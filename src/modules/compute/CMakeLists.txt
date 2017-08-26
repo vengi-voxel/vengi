@@ -14,7 +14,7 @@ add_library(${LIB} ${SRCS})
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_compile_definitions(${LIB} PRIVATE -DOPENCL_LIBRARY="${OpenCL_LIBRARY}")
-target_include_directories(${LIB} PUBLIC ${OPENCL_INCLUDE_DIRS})
+target_include_directories(${LIB} PUBLIC ${OpenCL_INCLUDE_DIRS})
 
 set(TEST_SRCS
 	tests/ComputeShaderTest.cpp
