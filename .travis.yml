@@ -63,6 +63,7 @@ install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-6"; export CC="gcc-6"; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty-travis-formatter; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install postgresql; fi
+
+#  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install postgresql; fi
 
 cache: apt
