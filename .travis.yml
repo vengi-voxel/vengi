@@ -56,8 +56,8 @@ addons:
 #    - opencl-c-headers
 
 script:
-  - make BUILDDIR=build-$TRAVIS_OS_NAME -j 4
-  - make BUILDDIR=build-$TRAVIS_OS_NAME tests ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*"
+  - make BUILDDIR=build-$TRAVIS_OS_NAME -j 4 CMAKE_BINARY=cmake
+  - make BUILDDIR=build-$TRAVIS_OS_NAME tests CMAKE_BINARY=cmake ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*"
 
 install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-6"; export CC="gcc-6"; fi
