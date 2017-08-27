@@ -33,7 +33,21 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 	endif()
 endif()
 
-set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} ${CMAKE_DL_LIBS}")
+check_library_exists(m pow "" HAVE_LIBM)
+if(HAVE_LIBM)
+  set(CMAKE_REQUIRED_LIBRARIES m)
+  foreach(_FN
+          atan atan2 ceil copysign cos cosf fabs floor log pow scalbn sin
+          sinf sqrt sqrtf tan tanf acos asin)
+    string(TOUPPER ${_FN} _UPPER)
+    set(_HAVEVAR "HAVE_${_UPPER}")
+    check_function_exists("${_FN}" ${_HAVEVAR})
+  endforeach()
+  set(CMAKE_REQUIRED_LIBRARIES)
+  set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lm")
+endif()
+
+#set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} ${CMAKE_DL_LIBS}")
 
 check_include_files("syslog.h" HAVE_SYSLOG_H)
 check_include_files("execinfo.h" HAVE_EXECINFO_H)

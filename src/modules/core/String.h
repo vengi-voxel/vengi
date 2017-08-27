@@ -14,6 +14,9 @@
 #include <stdarg.h>
 #include <SDL.h>
 
+#ifdef __APPLE__
+#include <string_view>
+#else
 #ifdef _MSC_VER
 #include "../string_view/string_view.hpp"
 namespace std {
@@ -27,6 +30,7 @@ using string_view = std::experimental::string_view;
 }
 #else
 #include <string_view>
+#endif
 #endif
 #endif
 

@@ -5,6 +5,8 @@ os:
   - linux
   - osx
 
+osx_image: xcode9
+
 git:
   depth: 3
 
@@ -55,7 +57,13 @@ addons:
 # currently not available
 #    - opencl-c-headers
 
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; fi
+
 script:
+  - g++ --version
+  - which g++
+  - echo $PATH
   - make -j 4
   - make tests ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*"
 
@@ -63,9 +71,11 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then mkdir -p latest-gcc-symlinks; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/g++-7 latest-gcc-symlinks/g++; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/gcc-7 latest-gcc-symlinks/gcc; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/g++-7 latest-gcc-symlinks/cpp; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/gcc-7 latest-gcc-symlinks/cc; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export PATH=$PWD/latest-gcc-symlinks:$PATH; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty-travis-formatter; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty xcpretty-travis-formatter; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install qt; fi
 
 cache:
   - apt
