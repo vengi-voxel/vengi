@@ -14,8 +14,8 @@ addons:
   apt:
     packages:
     - zlib1g-dev
-    - g++-6
-    - gcc-6
+    - g++-7
+    - gcc-7
     - clang-3.8
     - libdbus-1-dev
     - make
@@ -61,7 +61,7 @@ script:
   - make BUILDDIR=build-$TRAVIS_OS_NAME tests CMAKE_BINARY=cmake ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*"
 
 install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-6"; export CC="gcc-6"; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-7"; export CC="gcc-7"; fi
   - if [ "$CXX" = "clang++" ]; then export CXXFLAGS=-Qunused-arguments; export CFLAGS=-Qunused-arguments; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty-travis-formatter; fi
