@@ -56,6 +56,7 @@ addons:
 #    - opencl-c-headers
 
 script:
+  - $CXX --version
   - make BUILDDIR=build-$TRAVIS_OS_NAME -j 4 CMAKE_BINARY=cmake
   - make BUILDDIR=build-$TRAVIS_OS_NAME tests CMAKE_BINARY=cmake ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*"
 
