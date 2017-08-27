@@ -56,13 +56,14 @@ addons:
 #    - opencl-c-headers
 
 script:
-  - $CXX --version
   - make -j 4
   - make tests ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*"
 
 install:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 50; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 50; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then mkdir -p latest-gcc-symlinks; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export PATH=$PWD/latest-gcc-symlinks:$PATH; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty-travis-formatter; fi
 
