@@ -268,9 +268,10 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 	if (splitFrustum > 0) {
 		int indexOffset = startIndex;
-		float planes[splitFrustum * 2];
+		std::vector<float> planes;
+		planes.reserve(splitFrustum * 2);
 
-		camera.sliceFrustum(planes, SDL_arraysize(planes), splitFrustum);
+		camera.sliceFrustum(&planes[0], splitFrustum * 2, splitFrustum);
 
 		reserve(core::FRUSTUM_VERTICES_MAX * splitFrustum + targetLineVertices);
 

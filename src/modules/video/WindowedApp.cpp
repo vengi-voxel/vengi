@@ -29,7 +29,7 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 		Log::error("unknown error (%s:%i => %s)", file, line, function);
 	}
 }
-#define sdlCheckError() checkSDLError(__FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define sdlCheckError() checkSDLError(__FILE__, __LINE__, SDL_FUNCTION)
 }
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
