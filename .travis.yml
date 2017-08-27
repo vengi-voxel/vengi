@@ -57,8 +57,8 @@ addons:
 
 script:
   - $CXX --version
-  - make BUILDDIR=build-$TRAVIS_OS_NAME -j 4 CMAKE_BINARY=cmake
-  - make BUILDDIR=build-$TRAVIS_OS_NAME tests CMAKE_BINARY=cmake ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*"
+  - make -j 4
+  - make tests ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*"
 
 install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-7"; export CC="gcc-7"; fi
@@ -68,4 +68,6 @@ install:
 
 #  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install postgresql; fi
 
-cache: apt
+cache:
+  - apt
+  - ccache
