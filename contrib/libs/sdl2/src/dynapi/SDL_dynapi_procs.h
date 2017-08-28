@@ -50,6 +50,8 @@ SDL_DYNAPI_PROC(int,SDL_snprintf,(SDL_OUT_Z_CAP(b) char *a, size_t b, SDL_PRINTF
 
 #if defined(__WIN32__) && !defined(HAVE_LIBC)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
+#elif defined(__OS2__)
+SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
 #else
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c),(a,b,c),return)
 #endif
@@ -661,3 +663,9 @@ SDL_DYNAPI_PROC(void*,SDL_LoadFile_RW,(SDL_RWops *a, size_t *b, int c),(a,b,c),r
 SDL_DYNAPI_PROC(int,SDL_wcscmp,(const wchar_t *a, const wchar_t *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_BlendMode,SDL_ComposeCustomBlendMode,(SDL_BlendFactor a, SDL_BlendFactor b, SDL_BlendOperation c, SDL_BlendFactor d, SDL_BlendFactor e, SDL_BlendOperation f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_DuplicateSurface,(SDL_Surface *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_Vulkan_LoadLibrary,(const char *a),(a),return)
+SDL_DYNAPI_PROC(void*,SDL_Vulkan_GetVkGetInstanceProcAddr,(void),(),return)
+SDL_DYNAPI_PROC(void,SDL_Vulkan_UnloadLibrary,(void),(),)
+SDL_DYNAPI_PROC(SDL_bool,SDL_Vulkan_GetInstanceExtensions,(SDL_Window *a, unsigned *b, const char **c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_Vulkan_CreateSurface,(SDL_Window *a, VkInstance b, VkSurfaceKHR *c),(a,b,c),return)
+SDL_DYNAPI_PROC(void,SDL_Vulkan_GetDrawableSize,(SDL_Window *a, int *b, int *c),(a,b,c),)

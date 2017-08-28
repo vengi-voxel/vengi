@@ -27,6 +27,13 @@
 #if defined(__WIN32__)
 #include "../core/windows/SDL_windows.h"
 #endif
+#if defined(__OS2__)
+#define INCL_DOS
+#include <os2.h>
+#ifndef QSV_NUMPROCESSORS
+#define QSV_NUMPROCESSORS 26
+#endif
+#endif
 
 /* CPU feature detection for SDL */
 
@@ -48,6 +55,10 @@
 #elif SDL_ALTIVEC_BLITTERS && HAVE_SETJMP
 #include <signal.h>
 #include <setjmp.h>
+#endif
+
+#if defined(__QNXNTO__)
+#include <sys/syspage.h>
 #endif
 
 #if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH)
@@ -339,6 +350,8 @@ CPU_haveNEON(void)
     return 1;  /* all Apple ARMv7 chips and later have NEON. */
 #elif defined(__APPLE__)
     return 0;  /* assune anything else from Apple doesn't have NEON. */
+#elif defined(__QNXNTO__)
+    return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
     return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON);
 #elif (defined(__LINUX__) || defined(__ANDROID__))
@@ -410,6 +423,12 @@ SDL_GetCPUCount(void)
             SYSTEM_INFO info;
             GetSystemInfo(&info);
             SDL_CPUCount = info.dwNumberOfProcessors;
+        }
+#endif
+#ifdef __OS2__
+        if (SDL_CPUCount <= 0) {
+            DosQuerySysInfo(QSV_NUMPROCESSORS, QSV_NUMPROCESSORS,
+                            &SDL_CPUCount, sizeof(SDL_CPUCount) );
         }
 #endif
 #endif
@@ -711,6 +730,13 @@ SDL_GetSystemRAM(void)
             if (GlobalMemoryStatusEx(&stat)) {
                 SDL_SystemRAM = (int)(stat.ullTotalPhys / (1024 * 1024));
             }
+        }
+#endif
+#ifdef __OS2__
+        if (SDL_SystemRAM <= 0) {
+            Uint32 sysram = 0;
+            DosQuerySysInfo(QSV_TOTPHYSMEM, QSV_TOTPHYSMEM, &sysram, 4);
+            SDL_SystemRAM = (int) (sysram / 0x100000U);
         }
 #endif
 #endif

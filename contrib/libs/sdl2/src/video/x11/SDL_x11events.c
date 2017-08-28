@@ -303,10 +303,10 @@ static char* X11_URIToLocal(char* uri) {
 }
 
 #if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
-static void X11_HandleGenericEvent(SDL_VideoData *videodata,XEvent event)
+static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
 {
     /* event is a union, so cookie == &event, but this is type safe. */
-    XGenericEventCookie *cookie = &event.xcookie;
+    XGenericEventCookie *cookie = &xev->xcookie;
     if (X11_XGetEventData(videodata->display, cookie)) {
         X11_HandleXinput2Event(videodata, cookie);
         X11_XFreeEventData(videodata->display, cookie);
@@ -604,7 +604,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
         case SelectionNotify: {
 #ifdef DEBUG_XEVENTS
             printf("window CLIPBOARD: SelectionNotify (requestor = %ld, target = %ld)\n",
-                xevent.xselection.requestor, xevent.xselection.target);
+                xevent->xselection.requestor, xevent->xselection.target);
 #endif
             videodata->selection_waiting = SDL_FALSE;
         }
@@ -616,7 +616,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
 
 #ifdef DEBUG_XEVENTS
             printf("window CLIPBOARD: SelectionClear (requestor = %ld, target = %ld)\n",
-                xevent.xselection.requestor, xevent.xselection.target);
+                xevent->xselection.requestor, xevent->xselection.target);
 #endif
 
             if (xevent->xselectionclear.selection == XA_PRIMARY ||
@@ -696,7 +696,7 @@ X11_DispatchEvent(_THIS)
 
 #if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
     if(xevent.type == GenericEvent) {
-        X11_HandleGenericEvent(videodata,xevent);
+        X11_HandleGenericEvent(videodata, &xevent);
         return;
     }
 #endif

@@ -19,13 +19,34 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_kmsdrmevents_c_h
-#define _SDL_kmsdrmevents_c_h
+/*
+ * @author Mark Callow, www.edgewise-consulting.com. Based on Jacob Lifshay's
+ * SDL_x11vulkan.h.
+ */
 
-#include "SDL_kmsdrmvideo.h"
+#include "../../SDL_internal.h"
 
-void KMSDRM_PumpEvents(_THIS);
-void KMSDRM_EventInit(_THIS);
-void KMSDRM_EventQuit(_THIS);
+#ifndef _SDL_mirvulkan_h
+#define _SDL_mirvulkan_h
 
-#endif /* _SDL_kmsdrmevents_c_h */
+#include "../SDL_vulkan_internal.h"
+#include "../SDL_sysvideo.h"
+
+#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_MIR
+
+int MIR_Vulkan_LoadLibrary(_THIS, const char *path);
+void MIR_Vulkan_UnloadLibrary(_THIS);
+SDL_bool MIR_Vulkan_GetInstanceExtensions(_THIS,
+                                          SDL_Window *window,
+                                          unsigned *count,
+                                          const char **names);
+SDL_bool MIR_Vulkan_CreateSurface(_THIS,
+                                  SDL_Window *window,
+                                  VkInstance instance,
+                                  VkSurfaceKHR *surface);
+
+#endif
+
+#endif /* _SDL_mirvulkan_h */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -26,6 +26,7 @@
 #include "SDL_messagebox.h"
 #include "SDL_shape.h"
 #include "SDL_thread.h"
+#include "SDL_vulkan.h"
 
 /* The SDL video driver */
 
@@ -262,6 +263,16 @@ struct SDL_VideoDevice
 
     /* * * */
     /*
+     * Vulkan support
+     */
+    int (*Vulkan_LoadLibrary) (_THIS, const char *path);
+    void (*Vulkan_UnloadLibrary) (_THIS);
+    SDL_bool (*Vulkan_GetInstanceExtensions) (_THIS, SDL_Window *window, unsigned *count, const char **names);
+    SDL_bool (*Vulkan_CreateSurface) (_THIS, SDL_Window *window, VkInstance instance, VkSurfaceKHR *surface);
+    void (*Vulkan_GetDrawableSize) (_THIS, SDL_Window * window, int *w, int *h);
+
+    /* * * */
+    /*
      * Event manager functions
      */
     void (*PumpEvents) (_THIS);
@@ -329,7 +340,9 @@ struct SDL_VideoDevice
         int profile_mask;
         int share_with_current_context;
         int release_behavior;
+        int reset_notification;
         int framebuffer_srgb_capable;
+        int no_error;
         int retained_backing;
         int driver_loaded;
         char driver_path[256];
@@ -345,6 +358,17 @@ struct SDL_VideoDevice
     SDL_GLContext current_glctx;
     SDL_TLSID current_glwin_tls;
     SDL_TLSID current_glctx_tls;
+
+    /* * * */
+    /* Data used by the Vulkan drivers */
+    struct
+    {
+        void *vkGetInstanceProcAddr;
+        void *vkEnumerateInstanceExtensionProperties;
+        int loader_loaded;
+        char loader_path[256];
+        void *loader_handle;
+    } vulkan_config;
 
     /* * * */
     /* Data private to this driver */
@@ -403,7 +427,7 @@ extern void *SDL_GetDisplayDriverData( int displayIndex );
 extern void SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor);
 
 extern int SDL_RecreateWindow(SDL_Window * window, Uint32 flags);
-extern SDL_bool SDL_HasWindows();
+extern SDL_bool SDL_HasWindows(void);
 
 extern void SDL_OnWindowShown(SDL_Window * window);
 extern void SDL_OnWindowHidden(SDL_Window * window);

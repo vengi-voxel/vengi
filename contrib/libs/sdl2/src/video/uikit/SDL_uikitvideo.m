@@ -37,6 +37,7 @@
 #include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
 #include "SDL_uikitclipboard.h"
+#include "SDL_uikitvulkan.h"
 
 #define UIKITVID_DRIVER_NAME "uikit"
 
@@ -123,6 +124,15 @@ UIKit_CreateDevice(int devindex)
         device->GL_LoadLibrary      = UIKit_GL_LoadLibrary;
         device->free = UIKit_DeleteDevice;
 
+    #if SDL_VIDEO_VULKAN_SURFACE
+        device->Vulkan_LoadLibrary = UIKit_Vulkan_LoadLibrary;
+        device->Vulkan_UnloadLibrary = UIKit_Vulkan_UnloadLibrary;
+        device->Vulkan_GetInstanceExtensions
+                                     = UIKit_Vulkan_GetInstanceExtensions;
+        device->Vulkan_CreateSurface = UIKit_Vulkan_CreateSurface;
+        device->Vulkan_GetDrawableSize = UIKit_Vulkan_GetDrawableSize;
+    #endif
+
         device->gl_config.accelerated = 1;
 
         return device;
@@ -176,18 +186,39 @@ UIKit_IsSystemVersionAtLeast(double version)
 CGRect
 UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
+    CGRect frame = screen.bounds;
+
 #if !TARGET_OS_TV && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0)
     BOOL hasiOS7 = UIKit_IsSystemVersionAtLeast(7.0);
 
-    if (hasiOS7 || (window->flags & (SDL_WINDOW_BORDERLESS|SDL_WINDOW_FULLSCREEN))) {
-        /* The view should always show behind the status bar in iOS 7+. */
-        return screen.bounds;
-    } else {
-        return screen.applicationFrame;
+    /* The view should always show behind the status bar in iOS 7+. */
+    if (!hasiOS7 && !(window->flags & (SDL_WINDOW_BORDERLESS|SDL_WINDOW_FULLSCREEN))) {
+        frame = screen.applicationFrame;
     }
-#else
-    return screen.bounds;
 #endif
+
+#if !TARGET_OS_TV
+    /* iOS 10 seems to have a bug where, in certain conditions, putting the
+     * device to sleep with the a landscape-only app open, re-orienting the
+     * device to portrait, and turning it back on will result in the screen
+     * bounds returning portrait orientation despite the app being in landscape.
+     * This is a workaround until a better solution can be found.
+     * https://bugzilla.libsdl.org/show_bug.cgi?id=3505
+     * https://bugzilla.libsdl.org/show_bug.cgi?id=3465
+     * https://forums.developer.apple.com/thread/65337 */
+    if (UIKit_IsSystemVersionAtLeast(8.0)) {
+        UIInterfaceOrientation orient = [UIApplication sharedApplication].statusBarOrientation;
+        BOOL isLandscape = UIInterfaceOrientationIsLandscape(orient);
+
+        if (isLandscape != (frame.size.width > frame.size.height)) {
+            float height = frame.size.width;
+            frame.size.width = frame.size.height;
+            frame.size.height = height;
+        }
+    }
+#endif
+
+    return frame;
 }
 
 /*

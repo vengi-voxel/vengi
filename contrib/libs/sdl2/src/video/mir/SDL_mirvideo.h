@@ -28,6 +28,7 @@
 
 #include <EGL/egl.h>
 #include <mir_toolkit/mir_client_library.h>
+#include "SDL_stdinc.h"
 
 typedef struct MIR_Window MIR_Window;
 

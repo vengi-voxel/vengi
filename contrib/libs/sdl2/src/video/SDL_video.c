@@ -1329,7 +1329,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 }
 
 #define CREATE_FLAGS \
-    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN )
+    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN)
 
 static void
 SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
@@ -1384,7 +1384,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     /* Some platforms have OpenGL enabled by default */
 #if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__
-    if (!_this->is_dummy) {
+    if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN)) {
         flags |= SDL_WINDOW_OPENGL;
     }
 #endif
@@ -1394,6 +1394,25 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
             return NULL;
         }
         if (SDL_GL_LoadLibrary(NULL) < 0) {
+            return NULL;
+        }
+    }
+
+    if(flags & SDL_WINDOW_VULKAN)
+    {
+        if(!_this->Vulkan_CreateSurface)
+        {
+            SDL_SetError("Vulkan support is either not configured in SDL "
+            		     "or not available in video driver");
+            return NULL;
+        }
+        if(flags & SDL_WINDOW_OPENGL)
+        {
+            SDL_SetError("Vulkan and OpenGL not supported on same window");
+            return NULL;
+        }
+        if(SDL_Vulkan_LoadLibrary(NULL) < 0)
+        {
             return NULL;
         }
     }
@@ -1573,6 +1592,16 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         }
     }
 
+    if ((window->flags & SDL_WINDOW_VULKAN) != (flags & SDL_WINDOW_VULKAN)) {
+        SDL_SetError("Can't change SDL_WINDOW_VULKAN window flag");
+        return -1;
+    }
+
+    if ((window->flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
+        SDL_SetError("Vulkan and OpenGL not supported on same window");
+        return -1;
+    }
+
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
     window->last_fullscreen_flags = window->flags;
     window->is_destroying = SDL_FALSE;
@@ -1609,7 +1638,7 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
 }
 
 SDL_bool
-SDL_HasWindows()
+SDL_HasWindows(void)
 {
     return (_this && _this->windows != NULL);
 }
@@ -2632,6 +2661,9 @@ SDL_DestroyWindow(SDL_Window * window)
     if (window->flags & SDL_WINDOW_OPENGL) {
         SDL_GL_UnloadLibrary();
     }
+    if (window->flags & SDL_WINDOW_VULKAN) {
+        SDL_Vulkan_UnloadLibrary();
+    }
 
     display = SDL_GetDisplayForWindow(window);
     if (display->fullscreen_window == window) {
@@ -2989,7 +3021,9 @@ SDL_GL_ResetAttributes()
 #endif
     _this->gl_config.flags = 0;
     _this->gl_config.framebuffer_srgb_capable = 0;
+    _this->gl_config.no_error = 0;
     _this->gl_config.release_behavior = SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH;
+    _this->gl_config.reset_notification = SDL_GL_CONTEXT_RESET_NO_NOTIFICATION;
 
     _this->gl_config.share_with_current_context = 0;
 }
@@ -3098,6 +3132,12 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
         break;
     case SDL_GL_CONTEXT_RELEASE_BEHAVIOR:
         _this->gl_config.release_behavior = value;
+        break;
+    case SDL_GL_CONTEXT_RESET_NOTIFICATION:
+        _this->gl_config.reset_notification = value;
+        break;
+    case SDL_GL_CONTEXT_NO_ERROR:
+        _this->gl_config.no_error = value;
         break;
     default:
         retval = SDL_SetError("Unknown OpenGL attribute");
@@ -3301,6 +3341,11 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     case SDL_GL_FRAMEBUFFER_SRGB_CAPABLE:
         {
             *value = _this->gl_config.framebuffer_srgb_capable;
+            return 0;
+        }
+    case SDL_GL_CONTEXT_NO_ERROR:
+        {
+            *value = _this->gl_config.no_error;
             return 0;
         }
     default:
@@ -3930,6 +3975,130 @@ void SDL_OnApplicationDidBecomeActive(void)
             SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
             SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
         }
+    }
+}
+
+#define NOT_A_VULKAN_WINDOW "The specified window isn't a Vulkan window."
+
+int SDL_Vulkan_LoadLibrary(const char *path)
+{
+    int retval;
+    if(!_this)
+    {
+        SDL_UninitializedVideo();
+        return -1;
+    }
+    if(_this->vulkan_config.loader_loaded)
+    {
+        if(path && SDL_strcmp(path, _this->vulkan_config.loader_path) != 0)
+        {
+            return SDL_SetError("Vulkan loader library already loaded");
+        }
+        retval = 0;
+    }
+    else
+    {
+        if(!_this->Vulkan_LoadLibrary)
+        {
+            return SDL_SetError("No Vulkan support in video driver");
+        }
+        retval = _this->Vulkan_LoadLibrary(_this, path);
+    }
+    if(retval == 0)
+    {
+        _this->vulkan_config.loader_loaded++;
+    }
+    return retval;
+}
+
+void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
+{
+    if(!_this)
+    {
+        SDL_UninitializedVideo();
+        return NULL;
+    }
+    if(!_this->vulkan_config.loader_loaded)
+    {
+        SDL_SetError("No Vulkan loader has been loaded");
+    }
+    return _this->vulkan_config.vkGetInstanceProcAddr;
+}
+
+void SDL_Vulkan_UnloadLibrary(void)
+{
+    if(!_this)
+    {
+        SDL_UninitializedVideo();
+        return;
+    }
+    if(_this->vulkan_config.loader_loaded > 0)
+    {
+        if(--_this->vulkan_config.loader_loaded > 0)
+        {
+            return;
+        }
+        if(_this->Vulkan_UnloadLibrary)
+        {
+            _this->Vulkan_UnloadLibrary(_this);
+        }
+    }
+}
+
+SDL_bool SDL_Vulkan_GetInstanceExtensions(SDL_Window *window, unsigned *count, const char **names)
+{
+    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+
+    if(!(window->flags & SDL_WINDOW_VULKAN))
+    {
+        SDL_SetError(NOT_A_VULKAN_WINDOW);
+        return SDL_FALSE;
+    }
+
+    if(!count)
+    {
+        SDL_SetError("invalid count");
+        return SDL_FALSE;
+    }
+
+    return _this->Vulkan_GetInstanceExtensions(_this, window, count, names);
+}
+
+SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
+                                  VkInstance instance,
+                                  VkSurfaceKHR *surface)
+{
+    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+
+    if(!(window->flags & SDL_WINDOW_VULKAN))
+    {
+        SDL_SetError(NOT_A_VULKAN_WINDOW);
+        return SDL_FALSE;
+    }
+
+    if(!instance)
+    {
+        SDL_SetError("invalid instance");
+        return SDL_FALSE;
+    }
+
+    if(!surface)
+    {
+        SDL_SetError("invalid surface");
+        return SDL_FALSE;
+    }
+
+    return _this->Vulkan_CreateSurface(_this, window, instance, surface);
+}
+
+void SDL_Vulkan_GetDrawableSize(SDL_Window * window, int *w, int *h)
+{
+    CHECK_WINDOW_MAGIC(window,);
+
+    if (_this->Vulkan_GetDrawableSize) {
+        _this->Vulkan_GetDrawableSize(_this, window, w, h);
+    } else {
+        SDL_GetWindowSize(window, w, h);
     }
 }
 

@@ -114,6 +114,13 @@ typedef GLXContext(*PFNGLXCREATECONTEXTATTRIBSARBPROC) (Display * dpy,
 #endif
 #endif
 
+#ifndef GLX_ARB_create_context_no_error
+#define GLX_ARB_create_context_no_error
+#ifndef GLX_CONTEXT_OPENGL_NO_ERROR_ARB
+#define GLX_CONTEXT_OPENGL_NO_ERROR_ARB                 0x31B3
+#endif
+#endif
+
 #ifndef GLX_EXT_swap_control
 #define GLX_SWAP_INTERVAL_EXT              0x20F1
 #define GLX_MAX_SWAP_INTERVAL_EXT          0x20F2
@@ -394,6 +401,16 @@ X11_GL_InitExtensions(_THIS)
     if (HasExtension("GLX_ARB_context_flush_control", extensions)) {
         _this->gl_data->HAS_GLX_ARB_context_flush_control = SDL_TRUE;
     }
+
+    /* Check for GLX_ARB_create_context_robustness */
+    if (HasExtension("GLX_ARB_create_context_robustness", extensions)) {
+        _this->gl_data->HAS_GLX_ARB_create_context_robustness = SDL_TRUE;
+    }
+
+    /* Check for GLX_ARB_create_context_no_error */
+    if (HasExtension("GLX_ARB_create_context_no_error", extensions)) {
+        _this->gl_data->HAS_GLX_ARB_create_context_no_error = SDL_TRUE;
+    }
 }
 
 /* glXChooseVisual and glXChooseFBConfig have some small differences in
@@ -621,8 +638,8 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
             context =
                 _this->gl_data->glXCreateContext(display, vinfo, share_context, True);
         } else {
-            /* max 10 attributes plus terminator */
-            int attribs[11] = {
+            /* max 14 attributes plus terminator */
+            int attribs[15] = {
                 GLX_CONTEXT_MAJOR_VERSION_ARB,
                 _this->gl_config.major_version,
                 GLX_CONTEXT_MINOR_VERSION_ARB,
@@ -650,6 +667,21 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
                     _this->gl_config.release_behavior ? 
                     GLX_CONTEXT_RELEASE_BEHAVIOR_FLUSH_ARB : 
                     GLX_CONTEXT_RELEASE_BEHAVIOR_NONE_ARB;
+            }
+
+            /* only set if glx extension is available */
+            if( _this->gl_data->HAS_GLX_ARB_create_context_robustness ) {
+                attribs[iattr++] = GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB;
+                attribs[iattr++] =
+                    _this->gl_config.reset_notification ?
+                    GLX_LOSE_CONTEXT_ON_RESET_ARB :
+                    GLX_NO_RESET_NOTIFICATION_ARB;
+            }
+
+            /* only set if glx extension is available */
+            if( _this->gl_data->HAS_GLX_ARB_create_context_no_error ) {
+                attribs[iattr++] = GLX_CONTEXT_OPENGL_NO_ERROR_ARB;
+                attribs[iattr++] = _this->gl_config.no_error;
             }
 
             attribs[iattr++] = 0;

@@ -25,6 +25,7 @@ include(CheckLibraryExists)
 include(CheckIncludeFiles)
 include(CheckIncludeFile)
 include(CheckSymbolExists)
+include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
 include(CheckTypeSize)
@@ -44,10 +45,16 @@ include(cmake/sdlchecks.cmake)
 # set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 0)
-set(SDL_MICRO_VERSION 5)
-set(SDL_INTERFACE_AGE 1)
-set(SDL_BINARY_AGE 5)
+set(SDL_MICRO_VERSION 6)
+set(SDL_INTERFACE_AGE 0)
+set(SDL_BINARY_AGE 6)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
+
+# Set defaults preventing destination file conflicts
+set(CMAKE_DEBUG_POSTFIX "d"
+    CACHE STRING "Name suffix for debug builds")
+
+mark_as_advanced(CMAKE_IMPORT_LIBRARY_SUFFIX CMAKE_DEBUG_POSTFIX)
 
 # Calculate a libtool-like version number
 math(EXPR LT_CURRENT "${SDL_MICRO_VERSION} - ${SDL_INTERFACE_AGE}")
@@ -321,11 +328,13 @@ set_option(VIDEO_COCOA         "Use Cocoa video driver" ${APPLE})
 set_option(DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
 set_option(RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS})
 set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
+dep_option(VIDEO_VULKAN        "Enable Vulkan surface creation" ON "ANDROID OR APPLE OR LINUX OR WINDOWS" OFF)
 set_option(VIDEO_KMSDRM        "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "VIDEO_KMSDRM" OFF)
 
 # TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
 # The options below are for compatibility to configure's default behaviour.
+set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
 set(SDL_STATIC ON CACHE BOOL "Build a static version of the library")
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" OFF "SDL_STATIC" OFF)
@@ -413,12 +422,16 @@ if(USE_GCC OR USE_CLANG)
     list(APPEND EXTRA_CFLAGS "-Wshadow")
   endif()
 
-  #set(CMAKE_REQUIRED_FLAGS "-Wl,--no-undefined")
-  #check_c_compiler_flag("" HAVE_NO_UNDEFINED)
-  #set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
-  #if(HAVE_NO_UNDEFINED)
-  #  list(APPEND EXTRA_LDFLAGS "-Wl,--no-undefined")
-  #endif()
+  if(APPLE)
+    list(APPEND EXTRA_LDFLAGS "-Wl,-undefined,error")
+  else()
+    set(CMAKE_REQUIRED_FLAGS "-Wl,--no-undefined")
+    check_c_compiler_flag("" HAVE_NO_UNDEFINED)
+    set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+    if(HAVE_NO_UNDEFINED)
+      list(APPEND EXTRA_LDFLAGS "-Wl,--no-undefined")
+    endif()
+  endif()
 endif()
 
 if(ASSEMBLY)
@@ -603,7 +616,7 @@ if(LIBC)
     set(HAVE_SIGNAL_H 1)
     foreach(_FN
             malloc calloc realloc free qsort abs memset memcpy memmove memcmp
-            wcslen wcslcpy wcslcat wcscmp
+            wcslen wcscmp
             strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf atan atan2 acos asin ceil copysign cos
@@ -629,9 +642,7 @@ if(LIBC)
     endforeach()
 
     check_include_files("dlfcn.h;stdint.h;stddef.h;inttypes.h;stdlib.h;strings.h;string.h;float.h" STDC_HEADERS)
-    if (NOT IOS)
-        check_type_size("size_t" SIZEOF_SIZE_T)
-    endif()
+    check_type_size("size_t" SIZEOF_SIZE_T)
     check_symbol_exists(M_PI math.h HAVE_M_PI)
     # TODO: refine the mprotect check
     check_c_source_compiles("#include <sys/types.h>
@@ -765,7 +776,8 @@ if(ANDROID)
   endif()
 
   file(GLOB ANDROID_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/android/*.c)
-  set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_MAIN_SOURCES})
+  set(SDLMAIN_SOURCES ${SDLMAIN_SOURCES} ${ANDROID_MAIN_SOURCES})
+
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_ANDROID 1)
     file(GLOB ANDROID_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/android/*.c)
@@ -777,6 +789,12 @@ if(ANDROID)
     file(GLOB ANDROID_FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/android/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_FILESYSTEM_SOURCES})
     set(HAVE_SDL_FILESYSTEM TRUE)
+  endif()
+  if(SDL_HAPTIC)
+    set(SDL_HAPTIC_ANDROID 1)
+    file(GLOB ANDROID_HAPTIC_SOURCES ${SDL2_SOURCE_DIR}/src/haptic/android/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_HAPTIC_SOURCES})
+    set(HAVE_SDL_HAPTIC TRUE)
   endif()
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_ANDROID 1)
@@ -825,6 +843,20 @@ if(ANDROID)
       find_library(OpenGLES1_LIBRARY GLESv1_CM)
       find_library(OpenGLES2_LIBRARY GLESv2)
       list(APPEND EXTRA_LIBS ${OpenGLES1_LIBRARY} ${OpenGLES2_LIBRARY})
+    endif()
+
+    CHECK_C_SOURCE_COMPILES("
+    #if defined(__ANDROID__) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
+    #error Vulkan doesn't work on this configuration
+    #endif
+    int main()
+    {
+        return 0;
+    }
+    " VULKAN_PASSED_ANDROID_CHECKS)
+    if(NOT VULKAN_PASSED_ANDROID_CHECKS)
+      set(VIDEO_VULKAN OFF)
+      message(STATUS "Vulkan doesn't work on this configuration")
     endif()
   endif()
 
@@ -929,6 +961,11 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
     CheckKMSDRM()
   endif()
 
+  if(UNIX)
+    file(GLOB CORE_UNIX_SOURCES ${SDL2_SOURCE_DIR}/src/core/unix/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${CORE_UNIX_SOURCES})
+  endif()
+
   if(LINUX)
     check_c_source_compiles("
         #include <linux/input.h>
@@ -948,8 +985,8 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
             ioctl(0, KDGKBENT, &kbe);
         }" HAVE_INPUT_KD)
 
-    file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/linux/*.c ${SDL2_SOURCE_DIR}/src/core/unix/*.c)
-    set(SOURCE_FILES ${SOURCE_FILES} ${CORE_SOURCES})
+    file(GLOB CORE_LINUX_SOURCES ${SDL2_SOURCE_DIR}/src/core/linux/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${CORE_LINUX_SOURCES})
 
     if(HAVE_INPUT_EVENTS)
       set(SDL_INPUT_LINUXEV 1)
@@ -985,7 +1022,6 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
     endif()
 
     check_include_file("fcitx/frontend.h" HAVE_FCITX_FRONTEND_H)
-
   endif()
 
   if(INPUT_TSLIB)
@@ -1125,6 +1161,7 @@ elseif(WINDOWS)
     check_include_file(dsound.h HAVE_DSOUND_H)
     check_include_file(dinput.h HAVE_DINPUT_H)
     check_include_file(xaudio2.h HAVE_XAUDIO2_H)
+    check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
     check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
     check_include_file(dxgi.h HAVE_DXGI_H)
     if(HAVE_D3D_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H OR HAVE_XAUDIO2_H)
@@ -1156,7 +1193,7 @@ elseif(WINDOWS)
       set(SOURCE_FILES ${SOURCE_FILES} ${XAUDIO2_AUDIO_SOURCES})
     endif()
 
-    if(HAVE_AUDIOCLIENT_H)
+    if(HAVE_AUDIOCLIENT_H AND HAVE_MMDEVICEAPI_H)
       set(SDL_AUDIO_DRIVER_WASAPI 1)
       file(GLOB WASAPI_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/wasapi/*.c)
       set(SOURCE_FILES ${SOURCE_FILES} ${WASAPI_AUDIO_SOURCES})
@@ -1250,7 +1287,7 @@ elseif(WINDOWS)
     set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
     if(HAVE_DINPUT_H)
       set(SDL_JOYSTICK_DINPUT 1)
-      list(APPEND EXTRA_LIBS dinput8 dxguid)
+      list(APPEND EXTRA_LIBS dinput8)
       if(CMAKE_COMPILER_IS_MINGW)
         list(APPEND EXTRA_LIBS dxerr8)
       elseif (NOT USE_WINSDK_DIRECTX)
@@ -1291,17 +1328,25 @@ elseif(WINDOWS)
     list(APPEND SDL_LIBS "-lmingw32" "-mwindows")
   endif()
 elseif(APPLE)
-  # TODO: rework this for proper MacOS X, iOS and Darwin support
+  # TODO: rework this all for proper MacOS X, iOS and Darwin support
+
+  # We always need these libs on macOS at the moment.
+  # !!! FIXME: we need Carbon for some very old API calls in
+  # !!! FIXME:  src/video/cocoa/SDL_cocoakeyboard.c, but we should figure out
+  # !!! FIXME:  how to dump those.
+  if (APPLE AND NOT IOS)
+    set(SDL_FRAMEWORK_COCOA 1)
+    set(SDL_FRAMEWORK_CARBON 1)
+  endif()
 
   # Requires the darwin file implementation
   if(SDL_FILE)
     file(GLOB EXTRA_SOURCES ${SDL2_SOURCE_DIR}/src/file/cocoa/*.m)
     set(SOURCE_FILES ${EXTRA_SOURCES} ${SOURCE_FILES})
+    # !!! FIXME: modern CMake doesn't need "LANGUAGE C" for Objective-C.
     set_source_files_properties(${EXTRA_SOURCES} PROPERTIES LANGUAGE C)
     set(HAVE_SDL_FILE TRUE)
-    if (NOT IOS)
-      set(SDL_FRAMEWORK_COCOA 1)
-    endif()
+    # !!! FIXME: why is COREVIDEO inside this if() block?
     set(SDL_FRAMEWORK_COREVIDEO 1)
   else()
     message_error("SDL_FILE must be enabled to build on MacOS X")
@@ -1355,9 +1400,6 @@ elseif(APPLE)
     endif()
     set(SOURCE_FILES ${SOURCE_FILES} ${POWER_SOURCES})
     set(HAVE_SDL_POWER TRUE)
-    if (NOT IOS)
-      set(SDL_FRAMEWORK_CARBON 1)
-    endif()
     set(SDL_FRAMEWORK_IOKIT 1)
   endif()
 
@@ -1371,12 +1413,17 @@ elseif(APPLE)
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_COCOA 1)
     file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/cocoa/*.m)
+    # !!! FIXME: modern CMake doesn't need "LANGUAGE C" for Objective-C.
     set_source_files_properties(${FILESYSTEM_SOURCES} PROPERTIES LANGUAGE C)
     set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
     set(HAVE_SDL_FILESYSTEM TRUE)
   endif()
 
   # Actually load the frameworks at the end so we don't duplicate include.
+  if (VIDEO_VULKAN)
+    find_library(QUARTZCORE QuartzCore)
+    list(APPEND EXTRA_LIBS ${QUARTZCORE})
+  endif()
   if(SDL_FRAMEWORK_COREVIDEO)
     find_library(COREVIDEO CoreVideo)
     list(APPEND EXTRA_LIBS ${COREVIDEO})
@@ -1390,10 +1437,8 @@ elseif(APPLE)
     list(APPEND EXTRA_LIBS ${IOKIT})
   endif()
   if(SDL_FRAMEWORK_FF)
-    if (NOT IOS)
-      find_library(FORCEFEEDBACK ForceFeedback)
-      list(APPEND EXTRA_LIBS ${FORCEFEEDBACK})
-    endif()
+    find_library(FORCEFEEDBACK ForceFeedback)
+    list(APPEND EXTRA_LIBS ${FORCEFEEDBACK})
   endif()
   if(SDL_FRAMEWORK_CARBON)
     find_library(CARBON_LIBRARY Carbon)
@@ -1404,29 +1449,14 @@ elseif(APPLE)
     list(APPEND EXTRA_LIBS ${COREAUDIO})
   endif()
   if(SDL_FRAMEWORK_AUDIOTOOLBOX)
-    find_library(AUDIOTOOLKIT AudioToolbox)
-    list(APPEND EXTRA_LIBS ${AUDIOTOOLKIT})
-  endif()
-  if(SDL_FRAMEWORK_AUDIOUNIT)
-    find_library(AUDIOUNIT AudioUnit)
-    list(APPEND EXTRA_LIBS ${AUDIOUNIT})
-  endif()
-  if (SDL_FRAMEWORK_GAMECONTROLLER)
-    find_library(GAMECONTROLLER GameController)
-    list(APPEND EXTRA_LIBS ${GAMECONTROLLER})
-  endif()
-  if (IOS)
-    find_library(QUARTZCORE QuartzCore)
-    list(APPEND EXTRA_LIBS ${QUARTZCORE})
-    find_library(COREMOTION CoreMotion)
-    list(APPEND EXTRA_LIBS ${COREMOTION})
-    find_library(OPENGLES OpenGLES)
-    list(APPEND EXTRA_LIBS ${OPENGLES})
+    find_library(AUDIOTOOLBOX AudioToolbox)
+    list(APPEND EXTRA_LIBS ${AUDIOTOOLBOX})
   endif()
 
   # iOS hack needed - http://code.google.com/p/ios-cmake/ ?
   if(SDL_VIDEO)
     if (IOS)
+      set(SDL_VIDEO_DRIVER_UIKIT 1)
       file(GLOB UIKITVIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/uikit/*.m)
       set(SOURCE_FILES ${SOURCE_FILES} ${UIKITVIDEO_SOURCES})
     else()
@@ -1473,6 +1503,10 @@ elseif(HAIKU)
   CheckPTHREAD()
 endif()
 
+if(VIDEO_VULKAN AND (NOT APPLE OR QUARTZCORE))
+  set(SDL_VIDEO_VULKAN_SURFACE 1)
+endif()
+
 # Dummies
 # configure.in does it differently:
 # if not have X
@@ -1517,7 +1551,7 @@ if(NOT HAVE_SDL_TIMERS)
   set(SOURCE_FILES ${SOURCE_FILES} ${TIMER_SOURCES})
 endif()
 
-if(NOT SDLMAIN_SOURCES AND NOT IOS)
+if(NOT SDLMAIN_SOURCES)
   file(GLOB SDLMAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/dummy/*.c)
 endif()
 
@@ -1557,13 +1591,27 @@ if(NOT WINDOWS OR CYGWIN)
   set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")
   set(bindir "\${exec_prefix}/bin")
   set(includedir "\${prefix}/include")
-  set(ENABLE_STATIC_TRUE "")
-  set(ENABLE_STATIC_FALSE "#")
-  set(ENABLE_SHARED_TRUE "#")
-  set(ENABLE_SHARED_FALSE "")
+  if(SDL_STATIC)
+    set(ENABLE_STATIC_TRUE "")
+    set(ENABLE_STATIC_FALSE "#")
+  else()
+    set(ENABLE_STATIC_TRUE "#")
+    set(ENABLE_STATIC_FALSE "")
+  endif()
+  if(SDL_SHARED)
+    set(ENABLE_SHARED_TRUE "")
+    set(ENABLE_SHARED_FALSE "#")
+  else()
+    set(ENABLE_SHARED_TRUE "#")
+    set(ENABLE_SHARED_FALSE "")
+  endif()
 
   # Clean up the different lists
   listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
+  set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
+  list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
+  listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
+  set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
   listtostr(SDL_LIBS _SDL_LIBS)
   set(SDL_LIBS ${_SDL_LIBS})
 endif()
