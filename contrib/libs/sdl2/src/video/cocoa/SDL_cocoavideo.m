@@ -81,8 +81,8 @@ Cocoa_CreateDevice(int devindex)
     device->PumpEvents = Cocoa_PumpEvents;
     device->SuspendScreenSaver = Cocoa_SuspendScreenSaver;
 
-    device->CreateWindow = Cocoa_CreateWindow;
-    device->CreateWindowFrom = Cocoa_CreateWindowFrom;
+    device->CreateSDLWindow = Cocoa_CreateWindow;
+    device->CreateSDLWindowFrom = Cocoa_CreateWindowFrom;
     device->SetWindowTitle = Cocoa_SetWindowTitle;
     device->SetWindowIcon = Cocoa_SetWindowIcon;
     device->SetWindowPosition = Cocoa_SetWindowPosition;
@@ -123,7 +123,7 @@ Cocoa_CreateDevice(int devindex)
     device->GL_DeleteContext = Cocoa_GL_DeleteContext;
 #endif
 
-#if SDL_VIDEO_VULKAN_SURFACE
+#if SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Cocoa_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = Cocoa_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = Cocoa_Vulkan_GetInstanceExtensions;

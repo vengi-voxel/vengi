@@ -23,7 +23,7 @@
 #include "SDL_vulkan_internal.h"
 #include "SDL_error.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE
+#if SDL_VIDEO_VULKAN
 
 /* Based on the headers found in
  * https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers
@@ -133,14 +133,11 @@ VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     if(count == 0)
     {
         retval = SDL_calloc(1, sizeof(VkExtensionProperties)); // so we can return non-null
-        if(!retval)
-        {
-            SDL_OutOfMemory();
-            return NULL;
-        }
-        *extensionCount = 0;
     }
-    retval = SDL_calloc(count, sizeof(VkExtensionProperties));
+	else
+	{
+		retval = SDL_calloc(count, sizeof(VkExtensionProperties));
+	}
     if(!retval)
     {
         SDL_OutOfMemory();

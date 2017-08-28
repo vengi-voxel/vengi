@@ -26,13 +26,13 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_androidvulkan_h
-#define _SDL_androidvulkan_h
+#ifndef SDL_androidvulkan_h_
+#define SDL_androidvulkan_h_
 
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_ANDROID
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_ANDROID
 
 int Android_Vulkan_LoadLibrary(_THIS, const char *path);
 void Android_Vulkan_UnloadLibrary(_THIS);
@@ -47,6 +47,6 @@ SDL_bool Android_Vulkan_CreateSurface(_THIS,
 
 #endif
 
-#endif /* _SDL_androidvulkan_h */
+#endif /* SDL_androidvulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

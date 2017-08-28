@@ -18,17 +18,19 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _SDL_vulkan_internal_h
-#define _SDL_vulkan_internal_h
+#ifndef SDL_vulkan_internal_h_
+#define SDL_vulkan_internal_h_
 
 #include "../SDL_internal.h"
 
 #include "SDL_stdinc.h"
 
 #if defined(SDL_LOADSO_DISABLED)
-#undef SDL_VIDEO_VULKAN_SURFACE
-#define SDL_VIDEO_VULKAN_SURFACE 0
+#undef SDL_VIDEO_VULKAN
+#define SDL_VIDEO_VULKAN 0
 #endif
+
+#if SDL_VIDEO_VULKAN
 
 #if SDL_VIDEO_DRIVER_ANDROID
 #define VK_USE_PLATFORM_ANDROID_KHR
@@ -44,22 +46,22 @@
 #endif
 #if SDL_VIDEO_DRIVER_WAYLAND
 #define VK_USE_PLATFORM_WAYLAND_KHR
+#include "wayland/SDL_waylanddyn.h"
 #endif
 #if SDL_VIDEO_DRIVER_WINDOWS
 #define VK_USE_PLATFORM_WIN32_KHR
+#include "../core/windows/SDL_windows.h"
 #endif
 #if SDL_VIDEO_DRIVER_X11
 #define VK_USE_PLATFORM_XLIB_KHR
 #define VK_USE_PLATFORM_XCB_KHR
 #endif
 
-#if SDL_VIDEO_VULKAN_SURFACE
-
-/* Need vulkan.h for the following declarations. Must ensure the first
- * inclusion of vulkan has the appropriate USE_PLATFORM defined, hence
- * the above. */
 #define VK_NO_PROTOTYPES
 #include "./khronos/vulkan/vulkan.h"
+
+#include "SDL_vulkan.h"
+
 
 extern const char *SDL_Vulkan_GetResultString(VkResult result);
 
@@ -74,7 +76,13 @@ extern SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
                                                         unsigned nameCount,
                                                         const char *const *names);
 
-#endif
+#else
 
-#endif
+/* No SDL Vulkan support, just include the header for typedefs */
+#include "SDL_vulkan.h"
+
+#endif /* SDL_VIDEO_VULKAN */
+
+#endif /* SDL_vulkan_internal_h_ */
+
 /* vi: set ts=4 sw=4 expandtab: */

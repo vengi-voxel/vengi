@@ -26,13 +26,13 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_mirvulkan_h
-#define _SDL_mirvulkan_h
+#ifndef SDL_mirvulkan_h_
+#define SDL_mirvulkan_h_
 
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_MIR
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_MIR
 
 int MIR_Vulkan_LoadLibrary(_THIS, const char *path);
 void MIR_Vulkan_UnloadLibrary(_THIS);
@@ -47,6 +47,6 @@ SDL_bool MIR_Vulkan_CreateSurface(_THIS,
 
 #endif
 
-#endif /* _SDL_mirvulkan_h */
+#endif /* SDL_mirvulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

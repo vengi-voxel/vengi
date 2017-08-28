@@ -26,13 +26,13 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_windowsvulkan_h
-#define _SDL_windowsvulkan_h
+#ifndef SDL_windowsvulkan_h_
+#define SDL_windowsvulkan_h_
 
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_WINDOWS
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_WINDOWS
 
 int WIN_Vulkan_LoadLibrary(_THIS, const char *path);
 void WIN_Vulkan_UnloadLibrary(_THIS);
@@ -47,6 +47,6 @@ SDL_bool WIN_Vulkan_CreateSurface(_THIS,
 
 #endif
 
-#endif /* _SDL_windowsvulkan_h */
+#endif /* SDL_windowsvulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

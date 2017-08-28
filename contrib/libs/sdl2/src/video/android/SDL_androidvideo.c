@@ -115,7 +115,7 @@ Android_CreateDevice(int devindex)
     device->VideoQuit = Android_VideoQuit;
     device->PumpEvents = Android_PumpEvents;
 
-    device->CreateWindow = Android_CreateWindow;
+    device->CreateSDLWindow = Android_CreateWindow;
     device->SetWindowTitle = Android_SetWindowTitle;
     device->DestroyWindow = Android_DestroyWindow;
     device->GetWindowWMInfo = Android_GetWindowWMInfo;
@@ -133,7 +133,7 @@ Android_CreateDevice(int devindex)
     device->GL_SwapWindow = Android_GLES_SwapWindow;
     device->GL_DeleteContext = Android_GLES_DeleteContext;
 
-#if SDL_VIDEO_VULKAN_SURFACE
+#if SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Android_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = Android_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = Android_Vulkan_GetInstanceExtensions;

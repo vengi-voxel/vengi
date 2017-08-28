@@ -137,9 +137,8 @@ WIN_CreateDevice(int devindex)
     device->SetDisplayMode = WIN_SetDisplayMode;
     device->PumpEvents = WIN_PumpEvents;
 
-#undef CreateWindow
-    device->CreateWindow = WIN_CreateWindow;
-    device->CreateWindowFrom = WIN_CreateWindowFrom;
+    device->CreateSDLWindow = WIN_CreateWindow;
+    device->CreateSDLWindowFrom = WIN_CreateWindowFrom;
     device->SetWindowTitle = WIN_SetWindowTitle;
     device->SetWindowIcon = WIN_SetWindowIcon;
     device->SetWindowPosition = WIN_SetWindowPosition;
@@ -191,7 +190,7 @@ WIN_CreateDevice(int devindex)
     device->GL_SwapWindow = WIN_GLES_SwapWindow;
     device->GL_DeleteContext = WIN_GLES_DeleteContext;
 #endif
-#if SDL_VIDEO_VULKAN_SURFACE
+#if SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = WIN_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = WIN_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = WIN_Vulkan_GetInstanceExtensions;

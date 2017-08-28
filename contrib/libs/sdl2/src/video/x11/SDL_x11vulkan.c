@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_X11
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_X11
 
 #include "SDL_x11video.h"
 #include "SDL_assert.h"
@@ -29,9 +29,11 @@
 #include "SDL_x11vulkan.h"
 
 #include <X11/Xlib.h>
-//#include <xcb/xcb.h>
+/*#include <xcb/xcb.h>*/
+/*
 typedef uint32_t xcb_window_t;
 typedef uint32_t xcb_visualid_t;
+*/
 
 int X11_Vulkan_LoadLibrary(_THIS, const char *path)
 {

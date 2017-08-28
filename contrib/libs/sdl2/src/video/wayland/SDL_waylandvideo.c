@@ -168,7 +168,7 @@ Wayland_CreateDevice(int devindex)
     device->GL_GetProcAddress = Wayland_GLES_GetProcAddress;
     device->GL_DeleteContext = Wayland_GLES_DeleteContext;
 
-    device->CreateWindow = Wayland_CreateWindow;
+    device->CreateSDLWindow = Wayland_CreateWindow;
     device->ShowWindow = Wayland_ShowWindow;
     device->SetWindowFullscreen = Wayland_SetWindowFullscreen;
     device->MaximizeWindow = Wayland_MaximizeWindow;
@@ -182,7 +182,7 @@ Wayland_CreateDevice(int devindex)
     device->GetClipboardText = Wayland_GetClipboardText;
     device->HasClipboardText = Wayland_HasClipboardText;
 
-#if SDL_VIDEO_VULKAN_SURFACE
+#if SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Wayland_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = Wayland_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = Wayland_Vulkan_GetInstanceExtensions;

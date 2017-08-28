@@ -27,13 +27,13 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_cocoavulkan_h
-#define _SDL_cocoavulkan_h
+#ifndef SDL_cocoavulkan_h_
+#define SDL_cocoavulkan_h_
 
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_COCOA
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_COCOA
 
 int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path);
 void Cocoa_Vulkan_UnloadLibrary(_THIS);
@@ -50,6 +50,6 @@ void Cocoa_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
 
 #endif
 
-#endif /* _SDL_cocoavulkan_h */
+#endif /* SDL_cocoavulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

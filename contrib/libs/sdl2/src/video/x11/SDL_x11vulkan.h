@@ -20,14 +20,14 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11vulkan_h
-#define _SDL_x11vulkan_h
+#ifndef SDL_x11vulkan_h_
+#define SDL_x11vulkan_h_
 
 #include "../SDL_vulkan_internal.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_X11
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_X11
 
-typedef struct xcb_connection_t xcb_connection_t;
+/*typedef struct xcb_connection_t xcb_connection_t;*/
 typedef xcb_connection_t *(*PFN_XGetXCBConnection)(Display *dpy);
 
 int X11_Vulkan_LoadLibrary(_THIS, const char *path);
@@ -43,6 +43,6 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
 
 #endif
 
-#endif /* _SDL_x11vulkan_h */
+#endif /* SDL_x11vulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

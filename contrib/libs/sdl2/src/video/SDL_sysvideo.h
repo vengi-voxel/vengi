@@ -26,7 +26,8 @@
 #include "SDL_messagebox.h"
 #include "SDL_shape.h"
 #include "SDL_thread.h"
-#include "SDL_vulkan.h"
+
+#include "SDL_vulkan_internal.h"
 
 /* The SDL video driver */
 
@@ -206,8 +207,8 @@ struct SDL_VideoDevice
     /*
      * Window functions
      */
-    int (*CreateWindow) (_THIS, SDL_Window * window);
-    int (*CreateWindowFrom) (_THIS, SDL_Window * window, const void *data);
+    int (*CreateSDLWindow) (_THIS, SDL_Window * window);
+    int (*CreateSDLWindowFrom) (_THIS, SDL_Window * window, const void *data);
     void (*SetWindowTitle) (_THIS, SDL_Window * window);
     void (*SetWindowIcon) (_THIS, SDL_Window * window, SDL_Surface * icon);
     void (*SetWindowPosition) (_THIS, SDL_Window * window);
