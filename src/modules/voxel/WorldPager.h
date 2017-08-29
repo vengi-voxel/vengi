@@ -18,7 +18,6 @@ class PagedVolumeWrapper;
 class WorldPager: public PagedVolume::Pager {
 private:
 	WorldPersister _worldPersister;
-	bool _persist = true;
 	long _seed = 0l;
 	int _createFlags = 0;
 	glm::vec2 _noiseSeedOffset;

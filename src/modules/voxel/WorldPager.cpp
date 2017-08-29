@@ -7,14 +7,10 @@
 #include "voxel/generator/WorldGenerator.h"
 #include "voxel/polyvox/PagedVolumeWrapper.h"
 
-#define PERSIST 1
-
 namespace voxel {
 
 void WorldPager::erase(const Region& region) {
-#if PERSIST
 	_worldPersister.erase(region, _seed);
-#endif
 }
 
 bool WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
@@ -22,27 +18,20 @@ bool WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
 	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
-#if PERSIST
-	if (_persist && _worldPersister.load(pctx.chunk.get(), _seed)) {
+	if (_worldPersister.load(pctx.chunk.get(), _seed)) {
 		return false;
 	}
-#endif
 	create(pctx);
 	return true;
 }
 
 void WorldPager::pageOut(PagedVolume::Chunk* chunk) {
-#if PERSIST
-	if (!_persist) {
-		return;
-	}
 	core_assert(chunk != nullptr);
 	_worldPersister.save(chunk, _seed);
-#endif
 }
 
 void WorldPager::setPersist(bool persist) {
-	_persist = persist;
+	_worldPersister.setPersist(persist);
 }
 
 void WorldPager::setSeed(long seed) {

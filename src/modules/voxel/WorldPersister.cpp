@@ -21,6 +21,9 @@ std::string WorldPersister::getWorldName(const Region& region, long seed) const 
 }
 
 void WorldPersister::erase(const Region& region, long seed) {
+	if (!_persist) {
+		return;
+	}
 	core_trace_scoped(WorldPersisterErase);
 #if 0
 	PagedVolume::ChunkPtr chunk = ctx.getChunk();
@@ -33,6 +36,9 @@ void WorldPersister::erase(const Region& region, long seed) {
 }
 
 bool WorldPersister::load(PagedVolume::Chunk* chunk, long seed) {
+	if (!_persist) {
+		return false;
+	}
 	core_trace_scoped(WorldPersisterLoad);
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
@@ -101,6 +107,9 @@ bool WorldPersister::load(PagedVolume::Chunk* chunk, long seed) {
 }
 
 bool WorldPersister::save(PagedVolume::Chunk* chunk, long seed) {
+	if (!_persist) {
+		return false;
+	}
 	core_trace_scoped(WorldPersisterLoad);
 	core::ByteStream voxelStream;
 	const Region& region = chunk->region();
