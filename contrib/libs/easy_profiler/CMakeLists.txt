@@ -125,7 +125,7 @@ if(WIN32)
 	)
 endif(WIN32)
 
-add_library(${LIB_NAME} STATIC ${SOURCES})
+engine_add_library(LIB ${LIB_NAME} SRCS ${SOURCES})
 
 if (MINGW)
 	add_definitions(
