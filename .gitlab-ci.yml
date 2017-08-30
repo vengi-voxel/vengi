@@ -1,10 +1,4 @@
-image: debian:experimental
-
-before_script:
-  - export TERM=dumb
-  - apt-get update -qq
-  - apt-get install -y -qq pkg-config build-essential cmake doxygen graphviz postgresql-server-dev-9.6 libpq-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev libenet-dev libcurl4-openssl-dev opencl-c-headers libgtk-3-dev qt5-default qtbase5-dev ocl-icd-libopencl1 ocl-icd-opencl-dev
-  - cmake --version
+image: registry.gitlab.com/mgerhardy/engine-docker:master
 
 build:
   script:
