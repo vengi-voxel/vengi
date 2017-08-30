@@ -18,7 +18,7 @@ private:
 	NetworkPtr _network;
 
 public:
-	MessageSender(NetworkPtr network);
+	MessageSender(const NetworkPtr& network);
 
 	void sendServerMessage(ENetPeer* peer, FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags = ENET_PACKET_FLAG_RELIABLE);
 	void sendServerMessage(std::vector<ENetPeer*> peers, FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags = ENET_PACKET_FLAG_RELIABLE);

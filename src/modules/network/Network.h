@@ -25,7 +25,7 @@ private:
 	void disconnectPeer(ENetPeer *peer, uint32_t timeout = 3000);
 	void updateHost(ENetHost* host, bool server);
 public:
-	Network(ProtocolHandlerRegistryPtr protocolHandlerRegistry, core::EventBusPtr eventBus);
+	Network(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry, const core::EventBusPtr& eventBus);
 	virtual ~Network();
 
 	bool init();

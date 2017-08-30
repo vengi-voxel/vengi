@@ -24,7 +24,7 @@ inline ENetPacket* createClientPacket(FlatBufferBuilder& fbb, ClientMsgType type
 	return packet;
 }
 
-MessageSender::MessageSender(NetworkPtr network) :
+MessageSender::MessageSender(const NetworkPtr& network) :
 		_network(network) {
 }
 

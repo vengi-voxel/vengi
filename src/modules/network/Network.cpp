@@ -15,7 +15,7 @@
 
 namespace network {
 
-Network::Network(ProtocolHandlerRegistryPtr protocolHandlerRegistry, core::EventBusPtr eventBus) :
+Network::Network(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry, const core::EventBusPtr& eventBus) :
 		_protocolHandlerRegistry(protocolHandlerRegistry), _eventBus(eventBus), _server(nullptr), _client(nullptr) {
 }
 
