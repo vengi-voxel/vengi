@@ -117,7 +117,9 @@ bool QBTFormat::loadMatrix(io::FileStream& stream) {
 	}
 	delete [] voxelData;
 	delete [] voxelDataDecompressed;
-	return volume;
+	// TODO: do something with the volume, don't just free it after loading it.
+	delete volume;
+	return true;
 }
 
 bool QBTFormat::loadModel(io::FileStream& stream) {
