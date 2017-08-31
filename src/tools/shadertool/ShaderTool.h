@@ -95,6 +95,7 @@ protected:
 	std::string _shaderDirectory;
 	std::string _shaderTemplateFile;
 	std::string _uniformBufferTemplateFile;
+	std::string _shaderfile;
 
 	bool parseLayout(Layout& layout, core::Tokenizer& tok);
 	bool parse(const std::string& src, bool vertex);

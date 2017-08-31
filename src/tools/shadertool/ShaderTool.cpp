@@ -775,7 +775,7 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	const std::string glslangValidatorBin = _argv[1];
-	const std::string shaderfile          = _argv[2];
+	_shaderfile                           = _argv[2];
 	_shaderTemplateFile                   = _argv[3];
 	_uniformBufferTemplateFile            = _argv[4];
 	_namespaceSrc    = _argc >= 6 ?         _argv[5] : "frontend";
@@ -787,16 +787,19 @@ core::AppState ShaderTool::onRunning() {
 	Log::debug("Using %s as namespace", _namespaceSrc.c_str());
 	Log::debug("Using %s as shader directory", _shaderDirectory.c_str());
 
-	Log::debug("Preparing shader file %s", shaderfile.c_str());
-	const std::string fragmentFilename = shaderfile + FRAGMENT_POSTFIX;
-	const std::string fragmentBuffer = filesystem()->load(fragmentFilename);
+	Log::debug("Preparing shader file %s", _shaderfile.c_str());
+	const std::string fragmentFilename = _shaderfile + FRAGMENT_POSTFIX;
+	const io::FilePtr& f = filesystem()->open(fragmentFilename);
+	Log::debug("Path of shaderfile: %s", f->path().c_str());
+	const bool changedDir = filesystem()->pushDir(f->path());
+	const std::string fragmentBuffer = f->load();
 	if (fragmentBuffer.empty()) {
 		Log::error("Could not load %s", fragmentFilename.c_str());
 		_exitCode = 1;
 		return core::AppState::Cleanup;
 	}
 
-	const std::string vertexFilename = shaderfile + VERTEX_POSTFIX;
+	const std::string vertexFilename = _shaderfile + VERTEX_POSTFIX;
 	const std::string vertexBuffer = filesystem()->load(vertexFilename);
 	if (vertexBuffer.empty()) {
 		Log::error("Could not load %s", vertexFilename.c_str());
@@ -804,15 +807,16 @@ core::AppState ShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 
-	const std::string geometryFilename = shaderfile + GEOMETRY_POSTFIX;
+	const std::string geometryFilename = _shaderfile + GEOMETRY_POSTFIX;
 	const std::string geometryBuffer = filesystem()->load(geometryFilename);
 
 	video::Shader shader;
+
 	const std::string& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, false);
 	const std::string& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, false);
 
-	_shaderStruct.filename = shaderfile;
-	_shaderStruct.name = shaderfile;
+	_shaderStruct.filename = _shaderfile;
+	_shaderStruct.name = _shaderfile;
 	parse(fragmentSrcSource, false);
 	if (!geometryBuffer.empty()) {
 		const std::string& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, false);
@@ -825,7 +829,11 @@ core::AppState ShaderTool::onRunning() {
 	const std::string& vertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, true);
 	const std::string& geometrySource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, true);
 
-	Log::debug("Writing shader file %s to %s", shaderfile.c_str(), filesystem()->homePath().c_str());
+	if (changedDir) {
+		filesystem()->popDir();
+	}
+
+	Log::debug("Writing shader file %s to %s", _shaderfile.c_str(), filesystem()->homePath().c_str());
 	std::string finalFragmentFilename = _appname + "-" + fragmentFilename;
 	std::string finalVertexFilename = _appname + "-" + vertexFilename;
 	std::string finalGeometryFilename = _appname + "-" + geometryFilename;
@@ -835,7 +843,7 @@ core::AppState ShaderTool::onRunning() {
 		filesystem()->write(finalGeometryFilename, geometrySource);
 	}
 
-	Log::debug("Validating shader file %s", shaderfile.c_str());
+	Log::debug("Validating shader file %s", _shaderfile.c_str());
 
 	std::vector<std::string> fragmentArgs;
 	fragmentArgs.push_back(filesystem()->homePath() + finalFragmentFilename);
