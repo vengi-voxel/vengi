@@ -56,9 +56,8 @@ macro(generate_shaders TARGET)
 					add_custom_command(
 						OUTPUT ${_shader}
 						COMMENT "Validate ${_file} and generate ${_shaderfile}"
-						COMMAND ${CMAKE_BINARY_DIR}/shadertool ${CMAKE_BINARY_DIR}/glslangValidator ${_file} ${_template} ${_template_ub} shader shaders/ ${GEN_DIR}
+						COMMAND ${CMAKE_BINARY_DIR}/shadertool --glslang ${CMAKE_BINARY_DIR}/glslangValidator --shader ${_dir}/${_file} --shadertemplate ${_template} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
 						DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template} ${_template_ub}
-						WORKING_DIRECTORY ${_dir}
 					)
 					list(APPEND _headers ${_shader})
 				endif()

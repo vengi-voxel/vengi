@@ -758,6 +758,13 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 }
 
 core::AppState ShaderTool::onConstruct() {
+	registerArg("--glslang").setShort("-g").setDescription("Path to glslangvalidator binary");
+	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for");
+	registerArg("--shadertemplate").setShort("-t").setDescription("The shader template file");
+	registerArg("--buffertemplate").setShort("-b").setDescription("The uniform buffer template file");
+	registerArg("--namespace").setShort("-n").setDescription("Namespace to generate the source in").setDefaultValue("shader");
+	registerArg("--shaderdir").setShort("-d").setDescription("Directory to load the shader from").setDefaultValue("shaders/");
+	registerArg("--sourcedir").setDescription("Directory to generate the source in");
 	Log::trace("Set some shader config vars to let the validation work");
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
@@ -767,31 +774,29 @@ core::AppState ShaderTool::onConstruct() {
 }
 
 core::AppState ShaderTool::onRunning() {
-	if (_argc < 5) {
-		_exitCode = 1;
-		Log::error("Usage: %s <path/to/glslangvalidator> <shaderfile> <shadertemplate> <uniformbuffertemplate> <namespace> <shader-dir> <src-generator-dir>", _argv[0]);
-		return core::AppState::Cleanup;
-	}
+	const std::string glslangValidatorBin = getArgVal("--glslang");
+	const std::string shaderfile          = getArgVal("--shader");
+	_shaderTemplateFile                   = getArgVal("--shadertemplate");
+	_uniformBufferTemplateFile            = getArgVal("--buffertemplate");
+	_namespaceSrc                         = getArgVal("--namespace");
+	_shaderDirectory                      = getArgVal("--shaderdir");
+	_sourceDirectory                      = getArgVal("--sourcedir", _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
 
-	const std::string glslangValidatorBin = _argv[1];
-	_shaderfile                           = _argv[2];
-	_shaderTemplateFile                   = _argv[3];
-	_uniformBufferTemplateFile            = _argv[4];
-	_namespaceSrc    = _argc >= 6 ?         _argv[5] : "frontend";
-	_shaderDirectory = _argc >= 7 ?         _argv[6] : "shaders/";
-	_sourceDirectory = _argc >= 8 ?         _argv[7] : _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/";
+	if (!core::string::endsWith(_shaderDirectory, "/")) {
+		_shaderDirectory = _shaderDirectory + "/";
+	}
 
 	Log::debug("Using glslangvalidator binary: %s", glslangValidatorBin.c_str());
 	Log::debug("Using %s as output directory", _sourceDirectory.c_str());
 	Log::debug("Using %s as namespace", _namespaceSrc.c_str());
 	Log::debug("Using %s as shader directory", _shaderDirectory.c_str());
 
+	Log::debug("Preparing shader file %s", shaderfile.c_str());
+	_shaderfile = std::string(core::string::extractFilename(shaderfile.c_str()));
 	Log::debug("Preparing shader file %s", _shaderfile.c_str());
 	const std::string fragmentFilename = _shaderfile + FRAGMENT_POSTFIX;
-	const io::FilePtr& f = filesystem()->open(fragmentFilename);
-	Log::debug("Path of shaderfile: %s", f->path().c_str());
-	const bool changedDir = filesystem()->pushDir(f->path());
-	const std::string fragmentBuffer = f->load();
+	const bool changedDir = filesystem()->pushDir(std::string(core::string::extractPath(shaderfile.c_str())));
+	const std::string fragmentBuffer = filesystem()->load(fragmentFilename);
 	if (fragmentBuffer.empty()) {
 		Log::error("Could not load %s", fragmentFilename.c_str());
 		_exitCode = 1;
