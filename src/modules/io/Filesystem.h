@@ -7,6 +7,7 @@
 #include <memory>
 #include "core/ThreadPool.h"
 #include "File.h"
+#include <stack>
 
 namespace io {
 
@@ -23,6 +24,9 @@ private:
 
 	std::string _basePath;
 	std::string _homePath;
+
+	std::stack<std::string> _dirStack;
+
 public:
 	Filesystem();
 	~Filesystem();
@@ -58,6 +62,12 @@ public:
 	bool list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter = "") const;
 
 	bool isRelativeFilename(const std::string& name) const;
+
+	bool chdir(const std::string& directory);
+
+	bool popDir();
+
+	bool pushDir(const std::string& directory);
 
 	io::FilePtr open(const std::string& filename, FileMode mode = FileMode::Read) const;
 

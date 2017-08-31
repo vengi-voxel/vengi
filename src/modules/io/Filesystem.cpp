@@ -62,6 +62,25 @@ bool Filesystem::isRelativeFilename(const std::string& name) const {
 #endif
 }
 
+bool Filesystem::popDir() {
+	if (_dirStack.empty()) {
+		return false;
+	}
+	const std::string& directory = _dirStack.top();
+	chdir(directory);
+	_dirStack.pop();
+	return true;
+}
+
+bool Filesystem::pushDir(const std::string& directory) {
+	const bool changed = chdir(directory);
+	if (!changed) {
+		return false;
+	}
+	_dirStack.push(directory);
+	return true;
+}
+
 io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
 	if (mode == FileMode::Write && !isRelativeFilename(filename)) {
 		return std::make_shared<io::File>(filename, mode);
