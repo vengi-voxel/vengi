@@ -68,6 +68,7 @@ bool Filesystem::popDir() {
 	}
 	const std::string& directory = _dirStack.top();
 	chdir(directory);
+	Log::trace("change current dir to %s", directory.c_str());
 	_dirStack.pop();
 	return true;
 }
@@ -77,6 +78,7 @@ bool Filesystem::pushDir(const std::string& directory) {
 	if (!changed) {
 		return false;
 	}
+	Log::trace("change current dir to %s", directory.c_str());
 	_dirStack.push(directory);
 	return true;
 }
