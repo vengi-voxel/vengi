@@ -149,7 +149,7 @@ AppState App::onConstruct() {
 	}).setHelp("Set a variable name");
 
 	for (int i = 0; i < _argc; ++i) {
-		if (_argv[i][0] != '-' || (_argv[i][0] != '\0' &&_argv[i][1] == '-')) {
+		if (_argv[i][0] != '-' || (_argv[i][0] != '\0' && _argv[i][1] == '-')) {
 			continue;
 		}
 
@@ -394,8 +394,13 @@ AppState App::onInit() {
 	return AppState::Running;
 }
 
-void App::usage() {
+void App::usage() const {
 	Log::info("Usage: %s [--help] [-set configvar value] [-commandname]", _appname.c_str());
+
+	for (const Argument& a : _arguments) {
+		Log::info("%s | %s - %s (default: %s)",
+				a.longArg().c_str(), a.shortArg().c_str(), a.description().c_str(), a.defaultValue().c_str());
+	}
 
 	int maxWidth = 0;
 	core::Var::visitSorted([&] (const core::VarPtr& v) {
@@ -469,7 +474,7 @@ bool App::hasArg(const std::string& arg) const {
 	return false;
 }
 
-std::string App::getArgVal(const std::string& arg) const {
+std::string App::getArgVal(const std::string& arg, const std::string& defaultVal) {
 	for (int i = 1; i < _argc; ++i) {
 		if (arg != _argv[i]) {
 			continue;
@@ -478,7 +483,37 @@ std::string App::getArgVal(const std::string& arg) const {
 			return _argv[i + 1];
 		}
 	}
+	if (!defaultVal.empty()) {
+		return defaultVal;
+	}
+	for (const Argument& a : _arguments) {
+		if (a.longArg() != arg && a.shortArg() != arg) {
+			continue;
+		}
+		for (int i = 1; i < _argc; ++i) {
+			if (a.longArg() != _argv[i] && a.shortArg() != _argv[i]) {
+				continue;
+			}
+			if (i + 1 < _argc) {
+				return _argv[i + 1];
+			}
+		}
+		if (!a.mandatory()) {
+			return a.defaultValue();
+		}
+		if (a.defaultValue().empty()) {
+			usage();
+			requestQuit();
+		}
+		return a.defaultValue();
+	}
 	return "";
+}
+
+App::Argument& App::registerArg(const std::string& arg) {
+	App::Argument argument(arg);
+	_arguments.push_back(argument);
+	return _arguments.back();
 }
 
 AppState App::onCleanup() {

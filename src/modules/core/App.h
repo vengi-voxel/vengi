@@ -104,7 +104,7 @@ protected:
 		_framesPerSecondsCap = framesPerSecondsCap;
 	}
 
-	void usage();
+	void usage() const;
 
 public:
 	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport, size_t threadPoolSize = 1);
@@ -129,11 +129,66 @@ public:
 
 	const std::string& appname() const;
 
+	class Argument {
+	private:
+		std::string _longArg;
+		std::string _shortArg;
+		std::string _description;
+		std::string _defaultValue;
+		bool _mandatory = false;
+
+	public:
+		Argument(const std::string longArg) :
+				_longArg(longArg) {
+		}
+
+		Argument& setShort(const std::string& shortArg) {
+			_shortArg = shortArg;
+			return *this;
+		}
+
+		Argument& setMandatory() {
+			_mandatory = true;
+			return *this;
+		}
+
+		Argument& setDescription(const std::string& description) {
+			_description = description;
+			return *this;
+		}
+
+		Argument& setDefaultValue(const std::string& defaultValue) {
+			_defaultValue = defaultValue;
+			return *this;
+		}
+
+		const std::string& defaultValue() const {
+			return _defaultValue;
+		}
+
+		const std::string& description() const {
+			return _description;
+		}
+
+		const std::string& longArg() const {
+			return _longArg;
+		}
+
+		bool mandatory() const {
+			return _mandatory;
+		}
+
+		const std::string& shortArg() const {
+			return _shortArg;
+		}
+	};
+
 	/**
 	 * @note Only valid after
 	 */
 	bool hasArg(const std::string& arg) const;
-	std::string getArgVal(const std::string& arg) const;
+	std::string getArgVal(const std::string& arg, const std::string& defaultVal = "");
+	Argument& registerArg(const std::string& arg);
 
 	// handle the app state changes here
 	virtual void onFrame();
@@ -172,6 +227,9 @@ public:
 		core_assert(_staticInstance != nullptr);
 		return _staticInstance;
 	}
+
+private:
+	std::list<Argument> _arguments;
 };
 
 inline App::ProfilerCPU::ProfilerCPU(const std::string& name, uint16_t maxSamples) :

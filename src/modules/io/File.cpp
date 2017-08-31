@@ -63,6 +63,9 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 }
 
 long File::write(const unsigned char *buf, size_t len) const {
+	if (!_file) {
+		return -1;
+	}
 	if (_mode != FileMode::Write) {
 		return -1L;
 	}
