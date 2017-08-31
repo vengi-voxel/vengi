@@ -575,7 +575,6 @@ void ShaderTool::generateSrc() {
 		std::string generatedUb = srcUb;
 		generatedUb = core::string::replaceAll(generatedUb, "$name$", uniformBufferStructName);
 		generatedUb = core::string::replaceAll(generatedUb, "$namespace$", _namespaceSrc);
-		generatedUb = core::string::replaceAll(generatedUb, "$filename$", _shaderDirectory + uniformBufferStructName + ".h");
 		generatedUb = core::string::replaceAll(generatedUb, "$uniformbuffers$", ub.str());
 		generatedUb = core::string::replaceAll(generatedUb, "$setters$", "");
 		generatedUb = core::string::replaceAll(generatedUb, "$shutdown$", shutdown.str());
