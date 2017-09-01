@@ -780,7 +780,8 @@ core::AppState ShaderTool::onRunning() {
 	_uniformBufferTemplateFile            = getArgVal("--buffertemplate");
 	_namespaceSrc                         = getArgVal("--namespace");
 	_shaderDirectory                      = getArgVal("--shaderdir");
-	_sourceDirectory                      = getArgVal("--sourcedir", _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
+	_sourceDirectory                      = getArgVal("--sourcedir",
+			_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
 
 	if (!core::string::endsWith(_shaderDirectory, "/")) {
 		_shaderDirectory = _shaderDirectory + "/";

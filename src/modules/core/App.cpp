@@ -403,9 +403,22 @@ AppState App::onInit() {
 void App::usage() const {
 	Log::info("Usage: %s [--help] [-set configvar value] [-commandname]", _appname.c_str());
 
+	int maxWidthLong = 0;
+	int maxWidthShort = 0;
 	for (const Argument& a : _arguments) {
-		Log::info("%s | %s - %s (default: %s)",
-				a.longArg().c_str(), a.shortArg().c_str(), a.description().c_str(), a.defaultValue().c_str());
+		maxWidthLong = std::max(maxWidthLong, (int)a.longArg().size());
+		maxWidthShort = std::max(maxWidthShort, (int)a.shortArg().size());
+	};
+	int maxWidthOnlyLong = maxWidthLong + maxWidthShort + 3;
+	for (const Argument& a : _arguments) {
+		const std::string defaultVal = a.defaultValue().empty() ? "" : core::string::format(" (default: %s)", a.defaultValue().c_str());
+		if (a.shortArg().empty()) {
+			Log::info("%-*s - %s %s", maxWidthOnlyLong,
+				a.longArg().c_str(), a.description().c_str(), defaultVal.c_str());
+		} else {
+			Log::info("%-*s | %-*s - %s %s", maxWidthLong,
+				a.longArg().c_str(), maxWidthShort, a.shortArg().c_str(), a.description().c_str(), defaultVal.c_str());
+		}
 	}
 
 	int maxWidth = 0;
