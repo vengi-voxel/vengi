@@ -141,12 +141,11 @@ endmacro()
 macro(generate_db_models TARGET INPUT OUTPUT)
 	set(GEN_DIR ${CMAKE_BINARY_DIR}/gen-dbmodels/${TARGET}/)
 	file(MAKE_DIRECTORY ${GEN_DIR})
-	message(STATUS "Generate models for ${PERSISTENCE_DBTYPE}")
 	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
 	add_custom_command(
 		OUTPUT ${GEN_DIR}${OUTPUT}
 		COMMENT "Generate ${OUTPUT}"
-		COMMAND ${CMAKE_BINARY_DIR}/databasetool --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT} ${PERSISTENCE_DBTYPE}
+		COMMAND ${CMAKE_BINARY_DIR}/databasetool --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT}
 		DEPENDS databasetool ${INPUT}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 	)
