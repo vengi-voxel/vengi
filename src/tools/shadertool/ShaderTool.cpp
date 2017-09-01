@@ -758,13 +758,13 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 }
 
 core::AppState ShaderTool::onConstruct() {
-	registerArg("--glslang").setShort("-g").setDescription("Path to glslangvalidator binary");
-	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for");
-	registerArg("--shadertemplate").setShort("-t").setDescription("The shader template file");
-	registerArg("--buffertemplate").setShort("-b").setDescription("The uniform buffer template file");
+	registerArg("--glslang").setShort("-g").setDescription("Path to glslangvalidator binary").setMandatory();
+	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for").setMandatory();
+	registerArg("--shadertemplate").setShort("-t").setDescription("The shader template file").setMandatory();
+	registerArg("--buffertemplate").setShort("-b").setDescription("The uniform buffer template file").setMandatory();
 	registerArg("--namespace").setShort("-n").setDescription("Namespace to generate the source in").setDefaultValue("shader");
 	registerArg("--shaderdir").setShort("-d").setDescription("Directory to load the shader from").setDefaultValue("shaders/");
-	registerArg("--sourcedir").setDescription("Directory to generate the source in");
+	registerArg("--sourcedir").setDescription("Directory to generate the source in").setMandatory();
 	Log::trace("Set some shader config vars to let the validation work");
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);

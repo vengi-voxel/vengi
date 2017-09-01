@@ -542,36 +542,33 @@ bool ComputeShaderTool::parse(const std::string& buffer) {
 	return true;
 }
 
+core::AppState ComputeShaderTool::onConstruct() {
+	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for").setMandatory();
+	registerArg("--shadertemplate").setShort("-t").setDescription("The shader template file").setMandatory();
+	registerArg("--namespace").setShort("-n").setDescription("Namespace to generate the source in").setDefaultValue("compute");
+	registerArg("--shaderdir").setShort("-d").setDescription("Directory to load the shader from").setDefaultValue("shaders/");
+	registerArg("--sourcedir").setDescription("Directory to generate the source in").setMandatory();
+	return core::App::onConstruct();
+}
+
 core::AppState ComputeShaderTool::onRunning() {
-	if (_argc < 3) {
-		_exitCode = 1;
-		Log::error("Usage: %s <shaderfile> <shadertemplate> <namespace> <shader-dir> <src-generator-dir>",
-				_argv[0]);
-		Log::error("shaderfile        - relative to data dir");
-		Log::error("shadertemplate    - path to shader template file");
-		Log::error("namespace         - the c++ namespace");
-		Log::error("shader-dir        - the directory where the shaders are found in - relative to data dir");
-		Log::error("src-generator-dir - the output dir for the generated c++ code");
-		Log::error("%s", "");
-		Log::error("Example call");
-		Log::error("%s shaders/test src/tools/computeshadertool/ComputeShaderTemplate.h.in compute shaders/ outdir",
-				_argv[0]);
+	const std::string shaderfile          = getArgVal("--shader");
+	_shaderTemplateFile                   = getArgVal("--shadertemplate");
+	_namespaceSrc                         = getArgVal("--namespace");
+	_shaderDirectory                      = getArgVal("--shaderdir");
+	_sourceDirectory                      = getArgVal("--sourcedir",
+			_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
 
-		return core::AppState::Cleanup;
+	if (!core::string::endsWith(_shaderDirectory, "/")) {
+		_shaderDirectory = _shaderDirectory + "/";
 	}
-
-	const std::string shaderfile          = _argv[1];
-	_shaderTemplateFile                   = _argv[2];
-	_namespaceSrc    = _argc >= 4 ?         _argv[3] : "compute";
-	_shaderDirectory = _argc >= 5 ?         _argv[4] : "shaders/";
-	_sourceDirectory = _argc >= 6 ?         _argv[5] : _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/";
-
 	Log::debug("Using %s as output directory", _sourceDirectory.c_str());
 	Log::debug("Using %s as namespace", _namespaceSrc.c_str());
 	Log::debug("Using %s as shader directory", _shaderDirectory.c_str());
 
 	Log::debug("Preparing shader file %s", shaderfile.c_str());
 	_computeFilename = shaderfile + COMPUTE_POSTFIX;
+	const bool changedDir = filesystem()->pushDir(std::string(core::string::extractPath(shaderfile.c_str())));
 	const std::string computeBuffer = filesystem()->load(_computeFilename);
 	if (computeBuffer.empty()) {
 		Log::error("Could not load %s", _computeFilename.c_str());
@@ -590,6 +587,10 @@ core::AppState ComputeShaderTool::onRunning() {
 	generateSrc();
 
 	const std::string& computeSource = shader.getSource(computeBuffer, true);
+
+	if (changedDir) {
+		filesystem()->popDir();
+	}
 
 	Log::debug("Writing shader file %s to %s", shaderfile.c_str(), filesystem()->homePath().c_str());
 	std::string finalComputeFilename = _appname + "-" + _computeFilename;

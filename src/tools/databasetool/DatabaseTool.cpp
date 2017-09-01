@@ -591,15 +591,16 @@ bool DatabaseTool::parse(const std::string& buffer) {
 	return true;
 }
 
-core::AppState DatabaseTool::onRunning() {
-	if (_argc < 3) {
-		_exitCode = 1;
-		Log::error("Usage: %s <inputfile> <outputfile> (%i)", _argv[0], _argc);
-		return core::AppState::Cleanup;
-	}
+core::AppState DatabaseTool::onConstruct() {
+	registerArg("--tablefile").setShort("-t").setDescription("The path to the table to file").setMandatory();
+	registerArg("--outfile").setShort("-o").setDescription("The file that should be generated").setMandatory();
+	Super::onConstruct();
+}
 
-	_tableFile    = _argv[1];
-	_targetFile   = _argv[2];
+
+core::AppState DatabaseTool::onRunning() {
+	_tableFile    = getArgVal("--tablefile");
+	_targetFile   = getArgVal("--outfile");
 
 	Log::debug("Preparing table file %s", _tableFile.c_str());
 	const std::string& buf = filesystem()->load(_tableFile);

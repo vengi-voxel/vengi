@@ -16,6 +16,7 @@
  */
 class DatabaseTool: public core::App {
 protected:
+	using Super = core::App;
 	std::string _tableFile;
 	std::string _targetFile;
 
@@ -58,5 +59,6 @@ protected:
 public:
 	DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
+	core::AppState onConstruct() override;
 	core::AppState onRunning() override;
 };

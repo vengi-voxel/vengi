@@ -107,9 +107,8 @@ macro(generate_compute_shaders TARGET)
 					add_custom_command(
 						OUTPUT ${_shader}
 						COMMENT "Generate ${_shaderfile}"
-						COMMAND ${CMAKE_BINARY_DIR}/computeshadertool ${_file} ${_template} compute shaders/ ${GEN_DIR}
+						COMMAND ${CMAKE_BINARY_DIR}/computeshadertool --shader ${_dir}/${_file} --shadertemplate ${_template} --sourcedir ${GEN_DIR}
 						DEPENDS computeshadertool ${_dir}/${_file}.cl ${_template}
-						WORKING_DIRECTORY ${_dir}
 					)
 					list(APPEND _headers ${_shader})
 				endif()
@@ -147,7 +146,7 @@ macro(generate_db_models TARGET INPUT OUTPUT)
 	add_custom_command(
 		OUTPUT ${GEN_DIR}${OUTPUT}
 		COMMENT "Generate ${OUTPUT}"
-		COMMAND ${CMAKE_BINARY_DIR}/databasetool ${INPUT} ${GEN_DIR}${OUTPUT} ${PERSISTENCE_DBTYPE}
+		COMMAND ${CMAKE_BINARY_DIR}/databasetool --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT} ${PERSISTENCE_DBTYPE}
 		DEPENDS databasetool ${INPUT}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 	)
