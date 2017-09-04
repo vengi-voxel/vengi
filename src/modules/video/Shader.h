@@ -33,6 +33,10 @@ class UniformBuffer;
 #define GEOMETRY_POSTFIX ".geom"
 #endif
 
+#ifndef COMPUTE_POSTFIX
+#define COMPUTE_POSTFIX ".comp"
+#endif
+
 // activate this to validate that every uniform was set
 #define VALIDATE_UNIFORMS 0
 

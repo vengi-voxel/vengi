@@ -168,6 +168,7 @@ enum class ShaderType {
 	Vertex,
 	Fragment,
 	Geometry,
+	Compute,
 
 	Max
 };

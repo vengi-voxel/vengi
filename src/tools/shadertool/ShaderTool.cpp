@@ -815,6 +815,9 @@ core::AppState ShaderTool::onRunning() {
 	const std::string geometryFilename = _shaderfile + GEOMETRY_POSTFIX;
 	const std::string geometryBuffer = filesystem()->load(geometryFilename);
 
+	const std::string computeFilename = _shaderfile + COMPUTE_POSTFIX;
+	const std::string computeBuffer = filesystem()->load(computeFilename);
+
 	video::Shader shader;
 
 	const std::string& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, false);
@@ -827,12 +830,17 @@ core::AppState ShaderTool::onRunning() {
 		const std::string& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, false);
 		parse(geometrySrcSource, false);
 	}
+	if (!computeBuffer.empty()) {
+		const std::string& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer, false);
+		parse(computeSrcSource, false);
+	}
 	parse(vertexSrcSource, true);
 	generateSrc();
 
 	const std::string& fragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, true);
 	const std::string& vertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, true);
 	const std::string& geometrySource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, true);
+	const std::string& computeSource = shader.getSource(video::ShaderType::Compute, computeBuffer, true);
 
 	if (changedDir) {
 		filesystem()->popDir();
@@ -842,10 +850,14 @@ core::AppState ShaderTool::onRunning() {
 	std::string finalFragmentFilename = _appname + "-" + fragmentFilename;
 	std::string finalVertexFilename = _appname + "-" + vertexFilename;
 	std::string finalGeometryFilename = _appname + "-" + geometryFilename;
+	std::string finalComputeFilename = _appname + "-" + computeFilename;
 	filesystem()->write(finalFragmentFilename, fragmentSource);
 	filesystem()->write(finalVertexFilename, vertexSource);
 	if (!geometrySource.empty()) {
 		filesystem()->write(finalGeometryFilename, geometrySource);
+	}
+	if (!computeSource.empty()) {
+		filesystem()->write(finalComputeFilename, computeSource);
 	}
 
 	Log::debug("Validating shader file %s", _shaderfile.c_str());
@@ -864,6 +876,12 @@ core::AppState ShaderTool::onRunning() {
 		geometryArgs.push_back(filesystem()->homePath() + finalGeometryFilename);
 		geometryValidationExitCode = core::Process::exec(glslangValidatorBin, geometryArgs);
 	}
+	int computeValidationExitCode = 0;
+	if (!computeSource.empty()) {
+		std::vector<std::string> computeArgs;
+		computeArgs.push_back(filesystem()->homePath() + finalComputeFilename);
+		computeValidationExitCode = core::Process::exec(glslangValidatorBin, computeArgs);
+	}
 
 	if (fragmentValidationExitCode != 0) {
 		Log::error("Failed to validate fragment shader");
@@ -877,6 +895,10 @@ core::AppState ShaderTool::onRunning() {
 		Log::error("Failed to validate geometry shader");
 		Log::warn("%s %s%s", glslangValidatorBin.c_str(), filesystem()->homePath().c_str(), finalGeometryFilename.c_str());
 		_exitCode = geometryValidationExitCode;
+	} else if (computeValidationExitCode != 0) {
+		Log::error("Failed to validate compute shader");
+		Log::warn("%s %s%s", glslangValidatorBin.c_str(), filesystem()->homePath().c_str(), finalComputeFilename.c_str());
+		_exitCode = computeValidationExitCode;
 	}
 
 	requestQuit();
