@@ -611,7 +611,7 @@ bool ShaderTool::parseLayout(ShaderTool::Layout& layout, core::Tokenizer& tok) {
 	}
 	std::string token = tok.next();
 	if (token != "(") {
-		Log::warn("Unexpected layout syntax");
+		Log::warn("Unexpected layout syntax - expected {, got %s", token.c_str());
 		return false;
 	}
 	do {
@@ -619,6 +619,7 @@ bool ShaderTool::parseLayout(ShaderTool::Layout& layout, core::Tokenizer& tok) {
 			return false;
 		}
 		token = tok.next();
+		Log::trace("token: %s", token.c_str());
 		if (token == "std140") {
 			layout.blockLayout = BlockLayout::std140;
 		} else if (token == "std430") {
@@ -630,7 +631,7 @@ bool ShaderTool::parseLayout(ShaderTool::Layout& layout, core::Tokenizer& tok) {
 		int offset = 0;
 		int index = 0;
 		*/
-	} while(token != ")");
+	} while (token != ")");
 
 	return true;
 }
@@ -685,11 +686,13 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			return false;
 		}
 		std::string type = tok.next();
+		Log::trace("token: %s", type.c_str());
 		if (!tok.hasNext()) {
 			Log::error("Failed to parse the shader, could not get variable name for type %s", type.c_str());
 			return false;
 		}
 		while (type == "highp" || type == "mediump" || type == "lowp" || type == "precision") {
+			Log::trace("token: %s", type.c_str());
 			if (!tok.hasNext()) {
 				Log::error("Failed to parse the shader, could not get type");
 				return false;
@@ -697,6 +700,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			type = tok.next();
 		}
 		std::string name = tok.next();
+		Log::trace("token: %s", name.c_str());
 		// uniform block
 		if (name == "{") {
 			block.name = type;
