@@ -186,7 +186,8 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
 			return cTypes[i].type;
 		}
 	}
-	core_assert_msg(false, "Unknown type given: %s", type.c_str());
+	Log::error("Unknown type given: %s at line %i\n%s", type.c_str(), _tok.line(),_currentSource.c_str());
+	core_assert_msg(false, "Unknown type given: %s at line %i", type.c_str(), _tok.line());
 	return Variable::FLOAT;
 }
 
@@ -605,20 +606,21 @@ void ShaderTool::generateSrc() {
 	}
 }
 
-bool ShaderTool::parseLayout(ShaderTool::Layout& layout, core::Tokenizer& tok) {
-	if (!tok.hasNext()) {
+bool ShaderTool::parseLayout(ShaderTool::Layout& layout) {
+	if (!_tok.hasNext()) {
 		return false;
 	}
-	std::string token = tok.next();
+
+	std::string token = _tok.next();
 	if (token != "(") {
 		Log::warn("Unexpected layout syntax - expected {, got %s", token.c_str());
 		return false;
 	}
 	do {
-		if (!tok.hasNext()) {
+		if (!_tok.hasNext()) {
 			return false;
 		}
-		token = tok.next();
+		token = _tok.next();
 		Log::trace("token: %s", token.c_str());
 		if (token == "std140") {
 			layout.blockLayout = BlockLayout::std140;
@@ -637,12 +639,27 @@ bool ShaderTool::parseLayout(ShaderTool::Layout& layout, core::Tokenizer& tok) {
 }
 
 bool ShaderTool::parse(const std::string& buffer, bool vertex) {
+	_currentSource = buffer;
 	bool uniformBlock = false;
-	core::Tokenizer tok(buffer, " ;", "{}()");
+
+	simplecpp::DUI dui;
+	simplecpp::OutputList outputList;
+	std::vector<std::string> files;
+	std::stringstream f(buffer);
+	simplecpp::TokenList rawtokens(f, files, _shaderfile, &outputList);
+	std::map<std::string, simplecpp::TokenList*> included = simplecpp::load(rawtokens, files, dui, &outputList);
+	simplecpp::TokenList output(files);
+	simplecpp::preprocess(output, rawtokens, files, included, dui, &outputList);
+
+	simplecpp::Location loc(files);
+	std::stringstream comment;
 	UniformBlock block;
 	Layout layout;
-	while (tok.hasNext()) {
-		const std::string token = tok.next();
+
+	_tok.init(&output);
+
+	while (_tok.hasNext()) {
+		const std::string token = _tok.next();
 		Log::trace("token: %s", token.c_str());
 		std::vector<Variable>* v = nullptr;
 		if (token == "$in") {
@@ -659,7 +676,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 				v = &_shaderStruct.outs;
 			}
 		} else if (token == "layout") {
-			if (!parseLayout(layout, tok)) {
+			if (!parseLayout(layout)) {
 				Log::warn("Could not parse layout");
 			}
 		} else if (token == "buffer") {
@@ -672,8 +689,9 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 				Log::trace("End of uniform block: %s", block.name.c_str());
 				_shaderStruct.uniformBlocks.push_back(block);
 				layout = Layout();
+				core_assert_always(_tok.next() == ";");
 			} else {
-				tok.prev();
+				_tok.prev();
 			}
 		}
 
@@ -681,25 +699,25 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			continue;
 		}
 
-		if (!tok.hasNext()) {
+		if (!_tok.hasNext()) {
 			Log::error("Failed to parse the shader, could not get type");
 			return false;
 		}
-		std::string type = tok.next();
+		std::string type = _tok.next();
 		Log::trace("token: %s", type.c_str());
-		if (!tok.hasNext()) {
+		if (!_tok.hasNext()) {
 			Log::error("Failed to parse the shader, could not get variable name for type %s", type.c_str());
 			return false;
 		}
 		while (type == "highp" || type == "mediump" || type == "lowp" || type == "precision") {
 			Log::trace("token: %s", type.c_str());
-			if (!tok.hasNext()) {
+			if (!_tok.hasNext()) {
 				Log::error("Failed to parse the shader, could not get type");
 				return false;
 			}
-			type = tok.next();
+			type = _tok.next();
 		}
-		std::string name = tok.next();
+		std::string name = _tok.next();
 		Log::trace("token: %s", name.c_str());
 		// uniform block
 		if (name == "{") {
@@ -713,31 +731,17 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			continue;
 		}
 		const Variable::Type typeEnum = getType(type);
-		bool isArray = false;
-		std::string number;
-		for (char c : name) {
-			if (c == ']') {
-				break;
-			}
-			if (isArray) {
-				number.push_back(c);
-			}
-			if (c == '[') {
-				isArray = true;
-			}
-		}
-		int arraySize = core::string::toInt(number);
-		if (isArray && arraySize == 0) {
-			arraySize = -1;
-			Log::warn("Could not determine array size for %s (%s)", name.c_str(), number.c_str());
-		}
+		const bool isArray = _tok.peekNext() == "[";
+		int arraySize = 0;
 		if (isArray) {
-			std::vector<std::string> tokens;
-			core::string::splitString(name, tokens, "[");
-			if (tokens.size() != 2) {
-				Log::error("Could not extract variable name from %s", name.c_str());
-			} else {
-				name = tokens[0];
+			_tok.next();
+			const std::string& number = _tok.next();
+			core_assert_always(_tok.next() == "]");
+			core_assert_always(_tok.next() == ";");
+			arraySize = core::string::toInt(number);
+			if (arraySize == 0) {
+				arraySize = -1;
+				Log::warn("Could not determine array size for %s (%s)", name.c_str(), number.c_str());
 			}
 		}
 		// TODO: multi dimensional arrays are only supported in glsl >= 5.50

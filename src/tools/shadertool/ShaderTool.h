@@ -6,6 +6,47 @@
 
 #include "core/App.h"
 #include "core/Tokenizer.h"
+#include <simplecpp.h>
+
+class TokenIterator {
+private:
+	const simplecpp::TokenList* _tokenList = nullptr;
+	const simplecpp::Token *_tok = nullptr;
+public:
+	void init(const simplecpp::TokenList* tokenList) {
+		_tokenList = tokenList;
+		_tok = _tokenList->cfront();
+	}
+
+	inline bool hasNext() const {
+		return _tok != nullptr;
+	}
+
+	inline std::string next() {
+		const std::string& token = _tok->str;
+		_tok = _tok->next;
+		return token;
+	}
+
+	inline std::string prev() {
+		_tok = _tok->previous;
+		return _tok->str;
+	}
+
+	inline int line() const {
+		if (!_tok) {
+			return -1;
+		}
+		return _tok->location.line;
+	}
+
+	inline std::string peekNext() const {
+		if (!_tok) {
+			return "";
+		}
+		return _tok->str;
+	}
+};
 
 /**
  * @brief This tool validates the shaders and generated c++ code for them.
@@ -90,14 +131,16 @@ protected:
 		std::vector<Variable> outs;
 	};
 	ShaderStruct _shaderStruct;
+	TokenIterator _tok;
 	std::string _namespaceSrc;
 	std::string _sourceDirectory;
 	std::string _shaderDirectory;
 	std::string _shaderTemplateFile;
 	std::string _uniformBufferTemplateFile;
 	std::string _shaderfile;
+	std::string _currentSource;
 
-	bool parseLayout(Layout& layout, core::Tokenizer& tok);
+	bool parseLayout(Layout& layout);
 	bool parse(const std::string& src, bool vertex);
 	Variable::Type getType(const std::string& type) const;
 	std::string std140Align(const Variable& v) const;
