@@ -4,15 +4,16 @@
 
 #pragma once
 
-#include "core/App.h"
+#include "core/ConsoleApp.h"
 #include "ui/TurboBadger.h"
 #include "ui/UIDummies.h"
 
 /**
  * @brief This tool validates te ui files (*.tb.txt)
  */
-class UITool: public core::App {
+class UITool: public core::ConsoleApp {
 private:
+	using Super = core::ConsoleApp;
 	DummyRenderer _renderer;
 	tb::TBWidget _root;
 public:

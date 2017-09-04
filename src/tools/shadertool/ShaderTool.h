@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/App.h"
+#include "core/ConsoleApp.h"
 #include "core/Tokenizer.h"
 #include <simplecpp.h>
 
@@ -51,7 +51,9 @@ public:
 /**
  * @brief This tool validates the shaders and generated c++ code for them.
  */
-class ShaderTool: public core::App {
+class ShaderTool: public core::ConsoleApp {
+private:
+	using Super = core::ConsoleApp;
 protected:
 	struct Variable {
 		enum Type {

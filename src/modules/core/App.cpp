@@ -146,7 +146,6 @@ AppState App::onConstruct() {
 	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
 	Log::init();
 
-
 	core::Command::registerCommand("set", [] (const core::CmdArgs& args) {
 		if (args.size() != 2) {
 			return;

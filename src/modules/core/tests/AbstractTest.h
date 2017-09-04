@@ -3,7 +3,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/App.h"
+#include "core/ConsoleApp.h"
 #include "core/EventBus.h"
 #include "io/Filesystem.h"
 #include <glm/glm.hpp>
@@ -77,8 +77,10 @@ inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec1<T, P>& ve
 
 class AbstractTest: public testing::Test {
 private:
-	class TestApp: public core::App {
+	class TestApp: public core::ConsoleApp {
 		friend class AbstractTest;
+	private:
+		using Super = core::ConsoleApp;
 	protected:
 		AbstractTest* _test = nullptr;
 	public:

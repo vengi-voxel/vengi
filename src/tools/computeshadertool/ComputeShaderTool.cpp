@@ -12,7 +12,7 @@
 #include <string>
 
 ComputeShaderTool::ComputeShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		core::App(filesystem, eventBus, timeProvider, 0) {
+		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "computeshadertool");
 }
 
@@ -548,7 +548,7 @@ core::AppState ComputeShaderTool::onConstruct() {
 	registerArg("--namespace").setShort("-n").setDescription("Namespace to generate the source in").setDefaultValue("compute");
 	registerArg("--shaderdir").setShort("-d").setDescription("Directory to load the shader from").setDefaultValue("shaders/");
 	registerArg("--sourcedir").setDescription("Directory to generate the source in").setMandatory();
-	return core::App::onConstruct();
+	return Super::onConstruct();
 }
 
 core::AppState ComputeShaderTool::onRunning() {

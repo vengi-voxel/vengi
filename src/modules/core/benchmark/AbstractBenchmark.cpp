@@ -24,7 +24,7 @@ void AbstractBenchmark::TearDown(benchmark::State& st) {
 }
 
 AbstractBenchmark::BenchmarkApp::BenchmarkApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark) :
-		core::App(filesystem, eventBus, timeProvider, 10000), _benchmark(benchmark) {
+		Super(filesystem, eventBus, timeProvider, 10000), _benchmark(benchmark) {
 	init(ORGANISATION, "benchmark");
 	while (_curState < AppState::Running) {
 		core_trace_scoped(AppMainLoop);
@@ -33,13 +33,13 @@ AbstractBenchmark::BenchmarkApp::BenchmarkApp(const io::FilesystemPtr& filesyste
 }
 
 AppState AbstractBenchmark::BenchmarkApp::onCleanup() {
-	AppState state = core::App::onCleanup();
+	AppState state = Super::onCleanup();
 	_benchmark->onCleanupApp();
 	return state;
 }
 
 AppState AbstractBenchmark::BenchmarkApp::onInit() {
-	AppState state = core::App::onInit();
+	AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
 	}

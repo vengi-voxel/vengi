@@ -20,7 +20,7 @@
 Server::Server(const network::NetworkPtr& network, const backend::ServerLoopPtr& serverLoop,
 		const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
 		const core::EventBusPtr& eventBus) :
-		core::App(filesystem, eventBus, timeProvider, 15678), _network(network),
+		Super(filesystem, eventBus, timeProvider, 15678), _network(network),
 		_serverLoop(serverLoop) {
 	_syslog = true;
 	_coredump = true;
@@ -28,7 +28,7 @@ Server::Server(const network::NetworkPtr& network, const backend::ServerLoopPtr&
 }
 
 core::AppState Server::onConstruct() {
-	const core::AppState state = core::App::onConstruct();
+	const core::AppState state = Super::onConstruct();
 
 	core::Var::get(cfg::DatabaseName, "engine");
 	core::Var::get(cfg::DatabaseHost, "localhost");
@@ -48,7 +48,7 @@ core::AppState Server::onConstruct() {
 }
 
 core::AppState Server::onInit() {
-	const core::AppState state = core::App::onInit();
+	const core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
 	}
@@ -75,14 +75,14 @@ core::AppState Server::onInit() {
 }
 
 core::AppState Server::onCleanup() {
-	const core::AppState state = core::App::onCleanup();
+	const core::AppState state = Super::onCleanup();
 	_serverLoop->shutdown();
 	_network->shutdown();
 	return state;
 }
 
 core::AppState Server::onRunning() {
-	core::App::onRunning();
+	Super::onRunning();
 	_serverLoop->onFrame(_deltaFrame);
 	return core::AppState::Running;
 }

@@ -49,7 +49,7 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 // TODO: generated sampler setters should use video::TextureUnit
 // TODO: validate that each $out of the vertex shader has a $in in the fragment shader and vice versa
 ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		core::App(filesystem, eventBus, timeProvider, 0) {
+		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "shadertool");
 	static_assert(Variable::MAX == SDL_arraysize(cTypes), "mismatch in glsl types");
 }
@@ -778,7 +778,7 @@ core::AppState ShaderTool::onConstruct() {
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
-	return core::App::onConstruct();
+	return Super::onConstruct();
 }
 
 core::AppState ShaderTool::onRunning() {

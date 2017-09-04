@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/App.h"
+#include "core/ConsoleApp.h"
 #include "compute/Types.h"
 #include <simplecpp.h>
 #include <vector>
@@ -22,7 +22,9 @@
  * @li hides all the buffer creation/deletion mambo-jambo from the caller.
  * @li parses OpenCL structs and generate proper aligned C++ struct for them.
  */
-class ComputeShaderTool: public core::App {
+class ComputeShaderTool: public core::ConsoleApp {
+private:
+	using Super = core::ConsoleApp;
 protected:
 	std::string _namespaceSrc;
 	std::string _sourceDirectory;

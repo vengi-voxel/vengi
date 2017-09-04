@@ -29,7 +29,7 @@ void AbstractTest::TearDown() {
 }
 
 AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
-		core::App(filesystem, eventBus, timeProvider, 10000), _test(test) {
+		Super(filesystem, eventBus, timeProvider, 10000), _test(test) {
 	init(ORGANISATION, "test");
 	_argc = ::_argc;
 	_argv = ::_argv;
@@ -40,13 +40,13 @@ AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::
 }
 
 AppState AbstractTest::TestApp::onCleanup() {
-	AppState state = core::App::onCleanup();
+	AppState state = Super::onCleanup();
 	_test->onCleanupApp();
 	return state;
 }
 
 AppState AbstractTest::TestApp::onInit() {
-	AppState state = core::App::onInit();
+	AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
 	}

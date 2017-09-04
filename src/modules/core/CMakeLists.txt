@@ -15,6 +15,7 @@ set(SRCS
 	ConcurrentVector.h
 	Common.h
 	Concurrency.h
+	ConsoleApp.h ConsoleApp.cpp
 	EventBus.cpp EventBus.h
 	Frustum.cpp Frustum.h
 	GameConfig.h

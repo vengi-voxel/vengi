@@ -5,7 +5,7 @@
 #pragma once
 
 #include <map>
-#include "core/App.h"
+#include "core/ConsoleApp.h"
 #include "core/Tokenizer.h"
 #include "persistence/Model.h"
 #include <sstream>
@@ -14,9 +14,10 @@
  * @brief This tool will generate c++ code for *.tbl files. These files are a meta description of
  * database tables.
  */
-class DatabaseTool: public core::App {
+class DatabaseTool: public core::ConsoleApp {
+private:
+	using Super = core::ConsoleApp;
 protected:
-	using Super = core::App;
 	std::string _tableFile;
 	std::string _targetFile;
 

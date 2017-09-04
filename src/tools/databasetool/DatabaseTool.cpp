@@ -21,7 +21,7 @@ static const char *ConstraintTypeNames[] = {
 };
 
 DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		core::App(filesystem, eventBus, timeProvider, 0) {
+		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "databasetool");
 	static_assert(SDL_arraysize(FieldTypeNames) == persistence::Model::MAX_FIELDTYPES, "Invalid field type mapping");
 	static_assert(SDL_arraysize(ConstraintTypeNames) == persistence::Model::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
@@ -594,7 +594,7 @@ bool DatabaseTool::parse(const std::string& buffer) {
 core::AppState DatabaseTool::onConstruct() {
 	registerArg("--tablefile").setShort("-t").setDescription("The path to the table to file").setMandatory();
 	registerArg("--outfile").setShort("-o").setDescription("The file that should be generated").setMandatory();
-	Super::onConstruct();
+	return Super::onConstruct();
 }
 
 

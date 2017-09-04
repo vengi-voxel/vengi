@@ -4,13 +4,14 @@
 
 #pragma once
 
-#include "core/App.h"
+#include "core/ConsoleApp.h"
 #include "backend/loop/ServerLoop.h"
 #include "core/TimeProvider.h"
 #include "network/Network.h"
 
-class Server: public core::App {
+class Server: public core::ConsoleApp {
 private:
+	using Super = core::ConsoleApp;
 	network::NetworkPtr _network;
 	backend::ServerLoopPtr _serverLoop;
 public:

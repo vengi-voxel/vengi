@@ -8,12 +8,12 @@
 #include "io/Filesystem.h"
 
 UITool::UITool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		core::App(filesystem, eventBus, timeProvider, 0) {
+		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "uitool");
 }
 
 core::AppState UITool::onInit() {
-	const core::AppState state = core::App::onInit();
+	const core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
 	}
@@ -62,7 +62,7 @@ core::AppState UITool::onCleanup() {
 	tb::TBWidgetsAnimationManager::Shutdown();
 	tb::tb_core_shutdown();
 
-	return core::App::onCleanup();
+	return Super::onCleanup();
 }
 
 int main(int argc, char *argv[]) {
