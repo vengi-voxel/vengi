@@ -187,7 +187,7 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
 	return Variable::FLOAT;
 }
 
-#define USE_ALIGN_AS 0
+#define USE_ALIGN_AS 1
 
 /**
  * The size of each element in the array will be the size of the element type, rounded up to a multiple of the
@@ -202,7 +202,7 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
  */
 std::string ShaderTool::std140Align(const Variable& v) const {
 #if USE_ALIGN_AS > 0
-	// TODO: generete uniform buffer struct - enforce std140 layout
+	// TODO: generate uniform buffer struct - enforce std140 layout
 	// TODO: extract uniform blocks into aligned structs and generate methods to update them
 	//       align them via GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT - use glBindBufferRange
 	//       GL_MAX_UNIFORM_BLOCK_SIZE
@@ -270,6 +270,51 @@ size_t ShaderTool::std140Size(const Variable& v) const {
 		return components * bytes * v.arraySize;
 	}
 	return components * bytes;
+}
+
+std::string ShaderTool::std430Align(const Variable& v) const {
+	// TODO: check this layout
+	return std140Align(v);
+}
+
+size_t ShaderTool::std430Size(const Variable& v) const {
+	// TODO: check this layout
+	return std140Size(v);
+}
+
+std::string ShaderTool::std430Padding(const Variable& v, int& padding) const {
+	// TODO: check this layout
+	return std140Padding(v, padding);
+}
+
+std::string ShaderTool::typeAlign(const Variable& v) const {
+	switch (_layout.blockLayout) {
+	default:
+	case BlockLayout::std140:
+		return std140Align(v);
+	case BlockLayout::std430:
+		return std430Align(v);
+	}
+}
+
+size_t ShaderTool::typeSize(const Variable& v) const {
+	switch (_layout.blockLayout) {
+	default:
+	case BlockLayout::std140:
+		return std140Size(v);
+	case BlockLayout::std430:
+		return std430Size(v);
+	}
+}
+
+std::string ShaderTool::typePadding(const Variable& v, int& padding) const {
+	switch (_layout.blockLayout) {
+	default:
+	case BlockLayout::std140:
+		return std140Padding(v, padding);
+	case BlockLayout::std430:
+		return std430Padding(v, padding);
+	}
 }
 
 void ShaderTool::generateSrc() {
@@ -533,21 +578,34 @@ void ShaderTool::generateSrc() {
 		ub << "\n\t/**\n\t * @brief Uniform buffer for " << uniformBufferStructName << "::Data\n\t */\n";
 		ub << "\tvideo::UniformBuffer _" << uniformBufferName << ";\n";
 		shutdown << "\t\t_" << uniformBufferName << ".shutdown();\n";
-		ub << "\t/**\n\t * @brief layout(std140) aligned uniform block structure\n\t */\n";
+		ub << "\t/**\n\t * @brief layout(";
+		switch (_layout.blockLayout) {
+		case BlockLayout::unknown:
+		case BlockLayout::std140:
+			ub << "std140";
+			break;
+		case BlockLayout::std430:
+			ub << "std430";
+			break;
+		default:
+			ub << "error";
+			break;
+		}
+		ub << ") aligned uniform block structure\n\t */\n";
 		ub << "\t#pragma pack(push, 1)\n\tstruct Data {\n";
 		size_t structSize = 0u;
 		int paddingCnt = 0;
 		for (auto& v : ubuf.members) {
 			const std::string& uniformName = convertName(v.name, false);
 			const Types& cType = cTypes[v.type];
-			ub << "\t\t" << std140Align(v) << cType.ctype << " " << uniformName;
-			const size_t memberSize = std140Size(v);
+			ub << "\t\t" << typeAlign(v) << cType.ctype << " " << uniformName;
+			const size_t memberSize = typeSize(v);
 			structSize += memberSize;
 			if (v.arraySize > 0) {
 				ub << "[" << v.arraySize << "]";
 			}
 			ub << "; // " << memberSize << " bytes\n";
-			ub << std140Padding(v, paddingCnt);
+			ub << typePadding(v, paddingCnt);
 		}
 		ub << "\t};\n\t#pragma pack(pop)\n";
 #if USE_ALIGN_AS > 0
@@ -602,7 +660,7 @@ void ShaderTool::generateSrc() {
 	}
 }
 
-bool ShaderTool::parseLayout(ShaderTool::Layout& layout) {
+bool ShaderTool::parseLayout() {
 	if (!_tok.hasNext()) {
 		return false;
 	}
@@ -619,16 +677,40 @@ bool ShaderTool::parseLayout(ShaderTool::Layout& layout) {
 		token = _tok.next();
 		Log::trace("token: %s", token.c_str());
 		if (token == "std140") {
-			layout.blockLayout = BlockLayout::std140;
+			_layout.blockLayout = BlockLayout::std140;
 		} else if (token == "std430") {
-			layout.blockLayout = BlockLayout::std430;
+			_layout.blockLayout = BlockLayout::std430;
+		} else if (token == "location") {
+			core_assert_always(_tok.hasNext() && _tok.next() == "=");
+			if (!_tok.hasNext()) {
+				return false;
+			}
+			_layout.location = core::string::toInt(_tok.next());
+		} else if (token == "offset") {
+			core_assert_always(_tok.hasNext() && _tok.next() == "=");
+			if (!_tok.hasNext()) {
+				return false;
+			}
+			_layout.offset = core::string::toInt(_tok.next());
+		} else if (token == "compontents") {
+			core_assert_always(_tok.hasNext() && _tok.next() == "=");
+			if (!_tok.hasNext()) {
+				return false;
+			}
+			_layout.components = core::string::toInt(_tok.next());
+		} else if (token == "index") {
+			core_assert_always(_tok.hasNext() && _tok.next() == "=");
+			if (!_tok.hasNext()) {
+				return false;
+			}
+			_layout.index = core::string::toInt(_tok.next());
+		} else if (token == "binding") {
+			core_assert_always(_tok.hasNext() && _tok.next() == "=");
+			if (!_tok.hasNext()) {
+				return false;
+			}
+			_layout.binding = core::string::toInt(_tok.next());
 		}
-		/* TODO location = x, offset = 20, std140
-		int binding = 0;
-		int components = 0;
-		int offset = 0;
-		int index = 0;
-		*/
 	} while (token != ")");
 
 	return true;
@@ -650,7 +732,6 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 	simplecpp::Location loc(files);
 	std::stringstream comment;
 	UniformBlock block;
-	Layout layout;
 
 	_tok.init(&output);
 
@@ -672,7 +753,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 				v = &_shaderStruct.outs;
 			}
 		} else if (token == "layout") {
-			if (!parseLayout(layout)) {
+			if (!parseLayout()) {
 				Log::warn("Could not parse layout");
 			}
 		} else if (token == "buffer") {
@@ -684,7 +765,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 				uniformBlock = false;
 				Log::trace("End of uniform block: %s", block.name.c_str());
 				_shaderStruct.uniformBlocks.push_back(block);
-				layout = Layout();
+				_layout = Layout();
 				core_assert_always(_tok.next() == ";");
 			} else {
 				_tok.prev();
@@ -721,8 +802,8 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			block.members.clear();
 			Log::trace("Found uniform block: %s", type.c_str());
 			uniformBlock = true;
-			if (layout.blockLayout != BlockLayout::std140) {
-				Log::warn("Incompatible block layout chosen for uniform block %s (%i)", type.c_str(), std::enum_value(layout.blockLayout));
+			if (_layout.blockLayout != BlockLayout::std140) {
+				Log::warn("Incompatible block layout chosen for uniform block %s (%i)", type.c_str(), std::enum_value(_layout.blockLayout));
 			}
 			continue;
 		}
@@ -747,7 +828,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			auto findIter = std::find_if(v->begin(), v->end(), [&] (const Variable& var) { return var.name == name; });
 			if (findIter == v->end()) {
 				v->push_back(Variable{typeEnum, name, arraySize});
-				layout = Layout();
+				_layout = Layout();
 			} else {
 				Log::warn("Found duplicate variable %s (%s versus %s)",
 						name.c_str(), cTypes[(int)findIter->type].ctype, cTypes[(int)typeEnum].ctype);

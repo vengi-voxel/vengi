@@ -116,6 +116,7 @@ protected:
 		int components = 0;
 		int offset = 0;
 		int index = 0;
+		int location = -1;
 		BlockLayout blockLayout = BlockLayout::unknown;
 	};
 
@@ -134,6 +135,7 @@ protected:
 	};
 	ShaderStruct _shaderStruct;
 	TokenIterator _tok;
+	Layout _layout;
 	std::string _namespaceSrc;
 	std::string _sourceDirectory;
 	std::string _shaderDirectory;
@@ -142,18 +144,27 @@ protected:
 	std::string _shaderfile;
 	std::string _currentSource;
 
-	bool parseLayout(Layout& layout);
+	bool parseLayout();
 	bool parse(const std::string& src, bool vertex);
 	Variable::Type getType(const std::string& type) const;
+
 	std::string std140Align(const Variable& v) const;
 	size_t std140Size(const Variable& v) const;
 	std::string std140Padding(const Variable& v, int& padding) const;
+
+	std::string std430Align(const Variable& v) const;
+	size_t std430Size(const Variable& v) const;
+	std::string std430Padding(const Variable& v, int& padding) const;
+
+	std::string typeAlign(const Variable& v) const;
+	size_t typeSize(const Variable& v) const;
+	std::string typePadding(const Variable& v, int& padding) const;
+
 	int getComponents(const Variable::Type type) const;
 	std::string uniformSetterPostfix(const Variable::Type type, int amount) const;
 	void generateSrc();
 public:
 	ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
-	~ShaderTool();
 
 	core::AppState onConstruct() override;
 	core::AppState onRunning() override;
