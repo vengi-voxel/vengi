@@ -46,15 +46,11 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "video::TextureUnit", Value,      "sampler2DShadow" }
 };
 
-// TODO: generated sampler setters should use video::TextureUnit
 // TODO: validate that each $out of the vertex shader has a $in in the fragment shader and vice versa
 ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "shadertool");
 	static_assert(Variable::MAX == SDL_arraysize(cTypes), "mismatch in glsl types");
-}
-
-ShaderTool::~ShaderTool() {
 }
 
 static inline std::string convertName(const std::string& in, bool firstUpper) {
