@@ -4,11 +4,23 @@
 
 #include "ShaderTool.h"
 #include "core/App.h"
+#include "core/Array.h"
 #include "io/Filesystem.h"
 #include "core/Process.h"
 #include "core/GameConfig.h"
 #include "video/Shader.h"
 #include "video/Version.h"
+
+const char* ShaderTool::PrimitiveTypeStr[] {
+	nullptr,
+	"points",
+	"lines",
+	"lines_adjacency",
+	"triangles",
+	"triangles_adjacency",
+	"line_strip",
+	"triangle_strip"
+};
 
 const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::DOUBLE,          1, "double",       Value,     "double" },
@@ -50,7 +62,8 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "shadertool");
-	static_assert(Variable::MAX == SDL_arraysize(cTypes), "mismatch in glsl types");
+	static_assert(Variable::MAX == lengthof(cTypes), "mismatch in glsl types");
+	static_assert(lengthof(PrimitiveTypeStr) == std::enum_value(PrimitiveType::Max), "PrimitiveTypeStr doesn't match enum");
 }
 
 static inline std::string convertName(const std::string& in, bool firstUpper) {
@@ -660,6 +673,18 @@ void ShaderTool::generateSrc() {
 	}
 }
 
+ShaderTool::PrimitiveType ShaderTool::layoutPrimitiveType(const std::string& token) const {
+	for (int i = 0; i < lengthof(PrimitiveTypeStr); ++i) {
+		if (PrimitiveTypeStr[i] == nullptr) {
+			continue;
+		}
+		if (token == PrimitiveTypeStr[i]) {
+			return (PrimitiveType)i;
+		}
+	}
+	return PrimitiveType::None;
+}
+
 bool ShaderTool::parseLayout() {
 	if (!_tok.hasNext()) {
 		return false;
@@ -710,6 +735,42 @@ bool ShaderTool::parseLayout() {
 				return false;
 			}
 			_layout.binding = core::string::toInt(_tok.next());
+		} else if (token == "xfb_buffer") {
+			core_assert_always(_tok.hasNext() && _tok.next() == "=");
+			if (!_tok.hasNext()) {
+				return false;
+			}
+			_layout.transformFeedbackBuffer = core::string::toInt(_tok.next());
+		} else if (token == "xfb_offset") {
+			core_assert_always(_tok.hasNext() && _tok.next() == "=");
+			if (!_tok.hasNext()) {
+				return false;
+			}
+			_layout.transformFeedbackOffset = core::string::toInt(_tok.next());
+		} else if (token == "vertices") {
+			core_assert_always(_tok.hasNext() && _tok.next() == "=");
+			if (!_tok.hasNext()) {
+				return false;
+			}
+			_layout.tesselationVertices = core::string::toInt(_tok.next());
+		} else if (token == "max_vertices") {
+			core_assert_always(_tok.hasNext() && _tok.next() == "=");
+			if (!_tok.hasNext()) {
+				return false;
+			}
+			_layout.maxGeometryVertices = core::string::toInt(_tok.next());
+		} else if (token == "origin_upper_left") {
+			_layout.originUpperLeft = true;
+		} else if (token == "pixel_center_integer") {
+			_layout.pixelCenterInteger = true;
+		} else if (token == "early_fragment_tests") {
+			_layout.earlyFragmentTests = true;
+		} else if (token == "primitive_type") {
+			core_assert_always(_tok.hasNext() && _tok.next() == "=");
+			if (!_tok.hasNext()) {
+				return false;
+			}
+			_layout.primitiveType = layoutPrimitiveType(_tok.next());
 		}
 	} while (token != ")");
 
@@ -753,6 +814,10 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 				v = &_shaderStruct.outs;
 			}
 		} else if (token == "layout") {
+			// there can be multiple layouts per definition since GL 4.2 (or ARB_shading_language_420pack)
+			// that's why we only reset the layout after we finished parsing the variable and/or the
+			// uniform buffer. The last defined value for the mutually-exclusive qualifiers or for numeric
+			// qualifiers prevails.
 			if (!parseLayout()) {
 				Log::warn("Could not parse layout");
 			}
@@ -802,9 +867,6 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			block.members.clear();
 			Log::trace("Found uniform block: %s", type.c_str());
 			uniformBlock = true;
-			if (_layout.blockLayout != BlockLayout::std140) {
-				Log::warn("Incompatible block layout chosen for uniform block %s (%i)", type.c_str(), std::enum_value(_layout.blockLayout));
-			}
 			continue;
 		}
 		const Variable::Type typeEnum = getType(type);

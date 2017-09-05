@@ -65,6 +65,7 @@ protected:
 			SAMPLER1D, SAMPLER2D, SAMPLER3D,
 			SAMPLERCUBEMAP, SAMPLER2DARRAYSHADOW, SAMPLER2DARRAY,
 			SAMPLER1DSHADOW, SAMPLER2DSHADOW, MAX
+			// TODO: atomics
 		};
 		Type type;
 		std::string name;
@@ -111,12 +112,33 @@ protected:
 		std430
 	};
 
+	enum class PrimitiveType {
+		None,
+		Points,
+		Lines,
+		LinesAdjacency,
+		Triangles,
+		TrianglesAdjacency,
+		LineStrip,
+		TriangleStrip,
+		Max
+	};
+	static const char* PrimitiveTypeStr[];
+
 	struct Layout {
 		int binding = 0;
 		int components = 0;
 		int offset = 0;
 		int index = 0;
 		int location = -1;
+		int transformFeedbackOffset = -1; // 4-4
+		int transformFeedbackBuffer = -1; // 4-4
+		int tesselationVertices = -1; // 4.0
+		int maxGeometryVertices = -1; // 4.0
+		bool originUpperLeft = false; // 4.0
+		bool pixelCenterInteger = false; // 4.0
+		bool earlyFragmentTests = false; // 4.2
+		PrimitiveType primitiveType = PrimitiveType::None;
 		BlockLayout blockLayout = BlockLayout::unknown;
 	};
 
@@ -144,6 +166,7 @@ protected:
 	std::string _shaderfile;
 	std::string _currentSource;
 
+	PrimitiveType layoutPrimitiveType(const std::string& token) const;
 	bool parseLayout();
 	bool parse(const std::string& src, bool vertex);
 	Variable::Type getType(const std::string& type) const;
