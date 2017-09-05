@@ -10,6 +10,7 @@
 #include "core/GameConfig.h"
 #include "video/Shader.h"
 #include "video/Version.h"
+#include "Util.h"
 
 const char* ShaderTool::PrimitiveTypeStr[] {
 	nullptr,
@@ -64,26 +65,6 @@ ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBus
 	init(ORGANISATION, "shadertool");
 	static_assert(Variable::MAX == lengthof(cTypes), "mismatch in glsl types");
 	static_assert(lengthof(PrimitiveTypeStr) == std::enum_value(PrimitiveType::Max), "PrimitiveTypeStr doesn't match enum");
-}
-
-static inline std::string convertName(const std::string& in, bool firstUpper) {
-	std::string out;
-	std::vector<std::string> nameParts;
-	core::string::splitString(in, nameParts, "_");
-	for (std::string& n : nameParts) {
-		if (n.length() > 1 || nameParts.size() < 2) {
-			if (!firstUpper) {
-				firstUpper = true;
-			} else {
-				n[0] = SDL_toupper(n[0]);
-			}
-			out += n;
-		}
-	}
-	if (out.empty()) {
-		out = in;
-	}
-	return out;
 }
 
 std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type type, int amount) const {
@@ -429,7 +410,7 @@ void ShaderTool::generateSrc() {
 	for (int i = 0; i < uniformSize; ++i) {
 		const Variable& v = _shaderStruct.uniforms[i];
 		const bool isInteger = v.isSingleInteger();
-		const std::string& uniformName = convertName(v.name, true);
+		const std::string& uniformName = util::convertName(v.name, true);
 		setters << "\tinline bool set" << uniformName << "(";
 		const Types& cType = cTypes[v.type];
 		if (v.arraySize > 0 && isInteger) {
@@ -516,7 +497,7 @@ void ShaderTool::generateSrc() {
 	}
 	for (int i = 0; i < attributeSize; ++i) {
 		const Variable& v = _shaderStruct.attributes[i];
-		const std::string& attributeName = convertName(v.name, true);
+		const std::string& attributeName = util::convertName(v.name, true);
 		const bool isInt = v.isInteger();
 		setters << "\tinline bool init" << attributeName << "Custom(size_t stride = ";
 		setters << "sizeof(" << cTypes[v.type].ctype << ")";
@@ -586,8 +567,8 @@ void ShaderTool::generateSrc() {
 		setters << "\n";
 	}
 	for (auto & ubuf : _shaderStruct.uniformBlocks) {
-		const std::string& uniformBufferStructName = convertName(ubuf.name, true);
-		const std::string& uniformBufferName = convertName(ubuf.name, false);
+		const std::string& uniformBufferStructName = util::convertName(ubuf.name, true);
+		const std::string& uniformBufferName = util::convertName(ubuf.name, false);
 		ub << "\n\t/**\n\t * @brief Uniform buffer for " << uniformBufferStructName << "::Data\n\t */\n";
 		ub << "\tvideo::UniformBuffer _" << uniformBufferName << ";\n";
 		shutdown << "\t\t_" << uniformBufferName << ".shutdown();\n";
@@ -609,7 +590,7 @@ void ShaderTool::generateSrc() {
 		size_t structSize = 0u;
 		int paddingCnt = 0;
 		for (auto& v : ubuf.members) {
-			const std::string& uniformName = convertName(v.name, false);
+			const std::string& uniformName = util::convertName(v.name, false);
 			const Types& cType = cTypes[v.type];
 			ub << "\t\t" << typeAlign(v) << cType.ctype << " " << uniformName;
 			const size_t memberSize = typeSize(v);

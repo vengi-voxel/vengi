@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/ConsoleApp.h"
-#include "core/Tokenizer.h"
 #include <simplecpp.h>
 
 class TokenIterator {
