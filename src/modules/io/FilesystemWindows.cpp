@@ -7,11 +7,6 @@
 
 namespace io {
 
-bool Filesystem::chdir(const std::string& directory) {
-	// TODO: implement me
-	return false;
-}
-
 bool Filesystem::createDir(const std::string& directory) const {
 	if (directory.empty()) {
 		return false;

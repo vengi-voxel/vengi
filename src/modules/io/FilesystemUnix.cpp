@@ -8,15 +8,6 @@
 
 namespace io {
 
-bool Filesystem::chdir(const std::string& directory) {
-	const int retVal = ::chdir(directory.c_str());
-	if (retVal == -1) {
-		::perror("Failed to change directory");
-		return false;
-	}
-	return true;
-}
-
 bool Filesystem::createDir(const std::string& dir) const {
 	if (dir.empty()) {
 		return false;

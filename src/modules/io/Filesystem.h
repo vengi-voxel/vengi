@@ -8,6 +8,7 @@
 #include "core/ThreadPool.h"
 #include "File.h"
 #include <stack>
+#include <uv.h>
 
 namespace io {
 

@@ -6,7 +6,6 @@
 #include "core/Var.h"
 #include "core/Log.h"
 #include <SDL.h>
-#include <uv.h>
 
 namespace io {
 
@@ -45,6 +44,10 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 
 void Filesystem::onRunning() {
 	uv_run(_loop, UV_RUN_DEFAULT);
+}
+
+bool Filesystem::chdir(const std::string& directory) {
+	return uv_chdir(directory.c_str()) == 0;
 }
 
 void Filesystem::shutdown() {
