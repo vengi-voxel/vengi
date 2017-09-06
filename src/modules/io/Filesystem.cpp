@@ -6,6 +6,7 @@
 #include "core/Var.h"
 #include "core/Log.h"
 #include <SDL.h>
+#include <uv.h>
 
 namespace io {
 
