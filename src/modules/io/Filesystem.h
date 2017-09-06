@@ -34,6 +34,8 @@ public:
 	void init(const std::string& organisation, const std::string& appname);
 	void shutdown();
 
+	void onRunning();
+
 	/**
 	 * @brief Get the path where the application resides.
 	 *

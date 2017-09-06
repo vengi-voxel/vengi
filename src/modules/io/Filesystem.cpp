@@ -43,6 +43,10 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 }
 
+void Filesystem::onRunning() {
+	uv_run(_loop, UV_RUN_DEFAULT);
+}
+
 void Filesystem::shutdown() {
 	_threadPool.shutdown();
 }
