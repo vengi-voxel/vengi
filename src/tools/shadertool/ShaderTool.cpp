@@ -3,291 +3,24 @@
  */
 
 #include "ShaderTool.h"
-#include "core/App.h"
-#include "core/Array.h"
 #include "io/Filesystem.h"
 #include "core/Process.h"
 #include "core/GameConfig.h"
 #include "video/Shader.h"
-#include "video/Version.h"
-#include "Util.h"
-
-const char* ShaderTool::PrimitiveTypeStr[] {
-	nullptr,
-	"points",
-	"lines",
-	"lines_adjacency",
-	"triangles",
-	"triangles_adjacency",
-	"line_strip",
-	"triangle_strip"
-};
-
-const ShaderTool::Types ShaderTool::cTypes[] = {
-	{ ShaderTool::Variable::DOUBLE,          1, "double",       Value,     "double" },
-	{ ShaderTool::Variable::FLOAT,           1, "float",        Value,     "float" },
-	{ ShaderTool::Variable::UNSIGNED_INT,    1, "uint32_t",     Value,     "uint" },
-	{ ShaderTool::Variable::BOOL,            1, "bool",         Value,     "bool" },
-	{ ShaderTool::Variable::INT,             1, "int32_t",      Value,     "int" },
-	{ ShaderTool::Variable::BVEC2,           2, "glm::bvec2",   Reference, "bvec2" },
-	{ ShaderTool::Variable::BVEC3,           3, "glm::bvec3",   Reference, "bvec3" },
-	{ ShaderTool::Variable::BVEC4,           4, "glm::bvec4",   Reference, "bvec4" },
-	{ ShaderTool::Variable::DVEC2,           2, "glm::dvec2",   Reference, "dvec2" },
-	{ ShaderTool::Variable::DVEC3,           3, "glm::dvec3",   Reference, "dvec3" },
-	{ ShaderTool::Variable::DVEC4,           4, "glm::dvec4",   Reference, "dvec4" },
-	{ ShaderTool::Variable::UVEC2,           2, "glm::uvec2",   Reference, "uvec2" },
-	{ ShaderTool::Variable::UVEC3,           3, "glm::uvec3",   Reference, "uvec3" },
-	{ ShaderTool::Variable::UVEC4,           4, "glm::uvec4",   Reference, "uvec4" },
-	{ ShaderTool::Variable::IVEC2,           2, "glm::ivec2",   Reference, "ivec2" },
-	{ ShaderTool::Variable::IVEC3,           3, "glm::ivec3",   Reference, "ivec3" },
-	{ ShaderTool::Variable::IVEC4,           4, "glm::ivec4",   Reference, "ivec4" },
-	{ ShaderTool::Variable::VEC2,            2, "glm::vec2",    Reference, "vec2" },
-	{ ShaderTool::Variable::VEC3,            3, "glm::vec3",    Reference, "vec3" },
-	{ ShaderTool::Variable::VEC4,            4, "glm::vec4",    Reference, "vec4" },
-	{ ShaderTool::Variable::MAT2,            1, "glm::mat2",    Reference, "mat2" },
-	{ ShaderTool::Variable::MAT3,            1, "glm::mat3",    Reference, "mat3" },
-	{ ShaderTool::Variable::MAT4,            1, "glm::mat4",    Reference, "mat4" },
-	{ ShaderTool::Variable::MAT3X4,          1, "glm::mat3x4",  Reference, "mat3x4" },
-	{ ShaderTool::Variable::MAT4X3,          1, "glm::mat4x3",  Reference, "mat4x3" },
-	{ ShaderTool::Variable::SAMPLER1D,       1, "video::TextureUnit", Value,      "sampler1D" },
-	{ ShaderTool::Variable::SAMPLER2D,       1, "video::TextureUnit", Value,      "sampler2D" },
-	{ ShaderTool::Variable::SAMPLER2DARRAY,  1, "video::TextureUnit", Value,      "sampler2DArray" },
-	{ ShaderTool::Variable::SAMPLER2DARRAYSHADOW, 1, "video::TextureUnit", Value, "sampler2DArrayShadow" },
-	{ ShaderTool::Variable::SAMPLER3D,       1, "video::TextureUnit", Value,      "sampler3D" },
-	{ ShaderTool::Variable::SAMPLERCUBEMAP,  1, "video::TextureUnit", Value,      "samplerCube" },
-	{ ShaderTool::Variable::SAMPLER1DSHADOW, 1, "video::TextureUnit", Value,      "sampler1DShadow" },
-	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "video::TextureUnit", Value,      "sampler2DShadow" }
-};
 
 // TODO: validate that each $out of the vertex shader has a $in in the fragment shader and vice versa
 ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "shadertool");
-	static_assert(Variable::MAX == lengthof(cTypes), "mismatch in glsl types");
-	static_assert(lengthof(PrimitiveTypeStr) == std::enum_value(PrimitiveType::Max), "PrimitiveTypeStr doesn't match enum");
-}
-
-std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type type, int amount) const {
-	switch (type) {
-	case Variable::MAX:
-		return "";
-	case Variable::FLOAT:
-		if (amount > 1) {
-			return "1fv";
-		}
-		return "f";
-	case Variable::DOUBLE:
-		if (amount > 1) {
-			return "1dv";
-		}
-		return "d";
-	case Variable::UNSIGNED_INT:
-		if (amount > 1) {
-			return "1uiv";
-		}
-		return "ui";
-	case Variable::BOOL:
-	case Variable::INT:
-		if (amount > 1) {
-			return "1iv";
-		}
-		return "i";
-	case Variable::DVEC2:
-	case Variable::BVEC2:
-	case Variable::UVEC2:
-	case Variable::VEC2:
-		if (amount > 1) {
-			return "Vec2v";
-		}
-		return "Vec2";
-	case Variable::DVEC3:
-	case Variable::BVEC3:
-	case Variable::UVEC3:
-	case Variable::VEC3:
-		if (amount > 1) {
-			return "Vec3v";
-		}
-		return "Vec3";
-	case Variable::DVEC4:
-	case Variable::BVEC4:
-	case Variable::UVEC4:
-	case Variable::VEC4:
-		if (amount > 1) {
-			return "Vec4v";
-		}
-		return "Vec4";
-	case Variable::IVEC2:
-		if (amount > 1) {
-			return "Vec2v";
-		}
-		return "Vec2";
-	case Variable::IVEC3:
-		if (amount > 1) {
-			return "Vec3v";
-		}
-		return "Vec3";
-	case Variable::IVEC4:
-		if (amount > 1) {
-			return "Vec4v";
-		}
-		return "Vec4";
-	case Variable::MAT3X4:
-	case Variable::MAT4X3:
-	case Variable::MAT2:
-	case Variable::MAT3:
-	case Variable::MAT4:
-		if (amount > 1) {
-			return "Matrixv";
-		}
-		return "Matrix";
-	case Variable::SAMPLER1D:
-	case Variable::SAMPLER2D:
-	case Variable::SAMPLER3D:
-	case Variable::SAMPLER1DSHADOW:
-	case Variable::SAMPLER2DSHADOW:
-	case Variable::SAMPLER2DARRAY:
-	case Variable::SAMPLER2DARRAYSHADOW:
-		if (amount > 1) {
-			// https://www.opengl.org/wiki/Data_Type_%28GLSL%29#Opaque_arrays
-			if (video::Shader::glslVersion < video::GLSLVersion::V400) {
-				Log::warn("Sampler arrays are only allowed under special circumstances - don't do this for GLSL < 4.0");
-			}
-			// TODO: doesn't work yet, video::TextureUnit support is needed here
-			return "1iv";
-		}
-		return "";
-	case Variable::SAMPLERCUBEMAP:
-		if (amount > 1) {
-			return "1iv";
-		}
-		return "i";
-	}
-	return "";
-}
-
-int ShaderTool::getComponents(const ShaderTool::Variable::Type type) const {
-	return cTypes[(int)type].components;
-}
-
-ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
-	int max = std::enum_value(Variable::MAX);
-	for (int i = 0; i < max; ++i) {
-		if (type == cTypes[i].glsltype) {
-			return cTypes[i].type;
-		}
-	}
-	Log::error("Unknown type given: %s at line %i\n%s", type.c_str(), _tok.line(),_currentSource.c_str());
-	core_assert_msg(false, "Unknown type given: %s at line %i", type.c_str(), _tok.line());
-	return Variable::FLOAT;
-}
-
-#define USE_ALIGN_AS 1
-
-/**
- * The size of each element in the array will be the size of the element type, rounded up to a multiple of the
- * size of a vec4. This is also the array’s alignment. The array’s size will be this rounded-up element’s size
- * times the number of elements in the array.
- * If the member is a three-component vector with components consuming N basic machine units, the base alignment is 4N.
- *
- * @note:
- * a float needs 4 bytes and it's 4 bytes aligned
- * a vec3 needs 12 bytes and it's 16 bytes aligned
- * a vec4 needs 16 bytes and it's 16 bytes aligned
- */
-std::string ShaderTool::std140Align(const Variable& v) const {
-#if USE_ALIGN_AS > 0
-	// TODO: generate uniform buffer struct - enforce std140 layout
-	// TODO: extract uniform blocks into aligned structs and generate methods to update them
-	//       align them via GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT - use glBindBufferRange
-	//       GL_MAX_UNIFORM_BLOCK_SIZE
-	const Types& cType = cTypes[v.type];
-	if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::VEC4
-	 || cType.type == Variable::Type::DVEC2 || cType.type == Variable::Type::DVEC3 || cType.type == Variable::Type::DVEC4
-	 || cType.type == Variable::Type::IVEC2 || cType.type == Variable::Type::IVEC3 || cType.type == Variable::Type::IVEC4
-	 || cType.type == Variable::Type::BVEC2 || cType.type == Variable::Type::BVEC3 || cType.type == Variable::Type::BVEC4) {
-		return "alignas(16) ";
-	}
-	if (cType.type == Variable::Type::FLOAT || cType.type == Variable::Type::DOUBLE) {
-		return "alignas(4) ";
-	}
-#endif
-	return "";
-}
-
-std::string ShaderTool::std140Padding(const Variable& v, int& padding) const {
-#if USE_ALIGN_AS == 0
-	const Types& cType = cTypes[v.type];
-	if (cType.type == Variable::Type::VEC3
-	 || cType.type == Variable::Type::DVEC3
-	 || cType.type == Variable::Type::IVEC3
-	 || cType.type == Variable::Type::BVEC3) {
-		return "\t\tfloat _padding" + std::to_string(padding++) + ";\n";
-	}
-#endif
-	return "";
-}
-
-size_t ShaderTool::std140Size(const Variable& v) const {
-	const Types& cType = cTypes[v.type];
-	int components = cType.components;
-	int bytes = 4;
-	if (cType.type == Variable::Type::DVEC2
-	 || cType.type == Variable::Type::DVEC3
-	 || cType.type == Variable::Type::DVEC4
-	 || cType.type == Variable::Type::DOUBLE) {
-		bytes = 8;
-	}
-	if (cType.type == Variable::Type::VEC2
-	 || cType.type == Variable::Type::DVEC2
-	 || cType.type == Variable::Type::IVEC2
-	 || cType.type == Variable::Type::BVEC2) {
-		components = 2;
-	}
-	if (cType.type == Variable::Type::VEC3
-	 || cType.type == Variable::Type::DVEC3
-	 || cType.type == Variable::Type::IVEC3
-	 || cType.type == Variable::Type::BVEC3) {
-		components = 4;
-	}
-	if (cType.type == Variable::Type::MAT2) {
-		components = 4;
-	} else if (cType.type == Variable::Type::MAT3) {
-		components = 9; // FIXME
-	} else if (cType.type == Variable::Type::MAT4) {
-		components = 16;
-	} else if (cType.type == Variable::Type::MAT3X4) {
-		components = 16; // FIXME
-	} else if (cType.type == Variable::Type::MAT4X3) {
-		components = 16; // FIXME
-	}
-	if (v.arraySize > 0) {
-		return components * bytes * v.arraySize;
-	}
-	return components * bytes;
-}
-
-std::string ShaderTool::std430Align(const Variable& v) const {
-	// TODO: check this layout
-	return std140Align(v);
-}
-
-size_t ShaderTool::std430Size(const Variable& v) const {
-	// TODO: check this layout
-	return std140Size(v);
-}
-
-std::string ShaderTool::std430Padding(const Variable& v, int& padding) const {
-	// TODO: check this layout
-	return std140Padding(v, padding);
 }
 
 std::string ShaderTool::typeAlign(const Variable& v) const {
 	switch (_layout.blockLayout) {
 	default:
 	case BlockLayout::std140:
-		return std140Align(v);
+		return util::std140Align(v);
 	case BlockLayout::std430:
-		return std430Align(v);
+		return util::std430Align(v);
 	}
 }
 
@@ -295,9 +28,9 @@ size_t ShaderTool::typeSize(const Variable& v) const {
 	switch (_layout.blockLayout) {
 	default:
 	case BlockLayout::std140:
-		return std140Size(v);
+		return util::std140Size(v);
 	case BlockLayout::std430:
-		return std430Size(v);
+		return util::std430Size(v);
 	}
 }
 
@@ -305,9 +38,9 @@ std::string ShaderTool::typePadding(const Variable& v, int& padding) const {
 	switch (_layout.blockLayout) {
 	default:
 	case BlockLayout::std140:
-		return std140Padding(v, padding);
+		return util::std140Padding(v, padding);
 	case BlockLayout::std430:
-		return std430Padding(v, padding);
+		return util::std430Padding(v, padding);
 	}
 }
 
@@ -395,7 +128,7 @@ void ShaderTool::generateSrc() {
 			const Variable& v = _shaderStruct.attributes[i];
 			attributes << "\t\tconst int " << v.name << "Location = getAttributeLocation(\"" << v.name << "\");\n";
 			attributes << "\t\tif (" << v.name << "Location != -1) {\n";
-			attributes << "\t\t\tsetAttributeComponents(" << v.name << "Location, " << getComponents(v.type) << ");\n";
+			attributes << "\t\t\tsetAttributeComponents(" << v.name << "Location, " << util::getComponents(v.type) << ");\n";
 			attributes << "\t\t}\n";
 		}
 	} else {
@@ -412,7 +145,7 @@ void ShaderTool::generateSrc() {
 		const bool isInteger = v.isSingleInteger();
 		const std::string& uniformName = util::convertName(v.name, true);
 		setters << "\tinline bool set" << uniformName << "(";
-		const Types& cType = cTypes[v.type];
+		const Types& cType = util::resolveTypes(v.type);
 		if (v.arraySize > 0 && isInteger) {
 			setters << "const ";
 		} else if (cType.passBy == PassBy::Reference) {
@@ -442,7 +175,7 @@ void ShaderTool::generateSrc() {
 		setters << "\");\n\t\tif (location == -1) {\n";
 		setters << "\t\t\treturn false;\n";
 		setters << "\t\t}\n";
-		setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
+		setters << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
 		setters << "(location, " << v.name;
 		if (v.arraySize > 0) {
 			setters << ", " << v.arraySize;
@@ -459,7 +192,7 @@ void ShaderTool::generateSrc() {
 			setters << "\t\t\treturn false;\n";
 			setters << "\t\t}\n";
 			setters << "\t\tcore_assert((int)var.size() == " << v.arraySize << ");\n";
-			setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize) << "(location, &var.front(), var.size());\n";
+			setters << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize) << "(location, &var.front(), var.size());\n";
 			setters << "\t\treturn true;\n";
 			setters << "\t}\n";
 		} else if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::VEC4) {
@@ -480,12 +213,12 @@ void ShaderTool::generateSrc() {
 #if 0
 		if (v.arraySize == -1 || v.arraySize > 1) {
 			setters << "\tinline bool set" << uniformName << "(";
-			const Types& cType = cTypes[v.type];
+			const Types& cType = util::getTypes(v.type);
 			setters << "const std::vector<" << cType.ctype << ">& " << v.name << ") const {\n";
 			setters << "\t\tif (!hasUniform(\"" << v.name << "[0]\")) {\n";
 			setters << "\t\t\treturn false;\n";
 			setters << "\t\t}\n";
-			setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
+			setters << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
 			setters << "(\"" << v.name << "[0]\", &" << v.name << "[0], " << v.name << ".size());\n";
 			setters << "\t\treturn true;\n";
 			setters << "\t}\n";
@@ -500,7 +233,7 @@ void ShaderTool::generateSrc() {
 		const std::string& attributeName = util::convertName(v.name, true);
 		const bool isInt = v.isInteger();
 		setters << "\tinline bool init" << attributeName << "Custom(size_t stride = ";
-		setters << "sizeof(" << cTypes[v.type].ctype << ")";
+		setters << "sizeof(" << util::resolveTypes(v.type).ctype << ")";
 		setters << ", const void* pointer = nullptr, video::DataType type = ";
 		if (isInt) {
 			setters << "video::DataType::Int";
@@ -508,7 +241,7 @@ void ShaderTool::generateSrc() {
 			setters << "video::DataType::Float";
 		}
 		setters << ", int size = ";
-		setters << cTypes[v.type].components << ", ";
+		setters << util::resolveTypes(v.type).components << ", ";
 		setters << "bool isInt = ";
 		setters << (isInt ? "true" : "false");
 		setters << ", bool normalize = false) const {\n";
@@ -534,7 +267,7 @@ void ShaderTool::generateSrc() {
 		setters << "\t\tif (loc == -1) {\n";
 		setters << "\t\t\treturn false;\n";
 		setters << "\t\t}\n";
-		setters << "\t\tconst size_t stride = sizeof(" << cTypes[v.type].ctype << ");\n";
+		setters << "\t\tconst size_t stride = sizeof(" << util::resolveTypes(v.type).ctype << ");\n";
 		setters << "\t\tconst void* pointer = nullptr;\n";
 		setters << "\t\tconst video::DataType type = ";
 		if (isInt) {
@@ -591,7 +324,7 @@ void ShaderTool::generateSrc() {
 		int paddingCnt = 0;
 		for (auto& v : ubuf.members) {
 			const std::string& uniformName = util::convertName(v.name, false);
-			const Types& cType = cTypes[v.type];
+			const Types& cType = util::resolveTypes(v.type);
 			ub << "\t\t" << typeAlign(v) << cType.ctype << " " << uniformName;
 			const size_t memberSize = typeSize(v);
 			structSize += memberSize;
@@ -652,18 +385,6 @@ void ShaderTool::generateSrc() {
 		_exitCode = 100;
 		requestQuit();
 	}
-}
-
-ShaderTool::PrimitiveType ShaderTool::layoutPrimitiveType(const std::string& token) const {
-	for (int i = 0; i < lengthof(PrimitiveTypeStr); ++i) {
-		if (PrimitiveTypeStr[i] == nullptr) {
-			continue;
-		}
-		if (token == PrimitiveTypeStr[i]) {
-			return (PrimitiveType)i;
-		}
-	}
-	return PrimitiveType::None;
 }
 
 bool ShaderTool::parseLayout() {
@@ -751,7 +472,7 @@ bool ShaderTool::parseLayout() {
 			if (!_tok.hasNext()) {
 				return false;
 			}
-			_layout.primitiveType = layoutPrimitiveType(_tok.next());
+			_layout.primitiveType = util::layoutPrimitiveType(_tok.next());
 		}
 	} while (token != ")");
 
@@ -759,7 +480,6 @@ bool ShaderTool::parseLayout() {
 }
 
 bool ShaderTool::parse(const std::string& buffer, bool vertex) {
-	_currentSource = buffer;
 	bool uniformBlock = false;
 
 	simplecpp::DUI dui;
@@ -850,7 +570,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			uniformBlock = true;
 			continue;
 		}
-		const Variable::Type typeEnum = getType(type);
+		const Variable::Type typeEnum = util::getType(type, _tok.line());
 		const bool isArray = _tok.peekNext() == "[";
 		int arraySize = 0;
 		if (isArray) {
@@ -874,7 +594,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 				_layout = Layout();
 			} else {
 				Log::warn("Found duplicate variable %s (%s versus %s)",
-						name.c_str(), cTypes[(int)findIter->type].ctype, cTypes[(int)typeEnum].ctype);
+						name.c_str(), util::resolveTypes(findIter->type).ctype, util::resolveTypes(typeEnum).ctype);
 			}
 		}
 	}
