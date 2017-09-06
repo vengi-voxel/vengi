@@ -210,6 +210,11 @@ define UPDATE_HG
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,libuv,https://github.com/libuv/libuv.git)
+	cp $(UPDATEDIR)/libuv.sync/include/*.h contrib/libs/libuv/include
+	cp $(UPDATEDIR)/libuv.sync/src/unix/*.[ch] contrib/libs/libuv/src/unix
+	cp $(UPDATEDIR)/libuv.sync/src/win/*.[ch] contrib/libs/libuv/src/win
+	cp $(UPDATEDIR)/libuv.sync/src/*.[ch] contrib/libs/libuv/src
 	$(call UPDATE_GIT,stb,https://github.com/nothings/stb.git)
 	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/stb_image.h
 	cp $(UPDATEDIR)/stb.sync/stb_image_write.h src/modules/image/stb_image_write.h
