@@ -40,6 +40,8 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 	Log::debug("homepath: %s", _homePath.c_str());
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
+
+	_loop = uv_loop_new();
 }
 
 void Filesystem::onRunning() {
@@ -52,6 +54,12 @@ bool Filesystem::chdir(const std::string& directory) {
 
 void Filesystem::shutdown() {
 	_threadPool.shutdown();
+	if (_loop != nullptr) {
+		uv_loop_close(_loop);
+		//uv_loop_delete(_loop);
+		SDL_free(_loop);
+		_loop = nullptr;
+	}
 }
 
 bool Filesystem::isRelativeFilename(const std::string& name) const {
@@ -68,6 +76,26 @@ bool Filesystem::isRelativeFilename(const std::string& name) const {
 	}
 	return name[0] != '/';
 #endif
+}
+
+bool Filesystem::watch(const std::string& path) {
+	// TODO: memory leak of fsEvent
+	uv_fs_event_t * fsEvent = (uv_fs_event_t *) SDL_malloc(sizeof(*fsEvent));
+	if (uv_fs_event_init(_loop, fsEvent) != 0) {
+		SDL_free(fsEvent);
+		return false;
+	}
+	const int ret = uv_fs_event_start(fsEvent, [] (uv_fs_event_t *handle, const char *filename, int events, int status) {
+		if (filename == nullptr) {
+			return;
+		}
+		Log::info("filename: %s", filename);
+	}, path.c_str(), UV_FS_EVENT_RECURSIVE);
+	if (ret != 0) {
+		SDL_free(fsEvent);
+		return false;
+	}
+	return true;
 }
 
 bool Filesystem::popDir() {

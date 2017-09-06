@@ -27,6 +27,7 @@ private:
 	std::string _homePath;
 
 	std::stack<std::string> _dirStack;
+	uv_loop_t *_loop = nullptr;
 
 public:
 	Filesystem();
@@ -36,6 +37,8 @@ public:
 	void shutdown();
 
 	void onRunning();
+
+	bool watch(const std::string& path);
 
 	/**
 	 * @brief Get the path where the application resides.

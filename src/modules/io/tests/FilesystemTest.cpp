@@ -16,7 +16,7 @@ class FilesystemTest: public core::AbstractTest {
 
 TEST_F(FilesystemTest, testListDirectory) {
 	io::Filesystem fs;
-	ASSERT_TRUE(fs.createDir("listdirtest"));
+	fs.init("test", "test");
 	ASSERT_TRUE(fs.createDir("listdirtest/dir1"));
 	ASSERT_TRUE(fs.syswrite("listdirtest/dir1/ignored", "ignore"));
 	ASSERT_TRUE(fs.syswrite("listdirtest/dir1/ignoredtoo", "ignore"));
@@ -36,10 +36,12 @@ TEST_F(FilesystemTest, testListDirectory) {
 	ASSERT_EQ(io::Filesystem::DirEntry::Type::dir, entities[0].type);
 	ASSERT_EQ(io::Filesystem::DirEntry::Type::file, entities[1].type);
 	ASSERT_EQ(io::Filesystem::DirEntry::Type::file, entities[2].type);
+	fs.shutdown();
 }
 
 TEST_F(FilesystemTest, testListFilter) {
 	io::Filesystem fs;
+	fs.init("test", "test");
 	ASSERT_TRUE(fs.createDir("listdirtestfilter"));
 	ASSERT_TRUE(fs.createDir("listdirtestfilter/dirxyz"));
 	ASSERT_TRUE(fs.syswrite("listdirtestfilter/filexyz", "1"));
@@ -48,11 +50,15 @@ TEST_F(FilesystemTest, testListFilter) {
 	std::vector<io::Filesystem::DirEntry> entities;
 	fs.list("listdirtestfilter/", entities, "*xyz");
 	ASSERT_EQ(2u, entities.size()) << entities;
+	fs.shutdown();
 }
 
 TEST_F(FilesystemTest, testMkdir) {
 	io::Filesystem fs;
+	fs.init("test", "test");
 	ASSERT_TRUE(fs.createDir("testdir"));
+	ASSERT_TRUE(fs.createDir("testdir2/subdir/other"));
+	fs.shutdown();
 }
 
 }
