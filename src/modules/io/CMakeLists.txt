@@ -1,16 +1,11 @@
 set(SRCS
-	EventHandler.cpp EventHandler.h IEventObserver.h
-	Filesystem.cpp Filesystem.h
-	FileStream.cpp FileStream.h
+	EventHandler.cpp EventHandler.h
 	File.cpp File.h
+	FileStream.cpp FileStream.h
+	Filesystem.cpp Filesystem.h
+	IEventObserver.h
 	IOResource.h
 )
-
-if (LINUX OR DARWIN)
-	list(APPEND SRCS FilesystemUnix.cpp)
-elseif (WINDOWS)
-	list(APPEND SRCS FilesystemWindows.cpp)
-endif()
 
 set(LIB io)
 add_library(${LIB} ${SRCS})

@@ -41,7 +41,86 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 
-	_loop = uv_loop_new();
+	_loop = new uv_loop_t;
+	uv_loop_init(_loop);
+}
+
+bool Filesystem::removeDir(const std::string& dir, bool recursive) const {
+	if (dir.empty()) {
+		return false;
+	}
+
+	if (!recursive) {
+		uv_fs_t req;
+		return uv_fs_rmdir(_loop, &req, dir.c_str(), nullptr) == 0;
+	}
+	// TODO: implement me
+	return false;
+}
+
+bool Filesystem::createDir(const std::string& dir, bool recursive) const {
+	if (dir.empty()) {
+		return false;
+	}
+
+	if (!recursive) {
+		uv_fs_t req;
+		// rwx+o, r+g
+		const int retVal = uv_fs_mkdir(_loop, &req, dir.c_str(), 0740, nullptr);
+		if (retVal != 0 && req.result != UV_EEXIST) {
+			return false;
+		}
+		return true;
+	}
+
+	std::string s = dir;
+	if (s[s.size() - 1] != '/') {
+		// force trailing / so we can handle everything in loop
+		s += '/';
+	}
+
+	size_t pre = 0, pos;
+	while ((pos = s.find_first_of('/', pre)) != std::string::npos) {
+		const std::string dirpart = s.substr(0, pos++);
+		pre = pos;
+		if (dirpart.empty()) {
+			continue; // if leading / first time is 0 length
+		}
+		const char *dirc = dirpart.c_str();
+		uv_fs_t req;
+		const int retVal = uv_fs_mkdir(_loop, &req, dirc, 0700, nullptr);
+		if (retVal != 0 && req.result != UV_EEXIST) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const {
+	uv_fs_t req;
+	const int amount = uv_fs_scandir(_loop, &req, directory.c_str(), 0, nullptr);
+	if (amount <= 0) {
+		return false;
+	}
+	uv_dirent_t ent;
+	while (uv_fs_scandir_next(&req, &ent) != UV_EOF) {
+		DirEntry::Type type = DirEntry::Type::unknown;
+		if (ent.type == UV_DIRENT_DIR) {
+			type = DirEntry::Type::dir;
+		} else if (ent.type == UV_DIRENT_FILE) {
+			type = DirEntry::Type::file;
+		} else if (ent.type == UV_DIRENT_UNKNOWN) {
+			type = DirEntry::Type::unknown;
+		} else {
+			Log::debug("Unknown directory entry found: %s", ent.name);
+			continue;
+		}
+		if (!filter.empty() && !core::string::matches(filter, ent.name)) {
+			continue;
+		}
+		entities.push_back(DirEntry{ent.name, type});
+	}
+	return true;
 }
 
 void Filesystem::onRunning() {
@@ -54,12 +133,18 @@ bool Filesystem::chdir(const std::string& directory) {
 
 void Filesystem::shutdown() {
 	_threadPool.shutdown();
+	for (auto& e : _watches) {
+		uv_fs_event_stop(e.second);
+	}
 	if (_loop != nullptr) {
 		uv_loop_close(_loop);
-		//uv_loop_delete(_loop);
-		SDL_free(_loop);
+		delete _loop;
 		_loop = nullptr;
 	}
+	for (auto& e : _watches) {
+		delete e.second;
+	}
+	_watches.clear();
 }
 
 bool Filesystem::isRelativeFilename(const std::string& name) const {
@@ -78,11 +163,26 @@ bool Filesystem::isRelativeFilename(const std::string& name) const {
 #endif
 }
 
+bool Filesystem::unwatch(const std::string& path) {
+	auto i = _watches.find(path);
+	if (i == _watches.end()) {
+		return false;
+	}
+	uv_fs_event_stop(i->second);
+	delete i->second;
+	_watches.erase(i);
+	return true;
+}
+
 bool Filesystem::watch(const std::string& path) {
-	// TODO: memory leak of fsEvent
-	uv_fs_event_t * fsEvent = (uv_fs_event_t *) SDL_malloc(sizeof(*fsEvent));
+	uv_fs_event_t* fsEvent = new uv_fs_event_t;
 	if (uv_fs_event_init(_loop, fsEvent) != 0) {
-		SDL_free(fsEvent);
+		delete fsEvent;
+		return false;
+	}
+	auto i = _watches.insert(std::make_pair(path, fsEvent));
+	if (!i.second) {
+		delete fsEvent;
 		return false;
 	}
 	const int ret = uv_fs_event_start(fsEvent, [] (uv_fs_event_t *handle, const char *filename, int events, int status) {
@@ -92,7 +192,7 @@ bool Filesystem::watch(const std::string& path) {
 		Log::info("filename: %s", filename);
 	}, path.c_str(), UV_FS_EVENT_RECURSIVE);
 	if (ret != 0) {
-		SDL_free(fsEvent);
+		delete fsEvent;
 		return false;
 	}
 	return true;

@@ -30,12 +30,12 @@ TEST_F(FilesystemTest, testListDirectory) {
 		[] (const io::Filesystem::DirEntry& first, const io::Filesystem::DirEntry& second) {
 			return first.name < second.name;
 		});
-	ASSERT_EQ("dir1", entities[0].name);
-	ASSERT_EQ("file1", entities[1].name);
-	ASSERT_EQ("file2", entities[2].name);
-	ASSERT_EQ(io::Filesystem::DirEntry::Type::dir, entities[0].type);
-	ASSERT_EQ(io::Filesystem::DirEntry::Type::file, entities[1].type);
-	ASSERT_EQ(io::Filesystem::DirEntry::Type::file, entities[2].type);
+	EXPECT_EQ("dir1", entities[0].name);
+	EXPECT_EQ("file1", entities[1].name);
+	EXPECT_EQ("file2", entities[2].name);
+	EXPECT_EQ(io::Filesystem::DirEntry::Type::dir, entities[0].type);
+	EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[1].type);
+	EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[2].type);
 	fs.shutdown();
 }
 
@@ -49,7 +49,7 @@ TEST_F(FilesystemTest, testListFilter) {
 	ASSERT_TRUE(fs.syswrite("listdirtestfilter/fileignore", "3"));
 	std::vector<io::Filesystem::DirEntry> entities;
 	fs.list("listdirtestfilter/", entities, "*xyz");
-	ASSERT_EQ(2u, entities.size()) << entities;
+	EXPECT_EQ(2u, entities.size()) << entities;
 	fs.shutdown();
 }
 
@@ -58,6 +58,9 @@ TEST_F(FilesystemTest, testMkdir) {
 	fs.init("test", "test");
 	ASSERT_TRUE(fs.createDir("testdir"));
 	ASSERT_TRUE(fs.createDir("testdir2/subdir/other"));
+	ASSERT_TRUE(fs.removeDir("testdir2/subdir/other"));
+	ASSERT_TRUE(fs.removeDir("testdir2/subdir"));
+	ASSERT_TRUE(fs.removeDir("testdir2"));
 	fs.shutdown();
 }
 

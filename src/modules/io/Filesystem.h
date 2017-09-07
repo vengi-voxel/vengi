@@ -9,6 +9,7 @@
 #include "File.h"
 #include <stack>
 #include <uv.h>
+#include <unordered_map>
 
 namespace io {
 
@@ -27,6 +28,7 @@ private:
 	std::string _homePath;
 
 	std::stack<std::string> _dirStack;
+	std::unordered_map<std::string, uv_fs_event_t*> _watches;
 	uv_loop_t *_loop = nullptr;
 
 public:
@@ -38,6 +40,7 @@ public:
 
 	void onRunning();
 
+	bool unwatch(const std::string& path);
 	bool watch(const std::string& path);
 
 	/**
@@ -97,7 +100,9 @@ public:
 
 	bool syswrite(const std::string& filename, const std::string& string);
 
-	bool createDir(const std::string& dir) const;
+	bool createDir(const std::string& dir, bool recursive = true) const;
+
+	bool removeDir(const std::string& dir, bool recursive = false) const;
 };
 
 inline bool Filesystem::exists(const std::string& filename) const {
