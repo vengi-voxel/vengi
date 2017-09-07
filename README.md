@@ -23,6 +23,7 @@ Voxel engine with procedural generated landscape.
   * nativefiledialog (+gtk3 or qt on linux)
   * enet
   * zlib
+  * libuv
   * turbobadger
   * gtest
   * opencl
