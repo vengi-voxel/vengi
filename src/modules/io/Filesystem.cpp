@@ -123,7 +123,7 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 	return true;
 }
 
-void Filesystem::onRunning() {
+void Filesystem::update() {
 	uv_run(_loop, UV_RUN_DEFAULT);
 }
 

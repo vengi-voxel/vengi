@@ -480,7 +480,7 @@ AppState App::onRunning() {
 
 	core::Command::executeDelayed();
 
-	_filesystem->onRunning();
+	_filesystem->update();
 
 	return AppState::Cleanup;
 }

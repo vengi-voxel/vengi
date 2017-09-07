@@ -38,7 +38,7 @@ public:
 	void init(const std::string& organisation, const std::string& appname);
 	void shutdown();
 
-	void onRunning();
+	void update();
 
 	bool unwatch(const std::string& path);
 	bool watch(const std::string& path);
