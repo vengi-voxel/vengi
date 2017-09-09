@@ -26,7 +26,7 @@ private:
 	void init() override;
 
 public:
-	Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
+	Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider);
 	~Npc();
 

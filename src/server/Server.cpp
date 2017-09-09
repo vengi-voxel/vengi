@@ -6,7 +6,7 @@
 #include "core/Var.h"
 #include "core/command/Command.h"
 #include "cooldown/CooldownProvider.h"
-#include "network/MessageSender.h"
+#include "network/ServerMessageSender.h"
 #include "attrib/ContainerProvider.h"
 #include "poi/PoiProvider.h"
 #include "backend/entity/EntityStorage.h"
@@ -17,7 +17,7 @@
 
 #include <cstdlib>
 
-Server::Server(const network::NetworkPtr& network, const backend::ServerLoopPtr& serverLoop,
+Server::Server(const network::ServerNetworkPtr& network, const backend::ServerLoopPtr& serverLoop,
 		const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
 		const core::EventBusPtr& eventBus) :
 		Super(filesystem, eventBus, timeProvider, 15678), _network(network),
@@ -96,8 +96,8 @@ int main(int argc, char *argv[]) {
 	const attrib::ContainerProviderPtr& containerProvider = std::make_shared<attrib::ContainerProvider>();
 
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
-	const network::NetworkPtr& network = std::make_shared<network::Network>(protocolHandlerRegistry, eventBus);
-	const network::MessageSenderPtr& messageSender = std::make_shared<network::MessageSender>(network);
+	const network::ServerNetworkPtr& network = std::make_shared<network::ServerNetwork>(protocolHandlerRegistry, eventBus);
+	const network::ServerMessageSenderPtr& messageSender = std::make_shared<network::ServerMessageSender>(network);
 
 	const backend::AILoaderPtr& loader = std::make_shared<backend::AILoader>(registry);
 

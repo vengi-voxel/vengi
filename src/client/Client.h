@@ -15,8 +15,8 @@
 #include "core/Var.h"
 #include "core/Common.h"
 #include "voxel/WorldEvents.h"
-#include "network/Network.h"
-#include "network/MessageSender.h"
+#include "network/ClientNetwork.h"
+#include "network/ClientMessageSender.h"
 #include "network/NetworkEvents.h"
 #include "ui/UIApp.h"
 #include "ui/WaitingMessage.h"
@@ -32,11 +32,10 @@ protected:
 	using Super = ui::UIApp;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
-	network::NetworkPtr _network;
+	network::ClientNetworkPtr _network;
 	voxel::WorldPtr _world;
-	network::MessageSenderPtr _messageSender;
+	network::ClientMessageSenderPtr _messageSender;
 	frontend::WorldRenderer _worldRenderer;
-	ENetPeer* _peer = nullptr;
 	flatbuffers::FlatBufferBuilder _moveFbb;
 	network::MoveDirection _moveMask = network::MoveDirection::NONE;
 	network::MoveDirection _lastMoveMask = network::MoveDirection::NONE;
@@ -63,7 +62,7 @@ protected:
 	void handleLogin();
 	int renderMap(video::Shader& shader, const voxel::WorldPtr& world, const glm::mat4& view, float aspect);
 public:
-	Client(const video::MeshPoolPtr& meshPool, const network::NetworkPtr& network, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
+	Client(const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldPtr& world, const network::ClientMessageSenderPtr& messageSender,
 			const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem);
 	~Client();
 

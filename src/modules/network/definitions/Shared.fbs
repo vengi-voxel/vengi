@@ -59,3 +59,11 @@ enum ItemType: int {
 	NONE,
 	WEAPON
 }
+
+/// The move direction is a bit mask of the keys that the client currently holds pressed
+enum MoveDirection:ubyte (bit_flags) {
+	MOVEFORWARD,
+	MOVEBACKWARD,
+	MOVELEFT,
+	MOVERIGHT
+}

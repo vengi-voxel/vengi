@@ -12,7 +12,7 @@ namespace backend {
 
 std::atomic<EntityId> Npc::_nextNpcId(5000000);
 
-Npc::Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
+Npc::Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider) :
 		Entity(_nextNpcId++, messageSender, timeProvider, containerProvider, cooldownProvider), _world(world), _poiProvider(poiProvider) {
 	_entityType = type;

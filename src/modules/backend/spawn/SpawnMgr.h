@@ -16,7 +16,7 @@ private:
 	AILoaderPtr _loader;
 	voxel::WorldPtr _world;
 	EntityStoragePtr _entityStorage;
-	network::MessageSenderPtr _messageSender;
+	network::ServerMessageSenderPtr _messageSender;
 	core::TimeProviderPtr _timeProvider;
 	attrib::ContainerProviderPtr _containerProvider;
 	poi::PoiProviderPtr _poiProvider;
@@ -28,7 +28,7 @@ private:
 	void spawnCharacters(ai::Zone& zone);
 
 public:
-	SpawnMgr(const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const network::MessageSenderPtr& messageSender,
+	SpawnMgr(const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
 			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 	bool init();

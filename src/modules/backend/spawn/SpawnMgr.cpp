@@ -18,7 +18,7 @@ namespace backend {
 
 static const long spawnTime = 15000L;
 
-SpawnMgr::SpawnMgr(const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const network::MessageSenderPtr& messageSender,
+SpawnMgr::SpawnMgr(const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
 		const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
 		_loader(loader), _world(world), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),

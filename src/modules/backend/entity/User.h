@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "network/MessageSender.h"
+#include "network/ServerMessageSender.h"
 #include "Entity.h"
 #include "core/Var.h"
 #include "poi/PoiProvider.h"
@@ -14,7 +14,6 @@ namespace backend {
 class User : public Entity {
 private:
 	std::string _name;
-	std::string _password;
 	std::string _email;
 	uint32_t _host;
 	voxel::WorldPtr _world;
@@ -35,19 +34,15 @@ protected:
 	void visibleRemove(const EntitySet& entities) override;
 
 public:
-	User(ENetPeer* peer, EntityId id, const std::string& name, const network::MessageSenderPtr& messageSender, const voxel::WorldPtr& world,
+	User(ENetPeer* peer, EntityId id, const std::string& name, const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
 			const poi::PoiProviderPtr& poiProvider);
 
 	void setEntityId(EntityId id);
 
-	void setPassword(const std::string& password);
-
 	void setEmail(const std::string& mail);
 
 	const std::string& name() const;
-
-	const std::string& password() const;
 
 	const std::string& email() const;
 
@@ -97,20 +92,12 @@ inline void User::setEntityId(EntityId id) {
 	_entityId = id;
 }
 
-inline void User::setPassword(const std::string& pw) {
-	_password = pw;
-}
-
 inline void User::setEmail(const std::string& mail) {
 	_email = mail;
 }
 
 inline const std::string& User::name() const {
 	return _name;
-}
-
-inline const std::string& User::password() const {
-	return _password;
 }
 
 inline const std::string& User::email() const {

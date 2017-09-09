@@ -33,8 +33,8 @@ typedef std::shared_ptr<ContainerProvider> ContainerProviderPtr;
 
 namespace network {
 
-class MessageSender;
-typedef std::shared_ptr<MessageSender> MessageSenderPtr;
+class ServerMessageSender;
+typedef std::shared_ptr<ServerMessageSender> ServerMessageSenderPtr;
 
 }
 

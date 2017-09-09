@@ -14,36 +14,37 @@
 
 namespace network {
 
+enum class DisconnectReason {
+	ProtocolError,
+	Disconnect,
+	Unknown
+};
+
 class Network {
-private:
+protected:
 	ProtocolHandlerRegistryPtr _protocolHandlerRegistry;
 	core::EventBusPtr _eventBus;
-	ENetHost* _server;
-	ENetHost* _client;
 
-	bool packetReceived(ENetEvent& event, bool server);
-	void disconnectPeer(ENetPeer *peer, uint32_t timeout = 3000);
-	void updateHost(ENetHost* host, bool server);
+	/**
+	 * @brief Package deserialization
+	 * @return @c false if the package couldn't get deserialized properly or no handler is registered for the found message
+	 * @c true if everything went smooth.
+	 */
+	virtual bool packetReceived(ENetEvent& event) = 0;
+	void disconnectPeer(ENetPeer *peer, DisconnectReason reason);
+	void updateHost(ENetHost* host);
 public:
 	Network(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry, const core::EventBusPtr& eventBus);
 	virtual ~Network();
 
-	bool init();
-	void shutdown();
-	void update();
-
-	// Server related methods
-	bool bind(uint16_t port, const std::string& hostname = "", int maxPeers = 1024, int maxChannels = 1);
-	inline void broadcast(ENetPacket* packet, int channel = 0) { enet_host_broadcast(_server, channel, packet); }
-
-	// Client related methods
-	ENetPeer* connect(uint16_t port, const std::string& hostname, int maxChannels = 1);
-	void disconnect();
+	virtual bool init();
+	virtual void shutdown();
 
 	const ProtocolHandlerRegistryPtr& registry();
 
-	// Shared methods
-	inline bool sendMessage(ENetPeer* peer, ENetPacket* packet, int channel = 0) { return enet_peer_send(peer, channel, packet) == 0; }
+	inline bool sendMessage(ENetPeer* peer, ENetPacket* packet, int channel = 0) {
+		return enet_peer_send(peer, channel, packet) == 0;
+	}
 };
 
 inline const ProtocolHandlerRegistryPtr& Network::registry() {

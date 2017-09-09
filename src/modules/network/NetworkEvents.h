@@ -25,15 +25,16 @@ public:
 class DisconnectEvent: public core::IEventBusEvent {
 private:
 	ENetPeer* _peer;
+	DisconnectReason _reason;
 public:
-	DisconnectEvent(ENetPeer* peer) :
-			_peer(peer) {
-		if (peer != nullptr) {
-			Log::trace("Disconnect peer event %u", peer->connectID);
-		} else {
-			Log::trace("Could not connect");
-		}
+	DisconnectEvent(ENetPeer* peer, DisconnectReason reason) :
+			_peer(peer), _reason(reason) {
 	}
+
+	inline DisconnectReason reason() const {
+		return _reason;
+	}
+
 	inline ENetPeer* peer() const {
 		return _peer;
 	}

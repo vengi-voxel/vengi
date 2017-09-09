@@ -15,8 +15,6 @@
 #include "core/GLM.h"
 #include "io/Filesystem.h"
 #include "core/Color.h"
-#include "network/Network.h"
-#include "network/MessageSender.h"
 #include "network/IMsgProtocolHandler.h"
 #include "ServerMessages_generated.h"
 #include "network/AttribUpdateHandler.h"
@@ -42,7 +40,7 @@
 			_moveMask &= ~network::MoveDirection::flag; \
 	}).setHelp("Character movement");
 
-Client::Client(const video::MeshPoolPtr& meshPool, const network::NetworkPtr& network, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
+Client::Client(const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldPtr& world, const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem) :
 		Super(filesystem, eventBus, timeProvider, 17816), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
 		_worldRenderer(world), _waiting(this) {
@@ -54,10 +52,6 @@ Client::~Client() {
 }
 
 void Client::sendMovement() {
-	if (_peer == nullptr) {
-		return;
-	}
-
 	if (_now - _lastMovement <= 100L) {
 		return;
 	}
@@ -70,7 +64,7 @@ void Client::sendMovement() {
 	// TODO: we can't use the camera, as we are aiming for a freelook mode, where the players' angles might be different from the camera's
 	const float pitch = 0.0f;
 	const float yaw = 0.0f;
-	_messageSender->sendClientMessage(_peer, _moveFbb, network::ClientMsgType::Move, CreateMove(_moveFbb, _moveMask, pitch, yaw).Union());
+	_messageSender->sendClientMessage(_moveFbb, network::ClientMsgType::Move, CreateMove(_moveFbb, _moveMask, pitch, yaw).Union());
 }
 
 void Client::onEvent(const network::DisconnectEvent& event) {
@@ -84,7 +78,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 	const std::string& email = core::Var::getSafe(cfg::ClientEmail)->strVal();
 	const std::string& password = core::Var::getSafe(cfg::ClientPassword)->strVal();
 	Log::info("Trying to log into the server with %s", email.c_str());
-	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserConnect,
+	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnect,
 			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(password)).Union());
 }
 
@@ -326,7 +320,7 @@ void Client::authFailed() {
 
 void Client::disconnect() {
 	flatbuffers::FlatBufferBuilder fbb;
-	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserDisconnect, network::CreateUserDisconnect(fbb).Union());
+	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserDisconnect, network::CreateUserDisconnect(fbb).Union());
 }
 
 void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation) {
@@ -360,7 +354,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	_worldRenderer.extractMeshes(_camera);
 
 	flatbuffers::FlatBufferBuilder fbb;
-	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserConnected,
+	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnected,
 			network::CreateUserConnected(fbb).Union());
 }
 
@@ -374,8 +368,6 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 	}
 
 	peer->data = this;
-
-	_peer = peer;
 	Log::info("Connected to server %s:%i", hostname.c_str(), port);
 	_waiting.setTextId("stateconnecting");
 	return true;
@@ -388,8 +380,8 @@ int main(int argc, char *argv[]) {
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
-	const network::NetworkPtr& network = std::make_shared<network::Network>(protocolHandlerRegistry, eventBus);
-	const network::MessageSenderPtr& messageSender = std::make_shared<network::MessageSender>(network);
+	const network::ClientNetworkPtr& network = std::make_shared<network::ClientNetwork>(protocolHandlerRegistry, eventBus);
+	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
 	Client app(meshPool, network, world, messageSender, eventBus, timeProvider, filesystem);
 	return app.startMainLoop(argc, argv);
 }

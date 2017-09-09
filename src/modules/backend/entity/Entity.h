@@ -12,7 +12,7 @@
 #include "attrib/Attributes.h"
 #include "attrib/ContainerProvider.h"
 #include "cooldown/CooldownMgr.h"
-#include "network/MessageSender.h"
+#include "network/ServerMessageSender.h"
 #include "EntityId.h"
 
 namespace voxel {
@@ -41,7 +41,7 @@ private:
 
 protected:
 	EntityId _entityId;
-	network::MessageSenderPtr _messageSender;
+	network::ServerMessageSenderPtr _messageSender;
 	attrib::ContainerProviderPtr _containerProvider;
 	attrib::Attributes _attribs;
 
@@ -70,7 +70,7 @@ protected:
 
 	void onAttribChange(const attrib::DirtyValue& v);
 public:
-	Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider,
+	Entity(EntityId id, const network::ServerMessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider,
 			const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 	virtual ~Entity();
 

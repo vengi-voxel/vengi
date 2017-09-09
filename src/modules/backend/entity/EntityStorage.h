@@ -38,7 +38,7 @@ private:
 	core::QuadTree<QuadTreeNode, float> _quadTree;
 	core::QuadTreeCache<QuadTreeNode, float> _quadTreeCache;
 
-	network::MessageSenderPtr _messageSender;
+	network::ServerMessageSenderPtr _messageSender;
 	voxel::WorldPtr _world;
 	core::TimeProviderPtr _timeProvider;
 	attrib::ContainerProviderPtr _containerProvider;
@@ -55,7 +55,7 @@ private:
 
 	EntityId getUserId(const std::string& email, const std::string& password) const;
 public:
-	EntityStorage(const network::MessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
+	EntityStorage(const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
 			const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 
 	UserPtr login(ENetPeer* peer, const std::string& email, const std::string& password);
