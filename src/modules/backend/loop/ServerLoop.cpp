@@ -37,6 +37,9 @@ ServerLoop::ServerLoop(const network::ServerNetworkPtr& network, const SpawnMgrP
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
 }
 
+#define regHandler(type, handler, ...) \
+	r->registerHandler(network::EnumNameClientMsgType(type), std::make_shared<handler>(__VA_ARGS__));
+
 bool ServerLoop::init() {
 	if (core::Singleton<::persistence::ConnectionPool>::getInstance().init() <= 0) {
 		Log::error("Failed to init the connection pool");
@@ -65,11 +68,11 @@ bool ServerLoop::init() {
 	}
 
 	const network::ProtocolHandlerRegistryPtr& r = _network->registry();
-	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::UserConnect), std::make_shared<UserConnectHandler>(_network, _entityStorage, _world));
-	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::UserConnected), std::make_shared<UserConnectedHandler>());
-	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::UserDisconnect), std::make_shared<UserDisconnectHandler>());
-	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::Attack), std::make_shared<AttackHandler>());
-	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::Move), std::make_shared<MoveHandler>());
+	regHandler(network::ClientMsgType::UserConnect, UserConnectHandler, _network, _entityStorage, _world);
+	regHandler(network::ClientMsgType::UserConnected, UserConnectedHandler);
+	regHandler(network::ClientMsgType::UserDisconnect, UserDisconnectHandler);
+	regHandler(network::ClientMsgType::Attack, AttackHandler);
+	regHandler(network::ClientMsgType::Move, MoveHandler);
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");

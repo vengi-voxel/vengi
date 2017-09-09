@@ -109,19 +109,22 @@ core::AppState Client::onConstruct() {
 	return state;
 }
 
+#define regHandler(type, handler, ...) \
+	r->registerHandler(network::EnumNameServerMsgType(type), std::make_shared<handler>(__VA_ARGS__));
+
 core::AppState Client::onInit() {
 	eventBus()->subscribe<network::NewConnectionEvent>(*this);
 	eventBus()->subscribe<network::DisconnectEvent>(*this);
 	eventBus()->subscribe<voxel::WorldCreatedEvent>(*this);
 
 	const network::ProtocolHandlerRegistryPtr& r = _network->registry();
-	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::AttribUpdate), std::make_shared<AttribUpdateHandler>());
-	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::EntitySpawn), std::make_shared<EntitySpawnHandler>());
-	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::EntityRemove), std::make_shared<EntityRemoveHandler>());
-	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::EntityUpdate), std::make_shared<EntityUpdateHandler>());
-	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::UserSpawn), std::make_shared<UserSpawnHandler>());
-	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::AuthFailed), std::make_shared<AuthFailedHandler>());
-	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::Seed), std::make_shared<SeedHandler>(_world));
+	regHandler(network::ServerMsgType::AttribUpdate, AttribUpdateHandler);
+	regHandler(network::ServerMsgType::EntitySpawn, EntitySpawnHandler);
+	regHandler(network::ServerMsgType::EntityRemove, EntityRemoveHandler);
+	regHandler(network::ServerMsgType::EntityUpdate, EntityUpdateHandler);
+	regHandler(network::ServerMsgType::UserSpawn, UserSpawnHandler);
+	regHandler(network::ServerMsgType::AuthFailed, AuthFailedHandler);
+	regHandler(network::ServerMsgType::Seed, SeedHandler, _world);
 
 	core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
