@@ -45,11 +45,11 @@ AppState AbstractBenchmark::BenchmarkApp::onInit() {
 	}
 
 	if (hasArg("debug") || hasArg("-debug") || hasArg("--debug") || hasArg("-d")) {
-		_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
+		_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
 		Log::init();
 		Log::debug("Activate debug logging");
 	} else {
-		_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_WARN));
+		_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_WARN));
 		Log::init();
 	}
 

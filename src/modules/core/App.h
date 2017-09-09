@@ -94,7 +94,8 @@ protected:
 	static App* _staticInstance;
 	core::ThreadPool _threadPool;
 	core::TimeProviderPtr _timeProvider;
-	core::VarPtr _logLevel;
+	core::VarPtr _logLevelVar;
+	core::VarPtr _syslogVar;
 
 	/**
 	 * @brief There is no fps limit per default, but you set one on a per-app basis

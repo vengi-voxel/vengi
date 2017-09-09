@@ -49,7 +49,7 @@ core::AppState TestApp::onInit() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
-	_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
+	_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
 	Log::init();
 	if (state == core::AppState::Cleanup) {
 		return state;

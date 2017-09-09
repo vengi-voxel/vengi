@@ -40,7 +40,7 @@ void TestIMGUI::onRenderUI() {
 
 core::AppState TestIMGUI::onInit() {
 	core::AppState state = Super::onInit();
-	_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
+	_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
 	Log::init();
 	if (state == core::AppState::Cleanup) {
 		return state;

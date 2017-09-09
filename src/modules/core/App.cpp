@@ -385,7 +385,8 @@ AppState App::onInit() {
 	});
 	// we might have changed the loglevel from the commandline
 	Log::init();
-	_logLevel = core::Var::getSafe(cfg::CoreLogLevel);
+	_logLevelVar = core::Var::getSafe(cfg::CoreLogLevel);
+	_syslogVar = core::Var::getSafe(cfg::CoreSysLog);
 
 	core_trace_init();
 
@@ -473,9 +474,10 @@ void App::onBeforeRunning() {
 }
 
 AppState App::onRunning() {
-	if (_logLevel->isDirty()) {
+	if (_logLevelVar->isDirty() || _syslogVar->isDirty()) {
 		Log::init();
-		_logLevel->markClean();
+		_logLevelVar->markClean();
+		_syslogVar->markClean();
 	}
 
 	core::Command::executeDelayed();

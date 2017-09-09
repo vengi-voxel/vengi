@@ -64,6 +64,11 @@ void Log::init() {
 		_syslog = false;
 #endif
 	} else {
+#ifdef HAVE_SYSLOG_H
+		if (_syslog) {
+			closelog();
+		}
+#endif
 		_syslog = false;
 	}
 }
