@@ -7,9 +7,9 @@
 /// @defgroup gtx_orthonormalize GLM_GTX_orthonormalize
 /// @ingroup gtx
 ///
-/// @brief Orthonormalize matrices.
+/// Include <glm/gtx/orthonormalize.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/orthonormalize.hpp> need to be included to use these functionalities.
+/// Orthonormalize matrices.
 
 #pragma once
 
@@ -34,14 +34,14 @@ namespace glm
 	/// Returns the orthonormalized matrix of m.
 	///
 	/// @see gtx_orthonormalize
-	template<typename T, precision P> 
-	GLM_FUNC_DECL mat<3, 3, T, P> orthonormalize(mat<3, 3, T, P> const & m);
+	template<typename T, qualifier Q> 
+	GLM_FUNC_DECL mat<3, 3, T, Q> orthonormalize(mat<3, 3, T, Q> const& m);
 		
 	/// Orthonormalizes x according y.
 	///
 	/// @see gtx_orthonormalize
-	template<typename T, precision P> 
-	GLM_FUNC_DECL vec<3, T, P> orthonormalize(vec<3, T, P> const & x, vec<3, T, P> const & y);
+	template<typename T, qualifier Q> 
+	GLM_FUNC_DECL vec<3, T, Q> orthonormalize(vec<3, T, Q> const& x, vec<3, T, Q> const& y);
 
 	/// @}
 }//namespace glm

@@ -1,29 +1,6 @@
 /// @file glm/ext.hpp
 ///
 /// @ref core (Dependence)
-/// 
-/// @defgroup gtc GTC Extensions (Stable)
-///
-/// @brief Functions and types that the GLSL specification doesn't define, but useful to have for a C++ program.
-/// 
-/// GTC extensions aim to be stable. 
-/// 
-/// Even if it's highly unrecommended, it's possible to include all the extensions at once by
-/// including <glm/ext.hpp>. Otherwise, each extension needs to be included  a specific file.
-/// 
-/// @defgroup gtx GTX Extensions (Experimental)
-/// 
-/// @brief Functions and types that the GLSL specification doesn't define, but 
-/// useful to have for a C++ program.
-/// 
-/// Experimental extensions are useful functions and types, but the development of
-/// their API and functionality is not necessarily stable. They can change 
-/// substantially between versions. Backwards compatibility is not much of an issue
-/// for them.
-/// 
-/// Even if it's highly unrecommended, it's possible to include all the extensions 
-/// at once by including <glm/ext.hpp>. Otherwise, each extension needs to be 
-/// included  a specific file.
 
 #include "detail/setup.hpp"
 
@@ -36,11 +13,12 @@
 #	pragma message("GLM: All extensions included (not recommanded)")
 #endif//GLM_MESSAGES
 
+#include "./ext/vector_relational.hpp"
+
 #include "./gtc/bitfield.hpp"
 #include "./gtc/color_space.hpp"
 #include "./gtc/constants.hpp"
 #include "./gtc/epsilon.hpp"
-#include "./gtc/functions.hpp"
 #include "./gtc/integer.hpp"
 #include "./gtc/matrix_access.hpp"
 #include "./gtc/matrix_integer.hpp"
@@ -77,6 +55,7 @@
 #include "./gtx/fast_exponential.hpp"
 #include "./gtx/fast_square_root.hpp"
 #include "./gtx/fast_trigonometry.hpp"
+#include "./gtx/functions.hpp"
 #include "./gtx/gradient_paint.hpp"
 #include "./gtx/handed_coordinate_space.hpp"
 #include "./gtx/integer.hpp"

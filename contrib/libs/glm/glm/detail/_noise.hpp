@@ -12,73 +12,73 @@ namespace glm{
 namespace detail
 {
 	template<typename T>
-	GLM_FUNC_QUALIFIER T mod289(T const & x)
+	GLM_FUNC_QUALIFIER T mod289(T const& x)
 	{
 		return x - floor(x * (static_cast<T>(1.0) / static_cast<T>(289.0))) * static_cast<T>(289.0);
 	}
 
 	template<typename T>
-	GLM_FUNC_QUALIFIER T permute(T const & x)
+	GLM_FUNC_QUALIFIER T permute(T const& x)
 	{
 		return mod289(((x * static_cast<T>(34)) + static_cast<T>(1)) * x);
 	}
 
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER vec<2, T, P> permute(vec<2, T, P> const & x)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<2, T, Q> permute(vec<2, T, Q> const& x)
 	{
 		return mod289(((x * static_cast<T>(34)) + static_cast<T>(1)) * x);
 	}
 	
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER vec<3, T, P> permute(vec<3, T, P> const & x)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<3, T, Q> permute(vec<3, T, Q> const& x)
 	{
 		return mod289(((x * static_cast<T>(34)) + static_cast<T>(1)) * x);
 	}
 	
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER vec<4, T, P> permute(vec<4, T, P> const & x)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<4, T, Q> permute(vec<4, T, Q> const& x)
 	{
 		return mod289(((x * static_cast<T>(34)) + static_cast<T>(1)) * x);
 	}
 
 	template<typename T>
-	GLM_FUNC_QUALIFIER T taylorInvSqrt(T const & r)
+	GLM_FUNC_QUALIFIER T taylorInvSqrt(T const& r)
 	{
 		return T(1.79284291400159) - T(0.85373472095314) * r;
 	}
 	
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER vec<2, T, P> taylorInvSqrt(vec<2, T, P> const & r)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<2, T, Q> taylorInvSqrt(vec<2, T, Q> const& r)
 	{
 		return T(1.79284291400159) - T(0.85373472095314) * r;
 	}
 	
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER vec<3, T, P> taylorInvSqrt(vec<3, T, P> const & r)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<3, T, Q> taylorInvSqrt(vec<3, T, Q> const& r)
 	{
 		return T(1.79284291400159) - T(0.85373472095314) * r;
 	}
 	
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER vec<4, T, P> taylorInvSqrt(vec<4, T, P> const & r)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<4, T, Q> taylorInvSqrt(vec<4, T, Q> const& r)
 	{
 		return T(1.79284291400159) - T(0.85373472095314) * r;
 	}
 
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER vec<2, T, P> fade(vec<2, T, P> const & t)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<2, T, Q> fade(vec<2, T, Q> const& t)
 	{
 		return (t * t * t) * (t * (t * T(6) - T(15)) + T(10));
 	}
 	
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER vec<3, T, P> fade(vec<3, T, P> const & t)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<3, T, Q> fade(vec<3, T, Q> const& t)
 	{
 		return (t * t * t) * (t * (t * T(6) - T(15)) + T(10));
 	}
 	
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER vec<4, T, P> fade(vec<4, T, P> const & t)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<4, T, Q> fade(vec<4, T, Q> const& t)
 	{
 		return (t * t * t) * (t * (t * T(6) - T(15)) + T(10));
 	}

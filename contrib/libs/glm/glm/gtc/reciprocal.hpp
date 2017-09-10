@@ -6,9 +6,9 @@
 /// @defgroup gtc_reciprocal GLM_GTC_reciprocal
 /// @ingroup gtc
 ///
-/// @brief Define secant, cosecant and cotangent functions.
+/// Include <glm/gtc/reciprocal.hpp> to use the features of this extension.
 ///
-/// <glm/gtc/reciprocal.hpp> need to be included to use these features.
+/// Define secant, cosecant and cotangent functions.
 
 #pragma once
 

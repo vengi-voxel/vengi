@@ -8,9 +8,9 @@
 /// @defgroup gtx_rotate_normalized_axis GLM_GTX_rotate_normalized_axis
 /// @ingroup gtx
 ///
-/// @brief Quaternions and matrices rotations around normalized axis.
+/// Include <glm/gtx/rotate_normalized_axis.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/rotate_normalized_axis.hpp> need to be included to use these functionalities.
+/// Quaternions and matrices rotations around normalized axis.
 
 #pragma once
 
@@ -41,13 +41,13 @@ namespace glm
 	/// 
 	/// @see gtx_rotate_normalized_axis
 	/// @see - rotate(T angle, T x, T y, T z) 
-	/// @see - rotate(mat<4, 4, T, P> const & m, T angle, T x, T y, T z) 
-	/// @see - rotate(T angle, vec<3, T, P> const & v) 
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<4, 4, T, P> rotateNormalizedAxis(
-		mat<4, 4, T, P> const& m,
-		T const & angle,
-		vec<3, T, P> const & axis);
+	/// @see - rotate(mat<4, 4, T, Q> const& m, T angle, T x, T y, T z) 
+	/// @see - rotate(T angle, vec<3, T, Q> const& v) 
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<4, 4, T, Q> rotateNormalizedAxis(
+		mat<4, 4, T, Q> const& m,
+		T const& angle,
+		vec<3, T, Q> const& axis);
 
 	/// Rotates a quaternion from a vector of 3 components normalized axis and an angle.
 	/// 
@@ -56,11 +56,11 @@ namespace glm
 	/// @param axis Normalized axis of the rotation, must be normalized.
 	/// 
 	/// @see gtx_rotate_normalized_axis
-	template<typename T, precision P>
-	GLM_FUNC_DECL tquat<T, P> rotateNormalizedAxis(
-		tquat<T, P> const & q,
-		T const & angle,
-		vec<3, T, P> const & axis);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL tquat<T, Q> rotateNormalizedAxis(
+		tquat<T, Q> const& q,
+		T const& angle,
+		vec<3, T, Q> const& axis);
 
 	/// @}
 }//namespace glm

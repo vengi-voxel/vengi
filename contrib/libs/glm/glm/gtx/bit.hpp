@@ -5,10 +5,10 @@
 ///
 /// @defgroup gtx_bit GLM_GTX_bit
 /// @ingroup gtx
+///
+/// Include <glm/gtx/bit.hpp> to use the features of this extension.
 /// 
-/// @brief Allow to perform bit operations on integer values
-/// 
-/// <glm/gtx/bit.hpp> need to be included to use these functionalities.
+/// Allow to perform bit operations on integer values
 
 #pragma once
 
@@ -39,8 +39,8 @@ namespace glm
 	/// Find the highest bit set to 1 in a integer variable and return its value.
 	///
 	/// @see gtx_bit
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, T, P> highestBitValue(vecType<L, T, P> const & value);
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, T, Q> highestBitValue(vec<L, T, Q> const& value);
 
 	/// Return the power of two number which value is just higher the input value.
 	/// Deprecated, use ceilPowerOfTwo from GTC_round instead
@@ -55,8 +55,8 @@ namespace glm
 	///
 	/// @see gtc_round
 	/// @see gtx_bit
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_DEPRECATED GLM_FUNC_DECL vecType<L, T, P> powerOfTwoAbove(vecType<L, T, P> const & value);
+	template<length_t L, typename T, qualifier Q>
+	GLM_DEPRECATED GLM_FUNC_DECL vec<L, T, Q> powerOfTwoAbove(vec<L, T, Q> const& value);
 
 	/// Return the power of two number which value is just lower the input value.
 	/// Deprecated, use floorPowerOfTwo from GTC_round instead
@@ -71,8 +71,8 @@ namespace glm
 	///
 	/// @see gtc_round
 	/// @see gtx_bit
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_DEPRECATED GLM_FUNC_DECL vecType<L, T, P> powerOfTwoBelow(vecType<L, T, P> const & value);
+	template<length_t L, typename T, qualifier Q>
+	GLM_DEPRECATED GLM_FUNC_DECL vec<L, T, Q> powerOfTwoBelow(vec<L, T, Q> const& value);
 
 	/// Return the power of two number which value is the closet to the input value.
 	/// Deprecated, use roundPowerOfTwo from GTC_round instead
@@ -87,8 +87,8 @@ namespace glm
 	///
 	/// @see gtc_round
 	/// @see gtx_bit
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_DEPRECATED GLM_FUNC_DECL vecType<L, T, P> powerOfTwoNearest(vecType<L, T, P> const & value);
+	template<length_t L, typename T, qualifier Q>
+	GLM_DEPRECATED GLM_FUNC_DECL vec<L, T, Q> powerOfTwoNearest(vec<L, T, Q> const& value);
 
 	/// @}
 } //namespace glm

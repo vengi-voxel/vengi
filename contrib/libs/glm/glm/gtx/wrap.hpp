@@ -6,9 +6,9 @@
 /// @defgroup gtx_wrap GLM_GTX_wrap
 /// @ingroup gtx
 ///
-/// @brief Wrapping mode of texture coordinates.
+/// Include <glm/gtx/wrap.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/wrap.hpp> need to be included to use these functionalities.
+/// Wrapping mode of texture coordinates.
 
 #pragma once
 

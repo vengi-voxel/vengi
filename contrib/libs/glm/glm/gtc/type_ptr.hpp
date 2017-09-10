@@ -7,7 +7,9 @@
 /// @defgroup gtc_type_ptr GLM_GTC_type_ptr
 /// @ingroup gtc
 ///
-/// @brief Handles the interaction between pointers and vector, matrix types.
+/// Include <glm/gtc/type_ptr.hpp> to use the features of this extension.
+///
+/// Handles the interaction between pointers and vector, matrix types.
 ///
 /// This extension defines an overloaded function, glm::value_ptr, which
 /// takes any of the \ref core_template "core template types". It returns
@@ -28,12 +30,13 @@
 /// glUniformMatrix4fv(uniformMatrixLoc, 1, GL_FALSE, glm::value_ptr(someMatrix));
 /// @endcode
 ///
-/// <glm/gtc/type_ptr.hpp> need to be included to use these functionalities.
+/// <glm/gtc/type_ptr.hpp> need to be included to use the features of this extension.
 
 #pragma once
 
 // Dependency:
 #include "../gtc/quaternion.hpp"
+#include "../gtc/vec1.hpp"
 #include "../vec2.hpp"
 #include "../vec3.hpp"
 #include "../vec4.hpp"
@@ -61,6 +64,86 @@ namespace glm
 	/// @see gtc_type_ptr
 	template<typename genType>
 	GLM_FUNC_DECL typename genType::value_type const * value_ptr(genType const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<1, T, Q> make_vec1(vec<1, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<1, T, Q> make_vec1(vec<2, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<1, T, Q> make_vec1(vec<3, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<1, T, Q> make_vec1(vec<4, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<2, T, Q> make_vec2(vec<1, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<2, T, Q> make_vec2(vec<2, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<2, T, Q> make_vec2(vec<3, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<2, T, Q> make_vec2(vec<4, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<3, T, Q> make_vec3(vec<1, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<3, T, Q> make_vec3(vec<2, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<3, T, Q> make_vec3(vec<3, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<3, T, Q> make_vec3(vec<4, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<4, T, Q> make_vec4(vec<1, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<4, T, Q> make_vec4(vec<2, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<4, T, Q> make_vec4(vec<3, T, Q> const& v);
+
+	/// Build a vector from a pointer.
+	/// @see gtc_type_ptr
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL vec<4, T, Q> make_vec4(vec<4, T, Q> const& v);
 
 	/// Build a vector from a pointer.
 	/// @see gtc_type_ptr

@@ -14,11 +14,11 @@ namespace glm
 		return genType(1) / glm::cos(angle);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> sec(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> sec(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'sec' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(sec, x);
+		return detail::functor1<L, T, T, Q>::call(sec, x);
 	}
 
 	// csc
@@ -29,11 +29,11 @@ namespace glm
 		return genType(1) / glm::sin(angle);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> csc(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> csc(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'csc' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(csc, x);
+		return detail::functor1<L, T, T, Q>::call(csc, x);
 	}
 
 	// cot
@@ -46,11 +46,11 @@ namespace glm
 		return glm::tan(pi_over_2 - angle);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> cot(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> cot(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'cot' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(cot, x);
+		return detail::functor1<L, T, T, Q>::call(cot, x);
 	}
 
 	// asec
@@ -61,11 +61,11 @@ namespace glm
 		return acos(genType(1) / x);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> asec(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> asec(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'asec' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(asec, x);
+		return detail::functor1<L, T, T, Q>::call(asec, x);
 	}
 
 	// acsc
@@ -76,11 +76,11 @@ namespace glm
 		return asin(genType(1) / x);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> acsc(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> acsc(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'acsc' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(acsc, x);
+		return detail::functor1<L, T, T, Q>::call(acsc, x);
 	}
 
 	// acot
@@ -93,11 +93,11 @@ namespace glm
 		return pi_over_2 - atan(x);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> acot(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> acot(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'acot' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(acot, x);
+		return detail::functor1<L, T, T, Q>::call(acot, x);
 	}
 
 	// sech
@@ -108,11 +108,11 @@ namespace glm
 		return genType(1) / glm::cosh(angle);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> sech(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> sech(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'sech' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(sech, x);
+		return detail::functor1<L, T, T, Q>::call(sech, x);
 	}
 
 	// csch
@@ -123,11 +123,11 @@ namespace glm
 		return genType(1) / glm::sinh(angle);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> csch(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> csch(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'csch' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(csch, x);
+		return detail::functor1<L, T, T, Q>::call(csch, x);
 	}
 
 	// coth
@@ -138,11 +138,11 @@ namespace glm
 		return glm::cosh(angle) / glm::sinh(angle);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> coth(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> coth(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'coth' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(coth, x);
+		return detail::functor1<L, T, T, Q>::call(coth, x);
 	}
 
 	// asech
@@ -153,11 +153,11 @@ namespace glm
 		return acosh(genType(1) / x);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> asech(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> asech(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'asech' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(asech, x);
+		return detail::functor1<L, T, T, Q>::call(asech, x);
 	}
 
 	// acsch
@@ -168,11 +168,11 @@ namespace glm
 		return acsch(genType(1) / x);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> acsch(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> acsch(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'acsch' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(acsch, x);
+		return detail::functor1<L, T, T, Q>::call(acsch, x);
 	}
 
 	// acoth
@@ -183,10 +183,10 @@ namespace glm
 		return atanh(genType(1) / x);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> acoth(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> acoth(vec<L, T, Q> const& x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'acoth' only accept floating-point inputs");
-		return detail::functor1<L, T, T, P>::call(acoth, x);
+		return detail::functor1<L, T, T, Q>::call(acoth, x);
 	}
 }//namespace glm

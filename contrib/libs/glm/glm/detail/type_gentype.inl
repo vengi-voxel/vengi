@@ -55,7 +55,7 @@ base<vT, cT, rT, pT>::base()
 template<typename vT, uint cT, uint rT, profile pT>
 base<vT, cT, rT, pT>::base
 (
-	typename base<vT, cT, rT, pT>::class_type const & m
+	typename base<vT, cT, rT, pT>::class_type const& m
 )
 {
 	for
@@ -72,7 +72,7 @@ base<vT, cT, rT, pT>::base
 template<typename vT, uint cT, uint rT, profile pT>
 base<vT, cT, rT, pT>::base
 (
-	typename base<vT, cT, rT, pT>::T const & x
+	typename base<vT, cT, rT, pT>::T const& x
 )
 {
 	if(rT == 1) // vector
@@ -135,7 +135,7 @@ template<typename vT, uint cT, uint rT, profile pT>
 template<typename vU, uint cU, uint rU, profile pU>
 base<vT, cT, rT, pT>::base
 (
-	base<vU, cU, rU, pU> const & m
+	base<vU, cU, rU, pU> const& m
 )
 {
 	for
@@ -162,7 +162,7 @@ typename base<vT, cT, rT, pT>::col_type& base<vT, cT, rT, pT>::operator[]
 }
 
 template<typename vT, uint cT, uint rT, profile pT>
-typename base<vT, cT, rT, pT>::col_type const & base<vT, cT, rT, pT>::operator[]
+typename base<vT, cT, rT, pT>::col_type const& base<vT, cT, rT, pT>::operator[]
 (
 	typename base<vT, cT, rT, pT>::size_type i
 ) const
@@ -176,7 +176,7 @@ typename base<vT, cT, rT, pT>::col_type const & base<vT, cT, rT, pT>::operator[]
 template<typename vT, uint cT, uint rT, profile pT>
 typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator= 
 (
-	typename base<vT, cT, rT, pT>::class_type const & x
+	typename base<vT, cT, rT, pT>::class_type const& x
 )
 {
 	memcpy(&this->value, &x.value, cT * rT * sizeof(vT));
@@ -186,7 +186,7 @@ typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator=
 template<typename vT, uint cT, uint rT, profile pT>
 typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator+= 
 (
-	typename base<vT, cT, rT, pT>::T const & x
+	typename base<vT, cT, rT, pT>::T const& x
 )
 {
 	typename base<vT, cT, rT, pT>::size_type stop_col = x.col_size();
@@ -202,7 +202,7 @@ typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator+=
 template<typename vT, uint cT, uint rT, profile pT>
 typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator+= 
 (
-	typename base<vT, cT, rT, pT>::class_type const & x
+	typename base<vT, cT, rT, pT>::class_type const& x
 )
 {
 	typename base<vT, cT, rT, pT>::size_type stop_col = x.col_size();
@@ -218,7 +218,7 @@ typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator+=
 template<typename vT, uint cT, uint rT, profile pT>
 typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator-= 
 (
-	typename base<vT, cT, rT, pT>::T const & x
+	typename base<vT, cT, rT, pT>::T const& x
 )
 {
 	typename base<vT, cT, rT, pT>::size_type stop_col = x.col_size();
@@ -234,7 +234,7 @@ typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator-=
 template<typename vT, uint cT, uint rT, profile pT>
 typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator-= 
 (
-	typename base<vT, cT, rT, pT>::class_type const & x
+	typename base<vT, cT, rT, pT>::class_type const& x
 )
 {
 	typename base<vT, cT, rT, pT>::size_type stop_col = x.col_size();
@@ -250,7 +250,7 @@ typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator-=
 template<typename vT, uint cT, uint rT, profile pT>
 typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator*= 
 (
-	typename base<vT, cT, rT, pT>::T const & x
+	typename base<vT, cT, rT, pT>::T const& x
 )
 {
 	typename base<vT, cT, rT, pT>::size_type stop_col = x.col_size();
@@ -266,7 +266,7 @@ typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator*=
 template<typename vT, uint cT, uint rT, profile pT>
 typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator*= 
 (
-	typename base<vT, cT, rT, pT>::class_type const & x
+	typename base<vT, cT, rT, pT>::class_type const& x
 )
 {
 	typename base<vT, cT, rT, pT>::size_type stop_col = x.col_size();
@@ -282,7 +282,7 @@ typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator*=
 template<typename vT, uint cT, uint rT, profile pT>
 typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator/= 
 (
-	typename base<vT, cT, rT, pT>::T const & x
+	typename base<vT, cT, rT, pT>::T const& x
 )
 {
 	typename base<vT, cT, rT, pT>::size_type stop_col = x.col_size();
@@ -298,7 +298,7 @@ typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator/=
 template<typename vT, uint cT, uint rT, profile pT>
 typename base<vT, cT, rT, pT>::class_type& base<vT, cT, rT, pT>::operator/= 
 (
-	typename base<vT, cT, rT, pT>::class_type const & x
+	typename base<vT, cT, rT, pT>::class_type const& x
 )
 {
 	typename base<vT, cT, rT, pT>::size_type stop_col = x.col_size();

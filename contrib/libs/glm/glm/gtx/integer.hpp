@@ -6,9 +6,9 @@
 /// @defgroup gtx_integer GLM_GTX_integer
 /// @ingroup gtx
 ///
-/// @brief Add support for integer for core functions
+/// Include <glm/gtx/integer.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/integer.hpp> need to be included to use these functionalities.
+/// Add support for integer for core functions
 
 #pragma once
 
@@ -48,7 +48,7 @@ namespace glm
 	//! Return the factorial value of a number (!12 max, integer only)
 	//! From GLM_GTX_integer extension.
 	template<typename genType> 
-	GLM_FUNC_DECL genType factorial(genType const & x);
+	GLM_FUNC_DECL genType factorial(genType const& x);
 
 	//! 32bit signed integer. 
 	//! From GLM_GTX_integer extension.

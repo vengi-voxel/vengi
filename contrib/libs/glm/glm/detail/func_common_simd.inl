@@ -10,191 +10,191 @@
 namespace glm{
 namespace detail
 {
-	template<precision P>
-	struct compute_abs_vector<4, float, P, true>
+	template<qualifier Q>
+	struct compute_abs_vector<4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const & v)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& v)
 		{
-			vec<4, float, P> result;
+			vec<4, float, Q> result;
 			result.data = glm_vec4_abs(v.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_abs_vector<4, int, P, true>
+	template<qualifier Q>
+	struct compute_abs_vector<4, int, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, int, P> call(vec<4, int, P> const & v)
+		GLM_FUNC_QUALIFIER static vec<4, int, Q> call(vec<4, int, Q> const& v)
 		{
-			vec<4, int, P> result;
+			vec<4, int, Q> result;
 			result.data = glm_ivec4_abs(v.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_floor<4, float, P, true>
+	template<qualifier Q>
+	struct compute_floor<4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const & v)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& v)
 		{
-			vec<4, float, P> result;
+			vec<4, float, Q> result;
 			result.data = glm_vec4_floor(v.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_ceil<4, float, P, true>
+	template<qualifier Q>
+	struct compute_ceil<4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const & v)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& v)
 		{
-			vec<4, float, P> result;
+			vec<4, float, Q> result;
 			result.data = glm_vec4_ceil(v.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_fract<4, float, P, true>
+	template<qualifier Q>
+	struct compute_fract<4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const & v)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& v)
 		{
-			vec<4, float, P> result;
+			vec<4, float, Q> result;
 			result.data = glm_vec4_fract(v.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_round<4, float, P, true>
+	template<qualifier Q>
+	struct compute_round<4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const & v)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& v)
 		{
-			vec<4, float, P> result;
+			vec<4, float, Q> result;
 			result.data = glm_vec4_round(v.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_mod<4, float, P, true>
+	template<qualifier Q>
+	struct compute_mod<4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const & x, vec<4, float, P> const & y)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& x, vec<4, float, Q> const& y)
 		{
-			vec<4, float, P> result;
+			vec<4, float, Q> result;
 			result.data = glm_vec4_mod(x.data, y.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_min_vector<4, float, P, true>
+	template<qualifier Q>
+	struct compute_min_vector<4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const & v1, vec<4, float, P> const & v2)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& v1, vec<4, float, Q> const& v2)
 		{
-			vec<4, float, P> result;
+			vec<4, float, Q> result;
 			result.data = _mm_min_ps(v1.data, v2.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_min_vector<4, int32, P, true>
+	template<qualifier Q>
+	struct compute_min_vector<4, int32, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, int32, P> call(vec<4, int32, P> const & v1, vec<4, int32, P> const & v2)
+		GLM_FUNC_QUALIFIER static vec<4, int32, Q> call(vec<4, int32, Q> const& v1, vec<4, int32, Q> const& v2)
 		{
-			vec<4, int32, P> result;
+			vec<4, int32, Q> result;
 			result.data = _mm_min_epi32(v1.data, v2.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_min_vector<4, uint32, P, true>
+	template<qualifier Q>
+	struct compute_min_vector<4, uint32, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, int32, P> call(vec<4, uint32, P> const & v1, vec<4, uint32, P> const & v2)
+		GLM_FUNC_QUALIFIER static vec<4, int32, Q> call(vec<4, uint32, Q> const& v1, vec<4, uint32, Q> const& v2)
 		{
-			vec<4, uint32, P> result;
+			vec<4, uint32, Q> result;
 			result.data = _mm_min_epu32(v1.data, v2.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_max_vector<4, float, P, true>
+	template<qualifier Q>
+	struct compute_max_vector<4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const & v1, vec<4, float, P> const & v2)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& v1, vec<4, float, Q> const& v2)
 		{
-			vec<4, float, P> result;
+			vec<4, float, Q> result;
 			result.data = _mm_max_ps(v1.data, v2.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_max_vector<4, int32, P, true>
+	template<qualifier Q>
+	struct compute_max_vector<4, int32, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, int32, P> call(vec<4, int32, P> const & v1, vec<4, int32, P> const & v2)
+		GLM_FUNC_QUALIFIER static vec<4, int32, Q> call(vec<4, int32, Q> const& v1, vec<4, int32, Q> const& v2)
 		{
-			vec<4, int32, P> result;
+			vec<4, int32, Q> result;
 			result.data = _mm_max_epi32(v1.data, v2.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_max_vector<4, uint32, P, true>
+	template<qualifier Q>
+	struct compute_max_vector<4, uint32, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, uint32, P> call(vec<4, uint32, P> const & v1, vec<4, uint32, P> const & v2)
+		GLM_FUNC_QUALIFIER static vec<4, uint32, Q> call(vec<4, uint32, Q> const& v1, vec<4, uint32, Q> const& v2)
 		{
-			vec<4, uint32, P> result;
+			vec<4, uint32, Q> result;
 			result.data = _mm_max_epu32(v1.data, v2.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_clamp_vector<4, float, P, true>
+	template<qualifier Q>
+	struct compute_clamp_vector<4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const & x, vec<4, float, P> const & minVal, vec<4, float, P> const & maxVal)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& x, vec<4, float, Q> const& minVal, vec<4, float, Q> const& maxVal)
 		{
-			vec<4, float, P> result;
+			vec<4, float, Q> result;
 			result.data = _mm_min_ps(_mm_max_ps(x.data, minVal.data), maxVal.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_clamp_vector<4, int32, P, true>
+	template<qualifier Q>
+	struct compute_clamp_vector<4, int32, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, int32, P> call(vec<4, int32, P> const & x, vec<4, int32, P> const & minVal, vec<4, int32, P> const & maxVal)
+		GLM_FUNC_QUALIFIER static vec<4, int32, Q> call(vec<4, int32, Q> const& x, vec<4, int32, Q> const& minVal, vec<4, int32, Q> const& maxVal)
 		{
-			vec<4, int32, P> result;
+			vec<4, int32, Q> result;
 			result.data = _mm_min_epi32(_mm_max_epi32(x.data, minVal.data), maxVal.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_clamp_vector<4, uint32, P, true>
+	template<qualifier Q>
+	struct compute_clamp_vector<4, uint32, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, uint32, P> call(vec<4, uint32, P> const & x, vec<4, uint32, P> const & minVal, vec<4, uint32, P> const & maxVal)
+		GLM_FUNC_QUALIFIER static vec<4, uint32, Q> call(vec<4, uint32, Q> const& x, vec<4, uint32, Q> const& minVal, vec<4, uint32, Q> const& maxVal)
 		{
-			vec<4, uint32, P> result;
+			vec<4, uint32, Q> result;
 			result.data = _mm_min_epu32(_mm_max_epu32(x.data, minVal.data), maxVal.data);
 			return result;
 		}
 	};
 
-	template<precision P>
-	struct compute_mix_vector<4, float, bool, P, true>
+	template<qualifier Q>
+	struct compute_mix_vector<4, float, bool, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const & x, vec<4, float, P> const & y, vec<4, bool, P> const & a)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& x, vec<4, float, Q> const& y, vec<4, bool, Q> const& a)
 		{
 			__m128i const Load = _mm_set_epi32(-static_cast<int>(a.w), -static_cast<int>(a.z), -static_cast<int>(a.y), -static_cast<int>(a.x));
 			__m128 const Mask = _mm_castsi128_ps(Load);
 
-			vec<4, float, P> Result;
+			vec<4, float, Q> Result;
 #			if 0 && GLM_ARCH & GLM_ARCH_AVX
 				Result.data = _mm_blendv_ps(x.data, y.data, Mask);
 #			else
@@ -204,23 +204,23 @@ namespace detail
 		}
 	};
 /* FIXME
-	template<precision P>
-	struct compute_step_vector<float, P, tvec4>
+	template<qualifier Q>
+	struct compute_step_vector<float, Q, tvec4>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const& edge, vec<4, float, P> const& x)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& edge, vec<4, float, Q> const& x)
 		{
-			vec<4, float, P> Result;
+			vec<4, float, Q> Result;
 			result.data = glm_vec4_step(edge.data, x.data);
 			return result;
 		}
 	};
 */
-	template<precision P>
-	struct compute_smoothstep_vector<4, float, P, true>
+	template<qualifier Q>
+	struct compute_smoothstep_vector<4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, float, P> call(vec<4, float, P> const& edge0, vec<4, float, P> const& edge1, vec<4, float, P> const& x)
+		GLM_FUNC_QUALIFIER static vec<4, float, Q> call(vec<4, float, Q> const& edge0, vec<4, float, Q> const& edge1, vec<4, float, Q> const& x)
 		{
-			vec<4, float, P> Result;
+			vec<4, float, Q> Result;
 			Result.data = glm_vec4_smoothstep(edge0.data, edge1.data, x.data);
 			return Result;
 		}

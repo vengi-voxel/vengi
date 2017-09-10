@@ -6,9 +6,9 @@
 /// @defgroup gtx_common GLM_GTX_common
 /// @ingroup gtx
 ///
-/// @brief Provide functions to increase the compatibility with Cg and HLSL languages
+/// Include <glm/gtx/common.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/common.hpp> need to be included to use these functionalities.
+/// @brief Provide functions to increase the compatibility with Cg and HLSL languages
 
 #pragma once
 
@@ -40,15 +40,15 @@ namespace glm
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/isnan.xml">GLSL isnan man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<typename genType> 
-	GLM_FUNC_DECL typename genType::bool_type isdenormal(genType const & x);
+	GLM_FUNC_DECL typename genType::bool_type isdenormal(genType const& x);
 
 	/// Similar to 'mod' but with a different rounding and integer support.
 	/// Returns 'x - y * trunc(x/y)' instead of 'x - y * floor(x/y)'
 	/// 
 	/// @see <a href="http://stackoverflow.com/questions/7610631/glsl-mod-vs-hlsl-fmod">GLSL mod vs HLSL fmod</a>
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/mod.xml">GLSL mod man page</a>
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, T, P> fmod(vecType<L, T, P> const & v);
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, T, Q> fmod(vec<L, T, Q> const& v);
 
 	/// @}
 }//namespace glm

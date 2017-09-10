@@ -4,21 +4,21 @@
 #if GLM_ARCH & GLM_ARCH_SSE2_BIT
 
 #include "type_mat4x4.hpp"
-#include "func_geometric.hpp"
+#include "../geometric.hpp"
 #include "../simd/matrix.h"
 #include <cstring>
 
 namespace glm{
 namespace detail
 {
-	template<precision P>
-	struct compute_matrixCompMult<mat, 4, 4, float, P, true>
+	template<qualifier Q>
+	struct compute_matrixCompMult<4, 4, float, Q, true>
 	{
-		GLM_STATIC_ASSERT(detail::is_aligned<P>::value, "Specialization requires aligned");
+		GLM_STATIC_ASSERT(detail::is_aligned<Q>::value, "Specialization requires aligned");
 
-		GLM_FUNC_QUALIFIER static mat<4, 4, float, P> call(mat<4, 4, float, P> const & x, mat<4, 4, float, P> const & y)
+		GLM_FUNC_QUALIFIER static mat<4, 4, float, Q> call(mat<4, 4, float, Q> const& x, mat<4, 4, float, Q> const& y)
 		{
-			mat<4, 4, float, P> Result;
+			mat<4, 4, float, Q> Result;
 			glm_mat4_matrixCompMult(
 				*static_cast<glm_vec4 const (*)[4]>(&x[0].data),
 				*static_cast<glm_vec4 const (*)[4]>(&y[0].data),
@@ -27,12 +27,12 @@ namespace detail
 		}
 	};
 
-	template<precision P>
-	struct compute_transpose<mat, 4, 4, float, P, true>
+	template<qualifier Q>
+	struct compute_transpose<4, 4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static mat<4, 4, float, P> call(mat<4, 4, float, P> const & m)
+		GLM_FUNC_QUALIFIER static mat<4, 4, float, Q> call(mat<4, 4, float, Q> const& m)
 		{
-			mat<4, 4, float, P> Result;
+			mat<4, 4, float, Q> Result;
 			glm_mat4_transpose(
 				*static_cast<glm_vec4 const (*)[4]>(&m[0].data),
 				*static_cast<glm_vec4(*)[4]>(&Result[0].data));
@@ -40,21 +40,21 @@ namespace detail
 		}
 	};
 
-	template<precision P>
-	struct compute_determinant<mat, 4, 4, float, P, true>
+	template<qualifier Q>
+	struct compute_determinant<4, 4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static float call(mat<4, 4, float, P> const& m)
+		GLM_FUNC_QUALIFIER static float call(mat<4, 4, float, Q> const& m)
 		{
 			return _mm_cvtss_f32(glm_mat4_determinant(*reinterpret_cast<__m128 const(*)[4]>(&m[0].data)));
 		}
 	};
 
-	template<precision P>
-	struct compute_inverse<mat, 4, 4, float, P, true>
+	template<qualifier Q>
+	struct compute_inverse<4, 4, float, Q, true>
 	{
-		GLM_FUNC_QUALIFIER static mat<4, 4, float, P> call(mat<4, 4, float, P> const& m)
+		GLM_FUNC_QUALIFIER static mat<4, 4, float, Q> call(mat<4, 4, float, Q> const& m)
 		{
-			mat<4, 4, float, P> Result;
+			mat<4, 4, float, Q> Result;
 			glm_mat4_inverse(*reinterpret_cast<__m128 const(*)[4]>(&m[0].data), *reinterpret_cast<__m128(*)[4]>(&Result[0].data));
 			return Result;
 		}

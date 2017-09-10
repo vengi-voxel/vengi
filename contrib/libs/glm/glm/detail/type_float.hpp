@@ -19,22 +19,22 @@ namespace detail
 	/// @addtogroup core_precision
 	/// @{
 
-	/// Low precision floating-point numbers. 
-	/// There is no guarantee on the actual precision.
+	/// Low qualifier floating-point numbers. 
+	/// There is no guarantee on the actual qualifier.
 	/// 
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.1.4 Floats</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.7.2 Precision Qualifier</a>
 	typedef lowp_float_t		lowp_float;
 
-	/// Medium precision floating-point numbers.
-	/// There is no guarantee on the actual precision.
+	/// Medium qualifier floating-point numbers.
+	/// There is no guarantee on the actual qualifier.
 	/// 
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.1.4 Floats</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.7.2 Precision Qualifier</a>
 	typedef mediump_float_t		mediump_float;
 
-	/// High precision floating-point numbers.
-	/// There is no guarantee on the actual precision.
+	/// High qualifier floating-point numbers.
+	/// There is no guarantee on the actual qualifier.
 	/// 
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.1.4 Floats</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.7.2 Precision Qualifier</a>

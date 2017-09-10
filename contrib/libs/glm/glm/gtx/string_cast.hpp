@@ -8,9 +8,10 @@
 /// @defgroup gtx_string_cast GLM_GTX_string_cast
 /// @ingroup gtx
 ///
-/// @brief Setup strings for GLM type values
+/// Include <glm/gtx/string_cast.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/string_cast.hpp> need to be included to use these functionalities.
+/// Setup strings for GLM type values
+///
 /// This extension is not supported with CUDA
 
 #pragma once

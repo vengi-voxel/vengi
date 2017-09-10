@@ -7,9 +7,9 @@
 /// @defgroup gtx_matrix_transform_2d GLM_GTX_matrix_transform_2d
 /// @ingroup gtx
 ///
-/// @brief Defines functions that generate common 2d transformation matrices.
+/// Include <glm/gtx/matrix_transform_2d.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/matrix_transform_2d.hpp> need to be included to use these functionalities.
+/// Defines functions that generate common 2d transformation matrices.
 
 #pragma once
 
@@ -34,45 +34,45 @@ namespace glm
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
 	/// @param v Coordinates of a translation vector.		
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<3, 3, T, P> translate(
-		mat<3, 3, T, P> const& m,
-		vec<2, T, P> const & v);
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> translate(
+		mat<3, 3, T, Q> const& m,
+		vec<2, T, Q> const& v);
 
 	/// Builds a rotation 3 * 3 matrix created from an angle. 
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
 	/// @param angle Rotation angle expressed in radians.
-	template<typename T, precision P> 
-	GLM_FUNC_QUALIFIER mat<3, 3, T, P> rotate(
-		mat<3, 3, T, P> const& m,
+	template<typename T, qualifier Q> 
+	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> rotate(
+		mat<3, 3, T, Q> const& m,
 		T angle);
 
 	/// Builds a scale 3 * 3 matrix created from a vector of 2 components.
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
 	/// @param v Coordinates of a scale vector.		
-	template<typename T, precision P> 
-	GLM_FUNC_QUALIFIER mat<3, 3, T, P> scale(
-		mat<3, 3, T, P> const& m,
-		vec<2, T, P> const & v);
+	template<typename T, qualifier Q> 
+	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> scale(
+		mat<3, 3, T, Q> const& m,
+		vec<2, T, Q> const& v);
 
 	/// Builds an horizontal (parallel to the x axis) shear 3 * 3 matrix. 
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
 	/// @param y Shear factor.
-	template<typename T, precision P> 
-	GLM_FUNC_QUALIFIER mat<3, 3, T, P> shearX(
-		mat<3, 3, T, P> const& m,
+	template<typename T, qualifier Q> 
+	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> shearX(
+		mat<3, 3, T, Q> const& m,
 		T y);
 
 	/// Builds a vertical (parallel to the y axis) shear 3 * 3 matrix. 
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
 	/// @param x Shear factor.
-	template<typename T, precision P> 
-	GLM_FUNC_QUALIFIER mat<3, 3, T, P> shearY(
-		mat<3, 3, T, P> const& m,
+	template<typename T, qualifier Q> 
+	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> shearY(
+		mat<3, 3, T, Q> const& m,
 		T x);
 
 	/// @}

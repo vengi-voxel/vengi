@@ -7,9 +7,9 @@
 /// @defgroup gtx_matrix_cross_product GLM_GTX_matrix_cross_product
 /// @ingroup gtx
 ///
-/// @brief Build cross product matrices
+/// Include <glm/gtx/matrix_cross_product.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/matrix_cross_product.hpp> need to be included to use these functionalities.
+/// Build cross product matrices
 
 #pragma once
 
@@ -31,15 +31,15 @@ namespace glm
 
 	//! Build a cross product matrix.
 	//! From GLM_GTX_matrix_cross_product extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<3, 3, T, P> matrixCross3(
-		vec<3, T, P> const & x);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<3, 3, T, Q> matrixCross3(
+		vec<3, T, Q> const& x);
 		
 	//! Build a cross product matrix.
 	//! From GLM_GTX_matrix_cross_product extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<4, 4, T, P> matrixCross4(
-		vec<3, T, P> const & x);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<4, 4, T, Q> matrixCross4(
+		vec<3, T, Q> const& x);
 
 	/// @}
 }//namespace glm

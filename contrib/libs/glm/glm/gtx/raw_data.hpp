@@ -6,9 +6,9 @@
 /// @defgroup gtx_raw_data GLM_GTX_raw_data
 /// @ingroup gtx
 ///
-/// @brief Projection of a vector to other one
+/// Include <glm/gtx/raw_data.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/raw_data.hpp> need to be included to use these functionalities.
+/// Projection of a vector to other one
 
 #pragma once
 

@@ -4,8 +4,8 @@
 namespace glm{
 namespace detail
 {
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> taylorCos(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> taylorCos(vec<L, T, Q> const& x)
 	{
 		return static_cast<T>(1)
 			- (x * x) * (1.f / 2.f)
@@ -21,10 +21,10 @@ namespace detail
 		return (T(0.9999932946) + xx * (T(-0.4999124376) + xx * (T(0.0414877472) + xx * T(-0.0012712095))));
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> cos_52s(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> cos_52s(vec<L, T, Q> const& x)
 	{
-		return detail::functor1<L, T, T, P>::call(cos_52s, x);
+		return detail::functor1<L, T, T, Q>::call(cos_52s, x);
 	}
 }//namespace detail
 
@@ -35,10 +35,10 @@ namespace detail
 		return abs<T>(mod<T>(angle, two_pi<T>()));
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> wrapAngle(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> wrapAngle(vec<L, T, Q> const& x)
 	{
-		return detail::functor1<L, T, T, P>::call(wrapAngle, x);
+		return detail::functor1<L, T, T, Q>::call(wrapAngle, x);
 	}
 
 	// cos
@@ -57,10 +57,10 @@ namespace detail
 		return detail::cos_52s(two_pi<T>() - angle);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> fastCos(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> fastCos(vec<L, T, Q> const& x)
 	{
-		return detail::functor1<L, T, T, P>::call(fastCos, x);
+		return detail::functor1<L, T, T, Q>::call(fastCos, x);
 	}
 
 	// sin
@@ -70,10 +70,10 @@ namespace detail
 		return fastCos<T>(half_pi<T>() - x);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> fastSin(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> fastSin(vec<L, T, Q> const& x)
 	{
-		return detail::functor1<L, T, T, P>::call(fastSin, x);
+		return detail::functor1<L, T, T, Q>::call(fastSin, x);
 	}
 
 	// tan
@@ -83,10 +83,10 @@ namespace detail
 		return x + (x * x * x * T(0.3333333333)) + (x * x * x * x * x * T(0.1333333333333)) + (x * x * x * x * x * x * x * T(0.0539682539));
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> fastTan(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> fastTan(vec<L, T, Q> const& x)
 	{
-		return detail::functor1<L, T, T, P>::call(fastTan, x);
+		return detail::functor1<L, T, T, Q>::call(fastTan, x);
 	}
 
 	// asin
@@ -96,10 +96,10 @@ namespace detail
 		return x + (x * x * x * T(0.166666667)) + (x * x * x * x * x * T(0.075)) + (x * x * x * x * x * x * x * T(0.0446428571)) + (x * x * x * x * x * x * x * x * x * T(0.0303819444));// + (x * x * x * x * x * x * x * x * x * x * x * T(0.022372159));
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> fastAsin(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> fastAsin(vec<L, T, Q> const& x)
 	{
-		return detail::functor1<L, T, T, P>::call(fastAsin, x);
+		return detail::functor1<L, T, T, Q>::call(fastAsin, x);
 	}
 
 	// acos
@@ -109,10 +109,10 @@ namespace detail
 		return T(1.5707963267948966192313216916398) - fastAsin(x); //(PI / 2)
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> fastAcos(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> fastAcos(vec<L, T, Q> const& x)
 	{
-		return detail::functor1<L, T, T, P>::call(fastAcos, x);
+		return detail::functor1<L, T, T, Q>::call(fastAcos, x);
 	}
 
 	// atan
@@ -123,10 +123,10 @@ namespace detail
 		return abs(fastAtan(y / x)) * sgn;
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> fastAtan(vecType<L, T, P> const & y, vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> fastAtan(vec<L, T, Q> const& y, vec<L, T, Q> const& x)
 	{
-		return detail::functor2<L, T, P>::call(fastAtan, y, x);
+		return detail::functor2<L, T, Q>::call(fastAtan, y, x);
 	}
 
 	template<typename T> 
@@ -135,9 +135,9 @@ namespace detail
 		return x - (x * x * x * T(0.333333333333)) + (x * x * x * x * x * T(0.2)) - (x * x * x * x * x * x * x * T(0.1428571429)) + (x * x * x * x * x * x * x * x * x * T(0.111111111111)) - (x * x * x * x * x * x * x * x * x * x * x * T(0.0909090909));
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> fastAtan(vecType<L, T, P> const & x)
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, T, Q> fastAtan(vec<L, T, Q> const& x)
 	{
-		return detail::functor1<L, T, T, P>::call(fastAtan, x);
+		return detail::functor1<L, T, T, Q>::call(fastAtan, x);
 	}
 }//namespace glm

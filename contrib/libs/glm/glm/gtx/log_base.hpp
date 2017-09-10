@@ -6,9 +6,9 @@
 /// @defgroup gtx_log_base GLM_GTX_log_base
 /// @ingroup gtx
 ///
-/// @brief Logarithm for any base. base can be a vector or a scalar.
+/// Include <glm/gtx/log_base.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/log_base.hpp> need to be included to use these functionalities.
+/// Logarithm for any base. base can be a vector or a scalar.
 
 #pragma once
 
@@ -32,15 +32,15 @@ namespace glm
 	/// From GLM_GTX_log_base.
 	template<typename genType>
 	GLM_FUNC_DECL genType log(
-		genType const & x,
-		genType const & base);
+		genType const& x,
+		genType const& base);
 
 	/// Logarithm for any base.
 	/// From GLM_GTX_log_base.
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, T, P> sign(
-		vecType<L, T, P> const& x,
-		vecType<L, T, P> const& base);
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, T, Q> sign(
+		vec<L, T, Q> const& x,
+		vec<L, T, Q> const& base);
 
 	/// @}
 }//namespace glm

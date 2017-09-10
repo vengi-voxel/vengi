@@ -6,9 +6,9 @@
 /// @defgroup gtx_scalar_relational GLM_GTX_scalar_relational
 /// @ingroup gtx
 ///
-/// @brief Extend a position from a source to a position at a defined length.
+/// Include <glm/gtx/scalar_relational.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/scalar_relational.hpp> need to be included to use these functionalities.
+/// Extend a position from a source to a position at a defined length.
 
 #pragma once
 

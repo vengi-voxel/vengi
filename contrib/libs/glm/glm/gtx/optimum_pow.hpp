@@ -6,9 +6,9 @@
 /// @defgroup gtx_optimum_pow GLM_GTX_optimum_pow
 /// @ingroup gtx
 ///
-/// @brief Integer exponentiation of power functions.
+/// Include <glm/gtx/optimum_pow.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/optimum_pow.hpp> need to be included to use these functionalities.
+/// Integer exponentiation of power functions.
 
 #pragma once
 
@@ -33,19 +33,19 @@ namespace gtx
 	///
 	/// @see gtx_optimum_pow
 	template<typename genType>
-	GLM_FUNC_DECL genType pow2(genType const & x);
+	GLM_FUNC_DECL genType pow2(genType const& x);
 
 	/// Returns x raised to the power of 3.
 	///
 	/// @see gtx_optimum_pow
 	template<typename genType>
-	GLM_FUNC_DECL genType pow3(genType const & x);
+	GLM_FUNC_DECL genType pow3(genType const& x);
 
 	/// Returns x raised to the power of 4.
 	///
 	/// @see gtx_optimum_pow
 	template<typename genType>
-	GLM_FUNC_DECL genType pow4(genType const & x);
+	GLM_FUNC_DECL genType pow4(genType const& x);
 
 	/// @}
 }//namespace gtx

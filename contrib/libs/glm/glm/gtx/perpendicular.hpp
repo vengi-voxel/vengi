@@ -7,9 +7,9 @@
 /// @defgroup gtx_perpendicular GLM_GTX_perpendicular
 /// @ingroup gtx
 ///
-/// @brief Perpendicular of a vector from other one
+/// Include <glm/gtx/perpendicular.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/perpendicular.hpp> need to be included to use these functionalities.
+/// Perpendicular of a vector from other one
 
 #pragma once
 
@@ -32,10 +32,8 @@ namespace glm
 
 	//! Projects x a perpendicular axis of Normal.
 	//! From GLM_GTX_perpendicular extension.
-	template<typename vecType> 
-	GLM_FUNC_DECL vecType perp(
-		vecType const & x, 
-		vecType const & Normal);
+	template<typename genType>
+	GLM_FUNC_DECL genType perp(genType const& x, genType const& Normal);
 
 	/// @}
 }//namespace glm

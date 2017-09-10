@@ -5,10 +5,10 @@
 ///
 /// @defgroup gtc_constants GLM_GTC_constants
 /// @ingroup gtc
+///
+/// Include <glm/gtc/constants.hpp> to use the features of this extension.
 /// 
-/// @brief Provide a list of constants and precomputed useful values.
-/// 
-/// <glm/gtc/constants.hpp> need to be included to use these features.
+/// Provide a list of constants and precomputed useful values.
 
 #pragma once
 

@@ -6,9 +6,9 @@
 /// @defgroup gtx_fast_trigonometry GLM_GTX_fast_trigonometry
 /// @ingroup gtx
 ///
-/// @brief Fast but less accurate implementations of trigonometric functions.
+/// Include <glm/gtx/fast_trigonometry.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/fast_trigonometry.hpp> need to be included to use these functionalities.
+/// Fast but less accurate implementations of trigonometric functions.
 
 #pragma once
 

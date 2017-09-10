@@ -7,25 +7,25 @@
 
 namespace glm
 {
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> translate(mat<4, 4, T, P> const & m, vec<3, T, P> const & v)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> translate(mat<4, 4, T, Q> const& m, vec<3, T, Q> const& v)
 	{
-		mat<4, 4, T, P> Result(m);
+		mat<4, 4, T, Q> Result(m);
 		Result[3] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3];
 		return Result;
 	}
 	
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> rotate(mat<4, 4, T, P> const & m, T angle, vec<3, T, P> const & v)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> rotate(mat<4, 4, T, Q> const& m, T angle, vec<3, T, Q> const& v)
 	{
 		T const a = angle;
 		T const c = cos(a);
 		T const s = sin(a);
 
-		vec<3, T, P> axis(normalize(v));
-		vec<3, T, P> temp((T(1) - c) * axis);
+		vec<3, T, Q> axis(normalize(v));
+		vec<3, T, Q> temp((T(1) - c) * axis);
 
-		mat<4, 4, T, P> Rotate;
+		mat<4, 4, T, Q> Rotate;
 		Rotate[0][0] = c + temp[0] * axis[0];
 		Rotate[0][1] = temp[0] * axis[1] + s * axis[2];
 		Rotate[0][2] = temp[0] * axis[2] - s * axis[1];
@@ -38,7 +38,7 @@ namespace glm
 		Rotate[2][1] = temp[2] * axis[1] - s * axis[0];
 		Rotate[2][2] = c + temp[2] * axis[2];
 
-		mat<4, 4, T, P> Result;
+		mat<4, 4, T, Q> Result;
 		Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
 		Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
 		Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
@@ -46,15 +46,15 @@ namespace glm
 		return Result;
 	}
 		
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> rotate_slow(mat<4, 4, T, P> const & m, T angle, vec<3, T, P> const & v)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> rotate_slow(mat<4, 4, T, Q> const& m, T angle, vec<3, T, Q> const& v)
 	{
 		T const a = angle;
 		T const c = cos(a);
 		T const s = sin(a);
-		mat<4, 4, T, P> Result;
+		mat<4, 4, T, Q> Result;
 
-		vec<3, T, P> axis = normalize(v);
+		vec<3, T, Q> axis = normalize(v);
 
 		Result[0][0] = c + (static_cast<T>(1) - c)      * axis.x     * axis.x;
 		Result[0][1] = (static_cast<T>(1) - c) * axis.x * axis.y + s * axis.z;
@@ -71,14 +71,14 @@ namespace glm
 		Result[2][2] = c + (static_cast<T>(1) - c) * axis.z * axis.z;
 		Result[2][3] = static_cast<T>(0);
 
-		Result[3] = vec<4, T, P>(0, 0, 0, 1);
+		Result[3] = vec<4, T, Q>(0, 0, 0, 1);
 		return m * Result;
 	}
 
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> scale(mat<4, 4, T, P> const & m, vec<3, T, P> const & v)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> scale(mat<4, 4, T, Q> const& m, vec<3, T, Q> const& v)
 	{
-		mat<4, 4, T, P> Result;
+		mat<4, 4, T, Q> Result;
 		Result[0] = m[0] * v[0];
 		Result[1] = m[1] * v[1];
 		Result[2] = m[2] * v[2];
@@ -86,10 +86,10 @@ namespace glm
 		return Result;
 	}
 
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> scale_slow(mat<4, 4, T, P> const & m, vec<3, T, P> const & v)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> scale_slow(mat<4, 4, T, Q> const& m, vec<3, T, Q> const& v)
 	{
-		mat<4, 4, T, P> Result(T(1));
+		mat<4, 4, T, Q> Result(T(1));
 		Result[0][0] = v.x;
 		Result[1][1] = v.y;
 		Result[2][2] = v.z;
@@ -435,16 +435,16 @@ namespace glm
 		return tweakedInfinitePerspective(fovy, aspect, zNear, epsilon<T>());
 	}
 
-	template<typename T, typename U, precision P>
-	GLM_FUNC_QUALIFIER vec<3, T, P> project
+	template<typename T, typename U, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<3, T, Q> project
 	(
-		vec<3, T, P> const & obj,
-		mat<4, 4, T, P> const& model,
-		mat<4, 4, T, P> const& proj,
-		vec<4, U, P> const & viewport
+		vec<3, T, Q> const& obj,
+		mat<4, 4, T, Q> const& model,
+		mat<4, 4, T, Q> const& proj,
+		vec<4, U, Q> const& viewport
 	)
 	{
-		vec<4, T, P> tmp = vec<4, T, P>(obj, static_cast<T>(1));
+		vec<4, T, Q> tmp = vec<4, T, Q>(obj, static_cast<T>(1));
 		tmp = model * tmp;
 		tmp = proj * tmp;
 
@@ -458,21 +458,21 @@ namespace glm
 		tmp[0] = tmp[0] * T(viewport[2]) + T(viewport[0]);
 		tmp[1] = tmp[1] * T(viewport[3]) + T(viewport[1]);
 
-		return vec<3, T, P>(tmp);
+		return vec<3, T, Q>(tmp);
 	}
 
-	template<typename T, typename U, precision P>
-	GLM_FUNC_QUALIFIER vec<3, T, P> unProject
+	template<typename T, typename U, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<3, T, Q> unProject
 	(
-		vec<3, T, P> const & win,
-		mat<4, 4, T, P> const& model,
-		mat<4, 4, T, P> const& proj,
-		vec<4, U, P> const & viewport
+		vec<3, T, Q> const& win,
+		mat<4, 4, T, Q> const& model,
+		mat<4, 4, T, Q> const& proj,
+		vec<4, U, Q> const& viewport
 	)
 	{
-		mat<4, 4, T, P> Inverse = inverse(proj * model);
+		mat<4, 4, T, Q> Inverse = inverse(proj * model);
 
-		vec<4, T, P> tmp = vec<4, T, P>(win, T(1));
+		vec<4, T, Q> tmp = vec<4, T, Q>(win, T(1));
 		tmp.x = (tmp.x - T(viewport[0])) / T(viewport[2]);
 		tmp.y = (tmp.y - T(viewport[1])) / T(viewport[3]);
 #		if GLM_DEPTH_CLIP_SPACE == GLM_DEPTH_ZERO_TO_ONE
@@ -482,33 +482,33 @@ namespace glm
 			tmp = tmp * static_cast<T>(2) - static_cast<T>(1);
 #		endif
 
-		vec<4, T, P> obj = Inverse * tmp;
+		vec<4, T, Q> obj = Inverse * tmp;
 		obj /= obj.w;
 
-		return vec<3, T, P>(obj);
+		return vec<3, T, Q>(obj);
 	}
 
-	template<typename T, precision P, typename U>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> pickMatrix(vec<2, T, P> const & center, vec<2, T, P> const & delta, vec<4, U, P> const & viewport)
+	template<typename T, qualifier Q, typename U>
+	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> pickMatrix(vec<2, T, Q> const& center, vec<2, T, Q> const& delta, vec<4, U, Q> const& viewport)
 	{
 		assert(delta.x > static_cast<T>(0) && delta.y > static_cast<T>(0));
-		mat<4, 4, T, P> Result(static_cast<T>(1));
+		mat<4, 4, T, Q> Result(static_cast<T>(1));
 
 		if(!(delta.x > static_cast<T>(0) && delta.y > static_cast<T>(0)))
 			return Result; // Error
 
-		vec<3, T, P> Temp(
+		vec<3, T, Q> Temp(
 			(static_cast<T>(viewport[2]) - static_cast<T>(2) * (center.x - static_cast<T>(viewport[0]))) / delta.x,
 			(static_cast<T>(viewport[3]) - static_cast<T>(2) * (center.y - static_cast<T>(viewport[1]))) / delta.y,
 			static_cast<T>(0));
 
 		// Translate and scale the picked region to the entire window
 		Result = translate(Result, Temp);
-		return scale(Result, vec<3, T, P>(static_cast<T>(viewport[2]) / delta.x, static_cast<T>(viewport[3]) / delta.y, static_cast<T>(1)));
+		return scale(Result, vec<3, T, Q>(static_cast<T>(viewport[2]) / delta.x, static_cast<T>(viewport[3]) / delta.y, static_cast<T>(1)));
 	}
 
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> lookAt(vec<3, T, P> const & eye, vec<3, T, P> const & center, vec<3, T, P> const & up)
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> lookAt(vec<3, T, Q> const& eye, vec<3, T, Q> const& center, vec<3, T, Q> const& up)
 	{
 #		if GLM_COORDINATE_SYSTEM == GLM_LEFT_HANDED
 			return lookAtLH(eye, center, up);
@@ -517,19 +517,19 @@ namespace glm
 #		endif
 	}
 
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> lookAtRH
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> lookAtRH
 	(
-		vec<3, T, P> const & eye,
-		vec<3, T, P> const & center,
-		vec<3, T, P> const & up
+		vec<3, T, Q> const& eye,
+		vec<3, T, Q> const& center,
+		vec<3, T, Q> const& up
 	)
 	{
-		vec<3, T, P> const f(normalize(center - eye));
-		vec<3, T, P> const s(normalize(cross(f, up)));
-		vec<3, T, P> const u(cross(s, f));
+		vec<3, T, Q> const f(normalize(center - eye));
+		vec<3, T, Q> const s(normalize(cross(f, up)));
+		vec<3, T, Q> const u(cross(s, f));
 
-		mat<4, 4, T, P> Result(1);
+		mat<4, 4, T, Q> Result(1);
 		Result[0][0] = s.x;
 		Result[1][0] = s.y;
 		Result[2][0] = s.z;
@@ -545,19 +545,19 @@ namespace glm
 		return Result;
 	}
 
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> lookAtLH
+	template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> lookAtLH
 	(
-		vec<3, T, P> const & eye,
-		vec<3, T, P> const & center,
-		vec<3, T, P> const & up
+		vec<3, T, Q> const& eye,
+		vec<3, T, Q> const& center,
+		vec<3, T, Q> const& up
 	)
 	{
-		vec<3, T, P> const f(normalize(center - eye));
-		vec<3, T, P> const s(normalize(cross(up, f)));
-		vec<3, T, P> const u(cross(f, s));
+		vec<3, T, Q> const f(normalize(center - eye));
+		vec<3, T, Q> const s(normalize(cross(up, f)));
+		vec<3, T, Q> const u(cross(f, s));
 
-		mat<4, 4, T, P> Result(1);
+		mat<4, 4, T, Q> Result(1);
 		Result[0][0] = s.x;
 		Result[1][0] = s.y;
 		Result[2][0] = s.z;

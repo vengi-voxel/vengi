@@ -2,7 +2,9 @@
 /// @file glm/gtx/scalar_multiplication.hpp
 /// @author Joshua Moerman
 ///
-/// @brief Enables scalar multiplication for all types
+/// Include <glm/gtx/scalar_multiplication.hpp> to use the features of this extension.
+///
+/// Enables scalar multiplication for all types
 ///
 /// Since GLSL is very strict about types, the following (often used) combinations do not work:
 ///    double * vec4
@@ -39,19 +41,19 @@ namespace glm
 #define GLM_IMPLEMENT_SCAL_MULT(Vec) \
 	template<typename T> \
 	return_type_scalar_multiplication<T, Vec> \
-	operator*(T const & s, Vec rh){ \
+	operator*(T const& s, Vec rh){ \
 		return rh *= static_cast<float>(s); \
 	} \
 	 \
 	template<typename T> \
 	return_type_scalar_multiplication<T, Vec> \
-	operator*(Vec lh, T const & s){ \
+	operator*(Vec lh, T const& s){ \
 		return lh *= static_cast<float>(s); \
 	} \
 	 \
 	template<typename T> \
 	return_type_scalar_multiplication<T, Vec> \
-	operator/(Vec lh, T const & s){ \
+	operator/(Vec lh, T const& s){ \
 		return lh *= 1.0f / s; \
 	}
 

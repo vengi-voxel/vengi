@@ -6,9 +6,9 @@
 /// @defgroup gtx_extend GLM_GTX_extend
 /// @ingroup gtx
 ///
-/// @brief Extend a position from a source to a position at a defined length.
+/// Include <glm/gtx/extend.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/extend.hpp> need to be included to use these functionalities.
+/// Extend a position from a source to a position at a defined length.
 
 #pragma once
 
@@ -32,8 +32,8 @@ namespace glm
 	/// @see gtx_extend
 	template<typename genType> 
 	GLM_FUNC_DECL genType extend(
-		genType const & Origin, 
-		genType const & Source, 
+		genType const& Origin, 
+		genType const& Source, 
 		typename genType::value_type const Length);
 
 	/// @}

@@ -7,8 +7,9 @@
 /// @defgroup gtx_std_based_type GLM_GTX_std_based_type
 /// @ingroup gtx
 ///
-/// @brief Adds vector types based on STL value types.
-/// <glm/gtx/std_based_type.hpp> need to be included to use these functionalities.
+/// Include <glm/gtx/std_based_type.hpp> to use the features of this extension.
+///
+/// Adds vector types based on STL value types.
 
 #pragma once
 

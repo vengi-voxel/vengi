@@ -1,30 +1,30 @@
-/// @ref gtc_functions
-/// @file glm/gtc/functions.hpp
+/// @ref gtx_functions
+/// @file glm/gtx/functions.hpp
 /// 
 /// @see core (dependence)
 /// @see gtc_quaternion (dependence)
 ///
-/// @defgroup gtc_functions GLM_GTC_functions
-/// @ingroup gtc
+/// @defgroup gtx_functions GLM_GTX_functions
+/// @ingroup gtx
+///
+/// Include <glm/gtx/functions.hpp> to use the features of this extension.
 /// 
-/// @brief List of useful common functions.
-/// 
-/// <glm/gtc/functions.hpp> need to be included to use these functionalities.
+/// List of useful common functions.
 
 #pragma once
 
 // Dependencies
 #include "../detail/setup.hpp"
-#include "../detail/precision.hpp"
+#include "../detail/qualifier.hpp"
 #include "../detail/type_vec2.hpp"
 
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
-#	pragma message("GLM: GLM_GTC_functions extension included")
+#	pragma message("GLM: GLM_GTX_functions extension included")
 #endif
 
 namespace glm
 {
-	/// @addtogroup gtc_functions
+	/// @addtogroup gtx_functions
 	/// @{
 
 	/// 1D gauss function
@@ -39,11 +39,11 @@ namespace glm
 	/// 2D gauss function
 	///
 	/// @see gtc_epsilon
-	template<typename T, precision P>
+	template<typename T, qualifier Q>
 	GLM_FUNC_DECL T gauss(
-		vec<2, T, P> const& Coord,
-		vec<2, T, P> const& ExpectedValue,
-		vec<2, T, P> const& StandardDeviation);
+		vec<2, T, Q> const& Coord,
+		vec<2, T, Q> const& ExpectedValue,
+		vec<2, T, Q> const& StandardDeviation);
 
 	/// @}
 }//namespace glm

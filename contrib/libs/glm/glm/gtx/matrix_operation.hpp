@@ -6,9 +6,9 @@
 /// @defgroup gtx_matrix_operation GLM_GTX_matrix_operation
 /// @ingroup gtx
 ///
-/// @brief Build diagonal matrices from vectors.
+/// Include <glm/gtx/matrix_operation.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/matrix_operation.hpp> need to be included to use these functionalities.
+/// Build diagonal matrices from vectors.
 
 #pragma once
 
@@ -30,57 +30,57 @@ namespace glm
 
 	//! Build a diagonal matrix.
 	//! From GLM_GTX_matrix_operation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<2, 2, T, P> diagonal2x2(
-		vec<2, T, P> const & v);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<2, 2, T, Q> diagonal2x2(
+		vec<2, T, Q> const& v);
 
 	//! Build a diagonal matrix.
 	//! From GLM_GTX_matrix_operation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<2, 3, T, P> diagonal2x3(
-		vec<2, T, P> const & v);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<2, 3, T, Q> diagonal2x3(
+		vec<2, T, Q> const& v);
 
 	//! Build a diagonal matrix.
 	//! From GLM_GTX_matrix_operation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<2, 4, T, P> diagonal2x4(
-		vec<2, T, P> const & v);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<2, 4, T, Q> diagonal2x4(
+		vec<2, T, Q> const& v);
 
 	//! Build a diagonal matrix.
 	//! From GLM_GTX_matrix_operation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<3, 2, T, P> diagonal3x2(
-		vec<2, T, P> const & v);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<3, 2, T, Q> diagonal3x2(
+		vec<2, T, Q> const& v);
 
 	//! Build a diagonal matrix.
 	//! From GLM_GTX_matrix_operation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<3, 3, T, P> diagonal3x3(
-		vec<3, T, P> const & v);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<3, 3, T, Q> diagonal3x3(
+		vec<3, T, Q> const& v);
 
 	//! Build a diagonal matrix.
 	//! From GLM_GTX_matrix_operation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<3, 4, T, P> diagonal3x4(
-		vec<3, T, P> const & v);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<3, 4, T, Q> diagonal3x4(
+		vec<3, T, Q> const& v);
 
 	//! Build a diagonal matrix.
 	//! From GLM_GTX_matrix_operation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<4, 2, T, P> diagonal4x2(
-		vec<2, T, P> const & v);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<4, 2, T, Q> diagonal4x2(
+		vec<2, T, Q> const& v);
 
 	//! Build a diagonal matrix.
 	//! From GLM_GTX_matrix_operation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<4, 3, T, P> diagonal4x3(
-		vec<3, T, P> const & v);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<4, 3, T, Q> diagonal4x3(
+		vec<3, T, Q> const& v);
 
 	//! Build a diagonal matrix.
 	//! From GLM_GTX_matrix_operation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<4, 4, T, P> diagonal4x4(
-		vec<4, T, P> const & v);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<4, 4, T, Q> diagonal4x4(
+		vec<4, T, Q> const& v);
 
 	/// @}
 }//namespace glm

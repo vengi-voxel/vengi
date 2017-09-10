@@ -7,14 +7,14 @@ namespace glm{
 namespace detail
 {
 #	if GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
-	template<precision P, int E0, int E1, int E2, int E3>
-	struct _swizzle_base1<4, float, P, E0,E1,E2,E3, true> : public _swizzle_base0<float, 4>
+	template<qualifier Q, int E0, int E1, int E2, int E3>
+	struct _swizzle_base1<4, float, Q, E0,E1,E2,E3, true> : public _swizzle_base0<float, 4>
 	{ 
-		GLM_FUNC_QUALIFIER vec<4, float, P> operator ()()  const
+		GLM_FUNC_QUALIFIER vec<4, float, Q> operator ()()  const
 		{
 			__m128 data = *reinterpret_cast<__m128 const*>(&this->_buffer);
 
-			vec<4, float, P> Result;
+			vec<4, float, Q> Result;
 #			if GLM_ARCH & GLM_ARCH_AVX_BIT
 				Result.data = _mm_permute_ps(data, _MM_SHUFFLE(E3, E2, E1, E0));
 #			else
@@ -24,123 +24,123 @@ namespace detail
 		}
 	};
 
-	template<precision P, int E0, int E1, int E2, int E3>
-	struct _swizzle_base1<4, int32, P, E0,E1,E2,E3, true> : public _swizzle_base0<int32, 4>
+	template<qualifier Q, int E0, int E1, int E2, int E3>
+	struct _swizzle_base1<4, int32, Q, E0,E1,E2,E3, true> : public _swizzle_base0<int32, 4>
 	{ 
-		GLM_FUNC_QUALIFIER vec<4, int32, P> operator ()()  const
+		GLM_FUNC_QUALIFIER vec<4, int32, Q> operator ()()  const
 		{
 			__m128i data = *reinterpret_cast<__m128i const*>(&this->_buffer);
 
-			vec<4, int32, P> Result;
+			vec<4, int32, Q> Result;
 			Result.data = _mm_shuffle_epi32(data, _MM_SHUFFLE(E3, E2, E1, E0));
 			return Result;
 		}
 	};
 
-	template<precision P, int E0, int E1, int E2, int E3>
-	struct _swizzle_base1<4, uint32, P, E0,E1,E2,E3, true> : public _swizzle_base0<uint32, 4>
+	template<qualifier Q, int E0, int E1, int E2, int E3>
+	struct _swizzle_base1<4, uint32, Q, E0,E1,E2,E3, true> : public _swizzle_base0<uint32, 4>
 	{ 
-		GLM_FUNC_QUALIFIER vec<4, uint32, P> operator ()()  const
+		GLM_FUNC_QUALIFIER vec<4, uint32, Q> operator ()()  const
 		{
 			__m128i data = *reinterpret_cast<__m128i const*>(&this->_buffer);
 
-			vec<4, uint32, P> Result;
+			vec<4, uint32, Q> Result;
 			Result.data = _mm_shuffle_epi32(data, _MM_SHUFFLE(E3, E2, E1, E0));
 			return Result;
 		}
 	};
 #	endif// GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
 
-	template<precision P>
-	struct compute_vec4_add<float, P, true>
+	template<qualifier Q>
+	struct compute_vec4_add<float, Q, true>
 	{
-		static vec<4, float, P> call(vec<4, float, P> const & a, vec<4, float, P> const & b)
+		static vec<4, float, Q> call(vec<4, float, Q> const& a, vec<4, float, Q> const& b)
 		{
-			vec<4, float, P> Result;
+			vec<4, float, Q> Result;
 			Result.data = _mm_add_ps(a.data, b.data);
 			return Result;
 		}
 	};
 
 #	if GLM_ARCH & GLM_ARCH_AVX_BIT
-	template<precision P>
-	struct compute_vec4_add<double, P, true>
+	template<qualifier Q>
+	struct compute_vec4_add<double, Q, true>
 	{
-		static vec<4, double, P> call(vec<4, double, P> const & a, vec<4, double, P> const & b)
+		static vec<4, double, Q> call(vec<4, double, Q> const& a, vec<4, double, Q> const& b)
 		{
-			vec<4, double, P> Result;
+			vec<4, double, Q> Result;
 			Result.data = _mm256_add_pd(a.data, b.data);
 			return Result;
 		}
 	};
 #	endif
 
-	template<precision P>
-	struct compute_vec4_sub<float, P, true>
+	template<qualifier Q>
+	struct compute_vec4_sub<float, Q, true>
 	{
-		static vec<4, float, P> call(vec<4, float, P> const & a, vec<4, float, P> const & b)
+		static vec<4, float, Q> call(vec<4, float, Q> const& a, vec<4, float, Q> const& b)
 		{
-			vec<4, float, P> Result;
+			vec<4, float, Q> Result;
 			Result.data = _mm_sub_ps(a.data, b.data);
 			return Result;
 		}
 	};
 
 #	if GLM_ARCH & GLM_ARCH_AVX_BIT
-	template<precision P>
-	struct compute_vec4_sub<double, P, true>
+	template<qualifier Q>
+	struct compute_vec4_sub<double, Q, true>
 	{
-		static vec<4, double, P> call(vec<4, double, P> const & a, vec<4, double, P> const & b)
+		static vec<4, double, Q> call(vec<4, double, Q> const& a, vec<4, double, Q> const& b)
 		{
-			vec<4, double, P> Result;
+			vec<4, double, Q> Result;
 			Result.data = _mm256_sub_pd(a.data, b.data);
 			return Result;
 		}
 	};
 #	endif
 
-	template<precision P>
-	struct compute_vec4_mul<float, P, true>
+	template<qualifier Q>
+	struct compute_vec4_mul<float, Q, true>
 	{
-		static vec<4, float, P> call(vec<4, float, P> const & a, vec<4, float, P> const & b)
+		static vec<4, float, Q> call(vec<4, float, Q> const& a, vec<4, float, Q> const& b)
 		{
-			vec<4, float, P> Result;
+			vec<4, float, Q> Result;
 			Result.data = _mm_mul_ps(a.data, b.data);
 			return Result;
 		}
 	};
 
 #	if GLM_ARCH & GLM_ARCH_AVX_BIT
-	template<precision P>
-	struct compute_vec4_mul<double, P, true>
+	template<qualifier Q>
+	struct compute_vec4_mul<double, Q, true>
 	{
-		static vec<4, double, P> call(vec<4, double, P> const & a, vec<4, double, P> const & b)
+		static vec<4, double, Q> call(vec<4, double, Q> const& a, vec<4, double, Q> const& b)
 		{
-			vec<4, double, P> Result;
+			vec<4, double, Q> Result;
 			Result.data = _mm256_mul_pd(a.data, b.data);
 			return Result;
 		}
 	};
 #	endif
 
-	template<precision P>
-	struct compute_vec4_div<float, P, true>
+	template<qualifier Q>
+	struct compute_vec4_div<float, Q, true>
 	{
-		static vec<4, float, P> call(vec<4, float, P> const & a, vec<4, float, P> const & b)
+		static vec<4, float, Q> call(vec<4, float, Q> const& a, vec<4, float, Q> const& b)
 		{
-			vec<4, float, P> Result;
+			vec<4, float, Q> Result;
 			Result.data = _mm_div_ps(a.data, b.data);
 			return Result;
 		}
 	};
 
 	#	if GLM_ARCH & GLM_ARCH_AVX_BIT
-	template<precision P>
-	struct compute_vec4_div<double, P, true>
+	template<qualifier Q>
+	struct compute_vec4_div<double, Q, true>
 	{
-		static vec<4, double, P> call(vec<4, double, P> const & a, vec<4, double, P> const & b)
+		static vec<4, double, Q> call(vec<4, double, Q> const& a, vec<4, double, Q> const& b)
 		{
-			vec<4, double, P> Result;
+			vec<4, double, Q> Result;
 			Result.data = _mm256_div_pd(a.data, b.data);
 			return Result;
 		}
@@ -150,7 +150,7 @@ namespace detail
 	template<>
 	struct compute_vec4_div<float, aligned_lowp, true>
 	{
-		static vec<4, float, aligned_lowp> call(vec<4, float, aligned_lowp> const & a, vec<4, float, aligned_lowp> const & b)
+		static vec<4, float, aligned_lowp> call(vec<4, float, aligned_lowp> const& a, vec<4, float, aligned_lowp> const& b)
 		{
 			vec<4, float, aligned_lowp> Result;
 			Result.data = _mm_mul_ps(a.data, _mm_rcp_ps(b.data));
@@ -158,181 +158,181 @@ namespace detail
 		}
 	};
 
-	template<typename T, precision P>
-	struct compute_vec4_and<T, P, true, 32, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_and<T, Q, true, 32, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
+		static vec<4, T, Q> call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm_and_si128(a.data, b.data);
 			return Result;
 		}
 	};
 
 #	if GLM_ARCH & GLM_ARCH_AVX2_BIT
-	template<typename T, precision P>
-	struct compute_vec4_and<T, P, true, 64, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_and<T, Q, true, 64, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
+		static vec<4, T, Q> call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm256_and_si256(a.data, b.data);
 			return Result;
 		}
 	};
 #	endif
 
-	template<typename T, precision P>
-	struct compute_vec4_or<T, P, true, 32, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_or<T, Q, true, 32, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
+		static vec<4, T, Q> call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm_or_si128(a.data, b.data);
 			return Result;
 		}
 	};
 
 #	if GLM_ARCH & GLM_ARCH_AVX2_BIT
-	template<typename T, precision P>
-	struct compute_vec4_or<T, P, true, 64, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_or<T, Q, true, 64, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
+		static vec<4, T, Q> call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm256_or_si256(a.data, b.data);
 			return Result;
 		}
 	};
 #	endif
 
-	template<typename T, precision P>
-	struct compute_vec4_xor<T, P, true, 32, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_xor<T, Q, true, 32, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
+		static vec<4, T, Q> call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm_xor_si128(a.data, b.data);
 			return Result;
 		}
 	};
 
 #	if GLM_ARCH & GLM_ARCH_AVX2_BIT
-	template<typename T, precision P>
-	struct compute_vec4_xor<T, P, true, 64, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_xor<T, Q, true, 64, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
+		static vec<4, T, Q> call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm256_xor_si256(a.data, b.data);
 			return Result;
 		}
 	};
 #	endif
 
-	template<typename T, precision P>
-	struct compute_vec4_shift_left<T, P, true, 32, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_shift_left<T, Q, true, 32, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
+		static vec<4, T, Q> call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm_sll_epi32(a.data, b.data);
 			return Result;
 		}
 	};
 
 #	if GLM_ARCH & GLM_ARCH_AVX2_BIT
-	template<typename T, precision P>
-	struct compute_vec4_shift_left<T, P, true, 64, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_shift_left<T, Q, true, 64, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
+		static vec<4, T, Q> call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm256_sll_epi64(a.data, b.data);
 			return Result;
 		}
 	};
 #	endif
 
-	template<typename T, precision P>
-	struct compute_vec4_shift_right<T, P, true, 32, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_shift_right<T, Q, true, 32, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
+		static vec<4, T, Q> call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm_srl_epi32(a.data, b.data);
 			return Result;
 		}
 	};
 
 #	if GLM_ARCH & GLM_ARCH_AVX2_BIT
-	template<typename T, precision P>
-	struct compute_vec4_shift_right<T, P, true, 64, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_shift_right<T, Q, true, 64, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
+		static vec<4, T, Q> call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm256_srl_epi64(a.data, b.data);
 			return Result;
 		}
 	};
 #	endif
 
-	template<typename T, precision P>
-	struct compute_vec4_bitwise_not<T, P, true, 32, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_bitwise_not<T, Q, true, 32, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const & v)
+		static vec<4, T, Q> call(vec<4, T, Q> const& v)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm_xor_si128(v.data, _mm_set1_epi32(-1));
 			return Result;
 		}
 	};
 
 #	if GLM_ARCH & GLM_ARCH_AVX2_BIT
-	template<typename T, precision P>
-	struct compute_vec4_bitwise_not<T, P, true, 64, true>
+	template<typename T, qualifier Q>
+	struct compute_vec4_bitwise_not<T, Q, true, 64, true>
 	{
-		static vec<4, T, P> call(vec<4, T, P> const & v)
+		static vec<4, T, Q> call(vec<4, T, Q> const& v)
 		{
-			vec<4, T, P> Result;
+			vec<4, T, Q> Result;
 			Result.data = _mm256_xor_si256(v.data, _mm_set1_epi32(-1));
 			return Result;
 		}
 	};
 #	endif
 
-	template<precision P>
-	struct compute_vec4_equal<float, P, false, 32, true>
+	template<qualifier Q>
+	struct compute_vec4_equal<float, Q, false, 32, true>
 	{
-		static bool call(vec<4, float, P> const & v1, vec<4, float, P> const & v2)
+		static bool call(vec<4, float, Q> const& v1, vec<4, float, Q> const& v2)
 		{
 			return _mm_movemask_ps(_mm_cmpeq_ps(v1.data, v2.data)) != 0;
 		}
 	};
 
-	template<precision P>
-	struct compute_vec4_equal<int32, P, true, 32, true>
+	template<qualifier Q>
+	struct compute_vec4_equal<int32, Q, true, 32, true>
 	{
-		static bool call(vec<4, int32, P> const & v1, vec<4, int32, P> const & v2)
+		static bool call(vec<4, int32, Q> const& v1, vec<4, int32, Q> const& v2)
 		{
 			return _mm_movemask_epi8(_mm_cmpeq_epi32(v1.data, v2.data)) != 0;
 		}
 	};
 
-	template<precision P>
-	struct compute_vec4_nequal<float, P, false, 32, true>
+	template<qualifier Q>
+	struct compute_vec4_nequal<float, Q, false, 32, true>
 	{
-		static bool call(vec<4, float, P> const & v1, vec<4, float, P> const & v2)
+		static bool call(vec<4, float, Q> const& v1, vec<4, float, Q> const& v2)
 		{
 			return _mm_movemask_ps(_mm_cmpneq_ps(v1.data, v2.data)) != 0;
 		}
 	};
 
-	template<precision P>
-	struct compute_vec4_nequal<int32, P, true, 32, true>
+	template<qualifier Q>
+	struct compute_vec4_nequal<int32, Q, true, 32, true>
 	{
-		static bool call(vec<4, int32, P> const & v1, vec<4, int32, P> const & v2)
+		static bool call(vec<4, int32, Q> const& v1, vec<4, int32, Q> const& v2)
 		{
 			return _mm_movemask_epi8(_mm_cmpneq_epi32(v1.data, v2.data)) != 0;
 		}

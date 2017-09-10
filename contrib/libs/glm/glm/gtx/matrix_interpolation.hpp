@@ -7,9 +7,9 @@
 /// @defgroup gtx_matrix_interpolation GLM_GTX_matrix_interpolation
 /// @ingroup gtx
 ///
-/// @brief Allows to directly interpolate two exiciting matrices.
+/// Include <glm/gtx/matrix_interpolation.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/matrix_interpolation.hpp> need to be included to use these functionalities.
+/// Allows to directly interpolate two exiciting matrices.
 
 #pragma once
 
@@ -31,32 +31,32 @@ namespace glm
 
 	/// Get the axis and angle of the rotation from a matrix.
 	/// From GLM_GTX_matrix_interpolation extension.
-	template<typename T, precision P>
+	template<typename T, qualifier Q>
 	GLM_FUNC_DECL void axisAngle(
-		mat<4, 4, T, P> const& mat,
-		vec<3, T, P> & axis,
+		mat<4, 4, T, Q> const& mat,
+		vec<3, T, Q> & axis,
 		T & angle);
 
 	/// Build a matrix from axis and angle.
 	/// From GLM_GTX_matrix_interpolation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<4, 4, T, P> axisAngleMatrix(
-		vec<3, T, P> const & axis,
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<4, 4, T, Q> axisAngleMatrix(
+		vec<3, T, Q> const& axis,
 		T const angle);
 
 	/// Extracts the rotation part of a matrix.
 	/// From GLM_GTX_matrix_interpolation extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<4, 4, T, P> extractMatrixRotation(
-		mat<4, 4, T, P> const& mat);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<4, 4, T, Q> extractMatrixRotation(
+		mat<4, 4, T, Q> const& mat);
 
 	/// Build a interpolation of 4 * 4 matrixes.
 	/// From GLM_GTX_matrix_interpolation extension.
 	/// Warning! works only with rotation and/or translation matrixes, scale will generate unexpected results.
-	template<typename T, precision P>
-	GLM_FUNC_DECL mat<4, 4, T, P> interpolate(
-		mat<4, 4, T, P> const& m1,
-		mat<4, 4, T, P> const& m2,
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL mat<4, 4, T, Q> interpolate(
+		mat<4, 4, T, Q> const& m1,
+		mat<4, 4, T, Q> const& m2,
 		T const delta);
 
 	/// @}

@@ -8,9 +8,9 @@
 /// @defgroup gtx_vector_angle GLM_GTX_vector_angle
 /// @ingroup gtx
 ///
-/// @brief Compute angle between vectors
+/// Include <glm/gtx/vector_angle.hpp> to use the features of this extension.
 ///
-/// <glm/gtx/vector_angle.hpp> need to be included to use these functionalities.
+/// Compute angle between vectors
 
 #pragma once
 
@@ -36,27 +36,20 @@ namespace glm
 	//! Returns the absolute angle between two vectors.
 	//! Parameters need to be normalized.
 	/// @see gtx_vector_angle extension.
-	template<typename vecType>
-	GLM_FUNC_DECL typename vecType::value_type angle(
-		vecType const & x, 
-		vecType const & y);
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL T angle(vec<L, T, Q> const& x, vec<L, T, Q> const& y);
 
 	//! Returns the oriented angle between two 2d vectors.
 	//! Parameters need to be normalized.
 	/// @see gtx_vector_angle extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL T orientedAngle(
-		vec<2, T, P> const & x,
-		vec<2, T, P> const & y);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL T orientedAngle(vec<2, T, Q> const& x, vec<2, T, Q> const& y);
 
 	//! Returns the oriented angle between two 3d vectors based from a reference axis.
 	//! Parameters need to be normalized.
 	/// @see gtx_vector_angle extension.
-	template<typename T, precision P>
-	GLM_FUNC_DECL T orientedAngle(
-		vec<3, T, P> const & x,
-		vec<3, T, P> const & y,
-		vec<3, T, P> const & ref);
+	template<typename T, qualifier Q>
+	GLM_FUNC_DECL T orientedAngle(vec<3, T, Q> const& x, vec<3, T, Q> const& y, vec<3, T, Q> const& ref);
 
 	/// @}
 }// namespace glm

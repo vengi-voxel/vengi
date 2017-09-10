@@ -44,9 +44,9 @@ struct light
 
 glm::vec3 computeNormal
 (
-	glm::vec3 const & a,
-	glm::vec3 const & b,
-	glm::vec3 const & c
+	glm::vec3 const& a,
+	glm::vec3 const& b,
+	glm::vec3 const& c
 )
 {
 	return glm::normalize(glm::cross(c - a, b - a));
@@ -62,7 +62,7 @@ void glUniformMatrix4fv(GLuint, int, int, float*){}
 #include <glm/mat4x4.hpp> // glm::mat4
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
-void func(GLuint LocationMVP, float Translate, glm::vec2 const & Rotate)
+void func(GLuint LocationMVP, float Translate, glm::vec2 const& Rotate)
 {
 	glm::mat4 Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
 	glm::mat4 ViewTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -Translate));
@@ -132,10 +132,10 @@ struct intersection
 #include <glm/gtc/random.hpp>// glm::vecRand3
 glm::vec3 lighting
 (
-	intersection const & Intersection,
-	material const & Material,
-	light const & Light,
-	glm::vec3 const & View
+	intersection const& Intersection,
+	material const& Material,
+	light const& Light,
+	glm::vec3 const& View
 )
 {
 	glm::vec3 Color(0.0f);
