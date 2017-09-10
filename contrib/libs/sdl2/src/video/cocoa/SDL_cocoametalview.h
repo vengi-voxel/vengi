@@ -32,9 +32,11 @@
 #import "../SDL_sysvideo.h"
 #import "SDL_cocoawindow.h"
 
-#import <Cocoa/Cocoa.h>
-#import <Metal/Metal.h>
-#import <QuartzCore/CAMetalLayer.h>
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_COCOA
+
+#include <Cocoa/Cocoa.h>
+#include <Metal/Metal.h>
+#include <QuartzCore/CAMetalLayer.h>
 
 #define METALVIEW_TAG 255
 
@@ -54,6 +56,8 @@
 SDL_cocoametalview* Cocoa_Mtl_AddMetalView(SDL_Window* window);
 
 void Cocoa_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h);
+
+#endif /* SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_COCOA */
 
 #endif /* SDL_cocoametalview_h_ */
 

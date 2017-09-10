@@ -1184,27 +1184,25 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
         if (window->is_destroying && (window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)
             return 0;
     
-        if (!_this->is_dummy) {
-            /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
-            if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
-                if (!Cocoa_SetWindowFullscreenSpace(window, SDL_FALSE)) {
-                    return -1;
-                }
-            } else if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)) {
-                display = SDL_GetDisplayForWindow(window);
-                SDL_SetDisplayModeForDisplay(display, NULL);
-                if (_this->SetWindowFullscreen) {
-                    _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
-                }
+        /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
+        if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
+            if (!Cocoa_SetWindowFullscreenSpace(window, SDL_FALSE)) {
+                return -1;
             }
+        } else if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+            display = SDL_GetDisplayForWindow(window);
+            SDL_SetDisplayModeForDisplay(display, NULL);
+            if (_this->SetWindowFullscreen) {
+                _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
+            }
+        }
 
-            if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
-                if (Cocoa_IsWindowInFullscreenSpace(window) != fullscreen) {
-                    return -1;
-                }
-                window->last_fullscreen_flags = window->flags;
-                return 0;
+        if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
+            if (Cocoa_IsWindowInFullscreenSpace(window) != fullscreen) {
+                return -1;
             }
+            window->last_fullscreen_flags = window->flags;
+            return 0;
         }
     }
 #elif __WINRT__ && (NTDDI_VERSION < NTDDI_WIN10)
@@ -2943,8 +2941,8 @@ SDL_GL_ExtensionSupported(const char *extension)
 void
 SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
 {
-/* This function breaks games because OpenGL functions are being called before a context is current - see bug 3725 */
-#if 0
+/* THIS REQUIRES AN EXISTING GL CONTEXT THAT HAS BEEN MADE CURRENT. */
+/*  Please refer to https://bugzilla.libsdl.org/show_bug.cgi?id=3725 for discussion. */
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
 	/* XXX This is fragile; it will break in the event of release of
 	 * new versions of OpenGL ES.
@@ -2963,10 +2961,6 @@ SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
         *minor = 0;
     }
 #endif
-#else
-        *major = 2;
-        *minor = 0;
-#endif /* 0 */
 }
 
 void
@@ -2993,19 +2987,27 @@ SDL_GL_ResetAttributes()
     _this->gl_config.multisamplesamples = 0;
     _this->gl_config.retained_backing = 1;
     _this->gl_config.accelerated = -1;  /* accelerated or not, both are fine */
-    _this->gl_config.profile_mask = 0;
+
+    if (_this->GL_DefaultProfileConfig) {
+        _this->GL_DefaultProfileConfig(_this, &_this->gl_config.profile_mask,
+                                       &_this->gl_config.major_version,
+                                       &_this->gl_config.minor_version);
+    } else {
 #if SDL_VIDEO_OPENGL
-    _this->gl_config.major_version = 2;
-    _this->gl_config.minor_version = 1;
+        _this->gl_config.major_version = 2;
+        _this->gl_config.minor_version = 1;
+        _this->gl_config.profile_mask = 0;
 #elif SDL_VIDEO_OPENGL_ES2
-    _this->gl_config.major_version = 2;
-    _this->gl_config.minor_version = 0;
-    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+        _this->gl_config.major_version = 2;
+        _this->gl_config.minor_version = 0;
+        _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 #elif SDL_VIDEO_OPENGL_ES
-    _this->gl_config.major_version = 1;
-    _this->gl_config.minor_version = 1;
-    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+        _this->gl_config.major_version = 1;
+        _this->gl_config.minor_version = 1;
+        _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 #endif
+    }
+
     _this->gl_config.flags = 0;
     _this->gl_config.framebuffer_srgb_capable = 0;
     _this->gl_config.no_error = 0;

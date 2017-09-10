@@ -23,6 +23,7 @@
 #include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_log.h"
+#include "SDL_main.h"
 
 #ifdef __ANDROID__
 
@@ -43,6 +44,7 @@
 #include <pthread.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <dlfcn.h>
 /* #define LOG_TAG "SDL_android" */
 /* #define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__) */
 /* #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__) */
@@ -58,6 +60,13 @@
 
 
 /* Java class SDLActivity */
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(
+        JNIEnv* mEnv, jclass cls);
+
+JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(
+        JNIEnv* env, jclass cls,
+        jstring library, jstring function, jobject array);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
         JNIEnv* env, jclass jcls,
         jstring filename);
@@ -84,7 +93,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeHat)(
 
 JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeAddJoystick)(
         JNIEnv* env, jclass jcls,
-        jint device_id, jstring device_name, jint is_accelerometer,
+        jint device_id, jstring device_name, jstring device_desc, jint is_accelerometer,
         jint nbuttons, jint naxes, jint nhats, jint nballs);
 
 JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeRemoveJoystick)(
@@ -237,9 +246,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
 }
 
 /* Called before SDL_main() to initialize JNI bindings */
-JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init()");
+    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeSetupJNI()");
 
     Android_JNI_SetupThread();
 
@@ -299,16 +308,97 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
        !midSetActivityTitle || !midSetOrientation || !midGetContext || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown || 
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL: Couldn't locate Java callbacks, check that they're named and typed correctly");
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
     fidSeparateMouseAndTouch = (*mEnv)->GetStaticFieldID(mEnv, mActivityClass, "mSeparateMouseAndTouch", "Z");
 
     if (!fidSeparateMouseAndTouch) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL: Couldn't locate Java static fields, check that they're named and typed correctly");
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java static fields, do you have the latest version of SDLActivity.java?");
     }
 
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init() finished!");
+    SDL_SetMainReady();
+}
+
+/* SDL main function prototype */
+typedef int (*SDL_main_func)(int argc, char *argv[]);
+
+/* Start up the SDL app */
+JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv* env, jclass cls, jstring library, jstring function, jobject array)
+{
+    int status = -1;
+    const char *library_file;
+    void *library_handle;
+
+    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeRunMain()");
+
+    library_file = (*env)->GetStringUTFChars(env, library, NULL);
+    library_handle = dlopen(library_file, RTLD_GLOBAL);
+    if (library_handle) {
+        const char *function_name;
+        SDL_main_func SDL_main;
+
+        function_name = (*env)->GetStringUTFChars(env, function, NULL);
+        SDL_main = (SDL_main_func)dlsym(library_handle, function_name);
+        if (SDL_main) {
+            int i;
+            int argc;
+            int len;
+            char **argv;
+
+            /* Prepare the arguments. */
+            len = (*env)->GetArrayLength(env, array);
+            argv = SDL_stack_alloc(char*, 1 + len + 1);
+            argc = 0;
+            /* Use the name "app_process" so PHYSFS_platformCalcBaseDir() works.
+               https://bitbucket.org/MartinFelis/love-android-sdl2/issue/23/release-build-crash-on-start
+             */
+            argv[argc++] = SDL_strdup("app_process");
+            for (i = 0; i < len; ++i) {
+                const char* utf;
+                char* arg = NULL;
+                jstring string = (*env)->GetObjectArrayElement(env, array, i);
+                if (string) {
+                    utf = (*env)->GetStringUTFChars(env, string, 0);
+                    if (utf) {
+                        arg = SDL_strdup(utf);
+                        (*env)->ReleaseStringUTFChars(env, string, utf);
+                    }
+                    (*env)->DeleteLocalRef(env, string);
+                }
+                if (!arg) {
+                    arg = SDL_strdup("");
+                }
+                argv[argc++] = arg;
+            }
+            argv[argc] = NULL;
+
+
+            /* Run the application. */
+            status = SDL_main(argc, argv);
+
+            /* Release the arguments. */
+            for (i = 0; i < argc; ++i) {
+                SDL_free(argv[i]);
+            }
+            SDL_stack_free(argv);
+
+        } else {
+            __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
+        }
+        (*env)->ReleaseStringUTFChars(env, function, function_name);
+
+        dlclose(library_handle);
+
+    } else {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't load library %s", library_file);
+    }
+    (*env)->ReleaseStringUTFChars(env, library, library_file);
+
+    /* Do not issue an exit or the whole application will terminate instead of just the SDL thread */
+    /* exit(status); */
+
+    return status;
 }
 
 /* Drop file */
@@ -365,15 +455,17 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeHat)(
 
 JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeAddJoystick)(
                                     JNIEnv* env, jclass jcls,
-                                    jint device_id, jstring device_name, jint is_accelerometer,
+                                    jint device_id, jstring device_name, jstring device_desc, jint is_accelerometer,
                                     jint nbuttons, jint naxes, jint nhats, jint nballs)
 {
     int retval;
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
+    const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
-    retval = Android_AddJoystick(device_id, name, (SDL_bool) is_accelerometer, nbuttons, naxes, nhats, nballs);
+    retval = Android_AddJoystick(device_id, name, desc, (SDL_bool) is_accelerometer, nbuttons, naxes, nhats, nballs);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
+    (*env)->ReleaseStringUTFChars(env, device_desc, desc);
 
     return retval;
 }
@@ -546,6 +638,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
                                     JNIEnv* env, jclass cls)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
+
     if (Android_Window) {
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);

@@ -44,8 +44,10 @@
 
 #if SDL_VIDEO_DRIVER_RPI
 /* Raspbian places the OpenGL ES/EGL binaries in a non standard path */
-#define DEFAULT_EGL "/opt/vc/lib/libEGL.so"
-#define DEFAULT_OGL_ES2 "/opt/vc/lib/libGLESv2.so"
+#define DEFAULT_EGL "/opt/vc/lib/libbrcmEGL.so"
+#define DEFAULT_OGL_ES2 "/opt/vc/lib/libbrcmGLESv2.so"
+#define ALT_EGL "/opt/vc/lib/libEGL.so"
+#define ALT_OGL_ES2 "/opt/vc/lib/libGLESv2.so"
 #define DEFAULT_OGL_ES_PVR "/opt/vc/lib/libGLES_CM.so"
 #define DEFAULT_OGL_ES "/opt/vc/lib/libGLESv1_CM.so"
 
@@ -292,6 +294,13 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
             if (_this->gl_config.major_version > 1) {
                 path = DEFAULT_OGL_ES2;
                 egl_dll_handle = SDL_LoadObject(path);
+#ifdef ALT_OGL_ES2
+                if (egl_dll_handle == NULL) {
+                    path = ALT_OGL_ES2;
+                    egl_dll_handle = SDL_LoadObject(path);
+                }
+#endif
+
             } else {
                 path = DEFAULT_OGL_ES;
                 egl_dll_handle = SDL_LoadObject(path);
@@ -328,6 +337,14 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
             path = DEFAULT_EGL;
         }
         dll_handle = SDL_LoadObject(path);
+
+#ifdef ALT_EGL
+        if (dll_handle == NULL) {
+            path = ALT_EGL;
+            dll_handle = SDL_LoadObject(path);
+        }
+#endif
+
         if (dll_handle == NULL || SDL_LoadFunction(dll_handle, "eglChooseConfig") == NULL) {
             if (dll_handle != NULL) {
                 SDL_UnloadObject(dll_handle);
@@ -380,12 +397,12 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 #if !defined(__WINRT__)
     if (platform) {
         if (egl_version_major == 1 && egl_version_minor == 5) {
-            _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, (void *)native_display, NULL);
+            _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, (void *)(size_t)native_display, NULL);
         } else {
             if (SDL_EGL_HasExtension(_this, SDL_EGL_CLIENT_EXTENSION, "EGL_EXT_platform_base")) {
                 _this->egl_data->eglGetPlatformDisplayEXT = SDL_EGL_GetProcAddress(_this, "eglGetPlatformDisplayEXT");
                 if (_this->egl_data->eglGetPlatformDisplayEXT) {
-                    _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplayEXT(platform, (void *)native_display, NULL);
+                    _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplayEXT(platform, (void *)(size_t)native_display, NULL);
                 }
             }
         }
