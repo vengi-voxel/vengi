@@ -14,7 +14,6 @@
 #include <map>
 #include <stdexcept>
 #include <utility>
-#include <cstdint>
 
 #include "restclient-cpp/restclient.h"
 #include "restclient-cpp/helpers.h"
@@ -35,6 +34,7 @@ RestClient::Connection::Connection(const std::string& baseUrl)
   this->baseUrl = baseUrl;
   this->timeout = 0;
   this->followRedirects = false;
+  this->noSignal = false;
 }
 
 RestClient::Connection::~Connection() {
@@ -56,10 +56,19 @@ RestClient::Connection::GetInfo() {
   ret.baseUrl = this->baseUrl;
   ret.headers = this->GetHeaders();
   ret.timeout = this->timeout;
+  ret.followRedirects = this->followRedirects;
+  ret.noSignal = this->noSignal;
   ret.basicAuth.username = this->basicAuth.username;
   ret.basicAuth.password = this->basicAuth.password;
   ret.customUserAgent = this->customUserAgent;
   ret.lastRequest = this->lastRequest;
+
+  ret.certPath = this->certPath;
+  ret.certType = this->certType;
+  ret.keyPath = this->keyPath;
+  ret.keyPassword = this->keyPassword;
+
+  ret.uriProxy = this->uriProxy;
 
   return ret;
 }
@@ -86,7 +95,11 @@ RestClient::Connection::AppendHeader(const std::string& key,
  */
 void
 RestClient::Connection::SetHeaders(RestClient::HeaderFields headers) {
+#if __cplusplus >= 201103L
   this->headerFields = std::move(headers);
+#else
+  this->headerFields = headers;
+#endif
 }
 
 /**
@@ -159,6 +172,18 @@ RestClient::Connection::SetTimeout(int seconds) {
 }
 
 /**
+ * @brief switch off curl signals for connection (see CURLOPT_NONSIGNAL). By
+ * default signals are used, except when timeout is given.
+ *
+ * @param no - set to true switches signals off
+ *
+ */
+void
+RestClient::Connection::SetNoSignal(bool no) {
+  this->noSignal = no;
+}
+
+/**
  * @brief set username and password for basic auth
  *
  * @param username
@@ -170,6 +195,70 @@ RestClient::Connection::SetBasicAuth(const std::string& username,
                                      const std::string& password) {
   this->basicAuth.username = username;
   this->basicAuth.password = password;
+}
+
+/**
+ * @brief set certificate path
+ *
+ * @param path to certificate file
+ *
+ */
+void
+RestClient::Connection::SetCertPath(const std::string& cert) {
+  this->certPath = cert;
+}
+
+/**
+ * @brief set certificate type
+ *
+ * @param certificate type (e.g. "PEM" or "DER")
+ *
+ */
+void
+RestClient::Connection::SetCertType(const std::string& certType) {
+  this->certType = certType;
+}
+
+/**
+ * @brief set key path
+ *
+ * @param path to key file
+ *
+ */
+void
+RestClient::Connection::SetKeyPath(const std::string& keyPath) {
+  this->keyPath = keyPath;
+}
+
+/**
+ * @brief set key password
+ *
+ * @param key password
+ *
+ */
+void
+RestClient::Connection::SetKeyPassword(const std::string& keyPassword) {
+  this->keyPassword = keyPassword;
+}
+
+/**
+ * @brief set HTTP proxy address and port
+ *
+ * @param proxy address with port number
+ *
+ */
+void
+RestClient::Connection::SetProxy(const std::string& uriProxy) {
+  std::string uriProxyUpper = uriProxy;
+  // check if the provided address is prefixed with "http"
+  std::transform(uriProxyUpper.begin(), uriProxyUpper.end(),
+    uriProxyUpper.begin(), ::toupper);
+
+  if ((uriProxy.length() > 0) && (uriProxyUpper.compare(0, 4, "HTTP") != 0)) {
+    this->uriProxy = "http://" + uriProxy;
+  } else {
+    this->uriProxy = uriProxy;
+  }
 }
 
 /**
@@ -239,19 +328,62 @@ RestClient::Connection::performCurlRequest(const std::string& uri) {
   if (this->followRedirects == true) {
     curl_easy_setopt(this->curlHandle, CURLOPT_FOLLOWLOCATION, 1L);
   }
+
+  if (this->noSignal) {
+    // multi-threaded and prevent entering foreign signal handler (e.g. JNI)
+    curl_easy_setopt(this->curlHandle, CURLOPT_NOSIGNAL, 1);
+  }
+
   // if provided, supply CA path
   if (!this->caInfoFilePath.empty()) {
     curl_easy_setopt(this->curlHandle, CURLOPT_CAINFO,
                      this->caInfoFilePath.c_str());
   }
+
+  // set cert file path
+  if (!this->certPath.empty()) {
+    curl_easy_setopt(this->curlHandle, CURLOPT_SSLCERT,
+                     this->certPath.c_str());
+  }
+
+  // set cert type
+  if (!this->certType.empty()) {
+    curl_easy_setopt(this->curlHandle, CURLOPT_SSLCERTTYPE,
+                     this->certType.c_str());
+  }
+  // set key file path
+  if (!this->keyPath.empty()) {
+    curl_easy_setopt(this->curlHandle, CURLOPT_SSLKEY,
+                     this->keyPath.c_str());
+  }
+  // set key password
+  if (!this->keyPassword.empty()) {
+    curl_easy_setopt(this->curlHandle, CURLOPT_KEYPASSWD,
+                     this->keyPassword.c_str());
+  }
+
+  // set web proxy address
+  if (!this->uriProxy.empty()) {
+    curl_easy_setopt(this->curlHandle, CURLOPT_PROXY,
+                     uriProxy.c_str());
+    curl_easy_setopt(this->curlHandle, CURLOPT_HTTPPROXYTUNNEL,
+                     1L);
+  }
+
   res = curl_easy_perform(this->curlHandle);
   if (res != CURLE_OK) {
-    if (res == CURLE_OPERATION_TIMEDOUT) {
-      ret.code = res;
-      ret.body = "Operation Timeout.";
-    } else {
-      ret.body = "Failed to query.";
-      ret.code = -1;
+    switch (res) {
+      case CURLE_OPERATION_TIMEDOUT:
+        ret.code = res;
+        ret.body = "Operation Timeout.";
+        break;
+      case CURLE_SSL_CERTPROBLEM:
+        ret.code = res;
+        ret.body = curl_easy_strerror(res);
+        break;
+      default:
+        ret.body = "Failed to query.";
+        ret.code = -1;
     }
   } else {
     int64_t http_code = 0;
@@ -360,3 +492,21 @@ RestClient::Connection::del(const std::string& url) {
   return this->performCurlRequest(url);
 }
 
+/**
+ * @brief HTTP HEAD method
+ *
+ * @param url to query
+ *
+ * @return response struct
+ */
+RestClient::Response
+RestClient::Connection::head(const std::string& url) {
+    /** we want HTTP HEAD */
+    const char* http_head = "HEAD";
+
+    /** set HTTP HEAD METHOD */
+    curl_easy_setopt(this->curlHandle, CURLOPT_CUSTOMREQUEST, http_head);
+    curl_easy_setopt(this->curlHandle, CURLOPT_NOBODY, 1L);
+
+    return this->performCurlRequest(url);
+}

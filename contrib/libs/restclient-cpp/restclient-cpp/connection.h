@@ -85,8 +85,18 @@ class Connection {
       *  Member 'username' contains the basic auth username
       *  @var basicAuth::password
       *  Member 'password' contains the basic auth password
+      *  @var Info::certPath
+      *  Member 'certPath' contains the certificate file path
+      *  @var Info::certType
+      *  Member 'certType' contains the certificate type
+      *  @var Info::keyPath
+      *  Member 'keyPath' contains the SSL key file path
+      *  @var Info::keyPassword
+      *  Member 'keyPassword' contains the SSL key password
       *  @var Info::customUserAgent
       *  Member 'customUserAgent' contains the custom user agent
+      *  @var Info::uriProxy
+      *  Member 'uriProxy' contains the HTTP proxy address
       *  @var Info::lastRequest
       *  Member 'lastRequest' contains metrics about the last request
       */
@@ -95,11 +105,18 @@ class Connection {
       RestClient::HeaderFields headers;
       int timeout;
       bool followRedirects;
+      bool noSignal;
       struct {
         std::string username;
         std::string password;
       } basicAuth;
+
+      std::string certPath;
+      std::string certType;
+      std::string keyPath;
+      std::string keyPassword;
       std::string customUserAgent;
+      std::string uriProxy;
       RequestInfo lastRequest;
     } Info;
 
@@ -115,6 +132,9 @@ class Connection {
     // set connection timeout to seconds
     void SetTimeout(int seconds);
 
+    // set to not use signals
+    void SetNoSignal(bool no);
+
     // set whether to follow redirects
     void FollowRedirects(bool follow);
 
@@ -125,6 +145,21 @@ class Connection {
     // set the Certificate Authority (CA) Info which is the path to file holding
     // certificates to be used to verify peers. See CURLOPT_CAINFO
     void SetCAInfoFilePath(const std::string& caInfoFilePath);
+
+    // set CURLOPT_SSLCERT
+    void SetCertPath(const std::string& cert);
+
+    // set CURLOPT_SSLCERTTYPE
+    void SetCertType(const std::string& type);
+
+    // set CURLOPT_SSLKEY. Default format is PEM
+    void SetKeyPath(const std::string& keyPath);
+
+    // set CURLOPT_KEYPASSWD.
+    void SetKeyPassword(const std::string& keyPassword);
+
+    // set CURLOPT_PROXY
+    void SetProxy(const std::string& uriProxy);
 
     std::string GetUserAgent();
 
@@ -148,6 +183,7 @@ class Connection {
     RestClient::Response put(const std::string& uri,
                              const std::string& data);
     RestClient::Response del(const std::string& uri);
+    RestClient::Response head(const std::string& uri);
 
  private:
     CURL* curlHandle;
@@ -155,6 +191,7 @@ class Connection {
     RestClient::HeaderFields headerFields;
     int timeout;
     bool followRedirects;
+    bool noSignal;
     struct {
       std::string username;
       std::string password;
@@ -162,6 +199,11 @@ class Connection {
     std::string customUserAgent;
     std::string caInfoFilePath;
     RequestInfo lastRequest;
+    std::string certPath;
+    std::string certType;
+    std::string keyPath;
+    std::string keyPassword;
+    std::string uriProxy;
     RestClient::Response performCurlRequest(const std::string& uri);
 };
 };  // namespace RestClient

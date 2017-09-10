@@ -12,7 +12,6 @@
 #include <string>
 #include <algorithm>
 #include <functional>
-#include <cctype>
 
 #include "restclient-cpp/version.h"
 
