@@ -30,7 +30,7 @@
 #include <random>
 #include <math.h>
 #include <stdlib.h>
-#include <glm/detail/func_common.hpp>
+#include <glm/common.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

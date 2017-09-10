@@ -269,6 +269,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 			processNeighbour(_current->position + arrayPathfinderCorners[5], _current->gVal + fCornerCost);
 			processNeighbour(_current->position + arrayPathfinderCorners[6], _current->gVal + fCornerCost);
 			processNeighbour(_current->position + arrayPathfinderCorners[7], _current->gVal + fCornerCost);
+			/* fallthrough */
 
 		case EighteenConnected:
 			processNeighbour(_current->position + arrayPathfinderEdges[0], _current->gVal + fEdgeCost);
@@ -283,6 +284,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 			processNeighbour(_current->position + arrayPathfinderEdges[9], _current->gVal + fEdgeCost);
 			processNeighbour(_current->position + arrayPathfinderEdges[10], _current->gVal + fEdgeCost);
 			processNeighbour(_current->position + arrayPathfinderEdges[11], _current->gVal + fEdgeCost);
+			/* fallthrough */
 
 		case SixConnected:
 			processNeighbour(_current->position + arrayPathfinderFaces[0], _current->gVal + fFaceCost);
@@ -291,6 +293,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 			processNeighbour(_current->position + arrayPathfinderFaces[3], _current->gVal + fFaceCost);
 			processNeighbour(_current->position + arrayPathfinderFaces[4], _current->gVal + fFaceCost);
 			processNeighbour(_current->position + arrayPathfinderFaces[5], _current->gVal + fFaceCost);
+			break;
 		}
 
 		if (_allNodes.size() > _params.maxNumberOfNodes) {

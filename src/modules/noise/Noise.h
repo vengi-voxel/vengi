@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Simplex.h"
-#include <glm/detail/func_trigonometric.hpp>
+#include <glm/trigonometric.hpp>
 #include <glm/gtc/constants.hpp>
 #include <cstdint>
 
