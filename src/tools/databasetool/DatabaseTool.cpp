@@ -237,9 +237,11 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	if (nonPrimaryKeyMembers > 0) {
 		src << ") : " << classname << "() {\n";
 		src << loadNonPk.str();
-		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"\", __load_.str());\n";
+		src << "\t\tconst std::string __load_str_ = __load_.str();\n";
+		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"\", __load_str_);\n";
 		src << loadNonPkAdd.str();
-		src << "\t\tcore_assert_always(__p_.exec().result);\n";
+		src << "\t\tconst State& __state = __p_.exec();\n";
+		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute statement: '%s' - error: '%s'\", __load_str_.c_str(), __state.lastErrorMsg.c_str());\n";
 		src << "\t}\n\n";
 	}
 
