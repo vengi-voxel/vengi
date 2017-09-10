@@ -210,7 +210,16 @@ define UPDATE_HG
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,restclient-cpp,https://github.com/mrtazz/restclient-cpp.git)
+	rm -rf contrib/libs/restclient-cpp/restclient-cpp/*.h
+	rm -rf contrib/libs/restclient-cpp/*.cc
+	cp $(UPDATEDIR)/restclient-cpp.sync/include/restclient-cpp/*.h contrib/libs/restclient-cpp/restclient-cpp
+	cp $(UPDATEDIR)/restclient-cpp.sync/source/*.cc contrib/libs/restclient-cpp
 	$(call UPDATE_GIT,libuv,https://github.com/libuv/libuv.git)
+	rm -rf contrib/libs/libuv/include/*.[ch]
+	rm -rf contrib/libs/libuv/src/unix/*.[ch]
+	rm -rf contrib/libs/libuv/src/win32/*.[ch]
+	rm -rf contrib/libs/libuv/src/*.[ch]
 	cp $(UPDATEDIR)/libuv.sync/include/*.h contrib/libs/libuv/include
 	cp $(UPDATEDIR)/libuv.sync/src/unix/*.[ch] contrib/libs/libuv/src/unix
 	cp $(UPDATEDIR)/libuv.sync/src/win/*.[ch] contrib/libs/libuv/src/win
@@ -219,6 +228,7 @@ updatelibs:
 	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/stb_image.h
 	cp $(UPDATEDIR)/stb.sync/stb_image_write.h src/modules/image/stb_image_write.h
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxel/font/stb_truetype.h
+	cp $(UPDATEDIR)/stb.sync/stb_image.h contrib/libs/turbobadger/tb/thirdparty
 	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)
 	cp $(UPDATEDIR)/simplecpp.sync/simplecpp.* contrib/libs/simplecpp
 	$(call UPDATE_GIT,easy_profiler,https://github.com/yse/easy_profiler.git)
