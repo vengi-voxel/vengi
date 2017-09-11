@@ -209,12 +209,14 @@ define UPDATE_HG
 	fi;
 endef
 
-updatelibs:
+update-restclient-cpp:
 	$(call UPDATE_GIT,restclient-cpp,https://github.com/mrtazz/restclient-cpp.git)
 	rm -rf contrib/libs/restclient-cpp/restclient-cpp/*.h
 	rm -rf contrib/libs/restclient-cpp/*.cc
 	cp $(UPDATEDIR)/restclient-cpp.sync/include/restclient-cpp/*.h contrib/libs/restclient-cpp/restclient-cpp
 	cp $(UPDATEDIR)/restclient-cpp.sync/source/*.cc contrib/libs/restclient-cpp
+
+update-libuv:
 	$(call UPDATE_GIT,libuv,https://github.com/libuv/libuv.git)
 	rm -rf contrib/libs/libuv/include/*.[ch]
 	rm -rf contrib/libs/libuv/src/unix/*.[ch]
@@ -224,14 +226,20 @@ updatelibs:
 	cp $(UPDATEDIR)/libuv.sync/src/unix/*.[ch] contrib/libs/libuv/src/unix
 	cp $(UPDATEDIR)/libuv.sync/src/win/*.[ch] contrib/libs/libuv/src/win
 	cp $(UPDATEDIR)/libuv.sync/src/*.[ch] contrib/libs/libuv/src
+
+update-stb:
 	$(call UPDATE_GIT,stb,https://github.com/nothings/stb.git)
 	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/stb_image.h
 	cp $(UPDATEDIR)/stb.sync/stb_image_write.h src/modules/image/stb_image_write.h
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxel/font/stb_truetype.h
 	cp $(UPDATEDIR)/stb.sync/stb_image.h contrib/libs/turbobadger/tb/thirdparty
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h contrib/libs/turbobadger/tb/thirdparty
+
+update-simplecpp:
 	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)
 	cp $(UPDATEDIR)/simplecpp.sync/simplecpp.* contrib/libs/simplecpp
+
+update-easy_profiler:
 	$(call UPDATE_GIT,easy_profiler,https://github.com/yse/easy_profiler.git)
 	rm -rf contrib/libs/easy_profiler
 	mkdir contrib/libs/easy_profiler
@@ -242,6 +250,8 @@ updatelibs:
 	mkdir src/tools/profiler
 	cp -r $(UPDATEDIR)/easy_profiler.sync/profiler_gui/* src/tools/profiler
 	git checkout -f src/tools/profiler/CMakeLists.txt
+
+update-remotery:
 	$(call UPDATE_GIT,remotery,https://github.com/Celtoys/Remotery)
 	cp $(UPDATEDIR)/remotery.sync/lib/Remotery.[ch] src/modules/core/trace
 	rm -rf tools/remotery
@@ -250,33 +260,47 @@ updatelibs:
 	cp $(UPDATEDIR)/remotery.sync/LICENSE tools/remotery
 	cp $(UPDATEDIR)/remotery.sync/readme.md tools/remotery
 	sed -i 's/[ \t]*$$//g' src/modules/core/trace/Remotery.[ch]
+
+update-microprofile:
 	$(call UPDATE_GIT,microprofile,https://github.com/jonasmr/microprofile.git)
 	cp $(UPDATEDIR)/microprofile.sync/microprofile*.[ch]* src/modules/core/trace
 	sed -i 's/\r//g' src/modules/core/trace/microprofile*
 	sed -i 's/[ \t]*$$//g' src/modules/core/trace/microprofile*
+
+update-googletest:
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
 	rm -rf contrib/libs/gtest/src
 	rm -rf contrib/libs/gtest/include
 	cp -r $(UPDATEDIR)/googletest.sync/googletest/src contrib/libs/gtest
 	cp -r $(UPDATEDIR)/googletest.sync/googletest/include contrib/libs/gtest/include
 	git checkout -f contrib/libs/gtest/include/gtest/internal/custom
+
+update-benchmark:
 	$(call UPDATE_GIT,benchmark,https://github.com/google/benchmark.git)
 	cp -r $(UPDATEDIR)/benchmark.sync/src/* contrib/libs/benchmark/src
 	cp -r $(UPDATEDIR)/benchmark.sync/include/* contrib/libs/benchmark/include
+
+update-backward:
 	$(call UPDATE_GIT,backward-cpp,https://github.com/bombela/backward-cpp.git)
 	cp $(UPDATEDIR)/backward-cpp.sync/backward.cpp contrib/libs/backward
 	cp -f $(UPDATEDIR)/backward-cpp.sync/backward.hpp contrib/libs/backward/backward.h
 	sed -i 's/backward.hpp/backward.h/g' contrib/libs/backward/backward.cpp
+
+update-dearimgui:
 	$(call UPDATE_GIT,imgui-addons,https://github.com/Flix01/imgui.git)
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
 	cp $(UPDATEDIR)/imgui.sync/imgui*.h $(UPDATEDIR)/imgui.sync/imgui*.cpp $(UPDATEDIR)/imgui.sync/stb_*.h contrib/libs/dearimgui/dearimgui
 	mv contrib/libs/dearimgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
 	sed -i 's/"imgui.h"/"imgui\/IMGUI.h"/g' src/tests/testimgui/Demo.cpp
+
+update-assimp:
 	$(call UPDATE_GIT,assimp,https://github.com/assimp/assimp.git)
 	rm -rf contrib/libs/assimp/code/* contrib/libs/assimp/include/*
 	cp -r $(UPDATEDIR)/assimp.sync/code/* contrib/libs/assimp/code
 	cp -r $(UPDATEDIR)/assimp.sync/include/* contrib/libs/assimp/include
 	git checkout contrib/libs/assimp/include/assimp/revision.h
+
+update-flatbuffers:
 	$(call UPDATE_GIT,flatbuffers,https://github.com/google/flatbuffers.git)
 	rm -rf contrib/libs/flatbuffers/flatbuffers/* contrib/libs/flatbuffers/compiler/*
 	mkdir -p contrib/libs/flatbuffers/compiler/src
@@ -284,19 +308,27 @@ updatelibs:
 	cp -r $(UPDATEDIR)/flatbuffers.sync/src/* contrib/libs/flatbuffers/compiler
 	cp -r $(UPDATEDIR)/flatbuffers.sync/grpc/src/* contrib/libs/flatbuffers/compiler/src
 	rm contrib/libs/flatbuffers/compiler/flathash.cpp
+
+update-enet:
 	$(call UPDATE_GIT,libenet,https://github.com/lsalzman/enet.git)
 	cp -r $(UPDATEDIR)/libenet.sync/*.[ch] contrib/libs/libenet
 	cp -r $(UPDATEDIR)/libenet.sync/include/* contrib/libs/libenet/include
+
+update-glm:
 	$(call UPDATE_GIT,glm,https://github.com/g-truc/glm.git)
 	rm -rf contrib/libs/glm/glm/*
 	cp -r $(UPDATEDIR)/glm.sync/glm/* contrib/libs/glm/glm
 	rm contrib/libs/glm/glm/CMakeLists.txt
+
+update-sdl2:
 	$(call UPDATE_HG,sdl2,https://hg.libsdl.org/SDL)
 	rm -rf contrib/libs/sdl2/src/* contrib/libs/sdl2/include/*
 	cp -r $(UPDATEDIR)/sdl2.sync/src/* contrib/libs/sdl2/src
 	cp -r $(UPDATEDIR)/sdl2.sync/include/* contrib/libs/sdl2/include
 	mv contrib/libs/sdl2/include/SDL_config.h contrib/libs/sdl2/config/
 	rm contrib/libs/sdl2/include/SDL_config.h.in
+
+update-turbobadger:
 	$(call UPDATE_GIT,turbobadger,https://github.com/fruxo/turbobadger.git)
 	rm -rf contrib/libs/turbobadger/tb/*
 	cp -r $(UPDATEDIR)/turbobadger.sync/src/tb/* contrib/libs/turbobadger/tb
@@ -310,8 +342,12 @@ updatelibs:
 	git diff contrib/libs/turbobadger/ > $(UPDATEDIR)/turbobadger.sync/upstream.diff
 	git checkout contrib/libs/turbobadger/tb/tb_id.cpp
 
-#	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
-#	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
+# currently not part of updatelibs - intentional - we adopted the original code.
+update-simplexnoise:
+	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
+	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
+
+updatelibs: update-restclient-cpp update-libuv update-stb update-easy_profiler update-remotery update-microprofile update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
