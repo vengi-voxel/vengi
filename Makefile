@@ -342,6 +342,10 @@ update-turbobadger:
 	git diff contrib/libs/turbobadger/ > $(UPDATEDIR)/turbobadger.sync/upstream.diff
 	git checkout contrib/libs/turbobadger/tb/tb_id.cpp
 
+update-json:
+	$(call UPDATE_GIT,json,https://github.com/nlohmann/json)
+	cp $(UPDATEDIR)/json.sync/src/json.hpp src/modules/core
+
 # currently not part of updatelibs - intentional - we adopted the original code.
 update-simplexnoise:
 	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
