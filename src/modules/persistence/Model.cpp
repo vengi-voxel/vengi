@@ -84,13 +84,14 @@ bool Model::exec(const char* query) {
 	return fillModelValues(s);
 }
 
-Model::Field Model::getField(const std::string& name) const {
+const Model::Field& Model::getField(const std::string& name) const {
 	for (const Field& field : _fields) {
 		if (field.name == name) {
 			return field;
 		}
 	}
-	return Field();
+	static const Field emptyField;
+	return emptyField;
 }
 
 bool Model::begin() {
@@ -114,11 +115,11 @@ bool Model::fillModelValues(Model::State& state) {
 		return state.result;
 	}
 
-	const int nFields = PQnfields(state.res);
-	Log::trace("Query has values for %i fields", nFields);
-	for (int i = 0; i < nFields; ++i) {
+	const int cols = PQnfields(state.res);
+	Log::trace("Query has values for %i cols", cols);
+	for (int i = 0; i < cols; ++i) {
 		const char* name = PQfname(state.res, i);
-		const char* value = PQgetvalue(state.res, 0, i);
+		const char* value = PQgetisnull(state.res, 0, i) ? nullptr : PQgetvalue(state.res, 0, i);
 		if (value == nullptr) {
 			value = "";
 		}

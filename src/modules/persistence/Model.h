@@ -90,7 +90,7 @@ protected:
 	const std::string _tableName;
 	uint8_t* _membersPointer;
 
-	Field getField(const std::string& name) const;
+	const Field& getField(const std::string& name) const;
 	bool checkLastResult(State& state, Connection* connection) const;
 	bool fillModelValues(State& state);
 public:
