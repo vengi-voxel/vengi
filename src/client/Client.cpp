@@ -15,6 +15,7 @@
 #include "core/GLM.h"
 #include "io/Filesystem.h"
 #include "core/Color.h"
+#include "core/Password.h"
 #include "network/IMsgProtocolHandler.h"
 #include "ServerMessages_generated.h"
 #include "network/AttribUpdateHandler.h"
@@ -79,7 +80,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 	const std::string& password = core::Var::getSafe(cfg::ClientPassword)->strVal();
 	Log::info("Trying to log into the server with %s", email.c_str());
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnect,
-			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(password)).Union());
+			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(core::pwhash(password))).Union());
 }
 
 void Client::onEvent(const voxel::WorldCreatedEvent& event) {
@@ -274,6 +275,7 @@ core::AppState Client::onRunning() {
 		Log::info("TODO: %s needs broadcast", var->name().c_str());
 	});
 	_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+	_camera.update(_deltaFrame);
 	sendMovement();
 	if (state == core::AppState::Running) {
 		_network->update();
@@ -294,11 +296,13 @@ void Client::onWindowResize() {
 void Client::signup(const std::string& email, const std::string& password) {
 	RestClient::Connection conn(core::Var::getSafe(cfg::HTTPBaseURL)->strVal());
 	conn.AppendHeader("Content-Type", "text/json");
+	// TODO: json web token?
 	const RestClient::Response r = conn.post("signup",
 		"{"
 			"\"email\": \"" + email + "\", "
-			"\"password\": \"" + password + "\""
+			"\"password\": \"" + core::pwhash(password) + "\""
 		"}");
+	// TODO: enum
 	if (r.code != 200) {
 		Log::error("Failed to signup with %s (%i)", email.c_str(), r.code);
 	}
@@ -307,7 +311,9 @@ void Client::signup(const std::string& email, const std::string& password) {
 void Client::lostPassword(const std::string& email) {
 	RestClient::Connection conn(core::Var::getSafe(cfg::HTTPBaseURL)->strVal());
 	conn.AppendHeader("Content-Type", "text/json");
+	// TODO: json web token?
 	const RestClient::Response r = conn.post("lostpassword", "{\"email\": \"" + email + "\"}");
+	// TODO: enum
 	if (r.code != 200) {
 		Log::error("Failed to request the password reset for %s (%i)", email.c_str(), r.code);
 	}

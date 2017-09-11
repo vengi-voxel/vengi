@@ -4,6 +4,7 @@
 
 #include "EntityStorage.h"
 #include "core/Var.h"
+#include "core/Password.h"
 #include "User.h"
 #include "DatabaseModels.h"
 #include "Npc.h"
@@ -31,22 +32,28 @@ void EntityStorage::registerUser(const UserPtr& user) {
 }
 
 EntityId EntityStorage::getUserId(const std::string& email, const std::string& password) const {
-	persistence::UserStore userStore(&email, &password, nullptr);
+	persistence::UserStore userStore(&email, nullptr, nullptr);
 	EntityId checkId = userStore.userid();
 
-	if (checkId == 0) {
+	if (checkId == EntityIdNone) {
 		const core::VarPtr& autoReg = core::Var::getSafe(cfg::ServerAutoRegister);
 		if (autoReg->boolVal()) {
+			Log::warn("Creating new user account for %s because auto registration is activated", email.c_str());
 			userStore.insert(email, password, ::persistence::Timestamp::now());
 			checkId = userStore.userid();
 		}
 	}
+
+	if (password != core::pwhash(userStore.password())) {
+		return EntityIdNone;
+	}
+
 	return checkId;
 }
 
 UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std::string& passwd) {
 	EntityId id = getUserId(email, passwd);
-	if (id <= 0) {
+	if (id <= EntityIdNone) {
 		Log::warn("Could not get user id for email: %s", email.c_str());
 		return UserPtr();
 	}

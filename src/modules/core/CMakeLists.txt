@@ -31,6 +31,7 @@ set(SRCS
 	MurmurHash3.cpp MurmurHash3.h
 	NonCopyable.h
 	Octree.h Octree.cpp
+	Password.h
 	Plane.h Plane.cpp
 	Process.cpp Process.h
 	QuadTree.h
