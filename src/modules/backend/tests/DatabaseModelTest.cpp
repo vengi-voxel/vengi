@@ -22,31 +22,35 @@ public:
 		core::Var::get(cfg::DatabasePassword, "engine");
 
 		core::Singleton<::persistence::ConnectionPool>::getInstance().init();
+		ASSERT_TRUE(persistence::UserStore::createTable()) << "Could not create table";
+		persistence::UserStore::truncate();
 	}
 
 	void TearDown() override {
 		Super::TearDown();
 		core::Singleton<::persistence::ConnectionPool>::getInstance().shutdown();
 	}
+
+	void createUser(const std::string& email, const std::string& password) {
+		const ::persistence::Timestamp ts = ::persistence::Timestamp::now();
+		persistence::UserStore u;
+		ASSERT_EQ(0, u.userid());
+		ASSERT_TRUE(u.insert(email, password, ts));
+		ASSERT_NE(0, u.userid());
+
+		persistence::UserStore u2nd(&email, &password, nullptr);
+		ASSERT_EQ(u2nd.userid(), u.userid());
+	}
 };
 
-TEST_F(DatabaseModelTest, testCreate) {
-	ASSERT_TRUE(persistence::UserStore::createTable()) << "Could not create table";
+TEST_F(DatabaseModelTest, testCreateUser) {
+	createUser("a@b.c.d", "secret");
 }
 
-TEST_F(DatabaseModelTest, testWrite) {
-	ASSERT_TRUE(persistence::UserStore::createTable()) << "Could not create table";
-	const std::string email = "a@b.c.d";
-	const std::string password = "secret";
-	persistence::UserStore::truncate();
-	const ::persistence::Timestamp ts = ::persistence::Timestamp::now();
-	persistence::UserStore u(&email, &password, nullptr);
-	ASSERT_EQ(0, u.userid());
-	ASSERT_TRUE(u.insert(email, password, ts));
-	ASSERT_NE(0, u.userid());
-
-	persistence::UserStore u2nd(&email, &password, nullptr);
-	ASSERT_EQ(u2nd.userid(), u.userid());
+TEST_F(DatabaseModelTest, testCreateUsers) {
+	for (int i = 0; i < 100; ++i) {
+		createUser(core::string::format("a%i@b.c.d", i), "secret");
+	}
 }
 
 }

@@ -125,38 +125,78 @@ public:
 		Model* _model;
 		std::string _name;
 		std::string _statement;
-		typedef std::pair<std::string, FieldType> ParamEntry;
-		std::vector<ParamEntry> _params;
+		struct BindParam {
+			std::vector<const char *> values;
+			std::vector<int> lengths;
+			std::vector<int> formats;
+			std::vector<std::string> valueBuffers;
+			std::vector<FieldType> fieldTypes;
+			int position = 0;
+			BindParam(int num) :
+					values(num, nullptr), lengths(num, 0), formats(num, 0), fieldTypes(num, FieldType::INT) {
+				valueBuffers.reserve(num);
+			}
+
+			int add() {
+				const int index = position;
+				++position;
+				if (values.capacity() < (size_t)position) {
+					values.resize(position);
+					valueBuffers.resize(position);
+					lengths.resize(position);
+					formats.resize(position);
+					fieldTypes.resize(position);
+				}
+				return index;
+			}
+		};
+		BindParam _params;
 	public:
 		PreparedStatement(Model* model, const std::string& name, const std::string& statement);
 
-		inline PreparedStatement& add(const std::string& type, FieldType fieldType) {
-			_params.push_back(std::make_pair(type, fieldType));
+		PreparedStatement& add(const std::string& value, FieldType fieldType) {
+			const int index = _params.add();
+			_params.valueBuffers.emplace_back(value);
+			_params.fieldTypes[index] = fieldType;
+			_params.values[index] = _params.valueBuffers.back().data();
 			return *this;
 		}
 
-		template<class Type>
-		PreparedStatement& add(const Type& type, FieldType fieldType) {
-			return add(std::to_string(type), fieldType);
+		PreparedStatement& add(const std::string& value) {
+			return add(value, FieldType::STRING);
 		}
 
-		inline PreparedStatement& add(const std::string& type) {
-			return add(type, FieldType::STRING);
+		PreparedStatement& add(int value) {
+			return add(std::to_string(value), FieldType::INT);
 		}
 
-		inline PreparedStatement& addPassword(const std::string& password) {
+		PreparedStatement& add(long value) {
+			return add(std::to_string(value), FieldType::LONG);
+		}
+
+		PreparedStatement& addPassword(const std::string& password) {
 			return add(password, FieldType::PASSWORD);
 		}
 
-		inline PreparedStatement& add(const char* type, FieldType fieldType) {
-			return add(std::string(type), FieldType::STRING);
+		PreparedStatement& add(const char* value, FieldType fieldType) {
+			const int index = _params.add();
+			_params.fieldTypes[index] = fieldType;
+			_params.values[index] = value;
+			return *this;
 		}
 
-		inline PreparedStatement& add(const Timestamp& type) {
+		PreparedStatement& add(nullptr_t value, FieldType fieldType) {
+			const int index = _params.add();
+			_params.fieldTypes[index] = fieldType;
+			_params.values[index] = value;
+			return *this;
+		}
+
+		PreparedStatement& add(const Timestamp& type) {
 			if (type.isNow()) {
 				return add("NOW()", FieldType::TIMESTAMP);
 			}
-			return add(type.time(), FieldType::TIMESTAMP);
+			return add(std::to_string(type.time()), FieldType::TIMESTAMP);
 		}
 
 		State exec();

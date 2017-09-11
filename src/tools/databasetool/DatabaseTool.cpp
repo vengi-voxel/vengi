@@ -207,6 +207,9 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 			src << ", ";
 		}
 		src << cpptype << " " << f.name;
+		if (nonPrimaryKeyMembers != 0) {
+			src << " = nullptr";
+		}
 		++nonPrimaryKeyMembers;
 		loadNonPk << "\t\tif (" << f.name << " != nullptr) {\n";
 		loadNonPk << "\t\t\t_m._" << f.name << " = *" << f.name << ";\n";
@@ -225,7 +228,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 			loadNonPkAdd << "\t\t\tif (" << f.name << "->isNow()) {\n";
 			loadNonPkAdd << "\t\t\t\t__p_.add(\"NOW()\");\n";
 			loadNonPkAdd << "\t\t\t} else {\n";
-			loadNonPkAdd << "\t\t\t\t__p_.add(" << f.name << "->time()" << ");\n";
+			loadNonPkAdd << "\t\t\t\t__p_.add(*" << f.name << ");\n";
 			loadNonPkAdd << "\t\t\t}\n";
 		} else if (f.type == persistence::Model::FieldType::PASSWORD) {
 			loadNonPkAdd << "\t\t\t__p_.addPassword(" << "*" << f.name << ");\n";

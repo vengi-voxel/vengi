@@ -151,7 +151,7 @@ bool Model::fillModelValues(Model::State& state) {
 }
 
 Model::PreparedStatement::PreparedStatement(Model* model, const std::string& name, const std::string& statement) :
-		_model(model), _name(name), _statement(statement) {
+		_model(model), _name(name), _statement(statement), _params(std::count(statement.begin(), statement.end(), '$')) {
 }
 
 Model::State Model::PreparedStatement::exec() {
@@ -164,20 +164,18 @@ Model::State Model::PreparedStatement::exec() {
 
 	ConnectionType* conn = scoped.connection()->connection();
 
-	if (!scoped.connection()->hasPreparedStatement(_name)) {
-		State state(PQprepare(conn, _name.c_str(), _statement.c_str(), (int)_params.size(), nullptr));
+	if (_name.empty() || !scoped.connection()->hasPreparedStatement(_name)) {
+		State state(PQprepare(conn, _name.c_str(), _statement.c_str(), (int)_params.values.size(), nullptr));
 		if (!_model->checkLastResult(state, scoped)) {
 			return state;
 		}
-		scoped.connection()->registerPreparedStatement(_name);
+		if (!_name.empty()) {
+			scoped.connection()->registerPreparedStatement(_name);
+		}
 	}
-	const int size = _params.size();
-	std::vector<const char*> paramValues;
-	paramValues.reserve(size);
-	for (int i = 0; i < size; ++i) {
-		paramValues.push_back(_params[i].first.c_str());
-	}
-	State prepState(PQexecPrepared(conn, _name.c_str(), size, &paramValues[0], nullptr, nullptr, 0));
+
+	const int size = _params.position;
+	State prepState(PQexecPrepared(conn, _name.c_str(), size, &_params.values[0], &_params.lengths[0], &_params.formats[0], 0));
 	if (!_model->checkLastResult(prepState, scoped)) {
 		return prepState;
 	}
