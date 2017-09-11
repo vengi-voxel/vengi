@@ -26,9 +26,7 @@
 #include "network/EntityUpdateHandler.h"
 #include "network/UserSpawnHandler.h"
 #include "voxel/MaterialColor.h"
-
-#include <restclient-cpp/restclient.h>
-#include <restclient-cpp/connection.h>
+#include "core/Rest.h"
 
 #define registerMoveCmd(name, flag) \
 	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
@@ -294,14 +292,8 @@ void Client::onWindowResize() {
 }
 
 void Client::signup(const std::string& email, const std::string& password) {
-	RestClient::Connection conn(core::Var::getSafe(cfg::HTTPBaseURL)->strVal());
-	conn.AppendHeader("Content-Type", "text/json");
-	// TODO: json web token?
-	const RestClient::Response r = conn.post("signup",
-		"{"
-			"\"email\": \"" + email + "\", "
-			"\"password\": \"" + core::pwhash(password) + "\""
-		"}");
+	const core::rest::Response& r = core::rest::post("signup",
+			core::json { { "email", email }, { "password", core::pwhash(password) } });
 	// TODO: enum
 	if (r.code != 200) {
 		Log::error("Failed to signup with %s (%i)", email.c_str(), r.code);
@@ -309,10 +301,8 @@ void Client::signup(const std::string& email, const std::string& password) {
 }
 
 void Client::lostPassword(const std::string& email) {
-	RestClient::Connection conn(core::Var::getSafe(cfg::HTTPBaseURL)->strVal());
-	conn.AppendHeader("Content-Type", "text/json");
-	// TODO: json web token?
-	const RestClient::Response r = conn.post("lostpassword", "{\"email\": \"" + email + "\"}");
+	const core::rest::Response& r = core::rest::post("lostpassword",
+			core::json { { "email", email } });
 	// TODO: enum
 	if (r.code != 200) {
 		Log::error("Failed to request the password reset for %s (%i)", email.c_str(), r.code);

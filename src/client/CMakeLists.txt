@@ -17,7 +17,7 @@ set(SRCS
 	ui/LostPasswordWindow.h
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ui frontend util restclient-cpp)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ui frontend util)
 check_ui_files(${PROJECT_NAME})
 
 gtest_suite_files(tests
