@@ -342,6 +342,19 @@ update-turbobadger:
 	git diff contrib/libs/turbobadger/ > $(UPDATEDIR)/turbobadger.sync/upstream.diff
 	git checkout contrib/libs/turbobadger/tb/tb_id.cpp
 
+update-glslang:
+	$(call UPDATE_GIT,glslang,https://github.com/KhronosGroup/glslang.git)
+	rm -rf src/tools/glslang/External
+	cp -r $(UPDATEDIR)/glslang.sync/External src/tools/glslang/
+	rm -rf src/tools/glslang/glslang
+	cp -r $(UPDATEDIR)/glslang.sync/glslang src/tools/glslang/
+	rm -rf src/tools/glslang/OGLCompilersDLL
+	cp -r $(UPDATEDIR)/glslang.sync/OGLCompilersDLL src/tools/glslang/
+	rm -rf src/tools/glslang/SPIRV
+	cp -r $(UPDATEDIR)/glslang.sync/SPIRV src/tools/glslang/
+	rm -rf src/tools/glslang/StandAlone
+	cp -r $(UPDATEDIR)/glslang.sync/StandAlone src/tools/glslang/
+
 update-json:
 	$(call UPDATE_GIT,json,https://github.com/nlohmann/json)
 	cp $(UPDATEDIR)/json.sync/src/json.hpp src/modules/core
@@ -351,7 +364,7 @@ update-simplexnoise:
 	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
 	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
 
-updatelibs: update-restclient-cpp update-libuv update-stb update-easy_profiler update-remotery update-microprofile update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger
+updatelibs: update-restclient-cpp update-libuv update-stb update-easy_profiler update-remotery update-microprofile update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
