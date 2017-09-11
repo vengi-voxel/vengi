@@ -294,8 +294,7 @@ void Client::onWindowResize() {
 void Client::signup(const std::string& email, const std::string& password) {
 	const core::rest::Response& r = core::rest::post("signup",
 			core::json { { "email", email }, { "password", core::pwhash(password) } });
-	// TODO: enum
-	if (r.code != 200) {
+	if (r.code != core::rest::StatusCode::OK) {
 		Log::error("Failed to signup with %s (%i)", email.c_str(), r.code);
 	}
 }
@@ -303,8 +302,7 @@ void Client::signup(const std::string& email, const std::string& password) {
 void Client::lostPassword(const std::string& email) {
 	const core::rest::Response& r = core::rest::post("lostpassword",
 			core::json { { "email", email } });
-	// TODO: enum
-	if (r.code != 200) {
+	if (r.code != core::rest::StatusCode::OK) {
 		Log::error("Failed to request the password reset for %s (%i)", email.c_str(), r.code);
 	}
 }
