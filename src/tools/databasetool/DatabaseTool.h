@@ -47,9 +47,10 @@ protected:
 	std::string getDbType(const persistence::Model::Field& field) const;
 	std::string getDbFlags(const Table& table, const persistence::Model::Field& field) const;
 	std::string getCPPType(persistence::Model::FieldType type, bool function = false, bool pointer = false) const;
-	std::string getCPPInit(persistence::Model::FieldType type) const;
+	std::string getCPPInit(persistence::Model::FieldType type, bool pointer) const;
 
 	void sep(std::stringstream& ss, int count) const;
+	bool isPointer(const persistence::Model::Field& field) const;
 
 	bool parseConstraints(core::Tokenizer& tok, Table& table) const;
 	bool parseField(core::Tokenizer& tok, Table& table) const;

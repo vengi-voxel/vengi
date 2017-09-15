@@ -12,6 +12,7 @@ static const char *FieldTypeNames[] = {
 	CORE_STRINGIFY(PASSWORD),
 	CORE_STRINGIFY(TIMESTAMP)
 };
+static_assert(SDL_arraysize(FieldTypeNames) == persistence::Model::MAX_FIELDTYPES, "Invalid field type mapping");
 
 static const char *ConstraintTypeNames[] = {
 	CORE_STRINGIFY(UNIQUE),
@@ -19,12 +20,11 @@ static const char *ConstraintTypeNames[] = {
 	CORE_STRINGIFY(AUTOINCREMENT),
 	CORE_STRINGIFY(NOTNULL)
 };
+static_assert(SDL_arraysize(ConstraintTypeNames) == persistence::Model::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
 
 DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "databasetool");
-	static_assert(SDL_arraysize(FieldTypeNames) == persistence::Model::MAX_FIELDTYPES, "Invalid field type mapping");
-	static_assert(SDL_arraysize(ConstraintTypeNames) == persistence::Model::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
 }
 
 bool DatabaseTool::needsInitCPP(persistence::Model::FieldType type) const {
@@ -38,7 +38,10 @@ bool DatabaseTool::needsInitCPP(persistence::Model::FieldType type) const {
 	}
 }
 
-std::string DatabaseTool::getCPPInit(persistence::Model::FieldType type) const {
+std::string DatabaseTool::getCPPInit(persistence::Model::FieldType type, bool pointer) const {
+	if (pointer) {
+		return "nullptr";
+	}
 	switch (type) {
 	case persistence::Model::FieldType::PASSWORD:
 	case persistence::Model::FieldType::STRING:
@@ -48,6 +51,8 @@ std::string DatabaseTool::getCPPInit(persistence::Model::FieldType type) const {
 		return "0l";
 	case persistence::Model::FieldType::INT:
 		return "0";
+	case persistence::Model::FieldType::MAX:
+		break;
 	}
 	return "";
 }
@@ -56,10 +61,10 @@ std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool fu
 	switch (type) {
 	case persistence::Model::FieldType::PASSWORD:
 	case persistence::Model::FieldType::STRING:
+		if (pointer) {
+			return "const char*";
+		}
 		if (function) {
-			if (pointer) {
-				return "const std::string*";
-			}
 			return "const std::string&";
 		}
 		return "std::string";
@@ -81,6 +86,8 @@ std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool fu
 			return "int32_t*";
 		}
 		return "int32_t";
+	case persistence::Model::FieldType::MAX:
+		break;
 	}
 	return "";
 }
@@ -110,6 +117,8 @@ std::string DatabaseTool::getDbType(const persistence::Model::Field& field) cons
 			return "";
 		}
 		return "INT";
+	case persistence::Model::FieldType::MAX:
+		break;
 	}
 	return "";
 }
@@ -142,6 +151,22 @@ void DatabaseTool::sep(std::stringstream& ss, int count) const {
 	ss << "$" << count;
 }
 
+bool DatabaseTool::isPointer(const persistence::Model::Field& field) const {
+	if (field.isNotNull()) {
+		return false;
+	}
+	if (field.isPrimaryKey()) {
+		return false;
+	}
+	if (field.isAutoincrement()) {
+		return false;
+	}
+	if (field.isUnique()) {
+		return false;
+	}
+	return true;
+}
+
 bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& src) const {
 	if (!table.namespaceSrc.empty()) {
 		src << "namespace " << table.namespaceSrc << " {\n\n";
@@ -160,9 +185,12 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		src << getCPPType(f.type, false);
 		src << " _" << f.name;
 		if (needsInitCPP(f.type)) {
-			src << " = " << getCPPInit(f.type);
+			src << " = " << getCPPInit(f.type, false);
 		}
 		src << ";\n";
+		if (isPointer(f)) {
+			src << "\t\tbool _isNull_" << f.name << " = false;\n;";
+		}
 	}
 	src << "\t};\n";
 	src << "\tMembers _m;\n";
@@ -183,6 +211,12 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		src << ", " << f.length;
 		src << ", offsetof(";
 		src << "Members, _" << f.name << ")";
+		if (isPointer(f)) {
+			src << ", offsetof(";
+			src << "Members, _isNull_" << f.name << ")";
+		} else {
+			src << ", 0";
+		}
 		src << "});\n";
 	}
 	src << "\t}\n\n";
@@ -231,9 +265,11 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 			loadNonPkAdd << "\t\t\t\t__p_.add(*" << f.name << ");\n";
 			loadNonPkAdd << "\t\t\t}\n";
 		} else if (f.type == persistence::Model::FieldType::PASSWORD) {
-			loadNonPkAdd << "\t\t\t__p_.addPassword(" << "*" << f.name << ");\n";
+			loadNonPkAdd << "\t\t\t__p_.addPassword(";
+			loadNonPkAdd << f.name << ");\n";
 		} else {
-			loadNonPkAdd << "\t\t\t__p_.add(" << "*" << f.name << ");\n";
+			loadNonPkAdd << "\t\t\t__p_.add(";
+			loadNonPkAdd << f.name << ");\n";
 		}
 		loadNonPkAdd << "\t\t}\n";
 	}
@@ -333,7 +369,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	bool firstField = true;
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
-		const std::string& cpptype = getCPPType(f.type, true);
+		const std::string& cpptype = getCPPType(f.type, true, isPointer(f));
 		std::string n = f.name;
 		n[0] = SDL_toupper(n[0]);
 
@@ -343,7 +379,18 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		createTable << "\t\t\t\"" << f.name << " " << getDbType(f) << getDbFlags(table, f);
 
 		src << "\tinline " << cpptype << " " << f.name << "() const {\n";
-		src << "\t\treturn _m._" << f.name << ";\n";
+		if (isPointer(f)) {
+			src << "\t\tif (_m._isNull_" << f.name << ") {\n";
+			src << "\t\t\treturn nullptr;\n";
+			src << "\t\t}\n";
+			if (f.type == persistence::Model::FieldType::STRING || f.type == persistence::Model::FieldType::PASSWORD) {
+				src << "\t\treturn _m._" << f.name << ".data();\n";
+			} else {
+				src << "\t\treturn &_m._" << f.name << ";\n";
+			}
+		} else {
+			src << "\t\treturn _m._" << f.name << ";\n";
+		}
 		src << "\t}\n\n";
 
 		src << "\tinline void set" << n << "(" << cpptype << " " << f.name << ") {\n";
@@ -456,13 +503,21 @@ bool DatabaseTool::parseField(core::Tokenizer& tok, Table& table) const {
 			}
 		} else if (token == "default") {
 			if (!tok.hasNext()) {
-				Log::error("missing value for default of %s", fieldname.c_str());
+				Log::error("Missing value for default of %s", fieldname.c_str());
+				return false;
+			}
+			if (!field.defaultVal.empty()) {
+				Log::error("There is already a default value (%s) defined for field '%s'", field.defaultVal.c_str(), fieldname.c_str());
 				return false;
 			}
 			field.defaultVal = tok.next();
 		} else if (token == "length") {
 			if (!tok.hasNext()) {
-				Log::error("missing value for length of %s", fieldname.c_str());
+				Log::error("Missing value for length of '%s'", fieldname.c_str());
+				return false;
+			}
+			if (field.type != persistence::Model::FieldType::STRING && field.type != persistence::Model::FieldType::PASSWORD) {
+				Log::error("Field '%s' of type %i doesn't support length parameter", fieldname.c_str(), std::enum_value(field.type));
 				return false;
 			}
 			field.length = core::string::toInt(tok.next());

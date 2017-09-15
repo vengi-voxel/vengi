@@ -119,7 +119,8 @@ bool Model::fillModelValues(Model::State& state) {
 	Log::trace("Query has values for %i cols", cols);
 	for (int i = 0; i < cols; ++i) {
 		const char* name = PQfname(state.res, i);
-		const char* value = PQgetisnull(state.res, 0, i) ? nullptr : PQgetvalue(state.res, 0, i);
+		const bool isNull = PQgetisnull(state.res, 0, i);
+		const char* value = isNull ? nullptr : PQgetvalue(state.res, 0, i);
 		if (value == nullptr) {
 			value = "";
 		}
@@ -145,7 +146,10 @@ bool Model::fillModelValues(Model::State& state) {
 			setValue(f, Timestamp(core::string::toLong(value)));
 			break;
 		}
+		case FieldType::MAX:
+			break;
 		}
+		setIsNull(f, isNull);
 	}
 	return true;
 }

@@ -38,7 +38,7 @@ public:
 		ASSERT_TRUE(u.insert(email, password, ts));
 		ASSERT_NE(0, u.userid());
 
-		persistence::UserStore u2nd(&email, &password, nullptr);
+		persistence::UserStore u2nd(email.c_str(), password.c_str(), nullptr);
 		ASSERT_EQ(u2nd.userid(), u.userid());
 	}
 };

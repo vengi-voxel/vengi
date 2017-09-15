@@ -37,9 +37,10 @@ public:
 		LONG,
 		INT,
 		PASSWORD,
-		TIMESTAMP
+		TIMESTAMP,
+		MAX
 	};
-	static constexpr int MAX_FIELDTYPES = 5;
+	static constexpr int MAX_FIELDTYPES = std::enum_value(FieldType::MAX);
 
 	struct Field {
 		std::string name;
@@ -48,7 +49,8 @@ public:
 		uint32_t contraintMask = 0u;
 		std::string defaultVal = "";
 		int length = 0;
-		intptr_t offset = 0;
+		intptr_t offset = -1;
+		intptr_t nulloffset = -1;
 
 		inline bool isAutoincrement() const {
 			return (contraintMask & std::enum_value(ConstraintType::AUTOINCREMENT)) != 0u;
@@ -178,6 +180,13 @@ public:
 			return add(password, FieldType::PASSWORD);
 		}
 
+		PreparedStatement& addPassword(const char* password) {
+			const int index = _params.add();
+			_params.fieldTypes[index] = FieldType::PASSWORD;
+			_params.values[index] = password;
+			return *this;
+		}
+
 		PreparedStatement& add(const char* value, FieldType fieldType) {
 			const int index = _params.add();
 			_params.fieldTypes[index] = fieldType;
@@ -204,9 +213,19 @@ public:
 
 	template<class TYPE>
 	inline void setValue(const Field& f, const TYPE& value) {
+		core_assert(f.offset >= 0);
 		uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
 		TYPE* targetValue = (TYPE*)target;
 		*targetValue = value;
+	}
+
+	inline void setIsNull(const Field& f, bool isNull) {
+		if (f.nulloffset == -1) {
+			return;
+		}
+		uint8_t* target = (uint8_t*)(_membersPointer + f.nulloffset);
+		bool* targetValue = (bool*)target;
+		*targetValue = isNull;
 	}
 
 	PreparedStatement prepare(const std::string& name, const std::string& statement);

@@ -4,6 +4,12 @@
 // the databasetool binary will generate model files for the
 // table definitions in this file.
 //
+// Valid types
+// * password
+// * string
+// * int
+// * long
+// * timestamp
 
 table user_table {
 	classname UserStore
