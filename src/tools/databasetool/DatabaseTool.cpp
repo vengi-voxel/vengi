@@ -23,7 +23,7 @@ static const char *ConstraintTypeNames[] = {
 static_assert(SDL_arraysize(ConstraintTypeNames) == persistence::Model::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
 
 // TODO:
-// * ctors shouldn't select - add own select, insert, update and delete methods
+// * add update and delete methods
 // * split into util classes
 // * move sql syntax related methods into vendor specific classes
 DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
@@ -239,7 +239,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		}
 		const std::string& cpptype = getCPPType(f.type, true, true);
 		if (nonPrimaryKeyMembers == 0) {
-			src << "\t" << classname << "(";
+			src << "\tbool select(";
 			loadNonPk << "\t\t__load_ << \"SELECT * FROM " << table.name << " WHERE \";\n";
 		} else {
 			src << ", ";
@@ -278,14 +278,14 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		loadNonPkAdd << "\t\t}\n";
 	}
 	if (nonPrimaryKeyMembers > 0) {
-		src << ") : " << classname << "() {\n";
+		src << ") {\n";
 		src << loadNonPk.str();
 		src << "\t\tconst std::string __load_str_ = __load_.str();\n";
 		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"\", __load_str_);\n";
 		src << loadNonPkAdd.str();
 		src << "\t\tconst State& __state = __p_.exec();\n";
 		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute statement: '%s' - error: '%s'\", __load_str_.c_str(), __state.lastErrorMsg.c_str());\n";
-		src << "\t}\n\n";
+		src << "\t\treturn __state.result;\n\t}\n\n";
 	}
 
 	// ctor for primary keys
@@ -308,7 +308,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 				load << " AND ";
 			} else {
 				load << "\"SELECT * FROM " << table.name << " WHERE ";
-				src << "\t" << classname << "(";
+				src << "\tbool selectById(";
 			}
 			++primaryKeys;
 			load << f.name << " = ";
@@ -343,11 +343,12 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	insert << "\"";
 	if (primaryKeys > 0) {
 		load << "\"";
-		src << ") : " << classname << "() {\n";
+		src << ") {\n";
 		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"" << classname << "Load\",\n\t\t\t"  << load.str() << ");\n";
 		src << "\t\t__p_" << loadadd.str() << ";\n";
-		src << "\t\tcore_assert_always(__p_.exec().result);\n";
-		src << "\t}\n\n";
+		src << "\t\tconst State& __state = __p_.exec();\n";
+		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute selectById statement - error: '%s'\", __state.lastErrorMsg.c_str());\n";
+		src << "\t\treturn __state.result;\n\t}\n\n";
 	}
 
 	std::stringstream createTable;

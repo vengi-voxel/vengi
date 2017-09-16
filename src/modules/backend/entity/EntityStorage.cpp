@@ -32,18 +32,11 @@ void EntityStorage::registerUser(const UserPtr& user) {
 }
 
 EntityId EntityStorage::getUserId(const std::string& email, const std::string& password) const {
-	persistence::UserStore userStore(email.c_str(), nullptr, nullptr);
-	EntityId checkId = userStore.userid();
-
-	if (checkId == EntityIdNone) {
-		const core::VarPtr& autoReg = core::Var::getSafe(cfg::ServerAutoRegister);
-		if (autoReg->boolVal()) {
-			Log::warn("Creating new user account for %s because auto registration is activated", email.c_str());
-			userStore.insert(email, password, ::persistence::Timestamp::now());
-			checkId = userStore.userid();
-		}
+	persistence::UserStore userStore;
+	if (!userStore.select(email.c_str())) {
+		return EntityIdNone;
 	}
-
+	EntityId checkId = userStore.userid();
 	if (password != core::pwhash(userStore.password())) {
 		return EntityIdNone;
 	}
