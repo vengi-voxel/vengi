@@ -22,6 +22,9 @@ static const char *ConstraintTypeNames[] = {
 };
 static_assert(SDL_arraysize(ConstraintTypeNames) == persistence::Model::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
 
+// TODO:
+// * ctors shouldn't select - add own select, insert, update and delete methods
+// * split into util classes
 DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "databasetool");
