@@ -25,6 +25,7 @@ static_assert(SDL_arraysize(ConstraintTypeNames) == persistence::Model::MAX_CONS
 // TODO:
 // * ctors shouldn't select - add own select, insert, update and delete methods
 // * split into util classes
+// * move sql syntax related methods into vendor specific classes
 DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "databasetool");
