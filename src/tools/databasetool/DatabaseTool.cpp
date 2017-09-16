@@ -76,7 +76,7 @@ std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool fu
 			if (pointer) {
 				return "const ::persistence::Timestamp*";
 			}
-			return "const ::persistence::Timestamp";
+			return "const ::persistence::Timestamp&";
 		}
 		return "::persistence::Timestamp";
 	case persistence::Model::FieldType::LONG:
