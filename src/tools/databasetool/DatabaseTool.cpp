@@ -383,7 +383,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	src << "\t}\n\n";
 
 	src << "\tstatic bool truncate() {\n";
-	src << "\t\treturn " << classname << "().exec(\"TRUNCATE TABLE " << quote << table.name << quote << ";\");\n";
+	src << "\t\treturn " << classname << "().exec(\"TRUNCATE TABLE " << quote << table.name << quote << "\");\n";
 	src << "\t}\n\n";
 
 	createTable << "CREATE TABLE IF NOT EXISTS " << quote << table.name << quote << " (\"\n";
