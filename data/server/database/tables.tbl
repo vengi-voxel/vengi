@@ -29,11 +29,12 @@
 //   constraints {
 //     <FIELDNAME> unique
 //     <FIELDNAME> primarykey
+//     <FIELDNAME2> primarykey
 //     <FIELDNAME> autoincrement
+//     (<FIELD1>, <FIELD2>) unique
 //   }
 // }
 
-/*
 table event {
 	namespace backend
 	field id {
@@ -59,6 +60,9 @@ table event {
 
 table event_point {
 	namespace backend
+	field eventid {
+		type long
+	}
 	field userid {
 		type long
 	}
@@ -71,10 +75,9 @@ table event_point {
 		notnull
 	}
 	constraints {
-		(userid, key) unique
+		(userid, eventid, key) unique
 	}
 }
-*/
 
 table user {
 	namespace backend

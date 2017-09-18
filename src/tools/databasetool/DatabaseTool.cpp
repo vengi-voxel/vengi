@@ -5,6 +5,7 @@
 #include "DatabaseTool.h"
 #include "io/Filesystem.h"
 #include "core/String.h"
+#include "core/Common.h"
 
 static const char *FieldTypeNames[] = {
 	CORE_STRINGIFY(STRING),
@@ -30,6 +31,10 @@ static_assert(SDL_arraysize(ConstraintTypeNames) == persistence::Model::MAX_CONS
 DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "databasetool");
+}
+
+void DatabaseTool::sort(Fields& fields) {
+	// TODO: implement me
 }
 
 bool DatabaseTool::needsInitCPP(persistence::Model::FieldType type) const {
@@ -83,7 +88,7 @@ std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool fu
 		return "::persistence::Timestamp";
 	case persistence::Model::FieldType::LONG:
 		if (pointer) {
-			return "int64_t*";
+			return "const int64_t*";
 		}
 		return "int64_t";
 	case persistence::Model::FieldType::INT:
@@ -144,7 +149,12 @@ std::string DatabaseTool::getDbFlags(const Table& table, const persistence::Mode
 		ss << " PRIMARY KEY";
 	}
 	if (field.isUnique()) {
-		ss << " UNIQUE";
+		auto i = table.contraints.find(field.name);
+		// only if there is one field in the unique list - otherwise we have to construct
+		// them differently like the primary key for multiple fields
+		if (i == table.contraints.end() || i->second.fields.size() == 1) {
+			ss << " UNIQUE";
+		}
 	}
 	if (!field.defaultVal.empty()) {
 		ss << " DEFAULT " << field.defaultVal;
@@ -194,7 +204,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		}
 		src << ";\n";
 		if (isPointer(f)) {
-			src << "\t\tbool _isNull_" << f.name << " = false;\n;";
+			src << "\t\tbool _isNull_" << f.name << " = false;\n";
 		}
 	}
 	src << "\t};\n";
@@ -271,6 +281,9 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 			loadNonPkAdd << "\t\t\t}\n";
 		} else if (f.type == persistence::Model::FieldType::PASSWORD) {
 			loadNonPkAdd << "\t\t\t__p_.addPassword(";
+			loadNonPkAdd << f.name << ");\n";
+		} else if (f.type == persistence::Model::FieldType::LONG || f.type == persistence::Model::FieldType::INT) {
+			loadNonPkAdd << "\t\t\t__p_.add(*";
 			loadNonPkAdd << f.name << ");\n";
 		} else {
 			loadNonPkAdd << "\t\t\t__p_.add(";
@@ -375,7 +388,8 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	bool firstField = true;
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
-		const std::string& cpptype = getCPPType(f.type, true, isPointer(f));
+		const std::string& cpptypeGetter = getCPPType(f.type, true, isPointer(f));
+		const std::string& cpptypeSetter = getCPPType(f.type, true, false);
 		std::string n = f.name;
 		core::string::upperCamelCase(n);
 
@@ -384,7 +398,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		}
 		createTable << "\t\t\t\"" << f.name << " " << getDbType(f) << getDbFlags(table, f);
 
-		src << "\tinline " << cpptype << " " << f.name << "() const {\n";
+		src << "\tinline " << cpptypeGetter << " " << f.name << "() const {\n";
 		if (isPointer(f)) {
 			src << "\t\tif (_m._isNull_" << f.name << ") {\n";
 			src << "\t\t\treturn nullptr;\n";
@@ -399,12 +413,35 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		}
 		src << "\t}\n\n";
 
-		src << "\tinline void set" << n << "(" << cpptype << " " << f.name << ") {\n";
+		src << "\tinline void set" << n << "(" << cpptypeSetter << " " << f.name << ") {\n";
 		src << "\t\t_m._" << f.name << " = " << f.name << ";\n";
+		if (isPointer(f)) {
+			src << "\t\t_m._isNull_" << f.name << " = false;\n";
+		}
 		src << "\t}\n\n";
+
+		if (isPointer(f)) {
+			src << "\tinline void set" << n << "(nullptr_t " << f.name << ") {\n";
+			src << "\t\t_m._isNull_" << f.name << " = true;\n";
+			src << "\t}\n\n";
+		}
 
 		firstField = false;
 	}
+
+	if (!table.uniqueKeys.empty()) {
+		bool firstUniqueKey = true;
+		createTable << ",\"\n\t\t\t\"UNIQUE KEY(";
+		for (const std::string& fieldName : table.uniqueKeys) {
+			if (!firstUniqueKey) {
+				createTable << ", ";
+			}
+			createTable << fieldName;
+			firstUniqueKey = false;
+		}
+		createTable << ")";
+	}
+
 	if (table.primaryKeys > 1) {
 		createTable << ",\"\n\t\t\t\"PRIMARY KEY(";
 		bool firstPrimaryKey = true;
@@ -505,7 +542,7 @@ bool DatabaseTool::parseField(core::Tokenizer& tok, Table& table) const {
 				Constraint& c = i->second;
 				c.types |= std::enum_value(persistence::Model::ConstraintType::NOTNULL);
 			} else {
-				table.contraints.insert(std::make_pair(fieldname, Constraint{fieldname, (uint32_t)std::enum_value(persistence::Model::ConstraintType::NOTNULL)}));
+				table.contraints.insert(std::make_pair(fieldname, Constraint{{fieldname}, (uint32_t)std::enum_value(persistence::Model::ConstraintType::NOTNULL)}));
 			}
 		} else if (token == "default") {
 			if (!tok.hasNext()) {
@@ -542,37 +579,75 @@ bool DatabaseTool::parseConstraints(core::Tokenizer& tok, Table& table) const {
 		return false;
 	}
 	std::string token = tok.next();
+	Log::trace("token: '%s'", token.c_str());
 	if (token != "{") {
 		Log::error("Expected {, found %s", token.c_str());
 		return false;
 	}
 	while (tok.hasNext()) {
+		std::vector<std::string> fieldNames;
 		token = tok.next();
+		Log::trace("token: '%s'", token.c_str());
 		if (token == "}") {
 			break;
 		}
+		if (token == "(") {
+			// parse token list
+			while (tok.hasNext()) {
+				token = tok.next();
+				Log::trace("list token: '%s'", token.c_str());
+				if (token == "," || token.empty()) {
+					continue;
+				}
+				if (token == ")") {
+					// this might happen because the separator and split char might follow each other
+					if (!tok.hasNext()) {
+						return false;
+					}
+					token = tok.next();
+					if (!token.empty()) {
+						token = tok.prev();
+					}
+					break;
+				}
+				fieldNames.push_back(token);
+			}
+		} else {
+			fieldNames.push_back(token);
+		}
 		if (!tok.hasNext()) {
-			Log::error("missing type for field constraint %s", token.c_str());
+			Log::error("invalid constraint syntax block for table %s", table.name.c_str());
 			return false;
 		}
-		const std::string& type = tok.next();
+		token = tok.next();
+		Log::trace("type: '%s', table: %s", token.c_str(), table.name.c_str());
 		uint32_t typeMapping = 0u;
 		for (uint32_t i = 0; i < persistence::Model::MAX_CONSTRAINTTYPES; ++i) {
-			if (core::string::iequals(type, ConstraintTypeNames[i])) {
+			if (core::string::iequals(token, ConstraintTypeNames[i])) {
 				typeMapping = 1 << i;
 				break;
 			}
 		}
 		if (typeMapping == 0u) {
-			Log::error("invalid field type for field constraint %s: %s", token.c_str(), type.c_str());
+			Log::error("invalid constraint syntax block for table %s: '%s'", table.name.c_str(), token.c_str());
 			return false;
 		}
-		auto i = table.contraints.find(token);
-		if (i != table.contraints.end()) {
-			Constraint& c = i->second;
-			c.types |= typeMapping;
+		if (fieldNames.size() == 1) {
+			const std::string& name = fieldNames[0];
+			auto i = table.contraints.find(name);
+			if (i != table.contraints.end()) {
+				Constraint& c = i->second;
+				c.types |= typeMapping;
+			} else {
+				Log::trace("fieldnames: %i", (int)fieldNames.size());
+				table.contraints.insert(std::make_pair(name, Constraint{fieldNames, typeMapping}));
+			}
 		} else {
-			table.contraints.insert(std::make_pair(token, Constraint{token, typeMapping}));
+			if (typeMapping != std::enum_value(persistence::Model::ConstraintType::UNIQUE)) {
+				Log::error("Unsupported type mapping for table '%s'", table.name.c_str());
+				return false;
+			}
+			table.uniqueKeys = std::move(fieldNames);
 		}
 	}
 	return true;
@@ -621,22 +696,26 @@ bool DatabaseTool::parseTable(core::Tokenizer& tok, Table& table) const {
 
 	for (auto entry : table.contraints) {
 		const Constraint& c = entry.second;
-		if (table.fields.find(c.field) == table.fields.end()) {
-			Log::error("constraint referenced field wasn't found: %s", c.field.c_str());
-			return false;
+		for (const std::string& fieldName: c.fields) {
+			if (table.fields.find(fieldName) == table.fields.end()) {
+				Log::error("constraint referenced field wasn't found: '%s'", fieldName.c_str());
+				return false;
+			}
+			Log::debug("transfer constraint to field for faster lookup for %s", fieldName.c_str());
+			table.fields[fieldName].contraintMask |= c.types;
 		}
-		Log::debug("transfer constraint to field for faster lookup for %s", c.field.c_str());
-		table.fields[c.field].contraintMask |= c.types;
 		if ((c.types & std::enum_value(persistence::Model::ConstraintType::PRIMARYKEY)) != 0) {
-			++table.primaryKeys;
+			table.primaryKeys += c.fields.size();
 		}
 	}
+
+	sort(table.fields);
 
 	return !table.fields.empty();
 }
 
 bool DatabaseTool::parse(const std::string& buffer) {
-	core::Tokenizer tok(buffer, " ");
+	core::Tokenizer tok(buffer, " \t\n", "(){},;");
 	while (tok.hasNext()) {
 		const std::string& token = tok.next();
 		if (token == "table") {

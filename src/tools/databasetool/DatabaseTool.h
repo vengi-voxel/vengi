@@ -22,7 +22,7 @@ protected:
 	std::string _targetFile;
 
 	struct Constraint {
-		std::string field;
+		std::vector<std::string> fields;
 		// bitmask from persistence::Model::ConstraintType
 		uint32_t types;
 	};
@@ -38,11 +38,13 @@ protected:
 		Fields fields;
 		Constraints contraints;
 		int primaryKeys = 0;
+		std::vector<std::string> uniqueKeys;
 	};
 
 	typedef std::map<std::string, Table> Tables;
 	Tables _tables;
 
+	static void sort(Fields& fields);
 	bool needsInitCPP(persistence::Model::FieldType type) const;
 	std::string getDbType(const persistence::Model::Field& field) const;
 	std::string getDbFlags(const Table& table, const persistence::Model::Field& field) const;

@@ -160,4 +160,11 @@ TEST_F(TokenizerTest, testTokenizerSplit) {
 	EXPECT_EQ("typedef", t.tokens()[0]) << toString(t.tokens());
 }
 
+TEST_F(TokenizerTest, testTokenizerSplit2) {
+	// separator and split char followed by each other...
+	core::Tokenizer t("foo bar {\n\tkey value\n}\n\nfoo2 bar2 {\n\t(key2 value2) {}\n}\n", " \t\n", "(){},;");
+	ASSERT_EQ(17u, t.tokens().size()) << toString(t.tokens());
+	EXPECT_EQ(17u, t.size()) << toString(t.tokens());
+}
+
 }
