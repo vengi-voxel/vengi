@@ -4,6 +4,7 @@
 
 #include "DatabaseTool.h"
 #include "io/Filesystem.h"
+#include "core/String.h"
 
 static const char *FieldTypeNames[] = {
 	CORE_STRINGIFY(STRING),
@@ -376,7 +377,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		const persistence::Model::Field& f = entry.second;
 		const std::string& cpptype = getCPPType(f.type, true, isPointer(f));
 		std::string n = f.name;
-		n[0] = SDL_toupper(n[0]);
+		core::string::upperCamelCase(n);
 
 		if (!firstField) {
 			createTable << ",\"\n";
@@ -646,7 +647,7 @@ bool DatabaseTool::parse(const std::string& buffer) {
 			const std::string& tablename = tok.next();
 			Table table;
 			table.name = tablename;
-			table.classname = tablename;
+			table.classname = core::string::upperCamelCase(tablename + "Model");
 			if (!parseTable(tok, table)) {
 				return false;
 			}
