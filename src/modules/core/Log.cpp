@@ -7,6 +7,7 @@
 #include "config.h"
 #include "App.h"
 #include <cstring>
+#include <cstdio>
 #include <SDL.h>
 
 #ifdef HAVE_SYSLOG_H
@@ -46,6 +47,10 @@ static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority p
 		syslogLevel = LOG_INFO;
 	}
 	syslog(syslogLevel, "%s", message);
+	if (priority == SDL_LOG_PRIORITY_CRITICAL || priority == SDL_LOG_PRIORITY_ERROR) {
+		fprintf(stderr, "%s\n", message);
+		fflush(stderr);
+	}
 }
 #endif
 

@@ -7,6 +7,8 @@
 #include "core/String.h"
 #include "core/Common.h"
 
+static const char *quote = "\\\"";
+
 static const char *FieldTypeNames[] = {
 	CORE_STRINGIFY(STRING),
 	CORE_STRINGIFY(LONG),
@@ -251,7 +253,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		const std::string& cpptype = getCPPType(f.type, true, true);
 		if (nonPrimaryKeyMembers == 0) {
 			src << "\tbool select(";
-			loadNonPk << "\t\t__load_ << \"SELECT * FROM " << table.name << " WHERE \";\n";
+			loadNonPk << "\t\t__load_ << \"SELECT * FROM " << quote << table.name << quote << " WHERE \";\n";
 		} else {
 			src << ", ";
 		}
@@ -311,7 +313,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	std::stringstream load;
 	std::stringstream loadadd;
 	std::string autoincrement;
-	insert << "\"INSERT INTO " << table.name << " (";
+	insert << "\"INSERT INTO " << quote << table.name << quote << " (";
 	int insertValues = 0;
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
@@ -321,11 +323,11 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 				src << ", ";
 				load << " AND ";
 			} else {
-				load << "\"SELECT * FROM " << table.name << " WHERE ";
+				load << "\"SELECT * FROM " << quote << table.name << quote << " WHERE ";
 				src << "\tbool selectById(";
 			}
 			++primaryKeys;
-			load << f.name << " = ";
+			load << quote << f.name << quote << " = ";
 			sep(load, primaryKeys);
 			loadadd << ".add(" << f.name << ")";
 			src << cpptype << " " << f.name;
@@ -381,10 +383,10 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	src << "\t}\n\n";
 
 	src << "\tstatic bool truncate() {\n";
-	src << "\t\treturn " << classname << "().exec(\"TRUNCATE TABLE " << table.name << ";\");\n";
+	src << "\t\treturn " << classname << "().exec(\"TRUNCATE TABLE " << quote << table.name << quote << ";\");\n";
 	src << "\t}\n\n";
 
-	createTable << "CREATE TABLE IF NOT EXISTS " << table.name << " (\"\n";
+	createTable << "CREATE TABLE IF NOT EXISTS " << quote << table.name << quote << " (\"\n";
 	bool firstField = true;
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
@@ -431,7 +433,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 
 	if (!table.uniqueKeys.empty()) {
 		bool firstUniqueKey = true;
-		createTable << ",\"\n\t\t\t\"UNIQUE KEY(";
+		createTable << ",\"\n\t\t\t\"UNIQUE(";
 		for (const std::string& fieldName : table.uniqueKeys) {
 			if (!firstUniqueKey) {
 				createTable << ", ";
