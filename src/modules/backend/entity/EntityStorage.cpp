@@ -32,11 +32,11 @@ void EntityStorage::registerUser(const UserPtr& user) {
 }
 
 EntityId EntityStorage::getUserId(const std::string& email, const std::string& password) const {
-	persistence::UserStore userStore;
+	persistence::UserModel userStore;
 	if (!userStore.select(email.c_str())) {
 		return EntityIdNone;
 	}
-	EntityId checkId = userStore.userid();
+	EntityId checkId = userStore.id();
 	if (password != core::pwhash(userStore.password())) {
 		return EntityIdNone;
 	}

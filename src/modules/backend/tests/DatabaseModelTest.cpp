@@ -22,8 +22,8 @@ public:
 		core::Var::get(cfg::DatabasePassword, "engine");
 
 		core::Singleton<::persistence::ConnectionPool>::getInstance().init();
-		ASSERT_TRUE(persistence::UserStore::createTable()) << "Could not create table";
-		persistence::UserStore::truncate();
+		ASSERT_TRUE(persistence::UserModel::createTable()) << "Could not create table";
+		persistence::UserModel::truncate();
 	}
 
 	void TearDown() override {
@@ -33,14 +33,14 @@ public:
 
 	void createUser(const std::string& email, const std::string& password) {
 		const ::persistence::Timestamp ts = ::persistence::Timestamp::now();
-		persistence::UserStore u;
-		ASSERT_EQ(0, u.userid());
+		persistence::UserModel u;
+		ASSERT_EQ(0, u.id());
 		ASSERT_TRUE(u.insert(email, password, ts));
-		ASSERT_NE(0, u.userid());
+		ASSERT_NE(0, u.id());
 
-		persistence::UserStore u2nd;
+		persistence::UserModel u2nd;
 		ASSERT_TRUE(u2nd.select(email.c_str(), password.c_str(), nullptr));
-		ASSERT_EQ(u2nd.userid(), u.userid());
+		ASSERT_EQ(u2nd.id(), u.id());
 	}
 };
 
