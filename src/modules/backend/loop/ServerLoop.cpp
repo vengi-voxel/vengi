@@ -45,8 +45,9 @@ bool ServerLoop::init() {
 		Log::error("Failed to init the connection pool");
 		return false;
 	}
-	persistence::UserModel u;
-	u.createTable();
+	persistence::UserModel::createTable();
+	persistence::EventModel::createTable();
+	persistence::EventPointModel::createTable();
 
 	if (!_cooldownProvider->init("cooldowns.lua")) {
 		Log::error("Failed to load the cooldown configuration: %s", _cooldownProvider->error().c_str());
