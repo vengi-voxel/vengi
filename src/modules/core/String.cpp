@@ -44,7 +44,7 @@ void splitString(const std::string& string, std::vector<std::string>& tokens, co
 	while (std::string::npos != pos || std::string::npos != lastPos) {
 		// Found a token, add it to the vector.
 		tokens.push_back(string.substr(lastPos, pos - lastPos));
-		// Skip delimiters.  Note the "not_of"
+		// Skip delimiters. Note the "not_of"
 		lastPos = string.find_first_not_of(delimiters, pos);
 		// Find next "non-delimiter"
 		pos = string.find_first_of(delimiters, lastPos);
@@ -59,7 +59,7 @@ std::string toLower(const std::string& string) {
 
 
 static bool patternMatch(const char *pattern, const char *text);
-static bool patternMatchMulti (const char* pattern, const char* text) {
+static bool patternMatchMulti(const char* pattern, const char* text) {
 	const char *p = pattern;
 	const char *t = text;
 	char c;
@@ -115,7 +115,7 @@ static bool patternMatch(const char *pattern, const char *text) {
 	return *t == '\0';
 }
 
-bool matches (const std::string& pattern, const char* text) {
+bool matches(const std::string& pattern, const char* text) {
 	if (pattern.empty()) {
 		return true;
 	}
@@ -129,6 +129,63 @@ std::string concat(std::string_view first, std::string_view second) {
 	target.append(second.data(), second.size());
 	return target;
 }
+
+static void camelCase(std::string& str, bool upperCamelCase) {
+	if (str.empty()) {
+		return;
+	}
+
+	size_t startIndex = str.find_first_not_of("_", 0);
+	if (startIndex == std::string::npos) {
+		str = "";
+		return;
+	}
+	if (startIndex > 0) {
+		str = str.substr(startIndex);
+	}
+	std::string::size_type pos = str.find_first_of("_", 0);
+	while (std::string::npos != pos) {
+		std::string sub = str.substr(0, pos);
+		std::string second = str.substr(pos + 1, str.length() - (pos + 1));
+		if (!second.empty()) {
+			second[0] = SDL_toupper(second[0]);
+			sub.append(second);
+		}
+		str = sub;
+		if (str.empty()) {
+			return;
+		}
+		pos = str.find_first_of("_", pos);
+	}
+	if (str.empty()) {
+		return;
+	}
+	if (!upperCamelCase) {
+		return;
+	}
+	str[0] = SDL_toupper(str[0]);
+}
+
+std::string lowerCamelCase(const std::string& str) {
+	std::string copy = str;
+	lowerCamelCase(copy);
+	return copy;
+}
+
+std::string upperCamelCase(const std::string& str) {
+	std::string copy = str;
+	upperCamelCase(copy);
+	return copy;
+}
+
+void upperCamelCase(std::string& str) {
+	camelCase(str, true);
+}
+
+void lowerCamelCase(std::string& str) {
+	camelCase(str, false);
+}
+
 
 }
 }

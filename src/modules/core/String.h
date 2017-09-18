@@ -222,5 +222,16 @@ inline bool matches(const std::string& pattern, const std::string& text) {
 // pass by copy to prevent aliasing
 extern std::string concat(std::string_view first, std::string_view second);
 
+/**
+ * @param[in,out] str Converts a string into UpperCamelCase.
+ * @note Underscores are removed and the following character is also converted to upper case.
+ * Example: @c foo_bar will end as @c FooBar
+ */
+extern void upperCamelCase(std::string& str);
+extern std::string upperCamelCase(const std::string& str);
+
+extern void lowerCamelCase(std::string& str);
+extern std::string lowerCamelCase(const std::string& str);
+
 }
 }
