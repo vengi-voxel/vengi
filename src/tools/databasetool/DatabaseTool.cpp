@@ -93,7 +93,7 @@ std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool fu
 		return "int64_t";
 	case persistence::Model::FieldType::INT:
 		if (pointer) {
-			return "int32_t*";
+			return "const int32_t*";
 		}
 		return "int32_t";
 	case persistence::Model::FieldType::MAX:
