@@ -392,8 +392,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		const persistence::Model::Field& f = entry.second;
 		const std::string& cpptypeGetter = getCPPType(f.type, true, isPointer(f));
 		const std::string& cpptypeSetter = getCPPType(f.type, true, false);
-		std::string n = f.name;
-		core::string::upperCamelCase(n);
+		const std::string& n = core::string::upperCamelCase(f.name);
 
 		if (!firstField) {
 			createTable << ",\"\n";
