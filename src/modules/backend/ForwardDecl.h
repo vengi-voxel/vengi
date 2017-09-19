@@ -67,6 +67,13 @@ typedef std::shared_ptr<PoiProvider> PoiProviderPtr;
 
 }
 
+namespace eventmgr {
+
+class EventMgr;
+typedef std::shared_ptr<EventMgr> EventMgrPtr;
+
+}
+
 namespace core {
 
 class TimeProvider;
