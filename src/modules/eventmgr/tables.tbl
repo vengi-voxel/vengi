@@ -1,0 +1,43 @@
+table event {
+	namespace backend
+	field id {
+		type long
+	}
+	field type {
+		type long
+		notnull
+	}
+	field startdate {
+		type timestamp
+		notnull
+	}
+	field enddate {
+		type timestamp
+		notnull
+	}
+	constraints {
+		id primarykey
+		id autoincrement
+	}
+}
+
+table event_point {
+	namespace backend
+	field eventid {
+		type long
+	}
+	field userid {
+		type long
+	}
+	field key {
+		type string
+		notnull
+	}
+	field points {
+		type long
+		notnull
+	}
+	constraints {
+		(userid, eventid, key) unique
+	}
+}

@@ -1,0 +1,25 @@
+table user {
+	namespace backend
+	field id {
+		type long
+	}
+	field email {
+		type string
+		notnull
+	}
+	field password {
+		type password
+		length 128
+		notnull
+	}
+	field registrationdate {
+		type timestamp
+		default "NOW()"
+		notnull
+	}
+	constraints {
+		email unique
+		id primarykey
+		id autoincrement
+	}
+}

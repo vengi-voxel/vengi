@@ -37,7 +37,7 @@ set(LIB backend)
 add_library(${LIB} ${SRCS})
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES network io core util voxel attrib eventmgr poi cooldown persistence ai stock util)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
-generate_db_models(${LIB} ${ROOT_DIR}/data/server/database/tables.tbl DatabaseModels.h)
+generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl BackendModels.h)
 
 gtest_suite_files(tests
 	tests/DatabaseModelTest.cpp
