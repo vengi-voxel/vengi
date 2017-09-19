@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "DatabaseModels.h"
+#include "UserModel.h"
 #include "persistence/ConnectionPool.h"
 #include "config.h"
 

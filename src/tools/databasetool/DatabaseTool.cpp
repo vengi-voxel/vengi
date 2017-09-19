@@ -22,21 +22,33 @@ DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::Even
 
 bool DatabaseTool::generateSrc() const {
 	Log::info("Generate database bindings for %s", _targetFile.c_str());
-	std::stringstream src;
-	src << "#pragma once\n";
-	src << "\n";
-	src << "#include \"persistence/Model.h\"\n";
-	src << "#include \"core/String.h\"\n\n";
-	src << "#include \"core/Common.h\"\n\n";
+	std::stringstream header;
+	header << "#pragma once\n\n";
 
+	const std::string dir(core::string::extractPath(_targetFile.c_str()));
+	bool error = false;
 	for (auto i : _tables) {
 		const databasetool::Table& table = i.second;
+		std::stringstream src;
+		src << "#pragma once\n\n";
+		src << "#include \"persistence/Model.h\"\n";
+		src << "#include \"core/String.h\"\n";
+		src << "#include \"core/Common.h\"\n\n";
 		if (!databasetool::generateClassForTable(table, src)) {
-			return false;
+			error = true;
+			continue;
+		}
+		header << "#include \"" << table.classname << ".h\"\n";
+		const std::string filename = dir + table.classname + ".h";
+		if (!filesystem()->syswrite(filename, src.str())) {
+			error = true;
+			continue;
 		}
 	}
-
-	return filesystem()->syswrite(_targetFile, src.str());
+	if (error) {
+		return false;
+	}
+	return filesystem()->syswrite(_targetFile, header.str());
 }
 
 bool DatabaseTool::parse(const std::string& buffer) {
