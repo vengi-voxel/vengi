@@ -98,7 +98,7 @@ void createConstructor(const databasetool::Table& table, std::stringstream& src)
 	src << "\t}\n\n";
 }
 
-static void createNonPrimaryKeyConstructor(const databasetool::Table& table, std::stringstream& src) {
+static void createSelectStatement(const databasetool::Table& table, std::stringstream& src) {
 	int nonPrimaryKeyMembers = 0;
 	std::stringstream loadNonPk;
 	std::stringstream loadNonPkAdd;
@@ -256,20 +256,12 @@ static void createInsertStatement(const databasetool::Table& table, std::strings
 	src << "\t}\n\n";
 }
 
-static void createCreateTableStatement(const databasetool::Table& table, std::stringstream& src) {
-	std::stringstream createTable;
-	createTable << "CREATE TABLE IF NOT EXISTS " << quote << table.name << quote << " (\"\n";
-	bool firstField = true;
+static void createGetterAndSetter(const databasetool::Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
 		const std::string& cpptypeGetter = databasetool::getCPPType(f.type, true, databasetool::isPointer(f));
 		const std::string& cpptypeSetter = databasetool::getCPPType(f.type, true, false);
 		const std::string& n = core::string::upperCamelCase(f.name);
-
-		if (!firstField) {
-			createTable << ",\"\n";
-		}
-		createTable << "\t\t\t\"" << f.name << " " << databasetool::getDbType(f) << getDbFlags(table, f);
 
 		src << "\tinline " << cpptypeGetter << " " << f.name << "() const {\n";
 		if (databasetool::isPointer(f)) {
@@ -298,7 +290,19 @@ static void createCreateTableStatement(const databasetool::Table& table, std::st
 			src << "\t\t_m._isNull_" << f.name << " = true;\n";
 			src << "\t}\n\n";
 		}
+	}
+}
 
+static void createCreateTableStatement(const databasetool::Table& table, std::stringstream& src) {
+	std::stringstream createTable;
+	createTable << "CREATE TABLE IF NOT EXISTS " << quote << table.name << quote << " (\"\n";
+	bool firstField = true;
+	for (auto entry : table.fields) {
+		const persistence::Model::Field& f = entry.second;
+		if (!firstField) {
+			createTable << ",\"\n";
+		}
+		createTable << "\t\t\t\"" << f.name << " " << databasetool::getDbType(f) << getDbFlags(table, f);
 		firstField = false;
 	}
 
@@ -352,7 +356,7 @@ bool generateClassForTable(const databasetool::Table& table, std::stringstream& 
 
 	createConstructor(table, src);
 
-	createNonPrimaryKeyConstructor(table, src);
+	createSelectStatement(table, src);
 
 	createSelectByIds(table, src);
 
@@ -361,6 +365,8 @@ bool generateClassForTable(const databasetool::Table& table, std::stringstream& 
 	createTruncateStatement(table, src);
 
 	createCreateTableStatement(table, src);
+
+	createGetterAndSetter(table, src);
 
 	return true;
 }
