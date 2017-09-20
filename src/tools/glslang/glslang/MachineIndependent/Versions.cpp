@@ -154,6 +154,7 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_OES_standard_derivatives]         = EBhDisable;
     extensionBehavior[E_GL_EXT_frag_depth]                   = EBhDisable;
     extensionBehavior[E_GL_OES_EGL_image_external]           = EBhDisable;
+    extensionBehavior[E_GL_OES_EGL_image_external_essl3]     = EBhDisable;
     extensionBehavior[E_GL_EXT_shader_texture_lod]           = EBhDisable;
     extensionBehavior[E_GL_EXT_shadow_samplers]              = EBhDisable;
     extensionBehavior[E_GL_ARB_texture_rectangle]            = EBhDisable;
@@ -201,6 +202,7 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_AMD_texture_gather_bias_lod]              = EBhDisable;
     extensionBehavior[E_GL_AMD_gpu_shader_int16]                     = EBhDisable;
     extensionBehavior[E_GL_AMD_shader_image_load_store_lod]          = EBhDisable;
+    extensionBehavior[E_GL_AMD_shader_fragment_mask]                 = EBhDisable;
 #endif
 
 #ifdef NV_EXTENSIONS
@@ -260,6 +262,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_OES_standard_derivatives 1\n"
             "#define GL_EXT_frag_depth 1\n"
             "#define GL_OES_EGL_image_external 1\n"
+            "#define GL_OES_EGL_image_external_essl3 1\n"
             "#define GL_EXT_shader_texture_lod 1\n"
             "#define GL_EXT_shadow_samplers 1\n"
 
@@ -333,6 +336,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_AMD_texture_gather_bias_lod 1\n"
             "#define GL_AMD_gpu_shader_int16 1\n"
             "#define GL_AMD_shader_image_load_store_lod 1\n"
+            "#define GL_AMD_shader_fragment_mask 1\n"
 #endif
 
 #ifdef NV_EXTENSIONS
