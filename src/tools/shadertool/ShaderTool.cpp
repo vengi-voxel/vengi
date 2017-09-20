@@ -305,16 +305,32 @@ core::AppState ShaderTool::onRunning() {
 
 	_shaderStruct.filename = _shaderfile;
 	_shaderStruct.name = _shaderfile;
-	parse(fragmentSrcSource, false);
+	if (!parse(fragmentSrcSource, false)) {
+		Log::error("Failed to parse fragment shader %s", _shaderfile.c_str());
+		_exitCode = 1;
+		return core::AppState::Cleanup;
+	}
 	if (!geometryBuffer.empty()) {
 		const std::string& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, false);
-		parse(geometrySrcSource, false);
+		if (!parse(geometrySrcSource, false)) {
+			Log::error("Failed to parse geometry shader %s", _shaderfile.c_str());
+			_exitCode = 1;
+			return core::AppState::Cleanup;
+		}
 	}
 	if (!computeBuffer.empty()) {
 		const std::string& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer, false);
-		parse(computeSrcSource, false);
+		if (!parse(computeSrcSource, false)) {
+			Log::error("Failed to parse compute shader %s", _shaderfile.c_str());
+			_exitCode = 1;
+			return core::AppState::Cleanup;
+		}
 	}
-	parse(vertexSrcSource, true);
+	if (!parse(vertexSrcSource, true)) {
+		Log::error("Failed to parse vertex shader %s", _shaderfile.c_str());
+		_exitCode = 1;
+		return core::AppState::Cleanup;
+	}
 
 	for (const auto& block : _shaderStruct.uniformBlocks) {
 		Log::debug("Found uniform block %s with %i members", block.name.c_str(), int(block.members.size()));
@@ -334,7 +350,8 @@ core::AppState ShaderTool::onRunning() {
 
 	const std::string& templateShader = fs->load(_shaderTemplateFile);
 	const std::string& templateUniformBuffer = fs->load(_uniformBufferTemplateFile);
-	if (!shadertool::generateSrc(templateShader, templateUniformBuffer, _shaderStruct, filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory)) {
+	if (!shadertool::generateSrc(templateShader, templateUniformBuffer, _shaderStruct,
+			filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory)) {
 		Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
 		_exitCode = 1;
 		return core::AppState::Cleanup;
