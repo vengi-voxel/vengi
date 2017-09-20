@@ -16,7 +16,7 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 	std::string src(templateShader);
 	const std::string& name = shaderStruct.name + "Shader";
 
-	const std::string& filename = util::convertName(name, false);
+	const std::string& filename = util::convertName(name, true);
 	src = core::string::replaceAll(src, "$name$", filename);
 	src = core::string::replaceAll(src, "$namespace$", namespaceSrc);
 	src = core::string::replaceAll(src, "$filename$", shaderDirectory + shaderStruct.filename);
