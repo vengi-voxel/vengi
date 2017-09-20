@@ -14,8 +14,7 @@ namespace shadertool {
 bool generateSrc(const std::string& templateShader, const std::string& templateUniformBuffer, const ShaderStruct& shaderStruct,
 		const io::FilesystemPtr& filesystem, const std::string& namespaceSrc, const std::string& sourceDirectory, const std::string& shaderDirectory) {
 	std::string src(templateShader);
-	std::string srcUb(templateUniformBuffer);
-	std::string name = shaderStruct.name + "Shader";
+	const std::string& name = shaderStruct.name + "Shader";
 
 	const std::string& filename = util::convertName(name, false);
 	src = core::string::replaceAll(src, "$name$", filename);
@@ -293,8 +292,7 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		setters << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", buf);\n";
 		setters << "\t}\n";
 
-		std::string generatedUb = srcUb;
-		generatedUb = core::string::replaceAll(generatedUb, "$name$", uniformBufferStructName);
+		std::string generatedUb = core::string::replaceAll(templateUniformBuffer, "$name$", uniformBufferStructName);
 		generatedUb = core::string::replaceAll(generatedUb, "$namespace$", namespaceSrc);
 		generatedUb = core::string::replaceAll(generatedUb, "$uniformbuffers$", ub.str());
 		generatedUb = core::string::replaceAll(generatedUb, "$setters$", "");
