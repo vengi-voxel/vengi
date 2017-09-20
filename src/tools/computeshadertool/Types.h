@@ -6,6 +6,7 @@
 
 #include "compute/Types.h"
 #include <string>
+#include <vector>
 
 namespace computeshadertool {
 

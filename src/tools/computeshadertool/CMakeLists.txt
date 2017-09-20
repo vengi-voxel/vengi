@@ -2,6 +2,8 @@ project(computeshadertool)
 
 set(SHARED_SRCS
 	Types.h
+	Parser.cpp Parser.h
+	Generator.cpp Generator.h
 	Util.cpp Util.h
 )
 
