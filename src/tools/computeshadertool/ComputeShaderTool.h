@@ -38,7 +38,7 @@ protected:
 	const simplecpp::Token *parseKernel(const simplecpp::Token *tok);
 	const simplecpp::Token *parseStruct(const simplecpp::Token *tok);
 	bool parse(const std::string& src);
-	void generateSrc();
+	bool generateSrc();
 	static bool validate(computeshadertool::Kernel& kernel);
 public:
 	ComputeShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

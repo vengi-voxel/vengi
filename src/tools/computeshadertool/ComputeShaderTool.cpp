@@ -55,7 +55,7 @@ bool ComputeShaderTool::validate(computeshadertool::Kernel& kernel) {
 }
 
 // TODO: doxygen
-void ComputeShaderTool::generateSrc() {
+bool ComputeShaderTool::generateSrc() {
 	const std::string& templateShader = filesystem()->load(_shaderTemplateFile);
 	std::string src(templateShader);
 	std::string name = _name + "Shader";
@@ -208,9 +208,9 @@ void ComputeShaderTool::generateSrc() {
 	Log::info("Generate shader bindings for %s at %s", _name.c_str(), targetFile.c_str());
 	if (!filesystem()->syswrite(targetFile, src)) {
 		Log::error("Failed to write %s", targetFile.c_str());
-		_exitCode = 100;
-		requestQuit();
+		return false;
 	}
+	return true;
 }
 
 const simplecpp::Token *ComputeShaderTool::parseStruct(const simplecpp::Token *tok) {
@@ -584,7 +584,10 @@ core::AppState ComputeShaderTool::onRunning() {
 		_exitCode = 1;
 		return core::AppState::Cleanup;
 	}
-	generateSrc();
+	if (!generateSrc()) {
+		_exitCode = 100;
+		return core::AppState::Cleanup;
+	}
 
 	const std::string& computeSource = shader.getSource(computeBuffer, true);
 
@@ -596,8 +599,7 @@ core::AppState ComputeShaderTool::onRunning() {
 	std::string finalComputeFilename = _appname + "-" + _computeFilename;
 	filesystem()->write(finalComputeFilename, computeSource);
 
-	requestQuit();
-	return core::AppState::Running;
+	return core::AppState::Cleanup;
 }
 
 int main(int argc, char *argv[]) {
