@@ -37,6 +37,4 @@ extern std::string std430Padding(const Variable& v, int& padding);
 
 extern const Types& resolveTypes(Variable::Type type);
 
-extern PrimitiveType layoutPrimitiveType(const std::string& token);
-
 }

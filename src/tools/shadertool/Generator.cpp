@@ -17,18 +17,7 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 	std::string srcUb(templateUniformBuffer);
 	std::string name = shaderStruct.name + "Shader";
 
-	std::vector<std::string> shaderNameParts;
-	core::string::splitString(name, shaderNameParts, "_");
-	std::string filename = "";
-	for (std::string n : shaderNameParts) {
-		if (n.length() > 1 || shaderNameParts.size() < 2) {
-			n[0] = SDL_toupper(n[0]);
-			filename += n;
-		}
-	}
-	if (filename.empty()) {
-		filename = name;
-	}
+	const std::string& filename = util::convertName(name, false);
 	src = core::string::replaceAll(src, "$name$", filename);
 	src = core::string::replaceAll(src, "$namespace$", namespaceSrc);
 	src = core::string::replaceAll(src, "$filename$", shaderDirectory + shaderStruct.filename);
