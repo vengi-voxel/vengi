@@ -27,7 +27,7 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 	if (uniformSize > 0) {
 		uniforms << "checkUniforms({";
 		for (int i = 0; i < uniformSize; ++i) {
-			std::string uniformName = shaderStruct.uniforms[i].name;
+			const std::string& uniformName = shaderStruct.uniforms[i].name;
 			uniforms << "\"";
 			uniforms << uniformName;
 			uniforms << "\"";
