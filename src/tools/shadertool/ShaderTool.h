@@ -57,7 +57,6 @@ private:
 protected:
 	ShaderStruct _shaderStruct;
 	TokenIterator _tok;
-	Layout _layout;
 	std::string _namespaceSrc;
 	std::string _sourceDirectory;
 	std::string _shaderDirectory;
@@ -65,14 +64,8 @@ protected:
 	std::string _uniformBufferTemplateFile;
 	std::string _shaderfile;
 
-	bool parseLayout();
+	bool parseLayout(Layout& layout);
 	bool parse(const std::string& src, bool vertex);
-
-	std::string typeAlign(const Variable& v) const;
-	size_t typeSize(const Variable& v) const;
-	std::string typePadding(const Variable& v, int& padding) const;
-
-	void generateSrc();
 public:
 	ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 

@@ -1,14 +1,21 @@
 project(shadertool)
+
+set(SHARED_SRCS
+	Generator.cpp Generator.h
+	Types.cpp Types.h
+	Util.cpp Util.h
+)
+
 set(SRCS
 	ShaderTool.h ShaderTool.cpp
-	Util.h Util.cpp
+	${SHARED_SRCS}
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS})
 add_dependencies(${PROJECT_NAME} glslangValidator)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES video simplecpp)
 
 set(TEST_SRCS
-	Util.cpp Util.h
+	${SHARED_SRCS}
 	tests/ShaderToolTest.cpp
 )
 
