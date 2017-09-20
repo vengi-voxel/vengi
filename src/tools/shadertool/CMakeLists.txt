@@ -4,6 +4,7 @@ set(SHARED_SRCS
 	Generator.cpp Generator.h
 	Types.cpp Types.h
 	Util.cpp Util.h
+	TokenIterator.h
 )
 
 set(SRCS
