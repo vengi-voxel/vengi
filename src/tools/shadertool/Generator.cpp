@@ -74,7 +74,6 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 	}
 
 	std::stringstream setters;
-	std::stringstream includes;
 	if (uniformSize > 0 || attributeSize > 0) {
 		setters << "\n";
 	}
@@ -232,11 +231,12 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		}
 	}
 
-	std::stringstream ub;
-	std::stringstream shutdown;
 	if (!shaderStruct.uniformBlocks.empty()) {
 		setters << "\n";
 	}
+	std::stringstream ub;
+	std::stringstream shutdown;
+	std::stringstream includes;
 	for (auto & ubuf : shaderStruct.uniformBlocks) {
 		const std::string& uniformBufferStructName = util::convertName(ubuf.name, true);
 		const std::string& uniformBufferName = util::convertName(ubuf.name, false);
