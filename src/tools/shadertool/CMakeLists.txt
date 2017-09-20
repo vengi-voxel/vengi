@@ -5,6 +5,7 @@ set(SHARED_SRCS
 	Types.cpp Types.h
 	Util.cpp Util.h
 	TokenIterator.h
+	Parser.cpp Parser.h
 )
 
 set(SRCS

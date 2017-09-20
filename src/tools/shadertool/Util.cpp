@@ -13,18 +13,6 @@
 
 namespace util {
 
-static const char* PrimitiveTypeStr[] {
-	nullptr,
-	"points",
-	"lines",
-	"lines_adjacency",
-	"triangles",
-	"triangles_adjacency",
-	"line_strip",
-	"triangle_strip"
-};
-static_assert(lengthof(PrimitiveTypeStr) == std::enum_value(PrimitiveType::Max), "PrimitiveTypeStr doesn't match enum");
-
 static const Types cTypes[] = {
 	{ Variable::DOUBLE,          1, "double",       Value,     "double" },
 	{ Variable::FLOAT,           1, "float",        Value,     "float" },
@@ -299,18 +287,6 @@ std::string std430Padding(const Variable& v, int& padding) {
 
 const Types& resolveTypes(Variable::Type type) {
 	return cTypes[type];
-}
-
-PrimitiveType layoutPrimitiveType(const std::string& token) {
-	for (int i = 0; i < lengthof(PrimitiveTypeStr); ++i) {
-		if (PrimitiveTypeStr[i] == nullptr) {
-			continue;
-		}
-		if (token == PrimitiveTypeStr[i]) {
-			return (PrimitiveType)i;
-		}
-	}
-	return PrimitiveType::None;
 }
 
 }
