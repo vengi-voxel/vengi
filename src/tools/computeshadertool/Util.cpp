@@ -3,6 +3,7 @@
  */
 #include "Util.h"
 #include "core/String.h"
+#include "compute/Types.h"
 
 namespace util {
 

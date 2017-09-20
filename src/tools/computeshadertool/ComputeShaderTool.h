@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/ConsoleApp.h"
-#include "compute/Types.h"
+#include "Types.h"
 #include <simplecpp.h>
 #include <vector>
 
@@ -32,41 +32,14 @@ protected:
 	std::string _computeFilename;
 	std::string _shaderTemplateFile;
 	std::string _name;
-
-	struct Parameter {
-		std::string qualifier;
-		std::string type;
-		std::string name;
-		std::string comment;
-		bool byReference = false;
-		compute::BufferFlag flags = compute::BufferFlag::ReadWrite;
-	};
-
-	struct ReturnValue {
-		std::string type;
-	};
-
-	struct Kernel {
-		std::string name;
-		std::vector<Parameter> parameters;
-		int workDimension = 1;
-		ReturnValue returnValue;
-	};
-
-	struct Struct {
-		std::string comment;
-		std::string name;
-		std::vector<Parameter> parameters;
-	};
-
-	std::vector<Kernel> _kernels;
-	std::vector<Struct> _structs;
+	std::vector<computeshadertool::Kernel> _kernels;
+	std::vector<computeshadertool::Struct> _structs;
 
 	const simplecpp::Token *parseKernel(const simplecpp::Token *tok);
 	const simplecpp::Token *parseStruct(const simplecpp::Token *tok);
 	bool parse(const std::string& src);
 	void generateSrc();
-	static bool validate(Kernel& kernel);
+	static bool validate(computeshadertool::Kernel& kernel);
 public:
 	ComputeShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	~ComputeShaderTool();

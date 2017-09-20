@@ -3,8 +3,8 @@
  */
 
 #include "ComputeShaderTool.h"
-#include "core/App.h"
 #include "core/Assert.h"
+#include "core/String.h"
 #include "io/Filesystem.h"
 #include "compute/Shader.h"
 #include "Util.h"
@@ -19,10 +19,10 @@ ComputeShaderTool::ComputeShaderTool(const io::FilesystemPtr& filesystem, const 
 ComputeShaderTool::~ComputeShaderTool() {
 }
 
-bool ComputeShaderTool::validate(Kernel& kernel) {
+bool ComputeShaderTool::validate(computeshadertool::Kernel& kernel) {
 	bool error = false;
 	// check mutual exclusive parameter flags
-	for (const Parameter& p : kernel.parameters) {
+	for (const computeshadertool::Parameter& p : kernel.parameters) {
 		if ((p.flags & compute::BufferFlag::UseHostPointer) != compute::BufferFlag::None) {
 			if ((p.flags & compute::BufferFlag::CopyHostPointer) != compute::BufferFlag::None) {
 				Log::error("CopyHostPointer and UseHostPointer are mutually exclusive");
@@ -56,7 +56,7 @@ bool ComputeShaderTool::validate(Kernel& kernel) {
 
 // TODO: doxygen
 void ComputeShaderTool::generateSrc() {
-	const std::string& templateShader = core::App::getInstance()->filesystem()->load(_shaderTemplateFile);
+	const std::string& templateShader = filesystem()->load(_shaderTemplateFile);
 	std::string src(templateShader);
 	std::string name = _name + "Shader";
 
@@ -76,10 +76,10 @@ void ComputeShaderTool::generateSrc() {
 	std::stringstream shutdown;
 	std::stringstream createKernels;
 	std::stringstream kernels;
-	for (Kernel& k : _kernels) {
+	for (computeshadertool::Kernel& k : _kernels) {
 		kernels << "\n\tbool " << k.name << "(\n\t\t";
 		bool first = true;
-		for (Parameter& p : k.parameters) {
+		for (computeshadertool::Parameter& p : k.parameters) {
 			if (!first) {
 				kernels << ",\n\t\t";
 			}
@@ -104,7 +104,7 @@ void ComputeShaderTool::generateSrc() {
 		}
 		kernels << ",\n\t\tconst glm::ivec" << k.workDimension << "& workSize\n\t) const {\n";
 		for (size_t i = 0; i < k.parameters.size(); ++i) {
-			const Parameter& p = k.parameters[i];
+			const computeshadertool::Parameter& p = k.parameters[i];
 			if (core::string::contains(p.type, "*")) {
 				const std::string& bufferName = core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
 				const std::string size = "core::vectorSize(" + p.name + ")";
@@ -136,7 +136,7 @@ void ComputeShaderTool::generateSrc() {
 		kernels << k.workDimension;
 		kernels << ");\n";
 		for (size_t i = 0; i < k.parameters.size(); ++i) {
-			const Parameter& p = k.parameters[i];
+			const computeshadertool::Parameter& p = k.parameters[i];
 			if (!core::string::contains(p.type, "*")) {
 				continue;
 			}
@@ -165,7 +165,7 @@ void ComputeShaderTool::generateSrc() {
 
 	std::stringstream structs;
 	bool firstStruct = true;
-	for (const Struct& s : _structs) {
+	for (const computeshadertool::Struct& s : _structs) {
 		if (!firstStruct) {
 			structs << "\n";
 		}
@@ -174,7 +174,7 @@ void ComputeShaderTool::generateSrc() {
 			structs << "/** " << s.comment << "*/\n";
 		}
 		structs << "\tstruct /*alignas(4)*/ " << s.name << " {\n";
-		for (const Parameter& p : s.parameters) {
+		for (const computeshadertool::Parameter& p : s.parameters) {
 			const util::CLTypeMapping& clType = util::vectorType(p.type);
 			if (!p.comment.empty()) {
 				structs << "\t\t/** " << p.comment << "*/\n";
@@ -206,7 +206,7 @@ void ComputeShaderTool::generateSrc() {
 	src = core::string::replaceAll(src, "$includes$", includes.str());
 	const std::string targetFile = _sourceDirectory + filename + ".h";
 	Log::info("Generate shader bindings for %s at %s", _name.c_str(), targetFile.c_str());
-	if (!core::App::getInstance()->filesystem()->syswrite(targetFile, src)) {
+	if (!filesystem()->syswrite(targetFile, src)) {
 		Log::error("Failed to write %s", targetFile.c_str());
 		_exitCode = 100;
 		requestQuit();
@@ -220,7 +220,7 @@ const simplecpp::Token *ComputeShaderTool::parseStruct(const simplecpp::Token *t
 				tok->location.file().c_str(), tok->location.line, tok->location.col);
 		return tok;
 	}
-	Struct structVar;
+	computeshadertool::Struct structVar;
 	structVar.name = tok->str;
 	tok = tok->next;
 	if (!tok->next) {
@@ -247,7 +247,7 @@ const simplecpp::Token *ComputeShaderTool::parseStruct(const simplecpp::Token *t
 	}
 	int depth = 1;
 	bool valid = false;
-	Parameter param;
+	computeshadertool::Parameter param;
 	for (tok = tok->next; tok; tok = tok->next) {
 		const std::string& token = tok->str;
 		if (token == "{") {
@@ -269,7 +269,7 @@ const simplecpp::Token *ComputeShaderTool::parseStruct(const simplecpp::Token *t
 				}
 			}
 			structVar.parameters.push_back(param);
-			param = Parameter();
+			param = computeshadertool::Parameter();
 			if (tok) {
 				tok = tok->next;
 			}
@@ -398,14 +398,14 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 		return tok;
 	}
 
-	Kernel kernel;
+	computeshadertool::Kernel kernel;
 	kernel.name = stack.top();
 	kernel.workDimension = kernelDimensions;
 	Log::debug("found kernel %s with dimension %i", kernel.name.c_str(), kernel.workDimension);
 	stack.pop();
 
 	bool added = false;
-	Parameter parameter;
+	computeshadertool::Parameter parameter;
 	while (!parameterTokens.empty()) {
 		const std::string token = parameterTokens.back();
 		parameterTokens.pop_back();
@@ -419,7 +419,7 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 				parameter.type.append(" *");
 			}
 			kernel.parameters.insert(kernel.parameters.begin(), parameter);
-			parameter = Parameter();
+			parameter = computeshadertool::Parameter();
 			continue;
 		}
 		// TODO: __local size must be the size in bytes for the buffer that create
