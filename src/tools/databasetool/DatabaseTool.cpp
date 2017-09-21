@@ -21,7 +21,7 @@ DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::Even
 }
 
 bool DatabaseTool::generateSrc() const {
-	Log::info("Generate database bindings for %s", _targetFile.c_str());
+	Log::debug("Generate database bindings for %s", _targetFile.c_str());
 	std::stringstream header;
 	header << "#pragma once\n\n";
 
