@@ -5,7 +5,7 @@
 #include "select/Same.h"
 #include "select/Single.h"
 #include "core/Common.h"
-#include <SDL.h>
+#include "core/Array.h"
 
 namespace voxedit {
 
@@ -19,7 +19,7 @@ static const struct Selection {
 	{SelectType::LineHorizontal,	selections::LineHorizontal::get()},
 	{SelectType::Edge,				selections::Edge::get()}
 };
-static_assert(SDL_arraysize(selectionsArray) == std::enum_value(SelectType::Max), "Array size doesn't match selection modes");
+static_assert(lengthof(selectionsArray) == std::enum_value(SelectType::Max), "Array size doesn't match selection modes");
 
 void SelectionHandler::unselectAll() {
 	_selectedVoxels = 0;

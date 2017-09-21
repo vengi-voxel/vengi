@@ -17,6 +17,7 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
 #include "core/Random.h"
+#include "core/Array.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
 #include "voxedit-util/tool/Crop.h"
@@ -440,7 +441,7 @@ void Model::render(const video::Camera& camera) {
 	_rawVolumeRenderer.render(camera);
 	// TODO: render error if rendered last - but be before grid renderer to get transparency.
 	if (_renderLockAxis) {
-		for (int i = 0; i < (int)SDL_arraysize(_planeMeshIndex); ++i) {
+		for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
 			_shapeRenderer.render(_planeMeshIndex[i], camera);
 		}
 	}
@@ -477,7 +478,7 @@ void Model::init() {
 	_gridRenderer.init();
 
 	_mirrorMeshIndex = -1;
-	for (int i = 0; i < (int)SDL_arraysize(_planeMeshIndex); ++i) {
+	for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
 		_planeMeshIndex[i] = -1;
 	}
 

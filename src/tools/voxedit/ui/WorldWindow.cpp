@@ -4,6 +4,7 @@
 
 #include "WorldWindow.h"
 #include "core/Common.h"
+#include "core/Array.h"
 #include "editorscene/EditorScene.h"
 
 namespace voxedit {
@@ -35,13 +36,13 @@ WorldWindow::WorldWindow(ui::Window* window, EditorScene* scene, const std::stri
 	if (!_ctx.load(luaString)) {
 		Log::warn("Could not load the world context from the lua file");
 	}
-	fillWidgets(WORLDFIELDS, SDL_arraysize(WORLDFIELDS), &_ctx);
+	fillWidgets(WORLDFIELDS, lengthof(WORLDFIELDS), &_ctx);
 }
 
 bool WorldWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (ev.target->GetID() == TBIDC("ok")) {
-			fillFields(WORLDFIELDS, SDL_arraysize(WORLDFIELDS), &_ctx);
+			fillFields(WORLDFIELDS, lengthof(WORLDFIELDS), &_ctx);
 			_scene->world(_ctx);
 			Close();
 			return true;

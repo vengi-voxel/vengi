@@ -6,6 +6,7 @@
 #include "editorscene/EditorScene.h"
 #include "palette/PaletteWidget.h"
 #include "io/Filesystem.h"
+#include "core/Array.h"
 #include "../VoxEdit.h"
 #include <assimp/Exporter.hpp>
 #include <assimp/Importer.hpp>
@@ -68,7 +69,7 @@ static const struct {
 	{"Palm",				"tree_palm",				TBIDC("tree_palm"),					voxel::TreeType::Palm},
 	{"SpaceColonization",	"tree_spacecolonization",	TBIDC("tree_spacecolonization"),	voxel::TreeType::SpaceColonization}
 };
-static_assert((int)SDL_arraysize(treeTypes) == (int)voxel::TreeType::Max, "Missing support for tree types in the ui");
+static_assert(lengthof(treeTypes) == (int)voxel::TreeType::Max, "Missing support for tree types in the ui");
 
 static const struct {
 	const char *name;
@@ -80,7 +81,7 @@ static const struct {
 	{"Grass",		"plant_grass",		TBIDC("plant_grass"),		voxel::PlantType::Grass},
 	{"Mushroom",	"plant_mushroom",	TBIDC("plant_mushroom"),	voxel::PlantType::Mushroom}
 };
-static_assert((int)SDL_arraysize(plantTypes) == (int)voxel::PlantType::MaxPlantTypes, "Missing support for plant types in the ui");
+static_assert(lengthof(plantTypes) == (int)voxel::PlantType::MaxPlantTypes, "Missing support for plant types in the ui");
 
 static const struct {
 	const char *name;
@@ -91,12 +92,12 @@ static const struct {
 	{"Tower",		"building_tower",	TBIDC("building_tower"),	voxel::BuildingType::Tower},
 	{"House",		"building_house",	TBIDC("building_house"),	voxel::BuildingType::House}
 };
-static_assert((int)SDL_arraysize(buildingTypes) == (int)voxel::BuildingType::Max, "Missing support for building types in the ui");
+static_assert(lengthof(buildingTypes) == (int)voxel::BuildingType::Max, "Missing support for building types in the ui");
 
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		ui::Window(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
-	for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
+	for (int i = 0; i < lengthof(treeTypes); ++i) {
 		addMenuItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
 	}
 	addMenuItem(_fileItems, "New");
@@ -108,11 +109,11 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addMenuItem(_fileItems, "Quit");
 
 	addMenuItem(_plantItems, "Cactus", "cactus");
-	for (uint32_t i = 0; i < SDL_arraysize(plantTypes); ++i) {
+	for (int i = 0; i < lengthof(plantTypes); ++i) {
 		addMenuItem(_plantItems, plantTypes[i].name, plantTypes[i].id);
 	}
 
-	for (uint32_t i = 0; i < SDL_arraysize(buildingTypes); ++i) {
+	for (int i = 0; i < lengthof(buildingTypes); ++i) {
 		addMenuItem(_buildingItems, buildingTypes[i].name, buildingTypes[i].id);
 	}
 
@@ -562,32 +563,32 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 
-	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
+	for (int i = 0; i < lengthof(actions); ++i) {
 		if (isAny(ev, actions[i].id)) {
 			_scene->setAction(actions[i].action);
 			return true;
 		}
 	}
-	for (uint32_t i = 0; i < SDL_arraysize(selectionmodes); ++i) {
+	for (int i = 0; i < lengthof(selectionmodes); ++i) {
 		if (isAny(ev, selectionmodes[i].id)) {
 			_scene->setSelectionType(selectionmodes[i].type);
 			setAction(Action::SelectVoxels);
 			return true;
 		}
 	}
-	for (uint32_t i = 0; i < SDL_arraysize(shapes); ++i) {
+	for (int i = 0; i < lengthof(shapes); ++i) {
 		if (isAny(ev, shapes[i].id)) {
 			_scene->setCursorShape(shapes[i].shape);
 			return true;
 		}
 	}
-	for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
+	for (int i = 0; i < lengthof(treeTypes); ++i) {
 		if (isAny(ev, treeTypes[i].tbid)) {
 			new TreeWindow(this, _scene, treeTypes[i].type);
 			return true;
 		}
 	}
-	for (uint32_t i = 0; i < SDL_arraysize(buildingTypes); ++i) {
+	for (int i = 0; i < lengthof(buildingTypes); ++i) {
 		if (isAny(ev, buildingTypes[i].tbid)) {
 			voxel::BuildingContext ctx;
 			if (buildingTypes[i].type == voxel::BuildingType::Tower) {
@@ -597,7 +598,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
-	for (uint32_t i = 0; i < SDL_arraysize(plantTypes); ++i) {
+	for (int i = 0; i < lengthof(plantTypes); ++i) {
 		if (isAny(ev, plantTypes[i].tbid)) {
 			_scene->createPlant(plantTypes[i].type);
 			return true;
@@ -619,7 +620,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 }
 
 void VoxEditWindow::setSelectionType(SelectType type) {
-	for (uint32_t i = 0; i < SDL_arraysize(selectionmodes); ++i) {
+	for (int i = 0; i < lengthof(selectionmodes); ++i) {
 		if (selectionmodes[i].type != type) {
 			continue;
 		}
@@ -634,7 +635,7 @@ void VoxEditWindow::setSelectionType(SelectType type) {
 }
 
 void VoxEditWindow::setAction(Action action) {
-	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
+	for (int i = 0; i < lengthof(actions); ++i) {
 		if (actions[i].action != action) {
 			continue;
 		}
@@ -827,7 +828,7 @@ void VoxEditWindow::OnProcess() {
 		}
 	}
 
-	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
+	for (int i = 0; i < lengthof(actions); ++i) {
 		tb::TBWidget* w = GetWidgetByID(actions[i].id);
 		if (w == nullptr) {
 			continue;
