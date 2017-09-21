@@ -6,6 +6,7 @@
 #include "frontend/ShaderAttribute.h"
 #include "video/Camera.h"
 #include "core/Color.h"
+#include "core/Array.h"
 
 namespace frontend {
 
@@ -63,7 +64,7 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::Materialblock::Data::materialcolor);
+	const int shaderMaterialColorsArraySize = lengthof(shader::Materialblock::Data::materialcolor);
 	const int materialColorsArraySize = voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
