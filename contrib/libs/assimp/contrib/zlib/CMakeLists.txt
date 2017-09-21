@@ -67,7 +67,6 @@ endif()
 check_include_file(unistd.h Z_HAVE_UNISTD_H)
 
 if(MSVC)
-    set(CMAKE_DEBUG_POSTFIX "d")
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})

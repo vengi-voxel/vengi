@@ -1,6 +1,5 @@
 project(glslang)
 if(WIN32)
-	set(CMAKE_DEBUG_POSTFIX "d")
 	include(ChooseMSVCCRT.cmake)
 	add_definitions(-DGLSLANG_OSINCLUDE_WIN32)
 elseif(UNIX)
