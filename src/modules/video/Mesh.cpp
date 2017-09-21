@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "core/Common.h"
 #include "core/Color.h"
+#include "core/Array.h"
 #include "core/Log.h"
 #include "video/ScopedLineWidth.h"
 #include "video/Types.h"
@@ -608,7 +609,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 	normalData.reserve(_vertices.size() * 2);
 	for (const core::Vertex& v : _vertices) {
 		glm::mat4 bonetrans = glm::mat4(1.0f);
-		for (int i = 0; i < (int)SDL_arraysize(v._boneIds); ++i) {
+		for (int i = 0; i < lengthof(v._boneIds); ++i) {
 			const glm::mat4& bmat = _boneInfo[v._boneIds[i]].finalTransformation * v._boneWeights[i];
 			bonetrans += bmat;
 		}
