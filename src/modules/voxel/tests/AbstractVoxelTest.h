@@ -15,6 +15,38 @@
 
 namespace voxel {
 
+inline bool operator==(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2) {
+	for (int i = 0; i < 3; ++i) {
+		if (volume1.mins()[i] != volume2.mins()[i]) {
+			return false;
+		}
+		if (volume1.maxs()[i] != volume2.maxs()[i]) {
+			return false;
+		}
+	}
+
+	const voxel::Region& region = volume1.region();
+	const int32_t lowerX = region.getLowerX();
+	const int32_t lowerY = region.getLowerY();
+	const int32_t lowerZ = region.getLowerZ();
+	const int32_t upperX = region.getUpperX();
+	const int32_t upperY = region.getUpperY();
+	const int32_t upperZ = region.getUpperZ();
+	for (int32_t z = lowerZ; z <= upperZ; ++z) {
+		for (int32_t y = lowerY; y <= upperY; ++y) {
+			for (int32_t x = lowerX; x <= upperX; ++x) {
+				const glm::ivec3 pos(x, y, z);
+				const voxel::Voxel& voxel1 = volume1.voxel(pos);
+				const voxel::Voxel& voxel2 = volume2.voxel(pos);
+				if (!voxel1.isSame(voxel2)) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {
 	return os << "region["
 			<< "center(" << glm::to_string(region.getCentre()) << "), "
