@@ -5,19 +5,20 @@
 
 #include "commonlua/LUA.h"
 #include "core/App.h"
+#include "core/Array.h"
+#include "core/Common.h"
 #include "io/Filesystem.h"
-#include <SDL.h>
 
 namespace cooldown {
 
 CooldownProvider::CooldownProvider() {
-	for (size_t i = 0u; i < SDL_arraysize(_durations); ++i) {
+	for (int i = 0; i < lengthof(_durations); ++i) {
 		_durations[i] = DefaultDuration;
 	}
 }
 
 long CooldownProvider::setDuration(Type type, long duration) {
-	const int t = std::enum_value<Type>(type);
+	const int32_t t = std::enum_value<Type>(type);
 	const long old = _durations[t];
 	_durations[t] = duration;
 	return old;
