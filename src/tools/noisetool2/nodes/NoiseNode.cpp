@@ -1,6 +1,7 @@
 #include "NoiseNode.h"
 #include "noise/Noise.h"
 #include "core/App.h"
+#include "core/Array.h"
 
 static const char* NoiseTypeStr[] = {
 	"double noise",
@@ -23,7 +24,7 @@ static const char* NoiseTypeStr[] = {
 	"swissTurbulence",
 	"jordanTurbulence"
 };
-static constexpr int numValues = (int)SDL_arraysize(NoiseTypeStr);
+static constexpr int numValues = lengthof(NoiseTypeStr);
 static_assert(int(NoiseType::Max) == numValues, "Array size doesn't match NoiseType::Max value");
 
 static inline unsigned long millis() {
