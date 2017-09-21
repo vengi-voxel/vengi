@@ -84,6 +84,18 @@ bool Model::exec(const char* query) {
 	return fillModelValues(s);
 }
 
+bool Model::exec(const char* query) const {
+	Log::debug("%s", query);
+	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
+	if (!scoped) {
+		Log::error("Could not execute query '%s' - could not acquire connection", query);
+		return false;
+	}
+	ConnectionType* conn = scoped.connection()->connection();
+	State s(PQexec(conn, query));
+	return checkLastResult(s, scoped);
+}
+
 const Model::Field& Model::getField(const std::string& name) const {
 	for (const Field& field : _fields) {
 		if (field.name == name) {
