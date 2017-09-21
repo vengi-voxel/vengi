@@ -1,6 +1,7 @@
 #include "TestShapeBuilder.h"
 #include "io/Filesystem.h"
 #include "core/Color.h"
+#include "core/Array.h"
 #include "core/GLM.h"
 #include "imgui/IMGUI.h"
 
@@ -21,7 +22,7 @@ core::AppState TestShapeBuilder::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	for (int i = 0; i < (int)SDL_arraysize(_position); ++i) {
+	for (int i = 0; i < lengthof(_position); ++i) {
 		_scale[i] = glm::one<glm::vec3>();
 		_position[i] = glm::zero<glm::ivec3>();
 	}
@@ -121,7 +122,7 @@ void TestShapeBuilder::onRenderUI() {
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("UnitCube")) {
-		if (_meshCount < (int)SDL_arraysize(_meshes)) {
+		if (_meshCount < lengthof(_meshes)) {
 			_meshes[_meshCount++] = _meshUnitCube;
 		}
 	}
@@ -150,7 +151,7 @@ void TestShapeBuilder::onRenderUI() {
 	}
 	ImGui::Separator();
 
-	if (buildMesh && _meshCount < (int)SDL_arraysize(_meshes)) {
+	if (buildMesh && _meshCount < lengthof(_meshes)) {
 		_meshes[_meshCount] = _shapeRenderer.create(_shapeBuilder);
 		if (_meshes[_meshCount] != -1) {
 			++_meshCount;
