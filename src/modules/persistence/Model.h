@@ -18,6 +18,7 @@ using ResultType = PGresult;
 
 namespace persistence {
 
+class DBHandler;
 class Connection;
 
 class Model {

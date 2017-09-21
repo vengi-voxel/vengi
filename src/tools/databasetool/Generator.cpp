@@ -205,12 +205,6 @@ static void createSelectByIds(const databasetool::Table& table, std::stringstrea
 	}
 }
 
-static void createTruncateStatement(const databasetool::Table& table, std::stringstream& src) {
-	src << "\tstatic bool truncate() {\n";
-	src << "\t\treturn " << table.classname << "().exec(\"TRUNCATE TABLE " << quote << table.name << quote << "\");\n";
-	src << "\t}\n\n";
-}
-
 static void createInsertStatement(const databasetool::Table& table, std::stringstream& src) {
 	std::stringstream insert;
 	std::stringstream insertvalues;
@@ -354,6 +348,7 @@ bool generateClassForTable(const databasetool::Table& table, std::stringstream& 
 	const Namespace ns(table, src);
 	const Class cl(table, src);
 
+	src << "\tfriend class ::persistence::DBHandler;\n";
 	src << "protected:\n";
 
 	createMembersStruct(table, src);
@@ -367,8 +362,6 @@ bool generateClassForTable(const databasetool::Table& table, std::stringstream& 
 	createSelectByIds(table, src);
 
 	createInsertStatement(table, src);
-
-	createTruncateStatement(table, src);
 
 	createCreateTableStatement(table, src);
 

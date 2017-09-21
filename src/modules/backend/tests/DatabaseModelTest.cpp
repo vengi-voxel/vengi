@@ -5,6 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "UserModel.h"
 #include "persistence/ConnectionPool.h"
+#include "persistence/DBHandler.h"
 #include "config.h"
 
 namespace backend {
@@ -23,7 +24,7 @@ public:
 
 		core::Singleton<::persistence::ConnectionPool>::getInstance().init();
 		ASSERT_TRUE(persistence::UserModel::createTable()) << "Could not create table";
-		persistence::UserModel::truncate();
+		::persistence::DBHandler::truncate(persistence::UserModel());
 	}
 
 	void TearDown() override {
