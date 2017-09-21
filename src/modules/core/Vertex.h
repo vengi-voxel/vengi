@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/Array.h"
 
 namespace core {
 
@@ -23,7 +24,7 @@ struct Vertex {
 			return true;
 		}
 
-		const int size = SDL_arraysize(_boneIds);
+		const int size = lengthof(_boneIds);
 		for (int i = 0; i < size; ++i) {
 			if (_boneIds[i] == 0u) {
 				_boneIds[i] = boneID;
