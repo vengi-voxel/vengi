@@ -1,5 +1,6 @@
 #include "WaitingMessage.h"
 #include "FontUtil.h"
+#include "core/Array.h"
 #include "UIApp.h"
 
 namespace ui {
@@ -46,7 +47,7 @@ void WaitingMessage::render() {
 		return;
 	}
 	if (_connectingStart >= 2000) {
-		_dotsIndex = (_dotsIndex + 1) % SDL_arraysize(dotsArray);
+		_dotsIndex = (_dotsIndex + 1) % lengthof(dotsArray);
 		_connectingStart -= 2000;
 	}
 	const int y = _app->height() / 2 - _font->GetHeight() / 2;
