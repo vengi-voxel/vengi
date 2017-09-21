@@ -62,7 +62,7 @@ inline int toInt(const char*str) {
 	return SDL_atoi(str);
 }
 
-inline int toLong(const char* str) {
+inline int64_t toLong(const char* str) {
 	return ::atol(str);
 }
 
@@ -70,7 +70,7 @@ inline int toInt(const std::string& str) {
 	return toInt(str.c_str());
 }
 
-inline int toLong(const std::string& str) {
+inline int64_t toLong(const std::string& str) {
 	return toLong(str.c_str());
 }
 
