@@ -47,7 +47,8 @@ void SpawnMgr::spawnAnimals(ai::Zone& zone) {
 
 void SpawnMgr::spawnEntity(ai::Zone& zone, network::EntityType start, network::EntityType end, int maxAmount) {
 	const int offset = (int)start + 1;
-	int count[(int)end - offset];
+	const int size = (int)end - offset;
+	int count[size];
 	memset(count, 0, sizeof(count));
 	zone.execute([&] (const ai::AIPtr& ai) {
 		const AICharacter& chr = ai::character_cast<AICharacter>(ai->getCharacter());
@@ -60,7 +61,6 @@ void SpawnMgr::spawnEntity(ai::Zone& zone, network::EntityType start, network::E
 		++count[index];
 	});
 
-	const int size = SDL_arraysize(count);
 	for (int i = 0; i < size; ++i) {
 		if (count[i] >= maxAmount)
 			continue;
