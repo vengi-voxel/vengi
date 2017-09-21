@@ -212,8 +212,22 @@ public:
 		State exec();
 	};
 
+	void setValue(const Field& f, const std::string& value) {
+		core_assert(f.offset >= 0);
+		uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
+		std::string* targetValue = (std::string*)target;
+		*targetValue = value;
+	}
+
+	void setValue(const Field& f, const Timestamp& value) {
+		core_assert(f.offset >= 0);
+		uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
+		Timestamp* targetValue = (Timestamp*)target;
+		*targetValue = value;
+	}
+
 	template<class TYPE>
-	inline void setValue(const Field& f, const TYPE& value) {
+	void setValue(const Field& f, const TYPE& value) {
 		core_assert(f.offset >= 0);
 		uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
 		TYPE* targetValue = (TYPE*)target;

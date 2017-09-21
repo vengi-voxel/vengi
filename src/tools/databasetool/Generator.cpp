@@ -100,26 +100,42 @@ void createConstructor(const Table& table, std::stringstream& src) {
 }
 
 static void createSelectStatement(const Table& table, std::stringstream& src) {
-	int nonPrimaryKeyMembers = 0;
+	if (table.primaryKeys <= 0) {
+		return;
+	}
 	std::stringstream loadNonPk;
-	std::stringstream loadNonPkAdd;
-
 	loadNonPk << "\t\tstd::stringstream __load_;\n\t\tint __count_ = 1;\n\t\tbool __andNeeded_ = false;\n";
+	loadNonPk << "\t\t__load_ << \"SELECT ";
 
+	for (auto i = table.fields.begin(); i != table.fields.end(); ++i) {
+		const persistence::Model::Field& f = i->second;
+		if (i != table.fields.begin()) {
+			loadNonPk << ", ";
+		}
+		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
+			loadNonPk << "CAST(EXTRACT(EPOCH FROM ";
+		}
+		loadNonPk << f.name;
+		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
+			loadNonPk << " AT TIME ZONE 'UTC') AS bigint) * 1000 AS " << f.name;
+		}
+	}
+
+	int nonPrimaryKeyMembers = 0;
+	std::stringstream loadNonPkAdd;
+	loadNonPk << " FROM " << quote << table.name << quote << " WHERE \";\n";
+	src << "\tbool select(";
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
 		if (f.isPrimaryKey()) {
 			continue;
 		}
 		const std::string& cpptype = getCPPType(f.type, true, true);
-		if (nonPrimaryKeyMembers == 0) {
-			src << "\tbool select(";
-			loadNonPk << "\t\t__load_ << \"SELECT * FROM " << quote << table.name << quote << " WHERE \";\n";
-		} else {
+		if (nonPrimaryKeyMembers > 0) {
 			src << ", ";
 		}
 		src << cpptype << " " << f.name;
-		if (nonPrimaryKeyMembers != 0) {
+		if (nonPrimaryKeyMembers > 0) {
 			src << " = nullptr";
 		}
 		++nonPrimaryKeyMembers;
@@ -174,6 +190,22 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 
 static void createSelectByIds(const Table& table, std::stringstream& src) {
 	std::stringstream select;
+	select << "\"SELECT ";
+	for (auto i = table.fields.begin(); i != table.fields.end(); ++i) {
+		const persistence::Model::Field& f = i->second;
+		if (i != table.fields.begin()) {
+			select << ", ";
+		}
+		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
+			select << "cast(EXTRACT(EPOCH FROM ";
+		}
+		select << f.name;
+		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
+			select << " AT TIME ZONE 'UTC') AS bigint) * 1000 AS " << f.name;
+		}
+	}
+	select << " FROM " << quote << table.name << quote << " WHERE ";
+
 	std::stringstream loadadd;
 	int fieldIndex = 0;
 	for (auto entry : table.fields) {
@@ -186,7 +218,6 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 			src << ", ";
 			select << " AND ";
 		} else {
-			select << "\"SELECT * FROM " << quote << table.name << quote << " WHERE ";
 			src << "\tbool selectById(";
 		}
 		++fieldIndex;
