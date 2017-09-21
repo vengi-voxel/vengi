@@ -9,6 +9,7 @@
 #include "core/Color.h"
 #include "core/UTF8.h"
 #include "core/Common.h"
+#include "core/Array.h"
 #include "video/Renderer.h"
 #include "video/ScopedViewPort.h"
 #include "IMGUI.h"
@@ -51,7 +52,7 @@ bool IMGUIApp::onTextInput(const std::string& text) {
 bool IMGUIApp::onKeyPress(int32_t key, int16_t modifierUnused) {
 	ImGuiIO& io = ImGui::GetIO();
 	key &= ~SDLK_SCANCODE_MASK;
-	core_assert(key >= 0 && key < (int)SDL_arraysize(io.KeysDown));
+	core_assert(key >= 0 && key < lengthof(io.KeysDown));
 	io.KeysDown[key] = true;
 	const int16_t modifier = SDL_GetModState();
 	io.KeyShift = (modifier & KMOD_SHIFT) != 0;
@@ -64,7 +65,7 @@ bool IMGUIApp::onKeyPress(int32_t key, int16_t modifierUnused) {
 bool IMGUIApp::onKeyRelease(int32_t key) {
 	ImGuiIO& io = ImGui::GetIO();
 	key &= ~SDLK_SCANCODE_MASK;
-	core_assert(key >= 0 && key < (int)SDL_arraysize(io.KeysDown));
+	core_assert(key >= 0 && key < lengthof(io.KeysDown));
 	io.KeysDown[key] = false;
 	const int16_t modifier = SDL_GetModState();
 	io.KeyShift = (modifier & KMOD_SHIFT) != 0;
