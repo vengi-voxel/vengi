@@ -1,5 +1,5 @@
 #include "NoiseType.h"
-#include <SDL.h>
+#include "core/Array.h"
 
 static const char *NoiseTypeStr[] = {
 	"double noise",
@@ -23,7 +23,7 @@ static const char *NoiseTypeStr[] = {
 	"jordanTurbulence",
 	"poissonDiskDistribution"
 };
-static_assert((int)SDL_arraysize(NoiseTypeStr) == (int)NoiseType::Max, "String array size doesn't match noise types");
+static_assert(lengthof(NoiseTypeStr) == (int)NoiseType::Max, "String array size doesn't match noise types");
 
 const char *getNoiseTypeName(NoiseType t) {
 	return NoiseTypeStr[(int)t];
