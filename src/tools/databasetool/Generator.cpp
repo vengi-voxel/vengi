@@ -1,6 +1,7 @@
 #include "Generator.h"
 #include "Util.h"
 #include "Mapping.h"
+#include "Table.h"
 #include "core/String.h"
 
 namespace databasetool {
@@ -8,10 +9,10 @@ namespace databasetool {
 static const char *quote = "\\\"";
 
 struct Namespace {
-	const databasetool::Table& _table;
+	const Table& _table;
 	std::stringstream& _src;
 
-	Namespace(const databasetool::Table& table, std::stringstream& src) : _table(table), _src(src) {
+	Namespace(const Table& table, std::stringstream& src) : _table(table), _src(src) {
 		if (!table.namespaceSrc.empty()) {
 			src << "namespace " << table.namespaceSrc << " {\n\n";
 		}
@@ -26,10 +27,10 @@ struct Namespace {
 };
 
 struct Class {
-	const databasetool::Table& _table;
+	const Table& _table;
 	std::stringstream& _src;
 
-	Class(const databasetool::Table& table, std::stringstream& src) : _table(table), _src(src) {
+	Class(const Table& table, std::stringstream& src) : _table(table), _src(src) {
 		src << "class " << table.classname << " : public ::persistence::Model {\n";
 		src << "private:\n";
 		src << "\tusing Super = ::persistence::Model;\n";
@@ -54,18 +55,18 @@ struct MembersStruct {
 	}
 };
 
-static void createMembersStruct(const databasetool::Table& table, std::stringstream& src) {
+static void createMembersStruct(const Table& table, std::stringstream& src) {
 	src << "\tstruct " << MembersStruct::structName() << "{\n";
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
 		src << "\t\t";
-		src << databasetool::getCPPType(f.type, false);
+		src << getCPPType(f.type, false);
 		src << " _" << f.name;
-		if (databasetool::needsInitCPP(f.type)) {
-			src << " = " << databasetool::getCPPInit(f.type, false);
+		if (needsInitCPP(f.type)) {
+			src << " = " << getCPPInit(f.type, false);
 		}
 		src << ";\n";
-		if (databasetool::isPointer(f)) {
+		if (isPointer(f)) {
 			src << "\t\tbool " << MembersStruct::nullFieldName(f) << " = false;\n";
 		}
 	}
@@ -73,7 +74,7 @@ static void createMembersStruct(const databasetool::Table& table, std::stringstr
 	src << "\tMembers " << MembersStruct::varName() << ";\n";
 }
 
-void createConstructor(const databasetool::Table& table, std::stringstream& src) {
+void createConstructor(const Table& table, std::stringstream& src) {
 	src << "\t" << table.classname << "(";
 	src << ") : Super(\"" << table.name << "\") {\n";
 	src << "\t\t_membersPointer = (uint8_t*)&" << MembersStruct::varName() << ";\n";
@@ -87,7 +88,7 @@ void createConstructor(const databasetool::Table& table, std::stringstream& src)
 		src << ", " << f.length;
 		src << ", offsetof(";
 		src << MembersStruct::structName() << ", _" << f.name << ")";
-		if (databasetool::isPointer(f)) {
+		if (isPointer(f)) {
 			src << ", offsetof(";
 			src << MembersStruct::structName() << ", " << MembersStruct::nullFieldName(f) << ")";
 		} else {
@@ -98,7 +99,7 @@ void createConstructor(const databasetool::Table& table, std::stringstream& src)
 	src << "\t}\n\n";
 }
 
-static void createSelectStatement(const databasetool::Table& table, std::stringstream& src) {
+static void createSelectStatement(const Table& table, std::stringstream& src) {
 	int nonPrimaryKeyMembers = 0;
 	std::stringstream loadNonPk;
 	std::stringstream loadNonPkAdd;
@@ -110,7 +111,7 @@ static void createSelectStatement(const databasetool::Table& table, std::strings
 		if (f.isPrimaryKey()) {
 			continue;
 		}
-		const std::string& cpptype = databasetool::getCPPType(f.type, true, true);
+		const std::string& cpptype = getCPPType(f.type, true, true);
 		if (nonPrimaryKeyMembers == 0) {
 			src << "\tbool select(";
 			loadNonPk << "\t\t__load_ << \"SELECT * FROM " << quote << table.name << quote << " WHERE \";\n";
@@ -171,7 +172,7 @@ static void createSelectStatement(const databasetool::Table& table, std::strings
 	}
 }
 
-static void createSelectByIds(const databasetool::Table& table, std::stringstream& src) {
+static void createSelectByIds(const Table& table, std::stringstream& src) {
 	std::stringstream select;
 	std::stringstream loadadd;
 	int fieldIndex = 0;
@@ -180,7 +181,7 @@ static void createSelectByIds(const databasetool::Table& table, std::stringstrea
 		if (!f.isPrimaryKey()) {
 			continue;
 		}
-		const std::string& cpptype = databasetool::getCPPType(f.type, true);
+		const std::string& cpptype = getCPPType(f.type, true);
 		if (fieldIndex > 0) {
 			src << ", ";
 			select << " AND ";
@@ -190,7 +191,7 @@ static void createSelectByIds(const databasetool::Table& table, std::stringstrea
 		}
 		++fieldIndex;
 		select << quote << f.name << quote << " = ";
-		databasetool::sep(select, fieldIndex);
+		sep(select, fieldIndex);
 		loadadd << ".add(" << f.name << ")";
 		src << cpptype << " " << f.name;
 	}
@@ -205,7 +206,7 @@ static void createSelectByIds(const databasetool::Table& table, std::stringstrea
 	}
 }
 
-static void createInsertStatement(const databasetool::Table& table, std::stringstream& src) {
+static void createInsertStatement(const Table& table, std::stringstream& src) {
 	std::stringstream insert;
 	std::stringstream insertvalues;
 	std::stringstream insertadd;
@@ -222,9 +223,9 @@ static void createInsertStatement(const databasetool::Table& table, std::strings
 				insertparams << ", ";
 			}
 			++insertValues;
-			insertparams << databasetool::getCPPType(f.type, true) << " " << f.name;
+			insertparams << getCPPType(f.type, true) << " " << f.name;
 			insert << "\\\"" << f.name << "\\\"";
-			databasetool::sep(insertvalues, insertValues);
+			sep(insertvalues, insertValues);
 			// TODO: length check if type is string
 			if (f.type == persistence::Model::FieldType::PASSWORD) {
 				insertadd << ".addPassword(" << f.name << ")";
@@ -256,15 +257,15 @@ static void createInsertStatement(const databasetool::Table& table, std::strings
 	src << "\t}\n\n";
 }
 
-static void createGetterAndSetter(const databasetool::Table& table, std::stringstream& src) {
+static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
-		const std::string& cpptypeGetter = databasetool::getCPPType(f.type, true, databasetool::isPointer(f));
-		const std::string& cpptypeSetter = databasetool::getCPPType(f.type, true, false);
+		const std::string& cpptypeGetter = getCPPType(f.type, true, isPointer(f));
+		const std::string& cpptypeSetter = getCPPType(f.type, true, false);
 		const std::string& n = core::string::upperCamelCase(f.name);
 
 		src << "\tinline " << cpptypeGetter << " " << f.name << "() const {\n";
-		if (databasetool::isPointer(f)) {
+		if (isPointer(f)) {
 			src << "\t\tif (_m._isNull_" << f.name << ") {\n";
 			src << "\t\t\treturn nullptr;\n";
 			src << "\t\t}\n";
@@ -280,12 +281,12 @@ static void createGetterAndSetter(const databasetool::Table& table, std::strings
 
 		src << "\tinline void set" << n << "(" << cpptypeSetter << " " << f.name << ") {\n";
 		src << "\t\t_m._" << f.name << " = " << f.name << ";\n";
-		if (databasetool::isPointer(f)) {
+		if (isPointer(f)) {
 			src << "\t\t_m._isNull_" << f.name << " = false;\n";
 		}
 		src << "\t}\n\n";
 
-		if (databasetool::isPointer(f)) {
+		if (isPointer(f)) {
 			src << "\tinline void set" << n << "(nullptr_t " << f.name << ") {\n";
 			src << "\t\t_m._isNull_" << f.name << " = true;\n";
 			src << "\t}\n\n";
@@ -293,7 +294,7 @@ static void createGetterAndSetter(const databasetool::Table& table, std::strings
 	}
 }
 
-static void createCreateTableStatement(const databasetool::Table& table, std::stringstream& src) {
+static void createCreateTableStatement(const Table& table, std::stringstream& src) {
 	std::stringstream createTable;
 	createTable << "CREATE TABLE IF NOT EXISTS " << quote << table.name << quote << " (\"\n";
 	bool firstField = true;
@@ -302,7 +303,7 @@ static void createCreateTableStatement(const databasetool::Table& table, std::st
 		if (!firstField) {
 			createTable << ",\"\n";
 		}
-		createTable << "\t\t\t\"" << f.name << " " << databasetool::getDbType(f) << getDbFlags(table, f);
+		createTable << "\t\t\t\"" << f.name << " " << getDbType(f) << getDbFlags(table, f);
 		firstField = false;
 	}
 
@@ -344,7 +345,7 @@ static void createCreateTableStatement(const databasetool::Table& table, std::st
 	src << "\t}\n";
 }
 
-bool generateClassForTable(const databasetool::Table& table, std::stringstream& src) {
+bool generateClassForTable(const Table& table, std::stringstream& src) {
 	const Namespace ns(table, src);
 	const Class cl(table, src);
 
