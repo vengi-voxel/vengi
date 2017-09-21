@@ -6,6 +6,7 @@
 #include "voxel/MaterialColor.h"
 #include "video/ScopedPolygonMode.h"
 #include "core/Trace.h"
+#include "core/Array.h"
 
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
@@ -238,7 +239,7 @@ bool OctreeRenderer::init(voxel::PagedVolume* volume, const voxel::Region& regio
 		return false;
 	}
 
-	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::Materialblock::Data::materialcolor);
+	const int shaderMaterialColorsArraySize = lengthof(shader::Materialblock::Data::materialcolor);
 	const int materialColorsArraySize = voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
