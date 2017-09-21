@@ -4,6 +4,7 @@
 
 #include "WorldRenderer.h"
 #include "core/Color.h"
+#include "core/Array.h"
 #include "video/Renderer.h"
 #include "voxel/Constants.h"
 #include "core/App.h"
@@ -103,7 +104,7 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 }
 
 void WorldRenderer::fillPlantPositionsFromMeshes() {
-	const int plantMeshAmount = SDL_arraysize(_meshPlantList);
+	const int plantMeshAmount = lengthof(_meshPlantList);
 	for (PlantBuffer& vbo : _meshPlantList) {
 		vbo.instancedPositions.clear();
 	}
@@ -195,7 +196,7 @@ void WorldRenderer::handleMeshQueue() {
 }
 
 WorldRenderer::ChunkBuffer* WorldRenderer::findFreeChunkBuffer() {
-	for (int i = 0; i < (int)SDL_arraysize(_chunkBuffers); ++i) {
+	for (int i = 0; i < lengthof(_chunkBuffers); ++i) {
 		if (!_chunkBuffers[i].inuse) {
 			return &_chunkBuffers[i];
 		}
@@ -862,7 +863,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		return false;
 	}
 
-	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::Materialblock::Data::materialcolor);
+	const int shaderMaterialColorsArraySize = lengthof(shader::Materialblock::Data::materialcolor);
 	const int materialColorsArraySize = voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
