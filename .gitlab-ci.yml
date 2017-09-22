@@ -1,9 +1,54 @@
 image: registry.gitlab.com/mgerhardy/engine-docker:master
 
+stages:
+  - build
+  - test
+  - analyse
+
+before_script:
+  - mkdir -p ccache
+  - export CCACHE_BASEDIR=${PWD}
+  - export CCACHE_DIR=${PWD}/ccache
+
+cache:
+  paths:
+    - ccache/
+
 build:
+  stage: build
   script:
     - make -j 4
-    - make tests ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*"
+  artifacts:
+    paths:
+    - build/Debug/tests
+    - build/Debug/compile_commands.json
+
+test:
+  stage: test
+  dependencies:
+    - build
+  script:
+    - cd build/Debug
+    - ./tests --gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*:VoxFormatTest.testSave
+
+analyse:cppcheck:
+  stage: analyse
+  script:
+    - cppcheck --enable=all --project=build/Debug/compile_commands.json src 2> cppcheck.log
+  artifacts:
+    paths:
+    - cppcheck.log
+
+analyse:valgrind:
+  stage: analyse
+  dependencies:
+    - build
+  script:
+    - cd build/Debug
+    - valgrind ./tests --gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.* 2> valgrind.log
+  artifacts:
+    paths:
+    - valgrind.log
 
 pages:
   script:
