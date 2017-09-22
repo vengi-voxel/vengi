@@ -123,7 +123,13 @@ static void createSelectStatement(const databasetool::Table& table, std::strings
 		}
 		++nonPrimaryKeyMembers;
 		loadNonPk << "\t\tif (" << f.name << " != nullptr) {\n";
-		loadNonPk << "\t\t\t_m._" << f.name << " = *" << f.name << ";\n";
+#if 0
+		loadNonPk << "\t\t\t_m._" << f.name << " = ";
+		if (f.type != persistence::Model::FieldType::PASSWORD && f.type != persistence::Model::FieldType::STRING) {
+			loadNonPk << "*";
+		}
+		loadNonPk << f.name << ";\n";
+#endif
 		loadNonPk << "\t\t\tif (__andNeeded_) {\n";
 		loadNonPk << "\t\t\t\t__load_ << \" AND \";\n";
 		loadNonPk << "\t\t\t\t__andNeeded_ = false;\n";
