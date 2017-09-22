@@ -91,7 +91,7 @@ void createConstructor(const databasetool::Table& table, std::stringstream& src)
 			src << ", offsetof(";
 			src << MembersStruct::structName() << ", " << MembersStruct::nullFieldName(f) << ")";
 		} else {
-			src << ", 0";
+			src << ", -1";
 		}
 		src << "});\n";
 	}
