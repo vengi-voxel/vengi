@@ -161,9 +161,10 @@ static void camelCase(std::string& str, bool upperCamelCase) {
 		return;
 	}
 	if (!upperCamelCase) {
-		return;
+		str[0] = SDL_tolower(str[0]);
+	} else {
+		str[0] = SDL_toupper(str[0]);
 	}
-	str[0] = SDL_toupper(str[0]);
 }
 
 std::string lowerCamelCase(const std::string& str) {
