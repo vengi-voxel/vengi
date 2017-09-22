@@ -47,11 +47,11 @@ std::string getCPPType(persistence::Model::FieldType type, bool function, bool p
 	case persistence::Model::FieldType::TIMESTAMP:
 		if (function) {
 			if (pointer) {
-				return "const ::persistence::Timestamp*";
+				return "const persistence::Timestamp*";
 			}
-			return "const ::persistence::Timestamp&";
+			return "const persistence::Timestamp&";
 		}
-		return "::persistence::Timestamp";
+		return "persistence::Timestamp";
 	case persistence::Model::FieldType::LONG:
 		if (pointer) {
 			return "const int64_t*";

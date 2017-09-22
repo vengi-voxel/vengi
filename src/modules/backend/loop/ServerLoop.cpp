@@ -46,15 +46,15 @@ bool ServerLoop::init() {
 		Log::error("Failed to init the connection pool");
 		return false;
 	}
-	if (!persistence::UserModel::createTable()) {
+	if (!db::UserModel::createTable()) {
 		Log::error("Failed to create user table");
 		return false;
 	}
-	if (!persistence::EventModel::createTable()) {
+	if (!db::EventModel::createTable()) {
 		Log::error("Failed to create event table");
 		return false;
 	}
-	if (!persistence::EventPointModel::createTable()) {
+	if (!db::EventPointModel::createTable()) {
 		Log::error("Failed to create event point table");
 		return false;
 	}

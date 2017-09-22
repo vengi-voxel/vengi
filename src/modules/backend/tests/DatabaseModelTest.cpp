@@ -6,6 +6,7 @@
 #include "UserModel.h"
 #include "persistence/ConnectionPool.h"
 #include "persistence/DBHandler.h"
+#include "core/GameConfig.h"
 #include "config.h"
 
 namespace backend {
@@ -22,24 +23,24 @@ public:
 		core::Var::get(cfg::DatabaseUser, "engine");
 		core::Var::get(cfg::DatabasePassword, "engine");
 
-		core::Singleton<::persistence::ConnectionPool>::getInstance().init();
-		ASSERT_TRUE(persistence::UserModel::createTable()) << "Could not create table";
-		::persistence::DBHandler::truncate(persistence::UserModel());
+		core::Singleton<persistence::ConnectionPool>::getInstance().init();
+		ASSERT_TRUE(db::UserModel::createTable()) << "Could not create table";
+		persistence::DBHandler::truncate(db::UserModel());
 	}
 
 	void TearDown() override {
 		Super::TearDown();
-		core::Singleton<::persistence::ConnectionPool>::getInstance().shutdown();
+		core::Singleton<persistence::ConnectionPool>::getInstance().shutdown();
 	}
 
 	void createUser(const std::string& email, const std::string& password) {
-		const ::persistence::Timestamp ts = ::persistence::Timestamp::now();
-		persistence::UserModel u;
+		const persistence::Timestamp ts = persistence::Timestamp::now();
+		db::UserModel u;
 		ASSERT_EQ(0, u.id());
 		ASSERT_TRUE(u.insert(email, password, ts));
 		ASSERT_NE(0, u.id());
 
-		persistence::UserModel u2nd;
+		db::UserModel u2nd;
 		ASSERT_TRUE(u2nd.select(email.c_str(), password.c_str(), nullptr));
 		ASSERT_EQ(u2nd.id(), u.id());
 	}

@@ -32,7 +32,7 @@ void EntityStorage::registerUser(const UserPtr& user) {
 }
 
 EntityId EntityStorage::getUserId(const std::string& email, const std::string& password) const {
-	persistence::UserModel userStore;
+	db::UserModel userStore;
 	if (!userStore.select(email.c_str())) {
 		return EntityIdNone;
 	}

@@ -7,6 +7,7 @@
 namespace databasetool {
 
 static const char *quote = "\\\"";
+#define NAMESPACE "db"
 
 struct Namespace {
 	const Table& _table;
@@ -16,10 +17,10 @@ struct Namespace {
 		if (!table.namespaceSrc.empty()) {
 			src << "namespace " << table.namespaceSrc << " {\n\n";
 		}
-		src << "namespace persistence {\n\n";
+		src << "namespace " NAMESPACE " {\n\n";
 	}
 	~Namespace() {
-		_src << "} // namespace ::persistence\n\n";
+		_src << "} // namespace " NAMESPACE "\n\n";
 		if (!_table.namespaceSrc.empty()) {
 			_src << "} // namespace " << _table.namespaceSrc << "\n\n";
 		}
@@ -31,9 +32,9 @@ struct Class {
 	std::stringstream& _src;
 
 	Class(const Table& table, std::stringstream& src) : _table(table), _src(src) {
-		src << "class " << table.classname << " : public ::persistence::Model {\n";
+		src << "class " << table.classname << " : public persistence::Model {\n";
 		src << "private:\n";
-		src << "\tusing Super = ::persistence::Model;\n";
+		src << "\tusing Super = persistence::Model;\n";
 	}
 
 	~Class() {
@@ -115,7 +116,7 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
 			loadNonPk << "CAST(EXTRACT(EPOCH FROM ";
 		}
-		loadNonPk << f.name;
+		loadNonPk << quote << f.name << quote;
 		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
 			loadNonPk << " AT TIME ZONE 'UTC') AS bigint) * 1000 AS " << f.name;
 		}
@@ -199,7 +200,7 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
 			select << "cast(EXTRACT(EPOCH FROM ";
 		}
-		select << f.name;
+		select << quote << f.name << quote;
 		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
 			select << " AT TIME ZONE 'UTC') AS bigint) * 1000 AS " << f.name;
 		}
@@ -380,7 +381,7 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 	const Namespace ns(table, src);
 	const Class cl(table, src);
 
-	src << "\tfriend class ::persistence::DBHandler;\n";
+	src << "\tfriend class persistence::DBHandler;\n";
 	src << "protected:\n";
 
 	createMembersStruct(table, src);
