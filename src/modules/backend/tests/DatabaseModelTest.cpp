@@ -36,13 +36,15 @@ public:
 	void createUser(const std::string& email, const std::string& password) {
 		const persistence::Timestamp ts = persistence::Timestamp::now();
 		db::UserModel u;
-		ASSERT_EQ(0, u.id());
+		EXPECT_EQ(0, u.id());
 		ASSERT_TRUE(u.insert(email, password, ts));
-		ASSERT_NE(0, u.id());
+		EXPECT_NE(0, u.id());
 
 		db::UserModel u2nd;
 		ASSERT_TRUE(u2nd.select(email.c_str(), password.c_str(), nullptr));
-		ASSERT_EQ(u2nd.id(), u.id());
+		EXPECT_GT(u2nd.registrationdate().time(), uint64_t(0));
+		EXPECT_EQ(u2nd.email(), email);
+		EXPECT_EQ(u2nd.id(), u.id());
 	}
 };
 
