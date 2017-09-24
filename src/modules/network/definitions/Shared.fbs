@@ -18,6 +18,12 @@ struct IVec2 {
 	y:int;
 }
 
+enum EventType: int {
+	NONE,
+
+	GENERIC
+}
+
 enum EntityType: int {
 	NONE,
 

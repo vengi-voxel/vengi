@@ -1,5 +1,6 @@
 set(SRCS
 	EventMgr.h EventMgr.cpp
+	EventData.h
 )
 set(LIB eventmgr)
 add_library(${LIB} ${SRCS})
