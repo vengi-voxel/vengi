@@ -11,7 +11,7 @@ class FileStreamTest : public core::AbstractTest {
 };
 
 TEST_F(FileStreamTest, testFileStreamRead) {
-	const FilePtr& file = core::App::getInstance()->filesystem()->open("iotest.txt");
+	const FilePtr& file = _testApp->filesystem()->open("iotest.txt");
 	ASSERT_TRUE((bool)file) << "Could not open filename " << file->fileName();
 	FileStream stream(file.get());
 	uint8_t chr;
@@ -41,7 +41,7 @@ TEST_F(FileStreamTest, testFileStreamRead) {
 }
 
 TEST_F(FileStreamTest, testFileStreamWrite) {
-	const FilePtr& file = core::App::getInstance()->filesystem()->open("filestream-writetest", io::FileMode::Write);
+	const FilePtr& file = _testApp->filesystem()->open("filestream-writetest", io::FileMode::Write);
 	File* fileRaw = file.get();
 	FileStream stream(fileRaw);
 	EXPECT_TRUE(stream.addInt(1));

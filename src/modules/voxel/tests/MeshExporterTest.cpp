@@ -21,7 +21,7 @@ TEST_F(MeshExporterTest, testExport) {
 	ASSERT_GE(mesh.getNoOfIndices(), 8u);
 	const char *filename = "meshexportertest.obj";
 	ASSERT_TRUE(exportMesh(&mesh, filename)) << "Could not export mesh to " << filename;
-	ASSERT_TRUE(core::App::getInstance()->filesystem()->exists(filename));
+	ASSERT_TRUE(_testApp->filesystem()->exists(filename));
 }
 
 }

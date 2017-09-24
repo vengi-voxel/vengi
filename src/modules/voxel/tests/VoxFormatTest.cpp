@@ -11,7 +11,7 @@ class VoxFormatTest: public AbstractVoxelTest {
 };
 
 TEST_F(VoxFormatTest, testLoad) {
-	const io::FilePtr& file = core::App::getInstance()->filesystem()->open("magicavoxel.vox");
+	const io::FilePtr& file = _testApp->filesystem()->open("magicavoxel.vox");
 	ASSERT_TRUE((bool)file) << "Could not open vox file";
 	VoxFormat f;
 	RawVolume* volume = f.load(file);
@@ -20,13 +20,13 @@ TEST_F(VoxFormatTest, testLoad) {
 }
 
 TEST_F(VoxFormatTest, testSave) {
-	const io::FilePtr& file = core::App::getInstance()->filesystem()->open("magicavoxel.vox");
+	const io::FilePtr& file = _testApp->filesystem()->open("magicavoxel.vox");
 	ASSERT_TRUE((bool)file) << "Could not open vox file";
 	VoxFormat f;
 	RawVolume* loadedVolume = f.load(file);
 	ASSERT_NE(nullptr, loadedVolume) << "Could not load vox file";
 
-	const io::FilePtr& fileSave = core::App::getInstance()->filesystem()->open("magicavoxel-save.vox", io::FileMode::Write);
+	const io::FilePtr& fileSave = _testApp->filesystem()->open("magicavoxel-save.vox", io::FileMode::Write);
 	ASSERT_TRUE(f.save(loadedVolume, fileSave));
 
 	RawVolume *savedVolume = f.load(fileSave);

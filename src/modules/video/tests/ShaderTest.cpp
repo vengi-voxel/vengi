@@ -12,7 +12,7 @@ class ShaderTest : public core::AbstractTest {
 };
 
 TEST_F(ShaderTest, testInclude) {
-	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& filesystem = _testApp->filesystem();
 
 	filesystem->write("foobar.vert", "#define SUCCESS");
 	filesystem->write("foobar.frag", "#define SUCCESS");

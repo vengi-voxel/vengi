@@ -17,7 +17,7 @@ protected:
 	void SetUp() override {
 		TestSuite::SetUp();
 		if (_luaCode.empty()) {
-			_luaCode = core::App::getInstance()->filesystem()->load("testluaregistry.lua");
+			_luaCode = _testApp->filesystem()->load("testluaregistry.lua");
 			ASSERT_FALSE(_luaCode.empty());
 		}
 		ASSERT_TRUE(_registry.init()) << "Failed to initialize the lua ai registry";

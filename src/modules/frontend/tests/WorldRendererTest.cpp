@@ -20,8 +20,8 @@ public:
 		core::AbstractTest::SetUp();
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		_world = std::make_shared<voxel::World>();
-		const std::string& world = core::App::getInstance()->filesystem()->load("world.lua");
-		const std::string& biomes = core::App::getInstance()->filesystem()->load("biomes.lua");
+		const std::string& world = _testApp->filesystem()->load("world.lua");
+		const std::string& biomes = _testApp->filesystem()->load("biomes.lua");
 		_world->init(world, biomes);
 
 		_worldRenderer = new WorldRenderer(_world);

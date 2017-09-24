@@ -11,7 +11,7 @@ class QBTFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(QBTFormatTest, DISABLED_testLoad) {
-	const io::FilePtr& file = core::App::getInstance()->filesystem()->open("qubicle.qbt");
+	const io::FilePtr& file = _testApp->filesystem()->open("qubicle.qbt");
 	ASSERT_TRUE((bool)file) << "Could not open qbt file";
 	QBTFormat f;
 	RawVolume* volume = f.load(file);

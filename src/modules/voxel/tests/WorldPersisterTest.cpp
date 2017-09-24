@@ -16,7 +16,7 @@ TEST_F(WorldPersisterTest, testSaveLoad) {
 
 	const voxel::Region region = _ctx.region();
 	const std::string& filename = persister.getWorldName(region, _seed);
-	const core::App* app = core::App::getInstance();
+	const core::App* app = _testApp;
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	ASSERT_TRUE(filesystem->open(filename)->exists()) << "Nothing was written into " << filename;
 	_volData.flushAll();
