@@ -32,7 +32,10 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	stream.addInt(0);
 
 	int64_t headerSize = stream.pos();
+	Log::debug("headersize is: %i", (int)headerSize);
+
 	// model size
+	Log::debug("add SIZE chunk at pos %i", (int)stream.pos());
 	stream.addInt(FourCC('S','I','Z','E'));
 	stream.addInt(3 * sizeof(uint32_t));
 	stream.addInt(0);
@@ -42,6 +45,7 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	stream.addInt(region.getHeightInVoxels());
 
 	// voxel data
+	Log::debug("add XYZI chunk at pos %i", (int)stream.pos());
 	stream.addInt(FourCC('X','Y','Z','I'));
 	uint32_t numVoxels = 0;
 	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
@@ -76,15 +80,23 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 		}
 	}
 
+	Log::debug("add RGBA chunk at pos %i", (int)stream.pos());
 	stream.addInt(FourCC('R','G','B','A'));
 	const MaterialColorArray& materialColors = getMaterialColors();
 	const int numColors = materialColors.size();
+	if (numColors > 256) {
+		Log::error("More colors than supported");
+		return false;
+	}
 	stream.addInt(numColors * sizeof(uint32_t));
 	stream.addInt(0);
 
 	for (int i = 0; i < numColors; i++) {
 		const uint32_t rgba = core::Color::getRGBA(materialColors[i]);
 		stream.addInt(rgba);
+	}
+	for (int i = numColors; i < 256; i++) {
+		stream.addInt(0);
 	}
 
 	// magic, version, main chunk, main chunk size, main chunk child size
@@ -232,7 +244,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		const int64_t currentChunkPos = stream.pos();
 		const int64_t nextChunkPos = currentChunkPos + numBytesChunk + numBytesChildrenChunks;
 		if (chunkId == FourCC('R','G','B','A')) {
-			Log::debug("Found palette chunk with %u bytes", numBytesChunk);
+			Log::debug("Found palette chunk with %u bytes (currentPos: %i, nextPos: %i)", numBytesChunk, (int)currentChunkPos, (int)nextChunkPos);
 			// 7. Chunk id 'RGBA' : palette
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -256,7 +268,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 			}
 			break;
 		} else if (chunkId == FourCC('S','I','Z','E')) {
-			Log::debug("Found size chunk with %u bytes and %u child bytes", numBytesChunk, numBytesChildrenChunks);
+			Log::debug("Found size chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			// 5. Chunk id 'SIZE' : model size
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -295,7 +307,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		const int64_t nextChunkPos = currentChunkPos + numBytesChunk + numBytesChildrenChunks;
 
 		if (chunkId == FourCC('P','A','C','K')) {
-			Log::debug("Found pack chunk with %u bytes and %u child bytes", numBytesChunk, numBytesChildrenChunks);
+			Log::debug("Found pack chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			// 4. Chunk id 'PACK' : if it is absent, only one model in the file
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -307,7 +319,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				Log::warn("We are right now only loading the first model of a vox file");
 			}
 		} else if (chunkId == FourCC('X','Y','Z','I')) {
-			Log::debug("Found voxel chunk with %u bytes and %u child bytes", numBytesChunk, numBytesChildrenChunks);
+			Log::debug("Found voxel chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			// 6. Chunk id 'XYZI' : model voxels
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -334,7 +346,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				volume->setVoxel(x, y, z, voxel);
 			}
 		} else if (chunkId == FourCC('M','A','T','T')) {
-			Log::debug("Found material chunk with %u bytes and %u child bytes", numBytesChunk, numBytesChildrenChunks);
+			Log::debug("Found material chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			// 9. Chunk id 'MATT' : material, if it is absent, it is diffuse material
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -385,7 +397,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		} else if (chunkId == FourCC('R','G','B','A') || chunkId == FourCC('S','I','Z','E')) {
 			// already loaded
 		} else {
-			Log::warn("Unknown chunk in vox file: %u with %u bytes and %u child bytes", chunkId, numBytesChunk, numBytesChildrenChunks);
+			Log::warn("Unknown chunk in vox file: %u with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", chunkId, numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 		}
 		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
 		wrap(stream.seek(nextChunkPos));
