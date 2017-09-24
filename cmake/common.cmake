@@ -3,10 +3,11 @@ include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 
 set(DEFAULT_LUA_EXECUTABLE lua lua5.2 lua5.3)
+set(GAME_BASE_DIR data CACHE STRING "" FORCE)
 
 macro(copy_data_files TARGET)
 	add_custom_target(copy-data-${TARGET} ALL
-		COMMAND cmake -E copy_directory "${ROOT_DIR}/data/${TARGET}/" ${CMAKE_BINARY_DIR}
+		COMMAND cmake -E copy_directory "${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}/" ${CMAKE_BINARY_DIR}
 		COMMENT "Copy ${TARGET} data files...")
 endmacro()
 
@@ -21,7 +22,7 @@ macro(check_lua_files TARGET)
 				${_file}
 				COMMAND ${LUA_EXECUTABLE} ${_file}
 				COMMENT "Validate ${_file}"
-				WORKING_DIRECTORY ${ROOT_DIR}/data/${TARGET}
+				WORKING_DIRECTORY ${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}
 			)
 			add_dependencies(${TARGET} ${_file})
 		endforeach()
@@ -32,7 +33,7 @@ macro(check_lua_files TARGET)
 				COMMAND ${CMAKE_BINARY_DIR}/luac ${_file}
 				COMMENT "Validate ${_file}"
 				DEPENDS luac
-				WORKING_DIRECTORY ${ROOT_DIR}/data/${TARGET}
+				WORKING_DIRECTORY ${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}
 			)
 			add_dependencies(${TARGET} ${_file})
 		endforeach()
@@ -40,7 +41,7 @@ macro(check_lua_files TARGET)
 endmacro()
 
 macro(check_ui_files TARGET)
-	set(_workingdir "${ROOT_DIR}/data/${TARGET}")
+	set(_workingdir "${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}")
 	set(_dir "${_workingdir}/ui/window")
 	file(GLOB UI_FILES ${_dir}/*.tb.txt)
 	foreach(_file ${UI_FILES})
