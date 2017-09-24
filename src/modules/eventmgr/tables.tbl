@@ -1,5 +1,5 @@
 table event {
-	namespace backend
+	namespace eventmgr
 	field id {
 		type long
 	}
@@ -22,7 +22,7 @@ table event {
 }
 
 table event_point {
-	namespace backend
+	namespace eventmgr
 	field eventid {
 		type long
 	}

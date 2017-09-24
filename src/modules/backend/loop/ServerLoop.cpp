@@ -23,6 +23,7 @@
 #include "backend/network/MoveHandler.h"
 #include "core/command/CommandHandler.h"
 #include "voxel/MaterialColor.h"
+#include "eventmgr/EventMgr.h"
 
 namespace backend {
 
@@ -30,9 +31,9 @@ constexpr int aiDebugServerPort = 11338;
 constexpr const char* aiDebugServerInterface = "127.0.0.1";
 
 ServerLoop::ServerLoop(const network::ServerNetworkPtr& network, const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
-		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
+		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr) :
 		_network(network), _spawnMgr(spawnMgr), _world(world),
-		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider) {
+		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr) {
 	_world->setClientData(false);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
@@ -50,12 +51,8 @@ bool ServerLoop::init() {
 		Log::error("Failed to create user table");
 		return false;
 	}
-	if (!db::EventModel::createTable()) {
-		Log::error("Failed to create event table");
-		return false;
-	}
-	if (!db::EventPointModel::createTable()) {
-		Log::error("Failed to create event point table");
+	if (!_eventMgr->init()) {
+		Log::error("Failed to init event manager");
 		return false;
 	}
 

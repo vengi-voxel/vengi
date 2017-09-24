@@ -17,6 +17,13 @@ class Server;
 
 }
 
+namespace eventmgr {
+
+class EventMgr;
+typedef std::shared_ptr<EventMgr> EventMgrPtr;
+
+}
+
 namespace cooldown {
 
 class CooldownProvider;

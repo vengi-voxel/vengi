@@ -10,7 +10,9 @@ namespace eventmgr {
 class EventMgrTest : public core::AbstractTest {
 };
 
-TEST_F(EventMgrTest, testEventMgr) {
+TEST_F(EventMgrTest, testEventMgrInit) {
+	EventMgr mgr;
+	ASSERT_TRUE(mgr.init());
 }
 
 }

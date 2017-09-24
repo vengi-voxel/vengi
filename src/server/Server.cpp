@@ -9,6 +9,7 @@
 #include "network/ServerMessageSender.h"
 #include "attrib/ContainerProvider.h"
 #include "poi/PoiProvider.h"
+#include "eventmgr/EventMgr.h"
 #include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "backend/entity/ai/AILoader.h"
@@ -106,7 +107,9 @@ int main(int argc, char *argv[]) {
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownProvider);
 	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 
-	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider);
+	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>();
+
+	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider, eventMgr);
 
 	Server app(network, serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);
