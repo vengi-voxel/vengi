@@ -88,14 +88,14 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 		Log::error("More colors than supported");
 		return false;
 	}
-	stream.addInt(numColors * sizeof(uint32_t));
+	stream.addInt(256 * sizeof(uint32_t));
 	stream.addInt(0);
 
-	for (int i = 0; i < numColors; i++) {
+	for (int i = 0; i < numColors; ++i) {
 		const uint32_t rgba = core::Color::getRGBA(materialColors[i]);
 		stream.addInt(rgba);
 	}
-	for (int i = numColors; i < 256; i++) {
+	for (int i = numColors; i < 256; ++i) {
 		stream.addInt(0);
 	}
 
