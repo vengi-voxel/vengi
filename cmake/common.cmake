@@ -2,7 +2,7 @@ include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 
-set(DEFAULT_LUA_EXECUTABLE lua lua5.2 lua5.3)
+set(DEFAULT_LUA_EXECUTABLE lua lua5.2 lua5.3 luac luac5.2 luac5.3)
 set(GAME_BASE_DIR data CACHE STRING "" FORCE)
 
 macro(copy_data_files TARGET)
