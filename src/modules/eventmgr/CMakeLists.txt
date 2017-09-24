@@ -1,5 +1,6 @@
 set(SRCS
 	EventMgr.h EventMgr.cpp
+	Event.h Event.cpp
 	EventData.h
 )
 set(LIB eventmgr)

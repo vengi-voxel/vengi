@@ -25,9 +25,34 @@ bool EventMgr::init() {
 }
 
 void EventMgr::update(long dt) {
+	for (auto& e : _events) {
+		if (!e.second->update(dt)) {
+			e.second->stop();
+			// TODO: remove event from collection
+		}
+	}
 }
 
 void EventMgr::shutdown() {
+	for (auto& e : _events) {
+		e.second->stop();
+	}
+	_events.clear();
+}
+
+bool EventMgr::startEvent(EventId id) {
+	// TODO: load event data from lua scripts and add to _events
+	return false;
+}
+
+bool EventMgr::stopEvent(EventId id) {
+	auto i = _events.find(id);
+	if (i == _events.end()) {
+		return false;
+	}
+	i->second->stop();
+	_events.erase(i);
+	return true;
 }
 
 }
