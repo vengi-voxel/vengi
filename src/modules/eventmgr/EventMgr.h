@@ -12,6 +12,8 @@ public:
 
 	bool init();
 
+	void update(long dt);
+
 	void shutdown();
 };
 

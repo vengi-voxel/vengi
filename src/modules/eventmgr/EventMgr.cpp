@@ -24,6 +24,9 @@ bool EventMgr::init() {
 	return true;
 }
 
+void EventMgr::update(long dt) {
+}
+
 void EventMgr::shutdown() {
 }
 
