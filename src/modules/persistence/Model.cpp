@@ -60,6 +60,7 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 	case PGRES_COMMAND_OK:
 	case PGRES_TUPLES_OK:
 		state.affectedRows = PQntuples(state.res);
+		state.currentRow = 0;
 		Log::debug("Affected rows %i", state.affectedRows);
 		break;
 	default:
@@ -81,6 +82,13 @@ bool Model::exec(const char* query) {
 	ConnectionType* conn = scoped.connection()->connection();
 	State s(PQexec(conn, query));
 	checkLastResult(s, scoped);
+	if (s.affectedRows > 1) {
+		Log::debug("More than one row affected, can't fill model values");
+		return s.result;
+	} else if (s.affectedRows <= 0) {
+		Log::trace("No rows affected, can't fill model values");
+		return s.result;
+	}
 	return fillModelValues(s);
 }
 
@@ -119,34 +127,28 @@ bool Model::rollback() {
 }
 
 bool Model::fillModelValues(Model::State& state) {
-	if (state.affectedRows > 1) {
-		Log::debug("More than one row affected, can't fill model values");
-		return state.result;
-	} else if (state.affectedRows <= 0) {
-		Log::trace("No rows affected, can't fill model values");
-		return state.result;
-	}
-
 	const int cols = PQnfields(state.res);
 	Log::trace("Query has values for %i cols", cols);
 	for (int i = 0; i < cols; ++i) {
 		const char* name = PQfname(state.res, i);
-		const bool isNull = PQgetisnull(state.res, 0, i);
-		const char* value = isNull ? nullptr : PQgetvalue(state.res, 0, i);
-		if (value == nullptr) {
-			value = "";
-		}
 		const Field& f = getField(name);
 		if (f.name != name) {
 			Log::error("Unknown field name for '%s'", name);
 			state.result = false;
 			return false;
 		}
-		Log::debug("Try to set '%s' to '%s'", name, value);
+		const bool isNull = PQgetisnull(state.res, state.currentRow, i);
+		const char* value = isNull ? nullptr : PQgetvalue(state.res, state.currentRow, i);
+		int length = PQgetlength(state.res, state.currentRow, i);
+		if (value == nullptr) {
+			value = "";
+			length = 0;
+		}
+		Log::debug("Try to set '%s' to '%s' (length: %i)", name, value, length);
 		switch (f.type) {
 		case FieldType::STRING:
 		case FieldType::PASSWORD:
-			setValue(f, std::string(value));
+			setValue(f, std::string(value, length));
 			break;
 		case FieldType::INT:
 			setValue(f, core::string::toInt(value));
@@ -191,8 +193,15 @@ Model::State Model::PreparedStatement::exec() {
 	}
 
 	const int size = _params.position;
-	State prepState(PQexecPrepared(conn, _name.c_str(), size, &_params.values[0], &_params.lengths[0], &_params.formats[0], 0));
+	State prepState(PQexecPrepared(conn, _name.c_str(), size, &_params.values[0], nullptr, nullptr, 0));
 	if (!_model->checkLastResult(prepState, scoped)) {
+		return prepState;
+	}
+	if (prepState.affectedRows > 1) {
+		Log::debug("More than one row affected, can't fill model values");
+		return prepState;
+	} else if (prepState.affectedRows <= 0) {
+		Log::trace("No rows affected, can't fill model values");
 		return prepState;
 	}
 	_model->fillModelValues(prepState);

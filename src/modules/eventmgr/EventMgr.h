@@ -2,9 +2,11 @@
  * @file
  */
 
+#include "EventConfigurationData.h"
 #include "Event.h"
-#include "EventData.h"
-#include "Shared_generated.h"
+#include "EventProvider.h"
+#include "EventType.h"
+#include "persistence/DBHandler.h"
 #include <memory>
 #include <unordered_map>
 
@@ -12,10 +14,12 @@ namespace eventmgr {
 
 class EventMgr {
 private:
-	std::unordered_map<network::EventType, EventData> _eventData;
+	std::unordered_map<Type, EventConfigurationData> _eventData;
 	std::unordered_map<EventId, EventPtr> _events;
+
+	EventProvider _eventProvider;
 public:
-	EventMgr();
+	EventMgr(const persistence::DBHandlerPtr& dbHandler);
 
 	bool init();
 

@@ -2,6 +2,7 @@
 #include "Util.h"
 #include "Mapping.h"
 #include "Table.h"
+#include "persistence/DBHandler.h"
 #include "core/String.h"
 
 namespace databasetool {
@@ -20,6 +21,7 @@ struct Namespace {
 		src << "namespace " NAMESPACE " {\n\n";
 	}
 	~Namespace() {
+		_src << "typedef std::shared_ptr<" << _table.classname << "> " << _table.classname << "Ptr;\n\n";
 		_src << "} // namespace " NAMESPACE "\n\n";
 		if (!_table.namespaceSrc.empty()) {
 			_src << "} // namespace " << _table.namespaceSrc << "\n\n";
@@ -57,7 +59,7 @@ struct MembersStruct {
 };
 
 static void createMembersStruct(const Table& table, std::stringstream& src) {
-	src << "\tstruct " << MembersStruct::structName() << "{\n";
+	src << "\tstruct " << MembersStruct::structName() << " {\n";
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
 		src << "\t\t";
@@ -73,6 +75,38 @@ static void createMembersStruct(const Table& table, std::stringstream& src) {
 	}
 	src << "\t};\n";
 	src << "\tMembers " << MembersStruct::varName() << ";\n";
+}
+
+static void createMetaInformation(const Table& table, std::stringstream& src) {
+	src << "\tstatic constexpr int primaryKeys = " << table.primaryKeys << ";\n\n";
+	src << "\tstatic const std::vector<Constraint>& constraints() {\n";
+	src << "\t\tstatic const std::vector<Constraint> _constraints {\n";
+	for (auto i = table.constraints.begin(); i != table.constraints.end(); ++i) {
+		const persistence::Model::Constraint& c = i->second;
+		if (i != table.constraints.begin()) {
+			src << ",\n";
+		}
+		src << "\t\t\t{{\"";
+		src << core::string::join(c.fields.begin(), c.fields.end(), "\",\"");
+		src << "\"}, " << c.types << "}";
+	}
+	if (!table.constraints.empty()) {
+		src << "\n";
+	}
+	src << "\t\t};\n";
+	src << "\t\treturn _constraints;\n";
+	src << "\t};\n\n";
+
+	src << "\tstatic const std::array<std::vector<std::string>, " << table.uniqueKeys.size() << ">& uniqueKeys() {\n";
+	src << "\t\tstatic const std::array<std::vector<std::string>, " << table.uniqueKeys.size() << "> _uniquekeys {\n";
+	for (const auto& uniqueKey : table.uniqueKeys) {
+		src << "\t\t\tstd::vector<std::string>{\"";
+		src << core::string::join(uniqueKey.begin(), uniqueKey.end(), "\", \"");
+		src << "\"},\n"; // TODO: remove last ,
+	}
+	src << "\t\t};\n";
+	src << "\t\treturn _uniquekeys;\n";
+	src << "\t};\n\n";
 }
 
 void createConstructor(const Table& table, std::stringstream& src) {
@@ -106,25 +140,18 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 	}
 	std::stringstream loadNonPk;
 	loadNonPk << "\t\tstd::stringstream __load_;\n\t\tint __count_ = 1;\n\t\tbool __andNeeded_ = false;\n";
-	loadNonPk << "\t\t__load_ << \"SELECT ";
+	loadNonPk << "\t\t__load_ << R\"(";
 
-	for (auto i = table.fields.begin(); i != table.fields.end(); ++i) {
-		const persistence::Model::Field& f = i->second;
-		if (i != table.fields.begin()) {
-			loadNonPk << ", ";
-		}
-		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
-			loadNonPk << "CAST(EXTRACT(EPOCH FROM ";
-		}
-		loadNonPk << quote << f.name << quote;
-		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
-			loadNonPk << " AT TIME ZONE 'UTC') AS bigint) * 1000 AS " << f.name;
-		}
+	persistence::Model::Fields fields;
+	fields.reserve(table.fields.size());
+	for (auto& e : table.fields) {
+		fields.push_back(e.second);
 	}
+	loadNonPk << persistence::DBHandler::createSelect(fields, table.name);
 
 	int nonPrimaryKeyMembers = 0;
 	std::stringstream loadNonPkAdd;
-	loadNonPk << " FROM " << quote << table.name << quote << " WHERE \";\n";
+	loadNonPk << " WHERE )\";\n";
 	src << "\tbool select(";
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
@@ -153,7 +180,7 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 		loadNonPk << "\t\t\t\t__andNeeded_ = false;\n";
 		loadNonPk << "\t\t\t}\n";
 
-		loadNonPk << "\t\t\t__load_ << \"" << f.name << " = ";
+		loadNonPk << "\t\t\t__load_ << \"" << quote << f.name << quote << " = ";
 		loadNonPk << "$\" << __count_";
 		loadNonPk << ";\n\t\t\t++__count_;\n\t\t\t__andNeeded_ = true;\n";
 		loadNonPk << "\t\t}\n";
@@ -190,22 +217,15 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 }
 
 static void createSelectByIds(const Table& table, std::stringstream& src) {
-	std::stringstream select;
-	select << "\"SELECT ";
-	for (auto i = table.fields.begin(); i != table.fields.end(); ++i) {
-		const persistence::Model::Field& f = i->second;
-		if (i != table.fields.begin()) {
-			select << ", ";
-		}
-		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
-			select << "cast(EXTRACT(EPOCH FROM ";
-		}
-		select << quote << f.name << quote;
-		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
-			select << " AT TIME ZONE 'UTC') AS bigint) * 1000 AS " << f.name;
-		}
+	persistence::Model::Fields fields;
+	fields.reserve(table.fields.size());
+	for (auto& e : table.fields) {
+		fields.push_back(e.second);
 	}
-	select << " FROM " << quote << table.name << quote << " WHERE ";
+	const std::string& select = persistence::DBHandler::createSelect(fields, table.name);
+
+	std::stringstream where;
+	where << "WHERE ";
 
 	std::stringstream loadadd;
 	int fieldIndex = 0;
@@ -217,20 +237,19 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 		const std::string& cpptype = getCPPType(f.type, true);
 		if (fieldIndex > 0) {
 			src << ", ";
-			select << " AND ";
+			where << " AND ";
 		} else {
 			src << "\tbool selectById(";
 		}
 		++fieldIndex;
-		select << quote << f.name << quote << " = ";
-		sep(select, fieldIndex);
+		where << "\"" << f.name << "\" = ";
+		sep(where, fieldIndex);
 		loadadd << ".add(" << f.name << ")";
 		src << cpptype << " " << f.name;
 	}
 	if (table.primaryKeys > 0) {
-		select << "\"";
 		src << ") {\n";
-		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"" << table.classname << "Load\",\n\t\t\t"  << select.str() << ");\n";
+		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"" << table.classname << "Load\",\n\t\t\tR\"("  << select << " " << where.str() << ")\");\n";
 		src << "\t\t__p_" << loadadd.str() << ";\n";
 		src << "\t\tconst State& __state = __p_.exec();\n";
 		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute selectById statement - error: '%s'\", __state.lastErrorMsg.c_str());\n";
@@ -273,6 +292,7 @@ static void createInsertStatement(const Table& table, std::stringstream& src) {
 	if (!autoincrement.empty()) {
 		insert << " RETURNING " << autoincrement;
 	}
+	// TODO: on duplicate key update
 	insert << "\"";
 
 	src << "\t/**\n";
@@ -341,15 +361,17 @@ static void createCreateTableStatement(const Table& table, std::stringstream& sr
 
 	if (!table.uniqueKeys.empty()) {
 		bool firstUniqueKey = true;
-		createTable << ",\"\n\t\t\t\"UNIQUE(";
-		for (const std::string& fieldName : table.uniqueKeys) {
-			if (!firstUniqueKey) {
-				createTable << ", ";
+		for (const auto& uniqueKey : table.uniqueKeys) {
+			createTable << ",\"\n\t\t\t\"UNIQUE(";
+			for (const std::string& fieldName : uniqueKey) {
+				if (!firstUniqueKey) {
+					createTable << ", ";
+				}
+				createTable << fieldName;
+				firstUniqueKey = false;
 			}
-			createTable << fieldName;
-			firstUniqueKey = false;
+			createTable << ")";
 		}
-		createTable << ")";
 	}
 
 	if (table.primaryKeys > 1) {
@@ -378,6 +400,16 @@ static void createCreateTableStatement(const Table& table, std::stringstream& sr
 }
 
 bool generateClassForTable(const Table& table, std::stringstream& src) {
+	src << "/**\n * @file\n */\n\n";
+	src << "#pragma once\n\n";
+	src << "#include \"persistence/Model.h\"\n";
+	src << "#include \"core/String.h\"\n";
+	src << "#include \"core/Common.h\"\n\n";
+	src << "#include <memory>\n";
+	src << "#include <vector>\n";
+	src << "#include <array>\n";
+	src << "#include <string>\n\n";
+
 	const Namespace ns(table, src);
 	const Class cl(table, src);
 
@@ -387,6 +419,8 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 	createMembersStruct(table, src);
 
 	src << "public:\n";
+
+	createMetaInformation(table, src);
 
 	createConstructor(table, src);
 

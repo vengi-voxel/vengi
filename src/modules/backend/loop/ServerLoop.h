@@ -14,6 +14,7 @@
 #include "network/ProtocolHandlerRegistry.h"
 #include "backend/entity/EntityStorage.h"
 #include "core/EventBus.h"
+#include "persistence/DBHandler.h"
 
 #include <memory>
 #include <thread>
@@ -38,14 +39,16 @@ private:
 	poi::PoiProviderPtr _poiProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	eventmgr::EventMgrPtr _eventMgr;
+	persistence::DBHandlerPtr _dbHandler;
 	core::Input _input;
 
 	void readInput();
 public:
-	ServerLoop(const network::ServerNetworkPtr& network, const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world,
-			const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
-			const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider,
-			const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr);
+	ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network::ServerNetworkPtr& network, const SpawnMgrPtr& spawnMgr,
+			const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,
+			const AIRegistryPtr& registry, const attrib::ContainerProviderPtr& containerProvider,
+			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
+			const eventmgr::EventMgrPtr& eventMgr);
 
 	bool init();
 	void shutdown();

@@ -44,7 +44,13 @@ public:
 		ASSERT_TRUE(u2nd.select(email.c_str(), password.c_str(), nullptr));
 		EXPECT_GT(u2nd.registrationdate().time(), uint64_t(0));
 		EXPECT_EQ(u2nd.email(), email);
-		EXPECT_EQ(u2nd.id(), u.id());
+		ASSERT_EQ(u2nd.id(), u.id());
+
+		db::UserModel u3nd;
+		ASSERT_TRUE(u3nd.selectById(u.id()));
+		EXPECT_GT(u3nd.registrationdate().time(), uint64_t(0));
+		EXPECT_EQ(u3nd.email(), email);
+		ASSERT_EQ(u3nd.id(), u.id());
 	}
 };
 
@@ -53,7 +59,7 @@ TEST_F(DatabaseModelTest, testCreateUser) {
 }
 
 TEST_F(DatabaseModelTest, testCreateUsers) {
-	for (int i = 0; i < 100; ++i) {
+	for (int i = 0; i < 5; ++i) {
 		createUser(core::string::format("a%i@b.c.d", i), "secret");
 	}
 }

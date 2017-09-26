@@ -71,6 +71,13 @@ public:
 	};
 	typedef std::vector<Field> Fields;
 
+	struct Constraint {
+		std::vector<std::string> fields;
+		// bitmask from persistence::Model::ConstraintType
+		uint32_t types;
+	};
+	typedef std::unordered_map<std::string, persistence::Model::Constraint> Constraints;
+
 	class State {
 	public:
 		State(ResultType* res);
@@ -85,6 +92,7 @@ public:
 
 		std::string lastErrorMsg;
 		int affectedRows = -1;
+		int currentRow = -1;
 		// false on error, true on success
 		bool result = false;
 	};
@@ -100,9 +108,9 @@ public:
 	Model(const std::string& tableName);
 	virtual ~Model();
 
-	const std::string& getTableName() const;
+	const std::string& tableName() const;
 
-	const Fields& getFields() const;
+	const Fields& fields() const;
 
 	bool isPrimaryKey(const std::string& fieldname) const;
 
@@ -185,6 +193,7 @@ public:
 			const int index = _params.add();
 			_params.fieldTypes[index] = FieldType::PASSWORD;
 			_params.values[index] = password;
+			_params.lengths[index] = strlen(password);
 			return *this;
 		}
 
@@ -192,6 +201,7 @@ public:
 			const int index = _params.add();
 			_params.fieldTypes[index] = fieldType;
 			_params.values[index] = value;
+			_params.lengths[index] = strlen(value);
 			return *this;
 		}
 
@@ -260,11 +270,11 @@ inline bool Model::exec(const std::string& query) {
 	return exec(query.c_str());
 }
 
-inline const std::string& Model::getTableName() const {
+inline const std::string& Model::tableName() const {
 	return _tableName;
 }
 
-inline const Model::Fields& Model::getFields() const {
+inline const Model::Fields& Model::fields() const {
 	return _fields;
 }
 

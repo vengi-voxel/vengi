@@ -31,10 +31,6 @@ bool DatabaseTool::generateSrc() const {
 	for (auto i : _tables) {
 		const databasetool::Table& table = i.second;
 		std::stringstream src;
-		src << "#pragma once\n\n";
-		src << "#include \"persistence/Model.h\"\n";
-		src << "#include \"core/String.h\"\n";
-		src << "#include \"core/Common.h\"\n\n";
 		if (!databasetool::generateClassForTable(table, src)) {
 			error = true;
 			continue;

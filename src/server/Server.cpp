@@ -15,6 +15,7 @@
 #include "backend/entity/ai/AILoader.h"
 #include "backend/loop/ServerLoop.h"
 #include "backend/spawn/SpawnMgr.h"
+#include "persistence/DBHandler.h"
 
 #include <cstdlib>
 
@@ -107,9 +108,10 @@ int main(int argc, char *argv[]) {
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownProvider);
 	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 
-	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>();
+	const persistence::DBHandlerPtr& dbHandler = std::make_shared<persistence::DBHandler>();
+	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(dbHandler);
 
-	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider, eventMgr);
+	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(dbHandler, network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider, eventMgr);
 
 	Server app(network, serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);

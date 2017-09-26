@@ -6,6 +6,10 @@
 
 namespace eventmgr {
 
+Event::Event(EventId id) :
+		_id(id) {
+}
+
 bool Event::stop() {
 	return false;
 }

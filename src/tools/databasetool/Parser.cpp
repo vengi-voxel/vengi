@@ -48,12 +48,12 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 			}
 			field.type = typeMapping;
 		} else if (token == "notnull") {
-			auto i = table.contraints.find(fieldname);
-			if (i != table.contraints.end()) {
-				Constraint& c = i->second;
+			auto i = table.constraints.find(fieldname);
+			if (i != table.constraints.end()) {
+				persistence::Model::Constraint& c = i->second;
 				c.types |= std::enum_value(persistence::Model::ConstraintType::NOTNULL);
 			} else {
-				table.contraints.insert(std::make_pair(fieldname, Constraint{{fieldname}, (uint32_t)std::enum_value(persistence::Model::ConstraintType::NOTNULL)}));
+				table.constraints.insert(std::make_pair(fieldname, persistence::Model::Constraint{{fieldname}, (uint32_t)std::enum_value(persistence::Model::ConstraintType::NOTNULL)}));
 			}
 		} else if (token == "default") {
 			if (!tok.hasNext()) {
@@ -96,7 +96,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 		return false;
 	}
 	while (tok.hasNext()) {
-		std::vector<std::string> fieldNames;
+		std::set<std::string> fieldNames;
 		token = tok.next();
 		Log::trace("token: '%s'", token.c_str());
 		if (token == "}") {
@@ -121,10 +121,10 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 					}
 					break;
 				}
-				fieldNames.push_back(token);
+				fieldNames.insert(token);
 			}
 		} else {
-			fieldNames.push_back(token);
+			fieldNames.insert(token);
 		}
 		if (!tok.hasNext()) {
 			Log::error("invalid constraint syntax block for table %s", table.name.c_str());
@@ -144,21 +144,23 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 			return false;
 		}
 		if (fieldNames.size() == 1) {
-			const std::string& name = fieldNames[0];
-			auto i = table.contraints.find(name);
-			if (i != table.contraints.end()) {
-				Constraint& c = i->second;
+			const std::string& name = *fieldNames.begin();
+			auto i = table.constraints.find(name);
+			if (i != table.constraints.end()) {
+				persistence::Model::Constraint& c = i->second;
 				c.types |= typeMapping;
 			} else {
 				Log::trace("fieldnames: %i", (int)fieldNames.size());
-				table.contraints.insert(std::make_pair(name, Constraint{fieldNames, typeMapping}));
+				std::vector<std::string> fieldNamesVec;
+				std::copy(fieldNames.begin(), fieldNames.end(), std::back_inserter(fieldNamesVec));
+				table.constraints.insert(std::make_pair(name, persistence::Model::Constraint{fieldNamesVec, typeMapping}));
 			}
 		} else {
 			if (typeMapping != std::enum_value(persistence::Model::ConstraintType::UNIQUE)) {
 				Log::error("Unsupported type mapping for table '%s'", table.name.c_str());
 				return false;
 			}
-			table.uniqueKeys = std::move(fieldNames);
+			table.uniqueKeys.emplace_back(std::move(fieldNames));
 		}
 	}
 	return true;
@@ -205,8 +207,8 @@ bool parseTable(core::Tokenizer& tok, Table& table) {
 		}
 	}
 
-	for (auto entry : table.contraints) {
-		const Constraint& c = entry.second;
+	for (auto entry : table.constraints) {
+		const persistence::Model::Constraint& c = entry.second;
 		for (const std::string& fieldName: c.fields) {
 			if (table.fields.find(fieldName) == table.fields.end()) {
 				Log::error("constraint referenced field wasn't found: '%s'", fieldName.c_str());

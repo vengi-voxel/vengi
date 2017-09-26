@@ -8,10 +8,16 @@
 
 namespace eventmgr {
 
-EventMgr::EventMgr() {
+EventMgr::EventMgr(const persistence::DBHandlerPtr& dbHandler) :
+		_eventProvider(dbHandler) {
 }
 
 bool EventMgr::init() {
+	if (!_eventProvider.init()) {
+		Log::error("Failed to create event table");
+		return false;
+	}
+
 	if (!db::EventModel::createTable()) {
 		Log::error("Failed to create event table");
 		return false;
@@ -25,11 +31,12 @@ bool EventMgr::init() {
 }
 
 void EventMgr::update(long dt) {
-	for (auto& e : _events) {
-		if (!e.second->update(dt)) {
-			e.second->stop();
-			// TODO: remove event from collection
+	for (auto i = _events.begin(); i != _events.end(); ++i)  {
+		if (i->second->update(dt)) {
+			continue;
 		}
+		i->second->stop();
+		i = _events.erase(i);
 	}
 }
 
@@ -41,8 +48,18 @@ void EventMgr::shutdown() {
 }
 
 bool EventMgr::startEvent(EventId id) {
-	// TODO: load event data from lua scripts and add to _events
-	return false;
+	const db::EventModelPtr& model = _eventProvider.get(id);
+	if (!model) {
+		Log::warn("Failed to get the event data with the id %i", (int)id);
+		return false;
+	}
+	const EventPtr& event = std::make_shared<Event>(id);
+	if (!event->start()) {
+		Log::warn("Failed to start the event with the id %i", (int)id);
+		return false;
+	}
+	_events.insert(std::make_pair(id, event));
+	return true;
 }
 
 bool EventMgr::stopEvent(EventId id) {

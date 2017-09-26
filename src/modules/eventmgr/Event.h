@@ -4,16 +4,17 @@
 
 #pragma once
 
+#include "EventId.h"
 #include <memory>
 
 namespace eventmgr {
 
-using EventId = int;
-
 class Event {
 private:
-	EventId id;
+	EventId _id;
 public:
+	Event(EventId id);
+
 	bool start();
 	bool stop();
 

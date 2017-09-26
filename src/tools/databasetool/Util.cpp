@@ -115,10 +115,10 @@ std::string getDbFlags(const Table& table, const persistence::Model::Field& fiel
 		ss << " PRIMARY KEY";
 	}
 	if (field.isUnique()) {
-		auto i = table.contraints.find(field.name);
+		auto i = table.constraints.find(field.name);
 		// only if there is one field in the unique list - otherwise we have to construct
 		// them differently like the primary key for multiple fields
-		if (i == table.contraints.end() || i->second.fields.size() == 1) {
+		if (i == table.constraints.end() || i->second.fields.size() == 1) {
 			ss << " UNIQUE";
 		}
 	}

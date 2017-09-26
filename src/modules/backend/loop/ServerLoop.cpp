@@ -30,10 +30,10 @@ namespace backend {
 constexpr int aiDebugServerPort = 11338;
 constexpr const char* aiDebugServerInterface = "127.0.0.1";
 
-ServerLoop::ServerLoop(const network::ServerNetworkPtr& network, const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
+ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network::ServerNetworkPtr& network, const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
 		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr) :
 		_network(network), _spawnMgr(spawnMgr), _world(world),
-		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr) {
+		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler) {
 	_world->setClientData(false);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
@@ -43,8 +43,8 @@ ServerLoop::ServerLoop(const network::ServerNetworkPtr& network, const SpawnMgrP
 	r->registerHandler(network::EnumNameClientMsgType(type), std::make_shared<handler>(__VA_ARGS__));
 
 bool ServerLoop::init() {
-	if (core::Singleton<::persistence::ConnectionPool>::getInstance().init() <= 0) {
-		Log::error("Failed to init the connection pool");
+	if (_dbHandler->init()) {
+		Log::error("Failed to init the dbhandler");
 		return false;
 	}
 	if (!db::UserModel::createTable()) {
@@ -107,8 +107,8 @@ bool ServerLoop::init() {
 
 void ServerLoop::shutdown() {
 	_world->shutdown();
-	core::Singleton<::persistence::ConnectionPool>::getInstance().shutdown();
 	_spawnMgr->shutdown();
+	_dbHandler->shutdown();
 	delete _zone;
 	delete _aiServer;
 	_zone = nullptr;
