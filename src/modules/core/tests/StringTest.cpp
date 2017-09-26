@@ -15,6 +15,21 @@ TEST_F(StringTest, testEraseAllSpaces) {
 	ASSERT_EQ(",", core::string::eraseAllSpaces("  ,  "));
 }
 
+TEST_F(StringTest, testJoinFunc) {
+	std::string test = "abcd";
+	ASSERT_EQ("b,c,d,e", core::string::join(test.begin(), test.end(), ",", [] (char c) { return (char)(c + 1); }));
+}
+
+TEST_F(StringTest, testJoin) {
+	std::string test = "abcd";
+	ASSERT_EQ("a,b,c,d", core::string::join(test.begin(), test.end(), ","));
+}
+
+TEST_F(StringTest, testJoinSingleEntry) {
+	std::string test = "a";
+	ASSERT_EQ("a", core::string::join(test.begin(), test.end(), ","));
+}
+
 TEST_F(StringTest, testExtractFilename) {
 	ASSERT_EQ("file", core::string::extractFilename("/path/to/file.extension"));
 	ASSERT_EQ("file", core::string::extractFilename("file.extension"));

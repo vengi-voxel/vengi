@@ -7,6 +7,7 @@
 #include <string>
 #include <cstring>
 #include <cstdlib>
+#include <sstream>
 #include <climits>
 #include <algorithm>
 #include <vector>
@@ -207,6 +208,30 @@ inline bool iequals(const std::string& a, const std::string& b) {
 		}
 	}
 	return true;
+}
+
+template<typename ITER>
+std::string join(const ITER& begin, const ITER& end, const char *delimiter) {
+	std::stringstream ss;
+	auto i = begin;
+	ss << *i;
+	for (++i; i != end; ++i) {
+		ss << delimiter;
+		ss << *i;
+	}
+	return ss.str();
+}
+
+template<typename ITER, typename FUNC>
+std::string join(const ITER& begin, const ITER& end, const char *delimiter, FUNC&& func) {
+	std::stringstream ss;
+	auto i = begin;
+	ss << func(*i);
+	for (++i; i != end; ++i) {
+		ss << delimiter;
+		ss << func(*i);
+	}
+	return ss.str();
 }
 
 /**
