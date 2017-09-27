@@ -11,7 +11,6 @@
 namespace databasetool {
 
 extern bool needsInitCPP(persistence::Model::FieldType type);
-extern std::string getDbType(const persistence::Model::Field& field);
 extern std::string getDbFlags(const Table& table, const persistence::Model::Field& field);
 extern std::string getCPPType(persistence::Model::FieldType type, bool function = false, bool pointer = false);
 extern std::string getCPPInit(persistence::Model::FieldType type, bool pointer);

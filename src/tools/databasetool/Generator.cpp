@@ -356,7 +356,7 @@ static void createCreateTableStatement(const Table& table, std::stringstream& sr
 			createTable << ",\"\n";
 		}
 		createTable << "\t\t\t\"" << quote << f.name << quote;
-		const std::string& dbType = getDbType(f);
+		const std::string& dbType = persistence::DBHandler::getDbType(f);
 		if (!dbType.empty()) {
 			createTable << " " << dbType;
 		}

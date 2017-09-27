@@ -19,7 +19,10 @@ private:
 	static std::string quote(const std::string& in) {
 		return core::string::format("\"%s\"", in.c_str());
 	}
+
 public:
+	static std::string getDbType(const persistence::Model::Field& field);
+
 	DBHandler();
 
 	bool init();

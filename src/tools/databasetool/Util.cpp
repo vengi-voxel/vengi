@@ -72,41 +72,6 @@ std::string getCPPType(persistence::Model::FieldType type, bool function, bool p
 	return "";
 }
 
-std::string getDbType(const persistence::Model::Field& field) {
-	if (field.type == persistence::Model::FieldType::PASSWORD
-	 || field.type == persistence::Model::FieldType::STRING) {
-		if (field.length > 0) {
-			return core::string::format("VARCHAR(%i)", field.length);
-		}
-		return "VARCHAR(256)";
-	}
-	if (field.length > 0) {
-		Log::warn("Ignoring field length for '%s'", field.name.c_str());
-	}
-
-	switch (field.type) {
-	case persistence::Model::FieldType::TEXT:
-		return "TEXT";
-	case persistence::Model::FieldType::TIMESTAMP:
-		return "TIMESTAMP";
-	case persistence::Model::FieldType::LONG:
-		if (field.isAutoincrement()) {
-			return "";
-		}
-		return "BIGINT";
-	case persistence::Model::FieldType::INT:
-		if (field.isAutoincrement()) {
-			return "";
-		}
-		return "INT";
-	case persistence::Model::FieldType::STRING:
-	case persistence::Model::FieldType::PASSWORD:
-	case persistence::Model::FieldType::MAX:
-		break;
-	}
-	return "";
-}
-
 std::string getDbFlags(const Table& table, const persistence::Model::Field& field) {
 	std::stringstream ss;
 	bool empty = true;
