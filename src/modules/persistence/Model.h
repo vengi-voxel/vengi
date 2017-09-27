@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <unordered_map>
 #include <vector>
+#include <set>
 #include "core/Common.h"
 #include "Timestamp.h"
 #include "config.h"
@@ -78,6 +79,7 @@ public:
 		uint32_t types;
 	};
 	typedef std::unordered_map<std::string, persistence::Model::Constraint> Constraints;
+	typedef std::vector<std::set<std::string>> UniqueKeys;
 
 	class State {
 	public:
@@ -103,6 +105,7 @@ protected:
 	int _primaryKeys = 0;
 	uint8_t* _membersPointer;
 	Constraints _constraints;
+	UniqueKeys _uniqueKeys;
 
 	const Field& getField(const std::string& name) const;
 	bool checkLastResult(State& state, Connection* connection) const;
@@ -116,6 +119,8 @@ public:
 	const Fields& fields() const;
 
 	const Constraints& constraints() const;
+
+	const UniqueKeys& uniqueKeys() const;
 
 	bool isPrimaryKey(const std::string& fieldname) const;
 
@@ -287,5 +292,8 @@ inline const Model::Constraints& Model::constraints() const {
 	return _constraints;
 }
 
+inline const Model::UniqueKeys& Model::uniqueKeys() const {
+	return _uniqueKeys;
+}
 
 }

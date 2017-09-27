@@ -77,19 +77,6 @@ static void createMembersStruct(const Table& table, std::stringstream& src) {
 	src << "\tMembers " << MembersStruct::varName() << ";\n";
 }
 
-static void createMetaInformation(const Table& table, std::stringstream& src) {
-	src << "\tstatic const std::array<std::vector<std::string>, " << table.uniqueKeys.size() << ">& uniqueKeys() {\n";
-	src << "\t\tstatic const std::array<std::vector<std::string>, " << table.uniqueKeys.size() << "> _uniquekeys {\n";
-	for (const auto& uniqueKey : table.uniqueKeys) {
-		src << "\t\t\tstd::vector<std::string>{\"";
-		src << core::string::join(uniqueKey.begin(), uniqueKey.end(), "\", \"");
-		src << "\"},\n"; // TODO: remove last ,
-	}
-	src << "\t\t};\n";
-	src << "\t\treturn _uniquekeys;\n";
-	src << "\t};\n\n";
-}
-
 void createConstructor(const Table& table, std::stringstream& src) {
 	src << "\t" << table.classname << "(";
 	src << ") : Super(\"" << table.name << "\") {\n";
@@ -119,6 +106,12 @@ void createConstructor(const Table& table, std::stringstream& src) {
 		src << core::string::join(c.fields.begin(), c.fields.end(), "\",\"");
 		src << "\"}, " << c.types << "}));\n";
 	}
+	for (const auto& uniqueKey : table.uniqueKeys) {
+		src << "\t\t_uniqueKeys.emplace_back(std::set<std::string>{\"";
+		src << core::string::join(uniqueKey.begin(), uniqueKey.end(), "\", \"");
+		src << "\"});\n";
+	}
+
 	src << "\t\t_primaryKeys = " << table.primaryKeys << ";\n";
 
 	src << "\t}\n\n";
@@ -417,8 +410,6 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 	createMembersStruct(table, src);
 
 	src << "public:\n";
-
-	createMetaInformation(table, src);
 
 	createConstructor(table, src);
 

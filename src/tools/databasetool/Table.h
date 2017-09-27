@@ -1,11 +1,9 @@
 #pragma once
 
 #include "persistence/Model.h"
-#include <map>
-#include <vector>
 #include <cstdint>
+#include <map>
 #include <string>
-#include <set>
 
 namespace databasetool {
 
@@ -19,7 +17,7 @@ struct Table {
 	Fields fields;
 	persistence::Model::Constraints constraints;
 	int primaryKeys = 0;
-	std::vector<std::set<std::string>> uniqueKeys;
+	persistence::Model::UniqueKeys uniqueKeys;
 };
 
 }
