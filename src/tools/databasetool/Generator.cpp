@@ -360,7 +360,7 @@ static void createCreateTableStatement(const Table& table, std::stringstream& sr
 		if (!dbType.empty()) {
 			createTable << " " << dbType;
 		}
-		const std::string& flags = getDbFlags(table, f);
+		const std::string& flags = getDbFlags(table.primaryKeys, table.constraints, f);
 		if (!flags.empty()) {
 			createTable << " " << flags;
 		}

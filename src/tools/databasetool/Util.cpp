@@ -72,7 +72,7 @@ std::string getCPPType(persistence::Model::FieldType type, bool function, bool p
 	return "";
 }
 
-std::string getDbFlags(const Table& table, const persistence::Model::Field& field) {
+std::string getDbFlags(int numberPrimaryKeys, const persistence::Model::Constraints& constraints, const persistence::Model::Field& field) {
 	std::stringstream ss;
 	bool empty = true;
 	if (field.isAutoincrement()) {
@@ -90,7 +90,7 @@ std::string getDbFlags(const Table& table, const persistence::Model::Field& fiel
 		ss << "NOT NULL";
 		empty = false;
 	}
-	if (field.isPrimaryKey() && table.primaryKeys == 1) {
+	if (field.isPrimaryKey() && numberPrimaryKeys == 1) {
 		if (!empty) {
 			ss << " ";
 		}
@@ -98,10 +98,10 @@ std::string getDbFlags(const Table& table, const persistence::Model::Field& fiel
 		empty = false;
 	}
 	if (field.isUnique()) {
-		auto i = table.constraints.find(field.name);
+		auto i = constraints.find(field.name);
 		// only if there is one field in the unique list - otherwise we have to construct
 		// them differently like the primary key for multiple fields
-		if (i == table.constraints.end() || i->second.fields.size() == 1) {
+		if (i == constraints.end() || i->second.fields.size() == 1) {
 			if (!empty) {
 				ss << " ";
 			}
