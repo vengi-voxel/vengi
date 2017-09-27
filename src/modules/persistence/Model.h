@@ -12,52 +12,16 @@
 #include <set>
 #include "core/Common.h"
 #include "Timestamp.h"
+#include "FieldType.h"
+#include "PreparedStatement.h"
+#include "State.h"
+#include "ConstraintType.h"
 #include "config.h"
 
 #include <libpq-fe.h>
 using ResultType = PGresult;
 
 namespace persistence {
-
-class State {
-public:
-	State(ResultType* res);
-	~State();
-
-	State(State&& other);
-
-	State(const State& other) = delete;
-	State& operator=(const State& other) = delete;
-
-	ResultType* res = nullptr;
-
-	std::string lastErrorMsg;
-	int affectedRows = -1;
-	int currentRow = -1;
-	// false on error, true on success
-	bool result = false;
-};
-
-// don't change the order - code generator relies on this
-enum class ConstraintType {
-	UNIQUE = 1 << 0,
-	PRIMARYKEY = 1 << 1,
-	AUTOINCREMENT = 1 << 2,
-	NOTNULL = 1 << 3
-};
-static constexpr int MAX_CONSTRAINTTYPES = 4;
-
-// don't change the order - code generator relies on this
-enum class FieldType {
-	STRING,
-	TEXT,
-	LONG,
-	INT,
-	PASSWORD,
-	TIMESTAMP,
-	MAX
-};
-static constexpr int MAX_FIELDTYPES = std::enum_value(FieldType::MAX);
 
 struct Field {
 	std::string name;
@@ -101,6 +65,7 @@ class Connection;
 class Model {
 protected:
 	friend class DBHandler;
+	friend class PreparedStatement;
 	Fields _fields;
 	const std::string _tableName;
 	int _primaryKeys = 0;
@@ -130,110 +95,6 @@ public:
 	bool begin();
 	bool commit();
 	bool rollback();
-
-	class ScopedTransaction {
-	private:
-		bool _commited = false;
-		bool _autocommit;
-		Model* _model;
-	public:
-		ScopedTransaction(Model* model, bool autocommit = true);
-		~ScopedTransaction();
-
-		void commit();
-		void rollback();
-	};
-
-	class PreparedStatement {
-	private:
-		Model* _model;
-		std::string _name;
-		std::string _statement;
-		struct BindParam {
-			std::vector<const char *> values;
-			std::vector<int> lengths;
-			std::vector<int> formats;
-			std::vector<std::string> valueBuffers;
-			std::vector<FieldType> fieldTypes;
-			int position = 0;
-			BindParam(int num) :
-					values(num, nullptr), lengths(num, 0), formats(num, 0), fieldTypes(num, FieldType::INT) {
-				valueBuffers.reserve(num);
-			}
-
-			int add() {
-				const int index = position;
-				++position;
-				if (values.capacity() < (size_t)position) {
-					values.resize(position);
-					valueBuffers.resize(position);
-					lengths.resize(position);
-					formats.resize(position);
-					fieldTypes.resize(position);
-				}
-				return index;
-			}
-		};
-		BindParam _params;
-	public:
-		PreparedStatement(Model* model, const std::string& name, const std::string& statement);
-
-		PreparedStatement& add(const std::string& value, FieldType fieldType) {
-			const int index = _params.add();
-			_params.valueBuffers.emplace_back(value);
-			_params.fieldTypes[index] = fieldType;
-			_params.values[index] = _params.valueBuffers.back().data();
-			return *this;
-		}
-
-		PreparedStatement& add(const std::string& value) {
-			return add(value, FieldType::STRING);
-		}
-
-		PreparedStatement& add(int value) {
-			return add(std::to_string(value), FieldType::INT);
-		}
-
-		PreparedStatement& add(long value) {
-			return add(std::to_string(value), FieldType::LONG);
-		}
-
-		PreparedStatement& addPassword(const std::string& password) {
-			return add(password, FieldType::PASSWORD);
-		}
-
-		PreparedStatement& addPassword(const char* password) {
-			const int index = _params.add();
-			_params.fieldTypes[index] = FieldType::PASSWORD;
-			_params.values[index] = password;
-			_params.lengths[index] = strlen(password);
-			return *this;
-		}
-
-		PreparedStatement& add(const char* value, FieldType fieldType) {
-			const int index = _params.add();
-			_params.fieldTypes[index] = fieldType;
-			_params.values[index] = value;
-			_params.lengths[index] = strlen(value);
-			return *this;
-		}
-
-		PreparedStatement& add(nullptr_t value, FieldType fieldType) {
-			const int index = _params.add();
-			_params.fieldTypes[index] = fieldType;
-			_params.values[index] = value;
-			return *this;
-		}
-
-		PreparedStatement& add(const Timestamp& type) {
-			if (type.isNow()) {
-				return add("NOW()", FieldType::TIMESTAMP);
-			}
-			return add(std::to_string(type.time()), FieldType::TIMESTAMP);
-		}
-
-		State exec();
-	};
 
 	void setValue(const Field& f, const std::string& value) {
 		core_assert(f.offset >= 0);

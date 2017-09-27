@@ -4,7 +4,12 @@ set(SRCS
 	ConnectionPool.cpp ConnectionPool.h
 	Model.cpp Model.h
 	DBHandler.cpp DBHandler.h
-	Timestamp.h
+	ConstraintType.h
+	FieldType.h
+	PreparedStatement.cpp PreparedStatement.h
+	ScopedTransaction.cpp ScopedTransaction.h
+	State.cpp State.h
+	Timestamp.cpp Timestamp.h
 )
 set(LIB persistence)
 add_library(${LIB} ${SRCS})

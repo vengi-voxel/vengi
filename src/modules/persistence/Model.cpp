@@ -5,6 +5,7 @@
 #include "Model.h"
 #include "ConnectionPool.h"
 #include "ScopedConnection.h"
+#include "ConstraintType.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include <algorithm>
@@ -31,7 +32,7 @@ bool Model::isPrimaryKey(const std::string& fieldname) const {
 	return (i->contraintMask & std::enum_value(ConstraintType::PRIMARYKEY)) != 0;
 }
 
-Model::PreparedStatement Model::prepare(const std::string& name, const std::string& statement) {
+PreparedStatement Model::prepare(const std::string& name, const std::string& statement) {
 	return PreparedStatement(this, name, statement);
 }
 
@@ -167,91 +168,6 @@ bool Model::fillModelValues(State& state) {
 		setIsNull(f, isNull);
 	}
 	return true;
-}
-
-Model::PreparedStatement::PreparedStatement(Model* model, const std::string& name, const std::string& statement) :
-		_model(model), _name(name), _statement(statement), _params(std::count(statement.begin(), statement.end(), '$')) {
-}
-
-State Model::PreparedStatement::exec() {
-	Log::debug("prepared statement: '%s'", _statement.c_str());
-	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
-	if (!scoped) {
-		Log::error("Could not prepare query '%s' - could not acquire connection", _statement.c_str());
-		return State(nullptr);
-	}
-
-	ConnectionType* conn = scoped.connection()->connection();
-
-	if (_name.empty() || !scoped.connection()->hasPreparedStatement(_name)) {
-		State state(PQprepare(conn, _name.c_str(), _statement.c_str(), (int)_params.values.size(), nullptr));
-		if (!_model->checkLastResult(state, scoped)) {
-			return state;
-		}
-		if (!_name.empty()) {
-			scoped.connection()->registerPreparedStatement(_name);
-		}
-	}
-
-	const int size = _params.position;
-	State prepState(PQexecPrepared(conn, _name.c_str(), size, &_params.values[0], nullptr, nullptr, 0));
-	if (!_model->checkLastResult(prepState, scoped)) {
-		return prepState;
-	}
-	if (prepState.affectedRows > 1) {
-		Log::debug("More than one row affected, can't fill model values");
-		return prepState;
-	} else if (prepState.affectedRows <= 0) {
-		Log::trace("No rows affected, can't fill model values");
-		return prepState;
-	}
-	_model->fillModelValues(prepState);
-	return prepState;
-}
-
-State::State(ResultType* _res) :
-		res(_res) {
-}
-
-State::State(State&& other) :
-		res(other.res), lastErrorMsg(other.lastErrorMsg), affectedRows(
-				other.affectedRows), result(other.result) {
-	other.res = nullptr;
-}
-
-State::~State() {
-	if (res != nullptr) {
-		PQclear(res);
-		res = nullptr;
-	}
-}
-
-Model::ScopedTransaction::ScopedTransaction(Model* model, bool autocommit) :
-		_autocommit(autocommit), _model(model) {
-}
-
-Model::ScopedTransaction::~ScopedTransaction() {
-	if (_autocommit) {
-		commit();
-	} else {
-		rollback();
-	}
-}
-
-void Model::ScopedTransaction::commit() {
-	if (_commited) {
-		return;
-	}
-	_commited = true;
-	_model->commit();
-}
-
-void Model::ScopedTransaction::rollback() {
-	if (_commited) {
-		return;
-	}
-	_commited = true;
-	_model->rollback();
 }
 
 }

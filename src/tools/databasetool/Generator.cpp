@@ -191,7 +191,7 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 		src << ") {\n";
 		src << loadNonPk.str();
 		src << "\t\tconst std::string __load_str_ = __load_.str();\n";
-		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"\", __load_str_);\n";
+		src << "\t\tpersistence::PreparedStatement __p_ = prepare(\"\", __load_str_);\n";
 		src << loadNonPkAdd.str();
 		src << "\t\tconst persistence::State& __state = __p_.exec();\n";
 		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute statement: '%s' - error: '%s'\", __load_str_.c_str(), __state.lastErrorMsg.c_str());\n";
@@ -232,7 +232,7 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 	}
 	if (table.primaryKeys > 0) {
 		src << ") {\n";
-		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"" << table.classname << "Load\",\n\t\t\tR\"("  << select << " " << where.str() << ")\");\n";
+		src << "\t\tpersistence::PreparedStatement __p_ = prepare(\"" << table.classname << "Load\",\n\t\t\tR\"("  << select << " " << where.str() << ")\");\n";
 		src << "\t\t__p_" << loadadd.str() << ";\n";
 		src << "\t\tconst persistence::State& __state = __p_.exec();\n";
 		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute selectById statement - error: '%s'\", __state.lastErrorMsg.c_str());\n";
@@ -286,7 +286,7 @@ static void createInsertStatement(const Table& table, std::stringstream& src) {
 	src << "\tbool insert(";
 	src << insertparams.str();
 	src << ") {\n";
-	src << "\t\tSuper::PreparedStatement __p_ = prepare(\"" << table.classname << "Insert\",\n\t\t\t"  << insert.str() << ");\n";
+	src << "\t\tpersistence::PreparedStatement __p_ = prepare(\"" << table.classname << "Insert\",\n\t\t\t"  << insert.str() << ");\n";
 	src << "\t\t__p_" << insertadd.str() << ";\n";
 	src << "\t\treturn __p_.exec().result;\n";
 	src << "\t}\n\n";

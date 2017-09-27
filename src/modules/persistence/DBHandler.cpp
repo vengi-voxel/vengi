@@ -234,7 +234,7 @@ bool DBHandler::checkLastResult(State& state, Connection* connection) const {
 		Log::debug("Affected rows %i", state.affectedRows);
 		break;
 	default:
-		Log::error("not catched state: %s", PQresStatus(lastState));
+		Log::error("Unknown state: %s", PQresStatus(lastState));
 		return false;
 	}
 
