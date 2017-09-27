@@ -100,7 +100,9 @@ public:
 protected:
 	Fields _fields;
 	const std::string _tableName;
+	int _primaryKeys = 0;
 	uint8_t* _membersPointer;
+	Constraints _constraints;
 
 	const Field& getField(const std::string& name) const;
 	bool checkLastResult(State& state, Connection* connection) const;
@@ -112,6 +114,8 @@ public:
 	const std::string& tableName() const;
 
 	const Fields& fields() const;
+
+	const Constraints& constraints() const;
 
 	bool isPrimaryKey(const std::string& fieldname) const;
 
@@ -278,5 +282,10 @@ inline const std::string& Model::tableName() const {
 inline const Model::Fields& Model::fields() const {
 	return _fields;
 }
+
+inline const Model::Constraints& Model::constraints() const {
+	return _constraints;
+}
+
 
 }

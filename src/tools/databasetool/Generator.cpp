@@ -78,25 +78,6 @@ static void createMembersStruct(const Table& table, std::stringstream& src) {
 }
 
 static void createMetaInformation(const Table& table, std::stringstream& src) {
-	src << "\tstatic constexpr int primaryKeys = " << table.primaryKeys << ";\n\n";
-	src << "\tstatic const std::vector<Constraint>& constraints() {\n";
-	src << "\t\tstatic const std::vector<Constraint> _constraints {\n";
-	for (auto i = table.constraints.begin(); i != table.constraints.end(); ++i) {
-		const persistence::Model::Constraint& c = i->second;
-		if (i != table.constraints.begin()) {
-			src << ",\n";
-		}
-		src << "\t\t\t{{\"";
-		src << core::string::join(c.fields.begin(), c.fields.end(), "\",\"");
-		src << "\"}, " << c.types << "}";
-	}
-	if (!table.constraints.empty()) {
-		src << "\n";
-	}
-	src << "\t\t};\n";
-	src << "\t\treturn _constraints;\n";
-	src << "\t};\n\n";
-
 	src << "\tstatic const std::array<std::vector<std::string>, " << table.uniqueKeys.size() << ">& uniqueKeys() {\n";
 	src << "\t\tstatic const std::array<std::vector<std::string>, " << table.uniqueKeys.size() << "> _uniquekeys {\n";
 	for (const auto& uniqueKey : table.uniqueKeys) {
@@ -113,9 +94,10 @@ void createConstructor(const Table& table, std::stringstream& src) {
 	src << "\t" << table.classname << "(";
 	src << ") : Super(\"" << table.name << "\") {\n";
 	src << "\t\t_membersPointer = (uint8_t*)&" << MembersStruct::varName() << ";\n";
+	src << "\t\t_fields.reserve(" << table.fields.size() << ");\n";
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
-		src << "\t\t_fields.push_back(Field{";
+		src << "\t\t_fields.emplace_back(Field{";
 		src << "\"" << f.name << "\"";
 		src << ", FieldType::" << FieldTypeNames[std::enum_value(f.type)];
 		src << ", " << f.contraintMask;
@@ -131,6 +113,14 @@ void createConstructor(const Table& table, std::stringstream& src) {
 		}
 		src << "});\n";
 	}
+	for (auto i = table.constraints.begin(); i != table.constraints.end(); ++i) {
+		const persistence::Model::Constraint& c = i->second;
+		src << "\t\t_constraints.insert(std::make_pair(\"" << i->first << "\", Constraint{{\"";
+		src << core::string::join(c.fields.begin(), c.fields.end(), "\",\"");
+		src << "\"}, " << c.types << "}));\n";
+	}
+	src << "\t\t_primaryKeys = " << table.primaryKeys << ";\n";
+
 	src << "\t}\n\n";
 }
 
