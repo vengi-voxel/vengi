@@ -13,17 +13,17 @@ EventMgr::EventMgr(const persistence::DBHandlerPtr& dbHandler) :
 }
 
 bool EventMgr::init() {
-	if (!_eventProvider.init()) {
-		Log::error("Failed to create event table");
-		return false;
-	}
-
 	if (!_dbHandler->createTable(db::EventModel())) {
 		Log::error("Failed to create event table");
 		return false;
 	}
 	if (!_dbHandler->createTable(db::EventPointModel())) {
 		Log::error("Failed to create event point table");
+		return false;
+	}
+
+	if (!_eventProvider.init()) {
+		Log::error("Failed to init event provider");
 		return false;
 	}
 
