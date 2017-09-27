@@ -6,6 +6,7 @@
 #include "core/Singleton.h"
 #include "ConnectionPool.h"
 #include "core/Log.h"
+#include "core/String.h"
 #include <sstream>
 
 namespace persistence {

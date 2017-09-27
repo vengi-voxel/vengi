@@ -146,6 +146,7 @@ bool Model::fillModelValues(Model::State& state) {
 		}
 		Log::debug("Try to set '%s' to '%s' (length: %i)", name, value, length);
 		switch (f.type) {
+		case FieldType::TEXT:
 		case FieldType::STRING:
 		case FieldType::PASSWORD:
 			setValue(f, std::string(value, length));

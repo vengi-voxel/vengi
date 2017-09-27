@@ -290,7 +290,7 @@ static void createInsertStatement(const Table& table, std::stringstream& src) {
 
 	insert << ") VALUES (" << insertvalues.str() << ")";
 	if (!autoincrement.empty()) {
-		insert << " RETURNING " << autoincrement;
+		insert << " RETURNING " << quote << autoincrement << quote;
 	}
 	// TODO: on duplicate key update
 	insert << "\"";
@@ -355,7 +355,15 @@ static void createCreateTableStatement(const Table& table, std::stringstream& sr
 		if (!firstField) {
 			createTable << ",\"\n";
 		}
-		createTable << "\t\t\t\"" << f.name << " " << getDbType(f) << getDbFlags(table, f);
+		createTable << "\t\t\t\"" << quote << f.name << quote;
+		const std::string& dbType = getDbType(f);
+		if (!dbType.empty()) {
+			createTable << " " << dbType;
+		}
+		const std::string& flags = getDbFlags(table, f);
+		if (!flags.empty()) {
+			createTable << " " << flags;
+		}
 		firstField = false;
 	}
 
@@ -367,7 +375,7 @@ static void createCreateTableStatement(const Table& table, std::stringstream& sr
 				if (!firstUniqueKey) {
 					createTable << ", ";
 				}
-				createTable << fieldName;
+				createTable << quote << fieldName << quote;
 				firstUniqueKey = false;
 			}
 			createTable << ")";
@@ -385,7 +393,7 @@ static void createCreateTableStatement(const Table& table, std::stringstream& sr
 			if (!firstPrimaryKey) {
 				createTable << ", ";
 			}
-			createTable << f.name;
+			createTable << quote << f.name << quote;
 			firstPrimaryKey = false;
 		}
 		createTable << ")\"\n";

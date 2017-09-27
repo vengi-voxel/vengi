@@ -6,6 +6,7 @@ table definitions in this file.
 ## Valid types
 * password
 * string
+* text
 * int
 * long
 * timestamp

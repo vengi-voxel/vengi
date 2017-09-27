@@ -35,6 +35,7 @@ public:
 	// don't change the order - code generator relies on this
 	enum class FieldType {
 		STRING,
+		TEXT,
 		LONG,
 		INT,
 		PASSWORD,

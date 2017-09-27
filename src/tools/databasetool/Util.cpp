@@ -1,5 +1,6 @@
 #include "Util.h"
 #include "Table.h"
+#include "core/String.h"
 
 namespace databasetool {
 
@@ -7,6 +8,7 @@ bool needsInitCPP(persistence::Model::FieldType type) {
 	switch (type) {
 	case persistence::Model::FieldType::PASSWORD:
 	case persistence::Model::FieldType::STRING:
+	case persistence::Model::FieldType::TEXT:
 	case persistence::Model::FieldType::TIMESTAMP:
 		return false;
 	default:
@@ -19,6 +21,7 @@ std::string getCPPInit(persistence::Model::FieldType type, bool pointer) {
 		return "nullptr";
 	}
 	switch (type) {
+	case persistence::Model::FieldType::TEXT:
 	case persistence::Model::FieldType::PASSWORD:
 	case persistence::Model::FieldType::STRING:
 		return "\"\"";
@@ -37,6 +40,7 @@ std::string getCPPType(persistence::Model::FieldType type, bool function, bool p
 	switch (type) {
 	case persistence::Model::FieldType::PASSWORD:
 	case persistence::Model::FieldType::STRING:
+	case persistence::Model::FieldType::TEXT:
 		if (pointer) {
 			return "const char*";
 		}
@@ -69,18 +73,20 @@ std::string getCPPType(persistence::Model::FieldType type, bool function, bool p
 }
 
 std::string getDbType(const persistence::Model::Field& field) {
-	switch (field.type) {
-	case persistence::Model::FieldType::PASSWORD:
-	case persistence::Model::FieldType::STRING: {
-		std::string type = "CHAR(";
+	if (field.type == persistence::Model::FieldType::PASSWORD
+	 || field.type == persistence::Model::FieldType::STRING) {
 		if (field.length > 0) {
-			type += std::to_string(field.length);
-		} else {
-			type += "256";
+			return core::string::format("VARCHAR(%i)", field.length);
 		}
-		type += ')';
-		return type;
+		return "VARCHAR(256)";
 	}
+	if (field.length > 0) {
+		Log::warn("Ignoring field length for '%s'", field.name.c_str());
+	}
+
+	switch (field.type) {
+	case persistence::Model::FieldType::TEXT:
+		return "TEXT";
 	case persistence::Model::FieldType::TIMESTAMP:
 		return "TIMESTAMP";
 	case persistence::Model::FieldType::LONG:
@@ -93,6 +99,8 @@ std::string getDbType(const persistence::Model::Field& field) {
 			return "";
 		}
 		return "INT";
+	case persistence::Model::FieldType::STRING:
+	case persistence::Model::FieldType::PASSWORD:
 	case persistence::Model::FieldType::MAX:
 		break;
 	}
@@ -101,29 +109,47 @@ std::string getDbType(const persistence::Model::Field& field) {
 
 std::string getDbFlags(const Table& table, const persistence::Model::Field& field) {
 	std::stringstream ss;
+	bool empty = true;
 	if (field.isAutoincrement()) {
+		empty = false;
 		if (field.type == persistence::Model::FieldType::LONG) {
-			ss << " BIGSERIAL";
+			ss << "BIGSERIAL";
 		} else {
-			ss << " SERIAL";
+			ss << "SERIAL";
 		}
 	}
 	if (field.isNotNull()) {
-		ss << " NOT NULL";
+		if (!empty) {
+			ss << " ";
+		}
+		ss << "NOT NULL";
+		empty = false;
 	}
 	if (field.isPrimaryKey() && table.primaryKeys == 1) {
-		ss << " PRIMARY KEY";
+		if (!empty) {
+			ss << " ";
+		}
+		ss << "PRIMARY KEY";
+		empty = false;
 	}
 	if (field.isUnique()) {
 		auto i = table.constraints.find(field.name);
 		// only if there is one field in the unique list - otherwise we have to construct
 		// them differently like the primary key for multiple fields
 		if (i == table.constraints.end() || i->second.fields.size() == 1) {
-			ss << " UNIQUE";
+			if (!empty) {
+				ss << " ";
+			}
+			ss << "UNIQUE";
+			empty = false;
 		}
 	}
 	if (!field.defaultVal.empty()) {
-		ss << " DEFAULT " << field.defaultVal;
+		if (!empty) {
+			ss << " ";
+		}
+		ss << "DEFAULT " << field.defaultVal;
+		empty = false;
 	}
 	return ss.str();
 }
