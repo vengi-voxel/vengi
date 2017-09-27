@@ -47,7 +47,7 @@ bool ServerLoop::init() {
 		Log::error("Failed to init the dbhandler");
 		return false;
 	}
-	if (!db::UserModel::createTable()) {
+	if (!_dbHandler->createTable(db::UserModel())) {
 		Log::error("Failed to create user table");
 		return false;
 	}

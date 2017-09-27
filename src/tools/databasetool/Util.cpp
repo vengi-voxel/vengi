@@ -4,43 +4,43 @@
 
 namespace databasetool {
 
-bool needsInitCPP(persistence::Model::FieldType type) {
+bool needsInitCPP(persistence::FieldType type) {
 	switch (type) {
-	case persistence::Model::FieldType::PASSWORD:
-	case persistence::Model::FieldType::STRING:
-	case persistence::Model::FieldType::TEXT:
-	case persistence::Model::FieldType::TIMESTAMP:
+	case persistence::FieldType::PASSWORD:
+	case persistence::FieldType::STRING:
+	case persistence::FieldType::TEXT:
+	case persistence::FieldType::TIMESTAMP:
 		return false;
 	default:
 		return true;
 	}
 }
 
-std::string getCPPInit(persistence::Model::FieldType type, bool pointer) {
+std::string getCPPInit(persistence::FieldType type, bool pointer) {
 	if (pointer) {
 		return "nullptr";
 	}
 	switch (type) {
-	case persistence::Model::FieldType::TEXT:
-	case persistence::Model::FieldType::PASSWORD:
-	case persistence::Model::FieldType::STRING:
+	case persistence::FieldType::TEXT:
+	case persistence::FieldType::PASSWORD:
+	case persistence::FieldType::STRING:
 		return "\"\"";
-	case persistence::Model::FieldType::TIMESTAMP:
-	case persistence::Model::FieldType::LONG:
+	case persistence::FieldType::TIMESTAMP:
+	case persistence::FieldType::LONG:
 		return "0l";
-	case persistence::Model::FieldType::INT:
+	case persistence::FieldType::INT:
 		return "0";
-	case persistence::Model::FieldType::MAX:
+	case persistence::FieldType::MAX:
 		break;
 	}
 	return "";
 }
 
-std::string getCPPType(persistence::Model::FieldType type, bool function, bool pointer) {
+std::string getCPPType(persistence::FieldType type, bool function, bool pointer) {
 	switch (type) {
-	case persistence::Model::FieldType::PASSWORD:
-	case persistence::Model::FieldType::STRING:
-	case persistence::Model::FieldType::TEXT:
+	case persistence::FieldType::PASSWORD:
+	case persistence::FieldType::STRING:
+	case persistence::FieldType::TEXT:
 		if (pointer) {
 			return "const char*";
 		}
@@ -48,7 +48,7 @@ std::string getCPPType(persistence::Model::FieldType type, bool function, bool p
 			return "const std::string&";
 		}
 		return "std::string";
-	case persistence::Model::FieldType::TIMESTAMP:
+	case persistence::FieldType::TIMESTAMP:
 		if (function) {
 			if (pointer) {
 				return "const persistence::Timestamp*";
@@ -56,67 +56,20 @@ std::string getCPPType(persistence::Model::FieldType type, bool function, bool p
 			return "const persistence::Timestamp&";
 		}
 		return "persistence::Timestamp";
-	case persistence::Model::FieldType::LONG:
+	case persistence::FieldType::LONG:
 		if (pointer) {
 			return "const int64_t*";
 		}
 		return "int64_t";
-	case persistence::Model::FieldType::INT:
+	case persistence::FieldType::INT:
 		if (pointer) {
 			return "const int32_t*";
 		}
 		return "int32_t";
-	case persistence::Model::FieldType::MAX:
+	case persistence::FieldType::MAX:
 		break;
 	}
 	return "";
-}
-
-std::string getDbFlags(int numberPrimaryKeys, const persistence::Model::Constraints& constraints, const persistence::Model::Field& field) {
-	std::stringstream ss;
-	bool empty = true;
-	if (field.isAutoincrement()) {
-		empty = false;
-		if (field.type == persistence::Model::FieldType::LONG) {
-			ss << "BIGSERIAL";
-		} else {
-			ss << "SERIAL";
-		}
-	}
-	if (field.isNotNull()) {
-		if (!empty) {
-			ss << " ";
-		}
-		ss << "NOT NULL";
-		empty = false;
-	}
-	if (field.isPrimaryKey() && numberPrimaryKeys == 1) {
-		if (!empty) {
-			ss << " ";
-		}
-		ss << "PRIMARY KEY";
-		empty = false;
-	}
-	if (field.isUnique()) {
-		auto i = constraints.find(field.name);
-		// only if there is one field in the unique list - otherwise we have to construct
-		// them differently like the primary key for multiple fields
-		if (i == constraints.end() || i->second.fields.size() == 1) {
-			if (!empty) {
-				ss << " ";
-			}
-			ss << "UNIQUE";
-			empty = false;
-		}
-	}
-	if (!field.defaultVal.empty()) {
-		if (!empty) {
-			ss << " ";
-		}
-		ss << "DEFAULT " << field.defaultVal;
-		empty = false;
-	}
-	return ss.str();
 }
 
 void sep(std::stringstream& ss, int count) {
@@ -127,7 +80,7 @@ void sort(databasetool::Fields& fields) {
 	// TODO: implement me
 }
 
-bool isPointer(const persistence::Model::Field& field) {
+bool isPointer(const persistence::Field& field) {
 	if (field.isNotNull()) {
 		return false;
 	}

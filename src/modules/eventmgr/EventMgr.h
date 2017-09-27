@@ -18,6 +18,7 @@ private:
 	std::unordered_map<EventId, EventPtr> _events;
 
 	EventProvider _eventProvider;
+	persistence::DBHandlerPtr _dbHandler;
 public:
 	EventMgr(const persistence::DBHandlerPtr& dbHandler);
 

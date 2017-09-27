@@ -19,87 +19,88 @@ using ResultType = PGresult;
 
 namespace persistence {
 
+class State {
+public:
+	State(ResultType* res);
+	~State();
+
+	State(State&& other);
+
+	State(const State& other) = delete;
+	State& operator=(const State& other) = delete;
+
+	ResultType* res = nullptr;
+
+	std::string lastErrorMsg;
+	int affectedRows = -1;
+	int currentRow = -1;
+	// false on error, true on success
+	bool result = false;
+};
+
+// don't change the order - code generator relies on this
+enum class ConstraintType {
+	UNIQUE = 1 << 0,
+	PRIMARYKEY = 1 << 1,
+	AUTOINCREMENT = 1 << 2,
+	NOTNULL = 1 << 3
+};
+static constexpr int MAX_CONSTRAINTTYPES = 4;
+
+// don't change the order - code generator relies on this
+enum class FieldType {
+	STRING,
+	TEXT,
+	LONG,
+	INT,
+	PASSWORD,
+	TIMESTAMP,
+	MAX
+};
+static constexpr int MAX_FIELDTYPES = std::enum_value(FieldType::MAX);
+
+struct Field {
+	std::string name;
+	FieldType type = FieldType::STRING;
+	// bitmask from ConstraintType
+	uint32_t contraintMask = 0u;
+	std::string defaultVal = "";
+	int length = 0;
+	intptr_t offset = -1;
+	intptr_t nulloffset = -1;
+
+	inline bool isAutoincrement() const {
+		return (contraintMask & std::enum_value(ConstraintType::AUTOINCREMENT)) != 0u;
+	}
+
+	inline bool isNotNull() const {
+		return (contraintMask & std::enum_value(ConstraintType::NOTNULL)) != 0u;
+	}
+
+	inline bool isPrimaryKey() const {
+		return (contraintMask & std::enum_value(ConstraintType::PRIMARYKEY)) != 0u;
+	}
+
+	inline bool isUnique() const {
+		return (contraintMask & std::enum_value(ConstraintType::UNIQUE)) != 0u;
+	}
+};
+typedef std::vector<Field> Fields;
+
+struct Constraint {
+	std::vector<std::string> fields;
+	// bitmask from persistence::Model::ConstraintType
+	uint32_t types;
+};
+typedef std::unordered_map<std::string, Constraint> Constraints;
+typedef std::vector<std::set<std::string>> UniqueKeys;
+
 class DBHandler;
 class Connection;
 
 class Model {
-public:
-	// don't change the order - code generator relies on this
-	enum class ConstraintType {
-		UNIQUE = 1 << 0,
-		PRIMARYKEY = 1 << 1,
-		AUTOINCREMENT = 1 << 2,
-		NOTNULL = 1 << 3
-	};
-	static constexpr int MAX_CONSTRAINTTYPES = 4;
-
-	// don't change the order - code generator relies on this
-	enum class FieldType {
-		STRING,
-		TEXT,
-		LONG,
-		INT,
-		PASSWORD,
-		TIMESTAMP,
-		MAX
-	};
-	static constexpr int MAX_FIELDTYPES = std::enum_value(FieldType::MAX);
-
-	struct Field {
-		std::string name;
-		FieldType type = FieldType::STRING;
-		// bitmask from ConstraintType
-		uint32_t contraintMask = 0u;
-		std::string defaultVal = "";
-		int length = 0;
-		intptr_t offset = -1;
-		intptr_t nulloffset = -1;
-
-		inline bool isAutoincrement() const {
-			return (contraintMask & std::enum_value(ConstraintType::AUTOINCREMENT)) != 0u;
-		}
-
-		inline bool isNotNull() const {
-			return (contraintMask & std::enum_value(ConstraintType::NOTNULL)) != 0u;
-		}
-
-		inline bool isPrimaryKey() const {
-			return (contraintMask & std::enum_value(ConstraintType::PRIMARYKEY)) != 0u;
-		}
-
-		inline bool isUnique() const {
-			return (contraintMask & std::enum_value(ConstraintType::UNIQUE)) != 0u;
-		}
-	};
-	typedef std::vector<Field> Fields;
-
-	struct Constraint {
-		std::vector<std::string> fields;
-		// bitmask from persistence::Model::ConstraintType
-		uint32_t types;
-	};
-	typedef std::unordered_map<std::string, persistence::Model::Constraint> Constraints;
-	typedef std::vector<std::set<std::string>> UniqueKeys;
-
-	class State {
-	public:
-		State(ResultType* res);
-		~State();
-
-		State(State&& other);
-
-		State(const State& other) = delete;
-		State& operator=(const State& other) = delete;
-
-		ResultType* res = nullptr;
-
-		std::string lastErrorMsg;
-		int affectedRows = -1;
-		int currentRow = -1;
-		// false on error, true on success
-		bool result = false;
-	};
 protected:
+	friend class DBHandler;
 	Fields _fields;
 	const std::string _tableName;
 	int _primaryKeys = 0;
@@ -121,6 +122,8 @@ public:
 	const Constraints& constraints() const;
 
 	const UniqueKeys& uniqueKeys() const;
+
+	int primaryKeys() const;
 
 	bool isPrimaryKey(const std::string& fieldname) const;
 
@@ -284,16 +287,20 @@ inline const std::string& Model::tableName() const {
 	return _tableName;
 }
 
-inline const Model::Fields& Model::fields() const {
+inline const Fields& Model::fields() const {
 	return _fields;
 }
 
-inline const Model::Constraints& Model::constraints() const {
+inline const Constraints& Model::constraints() const {
 	return _constraints;
 }
 
-inline const Model::UniqueKeys& Model::uniqueKeys() const {
+inline const UniqueKeys& Model::uniqueKeys() const {
 	return _uniqueKeys;
+}
+
+inline int Model::primaryKeys() const {
+	return _primaryKeys;
 }
 
 }

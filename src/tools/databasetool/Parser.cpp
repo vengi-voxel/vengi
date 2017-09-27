@@ -20,7 +20,7 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 		Log::error("Expected {, found %s", token.c_str());
 		return false;
 	}
-	persistence::Model::Field field;
+	persistence::Field field;
 	field.name = fieldname;
 	while (tok.hasNext()) {
 		token = tok.next();
@@ -33,11 +33,11 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 				return false;
 			}
 			const std::string& type = tok.next();
-			persistence::Model::FieldType typeMapping = persistence::Model::FieldType::STRING;
+			persistence::FieldType typeMapping = persistence::FieldType::STRING;
 			bool foundType = false;
-			for (int i = 0; i < persistence::Model::MAX_FIELDTYPES; ++i) {
+			for (int i = 0; i < persistence::MAX_FIELDTYPES; ++i) {
 				if (core::string::iequals(type, FieldTypeNames[i])) {
-					typeMapping = (persistence::Model::FieldType)i;
+					typeMapping = (persistence::FieldType)i;
 					foundType = true;
 					break;
 				}
@@ -50,10 +50,10 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 		} else if (token == "notnull") {
 			auto i = table.constraints.find(fieldname);
 			if (i != table.constraints.end()) {
-				persistence::Model::Constraint& c = i->second;
-				c.types |= std::enum_value(persistence::Model::ConstraintType::NOTNULL);
+				persistence::Constraint& c = i->second;
+				c.types |= std::enum_value(persistence::ConstraintType::NOTNULL);
 			} else {
-				table.constraints.insert(std::make_pair(fieldname, persistence::Model::Constraint{{fieldname}, (uint32_t)std::enum_value(persistence::Model::ConstraintType::NOTNULL)}));
+				table.constraints.insert(std::make_pair(fieldname, persistence::Constraint{{fieldname}, (uint32_t)std::enum_value(persistence::ConstraintType::NOTNULL)}));
 			}
 		} else if (token == "default") {
 			if (!tok.hasNext()) {
@@ -70,7 +70,7 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 				Log::error("Missing value for length of '%s'", fieldname.c_str());
 				return false;
 			}
-			if (field.type != persistence::Model::FieldType::STRING && field.type != persistence::Model::FieldType::PASSWORD) {
+			if (field.type != persistence::FieldType::STRING && field.type != persistence::FieldType::PASSWORD) {
 				Log::error("Field '%s' of type %i doesn't support length parameter", fieldname.c_str(), std::enum_value(field.type));
 				return false;
 			}
@@ -133,7 +133,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 		token = tok.next();
 		Log::trace("type: '%s', table: %s", token.c_str(), table.name.c_str());
 		uint32_t typeMapping = 0u;
-		for (uint32_t i = 0; i < persistence::Model::MAX_CONSTRAINTTYPES; ++i) {
+		for (uint32_t i = 0; i < persistence::MAX_CONSTRAINTTYPES; ++i) {
 			if (core::string::iequals(token, ConstraintTypeNames[i])) {
 				typeMapping = 1 << i;
 				break;
@@ -147,16 +147,16 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 			const std::string& name = *fieldNames.begin();
 			auto i = table.constraints.find(name);
 			if (i != table.constraints.end()) {
-				persistence::Model::Constraint& c = i->second;
+				persistence::Constraint& c = i->second;
 				c.types |= typeMapping;
 			} else {
 				Log::trace("fieldnames: %i", (int)fieldNames.size());
 				std::vector<std::string> fieldNamesVec;
 				std::copy(fieldNames.begin(), fieldNames.end(), std::back_inserter(fieldNamesVec));
-				table.constraints.insert(std::make_pair(name, persistence::Model::Constraint{fieldNamesVec, typeMapping}));
+				table.constraints.insert(std::make_pair(name, persistence::Constraint{fieldNamesVec, typeMapping}));
 			}
 		} else {
-			if (typeMapping != std::enum_value(persistence::Model::ConstraintType::UNIQUE)) {
+			if (typeMapping != std::enum_value(persistence::ConstraintType::UNIQUE)) {
 				Log::error("Unsupported type mapping for table '%s'", table.name.c_str());
 				return false;
 			}
@@ -208,7 +208,7 @@ bool parseTable(core::Tokenizer& tok, Table& table) {
 	}
 
 	for (auto entry : table.constraints) {
-		const persistence::Model::Constraint& c = entry.second;
+		const persistence::Constraint& c = entry.second;
 		for (const std::string& fieldName: c.fields) {
 			if (table.fields.find(fieldName) == table.fields.end()) {
 				Log::error("constraint referenced field wasn't found: '%s'", fieldName.c_str());
@@ -217,7 +217,7 @@ bool parseTable(core::Tokenizer& tok, Table& table) {
 			Log::debug("transfer constraint to field for faster lookup for %s", fieldName.c_str());
 			table.fields[fieldName].contraintMask |= c.types;
 		}
-		if ((c.types & std::enum_value(persistence::Model::ConstraintType::PRIMARYKEY)) != 0) {
+		if ((c.types & std::enum_value(persistence::ConstraintType::PRIMARYKEY)) != 0) {
 			table.primaryKeys += c.fields.size();
 		}
 	}

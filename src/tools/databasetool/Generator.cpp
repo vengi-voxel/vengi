@@ -53,7 +53,7 @@ struct MembersStruct {
 		return "_m";
 	}
 
-	static std::string nullFieldName(const persistence::Model::Field& f) {
+	static std::string nullFieldName(const persistence::Field& f) {
 		return "_isNull_" + f.name;
 	}
 };
@@ -61,7 +61,7 @@ struct MembersStruct {
 static void createMembersStruct(const Table& table, std::stringstream& src) {
 	src << "\tstruct " << MembersStruct::structName() << " {\n";
 	for (auto entry : table.fields) {
-		const persistence::Model::Field& f = entry.second;
+		const persistence::Field& f = entry.second;
 		src << "\t\t";
 		src << getCPPType(f.type, false);
 		src << " _" << f.name;
@@ -83,10 +83,10 @@ void createConstructor(const Table& table, std::stringstream& src) {
 	src << "\t\t_membersPointer = (uint8_t*)&" << MembersStruct::varName() << ";\n";
 	src << "\t\t_fields.reserve(" << table.fields.size() << ");\n";
 	for (auto entry : table.fields) {
-		const persistence::Model::Field& f = entry.second;
-		src << "\t\t_fields.emplace_back(Field{";
+		const persistence::Field& f = entry.second;
+		src << "\t\t_fields.emplace_back(persistence::Field{";
 		src << "\"" << f.name << "\"";
-		src << ", FieldType::" << FieldTypeNames[std::enum_value(f.type)];
+		src << ", persistence::FieldType::" << FieldTypeNames[std::enum_value(f.type)];
 		src << ", " << f.contraintMask;
 		src << ", \"" << f.defaultVal << "\"";
 		src << ", " << f.length;
@@ -101,8 +101,8 @@ void createConstructor(const Table& table, std::stringstream& src) {
 		src << "});\n";
 	}
 	for (auto i = table.constraints.begin(); i != table.constraints.end(); ++i) {
-		const persistence::Model::Constraint& c = i->second;
-		src << "\t\t_constraints.insert(std::make_pair(\"" << i->first << "\", Constraint{{\"";
+		const persistence::Constraint& c = i->second;
+		src << "\t\t_constraints.insert(std::make_pair(\"" << i->first << "\", persistence::Constraint{{\"";
 		src << core::string::join(c.fields.begin(), c.fields.end(), "\",\"");
 		src << "\"}, " << c.types << "}));\n";
 	}
@@ -125,7 +125,7 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 	loadNonPk << "\t\tstd::stringstream __load_;\n\t\tint __count_ = 1;\n\t\tbool __andNeeded_ = false;\n";
 	loadNonPk << "\t\t__load_ << R\"(";
 
-	persistence::Model::Fields fields;
+	persistence::Fields fields;
 	fields.reserve(table.fields.size());
 	for (auto& e : table.fields) {
 		fields.push_back(e.second);
@@ -137,7 +137,7 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 	loadNonPk << " WHERE )\";\n";
 	src << "\tbool select(";
 	for (auto entry : table.fields) {
-		const persistence::Model::Field& f = entry.second;
+		const persistence::Field& f = entry.second;
 		if (f.isPrimaryKey()) {
 			continue;
 		}
@@ -153,7 +153,7 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 		loadNonPk << "\t\tif (" << f.name << " != nullptr) {\n";
 #if 0
 		loadNonPk << "\t\t\t_m._" << f.name << " = ";
-		if (f.type != persistence::Model::FieldType::PASSWORD && f.type != persistence::Model::FieldType::STRING) {
+		if (f.type != persistence::FieldType::PASSWORD && f.type != persistence::FieldType::STRING) {
 			loadNonPk << "*";
 		}
 		loadNonPk << f.name << ";\n";
@@ -169,16 +169,16 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 		loadNonPk << "\t\t}\n";
 
 		loadNonPkAdd << "\t\tif (" << f.name << " != nullptr) {\n";
-		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
+		if (f.type == persistence::FieldType::TIMESTAMP) {
 			loadNonPkAdd << "\t\t\tif (" << f.name << "->isNow()) {\n";
 			loadNonPkAdd << "\t\t\t\t__p_.add(\"NOW()\");\n";
 			loadNonPkAdd << "\t\t\t} else {\n";
 			loadNonPkAdd << "\t\t\t\t__p_.add(*" << f.name << ");\n";
 			loadNonPkAdd << "\t\t\t}\n";
-		} else if (f.type == persistence::Model::FieldType::PASSWORD) {
+		} else if (f.type == persistence::FieldType::PASSWORD) {
 			loadNonPkAdd << "\t\t\t__p_.addPassword(";
 			loadNonPkAdd << f.name << ");\n";
-		} else if (f.type == persistence::Model::FieldType::LONG || f.type == persistence::Model::FieldType::INT) {
+		} else if (f.type == persistence::FieldType::LONG || f.type == persistence::FieldType::INT) {
 			loadNonPkAdd << "\t\t\t__p_.add(*";
 			loadNonPkAdd << f.name << ");\n";
 		} else {
@@ -193,14 +193,14 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 		src << "\t\tconst std::string __load_str_ = __load_.str();\n";
 		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"\", __load_str_);\n";
 		src << loadNonPkAdd.str();
-		src << "\t\tconst State& __state = __p_.exec();\n";
+		src << "\t\tconst persistence::State& __state = __p_.exec();\n";
 		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute statement: '%s' - error: '%s'\", __load_str_.c_str(), __state.lastErrorMsg.c_str());\n";
 		src << "\t\treturn __state.result;\n\t}\n\n";
 	}
 }
 
 static void createSelectByIds(const Table& table, std::stringstream& src) {
-	persistence::Model::Fields fields;
+	persistence::Fields fields;
 	fields.reserve(table.fields.size());
 	for (auto& e : table.fields) {
 		fields.push_back(e.second);
@@ -213,7 +213,7 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 	std::stringstream loadadd;
 	int fieldIndex = 0;
 	for (auto entry : table.fields) {
-		const persistence::Model::Field& f = entry.second;
+		const persistence::Field& f = entry.second;
 		if (!f.isPrimaryKey()) {
 			continue;
 		}
@@ -234,7 +234,7 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 		src << ") {\n";
 		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"" << table.classname << "Load\",\n\t\t\tR\"("  << select << " " << where.str() << ")\");\n";
 		src << "\t\t__p_" << loadadd.str() << ";\n";
-		src << "\t\tconst State& __state = __p_.exec();\n";
+		src << "\t\tconst persistence::State& __state = __p_.exec();\n";
 		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute selectById statement - error: '%s'\", __state.lastErrorMsg.c_str());\n";
 		src << "\t\treturn __state.result;\n\t}\n\n";
 	}
@@ -249,7 +249,7 @@ static void createInsertStatement(const Table& table, std::stringstream& src) {
 	insert << "\"INSERT INTO " << quote << table.name << quote << " (";
 	int insertValues = 0;
 	for (auto entry : table.fields) {
-		const persistence::Model::Field& f = entry.second;
+		const persistence::Field& f = entry.second;
 		if (!f.isAutoincrement()) {
 			if (insertValues > 0) {
 				insertvalues << ", ";
@@ -261,7 +261,7 @@ static void createInsertStatement(const Table& table, std::stringstream& src) {
 			insert << "\\\"" << f.name << "\\\"";
 			sep(insertvalues, insertValues);
 			// TODO: length check if type is string
-			if (f.type == persistence::Model::FieldType::PASSWORD) {
+			if (f.type == persistence::FieldType::PASSWORD) {
 				insertadd << ".addPassword(" << f.name << ")";
 			} else {
 				insertadd << ".add(" << f.name << ")";
@@ -294,7 +294,7 @@ static void createInsertStatement(const Table& table, std::stringstream& src) {
 
 static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
-		const persistence::Model::Field& f = entry.second;
+		const persistence::Field& f = entry.second;
 		const std::string& cpptypeGetter = getCPPType(f.type, true, isPointer(f));
 		const std::string& cpptypeSetter = getCPPType(f.type, true, false);
 		const std::string& n = core::string::upperCamelCase(f.name);
@@ -304,7 +304,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 			src << "\t\tif (_m._isNull_" << f.name << ") {\n";
 			src << "\t\t\treturn nullptr;\n";
 			src << "\t\t}\n";
-			if (f.type == persistence::Model::FieldType::STRING || f.type == persistence::Model::FieldType::PASSWORD) {
+			if (f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::PASSWORD) {
 				src << "\t\treturn _m._" << f.name << ".data();\n";
 			} else {
 				src << "\t\treturn &_m._" << f.name << ";\n";
@@ -327,67 +327,6 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 			src << "\t}\n\n";
 		}
 	}
-}
-
-static void createCreateTableStatement(const Table& table, std::stringstream& src) {
-	std::stringstream createTable;
-	createTable << "CREATE TABLE IF NOT EXISTS " << quote << table.name << quote << " (\"\n";
-	bool firstField = true;
-	for (auto entry : table.fields) {
-		const persistence::Model::Field& f = entry.second;
-		if (!firstField) {
-			createTable << ",\"\n";
-		}
-		createTable << "\t\t\t\"" << quote << f.name << quote;
-		const std::string& dbType = persistence::DBHandler::getDbType(f);
-		if (!dbType.empty()) {
-			createTable << " " << dbType;
-		}
-		const std::string& flags = getDbFlags(table.primaryKeys, table.constraints, f);
-		if (!flags.empty()) {
-			createTable << " " << flags;
-		}
-		firstField = false;
-	}
-
-	if (!table.uniqueKeys.empty()) {
-		bool firstUniqueKey = true;
-		for (const auto& uniqueKey : table.uniqueKeys) {
-			createTable << ",\"\n\t\t\t\"UNIQUE(";
-			for (const std::string& fieldName : uniqueKey) {
-				if (!firstUniqueKey) {
-					createTable << ", ";
-				}
-				createTable << quote << fieldName << quote;
-				firstUniqueKey = false;
-			}
-			createTable << ")";
-		}
-	}
-
-	if (table.primaryKeys > 1) {
-		createTable << ",\"\n\t\t\t\"PRIMARY KEY(";
-		bool firstPrimaryKey = true;
-		for (auto entry : table.fields) {
-			const persistence::Model::Field& f = entry.second;
-			if (!f.isPrimaryKey()) {
-				continue;
-			}
-			if (!firstPrimaryKey) {
-				createTable << ", ";
-			}
-			createTable << quote << f.name << quote;
-			firstPrimaryKey = false;
-		}
-		createTable << ")\"\n";
-	} else {
-		createTable << "\"\n";
-	}
-	createTable << "\t\t\t\");";
-
-	src << "\tstatic bool createTable() {\n";
-	src << "\t\treturn " << table.classname << "().exec(\"" << createTable.str() << "\");\n";
-	src << "\t}\n";
 }
 
 bool generateClassForTable(const Table& table, std::stringstream& src) {
@@ -418,8 +357,6 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 	createSelectByIds(table, src);
 
 	createInsertStatement(table, src);
-
-	createCreateTableStatement(table, src);
 
 	createGetterAndSetter(table, src);
 

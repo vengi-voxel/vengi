@@ -104,7 +104,7 @@ bool Model::exec(const char* query) const {
 	return checkLastResult(s, scoped);
 }
 
-const Model::Field& Model::getField(const std::string& name) const {
+const Field& Model::getField(const std::string& name) const {
 	for (const Field& field : _fields) {
 		if (field.name == name) {
 			return field;
@@ -126,7 +126,7 @@ bool Model::rollback() {
 	return exec("ROLLBACK;");
 }
 
-bool Model::fillModelValues(Model::State& state) {
+bool Model::fillModelValues(State& state) {
 	const int cols = PQnfields(state.res);
 	Log::trace("Query has values for %i cols", cols);
 	for (int i = 0; i < cols; ++i) {
@@ -173,7 +173,7 @@ Model::PreparedStatement::PreparedStatement(Model* model, const std::string& nam
 		_model(model), _name(name), _statement(statement), _params(std::count(statement.begin(), statement.end(), '$')) {
 }
 
-Model::State Model::PreparedStatement::exec() {
+State Model::PreparedStatement::exec() {
 	Log::debug("prepared statement: '%s'", _statement.c_str());
 	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
 	if (!scoped) {
@@ -209,17 +209,17 @@ Model::State Model::PreparedStatement::exec() {
 	return prepState;
 }
 
-Model::State::State(ResultType* _res) :
+State::State(ResultType* _res) :
 		res(_res) {
 }
 
-Model::State::State(State&& other) :
+State::State(State&& other) :
 		res(other.res), lastErrorMsg(other.lastErrorMsg), affectedRows(
 				other.affectedRows), result(other.result) {
 	other.res = nullptr;
 }
 
-Model::State::~State() {
+State::~State() {
 	if (res != nullptr) {
 		PQclear(res);
 		res = nullptr;

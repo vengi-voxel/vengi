@@ -12,7 +12,7 @@ static const char *FieldTypeNames[] = {
 	CORE_STRINGIFY(PASSWORD),
 	CORE_STRINGIFY(TIMESTAMP)
 };
-static_assert(lengthof(FieldTypeNames) == persistence::Model::MAX_FIELDTYPES, "Invalid field type mapping");
+static_assert(lengthof(FieldTypeNames) == persistence::MAX_FIELDTYPES, "Invalid field type mapping");
 
 static const char *ConstraintTypeNames[] = {
 	CORE_STRINGIFY(UNIQUE),
@@ -20,4 +20,4 @@ static const char *ConstraintTypeNames[] = {
 	CORE_STRINGIFY(AUTOINCREMENT),
 	CORE_STRINGIFY(NOTNULL)
 };
-static_assert(lengthof(ConstraintTypeNames) == persistence::Model::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
+static_assert(lengthof(ConstraintTypeNames) == persistence::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");

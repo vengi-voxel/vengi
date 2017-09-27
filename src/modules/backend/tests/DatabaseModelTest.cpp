@@ -12,7 +12,9 @@
 namespace backend {
 
 class DatabaseModelTest: public core::AbstractTest {
+private:
 	using Super = core::AbstractTest;
+	persistence::DBHandler _dbHandler;
 public:
 	void SetUp() override {
 		Super::SetUp();
@@ -23,14 +25,14 @@ public:
 		core::Var::get(cfg::DatabaseUser, "engine");
 		core::Var::get(cfg::DatabasePassword, "engine");
 
-		core::Singleton<persistence::ConnectionPool>::getInstance().init();
-		ASSERT_TRUE(db::UserModel::createTable()) << "Could not create table";
-		persistence::DBHandler::truncate(db::UserModel());
+		ASSERT_TRUE(_dbHandler.init());
+		ASSERT_TRUE(_dbHandler.createTable(db::UserModel())) << "Could not create table";
+		_dbHandler.truncate(db::UserModel());
 	}
 
 	void TearDown() override {
 		Super::TearDown();
-		core::Singleton<persistence::ConnectionPool>::getInstance().shutdown();
+		_dbHandler.shutdown();
 	}
 
 	void createUser(const std::string& email, const std::string& password) {

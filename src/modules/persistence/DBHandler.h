@@ -16,12 +16,14 @@ namespace persistence {
 
 class DBHandler {
 private:
-	static std::string quote(const std::string& in) {
-		return core::string::format("\"%s\"", in.c_str());
-	}
+	static std::string quote(const std::string& in);
 
+	State execInternal(const std::string& query) const;
+
+	bool checkLastResult(State& state, Connection* connection) const;
 public:
-	static std::string getDbType(const persistence::Model::Field& field);
+	static std::string getDbType(const Field& field);
+	static std::string getDbFlags(int numberPrimaryKeys, const Constraints& constraints, const Field& field);
 
 	DBHandler();
 
@@ -29,8 +31,9 @@ public:
 
 	void shutdown();
 
+	static std::string createCreateTableStatement(const Model& table);
 	static std::string createSelect(const Model& model);
-	static std::string createSelect(const Model::Fields& fields, const std::string& tableName);
+	static std::string createSelect(const Fields& fields, const std::string& tableName);
 
 	template<class FUNC, class MODEL>
 	bool selectAll(MODEL&& model, FUNC&& func) {
@@ -41,7 +44,7 @@ public:
 			return false;
 		}
 		ConnectionType* conn = scoped.connection()->connection();
-		Model::State s(PQexec(conn, select.c_str()));
+		State s(PQexec(conn, select.c_str()));
 		if (!model.checkLastResult(s, scoped)) {
 			return false;
 		}
@@ -54,15 +57,13 @@ public:
 		return true;
 	}
 
-	template<class MODEL>
-	static void truncate(const MODEL& model) {
-		model.exec("TRUNCATE TABLE " + quote(model.tableName()));
-	}
+	void truncate(const Model& model) const;
 
-	template<class MODEL>
-	static void truncate(MODEL&& model) {
-		model.exec("TRUNCATE TABLE " + quote(model.tableName()));
-	}
+	void truncate(Model&& model) const;
+
+	bool createTable(Model&& model) const;
+
+	bool exec(const std::string& query) const;
 };
 
 typedef std::shared_ptr<DBHandler> DBHandlerPtr;

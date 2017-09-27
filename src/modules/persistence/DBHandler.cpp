@@ -26,9 +26,9 @@ void DBHandler::shutdown() {
 	core::Singleton<ConnectionPool>::getInstance().shutdown();
 }
 
-std::string DBHandler::getDbType(const Model::Field& field) {
-	if (field.type == Model::FieldType::PASSWORD
-	 || field.type == Model::FieldType::STRING) {
+std::string DBHandler::getDbType(const Field& field) {
+	if (field.type == FieldType::PASSWORD
+	 || field.type == FieldType::STRING) {
 		if (field.length > 0) {
 			return core::string::format("VARCHAR(%i)", field.length);
 		}
@@ -39,52 +39,228 @@ std::string DBHandler::getDbType(const Model::Field& field) {
 	}
 
 	switch (field.type) {
-	case Model::FieldType::TEXT:
+	case FieldType::TEXT:
 		return "TEXT";
-	case Model::FieldType::TIMESTAMP:
+	case FieldType::TIMESTAMP:
 		return "TIMESTAMP";
-	case Model::FieldType::LONG:
+	case FieldType::LONG:
 		if (field.isAutoincrement()) {
 			return "";
 		}
 		return "BIGINT";
-	case Model::FieldType::INT:
+	case FieldType::INT:
 		if (field.isAutoincrement()) {
 			return "";
 		}
 		return "INT";
-	case Model::FieldType::STRING:
-	case Model::FieldType::PASSWORD:
-	case Model::FieldType::MAX:
+	case FieldType::STRING:
+	case FieldType::PASSWORD:
+	case FieldType::MAX:
 		break;
 	}
 	return "";
 }
 
+std::string DBHandler::createCreateTableStatement(const Model& table) {
+	std::stringstream createTable;
+	createTable << "CREATE TABLE IF NOT EXISTS " << quote(table.tableName()) << " (";
+	bool firstField = true;
+	for (const auto& f : table.fields()) {
+		if (!firstField) {
+			createTable << ", ";
+		}
+		createTable << quote(f.name);
+		const std::string& dbType = getDbType(f);
+		if (!dbType.empty()) {
+			createTable << " " << dbType;
+		}
+		const std::string& flags = getDbFlags(table.primaryKeys(), table.constraints(), f);
+		if (!flags.empty()) {
+			createTable << " " << flags;
+		}
+		firstField = false;
+	}
+
+	if (!table.uniqueKeys().empty()) {
+		bool firstUniqueKey = true;
+		for (const auto& uniqueKey : table.uniqueKeys()) {
+			createTable << ", UNIQUE(";
+			for (const std::string& fieldName : uniqueKey) {
+				if (!firstUniqueKey) {
+					createTable << ", ";
+				}
+				createTable << quote(fieldName);
+				firstUniqueKey = false;
+			}
+			createTable << ")";
+		}
+	}
+
+	if (table.primaryKeys() > 1) {
+		createTable << ", PRIMARY KEY(";
+		bool firstPrimaryKey = true;
+		for (const auto& f : table.fields()) {
+			if (!f.isPrimaryKey()) {
+				continue;
+			}
+			if (!firstPrimaryKey) {
+				createTable << ", ";
+			}
+			createTable << quote(f.name);
+			firstPrimaryKey = false;
+		}
+		createTable << ")";
+	}
+	createTable << ");";
+	return createTable.str();
+}
+
+std::string DBHandler::getDbFlags(int numberPrimaryKeys, const Constraints& constraints, const Field& field) {
+	std::stringstream ss;
+	bool empty = true;
+	if (field.isAutoincrement()) {
+		empty = false;
+		if (field.type == FieldType::LONG) {
+			ss << "BIGSERIAL";
+		} else {
+			ss << "SERIAL";
+		}
+	}
+	if (field.isNotNull()) {
+		if (!empty) {
+			ss << " ";
+		}
+		ss << "NOT NULL";
+		empty = false;
+	}
+	if (field.isPrimaryKey() && numberPrimaryKeys == 1) {
+		if (!empty) {
+			ss << " ";
+		}
+		ss << "PRIMARY KEY";
+		empty = false;
+	}
+	if (field.isUnique()) {
+		auto i = constraints.find(field.name);
+		// only if there is one field in the unique list - otherwise we have to construct
+		// them differently like the primary key for multiple fields
+		if (i == constraints.end() || i->second.fields.size() == 1) {
+			if (!empty) {
+				ss << " ";
+			}
+			ss << "UNIQUE";
+			empty = false;
+		}
+	}
+	if (!field.defaultVal.empty()) {
+		if (!empty) {
+			ss << " ";
+		}
+		ss << "DEFAULT " << field.defaultVal;
+		empty = false;
+	}
+	return ss.str();
+}
+
 std::string DBHandler::createSelect(const Model& model) {
-	const Model::Fields& fields = model.fields();
+	const Fields& fields = model.fields();
 	return createSelect(fields, model.tableName());
 }
 
-std::string DBHandler::createSelect(const Model::Fields& fields, const std::string& tableName) {
+std::string DBHandler::createSelect(const Fields& fields, const std::string& tableName) {
 	std::stringstream select;
 	select << "SELECT ";
 	for (auto i = fields.begin(); i != fields.end(); ++i) {
-		const Model::Field& f = *i;
+		const Field& f = *i;
 		if (i != fields.begin()) {
 			select << ", ";
 		}
-		if (f.type == Model::FieldType::TIMESTAMP) {
+		if (f.type == FieldType::TIMESTAMP) {
 			select << "CAST(EXTRACT(EPOCH FROM ";
 		}
 		select << quote(f.name);
-		if (f.type == Model::FieldType::TIMESTAMP) {
+		if (f.type == FieldType::TIMESTAMP) {
 			select << " AT TIME ZONE 'UTC') AS bigint) * 1000 AS " << quote(f.name);
 		}
 	}
 
 	select << " FROM " << quote(tableName) << "";
 	return select.str();
+}
+
+std::string DBHandler::quote(const std::string& in) {
+	return core::string::format("\"%s\"", in.c_str());
+}
+
+void DBHandler::truncate(const Model& model) const {
+	model.exec("TRUNCATE TABLE " + quote(model.tableName()));
+}
+
+void DBHandler::truncate(Model&& model) const {
+	model.exec("TRUNCATE TABLE " + quote(model.tableName()));
+}
+
+bool DBHandler::createTable(Model&& model) const {
+	const std::string& query = createCreateTableStatement(model);
+	return exec(query);
+}
+
+bool DBHandler::checkLastResult(State& state, Connection* connection) const {
+	state.affectedRows = 0;
+	if (state.res == nullptr) {
+		Log::debug("Empty result");
+		return false;
+	}
+
+	ExecStatusType lastState = PQresultStatus(state.res);
+
+	switch (lastState) {
+	case PGRES_NONFATAL_ERROR:
+		state.lastErrorMsg = PQerrorMessage(connection->connection());
+		Log::warn("non fatal error: %s", state.lastErrorMsg.c_str());
+		break;
+	case PGRES_BAD_RESPONSE:
+	case PGRES_FATAL_ERROR:
+		state.lastErrorMsg = PQerrorMessage(connection->connection());
+		Log::error("fatal error: %s", state.lastErrorMsg.c_str());
+		PQclear(state.res);
+		state.res = nullptr;
+		return false;
+	case PGRES_EMPTY_QUERY:
+	case PGRES_COMMAND_OK:
+	case PGRES_TUPLES_OK:
+		state.affectedRows = PQntuples(state.res);
+		state.currentRow = 0;
+		Log::debug("Affected rows %i", state.affectedRows);
+		break;
+	default:
+		Log::error("not catched state: %s", PQresStatus(lastState));
+		return false;
+	}
+
+	state.result = true;
+	return true;
+}
+
+bool DBHandler::exec(const std::string& query) const {
+	const State& s = execInternal(query);
+	return s.result;
+}
+
+State DBHandler::execInternal(const std::string& query) const {
+	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
+	if (!scoped) {
+		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
+		return State(nullptr);
+	}
+	ConnectionType* conn = scoped.connection()->connection();
+	State s(PQexec(conn, query.c_str()));
+	if (!checkLastResult(s, scoped)) {
+		Log::warn("Failed to execute query: '%s'", query.c_str());
+	} else {
+		Log::debug("Executed query: '%s'", query.c_str());
+	}
+	return s;
 }
 
 }

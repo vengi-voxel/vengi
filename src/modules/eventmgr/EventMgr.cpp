@@ -9,7 +9,7 @@
 namespace eventmgr {
 
 EventMgr::EventMgr(const persistence::DBHandlerPtr& dbHandler) :
-		_eventProvider(dbHandler) {
+		_eventProvider(dbHandler), _dbHandler(dbHandler) {
 }
 
 bool EventMgr::init() {
@@ -18,11 +18,11 @@ bool EventMgr::init() {
 		return false;
 	}
 
-	if (!db::EventModel::createTable()) {
+	if (!_dbHandler->createTable(db::EventModel())) {
 		Log::error("Failed to create event table");
 		return false;
 	}
-	if (!db::EventPointModel::createTable()) {
+	if (!_dbHandler->createTable(db::EventPointModel())) {
 		Log::error("Failed to create event point table");
 		return false;
 	}

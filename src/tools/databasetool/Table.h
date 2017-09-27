@@ -8,16 +8,16 @@
 namespace databasetool {
 
 // TODO: sort for insertion order - keep it stable
-typedef std::map<std::string, persistence::Model::Field> Fields;
+typedef std::map<std::string, persistence::Field> Fields;
 
 struct Table {
 	std::string name;
 	std::string classname;
 	std::string namespaceSrc = "backend";
 	Fields fields;
-	persistence::Model::Constraints constraints;
+	persistence::Constraints constraints;
 	int primaryKeys = 0;
-	persistence::Model::UniqueKeys uniqueKeys;
+	persistence::UniqueKeys uniqueKeys;
 };
 
 }

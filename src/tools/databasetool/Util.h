@@ -10,12 +10,11 @@
 
 namespace databasetool {
 
-extern bool needsInitCPP(persistence::Model::FieldType type);
-extern std::string getDbFlags(int numberPrimaryKeys, const persistence::Model::Constraints& constraints, const persistence::Model::Field& field);
-extern std::string getCPPType(persistence::Model::FieldType type, bool function = false, bool pointer = false);
-extern std::string getCPPInit(persistence::Model::FieldType type, bool pointer);
+extern bool needsInitCPP(persistence::FieldType type);
+extern std::string getCPPType(persistence::FieldType type, bool function = false, bool pointer = false);
+extern std::string getCPPInit(persistence::FieldType type, bool pointer);
 extern void sep(std::stringstream& ss, int count);
 extern void sort(databasetool::Fields& fields);
-extern bool isPointer(const persistence::Model::Field& field);
+extern bool isPointer(const persistence::Field& field);
 
 }
