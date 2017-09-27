@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/NonCopyable.h"
 #include <string>
 
 #include <libpq-fe.h>
@@ -11,15 +12,11 @@ using ResultType = PGresult;
 
 namespace persistence {
 
-class State {
+class State : public core::NonCopyable {
 public:
 	State(ResultType* res);
-	~State();
-
 	State(State&& other);
-
-	State(const State& other) = delete;
-	State& operator=(const State& other) = delete;
+	~State();
 
 	ResultType* res = nullptr;
 

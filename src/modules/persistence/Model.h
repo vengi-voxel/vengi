@@ -18,9 +18,6 @@
 #include "ConstraintType.h"
 #include "config.h"
 
-#include <libpq-fe.h>
-using ResultType = PGresult;
-
 namespace persistence {
 
 struct Field {
