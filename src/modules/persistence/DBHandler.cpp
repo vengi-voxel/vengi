@@ -6,7 +6,6 @@
 #include "core/Singleton.h"
 #include "ConnectionPool.h"
 #include "core/Log.h"
-#include <sstream>
 
 namespace persistence {
 
@@ -23,6 +22,25 @@ bool DBHandler::init() {
 
 void DBHandler::shutdown() {
 	core::Singleton<ConnectionPool>::getInstance().shutdown();
+}
+
+bool DBHandler::insert(const Model& model) const {
+	return execInternalWithParameters(createInsertStatement(model), model).result;
+}
+
+State DBHandler::execInternalWithParameters(const std::string& query, const Model& model) const {
+	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
+	if (!scoped) {
+		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
+		return State();
+	}
+	State s(scoped.connection());
+	if (!s.exec(query.c_str())) {
+		Log::warn("Failed to execute query: '%s'", query.c_str());
+	} else {
+		Log::debug("Executed query: '%s'", query.c_str());
+	}
+	return s;
 }
 
 bool DBHandler::truncate(const Model& model) const {

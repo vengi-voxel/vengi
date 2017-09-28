@@ -39,7 +39,7 @@ void Connection::changePort(uint16_t port) {
 }
 
 static void defaultNoticeProcessor(void *arg, const char *message) {
-	Log::debug("notice processor: %s", message);
+	Log::debug("Notice processor: '%s'", message);
 }
 
 bool Connection::connect() {
@@ -71,9 +71,9 @@ bool Connection::connect() {
 	}
 
 	_connection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), nullptr, dbname, user, password);
-	Log::debug("connect %p", _connection);
+	Log::debug("Connect %p", _connection);
 	if (PQstatus(_connection) != CONNECTION_OK) {
-		Log::error("Connection to database failed: %s", PQerrorMessage(_connection));
+		Log::error("Connection to database failed: '%s'", PQerrorMessage(_connection));
 		disconnect();
 		return false;
 	}
@@ -86,7 +86,7 @@ bool Connection::connect() {
 
 void Connection::disconnect() {
 	if (_connection != nullptr) {
-		Log::debug("disconnect %p", _connection);
+		Log::debug("Disconnect %p", _connection);
 		PQfinish(_connection);
 		_connection = nullptr;
 	}

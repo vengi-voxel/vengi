@@ -4,11 +4,16 @@
 
 #include "SQLGenerator.h"
 #include "core/String.h"
+#include "Model.h"
 
 namespace persistence {
 
 static inline std::string quote(const std::string& in) {
 	return core::string::format("\"%s\"", in.c_str());
+}
+
+static inline void sep(std::stringstream& ss, int count) {
+	ss << "$" << count;
 }
 
 static std::string getDbFlags(int numberPrimaryKeys, const Constraints& constraints, const Field& field) {
@@ -149,6 +154,34 @@ std::string createCreateTableStatement(const Model& table) {
 
 std::string createTruncateTableStatement(const Model& model) {
 	return core::string::format("TRUNCATE TABLE \"%s\"", model.tableName().c_str());
+}
+
+std::string createInsertStatement(const Model& table) {
+	std::stringstream insert;
+	std::stringstream values;
+	std::string autoincrement;
+	insert << "INSERT INTO " << quote(table.tableName()) << " (";
+	int insertValueIndex = 0;
+	for (const persistence::Field& f : table.fields()) {
+		if (f.isAutoincrement()) {
+			autoincrement = f.name;
+			continue;
+		}
+		if (insertValueIndex > 0) {
+			values << ", ";
+			insert << ", ";
+		}
+		++insertValueIndex;
+		insert << quote(f.name);
+		sep(values, insertValueIndex);
+	}
+
+	insert << ") VALUES (" << values.str() << ")";
+	if (!autoincrement.empty()) {
+		insert << " RETURNING " << quote(autoincrement);
+	}
+	// TODO: on duplicate key update
+	return insert.str();
 }
 
 std::string createSelect(const Model& model) {

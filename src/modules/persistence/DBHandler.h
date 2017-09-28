@@ -18,12 +18,12 @@ namespace persistence {
 class DBHandler {
 private:
 	State execInternal(const std::string& query) const;
+	State execInternalWithParameters(const std::string& query, const Model& model) const;
 
 public:
 	DBHandler();
 
 	bool init();
-
 	void shutdown();
 
 	template<class FUNC, class MODEL>
@@ -47,12 +47,10 @@ public:
 		return true;
 	}
 
+	bool insert(const Model& model) const;
 	bool truncate(const Model& model) const;
-
 	bool truncate(Model&& model) const;
-
 	bool createTable(Model&& model) const;
-
 	bool exec(const std::string& query) const;
 
 	// transactions

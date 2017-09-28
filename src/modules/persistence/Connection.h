@@ -7,14 +7,10 @@
 #include "ForwardDecl.h"
 #include <string>
 #include <unordered_set>
-#include "config.h"
 
 namespace persistence {
 
 class Connection {
-	friend class ConnectionPool;
-	friend class PreparedStatement;
-	friend class State;
 private:
 	ConnectionType* _connection;
 	std::string _host;
@@ -23,8 +19,8 @@ private:
 	std::string _password;
 	uint16_t _port;
 	std::unordered_set<std::string> _preparedStatements;
+public:
 	Connection();
-
 	~Connection();
 
 	bool hasPreparedStatement(const std::string& name) const;

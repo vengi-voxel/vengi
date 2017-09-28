@@ -4,12 +4,6 @@
 
 #pragma once
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstddef>
-#include <unordered_map>
-#include <vector>
-#include <set>
 #include "core/Common.h"
 #include "Timestamp.h"
 #include "FieldType.h"
@@ -17,7 +11,13 @@
 #include "State.h"
 #include "ConstraintType.h"
 #include "ForwardDecl.h"
-#include "config.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstddef>
+#include <unordered_map>
+#include <vector>
+#include <set>
 
 namespace persistence {
 

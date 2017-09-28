@@ -7,6 +7,7 @@
 #include "ConnectionPool.h"
 #include "Connection.h"
 #include "Model.h"
+#include "FieldType.h"
 
 #include "core/Singleton.h"
 #include "core/Log.h"
