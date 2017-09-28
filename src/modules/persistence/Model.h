@@ -86,10 +86,6 @@ public:
 
 	bool isPrimaryKey(const std::string& fieldname) const;
 
-	bool begin();
-	bool commit();
-	bool rollback();
-
 	template<class T>
 	T getValue(const Field& f) const {
 		core_assert(f.nulloffset < 0);

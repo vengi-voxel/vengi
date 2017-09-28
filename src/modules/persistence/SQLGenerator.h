@@ -15,4 +15,8 @@ extern std::string createTruncateTableStatement(const Model& model);
 extern std::string createSelect(const Model& model);
 extern std::string createSelect(const Fields& fields, const std::string& tableName);
 
+extern const char* createTransactionBegin();
+extern const char* createTransactionCommit();
+extern const char* createTransactionRollback();
+
 }

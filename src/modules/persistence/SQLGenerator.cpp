@@ -177,4 +177,16 @@ std::string createSelect(const Fields& fields, const std::string& tableName) {
 	return select.str();
 }
 
+const char* createTransactionBegin() {
+	return "START TRANSACTION";
+}
+
+const char* createTransactionCommit() {
+	return "COMMIT";
+}
+
+const char* createTransactionRollback() {
+	return "ROLLBACK";
+}
+
 }

@@ -57,15 +57,15 @@ State DBHandler::execInternal(const std::string& query) const {
 }
 
 bool DBHandler::begin() {
-	return exec("START TRANSACTION;");
+	return exec(createTransactionBegin());
 }
 
 bool DBHandler::commit() {
-	return exec("COMMIT;");
+	return exec(createTransactionCommit());
 }
 
 bool DBHandler::rollback() {
-	return exec("ROLLBACK;");
+	return exec(createTransactionRollback());
 }
 
 }

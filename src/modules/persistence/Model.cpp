@@ -80,18 +80,6 @@ const Field& Model::getField(const std::string& name) const {
 	return emptyField;
 }
 
-bool Model::begin() {
-	return exec("START TRANSACTION;");
-}
-
-bool Model::commit() {
-	return exec("COMMIT;");
-}
-
-bool Model::rollback() {
-	return exec("ROLLBACK;");
-}
-
 bool Model::fillModelValues(State& state) {
 	const int cols = PQnfields(state.res);
 	Log::trace("Query has values for %i cols", cols);
