@@ -8,6 +8,7 @@
 #include "ConstraintType.h"
 #include "core/Log.h"
 #include "core/String.h"
+#include "core/Singleton.h"
 #include <algorithm>
 
 // TODO: remove me
@@ -39,43 +40,6 @@ PreparedStatement Model::prepare(const std::string& name, const std::string& sta
 	return PreparedStatement(this, name, statement);
 }
 
-bool Model::checkLastResult(State& state, Connection* connection) const {
-	state.affectedRows = 0;
-	if (state.res == nullptr) {
-		Log::debug("Empty result");
-		return false;
-	}
-
-	ExecStatusType lastState = PQresultStatus(state.res);
-
-	switch (lastState) {
-	case PGRES_NONFATAL_ERROR:
-		state.lastErrorMsg = PQerrorMessage(connection->connection());
-		Log::warn("non fatal error: %s", state.lastErrorMsg);
-		break;
-	case PGRES_BAD_RESPONSE:
-	case PGRES_FATAL_ERROR:
-		state.lastErrorMsg = PQerrorMessage(connection->connection());
-		Log::error("fatal error: %s", state.lastErrorMsg);
-		PQclear(state.res);
-		state.res = nullptr;
-		return false;
-	case PGRES_EMPTY_QUERY:
-	case PGRES_COMMAND_OK:
-	case PGRES_TUPLES_OK:
-		state.affectedRows = PQntuples(state.res);
-		state.currentRow = 0;
-		Log::debug("Affected rows %i", state.affectedRows);
-		break;
-	default:
-		Log::error("unknown state: %s", PQresStatus(lastState));
-		return false;
-	}
-
-	state.result = true;
-	return true;
-}
-
 bool Model::exec(const char* query) {
 	Log::debug("%s", query);
 	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
@@ -84,8 +48,7 @@ bool Model::exec(const char* query) {
 		return false;
 	}
 	ConnectionType* conn = scoped.connection()->connection();
-	State s(PQexec(conn, query));
-	checkLastResult(s, scoped);
+	State s(conn, PQexec(conn, query));
 	if (s.affectedRows > 1) {
 		Log::debug("More than one row affected, can't fill model values");
 		return s.result;
@@ -104,8 +67,8 @@ bool Model::exec(const char* query) const {
 		return false;
 	}
 	ConnectionType* conn = scoped.connection()->connection();
-	State s(PQexec(conn, query));
-	return checkLastResult(s, scoped);
+	const State s(conn, PQexec(conn, query));
+	return s.result;
 }
 
 const Field& Model::getField(const std::string& name) const {

@@ -208,46 +208,6 @@ bool DBHandler::createTable(Model&& model) const {
 	return exec(query);
 }
 
-bool DBHandler::checkLastResult(State& state, Connection* connection) const {
-	state.affectedRows = 0;
-	state.result = false;
-	if (state.res == nullptr) {
-		Log::debug("Empty result");
-		return false;
-	}
-
-	ExecStatusType lastState = PQresultStatus(state.res);
-
-	switch (lastState) {
-	case PGRES_NONFATAL_ERROR: {
-		char *lastErrorMsg = PQerrorMessage(connection->connection());
-		Log::warn("non fatal error: %s", lastErrorMsg);
-		PQfreemem(lastErrorMsg);
-		state.result = true;
-		// TODO: wtf is a non-fatal error?
-		break;
-	}
-	case PGRES_BAD_RESPONSE:
-	case PGRES_FATAL_ERROR:
-		state.lastErrorMsg = PQerrorMessage(connection->connection());
-		Log::error("fatal error: %s", state.lastErrorMsg);
-		break;
-	case PGRES_EMPTY_QUERY:
-	case PGRES_COMMAND_OK:
-	case PGRES_TUPLES_OK:
-		state.affectedRows = PQntuples(state.res);
-		state.currentRow = 0;
-		state.result = true;
-		Log::debug("Affected rows %i", state.affectedRows);
-		break;
-	default:
-		Log::error("Unknown state: %s", PQresStatus(lastState));
-		break;
-	}
-
-	return state.result;
-}
-
 bool DBHandler::exec(const std::string& query) const {
 	const State& s = execInternal(query);
 	return s.result;
@@ -260,8 +220,8 @@ State DBHandler::execInternal(const std::string& query) const {
 		return State();
 	}
 	ConnectionType* conn = scoped.connection()->connection();
-	State s(PQexec(conn, query.c_str()));
-	if (!checkLastResult(s, scoped)) {
+	State s(conn, PQexec(conn, query.c_str()));
+	if (!s.result) {
 		Log::warn("Failed to execute query: '%s'", query.c_str());
 	} else {
 		Log::debug("Executed query: '%s'", query.c_str());

@@ -42,14 +42,14 @@ State PreparedStatement::exec() {
 	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
 	if (!scoped) {
 		Log::error("Could not prepare query '%s' - could not acquire connection", _statement.c_str());
-		return State(nullptr);
+		return State();
 	}
 
 	ConnectionType* conn = scoped.connection()->connection();
 
 	if (_name.empty() || !scoped.connection()->hasPreparedStatement(_name)) {
-		State state(PQprepare(conn, _name.c_str(), _statement.c_str(), (int)_params.values.size(), nullptr));
-		if (!_model->checkLastResult(state, scoped)) {
+		State state(conn, PQprepare(conn, _name.c_str(), _statement.c_str(), (int)_params.values.size(), nullptr));
+		if (!state.result) {
 			return state;
 		}
 		if (!_name.empty()) {
@@ -58,8 +58,8 @@ State PreparedStatement::exec() {
 	}
 
 	const int size = _params.position;
-	State prepState(PQexecPrepared(conn, _name.c_str(), size, &_params.values[0], nullptr, nullptr, 0));
-	if (!_model->checkLastResult(prepState, scoped)) {
+	State prepState(conn, PQexecPrepared(conn, _name.c_str(), size, &_params.values[0], nullptr, nullptr, 0));
+	if (!prepState.result) {
 		return prepState;
 	}
 	if (prepState.affectedRows > 1) {

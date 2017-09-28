@@ -9,8 +9,9 @@
 
 namespace persistence {
 
-State::State(ResultType* _res) :
+State::State(ConnectionType* connection, ResultType* _res) :
 		res(_res) {
+	checkLastResult(connection);
 }
 
 State::State(State&& other) :
@@ -31,19 +32,19 @@ State::~State() {
 	}
 }
 
-bool State::checkLastResult(Connection* connection) {
+void State::checkLastResult(ConnectionType* connection) {
 	affectedRows = 0;
 	result = false;
 	if (res == nullptr) {
 		Log::debug("Empty result");
-		return false;
+		return;
 	}
 
 	ExecStatusType lastState = PQresultStatus(res);
 
 	switch (lastState) {
 	case PGRES_NONFATAL_ERROR: {
-		char *lastErrorMsg = PQerrorMessage(connection->connection());
+		char *lastErrorMsg = PQerrorMessage(connection);
 		Log::warn("non fatal error: %s", lastErrorMsg);
 		PQfreemem(lastErrorMsg);
 		result = true;
@@ -52,7 +53,7 @@ bool State::checkLastResult(Connection* connection) {
 	}
 	case PGRES_BAD_RESPONSE:
 	case PGRES_FATAL_ERROR:
-		lastErrorMsg = PQerrorMessage(connection->connection());
+		lastErrorMsg = PQerrorMessage(connection);
 		Log::error("fatal error: %s", lastErrorMsg);
 		break;
 	case PGRES_EMPTY_QUERY:
@@ -67,8 +68,6 @@ bool State::checkLastResult(Connection* connection) {
 		Log::error("Unknown state: %s", PQresStatus(lastState));
 		break;
 	}
-
-	return result;
 }
 
 }

@@ -11,15 +11,17 @@
 namespace persistence {
 
 class State : public core::NonCopyable {
+private:
+	void checkLastResult(ConnectionType* connection);
 public:
-	constexpr State() {}
-	State(ResultType* res);
+	constexpr State() {
+	}
+	State(ConnectionType* connection, ResultType* res);
 	State(State&& other);
 	~State();
 
 	ResultType* res = nullptr;
 
-	bool checkLastResult(Connection* connection);
 	char* lastErrorMsg = nullptr;
 	int affectedRows = -1;
 	int currentRow = -1;

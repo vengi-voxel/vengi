@@ -22,8 +22,6 @@ private:
 	static std::string quote(const std::string& in);
 
 	State execInternal(const std::string& query) const;
-
-	bool checkLastResult(State& state, Connection* connection) const;
 public:
 	static std::string getDbType(const Field& field);
 	static std::string getDbFlags(int numberPrimaryKeys, const Constraints& constraints, const Field& field);
@@ -47,8 +45,8 @@ public:
 			return false;
 		}
 		ConnectionType* conn = scoped.connection()->connection();
-		State s(PQexec(conn, select.c_str()));
-		if (!model.checkLastResult(s, scoped)) {
+		State s(conn, PQexec(conn, select.c_str()));
+		if (!s.result) {
 			return false;
 		}
 		for (int i = 0; i < s.affectedRows; ++i) {

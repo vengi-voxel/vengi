@@ -69,7 +69,6 @@ protected:
 	UniqueKeys _uniqueKeys;
 
 	const Field& getField(const std::string& name) const;
-	bool checkLastResult(State& state, Connection* connection) const;
 	bool fillModelValues(State& state);
 public:
 	Model(const std::string& tableName);
