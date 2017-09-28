@@ -192,12 +192,12 @@ std::string DBHandler::quote(const std::string& in) {
 	return core::string::format("\"%s\"", in.c_str());
 }
 
-void DBHandler::truncate(const Model& model) const {
-	model.exec("TRUNCATE TABLE " + quote(model.tableName()));
+bool DBHandler::truncate(const Model& model) const {
+	return model.exec("TRUNCATE TABLE " + quote(model.tableName()));
 }
 
-void DBHandler::truncate(Model&& model) const {
-	model.exec("TRUNCATE TABLE " + quote(model.tableName()));
+bool DBHandler::truncate(Model&& model) const {
+	return model.exec("TRUNCATE TABLE " + quote(model.tableName()));
 }
 
 bool DBHandler::createTable(Model&& model) const {

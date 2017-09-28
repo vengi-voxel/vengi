@@ -14,6 +14,7 @@ namespace backend {
 class DatabaseModelTest: public core::AbstractTest {
 private:
 	using Super = core::AbstractTest;
+protected:
 	persistence::DBHandler _dbHandler;
 public:
 	void SetUp() override {
@@ -64,6 +65,28 @@ TEST_F(DatabaseModelTest, testCreateUsers) {
 	for (int i = 0; i < 5; ++i) {
 		createUser(core::string::format("a%i@b.c.d", i), "secret");
 	}
+}
+
+TEST_F(DatabaseModelTest, testSelectAll) {
+	const int expected = 5;
+	for (int i = 0; i < expected; ++i) {
+		createUser(core::string::format("a%i@b.c.d", i), "secret");
+	}
+	int count = 0;
+	EXPECT_TRUE(_dbHandler.selectAll(db::UserModel(), [&] (const db::UserModelPtr& model) {
+		++count;
+	}));
+	EXPECT_EQ(count, expected);
+}
+
+TEST_F(DatabaseModelTest, testTruncate) {
+	createUser("a@b.c.d", "secret");
+	EXPECT_TRUE(_dbHandler.truncate(db::UserModel()));
+	int count = 0;
+	_dbHandler.selectAll(db::UserModel(), [&] (const db::UserModelPtr& model) {
+		++count;
+	});
+	EXPECT_EQ(count, 0);
 }
 
 }

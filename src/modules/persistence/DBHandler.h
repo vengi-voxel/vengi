@@ -54,9 +54,9 @@ public:
 		return true;
 	}
 
-	void truncate(const Model& model) const;
+	bool truncate(const Model& model) const;
 
-	void truncate(Model&& model) const;
+	bool truncate(Model&& model) const;
 
 	bool createTable(Model&& model) const;
 
