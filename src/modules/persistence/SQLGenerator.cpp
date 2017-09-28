@@ -186,10 +186,7 @@ std::string createInsertStatement(const Model& table) {
 
 std::string createSelect(const Model& model) {
 	const Fields& fields = model.fields();
-	return createSelect(fields, model.tableName());
-}
-
-std::string createSelect(const Fields& fields, const std::string& tableName) {
+	const std::string& tableName = model.tableName();
 	std::stringstream select;
 	select << "SELECT ";
 	for (auto i = fields.begin(); i != fields.end(); ++i) {

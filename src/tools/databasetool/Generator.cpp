@@ -125,18 +125,18 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 	}
 	std::stringstream loadNonPk;
 	loadNonPk << "\t\tstd::stringstream __load_;\n\t\tint __count_ = 1;\n\t\tbool __andNeeded_ = false;\n";
-	loadNonPk << "\t\t__load_ << R\"(";
+	loadNonPk << "\t\t__load_ << ";
 
 	persistence::Fields fields;
 	fields.reserve(table.fields.size());
 	for (auto& e : table.fields) {
 		fields.push_back(e.second);
 	}
-	loadNonPk << persistence::createSelect(fields, table.name);
+	loadNonPk << "persistence::createSelect(*this) + ";
 
 	int nonPrimaryKeyMembers = 0;
 	std::stringstream loadNonPkAdd;
-	loadNonPk << " WHERE )\";\n";
+	loadNonPk << "\" WHERE \";\n";
 	src << "\tbool select(";
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
@@ -207,7 +207,6 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 	for (auto& e : table.fields) {
 		fields.push_back(e.second);
 	}
-	const std::string& select = persistence::createSelect(fields, table.name);
 
 	std::stringstream where;
 	where << "WHERE ";
@@ -234,7 +233,7 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 	}
 	if (table.primaryKeys > 0) {
 		src << ") {\n";
-		src << "\t\tpersistence::PreparedStatement __p_ = prepare(\"" << table.classname << "Load\",\n\t\t\tR\"("  << select << " " << where.str() << ")\");\n";
+		src << "\t\tpersistence::PreparedStatement __p_ = prepare(\"" << table.classname << "Load\", persistence::createSelect(*this) + R\"( " << where.str() << ")\");\n";
 		src << "\t\t__p_" << loadadd.str() << ";\n";
 		src << "\t\tconst persistence::State& __state = __p_.exec();\n";
 		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute selectById statement - error: '%s'\", __state.lastErrorMsg);\n";
@@ -243,42 +242,26 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 }
 
 static void createInsertStatement(const Table& table, std::stringstream& src) {
-	std::stringstream insert;
-	std::stringstream insertvalues;
 	std::stringstream insertadd;
 	std::stringstream insertparams;
-	std::string autoincrement;
-	insert << "\"INSERT INTO " << quote << table.name << quote << " (";
 	int insertValues = 0;
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
-		if (!f.isAutoincrement()) {
-			if (insertValues > 0) {
-				insertvalues << ", ";
-				insert << ", ";
-				insertparams << ", ";
-			}
-			++insertValues;
-			insertparams << getCPPType(f.type, true) << " " << f.name;
-			insert << "\\\"" << f.name << "\\\"";
-			sep(insertvalues, insertValues);
-			// TODO: length check if type is string
-			if (f.type == persistence::FieldType::PASSWORD) {
-				insertadd << ".addPassword(" << f.name << ")";
-			} else {
-				insertadd << ".add(" << f.name << ")";
-			}
+		if (f.isAutoincrement()) {
+			continue;
+		}
+		if (insertValues > 0) {
+			insertparams << ", ";
+		}
+		++insertValues;
+		insertparams << getCPPType(f.type, true) << " " << f.name;
+		// TODO: length check if type is string
+		if (f.type == persistence::FieldType::PASSWORD) {
+			insertadd << ".addPassword(" << f.name << ")";
 		} else {
-			autoincrement = f.name;
+			insertadd << ".add(" << f.name << ")";
 		}
 	}
-
-	insert << ") VALUES (" << insertvalues.str() << ")";
-	if (!autoincrement.empty()) {
-		insert << " RETURNING " << quote << autoincrement << quote;
-	}
-	// TODO: on duplicate key update
-	insert << "\"";
 
 	src << "\t/**\n";
 	src << "\t * @brief Insert a new row into the database with the given parameters\n";
@@ -288,7 +271,7 @@ static void createInsertStatement(const Table& table, std::stringstream& src) {
 	src << "\tbool insert(";
 	src << insertparams.str();
 	src << ") {\n";
-	src << "\t\tpersistence::PreparedStatement __p_ = prepare(\"" << table.classname << "Insert\",\n\t\t\t"  << insert.str() << ");\n";
+	src << "\t\tpersistence::PreparedStatement __p_ = prepare(\"" << table.classname << "Insert\", persistence::createInsertStatement(*this));\n";
 	src << "\t\t__p_" << insertadd.str() << ";\n";
 	src << "\t\treturn __p_.exec().result;\n";
 	src << "\t}\n\n";
@@ -335,6 +318,7 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 	src << "/**\n * @file\n */\n\n";
 	src << "#pragma once\n\n";
 	src << "#include \"persistence/Model.h\"\n";
+	src << "#include \"persistence/SQLGenerator.h\"\n";
 	src << "#include \"core/String.h\"\n";
 	src << "#include \"core/Common.h\"\n\n";
 	src << "#include <memory>\n";
