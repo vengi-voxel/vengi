@@ -3,6 +3,7 @@
  */
 
 #include "ForwardDecl.h"
+#include "DBHandler.h"
 
 namespace persistence {
 
@@ -10,9 +11,9 @@ class ScopedTransaction {
 private:
 	bool _commited = false;
 	bool _autocommit;
-	Model* _model;
+	DBHandlerPtr _dbHandler;
 public:
-	ScopedTransaction(Model* model, bool autocommit = true);
+	ScopedTransaction(const DBHandlerPtr& model, bool autocommit = true);
 	~ScopedTransaction();
 
 	void commit();

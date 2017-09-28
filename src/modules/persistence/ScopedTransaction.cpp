@@ -7,8 +7,9 @@
 
 namespace persistence {
 
-ScopedTransaction::ScopedTransaction(Model* model, bool autocommit) :
-		_autocommit(autocommit), _model(model) {
+ScopedTransaction::ScopedTransaction(const DBHandlerPtr& dbHandler, bool autocommit) :
+		_autocommit(autocommit), _dbHandler(dbHandler) {
+	_dbHandler->begin();
 }
 
 ScopedTransaction::~ScopedTransaction() {
@@ -24,7 +25,7 @@ void ScopedTransaction::commit() {
 		return;
 	}
 	_commited = true;
-	_model->commit();
+	_dbHandler->commit();
 }
 
 void ScopedTransaction::rollback() {
@@ -32,7 +33,7 @@ void ScopedTransaction::rollback() {
 		return;
 	}
 	_commited = true;
-	_model->rollback();
+	_dbHandler->rollback();
 }
 
 }
