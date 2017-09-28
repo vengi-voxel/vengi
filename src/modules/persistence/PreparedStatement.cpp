@@ -11,6 +11,8 @@
 #include "core/Singleton.h"
 #include "core/Log.h"
 
+#include <libpq-fe.h>
+
 namespace persistence {
 
 PreparedStatement::BindParam::BindParam(int num) :

@@ -1,4 +1,9 @@
+/**
+ * @file
+ */
+
 #include "ScopedConnection.h"
+#include "Connection.h"
 
 namespace persistence {
 

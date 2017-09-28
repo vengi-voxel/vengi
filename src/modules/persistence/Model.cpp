@@ -10,6 +10,9 @@
 #include "core/String.h"
 #include <algorithm>
 
+// TODO: remove me
+#include <libpq-fe.h>
+
 namespace persistence {
 
 Model::Model(const std::string& tableName) :
@@ -48,12 +51,12 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 	switch (lastState) {
 	case PGRES_NONFATAL_ERROR:
 		state.lastErrorMsg = PQerrorMessage(connection->connection());
-		Log::warn("non fatal error: %s", state.lastErrorMsg.c_str());
+		Log::warn("non fatal error: %s", state.lastErrorMsg);
 		break;
 	case PGRES_BAD_RESPONSE:
 	case PGRES_FATAL_ERROR:
 		state.lastErrorMsg = PQerrorMessage(connection->connection());
-		Log::error("fatal error: %s", state.lastErrorMsg.c_str());
+		Log::error("fatal error: %s", state.lastErrorMsg);
 		PQclear(state.res);
 		state.res = nullptr;
 		return false;
@@ -65,7 +68,7 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 		Log::debug("Affected rows %i", state.affectedRows);
 		break;
 	default:
-		Log::error("not catched state: %s", PQresStatus(lastState));
+		Log::error("unknown state: %s", PQresStatus(lastState));
 		return false;
 	}
 

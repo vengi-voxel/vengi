@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ConnectionPool.h"
 #include "core/Log.h"
 #include "core/Var.h"

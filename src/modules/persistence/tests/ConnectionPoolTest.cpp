@@ -3,6 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
+#include "core/Singleton.h"
 #include "persistence/ConnectionPool.h"
 
 namespace persistence {

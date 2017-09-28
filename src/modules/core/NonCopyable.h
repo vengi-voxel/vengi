@@ -8,7 +8,7 @@ namespace core {
 
 class NonCopyable {
 public:
-	NonCopyable() {
+	constexpr NonCopyable() {
 	}
 private:
 	NonCopyable(const NonCopyable&) = delete;

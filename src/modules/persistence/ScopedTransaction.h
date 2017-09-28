@@ -2,9 +2,9 @@
  * @file
  */
 
-namespace persistence {
+#include "ForwardDecl.h"
 
-class Model;
+namespace persistence {
 
 class ScopedTransaction {
 private:

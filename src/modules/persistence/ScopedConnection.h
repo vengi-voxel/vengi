@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #pragma once
 
-#include "Connection.h"
+#include "ForwardDecl.h"
 
 namespace persistence {
 

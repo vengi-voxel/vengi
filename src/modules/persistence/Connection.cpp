@@ -6,6 +6,7 @@
 #include "ConnectionPool.h"
 #include "core/Log.h"
 #include "core/Singleton.h"
+#include <libpq-fe.h>
 
 namespace persistence {
 

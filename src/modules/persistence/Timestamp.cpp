@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Timestamp.h"
 
 namespace persistence {

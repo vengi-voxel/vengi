@@ -4,12 +4,10 @@
 
 #pragma once
 
+#include "ForwardDecl.h"
 #include <string>
 #include <unordered_set>
 #include "config.h"
-
-#include <libpq-fe.h>
-using ConnectionType = ::PGconn;
 
 namespace persistence {
 

@@ -16,6 +16,7 @@
 #include "PreparedStatement.h"
 #include "State.h"
 #include "ConstraintType.h"
+#include "ForwardDecl.h"
 #include "config.h"
 
 namespace persistence {
@@ -55,9 +56,6 @@ struct Constraint {
 };
 typedef std::unordered_map<std::string, Constraint> Constraints;
 typedef std::vector<std::set<std::string>> UniqueKeys;
-
-class DBHandler;
-class Connection;
 
 class Model {
 protected:

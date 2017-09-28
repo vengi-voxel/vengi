@@ -12,6 +12,9 @@
 #include "ConnectionPool.h"
 #include <memory>
 
+// TODO: remove me!
+#include <libpq-fe.h>
+
 namespace persistence {
 
 class DBHandler {

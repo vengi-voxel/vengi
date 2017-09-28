@@ -9,6 +9,9 @@
 #include "core/String.h"
 #include <sstream>
 
+// TODO: remove me? all in state?
+#include <libpq-fe.h>
+
 namespace persistence {
 
 DBHandler::DBHandler() {
@@ -207,6 +210,7 @@ bool DBHandler::createTable(Model&& model) const {
 
 bool DBHandler::checkLastResult(State& state, Connection* connection) const {
 	state.affectedRows = 0;
+	state.result = false;
 	if (state.res == nullptr) {
 		Log::debug("Empty result");
 		return false;
@@ -215,31 +219,33 @@ bool DBHandler::checkLastResult(State& state, Connection* connection) const {
 	ExecStatusType lastState = PQresultStatus(state.res);
 
 	switch (lastState) {
-	case PGRES_NONFATAL_ERROR:
-		state.lastErrorMsg = PQerrorMessage(connection->connection());
-		Log::warn("non fatal error: %s", state.lastErrorMsg.c_str());
+	case PGRES_NONFATAL_ERROR: {
+		char *lastErrorMsg = PQerrorMessage(connection->connection());
+		Log::warn("non fatal error: %s", lastErrorMsg);
+		PQfreemem(lastErrorMsg);
+		state.result = true;
+		// TODO: wtf is a non-fatal error?
 		break;
+	}
 	case PGRES_BAD_RESPONSE:
 	case PGRES_FATAL_ERROR:
 		state.lastErrorMsg = PQerrorMessage(connection->connection());
-		Log::error("fatal error: %s", state.lastErrorMsg.c_str());
-		PQclear(state.res);
-		state.res = nullptr;
-		return false;
+		Log::error("fatal error: %s", state.lastErrorMsg);
+		break;
 	case PGRES_EMPTY_QUERY:
 	case PGRES_COMMAND_OK:
 	case PGRES_TUPLES_OK:
 		state.affectedRows = PQntuples(state.res);
 		state.currentRow = 0;
+		state.result = true;
 		Log::debug("Affected rows %i", state.affectedRows);
 		break;
 	default:
 		Log::error("Unknown state: %s", PQresStatus(lastState));
-		return false;
+		break;
 	}
 
-	state.result = true;
-	return true;
+	return state.result;
 }
 
 bool DBHandler::exec(const std::string& query) const {
@@ -251,7 +257,7 @@ State DBHandler::execInternal(const std::string& query) const {
 	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
 	if (!scoped) {
 		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
-		return State(nullptr);
+		return State();
 	}
 	ConnectionType* conn = scoped.connection()->connection();
 	State s(PQexec(conn, query.c_str()));
