@@ -6,6 +6,7 @@
 #include "core/String.h"
 #include "core/Assert.h"
 #include "Util.h"
+#include "Types.h"
 
 namespace computeshadertool {
 
