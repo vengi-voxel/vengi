@@ -12,7 +12,7 @@ class FileStreamTest : public core::AbstractTest {
 
 TEST_F(FileStreamTest, testFileStreamRead) {
 	const FilePtr& file = _testApp->filesystem()->open("iotest.txt");
-	ASSERT_TRUE((bool)file) << "Could not open filename " << file->fileName();
+	ASSERT_TRUE(file->exists());
 	FileStream stream(file.get());
 	uint8_t chr;
 	uint32_t magic;
