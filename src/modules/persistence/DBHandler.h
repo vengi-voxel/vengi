@@ -54,6 +54,11 @@ public:
 	bool createTable(Model&& model) const;
 
 	bool exec(const std::string& query) const;
+
+	// transactions
+	bool begin();
+	bool commit();
+	bool rollback();
 };
 
 typedef std::shared_ptr<DBHandler> DBHandlerPtr;
