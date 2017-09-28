@@ -16,20 +16,22 @@ namespace persistence {
 
 class DBHandler {
 private:
-	static std::string quote(const std::string& in);
-
 	State execInternal(const std::string& query) const;
-public:
+
+	// TODO: move these into own class - a statement generator
+	static std::string quote(const std::string& in);
 	static std::string getDbType(const Field& field);
 	static std::string getDbFlags(int numberPrimaryKeys, const Constraints& constraints, const Field& field);
+	static std::string createCreateTableStatement(const Model& table);
 
+public:
 	DBHandler();
 
 	bool init();
 
 	void shutdown();
 
-	static std::string createCreateTableStatement(const Model& table);
+	// TODO: move these into own class - a statement generator
 	static std::string createSelect(const Model& model);
 	static std::string createSelect(const Fields& fields, const std::string& tableName);
 

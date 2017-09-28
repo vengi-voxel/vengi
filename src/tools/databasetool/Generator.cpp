@@ -100,6 +100,7 @@ void createConstructor(const Table& table, std::stringstream& src) {
 		}
 		src << "});\n";
 	}
+	src << "\t\t_constraints.reserve(" << table.constraints.size() << ");\n";
 	for (auto i = table.constraints.begin(); i != table.constraints.end(); ++i) {
 		const persistence::Constraint& c = i->second;
 		src << "\t\t_constraints.insert(std::make_pair(\"" << i->first << "\", persistence::Constraint{{\"";
