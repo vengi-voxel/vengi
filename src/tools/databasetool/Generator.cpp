@@ -3,6 +3,7 @@
 #include "Mapping.h"
 #include "Table.h"
 #include "persistence/DBHandler.h"
+#include "persistence/SQLGenerator.h"
 #include "core/String.h"
 
 namespace databasetool {
@@ -131,7 +132,7 @@ static void createSelectStatement(const Table& table, std::stringstream& src) {
 	for (auto& e : table.fields) {
 		fields.push_back(e.second);
 	}
-	loadNonPk << persistence::DBHandler::createSelect(fields, table.name);
+	loadNonPk << persistence::createSelect(fields, table.name);
 
 	int nonPrimaryKeyMembers = 0;
 	std::stringstream loadNonPkAdd;
@@ -206,7 +207,7 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 	for (auto& e : table.fields) {
 		fields.push_back(e.second);
 	}
-	const std::string& select = persistence::DBHandler::createSelect(fields, table.name);
+	const std::string& select = persistence::createSelect(fields, table.name);
 
 	std::stringstream where;
 	where << "WHERE ";

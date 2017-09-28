@@ -10,6 +10,7 @@
 #include "core/Singleton.h"
 #include "ScopedConnection.h"
 #include "ConnectionPool.h"
+#include "SQLGenerator.h"
 #include <memory>
 
 namespace persistence {
@@ -18,22 +19,12 @@ class DBHandler {
 private:
 	State execInternal(const std::string& query) const;
 
-	// TODO: move these into own class - a statement generator
-	static std::string quote(const std::string& in);
-	static std::string getDbType(const Field& field);
-	static std::string getDbFlags(int numberPrimaryKeys, const Constraints& constraints, const Field& field);
-	static std::string createCreateTableStatement(const Model& table);
-
 public:
 	DBHandler();
 
 	bool init();
 
 	void shutdown();
-
-	// TODO: move these into own class - a statement generator
-	static std::string createSelect(const Model& model);
-	static std::string createSelect(const Fields& fields, const std::string& tableName);
 
 	template<class FUNC, class MODEL>
 	bool selectAll(MODEL&& model, FUNC&& func) {

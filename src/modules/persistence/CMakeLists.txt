@@ -8,7 +8,8 @@ set(SRCS
 	FieldType.h
 	PreparedStatement.cpp PreparedStatement.h
 	ScopedTransaction.cpp ScopedTransaction.h
-	State.cpp State.h
+	State.cpp State
+	SQLGenerator.cpp SQLGenerator.h
 	Timestamp.cpp Timestamp.h
 )
 set(LIB persistence)
