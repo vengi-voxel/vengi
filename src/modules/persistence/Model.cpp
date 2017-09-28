@@ -135,4 +135,36 @@ bool Model::fillModelValues(State& state) {
 	return true;
 }
 
+void Model::setValue(const Field& f, const std::string& value) {
+	core_assert(f.offset >= 0);
+	uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
+	std::string* targetValue = (std::string*)target;
+	*targetValue = value;
+}
+
+void Model::setValue(const Field& f, const Timestamp& value) {
+	core_assert(f.offset >= 0);
+	uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
+	Timestamp* targetValue = (Timestamp*)target;
+	*targetValue = value;
+}
+
+void Model::setIsNull(const Field& f, bool isNull) {
+	if (f.nulloffset == -1) {
+		return;
+	}
+	uint8_t* target = (uint8_t*)(_membersPointer + f.nulloffset);
+	bool* targetValue = (bool*)target;
+	*targetValue = isNull;
+}
+
+bool Model::isNull(const Field& f) const {
+	if (f.nulloffset < 0) {
+		return false;
+	}
+	const uint8_t* target = (const uint8_t*)(_membersPointer + f.nulloffset);
+	const bool* targetValue = (const bool*)target;
+	return *targetValue;
+}
+
 }

@@ -90,19 +90,26 @@ public:
 	bool commit();
 	bool rollback();
 
-	void setValue(const Field& f, const std::string& value) {
+	template<class T>
+	T getValue(const Field& f) const {
+		core_assert(f.nulloffset < 0);
 		core_assert(f.offset >= 0);
-		uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
-		std::string* targetValue = (std::string*)target;
-		*targetValue = value;
+		const uint8_t* target = (const uint8_t*)(_membersPointer + f.offset);
+		const T* targetValue = (const T*)target;
+		return *targetValue;
 	}
 
-	void setValue(const Field& f, const Timestamp& value) {
+	template<class T>
+	const T* getValuePointer(const Field& f) const {
+		core_assert(f.nulloffset >= 0);
 		core_assert(f.offset >= 0);
-		uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
-		Timestamp* targetValue = (Timestamp*)target;
-		*targetValue = value;
+		const uint8_t* target = (const uint8_t*)(_membersPointer + f.offset);
+		const T* targetValue = (const T*)target;
+		return targetValue;
 	}
+
+	void setValue(const Field& f, const std::string& value);
+	void setValue(const Field& f, const Timestamp& value);
 
 	template<class TYPE>
 	void setValue(const Field& f, const TYPE& value) {
@@ -112,14 +119,8 @@ public:
 		*targetValue = value;
 	}
 
-	inline void setIsNull(const Field& f, bool isNull) {
-		if (f.nulloffset == -1) {
-			return;
-		}
-		uint8_t* target = (uint8_t*)(_membersPointer + f.nulloffset);
-		bool* targetValue = (bool*)target;
-		*targetValue = isNull;
-	}
+	void setIsNull(const Field& f, bool isNull);
+	bool isNull(const Field& f) const;
 
 	PreparedStatement prepare(const std::string& name, const std::string& statement);
 
