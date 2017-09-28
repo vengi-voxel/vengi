@@ -9,9 +9,6 @@
 #include "core/String.h"
 #include <sstream>
 
-// TODO: remove me? all in state?
-#include <libpq-fe.h>
-
 namespace persistence {
 
 DBHandler::DBHandler() {
@@ -219,9 +216,8 @@ State DBHandler::execInternal(const std::string& query) const {
 		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
 		return State();
 	}
-	ConnectionType* conn = scoped.connection()->connection();
-	State s(conn, PQexec(conn, query.c_str()));
-	if (!s.result) {
+	State s(scoped.connection());
+	if (!s.exec(query.c_str())) {
 		Log::warn("Failed to execute query: '%s'", query.c_str());
 	} else {
 		Log::debug("Executed query: '%s'", query.c_str());

@@ -12,9 +12,6 @@
 #include "ConnectionPool.h"
 #include <memory>
 
-// TODO: remove me!
-#include <libpq-fe.h>
-
 namespace persistence {
 
 class DBHandler {
@@ -44,9 +41,8 @@ public:
 			Log::error("Could not execute query '%s' - could not acquire connection", select.c_str());
 			return false;
 		}
-		ConnectionType* conn = scoped.connection()->connection();
-		State s(conn, PQexec(conn, select.c_str()));
-		if (!s.result) {
+		State s(scoped.connection());
+		if (!s.exec(select.c_str())) {
 			return false;
 		}
 		for (int i = 0; i < s.affectedRows; ++i) {

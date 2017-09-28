@@ -9,15 +9,15 @@
 
 namespace persistence {
 
-State::State(ConnectionType* connection, ResultType* _res) :
-		res(_res) {
-	checkLastResult(connection);
+State::State(Connection* connection) :
+		_connection(connection) {
 }
 
 State::State(State&& other) :
 		res(other.res), lastErrorMsg(other.lastErrorMsg), affectedRows(
 				other.affectedRows), result(other.result) {
 	other.res = nullptr;
+	other._connection = nullptr;
 	other.lastErrorMsg = nullptr;
 }
 
@@ -32,13 +32,38 @@ State::~State() {
 	}
 }
 
+bool State::exec(const char *statement) {
+	res = PQexec(_connection->connection(), statement);
+	checkLastResult(_connection->connection());
+	return result;
+}
+
+bool State::prepare(const char *name, const char* statement, int parameterCount) {
+	res = PQprepare(_connection->connection(), name, statement, parameterCount, nullptr);
+	checkLastResult(_connection->connection());
+	if (!result) {
+		return false;
+	}
+	if (name != nullptr && name[0] != '\0') {
+		_connection->registerPreparedStatement(std::string(name));
+	}
+	return true;
+}
+
+bool State::execPrepared(const char *name, int parameterCount, const char *const *paramValues) {
+	res = PQexecPrepared(_connection->connection(), name, parameterCount, paramValues, nullptr, nullptr, 0);
+	checkLastResult(_connection->connection());
+	return result;
+}
+
 void State::checkLastResult(ConnectionType* connection) {
 	affectedRows = 0;
-	result = false;
 	if (res == nullptr) {
+		result = true;
 		Log::debug("Empty result");
 		return;
 	}
+	result = false;
 
 	ExecStatusType lastState = PQresultStatus(res);
 
@@ -48,7 +73,6 @@ void State::checkLastResult(ConnectionType* connection) {
 		Log::warn("non fatal error: %s", lastErrorMsg);
 		PQfreemem(lastErrorMsg);
 		result = true;
-		// TODO: wtf is a non-fatal error?
 		break;
 	}
 	case PGRES_BAD_RESPONSE:

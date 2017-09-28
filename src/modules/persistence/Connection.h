@@ -14,6 +14,7 @@ namespace persistence {
 class Connection {
 	friend class ConnectionPool;
 	friend class PreparedStatement;
+	friend class State;
 private:
 	ConnectionType* _connection;
 	std::string _host;

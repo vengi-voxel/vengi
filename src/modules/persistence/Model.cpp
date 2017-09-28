@@ -11,7 +11,7 @@
 #include "core/Singleton.h"
 #include <algorithm>
 
-// TODO: remove me
+// TODO: remove me fillModelValues
 #include <libpq-fe.h>
 
 namespace persistence {
@@ -47,8 +47,8 @@ bool Model::exec(const char* query) {
 		Log::error("Could not execute query '%s' - could not acquire connection", query);
 		return false;
 	}
-	ConnectionType* conn = scoped.connection()->connection();
-	State s(conn, PQexec(conn, query));
+	State s(scoped.connection());
+	s.exec(query);
 	if (s.affectedRows > 1) {
 		Log::debug("More than one row affected, can't fill model values");
 		return s.result;
@@ -66,9 +66,8 @@ bool Model::exec(const char* query) const {
 		Log::error("Could not execute query '%s' - could not acquire connection", query);
 		return false;
 	}
-	ConnectionType* conn = scoped.connection()->connection();
-	const State s(conn, PQexec(conn, query));
-	return s.result;
+	State s(scoped.connection());
+	return s.exec(query);
 }
 
 const Field& Model::getField(const std::string& name) const {

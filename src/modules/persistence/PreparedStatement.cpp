@@ -11,8 +11,6 @@
 #include "core/Singleton.h"
 #include "core/Log.h"
 
-#include <libpq-fe.h>
-
 namespace persistence {
 
 PreparedStatement::BindParam::BindParam(int num) :
@@ -45,20 +43,16 @@ State PreparedStatement::exec() {
 		return State();
 	}
 
-	ConnectionType* conn = scoped.connection()->connection();
-
 	if (_name.empty() || !scoped.connection()->hasPreparedStatement(_name)) {
-		State state(conn, PQprepare(conn, _name.c_str(), _statement.c_str(), (int)_params.values.size(), nullptr));
-		if (!state.result) {
+		State state(scoped.connection());
+		if (!state.prepare(_name.c_str(), _statement.c_str(), (int)_params.values.size())) {
 			return state;
-		}
-		if (!_name.empty()) {
-			scoped.connection()->registerPreparedStatement(_name);
 		}
 	}
 
 	const int size = _params.position;
-	State prepState(conn, PQexecPrepared(conn, _name.c_str(), size, &_params.values[0], nullptr, nullptr, 0));
+	State prepState(scoped.connection());
+	prepState.execPrepared(_name.c_str(), size, &_params.values[0]);
 	if (!prepState.result) {
 		return prepState;
 	}
