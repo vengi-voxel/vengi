@@ -7,9 +7,7 @@
 #include "Model.h"
 #include "core/String.h"
 #include "core/Log.h"
-#include "core/Singleton.h"
 #include "ScopedConnection.h"
-#include "ConnectionPool.h"
 #include "SQLGenerator.h"
 #include <memory>
 
@@ -29,7 +27,7 @@ public:
 	template<class FUNC, class MODEL>
 	bool selectAll(MODEL&& model, FUNC&& func) {
 		const std::string& select = createSelect(model);
-		ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
+		ScopedConnection scoped(connection());
 		if (!scoped) {
 			Log::error("Could not execute query '%s' - could not acquire connection", select.c_str());
 			return false;
@@ -46,6 +44,8 @@ public:
 		}
 		return true;
 	}
+
+	Connection* connection() const;
 
 	bool insert(const Model& model) const;
 	bool truncate(const Model& model) const;

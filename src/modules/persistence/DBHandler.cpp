@@ -24,12 +24,16 @@ void DBHandler::shutdown() {
 	core::Singleton<ConnectionPool>::getInstance().shutdown();
 }
 
+Connection* DBHandler::connection() const {
+	return core::Singleton<ConnectionPool>::getInstance().connection();
+}
+
 bool DBHandler::insert(const Model& model) const {
 	return execInternalWithParameters(createInsertStatement(model), model).result;
 }
 
 State DBHandler::execInternalWithParameters(const std::string& query, const Model& model) const {
-	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
+	ScopedConnection scoped(connection());
 	if (!scoped) {
 		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
 		return State();
@@ -60,7 +64,7 @@ bool DBHandler::exec(const std::string& query) const {
 }
 
 State DBHandler::execInternal(const std::string& query) const {
-	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
+	ScopedConnection scoped(connection());
 	if (!scoped) {
 		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
 		return State();
