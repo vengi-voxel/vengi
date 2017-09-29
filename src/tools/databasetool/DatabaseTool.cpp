@@ -11,11 +11,6 @@
 #include "Mapping.h"
 #include "Generator.h"
 
-// TODO:
-// * add update and delete methods
-// * move sql syntax related methods into vendor specific classes
-// * use raw string literals
-// * password support
 DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 0) {
 	init(ORGANISATION, "databasetool");

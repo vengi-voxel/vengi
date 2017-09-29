@@ -25,34 +25,21 @@ static_assert(std::enum_value(Operator::Max) == lengthof(operatorString), "Array
 
 }
 
-DBCondition::DBCondition(Operator op) :
-		_op(op) {
-}
-
-DBCondition::~DBCondition() {
-}
-
-std::string DBCondition::value(int index, const Model& model) const {
-	return "42";
-}
-
-std::string DBCondition::field(int index, const Model& model) const {
-	return "FIELD";
-}
-
 std::string DBCondition::statement(const Model& model, int& parameterCount) const {
+	if (_field == nullptr) {
+		return "";
+	}
+	if (_op == Operator::Max) {
+		return "";
+	}
 	++parameterCount;
-	const std::string& f = field(parameterCount, model);
 	const char* o = __priv::operatorString[std::enum_value(_op)];
-	return core::string::format("%s %s $%i", f.c_str(), o, parameterCount);
-}
-
-DBConditionOne::DBConditionOne() :
-		Super(Operator::Max) {
+	return core::string::format("\"%s\" %s $%i", _field, o, parameterCount);
 }
 
 std::string DBConditionOne::statement(const Model& model, int& parameterCount) const {
-	return "1";
+	static const std::string one = "true";
+	return one;
 }
 
 }

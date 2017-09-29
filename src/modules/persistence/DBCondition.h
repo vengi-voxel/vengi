@@ -22,24 +22,43 @@ enum class Operator {
 };
 
 class DBCondition {
-private:
-	Operator _op;
+protected:
+	Operator _op = Operator::Max;
+	const char* _field = nullptr;
+	const char* _value = nullptr;
+
+	constexpr DBCondition() {}
 public:
-	DBCondition(Operator op);
-	virtual ~DBCondition();
+	constexpr DBCondition(const char* field, const char* value, Operator op = Operator::Equal) :
+			_op(op), _field(field), _value(value) {
+	}
 
-	virtual std::string value(int index, const Model& model) const;
+	virtual ~DBCondition() {
+	}
 
-	virtual std::string field(int index, const Model& model) const;
+	/**
+	 * @return A string - and never @c nullptr (but can be empty of course) - that the field of the
+	 * query is checked against.
+	 */
+	const char* value() const;
 
 	virtual std::string statement(const Model& model, int& parameterCount) const;
 };
+
+inline const char* DBCondition::value() const {
+	if (_value == nullptr) {
+		return "";
+	}
+	return _value;
+}
 
 class DBConditionOne : public DBCondition {
 private:
 	using Super = DBCondition;
 public:
-	DBConditionOne();
+	constexpr DBConditionOne() :
+			Super() {
+	}
 
 	std::string statement(const Model& model, int& parameterCount) const override;
 };

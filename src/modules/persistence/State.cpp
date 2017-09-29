@@ -4,6 +4,7 @@
 
 #include "State.h"
 #include "core/Log.h"
+#include "core/Assert.h"
 #include "Connection.h"
 #include <libpq-fe.h>
 
@@ -32,9 +33,15 @@ State::~State() {
 	}
 }
 
-bool State::exec(const char *statement) {
-	res = PQexec(_connection->connection(), statement);
-	checkLastResult(_connection->connection());
+bool State::exec(const char *statement, int parameterCount, const char *const *paramValues) {
+	core_assert_msg(parameterCount <= 0 || paramValues != nullptr, "Parameters don't match");
+	ConnectionType* c = _connection->connection();
+	if (parameterCount <= 0) {
+		res = PQexec(c, statement);
+	} else {
+		res = PQexecParams(c, statement, parameterCount, nullptr, paramValues, nullptr, nullptr, 0);
+	}
+	checkLastResult(c);
 	return result;
 }
 

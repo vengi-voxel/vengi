@@ -22,7 +22,7 @@ public:
 	State(State&& other);
 	~State();
 
-	bool exec(const char* statement);
+	bool exec(const char* statement, int parameterCount = 0, const char *const *paramValues = nullptr);
 	bool prepare(const char *name, const char* statement, int parameterCount);
 	bool execPrepared(const char *name, int parameterCount, const char *const *paramValues);
 

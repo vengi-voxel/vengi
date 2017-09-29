@@ -277,6 +277,21 @@ static void createInsertStatement(const Table& table, std::stringstream& src) {
 	src << "\t}\n\n";
 }
 
+static void createDBConditions(const Table& table, std::stringstream& src) {
+	for (auto entry : table.fields) {
+		const persistence::Field& f = entry.second;
+		const std::string classname = "DBCondition" + core::string::upperCamelCase(table.name) + core::string::upperCamelCase(f.name);
+		src << "class " << classname;
+		src << " : public persistence::DBCondition {\n";
+		src << "private:\n";
+		src << "\tusing Super = persistence::DBCondition;\n";
+		src << "public:\n";
+		src << "\t" << classname << "(const char *value, persistence::Operator op = persistence::Operator::Equal) :\n\t\tSuper(\"";
+		src << f.name << "\", value, op) {\n\t}\n";
+		src << "}; // class " << classname << "\n\n";
+	}
+}
+
 static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
@@ -319,6 +334,7 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 	src << "#pragma once\n\n";
 	src << "#include \"persistence/Model.h\"\n";
 	src << "#include \"persistence/SQLGenerator.h\"\n";
+	src << "#include \"persistence/DBCondition.h\"\n";
 	src << "#include \"core/String.h\"\n";
 	src << "#include \"core/Common.h\"\n\n";
 	src << "#include <memory>\n";
@@ -327,24 +343,28 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 	src << "#include <string>\n\n";
 
 	const Namespace ns(table, src);
-	const Class cl(table, src);
+	{
+		const Class cl(table, src);
 
-	src << "\tfriend class persistence::DBHandler;\n";
-	src << "protected:\n";
+		src << "\tfriend class persistence::DBHandler;\n";
+		src << "protected:\n";
 
-	createMembersStruct(table, src);
+		createMembersStruct(table, src);
 
-	src << "public:\n";
+		src << "public:\n";
 
-	createConstructor(table, src);
+		createConstructor(table, src);
 
-	createSelectStatement(table, src);
+		createSelectStatement(table, src);
 
-	createSelectByIds(table, src);
+		createSelectByIds(table, src);
 
-	createInsertStatement(table, src);
+		createInsertStatement(table, src);
 
-	createGetterAndSetter(table, src);
+		createGetterAndSetter(table, src);
+	}
+
+	createDBConditions(table, src);
 
 	return true;
 }

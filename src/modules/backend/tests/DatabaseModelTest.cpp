@@ -79,6 +79,20 @@ TEST_F(DatabaseModelTest, testSelectAll) {
 	EXPECT_EQ(count, expected);
 }
 
+TEST_F(DatabaseModelTest, testSelectByEmail) {
+	const int expected = 5;
+	for (int i = 0; i < expected; ++i) {
+		createUser(core::string::format("a%i@b.c.d", i), "secret");
+	}
+	int count = 0;
+	const db::DBConditionUserEmail condition("a1@b.c.d");
+	EXPECT_TRUE(_dbHandler.select(db::UserModel(), [&] (const db::UserModelPtr& model) {
+		++count;
+		ASSERT_EQ(std::string(condition.value()), model->email());
+	}, condition));
+	EXPECT_EQ(count, 1);
+}
+
 TEST_F(DatabaseModelTest, testTruncate) {
 	createUser("a@b.c.d", "secret");
 	EXPECT_TRUE(_dbHandler.truncate(db::UserModel()));
