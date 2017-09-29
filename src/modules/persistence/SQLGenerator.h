@@ -21,6 +21,6 @@ extern const char* createTransactionBegin();
 extern const char* createTransactionCommit();
 extern const char* createTransactionRollback();
 
-extern std::string createWhere(const Model& model, const DBCondition& condition, int &parameterCount);
+extern std::string createWhere(const DBCondition& condition, int &parameterCount);
 
 }

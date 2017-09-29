@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace persistence {
 
@@ -42,7 +43,7 @@ public:
 	 */
 	const char* value() const;
 
-	virtual std::string statement(const Model& model, int& parameterCount) const;
+	virtual std::string statement(int& parameterCount) const;
 };
 
 inline const char* DBCondition::value() const {
@@ -60,7 +61,21 @@ public:
 			Super() {
 	}
 
-	std::string statement(const Model& model, int& parameterCount) const override;
+	std::string statement(int& parameterCount) const override;
+};
+
+class DBConditionMultiple : public DBCondition {
+private:
+	using Super = DBCondition;
+	std::vector<DBCondition> _conditions;
+	bool _and;
+public:
+	// TODO: somehow make this constexpr
+	DBConditionMultiple(bool __and, const std::vector<DBCondition>& conditions) :
+			Super(), _conditions(conditions), _and(__and) {
+	}
+
+	std::string statement(int& parameterCount) const override;
 };
 
 }

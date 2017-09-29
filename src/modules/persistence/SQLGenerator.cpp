@@ -208,9 +208,9 @@ std::string createSelect(const Model& model) {
 	return select.str();
 }
 
-std::string createWhere(const Model& model, const DBCondition& condition, int &parameterCount) {
+std::string createWhere(const DBCondition& condition, int &parameterCount) {
 	std::stringstream where;
-	where << " WHERE " << condition.statement(model, parameterCount);
+	where << " WHERE " << condition.statement(parameterCount);
 	return where.str();
 }
 

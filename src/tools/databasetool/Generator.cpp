@@ -286,7 +286,7 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		src << "private:\n";
 		src << "\tusing Super = persistence::DBCondition;\n";
 		src << "public:\n";
-		src << "\t" << classname << "(const char *value, persistence::Operator op = persistence::Operator::Equal) :\n\t\tSuper(\"";
+		src << "\tconstexpr " << classname << "(const char *value, persistence::Operator op = persistence::Operator::Equal) :\n\t\tSuper(\"";
 		src << f.name << "\", value, op) {\n\t}\n";
 		src << "}; // class " << classname << "\n\n";
 	}

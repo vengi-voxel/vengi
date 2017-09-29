@@ -30,6 +30,7 @@ target_include_directories(persistence PUBLIC ${PostgreSQL_INCLUDE_DIRS})
 if (POSTGRESQL_FOUND)
 	gtest_suite_files(tests
 		tests/ConnectionPoolTest.cpp
+		tests/DBConditionTest.cpp
 	)
 	gtest_suite_deps(tests ${LIB})
 endif()

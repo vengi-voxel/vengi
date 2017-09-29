@@ -32,7 +32,7 @@ public:
 	template<class FUNC, class MODEL>
 	bool select(MODEL&& model, FUNC&& func, const DBCondition& condition) {
 		int conditionAmount = 0;
-	    const std::string& select = createSelect(model) + createWhere(model, condition, conditionAmount);
+	    const std::string& select = createSelect(model) + createWhere(condition, conditionAmount);
 		ScopedConnection scoped(connection());
 		if (!scoped) {
 			Log::error("Could not execute query '%s' - could not acquire connection", select.c_str());
