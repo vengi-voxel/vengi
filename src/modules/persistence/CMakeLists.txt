@@ -4,6 +4,7 @@ set(SRCS
 	ConnectionPool.cpp ConnectionPool.h
 	Model.cpp Model.h
 	DBHandler.cpp DBHandler.h
+	DBCondition.cpp DBCondition.h
 	ConstraintType.h
 	FieldType.h
 	PreparedStatement.cpp PreparedStatement.h

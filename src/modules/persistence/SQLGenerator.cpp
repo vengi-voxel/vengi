@@ -5,6 +5,7 @@
 #include "SQLGenerator.h"
 #include "core/String.h"
 #include "Model.h"
+#include "DBCondition.h"
 
 namespace persistence {
 
@@ -205,6 +206,12 @@ std::string createSelect(const Model& model) {
 
 	select << " FROM " << quote(tableName) << "";
 	return select.str();
+}
+
+std::string createWhere(const Model& model, const DBCondition& condition, int &parameterCount) {
+	std::stringstream where;
+	where << " WHERE " << condition.statement(model, parameterCount);
+	return where.str();
 }
 
 const char* createTransactionBegin() {

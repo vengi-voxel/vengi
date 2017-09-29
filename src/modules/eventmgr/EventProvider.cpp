@@ -15,7 +15,7 @@ EventProvider::EventProvider(const persistence::DBHandlerPtr& dbHandler) :
 }
 
 bool EventProvider::init() {
-	return _dbHandler->selectAll(db::EventModel(), [this] (db::EventModelPtr model) {
+	return _dbHandler->select(db::EventModel(), [this] (db::EventModelPtr model) {
 		_eventData.insert(std::make_pair((EventId)model->id(), model));
 	});
 }

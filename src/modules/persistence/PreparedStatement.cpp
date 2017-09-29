@@ -14,12 +14,12 @@
 
 namespace persistence {
 
-PreparedStatement::BindParam::BindParam(int num) :
+BindParam::BindParam(int num) :
 		values(num, nullptr), lengths(num, 0), formats(num, 0), fieldTypes(num, FieldType::INT) {
 	valueBuffers.reserve(num);
 }
 
-int PreparedStatement::BindParam::add() {
+int BindParam::add() {
 	const int index = position;
 	++position;
 	if (values.capacity() < (size_t)position) {

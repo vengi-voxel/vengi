@@ -14,22 +14,23 @@ namespace persistence {
 
 class Model;
 
+struct BindParam {
+	std::vector<const char *> values;
+	std::vector<int> lengths;
+	std::vector<int> formats;
+	std::vector<std::string> valueBuffers;
+	std::vector<FieldType> fieldTypes;
+	int position = 0;
+	BindParam(int num);
+
+	int add();
+};
+
 class PreparedStatement {
 private:
 	Model* _model;
 	std::string _name;
 	std::string _statement;
-	struct BindParam {
-		std::vector<const char *> values;
-		std::vector<int> lengths;
-		std::vector<int> formats;
-		std::vector<std::string> valueBuffers;
-		std::vector<FieldType> fieldTypes;
-		int position = 0;
-		BindParam(int num);
-
-		int add();
-	};
 	BindParam _params;
 public:
 	PreparedStatement(Model* model, const std::string& name, const std::string& statement);

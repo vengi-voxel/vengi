@@ -73,7 +73,7 @@ TEST_F(DatabaseModelTest, testSelectAll) {
 		createUser(core::string::format("a%i@b.c.d", i), "secret");
 	}
 	int count = 0;
-	EXPECT_TRUE(_dbHandler.selectAll(db::UserModel(), [&] (const db::UserModelPtr& model) {
+	EXPECT_TRUE(_dbHandler.select(db::UserModel(), [&] (const db::UserModelPtr& model) {
 		++count;
 	}));
 	EXPECT_EQ(count, expected);
@@ -83,7 +83,7 @@ TEST_F(DatabaseModelTest, testTruncate) {
 	createUser("a@b.c.d", "secret");
 	EXPECT_TRUE(_dbHandler.truncate(db::UserModel()));
 	int count = 0;
-	_dbHandler.selectAll(db::UserModel(), [&] (const db::UserModelPtr& model) {
+	_dbHandler.select(db::UserModel(), [&] (const db::UserModelPtr& model) {
 		++count;
 	});
 	EXPECT_EQ(count, 0);
