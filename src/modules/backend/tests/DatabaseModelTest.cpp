@@ -21,6 +21,7 @@ public:
 		Super::SetUp();
 		core::Var::get(cfg::DatabaseMinConnections, "1");
 		core::Var::get(cfg::DatabaseMaxConnections, "2");
+		// TODO: use a different database for the tests
 		core::Var::get(cfg::DatabaseName, "engine");
 		core::Var::get(cfg::DatabaseHost, "localhost");
 		core::Var::get(cfg::DatabaseUser, "engine");
@@ -36,7 +37,7 @@ public:
 		_dbHandler.shutdown();
 	}
 
-	void createUser(const std::string& email, const std::string& password) {
+	void createUser(const std::string& email, const std::string& password, int64_t& id) {
 		const persistence::Timestamp ts = persistence::Timestamp::now();
 		db::UserModel u;
 		EXPECT_EQ(0, u.id());
@@ -54,23 +55,28 @@ public:
 		EXPECT_GT(u3nd.registrationdate().time(), uint64_t(0));
 		EXPECT_EQ(u3nd.email(), email);
 		ASSERT_EQ(u3nd.id(), u.id());
+
+		id = u.id();
 	}
 };
 
 TEST_F(DatabaseModelTest, testCreateUser) {
-	createUser("a@b.c.d", "secret");
+	int64_t id = -1L;
+	createUser("a@b.c.d", "secret", id);
 }
 
 TEST_F(DatabaseModelTest, testCreateUsers) {
+	int64_t id = -1L;
 	for (int i = 0; i < 5; ++i) {
-		createUser(core::string::format("a%i@b.c.d", i), "secret");
+		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
 	}
 }
 
 TEST_F(DatabaseModelTest, testSelectAll) {
+	int64_t id = -1L;
 	const int expected = 5;
 	for (int i = 0; i < expected; ++i) {
-		createUser(core::string::format("a%i@b.c.d", i), "secret");
+		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
 	}
 	int count = 0;
 	EXPECT_TRUE(_dbHandler.select(db::UserModel(), [&] (const db::UserModelPtr& model) {
@@ -80,9 +86,10 @@ TEST_F(DatabaseModelTest, testSelectAll) {
 }
 
 TEST_F(DatabaseModelTest, testSelectByEmail) {
+	int64_t id = -1L;
 	const int expected = 5;
 	for (int i = 0; i < expected; ++i) {
-		createUser(core::string::format("a%i@b.c.d", i), "secret");
+		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
 	}
 	int count = 0;
 	const db::DBConditionUserEmail condition("a1@b.c.d");
@@ -93,8 +100,24 @@ TEST_F(DatabaseModelTest, testSelectByEmail) {
 	EXPECT_EQ(count, 1);
 }
 
+TEST_F(DatabaseModelTest, testSelectById) {
+	const int expected = 5;
+	int64_t id = -1L;
+	for (int i = 0; i < expected; ++i) {
+		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
+	}
+	int count = 0;
+	const db::DBConditionUserId condition(id);
+	EXPECT_TRUE(_dbHandler.select(db::UserModel(), [&] (const db::UserModelPtr& model) {
+		++count;
+		ASSERT_EQ(id, model->id());
+	}, condition));
+	EXPECT_EQ(count, 1);
+}
+
 TEST_F(DatabaseModelTest, testTruncate) {
-	createUser("a@b.c.d", "secret");
+	int64_t id = -1L;
+	createUser("a@b.c.d", "secret", id);
 	EXPECT_TRUE(_dbHandler.truncate(db::UserModel()));
 	int count = 0;
 	_dbHandler.select(db::UserModel(), [&] (const db::UserModelPtr& model) {
