@@ -18,6 +18,7 @@ enum class Operator {
 	Lesser,
 	BiggerOrEqual,
 	LessOrEqual,
+	Like,
 
 	Max
 };

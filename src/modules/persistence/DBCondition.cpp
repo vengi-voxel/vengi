@@ -20,7 +20,8 @@ static const char *operatorString[] = {
 	">",
 	"<",
 	">=",
-	"<="
+	"<=",
+	"LIKE"
 };
 static_assert(std::enum_value(Operator::Max) == lengthof(operatorString), "Array sizes don't match");
 
