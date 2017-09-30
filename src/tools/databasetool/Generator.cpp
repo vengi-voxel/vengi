@@ -286,8 +286,26 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		src << "private:\n";
 		src << "\tusing Super = persistence::DBCondition;\n";
 		src << "public:\n";
-		src << "\tconstexpr " << classname << "(const char *value, persistence::Operator op = persistence::Operator::Equal) :\n\t\tSuper(\"";
-		src << f.name << "\", value, op) {\n\t}\n";
+		src << "\t";
+		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
+			src << "constexpr ";
+		}
+		src << classname << "(";
+		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
+			src << "const char *";
+		} else {
+			src << getCPPType(f.type, true, false);
+		}
+		src << " value, persistence::Operator op = persistence::Operator::Equal) :\n\t\tSuper(\"";
+		src << f.name << "\", ";
+		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
+			src << "value";
+		} else if (f.type == persistence::FieldType::TIMESTAMP) {
+			src << "std::to_string(value.time())";
+		} else {
+			src << "std::to_string(value)";
+		}
+		src << ", op) {\n\t}\n";
 		src << "}; // class " << classname << "\n\n";
 	}
 }

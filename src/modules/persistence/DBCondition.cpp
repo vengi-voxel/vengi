@@ -8,6 +8,7 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/Array.h"
+#include <SDL.h>
 
 namespace persistence {
 
@@ -23,6 +24,17 @@ static const char *operatorString[] = {
 };
 static_assert(std::enum_value(Operator::Max) == lengthof(operatorString), "Array sizes don't match");
 
+}
+
+DBCondition::DBCondition(const char* field, const std::string& value, Operator op) :
+		_op(op), _field(field), _valueCopy(SDL_strdup(value.c_str())), _value(_valueCopy) {
+}
+
+DBCondition::~DBCondition() {
+	if (_valueCopy != nullptr) {
+		SDL_free(_valueCopy);
+		_valueCopy = nullptr;
+	}
 }
 
 std::string DBCondition::statement(int& parameterCount) const {

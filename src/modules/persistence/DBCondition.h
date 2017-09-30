@@ -26,6 +26,7 @@ class DBCondition {
 protected:
 	Operator _op = Operator::Max;
 	const char* _field = nullptr;
+	char *_valueCopy = nullptr;
 	const char* _value = nullptr;
 
 	constexpr DBCondition() {}
@@ -34,8 +35,9 @@ public:
 			_op(op), _field(field), _value(value) {
 	}
 
-	virtual ~DBCondition() {
-	}
+	DBCondition(const char* field, const std::string& value, Operator op = Operator::Equal);
+
+	virtual ~DBCondition();
 
 	/**
 	 * @return A string - and never @c nullptr (but can be empty of course) - that the field of the
