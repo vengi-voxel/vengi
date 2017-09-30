@@ -32,6 +32,48 @@ int BindParam::add() {
 	return index;
 }
 
+void BindParam::push(const Model& model, const Field& field) {
+	const int index = add();
+	switch (field.type) {
+	case FieldType::INT: {
+		const int value = model.getValue<int>(field);
+		valueBuffers.emplace_back(std::to_string(value));
+		values[index] = valueBuffers.back().c_str();
+		break;
+	}
+	case FieldType::LONG: {
+		const int64_t value = model.getValue<int64_t>(field);
+		valueBuffers.emplace_back(std::to_string(value));
+		values[index] = valueBuffers.back().c_str();
+		break;
+	}
+	case FieldType::TIMESTAMP: {
+		const Timestamp& value = model.getValue<Timestamp>(field);
+		if (value.isNow()) {
+			values[index] = "NOW()";
+		} else {
+			valueBuffers.emplace_back(std::to_string(value.time()));
+			values[index] = valueBuffers.back().c_str();
+		}
+		break;
+	}
+	case FieldType::PASSWORD:
+	case FieldType::STRING:
+	case FieldType::TEXT: {
+		if (field.isNotNull()) {
+			valueBuffers.emplace_back(model.getValue<std::string>(field));
+			values[index] = valueBuffers.back().c_str();
+		} else {
+			values[index] = model.getValue<const char*>(field);
+		}
+		break;
+	}
+	case FieldType::MAX:
+		break;
+	}
+	fieldTypes[index] = field.type;
+}
+
 PreparedStatement::PreparedStatement(Model* model, const std::string& name, const std::string& statement) :
 		_model(model), _name(name), _statement(statement), _params(std::count(statement.begin(), statement.end(), '$')) {
 }
@@ -47,6 +89,7 @@ State PreparedStatement::exec() {
 	if (_name.empty() || !scoped.connection()->hasPreparedStatement(_name)) {
 		State state(scoped.connection());
 		if (!state.prepare(_name.c_str(), _statement.c_str(), (int)_params.values.size())) {
+			Log::error("Could not prepare query '%s'", _statement.c_str());
 			return state;
 		}
 	}
@@ -55,6 +98,7 @@ State PreparedStatement::exec() {
 	State prepState(scoped.connection());
 	prepState.execPrepared(_name.c_str(), size, &_params.values[0]);
 	if (!prepState.result) {
+		Log::error("Could not execute prepared query '%s'", _statement.c_str());
 		return prepState;
 	}
 	if (prepState.affectedRows > 1) {

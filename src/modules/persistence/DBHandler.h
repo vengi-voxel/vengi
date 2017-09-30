@@ -21,7 +21,7 @@ namespace persistence {
 class DBHandler {
 private:
 	State execInternal(const std::string& query) const;
-	State execInternalWithParameters(const std::string& query, const Model& model) const;
+	State execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const;
 
 public:
 	DBHandler();
@@ -108,8 +108,8 @@ public:
 
 	Connection* connection() const;
 
-	bool update(const Model& model) const;
-	bool insert(const Model& model) const;
+	bool update(Model& model) const;
+	bool insert(Model& model) const;
 	bool truncate(const Model& model) const;
 	bool truncate(Model&& model) const;
 	bool createTable(Model&& model) const;

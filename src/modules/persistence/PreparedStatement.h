@@ -13,6 +13,7 @@
 namespace persistence {
 
 class Model;
+class Field;
 
 struct BindParam {
 	std::vector<const char *> values;
@@ -24,6 +25,7 @@ struct BindParam {
 	BindParam(int num);
 
 	int add();
+	void push(const Model& model, const Field& field);
 };
 
 class PreparedStatement {

@@ -269,42 +269,6 @@ static void createSelectByIds(const Table& table, std::stringstream& src) {
 	}
 }
 
-static void createInsertStatement(const Table& table, std::stringstream& src) {
-	std::stringstream insertadd;
-	std::stringstream insertparams;
-	int insertValues = 0;
-	for (auto entry : table.fields) {
-		const persistence::Field& f = entry.second;
-		if (f.isAutoincrement()) {
-			continue;
-		}
-		if (insertValues > 0) {
-			insertparams << ", ";
-		}
-		++insertValues;
-		insertparams << getCPPType(f.type, true) << " " << f.name;
-		// TODO: length check if type is string
-		if (f.type == persistence::FieldType::PASSWORD) {
-			insertadd << ".addPassword(" << f.name << ")";
-		} else {
-			insertadd << ".add(" << f.name << ")";
-		}
-	}
-
-	src << "\t/**\n";
-	src << "\t * @brief Insert a new row into the database with the given parameters\n";
-	src << "\t * @note Also fills the generated keys in the model instance\n";
-	src << "\t * @return @c true if the execution was successful, @c false otherwise\n";
-	src << "\t */\n";
-	src << "\tbool insert(";
-	src << insertparams.str();
-	src << ") {\n";
-	src << "\t\tpersistence::PreparedStatement __p_ = prepare(\"" << table.classname << "Insert\", persistence::createInsertStatement(*this));\n";
-	src << "\t\t__p_" << insertadd.str() << ";\n";
-	src << "\t\treturn __p_.exec().result;\n";
-	src << "\t}\n\n";
-}
-
 static void createDBConditions(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
@@ -404,8 +368,6 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 		createSelectStatement(table, src);
 
 		createSelectByIds(table, src);
-
-		createInsertStatement(table, src);
 
 		createGetterAndSetter(table, src);
 	}

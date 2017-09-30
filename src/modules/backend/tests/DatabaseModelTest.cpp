@@ -41,7 +41,10 @@ public:
 		const persistence::Timestamp ts = persistence::Timestamp::now();
 		db::UserModel u;
 		EXPECT_EQ(0, u.id());
-		ASSERT_TRUE(u.insert(email, password, ts));
+		u.setEmail(email);
+		u.setPassword(password);
+		u.setRegistrationdate(ts);
+		ASSERT_TRUE(_dbHandler.insert(u));
 		EXPECT_NE(0, u.id());
 
 		db::UserModel u2nd;
@@ -135,6 +138,24 @@ TEST_F(DatabaseModelTest, testDelete) {
 		++count;
 	});
 	EXPECT_EQ(count, 0);
+}
+
+TEST_F(DatabaseModelTest, testUpdate) {
+	int64_t id = -1L;
+	createUser("a@b.c.d", "secret", id);
+	int count = 0;
+	db::UserModel copy;
+	_dbHandler.select(db::UserModel(), [&] (db::UserModel&& model) {
+		++count;
+		copy = std::move(model);
+	}, db::DBConditionUserId(id));
+	ASSERT_EQ(count, 1);
+	copy.setEmail("no@mail.com");
+	_dbHandler.update(copy);
+	_dbHandler.select(db::UserModel(), [&] (db::UserModel&& model) {
+		++count;
+		ASSERT_EQ(copy.email(), model.email());
+	}, db::DBConditionUserId(id));
 }
 
 }

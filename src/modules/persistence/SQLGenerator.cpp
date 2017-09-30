@@ -13,8 +13,18 @@ static inline std::string quote(const std::string& in) {
 	return core::string::format("\"%s\"", in.c_str());
 }
 
-static inline void sep(std::stringstream& ss, int count) {
-	ss << "$" << count;
+static inline bool placeholder(const Model& model, const Field& field, std::stringstream& ss, int count) {
+	if (field.type == FieldType::TIMESTAMP) {
+		const Timestamp& ts = model.getValue<Timestamp>(field);
+		if (ts.isNow()) {
+			ss << "NOW()";
+			return false;
+		}
+		ss << "to_timestamp($" << count << ")";
+	} else {
+		ss << "$" << count;
+	}
+	return true;
 }
 
 static std::string getDbFlags(int numberPrimaryKeys, const Constraints& constraints, const Field& field) {
@@ -157,9 +167,58 @@ std::string createTruncateTableStatement(const Model& model) {
 	return core::string::format("TRUNCATE TABLE \"%s\"", model.tableName().c_str());
 }
 
-std::string createUpdateStatement(const Model& table) {
+std::string createUpdateStatement(const Model& model, BindParam* params) {
+	const Fields& fields = model.fields();
+	const std::string& tableName = model.tableName();
 	std::stringstream update;
-	update << "UPDATE " << quote(table.tableName()) << " --- TODO";
+	update << "UPDATE " << quote(tableName) << " SET (";
+	for (auto i = fields.begin(); i != fields.end(); ++i) {
+		if (i->isPrimaryKey()) {
+			continue;
+		}
+		const Field& f = *i;
+		if (i != fields.begin()) {
+			update << ", ";
+		}
+		update << quote(f.name);
+	}
+	update << ") = (";
+	int index = 1;
+	for (auto i = fields.begin(); i != fields.end(); ++i) {
+		const Field& f = *i;
+		if (f.isPrimaryKey()) {
+			continue;
+		}
+		if (i != fields.begin()) {
+			update << ", ";
+		}
+		if (placeholder(model, f, update, index)) {
+			++index;
+			if (params != nullptr) {
+				params->push(model, f);
+			}
+		}
+	}
+	update << ") WHERE ";
+	int where = 0;
+	for (auto i = fields.begin(); i != fields.end(); ++i) {
+		const Field& f = *i;
+		if (!f.isPrimaryKey()) {
+			continue;
+		}
+		if (where > 0) {
+			update << " AND ";
+		}
+		++where;
+		update << quote(f.name) << " = ";
+		if (placeholder(model, f, update, index)) {
+			++index;
+			if (params != nullptr) {
+				params->push(model, f);
+			}
+		}
+	}
+
 	return update.str();
 }
 
@@ -169,33 +228,62 @@ std::string createDeleteStatement(const Model& table) {
 	return deleteStatement.str();
 }
 
-std::string createInsertStatement(const Model& table) {
+std::string createInsertStatement(const Model& model, BindParam* params) {
 	std::stringstream insert;
 	std::stringstream values;
 	std::string autoincrement;
-	insert << "INSERT INTO " << quote(table.tableName()) << " (";
-	int insertValueIndex = 0;
-	for (const persistence::Field& f : table.fields()) {
+	std::string primaryKey;
+	insert << "INSERT INTO " << quote(model.tableName()) << " (";
+	int insertValueIndex = 1;
+	for (const persistence::Field& f : model.fields()) {
+		if (f.isPrimaryKey()) {
+			primaryKey = f.name;
+		}
 		if (f.isAutoincrement()) {
 			autoincrement = f.name;
 			continue;
 		}
-		if (insertValueIndex > 0) {
+		if (model.isNull(f)) {
+			continue;
+		}
+		if (insertValueIndex > 1) {
 			values << ", ";
 			insert << ", ";
 		}
-		++insertValueIndex;
 		insert << quote(f.name);
-		sep(values, insertValueIndex);
+		if (placeholder(model, f, values, insertValueIndex)) {
+			++insertValueIndex;
+			if (params != nullptr) {
+				params->push(model, f);
+			}
+		}
 	}
 
 	insert << ") VALUES (" << values.str() << ")";
 	if (!autoincrement.empty()) {
 		insert << " RETURNING " << quote(autoincrement);
 	}
-	//ON CONFLICT (id) DO UPDATE
-	//  SET column_1 = excluded.column_1,
-	//      column_2 = excluded.column_2;
+#if 0
+	// TODO: fix this
+	if (model.primaryKeys() == 1) {
+		insert << " ON CONFLICT (" << quote(primaryKey);
+		insert << ") DO UPDATE SET ";
+		int fieldIndex = 0;
+		for (const persistence::Field& f : model.fields()) {
+			if (fieldIndex > 0) {
+				insert << ", ";
+			}
+			insert << quote(f.name) << " = ";
+			if (placeholder(f.type, insert, insertValueIndex)) {
+				++insertValueIndex;
+				if (params != nullptr) {
+					params->push(model, f);
+				}
+			}
+			++fieldIndex;
+		}
+	}
+#endif
 	return insert.str();
 }
 
