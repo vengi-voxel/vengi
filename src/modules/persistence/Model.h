@@ -62,7 +62,7 @@ protected:
 	friend class DBHandler;
 	friend class PreparedStatement;
 	Fields _fields;
-	const std::string _tableName;
+	std::string _tableName;
 	int _primaryKeys = 0;
 	uint8_t* _membersPointer;
 	Constraints _constraints;

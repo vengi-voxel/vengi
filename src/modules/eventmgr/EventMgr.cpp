@@ -48,12 +48,13 @@ void EventMgr::shutdown() {
 }
 
 bool EventMgr::startEvent(EventId id) {
-	const db::EventModelPtr& model = _eventProvider.get(id);
-	if (!model) {
+	const db::EventModel* model = _eventProvider.get(id);
+	if (model == nullptr) {
 		Log::warn("Failed to get the event data with the id %i", (int)id);
 		return false;
 	}
 	const EventPtr& event = std::make_shared<Event>(id);
+	// TODO: use model data
 	if (!event->start()) {
 		Log::warn("Failed to start the event with the id %i", (int)id);
 		return false;

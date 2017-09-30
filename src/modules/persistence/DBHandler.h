@@ -17,7 +17,7 @@ namespace persistence {
 
 // TODO:
 // * password support
-// * add update and delete methods
+// * add update methods
 class DBHandler {
 private:
 	State execInternal(const std::string& query) const;
@@ -28,6 +28,39 @@ public:
 
 	bool init();
 	void shutdown();
+
+	template<class MODEL>
+	bool deleteModel(MODEL&& model, const DBCondition& condition) {
+		int conditionAmount = 0;
+		const std::string& query = createDeleteStatement(model) + createWhere(condition, conditionAmount);
+		ScopedConnection scoped(connection());
+		if (!scoped) {
+			Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
+			return false;
+		}
+		State s(scoped.connection());
+		if (conditionAmount > 0) {
+			BindParam params(conditionAmount);
+			for (int i = 0; i < conditionAmount; ++i) {
+				const int index = params.add();
+				const char* value = condition.value();
+				params.values[index] = value;
+			}
+			if (!s.exec(query.c_str(), conditionAmount, &params.values[0])) {
+				Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
+				return false;
+			}
+		} else if (!s.exec(query.c_str())) {
+			Log::error("Failed to execute query '%s'", query.c_str());
+			return false;
+		}
+		if (s.affectedRows <= 0) {
+			Log::trace("No rows affected, can't fill model values");
+			return true;
+		}
+		Log::debug("Affected rows %i", s.affectedRows);
+		return true;
+	}
 
 	template<class FUNC, class MODEL>
 	bool select(MODEL&& model, FUNC&& func, const DBCondition& condition) {
@@ -59,9 +92,9 @@ public:
 			return true;
 		}
 		for (int i = 0; i < s.affectedRows; ++i) {
-			std::shared_ptr<MODEL> modelptr = std::make_shared<MODEL>();
-			modelptr->fillModelValues(s);
-			func(modelptr);
+			MODEL selectedModel;
+			selectedModel.fillModelValues(s);
+			func(std::move(selectedModel));
 			++s.currentRow;
 		}
 		Log::debug("Affected rows %i", s.affectedRows);
@@ -75,6 +108,7 @@ public:
 
 	Connection* connection() const;
 
+	bool update(const Model& model) const;
 	bool insert(const Model& model) const;
 	bool truncate(const Model& model) const;
 	bool truncate(Model&& model) const;

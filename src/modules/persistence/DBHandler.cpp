@@ -28,23 +28,12 @@ Connection* DBHandler::connection() const {
 	return core::Singleton<ConnectionPool>::getInstance().connection();
 }
 
-bool DBHandler::insert(const Model& model) const {
-	return execInternalWithParameters(createInsertStatement(model), model).result;
+bool DBHandler::update(const Model& model) const {
+	return execInternal(createUpdateStatement(model)).result;
 }
 
-State DBHandler::execInternalWithParameters(const std::string& query, const Model& model) const {
-	ScopedConnection scoped(connection());
-	if (!scoped) {
-		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
-		return State();
-	}
-	State s(scoped.connection());
-	if (!s.exec(query.c_str())) {
-		Log::warn("Failed to execute query: '%s'", query.c_str());
-	} else {
-		Log::debug("Executed query: '%s'", query.c_str());
-	}
-	return s;
+bool DBHandler::insert(const Model& model) const {
+	return execInternalWithParameters(createInsertStatement(model), model).result;
 }
 
 bool DBHandler::truncate(const Model& model) const {
@@ -70,6 +59,22 @@ State DBHandler::execInternal(const std::string& query) const {
 		return State();
 	}
 	State s(scoped.connection());
+	if (!s.exec(query.c_str())) {
+		Log::warn("Failed to execute query: '%s'", query.c_str());
+	} else {
+		Log::debug("Executed query: '%s'", query.c_str());
+	}
+	return s;
+}
+
+State DBHandler::execInternalWithParameters(const std::string& query, const Model& model) const {
+	ScopedConnection scoped(connection());
+	if (!scoped) {
+		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
+		return State();
+	}
+	State s(scoped.connection());
+	// TODO: handle model parameters
 	if (!s.exec(query.c_str())) {
 		Log::warn("Failed to execute query: '%s'", query.c_str());
 	} else {

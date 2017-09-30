@@ -79,7 +79,7 @@ TEST_F(DatabaseModelTest, testSelectAll) {
 		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
 	}
 	int count = 0;
-	EXPECT_TRUE(_dbHandler.select(db::UserModel(), [&] (const db::UserModelPtr& model) {
+	EXPECT_TRUE(_dbHandler.select(db::UserModel(), [&] (db::UserModel&& model) {
 		++count;
 	}));
 	EXPECT_EQ(count, expected);
@@ -93,9 +93,9 @@ TEST_F(DatabaseModelTest, testSelectByEmail) {
 	}
 	int count = 0;
 	const db::DBConditionUserEmail condition("a1@b.c.d");
-	EXPECT_TRUE(_dbHandler.select(db::UserModel(), [&] (const db::UserModelPtr& model) {
+	EXPECT_TRUE(_dbHandler.select(db::UserModel(), [&] (db::UserModel&& model) {
 		++count;
-		ASSERT_EQ(std::string(condition.value()), model->email());
+		ASSERT_EQ(std::string(condition.value()), model.email());
 	}, condition));
 	EXPECT_EQ(count, 1);
 }
@@ -108,9 +108,9 @@ TEST_F(DatabaseModelTest, testSelectById) {
 	}
 	int count = 0;
 	const db::DBConditionUserId condition(id);
-	EXPECT_TRUE(_dbHandler.select(db::UserModel(), [&] (const db::UserModelPtr& model) {
+	EXPECT_TRUE(_dbHandler.select(db::UserModel(), [&] (db::UserModel&& model) {
 		++count;
-		ASSERT_EQ(id, model->id());
+		ASSERT_EQ(id, model.id());
 	}, condition));
 	EXPECT_EQ(count, 1);
 }
@@ -120,7 +120,18 @@ TEST_F(DatabaseModelTest, testTruncate) {
 	createUser("a@b.c.d", "secret", id);
 	EXPECT_TRUE(_dbHandler.truncate(db::UserModel()));
 	int count = 0;
-	_dbHandler.select(db::UserModel(), [&] (const db::UserModelPtr& model) {
+	_dbHandler.select(db::UserModel(), [&] (db::UserModel&& model) {
+		++count;
+	});
+	EXPECT_EQ(count, 0);
+}
+
+TEST_F(DatabaseModelTest, testDelete) {
+	int64_t id = -1L;
+	createUser("a@b.c.d", "secret", id);
+	EXPECT_TRUE(_dbHandler.deleteModel(db::UserModel(), db::DBConditionUserId(id)));
+	int count = 0;
+	_dbHandler.select(db::UserModel(), [&] (db::UserModel&& model) {
 		++count;
 	});
 	EXPECT_EQ(count, 0);

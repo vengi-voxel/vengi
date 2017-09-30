@@ -72,7 +72,7 @@ PreparedStatement& PreparedStatement::add(const std::string& value, FieldType fi
 	const int index = _params.add();
 	_params.valueBuffers.emplace_back(value);
 	_params.fieldTypes[index] = fieldType;
-	_params.values[index] = _params.valueBuffers.back().data();
+	_params.values[index] = _params.valueBuffers.back().c_str();
 	return *this;
 }
 

@@ -115,7 +115,35 @@ void createConstructor(const Table& table, std::stringstream& src) {
 	}
 
 	src << "\t\t_primaryKeys = " << table.primaryKeys << ";\n";
+	src << "\t}\n\n";
 
+	src << "\t" << table.classname << "(" << table.classname << "&& source) : Super(std::move(source._tableName)) {\n";
+	src << "\t\t_fields = std::move(source._fields);\n";
+	src << "\t\t_primaryKeys = source._primaryKeys;\n";
+	src << "\t\t_constraints = std::move(source._constraints);\n";
+	src << "\t\t_uniqueKeys = std::move(source._uniqueKeys);\n";
+	src << "\t\t_m = std::move(source._m);\n";
+	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
+	src << "\t}\n\n";
+
+	src << "\t" << table.classname << "& operator=(" << table.classname << "&& source) {\n";
+	src << "\t\t_tableName = std::move(source._tableName);\n";
+	src << "\t\t_fields = std::move(source._fields);\n";
+	src << "\t\t_primaryKeys = source._primaryKeys;\n";
+	src << "\t\t_constraints = std::move(source._constraints);\n";
+	src << "\t\t_uniqueKeys = std::move(source._uniqueKeys);\n";
+	src << "\t\t_m = std::move(source._m);\n";
+	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
+	src << "\t\treturn *this;\n";
+	src << "\t}\n\n";
+
+	src << "\t" << table.classname << "(const " << table.classname << "& source) : Super(source._tableName) {\n";
+	src << "\t\t_fields = source._fields;\n";
+	src << "\t\t_primaryKeys = source._primaryKeys;\n";
+	src << "\t\t_constraints = source._constraints;\n";
+	src << "\t\t_uniqueKeys = source._uniqueKeys;\n";
+	src << "\t\t_m = source._m;\n";
+	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
 	src << "\t}\n\n";
 }
 

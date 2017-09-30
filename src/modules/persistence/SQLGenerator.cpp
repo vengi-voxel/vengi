@@ -157,6 +157,18 @@ std::string createTruncateTableStatement(const Model& model) {
 	return core::string::format("TRUNCATE TABLE \"%s\"", model.tableName().c_str());
 }
 
+std::string createUpdateStatement(const Model& table) {
+	std::stringstream update;
+	update << "UPDATE " << quote(table.tableName()) << " --- TODO";
+	return update.str();
+}
+
+std::string createDeleteStatement(const Model& table) {
+	std::stringstream deleteStatement;
+	deleteStatement << "DELETE FROM " << quote(table.tableName());
+	return deleteStatement.str();
+}
+
 std::string createInsertStatement(const Model& table) {
 	std::stringstream insert;
 	std::stringstream values;
@@ -181,7 +193,9 @@ std::string createInsertStatement(const Model& table) {
 	if (!autoincrement.empty()) {
 		insert << " RETURNING " << quote(autoincrement);
 	}
-	// TODO: on duplicate key update
+	//ON CONFLICT (id) DO UPDATE
+	//  SET column_1 = excluded.column_1,
+	//      column_2 = excluded.column_2;
 	return insert.str();
 }
 
