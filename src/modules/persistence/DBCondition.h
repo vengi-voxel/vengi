@@ -67,11 +67,11 @@ public:
 class DBConditionMultiple : public DBCondition {
 private:
 	using Super = DBCondition;
-	std::vector<DBCondition> _conditions;
+	std::vector<const DBCondition*> _conditions;
 	bool _and;
 public:
 	// TODO: somehow make this constexpr
-	DBConditionMultiple(bool __and, const std::vector<DBCondition>& conditions) :
+	DBConditionMultiple(bool __and, std::vector<const DBCondition*>&& conditions) :
 			Super(), _conditions(conditions), _and(__and) {
 	}
 

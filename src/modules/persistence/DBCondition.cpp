@@ -44,8 +44,10 @@ std::string DBConditionOne::statement(int& parameterCount) const {
 
 std::string DBConditionMultiple::statement(int& parameterCount) const {
 	const char* o = _and ? " AND " : " OR ";
-	return core::string::join(_conditions.begin(), _conditions.end(), o, [&] (const DBCondition& cond) {
-		return cond.statement(parameterCount);
+	return core::string::join(_conditions.begin(), _conditions.end(), o, [&] (const DBCondition* cond) {
+		const std::string& s = cond->statement(parameterCount);
+		Log::debug("Statement: '%s', parameterCount: %i", s.c_str(), parameterCount);
+		return s;
 	});
 }
 
