@@ -51,9 +51,14 @@ static WCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
 static WCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
 static ATOM SDL_HelperWindowClass = 0;
 
+// for borderless Windows, still want the following flags:
+// - WS_CAPTION: this seems to enable the Windows minimize animation
+// - WS_SYSMENU: enables system context menu on task bar
+// - WS_MINIMIZEBOX: window will respond to Windows minimize commands sent to all windows, such as windows key + m, shaking title bar, etc.
+
 #define STYLE_BASIC         (WS_CLIPSIBLINGS | WS_CLIPCHILDREN)
 #define STYLE_FULLSCREEN    (WS_POPUP)
-#define STYLE_BORDERLESS    (WS_POPUP)
+#define STYLE_BORDERLESS    (WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
 #define STYLE_NORMAL        (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
 #define STYLE_RESIZABLE     (WS_THICKFRAME | WS_MAXIMIZEBOX)
 #define STYLE_MASK          (STYLE_FULLSCREEN | STYLE_BORDERLESS | STYLE_NORMAL | STYLE_RESIZABLE)
@@ -89,7 +94,11 @@ WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x
     rect.top = 0;
     rect.right = (use_current ? window->w : window->windowed.w);
     rect.bottom = (use_current ? window->h : window->windowed.h);
-    AdjustWindowRectEx(&rect, style, menu, 0);
+
+    // borderless windows will have WM_NCCALCSIZE return 0 for the non-client area. When this happens, it looks like windows will send a resize message
+    // expanding the window client area to the previous window + chrome size, so shouldn't need to adjust the window size for the set styles.
+    if (!(window->flags & SDL_WINDOW_BORDERLESS))
+        AdjustWindowRectEx(&rect, style, menu, 0);
 
     *x = (use_current ? window->x : window->windowed.x) + rect.left;
     *y = (use_current ? window->y : window->windowed.y) + rect.top;
@@ -216,10 +225,10 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
         } else {
             window->flags &= ~SDL_WINDOW_SHOWN;
         }
-        if (style & (WS_BORDER | WS_THICKFRAME)) {
-            window->flags &= ~SDL_WINDOW_BORDERLESS;
-        } else {
+        if (style & WS_POPUP) {
             window->flags |= SDL_WINDOW_BORDERLESS;
+        } else {
+            window->flags &= ~SDL_WINDOW_BORDERLESS;
         }
         if (style & WS_THICKFRAME) {
             window->flags |= SDL_WINDOW_RESIZABLE;
@@ -305,6 +314,9 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
         }
         return -1;
     }
+
+    // Inform Windows of the frame change so we can respond to WM_NCCALCSIZE
+    SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
         return 0;

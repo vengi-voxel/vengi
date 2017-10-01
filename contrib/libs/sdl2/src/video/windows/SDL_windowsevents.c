@@ -949,11 +949,19 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+    case WM_NCCALCSIZE:
+        {
+            // When borderless, need to tell windows that the size of the non-client area is 0
+            if ( wParam == TRUE && SDL_GetWindowFlags( data->window ) & SDL_WINDOW_BORDERLESS )
+                return 0;
+        }
+        break;
+
     case WM_NCHITTEST:
         {
             SDL_Window *window = data->window;
             if (window->hit_test) {
-                POINT winpoint = { (int) LOWORD(lParam), (int) HIWORD(lParam) };
+                POINT winpoint = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
                 if (ScreenToClient(hwnd, &winpoint)) {
                     const SDL_Point point = { (int) winpoint.x, (int) winpoint.y };
                     const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
@@ -976,7 +984,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-
     }
 
     /* If there's a window proc, assume it's going to handle messages */

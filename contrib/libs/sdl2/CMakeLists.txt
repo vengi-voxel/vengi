@@ -322,7 +322,7 @@ set_option(VIDEO_COCOA         "Use Cocoa video driver" ${APPLE})
 set_option(DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
 set_option(RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS})
 set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
-dep_option(VIDEO_VULKAN        "Enable Vulkan surface creation" ON "ANDROID OR APPLE OR LINUX OR WINDOWS" OFF)
+dep_option(VIDEO_VULKAN        "Enable Vulkan support" ON "ANDROID OR APPLE OR LINUX OR WINDOWS" OFF)
 set_option(VIDEO_KMSDRM        "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "VIDEO_KMSDRM" OFF)
 
@@ -602,7 +602,7 @@ endif()
 if(LIBC)
   if(WINDOWS AND NOT MINGW)
     set(HAVE_LIBC TRUE)
-    foreach(_HEADER stdio.h string.h wchar.h ctype.h math.h)
+    foreach(_HEADER stdio.h string.h wchar.h ctype.h math.h limits.h)
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REPLACE "." "_" _HAVE_H ${_UPPER})
       set(${_HAVE_H} 1)
@@ -628,7 +628,7 @@ if(LIBC)
     set(HAVE_LIBC TRUE)
     check_include_file(sys/types.h HAVE_SYS_TYPES_H)
     foreach(_HEADER
-            stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h
+            stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h limits.h
             strings.h wchar.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h)
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REPLACE "." "_" _HAVE_H ${_UPPER})
@@ -792,7 +792,7 @@ if(ANDROID)
   endif()
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_ANDROID 1)
-    file(GLOB ANDROID_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/android/*.c)
+    file(GLOB ANDROID_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/android/*.c ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_JOYSTICK_SOURCES})
     set(HAVE_SDL_JOYSTICK TRUE)
   endif()
@@ -840,7 +840,7 @@ if(ANDROID)
     endif()
 
     CHECK_C_SOURCE_COMPILES("
-    #if defined(__ANDROID__) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
+    #if defined(__ARM_ARCH) && __ARM_ARCH < 7
     #error Vulkan doesn't work on this configuration
     #endif
     int main()
@@ -856,7 +856,6 @@ if(ANDROID)
 
   CheckPTHREAD()
 
-  list(APPEND EXTRA_LDFLAGS "-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit")
 endif()
 
 # Platform-specific options and settings
@@ -1032,7 +1031,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
     CheckUSBHID()   # seems to be BSD specific - limit the test to BSD only?
     if(LINUX AND NOT ANDROID)
       set(SDL_JOYSTICK_LINUX 1)
-      file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/linux/*.c)
+      file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/linux/*.c ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
       set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
       set(HAVE_SDL_JOYSTICK TRUE)
     endif()
@@ -1358,7 +1357,7 @@ elseif(APPLE)
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_IOKIT 1)
     if (IOS)
-      file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/iphoneos/*.m)
+      file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/iphoneos/*.m ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
     else()
       file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/darwin/*.c)
     endif()
@@ -1414,10 +1413,6 @@ elseif(APPLE)
   endif()
 
   # Actually load the frameworks at the end so we don't duplicate include.
-  if (VIDEO_VULKAN)
-    find_library(QUARTZCORE QuartzCore)
-    list(APPEND EXTRA_LIBS ${QUARTZCORE})
-  endif()
   if(SDL_FRAMEWORK_COREVIDEO)
     find_library(COREVIDEO CoreVideo)
     list(APPEND EXTRA_LIBS ${COREVIDEO})
@@ -1497,8 +1492,8 @@ elseif(HAIKU)
   CheckPTHREAD()
 endif()
 
-if(VIDEO_VULKAN AND (NOT APPLE OR QUARTZCORE))
-  set(SDL_VIDEO_VULKAN_SURFACE 1)
+if(VIDEO_VULKAN)
+  set(SDL_VIDEO_VULKAN 1)
 endif()
 
 # Dummies
