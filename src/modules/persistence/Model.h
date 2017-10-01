@@ -7,7 +7,7 @@
 #include "core/Common.h"
 #include "Timestamp.h"
 #include "FieldType.h"
-#include "PreparedStatement.h"
+#include "BindParam.h"
 #include "State.h"
 #include "ConstraintType.h"
 #include "ForwardDecl.h"

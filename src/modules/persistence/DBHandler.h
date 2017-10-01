@@ -8,7 +8,7 @@
 #include "core/String.h"
 #include "core/Log.h"
 #include "ScopedConnection.h"
-#include "PreparedStatement.h"
+#include "BindParam.h"
 #include "SQLGenerator.h"
 #include "DBCondition.h"
 #include <memory>

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "PreparedStatement.h"
+#include "BindParam.h"
 #include "ScopedConnection.h"
 #include "ConnectionPool.h"
 #include "Connection.h"
@@ -39,12 +39,14 @@ void BindParam::push(const Model& model, const Field& field) {
 		const int value = model.getValue<int>(field);
 		valueBuffers.emplace_back(std::to_string(value));
 		values[index] = valueBuffers.back().c_str();
+		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
 	case FieldType::LONG: {
 		const int64_t value = model.getValue<int64_t>(field);
 		valueBuffers.emplace_back(std::to_string(value));
 		values[index] = valueBuffers.back().c_str();
+		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
 	case FieldType::TIMESTAMP: {
@@ -55,6 +57,7 @@ void BindParam::push(const Model& model, const Field& field) {
 			valueBuffers.emplace_back(std::to_string(value.time()));
 			values[index] = valueBuffers.back().c_str();
 		}
+		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
 	case FieldType::PASSWORD:
@@ -66,6 +69,7 @@ void BindParam::push(const Model& model, const Field& field) {
 		} else {
 			values[index] = model.getValue<const char*>(field);
 		}
+		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
 	case FieldType::MAX:

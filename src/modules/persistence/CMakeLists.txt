@@ -7,7 +7,7 @@ set(SRCS
 	DBCondition.cpp DBCondition.h
 	ConstraintType.h
 	FieldType.h
-	PreparedStatement.cpp PreparedStatement.h
+	BindParam.cpp BindParam.h
 	ScopedTransaction.cpp ScopedTransaction.h
 	State.cpp State
 	SQLGenerator.cpp SQLGenerator.h

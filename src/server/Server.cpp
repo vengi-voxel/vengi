@@ -105,10 +105,10 @@ int main(int argc, char *argv[]) {
 	const cooldown::CooldownProviderPtr& cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 
 	const poi::PoiProviderPtr& poiProvider = std::make_shared<poi::PoiProvider>(world, timeProvider);
-	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownProvider);
+	const persistence::DBHandlerPtr& dbHandler = std::make_shared<persistence::DBHandler>();
+	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownProvider, dbHandler);
 	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 
-	const persistence::DBHandlerPtr& dbHandler = std::make_shared<persistence::DBHandler>();
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(dbHandler);
 
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(dbHandler, network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider, eventMgr);
