@@ -48,9 +48,6 @@ private:
 	long _time;
 
 	void registerUser(const UserPtr& user);
-	// users are controlling npcs - and here we update them and send the messages to
-	// the users that are seeing this npc entity.
-	// users itself are not visible until they have taken over a npc
 	bool updateEntity(const EntityPtr& entity, long dt);
 	void updateQuadTree();
 
