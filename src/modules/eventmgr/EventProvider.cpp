@@ -15,7 +15,7 @@ EventProvider::EventProvider(const persistence::DBHandlerPtr& dbHandler) :
 }
 
 bool EventProvider::init() {
-	return _dbHandler->select(db::EventModel(), [this] (db::EventModel&& model) {
+	return _dbHandler->select(db::EventModel(), persistence::DBConditionOne(), [this] (db::EventModel&& model) {
 		_eventData.insert(std::make_pair((EventId)model.id(), std::forward<db::EventModel>(model)));
 	});
 }

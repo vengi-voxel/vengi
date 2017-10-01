@@ -118,8 +118,6 @@ public:
 	void setIsNull(const Field& f, bool isNull);
 	bool isNull(const Field& f) const;
 
-	PreparedStatement prepare(const std::string& name, const std::string& statement);
-
 	bool exec(const std::string& query) const;
 	bool exec(const std::string& query);
 

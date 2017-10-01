@@ -46,12 +46,12 @@ public:
 	 * @return A string - and never @c nullptr (but can be empty of course) - that the field of the
 	 * query is checked against.
 	 */
-	const char* value() const;
+	virtual const char* value(int index) const;
 
 	virtual std::string statement(int& parameterCount) const;
 };
 
-inline const char* DBCondition::value() const {
+inline const char* DBCondition::value(int index) const {
 	if (_value == nullptr) {
 		return "";
 	}
@@ -81,6 +81,7 @@ public:
 	}
 
 	std::string statement(int& parameterCount) const override;
+	const char* value(int index) const override;
 };
 
 }

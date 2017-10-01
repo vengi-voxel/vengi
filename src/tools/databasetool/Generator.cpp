@@ -8,7 +8,6 @@
 
 namespace databasetool {
 
-static const char *quote = "\\\"";
 #define NAMESPACE "db"
 
 struct Namespace {
@@ -147,128 +146,6 @@ void createConstructor(const Table& table, std::stringstream& src) {
 	src << "\t}\n\n";
 }
 
-static void createSelectStatement(const Table& table, std::stringstream& src) {
-	if (table.primaryKeys <= 0) {
-		return;
-	}
-	std::stringstream loadNonPk;
-	loadNonPk << "\t\tstd::stringstream __load_;\n\t\tint __count_ = 1;\n\t\tbool __andNeeded_ = false;\n";
-	loadNonPk << "\t\t__load_ << ";
-
-	persistence::Fields fields;
-	fields.reserve(table.fields.size());
-	for (auto& e : table.fields) {
-		fields.push_back(e.second);
-	}
-	loadNonPk << "persistence::createSelect(*this) + ";
-
-	int nonPrimaryKeyMembers = 0;
-	std::stringstream loadNonPkAdd;
-	loadNonPk << "\" WHERE \";\n";
-	src << "\tbool select(";
-	for (auto entry : table.fields) {
-		const persistence::Field& f = entry.second;
-		if (f.isPrimaryKey()) {
-			continue;
-		}
-		const std::string& cpptype = getCPPType(f.type, true, true);
-		if (nonPrimaryKeyMembers > 0) {
-			src << ", ";
-		}
-		src << cpptype << " " << f.name;
-		if (nonPrimaryKeyMembers > 0) {
-			src << " = nullptr";
-		}
-		++nonPrimaryKeyMembers;
-		loadNonPk << "\t\tif (" << f.name << " != nullptr) {\n";
-#if 0
-		loadNonPk << "\t\t\t_m._" << f.name << " = ";
-		if (f.type != persistence::FieldType::PASSWORD && f.type != persistence::FieldType::STRING) {
-			loadNonPk << "*";
-		}
-		loadNonPk << f.name << ";\n";
-#endif
-		loadNonPk << "\t\t\tif (__andNeeded_) {\n";
-		loadNonPk << "\t\t\t\t__load_ << \" AND \";\n";
-		loadNonPk << "\t\t\t\t__andNeeded_ = false;\n";
-		loadNonPk << "\t\t\t}\n";
-
-		loadNonPk << "\t\t\t__load_ << \"" << quote << f.name << quote << " = ";
-		loadNonPk << "$\" << __count_";
-		loadNonPk << ";\n\t\t\t++__count_;\n\t\t\t__andNeeded_ = true;\n";
-		loadNonPk << "\t\t}\n";
-
-		loadNonPkAdd << "\t\tif (" << f.name << " != nullptr) {\n";
-		if (f.type == persistence::FieldType::TIMESTAMP) {
-			loadNonPkAdd << "\t\t\tif (" << f.name << "->isNow()) {\n";
-			loadNonPkAdd << "\t\t\t\t__p_.add(\"NOW()\");\n";
-			loadNonPkAdd << "\t\t\t} else {\n";
-			loadNonPkAdd << "\t\t\t\t__p_.add(*" << f.name << ");\n";
-			loadNonPkAdd << "\t\t\t}\n";
-		} else if (f.type == persistence::FieldType::PASSWORD) {
-			loadNonPkAdd << "\t\t\t__p_.addPassword(";
-			loadNonPkAdd << f.name << ");\n";
-		} else if (f.type == persistence::FieldType::LONG || f.type == persistence::FieldType::INT) {
-			loadNonPkAdd << "\t\t\t__p_.add(*";
-			loadNonPkAdd << f.name << ");\n";
-		} else {
-			loadNonPkAdd << "\t\t\t__p_.add(";
-			loadNonPkAdd << f.name << ");\n";
-		}
-		loadNonPkAdd << "\t\t}\n";
-	}
-	if (nonPrimaryKeyMembers > 0) {
-		src << ") {\n";
-		src << loadNonPk.str();
-		src << "\t\tconst std::string __load_str_ = __load_.str();\n";
-		src << "\t\tpersistence::PreparedStatement __p_ = prepare(\"\", __load_str_);\n";
-		src << loadNonPkAdd.str();
-		src << "\t\tconst persistence::State& __state = __p_.exec();\n";
-		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute statement: '%s' - error: '%s'\", __load_str_.c_str(), __state.lastErrorMsg);\n";
-		src << "\t\treturn __state.result;\n\t}\n\n";
-	}
-}
-
-static void createSelectByIds(const Table& table, std::stringstream& src) {
-	persistence::Fields fields;
-	fields.reserve(table.fields.size());
-	for (auto& e : table.fields) {
-		fields.push_back(e.second);
-	}
-
-	std::stringstream where;
-	where << "WHERE ";
-
-	std::stringstream loadadd;
-	int fieldIndex = 0;
-	for (auto entry : table.fields) {
-		const persistence::Field& f = entry.second;
-		if (!f.isPrimaryKey()) {
-			continue;
-		}
-		const std::string& cpptype = getCPPType(f.type, true);
-		if (fieldIndex > 0) {
-			src << ", ";
-			where << " AND ";
-		} else {
-			src << "\tbool selectById(";
-		}
-		++fieldIndex;
-		where << "\"" << f.name << "\" = ";
-		sep(where, fieldIndex);
-		loadadd << ".add(" << f.name << ")";
-		src << cpptype << " " << f.name;
-	}
-	if (table.primaryKeys > 0) {
-		src << ") {\n";
-		src << "\t\tpersistence::PreparedStatement __p_ = prepare(\"" << table.classname << "Load\", persistence::createSelect(*this) + R\"( " << where.str() << ")\");\n";
-		src << "\t\t__p_" << loadadd.str() << ";\n";
-		src << "\t\tconst persistence::State& __state = __p_.exec();\n";
-		src << "\t\tcore_assert_msg(__state.result, \"Failed to execute selectById statement - error: '%s'\", __state.lastErrorMsg);\n";
-		src << "\t\treturn __state.result;\n\t}\n\n";
-	}
-}
-
 static void createDBConditions(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
@@ -298,6 +175,14 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 			src << "std::to_string(value)";
 		}
 		src << ", op) {\n\t}\n";
+
+		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
+			src << "\t" << classname << "(";
+			src << "const std::string&";
+			src << " value, persistence::Operator op = persistence::Operator::Equal) :\n\t\tSuper(\"";
+			src << f.name << "\", value, op) {\n\t}\n";
+		}
+
 		src << "}; // class " << classname << "\n\n";
 	}
 }
@@ -364,10 +249,6 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 		src << "public:\n";
 
 		createConstructor(table, src);
-
-		createSelectStatement(table, src);
-
-		createSelectByIds(table, src);
 
 		createGetterAndSetter(table, src);
 	}

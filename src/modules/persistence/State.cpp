@@ -77,7 +77,7 @@ void State::checkLastResult(ConnectionType* connection) {
 	switch (lastState) {
 	case PGRES_NONFATAL_ERROR: {
 		char *lastErrorMsg = PQerrorMessage(connection);
-		Log::warn("non fatal error: %s", lastErrorMsg);
+		Log::warn("Mon fatal error: %s", lastErrorMsg);
 		PQfreemem(lastErrorMsg);
 		result = true;
 		break;
@@ -85,7 +85,7 @@ void State::checkLastResult(ConnectionType* connection) {
 	case PGRES_BAD_RESPONSE:
 	case PGRES_FATAL_ERROR:
 		lastErrorMsg = PQerrorMessage(connection);
-		Log::error("fatal error: %s", lastErrorMsg);
+		Log::error("Fatal error: %s", lastErrorMsg);
 		break;
 	case PGRES_EMPTY_QUERY:
 	case PGRES_COMMAND_OK:

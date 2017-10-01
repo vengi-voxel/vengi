@@ -11,7 +11,6 @@
 #include "core/Singleton.h"
 #include <algorithm>
 
-// TODO: remove me fillModelValues
 #include <libpq-fe.h>
 
 namespace persistence {
@@ -34,10 +33,6 @@ bool Model::isPrimaryKey(const std::string& fieldname) const {
 	}
 
 	return (i->contraintMask & std::enum_value(ConstraintType::PRIMARYKEY)) != 0;
-}
-
-PreparedStatement Model::prepare(const std::string& name, const std::string& statement) {
-	return PreparedStatement(this, name, statement);
 }
 
 bool Model::exec(const char* query) {

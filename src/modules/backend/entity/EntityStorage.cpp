@@ -8,15 +8,18 @@
 #include "User.h"
 #include "UserModel.h"
 #include "Npc.h"
+#include "persistence/DBHandler.h"
 
 #define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::type, network::msg.Union());
 
 namespace backend {
 
 EntityStorage::EntityStorage(const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
-		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
+		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
+		const persistence::DBHandlerPtr& dbHandler) :
 		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree), _messageSender(messageSender), _world(world), _timeProvider(
-				timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _time(0L) {
+				timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _dbHandler(dbHandler),
+				_time(0L) {
 }
 
 core::RectFloat EntityStorage::QuadTreeNode::getRect() const {
@@ -33,7 +36,7 @@ void EntityStorage::registerUser(const UserPtr& user) {
 
 EntityId EntityStorage::getUserId(const std::string& email, const std::string& password) const {
 	db::UserModel userStore;
-	if (!userStore.select(email.c_str())) {
+	if (!_dbHandler->select(userStore, db::DBConditionUserEmail(email.c_str()))) {
 		return EntityIdNone;
 	}
 	EntityId checkId = userStore.id();

@@ -87,3 +87,10 @@ class TimeProvider;
 typedef std::shared_ptr<TimeProvider> TimeProviderPtr;
 
 }
+
+namespace persistence {
+
+class DBHandler;
+typedef std::shared_ptr<DBHandler> DBHandlerPtr;
+
+}
