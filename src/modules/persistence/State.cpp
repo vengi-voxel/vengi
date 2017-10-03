@@ -27,10 +27,7 @@ State::~State() {
 		PQclear(res);
 		res = nullptr;
 	}
-	if (lastErrorMsg != nullptr) {
-		PQfreemem(lastErrorMsg);
-		lastErrorMsg = nullptr;
-	}
+	lastErrorMsg = nullptr;
 }
 
 bool State::exec(const char *statement, int parameterCount, const char *const *paramValues) {
