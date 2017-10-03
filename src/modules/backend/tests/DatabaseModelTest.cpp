@@ -152,6 +152,7 @@ TEST_F(DatabaseModelTest, testUpdate) {
 		copy = std::move(model);
 	});
 	ASSERT_EQ(count, 1);
+	ASSERT_EQ("a@b.c.d", copy.email());
 	copy.setEmail("no@mail.com");
 	_dbHandler.update(copy);
 	_dbHandler.select(db::UserModel(), db::DBConditionUserId(id), [&] (db::UserModel&& model) {
