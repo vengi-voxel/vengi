@@ -161,4 +161,7 @@ TEST_F(DatabaseModelTest, testUpdate) {
 	});
 }
 
+TEST_F(DatabaseModelTest, testRelativeUpdate) {
+}
+
 }

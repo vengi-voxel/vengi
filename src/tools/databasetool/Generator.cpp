@@ -165,7 +165,7 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		} else {
 			src << getCPPType(f.type, true, false);
 		}
-		src << " value, persistence::Operator op = persistence::Operator::Equal) :\n\t\tSuper(\"";
+		src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(\"";
 		src << f.name << "\", ";
 		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
 			src << "value";
@@ -174,13 +174,13 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		} else {
 			src << "std::to_string(value)";
 		}
-		src << ", op) {\n\t}\n";
+		src << ", comp) {\n\t}\n";
 
 		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
 			src << "\t" << classname << "(";
 			src << "const std::string&";
-			src << " value, persistence::Operator op = persistence::Operator::Equal) :\n\t\tSuper(\"";
-			src << f.name << "\", value, op) {\n\t}\n";
+			src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(\"";
+			src << f.name << "\", value, comp) {\n\t}\n";
 		}
 
 		src << "}; // class " << classname << "\n\n";

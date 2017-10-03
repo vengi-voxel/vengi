@@ -11,7 +11,7 @@ namespace persistence {
 
 class Model;
 
-enum class Operator {
+enum class Comparator {
 	Equal,
 	NotEqual,
 	Bigger,
@@ -27,18 +27,18 @@ enum class Operator {
 
 class DBCondition {
 protected:
-	Operator _op = Operator::Max;
+	Comparator _comp = Comparator::Max;
 	const char* _field = nullptr;
 	char *_valueCopy = nullptr;
 	const char* _value = nullptr;
 
 	constexpr DBCondition() {}
 public:
-	constexpr DBCondition(const char* field, const char* value, Operator op = Operator::Equal) :
-			_op(op), _field(field), _value(value) {
+	constexpr DBCondition(const char* field, const char* value, Comparator comp = Comparator::Equal) :
+			_comp(comp), _field(field), _value(value) {
 	}
 
-	DBCondition(const char* field, const std::string& value, Operator op = Operator::Equal);
+	DBCondition(const char* field, const std::string& value, Comparator comp = Comparator::Equal);
 
 	virtual ~DBCondition();
 

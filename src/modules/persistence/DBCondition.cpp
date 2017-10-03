@@ -14,7 +14,7 @@ namespace persistence {
 
 namespace __priv {
 
-static const char *operatorString[] = {
+static const char *comparatorString[] = {
 	"=",
 	"!=",
 	">",
@@ -25,12 +25,12 @@ static const char *operatorString[] = {
 	"IN",
 	"NOT IN"
 };
-static_assert(std::enum_value(Operator::Max) == lengthof(operatorString), "Array sizes don't match");
+static_assert(std::enum_value(Comparator::Max) == lengthof(comparatorString), "Comparator array sizes don't match");
 
 }
 
-DBCondition::DBCondition(const char* field, const std::string& value, Operator op) :
-		_op(op), _field(field), _valueCopy(SDL_strdup(value.c_str())), _value(_valueCopy) {
+DBCondition::DBCondition(const char* field, const std::string& value, Comparator comp) :
+		_comp(comp), _field(field), _valueCopy(SDL_strdup(value.c_str())), _value(_valueCopy) {
 }
 
 DBCondition::~DBCondition() {
@@ -44,12 +44,12 @@ std::string DBCondition::statement(int& parameterCount) const {
 	if (_field == nullptr) {
 		return "";
 	}
-	if (_op == Operator::Max) {
+	if (_comp == Comparator::Max) {
 		return "";
 	}
 	++parameterCount;
-	const char* o = __priv::operatorString[std::enum_value(_op)];
-	return core::string::format("\"%s\" %s $%i", _field, o, parameterCount);
+	const char* c = __priv::comparatorString[std::enum_value(_comp)];
+	return core::string::format("\"%s\" %s $%i", _field, c, parameterCount);
 }
 
 std::string DBConditionOne::statement(int& parameterCount) const {
