@@ -29,11 +29,13 @@ table event_point {
 	namespace eventmgr
 	field eventid {
 		type long
+		notnull
 		operator set
 	}
 	field userid {
 		type long
 		operator set
+		notnull
 	}
 	field key {
 		type string

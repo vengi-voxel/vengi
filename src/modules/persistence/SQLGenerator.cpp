@@ -4,10 +4,18 @@
 
 #include "SQLGenerator.h"
 #include "core/String.h"
+#include "core/Array.h"
 #include "Model.h"
 #include "DBCondition.h"
 
 namespace persistence {
+
+static const char *OperatorStrings[] = {
+	" + ",
+	" - ",
+	" = "
+};
+static_assert(lengthof(OperatorStrings) == (int)persistence::Operator::MAX, "Invalid operator mapping");
 
 static inline std::string quote(const std::string& in) {
 	return core::string::format("\"%s\"", in.c_str());
@@ -235,6 +243,7 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 	std::string primaryKey;
 	insert << "INSERT INTO " << quote(model.tableName()) << " (";
 	int insertValueIndex = 1;
+	int inserted = 0;
 	for (const persistence::Field& f : model.fields()) {
 		if (f.isPrimaryKey()) {
 			primaryKey = f.name;
@@ -246,11 +255,12 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 		if (model.isNull(f)) {
 			continue;
 		}
-		if (insertValueIndex > 1) {
+		if (inserted > 0) {
 			values << ", ";
 			insert << ", ";
 		}
 		insert << quote(f.name);
+		++inserted;
 		if (placeholder(model, f, values, insertValueIndex)) {
 			++insertValueIndex;
 			if (params != nullptr) {
@@ -260,21 +270,19 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 	}
 
 	insert << ") VALUES (" << values.str() << ")";
-	if (!autoincrement.empty()) {
-		insert << " RETURNING " << quote(autoincrement);
-	}
-#if 0
-	// TODO: fix this
 	if (model.primaryKeys() == 1) {
 		insert << " ON CONFLICT (" << quote(primaryKey);
 		insert << ") DO UPDATE SET ";
 		int fieldIndex = 0;
 		for (const persistence::Field& f : model.fields()) {
+			if (f.isPrimaryKey() || f.isAutoincrement()) {
+				continue;
+			}
 			if (fieldIndex > 0) {
 				insert << ", ";
 			}
-			insert << quote(f.name) << " = ";
-			if (placeholder(f.type, insert, insertValueIndex)) {
+			insert << quote(f.name) << OperatorStrings[(int)f.updateOperator];
+			if (placeholder(model, f, insert, insertValueIndex)) {
 				++insertValueIndex;
 				if (params != nullptr) {
 					params->push(model, f);
@@ -283,7 +291,41 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 			++fieldIndex;
 		}
 	}
-#endif
+	const UniqueKeys uniqueKeys = model.uniqueKeys();
+	for (const auto& set : uniqueKeys) {
+		insert << " ON CONFLICT (";
+		insert << core::string::join(set.begin(), set.end(), ", ", [] (const std::string& fieldName) {
+			return quote(fieldName);
+		});
+		insert << ") DO UPDATE SET ";
+		int fieldIndex = 0;
+		for (const persistence::Field& f : model.fields()) {
+			if (f.isPrimaryKey() || f.isAutoincrement()) {
+				continue;
+			}
+			if (set.find(f.name) != set.end()) {
+				continue;
+			}
+			if (fieldIndex > 0) {
+				insert << ", ";
+			}
+			insert << quote(f.name);
+			if (f.updateOperator != Operator::SET) {
+				insert << " = " << quote(f.name);
+				insert << OperatorStrings[(int)f.updateOperator];
+			}
+			if (placeholder(model, f, insert, insertValueIndex)) {
+				++insertValueIndex;
+				if (params != nullptr) {
+					params->push(model, f);
+				}
+			}
+			++fieldIndex;
+		}
+	}
+	if (!autoincrement.empty()) {
+		insert << " RETURNING " << quote(autoincrement);
+	}
 	return insert.str();
 }
 
