@@ -2,18 +2,22 @@ table event {
 	namespace eventmgr
 	field id {
 		type long
+		operator set
 	}
 	field type {
 		type long
 		notnull
+		operator set
 	}
 	field startdate {
 		type timestamp
 		notnull
+		operator set
 	}
 	field enddate {
 		type timestamp
 		notnull
+		operator set
 	}
 	constraints {
 		id primarykey
@@ -25,17 +29,21 @@ table event_point {
 	namespace eventmgr
 	field eventid {
 		type long
+		operator set
 	}
 	field userid {
 		type long
+		operator set
 	}
 	field key {
 		type string
 		notnull
+		operator set
 	}
 	field points {
 		type long
 		notnull
+		operator add
 	}
 	constraints {
 		(userid, eventid, key) unique

@@ -6,7 +6,7 @@
 
 namespace persistence {
 
-// don't change the order - code generator relies on this
+// don't change the order without changing the string mapping
 enum class ConstraintType {
 	UNIQUE = 1 << 0,
 	PRIMARYKEY = 1 << 1,

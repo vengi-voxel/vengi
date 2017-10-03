@@ -8,7 +8,7 @@
 
 namespace persistence {
 
-// don't change the order - code generator relies on this
+// don't change the order without changing the string mapping
 enum class FieldType {
 	STRING,
 	TEXT,

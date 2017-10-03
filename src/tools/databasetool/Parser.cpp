@@ -65,6 +65,26 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 				return false;
 			}
 			field.defaultVal = tok.next();
+		} else if (token == "operator") {
+			if (!tok.hasNext()) {
+				Log::error("missing operator for field %s", fieldname.c_str());
+				return false;
+			}
+			const std::string& opStr = tok.next();
+			persistence::Operator op = persistence::Operator::SET;
+			bool foundOperator = false;
+			for (int i = 0; i < (int)persistence::Operator::MAX; ++i) {
+				if (core::string::iequals(opStr, OperatorNames[i])) {
+					op = (persistence::Operator)i;
+					foundOperator = true;
+					break;
+				}
+			}
+			if (!foundOperator) {
+				Log::error("invalid operator for field %s: %s", fieldname.c_str(), opStr.c_str());
+				return false;
+			}
+			field.updateOperator = op;
 		} else if (token == "length") {
 			if (!tok.hasNext()) {
 				Log::error("Missing value for length of '%s'", fieldname.c_str());

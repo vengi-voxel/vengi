@@ -21,3 +21,10 @@ static const char *ConstraintTypeNames[] = {
 	CORE_STRINGIFY(NOTNULL)
 };
 static_assert(lengthof(ConstraintTypeNames) == persistence::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
+
+static const char *OperatorNames[] = {
+	CORE_STRINGIFY(ADD),
+	CORE_STRINGIFY(SUBTRACT),
+	CORE_STRINGIFY(SET)
+};
+static_assert(lengthof(OperatorNames) == (int)persistence::Operator::MAX, "Invalid operator mapping");

@@ -87,6 +87,7 @@ void createConstructor(const Table& table, std::stringstream& src) {
 		src << "\t\t_fields.emplace_back(persistence::Field{";
 		src << "\"" << f.name << "\"";
 		src << ", persistence::FieldType::" << FieldTypeNames[std::enum_value(f.type)];
+		src << ", persistence::Operator::" << OperatorNames[std::enum_value(f.updateOperator)];
 		src << ", " << f.contraintMask;
 		src << ", \"" << f.defaultVal << "\"";
 		src << ", " << f.length;

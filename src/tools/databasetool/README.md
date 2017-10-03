@@ -1,23 +1,36 @@
 # Table descriptions for the databasetool.
 
 The databasetool binary will generate model files for the
-table definitions in this file.
+table definitions given in `*.tbl` files. You can specify the fields,
+the constraints and set an operator for dealing with conflict states.
 
-## Valid types
-* password
-* string
-* text
-* int
-* long
-* timestamp
+The operator is taken into account when you execute an insert or
+update statement and hit a unique key violation. This cna e.g. be used
+to increase points for particular keys. The first time you normally
+perform an insert - and the following times (you are still running the
+same code on it) you will hit a key violation and thus perform the
+insert or update with the operator specified. The default operator is
+`set`. See a full list of valid operators below.
 
-If no classname is specified, the table name will be used with `Model` as postfix.
+To add a new `*.tbl` file to a module and automatically generate code
+for that table definition, you have to add the following after your
+cmake `add_library(${LIB} ${SRCS})` call:
+
+```
+generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl ExampleModels.h)
+```
+
+`ExampleModels.h` specifies a single header where all generated table models
+are put into.
 
 **Example:**
 
-Table user with be UserModel if no other classname was specified
+If no classname is specified, the table name will be used with `Model` as postfix.
 
-All models will be put into a persistence namespace.
+Table `user` will be generated as `UserModel` class, if no other `classname` was
+specified
+
+All models will be put into a `persistence` namespace.
 
 ```
 table <TABLENAME> {
@@ -27,6 +40,7 @@ table <TABLENAME> {
     type <FIELDTYPE>
     notnull (optional)
     length <LENGTH> (optional)
+	operator <OPERATOR>
     default <DEFAULTVALUE> (optional)
   }
   constraints {
@@ -38,3 +52,16 @@ table <TABLENAME> {
   }
 }
 ```
+
+## Valid field types
+* password
+* string
+* text
+* int
+* long
+* timestamp
+
+## Valid operators
+* set
+* add
+* subtract

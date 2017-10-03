@@ -21,9 +21,19 @@
 
 namespace persistence {
 
+// don't change the order without changing the string mapping
+enum class Operator {
+	ADD,
+	SUBTRACT,
+	SET,
+
+	MAX
+};
+
 struct Field {
 	std::string name;
 	FieldType type = FieldType::STRING;
+	Operator updateOperator = Operator::SET;
 	// bitmask from ConstraintType
 	uint32_t contraintMask = 0u;
 	std::string defaultVal = "";
