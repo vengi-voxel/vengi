@@ -88,7 +88,7 @@ bool User::update(long dt) {
 
 	_lastAction = _time;
 
-	glm::vec3 moveDelta = glm::vec3(0.0f);
+	glm::vec3 moveDelta {0.0f};
 	const float speed = current(attrib::Type::SPEED) * static_cast<float>(dt) / 1000.0f;
 	if (isMove(network::MoveDirection::MOVELEFT)) {
 		moveDelta += glm::left * speed;
