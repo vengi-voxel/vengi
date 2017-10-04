@@ -1,5 +1,10 @@
 /**
  * @file
+ *
+ * @defgroup Persistence
+ * @{
+ * The @c DBHandler is used to interact with the database. The @c DatabaseTool is used to generate the metadata classes
+ * for the database tables.
  */
 
 #pragma once
@@ -15,20 +20,41 @@
 
 namespace persistence {
 
-// TODO:
-// * password support
-// * offset, limit support
+/**
+ * @brief Database access for insert, update, delete, ...
+ *
+ * @sa DatabaseTool
+ * @sa Model
+ * @todo password support
+ * @todo offset, limit support
+ */
 class DBHandler {
 private:
 	State execInternal(const std::string& query) const;
 	State execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const;
 
+	Connection* connection() const;
+
 public:
 	DBHandler();
 
+	/**
+	 * @brief Initializes the connections
+	 * @return @c true if the initialization was executed successfully, @c false otherwise.
+	 */
 	bool init();
+
+	/**
+	 * @brief Not calling @c shutdown() after @c init() was called will lead to memory leaks
+	 */
 	void shutdown();
 
+	/**
+	 * @brief Deletes one or more database entries of the given @c persistence::Model
+	 * @param[in] model The model that should be deleted
+	 * @param[in] condition The @c persistence::DBCondition that identifies the entries to delete
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
 	template<class MODEL>
 	bool deleteModel(MODEL&& model, const DBCondition& condition) const {
 		int conditionAmount = 0;
@@ -64,6 +90,14 @@ public:
 		return true;
 	}
 
+	/**
+	 * @brief Select database entries of the given @c persistence::Model
+	 * @param[in] model The model that should be selected
+	 * @param[in] condition The @c persistence::DBCondition that identifies the entries to select
+	 * @param[in] func The callback that is notified on every entry that was found that matches
+	 * the search conditions.
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
 	template<class FUNC, class MODEL>
 	bool select(MODEL&& model, const DBCondition& condition, FUNC&& func) const {
 		int conditionAmount = 0;
@@ -105,6 +139,13 @@ public:
 		return true;
 	}
 
+	/**
+	 * @brief Select one database entry of the given @c persistence::Model (or if the result leads to multiple
+	 * entries, you get the last one - but keep in mind that the result set is not ordered!)
+	 * @param[in,out] model The model that should be selected - the result data is written into the model
+	 * @param[in] condition The @c persistence::DBCondition that identifies the entries to select
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
 	template<class MODEL>
 	bool select(MODEL& model, const DBCondition& condition) const {
 		return select(model, condition, [&model] (MODEL&& selectedModel) {
@@ -112,18 +153,50 @@ public:
 		});
 	}
 
-	template<class MODEL>
-	bool select(MODEL& model) const {
-		return select(model, DBConditionOne());
-	}
-
-	Connection* connection() const;
-
+	/**
+	 * @brief Updates the database entry for the give model. The primary keys must be set in the
+	 * @c persistence::Model instance that is given to this method
+	 * @param[in,out] model The model that should be updated
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
 	bool update(Model& model) const;
+
+	/**
+	 * @brief Insert or updates the database entry for the give model. The primary keys must be set in the
+	 * @c persistence::Model instance that is given to this method. If you violate a unique key constraint,
+	 * an update is performed instead. Depending on the @c persistence::Field settings you either get a
+	 * relative update or an absolute set during that conflict for the new data.
+	 * @param[in,out] model The model that should be inserted/updated
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
 	bool insert(Model& model) const;
+
+	/**
+	 * @brief Truncate the table for the given @c persistence::Model
+	 * @param[in] model The model that the table is to be truncated for
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
 	bool truncate(const Model& model) const;
+
+	/**
+	 * @brief Truncate the table for the given @c persistence::Model
+	 * @param[in] model The model that the table is to be truncated for
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
 	bool truncate(Model&& model) const;
+
+	/**
+	 * @brief Create the table for the given @c persistence::Model
+	 * @param[in] model The model that the table is to be created for
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
 	bool createTable(Model&& model) const;
+
+	/**
+	 * @brief Executes a single query
+	 * @param[in] query The query to execute
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
 	bool exec(const std::string& query) const;
 
 	// transactions
@@ -135,3 +208,7 @@ public:
 typedef std::shared_ptr<DBHandler> DBHandlerPtr;
 
 }
+
+/**
+ * @}
+ */

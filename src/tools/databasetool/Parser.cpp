@@ -5,6 +5,22 @@
 
 namespace databasetool {
 
+static const char *Keywords[] {
+	"new", "delete", "const", "volatile",
+	nullptr
+};
+
+static bool checkFieldname(const std::string& in) {
+	const char **token = Keywords;
+	while (*token) {
+		if (in == *token) {
+			return false;
+		}
+		++token;
+	}
+	return true;
+}
+
 bool parseField(core::Tokenizer& tok, Table& table) {
 	if (!tok.hasNext()) {
 		Log::error("Expected field name");
@@ -13,6 +29,10 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 	const std::string& fieldname = tok.next();
 	if (!tok.hasNext()) {
 		Log::error("Expected { after field name %s", fieldname.c_str());
+		return false;
+	}
+	if (!checkFieldname(fieldname)) {
+		Log::error("Field %s uses a reserved keyword", fieldname.c_str());
 		return false;
 	}
 	std::string token = tok.next();
@@ -48,12 +68,12 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 			}
 			field.type = typeMapping;
 		} else if (token == "notnull") {
-			auto i = table.constraints.find(fieldname);
+			auto i = table.constraints.find(field.name);
 			if (i != table.constraints.end()) {
 				persistence::Constraint& c = i->second;
 				c.types |= std::enum_value(persistence::ConstraintType::NOTNULL);
 			} else {
-				table.constraints.insert(std::make_pair(fieldname, persistence::Constraint{{fieldname}, (uint32_t)std::enum_value(persistence::ConstraintType::NOTNULL)}));
+				table.constraints.insert(std::make_pair(field.name, persistence::Constraint{{field.name}, (uint32_t)std::enum_value(persistence::ConstraintType::NOTNULL)}));
 			}
 		} else if (token == "default") {
 			if (!tok.hasNext()) {
@@ -61,7 +81,7 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 				return false;
 			}
 			if (!field.defaultVal.empty()) {
-				Log::error("There is already a default value (%s) defined for field '%s'", field.defaultVal.c_str(), fieldname.c_str());
+				Log::error("There is already a default value (%s) defined for field '%s'", field.defaultVal.c_str(), field.name.c_str());
 				return false;
 			}
 			field.defaultVal = tok.next();
@@ -100,7 +120,7 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 			return false;
 		}
 	}
-	table.fields.insert(std::make_pair(fieldname, field));
+	table.fields.insert(std::make_pair(field.name, field));
 	return true;
 }
 

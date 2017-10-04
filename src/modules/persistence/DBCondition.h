@@ -11,6 +11,9 @@ namespace persistence {
 
 class Model;
 
+/**
+ * @brief Comparators for the @c DBCondition class.
+ */
 enum class Comparator {
 	Equal,
 	NotEqual,
@@ -25,6 +28,9 @@ enum class Comparator {
 	Max
 };
 
+/**
+ * @brief A DBCondition is used to build and fill the @c WHERE statements.
+ */
 class DBCondition {
 protected:
 	Comparator _comp = Comparator::Max;
@@ -58,6 +64,9 @@ inline const char* DBCondition::value(int index) const {
 	return _value;
 }
 
+/**
+ * @brief This is the 'empty' @c DBCondition - it always evaluates to true
+ */
 class DBConditionOne : public DBCondition {
 private:
 	using Super = DBCondition;
@@ -69,6 +78,9 @@ public:
 	std::string statement(int& parameterCount) const override;
 };
 
+/**
+ * @brief Chain multiple @c DBCondition objects together into one
+ */
 class DBConditionMultiple : public DBCondition {
 private:
 	using Super = DBCondition;

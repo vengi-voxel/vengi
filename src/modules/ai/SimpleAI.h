@@ -1,5 +1,5 @@
 /**
- * @page SimpleAI documentation
+ * @page SimpleAI SimpleAI documentation
  *
  * @section purpose Purpose
  *
