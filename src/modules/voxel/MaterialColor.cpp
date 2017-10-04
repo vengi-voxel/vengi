@@ -147,6 +147,7 @@ public:
 		auto i = _colorMapping.find(type);
 		if (i == _colorMapping.end()) {
 			static MaterialColorIndices Empty(0);
+			Log::warn("Could not find color indices for voxel type %s", VoxelTypeStr[(int)type]);
 			return Empty;
 		}
 		return i->second;
