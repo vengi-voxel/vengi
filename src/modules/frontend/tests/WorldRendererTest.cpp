@@ -20,9 +20,12 @@ public:
 		core::AbstractTest::SetUp();
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		_world = std::make_shared<voxel::World>();
+		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 		const std::string& world = _testApp->filesystem()->load("world.lua");
+		ASSERT_NE("", world);
 		const std::string& biomes = _testApp->filesystem()->load("biomes.lua");
-		_world->init(world, biomes);
+		ASSERT_NE("", biomes);
+		ASSERT_TRUE(_world->init(world, biomes));
 
 		_worldRenderer = new WorldRenderer(_world);
 		_renderer = static_cast<T_WorldRenderer*>(_worldRenderer);
@@ -38,6 +41,14 @@ TEST_F(WorldRendererTest, testCreate) {
 	_world->setPersist(false);
 	ASSERT_NE(nullptr, _renderer);
 	video::Camera camera;
+	camera.init(glm::ivec2(0), glm::ivec2(1024, 1024));
+	camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
+	camera.setPosition(glm::zero<glm::vec3>());
+	camera.lookAt(glm::vec3(10.0f, 70.0f, 10.0f));
+	camera.setNearPlane(0.05f);
+	camera.setFarPlane(40.0f);
+	camera.update(0l);
+
 	_renderer->extractMeshes(camera);
 	voxel::ChunkMeshes mesh(0, 0, 0, 0);
 	int amount = 0;

@@ -158,11 +158,11 @@ public:
 		if (type != VoxelType::Air) {
 			auto i = _colorMapping.find(type);
 			if (i == _colorMapping.end()) {
-				Log::error("Failed to get color indices for voxel type %i", (int)type);
+				Log::error("Failed to get color indices for voxel type %s", VoxelTypeStr[(int)type]);
 			} else {
 				const MaterialColorIndices& indices = i->second;
 				if (indices.empty()) {
-					Log::error("Failed to get color indices for voxel type %i", (int)type);
+					Log::error("Failed to get color indices for voxel type %s", VoxelTypeStr[(int)type]);
 				} else {
 					colorIndex %= (uint32_t)indices.size();
 					index = indices[colorIndex];
@@ -178,11 +178,11 @@ public:
 		if (type != VoxelType::Air) {
 			auto i = _colorMapping.find(type);
 			if (i == _colorMapping.end()) {
-				Log::error("Failed to get color indices for voxel type %i", (int)type);
+				Log::error("Failed to get color indices for voxel type %s", VoxelTypeStr[(int)type]);
 			} else {
 				const MaterialColorIndices& indices = i->second;
 				if (indices.empty()) {
-					Log::error("Failed to get color indices for voxel type %i", (int)type);
+					Log::error("Failed to get color indices for voxel type %s", VoxelTypeStr[(int)type]);
 				} else if (indices.size() == 1) {
 					index = indices.front();
 				} else {

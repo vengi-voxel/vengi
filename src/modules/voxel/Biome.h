@@ -7,6 +7,7 @@
 #include "TreeContext.h"
 #include "polyvox/Voxel.h"
 #include "core/Random.h"
+#include "core/Assert.h"
 #include <glm/common.hpp>
 #include <vector>
 
@@ -61,10 +62,12 @@ inline bool Biome::hasClouds() const {
 }
 
 inline Voxel Biome::voxel(core::Random& random) const {
+	core_assert(!indices.empty());
 	return Voxel(type, *random.randomElement(indices.begin(), indices.end()));
 }
 
 inline Voxel Biome::voxel(uint8_t colorIndex) const {
+	core_assert(!indices.empty());
 	const uint8_t max = indices.size() - 1u;
 	const uint8_t min = 0u;
 	return Voxel(type, glm::clamp(colorIndex, min, max));

@@ -15,6 +15,7 @@ Biome::Biome(VoxelType _type, const MaterialColorIndices& _indices, int16_t _yMi
 		indices(_indices), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(_temperature),
 		underground(_underground), type(_type), treeDistribution(calcTreeDistribution()),
 		cloudDistribution(calcCloudDistribution()), plantDistribution(calcPlantDistribution()) {
+	core_assert(!indices.empty());
 }
 
 void Biome::addTreeType(TreeType type) {
