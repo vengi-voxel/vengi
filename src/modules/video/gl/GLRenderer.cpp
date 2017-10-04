@@ -13,6 +13,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "core/Assert.h"
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <glm/common.hpp>
@@ -1016,6 +1017,7 @@ void destroyContext(RendererContext& context) {
 }
 
 RendererContext createContext(SDL_Window* window) {
+	core_assert(window != nullptr);
 	return SDL_GL_CreateContext(window);
 }
 
