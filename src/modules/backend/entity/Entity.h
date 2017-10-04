@@ -36,20 +36,24 @@ typedef std::unordered_set<EntityPtr> EntitySet;
  */
 class Entity {
 private:
-	core::ReadWriteLock _visibleLock;
+	core::ReadWriteLock _visibleLock {"Entity"};
 	EntitySet _visible;
 
 protected:
-	EntityId _entityId;
+	// network stuff
 	network::ServerMessageSenderPtr _messageSender;
-	attrib::ContainerProviderPtr _containerProvider;
-	attrib::Attributes _attribs;
-
-	std::unordered_set<attrib::DirtyValue> _dirtyTypes;
-	cooldown::CooldownMgr _cooldowns;
-	network::EntityType _entityType = network::EntityType::NONE;
 	ENetPeer *_peer = nullptr;
 
+	// attribute stuff
+	attrib::ContainerProviderPtr _containerProvider;
+	attrib::Attributes _attribs;
+	std::unordered_set<attrib::DirtyValue> _dirtyAttributeTypes;
+
+	// cooldowns
+	cooldown::CooldownMgr _cooldowns;
+
+	EntityId _entityId;
+	network::EntityType _entityType = network::EntityType::NONE;
 	glm::vec3 _pos;
 	float _orientation = 0.0f;
 	float _size = 1.0f;

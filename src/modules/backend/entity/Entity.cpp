@@ -10,7 +10,7 @@
 namespace backend {
 
 Entity::Entity(EntityId id, const network::ServerMessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
-		_visibleLock("Entity"), _entityId(id), _messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider, cooldownProvider) {
+		_messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider, cooldownProvider), _entityId(id) {
 	_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1));
 }
 
@@ -53,7 +53,7 @@ void Entity::init() {
 
 void Entity::onAttribChange(const attrib::DirtyValue& v) {
 	Log::debug("Attrib changed for type %s (current: %s) to value %f", network::EnumNameAttribType(v.type), (v.current ? "true" : "false"), v.value);
-	_dirtyTypes.insert(v);
+	_dirtyAttributeTypes.insert(v);
 }
 
 void Entity::addContainer(const std::string& id) {
@@ -90,7 +90,7 @@ void Entity::sendAttribUpdate() {
 		return;
 	}
 
-	std::unordered_set<attrib::DirtyValue> dirtyTypes = _dirtyTypes;
+	std::unordered_set<attrib::DirtyValue> dirtyTypes = _dirtyAttributeTypes;
 	if (!dirtyTypes.empty()) {
 		flatbuffers::FlatBufferBuilder fbb;
 		auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(dirtyTypes.size(),
@@ -109,9 +109,9 @@ void Entity::sendAttribUpdate() {
 
 bool Entity::update(long dt) {
 	_attribs.onFrame(dt);
-	if (!_dirtyTypes.empty()) {
+	if (!_dirtyAttributeTypes.empty()) {
 		sendAttribUpdate();
-		_dirtyTypes.clear();
+		_dirtyAttributeTypes.clear();
 	}
 	_cooldowns.update();
 	return true;
