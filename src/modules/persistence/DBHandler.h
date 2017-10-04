@@ -27,6 +27,7 @@ namespace persistence {
  * @sa Model
  * @todo password support
  * @todo offset, limit support
+ * @todo order by support
  */
 class DBHandler {
 private:
