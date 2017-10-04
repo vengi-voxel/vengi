@@ -364,7 +364,12 @@ update-simplexnoise:
 	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
 	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
 
-updatelibs: update-restclient-cpp update-libuv update-stb update-easy_profiler update-remotery update-microprofile update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang
+update-murmurhash3:
+	$(call UPDATE_GIT,smhasher,https://github.com/aappleby/smhasher.git)
+	cp $(UPDATEDIR)/smhasher.sync/src/MurmurHash3.* src/modules/core
+	sed -i 's/[ \t]*$$//g' src/modules/core/MurmurHash3.*
+
+updatelibs: update-restclient-cpp update-libuv update-stb update-easy_profiler update-remotery update-microprofile update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang update-murmurhash3
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
