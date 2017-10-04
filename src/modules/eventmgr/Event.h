@@ -14,11 +14,12 @@ private:
 	EventId _id;
 public:
 	Event(EventId id);
+	virtual ~Event();
 
 	bool start();
 	bool stop();
 
-	bool update(long dt);
+	virtual bool update(long dt);
 };
 
 typedef std::shared_ptr<Event> EventPtr;

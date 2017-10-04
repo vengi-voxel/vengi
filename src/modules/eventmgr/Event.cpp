@@ -10,6 +10,9 @@ Event::Event(EventId id) :
 		_id(id) {
 }
 
+Event::~Event() {
+}
+
 bool Event::stop() {
 	return false;
 }
