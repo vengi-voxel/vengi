@@ -17,7 +17,7 @@ namespace persistence {
 
 // TODO:
 // * password support
-// * relative updates
+// * offset, limit support
 class DBHandler {
 private:
 	State execInternal(const std::string& query) const;
