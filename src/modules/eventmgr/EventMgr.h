@@ -19,17 +19,16 @@ private:
 
 	EventProvider _eventProvider;
 	persistence::DBHandlerPtr _dbHandler;
+
+	EventPtr createEvent(Type eventType, EventId id) const;
 public:
 	EventMgr(const persistence::DBHandlerPtr& dbHandler);
 
 	bool init();
-
 	void update(long dt);
-
 	void shutdown();
 
 	bool startEvent(EventId id);
-
 	bool stopEvent(EventId id);
 };
 

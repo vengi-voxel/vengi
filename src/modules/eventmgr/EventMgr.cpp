@@ -5,6 +5,7 @@
 #include "EventMgr.h"
 #include "EventMgrModels.h"
 #include "core/Log.h"
+#include "core/Common.h"
 
 namespace eventmgr {
 
@@ -47,14 +48,30 @@ void EventMgr::shutdown() {
 	_events.clear();
 }
 
+EventPtr EventMgr::createEvent(Type eventType, EventId id) const {
+	switch (eventType) {
+	case Type::GENERIC:
+		return std::make_shared<Event>(id);
+	case Type::NONE:
+		break;
+	}
+	return EventPtr();
+}
+
 bool EventMgr::startEvent(EventId id) {
 	const db::EventModelPtr& model = _eventProvider.get(id);
 	if (!model) {
 		Log::warn("Failed to get the event data with the id %i", (int)id);
 		return false;
 	}
-	const EventPtr& event = std::make_shared<Event>(id);
-	// TODO: use model data
+	const int64_t type = model->type();
+	if (type < std::enum_value(Type::MIN) || type > std::enum_value(Type::MAX)) {
+		Log::warn("Failed to get the event type from event data with the id %i (type: %i)",
+				(int)id, (int)type);
+		return false;
+	}
+	const Type eventType = network::EnumValuesEventType()[type];
+	const EventPtr& event = createEvent(eventType, id);
 	if (!event->start()) {
 		Log::warn("Failed to start the event with the id %i", (int)id);
 		return false;
