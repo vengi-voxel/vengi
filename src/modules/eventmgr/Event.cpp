@@ -13,16 +13,19 @@ Event::Event(EventId id) :
 Event::~Event() {
 }
 
-bool Event::stop() {
-	return false;
+bool Event::start() {
+	return true;
 }
 
-bool Event::start() {
-	return false;
+bool Event::stop() {
+	return true;
 }
 
 bool Event::update(long dt) {
 	return true;
+}
+
+void Event::shutdown() {
 }
 
 }

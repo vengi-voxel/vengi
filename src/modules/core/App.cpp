@@ -27,6 +27,7 @@ App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 		_timeProvider(timeProvider) {
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 	_now = currentMillis();
+	_timeProvider->update(_now);
 	_staticInstance = this;
 }
 

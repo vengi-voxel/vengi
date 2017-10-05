@@ -3,27 +3,18 @@
  */
 
 #include "EventMgr.h"
-#include "EventMgrModels.h"
 #include "core/Log.h"
 #include "core/Common.h"
+#include "EventMgrModels.h"
 
 namespace eventmgr {
 
-EventMgr::EventMgr(const persistence::DBHandlerPtr& dbHandler) :
-		_eventProvider(dbHandler), _dbHandler(dbHandler) {
+EventMgr::EventMgr(const EventProviderPtr& eventProvider, const core::TimeProviderPtr& timeProvider) :
+		_eventProvider(eventProvider), _timeProvider(timeProvider) {
 }
 
 bool EventMgr::init() {
-	if (!_dbHandler->createTable(db::EventModel())) {
-		Log::error("Failed to create event table");
-		return false;
-	}
-	if (!_dbHandler->createTable(db::EventPointModel())) {
-		Log::error("Failed to create event point table");
-		return false;
-	}
-
-	if (!_eventProvider.init()) {
+	if (!_eventProvider->init()) {
 		Log::error("Failed to init event provider");
 		return false;
 	}
@@ -32,20 +23,40 @@ bool EventMgr::init() {
 }
 
 void EventMgr::update(long dt) {
-	for (auto i = _events.begin(); i != _events.end(); ++i)  {
-		if (i->second->update(dt)) {
+	const auto currentMillis = _timeProvider->tickTime();
+	const EventProvider::EventData& eventData = _eventProvider->eventData();
+	for (const auto& entry : eventData) {
+		const db::EventModelPtr& data = entry.second;
+		const auto i = _events.find(data->id());
+		if (i == _events.end()) {
+			const persistence::Timestamp& startTime = data->startdate();
+			if (startTime.time() >= currentMillis) {
+				startEvent(data);
+			}
 			continue;
 		}
-		i->second->stop();
-		i = _events.erase(i);
+
+		const persistence::Timestamp& endTime = data->enddate();
+		if (endTime.time() <= currentMillis) {
+			const EventPtr& event = i->second;
+			Log::info("Stop event of type %i", (int)data->id());
+			event->stop();
+			_events.erase(i);
+			continue;
+		}
+	}
+	for (auto i = _events.begin(); i != _events.end(); ++i)  {
+		Log::info("Tick event %i", (int)i->first);
+		i->second->update(dt);
 	}
 }
 
 void EventMgr::shutdown() {
 	for (auto& e : _events) {
-		e.second->stop();
+		e.second->shutdown();
 	}
 	_events.clear();
+	_eventProvider->shutdown();
 }
 
 EventPtr EventMgr::createEvent(Type eventType, EventId id) const {
@@ -58,13 +69,9 @@ EventPtr EventMgr::createEvent(Type eventType, EventId id) const {
 	return EventPtr();
 }
 
-bool EventMgr::startEvent(EventId id) {
-	const db::EventModelPtr& model = _eventProvider.get(id);
-	if (!model) {
-		Log::warn("Failed to get the event data with the id %i", (int)id);
-		return false;
-	}
+bool EventMgr::startEvent(const db::EventModelPtr& model) {
 	const int64_t type = model->type();
+	const EventId id = model->id();
 	if (type < std::enum_value(Type::MIN) || type > std::enum_value(Type::MAX)) {
 		Log::warn("Failed to get the event type from event data with the id %i (type: %i)",
 				(int)id, (int)type);
@@ -76,17 +83,11 @@ bool EventMgr::startEvent(EventId id) {
 		Log::warn("Failed to start the event with the id %i", (int)id);
 		return false;
 	}
+	Log::info("Start event of type %s (id: %i)", network::EnumNameEventType(eventType), (int)model->id());
+	Log::debug("Event start time %lu, end time: %lu",
+			(unsigned long)model->startdate().time(),
+			(unsigned long)model->enddate().time());
 	_events.insert(std::make_pair(id, std::move(event)));
-	return true;
-}
-
-bool EventMgr::stopEvent(EventId id) {
-	auto i = _events.find(id);
-	if (i == _events.end()) {
-		return false;
-	}
-	i->second->stop();
-	_events.erase(i);
 	return true;
 }
 

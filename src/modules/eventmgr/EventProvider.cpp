@@ -7,6 +7,7 @@
 #include "core/Array.h"
 #include "core/Common.h"
 #include "io/Filesystem.h"
+#include "EventMgrModels.h"
 
 namespace eventmgr {
 
@@ -15,6 +16,15 @@ EventProvider::EventProvider(const persistence::DBHandlerPtr& dbHandler) :
 }
 
 bool EventProvider::init() {
+	if (!_dbHandler->createTable(db::EventModel())) {
+		Log::error("Failed to create event table");
+		return false;
+	}
+	if (!_dbHandler->createTable(db::EventPointModel())) {
+		Log::error("Failed to create event point table");
+		return false;
+	}
+
 	return _dbHandler->select(db::EventModel(), persistence::DBConditionOne(), [this] (db::EventModel&& model) {
 		const db::EventModelPtr& modelPtr = std::make_shared<db::EventModel>(std::forward<db::EventModel>(model));
 		_eventData.insert(std::make_pair((EventId)model.id(), std::move(modelPtr)));

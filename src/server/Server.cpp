@@ -109,7 +109,8 @@ int main(int argc, char *argv[]) {
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownProvider, dbHandler);
 	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 
-	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(dbHandler);
+	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
+	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
 
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(dbHandler, network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider, eventMgr);
 

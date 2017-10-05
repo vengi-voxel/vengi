@@ -19,17 +19,25 @@ namespace eventmgr {
  * @ingroup Events
  */
 class EventProvider {
+public:
+	typedef std::unordered_map<EventId, db::EventModelPtr> EventData;
 private:
 	persistence::DBHandlerPtr _dbHandler;
-	std::unordered_map<EventId, db::EventModelPtr> _eventData;
+	EventData _eventData;
 public:
 	EventProvider(const persistence::DBHandlerPtr& dbHandler);
+
+	const EventData& eventData() const;
 
 	bool init();
 	void shutdown();
 
 	db::EventModelPtr get(EventId id) const;
 };
+
+inline const EventProvider::EventData& EventProvider::eventData() const {
+	return _eventData;
+}
 
 typedef std::shared_ptr<EventProvider> EventProviderPtr;
 

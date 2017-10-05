@@ -13,11 +13,13 @@ private:
 	using Super = persistence::AbstractDatabaseTest;
 protected:
 	persistence::DBHandlerPtr _dbHandler;
+	eventmgr::EventProviderPtr _eventProvider;
 public:
 	void SetUp() override {
 		Super::SetUp();
 		_dbHandler = std::make_shared<persistence::DBHandler>();
 		ASSERT_TRUE(_dbHandler->init()) << "Could not initialize dbhandler";
+		_eventProvider = std::make_shared<eventmgr::EventProvider>(_dbHandler);
 		_dbHandler->truncate(db::EventPointModel());
 		_dbHandler->truncate(db::EventModel());
 	}
@@ -25,6 +27,7 @@ public:
 	void TearDown() override {
 		Super::TearDown();
 		_dbHandler->shutdown();
+		_eventProvider->shutdown();
 	}
 
 	void createEvent(Type type, int64_t& id) {
@@ -43,7 +46,7 @@ public:
 };
 
 TEST_F(EventMgrTest, testEventMgrInit) {
-	EventMgr mgr(_dbHandler);
+	EventMgr mgr(_eventProvider, _testApp->timeProvider());
 	ASSERT_TRUE(mgr.init()) << "Could not initialize eventmgr";
 	mgr.shutdown();
 }
@@ -94,6 +97,26 @@ TEST_F(EventMgrTest, testEventPointModelInsertUniqueKeys) {
 		ASSERT_TRUE(_dbHandler->select(eventPointModel, m));
 		ASSERT_EQ(eventPointModel.points(), 0L);
 	}
+}
+
+TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
+	EventMgr mgr(_eventProvider, _testApp->timeProvider());
+	db::EventModel model;
+	const auto now = _testApp->timeProvider()->currentTime();
+	model.setStartdate(now);
+	model.setType(std::enum_value(Type::GENERIC));
+	model.setEnddate(now + 5000);
+	ASSERT_EQ(now, model.startdate().time());
+	ASSERT_EQ(now + 5000, model.enddate().time());
+	ASSERT_TRUE(_dbHandler->insert(model)) << "Could not add event entry";
+	ASSERT_TRUE(mgr.init()) << "Could not initialize eventmgr";
+	ASSERT_EQ(0, mgr.runningEvents());
+	mgr.update(1L);
+	ASSERT_EQ(1, mgr.runningEvents());
+	_testApp->timeProvider()->update(now + 5000);
+	mgr.update(1L);
+	ASSERT_EQ(0, mgr.runningEvents());
+	mgr.shutdown();
 }
 
 }
