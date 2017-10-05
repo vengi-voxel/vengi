@@ -2,31 +2,22 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "persistence/tests/AbstractDatabaseTest.h"
 #include "UserModel.h"
 #include "persistence/ConnectionPool.h"
 #include "persistence/DBHandler.h"
-#include "core/GameConfig.h"
 #include "engine-config.h"
 
 namespace backend {
 
-class DatabaseModelTest: public core::AbstractTest {
+class DatabaseModelTest: public persistence::AbstractDatabaseTest {
 private:
-	using Super = core::AbstractTest;
+	using Super = persistence::AbstractDatabaseTest;
 protected:
 	persistence::DBHandler _dbHandler;
 public:
 	void SetUp() override {
 		Super::SetUp();
-		core::Var::get(cfg::DatabaseMinConnections, "1");
-		core::Var::get(cfg::DatabaseMaxConnections, "2");
-		// TODO: use a different database for the tests
-		core::Var::get(cfg::DatabaseName, "engine");
-		core::Var::get(cfg::DatabaseHost, "localhost");
-		core::Var::get(cfg::DatabaseUser, "engine");
-		core::Var::get(cfg::DatabasePassword, "engine");
-
 		ASSERT_TRUE(_dbHandler.init());
 		ASSERT_TRUE(_dbHandler.createTable(db::UserModel())) << "Could not create table";
 		_dbHandler.truncate(db::UserModel());

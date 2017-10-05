@@ -2,28 +2,20 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "persistence/tests/AbstractDatabaseTest.h"
 #include "EventMgrModels.h"
-#include "../EventMgr.h"
-#include "engine-config.h"
+#include "eventmgr/EventMgr.h"
 
 namespace eventmgr {
 
-class EventMgrTest : public core::AbstractTest {
+class EventMgrTest : public persistence::AbstractDatabaseTest {
 private:
-	using Super = core::AbstractTest;
+	using Super = persistence::AbstractDatabaseTest;
 protected:
 	persistence::DBHandlerPtr _dbHandler;
 public:
 	void SetUp() override {
 		core::AbstractTest::SetUp();
-		core::Var::get(cfg::DatabaseMinConnections, "1");
-		core::Var::get(cfg::DatabaseMaxConnections, "2");
-		core::Var::get(cfg::DatabaseName, "engine");
-		core::Var::get(cfg::DatabaseHost, "localhost");
-		core::Var::get(cfg::DatabaseUser, "engine");
-		core::Var::get(cfg::DatabasePassword, "engine");
-
 		_dbHandler = std::make_shared<persistence::DBHandler>();
 		ASSERT_TRUE(_dbHandler->init()) << "Could not initialize dbhandler";
 		_dbHandler->truncate(db::EventPointModel());
