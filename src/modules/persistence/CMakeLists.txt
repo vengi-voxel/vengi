@@ -18,19 +18,20 @@ add_library(${LIB} ${SRCS})
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
-set(PostgreSQL_ADDITIONAL_VERSIONS "9.3" "9.4.1" "9.6")
-set(PostgreSQL_INCLUDE_ADDITIONAL_SEARCH_SUFFIXES "postgresql96")
-set(PostgreSQL_TYPE_ADDITIONAL_SEARCH_SUFFIXES "postgresql96/server")
-set(PostgreSQL_LIBRARY_ADDITIONAL_SEARCH_SUFFIXES "postgresql96")
-set(PostgreSQL_ADDITIONAL_SEARCH_PATHS "/usr/include/postgresql/9.3/server" "/usr/include/postgresql/9.4/server" "/opt/local/include/postgresql96/server")
+set(PostgreSQL_ADDITIONAL_VERSIONS "10")
 find_package(PostgreSQL)
+message(STATUS "Postgresql include dirs: ${PostgreSQL_INCLUDE_DIRS}")
+message(STATUS "Postgresql libs: ${PostgreSQL_LIBRARIES}")
 engine_target_link_libraries(TARGET persistence DEPENDENCIES ${PostgreSQL_LIBRARIES})
-target_include_directories(persistence PUBLIC ${PostgreSQL_INCLUDE_DIRS})
+target_include_directories(persistence PUBLIC ${PostgreSQL_INCLUDE_DIRS} /usr/include/postgresql/)
 
 if (POSTGRESQL_FOUND)
+	set(HAVE_POSTGRES 1 CACHE INTERNAL "Found postgres")
 	gtest_suite_files(tests
 		tests/ConnectionPoolTest.cpp
 		tests/DBConditionTest.cpp
 	)
 	gtest_suite_deps(tests ${LIB})
+else()
+	set(HAVE_POSTGRES 0 CACHE INTERNAL "Found postgres")
 endif()
