@@ -20,8 +20,7 @@ build:
     - make -j 4
   artifacts:
     paths:
-    - build/Debug/tests
-    - build/Debug/compile_commands.json
+    - build/Debug
 
 test:
   stage: test
@@ -29,7 +28,7 @@ test:
     - build
   script:
     - cd build/Debug
-    - ./tests --gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*:VoxFormatTest.testSave
+    - ./tests
 
 analyse:cppcheck:
   stage: analyse
@@ -45,10 +44,10 @@ analyse:valgrind:
     - build
   script:
     - cd build/Debug
-    - valgrind ./tests --gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.* 2> valgrind.log
+    - valgrind ./tests
   artifacts:
     paths:
-    - valgrind.log
+    - build/Debug/valgrind.log
 
 pages:
   script:
