@@ -76,7 +76,7 @@ bool EventMgr::startEvent(EventId id) {
 		Log::warn("Failed to start the event with the id %i", (int)id);
 		return false;
 	}
-	_events.insert(std::make_pair(id, event));
+	_events.insert(std::make_pair(id, std::move(event)));
 	return true;
 }
 
