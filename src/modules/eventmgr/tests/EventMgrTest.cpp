@@ -15,7 +15,7 @@ protected:
 	persistence::DBHandlerPtr _dbHandler;
 public:
 	void SetUp() override {
-		core::AbstractTest::SetUp();
+		Super::SetUp();
 		_dbHandler = std::make_shared<persistence::DBHandler>();
 		ASSERT_TRUE(_dbHandler->init()) << "Could not initialize dbhandler";
 		_dbHandler->truncate(db::EventPointModel());
