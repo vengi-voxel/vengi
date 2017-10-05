@@ -48,8 +48,8 @@ void EventMgr::shutdown() {
 }
 
 bool EventMgr::startEvent(EventId id) {
-	const db::EventModel* model = _eventProvider.get(id);
-	if (model == nullptr) {
+	const db::EventModelPtr& model = _eventProvider.get(id);
+	if (!model) {
 		Log::warn("Failed to get the event data with the id %i", (int)id);
 		return false;
 	}

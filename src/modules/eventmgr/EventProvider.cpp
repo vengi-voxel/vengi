@@ -16,7 +16,8 @@ EventProvider::EventProvider(const persistence::DBHandlerPtr& dbHandler) :
 
 bool EventProvider::init() {
 	return _dbHandler->select(db::EventModel(), persistence::DBConditionOne(), [this] (db::EventModel&& model) {
-		_eventData.insert(std::make_pair((EventId)model.id(), std::forward<db::EventModel>(model)));
+		const db::EventModelPtr& modelPtr = std::make_shared<db::EventModel>(std::forward<db::EventModel>(model));
+		_eventData.insert(std::make_pair((EventId)model.id(), std::move(modelPtr)));
 	});
 }
 
@@ -24,13 +25,12 @@ void EventProvider::shutdown() {
 	_eventData.clear();
 }
 
-const db::EventModel* EventProvider::get(EventId id) const {
+db::EventModelPtr EventProvider::get(EventId id) const {
 	auto i = _eventData.find(id);
 	if (i == _eventData.end()) {
-		return nullptr;
+		return db::EventModelPtr();
 	}
-	// TODO: this doesn't work because the pointer changes if new event data was inserted
-	return &i->second;
+	return i->second;
 }
 
 }

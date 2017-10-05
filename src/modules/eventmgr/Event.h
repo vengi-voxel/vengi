@@ -10,7 +10,7 @@
 namespace eventmgr {
 
 class Event {
-private:
+protected:
 	EventId _id;
 public:
 	Event(EventId id);
