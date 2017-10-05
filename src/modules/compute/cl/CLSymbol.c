@@ -1,7 +1,7 @@
 #include "CLSymbol.h"
 #include <SDL.h>
 #include <SDL_platform.h>
-#include "config.h"
+#include "engine-config.h"
 
 static void* obj = NULL;
 

@@ -4,7 +4,7 @@
 
 #include "AbstractVoxelTest.h"
 #include "voxel/World.h"
-#include "config.h"
+#include "engine-config.h"
 #include <chrono>
 #include <string>
 

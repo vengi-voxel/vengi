@@ -5,6 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "EventMgrModels.h"
 #include "../EventMgr.h"
+#include "engine-config.h"
 
 namespace eventmgr {
 

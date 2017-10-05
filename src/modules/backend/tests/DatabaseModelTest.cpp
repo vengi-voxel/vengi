@@ -7,7 +7,7 @@
 #include "persistence/ConnectionPool.h"
 #include "persistence/DBHandler.h"
 #include "core/GameConfig.h"
-#include "config.h"
+#include "engine-config.h"
 
 namespace backend {
 

@@ -13,7 +13,7 @@
 #include "Concurrency.h"
 #include <thread>
 #include <SDL.h>
-#include "config.h"
+#include "engine-config.h"
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif

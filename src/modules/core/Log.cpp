@@ -4,7 +4,7 @@
 
 #include "Log.h"
 #include "Var.h"
-#include "config.h"
+#include "engine-config.h"
 #include "App.h"
 #include <cstring>
 #include <cstdio>

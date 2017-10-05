@@ -7,7 +7,7 @@
 #include "ui/Window.h"
 #include "core/Common.h"
 #include "../Client.h"
-#include "config.h"
+#include "engine-config.h"
 #include "SignupWindow.h"
 #include "LostPasswordWindow.h"
 
