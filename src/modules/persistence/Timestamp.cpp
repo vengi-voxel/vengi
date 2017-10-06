@@ -3,16 +3,27 @@
  */
 
 #include "Timestamp.h"
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+#include <ctime>
 
 namespace persistence {
 
-// TODO: POSTGRES: microseconds
-Timestamp::Timestamp(uint64_t millis) :
-		_millis(millis), _now(false) {
+Timestamp::Timestamp(uint64_t seconds) :
+		_seconds(seconds), _now(false) {
 }
 
 Timestamp::Timestamp() :
 	Timestamp(0L) {
+}
+
+std::string Timestamp::toString(const char *format) const {
+	std::time_t t(_seconds);
+	std::tm tm = *std::gmtime(&t);
+	std::stringstream ss;
+	ss << std::put_time(&tm, format);
+	return ss.str();
 }
 
 Timestamp Timestamp::now() {

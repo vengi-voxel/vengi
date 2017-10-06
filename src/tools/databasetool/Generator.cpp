@@ -171,7 +171,7 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
 			src << "value";
 		} else if (f.type == persistence::FieldType::TIMESTAMP) {
-			src << "std::to_string(value.time())";
+			src << "std::to_string(value.seconds())";
 		} else {
 			src << "std::to_string(value)";
 		}

@@ -329,6 +329,8 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 	return insert.str();
 }
 
+// https://www.postgresql.org/docs/current/static/functions-formatting.html
+// https://www.postgresql.org/docs/current/static/functions-datetime.html
 std::string createSelect(const Model& model) {
 	const Fields& fields = model.fields();
 	const std::string& tableName = model.tableName();
@@ -344,7 +346,7 @@ std::string createSelect(const Model& model) {
 		}
 		select << quote(f.name);
 		if (f.type == FieldType::TIMESTAMP) {
-			select << " AT TIME ZONE 'UTC') AS bigint) * 1000 AS " << quote(f.name);
+			select << " AT TIME ZONE 'UTC') AS bigint) AS " << quote(f.name);
 		}
 	}
 

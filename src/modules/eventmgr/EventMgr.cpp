@@ -30,14 +30,14 @@ void EventMgr::update(long dt) {
 		const auto i = _events.find(data->id());
 		if (i == _events.end()) {
 			const persistence::Timestamp& startTime = data->startdate();
-			if (startTime.time() >= currentMillis) {
+			if (startTime.millis() >= currentMillis) {
 				startEvent(data);
 			}
 			continue;
 		}
 
 		const persistence::Timestamp& endTime = data->enddate();
-		if (endTime.time() <= currentMillis) {
+		if (endTime.millis() <= currentMillis) {
 			const EventPtr& event = i->second;
 			Log::info("Stop event of type %i", (int)data->id());
 			event->stop();
@@ -85,8 +85,8 @@ bool EventMgr::startEvent(const db::EventModelPtr& model) {
 	}
 	Log::info("Start event of type %s (id: %i)", network::EnumNameEventType(eventType), (int)model->id());
 	Log::debug("Event start time %lu, end time: %lu",
-			(unsigned long)model->startdate().time(),
-			(unsigned long)model->enddate().time());
+			(unsigned long)model->startdate().millis(),
+			(unsigned long)model->enddate().millis());
 	_events.insert(std::make_pair(id, std::move(event)));
 	return true;
 }

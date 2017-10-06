@@ -103,11 +103,13 @@ TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
 	EventMgr mgr(_eventProvider, _testApp->timeProvider());
 	db::EventModel model;
 	const auto now = _testApp->timeProvider()->currentTime();
-	model.setStartdate(now);
+	const uint64_t nowSeconds = now / 1000;
+	model.setStartdate(nowSeconds);
 	model.setType(std::enum_value(Type::GENERIC));
-	model.setEnddate(now + 5000);
-	ASSERT_EQ(now, model.startdate().time());
-	ASSERT_EQ(now + 5000, model.enddate().time());
+
+	model.setEnddate(nowSeconds + 5);
+	ASSERT_EQ(nowSeconds, model.startdate().seconds());
+	ASSERT_EQ(nowSeconds + 5, model.enddate().seconds());
 	ASSERT_TRUE(_dbHandler->insert(model)) << "Could not add event entry";
 	ASSERT_TRUE(mgr.init()) << "Could not initialize eventmgr";
 	ASSERT_EQ(0, mgr.runningEvents());

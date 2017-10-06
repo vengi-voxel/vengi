@@ -51,12 +51,9 @@ void BindParam::push(const Model& model, const Field& field) {
 	}
 	case FieldType::TIMESTAMP: {
 		const Timestamp& value = model.getValue<Timestamp>(field);
-		if (value.isNow()) {
-			values[index] = "NOW()";
-		} else {
-			valueBuffers.emplace_back(std::to_string(value.time()));
-			values[index] = valueBuffers.back().c_str();
-		}
+		core_assert_msg(!value.isNow(), "'NOW()' timestamps are not pushed as parameters - but as NOW()");
+		valueBuffers.emplace_back(std::to_string(value.seconds()));
+		values[index] = valueBuffers.back().c_str();
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}

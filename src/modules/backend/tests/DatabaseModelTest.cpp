@@ -42,13 +42,13 @@ public:
 		const db::DBConditionUserEmail emailCond(email);
 		const db::DBConditionUserPassword passwordCond(password);
 		ASSERT_TRUE(_dbHandler.select(u2nd, persistence::DBConditionMultiple(true, {&emailCond, &passwordCond})));
-		EXPECT_GT(u2nd.registrationdate().time(), uint64_t(0));
+		EXPECT_GT(u2nd.registrationdate().seconds(), uint64_t(0));
 		EXPECT_EQ(u2nd.email(), email);
 		ASSERT_EQ(u2nd.id(), u.id());
 
 		db::UserModel u3nd;
 		ASSERT_TRUE(_dbHandler.select(u3nd, db::DBConditionUserId(u.id())));
-		EXPECT_GT(u3nd.registrationdate().time(), uint64_t(0));
+		EXPECT_GT(u3nd.registrationdate().seconds(), uint64_t(0));
 		EXPECT_EQ(u3nd.email(), email);
 		ASSERT_EQ(u3nd.id(), u.id());
 
@@ -149,6 +149,22 @@ TEST_F(DatabaseModelTest, testUpdate) {
 	_dbHandler.select(db::UserModel(), db::DBConditionUserId(id), [&] (db::UserModel&& model) {
 		++count;
 		ASSERT_EQ(copy.email(), model.email());
+	});
+}
+
+TEST_F(DatabaseModelTest, testTimestamp) {
+	db::UserModel u;
+	EXPECT_EQ(0, u.id());
+	u.setEmail("timestamp@now.de");
+	u.setPassword("now");
+	const auto now = _testApp->timeProvider()->tickTime();
+	u.setRegistrationdate(now / 1000UL);
+	ASSERT_TRUE(_dbHandler.insert(u));
+
+	_dbHandler.select(db::UserModel(), db::DBConditionUserId(u.id()), [=] (db::UserModel&& model) {
+		const persistence::Timestamp& ts = model.registrationdate();
+		const persistence::Timestamp tsNow(now / 1000);
+		ASSERT_NEAR(ts.millis(), now, 999) << "db: " << ts.toString() << " now: " << tsNow.toString();
 	});
 }
 
