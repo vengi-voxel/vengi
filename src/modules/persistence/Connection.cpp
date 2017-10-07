@@ -81,6 +81,7 @@ bool Connection::connect() {
 	_preparedStatements.clear();
 
 	PQsetNoticeProcessor(_connection, defaultNoticeProcessor, nullptr);
+	PQexec(_connection, "SET TIME ZONE 'UTC';");
 	return true;
 }
 
