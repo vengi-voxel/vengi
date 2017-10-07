@@ -13,6 +13,11 @@
 
 namespace eventmgr {
 
+// TODO: if a event was stopped, this must be persisted in the event table - skip those in the event provider.
+//       if the endtime has passed, but that flag is not set, just load the event as usual and stop it in the next frame
+//       this is needed if the server had a downtime while the event would have ended. In such a case, no loot would
+//       get hand out to the players. To work around this, we let the event just restore all its states and then stop
+//       properly.
 class EventMgr {
 private:
 	std::unordered_map<Type, EventConfigurationData> _eventData;
