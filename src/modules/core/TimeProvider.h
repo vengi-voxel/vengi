@@ -5,7 +5,6 @@
 #pragma once
 
 #include <memory>
-#include <chrono>
 
 namespace core {
 
@@ -27,14 +26,9 @@ public:
 		return _tickTime;
 	}
 
-	unsigned long currentTime() const {
-		const unsigned long now = (unsigned long)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
-		return now;
-	}
+	unsigned long currentTime() const;
 
-	static inline double currentNanos() {
-		return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count() / 1e9;
-	}
+	static double currentNanos();
 
 	void update(unsigned long now) {
 		_tickTime = now;
