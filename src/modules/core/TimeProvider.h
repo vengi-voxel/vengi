@@ -26,6 +26,8 @@ public:
 		return _tickTime;
 	}
 
+	static std::string toString(unsigned long millis, const char *format = "%d-%m-%Y %H-%M-%S");
+
 	unsigned long currentTime() const;
 
 	static double currentNanos();
