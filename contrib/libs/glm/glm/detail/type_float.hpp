@@ -9,7 +9,10 @@ namespace glm{
 namespace detail
 {
 	typedef float				float32;
-	typedef double				float64;
+
+#	ifndef GLM_FORCE_SINGLE_ONLY
+		typedef double			float64;
+#	endif//GLM_FORCE_SINGLE_ONLY
 }//namespace detail
 	
 	typedef float				lowp_float_t;
@@ -53,13 +56,18 @@ namespace detail
 #endif
 
 	typedef float				float32;
-	typedef double				float64;
+
+#	ifndef GLM_FORCE_SINGLE_ONLY
+		typedef double				float64;
+#	endif//GLM_FORCE_SINGLE_ONLY
 
 ////////////////////
 // check type sizes
 #ifndef GLM_STATIC_ASSERT_NULL
 	GLM_STATIC_ASSERT(sizeof(glm::float32) == 4, "float32 size isn't 4 bytes on this platform");
-	GLM_STATIC_ASSERT(sizeof(glm::float64) == 8, "float64 size isn't 8 bytes on this platform");
+#	ifndef GLM_FORCE_SINGLE_ONLY
+		GLM_STATIC_ASSERT(sizeof(glm::float64) == 8, "float64 size isn't 8 bytes on this platform");
+#	endif//GLM_FORCE_SINGLE_ONLY
 #endif//GLM_STATIC_ASSERT_NULL
 
 	/// @}

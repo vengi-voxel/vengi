@@ -35,15 +35,6 @@ namespace glm
 	template<typename genIUType>
 	GLM_FUNC_DECL genIUType log2(genIUType x);
 
-	template<typename genIUType>
-	GLM_FUNC_DECL genIUType mod(genIUType x, genIUType y);
-
-	template<length_t L, typename T, qualifier Q>
-	GLM_FUNC_DECL vec<L, T, Q> mod(vec<L, T, Q> const& x, T y);
-
-	template<length_t L, typename T, qualifier Q>
-	GLM_FUNC_DECL vec<L, T, Q> mod(vec<L, T, Q> const& x, vec<L, T, Q> const& y);
-
 	/// Returns a value equal to the nearest integer to x.
 	/// The fraction 0.5 will round in a direction chosen by the
 	/// implementation, presumably the direction that is fastest.

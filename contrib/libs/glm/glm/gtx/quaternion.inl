@@ -230,7 +230,7 @@ namespace glm
 	{
 		mat<3, 3, T, Q> Result;
 
-		Result[2] = -normalize(direction);
+		Result[2] = -direction;
 		Result[0] = normalize(cross(up, Result[2]));
 		Result[1] = cross(Result[2], Result[0]);
 
@@ -242,7 +242,7 @@ namespace glm
 	{
 		mat<3, 3, T, Q> Result;
 
-		Result[2] = normalize(direction);
+		Result[2] = direction;
 		Result[0] = normalize(cross(up, Result[2]));
 		Result[1] = cross(Result[2], Result[0]);
 

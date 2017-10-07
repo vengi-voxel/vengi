@@ -601,6 +601,16 @@
 #endif//GLM_MESSAGES
 
 ///////////////////////////////////////////////////////////////////////////////////
+// Force single only (remove explicit float64 types)
+
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_SINGLE_ONLY_DISPLAYED)
+#	define GLM_MESSAGE_SINGLE_ONLY_DISPLAYED
+#	ifdef GLM_FORCE_SINGLE_ONLY
+#		pragma message("GLM: Using only single precision floating-point types")
+#	endif
+#endif//GLM_MESSAGES
+
+///////////////////////////////////////////////////////////////////////////////////
 // Clip control
 
 #define GLM_DEPTH_ZERO_TO_ONE				0x00000001

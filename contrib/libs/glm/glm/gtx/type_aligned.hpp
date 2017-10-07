@@ -622,27 +622,29 @@ namespace glm
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(float32, aligned_float32, 4);
 
-	/// 64 bit double-qualifier floating-point aligned scalar.
-	/// @see gtx_type_aligned
-	GLM_ALIGNED_TYPEDEF(float64, aligned_float64, 8);
-
-
 	/// 32 bit single-qualifier floating-point aligned scalar.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(float32_t, aligned_float32_t, 4);
-
-	/// 64 bit double-qualifier floating-point aligned scalar.
-	/// @see gtx_type_aligned
-	GLM_ALIGNED_TYPEDEF(float64_t, aligned_float64_t, 8);
-
 
 	/// 32 bit single-qualifier floating-point aligned scalar.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(float32, aligned_f32, 4);
 
+#	ifndef GLM_FORCE_SINGLE_ONLY
+
+	/// 64 bit double-qualifier floating-point aligned scalar.
+	/// @see gtx_type_aligned
+	GLM_ALIGNED_TYPEDEF(float64, aligned_float64, 8);
+
+	/// 64 bit double-qualifier floating-point aligned scalar.
+	/// @see gtx_type_aligned
+	GLM_ALIGNED_TYPEDEF(float64_t, aligned_float64_t, 8);
+
 	/// 64 bit double-qualifier floating-point aligned scalar.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(float64, aligned_f64, 8);
+
+#	endif//GLM_FORCE_SINGLE_ONLY
 
 
 	/// Single-qualifier floating-point aligned vector of 1 component.
@@ -678,7 +680,7 @@ namespace glm
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(fvec4, aligned_fvec4, 16);
 
-	
+
 	/// Single-qualifier floating-point aligned vector of 1 component.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(f32vec1, aligned_f32vec1, 4);
@@ -713,6 +715,8 @@ namespace glm
 	GLM_ALIGNED_TYPEDEF(dvec4, aligned_dvec4, 32);
 
 
+#	ifndef GLM_FORCE_SINGLE_ONLY
+
 	/// Double-qualifier floating-point aligned vector of 1 component.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(f64vec1, aligned_f64vec1, 8);
@@ -729,6 +733,7 @@ namespace glm
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(f64vec4, aligned_f64vec4, 32);
 
+#	endif//GLM_FORCE_SINGLE_ONLY
 
 	//////////////////////
 	// Float matrix types 
@@ -883,6 +888,8 @@ namespace glm
 	GLM_ALIGNED_TYPEDEF(f32mat4x4, aligned_f32mat4x4, 16);
 
 
+#	ifndef GLM_FORCE_SINGLE_ONLY
+
 	/// Double-qualifier floating-point aligned 1x1 matrix.
 	/// @see gtx_type_aligned
 	//typedef detail::tmat1x1<f64, defaultp> f64mat1;
@@ -940,6 +947,8 @@ namespace glm
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(f64mat4x4, aligned_f64mat4x4, 32);
 
+#	endif//GLM_FORCE_SINGLE_ONLY
+
 
 	//////////////////////////
 	// Quaternion types
@@ -960,9 +969,13 @@ namespace glm
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(f32quat, aligned_f32quat, 16);
 
+#	ifndef GLM_FORCE_SINGLE_ONLY
+
 	/// Double-qualifier floating-point aligned quaternion.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(f64quat, aligned_f64quat, 32);
+
+#	endif//GLM_FORCE_SINGLE_ONLY
 
 	/// @}
 }//namespace glm

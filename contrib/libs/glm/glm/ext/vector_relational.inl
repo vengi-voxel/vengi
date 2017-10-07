@@ -43,4 +43,16 @@ namespace glm
 	{
 		return greaterThanEqual(abs(x - y), epsilon);
 	}
+
+	template <length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, bool, Q> openBounded(vec<L, T, Q> const& Value, vec<L, T, Q> const& Min, vec<L, T, Q> const& Max)
+	{
+		return greaterThan(Value, Min) && lessThan(Value, Max);
+	}
+
+	template <length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, bool, Q> closeBounded(vec<L, T, Q> const& Value, vec<L, T, Q> const& Min, vec<L, T, Q> const& Max)
+	{
+		return greaterThanEqual(Value, Min) && lessThanEqual(Value, Max);
+	}
 }//namespace glm

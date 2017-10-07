@@ -592,28 +592,27 @@ namespace glm
 	/// @see gtc_type_precision
 	typedef detail::float32 float32;
 
-	/// 64 bit double-qualifier floating-point scalar.
-	/// @see gtc_type_precision
-	typedef detail::float64 float64;
-
-
 	/// 32 bit single-qualifier floating-point scalar.
 	/// @see gtc_type_precision
 	typedef detail::float32 float32_t;
-
-	/// 64 bit double-qualifier floating-point scalar.
-	/// @see gtc_type_precision
-	typedef detail::float64 float64_t;
-
 
 	/// 32 bit single-qualifier floating-point scalar.
 	/// @see gtc_type_precision
 	typedef float32 f32;
 
-	/// 64 bit double-qualifier floating-point scalar.
-	/// @see gtc_type_precision
-	typedef float64 f64;
+#	ifndef GLM_FORCE_SINGLE_ONLY
+		/// 64 bit double-qualifier floating-point scalar.
+		/// @see gtc_type_precision
+		typedef detail::float64 float64;
 
+		/// 64 bit double-qualifier floating-point scalar.
+		/// @see gtc_type_precision
+		typedef detail::float64 float64_t;
+
+		/// 64 bit double-qualifier floating-point scalar.
+		/// @see gtc_type_precision
+		typedef float64 f64;
+#	endif//GLM_FORCE_SINGLE_ONLY
 
 	/// Single-qualifier floating-point vector of 1 component.
 	/// @see gtc_type_precision
@@ -648,22 +647,23 @@ namespace glm
 	/// @see gtc_type_precision
 	typedef vec<4, f32, defaultp> f32vec4;
 
+#	ifndef GLM_FORCE_SINGLE_ONLY
+		/// Double-qualifier floating-point vector of 1 component.
+		/// @see gtc_type_precision
+		typedef vec<1, f64, defaultp> f64vec1;
 
-	/// Double-qualifier floating-point vector of 1 component.
-	/// @see gtc_type_precision
-	typedef vec<1, f64, defaultp> f64vec1;
+		/// Double-qualifier floating-point vector of 2 components.
+		/// @see gtc_type_precision
+		typedef vec<2, f64, defaultp> f64vec2;
 
-	/// Double-qualifier floating-point vector of 2 components.
-	/// @see gtc_type_precision
-	typedef vec<2, f64, defaultp> f64vec2;
+		/// Double-qualifier floating-point vector of 3 components.
+		/// @see gtc_type_precision
+		typedef vec<3, f64, defaultp> f64vec3;
 
-	/// Double-qualifier floating-point vector of 3 components.
-	/// @see gtc_type_precision
-	typedef vec<3, f64, defaultp> f64vec3;
-
-	/// Double-qualifier floating-point vector of 4 components.
-	/// @see gtc_type_precision
-	typedef vec<4, f64, defaultp> f64vec4;
+		/// Double-qualifier floating-point vector of 4 components.
+		/// @see gtc_type_precision
+		typedef vec<4, f64, defaultp> f64vec4;
+#	endif//GLM_FORCE_SINGLE_ONLY
 
 
 	//////////////////////
@@ -785,6 +785,8 @@ namespace glm
 	typedef mat<4, 4, f32, defaultp> f32mat4x4;
 
 
+#	ifndef GLM_FORCE_SINGLE_ONLY
+
 	/// Double-qualifier floating-point 1x1 matrix.
 	/// @see gtc_type_precision
 	//typedef detail::tmat1x1<f64, defaultp> f64mat1;
@@ -842,6 +844,8 @@ namespace glm
 	/// @see gtc_type_precision
 	typedef mat<4, 4, f64, defaultp> f64mat4x4;
 
+#	endif//GLM_FORCE_SINGLE_ONLY
+
 	//////////////////////////
 	// Quaternion types
 
@@ -849,9 +853,13 @@ namespace glm
 	/// @see gtc_type_precision
 	typedef tquat<f32, defaultp> f32quat;
 
+#	ifndef GLM_FORCE_SINGLE_ONLY
+
 	/// Double-qualifier floating-point quaternion.
 	/// @see gtc_type_precision
 	typedef tquat<f64, defaultp> f64quat;
+
+#	endif//GLM_FORCE_SINGLE_ONLY
 
 	/// @}
 }//namespace glm

@@ -172,20 +172,20 @@ namespace detail
 		glm::uint32 REG3(z);
 		glm::uint32 REG4(w);
 
-		REG1 = ((REG1 << 12) | REG1) & static_cast<glm::uint32>(0x000F000F000F000F);
-		REG2 = ((REG2 << 12) | REG2) & static_cast<glm::uint32>(0x000F000F000F000F);
-		REG3 = ((REG3 << 12) | REG3) & static_cast<glm::uint32>(0x000F000F000F000F);
-		REG4 = ((REG4 << 12) | REG4) & static_cast<glm::uint32>(0x000F000F000F000F);
+		REG1 = ((REG1 << 12) | REG1) & static_cast<glm::uint32>(0x000F000Fu);
+		REG2 = ((REG2 << 12) | REG2) & static_cast<glm::uint32>(0x000F000Fu);
+		REG3 = ((REG3 << 12) | REG3) & static_cast<glm::uint32>(0x000F000Fu);
+		REG4 = ((REG4 << 12) | REG4) & static_cast<glm::uint32>(0x000F000Fu);
 
-		REG1 = ((REG1 <<  6) | REG1) & static_cast<glm::uint32>(0x0303030303030303);
-		REG2 = ((REG2 <<  6) | REG2) & static_cast<glm::uint32>(0x0303030303030303);
-		REG3 = ((REG3 <<  6) | REG3) & static_cast<glm::uint32>(0x0303030303030303);
-		REG4 = ((REG4 <<  6) | REG4) & static_cast<glm::uint32>(0x0303030303030303);
+		REG1 = ((REG1 <<  6) | REG1) & static_cast<glm::uint32>(0x03030303u);
+		REG2 = ((REG2 <<  6) | REG2) & static_cast<glm::uint32>(0x03030303u);
+		REG3 = ((REG3 <<  6) | REG3) & static_cast<glm::uint32>(0x03030303u);
+		REG4 = ((REG4 <<  6) | REG4) & static_cast<glm::uint32>(0x03030303u);
 
-		REG1 = ((REG1 <<  3) | REG1) & static_cast<glm::uint32>(0x1111111111111111);
-		REG2 = ((REG2 <<  3) | REG2) & static_cast<glm::uint32>(0x1111111111111111);
-		REG3 = ((REG3 <<  3) | REG3) & static_cast<glm::uint32>(0x1111111111111111);
-		REG4 = ((REG4 <<  3) | REG4) & static_cast<glm::uint32>(0x1111111111111111);
+		REG1 = ((REG1 <<  3) | REG1) & static_cast<glm::uint32>(0x11111111u);
+		REG2 = ((REG2 <<  3) | REG2) & static_cast<glm::uint32>(0x11111111u);
+		REG3 = ((REG3 <<  3) | REG3) & static_cast<glm::uint32>(0x11111111u);
+		REG4 = ((REG4 <<  3) | REG4) & static_cast<glm::uint32>(0x11111111u);
 
 		return REG1 | (REG2 << 1) | (REG3 << 2) | (REG4 << 3);
 	}
