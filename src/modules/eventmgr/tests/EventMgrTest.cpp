@@ -100,24 +100,42 @@ TEST_F(EventMgrTest, testEventPointModelInsertUniqueKeys) {
 }
 
 TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
-	EventMgr mgr(_eventProvider, _testApp->timeProvider());
-	db::EventModel model;
-	const auto now = _testApp->timeProvider()->currentTime();
+	const core::TimeProviderPtr& timeProvider = _testApp->timeProvider();
+	const auto now = timeProvider->tickTime();
 	const uint64_t nowSeconds = now / 1000;
-	model.setStartdate(nowSeconds);
-	model.setType(std::enum_value(Type::GENERIC));
 
-	model.setEnddate(nowSeconds + 5);
+	db::EventModel model;
+	model.setStartdate(nowSeconds);
+	model.setType(Type::GENERIC);
+
+	const int secondsRuntime = 50;
+	const long millisRuntime = secondsRuntime * 1000L;
+
+	const int secondsDelta = 1;
+	const long millisDelta = secondsDelta * 1000L;
+	model.setEnddate(nowSeconds + secondsRuntime);
+
 	ASSERT_EQ(nowSeconds, model.startdate().seconds());
-	ASSERT_EQ(nowSeconds + 5, model.enddate().seconds());
+	ASSERT_EQ(nowSeconds + secondsRuntime, model.enddate().seconds());
+
 	ASSERT_TRUE(_dbHandler->insert(model)) << "Could not add event entry";
+
+	ASSERT_TRUE(_dbHandler->select(model, db::DBConditionEventId(model.id())));
+	ASSERT_EQ(nowSeconds, model.startdate().seconds());
+	ASSERT_EQ(nowSeconds + secondsRuntime, model.enddate().seconds());
+
+	EventMgr mgr(_eventProvider, timeProvider);
 	ASSERT_TRUE(mgr.init()) << "Could not initialize eventmgr";
 	ASSERT_EQ(0, mgr.runningEvents());
-	mgr.update(1L);
-	ASSERT_EQ(1, mgr.runningEvents());
-	_testApp->timeProvider()->update(now + 5000);
-	mgr.update(1L);
-	ASSERT_EQ(0, mgr.runningEvents());
+
+	timeProvider->update(now + millisDelta);
+	mgr.update(0L);
+	ASSERT_EQ(1, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickTime()) << " should be a running event " << model.startdate().toString();
+
+	timeProvider->update(now + millisDelta + millisRuntime);
+	mgr.update(0L);
+	ASSERT_EQ(0, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickTime()) << " should be no running event " << model.enddate().toString();
+
 	mgr.shutdown();
 }
 

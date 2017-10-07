@@ -31,6 +31,7 @@ public:
 	void update(long dt);
 	void shutdown();
 
+	EventPtr runningEvent(EventId id) const;
 	int runningEvents() const;
 };
 

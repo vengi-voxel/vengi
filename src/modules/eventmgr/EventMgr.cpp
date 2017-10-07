@@ -28,16 +28,20 @@ void EventMgr::update(long dt) {
 	for (const auto& entry : eventData) {
 		const db::EventModelPtr& data = entry.second;
 		const auto i = _events.find(data->id());
+		const persistence::Timestamp& endTime = data->enddate();
+		if (endTime.millis() < currentMillis) {
+			continue;
+		}
 		if (i == _events.end()) {
 			const persistence::Timestamp& startTime = data->startdate();
 			const auto eventStartMillis = startTime.millis();
-			if (eventStartMillis >= currentMillis) {
+			const auto delta = currentMillis - eventStartMillis;
+			if (delta <= 0) {
 				startEvent(data);
 			}
 			continue;
 		}
 
-		const persistence::Timestamp& endTime = data->enddate();
 		const auto eventEndMillis = endTime.millis();
 		if (eventEndMillis <= currentMillis) {
 			const EventPtr& event = i->second;
@@ -51,6 +55,14 @@ void EventMgr::update(long dt) {
 		Log::info("Tick event %i", (int)i->first);
 		i->second->update(dt);
 	}
+}
+
+EventPtr EventMgr::runningEvent(EventId id) const {
+	auto i = _events.find(id);
+	if (i == _events.end()) {
+		return EventPtr();
+	}
+	return i->second;
 }
 
 void EventMgr::shutdown() {
