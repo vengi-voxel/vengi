@@ -48,6 +48,14 @@ bool DBHandler::truncate(Model&& model) const {
 	return exec(createTruncateTableStatement(model));
 }
 
+bool DBHandler::dropTable(const Model& model) const {
+	return exec(createTruncateTableStatement(model));
+}
+
+bool DBHandler::dropTable(Model&& model) const {
+	return exec(createTruncateTableStatement(model));
+}
+
 bool DBHandler::createTable(Model&& model) const {
 	return exec(createCreateTableStatement(model));
 }

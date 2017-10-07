@@ -15,6 +15,7 @@ class DBCondition;
 
 extern std::string createCreateTableStatement(const Model& model);
 extern std::string createTruncateTableStatement(const Model& model);
+extern std::string createDropTableStatement(const Model& model);
 extern std::string createUpdateStatement(const Model& model, BindParam* params = nullptr);
 extern std::string createDeleteStatement(const Model& model);
 extern std::string createInsertStatement(const Model& model, BindParam* params = nullptr);

@@ -186,6 +186,9 @@ public:
 	 */
 	bool truncate(Model&& model) const;
 
+	bool dropTable(const Model& model) const;
+	bool dropTable(Model&& model) const;
+
 	/**
 	 * @brief Create the table for the given @c persistence::Model
 	 * @param[in] model The model that the table is to be created for

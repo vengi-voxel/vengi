@@ -20,8 +20,8 @@ public:
 		_dbHandler = std::make_shared<persistence::DBHandler>();
 		ASSERT_TRUE(_dbHandler->init()) << "Could not initialize dbhandler";
 		_eventProvider = std::make_shared<eventmgr::EventProvider>(_dbHandler);
-		_dbHandler->truncate(db::EventPointModel());
-		_dbHandler->truncate(db::EventModel());
+		_dbHandler->dropTable(db::EventPointModel());
+		_dbHandler->dropTable(db::EventModel());
 	}
 
 	void TearDown() override {

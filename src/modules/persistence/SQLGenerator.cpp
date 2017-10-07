@@ -179,6 +179,10 @@ std::string createTruncateTableStatement(const Model& model) {
 	return core::string::format("TRUNCATE TABLE \"%s\"", model.tableName().c_str());
 }
 
+std::string createDropTableStatement(const Model& model) {
+	return core::string::format("DROP TABLE IF EXISTS \"%s\"", model.tableName().c_str());
+}
+
 std::string createUpdateStatement(const Model& model, BindParam* params) {
 	const Fields& fields = model.fields();
 	const std::string& tableName = model.tableName();
