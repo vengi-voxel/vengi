@@ -1,7 +1,8 @@
 #ifndef FLATBUFFERS_BASE_H_
 #define FLATBUFFERS_BASE_H_
 
-#if defined(_MSC_VER) && defined(_DEBUG)
+#if defined(FLATBUFFERS_MEMORY_LEAK_TRACKING) && \
+    defined(_MSC_VER) && defined(_DEBUG)
   #define _CRTDBG_MAP_ALLOC
 #endif
 
@@ -15,7 +16,8 @@
 #include <cstdlib>
 #include <cstring>
 
-#if defined(_MSC_VER) && defined(_DEBUG)
+#if defined(FLATBUFFERS_MEMORY_LEAK_TRACKING) && \
+    defined(_MSC_VER) && defined(_DEBUG)
   #include <crtdbg.h>
   #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
   #define new DEBUG_NEW
@@ -164,6 +166,39 @@ typedef uintmax_t largest_scalar_t;
 
 // We support aligning the contents of buffers up to this size.
 #define FLATBUFFERS_MAX_ALIGNMENT 16
+
+template<typename T> T EndianSwap(T t) {
+  #if defined(_MSC_VER)
+    #define FLATBUFFERS_BYTESWAP16 _byteswap_ushort
+    #define FLATBUFFERS_BYTESWAP32 _byteswap_ulong
+    #define FLATBUFFERS_BYTESWAP64 _byteswap_uint64
+  #else
+    #if defined(__GNUC__) && __GNUC__ * 100 + __GNUC_MINOR__ < 408 && !defined(__clang__)
+      // __builtin_bswap16 was missing prior to GCC 4.8.
+      #define FLATBUFFERS_BYTESWAP16(x) \
+        static_cast<uint16_t>(__builtin_bswap32(static_cast<uint32_t>(x) << 16))
+    #else
+      #define FLATBUFFERS_BYTESWAP16 __builtin_bswap16
+    #endif
+    #define FLATBUFFERS_BYTESWAP32 __builtin_bswap32
+    #define FLATBUFFERS_BYTESWAP64 __builtin_bswap64
+  #endif
+  if (sizeof(T) == 1) {   // Compile-time if-then's.
+    return t;
+  } else if (sizeof(T) == 2) {
+    auto r = FLATBUFFERS_BYTESWAP16(*reinterpret_cast<uint16_t *>(&t));
+    return *reinterpret_cast<T *>(&r);
+  } else if (sizeof(T) == 4) {
+    auto r = FLATBUFFERS_BYTESWAP32(*reinterpret_cast<uint32_t *>(&t));
+    return *reinterpret_cast<T *>(&r);
+  } else if (sizeof(T) == 8) {
+    auto r = FLATBUFFERS_BYTESWAP64(*reinterpret_cast<uint64_t *>(&t));
+    return *reinterpret_cast<T *>(&r);
+  } else {
+    assert(0);
+  }
+}
+
 
 template<typename T> T EndianScalar(T t) {
   #if FLATBUFFERS_LITTLEENDIAN
