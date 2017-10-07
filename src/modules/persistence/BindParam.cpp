@@ -35,8 +35,15 @@ int BindParam::add() {
 void BindParam::push(const Model& model, const Field& field) {
 	const int index = add();
 	switch (field.type) {
+	case FieldType::SHORT: {
+		const int16_t value = model.getValue<int16_t>(field);
+		valueBuffers.emplace_back(std::to_string(value));
+		values[index] = valueBuffers.back().c_str();
+		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
+		break;
+	}
 	case FieldType::INT: {
-		const int value = model.getValue<int>(field);
+		const int32_t value = model.getValue<int32_t>(field);
 		valueBuffers.emplace_back(std::to_string(value));
 		values[index] = valueBuffers.back().c_str();
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);

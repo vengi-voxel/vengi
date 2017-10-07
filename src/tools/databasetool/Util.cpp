@@ -31,6 +31,7 @@ std::string getCPPInit(persistence::FieldType type, bool pointer) {
 	case persistence::FieldType::LONG:
 		return "0l";
 	case persistence::FieldType::INT:
+	case persistence::FieldType::SHORT:
 		return "0";
 	case persistence::FieldType::MAX:
 		break;
@@ -70,6 +71,11 @@ std::string getCPPType(persistence::FieldType type, bool function, bool pointer)
 			return "const int32_t*";
 		}
 		return "int32_t";
+	case persistence::FieldType::SHORT:
+		if (pointer) {
+			return "const int16_t*";
+		}
+		return "int16_t";
 	case persistence::FieldType::MAX:
 		break;
 	}

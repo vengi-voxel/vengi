@@ -61,6 +61,7 @@ table <TABLENAME> {
 * long
 * timestamp
 * boolean
+* short
 
 ## Valid operators
 * set
@@ -69,4 +70,4 @@ table <TABLENAME> {
 
 ## Other notable features
 * Timestamps are handled in UTC.
-* When using `ìnt` as a field type, there is also a setter configured that accepts enums.
+* When using `ìnt` or `short` as a field type, there is also a setter configured that accepts enums.

@@ -72,6 +72,7 @@ static void createMembersStruct(const Table& table, std::stringstream& src) {
 		if (isPointer(f)) {
 			src << "\t\tbool " << MembersStruct::nullFieldName(f) << " = false;\n";
 		}
+		// TODO: padding for short and boolean
 	}
 	src << "\t};\n";
 	src << "\tMembers " << MembersStruct::varName() << ";\n";
@@ -217,7 +218,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		}
 		src << "\t}\n\n";
 
-		if (f.type == persistence::FieldType::INT) {
+		if (f.type == persistence::FieldType::INT || f.type == persistence::FieldType::SHORT) {
 			src << "\ttemplate<typename T, class = typename std::enable_if<std::is_enum<T>::value>::type>\n";
 			src << "\tinline void set" << n << "(const T& " << f.name << ") {\n";
 			src << "\t\tsetType(static_cast<" << cpptypeSetter << ">(static_cast<typename std::underlying_type<T>::type>(" << f.name << ")));\n";
