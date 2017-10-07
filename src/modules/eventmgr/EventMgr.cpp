@@ -30,14 +30,16 @@ void EventMgr::update(long dt) {
 		const auto i = _events.find(data->id());
 		if (i == _events.end()) {
 			const persistence::Timestamp& startTime = data->startdate();
-			if (startTime.millis() >= currentMillis) {
+			const auto eventStartMillis = startTime.millis();
+			if (eventStartMillis >= currentMillis) {
 				startEvent(data);
 			}
 			continue;
 		}
 
 		const persistence::Timestamp& endTime = data->enddate();
-		if (endTime.millis() <= currentMillis) {
+		const auto eventEndMillis = endTime.millis();
+		if (eventEndMillis <= currentMillis) {
 			const EventPtr& event = i->second;
 			Log::info("Stop event of type %i", (int)data->id());
 			event->stop();

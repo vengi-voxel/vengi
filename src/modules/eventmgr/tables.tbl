@@ -5,7 +5,7 @@ table event {
 		operator set
 	}
 	field type {
-		type long
+		type int
 		notnull
 		operator set
 	}
