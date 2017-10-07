@@ -132,26 +132,33 @@
   while (0)
 
 
-static ssize_t uv__fs_fdatasync(uv_fs_t* req) {
-#if defined(__linux__) || defined(__sun) || defined(__NetBSD__)
-  return fdatasync(req->file);
-#elif defined(__APPLE__)
+static ssize_t uv__fs_fsync(uv_fs_t* req) {
+#if defined(__APPLE__)
   /* Apple's fdatasync and fsync explicitly do NOT flush the drive write cache
    * to the drive platters. This is in contrast to Linux's fdatasync and fsync
    * which do, according to recent man pages. F_FULLFSYNC is Apple's equivalent
-   * for flushing buffered data to permanent storage.
+   * for flushing buffered data to permanent storage. If F_FULLFSYNC is not
+   * supported by the file system we should fall back to fsync(). This is the
+   * same approach taken by sqlite.
    */
-  return fcntl(req->file, F_FULLFSYNC);
+  int r;
+
+  r = fcntl(req->file, F_FULLFSYNC);
+  if (r != 0 && errno == ENOTTY)
+    r = fsync(req->file);
+  return r;
 #else
   return fsync(req->file);
 #endif
 }
 
 
-static ssize_t uv__fs_fsync(uv_fs_t* req) {
-#if defined(__APPLE__)
-  /* See the comment in uv__fs_fdatasync. */
-  return fcntl(req->file, F_FULLFSYNC);
+static ssize_t uv__fs_fdatasync(uv_fs_t* req) {
+#if defined(__linux__) || defined(__sun) || defined(__NetBSD__)
+  return fdatasync(req->file);
+#elif defined(__APPLE__)
+  /* See the comment in uv__fs_fsync. */
+  return uv__fs_fsync(req);
 #else
   return fsync(req->file);
 #endif
@@ -438,7 +445,12 @@ static ssize_t uv__fs_readlink(uv_fs_t* req) {
     return -1;
   }
 
+#if defined(__MVS__)
+  len = os390_readlink(req->path, buf, len);
+#else
   len = readlink(req->path, buf, len);
+#endif
+
 
   if (len == -1) {
     uv__free(buf);
@@ -795,6 +807,7 @@ static ssize_t uv__fs_copyfile(uv_fs_t* req) {
   int64_t in_offset;
 
   dstfd = -1;
+  err = 0;
 
   /* Open the source file. */
   srcfd = uv_fs_open(NULL, &fs_req, req->path, O_RDONLY, 0, NULL);
@@ -809,7 +822,7 @@ static ssize_t uv__fs_copyfile(uv_fs_t* req) {
     goto out;
   }
 
-  dst_flags = O_WRONLY | O_CREAT;
+  dst_flags = O_WRONLY | O_CREAT | O_TRUNC;
 
   if (req->flags & UV_FS_COPYFILE_EXCL)
     dst_flags |= O_EXCL;
@@ -825,6 +838,11 @@ static ssize_t uv__fs_copyfile(uv_fs_t* req) {
 
   if (dstfd < 0) {
     err = dstfd;
+    goto out;
+  }
+
+  if (fchmod(dstfd, statsbuf.st_mode) == -1) {
+    err = -errno;
     goto out;
   }
 
