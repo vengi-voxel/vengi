@@ -65,3 +65,7 @@ table <TABLENAME> {
 * set
 * add
 * subtract
+
+## Other notable features
+* Timestamps are handled in UTC.
+* When using `ìnt` as a field type, there is also a setter configured that accepts enums.

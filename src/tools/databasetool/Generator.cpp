@@ -217,6 +217,13 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		}
 		src << "\t}\n\n";
 
+		if (f.type == persistence::FieldType::INT) {
+			src << "\ttemplate<typename T, class = typename std::enable_if<std::is_enum<T>::value>::type>\n";
+			src << "\tinline void set" << n << "(const T& " << f.name << ") {\n";
+			src << "\t\tsetType(static_cast<" << cpptypeSetter << ">(static_cast<typename std::underlying_type<T>::type>(" << f.name << ")));\n";
+			src << "\t}\n\n";
+		}
+
 		if (isPointer(f)) {
 			src << "\tinline void set" << n << "(nullptr_t " << f.name << ") {\n";
 			src << "\t\t_m._isNull_" << f.name << " = true;\n";
