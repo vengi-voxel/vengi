@@ -10,7 +10,8 @@ static const char *FieldTypeNames[] = {
 	CORE_STRINGIFY(LONG),
 	CORE_STRINGIFY(INT),
 	CORE_STRINGIFY(PASSWORD),
-	CORE_STRINGIFY(TIMESTAMP)
+	CORE_STRINGIFY(TIMESTAMP),
+	CORE_STRINGIFY(BOOLEAN)
 };
 static_assert(lengthof(FieldTypeNames) == persistence::MAX_FIELDTYPES, "Invalid field type mapping");
 

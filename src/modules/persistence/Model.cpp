@@ -100,6 +100,10 @@ bool Model::fillModelValues(State& state) {
 		case FieldType::PASSWORD:
 			setValue(f, std::string(value, length));
 			break;
+		case FieldType::BOOLEAN: {
+			setValue(f, *value == '1' || *value == 't' || *value == 'y' || *value == 'o' || *value == 'T');
+			break;
+		}
 		case FieldType::INT:
 			setValue(f, core::string::toInt(value));
 			break;

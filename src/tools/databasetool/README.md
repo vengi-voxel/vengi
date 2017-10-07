@@ -60,6 +60,7 @@ table <TABLENAME> {
 * int
 * long
 * timestamp
+* boolean
 
 ## Valid operators
 * set

@@ -21,6 +21,8 @@ std::string getCPPInit(persistence::FieldType type, bool pointer) {
 		return "nullptr";
 	}
 	switch (type) {
+	case persistence::FieldType::BOOLEAN:
+		return "false";
 	case persistence::FieldType::TEXT:
 	case persistence::FieldType::PASSWORD:
 	case persistence::FieldType::STRING:
@@ -38,6 +40,8 @@ std::string getCPPInit(persistence::FieldType type, bool pointer) {
 
 std::string getCPPType(persistence::FieldType type, bool function, bool pointer) {
 	switch (type) {
+	case persistence::FieldType::BOOLEAN:
+		return "bool";
 	case persistence::FieldType::PASSWORD:
 	case persistence::FieldType::STRING:
 	case persistence::FieldType::TEXT:

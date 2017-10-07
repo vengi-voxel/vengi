@@ -49,6 +49,16 @@ void BindParam::push(const Model& model, const Field& field) {
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
+	case FieldType::BOOLEAN: {
+		const bool value = model.getValue<bool>(field);
+		if (value) {
+			values[index] = "TRUE";
+		} else {
+			values[index] = "FALSE";
+		}
+		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
+		break;
+	}
 	case FieldType::TIMESTAMP: {
 		const Timestamp& value = model.getValue<Timestamp>(field);
 		core_assert_msg(!value.isNow(), "'NOW()' timestamps are not pushed as parameters - but as NOW()");

@@ -99,6 +99,8 @@ static std::string getDbType(const Field& field) {
 		return "TEXT";
 	case FieldType::TIMESTAMP:
 		return "TIMESTAMP";
+	case FieldType::BOOLEAN:
+		return "BOOLEAN";
 	case FieldType::LONG:
 		if (field.isAutoincrement()) {
 			return "";

@@ -19,6 +19,12 @@ table event {
 		notnull
 		operator set
 	}
+	field finished {
+		type boolean
+		notnull
+		default false
+		operator set
+	}
 	constraints {
 		id primarykey
 		id autoincrement
