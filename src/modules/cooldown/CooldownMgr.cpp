@@ -89,7 +89,7 @@ void CooldownMgr::update() {
 		_queue.pop();
 		_lock.unlockWrite();
 		Log::debug("Cooldown of type %i has just expired at %li",
-				std::enum_value(cooldown->type()), _timeProvider->tickTime());
+				std::enum_value(cooldown->type()), _timeProvider->tickMillis());
 		cooldown->expire();
 	}
 }

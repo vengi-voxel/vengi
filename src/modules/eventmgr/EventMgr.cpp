@@ -23,7 +23,7 @@ bool EventMgr::init() {
 }
 
 void EventMgr::update(long dt) {
-	const auto currentMillis = _timeProvider->tickTime();
+	const auto currentMillis = _timeProvider->tickMillis();
 	const EventProvider::EventData& eventData = _eventProvider->eventData();
 	for (const auto& entry : eventData) {
 		const db::EventModelPtr& data = entry.second;

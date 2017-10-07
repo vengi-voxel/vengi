@@ -23,7 +23,7 @@ void PoiProvider::update(long /*dt*/) {
 			break;
 		}
 		Poi poi = *i;
-		if (poi.time + seconds > _timeProvider->tickTime()) {
+		if (poi.time + seconds > _timeProvider->tickMillis()) {
 			break;
 		}
 		_pois.erase(i);
@@ -32,7 +32,7 @@ void PoiProvider::update(long /*dt*/) {
 
 void PoiProvider::addPointOfInterest(const glm::vec3& pos) {
 	core::ScopedWriteLock scoped(_lock);
-	_pois.emplace_back(Poi{pos, _timeProvider->tickTime()});
+	_pois.emplace_back(Poi{pos, _timeProvider->tickMillis()});
 
 	struct PoiComparatorLess: public std::binary_function<Poi, Poi, bool> {
 		inline bool operator()(const Poi& x, const Poi& y) const {

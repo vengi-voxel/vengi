@@ -30,7 +30,7 @@ public:
 	}
 
 	inline void start() {
-		_startMillis = _timeProvider->tickTime();
+		_startMillis = _timeProvider->tickMillis();
 		_expireMillis = _startMillis + _durationMillis;
 	}
 
@@ -58,7 +58,7 @@ public:
 	}
 
 	inline bool running() const {
-		return _expireMillis > 0ul && _timeProvider->tickTime() < _expireMillis;
+		return _expireMillis > 0ul && _timeProvider->tickMillis() < _expireMillis;
 	}
 
 	inline unsigned long duration() const {

@@ -99,20 +99,17 @@ TEST_F(EventMgrTest, testEventPointModelInsertUniqueKeys) {
 	}
 }
 
-TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
+TEST_F(EventMgrTest, testEventModelTimestamps) {
 	const core::TimeProviderPtr& timeProvider = _testApp->timeProvider();
-	const auto now = timeProvider->tickTime();
-	const uint64_t nowSeconds = now / 1000;
+	const auto now = timeProvider->tickMillis();
+	const uint64_t nowSeconds = now / 1000UL;
 
 	db::EventModel model;
 	model.setStartdate(nowSeconds);
 	model.setType(Type::GENERIC);
 
 	const int secondsRuntime = 50;
-	const long millisRuntime = secondsRuntime * 1000L;
 
-	const int secondsDelta = 1;
-	const long millisDelta = secondsDelta * 1000L;
 	model.setEnddate(nowSeconds + secondsRuntime);
 
 	ASSERT_EQ(nowSeconds, model.startdate().seconds());
@@ -123,6 +120,24 @@ TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
 	ASSERT_TRUE(_dbHandler->select(model, db::DBConditionEventId(model.id())));
 	ASSERT_EQ(nowSeconds, model.startdate().seconds());
 	ASSERT_EQ(nowSeconds + secondsRuntime, model.enddate().seconds());
+}
+
+TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
+	const core::TimeProviderPtr& timeProvider = _testApp->timeProvider();
+	const auto now = timeProvider->tickMillis();
+	const uint64_t nowSeconds = now / 1000UL;
+
+	db::EventModel model;
+	model.setStartdate(nowSeconds);
+	model.setType(Type::GENERIC);
+
+	const int secondsRuntime = 50;
+
+	const int secondsDelta = 1;
+	const long millisDelta = secondsDelta * 1000L;
+	model.setEnddate(nowSeconds + secondsRuntime);
+
+	ASSERT_TRUE(_dbHandler->insert(model)) << "Could not add event entry";
 
 	EventMgr mgr(_eventProvider, timeProvider);
 	ASSERT_TRUE(mgr.init()) << "Could not initialize eventmgr";
@@ -130,11 +145,12 @@ TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
 
 	timeProvider->update(now + millisDelta);
 	mgr.update(0L);
-	ASSERT_EQ(1, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickTime()) << " should be a running event " << model.startdate().toString();
+	ASSERT_EQ(1, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickMillis()) << " should be a running event " << model.startdate().toString();
 
+	const unsigned long millisRuntime = secondsRuntime * 1000UL;
 	timeProvider->update(now + millisDelta + millisRuntime);
 	mgr.update(0L);
-	ASSERT_EQ(0, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickTime()) << " should be no running event " << model.enddate().toString();
+	ASSERT_EQ(0, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickMillis()) << " should be no running event " << model.enddate().toString();
 
 	mgr.shutdown();
 }

@@ -22,8 +22,12 @@ public:
 	 * @brief The tick time gives you the time in milliseconds when the tick was started.
 	 * @note Updated once per tick
 	 */
-	inline unsigned long tickTime() const {
+	inline unsigned long tickMillis() const {
 		return _tickTime;
+	}
+
+	inline unsigned long tickSeconds() const {
+		return _tickTime / 1000UL;
 	}
 
 	static std::string toString(unsigned long millis, const char *format = "%d-%m-%Y %H-%M-%S");

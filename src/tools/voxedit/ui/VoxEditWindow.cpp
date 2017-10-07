@@ -753,7 +753,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 void VoxEditWindow::OnProcess() {
 	Super::OnProcess();
 
-	if (_lastModePress > 0l && core::App::getInstance()->timeProvider()->tickTime() - _lastModePress > 1500l) {
+	if (_lastModePress > 0l && core::App::getInstance()->timeProvider()->tickMillis() - _lastModePress > 1500l) {
 		executeMode();
 	}
 
@@ -890,7 +890,7 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 				if (l < MODENUMBERBUFSIZE - 1) {
 					_modeNumberBuf[l++] = (uint8_t)key;
 					_modeNumberBuf[l] = '\0';
-					_lastModePress = core::App::getInstance()->timeProvider()->tickTime();
+					_lastModePress = core::App::getInstance()->timeProvider()->tickMillis();
 				}
 			} else if (ev.special_key == tb::TB_KEY_ENTER) {
 				executeMode();
@@ -906,7 +906,7 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 				_axis |= core::Axis::Z;
 				Log::debug("Set axis to z");
 			}
-			_lastModePress = core::App::getInstance()->timeProvider()->tickTime();
+			_lastModePress = core::App::getInstance()->timeProvider()->tickMillis();
 		}
 	}
 

@@ -157,7 +157,7 @@ TEST_F(DatabaseModelTest, testTimestamp) {
 	EXPECT_EQ(0, u.id());
 	u.setEmail("timestamp@now.de");
 	u.setPassword("now");
-	const auto now = _testApp->timeProvider()->tickTime();
+	const auto now = _testApp->timeProvider()->tickMillis();
 	u.setRegistrationdate(now / 1000UL);
 	ASSERT_TRUE(_dbHandler.insert(u));
 
