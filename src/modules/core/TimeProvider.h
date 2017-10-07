@@ -14,7 +14,7 @@ namespace core {
  */
 class TimeProvider {
 private:
-	unsigned long _tickTime;
+	uint64_t _tickMillis;
 public:
 	TimeProvider();
 
@@ -22,22 +22,22 @@ public:
 	 * @brief The tick time gives you the time in milliseconds when the tick was started.
 	 * @note Updated once per tick
 	 */
-	inline unsigned long tickMillis() const {
-		return _tickTime;
+	inline uint64_t tickMillis() const {
+		return _tickMillis;
 	}
 
-	inline unsigned long tickSeconds() const {
-		return _tickTime / 1000UL;
+	inline uint64_t tickSeconds() const {
+		return _tickMillis / uint64_t(1000);
 	}
 
 	static std::string toString(unsigned long millis, const char *format = "%d-%m-%Y %H-%M-%S");
 
-	unsigned long currentTime() const;
+	uint64_t systemMillis() const;
 
-	static double currentNanos();
+	static double systemNanos();
 
-	void update(unsigned long now) {
-		_tickTime = now;
+	void update(uint64_t tickTime) {
+		_tickMillis = tickTime;
 	}
 };
 

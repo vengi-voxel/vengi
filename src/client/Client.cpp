@@ -51,7 +51,7 @@ Client::~Client() {
 }
 
 void Client::sendMovement() {
-	if (_now - _lastMovement <= 100L) {
+	if (_now - _lastMovement <= 100UL) {
 		return;
 	}
 

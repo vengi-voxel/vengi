@@ -9,8 +9,8 @@ struct NoiseData {
 	float lacunarity = 0.0f;
 	int octaves = 0;
 	float gain = 0.0f;
-	unsigned long millis = 0l;
-	unsigned long endmillis = 0l;
+	uint64_t millis = 0;
+	uint64_t endmillis = 0;
 	int seed = 0;
 	float ridgedOffset = 1.0f; // ridged noise
 	NoiseType noiseType = NoiseType::Max;

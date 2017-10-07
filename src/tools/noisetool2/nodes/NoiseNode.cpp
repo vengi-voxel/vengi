@@ -27,8 +27,8 @@ static const char* NoiseTypeStr[] = {
 static constexpr int numValues = lengthof(NoiseTypeStr);
 static_assert(int(NoiseType::Max) == numValues, "Array size doesn't match NoiseType::Max value");
 
-static inline unsigned long millis() {
-	return core::App::getInstance()->timeProvider()->currentTime();
+static inline uint64_t millis() {
+	return core::App::getInstance()->timeProvider()->systemMillis();
 }
 
 bool NoiseNode::GetNoiseTypeFromEnumIndex(void*, int value, const char** pTxt) {

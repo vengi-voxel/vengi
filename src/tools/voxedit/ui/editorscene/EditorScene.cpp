@@ -353,7 +353,7 @@ bool EditorScene::isDirty() const {
 
 bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	core_trace_scoped(EditorSceneOnEvent);
-	const long now = core::App::getInstance()->currentMillis();
+	const uint64_t now = core::App::getInstance()->systemMillis();
 	Model& mdl = m();
 	bool& mouseDown = _controller._mouseDown;
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {

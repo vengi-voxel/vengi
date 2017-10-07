@@ -83,9 +83,9 @@ protected:
 	bool _suspendRequested = false;
 	bool _syslog = false;
 	bool _coredump = false;
-	long _now;
+	uint64_t _now;
 	long _deltaFrame = 0l;
-	long _initTime = 0l;
+	uint64_t _initTime = 0l;
 	double _nextFrame = 0.0;
 	double _framesPerSecondsCap = 0.0;
 	int _exitCode = 0;
@@ -203,7 +203,7 @@ public:
 	/**
 	 * @return the millis since the epoch
 	 */
-	long currentMillis() const;
+	uint64_t systemMillis() const;
 
 	/**
 	 * @brief Access to the FileSystem
@@ -244,11 +244,11 @@ inline const std::vector<double>& App::ProfilerCPU::samples() const {
 }
 
 inline void App::ProfilerCPU::enter() {
-	_stamp = core::TimeProvider::currentNanos();
+	_stamp = core::TimeProvider::systemNanos();
 }
 
 inline void App::ProfilerCPU::leave() {
-	const double time = core::TimeProvider::currentNanos() - _stamp;
+	const double time = core::TimeProvider::systemNanos() - _stamp;
 	_max = std::max(_max, time);
 	_min = std::min(_min, time);
 	_avg = _avg * 0.5 + time * 0.5;
@@ -280,8 +280,8 @@ inline long App::deltaFrame() const {
 	return _deltaFrame;
 }
 
-inline long App::currentMillis() const {
-	return _timeProvider->currentTime();
+inline uint64_t App::systemMillis() const {
+	return _timeProvider->systemMillis();
 }
 
 inline io::FilesystemPtr App::filesystem() const {

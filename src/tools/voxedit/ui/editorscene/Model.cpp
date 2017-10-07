@@ -219,7 +219,7 @@ void Model::vertices(float* vertices, size_t vertexSize, size_t verticesSize, ui
 	modified(modifiedRegion);
 }
 
-void Model::executeAction(long now) {
+void Model::executeAction(uint64_t now) {
 	const Action execAction = evalAction();
 	if (execAction == Action::None) {
 		Log::warn("Nothing to execute");
@@ -490,7 +490,7 @@ void Model::init() {
 }
 
 void Model::update() {
-	const long ms = core::App::getInstance()->currentMillis();
+	const uint64_t ms = core::App::getInstance()->systemMillis();
 	if (_spaceColonizationTree != nullptr && ms - _lastGrow > 1000L) {
 		const bool growing = _spaceColonizationTree->step();
 		_lastGrow = ms;
@@ -583,7 +583,7 @@ void Model::spaceColonization() {
 	const voxel::Region& region = modelVolume()->region();
 	const core::AABB<int>& aabb = region.aabb();
 	const int trunkHeight = aabb.getWidthY() / 2;
-	_lastGrow = core::App::getInstance()->currentMillis();
+	_lastGrow = core::App::getInstance()->systemMillis();
 
 	_spaceColonizationTree = new voxel::tree::Tree(referencePosition(), trunkHeight, 6,
 			aabb.getWidthX() - leafSize, aabb.getWidthY() - trunkHeight - leafSize, aabb.getWidthZ() - leafSize, 4.0f, _lastGrow);

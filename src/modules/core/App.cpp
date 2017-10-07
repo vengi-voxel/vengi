@@ -26,7 +26,7 @@ App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 		_trace(traceport), _filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core"),
 		_timeProvider(timeProvider) {
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-	_now = currentMillis();
+	_now = systemMillis();
 	_timeProvider->update(_now);
 	_staticInstance = this;
 }
@@ -75,8 +75,8 @@ void App::onFrame() {
 	if (AppState::Blocked == _curState) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	} else {
-		const long now = currentMillis();
-		_deltaFrame = std::max(1l, now - _now);
+		const uint64_t now = systemMillis();
+		_deltaFrame = std::max(uint64_t(1), now - _now);
 		_timeProvider->update(now);
 		_now = now;
 
@@ -89,7 +89,7 @@ void App::onFrame() {
 		case AppState::Init: {
 			core_trace_scoped(AppOnInit);
 			_nextState = onInit();
-			_nextFrame = currentMillis();
+			_nextFrame = systemMillis();
 			break;
 		}
 		case AppState::Running: {

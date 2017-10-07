@@ -45,7 +45,7 @@ protected:
 	voxel::VoxelFont _voxelFont;
 	ui::WaitingMessage _waiting;
 
-	long _lastMovement = 0l;
+	uint64_t _lastMovement = 0l;
 
 	int _drawCallsWorld = 0;
 	int _drawCallsEntities = 0;

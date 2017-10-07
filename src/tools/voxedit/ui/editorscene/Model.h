@@ -70,7 +70,7 @@ private:
 	int _size = 32;
 	int _mouseX = 0;
 	int _mouseY = 0;
-	long _lastActionExecution = 0l;
+	uint64_t _lastActionExecution = 0;
 
 	Action _lastAction = Action::None;
 	// the action to execute on mouse move
@@ -78,7 +78,7 @@ private:
 
 	voxel::PickResult _result;
 
-	long _lastGrow = 0l;
+	uint64_t _lastGrow = 0;
 	voxel::tree::Tree *_spaceColonizationTree = nullptr;
 
 	int getIndexForAxis(core::Axis axis) const;
@@ -180,7 +180,7 @@ public:
 	bool trace(const video::Camera& camera);
 	void select(const glm::ivec3& pos);
 	void unselectAll();
-	void executeAction(long now);
+	void executeAction(uint64_t now);
 	void resetLastTrace();
 
 	void setSelectionType(SelectType type);

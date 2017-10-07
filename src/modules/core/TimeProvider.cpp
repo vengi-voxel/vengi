@@ -12,15 +12,15 @@
 namespace core {
 
 TimeProvider::TimeProvider() :
-		_tickTime(0ul) {
+		_tickMillis(uint64_t(0)) {
 }
 
-unsigned long TimeProvider::currentTime() const {
-	const unsigned long now = (unsigned long)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
-	return now;
+uint64_t TimeProvider::systemMillis() const {
+	const uint64_t millis = (uint64_t)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
+	return millis;
 }
 
-double TimeProvider::currentNanos() {
+double TimeProvider::systemNanos() {
 	return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count() / 1e9;
 }
 
