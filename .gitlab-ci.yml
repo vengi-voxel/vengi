@@ -30,7 +30,7 @@ test:
     - cd build/Debug
     - ./tests
 
-analyse:cppcheck:
+.analyse:cppcheck:
   stage: analyse
   script:
     - cppcheck -j 4 --enable=all --config-exclude=contrib/libs/ --project=build/Debug/compile_commands.json src 2> cppcheck.log
