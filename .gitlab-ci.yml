@@ -33,7 +33,7 @@ test:
 analyse:cppcheck:
   stage: analyse
   script:
-    - cppcheck --enable=all --project=build/Debug/compile_commands.json src 2> cppcheck.log
+    - cppcheck -j 4 --enable=all --config-exclude=contrib/libs/ --project=build/Debug/compile_commands.json src 2> cppcheck.log
   artifacts:
     paths:
     - cppcheck.log
@@ -44,7 +44,7 @@ analyse:valgrind:
     - build
   script:
     - cd build/Debug
-    - valgrind ./tests
+    - valgrind ./tests --gtest_filter=CoreTest.*:CameraTest.*:StringTest.*
   artifacts:
     paths:
     - build/Debug/valgrind.log
