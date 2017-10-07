@@ -35,7 +35,7 @@ void EventMgr::update(long dt) {
 		if (i == _events.end()) {
 			const persistence::Timestamp& startTime = data->startdate();
 			const auto eventStartMillis = startTime.millis();
-			const auto delta = currentMillis - eventStartMillis;
+			const long delta = eventStartMillis - currentMillis;
 			if (delta <= 0) {
 				startEvent(data);
 			}

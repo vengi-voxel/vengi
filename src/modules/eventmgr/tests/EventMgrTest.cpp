@@ -30,18 +30,26 @@ public:
 		_eventProvider->shutdown();
 	}
 
-	void createEvent(Type type, int64_t& id) {
+	void createEvent(Type type, db::EventModel& eventModel, const persistence::Timestamp& startdate = persistence::Timestamp::now(), const persistence::Timestamp& enddate = persistence::Timestamp::now()) {
 		db::EventModel model;
-		model.setType(std::enum_value(type));
-		model.setStartdate(persistence::Timestamp::now());
-		model.setEnddate(persistence::Timestamp::now());
+		model.setType(type);
+		model.setStartdate(startdate);
+		model.setEnddate(enddate);
+
+		ASSERT_EQ(startdate.seconds(), model.startdate().seconds());
+		ASSERT_EQ(enddate.seconds(), model.enddate().seconds());
+
 		ASSERT_TRUE(_dbHandler->insert(model));
 		EXPECT_NE(0, model.id());
-		id = model.id();
 
-		db::EventModel eventModel;
 		ASSERT_TRUE(_dbHandler->select(eventModel, db::DBConditionEventId(model.id())));
 		ASSERT_EQ(eventModel.id(), model.id());
+	}
+
+	void createEvent(Type type, EventId& id, const persistence::Timestamp& startdate = persistence::Timestamp::now(), const persistence::Timestamp& enddate = persistence::Timestamp::now()) {
+		db::EventModel model;
+		createEvent(type, model, startdate, enddate);
+		id = model.id();
 	}
 };
 
@@ -52,12 +60,12 @@ TEST_F(EventMgrTest, testEventMgrInit) {
 }
 
 TEST_F(EventMgrTest, testEventModelInsert) {
-	int64_t id;
+	EventId id;
 	createEvent(Type::GENERIC, id);
 }
 
 TEST_F(EventMgrTest, testEventPointModelInsert) {
-	int64_t id;
+	EventId id;
 	createEvent(Type::GENERIC, id);
 	db::EventPointModel pointModel;
 	pointModel.setEventid(id);
@@ -68,7 +76,7 @@ TEST_F(EventMgrTest, testEventPointModelInsert) {
 }
 
 TEST_F(EventMgrTest, testEventPointModelInsertUniqueKeys) {
-	int64_t id;
+	EventId id;
 	createEvent(Type::GENERIC, id);
 	db::EventPointModel pointModel;
 	pointModel.setEventid(id);
@@ -102,20 +110,11 @@ TEST_F(EventMgrTest, testEventPointModelInsertUniqueKeys) {
 TEST_F(EventMgrTest, testEventModelTimestamps) {
 	const core::TimeProviderPtr& timeProvider = _testApp->timeProvider();
 	const auto now = timeProvider->tickMillis();
+	const int secondsRuntime = 50;
 	const uint64_t nowSeconds = now / 1000UL;
 
 	db::EventModel model;
-	model.setStartdate(nowSeconds);
-	model.setType(Type::GENERIC);
-
-	const int secondsRuntime = 50;
-
-	model.setEnddate(nowSeconds + secondsRuntime);
-
-	ASSERT_EQ(nowSeconds, model.startdate().seconds());
-	ASSERT_EQ(nowSeconds + secondsRuntime, model.enddate().seconds());
-
-	ASSERT_TRUE(_dbHandler->insert(model)) << "Could not add event entry";
+	createEvent(Type::GENERIC, model, nowSeconds, nowSeconds + secondsRuntime);
 
 	ASSERT_TRUE(_dbHandler->select(model, db::DBConditionEventId(model.id())));
 	ASSERT_EQ(nowSeconds, model.startdate().seconds());
@@ -124,31 +123,33 @@ TEST_F(EventMgrTest, testEventModelTimestamps) {
 
 TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
 	const core::TimeProviderPtr& timeProvider = _testApp->timeProvider();
+	// current tick time: 1000ms
+	timeProvider->update(1000UL);
 	const auto now = timeProvider->tickMillis();
-	const uint64_t nowSeconds = now / 1000UL;
+	// event start tick time: 2s
+	const uint64_t eventStartSeconds = now / 1000UL + 1;
+	// event stop tick time: 52s
+	const int secondsRuntime = 50;
+	const uint64_t eventStopTime = eventStartSeconds + secondsRuntime;
 
 	db::EventModel model;
-	model.setStartdate(nowSeconds);
-	model.setType(Type::GENERIC);
-
-	const int secondsRuntime = 50;
-
-	const int secondsDelta = 1;
-	const long millisDelta = secondsDelta * 1000L;
-	model.setEnddate(nowSeconds + secondsRuntime);
-
-	ASSERT_TRUE(_dbHandler->insert(model)) << "Could not add event entry";
+	createEvent(Type::GENERIC, model, eventStartSeconds, eventStopTime);
 
 	EventMgr mgr(_eventProvider, timeProvider);
 	ASSERT_TRUE(mgr.init()) << "Could not initialize eventmgr";
 	ASSERT_EQ(0, mgr.runningEvents());
 
-	timeProvider->update(now + millisDelta);
+	// current tick time is 1s, event starts at 2s
+	mgr.update(0L);
+	ASSERT_EQ(0, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickMillis()) << " should be no running event " << model.startdate().toString();
+
+	// current tick time: 2000ms
+	timeProvider->update(eventStartSeconds * 1000UL);
 	mgr.update(0L);
 	ASSERT_EQ(1, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickMillis()) << " should be a running event " << model.startdate().toString();
 
-	const unsigned long millisRuntime = secondsRuntime * 1000UL;
-	timeProvider->update(now + millisDelta + millisRuntime);
+	// current tick time: 52000ms
+	timeProvider->update(eventStopTime * 1000UL);
 	mgr.update(0L);
 	ASSERT_EQ(0, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickMillis()) << " should be no running event " << model.enddate().toString();
 
