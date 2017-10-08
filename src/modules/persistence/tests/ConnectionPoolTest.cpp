@@ -9,15 +9,22 @@
 namespace persistence {
 
 class ConnectionPoolTest : public AbstractDatabaseTest {
+private:
+	using Super = AbstractDatabaseTest;
+protected:
+	bool _supported = true;
+public:
+	void SetUp() override {
+		Super::SetUp();
+		ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
+		_supported = pool.init() > 0;
+	}
 };
 
-TEST_F(ConnectionPoolTest, testConnectionPoolSize) {
-	ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
-	ASSERT_EQ(1, pool.init());
-	pool.shutdown();
-}
-
 TEST_F(ConnectionPoolTest, testConnectionPoolGetConnection) {
+	if (!_supported) {
+		return;
+	}
 	ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
 	ASSERT_EQ(1, pool.init());
 	Connection* c = pool.connection();

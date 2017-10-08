@@ -30,7 +30,7 @@ int ConnectionPool::init() {
 
 	Log::debug("Connect to %s@%s to database %s", _dbUser->strVal().c_str(), _dbHost->strVal().c_str(), _dbName->strVal().c_str());
 
-	for (int i = 0; i < _min; ++i) {
+	for (int i = _connectionAmount; i < _min; ++i) {
 		addConnection();
 	}
 
