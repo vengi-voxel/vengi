@@ -78,7 +78,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export PATH=$PWD/latest-gcc-symlinks:$PWD/cmake-3.9.2/bin:$PATH; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty xcpretty-travis-formatter; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install qt; brew link qt --force; brew linkapps qt; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_QT5_VERSION=$(brew list --versions qt | rev | cut -d' ' -f1 | rev) ln -s /usr/local/Cellar/qt/$HOMEBREW_QT5_VERSION/mkspecs /usr/local/mkspecs; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_QT5_VERSION=$(brew list --versions qt | rev | cut -d' ' -f1 | rev) sudo ln -s /usr/local/Cellar/qt/$HOMEBREW_QT5_VERSION/mkspecs /usr/local/mkspecs; fi
 
 cache:
   - apt
