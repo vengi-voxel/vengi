@@ -37,7 +37,7 @@
 namespace core {
 
 int Process::exec (const std::string& command, const std::vector<std::string>& arguments, const char* workingDirectory, size_t bufSize, char *output) {
-#if __LINUX__ or __MACOSX__
+#if __LINUX__ OR __MACOSX__
 	int link[2];
 	if (::pipe(link) < 0) {
 		Log::error("pipe failed: %s", strerror(errno));

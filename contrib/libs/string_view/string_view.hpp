@@ -202,7 +202,7 @@ class basic_string_view {
   CONSTEXPR size_type size() const { return std::distance(begin(), end()); }
   CONSTEXPR size_type length() const { return std::distance(begin(), end()); }
   CONSTEXPR size_type max_size() const {
-    return std::numeric_limits<size_type>::max() / 2;
+    return (std::numeric_limits<size_type>::max)() / 2;
   }
   CONSTEXPR bool empty() const { return size() == 0; }
   CONSTEXPR_CPP14 void remove_prefix(size_type n) {
