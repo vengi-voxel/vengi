@@ -11,33 +11,33 @@
 
 namespace core {
 
-const glm::vec4 Color::Clear        = glm::vec4(  0.f,   0,   0,   0) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::White        = glm::vec4(255.f, 255, 255, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Black        = glm::vec4(  0.f,   0,   0, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Lime         = glm::vec4(109.f, 198,   2, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Pink         = glm::vec4(248.f,   4,  62, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::LightBlue    = glm::vec4(  0.f, 153, 203, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::DarkBlue     = glm::vec4( 55.f, 116, 145, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Orange       = glm::vec4(252.f, 167,   0, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Yellow       = glm::vec4(255.f, 255,   0, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Sandy        = glm::vec4(237.f, 232, 160, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::LightGray    = glm::vec4(192.f, 192, 192, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Gray         = glm::vec4(128.f, 128, 128, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::DarkGray     = glm::vec4( 84.f,  84,  84, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::LightRed     = glm::vec4(255.f,  96,  96, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Red          = glm::vec4(255.f,   0,   0, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::DarkRed      = glm::vec4(128.f,   0,   0, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::LightGreen   = glm::vec4( 96.f, 255,  96, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Green        = glm::vec4(  0.f, 255,   0, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::DarkGreen    = glm::vec4(  0.f, 128,   0, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Blue         = glm::vec4(  0.f,   0, 255, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::SteelBlue    = glm::vec4( 35.f, 107, 142, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Olive        = glm::vec4(128.f, 128,   0, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Purple       = glm::vec4(128.f,   0, 128, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Cyan         = glm::vec4(  0.f, 255, 255, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::Brown        = glm::vec4(107.f,  66,  38, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::LightBrown   = glm::vec4(150.f, 107,  72, 255) / glm::vec4(Color::magnitude);
-const glm::vec4 Color::DarkBrown    = glm::vec4( 82.f,  43,  26, 255) / glm::vec4(Color::magnitude);
+const glm::vec4 Color::Clear        = glm::vec4(  0.f,   0,   0,   0) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::White        = glm::vec4(255.f, 255, 255, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Black        = glm::vec4(  0.f,   0,   0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Lime         = glm::vec4(109.f, 198,   2, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Pink         = glm::vec4(248.f,   4,  62, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::LightBlue    = glm::vec4(  0.f, 153, 203, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::DarkBlue     = glm::vec4( 55.f, 116, 145, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Orange       = glm::vec4(252.f, 167,   0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Yellow       = glm::vec4(255.f, 255,   0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Sandy        = glm::vec4(237.f, 232, 160, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::LightGray    = glm::vec4(192.f, 192, 192, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Gray         = glm::vec4(128.f, 128, 128, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::DarkGray     = glm::vec4( 84.f,  84,  84, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::LightRed     = glm::vec4(255.f,  96,  96, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Red          = glm::vec4(255.f,   0,   0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::DarkRed      = glm::vec4(128.f,   0,   0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::LightGreen   = glm::vec4( 96.f, 255,  96, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Green        = glm::vec4(  0.f, 255,   0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::DarkGreen    = glm::vec4(  0.f, 128,   0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Blue         = glm::vec4(  0.f,   0, 255, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::SteelBlue    = glm::vec4( 35.f, 107, 142, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Olive        = glm::vec4(128.f, 128,   0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Purple       = glm::vec4(128.f,   0, 128, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Cyan         = glm::vec4(  0.f, 255, 255, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Brown        = glm::vec4(107.f,  66,  38, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::LightBrown   = glm::vec4(150.f, 107,  72, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::DarkBrown    = glm::vec4( 82.f,  43,  26, 255) / glm::vec4(Color::magnitudef);
 
 /**
  * @brief Get the nearest matching color index from the list
@@ -80,8 +80,8 @@ int Color::getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>&
 }
 
 glm::vec4 Color::fromRGB(const unsigned int rgbInt, const float a) {
-	return glm::vec4(static_cast<float>(rgbInt >> 16 & 0xFF) / Color::magnitude, static_cast<float>(rgbInt >> 8 & 0xFF) / Color::magnitude,
-			static_cast<float>(rgbInt & 0xFF) / Color::magnitude, a);
+	return glm::vec4(static_cast<float>(rgbInt >> 16 & 0xFF) / Color::magnitudef, static_cast<float>(rgbInt >> 8 & 0xFF) / Color::magnitudef,
+			static_cast<float>(rgbInt & 0xFF) / Color::magnitudef, a);
 }
 
 glm::vec4 Color::fromRGBA(const unsigned int color) {
@@ -93,8 +93,8 @@ glm::vec4 Color::fromRGBA(const unsigned int color) {
 }
 
 glm::vec4 Color::fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	return glm::vec4(static_cast<float>(r) / Color::magnitude, static_cast<float>(g) / Color::magnitude,
-			static_cast<float>(b) / Color::magnitude, static_cast<float>(a) / Color::magnitude);
+	return glm::vec4(static_cast<float>(r) / Color::magnitudef, static_cast<float>(g) / Color::magnitudef,
+			static_cast<float>(b) / Color::magnitudef, static_cast<float>(a) / Color::magnitudef);
 }
 
 glm::vec4 Color::fromHSB(const float hue, const float saturation, const float brightness, const float alpha) {

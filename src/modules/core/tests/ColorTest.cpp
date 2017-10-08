@@ -17,10 +17,10 @@ TEST(ColorTest, testRGBA) {
 	EXPECT_EQ(0xff, color.a);
 
 	const glm::vec4 fcolor = core::Color::fromRGBA(color.rgba);
-	EXPECT_FLOAT_EQ(color.r / (float)core::Color::magnitude, fcolor.r);
-	EXPECT_FLOAT_EQ(color.g / (float)core::Color::magnitude, fcolor.g);
-	EXPECT_FLOAT_EQ(color.b / (float)core::Color::magnitude, fcolor.b);
-	EXPECT_FLOAT_EQ(color.a / (float)core::Color::magnitude, fcolor.a);
+	EXPECT_FLOAT_EQ(color.r / core::Color::magnitudef, fcolor.r);
+	EXPECT_FLOAT_EQ(color.g / core::Color::magnitudef, fcolor.g);
+	EXPECT_FLOAT_EQ(color.b / core::Color::magnitudef, fcolor.b);
+	EXPECT_FLOAT_EQ(color.a / core::Color::magnitudef, fcolor.a);
 	EXPECT_FLOAT_EQ(1.0f, fcolor.a);
 
 	core::RGBA convertedBack;
