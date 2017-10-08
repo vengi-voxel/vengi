@@ -1,16 +1,19 @@
 set(SRCS
-	Connection.cpp Connection.h
-	ScopedConnection.cpp ScopedConnection.h
-	ConnectionPool.cpp ConnectionPool.h
-	Model.cpp Model.h
-	DBHandler.cpp DBHandler.h
-	DBCondition.cpp DBCondition.h
-	ConstraintType.h
-	FieldType.h
 	BindParam.cpp BindParam.h
+	Connection.cpp Connection.h
+	ConnectionPool.cpp ConnectionPool.h
+	ConstraintType.h
+	DBCondition.cpp DBCondition.h
+	DBHandler.cpp DBHandler.h
+	FieldType.h
+	ForwardDecl.h
+	Model.cpp Model.h
+	Order.h
+	OrderBy.h
+	ScopedConnection.cpp ScopedConnection.h
 	ScopedTransaction.cpp ScopedTransaction.h
-	State.cpp State
 	SQLGenerator.cpp SQLGenerator.h
+	State.cpp State
 	Timestamp.cpp Timestamp.h
 )
 set(LIB persistence)

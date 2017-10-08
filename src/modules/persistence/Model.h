@@ -11,6 +11,7 @@
 #include "State.h"
 #include "ConstraintType.h"
 #include "ForwardDecl.h"
+#include "Order.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -58,6 +59,8 @@ struct Field {
 	}
 };
 typedef std::vector<Field> Fields;
+
+using FieldName = const char *;
 
 struct Constraint {
 	std::vector<std::string> fields;

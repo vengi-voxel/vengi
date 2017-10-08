@@ -16,6 +16,7 @@
 #include "BindParam.h"
 #include "SQLGenerator.h"
 #include "DBCondition.h"
+#include "OrderBy.h"
 #include <memory>
 
 namespace persistence {
@@ -26,8 +27,7 @@ namespace persistence {
  * @sa DatabaseTool
  * @sa Model
  * @todo password support
- * @todo offset, limit support
- * @todo order by support
+ * @todo add blob support
  */
 class DBHandler {
 private:
@@ -35,6 +35,41 @@ private:
 	State execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const;
 
 	Connection* connection() const;
+
+	template<class FUNC, class MODEL>
+	bool select(const std::string& query, int conditionAmount, MODEL& model, const DBCondition& condition, FUNC&& func) const {
+		Log::debug("Execute query '%s'", query.c_str());
+		ScopedConnection scoped(connection());
+		if (!scoped) {
+			Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
+			return false;
+		}
+		State s(scoped.connection());
+		if (conditionAmount > 0) {
+			BindParam params(conditionAmount);
+			for (int i = 0; i < conditionAmount; ++i) {
+				const int index = params.add();
+				const char* value = condition.value(i);
+				Log::debug("Parameter %i: '%s'", index + 1, value);
+				params.values[index] = value;
+			}
+			if (!s.exec(query.c_str(), conditionAmount, &params.values[0])) {
+				Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
+				return false;
+			}
+		} else if (!s.exec(query.c_str())) {
+			Log::error("Failed to execute query '%s'", query.c_str());
+			return false;
+		}
+		for (int i = 0; i < s.affectedRows; ++i) {
+			typename std::remove_reference<MODEL>::type selectedModel;
+			selectedModel.fillModelValues(s);
+			func(std::move(selectedModel));
+			++s.currentRow;
+		}
+		Log::debug("Affected rows %i", s.affectedRows);
+		return true;
+	}
 
 public:
 	DBHandler();
@@ -102,42 +137,38 @@ public:
 	template<class FUNC, class MODEL>
 	bool select(MODEL&& model, const DBCondition& condition, FUNC&& func) const {
 		int conditionAmount = 0;
-		const std::string& select = createSelect(model) + createWhere(condition, conditionAmount);
-		Log::debug("Execute query '%s'", select.c_str());
-		ScopedConnection scoped(connection());
-		if (!scoped) {
-			Log::error("Could not execute query '%s' - could not acquire connection", select.c_str());
-			return false;
-		}
-		State s(scoped.connection());
-		if (conditionAmount > 0) {
-			BindParam params(conditionAmount);
-			for (int i = 0; i < conditionAmount; ++i) {
-				const int index = params.add();
-				const char* value = condition.value(i);
-				Log::debug("Parameter %i: '%s'", index + 1, value);
-				params.values[index] = value;
-			}
-			if (!s.exec(select.c_str(), conditionAmount, &params.values[0])) {
-				Log::error("Failed to execute query '%s' with %i parameters", select.c_str(), conditionAmount);
-				return false;
-			}
-		} else if (!s.exec(select.c_str())) {
-			Log::error("Failed to execute query '%s'", select.c_str());
-			return false;
-		}
-		if (s.affectedRows <= 0) {
-			Log::trace("No rows affected, can't fill model values");
-			return true;
-		}
-		for (int i = 0; i < s.affectedRows; ++i) {
-			typename std::remove_reference<MODEL>::type selectedModel;
-			selectedModel.fillModelValues(s);
-			func(std::move(selectedModel));
-			++s.currentRow;
-		}
-		Log::debug("Affected rows %i", s.affectedRows);
-		return true;
+		const std::string& query = createSelect(model) + createWhere(condition, conditionAmount);
+		return select(query, conditionAmount, model, condition, func);
+	}
+
+	/**
+	 * @brief Select database entries of the given @c persistence::Model
+	 * @param[in] model The model that should be selected
+	 * @param[in] condition The @c persistence::DBCondition that identifies the entries to select
+	 * @param[in] orderBy The field data to order by
+	 * @param[in] func The callback that is notified on every entry that was found that matches
+	 * the search conditions.
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
+	template<class FUNC, class MODEL>
+	bool select(MODEL&& model, const DBCondition& condition, const OrderBy& orderBy, FUNC&& func) const {
+		int conditionAmount = 0;
+		const std::string& query = createSelect(model) + createWhere(condition, conditionAmount)
+				+ createOrderBy(orderBy) + createLimitOffset(orderBy.range);
+		return select(query, conditionAmount, model, condition, func);
+	}
+
+	/**
+	 * @brief Select database entries of the given @c persistence::Model
+	 * @param[in] model The model that should be selected
+	 * @param[in] orderBy The field data to order by
+	 * @param[in] func The callback that is notified on every entry that was found that matches
+	 * the search conditions.
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
+	template<class FUNC, class MODEL>
+	bool select(MODEL&& model, const OrderBy& orderBy, FUNC&& func) const {
+		return select(model, DBConditionOne(), orderBy, func);
 	}
 
 	/**

@@ -6,12 +6,15 @@
 
 #include <string>
 #include <vector>
+#include "Order.h"
 
 namespace persistence {
 
 class BindParam;
 class Model;
 class DBCondition;
+class OrderBy;
+struct Range;
 
 extern std::string createCreateTableStatement(const Model& model);
 extern std::string createTruncateTableStatement(const Model& model);
@@ -26,5 +29,7 @@ extern const char* createTransactionCommit();
 extern const char* createTransactionRollback();
 
 extern std::string createWhere(const DBCondition& condition, int &parameterCount);
+extern std::string createOrderBy(const OrderBy& orderBy);
+extern std::string createLimitOffset(const Range& range);
 
 }

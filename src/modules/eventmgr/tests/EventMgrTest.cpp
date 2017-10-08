@@ -22,6 +22,8 @@ public:
 		_eventProvider = std::make_shared<eventmgr::EventProvider>(_dbHandler);
 		_dbHandler->dropTable(db::EventPointModel());
 		_dbHandler->dropTable(db::EventModel());
+		_dbHandler->createTable(db::EventPointModel());
+		_dbHandler->createTable(db::EventModel());
 	}
 
 	void TearDown() override {

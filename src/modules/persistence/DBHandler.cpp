@@ -49,11 +49,11 @@ bool DBHandler::truncate(Model&& model) const {
 }
 
 bool DBHandler::dropTable(const Model& model) const {
-	return exec(createTruncateTableStatement(model));
+	return exec(createDropTableStatement(model));
 }
 
 bool DBHandler::dropTable(Model&& model) const {
-	return exec(createTruncateTableStatement(model));
+	return exec(createDropTableStatement(model));
 }
 
 bool DBHandler::createTable(Model&& model) const {

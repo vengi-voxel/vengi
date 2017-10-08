@@ -7,6 +7,7 @@
 #include "core/Array.h"
 #include "Model.h"
 #include "DBCondition.h"
+#include "OrderBy.h"
 
 namespace persistence {
 
@@ -16,6 +17,12 @@ static const char *OperatorStrings[] = {
 	" = "
 };
 static_assert(lengthof(OperatorStrings) == (int)persistence::Operator::MAX, "Invalid operator mapping");
+
+static const char *OrderStrings[] = {
+	"ASC",
+	"DESC"
+};
+static_assert(lengthof(OrderStrings) == (int)persistence::Order::MAX, "Invalid order mapping");
 
 static inline std::string quote(const std::string& in) {
 	return core::string::format("\"%s\"", in.c_str());
@@ -366,6 +373,26 @@ std::string createWhere(const DBCondition& condition, int &parameterCount) {
 	std::stringstream where;
 	where << " WHERE " << condition.statement(parameterCount);
 	return where.str();
+}
+
+std::string createOrderBy(const OrderBy& orderBy) {
+	std::stringstream ss;
+	ss << " ORDER BY " << quote(orderBy.fieldname) << " " << OrderStrings[std::enum_value(orderBy.order)];
+	return ss.str();
+}
+
+std::string createLimitOffset(const Range& range) {
+	if (range.limit <= 0 && range.offset <= 0) {
+		return "";
+	}
+	std::stringstream ss;
+	if (range.limit > 0) {
+		ss << " LIMIT " << range.limit;
+	}
+	if (range.offset > 0) {
+		ss << " OFFSET " << range.offset;
+	}
+	return ss.str();
 }
 
 const char* createTransactionBegin() {

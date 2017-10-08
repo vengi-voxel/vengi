@@ -58,6 +58,10 @@ struct MembersStruct {
 	}
 };
 
+static std::string getFieldnameFunction(const persistence::Field& field) {
+	return "f_" + field.name;
+}
+
 static void createMembersStruct(const Table& table, std::stringstream& src) {
 	src << "\tstruct " << MembersStruct::structName() << " {\n";
 	for (auto entry : table.fields) {
@@ -167,8 +171,8 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		} else {
 			src << getCPPType(f.type, true, false);
 		}
-		src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(\"";
-		src << f.name << "\", ";
+		src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(";
+		src << table.classname << "::" << getFieldnameFunction(f) << "(), ";
 		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
 			src << "value";
 		} else if (f.type == persistence::FieldType::TIMESTAMP) {
@@ -181,8 +185,8 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
 			src << "\t" << classname << "(";
 			src << "const std::string&";
-			src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(\"";
-			src << f.name << "\", value, comp) {\n\t}\n";
+			src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(";
+			src << table.classname << "::f_" << f.name << "(), value, comp) {\n\t}\n";
 		}
 
 		src << "}; // class " << classname << "\n\n";
@@ -233,6 +237,13 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 	}
 }
 
+void createFieldNames(const Table& table, std::stringstream& src) {
+	for (auto entry : table.fields) {
+		const persistence::Field& f = entry.second;
+		src << "\tstatic constexpr const char* " << getFieldnameFunction(f) << "() {\n\t\treturn \"" << f.name << "\";\n\t}\n\n";
+	}
+}
+
 bool generateClassForTable(const Table& table, std::stringstream& src) {
 	src << "/**\n * @file\n */\n\n";
 	src << "#pragma once\n\n";
@@ -260,6 +271,8 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 		createConstructor(table, src);
 
 		createGetterAndSetter(table, src);
+
+		createFieldNames(table, src);
 	}
 
 	createDBConditions(table, src);

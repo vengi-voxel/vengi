@@ -168,4 +168,34 @@ TEST_F(DatabaseModelTest, testTimestamp) {
 	});
 }
 
+TEST_F(DatabaseModelTest, testLimitOrderBy) {
+	int64_t id = -1L;
+	for (int i = 0; i < 5; ++i) {
+		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
+	}
+	const int limit = 2;
+	int count = 0;
+	const persistence::OrderBy orderBy(db::UserModel::f_id(), persistence::Order::DESC, limit);
+	_dbHandler.select(db::UserModel(), orderBy, [&] (db::UserModel&& model) {
+		++count;
+	});
+	ASSERT_EQ(limit, count);
+}
+
+TEST_F(DatabaseModelTest, testOffsetOrderBy) {
+	int64_t id = -1L;
+	const int n = 5;
+	for (int i = 0; i < n; ++i) {
+		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
+	}
+	const int limit = -1;
+	const int offset = 3;
+	int count = 0;
+	const persistence::OrderBy orderBy(db::UserModel::f_id(), persistence::Order::DESC, limit, offset);
+	_dbHandler.select(db::UserModel(), orderBy, [&] (db::UserModel&& model) {
+		++count;
+	});
+	ASSERT_EQ(n - offset, count);
+}
+
 }
