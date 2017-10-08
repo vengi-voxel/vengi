@@ -11,7 +11,7 @@
 namespace persistence {
 
 class Model;
-class Field;
+struct Field;
 
 struct BindParam {
 	std::vector<const char *> values;
