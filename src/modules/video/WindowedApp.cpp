@@ -165,7 +165,7 @@ core::AppState WindowedApp::onInit() {
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 
 	SDL_DisplayMode displayMode;
-	const int numDisplays = std::max(0, SDL_GetNumVideoDisplays());
+	const int numDisplays = (std::max)(0, SDL_GetNumVideoDisplays());
 	const int displayIndex = glm::clamp(core::Var::getSafe(cfg::ClientWindowDisplay)->intVal(), 0, numDisplays);
 	SDL_GetDesktopDisplayMode(displayIndex, &displayMode);
 
