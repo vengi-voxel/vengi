@@ -58,6 +58,10 @@ Connection* ConnectionPool::addConnection() {
 	c->changeDb(_dbName->strVal());
 	c->changeHost(_dbHost->strVal());
 	c->setLoginData(_dbUser->strVal(), _dbPw->strVal());
+	if (!c->connect()) {
+		delete c;
+		return nullptr;
+	}
 
 	_connections.push(c);
 	++_connectionAmount;
@@ -78,7 +82,7 @@ Connection* ConnectionPool::connection() {
 			return nullptr;
 		}
 		Connection* newC = addConnection();
-		if (!newC->connect()) {
+		if (newC == nullptr) {
 			Log::error("Could not connect to database");
 			return nullptr;
 		}

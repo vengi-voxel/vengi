@@ -12,27 +12,33 @@ class EventMgrTest : public persistence::AbstractDatabaseTest {
 private:
 	using Super = persistence::AbstractDatabaseTest;
 protected:
+	bool _supported = true;
 	persistence::DBHandlerPtr _dbHandler;
 	eventmgr::EventProviderPtr _eventProvider;
 public:
 	void SetUp() override {
 		Super::SetUp();
 		_dbHandler = std::make_shared<persistence::DBHandler>();
-		ASSERT_TRUE(_dbHandler->init()) << "Could not initialize dbhandler";
+		_supported = _dbHandler->init();
 		_eventProvider = std::make_shared<eventmgr::EventProvider>(_dbHandler);
-		_dbHandler->dropTable(db::EventPointModel());
-		_dbHandler->dropTable(db::EventModel());
-		_dbHandler->createTable(db::EventPointModel());
-		_dbHandler->createTable(db::EventModel());
+		if (_supported) {
+			_dbHandler->dropTable(db::EventPointModel());
+			_dbHandler->dropTable(db::EventModel());
+			_dbHandler->createTable(db::EventPointModel());
+			_dbHandler->createTable(db::EventModel());
+		}
 	}
 
 	void TearDown() override {
 		Super::TearDown();
-		_dbHandler->shutdown();
-		_eventProvider->shutdown();
+		if (_supported) {
+			_dbHandler->shutdown();
+			_eventProvider->shutdown();
+		}
 	}
 
 	void createEvent(Type type, db::EventModel& eventModel, const persistence::Timestamp& startdate = persistence::Timestamp::now(), const persistence::Timestamp& enddate = persistence::Timestamp::now()) {
+		ASSERT_TRUE(_supported);
 		db::EventModel model;
 		model.setType(type);
 		model.setStartdate(startdate);
@@ -56,17 +62,26 @@ public:
 };
 
 TEST_F(EventMgrTest, testEventMgrInit) {
+	if (!_supported) {
+		return;
+	}
 	EventMgr mgr(_eventProvider, _testApp->timeProvider());
 	ASSERT_TRUE(mgr.init()) << "Could not initialize eventmgr";
 	mgr.shutdown();
 }
 
 TEST_F(EventMgrTest, testEventModelInsert) {
+	if (!_supported) {
+		return;
+	}
 	EventId id;
 	createEvent(Type::GENERIC, id);
 }
 
 TEST_F(EventMgrTest, testEventPointModelInsert) {
+	if (!_supported) {
+		return;
+	}
 	EventId id;
 	createEvent(Type::GENERIC, id);
 	db::EventPointModel pointModel;
@@ -78,6 +93,9 @@ TEST_F(EventMgrTest, testEventPointModelInsert) {
 }
 
 TEST_F(EventMgrTest, testEventPointModelInsertUniqueKeys) {
+	if (!_supported) {
+		return;
+	}
 	EventId id;
 	createEvent(Type::GENERIC, id);
 	db::EventPointModel pointModel;
@@ -110,6 +128,9 @@ TEST_F(EventMgrTest, testEventPointModelInsertUniqueKeys) {
 }
 
 TEST_F(EventMgrTest, testEventModelTimestamps) {
+	if (!_supported) {
+		return;
+	}
 	const core::TimeProviderPtr& timeProvider = _testApp->timeProvider();
 	const auto now = timeProvider->tickMillis();
 	const int secondsRuntime = 50;
@@ -124,6 +145,9 @@ TEST_F(EventMgrTest, testEventModelTimestamps) {
 }
 
 TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
+	if (!_supported) {
+		return;
+	}
 	const core::TimeProviderPtr& timeProvider = _testApp->timeProvider();
 	// current tick time: 1000ms
 	timeProvider->update(1000UL);

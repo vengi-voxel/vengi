@@ -4,6 +4,7 @@
 
 #include "DBHandler.h"
 #include "core/Singleton.h"
+#include "core/Assert.h"
 #include "ConnectionPool.h"
 #include "core/Log.h"
 
@@ -12,15 +13,21 @@ namespace persistence {
 DBHandler::DBHandler() {
 }
 
+DBHandler::~DBHandler() {
+	core_assert_always(!_initialized);
+}
+
 bool DBHandler::init() {
 	if (core::Singleton<ConnectionPool>::getInstance().init() <= 0) {
 		Log::error("Failed to init the connection pool");
 		return false;
 	}
+	_initialized = true;
 	return true;
 }
 
 void DBHandler::shutdown() {
+	_initialized = false;
 	core::Singleton<ConnectionPool>::getInstance().shutdown();
 }
 

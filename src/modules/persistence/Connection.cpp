@@ -43,6 +43,9 @@ static void defaultNoticeProcessor(void *arg, const char *message) {
 }
 
 bool Connection::connect() {
+	if (_connection != nullptr && PQstatus(_connection) == CONNECTION_OK) {
+		return true;
+	}
 	std::string conninfo;
 
 	const char *host = nullptr;

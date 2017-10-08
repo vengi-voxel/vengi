@@ -71,8 +71,11 @@ private:
 		return true;
 	}
 
+	bool _initialized = false;
+
 public:
 	DBHandler();
+	~DBHandler();
 
 	/**
 	 * @brief Initializes the connections

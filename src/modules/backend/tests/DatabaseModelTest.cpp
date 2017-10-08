@@ -14,13 +14,16 @@ class DatabaseModelTest: public persistence::AbstractDatabaseTest {
 private:
 	using Super = persistence::AbstractDatabaseTest;
 protected:
+	bool _supported = true;
 	persistence::DBHandler _dbHandler;
 public:
 	void SetUp() override {
 		Super::SetUp();
-		ASSERT_TRUE(_dbHandler.init());
-		ASSERT_TRUE(_dbHandler.createTable(db::UserModel())) << "Could not create table";
-		_dbHandler.truncate(db::UserModel());
+		_supported = _dbHandler.init();
+		if (_supported) {
+			_dbHandler.dropTable(db::UserModel());
+			ASSERT_TRUE(_dbHandler.createTable(db::UserModel())) << "Could not create table";
+		}
 	}
 
 	void TearDown() override {
@@ -29,6 +32,7 @@ public:
 	}
 
 	void createUser(const std::string& email, const std::string& password, int64_t& id) {
+		ASSERT_TRUE(_supported);
 		const persistence::Timestamp ts = persistence::Timestamp::now();
 		db::UserModel u;
 		EXPECT_EQ(0, u.id());
@@ -57,11 +61,17 @@ public:
 };
 
 TEST_F(DatabaseModelTest, testCreateUser) {
+	if (!_supported) {
+		return;
+	}
 	int64_t id = -1L;
 	createUser("a@b.c.d", "secret", id);
 }
 
 TEST_F(DatabaseModelTest, testCreateUsers) {
+	if (!_supported) {
+		return;
+	}
 	int64_t id = -1L;
 	for (int i = 0; i < 5; ++i) {
 		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
@@ -69,6 +79,9 @@ TEST_F(DatabaseModelTest, testCreateUsers) {
 }
 
 TEST_F(DatabaseModelTest, testSelectAll) {
+	if (!_supported) {
+		return;
+	}
 	int64_t id = -1L;
 	const int expected = 5;
 	for (int i = 0; i < expected; ++i) {
@@ -82,6 +95,9 @@ TEST_F(DatabaseModelTest, testSelectAll) {
 }
 
 TEST_F(DatabaseModelTest, testSelectByEmail) {
+	if (!_supported) {
+		return;
+	}
 	int64_t id = -1L;
 	const int expected = 5;
 	for (int i = 0; i < expected; ++i) {
@@ -97,6 +113,9 @@ TEST_F(DatabaseModelTest, testSelectByEmail) {
 }
 
 TEST_F(DatabaseModelTest, testSelectById) {
+	if (!_supported) {
+		return;
+	}
 	const int expected = 5;
 	int64_t id = -1L;
 	for (int i = 0; i < expected; ++i) {
@@ -112,6 +131,9 @@ TEST_F(DatabaseModelTest, testSelectById) {
 }
 
 TEST_F(DatabaseModelTest, testTruncate) {
+	if (!_supported) {
+		return;
+	}
 	int64_t id = -1L;
 	createUser("a@b.c.d", "secret", id);
 	EXPECT_TRUE(_dbHandler.truncate(db::UserModel()));
@@ -123,6 +145,9 @@ TEST_F(DatabaseModelTest, testTruncate) {
 }
 
 TEST_F(DatabaseModelTest, testDelete) {
+	if (!_supported) {
+		return;
+	}
 	int64_t id = -1L;
 	createUser("a@b.c.d", "secret", id);
 	EXPECT_TRUE(_dbHandler.deleteModel(db::UserModel(), db::DBConditionUserId(id)));
@@ -134,6 +159,9 @@ TEST_F(DatabaseModelTest, testDelete) {
 }
 
 TEST_F(DatabaseModelTest, testUpdate) {
+	if (!_supported) {
+		return;
+	}
 	int64_t id = -1L;
 	createUser("a@b.c.d", "secret", id);
 	int count = 0;
@@ -153,6 +181,9 @@ TEST_F(DatabaseModelTest, testUpdate) {
 }
 
 TEST_F(DatabaseModelTest, testTimestamp) {
+	if (!_supported) {
+		return;
+	}
 	db::UserModel u;
 	EXPECT_EQ(0, u.id());
 	u.setEmail("timestamp@now.de");
@@ -169,6 +200,9 @@ TEST_F(DatabaseModelTest, testTimestamp) {
 }
 
 TEST_F(DatabaseModelTest, testLimitOrderBy) {
+	if (!_supported) {
+		return;
+	}
 	int64_t id = -1L;
 	for (int i = 0; i < 5; ++i) {
 		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
@@ -183,6 +217,9 @@ TEST_F(DatabaseModelTest, testLimitOrderBy) {
 }
 
 TEST_F(DatabaseModelTest, testOffsetOrderBy) {
+	if (!_supported) {
+		return;
+	}
 	int64_t id = -1L;
 	const int n = 5;
 	for (int i = 0; i < n; ++i) {
