@@ -249,7 +249,7 @@ inline void App::ProfilerCPU::enter() {
 
 inline void App::ProfilerCPU::leave() {
 	const double time = core::TimeProvider::systemNanos() - _stamp;
-	_max = std::max(_max, time);
+	_max = (std::max)(_max, time);
 	_min = (std::min)(_min, time);
 	_avg = _avg * 0.5 + time * 0.5;
 	_samples[_sampleCount & (_maxSampleCount - 1)] = time;
