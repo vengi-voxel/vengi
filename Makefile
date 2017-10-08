@@ -369,7 +369,11 @@ update-murmurhash3:
 	cp $(UPDATEDIR)/smhasher.sync/src/MurmurHash3.* src/modules/core
 	sed -i 's/[ \t]*$$//g' src/modules/core/MurmurHash3.*
 
-updatelibs: update-restclient-cpp update-libuv update-stb update-easy_profiler update-remotery update-microprofile update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang update-murmurhash3
+update-stringview:
+	$(call UPDATE_GIT,string_view,https://github.com/satoren/string_view.git)
+	cp $(UPDATEDIR)/string_view.sync/string_view.hpp contrib/libs/string_view
+
+updatelibs: update-stringview update-restclient-cpp update-libuv update-stb update-easy_profiler update-remotery update-microprofile update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang update-murmurhash3
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
