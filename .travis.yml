@@ -74,7 +74,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/gcc-7 latest-gcc-symlinks/gcc; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/g++-7 latest-gcc-symlinks/cpp; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/gcc-7 latest-gcc-symlinks/cc; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh; sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=cmake-3.9.2; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh; mkdir -p cmake-3.9.2; sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=cmake-3.9.2; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export PATH=$PWD/latest-gcc-symlinks:$PWD/cmake-3.9.2/bin:$PATH; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty xcpretty-travis-formatter; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install qt; brew link qt5 --force; fi
