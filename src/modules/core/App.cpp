@@ -76,7 +76,7 @@ void App::onFrame() {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	} else {
 		const uint64_t now = systemMillis();
-		_deltaFrame = std::max(uint64_t(1), now - _now);
+		_deltaFrame = (std::max)(uint64_t(1), now - _now);
 		_timeProvider->update(now);
 		_now = now;
 
@@ -407,8 +407,8 @@ void App::usage() const {
 	int maxWidthLong = 0;
 	int maxWidthShort = 0;
 	for (const Argument& a : _arguments) {
-		maxWidthLong = std::max(maxWidthLong, (int)a.longArg().size());
-		maxWidthShort = std::max(maxWidthShort, (int)a.shortArg().size());
+		maxWidthLong = (std::max)(maxWidthLong, (int)a.longArg().size());
+		maxWidthShort = (std::max)(maxWidthShort, (int)a.shortArg().size());
 	};
 	int maxWidthOnlyLong = maxWidthLong + maxWidthShort + 3;
 	for (const Argument& a : _arguments) {
@@ -424,10 +424,10 @@ void App::usage() const {
 
 	int maxWidth = 0;
 	core::Var::visitSorted([&] (const core::VarPtr& v) {
-		maxWidth = std::max(maxWidth, (int)v->name().size());
+		maxWidth = (std::max)(maxWidth, (int)v->name().size());
 	});
 	core::Command::visitSorted([&] (const core::Command& c) {
-		maxWidth = std::max(maxWidth, (int)c.name().size());
+		maxWidth = (std::max)(maxWidth, (int)c.name().size());
 	});
 
 	Log::info("---");
