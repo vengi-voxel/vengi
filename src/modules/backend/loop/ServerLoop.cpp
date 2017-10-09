@@ -43,7 +43,7 @@ ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network
 	r->registerHandler(network::EnumNameClientMsgType(type), std::make_shared<handler>(__VA_ARGS__));
 
 bool ServerLoop::init() {
-	if (_dbHandler->init()) {
+	if (!_dbHandler->init()) {
 		Log::error("Failed to init the dbhandler");
 		return false;
 	}
