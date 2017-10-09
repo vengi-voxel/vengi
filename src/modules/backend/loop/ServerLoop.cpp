@@ -64,7 +64,8 @@ bool ServerLoop::init() {
 	_zone = new ai::Zone("Zone");
 	_aiServer = new ai::Server(*_registry, aiDebugServerPort, aiDebugServerInterface);
 
-	const std::string& attributes = core::App::getInstance()->filesystem()->load("attributes.lua");
+	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	const std::string& attributes = filesystem->load("attributes.lua");
 	if (!_containerProvider->init(attributes)) {
 		Log::error("Failed to load the attributes: %s", _containerProvider->error().c_str());
 		return false;
@@ -87,7 +88,6 @@ bool ServerLoop::init() {
 		return false;
 	}
 
-	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
 	if (!_world->init(filesystem->load("world.lua"), filesystem->load("biomes.lua"))) {
 		Log::error("Failed to init the world");
 		return false;
