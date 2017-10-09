@@ -214,7 +214,7 @@ public:
 	Action _keyAction = Action::None;
 	// action that is selected via ui
 	Action _uiAction = Action::PlaceVoxel;
-	long _actionExecutionDelay = 20l;
+	uint64_t _actionExecutionDelay = 20;
 };
 
 inline core::Axis Model::lockedAxis() const {
