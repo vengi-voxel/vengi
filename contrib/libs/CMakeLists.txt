@@ -1,6 +1,3 @@
-if (NOT MSVC)
-	add_subdirectory(easy_profiler)
-endif()
 add_subdirectory(backward)
 add_subdirectory(benchmark)
 add_subdirectory(glm)

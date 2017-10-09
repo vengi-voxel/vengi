@@ -6,7 +6,6 @@ add_subdirectory(glslang)
 
 if (TOOLS)
 	add_subdirectory(voxedit)
-	add_subdirectory(profiler)
 	add_subdirectory(shapetool)
 	add_subdirectory(worldrenderertool)
 	add_subdirectory(noisetool)

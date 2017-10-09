@@ -181,14 +181,6 @@ test-ambient-occlusion: cmake
 	$(call COMPILE, tests)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) ./tests --gtest_color=yes --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
 
-.PHONY: remotery
-remotery:
-	$(Q)xdg-open file://$(CURDIR)/tools/remotery/index.html
-
-.PHONY: microprofile
-microprofile:
-	$(Q)xdg-open http://127.0.0.1:1338
-
 .PHONY: tags
 tags:
 	$(Q)ctags -R src
@@ -238,34 +230,6 @@ update-stb:
 update-simplecpp:
 	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)
 	cp $(UPDATEDIR)/simplecpp.sync/simplecpp.* contrib/libs/simplecpp
-
-update-easy_profiler:
-	$(call UPDATE_GIT,easy_profiler,https://github.com/yse/easy_profiler.git)
-	rm -rf contrib/libs/easy_profiler
-	mkdir contrib/libs/easy_profiler
-	cp -r $(UPDATEDIR)/easy_profiler.sync/easy_profiler_core/* contrib/libs/easy_profiler
-	git checkout HEAD contrib/libs/easy_profiler/version.info
-	git checkout -f contrib/libs/easy_profiler/CMakeLists.txt
-	rm -rf src/tools/profiler
-	mkdir src/tools/profiler
-	cp -r $(UPDATEDIR)/easy_profiler.sync/profiler_gui/* src/tools/profiler
-	git checkout -f src/tools/profiler/CMakeLists.txt
-
-update-remotery:
-	$(call UPDATE_GIT,remotery,https://github.com/Celtoys/Remotery)
-	cp $(UPDATEDIR)/remotery.sync/lib/Remotery.[ch] src/modules/core/trace
-	rm -rf tools/remotery
-	mkdir tools/remotery
-	cp -r $(UPDATEDIR)/remotery.sync/vis/* tools/remotery/
-	cp $(UPDATEDIR)/remotery.sync/LICENSE tools/remotery
-	cp $(UPDATEDIR)/remotery.sync/readme.md tools/remotery
-	sed -i 's/[ \t]*$$//g' src/modules/core/trace/Remotery.[ch]
-
-update-microprofile:
-	$(call UPDATE_GIT,microprofile,https://github.com/jonasmr/microprofile.git)
-	cp $(UPDATEDIR)/microprofile.sync/microprofile*.[ch]* src/modules/core/trace
-	sed -i 's/\r//g' src/modules/core/trace/microprofile*
-	sed -i 's/[ \t]*$$//g' src/modules/core/trace/microprofile*
 
 update-googletest:
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
@@ -373,7 +337,7 @@ update-stringview:
 	$(call UPDATE_GIT,string_view,https://github.com/satoren/string_view.git)
 	cp $(UPDATEDIR)/string_view.sync/string_view.hpp contrib/libs/string_view
 
-updatelibs: update-stringview update-restclient-cpp update-libuv update-stb update-easy_profiler update-remotery update-microprofile update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang update-murmurhash3
+updatelibs: update-stringview update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang update-murmurhash3
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh

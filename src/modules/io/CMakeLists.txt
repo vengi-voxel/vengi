@@ -10,7 +10,7 @@ set(SRCS
 set(LIB io)
 add_library(${LIB} ${SRCS})
 
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES sdl2 easy_profiler glm backward libuv)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES sdl2 glm backward libuv)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
