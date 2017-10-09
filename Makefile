@@ -163,27 +163,13 @@ server client voxedit shapetool worldrenderertool shadertool noisetool noisetool
 	$(call COMPILE, copy-data-shared)
 	$(call COMPILE, copy-data-$@)
 	$(Q)cd $(BUILDDIR); $(PERF_CMD) $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
-	$(Q)cd $(BUILDDIR); $(PERF_REPORT_CMD)
 
 backward flatbuffers glm libenet nativefiledialog restclient-cpp selene zlib lua53 luac libcurl assimp turbobadger sdl2: cmake
 	$(call COMPILE, $@)
 
-rcon profiler: cmake
+rcon: cmake
 	$(call COMPILE, $@)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
-
-test-material-color: cmake
-	$(call COMPILE, tests)
-	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) ./tests --gtest_color=yes --gtest_filter=MaterialTest* -- $(ARGS)
-	$(Q)xdg-open $(BUILDDIR)/material.png
-
-test-ambient-occlusion: cmake
-	$(call COMPILE, tests)
-	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) ./tests --gtest_color=yes --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
-
-.PHONY: tags
-tags:
-	$(Q)ctags -R src
 
 define UPDATE_GIT
 	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
