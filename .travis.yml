@@ -77,9 +77,10 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh; mkdir -p cmake-3.9.2; sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=cmake-3.9.2; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export PATH=$PWD/latest-gcc-symlinks:$PWD/cmake-3.9.2/bin:$PATH; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty xcpretty-travis-formatter; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install qt; brew link qt --force; brew linkapps qt; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install qt; brew link qt --force; brew linkapps qt; ls /usr/local/Cellar/qt/; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_QT5_VERSION=$(brew list --versions qt | rev | cut -d' ' -f1 | rev) sudo ln -s /usr/local/Cellar/qt/$HOMEBREW_QT5_VERSION/mkspecs /usr/local/mkspecs; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_QT5_VERSION=$(brew list --versions qt | rev | cut -d' ' -f1 | rev) sudo ln -s /usr/local/Cellar/qt/$HOMEBREW_QT5_VERSION/plugins /usr/local/plugins; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ls /usr/local; fi
 
 cache:
   - apt
