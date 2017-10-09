@@ -16,7 +16,7 @@ namespace core {
 
 Trace::Trace(uint16_t port) {
 #if USE_EMTRACE
-	emscripten_trace_configure("http://localhost:5000/", "Engine");
+	emscripten_trace_configure(core::string::format("http://localhost:%i/", (int)port).c_str(), "Engine");
 #endif
 	traceThread("MainThread");
 }
