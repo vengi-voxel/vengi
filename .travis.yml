@@ -5,7 +5,7 @@ os:
   - linux
   - osx
 
-osx_image: xcode9
+osx_image: xcode9.1
 
 git:
   depth: 3
@@ -79,6 +79,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty xcpretty-travis-formatter; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install qt; brew link qt --force; brew linkapps qt; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_QT5_VERSION=$(brew list --versions qt | rev | cut -d' ' -f1 | rev) sudo ln -s /usr/local/Cellar/qt/$HOMEBREW_QT5_VERSION/mkspecs /usr/local/mkspecs; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_QT5_VERSION=$(brew list --versions qt | rev | cut -d' ' -f1 | rev) sudo ln -s /usr/local/Cellar/qt/$HOMEBREW_QT5_VERSION/plugins /usr/local/plugins; fi
 
 cache:
   - apt
