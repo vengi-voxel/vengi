@@ -23,8 +23,8 @@ voxel::RawVolume* UndoHandler::undo() {
 	if (!canUndo()) {
 		return nullptr;
 	}
+	core_assert(_undoPosition >= 1);
 	--_undoPosition;
-	core_assert(_undoPosition >= 0);
 	voxel::RawVolume* v = undoState();
 	return new voxel::RawVolume(v);
 }
