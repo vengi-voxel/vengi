@@ -338,7 +338,7 @@ static unsigned short getAndSkipBOM(std::istream &istr)
 
     // Skip UTF-8 BOM 0xefbbbf
     if (ch1 == 0xef) {
-        istr.get();
+        (void)istr.get();
         if (istr.get() == 0xbb && istr.peek() == 0xbf) {
             (void)istr.get();
         } else {
@@ -401,6 +401,20 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         if (ch < ' ' && ch != '\t' && ch != '\n' && ch != '\r')
             ch = ' ';
 
+        if (ch >= 0x80) {
+            if (outputList) {
+                simplecpp::Output err(files);
+                err.type = simplecpp::Output::UNHANDLED_CHAR_ERROR;
+                err.location = location;
+                std::ostringstream s;
+                s << (int)ch;
+                err.msg = "The code contains unhandled character(s) (character code=" + s.str() + "). Neither unicode nor extended ascii is supported.";
+                outputList->push_back(err);
+            }
+            clear();
+            return;
+        }
+
         if (ch == '\n') {
             if (cback() && cback()->op == '\\') {
                 if (location.col > cback()->location.col + 1U)
@@ -449,9 +463,12 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
         // number or name
         if (isNameChar(ch)) {
+            const bool num = std::isdigit(ch);
             while (istr.good() && isNameChar(ch)) {
                 currentToken += ch;
                 ch = readChar(istr,bom);
+                if (num && ch=='\'' && isNameChar(peekChar(istr,bom)))
+                    ch = readChar(istr,bom);
             }
 
             ungetChar(istr,bom);
@@ -586,6 +603,7 @@ void simplecpp::TokenList::constFold()
         constFoldUnaryNotPosNeg(tok);
         constFoldMulDivRem(tok);
         constFoldAddSub(tok);
+        constFoldShift(tok);
         constFoldComparison(tok);
         constFoldBitwise(tok);
         constFoldLogicalOp(tok);
@@ -681,6 +699,7 @@ void simplecpp::TokenList::combineOperators()
     }
 }
 
+static const std::string COMPL("compl");
 static const std::string NOT("not");
 void simplecpp::TokenList::constFoldUnaryNotPosNeg(simplecpp::Token *tok)
 {
@@ -688,10 +707,16 @@ void simplecpp::TokenList::constFoldUnaryNotPosNeg(simplecpp::Token *tok)
         // "not" might be !
         if (isAlternativeUnaryOp(tok, NOT))
             tok->op = '!';
+        // "compl" might be ~
+        else if (isAlternativeUnaryOp(tok, COMPL))
+            tok->op = '~';
 
         if (tok->op == '!' && tok->next && tok->next->number) {
             tok->setstr(tok->next->str == "0" ? "1" : "0");
             deleteToken(tok->next);
+        } else if (tok->op == '~' && tok->next && tok->next->number) {
+           tok->setstr(toString(~stringToLL(tok->next->str)));
+           deleteToken(tok->next);
         } else {
             if (tok->previous && (tok->previous->number || tok->previous->name))
                 continue;
@@ -756,6 +781,29 @@ void simplecpp::TokenList::constFoldAddSub(Token *tok)
             result = stringToLL(tok->previous->str) + stringToLL(tok->next->str);
         else if (tok->op == '-')
             result = stringToLL(tok->previous->str) - stringToLL(tok->next->str);
+        else
+            continue;
+
+        tok = tok->previous;
+        tok->setstr(toString(result));
+        deleteToken(tok->next);
+        deleteToken(tok->next);
+    }
+}
+
+void simplecpp::TokenList::constFoldShift(Token *tok)
+{
+    for (; tok && tok->op != ')'; tok = tok->next) {
+        if (!tok->previous || !tok->previous->number)
+            continue;
+        if (!tok->next || !tok->next->number)
+            continue;
+
+        long long result;
+        if (tok->str == "<<")
+            result = stringToLL(tok->previous->str) << stringToLL(tok->next->str);
+        else if (tok->str == ">>")
+            result = stringToLL(tok->previous->str) >> stringToLL(tok->next->str);
         else
             continue;
 
@@ -1192,6 +1240,8 @@ namespace simplecpp {
                     argtok = argtok->next;
                 }
                 if (!sameline(nametoken, argtok)) {
+                    endToken = argtok ? argtok->previous : argtok;
+                    valueToken = NULL;
                     return false;
                 }
                 valueToken = argtok ? argtok->next : NULL;
@@ -1258,8 +1308,8 @@ namespace simplecpp {
                 } else {
                     if (!expandArg(tokens, tok, tok->location, macros, expandedmacros, parametertokens)) {
                         bool expanded = false;
-                        if (macros.find(tok->str) != macros.end() && expandedmacros.find(tok->str) == expandedmacros.end()) {
-                            const std::map<TokenString, Macro>::const_iterator it = macros.find(tok->str);
+                        const std::map<TokenString, Macro>::const_iterator it = macros.find(tok->str);
+                        if (it != macros.end() && expandedmacros.find(tok->str) == expandedmacros.end()) {
                             const Macro &m = it->second;
                             if (!m.functionLike()) {
                                 m.expand(tokens, tok, macros, files);
@@ -1847,16 +1897,20 @@ static void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::strin
             continue;
         simplecpp::Token *tok1 = tok->next;
         if (!tok1) {
-            throw std::runtime_error("missed sizeof argument");
+            throw std::runtime_error("missing sizeof argument");
         }
         simplecpp::Token *tok2 = tok1->next;
         if (!tok2) {
-            throw std::runtime_error("missed sizeof argument");
+            throw std::runtime_error("missing sizeof argument");
         }
         if (tok1->op == '(') {
             tok1 = tok1->next;
-            while (tok2->op != ')')
+            while (tok2->op != ')') {
                 tok2 = tok2->next;
+                if (!tok2) {
+                    throw std::runtime_error("invalid sizeof expression");
+                }
+            }
         }
 
         std::string type;
@@ -1882,15 +1936,15 @@ static void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::strin
     }
 }
 
-static const char * const altopData[] = {"and","or","bitand","bitor","not","not_eq","xor"};
-static const std::set<std::string> altop(&altopData[0], &altopData[7]);
+static const char * const altopData[] = {"and","or","bitand","bitor","compl","not","not_eq","xor"};
+static const std::set<std::string> altop(&altopData[0], &altopData[8]);
 static void simplifyName(simplecpp::TokenList &expr)
 {
     for (simplecpp::Token *tok = expr.front(); tok; tok = tok->next) {
         if (tok->name) {
             if (altop.find(tok->str) != altop.end()) {
                 bool alt;
-                if (tok->str == "not") {
+                if (tok->str == "not" || tok->str == "compl") {
                     alt = isAlternativeUnaryOp(tok,tok->str);
                 } else {
                     alt = isAlternativeBinaryOp(tok,tok->str);
@@ -2353,12 +2407,14 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                     }
                     try {
                         conditionIsTrue = (evaluate(expr, sizeOfType) != 0);
-                    } catch (const std::exception &) {
+                    } catch (const std::exception &e) {
                         if (outputList) {
                             Output out(rawtok->location.files);
                             out.type = Output::SYNTAX_ERROR;
                             out.location = rawtok->location;
                             out.msg = "failed to evaluate " + std::string(rawtok->str == IF ? "#if" : "#elif") + " condition";
+                            if (e.what() && *e.what())
+                                out.msg += std::string(", ") + e.what();
                             outputList->push_back(out);
                         }
                         output.clear();

@@ -164,7 +164,8 @@ namespace simplecpp {
             MISSING_HEADER,
             INCLUDE_NESTED_TOO_DEEPLY,
             SYNTAX_ERROR,
-            PORTABILITY_BACKSLASH
+            PORTABILITY_BACKSLASH,
+            UNHANDLED_CHAR_ERROR
         } type;
         Location location;
         std::string msg;
@@ -249,6 +250,7 @@ namespace simplecpp {
         void constFoldUnaryNotPosNeg(Token *tok);
         void constFoldMulDivRem(Token *tok);
         void constFoldAddSub(Token *tok);
+        void constFoldShift(Token *tok);
         void constFoldComparison(Token *tok);
         void constFoldBitwise(Token *tok);
         void constFoldLogicalOp(Token *tok);
