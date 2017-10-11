@@ -16,6 +16,7 @@ option(UNITTESTS_SANITIZER_UNDEFINED "Builds tests with undefined behaviour sani
 option(UNITTESTS_SANITIZER_LEAK "Builds tests with leak sanitizer" OFF)
 option(UNITTESTS_SANITIZER_ADDRESS "Builds tests with address sanitizer" OFF)
 option(TOOLS "Builds with tools" ON)
+option(RCON "Builds with rcon tool - also needs TOOLS to be active" ON)
 option(SERVER "Builds with server" ON)
 option(USE_CCACHE "Use ccache" ON)
 option(USE_GPROF "Use gprof - will become slow" OFF)

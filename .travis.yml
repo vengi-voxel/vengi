@@ -65,7 +65,7 @@ script:
   - which g++
   - cmake --version
   - echo $PATH
-  - make -j 4
+  - make -j 4 CMAKE_OPTIONS=-DRCON=OFF
   - make tests
 
 install:
