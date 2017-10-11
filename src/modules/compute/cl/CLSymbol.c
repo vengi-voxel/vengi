@@ -109,7 +109,9 @@ void computeCLShutdown() {
 	clpfEnqueueReleaseGLObjects = NULL;
 	clpfCreateFromGLTexture2D = NULL;
 	clpfCreateFromGLTexture3D = NULL;
+#if cl_khr_gl_sharing
 	clpfGetGLContextInfoKHR = NULL;
+#endif
 }
 
 #if defined(__MACOSX__)
@@ -261,7 +263,9 @@ int computeCLInit() {
 	clpfEnqueueReleaseGLObjects = (PFNCLEnqueueReleaseGLObjects_PROC*)SDL_LoadFunction(obj, "clEnqueueReleaseGLObjects");
 	clpfCreateFromGLTexture2D = (PFNCLCreateFromGLTexture2D_PROC*)SDL_LoadFunction(obj, "clCreateFromGLTexture2D");
 	clpfCreateFromGLTexture3D = (PFNCLCreateFromGLTexture3D_PROC*)SDL_LoadFunction(obj, "clCreateFromGLTexture3D");
+#if cl_khr_gl_sharing
 	clpfGetGLContextInfoKHR = (PFNCLGetGLContextInfoKHR_PROC*)SDL_LoadFunction(obj, "clGetGLContextInfoKHR");
+#endif
 
     return 0;
 }
@@ -363,7 +367,9 @@ PFNCLEnqueueAcquireGLObjects_PROC* clpfEnqueueAcquireGLObjects = NULL;
 PFNCLEnqueueReleaseGLObjects_PROC* clpfEnqueueReleaseGLObjects = NULL;
 PFNCLCreateFromGLTexture2D_PROC* clpfCreateFromGLTexture2D = NULL;
 PFNCLCreateFromGLTexture3D_PROC* clpfCreateFromGLTexture3D = NULL;
+#if cl_khr_gl_sharing
 PFNCLGetGLContextInfoKHR_PROC* clpfGetGLContextInfoKHR = NULL;
+#endif
 
 #ifdef __cplusplus
 }

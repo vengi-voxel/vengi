@@ -496,7 +496,10 @@ bool init() {
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clGetDeviceIDs.html
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateContext.html
 	error = clGetPlatformIDs(0, nullptr, &_priv::_ctx.platformIdCount);
-	if (error != CL_PLATFORM_NOT_FOUND_KHR) {
+#if cl_khr_icd
+	if (error != CL_PLATFORM_NOT_FOUND_KHR)
+#endif
+	{
 		checkError(error);
 	}
 

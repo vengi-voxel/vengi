@@ -24,6 +24,10 @@ extern "C" {
 #define CLAPI extern
 #endif
 
+#if !cl_khr_icd
+#define CL_PLATFORM_NOT_FOUND_KHR -1001
+#endif
+
 extern int computeCLInit();
 extern void computeCLShutdown();
 
@@ -141,7 +145,9 @@ typedef cl_int (APIENTRY PFNCLEnqueueAcquireGLObjects_PROC)(cl_command_queue, cl
 typedef cl_int (APIENTRY PFNCLEnqueueReleaseGLObjects_PROC)(cl_command_queue, cl_uint, const cl_mem *, cl_uint, const cl_event *, cl_event *);
 typedef cl_mem (APIENTRY PFNCLCreateFromGLTexture2D_PROC)(cl_context, cl_mem_flags, cl_GLenum, cl_GLint, cl_GLuint, cl_int *);
 typedef cl_mem (APIENTRY PFNCLCreateFromGLTexture3D_PROC)(cl_context, cl_mem_flags, cl_GLenum, cl_GLint, cl_GLuint, cl_int *);
+#if cl_khr_gl_sharing
 typedef cl_int (APIENTRY PFNCLGetGLContextInfoKHR_PROC)(const cl_context_properties *, cl_gl_context_info, size_t, void *, size_t *);
+#endif
 
 CLAPI PFNCLGetPlatformIDs_PROC* clpfGetPlatformIDs;
 CLAPI PFNCLGetPlatformInfo_PROC* clpfGetPlatformInfo;
@@ -240,7 +246,9 @@ CLAPI PFNCLEnqueueAcquireGLObjects_PROC* clpfEnqueueAcquireGLObjects;
 CLAPI PFNCLEnqueueReleaseGLObjects_PROC* clpfEnqueueReleaseGLObjects;
 CLAPI PFNCLCreateFromGLTexture2D_PROC* clpfCreateFromGLTexture2D;
 CLAPI PFNCLCreateFromGLTexture3D_PROC* clpfCreateFromGLTexture3D;
+#if cl_khr_gl_sharing
 CLAPI PFNCLGetGLContextInfoKHR_PROC* clpfGetGLContextInfoKHR;
+#endif
 
 #define clGetPlatformIDs clpfGetPlatformIDs
 #define clGetPlatformInfo clpfGetPlatformInfo
@@ -339,7 +347,9 @@ CLAPI PFNCLGetGLContextInfoKHR_PROC* clpfGetGLContextInfoKHR;
 #define clEnqueueReleaseGLObjects clpfEnqueueReleaseGLObjects
 #define clCreateFromGLTexture2D clpfCreateFromGLTexture2D
 #define clCreateFromGLTexture3D clpfCreateFromGLTexture3D
+#if cl_khr_gl_sharing
 #define clGetGLContextInfoKHR clpfGetGLContextInfoKHR
+#endif
 
 #ifdef __cplusplus
 }
