@@ -143,7 +143,7 @@ if(APPLE OR ARCH_64)
     set(OPT_DEF_SSEMATH ON)
   endif()
 endif()
-if(UNIX OR MINGW OR MSYS)
+if(UNIX OR MINGW OR MSYS OR WINDOWS)
   set(OPT_DEF_LIBC ON)
 endif()
 
