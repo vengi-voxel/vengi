@@ -45,9 +45,9 @@ include(cmake/sdlchecks.cmake)
 # set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 0)
-set(SDL_MICRO_VERSION 6)
+set(SDL_MICRO_VERSION 7)
 set(SDL_INTERFACE_AGE 0)
-set(SDL_BINARY_AGE 6)
+set(SDL_BINARY_AGE 7)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 
 # Calculate a libtool-like version number
@@ -143,7 +143,7 @@ if(APPLE OR ARCH_64)
     set(OPT_DEF_SSEMATH ON)
   endif()
 endif()
-if(UNIX OR MINGW OR MSYS OR WINDOWS)
+if(UNIX OR MINGW OR MSYS)
   set(OPT_DEF_LIBC ON)
 endif()
 
@@ -225,11 +225,14 @@ if(CYGWIN)
   set(SDL_CFLAGS "${SDL_CFLAGS} -I/usr/include/mingw")
 endif()
 
-if (LINUX OR EMSCRIPTEN)
-  add_definitions(-DUSING_GENERATED_CONFIG_H)
-endif()
+add_definitions(-DUSING_GENERATED_CONFIG_H)
 # General includes
 include_directories(${CMAKE_BINARY_DIR}/include include)
+if(USE_GCC OR USE_CLANG)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -idirafter ${SDL2_SOURCE_DIR}/src/video/khronos")
+else()
+  include_directories(${SDL2_SOURCE_DIR}/src/video/khronos)
+endif()
 
 # All these ENABLED_BY_DEFAULT vars will default to ON if not specified, so
 #  you only need to have a platform override them if they are disabling.
@@ -1644,4 +1647,9 @@ if (NOT SDL2_FOUND)
 	endif()
 	target_link_libraries(sdl2 ${EXTRA_LIBS})
 	target_include_directories(sdl2 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/config)
+	if (MSVC AND NOT LIBC)
+		set_target_properties(sdl2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
+		set_target_properties(sdl2 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+		set_target_properties(sdl2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
+	endif()
 endif()
