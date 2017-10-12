@@ -135,7 +135,7 @@ $(if $(LINUX),\
 	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1) \
 $(else),\
 	$(if $(DARWIN),\
-		$(Q)cd $(BUILDDIR); xcodebuild build -target $(1) install -project tests.xcodeproj -configuration $(BUILD_TYPE) CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO && exit ${PIPESTATUS[0]} \
+		$(Q)cd $(BUILDDIR); xcodebuild build -target $(1) install -project tests.xcodeproj -configuration $(BUILD_TYPE) CODE_SIGNING_ALLOWED=NO EXPANDED_CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO && exit ${PIPESTATUS[0]} \
 	$(else),\
 		$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1) \
 	)
