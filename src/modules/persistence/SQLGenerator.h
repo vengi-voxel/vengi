@@ -10,7 +10,7 @@
 
 namespace persistence {
 
-class BindParam;
+struct BindParam;
 class Model;
 class DBCondition;
 class OrderBy;
