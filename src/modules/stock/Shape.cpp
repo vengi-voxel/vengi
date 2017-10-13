@@ -4,6 +4,7 @@
 
 #include "Shape.h"
 #include "core/String.h"
+#include "core/Common.h"
 
 namespace stock {
 

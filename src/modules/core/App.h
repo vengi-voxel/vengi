@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <chrono>
 #include "Common.h"
+#include "Assert.h"
 #include "Var.h"
 #include "Trace.h"
 #include "EventBus.h"

@@ -21,7 +21,7 @@
  */
 
 #include "MD5.h"
-#include "core/Common.h"
+#include "core/Assert.h"
 #include <SDL.h>
 
 namespace core {

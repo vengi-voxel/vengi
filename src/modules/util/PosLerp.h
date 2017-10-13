@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/Assert.h"
 #include "core/Log.h"
 #include "core/GLM.h"
 

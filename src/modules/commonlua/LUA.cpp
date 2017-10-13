@@ -3,7 +3,8 @@
  */
 
 #include "LUA.h"
-#include "core/Common.h"
+#include "core/Assert.h"
+#include "core/Log.h"
 
 namespace lua {
 
@@ -256,7 +257,7 @@ void LUA::keyValueMap(std::map<std::string, std::string>& map, const char *key) 
 
 	while (lua_next(_state, -2) != 0) {
 		const char *_key = lua_tostring(_state, -2);
-		assert(_key);
+		core_assert(_key);
 		std::string _value;
 		if (lua_isstring(_state, -1)) {
 			_value = lua_tostring(_state, -1);

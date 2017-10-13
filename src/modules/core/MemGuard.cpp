@@ -1,4 +1,5 @@
 #include "MemGuard.h"
+#include "Common.h"
 #include <SDL.h>
 
 namespace core {

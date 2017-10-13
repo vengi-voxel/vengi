@@ -5,7 +5,7 @@
 #include "ConnectionPool.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/Common.h"
+#include "core/Assert.h"
 #include "core/GameConfig.h"
 
 namespace persistence {

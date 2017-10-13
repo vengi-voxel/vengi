@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/Common.h"
+#include "core/Assert.h"
 #include "core/ReadWriteLock.h"
 #include <array>
 

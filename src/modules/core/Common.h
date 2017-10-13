@@ -8,13 +8,10 @@
 #pragma once
 
 #include "Log.h"
-#include <glm/vec3.hpp>
 #include <cmath>
 #include <utility>
 #include <limits>
-#include <vector>
 #include <SDL.h>
-#include "Assert.h"
 
 #define CORE_STRINGIFY_INTERNAL(x) #x
 #define CORE_STRINGIFY(x) CORE_STRINGIFY_INTERNAL(x)

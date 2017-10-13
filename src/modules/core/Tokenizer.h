@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Common.h"
+#include "Assert.h"
 #include "String.h"
 
 namespace core {

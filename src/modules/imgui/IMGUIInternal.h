@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/Assert.h"
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 

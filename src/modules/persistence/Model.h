@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/Assert.h"
 #include "Timestamp.h"
 #include "FieldType.h"
 #include "BindParam.h"

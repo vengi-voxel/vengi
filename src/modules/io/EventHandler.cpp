@@ -6,6 +6,7 @@
 #include "IEventObserver.h"
 #include "core/Common.h"
 #include "core/GLM.h"
+#include "core/Assert.h"
 #include <SDL.h>
 
 namespace io {

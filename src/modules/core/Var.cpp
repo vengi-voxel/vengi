@@ -5,6 +5,7 @@
 #include "Var.h"
 #include "Log.h"
 #include "Common.h"
+#include "Assert.h"
 
 namespace core {
 

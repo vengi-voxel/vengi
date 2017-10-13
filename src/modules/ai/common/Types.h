@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "core/Common.h"
+#include "core/Assert.h"
 #define ai_assert core_assert_msg
 
 #include "Log.h"

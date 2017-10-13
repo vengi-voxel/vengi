@@ -2,6 +2,7 @@
 
 #include "core/Common.h"
 #include <vector>
+#include <glm/vec3.hpp>
 
 namespace voxel {
 class World;

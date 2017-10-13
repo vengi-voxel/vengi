@@ -4,15 +4,16 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
+#include <cstdint>
+#include <cstddef>
 #include <vector>
 #include <list>
 #include <string>
-#include <stdarg.h>
+#include <cstdarg>
 #include <SDL_endian.h>
-#include <limits.h>
+#include <climits>
 #include "Common.h"
+#include "Assert.h"
 
 namespace core {
 

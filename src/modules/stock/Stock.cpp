@@ -3,6 +3,7 @@
  */
 
 #include "Stock.h"
+#include "core/Log.h"
 #include <algorithm>
 
 namespace stock {

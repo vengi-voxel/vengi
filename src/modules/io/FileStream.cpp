@@ -5,6 +5,7 @@
 #include "FileStream.h"
 #include <SDL_stdinc.h>
 #include "io/File.h"
+#include "core/Assert.h"
 
 namespace io {
 
