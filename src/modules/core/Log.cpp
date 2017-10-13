@@ -35,6 +35,9 @@ static constexpr int bufSize = 4096;
 static SDL_LogPriority _logLevel = SDL_LOG_PRIORITY_INFO;
 
 #ifdef HAVE_SYSLOG_H
+static SDL_LogOutputFunction _sdlCallback;
+static void *_sdlCallbackUserData;
+
 static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	int syslogLevel = LOG_DEBUG;
 	if (priority == SDL_LOG_PRIORITY_CRITICAL) {
@@ -47,9 +50,8 @@ static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority p
 		syslogLevel = LOG_INFO;
 	}
 	syslog(syslogLevel, "%s", message);
-	if (priority == SDL_LOG_PRIORITY_CRITICAL || priority == SDL_LOG_PRIORITY_ERROR) {
-		fprintf(stderr, "%s\n", message);
-		fflush(stderr);
+	if (_sdlCallback != sysLogOutputFunction) {
+		_sdlCallback(_sdlCallbackUserData, category, priority, message);
 	}
 }
 #endif
@@ -61,6 +63,10 @@ void Log::init() {
 	const bool syslog = core::Var::getSafe(cfg::CoreSysLog)->boolVal();
 	if (syslog) {
 #ifdef HAVE_SYSLOG_H
+		if (_sdlCallback == nullptr) {
+			SDL_LogGetOutputFunction(&_sdlCallback, &_sdlCallbackUserData);
+		}
+		core_assert(_sdlCallback != sysLogOutputFunction);
 		openlog(nullptr, LOG_PID, LOG_USER);
 		SDL_LogSetOutputFunction(sysLogOutputFunction, nullptr);
 		_syslog = true;
@@ -71,6 +77,7 @@ void Log::init() {
 	} else {
 #ifdef HAVE_SYSLOG_H
 		if (_syslog) {
+			SDL_LogSetOutputFunction(_sdlCallback, _sdlCallbackUserData);
 			closelog();
 		}
 #endif
@@ -82,6 +89,7 @@ void Log::shutdown() {
 	// this is one of the last methods that is executed - so don't rely on anything
 	// still being available here - it won't
 #ifdef HAVE_SYSLOG_H
+	SDL_LogSetOutputFunction(_sdlCallback, _sdlCallbackUserData);
 	closelog();
 #endif
 }
