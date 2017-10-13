@@ -24,7 +24,7 @@ set(SRCS
 	JSON.h json.hpp
 	Log.cpp Log.h
 	MD5.cpp MD5.h
-	MemoryAllocator.h
+	PoolAllocator.h
 	MemGuard.cpp MemGuard.h
 	MurmurHash3.cpp MurmurHash3.h
 	NonCopyable.h
@@ -74,6 +74,7 @@ set(TEST_SRCS
 	tests/TokenizerTest.cpp
 	tests/FrustumTest.cpp
 	tests/PlaneTest.cpp
+	tests/PoolAllocatorTest.cpp
 	tests/StringTest.cpp
 	tests/ReadWriteLockTest.cpp
 )
