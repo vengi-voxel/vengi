@@ -7,6 +7,8 @@
 #include "core/Assert.h"
 #include "core/ReadWriteLock.h"
 #include <array>
+#include <string>
+#include <cstdint>
 
 namespace core {
 
