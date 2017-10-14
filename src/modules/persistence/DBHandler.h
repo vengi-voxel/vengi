@@ -27,7 +27,6 @@ namespace persistence {
  * @sa DatabaseTool
  * @sa Model
  * @todo password support
- * @todo add blob support
  */
 class DBHandler {
 private:
