@@ -4,6 +4,7 @@
 
 #include "SelectVisible.h"
 #include "backend/entity/Npc.h"
+#include "backend/entity/ai/AICharacter.h"
 
 namespace backend {
 

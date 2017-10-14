@@ -4,6 +4,9 @@
 
 #include "voxel/polyvox/AStarPathfinder.h"
 #include "Npc.h"
+#include "ai/AICharacter.h"
+#include "ai/AI.h"
+#include "ai/zone/Zone.h"
 #include "EntityStorage.h"
 #include "voxel/World.h"
 #include "poi/PoiProvider.h"
@@ -41,7 +44,7 @@ void Npc::init(const glm::ivec3* pos) {
 			ai()->getId(), ai()->getBehaviour()->getName().c_str(),
 			randomPos.x, randomPos.y, randomPos.z, std::enum_value(material));
 	setHomePosition(randomPos);
-	_ai->getCharacter()->setPosition(glm::vec3(randomPos.x, randomPos.y, randomPos.z));
+	_aiChr->setPosition(glm::vec3(randomPos.x, randomPos.y, randomPos.z));
 	init();
 	_ai->getAggroMgr().setReduceByValue(0.1f);
 }

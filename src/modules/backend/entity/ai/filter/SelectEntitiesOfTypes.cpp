@@ -2,6 +2,7 @@
 #include "core/String.h"
 #include "core/Common.h"
 #include "backend/entity/Npc.h"
+#include "backend/entity/ai/AICharacter.h"
 #include "network/ProtocolEnum.h"
 
 using namespace ai;

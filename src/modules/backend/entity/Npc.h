@@ -4,10 +4,12 @@
 
 #pragma once
 
-#include "backend/entity/ai/AICharacter.h"
+#include "ai/ForwardDecl.h"
+#include "ai/common/Types.h"
 #include <atomic>
 #include "Entity.h"
 #include "poi/PoiProvider.h"
+#include "backend/ForwardDecl.h"
 
 namespace backend {
 
