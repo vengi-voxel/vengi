@@ -80,6 +80,10 @@ void ClientNetwork::disconnect() {
 	_client = nullptr;
 }
 
+bool ClientNetwork::isConnected() const {
+	return _client != nullptr;
+}
+
 void ClientNetwork::update() {
 	core_trace_scoped(Network);
 	updateHost(_client);

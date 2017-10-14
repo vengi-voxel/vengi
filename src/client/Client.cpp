@@ -316,6 +316,9 @@ void Client::authFailed() {
 }
 
 void Client::disconnect() {
+	if (!_network->isConnected()) {
+		return;
+	}
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserDisconnect, network::CreateUserDisconnect(fbb).Union());
 }

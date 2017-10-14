@@ -20,6 +20,8 @@ public:
 	void disconnect();
 	bool packetReceived(ENetEvent& event) override;
 
+	bool isConnected() const;
+
 	inline bool sendMessage(ENetPacket* packet, int channel = 0) {
 		return Super::sendMessage(_peer, packet, channel);
 	}
