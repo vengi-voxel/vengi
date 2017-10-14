@@ -34,4 +34,8 @@ public:
 
 typedef std::shared_ptr<AICharacter> AICharacterPtr;
 
+inline Npc& getNpc(const ai::AIPtr& ai) {
+	return ai::character_cast<AICharacter>(ai->getCharacter()).getNpc();
+}
+
 }

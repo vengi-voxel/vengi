@@ -19,7 +19,7 @@ SelectIncreasePartner::SelectIncreasePartner(const std::string& parameters) :
 void SelectIncreasePartner::filter(const AIPtr& entity) {
 	FilteredEntities& entities = getFilteredEntities(entity);
 	entities.clear();
-	backend::Npc& chr = ai::character_cast<AICharacter>(entity->getCharacter()).getNpc();
+	backend::Npc& chr = getNpc(entity);
 	chr.visitVisible([&] (const backend::EntityPtr& e) {
 		if (chr.entityType() != e->entityType()) {
 			return;

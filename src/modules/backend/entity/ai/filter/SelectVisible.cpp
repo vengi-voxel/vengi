@@ -10,7 +10,7 @@ namespace backend {
 
 void SelectVisible::filter(const AIPtr& entity) {
 	FilteredEntities& entities = getFilteredEntities(entity);
-	Npc& chr = ai::character_cast<AICharacter>(entity->getCharacter()).getNpc();
+	backend::Npc& chr = getNpc(entity);
 	chr.visitVisible([&] (const EntityPtr& e) {
 		entities.push_back(e->id());
 	});

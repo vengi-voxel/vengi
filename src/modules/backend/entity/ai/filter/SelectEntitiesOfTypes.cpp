@@ -22,7 +22,7 @@ SelectEntitiesOfTypes::SelectEntitiesOfTypes(const std::string& parameters) :
 
 void SelectEntitiesOfTypes::filter(const AIPtr& entity) {
 	FilteredEntities& entities = getFilteredEntities(entity);
-	backend::Npc& chr = ai::character_cast<AICharacter>(entity->getCharacter()).getNpc();
+	backend::Npc& chr = getNpc(entity);
 	chr.visitVisible([&] (const backend::EntityPtr& e) {
 		if (!_entityTypes[std::enum_value(e->entityType())]) {
 			return;
