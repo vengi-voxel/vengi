@@ -20,6 +20,7 @@ private:
 	poi::PoiProviderPtr _poiProvider;
 	glm::ivec3 _homePosition;
 	ai::AIPtr _ai;
+	AICharacterPtr _aiChr;
 
 	void moveToGround();
 

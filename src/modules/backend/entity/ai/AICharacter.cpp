@@ -9,7 +9,7 @@
 namespace backend {
 
 AICharacter::AICharacter(ai::CharacterId id, Npc& npc) :
-		ai::ICharacter(id), _npc(npc) {
+		Super(id), _npc(npc) {
 	setOrientation(ai::randomf(glm::two_pi<float>()));
 	setAttribute(ai::attributes::NAME, npc.name() + " " + std::to_string(id));
 	setAttribute(ai::attributes::ID, std::to_string(id));
@@ -50,7 +50,7 @@ void AICharacter::update(int64_t dt, bool debuggingActive) {
 			setAttribute(network::EnumNameAttribType(attribType), core::string::format("%f/%f", current, max));
 		}
 	}
-	ai::ICharacter::update(dt, debuggingActive);
+	Super::update(dt, debuggingActive);
 }
 
 }

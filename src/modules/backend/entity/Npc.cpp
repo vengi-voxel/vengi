@@ -17,7 +17,8 @@ Npc::Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const 
 		Entity(_nextNpcId++, messageSender, timeProvider, containerProvider, cooldownProvider), _world(world), _poiProvider(poiProvider) {
 	_entityType = type;
 	_ai = std::make_shared<ai::AI>(behaviour);
-	_ai->setCharacter(std::make_shared<AICharacter>(_entityId, *this));
+	_aiChr = std::make_shared<AICharacter>(_entityId, *this);
+	_ai->setCharacter(_aiChr);
 }
 
 Npc::~Npc() {
@@ -93,17 +94,26 @@ bool Npc::update(long dt) {
 
 bool Npc::route(const glm::ivec3& target) {
 	std::list<glm::ivec3> result;
-	const glm::vec3& pos = _ai->getCharacter()->getPosition();
+	const glm::vec3& pos = _aiChr->getPosition();
 	const glm::ivec3 start(pos);
 	const glm::ivec3 end(target.x, target.y, target.z);
+	if (!_world->findPath(start, end, result)) {
+		return false;
+	}
 	// TODO: use the route
-	return _world->findPath(start, end, result);
+	return true;
 }
 
 void Npc::moveToGround() {
-	glm::vec3 pos = _ai->getCharacter()->getPosition();
+	glm::vec3 pos = _aiChr->getPosition();
+	// the voxel above us shouldn't be solid
+	if (!voxel::isFloor(_world->material(pos.x, pos.y + 1, pos.z))) {
+		if (voxel::isFloor(_world->material(pos.x, pos.y, pos.z))) {
+			return;
+		}
+	}
 	pos.y = _world->findFloor(pos.x, pos.z, voxel::isFloor);
-	_ai->getCharacter()->setPosition(pos);
+	_aiChr->setPosition(pos);
 }
 
 }

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "AICommon.h"
+#include <memory>
 
 namespace backend {
 
@@ -30,5 +31,7 @@ public:
 		return _npc;
 	}
 };
+
+typedef std::shared_ptr<AICharacter> AICharacterPtr;
 
 }
