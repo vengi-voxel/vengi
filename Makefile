@@ -272,11 +272,10 @@ update-glm:
 
 update-sdl2:
 	$(call UPDATE_HG,sdl2,https://hg.libsdl.org/SDL)
-	rm -rf contrib/libs/sdl2/src/* contrib/libs/sdl2/include/*
+	rm -rf contrib/libs/sdl2/src/* contrib/libs/sdl2/include/* contrib/libs/sdl2/cmake/*
 	cp -r $(UPDATEDIR)/sdl2.sync/src/* contrib/libs/sdl2/src
 	cp -r $(UPDATEDIR)/sdl2.sync/include/* contrib/libs/sdl2/include
-	mv contrib/libs/sdl2/include/SDL_config.h contrib/libs/sdl2/config/
-	rm contrib/libs/sdl2/include/SDL_config.h.in
+	cp -r $(UPDATEDIR)/sdl2.sync/cmake/* contrib/libs/sdl2/cmake
 
 update-turbobadger:
 	$(call UPDATE_GIT,turbobadger,https://github.com/fruxo/turbobadger.git)

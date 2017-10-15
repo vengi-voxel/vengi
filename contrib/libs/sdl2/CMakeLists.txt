@@ -58,6 +58,8 @@ set(LT_REVISION "${SDL_INTERFACE_AGE}")
 set(LT_RELEASE "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}")
 set(LT_VERSION "${LT_MAJOR}.${LT_AGE}.${LT_REVISION}")
 
+message(STATUS "${LT_VERSION} :: ${LT_AGE} :: ${LT_REVISION} :: ${LT_CURRENT} :: ${LT_RELEASE}")
+
 # General settings & flags
 set(LIBRARY_OUTPUT_DIRECTORY "build")
 # Check for 64 or 32 bit
@@ -632,7 +634,7 @@ if(LIBC)
     check_include_file(sys/types.h HAVE_SYS_TYPES_H)
     foreach(_HEADER
             stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h limits.h
-            strings.h wchar.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h)
+            strings.h wchar.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h libunwind.h)
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REPLACE "." "_" _HAVE_H ${_UPPER})
       check_include_file("${_HEADER}" ${_HAVE_H})
@@ -648,7 +650,7 @@ if(LIBC)
     foreach(_FN
             strtod malloc calloc realloc free getenv setenv putenv unsetenv
             qsort abs bcopy memset memcpy memmove memcmp strlen strlcpy strlcat
-            strdup _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
+            _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
             vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp
@@ -1630,7 +1632,189 @@ else()
 	set(DEFINES "")
 endif()
 
+##### Info output #####
+message(STATUS "")
+message(STATUS "SDL2 was configured with the following options:")
+message(STATUS "")
+message(STATUS "Platform: ${CMAKE_SYSTEM}")
+message(STATUS "64-bit:   ${ARCH_64}")
+message(STATUS "Compiler: ${CMAKE_C_COMPILER}")
+message(STATUS "")
+message(STATUS "Subsystems:")
+foreach(_SUB ${SDL_SUBSYSTEMS})
+  string(TOUPPER ${_SUB} _OPT)
+  message_bool_option(${_SUB} SDL_${_OPT})
+endforeach()
+message(STATUS "")
+message(STATUS "Options:")
+list(SORT ALLOPTIONS)
+foreach(_OPT ${ALLOPTIONS})
+  # Longest option is VIDEO_X11_XSCREENSAVER = 22 characters
+  # Get the padding
+  string(LENGTH ${_OPT} _OPTLEN)
+  math(EXPR _PADLEN "23 - ${_OPTLEN}")
+  string(RANDOM LENGTH ${_PADLEN} ALPHABET " " _PADDING)
+  message_tested_option(${_OPT} ${_PADDING})
+endforeach()
+message(STATUS "")
+message(STATUS " CFLAGS:        ${CMAKE_C_FLAGS}")
+message(STATUS " EXTRA_CFLAGS:  ${EXTRA_CFLAGS}")
+message(STATUS " EXTRA_LDFLAGS: ${EXTRA_LDFLAGS}")
+message(STATUS " EXTRA_LIBS:    ${EXTRA_LIBS}")
+message(STATUS "")
+message(STATUS " Build Shared Library: ${SDL_SHARED}")
+message(STATUS " Build Static Library: ${SDL_STATIC}")
+if(SDL_STATIC)
+    message(STATUS " Build Static Library with Position Independent Code: ${SDL_STATIC_PIC}")
+endif()
+message(STATUS "")
+if(UNIX)
+  message(STATUS "If something was not detected, although the libraries")
+  message(STATUS "were installed, then make sure you have set the")
+  message(STATUS "CFLAGS and LDFLAGS environment variables correctly.")
+  message(STATUS "")
+endif()
+
 endif(NOT SDL2_FOUND)
+
+if (FALSE) # to keep changes as small as possible in our own copy
+# Ensure that the extra cflags are used at compile time
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
+
+# Always build SDLmain
+add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
+target_include_directories(SDL2main PUBLIC $<INSTALL_INTERFACE:include>)
+set(_INSTALL_LIBS "SDL2main")
+
+if(SDL_SHARED)
+  add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
+  if(APPLE)
+    set_target_properties(SDL2 PROPERTIES MACOSX_RPATH 1)
+  elseif(UNIX AND NOT ANDROID)
+    set_target_properties(SDL2 PROPERTIES
+      VERSION ${LT_VERSION}
+      SOVERSION ${LT_REVISION}
+      OUTPUT_NAME "SDL2-${LT_RELEASE}")
+  else()
+    set_target_properties(SDL2 PROPERTIES
+      VERSION ${SDL_VERSION}
+      SOVERSION ${LT_REVISION}
+      OUTPUT_NAME "SDL2")
+  endif()
+  if(MSVC AND NOT LIBC)
+    # Don't try to link with the default set of libraries.
+    set_target_properties(SDL2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
+    set_target_properties(SDL2 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+    set_target_properties(SDL2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
+  endif()
+  set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
+  target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  target_include_directories(SDL2 PUBLIC $<INSTALL_INTERFACE:include>)
+endif()
+
+if(SDL_STATIC)
+  set (BUILD_SHARED_LIBS FALSE)
+  add_library(SDL2-static STATIC ${SOURCE_FILES})
+  if (NOT SDL_SHARED OR NOT WIN32)
+    set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
+    # Note: Apparently, OUTPUT_NAME must really be unique; even when
+    # CMAKE_IMPORT_LIBRARY_SUFFIX or the like are given. Otherwise
+    # the static build may race with the import lib and one will get
+    # clobbered, when the suffix is realized via subsequent rename.
+  endif()
+  set_target_properties(SDL2-static PROPERTIES POSITION_INDEPENDENT_CODE ${SDL_STATIC_PIC})
+  if(MSVC AND NOT LIBC)
+    set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
+    set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+    set_target_properties(SDL2-static PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
+  endif()
+  # TODO: Win32 platforms keep the same suffix .lib for import and static
+  # libraries - do we need to consider this?
+  set(_INSTALL_LIBS "SDL2-static" ${_INSTALL_LIBS})
+  target_link_libraries(SDL2-static ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  target_include_directories(SDL2-static PUBLIC $<INSTALL_INTERFACE:include>)
+endif()
+
+##### Installation targets #####
+install(TARGETS ${_INSTALL_LIBS} EXPORT SDL2Targets
+  LIBRARY DESTINATION "lib${LIB_SUFFIX}"
+  ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
+  RUNTIME DESTINATION bin)
+
+##### Export files #####
+if (APPLE)
+  set(PKG_PREFIX "SDL2.framework/Resources")
+elseif (WINDOWS)
+  set(PKG_PREFIX "cmake")
+else ()
+  set(PKG_PREFIX "lib/cmake/SDL2")
+endif ()
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake"
+  VERSION ${SDL_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+install(EXPORT SDL2Targets
+  FILE SDL2Targets.cmake
+  NAMESPACE SDL2::
+  DESTINATION ${PKG_PREFIX}
+)
+install(
+  FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/SDL2Config.cmake
+    ${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake
+  DESTINATION ${PKG_PREFIX}
+  COMPONENT Devel
+)
+
+file(GLOB INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/*.h)
+file(GLOB BIN_INCLUDE_FILES ${SDL2_BINARY_DIR}/include/*.h)
+foreach(_FNAME ${BIN_INCLUDE_FILES})
+  get_filename_component(_INCNAME ${_FNAME} NAME)
+  list(REMOVE_ITEM INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/${_INCNAME})
+endforeach()
+list(APPEND INCLUDE_FILES ${BIN_INCLUDE_FILES})
+install(FILES ${INCLUDE_FILES} DESTINATION include/SDL2)
+
+if(NOT (WINDOWS OR CYGWIN))
+  if(SDL_SHARED)
+    if (APPLE)
+        set(SOEXT "dylib")
+    else()
+        set(SOEXT "so")
+    endif()
+    install(CODE "
+      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+      \"libSDL2-2.0.${SOEXT}\" \"libSDL2.${SOEXT}\")")
+    install(FILES ${SDL2_BINARY_DIR}/libSDL2.${SOEXT} DESTINATION "lib${LIB_SUFFIX}")
+  endif()
+  if(FREEBSD)
+    # FreeBSD uses ${PREFIX}/libdata/pkgconfig
+    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
+  else()
+    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
+      DESTINATION "lib${LIB_SUFFIX}/pkgconfig")
+  endif()
+  install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION bin)
+  # TODO: what about the .spec file? Is it only needed for RPM creation?
+  install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_FULL_DATAROOTDIR}/aclocal")
+endif()
+
+##### Uninstall target #####
+
+if(NOT TARGET uninstall)
+  configure_file(
+      "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+      IMMEDIATE @ONLY)
+
+  add_custom_target(uninstall
+      COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif()
+
+endif(FALSE)
 
 engine_add_library(
 	LIB sdl2
@@ -1644,6 +1828,7 @@ if (NOT SDL2_FOUND)
 	endif()
 	target_link_libraries(sdl2 ${EXTRA_LIBS})
 	target_include_directories(sdl2 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
+	set_target_properties(sdl2 PROPERTIES POSITION_INDEPENDENT_CODE ${SDL_STATIC_PIC})
 	if (MSVC AND NOT LIBC)
 		set_target_properties(sdl2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
 		set_target_properties(sdl2 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
