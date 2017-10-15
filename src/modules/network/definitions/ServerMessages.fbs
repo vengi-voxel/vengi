@@ -44,8 +44,8 @@ table EntityUpdate {
 }
 
 enum AttribMode : byte {
-	PERCENTAGE,
-	ABSOLUTE,
+	Percentage,
+	Absolute,
 }
 
 table AttribEntry {

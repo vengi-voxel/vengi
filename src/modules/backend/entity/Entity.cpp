@@ -99,7 +99,7 @@ void Entity::sendAttribUpdate() {
 				dirtyTypes.erase(dirtyTypes.begin());
 				const double value = dirtyValue.value;
 				// TODO: maybe not needed?
-				const network::AttribMode mode = network::AttribMode::PERCENTAGE;
+				const network::AttribMode mode = network::AttribMode::Percentage;
 				const bool current = dirtyValue.current;
 				return network::CreateAttribEntry(fbb, dirtyValue.type, value, mode, current);
 			});
