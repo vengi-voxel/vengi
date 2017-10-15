@@ -5,8 +5,6 @@
 #ifndef TB_CONFIG_H
 #define TB_CONFIG_H
 
-#include <SDL_platform.h>
-
 #ifdef DEBUG
 #define TB_RUNTIME_DEBUG_INFO
 #endif
@@ -21,16 +19,12 @@
 #define TB_SYSTEM_SDL
 #define TB_FILE_SDL
 
-#ifdef __WINDOWS__
-#define TB_TARGET_WINDOWS
-#endif
-
-#ifdef __LINUX__
+#if defined(__linux) || defined(__linux__)
 #define TB_TARGET_LINUX
-#endif
-
-#ifdef __MACOSX__
+#elif MACOSX
 #define TB_TARGET_MACOSX
+#elif defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+#define TB_TARGET_WINDOWS
 #endif
 
 #endif
