@@ -44,6 +44,9 @@ If you want to run the database server locally, you have to install the postgres
 ## MacPorts
     port install qt5 postgresql95-server
 
+## Windows
+    vcpkg install sdl2 curl libuv zlib libpq lua glm glslang gtest qt5
+
 # Building
 You can just run ```make``` in the project root folder.
 
