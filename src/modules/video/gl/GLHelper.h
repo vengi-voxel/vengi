@@ -14,26 +14,27 @@ namespace video {
 namespace _priv {
 
 template<typename GetName, typename GetLocation>
-static int fillUniforms(Id _program, ShaderUniforms& _uniforms, const std::string& _name, GLenum activeEnum, GLenum activeMaxLengthEnum, GetName getName, GetLocation getLocation, bool block) {
+static int fillUniforms(Id program, ShaderUniforms& uniformMap, const std::string& shaderName, GLenum activeEnum, GLenum activeMaxLengthEnum, GetName getName, GetLocation getLocation, bool block) {
 	int numUniforms = 0;
-	glGetProgramiv(_program, activeEnum, &numUniforms);
+	glGetProgramiv(program, activeEnum, &numUniforms);
 	int uniformNameSize = 0;
-	glGetProgramiv(_program, activeMaxLengthEnum, &uniformNameSize);
+	glGetProgramiv(program, activeMaxLengthEnum, &uniformNameSize);
 	char name[uniformNameSize + 1];
 
+	const char *shaderNameC = shaderName.c_str();
 	for (int i = 0; i < numUniforms; i++) {
-		getName(_program, i, uniformNameSize, nullptr, name);
-		const int location = getLocation(_program, name);
+		getName(program, i, uniformNameSize, nullptr, name);
+		const int location = getLocation(program, name);
 		if (location < 0) {
-			Log::warn("Could not get uniform location for %s is %i (shader %s)", name, location, _name.c_str());
+			Log::warn("Could not get uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 			continue;
 		}
 		char* array = strchr(name, '[');
 		if (array != nullptr) {
 			*array = '\0';
 		}
-		_uniforms.insert(std::make_pair(std::string(name), Uniform{location, block}));
-		Log::debug("Got uniform location for %s is %i (shader %s)", name, location, _name.c_str());
+		uniformMap.insert(std::make_pair(std::string(name), Uniform{location, block}));
+		Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 	}
 	return numUniforms;
 }
