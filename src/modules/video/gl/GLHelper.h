@@ -14,7 +14,8 @@ namespace video {
 namespace _priv {
 
 template<typename GetName, typename GetLocation>
-static int fillUniforms(Id program, ShaderUniforms& uniformMap, const std::string& shaderName, GLenum activeEnum, GLenum activeMaxLengthEnum, GetName getName, GetLocation getLocation, bool block) {
+static int fillUniforms(Id program, ShaderUniforms& uniformMap, const std::string& shaderName, GLenum activeEnum,
+		GLenum activeMaxLengthEnum, GetName getName, GetLocation getLocation, bool block) {
 	int numUniforms = 0;
 	glGetProgramiv(program, activeEnum, &numUniforms);
 	int uniformNameSize = 0;
@@ -39,7 +40,8 @@ static int fillUniforms(Id program, ShaderUniforms& uniformMap, const std::strin
 	return numUniforms;
 }
 
-extern void debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam);
+extern void debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+		const GLchar* message, const GLvoid* userParam);
 extern bool checkFramebufferStatus();
 extern void setupLimits();
 extern void setupFeatures();
