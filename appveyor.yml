@@ -13,7 +13,11 @@ branches:
 
 clone_depth: 10
 
+# vcpkg enet, imgui are already available, but no on appveyor yet
+# assimp, qt5 don't build
+#  lua glm glslang gtest curl libuv zlib
 before_build:
+  - vcpkg install sdl2 libpq
   - ps: Start-FileDownload "http://registrationcenter-download.intel.com/akdlm/irc_nas/8386/intel_sdk_for_opencl_2015_r3_x64_setup.msi"
   - start /wait msiexec /i intel_sdk_for_opencl_2015_r3_x64_setup.msi /qn  /l*v msiexec.log
   - cmake -DTOOLS=OFF -G "Visual Studio 15 2017"

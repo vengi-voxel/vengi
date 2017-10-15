@@ -205,6 +205,7 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 	else()
 		set(_PROCESSOR_ARCH "x86")
 	endif()
+	message("Processor arch ${_PROCESSOR_ARCH}")
 	set(_SEARCH_PATHS
 		~/Library/Frameworks
 		/Library/Frameworks
@@ -214,6 +215,9 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 		/opt/local # DarwinPorts
 		/opt/csw # Blastwave
 		/opt
+		$ENV{VCPKG_ROOT}/installed/${_PROCESSOR_ARCH}-windows
+		C:/Tools/vcpkg/installed/${_PROCESSOR_ARCH}-windows
+		C:/vcpkg/installed/${_PROCESSOR_ARCH}-windows
 	)
 	find_package(PkgConfig QUIET)
 	if (PKG_CONFIG_FOUND)
