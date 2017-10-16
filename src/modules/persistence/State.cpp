@@ -6,7 +6,10 @@
 #include "core/Log.h"
 #include "core/Assert.h"
 #include "Connection.h"
+#include "engine-config.h"
+#ifdef HAVE_POSTGRES
 #include <libpq-fe.h>
+#endif
 
 namespace persistence {
 
@@ -24,7 +27,9 @@ State::State(State&& other) :
 
 State::~State() {
 	if (res != nullptr) {
+#ifdef HAVE_POSTGRES
 		PQclear(res);
+#endif
 		res = nullptr;
 	}
 	lastErrorMsg = nullptr;
@@ -33,17 +38,21 @@ State::~State() {
 bool State::exec(const char *statement, int parameterCount, const char *const *paramValues) {
 	core_assert_msg(parameterCount <= 0 || paramValues != nullptr, "Parameters don't match");
 	ConnectionType* c = _connection->connection();
+#ifdef HAVE_POSTGRES
 	if (parameterCount <= 0) {
 		res = PQexec(c, statement);
 	} else {
 		res = PQexecParams(c, statement, parameterCount, nullptr, paramValues, nullptr, nullptr, 0);
 	}
+#endif
 	checkLastResult(c);
 	return result;
 }
 
 bool State::prepare(const char *name, const char* statement, int parameterCount) {
+#ifdef HAVE_POSTGRES
 	res = PQprepare(_connection->connection(), name, statement, parameterCount, nullptr);
+#endif
 	checkLastResult(_connection->connection());
 	if (!result) {
 		return false;
@@ -55,7 +64,9 @@ bool State::prepare(const char *name, const char* statement, int parameterCount)
 }
 
 bool State::execPrepared(const char *name, int parameterCount, const char *const *paramValues) {
+#ifdef HAVE_POSTGRES
 	res = PQexecPrepared(_connection->connection(), name, parameterCount, paramValues, nullptr, nullptr, 0);
+#endif
 	checkLastResult(_connection->connection());
 	return result;
 }
@@ -69,6 +80,7 @@ void State::checkLastResult(ConnectionType* connection) {
 	}
 	result = false;
 
+#ifdef HAVE_POSTGRES
 	ExecStatusType lastState = PQresultStatus(res);
 
 	switch (lastState) {
@@ -96,6 +108,7 @@ void State::checkLastResult(ConnectionType* connection) {
 		Log::error("Unknown state: %s", PQresStatus(lastState));
 		break;
 	}
+#endif
 }
 
 }

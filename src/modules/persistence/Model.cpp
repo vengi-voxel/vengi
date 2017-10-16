@@ -9,9 +9,13 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/Singleton.h"
+#include "core/Assert.h"
 #include <algorithm>
+#include "engine-config.h"
 
+#ifdef HAVE_POSTGRES
 #include <libpq-fe.h>
+#endif
 
 namespace persistence {
 
@@ -76,6 +80,7 @@ const Field& Model::getField(const std::string& name) const {
 }
 
 bool Model::fillModelValues(State& state) {
+#ifdef HAVE_POSTGRES
 	const int cols = PQnfields(state.res);
 	Log::trace("Query has values for %i cols", cols);
 	for (int i = 0; i < cols; ++i) {
@@ -121,6 +126,9 @@ bool Model::fillModelValues(State& state) {
 		setIsNull(f, isNull);
 	}
 	return true;
+#else
+	return false;
+#endif
 }
 
 void Model::setValue(const Field& f, const std::string& value) {
