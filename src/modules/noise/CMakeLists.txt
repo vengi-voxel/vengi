@@ -21,6 +21,7 @@ endif()
 generate_compute_shaders(noise noise)
 
 gtest_suite_files(tests
+	tests/IslandNoiseTest.cpp
 	tests/NoiseTest.cpp
 	tests/NoiseShaderTest.cpp
 	tests/PoissonDiskDistributionTest.cpp
