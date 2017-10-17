@@ -1,9 +1,7 @@
+#include "ServerMessages_generated.h"
 #include "ClientNetwork.h"
 #include "core/Trace.h"
 #include "core/Log.h"
-#undef ABSOLUTE
-#undef RELATIVE
-#include "ServerMessages_generated.h"
 
 namespace network {
 
