@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ServerMessages_generated.h"
 #include "ClientNetwork.h"
 #include "core/Trace.h"

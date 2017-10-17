@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "Shape.h"
 #include "Shared_generated.h"
+#include "Shape.h"
 #include "cooldown/CooldownType.h"
 
 namespace stock {

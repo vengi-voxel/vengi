@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "Shared_generated.h"
 #include "backend/entity/ai/AICommon.h"
 #include "core/Common.h"
-#include "Shared_generated.h"
 #include <bitset>
 
 using namespace ai;

@@ -2,10 +2,10 @@
  * @file
  */
 
+#include "ServerMessages_generated.h"
 #include "SeedHandler.h"
 #include "core/App.h"
 #include "core/Var.h"
-#include "ServerMessages_generated.h"
 #include "voxel/WorldEvents.h"
 
 void SeedHandler::execute(ENetPeer* peer, const void* raw) {

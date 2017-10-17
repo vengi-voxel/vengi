@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "ServerNetwork.h"
 #include "ServerMessages_generated.h"
+#include "ServerNetwork.h"
 #include <memory>
 
 namespace network {

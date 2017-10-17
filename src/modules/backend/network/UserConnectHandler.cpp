@@ -2,9 +2,9 @@
  * @file
  */
 
-#include "UserConnectHandler.h"
 #include "ClientMessages_generated.h"
 #include "ServerMessages_generated.h"
+#include "UserConnectHandler.h"
 #include "backend/entity/User.h"
 #include "core/Var.h"
 #include "util/EMailValidator.h"

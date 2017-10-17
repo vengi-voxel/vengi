@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "network/IMsgProtocolHandler.h"
-#include "backend/entity/User.h"
 #include "ServerMessages_generated.h"
 #include "ClientMessages_generated.h"
+#include "network/IMsgProtocolHandler.h"
+#include "backend/entity/User.h"
 
 using namespace network;
 

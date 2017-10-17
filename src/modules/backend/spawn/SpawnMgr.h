@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "backend/ForwardDecl.h"
 #include "ServerMessages_generated.h"
+#include "backend/ForwardDecl.h"
 #include "ai/common/Types.h"
 #include <glm/vec3.hpp>
 

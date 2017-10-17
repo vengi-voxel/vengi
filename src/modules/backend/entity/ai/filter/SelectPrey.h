@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "backend/entity/ai/AICommon.h"
 #include "Shared_generated.h"
+#include "backend/entity/ai/AICommon.h"
 
 using namespace ai;
 

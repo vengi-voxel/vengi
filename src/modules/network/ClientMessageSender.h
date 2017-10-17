@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "ClientNetwork.h"
 #include "ClientMessages_generated.h"
+#include "ClientNetwork.h"
 #include <memory>
 
 namespace network {

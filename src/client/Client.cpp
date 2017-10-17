@@ -2,9 +2,9 @@
  * @file
  */
 
-#include "Client.h"
 #include "ClientMessages_generated.h"
 #include "ServerMessages_generated.h"
+#include "Client.h"
 #include "ui/LoginWindow.h"
 #include "ui/DisconnectWindow.h"
 #include "ui/AuthFailedWindow.h"
@@ -17,7 +17,6 @@
 #include "core/Color.h"
 #include "core/Password.h"
 #include "network/IMsgProtocolHandler.h"
-#include "ServerMessages_generated.h"
 #include "network/AttribUpdateHandler.h"
 #include "network/SeedHandler.h"
 #include "network/AuthFailedHandler.h"

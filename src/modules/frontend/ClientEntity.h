@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "ClientEntityId.h"
 #include "ServerMessages_generated.h"
 #include "Shared_generated.h"
+#include "ClientEntityId.h"
 #include "util/PosLerp.h"
 #include "attrib/ShadowAttributes.h"
 #include <vector>

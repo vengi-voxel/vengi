@@ -1,7 +1,11 @@
+/**
+ * @file
+ */
+
+#include "ClientMessages_generated.h"
 #include "ServerNetwork.h"
 #include "core/Trace.h"
 #include "core/Log.h"
-#include "ClientMessages_generated.h"
 
 namespace network {
 

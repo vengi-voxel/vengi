@@ -4,9 +4,6 @@
 
 #pragma once
 
-#include <cstdlib>
-#include <SDL.h>
-
 #include "ServerMessages_generated.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/WorldRenderer.h"
@@ -22,6 +19,9 @@
 #include "ui/WaitingMessage.h"
 #include "video/MeshPool.h"
 #include "video/Camera.h"
+
+#include <cstdlib>
+#include <SDL.h>
 
 // client states
 constexpr uint32_t CLIENT_CONNECTING = 1 << 0;

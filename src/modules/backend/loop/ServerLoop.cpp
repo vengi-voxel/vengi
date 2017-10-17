@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "ClientMessages_generated.h"
 #include "ServerLoop.h"
 
 #include "core/command/Command.h"
@@ -15,7 +16,6 @@
 #include "backend/entity/User.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "backend/entity/ai/AICommon.h"
-#include "ClientMessages_generated.h"
 #include "backend/network/UserConnectHandler.h"
 #include "backend/network/UserConnectedHandler.h"
 #include "backend/network/UserDisconnectHandler.h"
