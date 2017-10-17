@@ -52,7 +52,7 @@ protected:
 };
 
 // http://www.redblobgames.com/maps/terrain-from-noise/#elevation
-TEST_F(IslandNoiseTest, testIslandNoise) {
+TEST_F(IslandNoiseTest, DISABLED_testIslandNoise) {
 	const int components = 4;
 	const int w = 2048;
 	const int h = 1024;
