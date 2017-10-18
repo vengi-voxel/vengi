@@ -9,6 +9,11 @@
 
 namespace persistence {
 
+/**
+ * @brief Represents timestamp values in seconds.
+ *
+ * @ingroup Persistence
+ */
 class Timestamp {
 private:
 	uint64_t _seconds;

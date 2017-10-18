@@ -23,7 +23,7 @@ namespace persistence {
 
 /**
  * @brief Database access for insert, update, delete, ...
- *
+ * @ingroup Persistence
  * @sa DatabaseTool
  * @sa Model
  * @todo password support

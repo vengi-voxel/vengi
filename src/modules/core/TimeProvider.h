@@ -10,7 +10,7 @@
 namespace core {
 
 /**
- * The time provider will get an updated tick time with every tick. It does not perform any timer system call on getting the
+ * @brief The time provider will get an updated tick time with every tick. It does not perform any timer system call on getting the
  * tick time - only if you really need the current time.
  */
 class TimeProvider {

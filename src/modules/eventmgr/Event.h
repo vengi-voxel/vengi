@@ -9,6 +9,11 @@
 
 namespace eventmgr {
 
+/**
+ * @brief Base class for your game event logic
+ *
+ * @ingroup Events
+ */
 class Event {
 protected:
 	EventId _id;
@@ -20,17 +25,17 @@ public:
 	 * @brief Event start method if the start time is met
 	 * @return @c true if the event was started successfully, @c false otherwise.
 	 */
-	bool start();
+	virtual bool start();
 	/**
 	 * @brief Stop method for the event if the end time of the event configuration is met.
 	 * @return @c true if the event was stopped successfully, @c false otherwise.
 	 */
-	bool stop();
+	virtual bool stop();
 	/**
 	 * @brief Shutdown method that is called when the end time of the event is not yet
 	 * reached, but the @c EventMgr is shut down.
 	 */
-	void shutdown();
+	virtual void shutdown();
 	/**
 	 * @brief Update the event and all related components.
 	 * @param[in] dt The delta time since the last update was called (milliseconds)

@@ -71,6 +71,13 @@ struct Constraint {
 typedef std::unordered_map<std::string, Constraint> Constraints;
 typedef std::vector<std::set<std::string>> UniqueKeys;
 
+/**
+ * @brief The base class for your database models.
+ *
+ * Contains metadata to build the needed sql statements in the @c DBHandler
+ *
+ * @ingroup Persistence
+ */
 class Model {
 protected:
 	friend class DBHandler;

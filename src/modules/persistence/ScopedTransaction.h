@@ -7,6 +7,9 @@
 
 namespace persistence {
 
+/**
+ * @ingroup Persistence
+ */
 class ScopedTransaction {
 private:
 	bool _commited = false;
