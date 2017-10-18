@@ -20,12 +20,6 @@ namespace eventmgr {
 
 /**
  * @brief The event manager deals with starting, ticking and ending game events.
- *
- * @todo if a event was stopped, this must be persisted in the event table - skip those in the event provider.
- *       if the endtime has passed, but that flag is not set, just load the event as usual and stop it in the next frame
- *       this is needed if the server had a downtime while the event would have ended. In such a case, no loot would
- *       get hand out to the players. To work around this, we let the event just restore all its states and then stop
- *       properly.
  */
 class EventMgr {
 private:
