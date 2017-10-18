@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <memory>
+#include <cinttypes>
 
 #ifndef __GNUC__
 #define __attribute__(x)
