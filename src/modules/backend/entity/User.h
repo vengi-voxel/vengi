@@ -65,9 +65,7 @@ public:
 	 */
 	ENetPeer* setPeer(ENetPeer* peer);
 
-	uint32_t host() const {
-		return _host;
-	}
+	uint32_t host() const;
 
 	/**
 	 * @brief Informs the user that the login was successful
@@ -75,6 +73,10 @@ public:
 	void sendUserSpawn() const;
 	void sendSeed(long seed) const;
 };
+
+inline uint32_t User::host() const {
+	return _host;
+}
 
 inline bool User::isMove(network::MoveDirection dir) const {
 	return (_moveMask & dir) != network::MoveDirection::NONE;
