@@ -49,3 +49,34 @@ table stock {
 		itemid primarykey
 	}
 }
+
+table inventory {
+	namespace backend
+	field userid {
+		type long
+		operator set
+	}
+	field itemid {
+		type int
+		operator set
+		notnull
+	}
+	field containerid {
+		type byte
+		operator set
+		notnull
+	}
+	field x {
+		type byte
+		operator set
+		notnull
+	}
+	field y {
+		type byte
+		operator set
+		notnull
+	}
+	constraints {
+		userid index
+	}
+}
