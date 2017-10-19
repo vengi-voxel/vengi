@@ -42,6 +42,13 @@ void BindParam::push(const Model& model, const Field& field) {
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
+	case FieldType::BYTE: {
+		const int8_t value = model.getValue<uint8_t>(field);
+		valueBuffers.emplace_back(std::to_string(value));
+		values[index] = valueBuffers.back().c_str();
+		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
+		break;
+	}
 	case FieldType::INT: {
 		const int32_t value = model.getValue<int32_t>(field);
 		valueBuffers.emplace_back(std::to_string(value));

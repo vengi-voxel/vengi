@@ -120,6 +120,8 @@ static std::string getDbType(const Field& field) {
 		return "INT";
 	case FieldType::SHORT:
 		return "SMALLINT";
+	case FieldType::BYTE:
+		return "SMALLINT"; // TODO: check this
 	case FieldType::STRING:
 	case FieldType::PASSWORD:
 	case FieldType::MAX:

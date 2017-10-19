@@ -18,6 +18,7 @@ enum class FieldType {
 	TIMESTAMP,
 	BOOLEAN,
 	SHORT,
+	BYTE,
 	MAX
 };
 static constexpr int MAX_FIELDTYPES = std::enum_value(FieldType::MAX);

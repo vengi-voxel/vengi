@@ -110,8 +110,13 @@ bool Model::fillModelValues(State& state) {
 			break;
 		}
 		case FieldType::INT:
-		case FieldType::SHORT:
 			setValue(f, core::string::toInt(value));
+			break;
+		case FieldType::SHORT:
+			setValue(f, (int16_t)core::string::toInt(value));
+			break;
+		case FieldType::BYTE:
+			setValue(f, (uint8_t)core::string::toInt(value));
 			break;
 		case FieldType::LONG:
 			setValue(f, core::string::toLong(value));

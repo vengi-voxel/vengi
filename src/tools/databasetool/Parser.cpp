@@ -180,7 +180,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 			}
 		}
 		if (typeMapping == 0u) {
-			Log::error("invalid constraint syntax block for table %s: '%s'", table.name.c_str(), token.c_str());
+			Log::error("invalid constraint syntax for table %s: '%s'", table.name.c_str(), token.c_str());
 			return false;
 		}
 		if (fieldNames.size() == 1) {
