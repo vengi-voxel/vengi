@@ -5,6 +5,8 @@
 #include "SQLGenerator.h"
 #include "core/String.h"
 #include "core/Array.h"
+#include "core/Log.h"
+#include "core/Common.h"
 #include "Model.h"
 #include "DBCondition.h"
 #include "OrderBy.h"
@@ -181,6 +183,15 @@ std::string createCreateTableStatement(const Model& table) {
 		createTable << ")";
 	}
 	createTable << ");";
+
+	for (const auto& f : table.fields()) {
+		if (!f.isIndex()) {
+			continue;
+		}
+		createTable << "CREATE INDEX IF NOT EXISTS " << table.tableName() << "_" << f.name << " ON ";
+		createTable << table.tableName() << " USING btree (" << f.name << ");";
+	}
+
 	return createTable.str();
 }
 

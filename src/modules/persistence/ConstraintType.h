@@ -11,8 +11,9 @@ enum class ConstraintType {
 	UNIQUE = 1 << 0,
 	PRIMARYKEY = 1 << 1,
 	AUTOINCREMENT = 1 << 2,
-	NOTNULL = 1 << 3
+	NOTNULL = 1 << 3,
+	INDEX = 1 << 4
 };
-static constexpr int MAX_CONSTRAINTTYPES = 4;
+static constexpr int MAX_CONSTRAINTTYPES = 5;
 
 }

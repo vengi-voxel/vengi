@@ -47,6 +47,10 @@ struct Field {
 		return (contraintMask & std::enum_value(ConstraintType::AUTOINCREMENT)) != 0u;
 	}
 
+	inline bool isIndex() const {
+		return (contraintMask & std::enum_value(ConstraintType::INDEX)) != 0u;
+	}
+
 	inline bool isNotNull() const {
 		return (contraintMask & std::enum_value(ConstraintType::NOTNULL)) != 0u;
 	}
