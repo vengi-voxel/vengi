@@ -27,7 +27,7 @@ of course we could also add the db constraints.
 
 # EventMgr
 
-Proper event-end-while-application-is-not-running handling
+## Proper event-end-while-application-is-not-running handling
 
 If an event was stopped, this must be persisted in the event table - skip those in the event provider.
 if the endtime has passed, but that flag is not set, just load the event as usual and stop it in the next frame

@@ -3,6 +3,7 @@
  */
 
 #include "Inventory.h"
+#include "Container.h"
 
 namespace stock {
 
