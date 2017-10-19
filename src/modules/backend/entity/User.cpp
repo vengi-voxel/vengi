@@ -10,9 +10,10 @@ namespace backend {
 
 User::User(ENetPeer* peer, EntityId id, const std::string& name, const network::ServerMessageSenderPtr& messageSender,
 		const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
-		const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider) :
-		Entity(id, messageSender, timeProvider, containerProvider, cooldownProvider),
-		_name(name), _world(world), _poiProvider(poiProvider) {
+		const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider, const persistence::DBHandlerPtr& dbHandler,
+		const stock::ItemProviderPtr& itemProvider) :
+		Super(id, messageSender, timeProvider, containerProvider, cooldownProvider),
+		_name(name), _world(world), _poiProvider(poiProvider), _dbHandler(dbHandler), _stockMgr(this, itemProvider, dbHandler) {
 	setPeer(peer);
 	const glm::vec3& poi = _poiProvider->getPointOfInterest();
 	_pos = poi;
@@ -20,8 +21,13 @@ User::User(ENetPeer* peer, EntityId id, const std::string& name, const network::
 	_userTimeout = core::Var::getSafe(cfg::ServerUserTimeout);
 }
 
+void User::init() {
+	Super::init();
+	_stockMgr.init();
+}
+
 void User::visibleAdd(const EntitySet& entities) {
-	Entity::visibleAdd(entities);
+	Super::visibleAdd(entities);
 	for (const EntityPtr& e : entities) {
 		sendEntitySpawn(e);
 	}
@@ -87,6 +93,8 @@ bool User::update(long dt) {
 	}
 
 	_lastAction = _time;
+
+	_stockMgr.update(dt);
 
 	glm::vec3 moveDelta {0.0f};
 	const float speed = current(attrib::Type::SPEED) * static_cast<float>(dt) / 1000.0f;

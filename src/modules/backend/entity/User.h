@@ -7,23 +7,33 @@
 #include "network/ServerMessageSender.h"
 #include "Entity.h"
 #include "core/Var.h"
+#include "user/UserStockMgr.h"
 #include "poi/PoiProvider.h"
+#include "persistence/DBHandler.h"
+#include "stock/ItemProvider.h"
 
 namespace backend {
 
+/**
+ * @todo move everything into dedicated components
+ */
 class User : public Entity {
 private:
+	using Super = Entity;
 	std::string _name;
 	std::string _email;
 	uint32_t _host;
 	voxel::WorldPtr _world;
 	poi::PoiProviderPtr _poiProvider;
+	persistence::DBHandlerPtr _dbHandler;
 	network::MoveDirection _moveMask = network::MoveDirection::NONE;
 	float _yaw = 0.0f;
 	uint64_t _lastAction = 0u;
 	uint64_t _time = 0u;
 	core::VarPtr _userTimeout;
 	flatbuffers::FlatBufferBuilder _entityUpdateFbb;
+
+	UserStockMgr _stockMgr;
 
 	bool isMove(network::MoveDirection dir) const;
 	void addMove(network::MoveDirection dir);
@@ -36,7 +46,7 @@ protected:
 public:
 	User(ENetPeer* peer, EntityId id, const std::string& name, const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-			const poi::PoiProviderPtr& poiProvider);
+			const poi::PoiProviderPtr& poiProvider, const persistence::DBHandlerPtr& dbHandler, const stock::ItemProviderPtr& itemProvider);
 
 	void setEntityId(EntityId id);
 
@@ -58,6 +68,7 @@ public:
 
 	void reconnect();
 
+	void init() override;
 	bool update(long dt) override;
 
 	/**

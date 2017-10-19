@@ -9,6 +9,7 @@
 #include "UserModel.h"
 #include "Npc.h"
 #include "persistence/DBHandler.h"
+#include "stock/ItemProvider.h"
 
 #define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::type, network::msg.Union());
 
@@ -16,10 +17,10 @@ namespace backend {
 
 EntityStorage::EntityStorage(const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
 		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-		const persistence::DBHandlerPtr& dbHandler) :
+		const persistence::DBHandlerPtr& dbHandler, const stock::ItemProviderPtr& itemProvider) :
 		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree), _messageSender(messageSender), _world(world), _timeProvider(
 				timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _dbHandler(dbHandler),
-				_time(0L) {
+				_itemProvider(itemProvider), _time(0L) {
 }
 
 core::RectFloat EntityStorage::QuadTreeNode::getRect() const {
@@ -57,7 +58,7 @@ UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std
 	if (i == _users.end()) {
 		static const std::string name = "NONAME";
 		Log::info("user %i connects with host %i on port %i", (int) id, peer->address.host, peer->address.port);
-		const UserPtr& u = std::make_shared<User>(peer, id, name, _messageSender, _world, _timeProvider, _containerProvider, _cooldownProvider, _poiProvider);
+		const UserPtr& u = std::make_shared<User>(peer, id, name, _messageSender, _world, _timeProvider, _containerProvider, _cooldownProvider, _poiProvider, _dbHandler, _itemProvider);
 		u->init();
 		registerUser(u);
 		return u;

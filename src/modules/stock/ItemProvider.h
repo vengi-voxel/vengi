@@ -6,6 +6,7 @@
 
 #include "Item.h"
 #include <array>
+#include <memory>
 
 namespace stock {
 
@@ -51,7 +52,7 @@ public:
 	/**
 	 * @brief Creates a new item.
 	 */
-	Item* createItem(ItemId itemId);
+	ItemPtr createItem(ItemId itemId);
 
 	/**
 	 * @return The last error that occurred in an init() call
@@ -80,5 +81,6 @@ inline const ItemProvider::ItemDataContainer& ItemProvider::itemData() const {
 	return _itemData;
 }
 
+typedef std::shared_ptr<ItemProvider> ItemProviderPtr;
 
 }

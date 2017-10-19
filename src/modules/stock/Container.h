@@ -10,6 +10,7 @@
 namespace stock {
 
 class Item;
+typedef std::shared_ptr<Item> ItemPtr;
 
 /**
  * @ingroup Stock
@@ -17,7 +18,7 @@ class Item;
 class Container {
 public:
 	struct ContainerItem {
-		Item* item;
+		ItemPtr item;
 		uint8_t x;
 		uint8_t y;
 	};
@@ -36,19 +37,19 @@ public:
 	 */
 	size_t itemCount() const;
 
-	bool findSpace(const Item* item, uint8_t& x, uint8_t& y) const;
+	bool findSpace(const ItemPtr& item, uint8_t& x, uint8_t& y) const;
 
-	bool canAdd(const Item* item, uint8_t x, uint8_t y) const;
+	bool canAdd(const ItemPtr& item, uint8_t x, uint8_t y) const;
 
-	bool add(Item* item, uint8_t x, uint8_t y);
+	bool add(const ItemPtr& item, uint8_t x, uint8_t y);
 
-	bool add(Item* item);
+	bool add(const ItemPtr& item);
 
-	bool notifyRemove(Item* item);
+	bool notifyRemove(const ItemPtr& item);
 
-	Item* remove(uint8_t x, uint8_t y);
+	ItemPtr remove(uint8_t x, uint8_t y);
 
-	Item* get(uint8_t x, uint8_t y) const;
+	ItemPtr get(uint8_t x, uint8_t y) const;
 
 	int size() const;
 

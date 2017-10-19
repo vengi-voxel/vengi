@@ -16,8 +16,8 @@ protected:
 	Inventory _inv;
 	const uint8_t _containerId = 0u;
 	const Container* _container;
-	Item* _item1;
-	Item* _item2;
+	ItemPtr _item1;
+	ItemPtr _item2;
 public:
 	virtual void SetUp() override {
 		core::AbstractTest::SetUp();
@@ -55,10 +55,6 @@ public:
 		_provider.shutdown();
 		_itemData1 = nullptr;
 		_itemData2 = nullptr;
-
-		delete _item1;
-		delete _item2;
-		_item1 = _item2 = nullptr;
 	}
 };
 

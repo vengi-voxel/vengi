@@ -6,6 +6,7 @@
 
 #include "ItemData.h"
 #include "Container.h"
+#include <memory>
 
 namespace stock {
 
@@ -77,5 +78,7 @@ inline const ItemData& Item::data() const {
 inline bool operator==(const Item* item, ItemType type) {
 	return item->type() == type;
 }
+
+typedef std::shared_ptr<Item> ItemPtr;
 
 }

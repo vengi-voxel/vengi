@@ -31,9 +31,10 @@ constexpr int aiDebugServerPort = 11338;
 constexpr const char* aiDebugServerInterface = "127.0.0.1";
 
 ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network::ServerNetworkPtr& network, const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
-		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr) :
+		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr,
+		const stock::ItemProviderPtr& itemProvider) :
 		_network(network), _spawnMgr(spawnMgr), _world(world),
-		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler) {
+		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler), _itemProvider(itemProvider) {
 	_world->setClientData(false);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
@@ -43,12 +44,17 @@ ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network
 	r->registerHandler(network::EnumNameClientMsgType(type), std::make_shared<handler>(__VA_ARGS__));
 
 bool ServerLoop::init() {
+	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
 	if (!_dbHandler->init()) {
 		Log::error("Failed to init the dbhandler");
 		return false;
 	}
 	if (!_dbHandler->createTable(db::UserModel())) {
 		Log::error("Failed to create user table");
+		return false;
+	}
+	if (!_dbHandler->createTable(db::StockModel())) {
+		Log::error("Failed to create stock table");
 		return false;
 	}
 	if (!_eventMgr->init()) {
@@ -61,10 +67,15 @@ bool ServerLoop::init() {
 		return false;
 	}
 
+	const std::string& itemLuaString = filesystem->load("items.lua");
+	if (!_itemProvider->init(itemLuaString)) {
+		Log::error("Failed to load the item configuration: %s", _itemProvider->error().c_str());
+		return false;
+	}
+
 	_zone = new ai::Zone("Zone");
 	_aiServer = new ai::Server(*_registry, aiDebugServerPort, aiDebugServerInterface);
 
-	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
 	const std::string& attributes = filesystem->load("attributes.lua");
 	if (!_containerProvider->init(attributes)) {
 		Log::error("Failed to load the attributes: %s", _containerProvider->error().c_str());

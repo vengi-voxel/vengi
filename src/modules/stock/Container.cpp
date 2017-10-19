@@ -13,7 +13,7 @@ void Container::init(const ContainerShape& shape) {
 	_items.reserve(64);
 }
 
-bool Container::canAdd(const Item* item, uint8_t x, uint8_t y) const {
+bool Container::canAdd(const ItemPtr& item, uint8_t x, uint8_t y) const {
 	if (item == nullptr) {
 		return false;
 	}
@@ -32,7 +32,7 @@ bool Container::canAdd(const Item* item, uint8_t x, uint8_t y) const {
 	return true;
 }
 
-bool Container::add(Item* item) {
+bool Container::add(const ItemPtr& item) {
 	uint8_t x;
 	uint8_t y;
 	if (!findSpace(item, x, y)) {
@@ -56,7 +56,7 @@ bool Container::hasItemOfType(const ItemType& itemType) const {
 	return findByType(itemType) != _items.end();
 }
 
-bool Container::add(Item* item, uint8_t x, uint8_t y) {
+bool Container::add(const ItemPtr& item, uint8_t x, uint8_t y) {
 	if (!canAdd(item, x, y)) {
 		return false;
 	}
@@ -66,7 +66,7 @@ bool Container::add(Item* item, uint8_t x, uint8_t y) {
 	return true;
 }
 
-bool Container::notifyRemove(Item* item) {
+bool Container::notifyRemove(const ItemPtr& item) {
 	const ItemId id = item->id();
 	auto i = findById(id);
 	if (i == _items.end()) {
@@ -77,8 +77,8 @@ bool Container::notifyRemove(Item* item) {
 	return true;
 }
 
-Item* Container::remove(uint8_t x, uint8_t y) {
-	Item* item = get(x, y);
+ItemPtr Container::remove(uint8_t x, uint8_t y) {
+	const ItemPtr& item = get(x, y);
 	if (item == nullptr) {
 		return nullptr;
 	}
@@ -88,13 +88,13 @@ Item* Container::remove(uint8_t x, uint8_t y) {
 	return item;
 }
 
-Item* Container::get(uint8_t x, uint8_t y) const {
+ItemPtr Container::get(uint8_t x, uint8_t y) const {
 	if (!_shape.isInShape(x, y)) {
-		return nullptr;
+		return ItemPtr();
 	}
 	if ((_flags & Single) != 0) {
 		if (_items.empty()) {
-			return nullptr;
+			return ItemPtr();
 		}
 		return _items.front().item;
 	}
@@ -104,10 +104,10 @@ Item* Container::get(uint8_t x, uint8_t y) const {
 			return item.item;
 		}
 	}
-	return nullptr;
+	return ItemPtr();
 }
 
-bool Container::findSpace(const Item* item, uint8_t& targetX, uint8_t& targetY) const {
+bool Container::findSpace(const ItemPtr& item, uint8_t& targetX, uint8_t& targetY) const {
 	// always fits into scrollable container
 	if ((_flags & Scrollable) != 0) {
 		targetX = targetY = 0u;

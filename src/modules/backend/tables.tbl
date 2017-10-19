@@ -27,3 +27,25 @@ table user {
 		id autoincrement
 	}
 }
+
+table stock {
+	namespace backend
+	field userid {
+		type long
+		operator set
+	}
+	field itemid {
+		type int
+		operator set
+	}
+	field amount {
+		type long
+		operator add
+		notnull
+	}
+	constraints {
+		(userid, itemid) unique
+		userid primarykey
+		itemid primarykey
+	}
+}

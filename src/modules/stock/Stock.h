@@ -21,20 +21,16 @@ namespace stock {
 class Stock {
 private:
 	/** All the items this instance can deal with */
-	std::vector<Item*> _items;
+	std::unordered_map<ItemId, ItemPtr> _items;
 	/** The inventory has pointers to all the items distributed over all the Container instances in the Inventory. */
 	Inventory _inventory;
 
 	inline auto find(const ItemId& itemId) const {
-		return std::find_if(_items.begin(), _items.end(), [itemId] (const Item* item) {
-			return item->id() == itemId;
-		});
+		return _items.find(itemId);
 	}
 
 	inline auto find(const ItemId& itemId) {
-		return std::find_if(_items.begin(), _items.end(), [itemId] (const Item* item) {
-			return item->id() == itemId;
-		});
+		return _items.find(itemId);
 	}
 public:
 	Stock();
@@ -42,11 +38,15 @@ public:
 	/**
 	 * @brief Initializes the Stock class with all the Item instances it should manage.
 	 */
-	void init(const std::vector<Item*>& items);
+	void init(const std::vector<ItemPtr>& items);
 
-	int add(Item* item);
+	/**
+	 * @brief Adds a new item to the stock
+	 * @param[in] item The @c Item to add.
+	 */
+	ItemPtr add(const ItemPtr& item);
 
-	int remove(Item* item);
+	int remove(const ItemPtr& item);
 
 	int count(const ItemType& itemType) const;
 

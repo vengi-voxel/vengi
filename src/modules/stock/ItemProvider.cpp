@@ -62,18 +62,18 @@ bool ItemProvider::init(const std::string& luaScript) {
 	return true;
 }
 
-Item* ItemProvider::createItem(ItemId itemId) {
+ItemPtr ItemProvider::createItem(ItemId itemId) {
 	if (itemId > _itemData.size()) {
 		Log::error("Invalid item id %i", (int)itemId);
-		return nullptr;
+		return ItemPtr();
 	}
 	const ItemData* data = getItemData(itemId);
 	if (data == nullptr) {
 		Log::error("Could not find item for id %i", (int)itemId);
-		return nullptr;
+		return ItemPtr();
 	}
 	Log::trace("Create item with id %i", (int)itemId);
-	return new Item(*data);
+	return std::make_shared<Item>(*data);
 }
 
 bool ItemProvider::addItemData(const ItemData* itemData) {

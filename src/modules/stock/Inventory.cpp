@@ -26,7 +26,7 @@ void Inventory::clear() {
 	}
 }
 
-bool Inventory::notifyRemove(Item* item) {
+bool Inventory::notifyRemove(const ItemPtr& item) {
 	if (item == nullptr) {
 		return false;
 	}
@@ -39,8 +39,8 @@ bool Inventory::notifyRemove(Item* item) {
 	return false;
 }
 
-bool Inventory::add(uint8_t containerId, Item* item, uint8_t x, uint8_t y) {
-	if (item == nullptr) {
+bool Inventory::add(uint8_t containerId, const ItemPtr& item, uint8_t x, uint8_t y) {
+	if (!item) {
 		return false;
 	}
 	if (containerId >= maxContainers()) {
@@ -50,9 +50,9 @@ bool Inventory::add(uint8_t containerId, Item* item, uint8_t x, uint8_t y) {
 	return c.add(item, x, y);
 }
 
-Item* Inventory::remove(uint8_t containerId, uint8_t x, uint8_t y) {
+ItemPtr Inventory::remove(uint8_t containerId, uint8_t x, uint8_t y) {
 	if (containerId >= maxContainers()) {
-		return nullptr;
+		return ItemPtr();
 	}
 	Container& c = _containers[containerId];
 	return c.remove(x, y);

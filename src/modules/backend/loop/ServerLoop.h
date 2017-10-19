@@ -15,6 +15,7 @@
 #include "backend/entity/EntityStorage.h"
 #include "core/EventBus.h"
 #include "persistence/DBHandler.h"
+#include "stock/ItemProvider.h"
 
 #include <memory>
 #include <thread>
@@ -40,6 +41,7 @@ private:
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	eventmgr::EventMgrPtr _eventMgr;
 	persistence::DBHandlerPtr _dbHandler;
+	stock::ItemProviderPtr _itemProvider;
 	core::Input _input;
 
 	void readInput();
@@ -48,7 +50,7 @@ public:
 			const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,
 			const AIRegistryPtr& registry, const attrib::ContainerProviderPtr& containerProvider,
 			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-			const eventmgr::EventMgrPtr& eventMgr);
+			const eventmgr::EventMgrPtr& eventMgr, const stock::ItemProviderPtr& itemProvider);
 
 	bool init();
 	void shutdown();
