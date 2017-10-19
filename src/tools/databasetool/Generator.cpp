@@ -225,7 +225,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		if (f.type == persistence::FieldType::INT || f.type == persistence::FieldType::SHORT) {
 			src << "\ttemplate<typename T, class = typename std::enable_if<std::is_enum<T>::value>::type>\n";
 			src << "\tinline void set" << n << "(const T& " << f.name << ") {\n";
-			src << "\t\tsetType(static_cast<" << cpptypeSetter << ">(static_cast<typename std::underlying_type<T>::type>(" << f.name << ")));\n";
+			src << "\t\tset" << n << "(static_cast<" << cpptypeSetter << ">(static_cast<typename std::underlying_type<T>::type>(" << f.name << ")));\n";
 			src << "\t}\n\n";
 		}
 
