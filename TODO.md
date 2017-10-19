@@ -20,6 +20,11 @@ The databasetool should be able to generate foreign keys meta data. We can then 
 at compile time that the types we are referencing to are matching to the type we are referencing from. And
 of course we could also add the db constraints.
 
+## Databasetool
+
+* Support `(x, y, z) primarykey` (like we do for unique keys)
+* Allow to set just a key, currently we only support pk or unique.
+
 # EventMgr
 
 Proper event-end-while-application-is-not-running handling
