@@ -43,6 +43,46 @@ bool DatabaseTool::generateSrc() const {
 	return filesystem()->syswrite(_targetFile, header.str());
 }
 
+bool DatabaseTool::validate() const {
+	bool error = false;
+	for (const auto& entry : _tables) {
+		const databasetool::Table& table = entry.second;
+		const persistence::ForeignKeys& foreignKeys = table.foreignKeys;
+		for (const auto& fke : foreignKeys) {
+			const persistence::ForeignKey& fk = fke.second;
+			const auto i = _tables.find(fk.table);
+			if (i == _tables.end()) {
+				Log::debug("Could not find referenced table in this definition");
+				continue;
+			}
+			const databasetool::Table& ref = i->second;
+			const auto fi = table.fields.find(fke.first);
+			if (fi == table.fields.end()) {
+				error = true;
+				Log::error("Specified field '%s' is not part of the table '%s'",
+						fke.first.c_str(), table.name.c_str());
+				continue;
+			}
+
+			const auto ri = ref.fields.find(fk.field);
+			if (ri == ref.fields.end()) {
+				error = true;
+				Log::error("Referenced field '%s' is not part of the table '%s'",
+						fk.field.c_str(), ref.name.c_str());
+				continue;
+			}
+
+			if (ri->second.type != fi->second.type) {
+				error = true;
+				Log::error("Type of field '%s' doesn't match the field of the referenced field of the table '%s'",
+						fk.field.c_str(), ref.name.c_str());
+				continue;
+			}
+		}
+	}
+	return !error;
+}
+
 bool DatabaseTool::parse(const std::string& buffer) {
 	core::Tokenizer tok(buffer, " \t\n", "(){},;");
 	while (tok.hasNext()) {
@@ -62,7 +102,7 @@ bool DatabaseTool::parse(const std::string& buffer) {
 			_tables.insert(std::make_pair(tablename, table));
 		}
 	}
-	return true;
+	return validate();
 }
 
 core::AppState DatabaseTool::onConstruct() {

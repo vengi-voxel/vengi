@@ -17,7 +17,6 @@ Implement proper password handling (don't ever load passwords from DB into memor
 ## Foreign keys
 
 * check that the referenced field is a pk - theoretically we could also allow non-null with just a key... but we want to enforce a pk here
-* check that the referenced datatypes matches
 
 ## Enums
 

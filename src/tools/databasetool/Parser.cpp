@@ -201,7 +201,9 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 				return false;
 			}
 			const persistence::ForeignKey fk{token, tok.next()};
-			table.foreignKeys.insert(std::make_pair(*fieldNames.begin(), fk));
+			// there is only one entry
+			const std::string& fieldName = *fieldNames.begin();
+			table.foreignKeys.insert(std::make_pair(fieldName, fk));
 		}
 
 		if (fieldNames.size() == 1) {
