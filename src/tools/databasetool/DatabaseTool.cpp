@@ -43,42 +43,77 @@ bool DatabaseTool::generateSrc() const {
 	return filesystem()->syswrite(_targetFile, header.str());
 }
 
+bool DatabaseTool::validateOperators(const databasetool::Table& table) const {
+	for (const auto& fe : table.fields) {
+		const auto& field = fe.second;
+		if (field.updateOperator == persistence::Operator::SET) {
+			continue;
+		}
+		if (field.type == persistence::FieldType::STRING ||
+			field.type == persistence::FieldType::TEXT ||
+			field.type == persistence::FieldType::PASSWORD) {
+			Log::error("Table '%s': Invalid operator for string based field '%s'",
+					table.name.c_str(), field.name.c_str());
+			return true;
+		}
+	}
+	return false;
+}
+
+bool DatabaseTool::validateForeignKeys(const databasetool::Table& table) const {
+	bool error = false;
+	const persistence::ForeignKeys& foreignKeys = table.foreignKeys;
+	for (const auto& fke : foreignKeys) {
+		const persistence::ForeignKey& fk = fke.second;
+		const auto i = _tables.find(fk.table);
+		if (i == _tables.end()) {
+			Log::debug("Table '%s': Could not find referenced table in this definition", table.name.c_str());
+			continue;
+		}
+		const databasetool::Table& ref = i->second;
+		const auto fi = table.fields.find(fke.first);
+		if (fi == table.fields.end()) {
+			error = true;
+			Log::error("Table '%s': Specified field '%s' is not part of the table '%s'",
+					table.name.c_str(), fke.first.c_str(), table.name.c_str());
+			continue;
+		}
+
+		const auto ri = ref.fields.find(fk.field);
+		if (ri == ref.fields.end()) {
+			error = true;
+			Log::error("Table '%s': Referenced field '%s' is not part of the table '%s'",
+					table.name.c_str(), fk.field.c_str(), ref.name.c_str());
+			continue;
+		}
+
+		if (ri->second.type != fi->second.type) {
+			error = true;
+			Log::error("Table '%s': Type of field '%s' doesn't match the field of the referenced field of the table '%s'",
+					table.name.c_str(), fk.field.c_str(), ref.name.c_str());
+			continue;
+		}
+
+		if ((ri->second.contraintMask & std::enum_value(persistence::ConstraintType::PRIMARYKEY)) == 0u) {
+			if ((ri->second.contraintMask & std::enum_value(persistence::ConstraintType::NOTNULL)) == 0u) {
+				error = true;
+				Log::error("Table '%s': Referenced field '%s' in table '%s' isn't a primary key and can be null",
+						table.name.c_str(), fk.field.c_str(), fk.table.c_str());
+				continue;
+			}
+			Log::warn("Table '%s': Referenced field '%s' in table '%s' isn't a primary key",
+					table.name.c_str(), fk.field.c_str(), fk.table.c_str());
+		}
+	}
+	return error;
+}
+
 bool DatabaseTool::validate() const {
 	bool error = false;
 	for (const auto& entry : _tables) {
 		const databasetool::Table& table = entry.second;
-		const persistence::ForeignKeys& foreignKeys = table.foreignKeys;
-		for (const auto& fke : foreignKeys) {
-			const persistence::ForeignKey& fk = fke.second;
-			const auto i = _tables.find(fk.table);
-			if (i == _tables.end()) {
-				Log::debug("Could not find referenced table in this definition");
-				continue;
-			}
-			const databasetool::Table& ref = i->second;
-			const auto fi = table.fields.find(fke.first);
-			if (fi == table.fields.end()) {
-				error = true;
-				Log::error("Specified field '%s' is not part of the table '%s'",
-						fke.first.c_str(), table.name.c_str());
-				continue;
-			}
-
-			const auto ri = ref.fields.find(fk.field);
-			if (ri == ref.fields.end()) {
-				error = true;
-				Log::error("Referenced field '%s' is not part of the table '%s'",
-						fk.field.c_str(), ref.name.c_str());
-				continue;
-			}
-
-			if (ri->second.type != fi->second.type) {
-				error = true;
-				Log::error("Type of field '%s' doesn't match the field of the referenced field of the table '%s'",
-						fk.field.c_str(), ref.name.c_str());
-				continue;
-			}
-		}
+		error |= validateForeignKeys(table);
+		error |= validateOperators(table);
 	}
 	return !error;
 }

@@ -14,10 +14,6 @@ that.
 Implement proper password handling (don't ever load passwords from DB into memory - just compare hashes).
 (This should also be true for logging in - only transmit the hash - never the real password)
 
-## Foreign keys
-
-* check that the referenced field is a pk - theoretically we could also allow non-null with just a key... but we want to enforce a pk here
-
 ## Enums
 
 Support enums?

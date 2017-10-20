@@ -23,6 +23,8 @@ protected:
 	typedef std::map<std::string, databasetool::Table> Tables;
 	Tables _tables;
 
+	bool validateForeignKeys(const databasetool::Table& table) const;
+	bool validateOperators(const databasetool::Table& table) const;
 	bool validate() const;
 	bool parse(const std::string& src);
 	bool generateSrc() const;
