@@ -16,6 +16,7 @@ struct Table {
 	std::string namespaceSrc = "backend";
 	Fields fields;
 	persistence::Constraints constraints;
+	persistence::ForeignKeys foreignKeys;
 	int primaryKeys = 0;
 	persistence::UniqueKeys uniqueKeys;
 };

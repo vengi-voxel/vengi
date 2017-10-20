@@ -45,10 +45,12 @@ table <TABLENAME> {
   }
   constraints {
     <FIELDNAME> unique
+    <FIELDNAME> key
     <FIELDNAME> primarykey
     <FIELDNAME2> primarykey
     <FIELDNAME> autoincrement
     (<FIELD1>, <FIELD2>) unique
+    <FIELDNAME> foreignkey <FOREIGNTABLE> <FOREIGNFIELD>
   }
 }
 ```
@@ -62,6 +64,7 @@ table <TABLENAME> {
 * timestamp
 * boolean
 * short
+* byte
 
 ## Valid operators
 * set

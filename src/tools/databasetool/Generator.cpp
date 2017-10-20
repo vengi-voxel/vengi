@@ -106,17 +106,30 @@ void createConstructor(const Table& table, std::stringstream& src) {
 		}
 		src << "});\n";
 	}
-	src << "\t\t_constraints.reserve(" << table.constraints.size() << ");\n";
+	if (!table.constraints.empty()) {
+		src << "\t\t_constraints.reserve(" << table.constraints.size() << ");\n";
+	}
 	for (auto i = table.constraints.begin(); i != table.constraints.end(); ++i) {
 		const persistence::Constraint& c = i->second;
 		src << "\t\t_constraints.insert(std::make_pair(\"" << i->first << "\", persistence::Constraint{{\"";
 		src << core::string::join(c.fields.begin(), c.fields.end(), "\",\"");
 		src << "\"}, " << c.types << "}));\n";
 	}
+	if (!table.uniqueKeys.empty()) {
+		src << "\t\t_uniqueKeys.reserve(" << table.uniqueKeys.size() << ");\n";
+	}
 	for (const auto& uniqueKey : table.uniqueKeys) {
 		src << "\t\t_uniqueKeys.emplace_back(std::set<std::string>{\"";
 		src << core::string::join(uniqueKey.begin(), uniqueKey.end(), "\", \"");
 		src << "\"});\n";
+	}
+	if (!table.foreignKeys.empty()) {
+		src << "\t\t_foreignKeys.reserve(" << table.foreignKeys.size() << ");\n";
+	}
+	for (const auto& foreignKeyEntry : table.foreignKeys) {
+		src << "\t\t_foreignKeys.insert(std::make_pair(\"" << foreignKeyEntry.first << "\", persistence::ForeignKey{\"";
+		src << foreignKeyEntry.second.table << "\", \"" << foreignKeyEntry.second.field;
+		src << "\"}));\n";
 	}
 
 	src << "\t\t_primaryKeys = " << table.primaryKeys << ";\n";

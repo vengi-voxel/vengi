@@ -72,7 +72,13 @@ struct Constraint {
 	// bitmask from persistence::Model::ConstraintType
 	uint32_t types;
 };
+struct ForeignKey {
+	std::string table;
+	std::string field;
+};
+
 typedef std::unordered_map<std::string, Constraint> Constraints;
+typedef std::unordered_map<std::string, ForeignKey> ForeignKeys;
 typedef std::vector<std::set<std::string>> UniqueKeys;
 
 /**
@@ -92,6 +98,7 @@ protected:
 	uint8_t* _membersPointer;
 	Constraints _constraints;
 	UniqueKeys _uniqueKeys;
+	ForeignKeys _foreignKeys;
 
 	const Field& getField(const std::string& name) const;
 	bool fillModelValues(State& state);
@@ -106,6 +113,8 @@ public:
 	const Constraints& constraints() const;
 
 	const UniqueKeys& uniqueKeys() const;
+
+	const ForeignKeys& foreignKeys() const;
 
 	int primaryKeys() const;
 
@@ -172,6 +181,10 @@ inline const Constraints& Model::constraints() const {
 
 inline const UniqueKeys& Model::uniqueKeys() const {
 	return _uniqueKeys;
+}
+
+inline const ForeignKeys& Model::foreignKeys() const {
+	return _foreignKeys;
 }
 
 inline int Model::primaryKeys() const {

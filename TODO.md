@@ -16,9 +16,14 @@ Implement proper password handling (don't ever load passwords from DB into memor
 
 ## Foreign keys
 
-The databasetool should be able to generate foreign keys meta data. We can then use this data to validate
-at compile time that the types we are referencing to are matching to the type we are referencing from. And
-of course we could also add the db constraints.
+* check that the referenced field is a pk - theoretically we could also allow non-null with just a key... but we want to enforce a pk here
+* check that the referenced datatypes matches
+
+## Enums
+
+Support enums?
+
+    CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');
 
 ## Databasetool
 

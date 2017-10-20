@@ -44,9 +44,9 @@ table stock {
 		notnull
 	}
 	constraints {
-		(userid, itemid) unique
 		userid primarykey
 		itemid primarykey
+		userid foreignkey user id
 	}
 }
 
@@ -77,6 +77,6 @@ table inventory {
 		notnull
 	}
 	constraints {
-		userid index
+		userid foreignkey user id
 	}
 }

@@ -167,7 +167,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 			fieldNames.insert(token);
 		}
 		if (!tok.hasNext()) {
-			Log::error("invalid constraint syntax block for table %s", table.name.c_str());
+			Log::error("invalid constraint syntax for table %s", table.name.c_str());
 			return false;
 		}
 		token = tok.next();
@@ -183,6 +183,27 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 			Log::error("invalid constraint syntax for table %s: '%s'", table.name.c_str(), token.c_str());
 			return false;
 		}
+
+		if ((typeMapping & std::enum_value(persistence::ConstraintType::FOREIGNKEY)) != 0) {
+			if (fieldNames.size() != 1) {
+				Log::error("invalid foreign key constraint for table %s - expected to have exactly one field given",
+						table.name.c_str());
+				return false;
+			}
+			if (!tok.hasNext()) {
+				Log::error("invalid foreign key constraint for table %s - expected foreign table", table.name.c_str());
+				return false;
+			}
+			token = tok.next();
+			if (!tok.hasNext()) {
+				Log::error("invalid foreign key constraint for table %s - expected foreign field in table %s",
+						table.name.c_str(), token.c_str());
+				return false;
+			}
+			const persistence::ForeignKey fk{token, tok.next()};
+			table.foreignKeys.insert(std::make_pair(*fieldNames.begin(), fk));
+		}
+
 		if (fieldNames.size() == 1) {
 			const std::string& name = *fieldNames.begin();
 			auto i = table.constraints.find(name);

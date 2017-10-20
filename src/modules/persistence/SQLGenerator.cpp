@@ -155,7 +155,9 @@ std::string createCreateTableStatement(const Model& table) {
 	if (!table.uniqueKeys().empty()) {
 		bool firstUniqueKey = true;
 		for (const auto& uniqueKey : table.uniqueKeys()) {
-			createTable << ", UNIQUE(";
+			createTable << ", CONSTRAINT ";
+			createTable << table.tableName() << "_" << core::string::join(uniqueKey.begin(), uniqueKey.end(), "_");
+			createTable << " UNIQUE(";
 			for (const std::string& fieldName : uniqueKey) {
 				if (!firstUniqueKey) {
 					createTable << ", ";
@@ -182,6 +184,15 @@ std::string createCreateTableStatement(const Model& table) {
 		}
 		createTable << ")";
 	}
+
+	for (const auto& foreignKey : table.foreignKeys()) {
+		createTable << ", CONSTRAINT ";
+		createTable << table.tableName() << "_" << foreignKey.second.table << "_" << foreignKey.second.field;
+		createTable << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES public.\"";
+		createTable << foreignKey.second.table << "\"(\"" << foreignKey.second.field << "\") MATCH SIMPLE";
+		createTable << " ON UPDATE NO ACTION ON DELETE NO ACTION";
+	}
+
 	createTable << ");";
 
 	for (const auto& f : table.fields()) {
