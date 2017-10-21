@@ -187,6 +187,26 @@ void lowerCamelCase(std::string& str) {
 	camelCase(str, false);
 }
 
+char* append(char* buf, size_t bufsize, const char* string) {
+	const size_t bufl = strlen(buf);
+	if (bufl >= bufsize) {
+		return nullptr;
+	}
+	const size_t remaining = bufsize - bufl;
+	if (remaining <= 1u) {
+		return nullptr;
+	}
+	const size_t l = strlen(string);
+	if (remaining <= l) {
+		return nullptr;
+	}
+	char* p = buf + bufl;
+	for (size_t i = 0u; i < l; ++i) {
+		*p++ = *string++;
+	}
+	*p = '\0';
+	return p;
+}
 
 }
 }

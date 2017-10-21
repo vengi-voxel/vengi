@@ -15,6 +15,21 @@ TEST_F(StringTest, testEraseAllSpaces) {
 	ASSERT_EQ(",", core::string::eraseAllSpaces("  ,  "));
 }
 
+TEST_F(StringTest, testAppendSmall1) {
+	char buf1[4] = { '\0' };
+	ASSERT_EQ(&buf1[1], core::string::append(buf1, sizeof(buf1), "a"));
+	ASSERT_EQ(&buf1[2], core::string::append(buf1, sizeof(buf1), "a"));
+	ASSERT_EQ(&buf1[3], core::string::append(buf1, sizeof(buf1), "a"));
+	ASSERT_EQ(nullptr, core::string::append(buf1, sizeof(buf1), "a"));
+	ASSERT_FALSE(strcmp("aaa", buf1));
+}
+
+TEST_F(StringTest, testAppendSmall2) {
+	char buf1[4] = { 'a', 'a', 'a', '\0' };
+	ASSERT_EQ(nullptr, core::string::append(buf1, sizeof(buf1), "a"));
+	ASSERT_FALSE(strcmp("aaa", buf1));
+}
+
 TEST_F(StringTest, testJoinFunc) {
 	std::string test = "abcd";
 	ASSERT_EQ("b,c,d,e", core::string::join(test.begin(), test.end(), ",", [] (char c) { return (char)(c + 1); }));
