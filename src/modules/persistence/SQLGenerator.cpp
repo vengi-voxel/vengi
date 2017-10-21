@@ -188,7 +188,7 @@ std::string createCreateTableStatement(const Model& table) {
 	for (const auto& foreignKey : table.foreignKeys()) {
 		createTable << ", CONSTRAINT ";
 		createTable << table.tableName() << "_" << foreignKey.second.table << "_" << foreignKey.second.field;
-		createTable << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES public.\"";
+		createTable << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES \"";
 		createTable << foreignKey.second.table << "\"(\"" << foreignKey.second.field << "\") MATCH SIMPLE";
 		createTable << " ON UPDATE NO ACTION ON DELETE NO ACTION";
 	}
