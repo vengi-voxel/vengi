@@ -41,28 +41,28 @@ static inline bool placeholder(const Model& model, const Field& field, std::stri
 }
 
 static std::string getDbFlags(int numberPrimaryKeys, const Constraints& constraints, const Field& field) {
-	std::stringstream ss;
+	char buf[1024] = { '\0' };
 	bool empty = true;
 	if (field.isAutoincrement()) {
 		empty = false;
 		if (field.type == FieldType::LONG) {
-			ss << "BIGSERIAL";
+			core::string::append(buf, sizeof(buf), "BIGSERIAL");
 		} else {
-			ss << "SERIAL";
+			core::string::append(buf, sizeof(buf), "SERIAL");
 		}
 	}
 	if (field.isNotNull()) {
 		if (!empty) {
-			ss << " ";
+			core::string::append(buf, sizeof(buf), " ");
 		}
-		ss << "NOT NULL";
+		core::string::append(buf, sizeof(buf), "NOT NULL");
 		empty = false;
 	}
 	if (field.isPrimaryKey() && numberPrimaryKeys == 1) {
 		if (!empty) {
-			ss << " ";
+			core::string::append(buf, sizeof(buf), " ");
 		}
-		ss << "PRIMARY KEY";
+		core::string::append(buf, sizeof(buf), "PRIMARY KEY");
 		empty = false;
 	}
 	if (field.isUnique()) {
@@ -71,20 +71,21 @@ static std::string getDbFlags(int numberPrimaryKeys, const Constraints& constrai
 		// them differently like the primary key for multiple fields
 		if (i == constraints.end() || i->second.fields.size() == 1) {
 			if (!empty) {
-				ss << " ";
+				core::string::append(buf, sizeof(buf), " ");
 			}
-			ss << "UNIQUE";
+			core::string::append(buf, sizeof(buf), "UNIQUE");
 			empty = false;
 		}
 	}
 	if (!field.defaultVal.empty()) {
 		if (!empty) {
-			ss << " ";
+			core::string::append(buf, sizeof(buf), " ");
 		}
-		ss << "DEFAULT " << field.defaultVal;
+		core::string::append(buf, sizeof(buf), "DEFAULT ");
+		core::string::append(buf, sizeof(buf), field.defaultVal.c_str());
 		empty = false;
 	}
-	return ss.str();
+	return std::string(buf);
 }
 
 static std::string getDbType(const Field& field) {
