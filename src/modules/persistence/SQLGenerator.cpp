@@ -26,10 +26,6 @@ static const char *OrderStrings[] = {
 };
 static_assert(lengthof(OrderStrings) == (int)persistence::Order::MAX, "Invalid order mapping");
 
-static inline std::string quote(const std::string& in) {
-	return core::string::format("\"%s\"", in.c_str());
-}
-
 static inline bool placeholder(const Model& model, const Field& field, std::stringstream& ss, int count) {
 	if (field.type == FieldType::TIMESTAMP) {
 		const Timestamp& ts = model.getValue<Timestamp>(field);
@@ -134,13 +130,13 @@ static std::string getDbType(const Field& field) {
 
 std::string createCreateTableStatement(const Model& table) {
 	std::stringstream createTable;
-	createTable << "CREATE TABLE IF NOT EXISTS " << quote(table.tableName()) << " (";
+	createTable << "CREATE TABLE IF NOT EXISTS \"" << table.tableName() << "\" (";
 	bool firstField = true;
 	for (const auto& f : table.fields()) {
 		if (!firstField) {
 			createTable << ", ";
 		}
-		createTable << quote(f.name);
+		createTable << "\"" << f.name << "\"";
 		const std::string& dbType = getDbType(f);
 		if (!dbType.empty()) {
 			createTable << " " << dbType;
@@ -162,7 +158,7 @@ std::string createCreateTableStatement(const Model& table) {
 				if (!firstUniqueKey) {
 					createTable << ", ";
 				}
-				createTable << quote(fieldName);
+				createTable << "\"" << fieldName << "\"";
 				firstUniqueKey = false;
 			}
 			createTable << ")";
@@ -179,7 +175,7 @@ std::string createCreateTableStatement(const Model& table) {
 			if (!firstPrimaryKey) {
 				createTable << ", ";
 			}
-			createTable << quote(f.name);
+			createTable << "\"" << f.name << "\"";
 			firstPrimaryKey = false;
 		}
 		createTable << ")";
@@ -189,8 +185,8 @@ std::string createCreateTableStatement(const Model& table) {
 		createTable << ", CONSTRAINT ";
 		createTable << table.tableName() << "_" << foreignKey.second.table << "_" << foreignKey.second.field;
 		createTable << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES \"";
-		createTable << foreignKey.second.table << "\"(\"" << foreignKey.second.field << "\") MATCH SIMPLE";
-		createTable << " ON UPDATE NO ACTION ON DELETE NO ACTION";
+		createTable << foreignKey.second.table << "\"(\"" << foreignKey.second.field;
+		createTable << "\") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION";
 	}
 
 	createTable << ");";
@@ -199,8 +195,8 @@ std::string createCreateTableStatement(const Model& table) {
 		if (!f.isIndex()) {
 			continue;
 		}
-		createTable << "CREATE INDEX IF NOT EXISTS " << table.tableName() << "_" << f.name << " ON ";
-		createTable << table.tableName() << " USING btree (" << f.name << ");";
+		createTable << "CREATE INDEX IF NOT EXISTS " << table.tableName() << "_" << f.name << " ON \"";
+		createTable << table.tableName() << "\" USING btree (\"" << f.name << "\");";
 	}
 
 	return createTable.str();
@@ -218,7 +214,7 @@ std::string createUpdateStatement(const Model& model, BindParam* params) {
 	const Fields& fields = model.fields();
 	const std::string& tableName = model.tableName();
 	std::stringstream update;
-	update << "UPDATE " << quote(tableName) << " SET (";
+	update << "UPDATE \"" << tableName << "\" SET (";
 	for (auto i = fields.begin(); i != fields.end(); ++i) {
 		if (i->isPrimaryKey()) {
 			continue;
@@ -227,7 +223,7 @@ std::string createUpdateStatement(const Model& model, BindParam* params) {
 		if (i != fields.begin()) {
 			update << ", ";
 		}
-		update << quote(f.name);
+		update << "\"" << f.name << "\"";
 	}
 	update << ") = (";
 	int index = 1;
@@ -257,7 +253,7 @@ std::string createUpdateStatement(const Model& model, BindParam* params) {
 			update << " AND ";
 		}
 		++where;
-		update << quote(f.name) << " = ";
+		update << "\"" << f.name << "\" = ";
 		if (placeholder(model, f, update, index)) {
 			++index;
 			if (params != nullptr) {
@@ -270,9 +266,7 @@ std::string createUpdateStatement(const Model& model, BindParam* params) {
 }
 
 std::string createDeleteStatement(const Model& table) {
-	std::stringstream deleteStatement;
-	deleteStatement << "DELETE FROM " << quote(table.tableName());
-	return deleteStatement.str();
+	return core::string::format("DELETE FROM \"%s\"", table.tableName().c_str());
 }
 
 std::string createInsertStatement(const Model& model, BindParam* params) {
@@ -280,7 +274,7 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 	std::stringstream values;
 	std::string autoincrement;
 	std::string primaryKey;
-	insert << "INSERT INTO " << quote(model.tableName()) << " (";
+	insert << "INSERT INTO \"" << model.tableName() << "\" (";
 	int insertValueIndex = 1;
 	int inserted = 0;
 	for (const persistence::Field& f : model.fields()) {
@@ -298,7 +292,7 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 			values << ", ";
 			insert << ", ";
 		}
-		insert << quote(f.name);
+		insert << "\"" << f.name << "\"";
 		++inserted;
 		if (placeholder(model, f, values, insertValueIndex)) {
 			++insertValueIndex;
@@ -310,8 +304,8 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 
 	insert << ") VALUES (" << values.str() << ")";
 	if (model.primaryKeys() == 1) {
-		insert << " ON CONFLICT (" << quote(primaryKey);
-		insert << ") DO UPDATE SET ";
+		insert << " ON CONFLICT (\"" << primaryKey;
+		insert << "\") DO UPDATE SET ";
 		int fieldIndex = 0;
 		for (const persistence::Field& f : model.fields()) {
 			if (f.isPrimaryKey() || f.isAutoincrement()) {
@@ -320,7 +314,7 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 			if (fieldIndex > 0) {
 				insert << ", ";
 			}
-			insert << quote(f.name) << OperatorStrings[(int)f.updateOperator];
+			insert << "\"" << f.name << "\"" << OperatorStrings[(int)f.updateOperator];
 			if (placeholder(model, f, insert, insertValueIndex)) {
 				++insertValueIndex;
 				if (params != nullptr) {
@@ -334,7 +328,7 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 	for (const auto& set : uniqueKeys) {
 		insert << " ON CONFLICT (";
 		insert << core::string::join(set.begin(), set.end(), ", ", [] (const std::string& fieldName) {
-			return quote(fieldName);
+			return core::string::format("\"%s\"", fieldName.c_str());
 		});
 		insert << ") DO UPDATE SET ";
 		int fieldIndex = 0;
@@ -348,9 +342,9 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 			if (fieldIndex > 0) {
 				insert << ", ";
 			}
-			insert << quote(f.name);
+			insert << "\"" << f.name << "\"";
 			if (f.updateOperator != Operator::SET) {
-				insert << " = " << model.tableName() << "." << quote(f.name);
+				insert << " = \"" << model.tableName() << "." << f.name << "\"";
 				insert << OperatorStrings[(int)f.updateOperator];
 			}
 			if (placeholder(model, f, insert, insertValueIndex)) {
@@ -363,7 +357,7 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 		}
 	}
 	if (!autoincrement.empty()) {
-		insert << " RETURNING " << quote(autoincrement);
+		insert << " RETURNING \"" << autoincrement << "\"";
 	}
 	return insert.str();
 }
@@ -383,26 +377,23 @@ std::string createSelect(const Model& model) {
 		if (f.type == FieldType::TIMESTAMP) {
 			select << "CAST(EXTRACT(EPOCH FROM ";
 		}
-		select << quote(f.name);
+		select << "\"" << f.name << "\"";
 		if (f.type == FieldType::TIMESTAMP) {
-			select << " AT TIME ZONE 'UTC') AS bigint) AS " << quote(f.name);
+			select << " AT TIME ZONE 'UTC') AS bigint) AS \"" << f.name << "\"";
 		}
 	}
 
-	select << " FROM " << quote(tableName) << "";
+	select << " FROM \"" << tableName << "\"";
 	return select.str();
 }
 
 std::string createWhere(const DBCondition& condition, int &parameterCount) {
-	std::stringstream where;
-	where << " WHERE " << condition.statement(parameterCount);
-	return where.str();
+	const std::string& conditionStr = condition.statement(parameterCount);
+	return core::string::format(" WHERE %s", conditionStr.c_str());
 }
 
 std::string createOrderBy(const OrderBy& orderBy) {
-	std::stringstream ss;
-	ss << " ORDER BY " << quote(orderBy.fieldname) << " " << OrderStrings[std::enum_value(orderBy.order)];
-	return ss.str();
+	return core::string::format(" ORDER BY \"%s\" %s", orderBy.fieldname, OrderStrings[std::enum_value(orderBy.order)]);
 }
 
 std::string createLimitOffset(const Range& range) {
