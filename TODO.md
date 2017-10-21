@@ -25,6 +25,10 @@ Support enums?
 * Support `(x, y, z) primarykey` (like we do for unique keys)
 * Allow to set just a key, currently we only support pk or unique.
 
+## Schema
+
+* Support schemas for user data and server configuration data (event, user, default, ...)
+
 # EventMgr
 
 ## Proper event-end-while-application-is-not-running handling

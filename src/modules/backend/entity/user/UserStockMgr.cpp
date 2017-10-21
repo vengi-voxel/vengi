@@ -28,6 +28,12 @@ void UserStockMgr::init() {
 	})) {
 		Log::warn("Could not load stock for user %" PRIEntId, userId);
 	}
+	if (!_dbHandler->select(db::InventoryModel(), db::DBConditionInventoryUserid(userId), [this] (db::InventoryModel&& model) {
+		// TODO: load inventory
+		//_stock.inventory().add();
+	})) {
+		Log::warn("Could not load inventory for user %" PRIEntId, userId);
+	}
 }
 
 void UserStockMgr::shutdown() {
