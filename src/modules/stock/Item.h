@@ -17,10 +17,7 @@ using ItemAmount = int64_t;
  */
 class Item {
 protected:
-	static constexpr uint32_t ItemInContainer = 1 << 0;
 	const ItemData& _data;
-	Container _container; // socket for other items
-	uint32_t _flags = 0u;
 	ItemAmount _amount = 0;
 public:
 	Item(const ItemData& data);
