@@ -40,7 +40,17 @@ properly.
 
 # LootMgr
 
-Implement LootMgr that is able to hand out or change items via the stock system. Implement lua loot definition 'parsing'.
+Implement `LootMgr` that is able to hand out or change items via the stock system. Implement lua loot definition 'parsing'.
+
+# UserStockMgr
+
+Implement saving and loading of `Stock` and `Inventory` data.
+
+# Stock
+
+Think about the design again - Item shouldn't be a shared_ptr, just use the type in the map. That would also make an atomic
+counter useless, because we aren't operating on a shared data anymore. The `Stock` instance would be the owner and only
+instance that is able to modify the internal data.
 
 # World
 
