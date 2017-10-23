@@ -20,6 +20,10 @@ void Stock::init(const std::vector<ItemPtr>& items) {
 
 ItemPtr Stock::add(const ItemPtr& item) {
 	Log::debug("Add item %s", item->data().name());
+	if (item->amount() == 0) {
+		Log::debug("Give amount was 0 - ignore item add");
+		return ItemPtr();
+	}
 	auto i = find(item->id());
 	if (i == _items.end()) {
 		_items.insert(std::make_pair(item->id(), item));

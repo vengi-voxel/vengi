@@ -48,6 +48,8 @@ public:
 		_item2 = _provider.createItem(_itemData2->id());
 		ASSERT_EQ(2, _item1->shape().size());
 		ASSERT_EQ(1, _item2->shape().size());
+		_item1->changeAmount(1);
+		_item2->changeAmount(1);
 	}
 
 	virtual void TearDown() override {
