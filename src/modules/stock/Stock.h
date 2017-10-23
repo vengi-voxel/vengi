@@ -7,6 +7,7 @@
 #include "Item.h"
 #include "Inventory.h"
 #include <vector>
+#include <unordered_map>
 
 namespace stock {
 

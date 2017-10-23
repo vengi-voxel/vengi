@@ -78,8 +78,8 @@ ItemPtr ItemProvider::createItem(ItemId itemId) {
 
 bool ItemProvider::addItemData(const ItemData* itemData) {
 	const ItemId id = itemData->id();
-	// an entry with that id already exists
 	if (getItemData(id) != nullptr) {
+		Log::error("Invalid item id %i - an entry with that id already exists", (int)id);
 		return false;
 	}
 	_itemData[id] = itemData;
