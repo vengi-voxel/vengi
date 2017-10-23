@@ -23,7 +23,6 @@ Support enums?
 ## Databasetool
 
 * Support `(x, y, z) primarykey` (like we do for unique keys)
-* Allow to set just a key, currently we only support pk or unique.
 
 ## Schema
 
