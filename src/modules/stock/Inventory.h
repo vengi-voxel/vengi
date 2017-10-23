@@ -5,12 +5,11 @@
 #pragma once
 
 #include "Container.h"
+#include "ContainerData.h"
 #include <array>
 
 namespace stock {
 
-// TODO: container move operations with filters
-//       if might e.g. cost currency to move from one container to another
 /**
  * @ingroup Stock
  */
@@ -22,7 +21,7 @@ public:
 
 	int maxContainers() const;
 
-	bool initContainer(uint8_t containerId, const ContainerShape& shape);
+	bool initContainer(uint8_t containerId, const ContainerShape& shape, uint32_t flags = 0u);
 
 	void clear();
 
@@ -37,6 +36,8 @@ public:
 	ItemPtr remove(uint8_t containerId, uint8_t x, uint8_t y);
 
 	const Container* container(uint8_t containerId) const;
+
+	int id() const;
 };
 
 inline const Container* Inventory::container(uint8_t containerId) const {

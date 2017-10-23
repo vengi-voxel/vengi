@@ -3,15 +3,15 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "stock/ItemProvider.h"
+#include "stock/StockDataProvider.h"
 
 namespace stock {
 
-class ItemProviderTest: public core::AbstractTest {
+class StockDataProviderTest: public core::AbstractTest {
 };
 
-TEST_F(ItemProviderTest, testResetAndDuplicate) {
-	ItemProvider provider;
+TEST_F(StockDataProviderTest, testResetAndDuplicate) {
+	StockDataProvider provider;
 	ASSERT_TRUE(provider.addItemData(new ItemData(1, ItemType::WEAPON)));
 	ASSERT_TRUE(provider.addItemData(new ItemData(2, ItemType::WEAPON)));
 	ASSERT_FALSE(provider.addItemData(new ItemData(1, ItemType::WEAPON)));
@@ -20,17 +20,21 @@ TEST_F(ItemProviderTest, testResetAndDuplicate) {
 	provider.shutdown();
 }
 
-TEST_F(ItemProviderTest, testInit) {
+TEST_F(StockDataProviderTest, testInit) {
 	const char* lua = ""
 		"function init()\n"
-		"  local i = item.createItem(1, 'WEAPON')\n"
+		"  local i = stock.createItem(1, 'WEAPON')\n"
 		//"  print(i)\n"
-		"  local s = i:getShape()\n"
+		"  local s = i:shape()\n"
 		"  s:addRect(0, 0, 1, 1)\n"
+		"\n"
+		"  local invMain = stock.createContainer(\"main\")\n"
+		"  local invMainShape = invMain:shape()\n"
+		"  invMainShape:addRect(0, 0, 1, 1)\n"
 		"end\n";
-	ItemProvider provider;
+	StockDataProvider provider;
 	ASSERT_TRUE(provider.init(lua)) << provider.error();
-	const ItemData* itemData = provider.getItemData(1);
+	const ItemData* itemData = provider.itemData(1);
 	ASSERT_NE(nullptr, itemData);
 	ASSERT_EQ(ItemType::WEAPON, itemData->type());
 	ASSERT_EQ((ItemId)1, itemData->id());

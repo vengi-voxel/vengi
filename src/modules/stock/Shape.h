@@ -6,6 +6,7 @@
 
 #include "core/Assert.h"
 #include "core/GLM.h"
+#include <climits>
 
 namespace stock {
 
@@ -75,10 +76,10 @@ inline ItemShape::operator ItemShapeType() const {
  */
 class ContainerShape {
 private:
-	ContainerShapeType _containerShape[ContainerMaxHeight];
-	ContainerShapeType _itemShape[ContainerMaxHeight];
+	ContainerShapeType _containerShape[ContainerMaxHeight] {};
+	ContainerShapeType _itemShape[ContainerMaxHeight] {};
 public:
-	ContainerShape();
+	constexpr ContainerShape() {}
 
 	/**
 	 * @brief Define the shape by specifying the rect of a valid area.

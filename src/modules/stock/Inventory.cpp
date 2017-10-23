@@ -11,7 +11,7 @@ Inventory::Inventory() {
 	_containers.fill(Container());
 }
 
-bool Inventory::initContainer(uint8_t containerId, const ContainerShape& shape) {
+bool Inventory::initContainer(uint8_t containerId, const ContainerShape& shape, uint32_t flags) {
 	if (containerId >= maxContainers()) {
 		return false;
 	}

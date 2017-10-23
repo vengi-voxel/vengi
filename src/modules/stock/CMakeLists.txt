@@ -5,7 +5,7 @@ set(SRCS
 	Item.h Item.cpp
 	Shape.h Shape.cpp
 	Stock.h Stock.cpp
-	ItemProvider.h ItemProvider.cpp
+	StockDataProvider.h StockDataProvider.cpp
 )
 
 set(LIB stock)
@@ -18,6 +18,6 @@ gtest_suite_files(tests
 	tests/ShapeTest.cpp
 	tests/InventoryTest.cpp
 	tests/ContainerTest.cpp
-	tests/ItemProviderTest.cpp
+	tests/StockDataProviderTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

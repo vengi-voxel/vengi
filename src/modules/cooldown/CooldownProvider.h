@@ -44,12 +44,12 @@ public:
 
 	/**
 	 * @brief Initializes the cooldown durations.
-	 * @param[in] filename If this string is not empty, it is taken as a filename to the lua script
+	 * @param[in] cooldowns If this string is not empty, it is taken as a lua script
 	 * that contains the cooldown initialization data.
 	 * @return @c false in case of an error, @c true if the initialization was successful.
 	 * @sa error()
 	 */
-	bool init(const std::string& filename);
+	bool init(const std::string& cooldowns);
 
 	/**
 	 * @brief Access to the last error that was reported in case the @c init() call failed.

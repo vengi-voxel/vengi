@@ -3,15 +3,11 @@
  */
 
 #include "Shape.h"
+#include "core/Assert.h"
 #include "core/String.h"
 #include "core/Common.h"
 
 namespace stock {
-
-ContainerShape::ContainerShape() {
-	core_zero(_containerShape);
-	core_zero(_itemShape);
-}
 
 void ContainerShape::addRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
 	const ContainerShapeType row = (((ItemShapeType)1 << width) - 1) << x;

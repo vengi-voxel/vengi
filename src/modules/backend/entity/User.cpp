@@ -11,9 +11,9 @@ namespace backend {
 User::User(ENetPeer* peer, EntityId id, const std::string& name, const network::ServerMessageSenderPtr& messageSender,
 		const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider, const persistence::DBHandlerPtr& dbHandler,
-		const stock::ItemProviderPtr& itemProvider) :
+		const stock::StockProviderPtr& stockDataProvider) :
 		Super(id, messageSender, timeProvider, containerProvider, cooldownProvider),
-		_name(name), _world(world), _poiProvider(poiProvider), _dbHandler(dbHandler), _stockMgr(this, itemProvider, dbHandler) {
+		_name(name), _world(world), _poiProvider(poiProvider), _dbHandler(dbHandler), _stockMgr(this, stockDataProvider, dbHandler) {
 	setPeer(peer);
 	const glm::vec3& poi = _poiProvider->getPointOfInterest();
 	_pos = poi;

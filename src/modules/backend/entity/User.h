@@ -10,7 +10,7 @@
 #include "user/UserStockMgr.h"
 #include "poi/PoiProvider.h"
 #include "persistence/DBHandler.h"
-#include "stock/ItemProvider.h"
+#include "stock/StockDataProvider.h"
 
 namespace backend {
 
@@ -46,7 +46,7 @@ protected:
 public:
 	User(ENetPeer* peer, EntityId id, const std::string& name, const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-			const poi::PoiProviderPtr& poiProvider, const persistence::DBHandlerPtr& dbHandler, const stock::ItemProviderPtr& itemProvider);
+			const poi::PoiProviderPtr& poiProvider, const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider);
 
 	void setEntityId(EntityId id);
 

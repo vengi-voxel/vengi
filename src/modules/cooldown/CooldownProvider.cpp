@@ -24,16 +24,15 @@ long CooldownProvider::setDuration(Type type, long duration) {
 	return old;
 }
 
-bool CooldownProvider::init(const std::string& filename) {
-	if (filename.empty()) {
+bool CooldownProvider::init(const std::string& cooldowns) {
+	if (cooldowns.empty()) {
 		_error = "";
 		_initialized = true;
 		return true;
 	}
 
-	const std::string& cooldowns = core::App::getInstance()->filesystem()->load(filename);
 	if (cooldowns.empty()) {
-		_error = "Could not load file " + filename;
+		_error = "Could not load lua script";
 		return false;
 	}
 

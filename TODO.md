@@ -38,6 +38,11 @@ this is needed if the server had a downtime while the event would have ended. In
 get hand out to the players. To work around this, we let the event just restore all its states and then stop
 properly.
 
+## Rename EventProvider to EventSelector
+
+The EventProvider should read the event lua scripts - the EventSelector should read the event run configruation (start- and
+end dates) from the database
+
 # LootMgr
 
 Implement `LootMgr` that is able to hand out or change items via the stock system. Implement lua loot definition 'parsing'.
@@ -51,6 +56,8 @@ Implement saving and loading of `Stock` and `Inventory` data.
 Think about the design again - Item shouldn't be a shared_ptr, just use the type in the map. That would also make an atomic
 counter useless, because we aren't operating on a shared data anymore. The `Stock` instance would be the owner and only
 instance that is able to modify the internal data.
+
+Container move operations with filters - if might e.g. cost currency to move from one container to another
 
 # World
 
@@ -66,3 +73,7 @@ There should be a map editor to place Point-of-Interests (see PoiProvider) and e
 able to place markers to modifiy the island shape and put attributes into these. The map editor should just allow to modifiy
 these markers and place entities. Placing stuff on a per-voxel level should not be supported. The real map building should
 still be implemented via procgen.
+
+# Statsd support
+
+Add statsd support

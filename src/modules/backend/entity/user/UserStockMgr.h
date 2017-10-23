@@ -4,9 +4,8 @@
 
 #pragma once
 
+#include "backend/ForwardDecl.h"
 #include "stock/Stock.h"
-#include "stock/ItemProvider.h"
-#include "persistence/DBHandler.h"
 #include <memory>
 
 namespace backend {
@@ -19,12 +18,12 @@ class User;
 class UserStockMgr {
 private:
 	User* _user;
-	const stock::ItemProviderPtr _itemProvider;
+	const stock::StockProviderPtr _stockDataProvider;
 	persistence::DBHandlerPtr _dbHandler;
 	stock::Stock _stock;
 
 public:
-	UserStockMgr(User* user, const stock::ItemProviderPtr& itemProvider, const persistence::DBHandlerPtr& dbHandler);
+	UserStockMgr(User* user, const stock::StockProviderPtr& stockDataProvider, const persistence::DBHandlerPtr& dbHandler);
 
 	void init();
 	void shutdown();

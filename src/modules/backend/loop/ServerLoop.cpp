@@ -24,17 +24,23 @@
 #include "core/command/CommandHandler.h"
 #include "voxel/MaterialColor.h"
 #include "eventmgr/EventMgr.h"
+#include "stock/StockDataProvider.h"
 
 namespace backend {
 
 constexpr int aiDebugServerPort = 11338;
 constexpr const char* aiDebugServerInterface = "127.0.0.1";
 
-ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network::ServerNetworkPtr& network, const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
-		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr,
-		const stock::ItemProviderPtr& itemProvider) :
+ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network::ServerNetworkPtr& network,
+		const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world,  const EntityStoragePtr& entityStorage,
+		const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
+		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider,
+		const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr,
+		const stock::StockProviderPtr& stockDataProvider) :
 		_network(network), _spawnMgr(spawnMgr), _world(world),
-		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler), _itemProvider(itemProvider) {
+		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _attribContainerProvider(containerProvider),
+		_poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler),
+		_stockDataProvider(stockDataProvider) {
 	_world->setClientData(false);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
@@ -66,25 +72,26 @@ bool ServerLoop::init() {
 		return false;
 	}
 
-	if (!_cooldownProvider->init("cooldowns.lua")) {
+	const std::string& cooldowns = filesystem->load("cooldowns.lua");
+	if (!_cooldownProvider->init(cooldowns)) {
 		Log::error("Failed to load the cooldown configuration: %s", _cooldownProvider->error().c_str());
 		return false;
 	}
 
-	const std::string& itemLuaString = filesystem->load("items.lua");
-	if (!_itemProvider->init(itemLuaString)) {
-		Log::error("Failed to load the item configuration: %s", _itemProvider->error().c_str());
+	const std::string& stockLuaString = filesystem->load("stock.lua");
+	if (!_stockDataProvider->init(stockLuaString)) {
+		Log::error("Failed to load the stock configuration: %s", _stockDataProvider->error().c_str());
+		return false;
+	}
+
+	const std::string& attributes = filesystem->load("attributes.lua");
+	if (!_attribContainerProvider->init(attributes)) {
+		Log::error("Failed to load the attributes: %s", _attribContainerProvider->error().c_str());
 		return false;
 	}
 
 	_zone = new ai::Zone("Zone");
 	_aiServer = new ai::Server(*_registry, aiDebugServerPort, aiDebugServerInterface);
-
-	const std::string& attributes = filesystem->load("attributes.lua");
-	if (!_containerProvider->init(attributes)) {
-		Log::error("Failed to load the attributes: %s", _containerProvider->error().c_str());
-		return false;
-	}
 	_registry->init(_spawnMgr);
 	if (!_spawnMgr->init()) {
 		Log::error("Failed to init the spawn manager");

@@ -24,7 +24,8 @@ public:
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
-		_cooldownProvider->init("cooldowns.lua");
+		const std::string& cooldowns = core::App::getInstance()->filesystem()->load("cooldowns.lua");
+		_cooldownProvider->init(cooldowns);
 	}
 };
 

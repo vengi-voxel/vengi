@@ -10,6 +10,12 @@ namespace core {
 class StringTest: public AbstractTest {
 };
 
+TEST_F(StringTest, testFormat) {
+	ASSERT_EQ("1", core::string::format("1"));
+	ASSERT_EQ("10", core::string::format("%i", 10));
+	ASSERT_EQ("Hello World 10 after int", core::string::format("Hello World %i after int", 10));
+}
+
 TEST_F(StringTest, testEraseAllSpaces) {
 	ASSERT_EQ("", core::string::eraseAllSpaces("   "));
 	ASSERT_EQ(",", core::string::eraseAllSpaces("  ,  "));

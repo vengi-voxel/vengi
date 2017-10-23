@@ -8,8 +8,15 @@
 #include "Inventory.h"
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 namespace stock {
+
+class ContainerProvider;
+typedef std::shared_ptr<ContainerProvider> ContainerProviderPtr;
+
+class StockDataProvider;
+typedef std::shared_ptr<StockDataProvider> StockProviderPtr;
 
 /**
  * @defgroup Stock
@@ -25,6 +32,7 @@ private:
 	std::unordered_map<ItemId, ItemPtr> _items;
 	/** The inventory has pointers to all the items distributed over all the Container instances in the Inventory. */
 	Inventory _inventory;
+	StockProviderPtr _stockDataProvider;
 
 	inline auto find(const ItemId& itemId) const {
 		return _items.find(itemId);
@@ -34,12 +42,12 @@ private:
 		return _items.find(itemId);
 	}
 public:
-	Stock();
+	Stock(const StockProviderPtr& stockDataProvider);
 
 	/**
-	 * @brief Initializes the Stock class with all the Item instances it should manage.
+	 * @brief Initializes the stock and the inventory.
 	 */
-	void init(const std::vector<ItemPtr>& items);
+	bool init();
 
 	/**
 	 * @brief Adds a new item to the stock

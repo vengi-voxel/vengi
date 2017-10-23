@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "ContainerData.h"
 #include "Item.h"
 #include <array>
 #include <memory>
@@ -13,12 +14,13 @@ namespace stock {
 /**
  * @ingroup Stock
  */
-class ItemProvider {
+class StockDataProvider {
 public:
 	typedef std::array<const ItemData*, 4096> ItemDataContainer;
+	typedef std::unordered_map<std::string, ContainerData*> ContainerDataMap;
 
-	ItemProvider();
-	~ItemProvider();
+	StockDataProvider();
+	~StockDataProvider();
 
 	/**
 	 * @param luaScript The lua script string to load
@@ -37,17 +39,20 @@ public:
 	void reset();
 
 	/**
-	 * @return Immutable list of ItemData instances that were already parsed.
-	 */
-	const ItemDataContainer& itemData() const;
-
-	/**
-	 * @note Takes ownership of the ItemData instance and will delete it on reset()
+	 * @note Takes ownership of the @c ItemData instance and will delete it on @c reset()
 	 * @return If this returns @c false, the instance will not get managed by this class and must be freed manually.
 	 */
-	bool addItemData(const ItemData* itemData);
+	bool addItemData(ItemData* itemData);
 
-	const ItemData* getItemData(ItemId itemId) const;
+	const ItemData* itemData(ItemId itemId) const;
+
+	/**
+	 * @note Takes ownership of the @c ContainerData instance and will delete it on @c reset()
+	 * @return If this returns @c false, the instance will not get managed by this class and must be freed manually.
+	 */
+	bool addContainerData(ContainerData* containerData);
+
+	const ContainerData* containerData(const std::string& name) const;
 
 	/**
 	 * @brief Creates a new item.
@@ -61,26 +66,14 @@ public:
 
 private:
 	ItemDataContainer _itemData;
+	ContainerDataMap _containerDataMap;
 	std::string _error;
 };
 
-inline const std::string& ItemProvider::error() const {
+inline const std::string& StockDataProvider::error() const {
 	return _error;
 }
 
-inline void ItemProvider::reset() {
-	for (const ItemData* itemData : _itemData) {
-		ItemData* deleteItemData = const_cast<ItemData*>(itemData);
-		delete deleteItemData;
-	}
-	_itemData.fill(nullptr);
-	_error = "";
-}
-
-inline const ItemProvider::ItemDataContainer& ItemProvider::itemData() const {
-	return _itemData;
-}
-
-typedef std::shared_ptr<ItemProvider> ItemProviderPtr;
+typedef std::shared_ptr<StockDataProvider> StockProviderPtr;
 
 }

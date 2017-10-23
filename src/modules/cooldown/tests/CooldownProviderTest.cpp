@@ -12,7 +12,8 @@ class CooldownDurationTest : public core::AbstractTest {
 
 TEST_F(CooldownDurationTest, testLoading) {
 	CooldownProvider d;
-	ASSERT_TRUE(d.init("cooldowns.lua")) << d.error();
+	const std::string& cooldowns = core::App::getInstance()->filesystem()->load("cooldowns.lua");
+	ASSERT_TRUE(d.init(cooldowns)) << d.error();
 	ASSERT_NE(DefaultDuration, d.duration(Type::LOGOUT));
 }
 

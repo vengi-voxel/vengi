@@ -76,8 +76,8 @@ typedef std::shared_ptr<PoiProvider> PoiProviderPtr;
 
 namespace stock {
 
-class ItemProvider;
-typedef std::shared_ptr<ItemProvider> ItemProviderPtr;
+class StockDataProvider;
+typedef std::shared_ptr<StockDataProvider> StockProviderPtr;
 
 }
 

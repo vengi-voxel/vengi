@@ -3,6 +3,7 @@
  */
 
 #include "Server.h"
+
 #include "core/Var.h"
 #include "core/command/Command.h"
 #include "cooldown/CooldownProvider.h"
@@ -16,8 +17,7 @@
 #include "backend/loop/ServerLoop.h"
 #include "backend/spawn/SpawnMgr.h"
 #include "persistence/DBHandler.h"
-#include "stock/ItemProvider.h"
-
+#include "stock/StockDataProvider.h"
 #include <cstdlib>
 
 Server::Server(const network::ServerNetworkPtr& network, const backend::ServerLoopPtr& serverLoop,
@@ -105,16 +105,20 @@ int main(int argc, char *argv[]) {
 
 	const cooldown::CooldownProviderPtr& cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 
-	const stock::ItemProviderPtr& itemProvider = std::make_shared<stock::ItemProvider>();
+	const stock::StockProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
 	const poi::PoiProviderPtr& poiProvider = std::make_shared<poi::PoiProvider>(world, timeProvider);
 	const persistence::DBHandlerPtr& dbHandler = std::make_shared<persistence::DBHandler>();
-	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownProvider, dbHandler, itemProvider);
-	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
+	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world,
+			timeProvider, containerProvider, poiProvider, cooldownProvider, dbHandler, stockDataProvider);
+	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender,
+			timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 
 	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
 
-	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(dbHandler, network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider, eventMgr, itemProvider);
+	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(dbHandler, network, spawnMgr,
+			world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider, eventMgr,
+			stockDataProvider);
 
 	Server app(network, serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);

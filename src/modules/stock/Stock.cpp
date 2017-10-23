@@ -3,19 +3,24 @@
  */
 
 #include "Stock.h"
+#include "Shape.h"
+#include "stock/StockDataProvider.h"
 #include "core/Log.h"
 #include <algorithm>
 
 namespace stock {
 
-Stock::Stock() {
+Stock::Stock(const StockProviderPtr& stockDataProvider) :
+		_inventory(), _stockDataProvider(stockDataProvider) {
 }
 
-void Stock::init(const std::vector<ItemPtr>& items) {
-	Log::debug("Initialize stock with %i items", (int) items.size());
-	for (const ItemPtr& i : items) {
-		add(i);
+bool Stock::init() {
+	const ContainerData* data = _stockDataProvider->containerData("main");
+	if (data == nullptr) {
+		Log::error("Could not find the needed container data for container 'main'");
+		return false;
 	}
+	return _inventory.initContainer(data->id, data->shape, data->flags);
 }
 
 ItemPtr Stock::add(const ItemPtr& item) {

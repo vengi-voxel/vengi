@@ -9,13 +9,13 @@
 #include "network/ServerNetwork.h"
 #include "network/NetworkEvents.h"
 #include "voxel/World.h"
+#include "backend/ForwardDecl.h"
 #include "backend/spawn/SpawnMgr.h"
 #include "core/Input.h"
 #include "network/ProtocolHandlerRegistry.h"
 #include "backend/entity/EntityStorage.h"
 #include "core/EventBus.h"
 #include "persistence/DBHandler.h"
-#include "stock/ItemProvider.h"
 
 #include <memory>
 #include <thread>
@@ -23,10 +23,9 @@
 
 namespace backend {
 
-class AIRegistry;
-typedef std::shared_ptr<AIRegistry> AIRegistryPtr;
-
-class ServerLoop: public core::IEventBusHandler<network::NewConnectionEvent>, core::IEventBusHandler<network::DisconnectEvent> {
+class ServerLoop:
+	public core::IEventBusHandler<network::NewConnectionEvent>,
+	public core::IEventBusHandler<network::DisconnectEvent> {
 private:
 	network::ServerNetworkPtr _network;
 	SpawnMgrPtr _spawnMgr;
@@ -36,12 +35,12 @@ private:
 	EntityStoragePtr _entityStorage;
 	core::EventBusPtr _eventBus;
 	AIRegistryPtr _registry;
-	attrib::ContainerProviderPtr _containerProvider;
+	attrib::ContainerProviderPtr _attribContainerProvider;
 	poi::PoiProviderPtr _poiProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	eventmgr::EventMgrPtr _eventMgr;
 	persistence::DBHandlerPtr _dbHandler;
-	stock::ItemProviderPtr _itemProvider;
+	stock::StockProviderPtr _stockDataProvider;
 	core::Input _input;
 
 	void readInput();
@@ -50,7 +49,7 @@ public:
 			const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,
 			const AIRegistryPtr& registry, const attrib::ContainerProviderPtr& containerProvider,
 			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-			const eventmgr::EventMgrPtr& eventMgr, const stock::ItemProviderPtr& itemProvider);
+			const eventmgr::EventMgrPtr& eventMgr, const stock::StockProviderPtr& stockDataProvider);
 
 	bool init();
 	void shutdown();
