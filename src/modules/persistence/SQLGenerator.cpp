@@ -345,7 +345,7 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 			}
 			insert << "\"" << f.name << "\"";
 			if (f.updateOperator != Operator::SET) {
-				insert << " = \"" << model.tableName() << "." << f.name << "\"";
+				insert << " = \"" << model.tableName() << "\".\"" << f.name << "\"";
 				insert << OperatorStrings[(int)f.updateOperator];
 			}
 			if (placeholder(model, f, insert, insertValueIndex)) {
