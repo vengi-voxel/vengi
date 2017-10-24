@@ -42,10 +42,12 @@ public:
 
 	const ProtocolHandlerRegistryPtr& registry();
 
-	inline bool sendMessage(ENetPeer* peer, ENetPacket* packet, int channel = 0) {
-		return enet_peer_send(peer, channel, packet) == 0;
-	}
+	bool sendMessage(ENetPeer* peer, ENetPacket* packet, int channel = 0);
 };
+
+inline bool Network::sendMessage(ENetPeer* peer, ENetPacket* packet, int channel) {
+	return enet_peer_send(peer, channel, packet) == 0;
+}
 
 inline const ProtocolHandlerRegistryPtr& Network::registry() {
 	return _protocolHandlerRegistry;
