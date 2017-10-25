@@ -5,10 +5,7 @@
 #pragma once
 
 #include <string>
-#include <thread>
 #include <mutex>
-#include <atomic>
-#include <chrono>
 
 namespace core {
 
