@@ -6,6 +6,8 @@
 
 #include "core/EventBus.h"
 #include "core/Trace.h"
+#include "metric/Metric.h"
+#include "metric/MetricEvent.h"
 #include "network/ServerNetwork.h"
 #include "network/NetworkEvents.h"
 #include "voxel/World.h"
@@ -24,6 +26,7 @@
 namespace backend {
 
 class ServerLoop:
+	public core::IEventBusHandler<metric::MetricEvent>,
 	public core::IEventBusHandler<network::NewConnectionEvent>,
 	public core::IEventBusHandler<network::DisconnectEvent> {
 private:
@@ -42,6 +45,7 @@ private:
 	persistence::DBHandlerPtr _dbHandler;
 	stock::StockProviderPtr _stockDataProvider;
 	core::Input _input;
+	metric::Metric _metric;
 
 	void readInput();
 public:
@@ -56,6 +60,7 @@ public:
 	void onFrame(long dt);
 	void onEvent(const network::DisconnectEvent& event);
 	void onEvent(const network::NewConnectionEvent& event);
+	void onEvent(const metric::MetricEvent& event);
 };
 
 typedef std::shared_ptr<ServerLoop> ServerLoopPtr;

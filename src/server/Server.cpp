@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
 	const poi::PoiProviderPtr& poiProvider = std::make_shared<poi::PoiProvider>(world, timeProvider);
 	const persistence::DBHandlerPtr& dbHandler = std::make_shared<persistence::DBHandler>();
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world,
-			timeProvider, containerProvider, poiProvider, cooldownProvider, dbHandler, stockDataProvider);
+			timeProvider, containerProvider, poiProvider, cooldownProvider, dbHandler, stockDataProvider, eventBus);
 	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender,
 			timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 

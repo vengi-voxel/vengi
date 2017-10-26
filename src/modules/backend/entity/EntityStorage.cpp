@@ -5,11 +5,13 @@
 #include "EntityStorage.h"
 #include "core/Var.h"
 #include "core/Password.h"
+#include "core/EventBus.h"
 #include "User.h"
 #include "UserModel.h"
 #include "Npc.h"
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
+#include "metric/MetricEvent.h"
 
 #define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::type, network::msg.Union());
 
@@ -17,10 +19,10 @@ namespace backend {
 
 EntityStorage::EntityStorage(const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
 		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-		const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider) :
+		const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider, const core::EventBusPtr& eventBus) :
 		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree), _messageSender(messageSender), _world(world), _timeProvider(
 				timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _dbHandler(dbHandler),
-				_stockDataProvider(stockDataProvider), _time(0L) {
+				_stockDataProvider(stockDataProvider), _eventBus(eventBus), _time(0L) {
 }
 
 core::RectFloat EntityStorage::QuadTreeNode::getRect() const {
@@ -85,6 +87,7 @@ bool EntityStorage::logout(EntityId userId) {
 }
 
 void EntityStorage::addNpc(const NpcPtr& npc) {
+	_eventBus->publish(metric::increment("count.npc"));
 	_npcs.insert(std::make_pair(npc->id(), npc));
 }
 
@@ -95,6 +98,7 @@ bool EntityStorage::removeNpc(ai::CharacterId id) {
 	}
 	_quadTree.remove(QuadTreeNode { i->second });
 	_npcs.erase(id);
+	_eventBus->publish(metric::decrement("count.npc"));
 	return true;
 }
 

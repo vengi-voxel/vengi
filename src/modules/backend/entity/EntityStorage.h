@@ -46,6 +46,7 @@ private:
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	persistence::DBHandlerPtr _dbHandler;
 	stock::StockProviderPtr _stockDataProvider;
+	core::EventBusPtr _eventBus;
 	long _time;
 
 	void registerUser(const UserPtr& user);
@@ -56,7 +57,7 @@ private:
 public:
 	EntityStorage(const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
 			const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-			const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider);
+			const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider, const core::EventBusPtr& eventBus);
 
 	UserPtr login(ENetPeer* peer, const std::string& email, const std::string& password);
 	bool logout(EntityId userId);

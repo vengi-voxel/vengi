@@ -6,6 +6,7 @@
 
 #include <enet/enet.h>
 #include "core/Log.h"
+#include "core/EventBus.h"
 
 namespace network {
 

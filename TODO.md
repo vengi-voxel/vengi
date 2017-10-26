@@ -76,4 +76,4 @@ still be implemented via procgen.
 
 # Statsd support
 
-Add statsd support
+Extend statsd support with more events

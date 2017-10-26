@@ -25,6 +25,7 @@
 #include "voxel/MaterialColor.h"
 #include "eventmgr/EventMgr.h"
 #include "stock/StockDataProvider.h"
+#include "metric/UDPMetricSender.h"
 
 namespace backend {
 
@@ -40,10 +41,11 @@ ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network
 		_network(network), _spawnMgr(spawnMgr), _world(world),
 		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _attribContainerProvider(containerProvider),
 		_poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler),
-		_stockDataProvider(stockDataProvider) {
+		_stockDataProvider(stockDataProvider), _metric(std::make_shared<metric::UDPMetricSender>(), "server.") {
 	_world->setClientData(false);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
+	_eventBus->subscribe<metric::MetricEvent>(*this);
 }
 
 #define regHandler(type, handler, ...) \
@@ -51,6 +53,9 @@ ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network
 
 bool ServerLoop::init() {
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	if (!_metric.init()) {
+		Log::warn("Failed to init statsd metrics");
+	}
 	if (!_dbHandler->init()) {
 		Log::error("Failed to init the dbhandler");
 		return false;
@@ -135,6 +140,7 @@ void ServerLoop::shutdown() {
 	delete _aiServer;
 	_zone = nullptr;
 	_aiServer = nullptr;
+	_metric.shutdown();
 }
 
 void ServerLoop::readInput() {
@@ -174,6 +180,28 @@ void ServerLoop::onFrame(long dt) {
 		core_trace_scoped(EntityStorage);
 		_entityStorage->onFrame(dt);
 	}
+	_metric.timing("frame.delta", dt);
+}
+
+void ServerLoop::onEvent(const metric::MetricEvent& event) {
+	metric::MetricEventType type = event.type();
+	switch (type) {
+	case metric::MetricEventType::Count:
+		_metric.count(event.key().c_str(), event.value(), event.tags());
+		break;
+	case metric::MetricEventType::Gauge:
+		_metric.gauge(event.key().c_str(), (uint32_t)event.value(), event.tags());
+		break;
+	case metric::MetricEventType::Timing:
+		_metric.timing(event.key().c_str(), (uint32_t)event.value(), event.tags());
+		break;
+	case metric::MetricEventType::Histogram:
+		_metric.histogram(event.key().c_str(), (uint32_t)event.value(), event.tags());
+		break;
+	case metric::MetricEventType::Meter:
+		_metric.meter(event.key().c_str(), event.value(), event.tags());
+		break;
+	}
 }
 
 void ServerLoop::onEvent(const network::DisconnectEvent& event) {
@@ -185,10 +213,12 @@ void ServerLoop::onEvent(const network::DisconnectEvent& event) {
 	}
 	// TODO: handle this and abort on re-login
 	user->cooldownMgr().triggerCooldown(cooldown::Type::LOGOUT);
+	_metric.decrement("count.user");
 }
 
 void ServerLoop::onEvent(const network::NewConnectionEvent& event) {
 	Log::info("new connection - waiting for login request from %u", event.peer()->connectID);
+	_metric.increment("count.user");
 }
 
 }
