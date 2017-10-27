@@ -33,6 +33,12 @@ protected:
 	void SetUp() override {
 		Super::SetUp();
 		sender = std::make_shared<BufferSender>();
+		ASSERT_TRUE(sender->init());
+	}
+
+	void TearDown() override {
+		Super::SetUp();
+		sender->shutdown();
 	}
 
 	inline std::string count(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
