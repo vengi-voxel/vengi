@@ -110,4 +110,32 @@ public:
 	bool meter(const char* key, int value, const TagMap& tags = {}) const;
 };
 
+inline bool Metric::increment(const char* key, const TagMap& tags) const {
+	return count(key, 1, tags);
+}
+
+inline bool Metric::decrement(const char* key, const TagMap& tags) const {
+	return count(key, -1, tags);
+}
+
+inline bool Metric::count(const char* key, int delta, const TagMap& tags, float sampleRate) const {
+	return assemble(key, delta, "c", tags); // TODO:"|@%f", sampleRate
+}
+
+inline bool Metric::gauge(const char* key, uint32_t value, const TagMap& tags) const {
+	return assemble(key, value, "g", tags);
+}
+
+inline bool Metric::timing(const char* key, uint32_t millis, const TagMap& tags) const {
+	return assemble(key, millis, "ms", tags);
+}
+
+inline bool Metric::histogram(const char* key, uint32_t millis, const TagMap& tags) const {
+	return assemble(key, millis, "h", tags);
+}
+
+inline bool Metric::meter(const char* key, int value, const TagMap& tags) const {
+	return assemble(key, value, "m", tags);
+}
+
 }

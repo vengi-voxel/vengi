@@ -90,32 +90,4 @@ bool Metric::assemble(const char* key, int value, const char* type, const TagMap
 	return _messageSender->send(buffer);
 }
 
-bool Metric::increment(const char* key, const TagMap& tags) const {
-	return count(key, 1, tags);
-}
-
-bool Metric::decrement(const char* key, const TagMap& tags) const {
-	return count(key, -1, tags);
-}
-
-bool Metric::count(const char* key, int delta, const TagMap& tags, float sampleRate) const {
-	return assemble(key, delta, "c", tags); // TODO:"|@%f", sampleRate
-}
-
-bool Metric::gauge(const char* key, uint32_t value, const TagMap& tags) const {
-	return assemble(key, value, "g", tags);
-}
-
-bool Metric::timing(const char* key, uint32_t millis, const TagMap& tags) const {
-	return assemble(key, millis, "ms", tags);
-}
-
-bool Metric::histogram(const char* key, uint32_t millis, const TagMap& tags) const {
-	return assemble(key, millis, "h", tags);
-}
-
-bool Metric::meter(const char* key, int value, const TagMap& tags) const {
-	return assemble(key, value, "m", tags);
-}
-
 }
