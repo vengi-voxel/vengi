@@ -22,7 +22,8 @@ private:
 	void sendAuthFailed(ENetPeer* peer);
 
 public:
-	UserConnectHandler(network::NetworkPtr network, backend::EntityStoragePtr entityStorage, voxel::WorldPtr world);
+	UserConnectHandler(const network::NetworkPtr& network,
+			const backend::EntityStoragePtr& entityStorage, const voxel::WorldPtr& world);
 
 	void execute(ENetPeer* peer, const void* message) override;
 };
