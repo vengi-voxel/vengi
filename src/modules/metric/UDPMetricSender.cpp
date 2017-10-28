@@ -2,7 +2,9 @@
  * @file
  */
 
-#include <metric/UDPMetricSender.h>
+#include "UDPMetricSender.h"
+#include "core/Var.h"
+#include "core/Log.h"
 #include <cstring>
 #ifdef WIN32
 #define network_cleanup() WSACleanup()
@@ -28,11 +30,14 @@
 
 namespace metric {
 
-UDPMetricSender::UDPMetricSender(uint16_t port, const std::string& host) :
-		_host(host), _socket(INVALID_SOCKET), _port(port), _statsd(nullptr) {
+UDPMetricSender::UDPMetricSender() :
+		_socket(INVALID_SOCKET), _statsd(nullptr) {
 }
 
 bool UDPMetricSender::init() {
+	_port = core::Var::getSafe(cfg::MetricPort)->intVal();
+	_host = core::Var::getSafe(cfg::MetricHost)->strVal();
+	Log::info("metric udp sender %s:%i", _host.c_str(), (int)_port);
 #ifdef WIN32
 	WSADATA wsaData;
 	const int wsaResult = WSAStartup(MAKEWORD(2, 2), &wsaData);

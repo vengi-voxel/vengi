@@ -37,11 +37,11 @@ ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network
 		const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
 		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr,
-		const stock::StockProviderPtr& stockDataProvider) :
+		const stock::StockProviderPtr& stockDataProvider, const metric::IMetricSenderPtr& metricSender) :
 		_network(network), _spawnMgr(spawnMgr), _world(world),
 		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _attribContainerProvider(containerProvider),
 		_poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler),
-		_stockDataProvider(stockDataProvider), _metric(std::make_shared<metric::UDPMetricSender>(), "server.") {
+		_stockDataProvider(stockDataProvider), _metric("server."), _metricSender(metricSender) {
 	_world->setClientData(false);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
@@ -53,8 +53,11 @@ ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network
 
 bool ServerLoop::init() {
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
-	if (!_metric.init()) {
-		Log::warn("Failed to init statsd metrics");
+	if (!_metricSender->init()) {
+		Log::warn("Failed to init metric sender");
+	}
+	if (!_metric.init(_metricSender)) {
+		Log::warn("Failed to init metrics");
 	}
 	if (!_dbHandler->init()) {
 		Log::error("Failed to init the dbhandler");
@@ -140,6 +143,7 @@ void ServerLoop::shutdown() {
 	delete _aiServer;
 	_zone = nullptr;
 	_aiServer = nullptr;
+	_metricSender->shutdown();
 	_metric.shutdown();
 }
 

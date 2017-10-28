@@ -22,7 +22,7 @@ using TagMap = std::map<std::string, std::string>;
 class Metric {
 private:
 	const std::string _prefix;
-	const Flavor _flavor;
+	Flavor _flavor = Flavor::Telegraf;
 	IMetricSenderPtr _messageSender;
 
 	/**
@@ -37,12 +37,14 @@ private:
 	bool createTags(char *buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split = ",") const;
 	bool assemble(const char* key, int value, const char* type, const TagMap& tags = {}) const;
 public:
-	Metric(const IMetricSenderPtr& messageSender,
-			const std::string& prefix,
-			Flavor flavor = Flavor::Telegraf);
+	Metric(const char* prefix);
 	~Metric();
 
-	bool init();
+	/**
+	 * @param[in] messageSender @c IMessageSender - must already be initialized
+	 * @note Reads the @c metric_flavor cvar to configure the flavor.
+	 */
+	bool init(const IMetricSenderPtr& messageSender);
 	void shutdown();
 
 	/**

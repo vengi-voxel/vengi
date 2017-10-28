@@ -63,4 +63,8 @@ constexpr const char *AppBasePath = "app_basepath";
 
 constexpr const char *HTTPBaseURL = "http_baseurl";
 
+constexpr const char *MetricPort = "metric_port";
+constexpr const char *MetricHost = "metric_host";
+constexpr const char *MetricFlavor = "metric_flavor";
+
 }

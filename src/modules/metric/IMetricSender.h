@@ -23,6 +23,6 @@ public:
 	}
 };
 
-typedef std::shared_ptr<IMetricSender> IMetricSenderPtr;
+using IMetricSenderPtr = std::shared_ptr<IMetricSender>;
 
 }

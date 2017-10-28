@@ -8,6 +8,7 @@
 #include "core/Trace.h"
 #include "metric/Metric.h"
 #include "metric/MetricEvent.h"
+#include "metric/IMetricSender.h"
 #include "network/ServerNetwork.h"
 #include "network/NetworkEvents.h"
 #include "voxel/World.h"
@@ -46,6 +47,7 @@ private:
 	stock::StockProviderPtr _stockDataProvider;
 	core::Input _input;
 	metric::Metric _metric;
+	metric::IMetricSenderPtr _metricSender;
 
 	void readInput();
 public:
@@ -53,7 +55,8 @@ public:
 			const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,
 			const AIRegistryPtr& registry, const attrib::ContainerProviderPtr& containerProvider,
 			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-			const eventmgr::EventMgrPtr& eventMgr, const stock::StockProviderPtr& stockDataProvider);
+			const eventmgr::EventMgrPtr& eventMgr, const stock::StockProviderPtr& stockDataProvider,
+			const metric::IMetricSenderPtr& metricSender);
 
 	bool init();
 	void shutdown();

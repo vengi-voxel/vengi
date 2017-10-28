@@ -42,19 +42,43 @@ protected:
 	}
 
 	inline std::string count(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
-		Metric m(sender, PREFIX, flavor);
+		if (flavor == Flavor::Telegraf) {
+			core::Var::get("metric_flavor", "")->setVal("telegraf");
+		} else if (flavor == Flavor::Etsy) {
+			core::Var::get("metric_flavor", "")->setVal("etsy");
+		} else if (flavor == Flavor::Datadog) {
+			core::Var::get("metric_flavor", "")->setVal("datadog");
+		}
+		Metric m(PREFIX);
+		m.init(sender);
 		m.count(id, value, tags);
 		return sender->metricLine();
 	}
 
 	inline std::string gauge(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
-		Metric m(sender, PREFIX, flavor);
+		if (flavor == Flavor::Telegraf) {
+			core::Var::get("metric_flavor", "")->setVal("telegraf");
+		} else if (flavor == Flavor::Etsy) {
+			core::Var::get("metric_flavor", "")->setVal("etsy");
+		} else if (flavor == Flavor::Datadog) {
+			core::Var::get("metric_flavor", "")->setVal("datadog");
+		}
+		Metric m(PREFIX);
+		m.init(sender);
 		m.gauge(id, value, tags);
 		return sender->metricLine();
 	}
 
 	inline std::string timing(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
-		Metric m(sender, PREFIX, flavor);
+		if (flavor == Flavor::Telegraf) {
+			core::Var::get("metric_flavor", "")->setVal("telegraf");
+		} else if (flavor == Flavor::Etsy) {
+			core::Var::get("metric_flavor", "")->setVal("etsy");
+		} else if (flavor == Flavor::Datadog) {
+			core::Var::get("metric_flavor", "")->setVal("datadog");
+		}
+		Metric m(PREFIX);
+		m.init(sender);
 		m.timing(id, value, tags);
 		return sender->metricLine();
 	}

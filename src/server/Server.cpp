@@ -18,6 +18,7 @@
 #include "backend/spawn/SpawnMgr.h"
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
+#include "metric/UDPMetricSender.h"
 #include <cstdlib>
 
 Server::Server(const network::ServerNetworkPtr& network, const backend::ServerLoopPtr& serverLoop,
@@ -33,6 +34,9 @@ Server::Server(const network::ServerNetworkPtr& network, const backend::ServerLo
 core::AppState Server::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 
+	core::Var::get(cfg::MetricFlavor, "telegraf");
+	core::Var::get(cfg::MetricHost, "127.0.0.1");
+	core::Var::get(cfg::MetricPort, "8125");
 	core::Var::get(cfg::DatabaseName, "engine");
 	core::Var::get(cfg::DatabaseHost, "localhost");
 	core::Var::get(cfg::DatabaseUser, "engine");
@@ -116,9 +120,10 @@ int main(int argc, char *argv[]) {
 	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
 
+	const metric::IMetricSenderPtr& metricSender = std::make_shared<metric::UDPMetricSender>();
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(dbHandler, network, spawnMgr,
 			world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider, eventMgr,
-			stockDataProvider);
+			stockDataProvider, metricSender);
 
 	Server app(network, serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);

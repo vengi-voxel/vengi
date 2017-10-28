@@ -4,25 +4,40 @@
 
 #include "Metric.h"
 #include "core/Log.h"
+#include "core/Var.h"
+#include "core/Assert.h"
 #include <cstdio>
 #include <cstring>
 
 namespace metric {
 
-Metric::Metric(const IMetricSenderPtr& messageSender, const std::string& prefix, Flavor flavor) :
-		_prefix(prefix), _flavor(flavor), _messageSender(messageSender) {
+Metric::Metric(const char* prefix) :
+		_prefix(prefix) {
 }
 
 Metric::~Metric() {
 	shutdown();
 }
 
-bool Metric::init() {
-	return _messageSender->init();
+bool Metric::init(const IMetricSenderPtr& messageSender) {
+	const std::string& flavor = core::Var::getSafe(cfg::MetricFlavor)->strVal();
+	if (flavor == "telegraf") {
+		_flavor = Flavor::Telegraf;
+		Log::info("Using metric flavor 'telegraf'");
+	} else if (flavor == "etsy") {
+		_flavor = Flavor::Etsy;
+		Log::info("Using metric flavor 'etsy'");
+	} else if (flavor == "datadog") {
+		_flavor = Flavor::Datadog;
+		Log::info("Using metric flavor 'datadog'");
+	} else {
+		Log::warn("Invalid %s given - using telegraf", cfg::MetricFlavor);
+	}
+	_messageSender = messageSender;
+	return true;
 }
 
 void Metric::shutdown() {
-	_messageSender->shutdown();
 }
 
 bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split) const {
@@ -87,6 +102,7 @@ bool Metric::assemble(const char* key, int value, const char* type, const TagMap
 	if (written >= metricSize) {
 		return false;
 	}
+	core_assert_always(_messageSender);
 	return _messageSender->send(buffer);
 }
 
