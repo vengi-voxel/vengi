@@ -87,8 +87,8 @@ bool EntityStorage::logout(EntityId userId) {
 }
 
 void EntityStorage::addNpc(const NpcPtr& npc) {
-	_eventBus->publish(metric::increment("count.npc"));
 	_npcs.insert(std::make_pair(npc->id(), npc));
+	_eventBus->publish(metric::gauge("count.npc", _npcs.size()));
 }
 
 bool EntityStorage::removeNpc(ai::CharacterId id) {
@@ -98,7 +98,7 @@ bool EntityStorage::removeNpc(ai::CharacterId id) {
 	}
 	_quadTree.remove(QuadTreeNode { i->second });
 	_npcs.erase(id);
-	_eventBus->publish(metric::decrement("count.npc"));
+	_eventBus->publish(metric::gauge("count.npc", _npcs.size()));
 	return true;
 }
 
