@@ -48,10 +48,21 @@ ServerLoop::ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network
 	_eventBus->subscribe<metric::MetricEvent>(*this);
 }
 
+bool ServerLoop::addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMillis, uint64_t initialDelayMillis) {
+	timer->data = this;
+	uv_timer_init(_loop, timer);
+	return uv_timer_start(timer, cb, initialDelayMillis, repeatMillis) == 0;
+}
+
 #define regHandler(type, handler, ...) \
 	r->registerHandler(network::EnumNameClientMsgType(type), std::make_shared<handler>(__VA_ARGS__));
 
 bool ServerLoop::init() {
+	_loop = new uv_loop_t;
+	if (uv_loop_init(_loop) != 0) {
+		Log::error("Failed to init event loop");
+		return false;
+	}
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
 	if (!_metricSender->init()) {
 		Log::warn("Failed to init metric sender");
@@ -132,6 +143,32 @@ bool ServerLoop::init() {
 	} else {
 		Log::error("Could not start the ai debug server");
 	}
+
+	addTimer(&_poiTimer, [] (uv_timer_t* handle) {
+		ServerLoop* loop = (ServerLoop*)handle->data;
+		loop->_poiProvider->update(0l);
+	}, 1000);
+	addTimer(&_worldTimer, [] (uv_timer_t* handle) {
+		ServerLoop* loop = (ServerLoop*)handle->data;
+		loop->_world->update(0l);
+	}, 1000);
+	addTimer(&_zoneTimer, [] (uv_timer_t* handle) {
+		ServerLoop* loop = (ServerLoop*)handle->data;
+		loop->_zone->update(0l);
+	}, 250);
+	addTimer(&_aiServerTimer, [] (uv_timer_t* handle) {
+		ServerLoop* loop = (ServerLoop*)handle->data;
+		loop->_aiServer->update(0l);
+	}, 600);
+	addTimer(&_spawnMgrTimer, [] (uv_timer_t* handle) {
+		ServerLoop* loop = (ServerLoop*)handle->data;
+		loop->_spawnMgr->update(*loop->_zone, 0l);
+	}, 1000);
+	addTimer(&_entityStorageTimer, [] (uv_timer_t* handle) {
+		ServerLoop* loop = (ServerLoop*)handle->data;
+		loop->_entityStorage->update(0l);
+	}, 275);
+
 	return true;
 }
 
@@ -145,6 +182,17 @@ void ServerLoop::shutdown() {
 	_aiServer = nullptr;
 	_metricSender->shutdown();
 	_metric.shutdown();
+	uv_timer_stop(&_poiTimer);
+	uv_timer_stop(&_worldTimer);
+	uv_timer_stop(&_aiServerTimer);
+	uv_timer_stop(&_zoneTimer);
+	uv_timer_stop(&_spawnMgrTimer);
+	uv_timer_stop(&_entityStorageTimer);
+	if (_loop != nullptr) {
+		uv_loop_close(_loop);
+		delete _loop;
+		_loop = nullptr;
+	}
 }
 
 void ServerLoop::readInput() {
@@ -159,31 +207,11 @@ void ServerLoop::readInput() {
 void ServerLoop::update(long dt) {
 	readInput();
 	core_trace_scoped(ServerLoop);
+	uv_run(_loop, UV_RUN_NOWAIT);
 	core::Var::visitReplicate([] (const core::VarPtr& var) {
 		Log::info("TODO: %s needs replicate", var->name().c_str());
 	});
 	_network->update();
-	{ // TODO: move into own thread
-		core_trace_scoped(PoiUpdate);
-		_poiProvider->update(dt);
-	}
-	{ // TODO: move into own thread
-		core_trace_scoped(WorldUpdate);
-		_world->update(dt);
-	}
-	{ // TODO: move into own thread
-		core_trace_scoped(AIServerUpdate);
-		_zone->update(dt);
-		_aiServer->update(dt);
-	}
-	{ // TODO: move into own thread
-		core_trace_scoped(SpawnMgrUpdate);
-		_spawnMgr->update(*_zone, dt);
-	}
-	{
-		core_trace_scoped(EntityStorage);
-		_entityStorage->update(dt);
-	}
 	_metric.timing("frame.delta", dt);
 }
 

@@ -19,6 +19,7 @@
 #include "backend/entity/EntityStorage.h"
 #include "core/EventBus.h"
 #include "persistence/DBHandler.h"
+#include <uv.h>
 
 #include <memory>
 #include <thread>
@@ -50,6 +51,15 @@ private:
 	metric::IMetricSenderPtr _metricSender;
 
 	void readInput();
+	uv_loop_t *_loop = nullptr;
+	uv_timer_t _poiTimer;
+	uv_timer_t _worldTimer;
+	uv_timer_t _aiServerTimer;
+	uv_timer_t _zoneTimer;
+	uv_timer_t _spawnMgrTimer;
+	uv_timer_t _entityStorageTimer;
+
+	bool addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMillis, uint64_t initialDelayMillis = 0);
 public:
 	ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network::ServerNetworkPtr& network, const SpawnMgrPtr& spawnMgr,
 			const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,

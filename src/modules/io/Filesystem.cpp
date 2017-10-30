@@ -124,7 +124,7 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 }
 
 void Filesystem::update() {
-	uv_run(_loop, UV_RUN_DEFAULT);
+	uv_run(_loop, UV_RUN_NOWAIT);
 }
 
 bool Filesystem::chdir(const std::string& directory) {
