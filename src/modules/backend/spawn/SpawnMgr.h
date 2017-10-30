@@ -35,7 +35,7 @@ public:
 	void shutdown();
 
 	int spawn(ai::Zone& zone, network::EntityType type, int amount, const glm::ivec3* pos = nullptr);
-	void onFrame(ai::Zone& zone, long dt);
+	void update(ai::Zone& zone, long dt);
 };
 
 typedef std::shared_ptr<SpawnMgr> SpawnMgrPtr;

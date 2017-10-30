@@ -66,7 +66,7 @@ public:
 	bool removeNpc(ai::CharacterId id);
 	NpcPtr getNpc(ai::CharacterId id);
 
-	void onFrame(long dt);
+	void update(long dt);
 };
 
 typedef std::shared_ptr<EntityStorage> EntityStoragePtr;

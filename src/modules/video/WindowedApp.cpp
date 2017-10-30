@@ -3,6 +3,7 @@
  */
 
 #include "WindowedApp.h"
+#include "core/Assert.h"
 #include "core/Common.h"
 #include "io/Filesystem.h"
 #include "core/Singleton.h"

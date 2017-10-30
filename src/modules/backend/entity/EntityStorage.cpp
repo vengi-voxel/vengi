@@ -111,7 +111,7 @@ NpcPtr EntityStorage::getNpc(ai::CharacterId id) {
 	return i->second;
 }
 
-void EntityStorage::onFrame(long dt) {
+void EntityStorage::update(long dt) {
 	static long lastFrame = _time;
 	_time += dt;
 

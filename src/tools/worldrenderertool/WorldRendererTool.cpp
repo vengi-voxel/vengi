@@ -112,7 +112,7 @@ core::AppState WorldRendererTool::onInit() {
 void WorldRendererTool::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
-	_world->onFrame(_deltaFrame);
+	_world->update(_deltaFrame);
 
 	if (_resetTriggered && !_world->isReset()) {
 		_world->setContext(_ctx);

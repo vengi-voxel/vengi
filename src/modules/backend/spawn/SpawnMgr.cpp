@@ -89,7 +89,7 @@ int SpawnMgr::spawn(ai::Zone& zone, network::EntityType type, int amount, const 
 	return amount;
 }
 
-void SpawnMgr::onFrame(ai::Zone& zone, long dt) {
+void SpawnMgr::update(ai::Zone& zone, long dt) {
 	_time += dt;
 	if (_time >= spawnTime) {
 		_time -= spawnTime;

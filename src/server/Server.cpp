@@ -89,7 +89,7 @@ core::AppState Server::onCleanup() {
 
 core::AppState Server::onRunning() {
 	Super::onRunning();
-	_serverLoop->onFrame(_deltaFrame);
+	_serverLoop->update(_deltaFrame);
 	return core::AppState::Running;
 }
 

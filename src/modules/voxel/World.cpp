@@ -182,7 +182,7 @@ bool World::isReset() const {
 	return _cancelThreads;
 }
 
-void World::onFrame(long dt) {
+void World::update(long dt) {
 	core_trace_scoped(WorldOnFrame);
 }
 

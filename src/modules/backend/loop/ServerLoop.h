@@ -60,7 +60,7 @@ public:
 
 	bool init();
 	void shutdown();
-	void onFrame(long dt);
+	void update(long dt);
 	void onEvent(const network::DisconnectEvent& event);
 	void onEvent(const network::NewConnectionEvent& event);
 	void onEvent(const metric::MetricEvent& event);

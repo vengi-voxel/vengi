@@ -156,7 +156,7 @@ void ServerLoop::readInput() {
 	core::executeCommands(input);
 }
 
-void ServerLoop::onFrame(long dt) {
+void ServerLoop::update(long dt) {
 	readInput();
 	core_trace_scoped(ServerLoop);
 	core::Var::visitReplicate([] (const core::VarPtr& var) {
@@ -169,7 +169,7 @@ void ServerLoop::onFrame(long dt) {
 	}
 	{ // TODO: move into own thread
 		core_trace_scoped(WorldUpdate);
-		_world->onFrame(dt);
+		_world->update(dt);
 	}
 	{ // TODO: move into own thread
 		core_trace_scoped(AIServerUpdate);
@@ -178,11 +178,11 @@ void ServerLoop::onFrame(long dt) {
 	}
 	{ // TODO: move into own thread
 		core_trace_scoped(SpawnMgrUpdate);
-		_spawnMgr->onFrame(*_zone, dt);
+		_spawnMgr->update(*_zone, dt);
 	}
 	{
 		core_trace_scoped(EntityStorage);
-		_entityStorage->onFrame(dt);
+		_entityStorage->update(dt);
 	}
 	_metric.timing("frame.delta", dt);
 }
