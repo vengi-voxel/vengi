@@ -26,6 +26,7 @@
 #include "eventmgr/EventMgr.h"
 #include "stock/StockDataProvider.h"
 #include "metric/UDPMetricSender.h"
+using namespace std::chrono_literals;
 
 namespace backend {
 
@@ -52,6 +53,15 @@ bool ServerLoop::addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMill
 	timer->data = this;
 	uv_timer_init(_loop, timer);
 	return uv_timer_start(timer, cb, initialDelayMillis, repeatMillis) == 0;
+}
+
+void ServerLoop::onIdle(uv_idle_t* handle) {
+	ServerLoop* loop = (ServerLoop*)handle->data;
+	metric::Metric& metric = loop->_metric;
+
+	const core::App* app = core::App::getInstance();
+	metric.timing("frame.delta", app->deltaFrame());
+	metric.gauge("uptime", app->lifetimeInSeconds() * 1000.0f);
 }
 
 #define regHandler(type, handler, ...) \
@@ -169,7 +179,16 @@ bool ServerLoop::init() {
 		loop->_entityStorage->update(0l);
 	}, 275);
 
-	_input.init(_loop);
+	_idleTimer.data = this;
+	if (uv_idle_init(_loop, &_idleTimer) != 0) {
+		Log::warn("Couldn't init the idle timer");
+		return false;
+	}
+	uv_idle_start(&_idleTimer, onIdle);
+
+	if (!_input.init(_loop)) {
+		Log::warn("Could not init console input");
+	}
 
 	return true;
 }
@@ -191,6 +210,7 @@ void ServerLoop::shutdown() {
 	uv_timer_stop(&_zoneTimer);
 	uv_timer_stop(&_spawnMgrTimer);
 	uv_timer_stop(&_entityStorageTimer);
+	uv_idle_stop(&_idleTimer);
 	uv_tty_reset_mode();
 	if (_loop != nullptr) {
 		uv_loop_close(_loop);
@@ -203,7 +223,7 @@ void ServerLoop::update(long dt) {
 	core_trace_scoped(ServerLoop);
 	uv_run(_loop, UV_RUN_NOWAIT);
 	_network->update();
-	_metric.timing("frame.delta", dt);
+	std::this_thread::sleep_for(1ms);
 }
 
 void ServerLoop::onEvent(const metric::MetricEvent& event) {

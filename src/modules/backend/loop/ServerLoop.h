@@ -57,7 +57,9 @@ private:
 	uv_timer_t _zoneTimer;
 	uv_timer_t _spawnMgrTimer;
 	uv_timer_t _entityStorageTimer;
+	uv_idle_t _idleTimer;
 
+	static void onIdle(uv_idle_t* handle);
 	bool addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMillis, uint64_t initialDelayMillis = 0);
 public:
 	ServerLoop(const persistence::DBHandlerPtr& dbHandler, const network::ServerNetworkPtr& network, const SpawnMgrPtr& spawnMgr,

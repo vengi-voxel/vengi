@@ -59,12 +59,6 @@ instance that is able to modify the internal data.
 
 Container move operations with filters - if might e.g. cost currency to move from one container to another
 
-# Server
-
-The `Zone` should be in the map - each map should have it's own thread. The `EntityStorage` quad tree should also be in the map.
-
-There should still be a way to access users and npcs globally, but usually you should use the map - to prevent locking. Each map is updated in a single thread.
-
 # World
 
 Implement island style worlds. Each 'World' instance gets its own ai 'Zone'. There should be portals on the islands to get to other islands. Provide a map of where the islands are.
@@ -72,6 +66,8 @@ Implement island style worlds. Each 'World' instance gets its own ai 'Zone'. The
 Maybe also allow to sail to a another island...?
 
 These islands should not only be created by noise - just supported by noise to vary. But they should still be hand crafted to make them more interesting.
+
+The world should have a threadpool to update the maps in. Use libuv timers and forward the updating into the threads.
 
 ## Map editor
 
