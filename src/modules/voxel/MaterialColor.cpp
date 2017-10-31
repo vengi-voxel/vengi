@@ -213,8 +213,9 @@ bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFi
 }
 
 bool initDefaultMaterialColors() {
-	const io::FilePtr& paletteFile = core::App::getInstance()->filesystem()->open("palette-nippon.png");
-	const io::FilePtr& luaFile = core::App::getInstance()->filesystem()->open("palette-nippon.lua");
+	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	const io::FilePtr& paletteFile = filesystem->open("palette-nippon.png");
+	const io::FilePtr& luaFile = filesystem->open("palette-nippon.lua");
 	return initMaterialColors(paletteFile, luaFile);
 }
 
