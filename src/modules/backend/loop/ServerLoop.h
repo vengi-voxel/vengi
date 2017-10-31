@@ -50,7 +50,6 @@ private:
 	metric::Metric _metric;
 	metric::IMetricSenderPtr _metricSender;
 
-	void readInput();
 	uv_loop_t *_loop = nullptr;
 	uv_timer_t _poiTimer;
 	uv_timer_t _worldTimer;

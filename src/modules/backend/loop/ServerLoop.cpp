@@ -169,6 +169,8 @@ bool ServerLoop::init() {
 		loop->_entityStorage->update(0l);
 	}, 275);
 
+	_input.init(_loop);
+
 	return true;
 }
 
@@ -182,12 +184,14 @@ void ServerLoop::shutdown() {
 	_aiServer = nullptr;
 	_metricSender->shutdown();
 	_metric.shutdown();
+	_input.shutdown();
 	uv_timer_stop(&_poiTimer);
 	uv_timer_stop(&_worldTimer);
 	uv_timer_stop(&_aiServerTimer);
 	uv_timer_stop(&_zoneTimer);
 	uv_timer_stop(&_spawnMgrTimer);
 	uv_timer_stop(&_entityStorageTimer);
+	uv_tty_reset_mode();
 	if (_loop != nullptr) {
 		uv_loop_close(_loop);
 		delete _loop;
@@ -195,17 +199,7 @@ void ServerLoop::shutdown() {
 	}
 }
 
-void ServerLoop::readInput() {
-	const char *input = _input.read();
-	if (input == nullptr) {
-		return;
-	}
-
-	core::executeCommands(input);
-}
-
 void ServerLoop::update(long dt) {
-	readInput();
 	core_trace_scoped(ServerLoop);
 	uv_run(_loop, UV_RUN_NOWAIT);
 	core::Var::visitReplicate([] (const core::VarPtr& var) {
