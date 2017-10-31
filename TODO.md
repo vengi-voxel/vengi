@@ -1,4 +1,4 @@
-#Persistence
+# Persistence
 ## Savable
 
 To collect sql update statements for changed player data, every handler should register itself
@@ -58,6 +58,12 @@ counter useless, because we aren't operating on a shared data anymore. The `Stoc
 instance that is able to modify the internal data.
 
 Container move operations with filters - if might e.g. cost currency to move from one container to another
+
+# Server
+
+The `Zone` should be in the map - each map should have it's own thread. The `EntityStorage` quad tree should also be in the map.
+
+There should still be a way to access users and npcs globally, but usually you should use the map - to prevent locking. Each map is updated in a single thread.
 
 # World
 
