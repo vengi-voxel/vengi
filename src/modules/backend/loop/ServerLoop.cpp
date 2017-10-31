@@ -202,9 +202,6 @@ void ServerLoop::shutdown() {
 void ServerLoop::update(long dt) {
 	core_trace_scoped(ServerLoop);
 	uv_run(_loop, UV_RUN_NOWAIT);
-	core::Var::visitReplicate([] (const core::VarPtr& var) {
-		Log::info("TODO: %s needs replicate", var->name().c_str());
-	});
 	_network->update();
 	_metric.timing("frame.delta", dt);
 }
