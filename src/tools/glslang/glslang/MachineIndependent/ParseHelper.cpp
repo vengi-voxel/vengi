@@ -126,11 +126,6 @@ void TParseContext::setPrecisionDefaults()
             sampler.set(EbtFloat, Esd2D);
             sampler.external = true;
             defaultSamplerPrecision[computeSamplerTypeIndex(sampler)] = EpqLow;
-        } else {
-            // Non-ES profile
-            // All default to highp.
-            for (int type = 0; type < maxSamplerIndex; ++type)
-                defaultSamplerPrecision[type] = EpqHigh;
         }
 
         // If we are parsing built-in computational variables/functions, it is meaningful to record
@@ -145,6 +140,13 @@ void TParseContext::setPrecisionDefaults()
                 defaultPrecision[EbtInt] = EpqHigh;
                 defaultPrecision[EbtUint] = EpqHigh;
                 defaultPrecision[EbtFloat] = EpqHigh;
+            }
+
+            if (profile != EEsProfile) {
+                // Non-ES profile
+                // All sampler precisions default to highp.
+                for (int type = 0; type < maxSamplerIndex; ++type)
+                    defaultSamplerPrecision[type] = EpqHigh;
             }
         }
 
@@ -663,7 +665,8 @@ TIntermTyped* TParseContext::handleDotDereference(const TSourceLoc& loc, TInterm
     // leaving swizzles and struct/block dereferences.
 
     TIntermTyped* result = base;
-    if (base->isVector() || base->isScalar()) {
+    if ((base->isVector() || base->isScalar()) &&
+        (base->isFloatingDomain() || base->isIntegerDomain() || base->getBasicType() == EbtBool)) {
         if (base->isScalar()) {
             const char* dotFeature = "scalar swizzle";
             requireProfile(loc, ~EEsProfile, dotFeature);
@@ -1550,6 +1553,23 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
 
         break;
     }
+
+#ifdef NV_EXTENSIONS
+    case EOpAtomicAdd:
+    case EOpAtomicMin:
+    case EOpAtomicMax:
+    case EOpAtomicAnd:
+    case EOpAtomicOr:
+    case EOpAtomicXor:
+    case EOpAtomicExchange:
+    case EOpAtomicCompSwap:
+    {
+        if (arg0->getType().getBasicType() == EbtInt64 || arg0->getType().getBasicType() == EbtUint64)
+            requireExtensions(loc, 1, &E_GL_NV_shader_atomic_int64, fnCandidate.getName().c_str());
+
+        break;
+    }
+#endif
 
     case EOpInterpolateAtCentroid:
     case EOpInterpolateAtSample:
@@ -4441,8 +4461,8 @@ void TParseContext::layoutObjectCheck(const TSourceLoc& loc, const TSymbol& symb
         switch (qualifier.storage) {
         case EvqVaryingIn:
         case EvqVaryingOut:
-            if (type.getBasicType() != EbtBlock || 
-                (!(*type.getStruct())[0].type->getQualifier().hasLocation() && 
+            if (type.getBasicType() != EbtBlock ||
+                (!(*type.getStruct())[0].type->getQualifier().hasLocation() &&
                   (*type.getStruct())[0].type->getQualifier().builtIn == EbvNone))
                 error(loc, "SPIR-V requires location for user input/output", "location", "");
             break;
@@ -4843,7 +4863,7 @@ void TParseContext::fixOffset(const TSourceLoc& loc, TSymbol& symbol)
             // Check for overlap
             int numOffsets = 4;
             if (symbol.getType().isArray()) {
-                if (symbol.getType().isExplicitlySizedArray())
+                if (symbol.getType().isExplicitlySizedArray() && ! symbol.getType().getArraySizes()->isInnerImplicit())
                     numOffsets *= symbol.getType().getCumulativeArraySize();
                 else {
                     // "It is a compile-time error to declare an unsized array of atomic_uint."
