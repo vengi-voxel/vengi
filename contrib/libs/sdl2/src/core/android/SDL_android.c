@@ -31,6 +31,8 @@
 #include "SDL_android.h"
 #include <EGL/egl.h>
 
+#include "keyinfotable.h"
+
 #include "../../events/SDL_events_c.h"
 #include "../../video/android/SDL_androidkeyboard.h"
 #include "../../video/android/SDL_androidmouse.h"
@@ -211,6 +213,8 @@ static jmethodID midClipboardSetText;
 static jmethodID midClipboardGetText;
 static jmethodID midClipboardHasText;
 static jmethodID midOpenAPKExpansionInputStream;
+static jmethodID midGetManifestEnvironmentVariable;
+static jmethodID midGetDisplayDPI;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -310,11 +314,16 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
     midOpenAPKExpansionInputStream = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "openAPKExpansionInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
 
+    midGetManifestEnvironmentVariable = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "getManifestEnvironmentVariable", "(Ljava/lang/String;)Ljava/lang/String;");
+
+    midGetDisplayDPI = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
+
     if (!midGetNativeSurface ||
        !midSetActivityTitle || !midSetOrientation || !midGetContext || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown || 
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
-       !midOpenAPKExpansionInputStream) {
+       !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariable || !midGetDisplayDPI) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -745,6 +754,36 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
     (*env)->ReleaseStringUTFChars(env, text, utftext);
 }
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar)(
+                                    JNIEnv* env, jclass cls,
+                                    jchar chUnicode)
+{
+    SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
+    uint16_t mod = 0;
+
+    // We do not care about bigger than 127.
+    if (chUnicode < 127) {
+        AndroidKeyInfo info = unicharToAndroidKeyInfoTable[chUnicode];
+        code = info.code;
+        mod = info.mod;
+    }
+
+    if (mod & KMOD_SHIFT) {
+        /* If character uses shift, press shift down */
+        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
+    }
+
+    /* send a keydown and keyup even for the character */
+    SDL_SendKeyboardKey(SDL_PRESSED, code);
+    SDL_SendKeyboardKey(SDL_RELEASED, code);
+
+    if (mod & KMOD_SHIFT) {
+        /* If character uses shift, press shift back up */
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
+    }
+}
+
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
                                     JNIEnv* env, jclass cls,
                                     jstring text, jint newCursorPosition)
@@ -1009,6 +1048,28 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
     }
 
     return audioBufferFrames;
+}
+
+int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    jobject jDisplayObj = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetDisplayDPI);
+    jclass jDisplayClass = (*env)->GetObjectClass(env, jDisplayObj);
+
+    jfieldID fidXdpi = (*env)->GetFieldID(env, jDisplayClass, "xdpi", "F");
+    jfieldID fidYdpi = (*env)->GetFieldID(env, jDisplayClass, "ydpi", "F");
+    jfieldID fidDdpi = (*env)->GetFieldID(env, jDisplayClass, "densityDpi", "I");
+
+    float nativeXdpi = (*env)->GetFloatField(env, jDisplayObj, fidXdpi);
+    float nativeYdpi = (*env)->GetFloatField(env, jDisplayObj, fidYdpi);
+    int nativeDdpi = (*env)->GetIntField(env, jDisplayObj, fidDdpi);
+
+    *ddpi = (float)nativeDdpi;
+    *xdpi = nativeXdpi;
+    *ydpi = nativeYdpi;
+
+    return 0;
 }
 
 void * Android_JNI_GetAudioBuffer(void)
@@ -2032,6 +2093,41 @@ const char * SDL_AndroidGetExternalStoragePath(void)
         LocalReferenceHolder_Cleanup(&refs);
     }
     return s_AndroidExternalFilesPath;
+}
+
+// Ugh, but we have to SDL_strdup() our result to pass it safely back
+// out into normal SDL_getenv flow.  So we'll just do the same sort
+// of trick as on Win32 over in SDL_getenv.c.
+char *SDL_AndroidEnvMem;
+
+char *SDL_AndroidGetManifestEnvironmentVariable(const char *variableName)
+{
+    if ((mActivityClass == NULL) || (midGetManifestEnvironmentVariable == 0)) {
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "request to get environment variable before JNI is ready: %s", variableName);
+        return NULL;
+    }
+
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    jstring jVariableName = (*env)->NewStringUTF(env, variableName);
+    jstring jResult = (jstring)((*env)->CallStaticObjectMethod(env, mActivityClass, midGetManifestEnvironmentVariable, jVariableName));
+
+    if (jResult == NULL) {
+        return NULL;        
+    }
+
+    if (SDL_AndroidEnvMem) {
+        SDL_free(SDL_AndroidEnvMem);
+        SDL_AndroidEnvMem = NULL;
+    }
+
+    const char *result = (*env)->GetStringUTFChars(env, jResult, NULL);
+    SDL_AndroidEnvMem = SDL_strdup(result);
+    (*env)->ReleaseStringUTFChars(env, jResult, result);
+    (*env)->DeleteLocalRef(env, jResult);
+
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "environment variable in metadata: %s = %s", variableName, SDL_AndroidEnvMem);
+    return SDL_AndroidEnvMem;
 }
 
 #endif /* __ANDROID__ */
