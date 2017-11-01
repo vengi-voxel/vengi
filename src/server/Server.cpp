@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
 
 	const metric::IMetricSenderPtr& metricSender = std::make_shared<metric::UDPMetricSender>();
-	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(entityStorage, messageSender,
+	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(filesystem, entityStorage, messageSender,
 			timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, spawnMgr, registry, eventBus);
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(world, dbHandler, network,

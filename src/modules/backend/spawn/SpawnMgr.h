@@ -20,6 +20,7 @@ private:
 	attrib::ContainerProviderPtr _containerProvider;
 	poi::PoiProviderPtr _poiProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
+	io::FilesystemPtr _filesystem;
 	long _time;
 
 	void spawnEntity(const MapPtr& map, network::EntityType start, network::EntityType end, int maxAmount);
@@ -27,7 +28,7 @@ private:
 	void spawnCharacters(const MapPtr& map);
 
 public:
-	SpawnMgr(const EntityStoragePtr& entityStorage, const network::ServerMessageSenderPtr& messageSender,
+	SpawnMgr(const io::FilesystemPtr& filesytem, const EntityStoragePtr& entityStorage, const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
 			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 	bool init();
