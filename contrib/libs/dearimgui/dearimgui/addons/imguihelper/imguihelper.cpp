@@ -660,7 +660,7 @@ void RenderTextVertical(const ImFont* font,ImDrawList* draw_list, float size, Im
         float char_width = 0.0f;
         if (const ImFont::Glyph* glyph = font->FindGlyph((unsigned short)c))
         {
-            char_width = glyph->XAdvance * scale;
+            char_width = glyph->AdvanceX * scale;
             //fprintf(stderr,"%c [%1.4f]\n",(unsigned char) glyph->Codepoint,char_width);
 
             // Arbitrarily assume that both space and tabs are empty glyphs as an optimization

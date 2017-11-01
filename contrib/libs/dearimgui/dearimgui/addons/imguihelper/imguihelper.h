@@ -21,9 +21,9 @@ bool IsItemJustReleased();
 const ImFont* GetFont(int fntIndex);
 void PushFont(int fntIndex);    // using the index of the font instead of a ImFont* is easier (you can set up an enum).
 void TextColoredV(int fntIndex,const ImVec4& col, const char* fmt, va_list args);
-void TextColored(int fntIndex,const ImVec4& col, const char* fmt, ...) IM_PRINTFARGS(3);
+void TextColored(int fntIndex,const ImVec4& col, const char* fmt, ...) IM_FMTARGS(3);
 void TextV(int fntIndex,const char* fmt, va_list args);
-void Text(int fntIndex,const char* fmt, ...) IM_PRINTFARGS(2);
+void Text(int fntIndex,const char* fmt, ...) IM_FMTARGS(2);
 
 // Handy if we want to use ImGui::Image(...) or ImGui::ImageButton(...) with a glyph
 bool GetTexCoordsFromGlyph(unsigned short glyph,ImVec2& uv0,ImVec2& uv1);
