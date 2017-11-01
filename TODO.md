@@ -61,13 +61,13 @@ Container move operations with filters - if might e.g. cost currency to move fro
 
 # World
 
-Implement island style worlds. Each 'World' instance gets its own ai 'Zone'. There should be portals on the islands to get to other islands. Provide a map of where the islands are.
-(Theoretically we could scale/cluster per 'World' and each jump could include a server switch)
+Implement island style maps. Each 'Map' instance gets its own ai 'Zone'. There should be portals on the islands to get to other islands. Provide an overview map of where the islands are.
+(Theoretically we could scale/cluster per 'Map' and each jump could include a server switch)
 Maybe also allow to sail to a another island...?
 
 These islands should not only be created by noise - just supported by noise to vary. But they should still be hand crafted to make them more interesting.
 
-The world should have a threadpool to update the maps in. Use libuv timers and forward the updating into the threads.
+The 'World' class manages the 'Map' classes and should have a threadpool to update the maps in. Use libuv timers and forward the updating into the threads.
 
 ## Map editor
 
@@ -79,3 +79,7 @@ still be implemented via procgen.
 # Statsd support
 
 Extend statsd support with more events
+
+# EntityStorage
+
+Moved login out of the entity storage

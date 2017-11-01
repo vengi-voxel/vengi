@@ -6,9 +6,9 @@
 
 #include "backend/ForwardDecl.h"
 #include "network/Network.h"
-#include "core/QuadTree.h"
 #include "core/TimeProvider.h"
 #include "ai/common/Types.h"
+#include "UserModel.h"
 #include <unordered_map>
 
 namespace backend {
@@ -28,18 +28,7 @@ private:
 	typedef Npcs::iterator NpcsIter;
 	Npcs _npcs;
 
-	struct QuadTreeNode {
-		EntityPtr entity;
-
-		core::RectFloat getRect() const;
-		bool operator==(const QuadTreeNode& rhs) const;
-	};
-
-	core::QuadTree<QuadTreeNode, float> _quadTree;
-	core::QuadTreeCache<QuadTreeNode, float> _quadTreeCache;
-
 	network::ServerMessageSenderPtr _messageSender;
-	voxel::WorldPtr _world;
 	core::TimeProviderPtr _timeProvider;
 	attrib::ContainerProviderPtr _containerProvider;
 	poi::PoiProviderPtr _poiProvider;
@@ -47,15 +36,15 @@ private:
 	persistence::DBHandlerPtr _dbHandler;
 	stock::StockProviderPtr _stockDataProvider;
 	core::EventBusPtr _eventBus;
+	MapProviderPtr _mapProvider;
 	long _time;
 
 	void registerUser(const UserPtr& user);
 	bool updateEntity(const EntityPtr& entity, long dt);
-	void updateQuadTree();
 
-	EntityId getUserId(const std::string& email, const std::string& password) const;
+	bool userData(db::UserModel& model, const std::string& email, const std::string& password) const;
 public:
-	EntityStorage(const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
+	EntityStorage(const MapProviderPtr& mapProvider, const network::ServerMessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider,
 			const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
 			const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider, const core::EventBusPtr& eventBus);
 
@@ -64,7 +53,7 @@ public:
 
 	void addNpc(const NpcPtr& npc);
 	bool removeNpc(ai::CharacterId id);
-	NpcPtr getNpc(ai::CharacterId id);
+	NpcPtr npc(ai::CharacterId id);
 
 	void update(long dt);
 };

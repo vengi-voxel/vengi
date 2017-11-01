@@ -82,10 +82,14 @@ protected:
 		const ai::TreeNodePtr& node = _registry.createNode(nodeName, ctx);
 		ASSERT_TRUE((bool)node) << "Could not create lua provided node '" << nodeName << "'";
 		const ai::AIPtr& ai = std::make_shared<ai::AI>(node);
+		ASSERT_EQ(1, ai.use_count());
 		ai->setCharacter(_chr);
+		ASSERT_EQ(1, ai.use_count());
 		ASSERT_TRUE(zone.addAI(ai));
+		ASSERT_EQ(2, ai.use_count());
 		ai->setPause(true);
 		zone.update(1l);
+		ASSERT_EQ(2, ai.use_count());
 		ai->setPause(false);
 		for (int i = 0; i < n; ++i) {
 			const ai::TreeNodeStatus executionStatus = node->execute(ai, 1L);

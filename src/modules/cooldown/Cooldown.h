@@ -9,6 +9,7 @@
 #include "CooldownTriggerState.h"
 
 #include <memory>
+#include <functional>
 
 namespace cooldown {
 
@@ -16,6 +17,20 @@ namespace cooldown {
  * @defgroup Cooldowns
  * @{
  */
+
+/**
+ * @brief Parameter for @c CooldownCallback
+ */
+enum class CallbackType {
+	Started, Expired, Canceled
+};
+
+/**
+ * @brief Callback that can be given to a 'new' cooldown trigger. It's called whenever the cooldown changes its state.
+ * @note The @c CallbackType is given as parameter
+ */
+using CooldownCallback = std::function<void(CallbackType)>;
+
 class Cooldown {
 private:
 	Type _type;
@@ -23,59 +38,32 @@ private:
 	unsigned long _startMillis;
 	unsigned long _expireMillis;
 	core::TimeProviderPtr _timeProvider;
+	CooldownCallback _callback;
 
 public:
-	Cooldown(Type type, unsigned long durationMillis, const core::TimeProviderPtr& timeProvider) :
-			_type(type), _durationMillis(durationMillis), _startMillis(0ul), _expireMillis(0ul), _timeProvider(timeProvider) {
-	}
+	Cooldown(Type type, unsigned long durationMillis, const CooldownCallback& callback, const core::TimeProviderPtr& timeProvider);
 
-	inline void start() {
-		_startMillis = _timeProvider->tickMillis();
-		_expireMillis = _startMillis + _durationMillis;
-	}
+	void start();
 
-	inline void reset() {
-		_startMillis = 0ul;
-		_expireMillis = 0ul;
-	}
+	void reset();
 
-	inline void expire() {
-		// TODO: eventbus or state
-		reset();
-	}
+	void expire();
 
-	inline void cancel() {
-		// TODO: eventbus or state
-		reset();
-	}
+	void cancel();
 
-	unsigned long durationMillis() const {
-		return _durationMillis;
-	}
+	unsigned long durationMillis() const;
 
-	inline bool started() const {
-		return _expireMillis > 0ul;
-	}
+	bool started() const;
 
-	inline bool running() const {
-		return _expireMillis > 0ul && _timeProvider->tickMillis() < _expireMillis;
-	}
+	bool running() const;
 
-	inline unsigned long duration() const {
-		return _expireMillis - _startMillis;
-	}
+	unsigned long duration() const;
 
-	inline unsigned long startMillis() const {
-		return _startMillis;
-	}
+	unsigned long startMillis() const;
 
-	inline Type type() const {
-		return _type;
-	}
+	Type type() const;
 
-	inline bool operator<(const Cooldown& rhs) const {
-		return _expireMillis < rhs._expireMillis;
-	}
+	bool operator<(const Cooldown& rhs) const;
 };
 
 typedef std::shared_ptr<Cooldown> CooldownPtr;

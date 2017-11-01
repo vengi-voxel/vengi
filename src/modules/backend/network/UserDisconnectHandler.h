@@ -10,7 +10,7 @@
 namespace backend {
 
 USERPROTOHANDLERIMPL(UserDisconnect) {
-	user->disconnect();
+	user->triggerLogout();
 }
 
 }

@@ -7,21 +7,21 @@
 #include "core/Singleton.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
-#include "voxel/World.h"
 #include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AICharacter.h"
 #include "backend/entity/ai/AILoader.h"
 #include "poi/PoiProvider.h"
 #include "backend/entity/Npc.h"
+#include "backend/world/Map.h"
 
 namespace backend {
 
 static const long spawnTime = 15000L;
 
-SpawnMgr::SpawnMgr(const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const network::ServerMessageSenderPtr& messageSender,
+SpawnMgr::SpawnMgr(const EntityStoragePtr& entityStorage, const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
 		const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
-		_loader(loader), _world(world), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),
+		_loader(loader), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),
 		_containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _time(15000L) {
 }
 
@@ -29,7 +29,8 @@ void SpawnMgr::shutdown() {
 }
 
 bool SpawnMgr::init() {
-	const std::string& lua = core::App::getInstance()->filesystem()->load("behaviourtrees.lua");
+	const io::FilesystemPtr& filesytem = core::App::getInstance()->filesystem();
+	const std::string& lua = filesytem->load("behaviourtrees.lua");
 	if (!_loader->init(lua)) {
 		Log::error("could not load the behaviourtrees: %s", _loader->getError().c_str());
 		return false;
@@ -37,15 +38,16 @@ bool SpawnMgr::init() {
 	return true;
 }
 
-void SpawnMgr::spawnCharacters(ai::Zone& zone) {
-	spawnEntity(zone, network::EntityType::BEGIN_CHARACTERS, network::EntityType::MAX_CHARACTERS, 0);
+void SpawnMgr::spawnCharacters(const MapPtr& map) {
+	spawnEntity(map, network::EntityType::BEGIN_CHARACTERS, network::EntityType::MAX_CHARACTERS, 0);
 }
 
-void SpawnMgr::spawnAnimals(ai::Zone& zone) {
-	spawnEntity(zone, network::EntityType::BEGIN_ANIMAL, network::EntityType::MAX_ANIMAL, 2);
+void SpawnMgr::spawnAnimals(const MapPtr& map) {
+	spawnEntity(map, network::EntityType::BEGIN_ANIMAL, network::EntityType::MAX_ANIMAL, 2);
 }
 
-void SpawnMgr::spawnEntity(ai::Zone& zone, network::EntityType start, network::EntityType end, int maxAmount) {
+void SpawnMgr::spawnEntity(const MapPtr& map, network::EntityType start, network::EntityType end, int maxAmount) {
+	ai::Zone& zone = *map->zone();
 	const int offset = (int)start + 1;
 	const int size = (int)end - offset;
 	int count[size];
@@ -62,16 +64,17 @@ void SpawnMgr::spawnEntity(ai::Zone& zone, network::EntityType start, network::E
 	});
 
 	for (int i = 0; i < size; ++i) {
-		if (count[i] >= maxAmount)
+		if (count[i] >= maxAmount) {
 			continue;
+		}
 
 		const int needToSpawn = maxAmount - count[i];
 		network::EntityType type = static_cast<network::EntityType>(offset + i);
-		spawn(zone, type, needToSpawn);
+		spawn(map, type, needToSpawn);
 	}
 }
 
-int SpawnMgr::spawn(ai::Zone& zone, network::EntityType type, int amount, const glm::ivec3* pos) {
+int SpawnMgr::spawn(const MapPtr& map, network::EntityType type, int amount, const glm::ivec3* pos) {
 	const char *typeName = network::EnumNameEntityType(type);
 	const ai::TreeNodePtr& behaviour = _loader->load(typeName);
 	if (!behaviour) {
@@ -79,22 +82,23 @@ int SpawnMgr::spawn(ai::Zone& zone, network::EntityType type, int amount, const 
 		return 0;
 	}
 	for (int x = 0; x < amount; ++x) {
-		const NpcPtr& npc = std::make_shared<Npc>(type, _entityStorage, behaviour, _world, _messageSender, _timeProvider, _containerProvider, _cooldownProvider, _poiProvider);
+		const NpcPtr& npc = std::make_shared<Npc>(type, behaviour, map, _messageSender,
+				_timeProvider, _containerProvider, _cooldownProvider, _poiProvider);
 		npc->init(pos);
 		// now let it tick
-		zone.addAI(npc->ai());
+		map->addNpc(npc);
 		_entityStorage->addNpc(npc);
 	}
 
 	return amount;
 }
 
-void SpawnMgr::update(ai::Zone& zone, long dt) {
+void SpawnMgr::update(const MapPtr& map, long dt) {
 	_time += dt;
 	if (_time >= spawnTime) {
 		_time -= spawnTime;
-		spawnAnimals(zone);
-		spawnCharacters(zone);
+		spawnAnimals(map);
+		spawnCharacters(map);
 	}
 }
 

@@ -14,7 +14,6 @@ namespace backend {
 class SpawnMgr {
 private:
 	AILoaderPtr _loader;
-	voxel::WorldPtr _world;
 	EntityStoragePtr _entityStorage;
 	network::ServerMessageSenderPtr _messageSender;
 	core::TimeProviderPtr _timeProvider;
@@ -23,19 +22,19 @@ private:
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	long _time;
 
-	void spawnEntity(ai::Zone& zone, network::EntityType start, network::EntityType end, int maxAmount);
-	void spawnAnimals(ai::Zone& zone);
-	void spawnCharacters(ai::Zone& zone);
+	void spawnEntity(const MapPtr& map, network::EntityType start, network::EntityType end, int maxAmount);
+	void spawnAnimals(const MapPtr& map);
+	void spawnCharacters(const MapPtr& map);
 
 public:
-	SpawnMgr(const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const network::ServerMessageSenderPtr& messageSender,
+	SpawnMgr(const EntityStoragePtr& entityStorage, const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
 			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 	bool init();
 	void shutdown();
 
-	int spawn(ai::Zone& zone, network::EntityType type, int amount, const glm::ivec3* pos = nullptr);
-	void update(ai::Zone& zone, long dt);
+	int spawn(const MapPtr& map, network::EntityType type, int amount, const glm::ivec3* pos = nullptr);
+	void update(const MapPtr& map, long dt);
 };
 
 typedef std::shared_ptr<SpawnMgr> SpawnMgrPtr;

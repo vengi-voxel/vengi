@@ -12,8 +12,8 @@
 namespace backend {
 
 UserConnectHandler::UserConnectHandler(const network::NetworkPtr& network,
-		const backend::EntityStoragePtr& entityStorage, const voxel::WorldPtr& world) :
-		_network(network), _entityStorage(entityStorage), _world(world) {
+		const backend::EntityStoragePtr& entityStorage) :
+		_network(network), _entityStorage(entityStorage) {
 	auto data = network::CreateAuthFailed(_authFailed);
 	auto msg = network::CreateServerMessage(_authFailed, network::ServerMsgType::AuthFailed, data.Union());
 	network::FinishServerMessageBuffer(_authFailed, msg);
@@ -41,14 +41,15 @@ void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 	}
 	Log::info("User %s tries to log into the gameserver", email.c_str());
 
-	UserPtr user = _entityStorage->login(peer, email, password);
+	const UserPtr& user = _entityStorage->login(peer, email, password);
 	if (!user) {
 		sendAuthFailed(peer);
 		return;
 	}
 
 	Log::info("User '%s' logged into the gameserver", email.c_str());
-	user->sendSeed(_world->seed());
+	const long seed = core::Var::getSafe(cfg::ServerSeed)->longVal();
+	user->sendSeed(seed);
 	user->sendUserSpawn();
 }
 

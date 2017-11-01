@@ -4,16 +4,16 @@
 
 #include "User.h"
 #include "core/Var.h"
-#include "voxel/World.h"
+#include "backend/world/World.h"
 
 namespace backend {
 
-User::User(ENetPeer* peer, EntityId id, const std::string& name, const network::ServerMessageSenderPtr& messageSender,
-		const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
+User::User(ENetPeer* peer, EntityId id, const std::string& name, const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
+		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider, const persistence::DBHandlerPtr& dbHandler,
 		const stock::StockProviderPtr& stockDataProvider) :
-		Super(id, messageSender, timeProvider, containerProvider, cooldownProvider),
-		_name(name), _world(world), _poiProvider(poiProvider), _dbHandler(dbHandler), _stockMgr(this, stockDataProvider, dbHandler) {
+		Super(id, map, messageSender, timeProvider, containerProvider, cooldownProvider),
+		_name(name), _poiProvider(poiProvider), _dbHandler(dbHandler), _stockMgr(this, stockDataProvider, dbHandler) {
 	setPeer(peer);
 	const glm::vec3& poi = _poiProvider->getPointOfInterest();
 	_pos = poi;
@@ -56,8 +56,12 @@ void User::attack(EntityId id) {
 	_lastAction = _time;
 }
 
-void User::disconnect() {
-	Log::trace("disconnect user");
+void User::triggerLogout() {
+	_cooldowns.triggerCooldown(cooldown::Type::LOGOUT, [this] (cooldown::CallbackType type) {
+		if (type == cooldown::CallbackType::Expired) {
+			_disconnect = true;
+		}
+	});
 }
 
 void User::reconnect() {
@@ -69,32 +73,27 @@ void User::reconnect() {
 }
 
 bool User::update(long dt) {
+	if (_disconnect) {
+		return false;
+	}
 	_time += dt;
 	if (!Entity::update(dt)) {
 		return false;
 	}
 
 	if (_time - _lastAction > _userTimeout->ulongVal()) {
-		disconnect();
-		return false;
-	}
-
-	// invalid id means spectator
-	if (id() == -1) {
-		// TODO: if a certain time has passed, get another point of interest
-		//const glm::vec3& poi = _poiProvider->getPointOfInterest();
-		//_pos = poi;
-		_lastAction = _time;
+		triggerLogout();
 		return true;
 	}
+
+	_stockMgr.update(dt);
+	_cooldowns.update();
 
 	if (!isMove(network::MoveDirection::ANY)) {
 		return true;
 	}
 
 	_lastAction = _time;
-
-	_stockMgr.update(dt);
 
 	glm::vec3 moveDelta {0.0f};
 	const float speed = current(attrib::Type::SPEED) * static_cast<float>(dt) / 1000.0f;
@@ -111,11 +110,12 @@ bool User::update(long dt) {
 
 	_pos += glm::quat(glm::vec3(orientation(), _yaw, 0.0f)) * moveDelta;
 	// TODO: if not flying...
-	_pos.y = _world->findFloor(_pos.x, _pos.z, voxel::isFloor);
+	_pos.y = _map->findFloor(_pos);
 	Log::trace("move: dt %li, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", dt, speed, _pos.x, _pos.y, _pos.z, orientation(), _yaw);
 
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
-	_messageSender->sendServerMessage(_peer, _entityUpdateFbb,
+	// TODO: broadcast to visible
+	_messageSender->broadcastServerMessage(_entityUpdateFbb,
 			network::ServerMsgType::EntityUpdate,
 			network::CreateEntityUpdate(_entityUpdateFbb, id(), &pos, orientation()).Union());
 

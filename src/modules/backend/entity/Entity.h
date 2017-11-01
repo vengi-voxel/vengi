@@ -14,6 +14,7 @@
 #include "cooldown/CooldownMgr.h"
 #include "network/ServerMessageSender.h"
 #include "EntityId.h"
+#include "backend/ForwardDecl.h"
 
 namespace voxel {
 class World;
@@ -52,6 +53,8 @@ protected:
 	// cooldowns
 	cooldown::CooldownMgr _cooldowns;
 
+	MapPtr _map;
+
 	EntityId _entityId;
 	network::EntityType _entityType = network::EntityType::NONE;
 	glm::vec3 _pos;
@@ -74,8 +77,12 @@ protected:
 
 	void onAttribChange(const attrib::DirtyValue& v);
 public:
-	Entity(EntityId id, const network::ServerMessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider,
-			const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
+	Entity(EntityId id,
+			const MapPtr& map,
+			const network::ServerMessageSenderPtr& messageSender,
+			const core::TimeProviderPtr& timeProvider,
+			const attrib::ContainerProviderPtr& containerProvider,
+			const cooldown::CooldownProviderPtr& cooldownProvider);
 	virtual ~Entity();
 
 	void addContainer(const std::string& id);
@@ -84,6 +91,7 @@ public:
 	cooldown::CooldownMgr& cooldownMgr();
 
 	EntityId id() const;
+	MapPtr map() const;
 
 	bool dead() const;
 
@@ -173,7 +181,12 @@ public:
 	 */
 	bool inFrustum(const glm::vec3& position) const;
 	bool inFrustum(const Entity& other) const;
+	bool inFrustum(const EntityPtr& other) const;
 };
+
+inline MapPtr Entity::map() const {
+	return _map;
+}
 
 inline double Entity::current(attrib::Type type) const {
 	return _attribs.current(type);
@@ -228,6 +241,10 @@ inline ENetPeer* Entity::peer() const {
 
 inline bool Entity::inFrustum(const Entity& other) const {
 	return inFrustum(other.pos());
+}
+
+inline bool Entity::inFrustum(const EntityPtr& other) const {
+	return inFrustum(other->pos());
 }
 
 }

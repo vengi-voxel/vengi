@@ -6,6 +6,7 @@
 
 #include "backend/ForwardDecl.h"
 #include "core/ReadWriteLock.h"
+#include "core/Random.h"
 #include <glm/vec3.hpp>
 #include <vector>
 #include <memory>
@@ -29,11 +30,11 @@ private:
 	typedef std::vector<Poi> PoiQueue;
 	PoiQueue _pois;
 
-	voxel::WorldPtr _world;
 	core::TimeProviderPtr _timeProvider;
 	core::ReadWriteLock _lock;
+	core::Random _random;
 public:
-	PoiProvider(const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider);
+	PoiProvider(const core::TimeProviderPtr& timeProvider);
 
 	void update(long dt);
 

@@ -2,16 +2,24 @@ set(SRCS
 	ForwardDecl.h
 
 	spawn/SpawnMgr.cpp spawn/SpawnMgr.h
+
 	loop/ServerLoop.cpp loop/ServerLoop.h
-	entity/ai/AICharacter.cpp entity/ai/AICharacter.h
-	entity/ai/AIRegistry.cpp entity/ai/AIRegistry.h
-	entity/ai/AILoader.h
+
+	world/Map.cpp world/Map.h
+	world/MapId.h
+	world/MapProvider.cpp world/MapProvider.h
+	world/World.cpp world/World.h
+
 	network/UserConnectHandler.cpp network/UserConnectHandler.h
 	network/UserConnectedHandler.h
 	network/UserDisconnectHandler.h
 	network/AttackHandler.h
 	network/MoveHandler.h
 	network/IUserProtocolHandler.h
+
+	entity/ai/AICharacter.cpp entity/ai/AICharacter.h
+	entity/ai/AIRegistry.cpp entity/ai/AIRegistry.h
+	entity/ai/AILoader.h
 	entity/ai/condition/IsCloseToSelection.h
 	entity/ai/condition/IsSelectionAlive.h
 	entity/ai/condition/IsOnCooldown.h
@@ -43,5 +51,7 @@ generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl BackendModels.h
 gtest_suite_files(tests
 	tests/DatabaseModelTest.cpp
 	tests/SpawnMgrTest.cpp
+	tests/MapProviderTest.cpp
+	tests/MapTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

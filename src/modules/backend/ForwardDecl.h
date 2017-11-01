@@ -14,6 +14,7 @@ namespace ai {
 
 class Zone;
 class Server;
+class AIRegistry;
 
 }
 
@@ -46,6 +47,18 @@ typedef std::shared_ptr<ServerMessageSender> ServerMessageSenderPtr;
 }
 
 namespace backend {
+
+class World;
+typedef std::shared_ptr<World> WorldPtr;
+
+class Map;
+typedef std::shared_ptr<Map> MapPtr;
+
+class MapProvider;
+typedef std::shared_ptr<MapProvider> MapProviderPtr;
+
+class SpawnMgr;
+typedef std::shared_ptr<SpawnMgr> SpawnMgrPtr;
 
 class AIRegistry;
 typedef std::shared_ptr<AIRegistry> AIRegistryPtr;
@@ -92,6 +105,16 @@ namespace core {
 
 class TimeProvider;
 typedef std::shared_ptr<TimeProvider> TimeProviderPtr;
+
+class EventBus;
+typedef std::shared_ptr<EventBus> EventBusPtr;
+
+}
+
+namespace io {
+
+class Filesystem;
+typedef std::shared_ptr<Filesystem> FilesystemPtr;
 
 }
 

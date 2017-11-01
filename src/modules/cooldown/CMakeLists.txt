@@ -1,6 +1,7 @@
 set(SRCS
 	CooldownMgr.h CooldownMgr.cpp
 	CooldownType.h
+	Cooldown.h Cooldown.cpp
 	CooldownProvider.h CooldownProvider.cpp
 	CooldownTriggerState.h
 )

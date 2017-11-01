@@ -23,11 +23,11 @@ private:
 	std::string _name;
 	std::string _email;
 	uint32_t _host;
-	voxel::WorldPtr _world;
 	poi::PoiProviderPtr _poiProvider;
 	persistence::DBHandlerPtr _dbHandler;
 	network::MoveDirection _moveMask = network::MoveDirection::NONE;
 	float _yaw = 0.0f;
+	bool _disconnect = false;
 	uint64_t _lastAction = 0u;
 	uint64_t _time = 0u;
 	core::VarPtr _userTimeout;
@@ -44,7 +44,7 @@ protected:
 	void visibleRemove(const EntitySet& entities) override;
 
 public:
-	User(ENetPeer* peer, EntityId id, const std::string& name, const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world,
+	User(ENetPeer* peer, EntityId id, const std::string& name, const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
 			const poi::PoiProviderPtr& poiProvider, const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider);
 
@@ -61,10 +61,10 @@ public:
 	void attack(EntityId id);
 
 	/**
-	 * @brief The client closed the connection - the user object itself will stay in the server until
+	 * @brief The client wants to disconnect - the user object itself will stay in the server until
 	 * a logout cooldown was hit
 	 */
-	void disconnect();
+	void triggerLogout();
 
 	void reconnect();
 

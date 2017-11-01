@@ -45,7 +45,7 @@ public:
 	TreeNodeStatus doAction(backend::AICharacter& chr, int64_t deltaMillis) override {
 		backend::Npc& npc = chr.getNpc();
 		const glm::ivec3 pos = glm::ivec3(npc.pos());
-		if (_spawnMgr->spawn(*npc.ai()->getZone(), npc.entityType(), 1, &pos) == 1) {
+		if (_spawnMgr->spawn(npc.map(), npc.entityType(), 1, &pos) == 1) {
 			return FINISHED;
 		}
 		return FAILED;

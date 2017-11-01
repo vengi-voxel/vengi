@@ -17,8 +17,6 @@ class Npc: public Entity {
 private:
 	friend class AICharacter;
 	static std::atomic<EntityId> _nextNpcId;
-	voxel::WorldPtr _world;
-	EntityStoragePtr _entityStorage;
 	poi::PoiProviderPtr _poiProvider;
 	glm::ivec3 _homePosition;
 	ai::AIPtr _ai;
@@ -29,13 +27,14 @@ private:
 	void init() override;
 
 public:
-	Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::ServerMessageSenderPtr& messageSender,
-			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider);
+	Npc(network::EntityType type, const ai::TreeNodePtr& behaviour,
+			const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
+			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
+			const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider);
 	~Npc();
 
 	void init(const glm::ivec3* pos);
 
-	voxel::WorldPtr world() const;
 	void setHomePosition(const glm::ivec3& pos);
 	/**
 	 * @brief Sets a points of interest at the current npc position.
@@ -64,10 +63,6 @@ public:
 
 inline void Npc::setHomePosition(const glm::ivec3& pos) {
 	_homePosition = pos;
-}
-
-inline voxel::WorldPtr Npc::world() const {
-	return _world;
 }
 
 inline const glm::ivec3& Npc::homePosition() const {

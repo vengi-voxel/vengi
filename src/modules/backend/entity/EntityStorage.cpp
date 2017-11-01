@@ -7,73 +7,64 @@
 #include "core/Password.h"
 #include "core/EventBus.h"
 #include "User.h"
-#include "UserModel.h"
 #include "Npc.h"
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
+#include "backend/world/MapProvider.h"
 #include "metric/MetricEvent.h"
 
 #define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::type, network::msg.Union());
 
 namespace backend {
 
-EntityStorage::EntityStorage(const network::ServerMessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
-		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-		const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider, const core::EventBusPtr& eventBus) :
-		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree), _messageSender(messageSender), _world(world), _timeProvider(
-				timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _dbHandler(dbHandler),
-				_stockDataProvider(stockDataProvider), _eventBus(eventBus), _time(0L) {
-}
-
-core::RectFloat EntityStorage::QuadTreeNode::getRect() const {
-	return entity->rect();
-}
-
-bool EntityStorage::QuadTreeNode::operator==(const QuadTreeNode& rhs) const {
-	return rhs.entity == entity;
+EntityStorage::EntityStorage(const MapProviderPtr& mapProvider, const network::ServerMessageSenderPtr& messageSender,
+		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
+		const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
+		const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider,
+		const core::EventBusPtr& eventBus) :
+		_messageSender(messageSender),
+		_timeProvider(timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider),
+		_cooldownProvider(cooldownProvider), _dbHandler(dbHandler), _stockDataProvider(stockDataProvider),
+		_eventBus(eventBus), _mapProvider(mapProvider), _time(0L) {
 }
 
 void EntityStorage::registerUser(const UserPtr& user) {
 	_users[user->id()] = user;
 }
 
-EntityId EntityStorage::getUserId(const std::string& email, const std::string& password) const {
-	db::UserModel userStore;
-	if (!_dbHandler->select(userStore, db::DBConditionUserEmail(email.c_str()))) {
-		return EntityIdNone;
+bool EntityStorage::userData(db::UserModel& model, const std::string& email, const std::string& password) const {
+	if (!_dbHandler->select(model, db::DBConditionUserEmail(email.c_str()))) {
+		return false;
 	}
-	EntityId checkId = userStore.id();
-	if (password != core::pwhash(userStore.password())) {
-		return EntityIdNone;
-	}
-
-	return checkId;
+	return password == core::pwhash(model.password());
 }
 
 UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std::string& passwd) {
-	EntityId id = getUserId(email, passwd);
-	if (id <= EntityIdNone) {
+	db::UserModel model;
+	if (!userData(model, email, passwd)) {
 		Log::warn("Could not get user id for email: %s", email.c_str());
 		return UserPtr();
 	}
-	auto i = _users.find(id);
+	auto i = _users.find(model.id());
 	if (i == _users.end()) {
 		static const std::string name = "NONAME";
-		Log::info("user %i connects with host %i on port %i", (int) id, peer->address.host, peer->address.port);
-		const UserPtr& u = std::make_shared<User>(peer, id, name, _messageSender, _world, _timeProvider, _containerProvider, _cooldownProvider, _poiProvider, _dbHandler, _stockDataProvider);
+		const MapPtr& map = _mapProvider->map(model.mapid());
+		Log::info("user %i connects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
+		const UserPtr& u = std::make_shared<User>(peer, model.id(), model.name(), map, _messageSender, _timeProvider,
+				_containerProvider, _cooldownProvider, _poiProvider, _dbHandler, _stockDataProvider);
 		u->init();
 		registerUser(u);
 		return u;
 	}
 	const UserPtr& u = i->second;
 	if (u->host() == peer->address.host) {
-		Log::info("user %i reconnects with host %i on port %i", (int) id, peer->address.host, peer->address.port);
+		Log::info("user %i reconnects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
 		i->second->setPeer(peer);
 		i->second->reconnect();
 		return i->second;
 	}
 
-	Log::info("skip connection attempt for client %i - the hosts don't match", (int) id);
+	Log::info("skip connection attempt for client %i - the hosts don't match", (int) model.id());
 	return UserPtr();
 }
 
@@ -96,13 +87,12 @@ bool EntityStorage::removeNpc(ai::CharacterId id) {
 	if (i == _npcs.end()) {
 		return false;
 	}
-	_quadTree.remove(QuadTreeNode { i->second });
 	_npcs.erase(id);
 	_eventBus->publish(metric::gauge("count.npc", _npcs.size()));
 	return true;
 }
 
-NpcPtr EntityStorage::getNpc(ai::CharacterId id) {
+NpcPtr EntityStorage::npc(ai::CharacterId id) {
 	NpcsIter i = _npcs.find(id);
 	if (i == _npcs.end()) {
 		Log::trace("Could not find npc with id %i", id);
@@ -112,66 +102,6 @@ NpcPtr EntityStorage::getNpc(ai::CharacterId id) {
 }
 
 void EntityStorage::update(long dt) {
-	static long lastFrame = _time;
-	_time += dt;
-
-	// let this run at 4 frames per second
-	const long deltaLastTick = _time - lastFrame;
-	const long delayBetweenTicks = 250L;
-	if (deltaLastTick >= delayBetweenTicks) {
-		lastFrame = _time - (deltaLastTick - delayBetweenTicks);
-	} else {
-		return;
-	}
-
-	updateQuadTree();
-	for (auto i : _users) {
-		updateEntity(i.second, deltaLastTick);
-	}
-	for (auto i = _npcs.begin(); i != _npcs.end();) {
-		NpcPtr npc = i->second;
-		if (!updateEntity(npc, deltaLastTick)) {
-			Log::info("remove npc %li", npc->id());
-			_quadTree.remove(QuadTreeNode { npc });
-			i = _npcs.erase(i);
-		} else {
-			++i;
-		}
-	}
-}
-
-void EntityStorage::updateQuadTree() {
-	// TODO: a full rebuild is not needed every frame
-	_quadTree.clear();
-	for (auto i : _npcs) {
-		_quadTree.insert(QuadTreeNode { i.second });
-	}
-	for (auto i : _users) {
-		const UserPtr& user = i.second;
-		_quadTree.insert(QuadTreeNode { user });
-	}
-}
-
-bool EntityStorage::updateEntity(const EntityPtr& entity, long dt) {
-	if (!entity->update(dt)) {
-		return false;
-	}
-	const core::RectFloat& rect = entity->viewRect();
-	// TODO: maybe move into the entity instance to reduce memory allocations.
-	core::QuadTree<QuadTreeNode, float>::Contents contents;
-	contents.reserve(entity->visibleCount() + 10);
-	_quadTreeCache.query(rect, contents);
-	EntitySet set;
-	set.reserve(contents.size());
-	for (const QuadTreeNode& node : contents) {
-		// TODO: check the distance - the rect might contain more than the circle would...
-		if (entity->inFrustum(*node.entity.get())) {
-			set.insert(node.entity);
-		}
-	}
-	set.erase(entity);
-	entity->updateVisible(set);
-	return true;
 }
 
 }

@@ -82,8 +82,6 @@ bool StockDataProvider::init(const std::string& luaScript) {
 		return false;
 	}
 
-	Log::info("loaded %i items", (int)_itemData.size());
-
 	return true;
 }
 

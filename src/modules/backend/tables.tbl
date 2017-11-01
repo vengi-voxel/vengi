@@ -9,6 +9,11 @@ table user {
 		notnull
 		operator set
 	}
+	field name {
+		type string
+		notnull
+		operator set
+	}
 	field password {
 		type password
 		length 128
@@ -21,8 +26,15 @@ table user {
 		notnull
 		operator set
 	}
+	field mapid {
+		type int
+		default 1
+		notnull
+		operator set
+	}
 	constraints {
 		email unique
+		name unique
 		id primarykey
 		id autoincrement
 	}

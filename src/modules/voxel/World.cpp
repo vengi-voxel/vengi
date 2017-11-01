@@ -110,9 +110,11 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 
 bool World::init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes, uint16_t chunkSideLength) {
 	if (!_biomeManager.init(luaBiomes)) {
+		Log::error("Failed to init the biome mgr");
 		return false;
 	}
 	if (!_ctx.load(luaParameters)) {
+		Log::error("Failed to load the world context");
 		return false;
 	}
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);

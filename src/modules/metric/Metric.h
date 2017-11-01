@@ -5,6 +5,7 @@
 #pragma once
 
 #include "IMetricSender.h"
+#include "core/NonCopyable.h"
 #include <map>
 #include <string>
 #include <cstdint>
@@ -19,7 +20,7 @@ enum class Flavor {
 
 using TagMap = std::map<std::string, std::string>;
 
-class Metric {
+class Metric : public core::NonCopyable {
 private:
 	const std::string _prefix;
 	Flavor _flavor = Flavor::Telegraf;

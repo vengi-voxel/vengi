@@ -10,8 +10,8 @@
 
 namespace poi {
 
-PoiProvider::PoiProvider(const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider) :
-		_world(world), _timeProvider(timeProvider), _lock("PoiProvider") {
+PoiProvider::PoiProvider(const core::TimeProviderPtr& timeProvider) :
+		_timeProvider(timeProvider), _lock("PoiProvider") {
 }
 
 void PoiProvider::update(long /*dt*/) {
@@ -49,9 +49,9 @@ size_t PoiProvider::getPointOfInterestCount() const {
 
 glm::vec3 PoiProvider::getPointOfInterest() const {
 	if (_pois.empty()) {
-		return _world->randomPos();
+		return glm::zero<glm::vec3>();
 	}
-	return _world->random().randomElement(_pois.begin(), _pois.end())->pos;
+	return _random.randomElement(_pois.begin(), _pois.end())->pos;
 }
 
 }

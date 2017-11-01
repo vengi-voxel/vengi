@@ -7,17 +7,19 @@
 #include "ai/AICharacter.h"
 #include "ai/AI.h"
 #include "ai/zone/Zone.h"
-#include "EntityStorage.h"
-#include "voxel/World.h"
 #include "poi/PoiProvider.h"
+#include "backend/world/Map.h"
 
 namespace backend {
 
 std::atomic<EntityId> Npc::_nextNpcId(5000000);
 
-Npc::Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::ServerMessageSenderPtr& messageSender,
-		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider) :
-		Entity(_nextNpcId++, messageSender, timeProvider, containerProvider, cooldownProvider), _world(world), _poiProvider(poiProvider) {
+Npc::Npc(network::EntityType type, const ai::TreeNodePtr& behaviour,
+		const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
+		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
+		const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider) :
+		Entity(_nextNpcId++, map, messageSender, timeProvider, containerProvider, cooldownProvider),
+		_poiProvider(poiProvider) {
 	_entityType = type;
 	_ai = std::make_shared<ai::AI>(behaviour);
 	_aiChr = std::make_shared<AICharacter>(_entityId, *this);
@@ -38,11 +40,10 @@ void Npc::init() {
 }
 
 void Npc::init(const glm::ivec3* pos) {
-	const glm::ivec3& randomPos = pos ? *pos : _world->randomPos();
-	const voxel::VoxelType material = _world->material(randomPos.x, randomPos.y, randomPos.z);
-	Log::info("spawn character %i with behaviour tree %s at position %i:%i:%i (material: %i)",
+	const glm::ivec3& randomPos = pos ? *pos : _map->randomPos();
+	Log::info("spawn character %i with behaviour tree %s at position %i:%i:%i",
 			ai()->getId(), ai()->getBehaviour()->getName().c_str(),
-			randomPos.x, randomPos.y, randomPos.z, std::enum_value(material));
+			randomPos.x, randomPos.y, randomPos.z);
 	setHomePosition(randomPos);
 	_aiChr->setPosition(glm::vec3(randomPos.x, randomPos.y, randomPos.z));
 	init();
@@ -96,26 +97,22 @@ bool Npc::update(long dt) {
 }
 
 bool Npc::route(const glm::ivec3& target) {
+#if 0
 	std::list<glm::ivec3> result;
 	const glm::vec3& pos = _aiChr->getPosition();
 	const glm::ivec3 start(pos);
 	const glm::ivec3 end(target.x, target.y, target.z);
-	if (!_world->findPath(start, end, result)) {
+	if (!_map->findPath(start, end, result)) {
 		return false;
 	}
 	// TODO: use the route
+#endif
 	return true;
 }
 
 void Npc::moveToGround() {
 	glm::vec3 pos = _aiChr->getPosition();
-	// the voxel above us shouldn't be solid
-	if (!voxel::isFloor(_world->material(pos.x, pos.y + 1, pos.z))) {
-		if (voxel::isFloor(_world->material(pos.x, pos.y, pos.z))) {
-			return;
-		}
-	}
-	pos.y = _world->findFloor(pos.x, pos.z, voxel::isFloor);
+	pos.y = _map->findFloor(pos);
 	_aiChr->setPosition(pos);
 }
 

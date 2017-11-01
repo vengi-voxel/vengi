@@ -4,9 +4,11 @@
 
 #include "Server.h"
 
+#include "io/Filesystem.h"
 #include "core/Var.h"
 #include "core/command/Command.h"
 #include "cooldown/CooldownProvider.h"
+#include "network/ServerNetwork.h"
 #include "network/ServerMessageSender.h"
 #include "attrib/ContainerProvider.h"
 #include "poi/PoiProvider.h"
@@ -16,15 +18,16 @@
 #include "backend/entity/ai/AILoader.h"
 #include "backend/loop/ServerLoop.h"
 #include "backend/spawn/SpawnMgr.h"
+#include "backend/world/MapProvider.h"
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
 #include "metric/UDPMetricSender.h"
 #include <cstdlib>
 
-Server::Server(const network::ServerNetworkPtr& network, const backend::ServerLoopPtr& serverLoop,
+Server::Server(const backend::ServerLoopPtr& serverLoop,
 		const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
 		const core::EventBusPtr& eventBus) :
-		Super(filesystem, eventBus, timeProvider, 15678), _network(network),
+		Super(filesystem, eventBus, timeProvider, 15678),
 		_serverLoop(serverLoop) {
 	_syslog = true;
 	_coredump = true;
@@ -59,31 +62,17 @@ core::AppState Server::onInit() {
 		return state;
 	}
 
-	if (!_network->init()) {
-		Log::error("Failed to init the network");
-		return core::AppState::Cleanup;
-	}
-
 	if (!_serverLoop->init()) {
 		Log::error("Failed to init the main loop");
 		return core::AppState::Cleanup;
 	}
 
-	const core::VarPtr& port = core::Var::getSafe(cfg::ServerPort);
-	const core::VarPtr& host = core::Var::getSafe(cfg::ServerHost);
-	const core::VarPtr& maxclients = core::Var::getSafe(cfg::ServerMaxClients);
-	if (!_network->bind(port->intVal(), host->strVal(), maxclients->intVal(), 2)) {
-		Log::error("Failed to bind the server socket on %s:%i", host->strVal().c_str(), port->intVal());
-		return core::AppState::Cleanup;
-	}
-	Log::info("Server socket is up at %s:%i", host->strVal().c_str(), port->intVal());
 	return core::AppState::Running;
 }
 
 core::AppState Server::onCleanup() {
 	const core::AppState state = Super::onCleanup();
 	_serverLoop->shutdown();
-	_network->shutdown();
 	return state;
 }
 
@@ -95,7 +84,6 @@ core::AppState Server::onRunning() {
 
 int main(int argc, char *argv[]) {
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
-	const voxel::WorldPtr& world = std::make_shared<voxel::World>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const backend::AIRegistryPtr& registry = std::make_shared<backend::AIRegistry>();
@@ -110,21 +98,23 @@ int main(int argc, char *argv[]) {
 	const cooldown::CooldownProviderPtr& cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 
 	const stock::StockProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	const poi::PoiProviderPtr& poiProvider = std::make_shared<poi::PoiProvider>(world, timeProvider);
 	const persistence::DBHandlerPtr& dbHandler = std::make_shared<persistence::DBHandler>();
-	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world,
+	const poi::PoiProviderPtr& poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
+	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus);
+	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(mapProvider, messageSender,
 			timeProvider, containerProvider, poiProvider, cooldownProvider, dbHandler, stockDataProvider, eventBus);
-	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender,
-			timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 
 	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
 
 	const metric::IMetricSenderPtr& metricSender = std::make_shared<metric::UDPMetricSender>();
-	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(dbHandler, network, spawnMgr,
-			world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider, eventMgr,
-			stockDataProvider, metricSender);
+	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(entityStorage, messageSender,
+			timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
+	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, spawnMgr, registry, eventBus);
+	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(world, dbHandler, network,
+			filesystem, entityStorage, eventBus, containerProvider, poiProvider, cooldownProvider,
+			eventMgr, stockDataProvider, metricSender);
 
-	Server app(network, serverLoop, timeProvider, filesystem, eventBus);
+	Server app(serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);
 }
