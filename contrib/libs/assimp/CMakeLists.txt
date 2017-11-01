@@ -67,6 +67,7 @@ set(SRCS
 	code/IFCOpenings.cpp
 	code/MaterialSystem.cpp
 	code/glTFImporter.cpp
+	code/glTF2Importer.cpp
 	code/AssbinLoader.cpp
 	code/ComputeUVMappingProcess.cpp
 	code/glTFExporter.cpp
@@ -153,6 +154,7 @@ set(SRCS
 	code/MD3Loader.cpp
 	code/OgreMaterial.cpp
 	code/MakeVerboseFormat.cpp
+	code/ScaleProcess.cpp
 	code/NFFLoader.cpp
 	code/X3DExporter.cpp
 	code/X3DExporter.hpp

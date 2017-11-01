@@ -38,56 +38,68 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
 */
+#include "ScaleProcess.h"
 
-/** @file glTFWriter.h
- * Declares a class to write gltf/glb files
- *
- * glTF Extensions Support:
- *   KHR_materials_pbrSpecularGlossiness: full
- */
-#ifndef GLTF2ASSETWRITER_H_INC
-#define GLTF2ASSETWRITER_H_INC
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
-#ifndef ASSIMP_BUILD_NO_GLTF_IMPORTER
+namespace Assimp {
 
-#include "glTF2Asset.h"
-
-namespace glTF2
-{
-
-using rapidjson::MemoryPoolAllocator;
-
-class AssetWriter
-{
-    template<class T>
-    friend void WriteLazyDict(LazyDict<T>& d, AssetWriter& w);
-
-private:
-
-    void WriteBinaryData(IOStream* outfile, size_t sceneLength);
-
-    void WriteMetadata();
-    void WriteExtensionsUsed();
-
-    template<class T>
-    void WriteObjects(LazyDict<T>& d);
-
-public:
-    Document mDoc;
-    Asset& mAsset;
-
-    MemoryPoolAllocator<>& mAl;
-
-    AssetWriter(Asset& asset);
-
-    void WriteFile(const char* path);
-};
-
+ScaleProcess::ScaleProcess()
+: BaseProcess()
+, mScale( AI_CONFIG_GLOBAL_SCALE_FACTOR_DEFAULT ) {
+    // empty
 }
 
-// Include the implementation of the methods
-#include "glTF2AssetWriter.inl"
+ScaleProcess::~ScaleProcess() {
+    // empty
+}
 
-#endif // ASSIMP_BUILD_NO_GLTF_IMPORTER
+void ScaleProcess::setScale( ai_real scale ) {
+    mScale = scale;
+}
 
-#endif // GLTF2ASSETWRITER_H_INC
+ai_real ScaleProcess::getScale() const {
+    return mScale;
+}
+
+bool ScaleProcess::IsActive( unsigned int pFlags ) const {
+    return ( pFlags & aiProcess_GlobalScale ) != 0;
+}
+
+void ScaleProcess::SetupProperties( const Importer* pImp ) {
+    mScale = pImp->GetPropertyFloat( AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, 0 );
+}
+
+void ScaleProcess::Execute( aiScene* pScene ) {
+    if ( nullptr == pScene ) {
+        return;
+    }
+
+    if ( nullptr == pScene->mRootNode ) {
+        return;
+    }
+
+    traverseNodes( pScene->mRootNode );
+}
+
+void ScaleProcess::traverseNodes( aiNode *node ) {
+    applyScaling( node );
+
+    /*for ( unsigned int i = 0; i < node->mNumChildren; ++i ) {
+        aiNode *currentNode = currentNode->mChildren[ i ];
+        if ( nullptr != currentNode ) {
+            traverseNodes( currentNode );
+        }
+    }*/
+}
+
+void ScaleProcess::applyScaling( aiNode *currentNode ) {
+    if ( nullptr != currentNode ) {
+        currentNode->mTransformation.a1 = currentNode->mTransformation.a1 * mScale;
+        currentNode->mTransformation.b2 = currentNode->mTransformation.b2 * mScale;
+        currentNode->mTransformation.c3 = currentNode->mTransformation.c3 * mScale;
+    }
+}
+
+} // Namespace Assimp

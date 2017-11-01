@@ -38,56 +38,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
 */
+#pragma once
 
-/** @file glTFWriter.h
- * Declares a class to write gltf/glb files
- *
- * glTF Extensions Support:
- *   KHR_materials_pbrSpecularGlossiness: full
- */
-#ifndef GLTF2ASSETWRITER_H_INC
-#define GLTF2ASSETWRITER_H_INC
+#include "BaseProcess.h"
 
-#ifndef ASSIMP_BUILD_NO_GLTF_IMPORTER
+struct aiNode;
 
-#include "glTF2Asset.h"
+#if (!defined AI_CONFIG_GLOBAL_SCALE_FACTOR_DEFAULT)
+#   define AI_CONFIG_GLOBAL_SCALE_FACTOR_DEFAULT  1.0f
+#endif // !! AI_DEBONE_THRESHOLD
 
-namespace glTF2
-{
+namespace Assimp {
 
-using rapidjson::MemoryPoolAllocator;
+// ---------------------------------------------------------------------------
+/** ScaleProcess: Class to rescale the whole model.
+*/
+class ASSIMP_API ScaleProcess : public BaseProcess {
+public:
+    /// The default class constructor.
+    ScaleProcess();
 
-class AssetWriter
-{
-    template<class T>
-    friend void WriteLazyDict(LazyDict<T>& d, AssetWriter& w);
+    /// The class destructor.
+    virtual ~ScaleProcess();
+
+    /// Will set the scale manually.
+    void setScale( ai_real scale );
+
+    /// Returns the current scaling value.
+    ai_real getScale() const;
+
+    /// Overwritten, @see BaseProcess
+    virtual bool IsActive( unsigned int pFlags ) const;
+
+    /// Overwritten, @see BaseProcess
+    virtual void SetupProperties( const Importer* pImp );
+
+    /// Overwritten, @see BaseProcess
+    virtual void Execute( aiScene* pScene );
 
 private:
+    void traverseNodes( aiNode *currentNode );
+    void applyScaling( aiNode *currentNode );
 
-    void WriteBinaryData(IOStream* outfile, size_t sceneLength);
-
-    void WriteMetadata();
-    void WriteExtensionsUsed();
-
-    template<class T>
-    void WriteObjects(LazyDict<T>& d);
-
-public:
-    Document mDoc;
-    Asset& mAsset;
-
-    MemoryPoolAllocator<>& mAl;
-
-    AssetWriter(Asset& asset);
-
-    void WriteFile(const char* path);
+private:
+    ai_real mScale;
 };
 
-}
-
-// Include the implementation of the methods
-#include "glTF2AssetWriter.inl"
-
-#endif // ASSIMP_BUILD_NO_GLTF_IMPORTER
-
-#endif // GLTF2ASSETWRITER_H_INC
+} // Namespace Assimp

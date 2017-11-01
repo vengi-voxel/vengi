@@ -38,56 +38,54 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
 */
+#ifndef AI_GLTF2IMPORTER_H_INC
+#define AI_GLTF2IMPORTER_H_INC
 
-/** @file glTFWriter.h
- * Declares a class to write gltf/glb files
- *
- * glTF Extensions Support:
- *   KHR_materials_pbrSpecularGlossiness: full
- */
-#ifndef GLTF2ASSETWRITER_H_INC
-#define GLTF2ASSETWRITER_H_INC
+#include "BaseImporter.h"
+#include <assimp/DefaultIOSystem.h>
 
-#ifndef ASSIMP_BUILD_NO_GLTF_IMPORTER
+struct aiNode;
 
-#include "glTF2Asset.h"
 
 namespace glTF2
 {
+    class Asset;
+}
 
-using rapidjson::MemoryPoolAllocator;
+namespace Assimp {
 
-class AssetWriter
-{
-    template<class T>
-    friend void WriteLazyDict(LazyDict<T>& d, AssetWriter& w);
+/**
+ * Load the glTF2 format.
+ * https://github.com/KhronosGroup/glTF/tree/master/specification
+ */
+class glTF2Importer : public BaseImporter{
+public:
+    glTF2Importer();
+    virtual ~glTF2Importer();
+    virtual bool CanRead( const std::string& pFile, IOSystem* pIOHandler, bool checkSig ) const;
+
+protected:
+    virtual const aiImporterDesc* GetInfo() const;
+    virtual void InternReadFile( const std::string& pFile, aiScene* pScene, IOSystem* pIOHandler );
 
 private:
 
-    void WriteBinaryData(IOStream* outfile, size_t sceneLength);
+    std::vector<unsigned int> meshOffsets;
 
-    void WriteMetadata();
-    void WriteExtensionsUsed();
+    std::vector<int> embeddedTexIdxs;
 
-    template<class T>
-    void WriteObjects(LazyDict<T>& d);
+    aiScene* mScene;
 
-public:
-    Document mDoc;
-    Asset& mAsset;
+    void ImportEmbeddedTextures(glTF2::Asset& a);
+    void ImportMaterials(glTF2::Asset& a);
+    void ImportMeshes(glTF2::Asset& a);
+    void ImportCameras(glTF2::Asset& a);
+    void ImportLights(glTF2::Asset& a);
+    void ImportNodes(glTF2::Asset& a);
 
-    MemoryPoolAllocator<>& mAl;
-
-    AssetWriter(Asset& asset);
-
-    void WriteFile(const char* path);
 };
 
-}
+} // Namespace assimp
 
-// Include the implementation of the methods
-#include "glTF2AssetWriter.inl"
+#endif // AI_GLTF2IMPORTER_H_INC
 
-#endif // ASSIMP_BUILD_NO_GLTF_IMPORTER
-
-#endif // GLTF2ASSETWRITER_H_INC
