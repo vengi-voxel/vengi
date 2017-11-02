@@ -24,7 +24,7 @@ bool Map::QuadTreeNode::operator==(const QuadTreeNode& rhs) const {
 }
 
 Map::Map(MapId mapId, const core::EventBusPtr& eventBus) :
-		_mapId(mapId), _quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
+		_mapId(mapId), _mapIdStr(std::to_string(mapId)), _quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
 }
 
 Map::~Map() {

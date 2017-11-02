@@ -18,6 +18,7 @@ namespace backend {
 class Map {
 private:
 	MapId _mapId;
+	std::string _mapIdStr;
 	voxel::World* _voxelWorld = nullptr;
 	core::EventBusPtr _eventBus;
 	ai::Zone* _zone = nullptr;
