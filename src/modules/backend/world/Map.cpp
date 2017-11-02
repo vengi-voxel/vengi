@@ -118,7 +118,7 @@ bool Map::removeNpc(ai::CharacterId id) {
 		return false;
 	}
 	_quadTree.remove(QuadTreeNode { i->second });
-	_npcs.erase(id);
+	_npcs.erase(i);
 	return true;
 }
 
