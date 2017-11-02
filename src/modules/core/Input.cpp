@@ -5,6 +5,7 @@
 #include "Input.h"
 #include "core/Log.h"
 #include "core/command/CommandHandler.h"
+#include <cstring>
 
 namespace core {
 
@@ -33,7 +34,16 @@ void Input::onRead(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
 	if (nread < 0) {
 		return uv_close(reinterpret_cast<uv_handle_t*>(stream), nullptr);
 	}
-	const std::string commandLine(buf->base, buf->len);
+	size_t len;
+	for (len = 0u; len < buf->len; ++len) {
+		if (buf->base[len] == '\0' || buf->base[len] == '\n' || buf->base[len] == '\r') {
+			break;
+		}
+	}
+	if (len == 0u || len == buf->len) {
+		return;
+	}
+	const std::string commandLine(buf->base, len);
 	core::executeCommands(commandLine);
 }
 

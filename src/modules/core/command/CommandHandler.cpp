@@ -8,10 +8,24 @@
 namespace core {
 
 int executeCommands(const std::string& _commandLine) {
-	const std::vector<std::string> commands = core::Tokenizer(_commandLine, ";").tokens();
+	if (_commandLine.empty()) {
+		return 0;
+	}
 	int n = 0;
-	for (const std::string& command : commands) {
-		std::vector<std::string> tokens = core::Tokenizer(core::string::trim(command), " ").tokens();
+	const core::Tokenizer tok(_commandLine, ";");
+	for (const std::string& command : tok.tokens()) {
+		if (command.empty()) {
+			continue;
+		}
+		const std::string_view trimmed = core::string::trim(command);
+		if (trimmed.empty()) {
+			continue;
+		}
+		const core::Tokenizer tokInner(trimmed, " ");
+		if (tokInner.tokens().empty()) {
+			continue;
+		}
+		std::vector<std::string> tokens = tokInner.tokens();
 		const std::string cmd = tokens[0];
 		tokens.erase(tokens.begin());
 		if (core::Command::execute(cmd, tokens)) {

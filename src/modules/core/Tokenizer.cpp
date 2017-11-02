@@ -138,21 +138,27 @@ bool Tokenizer::skipComments(const char **s, bool skipWhitespace) {
 	if (next == '*') {
 		int l = 0;
 		_len -= 2;
+		if (_len < 0) {
+			return false;
+		}
 		*s += 2;
 		const char* data = *s;
 		while (data[l] != '\0' && data[l] != '*' && data[l + 1] != '\0' && data[l + 1] != '/') {
 			++l;
 		}
-		*s += l + 2;
 		_len -= l + 2;
+		if (_len < 0) {
+			return false;
+		}
+		*s += l + 2;
 		skip(s, skipWhitespace);
 		return true;
 	} else if (next == '/') {
 		while (**s != '\0' && **s != '\n') {
-			(*s)++;
 			if (--_len <= 0) {
 				return true;
 			}
+			(*s)++;
 		}
 		skip(s, skipWhitespace);
 		return true;
@@ -172,6 +178,9 @@ char Tokenizer::skip(const char **s, bool skipWhitespace) {
 			}
 			const size_t cl = core::utf8::lengthChar(c);
 			_len -= cl;
+			if (_len < 0) {
+				return '\0';
+			}
 			*s += cl;
 		}
 	}

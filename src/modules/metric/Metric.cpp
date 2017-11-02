@@ -79,7 +79,7 @@ bool Metric::assemble(const char* key, int value, const char* type, const TagMap
 	constexpr int metricSize = 256;
 	char buffer[metricSize];
 	constexpr int tagsSize = 256;
-	char tagsBuffer[tagsSize];
+	char tagsBuffer[tagsSize] = "";
 	int written;
 	switch (_flavor) {
 	case Flavor::Etsy:

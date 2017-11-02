@@ -180,7 +180,6 @@ void ServerLoop::shutdown() {
 	_network->shutdown();
 	uv_timer_stop(&_poiTimer);
 	uv_timer_stop(&_worldTimer);
-	uv_timer_stop(&_spawnMgrTimer);
 	uv_timer_stop(&_entityStorageTimer);
 	uv_idle_stop(&_idleTimer);
 	uv_tty_reset_mode();

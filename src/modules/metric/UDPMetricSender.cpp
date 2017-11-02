@@ -5,6 +5,7 @@
 #include "UDPMetricSender.h"
 #include "core/Var.h"
 #include "core/Log.h"
+#include "core/Assert.h"
 #include <cstring>
 #ifdef WIN32
 #define network_cleanup() WSACleanup()
@@ -99,7 +100,13 @@ bool UDPMetricSender::send(const char* buffer) const {
 			return false;
 		}
 	}
-	const int ret = sendto(_socket, (const void*)buffer, (size_t)strlen(buffer), 0, (const struct sockaddr *)_statsd, (socklen_t)sizeof(*_statsd));
+	core_assert(_statsd != nullptr);
+	core_assert(_socket != INVALID_SOCKET);
+	const void* buf = (const void*)buffer;
+	const size_t len = (size_t)strlen(buffer);
+	const struct sockaddr *sock = (const struct sockaddr *)_statsd;
+	const socklen_t socksize = (socklen_t)sizeof(*_statsd);
+	const int ret = sendto(_socket, buf, len, 0, sock, socksize);
 	return ret != -1;
 }
 

@@ -50,7 +50,6 @@ private:
 	uv_loop_t *_loop = nullptr;
 	uv_timer_t _poiTimer;
 	uv_timer_t _worldTimer;
-	uv_timer_t _spawnMgrTimer;
 	uv_timer_t _entityStorageTimer;
 	uv_idle_t _idleTimer;
 

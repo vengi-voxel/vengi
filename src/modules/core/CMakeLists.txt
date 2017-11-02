@@ -69,6 +69,7 @@ set(TEST_SRCS
 	tests/OctreeTest.cpp
 	tests/VarTest.cpp
 	tests/CommandTest.cpp
+	tests/CommandHandlerTest.cpp
 	tests/MD5Test.cpp
 	tests/SetTest.cpp
 	tests/TokenizerTest.cpp
