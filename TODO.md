@@ -67,7 +67,9 @@ Maybe also allow to sail to a another island...?
 
 These islands should not only be created by noise - just supported by noise to vary. But they should still be hand crafted to make them more interesting.
 
-The 'World' class manages the 'Map' classes and should have a threadpool to update the maps in. Use libuv timers and forward the updating into the threads.
+The `World` class manages the `Map` classes and should have a threadpool to update the maps in. Use libuv timers and forward the updating into the threads.
+
+The `Map` should have a lua tick - which is e.g. able to spawn new npcs or let stuff happen on the map. It needs access to all the users, all the npcs and must be be called on events like user-add/remove-from-map and npc-add/remove-from-map.
 
 ## Map editor
 
@@ -83,3 +85,7 @@ Extend statsd support with more events
 # EntityStorage
 
 Moved login out of the entity storage
+
+# SpawnMgr
+
+Configure entity types and amounts via lua map script
