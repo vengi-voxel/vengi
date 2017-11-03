@@ -10,5 +10,6 @@ set(LUA_SRCS
 	events.lua
 	world.lua
 	stock.lua
+	map/map001.lua
 )
 check_lua_files(${PROJECT_NAME} ${LUA_SRCS})

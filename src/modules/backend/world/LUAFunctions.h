@@ -7,6 +7,20 @@
 #include "commonlua/LUA.h"
 #include "World.h"
 
+// TODO: Map
+//  users
+//  npcs
+// TODO: EventBus
+//  onPlayerEnter
+//  onPlayerLeave
+// TODO: TimeProvider
+//  millis
+//  tickTime
+// TODO: CooldownMgr
+//  CooldownMgr.trigger(id, function()
+//   [...]
+//  end)
+
 namespace backend {
 
 static World* luaGetWorld(lua_State * l) {

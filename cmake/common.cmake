@@ -18,24 +18,26 @@ macro(check_lua_files TARGET)
 	if (LUA_EXECUTABLE)
 		message("${LUA_EXECUTABLE} found")
 		foreach(_file ${files})
+			string(REGEX REPLACE "[/]" "_" targetname ${_file})
 			add_custom_target(
-				${_file}
+				${targetname}
 				COMMAND ${LUA_EXECUTABLE} ${_file}
 				COMMENT "Validate ${_file}"
 				WORKING_DIRECTORY ${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}
 			)
-			add_dependencies(${TARGET} ${_file})
+			add_dependencies(${TARGET} ${targetname})
 		endforeach()
 	else()
 		foreach(_file ${files})
+			string(REGEX REPLACE "[/]" "_" targetname ${_file})
 			add_custom_target(
-				${_file}
+				${targetname}
 				COMMAND ${CMAKE_BINARY_DIR}/luac ${_file}
 				COMMENT "Validate ${_file}"
 				DEPENDS luac
 				WORKING_DIRECTORY ${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}
 			)
-			add_dependencies(${TARGET} ${_file})
+			add_dependencies(${TARGET} ${targetname})
 		endforeach()
 	endif()
 endmacro()
