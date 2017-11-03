@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 	const metric::IMetricSenderPtr& metricSender = std::make_shared<metric::UDPMetricSender>();
 	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(filesystem, entityStorage, messageSender,
 			timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
-	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, spawnMgr, registry, eventBus);
+	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, spawnMgr, registry, eventBus, filesystem);
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(world, dbHandler, network,
 			filesystem, entityStorage, eventBus, containerProvider, poiProvider, cooldownProvider,
 			eventMgr, stockDataProvider, metricSender);

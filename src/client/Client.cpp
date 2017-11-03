@@ -147,7 +147,7 @@ core::AppState Client::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!_world->init(filesystem()->load("world.lua"), filesystem()->load("biomes.lua"))) {
+	if (!_world->init(filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
 		return core::AppState::Cleanup;
 	}
 

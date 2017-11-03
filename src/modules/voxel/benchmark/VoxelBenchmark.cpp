@@ -19,8 +19,9 @@ public:
 
 	bool onInitApp() override {
 		voxel::initDefaultMaterialColors();
-		const std::string& luaParameters = core::App::getInstance()->filesystem()->load("world.lua");
-		const std::string& luaBiomes = core::App::getInstance()->filesystem()->load("biomes.lua");
+		const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+		const std::string& luaParameters = filesystem->load("worldparams.lua");
+		const std::string& luaBiomes = filesystem->load("biomes.lua");
 		Log::info("%s", luaParameters.c_str());
 		Log::info("%s", luaBiomes.c_str());
 		_biomeManager.init(luaBiomes);

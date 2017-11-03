@@ -21,7 +21,7 @@ public:
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		_world = std::make_shared<voxel::World>();
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
-		const std::string& world = _testApp->filesystem()->load("world.lua");
+		const std::string& world = _testApp->filesystem()->load("worldparams.lua");
 		ASSERT_NE("", world);
 		const std::string& biomes = _testApp->filesystem()->load("biomes.lua");
 		ASSERT_NE("", biomes);

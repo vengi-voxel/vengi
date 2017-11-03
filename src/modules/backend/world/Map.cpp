@@ -84,7 +84,7 @@ void Map::update(long dt) {
 
 bool Map::init(const io::FilesystemPtr& filesystem) {
 	_voxelWorld = new voxel::World();
-	const std::string& worldData = filesystem->load("world.lua");
+	const std::string& worldData = filesystem->load("worldparams.lua");
 	const std::string& biomesData = filesystem->load("biomes.lua");
 	if (!_voxelWorld->init(worldData, biomesData)) {
 		Log::error("Failed to init map with id %i", _mapId);

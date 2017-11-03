@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Map.h"
+#include "commonlua/LUA.h"
 #include "backend/ForwardDecl.h"
 #include <unordered_map>
 
@@ -16,11 +17,13 @@ private:
 	MapProviderPtr _mapProvider;
 	AIRegistryPtr _registry;
 	core::EventBusPtr _eventBus;
+	io::FilesystemPtr _filesystem;
 	ai::Server* _aiServer = nullptr;
 	std::unordered_map<MapId, MapPtr> _maps;
+	lua::LUA _lua;
 public:
 	World(const MapProviderPtr& mapProvider, const SpawnMgrPtr& spawnMgr, const AIRegistryPtr& registry,
-			const core::EventBusPtr& eventBus);
+			const core::EventBusPtr& eventBus, const io::FilesystemPtr& filesystem);
 
 	void update(long dt);
 

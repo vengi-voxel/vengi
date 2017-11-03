@@ -205,7 +205,6 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 	else()
 		set(_PROCESSOR_ARCH "x86")
 	endif()
-	message("Processor arch ${_PROCESSOR_ARCH}")
 	set(_SEARCH_PATHS
 		~/Library/Frameworks
 		/Library/Frameworks

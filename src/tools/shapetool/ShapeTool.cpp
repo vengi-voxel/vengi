@@ -74,7 +74,7 @@ core::AppState ShapeTool::onInit() {
 	if (!_biomeManager.init(filesystem()->load("biomes.lua"))) {
 		return core::AppState::Cleanup;
 	}
-	if (!_ctx.load(filesystem()->load("world.lua"))) {
+	if (!_ctx.load(filesystem()->load("worldparams.lua"))) {
 		return core::AppState::Cleanup;
 	}
 	_volumeData = new voxel::PagedVolume(&_pager);

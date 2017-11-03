@@ -18,7 +18,7 @@ protected:
 		World world;
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		const io::FilesystemPtr& filesystem = _testApp->filesystem();
-		ASSERT_TRUE(world.init(filesystem->load("world.lua"), filesystem->load("biomes.lua")));
+		ASSERT_TRUE(world.init(filesystem->load("worldparams.lua"), filesystem->load("biomes.lua")));
 		world.setSeed(0);
 		world.setPersist(false);
 		for (int i = 0; i < expected; ++i) {

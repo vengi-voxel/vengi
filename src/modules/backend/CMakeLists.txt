@@ -7,6 +7,7 @@ set(SRCS
 
 	world/Map.cpp world/Map.h
 	world/MapId.h
+	world/LUAFunctions.h
 	world/MapProvider.cpp world/MapProvider.h
 	world/World.cpp world/World.h
 
