@@ -24,8 +24,18 @@ public:
 
 	void update(long dt);
 
+	MapPtr map(MapId id) const;
+
 	bool init();
 	void shutdown();
 };
+
+inline MapPtr World::map(MapId id) const {
+	auto i = _maps.find(id);
+	if (i == _maps.end()) {
+		return MapPtr();
+	}
+	return i->second;
+}
 
 }
