@@ -171,7 +171,7 @@ private:
 	static int luaMain_CreateTree(lua_State * l) {
 		LUATreeLoader *ctx = luaGetContext(l);
 		const std::string name = luaL_checkstring(l, 1);
-		lua::LUA::newUserdata<LUATree>(l, "Tree", new LUATree(name, ctx));
+		lua::LUA::newUserdata(l, "Tree", new LUATree(name, ctx));
 		return 1;
 	}
 
@@ -224,7 +224,7 @@ private:
 			return lua::LUA::returnError(l, "Could not create a node for " + id);
 		}
 
-		LUANode* udata = lua::LUA::newUserdata<LUANode>(l, "Node", new LUANode(node, ctx, ctx->getAIFactory()));
+		LUANode* udata = lua::LUA::newUserdata(l, "Node", new LUANode(node, ctx, ctx->getAIFactory()));
 		if (!ctx->setRoot(udata)) {
 			LUATreeLoader *loader = luaGetContext(l);
 			return lua::LUA::returnError(l, loader->getError());
@@ -238,7 +238,7 @@ private:
 		const std::string name = luaL_checkstring(l, 3);
 
 		TreeNodeFactoryContext factoryCtx(name, "", True::get());
-		LUANode* udata = lua::LUA::newUserdata<LUANode>(l, "Node", node->addChild(id, factoryCtx));
+		LUANode* udata = lua::LUA::newUserdata(l, "Node", node->addChild(id, factoryCtx));
 		if (udata == nullptr) {
 			return lua::LUA::returnError(l, "Could not create a node for " + id);
 		}
@@ -256,7 +256,7 @@ private:
 			return lua::LUA::returnError(l, "Could not create a condition for " + conditionExpression + ": " + parser.getError());
 		}
 
-		LUACondition* udata = lua::LUA::newUserdata<LUACondition>(l, "Condition", new LUACondition(condition));
+		LUACondition* udata = lua::LUA::newUserdata(l, "Condition", new LUACondition(condition));
 		node->setCondition(udata);
 		return 1;
 	}
