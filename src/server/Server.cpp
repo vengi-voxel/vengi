@@ -19,6 +19,7 @@
 #include "backend/loop/ServerLoop.h"
 #include "backend/spawn/SpawnMgr.h"
 #include "backend/world/MapProvider.h"
+#include "backend/metric/MetricMgr.h"
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
 #include "metric/UDPMetricSender.h"
@@ -111,9 +112,10 @@ int main(int argc, char *argv[]) {
 	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(filesystem, entityStorage, messageSender,
 			timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, spawnMgr, registry, eventBus, filesystem);
+	const backend::MetricMgrPtr& metricMgr = std::make_shared<backend::MetricMgr>(metricSender, eventBus);
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(world, dbHandler, network,
 			filesystem, entityStorage, eventBus, containerProvider, poiProvider, cooldownProvider,
-			eventMgr, stockDataProvider, metricSender);
+			eventMgr, stockDataProvider, metricMgr);
 
 	Server app(serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);

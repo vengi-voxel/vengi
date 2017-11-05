@@ -5,6 +5,7 @@
 #pragma once
 
 #include "backend/ForwardDecl.h"
+#include "commonlua/LUA.h"
 #include "core/QuadTree.h"
 #include "core/Rect.h"
 #include "ai/common/Types.h"
@@ -21,6 +22,7 @@ private:
 	std::string _mapIdStr;
 	voxel::World* _voxelWorld = nullptr;
 	core::EventBusPtr _eventBus;
+	lua::LUA _lua;
 	ai::Zone* _zone = nullptr;
 	typedef std::unordered_map<ai::CharacterId, NpcPtr> Npcs;
 	typedef Npcs::iterator NpcsIter;

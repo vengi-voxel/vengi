@@ -8,9 +8,6 @@
 #include "core/Trace.h"
 #include "core/Input.h"
 #include "core/EventBus.h"
-#include "metric/Metric.h"
-#include "metric/MetricEvent.h"
-#include "metric/IMetricSender.h"
 #include "network/ServerNetwork.h"
 #include "network/NetworkEvents.h"
 #include "backend/ForwardDecl.h"
@@ -28,8 +25,6 @@
 namespace backend {
 
 class ServerLoop:
-	public core::IEventBusHandler<metric::MetricEvent>,
-	public core::IEventBusHandler<network::NewConnectionEvent>,
 	public core::IEventBusHandler<network::DisconnectEvent> {
 private:
 	network::ServerNetworkPtr _network;
@@ -43,8 +38,7 @@ private:
 	persistence::DBHandlerPtr _dbHandler;
 	stock::StockProviderPtr _stockDataProvider;
 	core::Input _input;
-	metric::Metric _metric;
-	metric::IMetricSenderPtr _metricSender;
+	MetricMgrPtr _metricMgr;
 	io::FilesystemPtr _filesystem;
 
 	uv_loop_t *_loop = nullptr;
@@ -62,14 +56,12 @@ public:
 			const attrib::ContainerProviderPtr& containerProvider,
 			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
 			const eventmgr::EventMgrPtr& eventMgr, const stock::StockProviderPtr& stockDataProvider,
-			const metric::IMetricSenderPtr& metricSender);
+			const MetricMgrPtr& metricMgr);
 
 	bool init();
 	void shutdown();
 	void update(long dt);
 	void onEvent(const network::DisconnectEvent& event);
-	void onEvent(const network::NewConnectionEvent& event);
-	void onEvent(const metric::MetricEvent& event);
 };
 
 typedef std::shared_ptr<ServerLoop> ServerLoopPtr;

@@ -51,6 +51,9 @@ namespace backend {
 class World;
 typedef std::shared_ptr<World> WorldPtr;
 
+class MetricMgr;
+typedef std::shared_ptr<MetricMgr> MetricMgrPtr;
+
 class Map;
 typedef std::shared_ptr<Map> MapPtr;
 

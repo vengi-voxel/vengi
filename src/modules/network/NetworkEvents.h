@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "network/Network.h"
 #include <enet/enet.h>
 #include "core/Log.h"
 #include "core/EventBus.h"

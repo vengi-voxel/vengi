@@ -14,6 +14,7 @@
 #include "persistence/ConnectionPool.h"
 #include "BackendModels.h"
 #include "EventMgrModels.h"
+#include "backend/metric/MetricMgr.h"
 #include "backend/entity/User.h"
 #include "backend/entity/ai/AICommon.h"
 #include "backend/network/UserConnectHandler.h"
@@ -21,11 +22,11 @@
 #include "backend/network/UserDisconnectHandler.h"
 #include "backend/network/AttackHandler.h"
 #include "backend/network/MoveHandler.h"
+#include "backend/world/World.h"
 #include "core/command/CommandHandler.h"
 #include "voxel/MaterialColor.h"
 #include "eventmgr/EventMgr.h"
 #include "stock/StockDataProvider.h"
-#include "metric/UDPMetricSender.h"
 using namespace std::chrono_literals;
 
 namespace backend {
@@ -35,14 +36,12 @@ ServerLoop::ServerLoop(const WorldPtr& world, const persistence::DBHandlerPtr& d
 		const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,
 		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr,
-		const stock::StockProviderPtr& stockDataProvider, const metric::IMetricSenderPtr& metricSender) :
+		const stock::StockProviderPtr& stockDataProvider, const MetricMgrPtr& metricMgr) :
 		_network(network), _world(world),
 		_entityStorage(entityStorage), _eventBus(eventBus), _attribContainerProvider(containerProvider),
 		_poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler),
-		_stockDataProvider(stockDataProvider), _metric("server."), _metricSender(metricSender), _filesystem(filesystem) {
-	_eventBus->subscribe<network::NewConnectionEvent>(*this);
+		_stockDataProvider(stockDataProvider), _metricMgr(metricMgr), _filesystem(filesystem) {
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
-	_eventBus->subscribe<metric::MetricEvent>(*this);
 }
 
 bool ServerLoop::addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMillis, uint64_t initialDelayMillis) {
@@ -53,7 +52,7 @@ bool ServerLoop::addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMill
 
 void ServerLoop::onIdle(uv_idle_t* handle) {
 	ServerLoop* loop = (ServerLoop*)handle->data;
-	metric::Metric& metric = loop->_metric;
+	metric::Metric& metric = loop->_metricMgr->metric();
 
 	const core::App* app = core::App::getInstance();
 	metric.timing("frame.delta", app->deltaFrame());
@@ -69,11 +68,8 @@ bool ServerLoop::init() {
 		Log::error("Failed to init event loop");
 		return false;
 	}
-	if (!_metricSender->init()) {
+	if (!_metricMgr->init()) {
 		Log::warn("Failed to init metric sender");
-	}
-	if (!_metric.init(_metricSender)) {
-		Log::warn("Failed to init metrics");
 	}
 	if (!_dbHandler->init()) {
 		Log::error("Failed to init the dbhandler");
@@ -174,8 +170,7 @@ bool ServerLoop::init() {
 void ServerLoop::shutdown() {
 	_world->shutdown();
 	_dbHandler->shutdown();
-	_metricSender->shutdown();
-	_metric.shutdown();
+	_metricMgr->shutdown();
 	_input.shutdown();
 	_network->shutdown();
 	uv_timer_stop(&_poiTimer);
@@ -197,27 +192,7 @@ void ServerLoop::update(long dt) {
 	std::this_thread::sleep_for(1ms);
 }
 
-void ServerLoop::onEvent(const metric::MetricEvent& event) {
-	metric::MetricEventType type = event.type();
-	switch (type) {
-	case metric::MetricEventType::Count:
-		_metric.count(event.key().c_str(), event.value(), event.tags());
-		break;
-	case metric::MetricEventType::Gauge:
-		_metric.gauge(event.key().c_str(), (uint32_t)event.value(), event.tags());
-		break;
-	case metric::MetricEventType::Timing:
-		_metric.timing(event.key().c_str(), (uint32_t)event.value(), event.tags());
-		break;
-	case metric::MetricEventType::Histogram:
-		_metric.histogram(event.key().c_str(), (uint32_t)event.value(), event.tags());
-		break;
-	case metric::MetricEventType::Meter:
-		_metric.meter(event.key().c_str(), event.value(), event.tags());
-		break;
-	}
-}
-
+// TODO: doesn't belong here
 void ServerLoop::onEvent(const network::DisconnectEvent& event) {
 	ENetPeer* peer = event.peer();
 	Log::info("disconnect peer: %u", peer->connectID);
@@ -226,11 +201,6 @@ void ServerLoop::onEvent(const network::DisconnectEvent& event) {
 		return;
 	}
 	user->triggerLogout();
-}
-
-void ServerLoop::onEvent(const network::NewConnectionEvent& event) {
-	Log::info("new connection - waiting for login request from %u", event.peer()->connectID);
-	_metric.increment("count.user");
 }
 
 }

@@ -18,6 +18,8 @@ set(SRCS
 	network/MoveHandler.h
 	network/IUserProtocolHandler.h
 
+	metric/MetricMgr.cpp metric/MetricMgr.h
+
 	entity/ai/AICharacter.cpp entity/ai/AICharacter.h
 	entity/ai/AIRegistry.cpp entity/ai/AIRegistry.h
 	entity/ai/AILoader.h

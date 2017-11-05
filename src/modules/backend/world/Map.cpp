@@ -12,6 +12,7 @@
 #include "backend/entity/User.h"
 #include "ai/zone/Zone.h"
 #include "metric/MetricEvent.h"
+#include "backend/eventbus/Event.h"
 
 namespace backend {
 
@@ -59,23 +60,23 @@ void Map::update(long dt) {
 	updateQuadTree();
 
 	for (auto i = _users.begin(); i != _users.end();) {
-		const UserPtr& user = i->second;
+		UserPtr user = i->second;
 		if (!updateEntity(user, dt)) {
 			Log::debug("remove user %li", user->id());
 			_quadTree.remove(QuadTreeNode { user });
 			i = _users.erase(i);
-			_eventBus->publish(metric::gauge("count.user", _users.size()));
+			_eventBus->publish(EntityRemoveEvent(user));
 		} else {
 			++i;
 		}
 	}
 	for (auto i = _npcs.begin(); i != _npcs.end();) {
-		const NpcPtr& npc = i->second;
+		NpcPtr npc = i->second;
 		if (!updateEntity(npc, dt)) {
 			Log::debug("remove npc %li", npc->id());
 			_quadTree.remove(QuadTreeNode { npc });
 			i = _npcs.erase(i);
-			_eventBus->publish(metric::gauge("count.npc", _npcs.size()));
+			_eventBus->publish(EntityRemoveEvent(npc));
 		} else {
 			++i;
 		}
@@ -84,9 +85,9 @@ void Map::update(long dt) {
 
 bool Map::init(const io::FilesystemPtr& filesystem) {
 	_voxelWorld = new voxel::World();
-	const std::string& worldData = filesystem->load("worldparams.lua");
+	const std::string& worldParamData = filesystem->load("worldparams.lua");
 	const std::string& biomesData = filesystem->load("biomes.lua");
-	if (!_voxelWorld->init(worldData, biomesData)) {
+	if (!_voxelWorld->init(worldParamData, biomesData)) {
 		Log::error("Failed to init map with id %i", _mapId);
 		return false;
 	}
@@ -94,6 +95,13 @@ bool Map::init(const io::FilesystemPtr& filesystem) {
 	_voxelWorld->setSeed(seed->longVal());
 	_voxelWorld->setPersist(false);
 	_zone = new ai::Zone(core::string::format("Zone %i", _mapId));
+	const std::string& mapData = filesystem->load(core::string::format("map/map%03i.lua", _mapId));
+	if (mapData.empty()) {
+		return true;
+	}
+	if (!_lua.load(mapData)) {
+		return false;
+	}
 	return true;
 }
 
@@ -117,8 +125,10 @@ bool Map::removeNpc(ai::CharacterId id) {
 	if (i == _npcs.end()) {
 		return false;
 	}
-	_quadTree.remove(QuadTreeNode { i->second });
+	NpcPtr npc = i->second;
+	_quadTree.remove(QuadTreeNode { npc });
 	_npcs.erase(i);
+	_eventBus->publish(EntityRemoveEvent(npc));
 	return true;
 }
 
