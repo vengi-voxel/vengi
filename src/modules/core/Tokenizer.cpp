@@ -155,10 +155,10 @@ bool Tokenizer::skipComments(const char **s, bool skipWhitespace) {
 		return true;
 	} else if (next == '/') {
 		while (**s != '\0' && **s != '\n') {
+			(*s)++;
 			if (--_len <= 0) {
 				return true;
 			}
-			(*s)++;
 		}
 		skip(s, skipWhitespace);
 		return true;
