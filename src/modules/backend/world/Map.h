@@ -21,9 +21,16 @@ private:
 	MapId _mapId;
 	std::string _mapIdStr;
 	voxel::World* _voxelWorld = nullptr;
+
 	core::EventBusPtr _eventBus;
+	SpawnMgrPtr _spawnMgr;
+	poi::PoiProviderPtr _poiProvider;
+	io::FilesystemPtr _filesystem;
+
 	lua::LUA _lua;
+
 	ai::Zone* _zone = nullptr;
+
 	typedef std::unordered_map<ai::CharacterId, NpcPtr> Npcs;
 	typedef Npcs::iterator NpcsIter;
 	Npcs _npcs;
@@ -48,12 +55,20 @@ private:
 	glm::vec3 findStartPosition(const EntityPtr& entity) const;
 
 public:
-	Map(MapId mapId, const core::EventBusPtr& eventBus);
+	Map(MapId mapId,
+			const core::EventBusPtr& eventBus,
+			const core::TimeProviderPtr& timeProvider,
+			const io::FilesystemPtr& filesystem,
+			const EntityStoragePtr& entityStorage,
+			const network::ServerMessageSenderPtr& messageSender,
+			const AILoaderPtr& loader,
+			const attrib::ContainerProviderPtr& containerProvider,
+			const cooldown::CooldownProviderPtr& cooldownProvider);
 	~Map();
 
 	void update(long dt);
 
-	bool init(const io::FilesystemPtr& filesystem);
+	bool init();
 	void shutdown();
 
 	/**
@@ -83,10 +98,21 @@ public:
 
 	int findFloor(const glm::vec3& pos) const;
 	glm::ivec3 randomPos() const;
+
+	const SpawnMgrPtr& spawnMgr() const;
+	const poi::PoiProviderPtr& poiProvider() const;
 };
 
 inline MapId Map::id() const {
 	return _mapId;
+}
+
+inline const SpawnMgrPtr& Map::spawnMgr() const {
+	return _spawnMgr;
+}
+
+inline const poi::PoiProviderPtr& Map::poiProvider() const {
+	return _poiProvider;
 }
 
 inline ai::Zone* Map::zone() const {

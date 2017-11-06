@@ -8,7 +8,6 @@
 #include "network/Network.h"
 #include "core/TimeProvider.h"
 #include "ai/common/Types.h"
-#include "UserModel.h"
 #include <unordered_map>
 
 namespace backend {
@@ -24,38 +23,24 @@ private:
 	typedef Users::iterator UsersIter;
 	Users _users;
 
-	typedef std::unordered_map<ai::CharacterId, NpcPtr> Npcs;
+	typedef std::unordered_map<EntityId, NpcPtr> Npcs;
 	typedef Npcs::iterator NpcsIter;
 	Npcs _npcs;
 
-	network::ServerMessageSenderPtr _messageSender;
-	core::TimeProviderPtr _timeProvider;
-	attrib::ContainerProviderPtr _containerProvider;
-	poi::PoiProviderPtr _poiProvider;
-	cooldown::CooldownProviderPtr _cooldownProvider;
-	persistence::DBHandlerPtr _dbHandler;
-	stock::StockProviderPtr _stockDataProvider;
 	core::EventBusPtr _eventBus;
-	MapProviderPtr _mapProvider;
 	long _time;
 
-	void registerUser(const UserPtr& user);
 	bool updateEntity(const EntityPtr& entity, long dt);
-
-	bool userData(db::UserModel& model, const std::string& email, const std::string& password) const;
 public:
-	EntityStorage(const MapProviderPtr& mapProvider, const network::ServerMessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider,
-			const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-			const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider, const core::EventBusPtr& eventBus);
+	EntityStorage(const core::EventBusPtr& eventBus);
 
-	UserPtr login(ENetPeer* peer, const std::string& email, const std::string& password);
-	bool logout(EntityId userId);
+	void addUser(const UserPtr& user);
+	bool removeUser(EntityId userId);
+	UserPtr user(EntityId userId);
 
 	void addNpc(const NpcPtr& npc);
-	bool removeNpc(ai::CharacterId id);
-	NpcPtr npc(ai::CharacterId id);
-
-	void update(long dt);
+	bool removeNpc(EntityId id);
+	NpcPtr npc(EntityId id);
 };
 
 typedef std::shared_ptr<EntityStorage> EntityStoragePtr;

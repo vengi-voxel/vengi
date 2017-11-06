@@ -17,7 +17,6 @@ class Npc: public Entity {
 private:
 	friend class AICharacter;
 	static std::atomic<EntityId> _nextNpcId;
-	poi::PoiProviderPtr _poiProvider;
 	glm::ivec3 _homePosition;
 	ai::AIPtr _ai;
 	AICharacterPtr _aiChr;
@@ -30,7 +29,7 @@ public:
 	Npc(network::EntityType type, const ai::TreeNodePtr& behaviour,
 			const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
-			const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider);
+			const cooldown::CooldownProviderPtr& cooldownProvider);
 	~Npc();
 
 	void init(const glm::ivec3* pos);

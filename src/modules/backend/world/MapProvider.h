@@ -20,9 +20,23 @@ public:
 private:
 	io::FilesystemPtr _filesystem;
 	core::EventBusPtr _eventBus;
+	core::TimeProviderPtr _timeProvider;
+	EntityStoragePtr _entityStorage;
+	network::ServerMessageSenderPtr _messageSender;
+	AILoaderPtr _loader;
+	attrib::ContainerProviderPtr _containerProvider;
+	cooldown::CooldownProviderPtr _cooldownProvider;
 	std::unordered_map<MapId, MapPtr> _maps;
 public:
-	MapProvider(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus);
+	MapProvider(
+			const io::FilesystemPtr& filesystem,
+			const core::EventBusPtr& eventBus,
+			const core::TimeProviderPtr& timeProvider,
+			const EntityStoragePtr& entityStorage,
+			const network::ServerMessageSenderPtr& messageSender,
+			const AILoaderPtr& loader,
+			const attrib::ContainerProviderPtr& containerProvider,
+			const cooldown::CooldownProviderPtr& cooldownProvider);
 
 	/**
 	 * @brief Returns a valid and initialized map (if found)

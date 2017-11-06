@@ -27,7 +27,7 @@
 
 namespace backend {
 
-void AIRegistry::init(const backend::SpawnMgrPtr& spawnMgr) {
+void AIRegistry::init() {
 	registerNodeFactory("GoHome", GoHome::getFactory());
 	registerNodeFactory("AttackOnSelection", AttackOnSelection::getFactory());
 	registerFilterFactory("SelectVisible", SelectVisible::getFactory());
@@ -38,7 +38,7 @@ void AIRegistry::init(const backend::SpawnMgrPtr& spawnMgr) {
 	registerConditionFactory("IsOnCooldown", IsOnCooldown::getFactory());
 	registerConditionFactory("IsSelectionAlive", IsSelectionAlive::getFactory());
 	registerNodeFactory("SetPointOfInterest", SetPointOfInterest::getFactory());
-	registerNodeFactory("Spawn", Spawn::getInstance(spawnMgr));
+	registerNodeFactory("Spawn", Spawn::getFactory());
 	registerNodeFactory("Die", core::Singleton<Die::Factory>::getInstance());
 	registerNodeFactory("TriggerCooldown", TriggerCooldown::getFactory());
 	registerNodeFactory("TriggerCooldownOnSelection", TriggerCooldownOnSelection::getFactory());

@@ -13,7 +13,6 @@ namespace backend {
 
 class World {
 private:
-	SpawnMgrPtr _spawnMgr;
 	MapProviderPtr _mapProvider;
 	AIRegistryPtr _registry;
 	core::EventBusPtr _eventBus;
@@ -22,7 +21,7 @@ private:
 	std::unordered_map<MapId, MapPtr> _maps;
 	lua::LUA _lua;
 public:
-	World(const MapProviderPtr& mapProvider, const SpawnMgrPtr& spawnMgr, const AIRegistryPtr& registry,
+	World(const MapProviderPtr& mapProvider, const AIRegistryPtr& registry,
 			const core::EventBusPtr& eventBus, const io::FilesystemPtr& filesystem);
 
 	void update(long dt);

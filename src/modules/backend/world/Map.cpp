@@ -13,6 +13,7 @@
 #include "ai/zone/Zone.h"
 #include "metric/MetricEvent.h"
 #include "backend/eventbus/Event.h"
+#include "backend/spawn/SpawnMgr.h"
 
 namespace backend {
 
@@ -24,8 +25,21 @@ bool Map::QuadTreeNode::operator==(const QuadTreeNode& rhs) const {
 	return rhs.entity == entity;
 }
 
-Map::Map(MapId mapId, const core::EventBusPtr& eventBus) :
-		_mapId(mapId), _mapIdStr(std::to_string(mapId)), _quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
+Map::Map(MapId mapId,
+		const core::EventBusPtr& eventBus,
+		const core::TimeProviderPtr& timeProvider,
+		const io::FilesystemPtr& filesystem,
+		const EntityStoragePtr& entityStorage,
+		const network::ServerMessageSenderPtr& messageSender,
+		const AILoaderPtr& loader,
+		const attrib::ContainerProviderPtr& containerProvider,
+		const cooldown::CooldownProviderPtr& cooldownProvider) :
+		_mapId(mapId), _mapIdStr(std::to_string(mapId)),
+		_eventBus(eventBus), _filesystem(filesystem),
+		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
+	_poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
+	_spawnMgr = std::make_shared<backend::SpawnMgr>(filesystem, entityStorage, messageSender,
+			timeProvider, loader, containerProvider, _poiProvider, cooldownProvider);
 }
 
 Map::~Map() {
@@ -55,6 +69,7 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 }
 
 void Map::update(long dt) {
+	_spawnMgr->update(ptr(), dt);
 	_voxelWorld->update(dt);
 	_zone->update(dt);
 	updateQuadTree();
@@ -83,10 +98,10 @@ void Map::update(long dt) {
 	}
 }
 
-bool Map::init(const io::FilesystemPtr& filesystem) {
+bool Map::init() {
 	_voxelWorld = new voxel::World();
-	const std::string& worldParamData = filesystem->load("worldparams.lua");
-	const std::string& biomesData = filesystem->load("biomes.lua");
+	const std::string& worldParamData = _filesystem->load("worldparams.lua");
+	const std::string& biomesData = _filesystem->load("biomes.lua");
 	if (!_voxelWorld->init(worldParamData, biomesData)) {
 		Log::error("Failed to init map with id %i", _mapId);
 		return false;
@@ -95,17 +110,24 @@ bool Map::init(const io::FilesystemPtr& filesystem) {
 	_voxelWorld->setSeed(seed->longVal());
 	_voxelWorld->setPersist(false);
 	_zone = new ai::Zone(core::string::format("Zone %i", _mapId));
-	const std::string& mapData = filesystem->load(core::string::format("map/map%03i.lua", _mapId));
+	const std::string& mapData = _filesystem->load(core::string::format("map/map%03i.lua", _mapId));
 	if (mapData.empty()) {
 		return true;
 	}
 	if (!_lua.load(mapData)) {
 		return false;
 	}
+
+	if (!_spawnMgr->init()) {
+		Log::error("Failed to init the spawn manager");
+		return false;
+	}
+
 	return true;
 }
 
 void Map::shutdown() {
+	_spawnMgr->shutdown();
 	if (_voxelWorld != nullptr) {
 		_voxelWorld->shutdown();
 		delete _voxelWorld;

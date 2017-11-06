@@ -100,22 +100,19 @@ int main(int argc, char *argv[]) {
 
 	const stock::StockProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
 	const persistence::DBHandlerPtr& dbHandler = std::make_shared<persistence::DBHandler>();
-	const poi::PoiProviderPtr& poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
-	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus);
-	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(mapProvider, messageSender,
-			timeProvider, containerProvider, poiProvider, cooldownProvider, dbHandler, stockDataProvider, eventBus);
+	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(eventBus);
+	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus, timeProvider,
+			entityStorage, messageSender, loader, containerProvider, cooldownProvider);
 
 	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
 
 	const metric::IMetricSenderPtr& metricSender = std::make_shared<metric::UDPMetricSender>();
-	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(filesystem, entityStorage, messageSender,
-			timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
-	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, spawnMgr, registry, eventBus, filesystem);
+	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, registry, eventBus, filesystem);
 	const backend::MetricMgrPtr& metricMgr = std::make_shared<backend::MetricMgr>(metricSender, eventBus);
-	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(world, dbHandler, network,
-			filesystem, entityStorage, eventBus, containerProvider, poiProvider, cooldownProvider,
-			eventMgr, stockDataProvider, metricMgr);
+	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(timeProvider, mapProvider,
+			messageSender, world, dbHandler, network, filesystem, entityStorage, eventBus, containerProvider,
+			cooldownProvider, eventMgr, stockDataProvider, metricMgr);
 
 	Server app(serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);

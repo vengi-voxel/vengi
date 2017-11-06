@@ -4,6 +4,8 @@
 
 #include "Entity.h"
 #include "core/Set.h"
+#include "core/Assert.h"
+#include "core/Rect.h"
 #include "core/Common.h"
 #include "core/Frustum.h"
 

@@ -16,31 +16,25 @@ namespace backend {
 constexpr int aiDebugServerPort = 11338;
 constexpr const char* aiDebugServerInterface = "127.0.0.1";
 
-World::World(const MapProviderPtr& mapProvider, const SpawnMgrPtr& spawnMgr, const AIRegistryPtr& registry,
+World::World(const MapProviderPtr& mapProvider, const AIRegistryPtr& registry,
 		const core::EventBusPtr& eventBus, const io::FilesystemPtr& filesystem) :
-		_spawnMgr(spawnMgr), _mapProvider(mapProvider), _registry(registry),
+		_mapProvider(mapProvider), _registry(registry),
 		_eventBus(eventBus), _filesystem(filesystem) {
 }
 
 void World::update(long dt) {
 	for (auto& e : _maps) {
 		MapPtr& map = e.second;
-		_spawnMgr->update(map, dt);
 		map->update(dt);
 	}
 	_aiServer->update(dt);
 }
 
 bool World::init() {
-	_registry->init(_spawnMgr);
+	_registry->init();
 
 	if (!_mapProvider->init()) {
 		Log::error("Failed to init the map provider");
-		return false;
-	}
-
-	if (!_spawnMgr->init()) {
-		Log::error("Failed to init the spawn manager");
 		return false;
 	}
 
@@ -84,7 +78,6 @@ bool World::init() {
 }
 
 void World::shutdown() {
-	_spawnMgr->shutdown();
 	for (auto& e : _maps) {
 		const MapPtr& map = e.second;
 		_aiServer->removeZone(map->zone());

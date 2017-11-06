@@ -19,7 +19,7 @@ class AILoader: public ai::LUATreeLoader {
 private:
 	AIRegistryPtr _registry;
 public:
-	AILoader(AIRegistryPtr registry) :
+	AILoader(const AIRegistryPtr& registry) :
 			ai::LUATreeLoader(*registry.get()), _registry(registry) {
 	}
 };

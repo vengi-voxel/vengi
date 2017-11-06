@@ -11,7 +11,6 @@
 #include "network/ServerNetwork.h"
 #include "network/NetworkEvents.h"
 #include "backend/ForwardDecl.h"
-#include "backend/spawn/SpawnMgr.h"
 #include "backend/world/World.h"
 #include "network/ProtocolHandlerRegistry.h"
 #include "backend/entity/EntityStorage.h"
@@ -28,11 +27,13 @@ class ServerLoop:
 	public core::IEventBusHandler<network::DisconnectEvent> {
 private:
 	network::ServerNetworkPtr _network;
+	core::TimeProviderPtr _timeProvider;
+	MapProviderPtr _mapProvider;
+	network::ServerMessageSenderPtr _messageSender;
 	WorldPtr _world;
 	EntityStoragePtr _entityStorage;
 	core::EventBusPtr _eventBus;
 	attrib::ContainerProviderPtr _attribContainerProvider;
-	poi::PoiProviderPtr _poiProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	eventmgr::EventMgrPtr _eventMgr;
 	persistence::DBHandlerPtr _dbHandler;
@@ -42,19 +43,19 @@ private:
 	io::FilesystemPtr _filesystem;
 
 	uv_loop_t *_loop = nullptr;
-	uv_timer_t _poiTimer;
 	uv_timer_t _worldTimer;
-	uv_timer_t _entityStorageTimer;
 	uv_idle_t _idleTimer;
 
 	static void onIdle(uv_idle_t* handle);
 	bool addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMillis, uint64_t initialDelayMillis = 0);
 public:
-	ServerLoop(const WorldPtr& world, const persistence::DBHandlerPtr& dbHandler,
+	ServerLoop(const core::TimeProviderPtr& timeProvider, const MapProviderPtr& mapProvider,
+			const network::ServerMessageSenderPtr& messageSender,
+			const WorldPtr& world, const persistence::DBHandlerPtr& dbHandler,
 			const network::ServerNetworkPtr& network, const io::FilesystemPtr& filesystem,
 			const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,
 			const attrib::ContainerProviderPtr& containerProvider,
-			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
+			const cooldown::CooldownProviderPtr& cooldownProvider,
 			const eventmgr::EventMgrPtr& eventMgr, const stock::StockProviderPtr& stockDataProvider,
 			const MetricMgrPtr& metricMgr);
 

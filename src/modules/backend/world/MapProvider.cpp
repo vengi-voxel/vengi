@@ -6,11 +6,22 @@
 #include "Map.h"
 #include "io/Filesystem.h"
 #include "core/Log.h"
+#include "core/Assert.h"
 
 namespace backend {
 
-MapProvider::MapProvider(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
-		_filesystem(filesystem), _eventBus(eventBus) {
+MapProvider::MapProvider(
+		const io::FilesystemPtr& filesystem,
+		const core::EventBusPtr& eventBus,
+		const core::TimeProviderPtr& timeProvider,
+		const EntityStoragePtr& entityStorage,
+		const network::ServerMessageSenderPtr& messageSender,
+		const AILoaderPtr& loader,
+		const attrib::ContainerProviderPtr& containerProvider,
+		const cooldown::CooldownProviderPtr& cooldownProvider) :
+		_filesystem(filesystem), _eventBus(eventBus), _timeProvider(timeProvider),
+		_entityStorage(entityStorage), _messageSender(messageSender), _loader(loader),
+		_containerProvider(containerProvider), _cooldownProvider(cooldownProvider) {
 }
 
 MapPtr MapProvider::map(MapId id, bool forceValidMap) const {
@@ -34,8 +45,10 @@ MapProvider::Maps MapProvider::worldMaps() const {
 }
 
 bool MapProvider::init() {
-	const MapPtr& map = std::make_shared<Map>(1, _eventBus);
-	if (!map->init(_filesystem)) {
+	const MapPtr& map = std::make_shared<Map>(1, _eventBus, _timeProvider,
+			_filesystem, _entityStorage, _messageSender,
+			_loader, _containerProvider, _cooldownProvider);
+	if (!map->init()) {
 		Log::warn("Failed to init map %i", map->id());
 		return false;
 	}

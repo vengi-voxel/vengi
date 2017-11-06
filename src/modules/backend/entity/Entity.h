@@ -57,7 +57,7 @@ protected:
 
 	EntityId _entityId;
 	network::EntityType _entityType = network::EntityType::NONE;
-	glm::vec3 _pos;
+	glm::vec3 _pos { glm::zero<glm::vec3>() };
 	float _orientation = 0.0f;
 	float _size = 1.0f;
 

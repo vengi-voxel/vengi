@@ -31,15 +31,18 @@ using namespace std::chrono_literals;
 
 namespace backend {
 
-ServerLoop::ServerLoop(const WorldPtr& world, const persistence::DBHandlerPtr& dbHandler,
+ServerLoop::ServerLoop(const core::TimeProviderPtr& timeProvider, const MapProviderPtr& mapProvider,
+		const network::ServerMessageSenderPtr& messageSender,
+		const WorldPtr& world, const persistence::DBHandlerPtr& dbHandler,
 		const network::ServerNetworkPtr& network, const io::FilesystemPtr& filesystem,
 		const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,
-		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider,
+		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr,
 		const stock::StockProviderPtr& stockDataProvider, const MetricMgrPtr& metricMgr) :
-		_network(network), _world(world),
+		_network(network), _timeProvider(timeProvider), _mapProvider(mapProvider), _messageSender(messageSender),
+		_world(world),
 		_entityStorage(entityStorage), _eventBus(eventBus), _attribContainerProvider(containerProvider),
-		_poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler),
+		_cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler),
 		_stockDataProvider(stockDataProvider), _metricMgr(metricMgr), _filesystem(filesystem) {
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
 }
@@ -124,7 +127,9 @@ bool ServerLoop::init() {
 	}
 
 	const network::ProtocolHandlerRegistryPtr& r = _network->registry();
-	regHandler(network::ClientMsgType::UserConnect, UserConnectHandler, _network, _entityStorage);
+	regHandler(network::ClientMsgType::UserConnect, UserConnectHandler,
+			_network, _mapProvider, _dbHandler, _entityStorage, _messageSender, _timeProvider,
+			_attribContainerProvider, _cooldownProvider, _stockDataProvider);
 	regHandler(network::ClientMsgType::UserConnected, UserConnectedHandler);
 	regHandler(network::ClientMsgType::UserDisconnect, UserDisconnectHandler);
 	regHandler(network::ClientMsgType::Attack, AttackHandler);
@@ -140,18 +145,10 @@ bool ServerLoop::init() {
 		return false;
 	}
 
-	addTimer(&_poiTimer, [] (uv_timer_t* handle) {
-		ServerLoop* loop = (ServerLoop*)handle->data;
-		loop->_poiProvider->update(handle->repeat);
-	}, 1000);
 	addTimer(&_worldTimer, [] (uv_timer_t* handle) {
 		ServerLoop* loop = (ServerLoop*)handle->data;
 		loop->_world->update(handle->repeat);
 	}, 1000);
-	addTimer(&_entityStorageTimer, [] (uv_timer_t* handle) {
-		ServerLoop* loop = (ServerLoop*)handle->data;
-		loop->_entityStorage->update(handle->repeat);
-	}, 275);
 
 	_idleTimer.data = this;
 	if (uv_idle_init(_loop, &_idleTimer) != 0) {
@@ -173,9 +170,7 @@ void ServerLoop::shutdown() {
 	_metricMgr->shutdown();
 	_input.shutdown();
 	_network->shutdown();
-	uv_timer_stop(&_poiTimer);
 	uv_timer_stop(&_worldTimer);
-	uv_timer_stop(&_entityStorageTimer);
 	uv_idle_stop(&_idleTimer);
 	uv_tty_reset_mode();
 	if (_loop != nullptr) {

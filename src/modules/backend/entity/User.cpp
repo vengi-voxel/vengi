@@ -10,13 +10,11 @@ namespace backend {
 
 User::User(ENetPeer* peer, EntityId id, const std::string& name, const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
-		const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider, const persistence::DBHandlerPtr& dbHandler,
+		const cooldown::CooldownProviderPtr& cooldownProvider, const persistence::DBHandlerPtr& dbHandler,
 		const stock::StockProviderPtr& stockDataProvider) :
 		Super(id, map, messageSender, timeProvider, containerProvider, cooldownProvider),
-		_name(name), _poiProvider(poiProvider), _dbHandler(dbHandler), _stockMgr(this, stockDataProvider, dbHandler) {
+		_name(name), _dbHandler(dbHandler), _stockMgr(this, stockDataProvider, dbHandler) {
 	setPeer(peer);
-	const glm::vec3& poi = _poiProvider->getPointOfInterest();
-	_pos = poi;
 	_entityType = network::EntityType::PLAYER;
 	_userTimeout = core::Var::getSafe(cfg::ServerUserTimeout);
 }

@@ -71,6 +71,10 @@ The `World` class manages the `Map` classes and should have a threadpool to upda
 
 The `Map` should have a lua tick - which is e.g. able to spawn new npcs or let stuff happen on the map. It needs access to all the users, all the npcs and must be be called on events like user-add/remove-from-map and npc-add/remove-from-map.
 
+## SpawnMgr
+
+Configure entity types and amounts via lua map script
+
 ## Map editor
 
 There should be a map editor to place Point-of-Interests (see PoiProvider) and entities with attributes. E.g. you should be
@@ -81,11 +85,3 @@ still be implemented via procgen.
 # Statsd support
 
 Extend statsd support with more events
-
-# EntityStorage
-
-Moved login out of the entity storage
-
-# SpawnMgr
-
-Configure entity types and amounts via lua map script

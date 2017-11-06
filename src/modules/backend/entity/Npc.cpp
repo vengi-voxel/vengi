@@ -17,9 +17,8 @@ std::atomic<EntityId> Npc::_nextNpcId(5000000);
 Npc::Npc(network::EntityType type, const ai::TreeNodePtr& behaviour,
 		const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
-		const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider) :
-		Entity(_nextNpcId++, map, messageSender, timeProvider, containerProvider, cooldownProvider),
-		_poiProvider(poiProvider) {
+		const cooldown::CooldownProviderPtr& cooldownProvider) :
+		Entity(_nextNpcId++, map, messageSender, timeProvider, containerProvider, cooldownProvider) {
 	_entityType = type;
 	_ai = std::make_shared<ai::AI>(behaviour);
 	_aiChr = std::make_shared<AICharacter>(_entityId, *this);
@@ -55,7 +54,7 @@ std::string Npc::name() const {
 }
 
 void Npc::setPointOfInterest() {
-	_poiProvider->addPointOfInterest(pos());
+	map()->poiProvider()->addPointOfInterest(pos());
 }
 
 double Npc::applyDamage(Npc* attacker, double damage) {

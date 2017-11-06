@@ -83,7 +83,7 @@ int SpawnMgr::spawn(const MapPtr& map, network::EntityType type, int amount, con
 	}
 	for (int x = 0; x < amount; ++x) {
 		const NpcPtr& npc = std::make_shared<Npc>(type, behaviour, map, _messageSender,
-				_timeProvider, _containerProvider, _cooldownProvider, _poiProvider);
+				_timeProvider, _containerProvider, _cooldownProvider);
 		npc->init(pos);
 		// now let it tick
 		map->addNpc(npc);

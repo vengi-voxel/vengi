@@ -7,19 +7,14 @@
 #include "AICommon.h"
 #include <memory>
 
-#include "backend/entity/EntityStorage.h"
-
 namespace backend {
-
-class SpawnMgr;
-typedef std::shared_ptr<SpawnMgr> SpawnMgrPtr;
 
 /**
  * @ingroup AI
  */
 class AIRegistry: public ai::AIRegistry {
 public:
-	void init(const backend::SpawnMgrPtr& spawnMgr);
+	void init();
 };
 
 typedef std::shared_ptr<AIRegistry> AIRegistryPtr;

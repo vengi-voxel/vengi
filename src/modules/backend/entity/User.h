@@ -23,7 +23,6 @@ private:
 	std::string _name;
 	std::string _email;
 	uint32_t _host;
-	poi::PoiProviderPtr _poiProvider;
 	persistence::DBHandlerPtr _dbHandler;
 	network::MoveDirection _moveMask = network::MoveDirection::NONE;
 	float _yaw = 0.0f;
@@ -46,7 +45,7 @@ protected:
 public:
 	User(ENetPeer* peer, EntityId id, const std::string& name, const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-			const poi::PoiProviderPtr& poiProvider, const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider);
+			const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider);
 
 	void setEntityId(EntityId id);
 
