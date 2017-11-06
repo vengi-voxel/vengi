@@ -20,9 +20,9 @@ static const long spawnTime = 15000L;
 SpawnMgr::SpawnMgr(const io::FilesystemPtr& filesytem, const EntityStoragePtr& entityStorage,
 		const network::ServerMessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider,
 		const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
-		const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
+		const cooldown::CooldownProviderPtr& cooldownProvider) :
 		_loader(loader), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),
-		_containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider),
+		_containerProvider(containerProvider), _cooldownProvider(cooldownProvider),
 		_filesystem(filesytem), _time(15000L) {
 }
 

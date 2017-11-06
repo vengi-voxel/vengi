@@ -39,7 +39,7 @@ Map::Map(MapId mapId,
 		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
 	_poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
 	_spawnMgr = std::make_shared<backend::SpawnMgr>(filesystem, entityStorage, messageSender,
-			timeProvider, loader, containerProvider, _poiProvider, cooldownProvider);
+			timeProvider, loader, containerProvider, cooldownProvider);
 }
 
 Map::~Map() {

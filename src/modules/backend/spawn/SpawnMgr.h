@@ -18,7 +18,6 @@ private:
 	network::ServerMessageSenderPtr _messageSender;
 	core::TimeProviderPtr _timeProvider;
 	attrib::ContainerProviderPtr _containerProvider;
-	poi::PoiProviderPtr _poiProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	io::FilesystemPtr _filesystem;
 	long _time;
@@ -30,7 +29,7 @@ private:
 public:
 	SpawnMgr(const io::FilesystemPtr& filesytem, const EntityStoragePtr& entityStorage, const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
-			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
+			const cooldown::CooldownProviderPtr& cooldownProvider);
 	bool init();
 	void shutdown();
 
