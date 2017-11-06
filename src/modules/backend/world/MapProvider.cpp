@@ -13,12 +13,20 @@ MapProvider::MapProvider(const io::FilesystemPtr& filesystem, const core::EventB
 		_filesystem(filesystem), _eventBus(eventBus) {
 }
 
-MapPtr MapProvider::map(MapId id) const {
+MapPtr MapProvider::map(MapId id, bool forceValidMap) const {
 	auto i = _maps.find(id);
-	if (i == _maps.end()) {
-		return MapPtr();
+	if (i != _maps.end()) {
+		return i->second;
 	}
-	return i->second;
+	if (forceValidMap) {
+		i = _maps.begin();
+		const bool empty = i != _maps.end();
+		core_assert(!empty);
+		if (!empty) {
+			return i->second;
+		}
+	}
+	return MapPtr();
 }
 
 MapProvider::Maps MapProvider::worldMaps() const {

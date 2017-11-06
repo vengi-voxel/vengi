@@ -16,7 +16,7 @@
 
 namespace backend {
 
-class Map {
+class Map : public std::enable_shared_from_this<Map> {
 private:
 	MapId _mapId;
 	std::string _mapIdStr;
@@ -44,6 +44,9 @@ private:
 
 	void updateQuadTree();
 	bool updateEntity(const EntityPtr& entity, long dt);
+
+	glm::vec3 findStartPosition(const EntityPtr& entity) const;
+
 public:
 	Map(MapId mapId, const core::EventBusPtr& eventBus);
 	~Map();
@@ -52,6 +55,24 @@ public:
 
 	bool init(const io::FilesystemPtr& filesystem);
 	void shutdown();
+
+	/**
+	 * If the object is currently maintained by a shared_ptr, you can get a shared_ptr from a raw pointer
+	 * instance that shares the state with the already existing shared_ptrs around.
+	 */
+	inline std::shared_ptr<Map> ptr() {
+		return shared_from_this();
+	}
+
+	/**
+	 * @brief Spawns a user at this map - also sets a suitable position
+	 * @note Updates the map instance of the @c User
+	 */
+	void addUser(const UserPtr& user);
+	/**
+	 * @note The user will keep this map set up to the point a new @c addUser() was called on another map instance.
+	 */
+	bool removeUser(EntityId id);
 
 	void addNpc(const NpcPtr& npc);
 	bool removeNpc(ai::CharacterId id);

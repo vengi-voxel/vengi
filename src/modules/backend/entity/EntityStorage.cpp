@@ -11,7 +11,9 @@
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
 #include "backend/world/MapProvider.h"
+#include "backend/world/Map.h"
 #include "metric/MetricEvent.h"
+#include "backend/eventbus/Event.h"
 
 #define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::type, network::msg.Union());
 
@@ -48,11 +50,12 @@ UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std
 	auto i = _users.find(model.id());
 	if (i == _users.end()) {
 		static const std::string name = "NONAME";
-		const MapPtr& map = _mapProvider->map(model.mapid());
+		MapPtr map = _mapProvider->map(model.mapid(), true);
 		Log::info("user %i connects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
 		const UserPtr& u = std::make_shared<User>(peer, model.id(), model.name(), map, _messageSender, _timeProvider,
 				_containerProvider, _cooldownProvider, _poiProvider, _dbHandler, _stockDataProvider);
 		u->init();
+		map->addUser(u);
 		registerUser(u);
 		return u;
 	}
@@ -79,7 +82,7 @@ bool EntityStorage::logout(EntityId userId) {
 
 void EntityStorage::addNpc(const NpcPtr& npc) {
 	_npcs.insert(std::make_pair(npc->id(), npc));
-	_eventBus->publish(metric::gauge("count.npc", _npcs.size()));
+	_eventBus->publish(EntityAddEvent(npc));
 }
 
 bool EntityStorage::removeNpc(ai::CharacterId id) {
@@ -87,8 +90,8 @@ bool EntityStorage::removeNpc(ai::CharacterId id) {
 	if (i == _npcs.end()) {
 		return false;
 	}
-	_npcs.erase(id);
-	_eventBus->publish(metric::gauge("count.npc", _npcs.size()));
+	_eventBus->publish(EntityDeleteEvent(i->second));
+	_npcs.erase(i);
 	return true;
 }
 

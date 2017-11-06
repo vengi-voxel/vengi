@@ -65,7 +65,7 @@ void Map::update(long dt) {
 			Log::debug("remove user %li", user->id());
 			_quadTree.remove(QuadTreeNode { user });
 			i = _users.erase(i);
-			_eventBus->publish(EntityRemoveEvent(user));
+			_eventBus->publish(EntityRemoveFromMapEvent(user));
 		} else {
 			++i;
 		}
@@ -76,7 +76,7 @@ void Map::update(long dt) {
 			Log::debug("remove npc %li", npc->id());
 			_quadTree.remove(QuadTreeNode { npc });
 			i = _npcs.erase(i);
-			_eventBus->publish(EntityRemoveEvent(npc));
+			_eventBus->publish(EntityRemoveFromMapEvent(npc));
 		} else {
 			++i;
 		}
@@ -115,9 +115,42 @@ void Map::shutdown() {
 	_zone = nullptr;
 }
 
+glm::vec3 Map::findStartPosition(const EntityPtr& entity) const {
+	// TODO: use the poi provider?
+	return glm::zero<glm::vec3>();
+}
+
+void Map::addUser(const UserPtr& user) {
+	auto i = _users.insert(std::make_pair(user->id(), user));
+	if (!i.second) {
+		return;
+	}
+	const glm::vec3& pos = findStartPosition(user);
+	user->setMap(ptr(), pos);
+	_eventBus->publish(EntityAddToMapEvent(user));
+}
+
+bool Map::removeUser(EntityId id) {
+	UsersIter i = _users.find(id);
+	if (i == _users.end()) {
+		return false;
+	}
+	UserPtr user = i->second;
+	_quadTree.remove(QuadTreeNode { user });
+	_users.erase(i);
+	_eventBus->publish(EntityRemoveFromMapEvent(user));
+	return true;
+}
+
 void Map::addNpc(const NpcPtr& npc) {
+	auto i = _npcs.insert(std::make_pair(npc->id(), npc));
+	if (!i.second) {
+		return;
+	}
+	const glm::vec3& pos = findStartPosition(npc);
+	npc->setMap(ptr(), pos);
 	_zone->addAI(npc->ai());
-	_npcs.insert(std::make_pair(npc->id(), npc));
+	_eventBus->publish(EntityAddToMapEvent(npc));
 }
 
 bool Map::removeNpc(ai::CharacterId id) {
@@ -128,7 +161,8 @@ bool Map::removeNpc(ai::CharacterId id) {
 	NpcPtr npc = i->second;
 	_quadTree.remove(QuadTreeNode { npc });
 	_npcs.erase(i);
-	_eventBus->publish(EntityRemoveEvent(npc));
+	_zone->removeAI(npc->ai());
+	_eventBus->publish(EntityRemoveFromMapEvent(npc));
 	return true;
 }
 
@@ -162,8 +196,7 @@ void Map::updateQuadTree() {
 		_quadTree.insert(QuadTreeNode { i.second });
 	}
 	for (auto i : _users) {
-		const UserPtr& user = i.second;
-		_quadTree.insert(QuadTreeNode { user });
+		_quadTree.insert(QuadTreeNode { i.second });
 	}
 }
 

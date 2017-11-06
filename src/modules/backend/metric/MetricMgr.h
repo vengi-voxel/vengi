@@ -16,8 +16,11 @@ namespace backend {
 
 class MetricMgr :
 	public core::IEventBusHandler<network::NewConnectionEvent>,
-	public core::IEventBusHandler<EntityRemoveEvent>,
-	public core::IEventBusHandler<metric::MetricEvent> {
+	public core::IEventBusHandler<metric::MetricEvent> ,
+	public core::IEventBusHandler<EntityRemoveFromMapEvent>,
+	public core::IEventBusHandler<EntityAddToMapEvent>,
+	public core::IEventBusHandler<EntityDeleteEvent>,
+	public core::IEventBusHandler<EntityAddEvent>{
 private:
 	metric::Metric _metric;
 	metric::IMetricSenderPtr _metricSender;
@@ -26,7 +29,10 @@ public:
 
 	void onEvent(const metric::MetricEvent& event);
 	void onEvent(const network::NewConnectionEvent& event);
-	void onEvent(const EntityRemoveEvent& event);
+	void onEvent(const EntityRemoveFromMapEvent& event);
+	void onEvent(const EntityAddToMapEvent& event);
+	void onEvent(const EntityDeleteEvent& event);
+	void onEvent(const EntityAddEvent& event);
 
 	metric::Metric& metric();
 

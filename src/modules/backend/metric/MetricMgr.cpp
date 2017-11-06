@@ -7,12 +7,16 @@
 #include "core/EventBus.h"
 #include "backend/entity/Entity.h"
 #include "metric/UDPMetricSender.h"
+#include "network/ProtocolEnum.h"
 
 namespace backend {
 
 MetricMgr::MetricMgr(const metric::IMetricSenderPtr& metricSender, const core::EventBusPtr& eventBus) :
 		_metric("server."), _metricSender(metricSender) {
-	eventBus->subscribe<EntityRemoveEvent>(*this);
+	eventBus->subscribe<EntityAddToMapEvent>(*this);
+	eventBus->subscribe<EntityRemoveFromMapEvent>(*this);
+	eventBus->subscribe<EntityAddEvent>(*this);
+	eventBus->subscribe<EntityDeleteEvent>(*this);
 	eventBus->subscribe<metric::MetricEvent>(*this);
 	eventBus->subscribe<network::NewConnectionEvent>(*this);
 }
@@ -60,12 +64,29 @@ void MetricMgr::onEvent(const network::NewConnectionEvent& event) {
 	_metric.increment("count.user");
 }
 
-void MetricMgr::onEvent(const EntityRemoveEvent& event) {
-	if (event.entity()->entityType() == network::EntityType::PLAYER) {
-		_metric.decrement("count.user");
-	} else {
-		_metric.decrement("count.npc");
-	}
+void MetricMgr::onEvent(const EntityAddEvent& event) {
+	const EntityPtr& entity = event.entity();
+	const network::EntityType type = entity->entityType();
+	const char *typeName = network::EnumNameEntityType(type);
+	_metric.increment("count.entity", {{"type", typeName}});
+}
+
+void MetricMgr::onEvent(const EntityDeleteEvent& event) {
+	const EntityPtr& entity = event.entity();
+	const network::EntityType type = entity->entityType();
+	const char *typeName = network::EnumNameEntityType(type);
+	_metric.decrement("count.entity", {{"type", typeName}});
+}
+
+void MetricMgr::onEvent(const EntityAddToMapEvent& event) {
+	const EntityPtr& entity = event.entity();
+	entity->map();
+	const network::EntityType type = entity->entityType();
+	const char *typeName = network::EnumNameEntityType(type);
+	_metric.increment("count.entity", {{"type", typeName}});
+}
+
+void MetricMgr::onEvent(const EntityRemoveFromMapEvent& event) {
 }
 
 }

@@ -35,7 +35,7 @@ typedef std::unordered_set<EntityPtr> EntitySet;
  *
  * @sa EntityUpdateHandler
  */
-class Entity {
+class Entity : public std::enable_shared_from_this<Entity> {
 private:
 	core::ReadWriteLock _visibleLock {"Entity"};
 	EntitySet _visible;
@@ -92,10 +92,19 @@ public:
 
 	EntityId id() const;
 	MapPtr map() const;
+	void setMap(const MapPtr& map, const glm::vec3& pos);
 
 	bool dead() const;
 
 	ENetPeer* peer() const;
+
+	/**
+	 * If the object is currently maintained by a shared_ptr, you can get a shared_ptr from a raw pointer
+	 * instance that shares the state with the already existing shared_ptrs around.
+	 */
+	inline std::shared_ptr<Entity> ptr() {
+		return shared_from_this();
+	}
 
 	/**
 	 * @note The implementation behind this must ensure thread safety
@@ -226,6 +235,11 @@ inline cooldown::CooldownMgr& Entity::cooldownMgr() {
 
 inline EntityId Entity::id() const {
 	return _entityId;
+}
+
+inline void Entity::setMap(const MapPtr& map, const glm::vec3& pos) {
+	_map = map;
+	_pos = pos;
 }
 
 inline bool Entity::dead() const {
