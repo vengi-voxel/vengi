@@ -33,7 +33,7 @@ void User::visibleAdd(const EntitySet& entities) {
 }
 
 void User::visibleRemove(const EntitySet& entities) {
-	Entity::visibleRemove(entities);
+	Super::visibleRemove(entities);
 	for (const EntityPtr& e : entities) {
 		sendEntityRemove(e);
 	}
@@ -88,7 +88,7 @@ bool User::update(long dt) {
 		return false;
 	}
 	_time += dt;
-	if (!Entity::update(dt)) {
+	if (!Super::update(dt)) {
 		return false;
 	}
 
