@@ -2,12 +2,7 @@
 [![Build Status](https://travis-ci.org/mgerhardy/engine.svg?branch=master)](https://travis-ci.org/mgerhardy/engine)
 
 # About
-Voxel engine with procedural generated landscape.
-
-![Screenshot](/screenshots/2016-12-14.png "Status")
-![Screenshot](/screenshots/2017-01-27-voxedit.png "Voxel editor")
-![Screenshot](/screenshots/2017-03-01-noisetool.png "Noise tool")
-![Screenshot](/screenshots/2017-03-21-noisetool2.png "Noise graph tool")
+Voxel MMO RPG engine.
 
 # Dependencies
 * cmake
