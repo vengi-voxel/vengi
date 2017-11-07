@@ -33,10 +33,15 @@ private:
 	flatbuffers::FlatBufferBuilder _entityUpdateFbb;
 
 	UserStockMgr _stockMgr;
+	core::TimeProviderPtr _timeProvider;
+	cooldown::CooldownProviderPtr _cooldownProvider;
 
 	bool isMove(network::MoveDirection dir) const;
 	void addMove(network::MoveDirection dir);
 	void removeMove(network::MoveDirection dir);
+
+	void onCooldownExpired(cooldown::Type type);
+	void triggerCooldown(cooldown::Type type);
 
 protected:
 	void visibleAdd(const EntitySet& entities) override;
@@ -82,6 +87,7 @@ public:
 	 */
 	void sendUserSpawn() const;
 	void sendSeed(long seed) const;
+	void sendCooldown(cooldown::Type type, bool started) const;
 };
 
 inline uint32_t User::host() const {

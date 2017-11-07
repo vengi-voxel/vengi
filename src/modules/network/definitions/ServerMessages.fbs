@@ -43,6 +43,16 @@ table EntityUpdate {
 	rotation:float = 0.0;
 }
 
+table StartCooldown {
+	id:CooldownType (key);
+	startUTCMillis:long;
+	durationMillis:long;
+}
+
+table StopCooldown {
+	id:CooldownType;
+}
+
 enum AttribMode : byte {
 	Percentage,
 	Absolute,
@@ -62,7 +72,17 @@ table AttribUpdate {
 	attribs:[AttribEntry] (required);
 }
 
-union ServerMsgType { Seed, UserSpawn, EntitySpawn, EntityRemove, EntityUpdate, AuthFailed, AttribUpdate }
+union ServerMsgType {
+	Seed,
+	UserSpawn,
+	EntitySpawn,
+	EntityRemove,
+	EntityUpdate,
+	AuthFailed,
+	AttribUpdate,
+	StartCooldown,
+	StopCooldown
+}
 
 table ServerMessage {
 	data:ServerMsgType;

@@ -13,7 +13,8 @@ User::User(ENetPeer* peer, EntityId id, const std::string& name, const MapPtr& m
 		const cooldown::CooldownProviderPtr& cooldownProvider, const persistence::DBHandlerPtr& dbHandler,
 		const stock::StockProviderPtr& stockDataProvider) :
 		Super(id, map, messageSender, timeProvider, containerProvider, cooldownProvider),
-		_name(name), _dbHandler(dbHandler), _stockMgr(this, stockDataProvider, dbHandler) {
+		_name(name), _dbHandler(dbHandler), _stockMgr(this, stockDataProvider, dbHandler),
+		_timeProvider(timeProvider), _cooldownProvider(cooldownProvider) {
 	setPeer(peer);
 	_entityType = network::EntityType::PLAYER;
 	_userTimeout = core::Var::getSafe(cfg::ServerUserTimeout);
@@ -54,11 +55,23 @@ void User::attack(EntityId id) {
 	_lastAction = _time;
 }
 
+void User::onCooldownExpired(cooldown::Type type) {
+	if (type == cooldown::Type::LOGOUT) {
+		_disconnect = true;
+	}
+}
+
 void User::triggerLogout() {
-	_cooldowns.triggerCooldown(cooldown::Type::LOGOUT, [this] (cooldown::CallbackType type) {
-		if (type == cooldown::CallbackType::Expired) {
-			_disconnect = true;
+	triggerCooldown(cooldown::Type::LOGOUT);
+}
+
+void User::triggerCooldown(cooldown::Type type) {
+	_cooldowns.triggerCooldown(type, [this, type] (cooldown::CallbackType callbackType) {
+		if (callbackType == cooldown::CallbackType::Expired) {
+			onCooldownExpired(type);
+			return;
 		}
+		sendCooldown(type, callbackType == cooldown::CallbackType::Started);
 	});
 }
 
@@ -123,6 +136,23 @@ bool User::update(long dt) {
 void User::sendSeed(long seed) const {
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::Seed, network::CreateSeed(fbb, seed).Union());
+}
+
+void User::sendCooldown(cooldown::Type type, bool started) const {
+	flatbuffers::FlatBufferBuilder fbb;
+	network::ServerMsgType msgtype;
+	flatbuffers::Offset<void> msg;
+	if (started) {
+		const uint64_t duration = _cooldownProvider->duration(type);
+		const uint64_t now = _timeProvider->tickMillis();
+		msg = network::CreateStartCooldown(fbb, type, now, duration).Union();
+		msgtype = network::ServerMsgType::StartCooldown;
+	} else {
+		msg = network::CreateStopCooldown(fbb, type).Union();
+		msgtype = network::ServerMsgType::StopCooldown;
+	}
+
+	_messageSender->sendServerMessage(_peer, fbb, msgtype, msg);
 }
 
 void User::sendUserSpawn() const {
