@@ -34,6 +34,8 @@ typedef std::shared_ptr<CooldownProvider> CooldownProviderPtr;
 
 namespace attrib {
 
+class Attributes;
+
 class ContainerProvider;
 typedef std::shared_ptr<ContainerProvider> ContainerProviderPtr;
 

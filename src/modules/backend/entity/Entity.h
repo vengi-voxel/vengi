@@ -121,6 +121,7 @@ public:
 	network::EntityType entityType() const;
 
 	double current(attrib::Type type) const;
+	double setCurrent(attrib::Type type, double value);
 
 	double max(attrib::Type type) const;
 
@@ -193,6 +194,8 @@ public:
 	bool inFrustum(const glm::vec3& position) const;
 	bool inFrustum(const Entity& other) const;
 	bool inFrustum(const EntityPtr& other) const;
+
+	std::string name() const;
 };
 
 inline MapPtr Entity::map() const {
@@ -201,6 +204,10 @@ inline MapPtr Entity::map() const {
 
 inline double Entity::current(attrib::Type type) const {
 	return _attribs.current(type);
+}
+
+inline double Entity::setCurrent(attrib::Type type, double value) {
+	return _attribs.setCurrent(type, value);
 }
 
 inline double Entity::max(attrib::Type type) const {

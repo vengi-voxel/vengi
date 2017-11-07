@@ -52,8 +52,6 @@ public:
 	double applyDamage(Npc* attacker, double damage);
 
 	bool update(long dt) override;
-
-	std::string name() const;
 };
 
 inline void Npc::setHomePosition(const glm::ivec3& pos) {

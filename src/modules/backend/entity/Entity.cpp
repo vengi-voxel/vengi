@@ -43,6 +43,10 @@ void Entity::setPointOfInterest() {
 	map()->poiProvider()->addPointOfInterest(pos());
 }
 
+std::string Entity::name() const {
+	return network::EnumNameEntityType(_entityType);
+}
+
 void Entity::init() {
 	const char *typeName = network::EnumNameEntityType(_entityType);
 	addContainer(typeName);

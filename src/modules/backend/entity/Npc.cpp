@@ -48,10 +48,6 @@ void Npc::init(const glm::ivec3* pos) {
 	_ai->getAggroMgr().setReduceByValue(0.1f);
 }
 
-std::string Npc::name() const {
-	return network::EnumNameEntityType(_entityType);
-}
-
 double Npc::applyDamage(Npc* attacker, double damage) {
 	double health = _attribs.current(attrib::Type::HEALTH);
 	if (health > 0.0) {
