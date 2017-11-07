@@ -8,6 +8,8 @@
 #include "core/Rect.h"
 #include "core/Common.h"
 #include "core/Frustum.h"
+#include "backend/world/Map.h"
+#include "poi/PoiProvider.h"
 
 namespace backend {
 
@@ -35,6 +37,10 @@ void Entity::visibleRemove(const EntitySet& entities) {
 	for (const EntityPtr& e : entities) {
 		Log::trace("entity %i is no longer visible for %i", (int)e->id(), (int)id());
 	}
+}
+
+void Entity::setPointOfInterest() {
+	map()->poiProvider()->addPointOfInterest(pos());
 }
 
 void Entity::init() {

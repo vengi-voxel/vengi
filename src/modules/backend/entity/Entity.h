@@ -94,6 +94,8 @@ public:
 	MapPtr map() const;
 	void setMap(const MapPtr& map, const glm::vec3& pos);
 
+	void setPointOfInterest();
+
 	bool dead() const;
 
 	ENetPeer* peer() const;

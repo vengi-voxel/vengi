@@ -35,10 +35,6 @@ public:
 	void init(const glm::ivec3* pos);
 
 	void setHomePosition(const glm::ivec3& pos);
-	/**
-	 * @brief Sets a points of interest at the current npc position.
-	 */
-	void setPointOfInterest();
 	const glm::ivec3& homePosition() const;
 	bool route(const glm::ivec3& target);
 	const ai::AIPtr& ai();

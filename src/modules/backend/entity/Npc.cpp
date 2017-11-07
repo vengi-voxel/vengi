@@ -7,7 +7,6 @@
 #include "ai/AICharacter.h"
 #include "ai/AI.h"
 #include "ai/zone/Zone.h"
-#include "poi/PoiProvider.h"
 #include "backend/world/Map.h"
 
 namespace backend {
@@ -51,10 +50,6 @@ void Npc::init(const glm::ivec3* pos) {
 
 std::string Npc::name() const {
 	return network::EnumNameEntityType(_entityType);
-}
-
-void Npc::setPointOfInterest() {
-	map()->poiProvider()->addPointOfInterest(pos());
 }
 
 double Npc::applyDamage(Npc* attacker, double damage) {
