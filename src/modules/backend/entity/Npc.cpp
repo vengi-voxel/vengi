@@ -82,7 +82,7 @@ bool Npc::update(long dt) {
 	if (!Super::update(dt)) {
 		return false;
 	}
-	ai::ICharacterPtr character = _ai->getCharacter();
+	const ai::ICharacterPtr& character = _ai->getCharacter();
 	character->setSpeed(current(attrib::Type::SPEED));
 	character->setOrientation(orientation());
 	return !dead();
