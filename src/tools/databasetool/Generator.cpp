@@ -133,6 +133,7 @@ void createConstructor(const Table& table, std::stringstream& src) {
 	}
 
 	src << "\t\t_primaryKeys = " << table.primaryKeys << ";\n";
+	src << "\t\t_autoIncrementStart = " << table.autoIncrementStart << ";\n";
 	src << "\t}\n\n";
 
 	src << "\t" << table.classname << "(" << table.classname << "&& source) : Super(std::move(source._tableName)) {\n";

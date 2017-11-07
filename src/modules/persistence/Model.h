@@ -95,6 +95,7 @@ protected:
 	Fields _fields;
 	std::string _tableName;
 	int _primaryKeys = 0;
+	long _autoIncrementStart = 0l;
 	uint8_t* _membersPointer;
 	Constraints _constraints;
 	UniqueKeys _uniqueKeys;
@@ -115,6 +116,8 @@ public:
 	const UniqueKeys& uniqueKeys() const;
 
 	const ForeignKeys& foreignKeys() const;
+
+	long autoIncrementStart() const;
 
 	int primaryKeys() const;
 
@@ -189,6 +192,10 @@ inline const ForeignKeys& Model::foreignKeys() const {
 
 inline int Model::primaryKeys() const {
 	return _primaryKeys;
+}
+
+inline long Model::autoIncrementStart() const {
+	return _autoIncrementStart;
 }
 
 }

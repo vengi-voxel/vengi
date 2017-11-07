@@ -11,7 +11,7 @@
 
 namespace backend {
 
-std::atomic<EntityId> Npc::_nextNpcId(5000000);
+std::atomic<EntityId> Npc::_nextNpcId(0);
 
 Npc::Npc(network::EntityType type, const ai::TreeNodePtr& behaviour,
 		const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,

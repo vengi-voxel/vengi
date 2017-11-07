@@ -2,6 +2,7 @@
 #include "Util.h"
 #include "Mapping.h"
 #include "core/Log.h"
+#include "core/Assert.h"
 
 namespace databasetool {
 
@@ -204,6 +205,17 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 			// there is only one entry
 			const std::string& fieldName = *fieldNames.begin();
 			table.foreignKeys.insert(std::make_pair(fieldName, fk));
+		} else if ((typeMapping & std::enum_value(persistence::ConstraintType::AUTOINCREMENT)) != 0) {
+			if (tok.hasNext()) {
+				token = tok.next();
+				const long startCounterLong = core::string::toLong(token);
+				if (startCounterLong > 0) {
+					core_assert_msg(table.autoIncrementStart == 0, "Table %s already has a auto increment starting value set", table.name.c_str());
+					table.autoIncrementStart = startCounterLong;
+				} else {
+					tok.prev();
+				}
+			}
 		}
 
 		if (fieldNames.size() == 1) {

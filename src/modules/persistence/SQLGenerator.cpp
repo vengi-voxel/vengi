@@ -40,17 +40,9 @@ static inline bool placeholder(const Model& model, const Field& field, std::stri
 	return true;
 }
 
-static std::string getDbFlags(int numberPrimaryKeys, const Constraints& constraints, const Field& field) {
+static std::string getDbFlags(const std::string& tablename, int numberPrimaryKeys, const Constraints& constraints, const Field& field) {
 	char buf[1024] = { '\0' };
 	bool empty = true;
-	if (field.isAutoincrement()) {
-		empty = false;
-		if (field.type == FieldType::LONG) {
-			core::string::append(buf, sizeof(buf), "BIGSERIAL");
-		} else {
-			core::string::append(buf, sizeof(buf), "SERIAL");
-		}
-	}
 	if (field.isNotNull()) {
 		if (!empty) {
 			core::string::append(buf, sizeof(buf), " ");
@@ -84,6 +76,15 @@ static std::string getDbFlags(int numberPrimaryKeys, const Constraints& constrai
 		core::string::append(buf, sizeof(buf), "DEFAULT ");
 		core::string::append(buf, sizeof(buf), field.defaultVal.c_str());
 		empty = false;
+	} else if ((field.contraintMask & (int)ConstraintType::AUTOINCREMENT) != 0) {
+		if (!empty) {
+			core::string::append(buf, sizeof(buf), " ");
+		}
+		core::string::append(buf, sizeof(buf), "DEFAULT nextval('");
+		core::string::append(buf, sizeof(buf), tablename.c_str());
+		core::string::append(buf, sizeof(buf), "_");
+		core::string::append(buf, sizeof(buf), field.name.c_str());
+		core::string::append(buf, sizeof(buf), "_seq'::regclass)");
 	}
 	return std::string(buf);
 }
@@ -108,14 +109,8 @@ static std::string getDbType(const Field& field) {
 	case FieldType::BOOLEAN:
 		return "BOOLEAN";
 	case FieldType::LONG:
-		if (field.isAutoincrement()) {
-			return "";
-		}
 		return "BIGINT";
 	case FieldType::INT:
-		if (field.isAutoincrement()) {
-			return "";
-		}
 		return "INT";
 	case FieldType::SHORT:
 		return "SMALLINT";
@@ -131,6 +126,14 @@ static std::string getDbType(const Field& field) {
 
 std::string createCreateTableStatement(const Model& table) {
 	std::stringstream createTable;
+	for (const auto& f : table.fields()) {
+		if ((f.contraintMask & (int)ConstraintType::AUTOINCREMENT) == 0) {
+			continue;
+		}
+		createTable << "CREATE SEQUENCE IF NOT EXISTS " << table.tableName() << "_" << f.name;
+		createTable << "_seq START " << table.autoIncrementStart() << ";";
+	}
+
 	createTable << "CREATE TABLE IF NOT EXISTS \"" << table.tableName() << "\" (";
 	bool firstField = true;
 	for (const auto& f : table.fields()) {
@@ -142,7 +145,7 @@ std::string createCreateTableStatement(const Model& table) {
 		if (!dbType.empty()) {
 			createTable << " " << dbType;
 		}
-		const std::string& flags = getDbFlags(table.primaryKeys(), table.constraints(), f);
+		const std::string& flags = getDbFlags(table.tableName(), table.primaryKeys(), table.constraints(), f);
 		if (!flags.empty()) {
 			createTable << " " << flags;
 		}
