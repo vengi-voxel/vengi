@@ -88,10 +88,11 @@ public:
 	 * @note The user will keep this map set up to the point a new @c addUser() was called on another map instance.
 	 */
 	bool removeUser(EntityId id);
+	UserPtr user(EntityId id);
 
 	void addNpc(const NpcPtr& npc);
-	bool removeNpc(ai::CharacterId id);
-	NpcPtr npc(ai::CharacterId id);
+	bool removeNpc(EntityId id);
+	NpcPtr npc(EntityId id);
 
 	ai::Zone* zone() const;
 	MapId id() const;

@@ -41,16 +41,16 @@ public:
 	const ai::AIPtr& ai();
 
 	bool die();
-	bool attack(ai::CharacterId id);
+	bool attack(EntityId id);
 	/**
 	 * @brief Applies damage to the entity
-	 * @param attacker The attacking @c Npc. This might be @c nullptr
+	 * @param attacker The attacking @c Entity. This might be @c nullptr
 	 * @param[in] damage The damage that the attacker tries to apply to the victim.
 	 * @return The amount of applied damage.
-	 * @note The amount of the applied damage might be less that the indended damage
+	 * @note The amount of the applied damage might be less that the intended damage
 	 * @note The victim gets aggro on the attacker
 	 */
-	double applyDamage(Npc* attacker, double damage);
+	double applyDamage(Entity* attacker, double damage);
 
 	bool update(long dt) override;
 };

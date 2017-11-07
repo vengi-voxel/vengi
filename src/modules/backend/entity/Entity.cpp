@@ -47,6 +47,30 @@ std::string Entity::name() const {
 	return network::EnumNameEntityType(_entityType);
 }
 
+void Entity::sendToVisible(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type,
+		flatbuffers::Offset<void> data, bool sendToSelf, uint32_t flags) {
+	const EntitySet& visible = visibleCopy();
+	std::vector<ENetPeer*> peers;
+	peers.reserve(visible.size() + 1);
+	if (sendToSelf) {
+		ENetPeer* p = peer();
+		if (p != nullptr) {
+			peers.push_back(p);
+		}
+	}
+	for (const EntityPtr& e : visible) {
+		ENetPeer* peer = e->peer();
+		if (peer == nullptr) {
+			continue;
+		}
+		peers.push_back(peer);
+	}
+	if (peers.empty()) {
+		return;
+	}
+	_messageSender->sendServerMessage(&peers[0], peers.size(), fbb, type, data, flags);
+}
+
 void Entity::init() {
 	const char *typeName = network::EnumNameEntityType(_entityType);
 	addContainer(typeName);
@@ -70,7 +94,8 @@ void Entity::init() {
 }
 
 void Entity::onAttribChange(const attrib::DirtyValue& v) {
-	Log::debug("Attrib changed for type %s (current: %s) to value %f", network::EnumNameAttribType(v.type), (v.current ? "true" : "false"), v.value);
+	Log::debug("Attrib changed for type %s (current: %s) to value %f",
+			network::EnumNameAttribType(v.type), (v.current ? "true" : "false"), v.value);
 	_dirtyAttributeTypes.insert(v);
 }
 
@@ -96,33 +121,23 @@ void Entity::sendAttribUpdate() {
 	// TODO: send current and max values to the clients
 	// TODO: collect which of them are dirty, and maintain a list of
 	// those that are for the owning client only or which of them must be broadcasted
-	std::vector<ENetPeer*> peers;
-	ENetPeer* p = peer();
-	if (p != nullptr) {
-		peers.push_back(p);
-	}
-
-	// TODO: broadcast to visible users
-
-	if (peers.empty()) {
+	std::unordered_set<attrib::DirtyValue> dirtyTypes = _dirtyAttributeTypes;
+	if (dirtyTypes.empty()) {
 		return;
 	}
-
-	std::unordered_set<attrib::DirtyValue> dirtyTypes = _dirtyAttributeTypes;
-	if (!dirtyTypes.empty()) {
-		flatbuffers::FlatBufferBuilder fbb;
-		auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(dirtyTypes.size(),
-			[&] (size_t i) {
-				const attrib::DirtyValue& dirtyValue = *dirtyTypes.begin();
-				dirtyTypes.erase(dirtyTypes.begin());
-				const double value = dirtyValue.value;
-				// TODO: maybe not needed?
-				const network::AttribMode mode = network::AttribMode::Percentage;
-				const bool current = dirtyValue.current;
-				return network::CreateAttribEntry(fbb, dirtyValue.type, value, mode, current);
-			});
-		_messageSender->sendServerMessage(peers, fbb, network::ServerMsgType::AttribUpdate, network::CreateAttribUpdate(fbb, id(), attribs).Union());
-	}
+	flatbuffers::FlatBufferBuilder fbb;
+	auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(dirtyTypes.size(),
+		[&] (size_t i) {
+			const attrib::DirtyValue& dirtyValue = *dirtyTypes.begin();
+			dirtyTypes.erase(dirtyTypes.begin());
+			const double value = dirtyValue.value;
+			// TODO: maybe not needed?
+			const network::AttribMode mode = network::AttribMode::Percentage;
+			const bool current = dirtyValue.current;
+			return network::CreateAttribEntry(fbb, dirtyValue.type, value, mode, current);
+		});
+	sendToVisible(fbb, network::ServerMsgType::AttribUpdate,
+			network::CreateAttribUpdate(fbb, id(), attribs).Union(), true);
 }
 
 bool Entity::update(long dt) {
@@ -163,7 +178,8 @@ void Entity::sendEntityUpdate(const EntityPtr& entity) const {
 	flatbuffers::FlatBufferBuilder fbb;
 	const glm::vec3& _pos = entity->pos();
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
-	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityUpdate, network::CreateEntityUpdate(fbb, entity->id(), &pos, entity->orientation()).Union());
+	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityUpdate,
+			network::CreateEntityUpdate(fbb, entity->id(), &pos, entity->orientation()).Union());
 }
 
 void Entity::sendEntitySpawn(const EntityPtr& entity) const {
@@ -174,7 +190,8 @@ void Entity::sendEntitySpawn(const EntityPtr& entity) const {
 	const glm::vec3& pos = entity->pos();
 	const network::Vec3 vec3 { pos.x, pos.y, pos.z };
 	const EntityId entityId = id();
-	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntitySpawn, network::CreateEntitySpawn(fbb, entity->id(), entity->entityType(), &vec3, entityId).Union());
+	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntitySpawn,
+			network::CreateEntitySpawn(fbb, entity->id(), entity->entityType(), &vec3, entityId).Union());
 }
 
 void Entity::sendEntityRemove(const EntityPtr& entity) const {
@@ -182,7 +199,8 @@ void Entity::sendEntityRemove(const EntityPtr& entity) const {
 		return;
 	}
 	flatbuffers::FlatBufferBuilder fbb;
-	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityRemove, network::CreateEntityRemove(fbb, entity->id()).Union());
+	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityRemove,
+			network::CreateEntityRemove(fbb, entity->id()).Union());
 }
 
 bool Entity::inFrustum(const glm::vec3& position) const {

@@ -164,6 +164,15 @@ bool Map::removeUser(EntityId id) {
 	return true;
 }
 
+UserPtr Map::user(EntityId id) {
+	UsersIter i = _users.find(id);
+	if (i == _users.end()) {
+		Log::trace("Could not find user with id " PRIEntId, id);
+		return UserPtr();
+	}
+	return i->second;
+}
+
 void Map::addNpc(const NpcPtr& npc) {
 	auto i = _npcs.insert(std::make_pair(npc->id(), npc));
 	if (!i.second) {
@@ -175,7 +184,7 @@ void Map::addNpc(const NpcPtr& npc) {
 	_eventBus->publish(EntityAddToMapEvent(npc));
 }
 
-bool Map::removeNpc(ai::CharacterId id) {
+bool Map::removeNpc(EntityId id) {
 	NpcsIter i = _npcs.find(id);
 	if (i == _npcs.end()) {
 		return false;
@@ -188,10 +197,10 @@ bool Map::removeNpc(ai::CharacterId id) {
 	return true;
 }
 
-NpcPtr Map::npc(ai::CharacterId id) {
+NpcPtr Map::npc(EntityId id) {
 	NpcsIter i = _npcs.find(id);
 	if (i == _npcs.end()) {
-		Log::trace("Could not find npc with id %i", id);
+		Log::trace("Could not find npc with id " PRIEntId, id);
 		return NpcPtr();
 	}
 	return i->second;

@@ -91,7 +91,7 @@ public:
 	cooldown::CooldownMgr& cooldownMgr();
 
 	EntityId id() const;
-	MapPtr map() const;
+	const MapPtr& map() const;
 	void setMap(const MapPtr& map, const glm::vec3& pos);
 
 	void setPointOfInterest();
@@ -196,9 +196,12 @@ public:
 	bool inFrustum(const EntityPtr& other) const;
 
 	std::string name() const;
+
+	void sendToVisible(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type,
+			flatbuffers::Offset<void> data, bool sendToSelf = false, uint32_t flags = ENET_PACKET_FLAG_RELIABLE);
 };
 
-inline MapPtr Entity::map() const {
+inline const MapPtr& Entity::map() const {
 	return _map;
 }
 

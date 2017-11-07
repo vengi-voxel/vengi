@@ -48,32 +48,34 @@ void Npc::init(const glm::ivec3* pos) {
 	_ai->getAggroMgr().setReduceByValue(0.1f);
 }
 
-double Npc::applyDamage(Npc* attacker, double damage) {
-	double health = _attribs.current(attrib::Type::HEALTH);
+double Npc::applyDamage(Entity* attacker, double damage) {
+	double health = current(attrib::Type::HEALTH);
 	if (health > 0.0) {
 		health = std::max(0.0, health - damage);
 		if (attacker != nullptr) {
 			_ai->getAggroMgr().addAggro(attacker->id(), damage);
 		}
-		_attribs.setCurrent(attrib::Type::HEALTH, health);
+		setCurrent(attrib::Type::HEALTH, health);
 		return damage;
 	}
 	return 0.0;
 }
 
 bool Npc::die() {
-	return applyDamage(nullptr, _attribs.current(attrib::Type::HEALTH)) > 0.0;
+	return applyDamage(nullptr, current(attrib::Type::HEALTH)) > 0.0;
 }
 
-bool Npc::attack(ai::CharacterId id) {
-	const double strength = _attribs.current(attrib::Type::STRENGTH);
+bool Npc::attack(EntityId id) {
+	const double strength = current(attrib::Type::STRENGTH);
 	if (strength <= 0.0) {
 		return false;
 	}
-	return _ai->getZone()->executeAsync(id, [=] (const ai::AIPtr & targetAi) {
-		AICharacter& targetChr = ai::character_cast<AICharacter>(targetAi->getCharacter());
-		targetChr.getNpc().applyDamage(this, strength);
-	});
+	const NpcPtr& npc = map()->npc(id);
+	if (!npc) {
+		// TODO: attack users...
+		return false;
+	}
+	return npc->applyDamage(this, strength) > 0.0;
 }
 
 bool Npc::update(long dt) {
@@ -81,7 +83,7 @@ bool Npc::update(long dt) {
 		return false;
 	}
 	ai::ICharacterPtr character = _ai->getCharacter();
-	character->setSpeed(_attribs.current(attrib::Type::SPEED));
+	character->setSpeed(current(attrib::Type::SPEED));
 	character->setOrientation(orientation());
 	return !dead();
 }
