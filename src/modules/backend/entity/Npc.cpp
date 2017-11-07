@@ -17,7 +17,7 @@ Npc::Npc(network::EntityType type, const ai::TreeNodePtr& behaviour,
 		const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider) :
-		Entity(_nextNpcId++, map, messageSender, timeProvider, containerProvider, cooldownProvider) {
+		Super(_nextNpcId++, map, messageSender, timeProvider, containerProvider, cooldownProvider) {
 	_entityType = type;
 	_ai = std::make_shared<ai::AI>(behaviour);
 	_aiChr = std::make_shared<AICharacter>(_entityId, *this);
@@ -34,7 +34,7 @@ Npc::~Npc() {
 }
 
 void Npc::init() {
-	Entity::init();
+	Super::init();
 }
 
 void Npc::init(const glm::ivec3* pos) {
@@ -77,7 +77,7 @@ bool Npc::attack(ai::CharacterId id) {
 }
 
 bool Npc::update(long dt) {
-	if (!Entity::update(dt)) {
+	if (!Super::update(dt)) {
 		return false;
 	}
 	ai::ICharacterPtr character = _ai->getCharacter();

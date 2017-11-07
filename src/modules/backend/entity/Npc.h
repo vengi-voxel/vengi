@@ -15,6 +15,7 @@ namespace backend {
 
 class Npc: public Entity {
 private:
+	using Super = Entity;
 	friend class AICharacter;
 	static std::atomic<EntityId> _nextNpcId;
 	glm::ivec3 _homePosition;
