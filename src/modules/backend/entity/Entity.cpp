@@ -4,6 +4,7 @@
 
 #include "Entity.h"
 #include "core/Set.h"
+#include "core/Array.h"
 #include "core/Assert.h"
 #include "core/Rect.h"
 #include "core/Common.h"
@@ -87,7 +88,7 @@ void Entity::init() {
 			attrib::Type::ATTACKRANGE,
 			attrib::Type::STRENGTH };
 
-	for (size_t i = 0; i < SDL_arraysize(types); ++i) {
+	for (size_t i = 0; i < lengthof(types); ++i) {
 		const attrib::Type type = static_cast<attrib::Type>(types[i]);
 		const double max = _attribs.max(type);
 		Log::debug("Set current for %s to %f", network::EnumNameAttribType(type), max);
@@ -120,18 +121,18 @@ void Entity::removeContainer(const std::string& id) {
 }
 
 void Entity::sendAttribUpdate() {
+	if (_dirtyAttributeTypes.empty()) {
+		return;
+	}
 	// TODO: send current and max values to the clients
 	// TODO: collect which of them are dirty, and maintain a list of
 	// those that are for the owning client only or which of them must be broadcasted
 	std::unordered_set<attrib::DirtyValue> dirtyTypes = _dirtyAttributeTypes;
-	if (dirtyTypes.empty()) {
-		return;
-	}
 	_attribUpdateFBB.Clear();
+	auto iter = dirtyTypes.begin();
 	auto attribs = _attribUpdateFBB.CreateVector<flatbuffers::Offset<network::AttribEntry>>(dirtyTypes.size(),
 		[&] (size_t i) {
-			const attrib::DirtyValue& dirtyValue = *dirtyTypes.begin();
-			dirtyTypes.erase(dirtyTypes.begin());
+			const attrib::DirtyValue& dirtyValue = *iter++;
 			const double value = dirtyValue.value;
 			// TODO: maybe not needed?
 			const network::AttribMode mode = network::AttribMode::Percentage;
