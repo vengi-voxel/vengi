@@ -121,16 +121,12 @@ void Entity::removeContainer(const std::string& id) {
 }
 
 void Entity::sendAttribUpdate() {
-	if (_dirtyAttributeTypes.empty()) {
-		return;
-	}
 	// TODO: send current and max values to the clients
 	// TODO: collect which of them are dirty, and maintain a list of
 	// those that are for the owning client only or which of them must be broadcasted
-	std::unordered_set<attrib::DirtyValue> dirtyTypes = _dirtyAttributeTypes;
 	_attribUpdateFBB.Clear();
-	auto iter = dirtyTypes.begin();
-	auto attribs = _attribUpdateFBB.CreateVector<flatbuffers::Offset<network::AttribEntry>>(dirtyTypes.size(),
+	auto iter = _dirtyAttributeTypes.begin();
+	auto attribs = _attribUpdateFBB.CreateVector<flatbuffers::Offset<network::AttribEntry>>(_dirtyAttributeTypes.size(),
 		[&] (size_t i) {
 			const attrib::DirtyValue& dirtyValue = *iter++;
 			const double value = dirtyValue.value;
