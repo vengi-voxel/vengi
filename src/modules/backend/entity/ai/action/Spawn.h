@@ -21,7 +21,7 @@ AI_TASK(Spawn) {
 	backend::Npc& npc = chr.getNpc();
 	const glm::ivec3 pos = glm::ivec3(npc.pos());
 	const SpawnMgrPtr& spawnMgr = npc.map()->spawnMgr();
-	if (spawnMgr->spawn(npc.map(), npc.entityType(), 1, &pos) == 1) {
+	if (spawnMgr->spawn(npc.entityType(), 1, &pos) == 1) {
 		return FINISHED;
 	}
 	return FAILED;

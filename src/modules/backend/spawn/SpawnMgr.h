@@ -13,6 +13,7 @@ namespace backend {
 
 class SpawnMgr {
 private:
+	Map* _map;
 	AILoaderPtr _loader;
 	EntityStoragePtr _entityStorage;
 	network::ServerMessageSenderPtr _messageSender;
@@ -22,19 +23,24 @@ private:
 	io::FilesystemPtr _filesystem;
 	long _time;
 
-	void spawnEntity(const MapPtr& map, network::EntityType start, network::EntityType end, int maxAmount);
-	void spawnAnimals(const MapPtr& map);
-	void spawnCharacters(const MapPtr& map);
+	void spawnEntity(network::EntityType start, network::EntityType end, int maxAmount);
+	void spawnAnimals();
+	void spawnCharacters();
 
 public:
-	SpawnMgr(const io::FilesystemPtr& filesytem, const EntityStoragePtr& entityStorage, const network::ServerMessageSenderPtr& messageSender,
-			const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
+	SpawnMgr(Map* map,
+			const io::FilesystemPtr& filesytem,
+			const EntityStoragePtr& entityStorage,
+			const network::ServerMessageSenderPtr& messageSender,
+			const core::TimeProviderPtr& timeProvider,
+			const AILoaderPtr& loader,
+			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider);
 	bool init();
 	void shutdown();
 
-	int spawn(const MapPtr& map, network::EntityType type, int amount, const glm::ivec3* pos = nullptr);
-	void update(const MapPtr& map, long dt);
+	int spawn(network::EntityType type, int amount, const glm::ivec3* pos = nullptr);
+	void update(long dt);
 };
 
 typedef std::shared_ptr<SpawnMgr> SpawnMgrPtr;

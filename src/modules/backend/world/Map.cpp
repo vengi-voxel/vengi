@@ -38,7 +38,7 @@ Map::Map(MapId mapId,
 		_eventBus(eventBus), _filesystem(filesystem),
 		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
 	_poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
-	_spawnMgr = std::make_shared<backend::SpawnMgr>(filesystem, entityStorage, messageSender,
+	_spawnMgr = std::make_shared<backend::SpawnMgr>(this, filesystem, entityStorage, messageSender,
 			timeProvider, loader, containerProvider, cooldownProvider);
 }
 
@@ -69,7 +69,7 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 }
 
 void Map::update(long dt) {
-	_spawnMgr->update(ptr(), dt);
+	_spawnMgr->update(dt);
 	_voxelWorld->update(dt);
 	_zone->update(dt);
 	updateQuadTree();

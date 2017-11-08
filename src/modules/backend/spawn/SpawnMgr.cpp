@@ -17,11 +17,15 @@ namespace backend {
 
 static const long spawnTime = 15000L;
 
-SpawnMgr::SpawnMgr(const io::FilesystemPtr& filesytem, const EntityStoragePtr& entityStorage,
-		const network::ServerMessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider,
-		const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
+SpawnMgr::SpawnMgr(Map* map,
+		const io::FilesystemPtr& filesytem,
+		const EntityStoragePtr& entityStorage,
+		const network::ServerMessageSenderPtr& messageSender,
+		const core::TimeProviderPtr& timeProvider,
+		const AILoaderPtr& loader,
+		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider) :
-		_loader(loader), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),
+		_map(map), _loader(loader), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),
 		_containerProvider(containerProvider), _cooldownProvider(cooldownProvider),
 		_filesystem(filesytem), _time(15000L) {
 }
@@ -38,16 +42,16 @@ bool SpawnMgr::init() {
 	return true;
 }
 
-void SpawnMgr::spawnCharacters(const MapPtr& map) {
-	spawnEntity(map, network::EntityType::BEGIN_CHARACTERS, network::EntityType::MAX_CHARACTERS, 0);
+void SpawnMgr::spawnCharacters() {
+	spawnEntity(network::EntityType::BEGIN_CHARACTERS, network::EntityType::MAX_CHARACTERS, 0);
 }
 
-void SpawnMgr::spawnAnimals(const MapPtr& map) {
-	spawnEntity(map, network::EntityType::BEGIN_ANIMAL, network::EntityType::MAX_ANIMAL, 2);
+void SpawnMgr::spawnAnimals() {
+	spawnEntity(network::EntityType::BEGIN_ANIMAL, network::EntityType::MAX_ANIMAL, 2);
 }
 
-void SpawnMgr::spawnEntity(const MapPtr& map, network::EntityType start, network::EntityType end, int maxAmount) {
-	ai::Zone& zone = *map->zone();
+void SpawnMgr::spawnEntity(network::EntityType start, network::EntityType end, int maxAmount) {
+	ai::Zone& zone = *_map->zone();
 	const int offset = (int)start + 1;
 	const int size = (int)end - offset;
 	int count[size];
@@ -70,11 +74,11 @@ void SpawnMgr::spawnEntity(const MapPtr& map, network::EntityType start, network
 
 		const int needToSpawn = maxAmount - count[i];
 		network::EntityType type = static_cast<network::EntityType>(offset + i);
-		spawn(map, type, needToSpawn);
+		spawn(type, needToSpawn);
 	}
 }
 
-int SpawnMgr::spawn(const MapPtr& map, network::EntityType type, int amount, const glm::ivec3* pos) {
+int SpawnMgr::spawn(network::EntityType type, int amount, const glm::ivec3* pos) {
 	const char *typeName = network::EnumNameEntityType(type);
 	const ai::TreeNodePtr& behaviour = _loader->load(typeName);
 	if (!behaviour) {
@@ -82,23 +86,23 @@ int SpawnMgr::spawn(const MapPtr& map, network::EntityType type, int amount, con
 		return 0;
 	}
 	for (int x = 0; x < amount; ++x) {
-		const NpcPtr& npc = std::make_shared<Npc>(type, behaviour, map, _messageSender,
+		const NpcPtr& npc = std::make_shared<Npc>(type, behaviour, _map->ptr(), _messageSender,
 				_timeProvider, _containerProvider, _cooldownProvider);
 		npc->init(pos);
 		// now let it tick
-		map->addNpc(npc);
+		_map->addNpc(npc);
 		_entityStorage->addNpc(npc);
 	}
 
 	return amount;
 }
 
-void SpawnMgr::update(const MapPtr& map, long dt) {
+void SpawnMgr::update(long dt) {
 	_time += dt;
 	if (_time >= spawnTime) {
 		_time -= spawnTime;
-		spawnAnimals(map);
-		spawnCharacters(map);
+		spawnAnimals();
+		spawnCharacters();
 	}
 }
 
