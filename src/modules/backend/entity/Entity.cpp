@@ -48,7 +48,7 @@ std::string Entity::name() const {
 }
 
 void Entity::sendToVisible(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type,
-		flatbuffers::Offset<void> data, bool sendToSelf, uint32_t flags) {
+		flatbuffers::Offset<void> data, bool sendToSelf, uint32_t flags) const {
 	const EntitySet& visible = visibleCopy();
 	std::vector<ENetPeer*> peers;
 	peers.reserve(visible.size() + 1);
@@ -125,8 +125,8 @@ void Entity::sendAttribUpdate() {
 	if (dirtyTypes.empty()) {
 		return;
 	}
-	flatbuffers::FlatBufferBuilder fbb;
-	auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(dirtyTypes.size(),
+	_attribUpdateFBB.Clear();
+	auto attribs = _attribUpdateFBB.CreateVector<flatbuffers::Offset<network::AttribEntry>>(dirtyTypes.size(),
 		[&] (size_t i) {
 			const attrib::DirtyValue& dirtyValue = *dirtyTypes.begin();
 			dirtyTypes.erase(dirtyTypes.begin());
@@ -134,10 +134,10 @@ void Entity::sendAttribUpdate() {
 			// TODO: maybe not needed?
 			const network::AttribMode mode = network::AttribMode::Percentage;
 			const bool current = dirtyValue.current;
-			return network::CreateAttribEntry(fbb, dirtyValue.type, value, mode, current);
+			return network::CreateAttribEntry(_attribUpdateFBB, dirtyValue.type, value, mode, current);
 		});
-	sendToVisible(fbb, network::ServerMsgType::AttribUpdate,
-			network::CreateAttribUpdate(fbb, id(), attribs).Union(), true);
+	sendToVisible(_attribUpdateFBB, network::ServerMsgType::AttribUpdate,
+			network::CreateAttribUpdate(_attribUpdateFBB, id(), attribs).Union(), true);
 }
 
 bool Entity::update(long dt) {
@@ -175,32 +175,32 @@ void Entity::sendEntityUpdate(const EntityPtr& entity) const {
 	if (_peer == nullptr) {
 		return;
 	}
-	flatbuffers::FlatBufferBuilder fbb;
 	const glm::vec3& _pos = entity->pos();
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
-	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityUpdate,
-			network::CreateEntityUpdate(fbb, entity->id(), &pos, entity->orientation()).Union());
+	_entityUpdateFBB.Clear();
+	_messageSender->sendServerMessage(_peer, _entityUpdateFBB, network::ServerMsgType::EntityUpdate,
+			network::CreateEntityUpdate(_entityUpdateFBB, entity->id(), &pos, entity->orientation()).Union());
 }
 
 void Entity::sendEntitySpawn(const EntityPtr& entity) const {
 	if (_peer == nullptr) {
 		return;
 	}
-	flatbuffers::FlatBufferBuilder fbb;
 	const glm::vec3& pos = entity->pos();
 	const network::Vec3 vec3 { pos.x, pos.y, pos.z };
 	const EntityId entityId = id();
-	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntitySpawn,
-			network::CreateEntitySpawn(fbb, entity->id(), entity->entityType(), &vec3, entityId).Union());
+	_entitySpawnFBB.Clear();
+	_messageSender->sendServerMessage(_peer, _entitySpawnFBB, network::ServerMsgType::EntitySpawn,
+			network::CreateEntitySpawn(_entitySpawnFBB, entity->id(), entity->entityType(), &vec3, entityId).Union());
 }
 
 void Entity::sendEntityRemove(const EntityPtr& entity) const {
 	if (_peer == nullptr) {
 		return;
 	}
-	flatbuffers::FlatBufferBuilder fbb;
-	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityRemove,
-			network::CreateEntityRemove(fbb, entity->id()).Union());
+	_entityRemoveFBB.Clear();
+	_messageSender->sendServerMessage(_peer, _entityRemoveFBB, network::ServerMsgType::EntityRemove,
+			network::CreateEntityRemove(_entityRemoveFBB, entity->id()).Union());
 }
 
 bool Entity::inFrustum(const glm::vec3& position) const {

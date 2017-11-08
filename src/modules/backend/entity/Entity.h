@@ -39,6 +39,11 @@ class Entity : public std::enable_shared_from_this<Entity> {
 private:
 	core::ReadWriteLock _visibleLock {"Entity"};
 	EntitySet _visible;
+	// they are stored as members to reduce memory allocations
+	mutable flatbuffers::FlatBufferBuilder _attribUpdateFBB;
+	mutable flatbuffers::FlatBufferBuilder _entityUpdateFBB;
+	mutable flatbuffers::FlatBufferBuilder _entitySpawnFBB;
+	mutable flatbuffers::FlatBufferBuilder _entityRemoveFBB;
 
 protected:
 	// network stuff
@@ -198,7 +203,7 @@ public:
 	std::string name() const;
 
 	void sendToVisible(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type,
-			flatbuffers::Offset<void> data, bool sendToSelf = false, uint32_t flags = ENET_PACKET_FLAG_RELIABLE);
+			flatbuffers::Offset<void> data, bool sendToSelf = false, uint32_t flags = ENET_PACKET_FLAG_RELIABLE) const;
 };
 
 inline const MapPtr& Entity::map() const {

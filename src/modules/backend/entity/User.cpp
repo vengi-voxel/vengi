@@ -158,8 +158,7 @@ void User::sendCooldown(cooldown::Type type, bool started) const {
 void User::sendUserSpawn() const {
 	flatbuffers::FlatBufferBuilder fbb;
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
-	// TODO: broadcast to visible
-	_messageSender->broadcastServerMessage(fbb, network::ServerMsgType::UserSpawn, network::CreateUserSpawn(fbb, id(), fbb.CreateString(_name), &pos).Union());
+	sendToVisible(fbb, network::ServerMsgType::UserSpawn, network::CreateUserSpawn(fbb, id(), fbb.CreateString(_name), &pos).Union(), true);
 }
 
 }
