@@ -30,7 +30,8 @@ private:
 	uint64_t _lastAction = 0u;
 	uint64_t _time = 0u;
 	core::VarPtr _userTimeout;
-	flatbuffers::FlatBufferBuilder _entityUpdateFbb;
+	flatbuffers::FlatBufferBuilder _entityUpdateFBB;
+	mutable flatbuffers::FlatBufferBuilder _cooldownFBB;
 
 	UserStockMgr _stockMgr;
 	core::TimeProviderPtr _timeProvider;

@@ -125,10 +125,9 @@ bool User::update(long dt) {
 	Log::trace("move: dt %li, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", dt, speed, _pos.x, _pos.y, _pos.z, orientation(), _yaw);
 
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
-	// TODO: broadcast to visible
-	_messageSender->broadcastServerMessage(_entityUpdateFbb,
+	sendToVisible(_entityUpdateFBB,
 			network::ServerMsgType::EntityUpdate,
-			network::CreateEntityUpdate(_entityUpdateFbb, id(), &pos, orientation()).Union());
+			network::CreateEntityUpdate(_entityUpdateFBB, id(), &pos, orientation()).Union(), true);
 
 	return true;
 }
@@ -139,20 +138,19 @@ void User::sendSeed(long seed) const {
 }
 
 void User::sendCooldown(cooldown::Type type, bool started) const {
-	flatbuffers::FlatBufferBuilder fbb;
 	network::ServerMsgType msgtype;
 	flatbuffers::Offset<void> msg;
 	if (started) {
 		const uint64_t duration = _cooldownProvider->duration(type);
 		const uint64_t now = _timeProvider->tickMillis();
-		msg = network::CreateStartCooldown(fbb, type, now, duration).Union();
+		msg = network::CreateStartCooldown(_cooldownFBB, type, now, duration).Union();
 		msgtype = network::ServerMsgType::StartCooldown;
 	} else {
-		msg = network::CreateStopCooldown(fbb, type).Union();
+		msg = network::CreateStopCooldown(_cooldownFBB, type).Union();
 		msgtype = network::ServerMsgType::StopCooldown;
 	}
 
-	_messageSender->sendServerMessage(_peer, fbb, msgtype, msg);
+	_messageSender->sendServerMessage(_peer, _cooldownFBB, msgtype, msg);
 }
 
 void User::sendUserSpawn() const {

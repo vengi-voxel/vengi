@@ -14,8 +14,6 @@
 #include "backend/world/MapProvider.h"
 #include "backend/world/Map.h"
 
-#define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::type, network::msg.Union());
-
 namespace backend {
 
 UserConnectHandler::UserConnectHandler(

@@ -190,6 +190,7 @@ void Entity::sendEntitySpawn(const EntityPtr& entity) const {
 	const network::Vec3 vec3 { pos.x, pos.y, pos.z };
 	const EntityId entityId = id();
 	_entitySpawnFBB.Clear();
+	// TODO: User::sendUserSpawn()?
 	_messageSender->sendServerMessage(_peer, _entitySpawnFBB, network::ServerMsgType::EntitySpawn,
 			network::CreateEntitySpawn(_entitySpawnFBB, entity->id(), entity->entityType(), &vec3, entityId).Union());
 }
