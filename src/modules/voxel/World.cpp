@@ -184,10 +184,6 @@ bool World::isReset() const {
 	return _cancelThreads;
 }
 
-void World::update(long dt) {
-	core_trace_scoped(WorldOnFrame);
-}
-
 void World::stats(int& meshes, int& extracted, int& pending) const {
 	extracted = _positionsExtracted.size();
 	pending = _pendingExtraction.size();

@@ -161,8 +161,6 @@ public:
 	 */
 	bool scheduleMeshExtraction(const glm::ivec3& pos);
 
-	void update(long dt);
-
 	const core::Random& random() const;
 
 	long seed() const;

@@ -70,7 +70,6 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 
 void Map::update(long dt) {
 	_spawnMgr->update(dt);
-	_voxelWorld->update(dt);
 	_zone->update(dt);
 	updateQuadTree();
 

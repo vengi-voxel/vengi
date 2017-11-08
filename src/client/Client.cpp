@@ -276,7 +276,6 @@ core::AppState Client::onRunning() {
 	sendMovement();
 	if (state == core::AppState::Running) {
 		_network->update();
-		_world->update(_deltaFrame);
 		if (_world->created()) {
 			_worldRenderer.onRunning(_camera, _deltaFrame);
 		}
