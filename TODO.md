@@ -6,7 +6,7 @@ Now consider that there are 1000 players logged in and they all have there Coold
 
 ## Password
 
-Implement proper password handling (don't ever load passwords from DB into memory - just compare hashes). (This should also be true for logging in - only transmit the hash - never the real password)
+Implement proper password handling (don't ever load password hashes from DB into memory - just compare hashes via sql statement). (This should also be true for signing up and logging in - only transmit the hash - never the real password)
 
 ## Enums
 
@@ -69,3 +69,7 @@ There should be a map editor to place Point-of-Interests (see `PoiProvider`) and
 # Statsd support
 
 Extend statsd support with more events
+
+#SignUp
+
+Implement signnp with email verification, Lost password and co - also see password related point in the persistence section.
