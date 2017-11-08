@@ -236,6 +236,19 @@ io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
 	return std::make_shared<io::File>(_basePath + filename, mode);
 }
 
+std::string Filesystem::load(const char *filename, ...) {
+	va_list ap;
+	constexpr std::size_t bufSize = 1024;
+	char text[bufSize];
+
+	va_start(ap, filename);
+	SDL_vsnprintf(text, bufSize, filename, ap);
+	text[sizeof(text) - 1] = '\0';
+	va_end(ap);
+
+	return load(std::string(text));
+}
+
 std::string Filesystem::load(const std::string& filename) const {
 	const io::FilePtr& f = open(filename);
 	return f->load();

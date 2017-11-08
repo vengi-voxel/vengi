@@ -110,7 +110,7 @@ bool Map::init() {
 	_voxelWorld->setSeed(seed->longVal());
 	_voxelWorld->setPersist(false);
 	_zone = new ai::Zone(core::string::format("Zone %i", _mapId));
-	const std::string& mapData = _filesystem->load(core::string::format("map/map%03i.lua", _mapId));
+	const std::string& mapData = _filesystem->load("map/map%03i.lua", _mapId);
 	if (mapData.empty()) {
 		return true;
 	}

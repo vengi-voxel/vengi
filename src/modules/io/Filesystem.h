@@ -10,6 +10,8 @@
 #include <stack>
 #include <uv.h>
 #include <unordered_map>
+#include <stdarg.h>
+#include <SDL.h>
 
 namespace io {
 
@@ -79,6 +81,8 @@ public:
 	bool pushDir(const std::string& directory);
 
 	io::FilePtr open(const std::string& filename, FileMode mode = FileMode::Read) const;
+
+	std::string load(SDL_PRINTF_FORMAT_STRING const char *filename, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 	std::string load(const std::string& filename) const;
 	/**
