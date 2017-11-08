@@ -44,10 +44,6 @@ private:
 	void onCooldownExpired(cooldown::Type type);
 	void triggerCooldown(cooldown::Type type);
 
-protected:
-	void visibleAdd(const EntitySet& entities) override;
-	void visibleRemove(const EntitySet& entities) override;
-
 public:
 	User(ENetPeer* peer, EntityId id, const std::string& name, const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider,

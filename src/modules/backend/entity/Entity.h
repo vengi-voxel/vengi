@@ -69,11 +69,11 @@ protected:
 	/**
 	 * @brief Called with the set of entities that just get visible for this entity
 	 */
-	virtual void visibleAdd(const EntitySet& entities);
+	void visibleAdd(const EntitySet& entities);
 	/**
 	 * @brief Called with the set of entities that just get invisible for this entity
 	 */
-	virtual void visibleRemove(const EntitySet& entities);
+	void visibleRemove(const EntitySet& entities);
 
 	void sendAttribUpdate();
 	void sendEntityUpdate(const EntityPtr& entity) const;

@@ -90,6 +90,10 @@ bool ServerLoop::init() {
 		Log::error("Failed to create stock table");
 		return false;
 	}
+	if (!_dbHandler->createTable(db::CooldownModel())) {
+		Log::error("Failed to create cooldown table");
+		return false;
+	}
 	if (!_eventMgr->init()) {
 		Log::error("Failed to init event manager");
 		return false;

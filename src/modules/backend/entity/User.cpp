@@ -23,20 +23,8 @@ User::User(ENetPeer* peer, EntityId id, const std::string& name, const MapPtr& m
 void User::init() {
 	Super::init();
 	_stockMgr.init();
-}
-
-void User::visibleAdd(const EntitySet& entities) {
-	Super::visibleAdd(entities);
-	for (const EntityPtr& e : entities) {
-		sendEntitySpawn(e);
-	}
-}
-
-void User::visibleRemove(const EntitySet& entities) {
-	Super::visibleRemove(entities);
-	for (const EntityPtr& e : entities) {
-		sendEntityRemove(e);
-	}
+	// TODO: add UserCooldownMgr and load cooldowns from db
+	//_cooldowns.init();
 }
 
 ENetPeer* User::setPeer(ENetPeer* peer) {
@@ -53,6 +41,7 @@ ENetPeer* User::setPeer(ENetPeer* peer) {
 
 void User::attack(EntityId id) {
 	_lastAction = _time;
+	// map().attackMgr().startAttack(this->id(), id);
 }
 
 void User::onCooldownExpired(cooldown::Type type) {

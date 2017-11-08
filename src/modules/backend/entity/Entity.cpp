@@ -30,12 +30,14 @@ Entity::~Entity() {
 void Entity::visibleAdd(const EntitySet& entities) {
 	for (const EntityPtr& e : entities) {
 		Log::trace("entity %i is visible for %i", (int)e->id(), (int)id());
+		sendEntitySpawn(e);
 	}
 }
 
 void Entity::visibleRemove(const EntitySet& entities) {
 	for (const EntityPtr& e : entities) {
 		Log::trace("entity %i is no longer visible for %i", (int)e->id(), (int)id());
+		sendEntityRemove(e);
 	}
 }
 

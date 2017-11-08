@@ -92,3 +92,25 @@ table inventory {
 		userid foreignkey user id
 	}
 }
+
+table cooldown {
+	namespace backend
+	field userid {
+		type long
+		operator set
+	}
+	field cooldownid {
+		type int
+		operator set
+	}
+	field starttime {
+		type timestamp
+		notnull
+		operator set
+	}
+	constraints {
+		userid primarykey
+		cooldownid primarykey
+		userid foreignkey user id
+	}
+}
