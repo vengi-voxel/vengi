@@ -58,8 +58,17 @@ void ServerLoop::onIdle(uv_idle_t* handle) {
 	metric::Metric& metric = loop->_metricMgr->metric();
 
 	const core::App* app = core::App::getInstance();
-	metric.timing("frame.delta", app->deltaFrame());
-	metric.gauge("uptime", app->lifetimeInSeconds() * 1000.0f);
+	const int deltaFrame = app->deltaFrame();
+	constexpr int delta = 10;
+	if (std::abs(deltaFrame - loop->_lastDeltaFrame) > delta) {
+		metric.timing("frame.delta", app->deltaFrame());
+		loop->_lastDeltaFrame = deltaFrame;
+	}
+	const uint64_t lifetimeSeconds = app->lifetimeInSeconds();
+	if (lifetimeSeconds != loop->_lifetimeSeconds) {
+		metric.gauge("uptime", lifetimeSeconds);
+		loop->_lifetimeSeconds = lifetimeSeconds;
+	}
 }
 
 #define regHandler(type, handler, ...) \
@@ -188,7 +197,11 @@ void ServerLoop::update(long dt) {
 	core_trace_scoped(ServerLoop);
 	uv_run(_loop, UV_RUN_NOWAIT);
 	_network->update();
-	_metricMgr->metric().gauge("events.skip", _eventBus->update(200));
+	const int eventSkip = _eventBus->update(200);
+	if (eventSkip != _lastEventSkip) {
+		_metricMgr->metric().gauge("events.skip", eventSkip);
+		_lastEventSkip = eventSkip;
+	}
 	std::this_thread::sleep_for(1ms);
 }
 

@@ -102,7 +102,7 @@ core::AppState TestMeshApp::onInit() {
 
 void TestMeshApp::doRender() {
 	const uint8_t animationIndex = core::Var::getSafe("animation")->intVal();
-	const long timeInSeconds = lifetimeInSeconds();
+	const uint64_t timeInSeconds = lifetimeInSeconds();
 
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);

@@ -46,6 +46,10 @@ private:
 	uv_timer_t _worldTimer;
 	uv_idle_t _idleTimer;
 
+	int _lastEventSkip = 0;
+	int _lastDeltaFrame = 0;
+	uint64_t _lifetimeSeconds = 0u;
+
 	static void onIdle(uv_idle_t* handle);
 	bool addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMillis, uint64_t initialDelayMillis = 0);
 public:
