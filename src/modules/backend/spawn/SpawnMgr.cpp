@@ -27,7 +27,7 @@ SpawnMgr::SpawnMgr(Map* map,
 		const cooldown::CooldownProviderPtr& cooldownProvider) :
 		_map(map), _loader(loader), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),
 		_containerProvider(containerProvider), _cooldownProvider(cooldownProvider),
-		_filesystem(filesytem), _time(15000L) {
+		_filesystem(filesytem) {
 }
 
 void SpawnMgr::shutdown() {

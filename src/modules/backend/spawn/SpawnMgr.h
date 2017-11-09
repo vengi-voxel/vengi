@@ -21,7 +21,7 @@ private:
 	attrib::ContainerProviderPtr _containerProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	io::FilesystemPtr _filesystem;
-	long _time;
+	long _time = 15000L;
 
 	void spawnEntity(network::EntityType start, network::EntityType end, int maxAmount);
 	void spawnAnimals();
