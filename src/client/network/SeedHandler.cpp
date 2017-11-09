@@ -12,5 +12,5 @@ void SeedHandler::execute(ENetPeer* peer, const void* raw) {
 	const network::Seed* message = getMsg<network::Seed>(raw);
 	const long seed = message->seed();
 	_world->setSeed(seed);
-	core::App::getInstance()->eventBus()->publish(voxel::WorldCreatedEvent(_world));
+	_eventBus->publish(voxel::WorldCreatedEvent(_world));
 }

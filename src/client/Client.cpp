@@ -122,7 +122,7 @@ core::AppState Client::onInit() {
 	regHandler(network::ServerMsgType::EntityUpdate, EntityUpdateHandler);
 	regHandler(network::ServerMsgType::UserSpawn, UserSpawnHandler);
 	regHandler(network::ServerMsgType::AuthFailed, AuthFailedHandler);
-	regHandler(network::ServerMsgType::Seed, SeedHandler, _world);
+	regHandler(network::ServerMsgType::Seed, SeedHandler, _world, _eventBus);
 
 	core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
