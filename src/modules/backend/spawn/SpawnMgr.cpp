@@ -34,11 +34,6 @@ void SpawnMgr::shutdown() {
 }
 
 bool SpawnMgr::init() {
-	const std::string& lua = _filesystem->load("behaviourtrees.lua");
-	if (!_loader->init(lua)) {
-		Log::error("could not load the behaviourtrees: %s", _loader->getError().c_str());
-		return false;
-	}
 	return true;
 }
 

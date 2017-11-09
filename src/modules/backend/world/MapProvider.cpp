@@ -7,6 +7,7 @@
 #include "io/Filesystem.h"
 #include "core/Log.h"
 #include "core/Assert.h"
+#include "backend/entity/ai/AILoader.h"
 
 namespace backend {
 
@@ -45,6 +46,12 @@ MapProvider::Maps MapProvider::worldMaps() const {
 }
 
 bool MapProvider::init() {
+	const std::string& lua = _filesystem->load("behaviourtrees.lua");
+	if (!_loader->init(lua)) {
+		Log::error("could not load the behaviourtrees: %s", _loader->getError().c_str());
+		return false;
+	}
+
 	const MapPtr& map = std::make_shared<Map>(1, _eventBus, _timeProvider,
 			_filesystem, _entityStorage, _messageSender,
 			_loader, _containerProvider, _cooldownProvider);
