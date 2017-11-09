@@ -55,9 +55,6 @@ protected:
 	attrib::Attributes _attribs;
 	std::unordered_set<attrib::DirtyValue> _dirtyAttributeTypes;
 
-	// cooldowns
-	cooldown::CooldownMgr _cooldowns;
-
 	MapPtr _map;
 
 	EntityId _entityId;
@@ -86,14 +83,11 @@ public:
 			const MapPtr& map,
 			const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider,
-			const attrib::ContainerProviderPtr& containerProvider,
-			const cooldown::CooldownProviderPtr& cooldownProvider);
+			const attrib::ContainerProviderPtr& containerProvider);
 	virtual ~Entity();
 
 	void addContainer(const std::string& id);
 	void removeContainer(const std::string& id);
-
-	cooldown::CooldownMgr& cooldownMgr();
 
 	EntityId id() const;
 	const MapPtr& map() const;
@@ -130,9 +124,7 @@ public:
 
 	double max(attrib::Type type) const;
 
-	inline int visibleCount() const {
-		return _visible.size();
-	}
+	int visibleCount() const;
 
 	/**
 	 * @brief Allows to execute a functor/lambda on the visible objects
@@ -206,6 +198,10 @@ public:
 			flatbuffers::Offset<void> data, bool sendToSelf = false, uint32_t flags = ENET_PACKET_FLAG_RELIABLE) const;
 };
 
+inline int Entity::visibleCount() const {
+	return _visible.size();
+}
+
 inline const MapPtr& Entity::map() const {
 	return _map;
 }
@@ -244,10 +240,6 @@ inline float Entity::orientation() const {
 
 inline void Entity::setOrientation(float orientation) {
 	_orientation = orientation;
-}
-
-inline cooldown::CooldownMgr& Entity::cooldownMgr() {
-	return _cooldowns;
 }
 
 inline EntityId Entity::id() const {

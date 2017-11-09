@@ -7,6 +7,7 @@
 #include "backend/entity/ai/AICharacter.h"
 #include "core/String.h"
 #include "core/Common.h"
+#include "core/Assert.h"
 
 namespace backend {
 
@@ -24,7 +25,8 @@ void SelectIncreasePartner::filter(const AIPtr& entity) {
 		if (chr.entityType() != e->entityType()) {
 			return;
 		}
-		if (e->cooldownMgr().isCooldown(_cooldownId)) {
+		const NpcPtr& npc = std::static_pointer_cast<Npc>(e);
+		if (npc->cooldownMgr().isCooldown(_cooldownId)) {
 			return;
 		}
 		entities.push_back(e->id());

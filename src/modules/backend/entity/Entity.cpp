@@ -18,10 +18,9 @@ Entity::Entity(EntityId id,
 		const MapPtr& map,
 		const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider,
-		const attrib::ContainerProviderPtr& containerProvider,
-		const cooldown::CooldownProviderPtr& cooldownProvider) :
+		const attrib::ContainerProviderPtr& containerProvider) :
 		_messageSender(messageSender), _containerProvider(containerProvider),
-		_cooldowns(timeProvider, cooldownProvider), _map(map), _entityId(id) {
+		_map(map), _entityId(id) {
 	_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1));
 }
 
@@ -145,7 +144,6 @@ bool Entity::update(long dt) {
 		sendAttribUpdate();
 		_dirtyAttributeTypes.clear();
 	}
-	_cooldowns.update();
 	return true;
 }
 

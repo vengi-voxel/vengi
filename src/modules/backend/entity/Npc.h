@@ -22,14 +22,20 @@ private:
 	ai::AIPtr _ai;
 	AICharacterPtr _aiChr;
 
+	// cooldowns
+	cooldown::CooldownMgr _cooldowns;
+
 	void moveToGround();
 
 	void init() override;
 
 public:
-	Npc(network::EntityType type, const ai::TreeNodePtr& behaviour,
-			const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
-			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
+	Npc(network::EntityType type,
+			const ai::TreeNodePtr& behaviour,
+			const MapPtr& map,
+			const network::ServerMessageSenderPtr& messageSender,
+			const core::TimeProviderPtr& timeProvider,
+			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider);
 	~Npc();
 
@@ -39,6 +45,8 @@ public:
 	const glm::ivec3& homePosition() const;
 	bool route(const glm::ivec3& target);
 	const ai::AIPtr& ai();
+
+	cooldown::CooldownMgr& cooldownMgr();
 
 	bool die();
 	bool attack(EntityId id);
@@ -65,6 +73,10 @@ inline const glm::ivec3& Npc::homePosition() const {
 
 inline const ai::AIPtr& Npc::ai() {
 	return _ai;
+}
+
+inline cooldown::CooldownMgr& Npc::cooldownMgr() {
+	return _cooldowns;
 }
 
 typedef std::shared_ptr<Npc> NpcPtr;

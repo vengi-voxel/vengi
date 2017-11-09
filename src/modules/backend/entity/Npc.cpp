@@ -17,7 +17,8 @@ Npc::Npc(network::EntityType type, const ai::TreeNodePtr& behaviour,
 		const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider) :
-		Super(_nextNpcId++, map, messageSender, timeProvider, containerProvider, cooldownProvider) {
+		Super(_nextNpcId++, map, messageSender, timeProvider, containerProvider),
+		_cooldowns(timeProvider, cooldownProvider) {
 	_entityType = type;
 	_ai = std::make_shared<ai::AI>(behaviour);
 	_aiChr = std::make_shared<AICharacter>(_entityId, *this);
@@ -82,6 +83,7 @@ bool Npc::update(long dt) {
 	if (!Super::update(dt)) {
 		return false;
 	}
+	_cooldowns.update();
 	const ai::ICharacterPtr& character = _ai->getCharacter();
 	character->setSpeed(current(attrib::Type::SPEED));
 	character->setOrientation(orientation());

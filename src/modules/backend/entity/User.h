@@ -8,6 +8,7 @@
 #include "Entity.h"
 #include "core/Var.h"
 #include "user/UserStockMgr.h"
+#include "user/UserCooldownMgr.h"
 #include "poi/PoiProvider.h"
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
@@ -36,6 +37,7 @@ private:
 	UserStockMgr _stockMgr;
 	core::TimeProviderPtr _timeProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
+	UserCooldownMgr _cooldownMgr;
 
 	bool isMove(network::MoveDirection dir) const;
 	void addMove(network::MoveDirection dir);
@@ -44,10 +46,20 @@ private:
 	void onCooldownExpired(cooldown::Type type);
 	void triggerCooldown(cooldown::Type type);
 
+	void shutdown();
+
 public:
-	User(ENetPeer* peer, EntityId id, const std::string& name, const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
-			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-			const persistence::DBHandlerPtr& dbHandler, const stock::StockProviderPtr& stockDataProvider);
+	User(ENetPeer* peer,
+			EntityId id,
+			const std::string& name,
+			const MapPtr& map,
+			const network::ServerMessageSenderPtr& messageSender,
+			const core::TimeProviderPtr& timeProvider,
+			const attrib::ContainerProviderPtr& containerProvider,
+			const cooldown::CooldownProviderPtr& cooldownProvider,
+			const persistence::DBHandlerPtr& dbHandler,
+			const stock::StockProviderPtr& stockDataProvider);
+	~User();
 
 	void setEntityId(EntityId id);
 

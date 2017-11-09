@@ -8,23 +8,37 @@
 
 namespace backend {
 
-User::User(ENetPeer* peer, EntityId id, const std::string& name, const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
-		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
-		const cooldown::CooldownProviderPtr& cooldownProvider, const persistence::DBHandlerPtr& dbHandler,
+User::User(ENetPeer* peer, EntityId id,
+		const std::string& name,
+		const MapPtr& map,
+		const network::ServerMessageSenderPtr& messageSender,
+		const core::TimeProviderPtr& timeProvider,
+		const attrib::ContainerProviderPtr& containerProvider,
+		const cooldown::CooldownProviderPtr& cooldownProvider,
+		const persistence::DBHandlerPtr& dbHandler,
 		const stock::StockProviderPtr& stockDataProvider) :
-		Super(id, map, messageSender, timeProvider, containerProvider, cooldownProvider),
+		Super(id, map, messageSender, timeProvider, containerProvider),
 		_name(name), _dbHandler(dbHandler), _stockMgr(this, stockDataProvider, dbHandler),
-		_timeProvider(timeProvider), _cooldownProvider(cooldownProvider) {
+		_timeProvider(timeProvider), _cooldownProvider(cooldownProvider),
+		_cooldownMgr(id, timeProvider, cooldownProvider, dbHandler) {
 	setPeer(peer);
 	_entityType = network::EntityType::PLAYER;
 	_userTimeout = core::Var::getSafe(cfg::ServerUserTimeout);
 }
 
+User::~User() {
+	shutdown();
+}
+
 void User::init() {
 	Super::init();
 	_stockMgr.init();
-	// TODO: add UserCooldownMgr and load cooldowns from db
-	//_cooldowns.init();
+	_cooldownMgr.init();
+}
+
+void User::shutdown() {
+	_stockMgr.shutdown();
+	_cooldownMgr.shutdown();
 }
 
 ENetPeer* User::setPeer(ENetPeer* peer) {
@@ -55,7 +69,7 @@ void User::triggerLogout() {
 }
 
 void User::triggerCooldown(cooldown::Type type) {
-	_cooldowns.triggerCooldown(type, [this, type] (cooldown::CallbackType callbackType) {
+	_cooldownMgr.triggerCooldown(type, [this, type] (cooldown::CallbackType callbackType) {
 		if (callbackType == cooldown::CallbackType::Expired) {
 			onCooldownExpired(type);
 			return;
@@ -87,7 +101,7 @@ bool User::update(long dt) {
 	}
 
 	_stockMgr.update(dt);
-	_cooldowns.update();
+	_cooldownMgr.update();
 
 	if (!isMove(network::MoveDirection::ANY)) {
 		return true;

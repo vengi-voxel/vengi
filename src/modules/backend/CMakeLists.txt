@@ -38,7 +38,10 @@ set(SRCS
 	entity/ai/filter/SelectVisible.cpp entity/ai/filter/SelectVisible.h
 	entity/ai/filter/SelectIncreasePartner.cpp entity/ai/filter/SelectIncreasePartner.h
 	entity/ai/filter/SelectEntitiesOfTypes.h entity/ai/filter/SelectEntitiesOfTypes.cpp
+
 	entity/user/UserStockMgr.h entity/user/UserStockMgr.cpp
+	entity/user/UserCooldownMgr.h entity/user/UserCooldownMgr.cpp
+
 	entity/Npc.cpp entity/Npc.h
 	entity/User.cpp entity/User.h
 	entity/EntityId.h

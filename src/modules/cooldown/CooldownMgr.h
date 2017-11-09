@@ -24,7 +24,7 @@ namespace cooldown {
  * @ingroup Cooldowns
  */
 class CooldownMgr: public core::NonCopyable {
-private:
+protected:
 	core::TimeProviderPtr _timeProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	core::ReadWriteLock _lock;
@@ -41,6 +41,7 @@ private:
 	Cooldowns _cooldowns;
 public:
 	CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
+	virtual ~CooldownMgr() {}
 
 	/**
 	 * @brief Tries to trigger the specified cooldown for the given entity
@@ -67,6 +68,9 @@ public:
 	 * @brief Checks whether a user has the given cooldown running
 	 */
 	bool isCooldown(Type type);
+
+	virtual void init() {}
+	virtual void shutdown() {}
 
 	/**
 	 * @brief Update cooldown states
