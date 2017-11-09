@@ -80,7 +80,7 @@ void Map::update(long dt) {
 			Log::debug("remove user %li", user->id());
 			_quadTree.remove(QuadTreeNode { user });
 			i = _users.erase(i);
-			_eventBus->publish(EntityRemoveFromMapEvent(user));
+			_eventBus->enqueue(std::make_shared<EntityRemoveFromMapEvent>(user));
 		} else {
 			++i;
 		}
@@ -91,7 +91,7 @@ void Map::update(long dt) {
 			Log::debug("remove npc %li", npc->id());
 			_quadTree.remove(QuadTreeNode { npc });
 			i = _npcs.erase(i);
-			_eventBus->publish(EntityRemoveFromMapEvent(npc));
+			_eventBus->enqueue(std::make_shared<EntityRemoveFromMapEvent>(npc));
 		} else {
 			++i;
 		}
@@ -158,7 +158,7 @@ void Map::addUser(const UserPtr& user) {
 	}
 	const glm::vec3& pos = findStartPosition(user);
 	user->setMap(ptr(), pos);
-	_eventBus->publish(EntityAddToMapEvent(user));
+	_eventBus->enqueue(std::make_shared<EntityAddToMapEvent>(user));
 }
 
 bool Map::removeUser(EntityId id) {
@@ -169,7 +169,7 @@ bool Map::removeUser(EntityId id) {
 	UserPtr user = i->second;
 	_quadTree.remove(QuadTreeNode { user });
 	_users.erase(i);
-	_eventBus->publish(EntityRemoveFromMapEvent(user));
+	_eventBus->enqueue(std::make_shared<EntityRemoveFromMapEvent>(user));
 	return true;
 }
 
@@ -190,7 +190,7 @@ void Map::addNpc(const NpcPtr& npc) {
 	const glm::vec3& pos = findStartPosition(npc);
 	npc->setMap(ptr(), pos);
 	_zone->addAI(npc->ai());
-	_eventBus->publish(EntityAddToMapEvent(npc));
+	_eventBus->enqueue(std::make_shared<EntityAddToMapEvent>(npc));
 }
 
 bool Map::removeNpc(EntityId id) {
@@ -202,7 +202,7 @@ bool Map::removeNpc(EntityId id) {
 	_quadTree.remove(QuadTreeNode { npc });
 	_npcs.erase(i);
 	_zone->removeAI(npc->ai());
-	_eventBus->publish(EntityRemoveFromMapEvent(npc));
+	_eventBus->enqueue(std::make_shared<EntityRemoveFromMapEvent>(npc));
 	return true;
 }
 
