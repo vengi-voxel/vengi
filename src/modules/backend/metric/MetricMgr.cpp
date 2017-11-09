@@ -8,10 +8,13 @@
 #include "backend/entity/Entity.h"
 #include "metric/UDPMetricSender.h"
 #include "network/ProtocolEnum.h"
+#include "backend/world/Map.h"
 
 namespace backend {
 
-MetricMgr::MetricMgr(const metric::IMetricSenderPtr& metricSender, const core::EventBusPtr& eventBus) :
+MetricMgr::MetricMgr(
+		const metric::IMetricSenderPtr& metricSender,
+		const core::EventBusPtr& eventBus) :
 		_metric("server."), _metricSender(metricSender) {
 	eventBus->subscribe<EntityAddToMapEvent>(*this);
 	eventBus->subscribe<EntityRemoveFromMapEvent>(*this);
@@ -80,13 +83,18 @@ void MetricMgr::onEvent(const EntityDeleteEvent& event) {
 
 void MetricMgr::onEvent(const EntityAddToMapEvent& event) {
 	const EntityPtr& entity = event.entity();
-	entity->map();
+	const MapPtr& map = entity->map();
 	const network::EntityType type = entity->entityType();
 	const char *typeName = network::EnumNameEntityType(type);
-	_metric.increment("count.entity", {{"type", typeName}});
+	_metric.increment("count.map.entity", {{"map", map->idStr()}, {"type", typeName}});
 }
 
 void MetricMgr::onEvent(const EntityRemoveFromMapEvent& event) {
+	const EntityPtr& entity = event.entity();
+	const MapPtr& map = entity->map();
+	const network::EntityType type = entity->entityType();
+	const char *typeName = network::EnumNameEntityType(type);
+	_metric.decrement("count.map.entity", {{"map", map->idStr()}, {"type", typeName}});
 }
 
 }

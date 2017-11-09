@@ -96,6 +96,7 @@ public:
 
 	ai::Zone* zone() const;
 	MapId id() const;
+	const std::string& idStr() const;
 
 	int findFloor(const glm::vec3& pos) const;
 	glm::ivec3 randomPos() const;
@@ -106,6 +107,10 @@ public:
 
 inline MapId Map::id() const {
 	return _mapId;
+}
+
+inline const std::string& Map::idStr() const {
+	return _mapIdStr;
 }
 
 inline const SpawnMgrPtr& Map::spawnMgr() const {
