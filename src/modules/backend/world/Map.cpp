@@ -3,6 +3,7 @@
  */
 
 #include "Map.h"
+#include "LUAFunctions.h"
 #include "voxel/World.h"
 #include "core/String.h"
 #include "core/EventBus.h"
@@ -109,16 +110,25 @@ bool Map::init() {
 	_voxelWorld->setSeed(seed->longVal());
 	_voxelWorld->setPersist(false);
 	_zone = new ai::Zone(core::string::format("Zone %i", _mapId));
+
+	if (!_spawnMgr->init()) {
+		Log::error("Failed to init the spawn manager");
+		return false;
+	}
+
 	const std::string& mapData = _filesystem->load("map/map%03i.lua", _mapId);
 	if (mapData.empty()) {
 		return true;
 	}
-	if (!_lua.load(mapData)) {
-		return false;
-	}
 
-	if (!_spawnMgr->init()) {
-		Log::error("Failed to init the spawn manager");
+	lua::LUAType map = _lua.registerType("Map");
+	map.addFunction("id", luaMapGetId);
+	map.addFunction("__gc", luaMapGC);
+	map.addFunction("__tostring", luaMapToString);
+
+	_lua.registerGlobal("map", luaGetMap);
+
+	if (!_lua.load(mapData)) {
 		return false;
 	}
 
