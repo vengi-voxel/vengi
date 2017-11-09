@@ -12,12 +12,23 @@ CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldo
 		_timeProvider(timeProvider), _cooldownProvider(cooldownProvider), _lock("CooldownMgr") {
 }
 
+CooldownPtr CooldownMgr::createCooldown(Type type, CooldownCallback callback) const {
+	// TODO: use a pool here
+	const unsigned long duration = defaultDuration(type);
+	return std::make_shared<Cooldown>(type, duration, callback, _timeProvider);
+}
+
+CooldownPtr CooldownMgr::createCooldown(Type type, long startMillis) const {
+	// TODO: use a pool here
+	const unsigned long duration = defaultDuration(type);
+	return std::make_shared<Cooldown>(type, duration, CooldownCallback(), _timeProvider, startMillis, startMillis + duration);
+}
+
 CooldownTriggerState CooldownMgr::triggerCooldown(Type type, CooldownCallback callback) {
 	core::ScopedWriteLock lock(_lock);
 	CooldownPtr cooldown = _cooldowns[type];
 	if (!cooldown) {
-		// TODO: use a pool here
-		cooldown = std::make_shared<Cooldown>(type, defaultDuration(type), callback, _timeProvider);
+		cooldown = createCooldown(type, callback);
 		_cooldowns[type] = cooldown;
 	} else if (cooldown->running()) {
 		Log::trace("Failed to trigger the cooldown of type %i: already running", std::enum_value(type));

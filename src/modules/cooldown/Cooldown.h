@@ -41,7 +41,9 @@ private:
 	CooldownCallback _callback;
 
 public:
-	Cooldown(Type type, unsigned long durationMillis, const CooldownCallback& callback, const core::TimeProviderPtr& timeProvider);
+	Cooldown(Type type, unsigned long durationMillis, const CooldownCallback& callback,
+			const core::TimeProviderPtr& timeProvider, unsigned long startMillis = 0lu,
+			unsigned long expireMillis = 0lu);
 
 	void start();
 

@@ -39,6 +39,9 @@ protected:
 	CooldownQueue _queue;
 	typedef std::unordered_map<Type, CooldownPtr, network::EnumHash<Type> > Cooldowns;
 	Cooldowns _cooldowns;
+
+	CooldownPtr createCooldown(Type type, CooldownCallback callback = CooldownCallback()) const;
+	CooldownPtr createCooldown(Type type, long startMillis) const;
 public:
 	CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 	virtual ~CooldownMgr() {}
