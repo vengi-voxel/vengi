@@ -8,8 +8,10 @@
 #include <list>
 #include <typeindex>
 #include <type_traits>
+#include <vector>
 #include <memory>
 #include "core/ReadWriteLock.h"
+#include "core/ConcurrentQueue.h"
 
 namespace core {
 
@@ -80,6 +82,8 @@ public:
 	}
 };
 
+typedef std::shared_ptr<IEventBusEvent> IEventBusEventPtr;
+
 /**
  * @brief Generates a new default event without a topic and any state attached
  */
@@ -96,6 +100,8 @@ private:
 	typedef std::list<EventBusHandlerReference> EventBusHandlerReferences;
 	typedef std::unordered_map<std::type_index, EventBusHandlerReferences> EventBusHandlerReferenceMap;
 	core::ReadWriteLock _lock;
+
+	core::ConcurrentQueue<IEventBusEventPtr> _queue;
 
 	class EventBusHandlerReference {
 	private:
@@ -165,6 +171,19 @@ public:
 	 * @return The amount of notified IEventBusHandler instances
 	 */
 	int publish(const IEventBusEvent& e);
+
+	/**
+	 * @brief Execute all queued events
+	 * @param[in] limit Limit the amount of executed events - if there are too many. If -1 is given here,
+	 * all events are handled.
+	 * @return the amount of events that are still in the queue (due to the limit)
+	 */
+	int update(int limit = -1);
+
+	/**
+	 * @brief Execute in the main thread in the next tick
+	 */
+	void enqueue(const IEventBusEventPtr& e);
 };
 
 typedef std::shared_ptr<EventBus> EventBusPtr;

@@ -188,6 +188,7 @@ void ServerLoop::update(long dt) {
 	core_trace_scoped(ServerLoop);
 	uv_run(_loop, UV_RUN_NOWAIT);
 	_network->update();
+	_metricMgr->metric().gauge("events.skip", _eventBus->update(200));
 	std::this_thread::sleep_for(1ms);
 }
 

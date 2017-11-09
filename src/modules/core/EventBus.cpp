@@ -48,6 +48,22 @@ int EventBus::unsubscribe(const std::type_index& index, void* handler, const IEv
 	return unsubscribedHandlers;
 }
 
+int EventBus::update(int limit) {
+	int i = 0;
+	IEventBusEventPtr event;
+	while (_queue.pop(event)) {
+		publish(*event);
+		if (limit > 0 && ++i > limit) {
+			break;
+		}
+	}
+	return _queue.size();
+}
+
+void EventBus::enqueue(const IEventBusEventPtr& e) {
+	_queue.push(e);
+}
+
 int EventBus::publish(const IEventBusEvent& e) {
 	const std::type_index& index = typeid(e);
 	// must be locked until the execution is done, because we are dealing with raw pointers here.
