@@ -137,8 +137,8 @@ void Map::shutdown() {
 }
 
 glm::vec3 Map::findStartPosition(const EntityPtr& entity) const {
-	// TODO: use the poi provider?
-	return glm::zero<glm::vec3>();
+	// TODO: poi provider should respect entity type and position type
+	return _poiProvider->getPointOfInterest();
 }
 
 void Map::addUser(const UserPtr& user) {
