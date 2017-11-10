@@ -12,10 +12,10 @@ Attributes::Attributes(Attributes* parent) :
 		_dirty(false), _lock("Attributes"), _attribLock("Attributes2"), _parent(parent) {
 }
 
-bool Attributes::onFrame(long dt) {
+bool Attributes::update(long dt) {
 	bool updated = false;
 	if (_parent != nullptr) {
-		updated = _parent->onFrame(dt);
+		updated = _parent->update(dt);
 		if (updated) {
 			_dirty = true;
 		}

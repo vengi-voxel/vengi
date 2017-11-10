@@ -48,7 +48,7 @@ namespace attrib {
  * type and a value of 10, too (both absolute) and last but not least a type damage with 10% relative, you
  * would get 22 as a final result.
  *
- * The system takes care about updating values in the @c Attributes::onFrame() method. Adding and removing
+ * The system takes care about updating values in the @c Attributes::update() method. Adding and removing
  * @c Container instances will set the dirty flag and will lead to a recalculation of the final values.
  *
  * The max values that are calculated here are just one value that this system provides. There are also the
@@ -58,7 +58,7 @@ namespace attrib {
  *
  * The system is thread safe. There are two looks in the system - one that is locked if you modify attributes,
  * and one for adding and removing containers. The added/removed containers only lead to a re-evaluation of
- * the max values if @c Attributes::onFrame() was called.
+ * the max values if @c Attributes::update() was called.
  *
  * @sa ContainerProvider
  * @sa ShadowAttributes
@@ -87,7 +87,7 @@ public:
 	 * by a global player state.
 	 *
 	 * @note The parent is optional, it is not modified, except that if it is dirty an update will be
-	 * performed in @c onFrame(). Only the max values are taken into account here (absolute and percentage
+	 * performed in @c update(). Only the max values are taken into account here (absolute and percentage
 	 * modifiers) - but not the currents.
 	 */
 	Attributes(Attributes* parent = nullptr);
@@ -122,7 +122,7 @@ public:
 	/**
 	 * @brief Calculates the new max values for the currently assigned @c Container's
 	 */
-	bool onFrame(long dt);
+	bool update(long dt);
 
 	/**
 	 * @note Locks the object (container)

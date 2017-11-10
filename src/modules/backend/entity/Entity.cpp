@@ -77,7 +77,7 @@ void Entity::init() {
 	const char *typeName = network::EnumNameEntityType(_entityType);
 	addContainer(typeName);
 
-	core_assert_always(_attribs.onFrame(0L));
+	core_assert_always(_attribs.update(0L));
 
 	// the list of attribute types that should be set to max on spawn
 	static const attrib::Type types[] = {
@@ -139,7 +139,7 @@ void Entity::sendAttribUpdate() {
 }
 
 bool Entity::update(long dt) {
-	_attribs.onFrame(dt);
+	_attribs.update(dt);
 	if (!_dirtyAttributeTypes.empty()) {
 		sendAttribUpdate();
 		_dirtyAttributeTypes.clear();

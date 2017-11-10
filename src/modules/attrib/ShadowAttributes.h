@@ -21,7 +21,7 @@ protected:
 	Values _current;
 	Values _max;
 public:
-	bool onFrame(long /*dt*/) {
+	bool update(long /*dt*/) {
 		return true;
 	}
 

@@ -22,7 +22,7 @@ void ClientEntity::lerpPosition(const glm::vec3& position, float orientation) {
 
 void ClientEntity::update(long dt) {
 	_posLerp.update(dt);
-	_attrib.onFrame(dt);
+	_attrib.update(dt);
 }
 
 }
