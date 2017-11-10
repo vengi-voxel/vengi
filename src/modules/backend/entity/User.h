@@ -22,7 +22,6 @@ private:
 	using Super = Entity;
 	std::string _name;
 	std::string _email;
-	uint32_t _host;
 	persistence::DBHandlerPtr _dbHandler;
 	network::MoveDirection _moveMask = network::MoveDirection::NONE;
 	float _yaw = 0.0f;
@@ -86,7 +85,6 @@ public:
 	 */
 	ENetPeer* setPeer(ENetPeer* peer);
 
-	uint32_t host() const;
 	void shutdown();
 
 	/**
@@ -96,10 +94,6 @@ public:
 	void sendSeed(long seed) const;
 	void sendCooldown(cooldown::Type type, bool started) const;
 };
-
-inline uint32_t User::host() const {
-	return _host;
-}
 
 inline bool User::isMove(network::MoveDirection dir) const {
 	return (_moveMask & dir) != network::MoveDirection::NONE;

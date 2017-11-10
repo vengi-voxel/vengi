@@ -45,10 +45,7 @@ ENetPeer* User::setPeer(ENetPeer* peer) {
 	ENetPeer* old = _peer;
 	_peer = peer;
 	if (_peer) {
-		_host = _peer->address.host;
 		_peer->data = this;
-	} else {
-		_host = 0u;
 	}
 	return old;
 }
