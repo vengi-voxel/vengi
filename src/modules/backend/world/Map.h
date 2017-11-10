@@ -50,6 +50,9 @@ private:
 	core::QuadTreeCache<QuadTreeNode, float> _quadTreeCache;
 
 	void updateQuadTree();
+	/**
+	 * @return @c false if the entity should be removed from the server.
+	 */
 	bool updateEntity(const EntityPtr& entity, long dt);
 
 	glm::vec3 findStartPosition(const EntityPtr& entity) const;

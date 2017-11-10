@@ -114,7 +114,7 @@ void App::onFrame() {
 					if (delay > 0) {
 						std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 					}
-					_nextFrame += 1000.0 / _framesPerSecondsCap;
+					_nextFrame += (1000.0 / _framesPerSecondsCap) + 0.00001;
 				}
 			}
 			break;

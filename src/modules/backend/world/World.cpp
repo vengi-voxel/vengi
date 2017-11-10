@@ -3,11 +3,13 @@
  */
 
 #include "World.h"
+#include "core/command/Command.h"
 #include "backend/spawn/SpawnMgr.h"
 #include "backend/world/MapProvider.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "io/Filesystem.h"
 #include "core/Log.h"
+#include "core/Common.h"
 #include "LUAFunctions.h"
 #include <SimpleAI.h>
 
@@ -28,6 +30,38 @@ void World::update(long dt) {
 		map->update(dt);
 	}
 	_aiServer->update(dt);
+}
+
+void World::construct() {
+	core::Command::registerCommand("maplist", [this] (const core::CmdArgs& args) {
+		for (auto& e : _maps) {
+			const MapPtr& map = e.second;
+			Log::info("Map %s", map->idStr().c_str());
+		}
+	}).setHelp("List all maps");
+
+	core::Command::registerCommand("spawnnpc", [this] (const core::CmdArgs& args) {
+		if (args.size() < 2) {
+			Log::info("Usage: spawnnpc <mapid> <npctype> [amount:default=1]");
+			return;
+		}
+		const MapId id = core::string::toInt(args[0]);
+		auto i = _maps.find(id);
+		if (i == _maps.end()) {
+			Log::info("Could not find the specified map");
+			return;
+		}
+		const MapPtr& map = i->second;
+		const int type = core::string::toInt(args[1]);
+		const bool isAnimal = type <= std::enum_value(network::EntityType::BEGIN_ANIMAL) || type >= std::enum_value(network::EntityType::MAX_ANIMAL);
+		const bool isCharacter = type <= std::enum_value(network::EntityType::BEGIN_CHARACTERS) || type >= std::enum_value(network::EntityType::MAX_CHARACTERS);
+		if (!isAnimal && !isCharacter) {
+			Log::info("Invalid npc type given");
+			return;
+		}
+		const int amount = args.size() == 3 ? core::string::toInt(args[2]) : 1;
+		map->spawnMgr()->spawn((network::EntityType)type, amount);
+	}).setHelp("Spawns a given amount of npcs of a particular type on the specified map");
 }
 
 bool World::init() {

@@ -11,6 +11,8 @@
 #include "core/Frustum.h"
 #include "backend/world/Map.h"
 #include "poi/PoiProvider.h"
+#include "network/ServerMessageSender.h"
+#include "attrib/ContainerProvider.h"
 
 namespace backend {
 

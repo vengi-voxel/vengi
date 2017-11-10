@@ -63,6 +63,7 @@ public:
 			const eventmgr::EventMgrPtr& eventMgr, const stock::StockProviderPtr& stockDataProvider,
 			const MetricMgrPtr& metricMgr);
 
+	void construct();
 	bool init();
 	void shutdown();
 	void update(long dt);

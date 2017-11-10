@@ -13,6 +13,7 @@
 #include "backend/entity/User.h"
 #include "ai/zone/Zone.h"
 #include "metric/MetricEvent.h"
+#include "poi/PoiProvider.h"
 #include "backend/eventbus/Event.h"
 #include "backend/spawn/SpawnMgr.h"
 
@@ -76,25 +77,25 @@ void Map::update(long dt) {
 
 	for (auto i = _users.begin(); i != _users.end();) {
 		UserPtr user = i->second;
-		if (!updateEntity(user, dt)) {
-			Log::debug("remove user %li", user->id());
-			_quadTree.remove(QuadTreeNode { user });
-			i = _users.erase(i);
-			_eventBus->enqueue(std::make_shared<EntityRemoveFromMapEvent>(user));
-		} else {
+		if (updateEntity(user, dt)) {
 			++i;
+			continue;
 		}
+		Log::debug("remove user " PRIEntId, user->id());
+		_quadTree.remove(QuadTreeNode { user });
+		i = _users.erase(i);
+		_eventBus->enqueue(std::make_shared<EntityDeleteEvent>(user->id(), user->entityType()));
 	}
 	for (auto i = _npcs.begin(); i != _npcs.end();) {
 		NpcPtr npc = i->second;
-		if (!updateEntity(npc, dt)) {
-			Log::debug("remove npc %li", npc->id());
-			_quadTree.remove(QuadTreeNode { npc });
-			i = _npcs.erase(i);
-			_eventBus->enqueue(std::make_shared<EntityRemoveFromMapEvent>(npc));
-		} else {
+		if (updateEntity(npc, dt)) {
 			++i;
+			continue;
 		}
+		Log::debug("remove npc " PRIEntId, npc->id());
+		_quadTree.remove(QuadTreeNode { npc });
+		i = _npcs.erase(i);
+		_eventBus->enqueue(std::make_shared<EntityDeleteEvent>(npc->id(), npc->entityType()));
 	}
 }
 

@@ -9,7 +9,6 @@
 #include "core/Var.h"
 #include "user/UserStockMgr.h"
 #include "user/UserCooldownMgr.h"
-#include "poi/PoiProvider.h"
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
 
@@ -45,8 +44,6 @@ private:
 
 	void onCooldownExpired(cooldown::Type type);
 	void triggerCooldown(cooldown::Type type);
-
-	void shutdown();
 
 public:
 	User(ENetPeer* peer,
@@ -90,6 +87,7 @@ public:
 	ENetPeer* setPeer(ENetPeer* peer);
 
 	uint32_t host() const;
+	void shutdown();
 
 	/**
 	 * @brief Informs the user that the login was successful

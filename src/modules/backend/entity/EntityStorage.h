@@ -5,9 +5,9 @@
 #pragma once
 
 #include "backend/ForwardDecl.h"
-#include "network/Network.h"
-#include "core/TimeProvider.h"
 #include "ai/common/Types.h"
+#include "core/EventBus.h"
+#include "backend/eventbus/Event.h"
 #include <unordered_map>
 
 namespace backend {
@@ -17,7 +17,7 @@ namespace backend {
  *
  * This includes calling the Entity::update() method as well as performing the visibility calculations.
  */
-class EntityStorage {
+class EntityStorage : public core::IEventBusHandler<EntityDeleteEvent>{
 private:
 	typedef std::unordered_map<EntityId, UserPtr> Users;
 	typedef Users::iterator UsersIter;
@@ -34,11 +34,13 @@ private:
 public:
 	EntityStorage(const core::EventBusPtr& eventBus);
 
-	void addUser(const UserPtr& user);
+	void onEvent(const EntityDeleteEvent& event);
+
+	bool addUser(const UserPtr& user);
 	bool removeUser(EntityId userId);
 	UserPtr user(EntityId userId);
 
-	void addNpc(const NpcPtr& npc);
+	bool addNpc(const NpcPtr& npc);
 	bool removeNpc(EntityId id);
 	NpcPtr npc(EntityId id);
 };

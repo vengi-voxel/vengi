@@ -32,6 +32,8 @@ Server::Server(const backend::ServerLoopPtr& serverLoop,
 		_serverLoop(serverLoop) {
 	_syslog = true;
 	_coredump = true;
+	// this ensures that we are sleeping 1 millisecond if there is enough room for it
+	setFramesPerSecondsCap(1000.0);
 	init(ORGANISATION, "server");
 }
 
@@ -53,6 +55,8 @@ core::AppState Server::onConstruct() {
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	core::Var::get(cfg::DatabaseMinConnections, "2");
 	core::Var::get(cfg::DatabaseMaxConnections, "10");
+
+	_serverLoop->construct();
 
 	return state;
 }

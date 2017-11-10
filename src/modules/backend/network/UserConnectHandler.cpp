@@ -7,6 +7,7 @@
 #include "UserConnectHandler.h"
 #include "backend/entity/User.h"
 #include "core/Var.h"
+#include "core/Log.h"
 #include "util/EMailValidator.h"
 #include "UserModel.h"
 #include "core/Password.h"

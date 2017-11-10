@@ -2,6 +2,7 @@
 
 #include "core/EventBus.h"
 #include "backend/ForwardDecl.h"
+#include "Shared_generated.h"
 
 namespace backend {
 
@@ -11,7 +12,18 @@ namespace backend {
 		EntityPtr _entity; \
 	public: \
 		name(const EntityPtr& entity) : _entity(entity) {} \
-		inline const EntityPtr& entity() const { return _entity;  } \
+		inline const EntityPtr& entity() const { return _entity; } \
+	};
+
+#define ENTITYIDTYPEEVENT(name) \
+	class name: public core::IEventBusEvent { \
+	private: \
+		EntityId _entityId; \
+		network::EntityType _type; \
+	public: \
+		name(EntityId entityId, network::EntityType type) : _entityId(entityId), _type(type) {} \
+		inline EntityId entityId() const { return _entityId; } \
+		inline network::EntityType entityType() const { return _type; } \
 	};
 
 /**
@@ -26,9 +38,11 @@ ENTITYEVENT(EntityAddToMapEvent)
 /**
  * @brief Delete an entity from the server
  *
+ * @note This event doesn't hold a reference to the entity - it might already be invalid.
+ *
  * @see @c EntityRemoveFromMapEvent
  */
-ENTITYEVENT(EntityDeleteEvent)
+ENTITYIDTYPEEVENT(EntityDeleteEvent)
 
 ENTITYEVENT(EntityAddEvent)
 

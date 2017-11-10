@@ -6,10 +6,11 @@
 
 #include "ai/ForwardDecl.h"
 #include "ai/common/Types.h"
-#include <atomic>
 #include "Entity.h"
-#include "poi/PoiProvider.h"
+#include "cooldown/CooldownMgr.h"
 #include "backend/ForwardDecl.h"
+
+#include <atomic>
 
 namespace backend {
 
@@ -40,6 +41,7 @@ public:
 	~Npc();
 
 	void init(const glm::ivec3* pos);
+	void shutdown();
 
 	void setHomePosition(const glm::ivec3& pos);
 	const glm::ivec3& homePosition() const;

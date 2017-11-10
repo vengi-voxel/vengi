@@ -26,6 +26,9 @@ Npc::Npc(network::EntityType type, const ai::TreeNodePtr& behaviour,
 }
 
 Npc::~Npc() {
+}
+
+void Npc::shutdown() {
 	ai::Zone* zone = _ai->getZone();
 	if (zone == nullptr) {
 		return;

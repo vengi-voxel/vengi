@@ -75,8 +75,7 @@ void MetricMgr::onEvent(const EntityAddEvent& event) {
 }
 
 void MetricMgr::onEvent(const EntityDeleteEvent& event) {
-	const EntityPtr& entity = event.entity();
-	const network::EntityType type = entity->entityType();
+	const network::EntityType type = event.entityType();
 	const char *typeName = network::EnumNameEntityType(type);
 	_metric.decrement("count.entity", {{"type", typeName}});
 }

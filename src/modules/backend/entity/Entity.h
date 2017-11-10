@@ -5,26 +5,18 @@
 #pragma once
 
 #include "core/GLM.h"
-#include <unordered_set>
-#include <memory>
 #include "core/Rect.h"
 #include "core/ReadWriteLock.h"
 #include "attrib/Attributes.h"
-#include "attrib/ContainerProvider.h"
-#include "cooldown/CooldownMgr.h"
-#include "network/ServerMessageSender.h"
-#include "EntityId.h"
 #include "backend/ForwardDecl.h"
+#include "ServerMessages_generated.h"
+#include "network/IProtocolHandler.h"
 
-namespace voxel {
-class World;
-typedef std::shared_ptr<World> WorldPtr;
-}
+#include <unordered_set>
+#include <memory>
 
 namespace backend {
 
-class Entity;
-typedef std::shared_ptr<Entity> EntityPtr;
 typedef std::unordered_set<EntityPtr> EntitySet;
 
 /**

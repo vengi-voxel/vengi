@@ -11,11 +11,13 @@
 #include "core/App.h"
 #include "io/Filesystem.h"
 #include "cooldown/CooldownProvider.h"
+#include "attrib/ContainerProvider.h"
 #include "persistence/ConnectionPool.h"
 #include "BackendModels.h"
 #include "EventMgrModels.h"
 #include "backend/metric/MetricMgr.h"
 #include "backend/entity/User.h"
+#include "backend/entity/Npc.h"
 #include "backend/entity/ai/AICommon.h"
 #include "backend/network/UserConnectHandler.h"
 #include "backend/network/UserConnectedHandler.h"
@@ -27,8 +29,6 @@
 #include "voxel/MaterialColor.h"
 #include "eventmgr/EventMgr.h"
 #include "stock/StockDataProvider.h"
-using namespace std::chrono_literals;
-
 namespace backend {
 
 ServerLoop::ServerLoop(const core::TimeProviderPtr& timeProvider, const MapProviderPtr& mapProvider,
@@ -69,6 +69,28 @@ void ServerLoop::onIdle(uv_idle_t* handle) {
 		metric.gauge("uptime", lifetimeSeconds);
 		loop->_lifetimeSeconds = lifetimeSeconds;
 	}
+}
+
+void ServerLoop::construct() {
+	core::Command::registerCommand("killnpc", [this] (const core::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::info("Usage: killnpc <entityid>");
+			return;
+		}
+		const EntityId id = core::string::toLong(args[0]);
+		const NpcPtr& npc = _entityStorage->npc(id);
+		if (!npc) {
+			Log::info("No npc with id " PRIEntId " found", id);
+			return;
+		}
+		if (!npc->die()) {
+			Log::info("Could not kill npc with id " PRIEntId, id);
+		} else {
+			Log::info("Killed npc with id " PRIEntId, id);
+		}
+	}).setHelp("Kill npc with given entity id");
+
+	_world->construct();
 }
 
 #define regHandler(type, handler, ...) \
@@ -198,7 +220,6 @@ void ServerLoop::update(long dt) {
 		_metricMgr->metric().gauge("events.skip", eventSkip);
 		_lastEventSkip = eventSkip;
 	}
-	std::this_thread::sleep_for(1ms);
 }
 
 // TODO: doesn't belong here

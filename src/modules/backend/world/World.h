@@ -28,6 +28,7 @@ public:
 
 	MapPtr map(MapId id) const;
 
+	void construct();
 	bool init();
 	void shutdown();
 };

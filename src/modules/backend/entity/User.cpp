@@ -5,6 +5,7 @@
 #include "User.h"
 #include "core/Var.h"
 #include "backend/world/World.h"
+#include "network/ServerMessageSender.h"
 
 namespace backend {
 
@@ -27,7 +28,6 @@ User::User(ENetPeer* peer, EntityId id,
 }
 
 User::~User() {
-	shutdown();
 }
 
 void User::init() {
