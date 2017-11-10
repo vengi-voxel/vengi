@@ -19,26 +19,39 @@ void UserStockMgr::update(long dt) {
 
 void UserStockMgr::init() {
 	const EntityId userId = _user->id();
-	if (!_dbHandler->select(db::StockModel(), db::DBConditionStockUserid(userId), [this] (db::StockModel&& model) {
-		const stock::ItemId itemId = model.itemid();
-		const stock::ItemPtr& item = _stockDataProvider->createItem(itemId);
+	if (!_dbHandler->select(db::InventoryModel(), db::DBConditionInventoryUserid(userId), [this] (db::InventoryModel&& model) {
+		stock::Inventory& inventory = _stock.inventory();
+		const stock::ItemPtr& item = _stockDataProvider->createItem(model.itemid());
 		if (!item) {
+			Log::warn("Could not get item for %i", model.itemid());
 			return;
 		}
-		item->changeAmount(model.amount());
-		_stock.add(item);
+		inventory.add(model.containerid(), item, model.x(), model.y());
 	})) {
-		Log::warn("Could not load stock for user %" PRIEntId, userId);
-	}
-	if (!_dbHandler->select(db::InventoryModel(), db::DBConditionInventoryUserid(userId), [this] (db::InventoryModel&& model) {
-		// TODO: load inventory
-		//_stock.inventory().add();
-	})) {
-		Log::warn("Could not load inventory for user %" PRIEntId, userId);
+		Log::warn("Could not load inventory for user " PRIEntId, userId);
 	}
 }
 
 void UserStockMgr::shutdown() {
+	const EntityId userId = _user->id();
+	const stock::Inventory& inventory = _stock.inventory();
+	const int maxContainers = inventory.maxContainers();
+	for (int i = 0; i < maxContainers; ++i) {
+		const stock::Container* container = inventory.container(i);
+		if (container == nullptr) {
+			continue;
+		}
+		const stock::Container::ContainerItems& items = container->items();
+		for (const stock::Container::ContainerItem& item : items) {
+			db::InventoryModel model;
+			model.setContainerid(i);
+			model.setUserid(userId);
+			model.setItemid(item.item->id());
+			model.setX(item.x);
+			model.setY(item.y);
+			_dbHandler->insert(model);
+		}
+	}
 }
 
 }

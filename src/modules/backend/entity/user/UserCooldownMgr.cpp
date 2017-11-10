@@ -25,7 +25,7 @@ void UserCooldownMgr::init() {
 		_cooldowns[type] = cooldown;
 		_queue.push(cooldown);
 	})) {
-		Log::warn("Could not load cooldowns for user %" PRIEntId, _userId);
+		Log::warn("Could not load cooldowns for user " PRIEntId, _userId);
 	}
 }
 

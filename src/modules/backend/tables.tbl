@@ -40,28 +40,6 @@ table user {
 	}
 }
 
-table stock {
-	namespace backend
-	field userid {
-		type long
-		operator set
-	}
-	field itemid {
-		type int
-		operator set
-	}
-	field amount {
-		type long
-		operator add
-		notnull
-	}
-	constraints {
-		userid primarykey
-		itemid primarykey
-		userid foreignkey user id
-	}
-}
-
 table inventory {
 	namespace backend
 	field userid {
@@ -71,6 +49,11 @@ table inventory {
 	field itemid {
 		type int
 		operator set
+		notnull
+	}
+	field amount {
+		type long
+		operator add
 		notnull
 	}
 	field containerid {
