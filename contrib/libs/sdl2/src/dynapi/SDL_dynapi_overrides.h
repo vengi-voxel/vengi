@@ -647,3 +647,16 @@
 #define SDL_AudioStreamAvailable SDL_AudioStreamAvailable_REAL
 #define SDL_FreeAudioStream SDL_FreeAudioStream_REAL
 #define SDL_AudioStreamFlush SDL_AudioStreamFlush_REAL
+#define SDL_acosf SDL_acosf_REAL
+#define SDL_asinf SDL_asinf_REAL
+#define SDL_atanf SDL_atanf_REAL
+#define SDL_atan2f SDL_atan2f_REAL
+#define SDL_ceilf SDL_ceilf_REAL
+#define SDL_copysignf SDL_copysignf_REAL
+#define SDL_fabsf SDL_fabsf_REAL
+#define SDL_floorf SDL_floorf_REAL
+#define SDL_logf SDL_logf_REAL
+#define SDL_powf SDL_powf_REAL
+#define SDL_scalbnf SDL_scalbnf_REAL
+#define SDL_fmod SDL_fmod_REAL
+#define SDL_fmodf SDL_fmodf_REAL
