@@ -53,6 +53,20 @@ bool ServerLoop::addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMill
 	return uv_timer_start(timer, cb, initialDelayMillis, repeatMillis) == 0;
 }
 
+void ServerLoop::signalCallback(uv_signal_t* handle, int signum) {
+	if (signum == SIGHUP) {
+		core::App::getInstance()->requestQuit();
+		return;
+	}
+
+	if (signum == SIGINT) {
+		//ServerLoop* loop = (ServerLoop*)handle->data;
+		// TODO: only quit if this was hit twice in under 2 seconds
+		core::App::getInstance()->requestQuit();
+		return;
+	}
+}
+
 void ServerLoop::onIdle(uv_idle_t* handle) {
 	ServerLoop* loop = (ServerLoop*)handle->data;
 	metric::Metric& metric = loop->_metricMgr->metric();
@@ -188,6 +202,11 @@ bool ServerLoop::init() {
 	}
 	uv_idle_start(&_idleTimer, onIdle);
 
+	uv_signal_init(_loop, &_signal);
+	_signal.data = this;
+	uv_signal_start(&_signal, signalCallback, SIGHUP);
+	uv_signal_start(&_signal, signalCallback, SIGINT);
+
 	if (!_input.init(_loop)) {
 		Log::warn("Could not init console input");
 	}
@@ -196,6 +215,7 @@ bool ServerLoop::init() {
 }
 
 void ServerLoop::shutdown() {
+	uv_signal_stop(&_signal);
 	_world->shutdown();
 	_dbHandler->shutdown();
 	_metricMgr->shutdown();

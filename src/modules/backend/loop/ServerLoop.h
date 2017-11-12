@@ -45,12 +45,14 @@ private:
 	uv_loop_t *_loop = nullptr;
 	uv_timer_t _worldTimer;
 	uv_idle_t _idleTimer;
+	uv_signal_t _signal;
 
 	int _lastEventSkip = 0;
 	int _lastDeltaFrame = 0;
 	uint64_t _lifetimeSeconds = 0u;
 
 	static void onIdle(uv_idle_t* handle);
+	static void signalCallback(uv_signal_t* handle, int signum);
 	bool addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMillis, uint64_t initialDelayMillis = 0);
 public:
 	ServerLoop(const core::TimeProviderPtr& timeProvider, const MapProviderPtr& mapProvider,
