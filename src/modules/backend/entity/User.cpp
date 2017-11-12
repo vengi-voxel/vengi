@@ -4,7 +4,7 @@
 
 #include "User.h"
 #include "core/Var.h"
-#include "backend/world/World.h"
+#include "backend/world/Map.h"
 #include "network/ServerMessageSender.h"
 
 namespace backend {
