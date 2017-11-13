@@ -139,19 +139,6 @@ bool ServerLoop::init() {
 		Log::error("Failed to init event manager");
 		return false;
 	}
-	if (!_network->init()) {
-		Log::error("Failed to init the network");
-		return false;
-	}
-
-	const core::VarPtr& port = core::Var::getSafe(cfg::ServerPort);
-	const core::VarPtr& host = core::Var::getSafe(cfg::ServerHost);
-	const core::VarPtr& maxclients = core::Var::getSafe(cfg::ServerMaxClients);
-	if (!_network->bind(port->intVal(), host->strVal(), maxclients->intVal(), 2)) {
-		Log::error("Failed to bind the server socket on %s:%i", host->strVal().c_str(), port->intVal());
-		return false;
-	}
-	Log::info("Server socket is up at %s:%i", host->strVal().c_str(), port->intVal());
 
 	const std::string& cooldowns = _filesystem->load("cooldowns.lua");
 	if (!_cooldownProvider->init(cooldowns)) {
@@ -210,6 +197,21 @@ bool ServerLoop::init() {
 	if (!_input.init(_loop)) {
 		Log::warn("Could not init console input");
 	}
+
+	// init the network last...
+	if (!_network->init()) {
+		Log::error("Failed to init the network");
+		return false;
+	}
+
+	const core::VarPtr& port = core::Var::getSafe(cfg::ServerPort);
+	const core::VarPtr& host = core::Var::getSafe(cfg::ServerHost);
+	const core::VarPtr& maxclients = core::Var::getSafe(cfg::ServerMaxClients);
+	if (!_network->bind(port->intVal(), host->strVal(), maxclients->intVal(), 2)) {
+		Log::error("Failed to bind the server socket on %s:%i", host->strVal().c_str(), port->intVal());
+		return false;
+	}
+	Log::info("Server socket is up at %s:%i", host->strVal().c_str(), port->intVal());
 
 	return true;
 }
