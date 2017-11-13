@@ -6,6 +6,7 @@
 #include "core/command/Command.h"
 #include "backend/spawn/SpawnMgr.h"
 #include "backend/world/MapProvider.h"
+#include "backend/world/Map.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "io/Filesystem.h"
 #include "core/Log.h"
@@ -26,7 +27,7 @@ World::World(const MapProviderPtr& mapProvider, const AIRegistryPtr& registry,
 
 void World::update(long dt) {
 	for (auto& e : _maps) {
-		MapPtr& map = e.second;
+		const MapPtr& map = e.second;
 		map->update(dt);
 	}
 	_aiServer->update(dt);

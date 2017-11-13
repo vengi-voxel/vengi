@@ -178,7 +178,7 @@ bool ServerLoop::init() {
 	}
 
 	addTimer(&_worldTimer, [] (uv_timer_t* handle) {
-		ServerLoop* loop = (ServerLoop*)handle->data;
+		const ServerLoop* loop = (const ServerLoop*)handle->data;
 		loop->_world->update(handle->repeat);
 	}, 1000);
 
