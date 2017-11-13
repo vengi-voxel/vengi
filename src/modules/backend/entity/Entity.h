@@ -138,8 +138,7 @@ public:
 	 */
 	inline EntitySet visibleCopy() const {
 		core::ScopedReadLock lock(_visibleLock);
-		const EntitySet set(_visible);
-		return set;
+		return EntitySet(_visible);
 	}
 
 	/**
