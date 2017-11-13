@@ -10,6 +10,7 @@
 namespace backend {
 
 USERPROTOHANDLERIMPL(Attack) {
+	user->updateLastActionTime();
 	user->attack(message->targetId());
 }
 

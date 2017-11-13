@@ -69,10 +69,6 @@ bool Npc::die() {
 	return applyDamage(nullptr, current(attrib::Type::HEALTH)) > 0.0;
 }
 
-bool Npc::attack(EntityId victimId) {
-	return map()->attackMgr().startAttack(id(), victimId);
-}
-
 bool Npc::update(long dt) {
 	if (!Super::update(dt)) {
 		return false;

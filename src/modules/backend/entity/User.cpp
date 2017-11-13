@@ -50,9 +50,8 @@ ENetPeer* User::setPeer(ENetPeer* peer) {
 	return old;
 }
 
-void User::attack(EntityId victimId) {
+void User::updateLastActionTime() {
 	_lastAction = _time;
-	map()->attackMgr().startAttack(id(), victimId);
 }
 
 void User::onCooldownExpired(cooldown::Type type) {
@@ -94,7 +93,6 @@ bool User::update(long dt) {
 
 	if (_time - _lastAction > _userTimeout->ulongVal()) {
 		triggerLogout();
-		return true;
 	}
 
 	_stockMgr.update(dt);

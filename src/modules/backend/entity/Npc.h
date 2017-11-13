@@ -51,7 +51,6 @@ public:
 	cooldown::CooldownMgr& cooldownMgr();
 
 	bool die();
-	bool attack(EntityId id);
 	/**
 	 * @brief Applies damage to the entity
 	 * @param attacker The attacking @c Entity. This might be @c nullptr

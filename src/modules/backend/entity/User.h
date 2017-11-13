@@ -67,7 +67,7 @@ public:
 
 	void changeMovement(network::MoveDirection bitmask, float pitch, float yaw);
 
-	void attack(EntityId id);
+	void updateLastActionTime();
 
 	/**
 	 * @brief The client wants to disconnect - the user object itself will stay in the server until

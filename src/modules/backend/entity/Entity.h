@@ -89,6 +89,8 @@ public:
 
 	bool dead() const;
 
+	bool attack(EntityId id);
+
 	ENetPeer* peer() const;
 
 	/**

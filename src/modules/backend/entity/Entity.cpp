@@ -51,6 +51,10 @@ std::string Entity::name() const {
 	return network::EnumNameEntityType(_entityType);
 }
 
+bool Entity::attack(EntityId victimId) {
+	return map()->attackMgr().startAttack(id(), victimId);
+}
+
 void Entity::sendToVisible(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type,
 		flatbuffers::Offset<void> data, bool sendToSelf, uint32_t flags) const {
 	const EntitySet& visible = visibleCopy();
