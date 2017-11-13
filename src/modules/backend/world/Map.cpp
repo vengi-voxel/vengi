@@ -8,6 +8,7 @@
 #include "core/String.h"
 #include "core/EventBus.h"
 #include "core/App.h"
+#include "core/QuadTree.h"
 #include "io/Filesystem.h"
 #include "backend/entity/Npc.h"
 #include "backend/entity/User.h"
@@ -37,7 +38,7 @@ Map::Map(MapId mapId,
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider) :
 		_mapId(mapId), _mapIdStr(std::to_string(mapId)),
-		_eventBus(eventBus), _filesystem(filesystem),
+		_eventBus(eventBus), _filesystem(filesystem), _attackMgr(this),
 		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
 	_poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
 	_spawnMgr = std::make_shared<backend::SpawnMgr>(this, filesystem, entityStorage, messageSender,
@@ -73,6 +74,7 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 void Map::update(long dt) {
 	_spawnMgr->update(dt);
 	_zone->update(dt);
+	_attackMgr.update(dt);
 	updateQuadTree();
 
 	for (auto i = _users.begin(); i != _users.end();) {
@@ -100,6 +102,9 @@ void Map::update(long dt) {
 }
 
 bool Map::init() {
+	if (!_attackMgr.init()) {
+		return false;
+	}
 	_voxelWorld = new voxel::World();
 	const std::string& worldParamData = _filesystem->load("worldparams.lua");
 	const std::string& biomesData = _filesystem->load("biomes.lua");
@@ -137,6 +142,7 @@ bool Map::init() {
 }
 
 void Map::shutdown() {
+	_attackMgr.shutdown();
 	_spawnMgr->shutdown();
 	if (_voxelWorld != nullptr) {
 		_voxelWorld->shutdown();

@@ -9,6 +9,7 @@
 #include "core/QuadTree.h"
 #include "core/Rect.h"
 #include "ai/common/Types.h"
+#include "backend/attack/AttackMgr.h"
 #include "MapId.h"
 #include <memory>
 #include <unordered_map>
@@ -38,6 +39,8 @@ private:
 	typedef std::unordered_map<EntityId, UserPtr> Users;
 	typedef Users::iterator UsersIter;
 	Users _users;
+
+	AttackMgr _attackMgr;
 
 	struct QuadTreeNode {
 		EntityPtr entity;
@@ -104,9 +107,20 @@ public:
 	int findFloor(const glm::vec3& pos) const;
 	glm::ivec3 randomPos() const;
 
+	const AttackMgr& attackMgr() const;
+	AttackMgr& attackMgr();
+
 	const SpawnMgrPtr& spawnMgr() const;
 	const poi::PoiProviderPtr& poiProvider() const;
 };
+
+inline const AttackMgr& Map::attackMgr() const {
+	return _attackMgr;
+}
+
+inline AttackMgr& Map::attackMgr() {
+	return _attackMgr;
+}
 
 inline MapId Map::id() const {
 	return _mapId;

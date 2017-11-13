@@ -69,17 +69,8 @@ bool Npc::die() {
 	return applyDamage(nullptr, current(attrib::Type::HEALTH)) > 0.0;
 }
 
-bool Npc::attack(EntityId id) {
-	const double strength = current(attrib::Type::STRENGTH);
-	if (strength <= 0.0) {
-		return false;
-	}
-	const NpcPtr& npc = map()->npc(id);
-	if (!npc) {
-		// TODO: attack users...
-		return false;
-	}
-	return npc->applyDamage(this, strength) > 0.0;
+bool Npc::attack(EntityId victimId) {
+	return map()->attackMgr().startAttack(id(), victimId);
 }
 
 bool Npc::update(long dt) {

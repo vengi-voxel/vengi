@@ -50,9 +50,9 @@ ENetPeer* User::setPeer(ENetPeer* peer) {
 	return old;
 }
 
-void User::attack(EntityId id) {
+void User::attack(EntityId victimId) {
 	_lastAction = _time;
-	// map().attackMgr().startAttack(this->id(), id);
+	map()->attackMgr().startAttack(id(), victimId);
 }
 
 void User::onCooldownExpired(cooldown::Type type) {

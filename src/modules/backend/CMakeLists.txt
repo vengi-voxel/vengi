@@ -5,6 +5,8 @@ set(SRCS
 
 	loop/ServerLoop.cpp loop/ServerLoop.h
 
+	attack/AttackMgr.cpp attack/AttackMgr.h
+
 	world/Map.cpp world/Map.h
 	world/MapId.h
 	world/LUAFunctions.h

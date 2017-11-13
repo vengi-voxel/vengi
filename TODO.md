@@ -62,6 +62,10 @@ The `Map` should have a lua tick - which is e.g. able to spawn new npcs or let s
 
 Configure entity types and amounts via lua map script
 
+## AttackMgr
+
+The attack mananger should get updated in the map tick and should maintain a list of attackers and victims.
+
 ## Map editor
 
 There should be a map editor to place Point-of-Interests (see `PoiProvider`) and entities with attributes. E.g. you should be able to place markers to modifiy the island shape and put attributes into these. The map editor should just allow to modifiy these markers and place entities. Placing stuff on a per-voxel level should not be supported. The real map building should still be implemented via procgen.
@@ -70,6 +74,6 @@ There should be a map editor to place Point-of-Interests (see `PoiProvider`) and
 
 Extend statsd support with more events
 
-#SignUp
+# SignUp
 
 Implement signnp with email verification, Lost password and co - also see password related point in the persistence section.
