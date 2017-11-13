@@ -74,7 +74,7 @@ void Console::onConstruct() {
 bool Console::init() {
 	_font = getFont(20);
 	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
-	const std::string& content = fs->load(historyFilename);
+	const std::string& content = fs->load("%s", historyFilename);
 	core::string::splitString(content, _history, "\n");
 	_historyPos = _history.size();
 	Log::info("Loaded %i history entries", _historyPos);
