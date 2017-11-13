@@ -4,10 +4,6 @@
 
 #include "AIRegistry.h"
 
-#include "backend/entity/EntityStorage.h"
-#include "backend/spawn/SpawnMgr.h"
-#include "core/Singleton.h"
-
 #include "action/Die.h"
 #include "action/GoHome.h"
 #include "action/Spawn.h"
@@ -30,18 +26,20 @@ namespace backend {
 void AIRegistry::init() {
 	registerNodeFactory("GoHome", GoHome::getFactory());
 	registerNodeFactory("AttackOnSelection", AttackOnSelection::getFactory());
+	registerNodeFactory("SetPointOfInterest", SetPointOfInterest::getFactory());
+	registerNodeFactory("Spawn", Spawn::getFactory());
+	registerNodeFactory("Die", Die::getFactory());
+	registerNodeFactory("TriggerCooldown", TriggerCooldown::getFactory());
+	registerNodeFactory("TriggerCooldownOnSelection", TriggerCooldownOnSelection::getFactory());
+
+	registerConditionFactory("IsCloseToSelection", IsCloseToSelection::getFactory());
+	registerConditionFactory("IsOnCooldown", IsOnCooldown::getFactory());
+	registerConditionFactory("IsSelectionAlive", IsSelectionAlive::getFactory());
+
 	registerFilterFactory("SelectVisible", SelectVisible::getFactory());
 	registerFilterFactory("SelectIncreasePartner", SelectIncreasePartner::getFactory());
 	registerFilterFactory("SelectPrey", SelectPrey::getFactory());
 	registerFilterFactory("SelectEntitiesOfTypes", SelectEntitiesOfTypes::getFactory());
-	registerConditionFactory("IsCloseToSelection", IsCloseToSelection::getFactory());
-	registerConditionFactory("IsOnCooldown", IsOnCooldown::getFactory());
-	registerConditionFactory("IsSelectionAlive", IsSelectionAlive::getFactory());
-	registerNodeFactory("SetPointOfInterest", SetPointOfInterest::getFactory());
-	registerNodeFactory("Spawn", Spawn::getFactory());
-	registerNodeFactory("Die", core::Singleton<Die::Factory>::getInstance());
-	registerNodeFactory("TriggerCooldown", TriggerCooldown::getFactory());
-	registerNodeFactory("TriggerCooldownOnSelection", TriggerCooldownOnSelection::getFactory());
 }
 
 }
