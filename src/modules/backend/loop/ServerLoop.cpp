@@ -127,6 +127,10 @@ bool ServerLoop::init() {
 		Log::error("Failed to create user table");
 		return false;
 	}
+	if (!_dbHandler->createTable(db::AttribModel())) {
+		Log::error("Failed to create attrib table");
+		return false;
+	}
 	if (!_dbHandler->createTable(db::InventoryModel())) {
 		Log::error("Failed to create stock table");
 		return false;

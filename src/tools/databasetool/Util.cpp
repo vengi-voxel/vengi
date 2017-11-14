@@ -30,6 +30,8 @@ std::string getCPPInit(persistence::FieldType type, bool pointer) {
 	case persistence::FieldType::TIMESTAMP:
 	case persistence::FieldType::LONG:
 		return "0l";
+	case persistence::FieldType::DOUBLE:
+		return "0.0";
 	case persistence::FieldType::INT:
 	case persistence::FieldType::SHORT:
 		return "0";
@@ -68,6 +70,11 @@ std::string getCPPType(persistence::FieldType type, bool function, bool pointer)
 			return "const int64_t*";
 		}
 		return "int64_t";
+	case persistence::FieldType::DOUBLE:
+		if (pointer) {
+			return "const double*";
+		}
+		return "double";
 	case persistence::FieldType::INT:
 		if (pointer) {
 			return "const int32_t*";

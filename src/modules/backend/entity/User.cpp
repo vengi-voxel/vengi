@@ -21,7 +21,7 @@ User::User(ENetPeer* peer, EntityId id,
 		Super(id, map, messageSender, timeProvider, containerProvider),
 		_name(name), _dbHandler(dbHandler), _stockMgr(this, stockDataProvider, dbHandler),
 		_timeProvider(timeProvider), _cooldownProvider(cooldownProvider),
-		_cooldownMgr(id, timeProvider, cooldownProvider, dbHandler) {
+		_cooldownMgr(id, timeProvider, cooldownProvider, dbHandler), _attribMgr(id, _attribs, dbHandler) {
 	setPeer(peer);
 	_entityType = network::EntityType::PLAYER;
 	_userTimeout = core::Var::getSafe(cfg::ServerUserTimeout);
@@ -34,11 +34,14 @@ void User::init() {
 	Super::init();
 	_stockMgr.init();
 	_cooldownMgr.init();
+	_attribMgr.init();
 }
 
 void User::shutdown() {
+	Super::shutdown();
 	_stockMgr.shutdown();
 	_cooldownMgr.shutdown();
+	_attribMgr.shutdown();
 }
 
 ENetPeer* User::setPeer(ENetPeer* peer) {

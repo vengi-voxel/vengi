@@ -157,6 +157,7 @@ public:
 	virtual bool update(long dt);
 
 	virtual void init();
+	virtual void shutdown();
 
 	/**
 	 * @return the size of this entity that is used for the visibility checks

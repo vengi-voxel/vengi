@@ -110,6 +110,8 @@ static std::string getDbType(const Field& field) {
 		return "BOOLEAN";
 	case FieldType::LONG:
 		return "BIGINT";
+	case FieldType::DOUBLE:
+		return "DOUBLE PRECISION";
 	case FieldType::INT:
 		return "INT";
 	case FieldType::SHORT:

@@ -7,6 +7,7 @@
 #include "network/ServerMessageSender.h"
 #include "Entity.h"
 #include "core/Var.h"
+#include "user/UserAttribMgr.h"
 #include "user/UserStockMgr.h"
 #include "user/UserCooldownMgr.h"
 #include "persistence/DBHandler.h"
@@ -36,6 +37,7 @@ private:
 	core::TimeProviderPtr _timeProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	UserCooldownMgr _cooldownMgr;
+	UserAttribMgr _attribMgr;
 
 	bool isMove(network::MoveDirection dir) const;
 	void addMove(network::MoveDirection dir);

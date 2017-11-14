@@ -97,3 +97,25 @@ table cooldown {
 		userid foreignkey user id
 	}
 }
+
+table attrib {
+	namespace backend
+	field userid {
+		type long
+		operator set
+	}
+	field attribtype {
+		type int
+		operator set
+	}
+	field value {
+		type double
+		notnull
+		operator set
+	}
+	constraints {
+		userid primarykey
+		attribtype primarykey
+		userid foreignkey user id
+	}
+}

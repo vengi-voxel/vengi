@@ -6,7 +6,7 @@
 #include "BackendModels.h"
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
-#include "../User.h"
+#include "backend/entity/User.h"
 
 namespace backend {
 

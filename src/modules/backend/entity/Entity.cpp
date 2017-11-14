@@ -101,6 +101,9 @@ void Entity::init() {
 	}
 }
 
+void Entity::shutdown() {
+}
+
 void Entity::onAttribChange(const attrib::DirtyValue& v) {
 	Log::debug("Attrib changed for type %s (current: %s) to value %f",
 			network::EnumNameAttribType(v.type), (v.current ? "true" : "false"), v.value);

@@ -56,6 +56,13 @@ void BindParam::push(const Model& model, const Field& field) {
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
+	case FieldType::DOUBLE: {
+		const double value = model.getValue<double>(field);
+		valueBuffers.emplace_back(std::to_string(value));
+		values[index] = valueBuffers.back().c_str();
+		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
+		break;
+	}
 	case FieldType::LONG: {
 		const int64_t value = model.getValue<int64_t>(field);
 		valueBuffers.emplace_back(std::to_string(value));
