@@ -4,6 +4,8 @@
 To collect sql update statements for changed player data, every handler should register itself somewhere in a way that the handler (e.g. the CooldownMgr or AttribMgr) can answer the question whether there is something to persist.
 Now consider that there are 1000 players logged in and they all have there CooldownMgr instance. The "collector-instance" would query all of them and asks them whether they are dirty or not. They collect the data and build a mass update statement. This might happen every minute or something like that.
 
+The databasetool must generate the metadata in a static manner - no model that is created should consume more memory as the fields on that particular model. The savable should just return a dirty list of those models - that's why the overhead of creating them must be as low as possible.
+
 ## Password
 
 Implement proper password handling (don't ever load password hashes from DB into memory - just compare hashes via sql statement). (This should also be true for signing up and logging in - only transmit the hash - never the real password)
