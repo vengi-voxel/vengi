@@ -19,20 +19,21 @@
 
 namespace persistence {
 
-Model::Model(const std::string& tableName) :
-		_tableName(tableName) {
+Model::Model(const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
+		const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys) :
+		_tableName(tableName), _fields(fields), _constraints(constraints),
+		_uniqueKeys(uniqueKeys), _foreignKeys(foreignKeys) {
 	_membersPointer = (uint8_t*)this;
 }
 
 Model::~Model() {
-	_fields.clear();
 }
 
 bool Model::isPrimaryKey(const std::string& fieldname) const {
-	auto i = std::find_if(_fields.begin(), _fields.end(),
+	auto i = std::find_if(_fields->begin(), _fields->end(),
 			[&fieldname](const Field& f) {return f.name == fieldname;}
 	);
-	if (i == _fields.end()) {
+	if (i == _fields->end()) {
 		return false;
 	}
 
@@ -70,7 +71,8 @@ bool Model::exec(const char* query) const {
 }
 
 const Field& Model::getField(const std::string& name) const {
-	for (const Field& field : _fields) {
+	for (auto i = _fields->begin(); i != _fields->end(); ++i) {
+		const Field& field = *i;
 		if (field.name == name) {
 			return field;
 		}

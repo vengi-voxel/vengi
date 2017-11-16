@@ -82,14 +82,18 @@ static void createMembersStruct(const Table& table, std::stringstream& src) {
 	src << "\tMembers " << MembersStruct::varName() << ";\n";
 }
 
-void createConstructor(const Table& table, std::stringstream& src) {
-	src << "\t" << table.classname << "(";
-	src << ") : Super(\"" << table.name << "\") {\n";
-	src << "\t\t_membersPointer = (uint8_t*)&" << MembersStruct::varName() << ";\n";
-	src << "\t\t_fields.reserve(" << table.fields.size() << ");\n";
+static void createMetaStruct(const Table& table, std::stringstream& src) {
+	src << "\tstruct Meta {\n";
+	src << "\t\tpersistence::Fields _fields;\n";
+	src << "\t\tpersistence::Constraints _constraints;\n";
+	src << "\t\tpersistence::UniqueKeys _uniqueKeys;\n";
+	src << "\t\tpersistence::ForeignKeys _foreignKeys;\n";
+	src << "\t\tMeta() {\n";
+
+	src << "\t\t\t_fields.reserve(" << table.fields.size() << ");\n";
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
-		src << "\t\t_fields.emplace_back(persistence::Field{";
+		src << "\t\t\t_fields.emplace_back(persistence::Field{";
 		src << "\"" << f.name << "\"";
 		src << ", persistence::FieldType::" << FieldTypeNames[std::enum_value(f.type)];
 		src << ", persistence::Operator::" << OperatorNames[std::enum_value(f.updateOperator)];
@@ -107,63 +111,68 @@ void createConstructor(const Table& table, std::stringstream& src) {
 		src << "});\n";
 	}
 	if (!table.constraints.empty()) {
-		src << "\t\t_constraints.reserve(" << table.constraints.size() << ");\n";
+		src << "\t\t\t_constraints.reserve(" << table.constraints.size() << ");\n";
 	}
 	for (auto i = table.constraints.begin(); i != table.constraints.end(); ++i) {
 		const persistence::Constraint& c = i->second;
-		src << "\t\t_constraints.insert(std::make_pair(\"" << i->first << "\", persistence::Constraint{{\"";
+		src << "\t\t\t_constraints.insert(std::make_pair(\"" << i->first << "\", persistence::Constraint{{\"";
 		src << core::string::join(c.fields.begin(), c.fields.end(), "\",\"");
 		src << "\"}, " << c.types << "}));\n";
 	}
 	if (!table.uniqueKeys.empty()) {
-		src << "\t\t_uniqueKeys.reserve(" << table.uniqueKeys.size() << ");\n";
+		src << "\t\t\t_uniqueKeys.reserve(" << table.uniqueKeys.size() << ");\n";
 	}
 	for (const auto& uniqueKey : table.uniqueKeys) {
-		src << "\t\t_uniqueKeys.emplace_back(std::set<std::string>{\"";
+		src << "\t\t\t_uniqueKeys.emplace_back(std::set<std::string>{\"";
 		src << core::string::join(uniqueKey.begin(), uniqueKey.end(), "\", \"");
 		src << "\"});\n";
 	}
 	if (!table.foreignKeys.empty()) {
-		src << "\t\t_foreignKeys.reserve(" << table.foreignKeys.size() << ");\n";
+		src << "\t\t\t_foreignKeys.reserve(" << table.foreignKeys.size() << ");\n";
 	}
 	for (const auto& foreignKeyEntry : table.foreignKeys) {
-		src << "\t\t_foreignKeys.insert(std::make_pair(\"" << foreignKeyEntry.first << "\", persistence::ForeignKey{\"";
+		src << "\t\t\t_foreignKeys.insert(std::make_pair(\"" << foreignKeyEntry.first << "\", persistence::ForeignKey{\"";
 		src << foreignKeyEntry.second.table << "\", \"" << foreignKeyEntry.second.field;
 		src << "\"}));\n";
 	}
+
+	src << "\t\t}\n";
+	src << "\t};\n";
+	src << "\tstatic inline Meta& meta() {\n\t\tstatic Meta _meta;\n\t\treturn _meta;\n\t}\n";
+}
+
+void createConstructor(const Table& table, std::stringstream& src) {
+	src << "\t" << table.classname << "(";
+	src << ") : Super(\"" << table.name << "\", &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
+	src << "\t\t_membersPointer = (uint8_t*)&" << MembersStruct::varName() << ";\n";
 
 	src << "\t\t_primaryKeys = " << table.primaryKeys << ";\n";
 	src << "\t\t_autoIncrementStart = " << table.autoIncrementStart << ";\n";
 	src << "\t}\n\n";
 
-	src << "\t" << table.classname << "(" << table.classname << "&& source) : Super(std::move(source._tableName)) {\n";
-	src << "\t\t_fields = std::move(source._fields);\n";
+	src << "\t" << table.classname << "(" << table.classname << "&& source) : Super(std::move(source._tableName), &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
 	src << "\t\t_primaryKeys = source._primaryKeys;\n";
-	src << "\t\t_constraints = std::move(source._constraints);\n";
-	src << "\t\t_uniqueKeys = std::move(source._uniqueKeys);\n";
 	src << "\t\t_m = std::move(source._m);\n";
+	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
+	src << "\t}\n\n";
+	src << "\t" << table.classname << "(const " << table.classname << "& source) : Super(source._tableName, &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
+	src << "\t\t_primaryKeys = source._primaryKeys;\n";
+	src << "\t\t_m = source._m;\n";
 	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
 	src << "\t}\n\n";
 
 	src << "\t" << table.classname << "& operator=(" << table.classname << "&& source) {\n";
-	src << "\t\t_tableName = std::move(source._tableName);\n";
-	src << "\t\t_fields = std::move(source._fields);\n";
-	src << "\t\t_primaryKeys = source._primaryKeys;\n";
-	src << "\t\t_constraints = std::move(source._constraints);\n";
-	src << "\t\t_uniqueKeys = std::move(source._uniqueKeys);\n";
 	src << "\t\t_m = std::move(source._m);\n";
 	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
 	src << "\t\treturn *this;\n";
 	src << "\t}\n\n";
 
-	src << "\t" << table.classname << "(const " << table.classname << "& source) : Super(source._tableName) {\n";
-	src << "\t\t_fields = source._fields;\n";
-	src << "\t\t_primaryKeys = source._primaryKeys;\n";
-	src << "\t\t_constraints = source._constraints;\n";
-	src << "\t\t_uniqueKeys = source._uniqueKeys;\n";
+	src << "\t" << table.classname << "& operator=(const " << table.classname << "& source) {\n";
 	src << "\t\t_m = source._m;\n";
 	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
+	src << "\t\treturn *this;\n";
 	src << "\t}\n\n";
+
 }
 
 static void createDBConditions(const Table& table, std::stringstream& src) {
@@ -279,6 +288,8 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 		src << "protected:\n";
 
 		createMembersStruct(table, src);
+
+		createMetaStruct(table, src);
 
 		src << "public:\n";
 

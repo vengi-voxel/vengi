@@ -65,7 +65,7 @@ TEST_F(DatabaseModelTest, testCreateUser) {
 		return;
 	}
 	int64_t id = -1L;
-	createUser("a@b.c.d", "secret", id);
+	createUser("testCreateUser@b.c.d", "secret", id);
 }
 
 TEST_F(DatabaseModelTest, testCreateUsers) {
@@ -74,7 +74,7 @@ TEST_F(DatabaseModelTest, testCreateUsers) {
 	}
 	int64_t id = -1L;
 	for (int i = 0; i < 5; ++i) {
-		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
+		createUser(core::string::format("testCreateUsers%i@b.c.d", i), "secret", id);
 	}
 }
 
@@ -85,7 +85,7 @@ TEST_F(DatabaseModelTest, testSelectAll) {
 	int64_t id = -1L;
 	const int expected = 5;
 	for (int i = 0; i < expected; ++i) {
-		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
+		createUser(core::string::format("testSelectAll%i@b.c.d", i), "secret", id);
 	}
 	int count = 0;
 	EXPECT_TRUE(_dbHandler.select(db::UserModel(), persistence::DBConditionOne(), [&] (db::UserModel&& model) {
@@ -101,10 +101,10 @@ TEST_F(DatabaseModelTest, testSelectByEmail) {
 	int64_t id = -1L;
 	const int expected = 5;
 	for (int i = 0; i < expected; ++i) {
-		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
+		createUser(core::string::format("testSelectByEmail%i@b.c.d", i), "secret", id);
 	}
 	int count = 0;
-	const db::DBConditionUserEmail condition("a1@b.c.d");
+	const db::DBConditionUserEmail condition("testSelectByEmail1@b.c.d");
 	EXPECT_TRUE(_dbHandler.select(db::UserModel(), condition, [&] (db::UserModel&& model) {
 		++count;
 		ASSERT_EQ(std::string(condition.value(0)), model.email());
@@ -119,7 +119,7 @@ TEST_F(DatabaseModelTest, testSelectById) {
 	const int expected = 5;
 	int64_t id = -1L;
 	for (int i = 0; i < expected; ++i) {
-		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
+		createUser(core::string::format("testSelectById%i@b.c.d", i), "secret", id);
 	}
 	int count = 0;
 	const db::DBConditionUserId condition(id);
@@ -135,7 +135,7 @@ TEST_F(DatabaseModelTest, testTruncate) {
 		return;
 	}
 	int64_t id = -1L;
-	createUser("a@b.c.d", "secret", id);
+	createUser("testTruncate@b.c.d", "secret", id);
 	EXPECT_TRUE(_dbHandler.truncate(db::UserModel()));
 	int count = 0;
 	_dbHandler.select(db::UserModel(), persistence::DBConditionOne(), [&] (db::UserModel&& model) {
@@ -149,7 +149,7 @@ TEST_F(DatabaseModelTest, testDelete) {
 		return;
 	}
 	int64_t id = -1L;
-	createUser("a@b.c.d", "secret", id);
+	createUser("testDelete@b.c.d", "secret", id);
 	EXPECT_TRUE(_dbHandler.deleteModel(db::UserModel(), db::DBConditionUserId(id)));
 	int count = 0;
 	_dbHandler.select(db::UserModel(), persistence::DBConditionOne(), [&] (db::UserModel&& model) {
@@ -163,7 +163,7 @@ TEST_F(DatabaseModelTest, testUpdate) {
 		return;
 	}
 	int64_t id = -1L;
-	createUser("a@b.c.d", "secret", id);
+	createUser("testUpdate@b.c.d", "secret", id);
 	int count = 0;
 	db::UserModel copy;
 	_dbHandler.select(db::UserModel(), db::DBConditionUserId(id), [&] (db::UserModel&& model) {
@@ -171,7 +171,7 @@ TEST_F(DatabaseModelTest, testUpdate) {
 		copy = std::move(model);
 	});
 	ASSERT_EQ(count, 1);
-	ASSERT_EQ("a@b.c.d", copy.email());
+	ASSERT_EQ("testUpdate@b.c.d", copy.email());
 	copy.setEmail("no@mail.com");
 	_dbHandler.update(copy);
 	_dbHandler.select(db::UserModel(), db::DBConditionUserId(id), [&] (db::UserModel&& model) {
@@ -186,7 +186,7 @@ TEST_F(DatabaseModelTest, testTimestamp) {
 	}
 	db::UserModel u;
 	EXPECT_EQ(0, u.id());
-	u.setEmail("timestamp@now.de");
+	u.setEmail("testTimestamp@now.de");
 	u.setPassword("now");
 	const auto now = _testApp->timeProvider()->tickMillis();
 	u.setRegistrationdate(now / 1000UL);
@@ -205,7 +205,7 @@ TEST_F(DatabaseModelTest, testLimitOrderBy) {
 	}
 	int64_t id = -1L;
 	for (int i = 0; i < 5; ++i) {
-		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
+		createUser(core::string::format("testLimitOrderBy%i@b.c.d", i), "secret", id);
 	}
 	const int limit = 2;
 	int count = 0;
@@ -223,7 +223,7 @@ TEST_F(DatabaseModelTest, testOffsetOrderBy) {
 	int64_t id = -1L;
 	const int n = 5;
 	for (int i = 0; i < n; ++i) {
-		createUser(core::string::format("a%i@b.c.d", i), "secret", id);
+		createUser(core::string::format("testOffsetOrderBy%i@b.c.d", i), "secret", id);
 	}
 	const int limit = -1;
 	const int offset = 3;

@@ -81,6 +81,11 @@ typedef std::unordered_map<std::string, Constraint> Constraints;
 typedef std::unordered_map<std::string, ForeignKey> ForeignKeys;
 typedef std::vector<std::set<std::string>> UniqueKeys;
 
+typedef Constraints* ConstraintsPtr;
+typedef ForeignKeys* ForeignKeysPtr;
+typedef UniqueKeys* UniqueKeysPtr;
+typedef Fields* FieldsPtr;
+
 /**
  * @brief The base class for your database models.
  *
@@ -92,19 +97,20 @@ class Model {
 protected:
 	friend class DBHandler;
 	friend class PreparedStatement;
-	Fields _fields;
 	std::string _tableName;
 	int _primaryKeys = 0;
 	long _autoIncrementStart = 0l;
 	uint8_t* _membersPointer;
-	Constraints _constraints;
-	UniqueKeys _uniqueKeys;
-	ForeignKeys _foreignKeys;
+	const FieldsPtr _fields;
+	const ConstraintsPtr _constraints;
+	const UniqueKeysPtr _uniqueKeys;
+	const ForeignKeysPtr _foreignKeys;
 
 	const Field& getField(const std::string& name) const;
 	bool fillModelValues(State& state);
 public:
-	Model(const std::string& tableName);
+	Model(const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
+			const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys);
 	virtual ~Model();
 
 	const std::string& tableName() const;
@@ -175,19 +181,19 @@ inline const std::string& Model::tableName() const {
 }
 
 inline const Fields& Model::fields() const {
-	return _fields;
+	return *_fields;
 }
 
 inline const Constraints& Model::constraints() const {
-	return _constraints;
+	return *_constraints;
 }
 
 inline const UniqueKeys& Model::uniqueKeys() const {
-	return _uniqueKeys;
+	return *_uniqueKeys;
 }
 
 inline const ForeignKeys& Model::foreignKeys() const {
-	return _foreignKeys;
+	return *_foreignKeys;
 }
 
 inline int Model::primaryKeys() const {
