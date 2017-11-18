@@ -63,3 +63,4 @@ gtest_suite_files(tests
 	tests/MapTest.cpp
 )
 gtest_suite_deps(tests ${LIB})
+test_generate_db_models(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.tbl TestModels.h)
