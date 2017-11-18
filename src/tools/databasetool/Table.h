@@ -19,7 +19,7 @@ struct Table {
 	persistence::ForeignKeys foreignKeys;
 	int primaryKeys = 0;
 	persistence::UniqueKeys uniqueKeys;
-	int autoIncrementStart = 0;
+	int autoIncrementStart = 1;
 };
 
 }

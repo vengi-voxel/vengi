@@ -99,7 +99,7 @@ protected:
 	friend class PreparedStatement;
 	std::string _tableName;
 	int _primaryKeys = 0;
-	long _autoIncrementStart = 0l;
+	long _autoIncrementStart = 1l;
 	uint8_t* _membersPointer;
 	const FieldsPtr _fields;
 	const ConstraintsPtr _constraints;

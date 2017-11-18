@@ -22,10 +22,10 @@ public:
 		_supported = _dbHandler->init();
 		_eventProvider = std::make_shared<eventmgr::EventProvider>(_dbHandler);
 		if (_supported) {
-			_dbHandler->dropTable(db::EventPointModel());
 			_dbHandler->dropTable(db::EventModel());
-			_dbHandler->createTable(db::EventPointModel());
-			_dbHandler->createTable(db::EventModel());
+			_dbHandler->dropTable(db::EventPointModel());
+			ASSERT_TRUE(_dbHandler->createTable(db::EventModel()));
+			ASSERT_TRUE(_dbHandler->createTable(db::EventPointModel()));
 		}
 	}
 

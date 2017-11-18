@@ -210,7 +210,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 				token = tok.next();
 				const long startCounterLong = core::string::toLong(token);
 				if (startCounterLong > 0) {
-					core_assert_msg(table.autoIncrementStart == 0, "Table %s already has a auto increment starting value set", table.name.c_str());
+					core_assert_msg(table.autoIncrementStart == 1, "Table %s already has a auto increment starting value set", table.name.c_str());
 					table.autoIncrementStart = startCounterLong;
 				} else {
 					tok.prev();
