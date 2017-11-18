@@ -33,10 +33,10 @@ test:
 .analyse:cppcheck:
   stage: analyse
   script:
-    - cppcheck -j 4 --enable=all --config-exclude=contrib/libs/ --project=build/Debug/compile_commands.json src 2> cppcheck.log
+    - cppcheck --xml-version=2 -j 4 --enable=all --config-exclude=contrib/libs/ --project=build/Debug/compile_commands.json src 2> cppcheck.xml
   artifacts:
     paths:
-    - cppcheck.log
+    - cppcheck.xml
 
 analyse:valgrind:
   stage: analyse
@@ -44,10 +44,10 @@ analyse:valgrind:
     - build
   script:
     - cd build/Debug
-    - valgrind ./tests --gtest_filter=CoreTest.*:CameraTest.*:StringTest.*
+    - valgrind --xml=yes --xml-file=valgrind.xml ./tests --gtest_filter=CoreTest.*:CameraTest.*:StringTest.*
   artifacts:
     paths:
-    - build/Debug/valgrind.log
+    - build/Debug/valgrind.xml
 
 pages:
   script:
