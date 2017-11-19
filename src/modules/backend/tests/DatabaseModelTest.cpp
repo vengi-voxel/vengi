@@ -21,7 +21,8 @@ public:
 		Super::SetUp();
 		_supported = _dbHandler.init();
 		if (_supported) {
-			_dbHandler.dropTable(db::TestModel());
+			ASSERT_TRUE(_dbHandler.createTable(db::TestModel())) << "Could not create table";
+			ASSERT_TRUE(_dbHandler.dropTable(db::TestModel()));
 			ASSERT_TRUE(_dbHandler.createTable(db::TestModel())) << "Could not create table";
 		}
 	}

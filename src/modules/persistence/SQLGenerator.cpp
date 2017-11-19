@@ -213,7 +213,16 @@ std::string createTruncateTableStatement(const Model& model) {
 }
 
 std::string createDropTableStatement(const Model& model) {
-	return core::string::format("DROP TABLE IF EXISTS \"%s\"", model.tableName().c_str());
+	std::stringstream dropTable;
+	dropTable << "DROP TABLE IF EXISTS \"" << model.tableName() << "\";";
+	for (const auto& f : model.fields()) {
+		if ((f.contraintMask & (int)ConstraintType::AUTOINCREMENT) == 0) {
+			continue;
+		}
+		dropTable << "DROP SEQUENCE IF EXISTS " << model.tableName() << "_" << f.name;
+		dropTable << "_seq;";
+	}
+	return dropTable.str();
 }
 
 std::string createUpdateStatement(const Model& model, BindParam* params) {
