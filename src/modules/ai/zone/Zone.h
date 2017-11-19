@@ -419,12 +419,9 @@ inline void Zone::update(int64_t dt) {
 		CharacterIdList scheduledDestroy;
 		{
 			ScopedWriteLock scopedLock(_scheduleLock);
-			scheduledAdd = _scheduledAdd;
-			scheduledRemove = _scheduledRemove;
-			scheduledDestroy = _scheduledDestroy;
-			_scheduledAdd.clear();
-			_scheduledRemove.clear();
-			_scheduledDestroy.clear();
+			scheduledAdd.swap(_scheduledAdd);
+			scheduledRemove.swap(_scheduledRemove);
+			scheduledDestroy.swap(_scheduledDestroy);
 		}
 		ScopedWriteLock scopedLock(_lock);
 		for (const AIPtr& ai : scheduledAdd) {
