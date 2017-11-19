@@ -40,3 +40,5 @@ if (POSTGRESQL_FOUND)
 else()
 	set(HAVE_POSTGRES 0 CACHE INTERNAL "Found postgres")
 endif()
+
+generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl PersistenceModels.h)

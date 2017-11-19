@@ -1,0 +1,24 @@
+table columns {
+	classname "SchemaModel"
+	schema information_schema
+	field column_name {
+		notnull
+		type string
+	}
+	field column_default {
+		notnull
+		type string
+	}
+	field is_nullable {
+		notnull
+		type string
+	}
+	field data_type {
+		notnull
+		type string
+	}
+	field character_maximum_length {
+		notnull
+		type int
+	}
+}
