@@ -10,7 +10,8 @@
 
 namespace persistence {
 
-DBHandler::DBHandler() {
+DBHandler::DBHandler(bool useForeignKeys) :
+		_useForeignKeys(useForeignKeys) {
 }
 
 DBHandler::~DBHandler() {
@@ -64,7 +65,7 @@ bool DBHandler::dropTable(Model&& model) const {
 }
 
 bool DBHandler::createTable(Model&& model) const {
-	return exec(createCreateTableStatement(model));
+	return exec(createCreateTableStatement(model, _useForeignKeys));
 }
 
 bool DBHandler::exec(const std::string& query) const {

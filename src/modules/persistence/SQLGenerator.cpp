@@ -126,7 +126,7 @@ static std::string getDbType(const Field& field) {
 	return "";
 }
 
-std::string createCreateTableStatement(const Model& table) {
+std::string createCreateTableStatement(const Model& table, bool useForeignKeys) {
 	std::stringstream createTable;
 	for (const auto& f : table.fields()) {
 		if ((f.contraintMask & (int)ConstraintType::AUTOINCREMENT) == 0) {
@@ -187,12 +187,14 @@ std::string createCreateTableStatement(const Model& table) {
 		createTable << ")";
 	}
 
-	for (const auto& foreignKey : table.foreignKeys()) {
-		createTable << ", CONSTRAINT ";
-		createTable << table.tableName() << "_" << foreignKey.second.table << "_" << foreignKey.second.field;
-		createTable << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES \"";
-		createTable << foreignKey.second.table << "\"(\"" << foreignKey.second.field;
-		createTable << "\") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION";
+	if (useForeignKeys) {
+		for (const auto& foreignKey : table.foreignKeys()) {
+			createTable << ", CONSTRAINT ";
+			createTable << table.tableName() << "_" << foreignKey.second.table << "_" << foreignKey.second.field;
+			createTable << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES \"";
+			createTable << foreignKey.second.table << "\"(\"" << foreignKey.second.field;
+			createTable << "\") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION";
+		}
 	}
 
 	createTable << ");";

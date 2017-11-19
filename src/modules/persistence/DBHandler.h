@@ -71,9 +71,10 @@ private:
 	}
 
 	bool _initialized = false;
+	bool _useForeignKeys;
 
 public:
-	DBHandler();
+	DBHandler(bool useForeignKeys = true);
 	~DBHandler();
 
 	/**

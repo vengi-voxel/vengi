@@ -16,7 +16,7 @@ class DBCondition;
 class OrderBy;
 struct Range;
 
-extern std::string createCreateTableStatement(const Model& model);
+extern std::string createCreateTableStatement(const Model& model, bool useForeignKeys);
 extern std::string createTruncateTableStatement(const Model& model);
 extern std::string createDropTableStatement(const Model& model);
 extern std::string createUpdateStatement(const Model& model, BindParam* params = nullptr);
