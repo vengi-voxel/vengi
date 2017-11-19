@@ -65,6 +65,7 @@ bool DBHandler::dropTable(Model&& model) const {
 }
 
 bool DBHandler::createTable(Model&& model) const {
+	// TODO: use SchemaModel and check whether we have to create it or update it.
 	return exec(createCreateTableStatement(model, _useForeignKeys));
 }
 

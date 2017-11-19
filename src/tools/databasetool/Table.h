@@ -1,8 +1,12 @@
 #pragma once
 
-#include "persistence/Model.h"
+#include "persistence/Field.h"
+#include "persistence/Structs.h"
 #include <cstdint>
+#include <vector>
 #include <map>
+#include <set>
+#include <unordered_map>
 #include <string>
 
 namespace databasetool {

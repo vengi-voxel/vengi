@@ -1,5 +1,4 @@
 #include "Util.h"
-#include "Table.h"
 #include "core/String.h"
 
 namespace databasetool {

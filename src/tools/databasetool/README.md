@@ -36,6 +36,7 @@ All models will be put into a `persistence` namespace.
 table <TABLENAME> {
   classname <STRING> (overrides the automatically determined name)
   namespace <STRING> (c++ namespace where the class is put into)
+  schema <STRING> (default is public)
   field <FIELDNAME> {
     type <FIELDTYPE>
     notnull (optional)

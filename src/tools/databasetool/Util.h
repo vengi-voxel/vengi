@@ -5,7 +5,8 @@
 #pragma once
 
 #include "Table.h"
-#include "persistence/Model.h"
+#include "persistence/FieldType.h"
+#include <string>
 #include <sstream>
 
 namespace databasetool {

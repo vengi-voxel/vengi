@@ -5,6 +5,7 @@ set(SRCS
 	ConstraintType.h
 	DBCondition.cpp DBCondition.h
 	DBHandler.cpp DBHandler.h
+	Field.h
 	FieldType.h
 	ForwardDecl.h
 	Model.cpp Model.h
@@ -14,6 +15,7 @@ set(SRCS
 	ScopedTransaction.cpp ScopedTransaction.h
 	SQLGenerator.cpp SQLGenerator.h
 	State.cpp State
+	Structs.h
 	Timestamp.cpp Timestamp.h
 )
 set(LIB persistence)

@@ -2,7 +2,7 @@
 
 #include "core/Common.h"
 #include "core/Array.h"
-#include "persistence/Model.h"
+#include "persistence/FieldType.h"
 
 static const char *FieldTypeNames[] = {
 	CORE_STRINGIFY(STRING),

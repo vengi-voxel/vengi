@@ -2,8 +2,6 @@
 #include "Util.h"
 #include "Mapping.h"
 #include "Table.h"
-#include "persistence/DBHandler.h"
-#include "persistence/SQLGenerator.h"
 #include "core/String.h"
 
 namespace databasetool {

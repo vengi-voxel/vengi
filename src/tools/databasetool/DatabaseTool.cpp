@@ -10,6 +10,7 @@
 #include "Parser.h"
 #include "Mapping.h"
 #include "Generator.h"
+#include "Table.h"
 
 DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 0) {
