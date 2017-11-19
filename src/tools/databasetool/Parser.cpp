@@ -270,6 +270,12 @@ bool parseTable(core::Tokenizer& tok, Table& table) {
 				return false;
 			}
 			table.namespaceSrc = tok.next();
+		} else if (token == "schema") {
+			if (!tok.hasNext()) {
+				Log::error("missing schema name for table %s", table.name.c_str());
+				return false;
+			}
+			table.schema = tok.next();
 		} else if (token == "classname") {
 			if (!tok.hasNext()) {
 				Log::error("missing clasname name for table %s", table.name.c_str());

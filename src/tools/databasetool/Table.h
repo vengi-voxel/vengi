@@ -14,6 +14,7 @@ struct Table {
 	std::string name;
 	std::string classname;
 	std::string namespaceSrc = "backend";
+	std::string schema = "public";
 	Fields fields;
 	persistence::Constraints constraints;
 	persistence::ForeignKeys foreignKeys;
