@@ -97,7 +97,9 @@ class Model {
 protected:
 	friend class DBHandler;
 	friend class PreparedStatement;
+	std::string _schema;
 	std::string _tableName;
+	std::string _fullTableName;
 	int _primaryKeys = 0;
 	long _autoIncrementStart = 1l;
 	uint8_t* _membersPointer;
@@ -109,11 +111,15 @@ protected:
 	const Field& getField(const std::string& name) const;
 	bool fillModelValues(State& state);
 public:
-	Model(const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
+	Model(const std::string& schema, const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
 			const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys);
 	virtual ~Model();
 
 	const std::string& tableName() const;
+
+	const std::string& fullTableName() const;
+
+	const std::string& schema() const;
 
 	const Fields& fields() const;
 
@@ -178,6 +184,14 @@ inline bool Model::exec(const std::string& query) {
 
 inline const std::string& Model::tableName() const {
 	return _tableName;
+}
+
+inline const std::string& Model::fullTableName() const {
+	return _fullTableName;
+}
+
+inline const std::string& Model::schema() const {
+	return _schema;
 }
 
 inline const Fields& Model::fields() const {

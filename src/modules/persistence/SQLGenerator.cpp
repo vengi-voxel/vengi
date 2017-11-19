@@ -132,11 +132,11 @@ std::string createCreateTableStatement(const Model& table, bool useForeignKeys) 
 		if ((f.contraintMask & (int)ConstraintType::AUTOINCREMENT) == 0) {
 			continue;
 		}
-		createTable << "CREATE SEQUENCE IF NOT EXISTS " << table.tableName() << "_" << f.name;
+		createTable << "CREATE SEQUENCE IF NOT EXISTS " << table.schema() << "." << table.tableName() << "_" << f.name;
 		createTable << "_seq START " << table.autoIncrementStart() << ";";
 	}
 
-	createTable << "CREATE TABLE IF NOT EXISTS \"" << table.tableName() << "\" (";
+	createTable << "CREATE TABLE IF NOT EXISTS \"" << table.schema() << "\".\"" << table.fullTableName() << "\" (";
 	bool firstField = true;
 	for (const auto& f : table.fields()) {
 		if (!firstField) {
@@ -203,7 +203,7 @@ std::string createCreateTableStatement(const Model& table, bool useForeignKeys) 
 		if (!f.isIndex()) {
 			continue;
 		}
-		createTable << "CREATE INDEX IF NOT EXISTS " << table.tableName() << "_" << f.name << " ON \"";
+		createTable << "CREATE INDEX IF NOT EXISTS " << table.schema() << "." << table.tableName() << "_" << f.name << " ON \"";
 		createTable << table.tableName() << "\" USING btree (\"" << f.name << "\");";
 	}
 
@@ -211,17 +211,17 @@ std::string createCreateTableStatement(const Model& table, bool useForeignKeys) 
 }
 
 std::string createTruncateTableStatement(const Model& model) {
-	return core::string::format("TRUNCATE TABLE \"%s\"", model.tableName().c_str());
+	return core::string::format("TRUNCATE TABLE \"%s\".\"%s\"", model.schema().c_str(), model.tableName().c_str());
 }
 
 std::string createDropTableStatement(const Model& model) {
 	std::stringstream dropTable;
-	dropTable << "DROP TABLE IF EXISTS \"" << model.tableName() << "\";";
+	dropTable << "DROP TABLE IF EXISTS \"" << model.schema() << "\".\"" << model.tableName() << "\";";
 	for (const auto& f : model.fields()) {
 		if ((f.contraintMask & (int)ConstraintType::AUTOINCREMENT) == 0) {
 			continue;
 		}
-		dropTable << "DROP SEQUENCE IF EXISTS " << model.tableName() << "_" << f.name;
+		dropTable << "DROP SEQUENCE IF EXISTS " << model.schema() << "." << model.tableName() << "_" << f.name;
 		dropTable << "_seq;";
 	}
 	return dropTable.str();
@@ -231,7 +231,7 @@ std::string createUpdateStatement(const Model& model, BindParam* params) {
 	const Fields& fields = model.fields();
 	const std::string& tableName = model.tableName();
 	std::stringstream update;
-	update << "UPDATE \"" << tableName << "\" SET (";
+	update << "UPDATE \"" << model.schema() << "\".\"" << tableName << "\" SET (";
 	for (auto i = fields.begin(); i != fields.end(); ++i) {
 		if (i->isPrimaryKey()) {
 			continue;
@@ -283,7 +283,7 @@ std::string createUpdateStatement(const Model& model, BindParam* params) {
 }
 
 std::string createDeleteStatement(const Model& table) {
-	return core::string::format("DELETE FROM \"%s\"", table.tableName().c_str());
+	return core::string::format("DELETE FROM \"%s\".\"%s\"", table.schema().c_str(), table.tableName().c_str());
 }
 
 std::string createInsertStatement(const Model& model, BindParam* params) {
@@ -291,7 +291,7 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 	std::stringstream values;
 	std::string autoincrement;
 	std::string primaryKey;
-	insert << "INSERT INTO \"" << model.tableName() << "\" (";
+	insert << "INSERT INTO \"" << model.schema() << "\".\"" << model.tableName() << "\" (";
 	int insertValueIndex = 1;
 	int inserted = 0;
 	for (const persistence::Field& f : model.fields()) {
@@ -400,7 +400,7 @@ std::string createSelect(const Model& model) {
 		}
 	}
 
-	select << " FROM \"" << tableName << "\"";
+	select << " FROM \"" << model.schema() << "\".\"" << tableName << "\"";
 	return select.str();
 }
 

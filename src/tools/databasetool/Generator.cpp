@@ -143,19 +143,19 @@ static void createMetaStruct(const Table& table, std::stringstream& src) {
 
 void createConstructor(const Table& table, std::stringstream& src) {
 	src << "\t" << table.classname << "(";
-	src << ") : Super(\"" << table.name << "\", &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
+	src << ") : Super(\"" << table.schema << "\", \"" << table.name << "\", &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
 	src << "\t\t_membersPointer = (uint8_t*)&" << MembersStruct::varName() << ";\n";
 
 	src << "\t\t_primaryKeys = " << table.primaryKeys << ";\n";
 	src << "\t\t_autoIncrementStart = " << table.autoIncrementStart << ";\n";
 	src << "\t}\n\n";
 
-	src << "\t" << table.classname << "(" << table.classname << "&& source) : Super(std::move(source._tableName), &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
+	src << "\t" << table.classname << "(" << table.classname << "&& source) : Super(std::move(source._schema), std::move(source._tableName), &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
 	src << "\t\t_primaryKeys = source._primaryKeys;\n";
 	src << "\t\t_m = std::move(source._m);\n";
 	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
 	src << "\t}\n\n";
-	src << "\t" << table.classname << "(const " << table.classname << "& source) : Super(source._tableName, &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
+	src << "\t" << table.classname << "(const " << table.classname << "& source) : Super(source._schema, source._tableName, &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
 	src << "\t\t_primaryKeys = source._primaryKeys;\n";
 	src << "\t\t_m = source._m;\n";
 	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
@@ -172,7 +172,6 @@ void createConstructor(const Table& table, std::stringstream& src) {
 	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
 	src << "\t\treturn *this;\n";
 	src << "\t}\n\n";
-
 }
 
 static void createDBConditions(const Table& table, std::stringstream& src) {
@@ -220,10 +219,11 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
 		const std::string& cpptypeGetter = getCPPType(f.type, true, isPointer(f));
+		const std::string& getter = core::string::lowerCamelCase(f.name);
 		const std::string& cpptypeSetter = getCPPType(f.type, true, false);
-		const std::string& n = core::string::upperCamelCase(f.name);
+		const std::string& setter = core::string::upperCamelCase(f.name);
 
-		src << "\tinline " << cpptypeGetter << " " << f.name << "() const {\n";
+		src << "\tinline " << cpptypeGetter << " " << getter << "() const {\n";
 		if (isPointer(f)) {
 			src << "\t\tif (_m._isNull_" << f.name << ") {\n";
 			src << "\t\t\treturn nullptr;\n";
@@ -238,7 +238,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		}
 		src << "\t}\n\n";
 
-		src << "\tinline void set" << n << "(" << cpptypeSetter << " " << f.name << ") {\n";
+		src << "\tinline void set" << setter << "(" << cpptypeSetter << " " << f.name << ") {\n";
 		src << "\t\t_m._" << f.name << " = " << f.name << ";\n";
 		if (isPointer(f)) {
 			src << "\t\t_m._isNull_" << f.name << " = false;\n";
@@ -247,13 +247,13 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 
 		if (f.type == persistence::FieldType::INT || f.type == persistence::FieldType::SHORT) {
 			src << "\ttemplate<typename T, class = typename std::enable_if<std::is_enum<T>::value>::type>\n";
-			src << "\tinline void set" << n << "(const T& " << f.name << ") {\n";
-			src << "\t\tset" << n << "(static_cast<" << cpptypeSetter << ">(static_cast<typename std::underlying_type<T>::type>(" << f.name << ")));\n";
+			src << "\tinline void set" << setter << "(const T& " << f.name << ") {\n";
+			src << "\t\tset" << setter << "(static_cast<" << cpptypeSetter << ">(static_cast<typename std::underlying_type<T>::type>(" << f.name << ")));\n";
 			src << "\t}\n\n";
 		}
 
 		if (isPointer(f)) {
-			src << "\tinline void set" << n << "(nullptr_t " << f.name << ") {\n";
+			src << "\tinline void set" << setter << "(nullptr_t " << f.name << ") {\n";
 			src << "\t\t_m._isNull_" << f.name << " = true;\n";
 			src << "\t}\n\n";
 		}

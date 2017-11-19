@@ -19,11 +19,12 @@
 
 namespace persistence {
 
-Model::Model(const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
+Model::Model(const std::string& schema, const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
 		const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys) :
-		_tableName(tableName), _fields(fields), _constraints(constraints),
+		_schema(schema), _tableName(tableName), _fields(fields), _constraints(constraints),
 		_uniqueKeys(uniqueKeys), _foreignKeys(foreignKeys) {
 	_membersPointer = (uint8_t*)this;
+	_fullTableName = _schema + "." + _tableName;
 }
 
 Model::~Model() {

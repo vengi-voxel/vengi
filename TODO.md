@@ -18,10 +18,6 @@ Support enums?
 
 * Support `(x, y, z) primarykey` (like we do for unique keys)
 
-## Schema
-
-* Support schemas for user data and server configuration data (event, user, default, ...)
-
 # EventMgr
 
 ## Proper event-end-while-application-is-not-running handling
