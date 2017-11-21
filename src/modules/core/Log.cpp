@@ -35,8 +35,8 @@ static constexpr int bufSize = 4096;
 static SDL_LogPriority _logLevel = SDL_LOG_PRIORITY_INFO;
 
 #ifdef HAVE_SYSLOG_H
-static SDL_LogOutputFunction _sdlCallback;
-static void *_sdlCallbackUserData;
+static SDL_LogOutputFunction _sdlCallback = nullptr;
+static void *_sdlCallbackUserData = nullptr;
 
 static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	int syslogLevel = LOG_DEBUG;
@@ -78,6 +78,8 @@ void Log::init() {
 #ifdef HAVE_SYSLOG_H
 		if (_syslog) {
 			SDL_LogSetOutputFunction(_sdlCallback, _sdlCallbackUserData);
+			_sdlCallback = nullptr;
+			_sdlCallbackUserData = nullptr;
 			closelog();
 		}
 #endif
@@ -89,9 +91,15 @@ void Log::shutdown() {
 	// this is one of the last methods that is executed - so don't rely on anything
 	// still being available here - it won't
 #ifdef HAVE_SYSLOG_H
-	SDL_LogSetOutputFunction(_sdlCallback, _sdlCallbackUserData);
-	closelog();
+	if (_syslog) {
+		SDL_LogSetOutputFunction(_sdlCallback, _sdlCallbackUserData);
+		closelog();
+		_sdlCallback = nullptr;
+		_sdlCallbackUserData = nullptr;
+	}
 #endif
+	_logLevel = SDL_LOG_PRIORITY_INFO;
+	_syslog = false;
 }
 
 void Log::trace(const char* msg, ...) {

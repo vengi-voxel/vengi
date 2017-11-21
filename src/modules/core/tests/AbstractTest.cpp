@@ -22,7 +22,7 @@ void AbstractTest::SetUp() {
 }
 
 void AbstractTest::TearDown() {
-	// prevent cvars from begin saved and reloaded for the next fiture in the test
+	// prevent cvars from begin saved and reloaded for the next fixture in the test
 	core::Var::shutdown();
 	delete _testApp;
 	_testApp = nullptr;
