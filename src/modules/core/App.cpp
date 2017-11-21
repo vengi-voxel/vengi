@@ -177,7 +177,7 @@ AppState App::onConstruct() {
 	}
 	Log::init();
 
-	Log::info("%s: " PROJECT_VERSION, _appname.c_str());
+	Log::debug("%s: " PROJECT_VERSION, _appname.c_str());
 
 	for (int i = 0; i < _argc; ++i) {
 		Log::debug("argv[%i] = %s", i, _argv[i]);
