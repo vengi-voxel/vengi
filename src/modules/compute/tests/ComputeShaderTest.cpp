@@ -16,6 +16,9 @@ public:
 	void SetUp() override {
 		Super::SetUp();
 		_supported = compute::init();
+		if (!_supported) {
+			Log::warn("ComputeShaderTest is skipped");
+		}
 	}
 
 	void TearDown() override {
