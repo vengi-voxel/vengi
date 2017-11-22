@@ -39,6 +39,42 @@ TEST_F(DatabaseSchemaUpdateTest, testAddNewColumns) {
 	}
 	ASSERT_TRUE(_dbHandler.createTable(db::TestUpdate1Model()));
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate2Model()));
+}
+
+TEST_F(DatabaseSchemaUpdateTest, testRemoveColumns) {
+	if (!_supported) {
+		return;
+	}
+	ASSERT_TRUE(_dbHandler.createTable(db::TestUpdate2Model()));
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+}
+
+TEST_F(DatabaseSchemaUpdateTest, testAddAndRemoveMultipleStuffColumns) {
+	if (!_supported) {
+		return;
+	}
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate3Model()));
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+}
+
+TEST_F(DatabaseSchemaUpdateTest, testAddAndRemoveSingleStepsColumns) {
+	if (!_supported) {
+		return;
+	}
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate2Model()));
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate3Model()));
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+}
+
+TEST_F(DatabaseSchemaUpdateTest, testAddAndRemoveSingleStepsReversedColumns) {
+	if (!_supported) {
+		return;
+	}
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate3Model()));
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate2Model()));
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
 }
 

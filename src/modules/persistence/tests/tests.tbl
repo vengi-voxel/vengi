@@ -66,3 +66,29 @@ table testupdate {
 		id primarykey
 	}
 }
+
+# Adds a new column, unique constraints and a sequence
+table testupdate {
+	namespace persistence
+	classname "TestUpdate3Model"
+	field id {
+		type long
+		operator set
+	}
+	field email {
+		type string
+		notnull
+		operator set
+	}
+	field name {
+		type string
+		notnull
+		operator set
+	}
+	constraints {
+		id autoincrement 1000000
+		id primarykey
+		name unique
+		email unique
+	}
+}
