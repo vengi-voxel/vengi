@@ -1,24 +1,36 @@
-table columns {
-	classname "SchemaModel"
-	schema information_schema
-	field column_name {
+// This model is used for automatic updating of tables. It contains meta data for every table. The
+// DBHandler is able to generate the sql statement to get from one state to another (that is - getting
+// from tbl file and generated model class to the real database table via "alter table" statements).
+table metainfo {
+	namespace persistence
+	field schemaname {
+		type string
+	}
+	field tablename {
+		type string
+	}
+	field columnname {
+		type string
+	}
+	field columndefault {
 		notnull
 		type string
 	}
-	field column_default {
+	field datatype {
 		notnull
 		type string
 	}
-	field is_nullable {
-		notnull
-		type string
-	}
-	field data_type {
-		notnull
-		type string
-	}
-	field character_maximum_length {
+	field maximumlength {
 		notnull
 		type int
+	}
+	field constraintmask {
+		notnull
+		type int
+	}
+	constraints {
+		schemaname primarykey
+		tablename primarykey
+		columnname primarykey
 	}
 }

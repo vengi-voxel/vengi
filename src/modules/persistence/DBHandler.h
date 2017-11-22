@@ -36,6 +36,9 @@ private:
 
 	Connection* connection() const;
 
+	bool insertMetadata(const Model& model) const;
+	bool loadMetadata(const Model& model, std::vector<db::MetainfoModel>& schemaModels) const;
+
 	template<class FUNC, class MODEL>
 	bool select(const std::string& query, int conditionAmount, MODEL& model, const DBCondition& condition, FUNC&& func) const {
 		Log::debug("Execute query '%s'", query.c_str());
@@ -259,6 +262,13 @@ public:
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
 	bool createTable(Model&& model) const;
+
+	/**
+	 * @brief Create a table for the given @c persistence::Model - or if this table already exists, it checks
+	 * whether the given model meta data matches the existing table and perform update statements if the differ
+	 * @return @c true if the statement was executed successfully, @c false otherwise.
+	 */
+	bool createOrUpdateTable(Model&& model) const;
 
 	/**
 	 * @brief Executes a single query

@@ -24,7 +24,7 @@ bool DBHandler::init() {
 		return false;
 	}
 	_initialized = true;
-	return true;
+	return exec(createCreateTableStatement(db::MetainfoModel(), _useForeignKeys));
 }
 
 void DBHandler::shutdown() {
@@ -59,16 +59,77 @@ bool DBHandler::truncate(Model&& model) const {
 }
 
 bool DBHandler::dropTable(const Model& model) const {
-	return exec(createDropTableStatement(model));
+	const State& s = execInternal(createDropTableStatement(model));
+	if (!s.result) {
+		return false;
+	}
+	const db::DBConditionMetainfoModelSchemaname c1(model.schema());
+	const db::DBConditionMetainfoModelTablename c2(model.tableName());
+	const DBConditionMultiple condition(true, { &c1, &c2 });
+	deleteModel(db::MetainfoModel(), condition);
+	return true;
 }
 
 bool DBHandler::dropTable(Model&& model) const {
-	return exec(createDropTableStatement(model));
+	return dropTable(model);
+}
+
+bool DBHandler::createOrUpdateTable(Model&& model) const {
+	std::vector<db::MetainfoModel> schemaModels;
+	if (!loadMetadata(model, schemaModels)) {
+		// doesn't exist yet - just create it
+		const State& s = execInternal(createCreateTableStatement(model, _useForeignKeys));
+		if (!s.result) {
+			return false;
+		}
+	} else {
+		const State& salter = execInternal(createAlterTableStatement(schemaModels, model, _useForeignKeys));
+		if (!salter.result) {
+			return false;
+		}
+	}
+	return insertMetadata(model);
+}
+
+bool DBHandler::loadMetadata(const Model& model, std::vector<db::MetainfoModel>& schemaModels) const {
+	schemaModels.reserve(model.fields().size() * 2);
+	// TODO: also take the schema into account?
+	return select(db::MetainfoModel(), db::DBConditionMetainfoModelTablename(model.tableName()), [&] (db::MetainfoModel&& model) {
+		schemaModels.emplace_back(std::move(model));
+	});
+}
+
+bool DBHandler::insertMetadata(const Model& model) const {
+	const db::DBConditionMetainfoModelSchemaname c1(model.schema());
+	const db::DBConditionMetainfoModelTablename c2(model.tableName());
+	const DBConditionMultiple condition(true, { &c1, &c2 });
+	deleteModel(db::MetainfoModel(), condition);
+
+	const Fields& fields = model.fields();
+	std::vector<db::MetainfoModel> models;
+	models.reserve(fields.size());
+	for (const auto& f : fields) {
+		db::MetainfoModel metaInfo;
+		metaInfo.setMaximumlength(f.length);
+		metaInfo.setColumndefault(f.defaultVal);
+		metaInfo.setColumnname(f.name);
+		metaInfo.setTablename(model.tableName());
+		metaInfo.setSchemaname(model.schema());
+		metaInfo.setConstraintmask(f.contraintMask);
+		metaInfo.setDatatype(toFieldType(f.type));
+		models.push_back(metaInfo);
+	}
+	return insert(models);
 }
 
 bool DBHandler::createTable(Model&& model) const {
-	// TODO: use SchemaModel and check whether we have to create it or update it.
-	return exec(createCreateTableStatement(model, _useForeignKeys));
+	const State& s = execInternal(createCreateTableStatement(model, _useForeignKeys));
+	if (!s.result) {
+		Log::error("Failed to create table");
+		return false;
+	}
+	insertMetadata(model);
+	return true;
 }
 
 bool DBHandler::exec(const std::string& query) const {

@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include "Order.h"
+#include "MetainfoModel.h"
 
 namespace persistence {
 
@@ -16,6 +17,7 @@ class DBCondition;
 class OrderBy;
 struct Range;
 
+extern std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys);
 extern std::string createCreateTableStatement(const Model& model, bool useForeignKeys);
 extern std::string createTruncateTableStatement(const Model& model);
 extern std::string createDropTableStatement(const Model& model);

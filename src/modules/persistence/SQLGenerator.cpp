@@ -9,6 +9,7 @@
 #include "core/Common.h"
 #include "Model.h"
 #include "DBCondition.h"
+#include "MetainfoModel.h"
 #include "OrderBy.h"
 #include <unordered_map>
 
@@ -139,6 +140,130 @@ static void createCreateSequence(std::stringstream& stmt, const Model& table, co
 
 static void createDropSequence(std::stringstream& stmt, const Model& table, const Field& field) {
 	stmt << "DROP SEQUENCE IF EXISTS " << table.schema() << "." << table.tableName() << "_" << field.name << "_seq;";
+}
+
+static void createDropSequence(std::stringstream& stmt, const Model& table, const db::MetainfoModel& field) {
+	stmt << "DROP SEQUENCE IF EXISTS " << table.schema() << "." << table.tableName() << "_" << field.columnname() << "_seq;";
+}
+
+template<class T>
+static inline bool isSet(uint32_t mask, T value) {
+	return (mask & (uint32_t)value) != 0u;
+}
+
+template<class T>
+static inline bool adds(const db::MetainfoModel& schemaColumn, const Field& field, T value) {
+	return !isSet(schemaColumn.constraintmask(), value) && isSet(field.contraintMask, value);
+}
+
+template<class T>
+static inline bool removes(const db::MetainfoModel& schemaColumn, const Field& field, T value) {
+	return isSet(schemaColumn.constraintmask(), value) && !isSet(field.contraintMask, value);
+}
+
+static void createAlterTableAlterColumn(std::stringstream& stmt, bool add, const Model& table, const db::MetainfoModel& schemaColumn, const Field& field) {
+	if (adds(schemaColumn, field, ConstraintType::AUTOINCREMENT)) {
+		createCreateSequence(stmt, table, field);
+	}
+
+	const char *action = add ? " ADD COLUMN " : " ALTER COLUMN ";
+	stmt << "ALTER TABLE " << table.tableName() << action << field.name;
+	if (toFieldType(schemaColumn.datatype()) != field.type || schemaColumn.maximumlength() != field.length) {
+		if (!add) {
+			stmt << " TYPE";
+		}
+		stmt << " " << getDbType(field);
+	}
+	if (schemaColumn.columndefault() != field.defaultVal) {
+		if (field.defaultVal.empty()) {
+			stmt << " DROP DEFAULT";
+		} else {
+			if (!add) {
+				stmt << " SET";
+			}
+			stmt << " DEFAULT " << field.defaultVal;
+		}
+	} else {
+		if (adds(schemaColumn, field, ConstraintType::AUTOINCREMENT)) {
+			if (!add) {
+				stmt << " SET";
+			}
+			stmt << " DEFAULT nextval('" << table.tableName() << "_" << field.name << "_seq'::regclass)";
+		} else if (removes(schemaColumn, field, ConstraintType::AUTOINCREMENT)) {
+			stmt << " DROP DEFAULT";
+		}
+	}
+	if (adds(schemaColumn, field, ConstraintType::NOTNULL)) {
+		if (!add) {
+			stmt << " SET";
+		}
+		stmt << " NOT NULL";
+	} else if (removes(schemaColumn, field, ConstraintType::NOTNULL)) {
+		stmt << " DROP NOT NULL";
+	}
+	stmt << ";";
+
+	// TODO: foreign keys
+	// TODO: DROP CONSTRAINT
+}
+
+static void createAlterTableDropColumn(std::stringstream& stmt, const Model& table, const db::MetainfoModel& field) {
+	stmt << "ALTER TABLE " << table.tableName() << " DROP COLUMN \"" << field.columnname() << "\";";
+	if ((field.constraintmask() & (int)ConstraintType::AUTOINCREMENT) != 0) {
+		createDropSequence(stmt, table, field);
+	}
+}
+
+static void createAlterTableAddColumn(std::stringstream& stmt, const Model& table, const Field& field) {
+	createAlterTableAlterColumn(stmt, true, table, db::MetainfoModel(), field);
+}
+
+static bool isDifferent(const db::MetainfoModel& schemaColumn, const Field& field) {
+	if ((uint32_t)schemaColumn.constraintmask() != field.contraintMask) {
+		return true;
+	}
+	if (schemaColumn.columndefault() != field.defaultVal) {
+		return true;
+	}
+	if (toFieldType(schemaColumn.datatype()) != field.type) {
+		return true;
+	}
+	if (schemaColumn.maximumlength() != field.length) {
+		return true;
+	}
+	return false;
+}
+
+std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys) {
+	std::stringstream stmt;
+	std::unordered_map<std::string, const db::MetainfoModel*> map;
+	map.reserve(columns.size());
+	for (const auto& c : columns) {
+		map.insert(std::make_pair(c.columnname(), &c));
+		const Field& f = table.getField(c.columnname());
+		if (f.name.empty()) {
+			// the field is not known in the current table structure - but it's known in the
+			// database, so get rid of the column
+			createAlterTableDropColumn(stmt, table, c);
+			continue;
+		}
+	}
+	for (const auto& f : table.fields()) {
+		auto i = map.find(f.name);
+		if (i != map.end()) {
+			// the field already exists, but it might be different from what we expect
+			// to find in the database
+			if (isDifferent(*i->second, f)) {
+				createAlterTableAlterColumn(stmt, "ALTER", table, *i->second, f);
+			}
+			continue;
+		}
+		// a new field that is not yet known in the database schema was added to the model
+		// now just create the new column.
+		createAlterTableAddColumn(stmt, table, f);
+	}
+
+	return stmt.str();
 }
 
 std::string createCreateTableStatement(const Model& table, bool useForeignKeys) {
