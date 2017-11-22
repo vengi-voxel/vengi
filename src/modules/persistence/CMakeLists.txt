@@ -32,6 +32,7 @@ target_include_directories(${LIB} PUBLIC ${PostgreSQL_INCLUDE_DIRS} /usr/include
 
 set(TEST_SRCS
 	tests/DatabaseModelTest.cpp
+	tests/SQLGeneratorTest.cpp
 )
 
 if (POSTGRESQL_FOUND)
@@ -39,6 +40,7 @@ if (POSTGRESQL_FOUND)
 	list(APPEND TEST_SRCS
 		tests/ConnectionPoolTest.cpp
 		tests/DBConditionTest.cpp
+		tests/DatabaseSchemaUpdateTest.cpp
 	)
 else()
 	set(HAVE_POSTGRES 0 CACHE INTERNAL "Found postgres")
