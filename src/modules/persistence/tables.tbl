@@ -1,4 +1,4 @@
-// This model is used for automatic updating of tables. It contains meta data for every table. The
+// This model is used for automatic updating of table columns. It contains meta data for every table. The
 // DBHandler is able to generate the sql statement to get from one state to another (that is - getting
 // from tbl file and generated model class to the real database table via "alter table" statements).
 table metainfo {

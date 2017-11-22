@@ -75,12 +75,16 @@ static void createMembersStruct(const Table& table, std::stringstream& src) {
 			src << " = " << getCPPInit(f.type, false);
 		}
 		src << ";\n";
+		// TODO: padding for short and boolean
+	}
+	for (auto entry : table.fields) {
+		// TODO: use bitfield
+		const persistence::Field& f = entry.second;
 		if (isPointer(f)) {
 			src << "\t\tbool " << MembersStruct::nullFieldName(f) << " = false;\n";
 		}
 		src << "\t\t// is there a valid value set\n";
 		src << "\t\tbool " << MembersStruct::validFieldName(f) << " = false;\n";
-		// TODO: padding for short and boolean
 	}
 	src << "\t};\n";
 	src << "\tMembers " << MembersStruct::varName() << ";\n";

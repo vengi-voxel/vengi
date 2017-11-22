@@ -8,6 +8,10 @@ Now consider that there are 1000 players logged in and they all have there Coold
 
 Implement proper password handling (don't ever load password hashes from DB into memory - just compare hashes via sql statement). (This should also be true for signing up and logging in - only transmit the hash - never the real password)
 
+## Checks
+
+ALTER TABLE products ADD CHECK (name <> '');
+
 ## Enums
 
 Support enums?

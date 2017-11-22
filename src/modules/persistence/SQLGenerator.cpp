@@ -134,21 +134,26 @@ static std::string getDbType(const Field& field) {
 }
 
 static void createCreateSequence(std::stringstream& stmt, const Model& table, const Field& field) {
-	stmt << "CREATE SEQUENCE IF NOT EXISTS " << table.schema() << "." << table.tableName() << "_" << field.name;
-	stmt << "_seq START " << table.autoIncrementStart() << ";";
+	stmt << "CREATE SEQUENCE IF NOT EXISTS \"" << table.schema() << "\".\"" << table.tableName() << "_" << field.name;
+	stmt << "_seq\" START " << table.autoIncrementStart() << ";";
 }
 
 static void createDropSequence(std::stringstream& stmt, const Model& table, const Field& field) {
-	stmt << "DROP SEQUENCE IF EXISTS " << table.schema() << "." << table.tableName() << "_" << field.name << "_seq;";
+	stmt << "DROP SEQUENCE IF EXISTS \"" << table.schema() << "\".\"" << table.tableName() << "_" << field.name << "_seq\";";
 }
 
 static void createDropSequence(std::stringstream& stmt, const Model& table, const db::MetainfoModel& field) {
-	stmt << "DROP SEQUENCE IF EXISTS " << table.schema() << "." << table.tableName() << "_" << field.columnname() << "_seq;";
+	stmt << "DROP SEQUENCE IF EXISTS \"" << table.schema() << "\".\"" << table.tableName() << "_" << field.columnname() << "_seq\";";
 }
 
 template<class T>
 static inline bool isSet(uint32_t mask, T value) {
 	return (mask & (uint32_t)value) != 0u;
+}
+
+template<class T>
+static inline bool changed(const db::MetainfoModel& schemaColumn, const Field& field, T value) {
+	return isSet(schemaColumn.constraintmask(), value) != isSet(field.contraintMask, value);
 }
 
 template<class T>
@@ -166,45 +171,55 @@ static void createAlterTableAlterColumn(std::stringstream& stmt, bool add, const
 		createCreateSequence(stmt, table, field);
 	}
 
-	const char *action = add ? " ADD COLUMN " : " ALTER COLUMN ";
-	stmt << "ALTER TABLE " << table.tableName() << action << field.name;
-	if (toFieldType(schemaColumn.datatype()) != field.type || schemaColumn.maximumlength() != field.length) {
+	const char *action = add ? "ADD" : "ALTER";
+	const std::string& base = core::string::format("ALTER TABLE \"%s\" %s COLUMN \"%s\"",
+			table.tableName().c_str(), action, field.name.c_str());
+	if (!add && adds(schemaColumn, field, ConstraintType::NOTNULL)) {
+		stmt << base << " " << getDbType(field);
+		if (!add) {
+			stmt << " SET";
+		}
+		stmt << " NOT NULL;";
+	} else if (!add && removes(schemaColumn, field, ConstraintType::NOTNULL)) {
+		stmt << base << " DROP NOT NULL;";
+	}
+	if (add || toFieldType(schemaColumn.datatype()) != field.type || schemaColumn.maximumlength() != field.length) {
+		stmt << base;
 		if (!add) {
 			stmt << " TYPE";
 		}
 		stmt << " " << getDbType(field);
+		if (adds(schemaColumn, field, ConstraintType::NOTNULL)) {
+			if (!add) {
+				stmt << " SET";
+			}
+			stmt << " NOT NULL";
+		}
+		stmt << ";";
 	}
 	if (schemaColumn.columndefault() != field.defaultVal) {
 		if (field.defaultVal.empty()) {
-			stmt << " DROP DEFAULT";
+			if (!add) {
+				stmt << base << " DROP DEFAULT;";
+			}
 		} else {
+			stmt << base;
 			if (!add) {
 				stmt << " SET";
 			}
-			stmt << " DEFAULT " << field.defaultVal;
+			stmt << " DEFAULT " << field.defaultVal << ";";
 		}
 	} else {
 		if (adds(schemaColumn, field, ConstraintType::AUTOINCREMENT)) {
+			stmt << base;
 			if (!add) {
 				stmt << " SET";
 			}
-			stmt << " DEFAULT nextval('" << table.tableName() << "_" << field.name << "_seq'::regclass)";
-		} else if (removes(schemaColumn, field, ConstraintType::AUTOINCREMENT)) {
-			stmt << " DROP DEFAULT";
+			stmt << " DEFAULT nextval('" << table.tableName() << "_" << field.name << "_seq'::regclass);";
+		} else if (!add && removes(schemaColumn, field, ConstraintType::AUTOINCREMENT)) {
+			stmt << base << " DROP DEFAULT;";
 		}
 	}
-	if (adds(schemaColumn, field, ConstraintType::NOTNULL)) {
-		if (!add) {
-			stmt << " SET";
-		}
-		stmt << " NOT NULL";
-	} else if (removes(schemaColumn, field, ConstraintType::NOTNULL)) {
-		stmt << " DROP NOT NULL";
-	}
-	stmt << ";";
-
-	// TODO: foreign keys
-	// TODO: DROP CONSTRAINT
 }
 
 static void createAlterTableDropColumn(std::stringstream& stmt, const Model& table, const db::MetainfoModel& field) {
@@ -220,15 +235,38 @@ static void createAlterTableAddColumn(std::stringstream& stmt, const Model& tabl
 
 static bool isDifferent(const db::MetainfoModel& schemaColumn, const Field& field) {
 	if ((uint32_t)schemaColumn.constraintmask() != field.contraintMask) {
+		Log::debug("%s differs in constraint mask", field.name.c_str());
+#define C_CHECK(type) \
+		if (adds(schemaColumn, field, ConstraintType::type)) { \
+			Log::debug("Added " CORE_STRINGIFY(type)); \
+		} else if (removes(schemaColumn, field, ConstraintType::type)) { \
+			Log::debug("Removed " CORE_STRINGIFY(type)); \
+		}
+
+		C_CHECK(UNIQUE)
+		C_CHECK(PRIMARYKEY)
+		C_CHECK(AUTOINCREMENT)
+		C_CHECK(NOTNULL)
+		C_CHECK(INDEX)
+		C_CHECK(FOREIGNKEY)
+
+#undef C_CHECK
+
 		return true;
 	}
 	if (schemaColumn.columndefault() != field.defaultVal) {
+		Log::debug("%s differens in default values ('%s' vs '%s')",
+				field.name.c_str(), schemaColumn.columndefault().c_str(), field.defaultVal.c_str());
 		return true;
 	}
 	if (toFieldType(schemaColumn.datatype()) != field.type) {
+		Log::debug("%s differens in types ('%s' vs '%s')",
+				field.name.c_str(), schemaColumn.datatype().c_str(), toFieldType(field.type));
 		return true;
 	}
 	if (schemaColumn.maximumlength() != field.length) {
+		Log::debug("%s differens in length ('%i' vs '%i')",
+				field.name.c_str(), schemaColumn.maximumlength(), field.length);
 		return true;
 	}
 	return false;
@@ -236,31 +274,75 @@ static bool isDifferent(const db::MetainfoModel& schemaColumn, const Field& fiel
 
 std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys) {
 	std::stringstream stmt;
+
+	stmt << "CREATE SCHEMA IF NOT EXISTS \"" << table.schema() << "\";";
+
 	std::unordered_map<std::string, const db::MetainfoModel*> map;
 	map.reserve(columns.size());
 	for (const auto& c : columns) {
 		map.insert(std::make_pair(c.columnname(), &c));
+		Log::debug("Handle expected column '%s' in table '%s'", c.columnname().c_str(), c.tablename().c_str());
 		const Field& f = table.getField(c.columnname());
 		if (f.name.empty()) {
+			Log::debug("Drop column '%s' from table '%s' - no longer in the model",
+					c.columnname().c_str(), c.tablename().c_str());
 			// the field is not known in the current table structure - but it's known in the
 			// database, so get rid of the column
 			createAlterTableDropColumn(stmt, table, c);
-			continue;
+		} else {
+			Log::debug("Column '%s' in table '%s' still exists - check for needed updates",
+					c.columnname().c_str(), c.tablename().c_str());
 		}
 	}
+	bool uniqueConstraintDiffers = false;
 	for (const auto& f : table.fields()) {
 		auto i = map.find(f.name);
 		if (i != map.end()) {
 			// the field already exists, but it might be different from what we expect
 			// to find in the database
 			if (isDifferent(*i->second, f)) {
-				createAlterTableAlterColumn(stmt, "ALTER", table, *i->second, f);
+				if (changed(*i->second, f, ConstraintType::UNIQUE)) {
+					uniqueConstraintDiffers = true;
+				}
+				Log::debug("Column '%s' in table '%s' differs - update it",
+						f.name.c_str(), table.tableName().c_str());
+				// TODO: foreign keys
+				// ALTER TABLE products ADD FOREIGN KEY (product_group_id) REFERENCES product_groups;
+				createAlterTableAlterColumn(stmt, false, table, *i->second, f);
 			}
 			continue;
 		}
+		Log::debug("Column '%s' in table '%s' doesn't exist yet - create it",
+				f.name.c_str(), table.tableName().c_str());
 		// a new field that is not yet known in the database schema was added to the model
 		// now just create the new column.
 		createAlterTableAddColumn(stmt, table, f);
+		if (f.isUnique()) {
+			uniqueConstraintDiffers = true;
+		}
+
+		// TODO: foreign keys
+		// ALTER TABLE products ADD FOREIGN KEY (product_group_id) REFERENCES product_groups;
+	}
+
+	if (uniqueConstraintDiffers) {
+		for (const auto& uniqueKey : table.uniqueKeys()) {
+			stmt << "ALTER TABLE DROP CONSTRAINT IF EXISTS ";
+			stmt << table.tableName() << "_" << core::string::join(uniqueKey.begin(), uniqueKey.end(), "_");
+			stmt << ";";
+			stmt << "ALTER TABLE ADD CONSTRAINT ";
+			stmt << table.tableName() << "_" << core::string::join(uniqueKey.begin(), uniqueKey.end(), "_");
+			stmt << " UNIQUE(";
+			bool firstUniqueKey = true;
+			for (const std::string& fieldName : uniqueKey) {
+				if (!firstUniqueKey) {
+					stmt << ", ";
+				}
+				stmt << "\"" << fieldName << "\"";
+				firstUniqueKey = false;
+			}
+			stmt << ");";
+		}
 	}
 
 	return stmt.str();
@@ -268,6 +350,9 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 
 std::string createCreateTableStatement(const Model& table, bool useForeignKeys) {
 	std::stringstream createTable;
+
+	createTable << "CREATE SCHEMA IF NOT EXISTS \"" << table.schema() << "\";";
+
 	for (const auto& f : table.fields()) {
 		if ((f.contraintMask & (int)ConstraintType::AUTOINCREMENT) == 0) {
 			continue;

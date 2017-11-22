@@ -22,7 +22,7 @@ TEST_F(SQLGeneratorTest, testDeleteWithPk) {
 }
 
 TEST_F(SQLGeneratorTest, testDrop) {
-	ASSERT_EQ(R"(DROP TABLE IF EXISTS "public"."test";DROP SEQUENCE IF EXISTS public.test_id_seq;)",
+	ASSERT_EQ(R"(DROP TABLE IF EXISTS "public"."test";DROP SEQUENCE IF EXISTS "public"."test_id_seq";)",
 			createDropTableStatement(db::TestModel()));
 }
 

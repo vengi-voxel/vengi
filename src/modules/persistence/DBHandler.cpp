@@ -78,13 +78,11 @@ bool DBHandler::createOrUpdateTable(Model&& model) const {
 	std::vector<db::MetainfoModel> schemaModels;
 	if (!loadMetadata(model, schemaModels)) {
 		// doesn't exist yet - just create it
-		const State& s = execInternal(createCreateTableStatement(model, _useForeignKeys));
-		if (!s.result) {
+		if (!exec(createCreateTableStatement(model, _useForeignKeys))) {
 			return false;
 		}
 	} else {
-		const State& salter = execInternal(createAlterTableStatement(schemaModels, model, _useForeignKeys));
-		if (!salter.result) {
+		if (!exec(createAlterTableStatement(schemaModels, model, _useForeignKeys))) {
 			return false;
 		}
 	}
@@ -93,10 +91,13 @@ bool DBHandler::createOrUpdateTable(Model&& model) const {
 
 bool DBHandler::loadMetadata(const Model& model, std::vector<db::MetainfoModel>& schemaModels) const {
 	schemaModels.reserve(model.fields().size() * 2);
-	// TODO: also take the schema into account?
-	return select(db::MetainfoModel(), db::DBConditionMetainfoModelTablename(model.tableName()), [&] (db::MetainfoModel&& model) {
+	const db::DBConditionMetainfoModelSchemaname c1(model.schema());
+	const db::DBConditionMetainfoModelTablename c2(model.tableName());
+	const DBConditionMultiple condition(true, { &c1, &c2 });
+	select(db::MetainfoModel(), condition, [&] (db::MetainfoModel&& model) {
 		schemaModels.emplace_back(std::move(model));
 	});
+	return !schemaModels.empty();
 }
 
 bool DBHandler::insertMetadata(const Model& model) const {
@@ -123,8 +124,7 @@ bool DBHandler::insertMetadata(const Model& model) const {
 }
 
 bool DBHandler::createTable(Model&& model) const {
-	const State& s = execInternal(createCreateTableStatement(model, _useForeignKeys));
-	if (!s.result) {
+	if (!exec(createCreateTableStatement(model, _useForeignKeys))) {
 		Log::error("Failed to create table");
 		return false;
 	}
