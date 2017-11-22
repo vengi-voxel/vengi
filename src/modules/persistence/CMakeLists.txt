@@ -30,15 +30,22 @@ message(STATUS "Postgresql libs: ${PostgreSQL_LIBRARIES}")
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES ${PostgreSQL_LIBRARIES})
 target_include_directories(${LIB} PUBLIC ${PostgreSQL_INCLUDE_DIRS} /usr/include/postgresql/)
 
+set(TEST_SRCS
+	tests/DatabaseModelTest.cpp
+)
+
 if (POSTGRESQL_FOUND)
 	set(HAVE_POSTGRES 1 CACHE INTERNAL "Found postgres")
-	gtest_suite_files(tests
+	list(APPEND TEST_SRCS
 		tests/ConnectionPoolTest.cpp
 		tests/DBConditionTest.cpp
 	)
-	gtest_suite_deps(tests ${LIB})
 else()
 	set(HAVE_POSTGRES 0 CACHE INTERNAL "Found postgres")
 endif()
 
+gtest_suite_files(tests ${TEST_SRCS})
+gtest_suite_deps(tests ${LIB})
+
 generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl PersistenceModels.h)
+test_generate_db_models(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.tbl TestModels.h)

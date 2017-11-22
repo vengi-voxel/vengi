@@ -16,7 +16,7 @@ UserAttribMgr::UserAttribMgr(EntityId userId,
 }
 
 bool UserAttribMgr::init() {
-	if (!_dbHandler->select(db::AttribModel(), db::DBConditionAttribUserid(_userId), [this] (db::AttribModel&& model) {
+	if (!_dbHandler->select(db::AttribModel(), db::DBConditionAttribModelUserid(_userId), [this] (db::AttribModel&& model) {
 		const int32_t id = model.attribtype();
 		const attrib::Type type = (attrib::Type)id;
 		const double value = model.value();

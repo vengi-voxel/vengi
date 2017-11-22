@@ -50,7 +50,7 @@ public:
 		ASSERT_TRUE(_dbHandler->insert(model));
 		EXPECT_NE(0, model.id());
 
-		ASSERT_TRUE(_dbHandler->select(eventModel, db::DBConditionEventId(model.id())));
+		ASSERT_TRUE(_dbHandler->select(eventModel, db::DBConditionEventModelId(model.id())));
 		ASSERT_EQ(eventModel.id(), model.id());
 	}
 
@@ -108,9 +108,9 @@ TEST_F(EventMgrTest, testEventPointModelInsertUniqueKeys) {
 
 	{
 		db::EventPointModel eventPointModel;
-		db::DBConditionEventPointEventid c1(id);
-		db::DBConditionEventPointUserid c2(pointModel.userid());
-		db::DBConditionEventPointKey c3("test");
+		db::DBConditionEventPointModelEventid c1(id);
+		db::DBConditionEventPointModelUserid c2(pointModel.userid());
+		db::DBConditionEventPointModelKey c3("test");
 		persistence::DBConditionMultiple m(true, {&c1, &c2, &c3});
 		ASSERT_TRUE(_dbHandler->select(eventPointModel, m));
 		ASSERT_EQ(eventPointModel.points(), 2L);
@@ -118,9 +118,9 @@ TEST_F(EventMgrTest, testEventPointModelInsertUniqueKeys) {
 
 	{
 		db::EventPointModel eventPointModel;
-		db::DBConditionEventPointEventid c1(id);
-		db::DBConditionEventPointUserid c2(pointModel.userid());
-		db::DBConditionEventPointKey c3("test2");
+		db::DBConditionEventPointModelEventid c1(id);
+		db::DBConditionEventPointModelUserid c2(pointModel.userid());
+		db::DBConditionEventPointModelKey c3("test2");
 		persistence::DBConditionMultiple m(true, {&c1, &c2, &c3});
 		ASSERT_TRUE(_dbHandler->select(eventPointModel, m));
 		ASSERT_EQ(eventPointModel.points(), 0L);
@@ -139,7 +139,7 @@ TEST_F(EventMgrTest, testEventModelTimestamps) {
 	db::EventModel model;
 	createEvent(Type::GENERIC, model, nowSeconds, nowSeconds + secondsRuntime);
 
-	ASSERT_TRUE(_dbHandler->select(model, db::DBConditionEventId(model.id())));
+	ASSERT_TRUE(_dbHandler->select(model, db::DBConditionEventModelId(model.id())));
 	ASSERT_EQ(nowSeconds, model.startdate().seconds());
 	ASSERT_EQ(nowSeconds + secondsRuntime, model.enddate().seconds());
 }

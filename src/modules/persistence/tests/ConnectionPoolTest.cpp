@@ -18,6 +18,9 @@ public:
 		Super::SetUp();
 		ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
 		_supported = pool.init() > 0;
+		if (!_supported) {
+			Log::warn("ConnectionPoolTest is skipped");
+		}
 	}
 };
 

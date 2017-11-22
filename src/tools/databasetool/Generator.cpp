@@ -175,7 +175,7 @@ void createConstructor(const Table& table, std::stringstream& src) {
 static void createDBConditions(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
-		const std::string classname = "DBCondition" + core::string::upperCamelCase(table.name) + core::string::upperCamelCase(f.name);
+		const std::string classname = "DBCondition" + core::string::upperCamelCase(table.classname) + core::string::upperCamelCase(f.name);
 		src << "class " << classname;
 		src << " : public persistence::DBCondition {\n";
 		src << "private:\n";
@@ -239,7 +239,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		src << "\tinline void set" << setter << "(" << cpptypeSetter << " " << f.name << ") {\n";
 		src << "\t\t_m._" << f.name << " = " << f.name << ";\n";
 		if (isPointer(f)) {
-			src << "\t\t_m._isNull_" << f.name << " = false;\n";
+			src << "\t\t_m." << MembersStruct::nullFieldName(f) << " = false;\n";
 		}
 		src << "\t}\n\n";
 
@@ -252,7 +252,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 
 		if (isPointer(f)) {
 			src << "\tinline void set" << setter << "(nullptr_t " << f.name << ") {\n";
-			src << "\t\t_m._isNull_" << f.name << " = true;\n";
+			src << "\t\t_m." << MembersStruct::nullFieldName(f) << " = true;\n";
 			src << "\t}\n\n";
 		}
 	}
@@ -269,7 +269,6 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 	src << "/**\n * @file\n */\n\n";
 	src << "#pragma once\n\n";
 	src << "#include \"persistence/Model.h\"\n";
-	src << "#include \"persistence/SQLGenerator.h\"\n";
 	src << "#include \"persistence/DBCondition.h\"\n";
 	src << "#include \"core/String.h\"\n";
 	src << "#include \"core/Common.h\"\n\n";

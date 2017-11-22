@@ -17,7 +17,7 @@ UserCooldownMgr::UserCooldownMgr(EntityId userId,
 
 void UserCooldownMgr::init() {
 	core::ScopedWriteLock lock(_lock);
-	if (!_dbHandler->select(db::CooldownModel(), db::DBConditionCooldownUserid(_userId), [this] (db::CooldownModel&& model) {
+	if (!_dbHandler->select(db::CooldownModel(), db::DBConditionCooldownModelUserid(_userId), [this] (db::CooldownModel&& model) {
 		const int32_t id = model.cooldownid();
 		const cooldown::Type type = (cooldown::Type)id;
 		const uint64_t millis = model.starttime().millis();

@@ -1,0 +1,68 @@
+table test {
+	namespace persistence
+	field id {
+		type long
+		operator set
+	}
+	field email {
+		type string
+		notnull
+		operator set
+	}
+	field name {
+		type string
+		notnull
+		operator set
+	}
+	field points {
+		type int
+		operator add
+	}
+	field password {
+		type password
+		length 128
+		notnull
+		operator set
+	}
+	field registrationdate {
+		type timestamp
+		default "NOW()"
+		notnull
+		operator set
+	}
+	constraints {
+		email unique
+		id primarykey
+		id autoincrement 1000000
+	}
+}
+
+table testupdate {
+	namespace persistence
+	classname "TestUpdate1Model"
+	field id {
+		type long
+		operator set
+	}
+	constraints {
+		id primarykey
+	}
+}
+
+# Adds a new column
+table testupdate {
+	namespace persistence
+	classname "TestUpdate2Model"
+	field id {
+		type long
+		operator set
+	}
+	field email {
+		type string
+		notnull
+		operator set
+	}
+	constraints {
+		id primarykey
+	}
+}

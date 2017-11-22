@@ -42,7 +42,7 @@ void UserConnectHandler::sendAuthFailed(ENetPeer* peer) {
 
 UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, const std::string& passwd) {
 	db::UserModel model;
-	if (!_dbHandler->select(model, db::DBConditionUserEmail(email.c_str()))) {
+	if (!_dbHandler->select(model, db::DBConditionUserModelEmail(email.c_str()))) {
 		Log::warn("Could not get user id for email: %s", email.c_str());
 		return UserPtr();
 	}

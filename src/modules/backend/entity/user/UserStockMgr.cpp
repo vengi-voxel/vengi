@@ -19,7 +19,7 @@ void UserStockMgr::update(long dt) {
 
 void UserStockMgr::init() {
 	const EntityId userId = _user->id();
-	if (!_dbHandler->select(db::InventoryModel(), db::DBConditionInventoryUserid(userId), [this] (db::InventoryModel&& model) {
+	if (!_dbHandler->select(db::InventoryModel(), db::DBConditionInventoryModelUserid(userId), [this] (db::InventoryModel&& model) {
 		stock::Inventory& inventory = _stock.inventory();
 		const stock::ItemPtr& item = _stockDataProvider->createItem(model.itemid());
 		if (!item) {
