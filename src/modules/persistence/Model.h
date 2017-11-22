@@ -48,7 +48,6 @@ protected:
 	const UniqueKeysPtr _uniqueKeys;
 	const ForeignKeysPtr _foreignKeys;
 
-	const Field& getField(const std::string& name) const;
 	bool fillModelValues(State& state);
 public:
 	Model(const std::string& schema, const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
@@ -75,6 +74,13 @@ public:
 
 	bool isPrimaryKey(const std::string& fieldname) const;
 
+	/**
+	 * @return @c true if the field was set to a valid value (which might also be null)
+	 */
+	bool isValid(const Field& f) const;
+	void reset(const Field& f);
+	void setValid(const Field& f, bool valid);
+
 	template<class T>
 	T getValue(const Field& f) const {
 		core_assert(f.nulloffset < 0);
@@ -93,6 +99,7 @@ public:
 		return targetValue;
 	}
 
+	void setValue(const Field& f, nullptr_t np);
 	void setValue(const Field& f, const std::string& value);
 	void setValue(const Field& f, const Timestamp& value);
 
@@ -103,6 +110,8 @@ public:
 		TYPE* targetValue = (TYPE*)target;
 		*targetValue = value;
 	}
+
+	const Field& getField(const std::string& name) const;
 
 	void setIsNull(const Field& f, bool isNull);
 	bool isNull(const Field& f) const;

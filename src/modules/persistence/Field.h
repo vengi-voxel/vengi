@@ -31,6 +31,9 @@ struct Field {
 	int length = 0;
 	intptr_t offset = -1;
 	intptr_t nulloffset = -1;
+	// a value that is used to decide whether the field
+	// has a valid value set (which might also be null)
+	intptr_t validoffset = -1;
 
 	inline bool isAutoincrement() const {
 		return (contraintMask & std::enum_value(ConstraintType::AUTOINCREMENT)) != 0u;

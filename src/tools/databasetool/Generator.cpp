@@ -54,6 +54,10 @@ struct MembersStruct {
 	static std::string nullFieldName(const persistence::Field& f) {
 		return "_isNull_" + f.name;
 	}
+
+	static std::string validFieldName(const persistence::Field& f) {
+		return "_isValid_" + f.name;
+	}
 };
 
 static std::string getFieldnameFunction(const persistence::Field& field) {
@@ -74,6 +78,8 @@ static void createMembersStruct(const Table& table, std::stringstream& src) {
 		if (isPointer(f)) {
 			src << "\t\tbool " << MembersStruct::nullFieldName(f) << " = false;\n";
 		}
+		src << "\t\t// is there a valid value set\n";
+		src << "\t\tbool " << MembersStruct::validFieldName(f) << " = false;\n";
 		// TODO: padding for short and boolean
 	}
 	src << "\t};\n";
@@ -106,6 +112,8 @@ static void createMetaStruct(const Table& table, std::stringstream& src) {
 		} else {
 			src << ", -1";
 		}
+		src << ", offsetof(";
+		src << MembersStruct::structName() << ", " << MembersStruct::validFieldName(f) << ")";
 		src << "});\n";
 	}
 	if (!table.constraints.empty()) {
@@ -238,6 +246,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 
 		src << "\tinline void set" << setter << "(" << cpptypeSetter << " " << f.name << ") {\n";
 		src << "\t\t_m._" << f.name << " = " << f.name << ";\n";
+		src << "\t\t_m." << MembersStruct::validFieldName(f) << " = true;\n";
 		if (isPointer(f)) {
 			src << "\t\t_m." << MembersStruct::nullFieldName(f) << " = false;\n";
 		}
@@ -253,6 +262,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		if (isPointer(f)) {
 			src << "\tinline void set" << setter << "(nullptr_t " << f.name << ") {\n";
 			src << "\t\t_m." << MembersStruct::nullFieldName(f) << " = true;\n";
+			src << "\t\t_m." << MembersStruct::validFieldName(f) << " = true;\n";
 			src << "\t}\n\n";
 		}
 	}

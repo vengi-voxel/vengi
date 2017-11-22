@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "PersistenceModels.h"
 #include "Model.h"
 #include "core/String.h"
 #include "core/Log.h"
@@ -95,9 +96,12 @@ public:
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
 	template<class MODEL>
-	bool deleteModel(MODEL&& model, const DBCondition& condition) const {
-		int conditionAmount = 0;
-		const std::string& query = createDeleteStatement(model) + createWhere(condition, conditionAmount);
+	bool deleteModel(MODEL&& model, const DBCondition& condition = DBConditionOne()) const {
+		BindParam params(10);
+		const std::string& stmt = createDeleteStatement(model, &params);
+		int conditionAmount = params.position;
+		const std::string& where = createWhere(condition, conditionAmount);
+		const std::string& query = stmt + where;
 		Log::debug("Execute query '%s'", query.c_str());
 		ScopedConnection scoped(connection());
 		if (!scoped) {
@@ -106,7 +110,6 @@ public:
 		}
 		State s(scoped.connection());
 		if (conditionAmount > 0) {
-			BindParam params(conditionAmount);
 			for (int i = 0; i < conditionAmount; ++i) {
 				const int index = params.add();
 				const char* value = condition.value(i);
@@ -139,8 +142,11 @@ public:
 	 */
 	template<class FUNC, class MODEL>
 	bool select(MODEL&& model, const DBCondition& condition, FUNC&& func) const {
-		int conditionAmount = 0;
-		const std::string& query = createSelect(model) + createWhere(condition, conditionAmount);
+		BindParam params(10);
+		const std::string& stmt = createSelect(model, &params);
+		int conditionAmount = params.position;
+		const std::string& where = createWhere(condition, conditionAmount);
+		const std::string& query = stmt + where;
 		return select(query, conditionAmount, model, condition, func);
 	}
 
@@ -155,9 +161,11 @@ public:
 	 */
 	template<class FUNC, class MODEL>
 	bool select(MODEL&& model, const DBCondition& condition, const OrderBy& orderBy, FUNC&& func) const {
-		int conditionAmount = 0;
-		const std::string& query = createSelect(model) + createWhere(condition, conditionAmount)
-				+ createOrderBy(orderBy) + createLimitOffset(orderBy.range);
+		BindParam params(10);
+		const std::string& stmt = createSelect(model, &params);
+		int conditionAmount = params.position;
+		const std::string& where = createWhere(condition, conditionAmount);
+		const std::string& query = stmt + where + createOrderBy(orderBy) + createLimitOffset(orderBy.range);
 		return select(query, conditionAmount, model, condition, func);
 	}
 
@@ -194,7 +202,7 @@ public:
 	 * @param[in,out] model The model that should be updated
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
-	bool update(Model& model) const;
+	bool update(Model& model, const DBCondition& condition = DBConditionOne()) const;
 
 	/**
 	 * @brief Insert or updates the database entry for the give model. The primary keys must be set in the
@@ -205,6 +213,28 @@ public:
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
 	bool insert(Model& model) const;
+
+	template<class MODEL>
+	bool insert(std::vector<MODEL>& models) const {
+		// TODO: prepared statement
+		for (auto& m : models) {
+			if (!insert(m)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	template<class MODEL>
+	bool deleteModels(std::vector<MODEL>& models) const {
+		// TODO: prepared statement
+		for (auto& m : models) {
+			if (!deleteModel(m)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * @brief Truncate the table for the given @c persistence::Model

@@ -10,6 +10,7 @@
 #include "Model.h"
 #include "DBCondition.h"
 #include "OrderBy.h"
+#include <unordered_map>
 
 namespace persistence {
 
@@ -381,7 +382,7 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 
 // https://www.postgresql.org/docs/current/static/functions-formatting.html
 // https://www.postgresql.org/docs/current/static/functions-datetime.html
-std::string createSelect(const Model& model) {
+std::string createSelect(const Model& model, BindParam* params) {
 	const Fields& fields = model.fields();
 	const std::string& tableName = model.tableName();
 	std::stringstream select;

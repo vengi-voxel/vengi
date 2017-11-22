@@ -147,6 +147,7 @@ void Model::setValue(const Field& f, const std::string& value) {
 	uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
 	std::string* targetValue = (std::string*)target;
 	*targetValue = value;
+	setValid(f, true);
 }
 
 void Model::setValue(const Field& f, const Timestamp& value) {
@@ -154,6 +155,11 @@ void Model::setValue(const Field& f, const Timestamp& value) {
 	uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
 	Timestamp* targetValue = (Timestamp*)target;
 	*targetValue = value;
+	setValid(f, true);
+}
+
+void Model::setValue(const Field& f, nullptr_t np) {
+	setIsNull(f, true);
 }
 
 void Model::setIsNull(const Field& f, bool isNull) {
@@ -163,6 +169,23 @@ void Model::setIsNull(const Field& f, bool isNull) {
 	uint8_t* target = (uint8_t*)(_membersPointer + f.nulloffset);
 	bool* targetValue = (bool*)target;
 	*targetValue = isNull;
+	setValid(f, true);
+}
+
+void Model::setValid(const Field& f, bool valid) {
+	uint8_t* target = (uint8_t*)(_membersPointer + f.validoffset);
+	bool* targetValue = (bool*)target;
+	*targetValue = valid;
+}
+
+void Model::reset(const Field& f) {
+	setValid(f, false);
+}
+
+bool Model::isValid(const Field& f) const {
+	const uint8_t* target = (const uint8_t*)(_membersPointer + f.validoffset);
+	const bool* targetValue = (const bool*)target;
+	return *targetValue;
 }
 
 bool Model::isNull(const Field& f) const {

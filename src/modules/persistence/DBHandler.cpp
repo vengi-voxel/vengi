@@ -6,7 +6,6 @@
 #include "core/Singleton.h"
 #include "core/Assert.h"
 #include "ConnectionPool.h"
-#include "PersistenceModels.h"
 #include "core/Log.h"
 
 namespace persistence {
@@ -37,10 +36,12 @@ Connection* DBHandler::connection() const {
 	return core::Singleton<ConnectionPool>::getInstance().connection();
 }
 
-bool DBHandler::update(Model& model) const {
-	BindParam param(10);
-	const std::string& query = createUpdateStatement(model, &param);
-	return execInternalWithParameters(query, model, param).result;
+bool DBHandler::update(Model& model, const DBCondition& condition) const {
+	BindParam params(10);
+	const std::string& query = createUpdateStatement(model, &params);
+	int conditionAmount = params.position;
+	const std::string& where = createWhere(condition, conditionAmount);
+	return execInternalWithParameters(query + where, model, params).result;
 }
 
 bool DBHandler::insert(Model& model) const {

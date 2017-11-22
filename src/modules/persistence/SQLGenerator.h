@@ -20,10 +20,10 @@ extern std::string createCreateTableStatement(const Model& model, bool useForeig
 extern std::string createTruncateTableStatement(const Model& model);
 extern std::string createDropTableStatement(const Model& model);
 extern std::string createUpdateStatement(const Model& model, BindParam* params = nullptr);
-extern std::string createDeleteStatement(const Model& model);
+extern std::string createDeleteStatement(const Model& model, BindParam* params = nullptr);
 extern std::string createInsertStatement(const Model& model, BindParam* params = nullptr);
 
-extern std::string createSelect(const Model& model);
+extern std::string createSelect(const Model& model, BindParam* params = nullptr);
 extern const char* createTransactionBegin();
 extern const char* createTransactionCommit();
 extern const char* createTransactionRollback();
