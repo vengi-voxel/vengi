@@ -53,8 +53,8 @@ std::string DBCondition::statement(int& parameterCount) const {
 }
 
 std::string DBConditionOne::statement(int& parameterCount) const {
-	static const std::string one = "true";
-	return one;
+	static const std::string empty = "";
+	return empty;
 }
 
 std::string DBConditionMultiple::statement(int& parameterCount) const {

@@ -28,6 +28,11 @@ static const char *OrderStrings[] = {
 static_assert(lengthof(OrderStrings) == (int)persistence::Order::MAX, "Invalid order mapping");
 
 static inline bool placeholder(const Model& model, const Field& field, std::stringstream& ss, int count) {
+	if (model.isNull(field)) {
+		core_assert(!field.isNotNull());
+		ss << "NULL";
+		return false;
+	}
 	if (field.type == FieldType::TIMESTAMP) {
 		const Timestamp& ts = model.getValue<Timestamp>(field);
 		if (ts.isNow()) {
@@ -127,17 +132,25 @@ static std::string getDbType(const Field& field) {
 	return "";
 }
 
+static void createCreateSequence(std::stringstream& stmt, const Model& table, const Field& field) {
+	stmt << "CREATE SEQUENCE IF NOT EXISTS " << table.schema() << "." << table.tableName() << "_" << field.name;
+	stmt << "_seq START " << table.autoIncrementStart() << ";";
+}
+
+static void createDropSequence(std::stringstream& stmt, const Model& table, const Field& field) {
+	stmt << "DROP SEQUENCE IF EXISTS " << table.schema() << "." << table.tableName() << "_" << field.name << "_seq;";
+}
+
 std::string createCreateTableStatement(const Model& table, bool useForeignKeys) {
 	std::stringstream createTable;
 	for (const auto& f : table.fields()) {
 		if ((f.contraintMask & (int)ConstraintType::AUTOINCREMENT) == 0) {
 			continue;
 		}
-		createTable << "CREATE SEQUENCE IF NOT EXISTS " << table.schema() << "." << table.tableName() << "_" << f.name;
-		createTable << "_seq START " << table.autoIncrementStart() << ";";
+		createCreateSequence(createTable, table, f);
 	}
 
-	createTable << "CREATE TABLE IF NOT EXISTS \"" << table.schema() << "\".\"" << table.fullTableName() << "\" (";
+	createTable << "CREATE TABLE IF NOT EXISTS \"" << table.schema() << "\".\"" << table.tableName() << "\" (";
 	bool firstField = true;
 	for (const auto& f : table.fields()) {
 		if (!firstField) {
@@ -212,65 +225,72 @@ std::string createCreateTableStatement(const Model& table, bool useForeignKeys) 
 }
 
 std::string createTruncateTableStatement(const Model& model) {
-	return core::string::format("TRUNCATE TABLE \"%s\".\"%s\"", model.schema().c_str(), model.tableName().c_str());
+	return core::string::format("TRUNCATE TABLE \"%s\".\"%s\";", model.schema().c_str(), model.tableName().c_str());
 }
 
 std::string createDropTableStatement(const Model& model) {
-	std::stringstream dropTable;
-	dropTable << "DROP TABLE IF EXISTS \"" << model.schema() << "\".\"" << model.tableName() << "\";";
+	std::stringstream stmt;
+	stmt << "DROP TABLE IF EXISTS \"" << model.schema() << "\".\"" << model.tableName() << "\";";
 	for (const auto& f : model.fields()) {
 		if ((f.contraintMask & (int)ConstraintType::AUTOINCREMENT) == 0) {
 			continue;
 		}
-		dropTable << "DROP SEQUENCE IF EXISTS " << model.schema() << "." << model.tableName() << "_" << f.name;
-		dropTable << "_seq;";
+		createDropSequence(stmt, model, f);
 	}
-	return dropTable.str();
+
+	return stmt.str();
 }
 
-std::string createUpdateStatement(const Model& model, BindParam* params) {
+static void createWhereStatementsForKeys(std::stringstream& stmt, int index, const Model& model, BindParam* params) {
+	int where = 0;
 	const Fields& fields = model.fields();
-	const std::string& tableName = model.tableName();
-	std::stringstream update;
-	update << "UPDATE \"" << model.schema() << "\".\"" << tableName << "\" SET (";
-	for (auto i = fields.begin(); i != fields.end(); ++i) {
-		if (i->isPrimaryKey()) {
-			continue;
-		}
-		const Field& f = *i;
-		if (i != fields.begin()) {
-			update << ", ";
-		}
-		update << "\"" << f.name << "\"";
-	}
-	update << ") = (";
-	int index = 1;
 	for (auto i = fields.begin(); i != fields.end(); ++i) {
 		const Field& f = *i;
-		if (f.isPrimaryKey()) {
+		if (!model.isValid(f)) {
 			continue;
 		}
-		if (i != fields.begin()) {
-			update << ", ";
+		if (!f.isPrimaryKey()) {
+			continue;
 		}
-		if (placeholder(model, f, update, index)) {
+		if (where > 0) {
+			stmt << " AND ";
+		} else {
+			stmt << " WHERE ";
+		}
+		++where;
+		stmt << "\"" << f.name << "\"";
+		if (model.isNull(f)) {
+			stmt << " IS ";
+		} else {
+			stmt << " = ";
+		}
+		if (placeholder(model, f, stmt, index)) {
 			++index;
 			if (params != nullptr) {
 				params->push(model, f);
 			}
 		}
 	}
-	update << ") WHERE ";
-	int where = 0;
+}
+
+std::string createUpdateStatement(const Model& model, BindParam* params) {
+	const Fields& fields = model.fields();
+	const std::string& tableName = model.tableName();
+	std::stringstream update;
+	update << "UPDATE \"" << model.schema() << "\".\"" << tableName << "\" SET ";
+	int updateFields = 0;
+	int index = 1;
 	for (auto i = fields.begin(); i != fields.end(); ++i) {
 		const Field& f = *i;
-		if (!f.isPrimaryKey()) {
+		if (!model.isValid(f)) {
 			continue;
 		}
-		if (where > 0) {
-			update << " AND ";
+		if (f.isPrimaryKey()) {
+			continue;
 		}
-		++where;
+		if (updateFields > 0) {
+			update << ", ";
+		}
 		update << "\"" << f.name << "\" = ";
 		if (placeholder(model, f, update, index)) {
 			++index;
@@ -278,13 +298,19 @@ std::string createUpdateStatement(const Model& model, BindParam* params) {
 				params->push(model, f);
 			}
 		}
+		++updateFields;
 	}
+
+	createWhereStatementsForKeys(update, index, model, params);
 
 	return update.str();
 }
 
-std::string createDeleteStatement(const Model& table) {
-	return core::string::format("DELETE FROM \"%s\".\"%s\"", table.schema().c_str(), table.tableName().c_str());
+std::string createDeleteStatement(const Model& table, BindParam* params) {
+	std::stringstream stmt;
+	stmt << "DELETE FROM \"" << table.schema() << "\".\"" << table.tableName() << "\"";
+	createWhereStatementsForKeys(stmt, 1, table, params);
+	return stmt.str();
 }
 
 std::string createInsertStatement(const Model& model, BindParam* params) {
@@ -296,15 +322,14 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 	int insertValueIndex = 1;
 	int inserted = 0;
 	for (const persistence::Field& f : model.fields()) {
-		if (f.isPrimaryKey()) {
-			primaryKey = f.name;
-		}
 		if (f.isAutoincrement()) {
 			autoincrement = f.name;
+		}
+		if (!model.isValid(f)) {
 			continue;
 		}
-		if (model.isNull(f)) {
-			continue;
+		if (f.isPrimaryKey()) {
+			primaryKey = f.name;
 		}
 		if (inserted > 0) {
 			values << ", ";
@@ -321,18 +346,25 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 	}
 
 	insert << ") VALUES (" << values.str() << ")";
-	if (model.primaryKeys() == 1) {
+	if (model.primaryKeys() == 1 && !primaryKey.empty()) {
 		insert << " ON CONFLICT (\"" << primaryKey;
 		insert << "\") DO UPDATE SET ";
 		int fieldIndex = 0;
 		for (const persistence::Field& f : model.fields()) {
+			if (!model.isValid(f)) {
+				continue;
+			}
 			if (f.isPrimaryKey() || f.isAutoincrement()) {
 				continue;
 			}
 			if (fieldIndex > 0) {
 				insert << ", ";
 			}
-			insert << "\"" << f.name << "\"" << OperatorStrings[(int)f.updateOperator];
+			insert << "\"" << f.name << "\" = ";
+			if (f.updateOperator != Operator::SET) {
+				insert << "\"" << model.schema() << "\".\"" << model.tableName() << "\".\"" << f.name << "\"";
+				insert << OperatorStrings[(int)f.updateOperator];
+			}
 			if (placeholder(model, f, insert, insertValueIndex)) {
 				++insertValueIndex;
 				if (params != nullptr) {
@@ -360,9 +392,9 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 			if (fieldIndex > 0) {
 				insert << ", ";
 			}
-			insert << "\"" << f.name << "\"";
+			insert << "\"" << f.name << "\" = ";
 			if (f.updateOperator != Operator::SET) {
-				insert << " = \"" << model.tableName() << "\".\"" << f.name << "\"";
+				insert << "\"" << model.schema() << "\".\"" << model.tableName() << "\".\"" << f.name << "\"";
 				insert << OperatorStrings[(int)f.updateOperator];
 			}
 			if (placeholder(model, f, insert, insertValueIndex)) {
@@ -377,6 +409,7 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 	if (!autoincrement.empty()) {
 		insert << " RETURNING \"" << autoincrement << "\"";
 	}
+	insert << ";";
 	return insert.str();
 }
 
@@ -402,12 +435,17 @@ std::string createSelect(const Model& model, BindParam* params) {
 	}
 
 	select << " FROM \"" << model.schema() << "\".\"" << tableName << "\"";
+	createWhereStatementsForKeys(select, 1, model, params);
 	return select.str();
 }
 
 std::string createWhere(const DBCondition& condition, int &parameterCount) {
+	const bool needWhere = parameterCount == 0;
 	const std::string& conditionStr = condition.statement(parameterCount);
-	return core::string::format(" WHERE %s", conditionStr.c_str());
+	if (conditionStr.empty()) {
+		return conditionStr;
+	}
+	return core::string::format("%s %s", (needWhere ? " WHERE" : ""), conditionStr.c_str());
 }
 
 std::string createOrderBy(const OrderBy& orderBy) {
