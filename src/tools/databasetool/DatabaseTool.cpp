@@ -66,7 +66,7 @@ bool DatabaseTool::validateForeignKeys(const databasetool::Table& table) const {
 	const persistence::ForeignKeys& foreignKeys = table.foreignKeys;
 	for (const auto& fke : foreignKeys) {
 		const persistence::ForeignKey& fk = fke.second;
-		const auto i = _tables.find(fk.table);
+		const auto i = _tables.find(fk.table + "_" + table.classname);
 		if (i == _tables.end()) {
 			Log::debug("Table '%s': Could not find referenced table in this definition", table.name.c_str());
 			continue;
@@ -135,7 +135,7 @@ bool DatabaseTool::parse(const std::string& buffer) {
 			if (!databasetool::parseTable(tok, table)) {
 				return false;
 			}
-			_tables.insert(std::make_pair(tablename, table));
+			_tables.insert(std::make_pair(tablename + "_" + table.classname, table));
 		}
 	}
 	return validate();

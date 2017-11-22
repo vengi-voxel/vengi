@@ -54,15 +54,8 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 				return false;
 			}
 			const std::string& type = tok.next();
-			persistence::FieldType typeMapping = persistence::FieldType::STRING;
-			bool foundType = false;
-			for (int i = 0; i < persistence::MAX_FIELDTYPES; ++i) {
-				if (core::string::iequals(type, FieldTypeNames[i])) {
-					typeMapping = (persistence::FieldType)i;
-					foundType = true;
-					break;
-				}
-			}
+			const persistence::FieldType typeMapping = persistence::toFieldType(type);
+			const bool foundType = typeMapping != persistence::FieldType::MAX;
 			if (!foundType) {
 				Log::error("invalid field type for field %s: %s", fieldname.c_str(), type.c_str());
 				return false;

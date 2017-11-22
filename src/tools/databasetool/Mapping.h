@@ -4,20 +4,6 @@
 #include "core/Array.h"
 #include "persistence/FieldType.h"
 
-static const char *FieldTypeNames[] = {
-	CORE_STRINGIFY(STRING),
-	CORE_STRINGIFY(TEXT),
-	CORE_STRINGIFY(LONG),
-	CORE_STRINGIFY(INT),
-	CORE_STRINGIFY(PASSWORD),
-	CORE_STRINGIFY(TIMESTAMP),
-	CORE_STRINGIFY(BOOLEAN),
-	CORE_STRINGIFY(SHORT),
-	CORE_STRINGIFY(BYTE),
-	CORE_STRINGIFY(DOUBLE)
-};
-static_assert(lengthof(FieldTypeNames) == persistence::MAX_FIELDTYPES, "Invalid field type mapping");
-
 static const char *ConstraintTypeNames[] = {
 	CORE_STRINGIFY(UNIQUE),
 	CORE_STRINGIFY(PRIMARYKEY),

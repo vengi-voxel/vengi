@@ -24,4 +24,7 @@ enum class FieldType {
 };
 static constexpr int MAX_FIELDTYPES = std::enum_value(FieldType::MAX);
 
+extern FieldType toFieldType(const std::string& type);
+extern const char* toFieldType(const FieldType type);
+
 }

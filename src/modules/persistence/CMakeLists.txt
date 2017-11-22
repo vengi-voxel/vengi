@@ -6,7 +6,7 @@ set(SRCS
 	DBCondition.cpp DBCondition.h
 	DBHandler.cpp DBHandler.h
 	Field.h
-	FieldType.h
+	FieldType.cpp FieldType.h
 	ForwardDecl.h
 	Model.cpp Model.h
 	Order.h
