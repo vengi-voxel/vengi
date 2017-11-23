@@ -23,7 +23,6 @@
 #include <sys/socket.h>
 #include <net/if.h>
 #include <netdb.h>
-#include <signal.h>
 #define closesocket close
 #define INVALID_SOCKET  -1
 #define network_cleanup()
@@ -45,8 +44,6 @@ bool UDPMetricSender::init() {
 	if (wsaResult != NO_ERROR) {
 		return false;
 	}
-#else
-	signal(SIGPIPE, SIG_IGN);
 #endif
 	connect();
 	return true;
