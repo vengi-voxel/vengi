@@ -104,6 +104,10 @@ bool UDPMetricSender::send(const char* buffer) const {
 	const struct sockaddr *sock = (const struct sockaddr *)_statsd;
 	const socklen_t socksize = (socklen_t)sizeof(*_statsd);
 	const int ret = sendto(_socket, buf, len, 0, sock, socksize);
+	if (ret == -1) {
+		closesocket(_socket);
+		_socket = INVALID_SOCKET;
+	}
 	return ret != -1;
 }
 
