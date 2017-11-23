@@ -90,5 +90,6 @@ table testupdate {
 		id primarykey
 		name unique
 		email unique
+		(name, email) unique
 	}
 }

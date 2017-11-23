@@ -54,6 +54,10 @@ struct Field {
 	inline bool isUnique() const {
 		return (contraintMask & std::enum_value(ConstraintType::UNIQUE)) != 0u;
 	}
+
+	inline bool isForeignKey() const {
+		return (contraintMask & std::enum_value(ConstraintType::FOREIGNKEY)) != 0u;
+	}
 };
 
 }
