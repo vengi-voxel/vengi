@@ -93,3 +93,30 @@ table testupdate {
 		(name, email) unique
 	}
 }
+
+# Changes datatype, maxlength and added a key/index
+table testupdate {
+	namespace persistence
+	classname "TestUpdate4Model"
+	field id {
+		type int
+		operator set
+	}
+	field email {
+		type string
+		notnull
+		operator set
+	}
+	field name {
+		type string
+		length 16
+		operator set
+	}
+	constraints {
+		id autoincrement 1000000
+		id primarykey
+		name index
+		email unique // TODO: doesn't get added
+		(name, email) unique
+	}
+}

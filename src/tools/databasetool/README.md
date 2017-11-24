@@ -46,7 +46,7 @@ table <TABLENAME> {
   }
   constraints {
     <FIELDNAME> unique
-    <FIELDNAME> key
+    <FIELDNAME> index
     <FIELDNAME> primarykey
     <FIELDNAME2> primarykey
     <FIELDNAME> autoincrement

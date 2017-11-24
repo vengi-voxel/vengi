@@ -31,7 +31,7 @@ TEST_F(SQLGeneratorTest, testTruncate) {
 }
 
 TEST_F(SQLGeneratorTest, testCreateWithoutMeta) {
-	ASSERT_EQ(R"(CREATE TABLE IF NOT EXISTS "public"."testupdate" ("id" BIGINT PRIMARY KEY);)",
+	ASSERT_EQ(R"(CREATE SCHEMA IF NOT EXISTS "public";CREATE TABLE IF NOT EXISTS "public"."testupdate" ("id" BIGINT PRIMARY KEY);)",
 			createCreateTableStatement(db::TestUpdate1Model(), false));
 }
 

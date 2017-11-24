@@ -16,6 +16,41 @@ private:
 protected:
 	bool _supported = true;
 	persistence::DBHandler _dbHandler;
+
+	bool isDifferent(const db::MetainfoModel& schemaColumn, const Field& field) const {
+		if ((uint32_t)schemaColumn.constraintmask() != field.contraintMask) {
+			return true;
+		}
+		if (schemaColumn.columndefault() != field.defaultVal) {
+			return true;
+		}
+		if (toFieldType(schemaColumn.datatype()) != field.type) {
+			return true;
+		}
+		if (schemaColumn.maximumlength() != field.length) {
+			return true;
+		}
+		return false;
+	}
+
+	void checkIsCurrent(Model&& model) const {
+		std::vector<db::MetainfoModel> schemaModels;
+		schemaModels.reserve(model.fields().size() * 2);
+		const db::DBConditionMetainfoModelSchemaname c1(model.schema());
+		const db::DBConditionMetainfoModelTablename c2(model.tableName());
+		const DBConditionMultiple condition(true, { &c1, &c2 });
+		_dbHandler.select(db::MetainfoModel(), condition, [&] (db::MetainfoModel&& model) {
+			schemaModels.emplace_back(std::move(model));
+		});
+		std::unordered_map<std::string, const db::MetainfoModel*> map;
+		map.reserve(schemaModels.size());
+		for (const auto& c : schemaModels) {
+			map.insert(std::make_pair(c.columnname(), &c));
+			const Field& f = model.getField(c.columnname());
+			ASSERT_FALSE(isDifferent(c, f)) << "Field " << f.name << " differs with db meta info";
+		}
+	}
+
 public:
 	void SetUp() override {
 		Super::SetUp();
@@ -38,7 +73,9 @@ TEST_F(DatabaseSchemaUpdateTest, testAddNewColumns) {
 		return;
 	}
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	checkIsCurrent(db::TestUpdate1Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate2Model()));
+	checkIsCurrent(db::TestUpdate2Model());
 }
 
 TEST_F(DatabaseSchemaUpdateTest, testRemoveColumns) {
@@ -46,7 +83,9 @@ TEST_F(DatabaseSchemaUpdateTest, testRemoveColumns) {
 		return;
 	}
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate2Model()));
+	checkIsCurrent(db::TestUpdate2Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	checkIsCurrent(db::TestUpdate1Model());
 }
 
 TEST_F(DatabaseSchemaUpdateTest, testAddAndRemoveMultipleStuffColumns) {
@@ -54,8 +93,11 @@ TEST_F(DatabaseSchemaUpdateTest, testAddAndRemoveMultipleStuffColumns) {
 		return;
 	}
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	checkIsCurrent(db::TestUpdate1Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate3Model()));
+	checkIsCurrent(db::TestUpdate3Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	checkIsCurrent(db::TestUpdate1Model());
 }
 
 TEST_F(DatabaseSchemaUpdateTest, testAddAndRemoveSingleStepsColumns) {
@@ -63,9 +105,13 @@ TEST_F(DatabaseSchemaUpdateTest, testAddAndRemoveSingleStepsColumns) {
 		return;
 	}
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	checkIsCurrent(db::TestUpdate1Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate2Model()));
+	checkIsCurrent(db::TestUpdate2Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate3Model()));
+	checkIsCurrent(db::TestUpdate3Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	checkIsCurrent(db::TestUpdate1Model());
 }
 
 TEST_F(DatabaseSchemaUpdateTest, testAddAndRemoveSingleStepsReversedColumns) {
@@ -73,9 +119,17 @@ TEST_F(DatabaseSchemaUpdateTest, testAddAndRemoveSingleStepsReversedColumns) {
 		return;
 	}
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	checkIsCurrent(db::TestUpdate1Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate3Model()));
+	checkIsCurrent(db::TestUpdate3Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate2Model()));
+	checkIsCurrent(db::TestUpdate2Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate1Model()));
+	checkIsCurrent(db::TestUpdate1Model());
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate3Model()));
+	checkIsCurrent(db::TestUpdate3Model());
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate4Model()));
+	checkIsCurrent(db::TestUpdate4Model());
 }
 
 }
