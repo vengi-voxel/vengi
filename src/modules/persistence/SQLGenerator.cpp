@@ -28,14 +28,32 @@ static const char *OrderStrings[] = {
 };
 static_assert(lengthof(OrderStrings) == (int)persistence::Order::MAX, "Invalid order mapping");
 
-static inline bool placeholder(const Model& model, const Field& field, std::stringstream& ss, int count) {
-	if (model.isNull(field)) {
+static inline void createSchemaIdentifier(std::stringstream& stmt, const Model& table) {
+	stmt << "\"" << table.schema() << "\"";
+}
+
+static inline void createIndexIdentifier(std::stringstream& stmt, const Model& table, const std::string& field) {
+	stmt << "\"" << table.tableName() << "_" << field << "\"";
+}
+
+static inline void createTableIdentifier(std::stringstream& stmt, const Model& table) {
+	createSchemaIdentifier(stmt, table);
+	stmt << ".\"" << table.tableName() << "\"";
+}
+
+static inline void createSequenceIdentifier(std::stringstream& stmt, const Model& table, const std::string& field) {
+	createSchemaIdentifier(stmt, table);
+	stmt << ".\"" << table.tableName() << "_" << field << "_seq\"";
+}
+
+static inline bool placeholder(const Model& table, const Field& field, std::stringstream& ss, int count) {
+	if (table.isNull(field)) {
 		core_assert(!field.isNotNull());
 		ss << "NULL";
 		return false;
 	}
 	if (field.type == FieldType::TIMESTAMP) {
-		const Timestamp& ts = model.getValue<Timestamp>(field);
+		const Timestamp& ts = table.getValue<Timestamp>(field);
 		if (ts.isNow()) {
 			ss << "NOW()";
 			return false;
@@ -124,7 +142,7 @@ static std::string getDbType(const Field& field) {
 	case FieldType::SHORT:
 		return "SMALLINT";
 	case FieldType::BYTE:
-		return "SMALLINT"; // TODO: check this
+		return "SMALLINT";
 	case FieldType::STRING:
 	case FieldType::PASSWORD:
 	case FieldType::MAX:
@@ -134,16 +152,21 @@ static std::string getDbType(const Field& field) {
 }
 
 static void createCreateSequence(std::stringstream& stmt, const Model& table, const Field& field) {
-	stmt << "CREATE SEQUENCE IF NOT EXISTS \"" << table.schema() << "\".\"" << table.tableName() << "_" << field.name;
-	stmt << "_seq\" START " << table.autoIncrementStart() << ";";
+	stmt << "CREATE SEQUENCE IF NOT EXISTS ";
+	createSequenceIdentifier(stmt, table, field.name);
+	stmt << " START " << table.autoIncrementStart() << ";";
 }
 
 static void createDropSequence(std::stringstream& stmt, const Model& table, const Field& field) {
-	stmt << "DROP SEQUENCE IF EXISTS \"" << table.schema() << "\".\"" << table.tableName() << "_" << field.name << "_seq\";";
+	stmt << "DROP SEQUENCE IF EXISTS ";
+	createSequenceIdentifier(stmt, table, field.name);
+	stmt << ";";
 }
 
 static void createDropSequence(std::stringstream& stmt, const Model& table, const db::MetainfoModel& field) {
-	stmt << "DROP SEQUENCE IF EXISTS \"" << table.schema() << "\".\"" << table.tableName() << "_" << field.columnname() << "_seq\";";
+	stmt << "DROP SEQUENCE IF EXISTS ";
+	createSequenceIdentifier(stmt, table, field.columnname());
+	stmt << ";";
 }
 
 template<class T>
@@ -167,6 +190,12 @@ static inline bool removes(const db::MetainfoModel& schemaColumn, const Field& f
 }
 
 static void createAlterTableAlterColumn(std::stringstream& stmt, bool add, const Model& table, const db::MetainfoModel& schemaColumn, const Field& field) {
+	if (removes(schemaColumn, field, ConstraintType::INDEX)) {
+		stmt << "DROP INDEX IF EXISTS ";
+		createIndexIdentifier(stmt, table, field.name);
+		stmt << ";";
+	}
+
 	if (adds(schemaColumn, field, ConstraintType::AUTOINCREMENT)) {
 		// TODO: pick max value and set to current
 		createCreateSequence(stmt, table, field);
@@ -216,15 +245,29 @@ static void createAlterTableAlterColumn(std::stringstream& stmt, bool add, const
 			if (!add) {
 				stmt << " SET";
 			}
-			stmt << " DEFAULT nextval('" << table.tableName() << "_" << field.name << "_seq'::regclass);";
+			stmt << " DEFAULT nextval('";
+			createSequenceIdentifier(stmt, table, field.name);
+			stmt << "'::regclass);";
 		} else if (!add && removes(schemaColumn, field, ConstraintType::AUTOINCREMENT)) {
 			stmt << base << " DROP DEFAULT;";
 		}
 	}
+
+	if (adds(schemaColumn, field, ConstraintType::INDEX)) {
+		stmt << "CREATE INDEX IF NOT EXISTS ";
+		createIndexIdentifier(stmt, table, field.name);
+		stmt << " ON ";
+		createTableIdentifier(stmt, table);
+		stmt << " USING btree (\"" << field.name << "\");";
+	}
+
+	// TODO: foreign keys
 }
 
 static void createAlterTableDropColumn(std::stringstream& stmt, const Model& table, const db::MetainfoModel& field) {
-	stmt << "ALTER TABLE " << table.tableName() << " DROP COLUMN \"" << field.columnname() << "\";";
+	stmt << "ALTER TABLE ";
+	createTableIdentifier(stmt, table);
+	stmt << " DROP COLUMN \"" << field.columnname() << "\";";
 	if ((field.constraintmask() & (int)ConstraintType::AUTOINCREMENT) != 0) {
 		createDropSequence(stmt, table, field);
 	}
@@ -284,7 +327,9 @@ static inline void foreignKeyConstraintName(std::stringstream& stmt, const Model
 std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys) {
 	std::stringstream stmt;
 
-	stmt << "CREATE SCHEMA IF NOT EXISTS \"" << table.schema() << "\";";
+	stmt << "CREATE SCHEMA IF NOT EXISTS ";
+	createSchemaIdentifier(stmt, table);
+	stmt << ";";
 
 	std::unordered_map<std::string, const db::MetainfoModel*> map;
 	map.reserve(columns.size());
@@ -337,10 +382,14 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 
 		if (useForeignKeys && foreignKeysDiffers) {
 			for (const auto& foreignKey : table.foreignKeys()) {
-				stmt << "ALTER TABLE \"" << table.schema() << "\".\"" << table.tableName() << "\" DROP CONSTRAINT IF EXISTS ";
+				stmt << "ALTER TABLE ";
+				createTableIdentifier(stmt, table);
+				stmt << " DROP CONSTRAINT IF EXISTS ";
 				foreignKeyConstraintName(stmt, table, foreignKey.second);
 				stmt << ";";
-				stmt << "ALTER TABLE \"" << table.schema() << "\".\"" << table.tableName() << "\" ADD CONSTRAINT ";
+				stmt << "ALTER TABLE ";
+				createTableIdentifier(stmt, table);
+				stmt << " ADD CONSTRAINT ";
 				foreignKeyConstraintName(stmt, table, foreignKey.second);
 				stmt << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES \"";
 				stmt << foreignKey.second.table << "\"(\"" << foreignKey.second.field;
@@ -351,10 +400,14 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 
 	if (uniqueConstraintDiffers) {
 		for (const auto& uniqueKey : table.uniqueKeys()) {
-			stmt << "ALTER TABLE \"" << table.schema() << "\".\"" << table.tableName() << "\" DROP CONSTRAINT IF EXISTS ";
+			stmt << "ALTER TABLE ";
+			createTableIdentifier(stmt, table);
+			stmt << " DROP CONSTRAINT IF EXISTS ";
 			uniqueConstraintName(stmt, table, uniqueKey);
 			stmt << ";";
-			stmt << "ALTER TABLE \"" << table.schema() << "\".\"" << table.tableName() << "\" ADD CONSTRAINT ";
+			stmt << "ALTER TABLE ";
+			createTableIdentifier(stmt, table);
+			stmt << " ADD CONSTRAINT ";
 			uniqueConstraintName(stmt, table, uniqueKey);
 			stmt << " UNIQUE(";
 			bool firstUniqueKey = true;
@@ -369,38 +422,41 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 		}
 	}
 
-	// TODO: index support
 	// TODO: multiple-field-pk
 
 	return stmt.str();
 }
 
 std::string createCreateTableStatement(const Model& table, bool useForeignKeys) {
-	std::stringstream createTable;
+	std::stringstream stmt;
 
-	createTable << "CREATE SCHEMA IF NOT EXISTS \"" << table.schema() << "\";";
+	stmt << "CREATE SCHEMA IF NOT EXISTS ";
+	createSchemaIdentifier(stmt, table);
+	stmt << ";";
 
 	for (const auto& f : table.fields()) {
 		if ((f.contraintMask & (int)ConstraintType::AUTOINCREMENT) == 0) {
 			continue;
 		}
-		createCreateSequence(createTable, table, f);
+		createCreateSequence(stmt, table, f);
 	}
 
-	createTable << "CREATE TABLE IF NOT EXISTS \"" << table.schema() << "\".\"" << table.tableName() << "\" (";
+	stmt << "CREATE TABLE IF NOT EXISTS ";
+	createTableIdentifier(stmt, table);
+	stmt << " (";
 	bool firstField = true;
 	for (const auto& f : table.fields()) {
 		if (!firstField) {
-			createTable << ", ";
+			stmt << ", ";
 		}
-		createTable << "\"" << f.name << "\"";
+		stmt << "\"" << f.name << "\"";
 		const std::string& dbType = getDbType(f);
 		if (!dbType.empty()) {
-			createTable << " " << dbType;
+			stmt << " " << dbType;
 		}
 		const std::string& flags = getDbFlags(table.tableName(), table.primaryKeys(), table.constraints(), f);
 		if (!flags.empty()) {
-			createTable << " " << flags;
+			stmt << " " << flags;
 		}
 		firstField = false;
 	}
@@ -408,57 +464,60 @@ std::string createCreateTableStatement(const Model& table, bool useForeignKeys) 
 	if (!table.uniqueKeys().empty()) {
 		bool firstUniqueKey = true;
 		for (const auto& uniqueKey : table.uniqueKeys()) {
-			createTable << ", CONSTRAINT ";
-			uniqueConstraintName(createTable, table, uniqueKey);
-			createTable << " UNIQUE(";
+			stmt << ", CONSTRAINT ";
+			uniqueConstraintName(stmt, table, uniqueKey);
+			stmt << " UNIQUE(";
 			for (const std::string& fieldName : uniqueKey) {
 				if (!firstUniqueKey) {
-					createTable << ", ";
+					stmt << ", ";
 				}
-				createTable << "\"" << fieldName << "\"";
+				stmt << "\"" << fieldName << "\"";
 				firstUniqueKey = false;
 			}
-			createTable << ")";
+			stmt << ")";
 		}
 	}
 
 	if (table.primaryKeys() > 1) {
-		createTable << ", PRIMARY KEY(";
+		stmt << ", PRIMARY KEY(";
 		bool firstPrimaryKey = true;
 		for (const auto& f : table.fields()) {
 			if (!f.isPrimaryKey()) {
 				continue;
 			}
 			if (!firstPrimaryKey) {
-				createTable << ", ";
+				stmt << ", ";
 			}
-			createTable << "\"" << f.name << "\"";
+			stmt << "\"" << f.name << "\"";
 			firstPrimaryKey = false;
 		}
-		createTable << ")";
+		stmt << ")";
 	}
 
 	if (useForeignKeys) {
 		for (const auto& foreignKey : table.foreignKeys()) {
-			createTable << ", CONSTRAINT ";
-			foreignKeyConstraintName(createTable, table, foreignKey.second);
-			createTable << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES \"";
-			createTable << foreignKey.second.table << "\"(\"" << foreignKey.second.field;
-			createTable << "\") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION";
+			stmt << ", CONSTRAINT ";
+			foreignKeyConstraintName(stmt, table, foreignKey.second);
+			stmt << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES \"";
+			stmt << foreignKey.second.table << "\"(\"" << foreignKey.second.field;
+			stmt << "\") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION";
 		}
 	}
 
-	createTable << ");";
+	stmt << ");";
 
 	for (const auto& f : table.fields()) {
 		if (!f.isIndex()) {
 			continue;
 		}
-		createTable << "CREATE INDEX IF NOT EXISTS \"" << table.schema() << "\"." << table.tableName() << "_" << f.name << " ON \"";
-		createTable << table.tableName() << "\" USING btree (\"" << f.name << "\");";
+		stmt << "CREATE INDEX IF NOT EXISTS ";
+		createIndexIdentifier(stmt, table, f.name);
+		stmt << " ON ";
+		createTableIdentifier(stmt, table);
+		stmt << " USING btree (\"" << f.name << "\");";
 	}
 
-	return createTable.str();
+	return stmt.str();
 }
 
 std::string createTruncateTableStatement(const Model& model) {
@@ -467,7 +526,9 @@ std::string createTruncateTableStatement(const Model& model) {
 
 std::string createDropTableStatement(const Model& model) {
 	std::stringstream stmt;
-	stmt << "DROP TABLE IF EXISTS \"" << model.schema() << "\".\"" << model.tableName() << "\";";
+	stmt << "DROP TABLE IF EXISTS ";
+	createTableIdentifier(stmt, model);
+	stmt << ";";
 	for (const auto& f : model.fields()) {
 		if ((f.contraintMask & (int)ConstraintType::AUTOINCREMENT) == 0) {
 			continue;
@@ -510,59 +571,63 @@ static void createWhereStatementsForKeys(std::stringstream& stmt, int index, con
 	}
 }
 
-std::string createUpdateStatement(const Model& model, BindParam* params) {
-	const Fields& fields = model.fields();
-	const std::string& tableName = model.tableName();
-	std::stringstream update;
-	update << "UPDATE \"" << model.schema() << "\".\"" << tableName << "\" SET ";
+std::string createUpdateStatement(const Model& table, BindParam* params) {
+	const Fields& fields = table.fields();
+	std::stringstream stmt;
+	stmt << "UPDATE ";
+	createTableIdentifier(stmt, table);
+	stmt << " SET ";
 	int updateFields = 0;
 	int index = 1;
 	for (auto i = fields.begin(); i != fields.end(); ++i) {
 		const Field& f = *i;
-		if (!model.isValid(f)) {
+		if (!table.isValid(f)) {
 			continue;
 		}
 		if (f.isPrimaryKey()) {
 			continue;
 		}
 		if (updateFields > 0) {
-			update << ", ";
+			stmt << ", ";
 		}
-		update << "\"" << f.name << "\" = ";
-		if (placeholder(model, f, update, index)) {
+		stmt << "\"" << f.name << "\" = ";
+		if (placeholder(table, f, stmt, index)) {
 			++index;
 			if (params != nullptr) {
-				params->push(model, f);
+				params->push(table, f);
 			}
 		}
 		++updateFields;
 	}
 
-	createWhereStatementsForKeys(update, index, model, params);
+	createWhereStatementsForKeys(stmt, index, table, params);
 
-	return update.str();
+	return stmt.str();
 }
 
 std::string createDeleteStatement(const Model& table, BindParam* params) {
 	std::stringstream stmt;
-	stmt << "DELETE FROM \"" << table.schema() << "\".\"" << table.tableName() << "\"";
+	stmt << "DELETE FROM ";
+	createTableIdentifier(stmt, table);
 	createWhereStatementsForKeys(stmt, 1, table, params);
 	return stmt.str();
 }
 
-std::string createInsertStatement(const Model& model, BindParam* params) {
-	std::stringstream insert;
+std::string createInsertStatement(const Model& table, BindParam* params) {
+	std::stringstream stmt;
 	std::stringstream values;
 	std::string autoincrement;
 	std::string primaryKey;
-	insert << "INSERT INTO \"" << model.schema() << "\".\"" << model.tableName() << "\" (";
+	stmt << "INSERT INTO ";
+	createTableIdentifier(stmt, table);
+	stmt << " (";
 	int insertValueIndex = 1;
 	int inserted = 0;
-	for (const persistence::Field& f : model.fields()) {
+	for (const persistence::Field& f : table.fields()) {
 		if (f.isAutoincrement()) {
 			autoincrement = f.name;
 		}
-		if (!model.isValid(f)) {
+		if (!table.isValid(f)) {
 			continue;
 		}
 		if (f.isPrimaryKey()) {
@@ -570,56 +635,56 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 		}
 		if (inserted > 0) {
 			values << ", ";
-			insert << ", ";
+			stmt << ", ";
 		}
-		insert << "\"" << f.name << "\"";
+		stmt << "\"" << f.name << "\"";
 		++inserted;
-		if (placeholder(model, f, values, insertValueIndex)) {
+		if (placeholder(table, f, values, insertValueIndex)) {
 			++insertValueIndex;
 			if (params != nullptr) {
-				params->push(model, f);
+				params->push(table, f);
 			}
 		}
 	}
 
-	insert << ") VALUES (" << values.str() << ")";
-	if (model.primaryKeys() == 1 && !primaryKey.empty()) {
-		insert << " ON CONFLICT (\"" << primaryKey;
-		insert << "\") DO UPDATE SET ";
+	stmt << ") VALUES (" << values.str() << ")";
+	if (table.primaryKeys() == 1 && !primaryKey.empty()) {
+		stmt << " ON CONFLICT (\"" << primaryKey;
+		stmt << "\") DO UPDATE SET ";
 		int fieldIndex = 0;
-		for (const persistence::Field& f : model.fields()) {
-			if (!model.isValid(f)) {
+		for (const persistence::Field& f : table.fields()) {
+			if (!table.isValid(f)) {
 				continue;
 			}
 			if (f.isPrimaryKey() || f.isAutoincrement()) {
 				continue;
 			}
 			if (fieldIndex > 0) {
-				insert << ", ";
+				stmt << ", ";
 			}
-			insert << "\"" << f.name << "\" = ";
+			stmt << "\"" << f.name << "\" = ";
 			if (f.updateOperator != Operator::SET) {
-				insert << "\"" << model.schema() << "\".\"" << model.tableName() << "\".\"" << f.name << "\"";
-				insert << OperatorStrings[(int)f.updateOperator];
+				stmt << "\"" << table.schema() << "\".\"" << table.tableName() << "\".\"" << f.name << "\"";
+				stmt << OperatorStrings[(int)f.updateOperator];
 			}
-			if (placeholder(model, f, insert, insertValueIndex)) {
+			if (placeholder(table, f, stmt, insertValueIndex)) {
 				++insertValueIndex;
 				if (params != nullptr) {
-					params->push(model, f);
+					params->push(table, f);
 				}
 			}
 			++fieldIndex;
 		}
 	}
-	const UniqueKeys uniqueKeys = model.uniqueKeys();
+	const UniqueKeys uniqueKeys = table.uniqueKeys();
 	for (const auto& set : uniqueKeys) {
-		insert << " ON CONFLICT (";
-		insert << core::string::join(set.begin(), set.end(), ", ", [] (const std::string& fieldName) {
+		stmt << " ON CONFLICT (";
+		stmt << core::string::join(set.begin(), set.end(), ", ", [] (const std::string& fieldName) {
 			return core::string::format("\"%s\"", fieldName.c_str());
 		});
-		insert << ") DO UPDATE SET ";
+		stmt << ") DO UPDATE SET ";
 		int fieldIndex = 0;
-		for (const persistence::Field& f : model.fields()) {
+		for (const persistence::Field& f : table.fields()) {
 			if (f.isPrimaryKey() || f.isAutoincrement()) {
 				continue;
 			}
@@ -627,53 +692,53 @@ std::string createInsertStatement(const Model& model, BindParam* params) {
 				continue;
 			}
 			if (fieldIndex > 0) {
-				insert << ", ";
+				stmt << ", ";
 			}
-			insert << "\"" << f.name << "\" = ";
+			stmt << "\"" << f.name << "\" = ";
 			if (f.updateOperator != Operator::SET) {
-				insert << "\"" << model.schema() << "\".\"" << model.tableName() << "\".\"" << f.name << "\"";
-				insert << OperatorStrings[(int)f.updateOperator];
+				stmt << "\"" << table.schema() << "\".\"" << table.tableName() << "\".\"" << f.name << "\"";
+				stmt << OperatorStrings[(int)f.updateOperator];
 			}
-			if (placeholder(model, f, insert, insertValueIndex)) {
+			if (placeholder(table, f, stmt, insertValueIndex)) {
 				++insertValueIndex;
 				if (params != nullptr) {
-					params->push(model, f);
+					params->push(table, f);
 				}
 			}
 			++fieldIndex;
 		}
 	}
 	if (!autoincrement.empty()) {
-		insert << " RETURNING \"" << autoincrement << "\"";
+		stmt << " RETURNING \"" << autoincrement << "\"";
 	}
-	insert << ";";
-	return insert.str();
+	stmt << ";";
+	return stmt.str();
 }
 
 // https://www.postgresql.org/docs/current/static/functions-formatting.html
 // https://www.postgresql.org/docs/current/static/functions-datetime.html
-std::string createSelect(const Model& model, BindParam* params) {
-	const Fields& fields = model.fields();
-	const std::string& tableName = model.tableName();
-	std::stringstream select;
-	select << "SELECT ";
+std::string createSelect(const Model& table, BindParam* params) {
+	const Fields& fields = table.fields();
+	std::stringstream stmt;
+	stmt << "SELECT ";
 	for (auto i = fields.begin(); i != fields.end(); ++i) {
 		const Field& f = *i;
 		if (i != fields.begin()) {
-			select << ", ";
+			stmt << ", ";
 		}
 		if (f.type == FieldType::TIMESTAMP) {
-			select << "CAST(EXTRACT(EPOCH FROM ";
+			stmt << "CAST(EXTRACT(EPOCH FROM ";
 		}
-		select << "\"" << f.name << "\"";
+		stmt << "\"" << f.name << "\"";
 		if (f.type == FieldType::TIMESTAMP) {
-			select << " AT TIME ZONE 'UTC') AS bigint) AS \"" << f.name << "\"";
+			stmt << " AT TIME ZONE 'UTC') AS bigint) AS \"" << f.name << "\"";
 		}
 	}
 
-	select << " FROM \"" << model.schema() << "\".\"" << tableName << "\"";
-	createWhereStatementsForKeys(select, 1, model, params);
-	return select.str();
+	stmt << " FROM ";
+	createTableIdentifier(stmt, table);
+	createWhereStatementsForKeys(stmt, 1, table, params);
+	return stmt.str();
 }
 
 std::string createWhere(const DBCondition& condition, int &parameterCount) {

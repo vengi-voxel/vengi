@@ -130,6 +130,8 @@ TEST_F(DatabaseSchemaUpdateTest, testAddAndRemoveSingleStepsReversedColumns) {
 	checkIsCurrent(db::TestUpdate3Model());
 	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate4Model()));
 	checkIsCurrent(db::TestUpdate4Model());
+	ASSERT_TRUE(_dbHandler.createOrUpdateTable(db::TestUpdate5Model()));
+	checkIsCurrent(db::TestUpdate5Model());
 }
 
 }
