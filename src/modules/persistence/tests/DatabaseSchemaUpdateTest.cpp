@@ -34,6 +34,7 @@ protected:
 	}
 
 	void checkIsCurrent(Model&& model) const {
+		Log::info("Check %s", model.tableName().c_str());
 		std::vector<db::MetainfoModel> schemaModels;
 		schemaModels.reserve(model.fields().size() * 2);
 		const db::DBConditionMetainfoModelSchemaname c1(model.schema());

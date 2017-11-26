@@ -260,14 +260,12 @@ static void createAlterTableAlterColumn(std::stringstream& stmt, bool add, const
 		createTableIdentifier(stmt, table);
 		stmt << " USING btree (\"" << field.name << "\");";
 	}
-
-	// TODO: foreign keys
 }
 
 static void createAlterTableDropColumn(std::stringstream& stmt, const Model& table, const db::MetainfoModel& field) {
 	stmt << "ALTER TABLE ";
 	createTableIdentifier(stmt, table);
-	stmt << " DROP COLUMN \"" << field.columnname() << "\";";
+	stmt << " DROP COLUMN \"" << field.columnname() << "\" CASCADE;";
 	if ((field.constraintmask() & (int)ConstraintType::AUTOINCREMENT) != 0) {
 		createDropSequence(stmt, table, field);
 	}
@@ -279,12 +277,12 @@ static void createAlterTableAddColumn(std::stringstream& stmt, const Model& tabl
 
 static bool isDifferent(const db::MetainfoModel& schemaColumn, const Field& field) {
 	if ((uint32_t)schemaColumn.constraintmask() != field.contraintMask) {
-		Log::debug("%s differs in constraint mask", field.name.c_str());
+		Log::debug("  - %s differs in constraint mask", field.name.c_str());
 #define C_CHECK(type) \
 		if (adds(schemaColumn, field, ConstraintType::type)) { \
-			Log::debug("Added " CORE_STRINGIFY(type)); \
+			Log::debug("  - Added " CORE_STRINGIFY(type) " to field %s", field.name.c_str()); \
 		} else if (removes(schemaColumn, field, ConstraintType::type)) { \
-			Log::debug("Removed " CORE_STRINGIFY(type)); \
+			Log::debug("  - Removed " CORE_STRINGIFY(type) " from field %s", field.name.c_str()); \
 		}
 
 		C_CHECK(UNIQUE)
@@ -299,17 +297,17 @@ static bool isDifferent(const db::MetainfoModel& schemaColumn, const Field& fiel
 		return true;
 	}
 	if (schemaColumn.columndefault() != field.defaultVal) {
-		Log::debug("%s differs in default values ('%s' vs '%s')",
+		Log::debug("  - %s differs in default values ('%s' vs '%s')",
 				field.name.c_str(), schemaColumn.columndefault().c_str(), field.defaultVal.c_str());
 		return true;
 	}
 	if (toFieldType(schemaColumn.datatype()) != field.type) {
-		Log::debug("%s differs in types ('%s' vs '%s')",
+		Log::debug("  - %s differs in types ('%s' vs '%s')",
 				field.name.c_str(), schemaColumn.datatype().c_str(), toFieldType(field.type));
 		return true;
 	}
 	if (schemaColumn.maximumlength() != field.length) {
-		Log::debug("%s differs in length ('%i' vs '%i')",
+		Log::debug("  - %s differs in length ('%i' vs '%i')",
 				field.name.c_str(), schemaColumn.maximumlength(), field.length);
 		return true;
 	}
@@ -327,6 +325,7 @@ static inline void foreignKeyConstraintName(std::stringstream& stmt, const Model
 std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys) {
 	std::stringstream stmt;
 
+	// TODO: allow to move into new schema?
 	stmt << "CREATE SCHEMA IF NOT EXISTS ";
 	createSchemaIdentifier(stmt, table);
 	stmt << ";";
@@ -335,24 +334,26 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 	map.reserve(columns.size());
 	for (const auto& c : columns) {
 		map.insert(std::make_pair(c.columnname(), &c));
-		Log::debug("Handle expected column '%s' in table '%s'", c.columnname().c_str(), c.tablename().c_str());
+		Log::debug("# Column '%s' in table '%s'", c.columnname().c_str(), c.tablename().c_str());
 		const Field& f = table.getField(c.columnname());
 		if (f.name.empty()) {
-			Log::debug("Drop column '%s' from table '%s' - no longer in the model",
+			Log::debug("- Column '%s' in table '%s' - no longer in the model, drop it",
 					c.columnname().c_str(), c.tablename().c_str());
 			// the field is not known in the current table structure - but it's known in the
 			// database, so get rid of the column
 			createAlterTableDropColumn(stmt, table, c);
 		} else {
-			Log::debug("Column '%s' in table '%s' still exists - check for needed updates",
+			Log::debug("- Column '%s' in table '%s' still exists - check for needed updates",
 					c.columnname().c_str(), c.tablename().c_str());
 		}
 	}
 	bool uniqueConstraintDiffers = false;
 	bool foreignKeysDiffers = false;
 	for (const auto& f : table.fields()) {
+		Log::debug("# Column '%s' in table '%s'", f.name.c_str(), table.tableName().c_str());
 		auto i = map.find(f.name);
 		if (i != map.end()) {
+			Log::debug("- Column '%s' in table '%s' already exists", f.name.c_str(), table.tableName().c_str());
 			// the field already exists, but it might be different from what we expect
 			// to find in the database
 			if (isDifferent(*i->second, f)) {
@@ -362,13 +363,13 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 				if (changed(*i->second, f, ConstraintType::FOREIGNKEY)) {
 					foreignKeysDiffers = true;
 				}
-				Log::debug("Column '%s' in table '%s' differs - update it",
+				Log::debug("- Column '%s' in table '%s' differs - update it",
 						f.name.c_str(), table.tableName().c_str());
 				createAlterTableAlterColumn(stmt, false, table, *i->second, f);
 			}
 			continue;
 		}
-		Log::debug("Column '%s' in table '%s' doesn't exist yet - create it",
+		Log::debug("- Column '%s' in table '%s' doesn't exist yet - create it",
 				f.name.c_str(), table.tableName().c_str());
 		// a new field that is not yet known in the database schema was added to the model
 		// now just create the new column.
@@ -379,22 +380,22 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 		if (f.isForeignKey()) {
 			foreignKeysDiffers = true;
 		}
+	}
 
-		if (useForeignKeys && foreignKeysDiffers) {
-			for (const auto& foreignKey : table.foreignKeys()) {
-				stmt << "ALTER TABLE ";
-				createTableIdentifier(stmt, table);
-				stmt << " DROP CONSTRAINT IF EXISTS ";
-				foreignKeyConstraintName(stmt, table, foreignKey.second);
-				stmt << ";";
-				stmt << "ALTER TABLE ";
-				createTableIdentifier(stmt, table);
-				stmt << " ADD CONSTRAINT ";
-				foreignKeyConstraintName(stmt, table, foreignKey.second);
-				stmt << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES \"";
-				stmt << foreignKey.second.table << "\"(\"" << foreignKey.second.field;
-				stmt << "\") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION";
-			}
+	if (useForeignKeys && foreignKeysDiffers) {
+		for (const auto& foreignKey : table.foreignKeys()) {
+			stmt << "ALTER TABLE ";
+			createTableIdentifier(stmt, table);
+			stmt << " DROP CONSTRAINT IF EXISTS ";
+			foreignKeyConstraintName(stmt, table, foreignKey.second);
+			stmt << ";";
+			stmt << "ALTER TABLE ";
+			createTableIdentifier(stmt, table);
+			stmt << " ADD CONSTRAINT ";
+			foreignKeyConstraintName(stmt, table, foreignKey.second);
+			stmt << " FOREIGN KEY(\"" << foreignKey.first << "\") REFERENCES \"";
+			stmt << foreignKey.second.table << "\"(\"" << foreignKey.second.field;
+			stmt << "\") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION";
 		}
 	}
 
