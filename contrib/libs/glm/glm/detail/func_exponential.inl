@@ -90,6 +90,9 @@ namespace detail
 		return detail::functor1<L, T, T, Q>::call(log, x);
 	}
 
+#   if GLM_HAS_CXX11_STL
+    using std::exp2;
+#   else
 	//exp2, ln2 = 0.69314718055994530941723212145818f
 	template<typename genType>
 	GLM_FUNC_QUALIFIER genType exp2(genType x)
@@ -98,6 +101,7 @@ namespace detail
 
 		return std::exp(static_cast<genType>(0.69314718055994530941723212145818) * x);
 	}
+#   endif
 
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<L, T, Q> exp2(vec<L, T, Q> const& x)

@@ -165,7 +165,7 @@ namespace glm
 	GLM_FUNC_QUALIFIER genType acsch(genType x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'acsch' only accept floating-point values");
-		return acsch(genType(1) / x);
+		return asinh(genType(1) / x);
 	}
 
 	template<length_t L, typename T, qualifier Q>

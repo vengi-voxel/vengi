@@ -45,7 +45,7 @@
 /// @brief The generic template types used as the basis for the core types. 
 ///
 /// These types are all templates used to define the actual @ref core_types.
-/// These templetes are implementation details of GLM types and should not be used explicitly.
+/// These templates are implementation details of GLM types and should not be used explicitly.
 ///
 /// @ingroup core
 ///
