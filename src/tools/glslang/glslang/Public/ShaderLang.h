@@ -68,15 +68,14 @@
 #endif
 
 //
-// Driver must call this first, once, before doing any other
-// compiler/linker operations.
+// Call before doing any other compiler/linker operations.
 //
 // (Call once per process, not once per thread.)
 //
 SH_IMPORT_EXPORT int ShInitialize();
 
 //
-// Driver should call this at process shutdown.
+// Call this at process shutdown to clean up memory.
 //
 SH_IMPORT_EXPORT int __fastcall ShFinalize();
 
@@ -290,7 +289,7 @@ SH_IMPORT_EXPORT int ShGetUniformLocation(const ShHandle uniformMap, const char*
 // Deferred-Lowering C++ Interface
 // -----------------------------------
 //
-// Below is a new alternate C++ interface that might potentially replace the above
+// Below is a new alternate C++ interface, which deprecates the above
 // opaque handle-based interface.
 //
 // The below is further designed to handle multiple compilation units per stage, where
@@ -368,7 +367,7 @@ public:
     void setShiftUavBinding(unsigned int base);      // DEPRECATED: use setShiftBinding
     void setShiftCbufferBinding(unsigned int base);  // synonym for setShiftUboBinding
     void setShiftSsboBinding(unsigned int base);     // DEPRECATED: use setShiftBinding
-    void setShiftBindingForSet(TResourceType res, unsigned int set, unsigned int base);
+    void setShiftBindingForSet(TResourceType res, unsigned int base, unsigned int set);
     void setResourceSetBinding(const std::vector<std::string>& base);
     void setAutoMapBindings(bool map);
     void setAutoMapLocations(bool map);
