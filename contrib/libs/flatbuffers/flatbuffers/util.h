@@ -34,8 +34,6 @@
 #include <windows.h>
 #include <winbase.h>
 #include <direct.h>
-#undef ABSOLUTE
-#undef RELATIVE
 #else
 #include <limits.h>
 #endif

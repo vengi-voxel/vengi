@@ -20,6 +20,8 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#include <memory>
+#include <limits>
 
 #if defined(_STLPORT_VERSION) && !defined(FLATBUFFERS_CPP98_STL)
   #define FLATBUFFERS_CPP98_STL
@@ -41,12 +43,14 @@ inline char string_back(const std::string &value) {
 // Helper method that retrieves ::data() from a vector in a way that is
 // compatible with pre C++11 STLs (e.g stlport).
 template <typename T> inline T *vector_data(std::vector<T> &vector) {
-  return &(vector[0]);
+  // In some debug environments, operator[] does bounds checking, so &vector[0]
+  // can't be used.
+  return &(*vector.begin());
 }
 
 template <typename T> inline const T *vector_data(
     const std::vector<T> &vector) {
-  return &(vector[0]);
+  return &(*vector.begin());
 }
 
 template <typename T, typename V>
@@ -170,7 +174,7 @@ inline void vector_emplace_back(std::vector<T> *vector, V &&data) {
       return *this;
     }
 
-    const T& operator*() const { return ptr_; }
+    const T& operator*() const { return *ptr_; }
     T* operator->() const { return ptr_; }
     T* get() const noexcept { return ptr_; }
     explicit operator bool() const { return ptr_ != nullptr; }

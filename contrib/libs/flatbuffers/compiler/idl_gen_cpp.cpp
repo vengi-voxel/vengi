@@ -127,7 +127,7 @@ class CppGenerator : public BaseGenerator {
     code_ += "#define " + include_guard;
     code_ += "";
 
-    if (parser_.opts.clang_nullable) {
+    if (parser_.opts.gen_nullable) {
       code_ += "#pragma clang system_header\n\n";
     }
 
@@ -433,7 +433,7 @@ class CppGenerator : public BaseGenerator {
   }
 
   std::string NullableExtension() {
-    return parser_.opts.clang_nullable ? " _Nullable " : "";
+    return parser_.opts.gen_nullable ? " _Nullable " : "";
   }
 
   static std::string NativeName(const std::string &name, const StructDef *sd, const IDLOptions & opts) {
@@ -2282,11 +2282,6 @@ class CppGenerator : public BaseGenerator {
     // Generate a default constructor.
     code_ += "  {{STRUCT_NAME}}() {";
     code_ += "    memset(this, 0, sizeof({{STRUCT_NAME}}));";
-    code_ += "  }";
-
-    // Generate a copy constructor.
-    code_ += "  {{STRUCT_NAME}}(const {{STRUCT_NAME}} &_o) {";
-    code_ += "    memcpy(this, &_o, sizeof({{STRUCT_NAME}}));";
     code_ += "  }";
 
     // Generate a constructor that takes all fields as arguments.
