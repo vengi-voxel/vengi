@@ -361,6 +361,7 @@ core::AppState UIApp::onInit() {
 	}
 
 	tb::TBWidgetListener::AddGlobalListener(this);
+	_uiInitialized = true;
 
 	if (!tb::g_tb_lng->Load("ui/lang/en.tb.txt")) {
 		Log::warn("could not load the translation");
@@ -372,6 +373,9 @@ core::AppState UIApp::onInit() {
 			_applicationSkin = skin;
 		}
 	}
+
+	tb::TBWidgetsAnimationManager::Init();
+
 	if (!tb::g_tb_skin->Load("ui/skin/skin.tb.txt", _applicationSkin.empty() ? nullptr : _applicationSkin.c_str())) {
 		Log::error("could not load the skin");
 		return core::AppState::Cleanup;
@@ -381,8 +385,6 @@ core::AppState UIApp::onInit() {
 		Log::error("could not init ui renderer");
 		return core::AppState::Cleanup;
 	}
-
-	tb::TBWidgetsAnimationManager::Init();
 
 	initFonts();
 	tb::TBFontFace *font = getFont(14, true);
@@ -467,9 +469,12 @@ core::AppState UIApp::onRunning() {
 
 core::AppState UIApp::onCleanup() {
 	tb::TBAnimationManager::AbortAllAnimations();
-	tb::TBWidgetListener::RemoveGlobalListener(this);
+	if (_uiInitialized) {
+		tb::TBWidgetListener::RemoveGlobalListener(this);
+		tb::TBWidgetsAnimationManager::Shutdown();
+		_uiInitialized = false;
+	}
 
-	tb::TBWidgetsAnimationManager::Shutdown();
 	tb::tb_core_shutdown();
 
 	_root.DeleteAllChildren();

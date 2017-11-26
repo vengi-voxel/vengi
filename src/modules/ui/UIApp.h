@@ -20,6 +20,7 @@ protected:
 	core::VarPtr _renderUI;
 	int _lastShowTextY = -1;
 	std::string _applicationSkin;
+	bool _uiInitialized = false;
 
 	virtual bool onKeyRelease(int32_t key) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;

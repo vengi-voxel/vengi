@@ -52,8 +52,10 @@ void RandomColorTexture::unbind() {
 }
 
 void RandomColorTexture::shutdown() {
-	_colorTexture->shutdown();
-	_colorTexture = video::TexturePtr();
+	if (_colorTexture) {
+		_colorTexture->shutdown();
+		_colorTexture = video::TexturePtr();
+	}
 	_noiseFuture.clear();
 }
 
