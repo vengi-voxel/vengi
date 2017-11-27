@@ -9,7 +9,7 @@
 #include "ui/VoxEditWindow.h"
 
 /**
- * @brief This tool provides a UI to create noise images on-the-fly.
+ * @brief This is a voxel editor that can import and export multiple mesh/voxel formats.
  */
 class VoxEdit: public ui::UIApp {
 private:
