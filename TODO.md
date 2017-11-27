@@ -1,3 +1,7 @@
+# Data handling
+
+The current approach with data dir must be extended/redone someone. There are way too many files installed per artifact atm. Also there should be CPack support to generate debian packages.
+
 # Persistence
 ## Savable
 
