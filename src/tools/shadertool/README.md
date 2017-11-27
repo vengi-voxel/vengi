@@ -1,10 +1,10 @@
 # Purpose
 
-This tool parses GLSL shader files (mainly *.vert, *.frag) and generated C++ source files for them.
+This tool parses GLSL shader files (mainly *.vert, *.frag) and generates C++ source files for them.
 
 # Description
 
-The generator uses `ShaderTemplate.h.in` and `UniformBufferTemplate.h.in` and generates the files by doing some string replacements.
+The generator uses `ShaderTemplate.h.in` and `UniformBufferTemplate.h.in` as a base to generat the C++ source files.
 
 There are several variables in the template file that are replaced by the generator.
 
