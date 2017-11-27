@@ -22,6 +22,24 @@ Support enums?
 
 * Support `(x, y, z) primarykey` (like we do for unique keys)
 
+# Shadertool
+
+Validate that each $out of the vertex shader has a $in in the fragment shader and vice versa.
+
+# VoxEdit
+
+Extract meshes in max 32x32x32 boundaries - RawVolumeRenderer maybe? This allows us to only reextract the chunk that was modified, not always the whole volume.
+
+Voxelizer via assimp
+
+Extrude
+
+Scale/move/rotate selections - not only the cursor or whole model
+
+LSystem parameter window needs the voxel options and should show information about the used alphabet
+
+Move space colonization tree generator into the tree submenu and take the ToolWindow parameters into account
+
 # EventMgr
 
 ## Proper event-end-while-application-is-not-running handling

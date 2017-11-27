@@ -21,13 +21,6 @@
 #define COMMAND_CALL(command, call, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {call;}).setHelp(help)
 #define COMMAND_MAINWINDOW_EVENT(command, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);event.ref_id = TBIDC(command);_mainWindow->InvokeEvent(event);}).setHelp(help)
 
-// TODO: extract meshes in max 32x32x32 boundaries - RawVolumeRenderer maybe?
-//       allows us to only reextract the chunk that was modified, not always the whole volume.
-// TODO: voxelizer via assimp
-// TODO: extrude
-// TODO: scale/move/rotate selections - not only the cursor or whole model
-// TODO: lsystem parameter window needs the voxel options and should show information about the used alphabet
-// TODO: move space colonization tree generator into the tree submenu and take the ToolWindow parameters into account
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init(ORGANISATION, "voxedit");
