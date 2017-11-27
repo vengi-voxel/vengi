@@ -69,7 +69,7 @@ core::AppState Server::onInit() {
 
 	if (!_serverLoop->init()) {
 		Log::error("Failed to init the main loop");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	return core::AppState::Running;

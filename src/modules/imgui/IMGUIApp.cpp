@@ -128,19 +128,19 @@ core::AppState IMGUIApp::onInit() {
 
 	if (!_shader.setup()) {
 		Log::error("Could not load the ui shader");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_bufferIndex = _vbo.create();
 	if (_bufferIndex < 0) {
 		Log::error("Failed to create ui vertex buffer");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	_vbo.setMode(_bufferIndex, video::VertexBufferMode::Stream);
 	_indexBufferIndex = _vbo.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
 	if (_indexBufferIndex < 0) {
 		Log::error("Failed to create ui index buffer");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_camera.setNearPlane(-1.0f);

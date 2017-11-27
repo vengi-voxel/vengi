@@ -61,7 +61,7 @@ AppState AbstractTest::TestApp::onInit() {
 	}
 
 	if (!_test->onInitApp()) {
-		return AppState::Cleanup;
+		return AppState::InitFailure;
 	}
 
 	return state;

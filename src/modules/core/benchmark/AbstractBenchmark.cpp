@@ -54,7 +54,7 @@ AppState AbstractBenchmark::BenchmarkApp::onInit() {
 	}
 
 	if (!_benchmark->onInitApp()) {
-		return AppState::Cleanup;
+		return AppState::InitFailure;
 	}
 
 	return state;

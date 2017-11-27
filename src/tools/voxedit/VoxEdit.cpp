@@ -272,7 +272,7 @@ void VoxEdit::update() {
 
 core::AppState VoxEdit::onRunning() {
 	core::AppState state = Super::onRunning();
-	if (state == core::AppState::Cleanup) {
+	if (state != core::AppState::Running) {
 		return state;
 	}
 	const bool current = isRelativeMouseMode();

@@ -155,17 +155,14 @@ core::AppState DatabaseTool::onRunning() {
 	const std::string& buf = filesystem()->load(_tableFile);
 	if (buf.empty()) {
 		Log::error("Could not load %s", _tableFile.c_str());
-		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!parse(buf.c_str())) {
-		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	if (!generateSrc()) {
-		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	return core::AppState::Cleanup;

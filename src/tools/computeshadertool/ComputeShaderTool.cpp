@@ -55,8 +55,7 @@ core::AppState ComputeShaderTool::onRunning() {
 	const std::string computeBuffer = filesystem()->load(_computeFilename);
 	if (computeBuffer.empty()) {
 		Log::error("Could not load %s", _computeFilename.c_str());
-		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	compute::Shader shader;
@@ -64,8 +63,7 @@ core::AppState ComputeShaderTool::onRunning() {
 
 	_name = std::string(core::string::extractFilename(shaderfile.c_str()));
 	if (!parse(computeSrcSource)) {
-		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	const std::string& templateShader = filesystem()->load(_shaderTemplateFile);
 	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs)) {

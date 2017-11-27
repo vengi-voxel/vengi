@@ -37,7 +37,7 @@ core::AppState NoiseTool2::onInit() {
 	core::AppState state = Super::onInit();
 	_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
 	Log::init();
-	if (state == core::AppState::Cleanup) {
+	if (state != core::AppState::Running) {
 		return state;
 	}
 

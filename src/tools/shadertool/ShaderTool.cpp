@@ -67,16 +67,14 @@ core::AppState ShaderTool::onRunning() {
 	const std::string fragmentBuffer = fs->load(fragmentFilename);
 	if (fragmentBuffer.empty()) {
 		Log::error("Could not load %s", fragmentFilename.c_str());
-		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	const std::string vertexFilename = _shaderfile + VERTEX_POSTFIX;
 	const std::string vertexBuffer = fs->load(vertexFilename);
 	if (vertexBuffer.empty()) {
 		Log::error("Could not load %s", vertexFilename.c_str());
-		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	const std::string geometryFilename = _shaderfile + GEOMETRY_POSTFIX;
@@ -94,29 +92,25 @@ core::AppState ShaderTool::onRunning() {
 	_shaderStruct.name = _shaderfile;
 	if (!parse(fragmentSrcSource, false)) {
 		Log::error("Failed to parse fragment shader %s", _shaderfile.c_str());
-		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	if (!geometryBuffer.empty()) {
 		const std::string& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, false);
 		if (!parse(geometrySrcSource, false)) {
 			Log::error("Failed to parse geometry shader %s", _shaderfile.c_str());
-			_exitCode = 1;
-			return core::AppState::Cleanup;
+			return core::AppState::InitFailure;
 		}
 	}
 	if (!computeBuffer.empty()) {
 		const std::string& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer, false);
 		if (!parse(computeSrcSource, false)) {
 			Log::error("Failed to parse compute shader %s", _shaderfile.c_str());
-			_exitCode = 1;
-			return core::AppState::Cleanup;
+			return core::AppState::InitFailure;
 		}
 	}
 	if (!parse(vertexSrcSource, true)) {
 		Log::error("Failed to parse vertex shader %s", _shaderfile.c_str());
-		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	for (const auto& block : _shaderStruct.uniformBlocks) {
@@ -140,8 +134,7 @@ core::AppState ShaderTool::onRunning() {
 	if (!shadertool::generateSrc(templateShader, templateUniformBuffer, _shaderStruct,
 			filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory)) {
 		Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
-		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	const std::string& fragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, true);

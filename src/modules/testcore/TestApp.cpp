@@ -51,18 +51,18 @@ core::AppState TestApp::onInit() {
 	}
 	_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
 	Log::init();
-	if (state == core::AppState::Cleanup) {
+	if (state != core::AppState::Running) {
 		return state;
 	}
 
 	video::enableDebug(video::DebugSeverity::Medium);
 
 	if (!_axis.init()) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!_plane.init() || !_plane.plane(glm::zero<glm::vec3>())) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _dimension.x, _dimension.y, _aspect);
