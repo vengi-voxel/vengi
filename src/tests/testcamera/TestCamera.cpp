@@ -12,6 +12,9 @@ TestCamera::TestCamera(const io::FilesystemPtr& filesystem, const core::EventBus
 
 core::AppState TestCamera::onInit() {
 	core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 
 	const float nearPlane = 5.0f;
 
@@ -54,7 +57,7 @@ core::AppState TestCamera::onInit() {
 		_renderCamera[i].update(0l);
 
 		if (!_frustums[i].init(_renderCamera[i], colors[i], renderSplitFrustum ? 4 : 0)) {
-			return core::AppState::Cleanup;
+			return core::AppState::InitFailure;
 		}
 		_frustums[i].setRenderAABB(renderAABB);
 	}

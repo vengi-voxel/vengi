@@ -17,12 +17,15 @@ TestOctreeVisit::TestOctreeVisit(const io::FilesystemPtr& filesystem, const core
 
 core::AppState TestOctreeVisit::onInit() {
 	core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 
 	_camera.setFarPlane(5000.0f);
 
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to init the shape renderer");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_shapeBuilder.sphere(10, 10, 5.0f);

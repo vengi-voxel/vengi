@@ -40,10 +40,13 @@ core::AppState TestMeshApp::onConstruct() {
 
 core::AppState TestMeshApp::onInit() {
 	core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 
 	if (!_shadow.init()) {
 		Log::error("Failed to init shadow object");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
@@ -54,19 +57,19 @@ core::AppState TestMeshApp::onInit() {
 
 	if (!_shadowMapShader.setup()) {
 		Log::error("Failed to init shadowmap shader");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	if (!_shadowMapRenderShader.setup()) {
 		Log::error("Failed to init shadowmap debug shader");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	if (!_meshShader.setup()) {
 		Log::error("Failed to init mesh shader");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	if (!_colorShader.setup()) {
 		Log::error("Failed to init color shader");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_meshPool.init();
@@ -75,13 +78,13 @@ core::AppState TestMeshApp::onInit() {
 	_mesh = _meshPool.getMesh(mesh);
 	if (!_mesh->isLoading()) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
 	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
 		Log::error("Failed to init the depthbuffer");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);

@@ -8,6 +8,10 @@ TestTemplate::TestTemplate(const io::FilesystemPtr& filesystem, const core::Even
 
 core::AppState TestTemplate::onInit() {
 	core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
+
 	return state;
 }
 

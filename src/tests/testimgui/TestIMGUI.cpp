@@ -40,11 +40,11 @@ void TestIMGUI::onRenderUI() {
 
 core::AppState TestIMGUI::onInit() {
 	core::AppState state = Super::onInit();
-	_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
-	Log::init();
-	if (state == core::AppState::Cleanup) {
+	if (state != core::AppState::Running) {
 		return state;
 	}
+	_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
+	Log::init();
 
 	video::clearColor(::core::Color::Black);
 	//video::enableDebug(video::DebugSeverity::Medium);

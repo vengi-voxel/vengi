@@ -52,10 +52,13 @@ void TestOctree::clear() {
 
 core::AppState TestOctree::onInit() {
 	core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to init the shape renderer");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	const glm::ivec3& center = _octree.aabb().getCenter();

@@ -11,19 +11,22 @@ TestTexture::TestTexture(const io::FilesystemPtr& filesystem, const core::EventB
 
 core::AppState TestTexture::onInit() {
 	const core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 	_camera.setMode(video::CameraMode::Orthogonal);
 	_camera.setNearPlane(-1.0f);
 	_camera.setFarPlane(1.0f);
 
 	if (!_textureShader.setup()) {
 		Log::error("Failed to init the texture shader");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_texture = video::createTextureFromImage("texture.png");
 	if (!_texture) {
 		Log::error("Failed to load texture");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createTexturedQuad(glm::vec2(0), dimension());

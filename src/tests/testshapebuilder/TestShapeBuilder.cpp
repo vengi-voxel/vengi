@@ -16,10 +16,13 @@ TestShapeBuilder::TestShapeBuilder(const io::FilesystemPtr& filesystem, const co
 
 core::AppState TestShapeBuilder::onInit() {
 	core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to init the shape renderer");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	for (int i = 0; i < lengthof(_position); ++i) {

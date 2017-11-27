@@ -11,23 +11,26 @@ TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::Ev
 
 core::AppState TestVoxelFont::onInit() {
 	core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	if (!_rawVolumeRenderer.init()) {
 		Log::error("Failed to initialize the raw volume renderer");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	if (!_rawVolumeRenderer.onResize(glm::ivec2(0), dimension())) {
 		Log::error("Failed to initialize the raw volume renderer");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!changeFontSize(0)) {
 		Log::error("Failed to start voxel font test application - could not load the given font file");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_camera.setFarPlane(4000.0f);

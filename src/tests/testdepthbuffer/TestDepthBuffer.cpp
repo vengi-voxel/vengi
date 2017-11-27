@@ -24,9 +24,12 @@ void TestDepthBuffer::doRender() {
 
 core::AppState TestDepthBuffer::onInit() {
 	core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 	if (!_shadowMapRenderShader.setup()) {
 		Log::error("Failed to init shadowmaprender shader");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
 
