@@ -357,7 +357,7 @@ core::AppState UIApp::onInit() {
 	}
 	if (!tb::tb_core_init(&_renderer)) {
 		Log::error("failed to initialize the ui");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	tb::TBWidgetListener::AddGlobalListener(this);
@@ -378,19 +378,19 @@ core::AppState UIApp::onInit() {
 
 	if (!tb::g_tb_skin->Load("ui/skin/skin.tb.txt", _applicationSkin.empty() ? nullptr : _applicationSkin.c_str())) {
 		Log::error("could not load the skin");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!_renderer.init(dimension())) {
 		Log::error("could not init ui renderer");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	initFonts();
 	tb::TBFontFace *font = getFont(14, true);
 	if (font == nullptr) {
 		Log::error("could not create the font face");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_root.SetRect(tb::TBRect(0, 0, _dimension.x, _dimension.y));

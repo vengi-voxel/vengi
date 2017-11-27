@@ -152,7 +152,7 @@ core::AppState WindowedApp::onInit() {
 
 	if (SDL_Init(SDL_INIT_VIDEO) == -1) {
 		sdlCheckError();
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	SDL_EventState(SDL_MOUSEMOTION, SDL_DISABLE);
@@ -211,7 +211,7 @@ core::AppState WindowedApp::onInit() {
 	_window = SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
 	if (!_window) {
 		sdlCheckError();
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_rendererContext = video::createContext(_window);

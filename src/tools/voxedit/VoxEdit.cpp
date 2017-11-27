@@ -247,7 +247,7 @@ core::AppState VoxEdit::onInit() {
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_meshPool->init();
@@ -255,7 +255,7 @@ core::AppState VoxEdit::onInit() {
 	_mainWindow = new voxedit::VoxEditWindow(this);
 	if (!_mainWindow->init()) {
 		Log::error("Failed to initialize the main window");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	newFile(true);

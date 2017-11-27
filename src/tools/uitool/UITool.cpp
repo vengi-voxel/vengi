@@ -21,19 +21,19 @@ core::AppState UITool::onInit() {
 	if (_argc != 2) {
 		_exitCode = 1;
 		Log::error("Usage: %s <inputfile>", _argv[0]);
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!tb::tb_core_init(&_renderer)) {
 		Log::error("failed to initialize the ui");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	if (!tb::g_tb_lng->Load("ui/lang/en.tb.txt")) {
 		Log::warn("could not load the translation");
 	}
 	if (!tb::g_tb_skin->Load("../shared/ui/skin/skin.tb.txt", nullptr)) {
 		Log::error("could not load the skin from shared dir");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	tb::TBWidgetsAnimationManager::Init();
 	ui::initFonts();

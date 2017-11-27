@@ -62,21 +62,21 @@ core::AppState WorldRendererTool::onInit() {
 	video::enableDebug(video::DebugSeverity::High);
 
 	if (!_axis.init()) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!_world->init(filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_world->setSeed(1);
 	if (!_worldRenderer.init(glm::ivec2(0), _dimension)) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	_camera.init(glm::ivec2(0), dimension());
 	_camera.setFieldOfView(45.0f);
@@ -91,12 +91,12 @@ core::AppState WorldRendererTool::onInit() {
 	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
 	if (!mesh) {
 		Log::error("Failed to load the mesh '%s'", meshName);
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	_entity = std::make_shared<frontend::ClientEntity>(1, network::EntityType::NONE, _camera.position(), 0.0f, mesh);
 	if (!_worldRenderer.addEntity(_entity)) {
 		Log::error("Failed to create entity");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	glm::vec3 targetPos = _camera.position();

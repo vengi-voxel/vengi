@@ -63,26 +63,26 @@ core::AppState ShapeTool::onInit() {
 	video::enableDebug(video::DebugSeverity::High);
 
 	if (!_axis.init()) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!_biomeManager.init(filesystem()->load("biomes.lua"))) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	if (!_ctx.load(filesystem()->load("worldparams.lua"))) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	_volumeData = new voxel::PagedVolume(&_pager);
 	_pager.init(_volumeData, &_biomeManager, &_ctx);
 
 	const voxel::Region region(0, 0, 0, 255, 127, 255);
 	if (!_octreeRenderer.init(_volumeData, region, 32)) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	_camera.init(glm::ivec2(0), dimension());
 	_camera.setFieldOfView(45.0f);
@@ -96,7 +96,7 @@ core::AppState ShapeTool::onInit() {
 	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
 	if (!mesh) {
 		Log::error("Failed to load the mesh '%s'", meshName);
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 	_entity = std::make_shared<frontend::ClientEntity>(1, network::EntityType::NONE, _camera.position(), 0.0f, mesh);
 

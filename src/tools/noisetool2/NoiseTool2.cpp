@@ -46,7 +46,7 @@ core::AppState NoiseTool2::onInit() {
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_camera.setFarPlane(4000.0f);

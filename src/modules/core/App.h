@@ -26,6 +26,7 @@ namespace core {
 enum class AppState : uint8_t {
 	Construct,
 	Init,
+	InitFailure,
 	Running,
 	Cleanup,
 	Destroy,

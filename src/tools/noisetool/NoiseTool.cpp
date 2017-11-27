@@ -43,7 +43,7 @@ core::AppState NoiseTool::onInit() {
 
 	_window = new NoiseToolWindow(this);
 	if (!_window->init()) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	return state;

@@ -132,7 +132,7 @@ core::AppState Client::onInit() {
 	video::enableDebug(video::DebugSeverity::Medium);
 
 	if (!_network->init()) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	_camera.init(glm::ivec2(0), dimension());
@@ -144,15 +144,15 @@ core::AppState Client::onInit() {
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!_world->init(filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	if (!_worldRenderer.init(glm::ivec2(0), _dimension)) {
-		return core::AppState::Cleanup;
+		return core::AppState::InitFailure;
 	}
 
 	RestClient::init();

@@ -92,6 +92,12 @@ void App::onFrame() {
 			_nextFrame = systemMillis();
 			break;
 		}
+		case AppState::InitFailure: {
+			core_trace_scoped(AppOnCleanup);
+			_exitCode = 1;
+			_nextState = onCleanup();
+			break;
+		}
 		case AppState::Running: {
 			{
 				core_trace_scoped(AppOnRunning);
