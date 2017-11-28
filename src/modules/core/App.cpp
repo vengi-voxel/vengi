@@ -283,6 +283,23 @@ AppState App::onConstruct() {
 		Log::warn("%s", args[0].c_str());
 	}).setHelp("Log given message as warn");
 
+	core::Command::registerCommand("log", [&] (const core::CmdArgs& args) {
+		if (args.size() < 2) {
+			return;
+		}
+		const std::string& id = args[0];
+		if (id.size() != 4) {
+			Log::error("The id must be 4 characters");
+			return;
+		}
+		const Log::Level level = Log::toLogLevel(args[1]);
+		if (level == Log::Level::None) {
+			Log::disable(FourCC(id[0], id[1], id[2], id[3]));
+		} else {
+			Log::enable(FourCC(id[0], id[1], id[2], id[3]), level);
+		}
+	}).setHelp("Change the log level on an id base (FourCC)");
+
 	core::Command::registerCommand("cvarlist", [] (const core::CmdArgs& args) {
 		core::Var::visitSorted([&] (const core::VarPtr& var) {
 			if (!args.empty() && !core::string::matches(args[0], var->name())) {
@@ -392,6 +409,11 @@ AppState App::onInit() {
 	core::Var::visit([&] (const core::VarPtr& var) {
 		var->markClean();
 	});
+	const std::string& autoexecCommands = filesystem()->load("autoexec.cfg");
+	if (!autoexecCommands.empty()) {
+		Command::execute(autoexecCommands);
+	}
+
 	// we might have changed the loglevel from the commandline
 	Log::init();
 	_logLevelVar = core::Var::getSafe(cfg::CoreLogLevel);

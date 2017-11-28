@@ -146,7 +146,7 @@ State DBHandler::execInternal(const std::string& query) const {
 	if (!s.exec(query.c_str())) {
 		Log::warn("Failed to execute query: '%s'", query.c_str());
 	} else {
-		Log::debug("Executed query: '%s'", query.c_str());
+		Log::debug(fourcc, "Executed query: '%s'", query.c_str());
 	}
 	return s;
 }
@@ -161,10 +161,10 @@ State DBHandler::execInternalWithParameters(const std::string& query, Model& mod
 	if (!s.exec(query.c_str(), param.position, &param.values[0])) {
 		Log::warn("Failed to execute query: '%s'", query.c_str());
 	} else {
-		Log::debug("Executed query: '%s'", query.c_str());
+		Log::debug(fourcc, "Executed query: '%s'", query.c_str());
 	}
 	if (s.affectedRows <= 0) {
-		Log::trace("No rows affected, can't fill model values");
+		Log::trace(fourcc, "No rows affected, can't fill model values");
 		return s;
 	}
 	model.fillModelValues(s);
