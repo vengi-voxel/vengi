@@ -41,36 +41,6 @@ bool Model::isPrimaryKey(const std::string& fieldname) const {
 	return (i->contraintMask & std::enum_value(ConstraintType::PRIMARYKEY)) != 0;
 }
 
-bool Model::exec(const char* query) {
-	Log::debug("%s", query);
-	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
-	if (!scoped) {
-		Log::error("Could not execute query '%s' - could not acquire connection", query);
-		return false;
-	}
-	State s(scoped.connection());
-	s.exec(query);
-	if (s.affectedRows > 1) {
-		Log::debug("More than one row affected, can't fill model values");
-		return s.result;
-	} else if (s.affectedRows <= 0) {
-		Log::trace("No rows affected, can't fill model values");
-		return s.result;
-	}
-	return fillModelValues(s);
-}
-
-bool Model::exec(const char* query) const {
-	Log::debug("%s", query);
-	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
-	if (!scoped) {
-		Log::error("Could not execute query '%s' - could not acquire connection", query);
-		return false;
-	}
-	State s(scoped.connection());
-	return s.exec(query);
-}
-
 const Field& Model::getField(const std::string& name) const {
 	for (auto i = _fields->begin(); i != _fields->end(); ++i) {
 		const Field& field = *i;

@@ -115,21 +115,7 @@ public:
 
 	void setIsNull(const Field& f, bool isNull);
 	bool isNull(const Field& f) const;
-
-	bool exec(const std::string& query) const;
-	bool exec(const std::string& query);
-
-	bool exec(const char* query) const;
-	bool exec(const char* query);
 };
-
-inline bool Model::exec(const std::string& query) const {
-	return exec(query.c_str());
-}
-
-inline bool Model::exec(const std::string& query) {
-	return exec(query.c_str());
-}
 
 inline const std::string& Model::tableName() const {
 	return _tableName;
