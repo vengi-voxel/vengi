@@ -45,7 +45,11 @@ void ConnectionPool::shutdown() {
 		Connection* c = _connections.front();
 		c->disconnect();
 		_connections.pop();
+		--_connectionAmount;
 		delete c;
+	}
+	if (_connectionAmount != 0) {
+		Log::warn("Connections out of sync: %i", _connectionAmount);
 	}
 	_connectionAmount = 0;
 
