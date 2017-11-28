@@ -75,7 +75,7 @@ private:
 	}
 
 	bool _initialized = false;
-	bool _useForeignKeys;
+	const bool _useForeignKeys;
 
 public:
 	DBHandler(bool useForeignKeys = true);
