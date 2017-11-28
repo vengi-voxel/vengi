@@ -52,7 +52,7 @@ public:
 	 * @param]in] callback A @c CooldownCallback that is called with the @c CallbackType parameter whenever the
 	 * cooldown switches to a new state.
 	 */
-	CooldownTriggerState triggerCooldown(Type type, CooldownCallback callback = CooldownCallback());
+	virtual CooldownTriggerState triggerCooldown(Type type, CooldownCallback callback = CooldownCallback());
 
 	/**
 	 * @brief Reset a cooldown and restart it

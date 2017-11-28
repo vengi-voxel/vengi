@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <cassert>
 #include <cstdio>
+#include <cinttypes>
 
 /**
  * @brief Logging macro to provide your own loggers
@@ -130,6 +131,7 @@ namespace ai {
  * @sa NOTHING_SELECTED
  */
 typedef int CharacterId;
+#define PRIChrId PRId32
 
 /**
  * @brief ICharacter attributes for the remote \ref debugger

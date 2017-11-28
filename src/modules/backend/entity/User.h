@@ -31,7 +31,6 @@ private:
 	uint64_t _time = 0u;
 	core::VarPtr _userTimeout;
 	flatbuffers::FlatBufferBuilder _entityUpdateFBB;
-	mutable flatbuffers::FlatBufferBuilder _cooldownFBB;
 
 	UserStockMgr _stockMgr;
 	core::TimeProviderPtr _timeProvider;
@@ -42,9 +41,6 @@ private:
 	bool isMove(network::MoveDirection dir) const;
 	void addMove(network::MoveDirection dir);
 	void removeMove(network::MoveDirection dir);
-
-	void onCooldownExpired(cooldown::Type type);
-	void triggerCooldown(cooldown::Type type);
 
 public:
 	User(ENetPeer* peer,
@@ -94,7 +90,6 @@ public:
 	 */
 	void sendUserSpawn() const;
 	void sendSeed(long seed) const;
-	void sendCooldown(cooldown::Type type, bool started) const;
 };
 
 inline bool User::isMove(network::MoveDirection dir) const {
