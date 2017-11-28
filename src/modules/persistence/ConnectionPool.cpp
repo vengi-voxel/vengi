@@ -21,7 +21,10 @@ int ConnectionPool::init() {
 	_min = core::Var::getSafe(cfg::DatabaseMinConnections)->intVal();
 	_max = core::Var::getSafe(cfg::DatabaseMaxConnections)->intVal();
 
-	core_assert_always(_min <= _max);
+	if (_min <= _max) {
+		Log::error("The min connection amount must be smaller or equal to the max connection amount");
+		return false;
+	}
 
 	_dbName = core::Var::getSafe(cfg::DatabaseName);
 	_dbHost = core::Var::getSafe(cfg::DatabaseHost);
