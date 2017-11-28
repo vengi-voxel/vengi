@@ -39,7 +39,6 @@ protected:
 	friend class PreparedStatement;
 	std::string _schema;
 	std::string _tableName;
-	std::string _fullTableName;
 	int _primaryKeys = 0;
 	long _autoIncrementStart = 1l;
 	uint8_t* _membersPointer;
@@ -56,29 +55,54 @@ public:
 
 	const std::string& tableName() const;
 
-	const std::string& fullTableName() const;
-
+	/**
+	 * @return The schema name the model is located in
+	 */
 	const std::string& schema() const;
 
+	/**
+	 * @return Collection of all @c Field instances that define this model
+	 */
 	const Fields& fields() const;
 
+	/**
+	 * @return Collection of all @c Constraint instances
+	 */
 	const Constraints& constraints() const;
 
+	/**
+	 * @return Collection of all unique keys. Defines by the set of names of the participating @c Field instances
+	 */
 	const UniqueKeys& uniqueKeys() const;
 
+	/**
+	 * @return Collection of foreign keys.
+	 */
 	const ForeignKeys& foreignKeys() const;
 
+	/**
+	 * @return The value to start the model auto increment sequence with. This is 1 by default if not specified otherwise.
+	 */
 	long autoIncrementStart() const;
 
+	/**
+	 * @return The number of primary keys that this model contains
+	 */
 	int primaryKeys() const;
-
-	bool isPrimaryKey(const std::string& fieldname) const;
 
 	/**
 	 * @return @c true if the field was set to a valid value (which might also be null)
 	 */
 	bool isValid(const Field& f) const;
+	/**
+	 * @see isValid()
+	 * @see setValid()
+	 */
 	void reset(const Field& f);
+	/**
+	 * @see isValid()
+	 * @see reset()
+	 */
 	void setValid(const Field& f, bool valid);
 
 	template<class T>
@@ -99,6 +123,9 @@ public:
 		return targetValue;
 	}
 
+	/**
+	 * @brief Set the @c Field value to null (if supported)
+	 */
 	void setValue(const Field& f, nullptr_t np);
 	void setValue(const Field& f, const std::string& value);
 	void setValue(const Field& f, const Timestamp& value);
@@ -111,18 +138,25 @@ public:
 		*targetValue = value;
 	}
 
+	/**
+	 * @return @c Field instance for the given colume name
+	 */
 	const Field& getField(const std::string& name) const;
 
+	/**
+	 * @brief Indicate that the value of the field should be written as null to the database
+	 * @note This only works if the @c Field instance can be set to null. If the @c Field is defined
+	 * as non-null. This is just a nop.
+	 */
 	void setIsNull(const Field& f, bool isNull);
+	/**
+	 * @return @c true if the given @c Field is currently set to null. @c false if not, or can't be null at all.
+	 */
 	bool isNull(const Field& f) const;
 };
 
 inline const std::string& Model::tableName() const {
 	return _tableName;
-}
-
-inline const std::string& Model::fullTableName() const {
-	return _fullTableName;
 }
 
 inline const std::string& Model::schema() const {

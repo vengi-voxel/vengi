@@ -24,21 +24,9 @@ Model::Model(const std::string& schema, const std::string& tableName, const Fiel
 		_schema(schema), _tableName(tableName), _fields(fields), _constraints(constraints),
 		_uniqueKeys(uniqueKeys), _foreignKeys(foreignKeys) {
 	_membersPointer = (uint8_t*)this;
-	_fullTableName = _schema + "." + _tableName;
 }
 
 Model::~Model() {
-}
-
-bool Model::isPrimaryKey(const std::string& fieldname) const {
-	auto i = std::find_if(_fields->begin(), _fields->end(),
-			[&fieldname](const Field& f) {return f.name == fieldname;}
-	);
-	if (i == _fields->end()) {
-		return false;
-	}
-
-	return (i->contraintMask & std::enum_value(ConstraintType::PRIMARYKEY)) != 0;
 }
 
 const Field& Model::getField(const std::string& name) const {
