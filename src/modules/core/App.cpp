@@ -295,10 +295,39 @@ AppState App::onConstruct() {
 		const Log::Level level = Log::toLogLevel(args[1]);
 		if (level == Log::Level::None) {
 			Log::disable(FourCC(id[0], id[1], id[2], id[3]));
+			Log::info("Disabling logging for %s", args[0].c_str());
 		} else {
 			Log::enable(FourCC(id[0], id[1], id[2], id[3]), level);
+			Log::info("Set log level for %s to %s", args[0].c_str(), args[1].c_str());
 		}
-	}).setHelp("Change the log level on an id base (FourCC)");
+	}).setHelp("Change the log level on an id base (FourCC)").setArgumentCompleter([] (const std::string& str, std::vector<std::string>& matches) -> int {
+		if (str[0] == 't') {
+			matches.push_back("trace");
+			return 1;
+		}
+		if (str[0] == 'd') {
+			matches.push_back("debug");
+			return 1;
+		}
+		if (str[0] == 'i') {
+			matches.push_back("info");
+			return 1;
+		}
+		if (str[0] == 'w') {
+			matches.push_back("warn");
+			return 1;
+		}
+		if (str[0] == 'e') {
+			matches.push_back("error");
+			return 1;
+		}
+		matches.push_back("trace");
+		matches.push_back("debug");
+		matches.push_back("info");
+		matches.push_back("warn");
+		matches.push_back("error");
+		return 5;
+	});
 
 	core::Command::registerCommand("cvarlist", [] (const core::CmdArgs& args) {
 		core::Var::visitSorted([&] (const core::VarPtr& var) {

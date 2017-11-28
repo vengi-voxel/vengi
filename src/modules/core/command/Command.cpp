@@ -4,6 +4,7 @@
 
 #include "Command.h"
 #include "core/Tokenizer.h"
+#include "core/Log.h"
 
 namespace core {
 
