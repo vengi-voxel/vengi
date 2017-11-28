@@ -52,12 +52,12 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, cons
 	const UserPtr& user = _entityStorage->user(model.id());
 	if (user) {
 		if (user->peer()->address.host == peer->address.host) {
-			Log::info("user %i reconnects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
+			Log::debug("user %i reconnects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
 			user->setPeer(peer);
 			user->reconnect();
 			return user;
 		}
-		Log::info("skip connection attempt for client %i - the hosts don't match", (int) model.id());
+		Log::debug("skip connection attempt for client %i - the hosts don't match", (int) model.id());
 		return UserPtr();
 	}
 	static const std::string name = "NONAME";
