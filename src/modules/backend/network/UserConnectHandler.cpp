@@ -86,7 +86,7 @@ void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 		sendAuthFailed(peer);
 		return;
 	}
-	Log::info("User %s tries to log into the gameserver", email.c_str());
+	Log::debug("User %s tries to log into the gameserver", email.c_str());
 
 	const UserPtr& user = login(peer, email, password);
 	if (!user) {
@@ -94,7 +94,6 @@ void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 		return;
 	}
 
-	Log::info("User '%s' logged into the gameserver", email.c_str());
 	const long seed = core::Var::getSafe(cfg::ServerSeed)->longVal();
 	user->sendSeed(seed);
 	user->sendUserSpawn();
