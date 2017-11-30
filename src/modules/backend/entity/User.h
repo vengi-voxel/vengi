@@ -17,19 +17,16 @@
 
 namespace backend {
 
-/**
- * @todo move everything into dedicated components
- */
 class User : public Entity {
 private:
 	using Super = Entity;
 	std::string _name;
 	std::string _email;
 	persistence::DBHandlerPtr _dbHandler;
-
-	UserStockMgr _stockMgr;
 	core::TimeProviderPtr _timeProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
+
+	UserStockMgr _stockMgr;
 	UserCooldownMgr _cooldownMgr;
 	UserAttribMgr _attribMgr;
 	UserLogoutMgr _logoutMgr;
