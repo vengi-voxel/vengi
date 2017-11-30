@@ -256,7 +256,7 @@ void ServerLoop::onEvent(const network::DisconnectEvent& event) {
 	if (user == nullptr) {
 		return;
 	}
-	user->triggerLogout();
+	user->logoutMgr().triggerLogout();
 }
 
 }

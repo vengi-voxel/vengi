@@ -10,6 +10,8 @@
 #include "user/UserAttribMgr.h"
 #include "user/UserStockMgr.h"
 #include "user/UserCooldownMgr.h"
+#include "user/UserLogoutMgr.h"
+#include "user/UserMovementMgr.h"
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
 
@@ -24,23 +26,17 @@ private:
 	std::string _name;
 	std::string _email;
 	persistence::DBHandlerPtr _dbHandler;
-	network::MoveDirection _moveMask = network::MoveDirection::NONE;
-	float _yaw = 0.0f;
-	bool _disconnect = false;
 	uint64_t _lastAction = 0u;
 	uint64_t _time = 0u;
 	core::VarPtr _userTimeout;
-	flatbuffers::FlatBufferBuilder _entityUpdateFBB;
 
 	UserStockMgr _stockMgr;
 	core::TimeProviderPtr _timeProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	UserCooldownMgr _cooldownMgr;
 	UserAttribMgr _attribMgr;
-
-	bool isMove(network::MoveDirection dir) const;
-	void addMove(network::MoveDirection dir);
-	void removeMove(network::MoveDirection dir);
+	UserLogoutMgr _logoutMgr;
+	UserMovementMgr _movementMgr;
 
 public:
 	User(ENetPeer* peer,
@@ -57,51 +53,54 @@ public:
 
 	void setEntityId(EntityId id);
 
+	const std::string& email() const;
 	void setEmail(const std::string& mail);
 
 	const std::string& name() const;
 
-	const std::string& email() const;
-
-	void changeMovement(network::MoveDirection bitmask, float pitch, float yaw);
-
 	void updateLastActionTime();
-
-	/**
-	 * @brief The client wants to disconnect - the user object itself will stay in the server until
-	 * a logout cooldown was hit
-	 */
-	void triggerLogout();
 
 	void reconnect();
 
-	void init() override;
 	bool update(long dt) override;
+
+	void init() override;
+	void shutdown();
 
 	/**
 	 * @brief Sets a new ENetPeer and returns the old one.
 	 */
 	ENetPeer* setPeer(ENetPeer* peer);
 
-	void shutdown();
+	void sendMessage(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type, flatbuffers::Offset<void> msg) const;
 
 	/**
 	 * @brief Informs the user that the login was successful
 	 */
 	void sendUserSpawn() const;
 	void sendSeed(long seed) const;
+
+	UserLogoutMgr& logoutMgr();
+	const UserLogoutMgr& logoutMgr() const;
+
+	UserMovementMgr& movementMgr();
+	const UserMovementMgr& movementMgr() const;
 };
 
-inline bool User::isMove(network::MoveDirection dir) const {
-	return (_moveMask & dir) != network::MoveDirection::NONE;
+inline UserLogoutMgr& User::logoutMgr() {
+	return _logoutMgr;
 }
 
-inline void User::addMove(network::MoveDirection dir) {
-	_moveMask |= dir;
+inline const UserLogoutMgr& User::logoutMgr() const {
+	return _logoutMgr;
 }
 
-inline void User::removeMove(network::MoveDirection dir) {
-	_moveMask &= ~dir;
+inline UserMovementMgr& User::movementMgr() {
+	return _movementMgr;
+}
+
+inline const UserMovementMgr& User::movementMgr() const {
+	return _movementMgr;
 }
 
 inline void User::setEntityId(EntityId id) {
@@ -118,12 +117,6 @@ inline const std::string& User::name() const {
 
 inline const std::string& User::email() const {
 	return _email;
-}
-
-inline void User::changeMovement(network::MoveDirection bitmask, float pitch, float yaw) {
-	_moveMask = bitmask;
-	_orientation = pitch;
-	_yaw = yaw;
 }
 
 typedef std::shared_ptr<User> UserPtr;

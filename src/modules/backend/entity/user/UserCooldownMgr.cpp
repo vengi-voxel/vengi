@@ -14,9 +14,8 @@ namespace backend {
 UserCooldownMgr::UserCooldownMgr(User* user,
 		const core::TimeProviderPtr& timeProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
-		const persistence::DBHandlerPtr& dbHandler,
-		const network::ServerMessageSenderPtr& messageSender) :
-		Super(timeProvider, cooldownProvider), _dbHandler(dbHandler), _messageSender(messageSender), _user(user) {
+		const persistence::DBHandlerPtr& dbHandler) :
+		Super(timeProvider, cooldownProvider), _dbHandler(dbHandler), _user(user) {
 }
 
 void UserCooldownMgr::init() {
@@ -45,18 +44,9 @@ void UserCooldownMgr::shutdown() {
 	}
 }
 
-void UserCooldownMgr::onCooldownExpired(cooldown::Type type) {
-	if (type == cooldown::Type::LOGOUT) {
-		_user->_disconnect = true;
-	}
-}
-
 cooldown::CooldownTriggerState UserCooldownMgr::triggerCooldown(cooldown::Type type, cooldown::CooldownCallback callback) {
 	return Super::triggerCooldown(type, [this, type, callback] (cooldown::CallbackType callbackType) {
 		callback(callbackType);
-		if (callbackType == cooldown::CallbackType::Expired) {
-			onCooldownExpired(type);
-		}
 		sendCooldown(type, callbackType == cooldown::CallbackType::Started);
 	});
 }
@@ -73,7 +63,7 @@ void UserCooldownMgr::sendCooldown(cooldown::Type type, bool started) const {
 		msg = network::CreateStopCooldown(_cooldownFBB, type).Union();
 		msgtype = network::ServerMsgType::StopCooldown;
 	}
-	_messageSender->sendServerMessage(_user->peer(), _cooldownFBB, msgtype, msg);
+	_user->sendMessage(_cooldownFBB, msgtype, msg);
 }
 
 

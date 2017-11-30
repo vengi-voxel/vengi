@@ -44,6 +44,8 @@ set(SRCS
 	entity/user/UserAttribMgr.h entity/user/UserAttribMgr.cpp
 	entity/user/UserStockMgr.h entity/user/UserStockMgr.cpp
 	entity/user/UserCooldownMgr.h entity/user/UserCooldownMgr.cpp
+	entity/user/UserLogoutMgr.h entity/user/UserLogoutMgr.cpp
+	entity/user/UserMovementMgr.h entity/user/UserMovementMgr.cpp
 
 	entity/Npc.cpp entity/Npc.h
 	entity/User.cpp entity/User.h

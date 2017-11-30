@@ -10,7 +10,7 @@
 namespace backend {
 
 USERPROTOHANDLERIMPL(Move) {
-	user->changeMovement(message->direction(), message->pitch(), message->yaw());
+	user->movementMgr().changeMovement(message->direction(), message->pitch(), message->yaw());
 }
 
 }
