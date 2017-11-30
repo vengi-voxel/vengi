@@ -4,6 +4,7 @@
 
 #include "UserLogoutMgr.h"
 #include "UserCooldownMgr.h"
+#include "core/GameConfig.h"
 
 namespace backend {
 
@@ -19,10 +20,20 @@ void UserLogoutMgr::triggerLogout() {
 	});
 }
 
+void UserLogoutMgr::updateLastActionTime() {
+	_lastAction = _time;
+}
+
 void UserLogoutMgr::update(long dt) {
+	_time += dt;
+
+	if (_time - _lastAction > _userTimeout->ulongVal()) {
+		triggerLogout();
+	}
 }
 
 bool UserLogoutMgr::init() {
+	_userTimeout = core::Var::getSafe(cfg::ServerUserTimeout);
 	return true;
 }
 

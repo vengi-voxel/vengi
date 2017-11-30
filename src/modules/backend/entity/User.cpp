@@ -3,7 +3,6 @@
  */
 
 #include "User.h"
-#include "core/Var.h"
 #include "attrib/Attributes.h"
 #include "backend/world/Map.h"
 #include "network/ServerMessageSender.h"
@@ -31,7 +30,6 @@ User::User(ENetPeer* peer, EntityId id,
 		_movementMgr(this) {
 	setPeer(peer);
 	_entityType = network::EntityType::PLAYER;
-	_userTimeout = core::Var::getSafe(cfg::ServerUserTimeout);
 }
 
 User::~User() {
@@ -64,10 +62,6 @@ ENetPeer* User::setPeer(ENetPeer* peer) {
 	return old;
 }
 
-void User::updateLastActionTime() {
-	_lastAction = _time;
-}
-
 void User::reconnect() {
 	Log::trace("reconnect user");
 	_attribs.markAsDirty();
@@ -80,13 +74,8 @@ bool User::update(long dt) {
 	if (_logoutMgr.isDisconnect()) {
 		return false;
 	}
-	_time += dt;
 	if (!Super::update(dt)) {
 		return false;
-	}
-
-	if (_time - _lastAction > _userTimeout->ulongVal()) {
-		_logoutMgr.triggerLogout();
 	}
 
 	_stockMgr.update(dt);

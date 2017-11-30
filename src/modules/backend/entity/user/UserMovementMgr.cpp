@@ -51,7 +51,7 @@ void UserMovementMgr::update(long dt) {
 			network::ServerMsgType::EntityUpdate,
 			network::CreateEntityUpdate(_entityUpdateFBB, _user->id(), &netPos, orientation).Union(), true);
 
-	_user->updateLastActionTime();
+	_user->logoutMgr().updateLastActionTime();
 }
 
 bool UserMovementMgr::init() {

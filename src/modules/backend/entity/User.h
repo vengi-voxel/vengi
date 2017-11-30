@@ -26,9 +26,6 @@ private:
 	std::string _name;
 	std::string _email;
 	persistence::DBHandlerPtr _dbHandler;
-	uint64_t _lastAction = 0u;
-	uint64_t _time = 0u;
-	core::VarPtr _userTimeout;
 
 	UserStockMgr _stockMgr;
 	core::TimeProviderPtr _timeProvider;
@@ -57,8 +54,6 @@ public:
 	void setEmail(const std::string& mail);
 
 	const std::string& name() const;
-
-	void updateLastActionTime();
 
 	void reconnect();
 

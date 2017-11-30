@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "core/Var.h"
+
 namespace backend {
 
 class UserCooldownMgr;
@@ -12,6 +14,10 @@ class UserLogoutMgr {
 private:
 	UserCooldownMgr& _cooldownMgr;
 	bool _disconnect = false;
+	uint64_t _lastAction = 0u;
+	uint64_t _time = 0u;
+	core::VarPtr _userTimeout;
+
 public:
 	UserLogoutMgr(UserCooldownMgr& cooldownMgr);
 
@@ -21,6 +27,7 @@ public:
 	 */
 	void triggerLogout();
 	bool isDisconnect() const;
+	void updateLastActionTime();
 
 	void update(long dt);
 	bool init();

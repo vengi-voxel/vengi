@@ -10,7 +10,7 @@
 namespace backend {
 
 USERPROTOHANDLERIMPL(Attack) {
-	user->updateLastActionTime();
+	user->logoutMgr().updateLastActionTime();
 	user->attack(message->targetId());
 }
 
