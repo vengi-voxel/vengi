@@ -7,6 +7,7 @@
 #include "backend/ForwardDecl.h"
 #include "network/Network.h"
 #include "core/TimeProvider.h"
+#include "core/Log.h"
 #include "ai/common/Types.h"
 
 #include <flatbuffers/flatbuffers.h>
@@ -15,6 +16,7 @@ namespace backend {
 
 class UserConnectHandler: public network::IProtocolHandler {
 private:
+	static constexpr auto logid = Log::logid("UserConnectHandler");
 	network::NetworkPtr _network;
 	MapProviderPtr _mapProvider;
 	persistence::DBHandlerPtr _dbHandler;

@@ -26,7 +26,6 @@ set(SRCS
 	MD5.cpp MD5.h
 	PoolAllocator.h
 	MemGuard.cpp MemGuard.h
-	MurmurHash3.cpp MurmurHash3.h
 	NonCopyable.h
 	Octree.h Octree.cpp
 	Password.h
@@ -71,6 +70,7 @@ set(TEST_SRCS
 	tests/CommandTest.cpp
 	tests/CommandHandlerTest.cpp
 	tests/MD5Test.cpp
+	tests/LogTest.cpp
 	tests/SetTest.cpp
 	tests/TokenizerTest.cpp
 	tests/FrustumTest.cpp

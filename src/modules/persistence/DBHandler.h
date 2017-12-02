@@ -32,7 +32,7 @@ namespace persistence {
  */
 class DBHandler {
 private:
-	static constexpr uint32_t fourcc = FourCC('D','B','H','A');
+	static constexpr auto logid = Log::logid("DBHandler");
 	State execInternal(const std::string& query) const;
 	State execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const;
 
@@ -43,7 +43,7 @@ private:
 
 	template<class FUNC, class MODEL>
 	bool select(const std::string& query, int conditionAmount, MODEL& model, const DBCondition& condition, FUNC&& func) const {
-		Log::debug(fourcc, "Execute query '%s'", query.c_str());
+		Log::debug(logid, "Execute query '%s'", query.c_str());
 		ScopedConnection scoped(connection());
 		if (!scoped) {
 			Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
@@ -55,7 +55,7 @@ private:
 			for (int i = 0; i < conditionAmount; ++i) {
 				const int index = params.add();
 				const char* value = condition.value(i);
-				Log::debug(fourcc, "Parameter %i: '%s'", index + 1, value);
+				Log::debug(logid, "Parameter %i: '%s'", index + 1, value);
 				params.values[index] = value;
 			}
 			if (!s.exec(query.c_str(), conditionAmount, &params.values[0])) {
@@ -72,7 +72,7 @@ private:
 			func(std::move(selectedModel));
 			++s.currentRow;
 		}
-		Log::debug(fourcc, "Affected rows %i", s.affectedRows);
+		Log::debug(logid, "Affected rows %i", s.affectedRows);
 		return true;
 	}
 
@@ -107,7 +107,7 @@ public:
 		int conditionAmount = params.position;
 		const std::string& where = createWhere(condition, conditionAmount);
 		const std::string& query = stmt + where;
-		Log::debug(fourcc, "Execute query '%s'", query.c_str());
+		Log::debug(logid, "Execute query '%s'", query.c_str());
 		ScopedConnection scoped(connection());
 		if (!scoped) {
 			Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
@@ -118,7 +118,7 @@ public:
 			for (int i = 0; i < conditionAmount; ++i) {
 				const int index = params.add();
 				const char* value = condition.value(i);
-				Log::debug(fourcc, "Parameter %i: '%s'", index + 1, value);
+				Log::debug(logid, "Parameter %i: '%s'", index + 1, value);
 				params.values[index] = value;
 			}
 			if (!s.exec(query.c_str(), conditionAmount, &params.values[0])) {
@@ -130,10 +130,10 @@ public:
 			return false;
 		}
 		if (s.affectedRows <= 0) {
-			Log::trace(fourcc, "No rows affected, can't fill model values");
+			Log::trace(logid, "No rows affected, can't fill model values");
 			return true;
 		}
-		Log::debug(fourcc, "Affected rows %i", s.affectedRows);
+		Log::debug(logid, "Affected rows %i", s.affectedRows);
 		return true;
 	}
 

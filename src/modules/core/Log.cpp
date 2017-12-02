@@ -7,6 +7,7 @@
 #include "engine-config.h"
 #include "App.h"
 #include "Common.h"
+#include "Array.h"
 #include <cstring>
 #include <cstdio>
 #include <unordered_map>
@@ -250,12 +251,14 @@ void Log::error(const char* msg, ...) {
 }
 
 void Log::trace(uint32_t id, const char* msg, ...) {
-	auto i = _logActive.find(id);
-	if (i == _logActive.end()) {
-		return;
-	}
-	if (i->second > SDL_LOG_PRIORITY_VERBOSE) {
-		return;
+	if (_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
+		auto i = _logActive.find(id);
+		if (i == _logActive.end()) {
+			return;
+		}
+		if (i->second > SDL_LOG_PRIORITY_VERBOSE) {
+			return;
+		}
 	}
 	va_list args;
 	va_start(args, msg);
@@ -263,12 +266,14 @@ void Log::trace(uint32_t id, const char* msg, ...) {
 }
 
 void Log::debug(uint32_t id, const char* msg, ...) {
-	auto i = _logActive.find(id);
-	if (i == _logActive.end()) {
-		return;
-	}
-	if (i->second > SDL_LOG_PRIORITY_DEBUG) {
-		return;
+	if (_logLevel > SDL_LOG_PRIORITY_DEBUG) {
+		auto i = _logActive.find(id);
+		if (i == _logActive.end()) {
+			return;
+		}
+		if (i->second > SDL_LOG_PRIORITY_DEBUG) {
+			return;
+		}
 	}
 	va_list args;
 	va_start(args, msg);
@@ -276,12 +281,14 @@ void Log::debug(uint32_t id, const char* msg, ...) {
 }
 
 void Log::info(uint32_t id, const char* msg, ...) {
-	auto i = _logActive.find(id);
-	if (i == _logActive.end()) {
-		return;
-	}
-	if (i->second > SDL_LOG_PRIORITY_INFO) {
-		return;
+	if (_logLevel > SDL_LOG_PRIORITY_INFO) {
+		auto i = _logActive.find(id);
+		if (i == _logActive.end()) {
+			return;
+		}
+		if (i->second > SDL_LOG_PRIORITY_INFO) {
+			return;
+		}
 	}
 	va_list args;
 	va_start(args, msg);
@@ -289,12 +296,14 @@ void Log::info(uint32_t id, const char* msg, ...) {
 }
 
 void Log::warn(uint32_t id, const char* msg, ...) {
-	auto i = _logActive.find(id);
-	if (i == _logActive.end()) {
-		return;
-	}
-	if (i->second > SDL_LOG_PRIORITY_WARN) {
-		return;
+	if (_logLevel > SDL_LOG_PRIORITY_WARN) {
+		auto i = _logActive.find(id);
+		if (i == _logActive.end()) {
+			return;
+		}
+		if (i->second > SDL_LOG_PRIORITY_WARN) {
+			return;
+		}
 	}
 	va_list args;
 	va_start(args, msg);
@@ -302,12 +311,14 @@ void Log::warn(uint32_t id, const char* msg, ...) {
 }
 
 void Log::error(uint32_t id, const char* msg, ...) {
-	auto i = _logActive.find(id);
-	if (i == _logActive.end()) {
-		return;
-	}
-	if (i->second > SDL_LOG_PRIORITY_ERROR) {
-		return;
+	if (_logLevel > SDL_LOG_PRIORITY_ERROR) {
+		auto i = _logActive.find(id);
+		if (i == _logActive.end()) {
+			return;
+		}
+		if (i->second > SDL_LOG_PRIORITY_ERROR) {
+			return;
+		}
 	}
 	va_list args;
 	va_start(args, msg);

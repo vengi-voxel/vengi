@@ -294,10 +294,12 @@ AppState App::onConstruct() {
 		}
 		const Log::Level level = Log::toLogLevel(args[1]);
 		if (level == Log::Level::None) {
-			Log::disable(FourCC(id[0], id[1], id[2], id[3]));
+			const auto fourcc = Log::logid(id.c_str());
+			Log::disable(fourcc);
 			Log::info("Disabling logging for %s", args[0].c_str());
 		} else {
-			Log::enable(FourCC(id[0], id[1], id[2], id[3]), level);
+			const auto fourcc = Log::logid(id.c_str());
+			Log::enable(fourcc, level);
 			Log::info("Set log level for %s to %s", args[0].c_str(), args[1].c_str());
 		}
 	}).setHelp("Change the log level on an id base (FourCC)").setArgumentCompleter([] (const std::string& str, std::vector<std::string>& matches) -> int {

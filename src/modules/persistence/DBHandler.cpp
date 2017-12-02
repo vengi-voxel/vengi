@@ -20,7 +20,7 @@ DBHandler::~DBHandler() {
 
 bool DBHandler::init() {
 	if (core::Singleton<ConnectionPool>::getInstance().init() <= 0) {
-		Log::error("Failed to init the connection pool");
+		Log::error(logid, "Failed to init the connection pool");
 		return false;
 	}
 	_initialized = true;
@@ -125,7 +125,7 @@ bool DBHandler::insertMetadata(const Model& model) const {
 
 bool DBHandler::createTable(Model&& model) const {
 	if (!exec(createCreateTableStatement(model, _useForeignKeys))) {
-		Log::error("Failed to create table");
+		Log::error(logid, "Failed to create table");
 		return false;
 	}
 	insertMetadata(model);
@@ -139,14 +139,14 @@ bool DBHandler::exec(const std::string& query) const {
 State DBHandler::execInternal(const std::string& query) const {
 	ScopedConnection scoped(connection());
 	if (!scoped) {
-		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
+		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());
 		return State();
 	}
 	State s(scoped.connection());
 	if (!s.exec(query.c_str())) {
-		Log::warn("Failed to execute query: '%s'", query.c_str());
+		Log::warn(logid, "Failed to execute query: '%s'", query.c_str());
 	} else {
-		Log::debug(fourcc, "Executed query: '%s'", query.c_str());
+		Log::debug(logid, "Executed query: '%s'", query.c_str());
 	}
 	return s;
 }
@@ -154,17 +154,17 @@ State DBHandler::execInternal(const std::string& query) const {
 State DBHandler::execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const {
 	ScopedConnection scoped(connection());
 	if (!scoped) {
-		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
+		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());
 		return State();
 	}
 	State s(scoped.connection());
 	if (!s.exec(query.c_str(), param.position, &param.values[0])) {
-		Log::warn("Failed to execute query: '%s'", query.c_str());
+		Log::warn(logid, "Failed to execute query: '%s'", query.c_str());
 	} else {
-		Log::debug(fourcc, "Executed query: '%s'", query.c_str());
+		Log::debug(logid, "Executed query: '%s'", query.c_str());
 	}
 	if (s.affectedRows <= 0) {
-		Log::trace(fourcc, "No rows affected, can't fill model values");
+		Log::trace(logid, "No rows affected, can't fill model values");
 		return s;
 	}
 	model.fillModelValues(s);

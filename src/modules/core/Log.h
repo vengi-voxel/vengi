@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Hash.h"
+#include <cstring>
 #include <cstdio>
 #include <memory>
 #include <cinttypes>
@@ -49,6 +51,18 @@ public:
 
 	static bool enable(uint32_t id, Level level);
 	static bool disable(uint32_t id);
+
+	/**
+	 * @brief Get log id for given name
+	 */
+	template<int N>
+	static constexpr uint32_t logid(const char (&name)[N]) {
+		return core::hash(name);
+	}
+
+	static uint32_t logid(const char* name, int size) {
+		return core::hash(name, size);
+	}
 
 	static void trace(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));
 	static void debug(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));

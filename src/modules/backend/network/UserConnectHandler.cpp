@@ -43,7 +43,7 @@ void UserConnectHandler::sendAuthFailed(ENetPeer* peer) {
 UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, const std::string& passwd) {
 	db::UserModel model;
 	if (!_dbHandler->select(model, db::DBConditionUserModelEmail(email.c_str()))) {
-		Log::warn("Could not get user id for email: %s", email.c_str());
+		Log::warn(logid, "Could not get user id for email: %s", email.c_str());
 		return UserPtr();
 	}
 	if (passwd != core::pwhash(model.password())) {
@@ -52,17 +52,17 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, cons
 	const UserPtr& user = _entityStorage->user(model.id());
 	if (user) {
 		if (user->peer()->address.host == peer->address.host) {
-			Log::debug("user %i reconnects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
+			Log::debug(logid, "user %i reconnects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
 			user->setPeer(peer);
 			user->reconnect();
 			return user;
 		}
-		Log::debug("skip connection attempt for client %i - the hosts don't match", (int) model.id());
+		Log::debug(logid, "skip connection attempt for client %i - the hosts don't match", (int) model.id());
 		return UserPtr();
 	}
 	static const std::string name = "NONAME";
 	MapPtr map = _mapProvider->map(model.mapid(), true);
-	Log::info("user %i connects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
+	Log::info(logid, "user %i connects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
 	const UserPtr& u = std::make_shared<User>(peer, model.id(), model.name(), map, _messageSender, _timeProvider,
 			_containerProvider, _cooldownProvider, _dbHandler, _stockDataProvider);
 	u->init();
@@ -77,16 +77,16 @@ void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 	const std::string& email = message->email()->str();
 	if (!util::isValidEmail(email)) {
 		sendAuthFailed(peer);
-		Log::debug("Invalid email given: '%s', %c", email.c_str(), email[0]);
+		Log::debug(logid, "Invalid email given: '%s', %c", email.c_str(), email[0]);
 		return;
 	}
 	const std::string& password = message->password()->str();
 	if (password.empty()) {
-		Log::debug("User tries to log into the gameserver without providing a password");
+		Log::debug(logid, "User tries to log into the server without providing a password");
 		sendAuthFailed(peer);
 		return;
 	}
-	Log::debug("User %s tries to log into the gameserver", email.c_str());
+	Log::debug(logid, "User %s tries to log into the server", email.c_str());
 
 	const UserPtr& user = login(peer, email, password);
 	if (!user) {

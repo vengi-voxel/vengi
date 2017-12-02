@@ -313,11 +313,6 @@ update-simplexnoise:
 	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
 	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
 
-update-murmurhash3:
-	$(call UPDATE_GIT,smhasher,https://github.com/aappleby/smhasher.git)
-	cp $(UPDATEDIR)/smhasher.sync/src/MurmurHash3.* src/modules/core
-	sed -i 's/[ \t]*$$//g' src/modules/core/MurmurHash3.*
-
 update-stringview:
 	$(call UPDATE_GIT,string_view,https://github.com/satoren/string_view.git)
 	cp $(UPDATEDIR)/string_view.sync/string_view.hpp contrib/libs/string_view
