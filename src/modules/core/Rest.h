@@ -14,6 +14,8 @@ using Connection = ::RestClient::Connection;
 using Response = ::RestClient::Response;
 
 core::rest::Response post(const std::string& url, const core::json& json = {});
+core::rest::Response put(const std::string& url, const core::json& json = {});
+core::rest::Response get(const std::string& url);
 
 enum StatusCode {
 	OK = 200,
