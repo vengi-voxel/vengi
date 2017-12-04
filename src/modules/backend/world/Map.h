@@ -6,8 +6,8 @@
 
 #include "backend/ForwardDecl.h"
 #include "commonlua/LUA.h"
-#include "core/QuadTree.h"
-#include "core/Rect.h"
+#include "math/QuadTree.h"
+#include "math/Rect.h"
 #include "ai/common/Types.h"
 #include "backend/attack/AttackMgr.h"
 #include "MapId.h"

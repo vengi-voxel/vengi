@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/GLM.h"
-#include "core/Rect.h"
+#include "math/Rect.h"
 #include "core/ReadWriteLock.h"
 #include "attrib/Attributes.h"
 #include "backend/ForwardDecl.h"

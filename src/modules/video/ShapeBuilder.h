@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/Common.h"
-#include "core/AABB.h"
-#include "core/Plane.h"
+#include "math/AABB.h"
+#include "math/Plane.h"
 #include "video/Camera.h"
 #include "core/GLM.h"
 #include "core/Color.h"

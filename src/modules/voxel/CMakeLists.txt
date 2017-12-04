@@ -60,7 +60,7 @@ set(SRCS
 )
 set(LIB voxel)
 add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core noise zlib image assimp commonlua)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math collection noise zlib image assimp commonlua)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 if (NOT MSVC)
 	target_compile_options(${LIB} PRIVATE -march=native PRIVATE -O3)

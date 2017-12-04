@@ -8,7 +8,7 @@
 #include "core/String.h"
 #include "core/EventBus.h"
 #include "core/App.h"
-#include "core/QuadTree.h"
+#include "math/QuadTree.h"
 #include "io/Filesystem.h"
 #include "backend/entity/Npc.h"
 #include "backend/entity/User.h"

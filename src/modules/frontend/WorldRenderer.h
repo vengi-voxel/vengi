@@ -15,7 +15,7 @@
 #include "video/DepthBuffer.h"
 #include "FrontendShaders.h"
 #include "core/GLM.h"
-#include "core/Octree.h"
+#include "math/Octree.h"
 #include "core/Var.h"
 #include "core/Color.h"
 #include "ClientEntity.h"

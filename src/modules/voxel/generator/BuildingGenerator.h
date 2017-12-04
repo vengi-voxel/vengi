@@ -3,7 +3,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/generator/ShapeGenerator.h"
 #include "BuildingGeneratorContext.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include <queue>
 
 namespace voxel {

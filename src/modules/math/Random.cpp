@@ -3,10 +3,10 @@
  */
 
 #include "Random.h"
-#include "Assert.h"
+#include "core/Assert.h"
 #include <chrono>
 #include <random>
-#include <stdlib.h>
+#include <cstdlib>
 
 namespace core {
 

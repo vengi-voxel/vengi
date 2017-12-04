@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/Random.h"
+#include "math/Random.h"
 #include "noise/Noise.h"
 #include "voxel/MaterialColor.h"
 

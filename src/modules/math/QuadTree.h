@@ -8,9 +8,9 @@
 #include <array>
 #include <algorithm>
 #include <unordered_map>
-#include "GLM.h"
+#include "core/GLM.h"
 #include "Rect.h"
-#include "Trace.h"
+#include "core/Trace.h"
 
 namespace core {
 

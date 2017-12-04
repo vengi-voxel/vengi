@@ -1,22 +1,15 @@
 set(SRCS
-	AABB.h
-	Axis.h
 	command/CommandHandler.h command/CommandHandler.cpp
 	command/Command.h command/Command.cpp
 	Assert.h
 	App.cpp App.h
 	AppCommand.cpp AppCommand.h
-	Bezier.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
-	ConcurrentQueue.h
-	ConcurrentSet.h
-	ConcurrentVector.h
 	Common.h
 	Concurrency.h
 	ConsoleApp.h ConsoleApp.cpp
 	EventBus.cpp EventBus.h
-	Frustum.cpp Frustum.h
 	GameConfig.h
 	GLM.cpp GLM.h
 	Hash.h
@@ -28,17 +21,11 @@ set(SRCS
 	PoolAllocator.h
 	MemGuard.cpp MemGuard.h
 	NonCopyable.h
-	Octree.h Octree.cpp
 	Password.h
-	Plane.h Plane.cpp
 	Process.cpp Process.h
-	QuadTree.h
-	Random.cpp Random.h
 	ReadWriteLock.h
-	Rect.h
 	RecursiveReadWriteLock.h
 	Rest.h Rest.cpp
-	Set.h
 	Singleton.h
 	String.cpp String.h
 	ThreadPool.cpp ThreadPool.h
@@ -53,29 +40,21 @@ set(SRCS
 )
 set(LIB core)
 add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES io restclient-cpp zlib ${CMAKE_DL_LIBS})
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES collection io restclient-cpp zlib ${CMAKE_DL_LIBS})
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 set(TEST_SRCS
 	tests/AbstractTest.cpp
-	tests/AABBTest.cpp
 	tests/CoreTest.cpp
-	tests/ConcurrentQueueTest.cpp
-	tests/RectTest.cpp
 	tests/ByteStreamTest.cpp
 	tests/ThreadPoolTest.cpp
 	tests/EventBusTest.cpp
-	tests/QuadTreeTest.cpp
-	tests/OctreeTest.cpp
 	tests/VarTest.cpp
 	tests/CommandTest.cpp
 	tests/CommandHandlerTest.cpp
 	tests/MD5Test.cpp
 	tests/LogTest.cpp
-	tests/SetTest.cpp
 	tests/TokenizerTest.cpp
-	tests/FrustumTest.cpp
-	tests/PlaneTest.cpp
 	tests/PoolAllocatorTest.cpp
 	tests/StringTest.cpp
 	tests/ReadWriteLockTest.cpp

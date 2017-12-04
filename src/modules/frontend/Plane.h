@@ -2,7 +2,7 @@
 
 #include "video/Camera.h"
 #include "core/Color.h"
-#include "core/Plane.h"
+#include "math/Plane.h"
 #include "video/ShapeBuilder.h"
 #include "frontend/ShapeRenderer.h"
 

@@ -6,7 +6,7 @@
 #include "image/Image.h"
 #include "core/Singleton.h"
 #include "core/App.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "io/Filesystem.h"

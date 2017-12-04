@@ -16,7 +16,7 @@
 #include "voxel/model/QBFormat.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "core/Array.h"
 #include "core/App.h"
 #include "io/Filesystem.h"

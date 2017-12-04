@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/Random.h"
+#include "math/Random.h"
 #include "core/Log.h"
 #include "voxel/polyvox/Voxel.h"
 #include <unordered_map>

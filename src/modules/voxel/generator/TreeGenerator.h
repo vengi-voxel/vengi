@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/Random.h"
+#include "math/Random.h"
 #include "voxel/BiomeManager.h"
 #include "voxel/RandomVoxel.h"
 #include "voxel/TreeContext.h"
@@ -13,7 +13,7 @@
 #include "SpaceColonization.h"
 #include "CactusGenerator.h"
 #include "LSystemGenerator.h"
-#include "core/AABB.h"
+#include "math/AABB.h"
 #include "core/Log.h"
 
 #include <unordered_map>

@@ -4,7 +4,7 @@
 
 #include "PoiProvider.h"
 #include "core/TimeProvider.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "core/Var.h"
 #include "core/GLM.h"
 

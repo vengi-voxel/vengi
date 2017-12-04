@@ -3,7 +3,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/QuadTree.h"
+#include "math/QuadTree.h"
 
 namespace core {
 

@@ -9,7 +9,7 @@
 #include "polyvox/Mesh.h"
 #include "polyvox/PagedVolume.h"
 #include "polyvox/Raycast.h"
-#include "core/Frustum.h"
+#include "math/Frustum.h"
 #include "voxel/Constants.h"
 #include "voxel/polyvox/Picking.h"
 #include <memory>
@@ -21,10 +21,10 @@
 #include "WorldContext.h"
 #include "io/Filesystem.h"
 #include "BiomeManager.h"
-#include "core/ConcurrentQueue.h"
+#include "collection/ConcurrentQueue.h"
 #include "core/ThreadPool.h"
 #include "core/Var.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "core/Log.h"
 #include <unordered_set>
 

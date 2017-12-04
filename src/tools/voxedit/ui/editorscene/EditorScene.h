@@ -15,7 +15,7 @@
 #include "Action.h"
 #include "Controller.h"
 #include "voxedit-util/Shape.h"
-#include "core/Axis.h"
+#include "math/Axis.h"
 #include "voxedit-util/SelectType.h"
 
 class EditorScene: public ui::Widget {

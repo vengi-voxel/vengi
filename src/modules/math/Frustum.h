@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Plane.h"
-#include "core/AABB.h"
+#include "math/AABB.h"
 #include <cstdint>
 
 namespace core {

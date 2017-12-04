@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "core/Frustum.h"
+#include "math/Frustum.h"
 #include "core/GLM.h"
 
 namespace core {

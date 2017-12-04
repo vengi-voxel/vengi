@@ -3,7 +3,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/Rect.h"
+#include "math/Rect.h"
 
 namespace core {
 

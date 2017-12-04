@@ -4,7 +4,7 @@
 
 #include "ThreadPool.h"
 #include "String.h"
-#include "Trace.h"
+#include "core/Trace.h"
 
 namespace core {
 

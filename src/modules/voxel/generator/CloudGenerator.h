@@ -6,7 +6,7 @@
 
 #include "ShapeGenerator.h"
 #include "voxel/BiomeManager.h"
-#include "core/Random.h"
+#include "math/Random.h"
 
 namespace voxel {
 namespace cloud {

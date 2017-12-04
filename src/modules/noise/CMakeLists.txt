@@ -8,7 +8,7 @@ set(SRCS
 
 set(LIB noise)
 add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core compute)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math compute)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 #set(MARCH native)
 set(MARCH generic)

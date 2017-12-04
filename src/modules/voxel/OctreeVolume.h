@@ -11,7 +11,7 @@
 #define BACKGROUND_TASK_ARE_THREADED 1
 
 #if BACKGROUND_TASK_ARE_THREADED > 0
-#include "core/ConcurrentQueue.h"
+#include "collection/ConcurrentQueue.h"
 #include "core/Concurrency.h"
 #include <thread>
 #include <list>

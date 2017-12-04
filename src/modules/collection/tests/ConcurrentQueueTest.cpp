@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "core/ConcurrentQueue.h"
+#include "collection/ConcurrentQueue.h"
 #include <thread>
 
 namespace core {

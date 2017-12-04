@@ -5,7 +5,7 @@
 #pragma once
 
 #include "SurfaceExtractionTask.h"
-#include "core/ConcurrentQueue.h"
+#include "collection/ConcurrentQueue.h"
 #include "OctreeNode.h"
 
 #include <vector>

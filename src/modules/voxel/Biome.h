@@ -6,7 +6,7 @@
 #include "MaterialColor.h"
 #include "TreeContext.h"
 #include "polyvox/Voxel.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "core/Assert.h"
 #include <glm/common.hpp>
 #include <vector>

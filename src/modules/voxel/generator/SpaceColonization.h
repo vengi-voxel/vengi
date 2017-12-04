@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/Random.h"
+#include "math/Random.h"
 #include "ShapeGenerator.h"
 #include "core/Log.h"
 

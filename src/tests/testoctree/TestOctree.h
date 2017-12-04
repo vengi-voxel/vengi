@@ -5,8 +5,8 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "core/Octree.h"
-#include "core/Random.h"
+#include "math/Octree.h"
+#include "math/Random.h"
 #include "video/ShapeBuilder.h"
 #include "frontend/ShapeRenderer.h"
 

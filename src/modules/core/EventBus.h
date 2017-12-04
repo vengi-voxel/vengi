@@ -11,7 +11,7 @@
 #include <vector>
 #include <memory>
 #include "core/ReadWriteLock.h"
-#include "core/ConcurrentQueue.h"
+#include "collection/ConcurrentQueue.h"
 
 namespace core {
 

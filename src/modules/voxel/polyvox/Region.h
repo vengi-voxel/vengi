@@ -5,9 +5,9 @@
 #pragma once
 
 #include "core/Assert.h"
-#include "core/AABB.h"
-#include "core/Rect.h"
-#include "core/Random.h"
+#include "math/AABB.h"
+#include "math/Rect.h"
+#include "math/Random.h"
 #include <glm/common.hpp>
 
 namespace voxel {

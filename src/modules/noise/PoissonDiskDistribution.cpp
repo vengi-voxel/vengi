@@ -26,7 +26,7 @@
 
 #include "PoissonDiskDistribution.h"
 #include "core/Log.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "core/GLM.h"
 
 namespace noise {

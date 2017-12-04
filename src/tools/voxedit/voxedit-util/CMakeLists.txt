@@ -22,7 +22,7 @@ set(SRCS
 set(LIB voxedit-util)
 add_library(${LIB} ${SRCS})
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES frontend util voxel)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES frontend util voxel math)
 
 gtest_suite_files(tests
 	tests/UndoHandlerTest.cpp

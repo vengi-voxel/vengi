@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <atomic>
+#include <algorithm>
 
 namespace core {
 

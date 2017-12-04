@@ -10,7 +10,7 @@
 #include "voxel/WorldContext.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Constants.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "core/Common.h"
 
 namespace voxel {

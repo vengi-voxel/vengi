@@ -7,7 +7,7 @@
 #include "ui/Window.h"
 #include "core/Common.h"
 #include "core/String.h"
-#include "core/Axis.h"
+#include "math/Axis.h"
 #include "editorscene/Action.h"
 #include "voxedit-util/SelectType.h"
 

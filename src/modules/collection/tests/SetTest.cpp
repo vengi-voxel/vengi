@@ -3,8 +3,8 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "core/Set.h"
-#include "core/Random.h"
+#include "collection/Set.h"
+#include "math/Random.h"
 #include <numeric>
 
 namespace core {

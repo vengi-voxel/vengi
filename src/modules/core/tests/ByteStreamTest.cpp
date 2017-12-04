@@ -4,12 +4,12 @@
 
 #include <gtest/gtest.h>
 #include "core/ByteStream.h"
-#include "core/Random.h"
+#include <random>
 #include <cstdlib>
-#include <limits.h>
-#include <math.h>
+#include <climits>
+#include <cmath>
 #include <SDL_timer.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 
 namespace {
@@ -210,11 +210,12 @@ TEST(ByteStreamTest, testReadWriteVariadic) {
 
 TEST(ByteStreamTest, testReadWriteAll) {
 	ByteStream byteStream;
-	core::Random random;
-	uint8_t byte = random.random() % BYTE_ADD;
-	int16_t word = random.random() % SHORT_ADD;
-	int32_t dword = random.random() % INT_ADD;
-	float floatv = floorf((random.random() % INT_ADD) / float(INT_ADD) * 100.0)
+	std::default_random_engine engine;
+	std::uniform_int_distribution<int> distribution(0, RAND_MAX);
+	uint8_t byte = distribution(engine) % BYTE_ADD;
+	int16_t word = distribution(engine) % SHORT_ADD;
+	int32_t dword = distribution(engine) % INT_ADD;
+	float floatv = floorf((distribution(engine) % INT_ADD) / float(INT_ADD) * 100.0)
 			/ 100.0;
 	size_t size = sizeof(byte) + sizeof(word) + sizeof(dword) + sizeof(floatv);
 	byteStream.addByte(byte);
@@ -246,37 +247,38 @@ typedef TypeValueList::iterator TypeValueListIter;
 
 TEST(ByteStreamTest, testRandomReadWrite) {
 	ByteStream byteStream;
-	core::Random random;
+	std::default_random_engine engine;
+	std::uniform_int_distribution<int> distribution(0, RAND_MAX);
 
 	TypeValueList _typeValueList;
 	TypeValueListIter _typeValueListIter;
 
-	unsigned int iterations = random.random() % 20 + 1;
+	unsigned int iterations = distribution(engine) % 20 + 1;
 	unsigned int index = 0;
 	size_t size = 0;
 
 	//add random types to byte stream
 	do {
-		DataType dataType = DataType(random.random() % count);
+		DataType dataType = DataType(distribution(engine) % count);
 		TypeValue typeValue;
 		typeValue.type = dataType;
 		switch (dataType) {
 		case e_byte: {
-			uint8_t* byte = new uint8_t(random.random() % BYTE_ADD);
+			uint8_t* byte = new uint8_t(distribution(engine) % BYTE_ADD);
 			byteStream.addByte(*byte);
 			typeValue.pValue = byte;
 			size += 1;
 			break;
 		}
 		case e_short: {
-			int16_t* word = new int16_t(random.random() % SHORT_ADD);
+			int16_t* word = new int16_t(distribution(engine) % SHORT_ADD);
 			byteStream.addShort(*word);
 			typeValue.pValue = word;
 			size += 2;
 			break;
 		}
 		case e_int: {
-			int32_t* dword = new int32_t(random.random() % INT_ADD);
+			int32_t* dword = new int32_t(distribution(engine) % INT_ADD);
 			byteStream.addInt(*dword);
 			typeValue.pValue = dword;
 			size += 4;
@@ -284,7 +286,7 @@ TEST(ByteStreamTest, testRandomReadWrite) {
 		}
 		case e_float: {
 			float* dword = new float(
-					floorf((random.random() % INT_ADD) / float(INT_ADD) * 100.0)
+					floorf((distribution(engine) % INT_ADD) / float(INT_ADD) * 100.0)
 							/ 100.0);
 			byteStream.addFloat(*dword);
 			typeValue.pValue = dword;

@@ -1,6 +1,6 @@
 #include "Octree.h"
-#include "core/Frustum.h"
-#include "core/AABB.h"
+#include "math/Frustum.h"
+#include "math/AABB.h"
 #include "core/GLM.h"
 #include "core/Log.h"
 

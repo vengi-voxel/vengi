@@ -10,8 +10,8 @@
 #include <unordered_map>
 #include "AABB.h"
 #include "Frustum.h"
-#include "Trace.h"
-#include "GLM.h"
+#include "core/Trace.h"
+#include "core/GLM.h"
 
 namespace core {
 

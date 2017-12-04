@@ -3,7 +3,7 @@
 #include "voxel/generator/ShapeGenerator.h"
 #include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/polyvox/RawVolumeWrapper.h"
-#include "core/Random.h"
+#include "math/Random.h"
 
 namespace voxedit {
 

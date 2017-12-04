@@ -7,7 +7,7 @@
 #include "ui/Window.h"
 #include "ui/ui_widgets.h"
 #include "core/Common.h"
-#include "core/ConcurrentQueue.h"
+#include "collection/ConcurrentQueue.h"
 #include <unordered_map>
 #include "../NoiseData.h"
 

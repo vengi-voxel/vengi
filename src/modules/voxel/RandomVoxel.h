@@ -1,7 +1,7 @@
 #pragma once
 
 #include "voxel/polyvox/Voxel.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "MaterialColor.h"
 
 namespace voxel {

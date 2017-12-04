@@ -2,7 +2,7 @@
 
 #include "voxel/polyvox/Mesh.h"
 #include "voxel/polyvox/RawVolume.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "voxel/RandomVoxel.h"
 #include "core/GLM.h"
 #include "PlantType.h"

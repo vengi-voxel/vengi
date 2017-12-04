@@ -8,7 +8,7 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "io/File.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "core/Concurrency.h"
 #include "voxel/polyvox/AStarPathfinder.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"

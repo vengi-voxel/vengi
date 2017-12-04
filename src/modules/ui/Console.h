@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include "core/Var.h"
-#include "core/Rect.h"
+#include "math/Rect.h"
 
 namespace tb {
 class TBFontFace;

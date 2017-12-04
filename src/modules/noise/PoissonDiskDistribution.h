@@ -33,8 +33,8 @@
 
 #include <functional>
 #include <vector>
-#include "core/Rect.h"
-#include "core/AABB.h"
+#include "math/Rect.h"
+#include "math/AABB.h"
 
 namespace noise {
 

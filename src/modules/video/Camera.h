@@ -6,8 +6,8 @@
 
 #include "core/GLM.h"
 #include "core/Var.h"
-#include "core/AABB.h"
-#include "core/Frustum.h"
+#include "math/AABB.h"
+#include "math/Frustum.h"
 #include "Types.h"
 #include "Ray.h"
 #include <math.h>

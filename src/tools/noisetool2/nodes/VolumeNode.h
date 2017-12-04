@@ -1,7 +1,7 @@
 #pragma once
 
 #include "NNode.h"
-#include "core/ConcurrentQueue.h"
+#include "collection/ConcurrentQueue.h"
 #include "core/ThreadPool.h"
 #include "frontend/RawVolumeRenderer.h"
 #include "video/FrameBuffer.h"

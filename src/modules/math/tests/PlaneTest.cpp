@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "core/Plane.h"
+#include "math/Plane.h"
 
 namespace core {
 

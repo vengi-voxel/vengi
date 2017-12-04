@@ -3,12 +3,12 @@
  */
 
 #include "Entity.h"
-#include "core/Set.h"
+#include "collection/Set.h"
 #include "core/Array.h"
 #include "core/Assert.h"
-#include "core/Rect.h"
+#include "math/Rect.h"
 #include "core/Common.h"
-#include "core/Frustum.h"
+#include "math/Frustum.h"
 #include "backend/world/Map.h"
 #include "poi/PoiProvider.h"
 #include "network/ServerMessageSender.h"

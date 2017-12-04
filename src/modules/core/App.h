@@ -9,7 +9,7 @@
 #include "Common.h"
 #include "Assert.h"
 #include "Var.h"
-#include "Trace.h"
+#include "core/Trace.h"
 #include "EventBus.h"
 #include "TimeProvider.h"
 #include "core/ThreadPool.h"

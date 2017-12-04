@@ -4,7 +4,7 @@
 
 #include "VolumeRotator.h"
 #include "RawVolume.h"
-#include "core/AABB.h"
+#include "math/AABB.h"
 #include "core/GLM.h"
 
 namespace voxel {

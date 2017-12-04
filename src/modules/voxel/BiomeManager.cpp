@@ -5,7 +5,7 @@
 #include "BiomeManager.h"
 #include "noise/Noise.h"
 #include "noise/PoissonDiskDistribution.h"
-#include "core/Random.h"
+#include "math/Random.h"
 #include "core/Common.h"
 #include "core/GLM.h"
 #include "Constants.h"

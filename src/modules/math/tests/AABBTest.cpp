@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "core/AABB.h"
+#include "math/AABB.h"
 
 namespace core {
 

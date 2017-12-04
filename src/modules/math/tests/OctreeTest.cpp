@@ -3,8 +3,8 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "core/Octree.h"
-#include "core/Frustum.h"
+#include "math/Octree.h"
+#include "math/Frustum.h"
 #include "core/Log.h"
 
 namespace core {

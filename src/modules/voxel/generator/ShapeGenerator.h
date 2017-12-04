@@ -6,7 +6,7 @@
 
 #include "voxel/polyvox/Voxel.h"
 #include "core/Common.h"
-#include "core/Bezier.h"
+#include "math/Bezier.h"
 #include "voxel/polyvox/Raycast.h"
 #include "core/GLM.h"
 

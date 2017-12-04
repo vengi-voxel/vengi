@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
-#include "GLM.h"
+#include <vector>
 
 namespace core {
 
@@ -73,7 +73,7 @@ std::unordered_set<KEY, HASH> mapFindChangedValues(const std::unordered_map<KEY,
 		}
 		const VALUE& oldValue = i->second;
 		const VALUE& newValue = e.second;
-		if (glm::abs(newValue - oldValue) > glm::epsilon<VALUE>()) {
+		if (std::abs(newValue - oldValue) > (VALUE)0.000001) {
 			result.insert(key);
 		}
 	}

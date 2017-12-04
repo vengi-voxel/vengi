@@ -1,7 +1,7 @@
 #pragma once
 
 #include "voxel/polyvox/RawVolume.h"
-#include "core/Axis.h"
+#include "math/Axis.h"
 
 namespace voxedit {
 namespace tool {
