@@ -5,6 +5,7 @@ set(SRCS
 	command/Command.h command/Command.cpp
 	Assert.h
 	App.cpp App.h
+	AppCommand.cpp AppCommand.h
 	Bezier.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
