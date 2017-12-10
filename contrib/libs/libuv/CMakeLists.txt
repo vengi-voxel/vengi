@@ -15,10 +15,11 @@ set(SOURCES
 	src/uv-common.c
 	src/uv-common.h
 	src/version.c
+	src/uv-data-getter-setters.c
 	)
 
 if(WIN32)
-  add_definitions(-D_WIN32_WINNT=0x0600 -D_GNU_SOURCE -D_CRT_SECURE_NO_WARNINGS)
+	add_definitions(-D_WIN32_WINNT=0x0600 -D_GNU_SOURCE -D_CRT_SECURE_NO_WARNINGS)
 	set (SOURCES ${SOURCES}
 		include/uv-win.h
 		src/win/async.c
