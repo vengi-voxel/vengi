@@ -126,7 +126,7 @@ public:
 	/**
 	 * @brief Set the @c Field value to null (if supported)
 	 */
-	void setValue(const Field& f, nullptr_t np);
+	void setValue(const Field& f, std::nullptr_t np);
 	void setValue(const Field& f, const std::string& value);
 	void setValue(const Field& f, const Timestamp& value);
 

@@ -116,7 +116,7 @@ void Model::setValue(const Field& f, const Timestamp& value) {
 	setValid(f, true);
 }
 
-void Model::setValue(const Field& f, nullptr_t np) {
+void Model::setValue(const Field& f, std::nullptr_t np) {
 	setIsNull(f, true);
 }
 
