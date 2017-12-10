@@ -57,7 +57,7 @@ public:
 	bool update(long dt) override;
 
 	void init() override;
-	void shutdown();
+	void shutdown() override;
 
 	/**
 	 * @brief Sets a new ENetPeer and returns the old one.
