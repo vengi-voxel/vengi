@@ -18,35 +18,32 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef SDL_internal_h_
-#define SDL_internal_h_
+#include "../../SDL_internal.h"
 
-/* Many of SDL's features require _GNU_SOURCE on various platforms */
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef SDL_cocoaopengles_h_
+#define SDL_cocoaopengles_h_
 
-/* This is for a variable-length array at the end of a struct:
-    struct x { int y; char z[SDL_VARIABLE_LENGTH_ARRAY]; };
-   Use this because GCC 2 needs different magic than other compilers. */
-#if (defined(__GNUC__) && (__GNUC__ <= 2)) || defined(__CC_ARM) || defined(__cplusplus)
-#define SDL_VARIABLE_LENGTH_ARRAY 1
-#else
-#define SDL_VARIABLE_LENGTH_ARRAY
-#endif
+#if SDL_VIDEO_OPENGL_EGL
 
-#include "dynapi/SDL_dynapi.h"
+#include "../SDL_sysvideo.h"
+#include "../SDL_egl_c.h"
 
-#if SDL_DYNAMIC_API
-#include "dynapi/SDL_dynapi_overrides.h"
-/* force DECLSPEC and SDLCALL off...it's all internal symbols now.
-   These will have actual #defines during SDL_dynapi.c only */
-#define DECLSPEC
-#define SDLCALL
-#endif
+/* OpenGLES functions */
+#define Cocoa_GLES_GetAttribute SDL_EGL_GetAttribute
+#define Cocoa_GLES_GetProcAddress SDL_EGL_GetProcAddress
+#define Cocoa_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
+#define Cocoa_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
+#define Cocoa_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 
-#include "SDL_config.h"
+extern int Cocoa_GLES_LoadLibrary(_THIS, const char *path);
+extern SDL_GLContext Cocoa_GLES_CreateContext(_THIS, SDL_Window * window);
+extern int Cocoa_GLES_SwapWindow(_THIS, SDL_Window * window);
+extern int Cocoa_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+extern void Cocoa_GLES_DeleteContext(_THIS, SDL_GLContext context);
+extern int Cocoa_GLES_SetupWindow(_THIS, SDL_Window * window);
 
-#endif /* SDL_internal_h_ */
+#endif /* SDL_VIDEO_OPENGL_EGL */
+
+#endif /* SDL_cocoaopengles_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

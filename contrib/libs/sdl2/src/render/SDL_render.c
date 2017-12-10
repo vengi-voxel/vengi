@@ -92,6 +92,9 @@ static const SDL_RenderDriver *render_drivers[] = {
 #if SDL_VIDEO_RENDER_DIRECTFB
     &DirectFB_RenderDriver,
 #endif
+#if SDL_VIDEO_RENDER_METAL
+    &METAL_RenderDriver,
+#endif
 #if SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
 #endif
@@ -2118,6 +2121,28 @@ int SDL_GL_UnbindTexture(SDL_Texture *texture)
     }
 
     return SDL_Unsupported();
+}
+
+void *
+SDL_RenderGetMetalLayer(SDL_Renderer * renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, NULL);
+
+    if (renderer->GetMetalLayer) {
+        return renderer->GetMetalLayer(renderer);
+    }
+    return NULL;
+}
+
+void *
+SDL_RenderGetMetalCommandEncoder(SDL_Renderer * renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, NULL);
+
+    if (renderer->GetMetalCommandEncoder) {
+        return renderer->GetMetalCommandEncoder(renderer);
+    }
+    return NULL;
 }
 
 static SDL_BlendMode

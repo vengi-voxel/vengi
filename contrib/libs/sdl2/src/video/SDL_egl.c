@@ -65,6 +65,13 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.dll"
 #define DEFAULT_OGL_ES "libGLESv1_CM.dll"
 
+#elif SDL_VIDEO_DRIVER_COCOA
+/* EGL AND OpenGL ES support via ANGLE */
+#define DEFAULT_EGL "libEGL.dylib"
+#define DEFAULT_OGL_ES2 "libGLESv2.dylib"
+#define DEFAULT_OGL_ES_PVR "libGLES_CM.dylib"   //???
+#define DEFAULT_OGL_ES "libGLESv1_CM.dylib"     //???
+
 #else
 /* Desktop Linux */
 #define DEFAULT_OGL "libGL.so.1"
@@ -261,7 +268,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 #endif
 
     if (_this->egl_data) {
-        return SDL_SetError("OpenGL ES context already created");
+        return SDL_SetError("EGL context already created");
     }
 
     _this->egl_data = (struct SDL_EGL_VideoData *) SDL_calloc(1, sizeof(SDL_EGL_VideoData));
@@ -375,6 +382,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     LOAD_FUNC(eglGetConfigAttrib);
     LOAD_FUNC(eglCreateContext);
     LOAD_FUNC(eglDestroyContext);
+    LOAD_FUNC(eglCreatePbufferSurface);
     LOAD_FUNC(eglCreateWindowSurface);
     LOAD_FUNC(eglDestroySurface);
     LOAD_FUNC(eglMakeCurrent);

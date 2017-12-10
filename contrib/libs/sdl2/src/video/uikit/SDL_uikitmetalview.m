@@ -28,7 +28,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_UIKIT
+#if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_RENDER_METAL || SDL_VIDEO_VULKAN)
 
 #import "../SDL_sysvideo.h"
 #import "SDL_uikitwindow.h"
@@ -49,9 +49,6 @@
                           tag:(int)tag
 {
     if ((self = [super initWithFrame:frame])) {
-        /* Resize properly when rotated. */
-        self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
         /* Set the appropriate scale (for retina display support) */
         self.contentScaleFactor = scale;
         self.tag = tag;
@@ -87,6 +84,10 @@ UIKit_Mtl_AddMetalView(SDL_Window* window)
     SDL_uikitview *view = (SDL_uikitview*)data.uiwindow.rootViewController.view;
     CGFloat scale = 1.0;
 
+	if ([view isKindOfClass:[SDL_uikitmetalview class]]) {
+		return (SDL_uikitmetalview *)view;
+	}
+
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         /* Set the scale to the natural scale factor of the screen - the
          * backing dimensions of the Metal view will match the pixel
@@ -105,19 +106,7 @@ UIKit_Mtl_AddMetalView(SDL_Window* window)
          = [[SDL_uikitmetalview alloc] initWithFrame:view.frame
                                           scale:scale
                                             tag:METALVIEW_TAG];
-#if 1
-    [view addSubview:metalview];
-#else
-    /* Sets this view as the controller's view, and adds the view to
-     * the window hierarchy.
-     *
-     * Left here for information. Not used because I suspect that for correct
-     * operation it will be necesary to copy everything from the window's
-     * current SDL_uikitview instance to the SDL_uikitview portion of the
-     * SDL_metalview. The latter would be derived from SDL_uikitview rather
-     * than UIView. */
     [metalview setSDLWindow:window];
-#endif
 
     return metalview;
 }
@@ -144,4 +133,4 @@ UIKit_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h)
     }
 }
 
-#endif
+#endif /* SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_RENDER_METAL || SDL_VIDEO_VULKAN) */

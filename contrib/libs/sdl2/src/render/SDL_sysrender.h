@@ -123,6 +123,9 @@ struct SDL_Renderer
     int (*GL_BindTexture) (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, float *texh);
     int (*GL_UnbindTexture) (SDL_Renderer * renderer, SDL_Texture *texture);
 
+    void *(*GetMetalLayer) (SDL_Renderer * renderer);
+    void *(*GetMetalCommandEncoder) (SDL_Renderer * renderer);
+
     /* The current renderer info */
     SDL_RendererInfo info;
 
@@ -184,6 +187,7 @@ extern SDL_RenderDriver GL_RenderDriver;
 extern SDL_RenderDriver GLES2_RenderDriver;
 extern SDL_RenderDriver GLES_RenderDriver;
 extern SDL_RenderDriver DirectFB_RenderDriver;
+extern SDL_RenderDriver METAL_RenderDriver;
 extern SDL_RenderDriver PSP_RenderDriver;
 extern SDL_RenderDriver SW_RenderDriver;
 
