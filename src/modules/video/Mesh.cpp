@@ -36,11 +36,6 @@ static inline glm::mat4 toMat4(const aiMatrix4x4& m) {
 	return glm::transpose(glm::mat4(m.a1, m.a2, m.a3, m.a4, m.b1, m.b2, m.b3, m.b4, m.c1, m.c2, m.c3, m.c4, m.d1, m.d2, m.d3, m.d4));
 }
 
-static inline glm::mat4 toMat4(const aiMatrix3x3& m) {
-	// assimp matrices are row major, but glm wants them to be column major
-	return glm::mat4(glm::transpose(glm::mat3(m.a1, m.a2, m.a3, m.b1, m.b2, m.b3, m.c1, m.c2, m.c3)));
-}
-
 }
 
 struct MeshNormals {
