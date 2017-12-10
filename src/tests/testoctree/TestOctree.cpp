@@ -6,7 +6,7 @@
 #include <array>
 
 TestOctree::TestOctree(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider), _listener(this) {
+		Super(filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "testoctree");
 	setCameraMotion(true);
 	//setRenderPlane(true);

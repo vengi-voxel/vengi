@@ -28,13 +28,7 @@ private:
 	using Tree = core::Octree<Wrapper>;
 	using Node = Tree::OctreeNode;
 
-	class Listener : public Tree::IOctreeListener {
-	private:
-		TestOctree* _app;
-	public:
-		Listener(TestOctree* app) :
-				_app(app) {
-		}
+	struct Listener : public Tree::IOctreeListener {
 		void onNodeCreated(const Node& parent, const Node& child) const override;
 	};
 
