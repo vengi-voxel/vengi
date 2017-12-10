@@ -27,7 +27,7 @@ public:
 	}
 
 	void update();
-	void shutdown();
+	void shutdown() override;
 };
 
 typedef std::shared_ptr<ClientNetwork> ClientNetworkPtr;
