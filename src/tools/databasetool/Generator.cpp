@@ -264,7 +264,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		}
 
 		if (isPointer(f)) {
-			src << "\tinline void set" << setter << "(nullptr_t " << f.name << ") {\n";
+			src << "\tinline void set" << setter << "(std::nullptr_t " << f.name << ") {\n";
 			src << "\t\t_m." << MembersStruct::nullFieldName(f) << " = true;\n";
 			src << "\t\t_m." << MembersStruct::validFieldName(f) << " = true;\n";
 			src << "\t}\n\n";
