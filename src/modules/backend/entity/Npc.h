@@ -41,7 +41,7 @@ public:
 	~Npc();
 
 	void init(const glm::ivec3* pos);
-	void shutdown();
+	void shutdown() override;
 
 	void setHomePosition(const glm::ivec3& pos);
 	const glm::ivec3& homePosition() const;
