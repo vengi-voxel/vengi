@@ -209,7 +209,7 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 	data.ridgedOffset = getFloat("ridgedoffset");
 	data.noiseType = type;
 
-	_noiseTool->threadPool().enqueue([this, type, data] () {
+	_noiseTool->threadPool().enqueue([this, data] () {
 		const size_t noiseBufferSize = _noiseWidth * _noiseHeight * BPP;
 		const size_t graphBufferSize = _noiseWidth * _graphHeight * BPP;
 		QueueData qd;
