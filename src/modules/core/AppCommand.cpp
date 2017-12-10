@@ -101,19 +101,15 @@ void init() {
 			return;
 		}
 		const std::string& id = args[0];
-		if (id.size() != 4) {
-			Log::error("The id must be 4 characters");
-			return;
-		}
 		const Log::Level level = Log::toLogLevel(args[1]);
 		if (level == Log::Level::None) {
 			const auto fourcc = Log::logid(id.c_str(), id.length());
 			Log::disable(fourcc);
-			Log::info("Disabling logging for %s", id.c_str());
+			Log::trace("Disabling logging for %s", id.c_str());
 		} else {
 			const auto fourcc = Log::logid(id.c_str(), id.length());
 			Log::enable(fourcc, level);
-			Log::info("Set log level for %s to %s", id.c_str(), args[1].c_str());
+			Log::trace("Set log level for %s to %s", id.c_str(), args[1].c_str());
 		}
 	}).setHelp("Change the log level on an id base (FourCC)").setArgumentCompleter([] (const std::string& str, std::vector<std::string>& matches) -> int {
 		if (str[0] == 't') {
