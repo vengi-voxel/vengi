@@ -13,11 +13,11 @@
 #include <memory>
 #include <unordered_map>
 
-class aiScene;
-class aiMesh;
-class aiAnimation;
-class aiNode;
-class aiNodeAnim;
+struct aiScene;
+struct aiMesh;
+struct aiAnimation;
+struct aiNode;
+struct aiNodeAnim;
 
 namespace Assimp {
 class Importer;

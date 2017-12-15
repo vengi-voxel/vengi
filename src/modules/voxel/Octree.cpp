@@ -42,8 +42,8 @@ private:
 
 class ScheduleUpdateIfNeededVisitor {
 public:
-	ScheduleUpdateIfNeededVisitor(Octree* octree, const glm::vec3& viewPosition) :
-			_octree(octree), _viewPosition(viewPosition) {
+	ScheduleUpdateIfNeededVisitor(Octree* octree) :
+			_octree(octree) {
 	}
 
 	bool preChildren(OctreeNode* node) {
@@ -90,7 +90,6 @@ public:
 	}
 private:
 	Octree* _octree;
-	glm::vec3 _viewPosition;
 };
 
 Octree::Octree(OctreeVolume* volume, uint32_t baseNodeSize) :
@@ -170,7 +169,7 @@ int Octree::update(TimeStamp dt, const glm::vec3& viewPosition, float lodThresho
 	// This isn't a visitor because visitors only visit active nodes, and here we are setting them.
 	const int activeNodes = determineActiveNodes(rootNode(), viewPosition, lodThreshold);
 
-	acceptVisitor(ScheduleUpdateIfNeededVisitor(this, viewPosition));
+	acceptVisitor(ScheduleUpdateIfNeededVisitor(this));
 
 	// Make sure any surface extraction tasks which were scheduled on the main thread
 	// get processed before we determine what to render.
