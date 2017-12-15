@@ -68,6 +68,11 @@ else()
 	check_library_exists(c clock_gettime "time.h" HAVE_CLOCKGETTIME)
 endif()
 
+if (USE_COVERAGE)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+endif()
+
 # TODO: fix most of these and activate them one by one
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -Wreturn-type -Wwrite-strings -Wno-unused-parameter -fdiagnostics-color=auto")
 if (CMAKE_USE_PTHREADS_INIT)
