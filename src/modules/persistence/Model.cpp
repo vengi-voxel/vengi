@@ -43,7 +43,7 @@ const Field& Model::getField(const std::string& name) const {
 bool Model::fillModelValues(State& state) {
 #ifdef HAVE_POSTGRES
 	const int cols = PQnfields(state.res);
-	Log::trace("Query has values for %i cols", cols);
+	Log::debug("Query has values for %i cols", cols);
 	for (int i = 0; i < cols; ++i) {
 		const char* name = PQfname(state.res, i);
 		const Field& f = getField(name);

@@ -204,7 +204,8 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 			src << getCPPType(f.type, true, false);
 		}
 		src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(";
-		src << table.classname << "::" << getFieldnameFunction(f) << "(), ";
+		src << table.classname << "::" << getFieldnameFunction(f) << "(), persistence::FieldType::";
+		src << persistence::toFieldType(f.type) << ", ";
 		if (isString(f)) {
 			if (f.isLower()) {
 				src << "core::string::toLower(value)";
@@ -222,7 +223,9 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 			src << "\t" << classname << "(";
 			src << "const std::string&";
 			src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(";
-			src << table.classname << "::f_" << f.name << "(), value, comp) {\n\t}\n";
+			src << table.classname << "::f_" << f.name << "(), persistence::FieldType::";
+			src << persistence::toFieldType(f.type);
+			src << ", value, comp) {\n\t}\n";
 		}
 
 		src << "}; // class " << classname << "\n\n";

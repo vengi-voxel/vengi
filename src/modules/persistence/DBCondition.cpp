@@ -29,8 +29,8 @@ static_assert(std::enum_value(Comparator::Max) == lengthof(comparatorString), "C
 
 }
 
-DBCondition::DBCondition(const char* field, const std::string& value, Comparator comp) :
-		_comp(comp), _field(field), _valueCopy(SDL_strdup(value.c_str())), _value(_valueCopy) {
+DBCondition::DBCondition(const char* field, FieldType type, const std::string& value, Comparator comp) :
+		_comp(comp), _field(field), _valueCopy(SDL_strdup(value.c_str())), _value(_valueCopy), _type(type) {
 }
 
 DBCondition::~DBCondition() {
@@ -49,6 +49,9 @@ std::string DBCondition::statement(int& parameterCount) const {
 	}
 	++parameterCount;
 	const char* c = __priv::comparatorString[std::enum_value(_comp)];
+	if (_type == FieldType::PASSWORD) {
+		return core::string::format("\"%s\" %s crypt($%i, \"%s\")", _field, c, parameterCount, _field);
+	}
 	return core::string::format("\"%s\" %s $%i", _field, c, parameterCount);
 }
 

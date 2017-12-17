@@ -158,6 +158,7 @@ State DBHandler::execInternalWithParameters(const std::string& query, Model& mod
 		return State();
 	}
 	State s(scoped.connection());
+	Log::debug("Execute query '%s' with %i parameters", query.c_str(), param.position);
 	if (!s.exec(query.c_str(), param.position, &param.values[0])) {
 		Log::warn(logid, "Failed to execute query: '%s'", query.c_str());
 	} else {

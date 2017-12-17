@@ -24,6 +24,7 @@ public:
 			ASSERT_TRUE(_dbHandler.createTable(db::TestModel())) << "Could not create table";
 			ASSERT_TRUE(_dbHandler.dropTable(db::TestModel()));
 			ASSERT_TRUE(_dbHandler.createTable(db::TestModel())) << "Could not create table";
+			Log::debug("DatabaseModelTest: Finished setup");
 		} else {
 			Log::warn("DatabaseModelTest is skipped");
 		}
@@ -192,7 +193,7 @@ TEST_F(DatabaseModelTest, testTimestamp) {
 	EXPECT_EQ(0, u.id());
 	u.setEmail("testTimestamp@now.de");
 	u.setName("testtimestampname");
-	u.setPassword("now");
+	u.setPassword("testtimestamppassword");
 	const auto now = _testApp->timeProvider()->tickMillis();
 	u.setRegistrationdate(now / 1000UL);
 	ASSERT_TRUE(_dbHandler.insert(u));

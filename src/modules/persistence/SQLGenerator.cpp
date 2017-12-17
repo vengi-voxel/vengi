@@ -46,13 +46,21 @@ static inline void createSequenceIdentifier(std::stringstream& stmt, const Model
 	stmt << ".\"" << table.tableName() << "_" << field << "_seq\"";
 }
 
-static inline bool placeholder(const Model& table, const Field& field, std::stringstream& ss, int count) {
+static inline bool placeholder(const Model& table, const Field& field, std::stringstream& ss, int count, bool select) {
 	if (table.isNull(field)) {
 		core_assert(!field.isNotNull());
 		ss << "NULL";
 		return false;
 	}
-	if (field.type == FieldType::TIMESTAMP) {
+	if (field.type == FieldType::PASSWORD) {
+		ss << "crypt($" << count << ", ";
+		if (select) {
+			ss << field.name;
+		} else {
+			ss << "gen_salt('bf', 8)";
+		}
+		ss << ")";
+	} else if (field.type == FieldType::TIMESTAMP) {
 		const Timestamp& ts = table.getValue<Timestamp>(field);
 		if (ts.isNow()) {
 			ss << "NOW()";
@@ -563,7 +571,7 @@ static void createWhereStatementsForKeys(std::stringstream& stmt, int index, con
 		} else {
 			stmt << " = ";
 		}
-		if (placeholder(model, f, stmt, index)) {
+		if (placeholder(model, f, stmt, index, true)) {
 			++index;
 			if (params != nullptr) {
 				params->push(model, f);
@@ -592,7 +600,7 @@ std::string createUpdateStatement(const Model& table, BindParam* params) {
 			stmt << ", ";
 		}
 		stmt << "\"" << f.name << "\" = ";
-		if (placeholder(table, f, stmt, index)) {
+		if (placeholder(table, f, stmt, index, false)) {
 			++index;
 			if (params != nullptr) {
 				params->push(table, f);
@@ -640,7 +648,7 @@ std::string createInsertStatement(const Model& table, BindParam* params) {
 		}
 		stmt << "\"" << f.name << "\"";
 		++inserted;
-		if (placeholder(table, f, values, insertValueIndex)) {
+		if (placeholder(table, f, values, insertValueIndex, false)) {
 			++insertValueIndex;
 			if (params != nullptr) {
 				params->push(table, f);
@@ -668,7 +676,7 @@ std::string createInsertStatement(const Model& table, BindParam* params) {
 				stmt << "\"" << table.schema() << "\".\"" << table.tableName() << "\".\"" << f.name << "\"";
 				stmt << OperatorStrings[(int)f.updateOperator];
 			}
-			if (placeholder(table, f, stmt, insertValueIndex)) {
+			if (placeholder(table, f, stmt, insertValueIndex, false)) {
 				++insertValueIndex;
 				if (params != nullptr) {
 					params->push(table, f);
@@ -700,7 +708,7 @@ std::string createInsertStatement(const Model& table, BindParam* params) {
 				stmt << "\"" << table.schema() << "\".\"" << table.tableName() << "\".\"" << f.name << "\"";
 				stmt << OperatorStrings[(int)f.updateOperator];
 			}
-			if (placeholder(table, f, stmt, insertValueIndex)) {
+			if (placeholder(table, f, stmt, insertValueIndex, false)) {
 				++insertValueIndex;
 				if (params != nullptr) {
 					params->push(table, f);
@@ -722,11 +730,17 @@ std::string createSelect(const Model& table, BindParam* params) {
 	const Fields& fields = table.fields();
 	std::stringstream stmt;
 	stmt << "SELECT ";
+	int select = 0;
 	for (auto i = fields.begin(); i != fields.end(); ++i) {
 		const Field& f = *i;
-		if (i != fields.begin()) {
+		if (f.type == FieldType::PASSWORD) {
+			// don't load passwords into memory
+			continue;
+		}
+		if (select > 0) {
 			stmt << ", ";
 		}
+		++select;
 		if (f.type == FieldType::TIMESTAMP) {
 			stmt << "CAST(EXTRACT(EPOCH FROM ";
 		}
@@ -736,6 +750,7 @@ std::string createSelect(const Model& table, BindParam* params) {
 		}
 	}
 
+	core_assert_always(select > 0);
 	stmt << " FROM ";
 	createTableIdentifier(stmt, table);
 	createWhereStatementsForKeys(stmt, 1, table, params);

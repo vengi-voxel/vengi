@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "FieldType.h"
 #include <string>
 #include <vector>
 
@@ -37,14 +38,15 @@ protected:
 	const char* _field = nullptr;
 	char *_valueCopy = nullptr;
 	const char* _value = nullptr;
+	FieldType _type = FieldType::MAX;
 
 	constexpr DBCondition() {}
 public:
-	constexpr DBCondition(const char* field, const char* value, Comparator comp = Comparator::Equal) :
-			_comp(comp), _field(field), _value(value) {
+	constexpr DBCondition(const char* field, FieldType type, const char* value, Comparator comp = Comparator::Equal) :
+			_comp(comp), _field(field), _value(value), _type(type) {
 	}
 
-	DBCondition(const char* field, const std::string& value, Comparator comp = Comparator::Equal);
+	DBCondition(const char* field, FieldType type, const std::string& value, Comparator comp = Comparator::Equal);
 
 	virtual ~DBCondition();
 

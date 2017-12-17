@@ -31,7 +31,9 @@ Some of these dependencies might not be available as packages in your toolchain 
 
 If you want to run the database server locally, you have to install the postgres server package:
 
-    apt-get install postgresql-10
+    apt-get install postgresql-10 postgresql-contrib
+
+    CREATE EXTENSION pgcrypto;
 
 ## Arch Linux
     pacman [...]

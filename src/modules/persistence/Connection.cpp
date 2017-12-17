@@ -103,7 +103,7 @@ bool Connection::connect() {
 
 #ifdef HAVE_POSTGRES
 	PQsetNoticeProcessor(_connection, defaultNoticeProcessor, nullptr);
-	PQexec(_connection, "SET TIME ZONE 'UTC';");
+	PQexec(_connection, "SET TIME ZONE 'UTC';CREATE EXTENSION pgcrypto;");
 #endif
 	return true;
 }
