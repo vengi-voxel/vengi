@@ -15,8 +15,9 @@ enum class ConstraintType {
 	AUTOINCREMENT = 1 << 2,
 	NOTNULL = 1 << 3,
 	INDEX = 1 << 4,
-	FOREIGNKEY = 1 << 5
+	FOREIGNKEY = 1 << 5,
+	LOWERCASE = 1 << 6
 };
-static constexpr int MAX_CONSTRAINTTYPES = 6;
+static constexpr int MAX_CONSTRAINTTYPES = 7;
 
 }

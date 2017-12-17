@@ -10,7 +10,8 @@ static const char *ConstraintTypeNames[] = {
 	CORE_STRINGIFY(AUTOINCREMENT),
 	CORE_STRINGIFY(NOTNULL),
 	CORE_STRINGIFY(INDEX),
-	CORE_STRINGIFY(FOREIGNKEY)
+	CORE_STRINGIFY(FOREIGNKEY),
+	CORE_STRINGIFY(LOWERCASE)
 };
 static_assert(lengthof(ConstraintTypeNames) == persistence::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
 

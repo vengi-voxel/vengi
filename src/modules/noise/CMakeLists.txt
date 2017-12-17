@@ -28,12 +28,7 @@ gtest_suite_files(tests
 )
 gtest_suite_deps(tests ${LIB} image)
 
-gtest_suite_begin(tests-noise TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
-gtest_suite_files(tests-noise
-	../core/tests/AbstractTest.cpp
-	tests/NoiseTest.cpp
-	tests/NoiseShaderTest.cpp
-	tests/PoissonDiskDistributionTest.cpp
-)
-gtest_suite_deps(tests-noise ${LIB} image)
-gtest_suite_end(tests-noise)
+gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_files(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_deps(tests-${LIB} ${LIB} image)
+gtest_suite_end(tests-${LIB})

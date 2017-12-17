@@ -3,6 +3,8 @@
 #include "Mapping.h"
 #include "core/Log.h"
 #include "core/Assert.h"
+#include "core/Tokenizer.h"
+#include "core/String.h"
 
 namespace databasetool {
 
@@ -61,14 +63,6 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 				return false;
 			}
 			field.type = typeMapping;
-		} else if (token == "notnull") {
-			auto i = table.constraints.find(field.name);
-			if (i != table.constraints.end()) {
-				persistence::Constraint& c = i->second;
-				c.types |= std::enum_value(persistence::ConstraintType::NOTNULL);
-			} else {
-				table.constraints.insert(std::make_pair(field.name, persistence::Constraint{{field.name}, (uint32_t)std::enum_value(persistence::ConstraintType::NOTNULL)}));
-			}
 		} else if (token == "default") {
 			if (!tok.hasNext()) {
 				Log::error("Missing value for default of %s", fieldname.c_str());
@@ -105,16 +99,44 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 				return false;
 			}
 			if (field.type != persistence::FieldType::STRING && field.type != persistence::FieldType::PASSWORD) {
-				Log::error("Field '%s' of type %i doesn't support length parameter", fieldname.c_str(), std::enum_value(field.type));
+				Log::error("Field '%s' of type '%s' doesn't support length parameter", fieldname.c_str(), persistence::toFieldType(field.type));
 				return false;
 			}
+			// TODO: what is the min length for passwords? (see pgcrypto)
 			field.length = core::string::toInt(tok.next());
 		} else {
-			Log::error("Unknown token found in table definition: %s", token.c_str());
-			return false;
+			uint32_t typeMapping = 0u;
+			for (uint32_t i = 0; i < persistence::MAX_CONSTRAINTTYPES; ++i) {
+				if (core::string::iequals(token, ConstraintTypeNames[i])) {
+					typeMapping = 1 << i;
+					break;
+				}
+			}
+			if (typeMapping == 0u) {
+				Log::error("Unknown token found in table definition: %s", token.c_str());
+				return false;
+			}
+
+			auto i = table.constraints.find(field.name);
+			if (i != table.constraints.end()) {
+				persistence::Constraint& c = i->second;
+				c.types |= typeMapping;
+			} else {
+				table.constraints.insert(std::make_pair(field.name, persistence::Constraint{{field.name}, typeMapping}));
+			}
 		}
 	}
 	table.fields.insert(std::make_pair(field.name, field));
+	if (field.isLower()) {
+		if (!isString(field)) {
+			Log::error("'lowercase' specified for a none-string field: %s", field.name.c_str());
+			return false;
+		}
+		if (field.type == persistence::FieldType::PASSWORD) {
+			Log::error("'lowercase' specified for a password field: %s", field.name.c_str());
+			return false;
+		}
+	}
 	return true;
 }
 

@@ -103,6 +103,10 @@ void sort(databasetool::Fields& fields) {
 	// TODO: implement me
 }
 
+bool isString(const persistence::Field& field) {
+	return field.type == persistence::FieldType::TEXT || field.type == persistence::FieldType::STRING || field.type == persistence::FieldType::PASSWORD;
+}
+
 bool isPointer(const persistence::Field& field) {
 	if (field.isNotNull()) {
 		return false;

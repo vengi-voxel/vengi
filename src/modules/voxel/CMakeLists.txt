@@ -93,10 +93,10 @@ set(TEST_SRCS
 gtest_suite_files(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
 
-gtest_suite_begin(tests-voxel TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
-gtest_suite_files(tests-voxel ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
-gtest_suite_deps(tests-voxel ${LIB})
-gtest_suite_end(tests-voxel)
+gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_files(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_deps(tests-${LIB} ${LIB})
+gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
 	../core/benchmark/AbstractBenchmark.cpp

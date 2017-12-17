@@ -17,5 +17,6 @@ extern std::string getCPPInit(persistence::FieldType type, bool pointer);
 extern void sep(std::stringstream& ss, int count);
 extern void sort(databasetool::Fields& fields);
 extern bool isPointer(const persistence::Field& field);
+extern bool isString(const persistence::Field& field);
 
 }

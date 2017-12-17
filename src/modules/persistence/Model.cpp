@@ -61,15 +61,20 @@ bool Model::fillModelValues(State& state) {
 		}
 		Log::debug("Try to set '%s' to '%s' (length: %i)", name, value, length);
 		switch (f.type) {
-		case FieldType::TEXT:
-		case FieldType::STRING:
 		case FieldType::PASSWORD:
+		case FieldType::TEXT:
 			setValue(f, std::string(value, length));
 			break;
-		case FieldType::BOOLEAN: {
+		case FieldType::STRING:
+			if (f.isLower()) {
+				setValue(f, core::string::toLower(std::string(value, length)));
+			} else {
+				setValue(f, std::string(value, length));
+			}
+			break;
+		case FieldType::BOOLEAN:
 			setValue(f, *value == '1' || *value == 't' || *value == 'y' || *value == 'o' || *value == 'T');
 			break;
-		}
 		case FieldType::INT:
 			setValue(f, core::string::toInt(value));
 			break;

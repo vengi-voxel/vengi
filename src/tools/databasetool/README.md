@@ -59,6 +59,7 @@ table <TABLENAME> {
 ## Valid field types
 * password
 * string
+* lower_text
 * text
 * int
 * long

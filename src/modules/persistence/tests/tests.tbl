@@ -7,6 +7,7 @@ table test {
 	field email {
 		type string
 		notnull
+		lowercase
 		operator set
 	}
 	field name {
@@ -60,6 +61,7 @@ table testupdate {
 	field email {
 		type string
 		notnull
+		lowercase
 		operator set
 	}
 	constraints {

@@ -29,10 +29,6 @@ Support enums?
 
 * Support `(x, y, z) primarykey` (like we do for unique keys)
 
-## Support for storing a value always in lowercase
-
-e.g. email (citext)
-
 # Shadertool
 
 Validate that each $out of the vertex shader has a $in in the fragment shader and vice versa.

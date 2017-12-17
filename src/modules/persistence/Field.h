@@ -51,6 +51,10 @@ struct Field {
 		return (contraintMask & std::enum_value(ConstraintType::PRIMARYKEY)) != 0u;
 	}
 
+	inline bool isLower() const {
+		return (contraintMask & std::enum_value(ConstraintType::LOWERCASE)) != 0u;
+	}
+
 	inline bool isUnique() const {
 		return (contraintMask & std::enum_value(ConstraintType::UNIQUE)) != 0u;
 	}

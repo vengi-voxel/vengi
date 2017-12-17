@@ -194,19 +194,23 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		src << "\tusing Super = persistence::DBCondition;\n";
 		src << "public:\n";
 		src << "\t";
-		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
+		if (isString(f) && !f.isLower()) {
 			src << "constexpr ";
 		}
 		src << classname << "(";
-		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
+		if (isString(f)) {
 			src << "const char *";
 		} else {
 			src << getCPPType(f.type, true, false);
 		}
 		src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(";
 		src << table.classname << "::" << getFieldnameFunction(f) << "(), ";
-		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
-			src << "value";
+		if (isString(f)) {
+			if (f.isLower()) {
+				src << "core::string::toLower(value)";
+			} else {
+				src << "value";
+			}
 		} else if (f.type == persistence::FieldType::TIMESTAMP) {
 			src << "std::to_string(value.seconds())";
 		} else {
@@ -214,7 +218,7 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		}
 		src << ", comp) {\n\t}\n";
 
-		if (f.type == persistence::FieldType::PASSWORD || f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::TEXT) {
+		if (isString(f)) {
 			src << "\t" << classname << "(";
 			src << "const std::string&";
 			src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(";
@@ -238,7 +242,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 			src << "\t\tif (_m._isNull_" << f.name << ") {\n";
 			src << "\t\t\treturn nullptr;\n";
 			src << "\t\t}\n";
-			if (f.type == persistence::FieldType::STRING || f.type == persistence::FieldType::PASSWORD) {
+			if (isString(f)) {
 				src << "\t\treturn _m._" << f.name << ".data();\n";
 			} else {
 				src << "\t\treturn &_m._" << f.name << ";\n";
@@ -249,7 +253,13 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		src << "\t}\n\n";
 
 		src << "\tinline void set" << setter << "(" << cpptypeSetter << " " << f.name << ") {\n";
-		src << "\t\t_m._" << f.name << " = " << f.name << ";\n";
+		src << "\t\t_m._" << f.name << " = ";
+		if (isString(f) && f.isLower()) {
+			src << "core::string::toLower(" << f.name << ")";
+		} else {
+			src << f.name;
+		}
+		src << ";\n";
 		src << "\t\t_m." << MembersStruct::validFieldName(f) << " = true;\n";
 		if (isPointer(f)) {
 			src << "\t\t_m." << MembersStruct::nullFieldName(f) << " = false;\n";

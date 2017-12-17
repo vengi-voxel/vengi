@@ -46,13 +46,11 @@ bool DatabaseTool::generateSrc() const {
 
 bool DatabaseTool::validateOperators(const databasetool::Table& table) const {
 	for (const auto& fe : table.fields) {
-		const auto& field = fe.second;
+		const persistence::Field& field = fe.second;
 		if (field.updateOperator == persistence::Operator::SET) {
 			continue;
 		}
-		if (field.type == persistence::FieldType::STRING ||
-			field.type == persistence::FieldType::TEXT ||
-			field.type == persistence::FieldType::PASSWORD) {
+		if (databasetool::isString(field)) {
 			Log::error("Table '%s': Invalid operator for string based field '%s'",
 					table.name.c_str(), field.name.c_str());
 			return true;

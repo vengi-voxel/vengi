@@ -63,7 +63,7 @@ set(TEST_SRCS
 gtest_suite_files(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
 
-gtest_suite_begin(tests-core TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
-gtest_suite_files(tests-core ${TEST_SRCS})
-gtest_suite_deps(tests-core ${LIB})
-gtest_suite_end(tests-core)
+gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_files(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_deps(tests-${LIB} ${LIB})
+gtest_suite_end(tests-${LIB})
