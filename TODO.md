@@ -10,7 +10,10 @@ Now consider that there are 1000 players logged in and they all have there Coold
 
 ## Password
 
-Implement proper password handling (don't ever load password hashes from DB into memory - just compare hashes via sql statement). (This should also be true for signing up and logging in - only transmit the hash - never the real password)
+https://www.postgresql.org/docs/9.4/static/pgcrypto.html
+
+`INSERT INTO users (email, password) VALUES ('foo@bar.com', crypt('xxx', gen_salt('bf', 8)));`
+`SELECT * FROM users WHERE email = lower('foo@bar.com') AND password = crypt('xxx', password);`
 
 ## Checks
 
@@ -25,6 +28,10 @@ Support enums?
 ## Databasetool
 
 * Support `(x, y, z) primarykey` (like we do for unique keys)
+
+## Support for storing a value always in lowercase
+
+e.g. email (citext)
 
 # Shadertool
 
