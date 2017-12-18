@@ -174,23 +174,23 @@ public:
 			return *this;
 		}
 
-		const std::string& defaultValue() const {
+		inline const std::string& defaultValue() const {
 			return _defaultValue;
 		}
 
-		const std::string& description() const {
+		inline const std::string& description() const {
 			return _description;
 		}
 
-		const std::string& longArg() const {
+		inline const std::string& longArg() const {
 			return _longArg;
 		}
 
-		bool mandatory() const {
+		inline bool mandatory() const {
 			return _mandatory;
 		}
 
-		const std::string& shortArg() const {
+		inline const std::string& shortArg() const {
 			return _shortArg;
 		}
 	};
