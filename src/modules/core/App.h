@@ -150,7 +150,7 @@ public:
 		bool _mandatory = false;
 
 	public:
-		Argument(const std::string longArg) :
+		Argument(const std::string& longArg) :
 				_longArg(longArg) {
 		}
 
