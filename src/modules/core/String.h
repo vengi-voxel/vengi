@@ -86,6 +86,7 @@ inline float toFloat(const std::string& str) {
 extern void splitString(const std::string& string, std::vector<std::string>& tokens, const std::string& delimiters = " \t\r\n\f\v");
 
 extern std::string toLower(const std::string& string);
+extern std::string toLower(const char* string);
 
 inline bool startsWith(const std::string& string, const std::string& token) {
 	return !string.compare(0, token.size(), token);

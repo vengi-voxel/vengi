@@ -57,6 +57,11 @@ std::string toLower(const std::string& string) {
 	return convert;
 }
 
+std::string toLower(const char* string) {
+	std::string convert(string);
+	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) std::tolower);
+	return convert;
+}
 
 static bool patternMatch(const char *pattern, const char *text);
 static bool patternMatchMulti(const char* pattern, const char* text) {
