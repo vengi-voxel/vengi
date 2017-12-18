@@ -116,12 +116,21 @@ public:
 	void init(const std::string& organisation, const std::string& appname);
 	int startMainLoop(int argc, char *argv[]);
 
-	// e.g. register your commands here
+	/**
+	 * e.g. register your commands here
+	 * @return @c AppState::Init as next phase
+	 */
 	virtual AppState onConstruct();
-	// evaluates the command line parameters that the application was started with. Make sure your commands are already registered
+	/**
+	 * @brief Evaluates the command line parameters that the application was started with.
+	 * @note Make sure your commands are already registered (@see onConstruct())
+	 * @return @c AppState::Running if initialization succeeds, @c AppState::InitFailure if it failed.
+	 */
 	virtual AppState onInit();
 	virtual void onBeforeRunning();
-	// called every frame after the initalization was done
+	/**
+	 * @brief called every frame after the initialization was done
+	 */
 	virtual AppState onRunning();
 	virtual void onAfterRunning();
 	virtual AppState onCleanup();
