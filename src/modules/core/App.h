@@ -136,7 +136,16 @@ public:
 	virtual AppState onCleanup();
 	virtual AppState onDestroy();
 
+	/**
+	 * @brief Don't enter the given @c AppState before the blocker was removed. This can be used to implement
+	 * e.g. long initialization phases.
+	 * @see @c remBlocker()
+	 */
 	void addBlocker(AppState blockedState);
+	/**
+	 * @brief Indicate that the given @c AppState can now be entered.
+	 * @see @c addBlocker()
+	 */
 	void remBlocker(AppState blockedState);
 
 	const std::string& appname() const;
