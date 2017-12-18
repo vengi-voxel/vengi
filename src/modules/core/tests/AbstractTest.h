@@ -87,8 +87,8 @@ private:
 		TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test);
 		~TestApp();
 
-		virtual AppState onInit() override;
-		virtual AppState onCleanup() override;
+		AppState onInit() override;
+		AppState onCleanup() override;
 	};
 
 protected:
