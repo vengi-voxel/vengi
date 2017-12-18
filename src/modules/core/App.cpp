@@ -161,6 +161,10 @@ AppState App::onConstruct() {
 		core::Var::get(args[0], "")->setVal(args[1]);
 	}).setHelp("Set a variable name");
 
+	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
+
+	AppCommand::init();
+
 	for (int i = 0; i < _argc; ++i) {
 		if (_argv[i][0] != '-' || (_argv[i][0] != '\0' && _argv[i][1] == '-')) {
 			continue;
@@ -202,10 +206,6 @@ AppState App::onConstruct() {
 	}
 
 	_filesystem->init(_organisation, _appname);
-
-	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
-
-	AppCommand::init();
 
 	return AppState::Init;
 }
