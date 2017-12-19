@@ -32,6 +32,9 @@ struct Class {
 	std::stringstream& _src;
 
 	Class(const Table& table, std::stringstream& src) : _table(table), _src(src) {
+		src << "/**\n * @brief Model class for table '" << table.name << "'\n";
+		src << " * @note Work with this class in combination with the persistence::DBHandler\n";
+		src << " */\n";
 		src << "class " << table.classname << " : public persistence::Model {\n";
 		src << "private:\n";
 		src << "\tusing Super = persistence::Model;\n";
@@ -68,6 +71,9 @@ static void createMembersStruct(const Table& table, std::stringstream& src) {
 	src << "\tstruct " << MembersStruct::structName() << " {\n";
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
+		src << "\t\t/**\n";
+		src << "\t\t * @brief Member for table column '" << entry.second.name << "'\n";
+		src << "\t\t */\n";
 		src << "\t\t";
 		src << getCPPType(f.type, false);
 		src << " _" << f.name;
@@ -81,9 +87,16 @@ static void createMembersStruct(const Table& table, std::stringstream& src) {
 		// TODO: use bitfield
 		const persistence::Field& f = entry.second;
 		if (isPointer(f)) {
+			src << "\t\t/**\n";
+			src << "\t\t * @brief Is the value set to null?\n";
+			src << "\t\t * @c true if a value is set to null and the field should be taken into account for e.g. update statements, @c false if not\n";
+			src << "\t\t */\n";
 			src << "\t\tbool " << MembersStruct::nullFieldName(f) << " = false;\n";
 		}
-		src << "\t\t// is there a valid value set\n";
+		src << "\t\t/**\n";
+		src << "\t\t * @brief Is there a valid value set?\n";
+		src << "\t\t * @c true if a value is set and the field should be taken into account for e.g. update statements, @c false if not\n";
+		src << "\t\t */\n";
 		src << "\t\tbool " << MembersStruct::validFieldName(f) << " = false;\n";
 	}
 	src << "\t};\n";
@@ -193,7 +206,15 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		src << "private:\n";
 		src << "\tusing Super = persistence::DBCondition;\n";
 		src << "public:\n";
-		src << "\t";
+		src << "\t/**\n\t * @brief Condition for " << f.name << "\n\t * @param[in] value";
+		if (f.type == persistence::FieldType::TIMESTAMP) {
+			src << " UTC timestamp in seconds";
+		} else if (isString(f)) {
+			if (f.isLower()) {
+				src << " The given value is converted to lowercase before the comparison takes place";
+			}
+		}
+		src << "\n\t */\n\t";
 		if (isString(f) && !f.isLower()) {
 			src << "constexpr ";
 		}
@@ -246,6 +267,33 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		const std::string& cpptypeSetter = getCPPType(f.type, true, false);
 		const std::string& setter = core::string::upperCamelCase(f.name);
 
+		src << "\t/**\n\t * @brief Access the value after the model was loaded\n";
+		if (f.type == persistence::FieldType::TIMESTAMP) {
+			src << "\t * @note The value is in seconds\n";
+		}
+		if (f.isAutoincrement()) {
+			src << "\t * @note Auto increment\n";
+		}
+		if (f.isIndex()) {
+			src << "\t * @note Index\n";
+		}
+		if (f.isNotNull()) {
+			src << "\t * @note May not be null\n";
+		}
+		if (f.isPrimaryKey()) {
+			src << "\t * @note Primary key\n";
+		}
+		if (f.isLower()) {
+			src << "\t * @note Store as lowercase string\n";
+		}
+		if (f.isUnique()) {
+			src << "\t * @note Unique key\n";
+		}
+		if (f.isForeignKey()) {
+			src << "\t * @note Foreign key\n";
+		}
+		src << "\t */\n";
+
 		src << "\tinline " << cpptypeGetter << " " << getter << "() const {\n";
 		if (isPointer(f)) {
 			src << "\t\tif (_m._isNull_" << f.name << ") {\n";
@@ -261,6 +309,30 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		}
 		src << "\t}\n\n";
 
+		src << "\t/**\n";
+		src << "\t * @brief Set the value for '" << f.name << "' for updates and where clauses\n";
+		if (f.isAutoincrement()) {
+			src << "\t * @note Auto increment\n";
+		}
+		if (f.isIndex()) {
+			src << "\t * @note Index\n";
+		}
+		if (f.isNotNull()) {
+			src << "\t * @note May not be null\n";
+		}
+		if (f.isPrimaryKey()) {
+			src << "\t * @note Primary key\n";
+		}
+		if (f.isLower()) {
+			src << "\t * @param[in] " << f.name << " Store as lowercase string\n";
+		}
+		if (f.isUnique()) {
+			src << "\t * @note Unique key\n";
+		}
+		if (f.isForeignKey()) {
+			src << "\t * @note Foreign key\n";
+		}
+		src << "\t */\n";
 		src << "\tinline void set" << setter << "(" << cpptypeSetter << " " << f.name << ") {\n";
 		src << "\t\t_m._" << f.name << " = ";
 		if (isString(f) && f.isLower()) {
@@ -276,6 +348,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		src << "\t}\n\n";
 
 		if (f.type == persistence::FieldType::INT || f.type == persistence::FieldType::SHORT) {
+			src << "\t/**\n\t * @brief Set the value for '" << f.name << "' for updates and where clauses\n\t */\n";
 			src << "\ttemplate<typename T, class = typename std::enable_if<std::is_enum<T>::value>::type>\n";
 			src << "\tinline void set" << setter << "(const T& " << f.name << ") {\n";
 			src << "\t\tset" << setter << "(static_cast<" << cpptypeSetter << ">(static_cast<typename std::underlying_type<T>::type>(" << f.name << ")));\n";
@@ -283,6 +356,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		}
 
 		if (isPointer(f)) {
+			src << "\t/**\n\t * @brief Set the value for '" << f.name << "' for updates and where clauses to null\n\t */\n";
 			src << "\tinline void set" << setter << "(std::nullptr_t " << f.name << ") {\n";
 			src << "\t\t_m." << MembersStruct::nullFieldName(f) << " = true;\n";
 			src << "\t\t_m." << MembersStruct::validFieldName(f) << " = true;\n";
@@ -294,6 +368,9 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 void createFieldNames(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
+		src << "\t/**\n";
+		src << "\t * @brief The column name for '" << f.name << "'\n";
+		src << "\t */\n";
 		src << "\tstatic constexpr const char* " << getFieldnameFunction(f) << "() {\n\t\treturn \"" << f.name << "\";\n\t}\n\n";
 	}
 }
