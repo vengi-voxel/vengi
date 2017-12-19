@@ -161,8 +161,6 @@ State DBHandler::execInternalWithParameters(const std::string& query, Model& mod
 	Log::debug("Execute query '%s' with %i parameters", query.c_str(), param.position);
 	if (!s.exec(query.c_str(), param.position, &param.values[0])) {
 		Log::warn(logid, "Failed to execute query: '%s'", query.c_str());
-	} else {
-		Log::debug(logid, "Executed query: '%s'", query.c_str());
 	}
 	if (s.affectedRows <= 0) {
 		Log::trace(logid, "No rows affected, can't fill model values");

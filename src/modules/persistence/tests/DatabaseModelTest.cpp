@@ -52,13 +52,13 @@ public:
 		const db::DBConditionTestModelPassword passwordCond(password);
 		ASSERT_TRUE(_dbHandler.select(mdl2nd, persistence::DBConditionMultiple(true, {&emailCond, &passwordCond})));
 		EXPECT_GT(mdl2nd.registrationdate().seconds(), uint64_t(0));
-		EXPECT_EQ(mdl2nd.email(), email);
+		EXPECT_EQ(mdl2nd.email(), mdl.email());
 		ASSERT_EQ(mdl2nd.id(), mdl.id());
 
 		db::TestModel mdl3nd;
 		ASSERT_TRUE(_dbHandler.select(mdl3nd, db::DBConditionTestModelId(mdl.id())));
 		EXPECT_GT(mdl3nd.registrationdate().seconds(), uint64_t(0));
-		EXPECT_EQ(mdl3nd.email(), email);
+		EXPECT_EQ(mdl3nd.email(), mdl.email());
 		ASSERT_EQ(mdl3nd.id(), mdl.id());
 
 		id = mdl.id();
@@ -168,7 +168,7 @@ TEST_F(DatabaseModelTest, testUpdate) {
 		return;
 	}
 	int64_t id = -1L;
-	createModel("testUpdate@b.c.d", "secret", id);
+	createModel("testupdate@b.c.d", "secret", id);
 	int count = 0;
 	db::TestModel copy;
 	_dbHandler.select(db::TestModel(), db::DBConditionTestModelId(id), [&] (db::TestModel&& model) {
@@ -176,7 +176,7 @@ TEST_F(DatabaseModelTest, testUpdate) {
 		copy = std::move(model);
 	});
 	ASSERT_EQ(count, 1);
-	ASSERT_EQ("testUpdate@b.c.d", copy.email());
+	ASSERT_EQ("testupdate@b.c.d", copy.email());
 	copy.setEmail("no@mail.com");
 	_dbHandler.update(copy);
 	_dbHandler.select(db::TestModel(), db::DBConditionTestModelId(id), [&] (db::TestModel&& model) {

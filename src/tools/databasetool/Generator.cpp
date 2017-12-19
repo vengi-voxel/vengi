@@ -225,7 +225,13 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 			src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(";
 			src << table.classname << "::f_" << f.name << "(), persistence::FieldType::";
 			src << persistence::toFieldType(f.type);
-			src << ", value, comp) {\n\t}\n";
+			src << ", ";
+			if (f.isLower()) {
+				src << "core::string::toLower(value)";
+			} else {
+				src << "value";
+			}
+			src << ", comp) {\n\t}\n";
 		}
 
 		src << "}; // class " << classname << "\n\n";
