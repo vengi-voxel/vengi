@@ -9,6 +9,7 @@
 #include "video/Camera.h"
 #include "video/DepthBuffer.h"
 #include "FrontendShaders.h"
+#include "video/Shader.h"
 #include "video/VertexBuffer.h"
 #include "video/UniformBuffer.h"
 #include "video/Texture.h"
