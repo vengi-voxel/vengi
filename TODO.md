@@ -12,6 +12,10 @@ Now consider that there are 1000 players logged in and they all have there Coold
 
 ALTER TABLE products ADD CHECK (name <> '');
 
+## Prepared statements
+
+Better support for prepared statements
+
 ## Enums
 
 Support enums?
@@ -95,3 +99,4 @@ Extend statsd support with more events
 # SignUp
 
 Implement signnp with email verification, Lost password and co - also see password related point in the persistence section.
+Maybe use https://github.com/est31/csrp-gmp
