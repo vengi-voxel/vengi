@@ -38,10 +38,11 @@ table <TABLENAME> {
   namespace <STRING> (c++ namespace where the class is put into)
   schema <STRING> (default is public)
   field <FIELDNAME> {
-    type <FIELDTYPE>
+    type <FIELDTYPE> (default: string)
     notnull (optional)
     length <LENGTH> (optional)
-	operator <OPERATOR>
+    operator <OPERATOR> (default: set)
+    lowercase (optional)
     default <DEFAULTVALUE> (optional)
   }
   constraints {
@@ -59,7 +60,6 @@ table <TABLENAME> {
 ## Valid field types
 * password
 * string
-* lower_text
 * text
 * int
 * long
