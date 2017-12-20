@@ -381,7 +381,8 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 	src << "#include \"persistence/Model.h\"\n";
 	src << "#include \"persistence/DBCondition.h\"\n";
 	src << "#include \"core/String.h\"\n";
-	src << "#include \"core/Common.h\"\n\n";
+	src << "#include \"core/Common.h\"\n";
+	src << "\n";
 	src << "#include <memory>\n";
 	src << "#include <vector>\n";
 	src << "#include <array>\n";

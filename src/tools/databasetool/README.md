@@ -23,14 +23,14 @@ generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl ExampleModels.h
 `ExampleModels.h` specifies a single header where all generated table models
 are put into.
 
-**Example:**
+## Example
 
 If no classname is specified, the table name will be used with `Model` as postfix.
 
 Table `user` will be generated as `UserModel` class, if no other `classname` was
 specified
 
-All models will be put into a `persistence` namespace.
+All models will be put into a `db` namespace.
 
 ```
 table <TABLENAME> {
