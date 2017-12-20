@@ -63,7 +63,7 @@ struct MembersStruct {
 	}
 };
 
-static std::string getFieldnameFunction(const persistence::Field& field) {
+static std::string getFieldNameFunction(const persistence::Field& field) {
 	return "f_" + field.name;
 }
 
@@ -225,7 +225,7 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 			src << getCPPType(f.type, true, false);
 		}
 		src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(";
-		src << table.classname << "::" << getFieldnameFunction(f) << "(), persistence::FieldType::";
+		src << table.classname << "::" << getFieldNameFunction(f) << "(), persistence::FieldType::";
 		src << persistence::toFieldType(f.type) << ", ";
 		if (isString(f)) {
 			if (f.isLower()) {
@@ -371,7 +371,7 @@ void createFieldNames(const Table& table, std::stringstream& src) {
 		src << "\t/**\n";
 		src << "\t * @brief The column name for '" << f.name << "'\n";
 		src << "\t */\n";
-		src << "\tstatic constexpr const char* " << getFieldnameFunction(f) << "() {\n\t\treturn \"" << f.name << "\";\n\t}\n\n";
+		src << "\tstatic constexpr const char* " << getFieldNameFunction(f) << "() {\n\t\treturn \"" << f.name << "\";\n\t}\n\n";
 	}
 }
 
