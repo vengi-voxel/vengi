@@ -1,6 +1,6 @@
 # Purpose
 
-This tool parses OpenCL shader files (*.cl) and generated C++ source files for them.
+This tool parses OpenCL shader files (`*.cl`) and generates C++ source files for them.
 
 # Description
 

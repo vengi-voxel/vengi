@@ -5,12 +5,12 @@
 #include "Generator.h"
 #include "core/String.h"
 #include "core/Assert.h"
+#include "io/Filesystem.h"
 #include "Util.h"
 #include "Types.h"
 
 namespace computeshadertool {
 
-// TODO: doxygen
 bool generateSrc(const io::FilesystemPtr& filesystem,
 		const std::string& templateShader,
 		const std::string& _name,
@@ -39,7 +39,21 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	std::stringstream createKernels;
 	std::stringstream kernels;
 	for (const Kernel& k : _kernels) {
-		kernels << "\n\tbool " << k.name << "(\n\t\t";
+		kernels << "\n";
+		kernels << "\t/**\n";
+		kernels << "\t * @brief Kernel code for '" << k.name << "'\n";
+		kernels << "\t * @return @c true if the execution was successful, @c false on error.\n";
+		for (const Parameter& p : k.parameters) {
+			if (core::string::contains(p.type, "*")) {
+				kernels << "\t * @param " << p.name;
+				kernels << " vector with datatype that matches the CL type " << p.type << ". Note\n";
+				kernels << "\t * that the base pointer of this vector should be aligned (64 bytes) for optimal performance.\n";
+			}
+		}
+		kernels << "\t * @param[in] workSize Specify the number of global work-items per dimension (" << k.workDimension << ")\n";
+		kernels << "\t * that will execute the kernel function\n";
+		kernels << "\t */\n";
+		kernels << "\tbool " << k.name << "(\n\t\t";
 		bool first = true;
 		for (const Parameter& p : k.parameters) {
 			if (!first) {
@@ -50,7 +64,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 			}
 			if (core::string::contains(p.type, "*")) {
 				const util::CLTypeMapping& clType = util::vectorType(p.type);
-				kernels << "/* " << p.type << "*/ std::vector<" << clType.type << ">& " << p.name;
+				kernels << "std::vector<" << clType.type << ">& " << p.name;
 			} else {
 				const util::CLTypeMapping& clType = util::vectorType(p.type);
 				kernels << clType.type;
@@ -78,6 +92,9 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 				kernels << "\t\t}\n";
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", " << i << ", " << bufferName << ");\n";
 
+				kernelMembers << "\t/**\n";
+				kernelMembers << "\t * @brief Buffer for '" << p.name << "'\n";
+				kernelMembers << "\t */\n";
 				kernelMembers << "\tmutable compute::Id " << bufferName << " = compute::InvalidId;\n";
 
 				shutdown << "\t\tcompute::deleteBuffer(" << bufferName << ");\n";

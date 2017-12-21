@@ -6,7 +6,10 @@
 #include "compute/Compute.h"
 #include "core/Log.h"
 #include "core/App.h"
+#include "core/Assert.h"
 #include "io/Filesystem.h"
+#include <glm/vec3.hpp>
+#include <glm/common.hpp>
 #include <glm/gtc/round.hpp>
 #include <vector>
 #include <string>
