@@ -59,7 +59,7 @@ protected:
 			core_assert(occlusionQueryId == video::InvalidId);
 		}
 		bool inuse = false;
-		core::AABB<int> _aabb = {glm::zero<glm::ivec3>(), glm::zero<glm::ivec3>()};
+		math::AABB<int> _aabb = {glm::zero<glm::ivec3>(), glm::zero<glm::ivec3>()};
 		voxel::ChunkMeshes meshes {0, 0, 0, 0};
 		std::vector<glm::vec3> instancedPositions;
 		video::Id occlusionQueryId = video::InvalidId;
@@ -78,12 +78,12 @@ protected:
 		 * This is the render aabb. There might be a scale applied here. So the mins of
 		 * the AABB might not be at the position given by @c translation()
 		 */
-		inline const core::AABB<int>& aabb() const {
+		inline const math::AABB<int>& aabb() const {
 			return _aabb;
 		}
 	};
 
-	core::Octree<ChunkBuffer*> _octree;
+	math::Octree<ChunkBuffer*> _octree;
 	static constexpr int MAX_CHUNKBUFFERS = 4096;
 	ChunkBuffer _chunkBuffers[MAX_CHUNKBUFFERS];
 	int _activeChunkBuffers = 0;

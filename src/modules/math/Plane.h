@@ -1,8 +1,12 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "core/GLM.h"
 
-namespace core {
+namespace math {
 
 enum class PlaneSide {
 	Front, Back, On

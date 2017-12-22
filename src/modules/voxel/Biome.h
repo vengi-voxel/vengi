@@ -44,7 +44,7 @@ public:
 	const std::vector<TreeType>& treeTypes() const;
 	void addTreeType(TreeType type);
 
-	Voxel voxel(core::Random& random) const;
+	Voxel voxel(math::Random& random) const;
 	Voxel voxel(uint8_t colorIndex) const;
 	Voxel voxel() const;
 };
@@ -61,7 +61,7 @@ inline bool Biome::hasClouds() const {
 	 return humidity >= 0.5f;
 }
 
-inline Voxel Biome::voxel(core::Random& random) const {
+inline Voxel Biome::voxel(math::Random& random) const {
 	core_assert(!indices.empty());
 	return Voxel(type, *random.randomElement(indices.begin(), indices.end()));
 }
@@ -74,7 +74,7 @@ inline Voxel Biome::voxel(uint8_t colorIndex) const {
 }
 
 inline Voxel Biome::voxel() const {
-	thread_local core::Random random;
+	thread_local math::Random random;
 	return voxel(random);
 }
 

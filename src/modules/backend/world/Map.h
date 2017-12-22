@@ -45,12 +45,12 @@ private:
 	struct QuadTreeNode {
 		EntityPtr entity;
 
-		core::RectFloat getRect() const;
+		math::RectFloat getRect() const;
 		bool operator==(const QuadTreeNode& rhs) const;
 	};
 
-	core::QuadTree<QuadTreeNode, float> _quadTree;
-	core::QuadTreeCache<QuadTreeNode, float> _quadTreeCache;
+	math::QuadTree<QuadTreeNode, float> _quadTree;
+	math::QuadTreeCache<QuadTreeNode, float> _quadTreeCache;
 
 	void updateQuadTree();
 	/**

@@ -93,7 +93,7 @@ protected:
 	void updateProjectionMatrix();
 	void updateTarget();
 
-	core::Frustum _frustum;
+	math::Frustum _frustum;
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 	~Camera();
@@ -237,13 +237,13 @@ public:
 	/**
 	 * @brief Calculates the 8 vertices for a split frustum
 	 */
-	void splitFrustum(float nearPlane, float farPlane, glm::vec3 out[core::FRUSTUM_VERTICES_MAX]) const;
-	void frustumCorners(glm::vec3 out[core::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
-	const core::Frustum& frustum() const;
+	void splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::FRUSTUM_VERTICES_MAX]) const;
+	void frustumCorners(glm::vec3 out[math::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
+	const math::Frustum& frustum() const;
 	bool isVisible(const glm::vec3& position) const;
-	bool isVisible(const core::AABB<float>& aabb) const;
+	bool isVisible(const math::AABB<float>& aabb) const;
 	bool isVisible(const glm::vec3& mins, const glm::vec3& maxs) const;
-	core::AABB<float> aabb() const;
+	math::AABB<float> aabb() const;
 	glm::vec4 sphereBoundingBox() const;
 	glm::vec4 splitFrustumSphereBoundingBox(float near, float far) const;
 };
@@ -429,7 +429,7 @@ inline const glm::mat4& Camera::viewProjectionMatrix() const {
 	return _viewProjectionMatrix;
 }
 
-inline const core::Frustum& Camera::frustum() const {
+inline const math::Frustum& Camera::frustum() const {
 	return _frustum;
 }
 
@@ -437,7 +437,7 @@ inline bool Camera::isVisible(const glm::vec3& pos) const {
 	return frustum().isVisible(pos);
 }
 
-inline bool Camera::isVisible(const core::AABB<float>& aabb) const {
+inline bool Camera::isVisible(const math::AABB<float>& aabb) const {
 	return isVisible(aabb.getLowerCorner(), aabb.getUpperCorner());
 }
 
@@ -445,7 +445,7 @@ inline bool Camera::isVisible(const glm::vec3& mins, const glm::vec3& maxs) cons
 	return frustum().isVisible(mins, maxs);
 }
 
-inline void Camera::frustumCorners(glm::vec3 out[core::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const {
+inline void Camera::frustumCorners(glm::vec3 out[math::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const {
 	frustum().corners(out, indices);
 }
 

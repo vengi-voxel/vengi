@@ -32,7 +32,7 @@ private:
 
 	core::TimeProviderPtr _timeProvider;
 	core::ReadWriteLock _lock;
-	core::Random _random;
+	math::Random _random;
 public:
 	PoiProvider(const core::TimeProviderPtr& timeProvider);
 

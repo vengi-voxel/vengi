@@ -215,19 +215,19 @@ bool Entity::inFrustum(const glm::vec3& position) const {
 	if (fieldOfView <= 1.0) {
 		return false;
 	}
-	return core::Frustum::isVisible(pos(), orientation(), position, glm::radians(fieldOfView));
+	return math::Frustum::isVisible(pos(), orientation(), position, glm::radians(fieldOfView));
 }
 
-core::RectFloat Entity::rect() const {
+math::RectFloat Entity::rect() const {
 	const glm::vec3 p = pos();
 	const float halfSize = size() / 2.0f;
-	return core::RectFloat(p.x - halfSize, p.z - halfSize, p.x + halfSize, p.z + halfSize);
+	return math::RectFloat(p.x - halfSize, p.z - halfSize, p.x + halfSize, p.z + halfSize);
 }
 
-core::RectFloat Entity::viewRect() const {
+math::RectFloat Entity::viewRect() const {
 	const glm::vec3 p = pos();
 	const float viewDistance = current(attrib::Type::VIEWDISTANCE);
-	return core::RectFloat(p.x - viewDistance, p.z - viewDistance, p.x + viewDistance, p.z + viewDistance);
+	return math::RectFloat(p.x - viewDistance, p.z - viewDistance, p.x + viewDistance, p.z + viewDistance);
 }
 
 }

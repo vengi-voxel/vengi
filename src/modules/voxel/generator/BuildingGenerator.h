@@ -10,7 +10,7 @@ namespace voxel {
 namespace building {
 
 template<class Volume, class Voxel>
-void createRoof(Volume& volume, glm::ivec3 pos, const BuildingContext& ctx, Voxel& roofVoxel, core::Random& random) {
+void createRoof(Volume& volume, glm::ivec3 pos, const BuildingContext& ctx, Voxel& roofVoxel, math::Random& random) {
 	int d = ctx.floorDepth;
 	do {
 		voxel::shape::createPlaneNoCenter(volume, pos, ctx.floorWidth, d, roofVoxel);
@@ -21,7 +21,7 @@ void createRoof(Volume& volume, glm::ivec3 pos, const BuildingContext& ctx, Voxe
 }
 
 template<class Volume, class Voxel>
-int createFloor(Volume& volume, const glm::ivec3& pos, const BuildingContext& ctx, Voxel& wallVoxel, core::Random& random) {
+int createFloor(Volume& volume, const glm::ivec3& pos, const BuildingContext& ctx, Voxel& wallVoxel, math::Random& random) {
 	const int width = ctx.floorWidth - 2 * ctx.wallOffset;
 	const int depth = ctx.floorDepth - 2 * ctx.wallOffset;
 	const int height = ctx.floorHeight;
@@ -84,7 +84,7 @@ int createFloor(Volume& volume, const glm::ivec3& pos, const BuildingContext& ct
 }
 
 template<class Volume>
-void createTower(Volume& volume, const BuildingContext& ctx, core::Random& random) {
+void createTower(Volume& volume, const BuildingContext& ctx, math::Random& random) {
 	const RandomVoxel wallVoxel(VoxelType::Wall, random);
 	glm::ivec3 pos = ctx.pos;
 	for (int i = 0; i < ctx.floors; ++i) {
@@ -135,7 +135,7 @@ void createTower(Volume& volume, const BuildingContext& ctx, core::Random& rando
 }
 
 template<class Volume>
-void createHouse(Volume& volume, const BuildingContext& ctx, core::Random& random) {
+void createHouse(Volume& volume, const BuildingContext& ctx, math::Random& random) {
 	const RandomVoxel wallVoxel(VoxelType::Wall, random);
 	glm::ivec3 pos = ctx.pos;
 	for (int i = 0; i < ctx.floors; ++i) {
@@ -148,7 +148,7 @@ void createHouse(Volume& volume, const BuildingContext& ctx, core::Random& rando
 
 template<class Volume>
 void createBuilding(Volume& volume, const glm::ivec3& pos, BuildingType type) {
-	core::Random random(pos.x + pos.y + pos.z);
+	math::Random random(pos.x + pos.y + pos.z);
 	BuildingContext ctx;
 	ctx.pos = pos;
 	switch (type) {

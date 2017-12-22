@@ -94,7 +94,7 @@ public:
 		std::iota(std::begin(v3), std::end(v3), 0);
 		std::iota(std::begin(v4), std::end(v4), offset);
 
-		core::Random rnd;
+		math::Random rnd;
 		rnd.shuffle(v3.begin(), v3.end());
 		rnd.shuffle(v4.begin(), v4.end());
 

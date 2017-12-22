@@ -83,7 +83,7 @@ void World::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	scheduleMeshExtraction(pos);
 }
 
-void World::updateExtractionOrder(const glm::ivec3& sortPos, const core::Frustum& frustum) {
+void World::updateExtractionOrder(const glm::ivec3& sortPos, const math::Frustum& frustum) {
 	// TODO: sort closest to camera and in frustum first
 }
 

@@ -19,7 +19,7 @@ struct CloudContext {
 
 template<class Volume, class BiomeManager>
 bool createClouds(Volume& volume, const voxel::Region& region, const BiomeManager& biomManager, const CloudContext& ctx) {
-	core::Random random(region.getCentreX() + region.getCentreY() + region.getCentreZ());
+	math::Random random(region.getCentreX() + region.getCentreY() + region.getCentreZ());
 
 	std::vector<glm::vec2> positions;
 	biomManager.getCloudPositions(region, positions, random, std::max(ctx.width, ctx.depth));

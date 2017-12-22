@@ -7,7 +7,7 @@
 #include "math/Frustum.h"
 #include "core/Log.h"
 
-namespace core {
+namespace math {
 
 class Item {
 private:
@@ -32,10 +32,10 @@ public:
 	void test(const glm::vec3& mins, const glm::vec3& maxs, int& n, const glm::ivec3& expectedMins, const glm::ivec3& expectedMaxs, int size) {
 		EXPECT_TRUE(glm::isPowerOfTwo(size));
 		n = 0;
-		const core::AABB<int> aabb(mins, maxs);
+		const math::AABB<int> aabb(mins, maxs);
 		Octree<Item*> octree(aabb);
-		core::Frustum frustum(aabb);
-		const core::AABB<float>& frustumAABB = frustum.aabb();
+		math::Frustum frustum(aabb);
+		const math::AABB<float>& frustumAABB = frustum.aabb();
 		EXPECT_TRUE(glm::all(glm::epsilonEqual(mins, frustumAABB.mins(), 0.1f)))
 			<< glm::to_string(mins) << ", "
 			<< glm::to_string(frustumAABB.mins());
@@ -43,7 +43,7 @@ public:
 			<< glm::to_string(maxs) << ", "
 			<< glm::to_string(frustumAABB.maxs());
 		bool ignore = false;
-		const core::AABB<int>& visitAABB = computeAABB(frustum, glm::vec3(size));
+		const math::AABB<int>& visitAABB = computeAABB(frustum, glm::vec3(size));
 		EXPECT_EQ(expectedMaxs, visitAABB.maxs())
 			<< "Expected to get " << glm::to_string(expectedMaxs)
 			<< " but got " << glm::to_string(visitAABB.maxs());
@@ -70,16 +70,16 @@ public:
 
 	void testAABB(const glm::vec3& mins, const glm::vec3& maxs, const glm::ivec3& expectedMins, const glm::ivec3& expectedMaxs, int size) {
 		EXPECT_TRUE(glm::isPowerOfTwo(size));
-		const core::AABB<int> aabb(mins, maxs);
-		core::Frustum frustum(aabb);
-		const core::AABB<float>& frustumAABB = frustum.aabb();
+		const math::AABB<int> aabb(mins, maxs);
+		math::Frustum frustum(aabb);
+		const math::AABB<float>& frustumAABB = frustum.aabb();
 		EXPECT_TRUE(glm::all(glm::epsilonEqual(mins, frustumAABB.mins(), 0.1f)))
 			<< glm::to_string(mins) << ", "
 			<< glm::to_string(frustumAABB.mins());
 		EXPECT_TRUE(glm::all(glm::epsilonEqual(maxs, frustumAABB.maxs(), 0.1f)))
 			<< glm::to_string(maxs) << ", "
 			<< glm::to_string(frustumAABB.maxs());
-		const core::AABB<int>& visitAABB = computeAABB(frustum, glm::vec3(size));
+		const math::AABB<int>& visitAABB = computeAABB(frustum, glm::vec3(size));
 		EXPECT_EQ(expectedMaxs, visitAABB.maxs())
 			<< "Expected to get " << glm::to_string(expectedMaxs)
 			<< " but got " << glm::to_string(visitAABB.maxs());
@@ -184,10 +184,10 @@ TEST_F(OctreeTest, testOctreeVisitOrthoFrustum) {
 	const glm::vec3 mins(0.0f);
 	const glm::vec3 maxs(128.0f);
 	const int slices = 8;
-	const core::AABB<int> aabb(mins, maxs);
+	const math::AABB<int> aabb(mins, maxs);
 	Octree<Item*> octree(aabb);
-	core::Frustum frustum(aabb);
-	const core::AABB<float>& frustumAABB = frustum.aabb();
+	math::Frustum frustum(aabb);
+	const math::AABB<float>& frustumAABB = frustum.aabb();
 	ASSERT_EQ(mins, frustumAABB.mins())
 		<< glm::to_string(mins) << ", "
 		<< glm::to_string(frustumAABB.mins());

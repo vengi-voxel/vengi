@@ -45,7 +45,7 @@ namespace noise {
  * If no \a initialSet of points is provided the area center will be used
  * as the initial point.
  */
-std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rect<int> &area, const std::vector<glm::vec2> &initialSet =
+std::vector<glm::vec2> poissonDiskDistribution(float separation, const math::Rect<int> &area, const std::vector<glm::vec2> &initialSet =
 		std::vector<glm::vec2>(), int k = 30);
 
 
@@ -56,7 +56,7 @@ std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rec
  * If no \a initialSet of points is provided the area center will be used
  * as the initial point.
  */
-std::vector<glm::vec3> poissonDiskDistribution(float separation, const core::AABB<int> &area, const std::vector<glm::vec3> &initialSet =
+std::vector<glm::vec3> poissonDiskDistribution(float separation, const math::AABB<int> &area, const std::vector<glm::vec3> &initialSet =
 		std::vector<glm::vec3>(), int k = 30);
 
 /**
@@ -66,7 +66,7 @@ std::vector<glm::vec3> poissonDiskDistribution(float separation, const core::AAB
  * higher the algorithm will be slow. If no \a initialSet of points is
  * provided the area center will be used as the initial point.
  */
-std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const glm::vec2&)> &distFunction, const core::Rect<int> &area,
+std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const glm::vec2&)> &distFunction, const math::Rect<int> &area,
 		const std::vector<glm::vec2> &initialSet = std::vector<glm::vec2>(), int k = 30);
 /**
  * returns a set of poisson disk samples within bounds defined by both \a
@@ -79,7 +79,7 @@ std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const g
  * @todo: remove Rect<int> area arguments and compute bounds inside the function
  */
 std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const glm::vec2&)> &distFunction,
-		const std::function<bool(const glm::vec2&)> &boundsFunction, const core::Rect<int> &area,
+		const std::function<bool(const glm::vec2&)> &boundsFunction, const math::Rect<int> &area,
 		const std::vector<glm::vec2> &initialSet = std::vector<glm::vec2>(), int k = 30);
 
 }

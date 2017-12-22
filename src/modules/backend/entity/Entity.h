@@ -169,13 +169,13 @@ public:
 	 * @note The position is in the center of this rectangle.
 	 * @note This is in world coordinates.
 	 */
-	core::RectFloat rect() const;
+	math::RectFloat rect() const;
 
 	/**
 	 * @brief the view rect defines which rect the entity can see right now.
 	 * This is used e.g. for visibility calculation
 	 */
-	core::RectFloat viewRect() const;
+	math::RectFloat viewRect() const;
 
 	/**
 	 * @brief Check whether the given position can be seen by the entity.

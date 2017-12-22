@@ -8,7 +8,7 @@
 #include <random>
 #include <cstdlib>
 
-namespace core {
+namespace math {
 
 Random::Random() :
 		Random(0) {

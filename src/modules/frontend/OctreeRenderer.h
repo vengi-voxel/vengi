@@ -28,7 +28,7 @@ private:
 		video::Id _indexBuffer;
 		video::Id _vertexBuffer;
 
-		core::AABB<float> _aabb{glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
+		math::AABB<float> _aabb{glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
 
 		voxel::TimeStamp _structureLastSynced = 0;
 		voxel::TimeStamp _propertiesLastSynced = 0;

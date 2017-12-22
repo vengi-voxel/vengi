@@ -9,7 +9,7 @@
 namespace frontend {
 
 /**
- * @brief Renders a video::Camera core::Frustum
+ * @brief Renders a video::Camera math::Frustum
  *
  * @see video::ShapeBuilder
  * @see ShapeRenderer

@@ -15,20 +15,20 @@ private:
 	using Super = TestApp;
 	class Wrapper {
 	private:
-		core::AABB<int> _aabb;
+		math::AABB<int> _aabb;
 	public:
 		Wrapper(const glm::ivec3& pos) :
 				_aabb(pos, pos + 1) {
 		}
-		inline core::AABB<int> aabb() const {
+		inline math::AABB<int> aabb() const {
 			return _aabb;
 		}
 	};
 
-	using Tree = core::Octree<Wrapper>;
+	using Tree = math::Octree<Wrapper>;
 	using Node = Tree::OctreeNode;
 
-	Tree _octree { core::AABB<int>(glm::ivec3(-1024, 0, -1024), glm::ivec3(1024, 2048, 1024)), 10 };
+	Tree _octree { math::AABB<int>(glm::ivec3(-1024, 0, -1024), glm::ivec3(1024, 2048, 1024)), 10 };
 	mutable video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;
 	video::Camera _octreeCamera;

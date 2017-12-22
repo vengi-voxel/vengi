@@ -50,8 +50,8 @@ private:
 	glm::ivec3 _referencePos;
 	glm::ivec3 _mirrorPos;
 
-	core::Axis _lockedAxis = core::Axis::None;
-	core::Axis _mirrorAxis = core::Axis::None;
+	math::Axis _lockedAxis = math::Axis::None;
+	math::Axis _mirrorAxis = math::Axis::None;
 
 	bool _empty = true;
 	bool _dirty = false;
@@ -81,9 +81,9 @@ private:
 	uint64_t _lastGrow = 0;
 	voxel::tree::Tree *_spaceColonizationTree = nullptr;
 
-	int getIndexForAxis(core::Axis axis) const;
-	int getIndexForMirrorAxis(core::Axis axis) const;
-	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, core::Axis axis, const glm::vec4& color);
+	int getIndexForAxis(math::Axis axis) const;
+	int getIndexForMirrorAxis(math::Axis axis) const;
+	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color);
 	void markExtract();
 	void markCursorExtract();
 	void modified(const voxel::Region& modifiedRegion, bool markUndo = true);
@@ -186,12 +186,12 @@ public:
 	void setSelectionType(SelectType type);
 	SelectType selectionType() const;
 
-	core::Axis lockedAxis() const;
-	void setLockedAxis(core::Axis axis, bool unlock);
-	void updateLockedPlane(core::Axis axis);
+	math::Axis lockedAxis() const;
+	void setLockedAxis(math::Axis axis, bool unlock);
+	void updateLockedPlane(math::Axis axis);
 
-	core::Axis mirrorAxis() const;
-	void setMirrorAxis(core::Axis axis, const glm::ivec3& mirrorPos);
+	math::Axis mirrorAxis() const;
+	void setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
 	void updateMirrorPlane();
 
 	void undo();
@@ -217,7 +217,7 @@ public:
 	uint64_t _actionExecutionDelay = 20;
 };
 
-inline core::Axis Model::lockedAxis() const {
+inline math::Axis Model::lockedAxis() const {
 	return _lockedAxis;
 }
 

@@ -5,7 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "math/Plane.h"
 
-namespace core {
+namespace math {
 
 class PlaneTest : public core::AbstractTest {
 };

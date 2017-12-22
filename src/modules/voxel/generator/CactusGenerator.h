@@ -15,7 +15,7 @@ namespace voxel {
 namespace cactus {
 
 template<class Volume>
-void createCactus(Volume& volume, const glm::ivec3& pos, int trunkHeight, int trunkWidth, core::Random& random) {
+void createCactus(Volume& volume, const glm::ivec3& pos, int trunkHeight, int trunkWidth, math::Random& random) {
 	std::vector<int> branches = {1, 2, 3, 4};
 	random.shuffle(branches.begin(), branches.end());
 	int top = (int) pos.y + trunkHeight;

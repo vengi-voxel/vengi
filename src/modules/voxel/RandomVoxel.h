@@ -12,7 +12,7 @@ namespace voxel {
 class RandomVoxel {
 private:
 	const MaterialColorIndices& indices;
-	const core::Random& _random;
+	const math::Random& _random;
 	const VoxelType _type;
 	int _sameCount;
 	mutable int _amount = 1;
@@ -20,11 +20,11 @@ private:
 public:
 	/**
 	 * @param type The VoxelType to pick the color index for
-	 * @param random @c core::Random instance
+	 * @param random @c math::Random instance
 	 * @param sameCount The amount of Voxel instances that are returned as the same
 	 * color before a possible change in the color index is evaluated.
 	 */
-	RandomVoxel(VoxelType type, const core::Random& random, int sameCount = 3) :
+	RandomVoxel(VoxelType type, const math::Random& random, int sameCount = 3) :
 			indices(getMaterialIndices(type)), _random(random), _type(type), _sameCount(sameCount) {
 	}
 

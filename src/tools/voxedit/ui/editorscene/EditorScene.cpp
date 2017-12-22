@@ -88,19 +88,19 @@ void EditorScene::setReferencePosition(const glm::ivec3& pos) {
 	_shapeRenderer.createOrUpdate(_referencePointMesh, _shapeBuilder);
 }
 
-core::Axis EditorScene::lockedAxis() const {
+math::Axis EditorScene::lockedAxis() const {
 	return m().lockedAxis();
 }
 
-void EditorScene::setLockedAxis(core::Axis axis, bool unlock) {
+void EditorScene::setLockedAxis(math::Axis axis, bool unlock) {
 	m().setLockedAxis(axis, unlock);
 }
 
-core::Axis EditorScene::mirrorAxis() const {
+math::Axis EditorScene::mirrorAxis() const {
 	return m().mirrorAxis();
 }
 
-void EditorScene::setMirrorAxis(core::Axis axis, const glm::ivec3& pos) {
+void EditorScene::setMirrorAxis(math::Axis axis, const glm::ivec3& pos) {
 	m().setMirrorAxis(axis, pos);
 }
 

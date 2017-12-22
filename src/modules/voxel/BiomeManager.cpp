@@ -151,7 +151,7 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	return biomeBestMatch;
 }
 
-void BiomeManager::distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border, float distribution) const {
+void BiomeManager::distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const {
 	std::vector<glm::vec2> initialSet;
 	voxel::Region shrinked = region;
 	shrinked.shrink(border);
@@ -172,7 +172,7 @@ void BiomeManager::getTreeTypes(const Region& region, std::vector<TreeType>& tre
 	treeTypes = biome->treeTypes();
 }
 
-void BiomeManager::getTreePositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
+void BiomeManager::getTreePositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
 	core_trace_scoped(BiomeGetTreePositions);
 	const glm::ivec3& pos = region.getCentre();
 	if (!hasTrees(pos)) {
@@ -182,7 +182,7 @@ void BiomeManager::getTreePositions(const Region& region, std::vector<glm::vec2>
 	distributePointsInRegion("tree", region, positions, random, border, biome->treeDistribution);
 }
 
-void BiomeManager::getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
+void BiomeManager::getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
 	core_trace_scoped(BiomeGetPlantPositions);
 	const glm::ivec3& pos = region.getCentre();
 	if (!hasPlants(pos)) {
@@ -192,7 +192,7 @@ void BiomeManager::getPlantPositions(const Region& region, std::vector<glm::vec2
 	distributePointsInRegion("plant", region, positions, random, border, biome->plantDistribution);
 }
 
-void BiomeManager::getCloudPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
+void BiomeManager::getCloudPositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
 	core_trace_scoped(BiomeGetCloudPositions);
 	glm::ivec3 pos = region.getCentre();
 	pos.y = region.getUpperY();

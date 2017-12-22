@@ -60,7 +60,7 @@ protected:
 	AttractionPoints _attractionPoints;
 	using Branches = std::unordered_map<glm::vec3, Branch*, std::hash<glm::vec3>>;
 	Branches _branches;
-	core::Random _random;
+	math::Random _random;
 
 	/**
 	 * Generate the attraction points for the crown
@@ -102,23 +102,23 @@ public:
 
 	class RandomSize {
 	private:
-		core::Random& _random;
+		math::Random& _random;
 		const glm::ivec3 _mins;
 		const glm::ivec3 _maxs;
 	public:
-		RandomSize(core::Random& random, int mins, int maxs) :
+		RandomSize(math::Random& random, int mins, int maxs) :
 				_random(random), _mins(mins), _maxs(maxs) {
 		}
 
-		RandomSize(core::Random& random, int size) :
+		RandomSize(math::Random& random, int size) :
 				_random(random), _mins(size - size / 2), _maxs(size + size / 2) {
 		}
 
-		RandomSize(core::Random& random, const glm::ivec3& mins, const glm::ivec3& maxs) :
+		RandomSize(math::Random& random, const glm::ivec3& mins, const glm::ivec3& maxs) :
 				_random(random), _mins(mins), _maxs(maxs) {
 		}
 
-		RandomSize(core::Random& random) :
+		RandomSize(math::Random& random) :
 				_random(random), _mins(16), _maxs(80, 25, 80) {
 		}
 

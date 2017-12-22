@@ -55,7 +55,7 @@ private:
 	std::vector<Biome*> _bioms;
 	std::vector<Zone*> _zones[int(ZoneType::Max)];
 	const Biome* _defaultBiome = nullptr;
-	void distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border, float distribution) const;
+	void distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const;
 
 public:
 	BiomeManager();
@@ -92,9 +92,9 @@ public:
 	int getCityDensity(const glm::ivec2& pos) const;
 	float getCityMultiplier(const glm::ivec2& pos, int* targetHeight = nullptr) const;
 	void getTreeTypes(const Region& region, std::vector<TreeType>& treeTypes) const;
-	void getTreePositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
-	void getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
-	void getCloudPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
+	void getTreePositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const;
+	void getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const;
+	void getCloudPositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const;
 
 	/**
 	 * @return Humidity noise in the range [0-1]

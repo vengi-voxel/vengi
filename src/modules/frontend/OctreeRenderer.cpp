@@ -74,7 +74,7 @@ void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, R
 				maxs = glm::max(maxs, v.position);
 			}
 
-			node->_aabb = core::AABB<float>(mins, maxs);
+			node->_aabb = math::AABB<float>(mins, maxs);
 			node->_vb.update(node->_vertexBuffer, mesh->getVertexVector());
 			node->_vb.update(node->_indexBuffer, mesh->getIndexVector());
 		}

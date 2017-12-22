@@ -1,10 +1,14 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "Plane.h"
 #include "math/AABB.h"
 #include <cstdint>
 
-namespace core {
+namespace math {
 
 enum class FrustumPlanes {
 	Right,
@@ -37,7 +41,7 @@ public:
 	}
 
 	template<class T>
-	Frustum(const core::AABB<T>& aabb) {
+	Frustum(const math::AABB<T>& aabb) {
 		update(glm::mat4(1.0f), aabb.projectionMatrix());
 	}
 
@@ -61,7 +65,7 @@ public:
 
 	void update(const glm::mat4& view, const glm::mat4& projection);
 
-	core::AABB<float> aabb() const;
+	math::AABB<float> aabb() const;
 
 	void corners(glm::vec3 out[FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
 

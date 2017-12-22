@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <cstdlib>
 
-namespace core {
+namespace math {
 
 class Random {
 public:

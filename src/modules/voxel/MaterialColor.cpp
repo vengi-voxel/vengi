@@ -173,7 +173,7 @@ public:
 		return voxel::createVoxel(type, index);
 	}
 
-	inline Voxel createRandomColorVoxel(VoxelType type, core::Random& random) const {
+	inline Voxel createRandomColorVoxel(VoxelType type, math::Random& random) const {
 		core_assert_msg(_initialized, "Material colors are not yet initialized");
 		uint8_t index = 0;
 		if (type != VoxelType::Air) {
@@ -228,7 +228,7 @@ const MaterialColorIndices& getMaterialIndices(VoxelType type) {
 }
 
 Voxel createRandomColorVoxel(VoxelType type) {
-	core::Random random;
+	math::Random random;
 	return createRandomColorVoxel(type, random);
 }
 
@@ -236,7 +236,7 @@ Voxel createColorVoxel(VoxelType type, uint32_t colorIndex) {
 	return getInstance().createColorVoxel(type, colorIndex);
 }
 
-Voxel createRandomColorVoxel(VoxelType type, core::Random& random) {
+Voxel createRandomColorVoxel(VoxelType type, math::Random& random) {
 	return getInstance().createRandomColorVoxel(type, random);
 }
 

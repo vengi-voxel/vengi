@@ -96,11 +96,11 @@ public:
 
 	void setVoxel(const voxel::Voxel& voxel);
 
-	core::Axis lockedAxis() const;
-	void setLockedAxis(core::Axis axis, bool unlock);
+	math::Axis lockedAxis() const;
+	void setLockedAxis(math::Axis axis, bool unlock);
 
-	core::Axis mirrorAxis() const;
-	void setMirrorAxis(core::Axis axis, const glm::ivec3& pos);
+	math::Axis mirrorAxis() const;
+	void setMirrorAxis(math::Axis axis, const glm::ivec3& pos);
 
 	float cameraSpeed() const;
 	void setCameraSpeed(float cameraSpeed);

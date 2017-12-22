@@ -74,7 +74,7 @@ public:
 	bool toggle();
 	void clear();
 	void clearCommandLine();
-	void render(const core::Rect<int> &rect, long deltaFrame);
+	void render(const math::Rect<int> &rect, long deltaFrame);
 	bool isActive() const;
 	bool onTextInput(const std::string& text);
 	bool onKeyPress(int32_t key, int16_t modifier);

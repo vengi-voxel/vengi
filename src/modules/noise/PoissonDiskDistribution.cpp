@@ -36,7 +36,7 @@ class Grid {
 public:
 	using Cell = std::vector<glm::vec2>;
 
-	Grid(const core::Rect<int> &bounds, uint32_t k) {
+	Grid(const math::Rect<int> &bounds, uint32_t k) {
 		resize(bounds, k);
 	}
 
@@ -79,7 +79,7 @@ public:
 		return false;
 	}
 
-	void resize(const core::Rect<int> &bounds, uint32_t k) {
+	void resize(const math::Rect<int> &bounds, uint32_t k) {
 		_bounds = bounds;
 		_size = _bounds.size();
 		resize(k);
@@ -94,14 +94,14 @@ public:
 		_grid.resize(_numCells.x * _numCells.y);
 	}
 
-	inline const core::Rect<int>& bounds() const {
+	inline const math::Rect<int>& bounds() const {
 		return _bounds;
 	}
 protected:
 	std::vector<Cell> _grid;
 	glm::ivec2 _numCells;
 	glm::ivec2 _offset;
-	core::Rect<int> _bounds;
+	math::Rect<int> _bounds;
 	glm::ivec2 _size;
 	uint32_t _k;
 	uint32_t _cellSize;
@@ -111,7 +111,7 @@ class Grid3D {
 public:
 	using Cell = std::vector<glm::vec3>;
 
-	Grid3D(const core::AABB<int> &aabb, uint32_t k) : _aabb(aabb) {
+	Grid3D(const math::AABB<int> &aabb, uint32_t k) : _aabb(aabb) {
 		resize(aabb, k);
 	}
 
@@ -158,7 +158,7 @@ public:
 		return false;
 	}
 
-	void resize(const core::AABB<int> &aabb, uint32_t k) {
+	void resize(const math::AABB<int> &aabb, uint32_t k) {
 		_aabb = aabb;
 		_size = _aabb.getWidth();
 		resize(k);
@@ -173,14 +173,14 @@ public:
 		_grid.resize(_numCells.x * _numCells.y * _numCells.z);
 	}
 
-	inline const core::AABB<int>& aabb() const {
+	inline const math::AABB<int>& aabb() const {
 		return _aabb;
 	}
 protected:
 	std::vector<Cell> _grid;
 	glm::ivec3 _numCells;
 	glm::ivec3 _offset;
-	core::AABB<int> _aabb;
+	math::AABB<int> _aabb;
 	glm::ivec3 _size;
 	uint32_t _k;
 	uint32_t _cellSize;
@@ -230,11 +230,11 @@ static void prepare(Grid& grid, std::vector<glm::vec2>& processingList, std::vec
 	}
 }
 
-std::vector<glm::vec3> poissonDiskDistribution(float separation, const core::AABB<int> &aabb, const std::vector<glm::vec3> &initialSet, int k) {
+std::vector<glm::vec3> poissonDiskDistribution(float separation, const math::AABB<int> &aabb, const std::vector<glm::vec3> &initialSet, int k) {
 	// prepare working structures
 	std::vector<glm::vec3> processingList;
 	std::vector<glm::vec3> outputList;
-	core::Random rnd(aabb.getCenterX() + aabb.getCenterY() + aabb.getCenterZ());
+	math::Random rnd(aabb.getCenterX() + aabb.getCenterY() + aabb.getCenterZ());
 
 	// create grid
 	Grid3D grid(aabb, 3);
@@ -276,11 +276,11 @@ std::vector<glm::vec3> poissonDiskDistribution(float separation, const core::AAB
 	return outputList;
 }
 
-std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rect<int> &bounds, const std::vector<glm::vec2> &initialSet, int k) {
+std::vector<glm::vec2> poissonDiskDistribution(float separation, const math::Rect<int> &bounds, const std::vector<glm::vec2> &initialSet, int k) {
 	// prepare working structures
 	std::vector<glm::vec2> processingList;
 	std::vector<glm::vec2> outputList;
-	core::Random rnd(bounds.getMinX());
+	math::Random rnd(bounds.getMinX());
 
 	// create grid
 	Grid grid(bounds, 3);
@@ -318,12 +318,12 @@ std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rec
 	return outputList;
 }
 
-std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const glm::vec2&)> &distFunction, const core::Rect<int> &bounds,
+std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const glm::vec2&)> &distFunction, const math::Rect<int> &bounds,
 		const std::vector<glm::vec2> &initialSet, int k) {
 	// prepare working structures
 	std::vector<glm::vec2> processingList;
 	std::vector<glm::vec2> outputList;
-	core::Random rnd(bounds.getMinX());
+	math::Random rnd(bounds.getMinX());
 
 	// create grid
 	Grid grid(bounds, 3);
@@ -365,11 +365,11 @@ std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const g
 }
 
 std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const glm::vec2&)> &distFunction,
-		const std::function<bool(const glm::vec2&)> &boundsFunction, const core::Rect<int> &bounds, const std::vector<glm::vec2> &initialSet, int k) {
+		const std::function<bool(const glm::vec2&)> &boundsFunction, const math::Rect<int> &bounds, const std::vector<glm::vec2> &initialSet, int k) {
 	// prepare working structures
 	std::vector<glm::vec2> processingList;
 	std::vector<glm::vec2> outputList;
-	core::Random rnd(bounds.getMinX());
+	math::Random rnd(bounds.getMinX());
 
 	// create grid
 	Grid grid(bounds, 3);

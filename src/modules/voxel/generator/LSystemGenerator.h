@@ -148,10 +148,10 @@ static bool evaluateState(LSystemState* state, Volume& volume, const LSystemCont
 }
 
 template<class Volume>
-static bool expand_r(LSystemState* state, Volume& volume, const LSystemContext& ctx, core::Random& random, char c, int generations);
+static bool expand_r(LSystemState* state, Volume& volume, const LSystemContext& ctx, math::Random& random, char c, int generations);
 
 template<class Volume>
-static bool expand(LSystemState* state, Volume& volume, const LSystemContext& ctx, core::Random& random, const std::string& axiomStr, int generations) {
+static bool expand(LSystemState* state, Volume& volume, const LSystemContext& ctx, math::Random& random, const std::string& axiomStr, int generations) {
 	std::vector<LSystemState> newStates;
 	LSystemState *currentState = state;
 	for (const char *axiom = axiomStr.c_str(); *axiom != '\0'; ++axiom) {
@@ -195,7 +195,7 @@ static bool expand(LSystemState* state, Volume& volume, const LSystemContext& ct
 }
 
 template<class Volume>
-static bool expand_r(LSystemState* state, Volume& volume, const LSystemContext& ctx, core::Random& random, char c, int generations) {
+static bool expand_r(LSystemState* state, Volume& volume, const LSystemContext& ctx, math::Random& random, char c, int generations) {
 	if (generations <= 0) {
 		return true;
 	}
@@ -214,7 +214,7 @@ static bool expand_r(LSystemState* state, Volume& volume, const LSystemContext& 
 }
 
 template<class Volume>
-bool generate(Volume& volume, const LSystemContext& ctx, core::Random& random) {
+bool generate(Volume& volume, const LSystemContext& ctx, math::Random& random) {
 	LSystemState initState;
 	initState.pos = glm::vec4(ctx.start, 1.0f);
 	return expand(&initState, volume, ctx, random, ctx.axiom, ctx.generations);

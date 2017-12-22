@@ -151,7 +151,7 @@ public:
 	/**
 	 * @brief Reorder the scheduled extraction commands that the closest chunks to the given position are handled first
 	 */
-	void updateExtractionOrder(const glm::ivec3& sortPos, const core::Frustum& frustum);
+	void updateExtractionOrder(const glm::ivec3& sortPos, const math::Frustum& frustum);
 
 	/**
 	 * @brief Performs async mesh extraction. You need to call @c pop in order to see if some extraction is ready.
@@ -161,7 +161,7 @@ public:
 	 */
 	bool scheduleMeshExtraction(const glm::ivec3& pos);
 
-	const core::Random& random() const;
+	const math::Random& random() const;
 
 	long seed() const;
 
@@ -194,7 +194,7 @@ private:
 	// fast lookup for positions that are already extracted
 	PositionSet _positionsExtracted;
 	core::VarPtr _meshSize;
-	core::Random _random;
+	math::Random _random;
 	std::atomic_bool _cancelThreads { false };
 };
 
@@ -234,7 +234,7 @@ inline void World::setPersist(bool persist) {
 	_pager.setPersist(persist);
 }
 
-inline const core::Random& World::random() const {
+inline const math::Random& World::random() const {
 	return _random;
 }
 

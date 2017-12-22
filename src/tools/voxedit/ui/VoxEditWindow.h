@@ -80,7 +80,7 @@ private:
 		Mirror
 	};
 	ModifierMode _mode = ModifierMode::None;
-	core::Axis _axis = core::Axis::None;
+	math::Axis _axis = math::Axis::None;
 	static constexpr int MODENUMBERBUFSIZE = 64;
 	char _modeNumberBuf[MODENUMBERBUFSIZE];
 	long _lastModePress = -1l;

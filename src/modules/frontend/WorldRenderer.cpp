@@ -29,7 +29,7 @@ const std::string MaxDepthBufferUniformName = "u_cascades";
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
-		_octree(core::AABB<int>(), 30), _world(world) {
+		_octree(math::AABB<int>(), 30), _world(world) {
 	core_assert(_worldScale.x == _worldScale.z);
 }
 
@@ -116,7 +116,7 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 			continue;
 		}
 		std::vector<glm::vec3> p = chunkBuffer.instancedPositions;
-		core::Random rnd(_world->seed() + chunkBuffer.translation().x + chunkBuffer.translation().y + chunkBuffer.translation().z);
+		math::Random rnd(_world->seed() + chunkBuffer.translation().x + chunkBuffer.translation().y + chunkBuffer.translation().z);
 		rnd.shuffle(p.begin(), p.end());
 		const int plantMeshes = p.size() / plantMeshAmount;
 		int delta = p.size() - plantMeshes * plantMeshAmount;
@@ -151,7 +151,7 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 		maxs = glm::max(maxs, v.position);
 	}
 
-	chunkBuffer._aabb = core::AABB<int>(mins * _worldScale, maxs * _worldScale);
+	chunkBuffer._aabb = math::AABB<int>(mins * _worldScale, maxs * _worldScale);
 }
 
 void WorldRenderer::handleMeshQueue() {
@@ -301,7 +301,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 		for (ChunkBuffer* chunkBuffer : contents) {
 			if (chunkBuffer->pendingResult) {
 #if 0
-				const core::AABB<int>& aabb = chunkBuffer->aabb();
+				const math::AABB<int>& aabb = chunkBuffer->aabb();
 				const glm::vec3& center = glm::vec3(aabb.getCenter());
 				const glm::mat4& translate = glm::translate(center);
 				const glm::mat4& model = glm::scale(translate, glm::vec3(aabb.getWidth()));
@@ -309,7 +309,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 #endif
 				continue;
 			}
-			const core::AABB<int>& aabb = chunkBuffer->aabb();
+			const math::AABB<int>& aabb = chunkBuffer->aabb();
 			if (aabb.containsPoint(camera.position())) {
 				continue;
 			}

@@ -10,7 +10,7 @@
 #include <glm/vec4.hpp>
 #include <vector>
 
-namespace core {
+namespace math {
 class Random;
 }
 
@@ -30,7 +30,7 @@ extern const MaterialColorArray& getMaterialColors();
  */
 extern const MaterialColorIndices& getMaterialIndices(VoxelType type);
 extern Voxel createRandomColorVoxel(VoxelType type);
-extern Voxel createRandomColorVoxel(VoxelType type, core::Random& random);
+extern Voxel createRandomColorVoxel(VoxelType type, math::Random& random);
 /**
  * @brief Creates a voxel of the given type with the fixed colorindex that is relative to the
  * valid color indices for this type.

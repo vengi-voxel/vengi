@@ -13,12 +13,12 @@
 #include "core/Trace.h"
 #include "core/GLM.h"
 
-namespace core {
+namespace math {
 
-extern core::AABB<int> computeAABB(const Frustum& area, const glm::vec3& minSize);
+extern math::AABB<int> computeAABB(const Frustum& area, const glm::vec3& minSize);
 
 /**
- * @note Given NODE type must implement @c aabb() and return core::AABB<TYPE>
+ * @note Given NODE type must implement @c aabb() and return math::AABB<TYPE>
  */
 template<class NODE, typename TYPE = int>
 class Octree {
@@ -296,7 +296,7 @@ public:
 	template<class VISITOR>
 	inline void visit(const Frustum& area, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) {
 		const glm::vec3 fminsize(minSize);
-		const core::AABB<int>& aabb = computeAABB(area, fminsize);
+		const math::AABB<int>& aabb = computeAABB(area, fminsize);
 		visit(area, aabb, visitor, minSize);
 	}
 

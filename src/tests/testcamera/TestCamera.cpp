@@ -111,7 +111,7 @@ void TestCamera::onRenderUI() {
 	ImGui::Text("Sphere: red = outside, green = inside, purple = touching");
 	ImGui::Text("Camera: %s (%i) %s", cameraRotType, _targetCamera + 1, mode);
 	if (_frustums[_targetCamera].renderAABB()) {
-		const core::AABB<float>&& aabb = targetCamera.aabb();
+		const math::AABB<float>&& aabb = targetCamera.aabb();
 		ImGui::Text("AABB(mins(%.2f:%.2f:%.2f), maxs(%.2f:%.2f:%.2f))", aabb.getLowerX(), aabb.getLowerY(), aabb.getLowerZ(), aabb.getUpperX(), aabb.getUpperY(), aabb.getUpperZ());
 	}
 	Super::onRenderUI();

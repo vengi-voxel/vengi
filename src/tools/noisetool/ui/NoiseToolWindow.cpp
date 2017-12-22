@@ -225,7 +225,7 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 		memcpy(graphBuffer, _graphBufferBackground, graphBufferSize);
 
 		if (qd.data.noiseType == NoiseType::poissonDiskDistribution) {
-			const core::Rect<int> area(0, 0, _noiseWidth - 1, _noiseHeight - 1);
+			const math::Rect<int> area(0, 0, _noiseWidth - 1, _noiseHeight - 1);
 			const std::vector<glm::vec2>& distrib = noise::poissonDiskDistribution(qd.data.separation, area);
 			for (const glm::vec2& v : distrib) {
 				const int x = v.x;

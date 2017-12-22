@@ -6,14 +6,14 @@
 #include "math/Frustum.h"
 #include "core/GLM.h"
 
-namespace core {
+namespace math {
 
 class FrustumTest : public core::AbstractTest {
 protected:
 	const float _farPlane = 500.0f;
 	const float _nearPlane = 0.1f;
 	Frustum _frustum;
-	core::AABB<float> _aabb;
+	math::AABB<float> _aabb;
 	glm::mat4 _view = glm::mat4(1.0f);
 	glm::mat4 _projection = glm::mat4(1.0f);
 public:
@@ -69,7 +69,7 @@ TEST_F(FrustumTest, testCullingSphere) {
 }
 
 TEST_F(FrustumTest, testCullingAABBPositive) {
-	const core::AABB<float> aabb(glm::vec3(0.0f), glm::vec3(100.0f));
+	const math::AABB<float> aabb(glm::vec3(0.0f), glm::vec3(100.0f));
 	SCOPED_TRACE(core::string::format("mins(%s), maxs(%s), frustummins(%s), frustummaxs(%s)",
 			glm::to_string(aabb.getLowerCorner()).c_str(),
 			glm::to_string(aabb.getUpperCorner()).c_str(),
@@ -79,7 +79,7 @@ TEST_F(FrustumTest, testCullingAABBPositive) {
 }
 
 TEST_F(FrustumTest, testCullingAABBNegative) {
-	const core::AABB<float> aabb(glm::vec3(-200.0f), glm::vec3(-100.0f));
+	const math::AABB<float> aabb(glm::vec3(-200.0f), glm::vec3(-100.0f));
 	SCOPED_TRACE(core::string::format("mins(%s), maxs(%s), frustummins(%s), frustummaxs(%s)",
 			glm::to_string(aabb.getLowerCorner()).c_str(),
 			glm::to_string(aabb.getUpperCorner()).c_str(),
@@ -89,14 +89,14 @@ TEST_F(FrustumTest, testCullingAABBNegative) {
 }
 
 TEST_F(FrustumTest, testInsideOutsidePoint) {
-	EXPECT_EQ(core::FrustumResult::Inside, _frustum.test(glm::vec3(_nearPlane, 0.0, 0.0)));
-	EXPECT_EQ(core::FrustumResult::Outside, _frustum.test(glm::vec3(0.0, 0.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Inside, _frustum.test(glm::vec3(_nearPlane, 0.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Outside, _frustum.test(glm::vec3(0.0, 0.0, 0.0)));
 }
 
 TEST_F(FrustumTest, testIntersectionInsideOutsideAABB) {
-	EXPECT_EQ(core::FrustumResult::Inside, _frustum.test(glm::vec3(_farPlane / 2.0f - 0.5f, -0.5, -0.5), glm::vec3(_farPlane / 2.0f + 0.5f, 0.5, 0.5)));
-	EXPECT_EQ(core::FrustumResult::Outside, _frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(-0.5, -0.5, -0.5)));
-	EXPECT_EQ(core::FrustumResult::Intersect, _frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
+	EXPECT_EQ(math::FrustumResult::Inside, _frustum.test(glm::vec3(_farPlane / 2.0f - 0.5f, -0.5, -0.5), glm::vec3(_farPlane / 2.0f + 0.5f, 0.5, 0.5)));
+	EXPECT_EQ(math::FrustumResult::Outside, _frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(-0.5, -0.5, -0.5)));
+	EXPECT_EQ(math::FrustumResult::Intersect, _frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 }
 
 TEST_F(FrustumTest, testCullingPoint) {
@@ -138,9 +138,9 @@ TEST_F(FrustumTest, testStaticFrustumCheck) {
 TEST_F(FrustumTest, testOrthoFrustum) {
 	const glm::ivec3 mins(-64, -32, -32);
 	const glm::ivec3 maxs(64, 32, 96);
-	const core::AABB<int> aabb(mins, maxs);
-	core::Frustum frustum(aabb);
-	EXPECT_EQ(frustum.aabb(), core::AABB<float>(mins, maxs));
+	const math::AABB<int> aabb(mins, maxs);
+	math::Frustum frustum(aabb);
+	EXPECT_EQ(frustum.aabb(), math::AABB<float>(mins, maxs));
 	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-64, -32, 64), glm::ivec3(-32, 0, 96)));
 	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-64, 0, 64), glm::ivec3(-32, 32, 96)));
 	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-32, -32, 64), glm::ivec3(0, 0, 96)));

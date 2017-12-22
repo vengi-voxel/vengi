@@ -78,7 +78,7 @@ public:
 	/// Gets the position of the upper corner.
 	glm::ivec3 getUpperCorner() const;
 
-	glm::ivec3 getRandomPosition(core::Random& random) const;
+	glm::ivec3 getRandomPosition(math::Random& random) const;
 
 	/// Gets the width of the region measured in voxels.
 	int32_t getWidthInVoxels() const;
@@ -183,10 +183,10 @@ public:
 	/// Shrinks this region by the amounts specified.
 	void shrink(const glm::ivec3& v3dAmount);
 
-	core::AABB<int> aabb() const;
+	math::AABB<int> aabb() const;
 	/// Returns a rect of the x and z area this region covers
-	core::Rect<int> rect(int border = 0) const;
-	core::Rect<float> rectf(int border = 0) const;
+	math::Rect<int> rect(int border = 0) const;
+	math::Rect<float> rectf(int border = 0) const;
 
 private:
 	int32_t m_iLowerX;
@@ -197,20 +197,20 @@ private:
 	int32_t m_iUpperZ;
 };
 
-inline core::AABB<int> Region::aabb() const {
-	return core::AABB<int>(getLowerCorner(), getUpperCorner() + 1);
+inline math::AABB<int> Region::aabb() const {
+	return math::AABB<int>(getLowerCorner(), getUpperCorner() + 1);
 }
 
-inline core::Rect<int> Region::rect(int border) const {
+inline math::Rect<int> Region::rect(int border) const {
 	core_assert(getUpperX() - getLowerX() > 2 * border);
 	core_assert(getUpperZ() - getLowerZ() > 2 * border);
-	return core::Rect<int>(getLowerX() + border, getLowerZ() + border, getUpperX() - border, getUpperZ() - border);
+	return math::Rect<int>(getLowerX() + border, getLowerZ() + border, getUpperX() - border, getUpperZ() - border);
 }
 
-inline core::Rect<float> Region::rectf(int border) const {
+inline math::Rect<float> Region::rectf(int border) const {
 	core_assert(getUpperX() - getLowerX() > 2 * border);
 	core_assert(getUpperZ() - getLowerZ() > 2 * border);
-	return core::Rect<float>(getLowerX() + border, getLowerZ() + border, getUpperX() - border, getUpperZ() - border);
+	return math::Rect<float>(getLowerX() + border, getLowerZ() + border, getUpperX() - border, getUpperZ() - border);
 }
 
 /**
@@ -297,7 +297,7 @@ inline glm::ivec3 Region::getUpperCorner() const {
 	return glm::ivec3(m_iUpperX, m_iUpperY, m_iUpperZ);
 }
 
-inline glm::ivec3 Region::getRandomPosition(core::Random& random) const {
+inline glm::ivec3 Region::getRandomPosition(math::Random& random) const {
 	const int x = random.random(m_iLowerX, m_iUpperX);
 	const int y = random.random(m_iLowerY, m_iUpperY);
 	const int z = random.random(m_iLowerZ, m_iUpperZ);

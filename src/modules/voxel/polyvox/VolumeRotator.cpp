@@ -41,7 +41,7 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 		const glm::vec4& newMins = rot * mins;
 		const glm::vec4& newMaxs = rot * maxs;
 		const glm::ivec3 vertices[] = { glm::vec3(newMins), glm::vec3(newMaxs) };
-		core::AABB<int> aabb = core::AABB<int>::construct(vertices, SDL_arraysize(vertices));
+		math::AABB<int> aabb = math::AABB<int>::construct(vertices, SDL_arraysize(vertices));
 		aabb.shift(-aabb.getLowerCorner());
 		destRegion = voxel::Region(aabb.getLowerCorner(), aabb.getUpperCorner());
 	} else {

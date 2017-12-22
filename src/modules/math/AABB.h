@@ -14,7 +14,7 @@
 #include <limits>
 #include <functional>
 
-namespace core {
+namespace math {
 
 /**
  * @brief axis-aligned bounding box
@@ -54,7 +54,7 @@ public:
 				mins.z = v.z;
 			}
 		}
-		return core::AABB<TYPE>(mins, maxs);
+		return math::AABB<TYPE>(mins, maxs);
 	}
 
 	static inline AABB construct(const std::vector<glm::tvec3<TYPE> >& vertices) {
@@ -795,13 +795,13 @@ inline bool intersects(const AABB<TYPE>& a, const AABB<TYPE>& b) {
 namespace std
 {
 template<typename TYPE>
-struct hash<core::AABB<TYPE> > {
+struct hash<math::AABB<TYPE> > {
 	static inline void hash_combine(size_t &seed, size_t hash) {
 		hash += 0x9e3779b9 + (seed << 6) + (seed >> 2);
 		seed ^= hash;
 	}
 
-	inline size_t operator()(const core::AABB<TYPE>& v) const {
+	inline size_t operator()(const math::AABB<TYPE>& v) const {
 		size_t seed = 0;
 		hash<TYPE> hasher;
 		const glm::tvec3<TYPE>& mins = v.mins();

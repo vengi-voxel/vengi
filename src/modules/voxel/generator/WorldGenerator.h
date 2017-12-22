@@ -27,7 +27,7 @@ class WorldGenerator {
 private:
 	BiomeManager& _biomeManager;
 	long _seed;
-	core::Random _random;
+	math::Random _random;
 
 	int fillVoxels(int x, int y, int z, const WorldContext& worldCtx, Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const;
 	float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const;

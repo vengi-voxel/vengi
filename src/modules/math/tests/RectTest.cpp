@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include "math/Rect.h"
 
-namespace core {
+namespace math {
 
 TEST(RectTest, testContains) {
 	RectuInt aabb(0, 0, 100, 100);

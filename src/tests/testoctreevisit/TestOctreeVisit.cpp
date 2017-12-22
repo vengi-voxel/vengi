@@ -3,6 +3,7 @@
 #include "io/Filesystem.h"
 #include "imgui/IMGUI.h"
 #include "core/Color.h"
+#include "math/AABB.h"
 #include "video/ScopedLineWidth.h"
 #include <array>
 
@@ -79,7 +80,7 @@ core::AppState TestOctreeVisit::onRunning() {
 	_shapeRenderer.createOrUpdate(_frustumMesh, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	const core::AABB<int>& aabb = core::computeAABB(_octreeCamera.frustum(), glm::vec3(minSize));
+	const math::AABB<int>& aabb = math::computeAABB(_octreeCamera.frustum(), glm::vec3(minSize));
 	_shapeBuilder.aabb(aabb);
 	_shapeRenderer.createOrUpdate(_aabbMesh, _shapeBuilder);
 

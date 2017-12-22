@@ -543,7 +543,7 @@ void Console::drawString(int x, int y, const std::string& str, int len) {
 	_font->DrawString(x, y, color, cstr, len);
 }
 
-void Console::render(const core::Rect<int> &rect, long deltaFrame) {
+void Console::render(const math::Rect<int> &rect, long deltaFrame) {
 	_frame += deltaFrame;
 	if (_frame > 250) {
 		_frame -= 250;

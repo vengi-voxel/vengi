@@ -106,10 +106,10 @@ TEST_F(CameraTest, testCameraFrustumCullingPerspective) {
 	camera.setPosition(glm::vec3(0.1, 1.0, 0.1));
 	camera.lookAt(glm::vec3(0.0), glm::forward);
 	camera.update(0l);
-	const core::Frustum& frustum = camera.frustum();
-	EXPECT_EQ(core::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
-	EXPECT_EQ(core::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
-	EXPECT_EQ(core::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
+	const math::Frustum& frustum = camera.frustum();
+	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 }
 
 TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
@@ -119,15 +119,15 @@ TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 	camera.setPosition(glm::vec3(0.1, 1.0, 0.1));
 	camera.lookAt(glm::vec3(0.0), glm::forward);
 	camera.update(0l);
-	const core::Frustum& frustum = camera.frustum();
+	const math::Frustum& frustum = camera.frustum();
 	SCOPED_TRACE(core::string::format("mins(%s), maxs(%s), frustummins(%s), frustummaxs(%s)",
 			glm::to_string(camera.aabb().getLowerCorner()).c_str(),
 			glm::to_string(camera.aabb().getUpperCorner()).c_str(),
 			glm::to_string(frustum.aabb().getLowerCorner()).c_str(),
 			glm::to_string(frustum.aabb().getUpperCorner()).c_str()));
-	EXPECT_EQ(core::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
-	EXPECT_EQ(core::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
-	EXPECT_EQ(core::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
+	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 }
 
 }

@@ -1,12 +1,16 @@
+/**
+ * @file
+ */
+
 #include "Octree.h"
 #include "math/Frustum.h"
 #include "math/AABB.h"
 #include "core/GLM.h"
 #include "core/Log.h"
 
-namespace core {
+namespace math {
 
-core::AABB<int> computeAABB(const Frustum& area, const glm::vec3& gridSize) {
+math::AABB<int> computeAABB(const Frustum& area, const glm::vec3& gridSize) {
 	const AABB<float>& aabb = area.aabb();
 	glm::vec3 mins = aabb.mins();
 	const glm::vec3& resultMins = glm::mod(mins, gridSize);

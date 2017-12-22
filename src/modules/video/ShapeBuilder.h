@@ -73,21 +73,21 @@ public:
 			reserve(_initialSize);
 		}
 	}
-	void aabbGridXY(const core::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
-	void aabbGridYZ(const core::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
-	void aabbGridXZ(const core::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
+	void aabbGridXY(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
+	void aabbGridYZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
+	void aabbGridXZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
 
 	void cube(const glm::vec3& mins, const glm::vec3& maxs);
 
-	void aabb(const core::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
-	void aabb(const core::AABB<int>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
+	void aabb(const math::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
+	void aabb(const math::AABB<int>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
 	/**
 	 * @param[in] tesselation The amount of splits on the plane that should be made
 	 */
 	void plane(uint32_t tesselation = 10, float scale = 1.0f);
 	void frustum(const Camera& camera, int splitFrustum = 0);
 	void geom(const std::vector<glm::vec3>& vert, const std::vector<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
-	void plane(const core::Plane& plane, bool normal);
+	void plane(const math::Plane& plane, bool normal);
 	/**
 	 * Geometry layout for spheres is as follows (for 5 slices, 4 stacks):
 	 *
@@ -128,8 +128,8 @@ public:
 	void setPosition(const glm::vec3& position);
 };
 
-inline void ShapeBuilder::aabb(const core::AABB<int>& aabb, bool renderGrid, float stepWidth) {
-	const core::AABB<float> converted(glm::vec3(aabb.getLowerCorner()), glm::vec3(aabb.getUpperCorner()));
+inline void ShapeBuilder::aabb(const math::AABB<int>& aabb, bool renderGrid, float stepWidth) {
+	const math::AABB<float> converted(glm::vec3(aabb.getLowerCorner()), glm::vec3(aabb.getUpperCorner()));
 	this->aabb(converted, renderGrid, stepWidth);
 }
 

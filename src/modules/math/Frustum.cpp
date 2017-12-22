@@ -1,7 +1,11 @@
+/**
+ * @file
+ */
+
 #include "Frustum.h"
 #include "core/Common.h"
 
-namespace core {
+namespace math {
 
 static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
 	glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
@@ -69,8 +73,8 @@ void Frustum::corners(glm::vec3 out[FRUSTUM_VERTICES_MAX], uint32_t indices[24])
 	indices[currentIndex++] = 7;
 }
 
-core::AABB<float> Frustum::aabb() const {
-	return core::AABB<float>::construct(_frustumVertices, FRUSTUM_VERTICES_MAX);
+math::AABB<float> Frustum::aabb() const {
+	return math::AABB<float>::construct(_frustumVertices, FRUSTUM_VERTICES_MAX);
 }
 
 void Frustum::split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_MAX]) const {

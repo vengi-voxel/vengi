@@ -52,7 +52,7 @@ public:
 		return _planeMesh >= 0;
 	};
 
-	bool plane(const glm::vec3& position, const core::Plane& plane, const glm::vec4& color = core::Color::White) {
+	bool plane(const glm::vec3& position, const math::Plane& plane, const glm::vec4& color = core::Color::White) {
 		_shapeBuilder.setColor(color);
 		_shapeBuilder.setPosition(position);
 		_shapeBuilder.plane(plane, false);

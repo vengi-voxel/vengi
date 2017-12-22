@@ -12,7 +12,7 @@ namespace voxel {
 class PlantGenerator {
 private:
 	Mesh* _meshes[(int)PlantType::MaxPlantTypes];
-	core::Random _random;
+	math::Random _random;
 
 public:
 	PlantGenerator();

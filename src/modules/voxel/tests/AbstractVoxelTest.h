@@ -124,7 +124,7 @@ protected:
 	Pager _pager;
 	PagedVolume _volData;
 	PagedVolumeWrapper _ctx;
-	core::Random _random;
+	math::Random _random;
 	long _seed = 0;
 	const voxel::Region _region { glm::ivec3(0), glm::ivec3(63) };
 

@@ -9,7 +9,7 @@ ShapeBuilder::ShapeBuilder(int initialSize) :
 	}
 }
 
-void ShapeBuilder::aabbGridXY(const core::AABB<float>& aabb, bool near, float stepWidth) {
+void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
 	const glm::vec3& width = aabb.getWidth();
 	const float wz = near ? 0.0f : width.z;
@@ -23,7 +23,7 @@ void ShapeBuilder::aabbGridXY(const core::AABB<float>& aabb, bool near, float st
 	}
 }
 
-void ShapeBuilder::aabbGridYZ(const core::AABB<float>& aabb, bool near, float stepWidth) {
+void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
 	const glm::vec3& width = aabb.getWidth();
 	const float wx = near ? 0.0f : width.x;
@@ -37,7 +37,7 @@ void ShapeBuilder::aabbGridYZ(const core::AABB<float>& aabb, bool near, float st
 	}
 }
 
-void ShapeBuilder::aabbGridXZ(const core::AABB<float>& aabb, bool near, float stepWidth) {
+void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
 	const glm::vec3& width = aabb.getWidth();
 	const float wy = near ? 0.0f : width.y;
@@ -113,7 +113,7 @@ void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs) {
 	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
 }
 
-void ShapeBuilder::aabb(const core::AABB<float>& aabb, bool renderGrid, float stepWidth) {
+void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float stepWidth) {
 	setPrimitive(Primitive::Lines);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	static const glm::vec3 vecs[8] = {
@@ -195,7 +195,7 @@ void ShapeBuilder::geom(const std::vector<glm::vec3>& vert, const std::vector<ui
 	}
 }
 
-void ShapeBuilder::plane(const core::Plane& plane, bool normals) {
+void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 	setPrimitive(Primitive::Lines);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	const glm::vec3& planeNormal = plane.norm();
@@ -260,8 +260,8 @@ void ShapeBuilder::plane(const core::Plane& plane, bool normals) {
 void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	setPrimitive(Primitive::Lines);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
-	glm::vec3 out[core::FRUSTUM_VERTICES_MAX];
-	uint32_t indices[core::FRUSTUM_VERTICES_MAX * 3];
+	glm::vec3 out[math::FRUSTUM_VERTICES_MAX];
+	uint32_t indices[math::FRUSTUM_VERTICES_MAX * 3];
 	camera.frustumCorners(out, indices);
 
 	const int targetLineVertices = camera.rotationType() == CameraRotationType::Target ? 2 : 0;
@@ -273,7 +273,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 		camera.sliceFrustum(&planes[0], splitFrustum * 2, splitFrustum);
 
-		reserve(core::FRUSTUM_VERTICES_MAX * splitFrustum + targetLineVertices);
+		reserve(math::FRUSTUM_VERTICES_MAX * splitFrustum + targetLineVertices);
 
 		for (int s = 0; s < splitFrustum; ++s) {
 			const float near = planes[s * 2 + 0];
@@ -287,10 +287,10 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 			for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
 				addIndex(indexOffset + indices[i]);
 			}
-			indexOffset += core::FRUSTUM_VERTICES_MAX;
+			indexOffset += math::FRUSTUM_VERTICES_MAX;
 		}
 	} else {
-		reserve(core::FRUSTUM_VERTICES_MAX + targetLineVertices);
+		reserve(math::FRUSTUM_VERTICES_MAX + targetLineVertices);
 
 		for (size_t i = 0; i < SDL_arraysize(out); ++i) {
 			addVertex(out[i]);
@@ -305,8 +305,8 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 		setColor(core::Color::Green);
 		addVertex(camera.position());
 		addVertex(camera.target());
-		addIndex(startIndex + core::FRUSTUM_VERTICES_MAX + 0);
-		addIndex(startIndex + core::FRUSTUM_VERTICES_MAX + 1);
+		addIndex(startIndex + math::FRUSTUM_VERTICES_MAX + 0);
+		addIndex(startIndex + math::FRUSTUM_VERTICES_MAX + 1);
 	}
 }
 

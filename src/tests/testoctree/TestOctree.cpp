@@ -30,7 +30,7 @@ bool TestOctree::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 void TestOctree::insert() {
-	const core::AABB<int>& aabb = _octree.aabb();
+	const math::AABB<int>& aabb = _octree.aabb();
 	const glm::ivec3& mins = aabb.mins();
 	const glm::ivec3& maxs = aabb.maxs();
 	glm::ivec3 pos;
@@ -86,7 +86,7 @@ void TestOctree::handleDirtyState() {
 	_itemVector.clear();
 	_octree.visit([&] (const Node& node) {
 		++_nodes;
-		const core::AABB<int>& aabb = node.aabb();
+		const math::AABB<int>& aabb = node.aabb();
 		const int depth = node.depth();
 		_itemVector.push_back(aabb);
 		Log::info("aabb for depth %i: %s",
@@ -112,7 +112,7 @@ void TestOctree::handleDirtyState() {
 	_octree.visit([this] (const Node& node) {
 		const Tree::Contents& contents = node.getContents();
 		for (const Wrapper& wrapper : contents) {
-			const core::AABB<int>& itemAABB = wrapper.aabb();
+			const math::AABB<int>& itemAABB = wrapper.aabb();
 			_shapeBuilder.setPosition(itemAABB.getCenter());
 			_shapeBuilder.sphere(10, 10, 5.0f);
 		}
@@ -166,7 +166,7 @@ void TestOctree::onRenderUI() {
 
 	if (ImGui::Button("Query")) {
 		_results.clear();
-		_queryAABB = core::AABB<int>(_queryMins, _queryMaxs);
+		_queryAABB = math::AABB<int>(_queryMins, _queryMaxs);
 		_octree.query(_queryAABB, _results);
 		Log::info("Query (%i:%i:%i) to (%i:%i:%i) (found: %i)",
 				_queryMins.x, _queryMins.y, _queryMins.z, _queryMaxs.x, _queryMaxs.y, _queryMaxs.z, (int)_results.size());
@@ -188,11 +188,11 @@ void TestOctree::onRenderUI() {
 
 	typedef struct _VectorGetter {
 		struct AABBInfo {
-			core::AABB<int> aabb;
+			math::AABB<int> aabb;
 			std::string info;
 		};
 		std::vector<AABBInfo> _itemVector;
-		_VectorGetter(const std::vector<core::AABB<int> >& itemVector) {
+		_VectorGetter(const std::vector<math::AABB<int> >& itemVector) {
 			for (const auto& aabb : itemVector) {
 				const glm::ivec3& mins = aabb.mins();
 				const glm::ivec3& maxs = aabb.maxs();
@@ -217,7 +217,7 @@ void TestOctree::onRenderUI() {
 			numEntries, glm::clamp(numEntries, 0, 25));
 	ImGui::PopItemWidth();
 	if (_itemIndex != -1) {
-		const core::AABB<int>& selected = _itemVector[_itemIndex];
+		const math::AABB<int>& selected = _itemVector[_itemIndex];
 		_queryMins = selected.mins();
 		_queryMaxs = selected.maxs();
 	}

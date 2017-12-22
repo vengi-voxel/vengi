@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #include "Plane.h"
 
-namespace core {
+namespace math {
 
 Plane::Plane()  {
 }

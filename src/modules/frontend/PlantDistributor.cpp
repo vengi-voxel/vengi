@@ -7,7 +7,7 @@ namespace frontend {
 void distributePlants(const voxel::WorldPtr& world, const glm::ivec3& pos, std::vector<glm::vec3>& translations) {
 	core_trace_scoped(WorldRendererDistributePlants);
 	const glm::ivec3& size = world->meshSize();
-	core::Random random(pos.x);
+	math::Random random(pos.x);
 	const voxel::BiomeManager& biomeMgr = world->biomeManager();
 	std::vector<glm::vec2> positions;
 	const voxel::Region region(pos.x, 0, pos.z, pos.x + size.x - 1, voxel::MAX_TERRAIN_HEIGHT, pos.z + size.z - 1);

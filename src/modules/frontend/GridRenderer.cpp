@@ -21,8 +21,8 @@ bool GridRenderer::init() {
 }
 
 void GridRenderer::update(const voxel::Region& region) {
-	const core::AABB<int>& intaabb = region.aabb();
-	const core::AABB<float> aabb(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
+	const math::AABB<int>& intaabb = region.aabb();
+	const math::AABB<float> aabb(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
 	_shapeBuilder.clear();
 	_shapeBuilder.aabb(aabb, false);
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
@@ -62,12 +62,12 @@ void GridRenderer::render(const video::Camera& camera, const voxel::Region& regi
 	if (_renderGrid) {
 		const glm::vec3& center = glm::vec3(region.getCentre());
 		const glm::vec3& halfWidth = glm::vec3(region.getDimensionsInCells()) / 2.0f;
-		const core::Plane planeLeft  (glm::left,     center + glm::vec3(-halfWidth.x, 0.0f, 0.0f));
-		const core::Plane planeRight (glm::right,    center + glm::vec3( halfWidth.x, 0.0f, 0.0f));
-		const core::Plane planeBottom(glm::down,     center + glm::vec3(0.0f, -halfWidth.y, 0.0f));
-		const core::Plane planeTop   (glm::up,       center + glm::vec3(0.0f,  halfWidth.y, 0.0f));
-		const core::Plane planeNear  (glm::forward,  center + glm::vec3(0.0f, 0.0f, -halfWidth.z));
-		const core::Plane planeFar   (glm::backward, center + glm::vec3(0.0f, 0.0f,  halfWidth.z));
+		const math::Plane planeLeft  (glm::left,     center + glm::vec3(-halfWidth.x, 0.0f, 0.0f));
+		const math::Plane planeRight (glm::right,    center + glm::vec3( halfWidth.x, 0.0f, 0.0f));
+		const math::Plane planeBottom(glm::down,     center + glm::vec3(0.0f, -halfWidth.y, 0.0f));
+		const math::Plane planeTop   (glm::up,       center + glm::vec3(0.0f,  halfWidth.y, 0.0f));
+		const math::Plane planeNear  (glm::forward,  center + glm::vec3(0.0f, 0.0f, -halfWidth.z));
+		const math::Plane planeFar   (glm::backward, center + glm::vec3(0.0f, 0.0f,  halfWidth.z));
 
 		if (planeFar.isBackSide(camera.position())) {
 			_shapeRenderer.render(_gridMeshIndexXYFar, camera);

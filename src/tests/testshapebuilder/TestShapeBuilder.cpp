@@ -2,6 +2,7 @@
 #include "io/Filesystem.h"
 #include "core/Color.h"
 #include "core/Array.h"
+#include "math/AABB.h"
 #include "core/GLM.h"
 #include "imgui/IMGUI.h"
 
@@ -131,7 +132,7 @@ void TestShapeBuilder::onRenderUI() {
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("AABB")) {
-		_shapeBuilder.aabb(core::AABB<float>(_mins, _maxs));
+		_shapeBuilder.aabb(math::AABB<float>(_mins, _maxs));
 		buildMesh = true;
 	}
 
@@ -139,17 +140,17 @@ void TestShapeBuilder::onRenderUI() {
 	ImGui::SameLine();
 	ImGui::InputFloat("Step width", &_stepWidth);
 	if (ImGui::Button("AABB Grid XY")) {
-		_shapeBuilder.aabbGridXY(core::AABB<float>(_mins, _maxs), _near, _stepWidth);
+		_shapeBuilder.aabbGridXY(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
 		buildMesh = true;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("AABB Grid XZ")) {
-		_shapeBuilder.aabbGridXZ(core::AABB<float>(_mins, _maxs), _near, _stepWidth);
+		_shapeBuilder.aabbGridXZ(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
 		buildMesh = true;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("AABB Grid YZ")) {
-		_shapeBuilder.aabbGridYZ(core::AABB<float>(_mins, _maxs), _near, _stepWidth);
+		_shapeBuilder.aabbGridYZ(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
 		buildMesh = true;
 	}
 	ImGui::Separator();

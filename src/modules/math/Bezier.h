@@ -1,8 +1,12 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include <glm/vec3.hpp>
 
-namespace core {
+namespace math {
 
 template<typename TYPE = float, glm::qualifier P = glm::defaultp>
 class Bezier {

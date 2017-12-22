@@ -11,7 +11,7 @@
 #include <glm/common.hpp>
 #include <functional>
 
-namespace core {
+namespace math {
 
 template<typename TYPE = int>
 class Rect {
@@ -202,13 +202,13 @@ typedef Rect<float> RectFloat;
 namespace std
 {
 template<typename TYPE>
-struct hash<core::Rect<TYPE> > {
+struct hash<math::Rect<TYPE> > {
 	static inline void hash_combine(size_t &seed, size_t hash) {
 		hash += 0x9e3779b9 + (seed << 6) + (seed >> 2);
 		seed ^= hash;
 	}
 
-	inline size_t operator()(const core::Rect<TYPE>& v) const {
+	inline size_t operator()(const math::Rect<TYPE>& v) const {
 		size_t seed = 0;
 		hash<TYPE> hasher;
 		hash_combine(seed, hasher(v.getMinX()));

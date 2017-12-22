@@ -5,7 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "math/AABB.h"
 
-namespace core {
+namespace math {
 
 class AABBTest : public core::AbstractTest {
 };
@@ -13,7 +13,7 @@ class AABBTest : public core::AbstractTest {
 TEST_F(AABBTest, testSplit) {
 	glm::ivec3 mins(-64, -32, -32);
 	glm::ivec3 maxs(64, 32, 96);
-	core::AABB<int> aabb(mins, maxs);
+	math::AABB<int> aabb(mins, maxs);
 	std::array<AABB<int>, 8> result;
 	aabb.split(result);
 	const glm::ivec3 center(0, 0, 32);

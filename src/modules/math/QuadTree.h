@@ -12,7 +12,7 @@
 #include "Rect.h"
 #include "core/Trace.h"
 
-namespace core {
+namespace math {
 
 template<class NODE, typename TYPE>
 class QuadTree {

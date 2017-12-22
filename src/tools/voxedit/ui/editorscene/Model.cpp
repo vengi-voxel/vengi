@@ -394,7 +394,7 @@ bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	}
 	_lastPlacement = pos;
 
-	if (_mirrorAxis == core::Axis::None) {
+	if (_mirrorAxis == math::Axis::None) {
 		return true;
 	}
 	const int index = getIndexForMirrorAxis(_mirrorAxis);
@@ -485,8 +485,8 @@ void Model::init() {
 	_lastAction = Action::None;
 	_action = Action::None;
 
-	_lockedAxis = core::Axis::None;
-	_mirrorAxis = core::Axis::None;
+	_lockedAxis = math::Axis::None;
+	_mirrorAxis = math::Axis::None;
 }
 
 void Model::update() {
@@ -495,7 +495,7 @@ void Model::update() {
 		const bool growing = _spaceColonizationTree->step();
 		_lastGrow = ms;
 		voxel::RawVolumeWrapper wrapper(modelVolume());
-		core::Random random;
+		math::Random random;
 		const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, random);
 		_spaceColonizationTree->generate(wrapper, woodRandomVoxel);
 		modified(modelVolume()->region());
@@ -573,7 +573,7 @@ bool Model::extractCursorVolume() {
 }
 
 void Model::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noise::NoiseType type) {
-	core::Random random;
+	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
 	modified(modelVolume()->region());
@@ -581,7 +581,7 @@ void Model::noise(int octaves, float lacunarity, float frequency, float gain, vo
 
 void Model::spaceColonization() {
 	const voxel::Region& region = modelVolume()->region();
-	const core::AABB<int>& aabb = region.aabb();
+	const math::AABB<int>& aabb = region.aabb();
 	const int trunkHeight = aabb.getWidthY() / 2;
 	_lastGrow = core::App::getInstance()->systemMillis();
 
@@ -590,7 +590,7 @@ void Model::spaceColonization() {
 }
 
 void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
-	core::Random random;
+	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	if (voxel::lsystem::generate(wrapper, lsystemCtx, random)) {
 		modified(modelVolume()->region());
@@ -622,7 +622,7 @@ void Model::world(const voxel::WorldContext& ctx) {
 }
 
 void Model::createCactus() {
-	core::Random random;
+	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::cactus::createCactus(wrapper, _referencePos, 18, 2, random);
 	modified(modelVolume()->region());
@@ -632,7 +632,7 @@ void Model::createCloud() {
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	struct HasClouds {
 		glm::vec2 pos;
-		void getCloudPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
+		void getCloudPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
 			positions.push_back(pos);
 		}
 	};
@@ -665,7 +665,7 @@ void Model::createBuilding(voxel::BuildingType type, const voxel::BuildingContex
 }
 
 void Model::createTree(voxel::TreeContext ctx) {
-	core::Random random;
+	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	ctx.pos = _referencePos;
 	voxel::tree::createTree(wrapper, ctx, random);
@@ -678,13 +678,13 @@ void Model::setReferencePosition(const glm::ivec3& pos) {
 
 void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (!force) {
-		if ((_lockedAxis & core::Axis::X) != core::Axis::None) {
+		if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
 			pos.x = _cursorPos.x;
 		}
-		if ((_lockedAxis & core::Axis::Y) != core::Axis::None) {
+		if ((_lockedAxis & math::Axis::Y) != math::Axis::None) {
 			pos.y = _cursorPos.y;
 		}
-		if ((_lockedAxis & core::Axis::Z) != core::Axis::None) {
+		if ((_lockedAxis & math::Axis::Z) != math::Axis::None) {
 			pos.z = _cursorPos.z;
 		}
 	}
@@ -700,9 +700,9 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	const voxel::Region& cursorRegion = cursorPositionVolume()->region();
 	_rawVolumeRenderer.setOffset(CursorVolumeIndex, -cursorRegion.getCentre() + _cursorPos);
 
-	updateLockedPlane(core::Axis::X);
-	updateLockedPlane(core::Axis::Y);
-	updateLockedPlane(core::Axis::Z);
+	updateLockedPlane(math::Axis::X);
+	updateLockedPlane(math::Axis::Y);
+	updateLockedPlane(math::Axis::Z);
 }
 
 void Model::markCursorExtract() {
@@ -742,25 +742,25 @@ bool Model::trace(const video::Camera& camera) {
 	return true;
 }
 
-int Model::getIndexForAxis(core::Axis axis) const {
-	if (axis == core::Axis::X) {
+int Model::getIndexForAxis(math::Axis axis) const {
+	if (axis == math::Axis::X) {
 		return 0;
-	} else if (axis == core::Axis::Y) {
+	} else if (axis == math::Axis::Y) {
 		return 1;
 	}
 	return 2;
 }
 
-int Model::getIndexForMirrorAxis(core::Axis axis) const {
-	if (axis == core::Axis::X) {
+int Model::getIndexForMirrorAxis(math::Axis axis) const {
+	if (axis == math::Axis::X) {
 		return 2;
-	} else if (axis == core::Axis::Y) {
+	} else if (axis == math::Axis::Y) {
 		return 1;
 	}
 	return 0;
 }
 
-void Model::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, core::Axis axis, const glm::vec4& color) {
+void Model::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color) {
 	const voxel::Region& region = modelVolume()->region();
 	const int index = mirror ? getIndexForMirrorAxis(axis) : getIndexForAxis(axis);
 	glm::vec3 mins = region.getLowerCorner();
@@ -770,7 +770,7 @@ void Model::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, core:
 	const glm::vec3& ur = maxs;
 	glm::vec3 ul;
 	glm::vec3 lr;
-	if (axis == core::Axis::Y) {
+	if (axis == math::Axis::Y) {
 		ul = glm::vec3(mins.x, mins.y, maxs.z);
 		lr = glm::vec3(maxs.x, maxs.y, mins.z);
 	} else {
@@ -786,13 +786,13 @@ void Model::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, core:
 	_shapeBuilder.geom(vecs, indices);
 }
 
-void Model::updateLockedPlane(core::Axis axis) {
-	if (axis == core::Axis::None) {
+void Model::updateLockedPlane(math::Axis axis) {
+	if (axis == math::Axis::None) {
 		return;
 	}
 	const int index = getIndexForAxis(axis);
 	int32_t& meshIndex = _planeMeshIndex[index];
-	if ((_lockedAxis & axis) == core::Axis::None) {
+	if ((_lockedAxis & axis) == math::Axis::None) {
 		if (meshIndex != -1) {
 			_shapeRenderer.deleteMesh(meshIndex);
 			meshIndex = -1;
@@ -809,11 +809,11 @@ void Model::updateLockedPlane(core::Axis axis) {
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 
-core::Axis Model::mirrorAxis() const {
+math::Axis Model::mirrorAxis() const {
 	return _mirrorAxis;
 }
 
-void Model::setMirrorAxis(core::Axis axis, const glm::ivec3& mirrorPos) {
+void Model::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos) {
 	if (_mirrorAxis == axis) {
 		if (_mirrorPos != mirrorPos) {
 			_mirrorPos = mirrorPos;
@@ -827,7 +827,7 @@ void Model::setMirrorAxis(core::Axis axis, const glm::ivec3& mirrorPos) {
 }
 
 void Model::updateMirrorPlane() {
-	if (_mirrorAxis == core::Axis::None) {
+	if (_mirrorAxis == math::Axis::None) {
 		if (_mirrorMeshIndex != -1) {
 			_shapeRenderer.deleteMesh(_mirrorMeshIndex);
 			_mirrorMeshIndex = -1;
@@ -839,15 +839,15 @@ void Model::updateMirrorPlane() {
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 
-void Model::setLockedAxis(core::Axis axis, bool unlock) {
+void Model::setLockedAxis(math::Axis axis, bool unlock) {
 	if (unlock) {
 		_lockedAxis &= ~axis;
 	} else {
 		_lockedAxis |= axis;
 	}
-	updateLockedPlane(core::Axis::X);
-	updateLockedPlane(core::Axis::Y);
-	updateLockedPlane(core::Axis::Z);
+	updateLockedPlane(math::Axis::X);
+	updateLockedPlane(math::Axis::Y);
+	updateLockedPlane(math::Axis::Z);
 }
 
 }

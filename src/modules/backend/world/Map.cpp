@@ -20,7 +20,7 @@
 
 namespace backend {
 
-core::RectFloat Map::QuadTreeNode::getRect() const {
+math::RectFloat Map::QuadTreeNode::getRect() const {
 	return entity->rect();
 }
 
@@ -39,7 +39,7 @@ Map::Map(MapId mapId,
 		const cooldown::CooldownProviderPtr& cooldownProvider) :
 		_mapId(mapId), _mapIdStr(std::to_string(mapId)),
 		_eventBus(eventBus), _filesystem(filesystem), _attackMgr(this),
-		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
+		_quadTree(math::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
 	_poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
 	_spawnMgr = std::make_shared<backend::SpawnMgr>(this, filesystem, entityStorage, messageSender,
 			timeProvider, loader, containerProvider, cooldownProvider);
@@ -53,9 +53,9 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 	if (!entity->update(dt)) {
 		return false;
 	}
-	const core::RectFloat& rect = entity->viewRect();
+	const math::RectFloat& rect = entity->viewRect();
 	// TODO: maybe move into the entity instance to reduce memory allocations.
-	core::QuadTree<QuadTreeNode, float>::Contents contents;
+	math::QuadTree<QuadTreeNode, float>::Contents contents;
 	contents.reserve(entity->visibleCount() + 10);
 	_quadTreeCache.query(rect, contents);
 	EntitySet set;

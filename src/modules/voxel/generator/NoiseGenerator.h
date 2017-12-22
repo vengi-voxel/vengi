@@ -24,7 +24,7 @@ static inline float getNoise(const glm::ivec2& pos, int octaves, float lacunarit
 }
 
 template<class Volume>
-void generate(Volume& volume, int octaves, float lacunarity, float frequency, float gain, NoiseType type, core::Random& random) {
+void generate(Volume& volume, int octaves, float lacunarity, float frequency, float gain, NoiseType type, math::Random& random) {
 	const Region& region = volume.region();
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();

@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include "math/QuadTree.h"
 
-namespace core {
+namespace math {
 
 class Item {
 private:

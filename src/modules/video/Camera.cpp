@@ -223,7 +223,7 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 	}
 }
 
-void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[core::FRUSTUM_VERTICES_MAX]) const {
+void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::FRUSTUM_VERTICES_MAX]) const {
 	glm::mat4 proj;
 	switch(_mode) {
 	case CameraMode::Orthogonal:
@@ -255,7 +255,7 @@ void Camera::updateFrustumPlanes() {
 	_frustum.updatePlanes(viewMatrix(), projectionMatrix());
 }
 
-core::AABB<float> Camera::aabb() const {
+math::AABB<float> Camera::aabb() const {
 	core_assert(!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE));
 	return frustum().aabb();
 }
@@ -312,7 +312,7 @@ glm::vec4 Camera::splitFrustumSphereBoundingBox(float near, float far) const {
 }
 
 glm::vec4 Camera::sphereBoundingBox() const {
-	const core::AABB<float> boundingBox = aabb();
+	const math::AABB<float> boundingBox = aabb();
 	const glm::vec3& mins = boundingBox.getLowerCorner();
 	const glm::vec3& maxs = boundingBox.getUpperCorner();
 

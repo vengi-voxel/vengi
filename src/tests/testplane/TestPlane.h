@@ -18,7 +18,7 @@ private:
 
 	video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;
-	core::Plane _plane;
+	math::Plane _plane;
 
 	void doRender() override;
 public:

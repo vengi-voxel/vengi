@@ -15,17 +15,17 @@ private:
 	using Super = TestApp;
 	class Wrapper {
 	private:
-		core::AABB<int> _aabb;
+		math::AABB<int> _aabb;
 	public:
 		Wrapper(const glm::ivec3& pos) :
 				_aabb(pos, pos + 1) {
 		}
-		inline core::AABB<int> aabb() const {
+		inline math::AABB<int> aabb() const {
 			return _aabb;
 		}
 	};
 
-	using Tree = core::Octree<Wrapper>;
+	using Tree = math::Octree<Wrapper>;
 	using Node = Tree::OctreeNode;
 
 	struct Listener : public Tree::IOctreeListener {
@@ -34,10 +34,10 @@ private:
 
 	Listener _listener;
 
-	Tree _octree { core::AABB<int>(glm::ivec3(-1024, 0, -1024), glm::ivec3(1024, 2048, 1024)), 10 };
+	Tree _octree { math::AABB<int>(glm::ivec3(-1024, 0, -1024), glm::ivec3(1024, 2048, 1024)), 10 };
 	mutable video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;
-	core::Random _random;
+	math::Random _random;
 	bool _dirty = false;
 	bool _renderItems = true;
 	bool _renderAABBs = true;
@@ -46,11 +46,11 @@ private:
 	int32_t _itemMeshes = -1;
 	int32_t _queryMeshes = -1;
 
-	std::vector<core::AABB<int> > _itemVector;
+	std::vector<math::AABB<int> > _itemVector;
 	int _itemIndex = -1;
 	Tree::Contents _results;
 
-	core::AABB<int> _queryAABB;
+	math::AABB<int> _queryAABB;
 	glm::ivec3 _queryMins;
 	glm::ivec3 _queryMaxs;
 
