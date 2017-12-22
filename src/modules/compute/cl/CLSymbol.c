@@ -267,7 +267,7 @@ int computeCLInit() {
 	clpfGetGLContextInfoKHR = (PFNCLGetGLContextInfoKHR_PROC*)SDL_LoadFunction(obj, "clGetGLContextInfoKHR");
 #endif
 
-    return 0;
+	return 0;
 }
 
 PFNCLGetPlatformIDs_PROC* clpfGetPlatformIDs = NULL;
