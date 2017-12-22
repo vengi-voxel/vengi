@@ -3,6 +3,9 @@
  */
 
 #include "core/tests/AbstractTest.h"
+#include "core/GLM.h"
+#include "math/Frustum.h"
+#include "math/AABB.h"
 #include "video/Camera.h"
 
 namespace video {

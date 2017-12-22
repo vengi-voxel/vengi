@@ -8,6 +8,7 @@
 #include "core/Color.h"
 #include "core/Array.h"
 #include "core/Log.h"
+#include "core/GLM.h"
 #include "video/ScopedLineWidth.h"
 #include "video/Types.h"
 #include <assimp/Importer.hpp>

@@ -4,9 +4,11 @@
 
 #include "GBuffer.h"
 #include "ScopedFrameBuffer.h"
+#include "Types.h"
 
 #include <cstddef>
 #include "core/Common.h"
+#include "core/Assert.h"
 
 namespace video {
 
