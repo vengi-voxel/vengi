@@ -251,7 +251,6 @@ TEST(ByteStreamTest, testRandomReadWrite) {
 	std::uniform_int_distribution<int> distribution(0, RAND_MAX);
 
 	TypeValueList _typeValueList;
-	TypeValueListIter _typeValueListIter;
 
 	unsigned int iterations = distribution(engine) % 20 + 1;
 	unsigned int index = 0;
