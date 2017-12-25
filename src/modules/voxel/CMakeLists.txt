@@ -62,11 +62,19 @@ set(LIB voxel)
 add_library(${LIB} ${SRCS})
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math collection noise zlib image assimp commonlua)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+set(MARCH native)
+#set(MARCH generic)
+# http://christian-seiler.de/projekte/fpmath/
 if (NOT MSVC)
-	target_compile_options(${LIB} PRIVATE -march=native PRIVATE -O3)
+	check_c_compiler_flag(-mtune=${MARCH} HAVE_FLAG_MTUNE_${MARCH})
+	if (HAVE_FLAG_MTUNE_${MARCH})
+		target_compile_options(${LIB} PRIVATE -mtune=${MARCH})
+	endif()
+	target_compile_options(${LIB} PRIVATE -O3)
 else()
-	# TODO MSVC
+	target_compile_options(${LIB} PRIVATE /Ox)
 endif()
+
 generate_compute_shaders(voxel meshextractor)
 
 set(TEST_SRCS
