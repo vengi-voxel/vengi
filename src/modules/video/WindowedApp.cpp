@@ -103,14 +103,16 @@ void WindowedApp::onWindowResize() {
 }
 
 bool WindowedApp::onKeyRelease(int32_t key) {
+	bool handled = false;
 	auto range = _bindings.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
 		const std::string& command = i->second.first;
 		if (command[0] == '+' && _keys.erase(key) > 0) {
 			core_assert_always(1 == core::Command::execute(command + " false"));
+			handled = true;
 		}
 	}
-	return true;
+	return handled;
 }
 
 bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
@@ -185,10 +187,11 @@ core::AppState WindowedApp::onInit() {
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+	SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
 
 	const bool fullscreen = core::Var::getSafe(cfg::ClientFullscreen)->boolVal();
 
-	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
 	}
