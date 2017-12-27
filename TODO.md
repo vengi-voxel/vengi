@@ -100,3 +100,16 @@ Extend statsd support with more events
 
 Implement signnp with email verification, Lost password and co - also see password related point in the persistence section.
 Maybe use https://github.com/est31/csrp-gmp
+
+# UI
+
+## Get rid of turbobadger and nativefiledialog - use nuklear and their file dialog implementation.
+
+- implement nuklear lua bindings
+- remove the ui tool
+- rename nuklear module to ui (incl. namespace) after we are done
+
+## Convert the tools that are using turbobadger
+- noisetool
+- voxedit
+- client
