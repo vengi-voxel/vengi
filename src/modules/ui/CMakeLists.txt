@@ -12,7 +12,7 @@ set(SRCS
 set(LIB ui)
 add_library(${LIB} ${SRCS})
 generate_shaders(${LIB} texture)
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core io video turbobadger)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core io video util turbobadger)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
