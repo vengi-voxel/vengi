@@ -270,7 +270,7 @@ core::AppState IMGUIApp::onRunning() {
 
 	ImGui::NewFrame();
 
-	SDL_ShowCursor(io.MouseDrawCursor ? SDL_FALSE : SDL_TRUE);
+	showCursor(io.MouseDrawCursor ? false : true);
 
 	core_trace_scoped(IMGUIAppUpdateUI);
 	video::ScopedShader scopedShader(_shader);

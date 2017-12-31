@@ -41,7 +41,11 @@ protected:
 	virtual ~WindowedApp() {
 	}
 
-	inline void centerMouseCursor() {
+	inline void showCursor(bool show) {
+		SDL_ShowCursor(show ? SDL_TRUE : SDL_FALSE);
+	}
+
+	inline void centerMousePosition() {
 		SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
 	}
 
