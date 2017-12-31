@@ -15,6 +15,8 @@
 
 namespace io {
 
+typedef void (*FileWatcher)(const char* file);
+
 /**
  * @brief Hide platform specific details about the io handling for files.
  *
@@ -43,7 +45,7 @@ public:
 	void update();
 
 	bool unwatch(const std::string& path);
-	bool watch(const std::string& path);
+	bool watch(const std::string& path, FileWatcher watcher);
 
 	/**
 	 * @brief Get the path where the application resides.

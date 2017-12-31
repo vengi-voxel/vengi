@@ -174,24 +174,30 @@ bool Filesystem::unwatch(const std::string& path) {
 	return true;
 }
 
-bool Filesystem::watch(const std::string& path) {
+bool Filesystem::watch(const std::string& path, FileWatcher watcher) {
 	uv_fs_event_t* fsEvent = new uv_fs_event_t;
 	if (uv_fs_event_init(_loop, fsEvent) != 0) {
 		delete fsEvent;
 		return false;
 	}
+	fsEvent->data = (void*)watcher;
 	auto i = _watches.insert(std::make_pair(path, fsEvent));
 	if (!i.second) {
 		delete fsEvent;
 		return false;
 	}
 	const int ret = uv_fs_event_start(fsEvent, [] (uv_fs_event_t *handle, const char *filename, int events, int status) {
+		if ((events & UV_CHANGE) == 0) {
+			return;
+		}
 		if (filename == nullptr) {
 			return;
 		}
-		Log::info("filename: %s", filename);
-	}, path.c_str(), UV_FS_EVENT_RECURSIVE);
+		FileWatcher watcher = (FileWatcher)handle->data;
+		watcher(filename);
+	}, path.c_str(), 0);
 	if (ret != 0) {
+		_watches.erase(_watches.find(path));
 		delete fsEvent;
 		return false;
 	}
