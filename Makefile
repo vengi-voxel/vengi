@@ -158,7 +158,7 @@ edit-local-config:
 doc: cmake
 	$(call COMPILE, $@)
 
-server client voxedit shapetool worldrenderertool shadertool noisetool noisetool2 databasetool uitool tests tests-math tests-core tests-persistence tests-voxel benchmarks-voxel tests-noise tests-computeshadertool testmesh testcamera testdepthbuffer testtexture testvoxelfont testplane testimgui testoctree testoctreevisit testshapebuilder tests-shadertool flatc computeshadertool: cmake
+server client voxedit shapetool worldrenderertool shadertool noisetool noisetool2 databasetool uitool tests tests-math tests-core tests-persistence tests-voxel benchmarks-voxel tests-noise tests-computeshadertool testmesh testcamera testdepthbuffer testnuklear testtexture testvoxelfont testplane testimgui testoctree testluaui testoctreevisit testshapebuilder tests-shadertool flatc computeshadertool: cmake
 	$(call COMPILE, $@)
 	$(call COMPILE, copy-data-shared)
 	$(call COMPILE, copy-data-$@)
@@ -304,6 +304,11 @@ update-glslang:
 	rm -rf src/tools/glslang/StandAlone
 	cp -r $(UPDATEDIR)/glslang.sync/StandAlone src/tools/glslang/
 
+update-nuklear:
+	$(call UPDATE_GIT,nuklear,https://github.com/vurtun/nuklear.git)
+	cp $(UPDATEDIR)/nuklear.sync/nuklear.h src/modules/nuklear/private
+	cp $(UPDATEDIR)/nuklear.sync/demo/overview.c src/tests/testnuklear
+
 update-json:
 	$(call UPDATE_GIT,json,https://github.com/nlohmann/json)
 	cp $(UPDATEDIR)/json.sync/src/json.hpp src/modules/core
@@ -317,7 +322,7 @@ update-stringview:
 	$(call UPDATE_GIT,string_view,https://github.com/satoren/string_view.git)
 	cp $(UPDATEDIR)/string_view.sync/string_view.hpp contrib/libs/string_view
 
-updatelibs: update-stringview update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang
+updatelibs: update-nuklear update-stringview update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
