@@ -38,6 +38,10 @@ private:
 	lua_State *_state;
 	std::string _error;
 	bool _destroy;
+	bool _debug;
+
+	void openState();
+	void closeState();
 
 public:
 	explicit LUA(lua_State *state);
@@ -46,6 +50,11 @@ public:
 	~LUA();
 
 	lua_State* state() const;
+
+	/**
+	 * @return @c false if the state is not managed by this instance
+	 */
+	bool resetState();
 
 	template<class T>
 	static T* newGlobalData(lua_State *L, const std::string& prefix, T *userData) {

@@ -313,7 +313,7 @@ static int clua_vecnewindex(lua_State *s) {
 
 template<class T>
 void clua_vecregister(lua_State* s) {
-	std::vector<luaL_Reg> funcs = {
+	const std::vector<luaL_Reg> funcs = {
 		{"__add", clua_vecadd<T>},
 		{"__sub", clua_vecsub<T>},
 		{"__mul", clua_vecdot<T>::dot},
@@ -330,7 +330,7 @@ void clua_vecregister(lua_State* s) {
 	using RAWTYPE = typename std::remove_pointer<T>::type;
 	clua_registerfuncs(s, &funcs.front(), clua_meta<RAWTYPE>::name());
 
-	std::vector<luaL_Reg> globalFuncs = {
+	const std::vector<luaL_Reg> globalFuncs = {
 		{"new", clua_vecnew<T>::vecnew},
 		{nullptr, nullptr}
 	};

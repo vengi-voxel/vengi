@@ -55,11 +55,19 @@ LUAType::LUAType(lua_State* state, const std::string& name) :
 }
 
 LUA::LUA(lua_State *state) :
-		_state(state), _destroy(false) {
+		_state(state), _destroy(false), _debug(false) {
 }
 
 LUA::LUA(bool debug) :
-		_destroy(true) {
+		_destroy(true), _debug(debug) {
+	openState();
+}
+
+LUA::~LUA() {
+	closeState();
+}
+
+void LUA::openState() {
 	_state = luaL_newstate();
 
 	luaL_openlibs(_state);
@@ -68,7 +76,7 @@ LUA::LUA(bool debug) :
 	lua_atpanic(_state, panicCB);
 
 	int mask = 0;
-	if (debug) {
+	if (_debug) {
 		mask |= LUA_MASKCALL;
 		mask |= LUA_MASKRET;
 		mask |= LUA_MASKLINE;
@@ -78,11 +86,22 @@ LUA::LUA(bool debug) :
 	lua_sethook(_state, debugHook, mask, 0);
 }
 
-LUA::~LUA() {
+void LUA::closeState() {
 	if (_destroy) {
 		lua_close(_state);
 		_state = nullptr;
 	}
+}
+
+bool LUA::resetState() {
+	// externally managed
+	if (!_destroy) {
+		return false;
+	}
+
+	closeState();
+	openState();
+	return true;
 }
 
 void LUA::reg(const std::string& prefix, const luaL_Reg* funcs) {
