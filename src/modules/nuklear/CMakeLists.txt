@@ -5,7 +5,7 @@ set(SRCS
 	Console.cpp Console.h
 
 	LUAUIApp.cpp LUAUIApp.h
-	LUAFunctions.h
+	LUAFunctions.cpp LUAFunctions.h
 
 	private/nuklear.h
 )

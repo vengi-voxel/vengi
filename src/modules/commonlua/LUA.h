@@ -186,3 +186,10 @@ inline const std::string& LUA::error() const {
 typedef std::shared_ptr<LUA> LUAPtr;
 
 }
+
+#if LUA_VERSION_NUM >= 502
+#undef lua_equal
+#define lua_equal(L, idx1, idx2) lua_compare(L, (idx1), (idx2), LUA_OPEQ)
+#undef lua_objlen
+#define lua_objlen lua_rawlen
+#endif

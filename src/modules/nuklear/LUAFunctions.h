@@ -1,6 +1,11 @@
 /**
  * @file
  * @brief LUA bindings for nuklear ui.
+ * @note Most of this stuff is shamelessly copied over from nuklear-love lua bindings
+ *
+ * LOVE-Nuklear - MIT licensed; no warranty implied; use at your own risk.
+ * authored from 2015-2016 by Micha Mettke
+ * adapted to LOVE in 2016 by Kevin Harrison
  */
 
 #pragma once
@@ -11,46 +16,6 @@
 #include <vector>
 
 namespace nuklear {
-
-static inline struct nk_context* uilua_ctx(lua_State* s) {
-	return lua::LUA::globalData<struct nk_context>(s, "context");
-}
-
-static constexpr struct Flags {
-	const char *name;
-	nk_flags flag;
-} windowFlags[] = {
-	{ "scrollbar", (nk_flags)~NK_WINDOW_NO_SCROLLBAR },
-	{ "scroll auto hide", NK_WINDOW_SCROLL_AUTO_HIDE },
-	{ "minimizable", NK_WINDOW_MINIMIZABLE },
-	{ "background", NK_WINDOW_BACKGROUND },
-	{ "scalable", NK_WINDOW_SCALABLE },
-	{ "closable", NK_WINDOW_CLOSABLE },
-	{ "movable", NK_WINDOW_MOVABLE },
-	{ "border", NK_WINDOW_BORDER },
-	{ "title", NK_WINDOW_TITLE },
-	{ nullptr, 0u }
-};
-
-/**
- * @brief Convert the given window flags to nuklear enum values
- */
-static nk_flags uilua_window_flag(lua_State *s, int argsStartIndex) {
-	const int argc = lua_gettop(s);
-	nk_flags flags = NK_WINDOW_NO_SCROLLBAR;
-	for (int i = argsStartIndex; i <= argc; ++i) {
-		const char *flagId = luaL_checkstring(s, i);
-		for (const Flags* flag = windowFlags; flag->name != nullptr; ++flag) {
-			if (!strcmp(flag->name, flagId)) {
-				flags |= flag->flag;
-				break;
-			}
-		}
-		const char *msg = lua_pushfstring(s, "Unknown window flag given: '%s'", flagId);
-		return luaL_argerror(s, i, msg);
-	}
-	return flags;
-}
 
 /**
  * @brief Extended window start with separated title and identifier to allow multiple windows with same name but not title
@@ -66,98 +31,116 @@ static nk_flags uilua_window_flag(lua_State *s, int argsStartIndex) {
  * @note If you do not define @c scalable or @c moveable you can set window position and size every frame
  * @return @c true if the window can be filled up with widgets from this point until @c windowEnd or @c false otherwise
  */
-int uilua_window_begin(lua_State *s) {
-	struct nk_context* ctx = uilua_ctx(s);
-	const char *name;
-	const char *title;
-	int startIndex;
-	const bool noNameDefined = lua_isnumber(s, 2);
-	if (noNameDefined) {
-		core_assert(lua_gettop(s) >= 5);
-		name = title = luaL_checkstring(s, 1);
-		startIndex = 2;
-	} else {
-		core_assert(lua_gettop(s) >= 6);
-		name = luaL_checkstring(s, 1);
-		title = luaL_checkstring(s, 2);
-		startIndex = 3;
-	}
-	const float x = luaL_checknumber(s, startIndex++);
-	const float y = luaL_checknumber(s, startIndex++);
-	const float w = luaL_checknumber(s, startIndex++);
-	const float h = luaL_checknumber(s, startIndex++);
-	const nk_flags flags = uilua_window_flag(s, startIndex);
-	const int retVal = nk_begin_titled(ctx, name, title, nk_rect(x, y, w, h), flags);
-	lua_pushboolean(s, retVal);
-	return 1;
-}
+extern int uilua_window_begin(lua_State *s);
 
 /**
  * @brief Needs to be called at the end of the window building process to process scaling,
  * scrollbars and general cleanup. All widget calls after this functions will result in
  * asserts or no state changes
  */
-int uilua_window_end(lua_State *s) {
-	core_assert(lua_gettop(s) == 0);
-	struct nk_context* ctx = uilua_ctx(s);
-	nk_end(ctx);
-	return 0;
-}
+extern int uilua_window_end(lua_State *s);
 
 /**
  * @return A rectangle with screen position and size of the currently processed window.
  * @note IMPORTANT: only call this function between calls `windowBegin` and `windowEnd`
  */
-int uilua_window_get_bounds(lua_State *s) {
-	core_assert(lua_gettop(s) == 0);
-	struct nk_context* ctx = uilua_ctx(s);
-	const struct nk_rect& rect = nk_window_get_bounds(ctx);
-	lua_pushnumber(s, rect.x);
-	lua_pushnumber(s, rect.y);
-	lua_pushnumber(s, rect.w);
-	lua_pushnumber(s, rect.h);
-	return 4;
-}
+extern int uilua_window_get_bounds(lua_State *s);
 
 /**
  * @return The position of the currently processed window.
  * @note IMPORTANT: only call this function between calls `windowBegin` and `windowEnd`
  */
-int uilua_window_get_position(lua_State *s) {
-	core_assert(lua_gettop(s) == 0);
-	struct nk_context* ctx = uilua_ctx(s);
-	const struct nk_vec2& pos = nk_window_get_position(ctx);
-	lua_pushnumber(s, pos.x);
-	lua_pushnumber(s, pos.y);
-	return 2;
-}
+extern int uilua_window_get_position(lua_State *s);
 
 /**
  * @return The size with width and height of the currently processed window.
  * @note IMPORTANT: only call this function between calls `windowBegin` and `windowEnd`
  */
-int uilua_window_get_size(lua_State *s) {
-	core_assert(lua_gettop(s) == 0);
-	struct nk_context* ctx = uilua_ctx(s);
-	const struct nk_vec2& size = nk_window_get_size(ctx);
-	lua_pushnumber(s, size.x);
-	lua_pushnumber(s, size.y);
-	return 2;
-}
+extern int uilua_window_get_size(lua_State *s);
 
 /**
  * @return The position and size of the currently visible and non-clipped space inside the currently processed window.
  * @note IMPORTANT: only call this function between calls `windowBegin` and `windowEnd`
  */
-int uilua_window_get_content_region(lua_State *s) {
-	core_assert(lua_gettop(s) == 0);
-	struct nk_context* ctx = uilua_ctx(s);
-	const struct nk_rect& rect = nk_window_get_content_region(ctx);
-	lua_pushnumber(s, rect.x);
-	lua_pushnumber(s, rect.y);
-	lua_pushnumber(s, rect.w);
-	lua_pushnumber(s, rect.h);
-	return 4;
-}
+extern int uilua_window_get_content_region(lua_State *s);
+
+extern int uilua_edit(lua_State *s);
+extern int uilua_text(lua_State *s);
+extern int uilua_push_scissor(lua_State *s);
+extern int uilua_label(lua_State *s);
+extern int uilua_image(lua_State *s);
+extern int uilua_button(lua_State *s);
+
+extern int uilua_window_has_focus(lua_State *s);
+extern int uilua_window_is_collapsed(lua_State *s);
+extern int uilua_window_is_hidden(lua_State *s);
+extern int uilua_window_is_active(lua_State *s);
+extern int uilua_window_is_hovered(lua_State *s);
+extern int uilua_window_is_any_hovered(lua_State *s);
+extern int uilua_item_is_any_active(lua_State *s);
+extern int uilua_window_set_bounds(lua_State *s);
+extern int uilua_window_set_position(lua_State *s);
+extern int uilua_window_set_size(lua_State *s);
+extern int uilua_window_set_focus(lua_State *s);
+extern int uilua_window_close(lua_State *s);
+extern int uilua_window_collapse(lua_State *s);
+extern int uilua_window_expand(lua_State *s);
+extern int uilua_window_show(lua_State *s);
+extern int uilua_window_hide(lua_State *s);
+extern int uilua_layout_row(lua_State *s);
+extern int uilua_layout_row_begin(lua_State *s);
+extern int uilua_layout_row_push(lua_State *s);
+extern int uilua_layout_row_end(lua_State *s);
+extern int uilua_layout_space_begin(lua_State *s);
+extern int uilua_layout_space_push(lua_State *s);
+extern int uilua_layout_space_end(lua_State *s);
+extern int uilua_layout_space_bounds(lua_State *s);
+extern int uilua_layout_space_to_screen(lua_State *s);
+extern int uilua_layout_space_to_local(lua_State *s);
+extern int uilua_layout_space_rect_to_screen(lua_State *s);
+extern int uilua_layout_space_rect_to_local(lua_State *s);
+extern int uilua_layout_ratio_from_pixel(lua_State *s);
+extern int uilua_group_begin(lua_State *s);
+extern int uilua_group_end(lua_State *s);
+extern int uilua_tree_push(lua_State *s);
+extern int uilua_tree_pop(lua_State *s);
+extern int uilua_button_set_behavior(lua_State *s);
+extern int uilua_button_push_behavior(lua_State *s);
+extern int uilua_button_pop_behavior(lua_State *s);
+extern int uilua_checkbox(lua_State *s);
+extern int uilua_radio(lua_State *s);
+extern int uilua_selectable(lua_State *s);
+extern int uilua_slider(lua_State *s);
+extern int uilua_progress(lua_State *s);
+extern int uilua_color_picker(lua_State *s);
+extern int uilua_property(lua_State *s);
+extern int uilua_popup_begin(lua_State *s);
+extern int uilua_popup_close(lua_State *s);
+extern int uilua_popup_end(lua_State *s);
+extern int uilua_combobox(lua_State *s);
+extern int uilua_combobox_begin(lua_State *s);
+extern int uilua_combobox_item(lua_State *s);
+extern int uilua_combobox_close(lua_State *s);
+extern int uilua_combobox_end(lua_State *s);
+extern int uilua_contextual_begin(lua_State *s);
+extern int uilua_contextual_item(lua_State *s);
+extern int uilua_contextual_close(lua_State *s);
+extern int uilua_contextual_end(lua_State *s);
+extern int uilua_tooltip(lua_State *s);
+extern int uilua_tooltip_begin(lua_State *s);
+extern int uilua_tooltip_end(lua_State *s);
+extern int uilua_menubar_begin(lua_State *s);
+extern int uilua_menubar_end(lua_State *s);
+extern int uilua_menu_begin(lua_State *s);
+extern int uilua_menu_item(lua_State *s);
+extern int uilua_menu_close(lua_State *s);
+extern int uilua_menu_end(lua_State *s);
+extern int uilua_spacing(lua_State *s);
+extern int uilua_widget_bounds(lua_State *s);
+extern int uilua_widget_position(lua_State *s);
+extern int uilua_widget_size(lua_State *s);
+extern int uilua_widget_width(lua_State *s);
+extern int uilua_widget_height(lua_State *s);
+extern int uilua_widget_is_hovered(lua_State *s);
 
 }

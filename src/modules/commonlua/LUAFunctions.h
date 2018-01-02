@@ -338,3 +338,7 @@ void clua_vecregister(lua_State* s) {
 }
 
 extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);
+
+extern int clua_typerror (lua_State *L, int narg, const char *tname);
+
+extern int clua_checkboolean(lua_State *s, int index);

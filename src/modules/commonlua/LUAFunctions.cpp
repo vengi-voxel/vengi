@@ -35,3 +35,16 @@ bool clua_optboolean(lua_State* s, int index, bool defaultVal) {
 	}
 	return defaultVal;
 }
+
+int clua_typerror(lua_State *s, int narg, const char *tname) {
+	const char *msg = lua_pushfstring(s, "%s expected, got %s", tname, luaL_typename(s, narg));
+	return luaL_argerror(s, narg, msg);
+}
+
+int clua_checkboolean(lua_State *s, int index) {
+	if (index < 0) {
+		index += lua_gettop(s) + 1;
+	}
+	luaL_checktype(s, index, LUA_TBOOLEAN);
+	return lua_toboolean(s, index);
+}

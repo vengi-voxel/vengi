@@ -391,7 +391,6 @@ core::AppState NuklearApp::onRunning() {
 	}
 
 	nk_clear(&_ctx);
-	_vbo.unbind();
 	return state;
 }
 

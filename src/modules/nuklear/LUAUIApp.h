@@ -6,6 +6,7 @@
 
 #include "NuklearApp.h"
 #include "commonlua/LUA.h"
+#include "video/TexturePool.h"
 
 namespace nuklear {
 
@@ -18,11 +19,13 @@ private:
 	using Super = NuklearApp;
 protected:
 	lua::LUA _lua;
+	video::TexturePoolPtr _texturePool;
 public:
-	LUAUIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport = 17815);
+	LUAUIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::TexturePoolPtr& texturePool, uint16_t traceport = 17815);
 	virtual ~LUAUIApp();
 
 	core::AppState onInit() override;
+	core::AppState onCleanup() override;
 
 	bool reload();
 	void onRenderUI() override;

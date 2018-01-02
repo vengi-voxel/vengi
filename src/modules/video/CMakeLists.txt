@@ -17,6 +17,7 @@ set(SRCS
 	DepthBuffer.cpp DepthBuffer.h
 	Cubemap.cpp Cubemap.h
 	Texture.cpp Texture.h
+	TexturePool.cpp TexturePool.h
 	Types.h
 	Version.h
 	Renderer.cpp Renderer.h
