@@ -419,15 +419,17 @@ typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_TEXTURE_DEPTH_SIZE 0x884A
 #define GL_TEXTURE_COMPARE_MODE 0x884C
 #define GL_TEXTURE_COMPARE_FUNC 0x884D
-#define GL_FUNC_ADD 0x8006
-#define GL_FUNC_SUBTRACT 0x800A
-#define GL_FUNC_REVERSE_SUBTRACT 0x800B
-#define GL_MIN 0x8007
-#define GL_MAX 0x8008
+#define GL_BLEND_COLOR 0x8005
+#define GL_BLEND_EQUATION 0x8009
 #define GL_CONSTANT_COLOR 0x8001
 #define GL_ONE_MINUS_CONSTANT_COLOR 0x8002
 #define GL_CONSTANT_ALPHA 0x8003
 #define GL_ONE_MINUS_CONSTANT_ALPHA 0x8004
+#define GL_FUNC_ADD 0x8006
+#define GL_FUNC_REVERSE_SUBTRACT 0x800B
+#define GL_FUNC_SUBTRACT 0x800A
+#define GL_MIN 0x8007
+#define GL_MAX 0x8008
 
 /* GL_VERSION_1_5 */
 
@@ -1403,71 +1405,197 @@ GLAPI PFNGLMULTIDRAWELEMENTSINDIRECT_PROC* glpfMultiDrawElementsIndirect;
 
 /* GL_VERSION_1_0 */
 
-GLAPI void APIENTRY glBlendFunc (GLenum sfactor, GLenum dfactor);
-GLAPI void APIENTRY glClear (GLbitfield mask);
-GLAPI void APIENTRY glClearColor (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
-GLAPI void APIENTRY glClearDepth (GLdouble depth);
-GLAPI void APIENTRY glClearStencil (GLint s);
-GLAPI void APIENTRY glColorMask (GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
-GLAPI void APIENTRY glCullFace (GLenum mode);
-GLAPI void APIENTRY glDepthFunc (GLenum func);
-GLAPI void APIENTRY glDepthMask (GLboolean flag);
-GLAPI void APIENTRY glDepthRange (GLdouble near, GLdouble far);
-GLAPI void APIENTRY glDisable (GLenum cap);
-GLAPI void APIENTRY glDrawBuffer (GLenum buf);
-GLAPI void APIENTRY glEnable (GLenum cap);
-GLAPI void APIENTRY glFinish (void);
-GLAPI void APIENTRY glFlush (void);
-GLAPI void APIENTRY glFrontFace (GLenum mode);
-GLAPI void APIENTRY glGetBooleanv (GLenum pname, GLboolean * data);
-GLAPI void APIENTRY glGetDoublev (GLenum pname, GLdouble * data);
-GLAPI GLenum APIENTRY glGetError (void);
-GLAPI void APIENTRY glGetFloatv (GLenum pname, GLfloat * data);
-GLAPI void APIENTRY glGetIntegerv (GLenum pname, GLint * data);
-GLAPI const GLubyte * APIENTRY glGetString (GLenum name);
-GLAPI void APIENTRY glGetTexImage (GLenum target, GLint level, GLenum format, GLenum type, void * pixels);
-GLAPI void APIENTRY glGetTexLevelParameterfv (GLenum target, GLint level, GLenum pname, GLfloat * params);
-GLAPI void APIENTRY glGetTexLevelParameteriv (GLenum target, GLint level, GLenum pname, GLint * params);
-GLAPI void APIENTRY glGetTexParameterfv (GLenum target, GLenum pname, GLfloat * params);
-GLAPI void APIENTRY glGetTexParameteriv (GLenum target, GLenum pname, GLint * params);
-GLAPI void APIENTRY glHint (GLenum target, GLenum mode);
-GLAPI GLboolean APIENTRY glIsEnabled (GLenum cap);
-GLAPI void APIENTRY glLineWidth (GLfloat width);
-GLAPI void APIENTRY glLogicOp (GLenum opcode);
-GLAPI void APIENTRY glPixelStoref (GLenum pname, GLfloat param);
-GLAPI void APIENTRY glPixelStorei (GLenum pname, GLint param);
-GLAPI void APIENTRY glPointSize (GLfloat size);
-GLAPI void APIENTRY glPolygonMode (GLenum face, GLenum mode);
-GLAPI void APIENTRY glReadBuffer (GLenum src);
-GLAPI void APIENTRY glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void * pixels);
-GLAPI void APIENTRY glScissor (GLint x, GLint y, GLsizei width, GLsizei height);
-GLAPI void APIENTRY glStencilFunc (GLenum func, GLint ref, GLuint mask);
-GLAPI void APIENTRY glStencilMask (GLuint mask);
-GLAPI void APIENTRY glStencilOp (GLenum fail, GLenum zfail, GLenum zpass);
-GLAPI void APIENTRY glTexImage1D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLint border, GLenum format, GLenum type, const void * pixels);
-GLAPI void APIENTRY glTexImage2D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void * pixels);
-GLAPI void APIENTRY glTexParameterf (GLenum target, GLenum pname, GLfloat param);
-GLAPI void APIENTRY glTexParameterfv (GLenum target, GLenum pname, const GLfloat * params);
-GLAPI void APIENTRY glTexParameteri (GLenum target, GLenum pname, GLint param);
-GLAPI void APIENTRY glTexParameteriv (GLenum target, GLenum pname, const GLint * params);
-GLAPI void APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
+typedef void (APIENTRY PFNGLBLENDFUNC_PROC (GLenum sfactor, GLenum dfactor));
+typedef void (APIENTRY PFNGLCLEAR_PROC (GLbitfield mask));
+typedef void (APIENTRY PFNGLCLEARCOLOR_PROC (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha));
+typedef void (APIENTRY PFNGLCLEARDEPTH_PROC (GLdouble depth));
+typedef void (APIENTRY PFNGLCLEARSTENCIL_PROC (GLint s));
+typedef void (APIENTRY PFNGLCOLORMASK_PROC (GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha));
+typedef void (APIENTRY PFNGLCULLFACE_PROC (GLenum mode));
+typedef void (APIENTRY PFNGLDEPTHFUNC_PROC (GLenum func));
+typedef void (APIENTRY PFNGLDEPTHMASK_PROC (GLboolean flag));
+typedef void (APIENTRY PFNGLDEPTHRANGE_PROC (GLdouble near, GLdouble far));
+typedef void (APIENTRY PFNGLDISABLE_PROC (GLenum cap));
+typedef void (APIENTRY PFNGLDRAWBUFFER_PROC (GLenum buf));
+typedef void (APIENTRY PFNGLENABLE_PROC (GLenum cap));
+typedef void (APIENTRY PFNGLFINISH_PROC (void));
+typedef void (APIENTRY PFNGLFLUSH_PROC (void));
+typedef void (APIENTRY PFNGLFRONTFACE_PROC (GLenum mode));
+typedef void (APIENTRY PFNGLGETBOOLEANV_PROC (GLenum pname, GLboolean * data));
+typedef void (APIENTRY PFNGLGETDOUBLEV_PROC (GLenum pname, GLdouble * data));
+typedef GLenum (APIENTRY PFNGLGETERROR_PROC (void));
+typedef void (APIENTRY PFNGLGETFLOATV_PROC (GLenum pname, GLfloat * data));
+typedef void (APIENTRY PFNGLGETINTEGERV_PROC (GLenum pname, GLint * data));
+typedef const GLubyte * (APIENTRY PFNGLGETSTRING_PROC (GLenum name));
+typedef void (APIENTRY PFNGLGETTEXIMAGE_PROC (GLenum target, GLint level, GLenum format, GLenum type, void * pixels));
+typedef void (APIENTRY PFNGLGETTEXLEVELPARAMETERFV_PROC (GLenum target, GLint level, GLenum pname, GLfloat * params));
+typedef void (APIENTRY PFNGLGETTEXLEVELPARAMETERIV_PROC (GLenum target, GLint level, GLenum pname, GLint * params));
+typedef void (APIENTRY PFNGLGETTEXPARAMETERFV_PROC (GLenum target, GLenum pname, GLfloat * params));
+typedef void (APIENTRY PFNGLGETTEXPARAMETERIV_PROC (GLenum target, GLenum pname, GLint * params));
+typedef void (APIENTRY PFNGLHINT_PROC (GLenum target, GLenum mode));
+typedef GLboolean (APIENTRY PFNGLISENABLED_PROC (GLenum cap));
+typedef void (APIENTRY PFNGLLINEWIDTH_PROC (GLfloat width));
+typedef void (APIENTRY PFNGLLOGICOP_PROC (GLenum opcode));
+typedef void (APIENTRY PFNGLPIXELSTOREF_PROC (GLenum pname, GLfloat param));
+typedef void (APIENTRY PFNGLPIXELSTOREI_PROC (GLenum pname, GLint param));
+typedef void (APIENTRY PFNGLPOINTSIZE_PROC (GLfloat size));
+typedef void (APIENTRY PFNGLPOLYGONMODE_PROC (GLenum face, GLenum mode));
+typedef void (APIENTRY PFNGLREADBUFFER_PROC (GLenum src));
+typedef void (APIENTRY PFNGLREADPIXELS_PROC (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void * pixels));
+typedef void (APIENTRY PFNGLSCISSOR_PROC (GLint x, GLint y, GLsizei width, GLsizei height));
+typedef void (APIENTRY PFNGLSTENCILFUNC_PROC (GLenum func, GLint ref, GLuint mask));
+typedef void (APIENTRY PFNGLSTENCILMASK_PROC (GLuint mask));
+typedef void (APIENTRY PFNGLSTENCILOP_PROC (GLenum fail, GLenum zfail, GLenum zpass));
+typedef void (APIENTRY PFNGLTEXIMAGE1D_PROC (GLenum target, GLint level, GLint internalformat, GLsizei width, GLint border, GLenum format, GLenum type, const void * pixels));
+typedef void (APIENTRY PFNGLTEXIMAGE2D_PROC (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void * pixels));
+typedef void (APIENTRY PFNGLTEXPARAMETERF_PROC (GLenum target, GLenum pname, GLfloat param));
+typedef void (APIENTRY PFNGLTEXPARAMETERFV_PROC (GLenum target, GLenum pname, const GLfloat * params));
+typedef void (APIENTRY PFNGLTEXPARAMETERI_PROC (GLenum target, GLenum pname, GLint param));
+typedef void (APIENTRY PFNGLTEXPARAMETERIV_PROC (GLenum target, GLenum pname, const GLint * params));
+typedef void (APIENTRY PFNGLVIEWPORT_PROC (GLint x, GLint y, GLsizei width, GLsizei height));
+
+GLAPI PFNGLBLENDFUNC_PROC* glpfBlendFunc;
+GLAPI PFNGLCLEAR_PROC* glpfClear;
+GLAPI PFNGLCLEARCOLOR_PROC* glpfClearColor;
+GLAPI PFNGLCLEARDEPTH_PROC* glpfClearDepth;
+GLAPI PFNGLCLEARSTENCIL_PROC* glpfClearStencil;
+GLAPI PFNGLCOLORMASK_PROC* glpfColorMask;
+GLAPI PFNGLCULLFACE_PROC* glpfCullFace;
+GLAPI PFNGLDEPTHFUNC_PROC* glpfDepthFunc;
+GLAPI PFNGLDEPTHMASK_PROC* glpfDepthMask;
+GLAPI PFNGLDEPTHRANGE_PROC* glpfDepthRange;
+GLAPI PFNGLDISABLE_PROC* glpfDisable;
+GLAPI PFNGLDRAWBUFFER_PROC* glpfDrawBuffer;
+GLAPI PFNGLENABLE_PROC* glpfEnable;
+GLAPI PFNGLFINISH_PROC* glpfFinish;
+GLAPI PFNGLFLUSH_PROC* glpfFlush;
+GLAPI PFNGLFRONTFACE_PROC* glpfFrontFace;
+GLAPI PFNGLGETBOOLEANV_PROC* glpfGetBooleanv;
+GLAPI PFNGLGETDOUBLEV_PROC* glpfGetDoublev;
+GLAPI PFNGLGETERROR_PROC* glpfGetError;
+GLAPI PFNGLGETFLOATV_PROC* glpfGetFloatv;
+GLAPI PFNGLGETINTEGERV_PROC* glpfGetIntegerv;
+GLAPI PFNGLGETSTRING_PROC* glpfGetString;
+GLAPI PFNGLGETTEXIMAGE_PROC* glpfGetTexImage;
+GLAPI PFNGLGETTEXLEVELPARAMETERFV_PROC* glpfGetTexLevelParameterfv;
+GLAPI PFNGLGETTEXLEVELPARAMETERIV_PROC* glpfGetTexLevelParameteriv;
+GLAPI PFNGLGETTEXPARAMETERFV_PROC* glpfGetTexParameterfv;
+GLAPI PFNGLGETTEXPARAMETERIV_PROC* glpfGetTexParameteriv;
+GLAPI PFNGLHINT_PROC* glpfHint;
+GLAPI PFNGLISENABLED_PROC* glpfIsEnabled;
+GLAPI PFNGLLINEWIDTH_PROC* glpfLineWidth;
+GLAPI PFNGLLOGICOP_PROC* glpfLogicOp;
+GLAPI PFNGLPIXELSTOREF_PROC* glpfPixelStoref;
+GLAPI PFNGLPIXELSTOREI_PROC* glpfPixelStorei;
+GLAPI PFNGLPOINTSIZE_PROC* glpfPointSize;
+GLAPI PFNGLPOLYGONMODE_PROC* glpfPolygonMode;
+GLAPI PFNGLREADBUFFER_PROC* glpfReadBuffer;
+GLAPI PFNGLREADPIXELS_PROC* glpfReadPixels;
+GLAPI PFNGLSCISSOR_PROC* glpfScissor;
+GLAPI PFNGLSTENCILFUNC_PROC* glpfStencilFunc;
+GLAPI PFNGLSTENCILMASK_PROC* glpfStencilMask;
+GLAPI PFNGLSTENCILOP_PROC* glpfStencilOp;
+GLAPI PFNGLTEXIMAGE1D_PROC* glpfTexImage1D;
+GLAPI PFNGLTEXIMAGE2D_PROC* glpfTexImage2D;
+GLAPI PFNGLTEXPARAMETERF_PROC* glpfTexParameterf;
+GLAPI PFNGLTEXPARAMETERFV_PROC* glpfTexParameterfv;
+GLAPI PFNGLTEXPARAMETERI_PROC* glpfTexParameteri;
+GLAPI PFNGLTEXPARAMETERIV_PROC* glpfTexParameteriv;
+GLAPI PFNGLVIEWPORT_PROC* glpfViewport;
+
+#define glBlendFunc glpfBlendFunc
+#define glClear glpfClear
+#define glClearColor glpfClearColor
+#define glClearDepth glpfClearDepth
+#define glClearStencil glpfClearStencil
+#define glColorMask glpfColorMask
+#define glCullFace glpfCullFace
+#define glDepthFunc glpfDepthFunc
+#define glDepthMask glpfDepthMask
+#define glDepthRange glpfDepthRange
+#define glDisable glpfDisable
+#define glDrawBuffer glpfDrawBuffer
+#define glEnable glpfEnable
+#define glFinish glpfFinish
+#define glFlush glpfFlush
+#define glFrontFace glpfFrontFace
+#define glGetBooleanv glpfGetBooleanv
+#define glGetDoublev glpfGetDoublev
+#define glGetError glpfGetError
+#define glGetFloatv glpfGetFloatv
+#define glGetIntegerv glpfGetIntegerv
+#define glGetString glpfGetString
+#define glGetTexImage glpfGetTexImage
+#define glGetTexLevelParameterfv glpfGetTexLevelParameterfv
+#define glGetTexLevelParameteriv glpfGetTexLevelParameteriv
+#define glGetTexParameterfv glpfGetTexParameterfv
+#define glGetTexParameteriv glpfGetTexParameteriv
+#define glHint glpfHint
+#define glIsEnabled glpfIsEnabled
+#define glLineWidth glpfLineWidth
+#define glLogicOp glpfLogicOp
+#define glPixelStoref glpfPixelStoref
+#define glPixelStorei glpfPixelStorei
+#define glPointSize glpfPointSize
+#define glPolygonMode glpfPolygonMode
+#define glReadBuffer glpfReadBuffer
+#define glReadPixels glpfReadPixels
+#define glScissor glpfScissor
+#define glStencilFunc glpfStencilFunc
+#define glStencilMask glpfStencilMask
+#define glStencilOp glpfStencilOp
+#define glTexImage1D glpfTexImage1D
+#define glTexImage2D glpfTexImage2D
+#define glTexParameterf glpfTexParameterf
+#define glTexParameterfv glpfTexParameterfv
+#define glTexParameteri glpfTexParameteri
+#define glTexParameteriv glpfTexParameteriv
+#define glViewport glpfViewport
 
 
 /* GL_VERSION_1_1 */
 
-GLAPI void APIENTRY glBindTexture (GLenum target, GLuint texture);
-GLAPI void APIENTRY glCopyTexImage1D (GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLint border);
-GLAPI void APIENTRY glCopyTexImage2D (GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
-GLAPI void APIENTRY glCopyTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width);
-GLAPI void APIENTRY glCopyTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
-GLAPI void APIENTRY glDeleteTextures (GLsizei n, const GLuint * textures);
-GLAPI void APIENTRY glDrawArrays (GLenum mode, GLint first, GLsizei count);
-GLAPI void APIENTRY glDrawElements (GLenum mode, GLsizei count, GLenum type, const void * indices);
-GLAPI void APIENTRY glGenTextures (GLsizei n, GLuint * textures);
-GLAPI GLboolean APIENTRY glIsTexture (GLuint texture);
-GLAPI void APIENTRY glPolygonOffset (GLfloat factor, GLfloat units);
-GLAPI void APIENTRY glTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const void * pixels);
-GLAPI void APIENTRY glTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void * pixels);
+typedef void (APIENTRY PFNGLBINDTEXTURE_PROC (GLenum target, GLuint texture));
+typedef void (APIENTRY PFNGLCOPYTEXIMAGE1D_PROC (GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLint border));
+typedef void (APIENTRY PFNGLCOPYTEXIMAGE2D_PROC (GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border));
+typedef void (APIENTRY PFNGLCOPYTEXSUBIMAGE1D_PROC (GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width));
+typedef void (APIENTRY PFNGLCOPYTEXSUBIMAGE2D_PROC (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height));
+typedef void (APIENTRY PFNGLDELETETEXTURES_PROC (GLsizei n, const GLuint * textures));
+typedef void (APIENTRY PFNGLDRAWARRAYS_PROC (GLenum mode, GLint first, GLsizei count));
+typedef void (APIENTRY PFNGLDRAWELEMENTS_PROC (GLenum mode, GLsizei count, GLenum type, const void * indices));
+typedef void (APIENTRY PFNGLGENTEXTURES_PROC (GLsizei n, GLuint * textures));
+typedef GLboolean (APIENTRY PFNGLISTEXTURE_PROC (GLuint texture));
+typedef void (APIENTRY PFNGLPOLYGONOFFSET_PROC (GLfloat factor, GLfloat units));
+typedef void (APIENTRY PFNGLTEXSUBIMAGE1D_PROC (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const void * pixels));
+typedef void (APIENTRY PFNGLTEXSUBIMAGE2D_PROC (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void * pixels));
+
+GLAPI PFNGLBINDTEXTURE_PROC* glpfBindTexture;
+GLAPI PFNGLCOPYTEXIMAGE1D_PROC* glpfCopyTexImage1D;
+GLAPI PFNGLCOPYTEXIMAGE2D_PROC* glpfCopyTexImage2D;
+GLAPI PFNGLCOPYTEXSUBIMAGE1D_PROC* glpfCopyTexSubImage1D;
+GLAPI PFNGLCOPYTEXSUBIMAGE2D_PROC* glpfCopyTexSubImage2D;
+GLAPI PFNGLDELETETEXTURES_PROC* glpfDeleteTextures;
+GLAPI PFNGLDRAWARRAYS_PROC* glpfDrawArrays;
+GLAPI PFNGLDRAWELEMENTS_PROC* glpfDrawElements;
+GLAPI PFNGLGENTEXTURES_PROC* glpfGenTextures;
+GLAPI PFNGLISTEXTURE_PROC* glpfIsTexture;
+GLAPI PFNGLPOLYGONOFFSET_PROC* glpfPolygonOffset;
+GLAPI PFNGLTEXSUBIMAGE1D_PROC* glpfTexSubImage1D;
+GLAPI PFNGLTEXSUBIMAGE2D_PROC* glpfTexSubImage2D;
+
+#define glBindTexture glpfBindTexture
+#define glCopyTexImage1D glpfCopyTexImage1D
+#define glCopyTexImage2D glpfCopyTexImage2D
+#define glCopyTexSubImage1D glpfCopyTexSubImage1D
+#define glCopyTexSubImage2D glpfCopyTexSubImage2D
+#define glDeleteTextures glpfDeleteTextures
+#define glDrawArrays glpfDrawArrays
+#define glDrawElements glpfDrawElements
+#define glGenTextures glpfGenTextures
+#define glIsTexture glpfIsTexture
+#define glPolygonOffset glpfPolygonOffset
+#define glTexSubImage1D glpfTexSubImage1D
+#define glTexSubImage2D glpfTexSubImage2D
 
 
 /* GL_VERSION_1_2 */

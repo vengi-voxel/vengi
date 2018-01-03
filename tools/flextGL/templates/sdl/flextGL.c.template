@@ -62,23 +62,17 @@ int flextInit(void)
     return 0;
 }
 
-
-
 void flextLoadOpenGLFunctions(void)
 {
     /* --- Function pointer loading --- */
 
-
     @for category,funcs in functions:
-    @if category not in ['VERSION_1_0', 'VERSION_1_1','VERSION_1_0_DEPRECATED', 'VERSION_1_1_DEPRECATED']:
     /* GL_@category */
 
     @for f in funcs:
     glpf@f.name = (PFNGL@f.name.upper()_PROC*)SDL_GL_GetProcAddress("gl@f.name");
     @end
 
-
-    @end
     @end
 }
 
@@ -90,7 +84,7 @@ int FLEXT_@extension = GL_FALSE;
 /* ---------------------- Function pointer definitions --------------------- */
 
 @for category,funcs in functions:
-@if len(funcs) > 0 and category not in ['VERSION_1_0', 'VERSION_1_1','VERSION_1_0_DEPRECATED', 'VERSION_1_1_DEPRECATED' ]:
+@if len(funcs) > 0:
 /* GL_@category */
 
 @for f in funcs:
@@ -99,7 +93,6 @@ PFNGL@f.name.upper()_PROC* glpf@f.name = NULL;
 
 @end
 @end
-
 
 #ifdef __cplusplus
 }

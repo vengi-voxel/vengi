@@ -43,22 +43,16 @@ extern "C" {
 
 /* GL_@cat */
 
-    @if cat in ['VERSION_1_0', 'VERSION_1_1','VERSION_1_0_DEPRECATED', 'VERSION_1_1_DEPRECATED']:
-        @for f in funcs:
-GLAPI @f.returntype APIENTRY gl@f.name (@f.param_list_string());
-        @end
-    @else:
-        @for f in funcs:
+    @for f in funcs:
 typedef @f.returntype (APIENTRY PFNGL@f.name.upper()_PROC (@f.param_list_string()));
-        @end
+    @end
 
-        @for f in funcs:
+    @for f in funcs:
 GLAPI PFNGL@f.name.upper()_PROC* glpf@f.name;
-        @end
+    @end
 
-        @for f in funcs:
+    @for f in funcs:
 #define gl@f.name glpf@f.name
-        @end
     @end
 
 @end

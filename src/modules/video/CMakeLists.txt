@@ -31,9 +31,9 @@ set(SRCS
 	ScopedPolygonMode.h
 )
 set(LIB video)
-find_package(OpenGL REQUIRED)
+find_package(OpenGL)
 add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math image util assimp zlib nativefiledialog ${OPENGL_LIBRARIES})
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math image util assimp zlib nativefiledialog)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_include_directories(${LIB} PUBLIC ${OPENGL_INCLUDE_DIRS})
 

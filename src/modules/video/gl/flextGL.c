@@ -67,23 +67,18 @@ int flextInit(void)
     return 0;
 }
 
-
-
 void flextLoadOpenGLFunctions(void)
 {
     /* --- Function pointer loading --- */
-
 
     /* GL_ARB_buffer_storage */
 
     glpfBufferStorage = (PFNGLBUFFERSTORAGE_PROC*)SDL_GL_GetProcAddress("glBufferStorage");
 
-
     /* GL_ARB_compute_shader */
 
     glpfDispatchCompute = (PFNGLDISPATCHCOMPUTE_PROC*)SDL_GL_GetProcAddress("glDispatchCompute");
     glpfDispatchComputeIndirect = (PFNGLDISPATCHCOMPUTEINDIRECT_PROC*)SDL_GL_GetProcAddress("glDispatchComputeIndirect");
-
 
     /* GL_ARB_debug_output */
 
@@ -91,7 +86,6 @@ void flextLoadOpenGLFunctions(void)
     glpfDebugMessageControlARB = (PFNGLDEBUGMESSAGECONTROLARB_PROC*)SDL_GL_GetProcAddress("glDebugMessageControlARB");
     glpfDebugMessageInsertARB = (PFNGLDEBUGMESSAGEINSERTARB_PROC*)SDL_GL_GetProcAddress("glDebugMessageInsertARB");
     glpfGetDebugMessageLogARB = (PFNGLGETDEBUGMESSAGELOGARB_PROC*)SDL_GL_GetProcAddress("glGetDebugMessageLogARB");
-
 
     /* GL_ARB_direct_state_access */
 
@@ -193,23 +187,86 @@ void flextLoadOpenGLFunctions(void)
     glpfVertexArrayVertexBuffer = (PFNGLVERTEXARRAYVERTEXBUFFER_PROC*)SDL_GL_GetProcAddress("glVertexArrayVertexBuffer");
     glpfVertexArrayVertexBuffers = (PFNGLVERTEXARRAYVERTEXBUFFERS_PROC*)SDL_GL_GetProcAddress("glVertexArrayVertexBuffers");
 
-
     /* GL_ARB_draw_indirect */
 
     glpfDrawArraysIndirect = (PFNGLDRAWARRAYSINDIRECT_PROC*)SDL_GL_GetProcAddress("glDrawArraysIndirect");
     glpfDrawElementsIndirect = (PFNGLDRAWELEMENTSINDIRECT_PROC*)SDL_GL_GetProcAddress("glDrawElementsIndirect");
 
-
     /* GL_ARB_instanced_arrays */
 
     glpfVertexAttribDivisorARB = (PFNGLVERTEXATTRIBDIVISORARB_PROC*)SDL_GL_GetProcAddress("glVertexAttribDivisorARB");
-
 
     /* GL_ARB_multi_draw_indirect */
 
     glpfMultiDrawArraysIndirect = (PFNGLMULTIDRAWARRAYSINDIRECT_PROC*)SDL_GL_GetProcAddress("glMultiDrawArraysIndirect");
     glpfMultiDrawElementsIndirect = (PFNGLMULTIDRAWELEMENTSINDIRECT_PROC*)SDL_GL_GetProcAddress("glMultiDrawElementsIndirect");
 
+    /* GL_VERSION_1_0 */
+
+    glpfBlendFunc = (PFNGLBLENDFUNC_PROC*)SDL_GL_GetProcAddress("glBlendFunc");
+    glpfClear = (PFNGLCLEAR_PROC*)SDL_GL_GetProcAddress("glClear");
+    glpfClearColor = (PFNGLCLEARCOLOR_PROC*)SDL_GL_GetProcAddress("glClearColor");
+    glpfClearDepth = (PFNGLCLEARDEPTH_PROC*)SDL_GL_GetProcAddress("glClearDepth");
+    glpfClearStencil = (PFNGLCLEARSTENCIL_PROC*)SDL_GL_GetProcAddress("glClearStencil");
+    glpfColorMask = (PFNGLCOLORMASK_PROC*)SDL_GL_GetProcAddress("glColorMask");
+    glpfCullFace = (PFNGLCULLFACE_PROC*)SDL_GL_GetProcAddress("glCullFace");
+    glpfDepthFunc = (PFNGLDEPTHFUNC_PROC*)SDL_GL_GetProcAddress("glDepthFunc");
+    glpfDepthMask = (PFNGLDEPTHMASK_PROC*)SDL_GL_GetProcAddress("glDepthMask");
+    glpfDepthRange = (PFNGLDEPTHRANGE_PROC*)SDL_GL_GetProcAddress("glDepthRange");
+    glpfDisable = (PFNGLDISABLE_PROC*)SDL_GL_GetProcAddress("glDisable");
+    glpfDrawBuffer = (PFNGLDRAWBUFFER_PROC*)SDL_GL_GetProcAddress("glDrawBuffer");
+    glpfEnable = (PFNGLENABLE_PROC*)SDL_GL_GetProcAddress("glEnable");
+    glpfFinish = (PFNGLFINISH_PROC*)SDL_GL_GetProcAddress("glFinish");
+    glpfFlush = (PFNGLFLUSH_PROC*)SDL_GL_GetProcAddress("glFlush");
+    glpfFrontFace = (PFNGLFRONTFACE_PROC*)SDL_GL_GetProcAddress("glFrontFace");
+    glpfGetBooleanv = (PFNGLGETBOOLEANV_PROC*)SDL_GL_GetProcAddress("glGetBooleanv");
+    glpfGetDoublev = (PFNGLGETDOUBLEV_PROC*)SDL_GL_GetProcAddress("glGetDoublev");
+    glpfGetError = (PFNGLGETERROR_PROC*)SDL_GL_GetProcAddress("glGetError");
+    glpfGetFloatv = (PFNGLGETFLOATV_PROC*)SDL_GL_GetProcAddress("glGetFloatv");
+    glpfGetIntegerv = (PFNGLGETINTEGERV_PROC*)SDL_GL_GetProcAddress("glGetIntegerv");
+    glpfGetString = (PFNGLGETSTRING_PROC*)SDL_GL_GetProcAddress("glGetString");
+    glpfGetTexImage = (PFNGLGETTEXIMAGE_PROC*)SDL_GL_GetProcAddress("glGetTexImage");
+    glpfGetTexLevelParameterfv = (PFNGLGETTEXLEVELPARAMETERFV_PROC*)SDL_GL_GetProcAddress("glGetTexLevelParameterfv");
+    glpfGetTexLevelParameteriv = (PFNGLGETTEXLEVELPARAMETERIV_PROC*)SDL_GL_GetProcAddress("glGetTexLevelParameteriv");
+    glpfGetTexParameterfv = (PFNGLGETTEXPARAMETERFV_PROC*)SDL_GL_GetProcAddress("glGetTexParameterfv");
+    glpfGetTexParameteriv = (PFNGLGETTEXPARAMETERIV_PROC*)SDL_GL_GetProcAddress("glGetTexParameteriv");
+    glpfHint = (PFNGLHINT_PROC*)SDL_GL_GetProcAddress("glHint");
+    glpfIsEnabled = (PFNGLISENABLED_PROC*)SDL_GL_GetProcAddress("glIsEnabled");
+    glpfLineWidth = (PFNGLLINEWIDTH_PROC*)SDL_GL_GetProcAddress("glLineWidth");
+    glpfLogicOp = (PFNGLLOGICOP_PROC*)SDL_GL_GetProcAddress("glLogicOp");
+    glpfPixelStoref = (PFNGLPIXELSTOREF_PROC*)SDL_GL_GetProcAddress("glPixelStoref");
+    glpfPixelStorei = (PFNGLPIXELSTOREI_PROC*)SDL_GL_GetProcAddress("glPixelStorei");
+    glpfPointSize = (PFNGLPOINTSIZE_PROC*)SDL_GL_GetProcAddress("glPointSize");
+    glpfPolygonMode = (PFNGLPOLYGONMODE_PROC*)SDL_GL_GetProcAddress("glPolygonMode");
+    glpfReadBuffer = (PFNGLREADBUFFER_PROC*)SDL_GL_GetProcAddress("glReadBuffer");
+    glpfReadPixels = (PFNGLREADPIXELS_PROC*)SDL_GL_GetProcAddress("glReadPixels");
+    glpfScissor = (PFNGLSCISSOR_PROC*)SDL_GL_GetProcAddress("glScissor");
+    glpfStencilFunc = (PFNGLSTENCILFUNC_PROC*)SDL_GL_GetProcAddress("glStencilFunc");
+    glpfStencilMask = (PFNGLSTENCILMASK_PROC*)SDL_GL_GetProcAddress("glStencilMask");
+    glpfStencilOp = (PFNGLSTENCILOP_PROC*)SDL_GL_GetProcAddress("glStencilOp");
+    glpfTexImage1D = (PFNGLTEXIMAGE1D_PROC*)SDL_GL_GetProcAddress("glTexImage1D");
+    glpfTexImage2D = (PFNGLTEXIMAGE2D_PROC*)SDL_GL_GetProcAddress("glTexImage2D");
+    glpfTexParameterf = (PFNGLTEXPARAMETERF_PROC*)SDL_GL_GetProcAddress("glTexParameterf");
+    glpfTexParameterfv = (PFNGLTEXPARAMETERFV_PROC*)SDL_GL_GetProcAddress("glTexParameterfv");
+    glpfTexParameteri = (PFNGLTEXPARAMETERI_PROC*)SDL_GL_GetProcAddress("glTexParameteri");
+    glpfTexParameteriv = (PFNGLTEXPARAMETERIV_PROC*)SDL_GL_GetProcAddress("glTexParameteriv");
+    glpfViewport = (PFNGLVIEWPORT_PROC*)SDL_GL_GetProcAddress("glViewport");
+
+    /* GL_VERSION_1_1 */
+
+    glpfBindTexture = (PFNGLBINDTEXTURE_PROC*)SDL_GL_GetProcAddress("glBindTexture");
+    glpfCopyTexImage1D = (PFNGLCOPYTEXIMAGE1D_PROC*)SDL_GL_GetProcAddress("glCopyTexImage1D");
+    glpfCopyTexImage2D = (PFNGLCOPYTEXIMAGE2D_PROC*)SDL_GL_GetProcAddress("glCopyTexImage2D");
+    glpfCopyTexSubImage1D = (PFNGLCOPYTEXSUBIMAGE1D_PROC*)SDL_GL_GetProcAddress("glCopyTexSubImage1D");
+    glpfCopyTexSubImage2D = (PFNGLCOPYTEXSUBIMAGE2D_PROC*)SDL_GL_GetProcAddress("glCopyTexSubImage2D");
+    glpfDeleteTextures = (PFNGLDELETETEXTURES_PROC*)SDL_GL_GetProcAddress("glDeleteTextures");
+    glpfDrawArrays = (PFNGLDRAWARRAYS_PROC*)SDL_GL_GetProcAddress("glDrawArrays");
+    glpfDrawElements = (PFNGLDRAWELEMENTS_PROC*)SDL_GL_GetProcAddress("glDrawElements");
+    glpfGenTextures = (PFNGLGENTEXTURES_PROC*)SDL_GL_GetProcAddress("glGenTextures");
+    glpfIsTexture = (PFNGLISTEXTURE_PROC*)SDL_GL_GetProcAddress("glIsTexture");
+    glpfPolygonOffset = (PFNGLPOLYGONOFFSET_PROC*)SDL_GL_GetProcAddress("glPolygonOffset");
+    glpfTexSubImage1D = (PFNGLTEXSUBIMAGE1D_PROC*)SDL_GL_GetProcAddress("glTexSubImage1D");
+    glpfTexSubImage2D = (PFNGLTEXSUBIMAGE2D_PROC*)SDL_GL_GetProcAddress("glTexSubImage2D");
 
     /* GL_VERSION_1_2 */
 
@@ -217,7 +274,6 @@ void flextLoadOpenGLFunctions(void)
     glpfDrawRangeElements = (PFNGLDRAWRANGEELEMENTS_PROC*)SDL_GL_GetProcAddress("glDrawRangeElements");
     glpfTexImage3D = (PFNGLTEXIMAGE3D_PROC*)SDL_GL_GetProcAddress("glTexImage3D");
     glpfTexSubImage3D = (PFNGLTEXSUBIMAGE3D_PROC*)SDL_GL_GetProcAddress("glTexSubImage3D");
-
 
     /* GL_VERSION_1_3 */
 
@@ -231,7 +287,6 @@ void flextLoadOpenGLFunctions(void)
     glpfGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGE_PROC*)SDL_GL_GetProcAddress("glGetCompressedTexImage");
     glpfSampleCoverage = (PFNGLSAMPLECOVERAGE_PROC*)SDL_GL_GetProcAddress("glSampleCoverage");
 
-
     /* GL_VERSION_1_4 */
 
     glpfBlendColor = (PFNGLBLENDCOLOR_PROC*)SDL_GL_GetProcAddress("glBlendColor");
@@ -243,7 +298,6 @@ void flextLoadOpenGLFunctions(void)
     glpfPointParameterfv = (PFNGLPOINTPARAMETERFV_PROC*)SDL_GL_GetProcAddress("glPointParameterfv");
     glpfPointParameteri = (PFNGLPOINTPARAMETERI_PROC*)SDL_GL_GetProcAddress("glPointParameteri");
     glpfPointParameteriv = (PFNGLPOINTPARAMETERIV_PROC*)SDL_GL_GetProcAddress("glPointParameteriv");
-
 
     /* GL_VERSION_1_5 */
 
@@ -266,7 +320,6 @@ void flextLoadOpenGLFunctions(void)
     glpfIsQuery = (PFNGLISQUERY_PROC*)SDL_GL_GetProcAddress("glIsQuery");
     glpfMapBuffer = (PFNGLMAPBUFFER_PROC*)SDL_GL_GetProcAddress("glMapBuffer");
     glpfUnmapBuffer = (PFNGLUNMAPBUFFER_PROC*)SDL_GL_GetProcAddress("glUnmapBuffer");
-
 
     /* GL_VERSION_2_0 */
 
@@ -364,7 +417,6 @@ void flextLoadOpenGLFunctions(void)
     glpfVertexAttrib4usv = (PFNGLVERTEXATTRIB4USV_PROC*)SDL_GL_GetProcAddress("glVertexAttrib4usv");
     glpfVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTER_PROC*)SDL_GL_GetProcAddress("glVertexAttribPointer");
 
-
     /* GL_VERSION_2_1 */
 
     glpfUniformMatrix2x3fv = (PFNGLUNIFORMMATRIX2X3FV_PROC*)SDL_GL_GetProcAddress("glUniformMatrix2x3fv");
@@ -373,7 +425,6 @@ void flextLoadOpenGLFunctions(void)
     glpfUniformMatrix3x4fv = (PFNGLUNIFORMMATRIX3X4FV_PROC*)SDL_GL_GetProcAddress("glUniformMatrix3x4fv");
     glpfUniformMatrix4x2fv = (PFNGLUNIFORMMATRIX4X2FV_PROC*)SDL_GL_GetProcAddress("glUniformMatrix4x2fv");
     glpfUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FV_PROC*)SDL_GL_GetProcAddress("glUniformMatrix4x3fv");
-
 
     /* GL_VERSION_3_0 */
 
@@ -462,7 +513,6 @@ void flextLoadOpenGLFunctions(void)
     glpfVertexAttribI4usv = (PFNGLVERTEXATTRIBI4USV_PROC*)SDL_GL_GetProcAddress("glVertexAttribI4usv");
     glpfVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTER_PROC*)SDL_GL_GetProcAddress("glVertexAttribIPointer");
 
-
     /* GL_VERSION_3_1 */
 
     glpfCopyBufferSubData = (PFNGLCOPYBUFFERSUBDATA_PROC*)SDL_GL_GetProcAddress("glCopyBufferSubData");
@@ -477,7 +527,6 @@ void flextLoadOpenGLFunctions(void)
     glpfPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEX_PROC*)SDL_GL_GetProcAddress("glPrimitiveRestartIndex");
     glpfTexBuffer = (PFNGLTEXBUFFER_PROC*)SDL_GL_GetProcAddress("glTexBuffer");
     glpfUniformBlockBinding = (PFNGLUNIFORMBLOCKBINDING_PROC*)SDL_GL_GetProcAddress("glUniformBlockBinding");
-
 
     /* GL_VERSION_3_2 */
 
@@ -500,7 +549,6 @@ void flextLoadOpenGLFunctions(void)
     glpfTexImage2DMultisample = (PFNGLTEXIMAGE2DMULTISAMPLE_PROC*)SDL_GL_GetProcAddress("glTexImage2DMultisample");
     glpfTexImage3DMultisample = (PFNGLTEXIMAGE3DMULTISAMPLE_PROC*)SDL_GL_GetProcAddress("glTexImage3DMultisample");
     glpfWaitSync = (PFNGLWAITSYNC_PROC*)SDL_GL_GetProcAddress("glWaitSync");
-
 
     /* GL_VERSION_3_3 */
 
@@ -532,7 +580,6 @@ void flextLoadOpenGLFunctions(void)
     glpfVertexAttribP3uiv = (PFNGLVERTEXATTRIBP3UIV_PROC*)SDL_GL_GetProcAddress("glVertexAttribP3uiv");
     glpfVertexAttribP4ui = (PFNGLVERTEXATTRIBP4UI_PROC*)SDL_GL_GetProcAddress("glVertexAttribP4ui");
     glpfVertexAttribP4uiv = (PFNGLVERTEXATTRIBP4UIV_PROC*)SDL_GL_GetProcAddress("glVertexAttribP4uiv");
-
 
 }
 
@@ -676,6 +723,73 @@ PFNGLVERTEXATTRIBDIVISORARB_PROC* glpfVertexAttribDivisorARB = NULL;
 
 PFNGLMULTIDRAWARRAYSINDIRECT_PROC* glpfMultiDrawArraysIndirect = NULL;
 PFNGLMULTIDRAWELEMENTSINDIRECT_PROC* glpfMultiDrawElementsIndirect = NULL;
+
+/* GL_VERSION_1_0 */
+
+PFNGLBLENDFUNC_PROC* glpfBlendFunc = NULL;
+PFNGLCLEAR_PROC* glpfClear = NULL;
+PFNGLCLEARCOLOR_PROC* glpfClearColor = NULL;
+PFNGLCLEARDEPTH_PROC* glpfClearDepth = NULL;
+PFNGLCLEARSTENCIL_PROC* glpfClearStencil = NULL;
+PFNGLCOLORMASK_PROC* glpfColorMask = NULL;
+PFNGLCULLFACE_PROC* glpfCullFace = NULL;
+PFNGLDEPTHFUNC_PROC* glpfDepthFunc = NULL;
+PFNGLDEPTHMASK_PROC* glpfDepthMask = NULL;
+PFNGLDEPTHRANGE_PROC* glpfDepthRange = NULL;
+PFNGLDISABLE_PROC* glpfDisable = NULL;
+PFNGLDRAWBUFFER_PROC* glpfDrawBuffer = NULL;
+PFNGLENABLE_PROC* glpfEnable = NULL;
+PFNGLFINISH_PROC* glpfFinish = NULL;
+PFNGLFLUSH_PROC* glpfFlush = NULL;
+PFNGLFRONTFACE_PROC* glpfFrontFace = NULL;
+PFNGLGETBOOLEANV_PROC* glpfGetBooleanv = NULL;
+PFNGLGETDOUBLEV_PROC* glpfGetDoublev = NULL;
+PFNGLGETERROR_PROC* glpfGetError = NULL;
+PFNGLGETFLOATV_PROC* glpfGetFloatv = NULL;
+PFNGLGETINTEGERV_PROC* glpfGetIntegerv = NULL;
+PFNGLGETSTRING_PROC* glpfGetString = NULL;
+PFNGLGETTEXIMAGE_PROC* glpfGetTexImage = NULL;
+PFNGLGETTEXLEVELPARAMETERFV_PROC* glpfGetTexLevelParameterfv = NULL;
+PFNGLGETTEXLEVELPARAMETERIV_PROC* glpfGetTexLevelParameteriv = NULL;
+PFNGLGETTEXPARAMETERFV_PROC* glpfGetTexParameterfv = NULL;
+PFNGLGETTEXPARAMETERIV_PROC* glpfGetTexParameteriv = NULL;
+PFNGLHINT_PROC* glpfHint = NULL;
+PFNGLISENABLED_PROC* glpfIsEnabled = NULL;
+PFNGLLINEWIDTH_PROC* glpfLineWidth = NULL;
+PFNGLLOGICOP_PROC* glpfLogicOp = NULL;
+PFNGLPIXELSTOREF_PROC* glpfPixelStoref = NULL;
+PFNGLPIXELSTOREI_PROC* glpfPixelStorei = NULL;
+PFNGLPOINTSIZE_PROC* glpfPointSize = NULL;
+PFNGLPOLYGONMODE_PROC* glpfPolygonMode = NULL;
+PFNGLREADBUFFER_PROC* glpfReadBuffer = NULL;
+PFNGLREADPIXELS_PROC* glpfReadPixels = NULL;
+PFNGLSCISSOR_PROC* glpfScissor = NULL;
+PFNGLSTENCILFUNC_PROC* glpfStencilFunc = NULL;
+PFNGLSTENCILMASK_PROC* glpfStencilMask = NULL;
+PFNGLSTENCILOP_PROC* glpfStencilOp = NULL;
+PFNGLTEXIMAGE1D_PROC* glpfTexImage1D = NULL;
+PFNGLTEXIMAGE2D_PROC* glpfTexImage2D = NULL;
+PFNGLTEXPARAMETERF_PROC* glpfTexParameterf = NULL;
+PFNGLTEXPARAMETERFV_PROC* glpfTexParameterfv = NULL;
+PFNGLTEXPARAMETERI_PROC* glpfTexParameteri = NULL;
+PFNGLTEXPARAMETERIV_PROC* glpfTexParameteriv = NULL;
+PFNGLVIEWPORT_PROC* glpfViewport = NULL;
+
+/* GL_VERSION_1_1 */
+
+PFNGLBINDTEXTURE_PROC* glpfBindTexture = NULL;
+PFNGLCOPYTEXIMAGE1D_PROC* glpfCopyTexImage1D = NULL;
+PFNGLCOPYTEXIMAGE2D_PROC* glpfCopyTexImage2D = NULL;
+PFNGLCOPYTEXSUBIMAGE1D_PROC* glpfCopyTexSubImage1D = NULL;
+PFNGLCOPYTEXSUBIMAGE2D_PROC* glpfCopyTexSubImage2D = NULL;
+PFNGLDELETETEXTURES_PROC* glpfDeleteTextures = NULL;
+PFNGLDRAWARRAYS_PROC* glpfDrawArrays = NULL;
+PFNGLDRAWELEMENTS_PROC* glpfDrawElements = NULL;
+PFNGLGENTEXTURES_PROC* glpfGenTextures = NULL;
+PFNGLISTEXTURE_PROC* glpfIsTexture = NULL;
+PFNGLPOLYGONOFFSET_PROC* glpfPolygonOffset = NULL;
+PFNGLTEXSUBIMAGE1D_PROC* glpfTexSubImage1D = NULL;
+PFNGLTEXSUBIMAGE2D_PROC* glpfTexSubImage2D = NULL;
 
 /* GL_VERSION_1_2 */
 
@@ -989,7 +1103,6 @@ PFNGLVERTEXATTRIBP3UI_PROC* glpfVertexAttribP3ui = NULL;
 PFNGLVERTEXATTRIBP3UIV_PROC* glpfVertexAttribP3uiv = NULL;
 PFNGLVERTEXATTRIBP4UI_PROC* glpfVertexAttribP4ui = NULL;
 PFNGLVERTEXATTRIBP4UIV_PROC* glpfVertexAttribP4uiv = NULL;
-
 
 
 #ifdef __cplusplus
