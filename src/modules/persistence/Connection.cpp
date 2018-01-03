@@ -58,6 +58,7 @@ bool Connection::connect() {
 	if (status()) {
 		return true;
 	}
+#ifdef HAVE_POSTGRES
 	std::string conninfo;
 
 	const char *host = nullptr;
@@ -85,7 +86,6 @@ bool Connection::connect() {
 		port = std::to_string(_port);
 	}
 
-#ifdef HAVE_POSTGRES
 	_connection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), nullptr, dbname, user, password);
 #else
 	_connection = nullptr;
