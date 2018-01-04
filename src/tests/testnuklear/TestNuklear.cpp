@@ -8,8 +8,9 @@ TestNuklear::TestNuklear(const io::FilesystemPtr& filesystem, const core::EventB
 	init(ORGANISATION, "testnuklear");
 }
 
-void TestNuklear::onRenderUI() {
+bool TestNuklear::onRenderUI() {
 	overview(&_ctx);
+	return true;
 }
 
 int main(int argc, char *argv[]) {

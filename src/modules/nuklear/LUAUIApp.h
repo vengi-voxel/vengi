@@ -28,7 +28,7 @@ public:
 	core::AppState onCleanup() override;
 
 	bool reload();
-	void onRenderUI() override;
+	bool onRenderUI() override;
 };
 
 }

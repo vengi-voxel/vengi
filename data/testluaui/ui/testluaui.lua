@@ -81,11 +81,9 @@ function update()
 			ui.spacing(1)
 			ui.label('Edit:')
 			ui.layoutRow('dynamic', 90, 1)
----[[
 			ui.edit('box', edit)
 			ui.layoutRow('dynamic', 5, 1)
 			ui.spacing(1)
---]]
 			ui.layoutRow('dynamic', 30, 1)
 			ui.label('Combobox:')
 			ui.combobox(comboA, comboA.items)

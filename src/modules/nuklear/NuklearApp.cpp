@@ -330,7 +330,10 @@ core::AppState NuklearApp::onRunning() {
 	nk_input_motion(&_ctx, _mousePos.x, _mousePos.y);
 	nk_input_end(&_ctx);
 
-	onRenderUI();
+	if (!onRenderUI()) {
+		nk_clear(&_ctx);
+		return state;
+	}
 
 	const math::Rect<int> rect(0, 0, _dimension.x, _dimension.y);
 	_console.render(rect, _deltaFrame);

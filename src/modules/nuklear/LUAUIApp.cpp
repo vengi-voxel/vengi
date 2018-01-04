@@ -53,9 +53,13 @@ core::AppState LUAUIApp::onCleanup() {
 	return Super::onCleanup();
 }
 
-void LUAUIApp::onRenderUI() {
+bool LUAUIApp::onRenderUI() {
 	core_trace_scoped(LUAAIAppOnRenderUI);
-	_lua.execute("update");
+	if (!_lua.execute("update")) {
+		Log::error("LUA UI: %s", _lua.error().c_str());
+		return false;
+	}
+	return true;
 }
 
 bool LUAUIApp::reload() {

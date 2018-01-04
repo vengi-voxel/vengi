@@ -12,5 +12,5 @@ private:
 public:
 	TestNuklear(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	void onRenderUI() override;
+	bool onRenderUI() override;
 };

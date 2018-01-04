@@ -57,7 +57,7 @@ public:
 	NuklearApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport = 17815);
 	virtual ~NuklearApp();
 
-	virtual void onRenderUI() = 0;
+	virtual bool onRenderUI() = 0;
 
 	virtual void onWindowResize() override;
 	virtual core::AppState onConstruct() override;
