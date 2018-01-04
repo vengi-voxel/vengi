@@ -331,6 +331,9 @@ core::AppState NuklearApp::onRunning() {
 	nk_input_end(&_ctx);
 
 	if (!onRenderUI()) {
+		if (_ctx.current) {
+			nk_end(&_ctx);
+		}
 		nk_clear(&_ctx);
 		return state;
 	}
