@@ -186,7 +186,23 @@ bool LUA::execute(const std::string &function, int returnValues) {
 		return false;
 	}
 	const int ret = lua_pcall(_state, 0, returnValues, 0);
-	if (ret != 0) {
+	if (ret != LUA_OK) {
+		setError(lua_tostring(_state, -1));
+		return false;
+	}
+
+	return true;
+}
+
+bool LUA::executeUpdate(long dt) {
+	lua_getglobal(_state, "update");
+	if (lua_isnil(_state, -1)) {
+		setError("Function 'update' wasn't found");
+		return false;
+	}
+	lua_pushinteger(_state, dt);
+	const int ret = lua_pcall(_state, 1, 0, 0);
+	if (ret != LUA_OK) {
 		setError(lua_tostring(_state, -1));
 		return false;
 	}

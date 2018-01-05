@@ -20,6 +20,7 @@ private:
 protected:
 	lua::LUA _lua;
 	video::TexturePoolPtr _texturePool;
+	bool _skipUntilReload = true;
 public:
 	LUAUIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::TexturePoolPtr& texturePool, uint16_t traceport = 17815);
 	virtual ~LUAUIApp();

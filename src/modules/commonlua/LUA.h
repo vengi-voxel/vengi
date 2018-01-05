@@ -155,6 +155,10 @@ public:
 	 * @note Use clua_get<T>(s, -1) to get the first custom return value.
 	 */
 	bool execute(const std::string &function, int returnValues = 0);
+	/**
+	 * @brief Executes an 'update' function with a delta time parameter in the lua code
+	 */
+	bool executeUpdate(long dt);
 
 	std::string valueStringFromTable(const char * key, const std::string& defaultValue = "");
 	float valueFloatFromTable(const char * key, float defaultValue = 0.0f);

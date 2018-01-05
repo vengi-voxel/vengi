@@ -12,7 +12,7 @@ local property = {value = 6}
 local edit = {value = 'Edit text'}
 local comboA = {value = 1, items = {'A', 'B', 'C'}}
 
-function update()
+function update(dt)
 	if ui.windowBegin('Overview', 100, 100, 600, 450, 'border', 'movable', 'title') then
 		ui.menubarBegin()
 		ui.layoutRowBegin('static', 25, 5);

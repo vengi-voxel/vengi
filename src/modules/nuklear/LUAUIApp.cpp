@@ -54,15 +54,20 @@ core::AppState LUAUIApp::onCleanup() {
 }
 
 bool LUAUIApp::onRenderUI() {
+	if (_skipUntilReload) {
+		return true;
+	}
 	core_trace_scoped(LUAAIAppOnRenderUI);
-	if (!_lua.execute("update")) {
+	if (!_lua.executeUpdate(_deltaFrame)) {
 		Log::error("LUA UI: %s", _lua.error().c_str());
+		_skipUntilReload = true;
 		return false;
 	}
 	return true;
 }
 
 bool LUAUIApp::reload() {
+	_skipUntilReload = true;
 	core_assert_always(_lua.resetState());
 
 	const std::vector<luaL_Reg> funcs = {
@@ -182,6 +187,7 @@ bool LUAUIApp::reload() {
 		Log::error("Could not execute lua script from '%s': %s", uiScriptPath.c_str(), _lua.error().c_str());
 		return false;
 	}
+	_skipUntilReload = false;
 	return true;
 }
 
