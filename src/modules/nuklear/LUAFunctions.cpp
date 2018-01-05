@@ -246,6 +246,12 @@ static struct nk_color uilua_checkcolor(lua_State *s, int index) {
 	return color;
 }
 
+static struct nk_colorf uilua_checkcolorf(lua_State *s, int index) {
+	const struct nk_color color = uilua_checkcolor(s, index);
+	struct nk_colorf colorf = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
+	return colorf;
+}
+
 /**
  * @brief Convert the given window flags to nuklear enum values
  */
@@ -1096,7 +1102,7 @@ int uilua_color_picker(lua_State *s) {
 		format = uilua_checkcolorformat(s, 2);
 	}
 	if (lua_isstring(s, 1)) {
-		struct nk_color color = uilua_checkcolor(s, 1);
+		struct nk_colorf color = uilua_checkcolorf(s, 1);
 		color = nk_color_picker(ctx, color, format);
 		char newColorString[10];
 		uilua_color(color.r, color.g, color.b, color.a, newColorString);
@@ -1106,7 +1112,7 @@ int uilua_color_picker(lua_State *s) {
 		if (!uilua_is_color(s, -1)) {
 			luaL_argerror(s, 1, "should have a color string value");
 		}
-		struct nk_color color = uilua_checkcolor(s, -1);
+		struct nk_colorf color = uilua_checkcolorf(s, -1);
 		const int changed = nk_color_pick(ctx, &color, format);
 		if (changed) {
 			char newColorString[10];
