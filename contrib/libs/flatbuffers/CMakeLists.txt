@@ -19,6 +19,8 @@ set(COMPILER_SRCS
 	compiler/src/compiler/cpp_generator.h
 	compiler/src/compiler/go_generator.cc
 	compiler/src/compiler/go_generator.h
+	compiler/src/compiler/java_generator.cc
+	compiler/src/compiler/java_generator.h
 	compiler/code_generators.cpp
 	compiler/flatc.cpp
 	compiler/flatc_main.cpp
