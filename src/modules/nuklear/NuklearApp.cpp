@@ -197,7 +197,7 @@ core::AppState NuklearApp::onInit() {
 
 	_fontTexture = video::createEmptyTexture("**font**");
 
-	nk_init_default(&_ctx, 0);
+	nk_init_default(&_ctx, nullptr);
 	_ctx.clip.copy = nk_sdl_clipbard_copy;
 	_ctx.clip.paste = nk_sdl_clipbard_paste;
 	_ctx.clip.userdata = nk_handle_ptr(this);
