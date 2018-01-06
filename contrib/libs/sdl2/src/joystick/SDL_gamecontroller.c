@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -911,6 +911,13 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
     ControllerMapping_t *mapping;
 
     SDL_LockJoysticks();
+
+    if ((device_index < 0) || (device_index >= SDL_NumJoysticks())) {
+        SDL_SetError("There are %d joysticks available", SDL_NumJoysticks());
+        SDL_UnlockJoysticks();
+        return (NULL);
+    }
+
     name = SDL_JoystickNameForIndex(device_index);
     guid = SDL_JoystickGetDeviceGUID(device_index);
     mapping = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
@@ -923,7 +930,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
     if (!mapping && SDL_SYS_IsDPAD_DeviceIndex(device_index)) {
         SDL_bool existing;
         char mapping_string[1024];
-        SDL_snprintf(mapping_string, sizeof(mapping_string), "none,%s,a:b0,b:b1,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,", name);
+        SDL_snprintf(mapping_string, sizeof(mapping_string), "none,%s,a:b0,b:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,", name);
         mapping = SDL_PrivateAddMappingForGUID(guid, mapping_string,
                           &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
     }
@@ -1353,12 +1360,13 @@ SDL_GameControllerOpen(int device_index)
     SDL_GameController *gamecontrollerlist;
     ControllerMapping_t *pSupportedController = NULL;
 
+    SDL_LockJoysticks();
+
     if ((device_index < 0) || (device_index >= SDL_NumJoysticks())) {
         SDL_SetError("There are %d joysticks available", SDL_NumJoysticks());
+        SDL_UnlockJoysticks();
         return (NULL);
     }
-
-    SDL_LockJoysticks();
 
     gamecontrollerlist = SDL_gamecontrollers;
     /* If the controller is already open, return it */

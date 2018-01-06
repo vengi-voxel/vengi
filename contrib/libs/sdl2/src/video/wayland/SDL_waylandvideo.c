@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -233,6 +233,7 @@ display_handle_mode(void *data,
     mode.w = width;
     mode.h = height;
     mode.refresh_rate = refresh / 1000; // mHz to Hz
+    mode.driverdata = display->driverdata;
     SDL_AddDisplayMode(display, &mode);
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
@@ -408,7 +409,7 @@ void
 Wayland_VideoQuit(_THIS)
 {
     SDL_VideoData *data = _this->driverdata;
-    int i;
+    int i, j;
 
     Wayland_FiniMouse ();
 
@@ -416,6 +417,11 @@ Wayland_VideoQuit(_THIS)
         SDL_VideoDisplay *display = &_this->displays[i];
         wl_output_destroy(display->driverdata);
         display->driverdata = NULL;
+
+        for (j = display->num_display_modes; j--;) {
+            display->display_modes[j].driverdata = NULL;
+        }
+        display->desktop_mode.driverdata = NULL;
     }
 
     Wayland_display_destroy_input(data);

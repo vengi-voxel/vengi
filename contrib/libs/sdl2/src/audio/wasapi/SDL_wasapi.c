@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -84,7 +84,7 @@ WStrLen(const WCHAR *wstr)
 static WCHAR *
 WStrDupe(const WCHAR *wstr)
 {
-    const int len = (WStrLen(wstr) + 1) * sizeof (WCHAR);
+    const size_t len = (WStrLen(wstr) + 1) * sizeof (WCHAR);
     WCHAR *retval = (WCHAR *) SDL_malloc(len);
     if (retval) {
         SDL_memcpy(retval, wstr, len);
@@ -321,15 +321,21 @@ WASAPI_PlayDevice(_THIS)
 static void
 WASAPI_WaitDevice(_THIS)
 {
-    while (RecoverWasapiIfLost(this) && this->hidden->client) {
-        const UINT32 maxpadding = this->spec.samples;
-        UINT32 padding = 0;
-        if (!WasapiFailed(this, IAudioClient_GetCurrentPadding(this->hidden->client, &padding))) {
-            if (padding <= maxpadding) {
-                break;
+    while (RecoverWasapiIfLost(this) && this->hidden->client && this->hidden->event) {
+        /*SDL_Log("WAITDEVICE");*/
+        if (WaitForSingleObjectEx(this->hidden->event, INFINITE, FALSE) == WAIT_OBJECT_0) {
+            const UINT32 maxpadding = this->spec.samples;
+            UINT32 padding = 0;
+            if (!WasapiFailed(this, IAudioClient_GetCurrentPadding(this->hidden->client, &padding))) {
+                /*SDL_Log("WASAPI EVENT! padding=%u maxpadding=%u", (unsigned int)padding, (unsigned int)maxpadding);*/
+                if (padding <= maxpadding) {
+                    break;
+                }
             }
-            /* Sleep long enough for half the buffer to be free. */
-            SDL_Delay(((padding - maxpadding) * 1000) / this->spec.freq);
+        } else {
+            /*SDL_Log("WASAPI FAILED EVENT!");*/
+            IAudioClient_Stop(this->hidden->client);
+            SDL_OpenedAudioDeviceDisconnected(this);
         }
     }
 }
@@ -429,6 +435,8 @@ ReleaseWasapiDevice(_THIS)
 {
     if (this->hidden->client) {
         IAudioClient_Stop(this->hidden->client);
+        IAudioClient_SetEventHandle(this->hidden->client, NULL);
+        IAudioClient_Release(this->hidden->client);
         this->hidden->client = NULL;
     }
 
@@ -455,6 +463,11 @@ ReleaseWasapiDevice(_THIS)
     if (this->hidden->activation_handler) {
         WASAPI_PlatformDeleteActivationHandler(this->hidden->activation_handler);
         this->hidden->activation_handler = NULL;
+    }
+
+    if (this->hidden->event) {
+        CloseHandle(this->hidden->event);
+        this->hidden->event = NULL;
     }
 }
 
@@ -517,6 +530,16 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 
     SDL_assert(client != NULL);
 
+#ifdef __WINRT__  /* CreateEventEx() arrived in Vista, so we need an #ifdef for XP. */
+    this->hidden->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
+#else
+    this->hidden->event = CreateEventW(NULL, 0, 0, NULL);
+#endif
+
+    if (this->hidden->event == NULL) {
+        return WIN_SetError("WASAPI can't create an event handle");
+    }
+
     ret = IAudioClient_GetMixFormat(client, &waveformat);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("WASAPI can't determine mix format", ret);
@@ -565,9 +588,14 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
         return WIN_SetErrorFromHRESULT("WASAPI can't determine minimum device period", ret);
     }
 
-    ret = IAudioClient_Initialize(client, sharemode, 0, duration, sharemode == AUDCLNT_SHAREMODE_SHARED ? 0 : duration, waveformat, NULL);
+    ret = IAudioClient_Initialize(client, sharemode, AUDCLNT_STREAMFLAGS_EVENTCALLBACK, duration, sharemode == AUDCLNT_SHAREMODE_SHARED ? 0 : duration, waveformat, NULL);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("WASAPI can't initialize audio client", ret);
+    }
+
+    ret = IAudioClient_SetEventHandle(client, this->hidden->event);
+    if (FAILED(ret)) {
+        return WIN_SetErrorFromHRESULT("WASAPI can't set event handle", ret);
     }
 
     ret = IAudioClient_GetBufferSize(client, &bufsize);

@@ -1,24 +1,23 @@
 /*
- Simple DirectMedia Layer
- Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
- 
- This software is provided 'as-is', without any express or implied
- warranty.  In no event will the authors be held liable for any damages
- arising from the use of this software.
- 
- Permission is granted to anyone to use this software for any purpose,
- including commercial applications, and to alter it and redistribute it
- freely, subject to the following restrictions:
- 
- 1. The origin of this software must not be misrepresented; you must not
- claim that you wrote the original software. If you use this software
- in a product, an acknowledgment in the product documentation would be
- appreciated but is not required.
- 2. Altered source versions must be plainly marked as such, and must not be
- misrepresented as being the original software.
- 3. This notice may not be removed or altered from any source distribution.
- */
+  Simple DirectMedia Layer
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+*/
 /*
  * @author Mark Callow, www.edgewise-consulting.com.
  *
@@ -28,7 +27,7 @@
 
 #import "SDL_cocoametalview.h"
 
-#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_COCOA
+#if SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_RENDER_METAL)
 
 #include "SDL_assert.h"
 
@@ -44,7 +43,7 @@
 }
 
 /* Indicate the view wants to draw using a backing layer instead of drawRect. */
--(BOOL) wantsUpdateLayer
+- (BOOL)wantsUpdateLayer
 {
     return YES;
 }
@@ -52,7 +51,7 @@
 /* When the wantsLayer property is set to YES, this method will be invoked to
  * return a layer instance.
  */
--(CALayer*) makeBackingLayer
+- (CALayer*)makeBackingLayer
 {
     return [self.class.layerClass layer];
 }
@@ -61,11 +60,12 @@
                    useHighDPI:(bool)useHighDPI
 {
 	if ((self = [super initWithFrame:frame])) {
-    
+        self.wantsLayer = YES;
+
         /* Allow resize. */
         self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
         _tag = METALVIEW_TAG;
-      
+
         _useHighDPI = useHighDPI;
         [self updateDrawableSize];
 	}
@@ -74,8 +74,9 @@
 }
 
 /* Set the size of the metal drawables when the view is resized. */
-- (void)resizeSubviewsWithOldSize:(NSSize)oldSize {
-    [super resizeSubviewsWithOldSize:oldSize];
+- (void)resizeWithOldSuperviewSize:(NSSize)oldSize
+{
+    [super resizeWithOldSuperviewSize:oldSize];
     [self updateDrawableSize];
 }
 
@@ -99,8 +100,6 @@ Cocoa_Mtl_AddMetalView(SDL_Window* window)
     SDL_cocoametalview *metalview
         = [[SDL_cocoametalview alloc] initWithFrame:view.frame
                        useHighDPI:(window->flags & SDL_WINDOW_ALLOW_HIGHDPI)];
-    // Instantiate the CAMetalLayer
-    metalview.wantsLayer = YES;
     [view addSubview:metalview];
     return metalview;
 }
@@ -123,6 +122,6 @@ Cocoa_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h)
     }
 }
 
-#endif /* SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_COCOA */
+#endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_RENDER_METAL) */
 
 /* vi: set ts=4 sw=4 expandtab: */

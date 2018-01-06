@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -337,10 +337,10 @@ pointer_handle_axis_common(struct SDL_WaylandInput *input,
         switch (a) {
             case WL_POINTER_AXIS_VERTICAL_SCROLL:
                 x = 0;
-                y = (float)wl_fixed_to_double(value);
+                y = 0 - (float)wl_fixed_to_double(value);
                 break;
             case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-                x = (float)wl_fixed_to_double(value);
+                x = 0 - (float)wl_fixed_to_double(value);
                 y = 0;
                 break;
             default:
@@ -588,6 +588,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
     } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
         wl_pointer_destroy(input->pointer);
         input->pointer = NULL;
+        input->display->pointer = NULL;
     }
 
     if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !input->touch) {

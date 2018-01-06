@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -165,7 +165,7 @@ RPI_ShowCursor(SDL_Cursor * cursor)
     
     if (curdata->element == DISPMANX_NO_HANDLE) {
         vc_dispmanx_rect_set(&src_rect, 0, 0, curdata->w << 16, curdata->h << 16);
-        vc_dispmanx_rect_set(&dst_rect, 0, 0, curdata->w, curdata->h);
+        vc_dispmanx_rect_set(&dst_rect, mouse->x, mouse->y, curdata->w, curdata->h);
         
         update = vc_dispmanx_update_start(10);
         SDL_assert(update);
