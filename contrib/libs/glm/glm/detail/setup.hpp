@@ -509,6 +509,22 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////
+// nullptr
+
+//
+#if GLM_LANG & GLM_LANG_CXX0X_FLAG
+#	define GLM_HAS_NULLPTR 1
+#else
+#	define GLM_HAS_NULLPTR 0
+#endif
+
+#if GLM_HAS_NULLPTR
+#	define GLM_NULLPTR nullptr
+#else
+#	define GLM_NULLPTR 0
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////
 // Static assert
 
 #if GLM_HAS_STATIC_ASSERT

@@ -25,7 +25,7 @@ namespace detail
 		char text[STRING_BUFFER];
 		va_list list;
 
-		if(msg == 0)
+		if(msg == GLM_NULLPTR)
 			return std::string();
 
 		va_start(list, msg);

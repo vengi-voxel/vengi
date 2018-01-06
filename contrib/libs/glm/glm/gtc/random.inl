@@ -340,13 +340,12 @@ namespace detail
 	template<typename T>
 	GLM_FUNC_QUALIFIER vec<3, T, defaultp> sphericalRand(T Radius)
 	{
-		T z = linearRand(T(-1), T(1));
-		T a = linearRand(T(0), T(6.283185307179586476925286766559f));
+		T theta = linearRand(T(0), T(6.283185307179586476925286766559f));
+		T phi = std::acos(linearRand(T(-1.0f), T(1.0f)));
 
-		T r = sqrt(T(1) - z * z);
-
-		T x = r * std::cos(a);
-		T y = r * std::sin(a);
+		T x = std::sin(phi) * std::cos(theta);
+		T y = std::sin(phi) * std::sin(theta);
+		T z = std::cos(phi);
 
 		return vec<3, T, defaultp>(x, y, z) * Radius;
 	}

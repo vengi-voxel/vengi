@@ -9,7 +9,7 @@
 ///
 /// Include <glm/gtx/matrix_interpolation.hpp> to use the features of this extension.
 ///
-/// Allows to directly interpolate two exiciting matrices.
+/// Allows to directly interpolate two matrices.
 
 #pragma once
 
