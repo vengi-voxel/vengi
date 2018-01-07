@@ -24,6 +24,7 @@ bool Shader::init() {
 std::string Shader::handlePragmas(const std::string& buffer) const {
 	// TODO: check the code for printf statements and activate the pragmas
 	//#pragma OPENCL EXTENSION cl_amd_printf : enable
+	//#pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
 	return buffer;
 }
 
@@ -43,15 +44,17 @@ std::string Shader::handleIncludes(const std::string& buffer) const {
 		}
 		for (; i != buffer.end(); ++i, ++index) {
 			const char *cStart = &buffer[index];
-			if (*cStart != '"')
+			if (*cStart != '"') {
 				continue;
+			}
 
 			++index;
 			++i;
 			for (; i != buffer.end(); ++i, ++index) {
 				const char *cEnd = &buffer[index];
-				if (*cEnd != '"')
+				if (*cEnd != '"') {
 					continue;
+				}
 
 				const std::string_view dir = core::string::extractPath(_name);
 				const std::string_view includeFile(cStart + 1, (size_t)(cEnd - (cStart + 1)));

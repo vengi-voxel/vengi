@@ -113,3 +113,9 @@ Maybe use https://github.com/est31/csrp-gmp
 - noisetool
 - voxedit
 - client
+
+# Compute module (opencl)
+
+- Support adding `#pragma unroll` automatically?
+- Support opencl data types - image2d_t, sampler_t
+- clEnqueueWriteImage and friends
