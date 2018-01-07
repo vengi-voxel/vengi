@@ -1,6 +1,8 @@
 #include "TestLUAUI.h"
 #include "io/Filesystem.h"
-#include "nuklear/Nuklear.h"
+#include "video/TexturePool.h"
+#include "core/TimeProvider.h"
+#include "core/EventBus.h"
 
 TestLUAUI::TestLUAUI(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::TexturePoolPtr& texturePool) :
 		Super(filesystem, eventBus, timeProvider, texturePool) {
