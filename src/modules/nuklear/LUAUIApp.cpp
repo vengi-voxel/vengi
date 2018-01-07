@@ -6,6 +6,7 @@
 #include "LUAFunctions.h"
 #include "io/Filesystem.h"
 #include "core/Log.h"
+#include "core/command/Command.h"
 #include "core/Trace.h"
 #include "Nuklear.h"
 
@@ -45,6 +46,8 @@ core::AppState LUAUIApp::onInit() {
 		Log::info("Installed file watcher for '%s'", uiScriptPath.c_str());
 	}
 
+	core::Command::registerCommand("uireload", [this] (const core::CmdArgs&) {reload();});
+
 	return state;
 }
 
@@ -67,6 +70,10 @@ bool LUAUIApp::onRenderUI() {
 }
 
 bool LUAUIApp::reload() {
+	const bool console = _console.isActive();
+	if (console) {
+		_console.toggle();
+	}
 	_skipUntilReload = true;
 	core_assert_always(_lua.resetState());
 
