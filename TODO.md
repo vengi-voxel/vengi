@@ -105,7 +105,6 @@ Maybe use https://github.com/est31/csrp-gmp
 
 ## Get rid of turbobadger and nativefiledialog - use nuklear and their file dialog implementation.
 
-- implement nuklear lua bindings
 - remove the ui tool
 - rename nuklear module to ui (incl. namespace) after we are done
 
