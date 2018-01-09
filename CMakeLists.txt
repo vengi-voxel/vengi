@@ -105,7 +105,6 @@ message(STATUS "Generate config.h in ${CMAKE_CURRENT_BINARY_DIR}")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 include_directories(src/modules)
-include_directories(src/modules/ui)
 
 add_subdirectory(contrib/libs)
 

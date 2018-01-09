@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "ui/Window.h"
-#include "ui/ui_widgets.h"
+#include "ui/turbobadger/Window.h"
+#include "ui/turbobadger/ui_widgets.h"
 #include "core/Common.h"
 #include "collection/ConcurrentQueue.h"
 #include <unordered_map>

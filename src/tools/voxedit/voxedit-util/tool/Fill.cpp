@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Fill.h"
 
 namespace voxedit {

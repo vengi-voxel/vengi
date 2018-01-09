@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #pragma once
 
-#include "ui/Widget.h"
+#include "ui/turbobadger/Widget.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "frontend/Axis.h"

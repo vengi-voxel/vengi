@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "nuklear/LUAUIApp.h"
+#include "ui/nuklear/LUAUIApp.h"
 
 class TestLUAUI: public nuklear::LUAUIApp {
 private:

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Same.h"
 
 namespace voxedit {

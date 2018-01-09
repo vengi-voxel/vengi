@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "ui/tests/UITest.h"
+#include "ui/turbobadger/tests/UITest.h"
 #include "../ui/LoginWindow.h"
 #include "../ui/SignupWindow.h"
 #include "../ui/AuthFailedWindow.h"

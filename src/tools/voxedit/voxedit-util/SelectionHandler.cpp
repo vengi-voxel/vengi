@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "SelectionHandler.h"
 #include "select/Edge.h"
 #include "select/LineHorizontal.h"

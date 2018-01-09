@@ -1,6 +1,6 @@
 #include "TestOctree.h"
 #include "io/Filesystem.h"
-#include "imgui/IMGUI.h"
+#include "ui/imgui/IMGUI.h"
 #include "core/Color.h"
 #include "video/ScopedLineWidth.h"
 #include <array>

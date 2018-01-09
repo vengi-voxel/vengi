@@ -42,7 +42,7 @@ macro(check_lua_files TARGET)
 	endif()
 endmacro()
 
-macro(check_ui_files TARGET)
+macro(check_ui_turbobadger TARGET)
 	set(_workingdir "${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}")
 	set(_dir "${_workingdir}/ui/window")
 	file(GLOB UI_FILES ${_dir}/*.tb.txt)

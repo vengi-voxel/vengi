@@ -11,7 +11,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/polyvox/Picking.h"
 #include "io/Filesystem.h"
-#include "imgui/IMGUI.h"
+#include "ui/imgui/IMGUI.h"
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 

@@ -120,14 +120,15 @@ set(SRCS
 	tb/tb_widgets_reader.h
 	tb/tb_window.h
 )
+set(LIB libturbobadger)
 engine_add_library(
-	LIB turbobadger
+	LIB ${LIB}
 	SRCS ${SRCS}
 )
-target_include_directories(turbobadger PUBLIC tb)
-target_link_libraries(turbobadger sdl2)
+target_include_directories(${LIB} PUBLIC ../../../src/modules/ui/turbobadger tb)
+target_link_libraries(${LIB} sdl2)
 if (NOT MSVC)
-	set_target_properties(turbobadger PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-inconsistent-missing-override -Wno-non-virtual-dtor")
+	set_target_properties(${LIB} PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-inconsistent-missing-override -Wno-non-virtual-dtor")
 endif()
 
 if (WINDOWS)

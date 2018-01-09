@@ -4,7 +4,7 @@
 #include "core/Array.h"
 #include "math/AABB.h"
 #include "core/GLM.h"
-#include "imgui/IMGUI.h"
+#include "ui/imgui/IMGUI.h"
 
 TestShapeBuilder::TestShapeBuilder(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider), _color(core::Color::DarkGreen) {

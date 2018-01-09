@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Crop.h"
 #include "core/Log.h"
 #include "voxel/polyvox/VolumeMerger.h"

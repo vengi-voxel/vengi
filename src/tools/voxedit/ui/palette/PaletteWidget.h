@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #pragma once
 
-#include "ui/Widget.h"
+#include "ui/turbobadger/Widget.h"
 #include "voxel/polyvox/Voxel.h"
 
 class PaletteWidget: public ui::Widget {

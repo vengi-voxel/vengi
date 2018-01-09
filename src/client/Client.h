@@ -15,8 +15,8 @@
 #include "network/ClientNetwork.h"
 #include "network/ClientMessageSender.h"
 #include "network/NetworkEvents.h"
-#include "ui/UIApp.h"
-#include "ui/WaitingMessage.h"
+#include "ui/turbobadger/UIApp.h"
+#include "ui/turbobadger/WaitingMessage.h"
 #include "video/MeshPool.h"
 #include "video/Camera.h"
 

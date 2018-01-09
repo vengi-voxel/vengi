@@ -5,11 +5,11 @@
 #pragma once
 
 #include "core/ConsoleApp.h"
-#include "ui/TurboBadger.h"
-#include "ui/UIDummies.h"
+#include "ui/turbobadger/TurboBadger.h"
+#include "ui/turbobadger/UIDummies.h"
 
 /**
- * @brief This tool validates te ui files (*.tb.txt)
+ * @brief This tool validates the turbobadger ui files (*.tb.txt)
  */
 class UITool: public core::ConsoleApp {
 private:

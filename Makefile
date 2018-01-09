@@ -212,6 +212,7 @@ update-stb:
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxel/font/stb_truetype.h
 	cp $(UPDATEDIR)/stb.sync/stb_image.h contrib/libs/turbobadger/tb/thirdparty
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h contrib/libs/turbobadger/tb/thirdparty
+# TODO: dearimgui
 
 update-simplecpp:
 	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)
@@ -241,7 +242,7 @@ update-dearimgui:
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
 	cp $(UPDATEDIR)/imgui.sync/imgui*.h $(UPDATEDIR)/imgui.sync/imgui*.cpp $(UPDATEDIR)/imgui.sync/stb_*.h contrib/libs/dearimgui/dearimgui
 	mv contrib/libs/dearimgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
-	sed -i 's/"imgui.h"/"imgui\/IMGUI.h"/g' src/tests/testimgui/Demo.cpp
+	sed -i 's/"imgui.h"/"ui\/imgui\/IMGUI.h"/g' src/tests/testimgui/Demo.cpp
 
 update-assimp:
 	$(call UPDATE_GIT,assimp,https://github.com/assimp/assimp.git)
@@ -279,17 +280,17 @@ update-sdl2:
 
 update-turbobadger:
 	$(call UPDATE_GIT,turbobadger,https://github.com/fruxo/turbobadger.git)
-	rm -rf contrib/libs/turbobadger/tb/*
-	cp -r $(UPDATEDIR)/turbobadger.sync/src/tb/* contrib/libs/turbobadger/tb
-	git checkout master contrib/libs/turbobadger/tb/tb_clipboard_sdl.cpp
-	git checkout master contrib/libs/turbobadger/tb/tb_system_sdl.cpp
-	git checkout master contrib/libs/turbobadger/tb/tb_file_sdl.cpp
-	git checkout contrib/libs/turbobadger/tb/thirdparty/
-	rm contrib/libs/turbobadger/tb/CMakeLists.txt
-	rm -rf contrib/libs/turbobadger/tb/utf8/test\ files
-	rm -rf contrib/libs/turbobadger/tb/tests
-	git diff contrib/libs/turbobadger/ > $(UPDATEDIR)/turbobadger.sync/upstream.diff
-	git checkout contrib/libs/turbobadger/tb/tb_id.cpp
+	rm -rf contrib/libs/libturbobadger/tb/*
+	cp -r $(UPDATEDIR)/turbobadger.sync/src/tb/* contrib/libs/libturbobadger/tb
+	git checkout master contrib/libs/libturbobadger/tb/tb_clipboard_sdl.cpp
+	git checkout master contrib/libs/libturbobadger/tb/tb_system_sdl.cpp
+	git checkout master contrib/libs/libturbobadger/tb/tb_file_sdl.cpp
+	git checkout contrib/libs/libturbobadger/tb/thirdparty/
+	rm contrib/libs/libturbobadger/tb/CMakeLists.txt
+	rm -rf contrib/libs/libturbobadger/tb/utf8/test\ files
+	rm -rf contrib/libs/libturbobadger/tb/tests
+	git diff contrib/libs/libturbobadger/ > $(UPDATEDIR)/turbobadger.sync/upstream.diff
+	git checkout contrib/libs/libturbobadger/tb/tb_id.cpp
 
 update-glslang:
 	$(call UPDATE_GIT,glslang,https://github.com/KhronosGroup/glslang.git)
@@ -306,7 +307,7 @@ update-glslang:
 
 update-nuklear:
 	$(call UPDATE_GIT,nuklear,https://github.com/vurtun/nuklear.git)
-	cp $(UPDATEDIR)/nuklear.sync/nuklear.h src/modules/nuklear/private
+	cp $(UPDATEDIR)/nuklear.sync/nuklear.h src/modules/ui/nuklear/private
 	cp $(UPDATEDIR)/nuklear.sync/demo/overview.c src/tests/testnuklear
 
 update-json:

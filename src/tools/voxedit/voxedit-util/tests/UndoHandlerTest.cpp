@@ -2,7 +2,6 @@
  * @file
  */
 
-
 #include "core/tests/AbstractTest.h"
 #include "../UndoHandler.h"
 #include "voxel/polyvox/RawVolume.h"

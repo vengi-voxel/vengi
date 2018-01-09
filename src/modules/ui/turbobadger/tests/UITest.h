@@ -3,9 +3,9 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "ui/TurboBadger.h"
-#include "ui/FontUtil.h"
-#include "ui/UIDummies.h"
+#include "ui/turbobadger/TurboBadger.h"
+#include "ui/turbobadger/FontUtil.h"
+#include "ui/turbobadger/UIDummies.h"
 
 namespace ui {
 

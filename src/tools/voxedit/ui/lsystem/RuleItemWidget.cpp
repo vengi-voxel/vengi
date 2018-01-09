@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "RuleItemWidget.h"
 
 namespace voxedit {

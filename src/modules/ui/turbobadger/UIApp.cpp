@@ -3,8 +3,8 @@
  */
 
 #include "UIApp.h"
-#include "ui/TurboBadger.h"
-#include "ui/FontUtil.h"
+#include "ui/turbobadger/TurboBadger.h"
+#include "ui/turbobadger/FontUtil.h"
 
 #include "io/Filesystem.h"
 #include "core/command/Command.h"

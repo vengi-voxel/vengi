@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Controller.h"
 #include "frontend/Movement.h"
 

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "NoiseType.h"
 #include "core/Array.h"
 

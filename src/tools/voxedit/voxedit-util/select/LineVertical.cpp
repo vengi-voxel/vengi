@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "LineVertical.h"
 
 namespace voxedit {

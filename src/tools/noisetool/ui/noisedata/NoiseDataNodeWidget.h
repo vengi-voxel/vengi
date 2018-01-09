@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #pragma once
 
-#include "TurboBadger.h"
+#include "ui/turbobadger/TurboBadger.h"
 
 class NoiseItem;
 

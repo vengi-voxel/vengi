@@ -7,7 +7,7 @@
 #include "video/Renderer.h"
 #include "video/Camera.h"
 #include "video/VertexBuffer.h"
-#include "UiShaders.h"
+#include "TurbobadgerShaders.h"
 
 #include <renderers/tb_renderer_batcher.h>
 

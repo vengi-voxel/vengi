@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Expand.h"
 #include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/polyvox/RawVolumeWrapper.h"

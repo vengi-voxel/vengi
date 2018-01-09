@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ShapeHandler.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/generator/ShapeGenerator.h"

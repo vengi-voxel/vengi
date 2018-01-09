@@ -1,8 +1,8 @@
 #pragma once
 
-#include "imgui/IMGUI.h"
-#include "imgui/IMGUIInternal.h"
-#include "imgui/IMGUIAddons.h"
+#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIInternal.h"
+#include "ui/imgui/IMGUIAddons.h"
 #include "core/Log.h"
 
 enum class NodeType {

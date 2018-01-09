@@ -7,7 +7,7 @@
 #include "../NoiseTool.h"
 #include "noisedata/NoiseDataNodeWidget.h"
 #include "noisedata/NoiseDataItemWidget.h"
-#include "ui/UIApp.h"
+#include "ui/turbobadger/UIApp.h"
 
 NoiseDataNodeWindow::NoiseDataNodeWindow(NoiseTool* tool) :
 		ui::Window(tool), _noiseTool(tool) {

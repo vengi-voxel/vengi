@@ -1,5 +1,5 @@
 #include "TestCamera.h"
-#include "imgui/IMGUI.h"
+#include "ui/imgui/IMGUI.h"
 #include "io/Filesystem.h"
 
 TestCamera::TestCamera(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

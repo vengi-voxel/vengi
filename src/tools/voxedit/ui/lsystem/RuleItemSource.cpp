@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "RuleItemSource.h"
 #include "RuleItemWidget.h"
 

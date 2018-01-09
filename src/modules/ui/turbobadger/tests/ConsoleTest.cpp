@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "ui/Console.h"
+#include "ui/turbobadger/Console.h"
 #include "core/Var.h"
 #include "core/command/Command.h"
 

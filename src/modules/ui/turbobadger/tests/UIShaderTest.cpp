@@ -3,7 +3,7 @@
  */
 
 #include "video/tests/AbstractGLTest.h"
-#include "UiShaders.h"
+#include "TurbobadgerShaders.h"
 
 namespace frontend {
 

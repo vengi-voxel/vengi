@@ -1,6 +1,6 @@
 #include "TestNuklear.h"
 #include "io/Filesystem.h"
-#include "nuklear/Nuklear.h"
+#include "ui/nuklear/Nuklear.h"
 #include "overview.c"
 
 TestNuklear::TestNuklear(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

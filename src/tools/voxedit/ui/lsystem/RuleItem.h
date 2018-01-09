@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #pragma once
 
-#include "ui/TurboBadger.h"
+#include "ui/turbobadger/TurboBadger.h"
 
 namespace voxedit {
 

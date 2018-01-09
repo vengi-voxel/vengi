@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #include "NoiseDataNodeWidget.h"
 #include "NoiseDataItemWidget.h"
-#include "ui/ui_widgets.h"
+#include "ui/turbobadger/ui_widgets.h"
 #include "core/Color.h"
 
 #define NOISEDATADETAIL(text, type) \

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Edge.h"
 
 namespace voxedit {

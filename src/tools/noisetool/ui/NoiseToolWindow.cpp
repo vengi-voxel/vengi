@@ -7,7 +7,7 @@
 #include "noisedata/NoiseDataItemWidget.h"
 #include "noise/Noise.h"
 #include "noise/Simplex.h"
-#include "ui/UIApp.h"
+#include "ui/turbobadger/UIApp.h"
 #include "core/Color.h"
 #include "NoiseDataNodeWindow.h"
 #include "noise/PoissonDiskDistribution.h"

@@ -9,7 +9,7 @@
 #include "lsystem/RuleItemSource.h"
 #include "lsystem/RuleItemWidget.h"
 #include "lsystem/SyntaxHighlighter.h"
-#include "ui/UIApp.h"
+#include "ui/turbobadger/UIApp.h"
 #include "core/JSON.h"
 #include "voxel/MaterialColor.h"
 #include "io/Filesystem.h"

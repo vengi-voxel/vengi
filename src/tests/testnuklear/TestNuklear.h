@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "nuklear/NuklearApp.h"
+#include "ui/nuklear/NuklearApp.h"
 
 class TestNuklear: public nuklear::NuklearApp {
 private:

@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #include "NoiseDataItemWidget.h"
 #include "../../NoiseTool.h"
-#include "ui/ui_widgets.h"
+#include "ui/turbobadger/ui_widgets.h"
 
 NoiseItemSource::NoiseItemSource(NoiseTool* tool) :
 		_tool(tool) {

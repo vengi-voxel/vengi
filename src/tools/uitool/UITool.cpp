@@ -3,8 +3,8 @@
  */
 
 #include "UITool.h"
-#include "ui/Window.h"
-#include "ui/FontUtil.h"
+#include "ui/turbobadger/Window.h"
+#include "ui/turbobadger/FontUtil.h"
 #include "io/Filesystem.h"
 
 UITool::UITool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

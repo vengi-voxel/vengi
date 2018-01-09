@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Model.h"
 #include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/polyvox/VolumeCropper.h"
