@@ -5,12 +5,12 @@ The current approach with data dir must be extended/redone someone. There are wa
 # Persistence
 ## Savable
 
-To collect sql update statements for changed player data, every handler should register itself somewhere in a way that the handler (e.g. the CooldownMgr or AttribMgr) can answer the question whether there is something to persist.
-Now consider that there are 1000 players logged in and they all have there CooldownMgr instance. The "collector-instance" would query all of them and asks them whether they are dirty or not. They collect the data and build a mass update statement. This might happen every minute or something like that.
+To collect sql update statements for changed player data, every handler should register itself somewhere in a way that the handler (e.g. the `CooldownMgr` or `AttribMgr`) can answer the question whether there is something to persist.
+Now consider that there are 1000 players logged in and they all have there `CooldownMgr` instance. The "collector-instance" would query all of them and asks them whether they are dirty or not. They collect the data and build a mass update statement. This might happen every minute or something like that.
 
 ## Checks
 
-ALTER TABLE products ADD CHECK (name <> '');
+`ALTER TABLE products ADD CHECK (name <> '');`
 
 ## Prepared statements
 
@@ -20,7 +20,7 @@ Better support for prepared statements
 
 Support enums?
 
-    CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');
+`CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');`
 
 ## Databasetool
 
@@ -28,11 +28,11 @@ Support enums?
 
 # Shadertool
 
-Validate that each $out of the vertex shader has a $in in the fragment shader and vice versa.
+Validate that each `$out` of the vertex shader has a `$in` in the fragment shader and vice versa.
 
 # VoxEdit
 
-Extract meshes in max 32x32x32 boundaries - RawVolumeRenderer maybe? This allows us to only reextract the chunk that was modified, not always the whole volume.
+Extract meshes in max 32x32x32 boundaries - `RawVolumeRenderer` maybe? This allows us to only reextract the chunk that was modified, not always the whole volume.
 
 Voxelizer via assimp
 
@@ -52,7 +52,7 @@ If an event was stopped, this must be persisted in the event table - skip those 
 
 ## Rename EventProvider to EventSelector
 
-The EventProvider should read the event lua scripts - the `EventSelector` should read the event run configruation (start- and end dates) from the database
+The EventProvider should read the event lua scripts - the `EventSelector` should read the event run configuration (start- and end dates) from the database
 
 # LootMgr
 
@@ -64,14 +64,14 @@ Implement saving and loading of `Stock` and `Inventory` data.
 
 # Stock
 
-Think about the design again - `Item` shouldn't be a shared_ptr, just use the type in the map. That would also make an atomic counter useless, because we aren't operating on a shared data anymore. The `Stock` instance would be the owner and only instance that is able to modify the internal data.
+Think about the design again - `Item` shouldn't be a `shared_ptr`, just use the type in the map. That would also make an atomic counter useless, because we aren't operating on a shared data anymore. The `Stock` instance would be the owner and only instance that is able to modify the internal data.
 
 Container move operations with filters - if might e.g. cost currency to move from one container to another.
 
 # World
 
-Implement island style maps. Each 'Map' instance gets its own ai `Zone`. There should be portals on the islands to get to other islands. Provide an overview map of where the islands are.
-(Theoretically we could scale/cluster per 'Map' and each jump could include a server switch)
+Implement island style maps. Each `Map` instance gets its own ai `Zone`. There should be portals on the islands to get to other islands. Provide an overview map of where the islands are.
+(Theoretically we could scale/cluster per `Map` and each jump could include a server switch)
 Maybe also allow to sail to a another island...?
 
 These islands should not only be created by noise - just supported by noise to vary. But they should still be hand crafted to make them more interesting.
@@ -98,23 +98,15 @@ Extend statsd support with more events
 
 # SignUp
 
-Implement signnp with email verification, Lost password and co - also see password related point in the persistence section.
+Implement signup with email verification, Lost password and co - also see password related point in the persistence section.
 Maybe use https://github.com/est31/csrp-gmp
 
 # UI
 
-## Get rid of turbobadger and nativefiledialog - use nuklear and their file dialog implementation.
-
-- remove the ui tool
-- rename nuklear module to ui (incl. namespace) after we are done
-
-## Convert the tools that are using turbobadger
-- noisetool
-- voxedit
-- client
+Get rid of nativefiledialog - e.g. for nuklear use their file dialog implementation.
 
 # Compute module (opencl)
 
 - Support adding `#pragma unroll` automatically?
-- Support opencl data types - image2d_t, sampler_t
-- clEnqueueWriteImage and friends
+- Support opencl data types - `image2d_t`, `sampler_t`
+- `clEnqueueWriteImage` and friends
