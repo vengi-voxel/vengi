@@ -9,6 +9,7 @@
 #include "video/VertexBuffer.h"
 #include "ImguiShaders.h"
 
+namespace ui {
 namespace imgui {
 
 class IMGUIApp: public video::WindowedApp {
@@ -45,4 +46,5 @@ public:
 	virtual core::AppState onCleanup() override;
 };
 
+}
 }

@@ -10,9 +10,9 @@
 /**
  * @brief Renders the imgui demo
  */
-class TestIMGUI: public imgui::IMGUIApp {
+class TestIMGUI: public ui::imgui::IMGUIApp {
 private:
-	using Super = imgui::IMGUIApp;
+	using Super = ui::imgui::IMGUIApp;
 	bool _showTestWindow = false;
 	bool _showMetricsWindow = false;
 

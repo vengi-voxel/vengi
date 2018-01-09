@@ -10,9 +10,9 @@
 #include "frontend/Axis.h"
 #include "frontend/Plane.h"
 
-class TestApp: public imgui::IMGUIApp {
+class TestApp: public ui::imgui::IMGUIApp {
 private:
-	using Super = imgui::IMGUIApp;
+	using Super = ui::imgui::IMGUIApp;
 protected:
 	bool _cameraMotion = false;
 	bool _renderPlane = false;

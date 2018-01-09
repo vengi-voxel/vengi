@@ -17,9 +17,9 @@
 /**
  * @brief This tool will render the world as a client would, but with options to modify it.
  */
-class WorldRendererTool: public imgui::IMGUIApp {
+class WorldRendererTool: public ui::imgui::IMGUIApp {
 protected:
-	using Super = imgui::IMGUIApp;
+	using Super = ui::imgui::IMGUIApp;
 	voxel::WorldContext _ctx;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;

@@ -10,9 +10,9 @@
 /**
  * @brief Renders the imgui demo
  */
-class NoiseTool2: public imgui::IMGUIApp {
+class NoiseTool2: public ui::imgui::IMGUIApp {
 private:
-	using Super = imgui::IMGUIApp;
+	using Super = ui::imgui::IMGUIApp;
 	bool _windowOpened = true;
 
 public:

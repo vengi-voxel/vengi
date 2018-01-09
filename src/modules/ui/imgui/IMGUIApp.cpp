@@ -14,6 +14,7 @@
 #include "video/ScopedViewPort.h"
 #include "IMGUI.h"
 
+namespace ui {
 namespace imgui {
 
 IMGUIApp::IMGUIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
@@ -332,4 +333,5 @@ core::AppState IMGUIApp::onCleanup() {
 	return Super::onCleanup();
 }
 
+}
 }
