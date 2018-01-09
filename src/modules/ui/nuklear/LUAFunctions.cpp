@@ -7,6 +7,7 @@
 #include "video/Texture.h"
 #include "core/Array.h"
 
+namespace ui {
 namespace nuklear {
 
 constexpr int NK_LOVE_MAX_RATIOS = 1024;
@@ -1631,4 +1632,5 @@ int uilua_widget_is_hovered(lua_State *s) {
 	return 1;
 }
 
+}
 }

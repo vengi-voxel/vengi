@@ -7,6 +7,7 @@
 #include "util/Console.h"
 #include "Nuklear.h"
 
+namespace ui {
 namespace nuklear {
 
 class NuklearApp;
@@ -27,4 +28,5 @@ public:
 	bool init(struct nk_context* ctx);
 };
 
+}
 }

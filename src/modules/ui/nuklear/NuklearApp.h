@@ -12,6 +12,7 @@
 #include "NuklearShaders.h"
 #include "Nuklear.h"
 
+namespace ui {
 namespace nuklear {
 
 class NuklearApp: public video::WindowedApp {
@@ -66,4 +67,5 @@ public:
 	virtual core::AppState onCleanup() override;
 };
 
+}
 }

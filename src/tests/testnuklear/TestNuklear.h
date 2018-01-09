@@ -6,9 +6,9 @@
 
 #include "ui/nuklear/NuklearApp.h"
 
-class TestNuklear: public nuklear::NuklearApp {
+class TestNuklear: public ui::nuklear::NuklearApp {
 private:
-	using Super = nuklear::NuklearApp;
+	using Super = ui::nuklear::NuklearApp;
 public:
 	TestNuklear(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 

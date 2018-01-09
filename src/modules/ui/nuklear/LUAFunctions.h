@@ -15,6 +15,7 @@
 #include "core/Assert.h"
 #include <vector>
 
+namespace ui {
 namespace nuklear {
 
 /**
@@ -143,4 +144,5 @@ extern int uilua_widget_width(lua_State *s);
 extern int uilua_widget_height(lua_State *s);
 extern int uilua_widget_is_hovered(lua_State *s);
 
+}
 }

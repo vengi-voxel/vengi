@@ -2,6 +2,7 @@
 #include "Nuklear.h"
 #include "NuklearApp.h"
 
+namespace ui {
 namespace nuklear {
 
 Console::Console() :
@@ -45,4 +46,5 @@ int Console::stringWidth(const char* s, int length) {
 	return styleFont->width(styleFont->userdata, styleFont->height, s, length);
 }
 
+}
 }

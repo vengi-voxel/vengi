@@ -11,6 +11,7 @@
 #include "Nuklear.h"
 #include <SDL.h>
 
+namespace ui {
 namespace nuklear {
 
 static const int MAX_VERTEX_MEMORY = 32768 * sizeof(NuklearApp::Vertex);
@@ -415,4 +416,5 @@ core::AppState NuklearApp::onCleanup() {
 	return Super::onCleanup();
 }
 
+}
 }

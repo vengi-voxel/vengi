@@ -10,6 +10,7 @@
 #include "core/Trace.h"
 #include "Nuklear.h"
 
+namespace ui {
 namespace nuklear {
 
 LUAUIApp::LUAUIApp(const io::FilesystemPtr& filesystem,
@@ -198,4 +199,5 @@ bool LUAUIApp::reload() {
 	return true;
 }
 
+}
 }

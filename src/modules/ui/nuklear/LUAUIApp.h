@@ -8,6 +8,7 @@
 #include "commonlua/LUA.h"
 #include "video/TexturePool.h"
 
+namespace ui {
 namespace nuklear {
 
 /**
@@ -32,4 +33,5 @@ public:
 	bool onRenderUI() override;
 };
 
+}
 }

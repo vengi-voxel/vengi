@@ -6,9 +6,9 @@
 
 #include "ui/nuklear/LUAUIApp.h"
 
-class TestLUAUI: public nuklear::LUAUIApp {
+class TestLUAUI: public ui::nuklear::LUAUIApp {
 private:
-	using Super = nuklear::LUAUIApp;
+	using Super = ui::nuklear::LUAUIApp;
 public:
 	TestLUAUI(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::TexturePoolPtr& texturePool);
 };
