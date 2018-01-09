@@ -11,6 +11,7 @@ class TBFontFace;
 }
 
 namespace ui {
+namespace turbobadger {
 
 class Console : public util::Console {
 private:
@@ -28,4 +29,5 @@ public:
 	bool toggle() override;
 };
 
+}
 }

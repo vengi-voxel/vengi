@@ -11,6 +11,7 @@ extern void register_stb_font_renderer();
 #endif
 
 namespace ui {
+namespace turbobadger {
 
 static const char* fontname = "Segoe";
 
@@ -45,4 +46,5 @@ static inline tb::TBFontFace *getFont(int dpSize = 14, bool registerAsDefault = 
 	return _font;
 }
 
+}
 }

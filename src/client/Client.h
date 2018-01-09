@@ -26,10 +26,10 @@
 // client states
 constexpr uint32_t CLIENT_CONNECTING = 1 << 0;
 
-class Client: public ui::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
+class Client: public ui::turbobadger::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxel::WorldCreatedEvent> {
 protected:
-	using Super = ui::UIApp;
+	using Super = ui::turbobadger::UIApp;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
 	network::ClientNetworkPtr _network;
@@ -43,7 +43,7 @@ protected:
 	core::VarPtr _maxTargetDistance;
 	frontend::ClientEntityPtr _player;
 	voxel::VoxelFont _voxelFont;
-	ui::WaitingMessage _waiting;
+	ui::turbobadger::WaitingMessage _waiting;
 
 	uint64_t _lastMovement = 0l;
 

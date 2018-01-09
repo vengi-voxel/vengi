@@ -4,6 +4,7 @@
 #include "core/Color.h"
 
 namespace ui {
+namespace turbobadger {
 
 class UIApp;
 
@@ -33,4 +34,5 @@ public:
 	void render();
 };
 
+}
 }

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 class DummyBitmap: public tb::TBBitmap {

@@ -8,6 +8,7 @@
 #include "ui/turbobadger/UIDummies.h"
 
 namespace ui {
+namespace turbobadger {
 
 class UITest: public core::AbstractTest {
 protected:
@@ -37,4 +38,5 @@ protected:
 	}
 };
 
+}
 }

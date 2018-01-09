@@ -10,6 +10,7 @@
 #include <tb_widgets_listener.h>
 
 namespace ui {
+namespace turbobadger {
 
 class UIApp: public video::WindowedApp, private tb::TBWidgetListener {
 private:
@@ -70,4 +71,5 @@ inline T* UIApp::getWidgetByType(const char *name) {
 	return _root.GetWidgetByIDAndType<T>(tb::TBID(name));
 }
 
+}
 }

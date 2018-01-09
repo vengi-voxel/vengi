@@ -16,6 +16,7 @@
 #include <stdarg.h>
 
 namespace ui {
+namespace turbobadger {
 
 namespace {
 
@@ -485,4 +486,5 @@ core::AppState UIApp::onCleanup() {
 	return Super::onCleanup();
 }
 
+}
 }

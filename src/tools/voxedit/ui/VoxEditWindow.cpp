@@ -95,7 +95,7 @@ static const struct {
 static_assert(lengthof(buildingTypes) == (int)voxel::BuildingType::Max, "Missing support for building types in the ui");
 
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
-		ui::Window(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
+		Super(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 	for (int i = 0; i < lengthof(treeTypes); ++i) {
 		addMenuItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
@@ -911,7 +911,7 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		}
 	}
 
-	return ui::Window::OnEvent(ev);
+	return Super::OnEvent(ev);
 }
 
 void VoxEditWindow::OnDie() {
@@ -943,7 +943,7 @@ void VoxEditWindow::quit() {
 	if (_scene->isDirty()) {
 		popup("Unsaved Modifications",
 				"There are unsaved modifications.\nDo you wish to discard them and quit?",
-				ui::Window::PopupType::YesNo, "unsaved_changes_quit");
+				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_quit");
 		return;
 	}
 	Close();
@@ -1003,7 +1003,7 @@ bool VoxEditWindow::voxelize(const std::string& file) {
 	_voxelizeFile = f;
 	popup("Unsaved Modifications",
 			"There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?",
-			ui::Window::PopupType::YesNo, "unsaved_changes_voxelize");
+			ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_voxelize");
 	return false;
 }
 
@@ -1062,7 +1062,7 @@ bool VoxEditWindow::load(const std::string& file) {
 	_loadFile = f;
 	popup("Unsaved Modifications",
 			"There are unsaved modifications.\nDo you wish to discard them and load?",
-			ui::Window::PopupType::YesNo, "unsaved_changes_load");
+			ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_load");
 	return false;
 }
 
@@ -1079,7 +1079,7 @@ bool VoxEditWindow::createNew(bool force) {
 	if (!force && _scene->isDirty()) {
 		popup("Unsaved Modifications",
 				"There are unsaved modifications.\nDo you wish to discard them and close?",
-				ui::Window::PopupType::YesNo, "unsaved_changes_new");
+				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_new");
 	} else if (_scene->newModel(force)) {
 		return true;
 	}

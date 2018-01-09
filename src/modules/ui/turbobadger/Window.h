@@ -15,15 +15,16 @@ typedef std::shared_ptr<Var> VarPtr;
 }
 
 namespace ui {
+namespace turbobadger {
 
 class UIApp;
 
 #define FIELD(name, type, structtarget, structmember) name, type, offsetof(structtarget, structmember)
-#define INT_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_INT, structtarget, structmember)
-#define FLOAT_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_FLOAT, structtarget, structmember)
-#define IVEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_IVEC2, structtarget, structmember)
-#define VEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_VEC2, structtarget, structmember)
-#define tr(id) ui::Window::getTranslation(id)
+#define INT_FIELD(name, structtarget, structmember) FIELD(name, ui::turbobadger::Window::T_INT, structtarget, structmember)
+#define FLOAT_FIELD(name, structtarget, structmember) FIELD(name, ui::turbobadger::Window::T_FLOAT, structtarget, structmember)
+#define IVEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::turbobadger::Window::T_IVEC2, structtarget, structmember)
+#define VEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::turbobadger::Window::T_VEC2, structtarget, structmember)
+#define tr(id) ui::turbobadger::Window::getTranslation(id)
 
 class Window: public tb::TBWindow, public io::IEventObserver {
 private:
@@ -108,4 +109,5 @@ inline T* Window::getWidgetByType(const char *name) {
 	return GetWidgetByIDAndType<T>(tb::TBID(name));
 }
 
+}
 }

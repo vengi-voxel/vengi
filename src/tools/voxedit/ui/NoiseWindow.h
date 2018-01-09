@@ -10,9 +10,9 @@ class EditorScene;
 
 namespace voxedit {
 
-class NoiseWindow : public ui::Window {
+class NoiseWindow : public ui::turbobadger::Window {
 private:
-	using Super = ui::Window;
+	using Super = ui::turbobadger::Window;
 	EditorScene* _scene;
 
 	tb::TBEditField* _octaves;
@@ -20,7 +20,7 @@ private:
 	tb::TBEditField* _lacunarity;
 	tb::TBEditField* _gain;
 public:
-	NoiseWindow(ui::Window* window, EditorScene* scene);
+	NoiseWindow(ui::turbobadger::Window* window, EditorScene* scene);
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };

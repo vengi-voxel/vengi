@@ -11,9 +11,9 @@
 /**
  * @brief This is a voxel editor that can import and export multiple mesh/voxel formats.
  */
-class VoxEdit: public ui::UIApp {
+class VoxEdit: public ui::turbobadger::UIApp {
 private:
-	using Super = ui::UIApp;
+	using Super = ui::turbobadger::UIApp;
 	core::VarPtr _lastDirectory;
 	voxedit::VoxEditWindow* _mainWindow;
 	video::MeshPoolPtr _meshPool;

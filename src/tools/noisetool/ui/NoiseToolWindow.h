@@ -13,11 +13,11 @@
 
 class NoiseTool;
 
-class NoiseToolWindow: public ui::Window {
+class NoiseToolWindow: public ui::turbobadger::Window {
 private:
 	static constexpr int BPP = 4;
 	static_assert(BPP == sizeof(uint32_t), "This code heavily relies on RGBA being 32bit");
-	using Super = ui::Window;
+	using Super = ui::turbobadger::Window;
 
 	NoiseTool* _noiseTool;
 	tb::TBSelectList* _select = nullptr;

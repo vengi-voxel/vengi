@@ -22,9 +22,9 @@
 #include "math/Axis.h"
 #include "voxedit-util/SelectType.h"
 
-class EditorScene: public ui::Widget {
+class EditorScene: public ui::turbobadger::Widget {
 private:
-	using Super = ui::Widget;
+	using Super = ui::turbobadger::Widget;
 	frontend::Axis _axis;
 	video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;

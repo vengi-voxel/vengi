@@ -18,9 +18,9 @@ typedef std::map<uint32_t, NoiseData> NoiseDataMap;
 /**
  * @brief This tool provides a UI to create noise images on-the-fly.
  */
-class NoiseTool: public ui::UIApp {
+class NoiseTool: public ui::turbobadger::UIApp {
 private:
-	using Super = ui::UIApp;
+	using Super = ui::turbobadger::UIApp;
 	NoiseDataMap _noiseData;
 	NoiseToolWindow* _window = nullptr;
 	NoiseItemSource* _noiseItemSource = nullptr;

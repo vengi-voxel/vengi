@@ -10,13 +10,13 @@
 
 namespace frontend {
 
-class LostPasswordWindow: public ui::Window {
+class LostPasswordWindow: public ui::turbobadger::Window {
 private:
 	Client* _client;
 
 public:
 	LostPasswordWindow(Client* client) :
-			ui::Window(client), _client(client) {
+			ui::turbobadger::Window(client), _client(client) {
 		core_assert_always(loadResourceFile("ui/window/client-lostpassword.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 
@@ -40,7 +40,7 @@ public:
 				return true;
 			}
 		}
-		return ui::Window::OnEvent(ev);
+		return ui::turbobadger::Window::OnEvent(ev);
 	}
 };
 

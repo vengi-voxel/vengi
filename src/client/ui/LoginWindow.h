@@ -15,7 +15,7 @@ namespace frontend {
 
 // TODO: introduce a login facade here that performs the auto login (if user wishes so), or show this popup. Or forward to a
 // signup window
-class LoginWindow: public ui::Window {
+class LoginWindow: public ui::turbobadger::Window {
 private:
 	Client* _client;
 
@@ -39,7 +39,7 @@ private:
 
 public:
 	LoginWindow(Client* client) :
-			ui::Window(client), _client(client) {
+			ui::turbobadger::Window(client), _client(client) {
 		core_assert_always(loadResourceFile("ui/window/client-login.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 
@@ -72,7 +72,7 @@ public:
 				return true;
 			}
 		}
-		return ui::Window::OnEvent(ev);
+		return ui::turbobadger::Window::OnEvent(ev);
 	}
 };
 

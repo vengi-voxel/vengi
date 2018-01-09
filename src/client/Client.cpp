@@ -67,7 +67,7 @@ void Client::sendMovement() {
 
 void Client::onEvent(const network::DisconnectEvent& event) {
 	removeState(CLIENT_CONNECTING);
-	ui::Window* main = new frontend::LoginWindow(this);
+	ui::turbobadger::Window* main = new frontend::LoginWindow(this);
 	new frontend::DisconnectWindow(main);
 }
 
@@ -309,7 +309,7 @@ void Client::authFailed() {
 	removeState(CLIENT_CONNECTING);
 	core::Var::getSafe(cfg::ClientAutoLogin)->setVal(false);
 	// TODO: stack (push/pop in UIApp) window support
-	ui::Window* main = new frontend::LoginWindow(this);
+	ui::turbobadger::Window* main = new frontend::LoginWindow(this);
 	new frontend::AuthFailedWindow(main);
 }
 

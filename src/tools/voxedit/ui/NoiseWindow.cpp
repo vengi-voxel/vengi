@@ -7,7 +7,7 @@
 
 namespace voxedit {
 
-NoiseWindow::NoiseWindow(ui::Window* window, EditorScene* scene) :
+NoiseWindow::NoiseWindow(ui::turbobadger::Window* window, EditorScene* scene) :
 		Super(window), _scene(scene) {
 	core_assert_always(loadResourceFile("ui/window/voxedit-noise.tb.txt"));
 

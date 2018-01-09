@@ -10,7 +10,7 @@
 #include "ui/turbobadger/UIApp.h"
 
 NoiseDataNodeWindow::NoiseDataNodeWindow(NoiseTool* tool) :
-		ui::Window(tool), _noiseTool(tool) {
+		Super(tool), _noiseTool(tool) {
 }
 
 bool NoiseDataNodeWindow::init() {

@@ -6,9 +6,9 @@
 #include "Widget.h"
 #include "core/Common.h"
 
-class ColorWidget: public ui::Widget {
+class ColorWidget: public ui::turbobadger::Widget {
 private:
-	using Super = ui::Widget;
+	using Super = ui::turbobadger::Widget;
 public:
 	UIWIDGET_SUBCLASS(ColorWidget, Super);
 
@@ -35,9 +35,9 @@ private:
 };
 UIWIDGET_FACTORY(ColorWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)
 
-class NodeConnectorWidget: public ui::Widget {
+class NodeConnectorWidget: public ui::turbobadger::Widget {
 private:
-	using Super = ui::Widget;
+	using Super = ui::turbobadger::Widget;
 public:
 	UIWIDGET_SUBCLASS(NodeConnectorWidget, Super);
 

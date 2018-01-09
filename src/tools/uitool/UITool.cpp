@@ -36,7 +36,7 @@ core::AppState UITool::onInit() {
 		return core::AppState::InitFailure;
 	}
 	tb::TBWidgetsAnimationManager::Init();
-	ui::initFonts();
+	ui::turbobadger::initFonts();
 
 	_root.SetRect(tb::TBRect(0, 0, 800, 600));
 	_root.SetSkinBg(TBIDC("background"));
@@ -45,7 +45,7 @@ core::AppState UITool::onInit() {
 }
 
 core::AppState UITool::onRunning() {
-	ui::Window window((ui::Window*) nullptr);
+	ui::turbobadger::Window window((ui::turbobadger::Window*) nullptr);
 	_root.AddChild(&window);
 	if (!window.loadResourceFile(_argv[1])) {
 		_exitCode = 1;

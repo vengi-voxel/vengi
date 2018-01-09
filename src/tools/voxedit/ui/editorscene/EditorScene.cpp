@@ -429,7 +429,7 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 	core_trace_scoped(EditorSceneOnPaint);
 	Super::OnPaint(paintProps);
 	const glm::ivec2& dimension = _frameBuffer.dimension();
-	ui::UIRect rect = GetRect();
+	ui::turbobadger::UIRect rect = GetRect();
 	rect.x = 0;
 	rect.y = 0;
 	const glm::vec4& uv = _frameBuffer.uv();

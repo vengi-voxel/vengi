@@ -10,9 +10,9 @@ class EditorScene;
 
 namespace voxedit {
 
-class LSystemWindow: public ui::Window {
+class LSystemWindow: public ui::turbobadger::Window {
 private:
-	using Super = ui::Window;
+	using Super = ui::turbobadger::Window;
 	EditorScene* _scene;
 	tb::TBEditField* _axiom = nullptr;
 	tb::TBInlineSelect* _generations = nullptr;
@@ -21,7 +21,7 @@ private:
 	void save(const std::string& file);
 	void load(const std::string& file);
 public:
-	LSystemWindow(ui::Window* window, EditorScene* scene);
+	LSystemWindow(ui::turbobadger::Window* window, EditorScene* scene);
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };

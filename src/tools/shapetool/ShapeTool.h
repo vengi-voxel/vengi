@@ -17,9 +17,9 @@
 /**
  * @brief This tool will render the world as a client would, but with options to modify it.
  */
-class ShapeTool: public ui::UIApp {
+class ShapeTool: public ui::turbobadger::UIApp {
 protected:
-	using Super = ui::UIApp;
+	using Super = ui::turbobadger::UIApp;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
 	frontend::OctreeRenderer _octreeRenderer;

@@ -10,7 +10,7 @@
 namespace voxedit {
 
 using WORLDCTX = voxel::WorldContext;
-static const ui::Window::Field WORLDFIELDS[] = {
+static const ui::turbobadger::Window::Field WORLDFIELDS[] = {
 	{INT_FIELD("landscapeoctaves", WORLDCTX, landscapeNoiseOctaves)},
 	{FLOAT_FIELD("landscapefrequency", WORLDCTX, landscapeNoiseFrequency)},
 	{FLOAT_FIELD("landscapeamplitude", WORLDCTX, landscapeNoiseAmplitude)},
@@ -28,8 +28,8 @@ static const ui::Window::Field WORLDFIELDS[] = {
 	{FLOAT_FIELD("cavedensitythreshold", WORLDCTX, caveDensityThreshold)}
 };
 
-WorldWindow::WorldWindow(ui::Window* window, EditorScene* scene, const std::string& luaString) :
-			ui::Window(window), _scene(scene) {
+WorldWindow::WorldWindow(ui::turbobadger::Window* window, EditorScene* scene, const std::string& luaString) :
+			Super(window), _scene(scene) {
 	core_assert_always(loadResourceFile("ui/window/voxedit-world.tb.txt"));
 	SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 	SetOpacity(0.8f);
@@ -56,7 +56,7 @@ bool WorldWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
-	return ui::Window::OnEvent(ev);
+	return Super::OnEvent(ev);
 }
 
 }

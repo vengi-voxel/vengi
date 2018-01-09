@@ -10,12 +10,12 @@
 
 namespace frontend {
 
-class HudWindow: public ui::Window {
+class HudWindow: public ui::turbobadger::Window {
 private:
 	Client* _client;
 public:
 	HudWindow(Client* client, const glm::ivec2& dimension) :
-			ui::Window(client), _client(client) {
+			ui::turbobadger::Window(client), _client(client) {
 		core_assert_always(loadResourceFile("ui/window/client-hud.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_NONE);
 		SetSize(dimension.x, 20);
@@ -26,7 +26,7 @@ public:
 			_client->disconnect();
 			return true;
 		}
-		return ui::Window::OnEvent(ev);
+		return ui::turbobadger::Window::OnEvent(ev);
 	}
 };
 

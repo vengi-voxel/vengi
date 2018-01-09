@@ -7,7 +7,7 @@
 
 namespace voxedit {
 
-TreeWindow::TreeWindow(ui::Window* window, EditorScene* scene, voxel::TreeType type) :
+TreeWindow::TreeWindow(ui::turbobadger::Window* window, EditorScene* scene, voxel::TreeType type) :
 		Super(window), _scene(scene) {
 	core_assert_always(loadResourceFile("ui/window/voxedit-tree.tb.txt"));
 

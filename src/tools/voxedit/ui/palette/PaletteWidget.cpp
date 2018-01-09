@@ -7,7 +7,7 @@
 #include "core/Color.h"
 
 PaletteWidget::PaletteWidget() :
-		ui::Widget() {
+		Super() {
 	SetIsFocusable(true);
 }
 

@@ -12,7 +12,7 @@
 
 namespace ui {
 
-class ClientUITest: public ui::UITest {
+class ClientUITest: public ui::turbobadger::UITest {
 };
 
 TEST_F(ClientUITest, testLoadClientUI) {

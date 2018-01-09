@@ -9,10 +9,10 @@
 
 namespace frontend {
 
-class DisconnectWindow: public ui::Window {
+class DisconnectWindow: public ui::turbobadger::Window {
 public:
 	DisconnectWindow(Window* parent) :
-			ui::Window(parent) {
+			ui::turbobadger::Window(parent) {
 		core_assert_always(loadResourceFile("ui/window/client-disconnect.tb.txt"));
 	}
 
@@ -21,7 +21,7 @@ public:
 			Close();
 			return true;
 		}
-		return ui::Window::OnEvent(ev);
+		return ui::turbobadger::Window::OnEvent(ev);
 	}
 };
 

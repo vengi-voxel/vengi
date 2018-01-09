@@ -5,7 +5,8 @@
 #include "video/tests/AbstractGLTest.h"
 #include "TurbobadgerShaders.h"
 
-namespace frontend {
+namespace ui {
+namespace turbobadger {
 
 class UIShaderTest : public video::AbstractGLTest {
 };
@@ -19,4 +20,5 @@ TEST_F(UIShaderTest, testTextureShader) {
 	shader.shutdown();
 }
 
+}
 }

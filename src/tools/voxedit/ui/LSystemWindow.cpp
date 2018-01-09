@@ -20,7 +20,7 @@ RuleItemSource productionRules;
 voxel::lsystem::LSystemContext ctx;
 Syntaxighlighter highlighter;
 
-LSystemWindow::LSystemWindow(ui::Window* window, EditorScene* scene) :
+LSystemWindow::LSystemWindow(ui::turbobadger::Window* window, EditorScene* scene) :
 		Super(window), _scene(scene) {
 	core_assert_always(loadResourceFile("ui/window/voxedit-lsystem.tb.txt"));
 	_axiom = getWidgetByType<tb::TBEditField>("axiom");
@@ -78,10 +78,10 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			}
 			return true;
 		} else if (ev.target->GetID() == TBIDC("lsystem_load")) {
-			load(((ui::UIApp*)core::App::getInstance())->openDialog("txt"));
+			load(((ui::turbobadger::UIApp*)core::App::getInstance())->openDialog("txt"));
 			return true;
 		} else if (ev.target->GetID() == TBIDC("lsystem_save")) {
-			save(((ui::UIApp*)core::App::getInstance())->saveDialog("txt"));
+			save(((ui::turbobadger::UIApp*)core::App::getInstance())->saveDialog("txt"));
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {

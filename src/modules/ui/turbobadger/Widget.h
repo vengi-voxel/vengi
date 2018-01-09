@@ -4,6 +4,7 @@
 #include <SDL.h>
 
 namespace ui {
+namespace turbobadger {
 
 class Widget : public tb::TBWidget {
 protected:
@@ -24,4 +25,5 @@ public:
 	}
 };
 
+}
 }

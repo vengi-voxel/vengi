@@ -7,9 +7,9 @@
 #include "ui/turbobadger/Widget.h"
 #include "voxel/polyvox/Voxel.h"
 
-class PaletteWidget: public ui::Widget {
+class PaletteWidget: public ui::turbobadger::Widget {
 private:
-	using Super = ui::Widget;
+	using Super = ui::turbobadger::Widget;
 protected:
 	int _width = 0;
 	int _height = 0;

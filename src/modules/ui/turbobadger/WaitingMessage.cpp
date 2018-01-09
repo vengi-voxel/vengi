@@ -4,6 +4,7 @@
 #include "UIApp.h"
 
 namespace ui {
+namespace turbobadger {
 
 WaitingMessage::WaitingMessage(UIApp* app) :
 		_app(app) {
@@ -60,4 +61,5 @@ void WaitingMessage::render() {
 	_font->DrawString(dotX, y, _color, dotsString);
 }
 
+}
 }

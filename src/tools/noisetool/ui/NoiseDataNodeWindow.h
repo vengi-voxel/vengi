@@ -9,9 +9,9 @@
 class NoiseTool;
 class NoiseDataItemWidget;
 
-class NoiseDataNodeWindow: public ui::Window {
+class NoiseDataNodeWindow: public ui::turbobadger::Window {
 private:
-	using Super = ui::Window;
+	using Super = ui::turbobadger::Window;
 
 	tb::TBWidget* _nodesWidget = nullptr;
 	NoiseTool* _noiseTool;

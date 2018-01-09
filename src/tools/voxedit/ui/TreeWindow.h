@@ -11,9 +11,9 @@ class EditorScene;
 
 namespace voxedit {
 
-class TreeWindow : public ui::Window {
+class TreeWindow : public ui::turbobadger::Window {
 private:
-	using Super = ui::Window;
+	using Super = ui::turbobadger::Window;
 	EditorScene* _scene;
 	voxel::TreeContext _ctx;
 
@@ -23,7 +23,7 @@ private:
 	tb::TBInlineSelect* _leavesHeight;
 	tb::TBInlineSelect* _leavesDepth;
 public:
-	TreeWindow(ui::Window* window, EditorScene* scene, voxel::TreeType type);
+	TreeWindow(ui::turbobadger::Window* window, EditorScene* scene, voxel::TreeType type);
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };

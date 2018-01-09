@@ -20,9 +20,10 @@ namespace voxedit {
 /**
  * @brief Voxel editing tools panel
  */
-class VoxEditWindow: public ui::Window {
+class VoxEditWindow: public ui::turbobadger::Window {
 	friend class ::VoxEdit;
 private:
+	using Super = ui::turbobadger::Window;
 	EditorScene* _scene;
 	EditorScene* _sceneTop = nullptr;
 	EditorScene* _sceneLeft = nullptr;

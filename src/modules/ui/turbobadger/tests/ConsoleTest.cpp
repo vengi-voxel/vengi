@@ -8,6 +8,7 @@
 #include "core/command/Command.h"
 
 namespace ui {
+namespace turbobadger {
 
 class ConsoleTest: public core::AbstractTest {
 };
@@ -42,4 +43,5 @@ TEST_F(ConsoleTest, testAutoCompleteCommand) {
 	ASSERT_EQ(cmdComplete + " ", c.commandLine());
 }
 
+}
 }

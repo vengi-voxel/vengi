@@ -3,6 +3,7 @@
 #include "FontUtil.h"
 
 namespace ui {
+namespace turbobadger {
 
 static const tb::TBColor consoleBgColor(127, 127, 127, 150);
 
@@ -46,4 +47,5 @@ int Console::stringWidth(const char* s, int length) {
 	return _font->GetStringWidth(s, length);
 }
 
+}
 }

@@ -11,6 +11,7 @@
 #include "core/Var.h"
 
 namespace ui {
+namespace turbobadger {
 
 static const std::string EMPTY = "";
 
@@ -407,4 +408,5 @@ void Window::requestQuit() {
 	core::App::getInstance()->requestQuit();
 }
 
+}
 }
