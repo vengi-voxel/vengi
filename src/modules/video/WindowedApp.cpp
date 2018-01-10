@@ -16,7 +16,6 @@
 #include "core/Singleton.h"
 #include "ShaderManager.h"
 #include "util/KeybindingHandler.h"
-#include <nfd.h>
 
 namespace video {
 
@@ -34,7 +33,10 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 }
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
-		App(filesystem, eventBus, timeProvider, traceport), _dimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
+		Super(filesystem, eventBus, timeProvider, traceport), _dimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
+}
+
+WindowedApp::~WindowedApp() {
 }
 
 void WindowedApp::onAfterRunning() {
@@ -43,7 +45,7 @@ void WindowedApp::onAfterRunning() {
 }
 
 core::AppState WindowedApp::onRunning() {
-	core::App::onRunning();
+	Super::onRunning();
 
 	for (KeyMapConstIter it = _keys.begin(); it != _keys.end(); ++it) {
 		const int key = it->first;
@@ -79,15 +81,14 @@ core::AppState WindowedApp::onRunning() {
 
 	video::startFrame(_window, _rendererContext);
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
-	// TODO: maybe only do this every nth frame?
 	core::Singleton<ShaderManager>::getInstance().update();
 
 	++_frameCounter;
 
 	double time = _now;
-	if (time > _frameCounterResetRime + 1000) {
-		_fps = (int) round((_frameCounter / (time - _frameCounterResetRime)) * 1000);
-		_frameCounterResetRime = time;
+	if (time > _frameCounterResetTime + 1000) {
+		_fps = (int) round((_frameCounter / (time - _frameCounterResetTime)) * 1000);
+		_frameCounterResetTime = time;
 		_frameCounter = 0;
 	}
 
@@ -147,7 +148,7 @@ bool WindowedApp::loadKeyBindings(const std::string& filename) {
 }
 
 core::AppState WindowedApp::onInit() {
-	core::AppState state = App::onInit();
+	core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
 	}
@@ -255,7 +256,7 @@ core::AppState WindowedApp::onInit() {
 }
 
 core::AppState WindowedApp::onConstruct() {
-	core::AppState state = App::onConstruct();
+	core::AppState state = Super::onConstruct();
 	core::Var::get(cfg::ClientMultiSampleBuffers, "1");
 	core::Var::get(cfg::ClientMultiSampleSamples, "4");
 	core::Var::get(cfg::ClientFullscreen, "true");
@@ -356,39 +357,37 @@ core::AppState WindowedApp::onCleanup() {
 	Log::trace("%s", keybindings.c_str());
 	filesystem()->write("keybindings.cfg", keybindings);
 
-	return App::onCleanup();
+	return Super::onCleanup();
+}
+
+void WindowedApp::showCursor(bool show) {
+	SDL_ShowCursor(show ? SDL_TRUE : SDL_FALSE);
+}
+
+void WindowedApp::centerMousePosition() {
+	SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
+}
+
+bool WindowedApp::isRelativeMouseMode() const {
+	return SDL_GetRelativeMouseMode();
+}
+
+void WindowedApp::toggleRelativeMouseMode() {
+	const bool current = isRelativeMouseMode();
+	setRelativeMouseMode(current ? false : true);
+}
+
+void WindowedApp::setRelativeMouseMode(bool mode) {
+	SDL_SetRelativeMouseMode(mode ? SDL_TRUE : SDL_FALSE);
 }
 
 std::string WindowedApp::fileDialog(OpenFileMode mode, const std::string& filter) {
-	nfdchar_t *outPath = nullptr;
-	nfdresult_t result;
-	if (mode == OpenFileMode::Open) {
-		result = NFD_OpenDialog(filter.c_str(), nullptr, &outPath);
-	} else if (mode == OpenFileMode::Save) {
-		result = NFD_SaveDialog(filter.c_str(), nullptr, &outPath);
-	} else {
-		result = NFD_PickFolder(nullptr, &outPath);
-	}
-	if (outPath && result == NFD_OKAY) {
-		Log::info("Selected %s", outPath);
-		std::string path = outPath;
-		free(outPath);
-		SDL_RaiseWindow(_window);
-		SDL_SetWindowInputFocus(_window);
-		return path;
-	} else if (result == NFD_CANCEL) {
-		Log::info("Cancel selection");
-	} else if (result == NFD_ERROR) {
-		const char *error = NFD_GetError();
-		if (error == nullptr) {
-			error = "Unknown";
-		}
-		Log::info("Error: %s", error);
-	}
-	free(outPath);
-	SDL_RaiseWindow(_window);
-	SDL_SetWindowInputFocus(_window);
+	Log::warn("This is not implemented in the base windowed application");
 	return "";
+}
+
+WindowedApp* WindowedApp::getInstance() {
+	return (WindowedApp*)Super::getInstance();
 }
 
 }

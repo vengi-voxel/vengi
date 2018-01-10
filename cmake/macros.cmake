@@ -515,7 +515,7 @@ macro(engine_add_executable)
 	endif()
 
 	if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-		set(SHARE_DIR "shared")
+		set(SHARE_DIR "share")
 		set(GAMES_DIR "${SHARE_DIR}/${_EXE_TARGET}")
 		set(ICON_DIR "${SHARE_DIR}/icons")
 		set(BIN_DIR "games")

@@ -323,6 +323,7 @@ update-stringview:
 	$(call UPDATE_GIT,string_view,https://github.com/satoren/string_view.git)
 	cp $(UPDATEDIR)/string_view.sync/string_view.hpp contrib/libs/string_view
 
+# TODO native file dialog support
 updatelibs: update-nuklear update-stringview update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang
 
 updategl:

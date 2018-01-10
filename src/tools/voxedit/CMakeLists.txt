@@ -26,6 +26,6 @@ set(SRCS
 	VoxEdit.h VoxEdit.cpp
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger voxedit-util)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger voxedit-util nativefiledialog)
 include_directories(.)
 check_ui_turbobadger(${PROJECT_NAME})

@@ -16,7 +16,14 @@ struct SDL_Window;
 
 namespace video {
 
+/**
+ * @brief An application with the usual lifecycle, but with a window attached to it.
+ *
+ * This application also receives input events (and others) from @c io::IEventObserver
+ */
 class WindowedApp: public core::App, public io::IEventObserver {
+private:
+	using Super = core::App;
 protected:
 	SDL_Window* _window = nullptr;
 	RendererContext _rendererContext = nullptr;
@@ -24,7 +31,7 @@ protected:
 	float _aspect = 1.0f;
 	int _fps = 0;
 	uint32_t _frameCounter = 0;
-	double _frameCounterResetRime = 0.0;
+	double _frameCounterResetTime = 0.0;
 
 	typedef std::unordered_map<int32_t, int16_t> KeyMap;
 	typedef KeyMap::const_iterator KeyMapConstIter;
@@ -38,54 +45,46 @@ protected:
 
 	bool loadKeyBindings(const std::string& filename = "keybindings.cfg");
 
-	virtual ~WindowedApp() {
-	}
+	virtual ~WindowedApp();
 
-	inline void showCursor(bool show) {
-		SDL_ShowCursor(show ? SDL_TRUE : SDL_FALSE);
-	}
+	void showCursor(bool show);
 
-	inline void centerMousePosition() {
-		SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
-	}
+	void centerMousePosition();
 
-	inline bool isRelativeMouseMode() const {
-		return SDL_GetRelativeMouseMode();
-	}
+	bool isRelativeMouseMode() const;
 
-	inline void toggleRelativeMouseMode() {
-		const bool current = isRelativeMouseMode();
-		setRelativeMouseMode(current ? false : true);
-	}
+	void toggleRelativeMouseMode();
 
-	inline void setRelativeMouseMode(bool mode) {
-		SDL_SetRelativeMouseMode(mode ? SDL_TRUE : SDL_FALSE);
-	}
+	void setRelativeMouseMode(bool mode);
 
 public:
-	inline const glm::ivec2& dimension() const {
-		return _dimension;
-	}
-
-	inline int width() const {
-		return _dimension.x;
-	}
-
-	inline int height() const {
-		return _dimension.y;
-	}
+	const glm::ivec2& dimension() const;
+	int width() const;
+	int height() const;
 
 	enum class OpenFileMode {
 		Save, Open, Directory
 	};
 
 	/**
-	 * @param filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
-	 * @return The selected string of the file - or an empty string
+	 * @brief Opens a file dialog
+	 * @param[in] mode @c OpenFileMode
+	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
+	 * @return The selected string of the file (or directory) - or an empty string if the selection was aborted.
 	 */
-	std::string fileDialog(OpenFileMode mode, const std::string& filter = "");
+	virtual std::string fileDialog(OpenFileMode mode, const std::string& filter = "");
+
+	/**
+	 * @brief Wrapper method for @c fileDialog()
+	 */
 	std::string saveDialog(const std::string& filter = "");
+	/**
+	 * @brief Wrapper method for @c fileDialog()
+	 */
 	std::string openDialog(const std::string& filter = "");
+	/**
+	 * @brief Wrapper method for @c fileDialog()
+	 */
 	std::string directoryDialog();
 
 	virtual core::AppState onRunning() override;
@@ -97,10 +96,20 @@ public:
 	virtual core::AppState onCleanup() override;
 	virtual void onWindowResize() override;
 
-	static WindowedApp* getInstance() {
-		return (WindowedApp*)core::App::getInstance();
-	}
+	static WindowedApp* getInstance();
 };
+
+inline const glm::ivec2& WindowedApp::dimension() const {
+	return _dimension;
+}
+
+inline int WindowedApp::width() const {
+	return _dimension.x;
+}
+
+inline int WindowedApp::height() const {
+	return _dimension.y;
+}
 
 inline std::string WindowedApp::saveDialog(const std::string& filter) {
 	return fileDialog(OpenFileMode::Save, filter);
