@@ -710,5 +710,12 @@ if (NOT CURL_FOUND)
 		add_definitions(-D_USRDLL)
 	endif(WIN32)
 
+	set(ADDITIONAL_COMPILE_FLAGS)
+	check_c_compiler_flag("-Wimplicit-fallthrough=0" HAS_IMPLICIT_FALLTHROUGH)
+	if (HAS_IMPLICIT_FALLTHROUGH)
+		set(ADDITIONAL_COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS} -Wimplicit-fallthrough=0")
+	endif()
+	set_target_properties(${LIB_NAME} PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS}")
+
 	set_target_properties(${LIB_NAME} PROPERTIES COMPILE_DEFINITIONS BUILDING_LIBCURL)
 endif()
