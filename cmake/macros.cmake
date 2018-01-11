@@ -474,14 +474,24 @@ endmacro()
 #
 # Example: engine_add_executable(TARGET SomeTargetName SRCS Source.cpp Main.cpp WINDOWED)
 #
+# TARGET:    the target name (binary name)
+# SRCS:      the source files for this target
+# WINDOWED:  this is needed to indicate whether the application should e.g. spawn a console on windows
+# NOINSTALL: means that the binary and data files are not put into the final installation folder
+#            this can e.g. be useful for stuff like code generators that are only needed during build
+#            time.
+#
 macro(engine_add_executable)
-	set(_OPTIONS_ARGS WINDOWED)
+	set(_OPTIONS_ARGS WINDOWED NOINSTALL)
 	set(_ONE_VALUE_ARGS TARGET)
 	set(_MULTI_VALUE_ARGS SRCS)
 
 	cmake_parse_arguments(_EXE "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
 
+	set(_EXE_CATEGORIES "Game")
+
 	if (_EXE_WINDOWED)
+		set(_EXE_TERMINAL "false")
 		if (WINDOWS)
 			add_executable(${_EXE_TARGET} WIN32 ${_EXE_SRCS})
 			if (MSVC)
@@ -491,6 +501,7 @@ macro(engine_add_executable)
 			add_executable(${_EXE_TARGET} ${_EXE_SRCS})
 		endif()
 	else()
+		set(_EXE_TERMINAL "true")
 		add_executable(${_EXE_TARGET} ${_EXE_SRCS})
 		if (WINDOWS)
 			if (MSVC)
@@ -514,26 +525,28 @@ macro(engine_add_executable)
 		set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "${SANITIZE_THREAD_FLAG}")
 	endif()
 
-	if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-		set(SHARE_DIR "share")
-		set(GAMES_DIR "${SHARE_DIR}/${_EXE_TARGET}")
-		set(ICON_DIR "${SHARE_DIR}/icons")
-		set(BIN_DIR "games")
-		configure_file(${ROOT_DIR}/contrib/installer/linux/desktop.in ${PROJECT_BINARY_DIR}/${_EXE_TARGET}.desktop)
-		install(FILES ${PROJECT_BINARY_DIR}/${_EXE_TARGET}.desktop DESTINATION ${SHARE_DIR}/applications)
-	endif()
-
-	set(ICON "${_EXE_TARGET}-icon.png")
-	if (EXISTS ${ROOT_DIR}/contrib/${ICON})
-		install(FILES ${ROOT_DIR}/contrib/${ICON} DESTINATION ${ICON_DIR} COMPONENT ${_EXE_TARGET})
-	endif()
-
-	foreach (dir ${RESOURCE_DIRS})
-		if (IS_DIRECTORY ${dir})
-			install(DIRECTORY ${dir} DESTINATION ${GAMES_DIR}/ COMPONENT ${_EXE_TARGET})
+	if (NOT _EXE_NOINSTALL)
+		set(ICON "${_EXE_TARGET}-icon.png")
+		if (EXISTS ${ROOT_DIR}/contrib/${ICON})
+			install(FILES ${ROOT_DIR}/contrib/${ICON} DESTINATION ${ICON_DIR} COMPONENT ${_EXE_TARGET})
 		endif()
-	endforeach()
-	install(TARGETS ${_EXE_TARGET} DESTINATION ${BIN_DIR} COMPONENT ${_EXE_TARGET})
+
+		if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+			set(SHARE_DIR "share")
+			set(GAMES_DIR "${SHARE_DIR}/${_EXE_TARGET}")
+			set(ICON_DIR "${SHARE_DIR}/icons")
+			set(BIN_DIR "games")
+			configure_file(${ROOT_DIR}/contrib/installer/linux/desktop.in ${PROJECT_BINARY_DIR}/${_EXE_TARGET}.desktop)
+			install(FILES ${PROJECT_BINARY_DIR}/${_EXE_TARGET}.desktop DESTINATION ${SHARE_DIR}/applications)
+		endif()
+
+		foreach (dir ${RESOURCE_DIRS})
+			if (IS_DIRECTORY ${dir})
+				install(DIRECTORY ${dir} DESTINATION ${GAMES_DIR}/ COMPONENT ${_EXE_TARGET})
+			endif()
+		endforeach()
+		install(TARGETS ${_EXE_TARGET} DESTINATION ${BIN_DIR} COMPONENT ${_EXE_TARGET})
+	endif()
 endmacro()
 
 macro(engine_target_link_libraries)

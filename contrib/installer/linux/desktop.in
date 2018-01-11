@@ -1,11 +1,11 @@
 [Desktop Entry]
 Version=1.0
-Name=@_EXE_TARGET@ @VERSION@
+Name=@_EXE_TARGET@ @CMAKE_PROJECT_VERSION@
 GenericName=@_EXE_TARGET@
 Comment=@DESCRIPTION@
 Exec=@_EXE_TARGET@
-Icon=@_EXE_TARGET@
-Terminal=false
+Icon=@ICON@
+Terminal=@_EXE_TERMINAL@
 Type=Application
-Categories=Game;
+Categories=@_EXE_CATEGORIES@
 StartupNotify=true
