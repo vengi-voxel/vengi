@@ -19,6 +19,10 @@
 
 namespace image {
 
+#if __GNUC__
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough" // stb_image.h
+#endif
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
