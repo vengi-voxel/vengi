@@ -164,7 +164,7 @@ server client voxedit shapetool worldrenderertool shadertool noisetool noisetool
 	$(call COMPILE, copy-data-$@)
 	$(Q)cd $(BUILDDIR); $(PERF_CMD) $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
-backward flatbuffers glm libenet nativefiledialog restclient-cpp selene zlib lua53 luac libcurl assimp turbobadger sdl2: cmake
+assimp backward benchmark dearimgui flatbuffers glm gtest libcurl libenet libturbobadger libuv lua53 nativefiledialog restclient-cpp sdl2 selene simplecpp zlib: cmake
 	$(call COMPILE, $@)
 
 rcon: cmake
@@ -324,6 +324,7 @@ update-stringview:
 	cp $(UPDATEDIR)/string_view.sync/string_view.hpp contrib/libs/string_view
 
 # TODO native file dialog support
+# TODO simpleai support
 updatelibs: update-nuklear update-stringview update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang
 
 updategl:
