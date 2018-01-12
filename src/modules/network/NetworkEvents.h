@@ -24,6 +24,12 @@ public:
 	}
 };
 
+/**
+ * @brief This event is thrown if a client drops the connection.
+ *
+ * @note Beware: This doesn't mean that the client is leaving the gameserver. It only means
+ * that the disconnect phase has been initialized.
+ */
 class DisconnectEvent: public core::IEventBusEvent {
 private:
 	ENetPeer* _peer;
