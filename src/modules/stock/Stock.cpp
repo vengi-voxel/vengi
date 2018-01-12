@@ -23,6 +23,11 @@ bool Stock::init() {
 	return _inventory.initContainer(data->id, data->shape, data->flags);
 }
 
+void Stock::shutdown() {
+	_inventory.clear();
+	_items.clear();
+}
+
 ItemPtr Stock::add(const ItemPtr& item) {
 	Log::debug("Add item %s", item->data().name());
 	if (item->amount() == 0) {

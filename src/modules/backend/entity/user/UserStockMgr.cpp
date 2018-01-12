@@ -53,6 +53,7 @@ void UserStockMgr::shutdown() {
 			_dbHandler->insert(model);
 		}
 	}
+	_stock.shutdown();
 }
 
 }

@@ -48,6 +48,7 @@ public:
 	 * @brief Initializes the stock and the inventory.
 	 */
 	bool init();
+	void shutdown();
 
 	/**
 	 * @brief Adds a new item to the stock
