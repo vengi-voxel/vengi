@@ -19,6 +19,9 @@ DBHandler::~DBHandler() {
 }
 
 bool DBHandler::init() {
+	if (_initialized) {
+		return true;
+	}
 	if (core::Singleton<ConnectionPool>::getInstance().init() <= 0) {
 		Log::error(logid, "Failed to init the connection pool");
 		return false;
