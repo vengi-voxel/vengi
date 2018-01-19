@@ -40,6 +40,18 @@ private:
 				_maxDepth(maxDepth), _depth(depth), _area(bounds) {
 		}
 
+	public:
+		QuadTreeNode(QuadTreeNode&& node) :
+				_maxDepth(node._maxDepth), _depth(node._depth), _area(node._area),
+				_contents(std::move(node._contents)), _nodes(std::move(node._nodes)) {
+		}
+
+		QuadTreeNode(const QuadTreeNode& node) :
+				_maxDepth(node._maxDepth), _depth(node._depth), _area(node._area),
+				_contents(node._contents), _nodes(node._nodes) {
+		}
+
+	private:
 		void createNodes() {
 			if (_depth >= _maxDepth) {
 				return;
