@@ -5,13 +5,13 @@
 #pragma once
 
 #include <string>
-#include <cstring>
-#include <cstdlib>
+#include <string.h>
+#include <stdlib.h>
 #include <sstream>
-#include <climits>
+#include <limits.h>
 #include <algorithm>
 #include <vector>
-#include <cctype>
+#include <ctype.h>
 #include <stdarg.h>
 #include <SDL.h>
 

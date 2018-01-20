@@ -145,62 +145,62 @@ void Log::shutdown() {
 	_syslog = false;
 }
 
-static void traceVA(const char *msg, va_list args) {
+static void traceVA(uint32_t id, const char *msg, va_list args) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
 	if (_syslog) {
-		SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
+		SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
-		SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", buf);
+		SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "(%u) " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", id, buf);
 	}
 	va_end(args);
 }
 
-static void debugVA(const char *msg, va_list args) {
+static void debugVA(uint32_t id, const char *msg, va_list args) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
 	if (_syslog) {
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET "\n", buf);
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "(%u) " ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET "\n", id, buf);
 	}
 	va_end(args);
 }
 
-static void infoVA(const char *msg, va_list args) {
+static void infoVA(uint32_t id, const char *msg, va_list args) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
 	if (_syslog) {
-		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
+		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
-		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", buf);
+		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "(%u) " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", id, buf);
 	}
 	va_end(args);
 }
 
-static void warnVA(const char *msg, va_list args) {
+static void warnVA(uint32_t id, const char *msg, va_list args) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
 	if (_syslog) {
-		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
-		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET "\n", buf);
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "(%u) " ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET "\n", id, buf);
 	}
 	va_end(args);
 }
 
-static void errorVA(const char *msg, va_list args) {
+static void errorVA(uint32_t id, const char *msg, va_list args) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
 	if (_syslog) {
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET "\n", buf);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "(%u) " ANSI_COLOR_RED "%s" ANSI_COLOR_RESET "\n", id, buf);
 	}
 	va_end(args);
 }
@@ -211,7 +211,7 @@ void Log::trace(const char* msg, ...) {
 	}
 	va_list args;
 	va_start(args, msg);
-	traceVA(msg, args);
+	traceVA(0u, msg, args);
 }
 
 void Log::debug(const char* msg, ...) {
@@ -220,7 +220,7 @@ void Log::debug(const char* msg, ...) {
 	}
 	va_list args;
 	va_start(args, msg);
-	debugVA(msg, args);
+	debugVA(0u, msg, args);
 }
 
 void Log::info(const char* msg, ...) {
@@ -229,7 +229,7 @@ void Log::info(const char* msg, ...) {
 	}
 	va_list args;
 	va_start(args, msg);
-	infoVA(msg, args);
+	infoVA(0u, msg, args);
 }
 
 void Log::warn(const char* msg, ...) {
@@ -238,7 +238,7 @@ void Log::warn(const char* msg, ...) {
 	}
 	va_list args;
 	va_start(args, msg);
-	warnVA(msg, args);
+	warnVA(0u, msg, args);
 }
 
 void Log::error(const char* msg, ...) {
@@ -247,7 +247,7 @@ void Log::error(const char* msg, ...) {
 	}
 	va_list args;
 	va_start(args, msg);
-	errorVA(msg, args);
+	errorVA(0u, msg, args);
 }
 
 void Log::trace(uint32_t id, const char* msg, ...) {
@@ -262,7 +262,7 @@ void Log::trace(uint32_t id, const char* msg, ...) {
 	}
 	va_list args;
 	va_start(args, msg);
-	traceVA(msg, args);
+	traceVA(id, msg, args);
 }
 
 void Log::debug(uint32_t id, const char* msg, ...) {
@@ -277,7 +277,7 @@ void Log::debug(uint32_t id, const char* msg, ...) {
 	}
 	va_list args;
 	va_start(args, msg);
-	debugVA(msg, args);
+	debugVA(id, msg, args);
 }
 
 void Log::info(uint32_t id, const char* msg, ...) {
@@ -292,7 +292,7 @@ void Log::info(uint32_t id, const char* msg, ...) {
 	}
 	va_list args;
 	va_start(args, msg);
-	infoVA(msg, args);
+	infoVA(id, msg, args);
 }
 
 void Log::warn(uint32_t id, const char* msg, ...) {
@@ -307,7 +307,7 @@ void Log::warn(uint32_t id, const char* msg, ...) {
 	}
 	va_list args;
 	va_start(args, msg);
-	warnVA(msg, args);
+	warnVA(id, msg, args);
 }
 
 void Log::error(uint32_t id, const char* msg, ...) {
@@ -322,7 +322,7 @@ void Log::error(uint32_t id, const char* msg, ...) {
 	}
 	va_list args;
 	va_start(args, msg);
-	errorVA(msg, args);
+	errorVA(id, msg, args);
 }
 
 bool Log::enable(uint32_t id, Log::Level level) {
