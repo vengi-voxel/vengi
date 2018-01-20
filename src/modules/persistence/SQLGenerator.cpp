@@ -197,6 +197,14 @@ static inline bool removes(const db::MetainfoModel& schemaColumn, const Field& f
 	return isSet(schemaColumn.constraintmask(), value) && !isSet(field.contraintMask, value);
 }
 
+static inline void uniqueConstraintName(std::stringstream& stmt, const Model& table, const std::set<std::string>& uniqueKey) {
+	stmt << table.tableName() << "_" << core::string::join(uniqueKey.begin(), uniqueKey.end(), "_") << "_unique";
+}
+
+static inline void foreignKeyConstraintName(std::stringstream& stmt, const Model& table, const ForeignKey& foreignKey) {
+	stmt << table.tableName() << "_" << foreignKey.table << "_" << foreignKey.field << "_fk";
+}
+
 static void createAlterTableAlterColumn(std::stringstream& stmt, bool add, const Model& table, const db::MetainfoModel& schemaColumn, const Field& field) {
 	if (removes(schemaColumn, field, ConstraintType::INDEX)) {
 		stmt << "DROP INDEX IF EXISTS ";
@@ -320,14 +328,6 @@ static bool isDifferent(const db::MetainfoModel& schemaColumn, const Field& fiel
 		return true;
 	}
 	return false;
-}
-
-static inline void uniqueConstraintName(std::stringstream& stmt, const Model& table, const std::set<std::string>& uniqueKey) {
-	stmt << table.tableName() << "_" << core::string::join(uniqueKey.begin(), uniqueKey.end(), "_");
-}
-
-static inline void foreignKeyConstraintName(std::stringstream& stmt, const Model& table, const ForeignKey& foreignKey) {
-	stmt << table.tableName() << "_" << foreignKey.table << "_" << foreignKey.field;
 }
 
 std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys) {
@@ -471,11 +471,11 @@ std::string createCreateTableStatement(const Model& table, bool useForeignKeys) 
 	}
 
 	if (!table.uniqueKeys().empty()) {
-		bool firstUniqueKey = true;
 		for (const auto& uniqueKey : table.uniqueKeys()) {
 			stmt << ", CONSTRAINT ";
 			uniqueConstraintName(stmt, table, uniqueKey);
 			stmt << " UNIQUE(";
+			bool firstUniqueKey = true;
 			for (const std::string& fieldName : uniqueKey) {
 				if (!firstUniqueKey) {
 					stmt << ", ";
