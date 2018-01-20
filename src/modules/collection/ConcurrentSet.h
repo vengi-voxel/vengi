@@ -1,30 +1,26 @@
 #pragma once
 
 #include <cstdint>
-#include <set>
+#include <unordered_set>
 #include <condition_variable>
 #include <mutex>
 #include <atomic>
 #include <algorithm>
 
-namespace core {
+namespace collection {
 
-template<class Data, class Compare = std::less<Data> >
+template<class Data>
 class ConcurrentSet {
+public:
+	using underlying_type = std::unordered_set<Data>;
 private:
-	using Collection = std::set<Data, Compare>;
-	Collection _data;
+	underlying_type _data;
 	mutable std::mutex _mutex;
 	std::condition_variable _conditionVariable;
-	std::atomic_bool _abort { false };
 public:
-	~ConcurrentSet() {
-		abortWait();
-	}
-
-	void abortWait() {
-		_abort = true;
-		_conditionVariable.notify_all();
+	void swap(underlying_type& target) {
+		std::unique_lock<std::mutex> lock(_mutex);
+		std::swap(_data, target);
 	}
 
 	void clear() {
@@ -32,25 +28,25 @@ public:
 		_data.clear();
 	}
 
-	bool push(Data const& data) {
+	bool insert(Data const& data) {
 		std::unique_lock<std::mutex> lock(_mutex);
 		auto i = _data.insert(data);
 		lock.unlock();
 		_conditionVariable.notify_one();
-		return i->second;
+		return i.second;
+	}
+
+	bool insert(Data&& data) {
+		std::unique_lock<std::mutex> lock(_mutex);
+		auto i = _data.insert(data);
+		lock.unlock();
+		_conditionVariable.notify_one();
+		return i.second;
 	}
 
 	bool contains(Data const& data) const {
 		std::unique_lock<std::mutex> lock(_mutex);
 		return _data.find(data) != _data.end();
-	}
-
-	bool push(Data&& data) {
-		std::unique_lock<std::mutex> lock(_mutex);
-		auto i = _data.insert(data);
-		lock.unlock();
-		_conditionVariable.notify_one();
-		return i->second;
 	}
 
 	inline bool empty() const {
@@ -63,38 +59,12 @@ public:
 		return _data.size();
 	}
 
-	bool pop(Data& poppedValue) {
+	template<class VISITOR>
+	void visit(VISITOR&& visitor) const {
 		std::unique_lock<std::mutex> lock(_mutex);
-		if (_data.empty()) {
-			return false;
+		for (const Data& d : _data) {
+			visitor(d);
 		}
-
-		poppedValue = std::move(*_data.begin());
-		_data.erase(_data.begin());
-		return true;
-	}
-
-	bool waitAndPop(Data& poppedValue) {
-		std::unique_lock<std::mutex> lock(_mutex);
-		while (_data.empty()) {
-			_conditionVariable.wait(lock, [this] {
-				return _abort || !_data.empty();
-			});
-			if (_abort) {
-				_abort = false;
-				return false;
-			}
-		}
-
-		poppedValue = std::move(*_data.begin());
-		_data.erase(_data.begin());
-		return true;
-	}
-
-	template<class SORT>
-	void sort(SORT&& sort) {
-		std::unique_lock<std::mutex> lock(_mutex);
-		std::sort(_data.begin(), _data.end(), sort);
 	}
 };
 
