@@ -70,7 +70,7 @@ private:
 
 		inline int count() const {
 			int count = 0;
-			for (auto& node : _nodes) {
+			for (const QuadTreeNode& node : _nodes) {
 				count += node.count();
 			}
 			count += _contents.size();
@@ -86,7 +86,10 @@ private:
 		}
 
 		void getAllContents(Contents& results) const {
-			for (auto& node : _nodes) {
+			for (const QuadTreeNode& node : _nodes) {
+				if (node.isEmpty()) {
+					continue;
+				}
 				node.getAllContents(results);
 			}
 
@@ -98,11 +101,11 @@ private:
 			if (!getRect().contains(area)) {
 				return false;
 			}
-			for (auto& node : _nodes) {
-				if (!node.getRect().contains(area)) {
+			for (QuadTreeNode& node : _nodes) {
+				if (!node.remove(item)) {
 					continue;
 				}
-				return node.remove(item);
+				return true;
 			}
 
 			auto i = std::find(_contents.begin(), _contents.end(), item);
@@ -123,11 +126,10 @@ private:
 				createNodes();
 			}
 
-			for (auto& node : _nodes) {
-				if (!node.getRect().contains(area)) {
+			for (QuadTreeNode& node : _nodes) {
+				if (!node.insert(item)) {
 					continue;
 				}
-				node.insert(item);
 				return true;
 			}
 
@@ -140,14 +142,14 @@ private:
 		}
 
 		void query(const Rect<TYPE>& queryArea, Contents& results) const {
-			for (auto& item : _contents) {
+			for (const NODE& item : _contents) {
 				const Rect<TYPE>& area = rect(item);
 				if (queryArea.intersectsWith(area)) {
 					results.push_back(item);
 				}
 			}
 
-			for (auto& node : _nodes) {
+			for (const QuadTreeNode& node : _nodes) {
 				if (node.isEmpty()) {
 					continue;
 				}

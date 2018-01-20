@@ -103,6 +103,9 @@ public:
 
 		void getAllContents(Contents& results) const {
 			for (const typename Octree<NODE, TYPE>::OctreeNode& node : _nodes) {
+				if (node.isEmpty()) {
+					continue;
+				}
 				node.getAllContents(results);
 			}
 

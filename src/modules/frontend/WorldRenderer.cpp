@@ -266,7 +266,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	// doing one query per chunk is most likely a little bit overkill.
 	const bool occlusionQuery = _occlusionQuery->boolVal();
 
-	std::vector<ChunkBuffer*> contents;
+	Tree::Contents contents;
 	contents.reserve(_activeChunkBuffers);
 	_octree.query(camera.frustum(), contents);
 	_queryResults = contents.size();

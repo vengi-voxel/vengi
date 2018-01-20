@@ -4,8 +4,10 @@
 
 #include "core/tests/AbstractTest.h"
 #include "math/Octree.h"
+#include "math/AABB.h"
 #include "math/Frustum.h"
 #include "core/Log.h"
+#include "core/GLM.h"
 
 namespace math {
 
