@@ -267,7 +267,6 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	const bool occlusionQuery = _occlusionQuery->boolVal();
 
 	Tree::Contents contents;
-	contents.reserve(_activeChunkBuffers);
 	_octree.query(camera.frustum(), contents);
 	_queryResults = contents.size();
 

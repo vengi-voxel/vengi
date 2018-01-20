@@ -5,6 +5,7 @@
 #pragma once
 
 #include <vector>
+#include <list>
 #include <array>
 #include <algorithm>
 #include <unordered_map>
@@ -17,7 +18,7 @@ namespace math {
 template<class NODE, typename TYPE>
 class QuadTree {
 public:
-	typedef typename std::vector<NODE> Contents;
+	typedef std::list<NODE> Contents;
 private:
 	class QuadTreeNode {
 		friend class QuadTree;
@@ -93,7 +94,8 @@ private:
 				node.getAllContents(results);
 			}
 
-			results.insert(results.end(), _contents.begin(), _contents.end());
+			// faster for list - but slower for vector
+			std::copy(_contents.begin(), _contents.end(), std::back_inserter(results));
 		}
 
 		bool remove(const NODE& item) {
@@ -207,10 +209,8 @@ public:
 	}
 
 	void clear() {
-		auto size = _root._contents.size();
 		_dirty = true;
 		_root._contents.clear();
-		_root._contents.reserve(size);
 		_root._nodes.clear();
 		_root._nodes.reserve(4);
 	}

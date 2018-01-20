@@ -56,7 +56,6 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 	const math::RectFloat& rect = entity->viewRect();
 	// TODO: maybe move into the entity instance to reduce memory allocations.
 	math::QuadTree<QuadTreeNode, float>::Contents contents;
-	contents.reserve(entity->visibleCount() + 10);
 	_quadTreeCache.query(rect, contents);
 	EntitySet set;
 	set.reserve(contents.size());

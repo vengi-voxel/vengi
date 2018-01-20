@@ -5,6 +5,7 @@
 #pragma once
 
 #include <vector>
+#include <list>
 #include <array>
 #include <algorithm>
 #include <unordered_map>
@@ -23,7 +24,7 @@ extern math::AABB<int> computeAABB(const Frustum& area, const glm::vec3& minSize
 template<class NODE, typename TYPE = int>
 class Octree {
 public:
-	typedef typename std::vector<NODE> Contents;
+	typedef typename std::list<NODE> Contents;
 
 	class OctreeNode;
 	struct IOctreeListener {
@@ -109,7 +110,8 @@ public:
 				node.getAllContents(results);
 			}
 
-			results.insert(results.end(), _contents.begin(), _contents.end());
+			// faster for list - but slower for vector
+			std::copy(_contents.begin(), _contents.end(), std::back_inserter(results));
 		}
 
 		bool remove(const NODE& item) {
@@ -308,10 +310,8 @@ public:
 	}
 
 	void clear() {
-		const size_t size = _root._contents.size();
 		_dirty = true;
 		_root._contents.clear();
-		_root._contents.reserve(size);
 		_root._nodes.clear();
 		_root._nodes.reserve(4);
 	}
