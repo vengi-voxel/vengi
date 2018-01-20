@@ -21,6 +21,7 @@
 #include "backend/world/MapProvider.h"
 #include "backend/metric/MetricMgr.h"
 #include "persistence/DBHandler.h"
+#include "persistence/PersistenceMgr.h"
 #include "stock/StockDataProvider.h"
 #include "metric/UDPMetricSender.h"
 #include <cstdlib>
@@ -114,9 +115,10 @@ int main(int argc, char *argv[]) {
 	const metric::IMetricSenderPtr& metricSender = std::make_shared<metric::UDPMetricSender>();
 	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, registry, eventBus, filesystem);
 	const backend::MetricMgrPtr& metricMgr = std::make_shared<backend::MetricMgr>(metricSender, eventBus);
+	const persistence::PersistenceMgrPtr& persistenceMgr = std::make_shared<persistence::PersistenceMgr>(dbHandler);
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(timeProvider, mapProvider,
 			messageSender, world, dbHandler, network, filesystem, entityStorage, eventBus, containerProvider,
-			cooldownProvider, eventMgr, stockDataProvider, metricMgr);
+			cooldownProvider, eventMgr, stockDataProvider, metricMgr, persistenceMgr);
 
 	Server app(serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);

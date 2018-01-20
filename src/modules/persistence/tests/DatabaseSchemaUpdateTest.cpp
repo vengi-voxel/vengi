@@ -40,12 +40,13 @@ protected:
 		const db::DBConditionMetainfoModelSchemaname c1(model.schema());
 		const db::DBConditionMetainfoModelTablename c2(model.tableName());
 		const DBConditionMultiple condition(true, { &c1, &c2 });
-		_dbHandler.select(db::MetainfoModel(), condition, [&] (db::MetainfoModel&& model) {
-			schemaModels.emplace_back(std::move(model));
-		});
+		ASSERT_TRUE(_dbHandler.select(db::MetainfoModel(), condition, [&] (db::MetainfoModel&& model) {
+			schemaModels.emplace_back(model);
+		})) << "Failed to execute metainfo select query";
 		std::unordered_map<std::string, const db::MetainfoModel*> map;
 		map.reserve(schemaModels.size());
 		for (const auto& c : schemaModels) {
+			ASSERT_FALSE(c.columnname().empty()) << c.tablename() << " has an invalid entry for the column";
 			map.insert(std::make_pair(c.columnname(), &c));
 			const Field& f = model.getField(c.columnname());
 			ASSERT_FALSE(isDifferent(c, f)) << "Field " << f.name << " differs with db meta info";

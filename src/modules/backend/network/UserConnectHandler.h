@@ -14,12 +14,16 @@
 
 namespace backend {
 
+/**
+ * @see UserLogoutMgr
+ */
 class UserConnectHandler: public network::IProtocolHandler {
 private:
 	static constexpr auto logid = Log::logid("UserConnectHandler");
 	network::NetworkPtr _network;
 	MapProviderPtr _mapProvider;
 	persistence::DBHandlerPtr _dbHandler;
+	persistence::PersistenceMgrPtr _persistenceMgr;
 	backend::EntityStoragePtr _entityStorage;
 	network::ServerMessageSenderPtr _messageSender;
 	core::TimeProviderPtr _timeProvider;
@@ -36,6 +40,7 @@ public:
 			const network::NetworkPtr& network,
 			const MapProviderPtr& mapProvider,
 			const persistence::DBHandlerPtr& dbHandler,
+			const persistence::PersistenceMgrPtr& persistenceMgr,
 			const backend::EntityStoragePtr& entityStorage,
 			const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider,

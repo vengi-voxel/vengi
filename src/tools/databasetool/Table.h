@@ -24,6 +24,7 @@ struct Table {
 	persistence::ForeignKeys foreignKeys;
 	int primaryKeys = 0;
 	persistence::UniqueKeys uniqueKeys;
+	std::string autoIncrementField;
 	int autoIncrementStart = 1;
 };
 

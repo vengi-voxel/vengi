@@ -109,6 +109,8 @@ static void createMetaStruct(const Table& table, std::stringstream& src) {
 	src << "\t\tpersistence::Constraints _constraints;\n";
 	src << "\t\tpersistence::UniqueKeys _uniqueKeys;\n";
 	src << "\t\tpersistence::ForeignKeys _foreignKeys;\n";
+	src << "\t\tpersistence::PrimaryKeys _primaryKeys;\n";
+	src << "\t\tconst char* _autoIncrementField = nullptr;\n";
 	src << "\t\tMeta() {\n";
 
 	src << "\t\t\t_fields.reserve(" << table.fields.size() << ");\n";
@@ -142,6 +144,25 @@ static void createMetaStruct(const Table& table, std::stringstream& src) {
 		src << core::string::join(c.fields.begin(), c.fields.end(), "\",\"");
 		src << "\"}, " << c.types << "}));\n";
 	}
+	if (table.primaryKeys > 0) {
+		src << "\t\t\t_primaryKeys.reserve(" << table.primaryKeys << ");\n";
+		for (auto entry : table.constraints) {
+			const persistence::Constraint& c = entry.second;
+			if ((c.types & std::enum_value(persistence::ConstraintType::PRIMARYKEY)) == 0) {
+				continue;
+			}
+			for (const std::string& pkfield : c.fields) {
+				src << "\t\t\t_primaryKeys.emplace_back(\"" << pkfield << "\");\n";
+			}
+		}
+	}
+	for (auto entry : table.constraints) {
+		const persistence::Constraint& c = entry.second;
+		if ((c.types & std::enum_value(persistence::ConstraintType::AUTOINCREMENT)) == 0) {
+			continue;
+		}
+		src << "\t\t\t_autoIncrementField = \"" << c.fields.front() << "\";\n";
+	}
 	if (!table.uniqueKeys.empty()) {
 		src << "\t\t\t_uniqueKeys.reserve(" << table.uniqueKeys.size() << ");\n";
 	}
@@ -166,22 +187,26 @@ static void createMetaStruct(const Table& table, std::stringstream& src) {
 
 void createConstructor(const Table& table, std::stringstream& src) {
 	src << "\t" << table.classname << "(";
-	src << ") : Super(\"" << table.schema << "\", \"" << table.name << "\", &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
+	src << ") : Super(\"" << table.schema << "\", \"" << table.name << "\", &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys, &meta()._primaryKeys) {\n";
 	src << "\t\t_membersPointer = (uint8_t*)&" << MembersStruct::varName() << ";\n";
-
-	src << "\t\t_primaryKeys = " << table.primaryKeys << ";\n";
+	src << "\t\t_primaryKeyFields = " << table.primaryKeys << ";\n";
+	src << "\t\t_autoIncrementField = meta()._autoIncrementField;\n";
 	src << "\t\t_autoIncrementStart = " << table.autoIncrementStart << ";\n";
 	src << "\t}\n\n";
 
-	src << "\t" << table.classname << "(" << table.classname << "&& source) : Super(std::move(source._schema), std::move(source._tableName), &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
-	src << "\t\t_primaryKeys = source._primaryKeys;\n";
+	src << "\t" << table.classname << "(" << table.classname << "&& source) : Super(std::move(source._schema), std::move(source._tableName), &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys, &meta()._primaryKeys) {\n";
 	src << "\t\t_m = std::move(source._m);\n";
 	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
+	src << "\t\t_primaryKeyFields = " << table.primaryKeys << ";\n";
+	src << "\t\t_autoIncrementField = meta()._autoIncrementField;\n";
+	src << "\t\t_autoIncrementStart = " << table.autoIncrementStart << ";\n";
 	src << "\t}\n\n";
-	src << "\t" << table.classname << "(const " << table.classname << "& source) : Super(source._schema, source._tableName, &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys) {\n";
-	src << "\t\t_primaryKeys = source._primaryKeys;\n";
+	src << "\t" << table.classname << "(const " << table.classname << "& source) : Super(source._schema, source._tableName, &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys, &meta()._primaryKeys) {\n";
 	src << "\t\t_m = source._m;\n";
 	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
+	src << "\t\t_primaryKeyFields = " << table.primaryKeys << ";\n";
+	src << "\t\t_autoIncrementField = meta()._autoIncrementField;\n";
+	src << "\t\t_autoIncrementStart = " << table.autoIncrementStart << ";\n";
 	src << "\t}\n\n";
 
 	src << "\t" << table.classname << "& operator=(" << table.classname << "&& source) {\n";

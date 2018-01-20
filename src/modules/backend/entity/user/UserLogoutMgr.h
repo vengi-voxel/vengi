@@ -10,6 +10,9 @@ namespace backend {
 
 class UserCooldownMgr;
 
+/**
+ * @see UserConnectHandler
+ */
 class UserLogoutMgr {
 private:
 	UserCooldownMgr& _cooldownMgr;

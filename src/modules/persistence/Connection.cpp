@@ -86,11 +86,16 @@ bool Connection::connect() {
 		port = std::to_string(_port);
 	}
 
+#if 0
+	const char *pw = PQencryptPassword(password, user);
+	// TODO: do I have to free the result?
+#endif
+	PQinitSSL(1);
 	_connection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), nullptr, dbname, user, password);
 #else
 	_connection = nullptr;
 #endif
-	Log::debug("Connect %p", _connection);
+	Log::debug("Database connection %p", _connection);
 	if (!status()) {
 #ifdef HAVE_POSTGRES
 		Log::error("Connection to database failed: '%s'", PQerrorMessage(_connection));
@@ -102,6 +107,9 @@ bool Connection::connect() {
 	_preparedStatements.clear();
 
 #ifdef HAVE_POSTGRES
+	if (!PQsslInUse(_connection)) {
+		Log::warn("SSL connection to the database failed");
+	}
 	PQsetNoticeProcessor(_connection, defaultNoticeProcessor, nullptr);
 	PQexec(_connection, "SET TIME ZONE 'UTC';CREATE EXTENSION pgcrypto;");
 #endif
@@ -112,6 +120,7 @@ void Connection::disconnect() {
 	if (_connection != nullptr) {
 		Log::debug("Disconnect %p", _connection);
 #ifdef HAVE_POSTGRES
+		PQflush(_connection);
 		PQfinish(_connection);
 #endif
 		_connection = nullptr;

@@ -24,11 +24,13 @@
 #include "backend/network/UserDisconnectHandler.h"
 #include "backend/network/AttackHandler.h"
 #include "backend/network/MoveHandler.h"
+#include "persistence/PersistenceMgr.h"
 #include "backend/world/World.h"
 #include "core/command/CommandHandler.h"
 #include "voxel/MaterialColor.h"
 #include "eventmgr/EventMgr.h"
 #include "stock/StockDataProvider.h"
+
 namespace backend {
 
 ServerLoop::ServerLoop(const core::TimeProviderPtr& timeProvider, const MapProviderPtr& mapProvider,
@@ -38,12 +40,14 @@ ServerLoop::ServerLoop(const core::TimeProviderPtr& timeProvider, const MapProvi
 		const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr,
-		const stock::StockProviderPtr& stockDataProvider, const MetricMgrPtr& metricMgr) :
+		const stock::StockProviderPtr& stockDataProvider, const MetricMgrPtr& metricMgr,
+		const persistence::PersistenceMgrPtr& persistenceMgr) :
 		_network(network), _timeProvider(timeProvider), _mapProvider(mapProvider), _messageSender(messageSender),
 		_world(world),
 		_entityStorage(entityStorage), _eventBus(eventBus), _attribContainerProvider(containerProvider),
 		_cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler),
-		_stockDataProvider(stockDataProvider), _metricMgr(metricMgr), _filesystem(filesystem) {
+		_stockDataProvider(stockDataProvider), _metricMgr(metricMgr), _filesystem(filesystem),
+		_persistenceMgr(persistenceMgr) {
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
 }
 
@@ -162,10 +166,15 @@ bool ServerLoop::init() {
 		return false;
 	}
 
+	if (!_persistenceMgr->init()) {
+		Log::error("Failed to init the persistence manager");
+		return false;
+	}
+
 	const network::ProtocolHandlerRegistryPtr& r = _network->registry();
 	regHandler(network::ClientMsgType::UserConnect, UserConnectHandler,
-			_network, _mapProvider, _dbHandler, _entityStorage, _messageSender, _timeProvider,
-			_attribContainerProvider, _cooldownProvider, _stockDataProvider);
+			_network, _mapProvider, _dbHandler, _persistenceMgr, _entityStorage, _messageSender,
+			_timeProvider, _attribContainerProvider, _cooldownProvider, _stockDataProvider);
 	regHandler(network::ClientMsgType::UserConnected, UserConnectedHandler);
 	regHandler(network::ClientMsgType::UserDisconnect, UserDisconnectHandler);
 	regHandler(network::ClientMsgType::Attack, AttackHandler);
@@ -185,6 +194,15 @@ bool ServerLoop::init() {
 		const ServerLoop* loop = (const ServerLoop*)handle->data;
 		loop->_world->update(handle->repeat);
 	}, 1000);
+
+	addTimer(&_persistenceMgrTimer, [] (uv_timer_t* handle) {
+		const ServerLoop* loop = (const ServerLoop*)handle->data;
+		const long dt = handle->repeat;
+		const persistence::PersistenceMgrPtr& persistenceMgr = loop->_persistenceMgr;
+		core::App::getInstance()->threadPool().enqueue([=] () {
+			persistenceMgr->update(dt);
+		});
+	}, 10000);
 
 	_idleTimer.data = this;
 	if (uv_idle_init(_loop, &_idleTimer) != 0) {
@@ -222,12 +240,14 @@ bool ServerLoop::init() {
 
 void ServerLoop::shutdown() {
 	uv_signal_stop(&_signal);
+	_persistenceMgr->shutdown();
 	_world->shutdown();
 	_dbHandler->shutdown();
 	_metricMgr->shutdown();
 	_input.shutdown();
 	_network->shutdown();
 	uv_timer_stop(&_worldTimer);
+	uv_timer_stop(&_persistenceMgrTimer);
 	uv_idle_stop(&_idleTimer);
 	uv_tty_reset_mode();
 	if (_loop != nullptr) {

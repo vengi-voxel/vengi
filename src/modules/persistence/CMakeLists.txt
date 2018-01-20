@@ -11,6 +11,10 @@ set(SRCS
 	Model.cpp Model.h
 	Order.h
 	OrderBy.h
+	ISavable.h
+	LongCounter.h
+	MassQuery.cpp MassQuery.h
+	PersistenceMgr.cpp PersistenceMgr.h
 	ScopedConnection.cpp ScopedConnection.h
 	ScopedTransaction.cpp ScopedTransaction.h
 	SQLGenerator.cpp SQLGenerator.h

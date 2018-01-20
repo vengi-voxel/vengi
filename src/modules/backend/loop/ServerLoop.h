@@ -41,9 +41,11 @@ private:
 	core::Input _input;
 	MetricMgrPtr _metricMgr;
 	io::FilesystemPtr _filesystem;
+	persistence::PersistenceMgrPtr _persistenceMgr;
 
 	uv_loop_t *_loop = nullptr;
 	uv_timer_t _worldTimer;
+	uv_timer_t _persistenceMgrTimer;
 	uv_idle_t _idleTimer;
 	uv_signal_t _signal;
 
@@ -63,7 +65,7 @@ public:
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider,
 			const eventmgr::EventMgrPtr& eventMgr, const stock::StockProviderPtr& stockDataProvider,
-			const MetricMgrPtr& metricMgr);
+			const MetricMgrPtr& metricMgr, const persistence::PersistenceMgrPtr& persistenceMgr);
 
 	void construct();
 	bool init();

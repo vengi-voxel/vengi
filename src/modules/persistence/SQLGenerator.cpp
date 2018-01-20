@@ -463,7 +463,7 @@ std::string createCreateTableStatement(const Model& table, bool useForeignKeys) 
 		if (!dbType.empty()) {
 			stmt << " " << dbType;
 		}
-		const std::string& flags = getDbFlags(table.tableName(), table.primaryKeys(), table.constraints(), f);
+		const std::string& flags = getDbFlags(table.tableName(), table.primaryKeyFields(), table.constraints(), f);
 		if (!flags.empty()) {
 			stmt << " " << flags;
 		}
@@ -487,7 +487,7 @@ std::string createCreateTableStatement(const Model& table, bool useForeignKeys) 
 		}
 	}
 
-	if (table.primaryKeys() > 1) {
+	if (table.primaryKeyFields() > 1) {
 		stmt << ", PRIMARY KEY(";
 		bool firstPrimaryKey = true;
 		for (const auto& f : table.fields()) {
@@ -548,7 +548,7 @@ std::string createDropTableStatement(const Model& model) {
 	return stmt.str();
 }
 
-static void createWhereStatementsForKeys(std::stringstream& stmt, int index, const Model& model, BindParam* params) {
+static void createWhereStatementsForKeys(std::stringstream& stmt, int& index, const Model& model, BindParam* params) {
 	int where = 0;
 	const Fields& fields = model.fields();
 	for (auto i = fields.begin(); i != fields.end(); ++i) {
@@ -580,14 +580,14 @@ static void createWhereStatementsForKeys(std::stringstream& stmt, int index, con
 	}
 }
 
-std::string createUpdateStatement(const Model& table, BindParam* params) {
-	const Fields& fields = table.fields();
+std::string createUpdateStatement(const Model& table, BindParam* params, int* parameterCount) {
 	std::stringstream stmt;
 	stmt << "UPDATE ";
 	createTableIdentifier(stmt, table);
 	stmt << " SET ";
 	int updateFields = 0;
 	int index = 1;
+	const Fields& fields = table.fields();
 	for (auto i = fields.begin(); i != fields.end(); ++i) {
 		const Field& f = *i;
 		if (!table.isValid(f)) {
@@ -611,6 +611,10 @@ std::string createUpdateStatement(const Model& table, BindParam* params) {
 
 	createWhereStatementsForKeys(stmt, index, table, params);
 
+	if (parameterCount != nullptr) {
+		*parameterCount = index - 1;
+	}
+
 	return stmt.str();
 }
 
@@ -618,49 +622,98 @@ std::string createDeleteStatement(const Model& table, BindParam* params) {
 	std::stringstream stmt;
 	stmt << "DELETE FROM ";
 	createTableIdentifier(stmt, table);
-	createWhereStatementsForKeys(stmt, 1, table, params);
+	int index = 1;
+	createWhereStatementsForKeys(stmt, index, table, params);
 	return stmt.str();
 }
 
-std::string createInsertStatement(const Model& table, BindParam* params) {
+std::string createInsertBaseStatement(const Model& table, bool& primaryKeyIncluded) {
 	std::stringstream stmt;
-	std::stringstream values;
-	std::string autoincrement;
-	std::string primaryKey;
 	stmt << "INSERT INTO ";
 	createTableIdentifier(stmt, table);
 	stmt << " (";
-	int insertValueIndex = 1;
 	int inserted = 0;
 	for (const persistence::Field& f : table.fields()) {
-		if (f.isAutoincrement()) {
-			autoincrement = f.name;
-		}
 		if (!table.isValid(f)) {
 			continue;
 		}
-		if (f.isPrimaryKey()) {
-			primaryKey = f.name;
-		}
 		if (inserted > 0) {
-			values << ", ";
 			stmt << ", ";
+		}
+		if (f.isPrimaryKey()) {
+			primaryKeyIncluded = true;
 		}
 		stmt << "\"" << f.name << "\"";
 		++inserted;
-		if (placeholder(table, f, values, insertValueIndex, false)) {
+	}
+
+	stmt << ")";
+
+	return stmt.str();
+}
+
+std::string createInsertValuesStatement(const Model& table, BindParam* params, int& insertValueIndex) {
+	std::stringstream stmt;
+	stmt << "(";
+	int inserted = 0;
+	for (const persistence::Field& f : table.fields()) {
+		if (!table.isValid(f)) {
+			continue;
+		}
+		if (inserted > 0) {
+			stmt << ", ";
+		}
+		++inserted;
+		if (placeholder(table, f, stmt, insertValueIndex, false)) {
 			++insertValueIndex;
 			if (params != nullptr) {
 				params->push(table, f);
 			}
 		}
 	}
+	stmt << ")";
+	return stmt.str();
+}
 
-	stmt << ") VALUES (" << values.str() << ")";
-	if (table.primaryKeys() == 1 && !primaryKey.empty()) {
-		stmt << " ON CONFLICT (\"" << primaryKey;
-		stmt << "\") DO UPDATE SET ";
-		int fieldIndex = 0;
+void createUpsertStatement(const Model& table, std::stringstream& stmt, bool primaryKeyIncluded, int insertValueIndex) {
+	if (primaryKeyIncluded && !table.primaryKeys().empty()) {
+		stmt << " ON CONFLICT (";
+		auto i = table.primaryKeys().begin();
+		stmt << "\"" << *i << "\"";
+		for (++i; i != table.primaryKeys().end(); ++i) {
+			stmt << ", \"" << *i << "\"";
+		}
+		stmt << ") DO ";
+		if (insertValueIndex <= (int)table.primaryKeys().size()) {
+			stmt << "NOTHING";
+		} else {
+			stmt << "UPDATE SET ";
+			int fieldIndex = 0;
+			for (const persistence::Field& f : table.fields()) {
+				if (!table.isValid(f)) {
+					continue;
+				}
+				if (f.isPrimaryKey() || f.isAutoincrement()) {
+					continue;
+				}
+				if (fieldIndex > 0) {
+					stmt << ", ";
+				}
+				stmt << "\"" << f.name << "\" = ";
+				if (f.updateOperator != Operator::SET) {
+					stmt << "\"" << table.schema() << "\".\"" << table.tableName() << "\".\"" << f.name << "\"";
+					stmt << OperatorStrings[(int)f.updateOperator];
+				}
+				stmt << "EXCLUDED.\"" << f.name << "\"";
+				++fieldIndex;
+			}
+		}
+		// right now the on conflict syntax doesn't permit to repeat the clause.
+		// https://www.postgresql.org/docs/current/static/sql-insert.html
+		return;
+	}
+	const UniqueKeys uniqueKeys = table.uniqueKeys();
+	for (const auto& set : uniqueKeys) {
 		for (const persistence::Field& f : table.fields()) {
 			if (!table.isValid(f)) {
 				continue;
@@ -668,60 +721,78 @@ std::string createInsertStatement(const Model& table, BindParam* params) {
 			if (f.isPrimaryKey() || f.isAutoincrement()) {
 				continue;
 			}
-			if (fieldIndex > 0) {
-				stmt << ", ";
-			}
-			stmt << "\"" << f.name << "\" = ";
-			if (f.updateOperator != Operator::SET) {
-				stmt << "\"" << table.schema() << "\".\"" << table.tableName() << "\".\"" << f.name << "\"";
-				stmt << OperatorStrings[(int)f.updateOperator];
-			}
-			if (placeholder(table, f, stmt, insertValueIndex, false)) {
-				++insertValueIndex;
-				if (params != nullptr) {
-					params->push(table, f);
-				}
-			}
-			++fieldIndex;
-		}
-	}
-	const UniqueKeys uniqueKeys = table.uniqueKeys();
-	for (const auto& set : uniqueKeys) {
-		stmt << " ON CONFLICT (";
-		stmt << core::string::join(set.begin(), set.end(), ", ", [] (const std::string& fieldName) {
-			return core::string::format("\"%s\"", fieldName.c_str());
-		});
-		stmt << ") DO UPDATE SET ";
-		int fieldIndex = 0;
-		for (const persistence::Field& f : table.fields()) {
-			if (f.isPrimaryKey() || f.isAutoincrement()) {
+			if (set.find(f.name) == set.end()) {
 				continue;
 			}
-			if (set.find(f.name) != set.end()) {
-				continue;
-			}
-			if (fieldIndex > 0) {
-				stmt << ", ";
-			}
-			stmt << "\"" << f.name << "\" = ";
-			if (f.updateOperator != Operator::SET) {
-				stmt << "\"" << table.schema() << "\".\"" << table.tableName() << "\".\"" << f.name << "\"";
-				stmt << OperatorStrings[(int)f.updateOperator];
-			}
-			if (placeholder(table, f, stmt, insertValueIndex, false)) {
-				++insertValueIndex;
-				if (params != nullptr) {
-					params->push(table, f);
+			stmt << " ON CONFLICT ON CONSTRAINT \"";
+			uniqueConstraintName(stmt, table, set);
+			stmt << "\" DO ";
+			if (insertValueIndex == 1) {
+				stmt << "NOTHING";
+			} else {
+				stmt << "UPDATE SET ";
+				int fieldIndex = 0;
+				for (const persistence::Field& f : table.fields()) {
+					if (!table.isValid(f)) {
+						continue;
+					}
+					if (f.isPrimaryKey() || f.isAutoincrement()) {
+						continue;
+					}
+					if (set.find(f.name) != set.end()) {
+						continue;
+					}
+					if (fieldIndex > 0) {
+						stmt << ", ";
+					}
+					stmt << "\"" << f.name << "\" = ";
+					if (f.updateOperator != Operator::SET) {
+						stmt << "\"" << table.schema() << "\".\"" << table.tableName() << "\".\"" << f.name << "\"";
+						stmt << OperatorStrings[(int)f.updateOperator];
+					}
+					stmt << "EXCLUDED.\"" << f.name << "\"";
+					++fieldIndex;
 				}
 			}
-			++fieldIndex;
+			// right now the on conflict syntax doesn't permit to repeat the clause.
+			// https://www.postgresql.org/docs/current/static/sql-insert.html
+			return;
 		}
 	}
-	if (!autoincrement.empty()) {
-		stmt << " RETURNING \"" << autoincrement << "\"";
+}
+
+std::string createInsertStatement(const std::vector<const Model*>& tables, BindParam* params, int* parameterCount) {
+	const Model& table = *tables.front();
+
+	bool primaryKeyIncluded = false;
+	std::stringstream stmt;
+	stmt << createInsertBaseStatement(table, primaryKeyIncluded);
+	stmt << " VALUES ";
+	int insertValueIndex = 1;
+
+	auto tableIter = tables.begin();
+	stmt << createInsertValuesStatement(**tableIter, params, insertValueIndex);
+	for (++tableIter; tableIter != tables.end(); ++tableIter) {
+		stmt << "," << createInsertValuesStatement(**tableIter, params, insertValueIndex);
+	}
+
+	createUpsertStatement(table, stmt, primaryKeyIncluded, insertValueIndex - 1);
+
+	const char* autoIncField = table.autoIncrementField();
+	if (autoIncField != nullptr) {
+		stmt << " RETURNING \"" << autoIncField << "\"";
 	}
 	stmt << ";";
+
+	if (parameterCount != nullptr) {
+		*parameterCount = insertValueIndex - 1;
+	}
+
 	return stmt.str();
+}
+
+std::string createInsertStatement(const Model& table, BindParam* params, int* parameterCount) {
+	return createInsertStatement({&table}, params, parameterCount);
 }
 
 // https://www.postgresql.org/docs/current/static/functions-formatting.html
@@ -753,7 +824,8 @@ std::string createSelect(const Model& table, BindParam* params) {
 	core_assert_always(select > 0);
 	stmt << " FROM ";
 	createTableIdentifier(stmt, table);
-	createWhereStatementsForKeys(stmt, 1, table, params);
+	int index = 1;
+	createWhereStatementsForKeys(stmt, index, table, params);
 	return stmt.str();
 }
 

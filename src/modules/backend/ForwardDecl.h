@@ -128,4 +128,7 @@ namespace persistence {
 class DBHandler;
 typedef std::shared_ptr<DBHandler> DBHandlerPtr;
 
+class PersistenceMgr;
+typedef std::shared_ptr<PersistenceMgr> PersistenceMgrPtr;
+
 }

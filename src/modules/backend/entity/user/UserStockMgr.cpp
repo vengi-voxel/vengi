@@ -7,6 +7,7 @@
 #include "persistence/DBHandler.h"
 #include "stock/StockDataProvider.h"
 #include "backend/entity/User.h"
+#include "core/Log.h"
 
 namespace backend {
 

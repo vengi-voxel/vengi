@@ -36,21 +36,23 @@ typedef Fields* FieldsPtr;
 class Model {
 protected:
 	friend class DBHandler;
-	friend class PreparedStatement;
+	friend class MassQuery;
 	std::string _schema;
 	std::string _tableName;
-	int _primaryKeys = 0;
+	int _primaryKeyFields = 0;
+	const char* _autoIncrementField = nullptr;
 	long _autoIncrementStart = 1l;
 	uint8_t* _membersPointer;
 	const FieldsPtr _fields;
 	const ConstraintsPtr _constraints;
 	const UniqueKeysPtr _uniqueKeys;
 	const ForeignKeysPtr _foreignKeys;
+	const PrimaryKeysPtr _primaryKeys;
 
 	bool fillModelValues(State& state);
 public:
 	Model(const std::string& schema, const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
-			const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys);
+			const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys, const PrimaryKeysPtr primaryKeys);
 	virtual ~Model();
 
 	const std::string& tableName() const;
@@ -71,7 +73,12 @@ public:
 	const Constraints& constraints() const;
 
 	/**
-	 * @return Collection of all unique keys. Defines by the set of names of the participating @c Field instances
+	 * @return Collection of all primary key fields.
+	 */
+	const PrimaryKeys& primaryKeys() const;
+
+	/**
+	 * @return Collection of all unique keys. Defined by the set of names of the participating @c Field instances
 	 */
 	const UniqueKeys& uniqueKeys() const;
 
@@ -80,15 +87,17 @@ public:
 	 */
 	const ForeignKeys& foreignKeys() const;
 
+	const char* autoIncrementField() const;
+
 	/**
 	 * @return The value to start the model auto increment sequence with. This is 1 by default if not specified otherwise.
 	 */
 	long autoIncrementStart() const;
 
 	/**
-	 * @return The number of primary keys that this model contains
+	 * @return The number of primary key fields that this model contains
 	 */
-	int primaryKeys() const;
+	int primaryKeyFields() const;
 
 	/**
 	 * @return @c true if the field was set to a valid value (which might also be null)
@@ -175,12 +184,20 @@ inline const UniqueKeys& Model::uniqueKeys() const {
 	return *_uniqueKeys;
 }
 
+inline const PrimaryKeys& Model::primaryKeys() const {
+	return *_primaryKeys;
+}
+
 inline const ForeignKeys& Model::foreignKeys() const {
 	return *_foreignKeys;
 }
 
-inline int Model::primaryKeys() const {
-	return _primaryKeys;
+inline int Model::primaryKeyFields() const {
+	return _primaryKeyFields;
+}
+
+inline const char* Model::autoIncrementField() const {
+	return _autoIncrementField;
 }
 
 inline long Model::autoIncrementStart() const {

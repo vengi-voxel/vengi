@@ -20,9 +20,9 @@
 namespace persistence {
 
 Model::Model(const std::string& schema, const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
-		const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys) :
+		const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys, const PrimaryKeysPtr primaryKeys) :
 		_schema(schema), _tableName(tableName), _fields(fields), _constraints(constraints),
-		_uniqueKeys(uniqueKeys), _foreignKeys(foreignKeys) {
+		_uniqueKeys(uniqueKeys), _foreignKeys(foreignKeys), _primaryKeys(primaryKeys) {
 	_membersPointer = (uint8_t*)this;
 }
 
@@ -30,19 +30,23 @@ Model::~Model() {
 }
 
 const Field& Model::getField(const std::string& name) const {
-	for (auto i = _fields->begin(); i != _fields->end(); ++i) {
-		const Field& field = *i;
-		if (field.name == name) {
-			return field;
+	if (!name.empty()) {
+		for (auto i = _fields->begin(); i != _fields->end(); ++i) {
+			const Field& field = *i;
+			if (field.name == name) {
+				return field;
+			}
 		}
 	}
+	// might e.g. happen in table update steps
+	Log::debug("Failed to lookup field '%s' in table '%s'", name.c_str(), _tableName.c_str());
 	static const Field emptyField;
 	return emptyField;
 }
 
 bool Model::fillModelValues(State& state) {
 #ifdef HAVE_POSTGRES
-	const int cols = PQnfields(state.res);
+	const int cols = state.cols;
 	Log::debug("Query has values for %i cols", cols);
 	for (int i = 0; i < cols; ++i) {
 		const char* name = PQfname(state.res, i);
@@ -99,6 +103,7 @@ bool Model::fillModelValues(State& state) {
 		}
 		setIsNull(f, isNull);
 	}
+	++state.currentRow;
 	return true;
 #else
 	return false;

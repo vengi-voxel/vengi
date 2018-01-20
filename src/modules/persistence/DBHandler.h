@@ -11,6 +11,7 @@
 
 #include "PersistenceModels.h"
 #include "Model.h"
+#include "MassQuery.h"
 #include "core/String.h"
 #include "core/Log.h"
 #include "core/Common.h"
@@ -32,9 +33,11 @@ namespace persistence {
  */
 class DBHandler {
 private:
+	friend class MassQuery;
 	static constexpr auto logid = Log::logid("DBHandler");
 	State execInternal(const std::string& query) const;
 	State execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const;
+	State massExecInternalWithParameters(const std::string& query, const BindParam& param) const;
 
 	Connection* connection() const;
 
@@ -67,10 +70,10 @@ private:
 			return false;
 		}
 		for (int i = 0; i < s.affectedRows; ++i) {
+			s.currentRow = i;
 			typename std::remove_reference<MODEL>::type selectedModel;
 			selectedModel.fillModelValues(s);
 			func(std::move(selectedModel));
-			++s.currentRow;
 		}
 		Log::debug(logid, "Affected rows %i", s.affectedRows);
 		return true;
@@ -219,15 +222,16 @@ public:
 	 */
 	bool insert(Model& model) const;
 
+	bool insert(std::vector<const Model*>& models) const;
+
 	template<class MODEL>
 	bool insert(std::vector<MODEL>& models) const {
-		// TODO: prepared statement
-		for (auto& m : models) {
-			if (!insert(m)) {
-				return false;
-			}
+		std::vector<const Model*> converted(models.size());
+		const int size = models.size();
+		for (int i = 0; i < size; ++i) {
+			converted[i] = &models[i];
 		}
-		return true;
+		return insert(converted);
 	}
 
 	template<class MODEL>
@@ -243,24 +247,26 @@ public:
 
 	/**
 	 * @brief Truncate the table for the given @c persistence::Model
-	 * @param[in] model The model that the table is to be truncated for
+	 * @param[in] model The model that identifies the table that should be truncated
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
 	bool truncate(const Model& model) const;
 
 	/**
 	 * @brief Truncate the table for the given @c persistence::Model
-	 * @param[in] model The model that the table is to be truncated for
+	 * @param[in] model The model that identifies the table that should be truncated
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
 	bool truncate(Model&& model) const;
+
+	MassQuery massQuery() const;
 
 	bool dropTable(const Model& model) const;
 	bool dropTable(Model&& model) const;
 
 	/**
 	 * @brief Create the table for the given @c persistence::Model
-	 * @param[in] model The model that the table is to be created for
+	 * @param[in] model The model that identifies the table that should be created
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
 	bool createTable(Model&& model) const;

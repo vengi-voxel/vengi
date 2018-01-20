@@ -50,10 +50,11 @@ bool State::exec(const char *statement, int parameterCount, const char *const *p
 }
 
 bool State::prepare(const char *name, const char* statement, int parameterCount) {
+	ConnectionType* c = _connection->connection();
 #ifdef HAVE_POSTGRES
-	res = PQprepare(_connection->connection(), name, statement, parameterCount, nullptr);
+	res = PQprepare(c, name, statement, parameterCount, nullptr);
 #endif
-	checkLastResult(_connection->connection());
+	checkLastResult(c);
 	if (!result) {
 		return false;
 	}
@@ -64,10 +65,11 @@ bool State::prepare(const char *name, const char* statement, int parameterCount)
 }
 
 bool State::execPrepared(const char *name, int parameterCount, const char *const *paramValues) {
+	ConnectionType* c = _connection->connection();
 #ifdef HAVE_POSTGRES
-	res = PQexecPrepared(_connection->connection(), name, parameterCount, paramValues, nullptr, nullptr, 0);
+	res = PQexecPrepared(c, name, parameterCount, paramValues, nullptr, nullptr, 0);
 #endif
-	checkLastResult(_connection->connection());
+	checkLastResult(c);
 	return result;
 }
 
@@ -100,6 +102,7 @@ void State::checkLastResult(ConnectionType* connection) {
 	case PGRES_COMMAND_OK:
 	case PGRES_TUPLES_OK:
 		affectedRows = PQntuples(res);
+		cols = PQnfields(res);
 		currentRow = 0;
 		result = true;
 		Log::debug("Affected rows %i", affectedRows);

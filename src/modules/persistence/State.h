@@ -30,6 +30,7 @@ public:
 
 	char* lastErrorMsg = nullptr;
 	int affectedRows = -1;
+	int cols = -1;
 	int currentRow = -1;
 	// false on error, true on success
 	bool result = false;

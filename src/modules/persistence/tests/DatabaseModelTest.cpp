@@ -35,15 +35,37 @@ public:
 		_dbHandler.shutdown();
 	}
 
-	void createModel(const std::string& email, const std::string& password, int64_t& id) {
-		ASSERT_TRUE(_supported);
-		const persistence::Timestamp ts = persistence::Timestamp::now();
+	db::TestModel m(const std::string& email, const std::string& password) const {
 		db::TestModel mdl;
-		EXPECT_EQ(0, mdl.id());
 		mdl.setName(email);
 		mdl.setEmail(email);
 		mdl.setPassword(password);
-		mdl.setRegistrationdate(ts);
+		mdl.setRegistrationdate(persistence::Timestamp::now());
+		return mdl;
+	}
+
+	void massInsert(int amount) {
+		if (!_supported) {
+			return;
+		}
+		std::vector<db::TestModel> models(amount);
+		std::vector<const Model*> modelPtrs(amount);
+		for (int i = 0; i < amount; ++i) {
+			models[i] = m(core::string::format("mail%i", i), "secret");
+			modelPtrs[i] = &models[i];
+		}
+		EXPECT_TRUE(_dbHandler.insert(modelPtrs));
+		int count = 0;
+		_dbHandler.select(db::TestModel(), persistence::DBConditionOne(), [&] (db::TestModel&& model) {
+			++count;
+		});
+		EXPECT_EQ(count, amount);
+	}
+
+	void createModel(const std::string& email, const std::string& password, int64_t& id) {
+		ASSERT_TRUE(_supported);
+		db::TestModel mdl = m(email, password);
+		EXPECT_EQ(0, mdl.id());
 		ASSERT_TRUE(_dbHandler.insert(mdl));
 		EXPECT_NE(0, mdl.id());
 
@@ -161,6 +183,40 @@ TEST_F(DatabaseModelTest, testDelete) {
 		++count;
 	});
 	EXPECT_EQ(count, 0);
+}
+
+TEST_F(DatabaseModelTest, testMultipleInsert) {
+	if (!_supported) {
+		return;
+	}
+	db::TestModel m1 = m("mail1", "password1");
+	db::TestModel m2 = m("mail2", "password2");
+	db::TestModel m3 = m("mail3", "password3");
+	std::vector<const Model*> models{&m1, &m2, &m3};
+	EXPECT_TRUE(_dbHandler.insert(models));
+	int count = 0;
+	_dbHandler.select(db::TestModel(), persistence::DBConditionOne(), [&] (db::TestModel&& model) {
+		++count;
+	});
+	EXPECT_EQ(count, 3);
+	count = 0;
+	std::string email3;
+	EXPECT_TRUE(_dbHandler.select(db::TestModel(), db::DBConditionTestModelEmail("mail3"), [&] (db::TestModel&& model) {
+		++count;
+	}));
+	EXPECT_EQ(count, 1);
+}
+
+TEST_F(DatabaseModelTest, test1000Insert) {
+	massInsert(1000);
+}
+
+TEST_F(DatabaseModelTest, test100Insert) {
+	massInsert(100);
+}
+
+TEST_F(DatabaseModelTest, test10Insert) {
+	massInsert(10);
 }
 
 TEST_F(DatabaseModelTest, testUpdate) {

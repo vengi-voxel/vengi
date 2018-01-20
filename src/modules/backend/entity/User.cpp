@@ -17,6 +17,7 @@ User::User(ENetPeer* peer, EntityId id,
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
 		const persistence::DBHandlerPtr& dbHandler,
+		const persistence::PersistenceMgrPtr& persistenceMgr,
 		const stock::StockProviderPtr& stockDataProvider) :
 		Super(id, map, messageSender, timeProvider, containerProvider),
 		_name(name),
@@ -25,7 +26,7 @@ User::User(ENetPeer* peer, EntityId id,
 		_cooldownProvider(cooldownProvider),
 		_stockMgr(this, stockDataProvider, dbHandler),
 		_cooldownMgr(this, timeProvider, cooldownProvider, dbHandler),
-		_attribMgr(id, _attribs, dbHandler),
+		_attribMgr(id, _attribs, dbHandler, persistenceMgr),
 		_logoutMgr(_cooldownMgr),
 		_movementMgr(this) {
 	setPeer(peer);

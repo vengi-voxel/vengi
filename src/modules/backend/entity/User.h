@@ -42,6 +42,7 @@ public:
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider,
 			const persistence::DBHandlerPtr& dbHandler,
+			const persistence::PersistenceMgrPtr& persistenceMgr,
 			const stock::StockProviderPtr& stockDataProvider);
 	~User();
 

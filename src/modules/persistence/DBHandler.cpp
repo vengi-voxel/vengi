@@ -53,12 +53,22 @@ bool DBHandler::insert(Model& model) const {
 	return execInternalWithParameters(query, model, param).result;
 }
 
+bool DBHandler::insert(std::vector<const Model*>& models) const {
+	BindParam param(10 * models.size());
+	const std::string& query = createInsertStatement(models, &param);
+	return massExecInternalWithParameters(query, param).result;
+}
+
 bool DBHandler::truncate(const Model& model) const {
 	return exec(createTruncateTableStatement(model));
 }
 
 bool DBHandler::truncate(Model&& model) const {
 	return exec(createTruncateTableStatement(model));
+}
+
+MassQuery DBHandler::massQuery() const {
+	return MassQuery(this);
 }
 
 bool DBHandler::dropTable(const Model& model) const {
@@ -170,6 +180,24 @@ State DBHandler::execInternalWithParameters(const std::string& query, Model& mod
 		return s;
 	}
 	model.fillModelValues(s);
+	return s;
+}
+
+State DBHandler::massExecInternalWithParameters(const std::string& query, const BindParam& param) const {
+	ScopedConnection scoped(connection());
+	if (!scoped) {
+		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());
+		return State();
+	}
+	State s(scoped.connection());
+	Log::debug("Execute query '%s' with %i parameters", query.c_str(), param.position);
+	if (!s.exec(query.c_str(), param.position, &param.values[0])) {
+		Log::warn(logid, "Failed to execute query: '%s'", query.c_str());
+	}
+	if (s.affectedRows <= 0) {
+		Log::trace(logid, "No rows affected, can't fill model values");
+		return s;
+	}
 	return s;
 }
 

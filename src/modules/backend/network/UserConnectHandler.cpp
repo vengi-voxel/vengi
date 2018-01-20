@@ -21,15 +21,17 @@ UserConnectHandler::UserConnectHandler(
 		const network::NetworkPtr& network,
 		const MapProviderPtr& mapProvider,
 		const persistence::DBHandlerPtr& dbHandler,
+		const persistence::PersistenceMgrPtr& persistenceMgr,
 		const backend::EntityStoragePtr& entityStorage,
 		const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider,
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
 		const stock::StockProviderPtr& stockDataProvider) :
-		_network(network), _mapProvider(mapProvider), _dbHandler(dbHandler), _entityStorage(entityStorage),
-		_messageSender(messageSender), _timeProvider(timeProvider), _containerProvider(containerProvider),
-		_cooldownProvider(cooldownProvider), _stockDataProvider(stockDataProvider) {
+		_network(network), _mapProvider(mapProvider), _dbHandler(dbHandler), _persistenceMgr(persistenceMgr),
+		_entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),
+		_containerProvider(containerProvider), _cooldownProvider(cooldownProvider),
+		_stockDataProvider(stockDataProvider) {
 	auto data = network::CreateAuthFailed(_authFailed);
 	auto msg = network::CreateServerMessage(_authFailed, network::ServerMsgType::AuthFailed, data.Union());
 	network::FinishServerMessageBuffer(_authFailed, msg);
@@ -64,7 +66,7 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, cons
 	MapPtr map = _mapProvider->map(model.mapid(), true);
 	Log::info(logid, "user %i connects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
 	const UserPtr& u = std::make_shared<User>(peer, model.id(), model.name(), map, _messageSender, _timeProvider,
-			_containerProvider, _cooldownProvider, _dbHandler, _stockDataProvider);
+			_containerProvider, _cooldownProvider, _dbHandler, _persistenceMgr, _stockDataProvider);
 	u->init();
 	map->addUser(u);
 	_entityStorage->addUser(u);

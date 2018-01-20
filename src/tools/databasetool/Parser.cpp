@@ -262,11 +262,8 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 				std::copy(fieldNames.begin(), fieldNames.end(), std::back_inserter(fieldNamesVec));
 				table.constraints.insert(std::make_pair(name, persistence::Constraint{fieldNamesVec, typeMapping}));
 			}
-		} else {
-			if (typeMapping != std::enum_value(persistence::ConstraintType::UNIQUE)) {
-				Log::error("Unsupported type mapping for table '%s'", table.name.c_str());
-				return false;
-			}
+		}
+		if (typeMapping == std::enum_value(persistence::ConstraintType::UNIQUE)) {
 			table.uniqueKeys.emplace_back(std::move(fieldNames));
 		}
 	}
