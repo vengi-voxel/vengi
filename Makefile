@@ -210,8 +210,8 @@ update-stb:
 	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/stb_image.h
 	cp $(UPDATEDIR)/stb.sync/stb_image_write.h src/modules/image/stb_image_write.h
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxel/font/stb_truetype.h
-	cp $(UPDATEDIR)/stb.sync/stb_image.h contrib/libs/turbobadger/tb/thirdparty
-	cp $(UPDATEDIR)/stb.sync/stb_truetype.h contrib/libs/turbobadger/tb/thirdparty
+	cp $(UPDATEDIR)/stb.sync/stb_image.h contrib/libs/libturbobadger/tb/thirdparty
+	cp $(UPDATEDIR)/stb.sync/stb_truetype.h contrib/libs/libturbobadger/tb/thirdparty
 # TODO: dearimgui
 
 update-simplecpp:
