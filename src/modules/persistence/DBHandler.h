@@ -70,7 +70,6 @@ private:
 			return false;
 		}
 		for (int i = 0; i < s.affectedRows; ++i) {
-			s.currentRow = i;
 			typename std::remove_reference<MODEL>::type selectedModel;
 			selectedModel.fillModelValues(s);
 			func(std::move(selectedModel));
