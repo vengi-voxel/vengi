@@ -17,6 +17,7 @@
  */
 
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
+#define SIMPLECPP_WINDOWS
 #define NOMINMAX
 #endif
 #include "simplecpp.h"
@@ -33,11 +34,10 @@
 #include <stdexcept>
 #include <utility>
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
+#ifdef SIMPLECPP_WINDOWS
 #include <windows.h>
 #undef ERROR
 #undef TRUE
-#define SIMPLECPP_WINDOWS
 #endif
 
 static bool isHex(const std::string &s)
@@ -380,6 +380,11 @@ static void portabilityBackslash(simplecpp::OutputList *outputList, const std::v
     outputList->push_back(err);
 }
 
+static bool isRawStringId(const std::string &str)
+{
+    return str == "R" || str == "uR" || str == "UR" || str == "LR" || str == "u8R";
+}
+
 void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filename, OutputList *outputList)
 {
     std::stack<simplecpp::Location> loc;
@@ -521,7 +526,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         // string / char literal
         else if (ch == '\"' || ch == '\'') {
             // C++11 raw string literal
-            if (ch == '\"' && cback() && cback()->op == 'R') {
+            if (ch == '\"' && cback() && cback()->name && isRawStringId(cback()->str)) {
                 std::string delim;
                 ch = readChar(istr,bom);
                 while (istr.good() && ch != '(' && ch != '\n') {
@@ -539,7 +544,12 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                     // TODO report
                     return;
                 currentToken.erase(currentToken.size() - endOfRawString.size(), endOfRawString.size() - 1U);
-                back()->setstr(escapeString(currentToken));
+                if (cback()->op == 'R')
+                    back()->setstr(escapeString(currentToken));
+                else {
+                    back()->setstr(cback()->str.substr(0, cback()->str.size() - 1));
+                    push_back(new Token(currentToken, location)); // push string without newlines
+                }
                 location.adjust(currentToken);
                 if (currentToken.find_first_of("\r\n") == std::string::npos)
                     location.col += 2 + 2 * delim.size();
@@ -715,8 +725,8 @@ void simplecpp::TokenList::constFoldUnaryNotPosNeg(simplecpp::Token *tok)
             tok->setstr(tok->next->str == "0" ? "1" : "0");
             deleteToken(tok->next);
         } else if (tok->op == '~' && tok->next && tok->next->number) {
-           tok->setstr(toString(~stringToLL(tok->next->str)));
-           deleteToken(tok->next);
+            tok->setstr(toString(~stringToLL(tok->next->str)));
+            deleteToken(tok->next);
         } else {
             if (tok->previous && (tok->previous->number || tok->previous->name))
                 continue;
@@ -1669,7 +1679,12 @@ namespace simplecpp {
 
             if (varargs && tokensB.empty() && tok->previous->str == ",")
                 output->deleteToken(A);
-            else {
+            else if (strAB != "," && macros.find(strAB) == macros.end()) {
+                A->setstr(strAB);
+                for (Token *b = tokensB.front(); b; b = b->next)
+                    b->location = loc;
+                output->takeTokens(tokensB);
+            } else {
                 output->deleteToken(A);
                 TokenList tokens(files);
                 tokens.push_back(new Token(strAB, tok->location));
@@ -1745,15 +1760,11 @@ static bool realFileName(const std::string &f, std::string *result)
     if (!alpha)
         return false;
 
-    // Convert char path to CHAR path
-    std::vector<CHAR> buf(f.size()+1U, 0);
-    for (unsigned int i = 0; i < f.size(); ++i)
-        buf[i] = f[i];
-
     // Lookup filename or foldername on file system
     WIN32_FIND_DATAA FindFileData;
-    HANDLE hFind = FindFirstFileA(&buf[0], &FindFileData);
-    if (hFind == INVALID_HANDLE_VALUE)
+    HANDLE hFind = FindFirstFileExA(f.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
+
+    if (INVALID_HANDLE_VALUE == hFind)
         return false;
     *result = FindFileData.cFileName;
     FindClose(hFind);
@@ -1828,6 +1839,9 @@ namespace simplecpp {
      */
     std::string simplifyPath(std::string path)
     {
+        if (path.empty())
+            return path;
+
         std::string::size_type pos;
 
         // replace backslash separators
@@ -2023,6 +2037,9 @@ static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const
 
 static std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)
 {
+    if (filedata.empty()) {
+        return "";
+    }
     if (isAbsolutePath(header)) {
         return (filedata.find(header) != filedata.end()) ? simplecpp::simplifyPath(header) : "";
     }
