@@ -87,6 +87,9 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 				return false;
 			}
 			field.defaultVal = tok.next();
+			if (core::string::iequals(field.defaultVal, "now()")) {
+				field.defaultVal = "(NOW() AT TIME ZONE 'UTC')";
+			}
 		} else if (token == "operator") {
 			if (!tok.hasNext()) {
 				Log::error("missing operator for field %s", fieldname.c_str());

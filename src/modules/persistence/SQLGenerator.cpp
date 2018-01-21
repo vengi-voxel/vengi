@@ -63,10 +63,10 @@ static inline bool placeholder(const Model& table, const Field& field, std::stri
 	} else if (field.type == FieldType::TIMESTAMP) {
 		const Timestamp& ts = table.getValue<Timestamp>(field);
 		if (ts.isNow()) {
-			ss << "NOW()";
+			ss << "NOW() AT TIME ZONE 'UTC'";
 			return false;
 		}
-		ss << "to_timestamp($" << count << ")";
+		ss << "to_timestamp($" << count << ") AT TIME ZONE 'UTC'";
 	} else {
 		ss << "$" << count;
 	}
@@ -138,7 +138,7 @@ static std::string getDbType(const Field& field) {
 	case FieldType::TEXT:
 		return "TEXT";
 	case FieldType::TIMESTAMP:
-		return "TIMESTAMP";
+		return "TIMESTAMP WITHOUT TIME ZONE";
 	case FieldType::BOOLEAN:
 		return "BOOLEAN";
 	case FieldType::LONG:
