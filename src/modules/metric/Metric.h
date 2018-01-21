@@ -8,7 +8,7 @@
 #include "core/NonCopyable.h"
 #include <map>
 #include <string>
-#include <cstdint>
+#include <stdint.h>
 
 namespace metric {
 

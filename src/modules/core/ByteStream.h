@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include <cstdint>
-#include <cstddef>
+#include <stdint.h>
+#include <stddef.h>
 #include <vector>
 #include <list>
 #include <string>
-#include <cstdarg>
+#include <stdarg.h>
 #include <SDL_endian.h>
-#include <climits>
+#include <limits.h>
 #include "Common.h"
 #include "Assert.h"
 

@@ -6,7 +6,7 @@
 
 #include "KeybindingParser.h"
 #include <unordered_map>
-#include <cstdint>
+#include <stdint.h>
 
 namespace util {
 

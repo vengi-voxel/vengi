@@ -6,7 +6,7 @@
 
 #include "core/Assert.h"
 #include "core/GLM.h"
-#include <climits>
+#include <limits.h>
 
 namespace stock {
 

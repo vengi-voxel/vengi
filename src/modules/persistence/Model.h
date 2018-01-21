@@ -16,9 +16,9 @@
 #include "Field.h"
 #include "Structs.h"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstddef>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
 
 namespace persistence {
 
@@ -37,8 +37,8 @@ class Model {
 protected:
 	friend class DBHandler;
 	friend class MassQuery;
-	std::string _schema;
-	std::string _tableName;
+	const char* _schema;
+	const char* _tableName;
 	int _primaryKeyFields = 0;
 	const char* _autoIncrementField = nullptr;
 	long _autoIncrementStart = 1l;
@@ -51,16 +51,16 @@ protected:
 
 	bool fillModelValues(State& state);
 public:
-	Model(const std::string& schema, const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
+	Model(const char* schema, const char*tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
 			const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys, const PrimaryKeysPtr primaryKeys);
 	virtual ~Model();
 
-	const std::string& tableName() const;
+	const char* tableName() const;
 
 	/**
 	 * @return The schema name the model is located in
 	 */
-	const std::string& schema() const;
+	const char* schema() const;
 
 	/**
 	 * @return Collection of all @c Field instances that define this model
@@ -152,6 +152,8 @@ public:
 	 */
 	const Field& getField(const std::string& name) const;
 
+	const Field& getField(const char* name) const;
+
 	/**
 	 * @brief Indicate that the value of the field should be written as null to the database
 	 * @note This only works if the @c Field instance can be set to null. If the @c Field is defined
@@ -164,12 +166,16 @@ public:
 	bool isNull(const Field& f) const;
 };
 
-inline const std::string& Model::tableName() const {
+inline const char* Model::tableName() const {
 	return _tableName;
 }
 
-inline const std::string& Model::schema() const {
+inline const char* Model::schema() const {
 	return _schema;
+}
+
+inline const Field& Model::getField(const std::string& name) const {
+	return getField(name.c_str());
 }
 
 inline const Fields& Model::fields() const {

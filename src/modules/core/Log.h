@@ -5,10 +5,10 @@
 #pragma once
 
 #include "Hash.h"
-#include <cstring>
-#include <cstdio>
+#include <string.h>
+#include <stdio.h>
 #include <memory>
-#include <cinttypes>
+#include <inttypes.h>
 #include <string>
 #include <SDL.h>
 

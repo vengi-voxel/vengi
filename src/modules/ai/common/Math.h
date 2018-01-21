@@ -15,7 +15,7 @@
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/norm.hpp>
 #include <limits>
-#include <cmath>
+#include <math.h>
 
 namespace ai {
 

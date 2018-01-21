@@ -5,7 +5,7 @@
 #pragma once
 
 #include <string>
-#include <cstdint>
+#include <stdint.h>
 
 namespace persistence {
 

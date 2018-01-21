@@ -19,7 +19,7 @@
 
 namespace persistence {
 
-Model::Model(const std::string& schema, const std::string& tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
+Model::Model(const char* schema, const char* tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
 		const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys, const PrimaryKeysPtr primaryKeys) :
 		_schema(schema), _tableName(tableName), _fields(fields), _constraints(constraints),
 		_uniqueKeys(uniqueKeys), _foreignKeys(foreignKeys), _primaryKeys(primaryKeys) {
@@ -29,17 +29,17 @@ Model::Model(const std::string& schema, const std::string& tableName, const Fiel
 Model::~Model() {
 }
 
-const Field& Model::getField(const std::string& name) const {
-	if (!name.empty()) {
+const Field& Model::getField(const char* name) const {
+	if (name != nullptr && name[0] != '\0') {
 		for (auto i = _fields->begin(); i != _fields->end(); ++i) {
 			const Field& field = *i;
 			if (field.name == name) {
 				return field;
 			}
 		}
+		// might e.g. happen in table update steps
+		Log::debug("Failed to lookup field '%s' in table '%s'", name, _tableName);
 	}
-	// might e.g. happen in table update steps
-	Log::debug("Failed to lookup field '%s' in table '%s'", name.c_str(), _tableName.c_str());
 	static const Field emptyField;
 	return emptyField;
 }

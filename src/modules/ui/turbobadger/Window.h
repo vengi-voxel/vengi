@@ -6,7 +6,7 @@
 
 #include "TurboBadger.h"
 #include "io/IEventObserver.h"
-#include <cstdint>
+#include <stdint.h>
 #include <memory>
 
 namespace core {

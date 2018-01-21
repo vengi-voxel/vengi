@@ -9,9 +9,9 @@
 #include "Log.h"
 #include <string>
 #include <unordered_map>
-#include <cassert>
-#include <cstdio>
-#include <cinttypes>
+#include <assert.h>
+#include <stdio.h>
+#include <inttypes.h>
 
 /**
  * @brief Logging macro to provide your own loggers

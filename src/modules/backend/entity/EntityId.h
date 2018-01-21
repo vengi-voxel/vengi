@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <cstdint>
-#include <cinttypes>
+#include <stdint.h>
+#include <inttypes.h>
 
 namespace backend {
 

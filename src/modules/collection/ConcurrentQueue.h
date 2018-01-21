@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
 #include <queue>
 #include <vector>
 #include <condition_variable>

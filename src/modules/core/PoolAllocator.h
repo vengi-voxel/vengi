@@ -6,7 +6,7 @@
 
 #include "Assert.h"
 #include "Log.h"
-#include <cstdint>
+#include <stdint.h>
 
 namespace core {
 

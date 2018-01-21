@@ -6,7 +6,7 @@
 
 #include "Plane.h"
 #include "math/AABB.h"
-#include <cstdint>
+#include <stdint.h>
 
 namespace math {
 

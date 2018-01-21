@@ -7,7 +7,7 @@
 #pragma once
 
 #include "core/EventBus.h"
-#include <cstdint>
+#include <stdint.h>
 #include <string>
 #include <map>
 

@@ -8,8 +8,8 @@
 #include "App.h"
 #include "Common.h"
 #include "Array.h"
-#include <cstring>
-#include <cstdio>
+#include <string.h>
+#include <stdio.h>
 #include <unordered_map>
 
 #ifdef HAVE_SYSLOG_H

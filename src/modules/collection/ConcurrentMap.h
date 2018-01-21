@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
 #include <map>
 #include <condition_variable>
 #include <mutex>

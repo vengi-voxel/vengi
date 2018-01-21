@@ -32,8 +32,8 @@
 #include <string.h>
 #include <deque>
 #include <algorithm>
-#include <cassert>
-#include <cstddef>
+#include <assert.h>
+#include <stddef.h>
 #include <memory>
 #include <iterator>
 #include <array>

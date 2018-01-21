@@ -6,7 +6,7 @@
 #include "ScopedFrameBuffer.h"
 #include "Types.h"
 
-#include <cstddef>
+#include <stddef.h>
 #include "core/Common.h"
 #include "core/Assert.h"
 

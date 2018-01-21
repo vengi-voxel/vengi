@@ -4,7 +4,7 @@
 
 #include <functional>
 #include <limits>
-#include <cmath>
+#include <math.h>
 
 #include <glm/gtc/integer.hpp>
 #include <glm/glm.hpp>

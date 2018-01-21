@@ -8,7 +8,7 @@
 #include <QPainter>
 #include <QFont>
 #include <QDebug>
-#include <cmath>
+#include <math.h>
 #include <QVector2D>
 
 namespace ai {

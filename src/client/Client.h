@@ -20,7 +20,7 @@
 #include "video/MeshPool.h"
 #include "video/Camera.h"
 
-#include <cstdlib>
+#include <stdlib.h>
 #include <SDL.h>
 
 // client states

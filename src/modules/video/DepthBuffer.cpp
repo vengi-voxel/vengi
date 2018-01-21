@@ -7,7 +7,7 @@
 #include "ScopedFrameBuffer.h"
 #include "Texture.h"
 
-#include <cstddef>
+#include <stddef.h>
 #include "core/Common.h"
 
 namespace video {

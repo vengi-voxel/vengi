@@ -7,7 +7,7 @@
 #include "Simplex.h"
 #include <glm/trigonometric.hpp>
 #include <glm/gtc/constants.hpp>
-#include <cstdint>
+#include <stdint.h>
 
 namespace noise {
 

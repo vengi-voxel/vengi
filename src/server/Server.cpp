@@ -24,7 +24,7 @@
 #include "persistence/PersistenceMgr.h"
 #include "stock/StockDataProvider.h"
 #include "metric/UDPMetricSender.h"
-#include <cstdlib>
+#include <stdlib.h>
 
 Server::Server(const backend::ServerLoopPtr& serverLoop,
 		const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,

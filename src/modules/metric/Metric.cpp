@@ -6,8 +6,9 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/Assert.h"
-#include <cstdio>
-#include <cstring>
+#include <stdio.h>
+#include <string.h>
+#include <SDL.h>
 
 namespace metric {
 
@@ -23,13 +24,13 @@ bool Metric::init(const IMetricSenderPtr& messageSender) {
 	const std::string& flavor = core::Var::getSafe(cfg::MetricFlavor)->strVal();
 	if (flavor == "telegraf") {
 		_flavor = Flavor::Telegraf;
-		Log::info("Using metric flavor 'telegraf'");
+		Log::debug("Using metric flavor 'telegraf'");
 	} else if (flavor == "etsy") {
 		_flavor = Flavor::Etsy;
-		Log::info("Using metric flavor 'etsy'");
+		Log::debug("Using metric flavor 'etsy'");
 	} else if (flavor == "datadog") {
 		_flavor = Flavor::Datadog;
-		Log::info("Using metric flavor 'datadog'");
+		Log::debug("Using metric flavor 'datadog'");
 	} else {
 		Log::warn("Invalid %s given - using telegraf", cfg::MetricFlavor);
 	}
@@ -44,7 +45,7 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 	if (tags.empty()) {
 		return true;
 	}
-	const size_t preambleLen = strlen(preamble);
+	const size_t preambleLen = SDL_strlen(preamble);
 	if (preambleLen >= len) {
 		return false;
 	}
@@ -52,7 +53,7 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 	buffer += preambleLen;
 	int remainingLen = len - preambleLen;
 	bool first = true;
-	const size_t splitLen = strlen(split);
+	const size_t splitLen = SDL_strlen(split);
 	for (const auto& e : tags) {
 		if (remainingLen <= 0) {
 			return false;
@@ -60,10 +61,10 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 		size_t keyValueLen = e.first.size() + strlen(sep) + e.second.size();
 		int written;
 		if (first) {
-			written = snprintf(buffer, remainingLen, "%s%s%s", e.first.c_str(), sep, e.second.c_str());
+			written = SDL_snprintf(buffer, remainingLen, "%s%s%s", e.first.c_str(), sep, e.second.c_str());
 		} else {
 			keyValueLen += splitLen;
-			written = snprintf(buffer, remainingLen, "%s%s%s%s", split, e.first.c_str(), sep, e.second.c_str());
+			written = SDL_snprintf(buffer, remainingLen, "%s%s%s%s", split, e.first.c_str(), sep, e.second.c_str());
 		}
 		if (written >= remainingLen) {
 			return false;
@@ -83,20 +84,20 @@ bool Metric::assemble(const char* key, int value, const char* type, const TagMap
 	int written;
 	switch (_flavor) {
 	case Flavor::Etsy:
-		written = snprintf(buffer, sizeof(buffer), "%s%s:%i|%s", _prefix.c_str(), key, value, type);
+		written = SDL_snprintf(buffer, sizeof(buffer), "%s%s:%i|%s", _prefix.c_str(), key, value, type);
 		break;
 	case Flavor::Datadog:
 		if (!createTags(tagsBuffer, sizeof(tagsBuffer), tags, ":", "|#", ",")) {
 			return false;
 		}
-		written = snprintf(buffer, sizeof(buffer), "%s%s:%i|%s%s", _prefix.c_str(), key, value, type, tagsBuffer);
+		written = SDL_snprintf(buffer, sizeof(buffer), "%s%s:%i|%s%s", _prefix.c_str(), key, value, type, tagsBuffer);
 		break;
 	case Flavor::Telegraf:
 	default:
 		if (!createTags(tagsBuffer, sizeof(tagsBuffer), tags, "=", ",", ",")) {
 			return false;
 		}
-		written = snprintf(buffer, sizeof(buffer), "%s%s%s:%i|%s", _prefix.c_str(), key, tagsBuffer, value, type);
+		written = SDL_snprintf(buffer, sizeof(buffer), "%s%s%s:%i|%s", _prefix.c_str(), key, tagsBuffer, value, type);
 		break;
 	}
 	if (written >= metricSize) {

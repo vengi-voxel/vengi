@@ -4,7 +4,7 @@
 #pragma once
 
 #include <string>
-#include <cstring>
+#include <string.h>
 #include <vector>
 #include "Types.h"
 #include "cl/CLTypes.h"

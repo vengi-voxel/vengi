@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
 #include <vector>
 #include <algorithm>
 #include <condition_variable>

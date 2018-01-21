@@ -3,7 +3,7 @@
  */
 
 #include "Voxel.h"
-#include <cstring>
+#include <string.h>
 
 namespace voxel {
 

@@ -7,7 +7,7 @@
 #include "IMetricSender.h"
 #include <string>
 #include <mutex>
-#include <cstdint>
+#include <stdint.h>
 
 #ifndef WIN32
 #define SOCKET  int

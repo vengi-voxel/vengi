@@ -5,8 +5,8 @@
 #pragma once
 
 #include <vector>
-#include <cstdint>
-#include <cstddef>
+#include <stdint.h>
+#include <stddef.h>
 
 namespace voxel {
 class RawVolume;

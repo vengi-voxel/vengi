@@ -11,7 +11,7 @@
 #include "Types.h"
 #include "Ray.h"
 #include <math.h>
-#include <ctime>
+#include <time.h>
 
 namespace video {
 

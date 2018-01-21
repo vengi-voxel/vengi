@@ -3,7 +3,7 @@
  */
 
 #include "TreeContext.h"
-#include <cstring>
+#include <string.h>
 
 namespace voxel {
 

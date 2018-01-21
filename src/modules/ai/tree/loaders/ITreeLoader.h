@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <cstdarg>
-#include <cstdio>
+#include <stdarg.h>
+#include <stdio.h>
 
 namespace ai {
 

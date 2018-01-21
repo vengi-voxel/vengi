@@ -2,7 +2,7 @@
 
 #include "persistence/Field.h"
 #include "persistence/Structs.h"
-#include <cstdint>
+#include <stdint.h>
 #include <vector>
 #include <map>
 #include <set>

@@ -6,7 +6,7 @@
 #include "core/GLM.h"
 
 #include <algorithm>
-#include <cmath>
+#include <math.h>
 #include <limits>
 
 namespace core {

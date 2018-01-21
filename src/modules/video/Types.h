@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
-#include <cstdint>
+#include <stdint.h>
 #include <unordered_map>
 #include "gl/GLTypes.h"
 

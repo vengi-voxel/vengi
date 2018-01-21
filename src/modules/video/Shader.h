@@ -5,8 +5,8 @@
 #pragma once
 
 #include <string>
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <memory>
 #include <vector>
 #include <map>

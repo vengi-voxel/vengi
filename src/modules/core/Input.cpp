@@ -5,7 +5,7 @@
 #include "Input.h"
 #include "core/Log.h"
 #include "core/command/CommandHandler.h"
-#include <cstring>
+#include <string.h>
 
 namespace core {
 

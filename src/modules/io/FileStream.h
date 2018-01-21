@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <cstdint>
-#include <cstddef>
+#include <stdint.h>
+#include <stddef.h>
 #include <string>
-#include <cstdarg>
+#include <stdarg.h>
 #include <SDL_endian.h>
 #include "core/Common.h"
-#include <climits>
+#include <limits.h>
 
 namespace io {
 

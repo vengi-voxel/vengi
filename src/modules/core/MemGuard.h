@@ -8,7 +8,7 @@
 #include "core/ReadWriteLock.h"
 #include <array>
 #include <string>
-#include <cstdint>
+#include <stdint.h>
 
 #ifdef _MSC_VER
 #define __attribute__(x)

@@ -6,7 +6,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <ctime>
+#include <time.h>
 
 namespace persistence {
 

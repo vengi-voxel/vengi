@@ -5,11 +5,11 @@
 #include <gtest/gtest.h>
 #include "core/ByteStream.h"
 #include <random>
-#include <cstdlib>
-#include <climits>
-#include <cmath>
+#include <stdlib.h>
+#include <limits.h>
+#include <math.h>
 #include <SDL_timer.h>
-#include <cstdlib>
+#include <stdlib.h>
 #include <string>
 
 namespace {

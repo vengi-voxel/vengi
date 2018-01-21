@@ -8,7 +8,7 @@
 #pragma once
 
 #include "Log.h"
-#include <cmath>
+#include <math.h>
 #include <utility>
 #include <limits>
 #include <SDL.h>

@@ -3,9 +3,9 @@
  */
 #pragma once
 
-#include <cstdio>
-#include <cstdarg>
-#include <cstring>
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 
 namespace ai {
 namespace Log {

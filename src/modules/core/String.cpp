@@ -193,7 +193,7 @@ void lowerCamelCase(std::string& str) {
 }
 
 char* append(char* buf, size_t bufsize, const char* string) {
-	const size_t bufl = strlen(buf);
+	const size_t bufl = SDL_strlen(buf);
 	if (bufl >= bufsize) {
 		return nullptr;
 	}
@@ -201,7 +201,7 @@ char* append(char* buf, size_t bufsize, const char* string) {
 	if (remaining <= 1u) {
 		return nullptr;
 	}
-	const size_t l = strlen(string);
+	const size_t l = SDL_strlen(string);
 	if (remaining <= l) {
 		return nullptr;
 	}

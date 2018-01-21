@@ -219,7 +219,7 @@ static void createAlterTableAlterColumn(std::stringstream& stmt, bool add, const
 
 	const char *action = add ? "ADD" : "ALTER";
 	const std::string& base = core::string::format("ALTER TABLE \"%s\".\"%s\" %s COLUMN \"%s\"",
-			table.schema().c_str(), table.tableName().c_str(), action, field.name.c_str());
+			table.schema(), table.tableName(), action, field.name.c_str());
 	if (!add && adds(schemaColumn, field, ConstraintType::NOTNULL)) {
 		stmt << base << " " << getDbType(field);
 		if (!add) {
@@ -358,10 +358,10 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 	bool uniqueConstraintDiffers = false;
 	bool foreignKeysDiffers = false;
 	for (const auto& f : table.fields()) {
-		Log::debug("# Column '%s' in table '%s'", f.name.c_str(), table.tableName().c_str());
+		Log::debug("# Column '%s' in table '%s'", f.name.c_str(), table.tableName());
 		auto i = map.find(f.name);
 		if (i != map.end()) {
-			Log::debug("- Column '%s' in table '%s' already exists", f.name.c_str(), table.tableName().c_str());
+			Log::debug("- Column '%s' in table '%s' already exists", f.name.c_str(), table.tableName());
 			// the field already exists, but it might be different from what we expect
 			// to find in the database
 			if (isDifferent(*i->second, f)) {
@@ -372,13 +372,13 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 					foreignKeysDiffers = true;
 				}
 				Log::debug("- Column '%s' in table '%s' differs - update it",
-						f.name.c_str(), table.tableName().c_str());
+						f.name.c_str(), table.tableName());
 				createAlterTableAlterColumn(stmt, false, table, *i->second, f);
 			}
 			continue;
 		}
 		Log::debug("- Column '%s' in table '%s' doesn't exist yet - create it",
-				f.name.c_str(), table.tableName().c_str());
+				f.name.c_str(), table.tableName());
 		// a new field that is not yet known in the database schema was added to the model
 		// now just create the new column.
 		createAlterTableAddColumn(stmt, table, f);
@@ -530,7 +530,7 @@ std::string createCreateTableStatement(const Model& table, bool useForeignKeys) 
 }
 
 std::string createTruncateTableStatement(const Model& model) {
-	return core::string::format("TRUNCATE TABLE \"%s\".\"%s\";", model.schema().c_str(), model.tableName().c_str());
+	return core::string::format("TRUNCATE TABLE \"%s\".\"%s\";", model.schema(), model.tableName());
 }
 
 std::string createDropTableStatement(const Model& model) {

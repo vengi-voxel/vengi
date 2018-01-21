@@ -6,7 +6,7 @@
 #include "core/Var.h"
 #include "core/Log.h"
 #include "core/Assert.h"
-#include <cstring>
+#include <string.h>
 #ifdef WIN32
 #define network_cleanup() WSACleanup()
 #define network_return int

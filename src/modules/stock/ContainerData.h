@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Shape.h"
-#include <cstdint>
+#include <stdint.h>
 #include <string>
 
 namespace stock {

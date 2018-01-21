@@ -6,7 +6,7 @@
 
 #include "core/Assert.h"
 #include <glm/gtc/round.hpp>
-#include <cstdint>
+#include <stdint.h>
 
 namespace voxel {
 
