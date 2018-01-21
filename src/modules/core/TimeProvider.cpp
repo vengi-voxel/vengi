@@ -16,8 +16,8 @@ TimeProvider::TimeProvider() :
 }
 
 uint64_t TimeProvider::systemMillis() const {
-	const uint64_t millis = (uint64_t)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
-	return millis;
+	auto unix_timestamp = std::chrono::seconds(std::time(NULL));
+	return std::chrono::milliseconds(unix_timestamp).count();
 }
 
 double TimeProvider::systemNanos() {
