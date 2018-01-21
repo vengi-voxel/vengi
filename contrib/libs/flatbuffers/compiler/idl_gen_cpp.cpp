@@ -1295,7 +1295,7 @@ class CppGenerator : public BaseGenerator {
   std::string GetDefaultScalarValue(const FieldDef &field) {
     if (field.value.type.enum_def && IsScalar(field.value.type.base_type)) {
       auto ev = field.value.type.enum_def->ReverseLookup(
-          static_cast<int>(StringToInt(field.value.constant.c_str())), false);
+          StringToInt(field.value.constant.c_str()), false);
       if (ev) {
         return WrapInNameSpace(field.value.type.enum_def->defined_namespace,
                                GetEnumValUse(*field.value.type.enum_def, *ev));
@@ -1316,7 +1316,13 @@ class CppGenerator : public BaseGenerator {
       code_.SetValue("PARAM_TYPE", "const char *");
       code_.SetValue("PARAM_VALUE", "nullptr");
     } else if (direct && field.value.type.base_type == BASE_TYPE_VECTOR) {
-      auto type = GenTypeWire(field.value.type.VectorType(), "", false);
+      const auto vtype = field.value.type.VectorType();
+      std::string type;
+      if (IsStruct(vtype)) {
+        type = WrapInNameSpace(*vtype.struct_def);
+      } else {
+        type = GenTypeWire(vtype, "", false);
+      }
       code_.SetValue("PARAM_TYPE", "const std::vector<" + type + "> *");
       code_.SetValue("PARAM_VALUE", "nullptr");
     } else {
@@ -1639,8 +1645,7 @@ class CppGenerator : public BaseGenerator {
         code_.SetValue("CPP_NAME", TranslateNameSpace(qualified_name));
 
         code_ += "  const {{CPP_NAME}} *{{FIELD_NAME}}_nested_root() const {";
-        code_ += "    auto data = {{FIELD_NAME}}()->Data();";
-        code_ += "    return flatbuffers::GetRoot<{{CPP_NAME}}>(data);";
+        code_ += "    return flatbuffers::GetRoot<{{CPP_NAME}}>({{FIELD_NAME}}()->Data());";
         code_ += "  }";
       }
 
@@ -1908,11 +1913,16 @@ class CppGenerator : public BaseGenerator {
                 ",\n      {{FIELD_NAME}} ? "
                 "_fbb.CreateString({{FIELD_NAME}}) : 0\\";
           } else if (field.value.type.base_type == BASE_TYPE_VECTOR) {
-            auto type = GenTypeWire(field.value.type.VectorType(), "", false);
-            code_ +=
-                ",\n      {{FIELD_NAME}} ? "
-                "_fbb.CreateVector<" +
-                type + ">(*{{FIELD_NAME}}) : 0\\";
+            code_ += ",\n      {{FIELD_NAME}} ? \\";
+            const auto vtype = field.value.type.VectorType();
+            if (IsStruct(vtype)) {
+              const auto type = WrapInNameSpace(*vtype.struct_def);
+              code_ += "_fbb.CreateVectorOfStructs<" + type + ">\\";
+            } else {
+              const auto type = GenTypeWire(vtype, "", false);
+              code_ += "_fbb.CreateVector<" + type + ">\\";
+            }
+            code_ += "(*{{FIELD_NAME}}) : 0\\";
           } else {
             code_ += ",\n      {{FIELD_NAME}}\\";
           }
