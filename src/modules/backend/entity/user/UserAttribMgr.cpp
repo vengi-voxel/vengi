@@ -6,6 +6,8 @@
 #include "attrib/AttributeType.h"
 #include "AttribModel.h"
 #include "core/Log.h"
+#include "persistence/PersistenceMgr.h"
+#include "persistence/DBHandler.h"
 
 namespace backend {
 
@@ -32,7 +34,14 @@ bool UserAttribMgr::init() {
 	})) {
 		Log::warn("Could not load attributes for user " PRIEntId, _userId);
 	}
+
+	// initialize the models
 	_dirtyModels.resize(int(attrib::Type::MAX));
+	for (std::underlying_type<attrib::Type>::type i = 0; i < int(attrib::Type::MAX); ++i) {
+		db::AttribModel& model = _dirtyModels[i];
+		model.setAttribtype(i);
+		model.setUserid(_userId);
+	}
 	_persistenceMgr->registerSavable(FOURCC, this);
 	return true;
 }
@@ -44,14 +53,13 @@ void UserAttribMgr::shutdown() {
 bool UserAttribMgr::getDirtyModels(Models& models) {
 	Collection::underlying_type c;
 	_dirtyAttributeTypes.swap(c);
+	models.reserve(models.size() + c.size());
 	for (const attrib::DirtyValue& v : c) {
 		// we only persist current values, max values are given by containers.
 		if (!v.current) {
 			continue;
 		}
 		db::AttribModel& model = _dirtyModels[int(v.type)];
-		model.setAttribtype(v.type);
-		model.setUserid(_userId);
 		model.setValue(v.value);
 		models.push_back(&model);
 	};

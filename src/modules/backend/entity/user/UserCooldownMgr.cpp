@@ -3,19 +3,23 @@
  */
 
 #include "UserCooldownMgr.h"
-#include "CooldownModel.h"
 #include "persistence/DBHandler.h"
+#include "persistence/PersistenceMgr.h"
 #include "core/Log.h"
 #include "network/ServerMessageSender.h"
 #include "backend/entity/User.h"
 
 namespace backend {
 
+static constexpr uint32_t FOURCC = FourCC('C','O','O','L');
+
 UserCooldownMgr::UserCooldownMgr(User* user,
 		const core::TimeProviderPtr& timeProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
-		const persistence::DBHandlerPtr& dbHandler) :
-		Super(timeProvider, cooldownProvider), _dbHandler(dbHandler), _user(user) {
+		const persistence::DBHandlerPtr& dbHandler,
+		const persistence::PersistenceMgrPtr& persistenceMgr) :
+		Super(timeProvider, cooldownProvider), _dbHandler(dbHandler),
+		_persistenceMgr(persistenceMgr), _user(user) {
 }
 
 void UserCooldownMgr::init() {
@@ -30,18 +34,19 @@ void UserCooldownMgr::init() {
 	})) {
 		Log::warn("Could not load cooldowns for user " PRIEntId, _user->id());
 	}
+
+	// initialize the models
+	_dirtyModels.resize(int(cooldown::Type::MAX));
+	for (std::underlying_type<cooldown::Type>::type i = 0; i < int(cooldown::Type::MAX); ++i) {
+		db::CooldownModel& model = _dirtyModels[i];
+		model.setCooldownid(i);
+		model.setUserid(_user->id());
+	}
+	_persistenceMgr->registerSavable(FOURCC, this);
 }
 
 void UserCooldownMgr::shutdown() {
-	core::ScopedWriteLock lock(_lock);
-	for (const auto& e : _cooldowns) {
-		const cooldown::CooldownPtr& c = e.second;
-		db::CooldownModel model;
-		model.setCooldownid(c->type());
-		model.setUserid(_user->id());
-		model.setStarttime(c->startMillis());
-		_dbHandler->insert(model);
-	}
+	_persistenceMgr->unregisterSavable(FOURCC, this);
 }
 
 cooldown::CooldownTriggerState UserCooldownMgr::triggerCooldown(cooldown::Type type, cooldown::CooldownCallback callback) {
@@ -66,5 +71,17 @@ void UserCooldownMgr::sendCooldown(cooldown::Type type, bool started) const {
 	_user->sendMessage(_cooldownFBB, msgtype, msg);
 }
 
+bool UserCooldownMgr::getDirtyModels(Models& models) {
+	// TODO: what about deleting...
+	core::ScopedReadLock lock(_lock);
+	models.reserve(models.size() + _cooldowns.size());
+	for (const auto& e : _cooldowns) {
+		const cooldown::CooldownPtr& c = e.second;
+		db::CooldownModel& model = _dirtyModels[(int)c->type()];
+		model.setStarttime(c->startMillis());
+		models.push_back(&model);
+	}
+	return true;
+}
 
 }

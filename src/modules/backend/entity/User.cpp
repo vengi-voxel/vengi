@@ -25,7 +25,7 @@ User::User(ENetPeer* peer, EntityId id,
 		_timeProvider(timeProvider),
 		_cooldownProvider(cooldownProvider),
 		_stockMgr(this, stockDataProvider, dbHandler),
-		_cooldownMgr(this, timeProvider, cooldownProvider, dbHandler),
+		_cooldownMgr(this, timeProvider, cooldownProvider, dbHandler, persistenceMgr),
 		_attribMgr(id, _attribs, dbHandler, persistenceMgr),
 		_logoutMgr(_cooldownMgr),
 		_movementMgr(this) {

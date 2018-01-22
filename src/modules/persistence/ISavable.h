@@ -5,9 +5,10 @@
 #pragma once
 
 #include <vector>
-#include "Model.h"
 
 namespace persistence {
+
+class Model;
 
 /**
  * @brief Interface used in combination with @c PersistenceMgr to do mass updates on dirty

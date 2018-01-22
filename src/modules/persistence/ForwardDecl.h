@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <memory>
+
 struct pg_conn;
 struct pg_result;
 
@@ -16,7 +18,12 @@ using ConnectionType = ::PGconn;
 using ResultType = ::PGresult;
 
 class Connection;
-class DBHandler;
 class Model;
+
+class DBHandler;
+typedef std::shared_ptr<DBHandler> DBHandlerPtr;
+
+class PersistenceMgr;
+typedef std::shared_ptr<PersistenceMgr> PersistenceMgrPtr;
 
 }

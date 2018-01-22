@@ -2,11 +2,10 @@
  * @file
  */
 
-#include "persistence/DBHandler.h"
+#include "persistence/ForwardDecl.h"
 #include "backend/entity/EntityId.h"
 #include "attrib/Attributes.h"
 #include "persistence/ISavable.h"
-#include "persistence/PersistenceMgr.h"
 #include "collection/ConcurrentSet.h"
 #include "AttribModel.h"
 #include <vector>
