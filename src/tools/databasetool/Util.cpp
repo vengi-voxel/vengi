@@ -45,6 +45,9 @@ std::string getCPPInit(persistence::FieldType type, bool pointer) {
 std::string getCPPType(persistence::FieldType type, bool function, bool pointer) {
 	switch (type) {
 	case persistence::FieldType::BOOLEAN:
+		if (pointer) {
+			return "const bool*";
+		}
 		return "bool";
 	case persistence::FieldType::PASSWORD:
 	case persistence::FieldType::STRING:

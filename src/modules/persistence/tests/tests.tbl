@@ -25,6 +25,21 @@ table test {
 		notnull
 		operator set
 	}
+	field sometext {
+		type text
+	}
+	field someboolean {
+		type boolean
+	}
+	field somedouble {
+		type double
+	}
+	field someshort {
+		type short
+	}
+	field somebyte {
+		type byte
+	}
 	field registrationdate {
 		type timestamp
 		default "NOW()"
@@ -33,6 +48,7 @@ table test {
 	}
 	constraints {
 		email unique
+		someboolean index
 		id primarykey
 		id autoincrement 1000000
 	}
