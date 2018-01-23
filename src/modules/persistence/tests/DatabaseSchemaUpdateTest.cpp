@@ -46,7 +46,7 @@ protected:
 		std::unordered_map<std::string, const db::MetainfoModel*> map;
 		map.reserve(schemaModels.size());
 		for (const auto& c : schemaModels) {
-			ASSERT_FALSE(c.columnname().empty()) << c.tablename() << " has an invalid entry for the column";
+			ASSERT_FALSE(c.columnname().empty()) << c.tableName() << " has an invalid entry for the column";
 			map.insert(std::make_pair(c.columnname(), &c));
 			const Field& f = model.getField(c.columnname());
 			ASSERT_FALSE(isDifferent(c, f)) << "Field " << f.name << " differs with db meta info";
