@@ -119,7 +119,7 @@ public:
 	 * @param[in] model The model that should be selected
 	 * @param[in] condition The @c persistence::DBCondition that identifies the entries to select
 	 * @param[in] func The callback that is notified on every entry that was found that matches
-	 * the search conditions.
+	 * the search conditions. It accepts a rvalue of the given @c MODEL class as parameter.
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
 	template<class FUNC, class MODEL>
@@ -138,7 +138,7 @@ public:
 	 * @param[in] condition The @c persistence::DBCondition that identifies the entries to select
 	 * @param[in] orderBy The field data to order by
 	 * @param[in] func The callback that is notified on every entry that was found that matches
-	 * the search conditions.
+	 * the search conditions. It accepts a rvalue of the given @c MODEL class as parameter.
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
 	template<class FUNC, class MODEL>
@@ -156,7 +156,7 @@ public:
 	 * @param[in] model The model that should be selected
 	 * @param[in] orderBy The field data to order by
 	 * @param[in] func The callback that is notified on every entry that was found that matches
-	 * the search conditions.
+	 * the search conditions. It accepts a rvalue of the given @c MODEL class as parameter.
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
 	template<class FUNC, class MODEL>

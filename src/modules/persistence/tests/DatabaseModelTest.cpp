@@ -277,7 +277,7 @@ TEST_F(DatabaseModelTest, testTimestamp) {
 	});
 }
 
-TEST_F(DatabaseModelTest, testLimitOrderBy) {
+TEST_F(DatabaseModelTest, testLimitOrderByDesc) {
 	if (!_supported) {
 		return;
 	}
