@@ -19,7 +19,6 @@
 #include "filter/SelectVisible.h"
 #include "filter/SelectEntitiesOfTypes.h"
 #include "filter/SelectIncreasePartner.h"
-#include "filter/SelectPrey.h"
 
 namespace backend {
 
@@ -38,7 +37,6 @@ void AIRegistry::init() {
 
 	registerFilterFactory("SelectVisible", SelectVisible::getFactory());
 	registerFilterFactory("SelectIncreasePartner", SelectIncreasePartner::getFactory());
-	registerFilterFactory("SelectPrey", SelectPrey::getFactory());
 	registerFilterFactory("SelectEntitiesOfTypes", SelectEntitiesOfTypes::getFactory());
 }
 

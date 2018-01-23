@@ -36,7 +36,6 @@ set(SRCS
 	entity/ai/action/AttackOnSelection.h
 	entity/ai/action/TriggerCooldown.cpp entity/ai/action/TriggerCooldown.h
 	entity/ai/action/TriggerCooldownOnSelection.cpp entity/ai/action/TriggerCooldownOnSelection.h
-	entity/ai/filter/SelectPrey.cpp entity/ai/filter/SelectPrey.h
 	entity/ai/filter/SelectVisible.cpp entity/ai/filter/SelectVisible.h
 	entity/ai/filter/SelectIncreasePartner.cpp entity/ai/filter/SelectIncreasePartner.h
 	entity/ai/filter/SelectEntitiesOfTypes.h entity/ai/filter/SelectEntitiesOfTypes.cpp
