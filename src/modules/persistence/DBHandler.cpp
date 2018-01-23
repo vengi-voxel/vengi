@@ -56,7 +56,16 @@ bool DBHandler::insert(Model& model) const {
 bool DBHandler::insert(std::vector<const Model*>& models) const {
 	BindParam param(10 * models.size());
 	const std::string& query = createInsertStatement(models, &param);
-	return massExecInternalWithParameters(query, param).result;
+	return execInternalWithParameters(query, param).result;
+}
+
+bool DBHandler::deleteModels(std::vector<const Model*>& models) const {
+	bool state = true;
+	// TODO: prepared statement
+	for (const Model* m : models) {
+		state &= deleteModel(*m);
+	}
+	return state;
 }
 
 bool DBHandler::truncate(const Model& model) const {
@@ -164,6 +173,34 @@ State DBHandler::execInternal(const std::string& query) const {
 	return s;
 }
 
+State DBHandler::execInternalWithCondition(const std::string& query, BindParam& params, int conditionOffset, const DBCondition& condition) const {
+	Log::debug(logid, "Execute query '%s'", query.c_str());
+	ScopedConnection scoped(connection());
+	if (!scoped) {
+		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
+		return State();
+	}
+	State s(scoped.connection());
+	if (conditionOffset > 0) {
+		for (int i = 0; i < conditionOffset; ++i) {
+			const int index = params.add();
+			const char* value = condition.value(i);
+			Log::debug(logid, "Parameter %i: '%s'", index + 1, value);
+			params.values[index] = value;
+		}
+		if (!s.exec(query.c_str(), params.position, &params.values[0])) {
+			Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionOffset);
+		}
+	} else if (!s.exec(query.c_str())) {
+		Log::error("Failed to execute query '%s'", query.c_str());
+	}
+	if (s.affectedRows <= 0) {
+		Log::trace(logid, "No rows affected.");
+		return s;
+	}
+	return s;
+}
+
 State DBHandler::execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const {
 	ScopedConnection scoped(connection());
 	if (!scoped) {
@@ -183,7 +220,7 @@ State DBHandler::execInternalWithParameters(const std::string& query, Model& mod
 	return s;
 }
 
-State DBHandler::massExecInternalWithParameters(const std::string& query, const BindParam& param) const {
+State DBHandler::execInternalWithParameters(const std::string& query, const BindParam& param) const {
 	ScopedConnection scoped(connection());
 	if (!scoped) {
 		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());

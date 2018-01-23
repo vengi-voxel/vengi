@@ -37,7 +37,8 @@ private:
 	static constexpr auto logid = Log::logid("DBHandler");
 	State execInternal(const std::string& query) const;
 	State execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const;
-	State massExecInternalWithParameters(const std::string& query, const BindParam& param) const;
+	State execInternalWithCondition(const std::string& query, BindParam& param, int conditionOffset, const DBCondition& condition) const;
+	State execInternalWithParameters(const std::string& query, const BindParam& param) const;
 
 	Connection* connection() const;
 
@@ -63,19 +64,16 @@ private:
 			}
 			if (!s.exec(query.c_str(), conditionAmount, &params.values[0])) {
 				Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
-				return false;
 			}
 		} else if (!s.exec(query.c_str())) {
 			Log::error("Failed to execute query '%s'", query.c_str());
-			return false;
 		}
 		for (int i = 0; i < s.affectedRows; ++i) {
 			typename std::remove_reference<MODEL>::type selectedModel;
 			selectedModel.fillModelValues(s);
 			func(std::move(selectedModel));
 		}
-		Log::debug(logid, "Affected rows %i", s.affectedRows);
-		return true;
+		return s.result;
 	}
 
 	bool _initialized = false;
@@ -109,34 +107,11 @@ public:
 		int conditionAmount = params.position;
 		const std::string& where = createWhere(condition, conditionAmount);
 		const std::string& query = stmt + where;
-		Log::debug(logid, "Execute query '%s'", query.c_str());
-		ScopedConnection scoped(connection());
-		if (!scoped) {
-			Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
-			return false;
+		const int conditionOffset = conditionAmount - params.position;
+		if (conditionOffset > 0) {
+			return execInternalWithCondition(query, params, conditionOffset, condition).result;
 		}
-		State s(scoped.connection());
-		if (conditionAmount > 0) {
-			for (int i = 0; i < conditionAmount; ++i) {
-				const int index = params.add();
-				const char* value = condition.value(i);
-				Log::debug(logid, "Parameter %i: '%s'", index + 1, value);
-				params.values[index] = value;
-			}
-			if (!s.exec(query.c_str(), conditionAmount, &params.values[0])) {
-				Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
-				return false;
-			}
-		} else if (!s.exec(query.c_str())) {
-			Log::error("Failed to execute query '%s'", query.c_str());
-			return false;
-		}
-		if (s.affectedRows <= 0) {
-			Log::trace(logid, "No rows affected, can't fill model values");
-			return true;
-		}
-		Log::debug(logid, "Affected rows %i", s.affectedRows);
-		return true;
+		return execInternalWithParameters(query, params).result;
 	}
 
 	/**
@@ -243,6 +218,8 @@ public:
 		}
 		return true;
 	}
+
+	bool deleteModels(std::vector<const Model*>& models) const;
 
 	/**
 	 * @brief Truncate the table for the given @c persistence::Model

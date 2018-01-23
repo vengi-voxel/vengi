@@ -171,6 +171,22 @@ TEST_F(DatabaseModelTest, testTruncate) {
 	EXPECT_EQ(count, 0);
 }
 
+TEST_F(DatabaseModelTest, testDeleteConditionAndPrimaryKey) {
+	if (!_supported) {
+		return;
+	}
+	int64_t id = -1L;
+	createModel("testDelete@b.c.d", "secret", id);
+	db::TestModel model;
+	model.setId(id);
+	EXPECT_TRUE(_dbHandler.deleteModel(model, db::DBConditionTestModelEmail("testDelete@b.c.d")));
+	int count = 0;
+	_dbHandler.select(db::TestModel(), persistence::DBConditionOne(), [&] (db::TestModel&& model) {
+		++count;
+	});
+	EXPECT_EQ(count, 0);
+}
+
 TEST_F(DatabaseModelTest, testDelete) {
 	if (!_supported) {
 		return;

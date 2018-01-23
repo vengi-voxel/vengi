@@ -829,13 +829,18 @@ std::string createSelect(const Model& table, BindParam* params) {
 	return stmt.str();
 }
 
+/**
+ * @param[in] condition The condition to generate the where clause for
+ * @param[in,out] parameterCount The amount of already existing where clauses due
+ * to primary keys that are not part of the condition
+ */
 std::string createWhere(const DBCondition& condition, int &parameterCount) {
 	const bool needWhere = parameterCount == 0;
 	const std::string& conditionStr = condition.statement(parameterCount);
 	if (conditionStr.empty()) {
 		return conditionStr;
 	}
-	return core::string::format("%s %s", (needWhere ? " WHERE" : ""), conditionStr.c_str());
+	return core::string::format("%s %s", (needWhere ? " WHERE" : " AND"), conditionStr.c_str());
 }
 
 std::string createOrderBy(const OrderBy& orderBy) {
