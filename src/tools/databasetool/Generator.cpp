@@ -317,6 +317,13 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		if (f.isForeignKey()) {
 			src << "\t * @note Foreign key\n";
 		}
+		if (f.updateOperator == persistence::Operator::ADD) {
+			src << "\t * @note Will add to the value in the conflict case (Operator::ADD)\n";
+		} else if (f.updateOperator == persistence::Operator::SUBTRACT) {
+			src << "\t * @note Will subtract to the value in the conflict case (Operator::SUBTRACT)\n";
+		} else if (f.updateOperator == persistence::Operator::SET) {
+			src << "\t * @note Will set the value in the conflict case (Operator::SET)\n";
+		}
 		src << "\t */\n";
 
 		src << "\tinline " << cpptypeGetter << " " << getter << "() const {\n";
