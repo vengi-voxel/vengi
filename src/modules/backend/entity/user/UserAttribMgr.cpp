@@ -53,6 +53,9 @@ void UserAttribMgr::shutdown() {
 bool UserAttribMgr::getDirtyModels(Models& models) {
 	Collection::underlying_type c;
 	_dirtyAttributeTypes.swap(c);
+	if (c.empty()) {
+		return false;
+	}
 	models.reserve(models.size() + c.size());
 	for (const attrib::DirtyValue& v : c) {
 		// we only persist current values, max values are given by containers.
