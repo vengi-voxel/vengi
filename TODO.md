@@ -13,6 +13,14 @@ or even better - do it in code.
 
 Better support for prepared statements
 
+## Joins
+
+Add support (autogenerate) for joins for the foreign keys in the models
+
+## Savable
+
+Support for deleting models
+
 ## Enums
 
 Support enums?

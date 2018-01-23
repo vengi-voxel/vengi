@@ -3,6 +3,7 @@
 #include "Mapping.h"
 #include "Table.h"
 #include "core/String.h"
+#include "core/Assert.h"
 
 namespace databasetool {
 
@@ -32,7 +33,7 @@ struct Class {
 	std::stringstream& _src;
 
 	Class(const Table& table, std::stringstream& src) : _table(table), _src(src) {
-		src << "/**\n * @brief Model class for table '" << table.name << "'\n";
+		src << "/**\n * @brief Model class for table '" << table.schema << "." << table.name << "'\n";
 		src << " * @note Work with this class in combination with the persistence::DBHandler\n";
 		src << " */\n";
 		src << "class " << table.classname << " : public persistence::Model {\n";
@@ -226,12 +227,16 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
 		const std::string classname = "DBCondition" + core::string::upperCamelCase(table.classname) + core::string::upperCamelCase(f.name);
+		src << "/**\n";
+		src << " * @brief Condition for '" << table.schema << "." << table.name << "." << f.name << "'.\n";
+		src << " */\n";
 		src << "class " << classname;
 		src << " : public persistence::DBCondition {\n";
 		src << "private:\n";
 		src << "\tusing Super = persistence::DBCondition;\n";
 		src << "public:\n";
-		src << "\t/**\n\t * @brief Condition for " << f.name << "\n\t * @param[in] value";
+		src << "\t/**\n\t * @brief Condition for " << f.name << "\n";
+		src << "\t * @param[in] value";
 		if (f.type == persistence::FieldType::TIMESTAMP) {
 			src << " UTC timestamp in seconds";
 		} else if (isString(f)) {
@@ -239,6 +244,8 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 				src << " The given value is converted to lowercase before the comparison takes place";
 			}
 		}
+		src << "\n";
+		src << "\t * @param[in] comp @c persistence::Comparator";
 		src << "\n\t */\n\t";
 		if (isString(f) && !f.isLower()) {
 			src << "constexpr ";
@@ -284,6 +291,42 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 	}
 }
 
+static void createDoxygen(const Table& table, const persistence::Field& f, std::stringstream& src) {
+	if (f.type == persistence::FieldType::TIMESTAMP) {
+		src << "\t * @note The value is in seconds\n";
+	}
+	if (f.isAutoincrement()) {
+		src << "\t * @note Auto increment\n";
+	}
+	if (f.isIndex()) {
+		src << "\t * @note Index\n";
+	}
+	if (f.isNotNull()) {
+		src << "\t * @note May not be null\n";
+	}
+	if (f.isPrimaryKey()) {
+		src << "\t * @note Primary key\n";
+	}
+	if (f.isLower()) {
+		src << "\t * @note Store as lowercase string\n";
+	}
+	if (f.isUnique()) {
+		src << "\t * @note Unique key\n";
+	}
+	if (f.isForeignKey()) {
+		auto i = table.foreignKeys.find(f.name);
+		core_assert(i != table.foreignKeys.end());
+		src << "\t * @note Foreign key to '" << table.schema << "." << i->second.table << "." << i->second.field << "'\n";
+	}
+	if (f.updateOperator == persistence::Operator::ADD) {
+		src << "\t * @note Will add to the value in the conflict case (Operator::ADD)\n";
+	} else if (f.updateOperator == persistence::Operator::SUBTRACT) {
+		src << "\t * @note Will subtract to the value in the conflict case (Operator::SUBTRACT)\n";
+	} else if (f.updateOperator == persistence::Operator::SET) {
+		src << "\t * @note Will set the value in the conflict case (Operator::SET)\n";
+	}
+}
+
 static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
@@ -292,38 +335,10 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		const std::string& cpptypeSetter = getCPPType(f.type, true, false);
 		const std::string& setter = core::string::upperCamelCase(f.name);
 
-		src << "\t/**\n\t * @brief Access the value after the model was loaded\n";
-		if (f.type == persistence::FieldType::TIMESTAMP) {
-			src << "\t * @note The value is in seconds\n";
-		}
-		if (f.isAutoincrement()) {
-			src << "\t * @note Auto increment\n";
-		}
-		if (f.isIndex()) {
-			src << "\t * @note Index\n";
-		}
-		if (f.isNotNull()) {
-			src << "\t * @note May not be null\n";
-		}
-		if (f.isPrimaryKey()) {
-			src << "\t * @note Primary key\n";
-		}
-		if (f.isLower()) {
-			src << "\t * @note Store as lowercase string\n";
-		}
-		if (f.isUnique()) {
-			src << "\t * @note Unique key\n";
-		}
-		if (f.isForeignKey()) {
-			src << "\t * @note Foreign key\n";
-		}
-		if (f.updateOperator == persistence::Operator::ADD) {
-			src << "\t * @note Will add to the value in the conflict case (Operator::ADD)\n";
-		} else if (f.updateOperator == persistence::Operator::SUBTRACT) {
-			src << "\t * @note Will subtract to the value in the conflict case (Operator::SUBTRACT)\n";
-		} else if (f.updateOperator == persistence::Operator::SET) {
-			src << "\t * @note Will set the value in the conflict case (Operator::SET)\n";
-		}
+		src << "\t/**\n\t * @brief Access the value for ";
+		src << "'" << table.schema << "." << table.name << "." << f.name << "'";
+		src << " after the model was loaded\n";
+		createDoxygen(table, f, src);
 		src << "\t */\n";
 
 		src << "\tinline " << cpptypeGetter << " " << getter << "() const {\n";
@@ -342,28 +357,10 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		src << "\t}\n\n";
 
 		src << "\t/**\n";
-		src << "\t * @brief Set the value for '" << f.name << "' for updates and where clauses\n";
-		if (f.isAutoincrement()) {
-			src << "\t * @note Auto increment\n";
-		}
-		if (f.isIndex()) {
-			src << "\t * @note Index\n";
-		}
-		if (f.isNotNull()) {
-			src << "\t * @note May not be null\n";
-		}
-		if (f.isPrimaryKey()) {
-			src << "\t * @note Primary key\n";
-		}
-		if (f.isLower()) {
-			src << "\t * @param[in] " << f.name << " Store as lowercase string\n";
-		}
-		if (f.isUnique()) {
-			src << "\t * @note Unique key\n";
-		}
-		if (f.isForeignKey()) {
-			src << "\t * @note Foreign key\n";
-		}
+		src << "\t * @brief Set the value for ";
+		src << "'" << table.schema << "." << table.name << "." << f.name << "'";
+		src << " for updates, inserts and where clauses\n";
+		createDoxygen(table, f, src);
 		src << "\t */\n";
 		src << "\tinline void set" << setter << "(" << cpptypeSetter << " " << f.name << ") {\n";
 		src << "\t\t_m._" << f.name << " = ";
