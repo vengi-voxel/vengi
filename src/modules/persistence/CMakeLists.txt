@@ -42,6 +42,7 @@ set(TEST_SRCS
 if (POSTGRESQL_FOUND)
 	set(HAVE_POSTGRES 1 CACHE INTERNAL "Found postgres")
 	list(APPEND TEST_SRCS
+		tests/PersistenceMgrTest.cpp
 		tests/ConnectionPoolTest.cpp
 		tests/DBConditionTest.cpp
 		tests/DatabaseSchemaUpdateTest.cpp
