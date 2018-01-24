@@ -59,6 +59,7 @@ set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl BackendModels.h)
 
 gtest_suite_files(tests
+	tests/AITest.cpp
 	tests/MapProviderTest.cpp
 	tests/MapTest.cpp
 )

@@ -188,15 +188,16 @@ UserPtr Map::user(EntityId id) {
 	return i->second;
 }
 
-void Map::addNpc(const NpcPtr& npc) {
+bool Map::addNpc(const NpcPtr& npc) {
 	auto i = _npcs.insert(std::make_pair(npc->id(), npc));
 	if (!i.second) {
-		return;
+		return false;
 	}
 	const glm::vec3& pos = findStartPosition(npc);
 	npc->setMap(ptr(), pos);
 	_zone->addAI(npc->ai());
 	_eventBus->enqueue(std::make_shared<EntityAddToMapEvent>(npc));
+	return true;
 }
 
 bool Map::removeNpc(EntityId id) {

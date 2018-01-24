@@ -96,13 +96,16 @@ public:
 	bool removeUser(EntityId id);
 	UserPtr user(EntityId id);
 
-	void addNpc(const NpcPtr& npc);
+	bool addNpc(const NpcPtr& npc);
 	bool removeNpc(EntityId id);
 	NpcPtr npc(EntityId id);
 
 	ai::Zone* zone() const;
 	MapId id() const;
 	const std::string& idStr() const;
+
+	int npcCount() const;
+	int userCount() const;
 
 	int findFloor(const glm::vec3& pos) const;
 	glm::ivec3 randomPos() const;
@@ -111,7 +114,10 @@ public:
 	AttackMgr& attackMgr();
 
 	const SpawnMgrPtr& spawnMgr() const;
+	SpawnMgrPtr& spawnMgr();
+
 	const poi::PoiProviderPtr& poiProvider() const;
+	poi::PoiProviderPtr& poiProvider();
 };
 
 inline const AttackMgr& Map::attackMgr() const {
@@ -134,12 +140,28 @@ inline const SpawnMgrPtr& Map::spawnMgr() const {
 	return _spawnMgr;
 }
 
+inline SpawnMgrPtr& Map::spawnMgr() {
+	return _spawnMgr;
+}
+
 inline const poi::PoiProviderPtr& Map::poiProvider() const {
+	return _poiProvider;
+}
+
+inline poi::PoiProviderPtr& Map::poiProvider() {
 	return _poiProvider;
 }
 
 inline ai::Zone* Map::zone() const {
 	return _zone;
+}
+
+inline int Map::npcCount() const {
+	return _npcs.size();
+}
+
+inline int Map::userCount() const {
+	return _users.size();
 }
 
 typedef std::shared_ptr<Map> MapPtr;

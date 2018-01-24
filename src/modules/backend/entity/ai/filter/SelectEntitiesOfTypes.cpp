@@ -10,7 +10,7 @@ using namespace ai;
 namespace backend {
 
 SelectEntitiesOfTypes::SelectEntitiesOfTypes(const std::string& parameters) :
-		IFilter("SelectNpcsOfTypes", parameters) {
+		IFilter("SelectEntitiesOfTypes", parameters) {
 	std::vector<std::string> types;
 	core::string::splitString(parameters, types, ",");
 	for (const std::string& type : types) {

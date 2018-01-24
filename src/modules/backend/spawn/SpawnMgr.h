@@ -27,6 +27,9 @@ private:
 	void spawnAnimals();
 	void spawnCharacters();
 
+	NpcPtr createNpc(network::EntityType type, const ai::TreeNodePtr& behaviour);
+	bool onSpawn(const NpcPtr& npc, const glm::ivec3* pos);
+
 public:
 	SpawnMgr(Map* map,
 			const io::FilesystemPtr& filesytem,
@@ -39,6 +42,7 @@ public:
 	bool init();
 	void shutdown();
 
+	NpcPtr spawn(network::EntityType type, const glm::ivec3* pos = nullptr);
 	int spawn(network::EntityType type, int amount, const glm::ivec3* pos = nullptr);
 	void update(long dt);
 };

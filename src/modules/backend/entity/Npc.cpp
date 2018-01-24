@@ -39,6 +39,7 @@ void Npc::shutdown() {
 
 void Npc::init() {
 	Super::init();
+	_ai->getAggroMgr().setReduceByValue(0.1f);
 }
 
 void Npc::init(const glm::ivec3* pos) {
@@ -49,7 +50,6 @@ void Npc::init(const glm::ivec3* pos) {
 	setHomePosition(randomPos);
 	_aiChr->setPosition(glm::vec3(randomPos.x, randomPos.y, randomPos.z));
 	init();
-	_ai->getAggroMgr().setReduceByValue(0.1f);
 }
 
 double Npc::applyDamage(Entity* attacker, double damage) {

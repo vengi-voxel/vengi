@@ -6,14 +6,18 @@
 
 #include "ai/ForwardDecl.h"
 #include "ai/common/Types.h"
-#include "Entity.h"
+#include "backend/entity/Entity.h"
 #include "cooldown/CooldownMgr.h"
 #include "backend/ForwardDecl.h"
+#include "backend/entity/EntityId.h"
 
 #include <atomic>
 
 namespace backend {
 
+/**
+ * @brief AI controlled @c Entity
+ */
 class Npc: public Entity {
 private:
 	using Super = Entity;

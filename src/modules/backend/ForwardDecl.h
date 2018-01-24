@@ -15,6 +15,8 @@ namespace ai {
 class Zone;
 class Server;
 class AIRegistry;
+class TreeNode;
+typedef std::shared_ptr<TreeNode> TreeNodePtr;
 
 }
 

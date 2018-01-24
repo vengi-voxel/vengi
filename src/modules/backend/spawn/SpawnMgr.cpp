@@ -73,6 +73,35 @@ void SpawnMgr::spawnEntity(network::EntityType start, network::EntityType end, i
 	}
 }
 
+bool SpawnMgr::onSpawn(const NpcPtr& npc, const glm::ivec3* pos) {
+	npc->init(pos);
+	// now let it tick
+	if (_map->addNpc(npc)) {
+		_entityStorage->addNpc(npc);
+		return true;
+	}
+	return false;
+}
+
+NpcPtr SpawnMgr::createNpc(network::EntityType type, const ai::TreeNodePtr& behaviour) {
+	return std::make_shared<Npc>(type, behaviour, _map->ptr(), _messageSender,
+					_timeProvider, _containerProvider, _cooldownProvider);
+}
+
+NpcPtr SpawnMgr::spawn(network::EntityType type, const glm::ivec3* pos) {
+	const char *typeName = network::EnumNameEntityType(type);
+	const ai::TreeNodePtr& behaviour = _loader->load(typeName);
+	if (!behaviour) {
+		Log::error("could not load the behaviour tree %s", typeName);
+		return NpcPtr();
+	}
+	const NpcPtr& npc = createNpc(type, behaviour);
+	if (!onSpawn(npc, pos)) {
+		return NpcPtr();
+	}
+	return npc;
+}
+
 int SpawnMgr::spawn(network::EntityType type, int amount, const glm::ivec3* pos) {
 	const char *typeName = network::EnumNameEntityType(type);
 	const ai::TreeNodePtr& behaviour = _loader->load(typeName);
@@ -81,12 +110,8 @@ int SpawnMgr::spawn(network::EntityType type, int amount, const glm::ivec3* pos)
 		return 0;
 	}
 	for (int x = 0; x < amount; ++x) {
-		const NpcPtr& npc = std::make_shared<Npc>(type, behaviour, _map->ptr(), _messageSender,
-				_timeProvider, _containerProvider, _cooldownProvider);
-		npc->init(pos);
-		// now let it tick
-		_map->addNpc(npc);
-		_entityStorage->addNpc(npc);
+		const NpcPtr& npc = createNpc(type, behaviour);
+		onSpawn(npc, pos);
 	}
 
 	return amount;
