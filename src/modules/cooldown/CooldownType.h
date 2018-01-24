@@ -31,4 +31,12 @@ inline Type getType(const std::string& name) {
 	return getType(name.c_str());
 }
 
+/**
+ * @brief Converts enum value into the string representation
+ * @ingroup Cooldowns
+ */
+inline const char* getType(Type type) {
+	return network::EnumNameCooldownType(type);
+}
+
 }
