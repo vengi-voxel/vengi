@@ -66,16 +66,23 @@ endif
 CMAKE_OPTIONS    ?=
 
 GPROF            ?=
+GCOV             ?=
 BUILD_TYPE       ?= Debug
 # override this in your Makefile.local to use a different directory
 BUILDDIRPATH     ?= ./
 #BUILDDIR         ?= $(BUILDDIRPATH)build-$(shell echo $(BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
 ifeq ($(GPROF),)
+ifneq ($(GCOV),)
+BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)/gcov
+CMAKE_OPTIONS    += -DUSE_GCOV=True
+else
 BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)
+endif
 else
 BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)/gprof
 CMAKE_OPTIONS    += -DUSE_GPROF=True
 endif
+
 
 ifneq ($(THREADS),)
 BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)/threads
