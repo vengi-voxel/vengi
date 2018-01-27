@@ -76,6 +76,9 @@ public:
 	UserLogoutMgr& logoutMgr();
 	const UserLogoutMgr& logoutMgr() const;
 
+	UserCooldownMgr& cooldownMgr();
+	const UserCooldownMgr& cooldownMgr() const;
+
 	UserMovementMgr& movementMgr();
 	const UserMovementMgr& movementMgr() const;
 };
@@ -94,6 +97,14 @@ inline UserMovementMgr& User::movementMgr() {
 
 inline const UserMovementMgr& User::movementMgr() const {
 	return _movementMgr;
+}
+
+inline UserCooldownMgr& User::cooldownMgr() {
+	return _cooldownMgr;
+}
+
+inline const UserCooldownMgr& User::cooldownMgr() const {
+	return _cooldownMgr;
 }
 
 inline void User::setEntityId(EntityId id) {
