@@ -22,7 +22,18 @@ namespace cooldown {
  * @brief Parameter for @c CooldownCallback
  */
 enum class CallbackType {
-	Started, Expired, Canceled
+	/**
+	 * @brief Given whenever a new cooldown was triggered
+	 */
+	Started,
+	/**
+	 * @brief Given whenever a cooldown expired
+	 */
+	Expired,
+	/**
+	 * @brief Given whenever a cooldown was canceled
+	 */
+	Canceled
 };
 
 /**
@@ -44,12 +55,18 @@ private:
 	CooldownCallback _callback;
 
 public:
-	Cooldown(Type type, unsigned long durationMillis, const CooldownCallback& callback,
+	Cooldown(Type type, unsigned long durationMillis,
 			const core::TimeProviderPtr& timeProvider, unsigned long startMillis = 0lu,
 			unsigned long expireMillis = 0lu);
 
-	void start();
+	/**
+	 * @brief Start a cooldown
+	 */
+	void start(CooldownCallback callback);
 
+	/**
+	 * @brief Start a cooldown
+	 */
 	void reset();
 
 	void expire();
@@ -58,8 +75,14 @@ public:
 
 	unsigned long durationMillis() const;
 
+	/**
+	 * @return @c true if the @c Cooldown was started, @c false if not.
+	 */
 	bool started() const;
 
+	/**
+	 * @return @c true if still running, @c false if not.
+	 */
 	bool running() const;
 
 	unsigned long duration() const;

@@ -51,14 +51,10 @@ protected:
 	/**
 	 * @brief Create @c Cooldown instances for the pool
 	 * @param[in] type The @c Type to start
-	 */
-	CooldownPtr createCooldown(Type type, CooldownCallback callback = CooldownCallback()) const;
-	/**
-	 * @brief Create @c Cooldown instances for the pool
-	 * @param[in] type The @c Type to start
 	 * @param[in] startMillis The millisecond timestamp when the Cooldown was triggered.
+	 * If this is less than @c 0 the @c TimeProvider will be used to resolve the time
 	 */
-	CooldownPtr createCooldown(Type type, long startMillis) const;
+	CooldownPtr createCooldown(Type type, long startMillis = -1l) const;
 public:
 	CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 	virtual ~CooldownMgr() {}

@@ -12,27 +12,29 @@ CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldo
 		_timeProvider(timeProvider), _cooldownProvider(cooldownProvider), _lock("CooldownMgr") {
 }
 
-CooldownPtr CooldownMgr::createCooldown(Type type, CooldownCallback callback) const {
-	const unsigned long duration = defaultDuration(type);
-	return std::make_shared<Cooldown>(type, duration, callback, _timeProvider);
-}
-
 CooldownPtr CooldownMgr::createCooldown(Type type, long startMillis) const {
 	const unsigned long duration = defaultDuration(type);
-	return std::make_shared<Cooldown>(type, duration, CooldownCallback(), _timeProvider, startMillis, startMillis + duration);
+	long expireMillis;
+	if (startMillis <= 0l) {
+		expireMillis = 0L;
+		startMillis = 0L;
+	} else {
+		expireMillis = startMillis + duration;
+	}
+	return std::make_shared<Cooldown>(type, duration, _timeProvider, startMillis, expireMillis);
 }
 
 CooldownTriggerState CooldownMgr::triggerCooldown(Type type, CooldownCallback callback) {
 	core::ScopedWriteLock lock(_lock);
 	CooldownPtr cooldown = _cooldowns[type];
 	if (!cooldown) {
-		cooldown = createCooldown(type, callback);
+		cooldown = createCooldown(type);
 		_cooldowns[type] = cooldown;
 	} else if (cooldown->running()) {
 		Log::trace("Failed to trigger the cooldown of type %i: already running", std::enum_value(type));
 		return CooldownTriggerState::ALREADY_RUNNING;
 	}
-	cooldown->start();
+	cooldown->start(callback);
 	_queue.push(cooldown);
 	Log::debug("Triggered the cooldown of type %i (expires in %lims, started at %li)",
 			std::enum_value(type), cooldown->duration(), cooldown->startMillis());

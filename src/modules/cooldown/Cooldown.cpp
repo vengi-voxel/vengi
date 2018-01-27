@@ -7,15 +7,16 @@
 namespace cooldown {
 
 Cooldown::Cooldown(Type type, unsigned long durationMillis,
-		const CooldownCallback& callback, const core::TimeProviderPtr& timeProvider,
+		const core::TimeProviderPtr& timeProvider,
 		unsigned long startMillis, unsigned long expireMillis) :
 		_type(type), _durationMillis(durationMillis), _startMillis(startMillis), _expireMillis(
-				expireMillis), _timeProvider(timeProvider), _callback(callback) {
+				expireMillis), _timeProvider(timeProvider) {
 }
 
-void Cooldown::start() {
+void Cooldown::start(CooldownCallback callback) {
 	_startMillis = _timeProvider->tickMillis();
 	_expireMillis = _startMillis + _durationMillis;
+	_callback = callback;
 	if (_callback) {
 		_callback(CallbackType::Started);
 	}
@@ -24,6 +25,7 @@ void Cooldown::start() {
 void Cooldown::reset() {
 	_startMillis = 0ul;
 	_expireMillis = 0ul;
+	_callback = CooldownCallback();
 }
 
 void Cooldown::expire() {
