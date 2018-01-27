@@ -29,7 +29,9 @@ void UserCooldownMgr::init() {
 		const uint64_t millis = model.starttime().millis();
 		const cooldown::CooldownPtr& cooldown = createCooldown(type, millis);
 		_cooldowns[type] = cooldown;
-		_queue.push(cooldown);
+		if (cooldown->running()) {
+			_queue.push(cooldown);
+		}
 	})) {
 		Log::warn("Could not load cooldowns for user " PRIEntId, _user->id());
 	}
