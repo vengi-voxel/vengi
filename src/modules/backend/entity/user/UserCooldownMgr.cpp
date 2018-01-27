@@ -51,7 +51,9 @@ void UserCooldownMgr::shutdown() {
 
 cooldown::CooldownTriggerState UserCooldownMgr::triggerCooldown(cooldown::Type type, cooldown::CooldownCallback callback) {
 	return Super::triggerCooldown(type, [this, type, callback] (cooldown::CallbackType callbackType) {
-		callback(callbackType);
+		if (callback) {
+			callback(callbackType);
+		}
 		sendCooldown(type, callbackType == cooldown::CallbackType::Started);
 	});
 }
