@@ -11,7 +11,7 @@
 
 namespace backend {
 
-UserStockMgr::UserStockMgr(User* user, const stock::StockProviderPtr& stockDataProvider, const persistence::DBHandlerPtr& dbHandler) :
+UserStockMgr::UserStockMgr(User* user, const stock::StockDataProviderPtr& stockDataProvider, const persistence::DBHandlerPtr& dbHandler) :
 		_user(user), _dbHandler(dbHandler), _stock(stockDataProvider) {
 }
 

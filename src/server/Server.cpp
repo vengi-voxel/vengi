@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 
 	const cooldown::CooldownProviderPtr& cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 
-	const stock::StockProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
+	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
 	const persistence::DBHandlerPtr& dbHandler = std::make_shared<persistence::DBHandler>();
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(eventBus);
 	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus, timeProvider,

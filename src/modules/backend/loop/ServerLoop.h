@@ -37,7 +37,7 @@ private:
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	eventmgr::EventMgrPtr _eventMgr;
 	persistence::DBHandlerPtr _dbHandler;
-	stock::StockProviderPtr _stockDataProvider;
+	stock::StockDataProviderPtr _stockDataProvider;
 	core::Input _input;
 	MetricMgrPtr _metricMgr;
 	io::FilesystemPtr _filesystem;
@@ -64,7 +64,7 @@ public:
 			const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider,
-			const eventmgr::EventMgrPtr& eventMgr, const stock::StockProviderPtr& stockDataProvider,
+			const eventmgr::EventMgrPtr& eventMgr, const stock::StockDataProviderPtr& stockDataProvider,
 			const MetricMgrPtr& metricMgr, const persistence::PersistenceMgrPtr& persistenceMgr);
 
 	void construct();

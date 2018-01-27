@@ -74,6 +74,6 @@ inline const std::string& StockDataProvider::error() const {
 	return _error;
 }
 
-typedef std::shared_ptr<StockDataProvider> StockProviderPtr;
+typedef std::shared_ptr<StockDataProvider> StockDataProviderPtr;
 
 }

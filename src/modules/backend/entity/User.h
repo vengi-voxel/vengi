@@ -43,7 +43,7 @@ public:
 			const cooldown::CooldownProviderPtr& cooldownProvider,
 			const persistence::DBHandlerPtr& dbHandler,
 			const persistence::PersistenceMgrPtr& persistenceMgr,
-			const stock::StockProviderPtr& stockDataProvider);
+			const stock::StockDataProviderPtr& stockDataProvider);
 	~User();
 
 	void setEntityId(EntityId id);

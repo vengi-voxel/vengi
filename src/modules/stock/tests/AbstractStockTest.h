@@ -11,7 +11,7 @@ namespace stock {
 
 class AbstractStockTest: public core::AbstractTest {
 protected:
-	StockProviderPtr _provider;
+	StockDataProviderPtr _provider;
 	ItemData *_itemData1;
 	ItemData *_itemData2;
 	Inventory _inv;

@@ -40,7 +40,7 @@ ServerLoop::ServerLoop(const core::TimeProviderPtr& timeProvider, const MapProvi
 		const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus,
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr,
-		const stock::StockProviderPtr& stockDataProvider, const MetricMgrPtr& metricMgr,
+		const stock::StockDataProviderPtr& stockDataProvider, const MetricMgrPtr& metricMgr,
 		const persistence::PersistenceMgrPtr& persistenceMgr) :
 		_network(network), _timeProvider(timeProvider), _mapProvider(mapProvider), _messageSender(messageSender),
 		_world(world),

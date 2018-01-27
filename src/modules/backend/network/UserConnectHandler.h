@@ -29,7 +29,7 @@ private:
 	core::TimeProviderPtr _timeProvider;
 	attrib::ContainerProviderPtr _containerProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
-	stock::StockProviderPtr _stockDataProvider;
+	stock::StockDataProviderPtr _stockDataProvider;
 	flatbuffers::FlatBufferBuilder _authFailed;
 
 	void sendAuthFailed(ENetPeer* peer);
@@ -46,7 +46,7 @@ public:
 			const core::TimeProviderPtr& timeProvider,
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider,
-			const stock::StockProviderPtr& stockDataProvider);
+			const stock::StockDataProviderPtr& stockDataProvider);
 
 	void execute(ENetPeer* peer, const void* message) override;
 };

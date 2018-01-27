@@ -18,12 +18,12 @@ class User;
 class UserStockMgr {
 private:
 	User* _user;
-	const stock::StockProviderPtr _stockDataProvider;
+	const stock::StockDataProviderPtr _stockDataProvider;
 	persistence::DBHandlerPtr _dbHandler;
 	stock::Stock _stock;
 
 public:
-	UserStockMgr(User* user, const stock::StockProviderPtr& stockDataProvider, const persistence::DBHandlerPtr& dbHandler);
+	UserStockMgr(User* user, const stock::StockDataProviderPtr& stockDataProvider, const persistence::DBHandlerPtr& dbHandler);
 
 	bool init();
 	void shutdown();

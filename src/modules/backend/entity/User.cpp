@@ -18,7 +18,7 @@ User::User(ENetPeer* peer, EntityId id,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
 		const persistence::DBHandlerPtr& dbHandler,
 		const persistence::PersistenceMgrPtr& persistenceMgr,
-		const stock::StockProviderPtr& stockDataProvider) :
+		const stock::StockDataProviderPtr& stockDataProvider) :
 		Super(id, map, messageSender, timeProvider, containerProvider),
 		_name(name),
 		_dbHandler(dbHandler),

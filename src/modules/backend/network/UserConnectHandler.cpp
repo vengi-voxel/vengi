@@ -27,7 +27,7 @@ UserConnectHandler::UserConnectHandler(
 		const core::TimeProviderPtr& timeProvider,
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
-		const stock::StockProviderPtr& stockDataProvider) :
+		const stock::StockDataProviderPtr& stockDataProvider) :
 		_network(network), _mapProvider(mapProvider), _dbHandler(dbHandler), _persistenceMgr(persistenceMgr),
 		_entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),
 		_containerProvider(containerProvider), _cooldownProvider(cooldownProvider),

@@ -10,7 +10,7 @@
 
 namespace stock {
 
-Stock::Stock(const StockProviderPtr& stockDataProvider) :
+Stock::Stock(const StockDataProviderPtr& stockDataProvider) :
 		_inventory(), _stockDataProvider(stockDataProvider) {
 }
 
