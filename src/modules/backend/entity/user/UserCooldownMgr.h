@@ -16,6 +16,10 @@ namespace backend {
 
 class User;
 
+/**
+ * @brief The UserCooldownMgr is responsible for persisting and sending out cooldown states
+ * @ingroup Cooldowns
+ */
 class UserCooldownMgr : public cooldown::CooldownMgr, public persistence::ISavable {
 private:
 	using Super = cooldown::CooldownMgr;
