@@ -13,13 +13,11 @@ CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldo
 }
 
 CooldownPtr CooldownMgr::createCooldown(Type type, CooldownCallback callback) const {
-	// TODO: use a pool here
 	const unsigned long duration = defaultDuration(type);
 	return std::make_shared<Cooldown>(type, duration, callback, _timeProvider);
 }
 
 CooldownPtr CooldownMgr::createCooldown(Type type, long startMillis) const {
-	// TODO: use a pool here
 	const unsigned long duration = defaultDuration(type);
 	return std::make_shared<Cooldown>(type, duration, CooldownCallback(), _timeProvider, startMillis, startMillis + duration);
 }

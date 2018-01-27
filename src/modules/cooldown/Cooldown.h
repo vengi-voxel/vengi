@@ -31,6 +31,9 @@ enum class CallbackType {
  */
 using CooldownCallback = std::function<void(CallbackType)>;
 
+/**
+ * @brief A cooldown is defined by a type, duration and a starting point.
+ */
 class Cooldown {
 private:
 	Type _type;

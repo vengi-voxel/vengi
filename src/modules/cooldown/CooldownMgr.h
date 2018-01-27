@@ -36,11 +36,28 @@ protected:
 	};
 
 	typedef std::priority_queue<CooldownPtr, std::vector<CooldownPtr>, CooldownComparatorLess> CooldownQueue;
+	/**
+	 * @brief Running cooldowns - sorted by expire time. There can only be one cooldown of the same
+	 * type at the same time.
+	 */
 	CooldownQueue _queue;
+
 	typedef std::unordered_map<Type, CooldownPtr, network::EnumHash<Type> > Cooldowns;
+	/**
+	 * @brief This is a pool of @c Cooldown instances.
+	 */
 	Cooldowns _cooldowns;
 
+	/**
+	 * @brief Create @c Cooldown instances for the pool
+	 * @param[in] type The @c Type to start
+	 */
 	CooldownPtr createCooldown(Type type, CooldownCallback callback = CooldownCallback()) const;
+	/**
+	 * @brief Create @c Cooldown instances for the pool
+	 * @param[in] type The @c Type to start
+	 * @param[in] startMillis The millisecond timestamp when the Cooldown was triggered.
+	 */
 	CooldownPtr createCooldown(Type type, long startMillis) const;
 public:
 	CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
