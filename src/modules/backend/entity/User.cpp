@@ -99,6 +99,9 @@ void User::sendUserSpawn() const {
 }
 
 void User::sendMessage(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type, flatbuffers::Offset<void> msg) const {
+	if (_peer == nullptr) {
+		return;
+	}
 	_messageSender->sendServerMessage(_peer, fbb, type, msg);
 }
 

@@ -60,7 +60,11 @@ generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl BackendModels.h
 
 gtest_suite_files(tests
 	tests/AITest.cpp
+	tests/UserCooldownMgrTest.cpp
 	tests/MapProviderTest.cpp
 	tests/MapTest.cpp
+	tests/EntityTest.h
+	tests/NpcTest.h
+	tests/UserTest.h
 )
 gtest_suite_deps(tests ${LIB})
