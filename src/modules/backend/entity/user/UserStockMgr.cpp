@@ -18,7 +18,7 @@ UserStockMgr::UserStockMgr(User* user, const stock::StockProviderPtr& stockDataP
 void UserStockMgr::update(long dt) {
 }
 
-void UserStockMgr::init() {
+bool UserStockMgr::init() {
 	_stock.init();
 	const EntityId userId = _user->id();
 	if (!_dbHandler->select(db::InventoryModel(), db::DBConditionInventoryModelUserid(userId), [this] (db::InventoryModel&& model) {
@@ -32,6 +32,7 @@ void UserStockMgr::init() {
 	})) {
 		Log::warn("Could not load inventory for user " PRIEntId, userId);
 	}
+	return true;
 }
 
 void UserStockMgr::shutdown() {

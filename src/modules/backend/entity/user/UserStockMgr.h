@@ -25,7 +25,7 @@ private:
 public:
 	UserStockMgr(User* user, const stock::StockProviderPtr& stockDataProvider, const persistence::DBHandlerPtr& dbHandler);
 
-	void init();
+	bool init();
 	void shutdown();
 
 	void update(long dt);
