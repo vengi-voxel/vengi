@@ -17,7 +17,7 @@ Stock::Stock(const StockDataProviderPtr& stockDataProvider) :
 bool Stock::init() {
 	const ContainerData* data = _stockDataProvider->containerData("main");
 	if (data == nullptr) {
-		Log::error("Could not find the needed container data for container 'main'");
+		Log::error("Could not find the needed inventory container data for container 'main'");
 		return false;
 	}
 	return _inventory.initContainer(data->id, data->shape, data->flags);
