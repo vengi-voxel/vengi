@@ -9,6 +9,9 @@
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class TexturePool {
 public:
 	TexturePool();

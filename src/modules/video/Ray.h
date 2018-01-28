@@ -6,6 +6,7 @@ namespace video {
 
 /**
  * @brief Defines origin and direction of a ray
+ * @ingroup Video
  */
 class Ray {
 public:

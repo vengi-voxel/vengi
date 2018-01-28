@@ -15,6 +15,9 @@
 namespace ui {
 namespace nuklear {
 
+/**
+ * @ingroup UI
+ */
 class NuklearApp: public video::WindowedApp {
 private:
 	using Super = video::WindowedApp;

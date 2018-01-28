@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ScopedLineWidth.h"
 
 namespace video {

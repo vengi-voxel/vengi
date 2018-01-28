@@ -13,6 +13,9 @@
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class Texture: public io::IOResource {
 private:
 	std::string _name;

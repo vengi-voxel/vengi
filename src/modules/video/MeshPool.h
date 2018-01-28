@@ -11,6 +11,9 @@
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class MeshPool {
 private:
 	typedef std::unordered_map<std::string, MeshPtr> Meshes;

@@ -18,6 +18,7 @@ namespace video {
 
 /**
  * @brief An application with the usual lifecycle, but with a window attached to it.
+ * @ingroup Video
  *
  * This application also receives input events (and others) from @c io::IEventObserver
  */

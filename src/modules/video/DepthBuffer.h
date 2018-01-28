@@ -10,6 +10,9 @@
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class DepthBuffer {
 public:
 	DepthBuffer();

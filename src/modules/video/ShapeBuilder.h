@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "core/Common.h"
@@ -11,6 +15,11 @@
 
 namespace video {
 
+/**
+ * @brief Generates primitives and allows to generate geometry from other types like @c AABB,
+ * @c Frustum and so on
+ * @ingroup Video
+ */
 class ShapeBuilder {
 public:
 	typedef std::vector<uint32_t> Indices;

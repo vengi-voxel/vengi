@@ -8,6 +8,9 @@
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class GBuffer {
 public:
 	GBuffer();

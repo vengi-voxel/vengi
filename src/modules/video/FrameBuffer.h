@@ -10,6 +10,9 @@
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class FrameBuffer {
 	friend class ScopedFrameBuffer;
 private:

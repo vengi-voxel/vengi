@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #pragma once
 
 #include "Shader.h"
@@ -5,6 +8,9 @@
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class ShaderManager {
 private:
 	typedef std::vector<Shader*> Shaders;

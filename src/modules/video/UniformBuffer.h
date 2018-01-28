@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "Renderer.h"
@@ -18,6 +22,7 @@ namespace video {
  *
  * Lastly, they can be used to share information between different programs. So modifying a single buffer can
  * effectively allow uniforms in multiple programs to be updated.
+ * @ingroup Video
  */
 class UniformBuffer {
 private:

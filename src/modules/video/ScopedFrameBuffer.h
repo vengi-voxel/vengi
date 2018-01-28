@@ -1,9 +1,16 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "FrameBuffer.h"
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class ScopedFrameBuffer {
 private:
 	Id _oldFramebuffer;

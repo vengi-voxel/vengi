@@ -12,6 +12,9 @@
 namespace ui {
 namespace imgui {
 
+/**
+ * @ingroup UI
+ */
 class IMGUIApp: public video::WindowedApp {
 private:
 	using Super = video::WindowedApp;

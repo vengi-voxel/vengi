@@ -1,5 +1,6 @@
 /**
  * @file
+ * @ingroup Video
  */
 
 #pragma once
@@ -44,6 +45,9 @@ constexpr inline DataType mapType() {
 	return DataType::Max;
 }
 
+/**
+ * @brief Allows to profile a particular renderer action
+ */
 class ProfilerGPU {
 private:
 	Id _id = InvalidId;

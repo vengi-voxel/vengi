@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #pragma once
 
 #include "Renderer.h"
@@ -7,6 +10,7 @@ namespace video {
 
 /**
  * @brief Restore the previous scissor after leaving the scope of the object
+ * @ingroup Video
  */
 class ScopedScissor {
 private:

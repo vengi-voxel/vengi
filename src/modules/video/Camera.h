@@ -33,6 +33,7 @@ enum class CameraMode {
 /**
  * @brief Camera class with frustum culling
  *
+ * @ingroup Video
  * @par Coordinate spaces
  * @li object coordinates (the raw coordinates passed to glVertex, glVertexPointer etc)
  * @li eye coordinates (after the model-view matrix has been applied)

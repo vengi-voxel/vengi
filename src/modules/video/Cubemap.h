@@ -8,6 +8,9 @@
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class Cubemap {
 private:
 	std::string _filename;

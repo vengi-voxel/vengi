@@ -1,5 +1,8 @@
 /**
  * @file
+ * @defgroup Voxel
+ * @{
+ * @}
  */
 
 #pragma once
@@ -50,6 +53,9 @@ struct ChunkMeshes {
 
 typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
 
+/**
+ * @ingroup Voxel
+ */
 class World {
 public:
 	enum Result {

@@ -1,5 +1,13 @@
 /**
  * @file
+ * @defgroup Compute
+ * @{
+ *
+ * The compute module contains wrappers around OpenCL.
+ *
+ * @see Shader
+ *
+ * @}
  */
 #pragma once
 

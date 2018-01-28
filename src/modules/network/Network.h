@@ -1,5 +1,9 @@
 /**
  * @file
+ * @defgroup Network
+ * @{
+ *
+ * The network messages are defined in fbs files in the definition/ folder.
  */
 
 #pragma once
@@ -20,6 +24,9 @@ enum class DisconnectReason {
 	Unknown
 };
 
+/**
+ * @brief Network implementation based on enet and flatbuffers
+ */
 class Network {
 protected:
 	ProtocolHandlerRegistryPtr _protocolHandlerRegistry;
@@ -56,3 +63,7 @@ inline const ProtocolHandlerRegistryPtr& Network::registry() {
 typedef std::shared_ptr<Network> NetworkPtr;
 
 }
+
+/**
+ * @}
+ */

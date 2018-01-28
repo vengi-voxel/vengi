@@ -12,6 +12,9 @@
 namespace ui {
 namespace turbobadger {
 
+/**
+ * @ingroup UI
+ */
 class UIApp: public video::WindowedApp, private tb::TBWidgetListener {
 private:
 	using Super = video::WindowedApp;

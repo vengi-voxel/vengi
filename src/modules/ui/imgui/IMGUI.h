@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @ingroup UI
+ */
+
 #pragma once
 
 #include "IMGUIInternal.h"

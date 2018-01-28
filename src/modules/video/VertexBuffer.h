@@ -13,6 +13,7 @@ namespace video {
 
 /**
  * @brief Wrapper for the opengl vertex buffer objects and vertex array objects.
+ * @ingroup Video
  */
 class VertexBuffer {
 private:

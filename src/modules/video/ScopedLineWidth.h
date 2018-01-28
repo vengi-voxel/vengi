@@ -12,6 +12,7 @@ namespace video {
 /**
  * @brief Not all line widths are supported on all platforms. This class helps you to set
  * a supported width and also restore the previous state after the scope was left.
+ * @ingroup Video
  */
 class ScopedLineWidth {
 private:

@@ -14,6 +14,10 @@ $includes$
 
 namespace $namespace$ {
 
+/**
+ * @brief Compute shader wrapper for @c $filename$
+ * @ingroup Compute
+ */
 class $name$ : public compute::Shader {
 private:
 	using Super = compute::Shader;

@@ -25,6 +25,9 @@ class Importer;
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class Mesh : public io::IOResource {
 public:
 	typedef std::vector<core::Vertex> Vertices;

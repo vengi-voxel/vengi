@@ -9,6 +9,9 @@
 
 namespace video {
 
+/**
+ * @ingroup Video
+ */
 class ScopedPolygonMode {
 private:
 	const video::PolygonMode _mode;
