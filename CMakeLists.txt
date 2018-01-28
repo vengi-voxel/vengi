@@ -3,6 +3,8 @@ project(engine VERSION "0.0.1")
 set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE STRING "Root dir")
 set(SCRIPTS_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
+add_custom_target(codegen)
+
 include(${SCRIPTS_CMAKE_DIR}/common.cmake)
 include(${SCRIPTS_CMAKE_DIR}/macros.cmake)
 include(${SCRIPTS_CMAKE_DIR}/pack.cmake)

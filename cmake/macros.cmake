@@ -95,6 +95,7 @@ macro(generate_shaders TARGET)
 	#target_sources(${TARGET} PUBLIC ${_headers} ${_h})
 	set_source_files_properties(${_headers} ${_h} ${_h}.in PROPERTIES GENERATED TRUE)
 	add_dependencies(${TARGET} GenerateShaderBindings${TARGET})
+	add_dependencies(codegen GenerateShaderBindings${TARGET})
 endmacro()
 
 macro(generate_compute_shaders TARGET)
@@ -146,6 +147,7 @@ macro(generate_compute_shaders TARGET)
 	#target_sources(${TARGET} PUBLIC ${_headers} ${_h})
 	set_source_files_properties(${_headers} ${_h} ${_h}.in PROPERTIES GENERATED TRUE)
 	add_dependencies(${TARGET} GenerateComputeShaderBindings${TARGET})
+	add_dependencies(codegen GenerateComputeShaderBindings${TARGET})
 endmacro()
 
 macro(generate_db_models TARGET INPUT OUTPUT)
@@ -165,6 +167,7 @@ macro(generate_db_models TARGET INPUT OUTPUT)
 	)
 	set_source_files_properties(${GEN_DIR}${OUTPUT} PROPERTIES GENERATED TRUE)
 	add_dependencies(${TARGET} GenerateDatabaseModelBindings${TARGET})
+	add_dependencies(codegen GenerateDatabaseModelBindings${TARGET})
 endmacro()
 
 macro(test_generate_db_models name INPUT OUTPUT)
@@ -200,6 +203,7 @@ macro(generate_protocol TARGET)
 		COMMENT "Generate network messages in ${GEN_DIR}"
 	)
 	add_dependencies(${TARGET} GenerateNetworkMessages${TARGET})
+	add_dependencies(codegen GenerateNetworkMessages${TARGET})
 endmacro()
 
 #
