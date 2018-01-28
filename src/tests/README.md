@@ -1,4 +1,4 @@
-#Visual Tests
+# Visual Tests
 
 These tests are dedicated test applications. They are no unit tests.
 
