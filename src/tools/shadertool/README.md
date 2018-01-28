@@ -1,4 +1,4 @@
-# Purpose
+# ShaderTool
 
 This tool parses GLSL shader files (mainly *.vert, *.frag) and generates C++ source files for them.
 
