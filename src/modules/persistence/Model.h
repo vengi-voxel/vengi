@@ -49,16 +49,26 @@ protected:
 	const ForeignKeysPtr _foreignKeys;
 	const PrimaryKeysPtr _primaryKeys;
 
+	/**
+	 * @brief Put the current row into this model instance.
+	 * @param[in,out] state The State of the query. Increases the current row for
+	 * each new model that calls this
+	 */
 	bool fillModelValues(State& state);
 public:
 	Model(const char* schema, const char*tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
 			const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys, const PrimaryKeysPtr primaryKeys);
 	virtual ~Model();
 
+	/**
+	 * @return The table name without schema
+	 * @see schema()
+	 */
 	const char* tableName() const;
 
 	/**
 	 * @return The schema name the model is located in
+	 * @see tableName()
 	 */
 	const char* schema() const;
 

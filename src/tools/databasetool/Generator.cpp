@@ -33,8 +33,10 @@ struct Class {
 	std::stringstream& _src;
 
 	Class(const Table& table, std::stringstream& src) : _table(table), _src(src) {
-		src << "/**\n * @brief Model class for table '" << table.schema << "." << table.name << "'\n";
+		src << "/**\n";
+		src << " * @brief Model class for table '" << table.schema << "." << table.name << "'\n";
 		src << " * @note Work with this class in combination with the persistence::DBHandler\n";
+		src << " * @ingroup Persistence\n";
 		src << " */\n";
 		src << "class " << table.classname << " : public persistence::Model {\n";
 		src << "private:\n";
