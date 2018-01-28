@@ -1,6 +1,9 @@
 /**
  * @file
- * @ingroup Video
+ * @defgroup Video
+ * @{
+ * The video subsystem implements rendering and window management.
+ * @}
  */
 
 #pragma once

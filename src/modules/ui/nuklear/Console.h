@@ -12,6 +12,9 @@ namespace nuklear {
 
 class NuklearApp;
 
+/**
+ * @ingroup UI
+ */
 class Console : public util::Console {
 private:
 	using Super = util::Console;

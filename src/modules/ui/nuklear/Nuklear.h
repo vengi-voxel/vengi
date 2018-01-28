@@ -11,4 +11,11 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_ASSERT core_assert
 
+/**
+ * @addtogroup UI
+ * @{
+ */
 #include "private/nuklear.h"
+/**
+ * @}
+ */

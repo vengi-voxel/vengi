@@ -8,6 +8,10 @@
 
 namespace $namespace$ {
 
+/**
+ * @ingroup Video
+ * @brief Uniform buffer wrapper
+ */
 class $name$ {
 public:
 	~$name$() {

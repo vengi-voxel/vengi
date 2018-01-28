@@ -14,6 +14,7 @@ namespace nuklear {
 /**
  * @brief The lua UI application is using a lua script with in @code ui/$appname$.lua @endcode to assemble the
  * UI. This script is automatically reloaded if it is changed in the filesystem.
+ * @ingroup UI
  */
 class LUAUIApp : public NuklearApp {
 private:

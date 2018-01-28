@@ -2,6 +2,7 @@
  * @file
  * @brief LUA bindings for nuklear ui.
  * @note Most of this stuff is shamelessly copied over from nuklear-love lua bindings
+ * @ingroup UI
  *
  * LOVE-Nuklear - MIT licensed; no warranty implied; use at your own risk.
  * authored from 2015-2016 by Micha Mettke

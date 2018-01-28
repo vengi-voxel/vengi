@@ -4,6 +4,12 @@
 #include "core/Assert.h"
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
+#include <utility>
+
+/**
+ * @addtogroup UI
+ * @{
+ */
 
 #define IM_VEC2_CLASS_EXTRA                                                   \
         ImVec2(const glm::ivec2& f) { x = f.x; y = f.y; }                     \
@@ -14,11 +20,9 @@
         operator glm::ivec4() const { return glm::ivec4(x,y,z,w); }
 
 #define IM_ASSERT(_EXPR) core_assert(_EXPR)
-
 #include <dearimgui/imgui.h>
 #define IMGUI_DEFINE_PLACEMENT_NEW
 #include <dearimgui/imgui_internal.h>
-#include <utility>
 
 template<class T, class ... Args>
 T* imguiAlloc(Args&&... args) {
@@ -26,3 +30,7 @@ T* imguiAlloc(Args&&... args) {
 	IM_PLACEMENT_NEW(instance) T(std::forward<Args>(args)...);
 	return instance;
 }
+
+/**
+ * @}
+ */

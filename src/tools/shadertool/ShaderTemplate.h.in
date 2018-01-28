@@ -14,6 +14,10 @@ $includes$
 
 namespace $namespace$ {
 
+/**
+ * @ingroup Video
+ * @brief Shader wrapper for $filename$
+ */
 class $name$ : public video::Shader {
 private:
 	using Super = video::Shader;
