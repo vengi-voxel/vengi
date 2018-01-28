@@ -427,12 +427,15 @@ inline void Zone::update(int64_t dt) {
 		for (const AIPtr& ai : scheduledAdd) {
 			doAddAI(ai);
 		}
+		scheduledAdd.clear();
 		for (const AIPtr& ai : scheduledRemove) {
 			doRemoveAI(ai);
 		}
+		scheduledRemove.clear();
 		for (auto id : scheduledDestroy) {
 			doDestroyAI(id);
 		}
+		scheduledDestroy.clear();
 	}
 
 	auto func = [&] (const AIPtr& ai) {
