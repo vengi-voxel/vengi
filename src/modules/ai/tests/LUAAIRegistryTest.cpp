@@ -82,14 +82,14 @@ protected:
 		const ai::TreeNodePtr& node = _registry.createNode(nodeName, ctx);
 		ASSERT_TRUE((bool)node) << "Could not create lua provided node '" << nodeName << "'";
 		const ai::AIPtr& ai = std::make_shared<ai::AI>(node);
-		ASSERT_EQ(1, ai.use_count()) << "We are holding more references than expected. Here should be the old reference at the moment.";
+		EXPECT_EQ(1, ai.use_count()) << "We are holding more references than expected. Here should be the old reference at the moment.";
 		ai->setCharacter(_chr);
-		ASSERT_EQ(1, ai.use_count()) << "We are holding more references than expected. Here should be the old reference at the moment.";
+		EXPECT_EQ(1, ai.use_count()) << "We are holding more references than expected. Here should be the old reference at the moment.";
 		ASSERT_TRUE(zone.addAI(ai));
-		ASSERT_EQ(2, ai.use_count()) << "We are holding more references than expected. One is here, one should be in the pending zone add queue.";
+		EXPECT_EQ(2, ai.use_count()) << "We are holding more references than expected. One is here, one should be in the pending zone add queue.";
 		ai->setPause(true);
 		zone.update(1l);
-		ASSERT_EQ(2, ai.use_count()) << "We are holding more references than expected. One is here, one should be in the zone ai collection.";
+		EXPECT_EQ(2, ai.use_count()) << "We are holding more references than expected. One is here, one should be in the zone ai collection.";
 		ai->setPause(false);
 		for (int i = 0; i < n; ++i) {
 			const ai::TreeNodeStatus executionStatus = node->execute(ai, 1L);
@@ -100,9 +100,9 @@ protected:
 		zone.update(1l);
 		ai->setPause(false);
 		ai->setBehaviour(ai::TreeNodePtr());
-		ASSERT_EQ(1, node.use_count()) << "Someone is still referencing the LUATreeNode";
+		EXPECT_EQ(1, node.use_count()) << "Someone is still referencing the LUATreeNode";
 		lua_gc(_registry.getLuaState(), LUA_GCCOLLECT, 0);
-		ASSERT_EQ(1, ai.use_count()) << "Someone is still referencing the AI instance";
+		EXPECT_EQ(1, ai.use_count()) << "Someone is still referencing the AI instance";
 	}
 };
 
