@@ -41,9 +41,9 @@ int Console::lineHeight() {
 	return lineHeight;
 }
 
-int Console::stringWidth(const char* s, int length) {
+glm::ivec2 Console::stringSize(const char* s, int length) {
 	const struct nk_user_font *styleFont = _ctx->style.font;
-	return styleFont->width(styleFont->userdata, styleFont->height, s, length);
+	return glm::ivec2(styleFont->width(styleFont->userdata, styleFont->height, s, length), lineHeight());
 }
 
 }

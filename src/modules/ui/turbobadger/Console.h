@@ -20,7 +20,7 @@ private:
 
 	void drawString(int x, int y, const glm::ivec4& color, const char* str, int len) override;
 	int lineHeight() override;
-	int stringWidth(const char* s, int length) override;
+	glm::ivec2 stringSize(const char* s, int length) override;
 	void beforeRender(const math::Rect<int> &rect) override;
 
 public:

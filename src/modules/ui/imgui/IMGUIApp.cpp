@@ -25,6 +25,9 @@ IMGUIApp::~IMGUIApp() {
 }
 
 void IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
+	if (_console.onMouseWheel(x, y)) {
+		return;
+	}
 	if (y > 0) {
 		_mouseWheel = 1;
 	} else if (y < 0) {
@@ -33,7 +36,17 @@ void IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
 	Super::onMouseWheel(x, y);
 }
 
+void IMGUIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
+	if (_console.isActive()) {
+		return;
+	}
+	Super::onMouseButtonRelease(x, y, button);
+}
+
 void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+	if (_console.onMouseButtonPress(x, y, button)) {
+		return;
+	}
 	if (button == SDL_BUTTON_LEFT) {
 		_mousePressed[0] = true;
 	} else if (button == SDL_BUTTON_RIGHT) {
@@ -45,25 +58,34 @@ void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t 
 }
 
 bool IMGUIApp::onTextInput(const std::string& text) {
+	if (_console.onTextInput(text)) {
+		return true;
+	}
 	ImGuiIO& io = ImGui::GetIO();
 	io.AddInputCharactersUTF8(text.c_str());
 	return true;
 }
 
-bool IMGUIApp::onKeyPress(int32_t key, int16_t modifierUnused) {
+bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
+	if (_console.onKeyPress(key, modifier)) {
+		return true;
+	}
 	ImGuiIO& io = ImGui::GetIO();
 	key &= ~SDLK_SCANCODE_MASK;
 	core_assert(key >= 0 && key < lengthof(io.KeysDown));
 	io.KeysDown[key] = true;
-	const int16_t modifier = SDL_GetModState();
-	io.KeyShift = (modifier & KMOD_SHIFT) != 0;
-	io.KeyCtrl  = (modifier & KMOD_CTRL) != 0;
-	io.KeyAlt   = (modifier & KMOD_ALT) != 0;
-	io.KeySuper = (modifier & KMOD_GUI) != 0;
-	return Super::onKeyPress(key, modifierUnused);
+	const int16_t modifiers = SDL_GetModState();
+	io.KeyShift = (modifiers & KMOD_SHIFT) != 0;
+	io.KeyCtrl  = (modifiers & KMOD_CTRL) != 0;
+	io.KeyAlt   = (modifiers & KMOD_ALT) != 0;
+	io.KeySuper = (modifiers & KMOD_GUI) != 0;
+	return Super::onKeyPress(key, modifier);
 }
 
 bool IMGUIApp::onKeyRelease(int32_t key) {
+	if (_console.isActive()) {
+		return true;
+	}
 	ImGuiIO& io = ImGui::GetIO();
 	key &= ~SDLK_SCANCODE_MASK;
 	core_assert(key >= 0 && key < lengthof(io.KeysDown));
@@ -89,6 +111,7 @@ void IMGUIApp::onWindowResize() {
 
 core::AppState IMGUIApp::onConstruct() {
 	const core::AppState state = Super::onConstruct();
+	_console.onConstruct();
 	return state;
 }
 
@@ -221,6 +244,8 @@ core::AppState IMGUIApp::onInit() {
 #endif
 	SDL_StartTextInput();
 
+	_console.init();
+
 	Log::info("Set up imgui");
 
 	return state;
@@ -292,6 +317,10 @@ core::AppState IMGUIApp::onRunning() {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
 	}
+
+	const math::Rect<int> rect(0, 0, _dimension.x, _dimension.y);
+	_console.render(rect, _deltaFrame);
+
 	ImGui::Render();
 
 	ImDrawData* drawData = ImGui::GetDrawData();
@@ -326,6 +355,7 @@ core::AppState IMGUIApp::onRunning() {
 
 core::AppState IMGUIApp::onCleanup() {
 	ImGui::Shutdown();
+	_console.shutdown();
 	_shader.shutdown();
 	_vbo.shutdown();
 	_indexBufferIndex = -1;

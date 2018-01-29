@@ -43,8 +43,8 @@ int Console::lineHeight() {
 	return lineHeight;
 }
 
-int Console::stringWidth(const char* s, int length) {
-	return _font->GetStringWidth(s, length);
+glm::ivec2 Console::stringSize(const char* s, int length) {
+	return glm::ivec2(_font->GetStringWidth(s, length), lineHeight());
 }
 
 }

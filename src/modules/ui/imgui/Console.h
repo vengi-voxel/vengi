@@ -5,12 +5,12 @@
 #pragma once
 
 #include "util/Console.h"
-#include "Nuklear.h"
+#include "IMGUI.h"
 
 namespace ui {
-namespace nuklear {
+namespace imgui {
 
-class NuklearApp;
+class IMGUIApp;
 
 /**
  * @ingroup UI
@@ -18,7 +18,6 @@ class NuklearApp;
 class Console : public util::Console {
 private:
 	using Super = util::Console;
-	struct nk_context* _ctx = nullptr;
 
 	void drawString(int x, int y, const glm::ivec4& color, const char* str, int len) override;
 	int lineHeight() override;
@@ -28,7 +27,6 @@ private:
 
 public:
 	Console();
-	bool init(struct nk_context* ctx);
 };
 
 }
