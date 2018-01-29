@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -999,8 +1000,7 @@ typedef std::multimap<uint64_t, const Connection*> ConnectionMap;
 
 /** DOM class for global document settings, a single instance per document can
  *  be accessed via Document.Globals(). */
-class FileGlobalSettings
-{
+class FileGlobalSettings {
 public:
     FileGlobalSettings(const Document& doc, std::shared_ptr<const PropertyTable> props);
     ~FileGlobalSettings();

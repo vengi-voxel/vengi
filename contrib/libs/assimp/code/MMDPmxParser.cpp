@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -41,7 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 #include "MMDPmxParser.h"
 #include "../contrib/utf8cpp/source/utf8.h"
-#include "Exceptional.h"
+#include <assimp/Exceptional.h>
 
 namespace pmx
 {
@@ -471,7 +472,7 @@ namespace pmx
 		stream->read((char*) &this->is_near, sizeof(uint8_t));
 	}
 
-	void PmxSoftBody::Read(std::istream *stream, PmxSetting *setting)
+    void PmxSoftBody::Read(std::istream * /*stream*/, PmxSetting * /*setting*/)
 	{
 		// 未実装
 		std::cerr << "Not Implemented Exception" << std::endl;

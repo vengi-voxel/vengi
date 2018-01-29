@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -302,7 +303,7 @@ namespace vmd
 			return result;
 		}
 
-		bool SaveToFile(const std::u16string& filename)
+        bool SaveToFile(const std::u16string& /*filename*/)
 		{
 			// TODO: How to adapt u16string to string?
 			/*

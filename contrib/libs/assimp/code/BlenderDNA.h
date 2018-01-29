@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -46,8 +47,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDED_AI_BLEND_DNA_H
 #define INCLUDED_AI_BLEND_DNA_H
 
-#include "BaseImporter.h"
-#include "StreamReader.h"
+#include <assimp/BaseImporter.h>
+#include <assimp/StreamReader.h>
 #include <assimp/DefaultLogger.hpp>
 #include <stdint.h>
 #include <memory>
@@ -92,6 +93,12 @@ struct Error : DeadlyImportError {
  *  descendents. It serves as base class for all data structure fields. */
 // -------------------------------------------------------------------------------
 struct ElemBase {
+    ElemBase()
+    : dna_type(nullptr)
+    {
+        // empty
+    }
+
     virtual ~ElemBase() {
         // empty
     }

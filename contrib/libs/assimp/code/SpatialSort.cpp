@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -42,7 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** @file Implementation of the helper class to quickly find vertices close to a given position */
 
-#include "SpatialSort.h"
+#include <assimp/SpatialSort.h>
 #include <assimp/ai_assert.h>
 
 using namespace Assimp;

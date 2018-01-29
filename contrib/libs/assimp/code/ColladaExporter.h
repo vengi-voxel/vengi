@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -54,7 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <map>
 
-#include "StringUtils.h"
+#include <assimp/StringUtils.h>
 
 struct aiScene;
 struct aiNode;
@@ -114,7 +115,9 @@ protected:
     /// Writes the given mesh
     void WriteGeometry( size_t pIndex);
 
-    enum FloatDataType { FloatType_Vector, FloatType_TexCoord2, FloatType_TexCoord3, FloatType_Color, FloatType_Mat4x4, FloatType_Weight };
+    //enum FloatDataType { FloatType_Vector, FloatType_TexCoord2, FloatType_TexCoord3, FloatType_Color, FloatType_Mat4x4, FloatType_Weight };
+    // customized to add animation related type
+	enum FloatDataType { FloatType_Vector, FloatType_TexCoord2, FloatType_TexCoord3, FloatType_Color, FloatType_Mat4x4, FloatType_Weight, FloatType_Time };
 
     /// Writes a float array of the given type
     void WriteFloatArray( const std::string& pIdString, FloatDataType pType, const ai_real* pData, size_t pElementCount);
@@ -122,6 +125,11 @@ protected:
     /// Writes the scene library
     void WriteSceneLibrary();
 
+	// customized, Writes the animation library
+	void WriteAnimationsLibrary();
+	void WriteAnimationLibrary( size_t pIndex);
+	std::string mFoundSkeletonRootNodeID = "skeleton_root";	 	// will be replaced by found node id in the WriteNode call.
+	
     /// Recursively writes the given node
     void WriteNode( const aiScene* scene, aiNode* pNode);
 

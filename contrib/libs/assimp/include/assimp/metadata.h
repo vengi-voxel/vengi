@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -187,7 +188,7 @@ struct aiMetadata {
     static inline
     aiMetadata *Alloc( unsigned int numProperties ) {
         if ( 0 == numProperties ) {
-            return NULL;
+            return nullptr;
         }
 
         aiMetadata *data = new aiMetadata;

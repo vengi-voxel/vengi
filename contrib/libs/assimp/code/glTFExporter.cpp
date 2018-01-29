@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -43,9 +44,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "glTFExporter.h"
 
-#include "Exceptional.h"
-#include "StringComparison.h"
-#include "ByteSwapper.h"
+#include <assimp/Exceptional.h>
+#include <assimp/StringComparison.h>
+#include <assimp/ByteSwapper.h>
 
 #include "SplitLargeMeshes.h"
 
@@ -56,7 +57,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/material.h>
 #include <assimp/scene.h>
 
-// Header files, standart library.
+// Header files, standard library.
 #include <memory>
 #include <inttypes.h>
 

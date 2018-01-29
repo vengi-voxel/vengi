@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -631,7 +632,7 @@ void WriteDump(const aiScene* scene, IOStream* io, bool shortened) {
 
 } // end of namespace AssxmlExport
 
-void ExportSceneAssxml(const char* pFile, IOSystem* pIOSystem, const aiScene* pScene, const ExportProperties* pProperties)
+void ExportSceneAssxml(const char* pFile, IOSystem* pIOSystem, const aiScene* pScene, const ExportProperties* /*pProperties*/)
 {
     IOStream * out = pIOSystem->Open( pFile, "wt" );
     if (!out) return;

@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -197,13 +198,17 @@ struct SceneHelper
  * The class is currently being used by various postprocessing steps
  * and loaders (ie. LWS).
  */
-class ASSIMP_API SceneCombiner
-{
+class ASSIMP_API SceneCombiner {
     // class cannot be instanced
-    SceneCombiner() {}
+    SceneCombiner() {
+        // empty
+    }
+
+    ~SceneCombiner() {
+        // empty
+    }
 
 public:
-
     // -------------------------------------------------------------------
     /** Merges two or more scenes.
      *

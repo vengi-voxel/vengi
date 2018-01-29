@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -45,7 +46,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** @file Implementation of the MD2 importer class */
 #include "MD2Loader.h"
-#include "ByteSwapper.h"
+#include <assimp/ByteSwapper.h>
 #include "MD2NormalTable.h" // shouldn't be included by other units
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/Importer.hpp>
@@ -274,11 +275,9 @@ void MD2Importer::InternReadFile( const std::string& pFile,
     aiMesh* pcMesh = pScene->mMeshes[0] = new aiMesh();
     pcMesh->mPrimitiveTypes = aiPrimitiveType_TRIANGLE;
 
-    // navigate to the begin of the frame data
-    BE_NCONST MD2::Frame* pcFrame = (BE_NCONST MD2::Frame*) ((uint8_t*)
-        m_pcHeader + m_pcHeader->offsetFrames);
-
-    pcFrame += configFrameID;
+    // navigate to the begin of the current frame data
+	BE_NCONST MD2::Frame* pcFrame = (BE_NCONST MD2::Frame*) ((uint8_t*)
+		m_pcHeader + m_pcHeader->offsetFrames + (m_pcHeader->frameSize * configFrameID));
 
     // navigate to the begin of the triangle data
     MD2::Triangle* pcTriangles = (MD2::Triangle*) ((uint8_t*)

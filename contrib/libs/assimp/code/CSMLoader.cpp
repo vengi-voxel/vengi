@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -49,9 +50,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ASSIMP_BUILD_NO_CSM_IMPORTER
 
 #include "CSMLoader.h"
-#include "SkeletonMeshBuilder.h"
-#include "ParsingUtils.h"
-#include "fast_atof.h"
+#include <assimp/SkeletonMeshBuilder.h>
+#include <assimp/ParsingUtils.h>
+#include <assimp/fast_atof.h>
 #include <assimp/Importer.hpp>
 #include <memory>
 #include <assimp/IOSystem.hpp>

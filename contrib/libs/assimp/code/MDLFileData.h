@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -56,7 +57,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/anim.h>
 #include <assimp/mesh.h>
 #include <assimp/Compiler/pushpack1.h>
-#include "ByteSwapper.h"
+#include <assimp/ByteSwapper.h>
 #include <stdint.h>
 #include <vector>
 

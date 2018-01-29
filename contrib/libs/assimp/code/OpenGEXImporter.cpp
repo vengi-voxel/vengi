@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -44,7 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/DefaultIOSystem.h>
 #include <assimp/DefaultLogger.hpp>
 #include "MakeVerboseFormat.h"
-#include "StringComparison.h"
+#include <assimp/StringComparison.h>
 
 #include <openddlparser/OpenDDLParser.h>
 #include <assimp/scene.h>
@@ -431,7 +432,7 @@ void OpenGEXImporter::handleNodes( DDLNode *node, aiScene *pScene ) {
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleMetricNode( DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleMetricNode( DDLNode *node, aiScene * /*pScene*/ ) {
     if( nullptr == node || nullptr == m_ctx ) {
         return;
     }
@@ -467,7 +468,7 @@ void OpenGEXImporter::handleMetricNode( DDLNode *node, aiScene *pScene ) {
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleNameNode( DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleNameNode( DDLNode *node, aiScene * /*pScene*/ ) {
     if( nullptr == m_currentNode ) {
         throw DeadlyImportError( "No current node for name." );
         return;
@@ -512,7 +513,7 @@ static void getRefNames( DDLNode *node, std::vector<std::string> &names ) {
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleObjectRefNode( DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleObjectRefNode( DDLNode *node, aiScene * /*pScene*/ ) {
     if( nullptr == m_currentNode ) {
         throw DeadlyImportError( "No parent node for name." );
         return;
@@ -536,7 +537,7 @@ void OpenGEXImporter::handleObjectRefNode( DDLNode *node, aiScene *pScene ) {
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleMaterialRefNode( ODDLParser::DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleMaterialRefNode( ODDLParser::DDLNode *node, aiScene * /*pScene*/ ) {
     if( nullptr == m_currentNode ) {
         throw DeadlyImportError( "No parent node for name." );
         return;
@@ -652,6 +653,8 @@ static void setMatrix( aiNode *node, DataArrayList *transformData ) {
         i++;
     }
 
+    ai_assert(i == 16);
+
     node->mTransformation.a1 = m[ 0 ];
     node->mTransformation.a2 = m[ 4 ];
     node->mTransformation.a3 = m[ 8 ];
@@ -674,7 +677,7 @@ static void setMatrix( aiNode *node, DataArrayList *transformData ) {
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleTransformNode( ODDLParser::DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleTransformNode( ODDLParser::DDLNode *node, aiScene * /*pScene*/ ) {
     if( nullptr == m_currentNode ) {
         throw DeadlyImportError( "No parent node for name." );
         return;
@@ -776,10 +779,22 @@ static void fillColor4( aiColor4D *col4, Value *vals ) {
     Value *next( vals );
     col4->r = next->getFloat();
     next = next->m_next;
+    if (!next) {
+        throw DeadlyImportError( "OpenGEX: Not enough values to fill 4-element color, only 1" );
+    }
+
     col4->g = next->getFloat();
     next = next->m_next;
+    if (!next) {
+        throw DeadlyImportError( "OpenGEX: Not enough values to fill 4-element color, only 2" );
+    }
+
     col4->b = next->getFloat();
     next = next->m_next;
+    if (!next) {
+        throw DeadlyImportError( "OpenGEX: Not enough values to fill 4-element color, only 3" );
+    }
+
     col4->a = next->getFloat();
 }
 
@@ -819,7 +834,7 @@ static void copyColor4DArray( size_t numItems, DataArrayList *vaList, aiColor4D 
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleVertexArrayNode( ODDLParser::DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleVertexArrayNode( ODDLParser::DDLNode *node, aiScene * /*pScene*/ ) {
     if( nullptr == node ) {
         throw DeadlyImportError( "No parent node for name." );
         return;
@@ -862,7 +877,7 @@ void OpenGEXImporter::handleVertexArrayNode( ODDLParser::DDLNode *node, aiScene 
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleIndexArrayNode( ODDLParser::DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleIndexArrayNode( ODDLParser::DDLNode *node, aiScene * /*pScene*/ ) {
     if( nullptr == node ) {
         throw DeadlyImportError( "No parent node for name." );
         return;
@@ -1001,7 +1016,7 @@ void OpenGEXImporter::handleMaterialNode( ODDLParser::DDLNode *node, aiScene *pS
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleColorNode( ODDLParser::DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleColorNode( ODDLParser::DDLNode *node, aiScene * /*pScene*/ ) {
     if( nullptr == node ) {
         return;
     }
@@ -1040,7 +1055,7 @@ void OpenGEXImporter::handleColorNode( ODDLParser::DDLNode *node, aiScene *pScen
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleTextureNode( ODDLParser::DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleTextureNode( ODDLParser::DDLNode *node, aiScene * /*pScene*/ ) {
     if( nullptr == node ) {
         return;
     }
@@ -1074,7 +1089,7 @@ void OpenGEXImporter::handleTextureNode( ODDLParser::DDLNode *node, aiScene *pSc
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleParamNode( ODDLParser::DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleParamNode( ODDLParser::DDLNode *node, aiScene * /*pScene*/ ) {
     if ( nullptr == node ) {
         return;
     }
@@ -1103,7 +1118,7 @@ void OpenGEXImporter::handleParamNode( ODDLParser::DDLNode *node, aiScene *pScen
 }
 
 //------------------------------------------------------------------------------------------------
-void OpenGEXImporter::handleAttenNode( ODDLParser::DDLNode *node, aiScene *pScene ) {
+void OpenGEXImporter::handleAttenNode( ODDLParser::DDLNode *node, aiScene * /*pScene*/ ) {
     if ( nullptr == node ) {
         return;
     }

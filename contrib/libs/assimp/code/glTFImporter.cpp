@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -42,8 +43,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ASSIMP_BUILD_NO_GLTF_IMPORTER
 
 #include "glTFImporter.h"
-#include "StringComparison.h"
-#include "StringUtils.h"
+#include <assimp/StringComparison.h>
+#include <assimp/StringUtils.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -98,14 +99,14 @@ const aiImporterDesc* glTFImporter::GetInfo() const
     return &desc;
 }
 
-bool glTFImporter::CanRead(const std::string& pFile, IOSystem* pIOHandler, bool checkSig) const
+bool glTFImporter::CanRead(const std::string& pFile, IOSystem* pIOHandler, bool /* checkSig */) const
 {
     const std::string &extension = GetExtension(pFile);
 
     if (extension != "gltf" && extension != "glb")
         return false;
 
-    if (checkSig && pIOHandler) {
+    if (pIOHandler) {
         glTF::Asset asset(pIOHandler);
         try {
             asset.Load(pFile, extension == "glb");
@@ -154,7 +155,7 @@ static void CopyValue(const glTF::mat4& v, aiMatrix4x4& o)
     o.a4 = v[12]; o.b4 = v[13]; o.c4 = v[14]; o.d4 = v[15];
 }
 
-inline void SetMaterialColorProperty(std::vector<int>& embeddedTexIdxs, Asset& r, glTF::TexProperty prop, aiMaterial* mat,
+inline void SetMaterialColorProperty(std::vector<int>& embeddedTexIdxs, Asset& /*r*/, glTF::TexProperty prop, aiMaterial* mat,
     aiTextureType texType, const char* pKey, unsigned int type, unsigned int idx)
 {
     if (prop.texture) {
@@ -234,6 +235,7 @@ static inline void SetFace(aiFace& face, int a, int b, int c)
     face.mIndices[2] = c;
 }
 
+#ifdef ASSIMP_BUILD_DEBUG
 static inline bool CheckValidFacesIndices(aiFace* faces, unsigned nFaces, unsigned nVerts)
 {
     for (unsigned i = 0; i < nFaces; ++i) {
@@ -245,6 +247,7 @@ static inline bool CheckValidFacesIndices(aiFace* faces, unsigned nFaces, unsign
     }
     return true;
 }
+#endif // ASSIMP_BUILD_DEBUG
 
 void glTFImporter::ImportMeshes(glTF::Asset& r)
 {
@@ -614,7 +617,7 @@ void glTFImporter::ImportEmbeddedTextures(glTF::Asset& r)
 
     // Add the embedded textures
     for (size_t i = 0; i < r.images.Size(); ++i) {
-        Image img = r.images[i];
+        Image &img = r.images[i];
         if (!img.HasData()) continue;
 
         int idx = mScene->mNumTextures++;

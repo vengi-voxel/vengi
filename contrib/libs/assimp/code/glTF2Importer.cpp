@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -42,8 +43,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ASSIMP_BUILD_NO_GLTF_IMPORTER
 
 #include "glTF2Importer.h"
-#include "StringComparison.h"
-#include "StringUtils.h"
+#include <assimp/StringComparison.h>
+#include <assimp/StringUtils.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -74,7 +75,7 @@ static const aiImporterDesc desc = {
     "",
     "",
     "",
-    aiImporterFlags_SupportTextFlavour | aiImporterFlags_LimitedSupport | aiImporterFlags_Experimental,
+    aiImporterFlags_SupportTextFlavour | aiImporterFlags_SupportBinaryFlavour | aiImporterFlags_LimitedSupport | aiImporterFlags_Experimental,
     0,
     0,
     0,
@@ -99,17 +100,17 @@ const aiImporterDesc* glTF2Importer::GetInfo() const
     return &desc;
 }
 
-bool glTF2Importer::CanRead(const std::string& pFile, IOSystem* pIOHandler, bool checkSig) const
+bool glTF2Importer::CanRead(const std::string& pFile, IOSystem* pIOHandler, bool /* checkSig */) const
 {
     const std::string &extension = GetExtension(pFile);
 
-    if (extension != "gltf") // We currently can't read glTF2 binary files (.glb), yet
+    if (extension != "gltf" && extension != "glb")
         return false;
 
-    if (checkSig && pIOHandler) {
+    if (pIOHandler) {
         glTF2::Asset asset(pIOHandler);
         try {
-            asset.Load(pFile);
+            asset.Load(pFile, extension == "glb");
             std::string version = asset.asset.version;
             return !version.empty() && version[0] == '2';
         } catch (...) {
@@ -159,21 +160,21 @@ static void CopyValue(const glTF2::mat4& v, aiMatrix4x4& o)
     o.a4 = v[12]; o.b4 = v[13]; o.c4 = v[14]; o.d4 = v[15];
 }
 
-inline void SetMaterialColorProperty(Asset& r, vec4& prop, aiMaterial* mat, const char* pKey, unsigned int type, unsigned int idx)
+inline void SetMaterialColorProperty(Asset& /*r*/, vec4& prop, aiMaterial* mat, const char* pKey, unsigned int type, unsigned int idx)
 {
     aiColor4D col;
     CopyValue(prop, col);
     mat->AddProperty(&col, 1, pKey, type, idx);
 }
 
-inline void SetMaterialColorProperty(Asset& r, vec3& prop, aiMaterial* mat, const char* pKey, unsigned int type, unsigned int idx)
+inline void SetMaterialColorProperty(Asset& /*r*/, vec3& prop, aiMaterial* mat, const char* pKey, unsigned int type, unsigned int idx)
 {
     aiColor4D col;
     CopyValue(prop, col);
     mat->AddProperty(&col, 1, pKey, type, idx);
 }
 
-inline void SetMaterialTextureProperty(std::vector<int>& embeddedTexIdxs, Asset& r, glTF2::TextureInfo prop, aiMaterial* mat, aiTextureType texType, unsigned int texSlot = 0)
+inline void SetMaterialTextureProperty(std::vector<int>& embeddedTexIdxs, Asset& /*r*/, glTF2::TextureInfo prop, aiMaterial* mat, aiTextureType texType, unsigned int texSlot = 0)
 {
     if (prop.texture && prop.texture->source) {
         aiString uri(prop.texture->source->uri);
@@ -211,63 +212,90 @@ inline void SetMaterialTextureProperty(std::vector<int>& embeddedTexIdxs, Asset&
     }
 }
 
+inline void SetMaterialTextureProperty(std::vector<int>& embeddedTexIdxs, Asset& r, glTF2::NormalTextureInfo& prop, aiMaterial* mat, aiTextureType texType, unsigned int texSlot = 0)
+{
+    SetMaterialTextureProperty( embeddedTexIdxs, r, (glTF2::TextureInfo) prop, mat, texType, texSlot );
+
+    if (prop.texture && prop.texture->source) {
+         mat->AddProperty(&prop.scale, 1, AI_MATKEY_GLTF_TEXTURE_SCALE(texType, texSlot));
+    }
+}
+
+inline void SetMaterialTextureProperty(std::vector<int>& embeddedTexIdxs, Asset& r, glTF2::OcclusionTextureInfo& prop, aiMaterial* mat, aiTextureType texType, unsigned int texSlot = 0)
+{
+    SetMaterialTextureProperty( embeddedTexIdxs, r, (glTF2::TextureInfo) prop, mat, texType, texSlot );
+
+    if (prop.texture && prop.texture->source) {
+        mat->AddProperty(&prop.strength, 1, AI_MATKEY_GLTF_TEXTURE_STRENGTH(texType, texSlot));
+    }
+}
+
+static aiMaterial* ImportMaterial(std::vector<int>& embeddedTexIdxs, Asset& r, Material& mat)
+{
+    aiMaterial* aimat = new aiMaterial();
+
+   if (!mat.name.empty()) {
+        aiString str(mat.name);
+
+        aimat->AddProperty(&str, AI_MATKEY_NAME);
+    }
+
+    SetMaterialColorProperty(r, mat.pbrMetallicRoughness.baseColorFactor, aimat, AI_MATKEY_COLOR_DIFFUSE);
+    SetMaterialColorProperty(r, mat.pbrMetallicRoughness.baseColorFactor, aimat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR);
+
+    SetMaterialTextureProperty(embeddedTexIdxs, r, mat.pbrMetallicRoughness.baseColorTexture, aimat, aiTextureType_DIFFUSE);
+    SetMaterialTextureProperty(embeddedTexIdxs, r, mat.pbrMetallicRoughness.baseColorTexture, aimat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE);
+
+    SetMaterialTextureProperty(embeddedTexIdxs, r, mat.pbrMetallicRoughness.metallicRoughnessTexture, aimat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE);
+
+    aimat->AddProperty(&mat.pbrMetallicRoughness.metallicFactor, 1, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR);
+    aimat->AddProperty(&mat.pbrMetallicRoughness.roughnessFactor, 1, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR);
+
+    float roughnessAsShininess = (1 - mat.pbrMetallicRoughness.roughnessFactor) * 1000;
+    aimat->AddProperty(&roughnessAsShininess, 1, AI_MATKEY_SHININESS);
+
+    SetMaterialTextureProperty(embeddedTexIdxs, r, mat.normalTexture, aimat, aiTextureType_NORMALS);
+    SetMaterialTextureProperty(embeddedTexIdxs, r, mat.occlusionTexture, aimat, aiTextureType_LIGHTMAP);
+    SetMaterialTextureProperty(embeddedTexIdxs, r, mat.emissiveTexture, aimat, aiTextureType_EMISSIVE);
+    SetMaterialColorProperty(r, mat.emissiveFactor, aimat, AI_MATKEY_COLOR_EMISSIVE);
+
+    aimat->AddProperty(&mat.doubleSided, 1, AI_MATKEY_TWOSIDED);
+
+    aiString alphaMode(mat.alphaMode);
+    aimat->AddProperty(&alphaMode, AI_MATKEY_GLTF_ALPHAMODE);
+    aimat->AddProperty(&mat.alphaCutoff, 1, AI_MATKEY_GLTF_ALPHACUTOFF);
+
+    //pbrSpecularGlossiness
+    if (mat.pbrSpecularGlossiness.isPresent) {
+        PbrSpecularGlossiness &pbrSG = mat.pbrSpecularGlossiness.value;
+
+        aimat->AddProperty(&mat.pbrSpecularGlossiness.isPresent, 1, AI_MATKEY_GLTF_PBRSPECULARGLOSSINESS);
+        SetMaterialColorProperty(r, pbrSG.diffuseFactor, aimat, AI_MATKEY_COLOR_DIFFUSE);
+        SetMaterialColorProperty(r, pbrSG.specularFactor, aimat, AI_MATKEY_COLOR_SPECULAR);
+
+        float glossinessAsShininess = pbrSG.glossinessFactor * 1000.0f;
+        aimat->AddProperty(&glossinessAsShininess, 1, AI_MATKEY_SHININESS);
+        aimat->AddProperty(&pbrSG.glossinessFactor, 1, AI_MATKEY_GLTF_PBRSPECULARGLOSSINESS_GLOSSINESS_FACTOR);
+
+        SetMaterialTextureProperty(embeddedTexIdxs, r, pbrSG.diffuseTexture, aimat, aiTextureType_DIFFUSE);
+
+        SetMaterialTextureProperty(embeddedTexIdxs, r, pbrSG.specularGlossinessTexture, aimat, aiTextureType_SPECULAR);
+    }
+
+    return aimat;
+}
+
 void glTF2Importer::ImportMaterials(glTF2::Asset& r)
 {
-    mScene->mNumMaterials = unsigned(r.materials.Size());
+    const unsigned int numImportedMaterials = unsigned(r.materials.Size());
+    Material defaultMaterial;
+
+    mScene->mNumMaterials = numImportedMaterials + 1;
     mScene->mMaterials = new aiMaterial*[mScene->mNumMaterials];
+    mScene->mMaterials[numImportedMaterials] = ImportMaterial(embeddedTexIdxs, r, defaultMaterial);
 
-    for (unsigned int i = 0; i < mScene->mNumMaterials; ++i) {
-        aiMaterial* aimat = mScene->mMaterials[i] = new aiMaterial();
-
-        Material& mat = r.materials[i];
-
-        if (!mat.name.empty()) {
-            aiString str(mat.name);
-
-            aimat->AddProperty(&str, AI_MATKEY_NAME);
-        }
-
-        SetMaterialColorProperty(r, mat.pbrMetallicRoughness.baseColorFactor, aimat, AI_MATKEY_COLOR_DIFFUSE);
-        SetMaterialColorProperty(r, mat.pbrMetallicRoughness.baseColorFactor, aimat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR);
-
-        SetMaterialTextureProperty(embeddedTexIdxs, r, mat.pbrMetallicRoughness.baseColorTexture, aimat, aiTextureType_DIFFUSE);
-        SetMaterialTextureProperty(embeddedTexIdxs, r, mat.pbrMetallicRoughness.baseColorTexture, aimat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE);
-
-        SetMaterialTextureProperty(embeddedTexIdxs, r, mat.pbrMetallicRoughness.metallicRoughnessTexture, aimat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE);
-
-        aimat->AddProperty(&mat.pbrMetallicRoughness.metallicFactor, 1, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR);
-        aimat->AddProperty(&mat.pbrMetallicRoughness.roughnessFactor, 1, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR);
-
-        float roughnessAsShininess = (1 - mat.pbrMetallicRoughness.roughnessFactor) * 1000;
-        aimat->AddProperty(&roughnessAsShininess, 1, AI_MATKEY_SHININESS);
-
-        SetMaterialTextureProperty(embeddedTexIdxs, r, mat.normalTexture, aimat, aiTextureType_NORMALS);
-        SetMaterialTextureProperty(embeddedTexIdxs, r, mat.occlusionTexture, aimat, aiTextureType_LIGHTMAP);
-        SetMaterialTextureProperty(embeddedTexIdxs, r, mat.emissiveTexture, aimat, aiTextureType_EMISSIVE);
-        SetMaterialColorProperty(r, mat.emissiveFactor, aimat, AI_MATKEY_COLOR_EMISSIVE);
-
-        aimat->AddProperty(&mat.doubleSided, 1, AI_MATKEY_TWOSIDED);
-
-        aiString alphaMode(mat.alphaMode);
-        aimat->AddProperty(&alphaMode, AI_MATKEY_GLTF_ALPHAMODE);
-        aimat->AddProperty(&mat.alphaCutoff, 1, AI_MATKEY_GLTF_ALPHACUTOFF);
-
-        //pbrSpecularGlossiness
-        if (mat.pbrSpecularGlossiness.isPresent) {
-            PbrSpecularGlossiness &pbrSG = mat.pbrSpecularGlossiness.value;
-
-            aimat->AddProperty(&mat.pbrSpecularGlossiness.isPresent, 1, AI_MATKEY_GLTF_PBRSPECULARGLOSSINESS);
-            SetMaterialColorProperty(r, pbrSG.diffuseFactor, aimat, AI_MATKEY_COLOR_DIFFUSE);
-            SetMaterialColorProperty(r, pbrSG.specularFactor, aimat, AI_MATKEY_COLOR_SPECULAR);
-
-            float glossinessAsShininess = pbrSG.glossinessFactor * 1000.0f;
-            aimat->AddProperty(&glossinessAsShininess, 1, AI_MATKEY_SHININESS);
-            aimat->AddProperty(&pbrSG.glossinessFactor, 1, AI_MATKEY_GLTF_PBRSPECULARGLOSSINESS_GLOSSINESS_FACTOR);
-
-            SetMaterialTextureProperty(embeddedTexIdxs, r, pbrSG.diffuseTexture, aimat, aiTextureType_DIFFUSE);
-
-            SetMaterialTextureProperty(embeddedTexIdxs, r, pbrSG.specularGlossinessTexture, aimat, aiTextureType_SPECULAR);
-        }
+    for (unsigned int i = 0; i < numImportedMaterials; ++i) {
+       mScene->mMaterials[i] = ImportMaterial(embeddedTexIdxs, r, r.materials[i]);
     }
 }
 
@@ -296,6 +324,7 @@ static inline void SetFace(aiFace& face, int a, int b, int c)
     face.mIndices[2] = c;
 }
 
+#ifdef ASSIMP_BUILD_DEBUG
 static inline bool CheckValidFacesIndices(aiFace* faces, unsigned nFaces, unsigned nVerts)
 {
     for (unsigned i = 0; i < nFaces; ++i) {
@@ -307,6 +336,7 @@ static inline bool CheckValidFacesIndices(aiFace* faces, unsigned nFaces, unsign
     }
     return true;
 }
+#endif // ASSIMP_BUILD_DEBUG
 
 void glTF2Importer::ImportMeshes(glTF2::Asset& r)
 {
@@ -360,7 +390,31 @@ void glTF2Importer::ImportMeshes(glTF2::Asset& r)
                 attr.position[0]->ExtractData(aim->mVertices);
             }
 
-            if (attr.normal.size() > 0 && attr.normal[0]) attr.normal[0]->ExtractData(aim->mNormals);
+            if (attr.normal.size() > 0 && attr.normal[0]) {
+                attr.normal[0]->ExtractData(aim->mNormals);
+
+                // only extract tangents if normals are present
+                if (attr.tangent.size() > 0 && attr.tangent[0]) {
+                    // generate bitangents from normals and tangents according to spec
+                    struct Tangent
+                    {
+                        aiVector3D xyz;
+                        ai_real w;
+                    } *tangents = nullptr;
+
+                    attr.tangent[0]->ExtractData(tangents);
+
+                    aim->mTangents = new aiVector3D[aim->mNumVertices];
+                    aim->mBitangents = new aiVector3D[aim->mNumVertices];
+
+                    for (unsigned int i = 0; i < aim->mNumVertices; ++i) {
+                        aim->mTangents[i] = tangents[i].xyz;
+                        aim->mBitangents[i] = (aim->mNormals[i] ^ tangents[i].xyz) * tangents[i].w;
+                    }
+
+                    delete tangents;
+                }
+            }
 
             for (size_t tc = 0; tc < attr.texcoord.size() && tc < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++tc) {
                 attr.texcoord[tc]->ExtractData(aim->mTextureCoords[tc]);
@@ -453,6 +507,10 @@ void glTF2Importer::ImportMeshes(glTF2::Asset& r)
             if (prim.material) {
                 aim->mMaterialIndex = prim.material.GetIndex();
             }
+            else {
+                aim->mMaterialIndex = mScene->mNumMaterials - 1;
+            }
+
         }
     }
 
@@ -473,6 +531,9 @@ void glTF2Importer::ImportCameras(glTF2::Asset& r)
 
         aiCamera* aicam = mScene->mCameras[i] = new aiCamera();
 
+        // cameras point in -Z by default, rest is specified in node transform
+        aicam->mLookAt = aiVector3D(0.f,0.f,-1.f);
+
         if (cam.type == Camera::Perspective) {
 
             aicam->mAspect        = cam.cameraProperties.perspective.aspectRatio;
@@ -490,7 +551,9 @@ aiNode* ImportNode(aiScene* pScene, glTF2::Asset& r, std::vector<unsigned int>& 
 {
     Node& node = *ptr;
 
-    aiNode* ainode = new aiNode(node.id);
+    std::string nameOrId = node.name.empty() ? node.id : node.name;
+
+    aiNode* ainode = new aiNode(nameOrId);
 
     if (!node.children.empty()) {
         ainode->mNumChildren = unsigned(node.children.size());
@@ -513,7 +576,13 @@ aiNode* ImportNode(aiScene* pScene, glTF2::Asset& r, std::vector<unsigned int>& 
             CopyValue(node.translation.value, trans);
             aiMatrix4x4 t;
             aiMatrix4x4::Translation(trans, t);
-            matrix = t * matrix;
+            matrix = matrix * t;
+        }
+
+        if (node.rotation.isPresent) {
+            aiQuaternion rot;
+            CopyValue(node.rotation.value, rot);
+            matrix = matrix * aiMatrix4x4(rot.GetMatrix());
         }
 
         if (node.scale.isPresent) {
@@ -521,14 +590,7 @@ aiNode* ImportNode(aiScene* pScene, glTF2::Asset& r, std::vector<unsigned int>& 
             CopyValue(node.scale.value, scal);
             aiMatrix4x4 s;
             aiMatrix4x4::Scaling(scal, s);
-            matrix = s * matrix;
-        }
-
-
-        if (node.rotation.isPresent) {
-            aiQuaternion rot;
-            CopyValue(node.rotation.value, rot);
-            matrix = aiMatrix4x4(rot.GetMatrix()) * matrix;
+            matrix = matrix * s;
         }
     }
 
@@ -637,7 +699,7 @@ void glTF2Importer::InternReadFile(const std::string& pFile, aiScene* pScene, IO
 
     // read the asset file
     glTF2::Asset asset(pIOHandler);
-    asset.Load(pFile);
+    asset.Load(pFile, GetExtension(pFile) == "glb");
 
     //
     // Copy the data out

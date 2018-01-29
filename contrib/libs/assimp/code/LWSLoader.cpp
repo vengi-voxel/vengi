@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -48,12 +49,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ASSIMP_BUILD_NO_LWS_IMPORTER
 
 #include "LWSLoader.h"
-#include "ParsingUtils.h"
-#include "fast_atof.h"
+#include <assimp/ParsingUtils.h>
+#include <assimp/fast_atof.h>
 
 #include <assimp/SceneCombiner.h>
-#include "GenericProperty.h"
-#include "SkeletonMeshBuilder.h"
+#include <assimp/GenericProperty.h>
+#include <assimp/SkeletonMeshBuilder.h>
 #include "ConvertToLHProcess.h"
 #include "Importer.h"
 #include <assimp/DefaultLogger.hpp>
@@ -471,7 +472,7 @@ void LWSImporter::BuildGraph(aiNode* nd, LWS::NodeDesc& src, std::vector<Attachm
 // Determine the exact location of a LWO file
 std::string LWSImporter::FindLWOFile(const std::string& in)
 {
-    // insert missing directory seperator if necessary
+    // insert missing directory separator if necessary
     std::string tmp;
     if (in.length() > 3 && in[1] == ':'&& in[2] != '\\' && in[2] != '/')
     {

@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -53,13 +54,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BlenderIntermediate.h"
 #include "BlenderModifier.h"
 #include "BlenderBMesh.h"
-#include "StringUtils.h"
+#include <assimp/StringUtils.h>
 #include <assimp/scene.h>
 #include <assimp/importerdesc.h>
 
-#include "StringComparison.h"
-#include "StreamReader.h"
-#include "MemoryIOWrapper.h"
+#include <assimp/StringComparison.h>
+#include <assimp/StreamReader.h>
+#include <assimp/MemoryIOWrapper.h>
 
 #include <cctype>
 
@@ -1148,7 +1149,7 @@ void BlenderImporter::ConvertMesh(const Scene& /*in*/, const Object* /*obj*/, co
 // ------------------------------------------------------------------------------------------------
 aiCamera* BlenderImporter::ConvertCamera(const Scene& /*in*/, const Object* obj, const Camera* cam, ConversionData& /*conv_data*/)
 {
-    ScopeGuard<aiCamera> out(new aiCamera());
+    std::unique_ptr<aiCamera> out(new aiCamera());
     out->mName = obj->id.name+2;
     out->mPosition = aiVector3D(0.f, 0.f, 0.f);
     out->mUp = aiVector3D(0.f, 1.f, 0.f);
@@ -1159,13 +1160,13 @@ aiCamera* BlenderImporter::ConvertCamera(const Scene& /*in*/, const Object* obj,
     out->mClipPlaneNear = cam->clipsta;
     out->mClipPlaneFar = cam->clipend;
 
-    return out.dismiss();
+    return out.release();
 }
 
 // ------------------------------------------------------------------------------------------------
 aiLight* BlenderImporter::ConvertLight(const Scene& /*in*/, const Object* obj, const Lamp* lamp, ConversionData& /*conv_data*/)
 {
-    ScopeGuard<aiLight> out(new aiLight());
+    std::unique_ptr<aiLight> out(new aiLight());
     out->mName = obj->id.name+2;
 
     switch (lamp->type)
@@ -1203,7 +1204,7 @@ aiLight* BlenderImporter::ConvertLight(const Scene& /*in*/, const Object* obj, c
     out->mColorAmbient = aiColor3D(lamp->r, lamp->g, lamp->b) * lamp->energy;
     out->mColorSpecular = aiColor3D(lamp->r, lamp->g, lamp->b) * lamp->energy;
     out->mColorDiffuse = aiColor3D(lamp->r, lamp->g, lamp->b) * lamp->energy;
-    return out.dismiss();
+    return out.release();
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1221,7 +1222,7 @@ aiNode* BlenderImporter::ConvertNode(const Scene& in, const Object* obj, Convers
         ++it;
     }
 
-    ScopeGuard<aiNode> node(new aiNode(obj->id.name+2)); // skip over the name prefix 'OB'
+    std::unique_ptr<aiNode> node(new aiNode(obj->id.name+2)); // skip over the name prefix 'OB'
     if (obj->data) {
         switch (obj->type)
         {
@@ -1305,14 +1306,14 @@ aiNode* BlenderImporter::ConvertNode(const Scene& in, const Object* obj, Convers
         aiNode** nd = node->mChildren = new aiNode*[node->mNumChildren]();
         for (const Object* nobj :children) {
             *nd = ConvertNode(in,nobj,conv_data,node->mTransformation * parentTransform);
-            (*nd++)->mParent = node;
+            (*nd++)->mParent = node.get();
         }
     }
 
     // apply modifiers
     modifier_cache->ApplyModifiers(*node,conv_data,in,*obj);
 
-    return node.dismiss();
+    return node.release();
 }
 
 #endif // ASSIMP_BUILD_NO_BLEND_IMPORTER

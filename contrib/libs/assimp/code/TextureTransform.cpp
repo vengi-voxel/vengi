@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -49,7 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/scene.h>
 
 #include "TextureTransform.h"
-#include "StringUtils.h"
+#include <assimp/StringUtils.h>
 
 using namespace Assimp;
 
@@ -317,7 +318,7 @@ void TextureTransformStep::Execute( aiScene* pScene)
                     info.lockedPos = AI_TT_UV_IDX_LOCK_TBD;
                 }
 
-                // Get all coresponding meshes
+                // Get all corresponding meshes
                 for (unsigned int n = 0; n < pScene->mNumMeshes;++n)    {
                     aiMesh* mesh = pScene->mMeshes[n];
                     if (mesh->mMaterialIndex != i || !mesh->mTextureCoords[0])

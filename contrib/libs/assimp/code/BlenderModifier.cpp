@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -47,7 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "BlenderModifier.h"
 #include <assimp/SceneCombiner.h>
-#include "Subdivision.h"
+#include <assimp/Subdivision.h>
 #include <assimp/scene.h>
 #include <memory>
 

@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -49,16 +50,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ASSIMP_BUILD_NO_IRR_IMPORTER
 
 #include "IRRLoader.h"
-#include "ParsingUtils.h"
-#include "fast_atof.h"
-#include "GenericProperty.h"
+#include <assimp/ParsingUtils.h>
+#include <assimp/fast_atof.h>
+#include <assimp/GenericProperty.h>
 
 #include <assimp/SceneCombiner.h>
-#include "StandardShapes.h"
+#include <assimp/StandardShapes.h>
 #include "Importer.h"
 
 // We need MathFunctions.h to compute the lcm/gcd of a number
-#include "MathFunctions.h"
+#include <assimp/MathFunctions.h>
 #include <memory>
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/mesh.h>
@@ -394,7 +395,7 @@ void IRRImporter::ComputeAnimations(Node* root, aiNode* real, std::vector<aiNode
                 angles[1] %= 360;
                 angles[2] %= 360;
 
-                if ((angles[0]*angles[1]) && (angles[1]*angles[2]))
+                if ( (angles[0]*angles[1]) != 0 && (angles[1]*angles[2]) != 0 )
                 {
                     FindSuitableMultiple(angles[0]);
                     FindSuitableMultiple(angles[1]);

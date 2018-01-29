@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -47,11 +48,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // internal headers
 #include "NFFLoader.h"
-#include "ParsingUtils.h"
-#include "StandardShapes.h"
-#include "qnan.h"
-#include "fast_atof.h"
-#include "RemoveComments.h"
+#include <assimp/ParsingUtils.h>
+#include <assimp/StandardShapes.h>
+#include <assimp/qnan.h>
+#include <assimp/fast_atof.h>
+#include <assimp/RemoveComments.h>
 #include <assimp/IOSystem.hpp>
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/scene.h>
@@ -242,8 +243,6 @@ void NFFImporter::InternReadFile( const std::string& pFile,
     // Check whether we can read from the file
     if( !file.get())
         throw DeadlyImportError( "Failed to open NFF file " + pFile + ".");
-
-    unsigned int m = (unsigned int)file->FileSize();
 
     // allocate storage and copy the contents of the file to a memory buffer
     // (terminate it with zero)
@@ -469,7 +468,7 @@ void NFFImporter::InternReadFile( const std::string& pFile,
                         for (unsigned int a = 0; a < numIdx;++a)
                         {
                             SkipSpaces(sz,&sz);
-                            m = ::strtoul10(sz,&sz);
+                            unsigned int m = ::strtoul10(sz,&sz);
                             if (m >= (unsigned int)tempPositions.size())
                             {
                                 DefaultLogger::get()->error("NFF2: Vertex index overflow");
@@ -635,7 +634,7 @@ void NFFImporter::InternReadFile( const std::string& pFile,
                         for (std::vector<unsigned int>::const_iterator it = tempIdx.begin(), end = tempIdx.end();
                             it != end;++it)
                         {
-                            m = *it;
+                            unsigned int m = *it;
 
                             // copy colors -vertex color specifications override polygon color specifications
                             if (hasColor)
@@ -735,7 +734,7 @@ void NFFImporter::InternReadFile( const std::string& pFile,
                     sz = &line[1];out = currentMesh;
                 }
                 SkipSpaces(sz,&sz);
-                m = strtoul10(sz);
+                unsigned int m = strtoul10(sz);
 
                 // ---- flip the face order
                 out->vertices.resize(out->vertices.size()+m);
@@ -1081,7 +1080,9 @@ void NFFImporter::InternReadFile( const std::string& pFile,
     // generate the camera
     if (hasCam)
     {
-        aiNode* nd = *ppcChildren = new aiNode();
+        ai_assert(ppcChildren);
+        aiNode* nd = new aiNode();
+        *ppcChildren = nd;
         nd->mName.Set("<NFF_Camera>");
         nd->mParent = root;
 
@@ -1105,13 +1106,15 @@ void NFFImporter::InternReadFile( const std::string& pFile,
     // generate light sources
     if (!lights.empty())
     {
+        ai_assert(ppcChildren);
         pScene->mNumLights = (unsigned int)lights.size();
         pScene->mLights = new aiLight*[pScene->mNumLights];
         for (unsigned int i = 0; i < pScene->mNumLights;++i,++ppcChildren)
         {
             const Light& l = lights[i];
 
-            aiNode* nd = *ppcChildren  = new aiNode();
+            aiNode* nd = new aiNode();
+            *ppcChildren = nd;
             nd->mParent = root;
 
             nd->mName.length = ::ai_snprintf(nd->mName.data,1024,"<NFF_Light%u>",i);
@@ -1128,7 +1131,8 @@ void NFFImporter::InternReadFile( const std::string& pFile,
     if (!pScene->mNumMeshes)throw DeadlyImportError("NFF: No meshes loaded");
     pScene->mMeshes = new aiMesh*[pScene->mNumMeshes];
     pScene->mMaterials = new aiMaterial*[pScene->mNumMaterials = pScene->mNumMeshes];
-    for (it = meshes.begin(), m = 0; it != end;++it)
+    unsigned int m = 0;
+    for (it = meshes.begin(); it != end;++it)
     {
         if ((*it).faces.empty())continue;
 

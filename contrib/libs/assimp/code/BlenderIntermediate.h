@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -110,7 +111,7 @@ namespace Blender {
         void operator= (const TempArray&)  {
         }
 
-        TempArray(const TempArray& arr) {
+        TempArray(const TempArray& /*arr*/) {
         }
 
     private:

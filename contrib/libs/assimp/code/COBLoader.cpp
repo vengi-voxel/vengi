@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -47,12 +48,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "COBLoader.h"
 #include "COBScene.h"
 
-#include "StreamReader.h"
-#include "ParsingUtils.h"
-#include "fast_atof.h"
+#include <assimp/StreamReader.h>
+#include <assimp/ParsingUtils.h>
+#include <assimp/fast_atof.h>
 
-#include "LineSplitter.h"
-#include "TinyFormatter.h"
+#include <assimp/LineSplitter.h>
+#include <assimp/TinyFormatter.h>
 #include <memory>
 #include <assimp/IOSystem.hpp>
 #include <assimp/DefaultLogger.hpp>

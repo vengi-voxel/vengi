@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -46,12 +47,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PlyExporter.h"
 #include <memory>
 #include <cmath>
-#include "Exceptional.h"
+#include <assimp/Exceptional.h>
 #include <assimp/scene.h>
 #include <assimp/version.h>
 #include <assimp/IOSystem.hpp>
 #include <assimp/Exporter.hpp>
-#include "qnan.h"
+#include <assimp/qnan.h>
 
 
 //using namespace Assimp;
@@ -65,7 +66,7 @@ template<> const char* type_of(double&) { return "double"; }
 
 // ------------------------------------------------------------------------------------------------
 // Worker function for exporting a scene to PLY. Prototyped and registered in Exporter.cpp
-void ExportScenePly(const char* pFile,IOSystem* pIOSystem, const aiScene* pScene, const ExportProperties* pProperties)
+void ExportScenePly(const char* pFile,IOSystem* pIOSystem, const aiScene* pScene, const ExportProperties* /*pProperties*/)
 {
     // invoke the exporter
     PlyExporter exporter(pFile, pScene);
@@ -83,7 +84,7 @@ void ExportScenePly(const char* pFile,IOSystem* pIOSystem, const aiScene* pScene
     outfile->Write( exporter.mOutput.str().c_str(), static_cast<size_t>(exporter.mOutput.tellp()),1);
 }
 
-void ExportScenePlyBinary(const char* pFile, IOSystem* pIOSystem, const aiScene* pScene, const ExportProperties* pProperties)
+void ExportScenePlyBinary(const char* pFile, IOSystem* pIOSystem, const aiScene* pScene, const ExportProperties* /*pProperties*/)
 {
     // invoke the exporter
     PlyExporter exporter(pFile, pScene, true);

@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -43,9 +44,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "glTF2Exporter.h"
 
-#include "Exceptional.h"
-#include "StringComparison.h"
-#include "ByteSwapper.h"
+#include <assimp/Exceptional.h>
+#include <assimp/StringComparison.h>
+#include <assimp/ByteSwapper.h>
 
 #include "SplitLargeMeshes.h"
 
@@ -56,7 +57,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/material.h>
 #include <assimp/scene.h>
 
-// Header files, standart library.
+// Header files, standard library.
 #include <memory>
 #include <inttypes.h>
 
@@ -75,6 +76,14 @@ namespace Assimp {
     {
         // invoke the exporter
         glTF2Exporter exporter(pFile, pIOSystem, pScene, pProperties, false);
+    }
+
+    // ------------------------------------------------------------------------------------------------
+    // Worker function for exporting a scene to GLB. Prototyped and registered in Exporter.cpp
+    void ExportSceneGLB2(const char* pFile, IOSystem* pIOSystem, const aiScene* pScene, const ExportProperties* pProperties)
+    {
+        // invoke the exporter
+        glTF2Exporter exporter(pFile, pIOSystem, pScene, pProperties, true);
     }
 
 } // end of namespace Assimp
@@ -101,6 +110,10 @@ glTF2Exporter::glTF2Exporter(const char* filename, IOSystem* pIOSystem, const ai
 
     mAsset.reset( new Asset( pIOSystem ) );
 
+    if (isBinary) {
+        mAsset->SetAsBinary();
+    }
+
     ExportMetadata();
 
     ExportMaterials();
@@ -118,7 +131,11 @@ glTF2Exporter::glTF2Exporter(const char* filename, IOSystem* pIOSystem, const ai
 
     AssetWriter writer(*mAsset);
 
-    writer.WriteFile(filename);
+    if (isBinary) {
+        writer.WriteGLBFile(filename);
+    } else {
+        writer.WriteFile(filename);
+    }
 }
 
 /*
@@ -170,13 +187,13 @@ inline Ref<Accessor> ExportData(Asset& a, std::string& meshName, Ref<Buffer>& bu
     bv->buffer = buffer;
     bv->byteOffset = unsigned(offset);
     bv->byteLength = length; //! The target that the WebGL buffer should be bound to.
+    bv->byteStride = 0;
     bv->target = isIndices ? BufferViewTarget_ELEMENT_ARRAY_BUFFER : BufferViewTarget_ARRAY_BUFFER;
 
     // accessor
     Ref<Accessor> acc = a.accessors.Create(a.FindUniqueID(meshName, "accessor"));
     acc->bufferView = bv;
     acc->byteOffset = 0;
-    acc->byteStride = 0;
     acc->componentType = compType;
     acc->count = count;
     acc->type = typeOut;
@@ -402,7 +419,7 @@ void glTF2Exporter::ExportMaterials()
     for (unsigned int i = 0; i < mScene->mNumMaterials; ++i) {
         const aiMaterial* mat = mScene->mMaterials[i];
 
-        std::string id = "material_" + std::to_string(i);
+        std::string id = "material_" + to_string(i);
 
         Ref<Material> m = mAsset->materials.Create(id);
 
@@ -445,7 +462,7 @@ void glTF2Exporter::ExportMaterials()
                 mat->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS
             ) {
                 // convert specular color to luminance
-                float specularIntensity = specularColor[0] * 0.2125 + specularColor[1] * 0.7154 + specularColor[2] * 0.0721;
+                float specularIntensity = specularColor[0] * 0.2125f + specularColor[1] * 0.7154f + specularColor[2] * 0.0721f;
                 //normalize shininess (assuming max is 1000) with an inverse exponentional curve
                 float normalizedShininess = std::sqrt(shininess / 1000);
 
@@ -692,8 +709,13 @@ void glTF2Exporter::ExportMeshes()
 		if (v) p.attributes.position.push_back(v);
 
 		/******************** Normals ********************/
+        // Normalize all normals as the validator can emit a warning otherwise
+        for (auto i = 0u; i < aim->mNumVertices; ++i) {
+            aim->mNormals[i].Normalize();
+        }
+
 		Ref<Accessor> n = ExportData(*mAsset, meshId, b, aim->mNumVertices, aim->mNormals, AttribType::VEC3, AttribType::VEC3, ComponentType_FLOAT);
-		if (n) p.attributes.normal.push_back(n);
+        if (n) p.attributes.normal.push_back(n);
 
 		/************** Texture coordinates **************/
         for (int i = 0; i < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++i) {
@@ -800,9 +822,33 @@ void glTF2Exporter::MergeMeshes()
             for (unsigned int m = nMeshes - 1; m >= 1; --m) {
                 Ref<Mesh> mesh = node->meshes.at(m);
 
-                firstMesh->primitives.insert(firstMesh->primitives.end(), mesh->primitives.begin(), mesh->primitives.end());
+                //append this mesh's primitives to the first mesh's primitives
+                firstMesh->primitives.insert(
+                    firstMesh->primitives.end(),
+                    mesh->primitives.begin(),
+                    mesh->primitives.end()
+                );
 
-                node->meshes.erase(node->meshes.begin() + m);
+                //remove the mesh from the list of meshes
+                unsigned int removedIndex = mAsset->meshes.Remove(mesh->id.c_str());
+
+                //find the presence of the removed mesh in other nodes
+                for (unsigned int nn = 0; nn < mAsset->nodes.Size(); ++nn) {
+                    Ref<Node> node = mAsset->nodes.Get(nn);
+
+                    for (unsigned int mm = 0; mm < node->meshes.size(); ++mm) {
+                        Ref<Mesh>& meshRef = node->meshes.at(mm);
+                        unsigned int meshIndex = meshRef.GetIndex();
+
+                        if (meshIndex == removedIndex) {
+                            node->meshes.erase(node->meshes.begin() + mm);
+                        } else if (meshIndex > removedIndex) {
+                            Ref<Mesh> newMeshRef = mAsset->meshes.Get(meshIndex - 1);
+
+                            meshRef = newMeshRef;
+                        }
+                    }
+                }
             }
 
             //since we were looping backwards, reverse the order of merged primitives to their original order

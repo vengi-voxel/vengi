@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -39,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-#include "StringUtils.h"
+#include <assimp/StringUtils.h>
 #include <iomanip>
 
 // Header files, Assimp
@@ -297,7 +298,7 @@ inline void Buffer::Read(Value& obj, Asset& r)
         if (dataURI.base64) {
             uint8_t* data = 0;
             this->byteLength = Util::DecodeBase64(dataURI.data, dataURI.dataLength, data);
-            this->mData.reset(data);
+            this->mData.reset(data, std::default_delete<uint8_t[]>());
 
             if (statedLength > 0 && this->byteLength != statedLength) {
                 throw DeadlyImportError("GLTF: buffer \"" + id + "\", expected " + to_string(statedLength) +
@@ -601,7 +602,6 @@ T Accessor::Indexer::GetValue(int i)
 inline Image::Image()
     : width(0)
     , height(0)
-    , mData(0)
     , mDataLength(0)
 {
 
@@ -624,8 +624,8 @@ inline void Image::Read(Value& obj, Asset& r)
                     Ref<BufferView> bv = r.bufferViews.Get(bufferViewId);
                     if (bv) {
                         mDataLength = bv->byteLength;
-                        mData = new uint8_t[mDataLength];
-                        memcpy(mData, bv->buffer->GetPointer() + bv->byteOffset, mDataLength);
+                        mData.reset(new uint8_t[mDataLength]);
+                        memcpy(mData.get(), bv->buffer->GetPointer() + bv->byteOffset, mDataLength);
                     }
                 }
             }
@@ -640,7 +640,9 @@ inline void Image::Read(Value& obj, Asset& r)
             if (ParseDataURI(uristr, uri->GetStringLength(), dataURI)) {
                 mimeType = dataURI.mediaType;
                 if (dataURI.base64) {
-                    mDataLength = Util::DecodeBase64(dataURI.data, dataURI.dataLength, mData);
+                    uint8_t *ptr = nullptr;
+                    mDataLength = Util::DecodeBase64(dataURI.data, dataURI.dataLength, ptr);
+                    mData.reset(ptr);
                 }
             }
             else {
@@ -652,10 +654,8 @@ inline void Image::Read(Value& obj, Asset& r)
 
 inline uint8_t* Image::StealData()
 {
-    uint8_t* data = mData;
     mDataLength = 0;
-    mData = 0;
-    return data;
+    return mData.release();
 }
 
 inline void Image::SetData(uint8_t* data, size_t length, Asset& r)
@@ -670,12 +670,12 @@ inline void Image::SetData(uint8_t* data, size_t length, Asset& r)
         bufferView->byteOffset = b->AppendData(data, length);
     }
     else { // text file: will be stored as a data uri
-        this->mData = data;
+        this->mData.reset(data);
         this->mDataLength = length;
     }
 }
 
-inline void Sampler::Read(Value& obj, Asset& r)
+inline void Sampler::Read(Value& obj, Asset& /*r*/)
 {
     SetDefaults();
 
@@ -1093,7 +1093,7 @@ Ref<Buffer> buf = pAsset_Root.buffers.Get(pCompression_Open3DGC.Buffer);
 }
 #endif
 
-inline void Camera::Read(Value& obj, Asset& r)
+inline void Camera::Read(Value& obj, Asset& /*r*/)
 {
     type = MemberOrDefault(obj, "type", Camera::Perspective);
 
@@ -1116,7 +1116,7 @@ inline void Camera::Read(Value& obj, Asset& r)
     }
 }
 
-inline void Light::Read(Value& obj, Asset& r)
+inline void Light::Read(Value& obj, Asset& /*r*/)
 {
     SetDefaults();
 
@@ -1282,7 +1282,7 @@ inline void Asset::ReadBinaryHeader(IOStream& stream)
     }
 
     AI_SWAP4(header.version);
-    asset.version = std::to_string(header.version);
+    asset.version = to_string(header.version);
     if (header.version != 1) {
         throw DeadlyImportError("GLTF: Unsupported binary glTF version");
     }
@@ -1414,7 +1414,7 @@ inline void Asset::ReadExtensionsUsed(Document& doc)
     #undef CHECK_EXT
 }
 
-inline IOStream* Asset::OpenFile(std::string path, const char* mode, bool absolute)
+inline IOStream* Asset::OpenFile(std::string path, const char* mode, bool /*absolute*/)
 {
     #ifdef ASSIMP_API
         return mIOSystem->Open(path, mode);

@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -55,9 +56,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // internal headers
 #include "SIBImporter.h"
-#include "ByteSwapper.h"
-#include "StreamReader.h"
-#include "TinyFormatter.h"
+#include <assimp/ByteSwapper.h>
+#include <assimp/StreamReader.h>
+#include <assimp/TinyFormatter.h>
 //#include "../contrib/ConvertUTF/ConvertUTF.h"
 #include "../contrib/utf8cpp/source/utf8.h"
 #include <assimp/IOSystem.hpp>
@@ -163,7 +164,7 @@ static aiColor3D ReadColor(StreamReaderLE* stream)
     return aiColor3D(r, g, b);
 }
 
-static void UnknownChunk(StreamReaderLE* stream, const SIBChunk& chunk)
+static void UnknownChunk(StreamReaderLE* /*stream*/, const SIBChunk& chunk)
 {
     char temp[5] = {
         static_cast<char>(( chunk.Tag>>24 ) & 0xff),
@@ -902,6 +903,7 @@ void SIBImporter::InternReadFile(const std::string& pFile,
     // Add nodes for each object.
     for (size_t n=0;n<sib.objs.size();n++)
     {
+        ai_assert(root->mChildren);
         SIBObject& obj = sib.objs[n];
         aiNode* node = new aiNode;
         root->mChildren[childIdx++] = node;
@@ -926,6 +928,7 @@ void SIBImporter::InternReadFile(const std::string& pFile,
     // (no transformation as the light is already in world space)
     for (size_t n=0;n<sib.lights.size();n++)
     {
+        ai_assert(root->mChildren);
         aiLight* light = sib.lights[n];
         if ( nullptr != light ) {
             aiNode* node = new aiNode;

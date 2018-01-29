@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -49,13 +50,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sstream>
 #include <stdarg.h>
 #include "ColladaParser.h"
-#include "fast_atof.h"
-#include "ParsingUtils.h"
-#include "StringUtils.h"
+#include <assimp/fast_atof.h>
+#include <assimp/ParsingUtils.h>
+#include <assimp/StringUtils.h>
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/IOSystem.hpp>
 #include <assimp/light.h>
-#include "TinyFormatter.h"
+#include <assimp/TinyFormatter.h>
 
 #include <memory>
 
@@ -224,7 +225,7 @@ void ColladaParser::ReadStructure()
 }
 
 // ------------------------------------------------------------------------------------------------
-// Reads asset informations such as coordinate system informations and legal blah
+// Reads asset information such as coordinate system information and legal blah
 void ColladaParser::ReadAssetInfo()
 {
     if( mReader->isEmptyElement())
@@ -2469,8 +2470,7 @@ void ColladaParser::CopyVertex(size_t currentVertex, size_t numOffsets, size_t n
     size_t baseOffset = currentPrimitive * numOffsets * numPoints + currentVertex * numOffsets;
 
     // don't overrun the boundaries of the index list
-    size_t maxIndexRequested = baseOffset + numOffsets - 1;
-    ai_assert(maxIndexRequested < indices.size());
+    ai_assert((baseOffset + numOffsets - 1) < indices.size());
 
     // extract per-vertex channels using the global per-vertex offset
     for (std::vector<InputChannel>::iterator it = pMesh->mPerVertexData.begin(); it != pMesh->mPerVertexData.end(); ++it)

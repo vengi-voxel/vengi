@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -225,6 +226,14 @@ struct TFace : ElemBase {
 
 // -------------------------------------------------------------------------------
 struct MTFace : ElemBase {
+	MTFace()
+	: flag(0)
+	, mode(0)
+	, tile(0)
+	, unwrap(0)
+	{
+	}
+
     float uv[4][2] FAIL;
     char flag;
     short mode;

@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -51,8 +52,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Header files, Assimp.
 #include <assimp/SceneCombiner.h>
-#include "StandardShapes.h"
-#include "StringUtils.h"
+#include <assimp/StandardShapes.h>
+#include <assimp/StringUtils.h>
 
 // Header files, stdlib.
 #include <iterator>
@@ -60,7 +61,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace Assimp
 {
 
-aiColor4D AMFImporter::SPP_Material::GetColor(const float pX, const float pY, const float pZ) const
+aiColor4D AMFImporter::SPP_Material::GetColor(const float /*pX*/, const float /*pY*/, const float /*pZ*/) const
 {
     aiColor4D tcol;
 
@@ -281,8 +282,11 @@ size_t AMFImporter::PostprocessHelper_GetTextureID_Or_Create(const std::string& 
 	{
 		if(!pID.empty())
 		{
-			for(size_t idx_target = pOffset, idx_src = 0; idx_target < tex_size; idx_target += pStep, idx_src++)
-				converted_texture.Data[idx_target] = src_texture[pSrcTexNum]->Data.at(idx_src);
+			for(size_t idx_target = pOffset, idx_src = 0; idx_target < tex_size; idx_target += pStep, idx_src++) {
+				CAMFImporter_NodeElement_Texture* tex = src_texture[pSrcTexNum];
+				ai_assert(tex);
+				converted_texture.Data[idx_target] = tex->Data.at(idx_src);
+			}
 		}
 	};// auto CopyTextureData = [&](const size_t pOffset, const size_t pStep, const uint8_t pSrcTexNum) -> void
 

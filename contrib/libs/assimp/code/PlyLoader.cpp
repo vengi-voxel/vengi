@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -47,8 +48,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // internal headers
 #include "PlyLoader.h"
-#include "IOStreamBuffer.h"
-#include "Macros.h"
+#include <assimp/IOStreamBuffer.h>
+#include <assimp/Macros.h>
 #include <memory>
 #include <assimp/IOSystem.hpp>
 #include <assimp/scene.h>
@@ -91,9 +92,9 @@ namespace
 // ------------------------------------------------------------------------------------------------
 // Constructor to be privately used by Importer
 PLYImporter::PLYImporter()
-  : mBuffer()
-  , pcDOM()
-  , mGeneratedMesh(NULL){
+  : mBuffer(nullptr)
+  , pcDOM(nullptr)
+  , mGeneratedMesh(nullptr){
   // empty
 }
 
@@ -196,7 +197,10 @@ void PLYImporter::InternReadFile(const std::string& pFile,
       if (!PLY::DOM::ParseInstance(streamedBuffer, &sPlyDom, this))
       {
         if (mGeneratedMesh != NULL)
+        {
           delete(mGeneratedMesh);
+          mGeneratedMesh = nullptr;
+        }
 
         streamedBuffer.close();
         throw DeadlyImportError("Invalid .ply file: Unable to build DOM (#1)");
@@ -211,7 +215,10 @@ void PLYImporter::InternReadFile(const std::string& pFile,
       if (!PLY::DOM::ParseInstanceBinary(streamedBuffer, &sPlyDom, this, bIsBE))
       {
         if (mGeneratedMesh != NULL)
+        {
           delete(mGeneratedMesh);
+          mGeneratedMesh = nullptr;
+        }
 
         streamedBuffer.close();
         throw DeadlyImportError("Invalid .ply file: Unable to build DOM (#2)");
@@ -220,7 +227,10 @@ void PLYImporter::InternReadFile(const std::string& pFile,
     else
     {
       if (mGeneratedMesh != NULL)
+      {
         delete(mGeneratedMesh);
+        mGeneratedMesh = nullptr;
+      }
 
       streamedBuffer.close();
       throw DeadlyImportError("Invalid .ply file: Unknown file format");
@@ -230,7 +240,10 @@ void PLYImporter::InternReadFile(const std::string& pFile,
   {
     AI_DEBUG_INVALIDATE_PTR(this->mBuffer);
     if (mGeneratedMesh != NULL)
+    {
       delete(mGeneratedMesh);
+      mGeneratedMesh = nullptr;
+    }
 
     streamedBuffer.close();
     throw DeadlyImportError("Invalid .ply file: Missing format specification");
@@ -252,7 +265,10 @@ void PLYImporter::InternReadFile(const std::string& pFile,
     if (mGeneratedMesh->mNumVertices < 3)
     {
       if (mGeneratedMesh != NULL)
+      {
         delete(mGeneratedMesh);
+        mGeneratedMesh = nullptr;
+      }
 
       streamedBuffer.close();
       throw DeadlyImportError("Invalid .ply file: Not enough "
@@ -289,6 +305,7 @@ void PLYImporter::InternReadFile(const std::string& pFile,
   pScene->mNumMeshes = 1;
   pScene->mMeshes = new aiMesh*[pScene->mNumMeshes];
   pScene->mMeshes[0] = mGeneratedMesh;
+  mGeneratedMesh = nullptr;
 
   // generate a simple node structure
   pScene->mRootNode = new aiNode();

@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -62,7 +63,7 @@ namespace Assimp {
 class ObjExporter {
 public:
     /// Constructor for a specific scene to export
-    ObjExporter(const char* filename, const aiScene* pScene);
+    ObjExporter(const char* filename, const aiScene* pScene, bool noMtl=false);
     ~ObjExporter();
     std::string GetMaterialLibName();
     std::string GetMaterialLibFileName();
@@ -97,7 +98,7 @@ private:
 
     void WriteHeader(std::ostringstream& out);
     void WriteMaterialFile();
-    void WriteGeometryFile();
+    void WriteGeometryFile(bool noMtl=false);
     std::string GetMaterialName(unsigned int index);
     void AddMesh(const aiString& name, const aiMesh* m, const aiMatrix4x4& mat);
     void AddNode(const aiNode* nd, const aiMatrix4x4& mParent);

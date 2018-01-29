@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -49,8 +50,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // internal headers
 #include "ValidateDataStructure.h"
-#include "BaseImporter.h"
-#include "fast_atof.h"
+#include <assimp/BaseImporter.h>
+#include <assimp/fast_atof.h>
 #include "ProcessHelper.h"
 #include <memory>
 
@@ -334,28 +335,28 @@ void ValidateDSProcess::Validate( const aiMesh* pMesh)
             case 1:
                 if (0 == (pMesh->mPrimitiveTypes & aiPrimitiveType_POINT))
                 {
-                    ReportError("aiMesh::mFaces[%i] is a POINT but aiMesh::mPrimtiveTypes "
+                    ReportError("aiMesh::mFaces[%i] is a POINT but aiMesh::mPrimitiveTypes "
                         "does not report the POINT flag",i);
                 }
                 break;
             case 2:
                 if (0 == (pMesh->mPrimitiveTypes & aiPrimitiveType_LINE))
                 {
-                    ReportError("aiMesh::mFaces[%i] is a LINE but aiMesh::mPrimtiveTypes "
+                    ReportError("aiMesh::mFaces[%i] is a LINE but aiMesh::mPrimitiveTypes "
                         "does not report the LINE flag",i);
                 }
                 break;
             case 3:
                 if (0 == (pMesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE))
                 {
-                    ReportError("aiMesh::mFaces[%i] is a TRIANGLE but aiMesh::mPrimtiveTypes "
+                    ReportError("aiMesh::mFaces[%i] is a TRIANGLE but aiMesh::mPrimitiveTypes "
                         "does not report the TRIANGLE flag",i);
                 }
                 break;
             default:
                 if (0 == (pMesh->mPrimitiveTypes & aiPrimitiveType_POLYGON))
                 {
-                    this->ReportError("aiMesh::mFaces[%i] is a POLYGON but aiMesh::mPrimtiveTypes "
+                    this->ReportError("aiMesh::mFaces[%i] is a POLYGON but aiMesh::mPrimitiveTypes "
                         "does not report the POLYGON flag",i);
                 }
                 break;

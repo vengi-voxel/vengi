@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -66,7 +67,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef ASSIMP_API
 #   include <memory>
 #   include <assimp/DefaultIOSystem.h>
-#   include "ByteSwapper.h"
+#   include <assimp/ByteSwapper.h>
 #else
 #   include <memory>
 #   define AI_SWAP4(p)
@@ -393,7 +394,7 @@ namespace glTF
         virtual ~Object() {}
 
         //! Maps special IDs to another ID, where needed. Subclasses may override it (statically)
-        static const char* TranslateId(Asset& r, const char* id)
+        static const char* TranslateId(Asset& /*r*/, const char* id)
             { return id; }
     };
 
@@ -649,7 +650,7 @@ namespace glTF
         int width, height;
 
     private:
-        uint8_t* mData;
+        std::unique_ptr<uint8_t[]> mData;
         size_t mDataLength;
 
     public:
@@ -664,7 +665,7 @@ namespace glTF
             { return mDataLength; }
 
         inline const uint8_t* GetData() const
-            { return mData; }
+            { return mData.get(); }
 
         inline uint8_t* StealData();
 

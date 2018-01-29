@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -43,6 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Q3BSPZipArchive.h"
 #include <cassert>
+#include <cstdlib>
 #include <assimp/ai_assert.h>
 
 namespace Assimp {
@@ -255,6 +257,7 @@ IOStream *Q3BSPZipArchive::Open(const char* pFile, const char* /*pMode*/) {
 // ------------------------------------------------------------------------------------------------
 //  Close a filestream.
 void Q3BSPZipArchive::Close(IOStream *pFile) {
+    (void)(pFile);
     ai_assert(pFile != NULL);
 
     // We don't do anything in case the file would be opened again in the future

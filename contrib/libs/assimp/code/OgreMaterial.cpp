@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -44,11 +45,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ASSIMP_BUILD_NO_OGRE_IMPORTER
 
 #include "OgreImporter.h"
-#include "TinyFormatter.h"
+#include <assimp/TinyFormatter.h>
 #include <assimp/material.h>
 #include <assimp/scene.h>
 #include <assimp/DefaultLogger.hpp>
-#include "fast_atof.h"
+#include <assimp/fast_atof.h>
 
 #include <vector>
 #include <sstream>
@@ -258,7 +259,7 @@ aiMaterial* OgreImporter::ReadMaterial(const std::string &pFile, Assimp::IOSyste
                 ReadTechnique(Trim(techniqueName), ss, material);
             }
 
-            // Read informations from a custom material
+            // Read information from a custom material
             /** @todo This "set $x y" does not seem to be a official Ogre material system feature.
                 Materials can inherit other materials and override texture units by using the (unique)
                 parent texture unit name in your cloned material.

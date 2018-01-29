@@ -1,13 +1,26 @@
 set(SRCS
 	code/FixNormalsStep.cpp
-	code/IFCLoader.cpp
+	code/Importer/IFC/IFCLoader.cpp
+	code/Importer/IFC/IFCCurve.cpp
+	code/Importer/IFC/IFCReaderGen1_2x3.cpp
+	code/Importer/IFC/IFCReaderGen2_2x3.cpp
+	code/Importer/IFC/IFCReaderGen_4.cpp
+	code/Importer/IFC/IFCBoolean.cpp
+	code/Importer/IFC/IFCUtil.cpp
+	code/Importer/IFC/IFCProfile.cpp
+	code/Importer/IFC/IFCOpenings.cpp
+	code/Importer/IFC/IFCMaterial.cpp
+	code/Importer/IFC/IFCGeometry.cpp
+	code/Importer/IFC/STEPFileReader.cpp
+	code/Importer/IFC/STEPFileEncoding.cpp
 	code/Importer.cpp
 	code/RemoveRedundantMaterials.cpp
 	code/UnrealLoader.cpp
-	code/IFCCurve.cpp
 	code/FBXNodeAttribute.cpp
 	code/Subdivision.cpp
 	code/OptimizeMeshes.cpp
+	code/D3MFExporter.cpp
+	code/EmbedTexturesProcess.cpp
 	code/FBXProperties.cpp
 	code/BlenderScene.cpp
 	code/CInterfaceIOWrapper.cpp
@@ -17,8 +30,6 @@ set(SRCS
 	code/BaseImporter.cpp
 	code/CSMLoader.cpp
 	code/SMDLoader.cpp
-	code/IFCReaderGen1.cpp
-	code/IFCReaderGen2.cpp
 	code/FindInvalidDataProcess.cpp
 	code/ScenePreprocessor.cpp
 	code/BVHLoader.cpp
@@ -30,7 +41,6 @@ set(SRCS
 	code/FBXDeformer.cpp
 	code/SkeletonMeshBuilder.cpp
 	code/RawLoader.cpp
-	code/IFCBoolean.cpp
 	code/FBXMeshGeometry.cpp
 	code/ImporterRegistry.cpp
 	code/ValidateDataStructure.cpp
@@ -48,7 +58,6 @@ set(SRCS
 	code/D3MFOpcPackage.cpp
 	code/ObjFileParser.cpp
 	code/OgreBinarySerializer.cpp
-	code/IFCProfile.cpp
 	code/DXFLoader.cpp
 	code/PlyParser.cpp
 	code/COBLoader.cpp
@@ -60,11 +69,9 @@ set(SRCS
 	code/ObjExporter.cpp
 	code/ColladaLoader.cpp
 	code/TargetAnimation.cpp
-	code/IFCUtil.cpp
 	code/FindDegenerates.cpp
 	code/PretransformVertices.cpp
 	code/BlenderLoader.cpp
-	code/IFCOpenings.cpp
 	code/MaterialSystem.cpp
 	code/glTFImporter.cpp
 	code/glTF2Importer.cpp
@@ -74,17 +81,14 @@ set(SRCS
 	code/Q3BSPFileParser.cpp
 	code/B3DImporter.cpp
 	code/MD5Parser.cpp
-	code/IFCMaterial.cpp
 	code/MD5Loader.cpp
 	code/GenFaceNormalsProcess.cpp
 	code/AssxmlExporter.cpp
 	code/MDCLoader.cpp
 	code/FBXMaterial.cpp
-	code/STEPFileReader.cpp
 	code/ASELoader.cpp
 	code/MDLLoader.cpp
 	code/CalcTangentsProcess.cpp
-	code/IFCGeometry.cpp
 	code/PlyExporter.cpp
 	code/IRRShared.cpp
 	code/NDOLoader.cpp
@@ -127,7 +131,6 @@ set(SRCS
 	code/BlenderModifier.cpp
 	code/ProcessHelper.cpp
 	code/BlenderTessellator.cpp
-	code/STEPFileEncoding.cpp
 	code/OptimizeGraph.cpp
 	code/DefaultIOSystem.cpp
 	code/GenVertexNormalsProcess.cpp
@@ -157,22 +160,17 @@ set(SRCS
 	code/ScaleProcess.cpp
 	code/NFFLoader.cpp
 	code/X3DExporter.cpp
-	code/X3DExporter.hpp
 	code/X3DImporter.cpp
-	code/X3DImporter.hpp
 	code/X3DImporter_Geometry2D.cpp
 	code/X3DImporter_Geometry3D.cpp
 	code/X3DImporter_Group.cpp
 	code/X3DImporter_Light.cpp
-	code/X3DImporter_Macro.hpp
 	code/X3DImporter_Metadata.cpp
 	code/X3DImporter_Networking.cpp
-	code/X3DImporter_Node.hpp
 	code/X3DImporter_Postprocess.cpp
 	code/X3DImporter_Rendering.cpp
 	code/X3DImporter_Shape.cpp
 	code/X3DImporter_Texturing.cpp
-	code/CreateAnimMesh.h
 	code/CreateAnimMesh.cpp
 	code/scene.cpp
 	contrib/openddlparser/code/DDLNode.cpp
@@ -182,6 +180,7 @@ set(SRCS
 	contrib/openddlparser/code/OpenDDLCommon.cpp
 	contrib/clipper/clipper.cpp
 	contrib/unzip/unzip.c
+	contrib/zip/src/zip.c
 	contrib/unzip/ioapi.c
 	contrib/irrXML/irrXML.cpp
 )

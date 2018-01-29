@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -45,7 +46,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ObjFileImporter.h"
 #include "ObjFileParser.h"
 #include "ObjFileData.h"
-#include "IOStreamBuffer.h"
+#include <assimp/IOStreamBuffer.h>
 #include <memory>
 #include <assimp/DefaultIOSystem.h>
 #include <assimp/Importer.hpp>
@@ -264,8 +265,12 @@ aiNode *ObjFileImporter::createNodes(const ObjFile::Model* pModel, const ObjFile
     {
         unsigned int meshId = pObject->m_Meshes[ i ];
         aiMesh *pMesh = createTopology( pModel, pObject, meshId );
-        if( pMesh && pMesh->mNumFaces > 0 ) {
-            MeshArray.push_back( pMesh );
+        if( pMesh ) {
+            if (pMesh->mNumFaces > 0) {
+                MeshArray.push_back( pMesh );
+            } else {
+                delete pMesh;
+            }
         }
     }
 
@@ -317,7 +322,7 @@ aiMesh *ObjFileImporter::createTopology( const ObjFile::Model* pModel, const Obj
         return NULL;
     }
 
-    aiMesh* pMesh = new aiMesh;
+    std::unique_ptr<aiMesh> pMesh(new aiMesh);
     if( !pObjMesh->m_name.empty() ) {
         pMesh->mName.Set( pObjMesh->m_name );
     }
@@ -382,9 +387,9 @@ aiMesh *ObjFileImporter::createTopology( const ObjFile::Model* pModel, const Obj
     }
 
     // Create mesh vertices
-    createVertexArray(pModel, pData, meshIndex, pMesh, uiIdxCount);
+    createVertexArray(pModel, pData, meshIndex, pMesh.get(), uiIdxCount);
 
-    return pMesh;
+    return pMesh.release();
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -444,6 +449,10 @@ void ObjFileImporter::createVertexArray(const ObjFile::Model* pModel,
                 throw DeadlyImportError( "OBJ: vertex index out of range" );
             }
 
+            if ( pMesh->mNumVertices <= newIndex ) {
+                throw DeadlyImportError("OBJ: bad vertex index");
+            }
+
             pMesh->mVertices[ newIndex ] = pModel->m_Vertices[ vertex ];
 
             // Copy all normals
@@ -466,17 +475,12 @@ void ObjFileImporter::createVertexArray(const ObjFile::Model* pModel,
             if ( !pModel->m_TextureCoord.empty() && vertexIndex < pSourceFace->m_texturCoords.size())
             {
                 const unsigned int tex = pSourceFace->m_texturCoords.at( vertexIndex );
-                ai_assert( tex < pModel->m_TextureCoord.size() );
 
                 if ( tex >= pModel->m_TextureCoord.size() )
                     throw DeadlyImportError("OBJ: texture coordinate index out of range");
 
                 const aiVector3D &coord3d = pModel->m_TextureCoord[ tex ];
                 pMesh->mTextureCoords[ 0 ][ newIndex ] = aiVector3D( coord3d.x, coord3d.y, coord3d.z );
-            }
-
-            if ( pMesh->mNumVertices <= newIndex ) {
-                throw DeadlyImportError("OBJ: bad vertex index");
             }
 
             // Get destination face

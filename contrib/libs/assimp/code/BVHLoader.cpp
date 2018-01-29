@@ -4,7 +4,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 
 All rights reserved.
@@ -45,11 +46,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ASSIMP_BUILD_NO_BVH_IMPORTER
 
 #include "BVHLoader.h"
-#include "fast_atof.h"
-#include "SkeletonMeshBuilder.h"
+#include <assimp/fast_atof.h>
+#include <assimp/SkeletonMeshBuilder.h>
 #include <assimp/Importer.hpp>
 #include <memory>
-#include "TinyFormatter.h"
+#include <assimp/TinyFormatter.h>
 #include <assimp/IOSystem.hpp>
 #include <assimp/scene.h>
 #include <assimp/importerdesc.h>

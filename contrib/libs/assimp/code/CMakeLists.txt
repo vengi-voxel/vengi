@@ -1,7 +1,8 @@
 # Open Asset Import Library (assimp)
 # ----------------------------------------------------------------------
 #
-# Copyright (c) 2006-2017, assimp team
+# Copyright (c) 2006-2018, assimp team
+
 
 # All rights reserved.
 #
@@ -98,6 +99,40 @@ SET( PUBLIC_HEADERS
   ${HEADER_PATH}/DefaultIOStream.h
   ${HEADER_PATH}/DefaultIOSystem.h
   ${HEADER_PATH}/SceneCombiner.h
+  ${HEADER_PATH}/fast_atof.h
+  ${HEADER_PATH}/qnan.h
+  ${HEADER_PATH}/BaseImporter.h
+  ${HEADER_PATH}/Hash.h
+  ${HEADER_PATH}/MemoryIOWrapper.h
+  ${HEADER_PATH}/ParsingUtils.h
+  ${HEADER_PATH}/StreamReader.h
+  ${HEADER_PATH}/StreamWriter.h
+  ${HEADER_PATH}/StringComparison.h
+  ${HEADER_PATH}/StringUtils.h
+  ${HEADER_PATH}/SGSpatialSort.h
+  ${HEADER_PATH}/GenericProperty.h
+  ${HEADER_PATH}/SpatialSort.h
+  ${HEADER_PATH}/SkeletonMeshBuilder.h
+  ${HEADER_PATH}/SmoothingGroups.h
+  ${HEADER_PATH}/SmoothingGroups.inl
+  ${HEADER_PATH}/StandardShapes.h
+  ${HEADER_PATH}/RemoveComments.h
+  ${HEADER_PATH}/Subdivision.h
+  ${HEADER_PATH}/Vertex.h
+  ${HEADER_PATH}/LineSplitter.h
+  ${HEADER_PATH}/TinyFormatter.h
+  ${HEADER_PATH}/Profiler.h
+  ${HEADER_PATH}/LogAux.h
+  ${HEADER_PATH}/Bitmap.h
+  ${HEADER_PATH}/XMLTools.h
+  ${HEADER_PATH}/IOStreamBuffer.h
+  ${HEADER_PATH}/CreateAnimMesh.h
+  ${HEADER_PATH}/irrXMLWrapper.h
+  ${HEADER_PATH}/BlobIOSystem.h
+  ${HEADER_PATH}/MathFunctions.h
+  ${HEADER_PATH}/Macros.h
+  ${HEADER_PATH}/Exceptional.h
+  ${HEADER_PATH}/ByteSwapper.h
 )
 
 SET( Core_SRCS
@@ -117,68 +152,40 @@ SET( Logging_SRCS
 SOURCE_GROUP(Logging FILES ${Logging_SRCS})
 
 SET( Common_SRCS
-  fast_atof.h
-  qnan.h
   BaseImporter.cpp
-  BaseImporter.h
   BaseProcess.cpp
   BaseProcess.h
   Importer.h
   ScenePrivate.h
   PostStepRegistry.cpp
   ImporterRegistry.cpp
-  ByteSwapper.h
   DefaultProgressHandler.h
   DefaultIOStream.cpp
   DefaultIOSystem.cpp
   CInterfaceIOWrapper.cpp
   CInterfaceIOWrapper.h
-  Hash.h
   Importer.cpp
   IFF.h
-  MemoryIOWrapper.h
-  ParsingUtils.h
-  StreamReader.h
-  StreamWriter.h
-  StringComparison.h
-  StringUtils.h
   SGSpatialSort.cpp
-  SGSpatialSort.h
   VertexTriangleAdjacency.cpp
   VertexTriangleAdjacency.h
-  GenericProperty.h
   SpatialSort.cpp
-  SpatialSort.h
   SceneCombiner.cpp
   ScenePreprocessor.cpp
   ScenePreprocessor.h
   SkeletonMeshBuilder.cpp
-  SkeletonMeshBuilder.h
   SplitByBoneCountProcess.cpp
   SplitByBoneCountProcess.h
   ScaleProcess.cpp
   ScaleProcess.h
-  SmoothingGroups.h
   StandardShapes.cpp
-  StandardShapes.h
   TargetAnimation.cpp
   TargetAnimation.h
   RemoveComments.cpp
-  RemoveComments.h
   Subdivision.cpp
-  Subdivision.h
   scene.cpp
-  Vertex.h
-  LineSplitter.h
-  TinyFormatter.h
-  Profiler.h
-  LogAux.h
   Bitmap.cpp
-  Bitmap.h
-  XMLTools.h
   Version.cpp
-  IOStreamBuffer.h
-  CreateAnimMesh.h
   CreateAnimMesh.cpp
 )
 SOURCE_GROUP(Common FILES ${Common_SRCS})
@@ -457,24 +464,23 @@ ADD_ASSIMP_IMPORTER( BLEND
 )
 
 ADD_ASSIMP_IMPORTER( IFC
-  IFCLoader.cpp
-  IFCLoader.h
-  IFCReaderGen1.cpp
-  IFCReaderGen2.cpp
-  IFCReaderGen.h
-  IFCUtil.h
-  IFCUtil.cpp
-  IFCGeometry.cpp
-  IFCMaterial.cpp
-  IFCProfile.cpp
-  IFCCurve.cpp
-  IFCBoolean.cpp
-  IFCOpenings.cpp
-  STEPFile.h
-  STEPFileReader.h
-  STEPFileReader.cpp
-  STEPFileEncoding.cpp
-  STEPFileEncoding.h
+  Importer/IFC/IFCLoader.cpp
+  Importer/IFC/IFCLoader.h
+  Importer/IFC/IFCReaderGen1_2x3.cpp
+  Importer/IFC/IFCReaderGen2_2x3.cpp
+  Importer/IFC/IFCReaderGen_2x3.h
+  Importer/IFC/IFCUtil.h
+  Importer/IFC/IFCUtil.cpp
+  Importer/IFC/IFCGeometry.cpp
+  Importer/IFC/IFCMaterial.cpp
+  Importer/IFC/IFCProfile.cpp
+  Importer/IFC/IFCCurve.cpp
+  Importer/IFC/IFCBoolean.cpp
+  Importer/IFC/IFCOpenings.cpp
+  Importer/IFC/STEPFileReader.h
+  Importer/IFC/STEPFileReader.cpp
+  Importer/IFC/STEPFileEncoding.cpp
+  Importer/IFC/STEPFileEncoding.h
 )
 if (ASSIMP_BUILD_IFC_IMPORTER)
   if (MSVC)
@@ -525,6 +531,8 @@ SET( PostProcessing_SRCS
   ComputeUVMappingProcess.h
   ConvertToLHProcess.cpp
   ConvertToLHProcess.h
+  EmbedTexturesProcess.cpp
+  EmbedTexturesProcess.h
   FindDegenerates.cpp
   FindDegenerates.h
   FindInstancesProcess.cpp
@@ -573,7 +581,7 @@ SET( PostProcessing_SRCS
 )
 SOURCE_GROUP( PostProcessing FILES ${PostProcessing_SRCS})
 
-SET( IrrXML_SRCS irrXMLWrapper.h )
+SET( IrrXML_SRCS ${HEADER_PATH}/irrXMLWrapper.h )
 SOURCE_GROUP( IrrXML FILES ${IrrXML_SRCS})
 
 ADD_ASSIMP_IMPORTER( Q3D
@@ -677,8 +685,11 @@ ADD_ASSIMP_IMPORTER( GLTF
 ADD_ASSIMP_IMPORTER( 3MF
     D3MFImporter.h
     D3MFImporter.cpp
+    D3MFExporter.h
+    D3MFExporter.cpp
     D3MFOpcPackage.h
     D3MFOpcPackage.cpp
+    3MFXmlTags.h
 )
 
 ADD_ASSIMP_IMPORTER( MMD
@@ -692,6 +703,7 @@ ADD_ASSIMP_IMPORTER( MMD
 )
 
 SET( Step_SRCS
+  STEPFile.h
   StepExporter.h
   StepExporter.cpp
 )
@@ -700,7 +712,7 @@ SOURCE_GROUP( Step FILES ${Step_SRCS})
 SET( Exporter_SRCS
   Exporter.cpp
   AssimpCExport.cpp
-  BlobIOSystem.h
+  ${HEADER_PATH}/BlobIOSystem.h
 )
 SOURCE_GROUP( Exporter FILES ${Exporter_SRCS})
 
@@ -739,6 +751,14 @@ SET( unzip_SRCS
   ../contrib/unzip/unzip.h
 )
 SOURCE_GROUP( unzip FILES ${unzip_SRCS})
+
+SET( ziplib_SRCS
+  ../contrib/zip/src/miniz.h
+  ../contrib/zip/src/zip.c
+  ../contrib/zip/src/zip.h
+)
+
+SOURCE_GROUP( ziplib FILES ${ziplib_SRCS} )
 
 SET ( openddl_parser_SRCS
   ../contrib/openddlparser/code/OpenDDLParser.cpp
@@ -851,6 +871,7 @@ SET( assimp_src
   ${Clipper_SRCS}
   ${openddl_parser_SRCS}
   ${open3dgc_SRCS}
+  ${ziplib_SRCS}
   # Necessary to show the headers in the project when using the VC++ generator:
 
   ${PUBLIC_HEADERS}
@@ -914,8 +935,27 @@ SET_TARGET_PROPERTIES( assimp PROPERTIES
 )
 
 if (APPLE)
-  SET_TARGET_PROPERTIES( assimp PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${ASSIMP_LIB_INSTALL_DIR}")
-endif()
+  SET_TARGET_PROPERTIES( assimp PROPERTIES
+    INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${ASSIMP_LIB_INSTALL_DIR}"
+  )
+
+  if (BUILD_FRAMEWORK)
+    SET_TARGET_PROPERTIES( assimp PROPERTIES
+      FRAMEWORK TRUE
+      FRAMEWORK_VERSION C
+      MACOSX_FRAMEWORK_IDENTIFIER net.sf.assimp
+      PUBLIC_HEADER "${PUBLIC_HEADERS}"
+    )
+
+    # PUBLIC_HEADER option does not support directory structure creation
+    # add ./Compiler/*.h to assimp.framework via copy command
+    ADD_CUSTOM_COMMAND(TARGET assimp POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory
+         "../${HEADER_PATH}/Compiler"
+         assimp.framework/Headers/Compiler
+      COMMENT "Copying public ./Compiler/ header files to framework bundle's Headers/Compiler/")
+  ENDIF(BUILD_FRAMEWORK)
+ENDIF(APPLE)
 
 # Build against external unzip, or add ../contrib/unzip so
 # assimp can #include "unzip.h"
@@ -935,14 +975,16 @@ INSTALL( TARGETS assimp
   LIBRARY DESTINATION ${ASSIMP_LIB_INSTALL_DIR}
   ARCHIVE DESTINATION ${ASSIMP_LIB_INSTALL_DIR}
   RUNTIME DESTINATION ${ASSIMP_BIN_INSTALL_DIR}
+  FRAMEWORK DESTINATION ${ASSIMP_LIB_INSTALL_DIR}
   COMPONENT ${LIBASSIMP_COMPONENT})
 INSTALL( FILES ${PUBLIC_HEADERS} DESTINATION ${ASSIMP_INCLUDE_INSTALL_DIR}/assimp COMPONENT assimp-dev)
 INSTALL( FILES ${COMPILER_HEADERS} DESTINATION ${ASSIMP_INCLUDE_INSTALL_DIR}/assimp/Compiler COMPONENT assimp-dev)
+
 if (ASSIMP_ANDROID_JNIIOSYSTEM)
   INSTALL(FILES ${HEADER_PATH}/${ASSIMP_ANDROID_JNIIOSYSTEM_PATH}/AndroidJNIIOSystem.h
     DESTINATION ${ASSIMP_INCLUDE_INSTALL_DIR}
     COMPONENT assimp-dev)
-endif(ASSIMP_ANDROID_JNIIOSYSTEM)
+ENDIF(ASSIMP_ANDROID_JNIIOSYSTEM)
 
 if(MSVC AND ASSIMP_INSTALL_PDB)
   IF(CMAKE_GENERATOR MATCHES "^Visual Studio")
@@ -964,7 +1006,7 @@ if(MSVC AND ASSIMP_INSTALL_PDB)
       CONFIGURATIONS RelWithDebInfo
     )
   ENDIF()
-endif ()
+ENDIF ()
 
 if (ASSIMP_COVERALLS)
     include(Coveralls)
@@ -976,4 +1018,4 @@ if (ASSIMP_COVERALLS)
         "${COVERAGE_SRCS}" # The source files.
         ON                 # If we should upload.
         "${PROJECT_SOURCE_DIR}/cmake-modules/") # (Optional) Alternate project cmake module path.
-endif()
+ENDIF()
