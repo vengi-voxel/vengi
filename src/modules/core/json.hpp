@@ -7283,7 +7283,6 @@ boundaries compute_boundaries(FloatType value)
 
     constexpr int      kPrecision = std::numeric_limits<FloatType>::digits; // = p (includes the hidden bit)
     constexpr int      kBias      = std::numeric_limits<FloatType>::max_exponent - 1 + (kPrecision - 1);
-    constexpr int      kMinExp    = 1 - kBias;
     constexpr uint64_t kHiddenBit = uint64_t{1} << (kPrecision - 1); // = 2^(p-1)
 
     using bits_type = typename std::conditional< kPrecision == 24, uint32_t, uint64_t >::type;
