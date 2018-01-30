@@ -28,6 +28,7 @@ IMGUIApp::~IMGUIApp() {
 }
 
 void IMGUIApp::traceBeginFrame(const char *threadName) {
+	Super::traceBeginFrame(threadName);
 	std::lock_guard<std::mutex> lock(_traceMutex);
 	const std::thread::id id = std::this_thread::get_id();
 	auto i = _traceMeasures.find(id);
@@ -37,6 +38,7 @@ void IMGUIApp::traceBeginFrame(const char *threadName) {
 }
 
 void IMGUIApp::traceBegin(const char *threadName, const char* name) {
+	Super::traceBegin(threadName, name);
 	std::lock_guard<std::mutex> lock(_traceMutex);
 	const std::thread::id id = std::this_thread::get_id();
 	auto measureIter = _traceMeasures.find(id);
@@ -55,6 +57,7 @@ void IMGUIApp::traceBegin(const char *threadName, const char* name) {
 }
 
 void IMGUIApp::traceEnd(const char *threadName) {
+	Super::traceEnd(threadName);
 	std::lock_guard<std::mutex> lock(_traceMutex);
 	const std::thread::id id = std::this_thread::get_id();
 	auto measureIter = _traceMeasures.find(id);
@@ -67,6 +70,7 @@ void IMGUIApp::traceEnd(const char *threadName) {
 }
 
 void IMGUIApp::traceEndFrame(const char *threadName) {
+	Super::traceEndFrame(threadName);
 	++_currentFrameCounter;
 }
 
