@@ -449,7 +449,7 @@ void IMGUIApp::renderTracing() {
 					continue;
 				}
 				posEnd.x = pos.x + data.delta;
-			    const ImVec2 labelSize = ImGui::CalcTextSize(key);
+				const ImVec2 labelSize = ImGui::CalcTextSize(key);
 				const ImVec2 size(glm::max(labelSize.x, posEnd.x - pos.x), glm::max(labelSize.y, posEnd.y - pos.y));
 				ImGui::ItemSize(size, 0.0f);
 				Log::info("key: %s, value: %f (%f:%f) - (%f:%f)", key, (float)data.delta, pos.x, pos.y, posEnd.x, posEnd.y);
