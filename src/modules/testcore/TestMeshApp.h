@@ -27,9 +27,15 @@ protected:
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	core::VarPtr _shadowMapShow;
+	core::VarPtr _shadowMap;
+	core::VarPtr _animationIndex;
+	core::VarPtr _meshName;
+	core::VarPtr _debugShadow;
+	core::VarPtr _debugShadowCascade;
 
 	virtual void renderPlane();
 	virtual void doRender() override;
+	virtual void onRenderUI() override;
 public:
 	TestMeshApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 

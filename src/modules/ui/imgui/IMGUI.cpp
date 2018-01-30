@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "IMGUI.h"
 
 namespace ImGui {
@@ -24,7 +28,7 @@ bool InputVarFloat(const char* label, core::VarPtr& var, float step, float step_
 	return false;
 }
 
-bool InputVarInt(const char* label, core::VarPtr& var, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
+bool InputVarInt(const char* label, core::VarPtr& var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
 	int v = var->intVal();
 	if (InputInt(label, &v, step, step_fast, extra_flags)) {
 		var->setVal(v);

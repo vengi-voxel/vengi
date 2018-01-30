@@ -1,5 +1,6 @@
 #include "TestMeshApp.h"
 #include "core/command/Command.h"
+#include "core/GameConfig.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedViewPort.h"
 #include "io/Filesystem.h"
@@ -31,9 +32,12 @@ core::AppState TestMeshApp::onConstruct() {
 		}
 	}).setHelp("Load a mesh from the pool. The name is without extension and the file must be in the mesh/ dir.");
 
-	core::Var::get("mesh", "chr_skelett2_bake");
-	core::Var::get("animation", "0");
+	_meshName = core::Var::get("mesh", "chr_skelett2_bake");
+	_animationIndex = core::Var::get("animation", "0");
+	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");
+	_debugShadow = core::Var::getSafe(cfg::ClientDebugShadow);
+	_debugShadowCascade = core::Var::getSafe(cfg::ClientDebugShadowMapCascade);
 
 	return state;
 }
@@ -74,7 +78,7 @@ core::AppState TestMeshApp::onInit() {
 
 	_meshPool.init();
 
-	const std::string& mesh = core::Var::getSafe("mesh")->strVal();
+	const std::string& mesh = _meshName->strVal();
 	_mesh = _meshPool.getMesh(mesh);
 	if (!_mesh->isLoading()) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
@@ -103,8 +107,29 @@ core::AppState TestMeshApp::onInit() {
 	return state;
 }
 
+void TestMeshApp::onRenderUI() {
+	Super::onRenderUI();
+	ImGui::Separator();
+	ImGui::Text("Mesh %s", _mesh->filename().c_str());
+	ImGui::Text("%i vertices", (int)_mesh->vertices().size());
+	ImGui::Text("%i indices", (int)_mesh->indices().size());
+	ImGui::Text("%i bones", (int)_mesh->bones());
+	ImGui::Text("%i animations", (int)_mesh->animations());
+	ImGui::Separator();
+	if (ImGui::InputVarInt("Animation", _animationIndex)) {
+		_animationIndex->setVal(_mesh->currentAnimation());
+	}
+	ImGui::CheckboxVar("ShowShadowMap", _shadowMapShow);
+	ImGui::CheckboxVar("ShowMapDebug", _debugShadow);
+	ImGui::CheckboxVar("ShadowCascade", _debugShadowCascade);
+	ImGui::CheckboxVar("ShadowMap", _shadowMap);
+	ImGui::InputVarString("Meshname", _meshName);
+	ImGui::ColorEdit3("Diffuse Color", glm::value_ptr(_diffuseColor));
+	ImGui::ColorEdit3("Ambient Color", glm::value_ptr(_ambientColor));
+}
+
 void TestMeshApp::doRender() {
-	const uint8_t animationIndex = core::Var::getSafe("animation")->intVal();
+	const uint8_t animationIndex = _animationIndex->intVal();
 	const uint64_t timeInSeconds = lifetimeInSeconds();
 
 	video::enable(video::State::DepthTest);

@@ -325,6 +325,9 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 
 	_timeInSeconds = timeInSeconds;
 	_animationIndex = animationIndex;
+	if (_animationIndex >= _scene->mNumAnimations) {
+		_animationIndex = 0l;
+	}
 
 	if (&shader != _lastShader) {
 		core_assert(shader.isActive());
@@ -509,7 +512,8 @@ void Mesh::boneTransform(float timeInSeconds, glm::mat4* transforms, size_t size
 		transforms[0] = glm::mat4(1.0f);
 		return;
 	}
-	core_assert(_numBones <= size);
+	core_assert_always(animationIndex < _scene->mNumAnimations);
+	core_assert_always(_numBones <= size);
 
 	const aiAnimation* animation = _scene->mAnimations[animationIndex];
 	const float ticksPerSecond = (float) (animation->mTicksPerSecond != 0 ? animation->mTicksPerSecond : 25.0f);
@@ -623,6 +627,13 @@ int Mesh::renderNormals(video::Shader& shader) {
 	_vertexBufferNormals.unbind();
 
 	return 1;
+}
+
+int Mesh::animations() const {
+	if (_scene == nullptr) {
+		return -1;
+	}
+	return _scene->mNumAnimations;
 }
 
 }

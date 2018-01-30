@@ -101,6 +101,9 @@ public:
 	const Vertices& vertices() const;
 	const Indices& indices() const;
 
+	int bones() const;
+	int animations() const;
+	uint8_t currentAnimation() const;
 	void shutdown();
 	bool loadMesh(const std::string& filename);
 	bool initMesh(Shader& shader, float timeInSeconds = 0.0f, uint8_t animationIndex = 0u);
@@ -126,6 +129,14 @@ inline const glm::vec3& Mesh::mins() const {
 
 inline const glm::vec3& Mesh::maxs() const {
 	return _aabbMaxs;
+}
+
+inline int Mesh::bones() const {
+	return _numBones;
+}
+
+inline uint8_t Mesh::currentAnimation() const {
+	return _animationIndex;
 }
 
 typedef std::shared_ptr<Mesh> MeshPtr;

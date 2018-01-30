@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui/imgui/IMGUIApp.h"
+#include "ui/imgui/IMGUI.h"
 #include "video/Mesh.h"
 #include "video/Camera.h"
 #include "frontend/Axis.h"

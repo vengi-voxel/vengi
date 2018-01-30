@@ -555,17 +555,17 @@ void Console::render(const math::Rect<int> &rect, long deltaFrame) {
 		return;
 	}
 	const int maxY = _messages.size() * lineH;
-	const int startY = std::min(rect.getMinZ() + rect.getMaxZ() - lineH, maxY);
 	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), _commandLine.length());
+	const int startY = std::min(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y, maxY);
 	MessagesIter i = _messages.rbegin();
 	std::advance(i, _scrollPos);
-	for (int y = startY - commandLineSize.y; i != _messages.rend(); ++i) {
+	for (int y = startY; i != _messages.rend(); ++i) {
 		if (y < 0) {
 			break;
 		}
 		const glm::ivec2& size = stringSize(i->c_str(), i->length());
-		drawString(consoleMarginLeft, y, *i, i->length());
 		y -= size.y;
+		drawString(consoleMarginLeft, y, *i, i->length());
 	}
 
 	drawString(consoleMarginLeft, startY, consolePrompt, consolePrompt.length());
