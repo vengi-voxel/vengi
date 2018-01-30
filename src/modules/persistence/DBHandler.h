@@ -239,6 +239,7 @@ public:
 
 	bool dropTable(const Model& model) const;
 	bool dropTable(Model&& model) const;
+	bool tableExists(const Model& model) const;
 
 	/**
 	 * @brief Create the table for the given @c persistence::Model

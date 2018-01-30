@@ -26,8 +26,8 @@ bool DBHandler::init() {
 		Log::error(logid, "Failed to init the connection pool");
 		return false;
 	}
-	_initialized = true;
-	return exec(createCreateTableStatement(db::MetainfoModel(), _useForeignKeys));
+	_initialized = createOrUpdateTable(db::MetainfoModel());
+	return _initialized;
 }
 
 void DBHandler::shutdown() {
@@ -96,17 +96,27 @@ bool DBHandler::dropTable(Model&& model) const {
 	return dropTable(model);
 }
 
+bool DBHandler::tableExists(const Model& model) const {
+	BindParam param(2);
+	const State& s = execInternalWithParameters(createTableExistsStatement(model, &param), param);
+	core_assert(s.result);
+	core_assert_msg(s.affectedRows == 1, "There should exactly be 1 affected row for this statement, but we got %i", s.affectedRows);
+	core_assert_msg(s.cols == 1, "There should exactly be 1 affected column for this statement, but we got %i", s.cols);
+	core_assert_msg(s.currentRow == 0, "s.currentRow should have been 0 - but is %i", s.currentRow);
+	const bool result = s.asBool(0);
+	Log::debug("check whether table '%s' exists: '%s'", model.tableName(), result ? "true" : "false");
+	return result;
+}
+
 bool DBHandler::createOrUpdateTable(Model&& model) const {
 	std::vector<db::MetainfoModel> schemaModels;
-	if (!loadMetadata(model, schemaModels)) {
+	if (!tableExists(model) || !loadMetadata(model, schemaModels)) {
 		// doesn't exist yet - just create it
 		if (!exec(createCreateTableStatement(model, _useForeignKeys))) {
 			return false;
 		}
-	} else {
-		if (!exec(createAlterTableStatement(schemaModels, model, _useForeignKeys))) {
-			return false;
-		}
+	} else if (!exec(createAlterTableStatement(schemaModels, model, _useForeignKeys))) {
+		return false;
 	}
 	return insertMetadata(model);
 }
@@ -231,10 +241,7 @@ State DBHandler::execInternalWithParameters(const std::string& query, const Bind
 	if (!s.exec(query.c_str(), param.position, &param.values[0])) {
 		Log::warn(logid, "Failed to execute query: '%s'", query.c_str());
 	}
-	if (s.affectedRows <= 0) {
-		Log::trace(logid, "No rows affected, can't fill model values");
-		return s;
-	}
+	Log::debug("current row: %i", s.currentRow);
 	return s;
 }
 

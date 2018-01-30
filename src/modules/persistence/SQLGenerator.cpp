@@ -330,6 +330,19 @@ static bool isDifferent(const db::MetainfoModel& schemaColumn, const Field& fiel
 	return false;
 }
 
+std::string createTableExistsStatement(const Model& model, BindParam* params) {
+	if (params != nullptr) {
+		const int indexSchema = params->add();
+		params->valueBuffers.emplace_back(model.schema());
+		params->values[indexSchema] = params->valueBuffers.back().c_str();
+
+		const int indexTable = params->add();
+		params->valueBuffers.emplace_back(model.tableName());
+		params->values[indexTable] = params->valueBuffers.back().c_str();
+	}
+	return R"(SELECT EXISTS (SELECT 1 FROM "pg_tables" WHERE "schemaname" = $1 AND "tablename" = $2);)";
+}
+
 std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys) {
 	std::stringstream stmt;
 

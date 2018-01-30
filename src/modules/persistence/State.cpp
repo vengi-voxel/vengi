@@ -5,6 +5,7 @@
 #include "State.h"
 #include "core/Log.h"
 #include "core/Assert.h"
+#include "core/String.h"
 #include "Connection.h"
 #include "engine-config.h"
 #ifdef HAVE_POSTGRES
@@ -18,8 +19,8 @@ State::State(Connection* connection) :
 }
 
 State::State(State&& other) :
-		res(other.res), lastErrorMsg(other.lastErrorMsg), affectedRows(
-				other.affectedRows), result(other.result) {
+		res(other.res), lastErrorMsg(other.lastErrorMsg), affectedRows(other.affectedRows),
+		cols(other.cols), currentRow(other.currentRow), result(other.result) {
 	other.res = nullptr;
 	other._connection = nullptr;
 	other.lastErrorMsg = nullptr;
@@ -71,6 +72,60 @@ bool State::execPrepared(const char *name, int parameterCount, const char *const
 #endif
 	checkLastResult(c);
 	return result;
+}
+
+int State::asInt(int colIndex) const {
+	const char *value;
+	int length;
+	bool isNull;
+	getResult(colIndex, &value, &length, &isNull);
+	if (length == 0) {
+		return 0;
+	}
+	return core::string::toInt(value);
+}
+
+bool State::isBool(const char *value) const {
+	return *value == '1' || *value == 't' || *value == 'y' || *value == 'o' || *value == 'T';
+}
+
+bool State::asBool(int colIndex) const {
+	const char *value;
+	int length;
+	bool isNull;
+	getResult(colIndex, &value, &length, &isNull);
+	if (length == 0) {
+		return false;
+	}
+	return isBool(value);
+}
+
+const char *State::columnName(int colIndex) const {
+#ifdef HAVE_POSTGRES
+	return PQfname(res, colIndex);
+#else
+	return "";
+#endif
+}
+
+void State::getResult(int colIndex, const char **value, int *length, bool *isNull) const {
+#ifdef HAVE_POSTGRES
+	*isNull = PQgetisnull(res, currentRow, colIndex) == 1;
+	*value = *isNull ? nullptr : PQgetvalue(res, currentRow, colIndex);
+	*length = PQgetlength(res, currentRow, colIndex);
+	if (*value != nullptr) {
+		Log::trace("value: %s, length: %i", *value, *length);
+	} else {
+		Log::trace("value for row %i - col %i is null", currentRow, colIndex);
+	}
+#else
+	*value = nullptr;
+#endif
+	if (*value == nullptr) {
+		*isNull = true;
+		*value = "";
+		*length = 0;
+	}
 }
 
 void State::checkLastResult(ConnectionType* connection) {

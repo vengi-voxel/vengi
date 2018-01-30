@@ -17,6 +17,7 @@ class DBCondition;
 class OrderBy;
 struct Range;
 
+extern std::string createTableExistsStatement(const Model& model, BindParam* params);
 extern std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys);
 extern std::string createCreateTableStatement(const Model& model, bool useForeignKeys);
 extern std::string createTruncateTableStatement(const Model& model);

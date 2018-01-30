@@ -11,11 +11,6 @@
 #include "core/Singleton.h"
 #include "core/Assert.h"
 #include <algorithm>
-#include "engine-config.h"
-
-#ifdef HAVE_POSTGRES
-#include <libpq-fe.h>
-#endif
 
 namespace persistence {
 
@@ -45,24 +40,20 @@ const Field& Model::getField(const char* name) const {
 }
 
 bool Model::fillModelValues(State& state) {
-#ifdef HAVE_POSTGRES
 	const int cols = state.cols;
 	Log::debug("Query has values for %i cols", cols);
 	for (int i = 0; i < cols; ++i) {
-		const char* name = PQfname(state.res, i);
+		const char* name = state.columnName(i);
 		const Field& f = getField(name);
 		if (f.name != name) {
 			Log::error("Unknown field name for '%s'", name);
 			state.result = false;
 			return false;
 		}
-		const bool isNull = PQgetisnull(state.res, state.currentRow, i);
-		const char* value = isNull ? nullptr : PQgetvalue(state.res, state.currentRow, i);
-		int length = PQgetlength(state.res, state.currentRow, i);
-		if (value == nullptr) {
-			value = "";
-			length = 0;
-		}
+		const char *value;
+		int length;
+		bool isNull;
+		state.getResult(i, &value, &length, &isNull);
 		Log::debug("Try to set '%s' to '%s' (length: %i)", name, value, length);
 		switch (f.type) {
 		case FieldType::PASSWORD:
@@ -77,7 +68,7 @@ bool Model::fillModelValues(State& state) {
 			}
 			break;
 		case FieldType::BOOLEAN:
-			setValue(f, *value == '1' || *value == 't' || *value == 'y' || *value == 'o' || *value == 'T');
+			setValue(f, state.isBool(value));
 			break;
 		case FieldType::INT:
 			setValue(f, core::string::toInt(value));
@@ -105,9 +96,6 @@ bool Model::fillModelValues(State& state) {
 	}
 	++state.currentRow;
 	return true;
-#else
-	return false;
-#endif
 }
 
 void Model::setValue(const Field& f, const std::string& value) {
