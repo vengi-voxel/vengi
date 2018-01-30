@@ -38,8 +38,8 @@ namespace NGE_Draw {
 // This methods are a subset of the ones already present in imguihelper.h, copied here to enable stand alone usage. Scoped for better isolation (in case of multi .cpp chaining and/or usage in amalgamation engines).
 static void ImDrawListPathFillAndStroke(ImDrawList *dl, const ImU32 &fillColor, const ImU32 &strokeColor, bool strokeClosed, float strokeThickness, bool antiAliased)    {
     if (!dl) return;
-    if ((fillColor & IM_COL32_A_MASK) != 0) dl->AddConvexPolyFilled(dl->_Path.Data, dl->_Path.Size, fillColor, antiAliased);
-    if ((strokeColor& IM_COL32_A_MASK)!= 0 && strokeThickness>0) dl->AddPolyline(dl->_Path.Data, dl->_Path.Size, strokeColor, strokeClosed, strokeThickness, antiAliased);
+    if ((fillColor & IM_COL32_A_MASK) != 0) dl->AddConvexPolyFilled(dl->_Path.Data, dl->_Path.Size, fillColor/*, antiAliased*/);
+    if ((strokeColor& IM_COL32_A_MASK)!= 0 && strokeThickness>0) dl->AddPolyline(dl->_Path.Data, dl->_Path.Size, strokeColor, strokeClosed, strokeThickness/*, antiAliased*/);
     dl->PathClear();
 }
 static void ImDrawListPathArcTo(ImDrawList *dl, const ImVec2 &centre, const ImVec2 &radii, float amin, float amax, int num_segments)  {
@@ -128,11 +128,11 @@ static void ImDrawListAddConvexPolyFilledWithVerticalGradient(ImDrawList *dl, co
 {
     if (!dl) return;
     if (colTop==colBot)  {
-        dl->AddConvexPolyFilled(points,points_count,colTop,anti_aliased);
+        dl->AddConvexPolyFilled(points,points_count,colTop/*,anti_aliased*/);
         return;
     }
-    const ImVec2 uv = GImGui->FontTexUvWhitePixel;
-    anti_aliased &= GImGui->Style.AntiAliasedShapes;
+    const ImVec2 uv = ImGui::GetFontTexUvWhitePixel();
+    //anti_aliased &= GImGui->Style.AntiAliasedShapes;
     //if (ImGui::GetIO().KeyCtrl) anti_aliased = false; // Debug
 
     int height=0;
@@ -233,9 +233,9 @@ static void ImDrawListAddConvexPolyFilledWithVerticalGradient(ImDrawList *dl, co
 }
 static void ImDrawListPathFillWithVerticalGradientAndStroke(ImDrawList *dl, const ImU32 &fillColorTop, const ImU32 &fillColorBottom, const ImU32 &strokeColor, bool strokeClosed = false, float strokeThickness = 1.0f, bool antiAliased = true, float miny=-1.f, float maxy=-1.f)    {
     if (!dl) return;
-    if (fillColorTop==fillColorBottom) dl->AddConvexPolyFilled(dl->_Path.Data,dl->_Path.Size, fillColorTop, antiAliased);
+    if (fillColorTop==fillColorBottom) dl->AddConvexPolyFilled(dl->_Path.Data,dl->_Path.Size, fillColorTop/*, antiAliased*/);
     else if ((fillColorTop & IM_COL32_A_MASK) != 0 || (fillColorBottom & IM_COL32_A_MASK) != 0) ImDrawListAddConvexPolyFilledWithVerticalGradient(dl, dl->_Path.Data, dl->_Path.Size, fillColorTop, fillColorBottom, antiAliased,miny,maxy);
-    if ((strokeColor& IM_COL32_A_MASK)!= 0 && strokeThickness>0) dl->AddPolyline(dl->_Path.Data, dl->_Path.Size, strokeColor, strokeClosed, strokeThickness, antiAliased);
+    if ((strokeColor& IM_COL32_A_MASK)!= 0 && strokeThickness>0) dl->AddPolyline(dl->_Path.Data, dl->_Path.Size, strokeColor, strokeClosed, strokeThickness/*, antiAliased*/);
     dl->PathClear();
 }
 static void ImDrawListAddRectWithVerticalGradient(ImDrawList *dl, const ImVec2 &a, const ImVec2 &b, const ImU32 &fillColorTop, const ImU32 &fillColorBottom, const ImU32 &strokeColor, float rounding = 0.0f, int rounding_corners = 0x0F,float strokeThickness = 1.0f,bool antiAliased = true) {
@@ -244,7 +244,7 @@ static void ImDrawListAddRectWithVerticalGradient(ImDrawList *dl, const ImVec2 &
         dl->AddRectFilledMultiColor(a,b,fillColorTop,fillColorTop,fillColorBottom,fillColorBottom); // Huge speedup!
         if ((strokeColor& IM_COL32_A_MASK)!= 0 && strokeThickness>0.f) {
             dl->PathRect(a, b, rounding, rounding_corners);
-            dl->AddPolyline(dl->_Path.Data, dl->_Path.Size, strokeColor, true, strokeThickness, antiAliased);
+            dl->AddPolyline(dl->_Path.Data, dl->_Path.Size, strokeColor, true, strokeThickness/*, antiAliased*/);
             dl->PathClear();
         }
     }

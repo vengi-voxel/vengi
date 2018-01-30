@@ -198,6 +198,7 @@ core::AppState IMGUIApp::onInit() {
 	attributePosition.offset = offsetof(ImDrawVert, pos);
 	_vbo.addAttribute(attributePosition);
 
+	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.DisplaySize = ImVec2((float)_dimension.x, (float)_dimension.y);
 	io.Fonts->AddFontDefault();
@@ -354,7 +355,7 @@ core::AppState IMGUIApp::onRunning() {
 }
 
 core::AppState IMGUIApp::onCleanup() {
-	ImGui::Shutdown();
+	ImGui::DestroyContext();
 	_console.shutdown();
 	_shader.shutdown();
 	_vbo.shutdown();
