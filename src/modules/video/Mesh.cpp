@@ -339,6 +339,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 	if (size > 0) {
 		core_assert_always(size == 100);
 		glm::mat4 transforms[100];
+		// TODO: size _numBones?
 		// TODO: use uniform block
 		boneTransform(_timeInSeconds, transforms, size, _animationIndex);
 		shader.setUniformMatrixv("u_bonetransforms", transforms, size);
@@ -348,6 +349,9 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 }
 
 void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh) {
+	if (!mesh->HasBones()) {
+		return;
+	}
 	Log::debug("Load %i bones", mesh->mNumBones);
 	for (uint32_t i = 0u; i < mesh->mNumBones; ++i) {
 		uint32_t boneIndex = 0u;
@@ -359,7 +363,7 @@ void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh) {
 			// Allocate an index for a new bone
 			boneIndex = _numBones;
 			++_numBones;
-			const BoneInfo bi = { toMat4(aiBone->mOffsetMatrix), glm::mat4(1.0f) };
+			const BoneInfo bi { toMat4(aiBone->mOffsetMatrix), glm::mat4(1.0f) };
 			_boneInfo.push_back(bi);
 			_boneMapping[boneName] = boneIndex;
 		} else {

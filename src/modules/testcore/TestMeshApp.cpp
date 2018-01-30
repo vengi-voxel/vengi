@@ -1,5 +1,6 @@
 #include "TestMeshApp.h"
 #include "core/command/Command.h"
+#include "core/Trace.h"
 #include "core/GameConfig.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedViewPort.h"
@@ -119,6 +120,10 @@ void TestMeshApp::onRenderUI() {
 	ImGui::Text("%i bones", (int)_mesh->bones());
 	ImGui::Text("%i animations", (int)_mesh->animations());
 	ImGui::Separator();
+	ImGui::CheckboxVar("Shadow map", _shadowMap);
+	ImGui::CheckboxVar("Show shadow map", _shadowMapShow);
+	ImGui::CheckboxVar("Shadow map debug", _debugShadow);
+	ImGui::CheckboxVar("Show shadow cascades", _debugShadowCascade);
 	if (ImGui::Checkbox("Render axis", &_renderAxis)) {
 		setRenderAxis(_renderAxis);
 	}
@@ -140,10 +145,6 @@ void TestMeshApp::onRenderUI() {
 	if (_mesh->animations() > 1 && ImGui::InputVarInt("Animation index", _animationIndex, 1, 1)) {
 		_animationIndex->setVal(_mesh->currentAnimation());
 	}
-	ImGui::CheckboxVar("Shadow map", _shadowMap);
-	ImGui::CheckboxVar("Show shadow map", _shadowMapShow);
-	ImGui::CheckboxVar("Shadow map debug", _debugShadow);
-	ImGui::CheckboxVar("Show shadow cascades", _debugShadowCascade);
 	ImGui::InputVarString("Mesh", _meshName);
 	if (_meshName->isDirty()) {
 		const video::MeshPtr& meshPtr = _meshPool.getMesh(_meshName->strVal());
@@ -163,8 +164,9 @@ void TestMeshApp::onRenderUI() {
 }
 
 void TestMeshApp::doRender() {
+	core_trace_scoped(TestMeshAppDoRender);
 	const uint8_t animationIndex = _animationIndex->intVal();
-	const uint64_t timeInSeconds = lifetimeInSeconds();
+	const float timeInSeconds = lifetimeInSecondsf();
 
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
@@ -178,6 +180,7 @@ void TestMeshApp::doRender() {
 	const std::vector<float>& distances = _shadow.distances();
 
 	{
+		core_trace_scoped(TestMeshAppDoRenderShadows);
 		video::disable(video::State::Blend);
 		// put shadow acne into the dark
 		video::cullFace(video::Face::Front);
@@ -241,6 +244,7 @@ void TestMeshApp::doRender() {
 		}
 	}
 	if (meshInitialized && _renderNormals) {
+		core_trace_scoped(TestMeshAppDoNormals);
 		video::ScopedShader scoped(_colorShader);
 		_colorShader.recordUsedUniforms(true);
 		_colorShader.clearUsedUniforms();
@@ -250,6 +254,7 @@ void TestMeshApp::doRender() {
 	}
 
 	if (_shadowMapShow->boolVal()) {
+		core_trace_scoped(TestMeshAppDoShowShadowMap);
 		const int width = _camera.width();
 		const int height = _camera.height();
 

@@ -219,6 +219,7 @@ public:
 
 	long deltaFrame() const;
 	uint64_t lifetimeInSeconds() const;
+	float lifetimeInSecondsf() const;
 
 	/**
 	 * @return the millis since the epoch
@@ -294,6 +295,10 @@ inline double App::ProfilerCPU::maximum() const {
 
 inline uint64_t App::lifetimeInSeconds() const {
 	return (_now - _initTime) / uint64_t(1000);
+}
+
+inline float App::lifetimeInSecondsf() const {
+	return float(_now - _initTime) / 1000.0f;
 }
 
 inline long App::deltaFrame() const {
