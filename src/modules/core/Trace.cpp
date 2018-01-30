@@ -134,7 +134,6 @@ void traceMessage(const char* message) {
 
 void traceThread(const char* name) {
 	_threadName = name;
-	traceMessage(name);
 }
 
 }
