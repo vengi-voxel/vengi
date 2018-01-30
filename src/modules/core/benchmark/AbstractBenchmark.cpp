@@ -45,15 +45,6 @@ AppState AbstractBenchmark::BenchmarkApp::onInit() {
 		return state;
 	}
 
-	if (hasArg("debug") || hasArg("-debug") || hasArg("--debug") || hasArg("-d")) {
-		_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
-		Log::init();
-		Log::debug("Activate debug logging");
-	} else {
-		_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_WARN));
-		Log::init();
-	}
-
 	if (!_benchmark->onInitApp()) {
 		return AppState::InitFailure;
 	}
