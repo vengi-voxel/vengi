@@ -1,3 +1,10 @@
+# Shader
+
+# mesh.frag
+
+there is an error in the fog computation - right now everything is in u_fogcolor because fogval == 1
+this is due to the fact that fogdistance is a very very high value because gl_FragCoord.w is 0
+
 # Data handling
 
 The current approach with data dir must be extended/redone someone. There are way too many files installed per artifact atm. Also there should be CPack support to generate debian packages.
