@@ -271,9 +271,6 @@ core::AppState IMGUIApp::onRunning() {
 	}
 
 	const bool renderUI = _renderUI->boolVal();
-	if (!renderUI) {
-		return core::AppState::Running;
-	}
 
 	const int renderTargetW = (int) (io.DisplaySize.x * io.DisplayFramebufferScale.x);
 	const int renderTargetH = (int) (io.DisplaySize.y * io.DisplayFramebufferScale.y);
@@ -314,7 +311,7 @@ core::AppState IMGUIApp::onRunning() {
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 	video::blendEquation(video::BlendEquation::Add);
 
-	{
+	if (renderUI) {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
 	}
