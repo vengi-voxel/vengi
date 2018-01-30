@@ -30,8 +30,24 @@ static inline glm::quat convert(const aiQuaternion& quat) {
 }
 
 static inline glm::mat4 convert(const aiMatrix4x4& m) {
-	// assimp matrices are row major, but glm wants them to be column major
-	return glm::transpose(glm::mat4(m.a1, m.a2, m.a3, m.a4, m.b1, m.b2, m.b3, m.b4, m.c1, m.c2, m.c3, m.c4, m.d1, m.d2, m.d3, m.d4));
+	glm::mat4 mat;
+	mat[0][0] = m.a1;
+	mat[1][0] = m.a2;
+	mat[2][0] = m.a3;
+	mat[3][0] = m.a4;
+	mat[0][1] = m.b1;
+	mat[1][1] = m.b2;
+	mat[2][1] = m.b3;
+	mat[3][1] = m.b4;
+	mat[0][2] = m.c1;
+	mat[1][2] = m.c2;
+	mat[2][2] = m.c3;
+	mat[3][2] = m.c4;
+	mat[0][3] = m.d1;
+	mat[1][3] = m.d2;
+	mat[2][3] = m.d3;
+	mat[3][3] = m.d4;
+	return mat;
 }
 
 static inline core::Vertex convertVertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) {
