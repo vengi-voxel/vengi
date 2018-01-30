@@ -46,7 +46,6 @@ int App::startMainLoop(int argc, char *argv[]) {
 	_argv = argv;
 
 	while (AppState::InvalidAppState != _curState) {
-		core_trace_scoped(AppMainLoop);
 		onFrame();
 	}
 	return _exitCode;
