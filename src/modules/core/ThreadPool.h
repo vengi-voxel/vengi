@@ -42,6 +42,7 @@ namespace core {
 class ThreadPool final {
 public:
 	explicit ThreadPool(size_t, const char *name = nullptr);
+	~ThreadPool();
 
 	/**
 	 * Enqueue functors or lambdas into the thread pool
@@ -49,10 +50,11 @@ public:
 	template<class F, class ... Args>
 	auto enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
 
+	void init();
 	void shutdown(bool wait = false);
-
-	~ThreadPool();
 private:
+	const size_t _threads;
+	const char *_name;
 	// need to keep track of threads so we can join them
 	std::vector<std::thread> _workers;
 	// the task queue

@@ -9,14 +9,17 @@
 namespace core {
 
 ThreadPool::ThreadPool(size_t threads, const char *name) :
-		_stop(false) {
-	_workers.reserve(threads);
-	if (name == nullptr) {
-		name = "ThreadPool";
+		_threads(threads), _name(name), _stop(false) {
+	if (_name == nullptr) {
+		_name = "ThreadPool";
 	}
-	for (size_t i = 0; i < threads; ++i) {
-		_workers.emplace_back([this, name, i] {
-			const std::string n = core::string::format("%s-%i", name, (int)i);
+}
+
+void ThreadPool::init() {
+	_workers.reserve(_threads);
+	for (size_t i = 0; i < _threads; ++i) {
+		_workers.emplace_back([this, i] {
+			const std::string n = core::string::format("%s-%i", this->_name, (int)i);
 			core_trace_thread(n.c_str());
 			for (;;) {
 				std::function<void()> task;
@@ -32,8 +35,10 @@ ThreadPool::ThreadPool(size_t threads, const char *name) :
 					this->_tasks.pop();
 				}
 
+				core_trace_begin_frame();
 				core_trace_scoped(ThreadPoolWorker);
 				task();
+				core_trace_end_frame();
 			}
 		});
 	}

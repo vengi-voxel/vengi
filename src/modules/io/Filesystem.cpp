@@ -18,6 +18,7 @@ Filesystem::~Filesystem() {
 }
 
 void Filesystem::init(const std::string& organisation, const std::string& appname) {
+	_threadPool.init();
 	_organisation = organisation;
 	_appname = appname;
 

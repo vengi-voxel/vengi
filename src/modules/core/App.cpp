@@ -214,6 +214,7 @@ AppState App::onInit() {
 	_initTime = _now;
 
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_EVENTS);
+	_threadPool.init();
 
 	Log::debug("detected %u cpus", core::cpus());
 	const std::string& content = _filesystem->load(_appname + ".vars");

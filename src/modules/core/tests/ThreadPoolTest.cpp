@@ -24,6 +24,7 @@ public:
 
 TEST_F(ThreadPoolTest, testPush) {
 	core::ThreadPool pool(1);
+	pool.init();
 	auto future = pool.enqueue([this] () {
 		_executed = true;
 	});
@@ -34,6 +35,7 @@ TEST_F(ThreadPoolTest, testPush) {
 TEST_F(ThreadPoolTest, testMultiplePush) {
 	const int x = 1000;
 	core::ThreadPool pool(2);
+	pool.init();
 	for (int i = 0; i < x; ++i) {
 		pool.enqueue([this] () {
 			_count++;
