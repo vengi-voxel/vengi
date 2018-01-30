@@ -9,16 +9,11 @@
 
 namespace io {
 
-Filesystem::Filesystem() :
-		_threadPool(1, "IO") {
-}
-
 Filesystem::~Filesystem() {
 	shutdown();
 }
 
 void Filesystem::init(const std::string& organisation, const std::string& appname) {
-	_threadPool.init();
 	_organisation = organisation;
 	_appname = appname;
 
@@ -133,7 +128,6 @@ bool Filesystem::chdir(const std::string& directory) {
 }
 
 void Filesystem::shutdown() {
-	_threadPool.shutdown();
 	for (auto& e : _watches) {
 		uv_fs_event_stop(e.second);
 	}

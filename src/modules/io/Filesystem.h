@@ -5,9 +5,10 @@
 #pragma once
 
 #include <memory>
-#include "core/ThreadPool.h"
 #include "File.h"
+#include <string>
 #include <stack>
+#include <vector>
 #include <uv.h>
 #include <unordered_map>
 #include <stdarg.h>
@@ -24,7 +25,6 @@ typedef void (*FileWatcher)(const char* file);
  */
 class Filesystem {
 private:
-	core::ThreadPool _threadPool;
 	std::string _organisation;
 	std::string _appname;
 
@@ -36,7 +36,6 @@ private:
 	uv_loop_t *_loop = nullptr;
 
 public:
-	Filesystem();
 	~Filesystem();
 
 	void init(const std::string& organisation, const std::string& appname);
@@ -87,16 +86,6 @@ public:
 	std::string load(SDL_PRINTF_FORMAT_STRING const char *filename, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 	std::string load(const std::string& filename) const;
-	/**
-	 * @brief Loads a file asynchronously and executes the given @c CompleteHandle once some result is available.
-	 */
-	template<class CompleteHandle>
-	void loadAsync(const std::string& filename, CompleteHandle&& completeHandle) {
-		_threadPool.enqueue([=]() {
-			const io::FilePtr& f = std::make_shared<io::File>(filename, FileMode::Read);
-			completeHandle(f);
-		});
-	}
 
 	bool write(const std::string& filename, const uint8_t* content, size_t length);
 
