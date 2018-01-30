@@ -11,6 +11,7 @@ TestMeshApp::TestMeshApp(const io::FilesystemPtr& filesystem, const core::EventB
 		Super(filesystem, eventBus, timeProvider), _colorShader(shader::ColorShader::getInstance()) {
 	setCameraMotion(true);
 	setRenderPlane(false);
+	_fogColor = core::Color::LightBlue;
 }
 
 core::AppState TestMeshApp::onConstruct() {
@@ -47,6 +48,8 @@ core::AppState TestMeshApp::onInit() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
+
+	_shadowRangeZ = _camera.farPlane() * 3.0f;
 
 	if (!_shadow.init()) {
 		Log::error("Failed to init shadow object");
@@ -116,16 +119,47 @@ void TestMeshApp::onRenderUI() {
 	ImGui::Text("%i bones", (int)_mesh->bones());
 	ImGui::Text("%i animations", (int)_mesh->animations());
 	ImGui::Separator();
-	if (ImGui::InputVarInt("Animation", _animationIndex)) {
+	if (ImGui::Checkbox("Render axis", &_renderAxis)) {
+		setRenderAxis(_renderAxis);
+	}
+	ImGui::Checkbox("Render normals", &_renderNormals);
+	if (ImGui::Checkbox("Render plane", &_renderPlane)) {
+		setRenderPlane(_renderPlane);
+	}
+	if (ImGui::Checkbox("Camera motion", &_cameraMotion)) {
+		setCameraMotion(_cameraMotion);
+	}
+	if (ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f)) {
+		setCameraSpeed(_cameraSpeed);
+	}
+	ImGui::InputFloat("Shadow bias", &_shadowBias, 0.001f, 0.01f);
+	ImGui::InputFloat("Shadow bias slope", &_shadowBiasSlope, 0.01f, 0.1f);
+	ImGui::InputFloat("Shadow range", &_shadowRangeZ, 0.01f, 0.1f);
+	ImGui::InputFloat("Fog range", &_fogRange, 0.01f, 0.1f);
+	ImGui::InputVarFloat("Rotation speed", _rotationSpeed, 0.01f, 0.1f);
+	if (_mesh->animations() > 1 && ImGui::InputVarInt("Animation index", _animationIndex, 1, 1)) {
 		_animationIndex->setVal(_mesh->currentAnimation());
 	}
-	ImGui::CheckboxVar("ShowShadowMap", _shadowMapShow);
-	ImGui::CheckboxVar("ShowMapDebug", _debugShadow);
-	ImGui::CheckboxVar("ShadowCascade", _debugShadowCascade);
-	ImGui::CheckboxVar("ShadowMap", _shadowMap);
-	ImGui::InputVarString("Meshname", _meshName);
-	ImGui::ColorEdit3("Diffuse Color", glm::value_ptr(_diffuseColor));
-	ImGui::ColorEdit3("Ambient Color", glm::value_ptr(_ambientColor));
+	ImGui::CheckboxVar("Shadow map", _shadowMap);
+	ImGui::CheckboxVar("Show shadow map", _shadowMapShow);
+	ImGui::CheckboxVar("Shadow map debug", _debugShadow);
+	ImGui::CheckboxVar("Show shadow cascades", _debugShadowCascade);
+	ImGui::InputVarString("Mesh", _meshName);
+	if (_meshName->isDirty()) {
+		const video::MeshPtr& meshPtr = _meshPool.getMesh(_meshName->strVal());
+		if (meshPtr->isLoading()) {
+			_mesh->shutdown();
+			_mesh = meshPtr;
+		} else {
+			Log::warn("Failed to load mesh: %s", _meshName->strVal().c_str());
+		}
+		_meshName->markClean();
+	}
+	ImGui::InputFloat3("Position", glm::value_ptr(_position));
+	ImGui::ColorEdit3("Diffuse color", glm::value_ptr(_diffuseColor));
+	ImGui::ColorEdit3("Ambient color", glm::value_ptr(_ambientColor));
+	ImGui::ColorEdit4("Fog color", glm::value_ptr(_fogColor));
+	ImGui::ColorEdit4("Clear color", glm::value_ptr(_clearColor));
 }
 
 void TestMeshApp::doRender() {
@@ -137,6 +171,7 @@ void TestMeshApp::doRender() {
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
+	_model = glm::translate(glm::mat4(1.0f), _position);
 	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
 	_shadow.calculateShadowData(_camera, true, maxDepthBuffers, _depthBuffer.dimension());
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
@@ -146,10 +181,7 @@ void TestMeshApp::doRender() {
 		video::disable(video::State::Blend);
 		// put shadow acne into the dark
 		video::cullFace(video::Face::Front);
-		const float shadowBiasSlope = 2;
-		const float shadowBias = 0.09f;
-		const float shadowRangeZ = _camera.farPlane() * 3.0f;
-		const glm::vec2 offset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
+		const glm::vec2 offset(_shadowBiasSlope, (_shadowBias / _shadowRangeZ) * (1 << 24));
 		const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
 
 		_depthBuffer.bind();
@@ -157,11 +189,13 @@ void TestMeshApp::doRender() {
 		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
 			_shadowMapShader.recordUsedUniforms(true);
 			_shadowMapShader.clearUsedUniforms();
-			_shadowMapShader.setModel(glm::mat4(1.0f));
+			_shadowMapShader.setModel(_model);
 			for (int i = 0; i < maxDepthBuffers; ++i) {
 				_depthBuffer.bindTexture(i);
 				_shadowMapShader.setLightviewprojection(cascades[i]);
-				renderPlane();
+				if (_renderPlane) {
+					renderPlane();
+				}
 				_mesh->render();
 			}
 		} else {
@@ -174,10 +208,12 @@ void TestMeshApp::doRender() {
 
 	bool meshInitialized = false;
 	{
-		video::clearColor(glm::vec4(0.8, 0.8f, 0.8f, 1.0f));
+		video::clearColor(_clearColor);
 		video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 
-		renderPlane();
+		if (_renderPlane) {
+			renderPlane();
+		}
 
 		video::ScopedShader scoped(_meshShader);
 		_meshShader.clearUsedUniforms();
@@ -185,15 +221,15 @@ void TestMeshApp::doRender() {
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
 			_meshShader.setViewprojection(_camera.viewProjectionMatrix());
-			_meshShader.setFogrange(250.0f);
+			_meshShader.setFogrange(_fogRange);
 			_meshShader.setViewdistance(_camera.farPlane());
-			_meshShader.setModel(glm::mat4(1.0f));
+			_meshShader.setModel(_model);
 			_meshShader.setTexture(video::TextureUnit::Zero);
 			_meshShader.setDiffuseColor(_diffuseColor);
 			_meshShader.setAmbientColor(_ambientColor);
 			_meshShader.setShadowmap(video::TextureUnit::One);
 			_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
-			_meshShader.setFogcolor(core::Color::LightBlue);
+			_meshShader.setFogcolor(_fogColor);
 			_meshShader.setCascades(cascades);
 			_meshShader.setDistances(distances);
 			_meshShader.setLightdir(_shadow.sunDirection());
@@ -204,12 +240,12 @@ void TestMeshApp::doRender() {
 			_meshShader.recordUsedUniforms(false);
 		}
 	}
-	if (meshInitialized) {
+	if (meshInitialized && _renderNormals) {
 		video::ScopedShader scoped(_colorShader);
 		_colorShader.recordUsedUniforms(true);
 		_colorShader.clearUsedUniforms();
 		_colorShader.setViewprojection(_camera.viewProjectionMatrix());
-		_colorShader.setModel(glm::mat4(1.0f));
+		_colorShader.setModel(_model);
 		_mesh->renderNormals(_colorShader);
 	}
 

@@ -99,7 +99,7 @@ void TestApp::beforeUI() {
 	_camera.move(moveDelta);
 	_camera.update(_deltaFrame);
 
-	if  (_renderPlane) {
+	if (_renderPlane) {
 		_plane.render(_camera);
 	}
 	{
