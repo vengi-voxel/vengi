@@ -27,6 +27,16 @@ public:
 	~TraceGLScoped();
 };
 
+class TraceCallback {
+public:
+	virtual ~TraceCallback() {}
+	virtual void traceBeginFrame() {}
+	virtual void traceBegin(const char *name) = 0;
+	virtual void traceEnd() = 0;
+	virtual void traceEndFrame() {}
+};
+
+extern TraceCallback* traceSet(TraceCallback* callback);
 extern void traceInit();
 extern void traceGLInit();
 extern void traceShutdown();
@@ -40,6 +50,7 @@ extern void traceGLEnd();
 extern void traceMessage(const char* name);
 extern void traceThread(const char* name);
 
+#define core_trace_set(x) core::traceSet(x)
 #define core_trace_init() core::traceInit()
 #define core_trace_gl_init() core::traceGLInit()
 #define core_trace_shutdown() core::traceShutdown()

@@ -14,6 +14,12 @@
 
 namespace core {
 
+namespace {
+
+static TraceCallback* _callback = nullptr;
+
+}
+
 Trace::Trace(uint16_t port) {
 #if USE_EMTRACE
 	emscripten_trace_configure(core::string::format("http://localhost:%i/", (int)port).c_str(), "Engine");
@@ -45,6 +51,12 @@ TraceGLScoped::~TraceGLScoped() {
 	traceGLEnd();
 }
 
+TraceCallback* traceSet(TraceCallback* callback) {
+	TraceCallback* old = _callback;
+	_callback = callback;
+	return old;
+}
+
 void traceInit() {
 #if USE_EMTRACE
 	Log::info("emtrace active");
@@ -64,7 +76,12 @@ void traceBeginFrame() {
 #if USE_EMTRACE
 	emscripten_trace_record_frame_start();
 #else
-	traceBegin("Frame");
+	if (_callback != nullptr) {
+		_callback->traceBeginFrame();
+	} else {
+		traceBegin("Frame");
+	}
+
 #endif
 }
 
@@ -72,19 +89,31 @@ void traceEndFrame() {
 #if USE_EMTRACE
 	emscripten_trace_record_frame_end();
 #else
-	traceEnd();
+	if (_callback != nullptr) {
+		_callback->traceEndFrame();
+	} else {
+		traceEnd();
+	}
 #endif
 }
 
 void traceBegin(const char* name) {
 #if USE_EMTRACE
 	emscripten_trace_enter_context(name);
+#else
+	if (_callback != nullptr) {
+		_callback->traceBegin(name);
+	}
 #endif
 }
 
 void traceEnd() {
 #if USE_EMTRACE
 	emscripten_trace_exit_context();
+#else
+	if (_callback != nullptr) {
+		_callback->traceEnd();
+	}
 #endif
 }
 
