@@ -9,6 +9,13 @@
 #include "video/VertexBuffer.h"
 #include "ImguiShaders.h"
 #include "Console.h"
+#include "core/Trace.h"
+#include <atomic>
+#include <map>
+#include <thread>
+#include <deque>
+#include <mutex>
+#include <array>
 
 namespace ui {
 namespace imgui {
@@ -16,7 +23,7 @@ namespace imgui {
 /**
  * @ingroup UI
  */
-class IMGUIApp: public video::WindowedApp {
+class IMGUIApp: public video::WindowedApp, public core::TraceCallback {
 private:
 	using Super = video::WindowedApp;
 protected:
@@ -30,6 +37,28 @@ protected:
 	int32_t _indexBufferIndex = -1;
 	int8_t _mouseWheel = 0;
 	bool _mousePressed[3];
+	bool _renderTracing = false;
+	std::mutex _traceMutex;
+	static constexpr int _maxMeasureSize = 200;
+	struct TraceData {
+		int cnt = 0;
+		bool begin = true;
+		double value = -1.0;
+		double delta = 0.0;
+	};
+	using FrameData = std::map<const char*, TraceData>;
+	using Frames = std::array<FrameData, _maxMeasureSize>;
+	using Measures = std::map<std::thread::id, Frames>;
+	thread_local static int _currentFrameCounter;
+	Measures _traceMeasures;
+	using FramesMillis = std::array<float, _maxMeasureSize>;
+	FramesMillis _frameMillis {0.0f};
+
+	virtual void traceBeginFrame() override;
+	virtual void traceBegin(const char* name) override;
+	virtual void traceEnd() override;
+	virtual void traceEndFrame() override;
+	void renderTracing();
 
 	virtual bool onKeyRelease(int32_t key) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;

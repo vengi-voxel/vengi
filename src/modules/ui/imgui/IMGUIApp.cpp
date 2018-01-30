@@ -18,11 +18,58 @@
 namespace ui {
 namespace imgui {
 
+thread_local int IMGUIApp::_currentFrameCounter = 0;
+
 IMGUIApp::IMGUIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
 		Super(filesystem, eventBus, timeProvider, traceport), _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {
+	core_trace_set(this);
 }
 
 IMGUIApp::~IMGUIApp() {
+	core_trace_set(nullptr);
+}
+
+void IMGUIApp::traceBeginFrame() {
+	std::lock_guard<std::mutex> lock(_traceMutex);
+	const std::thread::id id = std::this_thread::get_id();
+	auto i = _traceMeasures.find(id);
+	if (i == _traceMeasures.end()) {
+		i = _traceMeasures.emplace(std::make_pair(id, Frames())).first;
+	}
+}
+
+void IMGUIApp::traceBegin(const char* name) {
+	std::lock_guard<std::mutex> lock(_traceMutex);
+	const std::thread::id id = std::this_thread::get_id();
+	auto measureIter = _traceMeasures.find(id);
+	if (measureIter == _traceMeasures.end()) {
+		measureIter = _traceMeasures.insert(std::make_pair(id, Frames())).first;
+	}
+	FrameData& frame = measureIter->second[_currentFrameCounter % _maxMeasureSize];
+	auto frameIter = frame.find(name);
+	if (frameIter == frame.end()) {
+		frame.emplace(std::make_pair(name, TraceData{1, true, core::TimeProvider::systemNanos(), 0.0}));
+	} else {
+		frameIter->second.value += core::TimeProvider::systemNanos();
+		frameIter->second.cnt++;
+		frameIter->second.begin = true;
+	}
+}
+
+void IMGUIApp::traceEnd() {
+	std::lock_guard<std::mutex> lock(_traceMutex);
+	const std::thread::id id = std::this_thread::get_id();
+	auto measureIter = _traceMeasures.find(id);
+	core_assert(measureIter != _traceMeasures.end());
+	FrameData& frame = measureIter->second[_currentFrameCounter % _maxMeasureSize];
+	core_assert(!frame.empty());
+	TraceData& value = frame.rbegin()->second;
+	value.delta = core::TimeProvider::systemNanos() - (value.value / double(value.cnt));
+	value.begin = false;
+}
+
+void IMGUIApp::traceEndFrame() {
+	++_currentFrameCounter;
 }
 
 void IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
@@ -113,6 +160,7 @@ void IMGUIApp::onWindowResize() {
 core::AppState IMGUIApp::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 	_console.onConstruct();
+	core::Command::registerCommand("cl_rendertracing", [&] (const core::CmdArgs& args) { _renderTracing ^= true; }).setHelp("Toggle the trace data rendering");
 	return state;
 }
 
@@ -317,9 +365,13 @@ core::AppState IMGUIApp::onRunning() {
 		onRenderUI();
 	}
 
+	const int index = _currentFrameCounter % _maxMeasureSize;
+	_frameMillis[index] = _deltaFrame;
+
+	renderTracing();
+
 	const math::Rect<int> rect(0, 0, _dimension.x, _dimension.y);
 	_console.render(rect, _deltaFrame);
-
 	ImGui::Render();
 
 	ImDrawData* drawData = ImGui::GetDrawData();
@@ -350,6 +402,70 @@ core::AppState IMGUIApp::onRunning() {
 
 	video::scissor(0, 0, renderTargetW, renderTargetH);
 	return core::AppState::Running;
+}
+
+void IMGUIApp::renderTracing() {
+	if (!_renderTracing) {
+		return;
+	}
+	if (!ImGui::Begin("Tracing", &_renderTracing, ImGuiWindowFlags_AlwaysAutoResize)) {
+		return;
+	}
+	std::array<float, _maxMeasureSize> frameMillis;
+	float max = 0.0f;
+	float avg = 0.0f;
+	for (int i = 0; i < _maxMeasureSize; ++i) {
+		const int index = (_currentFrameCounter + i) % _maxMeasureSize;
+		const float value = _frameMillis[index];
+		frameMillis[i] = value / 1000.0f;
+		max = glm::max(max, frameMillis[i]);
+		avg += frameMillis[i];
+	}
+	std::array<float, _maxMeasureSize> frameMillisQuantile = frameMillis;
+	std::sort(frameMillisQuantile.begin(), frameMillisQuantile.end());
+	const int quantileIndex = int(0.95f * (float(_maxMeasureSize + 1)));
+	const float twenthyQuantile = frameMillisQuantile[quantileIndex];
+	avg /= (float)_maxMeasureSize;
+	const std::string& maxStr = core::string::format("max: %fms, avg: %fms, quantile: %f", max, avg, twenthyQuantile);
+	ImGui::PlotLines("Frame", &frameMillis[0], frameMillis.size(), 0, maxStr.c_str() , 0.0f, max, ImVec2(500, 100));
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	ImVec2 pos = ImGui::GetCursorPos();
+	ImVec2 posEnd = pos;
+	posEnd.x += 30.0f;
+	posEnd.y += 3.0f;
+	const ImU32 colBase = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
+	// TODO
+	if (1) {
+		std::lock_guard<std::mutex> lock(_traceMutex);
+		for (auto i = _traceMeasures.begin(); i != _traceMeasures.end(); ++i) {
+			const Frames& frames = i->second;
+			if (frames.empty()) {
+				continue;
+			}
+			const FrameData& frameData = frames.back();
+			for (auto fi = frameData.begin(); fi != frameData.end(); ++fi) {
+				const char* key = fi->first;
+				const TraceData& data = fi->second;
+				if (data.begin) {
+					// incomplete data
+					continue;
+				}
+				posEnd.x = pos.x + data.delta;
+			    const ImVec2 labelSize = ImGui::CalcTextSize(key);
+				const ImVec2 size(glm::max(labelSize.x, posEnd.x - pos.x), glm::max(labelSize.y, posEnd.y - pos.y));
+				ImGui::ItemSize(size, 0.0f);
+				Log::info("key: %s, value: %f (%f:%f) - (%f:%f)", key, (float)data.delta, pos.x, pos.y, posEnd.x, posEnd.y);
+				if (!ImGui::ItemAdd(ImRect(pos, posEnd), 0u, nullptr)) {
+					continue;
+				}
+				window->DrawList->AddRectFilled(pos, posEnd, colBase);
+				window->DrawList->AddText(pos, IM_COL32_WHITE, key, nullptr);
+				pos.y += 5.0f;
+				posEnd.y = pos.y + 3.0f;
+			}
+		}
+	}
+	ImGui::End();
 }
 
 core::AppState IMGUIApp::onCleanup() {
