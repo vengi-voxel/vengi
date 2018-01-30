@@ -22,10 +22,9 @@ class MetricMgr :
 	public core::IEventBusHandler<EntityDeleteEvent>,
 	public core::IEventBusHandler<EntityAddEvent>{
 private:
-	metric::Metric _metric;
-	metric::IMetricSenderPtr _metricSender;
+	metric::MetricPtr _metric;
 public:
-	MetricMgr(const metric::IMetricSenderPtr& metricSender, const core::EventBusPtr& eventBus);
+	MetricMgr(const metric::MetricPtr& metric, const core::EventBusPtr& eventBus);
 
 	void onEvent(const metric::MetricEvent& event);
 	void onEvent(const network::NewConnectionEvent& event);
@@ -34,13 +33,13 @@ public:
 	void onEvent(const EntityDeleteEvent& event);
 	void onEvent(const EntityAddEvent& event);
 
-	metric::Metric& metric();
+	metric::MetricPtr& metric();
 
 	bool init();
 	void shutdown();
 };
 
-inline metric::Metric& MetricMgr::metric() {
+inline metric::MetricPtr& MetricMgr::metric() {
 	return _metric;
 }
 

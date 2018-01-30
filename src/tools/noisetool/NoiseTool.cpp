@@ -7,8 +7,8 @@
 #include "ui/NoiseToolWindow.h"
 #include "ui/noisedata/NoiseDataItemWidget.h"
 
-NoiseTool::NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider) {
+NoiseTool::NoiseTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "noisetool");
 }
 
@@ -59,6 +59,7 @@ int main(int argc, char *argv[]) {
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
-	NoiseTool app(filesystem, eventBus, timeProvider);
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	NoiseTool app(metric, filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

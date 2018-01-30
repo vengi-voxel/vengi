@@ -11,7 +11,7 @@ namespace core {
 // a singleton - available via core::App
 class Trace {
 public:
-	Trace(uint16_t port = 17815);
+	Trace();
 	~Trace();
 };
 
@@ -30,10 +30,10 @@ public:
 class TraceCallback {
 public:
 	virtual ~TraceCallback() {}
-	virtual void traceBeginFrame() {}
-	virtual void traceBegin(const char *name) = 0;
-	virtual void traceEnd() = 0;
-	virtual void traceEndFrame() {}
+	virtual void traceBeginFrame(const char *threadName) {}
+	virtual void traceBegin(const char *threadName, const char *name) = 0;
+	virtual void traceEnd(const char *threadName) = 0;
+	virtual void traceEndFrame(const char *threadName) {}
 };
 
 extern TraceCallback* traceSet(TraceCallback* callback);

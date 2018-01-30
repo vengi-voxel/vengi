@@ -15,7 +15,7 @@ private:
 
 	void doRender() override;
 public:
-	TestDepthBuffer(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestDepthBuffer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;

@@ -7,8 +7,8 @@
 #include "NodeGraph.h"
 #include "voxel/MaterialColor.h"
 
-NoiseTool2::NoiseTool2(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider) {
+NoiseTool2::NoiseTool2(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 }
 
 void NoiseTool2::onRenderUI() {
@@ -55,9 +55,10 @@ core::AppState NoiseTool2::onInit() {
 }
 
 int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	NoiseTool2 app(filesystem, eventBus, timeProvider);
+	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
+	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	NoiseTool2 app(metric, filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

@@ -37,7 +37,7 @@ protected:
 
 	bool parse(const std::string& src);
 public:
-	ComputeShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	~ComputeShaderTool();
 
 	core::AppState onConstruct() override;

@@ -1,8 +1,11 @@
+/**
+ * @file
+ */
 #include "TestPlane.h"
 #include "io/Filesystem.h"
 
-TestPlane::TestPlane(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider) {
+TestPlane::TestPlane(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 	setCameraMotion(true);
 	setRenderAxis(true);
 }
@@ -33,10 +36,4 @@ core::AppState TestPlane::onCleanup() {
 	return state;
 }
 
-int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	TestPlane app(filesystem, eventBus, timeProvider);
-	return app.startMainLoop(argc, argv);
-}
+TEST_APP(TestPlane)

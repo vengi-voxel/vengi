@@ -38,9 +38,9 @@
 			_moveMask &= ~network::MoveDirection::flag; \
 	}).setHelp("Character movement");
 
-Client::Client(const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldPtr& world, const network::ClientMessageSenderPtr& messageSender,
+Client::Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldPtr& world, const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem) :
-		Super(filesystem, eventBus, timeProvider, 17816), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
+		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
 		_worldRenderer(world), _waiting(this) {
 	_world->setClientData(true);
 	init(ORGANISATION, "client");
@@ -380,6 +380,7 @@ int main(int argc, char *argv[]) {
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 	const network::ClientNetworkPtr& network = std::make_shared<network::ClientNetwork>(protocolHandlerRegistry, eventBus);
 	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
-	Client app(meshPool, network, world, messageSender, eventBus, timeProvider, filesystem);
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	Client app(metric, meshPool, network, world, messageSender, eventBus, timeProvider, filesystem);
 	return app.startMainLoop(argc, argv);
 }

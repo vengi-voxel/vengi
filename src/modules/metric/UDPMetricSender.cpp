@@ -37,7 +37,7 @@ UDPMetricSender::UDPMetricSender() :
 bool UDPMetricSender::init() {
 	_port = core::Var::getSafe(cfg::MetricPort)->intVal();
 	_host = core::Var::getSafe(cfg::MetricHost)->strVal();
-	Log::info("metric udp sender %s:%i", _host.c_str(), (int)_port);
+	Log::debug("metric udp sender %s:%i", _host.c_str(), (int)_port);
 #ifdef WIN32
 	WSADATA wsaData;
 	const int wsaResult = WSAStartup(MAKEWORD(2, 2), &wsaData);

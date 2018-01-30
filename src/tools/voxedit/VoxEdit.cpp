@@ -22,8 +22,8 @@
 #define COMMAND_CALL(command, call, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {call;}).setHelp(help)
 #define COMMAND_MAINWINDOW_EVENT(command, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);event.ref_id = TBIDC(command);_mainWindow->InvokeEvent(event);}).setHelp(help)
 
-VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
-		Super(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
+VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
+		Super(metric, filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init(ORGANISATION, "voxedit");
 }
 
@@ -321,6 +321,7 @@ int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const video::MeshPoolPtr& meshPool = std::make_shared<video::MeshPool>();
-	VoxEdit app(filesystem, eventBus, timeProvider, meshPool);
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	VoxEdit app(metric, filesystem, eventBus, timeProvider, meshPool);
 	return app.startMainLoop(argc, argv);
 }

@@ -6,6 +6,7 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/command/Command.h"
+#include "metric/Metric.h"
 
 extern char **_argv;
 extern int _argc;
@@ -16,7 +17,8 @@ void AbstractTest::SetUp() {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	_testApp = new TestApp(filesystem, eventBus, timeProvider, this);
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	_testApp = new TestApp(metric, filesystem, eventBus, timeProvider, this);
 	const bool isRunning = _testApp->_curState == AppState::Running;
 	ASSERT_TRUE(isRunning) << "Failed to setup the test app properly";
 }
@@ -28,8 +30,8 @@ void AbstractTest::TearDown() {
 	_testApp = nullptr;
 }
 
-AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
-		Super(filesystem, eventBus, timeProvider, 10000), _test(test) {
+AbstractTest::TestApp::TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
+		Super(metric, filesystem, eventBus, timeProvider), _test(test) {
 	init(ORGANISATION, "test");
 	_argc = ::_argc;
 	_argv = ::_argv;

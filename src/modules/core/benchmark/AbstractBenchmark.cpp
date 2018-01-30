@@ -13,7 +13,8 @@ void AbstractBenchmark::SetUp(benchmark::State& st) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	_benchmarkApp = new BenchmarkApp(filesystem, eventBus, timeProvider, this);
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	_benchmarkApp = new BenchmarkApp(metric, filesystem, eventBus, timeProvider, this);
 }
 
 void AbstractBenchmark::TearDown(benchmark::State& st) {
@@ -23,8 +24,8 @@ void AbstractBenchmark::TearDown(benchmark::State& st) {
 	_benchmarkApp = nullptr;
 }
 
-AbstractBenchmark::BenchmarkApp::BenchmarkApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark) :
-		Super(filesystem, eventBus, timeProvider, 10000), _benchmark(benchmark) {
+AbstractBenchmark::BenchmarkApp::BenchmarkApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark) :
+		Super(metric, filesystem, eventBus, timeProvider), _benchmark(benchmark) {
 	init(ORGANISATION, "benchmark");
 	while (_curState < AppState::Running) {
 		core_trace_scoped(AppMainLoop);

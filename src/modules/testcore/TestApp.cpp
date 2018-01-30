@@ -5,8 +5,8 @@
 #include "frontend/Movement.h"
 #include "video/ScopedPolygonMode.h"
 
-TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider, 21000) {
+TestApp::TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "test");
 }
 

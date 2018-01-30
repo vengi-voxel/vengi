@@ -49,8 +49,8 @@ protected:
 		} else if (flavor == Flavor::Datadog) {
 			core::Var::get("metric_flavor", "")->setVal("datadog");
 		}
-		Metric m(PREFIX);
-		m.init(sender);
+		Metric m;
+		m.init(PREFIX, sender);
 		m.count(id, value, tags);
 		return sender->metricLine();
 	}
@@ -63,8 +63,8 @@ protected:
 		} else if (flavor == Flavor::Datadog) {
 			core::Var::get("metric_flavor", "")->setVal("datadog");
 		}
-		Metric m(PREFIX);
-		m.init(sender);
+		Metric m;
+		m.init(PREFIX, sender);
 		m.gauge(id, value, tags);
 		return sender->metricLine();
 	}
@@ -77,8 +77,8 @@ protected:
 		} else if (flavor == Flavor::Datadog) {
 			core::Var::get("metric_flavor", "")->setVal("datadog");
 		}
-		Metric m(PREFIX);
-		m.init(sender);
+		Metric m;
+		m.init(PREFIX, sender);
 		m.timing(id, value, tags);
 		return sender->metricLine();
 	}

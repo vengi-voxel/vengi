@@ -40,7 +40,7 @@ set(SRCS
 )
 set(LIB core)
 add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES collection io restclient-cpp zlib ${CMAKE_DL_LIBS})
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES collection io metric restclient-cpp zlib ${CMAKE_DL_LIBS})
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 set(TEST_SRCS

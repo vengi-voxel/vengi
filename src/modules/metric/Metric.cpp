@@ -12,15 +12,12 @@
 
 namespace metric {
 
-Metric::Metric(const char* prefix) :
-		_prefix(prefix) {
-}
-
 Metric::~Metric() {
 	shutdown();
 }
 
-bool Metric::init(const IMetricSenderPtr& messageSender) {
+bool Metric::init(const char *prefix, const IMetricSenderPtr& messageSender) {
+	_prefix = prefix;
 	const std::string& flavor = core::Var::getSafe(cfg::MetricFlavor)->strVal();
 	if (flavor == "telegraf") {
 		_flavor = Flavor::Telegraf;
@@ -39,6 +36,7 @@ bool Metric::init(const IMetricSenderPtr& messageSender) {
 }
 
 void Metric::shutdown() {
+	_messageSender = IMetricSenderPtr();
 }
 
 bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split) const {
@@ -77,6 +75,9 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 }
 
 bool Metric::assemble(const char* key, int value, const char* type, const TagMap& tags) const {
+	if (!_messageSender) {
+		return false;
+	}
 	constexpr int metricSize = 256;
 	char buffer[metricSize];
 	constexpr int tagsSize = 256;
@@ -103,7 +104,6 @@ bool Metric::assemble(const char* key, int value, const char* type, const TagMap
 	if (written >= metricSize) {
 		return false;
 	}
-	core_assert_always(_messageSender);
 	return _messageSender->send(buffer);
 }
 

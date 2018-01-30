@@ -15,8 +15,8 @@
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 
-WorldRendererTool::WorldRendererTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world) :
-		Super(filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
+WorldRendererTool::WorldRendererTool(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world) :
+		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
 	init(ORGANISATION, "worldrenderertool");
 	_world->setClientData(true);
 }
@@ -232,11 +232,12 @@ void WorldRendererTool::reset(const voxel::WorldContext& ctx) {
 }
 
 int main(int argc, char *argv[]) {
-	const video::MeshPoolPtr meshPool = std::make_shared<video::MeshPool>();
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const voxel::WorldPtr world = std::make_shared<voxel::World>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	WorldRendererTool app(meshPool, filesystem, eventBus, timeProvider, world);
+	const video::MeshPoolPtr& meshPool = std::make_shared<video::MeshPool>();
+	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
+	const voxel::WorldPtr& world = std::make_shared<voxel::World>();
+	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
+	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	WorldRendererTool app(metric, meshPool, filesystem, eventBus, timeProvider, world);
 	return app.startMainLoop(argc, argv);
 }

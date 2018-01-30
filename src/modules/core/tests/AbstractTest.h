@@ -84,7 +84,7 @@ private:
 	protected:
 		AbstractTest* _test = nullptr;
 	public:
-		TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test);
+		TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test);
 		~TestApp();
 
 		AppState onInit() override;

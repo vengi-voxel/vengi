@@ -58,7 +58,7 @@ protected:
 	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
 public:
-	NuklearApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport = 17815);
+	NuklearApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	virtual ~NuklearApp();
 
 	virtual bool onRenderUI() = 0;

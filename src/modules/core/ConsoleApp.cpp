@@ -6,8 +6,8 @@
 
 namespace core {
 
-ConsoleApp::ConsoleApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport, size_t threadPoolSize) :
-		Super(filesystem, eventBus, timeProvider, traceport, threadPoolSize) {
+ConsoleApp::ConsoleApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
+		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize) {
 }
 
 ConsoleApp::~ConsoleApp() {

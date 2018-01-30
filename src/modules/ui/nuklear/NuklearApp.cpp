@@ -17,8 +17,8 @@ namespace nuklear {
 static const int MAX_VERTEX_MEMORY = 32768 * sizeof(NuklearApp::Vertex);
 static const int MAX_ELEMENT_MEMORY = 65536;
 
-NuklearApp::NuklearApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
-		Super(filesystem, eventBus, timeProvider, traceport), _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {
+NuklearApp::NuklearApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider), _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {
 }
 
 NuklearApp::~NuklearApp() {

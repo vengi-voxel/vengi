@@ -24,7 +24,7 @@ protected:
 	video::TexturePoolPtr _texturePool;
 	bool _skipUntilReload = true;
 public:
-	LUAUIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::TexturePoolPtr& texturePool, uint16_t traceport = 17815);
+	LUAUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::TexturePoolPtr& texturePool);
 	virtual ~LUAUIApp();
 
 	core::AppState onInit() override;

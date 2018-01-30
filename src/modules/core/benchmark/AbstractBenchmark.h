@@ -14,7 +14,7 @@ private:
 		using Super = core::ConsoleApp;
 		AbstractBenchmark* _benchmark = nullptr;
 	public:
-		BenchmarkApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark);
+		BenchmarkApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark);
 		~BenchmarkApp();
 
 		virtual core::AppState onInit() override;

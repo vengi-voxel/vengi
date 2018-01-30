@@ -13,7 +13,7 @@ private:
 	using Super = core::ConsoleApp;
 	backend::ServerLoopPtr _serverLoop;
 public:
-	Server(const backend::ServerLoopPtr& serverLoop,
+	Server(const metric::MetricPtr& metric, const backend::ServerLoopPtr& serverLoop,
 			const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
 			const core::EventBusPtr& eventBus);
 

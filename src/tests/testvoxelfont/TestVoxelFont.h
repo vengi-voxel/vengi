@@ -28,7 +28,7 @@ private:
 
 	bool changeFontSize(int delta);
 public:
-	TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestVoxelFont(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	void onRenderUI() override;
 

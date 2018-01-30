@@ -73,18 +73,18 @@ void ServerLoop::signalCallback(uv_signal_t* handle, int signum) {
 
 void ServerLoop::onIdle(uv_idle_t* handle) {
 	ServerLoop* loop = (ServerLoop*)handle->data;
-	metric::Metric& metric = loop->_metricMgr->metric();
+	const metric::MetricPtr& metric = loop->_metricMgr->metric();
 
 	const core::App* app = core::App::getInstance();
 	const int deltaFrame = app->deltaFrame();
 	constexpr int delta = 10;
 	if (std::abs(deltaFrame - loop->_lastDeltaFrame) > delta) {
-		metric.timing("frame.delta", app->deltaFrame());
+		metric->timing("frame.delta", app->deltaFrame());
 		loop->_lastDeltaFrame = deltaFrame;
 	}
 	const uint64_t lifetimeSeconds = app->lifetimeInSeconds();
 	if (lifetimeSeconds != loop->_lifetimeSeconds) {
-		metric.gauge("uptime", lifetimeSeconds);
+		metric->gauge("uptime", lifetimeSeconds);
 		loop->_lifetimeSeconds = lifetimeSeconds;
 	}
 }
@@ -264,7 +264,7 @@ void ServerLoop::update(long dt) {
 	_network->update();
 	const int eventSkip = _eventBus->update(200);
 	if (eventSkip != _lastEventSkip) {
-		_metricMgr->metric().gauge("events.skip", eventSkip);
+		_metricMgr->metric()->gauge("events.skip", eventSkip);
 		_lastEventSkip = eventSkip;
 	}
 }

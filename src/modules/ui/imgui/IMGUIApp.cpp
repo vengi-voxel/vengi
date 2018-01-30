@@ -20,16 +20,14 @@ namespace imgui {
 
 thread_local int IMGUIApp::_currentFrameCounter = 0;
 
-IMGUIApp::IMGUIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
-		Super(filesystem, eventBus, timeProvider, traceport), _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {
-	core_trace_set(this);
+IMGUIApp::IMGUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider), _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {
 }
 
 IMGUIApp::~IMGUIApp() {
-	core_trace_set(nullptr);
 }
 
-void IMGUIApp::traceBeginFrame() {
+void IMGUIApp::traceBeginFrame(const char *threadName) {
 	std::lock_guard<std::mutex> lock(_traceMutex);
 	const std::thread::id id = std::this_thread::get_id();
 	auto i = _traceMeasures.find(id);
@@ -38,7 +36,7 @@ void IMGUIApp::traceBeginFrame() {
 	}
 }
 
-void IMGUIApp::traceBegin(const char* name) {
+void IMGUIApp::traceBegin(const char *threadName, const char* name) {
 	std::lock_guard<std::mutex> lock(_traceMutex);
 	const std::thread::id id = std::this_thread::get_id();
 	auto measureIter = _traceMeasures.find(id);
@@ -56,7 +54,7 @@ void IMGUIApp::traceBegin(const char* name) {
 	}
 }
 
-void IMGUIApp::traceEnd() {
+void IMGUIApp::traceEnd(const char *threadName) {
 	std::lock_guard<std::mutex> lock(_traceMutex);
 	const std::thread::id id = std::this_thread::get_id();
 	auto measureIter = _traceMeasures.find(id);
@@ -68,7 +66,7 @@ void IMGUIApp::traceEnd() {
 	value.begin = false;
 }
 
-void IMGUIApp::traceEndFrame() {
+void IMGUIApp::traceEndFrame(const char *threadName) {
 	++_currentFrameCounter;
 }
 

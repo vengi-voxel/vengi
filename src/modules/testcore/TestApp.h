@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "TestAppMain.h"
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUI.h"
 #include "video/Mesh.h"
@@ -45,7 +46,7 @@ protected:
 	}
 
 public:
-	TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	virtual ~TestApp();
 
 	video::Camera& camera();

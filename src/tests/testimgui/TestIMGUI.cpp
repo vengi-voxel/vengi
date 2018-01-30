@@ -2,11 +2,12 @@
  * @file
  */
 #include "TestIMGUI.h"
+#include "testcore/TestAppMain.h"
 #include "io/Filesystem.h"
 #include "core/Color.h"
 
-TestIMGUI::TestIMGUI(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider) {
+TestIMGUI::TestIMGUI(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "testimgui");
 }
 
@@ -51,10 +52,4 @@ core::AppState TestIMGUI::onInit() {
 	return state;
 }
 
-int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	TestIMGUI app(filesystem, eventBus, timeProvider);
-	return app.startMainLoop(argc, argv);
-}
+TEST_APP(TestIMGUI)

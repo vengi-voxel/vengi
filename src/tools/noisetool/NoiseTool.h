@@ -25,7 +25,7 @@ private:
 	NoiseToolWindow* _window = nullptr;
 	NoiseItemSource* _noiseItemSource = nullptr;
 public:
-	NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	NoiseTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	void add(uint32_t dataId, const NoiseData& data);
 	void remove(uint32_t dataId);

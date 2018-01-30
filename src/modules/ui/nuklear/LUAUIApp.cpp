@@ -13,12 +13,12 @@
 namespace ui {
 namespace nuklear {
 
-LUAUIApp::LUAUIApp(const io::FilesystemPtr& filesystem,
+LUAUIApp::LUAUIApp(const metric::MetricPtr& metric,
+		const io::FilesystemPtr& filesystem,
 		const core::EventBusPtr& eventBus,
 		const core::TimeProviderPtr& timeProvider,
-		const video::TexturePoolPtr& texturePool,
-		uint16_t traceport) :
-		Super(filesystem, eventBus, timeProvider, traceport), _lua(false), _texturePool(texturePool) {
+		const video::TexturePoolPtr& texturePool) :
+		Super(metric, filesystem, eventBus, timeProvider), _lua(false), _texturePool(texturePool) {
 }
 
 LUAUIApp::~LUAUIApp() {

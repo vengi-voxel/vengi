@@ -9,10 +9,13 @@
 #include "Common.h"
 #include "Assert.h"
 #include "Var.h"
+#include "metric/Metric.h"
 #include "core/Trace.h"
 #include "EventBus.h"
 #include "TimeProvider.h"
 #include "core/ThreadPool.h"
+#include <stack>
+#include <atomic>
 
 #define ORGANISATION "engine"
 
@@ -38,8 +41,9 @@ enum class AppState : uint8_t {
 /**
  * @brief The app class controls the main loop of every application.
  */
-class App {
+class App : public core::TraceCallback {
 protected:
+	// Deprecated
 	class ProfilerCPU {
 	private:
 		double _min = 0.0;
@@ -62,6 +66,7 @@ protected:
 	};
 
 	template<class Profiler>
+	// Deprecated
 	struct ScopedProfiler {
 		Profiler& _p;
 		inline ScopedProfiler(Profiler& p) : _p(p) {
@@ -98,6 +103,16 @@ protected:
 	core::TimeProviderPtr _timeProvider;
 	core::VarPtr _logLevelVar;
 	core::VarPtr _syslogVar;
+	metric::IMetricSenderPtr _metricSender;
+	metric::MetricPtr _metric;
+	// if you modify the tracing during the frame, we throw away the current frame information
+	std::atomic_bool _blockMetricsUntilNextFrame { false };
+	struct TraceData {
+		const char *threadName;
+		const char *name;
+		double nanos;
+	};
+	static thread_local std::stack<TraceData> _traceData;
 
 	/**
 	 * @brief There is no fps limit per default, but you set one on a per-app basis
@@ -107,10 +122,15 @@ protected:
 		_framesPerSecondsCap = framesPerSecondsCap;
 	}
 
+	virtual void traceBeginFrame(const char *threadName) override;
+	virtual void traceBegin(const char *threadName, const char* name) override;
+	virtual void traceEnd(const char *threadName) override;
+	virtual void traceEndFrame(const char *threadName) override;
+
 	void usage() const;
 
 public:
-	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport, size_t threadPoolSize = 1);
+	App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~App();
 
 	void init(const std::string& organisation, const std::string& appname);

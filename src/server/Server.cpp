@@ -23,13 +23,12 @@
 #include "persistence/DBHandler.h"
 #include "persistence/PersistenceMgr.h"
 #include "stock/StockDataProvider.h"
-#include "metric/UDPMetricSender.h"
 #include <stdlib.h>
 
-Server::Server(const backend::ServerLoopPtr& serverLoop,
+Server::Server(const metric::MetricPtr& metric, const backend::ServerLoopPtr& serverLoop,
 		const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
 		const core::EventBusPtr& eventBus) :
-		Super(filesystem, eventBus, timeProvider, 15678),
+		Super(metric, filesystem, eventBus, timeProvider),
 		_serverLoop(serverLoop) {
 	_syslog = true;
 	_coredump = true;
@@ -41,9 +40,6 @@ Server::Server(const backend::ServerLoopPtr& serverLoop,
 core::AppState Server::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 
-	core::Var::get(cfg::MetricFlavor, "telegraf");
-	core::Var::get(cfg::MetricHost, "127.0.0.1");
-	core::Var::get(cfg::MetricPort, "8125");
 	core::Var::get(cfg::DatabaseName, "engine");
 	core::Var::get(cfg::DatabaseHost, "localhost");
 	core::Var::get(cfg::DatabaseUser, "engine");
@@ -112,14 +108,14 @@ int main(int argc, char *argv[]) {
 	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
 
-	const metric::IMetricSenderPtr& metricSender = std::make_shared<metric::UDPMetricSender>();
 	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, registry, eventBus, filesystem);
-	const backend::MetricMgrPtr& metricMgr = std::make_shared<backend::MetricMgr>(metricSender, eventBus);
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	const backend::MetricMgrPtr& metricMgr = std::make_shared<backend::MetricMgr>(metric, eventBus);
 	const persistence::PersistenceMgrPtr& persistenceMgr = std::make_shared<persistence::PersistenceMgr>(dbHandler);
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(timeProvider, mapProvider,
 			messageSender, world, dbHandler, network, filesystem, entityStorage, eventBus, containerProvider,
 			cooldownProvider, eventMgr, stockDataProvider, metricMgr, persistenceMgr);
 
-	Server app(serverLoop, timeProvider, filesystem, eventBus);
+	Server app(metric, serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);
 }

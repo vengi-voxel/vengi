@@ -32,8 +32,8 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 #define sdlCheckError() checkSDLError(__FILE__, __LINE__, SDL_FUNCTION)
 }
 
-WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
-		Super(filesystem, eventBus, timeProvider, traceport), _dimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
+WindowedApp::WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider), _dimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
 }
 
 WindowedApp::~WindowedApp() {

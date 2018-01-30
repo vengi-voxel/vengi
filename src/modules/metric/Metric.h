@@ -7,6 +7,7 @@
 #include "IMetricSender.h"
 #include "core/NonCopyable.h"
 #include <map>
+#include <memory>
 #include <string>
 #include <stdint.h>
 
@@ -22,7 +23,7 @@ using TagMap = std::map<std::string, std::string>;
 
 class Metric : public core::NonCopyable {
 private:
-	const std::string _prefix;
+	std::string _prefix;
 	Flavor _flavor = Flavor::Telegraf;
 	IMetricSenderPtr _messageSender;
 
@@ -38,14 +39,13 @@ private:
 	bool createTags(char *buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split = ",") const;
 	bool assemble(const char* key, int value, const char* type, const TagMap& tags = {}) const;
 public:
-	Metric(const char* prefix);
 	~Metric();
 
 	/**
 	 * @param[in] messageSender @c IMessageSender - must already be initialized
 	 * @note Reads the @c metric_flavor cvar to configure the flavor.
 	 */
-	bool init(const IMetricSenderPtr& messageSender);
+	bool init(const char *prefix, const IMetricSenderPtr& messageSender);
 	void shutdown();
 
 	/**
@@ -140,5 +140,7 @@ inline bool Metric::histogram(const char* key, uint32_t millis, const TagMap& ta
 inline bool Metric::meter(const char* key, int value, const TagMap& tags) const {
 	return assemble(key, value, "m", tags);
 }
+
+using MetricPtr = std::shared_ptr<Metric>;
 
 }

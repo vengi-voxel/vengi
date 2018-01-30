@@ -17,12 +17,13 @@ namespace core {
 namespace {
 
 static TraceCallback* _callback = nullptr;
+static thread_local const char* _threadName = "Unknown";
 
 }
 
-Trace::Trace(uint16_t port) {
+Trace::Trace() {
 #if USE_EMTRACE
-	emscripten_trace_configure(core::string::format("http://localhost:%i/", (int)port).c_str(), "Engine");
+	emscripten_trace_configure("http://localhost:17000/", "Engine");
 #endif
 	traceThread("MainThread");
 }
@@ -77,11 +78,10 @@ void traceBeginFrame() {
 	emscripten_trace_record_frame_start();
 #else
 	if (_callback != nullptr) {
-		_callback->traceBeginFrame();
+		_callback->traceBeginFrame(_threadName);
 	} else {
 		traceBegin("Frame");
 	}
-
 #endif
 }
 
@@ -90,7 +90,7 @@ void traceEndFrame() {
 	emscripten_trace_record_frame_end();
 #else
 	if (_callback != nullptr) {
-		_callback->traceEndFrame();
+		_callback->traceEndFrame(_threadName);
 	} else {
 		traceEnd();
 	}
@@ -102,7 +102,7 @@ void traceBegin(const char* name) {
 	emscripten_trace_enter_context(name);
 #else
 	if (_callback != nullptr) {
-		_callback->traceBegin(name);
+		_callback->traceBegin(_threadName, name);
 	}
 #endif
 }
@@ -112,7 +112,7 @@ void traceEnd() {
 	emscripten_trace_exit_context();
 #else
 	if (_callback != nullptr) {
-		_callback->traceEnd();
+		_callback->traceEnd(_threadName);
 	}
 #endif
 }
@@ -132,7 +132,8 @@ void traceMessage(const char* message) {
 	Log::trace("%s", message);
 }
 
-void traceThread(const	 char* name) {
+void traceThread(const char* name) {
+	_threadName = name;
 	traceMessage(name);
 }
 

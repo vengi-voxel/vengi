@@ -13,8 +13,8 @@
 #include <stack>
 #include <string>
 
-ComputeShaderTool::ComputeShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider, 0) {
+ComputeShaderTool::ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "computeshadertool");
 }
 
@@ -85,9 +85,10 @@ core::AppState ComputeShaderTool::onRunning() {
 }
 
 int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	ComputeShaderTool app(filesystem, eventBus, timeProvider);
+	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
+	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	ComputeShaderTool app(metric, filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

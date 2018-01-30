@@ -46,7 +46,7 @@ protected:
 	void afterRootWidget() override;
 
 public:
-	ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	ShapeTool(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	~ShapeTool();
 
 	core::AppState onConstruct() override;

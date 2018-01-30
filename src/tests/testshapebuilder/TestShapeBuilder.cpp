@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "TestShapeBuilder.h"
 #include "io/Filesystem.h"
 #include "core/Color.h"
@@ -6,8 +9,8 @@
 #include "core/GLM.h"
 #include "ui/imgui/IMGUI.h"
 
-TestShapeBuilder::TestShapeBuilder(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider), _color(core::Color::DarkGreen) {
+TestShapeBuilder::TestShapeBuilder(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider), _color(core::Color::DarkGreen) {
 	init(ORGANISATION, "testshapebuilder");
 	setCameraMotion(true);
 	setRenderPlane(true);
@@ -187,10 +190,4 @@ core::AppState TestShapeBuilder::onCleanup() {
 	return state;
 }
 
-int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	TestShapeBuilder app(filesystem, eventBus, timeProvider);
-	return app.startMainLoop(argc, argv);
-}
+TEST_APP(TestShapeBuilder)

@@ -47,7 +47,7 @@ protected:
 	void beforeUI() override;
 
 public:
-	WorldRendererTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world);
+	WorldRendererTool(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world);
 	~WorldRendererTool();
 
 	void reset(const voxel::WorldContext& ctx);

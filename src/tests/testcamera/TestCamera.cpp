@@ -2,8 +2,8 @@
 #include "ui/imgui/IMGUI.h"
 #include "io/Filesystem.h"
 
-TestCamera::TestCamera(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider) {
+TestCamera::TestCamera(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "testcamera");
 	setCameraMotion(true);
 	//setRenderPlane(true);
@@ -195,10 +195,4 @@ bool TestCamera::onKeyPress(int32_t key, int16_t modifier) {
 	return retVal;
 }
 
-int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	TestCamera app(filesystem, eventBus, timeProvider);
-	return app.startMainLoop(argc, argv);
-}
+TEST_APP(TestCamera)

@@ -14,8 +14,8 @@
 #include "Generator.h"
 #include "Parser.h"
 
-ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider, 0) {
+ShaderTool::ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "shadertool");
 }
 
@@ -206,9 +206,10 @@ core::AppState ShaderTool::onRunning() {
 }
 
 int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	ShaderTool app(filesystem, eventBus, timeProvider);
+	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
+	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	ShaderTool app(metric, filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

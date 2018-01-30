@@ -1,11 +1,14 @@
+/**
+ * @file
+ */
 #include "TestTexture.h"
 #include "core/Color.h"
 #include "video/Camera.h"
 #include "video/ScopedViewPort.h"
 #include "io/Filesystem.h"
 
-TestTexture::TestTexture(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider) {
+TestTexture::TestTexture(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "testtexture");
 }
 
@@ -74,11 +77,4 @@ core::AppState TestTexture::onCleanup() {
 	return Super::onCleanup();
 }
 
-int main(int argc, char *argv[]) {
-	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
-	TestTexture app(filesystem, eventBus, timeProvider);
-	return app.startMainLoop(argc, argv);
-
-}
+TEST_APP(TestTexture)

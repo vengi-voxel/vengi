@@ -27,7 +27,7 @@ private:
 	void doRender() override;
 	void onRenderUI() override;
 public:
-	TestShapeBuilder(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestShapeBuilder(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	virtual core::AppState onInit() override;
 	virtual core::AppState onCleanup() override;

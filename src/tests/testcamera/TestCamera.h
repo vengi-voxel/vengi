@@ -28,7 +28,7 @@ private:
 	void doRender() override;
 	void resetCameraPosition();
 public:
-	TestCamera(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestCamera(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	core::AppState onInit() override;
 	core::AppState onRunning() override;

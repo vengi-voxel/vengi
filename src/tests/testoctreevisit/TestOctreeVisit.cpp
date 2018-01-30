@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "TestOctreeVisit.h"
 
 #include "io/Filesystem.h"
@@ -7,8 +10,8 @@
 #include "video/ScopedLineWidth.h"
 #include <array>
 
-TestOctreeVisit::TestOctreeVisit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider) {
+TestOctreeVisit::TestOctreeVisit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "testoctreevisit");
 	setCameraMotion(true);
 	//setRenderPlane(true);
@@ -116,10 +119,4 @@ core::AppState TestOctreeVisit::onCleanup() {
 	return state;
 }
 
-int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	TestOctreeVisit app(filesystem, eventBus, timeProvider);
-	return app.startMainLoop(argc, argv);
-}
+TEST_APP(TestOctreeVisit)

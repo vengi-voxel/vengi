@@ -16,7 +16,7 @@ private:
 	bool _windowOpened = true;
 
 public:
-	NoiseTool2(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	NoiseTool2(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	core::AppState onInit() override;
 	core::AppState onConstruct() override;

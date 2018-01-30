@@ -8,8 +8,8 @@
 
 #define MaxDepthBufferUniformName "u_cascades"
 
-TestMeshApp::TestMeshApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider), _colorShader(shader::ColorShader::getInstance()) {
+TestMeshApp::TestMeshApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider), _colorShader(shader::ColorShader::getInstance()) {
 	setCameraMotion(true);
 	setRenderPlane(false);
 	_fogColor = core::Color::LightBlue;

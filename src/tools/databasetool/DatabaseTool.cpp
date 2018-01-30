@@ -12,8 +12,8 @@
 #include "Generator.h"
 #include "Table.h"
 
-DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider, 0) {
+DatabaseTool::DatabaseTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "databasetool");
 }
 
@@ -167,9 +167,10 @@ core::AppState DatabaseTool::onRunning() {
 }
 
 int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	DatabaseTool app(filesystem, eventBus, timeProvider);
+	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
+	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	DatabaseTool app(metric, filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

@@ -62,8 +62,9 @@ protected:
 	void handleLogin();
 	int renderMap(video::Shader& shader, const voxel::WorldPtr& world, const glm::mat4& view, float aspect);
 public:
-	Client(const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldPtr& world, const network::ClientMessageSenderPtr& messageSender,
-			const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem);
+	Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldPtr& world,
+			const network::ClientMessageSenderPtr& messageSender, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
+			const io::FilesystemPtr& filesystem);
 	~Client();
 
 	core::AppState onConstruct() override;

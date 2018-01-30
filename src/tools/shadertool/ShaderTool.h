@@ -24,7 +24,7 @@ protected:
 
 	bool parse(const std::string& src, bool vertex);
 public:
-	ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	core::AppState onConstruct() override;
 	core::AppState onRunning() override;

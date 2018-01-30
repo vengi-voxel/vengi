@@ -42,7 +42,7 @@ protected:
 	glm::ivec2 _mousePos;
 	glm::ivec2 _mouseRelativePos;
 
-	WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport = 17815);
+	WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	bool loadKeyBindings(const std::string& filename = "keybindings.cfg");
 

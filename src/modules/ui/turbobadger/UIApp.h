@@ -41,7 +41,7 @@ protected:
 
 	tb::MODIFIER_KEYS getModifierKeys() const;
 public:
-	UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport = 17815);
+	UIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	virtual ~UIApp();
 
 	virtual void beforeUI() {

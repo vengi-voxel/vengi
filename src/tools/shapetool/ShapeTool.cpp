@@ -23,8 +23,8 @@
  * LODs: Start with low level mesh - World Generator must be able to get a step-offset
  *       That way we have "something" quite fast
  */
-ShapeTool::ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool) {
+ShapeTool::ShapeTool(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool) {
 	init(ORGANISATION, "shapetool");
 }
 
@@ -203,6 +203,7 @@ int main(int argc, char *argv[]) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	ShapeTool app(meshPool, filesystem, eventBus, timeProvider);
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	ShapeTool app(metric, meshPool, filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

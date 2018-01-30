@@ -9,6 +9,7 @@
 #include "command/CommandHandler.h"
 #include "io/Filesystem.h"
 #include "Common.h"
+#include "metric/UDPMetricSender.h"
 #include "Log.h"
 #include "Tokenizer.h"
 #include "Concurrency.h"
@@ -22,10 +23,12 @@
 namespace core {
 
 App* App::_staticInstance;
+thread_local std::stack<App::TraceData> App::_traceData;
 
-App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport, size_t threadPoolSize) :
-		_trace(traceport), _filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core"),
-		_timeProvider(timeProvider) {
+App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
+		_filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core"),
+		_timeProvider(timeProvider), _metric(metric) {
+
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 	_now = systemMillis();
 	_timeProvider->update(_now);
@@ -33,6 +36,9 @@ App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 }
 
 App::~App() {
+	core_trace_set(nullptr);
+	_metricSender->shutdown();
+	_metric->shutdown();
 	Log::shutdown();
 }
 
@@ -57,6 +63,35 @@ void App::addBlocker(AppState blockedState) {
 
 void App::remBlocker(AppState blockedState) {
 	_blockers.erase(blockedState);
+}
+
+void App::traceBeginFrame(const char *threadName) {
+}
+
+void App::traceBegin(const char *threadName, const char* name) {
+	_traceData.emplace(TraceData{threadName, name, core::TimeProvider::systemNanos()});
+}
+
+void App::traceEnd(const char *threadName) {
+	if (_blockMetricsUntilNextFrame) {
+		return;
+	}
+	core_assert(!_traceData.empty());
+	TraceData traceData = _traceData.top();
+	_traceData.pop();
+	const double dt = core::TimeProvider::systemNanos() - traceData.nanos;
+	const double dtMillis = dt * 1000.0;
+	_metric->gauge(traceData.name, uint64_t(dtMillis * 1000.0), {{"thread", traceData.threadName}});
+}
+
+void App::traceEndFrame(const char *threadName) {
+	if (!_blockMetricsUntilNextFrame) {
+		return;
+	}
+	while (!_traceData.empty()) {
+		_traceData.pop();
+	}
+	_blockMetricsUntilNextFrame = false;
 }
 
 void App::onFrame() {
@@ -151,6 +186,10 @@ AppState App::onConstruct() {
 		logVar->setVal(logLevelVal);
 	}
 	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
+	core::Var::get(cfg::MetricFlavor, "telegraf");
+	core::Var::get(cfg::MetricHost, "127.0.0.1");
+	core::Var::get(cfg::MetricPort, "8125");
+
 	Log::init();
 
 	core::Command::registerCommand("set", [] (const core::CmdArgs& args) {
@@ -161,6 +200,16 @@ AppState App::onConstruct() {
 	}).setHelp("Set a variable name");
 
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
+
+	core::Command::registerCommand("trace", [&] (const core::CmdArgs& args) {
+		_blockMetricsUntilNextFrame = true;
+		if (core_trace_set(this) == this) {
+			core_trace_set(nullptr);
+			Log::info("Deactivated statsd based tracing metrics");
+		} else {
+			Log::info("Activated statsd based tracing metrics");
+		}
+	}).setHelp("Toggle application tracing via statsd");
 
 	AppCommand::init();
 
@@ -185,6 +234,17 @@ AppState App::onConstruct() {
 		}
 		core::executeCommands(command + " " + args);
 	}
+
+	_metricSender = std::make_shared<metric::UDPMetricSender>();
+	if (!_metricSender->init()) {
+		Log::warn("Failed to init metric sender");
+		return AppState::Destroy;;
+	}
+	if (!_metric->init(_appname.c_str(), _metricSender)) {
+		Log::warn("Failed to init metrics");
+		// no hard error...
+	}
+
 	Log::init();
 
 	Log::debug("%s: " PROJECT_VERSION, _appname.c_str());
@@ -489,6 +549,13 @@ AppState App::onCleanup() {
 	_threadPool.shutdown();
 
 	core_trace_shutdown();
+
+	if (_metricSender) {
+		_metricSender->shutdown();
+	}
+	if (_metric) {
+		_metric->shutdown();
+	}
 
 	return AppState::Destroy;
 }
