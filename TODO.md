@@ -30,6 +30,7 @@ Support enums?
 ## Databasetool
 
 * Support `(x, y, z) primarykey` (like we do for unique keys)
+* Lock table metainfo whenever we try to update the database structure
 
 # Shadertool
 
