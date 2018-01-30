@@ -67,7 +67,7 @@ bool IMGUIApp::onTextInput(const std::string& text) {
 }
 
 bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
-	if (_console.onKeyPress(key, modifier)) {
+	if (_console.onKeyPress(key, modifier) && _console.isActive()) {
 		return true;
 	}
 	ImGuiIO& io = ImGui::GetIO();
