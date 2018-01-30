@@ -10,6 +10,7 @@
 #include "core/UTF8.h"
 #include "core/Common.h"
 #include "core/Array.h"
+#include "math/Rect.h"
 #include "video/Renderer.h"
 #include "video/ScopedViewPort.h"
 #include "IMGUI.h"
