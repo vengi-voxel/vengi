@@ -29,6 +29,7 @@ protected:
 	glm::vec3 _ambientColor {0.2, 0.2, 0.2};
 	glm::vec4 _fogColor;
 	glm::vec4 _clearColor {0.8f, 0.8f, 0.8f, 1.0f};
+	glm::vec3 _omega { 0.0f };
 	bool _renderNormals = true;
 	float _fogRange = 250.0f;
 	float _shadowBiasSlope = 2.0f;

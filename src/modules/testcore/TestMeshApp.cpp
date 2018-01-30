@@ -57,8 +57,9 @@ core::AppState TestMeshApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
+	_camera.setType(video::CameraType::FirstPerson);
+	_camera.setMode(video::CameraMode::Perspective);
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
-	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 	_camera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
 	_camera.setTargetDistance(50.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);
@@ -136,6 +137,9 @@ void TestMeshApp::onRenderUI() {
 	}
 	if (ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f)) {
 		setCameraSpeed(_cameraSpeed);
+	}
+	if (ImGui::InputFloat3("Camera omega", glm::value_ptr(_omega))) {
+		_camera.setOmega(_omega);
 	}
 	ImGui::InputFloat("Shadow bias", &_shadowBias, 0.001f, 0.01f);
 	ImGui::InputFloat("Shadow bias slope", &_shadowBiasSlope, 0.01f, 0.1f);
