@@ -20,9 +20,6 @@ namespace video {
 namespace {
 const aiVector3D VECZERO(0.0f, 0.0f, 0.0f);
 const aiColor4D COLOR_BLACK(0.0f, 0.0f, 0.0f, 0.0f);
-static inline core::Vertex convertVertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) {
-	return core::Vertex(glm::vec3(p.x, p.y, p.z), glm::vec3(n.x, n.y, n.z), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a));
-}
 
 static inline glm::vec3 toVec3(const aiVector3D& vector) {
 	return glm::vec3(vector.x, vector.y, vector.z);
@@ -35,6 +32,10 @@ static inline glm::quat toQuat(const aiQuaternion& quat) {
 static inline glm::mat4 toMat4(const aiMatrix4x4& m) {
 	// assimp matrices are row major, but glm wants them to be column major
 	return glm::transpose(glm::mat4(m.a1, m.a2, m.a3, m.a4, m.b1, m.b2, m.b3, m.b4, m.c1, m.c2, m.c3, m.c4, m.d1, m.d2, m.d3, m.d4));
+}
+
+static inline core::Vertex convertVertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) {
+	return core::Vertex(toVec3(p), toVec3(n), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a));
 }
 
 }
@@ -154,7 +155,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 
 		for (uint32_t vi = 0; vi < mesh->mNumVertices; ++vi) {
 			const aiVector3D& pos = mesh->mVertices[vi];
-			const aiVector3D& normal = mesh->mNormals[vi];
+			const aiVector3D& normal = mesh->HasNormals() ? mesh->mNormals[vi] : VECZERO;
 			const aiVector3D& texCoord = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][vi] : VECZERO;
 			const aiColor4D& color = mesh->HasVertexColors(0) ? mesh->mColors[0][vi] : COLOR_BLACK;
 
