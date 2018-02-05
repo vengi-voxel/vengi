@@ -21,21 +21,21 @@ namespace {
 const aiVector3D VECZERO(0.0f, 0.0f, 0.0f);
 const aiColor4D COLOR_BLACK(0.0f, 0.0f, 0.0f, 0.0f);
 
-static inline glm::vec3 toVec3(const aiVector3D& vector) {
+static inline glm::vec3 convert(const aiVector3D& vector) {
 	return glm::vec3(vector.x, vector.y, vector.z);
 }
 
-static inline glm::quat toQuat(const aiQuaternion& quat) {
+static inline glm::quat convert(const aiQuaternion& quat) {
 	return glm::quat(quat.w, quat.x, quat.y, quat.z);
 }
 
-static inline glm::mat4 toMat4(const aiMatrix4x4& m) {
+static inline glm::mat4 convert(const aiMatrix4x4& m) {
 	// assimp matrices are row major, but glm wants them to be column major
 	return glm::transpose(glm::mat4(m.a1, m.a2, m.a3, m.a4, m.b1, m.b2, m.b3, m.b4, m.c1, m.c2, m.c3, m.c4, m.d1, m.d2, m.d3, m.d4));
 }
 
 static inline core::Vertex convertVertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) {
-	return core::Vertex(toVec3(p), toVec3(n), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a));
+	return core::Vertex(convert(p), convert(n), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a));
 }
 
 }
@@ -112,7 +112,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 		Log::warn("Scene incomplete '%s': '%s'", filename.c_str(), _importer->GetErrorString());
 	}
 
-	_globalInverseTransform = glm::inverse(toMat4(_scene->mRootNode->mTransformation));
+	_globalInverseTransform = glm::inverse(convert(_scene->mRootNode->mTransformation));
 
 	_meshData.resize(_scene->mNumMeshes);
 
@@ -342,7 +342,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 		glm::mat4 transforms[100];
 		// TODO: size _numBones?
 		// TODO: use uniform block
-		boneTransform(_timeInSeconds, transforms, size, _animationIndex);
+		boneTransform(transforms, size);
 		shader.setUniformMatrixv("u_bonetransforms", transforms, size);
 	}
 
@@ -364,7 +364,7 @@ void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh) {
 			// Allocate an index for a new bone
 			boneIndex = _numBones;
 			++_numBones;
-			const BoneInfo bi { toMat4(aiBone->mOffsetMatrix), glm::mat4(1.0f) };
+			const BoneInfo bi { convert(aiBone->mOffsetMatrix), glm::mat4(1.0f) };
 			_boneInfo.push_back(bi);
 			_boneMapping[boneName] = boneIndex;
 		} else {
@@ -420,27 +420,31 @@ uint32_t Mesh::findScaling(float animationTime, const aiNodeAnim* nodeAnim) {
 	return 0u;
 }
 
+template<class OUT, class IN>
+static OUT interpolate(const IN& current, const IN& next, float animationTime) {
+	const float deltaTime = (float) (next.mTime - current.mTime);
+	const float factor = (animationTime - (float) current.mTime) / deltaTime;
+	core_assert(factor >= 0.0f && factor <= 1.0f);
+	const OUT& start = convert(current.mValue);
+	const OUT& end = convert(next.mValue);
+	return glm::lerp(start, end, factor);
+}
+
 glm::vec3 Mesh::calcInterpolatedPosition(float animationTime, const aiNodeAnim* nodeAnim) {
 	if (nodeAnim->mNumPositionKeys == 1) {
-		return toVec3(nodeAnim->mPositionKeys[0].mValue);
+		return convert(nodeAnim->mPositionKeys[0].mValue);
 	}
 
 	const uint32_t positionIndex = findPosition(animationTime, nodeAnim);
 	const uint32_t nextPositionIndex = (positionIndex + 1);
 	core_assert(nextPositionIndex < nodeAnim->mNumPositionKeys);
-	const float deltaTime = (float) (nodeAnim->mPositionKeys[nextPositionIndex].mTime - nodeAnim->mPositionKeys[positionIndex].mTime);
-	const float factor = (animationTime - (float) nodeAnim->mPositionKeys[positionIndex].mTime) / deltaTime;
-	core_assert(factor >= 0.0f && factor <= 1.0f);
-	const glm::vec3& start = toVec3(nodeAnim->mPositionKeys[positionIndex].mValue);
-	const glm::vec3& end = toVec3(nodeAnim->mPositionKeys[nextPositionIndex].mValue);
-	const glm::vec3& delta = end - start;
-	return start + factor * delta;
+	return interpolate<glm::vec3, aiVectorKey>(nodeAnim->mPositionKeys[positionIndex], nodeAnim->mPositionKeys[nextPositionIndex], animationTime);
 }
 
 glm::mat4 Mesh::calcInterpolatedRotation(float animationTime, const aiNodeAnim* nodeAnim) {
 	// we need at least two values to interpolate...
 	if (nodeAnim->mNumRotationKeys == 1) {
-		return glm::mat4_cast(toQuat(nodeAnim->mRotationKeys[0].mValue));
+		return glm::mat4_cast(convert(nodeAnim->mRotationKeys[0].mValue));
 	}
 
 	const uint32_t rotationIndex = findRotation(animationTime, nodeAnim);
@@ -449,27 +453,21 @@ glm::mat4 Mesh::calcInterpolatedRotation(float animationTime, const aiNodeAnim* 
 	const float deltaTime = (float) (nodeAnim->mRotationKeys[nextRotationIndex].mTime - nodeAnim->mRotationKeys[rotationIndex].mTime);
 	const float factor = (animationTime - (float) nodeAnim->mRotationKeys[rotationIndex].mTime) / deltaTime;
 	core_assert(factor >= 0.0f && factor <= 1.0f);
-	const glm::quat& startRotationQ = toQuat(nodeAnim->mRotationKeys[rotationIndex].mValue);
-	const glm::quat& endRotationQ = toQuat(nodeAnim->mRotationKeys[nextRotationIndex].mValue);
+	const glm::quat& startRotationQ = convert(nodeAnim->mRotationKeys[rotationIndex].mValue);
+	const glm::quat& endRotationQ = convert(nodeAnim->mRotationKeys[nextRotationIndex].mValue);
 	const glm::quat& out = glm::normalize(glm::slerp(startRotationQ, endRotationQ, factor));
 	return glm::mat4_cast(out);
 }
 
 glm::vec3 Mesh::calcInterpolatedScaling(float animationTime, const aiNodeAnim* nodeAnim) {
 	if (nodeAnim->mNumScalingKeys == 1) {
-		return toVec3(nodeAnim->mScalingKeys[0].mValue);
+		return convert(nodeAnim->mScalingKeys[0].mValue);
 	}
 
 	const uint32_t scalingIndex = findScaling(animationTime, nodeAnim);
 	const uint32_t nextScalingIndex = (scalingIndex + 1);
 	core_assert(nextScalingIndex < nodeAnim->mNumScalingKeys);
-	const float deltaTime = (float) (nodeAnim->mScalingKeys[nextScalingIndex].mTime - nodeAnim->mScalingKeys[scalingIndex].mTime);
-	const float factor = (animationTime - (float) nodeAnim->mScalingKeys[scalingIndex].mTime) / deltaTime;
-	core_assert(factor >= 0.0f && factor <= 1.0f);
-	const glm::vec3& start = toVec3(nodeAnim->mScalingKeys[scalingIndex].mValue);
-	const glm::vec3& end = toVec3(nodeAnim->mScalingKeys[nextScalingIndex].mValue);
-	const glm::vec3 delta = end - start;
-	return start + factor * delta;
+	return interpolate<glm::vec3, aiVectorKey>(nodeAnim->mScalingKeys[scalingIndex], nodeAnim->mScalingKeys[nextScalingIndex], animationTime);
 }
 
 void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform) {
@@ -492,7 +490,7 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 		// Combine the above transformations
 		nodeTransformation = translationM * rotationM * scalingM;
 	} else {
-		nodeTransformation = toMat4(node->mTransformation);
+		nodeTransformation = convert(node->mTransformation);
 	}
 
 	const glm::mat4 globalTransformation = parentTransform * nodeTransformation;
@@ -511,18 +509,18 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 	}
 }
 
-void Mesh::boneTransform(float timeInSeconds, glm::mat4* transforms, size_t size, uint8_t animationIndex) {
+void Mesh::boneTransform(glm::mat4* transforms, size_t size) {
 	if (_numBones == 0 || _scene->mNumAnimations == 0) {
 		core_assert_always(size >= 1);
 		transforms[0] = glm::mat4(1.0f);
 		return;
 	}
-	core_assert_always(animationIndex < _scene->mNumAnimations);
+	core_assert_always(_animationIndex < _scene->mNumAnimations);
 	core_assert_always(_numBones <= size);
 
-	const aiAnimation* animation = _scene->mAnimations[animationIndex];
+	const aiAnimation* animation = _scene->mAnimations[_animationIndex];
 	const float ticksPerSecond = (float) (animation->mTicksPerSecond != 0 ? animation->mTicksPerSecond : 25.0f);
-	const float timeInTicks = timeInSeconds * ticksPerSecond;
+	const float timeInTicks = _timeInSeconds * ticksPerSecond;
 	const float animationTime = fmod(timeInTicks, (float) animation->mDuration);
 
 	readNodeHierarchy(animation, animationTime, _scene->mRootNode, glm::mat4(1.0f));

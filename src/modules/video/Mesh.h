@@ -88,7 +88,7 @@ private:
 
 	void setupNormalBufferAttributes(Shader& shader);
 	void setupBufferAttributes(Shader& shader);
-	void boneTransform(float timeInSeconds, glm::mat4* transforms, size_t size, uint8_t animationIndex = 0u);
+	void boneTransform(glm::mat4* transforms, size_t size);
 public:
 	Mesh();
 	~Mesh();
