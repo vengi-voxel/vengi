@@ -6,6 +6,7 @@
 #include "DBHandler.h"
 #include "MassQuery.h"
 #include "core/Common.h"
+#include "core/Trace.h"
 
 namespace persistence {
 
@@ -23,6 +24,7 @@ bool PersistenceMgr::registerSavable(uint32_t fourcc, ISavable *savable) {
 }
 
 bool PersistenceMgr::unregisterSavable(uint32_t fourcc, ISavable *savable) {
+	core_trace_scoped(PersistenceMgrUnregisterSavable);
 	Log::trace(logid, "Unregister savable (fourcc: %u, savable: %p)", fourcc, savable);
 	core::ScopedWriteLock lock(_lock);
 	auto i = _savables.find(fourcc);
@@ -49,14 +51,14 @@ bool PersistenceMgr::init() {
 }
 
 void PersistenceMgr::shutdown() {
-	Log::trace(logid, "Init shutdown");
+	core_trace_scoped(PersistenceMgrShutdown);
 	update(0l);
 	core::ScopedWriteLock lock(_lock);
 	_savables.clear();
 }
 
 void PersistenceMgr::update(long dt) {
-	Log::info(logid, "Persist dirty states");
+	core_trace_scoped(PersistenceMgrUpdate);
 	core::ScopedReadLock lock(_lock);
 	for (auto& collection : _savables) {
 		if (collection.second.empty()) {
