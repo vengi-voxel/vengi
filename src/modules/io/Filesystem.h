@@ -75,10 +75,21 @@ public:
 
 	bool isRelativeFilename(const std::string& name) const;
 
+	/**
+	 * @brief Changes the current working directory
+	 * @see popDir()
+	 * @see pushDir()
+	 */
 	bool chdir(const std::string& directory);
 
+	/**
+	 * @brief changes the current working dir to the last pushed one
+	 */
 	bool popDir();
 
+	/**
+	 * @brief Push a working dir change onto the stack for later returning without knowing the origin
+	 */
 	bool pushDir(const std::string& directory);
 
 	io::FilePtr open(const std::string& filename, FileMode mode = FileMode::Read) const;
@@ -91,8 +102,16 @@ public:
 
 	bool write(const std::string& filename, const std::string& string);
 
+	/**
+	 * @note The difference to the usual write() methods is that the given path is not put into the
+	 * known file system structure of the application. It just uses the given name.
+	 */
 	bool syswrite(const std::string& filename, const uint8_t* content, size_t length);
 
+	/**
+	 * @note The difference to the usual write() methods is that the given path is not put into the
+	 * known file system structure of the application. It just uses the given name.
+	 */
 	bool syswrite(const std::string& filename, const std::string& string);
 
 	bool createDir(const std::string& dir, bool recursive = true) const;

@@ -5,9 +5,12 @@
 #include "Filesystem.h"
 #include "core/Var.h"
 #include "core/Log.h"
+#include "core/Common.h"
 #include <SDL.h>
 
 namespace io {
+
+MAKE_SHARED_INVIS_CTOR(File);
 
 Filesystem::~Filesystem() {
 	shutdown();
@@ -222,19 +225,19 @@ bool Filesystem::pushDir(const std::string& directory) {
 
 io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
 	if (mode == FileMode::Write && !isRelativeFilename(filename)) {
-		return std::make_shared<io::File>(filename, mode);
+		return std::make_shared<make_shared_enabler>(filename, mode);
 	}
 	if (io::File(filename, FileMode::Read).exists()) {
 		Log::debug("loading file %s from current working dir", filename.c_str());
-		return std::make_shared<io::File>(filename, mode);
+		return std::make_shared<make_shared_enabler>(filename, mode);
 	}
 	const std::string homePath = _homePath + filename;
 	if (io::File(homePath, FileMode::Read).exists()) {
 		Log::debug("loading file %s from %s", filename.c_str(), _homePath.c_str());
-		return std::make_shared<io::File>(homePath, mode);
+		return std::make_shared<make_shared_enabler>(homePath, mode);
 	}
 	Log::debug("loading file %s from %s (doesn't exist at %s)", filename.c_str(), _basePath.c_str(), homePath.c_str());
-	return std::make_shared<io::File>(_basePath + filename, mode);
+	return std::make_shared<make_shared_enabler>(_basePath + filename, mode);
 }
 
 std::string Filesystem::load(const char *filename, ...) {

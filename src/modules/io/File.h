@@ -12,6 +12,8 @@ struct SDL_RWops;
 
 namespace io {
 
+class Filesystem;
+
 enum class FileMode {
 	Read, Write
 };
@@ -25,6 +27,7 @@ extern void normalizePath(std::string& str);
  */
 class File : public IOResource {
 	friend class FileStream;
+	friend class Filesystem;
 protected:
 	SDL_RWops* _file;
 	std::string _rawPath;
@@ -35,8 +38,8 @@ protected:
 	long tell() const;
 	long seek(long offset, int seekType) const;
 
-public:
 	File(const std::string& rawPath, FileMode mode);
+public:
 	virtual ~File();
 
 	/**
