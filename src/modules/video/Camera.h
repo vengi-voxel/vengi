@@ -86,7 +86,6 @@ protected:
 	glm::vec3 _target {0.0f};
 	float _distance = 100.0f;
 
-	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateFrustumPlanes();
 	void updateFrustumVertices();
 	void updateViewMatrix();
