@@ -89,7 +89,6 @@ bool UDPMetricSender::connect() const {
 }
 
 bool UDPMetricSender::send(const char* buffer) const {
-	// TODO: lock
 	if (_socket == INVALID_SOCKET) {
 		if (!connect()) {
 			return false;
