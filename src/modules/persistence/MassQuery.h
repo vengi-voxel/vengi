@@ -20,7 +20,8 @@ class MassQuery {
 private:
 	const DBHandler * const _dbHandler;
 	const size_t _commitSize;
-	std::vector<const Model*> _models;
+	std::vector<const Model*> _insertOrUpdate;
+	std::vector<const Model*> _delete;
 	friend class DBHandler;
 	MassQuery(const DBHandler* dbHandler, size_t amount = 1000);
 

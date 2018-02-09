@@ -25,10 +25,6 @@ Better support for prepared statements
 
 Add support (autogenerate) for joins for the foreign keys in the models
 
-## Savable
-
-Support for deleting models
-
 ## Enums
 
 Support enums?

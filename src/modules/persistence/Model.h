@@ -40,6 +40,7 @@ protected:
 	const char* _schema;
 	const char* _tableName;
 	int _primaryKeyFields = 0;
+	bool _flagToDelete = false;
 	const char* _autoIncrementField = nullptr;
 	long _autoIncrementStart = 1l;
 	uint8_t* _membersPointer;
@@ -55,6 +56,8 @@ protected:
 	 * each new model that calls this
 	 */
 	bool fillModelValues(State& state);
+
+	bool shouldBeDeleted() const;
 public:
 	Model(const char* schema, const char*tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
 			const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys, const PrimaryKeysPtr primaryKeys);
@@ -98,6 +101,11 @@ public:
 	const ForeignKeys& foreignKeys() const;
 
 	const char* autoIncrementField() const;
+
+	/**
+	 * @brief Flag for delete for the @c MassQuery and @c ISavable infrastructure
+	 */
+	void flagForDelete();
 
 	/**
 	 * @return The value to start the model auto increment sequence with. This is 1 by default if not specified otherwise.
@@ -218,6 +226,14 @@ inline const char* Model::autoIncrementField() const {
 
 inline long Model::autoIncrementStart() const {
 	return _autoIncrementStart;
+}
+
+inline void Model::flagForDelete() {
+	_flagToDelete = true;
+}
+
+inline bool Model::shouldBeDeleted() const {
+	return _flagToDelete;
 }
 
 }

@@ -12,6 +12,8 @@ namespace persistence {
 
 MassQuery::MassQuery(const DBHandler* dbHandler, size_t amount) :
 		_dbHandler(dbHandler), _commitSize(amount) {
+	_insertOrUpdate.reserve(_commitSize);
+	_delete.reserve(_commitSize);
 }
 
 MassQuery::~MassQuery() {
@@ -19,12 +21,15 @@ MassQuery::~MassQuery() {
 }
 
 void MassQuery::commit() {
-	if (_models.empty()) {
-		return;
-	}
 	// TODO: how to handle the error state here?
-	_dbHandler->insert(_models);
-	_models.clear();
+	if (!_insertOrUpdate.empty()) {
+		_dbHandler->insert(_insertOrUpdate);
+		_insertOrUpdate.clear();
+	}
+	if (!_delete.empty()) {
+		_dbHandler->deleteModels(_delete);
+		_delete.clear();
+	}
 }
 
 void MassQuery::add(ISavable* savable) {
@@ -33,8 +38,14 @@ void MassQuery::add(ISavable* savable) {
 	if (!savable->getDirtyModels(models)) {
 		return;
 	}
-	std::move(models.begin(), models.end(), std::back_inserter(_models));
-	if (_models.size() >= _commitSize) {
+	for (const Model* m : models) {
+		if (m->shouldBeDeleted()) {
+			_delete.push_back(m);
+		} else {
+			_insertOrUpdate.push_back(m);
+		}
+	}
+	if (_insertOrUpdate.size() + _delete.size() >= _commitSize) {
 		commit();
 	}
 }

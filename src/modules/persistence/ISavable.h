@@ -35,6 +35,7 @@ public:
 	 * @return A list of pointers to @c Model instances. The memory ownership stays at this
 	 * object. Might also return @c false if there is nothing to persist at the moment, @c true
 	 * if @c Model pointers were added to the list
+	 * @note To delete models, you have to mark the model as such via @c Model::flagForDelete()
 	 */
 	virtual bool getDirtyModels(Models& models) = 0;
 };
