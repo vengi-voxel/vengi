@@ -52,7 +52,7 @@ void EventMgr::update(long dt) {
 		}
 	}
 	for (auto i = _events.begin(); i != _events.end(); ++i)  {
-		Log::info("Tick event %i", (int)i->first);
+		Log::debug("Tick event %i", (int)i->first);
 		i->second->update(dt);
 	}
 }
