@@ -5,6 +5,7 @@ set(SRCS
 	EventConfigurationData.h
 	EventId.h
 	EventType.h
+	LUAFunctions.h
 )
 set(LIB eventmgr)
 add_library(${LIB} ${SRCS})

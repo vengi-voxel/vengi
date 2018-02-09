@@ -6,17 +6,47 @@
 #include "core/Log.h"
 #include "core/Common.h"
 #include "core/Trace.h"
+#include "io/Filesystem.h"
+#include "commonlua/LUA.h"
+#include "LUAFunctions.h"
 #include "EventMgrModels.h"
+#include "persistence/Timestamp.h"
 
 namespace eventmgr {
 
-EventMgr::EventMgr(const EventProviderPtr& eventProvider, const core::TimeProviderPtr& timeProvider) :
-		_eventProvider(eventProvider), _timeProvider(timeProvider) {
+EventMgr::EventMgr(const EventProviderPtr& eventProvider, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem) :
+		_eventProvider(eventProvider), _timeProvider(timeProvider), _filesystem(filesystem) {
 }
 
 bool EventMgr::init() {
 	if (!_eventProvider->init()) {
 		Log::error("Failed to init event provider");
+		return false;
+	}
+
+	lua::LUA lua;
+	luaL_Reg create = { "create", luaCreateEventConfigurationData };
+	luaL_Reg eof = { nullptr, nullptr };
+	luaL_Reg funcs[] = { create, eof };
+
+	lua::LUAType luaEvent = lua.registerType("EventConfigurationData");
+	luaEvent.addFunction("type", luaEventConfigurationDataGetType);
+	luaEvent.addFunction("name", luaEventConfigurationDataGetName);
+	luaEvent.addFunction("__gc", luaEventConfigurationDataGC);
+	luaEvent.addFunction("__tostring", luaEventConfigurationDataToString);
+
+	lua.reg("event", funcs);
+
+	const std::string& luaScript = _filesystem->load("events.lua");
+	if (!lua.load(luaScript)) {
+		Log::error("%s", lua.error().c_str());
+		return false;
+	}
+
+	// loads all the event configurations
+	lua.newGlobalData<EventMgr>("EventMgr", this);
+	if (!lua.execute("init")) {
+		Log::error("%s", lua.error().c_str());
 		return false;
 	}
 
@@ -49,7 +79,7 @@ void EventMgr::update(long dt) {
 		if (eventEndMillis <= currentMillis) {
 			core_trace_scoped(EventStop);
 			const EventPtr& event = i->second;
-			Log::info("Stop event of type %i", (int)data->id());
+			Log::info("Stop event of type " PRIEventId, (EventId)data->id());
 			event->stop();
 			_events.erase(i);
 			continue;
@@ -78,10 +108,17 @@ void EventMgr::shutdown() {
 	_eventProvider->shutdown();
 }
 
-EventPtr EventMgr::createEvent(Type eventType, EventId id) const {
-	switch (eventType) {
+EventPtr EventMgr::createEvent(const std::string& nameId, EventId id) const {
+	auto dataIter = _eventData.find(nameId);
+	if (dataIter == _eventData.end()) {
+		Log::warn("Can't start event with event id " PRIEventId ". No configuration found for %s",
+				id, nameId.c_str());
+		return EventPtr();
+	}
+	const EventConfigurationDataPtr& data = dataIter->second;
+	switch (data->type) {
 	case Type::GENERIC:
-		return std::make_shared<Event>(id);
+		return std::make_shared<Event>(id, data);
 	case Type::NONE:
 		break;
 	}
@@ -89,25 +126,28 @@ EventPtr EventMgr::createEvent(Type eventType, EventId id) const {
 }
 
 bool EventMgr::startEvent(const db::EventModelPtr& model) {
-	const int64_t type = model->type();
+	const std::string& nameId = model->nameid();
 	const EventId id = model->id();
-	if (type < std::enum_value(Type::MIN) || type > std::enum_value(Type::MAX)) {
-		Log::warn("Failed to get the event type from event data with the id %i (type: %i)",
-				(int)id, (int)type);
+	const EventPtr& event = createEvent(nameId, id);
+	if (!event || !event->start()) {
+		Log::warn("Failed to start the event with the id " PRIEventId, id);
 		return false;
 	}
-	const Type eventType = network::EnumValuesEventType()[type];
-	const EventPtr& event = createEvent(eventType, id);
-	if (!event->start()) {
-		Log::warn("Failed to start the event with the id %i", (int)id);
-		return false;
-	}
-	Log::info("Start event of type %s (id: %i)", network::EnumNameEventType(eventType), (int)model->id());
+	Log::info("Start event %s (id: " PRIEventId ")", nameId.c_str(), (EventId)model->id());
 	Log::debug("Event start time %lu, end time: %lu",
 			(unsigned long)model->startdate().millis(),
 			(unsigned long)model->enddate().millis());
 	_events.insert(std::make_pair(id, std::move(event)));
 	return true;
+}
+
+EventConfigurationDataPtr EventMgr::createEventConfig(const char *nameId, Type type) {
+	const EventConfigurationDataPtr& ptr = std::make_shared<EventConfigurationData>(nameId, type);
+	if (!_eventData.insert(std::make_pair(nameId, ptr)).second) {
+		Log::debug("Could not add new event configuration with id: '%s'", nameId);
+		return EventConfigurationDataPtr();
+	}
+	return ptr;
 }
 
 }

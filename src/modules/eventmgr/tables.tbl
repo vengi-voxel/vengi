@@ -4,8 +4,8 @@ table event {
 		type long
 		operator set
 	}
-	field type {
-		type short
+	field nameid {
+		type string
 		notnull
 		operator set
 	}

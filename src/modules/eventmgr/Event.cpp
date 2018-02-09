@@ -6,8 +6,8 @@
 
 namespace eventmgr {
 
-Event::Event(EventId id) :
-		_id(id) {
+Event::Event(EventId id, const EventConfigurationDataPtr& data) :
+		_id(id), _type(data->type) {
 }
 
 Event::~Event() {

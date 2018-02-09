@@ -7,6 +7,7 @@ engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES backend)
 set(LUA_SRCS
 	behaviourtrees.lua
 	attributes.lua
+	event/generic.lua
 	events.lua
 	world.lua
 	stock.lua

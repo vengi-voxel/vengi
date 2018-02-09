@@ -8,9 +8,13 @@
 #include "core/Common.h"
 #include "EventId.h"
 #include "EventType.h"
-#include "persistence/DBHandler.h"
 #include <memory>
 #include <unordered_map>
+
+namespace persistence {
+class DBHandler;
+typedef std::shared_ptr<DBHandler> DBHandlerPtr;
+}
 
 namespace eventmgr {
 

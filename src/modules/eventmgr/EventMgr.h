@@ -11,6 +11,11 @@
 #include <memory>
 #include <unordered_map>
 
+namespace io {
+class Filesystem;
+typedef std::shared_ptr<Filesystem> FilesystemPtr;
+}
+
 namespace eventmgr {
 
 /**
@@ -23,17 +28,18 @@ namespace eventmgr {
  */
 class EventMgr {
 private:
-	std::unordered_map<Type, EventConfigurationData> _eventData;
+	std::unordered_map<std::string, EventConfigurationDataPtr> _eventData;
 	std::unordered_map<EventId, EventPtr> _events;
 
 	EventProviderPtr _eventProvider;
 	core::TimeProviderPtr _timeProvider;
+	io::FilesystemPtr _filesystem;
 
-	EventPtr createEvent(Type eventType, EventId id) const;
+	EventPtr createEvent(const std::string& nameId, EventId id) const;
 
 	bool startEvent(const db::EventModelPtr& model);
 public:
-	EventMgr(const EventProviderPtr& eventProvider, const core::TimeProviderPtr& timeProvider);
+	EventMgr(const EventProviderPtr& eventProvider, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem);
 
 	bool init();
 	/**
@@ -55,6 +61,8 @@ public:
 	 * @return The amount of currently active/running events
 	 */
 	int runningEvents() const;
+
+	EventConfigurationDataPtr createEventConfig(const char *nameId, Type type);
 };
 
 inline int EventMgr::runningEvents() const {

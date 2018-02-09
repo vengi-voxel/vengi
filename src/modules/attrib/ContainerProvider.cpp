@@ -22,7 +22,7 @@ bool ContainerProvider::init(const std::string& luaScript) {
 	luaL_Reg funcs[] = { createContainer, eof };
 
 	lua::LUAType container = lua.registerType("Container");
-	container.addFunction("getName", luaContainerGetName);
+	container.addFunction("name", luaContainerGetName);
 	container.addFunction("absolute", luaContainerAddAbsolute);
 	container.addFunction("percentage", luaContainerAddPercentage);
 	container.addFunction("register", luaContainerRegister);

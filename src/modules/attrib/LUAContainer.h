@@ -38,11 +38,18 @@ public:
 		}
 	}
 
-	void createContainer() const {
-		_ctx->addContainer(std::make_shared<Container>(_name, _percentage, _absolute));
+	inline bool registered() const {
+		return _name.empty();
 	}
 
-	inline const std::string& getName() const {
+	void createContainer() {
+		_ctx->addContainer(std::make_shared<Container>(_name, _percentage, _absolute));
+		_percentage.clear();
+		_absolute.clear();
+		_name.clear();
+	}
+
+	inline const std::string& name() const {
 		return _name;
 	}
 };

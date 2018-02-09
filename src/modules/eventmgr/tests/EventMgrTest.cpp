@@ -5,6 +5,7 @@
 #include "persistence/tests/AbstractDatabaseTest.h"
 #include "EventMgrModels.h"
 #include "eventmgr/EventMgr.h"
+#include "persistence/DBHandler.h"
 
 namespace eventmgr {
 
@@ -39,7 +40,7 @@ public:
 	void createEvent(Type type, db::EventModel& eventModel, const persistence::Timestamp& startdate = persistence::Timestamp::now(), const persistence::Timestamp& enddate = persistence::Timestamp::now()) {
 		ASSERT_TRUE(_supported);
 		db::EventModel model;
-		model.setType(type);
+		model.setNameid(network::EnumNameEventType(type));
 		model.setStartdate(startdate);
 		model.setEnddate(enddate);
 
@@ -64,7 +65,7 @@ TEST_F(EventMgrTest, testEventMgrInit) {
 	if (!_supported) {
 		return;
 	}
-	EventMgr mgr(_eventProvider, _testApp->timeProvider());
+	EventMgr mgr(_eventProvider, _testApp->timeProvider(), _testApp->filesystem());
 	ASSERT_TRUE(mgr.init()) << "Could not initialize eventmgr";
 	mgr.shutdown();
 }
@@ -160,7 +161,7 @@ TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
 	db::EventModel model;
 	createEvent(Type::GENERIC, model, eventStartSeconds, eventStopTime);
 
-	EventMgr mgr(_eventProvider, timeProvider);
+	EventMgr mgr(_eventProvider, timeProvider, _testApp->filesystem());
 	ASSERT_TRUE(mgr.init()) << "Could not initialize eventmgr";
 	ASSERT_EQ(0, mgr.runningEvents());
 

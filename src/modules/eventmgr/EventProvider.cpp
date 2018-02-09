@@ -6,6 +6,7 @@
 #include "core/App.h"
 #include "core/Array.h"
 #include "core/Common.h"
+#include "persistence/DBHandler.h"
 #include "io/Filesystem.h"
 #include "EventMgrModels.h"
 

@@ -28,13 +28,18 @@ static int luaCreateContainer(lua_State * l) {
 
 static int luaContainerGC(lua_State * l) {
 	LUAContainer *container = luaGetContainerContext(l, 1);
+	if (!container->registered()) {
+		const int ret = luaL_error(l, "Container '%s' wasn't registered", container->name());
+		delete container;
+		return ret;
+	}
 	delete container;
 	return 0;
 }
 
 static int luaContainerToString(lua_State * l) {
 	const LUAContainer *ctx = luaGetContainerContext(l, 1);
-	lua_pushfstring(l, "container: %s", ctx->getName().c_str());
+	lua_pushfstring(l, "container: %s", ctx->name().c_str());
 	return 1;
 }
 
@@ -72,7 +77,7 @@ static int luaContainerRegister(lua_State * l) {
 
 static int luaContainerGetName(lua_State * l) {
 	const LUAContainer *ctx = luaGetContainerContext(l, 1);
-	lua_pushstring(l, ctx->getName().c_str());
+	lua_pushstring(l, ctx->name().c_str());
 	return 1;
 }
 

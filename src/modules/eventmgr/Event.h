@@ -5,6 +5,7 @@
 #pragma once
 
 #include "EventId.h"
+#include "EventConfigurationData.h"
 #include <memory>
 
 namespace eventmgr {
@@ -16,9 +17,10 @@ namespace eventmgr {
  */
 class Event {
 protected:
-	EventId _id;
+	const EventId _id;
+	const Type _type;
 public:
-	Event(EventId id);
+	Event(EventId id, const EventConfigurationDataPtr& data);
 	virtual ~Event();
 
 	/**
@@ -42,7 +44,18 @@ public:
 	 * @return @c true if the event was ticked successfully.
 	 */
 	virtual bool update(long dt);
+
+	EventId id() const;
+	Type type() const;
 };
+
+inline EventId Event::id() const {
+	return _id;
+}
+
+inline Type Event::type() const {
+	return _type;
+}
 
 typedef std::shared_ptr<Event> EventPtr;
 
