@@ -57,6 +57,9 @@ protected:
 	 */
 	bool fillModelValues(State& state);
 
+	/**
+	 * @note Used in the @c MassQuery to order the model into the right list.
+	 */
 	bool shouldBeDeleted() const;
 public:
 	Model(const char* schema, const char*tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
@@ -100,6 +103,9 @@ public:
 	 */
 	const ForeignKeys& foreignKeys() const;
 
+	/**
+	 * @return The name of the @c autoincrement field, or @c null if there is no such column.
+	 */
 	const char* autoIncrementField() const;
 
 	/**
