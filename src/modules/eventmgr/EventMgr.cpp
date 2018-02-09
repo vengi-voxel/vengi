@@ -5,6 +5,7 @@
 #include "EventMgr.h"
 #include "core/Log.h"
 #include "core/Common.h"
+#include "core/Trace.h"
 #include "EventMgrModels.h"
 
 namespace eventmgr {
@@ -23,6 +24,7 @@ bool EventMgr::init() {
 }
 
 void EventMgr::update(long dt) {
+	core_trace_scoped(EventMgrUpdate);
 	const auto currentMillis = _timeProvider->tickMillis();
 	const EventProvider::EventData& eventData = _eventProvider->eventData();
 	for (const auto& entry : eventData) {
@@ -37,6 +39,7 @@ void EventMgr::update(long dt) {
 			const auto eventStartMillis = startTime.millis();
 			const long delta = eventStartMillis - currentMillis;
 			if (delta <= 0) {
+				core_trace_scoped(EventStart);
 				startEvent(data);
 			}
 			continue;
@@ -44,6 +47,7 @@ void EventMgr::update(long dt) {
 
 		const auto eventEndMillis = endTime.millis();
 		if (eventEndMillis <= currentMillis) {
+			core_trace_scoped(EventStop);
 			const EventPtr& event = i->second;
 			Log::info("Stop event of type %i", (int)data->id());
 			event->stop();
@@ -53,6 +57,7 @@ void EventMgr::update(long dt) {
 	}
 	for (auto i = _events.begin(); i != _events.end(); ++i)  {
 		Log::debug("Tick event %i", (int)i->first);
+		core_trace_scoped(EventUpdate);
 		i->second->update(dt);
 	}
 }
