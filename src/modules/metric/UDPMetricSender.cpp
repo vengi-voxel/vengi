@@ -30,13 +30,11 @@
 
 namespace metric {
 
-UDPMetricSender::UDPMetricSender() :
-		_socket(INVALID_SOCKET), _statsd(nullptr) {
+UDPMetricSender::UDPMetricSender(const std::string& host, int port) :
+		_host(host), _socket(INVALID_SOCKET), _port(port), _statsd(nullptr) {
 }
 
 bool UDPMetricSender::init() {
-	_port = core::Var::getSafe(cfg::MetricPort)->intVal();
-	_host = core::Var::getSafe(cfg::MetricHost)->strVal();
 	Log::debug("metric udp sender %s:%i", _host.c_str(), (int)_port);
 #ifdef WIN32
 	WSADATA wsaData;

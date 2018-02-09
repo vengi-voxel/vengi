@@ -186,9 +186,6 @@ AppState App::onConstruct() {
 		logVar->setVal(logLevelVal);
 	}
 	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
-	core::Var::get(cfg::MetricFlavor, "telegraf");
-	core::Var::get(cfg::MetricHost, "127.0.0.1");
-	core::Var::get(cfg::MetricPort, "8125");
 
 	Log::init();
 
@@ -201,7 +198,7 @@ AppState App::onConstruct() {
 
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
 
-	core::Command::registerCommand("trace", [&] (const core::CmdArgs& args) {
+	core::Command::registerCommand("core_trace", [&] (const core::CmdArgs& args) {
 		_blockMetricsUntilNextFrame = true;
 		if (core_trace_set(this) == this) {
 			core_trace_set(nullptr);
@@ -235,7 +232,10 @@ AppState App::onConstruct() {
 		core::executeCommands(command + " " + args);
 	}
 
-	_metricSender = std::make_shared<metric::UDPMetricSender>();
+	core::Var::get(cfg::MetricFlavor, "telegraf");
+	const std::string& host = core::Var::get(cfg::MetricHost, "127.0.0.1")->strVal();
+	const int port = core::Var::get(cfg::MetricPort, "8125")->intVal();
+	_metricSender = std::make_shared<metric::UDPMetricSender>(host, port);
 	if (!_metricSender->init()) {
 		Log::warn("Failed to init metric sender");
 		return AppState::Destroy;;

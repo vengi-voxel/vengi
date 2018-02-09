@@ -19,15 +19,15 @@ namespace metric {
 
 class UDPMetricSender : public IMetricSender {
 private:
-	std::string _host;
+	const std::string _host;
 	mutable SOCKET _socket;
-	uint16_t _port = 0u;
+	const uint16_t _port;
 	mutable struct sockaddr_in* _statsd;
 	mutable std::mutex _connectionMutex;
 
 	bool connect() const;
 public:
-	UDPMetricSender();
+	UDPMetricSender(const std::string& host, int port);
 	bool send(const char* buffer) const override;
 
 	/**
