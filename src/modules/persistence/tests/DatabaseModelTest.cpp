@@ -29,6 +29,8 @@ public:
 		} else {
 			Log::warn("DatabaseModelTest is skipped");
 		}
+		ASSERT_EQ(32u, sizeof(persistence::Model))
+			<< "The base model size increased - this is copied a lot - make sure this is needed";
 	}
 
 	void TearDown() override {

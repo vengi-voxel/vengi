@@ -107,15 +107,13 @@ static void createMembersStruct(const Table& table, std::stringstream& src) {
 }
 
 static void createMetaStruct(const Table& table, std::stringstream& src) {
-	src << "\tstruct Meta {\n";
-	src << "\t\tpersistence::Fields _fields;\n";
-	src << "\t\tpersistence::Constraints _constraints;\n";
-	src << "\t\tpersistence::UniqueKeys _uniqueKeys;\n";
-	src << "\t\tpersistence::ForeignKeys _foreignKeys;\n";
-	src << "\t\tpersistence::PrimaryKeys _primaryKeys;\n";
-	src << "\t\tconst char* _autoIncrementField = nullptr;\n";
-	src << "\t\tMeta() {\n";
+	src << "\tstruct MetaPriv : public Meta {\n";
+	src << "\t\tMetaPriv() {\n";
 
+	src << "\t\t\t_schema = \"" << table.schema << "\";\n";
+	src << "\t\t\t_tableName = \"" << table.name << "\";\n";
+	src << "\t\t\t_primaryKeyFields = " << table.primaryKeys << ";\n";
+	src << "\t\t\t_autoIncrementStart = " << table.autoIncrementStart << ";\n";
 	src << "\t\t\t_fields.reserve(" << table.fields.size() << ");\n";
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
@@ -185,31 +183,22 @@ static void createMetaStruct(const Table& table, std::stringstream& src) {
 
 	src << "\t\t}\n";
 	src << "\t};\n";
-	src << "\tstatic inline Meta& meta() {\n\t\tstatic Meta _meta;\n\t\treturn _meta;\n\t}\n";
+	src << "\tstatic inline const Meta* meta() {\n\t\tstatic MetaPriv _meta;\n\t\treturn &_meta;\n\t}\n";
 }
 
 void createConstructor(const Table& table, std::stringstream& src) {
 	src << "\t" << table.classname << "(";
-	src << ") : Super(\"" << table.schema << "\", \"" << table.name << "\", &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys, &meta()._primaryKeys) {\n";
+	src << ") : Super(meta()) {\n";
 	src << "\t\t_membersPointer = (uint8_t*)&" << MembersStruct::varName() << ";\n";
-	src << "\t\t_primaryKeyFields = " << table.primaryKeys << ";\n";
-	src << "\t\t_autoIncrementField = meta()._autoIncrementField;\n";
-	src << "\t\t_autoIncrementStart = " << table.autoIncrementStart << ";\n";
 	src << "\t}\n\n";
 
-	src << "\t" << table.classname << "(" << table.classname << "&& source) : Super(std::move(source._schema), std::move(source._tableName), &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys, &meta()._primaryKeys) {\n";
+	src << "\t" << table.classname << "(" << table.classname << "&& source) : Super(meta()) {\n";
 	src << "\t\t_m = std::move(source._m);\n";
 	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
-	src << "\t\t_primaryKeyFields = " << table.primaryKeys << ";\n";
-	src << "\t\t_autoIncrementField = meta()._autoIncrementField;\n";
-	src << "\t\t_autoIncrementStart = " << table.autoIncrementStart << ";\n";
 	src << "\t}\n\n";
-	src << "\t" << table.classname << "(const " << table.classname << "& source) : Super(source._schema, source._tableName, &meta()._fields, &meta()._constraints, &meta()._uniqueKeys, &meta()._foreignKeys, &meta()._primaryKeys) {\n";
+	src << "\t" << table.classname << "(const " << table.classname << "& source) : Super(meta()) {\n";
 	src << "\t\t_m = source._m;\n";
 	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
-	src << "\t\t_primaryKeyFields = " << table.primaryKeys << ";\n";
-	src << "\t\t_autoIncrementField = meta()._autoIncrementField;\n";
-	src << "\t\t_autoIncrementStart = " << table.autoIncrementStart << ";\n";
 	src << "\t}\n\n";
 
 	src << "\t" << table.classname << "& operator=(" << table.classname << "&& source) {\n";

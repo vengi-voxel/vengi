@@ -27,9 +27,4 @@ typedef std::unordered_map<std::string, ForeignKey> ForeignKeys;
 typedef std::vector<std::set<std::string>> UniqueKeys;
 typedef std::vector<std::string> PrimaryKeys;
 
-typedef Constraints* ConstraintsPtr;
-typedef ForeignKeys* ForeignKeysPtr;
-typedef UniqueKeys* UniqueKeysPtr;
-typedef PrimaryKeys* PrimaryKeysPtr;
-
 }

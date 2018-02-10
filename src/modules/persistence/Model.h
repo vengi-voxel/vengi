@@ -35,21 +35,24 @@ typedef Fields* FieldsPtr;
  */
 class Model {
 protected:
+	struct Meta {
+		const char* _schema;
+		const char* _tableName;
+		uint8_t _primaryKeyFields = 0u;
+		const char* _autoIncrementField = nullptr;
+		long _autoIncrementStart = 1l;
+		Fields _fields;
+		Constraints _constraints;
+		UniqueKeys _uniqueKeys;
+		ForeignKeys _foreignKeys;
+		PrimaryKeys _primaryKeys;
+	};
+
 	friend class DBHandler;
 	friend class MassQuery;
-	const char* _schema;
-	const char* _tableName;
-	int _primaryKeyFields = 0;
 	bool _flagToDelete = false;
-	const char* _autoIncrementField = nullptr;
-	long _autoIncrementStart = 1l;
 	uint8_t* _membersPointer;
-	const FieldsPtr _fields;
-	const ConstraintsPtr _constraints;
-	const UniqueKeysPtr _uniqueKeys;
-	const ForeignKeysPtr _foreignKeys;
-	const PrimaryKeysPtr _primaryKeys;
-
+	const Meta* _s;
 	/**
 	 * @brief Put the current row into this model instance.
 	 * @param[in,out] state The State of the query. Increases the current row for
@@ -62,8 +65,7 @@ protected:
 	 */
 	bool shouldBeDeleted() const;
 public:
-	Model(const char* schema, const char*tableName, const FieldsPtr fields, const ConstraintsPtr constraints,
-			const UniqueKeysPtr uniqueKeys, const ForeignKeysPtr foreignKeys, const PrimaryKeysPtr primaryKeys);
+	Model(const Meta* s);
 	virtual ~Model();
 
 	/**
@@ -191,11 +193,11 @@ public:
 };
 
 inline const char* Model::tableName() const {
-	return _tableName;
+	return _s->_tableName;
 }
 
 inline const char* Model::schema() const {
-	return _schema;
+	return _s->_schema;
 }
 
 inline const Field& Model::getField(const std::string& name) const {
@@ -203,35 +205,35 @@ inline const Field& Model::getField(const std::string& name) const {
 }
 
 inline const Fields& Model::fields() const {
-	return *_fields;
+	return _s->_fields;
 }
 
 inline const Constraints& Model::constraints() const {
-	return *_constraints;
+	return _s->_constraints;
 }
 
 inline const UniqueKeys& Model::uniqueKeys() const {
-	return *_uniqueKeys;
+	return _s->_uniqueKeys;
 }
 
 inline const PrimaryKeys& Model::primaryKeys() const {
-	return *_primaryKeys;
+	return _s->_primaryKeys;
 }
 
 inline const ForeignKeys& Model::foreignKeys() const {
-	return *_foreignKeys;
+	return _s->_foreignKeys;
 }
 
 inline int Model::primaryKeyFields() const {
-	return _primaryKeyFields;
+	return _s->_primaryKeyFields;
 }
 
 inline const char* Model::autoIncrementField() const {
-	return _autoIncrementField;
+	return _s->_autoIncrementField;
 }
 
 inline long Model::autoIncrementStart() const {
-	return _autoIncrementStart;
+	return _s->_autoIncrementStart;
 }
 
 inline void Model::flagForDelete() {

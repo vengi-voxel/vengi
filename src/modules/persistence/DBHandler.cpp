@@ -98,7 +98,8 @@ bool DBHandler::dropTable(Model&& model) const {
 
 bool DBHandler::tableExists(const Model& model) const {
 	BindParam param(2);
-	const State& s = execInternalWithParameters(createTableExistsStatement(model, &param), param);
+	const std::string& stmt = createTableExistsStatement(model, &param);
+	const State& s = execInternalWithParameters(stmt, param);
 	core_assert(s.result);
 	core_assert_msg(s.affectedRows == 1, "There should exactly be 1 affected row for this statement, but we got %i", s.affectedRows);
 	core_assert_msg(s.cols == 1, "There should exactly be 1 affected column for this statement, but we got %i", s.cols);
