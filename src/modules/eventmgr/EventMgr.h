@@ -7,6 +7,7 @@
 #include "EventProvider.h"
 #include "EventType.h"
 #include "persistence/DBHandler.h"
+#include "commonlua/LUA.h"
 #include "core/TimeProvider.h"
 #include <memory>
 #include <unordered_map>
@@ -33,15 +34,15 @@ private:
 
 	EventProviderPtr _eventProvider;
 	core::TimeProviderPtr _timeProvider;
-	io::FilesystemPtr _filesystem;
+	lua::LUA _lua;
 
 	EventPtr createEvent(const std::string& nameId, EventId id) const;
 
 	bool startEvent(const db::EventModelPtr& model);
 public:
-	EventMgr(const EventProviderPtr& eventProvider, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem);
+	EventMgr(const EventProviderPtr& eventProvider, const core::TimeProviderPtr& timeProvider);
 
-	bool init();
+	bool init(const std::string& luaScript);
 	/**
 	 * @brief Call this in your main loop
 	 * Starts all events that are configured to run at the current time of the @c core::TimeProvider

@@ -143,7 +143,9 @@ bool ServerLoop::init() {
 		Log::error("Failed to create cooldown table");
 		return false;
 	}
-	if (!_eventMgr->init()) {
+
+	const std::string& events = _filesystem->load("events.lua");
+	if (!_eventMgr->init(events)) {
 		Log::error("Failed to init event manager");
 		return false;
 	}

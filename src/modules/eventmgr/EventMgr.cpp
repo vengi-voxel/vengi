@@ -7,46 +7,43 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "io/Filesystem.h"
-#include "commonlua/LUA.h"
 #include "LUAFunctions.h"
 #include "EventMgrModels.h"
 #include "persistence/Timestamp.h"
 
 namespace eventmgr {
 
-EventMgr::EventMgr(const EventProviderPtr& eventProvider, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem) :
-		_eventProvider(eventProvider), _timeProvider(timeProvider), _filesystem(filesystem) {
+EventMgr::EventMgr(const EventProviderPtr& eventProvider, const core::TimeProviderPtr& timeProvider) :
+		_eventProvider(eventProvider), _timeProvider(timeProvider) {
 }
 
-bool EventMgr::init() {
+bool EventMgr::init(const std::string& luaScript) {
 	if (!_eventProvider->init()) {
 		Log::error("Failed to init event provider");
 		return false;
 	}
 
-	lua::LUA lua;
 	luaL_Reg create = { "create", luaCreateEventConfigurationData };
 	luaL_Reg eof = { nullptr, nullptr };
 	luaL_Reg funcs[] = { create, eof };
 
-	lua::LUAType luaEvent = lua.registerType("EventConfigurationData");
+	lua::LUAType luaEvent = _lua.registerType("EventConfigurationData");
 	luaEvent.addFunction("type", luaEventConfigurationDataGetType);
 	luaEvent.addFunction("name", luaEventConfigurationDataGetName);
 	luaEvent.addFunction("__gc", luaEventConfigurationDataGC);
 	luaEvent.addFunction("__tostring", luaEventConfigurationDataToString);
 
-	lua.reg("event", funcs);
+	_lua.reg("event", funcs);
 
-	const std::string& luaScript = _filesystem->load("events.lua");
-	if (!lua.load(luaScript)) {
-		Log::error("%s", lua.error().c_str());
+	if (!_lua.load(luaScript)) {
+		Log::error("%s", _lua.error().c_str());
 		return false;
 	}
 
 	// loads all the event configurations
-	lua.newGlobalData<EventMgr>("EventMgr", this);
-	if (!lua.execute("init")) {
-		Log::error("%s", lua.error().c_str());
+	_lua.newGlobalData<EventMgr>("EventMgr", this);
+	if (!_lua.execute("init")) {
+		Log::error("%s", _lua.error().c_str());
 		return false;
 	}
 
