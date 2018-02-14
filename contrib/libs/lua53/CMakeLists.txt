@@ -43,6 +43,7 @@ engine_add_library(
 # TODO: compile lua and luac binaries to check if there is no system wide installation
 # see common.cmake
 if (NOT LUA53_FOUND)
+	target_link_libraries(${LIB} ${CMAKE_DL_LIBS})
 	if (LINUX AND NOT ANDROID AND NOT EMSCRIPTEN)
 		target_compile_definitions(${LIB} PUBLIC -DLUA_USE_LINUX)
 	elseif(DARWIN)
