@@ -17,6 +17,9 @@
 
 namespace backend {
 
+/**
+ * @brief A map contains the Entity instances. This is where the players are moving and npcs are living.
+ */
 class Map : public std::enable_shared_from_this<Map> {
 private:
 	MapId _mapId;

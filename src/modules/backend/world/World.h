@@ -11,6 +11,9 @@
 
 namespace backend {
 
+/**
+ * @brief The world is the whole universe of all @c Map instances.
+ */
 class World {
 private:
 	MapProviderPtr _mapProvider;
