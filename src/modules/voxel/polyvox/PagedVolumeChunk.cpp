@@ -5,6 +5,7 @@
 #include "PagedVolume.h"
 #include "Morton.h"
 #include "Utility.h"
+#include "core/Common.h"
 
 namespace voxel {
 
@@ -19,8 +20,8 @@ PagedVolume::Chunk::Chunk(const glm::ivec3& v3dPosition, uint16_t uSideLength, P
 
 	// Allocate the data
 	const uint32_t uNoOfVoxels = _sideLength * _sideLength * _sideLength;
-	_data = (Voxel*)SDL_malloc(uNoOfVoxels * sizeof(Voxel));
-	memset(_data, 0, uNoOfVoxels * sizeof(Voxel));
+	_data = (Voxel*)core_malloc(uNoOfVoxels * sizeof(Voxel));
+	core_memset(_data, 0, uNoOfVoxels * sizeof(Voxel));
 }
 
 PagedVolume::Chunk::~Chunk() {
@@ -28,7 +29,7 @@ PagedVolume::Chunk::~Chunk() {
 		_pager->pageOut(this);
 	}
 
-	SDL_free(_data);
+	core_free(_data);
 	_data = nullptr;
 }
 

@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "Voxel.h"
 #include "VoxelVertex.h"
+#include "core/Common.h"
 #include "core/NonCopyable.h"
 #include "Region.h"
 #include <vector>
@@ -71,16 +72,16 @@ private:
 public:
 	Array(uint32_t width, uint32_t height, uint32_t depth) :
 			_width(width), _height(height), _depth(depth) {
-		_elements = (VertexData*)SDL_malloc(width * height * depth * sizeof(VertexData));
-		SDL_memset(_elements, 0, width * height * depth * sizeof(VertexData));
+		_elements = (VertexData*)core_malloc(width * height * depth * sizeof(VertexData));
+		core_memset(_elements, 0, width * height * depth * sizeof(VertexData));
 	}
 
 	~Array() {
-		SDL_free(_elements);
+		core_free(_elements);
 	}
 
 	void clear() {
-		memset(_elements, 0x0, _width * _height * _depth * sizeof(VertexData));
+		core_memset(_elements, 0x0, _width * _height * _depth * sizeof(VertexData));
 	}
 
 	inline VertexData& operator()(uint32_t x, uint32_t y, uint32_t z) {
