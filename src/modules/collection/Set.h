@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <vector>
+#include <math.h>
 
 namespace core {
 
@@ -73,7 +74,7 @@ std::unordered_set<KEY, HASH> mapFindChangedValues(const std::unordered_map<KEY,
 		}
 		const VALUE& oldValue = i->second;
 		const VALUE& newValue = e.second;
-		if (std::abs(newValue - oldValue) > (VALUE)0.000001) {
+		if (fabs(newValue - oldValue) > (VALUE)0.000001) {
 			result.insert(key);
 		}
 	}
