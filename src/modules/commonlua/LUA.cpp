@@ -368,8 +368,8 @@ bool LUA::nextKeyValue() {
 	return lua_next(_state, -2) != 0;
 }
 
-void LUA::global(const std::string& name) {
-	lua_getglobal(_state, name.c_str());
+int LUA::global(const std::string& name) {
+	return lua_getglobal(_state, name.c_str());
 }
 
 }

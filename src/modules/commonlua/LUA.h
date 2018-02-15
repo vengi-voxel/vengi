@@ -121,7 +121,7 @@ public:
 		return luaL_error(L, "%s", error.c_str());
 	}
 
-	void global(const std::string& name);
+	int global(const std::string& name);
 
 	std::string key();
 
