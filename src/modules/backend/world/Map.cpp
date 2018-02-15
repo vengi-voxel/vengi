@@ -71,6 +71,10 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 }
 
 void Map::update(long dt) {
+	if (_luaUpdate && !_lua.execute("update")) {
+		Log::debug("Could not execute 'update' function for map id %i (%s)", _mapId, _lua.error().c_str());
+		_luaUpdate = false;
+	}
 	_spawnMgr->update(dt);
 	_zone->update(dt);
 	_attackMgr.update(dt);
@@ -134,13 +138,21 @@ bool Map::init() {
 	_lua.registerGlobal("map", luaGetMap);
 
 	if (!_lua.load(mapData)) {
+		Log::warn("Could not load map data for map id %i (%s)", _mapId, _lua.error().c_str());
 		return false;
+	}
+
+	if (!_lua.execute("init")) {
+		Log::debug("Could not execute 'init' function for map id %i (%s)", _mapId, _lua.error().c_str());
 	}
 
 	return true;
 }
 
 void Map::shutdown() {
+	if (!_lua.execute("shutdown")) {
+		Log::debug("Could not execute 'shutdown' function for map id %i (%s)", _mapId, _lua.error().c_str());
+	}
 	_attackMgr.shutdown();
 	_spawnMgr->shutdown();
 	if (_voxelWorld != nullptr) {

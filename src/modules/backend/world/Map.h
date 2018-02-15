@@ -32,6 +32,8 @@ private:
 
 	ai::Zone* _zone = nullptr;
 
+	bool _luaUpdate = true;
+
 	typedef std::unordered_map<ai::CharacterId, NpcPtr> Npcs;
 	typedef Npcs::iterator NpcsIter;
 	Npcs _npcs;

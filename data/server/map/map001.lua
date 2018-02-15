@@ -1,4 +1,4 @@
---init = function()
+--function init()
 --	EventBus.onUserEnter = function(user)
 --	end
 --	EventBus.onUserLeave = function(user)
@@ -9,8 +9,8 @@
 --	end
 --end
 
-update = function()
+function update()
 end
 
-shutdown = function()
+function shutdown()
 end
