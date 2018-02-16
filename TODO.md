@@ -88,7 +88,7 @@ These islands should not only be created by noise - just supported by noise to v
 
 The `World` class manages the `Map` classes and should have a threadpool to update the maps in. Use libuv timers and forward the updating into the threads.
 
-The `Map` should have a lua tick - which is e.g. able to spawn new npcs or let stuff happen on the map. It needs access to all the users, all the npcs and must be be called on events like user-add/remove-from-map and npc-add/remove-from-map.
+The `Map` should have a lua tick - which is e.g. able to spawn new npcs or let stuff happen on the map. It needs access to all the users, all the npcs and must be called on events like user-add/remove-from-map and npc-add/remove-from-map.
 
 ## SpawnMgr
 
@@ -114,9 +114,14 @@ Maybe use https://github.com/est31/csrp-gmp
 # UI
 
 Get rid of nativefiledialog - e.g. for nuklear use their file dialog implementation.
+Currently only voxedit makes use of this library.
 
 # Compute module (opencl)
 
 - Support adding `#pragma unroll` automatically?
 - Support opencl data types - `image2d_t`, `sampler_t`
 - `clEnqueueWriteImage` and friends
+
+# LUA
+
+Add support for lua_check linter
