@@ -24,7 +24,6 @@
 class MapEdit: public ui::imgui::IMGUIApp {
 protected:
 	using Super = ui::imgui::IMGUIApp;
-	voxel::WorldContext _ctx;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
 	frontend::WorldRenderer _worldRenderer;
@@ -37,7 +36,6 @@ protected:
 	ProfilerCPU _frameTimer = {"Frame"};
 	ProfilerCPU _beforeUiTimer = {"BeforeUI"};
 
-	bool _resetTriggered = false;
 	bool _lineModeRendering = false;
 	uint8_t _moveMask = 0;
 	bool _freelook = false;
@@ -53,8 +51,6 @@ protected:
 public:
 	MapEdit(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world);
 	~MapEdit();
-
-	void reset(const voxel::WorldContext& ctx);
 
 	core::AppState onConstruct() override;
 	core::AppState onInit() override;

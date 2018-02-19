@@ -67,8 +67,6 @@ public:
 	World();
 	~World();
 
-	void setContext(const WorldContext& ctx);
-
 	/**
 	 * @param[in] clientData if true, additional data that is only useful for rendering is generated
 	 */
@@ -121,7 +119,7 @@ public:
 	BiomeManager& biomeManager();
 	const BiomeManager& biomeManager() const;
 
-	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
+	[[deprecated]] void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 
 	PickResult pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength);
 
@@ -167,8 +165,6 @@ public:
 	 */
 	bool scheduleMeshExtraction(const glm::ivec3& pos);
 
-	const math::Random& random() const;
-
 	long seed() const;
 
 	void setSeed(long seed);
@@ -178,8 +174,6 @@ public:
 	void setPersist(bool persist);
 
 	int chunkSize() const;
-
-	PagedVolume::ChunkPtr chunk(const glm::ivec3& pos) const;
 
 	glm::ivec3 meshSize() const;
 
@@ -203,10 +197,6 @@ private:
 	math::Random _random;
 	std::atomic_bool _cancelThreads { false };
 };
-
-inline void World::setContext(const WorldContext& ctx) {
-	_ctx = ctx;
-}
 
 inline void World::setClientData(bool clientData) {
 	_clientData = clientData;
@@ -238,10 +228,6 @@ inline bool World::created() const {
 
 inline void World::setPersist(bool persist) {
 	_pager.setPersist(persist);
-}
-
-inline const math::Random& World::random() const {
-	return _random;
 }
 
 inline long World::seed() const {

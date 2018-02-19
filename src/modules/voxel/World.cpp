@@ -208,10 +208,6 @@ int World::chunkSize() const {
 	return _volumeData->chunkSideLength();
 }
 
-PagedVolume::ChunkPtr World::chunk(const glm::ivec3& pos) const {
-	return _volumeData->chunk(pos);
-}
-
 glm::ivec3 World::meshSize() const {
 	const int s = _meshSize->intVal();
 	return glm::ivec3(s, MAX_MESH_CHUNK_HEIGHT, s);

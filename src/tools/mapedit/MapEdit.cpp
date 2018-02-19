@@ -114,12 +114,6 @@ void MapEdit::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
-	if (_resetTriggered && !_world->isReset()) {
-		_world->setContext(_ctx);
-		_worldRenderer.extractMeshes(_camera);
-		_resetTriggered = false;
-	}
-
 	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
@@ -223,13 +217,6 @@ void MapEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t c
 	} else if (result.validPreviousPosition && button == SDL_BUTTON_LEFT) {
 		_world->setVoxel(result.previousPosition, voxel::createRandomColorVoxel(voxel::VoxelType::Grass));
 	}
-}
-
-void MapEdit::reset(const voxel::WorldContext& ctx) {
-	_ctx = ctx;
-	_worldRenderer.reset();
-	_world->reset();
-	_resetTriggered = true;
 }
 
 int main(int argc, char *argv[]) {
