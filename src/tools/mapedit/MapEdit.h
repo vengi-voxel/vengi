@@ -15,11 +15,13 @@
 #include "voxel/World.h"
 
 /**
- * @brief This tool will render the world as a client would, but with options to modify it.
+ * @brief This is the map editor to place entities with procgen settings to form a map in the world
+ *
+ * @note Can also be used to 'just' render a map.
  *
  * @ingroup Tools
  */
-class WorldRendererTool: public ui::imgui::IMGUIApp {
+class MapEdit: public ui::imgui::IMGUIApp {
 protected:
 	using Super = ui::imgui::IMGUIApp;
 	voxel::WorldContext _ctx;
@@ -49,8 +51,8 @@ protected:
 	void beforeUI() override;
 
 public:
-	WorldRendererTool(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world);
-	~WorldRendererTool();
+	MapEdit(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world);
+	~MapEdit();
 
 	void reset(const voxel::WorldContext& ctx);
 

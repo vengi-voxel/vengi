@@ -2,7 +2,8 @@
  * @file
  */
 
-#include "WorldRendererTool.h"
+#include "MapEdit.h"
+
 #include "video/Shader.h"
 #include "video/Renderer.h"
 #include "core/GLM.h"
@@ -15,16 +16,16 @@
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 
-WorldRendererTool::WorldRendererTool(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world) :
+MapEdit::MapEdit(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
-	init(ORGANISATION, "worldrenderertool");
+	init(ORGANISATION, "mapedit");
 	_world->setClientData(true);
 }
 
-WorldRendererTool::~WorldRendererTool() {
+MapEdit::~MapEdit() {
 }
 
-core::AppState WorldRendererTool::onConstruct() {
+core::AppState MapEdit::onConstruct() {
 	core::AppState state = Super::onConstruct();
 
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
@@ -53,7 +54,7 @@ core::AppState WorldRendererTool::onConstruct() {
 	return state;
 }
 
-core::AppState WorldRendererTool::onInit() {
+core::AppState MapEdit::onInit() {
 	core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
@@ -109,7 +110,7 @@ core::AppState WorldRendererTool::onInit() {
 	return state;
 }
 
-void WorldRendererTool::beforeUI() {
+void MapEdit::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
@@ -142,7 +143,7 @@ void WorldRendererTool::beforeUI() {
 	}
 }
 
-void WorldRendererTool::onRenderUI() {
+void MapEdit::onRenderUI() {
 	const glm::vec3& pos = _camera.position();
 	frontend::WorldRenderer::Stats stats;
 	_worldRenderer.stats(stats);
@@ -167,7 +168,7 @@ void WorldRendererTool::onRenderUI() {
 	ImGui::Text("l: line mode rendering");
 }
 
-core::AppState WorldRendererTool::onRunning() {
+core::AppState MapEdit::onRunning() {
 	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
 	const core::AppState state = Super::onRunning();
 
@@ -183,7 +184,7 @@ core::AppState WorldRendererTool::onRunning() {
 	return state;
 }
 
-core::AppState WorldRendererTool::onCleanup() {
+core::AppState MapEdit::onCleanup() {
 	_meshPool->shutdown();
 	_worldRenderer.shutdown();
 	_worldTimer.shutdown();
@@ -194,12 +195,12 @@ core::AppState WorldRendererTool::onCleanup() {
 	return state;
 }
 
-void WorldRendererTool::onWindowResize() {
+void MapEdit::onWindowResize() {
 	Super::onWindowResize();
 	_camera.init(glm::ivec2(0), dimension());
 }
 
-bool WorldRendererTool::onKeyPress(int32_t key, int16_t modifier) {
+bool MapEdit::onKeyPress(int32_t key, int16_t modifier) {
 	if (key == SDLK_ESCAPE) {
 		toggleRelativeMouseMode();
 	} else if (key == SDLK_PLUS || key == SDLK_KP_PLUS) {
@@ -212,7 +213,7 @@ bool WorldRendererTool::onKeyPress(int32_t key, int16_t modifier) {
 	return Super::onKeyPress(key, modifier);
 }
 
-void WorldRendererTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+void MapEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	Super::onMouseButtonPress(x, y, button, clicks);
 	const video::Ray& ray = _camera.mouseRay(glm::ivec2(_mousePos.x, _mousePos.y));
 	const glm::vec3& dirWithLength = ray.direction * _camera.farPlane();
@@ -224,7 +225,7 @@ void WorldRendererTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button,
 	}
 }
 
-void WorldRendererTool::reset(const voxel::WorldContext& ctx) {
+void MapEdit::reset(const voxel::WorldContext& ctx) {
 	_ctx = ctx;
 	_worldRenderer.reset();
 	_world->reset();
@@ -238,6 +239,6 @@ int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	WorldRendererTool app(metric, meshPool, filesystem, eventBus, timeProvider, world);
+	MapEdit app(metric, meshPool, filesystem, eventBus, timeProvider, world);
 	return app.startMainLoop(argc, argv);
 }

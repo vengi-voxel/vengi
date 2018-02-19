@@ -33,7 +33,7 @@ namespace frontend {
  * @brief Class that performs the rendering and extraction of the needed chunks.
  */
 class WorldRenderer {
-	friend class WorldRendererTool;
+	friend class MapEdit;
 protected:
 	struct PlantBuffer {
 		~PlantBuffer() {

@@ -160,13 +160,13 @@ clean-local-config:
 	$(Q)rm -rf $(LOCAL_CONFIG_DIR)
 
 edit-local-config:
-	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/worldrenderertool/worldrenderertool.vars
+	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/mapedit/mapedit.vars
 
 doc: cmake
 	$(call COMPILE, codegen)
 	$(call COMPILE, $@)
 
-server client voxedit shapetool worldrenderertool shadertool noisetool noisetool2 databasetool uitool tests tests-math tests-core tests-persistence tests-voxel benchmarks-voxel tests-noise tests-computeshadertool testmesh testcamera testdepthbuffer testnuklear testtexture testvoxelfont testplane testimgui testoctree testluaui testoctreevisit testshapebuilder tests-shadertool flatc computeshadertool: cmake
+server client voxedit shapetool mapedit shadertool noisetool noisetool2 databasetool uitool tests tests-math tests-core tests-persistence tests-voxel benchmarks-voxel tests-noise tests-computeshadertool testmesh testcamera testdepthbuffer testnuklear testtexture testvoxelfont testplane testimgui testoctree testluaui testoctreevisit testshapebuilder tests-shadertool flatc computeshadertool: cmake
 	$(call COMPILE, $@)
 	$(call COMPILE, copy-data-shared)
 	$(call COMPILE, copy-data-$@)

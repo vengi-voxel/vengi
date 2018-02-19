@@ -96,7 +96,7 @@ The attack manager should get updated in the map tick and should maintain a list
 
 ## Map editor
 
-There should be a map editor to place Point-of-Interests (see `PoiProvider`) and entities with attributes. E.g. you should be able to place markers to modifiy the island shape and put attributes into these. The map editor should just allow to modifiy these markers and place entities. Placing stuff on a per-voxel level should not be supported. The real map building should still be implemented via procgen.
+Finish implementation of the mapedit tool.
 
 # Statsd support
 
