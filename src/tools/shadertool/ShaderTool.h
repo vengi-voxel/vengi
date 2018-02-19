@@ -8,7 +8,9 @@
 #include "Types.h"
 
 /**
- * @brief This tool validates the shaders and generated c++ code for them.
+ * @brief This tool validates the GLSL shaders and generates c++ code for them.
+ *
+ * @ingroup Tools
  */
 class ShaderTool: public core::ConsoleApp {
 private:

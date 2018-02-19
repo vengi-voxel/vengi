@@ -10,6 +10,8 @@
 
 /**
  * @brief This is a voxel editor that can import and export multiple mesh/voxel formats.
+ *
+ * @ingroup Tools
  */
 class VoxEdit: public ui::turbobadger::UIApp {
 private:

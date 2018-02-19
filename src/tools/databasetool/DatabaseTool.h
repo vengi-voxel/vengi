@@ -12,6 +12,8 @@
 /**
  * @brief This tool will generate c++ code for *.tbl files. These files are a meta description of
  * database tables.
+ *
+ * @ingroup Tools
  */
 class DatabaseTool: public core::ConsoleApp {
 private:

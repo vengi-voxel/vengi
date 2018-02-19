@@ -18,6 +18,8 @@ class AINodeStaticResolver;
  *
  * @note If you embed the debugger into an already exsting QT application, you of course
  * don't need this.
+ *
+ * @ingroup Tools
  */
 class AIApplication: public QApplication {
 Q_OBJECT

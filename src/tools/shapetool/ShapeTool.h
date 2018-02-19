@@ -16,6 +16,8 @@
 
 /**
  * @brief This tool will render the world as a client would, but with options to modify it.
+ *
+ * @ingroup Tools
  */
 class ShapeTool: public ui::turbobadger::UIApp {
 protected:

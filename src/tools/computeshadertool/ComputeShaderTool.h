@@ -21,6 +21,8 @@
  *  and size.
  * @li hides all the buffer creation/deletion mambo-jambo from the caller.
  * @li parses OpenCL structs and generate proper aligned C++ struct for them.
+ *
+ * @ingroup Tools
  */
 class ComputeShaderTool: public core::ConsoleApp {
 private:

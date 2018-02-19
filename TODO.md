@@ -23,7 +23,7 @@ Better support for prepared statements
 
 ## Joins
 
-Add support (autogenerate) for joins for the foreign keys in the models
+Add support (auto-generate) for joins for the foreign keys in the models
 
 ## Enums
 
@@ -42,7 +42,7 @@ Validate that each `$out` of the vertex shader has a `$in` in the fragment shade
 
 # VoxEdit
 
-Extract meshes in max 32x32x32 boundaries - `RawVolumeRenderer` maybe? This allows us to only reextract the chunk that was modified, not always the whole volume.
+Extract meshes in max 32x32x32 boundaries - `RawVolumeRenderer` maybe? This allows us to only re-extract the chunk that was modified, not always the whole volume.
 
 Voxelizer via assimp
 
@@ -62,15 +62,11 @@ If an event was stopped, this must be persisted in the event table - skip those 
 
 ## Rename EventProvider to EventSelector
 
-The EventProvider should read the event lua scripts - the `EventSelector` should read the event run configuration (start- and end dates) from the database
+The EventProvider should read the event lua scripts - the `EventProvider` should read the event run configuration (start- and end dates) from the database
 
 # LootMgr
 
 Implement `LootMgr` that is able to hand out or change items via the stock system. Implement lua loot definition 'parsing'.
-
-# UserStockMgr
-
-Implement saving and loading of `Stock` and `Inventory` data.
 
 # Stock
 
@@ -96,7 +92,7 @@ Configure entity types and amounts via lua map script
 
 ## AttackMgr
 
-The attack mananger should get updated in the map tick and should maintain a list of attackers and victims.
+The attack manager should get updated in the map tick and should maintain a list of attackers and victims.
 
 ## Map editor
 

@@ -10,6 +10,8 @@
 
 /**
  * @brief This tool validates the turbobadger ui files (*.tb.txt)
+ *
+ * @ingroup Tools
  */
 class UITool: public core::ConsoleApp {
 private:

@@ -8,7 +8,9 @@
 #include "ui/imgui/IMGUI.h"
 
 /**
- * @brief Renders the imgui demo
+ * @brief This tool provides a UI to create noise images on-the-fly.
+ *
+ * @ingroup Tools
  */
 class NoiseTool2: public ui::imgui::IMGUIApp {
 private:
