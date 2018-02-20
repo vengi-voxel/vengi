@@ -16,7 +16,8 @@ namespace metric {
 enum class Flavor {
 	Etsy,		// https://github.com/etsy/statsd/blob/master/docs/metric_types.md
 	Datadog,	// https://docs.datadoghq.com/guides/dogstatsd/#datagram-format
-	Telegraf	// https://www.influxdata.com/blog/getting-started-with-sending-statsd-metrics-to-telegraf-influxdb/
+	Telegraf,	// https://www.influxdata.com/blog/getting-started-with-sending-statsd-metrics-to-telegraf-influxdb/
+	Influx		// https://docs.influxdata.com/influxdb/v1.4/guides/writing_data/
 };
 
 using TagMap = std::map<std::string, std::string>;

@@ -28,6 +28,9 @@ bool Metric::init(const char *prefix, const IMetricSenderPtr& messageSender) {
 	} else if (flavor == "datadog") {
 		_flavor = Flavor::Datadog;
 		Log::debug("Using metric flavor 'datadog'");
+	} else if (flavor == "influx") {
+		_flavor = Flavor::Influx;
+		Log::debug("Using metric flavor 'influx'");
 	} else {
 		Log::warn("Invalid %s given - using telegraf", cfg::MetricFlavor);
 	}
@@ -85,20 +88,26 @@ bool Metric::assemble(const char* key, int value, const char* type, const TagMap
 	int written;
 	switch (_flavor) {
 	case Flavor::Etsy:
-		written = SDL_snprintf(buffer, sizeof(buffer), "%s%s:%i|%s", _prefix.c_str(), key, value, type);
+		written = SDL_snprintf(buffer, sizeof(buffer), "%s.%s:%i|%s", _prefix.c_str(), key, value, type);
 		break;
 	case Flavor::Datadog:
 		if (!createTags(tagsBuffer, sizeof(tagsBuffer), tags, ":", "|#", ",")) {
 			return false;
 		}
-		written = SDL_snprintf(buffer, sizeof(buffer), "%s%s:%i|%s%s", _prefix.c_str(), key, value, type, tagsBuffer);
+		written = SDL_snprintf(buffer, sizeof(buffer), "%s.%s:%i|%s%s", _prefix.c_str(), key, value, type, tagsBuffer);
+		break;
+	case Flavor::Influx:
+		if (!createTags(tagsBuffer, sizeof(tagsBuffer), tags, "=", ",", ",")) {
+			return false;
+		}
+		written = SDL_snprintf(buffer, sizeof(buffer), "%s_%s,type=%s%s %s=%i", _prefix.c_str(), key, type, tagsBuffer, key, value);
 		break;
 	case Flavor::Telegraf:
 	default:
 		if (!createTags(tagsBuffer, sizeof(tagsBuffer), tags, "=", ",", ",")) {
 			return false;
 		}
-		written = SDL_snprintf(buffer, sizeof(buffer), "%s%s%s:%i|%s", _prefix.c_str(), key, tagsBuffer, value, type);
+		written = SDL_snprintf(buffer, sizeof(buffer), "%s.%s%s:%i|%s", _prefix.c_str(), key, tagsBuffer, value, type);
 		break;
 	}
 	if (written >= metricSize) {

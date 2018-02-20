@@ -23,7 +23,7 @@ public:
 	}
 };
 
-#define PREFIX "test."
+#define PREFIX "test"
 
 class MetricTest: public core::AbstractTest {
 private:
@@ -42,13 +42,7 @@ protected:
 	}
 
 	inline std::string count(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
-		if (flavor == Flavor::Telegraf) {
-			core::Var::get("metric_flavor", "")->setVal("telegraf");
-		} else if (flavor == Flavor::Etsy) {
-			core::Var::get("metric_flavor", "")->setVal("etsy");
-		} else if (flavor == Flavor::Datadog) {
-			core::Var::get("metric_flavor", "")->setVal("datadog");
-		}
+		setFlavor(flavor);
 		Metric m;
 		m.init(PREFIX, sender);
 		m.count(id, value, tags);
@@ -56,13 +50,7 @@ protected:
 	}
 
 	inline std::string gauge(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
-		if (flavor == Flavor::Telegraf) {
-			core::Var::get("metric_flavor", "")->setVal("telegraf");
-		} else if (flavor == Flavor::Etsy) {
-			core::Var::get("metric_flavor", "")->setVal("etsy");
-		} else if (flavor == Flavor::Datadog) {
-			core::Var::get("metric_flavor", "")->setVal("datadog");
-		}
+		setFlavor(flavor);
 		Metric m;
 		m.init(PREFIX, sender);
 		m.gauge(id, value, tags);
@@ -70,61 +58,69 @@ protected:
 	}
 
 	inline std::string timing(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
+		setFlavor(flavor);
+		Metric m;
+		m.init(PREFIX, sender);
+		m.timing(id, value, tags);
+		return sender->metricLine();
+	}
+
+	inline void setFlavor(Flavor flavor) const {
 		if (flavor == Flavor::Telegraf) {
 			core::Var::get("metric_flavor", "")->setVal("telegraf");
 		} else if (flavor == Flavor::Etsy) {
 			core::Var::get("metric_flavor", "")->setVal("etsy");
 		} else if (flavor == Flavor::Datadog) {
 			core::Var::get("metric_flavor", "")->setVal("datadog");
+		} else if (flavor == Flavor::Influx) {
+			core::Var::get("metric_flavor", "")->setVal("influx");
 		}
-		Metric m;
-		m.init(PREFIX, sender);
-		m.timing(id, value, tags);
-		return sender->metricLine();
 	}
 };
 
 TEST_F(MetricTest, testCounterIncreaseOne) {
-	ASSERT_EQ(count("test1", 1, Flavor::Etsy), PREFIX "test1:1|c");
+	ASSERT_EQ(count("test1", 1, Flavor::Etsy), PREFIX ".test1:1|c");
 }
 
 TEST_F(MetricTest, testCounterIncreaseTwo) {
-	ASSERT_EQ(count("test2", 2, Flavor::Etsy), PREFIX "test2:2|c");
+	ASSERT_EQ(count("test2", 2, Flavor::Etsy), PREFIX ".test2:2|c");
 }
 
 TEST_F(MetricTest, testGaugeValueOne) {
-	ASSERT_EQ(gauge("test1", 1, Flavor::Etsy), PREFIX "test1:1|g");
+	ASSERT_EQ(gauge("test1", 1, Flavor::Etsy), PREFIX ".test1:1|g");
 }
 
 TEST_F(MetricTest, testGaugeValueTwo) {
-	ASSERT_EQ(gauge("test2", 2, Flavor::Etsy), PREFIX "test2:2|g");
+	ASSERT_EQ(gauge("test2", 2, Flavor::Etsy), PREFIX ".test2:2|g");
 }
 
 TEST_F(MetricTest, testTimingValueOne) {
-	ASSERT_EQ(timing("test1", 1, Flavor::Etsy), PREFIX "test1:1|ms");
+	ASSERT_EQ(timing("test1", 1, Flavor::Etsy), PREFIX ".test1:1|ms");
 }
 
 TEST_F(MetricTest, testTimingValueTwo) {
-	ASSERT_EQ(timing("test2", 2, Flavor::Etsy), PREFIX "test2:2|ms");
+	ASSERT_EQ(timing("test2", 2, Flavor::Etsy), PREFIX ".test2:2|ms");
 }
 
 TEST_F(MetricTest, testTimingSingleTag) {
 	const TagMap map {{"key1", "value1"}};
-	ASSERT_EQ(timing("test", 1, Flavor::Etsy, map), PREFIX "test:1|ms")
+	ASSERT_EQ(timing("test", 1, Flavor::Etsy, map), PREFIX ".test:1|ms")
 		<< "Expected to get no tags on etsy flavor";
-	ASSERT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX "test,key1=value1:1|ms")
+	ASSERT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX ".test,key1=value1:1|ms")
 		<< "Expected to get tags after key in telegraf flavor";
-	ASSERT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX "test:1|ms|#key1:value1")
+	ASSERT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#key1:value1")
 		<< "Expected to get tags after type in datadog flavor";
+	ASSERT_EQ(timing("testkey", 1, Flavor::Influx, map), PREFIX "_testkey,type=ms,key1=value1 testkey=1")
+		<< "Unexpected influx format";
 }
 
 TEST_F(MetricTest, testTimingMultipleTags) {
 	const TagMap map {{"key1", "value1"}, {"key2", "value2"}};
-	ASSERT_EQ(timing("test", 1, Flavor::Etsy, map), PREFIX "test:1|ms")
+	ASSERT_EQ(timing("test", 1, Flavor::Etsy, map), PREFIX ".test:1|ms")
 		<< "Expected to get no tags on etsy flavor";
-	ASSERT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX "test,key1=value1,key2=value2:1|ms")
+	ASSERT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX ".test,key1=value1,key2=value2:1|ms")
 		<< "Expected to get tags after key in telegraf flavor";
-	ASSERT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX "test:1|ms|#key1:value1,key2:value2")
+	ASSERT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#key1:value1,key2:value2")
 		<< "Expected to get tags after type in datadog flavor";
 }
 
