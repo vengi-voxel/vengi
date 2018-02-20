@@ -121,3 +121,16 @@ Currently only voxedit makes use of this library.
 # LUA
 
 Add support for lua_check linter
+
+# Worldrenderer
+
+## Culling
+
+see "Silhouette Algorithms" by Bruce Gooch, Mark Hartner, and Nathan Beddes
+
+calculate whether the sides of a chunk are completely filled - can be done with a bitmask of uint8_t for each chunk.
+this can help culling later on.
+
+the first few entries should get lesser chunk in the multi query than the ones that are
+far away from the camera - it's more likely that the far away chunks are occluded.
+doing one query per chunk is most likely a little bit overkill.

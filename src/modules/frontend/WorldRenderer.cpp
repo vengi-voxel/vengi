@@ -243,15 +243,6 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	_visibleChunks = 0;
 	_occludedChunks = 0;
 
-	// TODO: see "Silhouette Algorithms" by Bruce Gooch, Mark
-	// Hartner, and Nathan Beddes
-
-	// TODO: calculate whether the sides of a chunk are completely filled - can be done with a bitmask of uint8_t for each chunk.
-	// this can help culling later on.
-
-	// TODO: the first few entries should get lesser chunk in the multi query than the ones that are
-	// far away from the camera - it's more likely that the far away chunks are occluded.
-	// doing one query per chunk is most likely a little bit overkill.
 	const bool occlusionQuery = _occlusionQuery->boolVal();
 
 	Tree::Contents contents;
