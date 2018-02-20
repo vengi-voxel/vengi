@@ -39,6 +39,7 @@ protected:
 	bool _lineModeRendering = false;
 	uint8_t _moveMask = 0;
 	bool _freelook = false;
+	bool _updateWorld = true;
 	int _drawCallsWorld = 0;
 	int _vertices = 0;
 	int _drawCallsEntities = 0;

@@ -124,8 +124,10 @@ void MapEdit::beforeUI() {
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	_camera.update(_deltaFrame);
 
-	_worldRenderer.extractMeshes(_camera);
-	_worldRenderer.onRunning(_camera, _deltaFrame);
+	if (_updateWorld) {
+		_worldRenderer.extractMeshes(_camera);
+		_worldRenderer.onRunning(_camera, _deltaFrame);
+	}
 	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
@@ -154,9 +156,13 @@ void MapEdit::onRenderUI() {
 
 	ImGui::InputVarFloat("speed", _speed);
 	ImGui::InputVarFloat("rotationSpeed", _rotationSpeed);
+	ImGui::CheckboxVar("Occlusion Query", cfg::OcclusionQuery);
+	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);
+	ImGui::CheckboxVar("Render AABB", cfg::RenderAABB);
 
 	ImGui::Checkbox("Line mode rendering", &_lineModeRendering);
 	ImGui::Checkbox("Freelook", &_freelook);
+	ImGui::Checkbox("Update World", &_updateWorld);
 
 	ImGui::Text("+/-: change move speed");
 	ImGui::Text("l: line mode rendering");

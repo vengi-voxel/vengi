@@ -46,6 +46,11 @@ bool CheckboxVar(const char* label, core::VarPtr& var) {
 	return false;
 }
 
+bool CheckboxVar(const char* label, const char* varName) {
+	core::VarPtr var = core::Var::getSafe(varName);
+	return CheckboxVar(label, var);
+}
+
 bool Combo(const char* label, int* current_item, const std::vector<std::string>& items, int items_count, int height_in_items) {
 	return Combo(label, current_item,
 		[](void* data, int idx, const char** out_text) {

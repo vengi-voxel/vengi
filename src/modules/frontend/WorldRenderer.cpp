@@ -4,6 +4,7 @@
 
 #include "WorldRenderer.h"
 #include "core/Color.h"
+#include "core/GameConfig.h"
 #include "core/Array.h"
 #include "video/Renderer.h"
 #include "voxel/Constants.h"
@@ -15,13 +16,6 @@
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
 #include "frontend/ShaderAttribute.h"
-
-namespace config {
-constexpr const char *RenderAABB = "r_renderaabb";
-constexpr const char *OcclusionThreshold = "r_occlusionthreshold";
-constexpr const char *OcclusionQuery = "r_occlusionquery";
-constexpr const char *RenderOccluded = "r_renderoccluded";
-}
 
 namespace frontend {
 
@@ -229,12 +223,6 @@ static size_t transform(size_t indexOffset, const voxel::Mesh& mesh, std::vector
 }
 
 bool WorldRenderer::occluded(ChunkBuffer * chunkBuffer) const {
-	const bool occlusionQuery = _occlusionQuery->boolVal();
-	if (!occlusionQuery) {
-		// this allows us to render occluded aabbs when we move the camera and
-		// having occlusion queries disabled.
-		return chunkBuffer->occludedLastFrame;
-	}
 	const video::Id queryId = chunkBuffer->occlusionQueryId;
 	const int samples = video::getOcclusionQueryResult(queryId);
 	if (samples == -1) {
@@ -325,11 +313,12 @@ void WorldRenderer::cull(const video::Camera& camera) {
 		video::flush();
 	}
 
-	// TODO: maybe fill the shapebuilder before waiting for the query result - measure measure measure...
 	const bool renderOccluded = _renderOccluded->boolVal();
+	const bool renderAABB = _renderAABBs->boolVal();
 	_shapeBuilder.clear();
+	_shapeBuilder.setColor(core::Color::Green);
 	for (ChunkBuffer* chunkBuffer : contents) {
-		if (occluded(chunkBuffer)) {
+		if (occlusionQuery && occluded(chunkBuffer)) {
 			 ++_occludedChunks;
 			 if (!renderOccluded) {
 				 continue;
@@ -340,8 +329,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 		} else {
 			++_visibleChunks;
 		}
-		if (_renderAABBs->boolVal()) {
-			_shapeBuilder.setColor(core::Color::Green);
+		if (renderAABB) {
 			_shapeBuilder.aabb(chunkBuffer->aabb());
 		}
 		const voxel::ChunkMeshes& meshes = chunkBuffer->meshes;
@@ -723,10 +711,10 @@ void WorldRenderer::stats(Stats& stats) const {
 void WorldRenderer::onConstruct() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");
-	_renderAABBs = core::Var::get(config::RenderAABB, "false");
-	_occlusionThreshold = core::Var::get(config::OcclusionThreshold, "20");
-	_occlusionQuery = core::Var::get(config::OcclusionQuery, "false");
-	_renderOccluded = core::Var::get(config::RenderOccluded, "false");
+	_renderAABBs = core::Var::get(cfg::RenderAABB, "false");
+	_occlusionThreshold = core::Var::get(cfg::OcclusionThreshold, "20");
+	_occlusionQuery = core::Var::get(cfg::OcclusionQuery, "false");
+	_renderOccluded = core::Var::get(cfg::RenderOccluded, "false");
 }
 
 bool WorldRenderer::initOpaqueBuffer() {
