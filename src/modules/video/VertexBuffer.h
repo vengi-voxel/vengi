@@ -41,6 +41,7 @@ public:
 	~VertexBuffer();
 
 	void clearAttributes();
+	int attributes() const;
 
 	void setMode(int32_t idx, VertexBufferMode mode);
 	void shutdown();

@@ -278,4 +278,8 @@ void VertexBuffer::clearAttributes() {
 	_attributes.clear();
 }
 
+int VertexBuffer::attributes() const {
+	return (int)_attributes.size();
+}
+
 }

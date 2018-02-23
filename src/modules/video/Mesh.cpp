@@ -283,6 +283,9 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 }
 
 void Mesh::setupNormalBufferAttributes(Shader& shader) {
+	if (_vertexBufferNormals.attributes() == 2) {
+		return;
+	}
 	_vertexBufferNormals.clearAttributes();
 
 	video::Attribute attribPos;
