@@ -59,12 +59,12 @@ static inline core::Vertex convertVertex(const aiVector3D& p, const aiVector3D& 
 struct MeshNormals {
 	struct AttributeData {
 		glm::vec4 vertex;
-		glm::vec3 color;
+		glm::vec3 color {core::Color::Red};
 	};
 	std::vector<AttributeData> data;
 
 	inline void reserve(size_t amount) {
-		data.reserve(amount);
+		data.resize(amount);
 	}
 };
 
@@ -517,6 +517,7 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 	auto iter = _boneMapping.find(nodeName);
 	if (iter != _boneMapping.end()) {
 		const uint32_t boneIndex = iter->second;
+		// https://stackoverflow.com/questions/29184311/how-to-rotate-a-skinned-models-bones-in-c-using-assimp
 		_boneInfo[boneIndex].finalTransformation = _globalInverseTransform * globalTransformation * _boneInfo[boneIndex].boneOffset;
 		Log::trace("update bone transform for node name %s (index: %u)", nodeName.c_str(), boneIndex);
 	} else {
@@ -629,23 +630,34 @@ int Mesh::renderNormals(video::Shader& shader) {
 
 	MeshNormals normalData;
 	normalData.reserve(_vertices.size() * 2);
+	size_t j = 0;
 	for (const core::Vertex& v : _vertices) {
-		glm::mat4 bonetrans = glm::mat4(1.0f);
+		glm::vec4& outVertex = normalData.data[j + 0].vertex;
+		glm::vec4& outNormal = normalData.data[j + 1].vertex;
+		j += 2;
 		for (int i = 0; i < lengthof(v._boneIds); ++i) {
-			const glm::mat4& bmat = _boneInfo[v._boneIds[i]].finalTransformation * v._boneWeights[i];
-			bonetrans += bmat;
+			const float weights = v._boneWeights[i];
+			if (weights <= glm::epsilon<float>()) {
+				continue;
+			}
+			const glm::mat4& transform = _boneInfo[v._boneIds[i]].finalTransformation;
+			const glm::mat3& rotation = glm::mat3(transform);
+			outVertex += transform * glm::vec4(v._pos, 1.0f) * weights;
+			outNormal += glm::vec4(rotation * v._norm * weights, 0.0f);
 		}
-		const glm::vec4& pos  = bonetrans * glm::vec4(v._pos,  1.0f);
-		const glm::vec4& norm = bonetrans * glm::vec4(v._norm, 0.0f);
-		const glm::vec4& extended = pos + 2.0f * norm;
-		normalData.data.emplace_back(MeshNormals::AttributeData{pos,      glm::vec3(core::Color::Red)});
-		normalData.data.emplace_back(MeshNormals::AttributeData{extended, glm::vec3(core::Color::Yellow)});
+	}
+	for (size_t i = 0u; i < normalData.data.size(); i += 2) {
+		const MeshNormals::AttributeData& pos1 = normalData.data[i + 0];
+		MeshNormals::AttributeData& pos2 = normalData.data[i + 1];
+		pos2.color = glm::vec3(core::Color::Yellow);
+		pos2.vertex = pos1.vertex + 0.5f * pos2.vertex;
 	}
 
 	_vertexBufferNormals.update(_vertexBufferNormalsIndex, normalData.data);
 	_vertexBufferNormals.bind();
 	ScopedLineWidth lineWidth(2.0f);
-	video::drawArrays(video::Primitive::Lines, normalData.data.size());
+	const int elements = _vertexBufferNormals.elements(_vertexBufferNormalsIndex, 2);
+	video::drawArrays(video::Primitive::Lines, elements);
 	_vertexBufferNormals.unbind();
 
 	return 1;
