@@ -50,5 +50,30 @@ You can just run ```make``` in the project root folder.
 # Running the tests
 The tests need a postgres database named `engine` and a user named `engine` with the password.... `engine` (you can modify them via cvars). If no OpenGL or OpenCL context is available, the related tests are skipped.
 
+# Setup
+## PostgreSQL
+
+first sudo as postgres default superuser 'postgres' on bash
+
+`sudo -i -u postgres`
+
+adding an new new user by typing
+
+`createuser -s engine`
+
+create a new database
+
+`createdb engine`
+
+now start postgres and add password for these user
+
+`psql`
+
+write this statement
+
+`ALTER USER engine WITH PASSWORD 'engine';`
+
+For the tests you need a different database called `enginetest`.
+
 # More information
 For more information, please check out the [wiki](https://gitlab.com/mgerhardy/engine/wikis/home) or the [doxygen](https://mgerhardy.gitlab.io/engine/) documentation.
