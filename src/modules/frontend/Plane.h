@@ -21,9 +21,11 @@ private:
 	int32_t _planeMesh = -1;
 public:
 	void render(const video::Camera& camera) {
-		video::disable(video::State::CullFace);
+		const bool disabled = video::disable(video::State::CullFace);
 		_shapeRenderer.render(_planeMesh, camera);
-		video::enable(video::State::CullFace);
+		if (disabled) {
+			video::enable(video::State::CullFace);
+		}
 	}
 
 	void shutdown() {
