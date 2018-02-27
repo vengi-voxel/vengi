@@ -25,26 +25,17 @@ $out float v_fogdistance;
 #endif
 
 void main(void) {
-	vec4 vertexIn = vec4(a_pos, 1.0);
-	vec4 normalIn = vec4(a_norm, 0.0);
-
-	vec4 bpos =
-		(u_bonetransforms[a_boneids[0]] * vertexIn) * a_boneweights[0] +
-		(u_bonetransforms[a_boneids[1]] * vertexIn) * a_boneweights[1] +
-		(u_bonetransforms[a_boneids[2]] * vertexIn) * a_boneweights[2] +
-		(u_bonetransforms[a_boneids[3]] * vertexIn) * a_boneweights[3];
-	vec4 bnorm =
-		(u_bonetransforms[a_boneids[0]] * normalIn) * a_boneweights[0] +
-		(u_bonetransforms[a_boneids[1]] * normalIn) * a_boneweights[1] +
-		(u_bonetransforms[a_boneids[2]] * normalIn) * a_boneweights[2] +
-		(u_bonetransforms[a_boneids[3]] * normalIn) * a_boneweights[3];
-	vec4 mpos      = u_model * bpos;
+	mat4 bonetrans = u_bonetransforms[a_boneids[0]] * a_boneweights[0];
+	bonetrans     += u_bonetransforms[a_boneids[1]] * a_boneweights[1];
+	bonetrans     += u_bonetransforms[a_boneids[2]] * a_boneweights[2];
+	bonetrans     += u_bonetransforms[a_boneids[3]] * a_boneweights[3];
+	vec4 mpos      = u_model * bonetrans * vec4(a_pos, 1.0);
 
 #if cl_shadowmap == 1
 	v_lightspacepos = mpos.xyz;
 	v_viewz         = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif // cl_shadowmap == 1
-	v_norm         = bnorm.xyz;
+	v_norm         = vec4(bonetrans * vec4(a_norm, 0.0)).xyz;
 	v_texcoords    = a_texcoords;
 	v_color        = a_color;
 	gl_Position    = u_viewprojection * mpos;
