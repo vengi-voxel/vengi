@@ -130,8 +130,8 @@ protected:
 	float _fogRange = 300.0f;
 	// TODO: get the view distance from the server - entity attributes
 	float _viewDistance = 1000.0f;
-	long _now = 0l;
-	long _deltaFrame = 0l;
+	uint64_t _now = 0ul;
+	uint64_t _deltaFrame = 0ul;
 
 	glm::vec4 _clearColor = core::Color::LightBlue;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
@@ -188,7 +188,7 @@ public:
 
 	void onConstruct();
 	bool init(const glm::ivec2& position, const glm::ivec2& dimension);
-	void onRunning(const video::Camera& camera, long dt);
+	void onRunning(const video::Camera& camera, uint64_t dt);
 	void shutdown();
 
 	void extractMeshes(const video::Camera& camera);

@@ -194,7 +194,7 @@ bool LUA::execute(const std::string &function, int returnValues) {
 	return true;
 }
 
-bool LUA::executeUpdate(long dt) {
+bool LUA::executeUpdate(uint64_t dt) {
 	lua_getglobal(_state, "update");
 	if (lua_isnil(_state, -1)) {
 		setError("Function 'update' wasn't found");

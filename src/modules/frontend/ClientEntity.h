@@ -31,7 +31,7 @@ public:
 	ClientEntity(ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
 	~ClientEntity();
 
-	void update(long dt);
+	void update(uint64_t dt);
 
 	void lerpPosition(const glm::vec3& position, float orientation);
 	const glm::vec3& position() const;

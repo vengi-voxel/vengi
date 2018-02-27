@@ -38,7 +38,7 @@ void WorldRenderer::reset() {
 	_activeChunkBuffers = 0;
 	_entities.clear();
 	_queryResults = 0;
-	_now = 0l;
+	_now = 0ul;
 }
 
 void WorldRenderer::shutdown() {
@@ -880,7 +880,7 @@ glm::vec3 WorldRenderer::groundPosition(const glm::vec3& position, int hovering)
 	return glm::vec3(position.x, y * _worldScale.y + hovering * _worldScale.y, position.z);
 }
 
-void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
+void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
 	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
 	_deltaFrame = dt;

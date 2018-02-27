@@ -14,14 +14,14 @@ namespace util {
 class PosLerp {
 private:
 	long MOVETIME = 200L;
-	long _now = 0L;
+	uint64_t _now = 0UL;
 	glm::vec3 _currentPosition;
 	glm::vec3 _lastPosition;
 	glm::vec3 _nextPosition;
-	long _nextPosTime;
+	uint64_t _nextPosTime = 0ul;
 public:
 	PosLerp() :
-			_currentPosition(0.0f), _lastPosition(0.0f), _nextPosition(0.0f), _nextPosTime(0L) {
+			_currentPosition(0.0f), _lastPosition(0.0f), _nextPosition(0.0f) {
 	}
 
 	inline const glm::vec3& position() const {
@@ -32,7 +32,7 @@ public:
 		_lastPosition = position;
 		_currentPosition = position;
 		_nextPosition = position;
-		_nextPosTime = 0l;
+		_nextPosTime = 0ul;
 	}
 
 	inline void setTargetPosition(const glm::vec3& position) {
@@ -42,7 +42,7 @@ public:
 		_nextPosTime = _now + MOVETIME;
 	}
 
-	void update(long dt) {
+	void update(uint64_t dt) {
 		_now += dt;
 		if (_now < _nextPosTime) {
 			const long remaining = _nextPosTime - _now;

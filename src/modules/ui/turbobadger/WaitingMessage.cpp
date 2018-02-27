@@ -31,11 +31,11 @@ void WaitingMessage::setTextId(const char *textId) {
 }
 
 void WaitingMessage::reset() {
-	_connectingStart = 0;
+	_connectingStart = 0ul;
 	_dotsIndex = 0;
 }
 
-void WaitingMessage::update(int deltaFrame) {
+void WaitingMessage::update(uint64_t deltaFrame) {
 	_connectingStart += deltaFrame;
 }
 
@@ -47,9 +47,9 @@ void WaitingMessage::render() {
 	if (_font == nullptr) {
 		return;
 	}
-	if (_connectingStart >= 2000) {
+	if (_connectingStart >= 2000ul) {
 		_dotsIndex = (_dotsIndex + 1) % lengthof(dotsArray);
-		_connectingStart -= 2000;
+		_connectingStart -= 2000ul;
 	}
 	const int y = _app->height() / 2 - _font->GetHeight() / 2;
 	const int w = _font->GetStringWidth(_translatedStr);

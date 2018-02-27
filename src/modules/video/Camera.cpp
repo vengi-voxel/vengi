@@ -126,7 +126,7 @@ void Camera::updateTarget() {
 	_dirty |= DIRTY_POSITON;
 }
 
-void Camera::update(long deltaFrame) {
+void Camera::update(uint64_t deltaFrame) {
 	const float dt = deltaFrame / 1000.0f;
 	if (dt > 0.0f) {
 		rotate(_omega * dt);

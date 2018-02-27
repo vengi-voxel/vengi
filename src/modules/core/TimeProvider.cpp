@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <time.h>
+#include <sys/time.h>
 
 namespace core {
 
@@ -17,7 +18,10 @@ TimeProvider::TimeProvider() :
 
 uint64_t TimeProvider::systemMillis() const {
 	auto unix_timestamp = std::chrono::seconds(std::time(NULL));
-	return std::chrono::milliseconds(unix_timestamp).count();
+	const uint64_t millis = unix_timestamp.count() * 1000UL;
+	timeval curTime;
+	gettimeofday(&curTime, nullptr);
+	return millis + curTime.tv_usec / 1000L;
 }
 
 double TimeProvider::systemNanos() {
@@ -25,8 +29,8 @@ double TimeProvider::systemNanos() {
 }
 
 std::string TimeProvider::toString(unsigned long millis, const char *format) {
-	std::time_t t(millis / 1000UL);
-	std::tm tm = *std::gmtime(&t);
+	time_t t(millis / 1000UL);
+	tm tm = *gmtime(&t);
 	std::stringstream ss;
 	ss << std::put_time(&tm, format);
 	return ss.str();

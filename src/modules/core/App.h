@@ -91,9 +91,9 @@ protected:
 	bool _syslog = false;
 	bool _coredump = false;
 	uint64_t _now;
-	long _deltaFrame = 0l;
-	uint64_t _initTime = 0l;
-	double _nextFrame = 0.0;
+	uint64_t _deltaFrame = 0ul;
+	uint64_t _initTime = 0ul;
+	uint64_t _nextFrame = 0ul;
 	double _framesPerSecondsCap = 0.0;
 	int _exitCode = 0;
 	io::FilesystemPtr _filesystem;
@@ -237,7 +237,7 @@ public:
 	void requestQuit();
 	void requestSuspend();
 
-	long deltaFrame() const;
+	uint64_t deltaFrame() const;
 	uint64_t lifetimeInSeconds() const;
 	float lifetimeInSecondsf() const;
 
@@ -321,7 +321,7 @@ inline float App::lifetimeInSecondsf() const {
 	return float(_now - _initTime) / 1000.0f;
 }
 
-inline long App::deltaFrame() const {
+inline uint64_t App::deltaFrame() const {
 	return _deltaFrame;
 }
 

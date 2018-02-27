@@ -14,7 +14,7 @@ private:
 	tb::TBFontFace *_font = nullptr;
 	tb::TBColor _color = {255, 255, 255, 255};
 	const char* _translatedStr = nullptr;
-	int _connectingStart = 0;
+	uint64_t _connectingStart = 0ul;
 	int _dotsIndex = 0;
 public:
 	WaitingMessage(UIApp* app);
@@ -30,7 +30,7 @@ public:
 	void setTextId(const char *textId);
 
 	void reset();
-	void update(int deltaFrame);
+	void update(uint64_t deltaFrame);
 	void render();
 };
 

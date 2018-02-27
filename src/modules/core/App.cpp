@@ -108,7 +108,7 @@ void App::onFrame() {
 	}
 
 	if (AppState::Blocked == _curState) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	} else {
 		const uint64_t now = systemMillis();
 		_deltaFrame = (std::max)(uint64_t(1), now - _now);
@@ -151,8 +151,8 @@ void App::onFrame() {
 					}
 				}
 				if (_framesPerSecondsCap > 1.0) {
-					const long delay = _nextFrame - now;
-					if (delay > 0) {
+					const uint64_t delay = _nextFrame - now;
+					if (delay > 0u) {
 						std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 					}
 					_nextFrame += (1000.0 / _framesPerSecondsCap) + 0.00001;
