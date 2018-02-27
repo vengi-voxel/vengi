@@ -203,6 +203,7 @@ void TestMeshApp::doRender() {
 				if (_renderPlane) {
 					renderPlane();
 				}
+				// TODO: why does only the plane appear in the depth map?
 				_mesh->render();
 			}
 		} else {
