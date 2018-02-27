@@ -260,6 +260,7 @@ core::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientMultiSampleBuffers, "1");
 	core::Var::get(cfg::ClientMultiSampleSamples, "4");
 	core::Var::get(cfg::ClientFullscreen, "true");
+	core::Var::get(cfg::ClientFog, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMapSize, "512");

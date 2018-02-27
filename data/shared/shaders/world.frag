@@ -8,10 +8,14 @@ uniform mat4 u_viewprojection;
 uniform mediump vec3 u_lightdir;
 uniform lowp vec3 u_diffuse_color;
 uniform lowp vec3 u_ambient_color;
+#if cl_fog == 1
 uniform lowp vec3 u_fogcolor;
 uniform float u_viewdistance;
+#endif // cl_fog
 $out vec4 o_color;
+#if cl_fog == 1
 $in float v_fogdivisor;
+#endif // cl_fog
 
 void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
@@ -51,11 +55,14 @@ void main(void) {
 	o_color = vec4(vec3(shadow), 1.0);
 #else // cl_debug_shadow
 	vec3 lightvalue = u_ambient_color + (diffuse * shadow);
+	vec3 linearColor = color * v_ambientocclusion * lightvalue;
 
+#if cl_fog == 1
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
 	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / v_fogdivisor, 0.0, 1.0);
-
-	vec3 linearColor = color * v_ambientocclusion * lightvalue;
 	o_color = vec4(mix(linearColor, u_fogcolor, fogval), v_color.a);
+#else // cl_fog
+	o_color = vec4(linearColor, v_color.a);
+#endif // cl_fog
 #endif // cl_debug_shadow
 }

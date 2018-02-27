@@ -33,6 +33,7 @@ core::AppState ShaderTool::onConstruct() {
 	registerArg("--sourcedir").setDescription("Directory to generate the source in").setMandatory();
 	Log::trace("Set some shader config vars to let the validation work");
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
+	core::Var::get(cfg::ClientFog, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);

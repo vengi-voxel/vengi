@@ -121,6 +121,7 @@ void TestMeshApp::onRenderUI() {
 	ImGui::Text("%i bones", (int)_mesh->bones());
 	ImGui::Text("%i animations", (int)_mesh->animations());
 	ImGui::Separator();
+	ImGui::CheckboxVar("Fog", cfg::ClientFog);
 	ImGui::CheckboxVar("Shadow map", _shadowMap);
 	ImGui::CheckboxVar("Show shadow map", _shadowMapShow);
 	ImGui::CheckboxVar("Shadow map debug", _debugShadow);

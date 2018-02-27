@@ -1,7 +1,10 @@
 $in vec3 v_norm;
 $in vec2 v_texcoords;
 $in vec4 v_color;
+#if cl_fog == 1
 $in float v_fogdivisor;
+$in float v_fogdistance;
+#endif
 
 $out vec4 o_color;
 
@@ -9,8 +12,10 @@ uniform sampler2D u_texture;
 uniform vec3 u_lightdir;
 uniform vec3 u_diffuse_color;
 uniform vec3 u_ambient_color;
+#if cl_fog == 1
 uniform vec3 u_fogcolor;
 uniform float u_viewdistance;
+#endif
 uniform mat4 u_viewprojection;
 
 #include "_shadowmap.frag"
@@ -46,12 +51,15 @@ void main(void) {
 #else // cl_debug_shadow
 	float ndotl = dot(v_norm, u_lightdir);
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
-	vec3 ambient = u_ambient_color;
-	vec3 lightvalue = ambient + (diffuse * shadow);
+	vec3 lightvalue = u_ambient_color + (diffuse * shadow);
 
-	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
-	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / v_fogdivisor, 0.0, 1.0);
+#if cl_fog == 1
+	//float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
+	float fogval = 1.0 - clamp((u_viewdistance - v_fogdistance) / v_fogdivisor, 0.0, 1.0);
 
 	o_color = vec4(mix(color * lightvalue, u_fogcolor, fogval), 1.0);
-#endif
+#else // cl_fog
+	o_color = vec4(color * lightvalue, 1.0);
+#endif // cl_fog
+#endif // cl_debug_shadow
 }
