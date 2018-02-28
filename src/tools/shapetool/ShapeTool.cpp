@@ -113,14 +113,14 @@ core::AppState ShapeTool::onInit() {
 void ShapeTool::beforeUI() {
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
-	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
+	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrameMillis);
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
-	_camera.update(_deltaFrame);
+	_camera.update(_deltaFrameMillis);
 
 	{
 		ScopedProfiler<ProfilerCPU> wt(_octreeTimer);
-		_activeNodes = _octreeRenderer.update(_deltaFrame, _camera);
+		_activeNodes = _octreeRenderer.update(_deltaFrameMillis, _camera);
 	}
 
 	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
@@ -160,7 +160,7 @@ core::AppState ShapeTool::onRunning() {
 	_axis.render(_camera);
 	//glm::vec3 entPos = _entity->position();
 	//entPos.y = _world->findFloor(entPos.x, entPos.z, voxel::isFloor);
-	_entity->update(_deltaFrame);
+	_entity->update(_deltaFrameMillis);
 	return state;
 }
 

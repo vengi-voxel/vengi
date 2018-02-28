@@ -62,7 +62,7 @@ bool LUAUIApp::onRenderUI() {
 		return true;
 	}
 	core_trace_scoped(LUAAIAppOnRenderUI);
-	if (!_lua.executeUpdate(_deltaFrame)) {
+	if (!_lua.executeUpdate(_deltaFrameMillis)) {
 		Log::error("LUA UI: %s", _lua.error().c_str());
 		_skipUntilReload = true;
 		return false;

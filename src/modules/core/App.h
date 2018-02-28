@@ -88,17 +88,46 @@ protected:
 	AppState _nextState = AppState::InvalidAppState;
 	std::unordered_set<AppState> _blockers;
 	bool _suspendRequested = false;
+
+	/**
+	 * @brief Should the application log to the syslog daemon
+	 */
 	bool _syslog = false;
+	/**
+	 * @brief Should the application generate a core dump on a crash
+	 */
 	bool _coredump = false;
+	/**
+	 * @brief A cached value of the @c core::TimeProvider tick milliseconds.
+	 */
 	uint64_t _now;
-	uint64_t _deltaFrame = 0ul;
-	uint64_t _initTime = 0ul;
-	uint64_t _nextFrame = 0ul;
+	/**
+	 * @brief The millisecond delta of the start of the current frame
+	 * and the start of the last frame
+	 */
+	uint64_t _deltaFrameMillis = 0ul;
+	/**
+	 * @brief The absolute milliseconds when the application was started.
+	 * Can be used to calculate the uptime.
+	 */
+	uint64_t _initMillis = 0ul;
+	/**
+	 * @brief The absolute milliseconds when the next frame should be run
+	 * @note Only handled if the max frames cap is set
+	 */
+	uint64_t _nextFrameMillis = 0ul;
 	double _framesPerSecondsCap = 0.0;
+
+	/**
+	 * @brief If the application failed to init or must be closed due to a failure, you
+	 * can set the exit code to expose the reason to the console that called the application.
+	 */
 	int _exitCode = 0;
+
+	static App* _staticInstance;
+
 	io::FilesystemPtr _filesystem;
 	core::EventBusPtr _eventBus;
-	static App* _staticInstance;
 	core::ThreadPool _threadPool;
 	core::TimeProviderPtr _timeProvider;
 	core::VarPtr _logLevelVar;
@@ -314,15 +343,15 @@ inline double App::ProfilerCPU::maximum() const {
 }
 
 inline uint64_t App::lifetimeInSeconds() const {
-	return (_now - _initTime) / uint64_t(1000);
+	return (_now - _initMillis) / uint64_t(1000);
 }
 
 inline float App::lifetimeInSecondsf() const {
-	return float(_now - _initTime) / 1000.0f;
+	return float(_now - _initMillis) / 1000.0f;
 }
 
 inline uint64_t App::deltaFrame() const {
-	return _deltaFrame;
+	return _deltaFrameMillis;
 }
 
 inline uint64_t App::systemMillis() const {

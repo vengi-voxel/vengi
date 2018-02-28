@@ -191,7 +191,7 @@ void Client::beforeUI() {
 		}
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
 		_camera.init(glm::ivec2(0), dimension());
-		_camera.update(_deltaFrame);
+		_camera.update(_deltaFrameMillis);
 
 		_drawCallsWorld = _worldRenderer.renderWorld(_camera);
 		_drawCallsEntities = _worldRenderer.renderEntities(_camera);
@@ -266,18 +266,18 @@ bool Client::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 core::AppState Client::onRunning() {
-	_waiting.update(_deltaFrame);
+	_waiting.update(_deltaFrameMillis);
 	core::AppState state = Super::onRunning();
 	core::Var::visitBroadcast([] (const core::VarPtr& var) {
 		Log::info("TODO: %s needs broadcast", var->name().c_str());
 	});
 	_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
-	_camera.update(_deltaFrame);
+	_camera.update(_deltaFrameMillis);
 	sendMovement();
 	if (state == core::AppState::Running) {
 		_network->update();
 		if (_world->created()) {
-			_worldRenderer.onRunning(_camera, _deltaFrame);
+			_worldRenderer.onRunning(_camera, _deltaFrameMillis);
 		}
 	}
 

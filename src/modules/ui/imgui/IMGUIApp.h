@@ -50,8 +50,8 @@ protected:
 	using Measures = std::map<std::thread::id, Frames>;
 	thread_local static int _currentFrameCounter;
 	Measures _traceMeasures;
-	using FramesMillis = std::array<float, _maxMeasureSize>;
-	FramesMillis _frameMillis {0.0f};
+	using FramesMillis = std::array<uint64_t, _maxMeasureSize>;
+	FramesMillis _frameMillis {0ul};
 
 	virtual void traceBeginFrame(const char *threadName) override;
 	virtual void traceBegin(const char *threadName, const char* name) override;

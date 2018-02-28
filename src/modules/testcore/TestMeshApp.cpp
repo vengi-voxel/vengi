@@ -113,59 +113,74 @@ core::AppState TestMeshApp::onInit() {
 }
 
 void TestMeshApp::onRenderUI() {
-	Super::onRenderUI();
-	ImGui::Separator();
-	ImGui::Text("Mesh %s", _mesh->filename().c_str());
-	ImGui::Text("%i vertices", (int)_mesh->vertices().size());
-	ImGui::Text("%i indices", (int)_mesh->indices().size());
-	ImGui::Text("%i bones", (int)_mesh->bones());
-	ImGui::Text("%i animations", (int)_mesh->animations());
-	ImGui::Separator();
-	ImGui::CheckboxVar("Fog", cfg::ClientFog);
-	ImGui::CheckboxVar("Shadow map", _shadowMap);
-	ImGui::CheckboxVar("Show shadow map", _shadowMapShow);
-	ImGui::CheckboxVar("Shadow map debug", _debugShadow);
-	ImGui::CheckboxVar("Show shadow cascades", _debugShadowCascade);
-	if (ImGui::Checkbox("Render axis", &_renderAxis)) {
-		setRenderAxis(_renderAxis);
+	ImGui::SetNextWindowPos(ImVec2(10, 10));
+	static bool showMeshDetails = true;
+	if (ImGui::Begin("Mesh details", &showMeshDetails)) {
+		ImGui::Text("Mesh %s", _mesh->filename().c_str());
+		ImGui::Text("%i vertices", (int)_mesh->vertices().size());
+		ImGui::Text("%i indices", (int)_mesh->indices().size());
+		ImGui::Text("%i bones", (int)_mesh->bones());
+		ImGui::Text("%i animations", (int)_mesh->animations());
+		ImGui::End();
 	}
-	ImGui::Checkbox("Render normals", &_renderNormals);
-	if (ImGui::Checkbox("Render plane", &_renderPlane)) {
-		setRenderPlane(_renderPlane);
+
+	static bool showInfo = true;
+	ImGui::SetNextWindowPos(ImVec2(300, 10));
+	if (ImGui::Begin("Info", &showInfo)) {
+		Super::onRenderUI();
+		ImGui::End();
 	}
-	if (ImGui::Checkbox("Camera motion", &_cameraMotion)) {
-		setCameraMotion(_cameraMotion);
-	}
-	if (ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f)) {
-		setCameraSpeed(_cameraSpeed);
-	}
-	if (ImGui::InputFloat3("Camera omega", glm::value_ptr(_omega))) {
-		_camera.setOmega(_omega);
-	}
-	ImGui::InputFloat("Shadow bias", &_shadowBias, 0.001f, 0.01f);
-	ImGui::InputFloat("Shadow bias slope", &_shadowBiasSlope, 0.01f, 0.1f);
-	ImGui::InputFloat("Shadow range", &_shadowRangeZ, 0.01f, 0.1f);
-	ImGui::InputFloat("Fog range", &_fogRange, 0.01f, 0.1f);
-	ImGui::InputVarFloat("Rotation speed", _rotationSpeed, 0.01f, 0.1f);
-	if (_mesh->animations() > 1 && ImGui::InputVarInt("Animation index", _animationIndex, 1, 1)) {
-		_animationIndex->setVal(_mesh->currentAnimation());
-	}
-	ImGui::InputVarString("Mesh", _meshName);
-	if (_meshName->isDirty()) {
-		const video::MeshPtr& meshPtr = _meshPool.getMesh(_meshName->strVal());
-		if (meshPtr->isLoading()) {
-			_mesh->shutdown();
-			_mesh = meshPtr;
-		} else {
-			Log::warn("Failed to load mesh: %s", _meshName->strVal().c_str());
+
+	ImGui::SetNextWindowPos(ImVec2(10, 150));
+	static bool showOptions = true;
+	if (ImGui::Begin("Options", &showOptions)) {
+		ImGui::CheckboxVar("Fog", cfg::ClientFog);
+		ImGui::CheckboxVar("Shadow map", _shadowMap);
+		ImGui::CheckboxVar("Show shadow map", _shadowMapShow);
+		ImGui::CheckboxVar("Shadow map debug", _debugShadow);
+		ImGui::CheckboxVar("Show shadow cascades", _debugShadowCascade);
+		if (ImGui::Checkbox("Render axis", &_renderAxis)) {
+			setRenderAxis(_renderAxis);
 		}
-		_meshName->markClean();
+		ImGui::Checkbox("Render normals", &_renderNormals);
+		if (ImGui::Checkbox("Render plane", &_renderPlane)) {
+			setRenderPlane(_renderPlane);
+		}
+		if (ImGui::Checkbox("Camera motion", &_cameraMotion)) {
+			setCameraMotion(_cameraMotion);
+		}
+		if (ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f)) {
+			setCameraSpeed(_cameraSpeed);
+		}
+		if (ImGui::InputFloat3("Camera omega", glm::value_ptr(_omega))) {
+			_camera.setOmega(_omega);
+		}
+		ImGui::InputFloat("Shadow bias", &_shadowBias, 0.001f, 0.01f);
+		ImGui::InputFloat("Shadow bias slope", &_shadowBiasSlope, 0.01f, 0.1f);
+		ImGui::InputFloat("Shadow range", &_shadowRangeZ, 0.01f, 0.1f);
+		ImGui::InputFloat("Fog range", &_fogRange, 0.01f, 0.1f);
+		ImGui::InputVarFloat("Rotation speed", _rotationSpeed, 0.01f, 0.1f);
+		if (_mesh->animations() > 1 && ImGui::InputVarInt("Animation index", _animationIndex, 1, 1)) {
+			_animationIndex->setVal(_mesh->currentAnimation());
+		}
+		ImGui::InputVarString("Mesh", _meshName);
+		if (_meshName->isDirty()) {
+			const video::MeshPtr& meshPtr = _meshPool.getMesh(_meshName->strVal());
+			if (meshPtr->isLoading()) {
+				_mesh->shutdown();
+				_mesh = meshPtr;
+			} else {
+				Log::warn("Failed to load mesh: %s", _meshName->strVal().c_str());
+			}
+			_meshName->markClean();
+		}
+		ImGui::InputFloat3("Position", glm::value_ptr(_position));
+		ImGui::ColorEdit3("Diffuse color", glm::value_ptr(_diffuseColor));
+		ImGui::ColorEdit3("Ambient color", glm::value_ptr(_ambientColor));
+		ImGui::ColorEdit4("Fog color", glm::value_ptr(_fogColor));
+		ImGui::ColorEdit4("Clear color", glm::value_ptr(_clearColor));
+		ImGui::End();
 	}
-	ImGui::InputFloat3("Position", glm::value_ptr(_position));
-	ImGui::ColorEdit3("Diffuse color", glm::value_ptr(_diffuseColor));
-	ImGui::ColorEdit3("Ambient color", glm::value_ptr(_ambientColor));
-	ImGui::ColorEdit4("Fog color", glm::value_ptr(_fogColor));
-	ImGui::ColorEdit4("Clear color", glm::value_ptr(_clearColor));
 }
 
 void TestMeshApp::doRender() {

@@ -114,7 +114,7 @@ void MapEdit::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
-	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
+	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrameMillis);
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
 	if (!_freelook) {
@@ -122,11 +122,11 @@ void MapEdit::beforeUI() {
 		_camera.setPosition(groundPosition);
 	}
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
-	_camera.update(_deltaFrame);
+	_camera.update(_deltaFrameMillis);
 
 	if (_updateWorld) {
 		_worldRenderer.extractMeshes(_camera);
-		_worldRenderer.onRunning(_camera, _deltaFrame);
+		_worldRenderer.onRunning(_camera, _deltaFrameMillis);
 	}
 	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
@@ -180,7 +180,7 @@ core::AppState MapEdit::onRunning() {
 	_axis.render(_camera);
 	//glm::vec3 entPos = _entity->position();
 	//entPos.y = _world->findFloor(entPos.x, entPos.z, voxel::isFloor);
-	_entity->update(_deltaFrame);
+	_entity->update(_deltaFrameMillis);
 	return state;
 }
 

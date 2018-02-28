@@ -111,7 +111,7 @@ void App::onFrame() {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	} else {
 		const uint64_t now = systemMillis();
-		_deltaFrame = (std::max)(uint64_t(1), now - _now);
+		_deltaFrameMillis = (std::max)(uint64_t(1), now - _now);
 		_timeProvider->update(now);
 		_now = now;
 
@@ -124,7 +124,7 @@ void App::onFrame() {
 		case AppState::Init: {
 			core_trace_scoped(AppOnInit);
 			_nextState = onInit();
-			_nextFrame = systemMillis();
+			_nextFrameMillis = systemMillis();
 			break;
 		}
 		case AppState::InitFailure: {
@@ -136,7 +136,7 @@ void App::onFrame() {
 		case AppState::Running: {
 			{
 				core_trace_scoped(AppOnRunning);
-				if (_framesPerSecondsCap < 1.0 || _nextFrame > now) {
+				if (_framesPerSecondsCap < 1.0 || _nextFrameMillis > now) {
 					{
 						core_trace_scoped(AppOnBeforeRunning);
 						onBeforeRunning();
@@ -151,11 +151,11 @@ void App::onFrame() {
 					}
 				}
 				if (_framesPerSecondsCap > 1.0) {
-					const uint64_t delay = _nextFrame - now;
+					const uint64_t delay = _nextFrameMillis - now;
 					if (delay > 0u) {
 						std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 					}
-					_nextFrame += (1000.0 / _framesPerSecondsCap) + 0.00001;
+					_nextFrameMillis += (1000.0 / _framesPerSecondsCap) + 0.00001;
 				}
 			}
 			break;
@@ -270,7 +270,7 @@ AppState App::onConstruct() {
 }
 
 AppState App::onInit() {
-	_initTime = _now;
+	_initMillis = _now;
 
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_EVENTS);
 	_threadPool.init();

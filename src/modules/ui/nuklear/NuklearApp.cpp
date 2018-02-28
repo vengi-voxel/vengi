@@ -340,7 +340,7 @@ core::AppState NuklearApp::onRunning() {
 	}
 
 	const math::Rect<int> rect(0, 0, _dimension.x, _dimension.y);
-	_console.render(rect, _deltaFrame);
+	_console.render(rect, _deltaFrameMillis);
 
 	const int renderTargetW = _camera.width();
 	const int renderTargetH = _camera.height();

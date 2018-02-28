@@ -75,7 +75,7 @@ void TestCamera::resetCameraPosition() {
 
 void TestCamera::doRender() {
 	video::Camera& c = _renderCamera[_targetCamera];
-	c.update(_deltaFrame);
+	c.update(_deltaFrameMillis);
 	_frustums[_targetCamera].render(_camera, c);
 	for (FrustumEntity& e : _entities) {
 		e.cull(c);

@@ -331,7 +331,7 @@ core::AppState IMGUIApp::onRunning() {
 		return core::AppState::Running;
 	}
 
-	io.DeltaTime = float(_deltaFrame) / 1000.0f;
+	io.DeltaTime = float(_deltaFrameMillis) / 1000.0f;
 	const uint32_t mouseMask = SDL_GetMouseState(nullptr, nullptr);
 	// If a mouse press event came, always pass it as "mouse held this frame",
 	// so we don't miss click-release events that are shorter than 1 frame.
@@ -368,12 +368,12 @@ core::AppState IMGUIApp::onRunning() {
 	}
 
 	const int index = _currentFrameCounter % _maxMeasureSize;
-	_frameMillis[index] = _deltaFrame;
+	_frameMillis[index] = _deltaFrameMillis;
 
 	renderTracing();
 
 	const math::Rect<int> rect(0, 0, _dimension.x, _dimension.y);
-	_console.render(rect, _deltaFrame);
+	_console.render(rect, _deltaFrameMillis);
 	ImGui::Render();
 
 	ImDrawData* drawData = ImGui::GetDrawData();
@@ -415,11 +415,12 @@ void IMGUIApp::renderTracing() {
 	}
 	std::array<float, _maxMeasureSize> frameMillis;
 	float max = 0.0f;
+	float min = 0.0f;
 	float avg = 0.0f;
 	for (int i = 0; i < _maxMeasureSize; ++i) {
 		const int index = (_currentFrameCounter + i) % _maxMeasureSize;
-		const float value = _frameMillis[index];
-		frameMillis[i] = value / 1000.0f;
+		frameMillis[i] = (float)_frameMillis[index] / 1000.0f;
+		min = glm::min(min, frameMillis[i]);
 		max = glm::max(max, frameMillis[i]);
 		avg += frameMillis[i];
 	}
@@ -428,8 +429,8 @@ void IMGUIApp::renderTracing() {
 	const int quantileIndex = int(0.95f * (float(_maxMeasureSize + 1)));
 	const float twenthyQuantile = frameMillisQuantile[quantileIndex];
 	avg /= (float)_maxMeasureSize;
-	const std::string& maxStr = core::string::format("max: %fms, avg: %fms, quantile: %f", max, avg, twenthyQuantile);
-	ImGui::PlotLines("Frame", &frameMillis[0], frameMillis.size(), 0, maxStr.c_str() , 0.0f, max, ImVec2(500, 100));
+	const std::string& maxStr = core::string::format("min: %.3fms, max: %.3fms, avg: %.3fms, quantile: %.3f", min, max, avg, twenthyQuantile);
+	ImGui::PlotLines("Frame", &frameMillis[0], frameMillis.size(), 0, maxStr.c_str() , min, max, ImVec2(500, 100));
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	ImVec2 pos = ImGui::GetCursorPos();
 	ImVec2 posEnd = pos;

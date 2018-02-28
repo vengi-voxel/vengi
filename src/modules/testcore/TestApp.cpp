@@ -94,10 +94,10 @@ void TestApp::beforeUI() {
 		}
 	}
 
-	const float speed = _cameraSpeed * static_cast<float>(_deltaFrame);
+	const float speed = _cameraSpeed * static_cast<float>(_deltaFrameMillis);
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
-	_camera.update(_deltaFrame);
+	_camera.update(_deltaFrameMillis);
 
 	if (_renderPlane) {
 		_plane.render(_camera);
@@ -113,7 +113,7 @@ void TestApp::beforeUI() {
 
 void TestApp::onRenderUI() {
 	ImGui::BulletText("ESC: toggle camera free look");
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::Text("Application average %lu ms/frame (%.1f FPS)", _deltaFrameMillis, ImGui::GetIO().Framerate);
 	ImGui::Separator();
 	if (ImGui::Button("Quit")) {
 		requestQuit();
