@@ -7,6 +7,7 @@
 #include "math/Random.h"
 #include "ShapeGenerator.h"
 #include "core/Log.h"
+#include "core/GLM.h"
 
 #include <unordered_map>
 

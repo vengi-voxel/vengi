@@ -1,5 +1,8 @@
-#include "PlantGenerator.h"
+/**
+ * @file
+ */
 
+#include "PlantGenerator.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 

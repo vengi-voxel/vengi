@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "VoxFileFormat.h"
 #include "voxel/MaterialColor.h"
 #include "core/Common.h"

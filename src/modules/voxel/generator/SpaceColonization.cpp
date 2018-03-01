@@ -4,7 +4,6 @@
 
 #include "SpaceColonization.h"
 
-#include <unordered_map>
 #include <functional>
 
 namespace voxel {

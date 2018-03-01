@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "MeshExporter.h"
 #include "core/Log.h"
 #include "core/GLM.h"

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "VoxelFont.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
