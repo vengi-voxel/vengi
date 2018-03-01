@@ -11,6 +11,9 @@
 #include "frontend/Shadow.h"
 #include "FrontendShaders.h"
 
+/**
+ * @brief Application that is able to render meshes
+ */
 class TestMeshApp: public TestApp {
 private:
 	using Super = TestApp;
