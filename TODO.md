@@ -134,3 +134,8 @@ this can help culling later on.
 the first few entries should get lesser chunk in the multi query than the ones that are
 far away from the camera - it's more likely that the far away chunks are occluded.
 doing one query per chunk is most likely a little bit overkill.
+
+# testmesh
+
+- testmesh (`TestMeshApp.cpp`) should render the sunlight and allow to change the position to test lighting
+- normal rendering must be fixed

@@ -1,5 +1,10 @@
+/**
+ * @file
+ */
+
 #include "CameraFrustum.h"
 #include "video/Renderer.h"
+#include "math/AABB.h"
 
 namespace frontend {
 

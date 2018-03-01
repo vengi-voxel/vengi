@@ -4,6 +4,8 @@
 
 #include "GridRenderer.h"
 #include "core/Trace.h"
+#include "math/AABB.h"
+#include "math/Plane.h"
 
 namespace frontend {
 

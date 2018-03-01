@@ -9,9 +9,9 @@
 #include "ClientEntityId.h"
 #include "util/PosLerp.h"
 #include "attrib/ShadowAttributes.h"
-#include <vector>
-#include <functional>
 #include "video/Mesh.h"
+#include <functional>
+#include <vector>
 #include <memory>
 
 namespace frontend {

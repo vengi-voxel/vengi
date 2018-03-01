@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "video/Camera.h"
@@ -20,10 +24,12 @@ private:
 	float _lineWidth = 4.0f;
 public:
 	void render(const video::Camera& camera) {
-		video::disable(video::State::DepthTest);
+		const bool active = video::disable(video::State::DepthTest);
 		video::ScopedLineWidth width(_lineWidth);
 		_shapeRenderer.renderAll(camera);
-		video::enable(video::State::DepthTest);
+		if (active) {
+			video::enable(video::State::DepthTest);
+		}
 	}
 
 	void shutdown() {

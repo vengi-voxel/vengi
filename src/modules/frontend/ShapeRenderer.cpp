@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "ShapeRenderer.h"
 #include "video/Renderer.h"
 #include "video/Shader.h"

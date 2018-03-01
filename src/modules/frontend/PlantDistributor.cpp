@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "PlantDistributor.h"
 #include "core/Trace.h"
 #include "voxel/World.h"

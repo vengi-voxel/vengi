@@ -1,17 +1,19 @@
 set(SRCS
+	Axis.h
+	CameraFrustum.cpp CameraFrustum.h
 	ClientEntity.h ClientEntity.cpp
 	ClientEntityId.h
-	Movement.h
-	CameraFrustum.cpp CameraFrustum.h
-	ShapeRenderer.cpp ShapeRenderer.h
-	PlantDistributor.cpp PlantDistributor.h
-	RawVolumeRenderer.cpp RawVolumeRenderer.h
-	OctreeRenderer.cpp OctreeRenderer.h
 	GridRenderer.cpp GridRenderer.h
-	Axis.h
+	MapRenderer.cpp MapRenderer.h
+	Movement.h
+	OctreeRenderer.cpp OctreeRenderer.h
 	Plane.h
+	PlantDistributor.cpp PlantDistributor.h
 	RandomColorTexture.h RandomColorTexture.cpp
+	RawVolumeRenderer.cpp RawVolumeRenderer.h
+	ShaderAttribute.h
 	Shadow.h Shadow.cpp
+	ShapeRenderer.cpp ShapeRenderer.h
 	WorldRenderer.h WorldRenderer.cpp
 )
 

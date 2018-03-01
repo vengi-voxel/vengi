@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include <glm/vec2.hpp>
@@ -11,6 +15,9 @@ class Camera;
 
 namespace frontend {
 
+/**
+ * @brief Helper class for calculating the cascaded shadow map data
+ */
 class Shadow {
 private:
 	glm::vec3 _sunDirection;
@@ -23,6 +30,9 @@ public:
 	bool init();
 
 	const glm::vec2& depthDimension() const;
+	/**
+	 * @param[in] maxDepthBuffers the amount of cascades
+	 */
 	void calculateShadowData(const video::Camera& camera, bool active, int maxDepthBuffers, const glm::ivec2& depthBufferSize, float sliceWeight = 1.0f);
 
 	const std::vector<glm::mat4>& cascades() const;

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Shadow.h"
 #include "video/Camera.h"
 #include "core/GLM.h"
@@ -5,7 +9,9 @@
 namespace frontend {
 
 bool Shadow::init() {
-	_lightView = glm::lookAt(glm::vec3(50.0f, 50.0f, -50.0f), glm::vec3(0.0f), glm::up);
+	const glm::vec3 eye(50.0f, 50.0f, -50.0f);
+	const glm::vec3 center(0.0f);
+	_lightView = glm::lookAt(eye, center, glm::up);
 	_sunDirection = glm::vec3(glm::column(glm::inverse(_lightView), 2));
 	return true;
 }

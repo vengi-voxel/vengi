@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "RandomColorTexture.h"
 #include "core/App.h"
 #include "NoiseShaders.h"

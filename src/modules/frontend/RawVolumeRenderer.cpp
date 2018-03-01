@@ -5,8 +5,14 @@
 #include "video/ScopedPolygonMode.h"
 #include "frontend/ShaderAttribute.h"
 #include "video/Camera.h"
+#include "video/Types.h"
+#include "video/Renderer.h"
+#include "video/Shader.h"
 #include "core/Color.h"
 #include "core/Array.h"
+#include "core/GLM.h"
+#include "core/Var.h"
+#include "core/GameConfig.h"
 
 namespace frontend {
 

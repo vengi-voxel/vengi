@@ -8,6 +8,7 @@
 #include "video/UniformBuffer.h"
 #include "video/Texture.h"
 #include "video/DepthBuffer.h"
+#include "core/GLM.h"
 
 namespace video {
 class Camera;

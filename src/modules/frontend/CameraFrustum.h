@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "frontend/ShapeRenderer.h"
@@ -24,12 +28,21 @@ protected:
 	int32_t _aabbMesh = -1;
 	bool _renderAABB = false;
 public:
+	/**
+	 * @param[in] splitFrustum The amount of splits that should be rendered.
+	 */
 	bool init(const video::Camera& frustumCamera, const glm::vec4& color = core::Color::Red, int splitFrustum = 0);
 
 	void shutdown();
 
+	/**
+	 * @param[in] renderAABB @c true if the math::AABB should be rendered for the camera frustum. @c false if not
+	 * @see renderAABB()
+	 */
 	void setRenderAABB(bool renderAABB);
-
+	/**
+	 * @see setRenderAABB()
+	 */
 	bool renderAABB() const;
 
 	void render(const video::Camera& camera, const video::Camera& frustumCamera);
