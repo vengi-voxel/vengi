@@ -9,9 +9,11 @@
 namespace frontend {
 
 bool Shadow::init() {
-	const glm::vec3 eye(50.0f, 50.0f, -50.0f);
+	const float length = 50.0f;
+	const glm::vec3 sunPos(length, length, -length);
 	const glm::vec3 center(0.0f);
-	_lightView = glm::lookAt(eye, center, glm::up);
+	_lightView = glm::lookAt(sunPos, center, glm::up);
+	//_sunDirection = normalize(center - sunPos);
 	_sunDirection = glm::vec3(glm::column(glm::inverse(_lightView), 2));
 	return true;
 }
