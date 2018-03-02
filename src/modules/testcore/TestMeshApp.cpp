@@ -205,9 +205,9 @@ void TestMeshApp::doRender() {
 
 	{
 		core_trace_scoped(TestMeshAppDoRenderShadows);
-		video::disable(video::State::Blend);
+		const bool blendEnabled = video::disable(video::State::Blend);
 		// put shadow acne into the dark
-		video::cullFace(video::Face::Front);
+		const bool cullFaceChanged = video::cullFace(video::Face::Front);
 		const glm::vec2 offset(_shadowBiasSlope, (_shadowBias / _shadowRangeZ) * (1 << 24));
 		const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
 
@@ -230,8 +230,12 @@ void TestMeshApp::doRender() {
 			_shadowMapShader.recordUsedUniforms(false);
 		}
 		_depthBuffer.unbind();
-		video::cullFace(video::Face::Back);
-		video::enable(video::State::Blend);
+		if (cullFaceChanged) {
+			video::cullFace(video::Face::Back);
+		}
+		if (blendEnabled) {
+			video::enable(video::State::Blend);
+		}
 	}
 
 	bool meshInitialized = false;
