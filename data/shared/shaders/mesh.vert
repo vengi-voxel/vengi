@@ -42,5 +42,5 @@ void main(void) {
 #if cl_fog == 1
 	v_fogdivisor   = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
 	v_fogdistance  = gl_Position.z / gl_Position.w;
-#endif
+#endif // cl_fog
 }

@@ -192,10 +192,13 @@ void TestMeshApp::doRender() {
 	const uint8_t animationIndex = _animationIndex->intVal();
 	const float timeInSeconds = lifetimeInSecondsf();
 
-	video::enable(video::State::DepthTest);
+	const bool oldDepth = video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
-	video::enable(video::State::CullFace);
-	video::enable(video::State::DepthMask);
+	const bool oldCullFace = video::enable(video::State::CullFace);
+	const bool oldDepthMask = video::enable(video::State::DepthMask);
+
+	video::clearColor(_clearColor);
+	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 
 	_model = glm::translate(glm::mat4(1.0f), _position);
 	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
@@ -205,7 +208,7 @@ void TestMeshApp::doRender() {
 
 	{
 		core_trace_scoped(TestMeshAppDoRenderShadows);
-		const bool blendEnabled = video::disable(video::State::Blend);
+		const bool oldBlend = video::disable(video::State::Blend);
 		// put shadow acne into the dark
 		const bool cullFaceChanged = video::cullFace(video::Face::Front);
 		const glm::vec2 offset(_shadowBiasSlope, (_shadowBias / _shadowRangeZ) * (1 << 24));
@@ -233,16 +236,13 @@ void TestMeshApp::doRender() {
 		if (cullFaceChanged) {
 			video::cullFace(video::Face::Back);
 		}
-		if (blendEnabled) {
+		if (oldBlend) {
 			video::enable(video::State::Blend);
 		}
 	}
 
 	bool meshInitialized = false;
 	{
-		video::clearColor(_clearColor);
-		video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
-
 		if (_renderPlane) {
 			renderPlane();
 		}
@@ -320,6 +320,16 @@ void TestMeshApp::doRender() {
 
 		// unbind buffer
 		_shadowMapDebugBuffer.unbind();
+	}
+
+	if (!oldDepth) {
+		video::disable(video::State::DepthTest);
+	}
+	if (!oldCullFace) {
+		video::disable(video::State::CullFace);
+	}
+	if (!oldDepthMask) {
+		video::disable(video::State::DepthMask);
 	}
 }
 

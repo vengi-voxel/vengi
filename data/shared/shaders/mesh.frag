@@ -4,7 +4,7 @@ $in vec4 v_color;
 #if cl_fog == 1
 $in float v_fogdivisor;
 $in float v_fogdistance;
-#endif
+#endif // cl_fog
 
 $out vec4 o_color;
 
@@ -15,7 +15,7 @@ uniform vec3 u_ambient_color;
 #if cl_fog == 1
 uniform vec3 u_fogcolor;
 uniform float u_viewdistance;
-#endif
+#endif // cl_fog
 uniform mat4 u_viewprojection;
 
 #include "_shadowmap.frag"
