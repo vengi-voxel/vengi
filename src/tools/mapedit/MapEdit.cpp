@@ -159,6 +159,9 @@ void MapEdit::onRenderUI() {
 	ImGui::CheckboxVar("Occlusion Query", cfg::OcclusionQuery);
 	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);
 	ImGui::CheckboxVar("Render AABB", cfg::RenderAABB);
+	ImGui::CheckboxVar("Shadowmap render", cfg::ClientShadowMapShow);
+	ImGui::CheckboxVar("Shadowmap cascades", cfg::ClientDebugShadowMapCascade);
+	ImGui::CheckboxVar("Shadowmap debug", cfg::ClientDebugShadow);
 
 	ImGui::Checkbox("Line mode rendering", &_lineModeRendering);
 	ImGui::Checkbox("Freelook", &_freelook);
