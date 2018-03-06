@@ -178,7 +178,11 @@ core::AppState WindowedApp::onInit() {
 		if (SDL_GetDisplayBounds(i, &dr) == -1) {
 			continue;
 		}
-		Log::info("Display %i: %i:%i x %i:%i", i, dr.x, dr.y, dr.w, dr.h);
+		float ddpi = -1.0f;
+		float hdpi = -1.0f;
+		float vdpi = -1.0f;
+		SDL_GetDisplayDPI(i, &ddpi, &hdpi, &vdpi);
+		Log::info("Display %i: %i:%i x %i:%i (dpi: %f, h: %f, v: %f)", i, dr.x, dr.y, dr.w, dr.h, ddpi, hdpi, vdpi);
 	}
 
 	int width = core::Var::get(cfg::ClientWindowWidth, displayMode.w)->intVal();
