@@ -985,6 +985,18 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 		return false;
 	}
 
+	glValidateProgram(program);
+	GLint success, logLength;
+	glGetProgramiv(program, GL_VALIDATE_STATUS, &success);
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+
+	std::string message(logLength, '\n');
+	if (message.size() > 1) {
+		glGetProgramInfoLog(program, message.size(), nullptr, &message[0]);
+	}
+	message.resize(std::max(logLength, 1) - 1);
+	Log::info("Validate: %s", message.c_str());
+
 	return true;
 }
 
