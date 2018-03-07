@@ -26,6 +26,7 @@ option(USE_GCOV "Use gcov - will become slow" OFF)
 option(USE_DOXYGEN_CHECK "Use -Wdocumentation if available" OFF)
 set(SERVER_HOST "localhost" CACHE STRING "Host where the server is running on")
 set(SERVER_PORT "11337" CACHE STRING "Port where the server is listening on")
+set(BASE_URL "http://localhost/" CACHE STRING "Base url of the http endpoints")
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	set(WINDOWS 1)

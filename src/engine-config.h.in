@@ -18,3 +18,4 @@
 #cmakedefine HAVE_POSTGRES 1
 
 #cmakedefine OPENCL_LIBRARY "@OPENCL_LIBRARY@"
+#cmakedefine BASE_URL "@BASE_URL@"
