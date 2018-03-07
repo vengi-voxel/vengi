@@ -157,10 +157,6 @@ bool Mesh::loadMesh(const std::string& filename) {
 	for (uint32_t i = 0u; i < _meshData.size(); ++i) {
 		const aiMesh* mesh = _scene->mMeshes[i];
 
-		if (mesh->HasVertexColors(0)) {
-			Log::debug("Mesh has vertex color");
-		}
-
 		for (uint32_t fi = 0; fi < mesh->mNumFaces; ++fi) {
 			const aiFace& face = mesh->mFaces[fi];
 			core_assert(face.mNumIndices == 3);
