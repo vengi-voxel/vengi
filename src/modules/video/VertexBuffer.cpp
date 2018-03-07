@@ -132,23 +132,22 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 
 int32_t VertexBuffer::create(const void* data, size_t size, VertexBufferType target) {
 	// we already have a buffer
-	if (_handleIdx >= (int)SDL_arraysize(_handles)) {
+	if (_handleIdx >= MAX_HANDLES) {
 		return -1;
 	}
-	_targets[_handleIdx] = target;
-	_handles[_handleIdx] = video::genBuffer();
-	if (!isValid(_handleIdx)) {
+	const int idx = _handleIdx;
+	_targets[idx] = target;
+	_handles[idx] = video::genBuffer();
+	if (!isValid(idx)) {
 		Log::error("Failed to create buffer (size: %i)", (int)size);
 		return -1;
 	}
-	_size[_handleIdx] = size;
+	_size[idx] = size;
 	if (data != nullptr) {
-		video::bindBuffer(_targets[_handleIdx], _handles[_handleIdx]);
-		video::bufferData(_targets[_handleIdx], _modes[_handleIdx], data, size);
-		video::unbindBuffer(_targets[_handleIdx]);
+		update(idx, data, size);
 	}
 	++_handleIdx;
-	return _handleIdx - 1;
+	return idx;
 }
 
 int32_t VertexBuffer::createFullscreenQuad() {
