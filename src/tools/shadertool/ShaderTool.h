@@ -21,10 +21,12 @@ protected:
 	std::string _sourceDirectory;
 	std::string _shaderDirectory;
 	std::string _shaderTemplateFile;
+	std::string _glslangValidatorBin;
 	std::string _uniformBufferTemplateFile;
 	std::string _shaderfile;
 
 	bool parse(const std::string& src, bool vertex);
+	void validate(const std::string& name);
 public:
 	ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 

@@ -40,8 +40,25 @@ core::AppState ShaderTool::onConstruct() {
 	return Super::onConstruct();
 }
 
+void ShaderTool::validate(const std::string& name) {
+	const std::string& writePath = filesystem()->homePath();
+	std::vector<std::string> args;
+	args.push_back(writePath + name);
+	char output[4096] = "";
+	int exitCode = core::Process::exec(_glslangValidatorBin, args, nullptr, sizeof(output), output);
+	if (exitCode != 0) {
+		Log::error("Failed to validate shader '%s'", name.c_str());
+		if (output[0] != '\0') {
+			Log::error("%s", output);
+		}
+		Log::debug("%s %s%s", _glslangValidatorBin.c_str(), writePath.c_str(), name.c_str());
+		_exitCode = exitCode;
+	}
+
+}
+
 core::AppState ShaderTool::onRunning() {
-	const std::string glslangValidatorBin = getArgVal("--glslang");
+	_glslangValidatorBin                  = getArgVal("--glslang");
 	const std::string shaderfile          = getArgVal("--shader");
 	_shaderTemplateFile                   = getArgVal("--shadertemplate");
 	_uniformBufferTemplateFile            = getArgVal("--buffertemplate");
@@ -54,7 +71,7 @@ core::AppState ShaderTool::onRunning() {
 		_shaderDirectory = _shaderDirectory + "/";
 	}
 
-	Log::debug("Using glslangvalidator binary: %s", glslangValidatorBin.c_str());
+	Log::debug("Using glslangvalidator binary: %s", _glslangValidatorBin.c_str());
 	Log::debug("Using %s as output directory", _sourceDirectory.c_str());
 	Log::debug("Using %s as namespace", _namespaceSrc.c_str());
 	Log::debug("Using %s as shader directory", _shaderDirectory.c_str());
@@ -164,61 +181,13 @@ core::AppState ShaderTool::onRunning() {
 
 	Log::debug("Validating shader file %s", _shaderfile.c_str());
 
-	std::vector<std::string> fragmentArgs;
-	fragmentArgs.push_back(writePath + finalFragmentFilename);
-	char outputFrag[4096] = "";
-	int fragmentValidationExitCode = core::Process::exec(glslangValidatorBin, fragmentArgs, nullptr, sizeof(outputFrag), outputFrag);
-	if (fragmentValidationExitCode != 0) {
-		Log::error("Failed to validate fragment shader '%s'", finalFragmentFilename.c_str());
-		if (outputFrag[0] != '\0') {
-			Log::error("%s", outputFrag);
-		}
-		Log::debug("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalFragmentFilename.c_str());
-		_exitCode = fragmentValidationExitCode;
-	}
-
-	std::vector<std::string> vertexArgs;
-	vertexArgs.push_back(writePath + finalVertexFilename);
-	char outputVertex[4096] = "";
-	int vertexValidationExitCode = core::Process::exec(glslangValidatorBin, vertexArgs, nullptr, sizeof(outputVertex), outputVertex);
-	if (vertexValidationExitCode != 0) {
-		Log::error("Failed to validate vertex shader '%s'", finalVertexFilename.c_str());
-		if (outputVertex[0] != '\0') {
-			Log::error("%s", outputVertex);
-		}
-		Log::debug("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalVertexFilename.c_str());
-		_exitCode = vertexValidationExitCode;
-	}
-
-	int geometryValidationExitCode = 0;
+	validate(finalFragmentFilename);
+	validate(finalVertexFilename);
 	if (!geometrySource.empty()) {
-		std::vector<std::string> geometryArgs;
-		geometryArgs.push_back(writePath + finalGeometryFilename);
-		char outputGeom[4096] = "";
-		geometryValidationExitCode = core::Process::exec(glslangValidatorBin, geometryArgs, nullptr, sizeof(outputGeom), outputGeom);
-		if (geometryValidationExitCode != 0) {
-			Log::error("Failed to validate geometry shader '%s'", finalGeometryFilename.c_str());
-			if (outputGeom[0] != '\0') {
-				Log::error("%s", outputGeom);
-			}
-			Log::debug("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalGeometryFilename.c_str());
-			_exitCode = geometryValidationExitCode;
-		}
+		validate(finalGeometryFilename);
 	}
-	int computeValidationExitCode = 0;
 	if (!computeSource.empty()) {
-		std::vector<std::string> computeArgs;
-		computeArgs.push_back(writePath + finalComputeFilename);
-		char outputCompute[4096] = "";
-		computeValidationExitCode = core::Process::exec(glslangValidatorBin, computeArgs, nullptr, sizeof(outputCompute), outputCompute);
-		if (computeValidationExitCode != 0) {
-			Log::error("Failed to validate compute shader '%s'", finalComputeFilename.c_str());
-			if (outputCompute[0] != '\0') {
-				Log::error("%s", outputCompute);
-			}
-			Log::debug("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalComputeFilename.c_str());
-			_exitCode = computeValidationExitCode;
-		}
+		validate(finalComputeFilename);
 	}
 
 	return core::AppState::Cleanup;
