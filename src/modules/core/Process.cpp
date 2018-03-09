@@ -37,7 +37,7 @@
 
 namespace core {
 
-int Process::exec (const std::string& command, const std::vector<std::string>& arguments, const char* workingDirectory, size_t bufSize, char *output) {
+int Process::exec(const std::string& command, const std::vector<std::string>& arguments, const char* workingDirectory, size_t bufSize, char *output) {
 #if __LINUX__ || __MACOSX__
 	int link[2];
 	if (::pipe(link) < 0) {

@@ -166,41 +166,59 @@ core::AppState ShaderTool::onRunning() {
 
 	std::vector<std::string> fragmentArgs;
 	fragmentArgs.push_back(writePath + finalFragmentFilename);
-	int fragmentValidationExitCode = core::Process::exec(glslangValidatorBin, fragmentArgs);
+	char outputFrag[4096] = "";
+	int fragmentValidationExitCode = core::Process::exec(glslangValidatorBin, fragmentArgs, nullptr, sizeof(outputFrag), outputFrag);
+	if (fragmentValidationExitCode != 0) {
+		Log::error("Failed to validate fragment shader '%s'", finalFragmentFilename.c_str());
+		if (outputFrag[0] != '\0') {
+			Log::error("%s", outputFrag);
+		}
+		Log::debug("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalFragmentFilename.c_str());
+		_exitCode = fragmentValidationExitCode;
+	}
 
 	std::vector<std::string> vertexArgs;
 	vertexArgs.push_back(writePath + finalVertexFilename);
-	int vertexValidationExitCode = core::Process::exec(glslangValidatorBin, vertexArgs);
+	char outputVertex[4096] = "";
+	int vertexValidationExitCode = core::Process::exec(glslangValidatorBin, vertexArgs, nullptr, sizeof(outputVertex), outputVertex);
+	if (vertexValidationExitCode != 0) {
+		Log::error("Failed to validate vertex shader '%s'", finalVertexFilename.c_str());
+		if (outputVertex[0] != '\0') {
+			Log::error("%s", outputVertex);
+		}
+		Log::debug("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalVertexFilename.c_str());
+		_exitCode = vertexValidationExitCode;
+	}
 
 	int geometryValidationExitCode = 0;
 	if (!geometrySource.empty()) {
 		std::vector<std::string> geometryArgs;
 		geometryArgs.push_back(writePath + finalGeometryFilename);
-		geometryValidationExitCode = core::Process::exec(glslangValidatorBin, geometryArgs);
+		char outputGeom[4096] = "";
+		geometryValidationExitCode = core::Process::exec(glslangValidatorBin, geometryArgs, nullptr, sizeof(outputGeom), outputGeom);
+		if (geometryValidationExitCode != 0) {
+			Log::error("Failed to validate geometry shader '%s'", finalGeometryFilename.c_str());
+			if (outputGeom[0] != '\0') {
+				Log::error("%s", outputGeom);
+			}
+			Log::debug("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalGeometryFilename.c_str());
+			_exitCode = geometryValidationExitCode;
+		}
 	}
 	int computeValidationExitCode = 0;
 	if (!computeSource.empty()) {
 		std::vector<std::string> computeArgs;
 		computeArgs.push_back(writePath + finalComputeFilename);
-		computeValidationExitCode = core::Process::exec(glslangValidatorBin, computeArgs);
-	}
-
-	if (fragmentValidationExitCode != 0) {
-		Log::error("Failed to validate fragment shader");
-		Log::warn("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalFragmentFilename.c_str());
-		_exitCode = fragmentValidationExitCode;
-	} else if (vertexValidationExitCode != 0) {
-		Log::error("Failed to validate vertex shader");
-		Log::warn("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalVertexFilename.c_str());
-		_exitCode = vertexValidationExitCode;
-	} else if (geometryValidationExitCode != 0) {
-		Log::error("Failed to validate geometry shader");
-		Log::warn("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalGeometryFilename.c_str());
-		_exitCode = geometryValidationExitCode;
-	} else if (computeValidationExitCode != 0) {
-		Log::error("Failed to validate compute shader");
-		Log::warn("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalComputeFilename.c_str());
-		_exitCode = computeValidationExitCode;
+		char outputCompute[4096] = "";
+		computeValidationExitCode = core::Process::exec(glslangValidatorBin, computeArgs, nullptr, sizeof(outputCompute), outputCompute);
+		if (computeValidationExitCode != 0) {
+			Log::error("Failed to validate compute shader '%s'", finalComputeFilename.c_str());
+			if (outputCompute[0] != '\0') {
+				Log::error("%s", outputCompute);
+			}
+			Log::debug("%s %s%s", glslangValidatorBin.c_str(), writePath.c_str(), finalComputeFilename.c_str());
+			_exitCode = computeValidationExitCode;
+		}
 	}
 
 	return core::AppState::Cleanup;
