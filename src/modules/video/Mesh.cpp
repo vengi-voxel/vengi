@@ -351,6 +351,10 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 		setupBufferAttributes(shader);
 	}
 
+	if (shader.hasUniform("u_vertexskinning")) {
+		shader.setUniformi("u_vertexskinning", _numBones);
+	}
+
 	const int size = shader.getUniformArraySize("u_bonetransforms");
 	if (size > 0) {
 		core_assert_always(size == 100);

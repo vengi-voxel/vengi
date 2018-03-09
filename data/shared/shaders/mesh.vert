@@ -13,6 +13,7 @@ uniform mat4 u_bonetransforms[100];
 uniform float u_fogrange;
 #endif
 uniform float u_viewdistance;
+uniform int u_vertexskinning;
 
 #include "_shadowmap.vert"
 
@@ -25,17 +26,29 @@ $out float v_fogdistance;
 #endif
 
 void main(void) {
-	mat4 bonetrans = u_bonetransforms[a_boneids[0]] * a_boneweights[0];
-	bonetrans     += u_bonetransforms[a_boneids[1]] * a_boneweights[1];
-	bonetrans     += u_bonetransforms[a_boneids[2]] * a_boneweights[2];
-	bonetrans     += u_bonetransforms[a_boneids[3]] * a_boneweights[3];
-	vec4 mpos      = u_model * bonetrans * vec4(a_pos, 1.0);
+	vec4 mpos;
+	if (bool(u_vertexskinning)) {
+		vec4 vertex = (u_bonetransforms[a_boneids[0]] * vec4(a_pos, 1.0)) * a_boneweights[0];
+		vertex     += (u_bonetransforms[a_boneids[1]] * vec4(a_pos, 1.0)) * a_boneweights[1];
+		vertex     += (u_bonetransforms[a_boneids[2]] * vec4(a_pos, 1.0)) * a_boneweights[2];
+		vertex     += (u_bonetransforms[a_boneids[3]] * vec4(a_pos, 1.0)) * a_boneweights[3];
+
+		vec4 normal = (u_bonetransforms[a_boneids[0]] * vec4(a_norm, 0.0)) * a_boneweights[0];
+		normal     += (u_bonetransforms[a_boneids[1]] * vec4(a_norm, 0.0)) * a_boneweights[1];
+		normal     += (u_bonetransforms[a_boneids[2]] * vec4(a_norm, 0.0)) * a_boneweights[2];
+		normal     += (u_bonetransforms[a_boneids[3]] * vec4(a_norm, 0.0)) * a_boneweights[3];
+
+		mpos        = u_model * vertex;
+		v_norm      = normal.xyz;
+	} else {
+		mpos        = u_model * vec4(a_pos, 1.0);
+		v_norm      = a_norm;
+	}
 
 #if cl_shadowmap == 1
 	v_lightspacepos = mpos.xyz;
 	v_viewz         = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif // cl_shadowmap == 1
-	v_norm         = vec4(bonetrans * vec4(a_norm, 0.0)).xyz;
 	v_texcoords    = a_texcoords;
 	v_color        = a_color;
 	gl_Position    = u_viewprojection * mpos;
