@@ -62,9 +62,9 @@ macro(generate_shaders TARGET)
 					convert_to_camel_case(${_file} _f)
 					set(_shaderfile "${_f}Shader.h")
 					set(_shader "${GEN_DIR}${_shaderfile}")
-					# TODO: there are includes in those files.... so we also might depend on other glsl and generated ub files
 					add_custom_command(
 						OUTPUT ${_shader}
+						IMPLICIT_DEPENDS C ${_dir}/${_file}.frag C ${_dir}/${_file}.vert
 						COMMENT "Validate ${_file} and generate ${_shaderfile}"
 						COMMAND ${CMAKE_BINARY_DIR}/shadertool --glslang ${CMAKE_BINARY_DIR}/glslangValidator --shader ${_dir}/${_file} --shadertemplate ${_template} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
 						DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template} ${_template_ub}
@@ -114,9 +114,9 @@ macro(generate_compute_shaders TARGET)
 					convert_to_camel_case(${_file} _f)
 					set(_shaderfile "${_f}Shader.h")
 					set(_shader "${GEN_DIR}${_shaderfile}")
-					# TODO: there are includes in those files.... so we also might depend on other cl files
 					add_custom_command(
 						OUTPUT ${_shader}
+						IMPLICIT_DEPENDS C ${_dir}/${_file}.cl
 						COMMENT "Generate ${_shaderfile}"
 						COMMAND ${CMAKE_BINARY_DIR}/computeshadertool --shader ${_dir}/${_file} --shadertemplate ${_template} --sourcedir ${GEN_DIR}
 						DEPENDS computeshadertool ${_dir}/${_file}.cl ${_template}
