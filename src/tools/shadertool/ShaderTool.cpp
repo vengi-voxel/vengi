@@ -31,6 +31,7 @@ core::AppState ShaderTool::onConstruct() {
 	registerArg("--namespace").setShort("-n").setDescription("Namespace to generate the source in").setDefaultValue("shader");
 	registerArg("--shaderdir").setShort("-d").setDescription("Directory to load the shader from").setDefaultValue("shaders/");
 	registerArg("--sourcedir").setDescription("Directory to generate the source in").setMandatory();
+	registerArg("--printincludes").setDescription("Print the includes for the given shader");
 	Log::trace("Set some shader config vars to let the validation work");
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
 	core::Var::get(cfg::ClientFog, "true", core::CV_SHADER);
@@ -54,27 +55,28 @@ void ShaderTool::validate(const std::string& name) {
 		Log::debug("%s %s%s", _glslangValidatorBin.c_str(), writePath.c_str(), name.c_str());
 		_exitCode = exitCode;
 	}
-
 }
 
 core::AppState ShaderTool::onRunning() {
-	_glslangValidatorBin                  = getArgVal("--glslang");
 	const std::string shaderfile          = getArgVal("--shader");
-	_shaderTemplateFile                   = getArgVal("--shadertemplate");
-	_uniformBufferTemplateFile            = getArgVal("--buffertemplate");
-	_namespaceSrc                         = getArgVal("--namespace");
-	_shaderDirectory                      = getArgVal("--shaderdir");
-	_sourceDirectory                      = getArgVal("--sourcedir",
-			_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
+	const bool printIncludes              = hasArg("--printincludes");
+	if (!printIncludes) {
+		_glslangValidatorBin              = getArgVal("--glslang");
+		_shaderTemplateFile               = getArgVal("--shadertemplate");
+		_uniformBufferTemplateFile        = getArgVal("--buffertemplate");
+		_namespaceSrc                     = getArgVal("--namespace");
+		_shaderDirectory                  = getArgVal("--shaderdir");
+		_sourceDirectory                  = getArgVal("--sourcedir",
+				_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
 
-	if (!core::string::endsWith(_shaderDirectory, "/")) {
-		_shaderDirectory = _shaderDirectory + "/";
+		if (!core::string::endsWith(_shaderDirectory, "/")) {
+			_shaderDirectory = _shaderDirectory + "/";
+		}
+		Log::debug("Using glslangvalidator binary: %s", _glslangValidatorBin.c_str());
+		Log::debug("Using %s as output directory", _sourceDirectory.c_str());
+		Log::debug("Using %s as namespace", _namespaceSrc.c_str());
+		Log::debug("Using %s as shader directory", _shaderDirectory.c_str());
 	}
-
-	Log::debug("Using glslangvalidator binary: %s", _glslangValidatorBin.c_str());
-	Log::debug("Using %s as output directory", _sourceDirectory.c_str());
-	Log::debug("Using %s as namespace", _namespaceSrc.c_str());
-	Log::debug("Using %s as shader directory", _shaderDirectory.c_str());
 
 	Log::debug("Preparing shader file %s", shaderfile.c_str());
 	_shaderfile = std::string(core::string::extractFilename(shaderfile.c_str()));
@@ -85,14 +87,16 @@ core::AppState ShaderTool::onRunning() {
 	const std::string fragmentBuffer = fs->load(fragmentFilename);
 	if (fragmentBuffer.empty()) {
 		Log::error("Could not load %s", fragmentFilename.c_str());
-		return core::AppState::InitFailure;
+		_exitCode = 127;
+		return core::AppState::Cleanup;
 	}
 
 	const std::string vertexFilename = _shaderfile + VERTEX_POSTFIX;
 	const std::string vertexBuffer = fs->load(vertexFilename);
 	if (vertexBuffer.empty()) {
 		Log::error("Could not load %s", vertexFilename.c_str());
-		return core::AppState::InitFailure;
+		_exitCode = 127;
+		return core::AppState::Cleanup;
 	}
 
 	const std::string geometryFilename = _shaderfile + GEOMETRY_POSTFIX;
@@ -111,25 +115,37 @@ core::AppState ShaderTool::onRunning() {
 	_shaderStruct.name = _shaderfile;
 	if (!parse(fragmentSrcSource, false)) {
 		Log::error("Failed to parse fragment shader %s", _shaderfile.c_str());
-		return core::AppState::InitFailure;
+		_exitCode = 1;
+		return core::AppState::Cleanup;
+	}
+	if (!parse(vertexSrcSource, true)) {
+		Log::error("Failed to parse vertex shader %s", _shaderfile.c_str());
+		_exitCode = 1;
+		return core::AppState::Cleanup;
 	}
 	if (!geometryBuffer.empty()) {
 		const std::string& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, false, &includes);
 		if (!parse(geometrySrcSource, false)) {
 			Log::error("Failed to parse geometry shader %s", _shaderfile.c_str());
-			return core::AppState::InitFailure;
+			_exitCode = 1;
+			return core::AppState::Cleanup;
 		}
 	}
 	if (!computeBuffer.empty()) {
 		const std::string& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer, false, &includes);
 		if (!parse(computeSrcSource, false)) {
 			Log::error("Failed to parse compute shader %s", _shaderfile.c_str());
-			return core::AppState::InitFailure;
+			_exitCode = 1;
+			return core::AppState::Cleanup;
 		}
 	}
-	if (!parse(vertexSrcSource, true)) {
-		Log::error("Failed to parse vertex shader %s", _shaderfile.c_str());
-		return core::AppState::InitFailure;
+
+	if (printIncludes) {
+		const std::string& path = std::string(core::string::extractPath(shaderfile.c_str()));
+		for (const std::string& i : includes) {
+			Log::info("%s%s", path.c_str(), i.c_str());
+		}
+		return core::AppState::Cleanup;
 	}
 
 	for (const auto& block : _shaderStruct.uniformBlocks) {
@@ -153,7 +169,8 @@ core::AppState ShaderTool::onRunning() {
 	if (!shadertool::generateSrc(templateShader, templateUniformBuffer, _shaderStruct,
 			filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory)) {
 		Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
-		return core::AppState::InitFailure;
+		_exitCode = 1;
+		return core::AppState::Cleanup;
 	}
 
 	const std::string& fragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, true);
