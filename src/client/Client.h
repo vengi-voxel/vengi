@@ -6,7 +6,7 @@
 
 #include "ServerMessages_generated.h"
 #include "frontend/ClientEntity.h"
-#include "frontend/WorldRenderer.h"
+#include "voxelfrontend/WorldRenderer.h"
 #include "voxel/font/VoxelFont.h"
 #include "util/PosLerp.h"
 #include "core/Var.h"

@@ -4,10 +4,11 @@
 
 #include "voxel/OctreeVolume.h"
 #include "frontend/Shadow.h"
-#include "frontend/ShaderAttribute.h"
+#include "ShaderAttribute.h"
 #include "frontend/RandomColorTexture.h"
 #include "video/Camera.h"
 #include "video/DepthBuffer.h"
+#include "VoxelfrontendShaders.h"
 #include "FrontendShaders.h"
 #include "video/Shader.h"
 #include "video/VertexBuffer.h"

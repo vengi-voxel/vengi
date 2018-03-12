@@ -11,11 +11,11 @@
 #include "core/App.h"
 #include "core/Var.h"
 #include "voxel/MaterialColor.h"
-#include "frontend/PlantDistributor.h"
+#include "PlantDistributor.h"
 #include "video/ScopedViewPort.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
-#include "frontend/ShaderAttribute.h"
+#include "ShaderAttribute.h"
 
 namespace frontend {
 

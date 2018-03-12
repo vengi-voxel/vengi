@@ -14,4 +14,4 @@ set(SRCS
 	nodes/RGBANode.h nodes/RGBANode.cpp
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES imgui noise image voxel frontend collection)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES imgui noise image voxelfrontend collection)

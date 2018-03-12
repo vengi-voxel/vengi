@@ -6,7 +6,7 @@
 
 #include "ui/imgui/IMGUIApp.h"
 #include "FrontendShaders.h"
-#include "frontend/WorldRenderer.h"
+#include "voxelfrontend/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/Axis.h"
 #include "video/Camera.h"

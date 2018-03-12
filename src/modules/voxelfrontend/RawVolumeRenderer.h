@@ -1,7 +1,12 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "voxel/polyvox/RawVolume.h"
 #include "video/VertexBuffer.h"
+#include "VoxelfrontendShaders.h"
 #include "FrontendShaders.h"
 #include "voxel/polyvox/Mesh.h"
 #include "frontend/Shadow.h"

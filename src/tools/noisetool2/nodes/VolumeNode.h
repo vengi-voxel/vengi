@@ -1,9 +1,13 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "NNode.h"
 #include "collection/ConcurrentQueue.h"
 #include "core/ThreadPool.h"
-#include "frontend/RawVolumeRenderer.h"
+#include "voxelfrontend/RawVolumeRenderer.h"
 #include "video/FrameBuffer.h"
 #include "video/Texture.h"
 #include "video/Camera.h"

@@ -6,7 +6,7 @@
 
 #include "testcore/TestApp.h"
 #include "voxel/font/VoxelFont.h"
-#include "frontend/RawVolumeRenderer.h"
+#include "voxelfrontend/RawVolumeRenderer.h"
 #include "video/VertexBuffer.h"
 #include "FrontendShaders.h"
 

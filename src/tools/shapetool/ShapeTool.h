@@ -6,7 +6,7 @@
 
 #include "ui/turbobadger/UIApp.h"
 #include "FrontendShaders.h"
-#include "frontend/OctreeRenderer.h"
+#include "voxelfrontend/OctreeRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/Axis.h"
 #include "video/Camera.h"

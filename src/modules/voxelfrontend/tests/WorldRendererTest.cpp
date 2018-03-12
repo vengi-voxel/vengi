@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "frontend/WorldRenderer.h"
+#include "voxelfrontend/WorldRenderer.h"
 #include "voxel/World.h"
 
 namespace frontend {

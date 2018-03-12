@@ -1,9 +1,13 @@
+/**
+ * @file
+ */
+
 #include "RawVolumeRenderer.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
-#include "frontend/ShaderAttribute.h"
+#include "ShaderAttribute.h"
 #include "video/Camera.h"
 #include "video/Types.h"
 #include "video/Renderer.h"

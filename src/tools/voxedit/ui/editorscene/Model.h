@@ -11,7 +11,7 @@
 #include "voxel/TreeContext.h"
 #include "voxel/generator/BuildingGeneratorContext.h"
 #include "voxel/generator/NoiseGenerator.h"
-#include "frontend/RawVolumeRenderer.h"
+#include "voxelfrontend/RawVolumeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "frontend/ShapeRenderer.h"
 #include "frontend/GridRenderer.h"
