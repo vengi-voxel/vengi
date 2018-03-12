@@ -139,9 +139,11 @@ protected:
 	struct TraceData {
 		const char *threadName;
 		const char *name;
-		double nanos;
+		uint64_t nanos;
 	};
 	static thread_local std::stack<TraceData> _traceData;
+
+	bool toggleTrace();
 
 	/**
 	 * @brief There is no fps limit per default, but you set one on a per-app basis
@@ -262,6 +264,7 @@ public:
 
 	// handle the app state changes here
 	virtual void onFrame();
+	virtual void onAfterFrame() {}
 	void readyForInit();
 	void requestQuit();
 	void requestSuspend();

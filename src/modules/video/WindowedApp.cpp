@@ -45,6 +45,7 @@ void WindowedApp::onAfterRunning() {
 }
 
 core::AppState WindowedApp::onRunning() {
+	core_trace_scoped(WindowedAppOnRunning);
 	Super::onRunning();
 
 	for (KeyMapConstIter it = _keys.begin(); it != _keys.end(); ++it) {
@@ -62,7 +63,6 @@ core::AppState WindowedApp::onRunning() {
 
 	SDL_GetMouseState(&_mousePos.x, &_mousePos.y);
 	SDL_GetRelativeMouseState(&_mouseRelativePos.x, &_mouseRelativePos.y);
-	core_trace_scoped(WindowedAppOnRunning);
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
@@ -79,6 +79,7 @@ core::AppState WindowedApp::onRunning() {
 		}
 	}
 
+	core_trace_scoped(WindowedAppStartFrame);
 	video::startFrame(_window, _rendererContext);
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 	core::Singleton<ShaderManager>::getInstance().update();

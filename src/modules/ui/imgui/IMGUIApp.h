@@ -12,7 +12,7 @@
 #include <atomic>
 #include <map>
 #include <thread>
-#include <deque>
+#include <stack>
 #include <mutex>
 #include <array>
 
@@ -35,21 +35,42 @@ protected:
 	int32_t _bufferIndex = -1;
 	int32_t _indexBufferIndex = -1;
 	int8_t _mouseWheel = 0;
-	bool _mousePressed[3];
+	bool _mousePressed[3] = {false};
 	bool _renderTracing = false;
 	std::mutex _traceMutex;
 	static constexpr int _maxMeasureSize = 200;
 	struct TraceData {
-		int cnt = 0;
-		bool begin = true;
-		double value = -1.0;
-		double delta = 0.0;
+		TraceData(uint64_t _value, const char *_name);
+		~TraceData();
+		const uint64_t value;
+		const char * const name;
+		uint64_t delta = 0ul;
+		std::vector<TraceData*> children;
 	};
-	using FrameData = std::map<const char*, TraceData>;
-	using Frames = std::array<FrameData, _maxMeasureSize>;
-	using Measures = std::map<std::thread::id, Frames>;
-	thread_local static int _currentFrameCounter;
+	class TraceRoot {
+	private:
+		std::stack<TraceData*> queue;
+	public:
+		TraceRoot(uint64_t nanos, const char *name);
+		TraceRoot(TraceRoot&&);
+		~TraceRoot();
+		/**
+		 * @brief Insert entry into the current active node
+		 * @param[in] nanos The nano second timestamp of the measurement
+		 * @param[in] name The name of the measurement
+		 */
+		void begin(uint64_t nanos, const char *name);
+		/**
+		 * @brief Calculate the delta of the last matching begin block
+		 * @param[in] nanos The nano second timestamp of end of the measurement
+		 */
+		void end(uint64_t nanos);
+		TraceData *data;
+	};
+	using Measures = std::map<std::thread::id, TraceRoot*>;
+	int _currentFrameCounter = 0;
 	Measures _traceMeasures;
+	Measures _traceMeasuresLastFrame;
 	using FramesMillis = std::array<uint64_t, _maxMeasureSize>;
 	FramesMillis _frameMillis {0ul};
 
@@ -57,6 +78,7 @@ protected:
 	virtual void traceBegin(const char *threadName, const char* name) override;
 	virtual void traceEnd(const char *threadName) override;
 	virtual void traceEndFrame(const char *threadName) override;
+	void addSubTrees(const TraceData* traceData, int &depth) const;
 	void renderTracing();
 
 	virtual bool onKeyRelease(int32_t key) override;
@@ -76,6 +98,7 @@ public:
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;
 	virtual core::AppState onRunning() override;
+	virtual void onAfterFrame() override;
 	virtual void onRenderUI() = 0;
 	virtual core::AppState onCleanup() override;
 };

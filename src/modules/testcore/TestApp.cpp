@@ -51,9 +51,6 @@ core::AppState TestApp::onInit() {
 	}
 	_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
 	Log::init();
-	if (state != core::AppState::Running) {
-		return state;
-	}
 
 	video::enableDebug(video::DebugSeverity::Medium);
 
@@ -103,6 +100,7 @@ void TestApp::beforeUI() {
 		_plane.render(_camera);
 	}
 	{
+		core_trace_scoped(TestAppDoRender);
 		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
 		doRender();
 	}
@@ -113,7 +111,10 @@ void TestApp::beforeUI() {
 
 void TestApp::onRenderUI() {
 	ImGui::BulletText("ESC: toggle camera free look");
-	ImGui::Text("Application average %lu ms/frame (%.1f FPS)", _deltaFrameMillis, ImGui::GetIO().Framerate);
+	bool temp = _renderTracing;
+	if (ImGui::Checkbox("Toggle profiler", &temp)) {
+		_renderTracing = toggleTrace();
+	}
 	ImGui::Separator();
 	if (ImGui::Button("Quit")) {
 		requestQuit();

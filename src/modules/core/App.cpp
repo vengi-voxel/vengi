@@ -76,12 +76,14 @@ void App::traceEnd(const char *threadName) {
 	if (_blockMetricsUntilNextFrame) {
 		return;
 	}
-	core_assert(!_traceData.empty());
+	if (_traceData.empty()) {
+		return;
+	}
 	TraceData traceData = _traceData.top();
 	_traceData.pop();
-	const double dt = core::TimeProvider::systemNanos() - traceData.nanos;
-	const double dtMillis = dt * 1000.0;
-	_metric->gauge(traceData.name, uint64_t(dtMillis * 1000.0), {{"thread", traceData.threadName}});
+	const uint64_t dt = core::TimeProvider::systemNanos() - traceData.nanos;
+	const uint64_t dtMillis = dt / 1000000lu;
+	_metric->gauge(traceData.name, dtMillis, {{"thread", traceData.threadName}});
 }
 
 void App::traceEndFrame(const char *threadName) {
@@ -109,9 +111,10 @@ void App::onFrame() {
 
 	if (AppState::Blocked == _curState) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		_deltaFrameMillis = 1;
 	} else {
 		const uint64_t now = systemMillis();
-		_deltaFrameMillis = (std::max)(uint64_t(1), now - _now);
+		_deltaFrameMillis = (std::max)(int64_t(1), int64_t(now) - int64_t(_now));
 		_timeProvider->update(now);
 		_now = now;
 
@@ -176,6 +179,7 @@ void App::onFrame() {
 		}
 	}
 	core_trace_end_frame();
+	onAfterFrame();
 }
 
 AppState App::onConstruct() {
@@ -199,12 +203,10 @@ AppState App::onConstruct() {
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
 
 	core::Command::registerCommand("core_trace", [&] (const core::CmdArgs& args) {
-		_blockMetricsUntilNextFrame = true;
-		if (core_trace_set(this) == this) {
-			core_trace_set(nullptr);
-			Log::info("Deactivated statsd based tracing metrics");
-		} else {
+		if (toggleTrace()) {
 			Log::info("Activated statsd based tracing metrics");
+		} else {
+			Log::info("Deactivated statsd based tracing metrics");
 		}
 	}).setHelp("Toggle application tracing via statsd");
 
@@ -267,6 +269,15 @@ AppState App::onConstruct() {
 	_filesystem->init(_organisation, _appname);
 
 	return AppState::Init;
+}
+
+bool App::toggleTrace() {
+	_blockMetricsUntilNextFrame = true;
+	if (core_trace_set(this) == this) {
+		core_trace_set(nullptr);
+		return false;
+	}
+	return true;
 }
 
 AppState App::onInit() {

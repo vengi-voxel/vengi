@@ -35,7 +35,7 @@ public:
 
 	uint64_t systemMillis() const;
 
-	static double systemNanos();
+	static uint64_t systemNanos();
 
 	void update(uint64_t tickTime) {
 		_tickMillis = tickTime;

@@ -18,60 +18,11 @@
 namespace ui {
 namespace imgui {
 
-thread_local int IMGUIApp::_currentFrameCounter = 0;
-
 IMGUIApp::IMGUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {
 }
 
 IMGUIApp::~IMGUIApp() {
-}
-
-void IMGUIApp::traceBeginFrame(const char *threadName) {
-	Super::traceBeginFrame(threadName);
-	std::lock_guard<std::mutex> lock(_traceMutex);
-	const std::thread::id id = std::this_thread::get_id();
-	auto i = _traceMeasures.find(id);
-	if (i == _traceMeasures.end()) {
-		i = _traceMeasures.emplace(std::make_pair(id, Frames())).first;
-	}
-}
-
-void IMGUIApp::traceBegin(const char *threadName, const char* name) {
-	Super::traceBegin(threadName, name);
-	std::lock_guard<std::mutex> lock(_traceMutex);
-	const std::thread::id id = std::this_thread::get_id();
-	auto measureIter = _traceMeasures.find(id);
-	if (measureIter == _traceMeasures.end()) {
-		measureIter = _traceMeasures.insert(std::make_pair(id, Frames())).first;
-	}
-	FrameData& frame = measureIter->second[_currentFrameCounter % _maxMeasureSize];
-	auto frameIter = frame.find(name);
-	if (frameIter == frame.end()) {
-		frame.emplace(std::make_pair(name, TraceData{1, true, core::TimeProvider::systemNanos(), 0.0}));
-	} else {
-		frameIter->second.value += core::TimeProvider::systemNanos();
-		frameIter->second.cnt++;
-		frameIter->second.begin = true;
-	}
-}
-
-void IMGUIApp::traceEnd(const char *threadName) {
-	Super::traceEnd(threadName);
-	std::lock_guard<std::mutex> lock(_traceMutex);
-	const std::thread::id id = std::this_thread::get_id();
-	auto measureIter = _traceMeasures.find(id);
-	core_assert(measureIter != _traceMeasures.end());
-	FrameData& frame = measureIter->second[_currentFrameCounter % _maxMeasureSize];
-	core_assert(!frame.empty());
-	TraceData& value = frame.rbegin()->second;
-	value.delta = core::TimeProvider::systemNanos() - (value.value / double(value.cnt));
-	value.begin = false;
-}
-
-void IMGUIApp::traceEndFrame(const char *threadName) {
-	Super::traceEndFrame(threadName);
-	++_currentFrameCounter;
 }
 
 void IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
@@ -304,6 +255,7 @@ core::AppState IMGUIApp::onInit() {
 }
 
 core::AppState IMGUIApp::onRunning() {
+	core_trace_scoped(IMGUIAppOnRunning);
 	core::AppState state = Super::onRunning();
 
 	if (state != core::AppState::Running) {
@@ -367,10 +319,15 @@ core::AppState IMGUIApp::onRunning() {
 		onRenderUI();
 	}
 
+	core_trace_scoped(IMGUIAppDoRenderUI);
+
 	const int index = _currentFrameCounter % _maxMeasureSize;
 	_frameMillis[index] = _deltaFrameMillis;
 
-	renderTracing();
+	{
+		core_trace_scoped(IMGUIAppOnRenderTracing);
+		renderTracing();
+	}
 
 	const math::Rect<int> rect(0, 0, _dimension.x, _dimension.y);
 	_console.render(rect, _deltaFrameMillis);
@@ -406,16 +363,144 @@ core::AppState IMGUIApp::onRunning() {
 	return core::AppState::Running;
 }
 
+void IMGUIApp::onAfterFrame() {
+	Super::onAfterFrame();
+	std::lock_guard<std::mutex> lock(_traceMutex);
+	for (auto& entry : _traceMeasuresLastFrame) {
+		delete entry.second;
+	}
+	_traceMeasuresLastFrame = _traceMeasures;
+	_traceMeasures.clear();
+}
+
+IMGUIApp::TraceData::TraceData(uint64_t _value, const char *_name) :
+		value(_value), name(_name) {
+	children.reserve(512);
+}
+
+IMGUIApp::TraceData::~TraceData() {
+	const int size = children.size();
+	for (int i = 0; i < size; ++i) {
+		delete children[i];
+	}
+	children.clear();
+}
+
+IMGUIApp::TraceRoot::TraceRoot(uint64_t nanos, const char *name) :
+		data(new TraceData(nanos, name)) {
+	queue.push(data);
+}
+
+IMGUIApp::TraceRoot::TraceRoot(TraceRoot&& other) :
+		data(nullptr) {
+	std::swap(data, other.data);
+	std::swap(queue, other.queue);
+}
+
+IMGUIApp::TraceRoot::~TraceRoot() {
+	delete data;
+	data = nullptr;
+}
+
+void IMGUIApp::TraceRoot::begin(uint64_t nanos, const char *name) {
+	core_assert(!queue.empty());
+	TraceData* top = queue.top();
+	std::vector<TraceData*> &children = top->children;
+	TraceData* t = new TraceData(nanos, name);
+	children.emplace_back(t);
+	queue.push(t);
+}
+
+void IMGUIApp::TraceRoot::end(uint64_t nanos) {
+	core_assert(!queue.empty());
+	TraceData* top = queue.top();
+	top->delta = nanos - top->value;
+	queue.pop();
+}
+
+void IMGUIApp::traceBeginFrame(const char *threadName) {
+	//Super::traceBeginFrame(threadName);
+	const std::thread::id id = std::this_thread::get_id();
+	const uint64_t nanos = core::TimeProvider::systemNanos();
+	TraceRoot* traceRoot = new TraceRoot(nanos, threadName);
+	std::lock_guard<std::mutex> lock(_traceMutex);
+	auto i = _traceMeasures.insert(std::make_pair(id, traceRoot));
+	if (!i.second) {
+		delete i.first->second;
+	}
+}
+
+void IMGUIApp::traceBegin(const char *threadName, const char* name) {
+	//Super::traceBegin(threadName, name);
+	const std::thread::id id = std::this_thread::get_id();
+	const uint64_t nanos = core::TimeProvider::systemNanos();
+	std::lock_guard<std::mutex> lock(_traceMutex);
+	auto measureIter = _traceMeasures.find(id);
+	// might happen if this was activated after the traceBeginFrame was already fired.
+	if (measureIter == _traceMeasures.end()) {
+		return;
+	}
+	TraceRoot* frame = measureIter->second;
+	frame->begin(nanos, name);
+}
+
+void IMGUIApp::traceEnd(const char *threadName) {
+	//Super::traceEnd(threadName);
+	const std::thread::id id = std::this_thread::get_id();
+	const uint64_t nanos = core::TimeProvider::systemNanos();
+	std::lock_guard<std::mutex> lock(_traceMutex);
+	auto measureIter = _traceMeasures.find(id);
+	// might happen if this was activated after the traceBeginFrame was already fired.
+	if (measureIter == _traceMeasures.end()) {
+		return;
+	}
+	TraceRoot* frame = measureIter->second;
+	frame->end(nanos);
+}
+
+void IMGUIApp::traceEndFrame(const char *threadName) {
+	//Super::traceEndFrame(threadName);
+	const std::thread::id id = std::this_thread::get_id();
+	std::lock_guard<std::mutex> lock(_traceMutex);
+	auto measureIter = _traceMeasures.find(id);
+	// might happen if this was activated after the traceBeginFrame was already fired.
+	if (measureIter == _traceMeasures.end()) {
+		return;
+	}
+	TraceRoot* frame = measureIter->second;
+	const uint64_t nanos = core::TimeProvider::systemNanos();
+	frame->end(nanos);
+}
+
+void IMGUIApp::addSubTrees(const TraceData* data, int &depth) const {
+	const ImGuiTreeNodeFlags flags = depth <= 5 ? ImGuiTreeNodeFlags_DefaultOpen : 0;
+	if (ImGui::TreeNodeEx(data->name, flags, "%s (%" PRIu64 "ns)", data->name, data->delta)) {
+		const ImU32 colBase = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
+		ImVec2 pos = ImGui::GetCursorScreenPos();
+		const ImVec2 posEnd = {pos.x + std::max(1.0f, (float)(data->delta / 10000UL)), pos.y + 8};
+		const ImRect size(pos, posEnd);
+		ImGui::ItemSize(size, 0.0f);
+		ImGui::ItemAdd(size, 0, nullptr);
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		window->DrawList->AddRectFilled(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), colBase);
+		++depth;
+		for (const TraceData* cdata : data->children) {
+			addSubTrees(cdata, depth);
+		}
+		ImGui::TreePop();
+	}
+}
+
 void IMGUIApp::renderTracing() {
 	if (!_renderTracing) {
 		return;
 	}
-	if (!ImGui::Begin("Tracing", &_renderTracing, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (!ImGui::Begin("Profiler", &_renderTracing, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
 		return;
 	}
 	std::array<float, _maxMeasureSize> frameMillis;
-	float max = 0.0f;
-	float min = 0.0f;
+	static float max = 0.0f;
+	static float min = 0.0f;
 	float avg = 0.0f;
 	for (int i = 0; i < _maxMeasureSize; ++i) {
 		const int index = (_currentFrameCounter + i) % _maxMeasureSize;
@@ -430,41 +515,15 @@ void IMGUIApp::renderTracing() {
 	const float twenthyQuantile = frameMillisQuantile[quantileIndex];
 	avg /= (float)_maxMeasureSize;
 	const std::string& maxStr = core::string::format("min: %.3fms, max: %.3fms, avg: %.3fms, quantile: %.3f", min, max, avg, twenthyQuantile);
-	ImGui::PlotLines("Frame", &frameMillis[0], frameMillis.size(), 0, maxStr.c_str() , min, max, ImVec2(500, 100));
-	ImGuiWindow* window = ImGui::GetCurrentWindow();
-	ImVec2 pos = ImGui::GetCursorPos();
-	ImVec2 posEnd = pos;
-	posEnd.x += 30.0f;
-	posEnd.y += 3.0f;
-	const ImU32 colBase = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
-	// TODO
-	if (1) {
-		std::lock_guard<std::mutex> lock(_traceMutex);
-		for (auto i = _traceMeasures.begin(); i != _traceMeasures.end(); ++i) {
-			const Frames& frames = i->second;
-			if (frames.empty()) {
-				continue;
-			}
-			const FrameData& frameData = frames.back();
-			for (auto fi = frameData.begin(); fi != frameData.end(); ++fi) {
-				const char* key = fi->first;
-				const TraceData& data = fi->second;
-				if (data.begin) {
-					// incomplete data
-					continue;
-				}
-				posEnd.x = pos.x + data.delta;
-				const ImVec2 labelSize = ImGui::CalcTextSize(key);
-				const ImVec2 size(glm::max(labelSize.x, posEnd.x - pos.x), glm::max(labelSize.y, posEnd.y - pos.y));
-				ImGui::ItemSize(size, 0.0f);
-				Log::info("key: %s, value: %f (%f:%f) - (%f:%f)", key, (float)data.delta, pos.x, pos.y, posEnd.x, posEnd.y);
-				if (!ImGui::ItemAdd(ImRect(pos, posEnd), 0u, nullptr)) {
-					continue;
-				}
-				window->DrawList->AddRectFilled(pos, posEnd, colBase);
-				window->DrawList->AddText(pos, IM_COL32_WHITE, key, nullptr);
-				pos.y += 5.0f;
-				posEnd.y = pos.y + 3.0f;
+	ImGui::PlotHistogram("Millis", &frameMillis[0], frameMillis.size(), 0, maxStr.c_str(), min, max, ImVec2(700, 100));
+	ImGui::Separator();
+	if (ImGui::CollapsingHeader("Profiler", ImGuiTreeNodeFlags_DefaultOpen)) {
+		for (auto i = _traceMeasuresLastFrame.begin(); i != _traceMeasuresLastFrame.end(); ++i) {
+			if (ImGui::TreeNodeEx("Thread", ImGuiTreeNodeFlags_DefaultOpen)) {
+				const TraceRoot* frameData = i->second;
+				int depth = 0;
+				addSubTrees(frameData->data, depth);
+				ImGui::TreePop();
 			}
 		}
 	}

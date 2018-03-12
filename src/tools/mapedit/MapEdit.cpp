@@ -172,6 +172,7 @@ void MapEdit::onRenderUI() {
 }
 
 core::AppState MapEdit::onRunning() {
+	core_trace_scoped(MapEditOnRunning);
 	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
 	const core::AppState state = Super::onRunning();
 
