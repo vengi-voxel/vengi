@@ -342,7 +342,10 @@ AppState App::onInit() {
 	});
 	const std::string& autoexecCommands = filesystem()->load("autoexec.cfg");
 	if (!autoexecCommands.empty()) {
+		Log::debug("execute autoexec.cfg");
 		Command::execute(autoexecCommands);
+	} else {
+		Log::debug("skip autoexec.cfg");
 	}
 
 	// we might have changed the loglevel from the commandline
