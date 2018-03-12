@@ -302,7 +302,7 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 
 		includes << "#include \"" << uniformBufferStructName + ".h\"\n";
 
-		Log::info("Generate ubo bindings for %s at %s", uniformBufferStructName.c_str(), targetFileUb.c_str());
+		Log::debug("Generate ubo bindings for %s at %s", uniformBufferStructName.c_str(), targetFileUb.c_str());
 		if (!filesystem->syswrite(targetFileUb, generatedUb)) {
 			Log::error("Failed to write %s", targetFileUb.c_str());
 			return false;
@@ -314,7 +314,7 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 	src = core::string::replaceAll(src, "$includes$", includes.str());
 
 	const std::string targetFile = sourceDirectory + filename + ".h";
-	Log::info("Generate shader bindings for %s at %s", shaderStruct.name.c_str(), targetFile.c_str());
+	Log::debug("Generate shader bindings for %s at %s", shaderStruct.name.c_str(), targetFile.c_str());
 	if (!filesystem->syswrite(targetFile, src)) {
 		Log::error("Failed to write %s", targetFile.c_str());
 		return false;
