@@ -46,7 +46,7 @@ protected:
 	core::VarPtr _debugShadow;
 	core::VarPtr _debugShadowCascade;
 
-	virtual void renderPlane();
+	virtual void renderPlane(video::Shader* shader = nullptr);
 	virtual void doRender() override;
 	virtual void onRenderUI() override;
 public:

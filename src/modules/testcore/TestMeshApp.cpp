@@ -224,7 +224,7 @@ void TestMeshApp::doRender() {
 				_depthBuffer.bindTexture(i);
 				_shadowMapShader.setLightviewprojection(cascades[i]);
 				if (_renderPlane) {
-					renderPlane();
+					renderPlane(&_shadowMapShader);
 				}
 				// TODO: why does only the plane appear in the depth map?
 				_mesh->render();
@@ -333,8 +333,8 @@ void TestMeshApp::doRender() {
 	}
 }
 
-void TestMeshApp::renderPlane() {
-	_plane.render(_camera);
+void TestMeshApp::renderPlane(video::Shader* shader) {
+	_plane.render(_camera, shader);
 }
 
 core::AppState TestMeshApp::onCleanup() {

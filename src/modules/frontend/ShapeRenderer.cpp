@@ -197,20 +197,20 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, siz
 	return true;
 }
 
-int ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model) const {
+int ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model, video::Shader* shader) const {
 	int cnt = 0;
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
 			continue;
 		}
-		if (render(meshIndex, camera, model)) {
+		if (render(meshIndex, camera, model, shader)) {
 			++cnt;
 		}
 	}
 	return cnt;
 }
 
-bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model) const {
+bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model, video::Shader* shader) const {
 	if (meshIndex == (uint32_t)-1) {
 		return false;
 	}
@@ -219,12 +219,18 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 
 	if (_amounts[meshIndex] > 0) {
 		core_assert(_offsetIndex[meshIndex] != -1);
-		video::ScopedShader scoped(_colorInstancedShader);
+		if (shader == nullptr) {
+			shader = &_colorInstancedShader;
+		}
+		video::ScopedShader scoped(*shader);
 		core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
 		core_assert_always(_colorInstancedShader.setModel(model));
 		video::drawElementsInstanced<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices, _amounts[meshIndex]);
 	} else {
-		video::ScopedShader scoped(_colorShader);
+		if (shader == nullptr) {
+			shader = &_colorShader;
+		}
+		video::ScopedShader scoped(*shader);
 		core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
 		core_assert_always(_colorShader.setModel(model));
 		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);

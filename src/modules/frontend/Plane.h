@@ -24,9 +24,9 @@ private:
 	frontend::ShapeRenderer _shapeRenderer;
 	int32_t _planeMesh = -1;
 public:
-	void render(const video::Camera& camera) {
+	void render(const video::Camera& camera, video::Shader* shader = nullptr) {
 		const bool disabled = video::disable(video::State::CullFace);
-		_shapeRenderer.render(_planeMesh, camera);
+		_shapeRenderer.render(_planeMesh, camera, glm::mat4(1.f), shader);
 		if (disabled) {
 			video::enable(video::State::CullFace);
 		}

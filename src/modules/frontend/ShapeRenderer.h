@@ -8,6 +8,7 @@
 #include "video/VertexBuffer.h"
 #include "video/Camera.h"
 #include "video/Types.h"
+#include "video/Shader.h"
 #include "core/Common.h"
 #include "ColorShader.h"
 #include "ColorInstancedShader.h"
@@ -74,9 +75,9 @@ public:
 	 */
 	bool updatePositions(uint32_t meshIndex, const float* posBuf, size_t posBufLength);
 
-	bool render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f)) const;
+	bool render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f), video::Shader* shader = nullptr) const;
 
-	int renderAll(const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f)) const;
+	int renderAll(const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f), video::Shader* shader = nullptr) const;
 };
 
 }
