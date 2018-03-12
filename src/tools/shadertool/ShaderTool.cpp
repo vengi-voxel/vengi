@@ -103,8 +103,9 @@ core::AppState ShaderTool::onRunning() {
 
 	video::Shader shader;
 
-	const std::string& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, false);
-	const std::string& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, false);
+	std::vector<std::string> includes;
+	const std::string& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, false, &includes);
+	const std::string& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, false, &includes);
 
 	_shaderStruct.filename = _shaderfile;
 	_shaderStruct.name = _shaderfile;
@@ -113,14 +114,14 @@ core::AppState ShaderTool::onRunning() {
 		return core::AppState::InitFailure;
 	}
 	if (!geometryBuffer.empty()) {
-		const std::string& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, false);
+		const std::string& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, false, &includes);
 		if (!parse(geometrySrcSource, false)) {
 			Log::error("Failed to parse geometry shader %s", _shaderfile.c_str());
 			return core::AppState::InitFailure;
 		}
 	}
 	if (!computeBuffer.empty()) {
-		const std::string& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer, false);
+		const std::string& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer, false, &includes);
 		if (!parse(computeSrcSource, false)) {
 			Log::error("Failed to parse compute shader %s", _shaderfile.c_str());
 			return core::AppState::InitFailure;
