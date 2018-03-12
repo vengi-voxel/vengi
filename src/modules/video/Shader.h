@@ -95,7 +95,7 @@ protected:
 	 */
 	bool checkUniformCache(int location, const void* value, size_t length) const;
 
-	std::string handleIncludes(const std::string& buffer) const;
+	std::string handleIncludes(const std::string& buffer, std::vector<std::string>* includedFiles) const;
 public:
 	Shader();
 	virtual ~Shader();
@@ -108,7 +108,7 @@ public:
 
 	bool load(const std::string& name, const std::string& buffer, ShaderType shaderType);
 
-	std::string getSource(ShaderType shaderType, const std::string& buffer, bool finalize = true) const;
+	std::string getSource(ShaderType shaderType, const std::string& buffer, bool finalize = true, std::vector<std::string>* includedFiles = nullptr) const;
 
 	/**
 	 * If the shaders were loaded manually via @c ::load, then you have to initialize the shader manually, too

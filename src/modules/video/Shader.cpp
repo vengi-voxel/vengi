@@ -262,7 +262,7 @@ int Shader::fetchAttributes() {
 	return video::fetchAttributes(_program, _attributes, _name);
 }
 
-std::string Shader::handleIncludes(const std::string& buffer) const {
+std::string Shader::handleIncludes(const std::string& buffer, std::vector<std::string>* includedFiles) const {
 	std::string src;
 	const std::string_view include = "#include";
 	int index = 0;
@@ -278,19 +278,25 @@ std::string Shader::handleIncludes(const std::string& buffer) const {
 		}
 		for (; i != buffer.end(); ++i, ++index) {
 			const char *cStart = &buffer[index];
-			if (*cStart != '"')
+			if (*cStart != '"') {
 				continue;
+			}
 
 			++index;
 			++i;
 			for (; i != buffer.end(); ++i, ++index) {
 				const char *cEnd = &buffer[index];
-				if (*cEnd != '"')
+				if (*cEnd != '"') {
 					continue;
+				}
 
 				const std::string_view dir = core::string::extractPath(_name);
 				const std::string_view includeFile(cStart + 1, (size_t)(cEnd - (cStart + 1)));
-				const std::string& includeBuffer = core::App::getInstance()->filesystem()->load(core::string::concat(dir, includeFile));
+				const std::string& fullPath = core::string::concat(dir, includeFile);
+				const std::string& includeBuffer = core::App::getInstance()->filesystem()->load(fullPath);
+				if (includedFiles != nullptr) {
+					includedFiles->push_back(fullPath);
+				}
 				if (includeBuffer.empty()) {
 					Log::error("could not load shader include %s from dir %s (shader %s)", includeFile.data(), dir.data(), _name.c_str());
 				}
@@ -313,7 +319,7 @@ std::string Shader::validPreprocessorName(const std::string& name) {
 	return core::string::replaceAll(name, "_", "");
 }
 
-std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, bool finalize) const {
+std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, bool finalize, std::vector<std::string>* includedFiles) const {
 	if (buffer.empty()) {
 		return "";
 	}
@@ -372,10 +378,10 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 		replaceShadow2D = "texture";
 	}
 
-	src += handleIncludes(buffer);
+	src += handleIncludes(buffer, includedFiles);
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		src = handleIncludes(src);
+		src = handleIncludes(src, includedFiles);
 		++level;
 		if (level >= 10) {
 			Log::warn("Abort shader include loop for %s", _name.c_str());
