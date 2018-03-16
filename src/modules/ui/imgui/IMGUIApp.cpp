@@ -472,7 +472,9 @@ void IMGUIApp::renderTracing() {
 }
 
 core::AppState IMGUIApp::onCleanup() {
-	ImGui::DestroyContext();
+	if (ImGui::GetCurrentContext() != nullptr) {
+		ImGui::DestroyContext();
+	}
 	_console.shutdown();
 	_shader.shutdown();
 	_vbo.shutdown();
