@@ -32,6 +32,9 @@ static RenderState s;
 
 void checkError() {
 #ifdef DEBUG
+	if (glGetError == nullptr) {
+		return;
+	}
 	/* check gl errors (can return multiple errors) */
 	for (;;) {
 		const GLenum glError = glGetError();
