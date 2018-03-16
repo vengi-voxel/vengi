@@ -344,7 +344,9 @@ core::AppState TestMeshApp::onCleanup() {
 	_meshShader.shutdown();
 	_colorShader.shutdown();
 	_shadowMapShader.shutdown();
-	_mesh->shutdown();
+	if (_mesh) {
+		_mesh->shutdown();
+	}
 	_meshPool.shutdown();
 	return Super::onCleanup();
 }
