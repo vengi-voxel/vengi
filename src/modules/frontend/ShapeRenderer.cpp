@@ -220,20 +220,14 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 	if (_amounts[meshIndex] > 0) {
 		core_assert(_offsetIndex[meshIndex] != -1);
 		if (shader == nullptr) {
-			shader = &_colorInstancedShader;
-		}
-		video::ScopedShader scoped(*shader);
-		if (shader == &_colorInstancedShader) {
+			video::ScopedShader scoped(_colorInstancedShader);
 			core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
 			core_assert_always(_colorInstancedShader.setModel(model));
 		}
 		video::drawElementsInstanced<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices, _amounts[meshIndex]);
 	} else {
 		if (shader == nullptr) {
-			shader = &_colorShader;
-		}
-		video::ScopedShader scoped(*shader);
-		if (shader == &_colorInstancedShader) {
+			video::ScopedShader scoped(_colorShader);
 			core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
 			core_assert_always(_colorShader.setModel(model));
 		}
