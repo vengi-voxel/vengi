@@ -733,7 +733,7 @@ bool bindRenderbuffer(Id handle) {
 }
 
 void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size) {
-	if (size == 0) {
+	if (size <= 0) {
 		return;
 	}
 	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
@@ -846,6 +846,9 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 }
 
 void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset) {
+	if (numIndices <= 0) {
+		return;
+	}
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
 	glDrawElements(glMode, (GLsizei)numIndices, glType, offset);
@@ -853,6 +856,12 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset
 }
 
 void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount) {
+	if (numIndices <= 0) {
+		return;
+	}
+	if (amount <= 0) {
+		return;
+	}
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
 	glDrawElementsInstanced(glMode, (GLsizei)numIndices, glType, nullptr, (GLsizei)amount);
@@ -860,6 +869,9 @@ void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, siz
 }
 
 void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex) {
+	if (numIndices <= 0) {
+		return;
+	}
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
 	glDrawElementsBaseVertex(glMode, (GLsizei)numIndices, glType, GL_OFFSET_CAST(indexSize * baseIndex), (GLint)baseVertex);
