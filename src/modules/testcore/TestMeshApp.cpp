@@ -334,7 +334,7 @@ void TestMeshApp::doRender() {
 }
 
 void TestMeshApp::renderPlane(video::Shader* shader) {
-	_plane.render(_camera, shader);
+	_plane.render(_camera, _model, shader);
 }
 
 core::AppState TestMeshApp::onCleanup() {

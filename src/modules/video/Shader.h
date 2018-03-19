@@ -587,13 +587,17 @@ class ScopedShader {
 private:
 	const Shader& _shader;
 	const Id _oldShader;
+	bool _alreadyActive;
 public:
 	ScopedShader(const Shader& shader) :
 			_shader(shader), _oldShader(getProgram()) {
-		_shader.activate();
+		_alreadyActive = _shader.activate();
 	}
 
-	virtual ~ScopedShader() {
+	~ScopedShader() {
+		if (_alreadyActive) {
+			return;
+		}
 		_shader.deactivate();
 		useProgram(_oldShader);
 	}

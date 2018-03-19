@@ -24,18 +24,11 @@ private:
 	frontend::ShapeRenderer _shapeRenderer;
 	int32_t _planeMesh = -1;
 public:
-	void render(const video::Camera& camera, video::Shader* shader = nullptr) {
-		const bool disabled = video::disable(video::State::CullFace);
-		_shapeRenderer.render(_planeMesh, camera, glm::mat4(1.f), shader);
-		if (disabled) {
-			video::enable(video::State::CullFace);
-		}
-	}
+	void render(const video::Camera& camera, video::Shader* shader = nullptr);
 
-	void shutdown() {
-		_shapeRenderer.shutdown();
-		_shapeBuilder.shutdown();
-	}
+	void render(const video::Camera& camera, const glm::mat4& model, video::Shader* shader = nullptr);
+
+	void shutdown();
 
 	/**
 	 * @param[in] position The offset that should be applied to the center of the plane
@@ -43,28 +36,10 @@ public:
 	 * @param[in] scale The vertices are in the normalized coordinate space between -0.5 and 0.5 - we have to scale them up to the size we need
 	 * @param[in] color The color of the plane.
 	 */
-	bool init() {
-		if (!_shapeRenderer.init()) {
-			return false;
-		}
-		return true;
-	}
+	bool init();
 
-	bool plane(const glm::vec3& position, int tesselation = 0, float scale = 100.0f, const glm::vec4& color = core::Color::White) {
-		_shapeBuilder.setColor(color);
-		_shapeBuilder.setPosition(position);
-		_shapeBuilder.plane(tesselation, scale);
-		_shapeRenderer.createOrUpdate(_planeMesh, _shapeBuilder);
-		return _planeMesh >= 0;
-	};
+	bool plane(const glm::vec3& position, int tesselation = 0, float scale = 100.0f, const glm::vec4& color = core::Color::White);
 
-	bool plane(const glm::vec3& position, const math::Plane& plane, const glm::vec4& color = core::Color::White) {
-		_shapeBuilder.setColor(color);
-		_shapeBuilder.setPosition(position);
-		_shapeBuilder.plane(plane, false);
-		_shapeRenderer.createOrUpdate(_planeMesh, _shapeBuilder);
-		return _planeMesh >= 0;
-	};
-};
+	bool plane(const glm::vec3& position, const math::Plane& plane, const glm::vec4& color = core::Color::White);};
 
 }
