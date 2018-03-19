@@ -4001,6 +4001,7 @@ void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
     }
     if (!_this->vulkan_config.loader_loaded) {
         SDL_SetError("No Vulkan loader has been loaded");
+        return NULL;
     }
     return _this->vulkan_config.vkGetInstanceProcAddr;
 }

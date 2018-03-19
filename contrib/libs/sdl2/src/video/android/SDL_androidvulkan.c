@@ -139,7 +139,7 @@ SDL_bool Android_Vulkan_CreateSurface(_THIS,
         (PFN_vkCreateAndroidSurfaceKHR)vkGetInstanceProcAddr(
                                             (VkInstance)instance,
                                             "vkCreateAndroidSurfaceKHR");
-    VkAndroidSurfaceCreateInfoKHR createInfo = {};
+    VkAndroidSurfaceCreateInfoKHR createInfo;
     VkResult result;
 
     if(!_this->vulkan_config.loader_handle)
@@ -154,6 +154,7 @@ SDL_bool Android_Vulkan_CreateSurface(_THIS,
                      " extension is not enabled in the Vulkan instance.");
         return SDL_FALSE;
     }
+    SDL_zero(createInfo);
     createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
     createInfo.flags = 0;

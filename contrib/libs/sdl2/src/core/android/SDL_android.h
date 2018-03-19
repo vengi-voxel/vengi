@@ -34,6 +34,7 @@ extern "C" {
 
 /* Interface from the SDL library into the Android Java activity */
 extern void Android_JNI_SetActivityTitle(const char *title);
+extern void Android_JNI_SetWindowStyle(SDL_bool fullscreen);
 extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint);
 
 extern SDL_bool Android_JNI_GetAccelerometerValues(float values[3]);
@@ -100,6 +101,11 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls);
 /* MessageBox */
 #include "SDL_messagebox.h"
 int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+
+/* Cursor support */
+int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
+SDL_bool Android_JNI_SetCustomCursor(int cursorID);
+SDL_bool Android_JNI_SetSystemCursor(int cursorID);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

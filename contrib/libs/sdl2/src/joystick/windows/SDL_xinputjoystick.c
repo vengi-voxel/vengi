@@ -41,7 +41,8 @@ SDL_XInputUseOldJoystickMapping()
 {
 #ifdef __WINRT__
     /* TODO: remove this __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
-    return SDL_TRUE;
+    /* FIXME: Why are Win8/10 different here? -flibit */
+    return (NTDDI_VERSION < NTDDI_WIN10);
 #else
     static int s_XInputUseOldJoystickMapping = -1;
     if (s_XInputUseOldJoystickMapping < 0) {
@@ -461,18 +462,6 @@ SDL_XINPUT_JoystickQuit(void)
     if (s_bXInputEnabled) {
         WIN_UnloadXInputDLL();
     }
-}
-
-SDL_bool
-SDL_SYS_IsXInputGamepad_DeviceIndex(int device_index)
-{
-    JoyStick_DeviceData *device = SYS_Joystick;
-    int index;
-
-    for (index = device_index; index > 0; index--)
-        device = device->pNext;
-
-    return device->bXInputDevice;
 }
 
 #else /* !SDL_JOYSTICK_XINPUT */

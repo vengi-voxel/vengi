@@ -184,7 +184,7 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
         PFN_vkCreateXcbSurfaceKHR vkCreateXcbSurfaceKHR =
             (PFN_vkCreateXcbSurfaceKHR)vkGetInstanceProcAddr((VkInstance)instance,
                                                              "vkCreateXcbSurfaceKHR");
-        VkXcbSurfaceCreateInfoKHR createInfo = {};
+        VkXcbSurfaceCreateInfoKHR createInfo;
         VkResult result;
         if(!vkCreateXcbSurfaceKHR)
         {
@@ -192,6 +192,7 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
                          " extension is not enabled in the Vulkan instance.");
             return SDL_FALSE;
         }
+        SDL_zero(createInfo);
         createInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
         createInfo.connection = videoData->vulkan_XGetXCBConnection(videoData->display);
         if(!createInfo.connection)
@@ -214,7 +215,7 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
         PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHR =
             (PFN_vkCreateXlibSurfaceKHR)vkGetInstanceProcAddr((VkInstance)instance,
                                                               "vkCreateXlibSurfaceKHR");
-        VkXlibSurfaceCreateInfoKHR createInfo = {};
+        VkXlibSurfaceCreateInfoKHR createInfo;
         VkResult result;
         if(!vkCreateXlibSurfaceKHR)
         {
@@ -222,6 +223,7 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
                          " extension is not enabled in the Vulkan instance.");
             return SDL_FALSE;
         }
+        SDL_zero(createInfo);
         createInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
         createInfo.dpy = videoData->display;
         createInfo.window = (xcb_window_t)windowData->xwindow;

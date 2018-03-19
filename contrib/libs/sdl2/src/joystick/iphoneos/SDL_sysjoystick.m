@@ -31,6 +31,7 @@
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
 #include "SDL_stdinc.h"
+#include "SDL_timer.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "../steam/SDL_steamcontroller.h"
@@ -60,6 +61,7 @@ static SDL_JoystickDeviceItem *deviceList = NULL;
 
 static int numjoysticks = 0;
 static SDL_JoystickID instancecounter = 0;
+int SDL_AppleTVRemoteOpenedAsJoystick = 0;
 
 static SDL_JoystickDeviceItem *
 GetDeviceForIndex(int device_index)
@@ -82,6 +84,14 @@ static void
 SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
 #ifdef SDL_JOYSTICK_MFI
+    const Uint16 BUS_BLUETOOTH = 0x05;
+    const Uint16 VENDOR_APPLE = 0x05AC;
+    Uint16 *guid16 = (Uint16 *)device->guid.data;
+    Uint16 vendor = 0;
+    Uint16 product = 0;
+    Uint16 version = 0;
+    Uint8 subtype = 0;
+
     const char *name = NULL;
     /* Explicitly retain the controller because SDL_JoystickDeviceItem is a
      * struct, and ARC doesn't work with structs. */
@@ -97,39 +107,26 @@ SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *contr
 
     device->name = SDL_strdup(name);
 
-    device->guid.data[0] = 'M';
-    device->guid.data[1] = 'F';
-    device->guid.data[2] = 'i';
-    device->guid.data[3] = 'G';
-    device->guid.data[4] = 'a';
-    device->guid.data[5] = 'm';
-    device->guid.data[6] = 'e';
-    device->guid.data[7] = 'p';
-    device->guid.data[8] = 'a';
-    device->guid.data[9] = 'd';
-
     if (controller.extendedGamepad) {
-        device->guid.data[10] = 1;
-    } else if (controller.gamepad) {
-        device->guid.data[10] = 2;
-    }
-#if TARGET_OS_TV
-    else if (controller.microGamepad) {
-        device->guid.data[10] = 3;
-    }
-#endif /* TARGET_OS_TV */
-
-    if (controller.extendedGamepad) {
+        vendor = VENDOR_APPLE;
+        product = 1;
+        subtype = 1;
         device->naxes = 6; /* 2 thumbsticks and 2 triggers */
         device->nhats = 1; /* d-pad */
         device->nbuttons = 7; /* ABXY, shoulder buttons, pause button */
     } else if (controller.gamepad) {
+        vendor = VENDOR_APPLE;
+        product = 2;
+        subtype = 2;
         device->naxes = 0; /* no traditional analog inputs */
         device->nhats = 1; /* d-pad */
         device->nbuttons = 7; /* ABXY, shoulder buttons, pause button */
     }
 #if TARGET_OS_TV
     else if (controller.microGamepad) {
+        vendor = VENDOR_APPLE;
+        product = 3;
+        subtype = 3;
         device->naxes = 2; /* treat the touch surface as two axes */
         device->nhats = 0; /* apparently the touch surface-as-dpad is buggy */
         device->nbuttons = 3; /* AX, pause button */
@@ -137,6 +134,21 @@ SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *contr
         controller.microGamepad.allowsRotation = SDL_GetHintBoolean(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION, SDL_FALSE);
     }
 #endif /* TARGET_OS_TV */
+
+    /* We only need 16 bits for each of these; space them out to fill 128. */
+    /* Byteswap so devices get same GUID on little/big endian platforms. */
+    *guid16++ = SDL_SwapLE16(BUS_BLUETOOTH);
+    *guid16++ = 0;
+    *guid16++ = SDL_SwapLE16(vendor);
+    *guid16++ = 0;
+    *guid16++ = SDL_SwapLE16(product);
+    *guid16++ = 0;
+    *guid16++ = SDL_SwapLE16(version);
+    *guid16++ = 0;
+
+    /* Note that this is an MFI controller and what subtype it is */
+    device->guid.data[14] = 'm';
+    device->guid.data[15] = subtype;
 
     /* This will be set when the first button press of the controller is
      * detected. */
@@ -150,6 +162,15 @@ SDL_SYS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
 {
     SDL_JoystickDeviceItem *device = deviceList;
 
+#if TARGET_OS_TV
+    if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+        /* Ignore devices that aren't actually controllers (e.g. remotes), they'll be handled as keyboard input */
+        if (controller && !controller.extendedGamepad && !controller.gamepad && controller.microGamepad) {
+            return;
+        }
+    }
+#endif
+
     while (device != NULL) {
         if (device->controller == controller) {
             return;
@@ -157,12 +178,10 @@ SDL_SYS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
         device = device->next;
     }
 
-    device = (SDL_JoystickDeviceItem *) SDL_malloc(sizeof(SDL_JoystickDeviceItem));
+    device = (SDL_JoystickDeviceItem *) SDL_calloc(1, sizeof(SDL_JoystickDeviceItem));
     if (device == NULL) {
         return;
     }
-
-    SDL_zerop(device);
 
     device->accelerometer = accelerometer;
     device->instance_id = instancecounter++;
@@ -277,11 +296,11 @@ static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickG
     }
 
     *device_instance = device->instance_id = instancecounter++;
-	device->name = SDL_strdup(name);
-	device->guid = guid;
-	SDL_GetSteamControllerInputs(&device->nbuttons,
-								 &device->naxes,
-								 &device->nhats);
+    device->name = SDL_strdup(name);
+    device->guid = guid;
+    SDL_GetSteamControllerInputs(&device->nbuttons,
+                                 &device->naxes,
+                                 &device->nhats);
     device->m_bSteamController = SDL_TRUE;
 
     if (deviceList == NULL) {
@@ -305,10 +324,10 @@ static void SteamControllerDisconnectedCallback(int device_instance)
 {
     SDL_JoystickDeviceItem *item;
 
-	for (item = deviceList; item; item = item->next) {
+    for (item = deviceList; item; item = item->next) {
         if (item->instance_id == device_instance) {
-			SDL_SYS_RemoveJoystickDevice(item);
-			break;
+            SDL_SYS_RemoveJoystickDevice(item);
+            break;
         }
     }
 }
@@ -448,6 +467,9 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 #endif /* SDL_JOYSTICK_MFI */
         }
     }
+    if (device->remote) {
+        ++SDL_AppleTVRemoteOpenedAsJoystick;
+    }
 
     return 0;
 }
@@ -538,6 +560,8 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
         Uint8 hatstate = SDL_HAT_CENTERED;
         int i;
         int updateplayerindex = 0;
+        const Uint8 pausebutton = joystick->nbuttons - 1; /* The pause button is always last. */
+        const Uint32 PAUSE_RELEASE_DELAY_MS = 100;
 
         if (controller.extendedGamepad) {
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
@@ -608,9 +632,6 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
                 SDL_PrivateJoystickAxis(joystick, i, axes[i]);
             }
 
-            /* Apparently the dpad values are not accurate enough to be useful. */
-            /* hatstate = SDL_SYS_MFIJoystickHatStateForDPad(gamepad.dpad); */
-
             Uint8 buttons[] = {
                 gamepad.buttonA.isPressed,
                 gamepad.buttonX.isPressed,
@@ -620,8 +641,6 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
                 updateplayerindex |= (joystick->buttons[i] != buttons[i]);
                 SDL_PrivateJoystickButton(joystick, i, buttons[i]);
             }
-
-            /* TODO: Figure out what to do with reportsAbsoluteDpadValues */
         }
 #endif /* TARGET_OS_TV */
 
@@ -631,16 +650,20 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
         }
 
         for (i = 0; i < joystick->hwdata->num_pause_presses; i++) {
-            /* The pause button is always last. */
-            Uint8 pausebutton = joystick->nbuttons - 1;
-
             SDL_PrivateJoystickButton(joystick, pausebutton, SDL_PRESSED);
-            SDL_PrivateJoystickButton(joystick, pausebutton, SDL_RELEASED);
-
+            joystick->hwdata->pause_button_down_time = SDL_GetTicks();
+            if (!joystick->hwdata->pause_button_down_time) {
+                joystick->hwdata->pause_button_down_time = 1;
+            }
             updateplayerindex = YES;
         }
-
         joystick->hwdata->num_pause_presses = 0;
+
+        if (joystick->hwdata->pause_button_down_time &&
+            SDL_TICKS_PASSED(SDL_GetTicks(), joystick->hwdata->pause_button_down_time + PAUSE_RELEASE_DELAY_MS)) {
+            SDL_PrivateJoystickButton(joystick, pausebutton, SDL_RELEASED);
+            joystick->hwdata->pause_button_down_time = 0;
+        }
 
         if (updateplayerindex && controller.playerIndex == -1) {
             BOOL usedPlayerIndexSlots[4] = {NO, NO, NO, NO};
@@ -716,6 +739,9 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
             controller.playerIndex = -1;
 #endif
         }
+    }
+    if (device->remote) {
+        --SDL_AppleTVRemoteOpenedAsJoystick;
     }
 }
 

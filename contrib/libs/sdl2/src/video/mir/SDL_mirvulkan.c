@@ -139,7 +139,7 @@ SDL_bool MIR_Vulkan_CreateSurface(_THIS,
         (PFN_vkCreateMirSurfaceKHR)vkGetInstanceProcAddr(
                                             (VkInstance)instance,
                                             "vkCreateMirSurfaceKHR");
-    VkMirSurfaceCreateInfoKHR createInfo = {};
+    VkMirSurfaceCreateInfoKHR createInfo;
     VkResult result;
 
     if(!_this->vulkan_config.loader_handle)
@@ -154,6 +154,7 @@ SDL_bool MIR_Vulkan_CreateSurface(_THIS,
                      " extension is not enabled in the Vulkan instance.");
         return SDL_FALSE;
     }
+    SDL_zero(createInfo);
     createInfo.sType = VK_STRUCTURE_TYPE_MIR_SURFACE_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
     createInfo.flags = 0;
