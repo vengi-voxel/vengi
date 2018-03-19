@@ -49,7 +49,8 @@ static_assert(std::enum_value(FrameBufferMode::Max) == lengthof(FrameBufferModes
 static const char* VendorStrings[] {
 	"nouveau",
 	"intel",
-	"nvidia"
+	"nvidia",
+	"amd"
 };
 static_assert(std::enum_value(Vendor::Max) == lengthof(VendorStrings), "Array sizes don't match Max");
 

@@ -95,6 +95,7 @@ enum class Vendor {
 	Nouveau,
 	Intel,
 	Nvidia,
+	Amd,
 
 	Max
 };
