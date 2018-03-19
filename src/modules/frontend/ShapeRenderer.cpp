@@ -223,16 +223,20 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 			shader = &_colorInstancedShader;
 		}
 		video::ScopedShader scoped(*shader);
-		core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
-		core_assert_always(_colorInstancedShader.setModel(model));
+		if (shader == &_colorInstancedShader) {
+			core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
+			core_assert_always(_colorInstancedShader.setModel(model));
+		}
 		video::drawElementsInstanced<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices, _amounts[meshIndex]);
 	} else {
 		if (shader == nullptr) {
 			shader = &_colorShader;
 		}
 		video::ScopedShader scoped(*shader);
-		core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
-		core_assert_always(_colorShader.setModel(model));
+		if (shader == &_colorInstancedShader) {
+			core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
+			core_assert_always(_colorShader.setModel(model));
+		}
 		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
 	}
 	_vbo[meshIndex].unbind();
