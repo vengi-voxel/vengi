@@ -128,7 +128,9 @@ bool World::init(const std::string& luaParameters, const std::string& luaBiomes,
 		_pager.setCreateFlags(voxel::world::WORLDGEN_SERVER);
 	}
 
-	_threadPool.enqueue([this] () {extractScheduledMesh();});
+	for (size_t i = 0u; i < _threadPool.size(); ++i) {
+		_threadPool.enqueue([this] () {extractScheduledMesh();});
+	}
 
 	return true;
 }
