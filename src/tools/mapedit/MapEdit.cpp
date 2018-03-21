@@ -167,6 +167,11 @@ void MapEdit::onRenderUI() {
 	ImGui::Checkbox("Freelook", &_freelook);
 	ImGui::Checkbox("Update World", &_updateWorld);
 
+	bool temp = _renderTracing;
+	if (ImGui::Checkbox("Toggle profiler", &temp)) {
+		_renderTracing = toggleTrace();
+	}
+
 	ImGui::Text("+/-: change move speed");
 	ImGui::Text("l: line mode rendering");
 }
