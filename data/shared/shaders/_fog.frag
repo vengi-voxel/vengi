@@ -6,7 +6,7 @@ $in float v_fogdivisor;
 vec4 fog(in vec3 linearColor, in float alpha) {
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
 	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / v_fogdivisor, 0.0, 1.0);
-	return vec4(mix(linearColor, u_fogcolor, fogval), v_color.a);
+	return vec4(mix(linearColor, u_fogcolor, fogval), alpha);
 }
 
 #else // cl_fog
