@@ -137,11 +137,11 @@ bool World::init(const std::string& luaParameters, const std::string& luaBiomes,
 
 void World::extractScheduledMesh() {
 	while (!_cancelThreads) {
-		core_trace_scoped(MeshExtraction);
 		decltype(_pendingExtraction)::Key pos;
 		if (!_pendingExtraction.waitAndPop(pos)) {
 			break;
 		}
+		core_trace_scoped(MeshExtraction);
 		const glm::ivec3& size = meshSize();
 		const glm::ivec3 mins(pos);
 		const glm::ivec3 maxs(glm::ivec3(pos) + size - 1);
