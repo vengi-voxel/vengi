@@ -2,6 +2,7 @@
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2015 LunarG, Inc.
 // Copyright (C) 2015-2016 Google, Inc.
+// Copyright (C) 2017 ARM Limited.
 //
 // All rights reserved.
 //
@@ -266,6 +267,8 @@ void TParseContext::handlePragma(const TSourceLoc& loc, const TVector<TString>& 
         if (tokens.size() != 1)
             error(loc, "extra tokens", "#pragma", "");
         intermediate.setUseStorageBuffer();
+    } else if (tokens[0].compare("once") == 0) {
+        warn(loc, "not implemented", "#pragma once", "");
     }
 }
 
@@ -776,7 +779,7 @@ TFunction* TParseContext::handleFunctionDeclarator(const TSourceLoc& loc, TFunct
         if (prevDec->isPrototyped() && prototype)
             profileRequires(loc, EEsProfile, 300, nullptr, "multiple prototypes for same function");
         if (prevDec->getType() != function.getType())
-            error(loc, "overloaded functions must have the same return type", function.getType().getBasicTypeString().c_str(), "");
+            error(loc, "overloaded functions must have the same return type", function.getName().c_str(), "");
         for (int i = 0; i < prevDec->getParamCount(); ++i) {
             if ((*prevDec)[i].type->getQualifier().storage != function[i].type->getQualifier().storage)
                 error(loc, "overloaded functions must have the same parameter storage qualifiers for argument", function[i].type->getStorageQualifierString(), "%d", i+1);
@@ -950,7 +953,7 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
             if (builtIn && fnCandidate->getNumExtensions())
                 requireExtensions(loc, fnCandidate->getNumExtensions(), fnCandidate->getExtensions(), fnCandidate->getName().c_str());
 
-            if (arguments) {
+            if (arguments != nullptr) {
                 // Make sure qualifications work for these arguments.
                 TIntermAggregate* aggregate = arguments->getAsAggregate();
                 for (int i = 0; i < fnCandidate->getParamCount(); ++i) {
@@ -988,7 +991,7 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
 
             if (builtIn && fnCandidate->getBuiltInOp() != EOpNull) {
                 // A function call mapped to a built-in operation.
-                result = handleBuiltInFunctionCall(loc, *arguments, *fnCandidate);
+                result = handleBuiltInFunctionCall(loc, arguments, *fnCandidate);
             } else {
                 // This is a function call not mapped to built-in operator.
                 // It could still be a built-in function, but only if PureOperatorBuiltins == false.
@@ -1036,20 +1039,24 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
     return result;
 }
 
-TIntermTyped* TParseContext::handleBuiltInFunctionCall(TSourceLoc loc, TIntermNode& arguments,
+TIntermTyped* TParseContext::handleBuiltInFunctionCall(TSourceLoc loc, TIntermNode* arguments,
                                                        const TFunction& function)
 {
     checkLocation(loc, function.getBuiltInOp());
     TIntermTyped *result = intermediate.addBuiltInFunctionCall(loc, function.getBuiltInOp(),
                                                                function.getParamCount() == 1,
-                                                               &arguments, function.getType());
+                                                               arguments, function.getType());
     if (obeyPrecisionQualifiers())
         computeBuiltinPrecisions(*result, function);
 
-    if (result == nullptr)  {
-        error(arguments.getLoc(), " wrong operand type", "Internal Error",
-                                  "built in unary operator function.  Type: %s",
-                                  static_cast<TIntermTyped*>(&arguments)->getCompleteString().c_str());
+    if (result == nullptr) {
+        if (arguments == nullptr)
+            error(loc, " wrong operand type", "Internal Error",
+                                      "built in unary operator function.  Type: %s", "");
+        else
+            error(arguments->getLoc(), " wrong operand type", "Internal Error",
+                                      "built in unary operator function.  Type: %s",
+                                      static_cast<TIntermTyped*>(arguments)->getCompleteString().c_str());
     } else if (result->getAsOperator())
         builtInOpCheck(loc, function, *result->getAsOperator());
 
@@ -1378,6 +1385,8 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         arg0 = unaryArg;
     }
 
+    TString featureString;
+    const char* feature = nullptr;
     switch (callNode.getOp()) {
     case EOpTextureGather:
     case EOpTextureGatherOffset:
@@ -1386,8 +1395,9 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         // Figure out which variants are allowed by what extensions,
         // and what arguments must be constant for which situations.
 
-        TString featureString = fnCandidate.getName() + "(...)";
-        const char* feature = featureString.c_str();
+        featureString = fnCandidate.getName();
+        featureString += "(...)";
+        feature = featureString.c_str();
         profileRequires(loc, EEsProfile, 310, nullptr, feature);
         int compArg = -1;  // track which argument, if any, is the constant component argument
         switch (callNode.getOp()) {
@@ -1443,8 +1453,9 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             bias = fnCandidate.getParamCount() > 4;
 
         if (bias) {
-            TString biasFeatureString = fnCandidate.getName() + "with bias argument";
-            const char* feature = biasFeatureString.c_str();
+            featureString = fnCandidate.getName();
+            featureString += "with bias argument";
+            feature = featureString.c_str();
             profileRequires(loc, ~EEsProfile, 450, nullptr, feature);
             requireExtensions(loc, 1, &E_GL_AMD_texture_gather_bias_lod, feature);
         }
@@ -1466,8 +1477,9 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             bias = fnCandidate.getParamCount() > 5;
 
         if (bias) {
-            TString featureString = fnCandidate.getName() + "with bias argument";
-            const char* feature = featureString.c_str();
+            featureString = fnCandidate.getName();
+            featureString += "with bias argument";
+            feature = featureString.c_str();
             profileRequires(loc, ~EEsProfile, 450, nullptr, feature);
             requireExtensions(loc, 1, &E_GL_AMD_texture_gather_bias_lod, feature);
         }
@@ -1480,6 +1492,39 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
     case EOpSparseTextureGatherLodOffsets:
     {
         requireExtensions(loc, 1, &E_GL_ARB_sparse_texture2, fnCandidate.getName().c_str());
+        break;
+    }
+
+    case EOpSwizzleInvocations:
+    {
+        if (! (*argp)[1]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "offset", "");
+        else {
+            unsigned offset[4] = {};
+            offset[0] = (*argp)[1]->getAsConstantUnion()->getConstArray()[0].getUConst();
+            offset[1] = (*argp)[1]->getAsConstantUnion()->getConstArray()[1].getUConst();
+            offset[2] = (*argp)[1]->getAsConstantUnion()->getConstArray()[2].getUConst();
+            offset[3] = (*argp)[1]->getAsConstantUnion()->getConstArray()[3].getUConst();
+            if (offset[0] > 3 || offset[1] > 3 || offset[2] > 3 || offset[3] > 3)
+                error(loc, "components must be in the range [0, 3]", "offset", "");
+        }
+
+        break;
+    }
+
+    case EOpSwizzleInvocationsMasked:
+    {
+        if (! (*argp)[1]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "mask", "");
+        else {
+            unsigned mask[3] = {};
+            mask[0] = (*argp)[1]->getAsConstantUnion()->getConstArray()[0].getUConst();
+            mask[1] = (*argp)[1]->getAsConstantUnion()->getConstArray()[1].getUConst();
+            mask[2] = (*argp)[1]->getAsConstantUnion()->getConstArray()[2].getUConst();
+            if (mask[0] > 31 || mask[1] > 31 || mask[2] > 31)
+                error(loc, "components must be in the range [0, 31]", "mask", "");
+        }
+
         break;
     }
 #endif
@@ -1509,6 +1554,12 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         }
 
         if (arg > 0) {
+
+#ifdef AMD_EXTENSIONS
+            bool f16ShadowCompare = (*argp)[1]->getAsTyped()->getBasicType() == EbtFloat16 && arg0->getType().getSampler().shadow;
+            if (f16ShadowCompare)
+                ++arg;
+#endif
             if (! (*argp)[arg]->getAsConstantUnion())
                 error(loc, "argument must be compile-time constant", "texel offset", "");
             else {
@@ -1574,6 +1625,9 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
     case EOpInterpolateAtCentroid:
     case EOpInterpolateAtSample:
     case EOpInterpolateAtOffset:
+#ifdef AMD_EXTENSIONS
+    case EOpInterpolateAtVertex:
+#endif
         // Make sure the first argument is an interpolant, or an array element of an interpolant
         if (arg0->getType().getQualifier().storage != EvqVaryingIn) {
             // It might still be an array element.
@@ -1588,6 +1642,23 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             if (base == nullptr || base->getType().getQualifier().storage != EvqVaryingIn)
                 error(loc, "first argument must be an interpolant, or interpolant-array element", fnCandidate.getName().c_str(), "");
         }
+
+#ifdef AMD_EXTENSIONS
+        if (callNode.getOp() == EOpInterpolateAtVertex) {
+            if (!arg0->getType().getQualifier().isExplicitInterpolation())
+                error(loc, "argument must be qualified as __explicitInterpAMD in", "interpolant", "");
+            else {
+                if (! (*argp)[1]->getAsConstantUnion())
+                    error(loc, "argument must be compile-time constant", "vertex index", "");
+                else {
+                    unsigned vertexIdx = (*argp)[1]->getAsConstantUnion()->getConstArray()[0].getUConst();
+                    if (vertexIdx > 2)
+                        error(loc, "must be in the range [0, 2]", "vertex index", "");
+                }
+            }
+        }
+#endif
+
         break;
 
     case EOpEmitStreamVertex:
@@ -1595,8 +1666,32 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         intermediate.setMultiStream();
         break;
 
+    case EOpSubgroupClusteredAdd:
+    case EOpSubgroupClusteredMul:
+    case EOpSubgroupClusteredMin:
+    case EOpSubgroupClusteredMax:
+    case EOpSubgroupClusteredAnd:
+    case EOpSubgroupClusteredOr:
+    case EOpSubgroupClusteredXor:
+        if ((*argp)[1]->getAsConstantUnion() == nullptr)
+            error(loc, "argument must be compile-time constant", "cluster size", "");
+        else {
+            int size = (*argp)[1]->getAsConstantUnion()->getConstArray()[0].getIConst();
+            if (size < 1)
+                error(loc, "argument must be at least 1", "cluster size", "");
+            else if (!IsPow2(size))
+                error(loc, "argument must be a power of 2", "cluster size", "");
+        }
+        break;
+
     default:
         break;
+    }
+
+    if (callNode.getOp() > EOpSubgroupGuardStart && callNode.getOp() < EOpSubgroupGuardStop) {
+        // these require SPIR-V 1.3
+        if (spvVersion.spv > 0 && spvVersion.spv < EShTargetSpv_1_3)
+            error(loc, "requires SPIR-V 1.3", "subgroup op", "");
     }
 }
 
@@ -2159,7 +2254,6 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     case EOpConstructDMat4x2:
     case EOpConstructDMat4x3:
     case EOpConstructDMat4x4:
-#ifdef AMD_EXTENSIONS
     case EOpConstructF16Mat2x2:
     case EOpConstructF16Mat2x3:
     case EOpConstructF16Mat2x4:
@@ -2169,7 +2263,6 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     case EOpConstructF16Mat4x2:
     case EOpConstructF16Mat4x3:
     case EOpConstructF16Mat4x4:
-#endif
         constructingMatrix = true;
         break;
     default:
@@ -2226,18 +2319,30 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
         // Finish pinning down spec-const semantics
         if (specConstType) {
             switch (op) {
+            case EOpConstructInt8:
+            case EOpConstructUint8:
+            case EOpConstructInt16:
+            case EOpConstructUint16:
             case EOpConstructInt:
             case EOpConstructUint:
             case EOpConstructInt64:
             case EOpConstructUint64:
-#ifdef AMD_EXTENSIONS
-            case EOpConstructInt16:
-            case EOpConstructUint16:
-#endif
             case EOpConstructBool:
             case EOpConstructBVec2:
             case EOpConstructBVec3:
             case EOpConstructBVec4:
+            case EOpConstructI8Vec2:
+            case EOpConstructI8Vec3:
+            case EOpConstructI8Vec4:
+            case EOpConstructU8Vec2:
+            case EOpConstructU8Vec3:
+            case EOpConstructU8Vec4:
+            case EOpConstructI16Vec2:
+            case EOpConstructI16Vec3:
+            case EOpConstructI16Vec4:
+            case EOpConstructU16Vec2:
+            case EOpConstructU16Vec3:
+            case EOpConstructU16Vec4:
             case EOpConstructIVec2:
             case EOpConstructIVec3:
             case EOpConstructIVec4:
@@ -2250,14 +2355,6 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             case EOpConstructU64Vec2:
             case EOpConstructU64Vec3:
             case EOpConstructU64Vec4:
-#ifdef AMD_EXTENSIONS
-            case EOpConstructI16Vec2:
-            case EOpConstructI16Vec3:
-            case EOpConstructI16Vec4:
-            case EOpConstructU16Vec2:
-            case EOpConstructU16Vec3:
-            case EOpConstructU16Vec4:
-#endif
                 // This was the list of valid ones, if they aren't converting from float
                 // and aren't making an array.
                 makeSpecConst = ! floatArgument && ! type.isArray();
@@ -2560,17 +2657,12 @@ void TParseContext::globalQualifierTypeCheck(const TSourceLoc& loc, const TQuali
 
     // now, knowing it is a shader in/out, do all the in/out semantic checks
 
-    if (publicType.basicType == EbtBool) {
+    if (publicType.basicType == EbtBool && !parsingBuiltins) {
         error(loc, "cannot be bool", GetStorageQualifierString(qualifier.storage), "");
         return;
     }
 
-    if (publicType.basicType == EbtInt   || publicType.basicType == EbtUint   ||
-#ifdef AMD_EXTENSIONS
-        publicType.basicType == EbtInt16 || publicType.basicType == EbtUint16 ||
-#endif
-        publicType.basicType == EbtInt64 || publicType.basicType == EbtUint64 ||
-        publicType.basicType == EbtDouble)
+    if (isTypeInt(publicType.basicType) || publicType.basicType == EbtDouble)
         profileRequires(loc, EEsProfile, 300, nullptr, "shader input/output");
 
 #ifdef AMD_EXTENSIONS
@@ -2578,13 +2670,13 @@ void TParseContext::globalQualifierTypeCheck(const TSourceLoc& loc, const TQuali
 #else
     if (!qualifier.flat) {
 #endif
-        if (publicType.basicType == EbtInt    || publicType.basicType == EbtUint   ||
-#ifdef AMD_EXTENSIONS
-            publicType.basicType == EbtInt16  || publicType.basicType == EbtUint16 ||
-#endif
-            publicType.basicType == EbtInt64  || publicType.basicType == EbtUint64 ||
+        if (isTypeInt(publicType.basicType) ||
             publicType.basicType == EbtDouble ||
-            (publicType.userDef && (publicType.userDef->containsBasicType(EbtInt)    ||
+            (publicType.userDef && (publicType.userDef->containsBasicType(EbtInt8)   ||
+                                    publicType.userDef->containsBasicType(EbtUint8)  ||
+                                    publicType.userDef->containsBasicType(EbtInt16)  ||
+                                    publicType.userDef->containsBasicType(EbtUint16) ||
+                                    publicType.userDef->containsBasicType(EbtInt)    ||
                                     publicType.userDef->containsBasicType(EbtUint)   ||
                                     publicType.userDef->containsBasicType(EbtInt64)  ||
                                     publicType.userDef->containsBasicType(EbtUint64) ||
@@ -2686,8 +2778,8 @@ void TParseContext::globalQualifierTypeCheck(const TSourceLoc& loc, const TQuali
                 error(loc, "can't use auxiliary qualifier on a fragment output", "centroid/sample/patch", "");
             if (qualifier.isInterpolation())
                 error(loc, "can't use interpolation qualifier on a fragment output", "flat/smooth/noperspective", "");
-            if (publicType.basicType == EbtDouble)
-                error(loc, "cannot contain a double", GetStorageQualifierString(qualifier.storage), "");
+            if (publicType.basicType == EbtDouble || publicType.basicType == EbtInt64 || publicType.basicType == EbtUint64)
+                error(loc, "cannot contain a double, int64, or uint64", GetStorageQualifierString(qualifier.storage), "");
         break;
 
         case EShLangCompute:
@@ -3098,7 +3190,7 @@ void TParseContext::arrayDimCheck(const TSourceLoc& loc, const TType* type, cons
 //
 void TParseContext::arrayDimMerge(TType& type, const TArraySizes* sizes)
 {
-    if (sizes)
+    if (sizes != nullptr)
         type.addArrayOuterSizes(*sizes);
 }
 
@@ -3478,17 +3570,25 @@ void TParseContext::redeclareBuiltinBlock(const TSourceLoc& loc, TTypeList& newT
         return;
     }
 
+    // Fix XFB stuff up, it applies to the order of the redeclaration, not
+    // the order of the original members.
+    if (currentBlockQualifier.storage == EvqVaryingOut && globalOutputDefaults.hasXfbBuffer()) {
+        if (!currentBlockQualifier.hasXfbBuffer())
+            currentBlockQualifier.layoutXfbBuffer = globalOutputDefaults.layoutXfbBuffer;
+        fixBlockXfbOffsets(currentBlockQualifier, newTypeList);
+    }
+
     // Edit and error check the container against the redeclaration
     //  - remove unused members
     //  - ensure remaining qualifiers/types match
+
     TType& type = block->getWritableType();
 
 #ifdef NV_EXTENSIONS
     // if gl_PerVertex is redeclared for the purpose of passing through "gl_Position"
-    // for passthrough purpose, the redclared block should have the same qualifers as
+    // for passthrough purpose, the redeclared block should have the same qualifers as
     // the current one
-    if (currentBlockQualifier.layoutPassthrough)
-    {
+    if (currentBlockQualifier.layoutPassthrough) {
         type.getQualifier().layoutPassthrough = currentBlockQualifier.layoutPassthrough;
         type.getQualifier().storage = currentBlockQualifier.storage;
         type.getQualifier().layoutStream = currentBlockQualifier.layoutStream;
@@ -3529,10 +3629,13 @@ void TParseContext::redeclareBuiltinBlock(const TSourceLoc& loc, TTypeList& newT
                 arrayLimitCheck(loc, member->type->getFieldName(), newType.getOuterArraySize());
             if (newType.getQualifier().isMemory())
                 error(memberLoc, "cannot add memory qualifier to redeclared block member", member->type->getFieldName().c_str(), "");
-            if (newType.getQualifier().hasLayout())
-                error(memberLoc, "cannot add layout to redeclared block member", member->type->getFieldName().c_str(), "");
+            if (newType.getQualifier().hasNonXfbLayout())
+                error(memberLoc, "cannot add non-XFB layout to redeclared block member", member->type->getFieldName().c_str(), "");
             if (newType.getQualifier().patch)
                 error(memberLoc, "cannot add patch to redeclared block member", member->type->getFieldName().c_str(), "");
+            if (newType.getQualifier().hasXfbBuffer() &&
+                newType.getQualifier().layoutXfbBuffer != currentBlockQualifier.layoutXfbBuffer)
+                error(memberLoc, "member cannot contradict block (or what block inherited from global)", "xfb_buffer", "");
             oldType.getQualifier().centroid = newType.getQualifier().centroid;
             oldType.getQualifier().sample = newType.getQualifier().sample;
             oldType.getQualifier().invariant = newType.getQualifier().invariant;
@@ -3540,9 +3643,20 @@ void TParseContext::redeclareBuiltinBlock(const TSourceLoc& loc, TTypeList& newT
             oldType.getQualifier().smooth = newType.getQualifier().smooth;
             oldType.getQualifier().flat = newType.getQualifier().flat;
             oldType.getQualifier().nopersp = newType.getQualifier().nopersp;
-
+            oldType.getQualifier().layoutXfbOffset = newType.getQualifier().layoutXfbOffset;
+            oldType.getQualifier().layoutXfbBuffer = newType.getQualifier().layoutXfbBuffer;
+            oldType.getQualifier().layoutXfbStride = newType.getQualifier().layoutXfbStride;
+            if (oldType.getQualifier().layoutXfbOffset != TQualifier::layoutXfbBufferEnd) {
+                // if any member as an xfb_offset, then the block's xfb_buffer inherents current xfb_buffer,
+                // and for xfb processing, the member needs it as well, along with xfb_stride
+                type.getQualifier().layoutXfbBuffer = currentBlockQualifier.layoutXfbBuffer;
+                oldType.getQualifier().layoutXfbBuffer = currentBlockQualifier.layoutXfbBuffer;
+            }
             if (oldType.isImplicitlySizedArray() && newType.isExplicitlySizedArray())
                 oldType.changeOuterArraySize(newType.getOuterArraySize());
+
+            //  check and process the member's type, which will include managing xfb information
+            layoutTypeCheck(loc, oldType);
 
             // go to next member
             ++member;
@@ -4556,6 +4670,8 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
             break;
         case EvqUniform:
         case EvqBuffer:
+            if (type.getBasicType() == EbtBlock)
+                error(loc, "cannot apply to uniform or buffer block", "location", "");
             break;
         default:
             error(loc, "can only apply to uniform, buffer, in, or out storage qualifiers", "location", "");
@@ -4582,11 +4698,9 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         // containing a double, the offset must also be a multiple of 8..."
         if (type.containsBasicType(EbtDouble) && ! IsMultipleOfPow2(qualifier.layoutXfbOffset, 8))
             error(loc, "type contains double; xfb_offset must be a multiple of 8", "xfb_offset", "");
-#ifdef AMD_EXTENSIONS
         // ..., if applied to an aggregate containing a float16_t, the offset must also be a multiple of 2..."
         else if (type.containsBasicType(EbtFloat16) && !IsMultipleOfPow2(qualifier.layoutXfbOffset, 2))
             error(loc, "type contains half float; xfb_offset must be a multiple of 2", "xfb_offset", "");
-#endif
         else if (! IsMultipleOfPow2(qualifier.layoutXfbOffset, 4))
             error(loc, "must be a multiple of size of first component", "xfb_offset", "");
     }
@@ -4625,12 +4739,23 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
                 return;
             }
         }
-    }
+    } else if (!intermediate.getAutoMapBindings()) {
+        // some types require bindings
 
-    // atomic_uint
-    if (type.getBasicType() == EbtAtomicUint) {
-        if (! type.getQualifier().hasBinding())
+        // atomic_uint
+        if (type.getBasicType() == EbtAtomicUint)
             error(loc, "layout(binding=X) is required", "atomic_uint", "");
+
+        // SPIR-V
+        if (spvVersion.spv > 0) {
+            if (qualifier.isUniformOrBuffer()) {
+                if (type.getBasicType() == EbtBlock && !qualifier.layoutPushConstant &&
+                                                       !qualifier.layoutAttachment)
+                    error(loc, "uniform/buffer blocks require layout(binding=X)", "binding", "");
+                else if (spvVersion.vulkan > 0 && type.getBasicType() == EbtSampler)
+                    error(loc, "sampler/texture/image requires layout(binding=X)", "binding", "");
+            }
+        }
     }
 
     // "The offset qualifier can only be used on block members of blocks..."
@@ -4686,20 +4811,18 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
             error(loc, "can only be applied to a scalar", "constant_id", "");
         switch (type.getBasicType())
         {
+        case EbtInt8:
+        case EbtUint8:
+        case EbtInt16:
+        case EbtUint16:
         case EbtInt:
         case EbtUint:
         case EbtInt64:
         case EbtUint64:
-#ifdef AMD_EXTENSIONS
-        case EbtInt16:
-        case EbtUint16:
-#endif
         case EbtBool:
         case EbtFloat:
         case EbtDouble:
-#ifdef AMD_EXTENSIONS
         case EbtFloat16:
-#endif
             break;
         default:
             error(loc, "cannot be applied to this type", "constant_id", "");
@@ -4785,11 +4908,11 @@ void TParseContext::layoutQualifierCheck(const TSourceLoc& loc, const TQualifier
             error(loc, "requires uniform or buffer storage qualifier", "binding", "");
     }
     if (qualifier.hasStream()) {
-        if (qualifier.storage != EvqVaryingOut)
+        if (!qualifier.isPipeOutput())
             error(loc, "can only be used on an output", "stream", "");
     }
     if (qualifier.hasXfb()) {
-        if (qualifier.storage != EvqVaryingOut)
+        if (!qualifier.isPipeOutput())
             error(loc, "can only be used on an output", "xfb layout qualifier", "");
     }
     if (qualifier.hasUniformLayout()) {
@@ -4896,10 +5019,21 @@ const TFunction* TParseContext::findFunction(const TSourceLoc& loc, const TFunct
         return nullptr;
     }
 
+    bool explicitTypesEnabled = extensionTurnedOn(E_GL_KHX_shader_explicit_arithmetic_types) ||
+                                extensionTurnedOn(E_GL_KHX_shader_explicit_arithmetic_types_int8) ||
+                                extensionTurnedOn(E_GL_KHX_shader_explicit_arithmetic_types_int16) ||
+                                extensionTurnedOn(E_GL_KHX_shader_explicit_arithmetic_types_int32) ||
+                                extensionTurnedOn(E_GL_KHX_shader_explicit_arithmetic_types_int64) ||
+                                extensionTurnedOn(E_GL_KHX_shader_explicit_arithmetic_types_float16) ||
+                                extensionTurnedOn(E_GL_KHX_shader_explicit_arithmetic_types_float32) ||
+                                extensionTurnedOn(E_GL_KHX_shader_explicit_arithmetic_types_float64);
+
     if (profile == EEsProfile || version < 120)
         function = findFunctionExact(loc, call, builtIn);
     else if (version < 400)
         function = findFunction120(loc, call, builtIn);
+    else if (explicitTypesEnabled)
+        function = findFunctionExplicitTypes(loc, call, builtIn);
     else
         function = findFunction400(loc, call, builtIn);
 
@@ -5068,6 +5202,85 @@ const TFunction* TParseContext::findFunction400(const TSourceLoc& loc, const TFu
 
         // 3. -> float is better than -> double
         return to2.getBasicType() == EbtFloat && to1.getBasicType() == EbtDouble;
+    };
+
+    // for ambiguity reporting
+    bool tie = false;
+
+    // send to the generic selector
+    const TFunction* bestMatch = selectFunction(candidateList, call, convertible, better, tie);
+
+    if (bestMatch == nullptr)
+        error(loc, "no matching overloaded function found", call.getName().c_str(), "");
+    else if (tie)
+        error(loc, "ambiguous best function under implicit type conversion", call.getName().c_str(), "");
+
+    return bestMatch;
+}
+
+// "To determine whether the conversion for a single argument in one match
+//  is better than that for another match, the conversion is assigned of the
+//  three ranks ordered from best to worst:
+//   1. Exact match: no conversion.
+//    2. Promotion: integral or floating-point promotion.
+//    3. Conversion: integral conversion, floating-point conversion,
+//       floating-integral conversion.
+//  A conversion C1 is better than a conversion C2 if the rank of C1 is
+//  better than the rank of C2."
+const TFunction* TParseContext::findFunctionExplicitTypes(const TSourceLoc& loc, const TFunction& call, bool& builtIn)
+{
+    // first, look for an exact match
+    TSymbol* symbol = symbolTable.find(call.getMangledName(), &builtIn);
+    if (symbol)
+        return symbol->getAsFunction();
+
+    // no exact match, use the generic selector, parameterized by the GLSL rules
+
+    // create list of candidates to send
+    TVector<const TFunction*> candidateList;
+    symbolTable.findFunctionNameList(call.getMangledName(), candidateList, builtIn);
+
+    // can 'from' convert to 'to'?
+    const auto convertible = [this](const TType& from, const TType& to, TOperator, int) -> bool {
+        if (from == to)
+            return true;
+        if (from.isArray() || to.isArray() || ! from.sameElementShape(to))
+            return false;
+        return intermediate.canImplicitlyPromote(from.getBasicType(), to.getBasicType());
+    };
+
+    // Is 'to2' a better conversion than 'to1'?
+    // Ties should not be considered as better.
+    // Assumes 'convertible' already said true.
+    const auto better = [this](const TType& from, const TType& to1, const TType& to2) -> bool {
+        // 1. exact match
+        if (from == to2)
+            return from != to1;
+        if (from == to1)
+            return false;
+
+        // 2. Promotion (integral, floating-point) is better
+        TBasicType from_type = from.getBasicType();
+        TBasicType to1_type = to1.getBasicType();
+        TBasicType to2_type = to2.getBasicType();
+        bool isPromotion1 = (intermediate.isIntegralPromotion(from_type, to1_type) ||
+                             intermediate.isFPPromotion(from_type, to1_type));
+        bool isPromotion2 = (intermediate.isIntegralPromotion(from_type, to2_type) ||
+                             intermediate.isFPPromotion(from_type, to2_type));
+        if (isPromotion2)
+            return !isPromotion1;
+        if(isPromotion1)
+            return false;
+
+        // 3. Conversion (integral, floating-point , floating-integral)
+        bool isConversion1 = (intermediate.isIntegralConversion(from_type, to1_type) ||
+                              intermediate.isFPConversion(from_type, to1_type) ||
+                              intermediate.isFPIntegralConversion(from_type, to1_type));
+        bool isConversion2 = (intermediate.isIntegralConversion(from_type, to2_type) ||
+                              intermediate.isFPConversion(from_type, to2_type) ||
+                              intermediate.isFPIntegralConversion(from_type, to2_type));
+
+        return isConversion2 && !isConversion1;
     };
 
     // for ambiguity reporting
@@ -5608,7 +5821,6 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
         basicOp = EOpConstructDouble;
         break;
 
-#ifdef AMD_EXTENSIONS
     case EOpConstructF16Vec2:
     case EOpConstructF16Vec3:
     case EOpConstructF16Vec4:
@@ -5624,7 +5836,34 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
     case EOpConstructFloat16:
         basicOp = EOpConstructFloat16;
         break;
-#endif
+
+    case EOpConstructI8Vec2:
+    case EOpConstructI8Vec3:
+    case EOpConstructI8Vec4:
+    case EOpConstructInt8:
+        basicOp = EOpConstructInt8;
+        break;
+
+    case EOpConstructU8Vec2:
+    case EOpConstructU8Vec3:
+    case EOpConstructU8Vec4:
+    case EOpConstructUint8:
+        basicOp = EOpConstructUint8;
+        break;
+
+    case EOpConstructI16Vec2:
+    case EOpConstructI16Vec3:
+    case EOpConstructI16Vec4:
+    case EOpConstructInt16:
+        basicOp = EOpConstructInt16;
+        break;
+
+    case EOpConstructU16Vec2:
+    case EOpConstructU16Vec3:
+    case EOpConstructU16Vec4:
+    case EOpConstructUint16:
+        basicOp = EOpConstructUint16;
+        break;
 
     case EOpConstructIVec2:
     case EOpConstructIVec3:
@@ -5653,22 +5892,6 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
     case EOpConstructUint64:
         basicOp = EOpConstructUint64;
         break;
-
-#ifdef AMD_EXTENSIONS
-    case EOpConstructI16Vec2:
-    case EOpConstructI16Vec3:
-    case EOpConstructI16Vec4:
-    case EOpConstructInt16:
-        basicOp = EOpConstructInt16;
-        break;
-
-    case EOpConstructU16Vec2:
-    case EOpConstructU16Vec3:
-    case EOpConstructU16Vec4:
-    case EOpConstructUint16:
-        basicOp = EOpConstructUint16;
-        break;
-#endif
 
     case EOpConstructBVec2:
     case EOpConstructBVec3:
@@ -6034,7 +6257,8 @@ void TParseContext::fixBlockLocations(const TSourceLoc& loc, TQualifier& qualifi
                     memberQualifier.layoutLocation = nextLocation;
                     memberQualifier.layoutComponent = TQualifier::layoutComponentEnd;
                 }
-                nextLocation = memberQualifier.layoutLocation + intermediate.computeTypeLocationSize(*typeList[member].type);
+                nextLocation = memberQualifier.layoutLocation + intermediate.computeTypeLocationSize(
+                                    *typeList[member].type, language);
             }
         }
     }

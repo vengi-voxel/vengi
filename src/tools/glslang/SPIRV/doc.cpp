@@ -49,6 +49,7 @@ namespace spv {
     extern "C" {
         // Include C-based headers that don't have a namespace
         #include "GLSL.ext.KHR.h"
+        #include "GLSL.ext.EXT.h"
 #ifdef AMD_EXTENSIONS
         #include "GLSL.ext.AMD.h"
 #endif
@@ -268,6 +269,9 @@ const char* DecorationString(int decoration)
     case 5252: return "ViewportRelativeNV";
     case 5256: return "SecondaryViewportRelativeNV";
 #endif
+
+    case DecorationHlslCounterBufferGOOGLE: return "DecorationHlslCounterBufferGOOGLE";
+    case DecorationHlslSemanticGOOGLE:      return "DecorationHlslSemanticGOOGLE";
     }
 }
 
@@ -350,6 +354,8 @@ const char* BuiltInString(int builtIn)
     case 5261: return "PositionPerViewNV";
     case 5262: return "ViewportMaskPerViewNV";
 #endif
+
+    case 5264: return "FullyCoveredEXT";
 
     case BuiltInCeiling:
     default: return "Bad";
@@ -722,7 +728,7 @@ const char* ScopeString(int mem)
     }
 }
 
-const int GroupOperationCeiling = 3;
+const int GroupOperationCeiling = 4;
 
 const char* GroupOperationString(int gop)
 {
@@ -732,6 +738,7 @@ const char* GroupOperationString(int gop)
     case 0:  return "Reduce";
     case 1:  return "InclusiveScan";
     case 2:  return "ExclusiveScan";
+    case 3:  return "ClusteredReduce";
 
     case GroupOperationCeiling:
     default: return "Bad";
@@ -830,6 +837,14 @@ const char* CapabilityString(int info)
     case 55: return "StorageImageReadWithoutFormat";
     case 56: return "StorageImageWriteWithoutFormat";
     case 57: return "MultiViewport";
+    case 61: return "GroupNonUniform";
+    case 62: return "GroupNonUniformVote";
+    case 63: return "GroupNonUniformArithmetic";
+    case 64: return "GroupNonUniformBallot";
+    case 65: return "GroupNonUniformShuffle";
+    case 66: return "GroupNonUniformShuffleRelative";
+    case 67: return "GroupNonUniformClustered";
+    case 68: return "GroupNonUniformQuad";
 
     case 4423: return "SubgroupBallotKHR";
     case 4427: return "DrawParameters";
@@ -846,6 +861,7 @@ const char* CapabilityString(int info)
     case 5013: return "StencilExportEXT";
 
 #ifdef AMD_EXTENSIONS
+    case 5008: return "Float16ImageAMD";
     case 5009: return "ImageGatherBiasLodAMD";
     case 5010: return "FragmentMaskAMD";
     case 5015: return "ImageReadWriteLodAMD";
@@ -861,6 +877,8 @@ const char* CapabilityString(int info)
     case 5259: return "ShaderStereoViewNV";
     case 5260: return "PerViewAttributesNV";
 #endif
+
+    case 5265: return "FragmentFullyCoveredEXT";
 
     case CapabilityCeiling:
     default: return "Bad";
@@ -1192,6 +1210,44 @@ const char* OpcodeString(int op)
     case 319: return "OpAtomicFlagClear";
     case 320: return "OpImageSparseRead";
 
+    case OpModuleProcessed: return "OpModuleProcessed";
+    case OpDecorateId:      return "OpDecorateId";
+
+    case 333: return "OpGroupNonUniformElect";
+    case 334: return "OpGroupNonUniformAll";
+    case 335: return "OpGroupNonUniformAny";
+    case 336: return "OpGroupNonUniformAllEqual";
+    case 337: return "OpGroupNonUniformBroadcast";
+    case 338: return "OpGroupNonUniformBroadcastFirst";
+    case 339: return "OpGroupNonUniformBallot";
+    case 340: return "OpGroupNonUniformInverseBallot";
+    case 341: return "OpGroupNonUniformBallotBitExtract";
+    case 342: return "OpGroupNonUniformBallotBitCount";
+    case 343: return "OpGroupNonUniformBallotFindLSB";
+    case 344: return "OpGroupNonUniformBallotFindMSB";
+    case 345: return "OpGroupNonUniformShuffle";
+    case 346: return "OpGroupNonUniformShuffleXor";
+    case 347: return "OpGroupNonUniformShuffleUp";
+    case 348: return "OpGroupNonUniformShuffleDown";
+    case 349: return "OpGroupNonUniformIAdd";
+    case 350: return "OpGroupNonUniformFAdd";
+    case 351: return "OpGroupNonUniformIMul";
+    case 352: return "OpGroupNonUniformFMul";
+    case 353: return "OpGroupNonUniformSMin";
+    case 354: return "OpGroupNonUniformUMin";
+    case 355: return "OpGroupNonUniformFMin";
+    case 356: return "OpGroupNonUniformSMax";
+    case 357: return "OpGroupNonUniformUMax";
+    case 358: return "OpGroupNonUniformFMax";
+    case 359: return "OpGroupNonUniformBitwiseAnd";
+    case 360: return "OpGroupNonUniformBitwiseOr";
+    case 361: return "OpGroupNonUniformBitwiseXor";
+    case 362: return "OpGroupNonUniformLogicalAnd";
+    case 363: return "OpGroupNonUniformLogicalOr";
+    case 364: return "OpGroupNonUniformLogicalXor";
+    case 365: return "OpGroupNonUniformQuadBroadcast";
+    case 366: return "OpGroupNonUniformQuadSwap";
+
     case 4421: return "OpSubgroupBallotKHR";
     case 4422: return "OpSubgroupFirstInvocationKHR";
     case 4428: return "OpSubgroupAllKHR";
@@ -1212,6 +1268,9 @@ const char* OpcodeString(int op)
     case 5011: return "OpFragmentMaskFetchAMD";
     case 5012: return "OpFragmentFetchAMD";
 #endif
+
+    case OpDecorateStringGOOGLE:       return "OpDecorateStringGOOGLE";
+    case OpMemberDecorateStringGOOGLE: return "OpMemberDecorateStringGOOGLE";
 
     case OpcodeCeiling:
     default:
@@ -1304,7 +1363,10 @@ void Parameterize()
     InstructionDesc[OpImageWrite].setResultAndType(false, false);
     InstructionDesc[OpDecorationGroup].setResultAndType(true, false);
     InstructionDesc[OpDecorate].setResultAndType(false, false);
+    InstructionDesc[OpDecorateId].setResultAndType(false, false);
+    InstructionDesc[OpDecorateStringGOOGLE].setResultAndType(false, false);
     InstructionDesc[OpMemberDecorate].setResultAndType(false, false);
+    InstructionDesc[OpMemberDecorateStringGOOGLE].setResultAndType(false, false);
     InstructionDesc[OpGroupDecorate].setResultAndType(false, false);
     InstructionDesc[OpGroupMemberDecorate].setResultAndType(false, false);
     InstructionDesc[OpName].setResultAndType(false, false);
@@ -1343,6 +1405,7 @@ void Parameterize()
     InstructionDesc[OpReleaseEvent].setResultAndType(false, false);
     InstructionDesc[OpGroupWaitEvents].setResultAndType(false, false);
     InstructionDesc[OpAtomicFlagClear].setResultAndType(false, false);
+    InstructionDesc[OpModuleProcessed].setResultAndType(false, false);
 
     // Specific additional context-dependent operands
 
@@ -1868,10 +1931,23 @@ void Parameterize()
     InstructionDesc[OpDecorate].operands.push(OperandDecoration, "");
     InstructionDesc[OpDecorate].operands.push(OperandVariableLiterals, "See <<Decoration,'Decoration'>>.");
 
+    InstructionDesc[OpDecorateId].operands.push(OperandId, "'Target'");
+    InstructionDesc[OpDecorateId].operands.push(OperandDecoration, "");
+    InstructionDesc[OpDecorateId].operands.push(OperandVariableIds, "See <<Decoration,'Decoration'>>.");
+
+    InstructionDesc[OpDecorateStringGOOGLE].operands.push(OperandId, "'Target'");
+    InstructionDesc[OpDecorateStringGOOGLE].operands.push(OperandDecoration, "");
+    InstructionDesc[OpDecorateStringGOOGLE].operands.push(OperandLiteralString, "'Literal String'");
+
     InstructionDesc[OpMemberDecorate].operands.push(OperandId, "'Structure Type'");
     InstructionDesc[OpMemberDecorate].operands.push(OperandLiteralNumber, "'Member'");
     InstructionDesc[OpMemberDecorate].operands.push(OperandDecoration, "");
     InstructionDesc[OpMemberDecorate].operands.push(OperandVariableLiterals, "See <<Decoration,'Decoration'>>.");
+
+    InstructionDesc[OpMemberDecorateStringGOOGLE].operands.push(OperandId, "'Structure Type'");
+    InstructionDesc[OpMemberDecorateStringGOOGLE].operands.push(OperandLiteralNumber, "'Member'");
+    InstructionDesc[OpMemberDecorateStringGOOGLE].operands.push(OperandDecoration, "");
+    InstructionDesc[OpMemberDecorateStringGOOGLE].operands.push(OperandLiteralString, "'Literal String'");
 
     InstructionDesc[OpGroupDecorate].operands.push(OperandId, "'Decoration Group'");
     InstructionDesc[OpGroupDecorate].operands.push(OperandVariableIds, "'Targets'");
@@ -2553,6 +2629,7 @@ void Parameterize()
     InstructionDesc[OpLoopMerge].operands.push(OperandId, "'Merge Block'");
     InstructionDesc[OpLoopMerge].operands.push(OperandId, "'Continue Target'");
     InstructionDesc[OpLoopMerge].operands.push(OperandLoop, "");
+    InstructionDesc[OpLoopMerge].operands.push(OperandOptionalLiteral, "");
 
     InstructionDesc[OpSelectionMerge].operands.push(OperandId, "'Merge Block'");
     InstructionDesc[OpSelectionMerge].operands.push(OperandSelect, "");
@@ -2813,6 +2890,182 @@ void Parameterize()
     InstructionDesc[OpEnqueueMarker].operands.push(OperandId, "'Wait Events'");
     InstructionDesc[OpEnqueueMarker].operands.push(OperandId, "'Ret Event'");
 
+    InstructionDesc[OpGroupNonUniformElect].capabilities.push_back(CapabilityGroupNonUniform);
+    InstructionDesc[OpGroupNonUniformElect].operands.push(OperandScope, "'Execution'");
+
+    InstructionDesc[OpGroupNonUniformAll].capabilities.push_back(CapabilityGroupNonUniformVote);
+    InstructionDesc[OpGroupNonUniformAll].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformAll].operands.push(OperandId, "X");
+
+    InstructionDesc[OpGroupNonUniformAny].capabilities.push_back(CapabilityGroupNonUniformVote);
+    InstructionDesc[OpGroupNonUniformAny].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformAny].operands.push(OperandId, "X");
+
+    InstructionDesc[OpGroupNonUniformAllEqual].capabilities.push_back(CapabilityGroupNonUniformVote);
+    InstructionDesc[OpGroupNonUniformAllEqual].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformAllEqual].operands.push(OperandId, "X");
+
+    InstructionDesc[OpGroupNonUniformBroadcast].capabilities.push_back(CapabilityGroupNonUniformBallot);
+    InstructionDesc[OpGroupNonUniformBroadcast].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformBroadcast].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformBroadcast].operands.push(OperandId, "ID");
+
+    InstructionDesc[OpGroupNonUniformBroadcastFirst].capabilities.push_back(CapabilityGroupNonUniformBallot);
+    InstructionDesc[OpGroupNonUniformBroadcastFirst].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformBroadcastFirst].operands.push(OperandId, "X");
+
+    InstructionDesc[OpGroupNonUniformBallot].capabilities.push_back(CapabilityGroupNonUniformBallot);
+    InstructionDesc[OpGroupNonUniformBallot].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformBallot].operands.push(OperandId, "X");
+
+    InstructionDesc[OpGroupNonUniformInverseBallot].capabilities.push_back(CapabilityGroupNonUniformBallot);
+    InstructionDesc[OpGroupNonUniformInverseBallot].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformInverseBallot].operands.push(OperandId, "X");
+
+    InstructionDesc[OpGroupNonUniformBallotBitExtract].capabilities.push_back(CapabilityGroupNonUniformBallot);
+    InstructionDesc[OpGroupNonUniformBallotBitExtract].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformBallotBitExtract].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformBallotBitExtract].operands.push(OperandId, "Bit");
+
+    InstructionDesc[OpGroupNonUniformBallotBitCount].capabilities.push_back(CapabilityGroupNonUniformBallot);
+    InstructionDesc[OpGroupNonUniformBallotBitCount].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformBallotBitCount].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformBallotBitCount].operands.push(OperandId, "X");
+
+    InstructionDesc[OpGroupNonUniformBallotFindLSB].capabilities.push_back(CapabilityGroupNonUniformBallot);
+    InstructionDesc[OpGroupNonUniformBallotFindLSB].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformBallotFindLSB].operands.push(OperandId, "X");
+
+    InstructionDesc[OpGroupNonUniformBallotFindMSB].capabilities.push_back(CapabilityGroupNonUniformBallot);
+    InstructionDesc[OpGroupNonUniformBallotFindMSB].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformBallotFindMSB].operands.push(OperandId, "X");
+
+    InstructionDesc[OpGroupNonUniformShuffle].capabilities.push_back(CapabilityGroupNonUniformShuffle);
+    InstructionDesc[OpGroupNonUniformShuffle].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformShuffle].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformShuffle].operands.push(OperandId, "'Id'");
+
+    InstructionDesc[OpGroupNonUniformShuffleXor].capabilities.push_back(CapabilityGroupNonUniformShuffle);
+    InstructionDesc[OpGroupNonUniformShuffleXor].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformShuffleXor].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformShuffleXor].operands.push(OperandId, "Mask");
+
+    InstructionDesc[OpGroupNonUniformShuffleUp].capabilities.push_back(CapabilityGroupNonUniformShuffleRelative);
+    InstructionDesc[OpGroupNonUniformShuffleUp].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformShuffleUp].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformShuffleUp].operands.push(OperandId, "Offset");
+
+    InstructionDesc[OpGroupNonUniformShuffleDown].capabilities.push_back(CapabilityGroupNonUniformShuffleRelative);
+    InstructionDesc[OpGroupNonUniformShuffleDown].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformShuffleDown].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformShuffleDown].operands.push(OperandId, "Offset");
+
+    InstructionDesc[OpGroupNonUniformIAdd].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformIAdd].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformIAdd].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformIAdd].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformIAdd].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformFAdd].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformFAdd].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformFAdd].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformFAdd].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformFAdd].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformIMul].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformIMul].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformIMul].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformIMul].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformIMul].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformFMul].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformFMul].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformFMul].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformFMul].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformFMul].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformSMin].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformSMin].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformSMin].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformSMin].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformSMin].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformUMin].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformUMin].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformUMin].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformUMin].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformUMin].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformFMin].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformFMin].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformFMin].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformFMin].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformFMin].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformSMax].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformSMax].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformSMax].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformSMax].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformSMax].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformUMax].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformUMax].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformUMax].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformUMax].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformUMax].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformFMax].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformFMax].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformFMax].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformFMax].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformFMax].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformBitwiseAnd].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformBitwiseAnd].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformBitwiseAnd].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformBitwiseAnd].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformBitwiseAnd].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformBitwiseOr].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformBitwiseOr].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformBitwiseOr].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformBitwiseOr].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformBitwiseOr].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformBitwiseXor].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformBitwiseXor].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformBitwiseXor].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformBitwiseXor].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformBitwiseXor].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformLogicalAnd].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformLogicalAnd].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformLogicalAnd].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformLogicalAnd].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformLogicalAnd].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformLogicalOr].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformLogicalOr].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformLogicalOr].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformLogicalOr].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformLogicalOr].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformLogicalXor].capabilities.push_back(CapabilityGroupNonUniformArithmetic);
+    InstructionDesc[OpGroupNonUniformLogicalXor].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformLogicalXor].operands.push(OperandGroupOperation, "'Operation'");
+    InstructionDesc[OpGroupNonUniformLogicalXor].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformLogicalXor].operands.push(OperandId, "'ClusterSize'", true);
+
+    InstructionDesc[OpGroupNonUniformQuadBroadcast].capabilities.push_back(CapabilityGroupNonUniformQuad);
+    InstructionDesc[OpGroupNonUniformQuadBroadcast].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformQuadBroadcast].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformQuadBroadcast].operands.push(OperandId, "'Id'");
+
+    InstructionDesc[OpGroupNonUniformQuadSwap].capabilities.push_back(CapabilityGroupNonUniformQuad);
+    InstructionDesc[OpGroupNonUniformQuadSwap].operands.push(OperandScope, "'Execution'");
+    InstructionDesc[OpGroupNonUniformQuadSwap].operands.push(OperandId, "X");
+    InstructionDesc[OpGroupNonUniformQuadSwap].operands.push(OperandLiteralNumber, "'Direction'");
+
     InstructionDesc[OpSubgroupBallotKHR].operands.push(OperandId, "'Predicate'");
 
     InstructionDesc[OpSubgroupFirstInvocationKHR].operands.push(OperandId, "'Value'");
@@ -2832,6 +3085,8 @@ void Parameterize()
     InstructionDesc[OpSubgroupReadInvocationKHR].capabilities.push_back(CapabilityGroups);
     InstructionDesc[OpSubgroupReadInvocationKHR].operands.push(OperandId, "'Value'");
     InstructionDesc[OpSubgroupReadInvocationKHR].operands.push(OperandId, "'Index'");
+
+    InstructionDesc[OpModuleProcessed].operands.push(OperandLiteralString, "'process'");
 
 #ifdef AMD_EXTENSIONS
     InstructionDesc[OpGroupIAddNonUniformAMD].capabilities.push_back(CapabilityGroups);
