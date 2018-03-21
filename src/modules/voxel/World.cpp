@@ -156,10 +156,9 @@ void World::extractScheduledMesh() {
 				&data.opaqueMesh, &data.waterMesh,
 				IsQuadNeeded(), IsWaterQuadNeeded(),
 				MAX_WATER_HEIGHT);
-		if (data.waterMesh.isEmpty() && data.opaqueMesh.isEmpty()) {
-			continue;
+		if (!data.waterMesh.isEmpty() || !data.opaqueMesh.isEmpty()) {
+			_extracted.push(std::move(data));
 		}
-		_extracted.push(std::move(data));
 	}
 }
 
