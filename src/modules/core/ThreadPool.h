@@ -50,6 +50,7 @@ public:
 	template<class F, class ... Args>
 	auto enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
 
+	size_t size() const;
 	void init();
 	void shutdown(bool wait = false);
 private:
@@ -87,6 +88,10 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 		_condition.notify_one();
 	}
 	return res;
+}
+
+inline size_t ThreadPool::size() const {
+	return _threads;
 }
 
 }
