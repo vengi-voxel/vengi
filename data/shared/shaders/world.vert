@@ -12,7 +12,6 @@ $in vec3 a_offset;
 #endif // MATERIALOFFSET
 int materialoffset = MATERIALOFFSET;
 
-uniform float u_fogrange;
 uniform mat4 u_model;
 uniform mat4 u_viewprojection;
 uniform sampler2D u_texture;
@@ -25,11 +24,7 @@ $out vec4 v_pos;
 $out vec4 v_color;
 $out float v_ambientocclusion;
 
-#if cl_fog == 1
-uniform float u_viewdistance;
-$out float v_fogdivisor;
-#endif // cl_fog
-
+#include "_fog.vert"
 #include "_shadowmap.vert"
 
 void main(void) {

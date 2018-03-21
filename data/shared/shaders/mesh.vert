@@ -9,21 +9,14 @@ $in vec4 a_color;
 uniform mat4 u_viewprojection;
 uniform mat4 u_model;
 uniform mat4 u_bonetransforms[100];
-#if cl_fog == 1
-uniform float u_fogrange;
-#endif
-uniform float u_viewdistance;
 uniform int u_vertexskinning;
 
+#include "_fog.vert"
 #include "_shadowmap.vert"
 
 $out vec3 v_norm;
 $out vec2 v_texcoords;
 $out vec4 v_color;
-#if cl_fog == 1
-$out float v_fogdivisor;
-$out float v_fogdistance;
-#endif
 
 void main(void) {
 	vec4 mpos;
@@ -54,6 +47,5 @@ void main(void) {
 	gl_Position    = u_viewprojection * mpos;
 #if cl_fog == 1
 	v_fogdivisor   = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
-	v_fogdistance  = gl_Position.z / gl_Position.w;
 #endif // cl_fog
 }

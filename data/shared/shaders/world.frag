@@ -3,19 +3,13 @@ $in vec4 v_color;
 $in float v_ambientocclusion;
 uniform mat4 u_viewprojection;
 
+#include "_fog.frag"
 #include "_shadowmap.frag"
 
 uniform mediump vec3 u_lightdir;
 uniform lowp vec3 u_diffuse_color;
 uniform lowp vec3 u_ambient_color;
-#if cl_fog == 1
-uniform lowp vec3 u_fogcolor;
-uniform float u_viewdistance;
-#endif // cl_fog
 $out vec4 o_color;
-#if cl_fog == 1
-$in float v_fogdivisor;
-#endif // cl_fog
 
 void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
