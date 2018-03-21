@@ -365,10 +365,11 @@ core::AppState IMGUIApp::onRunning() {
 
 void IMGUIApp::onAfterFrame() {
 	Super::onAfterFrame();
-	std::lock_guard<std::mutex> lock(_traceMutex);
 	for (auto& entry : _traceMeasuresLastFrame) {
 		delete entry.second;
 	}
+	++_currentFrameCounter;
+	std::lock_guard<std::mutex> lock(_traceMutex);
 	_traceMeasuresLastFrame = _traceMeasures;
 	_traceMeasures.clear();
 }
