@@ -15,44 +15,8 @@ uniform mat4 u_viewprojection;
 
 void main(void) {
 	vec3 color = $texture2D(u_texture, v_texcoords).rgb + v_color.rgb;
-	int cascade = calculateCascade();
-	float shadow = calculateShadow(cascade, u_viewprojection);
-#if cl_debug_cascade
-	if (cascade == 0) {
-		color.r = 0.0;
-		color.g = 1.0;
-		color.b = 0.0;
-	} else if (cascade == 1) {
-		color.r = 0.0;
-		color.g = 1.0;
-		color.b = 1.0;
-	} else if (cascade == 2) {
-		color.r = 0.0;
-		color.g = 0.0;
-		color.b = 1.0;
-	} else if (cascade == 3) {
-		color.r = 0.0;
-		color.g = 0.5;
-		color.b = 0.5;
-	} else {
-		color.r = 1.0;
-	}
-#endif // cl_debug_cascade
-#if cl_debug_shadow == 1
-	// shadow only rendering
-	o_color = vec4(vec3(shadow), 1.0);
-#else // cl_debug_shadow
 	float ndotl = dot(v_norm, u_lightdir);
-	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
-	vec3 lightvalue = u_ambient_color + (diffuse * shadow);
-
-#if cl_fog == 1
-	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
-	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / v_fogdivisor, 0.0, 1.0);
-
-	o_color = vec4(mix(color * lightvalue, u_fogcolor, fogval), 1.0);
-#else // cl_fog
-	o_color = vec4(color * lightvalue, 1.0);
-#endif // cl_fog
-#endif // cl_debug_shadow
+	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
+	vec3 linearColor = shadow(u_viewprojection, color, diffuse, u_ambient_color);
+	o_color = fog(linearColor, v_color.a);
 }

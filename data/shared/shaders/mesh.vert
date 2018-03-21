@@ -42,10 +42,12 @@ void main(void) {
 	v_lightspacepos = mpos.xyz;
 	v_viewz         = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif // cl_shadowmap == 1
-	v_texcoords    = a_texcoords;
-	v_color        = a_color;
-	gl_Position    = u_viewprojection * mpos;
+
 #if cl_fog == 1
 	v_fogdivisor   = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
 #endif // cl_fog
+
+	v_texcoords    = a_texcoords;
+	v_color        = a_color;
+	gl_Position    = u_viewprojection * mpos;
 }

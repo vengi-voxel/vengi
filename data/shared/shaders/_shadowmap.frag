@@ -41,14 +41,44 @@ int calculateCascade() {
 	return cascade;
 }
 
-#else // cl_shadowmap == 1
-
-int calculateCascade() {
-	return 0;
+vec3 shadow(in mat4 viewprojection, vec3 color, in vec3 diffuse, in vec3 ambient) {
+	int cascade = calculateCascade();
+	float shadow = calculateShadow(cascade, viewprojection);
+#if cl_debug_cascade
+	if (cascade == 0) {
+		color.r = 0.0;
+		color.g = 1.0;
+		color.b = 0.0;
+	} else if (cascade == 1) {
+		color.r = 0.0;
+		color.g = 1.0;
+		color.b = 1.0;
+	} else if (cascade == 2) {
+		color.r = 0.0;
+		color.g = 0.0;
+		color.b = 1.0;
+	} else if (cascade == 3) {
+		color.r = 0.0;
+		color.g = 0.5;
+		color.b = 0.5;
+	} else {
+		color.r = 1.0;
+	}
+#endif // cl_debug_cascade
+#if cl_debug_shadow == 1
+	// shadow only rendering
+	return vec3(shadow);
+#else // cl_debug_shadow
+	vec3 lightvalue = ambient + (diffuse * shadow);
+	return color * lightvalue;
+#endif // cl_debug_shadow
 }
 
-float calculateShadow(in int cascade, in mat4 viewprojection) {
-	return 1.0;
+#else // cl_shadowmap == 1
+
+vec3 shadow(in mat4 viewprojection, vec3 color, in vec3 diffuse, in vec3 ambient) {
+	vec3 lightvalue = ambient + diffuse;
+	return color * lightvalue;
 }
 
 #endif // cl_shadowmap == 1

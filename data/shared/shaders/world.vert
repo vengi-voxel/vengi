@@ -49,14 +49,14 @@ void main(void) {
 	const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 	v_ambientocclusion = aovalues[a_ao];
 
-#if cl_fog == 1
-	v_fogdivisor = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
-#endif // cl_fog
-
 #if cl_shadowmap == 1
 	v_lightspacepos = v_pos.xyz;
 	v_viewz = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif // cl_shadowmap
+
+#if cl_fog == 1
+	v_fogdivisor = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
+#endif // cl_fog
 
 	gl_Position = u_viewprojection * v_pos;
 }
