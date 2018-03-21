@@ -19,7 +19,7 @@ namespace video {
 
 namespace {
 const aiVector3D VECZERO(0.0f, 0.0f, 0.0f);
-const aiColor4D COLOR_BLACK(0.0f, 0.0f, 0.0f, 0.0f);
+const aiColor4D COLOR_BLACK(0.0f, 0.0f, 0.0f, 1.0f);
 
 static inline glm::vec3 convert(const aiVector3D& vector) {
 	return glm::vec3(vector.x, vector.y, vector.z);
