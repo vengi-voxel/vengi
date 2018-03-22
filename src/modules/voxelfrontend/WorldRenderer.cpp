@@ -234,6 +234,7 @@ bool WorldRenderer::occluded(ChunkBuffer * chunkBuffer) const {
 }
 
 void WorldRenderer::cull(const video::Camera& camera) {
+	core_trace_scoped(WorldRendererCull);
 	_opaqueIndices.clear();
 	_opaqueVertices.clear();
 	_waterIndices.clear();
@@ -272,6 +273,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 #endif
 
 	if (occlusionQuery) {
+		core_trace_scoped(WorldRendererOcclusionQuery);
 		// disable writing to the color buffer
 		// We just want to check whether they would be rendered, not actually render them
 		video::colorMask(false, false, false, false);
@@ -308,6 +310,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	const bool renderAABB = _renderAABBs->boolVal();
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::Green);
+	core_trace_scoped(WorldRendererPrepareBuffers);
 	for (ChunkBuffer* chunkBuffer : contents) {
 		if (occlusionQuery && occluded(chunkBuffer)) {
 			 ++_occludedChunks;
@@ -378,6 +381,7 @@ int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertic
 }
 
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
+	core_trace_scoped(WorldRendererRenderWorld);
 	handleMeshQueue();
 
 	cull(camera);
@@ -450,7 +454,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	core_assert_msg(checkShaders(), "Shader attributes don't have the same order");
 
-	core_trace_gl_scoped(WorldRendererRenderWorld);
 	int drawCallsWorld = 0;
 
 	video::enable(video::State::DepthTest);
@@ -463,6 +466,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();
 	if (shadowMap) {
+		core_trace_scoped(WorldRendererRenderShadow);
 		video::disable(video::State::Blend);
 		// put shadow acne into the dark
 		video::cullFace(video::Face::Front);
@@ -504,6 +508,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	}
 
 	{
+		core_trace_scoped(WorldRendererRenderOpaque);
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setModel(glm::scale(glm::vec3(_worldScale)));
 		if (shadowMap) {
@@ -515,6 +520,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		}
 	}
 	{
+		core_trace_scoped(WorldRendererRenderPlants);
 		video::ScopedShader scoped(_worldInstancedShader);
 		_worldInstancedShader.setModel(glm::scale(glm::vec3(0.4f)));
 		if (shadowMap) {
@@ -524,6 +530,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		drawCallsWorld += renderPlants(_visiblePlant, vertices);
 	}
 	{
+		core_trace_scoped(WorldRendererRenderWater);
 		video::ScopedShader scoped(_waterShader);
 		_waterShader.setModel(glm::scale(glm::mat4(1.0f), glm::vec3(_worldScale)));
 		if (shadowMap) {
@@ -684,6 +691,7 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 }
 
 void WorldRenderer::extractMeshes(const video::Camera& camera) {
+	core_trace_scoped(WorldRendererExtractMeshes);
 	_octree.visit(camera.frustum(), [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
 		return !_world->scheduleMeshExtraction(mins / this->_worldScale);
 	}, glm::vec3(_world->meshSize() * _worldScale));

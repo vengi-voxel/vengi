@@ -146,7 +146,7 @@ void World::extractScheduledMesh() {
 		const glm::ivec3 mins(pos);
 		const glm::ivec3 maxs(glm::ivec3(pos) + size - 1);
 		const Region region(mins, maxs);
-		// these number are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
+		// these numbers are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
 		// they also heavily depend on the size of the mesh region we extract
 		const int opaqueFactor = 16;
 		const int opaqueVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
