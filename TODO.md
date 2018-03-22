@@ -6,6 +6,14 @@ there is an error in the fog computation - right now everything is in u_fogcolor
 this is due to the fact that fogdistance is a very very high value because gl_FragCoord.w is 0. And this
 is related to the bonetrans matrix. Not taking it into account fixes gl_FragCoord.
 
+## world.frag
+
+```
+ERROR: (0) Failed to validate: shaders/world
+INFO: (0) Validation output: shaders/world
+active samplers with a different type refer to the same texture image unit
+```
+
 ## Code generation
 
 Only replace the files if something has really changed. (`configure_file`?)
