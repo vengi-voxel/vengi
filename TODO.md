@@ -100,7 +100,7 @@ The attack manager should get updated in the map tick and should maintain a list
 
 ## Map editor
 
-Finish implementation of the mapedit tool.
+Finish implementation of the `mapedit` tool.
 
 # Statsd support
 
