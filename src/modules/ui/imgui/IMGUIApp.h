@@ -78,7 +78,7 @@ protected:
 	virtual void traceBegin(const char *threadName, const char* name) override;
 	virtual void traceEnd(const char *threadName) override;
 	virtual void traceEndFrame(const char *threadName) override;
-	void addSubTrees(const TraceData* traceData, int &depth) const;
+	void addSubTrees(const TraceData* traceData, bool expandAll, int &depth) const;
 	void renderTracing();
 
 	virtual bool onKeyRelease(int32_t key) override;

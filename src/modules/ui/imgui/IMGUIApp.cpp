@@ -473,8 +473,8 @@ void IMGUIApp::traceEndFrame(const char *threadName) {
 	frame->end(nanos);
 }
 
-void IMGUIApp::addSubTrees(const TraceData* data, int &depth) const {
-	const ImGuiTreeNodeFlags flags = depth <= 5 ? ImGuiTreeNodeFlags_DefaultOpen : 0;
+void IMGUIApp::addSubTrees(const TraceData* data, bool expandAll, int &depth) const {
+	const ImGuiTreeNodeFlags flags = (expandAll || depth <= 5) ? ImGuiTreeNodeFlags_DefaultOpen : 0;
 	if (ImGui::TreeNodeEx(data->name, flags, "%s (%" PRIu64 "ns)", data->name, data->delta)) {
 		const ImU32 colBase = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
 		ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -486,7 +486,7 @@ void IMGUIApp::addSubTrees(const TraceData* data, int &depth) const {
 		window->DrawList->AddRectFilled(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), colBase);
 		++depth;
 		for (const TraceData* cdata : data->children) {
-			addSubTrees(cdata, depth);
+			addSubTrees(cdata, expandAll, depth);
 		}
 		ImGui::TreePop();
 	}
@@ -519,11 +519,13 @@ void IMGUIApp::renderTracing() {
 	ImGui::PlotHistogram("Millis", &frameMillis[0], frameMillis.size(), 0, maxStr.c_str(), min, max, ImVec2(700, 100));
 	ImGui::Separator();
 	if (ImGui::CollapsingHeader("Profiler", ImGuiTreeNodeFlags_DefaultOpen)) {
+		static bool expandAll = false;
+		ImGui::Checkbox("Expand all", &expandAll);
 		for (auto i = _traceMeasuresLastFrame.begin(); i != _traceMeasuresLastFrame.end(); ++i) {
 			if (ImGui::TreeNodeEx("Thread", ImGuiTreeNodeFlags_DefaultOpen)) {
 				const TraceRoot* frameData = i->second;
 				int depth = 0;
-				addSubTrees(frameData->data, depth);
+				addSubTrees(frameData->data, expandAll, depth);
 				ImGui::TreePop();
 			}
 		}
