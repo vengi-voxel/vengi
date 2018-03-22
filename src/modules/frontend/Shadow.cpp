@@ -5,6 +5,7 @@
 #include "Shadow.h"
 #include "video/Camera.h"
 #include "core/GLM.h"
+#include "core/Trace.h"
 
 namespace frontend {
 
@@ -19,6 +20,7 @@ bool Shadow::init() {
 }
 
 void Shadow::calculateShadowData(const video::Camera& camera, bool active, int maxDepthBuffers, const glm::ivec2& depthBufferSize, float sliceWeight) {
+	core_trace_scoped(ShadowCalculate);
 	_cascades.resize(maxDepthBuffers);
 	_distances.resize(maxDepthBuffers);
 	_depthDimension = depthBufferSize;
