@@ -108,7 +108,7 @@ gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
 	../core/benchmark/AbstractBenchmark.cpp
-	benchmark/VoxelBenchmark.cpp
+	benchmarks/VoxelBenchmark.cpp
 )
 engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS})
 engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark ${LIB})
