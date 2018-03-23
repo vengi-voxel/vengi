@@ -1,7 +1,6 @@
 set(SRCS
 	ConcurrentQueue.h
 	ConcurrentSet.h
-	ConcurrentVector.h
 	Set.h
 	dummy.cpp
 )
