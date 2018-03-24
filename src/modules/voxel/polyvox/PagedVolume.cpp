@@ -237,6 +237,7 @@ PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY
 	// We'll use this later to decide if data needs to be paged out again.
 	core::RecursiveScopedWriteLock chunkWriteLock(chunk->_rwLock);
 	chunk->_dataModified = _pager->pageIn(pctx);
+	// TODO: if this is empty, we can optimize the mesh extractor a lot
 	Log::debug("finished creating new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
 
 	return chunk;
