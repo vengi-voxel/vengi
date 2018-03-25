@@ -97,6 +97,14 @@ inline constexpr uint32_t FourCC(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 	return ((uint32_t) ((uint32_t(d) << 24) | (uint32_t(c) << 16) | (uint32_t(b) << 8) | uint32_t(a)));
 }
 
+// recursive macro helpers to represent binary masks
+template<uint64_t N>
+struct Binary { static const uint64_t value = Binary<N / 10>::value << 1 | (N % 10); };
+template<uint64_t N>
+const uint64_t Binary<N>::value;
+template<>
+struct Binary<0> { static const uint64_t value = uint64_t(0); };
+
 #define DIAG_STR(s) #s
 #define DIAG_JOINSTR(x,y) DIAG_STR(x ## y)
 #ifdef _MSC_VER

@@ -75,7 +75,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 	// At this point the results are usable, but we have a problem with thin structures disappearing.
 	// For example, if we have a solid blue sphere with a one voxel thick layer of red voxels on it,
 	// then we don't care that the shape changes then the red voxels are lost but we do care that the
-	// color changes, as this is very noticable. Our solution is o process again only those voxels
+	// color changes, as this is very noticable. Our solution is to process again only those voxels
 	// which lie on a material-air boundary, and to recompute their color using a larger naighbourhood
 	// while also accounting for how visible the child voxels are.
 	for (int32_t z = 0; z < destRegion.getDepthInVoxels(); ++z) {
