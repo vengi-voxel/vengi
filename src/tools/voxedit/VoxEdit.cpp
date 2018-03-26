@@ -12,6 +12,7 @@
 #include <nfd.h>
 
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
+#define COMMAND_MAINWINDOW_REPEAT(command, help) core::Command::registerCommand("+" #command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \
 	core::Command::registerCommand(core::string::toLower(#command), [this] (const core::CmdArgs& args) { \
 		const std::string file = args.empty() ? "" : args[0]; \
@@ -105,7 +106,7 @@ core::AppState VoxEdit::onConstruct() {
 	}).setHelp("Toggle relative mouse mode which provides free look");
 
 	core::Command::registerCommand("rotate", [this] (const core::CmdArgs& args) {
-		if (args.size() != 3) {
+		if (args.size() <= 3) {
 			Log::info("Expected to get x, y and z angles in degrees");
 			return;
 		}
@@ -128,7 +129,7 @@ core::AppState VoxEdit::onConstruct() {
 	}).setHelp("Fill with the current selected voxel");
 
 	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
-		if (args.size() != 3) {
+		if (args.size() <= 3) {
 			Log::info("Expected to get x, y and z coordinates");
 			return;
 		}
@@ -139,7 +140,7 @@ core::AppState VoxEdit::onConstruct() {
 	}).setHelp("Set the cursor to the specified position");
 
 	core::Command::registerCommand("movecursor", [this] (const core::CmdArgs& args) {
-		if (args.size() != 3) {
+		if (args.size() <= 3) {
 			Log::info("Expected to get relative x, y and z coordinates");
 			return;
 		}
@@ -189,8 +190,8 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(load, "Load a scene from the given file");
 	COMMAND_FILE(voxelize, "Load a scene from the given file");
 
-	COMMAND_MAINWINDOW(remove, "Remove the cursor shape from the current cursor position");
-	COMMAND_MAINWINDOW(place, "Place the cursor shape at the current cursor position");
+	COMMAND_MAINWINDOW_REPEAT(remove, "Remove the cursor shape from the current cursor position");
+	COMMAND_MAINWINDOW_REPEAT(place, "Place the cursor shape at the current cursor position");
 	COMMAND_MAINWINDOW(setReferencePositionToCursor, "Set the reference position to the current cursor position");
 	COMMAND_MAINWINDOW(unselectall, "Unselect every voxel");
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");

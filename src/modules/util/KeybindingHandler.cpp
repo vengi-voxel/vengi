@@ -49,7 +49,7 @@ bool isValidForBinding(int16_t pressedModMask, const std::string& command, int16
 	return true;
 }
 
-bool executeCommandsForBinding(std::unordered_map<int32_t, int16_t>& keys, const util::BindMap& bindings, int32_t key, int16_t modMask) {
+bool executeCommandsForBinding(std::unordered_map<int32_t, int16_t>& keys, const util::BindMap& bindings, int32_t key, int16_t modMask, bool execute) {
 	auto range = bindings.equal_range(key);
 	const int16_t modifier = modMask & (KMOD_SHIFT | KMOD_CTRL | KMOD_ALT);
 	for (auto i = range.first; i != range.second; ++i) {
@@ -61,14 +61,14 @@ bool executeCommandsForBinding(std::unordered_map<int32_t, int16_t>& keys, const
 		if (keys.find(key) == keys.end()) {
 			Log::trace("Execute the command %s for key %i", command.c_str(), key);
 			if (command[0] == '+') {
-				if (core::Command::execute(command + " true") == 1) {
+				if (!execute || core::Command::execute(command + " true") == 1) {
 					Log::trace("The tracking command was executed");
 					// store the modifiers that were set when the command was executed
 					keys[key] = modifier;
 				} else {
 					Log::trace("Failed to execute the tracking command %s", command.c_str());
 				}
-			} else {
+			} else if (execute) {
 				core::Command::execute(command);
 			}
 		}
