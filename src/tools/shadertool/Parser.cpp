@@ -246,9 +246,10 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 			auto findIter = std::find_if(v->begin(), v->end(), [&] (const Variable& var) {return var.name == name;});
 			if (findIter == v->end()) {
 				v->push_back(Variable{typeEnum, name, arraySize});
-			} else {
-				Log::warn("Found duplicate variable %s (%s versus %s)",
-						name.c_str(), util::resolveTypes(findIter->type).ctype, util::resolveTypes(typeEnum).ctype);
+			} else if (typeEnum != findIter->type) {
+				Log::error("Found duplicate variable %s (%s versus %s)",
+					name.c_str(), util::resolveTypes(findIter->type).ctype, util::resolveTypes(typeEnum).ctype);
+				return false;
 			}
 		}
 	}

@@ -17,8 +17,8 @@ static const Types cTypes[] = {
 	{ Variable::DOUBLE,          1, "double",       Value,     "double" },
 	{ Variable::FLOAT,           1, "float",        Value,     "float" },
 	{ Variable::UNSIGNED_INT,    1, "uint32_t",     Value,     "uint" },
-	{ Variable::BOOL,            1, "bool",         Value,     "bool" },
 	{ Variable::INT,             1, "int32_t",      Value,     "int" },
+	{ Variable::BOOL,            1, "bool",         Value,     "bool" },
 	{ Variable::BVEC2,           2, "glm::bvec2",   Reference, "bvec2" },
 	{ Variable::BVEC3,           3, "glm::bvec3",   Reference, "bvec3" },
 	{ Variable::BVEC4,           4, "glm::bvec4",   Reference, "bvec4" },
@@ -51,7 +51,7 @@ static const Types cTypes[] = {
 static_assert(Variable::MAX == lengthof(cTypes), "mismatch in glsl types");
 
 int getComponents(const Variable::Type type) {
-	return cTypes[(int)type].components;
+	return resolveTypes(type).components;
 }
 
 Variable::Type getType(const std::string& type, int line) {
@@ -204,7 +204,7 @@ std::string std140Align(const Variable& v) {
 	// TODO: extract uniform blocks into aligned structs and generate methods to update them
 	//       align them via GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT - use glBindBufferRange
 	//       GL_MAX_UNIFORM_BLOCK_SIZE
-	const Types& cType = cTypes[v.type];
+	const Types& cType = resolveTypes(v.type);
 	if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::VEC4
 	 || cType.type == Variable::Type::DVEC2 || cType.type == Variable::Type::DVEC3 || cType.type == Variable::Type::DVEC4
 	 || cType.type == Variable::Type::IVEC2 || cType.type == Variable::Type::IVEC3 || cType.type == Variable::Type::IVEC4
@@ -232,7 +232,7 @@ std::string std140Padding(const Variable& v, int& padding) {
 }
 
 size_t std140Size(const Variable& v) {
-	const Types& cType = cTypes[v.type];
+	const Types& cType = resolveTypes(v.type);
 	int components = cType.components;
 	int bytes = 4;
 	if (cType.type == Variable::Type::DVEC2
@@ -286,7 +286,15 @@ std::string std430Padding(const Variable& v, int& padding) {
 }
 
 const Types& resolveTypes(Variable::Type type) {
-	return cTypes[type];
+	int max = std::enum_value(Variable::MAX);
+	for (int i = 0; i < max; ++i) {
+		if (type == cTypes[i].type) {
+			return cTypes[i];
+		}
+	}
+	Log::error("Unknown type given: assuming first entry");
+	core_assert_msg(false, "Unknown type given: %i", int(type));
+	return cTypes[0];
 }
 
 }
