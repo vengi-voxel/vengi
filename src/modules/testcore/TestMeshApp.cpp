@@ -146,6 +146,8 @@ void TestMeshApp::onRenderUI() {
 		if (ImGui::Checkbox("Render axis", &_renderAxis)) {
 			setRenderAxis(_renderAxis);
 		}
+		static const char* items[] = { "Disable", "First", "Second", "Third", "Fourth" };
+		ImGui::Combo("Bone weight", &_boneInfluence, items, IM_ARRAYSIZE(items));
 		ImGui::Checkbox("Render normals", &_renderNormals);
 		if (ImGui::Checkbox("Render plane", &_renderPlane)) {
 			setRenderPlane(_renderPlane);
@@ -265,6 +267,7 @@ void TestMeshApp::doRender() {
 			_meshShader.setCascades(cascades);
 			_meshShader.setDistances(distances);
 			_meshShader.setLightdir(_shadow.sunDirection());
+			_meshShader.setBoneinfluence(_boneInfluence - 1);
 			video::bindTexture(video::TextureUnit::One, _depthBuffer);
 			const video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
 			_mesh->render();

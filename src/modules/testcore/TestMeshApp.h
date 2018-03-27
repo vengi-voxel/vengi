@@ -38,6 +38,7 @@ protected:
 	float _shadowBiasSlope = 2.0f;
 	float _shadowBias = 0.09f;
 	float _shadowRangeZ = 0.0f;
+	int _boneInfluence = 0;
 	glm::mat4 _model {1.0f};
 	core::VarPtr _shadowMapShow;
 	core::VarPtr _shadowMap;

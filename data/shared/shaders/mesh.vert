@@ -10,6 +10,7 @@ uniform mat4 u_viewprojection;
 uniform mat4 u_model;
 uniform mat4 u_bonetransforms[100];
 uniform int u_vertexskinning;
+uniform int u_boneinfluence;
 
 #include "_fog.vert"
 #include "_shadowmap.vert"
@@ -48,6 +49,10 @@ void main(void) {
 #endif // cl_fog
 
 	v_texcoords    = a_texcoords;
-	v_color        = a_color;
+	if (u_boneinfluence >= 0 && u_boneinfluence < 4) {
+		v_color    = vec4(1.0 - a_boneweights[u_boneinfluence], a_boneweights[u_boneinfluence], 0, 1);
+	} else {
+		v_color    = a_color;
+	}
 	gl_Position    = u_viewprojection * mpos;
 }
