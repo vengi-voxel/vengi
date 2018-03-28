@@ -26,7 +26,7 @@ struct Vertex {
 
 		const int size = lengthof(_boneIds);
 		for (int i = 0; i < size; ++i) {
-			if (_boneIds[i] == 0u) {
+			if (glm::abs(_boneWeights[i]) <= glm::epsilon<float>()) {
 				_boneIds[i] = boneID;
 				_boneWeights[i] = weight;
 				return true;
