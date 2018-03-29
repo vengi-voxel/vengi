@@ -9,6 +9,7 @@
 #include "voxelfrontend/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/Axis.h"
+#include "frontend/Movement.h"
 #include "video/Camera.h"
 #include "video/MeshPool.h"
 #include "video/VertexBuffer.h"
@@ -35,9 +36,9 @@ protected:
 	video::ProfilerGPU _worldTimer = {"World"};
 	ProfilerCPU _frameTimer = {"Frame"};
 	ProfilerCPU _beforeUiTimer = {"BeforeUI"};
+	frontend::Movement _movement;
 
 	bool _lineModeRendering = false;
-	uint8_t _moveMask = 0;
 	bool _freelook = false;
 	bool _updateWorld = true;
 	int _drawCallsWorld = 0;

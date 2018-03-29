@@ -11,7 +11,30 @@ namespace core {
 Command::CommandMap Command::_cmds;
 ReadWriteLock Command::_lock("Command");
 std::vector<std::string> Command::_delayedTokens;
-int Command::_delayFrames;
+uint64_t Command::_delayMillis = 0;
+
+Command& Command::registerCommand(const char* name, FunctionType&& func) {
+	ScopedWriteLock lock(_lock);
+	const Command c(name, std::forward<FunctionType>(func));
+	_cmds.insert(std::make_pair(name, c));
+	return _cmds.find(name)->second;
+}
+
+void Command::registerActionButton(const std::string& name, ActionButton& button) {
+	ScopedWriteLock lock(_lock);
+	const Command cPressed("+" + name, [&] (const core::CmdArgs& args) {
+		const int32_t key = core::string::toInt(args[0]);
+		const int64_t millis = core::string::toLong(args[1]);
+		button.handleDown(key, millis);
+	});
+	_cmds.insert(std::make_pair(cPressed.name(), cPressed));
+	const Command cReleased("-" + name, [&] (const core::CmdArgs& args) {
+		const int32_t key = core::string::toInt(args[0]);
+		const int64_t millis = core::string::toLong(args[1]);
+		button.handleUp(key, millis);
+	});
+	_cmds.insert(std::make_pair(cReleased.name(), cReleased));
+}
 
 int Command::complete(const std::string& str, std::vector<std::string>& matches) const {
 	if (!_completer) {
@@ -20,24 +43,40 @@ int Command::complete(const std::string& str, std::vector<std::string>& matches)
 	return _completer(str, matches);
 }
 
-int Command::executeDelayed() {
-	if (_delayFrames <= 0) {
-		_delayFrames = 0;
+int Command::update(uint64_t dt) {
+	if (_delayMillis == 0) {
 		return 0;
 	}
-	if (--_delayFrames > 0) {
-		Log::info("Waiting %i frames", _delayFrames);
+	Log::trace("Waiting %i millis", (int)_delayMillis);
+	if (dt > _delayMillis) {
+		_delayMillis = 0;
+	} else {
+		_delayMillis -= dt;
+	}
+	if (_delayMillis > 0) {
 		return 0;
 	}
 	// make a copy - it might get modified inside the execute call
 	std::vector<std::string> copy = _delayedTokens;
 	int executed = 0;
 	for (const std::string& fullCmd : copy) {
-		Log::info("execute %s", fullCmd.c_str());
+		Log::debug("execute %s", fullCmd.c_str());
 		executed += execute(fullCmd);
 	}
+	_delayedTokens.clear();
 
 	return executed;
+}
+
+int Command::execute(const char* msg, ...) {
+	va_list args;
+	va_start(args, msg);
+	char buf[4096];
+	SDL_vsnprintf(buf, sizeof(buf), msg, args);
+	buf[sizeof(buf) - 1] = '\0';
+	const int cmds = execute(std::string(buf));
+	va_end(args);
+	return cmds;
 }
 
 int Command::execute(const std::string& command) {
@@ -46,6 +85,11 @@ int Command::execute(const std::string& command) {
 	while (commandLineTokenizer.hasNext()) {
 		const std::string& fullCmd = commandLineTokenizer.next();
 		if (fullCmd.empty()) {
+			continue;
+		}
+		if (_delayMillis > 0) {
+			Log::debug("add command %s to delayed buffer", fullCmd.c_str());
+			_delayedTokens.push_back(fullCmd);
 			continue;
 		}
 		Log::debug("full command: '%s'", fullCmd.c_str());
@@ -60,21 +104,7 @@ int Command::execute(const std::string& command) {
 			args.push_back(commandTokenizer.next());
 			Log::debug("arg: '%s'", args.back().c_str());
 		}
-		if (c == "wait") {
-			if (args.size() == 1) {
-				_delayFrames += std::max(1, core::string::toInt(args[0]));
-			} else {
-				++_delayFrames;
-			}
-			++executed;
-		}
-		if (_delayFrames > 0) {
-			while (commandLineTokenizer.hasNext()) {
-				const std::string& delayedCommand = commandLineTokenizer.next();
-				Log::debug("add command %s to delayed buffer", delayedCommand.c_str());
-				_delayedTokens.push_back(delayedCommand);
-			}
-		} else if (execute(c, args)) {
+		if (execute(c, args)) {
 			++executed;
 		}
 	}
@@ -84,14 +114,14 @@ int Command::execute(const std::string& command) {
 bool Command::execute(const std::string& command, const CmdArgs& args) {
 	if (command == "wait") {
 		if (args.size() == 1) {
-			_delayFrames += std::max(1, core::string::toInt(args[0]));
+			_delayMillis += std::max(1, core::string::toInt(args[0]));
 		} else {
-			++_delayFrames;
+			++_delayMillis;
 		}
 		return true;
 	}
 	if ((command[0] == '+' || command[0] == '-') && args.empty()) {
-		Log::debug("Skip execution of %s - no arguments provided", command.c_str());
+		Log::warn("Skip execution of %s - no arguments provided", command.c_str());
 		return false;
 	}
 	Command cmd;
@@ -102,7 +132,7 @@ bool Command::execute(const std::string& command, const CmdArgs& args) {
 			Log::debug("could not find command callback for %s", command.c_str());
 			return false;
 		}
-		if (_delayFrames > 0) {
+		if (_delayMillis > 0) {
 			std::string fullCmd = command;
 			for (const std::string& arg : args) {
 				fullCmd.append(" ");

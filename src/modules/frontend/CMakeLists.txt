@@ -4,7 +4,7 @@ set(SRCS
 	ClientEntity.h ClientEntity.cpp
 	ClientEntityId.h
 	GridRenderer.cpp GridRenderer.h
-	Movement.h
+	Movement.h Movement.cpp
 	Plane.h Plane.cpp
 	RandomColorTexture.h RandomColorTexture.cpp
 	Shadow.h Shadow.cpp

@@ -27,17 +27,6 @@
 #include "voxel/MaterialColor.h"
 #include "core/Rest.h"
 
-#define registerMoveCmd(name, flag) \
-	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
-		if (args.empty()) { \
-			return; \
-		} \
-		if (args[0] == "true") \
-			_moveMask |= network::MoveDirection::flag; \
-		else \
-			_moveMask &= ~network::MoveDirection::flag; \
-	}).setHelp("Character movement");
-
 Client::Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldPtr& world, const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
@@ -54,15 +43,27 @@ void Client::sendMovement() {
 		return;
 	}
 
-	if (_lastMoveMask == _moveMask) {
+	network::MoveDirection moveMask = network::MoveDirection::NONE;
+	if (_movement.left()) {
+		moveMask |= network::MoveDirection::MOVELEFT;
+	} else if (_movement.right()) {
+		moveMask |= network::MoveDirection::MOVERIGHT;
+	}
+	if (_movement.forward()) {
+		moveMask |= network::MoveDirection::MOVEFORWARD;
+	} else if (_movement.backward()) {
+		moveMask |= network::MoveDirection::MOVEBACKWARD;
+	}
+
+	if (_lastMoveMask == moveMask) {
 		return;
 	}
 	_lastMovement = _now;
-	_lastMoveMask = _moveMask;
+	_lastMoveMask = moveMask;
 	// TODO: we can't use the camera, as we are aiming for a freelook mode, where the players' angles might be different from the camera's
 	const float pitch = 0.0f;
 	const float yaw = 0.0f;
-	_messageSender->sendClientMessage(_moveFbb, network::ClientMsgType::Move, CreateMove(_moveFbb, _moveMask, pitch, yaw).Union());
+	_messageSender->sendClientMessage(_moveFbb, network::ClientMsgType::Move, CreateMove(_moveFbb, moveMask, pitch, yaw).Union());
 }
 
 void Client::onEvent(const network::DisconnectEvent& event) {
@@ -88,10 +89,7 @@ void Client::onEvent(const voxel::WorldCreatedEvent& event) {
 core::AppState Client::onConstruct() {
 	core::AppState state = Super::onConstruct();
 
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
+	_movement.onConstruct();
 
 	core::Var::get(cfg::ClientPort, SERVER_PORT);
 	core::Var::get(cfg::ClientHost, SERVER_HOST);
@@ -132,6 +130,10 @@ core::AppState Client::onInit() {
 	video::enableDebug(video::DebugSeverity::Medium);
 
 	if (!_network->init()) {
+		return core::AppState::InitFailure;
+	}
+
+	if (!_movement.init()) {
 		return core::AppState::InitFailure;
 	}
 
@@ -237,6 +239,7 @@ core::AppState Client::onCleanup() {
 	_player = frontend::ClientEntityPtr();
 	_network->shutdown();
 	_waiting.shutdown();
+	_movement.shutdown();
 
 	RestClient::disable();
 
@@ -271,6 +274,7 @@ core::AppState Client::onRunning() {
 	core::Var::visitBroadcast([] (const core::VarPtr& var) {
 		Log::info("TODO: %s needs broadcast", var->name().c_str());
 	});
+	_movement.update(_deltaFrameMillis);
 	_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 	_camera.update(_deltaFrameMillis);
 	sendMovement();

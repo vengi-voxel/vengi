@@ -2,7 +2,6 @@
 #include "ui/imgui/IMGUI.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
-#include "frontend/Movement.h"
 #include "video/ScopedPolygonMode.h"
 
 TestApp::TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
@@ -26,10 +25,7 @@ core::AppState TestApp::onConstruct() {
 
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
+	_movement.onConstruct();
 
 	core::Command::registerCommand("+cam_freelook", [&] (const core::CmdArgs& args) {
 		Log::info("target lock: %s", args[0].c_str());
@@ -62,6 +58,10 @@ core::AppState TestApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
+	if (!_movement.init()) {
+		return core::AppState::InitFailure;
+	}
+
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _dimension.x, _dimension.y, _aspect);
 	_camera.init(glm::ivec2(0), dimension());
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
@@ -91,8 +91,8 @@ void TestApp::beforeUI() {
 		}
 	}
 
-	const float speed = _cameraSpeed * static_cast<float>(_deltaFrameMillis);
-	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
+	_movement.update(_deltaFrameMillis);
+	const glm::vec3& moveDelta = _movement.moveDelta(_cameraSpeed);
 	_camera.move(moveDelta);
 	_camera.update(_deltaFrameMillis);
 
@@ -124,6 +124,7 @@ void TestApp::onRenderUI() {
 core::AppState TestApp::onCleanup() {
 	_axis.shutdown();
 	_plane.shutdown();
+	_movement.shutdown();
 	return Super::onCleanup();
 }
 

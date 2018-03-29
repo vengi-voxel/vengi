@@ -53,19 +53,19 @@ protected:
 	}
 
 	void execute(int32_t key, int16_t modifier = KMOD_NONE) {
-		EXPECT_TRUE(util::executeCommandsForBinding(_keys, _parser.getBindings(), key, modifier))
+		EXPECT_TRUE(util::executeCommandsForBinding(_parser.getBindings(), key, modifier))
 				<< "Command for key " << key << " with pressed mods " << modifier << " should be executed";
 	}
 
 	void notExecute(int32_t key, int16_t modifier = KMOD_NONE) {
-		EXPECT_FALSE(util::executeCommandsForBinding(_keys, _parser.getBindings(), key, modifier))
+		EXPECT_FALSE(util::executeCommandsForBinding(_parser.getBindings(), key, modifier))
 				<< "Command for key " << key << " with pressed mods " << modifier << " should not be executed";
 	}
 
 	/**
 	 * for +commandname bindings
 	 */
-	void executePlusCommand(int32_t key, int16_t modifier = KMOD_NONE) {
+	void executeActionButtonCommand(int32_t key, int16_t modifier = KMOD_NONE) {
 		execute(key, modifier);
 		// There should be an entry in this map - the command is valid and starts with a +
 		// so we are tracking it for the release of the key
@@ -75,7 +75,7 @@ protected:
 };
 
 TEST_F(KeybindingHandlerTest, testValidCommandNoModifiers) {
-	executePlusCommand(SDLK_w);
+	executeActionButtonCommand(SDLK_w);
 }
 
 TEST_F(KeybindingHandlerTest, testNotBoundKey) {
@@ -128,7 +128,7 @@ TEST_F(KeybindingHandlerTest, testShiftModifier) {
 }
 
 TEST_F(KeybindingHandlerTest, testCtrlModifierA) {
-	executePlusCommand(SDLK_a, KMOD_RCTRL);
+	executeActionButtonCommand(SDLK_a, KMOD_RCTRL);
 }
 
 TEST_F(KeybindingHandlerTest, testCtrlModifierAWrongModifierPressed) {
@@ -136,7 +136,7 @@ TEST_F(KeybindingHandlerTest, testCtrlModifierAWrongModifierPressed) {
 }
 
 TEST_F(KeybindingHandlerTest, testCtrlModifier) {
-	executePlusCommand(SDLK_w, KMOD_LCTRL);
+	executeActionButtonCommand(SDLK_w, KMOD_LCTRL);
 }
 
 TEST_F(KeybindingHandlerTest, testModifierMasksAltSimple) {

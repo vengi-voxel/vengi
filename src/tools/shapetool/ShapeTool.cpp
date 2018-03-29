@@ -7,8 +7,8 @@
 #include "video/Renderer.h"
 #include "core/GLM.h"
 #include "core/Color.h"
+#include "core/command/Command.h"
 #include "io/Filesystem.h"
-#include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 
 /**
@@ -37,17 +37,15 @@ core::AppState ShapeTool::onConstruct() {
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
-	core::Command::registerCommand("+linemode", [&] (const core::CmdArgs& args) { \
+	_movement.onConstruct();
+
+	core::Command::registerCommand("+linemode", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		_lineModeRendering = args[0] == "true";
 	}).setHelp("Toggle line rendering mode");
 
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	core::Var::get(cfg::ShapeToolExtractRadius, "1");
 
@@ -63,6 +61,10 @@ core::AppState ShapeTool::onInit() {
 	video::enableDebug(video::DebugSeverity::High);
 
 	if (!_axis.init()) {
+		return core::AppState::InitFailure;
+	}
+
+	if (!_movement.init()) {
 		return core::AppState::InitFailure;
 	}
 
@@ -113,8 +115,7 @@ core::AppState ShapeTool::onInit() {
 void ShapeTool::beforeUI() {
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
-	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrameMillis);
-	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
+	const glm::vec3& moveDelta = _movement.moveDelta(_speed->floatVal());
 	_camera.move(moveDelta);
 	_camera.update(_deltaFrameMillis);
 
@@ -151,6 +152,7 @@ void ShapeTool::afterRootWidget() {
 
 core::AppState ShapeTool::onRunning() {
 	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
+	_movement.update(_deltaFrameMillis);
 	const core::AppState state = Super::onRunning();
 	const bool current = isRelativeMouseMode();
 	if (current) {
@@ -171,6 +173,7 @@ core::AppState ShapeTool::onCleanup() {
 	_worldTimer.shutdown();
 	_axis.shutdown();
 	_entity = frontend::ClientEntityPtr();
+	_movement.shutdown();
 	const core::AppState state = Super::onCleanup();
 	return state;
 }

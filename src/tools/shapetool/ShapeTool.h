@@ -8,6 +8,7 @@
 #include "FrontendShaders.h"
 #include "voxelfrontend/OctreeRenderer.h"
 #include "frontend/ClientEntity.h"
+#include "frontend/Movement.h"
 #include "frontend/Axis.h"
 #include "video/Camera.h"
 #include "video/MeshPool.h"
@@ -37,9 +38,9 @@ protected:
 	ProfilerCPU _octreeTimer = {"Octree"};
 	ProfilerCPU _frameTimer = {"Frame"};
 	ProfilerCPU _beforeUiTimer = {"BeforeUI"};
+	frontend::Movement _movement;
 
 	bool _lineModeRendering = false;
-	uint8_t _moveMask = 0;
 	int _activeNodes = 0;
 
 	bool onKeyPress(int32_t key, int16_t modifier) override;

@@ -9,8 +9,10 @@
 #include <utility>
 #include <functional>
 #include <unordered_map>
+#include "core/Common.h"
 #include "core/String.h"
 #include "core/ReadWriteLock.h"
+#include "ActionButton.h"
 
 namespace core {
 
@@ -28,30 +30,36 @@ private:
 	static CommandMap _cmds;
 	static ReadWriteLock _lock;
 
-	static int _delayFrames;
+	static uint64_t _delayMillis;
 	static std::vector<std::string> _delayedTokens;
 
-	const char* _name;
+	std::string _name;
 	const char* _help;
 	FunctionType _func;
 	typedef std::function<int(const std::string&, std::vector<std::string>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
 	Command() :
-		_name(nullptr), _help(nullptr), _func() {
+		_name(""), _help(nullptr), _func() {
 	}
 
-	Command(const char* name, FunctionType&& func) :
+	Command(const std::string& name, FunctionType&& func) :
 		_name(name), _help(""), _func(std::move(func)) {
 	}
 
 public:
-	static Command& registerCommand(const char* name, FunctionType&& func) {
-		ScopedWriteLock lock(_lock);
-		const Command c(name, std::forward<FunctionType>(func));
-		_cmds.insert(std::make_pair(name, c));
-		return _cmds.find(name)->second;
-	}
+	static Command& registerCommand(const char* name, FunctionType&& func);
+
+	/**
+	 * @brief Registers two commands prefixed with @c + and @c - (for pressed and released)
+	 * for commands that are bound to keys.
+	 * @param[in] name The name of the command. It will automatically be prefixed with
+	 * a @c + and @c
+	 * @param[in,out] button The @c ActionButton instance.
+	 * @note This class is not taking ownership of the button instance. You have to ensure
+	 * that the instance given here is alive as long as the commands are bound.
+	 */
+	static void registerActionButton(const std::string& name, ActionButton& button);
 
 	static bool unregisterCommand(const char* name);
 
@@ -60,9 +68,11 @@ public:
 	/**
 	 * @brief Executes delayed (by wait command e.g.) commands that are still in the command buffer
 	 */
-	static int executeDelayed();
+	static int update(uint64_t dt);
 
 	static int execute(const std::string& command);
+
+	static int execute(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));
 
 	static bool execute(const std::string& command, const CmdArgs& args);
 
@@ -130,7 +140,7 @@ inline bool Command::operator==(const Command& rhs) const {
 }
 
 inline const char* Command::name() const {
-	return _name;
+	return _name.c_str();
 }
 
 inline const char* Command::help() const {

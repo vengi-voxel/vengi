@@ -12,6 +12,8 @@
 
 namespace core {
 
+// TODO: c++14 adds a merge functionality to collections.
+
 template<typename TYPE, class HASH = std::hash<TYPE> >
 std::unordered_set<TYPE, HASH> setIntersection(const std::unordered_set<TYPE, HASH>& set1, const std::unordered_set<TYPE, HASH>& set2) {
 	if (set1.size() > set2.size()) {

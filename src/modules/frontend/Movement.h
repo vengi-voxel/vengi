@@ -4,38 +4,57 @@
 
 #pragma once
 
-#include "core/command/Command.h"
-#include "core/GLM.h"
+#include "core/command/ActionButton.h"
+#include <glm/vec3.hpp>
+#include <stdint.h>
 
-constexpr int MOVERIGHT		=	1 << 0;
-constexpr int MOVELEFT		=	1 << 1;
-constexpr int MOVEFORWARD	=	1 << 2;
-constexpr int MOVEBACKWARD	=	1 << 3;
+namespace frontend {
 
-#define registerMoveCmd(name, flag) \
-	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
-		if (args.empty()) { \
-			return; \
-		} \
-		if (args[0] == "true") \
-			_moveMask |= (flag); \
-		else \
-			_moveMask &= ~(flag); \
-	}).setHelp("Camera movement");
+/**
+ * @brief Movement component that does the input listening
+ *
+ * @see core::ActionButton
+ */
+class Movement {
+private:
+	core::ActionButton _moveLeft;
+	core::ActionButton _moveRight;
+	core::ActionButton _moveBackward;
+	core::ActionButton _moveForward;
 
-inline glm::vec3 getMoveDelta(float speed, int _moveMask) {
-	glm::vec3 moveDelta(0.0f);
-	if (_moveMask & MOVELEFT) {
-		moveDelta += glm::left * speed;
-	}
-	if (_moveMask & MOVERIGHT) {
-		moveDelta += glm::right * speed;
-	}
-	if (_moveMask & MOVEFORWARD) {
-		moveDelta += glm::forward * speed;
-	}
-	if (_moveMask & MOVEBACKWARD) {
-		moveDelta += glm::backward * speed;
-	}
-	return moveDelta;
+	uint64_t _millis = 0ul;
+
+public:
+	void onConstruct();
+	bool init();
+	void update(uint64_t deltaMillis);
+	void shutdown();
+
+	bool left() const;
+	bool right() const;
+	bool forward() const;
+	bool backward() const;
+
+	/**
+	 * @note update() must have been called with proper delta milliseconds.
+	 */
+	glm::vec3 moveDelta(float speed);
+};
+
+inline bool Movement::left() const {
+	return _moveLeft.pressed();
+}
+
+inline bool Movement::right() const {
+	return _moveRight.pressed();
+}
+
+inline bool Movement::forward() const {
+	return _moveForward.pressed();
+}
+
+inline bool Movement::backward() const {
+	return _moveBackward.pressed();
+}
+
 }

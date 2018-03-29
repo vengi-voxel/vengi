@@ -48,19 +48,6 @@ core::AppState WindowedApp::onRunning() {
 	core_trace_scoped(WindowedAppOnRunning);
 	Super::onRunning();
 
-	for (KeyMapConstIter it = _keys.begin(); it != _keys.end(); ++it) {
-		const int key = it->first;
-		auto range = _bindings.equal_range(key);
-		for (auto i = range.first; i != range.second; ++i) {
-			const std::string& command = i->second.command;
-			const int16_t modifier = i->second.modifier;
-			if (it->second == modifier && command[0] == '+') {
-				core_assert_always(1 == core::Command::execute(command + " true"));
-				_keys[key] = modifier;
-			}
-		}
-	}
-
 	SDL_GetMouseState(&_mousePos.x, &_mousePos.y);
 	SDL_GetRelativeMouseState(&_mouseRelativePos.x, &_mouseRelativePos.y);
 	SDL_Event event;
@@ -106,14 +93,58 @@ void WindowedApp::onWindowResize() {
 
 bool WindowedApp::onKeyRelease(int32_t key) {
 	bool handled = false;
+	int16_t code = 0;
+	switch (key) {
+	case SDLK_LCTRL:
+		code = KMOD_LCTRL;
+		break;
+	case SDLK_RCTRL:
+		code = KMOD_RCTRL;
+		break;
+	case SDLK_LSHIFT:
+		code = KMOD_LSHIFT;
+		break;
+	case SDLK_RSHIFT:
+		code = KMOD_RSHIFT;
+		break;
+	case SDLK_LALT:
+		code = KMOD_LALT;
+		break;
+	case SDLK_RALT:
+		code = KMOD_RALT;
+		break;
+	}
+	if (code != 0) {
+		for (auto& b : _bindings) {
+			const util::CommandModifierPair& pair = b.second;
+			const int32_t commandKey = b.first;
+			if (pair.command[0] != '+') {
+				// no action button command
+				continue;
+			}
+			if (!util::isValidForBinding(code, pair.command, pair.modifier)) {
+				continue;
+			}
+			if (!isPressed(commandKey)) {
+				continue;
+			}
+			core::Command::execute("-%s %i %" PRId64, &(pair.command.c_str()[1]), commandKey, _now);
+			// first try to execute commands with all the modifiers that are currently pressed
+			if (!util::executeCommandsForBinding(_bindings, commandKey, SDL_GetModState(), _now)) {
+				// if no binding was found, execute without modifier
+				util::executeCommandsForBinding(_bindings, commandKey, 0, _now);
+			}
+		}
+	}
 	auto range = _bindings.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
 		const std::string& command = i->second.command;
-		if (command[0] == '+' && _keys.erase(key) > 0) {
-			core_assert_always(1 == core::Command::execute(command + " false"));
+		if (command[0] == '+') {
+			core::Command::execute("-%s %i %" PRId64, &(command.c_str()[1]), key, _now);
 			handled = true;
 		}
 	}
+	_keys.erase(key);
 	return handled;
 }
 
@@ -130,11 +161,66 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 		}
 	}
 
-	if (util::executeCommandsForBinding(_keys, _bindings, key, modifier)) {
-		return true;
+	_keys.insert(key);
+
+	int16_t code = 0;
+	switch (key) {
+	case SDLK_LCTRL:
+		code = KMOD_LCTRL;
+		break;
+	case SDLK_RCTRL:
+		code = KMOD_RCTRL;
+		break;
+	case SDLK_LSHIFT:
+		code = KMOD_LSHIFT;
+		break;
+	case SDLK_RSHIFT:
+		code = KMOD_RSHIFT;
+		break;
+	case SDLK_LALT:
+		code = KMOD_LALT;
+		break;
+	case SDLK_RALT:
+		code = KMOD_RALT;
+		break;
+	}
+	if (code != 0) {
+		std::unordered_set<int32_t> recheck;
+		for (auto& b : _bindings) {
+			const util::CommandModifierPair& pair = b.second;
+			const int32_t commandKey = b.first;
+			if (pair.command[0] != '+') {
+				// no action button command
+				continue;
+			}
+			if (pair.modifier == 0) {
+				continue;
+			}
+			if (!isPressed(commandKey)) {
+				continue;
+			}
+			if (!util::isValidForBinding(modifier, pair.command, pair.modifier)) {
+				continue;
+			}
+			core::Command::execute("%s %i %" PRId64, pair.command.c_str(), commandKey, _now);
+			recheck.insert(commandKey);
+		}
+		for (int32_t checkKey : recheck) {
+			auto range = _bindings.equal_range(checkKey);
+			for (auto i = range.first; i != range.second; ++i) {
+				const util::CommandModifierPair& pair = i->second;
+				if (pair.modifier != 0) {
+					continue;
+				}
+				core::Command::execute("-%s %i %" PRId64, &(pair.command.c_str()[1]), checkKey, _now);
+			}
+		}
 	}
 
-	return false;
+	if (!util::executeCommandsForBinding(_bindings, key, modifier, _now)) {
+		return util::executeCommandsForBinding(_bindings, key, 0, _now);
+	}
+	return true;
 }
 
 bool WindowedApp::loadKeyBindings(const std::string& filename) {

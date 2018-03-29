@@ -11,6 +11,7 @@
 #include "video/Camera.h"
 #include "frontend/Axis.h"
 #include "frontend/Plane.h"
+#include "frontend/Movement.h"
 
 class TestApp: public ui::imgui::IMGUIApp {
 private:
@@ -22,8 +23,8 @@ protected:
 	video::Camera _camera;
 	frontend::Axis _axis;
 	frontend::Plane _plane;
+	frontend::Movement _movement;
 	core::VarPtr _rotationSpeed;
-	uint8_t _moveMask = 0;
 	float _cameraSpeed = 0.1f;
 
 	virtual void doRender() = 0;

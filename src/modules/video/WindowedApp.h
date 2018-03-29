@@ -34,10 +34,7 @@ protected:
 	uint32_t _frameCounter = 0;
 	double _frameCounterResetTime = 0.0;
 
-	typedef std::unordered_map<int32_t, int16_t> KeyMap;
-	typedef KeyMap::const_iterator KeyMapConstIter;
-	typedef KeyMap::iterator KeyMapIter;
-	KeyMap _keys;
+	std::unordered_set<int32_t> _keys;
 	util::BindMap _bindings;
 	glm::ivec2 _mousePos;
 	glm::ivec2 _mouseRelativePos;
@@ -62,6 +59,7 @@ public:
 	const glm::ivec2& dimension() const;
 	int width() const;
 	int height() const;
+	bool isPressed(int32_t key) const;
 
 	enum class OpenFileMode {
 		Save, Open, Directory
@@ -122,6 +120,10 @@ inline std::string WindowedApp::openDialog(const std::string& filter) {
 
 inline std::string WindowedApp::directoryDialog() {
 	return fileDialog(OpenFileMode::Directory);
+}
+
+inline bool WindowedApp::isPressed(int32_t key) const {
+	return _keys.find(key) != _keys.end();
 }
 
 }

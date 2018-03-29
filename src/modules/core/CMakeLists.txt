@@ -1,4 +1,5 @@
 set(SRCS
+	command/ActionButton.h command/ActionButton.cpp
 	command/CommandHandler.h command/CommandHandler.cpp
 	command/Command.h command/Command.cpp
 	Assert.h

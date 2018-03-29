@@ -9,6 +9,7 @@
 #include "core/GLM.h"
 #include "core/GameConfig.h"
 #include "core/Color.h"
+#include "core/command/Command.h"
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/polyvox/Picking.h"
 #include "io/Filesystem.h"
@@ -31,6 +32,8 @@ core::AppState MapEdit::onConstruct() {
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
+	_movement.onConstruct();
+
 	core::Command::registerCommand("+linemode", [&] (const core::CmdArgs& args) { \
 		if (args.empty()) {
 			return;
@@ -38,10 +41,6 @@ core::AppState MapEdit::onConstruct() {
 		_lineModeRendering = args[0] == "true";
 	}).setHelp("Toggle line rendering mode");
 
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 
 	core::Command::registerCommand("freelook", [this] (const core::CmdArgs& args) {
@@ -63,6 +62,10 @@ core::AppState MapEdit::onInit() {
 	video::enableDebug(video::DebugSeverity::High);
 
 	if (!_axis.init()) {
+		return core::AppState::InitFailure;
+	}
+
+	if (!_movement.init()) {
 		return core::AppState::InitFailure;
 	}
 
@@ -114,8 +117,7 @@ void MapEdit::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
-	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrameMillis);
-	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
+	const glm::vec3& moveDelta = _movement.moveDelta(_speed->floatVal());
 	_camera.move(moveDelta);
 	if (!_freelook) {
 		const glm::vec3& groundPosition = _worldRenderer.groundPosition(_camera.position());
@@ -181,6 +183,8 @@ core::AppState MapEdit::onRunning() {
 	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
 	const core::AppState state = Super::onRunning();
 
+	_movement.update(_deltaFrameMillis);
+
 	const bool current = isRelativeMouseMode();
 	if (current) {
 		_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
@@ -198,6 +202,7 @@ core::AppState MapEdit::onCleanup() {
 	_worldRenderer.shutdown();
 	_worldTimer.shutdown();
 	_axis.shutdown();
+	_movement.shutdown();
 	_entity = frontend::ClientEntityPtr();
 	const core::AppState state = Super::onCleanup();
 	_world->shutdown();

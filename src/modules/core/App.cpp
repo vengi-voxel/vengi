@@ -456,7 +456,7 @@ AppState App::onRunning() {
 		_syslogVar->markClean();
 	}
 
-	core::Command::executeDelayed();
+	core::Command::update(_deltaFrameMillis);
 
 	_filesystem->update();
 
