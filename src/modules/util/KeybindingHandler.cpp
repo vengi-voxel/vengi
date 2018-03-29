@@ -53,8 +53,8 @@ bool executeCommandsForBinding(std::unordered_map<int32_t, int16_t>& keys, const
 	auto range = bindings.equal_range(key);
 	const int16_t modifier = modMask & (KMOD_SHIFT | KMOD_CTRL | KMOD_ALT);
 	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.first;
-		const int16_t mod = i->second.second;
+		const std::string& command = i->second.command;
+		const int16_t mod = i->second.modifier;
 		if (!isValidForBinding(modifier, command, mod)) {
 			continue;
 		}

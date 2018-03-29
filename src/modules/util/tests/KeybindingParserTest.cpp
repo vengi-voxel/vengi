@@ -36,8 +36,8 @@ TEST(KeybindingParserTest, testParsing) {
 	bool somecommand = false;
 	bool foo = false;
 	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.first;
-		const int16_t mod = i->second.second;
+		const std::string& command = i->second.command;
+		const int16_t mod = i->second.modifier;
 		if ((mod & KMOD_SHIFT) && (mod & KMOD_ALT) && (mod & KMOD_CTRL)) {
 			EXPECT_EQ("allmodscommand", command);
 			allmodscommand = true;
@@ -74,8 +74,8 @@ TEST(KeybindingParserTest, testParsing) {
 	count = 0;
 	range = m.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.first;
-		const int16_t mod = i->second.second;
+		const std::string& command = i->second.command;
+		const int16_t mod = i->second.modifier;
 		EXPECT_EQ("someothercommand +", command);
 		EXPECT_TRUE(mod & KMOD_LALT) << "command " << command << " modifier wasn't parsed properly";
 		EXPECT_TRUE(!(mod & KMOD_RALT)) << "command " << command << " modifier wasn't parsed properly";

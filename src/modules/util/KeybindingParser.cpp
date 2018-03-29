@@ -45,7 +45,7 @@ void KeybindingParser::parseKeyAndCommand(std::string key, const std::string& co
 		++_invalidBindings;
 		return;
 	}
-	_bindings.insert(std::make_pair(keyCode, std::make_pair(command, modifier)));
+	_bindings.insert(std::make_pair(keyCode, CommandModifierPair(command, modifier)));
 }
 
 KeybindingParser::KeybindingParser(const std::string& key, const std::string& binding) :

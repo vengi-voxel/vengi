@@ -52,8 +52,8 @@ core::AppState WindowedApp::onRunning() {
 		const int key = it->first;
 		auto range = _bindings.equal_range(key);
 		for (auto i = range.first; i != range.second; ++i) {
-			const std::string& command = i->second.first;
-			const int16_t modifier = i->second.second;
+			const std::string& command = i->second.command;
+			const int16_t modifier = i->second.modifier;
 			if (it->second == modifier && command[0] == '+') {
 				core_assert_always(1 == core::Command::execute(command + " true"));
 				_keys[key] = modifier;
@@ -108,7 +108,7 @@ bool WindowedApp::onKeyRelease(int32_t key) {
 	bool handled = false;
 	auto range = _bindings.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.first;
+		const std::string& command = i->second.command;
 		if (command[0] == '+' && _keys.erase(key) > 0) {
 			core_assert_always(1 == core::Command::execute(command + " false"));
 			handled = true;
@@ -286,7 +286,7 @@ core::AppState WindowedApp::onConstruct() {
 			const int32_t key = i->first;
 			const util::CommandModifierPair& pair = i->second;
 			const char* keyName = SDL_GetKeyName(key);
-			const int16_t modifier = pair.second;
+			const int16_t modifier = pair.modifier;
 			std::string modifierKey;
 			if (modifier & KMOD_ALT) {
 				modifierKey += "ALT ";
@@ -297,7 +297,7 @@ core::AppState WindowedApp::onConstruct() {
 			if (modifier & KMOD_CTRL) {
 				modifierKey += "CTRL ";
 			}
-			const std::string& command = pair.first;
+			const std::string& command = pair.command;
 			Log::info("%-15s %-10s %s", modifierKey.c_str(), keyName, command.c_str());
 		}
 	}).setHelp("Show all known key bindings");
@@ -316,8 +316,8 @@ core::AppState WindowedApp::onConstruct() {
 			auto range = _bindings.equal_range(key);
 			bool found = false;
 			for (auto it = range.first; it != range.second; ++it) {
-				if (it->second.second == pair.second) {
-					it->second.first = pair.first;
+				if (it->second.modifier == pair.modifier) {
+					it->second.command = pair.command;
 					found = true;
 					Log::info("Updated binding for key %s", args[0].c_str());
 					break;
@@ -346,7 +346,7 @@ core::AppState WindowedApp::onCleanup() {
 		const int32_t key = i->first;
 		const util::CommandModifierPair& pair = i->second;
 		const std::string keyName = core::string::toLower(SDL_GetKeyName(key));
-		const int16_t modifier = pair.second;
+		const int16_t modifier = pair.modifier;
 		std::string modifierKey;
 		if (modifier & KMOD_ALT) {
 			modifierKey += "alt+";
@@ -357,7 +357,7 @@ core::AppState WindowedApp::onCleanup() {
 		if (modifier & KMOD_CTRL) {
 			modifierKey += "ctrl+";
 		}
-		const std::string& command = pair.first;
+		const std::string& command = pair.command;
 		keybindings += modifierKey + keyName + " " + command + '\n';
 	}
 	Log::trace("%s", keybindings.c_str());
