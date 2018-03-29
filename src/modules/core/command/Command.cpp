@@ -124,12 +124,12 @@ void Command::shutdown() {
 	_cmds.clear();
 }
 
-bool Command::unregisterCommand(const std::string& name) {
+bool Command::unregisterCommand(const char* name) {
 	ScopedWriteLock lock(_lock);
 	return _cmds.erase(name) > 0;
 }
 
-Command& Command::setHelp(const std::string& help) {
+Command& Command::setHelp(const char* help) {
 	_help = help;
 	return *this;
 }

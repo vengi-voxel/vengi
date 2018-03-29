@@ -31,29 +31,29 @@ private:
 	static int _delayFrames;
 	static std::vector<std::string> _delayedTokens;
 
-	std::string _name;
-	std::string _help;
+	const char* _name;
+	const char* _help;
 	FunctionType _func;
 	typedef std::function<int(const std::string&, std::vector<std::string>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
-	constexpr Command() :
-			_name(""), _func() {
+	Command() :
+		_name(nullptr), _help(nullptr), _func() {
 	}
 
-	Command(const std::string& name, FunctionType&& func) :
-		_name(name), _func(std::move(func)) {
+	Command(const char* name, FunctionType&& func) :
+		_name(name), _help(""), _func(std::move(func)) {
 	}
 
 public:
-	static Command& registerCommand(const std::string& name, FunctionType&& func) {
+	static Command& registerCommand(const char* name, FunctionType&& func) {
 		ScopedWriteLock lock(_lock);
 		const Command c(name, std::forward<FunctionType>(func));
-		_cmds.insert(std::make_pair(c.name(), c));
-		return _cmds.find(c.name())->second;
+		_cmds.insert(std::make_pair(name, c));
+		return _cmds.find(name)->second;
 	}
 
-	static bool unregisterCommand(const std::string& name);
+	static bool unregisterCommand(const char* name);
 
 	static void shutdown();
 
@@ -97,7 +97,7 @@ public:
 			}
 		}
 		std::sort(commandList.begin(), commandList.end(), [] (const Command &v1, const Command &v2) {
-			return v1.name() < v2.name();
+			return strcmp(v1.name(), v2.name()) < 0;
 		});
 		for (const auto& command : commandList) {
 			func(command);
@@ -117,10 +117,10 @@ public:
 
 	Command& setBoolCompleter();
 
-	const std::string& name() const;
+	const char* name() const;
 
-	Command& setHelp(const std::string& help);
-	const std::string& help() const;
+	Command& setHelp(const char* help);
+	const char* help() const;
 
 	bool operator==(const Command& rhs) const;
 };
@@ -129,11 +129,11 @@ inline bool Command::operator==(const Command& rhs) const {
 	return rhs._name == _name;
 }
 
-inline const std::string& Command::name() const {
+inline const char* Command::name() const {
 	return _name;
 }
 
-inline const std::string& Command::help() const {
+inline const char* Command::help() const {
 	return _help;
 }
 
@@ -142,7 +142,14 @@ inline const std::string& Command::help() const {
 namespace std {
 template<> struct hash<core::Command> {
 	inline size_t operator()(const core::Command &c) const {
-		return std::hash<std::string>()(c.name());
+		size_t result = 0;
+		const size_t prime = 31;
+		const char *name = c.name();
+		const size_t s = strlen(name);
+		for (size_t i = 0; i < s; ++i) {
+			result = name[i] + (result * prime);
+		}
+		return result;
 	}
 };
 }

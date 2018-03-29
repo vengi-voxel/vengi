@@ -402,7 +402,7 @@ void App::usage() const {
 		maxWidth = (std::max)(maxWidth, (int)v->name().size());
 	});
 	core::Command::visitSorted([&] (const core::Command& c) {
-		maxWidth = (std::max)(maxWidth, (int)c.name().size());
+		maxWidth = (std::max)(maxWidth, (int)strlen(c.name()));
 	});
 
 	Log::info("---");
@@ -439,7 +439,7 @@ void App::usage() const {
 	Log::info("---");
 	Log::info("Commands:");
 	core::Command::visitSorted([=] (const core::Command& c) {
-		Log::info("   %-*s %s", maxWidth, c.name().c_str(), c.help().c_str());
+		Log::info("   %-*s %s", maxWidth, c.name(), c.help());
 	});
 }
 

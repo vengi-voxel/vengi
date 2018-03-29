@@ -32,7 +32,7 @@ TEST_F(ConsoleTest, testAutoCompleteCommand) {
 	const std::string cmd1 = "abcdef_console";
 	const std::string cmd2 = "test";
 	const std::string cmdComplete = cmd1 + cmd2;
-	core::Command::registerCommand(cmdComplete, [] (const core::CmdArgs& args) {});
+	core::Command::registerCommand(cmdComplete.c_str(), [] (const core::CmdArgs& args) {});
 	Console c;
 	SDL_LogSetOutputFunction(nullptr, nullptr);
 	c.toggle();

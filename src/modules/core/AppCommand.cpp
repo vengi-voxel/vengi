@@ -175,7 +175,7 @@ void init() {
 			if (!args.empty() && !core::string::matches(args[0], cmd.name())) {
 				return;
 			}
-			Log::info("* %s - %s", cmd.name().c_str(), cmd.help().c_str());
+			Log::info("* %s - %s", cmd.name(), cmd.help());
 		});
 	}).setHelp("Show the list of known commands (wildcards supported)");
 }
