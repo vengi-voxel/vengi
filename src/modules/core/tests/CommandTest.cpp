@@ -18,7 +18,7 @@ TEST_F(CommandTest, testExecuteAfterUnregister) {
 	Command::registerCommand("test", [&] (const core::CmdArgs&) {
 	});
 	EXPECT_EQ(1, Command::execute("test"));
-	Command::unregisterCommand("test");
+	EXPECT_TRUE(Command::unregisterCommand("test")) << "Failed to unregister the 'test' command";
 	EXPECT_EQ(0, Command::execute("test"));
 }
 

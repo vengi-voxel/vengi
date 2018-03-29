@@ -14,7 +14,7 @@
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_MAINWINDOW_REPEAT(command, help) core::Command::registerCommand("+" #command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \
-	core::Command::registerCommand(core::string::toLower(#command), [this] (const core::CmdArgs& args) { \
+	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
 		const std::string file = args.empty() ? "" : args[0]; \
 		if (!command##File(file)) { \
 			Log::error("Failed to execute '" #command "' for file %s", file.c_str()); \

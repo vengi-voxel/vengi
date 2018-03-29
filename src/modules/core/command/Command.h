@@ -37,7 +37,7 @@ private:
 	typedef std::function<int(const std::string&, std::vector<std::string>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
-	Command() :
+	constexpr Command() :
 			_name(""), _func() {
 	}
 
@@ -53,7 +53,7 @@ public:
 		return _cmds.find(c.name())->second;
 	}
 
-	static void unregisterCommand(const std::string& name);
+	static bool unregisterCommand(const std::string& name);
 
 	static void shutdown();
 
