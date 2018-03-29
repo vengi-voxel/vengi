@@ -14,7 +14,7 @@ namespace detail
 		typedef double			float64;
 #	endif//GLM_FORCE_SINGLE_ONLY
 }//namespace detail
-	
+
 	typedef float				lowp_float_t;
 	typedef float				mediump_float_t;
 	typedef double				highp_float_t;
@@ -22,23 +22,23 @@ namespace detail
 	/// @addtogroup core_precision
 	/// @{
 
-	/// Low qualifier floating-point numbers. 
+	/// Low qualifier floating-point numbers.
 	/// There is no guarantee on the actual qualifier.
-	/// 
+	///
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.1.4 Floats</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.7.2 Precision Qualifier</a>
 	typedef lowp_float_t		lowp_float;
 
 	/// Medium qualifier floating-point numbers.
 	/// There is no guarantee on the actual qualifier.
-	/// 
+	///
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.1.4 Floats</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.7.2 Precision Qualifier</a>
 	typedef mediump_float_t		mediump_float;
 
 	/// High qualifier floating-point numbers.
 	/// There is no guarantee on the actual qualifier.
-	/// 
+	///
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.1.4 Floats</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 4.7.2 Precision Qualifier</a>
 	typedef highp_float_t		highp_float;

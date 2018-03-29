@@ -22,7 +22,7 @@ namespace glm
 		if(Distance >= LineLength) return b;
 		return a + LineDirection * Distance;
 	}
-	
+
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<2, T, Q> closestPointOnLine
 	(
@@ -42,5 +42,5 @@ namespace glm
 		if(Distance >= LineLength) return b;
 		return a + LineDirection * Distance;
 	}
-	
+
 }//namespace glm

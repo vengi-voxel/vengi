@@ -7,7 +7,7 @@
 /// @ingroup gtx
 ///
 /// Include <glm/gtx/bit.hpp> to use the features of this extension.
-/// 
+///
 /// Allow to perform bit operations on integer values
 
 #pragma once

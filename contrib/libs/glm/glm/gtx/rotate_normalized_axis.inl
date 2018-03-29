@@ -43,7 +43,7 @@ namespace glm
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER tquat<T, Q> rotateNormalizedAxis
 	(
-		tquat<T, Q> const& q, 
+		tquat<T, Q> const& q,
 		T const& angle,
 		vec<3, T, Q> const& v
 	)

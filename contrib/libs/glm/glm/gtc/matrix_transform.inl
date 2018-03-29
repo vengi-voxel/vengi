@@ -14,7 +14,7 @@ namespace glm
 		Result[3] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3];
 		return Result;
 	}
-	
+
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> rotate(mat<4, 4, T, Q> const& m, T angle, vec<3, T, Q> const& v)
 	{
@@ -45,7 +45,7 @@ namespace glm
 		Result[3] = m[3];
 		return Result;
 	}
-		
+
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> rotate_slow(mat<4, 4, T, Q> const& m, T angle, vec<3, T, Q> const& v)
 	{
@@ -361,7 +361,7 @@ namespace glm
 		assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
 
 		T const tanHalfFovy = tan(fovy / static_cast<T>(2));
-		
+
 		mat<4, 4, T, defaultp> Result(static_cast<T>(0));
 		Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
 		Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
@@ -377,7 +377,7 @@ namespace glm
 		assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
 
 		T const tanHalfFovy = tan(fovy / static_cast<T>(2));
-		
+
 		mat<4, 4, T, defaultp> Result(static_cast<T>(0));
 		Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
 		Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
@@ -447,7 +447,7 @@ namespace glm
 		assert(width > static_cast<T>(0));
 		assert(height > static_cast<T>(0));
 		assert(fov > static_cast<T>(0));
-	
+
 		T const rad = fov;
 		T const h = glm::cos(static_cast<T>(0.5) * rad) / glm::sin(static_cast<T>(0.5) * rad);
 		T const w = h * height / width; ///todo max(width , Height) / min(width , Height)?
@@ -467,7 +467,7 @@ namespace glm
 		assert(width > static_cast<T>(0));
 		assert(height > static_cast<T>(0));
 		assert(fov > static_cast<T>(0));
-	
+
 		T const rad = fov;
 		T const h = glm::cos(static_cast<T>(0.5) * rad) / glm::sin(static_cast<T>(0.5) * rad);
 		T const w = h * height / width; ///todo max(width , Height) / min(width , Height)?
@@ -487,7 +487,7 @@ namespace glm
 		assert(width > static_cast<T>(0));
 		assert(height > static_cast<T>(0));
 		assert(fov > static_cast<T>(0));
-	
+
 		T const rad = fov;
 		T const h = glm::cos(static_cast<T>(0.5) * rad) / glm::sin(static_cast<T>(0.5) * rad);
 		T const w = h * height / width; ///todo max(width , Height) / min(width , Height)?
@@ -507,7 +507,7 @@ namespace glm
 		assert(width > static_cast<T>(0));
 		assert(height > static_cast<T>(0));
 		assert(fov > static_cast<T>(0));
-	
+
 		T const rad = fov;
 		T const h = glm::cos(static_cast<T>(0.5) * rad) / glm::sin(static_cast<T>(0.5) * rad);
 		T const w = h * height / width; ///todo max(width , Height) / min(width , Height)?
@@ -625,7 +625,7 @@ namespace glm
 	template<typename T>
 	GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> tweakedInfinitePerspective(T fovy, T aspect, T zNear, T ep)
 	{
-		T const range = tan(fovy / static_cast<T>(2)) * zNear;	
+		T const range = tan(fovy / static_cast<T>(2)) * zNear;
 		T const left = -range * aspect;
 		T const right = range * aspect;
 		T const bottom = -range;

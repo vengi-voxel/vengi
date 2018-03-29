@@ -48,7 +48,7 @@ namespace detail
 			return static_cast<T>(1) / sqrt(x);
 		}
 	};
-		
+
 	template<length_t L, bool Aligned>
 	struct compute_inversesqrt<L, float, lowp, Aligned>
 	{
@@ -137,7 +137,7 @@ namespace detail
 	{
 		return static_cast<genType>(1) / sqrt(x);
 	}
-	
+
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<L, T, Q> inversesqrt(vec<L, T, Q> const& x)
 	{

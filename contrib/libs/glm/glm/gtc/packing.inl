@@ -356,13 +356,13 @@ namespace detail
 	{
 		return static_cast<uint8>(round(clamp(v, 0.0f, 1.0f) * 255.0f));
 	}
-	
+
 	GLM_FUNC_QUALIFIER float unpackUnorm1x8(uint8 p)
 	{
 		float const Unpack(p);
 		return Unpack * static_cast<float>(0.0039215686274509803921568627451); // 1 / 255
 	}
-	
+
 	GLM_FUNC_QUALIFIER uint16 packUnorm2x8(vec2 const& v)
 	{
 		u8vec2 const Topack(round(clamp(v, 0.0f, 1.0f) * 255.0f));
@@ -371,7 +371,7 @@ namespace detail
 		memcpy(&Unpack, &Topack, sizeof(Unpack));
 		return Unpack;
 	}
-	
+
 	GLM_FUNC_QUALIFIER vec2 unpackUnorm2x8(uint16 p)
 	{
 		u8vec2 Unpack;
@@ -386,7 +386,7 @@ namespace detail
 		memcpy(&Packed, &Topack, sizeof(Packed));
 		return Packed;
 	}
-	
+
 	GLM_FUNC_QUALIFIER float unpackSnorm1x8(uint8 p)
 	{
 		int8 Unpack = 0;
@@ -395,7 +395,7 @@ namespace detail
 			static_cast<float>(Unpack) * 0.00787401574803149606299212598425f, // 1.0f / 127.0f
 			-1.0f, 1.0f);
 	}
-	
+
 	GLM_FUNC_QUALIFIER uint16 packSnorm2x8(vec2 const& v)
 	{
 		i8vec2 const Topack(round(clamp(v, -1.0f, 1.0f) * 127.0f));
@@ -403,7 +403,7 @@ namespace detail
 		memcpy(&Packed, &Topack, sizeof(Packed));
 		return Packed;
 	}
-	
+
 	GLM_FUNC_QUALIFIER vec2 unpackSnorm2x8(uint16 p)
 	{
 		i8vec2 Unpack;
@@ -452,7 +452,7 @@ namespace detail
 		int16 Unpack = 0;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return clamp(
-			static_cast<float>(Unpack) * 3.0518509475997192297128208258309e-5f, //1.0f / 32767.0f, 
+			static_cast<float>(Unpack) * 3.0518509475997192297128208258309e-5f, //1.0f / 32767.0f,
 			-1.0f, 1.0f);
 	}
 
@@ -518,7 +518,7 @@ namespace detail
 		Result.data.y = v.y;
 		Result.data.z = v.z;
 		Result.data.w = v.w;
-		return Result.pack; 
+		return Result.pack;
 	}
 
 	GLM_FUNC_QUALIFIER ivec4 unpackI3x10_1x2(uint32 v)
@@ -539,7 +539,7 @@ namespace detail
 		Result.data.y = v.y;
 		Result.data.z = v.z;
 		Result.data.w = v.w;
-		return Result.pack; 
+		return Result.pack;
 	}
 
 	GLM_FUNC_QUALIFIER uvec4 unpackU3x10_1x2(uint32 v)

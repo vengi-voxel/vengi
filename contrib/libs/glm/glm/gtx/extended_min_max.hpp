@@ -28,112 +28,112 @@ namespace glm
 	/// @addtogroup gtx_extended_min_max
 	/// @{
 
-	/// Return the minimum component-wise values of 3 inputs 
+	/// Return the minimum component-wise values of 3 inputs
 	/// @see gtx_extented_min_max
 	template<typename T>
 	GLM_FUNC_DECL T min(
-		T const& x, 
-		T const& y, 
+		T const& x,
+		T const& y,
 		T const& z);
 
 	/// Return the minimum component-wise values of 3 inputs
 	/// @see gtx_extented_min_max
 	template<typename T, template<typename> class C>
 	GLM_FUNC_DECL C<T> min(
-		C<T> const& x, 
-		typename C<T>::T const& y, 
+		C<T> const& x,
+		typename C<T>::T const& y,
 		typename C<T>::T const& z);
 
-	/// Return the minimum component-wise values of 3 inputs 
+	/// Return the minimum component-wise values of 3 inputs
 	/// @see gtx_extented_min_max
 	template<typename T, template<typename> class C>
 	GLM_FUNC_DECL C<T> min(
-		C<T> const& x, 
-		C<T> const& y, 
+		C<T> const& x,
+		C<T> const& y,
 		C<T> const& z);
 
-	/// Return the minimum component-wise values of 4 inputs 
+	/// Return the minimum component-wise values of 4 inputs
 	/// @see gtx_extented_min_max
 	template<typename T>
 	GLM_FUNC_DECL T min(
-		T const& x, 
-		T const& y, 
-		T const& z, 
+		T const& x,
+		T const& y,
+		T const& z,
 		T const& w);
 
-	/// Return the minimum component-wise values of 4 inputs 
+	/// Return the minimum component-wise values of 4 inputs
 	/// @see gtx_extented_min_max
 	template<typename T, template<typename> class C>
 	GLM_FUNC_DECL C<T> min(
-		C<T> const& x, 
-		typename C<T>::T const& y, 
-		typename C<T>::T const& z, 
+		C<T> const& x,
+		typename C<T>::T const& y,
+		typename C<T>::T const& z,
 		typename C<T>::T const& w);
 
 	/// Return the minimum component-wise values of 4 inputs
 	/// @see gtx_extented_min_max
 	template<typename T, template<typename> class C>
 	GLM_FUNC_DECL C<T> min(
-		C<T> const& x, 
-		C<T> const& y, 
+		C<T> const& x,
+		C<T> const& y,
 		C<T> const& z,
 		C<T> const& w);
 
-	/// Return the maximum component-wise values of 3 inputs 
+	/// Return the maximum component-wise values of 3 inputs
 	/// @see gtx_extented_min_max
 	template<typename T>
 	GLM_FUNC_DECL T max(
-		T const& x, 
-		T const& y, 
+		T const& x,
+		T const& y,
 		T const& z);
 
 	/// Return the maximum component-wise values of 3 inputs
 	/// @see gtx_extented_min_max
 	template<typename T, template<typename> class C>
 	GLM_FUNC_DECL C<T> max(
-		C<T> const& x, 
-		typename C<T>::T const& y, 
+		C<T> const& x,
+		typename C<T>::T const& y,
 		typename C<T>::T const& z);
 
-	/// Return the maximum component-wise values of 3 inputs 
+	/// Return the maximum component-wise values of 3 inputs
 	/// @see gtx_extented_min_max
 	template<typename T, template<typename> class C>
 	GLM_FUNC_DECL C<T> max(
-		C<T> const& x, 
-		C<T> const& y, 
+		C<T> const& x,
+		C<T> const& y,
 		C<T> const& z);
 
 	/// Return the maximum component-wise values of 4 inputs
 	/// @see gtx_extented_min_max
 	template<typename T>
 	GLM_FUNC_DECL T max(
-		T const& x, 
-		T const& y, 
-		T const& z, 
+		T const& x,
+		T const& y,
+		T const& z,
 		T const& w);
 
-	/// Return the maximum component-wise values of 4 inputs 
+	/// Return the maximum component-wise values of 4 inputs
 	/// @see gtx_extented_min_max
 	template<typename T, template<typename> class C>
 	GLM_FUNC_DECL C<T> max(
-		C<T> const& x, 
-		typename C<T>::T const& y, 
-		typename C<T>::T const& z, 
+		C<T> const& x,
+		typename C<T>::T const& y,
+		typename C<T>::T const& z,
 		typename C<T>::T const& w);
 
-	/// Return the maximum component-wise values of 4 inputs 
+	/// Return the maximum component-wise values of 4 inputs
 	/// @see gtx_extented_min_max
 	template<typename T, template<typename> class C>
 	GLM_FUNC_DECL C<T> max(
-		C<T> const& x, 
-		C<T> const& y, 
-		C<T> const& z, 
+		C<T> const& x,
+		C<T> const& y,
+		C<T> const& z,
 		C<T> const& w);
 
 	/// Returns y if y < x; otherwise, it returns x. If one of the two arguments is NaN, the value of the other argument is returned.
 	///
 	/// @tparam genType Floating-point or integer; scalar or vector types.
-	/// 
+	///
 	/// @see gtx_extented_min_max
 	template<typename genType>
 	GLM_FUNC_DECL genType fmin(genType x, genType y);
@@ -161,31 +161,31 @@ namespace glm
 	GLM_FUNC_DECL vec<L, T, Q> fmin(vec<L, T, Q> const& x, vec<L, T, Q> const& y);
 
 	/// Returns y if x < y; otherwise, it returns x. If one of the two arguments is NaN, the value of the other argument is returned.
-	/// 
+	///
 	/// @tparam genType Floating-point; scalar or vector types.
-	/// 
+	///
 	/// @see gtx_extented_min_max
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmax">std::fmax documentation</a>
 	template<typename genType>
 	GLM_FUNC_DECL genType fmax(genType x, genType y);
 
 	/// Returns y if x < y; otherwise, it returns x. If one of the two arguments is NaN, the value of the other argument is returned.
-	/// 
+	///
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
 	/// @tparam T Floating-point scalar types
 	/// @tparam Q Value from qualifier enum
-	/// 
+	///
 	/// @see gtx_extented_min_max
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmax">std::fmax documentation</a>
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_DECL vec<L, T, Q> fmax(vec<L, T, Q> const& x, T y);
 
 	/// Returns y if x < y; otherwise, it returns x. If one of the two arguments is NaN, the value of the other argument is returned.
-	/// 
+	///
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
 	/// @tparam T Floating-point scalar types
 	/// @tparam Q Value from qualifier enum
-	/// 
+	///
 	/// @see gtx_extented_min_max
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmax">std::fmax documentation</a>
 	template<length_t L, typename T, qualifier Q>

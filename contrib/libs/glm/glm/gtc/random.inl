@@ -157,7 +157,7 @@ namespace detail
 			return (compute_rand<L, uint32, Q>::call() % (Max + static_cast<uint32>(1) - Min)) + Min;
 		}
 	};
- 
+
 	template<length_t L, qualifier Q>
 	struct compute_linearRand<L, int64, Q>
 	{
@@ -281,7 +281,7 @@ namespace detail
 		{
 			x1 = linearRand(genType(-1), genType(1));
 			x2 = linearRand(genType(-1), genType(1));
-		
+
 			w = x1 * x1 + x2 * x2;
 		} while(w > genType(1));
 
@@ -296,7 +296,7 @@ namespace detail
 
 	template<typename T>
 	GLM_FUNC_QUALIFIER vec<2, T, defaultp> diskRand(T Radius)
-	{		
+	{
 		vec<2, T, defaultp> Result(T(0));
 		T LenRadius(T(0));
 
@@ -317,7 +317,7 @@ namespace detail
 	{
 		vec<3, T, defaultp> Result(T(0));
 		T LenRadius(T(0));
-		
+
 		do
 		{
 			Result = linearRand(
@@ -326,7 +326,7 @@ namespace detail
 			LenRadius = length(Result);
 		}
 		while(LenRadius > Radius);
-		
+
 		return Result;
 	}
 

@@ -7,7 +7,7 @@
 /// @ingroup gtx
 ///
 /// Include <glm/gtx/hash.hpp> to use the features of this extension.
-/// 
+///
 /// Add std::hash support for glm types
 
 #pragma once
@@ -121,7 +121,7 @@ namespace std
 	{
 		GLM_FUNC_DECL size_t operator()(glm::mat<4, 2, T,Q> const& m) const;
 	};
-	
+
 	template<typename T, glm::qualifier Q>
 	struct hash<glm::mat<4, 3, T,Q> >
 	{

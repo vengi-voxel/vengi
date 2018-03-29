@@ -6,7 +6,7 @@
 /// @brief Features that implement in C++ the GLSL specification as closely as possible.
 ///
 /// The GLM core consists of @ref core_types "C++ types that mirror GLSL types" and
-/// C++ functions that mirror the GLSL functions. It also includes 
+/// C++ functions that mirror the GLSL functions. It also includes
 /// @ref core_precision "a set of qualifier-based types" that can be used in the appropriate
 /// functions. The C++ types are all based on a basic set of @ref core_template "template types".
 ///
@@ -42,7 +42,7 @@
 ///
 /// @defgroup core_template Template types
 ///
-/// @brief The generic template types used as the basis for the core types. 
+/// @brief The generic template types used as the basis for the core types.
 ///
 /// These types are all templates used to define the actual @ref core_types.
 /// These templates are implementation details of GLM types and should not be used explicitly.
@@ -52,25 +52,25 @@
 /// @defgroup gtc Stable extensions
 ///
 /// @brief Additional features not specified by GLSL specification.
-/// 
-/// GTC extensions aim to be stable. 
-/// 
+///
+/// GTC extensions aim to be stable.
+///
 /// Even if it's highly unrecommended, it's possible to include all the extensions at once by
 /// including <glm/ext.hpp>. Otherwise, each extension needs to be included  a specific file.
-/// 
+///
 /// @defgroup gtx Experimental extensions
-/// 
+///
 /// @brief Experimental features not specified by GLSL specification.
-/// 
+///
 /// Experimental extensions are useful functions and types, but the development of
-/// their API and functionality is not necessarily stable. They can change 
+/// their API and functionality is not necessarily stable. They can change
 /// substantially between versions. Backwards compatibility is not much of an issue
 /// for them.
-/// 
-/// Even if it's highly unrecommended, it's possible to include all the extensions 
-/// at once by including <glm/ext.hpp>. Otherwise, each extension needs to be 
+///
+/// Even if it's highly unrecommended, it's possible to include all the extensions
+/// at once by including <glm/ext.hpp>. Otherwise, each extension needs to be
 /// included  a specific file.
-/// 
+///
 /// @mainpage OpenGL Mathematics (GLM)
 /// - Website: <a href="https://glm.g-truc.net">glm.g-truc.net</a>
 /// - <a href="modules.html">GLM API documentation</a>

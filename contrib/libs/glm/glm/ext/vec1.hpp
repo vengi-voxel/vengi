@@ -7,7 +7,7 @@
 /// @ingroup ext
 ///
 /// Include <glm/ext/vec1.hpp> to use the features of this extension.
-/// 
+///
 /// Add vec1, ivec1, uvec1 and bvec1 types.
 
 #pragma once
@@ -56,7 +56,7 @@ namespace glm
 #				pragma clang diagnostic ignored "-Wgnu-anonymous-struct"
 #				pragma clang diagnostic ignored "-Wnested-anon-types"
 #			endif
-		
+
 			union
 			{
 				T x;
@@ -75,7 +75,7 @@ namespace glm
 					_GLM_SWIZZLE1_4_MEMBERS(T, Q, tvec4, s)
 #				endif//GLM_SWIZZLE*/
 			};
-		
+
 #			if GLM_COMPILER & GLM_COMPILER_CLANG
 #				pragma clang diagnostic pop
 #			endif
@@ -101,7 +101,7 @@ namespace glm
 
 		// -- Implicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec() GLM_DEFAULT;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec() GLM_DEFAULT_CTOR;
 		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec(vec const& v) GLM_DEFAULT;
 		template<qualifier P>
 		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec(vec<1, T, P> const& v);
@@ -138,10 +138,10 @@ namespace glm
 */
 		// -- Unary arithmetic operators --
 
-		GLM_FUNC_DECL vec & operator=(vec const& v) GLM_DEFAULT;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 vec & operator=(vec const& v) GLM_DEFAULT;
 
 		template<typename U>
-		GLM_FUNC_DECL vec & operator=(vec<1, U, Q> const& v);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 vec & operator=(vec<1, U, Q> const& v);
 		template<typename U>
 		GLM_FUNC_DECL vec & operator+=(U scalar);
 		template<typename U>

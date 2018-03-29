@@ -9,7 +9,7 @@ namespace detail
 #	if GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
 	template<qualifier Q, int E0, int E1, int E2, int E3>
 	struct _swizzle_base1<4, float, Q, E0,E1,E2,E3, true> : public _swizzle_base0<float, 4>
-	{ 
+	{
 		GLM_FUNC_QUALIFIER vec<4, float, Q> operator ()()  const
 		{
 			__m128 data = *reinterpret_cast<__m128 const*>(&this->_buffer);
@@ -26,7 +26,7 @@ namespace detail
 
 	template<qualifier Q, int E0, int E1, int E2, int E3>
 	struct _swizzle_base1<4, int32, Q, E0,E1,E2,E3, true> : public _swizzle_base0<int32, 4>
-	{ 
+	{
 		GLM_FUNC_QUALIFIER vec<4, int32, Q> operator ()()  const
 		{
 			__m128i data = *reinterpret_cast<__m128i const*>(&this->_buffer);
@@ -39,7 +39,7 @@ namespace detail
 
 	template<qualifier Q, int E0, int E1, int E2, int E3>
 	struct _swizzle_base1<4, uint32, Q, E0,E1,E2,E3, true> : public _swizzle_base0<uint32, 4>
-	{ 
+	{
 		GLM_FUNC_QUALIFIER vec<4, uint32, Q> operator ()()  const
 		{
 			__m128i data = *reinterpret_cast<__m128i const*>(&this->_buffer);

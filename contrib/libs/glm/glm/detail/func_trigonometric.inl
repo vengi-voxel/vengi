@@ -21,7 +21,7 @@ namespace glm
 	{
 		return detail::functor1<L, T, T, Q>::call(radians, v);
 	}
-	
+
 	// degrees
 	template<typename genType>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR genType degrees(genType radians)
@@ -155,7 +155,7 @@ namespace glm
 #	if GLM_HAS_CXX11_STL
 		using std::acosh;
 #	else
-		template<typename genType> 
+		template<typename genType>
 		GLM_FUNC_QUALIFIER genType acosh(genType x)
 		{
 			GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'acosh' only accept floating-point input");
@@ -180,7 +180,7 @@ namespace glm
 		GLM_FUNC_QUALIFIER genType atanh(genType x)
 		{
 			GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'atanh' only accept floating-point input");
-		
+
 			if(std::abs(x) >= static_cast<genType>(1))
 				return 0;
 			return static_cast<genType>(0.5) * log((static_cast<genType>(1) + x) / (static_cast<genType>(1) - x));

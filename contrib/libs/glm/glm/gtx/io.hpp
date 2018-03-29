@@ -10,7 +10,7 @@
 /// @ingroup gtx
 ///
 /// Include <glm/gtx/io.hpp> to use the features of this extension.
-/// 
+///
 /// std::[w]ostream support for glm types
 ///
 /// std::[w]ostream support for glm types + qualifier/width/etc. manipulators

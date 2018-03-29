@@ -3,7 +3,7 @@
 
 namespace glm
 {
-	template<typename genType> 
+	template<typename genType>
 	GLM_FUNC_QUALIFIER genType angle
 	(
 		genType const& x,

@@ -34,51 +34,51 @@ namespace glm
 
 		// -- Constructors --
 
-		GLM_FUNC_DECL mat() GLM_DEFAULT;
-		GLM_FUNC_DECL mat(mat<2, 2, T, Q> const& m) GLM_DEFAULT;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR_CXX14 mat() GLM_DEFAULT_CTOR;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR_CXX14 mat(mat<2, 2, T, Q> const& m) GLM_DEFAULT;
 		template<qualifier P>
-		GLM_FUNC_DECL mat(mat<2, 2, T, P> const& m);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR_CXX14 mat(mat<2, 2, T, P> const& m);
 
-		GLM_FUNC_DECL explicit mat(T scalar);
-		GLM_FUNC_DECL mat(
+		GLM_FUNC_DECL explicit GLM_CONSTEXPR_CTOR_CXX14 mat(T scalar);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR_CXX14 mat(
 			T const& x1, T const& y1,
 			T const& x2, T const& y2);
-		GLM_FUNC_DECL mat(
+		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR_CXX14 mat(
 			col_type const& v1,
 			col_type const& v2);
 
 		// -- Conversions --
 
 		template<typename U, typename V, typename M, typename N>
-		GLM_FUNC_DECL mat(
+		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR_CXX14 mat(
 			U const& x1, V const& y1,
 			M const& x2, N const& y2);
 
 		template<typename U, typename V>
-		GLM_FUNC_DECL mat(
+		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR_CXX14 mat(
 			vec<2, U, Q> const& v1,
 			vec<2, V, Q> const& v2);
 
 		// -- Matrix conversions --
 
 		template<typename U, qualifier P>
-		GLM_FUNC_DECL GLM_EXPLICIT mat(mat<2, 2, U, P> const& m);
+		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR_CTOR_CXX14 mat(mat<2, 2, U, P> const& m);
 
-		GLM_FUNC_DECL GLM_EXPLICIT mat(mat<3, 3, T, Q> const& x);
-		GLM_FUNC_DECL GLM_EXPLICIT mat(mat<4, 4, T, Q> const& x);
-		GLM_FUNC_DECL GLM_EXPLICIT mat(mat<2, 3, T, Q> const& x);
-		GLM_FUNC_DECL GLM_EXPLICIT mat(mat<3, 2, T, Q> const& x);
-		GLM_FUNC_DECL GLM_EXPLICIT mat(mat<2, 4, T, Q> const& x);
-		GLM_FUNC_DECL GLM_EXPLICIT mat(mat<4, 2, T, Q> const& x);
-		GLM_FUNC_DECL GLM_EXPLICIT mat(mat<3, 4, T, Q> const& x);
-		GLM_FUNC_DECL GLM_EXPLICIT mat(mat<4, 3, T, Q> const& x);
+		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR_CTOR_CXX14 mat(mat<3, 3, T, Q> const& x);
+		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR_CTOR_CXX14 mat(mat<4, 4, T, Q> const& x);
+		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR_CTOR_CXX14 mat(mat<2, 3, T, Q> const& x);
+		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR_CTOR_CXX14 mat(mat<3, 2, T, Q> const& x);
+		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR_CTOR_CXX14 mat(mat<2, 4, T, Q> const& x);
+		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR_CTOR_CXX14 mat(mat<4, 2, T, Q> const& x);
+		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR_CTOR_CXX14 mat(mat<3, 4, T, Q> const& x);
+		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR_CTOR_CXX14 mat(mat<4, 3, T, Q> const& x);
 
 		// -- Unary arithmetic operators --
 
-		GLM_FUNC_DECL mat<2, 2, T, Q> & operator=(mat<2, 2, T, Q> const& v) GLM_DEFAULT;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 mat<2, 2, T, Q> & operator=(mat<2, 2, T, Q> const& v) GLM_DEFAULT;
 
 		template<typename U>
-		GLM_FUNC_DECL mat<2, 2, T, Q> & operator=(mat<2, 2, U, Q> const& m);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 mat<2, 2, T, Q> & operator=(mat<2, 2, U, Q> const& m);
 		template<typename U>
 		GLM_FUNC_DECL mat<2, 2, T, Q> & operator+=(U s);
 		template<typename U>

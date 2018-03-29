@@ -10,7 +10,7 @@
 
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_EXT_INCLUDED_DISPLAYED)
 #	define GLM_MESSAGE_EXT_INCLUDED_DISPLAYED
-#	pragma message("GLM: All extensions included (not recommanded)")
+#	pragma message("GLM: All extensions included (not recommended)")
 #endif//GLM_MESSAGES
 
 #include "./ext/vector_relational.hpp"

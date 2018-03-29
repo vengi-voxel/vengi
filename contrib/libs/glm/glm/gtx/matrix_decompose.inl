@@ -11,7 +11,7 @@ namespace detail
 	// result = (a * ascl) + (b * bscl)
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<3, T, Q> combine(
-		vec<3, T, Q> const& a, 
+		vec<3, T, Q> const& a,
 		vec<3, T, Q> const& b,
 		T ascl, T bscl)
 	{
@@ -56,8 +56,8 @@ namespace detail
 
 		// First, isolate perspective.  This is the messiest.
 		if(
-			epsilonNotEqual(LocalMatrix[0][3], static_cast<T>(0), epsilon<T>()) || 
-			epsilonNotEqual(LocalMatrix[1][3], static_cast<T>(0), epsilon<T>()) || 
+			epsilonNotEqual(LocalMatrix[0][3], static_cast<T>(0), epsilon<T>()) ||
+			epsilonNotEqual(LocalMatrix[1][3], static_cast<T>(0), epsilon<T>()) ||
 			epsilonNotEqual(LocalMatrix[2][3], static_cast<T>(0), epsilon<T>()))
 		{
 			// rightHandSide is the right hand side of the equation.

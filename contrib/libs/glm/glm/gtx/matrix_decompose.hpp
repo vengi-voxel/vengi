@@ -33,7 +33,7 @@ namespace glm
 	/// @addtogroup gtx_matrix_decompose
 	/// @{
 
-	/// Decomposes a model matrix to translations, rotation and scale components 
+	/// Decomposes a model matrix to translations, rotation and scale components
 	/// @see gtx_matrix_decompose
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL bool decompose(

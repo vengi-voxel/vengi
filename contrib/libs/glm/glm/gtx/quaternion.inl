@@ -211,12 +211,12 @@ namespace glm
 		T invs = static_cast<T>(1) / s;
 
 		return tquat<T, Q>(
-			s * static_cast<T>(0.5f), 
+			s * static_cast<T>(0.5f),
 			rotationAxis.x * invs,
 			rotationAxis.y * invs,
 			rotationAxis.z * invs);
 	}
-	
+
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER tquat<T, Q> quatLookAt(vec<3, T, Q> const& direction, vec<3, T, Q> const& up)
 	{

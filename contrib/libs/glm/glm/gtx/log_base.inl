@@ -3,7 +3,7 @@
 
 namespace glm
 {
-	template<typename genType> 
+	template<typename genType>
 	GLM_FUNC_QUALIFIER genType log(genType const& x, genType const& base)
 	{
 		assert(!detail::compute_equal<genType>::call(x, static_cast<genType>(0)));

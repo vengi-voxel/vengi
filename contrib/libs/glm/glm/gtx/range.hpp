@@ -41,31 +41,31 @@ namespace glm
 	{
 		return v.length();
 	}
-	
+
 	template<typename T, qualifier Q>
 	inline length_t components(vec<2, T, Q> const& v)
 	{
 		return v.length();
 	}
-	
+
 	template<typename T, qualifier Q>
 	inline length_t components(vec<3, T, Q> const& v)
 	{
 		return v.length();
 	}
-	
+
 	template<typename T, qualifier Q>
 	inline length_t components(vec<4, T, Q> const& v)
 	{
 		return v.length();
 	}
-	
+
 	template<typename genType>
 	inline length_t components(genType const& m)
 	{
 		return m.length() * m[0].length();
 	}
-	
+
 	template<typename genType>
 	inline typename genType::value_type const * begin(genType const& v)
 	{

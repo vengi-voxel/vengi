@@ -34,7 +34,7 @@ namespace glm
 	/// @see gtx_vector_query extensions.
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_DECL bool areCollinear(vec<L, T, Q> const& v0, vec<L, T, Q> const& v1, T const& epsilon);
-		
+
 	//! Check whether two vectors are orthogonals.
 	/// @see gtx_vector_query extensions.
 	template<length_t L, typename T, qualifier Q>
@@ -44,7 +44,7 @@ namespace glm
 	/// @see gtx_vector_query extensions.
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_DECL bool isNormalized(vec<L, T, Q> const& v, T const& epsilon);
-		
+
 	//! Check whether a vector is null.
 	/// @see gtx_vector_query extensions.
 	template<length_t L, typename T, qualifier Q>

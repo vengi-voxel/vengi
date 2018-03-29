@@ -319,13 +319,13 @@ namespace detail
 
 	// sign
 	// fast and works for any type
-	template<typename genFIType> 
+	template<typename genFIType>
 	GLM_FUNC_QUALIFIER genFIType sign(genFIType x)
 	{
 		GLM_STATIC_ASSERT(
 			std::numeric_limits<genFIType>::is_iec559 || (std::numeric_limits<genFIType>::is_signed && std::numeric_limits<genFIType>::is_integer),
 			"'sign' only accept signed inputs");
-		
+
 		return detail::compute_sign<1, genFIType, defaultp, std::numeric_limits<genFIType>::is_iec559, highp>::call(vec<1, genFIType>(x)).x;
 	}
 
@@ -378,7 +378,7 @@ namespace detail
 	GLM_FUNC_QUALIFIER genType roundEven(genType x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'roundEven' only accept floating-point inputs");
-		
+
 		int Integer = static_cast<int>(x);
 		genType IntegerPart = static_cast<genType>(Integer);
 		genType FractionalPart = fract(x);
@@ -391,7 +391,7 @@ namespace detail
 		{
 			return IntegerPart;
 		}
-		else if(x <= static_cast<genType>(0)) // Work around... 
+		else if(x <= static_cast<genType>(0)) // Work around...
 		{
 			return IntegerPart - static_cast<genType>(1);
 		}
@@ -622,7 +622,7 @@ namespace detail
 #	if GLM_HAS_CXX11_STL
 		using std::isnan;
 #	else
-		template<typename genType> 
+		template<typename genType>
 		GLM_FUNC_QUALIFIER bool isnan(genType x)
 		{
 			GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'isnan' only accept floating-point inputs");
@@ -661,7 +661,7 @@ namespace detail
 #	if GLM_HAS_CXX11_STL
 		using std::isinf;
 #	else
-		template<typename genType> 
+		template<typename genType>
 		GLM_FUNC_QUALIFIER bool isinf(genType x)
 		{
 			GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'isinf' only accept floating-point inputs");
@@ -775,7 +775,7 @@ namespace detail
 	{
 		return reinterpret_cast<vec<L, float, Q>&>(const_cast<vec<L, uint, Q>&>(v));
 	}
-	
+
 	template<typename genType>
 	GLM_FUNC_QUALIFIER genType fma(genType const& a, genType const& b, genType const& c)
 	{

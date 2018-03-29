@@ -54,12 +54,12 @@ namespace glm
 	//! From GLM_GTX_norm extension.
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL T l2Norm(vec<3, T, Q> const& x, vec<3, T, Q> const& y);
-		
+
 	//! Returns the L2 norm of v.
 	//! From GLM_GTX_norm extension.
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL T l2Norm(vec<3, T, Q> const& x);
-		
+
 	//! Returns the L norm between x and y.
 	//! From GLM_GTX_norm extension.
 	template<typename T, qualifier Q>

@@ -29,7 +29,7 @@
 namespace glm
 {
 	///////////////////////////
-	// Signed int vector types 
+	// Signed int vector types
 
 	/// @addtogroup gtx_type_aligned
 	/// @{
@@ -241,7 +241,7 @@ namespace glm
 	/// Default qualifier 32 bit signed integer aligned scalar type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(ivec1, aligned_ivec1, 4);
-	
+
 	/// Default qualifier 32 bit signed integer aligned vector of 2 components type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(ivec2, aligned_ivec2, 8);
@@ -275,7 +275,7 @@ namespace glm
 	/// Default qualifier 16 bit signed integer aligned scalar type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(i16vec1, aligned_i16vec1, 2);
-	
+
 	/// Default qualifier 16 bit signed integer aligned vector of 2 components type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(i16vec2, aligned_i16vec2, 4);
@@ -292,7 +292,7 @@ namespace glm
 	/// Default qualifier 32 bit signed integer aligned scalar type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(i32vec1, aligned_i32vec1, 4);
-	
+
 	/// Default qualifier 32 bit signed integer aligned vector of 2 components type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(i32vec2, aligned_i32vec2, 8);
@@ -309,7 +309,7 @@ namespace glm
 	/// Default qualifier 64 bit signed integer aligned scalar type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(i64vec1, aligned_i64vec1, 8);
-	
+
 	/// Default qualifier 64 bit signed integer aligned vector of 2 components type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(i64vec2, aligned_i64vec2, 16);
@@ -533,7 +533,7 @@ namespace glm
 	/// Default qualifier 32 bit unsigned integer aligned scalar type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(uvec1, aligned_uvec1, 4);
-	
+
 	/// Default qualifier 32 bit unsigned integer aligned vector of 2 components type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(uvec2, aligned_uvec2, 8);
@@ -567,7 +567,7 @@ namespace glm
 	/// Default qualifier 16 bit unsigned integer aligned scalar type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(u16vec1, aligned_u16vec1, 2);
-	
+
 	/// Default qualifier 16 bit unsigned integer aligned vector of 2 components type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(u16vec2, aligned_u16vec2, 4);
@@ -584,7 +584,7 @@ namespace glm
 	/// Default qualifier 32 bit unsigned integer aligned scalar type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(u32vec1, aligned_u32vec1, 4);
-	
+
 	/// Default qualifier 32 bit unsigned integer aligned vector of 2 components type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(u32vec2, aligned_u32vec2, 8);
@@ -601,7 +601,7 @@ namespace glm
 	/// Default qualifier 64 bit unsigned integer aligned scalar type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(u64vec1, aligned_u64vec1, 8);
-	
+
 	/// Default qualifier 64 bit unsigned integer aligned vector of 2 components type.
 	/// @see gtx_type_aligned
 	GLM_ALIGNED_TYPEDEF(u64vec2, aligned_u64vec2, 16);
@@ -736,7 +736,7 @@ namespace glm
 #	endif//GLM_FORCE_SINGLE_ONLY
 
 	//////////////////////
-	// Float matrix types 
+	// Float matrix types
 
 	/// Single-qualifier floating-point aligned 1x1 matrix.
 	/// @see gtx_type_aligned

@@ -77,7 +77,7 @@ namespace glm
 
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> proj2D(
-		const mat<3, 3, T, Q>& m, 
+		const mat<3, 3, T, Q>& m,
 		const vec<3, T, Q>& normal)
 	{
 		mat<3, 3, T, Q> r(static_cast<T>(1));
@@ -90,7 +90,7 @@ namespace glm
 
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> proj3D(
-		const mat<4, 4, T, Q>& m, 
+		const mat<4, 4, T, Q>& m,
 		const vec<3, T, Q>& normal)
 	{
 		mat<4, 4, T, Q> r(static_cast<T>(1));
@@ -117,7 +117,7 @@ namespace glm
 		return result;
 	}
 
-	template<typename T, qualifier Q> 
+	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> scaleBias(mat<4, 4, T, Q> const& m, T scale, T bias)
 	{
 		return m * scaleBias(scale, bias);

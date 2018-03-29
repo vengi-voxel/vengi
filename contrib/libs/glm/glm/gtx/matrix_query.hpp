@@ -35,17 +35,17 @@ namespace glm
 	/// From GLM_GTX_matrix_query extension.
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL bool isNull(mat<2, 2, T, Q> const& m, T const& epsilon);
-		
+
 	/// Return whether a matrix a null matrix.
 	/// From GLM_GTX_matrix_query extension.
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL bool isNull(mat<3, 3, T, Q> const& m, T const& epsilon);
-		
+
 	/// Return whether a matrix is a null matrix.
 	/// From GLM_GTX_matrix_query extension.
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL bool isNull(mat<4, 4, T, Q> const& m, T const& epsilon);
-			
+
 	/// Return whether a matrix is an identity matrix.
 	/// From GLM_GTX_matrix_query extension.
 	template<length_t C, length_t R, typename T, qualifier Q, template<length_t, length_t, typename, qualifier> class matType>

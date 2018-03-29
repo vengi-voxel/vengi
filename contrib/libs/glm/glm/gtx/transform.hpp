@@ -39,12 +39,12 @@ namespace glm
 	GLM_FUNC_DECL mat<4, 4, T, Q> translate(
 		vec<3, T, Q> const& v);
 
-	/// Builds a rotation 4 * 4 matrix created from an axis of 3 scalars and an angle expressed in radians. 
+	/// Builds a rotation 4 * 4 matrix created from an axis of 3 scalars and an angle expressed in radians.
 	/// @see gtc_matrix_transform
 	/// @see gtx_transform
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL mat<4, 4, T, Q> rotate(
-		T angle, 
+		T angle,
 		vec<3, T, Q> const& v);
 
 	/// Transforms a matrix with a scale 4 * 4 matrix created from a vector of 3 components.

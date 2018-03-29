@@ -7,7 +7,7 @@
 /// @ingroup gtc
 ///
 /// Include <glm/gtc/vec1.hpp> to use the features of this extension.
-/// 
+///
 /// Add vec1, ivec1, uvec1 and bvec1 types.
 
 #pragma once
@@ -67,7 +67,7 @@ namespace glm
 #elif(defined(GLM_PRECISION_LOWP_INT))
 	typedef lowp_ivec1			ivec1;
 #else
-	/// 1 component vector of signed integer numbers. 
+	/// 1 component vector of signed integer numbers.
 	/// @see gtc_vec1 extension.
 	typedef highp_ivec1			ivec1;
 #endif//GLM_PRECISION
@@ -79,7 +79,7 @@ namespace glm
 #elif(defined(GLM_PRECISION_LOWP_UINT))
 	typedef lowp_uvec1			uvec1;
 #else
-	/// 1 component vector of unsigned integer numbers. 
+	/// 1 component vector of unsigned integer numbers.
 	/// @see gtc_vec1 extension.
 	typedef highp_uvec1			uvec1;
 #endif//GLM_PRECISION

@@ -29,21 +29,21 @@ namespace glm
 {
 	/// @addtogroup gtx_matrix_transform_2d
 	/// @{
-	
+
 	/// Builds a translation 3 * 3 matrix created from a vector of 2 components.
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
-	/// @param v Coordinates of a translation vector.		
+	/// @param v Coordinates of a translation vector.
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> translate(
 		mat<3, 3, T, Q> const& m,
 		vec<2, T, Q> const& v);
 
-	/// Builds a rotation 3 * 3 matrix created from an angle. 
+	/// Builds a rotation 3 * 3 matrix created from an angle.
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
 	/// @param angle Rotation angle expressed in radians.
-	template<typename T, qualifier Q> 
+	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> rotate(
 		mat<3, 3, T, Q> const& m,
 		T angle);
@@ -51,26 +51,26 @@ namespace glm
 	/// Builds a scale 3 * 3 matrix created from a vector of 2 components.
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
-	/// @param v Coordinates of a scale vector.		
-	template<typename T, qualifier Q> 
+	/// @param v Coordinates of a scale vector.
+	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> scale(
 		mat<3, 3, T, Q> const& m,
 		vec<2, T, Q> const& v);
 
-	/// Builds an horizontal (parallel to the x axis) shear 3 * 3 matrix. 
+	/// Builds an horizontal (parallel to the x axis) shear 3 * 3 matrix.
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
 	/// @param y Shear factor.
-	template<typename T, qualifier Q> 
+	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> shearX(
 		mat<3, 3, T, Q> const& m,
 		T y);
 
-	/// Builds a vertical (parallel to the y axis) shear 3 * 3 matrix. 
+	/// Builds a vertical (parallel to the y axis) shear 3 * 3 matrix.
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
 	/// @param x Shear factor.
-	template<typename T, qualifier Q> 
+	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<3, 3, T, Q> shearY(
 		mat<3, 3, T, Q> const& m,
 		T x);

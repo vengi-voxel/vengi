@@ -289,7 +289,7 @@
 #if GLM_PLATFORM == GLM_PLATFORM_ANDROID && !defined(GLM_LANG_STL11_FORCED)
 #	define GLM_HAS_CXX11_STL 0
 #elif GLM_COMPILER & GLM_COMPILER_CLANG
-#	if (GLM_LANG & GLM_LANG_CXX11_FLAG) || defined(GLM_LANG_STL11_FORCED)
+#	if (defined(_LIBCPP_VERSION) && GLM_LANG & GLM_LANG_CXX11_FLAG) || defined(GLM_LANG_STL11_FORCED)
 #		define GLM_HAS_CXX11_STL 1
 #	else
 #		define GLM_HAS_CXX11_STL 0
@@ -720,8 +720,19 @@
 
 #if GLM_HAS_DEFAULTED_FUNCTIONS
 #	define GLM_DEFAULT = default
+
+#	ifdef GLM_FORCE_NO_CTOR_INIT
+#		undef GLM_FORCE_CTOR_INIT
+#	endif
+
+#	ifdef GLM_FORCE_CTOR_INIT
+#		define GLM_DEFAULT_CTOR
+#	else
+#		define GLM_DEFAULT_CTOR = default
+#	endif
 #else
 #	define GLM_DEFAULT
+#	define GLM_DEFAULT_CTOR
 #endif
 
 #if GLM_HAS_CONSTEXPR || GLM_HAS_CONSTEXPR_PARTIAL
@@ -740,6 +751,14 @@
 #	define GLM_RELAXED_CONSTEXPR constexpr
 #else
 #	define GLM_RELAXED_CONSTEXPR const
+#endif
+
+#if GLM_LANG >= GLM_LANG_CXX14
+#	define GLM_CONSTEXPR_CXX14 GLM_CONSTEXPR
+#	define GLM_CONSTEXPR_CTOR_CXX14 GLM_CONSTEXPR_CTOR
+#else
+#	define GLM_CONSTEXPR_CXX14
+#	define GLM_CONSTEXPR_CTOR_CXX14
 #endif
 
 #if GLM_ARCH == GLM_ARCH_PURE
@@ -806,7 +825,7 @@ namespace glm
 ///////////////////////////////////////////////////////////////////////////////////
 // Check inclusions of different versions of GLM
 
-#elif ((GLM_SETUP_INCLUDED != GLM_VERSION) && !defined(GLM_FORCE_IGNORE_VERSION))	
+#elif ((GLM_SETUP_INCLUDED != GLM_VERSION) && !defined(GLM_FORCE_IGNORE_VERSION))
 #	error "GLM error: A different version of GLM is already included. Define GLM_FORCE_IGNORE_VERSION before including GLM headers to ignore this error."
 #elif GLM_SETUP_INCLUDED == GLM_VERSION
 
