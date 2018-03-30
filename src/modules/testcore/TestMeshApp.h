@@ -33,7 +33,9 @@ protected:
 	glm::vec4 _fogColor;
 	glm::vec4 _clearColor {0.8f, 0.8f, 0.8f, 1.0f};
 	glm::vec3 _omega { 0.0f };
+	bool _renderMesh = true;
 	bool _renderNormals = true;
+	bool _renderBones = false;
 	float _fogRange = 250.0f;
 	float _shadowBiasSlope = 2.0f;
 	float _shadowBias = 0.09f;

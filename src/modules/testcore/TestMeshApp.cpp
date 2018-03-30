@@ -143,12 +143,21 @@ void TestMeshApp::onRenderUI() {
 		ImGui::CheckboxVar("Show shadow map", _shadowMapShow);
 		ImGui::CheckboxVar("Shadow map debug", _debugShadow);
 		ImGui::CheckboxVar("Show shadow cascades", _debugShadowCascade);
+		static const char* items[] = { "Disable", "First", "Second", "Third", "Fourth" };
+		ImGui::Combo("Bone weight", &_boneInfluence, items, IM_ARRAYSIZE(items));
 		if (ImGui::Checkbox("Render axis", &_renderAxis)) {
 			setRenderAxis(_renderAxis);
 		}
-		static const char* items[] = { "Disable", "First", "Second", "Third", "Fourth" };
-		ImGui::Combo("Bone weight", &_boneInfluence, items, IM_ARRAYSIZE(items));
+		ImGui::Checkbox("Render mesh", &_renderMesh);
 		ImGui::Checkbox("Render normals", &_renderNormals);
+		ImGui::Checkbox("Render bones", &_renderBones);
+		if (ImGui::IsItemHovered()) {
+			ImGui::BeginTooltip();
+			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+			ImGui::TextUnformatted("Leaf bones are not rendered");
+			ImGui::PopTextWrapPos();
+			ImGui::EndTooltip();
+		}
 		if (ImGui::Checkbox("Render plane", &_renderPlane)) {
 			setRenderPlane(_renderPlane);
 		}
@@ -228,8 +237,10 @@ void TestMeshApp::doRender() {
 				if (_renderPlane) {
 					renderPlane(&_shadowMapShader);
 				}
-				// TODO: why does only the plane appear in the depth map?
-				_mesh->render();
+				if (_renderMesh) {
+					// TODO: why does only the plane appear in the depth map?
+					_mesh->render();
+				}
 			}
 		} else {
 			_shadowMapShader.recordUsedUniforms(false);
@@ -243,46 +254,56 @@ void TestMeshApp::doRender() {
 		}
 	}
 
-	bool meshInitialized = false;
+	bool meshInitialized = true;
 	{
 		if (_renderPlane) {
 			renderPlane();
 		}
 
-		video::ScopedShader scoped(_meshShader);
-		_meshShader.clearUsedUniforms();
-		_meshShader.recordUsedUniforms(true);
-		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
-		if (meshInitialized) {
-			_meshShader.setViewprojection(_camera.viewProjectionMatrix());
-			_meshShader.setFogrange(_fogRange);
-			_meshShader.setViewdistance(_camera.farPlane());
-			_meshShader.setModel(_model);
-			_meshShader.setTexture(video::TextureUnit::Zero);
-			_meshShader.setDiffuseColor(_diffuseColor);
-			_meshShader.setAmbientColor(_ambientColor);
-			_meshShader.setShadowmap(video::TextureUnit::One);
-			_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
-			_meshShader.setFogcolor(_fogColor);
-			_meshShader.setCascades(cascades);
-			_meshShader.setDistances(distances);
-			_meshShader.setLightdir(_shadow.sunDirection());
-			_meshShader.setBoneinfluence(_boneInfluence - 1);
-			video::bindTexture(video::TextureUnit::One, _depthBuffer);
-			const video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
-			_mesh->render();
-		} else {
-			_meshShader.recordUsedUniforms(false);
+		if (_renderMesh) {
+			video::ScopedShader scoped(_meshShader);
+			_meshShader.clearUsedUniforms();
+			_meshShader.recordUsedUniforms(true);
+			meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
+			if (meshInitialized) {
+				_meshShader.setViewprojection(_camera.viewProjectionMatrix());
+				_meshShader.setFogrange(_fogRange);
+				_meshShader.setViewdistance(_camera.farPlane());
+				_meshShader.setModel(_model);
+				_meshShader.setTexture(video::TextureUnit::Zero);
+				_meshShader.setDiffuseColor(_diffuseColor);
+				_meshShader.setAmbientColor(_ambientColor);
+				_meshShader.setShadowmap(video::TextureUnit::One);
+				_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+				_meshShader.setFogcolor(_fogColor);
+				_meshShader.setCascades(cascades);
+				_meshShader.setDistances(distances);
+				_meshShader.setLightdir(_shadow.sunDirection());
+				_meshShader.setBoneinfluence(_boneInfluence - 1);
+				video::bindTexture(video::TextureUnit::One, _depthBuffer);
+				const video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
+				_mesh->render();
+			} else {
+				_meshShader.recordUsedUniforms(false);
+			}
 		}
 	}
-	if (meshInitialized && _renderNormals) {
-		core_trace_scoped(TestMeshAppDoNormals);
-		video::ScopedShader scoped(_colorShader);
-		_colorShader.recordUsedUniforms(true);
-		_colorShader.clearUsedUniforms();
-		_colorShader.setViewprojection(_camera.viewProjectionMatrix());
-		_colorShader.setModel(_model);
-		_mesh->renderNormals(_colorShader);
+	if (meshInitialized) {
+		if (_renderNormals || _renderBones) {
+			video::ScopedShader scoped(_colorShader);
+			_colorShader.recordUsedUniforms(true);
+			_colorShader.clearUsedUniforms();
+			_colorShader.setViewprojection(_camera.viewProjectionMatrix());
+			_colorShader.setModel(_model);
+			if (_renderNormals) {
+				core_trace_scoped(TestMeshAppDoNormals);
+				_mesh->renderNormals(_colorShader);
+			}
+			if (_renderBones) {
+				core_trace_scoped(TestMeshAppDoBones);
+				_mesh->renderBones(_colorShader);
+			}
+		}
 	}
 
 	if (_shadowMapShow->boolVal()) {

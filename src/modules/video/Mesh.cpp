@@ -5,7 +5,6 @@
 #include "Mesh.h"
 #include "Renderer.h"
 #include "core/Common.h"
-#include "core/Color.h"
 #include "core/Array.h"
 #include "core/Log.h"
 #include "core/GLM.h"
@@ -56,18 +55,6 @@ static inline core::Vertex convertVertex(const aiVector3D& p, const aiVector3D& 
 
 }
 
-struct MeshNormals {
-	struct AttributeData {
-		glm::vec4 vertex;
-		glm::vec3 color {core::Color::Red};
-	};
-	std::vector<AttributeData> data;
-
-	inline void reserve(size_t amount) {
-		data.resize(amount);
-	}
-};
-
 Mesh::Mesh() :
 		io::IOResource(), _importer(new Assimp::Importer()) {
 }
@@ -83,8 +70,8 @@ void Mesh::shutdown() {
 	_images.clear();
 	_meshData.clear();
 	_vertexBuffer.shutdown();
-	_vertexBufferNormals.shutdown();
-	_vertexBufferNormalsIndex = -1;
+	_vertexBufferLines.shutdown();
+	_vertexBufferLinesIndex = -1;
 	_vertexBufferIndex = -1;
 
 	_vertices.clear();
@@ -278,29 +265,29 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	}
 }
 
-void Mesh::setupNormalBufferAttributes(Shader& shader) {
-	if (_vertexBufferNormals.attributes() == 2) {
+void Mesh::setupLineBufferAttributes(Shader& shader) {
+	if (_vertexBufferLines.attributes() == 2) {
 		return;
 	}
-	_vertexBufferNormals.clearAttributes();
+	_vertexBufferLines.clearAttributes();
 
 	video::Attribute attribPos;
-	attribPos.bufferIndex = _vertexBufferNormalsIndex;
+	attribPos.bufferIndex = _vertexBufferLinesIndex;
 	attribPos.index = shader.enableVertexAttributeArray("a_pos");
-	attribPos.stride = sizeof(MeshNormals::AttributeData);
+	attribPos.stride = sizeof(MeshLines::AttributeData);
 	attribPos.size = shader.getAttributeComponents(attribPos.index);
-	attribPos.type = video::mapType<decltype(MeshNormals::AttributeData::vertex)::value_type>();
-	attribPos.offset = offsetof(MeshNormals::AttributeData, vertex);
-	_vertexBufferNormals.addAttribute(attribPos);
+	attribPos.type = video::mapType<decltype(MeshLines::AttributeData::vertex)::value_type>();
+	attribPos.offset = offsetof(MeshLines::AttributeData, vertex);
+	_vertexBufferLines.addAttribute(attribPos);
 
 	video::Attribute attribColor;
-	attribColor.bufferIndex = _vertexBufferNormalsIndex;
+	attribColor.bufferIndex = _vertexBufferLinesIndex;
 	attribColor.index = shader.enableVertexAttributeArray("a_color");
-	attribColor.stride = sizeof(MeshNormals::AttributeData);
+	attribColor.stride = sizeof(MeshLines::AttributeData);
 	attribColor.size = shader.getAttributeComponents(attribColor.index);
-	attribColor.type = video::mapType<decltype(MeshNormals::AttributeData::color)::value_type>();
-	attribColor.offset = offsetof(MeshNormals::AttributeData, color);
-	_vertexBufferNormals.addAttribute(attribColor);
+	attribColor.type = video::mapType<decltype(MeshLines::AttributeData::color)::value_type>();
+	attribColor.offset = offsetof(MeshLines::AttributeData, color);
+	_vertexBufferLines.addAttribute(attribColor);
 }
 
 bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex) {
@@ -332,8 +319,8 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 
 		_state = io::IOSTATE_LOADED;
 
-		_vertexBufferNormalsIndex = _vertexBufferNormals.create();
-		_vertexBufferNormals.setMode(_vertexBufferNormalsIndex, VertexBufferMode::Dynamic);
+		_vertexBufferLinesIndex = _vertexBufferLines.create();
+		_vertexBufferLines.setMode(_vertexBufferLinesIndex, VertexBufferMode::Dynamic);
 
 		_vertexBufferIndex = _vertexBuffer.create(_vertices);
 		_vertexBuffer.create(_indices, VertexBufferType::IndexBuffer);
@@ -620,15 +607,55 @@ int Mesh::render() {
 	return drawCalls;
 }
 
+void Mesh::traverseBones(MeshLines& boneData, const aiNode* node, const glm::mat4& parent, const glm::vec3& start, bool traverse) {
+	const std::string name(node->mName.data);
+	glm::vec3 pos = start;
+	glm::mat4 transform = _globalInverseTransform * parent * convert(node->mTransformation);
+	const auto iter = _boneMapping.find(name);
+	if (iter != _boneMapping.end()) {
+		traverse = true;
+		pos = glm::column(transform, 3);
+		boneData.data.emplace_back(MeshLines::AttributeData{glm::vec4(start.x, start.y, start.z, 1.0f), core::Color::Green});
+		boneData.data.emplace_back(MeshLines::AttributeData{glm::vec4(pos.x, pos.y, pos.z, 1.0f), core::Color::Blue});
+	}
+	if (!traverse) {
+		transform = _globalInverseTransform * glm::mat4(1.0f);
+	}
+	for (uint32_t i = 0u; i < node->mNumChildren; ++i) {
+		traverseBones(boneData, node->mChildren[i], transform, pos, traverse);
+	}
+}
+
+int Mesh::renderBones(video::Shader& shader) {
+	core_assert(shader.isActive());
+
+	if (_state != io::IOSTATE_LOADED) {
+		return 0;
+	}
+	setupLineBufferAttributes(shader);
+
+	MeshLines boneData;
+	boneData.reserve(_boneMapping.size() * 2);
+	traverseBones(boneData, _scene->mRootNode, glm::mat4(1.0f), glm::vec3(0), false);
+	_vertexBufferLines.update(_vertexBufferLinesIndex, boneData.data);
+	_vertexBufferLines.bind();
+	ScopedLineWidth lineWidth(2.0f);
+	const int elements = _vertexBufferLines.elements(_vertexBufferLinesIndex, 2);
+	video::drawArrays(video::Primitive::Lines, elements);
+	_vertexBufferLines.unbind();
+
+	return 1;
+}
+
 int Mesh::renderNormals(video::Shader& shader) {
 	core_assert(shader.isActive());
 
 	if (_state != io::IOSTATE_LOADED) {
 		return 0;
 	}
-	setupNormalBufferAttributes(shader);
+	setupLineBufferAttributes(shader);
 
-	MeshNormals normalData;
+	MeshLines normalData;
 	normalData.reserve(_vertices.size() * 2);
 	size_t j = 0;
 	for (const core::Vertex& v : _vertices) {
@@ -647,18 +674,18 @@ int Mesh::renderNormals(video::Shader& shader) {
 		}
 	}
 	for (size_t i = 0u; i < normalData.data.size(); i += 2) {
-		const MeshNormals::AttributeData& pos1 = normalData.data[i + 0];
-		MeshNormals::AttributeData& pos2 = normalData.data[i + 1];
+		const MeshLines::AttributeData& pos1 = normalData.data[i + 0];
+		MeshLines::AttributeData& pos2 = normalData.data[i + 1];
 		pos2.color = glm::vec3(core::Color::Yellow);
 		pos2.vertex = pos1.vertex + 0.5f * pos2.vertex;
 	}
 
-	_vertexBufferNormals.update(_vertexBufferNormalsIndex, normalData.data);
-	_vertexBufferNormals.bind();
+	_vertexBufferLines.update(_vertexBufferLinesIndex, normalData.data);
+	_vertexBufferLines.bind();
 	ScopedLineWidth lineWidth(2.0f);
-	const int elements = _vertexBufferNormals.elements(_vertexBufferNormalsIndex, 2);
+	const int elements = _vertexBufferLines.elements(_vertexBufferLinesIndex, 2);
 	video::drawArrays(video::Primitive::Lines, elements);
-	_vertexBufferNormals.unbind();
+	_vertexBufferLines.unbind();
 
 	return 1;
 }

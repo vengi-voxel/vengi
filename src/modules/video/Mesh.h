@@ -9,6 +9,7 @@
 #include "video/Texture.h"
 #include "VertexBuffer.h"
 #include "core/Vertex.h"
+#include "core/Color.h"
 #include <vector>
 #include <memory>
 #include <unordered_map>
@@ -34,6 +35,18 @@ public:
 	typedef std::vector<uint32_t> Indices;
 
 private:
+	struct MeshLines {
+		struct AttributeData {
+			glm::vec4 vertex;
+			glm::vec3 color {core::Color::Red};
+		};
+		std::vector<AttributeData> data;
+
+		inline void reserve(size_t amount) {
+			data.resize(amount);
+		}
+	};
+
 	struct RenderMeshData {
 		uint32_t noOfIndices = 0u;
 		uint32_t baseVertex = 0u;
@@ -69,8 +82,8 @@ private:
 	Vertices _vertices;
 	Indices _indices;
 	VertexBuffer _vertexBuffer;
-	VertexBuffer _vertexBufferNormals;
-	int32_t _vertexBufferNormalsIndex = -1;
+	VertexBuffer _vertexBufferLines;
+	int32_t _vertexBufferLinesIndex = -1;
 	int32_t _vertexBufferIndex = -1;
 
 	// AABB
@@ -86,9 +99,13 @@ private:
 	void* _lastShader = nullptr;
 	std::string _filename;
 
-	void setupNormalBufferAttributes(Shader& shader);
+	void setupLineBufferAttributes(Shader& shader);
 	void setupBufferAttributes(Shader& shader);
 	void boneTransform(glm::mat4* transforms, size_t size);
+	/**
+	 * @brief We render the bone data as joint lines with a start position and the end position
+	 */
+	void traverseBones(MeshLines& boneData, const aiNode* node, const glm::mat4& parent, const glm::vec3& start, bool traverse = false);
 public:
 	Mesh();
 	~Mesh();
@@ -109,6 +126,7 @@ public:
 	bool initMesh(Shader& shader, float timeInSeconds = 0.0f, uint8_t animationIndex = 0u);
 	int render();
 	int renderNormals(video::Shader& shader);
+	int renderBones(video::Shader& shader);
 };
 
 inline const Mesh::Vertices& Mesh::vertices() const {
