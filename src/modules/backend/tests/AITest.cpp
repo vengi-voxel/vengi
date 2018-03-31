@@ -120,7 +120,7 @@ TEST_F(AITest, testActionSetPointOfInterest) {
 	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
 	const ai::TreeNodePtr& action = SetPointOfInterest::getFactory().create(&ctx);
 	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
-	ASSERT_EQ(1u, map->poiProvider()->getPointOfInterestCount());
+	ASSERT_EQ(1u, map->poiProvider()->count());
 }
 
 TEST_F(AITest, testActionGoHome) {

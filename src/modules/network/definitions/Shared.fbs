@@ -49,6 +49,13 @@ enum CooldownType: int {
 	LOGOUT
 }
 
+enum PointOfInterestType: int {
+	NONE,
+	GENERIC,
+	FIGHT,
+	QUEST
+}
+
 enum AttribType: int {
 	NONE,
 	HEALTH,

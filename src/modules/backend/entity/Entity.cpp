@@ -44,7 +44,7 @@ void Entity::visibleRemove(const EntitySet& entities) {
 }
 
 void Entity::setPointOfInterest() {
-	map()->poiProvider()->addPointOfInterest(pos());
+	map()->poiProvider()->add(pos());
 }
 
 const char* Entity::name() const {

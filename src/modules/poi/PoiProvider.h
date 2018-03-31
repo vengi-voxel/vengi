@@ -7,23 +7,31 @@
 #include "backend/ForwardDecl.h"
 #include "core/ReadWriteLock.h"
 #include "math/Random.h"
+#include "Shared_generated.h"
 #include <glm/vec3.hpp>
 #include <vector>
 #include <memory>
 
 namespace poi {
 
+struct PoiResult {
+	glm::vec3 pos;
+	bool valid;;
+};
+
+using Type = network::PointOfInterestType;
+
 /**
  * @brief Maintains a list of points of interest that are only valid for a particular time.
  *
- * @note One can add new POIs by calling @c PoiProvider::addPointOfInterest and get a random,
- * not yet expired POI by calling @c PoiProvider::getPointOfInterest(). If there are no POIs
- * left, you will get a random one from the @c voxel::World
+ * @note One can add new POIs by calling @c PoiProvider::addPointOfInterest() and get a random,
+ * not yet expired POI by calling @c PoiProvider::getPointOfInterest().
  */
 class PoiProvider {
 private:
 	struct Poi {
 		glm::vec3 pos;
+		Type type;
 		unsigned long time;
 	};
 
@@ -38,9 +46,12 @@ public:
 
 	void update(long dt);
 
-	void addPointOfInterest(const glm::vec3& pos);
-	size_t getPointOfInterestCount() const;
-	glm::vec3 getPointOfInterest() const;
+	void add(const glm::vec3& pos, Type type = Type::GENERIC);
+	size_t count() const;
+	/**
+	 * @param[in] type If @c Type::NONE is given here we are just looking for any type of POI
+	 */
+	PoiResult query(Type type = Type::NONE) const;
 };
 
 typedef std::shared_ptr<PoiProvider> PoiProviderPtr;
