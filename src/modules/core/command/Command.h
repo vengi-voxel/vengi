@@ -48,6 +48,9 @@ private:
 	}
 
 public:
+	static Command& registerCommand(const char* name, std::function<void(void)>& func) {
+		return registerCommand(name, FunctionType([&] (const CmdArgs&) {func();}));
+	}
 	static Command& registerCommand(const char* name, FunctionType&& func);
 	static bool unregisterCommand(const char* name);
 
