@@ -23,6 +23,7 @@ add_subdirectory(glslang)
 add_subdirectory(OGLCompilersDLL)
 add_subdirectory(StandAlone)
 add_subdirectory(SPIRV)
+target_compile_definitions(glslangValidator PRIVATE "-DENABLE_OPT=0")
 
 if (NOT MSVC)
 	set(ADDITIONAL_COMPILE_FLAGS)
