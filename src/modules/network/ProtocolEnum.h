@@ -11,7 +11,7 @@
 namespace network {
 
 template<class T>
-inline T getEnum(const char* name, const char **names) {
+inline T getEnum(const char* name, const char * const *names) {
 	int i = 0;
 	while (*names) {
 		if (!strcmp(*names, name)) {

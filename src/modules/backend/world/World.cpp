@@ -47,7 +47,7 @@ void World::construct() {
 		if (args.size() < 2) {
 			Log::info("Usage: sv_spawnnpc <mapid> <npctype> [amount:default=1]");
 			Log::info("entity types are:");
-			for (const char **t = network::EnumNamesEntityType(); *t != nullptr; ++t) {
+			for (const char *const *t = network::EnumNamesEntityType(); *t != nullptr; ++t) {
 				Log::info(" - %s", *t);
 			}
 			return;
