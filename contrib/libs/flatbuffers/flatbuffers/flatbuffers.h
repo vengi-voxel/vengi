@@ -525,12 +525,14 @@ class DetachedBuffer {
 // Essentially, this supports 2 std::vectors in a single buffer.
 class vector_downward {
  public:
-  explicit vector_downward(size_t initial_size = 1024,
-                           Allocator *allocator = nullptr,
-                           bool own_allocator = false)
+  explicit vector_downward(size_t initial_size,
+                           Allocator *allocator,
+                           bool own_allocator,
+                           size_t buffer_minalign)
       : allocator_(allocator ? allocator : &DefaultAllocator::instance()),
         own_allocator_(own_allocator),
         initial_size_(initial_size),
+        buffer_minalign_(buffer_minalign),
         reserved_(0),
         buf_(nullptr),
         cur_(nullptr),
@@ -578,11 +580,6 @@ class vector_downward {
     buf_ = nullptr;
     clear();
     return fb;
-  }
-
-  size_t growth_policy(size_t bytes) {
-    return (bytes == 0) ? initial_size_
-                        : ((bytes / 2) & ~(AlignOf<largest_scalar_t>() - 1));
   }
 
   size_t ensure_space(size_t len) {
@@ -667,6 +664,7 @@ class vector_downward {
   Allocator *allocator_;
   bool own_allocator_;
   size_t initial_size_;
+  size_t buffer_minalign_;
   size_t reserved_;
   uint8_t *buf_;
   uint8_t *cur_;  // Points at location between empty (below) and used (above).
@@ -677,9 +675,9 @@ class vector_downward {
     auto old_reserved = reserved_;
     auto old_size = size();
     auto old_scratch_size = scratch_size();
-    reserved_ += (std::max)(len, growth_policy(old_reserved));
-    FLATBUFFERS_CONSTEXPR size_t alignment = AlignOf<largest_scalar_t>();
-    reserved_ = (reserved_ + alignment - 1) & ~(alignment - 1);
+    reserved_ += (std::max)(len,
+                            old_reserved ? old_reserved / 2 : initial_size_);
+    reserved_ = (reserved_ + buffer_minalign_ - 1) & ~(buffer_minalign_ - 1);
     if (buf_) {
       buf_ = allocator_->reallocate_downward(buf_, old_reserved, reserved_,
                                              old_size, old_scratch_size);
@@ -726,10 +724,16 @@ class FlatBufferBuilder {
   /// a `DefaultAllocator`.
   /// @param[in] own_allocator Whether the builder/vector should own the
   /// allocator. Defaults to / `false`.
+  /// @param[in] buffer_minalign Force the buffer to be aligned to the given
+  /// minimum alignment upon reallocation. Only needed if you intend to store
+  /// types with custom alignment AND you wish to read the buffer in-place
+  /// directly after creation.
   explicit FlatBufferBuilder(size_t initial_size = 1024,
                              Allocator *allocator = nullptr,
-                             bool own_allocator = false)
-      : buf_(initial_size, allocator, own_allocator),
+                             bool own_allocator = false,
+                             size_t buffer_minalign =
+                                 AlignOf<largest_scalar_t>())
+      : buf_(initial_size, allocator, own_allocator, buffer_minalign),
         num_field_loc(0),
         max_voffset_(0),
         nested(false),
@@ -827,8 +831,12 @@ class FlatBufferBuilder {
   /// @cond FLATBUFFERS_INTERNAL
   void Pad(size_t num_bytes) { buf_.fill(num_bytes); }
 
-  void Align(size_t elem_size) {
+  void TrackMinAlign(size_t elem_size) {
     if (elem_size > minalign_) minalign_ = elem_size;
+  }
+
+  void Align(size_t elem_size) {
+    TrackMinAlign(elem_size);
     buf_.fill(PaddingBytes(buf_.size(), elem_size));
   }
 
@@ -1023,6 +1031,7 @@ class FlatBufferBuilder {
   // Aligns such that when "len" bytes are written, an object can be written
   // after it with "alignment" without padding.
   void PreAlign(size_t len, size_t alignment) {
+    TrackMinAlign(alignment);
     buf_.fill(PaddingBytes(GetSize() + len, alignment));
   }
   template<typename T> void PreAlign(size_t len) {
@@ -1655,13 +1664,14 @@ const T *GetTemporaryPointer(FlatBufferBuilder &fbb, Offset<T> offset) {
 /// This function is UNDEFINED for FlatBuffers whose schema does not include
 /// a file_identifier (likely points at padding or the start of a the root
 /// vtable).
-inline const char *GetBufferIdentifier(const void *buf) {
-  return reinterpret_cast<const char *>(buf) + sizeof(uoffset_t);
+inline const char *GetBufferIdentifier(const void *buf, bool size_prefixed = false) {
+  return reinterpret_cast<const char *>(buf) +
+         ((size_prefixed) ? 2 * sizeof(uoffset_t) : sizeof(uoffset_t));
 }
 
 // Helper to see if the identifier in a buffer has the expected value.
-inline bool BufferHasIdentifier(const void *buf, const char *identifier) {
-  return strncmp(GetBufferIdentifier(buf), identifier,
+inline bool BufferHasIdentifier(const void *buf, const char *identifier, bool size_prefixed = false) {
+  return strncmp(GetBufferIdentifier(buf, size_prefixed), identifier,
                  FlatBufferBuilder::kFileIdentifierLength) == 0;
 }
 
@@ -2060,6 +2070,9 @@ inline const uint8_t *GetBufferStartFromRootPointer(const void *root) {
   return nullptr;
 }
 
+/// @brief This return the prefixed size of a FlatBuffer.
+inline uoffset_t GetPrefixedSize(const uint8_t* buf){ return ReadScalar<uoffset_t>(buf); }
+
 // Base class for native objects (FlatBuffer data de-serialized into native
 // C++ data structures).
 // Contains no functionality, purely documentative.
@@ -2172,8 +2185,8 @@ enum ElementaryType {
   #undef FLATBUFFERS_ET
 };
 
-inline const char **ElementaryTypeNames() {
-  static const char *names[] = {
+inline const char * const *ElementaryTypeNames() {
+  static const char * const names[] = {
     #define FLATBUFFERS_ET(E) #E,
       FLATBUFFERS_GEN_ELEMENTARY_TYPES(FLATBUFFERS_ET)
     #undef FLATBUFFERS_ET
@@ -2194,7 +2207,7 @@ static_assert(sizeof(TypeCode) == 2, "TypeCode");
 struct TypeTable;
 
 // Signature of the static method present in each type.
-typedef TypeTable *(*TypeFunction)();
+typedef const TypeTable *(*TypeFunction)();
 
 struct TypeTable {
   SequenceType st;
@@ -2202,7 +2215,7 @@ struct TypeTable {
   const TypeCode *type_codes;
   const TypeFunction *type_refs;
   const int32_t *values;  // Only set for non-consecutive enum/union or structs.
-  const char **names;     // Only set if compiled with --reflect-names.
+  const char * const *names;     // Only set if compiled with --reflect-names.
 };
 
 // String which identifies the current version of FlatBuffers.

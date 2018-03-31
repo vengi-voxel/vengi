@@ -435,7 +435,7 @@ Offset<const Table *> CopyTable(FlatBufferBuilder &fbb,
             auto element_size = GetTypeSize(element_base_type);
             if (elemobjectdef && elemobjectdef->is_struct())
               element_size = elemobjectdef->bytesize();
-            fbb.StartVector(element_size, vec->size());
+            fbb.StartVector(vec->size(), element_size);
             fbb.PushBytes(vec->Data(), element_size * vec->size());
             offset = fbb.EndVector(vec->size());
             break;
@@ -513,7 +513,7 @@ bool VerifyVectorOfStructs(flatbuffers::Verifier &v,
 // forward declare to resolve cyclic deps between VerifyObject and VerifyVector
 bool VerifyObject(flatbuffers::Verifier &v, const reflection::Schema &schema,
                   const reflection::Object &obj,
-                  const flatbuffers::Table *table, bool isRequired);
+                  const flatbuffers::Table *table, bool required);
 
 bool VerifyVector(flatbuffers::Verifier &v, const reflection::Schema &schema,
                   const flatbuffers::Table &table,

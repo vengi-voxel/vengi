@@ -469,7 +469,7 @@ class JsGenerator : public BaseGenerator {
                                   const std::string &file) {
     const auto basename =
         flatbuffers::StripPath(flatbuffers::StripExtension(file));
-    if (basename == file_name_) { return typeName; }
+    if (basename == file_name_ || parser_.opts.generate_all) { return typeName; }
     return GenFileNamespacePrefix(file) + "." + typeName;
   }
 
@@ -679,6 +679,10 @@ class JsGenerator : public BaseGenerator {
                 GenPrefixedTypeName(GenTypeName(field.value.type, false, true),
                                     field.value.type.enum_def->file) +
                 " {\n";
+
+            if (!parser_.opts.generate_all) {
+                imported_files.insert(field.value.type.enum_def->file);
+            }
           } else {
             code += "):" + GenTypeName(field.value.type, false, true) + " {\n";
           }
@@ -741,7 +745,7 @@ class JsGenerator : public BaseGenerator {
               code += ", " + GenBBAccess() + ") : null;\n";
             }
 
-            if (lang_.language == IDLOptions::kTs) {
+            if (lang_.language == IDLOptions::kTs && !parser_.opts.generate_all) {
               imported_files.insert(field.value.type.struct_def->file);
             }
 
@@ -787,7 +791,10 @@ class JsGenerator : public BaseGenerator {
                 vectortypename = GenPrefixedTypeName(
                     vectortypename, vectortype.struct_def->file);
                 code += prefix + ", obj?:" + vectortypename;
-                imported_files.insert(vectortype.struct_def->file);
+
+                if (!parser_.opts.generate_all) {
+                    imported_files.insert(vectortype.struct_def->file);
+                }
               } else if (vectortype.base_type == BASE_TYPE_STRING) {
                 code += prefix + "):string\n";
                 code += prefix + ",optionalEncoding:flatbuffers.Encoding" +

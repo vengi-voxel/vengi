@@ -367,6 +367,7 @@ struct IDLOptions {
   bool mutable_buffer;
   bool one_file;
   bool proto_mode;
+  bool proto_oneof_union;
   bool generate_all;
   bool skip_unexpected_fields_in_json;
   bool generate_name_strings;
@@ -386,6 +387,7 @@ struct IDLOptions {
   std::string go_namespace;
   bool reexport_ts_modules;
   bool protobuf_ascii_alike;
+  bool size_prefixed;
 
   // Possible options for the more general generator below.
   enum Language {
@@ -426,6 +428,7 @@ struct IDLOptions {
         mutable_buffer(false),
         one_file(false),
         proto_mode(false),
+        proto_oneof_union(false),
         generate_all(false),
         skip_unexpected_fields_in_json(false),
         generate_name_strings(false),
@@ -440,6 +443,7 @@ struct IDLOptions {
         skip_flatbuffers_import(false),
         reexport_ts_modules(true),
         protobuf_ascii_alike(false),
+        size_prefixed(false),
         lang(IDLOptions::kJava),
         mini_reflect(IDLOptions::kNone),
         lang_to_generate(0) {}
@@ -532,6 +536,7 @@ class Parser : public ParserState {
     known_attributes_["idempotent"] = true;
     known_attributes_["cpp_type"] = true;
     known_attributes_["cpp_ptr_type"] = true;
+    known_attributes_["cpp_ptr_type_get"] = true;
     known_attributes_["cpp_str_type"] = true;
     known_attributes_["native_inline"] = true;
     known_attributes_["native_custom_alloc"] = true;
@@ -595,10 +600,10 @@ class Parser : public ParserState {
   FLATBUFFERS_CHECKED_ERROR ParseHexNum(int nibbles, uint64_t *val);
   FLATBUFFERS_CHECKED_ERROR Next();
   FLATBUFFERS_CHECKED_ERROR SkipByteOrderMark();
-  bool Is(int t);
-  bool IsIdent(const char *id);
+  bool Is(int t) const;
+  bool IsIdent(const char *id) const;
   FLATBUFFERS_CHECKED_ERROR Expect(int t);
-  std::string TokenToStringId(int t);
+  std::string TokenToStringId(int t) const;
   EnumDef *LookupEnum(const std::string &id);
   FLATBUFFERS_CHECKED_ERROR ParseNamespacing(std::string *id,
                                              std::string *last);
@@ -647,11 +652,11 @@ class Parser : public ParserState {
                                                   size_t fieldn,
                                                   const StructDef *parent_struct_def);
   FLATBUFFERS_CHECKED_ERROR ParseMetaData(SymbolTable<Value> *attributes);
-  FLATBUFFERS_CHECKED_ERROR TryTypedValue(int dtoken, bool check, Value &e,
+  FLATBUFFERS_CHECKED_ERROR TryTypedValue(const std::string *name, int dtoken, bool check, Value &e,
                                           BaseType req, bool *destmatch);
   FLATBUFFERS_CHECKED_ERROR ParseHash(Value &e, FieldDef* field);
   FLATBUFFERS_CHECKED_ERROR TokenError();
-  FLATBUFFERS_CHECKED_ERROR ParseSingleValue(Value &e);
+  FLATBUFFERS_CHECKED_ERROR ParseSingleValue(const std::string *name, Value &e);
   FLATBUFFERS_CHECKED_ERROR ParseEnumFromString(Type &type, int64_t *result);
   StructDef *LookupCreateStruct(const std::string &name,
                                 bool create_if_new = true,
@@ -660,6 +665,9 @@ class Parser : public ParserState {
   FLATBUFFERS_CHECKED_ERROR ParseNamespace();
   FLATBUFFERS_CHECKED_ERROR StartStruct(const std::string &name,
                                         StructDef **dest);
+  FLATBUFFERS_CHECKED_ERROR StartEnum(const std::string &name,
+                                      bool is_union,
+                                      EnumDef **dest);
   FLATBUFFERS_CHECKED_ERROR ParseDecl();
   FLATBUFFERS_CHECKED_ERROR ParseService();
   FLATBUFFERS_CHECKED_ERROR ParseProtoFields(StructDef *struct_def,
