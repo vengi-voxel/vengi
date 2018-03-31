@@ -22,7 +22,6 @@ ctrl+SHIFT+w ctrlshiftmodcommand
 class KeybindingHandlerTest : public core::AbstractTest {
 protected:
 	KeybindingParser _parser;
-	std::unordered_map<int32_t, int16_t> _keys;
 	bool _allmodscommand = false;
 	bool _ctrlshiftmodcommand = false;
 	bool _somecommand = false;
@@ -48,7 +47,6 @@ protected:
 		core::Command::registerCommand("somecommand", [this] (const core::CmdArgs& args) {this->_somecommand = true;});
 		core::Command::registerCommand("allmodscommand", [this] (const core::CmdArgs& args) {this->_allmodscommand = true;});
 		core::Command::registerCommand("ctrlshiftmodcommand", [this] (const core::CmdArgs& args) {this->_ctrlshiftmodcommand = true;});
-		_keys.clear();
 		return true;
 	}
 
@@ -67,10 +65,6 @@ protected:
 	 */
 	void executeActionButtonCommand(int32_t key, int16_t modifier = KMOD_NONE) {
 		execute(key, modifier);
-		// There should be an entry in this map - the command is valid and starts with a +
-		// so we are tracking it for the release of the key
-		EXPECT_NE(_keys.end(), _keys.find(key))
-				<< "The command for key " << key << " (modmask: " << modifier << ") wasn't saved to handle the keyup event later on";
 	}
 };
 
