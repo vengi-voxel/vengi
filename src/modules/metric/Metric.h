@@ -1,5 +1,11 @@
 /**
  * @file
+ * @defgroup Compute
+ * @{
+ *
+ * The metric module can generate multiple metric flavors for statsd and influx.
+ *
+ * @}
  */
 
 #pragma once
@@ -13,15 +19,24 @@
 
 namespace metric {
 
+/**
+ * @brief The metric flavors
+ */
 enum class Flavor {
-	Etsy,		// https://github.com/etsy/statsd/blob/master/docs/metric_types.md
-	Datadog,	// https://docs.datadoghq.com/guides/dogstatsd/#datagram-format
-	Telegraf,	// https://www.influxdata.com/blog/getting-started-with-sending-statsd-metrics-to-telegraf-influxdb/
-	Influx		// https://docs.influxdata.com/influxdb/v1.4/guides/writing_data/
+	Etsy,		/**< https://github.com/etsy/statsd/blob/master/docs/metric_types.md */
+	Datadog,	/**< https://docs.datadoghq.com/guides/dogstatsd/#datagram-format */
+	Telegraf,	/**< https://www.influxdata.com/blog/getting-started-with-sending-statsd-metrics-to-telegraf-influxdb */
+	Influx		/**< https://docs.influxdata.com/influxdb/v1.4/guides/writing_data */
 };
 
+/**
+ * @brief If the configured Flavor supports tags, they are just a key-value pair of strings
+ */
 using TagMap = std::map<std::string, std::string>;
 
+/**
+ * @brief The Metric class generates and publishes metrics
+ */
 class Metric : public core::NonCopyable {
 private:
 	std::string _prefix;

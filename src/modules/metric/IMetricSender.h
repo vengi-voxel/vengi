@@ -8,6 +8,11 @@
 
 namespace metric {
 
+/**
+ * @brief Interface for the metric sender
+ * @ingroup Metric
+ * @see Metric
+ */
 class IMetricSender {
 public:
 	virtual ~IMetricSender() {
