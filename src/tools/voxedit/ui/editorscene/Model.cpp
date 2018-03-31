@@ -163,7 +163,7 @@ void Model::extend(const glm::ivec3& size) {
 	modified(newVolume->region());
 }
 
-void Model::scale() {
+void Model::scaleHalf() {
 	// TODO: check that src region boundaries are even
 	const voxel::Region& srcRegion = modelVolume()->region();
 	const int w = srcRegion.getWidthInVoxels();

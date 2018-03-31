@@ -119,7 +119,7 @@ public:
 
 	void crop();
 	void extend(const glm::ivec3& size);
-	void scale();
+	void scaleHalf();
 	void fill(int x, int y, int z);
 
 	void vertices(float* vertices, size_t vertexSize, size_t verticesSize, uint32_t* indices, size_t indicesSize);

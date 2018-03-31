@@ -160,8 +160,8 @@ void EditorScene::extend(const glm::ivec3& size) {
 	m().extend(size);
 }
 
-void EditorScene::scale() {
-	m().scale();
+void EditorScene::scaleHalf() {
+	m().scaleHalf();
 }
 
 void EditorScene::fill(int x, int y, int z) {

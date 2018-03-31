@@ -660,8 +660,8 @@ void VoxEditWindow::extend(const glm::ivec3& size) {
 	_scene->extend(size);
 }
 
-void VoxEditWindow::scale() {
-	_scene->scale();
+void VoxEditWindow::scaleHalf() {
+	_scene->scaleHalf();
 }
 
 void VoxEditWindow::fill() {

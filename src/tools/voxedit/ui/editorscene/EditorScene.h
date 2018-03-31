@@ -131,7 +131,7 @@ public:
 
 	void crop();
 	void extend(const glm::ivec3& size);
-	void scale();
+	void scaleHalf();
 	void fill(int x, int y, int z);
 
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;

@@ -121,7 +121,7 @@ private:
 	void fill();
 	void fill(int x, int y, int z);
 	void extend(const glm::ivec3& size = glm::ivec3(1));
-	void scale();
+	void scaleHalf();
 	void setCursorPosition(int x, int y, int z, bool relative = false);
 	void toggleviewport();
 	void togglefreelook();
