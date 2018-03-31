@@ -36,6 +36,7 @@ TEST_F(MapProviderTest, testInit) {
 	MapProvider provider(_testApp->filesystem(), _testApp->eventBus(), _testApp->timeProvider(),
 			entityStorage, messageSender, loader, containerProvider, cooldownProvider);
 	ASSERT_TRUE(provider.init()) << "Failed to initialize the map provider";
+	provider.shutdown();
 }
 
 }

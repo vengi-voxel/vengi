@@ -25,6 +25,10 @@ MapProvider::MapProvider(
 		_containerProvider(containerProvider), _cooldownProvider(cooldownProvider) {
 }
 
+MapProvider::~MapProvider() {
+	shutdown();
+}
+
 MapPtr MapProvider::map(MapId id, bool forceValidMap) const {
 	auto i = _maps.find(id);
 	if (i != _maps.end()) {

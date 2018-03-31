@@ -38,6 +38,8 @@ public:
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider);
 
+	~MapProvider();
+
 	/**
 	 * @brief Returns a valid and initialized map (if found)
 	 * @param[in] id The @c MapId to get the map for
