@@ -4,7 +4,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2018, assimp team
 
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -39,68 +38,49 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
 */
-#pragma once
 
-#include <memory>
-#include <sstream>
-#include <vector>
-#include <assimp/vector3.h>
+/** @file FBXCommon.h
+* Some useful constants and enums for dealing with FBX files.
+*/
+#ifndef AI_FBXCOMMON_H_INC
+#define AI_FBXCOMMON_H_INC
 
-struct aiScene;
-struct aiNode;
-struct aiMaterial;
-struct aiMesh;
+#ifndef ASSIMP_BUILD_NO_FBX_EXPORTER
 
-struct zip_t;
 
-namespace Assimp {
+namespace FBX
+{
+    const std::string NULL_RECORD = { // 13 null bytes
+        '\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'
+    }; // who knows why
+    const std::string SEPARATOR = {'\x00', '\x01'}; // for use inside strings
+    const std::string MAGIC_NODE_TAG = "_$AssimpFbx$"; // from import
+    const int64_t SECOND = 46186158000; // FBX's kTime unit
 
-class IOStream;
+    // rotation order. We'll probably use EulerXYZ for everything
+    enum RotOrder {
+        RotOrder_EulerXYZ = 0,
+        RotOrder_EulerXZY,
+        RotOrder_EulerYZX,
+        RotOrder_EulerYXZ,
+        RotOrder_EulerZXY,
+        RotOrder_EulerZYX,
 
-namespace D3MF {
+        RotOrder_SphericXYZ,
 
-#ifndef ASSIMP_BUILD_NO_EXPORT
-#ifndef ASSIMP_BUILD_NO_3MF_EXPORTER
+        RotOrder_MAX // end-of-enum sentinel
+    };
 
-struct OpcPackageRelationship;
+    // transformation inheritance method. Most of the time RSrs
+    enum TransformInheritance {
+        TransformInheritance_RrSs = 0,
+        TransformInheritance_RSrs,
+        TransformInheritance_Rrs,
 
-class D3MFExporter {
-public:
-    D3MFExporter( const char* pFile, const aiScene* pScene );
-    ~D3MFExporter();
-    bool validate();
-    bool exportArchive( const char *file );
-    bool exportContentTypes();
-    bool exportRelations();
-    bool export3DModel();
+        TransformInheritance_MAX // end-of-enum sentinel
+    };
+}
 
-protected:
-    void writeHeader();
-    void writeMetaData();
-    void writeBaseMaterials();
-    void writeObjects();
-    void writeMesh( aiMesh *mesh );
-    void writeVertex( const aiVector3D &pos );
-    void writeFaces( aiMesh *mesh, unsigned int matIdx );
-    void writeBuild();
-    void exportContentTyp( const std::string &filename );
-    void writeModelToArchive( const std::string &folder, const std::string &modelName );
-    void writeRelInfoToFile( const std::string &folder, const std::string &relName );
+#endif // ASSIMP_BUILD_NO_FBX_EXPORTER
 
-private:
-    std::string mArchiveName;
-    zip_t *m_zipArchive;
-    const aiScene *mScene;
-    std::ostringstream mModelOutput;
-    std::ostringstream mRelOutput;
-    std::ostringstream mContentOutput;
-    std::vector<unsigned int> mBuildItems;
-    std::vector<OpcPackageRelationship*> mRelations;
-};
-
-#endif // ASSIMP_BUILD_NO_3MF_EXPORTER
-#endif // ASSIMP_BUILD_NO_EXPORT
-
-} // Namespace D3MF
-} // Namespace Assimp
-
+#endif // AI_FBXCOMMON_H_INC

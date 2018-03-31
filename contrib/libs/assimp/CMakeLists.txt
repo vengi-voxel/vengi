@@ -249,6 +249,7 @@ if (NOT ASSIMP_FOUND)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_AMF_IMPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_X3D_IMPORTER)
 
+	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_FBX_EXPORTER)
 	#target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_COLLADA_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_XFILE_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_STEP_EXPORTER)
