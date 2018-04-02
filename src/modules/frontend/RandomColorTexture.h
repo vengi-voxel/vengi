@@ -5,6 +5,7 @@
 
 #include "video/Texture.h"
 #include "noise/Noise.h"
+#include "video/Types.h"
 
 #include <vector>
 #include <future>

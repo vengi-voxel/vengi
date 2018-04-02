@@ -16,18 +16,18 @@ void RandomColorTexture::init() {
 	const float persistence = 0.3f;
 	const float frequency = 0.7f;
 	const float amplitude = 1.0f;
-	if (!shader.setup()) {
-		_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([=] () {
-			uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
-			noise::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
-			return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
-		}));
-	} else {
+	if (shader.setup()) {
 		const glm::ivec2 workSize(ColorTextureSize);
 		std::vector<uint8_t> colorTexture(ColorTextureSize * ColorTextureSize * ColorTextureDepth);
 		shader.seamlessNoise(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude, workSize);
 		_colorTexture->upload(video::TextureFormat::RGB, workSize.x, workSize.y, &colorTexture[0]);
+		return;
 	}
+	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([=] () {
+		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
+		noise::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
+		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
+	}));
 }
 
 void RandomColorTexture::bind(video::TextureUnit unit) {
