@@ -25,6 +25,10 @@ void Movement::shutdown() {
 	core::Command::unregisterActionButton("move_backward");
 	core::Command::unregisterActionButton("move_left");
 	core::Command::unregisterActionButton("move_right");
+	_moveLeft.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_moveRight.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_moveForward.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_moveBackward.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
 }
 
 void Movement::update(uint64_t deltaMillis) {
