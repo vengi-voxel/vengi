@@ -277,8 +277,8 @@ bool deleteBuffer(Id& buffer) {
 	const cl_int error = clReleaseMemObject((cl_mem)buffer);
 	checkError(error);
 	if (error == CL_SUCCESS) {
+		_priv::_sizes.erase(buffer);
 		buffer = InvalidId;
-		_priv::_sizes[buffer] = 0;
 		return true;
 	}
 	return false;
