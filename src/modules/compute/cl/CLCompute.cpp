@@ -254,6 +254,7 @@ Id createBuffer(BufferFlag flags, size_t size, void* data) {
 				0, size, 0, nullptr, nullptr, &error);
 		checkError(error);
 		if (target == nullptr) {
+			clReleaseMemObject(bufferObject);
 			return InvalidId;
 		}
 		memcpy(target, data, size);
@@ -261,6 +262,7 @@ Id createBuffer(BufferFlag flags, size_t size, void* data) {
 		error = clEnqueueUnmapMemObject(_priv::_ctx.commandQueue, bufferObject, target, 0, nullptr, &event);
 		checkError(error);
 		if (error != CL_SUCCESS) {
+			clReleaseMemObject(bufferObject);
 			return InvalidId;
 		}
 		error = clWaitForEvents(1, &event);
