@@ -20,6 +20,11 @@ Command& Command::registerCommand(const char* name, FunctionType&& func) {
 	return _cmds.find(name)->second;
 }
 
+bool Command::unregisterCommand(const char* name) {
+	ScopedWriteLock lock(_lock);
+	return _cmds.erase(name) > 0;
+}
+
 void Command::registerActionButton(const std::string& name, ActionButton& button) {
 	ScopedWriteLock lock(_lock);
 	const Command cPressed("+" + name, [&] (const core::CmdArgs& args) {
@@ -34,6 +39,13 @@ void Command::registerActionButton(const std::string& name, ActionButton& button
 		button.handleUp(key, millis);
 	});
 	_cmds.insert(std::make_pair(cReleased.name(), cReleased));
+}
+
+bool Command::unregisterActionButton(const std::string& name) {
+	ScopedWriteLock lock(_lock);
+	int amount = _cmds.erase("-" + name);
+	amount += _cmds.erase("+" + name);
+	return amount == 2;
 }
 
 int Command::complete(const std::string& str, std::vector<std::string>& matches) const {
@@ -152,11 +164,6 @@ bool Command::execute(const std::string& command, const CmdArgs& args) {
 void Command::shutdown() {
 	ScopedWriteLock lock(_lock);
 	_cmds.clear();
-}
-
-bool Command::unregisterCommand(const char* name) {
-	ScopedWriteLock lock(_lock);
-	return _cmds.erase(name) > 0;
 }
 
 Command& Command::setHelp(const char* help) {

@@ -21,7 +21,10 @@ void Movement::onConstruct() {
 
 void Movement::shutdown() {
 	_millis = 0ul;
-	// TODO: unregister action buttons
+	core::Command::unregisterActionButton("move_forward");
+	core::Command::unregisterActionButton("move_backward");
+	core::Command::unregisterActionButton("move_left");
+	core::Command::unregisterActionButton("move_right");
 }
 
 void Movement::update(uint64_t deltaMillis) {

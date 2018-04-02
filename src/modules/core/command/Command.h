@@ -49,6 +49,7 @@ private:
 
 public:
 	static Command& registerCommand(const char* name, FunctionType&& func);
+	static bool unregisterCommand(const char* name);
 
 	/**
 	 * @brief Registers two commands prefixed with @c + and @c - (for pressed and released)
@@ -60,8 +61,7 @@ public:
 	 * that the instance given here is alive as long as the commands are bound.
 	 */
 	static void registerActionButton(const std::string& name, ActionButton& button);
-
-	static bool unregisterCommand(const char* name);
+	static bool unregisterActionButton(const std::string& name);
 
 	static void shutdown();
 
