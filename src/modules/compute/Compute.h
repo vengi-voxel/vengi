@@ -5,7 +5,8 @@
  *
  * The compute module contains wrappers around OpenCL.
  *
- * @see Shader
+ * @see compute::Shader
+ * @see ComputeShaderTool
  *
  * @}
  */

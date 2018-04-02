@@ -1,5 +1,7 @@
 /**
  * @file
+ *
+ * @ingroup Compute
  */
 #include "CL.h"
 #include "CLSymbol.h"

@@ -23,6 +23,7 @@
  * @li parses OpenCL structs and generate proper aligned C++ struct for them.
  *
  * @ingroup Tools
+ * @ingroup Compute
  */
 class ComputeShaderTool: public core::ConsoleApp {
 private:

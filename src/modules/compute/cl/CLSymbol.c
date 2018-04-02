@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "CLSymbol.h"
 #include <SDL.h>
 #include <SDL_platform.h>
