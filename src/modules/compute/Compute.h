@@ -96,6 +96,9 @@ inline bool kernelArg(Id kernel, uint32_t index, glm::vec3& t) {
 	return kernelArg(kernel, index, sizeof(fourComponents), (const void*)&fourComponents);
 }
 
+/**
+ * @brief Passing stuff like buffer or texture handles to the kernel
+ */
 template<>
 inline bool kernelArg(Id kernel, uint32_t index, Id& t) {
 	return kernelArg(kernel, index, sizeof(Id), (const void*)&t);
