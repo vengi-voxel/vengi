@@ -6,12 +6,13 @@
 
 #include "ServerMessages_generated.h"
 #include "backend/ForwardDecl.h"
+#include "core/IComponent.h"
 #include "ai/common/Types.h"
 #include <glm/vec3.hpp>
 
 namespace backend {
 
-class SpawnMgr {
+class SpawnMgr : public core::IComponent {
 private:
 	Map* _map;
 	AILoaderPtr _loader;
@@ -39,8 +40,8 @@ public:
 			const AILoaderPtr& loader,
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider);
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 
 	NpcPtr spawn(network::EntityType type, const glm::ivec3* pos = nullptr);
 	int spawn(network::EntityType type, int amount, const glm::ivec3* pos = nullptr);
