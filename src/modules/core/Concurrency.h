@@ -19,4 +19,10 @@ inline uint32_t halfcpus() {
 
 extern void setThreadName(const char *name);
 
+enum class ThreadPriority {
+	High, Normal, Low
+};
+
+extern void setThreadPriority(ThreadPriority prio);
+
 }
