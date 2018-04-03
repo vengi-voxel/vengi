@@ -57,7 +57,6 @@ private:
 	math::QuadTree<QuadTreeNode, float> _quadTree;
 	math::QuadTreeCache<QuadTreeNode, float> _quadTreeCache;
 
-	void updateQuadTree();
 	/**
 	 * @return @c false if the entity should be removed from the server.
 	 */
@@ -102,6 +101,10 @@ public:
 	UserPtr user(EntityId id);
 
 	bool addNpc(const NpcPtr& npc);
+	/**
+	 * @brief Remove npc from map but keep it in the world
+	 * @note The npc will keep this map set up to the point a new @c addNpc() was called on another map instance.
+	 */
 	bool removeNpc(EntityId id);
 	NpcPtr npc(EntityId id);
 

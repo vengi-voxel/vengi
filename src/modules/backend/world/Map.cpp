@@ -78,7 +78,6 @@ void Map::update(long dt) {
 	_spawnMgr->update(dt);
 	_zone->update(dt);
 	_attackMgr.update(dt);
-	updateQuadTree();
 
 	for (auto i = _users.begin(); i != _users.end();) {
 		UserPtr user = i->second;
@@ -100,6 +99,7 @@ void Map::update(long dt) {
 		Log::debug("remove npc " PRIEntId, npc->id());
 		_quadTree.remove(QuadTreeNode { npc });
 		i = _npcs.erase(i);
+		_zone->removeAI(npc->ai());
 		_eventBus->enqueue(std::make_shared<EntityDeleteEvent>(npc->id(), npc->entityType()));
 	}
 }
@@ -165,8 +165,7 @@ void Map::shutdown() {
 }
 
 glm::vec3 Map::findStartPosition(const EntityPtr& entity) const {
-	// TODO: poi provider should respect entity type and position type
-	const poi::PoiResult& result = _poiProvider->query();
+	const poi::PoiResult& result = _poiProvider->query(poi::Type::GENERIC);
 	if (result.valid) {
 		return result.pos;
 	}
@@ -181,7 +180,9 @@ void Map::addUser(const UserPtr& user) {
 	}
 	const glm::vec3& pos = findStartPosition(user);
 	user->setMap(ptr(), pos);
+	_quadTree.insert(QuadTreeNode { user });
 	_eventBus->enqueue(std::make_shared<EntityAddToMapEvent>(user));
+	_poiProvider->add(pos, poi::Type::SPAWN);
 }
 
 bool Map::removeUser(EntityId id) {
@@ -213,6 +214,7 @@ bool Map::addNpc(const NpcPtr& npc) {
 	const glm::vec3& pos = findStartPosition(npc);
 	npc->setMap(ptr(), pos);
 	_zone->addAI(npc->ai());
+	_quadTree.insert(QuadTreeNode { npc });
 	_eventBus->enqueue(std::make_shared<EntityAddToMapEvent>(npc));
 	_poiProvider->add(pos, poi::Type::SPAWN);
 	return true;
@@ -252,17 +254,6 @@ int Map::findFloor(const glm::vec3& pos) const {
 
 glm::ivec3 Map::randomPos() const {
 	return _voxelWorld->randomPos();
-}
-
-void Map::updateQuadTree() {
-	// TODO: a full rebuild is not needed every frame
-	_quadTree.clear();
-	for (auto i : _npcs) {
-		_quadTree.insert(QuadTreeNode { i.second });
-	}
-	for (auto i : _users) {
-		_quadTree.insert(QuadTreeNode { i.second });
-	}
 }
 
 }
