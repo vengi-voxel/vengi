@@ -19,7 +19,7 @@ namespace persistence {
  * It will collect all database actions in prepared statements to write delta values into the database.
  * @note Your @c ISavable instances must be registered and unregistered.
  */
-class PersistenceMgr : core::IComponent {
+class PersistenceMgr : public core::IComponent {
 private:
 	using Savables = std::unordered_set<ISavable*>;
 	using Map = std::map<uint32_t, Savables>;

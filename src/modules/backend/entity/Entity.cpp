@@ -162,7 +162,6 @@ void Entity::updateVisible(const EntitySet& set) {
 	const EntitySet& remove = core::setDifference(stillVisible, _visible);
 	const EntitySet& add = core::setDifference(set, stillVisible);
 	_visible = core::setUnion(stillVisible, add);
-	core_assert(stillVisible.size() + add.size() == _visible.size());
 	_visibleLock.unlockWrite();
 
 	for (const auto& e : _visible) {

@@ -43,8 +43,7 @@ bool UserCooldownMgr::init() {
 		model.setCooldownid(i);
 		model.setUserid(_user->id());
 	}
-	_persistenceMgr->registerSavable(FOURCC, this);
-	return true;
+	return _persistenceMgr->registerSavable(FOURCC, this);
 }
 
 void UserCooldownMgr::shutdown() {
