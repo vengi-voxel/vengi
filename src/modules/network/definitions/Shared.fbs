@@ -53,6 +53,7 @@ enum PointOfInterestType: int {
 	NONE,
 	GENERIC,
 	FIGHT,
+	SPAWN,
 	QUEST
 }
 

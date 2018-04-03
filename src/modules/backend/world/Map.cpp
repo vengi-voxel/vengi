@@ -214,6 +214,7 @@ bool Map::addNpc(const NpcPtr& npc) {
 	npc->setMap(ptr(), pos);
 	_zone->addAI(npc->ai());
 	_eventBus->enqueue(std::make_shared<EntityAddToMapEvent>(npc));
+	_poiProvider->add(pos, poi::Type::SPAWN);
 	return true;
 }
 

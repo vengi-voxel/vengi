@@ -7,7 +7,7 @@
 #include "backend/ForwardDecl.h"
 #include "core/ReadWriteLock.h"
 #include "math/Random.h"
-#include "Shared_generated.h"
+#include "Type.h"
 #include <glm/vec3.hpp>
 #include <stack>
 #include <memory>
@@ -18,8 +18,6 @@ struct PoiResult {
 	glm::vec3 pos;
 	bool valid;;
 };
-
-using Type = network::PointOfInterestType;
 
 /**
  * @brief Maintains a list of points of interest that are only valid for a particular time.

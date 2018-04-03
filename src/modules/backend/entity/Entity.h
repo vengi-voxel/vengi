@@ -8,6 +8,7 @@
 #include "math/Rect.h"
 #include "core/ReadWriteLock.h"
 #include "attrib/Attributes.h"
+#include "poi/Type.h"
 #include "backend/ForwardDecl.h"
 #include "ServerMessages_generated.h"
 #include "network/IProtocolHandler.h"
@@ -85,7 +86,7 @@ public:
 	const MapPtr& map() const;
 	void setMap(const MapPtr& map, const glm::vec3& pos);
 
-	void setPointOfInterest();
+	void setPointOfInterest(poi::Type type = poi::Type::NONE);
 
 	bool dead() const;
 

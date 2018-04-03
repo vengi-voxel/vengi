@@ -4,6 +4,7 @@
 
 #include "AttackMgr.h"
 #include "backend/world/Map.h"
+#include "poi/PoiProvider.h"
 #include "backend/entity/Npc.h"
 
 namespace backend {
@@ -30,7 +31,11 @@ bool AttackMgr::startAttack(EntityId attackerId, EntityId victimId) {
 	if (!npc) {
 		return false;
 	}
-	return npc->applyDamage(attacker.get(), strength) > 0.0;
+	const bool started = npc->applyDamage(attacker.get(), strength) > 0.0;
+	if (started) {
+		_map->poiProvider()->add(attacker->pos(), poi::Type::FIGHT);
+	}
+	return started;
 }
 
 bool AttackMgr::init() {

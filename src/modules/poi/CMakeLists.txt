@@ -1,5 +1,6 @@
 set(SRCS
 	PoiProvider.cpp PoiProvider.h
+	Type.h
 )
 set(LIB poi)
 add_library(${LIB} ${SRCS})
