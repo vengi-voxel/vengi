@@ -14,9 +14,12 @@
 
 namespace poi {
 
+/**
+ * @brief PoiProvider::query() result.
+ */
 struct PoiResult {
 	glm::vec3 pos;
-	bool valid;;
+	bool valid; /**< If no valid POI was found, this is @c false, @c true otherwise */
 };
 
 /**
@@ -42,11 +45,21 @@ private:
 public:
 	PoiProvider(const core::TimeProviderPtr& timeProvider);
 
+	/**
+	 * @brief This will deleted outdated POIs. But tries to keep at least one in the list.
+	 */
 	void update(long dt);
 
+	/**
+	 * @brief Adds a POI for the given position
+	 */
 	void add(const glm::vec3& pos, Type type = Type::GENERIC);
+	/**
+	 * @brief The overall amount of POIs
+	 */
 	size_t count() const;
 	/**
+	 * @brief Get a POI either randomly or by specifying a type.
 	 * @param[in] type If @c Type::NONE is given here we are just looking for any type of POI
 	 */
 	PoiResult query(Type type = Type::NONE) const;
