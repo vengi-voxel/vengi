@@ -53,6 +53,12 @@ bool DBHandler::insert(Model& model) const {
 	return execInternalWithParameters(query, model, param).result;
 }
 
+bool DBHandler::insert(Model&& model) const {
+	BindParam param(10);
+	const std::string& query = createInsertStatement(model, &param);
+	return execInternalWithParameters(query, model, param).result;
+}
+
 bool DBHandler::insert(std::vector<const Model*>& models) const {
 	BindParam param(10 * models.size());
 	const std::string& query = createInsertStatement(models, &param);

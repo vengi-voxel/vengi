@@ -34,44 +34,51 @@ int BindParam::add() {
 
 void BindParam::push(const Model& model, const Field& field) {
 	const int index = add();
+	fieldTypes[index] = field.type;
+	if (model.isNull(field)) {
+		values[index] = nullptr;
+		Log::debug("Parameter %i: NULL", index + 1);
+		return;
+	}
+	const bool notNull = field.nulloffset == -1;
 	switch (field.type) {
 	case FieldType::SHORT: {
-		const int16_t value = model.getValue<int16_t>(field);
+		const int16_t value = notNull ? model.getValue<int16_t>(field) : *model.getValuePointer<int16_t>(field);
 		valueBuffers.emplace_back(std::to_string(value));
 		values[index] = valueBuffers.back().c_str();
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
 	case FieldType::BYTE: {
-		const int8_t value = model.getValue<uint8_t>(field);
+		const int8_t value = notNull ? model.getValue<uint8_t>(field) : *model.getValuePointer<uint8_t>(field);
 		valueBuffers.emplace_back(std::to_string(value));
 		values[index] = valueBuffers.back().c_str();
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
 	case FieldType::INT: {
-		const int32_t value = model.getValue<int32_t>(field);
+		const int32_t value = notNull ? model.getValue<int32_t>(field) : *model.getValuePointer<int32_t>(field);
 		valueBuffers.emplace_back(std::to_string(value));
 		values[index] = valueBuffers.back().c_str();
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
 	case FieldType::DOUBLE: {
-		const double value = model.getValue<double>(field);
+		const double value = notNull ? model.getValue<double>(field) : *model.getValuePointer<double>(field);
 		valueBuffers.emplace_back(std::to_string(value));
 		values[index] = valueBuffers.back().c_str();
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
 	case FieldType::LONG: {
-		const int64_t value = model.getValue<int64_t>(field);
+		const int64_t value = notNull ? model.getValue<int64_t>(field) : *model.getValuePointer<int64_t>(field);
 		valueBuffers.emplace_back(std::to_string(value));
 		values[index] = valueBuffers.back().c_str();
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
 	case FieldType::BOOLEAN: {
-		const bool value = model.getValue<bool>(field);
+		const bool value = notNull ? model.getValue<bool>(field) : *model.getValuePointer<bool>(field);
 		if (value) {
 			values[index] = "TRUE";
 		} else {
@@ -81,7 +88,7 @@ void BindParam::push(const Model& model, const Field& field) {
 		break;
 	}
 	case FieldType::TIMESTAMP: {
-		const Timestamp& value = model.getValue<Timestamp>(field);
+		const Timestamp& value = notNull ? model.getValue<Timestamp>(field) : *model.getValuePointer<Timestamp>(field);
 		core_assert_msg(!value.isNow(), "'NOW()' timestamps are not pushed as parameters - but as NOW()");
 		valueBuffers.emplace_back(std::to_string(value.seconds()));
 		values[index] = valueBuffers.back().c_str();
@@ -91,19 +98,14 @@ void BindParam::push(const Model& model, const Field& field) {
 	case FieldType::PASSWORD:
 	case FieldType::STRING:
 	case FieldType::TEXT: {
-		if (field.isNotNull()) {
-			valueBuffers.emplace_back(model.getValue<std::string>(field));
-			values[index] = valueBuffers.back().c_str();
-		} else {
-			values[index] = model.getValue<const char*>(field);
-		}
+		valueBuffers.emplace_back(notNull ? model.getValue<std::string>(field) : *model.getValuePointer<std::string>(field));
+		values[index] = valueBuffers.back().c_str();
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
 	case FieldType::MAX:
 		break;
 	}
-	fieldTypes[index] = field.type;
 }
 
 }

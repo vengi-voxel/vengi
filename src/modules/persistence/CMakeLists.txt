@@ -39,7 +39,7 @@ set(TEST_SRCS
 	tests/SQLGeneratorTest.cpp
 )
 
-if (POSTGRESQL_FOUND)
+if (PostgreSQL_FOUND)
 	set(HAVE_POSTGRES 1 CACHE INTERNAL "Found postgres")
 	list(APPEND TEST_SRCS
 		tests/PersistenceMgrTest.cpp

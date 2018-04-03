@@ -60,10 +60,6 @@ protected:
 	 */
 	bool fillModelValues(State& state);
 
-	/**
-	 * @note Used in the @c MassQuery to order the model into the right list.
-	 */
-	bool shouldBeDeleted() const;
 public:
 	Model(const Meta* s);
 	virtual ~Model();
@@ -111,6 +107,11 @@ public:
 	const char* autoIncrementField() const;
 
 	/**
+	 * @note Used in the @c MassQuery to order the model into the right list.
+	 */
+	bool shouldBeDeleted() const;
+
+	/**
 	 * @brief Flag for delete for the @c MassQuery and @c ISavable infrastructure
 	 */
 	void flagForDelete();
@@ -142,7 +143,7 @@ public:
 
 	template<class T>
 	T getValue(const Field& f) const {
-		core_assert(f.nulloffset < 0);
+		core_assert_msg(f.nulloffset < 0, "Use getValuePointer()");
 		core_assert(f.offset >= 0);
 		const uint8_t* target = (const uint8_t*)(_membersPointer + f.offset);
 		const T* targetValue = (const T*)target;
@@ -151,7 +152,7 @@ public:
 
 	template<class T>
 	const T* getValuePointer(const Field& f) const {
-		core_assert(f.nulloffset >= 0);
+		core_assert_msg(f.nulloffset >= 0, "Use getValue()");
 		core_assert(f.offset >= 0);
 		const uint8_t* target = (const uint8_t*)(_membersPointer + f.offset);
 		const T* targetValue = (const T*)target;

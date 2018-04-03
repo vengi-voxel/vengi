@@ -197,6 +197,8 @@ public:
 	 */
 	bool insert(Model& model) const;
 
+	bool insert(Model&& model) const;
+
 	bool insert(std::vector<const Model*>& models) const;
 
 	template<class MODEL>
