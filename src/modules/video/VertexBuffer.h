@@ -127,10 +127,13 @@ public:
 	bool isValid(int32_t idx) const;
 	/**
 	 * @param[in] idx The buffer index returned by create()
-	 * @return The handle for the given buffer index.
+	 * @return The native handle for the given buffer index.
 	 */
 	Id bufferHandle(int32_t idx) const;
 
+	/**
+	 * @return The vertex array object native handle
+	 */
 	Id handle() const;
 };
 
