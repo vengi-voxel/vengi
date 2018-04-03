@@ -9,7 +9,7 @@
 #include "math/Random.h"
 #include "Shared_generated.h"
 #include <glm/vec3.hpp>
-#include <vector>
+#include <stack>
 #include <memory>
 
 namespace poi {
@@ -35,7 +35,7 @@ private:
 		unsigned long time;
 	};
 
-	typedef std::vector<Poi> PoiQueue;
+	typedef std::deque<Poi> PoiQueue;
 	PoiQueue _pois;
 
 	core::TimeProviderPtr _timeProvider;
