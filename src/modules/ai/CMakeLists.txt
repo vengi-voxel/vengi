@@ -16,7 +16,6 @@ set(SRCS
 	common/String.h
 	common/Thread.h
 	common/ThreadPool.h
-	common/ThreadScheduler.h
 	common/Types.h
 	conditions/And.h
 	conditions/ConditionParser.h
@@ -123,7 +122,6 @@ gtest_suite_files(tests
 	tests/NodeTest.cpp
 	tests/ParserTest.cpp
 	tests/TestShared.cpp
-	tests/ThreadTest.cpp
 	tests/ZoneTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

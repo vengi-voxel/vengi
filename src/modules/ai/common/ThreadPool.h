@@ -32,6 +32,8 @@
 #include <atomic>
 #include <future>
 #include <functional>
+#include "core/Concurrency.h"
+#include "core/String.h"
 
 namespace ai {
 
@@ -63,7 +65,9 @@ inline ThreadPool::ThreadPool(size_t threads) :
 		_stop(false) {
 	_workers.reserve(threads);
 	for (size_t i = 0; i < threads; ++i) {
-		_workers.emplace_back([this] {
+		_workers.emplace_back([this, i] {
+			const std::string n = core::string::format("SimpleAI-%i", (int)i);
+			core::setThreadName(n.c_str());
 			for (;;) {
 				std::function<void()> task;
 				{
