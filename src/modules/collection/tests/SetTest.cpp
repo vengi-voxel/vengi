@@ -111,14 +111,6 @@ TEST_F(SetMassTest, testVectorIntersectionSorted) {
 	EXPECT_EQ(n - offset, (int)out.size());
 }
 
-TEST_F(SetMassTest, testVectorIntersectionUnsorted) {
-	std::sort(v1.begin(), v1.end());
-	std::sort(v2.begin(), v2.end());
-	std::vector<int> out;
-	core::vectorIntersection(v1, v2, out);
-	EXPECT_EQ(n - offset, (int)out.size());
-}
-
 TEST_F(SetMassTest, testVisibleActionsPerformance) {
 	const auto& inBoth = core::setIntersection(set1, set2);
 	EXPECT_EQ(n - offset, (int)inBoth.size());
