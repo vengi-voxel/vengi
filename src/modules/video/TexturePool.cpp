@@ -24,6 +24,7 @@ video::TexturePtr TexturePool::load(const std::string& name) {
 }
 
 bool TexturePool::init() {
+	_cache.reserve(32);
 	return true;
 }
 
