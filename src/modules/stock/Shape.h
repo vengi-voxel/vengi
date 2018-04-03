@@ -86,7 +86,7 @@ public:
 	 * @note You can call this multiple times if you would like to have a non
 	 * rectangular shape.
 	 */
-	void addRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
+	bool addRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
 
 	/**
 	 * @brief Define the shape by adding an ItemShapeType at a particular position.

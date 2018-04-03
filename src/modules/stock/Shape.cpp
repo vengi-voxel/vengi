@@ -9,11 +9,18 @@
 
 namespace stock {
 
-void ContainerShape::addRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
+bool ContainerShape::addRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
+	if (x + width >= ContainerMaxWidth) {
+		return false;
+	}
+	if (y + height >= ContainerMaxHeight) {
+		return false;
+	}
 	const ContainerShapeType row = (((ItemShapeType)1 << width) - 1) << x;
 	for (height += y; y < height; ++y) {
 		_containerShape[y] |= row;
 	}
+	return true;
 }
 
 bool ContainerShape::isFree(uint8_t x, uint8_t y) const {

@@ -13,7 +13,9 @@ class Item;
 typedef std::shared_ptr<Item> ItemPtr;
 
 /**
- * @brief A container is a collection of items. They are packed into a @c ContainerItem
+ * @brief A container is a collection of items. They are packed into a @c ContainerItem.
+ * Each Container instance has a @c ContainerShape assigned which defines the valid area to place
+ * items at.
  * @ingroup Stock
  */
 class Container {
@@ -25,7 +27,17 @@ public:
 	};
 	typedef std::vector<ContainerItem> ContainerItems;
 
-	void init(const ContainerShape& shape);
+	/** each item can only be in here once */
+	static constexpr uint32_t Unique     = 1 << 0;
+	/** only a single item can be in this container */
+	static constexpr uint32_t Single     = 1 << 1;
+	/** a scrollable container can hold as many items as wanted */
+	static constexpr uint32_t Scrollable = 1 << 2;
+
+	/**
+	 * @param[in] flags Bitmask of flags to control the behavior of the container
+	 */
+	void init(const ContainerShape& shape, uint32_t flags = 0u);
 
 	void clear();
 
@@ -69,13 +81,6 @@ private:
 	auto findById(ItemId id) const;
 
 	auto findByType(const ItemType& type) const;
-
-	/** each item can only be in here once */
-	static constexpr uint32_t Unique     = 1 << 0;
-	/** only a single item can be in this container */
-	static constexpr uint32_t Single     = 1 << 1;
-	/** a scrollable container can hold as many items as wanted */
-	static constexpr uint32_t Scrollable = 1 << 2;
 
 	ContainerShape _shape;
 	uint32_t _flags = 0u;

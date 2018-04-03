@@ -8,8 +8,9 @@
 
 namespace stock {
 
-void Container::init(const ContainerShape& shape) {
+void Container::init(const ContainerShape& shape, uint32_t flags) {
 	_shape = shape;
+	_flags = flags;
 	_items.reserve(64);
 }
 

@@ -27,7 +27,7 @@ private:
 TEST_F(AITest, testFilterSelectIncreasePartner) {
 	const NpcPtr& npc = create();
 	const NpcPtr& partner = setVisible(npc);
-	ASSERT_EQ(partner->id(), npc->ai()->getFilteredEntities().front());
+	EXPECT_EQ(partner->id(), npc->ai()->getFilteredEntities().front());
 }
 
 TEST_F(AITest, testFilterSelectVisible) {
@@ -42,9 +42,9 @@ TEST_F(AITest, testFilterSelectVisible) {
 	filter->filter(npc->ai());
 
 	const FilteredEntities& fe = npc->ai()->getFilteredEntities();
-	ASSERT_EQ(2u, fe.size())
+	EXPECT_EQ(2u, fe.size())
 		<< "Expected to have two of the npcs visible, but " << fe.size() << " are";
-	ASSERT_TRUE(std::find(fe.begin(), fe.end(), npcNotVisible->id()) == fe.end())
+	EXPECT_TRUE(std::find(fe.begin(), fe.end(), npcNotVisible->id()) == fe.end())
 		<< "This npc should not be part of the visible set";
 }
 
@@ -61,7 +61,7 @@ TEST_F(AITest, testFilterSelectEntitiesOfTypes) {
 	filter->filter(npc->ai());
 
 	const FilteredEntities& fe = npc->ai()->getFilteredEntities();
-	ASSERT_EQ(2u, fe.size())
+	EXPECT_EQ(2u, fe.size())
 		<< "Expected to have two of the npcs visible, but " << fe.size() << " are";
 }
 
@@ -70,7 +70,7 @@ TEST_F(AITest, testConditionIsSelectionAlive) {
 	setVisible(npc);
 	const ai::ConditionFactoryContext ctx("");
 	const ai::ConditionPtr& condition = IsSelectionAlive::getFactory().create(&ctx);
-	ASSERT_TRUE(condition->evaluate(npc->ai())) << "NPC should be alive";
+	EXPECT_TRUE(condition->evaluate(npc->ai())) << "NPC should be alive";
 }
 
 TEST_F(AITest, testConditionIsClosetoSelection) {
@@ -78,23 +78,23 @@ TEST_F(AITest, testConditionIsClosetoSelection) {
 	setVisible(npc);
 	const ai::ConditionFactoryContext ctx("");
 	const ai::ConditionPtr& condition = IsCloseToSelection::getFactory().create(&ctx);
-	ASSERT_TRUE(condition->evaluate(npc->ai())) << "NPCs should be close to each other";
+	EXPECT_TRUE(condition->evaluate(npc->ai())) << "NPCs should be close to each other";
 }
 
 TEST_F(AITest, testConditionIsOnCooldown) {
 	const NpcPtr& npc = create();
 	const ai::ConditionFactoryContext ctx(network::EnumNameCooldownType(cooldown::Type::INCREASE));
 	const ai::ConditionPtr& condition = IsOnCooldown::getFactory().create(&ctx);
-	ASSERT_EQ(cooldown::CooldownTriggerState::SUCCESS, npc->cooldownMgr().triggerCooldown(cooldown::Type::INCREASE));
-	ASSERT_TRUE(condition->evaluate(npc->ai())) << "NPC should have the cooldown triggered";
+	EXPECT_EQ(cooldown::CooldownTriggerState::SUCCESS, npc->cooldownMgr().triggerCooldown(cooldown::Type::INCREASE));
+	EXPECT_TRUE(condition->evaluate(npc->ai())) << "NPC should have the cooldown triggered";
 }
 
 TEST_F(AITest, testActionTriggerCooldown) {
 	const NpcPtr& npc = create();
 	const ai::TreeNodeFactoryContext ctx("foo", network::EnumNameCooldownType(cooldown::Type::INCREASE), ai::True::get());
 	const ai::TreeNodePtr& action = TriggerCooldown::getFactory().create(&ctx);
-	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
-	ASSERT_TRUE(npc->cooldownMgr().isCooldown(cooldown::Type::INCREASE));
+	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
+	EXPECT_TRUE(npc->cooldownMgr().isCooldown(cooldown::Type::INCREASE));
 }
 
 TEST_F(AITest, testActionTriggerCooldownOnSelection) {
@@ -102,7 +102,7 @@ TEST_F(AITest, testActionTriggerCooldownOnSelection) {
 	setVisible(npc);
 	const ai::TreeNodeFactoryContext ctx("foo", network::EnumNameCooldownType(cooldown::Type::INCREASE), ai::True::get());
 	const ai::TreeNodePtr& action = TriggerCooldown::getFactory().create(&ctx);
-	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
+	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
 }
 
 TEST_F(AITest, testActionSpawn) {
@@ -110,42 +110,43 @@ TEST_F(AITest, testActionSpawn) {
 	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
 	const ai::TreeNodePtr& action = Spawn::getFactory().create(&ctx);
 	const int before = map->npcCount();
-	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
+	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
 	const int after = map->npcCount();
-	ASSERT_EQ(before + 1, after) << "NPC wasn't spawned as expected";
+	EXPECT_EQ(before + 1, after) << "NPC wasn't spawned as expected";
 }
 
 TEST_F(AITest, testActionSetPointOfInterest) {
 	const NpcPtr& npc = create();
+	const size_t before = map->poiProvider()->count();
 	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
 	const ai::TreeNodePtr& action = SetPointOfInterest::getFactory().create(&ctx);
-	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
-	ASSERT_EQ(1u, map->poiProvider()->count());
+	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
+	EXPECT_GT(map->poiProvider()->count(), before);
 }
 
 TEST_F(AITest, testActionGoHome) {
 	const NpcPtr& npc = create();
 	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
 	const ai::TreeNodePtr& action = GoHome::getFactory().create(&ctx);
-	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
+	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
 }
 
 TEST_F(AITest, testActionDie) {
 	const NpcPtr& npc = create();
 	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
 	const ai::TreeNodePtr& action = Die::getFactory().create(&ctx);
-	ASSERT_FALSE(npc->dead()) << "NPC should be alive";
-	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
-	ASSERT_TRUE(npc->dead()) << "NPC should be dead";
+	EXPECT_FALSE(npc->dead()) << "NPC should be alive";
+	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
+	EXPECT_TRUE(npc->dead()) << "NPC should be dead";
 }
 
 TEST_F(AITest, testActionAttackOnSelection) {
 	const NpcPtr& npc = create();
 	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
 	const ai::TreeNodePtr& action = AttackOnSelection::getFactory().create(&ctx);
-	ASSERT_EQ(ai::TreeNodeStatus::FAILED, action->execute(npc->ai(), 0L));
+	EXPECT_EQ(ai::TreeNodeStatus::FAILED, action->execute(npc->ai(), 0L));
 	setVisible(npc);
-	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
+	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
 }
 
 }
