@@ -124,4 +124,32 @@ TEST_F(SetMassTest, testVisibleActionsPerformance) {
 	EXPECT_EQ(n - offset, (int)inBoth.size());
 }
 
+// exactly what is done for calculating the visible entities
+TEST_F(SetMassTest, testMassVisibleActions) {
+	const size_t n1 = 20110;
+	const size_t n2 = 22031;
+	const size_t overlap = 120;
+
+	std::unordered_set<int> set1(n1);
+	std::unordered_set<int> set2(n2);
+
+	for (size_t i = 0; i < n1; ++i) {
+		set1.insert(i);
+	}
+	for (size_t i = n1 - overlap; i < n1 - overlap + n2; ++i) {
+		set2.insert(i);
+	}
+
+	const auto& inBoth = core::setIntersection(set1, set2);
+	EXPECT_EQ(overlap, inBoth.size());
+	EXPECT_EQ(int(n1 - overlap), *inBoth.begin());
+	const std::unordered_set<int>& removeFromSet2 = core::setDifference(inBoth, set2);
+	EXPECT_EQ(n2 - overlap, removeFromSet2.size());
+	const std::unordered_set<int>& addToSet2 = core::setDifference(set1, inBoth);
+	EXPECT_EQ(n1 - overlap, addToSet2.size());
+	set2 = core::setUnion(inBoth, addToSet2);
+	EXPECT_EQ(n1, set2.size());
+	EXPECT_EQ(inBoth.size() + addToSet2.size(), set2.size());
+}
+
 }
