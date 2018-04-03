@@ -8,6 +8,7 @@
 #include "math/AABB.h"
 #include "math/Plane.h"
 #include "video/Camera.h"
+#include "video/Types.h"
 #include "core/GLM.h"
 #include "core/Color.h"
 #include <stdint.h>
