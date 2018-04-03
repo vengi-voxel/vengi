@@ -316,4 +316,14 @@ TEST_F(DatabaseModelTest, testOffsetOrderBy) {
 	ASSERT_EQ(n - offset, count);
 }
 
+TEST_F(DatabaseModelTest, testNullField) {
+	if (!_supported) {
+		return;
+	}
+	db::TestModel mdl = m("foo@b.ar", "123");
+	mdl.setPoints(nullptr);
+	ASSERT_TRUE(_dbHandler.insert(mdl));
+	ASSERT_TRUE(_dbHandler.update(mdl));
+}
+
 }
