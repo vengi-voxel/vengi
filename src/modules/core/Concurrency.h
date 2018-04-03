@@ -17,4 +17,6 @@ inline uint32_t halfcpus() {
 	return (std::max)(1u, std::thread::hardware_concurrency() / 2u);
 }
 
+extern void setThreadName(const char *name);
+
 }

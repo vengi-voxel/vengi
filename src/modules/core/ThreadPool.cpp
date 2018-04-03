@@ -3,8 +3,9 @@
  */
 
 #include "ThreadPool.h"
-#include "String.h"
+#include "core/String.h"
 #include "core/Trace.h"
+#include "core/Concurrency.h"
 
 namespace core {
 
@@ -20,6 +21,7 @@ void ThreadPool::init() {
 	for (size_t i = 0; i < _threads; ++i) {
 		_workers.emplace_back([this, i] {
 			const std::string n = core::string::format("%s-%i", this->_name, (int)i);
+			setThreadName(n.c_str());
 			core_trace_thread(n.c_str());
 			for (;;) {
 				std::function<void()> task;

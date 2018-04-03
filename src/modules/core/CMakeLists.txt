@@ -8,7 +8,7 @@ set(SRCS
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
 	Common.h
-	Concurrency.h
+	Concurrency.h Concurrency.cpp
 	ConsoleApp.h ConsoleApp.cpp
 	EventBus.cpp EventBus.h
 	GameConfig.h
