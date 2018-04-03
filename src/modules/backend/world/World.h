@@ -26,6 +26,7 @@ private:
 public:
 	World(const MapProviderPtr& mapProvider, const AIRegistryPtr& registry,
 			const core::EventBusPtr& eventBus, const io::FilesystemPtr& filesystem);
+	~World();
 
 	void update(long dt);
 

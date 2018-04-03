@@ -63,8 +63,12 @@ private:
 
 	// synchronization
 	std::mutex _queueMutex;
-	std::condition_variable _condition;
-	std::atomic_bool _stop;
+	std::condition_variable _queueCondition;
+	std::mutex _shutdownMutex;
+	std::condition_variable _shutdownCondition;
+	std::atomic_int _shutdownCount { 0 };
+	std::atomic_bool _stop { false };
+	std::atomic_bool _force { false };
 };
 
 // add new work item to the pool
@@ -85,8 +89,8 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 			return std::future<return_type>();
 		}
 		_tasks.emplace([task]() {(*task)();});
-		_condition.notify_one();
 	}
+	_queueCondition.notify_one();
 	return res;
 }
 

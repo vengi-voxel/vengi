@@ -27,6 +27,10 @@ World::World(const MapProviderPtr& mapProvider, const AIRegistryPtr& registry,
 		_eventBus(eventBus), _filesystem(filesystem) {
 }
 
+World::~World() {
+	shutdown();
+}
+
 void World::update(long dt) {
 	for (auto& e : _maps) {
 		const MapPtr& map = e.second;

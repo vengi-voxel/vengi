@@ -29,19 +29,23 @@ public:
 	}
 
 	bool insert(Data const& data) {
-		std::unique_lock<std::mutex> lock(_mutex);
-		auto i = _data.insert(data);
-		lock.unlock();
+		bool result;
+		{
+			std::unique_lock<std::mutex> lock(_mutex);
+			result = _data.insert(data).second;
+		}
 		_conditionVariable.notify_one();
-		return i.second;
+		return result;
 	}
 
 	bool insert(Data&& data) {
-		std::unique_lock<std::mutex> lock(_mutex);
-		auto i = _data.insert(data);
-		lock.unlock();
+		bool result;
+		{
+			std::unique_lock<std::mutex> lock(_mutex);
+			result = _data.insert(data).second;
+		}
 		_conditionVariable.notify_one();
-		return i.second;
+		return result;
 	}
 
 	bool contains(Data const& data) const {

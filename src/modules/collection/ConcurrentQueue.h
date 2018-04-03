@@ -26,8 +26,11 @@ public:
 
 	void abortWait() {
 		_abort = true;
-		std::unique_lock<std::mutex> lock(_mutex);
 		_conditionVariable.notify_all();
+	}
+
+	void reset() {
+		_abort = false;
 	}
 
 	void clear() {
@@ -36,16 +39,18 @@ public:
 	}
 
 	void push(Data const& data) {
-		std::unique_lock<std::mutex> lock(_mutex);
-		_data.push(data);
-		lock.unlock();
+		{
+			std::unique_lock<std::mutex> lock(_mutex);
+			_data.push(data);
+		}
 		_conditionVariable.notify_one();
 	}
 
 	void push(Data&& data) {
-		std::unique_lock<std::mutex> lock(_mutex);
-		_data.push(data);
-		lock.unlock();
+		{
+			std::unique_lock<std::mutex> lock(_mutex);
+			_data.push(data);
+		}
 		_conditionVariable.notify_one();
 	}
 
@@ -72,19 +77,12 @@ public:
 
 	bool waitAndPop(Data& poppedValue) {
 		std::unique_lock<std::mutex> lock(_mutex);
-		while (_data.empty()) {
-			_conditionVariable.wait(lock, [this] {
-				return _abort || !_data.empty();
-			});
-			if (_abort) {
-				_abort = false;
-				return false;
-			}
-			if (_data.empty()) {
-				return false;
-			}
+		_conditionVariable.wait(lock, [this] {
+			return _abort || !_data.empty();
+		});
+		if (_abort) {
+			return false;
 		}
-
 		poppedValue = std::move(_data.top());
 		_data.pop();
 		return true;

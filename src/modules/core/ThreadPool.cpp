@@ -9,7 +9,7 @@
 namespace core {
 
 ThreadPool::ThreadPool(size_t threads, const char *name) :
-		_threads(threads), _name(name), _stop(false) {
+		_threads(threads), _name(name) {
 	if (_name == nullptr) {
 		_name = "ThreadPool";
 	}
@@ -25,11 +25,11 @@ void ThreadPool::init() {
 				std::function<void()> task;
 				{
 					std::unique_lock<std::mutex> lock(this->_queueMutex);
-					this->_condition.wait(lock, [this] {
+					this->_queueCondition.wait(lock, [this] {
 						return this->_stop || !this->_tasks.empty();
 					});
-					if (this->_stop && this->_tasks.empty()) {
-						return;
+					if (this->_stop && (this->_force || this->_tasks.empty())) {
+						break;
 					}
 					task = std::move(this->_tasks.front());
 					this->_tasks.pop();
@@ -40,6 +40,8 @@ void ThreadPool::init() {
 				task();
 				core_trace_end_frame();
 			}
+			++_shutdownCount;
+			_shutdownCondition.notify_all();
 		});
 	}
 }
@@ -49,13 +51,15 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::shutdown(bool wait) {
+	if (_stop) {
+		return;
+	}
+	_force = !wait;
 	_stop = true;
-	if (!wait) {
-		std::unique_lock<std::mutex> lock(_queueMutex);
-		while (!_tasks.empty()) {
-			_tasks.pop();
-		}
-		_condition.notify_all();
+	_queueCondition.notify_all();
+	{
+		std::unique_lock<std::mutex> lock(_shutdownMutex);
+		_shutdownCondition.wait(lock, [&] { return _shutdownCount == (int)_workers.size(); });
 	}
 	for (std::thread &worker : _workers) {
 		worker.join();
