@@ -6,7 +6,7 @@
 
 #include "core/ReadWriteLock.h"
 #include "Cooldown.h"
-#include "core/NonCopyable.h"
+#include "core/IComponent.h"
 #include "core/TimeProvider.h"
 #include "core/ReadWriteLock.h"
 #include "CooldownProvider.h"
@@ -23,7 +23,7 @@ namespace cooldown {
  * @brief Cooldown manager that handles cooldowns for one entity
  * @ingroup Cooldowns
  */
-class CooldownMgr: public core::NonCopyable {
+class CooldownMgr: public core::IComponent {
 protected:
 	core::TimeProviderPtr _timeProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
@@ -85,8 +85,12 @@ public:
 	 */
 	bool isCooldown(Type type);
 
-	virtual void init() {}
-	virtual void shutdown() {}
+	virtual bool init() override {
+		return true;
+	}
+
+	virtual void shutdown() override {
+	}
 
 	/**
 	 * @brief Update cooldown states

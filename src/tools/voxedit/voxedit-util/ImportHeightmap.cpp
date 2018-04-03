@@ -1,5 +1,11 @@
+/**
+ * @file
+ */
+
 #include "ImportHeightmap.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/polyvox/Region.h"
+#include "core/Assert.h"
 
 namespace voxedit {
 

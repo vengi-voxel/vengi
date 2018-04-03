@@ -8,6 +8,7 @@
 #include "frontend/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "voxel/polyvox/Region.h"
+#include "core/IComponent.h"
 
 namespace frontend {
 

@@ -9,6 +9,7 @@
 #include "math/Plane.h"
 #include "video/ShapeBuilder.h"
 #include "frontend/ShapeRenderer.h"
+#include "core/IComponent.h"
 
 namespace frontend {
 
@@ -18,7 +19,7 @@ namespace frontend {
  * @see video::ShapeBuilder
  * @see ShapeRenderer
  */
-class Plane {
+class Plane : public core::IComponent {
 private:
 	video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;
@@ -28,7 +29,7 @@ public:
 
 	void render(const video::Camera& camera, const glm::mat4& model, video::Shader* shader = nullptr);
 
-	void shutdown();
+	void shutdown() override;
 
 	/**
 	 * @param[in] position The offset that should be applied to the center of the plane
@@ -36,7 +37,7 @@ public:
 	 * @param[in] scale The vertices are in the normalized coordinate space between -0.5 and 0.5 - we have to scale them up to the size we need
 	 * @param[in] color The color of the plane.
 	 */
-	bool init();
+	bool init() override;
 
 	bool plane(const glm::vec3& position, int tesselation = 0, float scale = 100.0f, const glm::vec4& color = core::Color::White);
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/IComponent.h"
 #include <memory>
 
 namespace metric {
@@ -13,18 +14,18 @@ namespace metric {
  * @ingroup Metric
  * @see Metric
  */
-class IMetricSender {
+class IMetricSender : public core::IComponent {
 public:
 	virtual ~IMetricSender() {
 	}
 
 	virtual bool send(const char* buffer) const = 0;
 
-	virtual bool init() {
+	virtual bool init() override {
 		return true;
 	}
 
-	virtual void shutdown() {
+	virtual void shutdown() override {
 	}
 };
 

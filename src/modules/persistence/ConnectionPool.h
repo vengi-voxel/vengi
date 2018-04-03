@@ -6,6 +6,7 @@
 
 #include "Connection.h"
 #include "core/Var.h"
+#include "core/IComponent.h"
 #include <queue>
 
 namespace persistence {
@@ -13,7 +14,7 @@ namespace persistence {
 /**
  * One connection pool per thread
  */
-class ConnectionPool {
+class ConnectionPool : public core::IComponent {
 	friend class Connection;
 protected:
 	int _min = -1;
@@ -30,8 +31,8 @@ public:
 	ConnectionPool();
 	~ConnectionPool();
 
-	int init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 
 	/**
 	 * @brief Gets one connection from the pool

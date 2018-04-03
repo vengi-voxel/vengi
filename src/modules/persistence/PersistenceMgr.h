@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include "ISavable.h"
 #include "DBHandler.h"
+#include "core/IComponent.h"
 #include "core/ReadWriteLock.h"
 
 namespace persistence {
@@ -18,7 +19,7 @@ namespace persistence {
  * It will collect all database actions in prepared statements to write delta values into the database.
  * @note Your @c ISavable instances must be registered and unregistered.
  */
-class PersistenceMgr {
+class PersistenceMgr : core::IComponent {
 private:
 	using Savables = std::unordered_set<ISavable*>;
 	using Map = std::map<uint32_t, Savables>;
@@ -31,11 +32,11 @@ public:
 	bool registerSavable(uint32_t fourcc, ISavable *savable);
 	bool unregisterSavable(uint32_t fourcc, ISavable *savable);
 
-	bool init();
+	bool init() override;
 	/**
 	 * @note You have to make sure, that the update is not called anymore and also not called currently.
 	 */
-	void shutdown();
+	void shutdown() override;
 
 	void update(long dt);
 };

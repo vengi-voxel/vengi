@@ -17,7 +17,7 @@ public:
 	void SetUp() override {
 		Super::SetUp();
 		ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
-		_supported = pool.init() > 0;
+		_supported = pool.init();
 		if (!_supported) {
 			Log::warn("ConnectionPoolTest is skipped");
 		}
@@ -29,7 +29,7 @@ TEST_F(ConnectionPoolTest, testConnectionPoolGetConnection) {
 		return;
 	}
 	ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
-	ASSERT_EQ(1, pool.init());
+	ASSERT_TRUE(pool.init());
 	Connection* c = pool.connection();
 	ASSERT_NE(nullptr, c);
 	pool.shutdown();

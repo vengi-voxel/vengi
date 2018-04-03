@@ -35,7 +35,7 @@ public:
 			const persistence::DBHandlerPtr& dbHandler,
 			const persistence::PersistenceMgrPtr& persistenceMgr);
 
-	void init() override;
+	bool init() override;
 	void shutdown() override;
 
 	cooldown::CooldownTriggerState triggerCooldown(cooldown::Type type, cooldown::CooldownCallback callback = cooldown::CooldownCallback()) override;

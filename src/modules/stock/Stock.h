@@ -6,6 +6,7 @@
 
 #include "Item.h"
 #include "Inventory.h"
+#include "core/IComponent.h"
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -26,7 +27,7 @@ typedef std::shared_ptr<StockDataProvider> StockDataProviderPtr;
  * The stock handler is taking responsibility for putting the items into it's Inventory. The Inventory itself
  * only has access to pointers over all of the items.
  */
-class Stock {
+class Stock : public core::IComponent {
 private:
 	/** All the items this instance can deal with */
 	std::unordered_map<ItemId, ItemPtr> _items;
@@ -47,8 +48,8 @@ public:
 	/**
 	 * @brief Initializes the stock and the inventory.
 	 */
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 
 	/**
 	 * @brief Adds a new item to the stock

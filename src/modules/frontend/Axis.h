@@ -8,6 +8,7 @@
 #include "video/ShapeBuilder.h"
 #include "frontend/ShapeRenderer.h"
 #include "video/ScopedLineWidth.h"
+#include "core/IComponent.h"
 
 namespace frontend {
 
@@ -17,7 +18,7 @@ namespace frontend {
  * @see video::ShapeBuilder
  * @see ShapeRenderer
  */
-class Axis {
+class Axis : public core::IComponent {
 private:
 	video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;
@@ -32,12 +33,12 @@ public:
 		}
 	}
 
-	void shutdown() {
+	void shutdown() override {
 		_shapeRenderer.shutdown();
 		_shapeBuilder.shutdown();
 	}
 
-	bool init() {
+	bool init() override {
 		if (!_shapeRenderer.init()) {
 			return false;
 		}

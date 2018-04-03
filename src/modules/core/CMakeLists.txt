@@ -14,6 +14,7 @@ set(SRCS
 	GameConfig.h
 	GLM.cpp GLM.h
 	Hash.h
+	IComponent.h
 	IFactoryRegistry.h
 	Input.cpp Input.h
 	JSON.h json.hpp

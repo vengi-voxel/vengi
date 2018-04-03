@@ -17,7 +17,7 @@ ConnectionPool::~ConnectionPool() {
 	shutdown();
 }
 
-int ConnectionPool::init() {
+bool ConnectionPool::init() {
 	_min = core::Var::getSafe(cfg::DatabaseMinConnections)->intVal();
 	_max = core::Var::getSafe(cfg::DatabaseMaxConnections)->intVal();
 
@@ -37,7 +37,7 @@ int ConnectionPool::init() {
 		addConnection();
 	}
 
-	return _connectionAmount;
+	return _connectionAmount > 0;
 }
 
 void ConnectionPool::shutdown() {

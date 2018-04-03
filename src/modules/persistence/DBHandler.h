@@ -15,6 +15,7 @@
 #include "core/String.h"
 #include "core/Log.h"
 #include "core/Common.h"
+#include "core/IComponent.h"
 #include "ScopedConnection.h"
 #include "BindParam.h"
 #include "SQLGenerator.h"
@@ -31,7 +32,7 @@ namespace persistence {
  * @sa Model
  * @todo password support
  */
-class DBHandler {
+class DBHandler : public core::IComponent {
 private:
 	friend class MassQuery;
 	static constexpr auto logid = Log::logid("DBHandler");
@@ -87,12 +88,12 @@ public:
 	 * @brief Initializes the connections
 	 * @return @c true if the initialization was executed successfully, @c false otherwise.
 	 */
-	bool init();
+	bool init() override;
 
 	/**
 	 * @brief Not calling @c shutdown() after @c init() was called will lead to memory leaks
 	 */
-	void shutdown();
+	void shutdown() override;
 
 	/**
 	 * @brief Deletes one or more database entries of the given @c persistence::Model

@@ -10,6 +10,7 @@
 #include "video/Types.h"
 #include "video/Shader.h"
 #include "core/Common.h"
+#include "core/IComponent.h"
 #include "ColorShader.h"
 #include "ColorInstancedShader.h"
 
@@ -21,7 +22,7 @@ namespace frontend {
  * @see video::ShapeBuilder
  * @see video::VertexBuffer
  */
-class ShapeRenderer {
+class ShapeRenderer : public core::IComponent {
 public:
 	static constexpr int MAX_MESHES = 16;
 private:
@@ -41,7 +42,7 @@ public:
 	ShapeRenderer();
 	~ShapeRenderer();
 
-	bool init();
+	bool init() override;
 
 	bool deleteMesh(int32_t meshIndex);
 
@@ -53,7 +54,7 @@ public:
 
 	int32_t create(const video::ShapeBuilder& shapeBuilder);
 
-	void shutdown();
+	void shutdown() override;
 
 	void update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder);
 

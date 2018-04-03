@@ -11,6 +11,7 @@
 #include "ProtocolHandlerRegistry.h"
 #include "IMsgProtocolHandler.h"
 #include "core/EventBus.h"
+#include "core/IComponent.h"
 #include <string>
 #include <stdint.h>
 #include <list>
@@ -27,7 +28,7 @@ enum class DisconnectReason {
 /**
  * @brief Network implementation based on enet and flatbuffers
  */
-class Network {
+class Network : public core::IComponent {
 protected:
 	ProtocolHandlerRegistryPtr _protocolHandlerRegistry;
 	core::EventBusPtr _eventBus;
@@ -44,8 +45,8 @@ public:
 	Network(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry, const core::EventBusPtr& eventBus);
 	virtual ~Network();
 
-	virtual bool init();
-	virtual void shutdown();
+	virtual bool init() override;
+	virtual void shutdown() override;
 
 	const ProtocolHandlerRegistryPtr& registry();
 

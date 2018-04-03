@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/command/ActionButton.h"
+#include "core/IComponent.h"
 #include <glm/vec3.hpp>
 #include <stdint.h>
 
@@ -15,7 +16,7 @@ namespace frontend {
  *
  * @see core::ActionButton
  */
-class Movement {
+class Movement : public core::IComponent {
 private:
 	core::ActionButton _moveLeft;
 	core::ActionButton _moveRight;
@@ -25,10 +26,10 @@ private:
 	uint64_t _millis = 0ul;
 
 public:
-	void onConstruct();
-	bool init();
+	void onConstruct() override;
+	bool init() override;
 	void update(uint64_t deltaMillis);
-	void shutdown();
+	void shutdown() override;
 
 	bool left() const;
 	bool right() const;

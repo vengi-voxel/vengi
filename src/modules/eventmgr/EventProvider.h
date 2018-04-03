@@ -6,6 +6,7 @@
 #include "EventConfigurationData.h"
 #include "EventModel.h"
 #include "core/Common.h"
+#include "core/IComponent.h"
 #include "EventId.h"
 #include "EventType.h"
 #include <memory>
@@ -22,7 +23,7 @@ namespace eventmgr {
  * @brief Provides configured events via EventData
  * @ingroup Events
  */
-class EventProvider {
+class EventProvider : public core::IComponent {
 public:
 	typedef std::unordered_map<EventId, db::EventModelPtr> EventData;
 private:
@@ -33,8 +34,8 @@ public:
 
 	const EventData& eventData() const;
 
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 
 	db::EventModelPtr get(EventId id) const;
 };

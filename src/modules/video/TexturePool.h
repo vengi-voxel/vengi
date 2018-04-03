@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/IComponent.h"
 #include "io/Filesystem.h"
 #include "Texture.h"
 #include <memory>
@@ -15,7 +16,7 @@ namespace video {
 /**
  * @ingroup Video
  */
-class TexturePool {
+class TexturePool : public core::IComponent {
 private:
 	io::FilesystemPtr _filesystem;
 	std::unordered_map<std::string, TexturePtr> _cache;
@@ -24,8 +25,8 @@ public:
 
 	video::TexturePtr load(const std::string& name);
 
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 };
 
 typedef std::shared_ptr<TexturePool> TexturePoolPtr;

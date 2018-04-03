@@ -22,7 +22,7 @@ UserCooldownMgr::UserCooldownMgr(User* user,
 		_persistenceMgr(persistenceMgr), _user(user) {
 }
 
-void UserCooldownMgr::init() {
+bool UserCooldownMgr::init() {
 	if (!_dbHandler->select(db::CooldownModel(), db::DBConditionCooldownModelUserid(_user->id()), [this] (db::CooldownModel&& model) {
 		const int32_t id = model.cooldownid();
 		const cooldown::Type type = (cooldown::Type)id;
@@ -44,6 +44,7 @@ void UserCooldownMgr::init() {
 		model.setUserid(_user->id());
 	}
 	_persistenceMgr->registerSavable(FOURCC, this);
+	return true;
 }
 
 void UserCooldownMgr::shutdown() {

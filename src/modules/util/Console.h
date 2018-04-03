@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "core/Var.h"
+#include "core/IComponent.h"
 #include "math/Rect.h"
 
 namespace util {
@@ -14,7 +15,7 @@ enum ConsoleColor {
 
 extern std::string getColor(ConsoleColor color);
 
-class Console {
+class Console : public core::IComponent {
 protected:
 	typedef std::vector<std::string> Messages;
 	typedef Messages::const_reverse_iterator MessagesIter;
@@ -71,8 +72,8 @@ public:
 	Console();
 	virtual ~Console() {}
 	virtual void onConstruct();
-	virtual bool init();
-	virtual void shutdown();
+	virtual bool init() override;
+	virtual void shutdown() override;
 	virtual bool toggle();
 	void clear();
 	void clearCommandLine();

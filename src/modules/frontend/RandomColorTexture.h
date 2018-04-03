@@ -6,13 +6,14 @@
 #include "video/Texture.h"
 #include "noise/Noise.h"
 #include "video/Types.h"
+#include "core/IComponent.h"
 
 #include <vector>
 #include <future>
 
 namespace frontend {
 
-class RandomColorTexture {
+class RandomColorTexture : public core::IComponent {
 private:
 	video::TexturePtr _colorTexture;
 
@@ -30,8 +31,8 @@ private:
 	typedef std::future<NoiseGenerationTask> NoiseFuture;
 	std::vector<NoiseFuture> _noiseFuture;
 public:
-	void init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 
 	void bind(video::TextureUnit unit = video::TextureUnit::Zero);
 	void unbind();
