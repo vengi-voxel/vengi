@@ -21,8 +21,9 @@ std::unordered_set<TYPE, HASH> setIntersection(const std::unordered_set<TYPE, HA
 	}
 
 	std::unordered_set<TYPE, HASH> intersection;
+	intersection.reserve(set2.size());
 	for (auto const& element : set1) {
-		if (set2.count(element) > 0) {
+		if (set2.find(element) != set2.end()) {
 			intersection.insert(element);
 		}
 	}
@@ -41,6 +42,7 @@ std::unordered_set<TYPE, HASH> setUnion(const std::unordered_set<TYPE, HASH>& in
 template<typename TYPE, class HASH = std::hash<TYPE> >
 std::unordered_set<TYPE, HASH> setDifference(const std::unordered_set<TYPE, HASH>& in1, const std::unordered_set<TYPE, HASH>& in2) {
 	std::unordered_set<TYPE, HASH> out;
+	out.reserve(in1.size() + in2.size());
 	for (const TYPE& element : in1) {
 		if (in2.find(element) == in2.end()) {
 			out.insert(element);
