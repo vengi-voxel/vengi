@@ -140,8 +140,7 @@ glm::vec3 Map::findStartPosition(const EntityPtr& entity) const {
 	if (result.valid) {
 		return result.pos;
 	}
-	// TODO:
-	return glm::zero<glm::vec3>();
+	return glm::vec3(randomPos());
 }
 
 void Map::addUser(const UserPtr& user) {
