@@ -5,6 +5,7 @@
 #pragma once
 
 #include "backend/entity/EntityId.h"
+#include "core/IComponent.h"
 #include <unordered_map>
 
 namespace backend {
@@ -14,17 +15,17 @@ class Map;
 /**
  * @brief Manages the attacks on a map
  */
-class AttackMgr {
+class AttackMgr : public core::IComponent {
 private:
 	Map* _map;
 public:
 	AttackMgr(Map* map);
 
-	bool init();
+	bool init() override;
 	/**
 	 * @brief Stops all running attacks
 	 */
-	void shutdown();
+	void shutdown() override;
 
 	/**
 	 * @brief Executes the running attacks.
