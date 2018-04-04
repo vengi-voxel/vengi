@@ -5,7 +5,6 @@
 #pragma once
 
 #include "backend/ForwardDecl.h"
-#include "commonlua/LUA.h"
 #include "math/QuadTree.h"
 #include "math/Rect.h"
 #include "ai/common/Types.h"
@@ -32,11 +31,7 @@ private:
 	poi::PoiProviderPtr _poiProvider;
 	io::FilesystemPtr _filesystem;
 
-	lua::LUA _lua;
-
 	ai::Zone* _zone = nullptr;
-
-	bool _luaUpdate = true;
 
 	typedef std::unordered_map<ai::CharacterId, NpcPtr> Npcs;
 	typedef Npcs::iterator NpcsIter;
