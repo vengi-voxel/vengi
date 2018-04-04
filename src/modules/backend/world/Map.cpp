@@ -103,16 +103,16 @@ bool Map::init() {
 	if (!_attackMgr.init()) {
 		return false;
 	}
-	_voxelWorld = new voxel::WorldMgr();
+	_voxelWorldMgr = new voxel::WorldMgr();
 	const std::string& worldParamData = _filesystem->load("worldparams.lua");
 	const std::string& biomesData = _filesystem->load("biomes.lua");
-	if (!_voxelWorld->init(worldParamData, biomesData)) {
+	if (!_voxelWorldMgr->init(worldParamData, biomesData)) {
 		Log::error("Failed to init map with id %i", _mapId);
 		return false;
 	}
 	const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
-	_voxelWorld->setSeed(seed->longVal());
-	_voxelWorld->setPersist(false);
+	_voxelWorldMgr->setSeed(seed->longVal());
+	_voxelWorldMgr->setPersist(false);
 	_zone = new ai::Zone(core::string::format("Zone %i", _mapId));
 
 	if (!_spawnMgr->init()) {
@@ -126,10 +126,10 @@ bool Map::init() {
 void Map::shutdown() {
 	_attackMgr.shutdown();
 	_spawnMgr->shutdown();
-	if (_voxelWorld != nullptr) {
-		_voxelWorld->shutdown();
-		delete _voxelWorld;
-		_voxelWorld = nullptr;
+	if (_voxelWorldMgr != nullptr) {
+		_voxelWorldMgr->shutdown();
+		delete _voxelWorldMgr;
+		_voxelWorldMgr = nullptr;
 	}
 	delete _zone;
 	_zone = nullptr;
@@ -214,16 +214,16 @@ NpcPtr Map::npc(EntityId id) {
 
 int Map::findFloor(const glm::vec3& pos) const {
 	// the voxel above us shouldn't be solid
-	if (!voxel::isFloor(_voxelWorld->material(pos.x, pos.y + 1, pos.z))) {
-		if (voxel::isFloor(_voxelWorld->material(pos.x, pos.y, pos.z))) {
+	if (!voxel::isFloor(_voxelWorldMgr->material(pos.x, pos.y + 1, pos.z))) {
+		if (voxel::isFloor(_voxelWorldMgr->material(pos.x, pos.y, pos.z))) {
 			return pos.y;
 		}
 	}
-	return _voxelWorld->findFloor(pos.x, pos.z, voxel::isFloor);
+	return _voxelWorldMgr->findFloor(pos.x, pos.z, voxel::isFloor);
 }
 
 glm::ivec3 Map::randomPos() const {
-	return _voxelWorld->randomPos();
+	return _voxelWorldMgr->randomPos();
 }
 
 }
