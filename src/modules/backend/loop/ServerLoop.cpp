@@ -90,9 +90,9 @@ void ServerLoop::onIdle(uv_idle_t* handle) {
 }
 
 void ServerLoop::construct() {
-	core::Command::registerCommand("killnpc", [this] (const core::CmdArgs& args) {
+	core::Command::registerCommand("sv_killnpc", [this] (const core::CmdArgs& args) {
 		if (args.size() != 1) {
-			Log::info("Usage: killnpc <entityid>");
+			Log::info("Usage: sv_killnpc <entityid>");
 			return;
 		}
 		const EntityId id = core::string::toLong(args[0]);
