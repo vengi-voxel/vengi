@@ -42,6 +42,8 @@ public:
 		_aiRegistry->init();
 		_loader = std::make_shared<AILoader>(_aiRegistry);
 		_containerProvider = std::make_shared<attrib::ContainerProvider>();
+		const std::string& attributes = _testApp->filesystem()->load("attributes.lua");
+		ASSERT_TRUE(_containerProvider->init(attributes)) << _containerProvider->error();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		_mapProvider = std::make_shared<MapProvider>(_testApp->filesystem(), _testApp->eventBus(), _testApp->timeProvider(),
 				_entityStorage, _messageSender, _loader, _containerProvider, _cooldownProvider);
@@ -54,6 +56,14 @@ public:
 TEST_F(WorldTest, testInitShutdown) {
 	create(world);
 	world.init();
+	world.shutdown();
+}
+
+TEST_F(WorldTest, testUpdate) {
+	create(world);
+	world.init();
+	world.update(0ul);
+	world.shutdown();
 }
 
 }
