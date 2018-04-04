@@ -45,8 +45,9 @@ PERF_CMD         ?=
 PERF_REPORT_CMD  ?=
 else
 PERF_OPTIONS     ?= --call-graph dwarf
-PERF_CMD         ?= sudo perf record $(PERF_OPTIONS)
-PERF_REPORT_CMD  ?= sudo perf report -g srcline -s dso,sym,srcline --inline -n --stdio
+#sudo sh -c 'echo -1 >/proc/sys/kernel/perf_event_paranoid'
+PERF_CMD         ?= perf record $(PERF_OPTIONS)
+PERF_REPORT_CMD  ?= perf report -g srcline -s dso,sym,srcline --inline -n --stdio
 endif
 
 DEBUG            ?=
