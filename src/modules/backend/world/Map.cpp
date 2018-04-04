@@ -71,9 +71,11 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 }
 
 void Map::update(long dt) {
-	if (_luaUpdate && !_lua.execute("update")) {
-		Log::debug("Could not execute 'update' function for map id %i (%s)", _mapId, _lua.error().c_str());
-		_luaUpdate = false;
+	if (_luaUpdate) {
+		if (!_lua.execute("update")) {
+			Log::debug("Could not execute 'update' function for map id %i (%s)", _mapId, _lua.error().c_str());
+			_luaUpdate = false;
+		}
 	}
 	_spawnMgr->update(dt);
 	_zone->update(dt);
