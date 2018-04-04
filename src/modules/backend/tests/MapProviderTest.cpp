@@ -17,25 +17,48 @@
 namespace backend {
 
 class MapProviderTest: public core::AbstractTest {
+public:
+	EntityStoragePtr _entityStorage;
+	network::ProtocolHandlerRegistryPtr _protocolHandlerRegistry;
+	network::ServerNetworkPtr _network;
+	network::ServerMessageSenderPtr _messageSender;
+	AILoaderPtr _loader;
+	attrib::ContainerProviderPtr _containerProvider;
+	cooldown::CooldownProviderPtr _cooldownProvider;
+
+	void SetUp() override {
+		core::AbstractTest::SetUp();
+		core::Var::get(cfg::ServerSeed, "1");
+		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
+		voxel::initDefaultMaterialColors();
+		_entityStorage = std::make_shared<EntityStorage>(_testApp->eventBus());
+		_protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+		_network = std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _testApp->eventBus());
+		_messageSender = std::make_shared<network::ServerMessageSender>(_network);
+		const AIRegistryPtr& registry = std::make_shared<AIRegistry>();
+		registry->init();
+		_loader = std::make_shared<AILoader>(registry);
+		_containerProvider = std::make_shared<attrib::ContainerProvider>();
+		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
+	}
 };
 
-TEST_F(MapProviderTest, testInit) {
-	core::Var::get(cfg::ServerSeed, "1");
-	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-	voxel::initDefaultMaterialColors();
-	const EntityStoragePtr& entityStorage = std::make_shared<EntityStorage>(_testApp->eventBus());
-	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
-	const network::ServerNetworkPtr& network = std::make_shared<network::ServerNetwork>(protocolHandlerRegistry, _testApp->eventBus());
-	const network::ServerMessageSenderPtr& messageSender = std::make_shared<network::ServerMessageSender>(network);
-	const AIRegistryPtr& registry = std::make_shared<AIRegistry>();
-	registry->init();
-	const AILoaderPtr& loader = std::make_shared<AILoader>(registry);
-	const attrib::ContainerProviderPtr& containerProvider = std::make_shared<attrib::ContainerProvider>();
-	const cooldown::CooldownProviderPtr& cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
+#define create(name) \
+	MapProvider name(_testApp->filesystem(), _testApp->eventBus(), _testApp->timeProvider(), \
+			_entityStorage, _messageSender, _loader, _containerProvider, _cooldownProvider);
 
-	MapProvider provider(_testApp->filesystem(), _testApp->eventBus(), _testApp->timeProvider(),
-			entityStorage, messageSender, loader, containerProvider, cooldownProvider);
-	ASSERT_TRUE(provider.init()) << "Failed to initialize the map provider";
+TEST_F(MapProviderTest, testInitShutdown) {
+	create(provider);
+	EXPECT_TRUE(provider.init()) << "Failed to initialize the map provider";
+	provider.shutdown();
+}
+
+TEST_F(MapProviderTest, testCreateMap) {
+	create(provider);
+	EXPECT_TRUE(provider.init()) << "Failed to initialize the map provider";
+	EXPECT_FALSE(provider.worldMaps().empty());
+	const MapPtr& map = provider.map(1, false);
+	EXPECT_TRUE(map);
 	provider.shutdown();
 }
 
