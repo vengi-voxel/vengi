@@ -5,19 +5,19 @@
 #pragma once
 
 #include "core/EventBus.h"
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 
 namespace voxel {
 
 class WorldCreatedEvent: public core::IEventBusEvent {
 private:
-	WorldPtr _world;
+	WorldMgrPtr _world;
 public:
-	WorldCreatedEvent(const WorldPtr& world) :
+	WorldCreatedEvent(const WorldMgrPtr& world) :
 			_world(world) {
 	}
 
-	inline const WorldPtr& world() const {
+	inline const WorldMgrPtr& world() const {
 		return _world;
 	}
 };

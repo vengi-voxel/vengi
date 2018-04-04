@@ -7,7 +7,7 @@
 
 namespace frontend {
 
-MapRenderer::MapRenderer(const voxel::WorldPtr& world) :
+MapRenderer::MapRenderer(const voxel::WorldMgrPtr& world) :
 		_world(world) {
 }
 

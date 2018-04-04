@@ -27,7 +27,7 @@
 #include "voxel/MaterialColor.h"
 #include "core/Rest.h"
 
-Client::Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldPtr& world, const network::ClientMessageSenderPtr& messageSender,
+Client::Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world, const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
 		_worldRenderer(world), _waiting(this) {
@@ -378,7 +378,7 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 int main(int argc, char *argv[]) {
 	const video::MeshPoolPtr& meshPool = std::make_shared<video::MeshPool>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
-	const voxel::WorldPtr& world = std::make_shared<voxel::World>();
+	const voxel::WorldMgrPtr& world = std::make_shared<voxel::WorldMgr>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "World.h"
+#include "WorldMgr.h"
 #include "core/Var.h"
 #include "core/Log.h"
 #include "core/Common.h"
@@ -21,15 +21,15 @@
 
 namespace voxel {
 
-World::World() :
-		_threadPool(core::halfcpus(), "World"), _random(_seed) {
+WorldMgr::WorldMgr() :
+		_threadPool(core::halfcpus(), "WorldMgr"), _random(_seed) {
 }
 
-World::~World() {
+WorldMgr::~WorldMgr() {
 	shutdown();
 }
 
-glm::ivec3 World::randomPos() const {
+glm::ivec3 WorldMgr::randomPos() const {
 	int lowestX = -100;
 	int lowestZ = -100;
 	int highestX = 100;
@@ -49,7 +49,7 @@ glm::ivec3 World::randomPos() const {
 // Extract the surface for the specified region of the volume.
 // The surface extractor outputs the mesh in an efficient compressed format which
 // is not directly suitable for rendering.
-bool World::scheduleMeshExtraction(const glm::ivec3& p) {
+bool WorldMgr::scheduleMeshExtraction(const glm::ivec3& p) {
 	if (_cancelThreads) {
 		return false;
 	}
@@ -64,7 +64,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	return true;
 }
 
-void World::setSeed(long seed) {
+void WorldMgr::setSeed(long seed) {
 	Log::info("Seed is: %li", seed);
 	_seed = seed;
 	_random.setSeed(seed);
@@ -72,27 +72,27 @@ void World::setSeed(long seed) {
 	_pager.setNoiseOffset(glm::vec2(_random.randomf(-10000.0f, 10000.0f), _random.randomf(-10000.0f, 10000.0f)));
 }
 
-PickResult World::pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength) {
+PickResult WorldMgr::pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength) {
 	static constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air, 0);
 	return voxel::pickVoxel(_volumeData, origin, directionWithLength, air);
 }
 
-void World::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
+void WorldMgr::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	_volumeData->setVoxel(pos, voxel);
 	allowReExtraction(pos);
 	scheduleMeshExtraction(pos);
 }
 
-void World::updateExtractionOrder(const glm::ivec3& sortPos, const math::Frustum& frustum) {
+void WorldMgr::updateExtractionOrder(const glm::ivec3& sortPos, const math::Frustum& frustum) {
 	// TODO: sort closest to camera and in frustum first
 }
 
-bool World::allowReExtraction(const glm::ivec3& pos) {
+bool WorldMgr::allowReExtraction(const glm::ivec3& pos) {
 	const glm::ivec3& gridPos = meshPos(pos);
 	return _positionsExtracted.erase(gridPos) != 0;
 }
 
-bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
+bool WorldMgr::findPath(const glm::ivec3& start, const glm::ivec3& end,
 		std::list<glm::ivec3>& listResult) {
 	core_trace_scoped(FindPath);
 	static auto f = [] (const voxel::PagedVolume* volData, const glm::ivec3& v3dPos) {
@@ -108,7 +108,7 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 	return true;
 }
 
-bool World::init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes, uint16_t chunkSideLength) {
+bool WorldMgr::init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes, uint16_t chunkSideLength) {
 	_threadPool.init();
 	if (!_biomeManager.init(luaBiomes)) {
 		Log::error("Failed to init the biome mgr");
@@ -135,7 +135,7 @@ bool World::init(const std::string& luaParameters, const std::string& luaBiomes,
 	return true;
 }
 
-void World::extractScheduledMesh() {
+void WorldMgr::extractScheduledMesh() {
 	while (!_cancelThreads) {
 		decltype(_pendingExtraction)::Key pos;
 		if (!_pendingExtraction.waitAndPop(pos)) {
@@ -162,7 +162,7 @@ void World::extractScheduledMesh() {
 	}
 }
 
-void World::shutdown() {
+void WorldMgr::shutdown() {
 	_cancelThreads = true;
 	_pendingExtraction.clear();
 	_pendingExtraction.abortWait();
@@ -178,21 +178,21 @@ void World::shutdown() {
 	_ctx = WorldContext();
 }
 
-void World::reset() {
+void WorldMgr::reset() {
 	_cancelThreads = true;
 }
 
-bool World::isReset() const {
+bool WorldMgr::isReset() const {
 	return _cancelThreads;
 }
 
-void World::stats(int& meshes, int& extracted, int& pending) const {
+void WorldMgr::stats(int& meshes, int& extracted, int& pending) const {
 	extracted = _positionsExtracted.size();
 	pending = _pendingExtraction.size();
 	meshes = _extracted.size();
 }
 
-bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) const {
+bool WorldMgr::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) const {
 	const bool result = raycast(start, direction, maxDistance, [&] (const PagedVolume::Sampler& sampler) {
 		voxel = sampler.voxel();
 		if (isBlocked(voxel.getMaterial())) {
@@ -205,16 +205,16 @@ bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float ma
 	return result;
 }
 
-int World::chunkSize() const {
+int WorldMgr::chunkSize() const {
 	return _volumeData->chunkSideLength();
 }
 
-glm::ivec3 World::meshSize() const {
+glm::ivec3 WorldMgr::meshSize() const {
 	const int s = _meshSize->intVal();
 	return glm::ivec3(s, MAX_MESH_CHUNK_HEIGHT, s);
 }
 
-VoxelType World::material(int x, int y, int z) const {
+VoxelType WorldMgr::material(int x, int y, int z) const {
 	const Voxel& voxel = _volumeData->voxel(x, y, z);
 	return voxel.getMaterial();
 }

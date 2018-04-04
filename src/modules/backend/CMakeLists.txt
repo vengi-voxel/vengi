@@ -63,6 +63,7 @@ gtest_suite_files(tests
 	tests/UserCooldownMgrTest.cpp
 	tests/MapProviderTest.cpp
 	tests/MapTest.cpp
+	tests/WorldTest.cpp
 	tests/EntityTest.h
 	tests/NpcTest.h
 	tests/UserTest.h

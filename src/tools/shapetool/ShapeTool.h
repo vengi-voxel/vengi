@@ -13,7 +13,7 @@
 #include "video/Camera.h"
 #include "video/MeshPool.h"
 #include "video/VertexBuffer.h"
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 
 /**
  * @brief This tool will render the world as a client would, but with options to modify it.

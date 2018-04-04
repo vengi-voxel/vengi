@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 #include "core/IComponent.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
@@ -17,10 +17,10 @@ namespace frontend {
  */
 class MapRenderer : public core::IComponent {
 private:
-	voxel::WorldPtr _world;
+	voxel::WorldMgrPtr _world;
 	video::FrameBuffer _frameBuffer;
 public:
-	MapRenderer(const voxel::WorldPtr& world);
+	MapRenderer(const voxel::WorldMgrPtr& world);
 
 	bool init() override;
 	void shutdown() override;

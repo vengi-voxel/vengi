@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 
 namespace voxel {
 

@@ -4,7 +4,7 @@
 
 #include "Map.h"
 #include "LUAFunctions.h"
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 #include "core/String.h"
 #include "core/EventBus.h"
 #include "core/App.h"
@@ -110,7 +110,7 @@ bool Map::init() {
 	if (!_attackMgr.init()) {
 		return false;
 	}
-	_voxelWorld = new voxel::World();
+	_voxelWorld = new voxel::WorldMgr();
 	const std::string& worldParamData = _filesystem->load("worldparams.lua");
 	const std::string& biomesData = _filesystem->load("biomes.lua");
 	if (!_voxelWorld->init(worldParamData, biomesData)) {

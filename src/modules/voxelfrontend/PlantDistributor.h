@@ -8,12 +8,12 @@
 #include <glm/vec3.hpp>
 
 namespace voxel {
-class World;
-typedef std::shared_ptr<World> WorldPtr;
+class WorldMgr;
+typedef std::shared_ptr<WorldMgr> WorldMgrPtr;
 }
 
 namespace frontend {
 
-extern void distributePlants(const voxel::WorldPtr& world, const glm::ivec3& pos, std::vector<glm::vec3>& translations);
+extern void distributePlants(const voxel::WorldMgrPtr& world, const glm::ivec3& pos, std::vector<glm::vec3>& translations);
 
 }

@@ -17,7 +17,7 @@
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 
-MapEdit::MapEdit(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world) :
+MapEdit::MapEdit(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
 	init(ORGANISATION, "mapedit");
 	_world->setClientData(true);
@@ -242,7 +242,7 @@ void MapEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t c
 int main(int argc, char *argv[]) {
 	const video::MeshPoolPtr& meshPool = std::make_shared<video::MeshPool>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
-	const voxel::WorldPtr& world = std::make_shared<voxel::World>();
+	const voxel::WorldMgrPtr& world = std::make_shared<voxel::WorldMgr>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();

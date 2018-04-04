@@ -14,7 +14,7 @@ set(SRCS
 	Constants.h
 	MaterialColor.h MaterialColor.cpp
 	RandomVoxel.h
-	World.cpp World.h
+	WorldMgr.cpp WorldMgr.h
 	WorldPersister.h WorldPersister.cpp
 	WorldPager.h WorldPager.cpp
 	WorldEvents.h
@@ -80,7 +80,7 @@ generate_compute_shaders(voxel meshextractor)
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
-	tests/WorldTest.cpp
+	tests/WorldMgrTest.cpp
 	tests/WorldPersisterTest.cpp
 	tests/LSystemGeneratorTest.cpp
 	tests/PolyVoxTest.cpp

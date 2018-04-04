@@ -13,7 +13,7 @@
 #include "video/Camera.h"
 #include "video/MeshPool.h"
 #include "video/VertexBuffer.h"
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 
 /**
  * @brief This is the map editor to place entities with procgen settings to form a map in the world
@@ -28,7 +28,7 @@ protected:
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
 	frontend::WorldRenderer _worldRenderer;
-	voxel::WorldPtr _world;
+	voxel::WorldMgrPtr _world;
 	frontend::Axis _axis;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;
@@ -51,7 +51,7 @@ protected:
 	void beforeUI() override;
 
 public:
-	MapEdit(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world);
+	MapEdit(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world);
 	~MapEdit();
 
 	core::AppState onConstruct() override;

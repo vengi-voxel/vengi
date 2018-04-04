@@ -22,7 +22,7 @@ namespace frontend {
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
-WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
+WorldRenderer::WorldRenderer(const voxel::WorldMgrPtr& world) :
 		_octree(math::AABB<int>(), 30), _world(world) {
 	core_assert(_worldScale.x == _worldScale.z);
 }

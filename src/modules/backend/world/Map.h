@@ -25,7 +25,7 @@ class Map : public std::enable_shared_from_this<Map>, public core::IComponent {
 private:
 	MapId _mapId;
 	std::string _mapIdStr;
-	voxel::World* _voxelWorld = nullptr;
+	voxel::WorldMgr* _voxelWorld = nullptr;
 
 	core::EventBusPtr _eventBus;
 	SpawnMgrPtr _spawnMgr;

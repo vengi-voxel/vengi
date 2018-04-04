@@ -3,11 +3,11 @@
  */
 #include "PlantDistributor.h"
 #include "core/Trace.h"
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 
 namespace frontend {
 
-void distributePlants(const voxel::WorldPtr& world, const glm::ivec3& pos, std::vector<glm::vec3>& translations) {
+void distributePlants(const voxel::WorldMgrPtr& world, const glm::ivec3& pos, std::vector<glm::vec3>& translations) {
 	core_trace_scoped(WorldRendererDistributePlants);
 	const glm::ivec3& size = world->meshSize();
 	math::Random random(pos.x);

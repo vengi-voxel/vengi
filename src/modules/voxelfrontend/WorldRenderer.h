@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 #include "voxel/generator/PlantGenerator.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
@@ -137,7 +137,7 @@ protected:
 	glm::vec4 _clearColor = core::Color::LightBlue;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
-	voxel::WorldPtr _world;
+	voxel::WorldMgrPtr _world;
 	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapShow;
 
@@ -182,7 +182,7 @@ protected:
 	bool initWaterBuffer();
 
 public:
-	WorldRenderer(const voxel::WorldPtr& world);
+	WorldRenderer(const voxel::WorldMgrPtr& world);
 	~WorldRenderer();
 
 	void reset();

@@ -3,19 +3,19 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 #include "engine-config.h"
 #include <chrono>
 #include <string>
 
 namespace voxel {
 
-class WorldTest: public AbstractVoxelTest {
+class WorldMgrTest: public AbstractVoxelTest {
 private:
 	int _chunkMeshPositionTest = 0;
 protected:
 	void extract(int expected) {
-		World world;
+		WorldMgr world;
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		const io::FilesystemPtr& filesystem = _testApp->filesystem();
 		ASSERT_TRUE(world.init(filesystem->load("worldparams.lua"), filesystem->load("biomes.lua")));
@@ -49,7 +49,7 @@ protected:
 	}
 
 	void chunkMeshPositionTest(
-			const World& world,
+			const WorldMgr& world,
 			int worldX, int worldY, int worldZ,
 			int chunkX, int chunkY, int chunkZ,
 			int meshX,  int meshY,  int meshZ
@@ -71,11 +71,11 @@ protected:
 	}
 };
 
-TEST_F(WorldTest, testExtractionMultiple) {
+TEST_F(WorldMgrTest, testExtractionMultiple) {
 	extract(4);
 }
 
-TEST_F(WorldTest, testExtractionSingle) {
+TEST_F(WorldMgrTest, testExtractionSingle) {
 	extract(1);
 }
 

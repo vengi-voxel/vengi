@@ -34,7 +34,7 @@ protected:
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
 	network::ClientNetworkPtr _network;
-	voxel::WorldPtr _world;
+	voxel::WorldMgrPtr _world;
 	network::ClientMessageSenderPtr _messageSender;
 	frontend::WorldRenderer _worldRenderer;
 	flatbuffers::FlatBufferBuilder _moveFbb;
@@ -61,9 +61,9 @@ protected:
 
 	void sendMovement();
 	void handleLogin();
-	int renderMap(video::Shader& shader, const voxel::WorldPtr& world, const glm::mat4& view, float aspect);
+	int renderMap(video::Shader& shader, const voxel::WorldMgrPtr& world, const glm::mat4& view, float aspect);
 public:
-	Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldPtr& world,
+	Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world,
 			const network::ClientMessageSenderPtr& messageSender, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 			const io::FilesystemPtr& filesystem);
 	~Client();

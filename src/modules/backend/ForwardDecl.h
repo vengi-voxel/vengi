@@ -5,8 +5,8 @@
 
 namespace voxel {
 
-class World;
-typedef std::shared_ptr<World> WorldPtr;
+class WorldMgr;
+typedef std::shared_ptr<WorldMgr> WorldMgrPtr;
 
 }
 

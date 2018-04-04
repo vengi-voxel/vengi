@@ -4,7 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "voxelfrontend/WorldRenderer.h"
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 
 namespace frontend {
 
@@ -13,14 +13,14 @@ public:
 	class T_WorldRenderer: public WorldRenderer {
 		FRIEND_TEST(WorldRendererTest, testDistanceCulling);
 	};
-	voxel::WorldPtr _world;
+	voxel::WorldMgrPtr _world;
 	T_WorldRenderer* _renderer;
 	WorldRenderer *_worldRenderer;
 
 	virtual void SetUp() override {
 		core::AbstractTest::SetUp();
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-		_world = std::make_shared<voxel::World>();
+		_world = std::make_shared<voxel::WorldMgr>();
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 		const std::string& world = _testApp->filesystem()->load("worldparams.lua");
 		ASSERT_NE("", world);

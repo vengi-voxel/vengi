@@ -4,7 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "poi/PoiProvider.h"
-#include "voxel/World.h"
+#include "voxel/WorldMgr.h"
 
 namespace poi {
 

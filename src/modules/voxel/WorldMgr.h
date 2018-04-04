@@ -56,7 +56,7 @@ typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
 /**
  * @ingroup Voxel
  */
-class World {
+class WorldMgr {
 public:
 	enum Result {
 		COMPLETED, ///< If the ray passed through the volume without being interrupted
@@ -64,8 +64,8 @@ public:
 		FAILED
 	};
 
-	World();
-	~World();
+	WorldMgr();
+	~WorldMgr();
 
 	/**
 	 * @param[in] clientData if true, additional data that is only useful for rendering is generated
@@ -147,7 +147,7 @@ public:
 
 	/**
 	 * @brief If you don't need an extracted mesh anymore, make sure to allow the reextraction at a later time.
-	 * @param[in] pos A World vector that is automatically converted into a mesh tile vector
+	 * @param[in] pos A WorldMgr vector that is automatically converted into a mesh tile vector
 	 * @return @c true if the given position was already extracted, @c false if not.
 	 */
 	bool allowReExtraction(const glm::ivec3& pos);
@@ -160,7 +160,7 @@ public:
 	/**
 	 * @brief Performs async mesh extraction. You need to call @c pop in order to see if some extraction is ready.
 	 *
-	 * @param[in] pos A World vector that is automatically converted into a mesh tile vector
+	 * @param[in] pos A WorldMgr vector that is automatically converted into a mesh tile vector
 	 * @note This will not allow to reschedule an extraction for the same area until @c allowReExtraction was called.
 	 */
 	bool scheduleMeshExtraction(const glm::ivec3& pos);
@@ -198,11 +198,11 @@ private:
 	std::atomic_bool _cancelThreads { false };
 };
 
-inline void World::setClientData(bool clientData) {
+inline void WorldMgr::setClientData(bool clientData) {
 	_clientData = clientData;
 }
 
-inline glm::ivec3 World::meshPos(const glm::ivec3& pos) const {
+inline glm::ivec3 WorldMgr::meshPos(const glm::ivec3& pos) const {
 	const glm::vec3 size(meshSize());
 	const int x = glm::floor(pos.x / size.x);
 	const int y = glm::floor(pos.y / size.y);
@@ -210,7 +210,7 @@ inline glm::ivec3 World::meshPos(const glm::ivec3& pos) const {
 	return glm::ivec3(x * size.x, y * size.y, z * size.z);
 }
 
-inline glm::ivec3 World::chunkPos(const glm::ivec3& pos) const {
+inline glm::ivec3 WorldMgr::chunkPos(const glm::ivec3& pos) const {
 	const float size = chunkSize();
 	const int x = glm::floor(pos.x / size);
 	const int y = glm::floor(pos.y / size);
@@ -218,29 +218,29 @@ inline glm::ivec3 World::chunkPos(const glm::ivec3& pos) const {
 	return glm::ivec3(x, y, z);
 }
 
-inline bool World::pop(ChunkMeshes& item) {
+inline bool WorldMgr::pop(ChunkMeshes& item) {
 	return _extracted.pop(item);
 }
 
-inline bool World::created() const {
+inline bool WorldMgr::created() const {
 	return _seed != 0;
 }
 
-inline void World::setPersist(bool persist) {
+inline void WorldMgr::setPersist(bool persist) {
 	_pager.setPersist(persist);
 }
 
-inline long World::seed() const {
+inline long WorldMgr::seed() const {
 	return _seed;
 }
-inline BiomeManager& World::biomeManager() {
+inline BiomeManager& WorldMgr::biomeManager() {
 	return _biomeManager;
 }
 
-inline const BiomeManager& World::biomeManager() const {
+inline const BiomeManager& WorldMgr::biomeManager() const {
 	return _biomeManager;
 }
 
-typedef std::shared_ptr<World> WorldPtr;
+typedef std::shared_ptr<WorldMgr> WorldMgrPtr;
 
 }
