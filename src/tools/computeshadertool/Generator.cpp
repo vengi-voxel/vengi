@@ -11,6 +11,14 @@
 
 namespace computeshadertool {
 
+static bool isBuffer(const std::string& str) {
+	return core::string::contains(str, "*");
+}
+
+static std::string getBufferName(const Kernel& k, const Parameter& p) {
+	return core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
+}
+
 bool generateSrc(const io::FilesystemPtr& filesystem,
 		const std::string& templateShader,
 		const std::string& _name,
@@ -19,8 +27,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		const std::string& sourceDirectory,
 		const std::vector<Kernel>& _kernels,
 		const std::vector<Struct>& _structs) {
-	std::string src(templateShader);
-	std::string name = _name + "Shader";
+	const std::string name = _name + "Shader";
 
 	std::vector<std::string> shaderNameParts;
 	core::string::splitString(name, shaderNameParts, "_");
@@ -36,7 +43,29 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	}
 	std::stringstream kernelMembers;
 	std::stringstream shutdown;
+	for (const Kernel& k : _kernels) {
+		for (size_t i = 0; i < k.parameters.size(); ++i) {
+			const Parameter& p = k.parameters[i];
+			if (!isBuffer(p.type)) {
+				continue;
+			}
+			const std::string& bufferName = getBufferName(k, p);
+			kernelMembers << "\t/**\n";
+			kernelMembers << "\t * @brief Buffer for '" << p.name << "'\n";
+			kernelMembers << "\t */\n";
+			kernelMembers << "\tmutable compute::Id " << bufferName << " = compute::InvalidId;\n";
+			shutdown << "\t\tcompute::deleteBuffer(" << bufferName << ");\n";
+		}
+
+		kernelMembers << "\tcompute::Id _kernel" << k.name << " = compute::InvalidId;\n";
+	}
+
 	std::stringstream createKernels;
+	for (const Kernel& k : _kernels) {
+		createKernels << "\t\t_kernel" << k.name << " = compute::createKernel(_program, \"" << k.name << "\");\n";
+		shutdown << "\t\tcompute::deleteKernel(_kernel" << k.name << ");\n";
+	}
+
 	std::stringstream kernels;
 	for (const Kernel& k : _kernels) {
 		kernels << "\n";
@@ -44,11 +73,12 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		kernels << "\t * @brief Kernel code for '" << k.name << "'\n";
 		kernels << "\t * @return @c true if the execution was successful, @c false on error.\n";
 		for (const Parameter& p : k.parameters) {
-			if (core::string::contains(p.type, "*")) {
-				kernels << "\t * @param " << p.name;
-				kernels << " vector with datatype that matches the CL type " << p.type << ". Note\n";
-				kernels << "\t * that the base pointer of this vector should be aligned (64 bytes) for optimal performance.\n";
+			if (!isBuffer(p.type)) {
+				continue;
 			}
+			kernels << "\t * @param " << p.name;
+			kernels << " vector with datatype that matches the CL type " << p.type << ". Note\n";
+			kernels << "\t * that the base pointer of this vector should be aligned (64 bytes) for optimal performance.\n";
 		}
 		kernels << "\t * @param[in] workSize Specify the number of global work-items per dimension (" << k.workDimension << ")\n";
 		kernels << "\t * that will execute the kernel function\n";
@@ -62,7 +92,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 			if (!p.qualifier.empty()) {
 				kernels << p.qualifier << " ";
 			}
-			if (core::string::contains(p.type, "*")) {
+			if (isBuffer(p.type)) {
 				const util::CLTypeMapping& clType = util::vectorType(p.type);
 				kernels << "std::vector<" << clType.type << ">& " << p.name;
 			} else {
@@ -81,8 +111,8 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		kernels << ",\n\t\tconst glm::ivec" << k.workDimension << "& workSize\n\t) const {\n";
 		for (size_t i = 0; i < k.parameters.size(); ++i) {
 			const Parameter& p = k.parameters[i];
-			if (core::string::contains(p.type, "*")) {
-				const std::string& bufferName = core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
+			if (isBuffer(p.type)) {
+				const std::string& bufferName = getBufferName(k, p);
 				const std::string size = "core::vectorSize(" + p.name + ")";
 				kernels << "\t\tif (" << bufferName << " == InvalidId) {\n";
 				kernels << "\t\t\tconst compute::BufferFlag flags = " << util::toString(p.flags) << " | bufferFlags(&" << p.name << "[0], " << size << ");\n";
@@ -91,13 +121,6 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 				kernels << "\t\t\tcompute::updateBufferFromType(" << bufferName << ", " << p.name << ");\n";
 				kernels << "\t\t}\n";
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", " << i << ", " << bufferName << ");\n";
-
-				kernelMembers << "\t/**\n";
-				kernelMembers << "\t * @brief Buffer for '" << p.name << "'\n";
-				kernelMembers << "\t */\n";
-				kernelMembers << "\tmutable compute::Id " << bufferName << " = compute::InvalidId;\n";
-
-				shutdown << "\t\tcompute::deleteBuffer(" << bufferName << ");\n";
 			} else {
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
 				kernels << i << ", ";
@@ -116,7 +139,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		kernels << ");\n";
 		for (size_t i = 0; i < k.parameters.size(); ++i) {
 			const Parameter& p = k.parameters[i];
-			if (!core::string::contains(p.type, "*")) {
+			if (!isBuffer(p.type)) {
 				continue;
 			}
 			if ((p.flags & (compute::BufferFlag::ReadWrite | compute::BufferFlag::WriteOnly)) != compute::BufferFlag::None) {
@@ -132,12 +155,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		kernels << "\t\treturn state;\n";
 		kernels << "\t}\n";
 
-		kernelMembers << "\tcompute::Id _kernel" << k.name << " = compute::InvalidId;\n";
-
 		core_assert_always(k.returnValue.type == "void");
-		createKernels << "\t\t_kernel" << k.name << " = compute::createKernel(_program, \"" << k.name << "\");\n";
-
-		shutdown << "\t\tcompute::deleteKernel(_kernel" << k.name << ");\n";
 	}
 
 	std::stringstream includes;
@@ -174,6 +192,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		structs << "\t};\n";
 	}
 
+	std::string src(templateShader);
 	src = core::string::replaceAll(src, "$name$", filename);
 	src = core::string::replaceAll(src, "$namespace$", namespaceSrc);
 	src = core::string::replaceAll(src, "$filename$", shaderDirectory + _name);
