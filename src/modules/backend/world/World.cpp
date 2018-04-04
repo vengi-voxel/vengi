@@ -98,25 +98,6 @@ bool World::init() {
 		_aiServer->addZone(map->zone());
 	}
 
-	lua::LUAType map = _lua.registerType("Map");
-	map.addFunction("id", luaMapGetId);
-	map.addFunction("__gc", luaMapGC);
-	map.addFunction("__tostring", luaMapToString);
-
-	_lua.registerGlobal("map", luaGetMap);
-
-	const std::string& luaScript = _filesystem->load("world.lua");
-	if (!_lua.load(luaScript)) {
-		Log::error("Failed to load world lua script: %s", _lua.error().c_str());
-		return false;
-	}
-
-	_lua.newGlobalData<World>("World", this);
-	if (!_lua.execute("init")) {
-		Log::error("Failed to init world lua script: %s", _lua.error().c_str());
-		return false;
-	}
-
 	return true;
 }
 
