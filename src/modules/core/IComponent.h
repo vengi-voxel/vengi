@@ -14,7 +14,7 @@ namespace core {
 struct IComponent : public core::NonCopyable {
 	virtual ~IComponent() {}
 
-	virtual void onConstruct() {}
+	virtual void construct() {}
 	virtual bool init() = 0;
 	virtual void shutdown() = 0;
 };

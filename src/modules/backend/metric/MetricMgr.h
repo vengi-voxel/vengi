@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/EventBus.h"
+#include "core/IComponent.h"
 #include "backend/eventbus/Event.h"
 #include "metric/Metric.h"
 #include "metric/MetricEvent.h"
@@ -15,6 +16,7 @@
 namespace backend {
 
 class MetricMgr :
+	public core::IComponent,
 	public core::IEventBusHandler<network::NewConnectionEvent>,
 	public core::IEventBusHandler<metric::MetricEvent> ,
 	public core::IEventBusHandler<EntityRemoveFromMapEvent>,
@@ -35,8 +37,8 @@ public:
 
 	metric::MetricPtr& metric();
 
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 };
 
 inline metric::MetricPtr& MetricMgr::metric() {

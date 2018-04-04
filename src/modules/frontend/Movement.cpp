@@ -12,7 +12,7 @@ bool Movement::init() {
 	return true;
 }
 
-void Movement::onConstruct() {
+void Movement::construct() {
 	core::Command::registerActionButton("move_forward", _moveForward);
 	core::Command::registerActionButton("move_backward", _moveBackward);
 	core::Command::registerActionButton("move_left", _moveLeft);

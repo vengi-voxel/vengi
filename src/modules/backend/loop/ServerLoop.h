@@ -8,6 +8,7 @@
 #include "core/Trace.h"
 #include "core/Input.h"
 #include "core/EventBus.h"
+#include "core/IComponent.h"
 #include "network/ServerNetwork.h"
 #include "network/NetworkEvents.h"
 #include "backend/ForwardDecl.h"
@@ -24,6 +25,7 @@
 namespace backend {
 
 class ServerLoop:
+	public core::IComponent,
 	public core::IEventBusHandler<network::DisconnectEvent> {
 private:
 	network::ServerNetworkPtr _network;
@@ -67,9 +69,9 @@ public:
 			const eventmgr::EventMgrPtr& eventMgr, const stock::StockDataProviderPtr& stockDataProvider,
 			const MetricMgrPtr& metricMgr, const persistence::PersistenceMgrPtr& persistenceMgr);
 
-	void construct();
-	bool init();
-	void shutdown();
+	void construct() override;
+	bool init() override;
+	void shutdown() override;
 	void update(long dt);
 	void onEvent(const network::DisconnectEvent& event);
 };

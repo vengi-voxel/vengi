@@ -9,6 +9,7 @@
 #include "math/QuadTree.h"
 #include "math/Rect.h"
 #include "ai/common/Types.h"
+#include "core/IComponent.h"
 #include "backend/attack/AttackMgr.h"
 #include "MapId.h"
 #include <memory>
@@ -20,7 +21,7 @@ namespace backend {
 /**
  * @brief A map contains the Entity instances. This is where the players are moving and npcs are living.
  */
-class Map : public std::enable_shared_from_this<Map> {
+class Map : public std::enable_shared_from_this<Map>, public core::IComponent {
 private:
 	MapId _mapId;
 	std::string _mapIdStr;
@@ -78,8 +79,8 @@ public:
 
 	void update(long dt);
 
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 
 	/**
 	 * If the object is currently maintained by a shared_ptr, you can get a shared_ptr from a raw pointer

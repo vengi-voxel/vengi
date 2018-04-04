@@ -6,6 +6,7 @@
 
 #include "backend/ForwardDecl.h"
 #include "stock/Stock.h"
+#include "core/IComponent.h"
 #include <memory>
 
 namespace backend {
@@ -15,7 +16,7 @@ class User;
 /**
  * @brief User stock manager that restores the state on login
  */
-class UserStockMgr {
+class UserStockMgr : public core::IComponent {
 private:
 	User* _user;
 	const stock::StockDataProviderPtr _stockDataProvider;
@@ -25,8 +26,8 @@ private:
 public:
 	UserStockMgr(User* user, const stock::StockDataProviderPtr& stockDataProvider, const persistence::DBHandlerPtr& dbHandler);
 
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 
 	void update(long dt);
 };

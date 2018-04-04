@@ -112,7 +112,7 @@ void IMGUIApp::onWindowResize() {
 
 core::AppState IMGUIApp::onConstruct() {
 	const core::AppState state = Super::onConstruct();
-	_console.onConstruct();
+	_console.construct();
 	core::Command::registerCommand("cl_rendertracing", [&] (const core::CmdArgs& args) { _renderTracing ^= true; }).setHelp("Toggle the trace data rendering");
 	return state;
 }

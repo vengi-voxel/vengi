@@ -89,7 +89,7 @@ void Client::onEvent(const voxel::WorldCreatedEvent& event) {
 core::AppState Client::onConstruct() {
 	core::AppState state = Super::onConstruct();
 
-	_movement.onConstruct();
+	_movement.construct();
 
 	core::Var::get(cfg::ClientPort, SERVER_PORT);
 	core::Var::get(cfg::ClientHost, SERVER_HOST);
@@ -100,7 +100,7 @@ core::AppState Client::onConstruct() {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "250.0");
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-	_worldRenderer.onConstruct();
+	_worldRenderer.construct();
 
 	return state;
 }

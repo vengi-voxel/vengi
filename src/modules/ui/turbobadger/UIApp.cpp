@@ -332,7 +332,7 @@ core::AppState UIApp::onConstruct() {
 
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 
-	_console.onConstruct();
+	_console.construct();
 
 	return state;
 }

@@ -64,7 +64,7 @@ Console::Console() {
 	SDL_LogSetOutputFunction(logConsole, this);
 }
 
-void Console::onConstruct() {
+void Console::construct() {
 	_autoEnable = core::Var::get("ui_autoconsole", "false");
 	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); }).setHelp("Toggle the in-game console");
 	core::Command::registerCommand("clear", [&] (const core::CmdArgs& args) { clear(); }).setHelp("Clear the text from the in-game console");

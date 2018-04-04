@@ -26,7 +26,7 @@ private:
 	uint64_t _millis = 0ul;
 
 public:
-	void onConstruct() override;
+	void construct() override;
 	bool init() override;
 	void update(uint64_t deltaMillis);
 	void shutdown() override;

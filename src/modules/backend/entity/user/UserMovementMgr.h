@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "core/NonCopyable.h"
+#include "core/IComponent.h"
 #include "network/ServerMessageSender.h"
 
 namespace backend {
 
 class User;
 
-class UserMovementMgr : public core::NonCopyable {
+class UserMovementMgr : public core::IComponent {
 private:
 	network::MoveDirection _moveMask = network::MoveDirection::NONE;
 	float _yaw = 0.0f;
@@ -27,8 +27,8 @@ public:
 
 	void changeMovement(network::MoveDirection bitmask, float pitch, float yaw);
 	void update(long dt);
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 };
 
 inline bool UserMovementMgr::isMove(network::MoveDirection dir) const {

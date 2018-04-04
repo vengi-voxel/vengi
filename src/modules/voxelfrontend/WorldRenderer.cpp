@@ -707,7 +707,7 @@ void WorldRenderer::stats(Stats& stats) const {
 	core_assert(_visibleChunks == _queryResults - _occludedChunks);
 }
 
-void WorldRenderer::onConstruct() {
+void WorldRenderer::construct() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");
 	_renderAABBs = core::Var::get(cfg::RenderAABB, "false");

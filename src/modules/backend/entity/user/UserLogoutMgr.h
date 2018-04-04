@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Var.h"
+#include "core/IComponent.h"
 
 namespace backend {
 
@@ -13,7 +14,7 @@ class UserCooldownMgr;
 /**
  * @see UserConnectHandler
  */
-class UserLogoutMgr {
+class UserLogoutMgr : public core::IComponent {
 private:
 	UserCooldownMgr& _cooldownMgr;
 	bool _disconnect = false;
@@ -33,8 +34,8 @@ public:
 	void updateLastActionTime();
 
 	void update(long dt);
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 };
 
 inline bool UserLogoutMgr::isDisconnect() const {

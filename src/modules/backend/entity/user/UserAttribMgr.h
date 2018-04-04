@@ -5,6 +5,7 @@
 #include "persistence/ForwardDecl.h"
 #include "backend/entity/EntityId.h"
 #include "attrib/Attributes.h"
+#include "core/IComponent.h"
 #include "persistence/ISavable.h"
 #include "collection/ConcurrentSet.h"
 #include "AttribModel.h"
@@ -19,7 +20,7 @@ namespace backend {
  * @note All @c attrib::Container instances must already be applied. Otherwise
  * the loaded current values might get capped to their min/max value.
  */
-class UserAttribMgr : public persistence::ISavable {
+class UserAttribMgr : public persistence::ISavable, public core::IComponent {
 private:
 	EntityId _userId;
 	attrib::Attributes& _attribs;
@@ -36,8 +37,8 @@ public:
 			const persistence::DBHandlerPtr& dbHandler,
 			const persistence::PersistenceMgrPtr& persistenceMgr);
 
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 
 	bool getDirtyModels(Models& models) override;
 };

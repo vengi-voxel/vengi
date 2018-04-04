@@ -25,7 +25,7 @@ core::AppState TestApp::onConstruct() {
 
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
-	_movement.onConstruct();
+	_movement.construct();
 
 	core::Command::registerCommand("+cam_freelook", [&] (const core::CmdArgs& args) {
 		Log::info("target lock: %s", args[0].c_str());

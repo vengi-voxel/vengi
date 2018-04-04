@@ -32,7 +32,7 @@ core::AppState MapEdit::onConstruct() {
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
-	_movement.onConstruct();
+	_movement.construct();
 
 	core::Command::registerCommand("+linemode", [&] (const core::CmdArgs& args) { \
 		if (args.empty()) {
@@ -47,7 +47,7 @@ core::AppState MapEdit::onConstruct() {
 		this->_freelook ^= true;
 	}).setHelp("Toggle free look");
 
-	_worldRenderer.onConstruct();
+	_worldRenderer.construct();
 	_world->setPersist(false);
 
 	return state;

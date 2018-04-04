@@ -37,7 +37,7 @@ core::AppState ShapeTool::onConstruct() {
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
-	_movement.onConstruct();
+	_movement.construct();
 
 	core::Command::registerCommand("+linemode", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {

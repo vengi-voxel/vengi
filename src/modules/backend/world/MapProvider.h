@@ -6,6 +6,7 @@
 
 #include "backend/ForwardDecl.h"
 #include "MapId.h"
+#include "core/IComponent.h"
 #include <memory>
 #include <unordered_map>
 
@@ -14,7 +15,7 @@ namespace backend {
 /**
  * @brief Responsible for loading and initializing the maps.
  */
-class MapProvider {
+class MapProvider : public core::IComponent {
 public:
 	using Maps = std::unordered_map<MapId, MapPtr>;
 private:
@@ -37,7 +38,6 @@ public:
 			const AILoaderPtr& loader,
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider);
-
 	~MapProvider();
 
 	/**
@@ -52,8 +52,8 @@ public:
 
 	Maps worldMaps() const;
 
-	bool init();
-	void shutdown();
+	bool init() override;
+	void shutdown() override;
 };
 
 typedef std::shared_ptr<MapProvider> MapProviderPtr;

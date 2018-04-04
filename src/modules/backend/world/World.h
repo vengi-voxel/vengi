@@ -6,6 +6,7 @@
 
 #include "Map.h"
 #include "commonlua/LUA.h"
+#include "core/IComponent.h"
 #include "backend/ForwardDecl.h"
 #include <unordered_map>
 
@@ -14,7 +15,7 @@ namespace backend {
 /**
  * @brief The world is the whole universe of all @c Map instances.
  */
-class World {
+class World : public core::IComponent {
 private:
 	MapProviderPtr _mapProvider;
 	AIRegistryPtr _registry;
@@ -32,9 +33,9 @@ public:
 
 	MapPtr map(MapId id) const;
 
-	void construct();
-	bool init();
-	void shutdown();
+	void construct() override;
+	bool init() override;
+	void shutdown() override;
 };
 
 inline MapPtr World::map(MapId id) const {

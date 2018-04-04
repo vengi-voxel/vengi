@@ -321,7 +321,7 @@ void NuklearApp::onWindowResize() {
 
 core::AppState NuklearApp::onConstruct() {
 	const core::AppState state = Super::onConstruct();
-	_console.onConstruct();
+	_console.construct();
 	return state;
 }
 
