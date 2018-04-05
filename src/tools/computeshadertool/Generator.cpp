@@ -19,7 +19,8 @@ static std::string getBufferName(const Kernel& k, const Parameter& p) {
 	return core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
 }
 
-static void generateKernelDoxygen(const Kernel& k, std::stringstream& kernels) {
+static int generateKernelDoxygen(const Kernel& k, std::stringstream& kernels, bool useVector) {
+	int buffers = 0;
 	kernels << "\t/**\n";
 	kernels << "\t * @brief Kernel code for '" << k.name << "'\n";
 	kernels << "\t * @return @c true if the execution was successful, @c false on error.\n";
@@ -30,13 +31,18 @@ static void generateKernelDoxygen(const Kernel& k, std::stringstream& kernels) {
 		kernels << "\t * @param " << p.name;
 		kernels << " vector with datatype that matches the CL type " << p.type << ". Note\n";
 		kernels << "\t * that the base pointer of this vector should be aligned (64 bytes) for optimal performance.\n";
+		if ((p.flags & compute::BufferFlag::ReadOnly) != compute::BufferFlag::None) {
+			continue;
+		}
+		++buffers;
 	}
 	kernels << "\t * @param[in] workSize Specify the number of global work-items per dimension (" << k.workDimension << ")\n";
 	kernels << "\t * that will execute the kernel function\n";
 	kernels << "\t */\n";
+	return buffers;
 }
 
-static void generateKernelHeader(const Kernel& k, std::stringstream& kernels) {
+static void generateKernelHeader(const Kernel& k, std::stringstream& kernels, bool useVector) {
 	kernels << "\tbool " << k.name << "(\n\t\t";
 	bool first = true;
 	for (const Parameter& p : k.parameters) {
@@ -48,7 +54,11 @@ static void generateKernelHeader(const Kernel& k, std::stringstream& kernels) {
 		}
 		if (isBuffer(p.type)) {
 			const util::CLTypeMapping& clType = util::vectorType(p.type);
-			kernels << "std::vector<" << clType.type << ">& " << p.name;
+			if (useVector) {
+				kernels << "std::vector<" << clType.type << ">& " << p.name;
+			} else {
+				kernels << clType.type << "* " << p.name << ", size_t " << p.name << "Size";
+			}
 		} else {
 			const util::CLTypeMapping& clType = util::vectorType(p.type);
 			kernels << clType.type;
@@ -65,17 +75,27 @@ static void generateKernelHeader(const Kernel& k, std::stringstream& kernels) {
 	kernels << ",\n\t\tconst glm::ivec" << k.workDimension << "& workSize\n\t) const";
 }
 
-static void generateKernelParameterTransfer(const Kernel& k, std::stringstream& kernels) {
+static void generateKernelParameterTransfer(const Kernel& k, std::stringstream& kernels, bool useVector) {
 	for (size_t i = 0; i < k.parameters.size(); ++i) {
 		const Parameter& p = k.parameters[i];
 		if (isBuffer(p.type)) {
 			const std::string& bufferName = getBufferName(k, p);
-			const std::string size = "core::vectorSize(" + p.name + ")";
 			kernels << "\t\tif (" << bufferName << " == InvalidId) {\n";
-			kernels << "\t\t\tconst compute::BufferFlag flags = " << util::toString(p.flags) << " | bufferFlags(&" << p.name << "[0], " << size << ");\n";
-			kernels << "\t\t\t" << bufferName << " = compute::createBufferFromType(flags, " << p.name << ");\n";
+			if (useVector) {
+				const std::string size = "core::vectorSize(" + p.name + ")";
+				kernels << "\t\t\tconst compute::BufferFlag flags = " << util::toString(p.flags) << " | bufferFlags(&" << p.name << "[0], " << size << ");\n";
+				kernels << "\t\t\t" << bufferName << " = compute::createBufferFromType(flags, " << p.name << ");\n";
+			} else {
+				const util::CLTypeMapping& clType = util::vectorType(p.type);
+				kernels << "\t\t\tconst compute::BufferFlag flags = " << util::toString(p.flags) << " | bufferFlags(" << p.name << ", " << p.name << "Size);\n";
+				kernels << "\t\t\t" << bufferName << " = compute::createBuffer(flags, " << p.name << "Size, const_cast<" << clType.type << "*>(" << p.name << "));\n";
+			}
 			kernels << "\t\t} else {\n";
-			kernels << "\t\t\tcompute::updateBufferFromType(" << bufferName << ", " << p.name << ");\n";
+			if (useVector) {
+				kernels << "\t\t\tcompute::updateBufferFromType(" << bufferName << ", " << p.name << ");\n";
+			} else {
+				kernels << "\t\t\tcompute::updateBuffer(" << bufferName << ", " << p.name << "Size, " << p.name << ");\n";
+			}
 			kernels << "\t\t}\n";
 			kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", " << i << ", " << bufferName << ");\n";
 		} else {
@@ -99,7 +119,7 @@ static void generateKernelExecution(const Kernel& k, std::stringstream& kernels)
 	kernels << ");\n";
 }
 
-static void generateKernelResultTransfer(const Kernel& k, std::stringstream& kernels) {
+static void generateKernelResultTransfer(const Kernel& k, std::stringstream& kernels, bool useVector) {
 	for (size_t i = 0; i < k.parameters.size(); ++i) {
 		const Parameter& p = k.parameters[i];
 		if (!isBuffer(p.type)) {
@@ -111,17 +131,21 @@ static void generateKernelResultTransfer(const Kernel& k, std::stringstream& ker
 			kernels << "\t\tcompute::finish();\n";
 			kernels << "#endif\n";
 			kernels << "\t\tif (state) {\n";
-			kernels << "\t\t\tcore_assert_always(compute::readBufferIntoVector(" << bufferName << ", " << p.name << "));\n";
+			if (useVector) {
+				kernels << "\t\t\tcore_assert_always(compute::readBufferIntoVector(" << bufferName << ", " << p.name << "));\n";
+			} else {
+				kernels << "\t\t\tcore_assert_always(compute::readBuffer(" << bufferName << ", " << p.name << "Size, " << p.name << "));\n";
+			}
 			kernels << "\t\t}\n";
 		}
 	}
 }
 
-static void generateKernelBody(const Kernel& k, std::stringstream& kernels) {
+static void generateKernelBody(const Kernel& k, std::stringstream& kernels, bool useVector) {
 	kernels << "{\n";
-	generateKernelParameterTransfer(k, kernels);
+	generateKernelParameterTransfer(k, kernels, useVector);
 	generateKernelExecution(k, kernels);
-	generateKernelResultTransfer(k, kernels);
+	generateKernelResultTransfer(k, kernels, useVector);
 	kernels << "\t\treturn state;\n";
 	kernels << "\t}\n";
 }
@@ -176,6 +200,13 @@ static void generateStructs(const std::vector<Struct>& _structs, std::stringstre
 	}
 }
 
+static int generateKernel(const Kernel& k, std::stringstream& kernels, bool useVector) {
+	const int buffers = generateKernelDoxygen(k, kernels, useVector);
+	generateKernelHeader(k, kernels, useVector);
+	generateKernelBody(k, kernels, useVector);
+	return buffers;
+}
+
 bool generateSrc(const io::FilesystemPtr& filesystem,
 		const std::string& templateShader,
 		const std::string& _name,
@@ -213,9 +244,10 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	std::stringstream kernels;
 	for (const Kernel& k : _kernels) {
 		kernels << "\n";
-		generateKernelDoxygen(k, kernels);
-		generateKernelHeader(k, kernels);
-		generateKernelBody(k, kernels);
+		const int buffers = generateKernel(k, kernels, true);
+		if (buffers > 0) {
+			generateKernel(k, kernels, false);
+		}
 
 		if (k.returnValue.type != "void") {
 			Log::error("return value must be void (Kernel: %s)", k.name.c_str());
