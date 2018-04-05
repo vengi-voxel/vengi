@@ -139,6 +139,7 @@ typedef cl_int (APIENTRY PFNCLEnqueueWaitForEvents_PROC)(cl_command_queue, cl_ui
 typedef cl_int (APIENTRY PFNCLEnqueueBarrier_PROC)(cl_command_queue);
 typedef cl_int (APIENTRY PFNCLUnloadCompiler_PROC)(void);
 typedef void * (APIENTRY PFNCLGetExtensionFunctionAddress_PROC)(const char *);
+typedef cl_int (APIENTRY PFNCLIcdGetPlatformIDs_PROC)(cl_uint num_entries, cl_platform_id *platforms, cl_uint *num_platforms);
 typedef cl_mem (APIENTRY PFNCLCreateFromGLBuffer_PROC)(cl_context, cl_mem_flags, cl_GLuint, int *);
 typedef cl_mem (APIENTRY PFNCLCreateFromGLTexture_PROC)(cl_context, cl_mem_flags, cl_GLenum, cl_GLint, cl_GLuint, cl_int *);
 typedef cl_mem (APIENTRY PFNCLCreateFromGLRenderbuffer_PROC)(cl_context, cl_mem_flags, cl_GLuint, cl_int *);
@@ -240,6 +241,7 @@ CLAPI PFNCLEnqueueWaitForEvents_PROC* clpfEnqueueWaitForEvents;
 CLAPI PFNCLEnqueueBarrier_PROC* clpfEnqueueBarrier;
 CLAPI PFNCLUnloadCompiler_PROC* clpfUnloadCompiler;
 CLAPI PFNCLGetExtensionFunctionAddress_PROC* clpfGetExtensionFunctionAddress;
+CLAPI PFNCLIcdGetPlatformIDs_PROC* clpfIcdGetPlatformIDs;
 CLAPI PFNCLCreateFromGLBuffer_PROC* clpfCreateFromGLBuffer;
 CLAPI PFNCLCreateFromGLTexture_PROC* clpfCreateFromGLTexture;
 CLAPI PFNCLCreateFromGLRenderbuffer_PROC* clpfCreateFromGLRenderbuffer;

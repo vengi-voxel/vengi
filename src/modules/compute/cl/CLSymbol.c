@@ -4,6 +4,11 @@
 #include "CLSymbol.h"
 #include <SDL.h>
 #include <SDL_platform.h>
+#include <stdio.h>
+
+#if defined(__LINUX__) || defined(__ANDROID__)
+#include <dirent.h>
+#endif
 #include "engine-config.h"
 
 static void* obj = NULL;
@@ -103,6 +108,7 @@ void computeCLShutdown() {
 	clpfEnqueueBarrier = NULL;
 	clpfUnloadCompiler = NULL;
 	clpfGetExtensionFunctionAddress = NULL;
+	clpfIcdGetPlatformIDs = NULL;
 	clpfCreateFromGLBuffer = NULL;
 	clpfCreateFromGLTexture = NULL;
 	clpfCreateFromGLRenderbuffer = NULL;
@@ -137,17 +143,90 @@ static const char *default_so_paths[] = {
 };
 #elif defined(__LINUX__)
 static const char *default_so_paths[] = {
-	"/usr/lib/libOpenCL.so",
-	"/usr/local/lib/libOpenCL.so",
-	"/usr/local/lib/libpocl.so",
-	"/usr/lib64/libOpenCL.so",
-	"/usr/lib32/libOpenCL.so",
-	"/usr/lib/x86_64-linux-gnu/libOpenCL.so",
-	"libOpenCL.so"
+	"libOpenCL.so",
+	"libOpenCL.so.1",
+	"libpocl.so"
 };
 #else
 #error "Unsupported platform"
 #endif
+
+#if defined(__ANDROID__) || defined(__LINUX__)
+static void* loadICDLinux() {
+#ifdef __ANDROID__
+	const char *vendorPath = "/system/vendor/Khronos/OpenCL/vendors/";
+#else
+	const char *vendorPath = "/etc/OpenCL/vendors/";
+#endif
+	struct dirent *entry = NULL;
+	DIR *dir = opendir(vendorPath);
+	if (NULL == dir) {
+		return NULL;
+	}
+	while ((entry = readdir(dir)) != NULL) {
+		switch (entry->d_type) {
+		case DT_UNKNOWN:
+		case DT_REG:
+		case DT_LNK: {
+			const char *ext = strrchr(entry->d_name, '.');
+			if (ext == NULL) {
+				continue;
+			}
+			if (strcmp(ext, ".icd")) {
+				continue;
+			}
+			char buf[512];
+			snprintf(buf, sizeof(buf), "%s%s", vendorPath, entry->d_name);
+			buf[511] = '\0';
+
+			FILE *icd = fopen(buf, "r");
+			if (icd == NULL) {
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Can't open file %s", buf);
+				break;
+			}
+			fseek(icd, 0, SEEK_END);
+			const long icdSize = ftell(icd);
+			if ((size_t)icdSize >= sizeof(buf) - 1) {
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "File content of '%s' doesn't fit buffer", buf);
+				fclose(icd);
+				break;
+			}
+			fseek(icd, 0, SEEK_SET);
+			if (icdSize != (long) fread(buf, 1, icdSize, icd)) {
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Could not read the whole icd file");
+				fclose(icd);
+				break;
+			}
+			fclose(icd);
+			if (buf[icdSize - 1] == '\n') {
+				buf[icdSize - 1] = '\0';
+			}
+			void* lib = SDL_LoadObject(buf);
+			if (lib != NULL) {
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Loaded OpenCL library '%s'", buf);
+				closedir(dir);
+				return lib;
+			}
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Could not load the specified library '%s'", buf);
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
+	closedir(dir);
+	return NULL;
+}
+#endif
+
+static void* loadICD() {
+#if defined(__ANDROID__) || defined(__LINUX__)
+	return loadICDLinux();
+#else
+	return NULL;
+#endif
+}
 
 int computeCLInit() {
 	const int n = SDL_arraysize(default_so_paths);
@@ -166,9 +245,49 @@ int computeCLInit() {
 			}
 		}
 	}
+
+	if (obj == NULL) {
+		// some vendors also exports all symbols - try that as a last resort
+		obj = loadICD();
+	}
+
 	if (obj == NULL) {
 		return -1;
 	}
+
+	clpfGetExtensionFunctionAddress = (PFNCLGetExtensionFunctionAddress_PROC*)SDL_LoadFunction(obj, "clGetExtensionFunctionAddress");
+	if (clpfGetExtensionFunctionAddress == NULL) {
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Given OpenCL library doesn't contain needed symbol clGetExtensionFunctionAddress");
+		return -1;
+	}
+
+#if 0
+	clpfIcdGetPlatformIDs = (PFNCLIcdGetPlatformIDs_PROC*)clpfGetExtensionFunctionAddress("clIcdGetPlatformIDsKHR");
+	if (clpfIcdGetPlatformIDs == NULL) {
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Given OpenCL library doesn't contain needed symbol clIcdGetPlatformIDsKHR");
+		return -1;
+	}
+
+	cl_uint platformCount;
+	cl_int result = clpfIcdGetPlatformIDs(0, NULL, &platformCount);
+	if (result != CL_SUCCESS) {
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Failed to execute clIcdGetPlatformIDs");
+		return -1;
+	}
+	cl_platform_id* platforms = (cl_platform_id *)SDL_malloc(platformCount * sizeof(cl_platform_id));
+	if (platforms == NULL) {
+		return SDL_OutOfMemory();
+	}
+	SDL_memset(platforms, 0, platformCount * sizeof(*platforms));
+	result = clpfIcdGetPlatformIDs(platformCount, platforms, NULL);
+	if (result != CL_SUCCESS) {
+		SDL_free(platforms);
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Failed to execute clIcdGetPlatformIDs to get the data");
+		return -1;
+	}
+	SDL_free(platforms);
+#endif
+
 	clpfGetPlatformIDs = (PFNCLGetPlatformIDs_PROC*)SDL_LoadFunction(obj, "clGetPlatformIDs");
 	clpfGetPlatformInfo = (PFNCLGetPlatformInfo_PROC*)SDL_LoadFunction(obj, "clGetPlatformInfo");
 	clpfGetDeviceIDs = (PFNCLGetDeviceIDs_PROC*)SDL_LoadFunction(obj, "clGetDeviceIDs");
@@ -256,7 +375,6 @@ int computeCLInit() {
 	clpfEnqueueWaitForEvents = (PFNCLEnqueueWaitForEvents_PROC*)SDL_LoadFunction(obj, "clEnqueueWaitForEvents");
 	clpfEnqueueBarrier = (PFNCLEnqueueBarrier_PROC*)SDL_LoadFunction(obj, "clEnqueueBarrier");
 	clpfUnloadCompiler = (PFNCLUnloadCompiler_PROC*)SDL_LoadFunction(obj, "clUnloadCompiler");
-	clpfGetExtensionFunctionAddress = (PFNCLGetExtensionFunctionAddress_PROC*)SDL_LoadFunction(obj, "clGetExtensionFunctionAddress");
 	clpfCreateFromGLBuffer = (PFNCLCreateFromGLBuffer_PROC*)SDL_LoadFunction(obj, "clCreateFromGLBuffer");
 	clpfCreateFromGLTexture = (PFNCLCreateFromGLTexture_PROC*)SDL_LoadFunction(obj, "clCreateFromGLTexture");
 	clpfCreateFromGLRenderbuffer = (PFNCLCreateFromGLRenderbuffer_PROC*)SDL_LoadFunction(obj, "clCreateFromGLRenderbuffer");
@@ -269,6 +387,11 @@ int computeCLInit() {
 #if cl_khr_gl_sharing
 	clpfGetGLContextInfoKHR = (PFNCLGetGLContextInfoKHR_PROC*)SDL_LoadFunction(obj, "clGetGLContextInfoKHR");
 #endif
+
+	if (clGetPlatformIDs == NULL) {
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Given OpenCL library doesn't contain needed symbols");
+		return -1;
+	}
 
 	return 0;
 }
@@ -361,6 +484,7 @@ PFNCLEnqueueWaitForEvents_PROC* clpfEnqueueWaitForEvents = NULL;
 PFNCLEnqueueBarrier_PROC* clpfEnqueueBarrier = NULL;
 PFNCLUnloadCompiler_PROC* clpfUnloadCompiler = NULL;
 PFNCLGetExtensionFunctionAddress_PROC* clpfGetExtensionFunctionAddress = NULL;
+PFNCLIcdGetPlatformIDs_PROC* clpfIcdGetPlatformIDs = NULL;
 PFNCLCreateFromGLBuffer_PROC* clpfCreateFromGLBuffer = NULL;
 PFNCLCreateFromGLTexture_PROC* clpfCreateFromGLTexture = NULL;
 PFNCLCreateFromGLRenderbuffer_PROC* clpfCreateFromGLRenderbuffer = NULL;
