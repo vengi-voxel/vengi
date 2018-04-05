@@ -496,6 +496,7 @@ bool finish() {
 bool init() {
 	core_assert(_priv::_ctx.context == nullptr);
 	if (computeCLInit() == -1) {
+		Log::debug("Could not init opencl library");
 		return false;
 	}
 

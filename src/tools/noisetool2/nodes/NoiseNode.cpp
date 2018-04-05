@@ -31,6 +31,14 @@ static inline uint64_t millis() {
 	return core::App::getInstance()->timeProvider()->systemMillis();
 }
 
+NoiseNode::NoiseNode() {
+	_noise.init();
+}
+
+NoiseNode::~NoiseNode() {
+	_noise.shutdown();
+}
+
 bool NoiseNode::GetNoiseTypeFromEnumIndex(void*, int value, const char** pTxt) {
 	if (!pTxt) {
 		return false;

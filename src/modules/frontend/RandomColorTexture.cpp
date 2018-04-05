@@ -3,29 +3,23 @@
  */
 #include "RandomColorTexture.h"
 #include "core/App.h"
-#include "NoiseShaders.h"
 
 namespace frontend {
 
 bool RandomColorTexture::init() {
+	if (!_noise.init()) {
+		return false;
+	}
 	_colorTexture = video::createEmptyTexture("**colortexture**");
-	compute::NoiseShader shader;
 	const int ColorTextureSize = 256;
 	const int ColorTextureOctaves = 2;
 	const int ColorTextureDepth = 3;
 	const float persistence = 0.3f;
 	const float frequency = 0.7f;
 	const float amplitude = 1.0f;
-	if (shader.setup()) {
-		const glm::ivec2 workSize(ColorTextureSize);
-		std::vector<uint8_t> colorTexture(ColorTextureSize * ColorTextureSize * ColorTextureDepth);
-		shader.seamlessNoise(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude, workSize);
-		_colorTexture->upload(video::TextureFormat::RGB, workSize.x, workSize.y, &colorTexture[0]);
-		return true;
-	}
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([=] () {
 		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
-		_noise.seamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
+		_noise.seamlessNoise(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
 		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
 	}));
 	return true;
@@ -61,6 +55,7 @@ void RandomColorTexture::shutdown() {
 		_colorTexture = video::TexturePtr();
 	}
 	_noiseFuture.clear();
+	_noise.shutdown();
 }
 
 }

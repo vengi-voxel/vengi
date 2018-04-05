@@ -5,6 +5,8 @@
 #pragma once
 
 #include "Simplex.h"
+#include "NoiseShaders.h"
+#include "core/IComponent.h"
 #include <glm/trigonometric.hpp>
 #include <glm/gtc/constants.hpp>
 #include <stdint.h>
@@ -21,8 +23,25 @@ inline float norm(float noise) {
 /**
  * @brief Wrapper class that picks the best path to calculate the noise. This is either on the gpu or the cpu.
  */
-class Noise {
+class Noise : public core::IComponent {
+private:
+	compute::NoiseShader& _shader;
+	bool _useShader = false;
+	bool _enableShader = true;
 public:
+	Noise();
+	~Noise();
+
+	bool canUseShader() const;
+	/**
+	 * @return @c true if the value was set, @c false otherwise. This might happen if you e.g. try to activate noise shaders,
+	 * but your system doesn't support them.
+	 */
+	bool useShader(bool enableShader);
+
+	bool init() override;
+	void shutdown() override;
+
 	/**
 	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
 	 * @param[in] octaves the amount of noise calls that contribute to the final result
@@ -64,7 +83,7 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
-	void seamlessNoise2DRGB(uint8_t* buffer, int size, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
+	void seamlessNoise(uint8_t* buffer, int size, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
 
 	/**
 	 * @return Range [-+2147483647,+2147483647].
@@ -91,5 +110,9 @@ public:
 	float jordanTurbulence(const glm::vec2&p, float offset, int octaves, float lacunarity = 2.0f, float gain1 = 0.8f, float gain = 0.5f, float warp0 = 0.4f, float warp = 0.35f,
 			float damp0 = 1.0f, float damp = 0.8f, float damp_scale = 1.0f) const;
 };
+
+inline bool Noise::canUseShader() const {
+	return _useShader && _enableShader;
+}
 
 }

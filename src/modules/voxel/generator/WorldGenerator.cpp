@@ -6,6 +6,11 @@ namespace world {
 
 WorldGenerator::WorldGenerator(BiomeManager& biomeManager, long seed) :
 		_biomeManager(biomeManager), _seed(seed), _random(seed) {
+	_noise.init();
+}
+
+WorldGenerator::~WorldGenerator() {
+	_noise.shutdown();
 }
 
 float WorldGenerator::getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const {

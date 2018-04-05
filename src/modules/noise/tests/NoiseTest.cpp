@@ -3,6 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
+#include "compute/Compute.h"
 #include "noise/Noise.h"
 #include "image/Image.h"
 #include "core/GLM.h"
@@ -11,6 +12,15 @@ namespace noise {
 
 class NoiseTest: public core::AbstractTest {
 protected:
+	void onCleanupApp() override {
+		compute::shutdown();
+	}
+
+	bool onInitApp() override {
+		compute::init();
+		return true;
+	}
+
 	template<typename NOISE>
 	void test2DNoise(NOISE&& noiseFunc, float frequency, const char *filename, int w = 256, int h = 256, int components = 4) {
 		uint8_t* buffer = new uint8_t[w * h * components];
@@ -19,8 +29,6 @@ protected:
 			for (int y = 0; y < h; ++y) {
 				const glm::vec2 pos(x * frequency, y * frequency);
 				const float noise = noiseFunc(pos);
-//				ASSERT_LE(noise, +1.0f)<< "Noise is bigger than 1.0: " << noise;
-//				ASSERT_GE(noise, -1.0f)<< "Noise is less than -1.0: " << noise;
 				float normalized = noise::norm(noise);
 				ASSERT_LE(normalized, 1.0f)<< "Noise is bigger than 1.0: " << normalized;
 				ASSERT_GE(normalized, 0.0f)<< "Noise is less than 0.0: " << normalized;
@@ -40,32 +48,35 @@ protected:
 		ASSERT_TRUE(image::Image::writePng(filename, buffer, w, h, components));
 		delete[] buffer;
 	}
+
+	void seamlessNoise(bool useShader) {
+		noise::Noise noise;
+		ASSERT_TRUE(noise.init());
+		noise.useShader(useShader);
+		if (useShader && !noise.canUseShader()) {
+			return;
+		}
+		const int width = 256;
+		const int height = 256;
+		const int components = 3;
+		uint8_t buffer[width * height * components];
+		const int octaves = 2;
+		const float persistence = 0.3f;
+		const float frequency = 0.7f;
+		const float amplitude = 1.0f;
+		noise.seamlessNoise(buffer, width, octaves, persistence, frequency, amplitude);
+		const std::string& target = core::string::format("testseamlessNoise-%i.png", useShader ? 1 : 0);
+		EXPECT_TRUE(image::Image::writePng(target.c_str(), buffer, width, height, components));
+		noise.shutdown();
+	}
 };
 
-TEST_F(NoiseTest, testHumidityNoise) {
-	test2DNoise([] (const glm::vec2& pos) {return noise::noise(pos);}, 0.001f, "testHumidity.png");
+TEST_F(NoiseTest, testSeamlessNoiseShader) {
+	seamlessNoise(true);
 }
 
-TEST_F(NoiseTest, testTemperatureNoise) {
-	test2DNoise([] (const glm::vec2& pos) {return noise::noise(pos); }, 0.0001f, "testTemperature.png");
-}
-
-TEST_F(NoiseTest, test2DNoiseColorMap) {
-	const int width = 256;
-	const int height = 256;
-	const int components = 3;
-	uint8_t buffer[width * height * components];
-	const int octaves = 2;
-	const float persistence = 0.3f;
-	const float frequency = 0.7f;
-	const float amplitude = 1.0f;
-	noise::Noise noise;
-	noise.seamlessNoise2DRGB(buffer, width, octaves, persistence, frequency, amplitude);
-	ASSERT_TRUE(image::Image::writePng("testNoiseColorMap.png", buffer, width, height, components));
-}
-
-TEST_F(NoiseTest, test2DNoiseRF) {
-	test2DNoise([] (const glm::vec2& pos) {return noise::ridgedMF(pos, 128.0f, 4, 2.02f, 1.0f);}, 20.0f, "test-ridgedmf-noise-1024-2048.png", 1024, 2048, 4);
+TEST_F(NoiseTest, testSeamlessNoiseCPU) {
+	seamlessNoise(false);
 }
 
 }

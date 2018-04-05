@@ -28,9 +28,13 @@ NoiseToolWindow::~NoiseToolWindow() {
 	}
 	delete[] _graphBufferBackground;
 	_graphBufferBackground = nullptr;
+	_noise.shutdown();
 }
 
 bool NoiseToolWindow::init() {
+	if (!_noise.init()) {
+		return false;
+	}
 	if (!loadResourceFile("ui/window/noisetool-main.tb.txt")) {
 		Log::error("Failed to init the main window: Could not load the ui definition");
 		return false;

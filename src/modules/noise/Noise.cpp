@@ -44,6 +44,38 @@ static float NoiseFBM(const VecType& pos, int octaves, float persistence, float 
 	return total;
 }
 
+Noise::Noise() :
+		_shader(compute::NoiseShader::getInstance()) {
+}
+
+Noise::~Noise() {
+	shutdown();
+}
+
+bool Noise::init() {
+	_useShader = _shader.setup();
+	if (_useShader) {
+		Log::info("Noise shaders can be used");
+	} else {
+		Log::info("Noise shaders can't be used");
+	}
+	return true;
+}
+
+void Noise::shutdown() {
+	_useShader = false;
+	_shader.shutdown();
+}
+
+bool Noise::useShader(bool enableShader) {
+	if (!_useShader && _enableShader) {
+		Log::warn("Can't enable use of shaders, not supported or not initialized");
+		return false;
+	}
+	_enableShader = enableShader;
+	return true;
+}
+
 float Noise::fbmNoise2D(const glm::vec2& pos, int octaves, float persistence, float frequency, float amplitude) const {
 	return NoiseFBM(pos, octaves, persistence, 2.0f, frequency, amplitude);
 }
@@ -148,8 +180,13 @@ float Noise::jordanTurbulence(const glm::vec2& p, float offset, int octaves, flo
 	return sum;
 }
 
-void Noise::seamlessNoise2DRGB(uint8_t* buffer, int size, int octaves, float persistence, float frequency, float amplitude) const {
+void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persistence, float frequency, float amplitude) const {
 	const int components = 3;
+	if (canUseShader()) {
+		const glm::ivec2 workSize(size);
+		_shader.seamlessNoise(buffer, size * size * components, size, octaves, persistence, frequency, amplitude, workSize);
+		return;
+	}
 	uint8_t bufferChannel[size * size];
 	const float pi2 = glm::two_pi<float>();
 	const float d = 1.0f / size;

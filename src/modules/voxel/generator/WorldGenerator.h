@@ -35,6 +35,7 @@ private:
 	float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const;
 public:
 	WorldGenerator(BiomeManager& biomeManager, long seed = 0);
+	~WorldGenerator();
 
 	template<class Volume>
 	bool createBuildings(Volume& volume) {

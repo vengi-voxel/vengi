@@ -47,5 +47,7 @@ protected:
 
 	void getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& defaultTitleBgColorOut, float& defaultTitleBgColorGradientOut) const override;
 public:
+	NoiseNode();
+	~NoiseNode();
 	static NoiseNode* Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge);
 };
