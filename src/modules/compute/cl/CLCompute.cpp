@@ -513,7 +513,7 @@ bool init() {
 	}
 
 	if (_priv::_ctx.platformIdCount == 0u) {
-		Log::error("No OpenCL platform found");
+		Log::debug("No OpenCL platform found");
 		return false;
 	} else {
 		Log::info("Found %u platform(s)", _priv::_ctx.platformIdCount);
