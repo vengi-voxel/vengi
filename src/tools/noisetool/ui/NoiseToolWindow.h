@@ -9,6 +9,7 @@
 #include "core/Common.h"
 #include "collection/ConcurrentQueue.h"
 #include <unordered_map>
+#include "noise/Noise.h"
 #include "../NoiseData.h"
 
 class NoiseTool;
@@ -19,6 +20,7 @@ private:
 	static_assert(BPP == sizeof(uint32_t), "This code heavily relies on RGBA being 32bit");
 	using Super = ui::turbobadger::Window;
 
+	noise::Noise _noise;
 	NoiseTool* _noiseTool;
 	tb::TBSelectList* _select = nullptr;
 

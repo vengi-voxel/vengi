@@ -50,7 +50,7 @@ float NoiseNode::getNoise(int x, int y, int z) {
 	switch (noiseType) {
 	case NoiseType::doubleNoise: {
 		const glm::ivec3 p3(position.x, position.y, 0);
-		return noise::doubleValueNoise(p3, 0);
+		return _noise.doubleValueNoise(p3, 0);
 	}
 	case NoiseType::simplexNoise:
 		return noise::noise(position);
@@ -93,17 +93,17 @@ float NoiseNode::getNoise(int x, int y, int z) {
 		const bool enableDistance = false;
 		const int seed = 0;
 		const glm::dvec3 p3(position.x, position.y, 0.0);
-		return noise::voronoi(p3, enableDistance, 1.0, seed);
+		return _noise.voronoi(p3, enableDistance, 1.0, seed);
 	}
 	case NoiseType::worleyNoise:
 		return noise::worleyNoise(position);
 	case NoiseType::worleyNoiseFbm:
 		return noise::worleyfBm(position, octaves, lacunarity, gain);
 	case NoiseType::swissTurbulence:
-		return noise::swissTurbulence(position, 0.0f, octaves, lacunarity, gain);
+		return _noise.swissTurbulence(position, 0.0f, octaves, lacunarity, gain);
 	case NoiseType::jordanTurbulence:
 		// float gain0, float gain, float warp0, float warp, float damp0, float damp, float damp_scale;
-		return noise::jordanTurbulence(position, 0.0f, octaves, lacunarity, gain);
+		return _noise.jordanTurbulence(position, 0.0f, octaves, lacunarity, gain);
 	case NoiseType::Max:
 		break;
 	}

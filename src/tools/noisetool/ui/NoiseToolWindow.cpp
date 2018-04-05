@@ -84,7 +84,7 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 	switch (noiseType) {
 	case NoiseType::doubleNoise: {
 		const glm::ivec3 p3(position.x, position.y, 0);
-		return noise::doubleValueNoise(p3, 0);
+		return _noise.doubleValueNoise(p3, 0);
 	}
 	case NoiseType::simplexNoise:
 		return noise::noise(position);
@@ -125,17 +125,17 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 	}
 	case NoiseType::voronoi: {
 		const glm::dvec3 p3(position.x, position.y, 0.0);
-		return noise::voronoi(p3, data.enableDistance, 1.0, data.seed);
+		return _noise.voronoi(p3, data.enableDistance, 1.0, data.seed);
 	}
 	case NoiseType::worleyNoise:
 		return noise::worleyNoise(position);
 	case NoiseType::worleyNoiseFbm:
 		return noise::worleyfBm(position, data.octaves, data.lacunarity, data.gain);
 	case NoiseType::swissTurbulence:
-		return noise::swissTurbulence(position, 0.0f, data.octaves, data.lacunarity, data.gain);
+		return _noise.swissTurbulence(position, 0.0f, data.octaves, data.lacunarity, data.gain);
 	case NoiseType::jordanTurbulence:
 		// float gain0, float gain, float warp0, float warp, float damp0, float damp, float damp_scale;
-		return noise::jordanTurbulence(position, 0.0f, data.octaves, data.lacunarity, data.gain);
+		return _noise.jordanTurbulence(position, 0.0f, data.octaves, data.lacunarity, data.gain);
 	case NoiseType::poissonDiskDistribution:
 	case NoiseType::Max:
 		break;

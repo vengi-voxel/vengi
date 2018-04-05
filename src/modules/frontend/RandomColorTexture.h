@@ -16,6 +16,7 @@ namespace frontend {
 class RandomColorTexture : public core::IComponent {
 private:
 	video::TexturePtr _colorTexture;
+	noise::Noise _noise;
 
 	struct NoiseGenerationTask {
 		NoiseGenerationTask(uint8_t *_buffer, int _width, int _height, int _depth) :

@@ -59,7 +59,8 @@ TEST_F(NoiseTest, test2DNoiseColorMap) {
 	const float persistence = 0.3f;
 	const float frequency = 0.7f;
 	const float amplitude = 1.0f;
-	noise::SeamlessNoise2DRGB(buffer, width, octaves, persistence, frequency, amplitude);
+	noise::Noise noise;
+	noise.seamlessNoise2DRGB(buffer, width, octaves, persistence, frequency, amplitude);
 	ASSERT_TRUE(image::Image::writePng("testNoiseColorMap.png", buffer, width, height, components));
 }
 

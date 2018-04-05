@@ -1,6 +1,11 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "NNode.h"
+#include "noise/Noise.h"
 
 enum class NoiseType {
 	doubleNoise,
@@ -34,6 +39,7 @@ protected:
 	int octaves = 4;
 	float gain = 0.5f;
 	int noiseTypeIndex = (int)NoiseType::simplexNoise;
+	noise::Noise _noise;
 
 	static bool GetNoiseTypeFromEnumIndex(void*, int value, const char** pTxt);
 

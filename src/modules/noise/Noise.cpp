@@ -29,7 +29,7 @@ namespace noise {
  * @param[in] amplitude The maximum absolute value that the noise function can output.
  */
 template<class VecType>
-static float Noise(const VecType& pos, int octaves, float persistence, float lacunarity, float frequency, float amplitude) {
+static float NoiseFBM(const VecType& pos, int octaves, float persistence, float lacunarity, float frequency, float amplitude) {
 	core_trace_scoped(Noise);
 	float total = 0.0f;
 	for (int i = 0; i < octaves; ++i) {
@@ -44,19 +44,19 @@ static float Noise(const VecType& pos, int octaves, float persistence, float lac
 	return total;
 }
 
-float Noise2D(const glm::vec2& pos, int octaves, float persistence, float frequency, float amplitude) {
-	return Noise(pos, octaves, persistence, 2.0f, frequency, amplitude);
+float Noise::fbmNoise2D(const glm::vec2& pos, int octaves, float persistence, float frequency, float amplitude) const {
+	return NoiseFBM(pos, octaves, persistence, 2.0f, frequency, amplitude);
 }
 
-float Noise3D(const glm::vec3& pos, int octaves, float persistence, float frequency, float amplitude) {
-	return Noise(pos, octaves, persistence, 2.0f, frequency, amplitude);
+float Noise::fbmNoise3D(const glm::vec3& pos, int octaves, float persistence, float frequency, float amplitude) const {
+	return NoiseFBM(pos, octaves, persistence, 2.0f, frequency, amplitude);
 }
 
-float Noise4D(const glm::vec4& pos, int octaves, float persistence, float frequency, float amplitude) {
-	return Noise(pos, octaves, persistence, 2.0f, frequency, amplitude);
+float Noise::fbmNoise4D(const glm::vec4& pos, int octaves, float persistence, float frequency, float amplitude) const {
+	return NoiseFBM(pos, octaves, persistence, 2.0f, frequency, amplitude);
 }
 
-int32_t intValueNoise(const glm::ivec3& pos, int32_t seed) {
+int32_t Noise::intValueNoise(const glm::ivec3& pos, int32_t seed) const {
 	constexpr int32_t xgen = 1619;
 	constexpr int32_t ygen = 31337;
 	constexpr int32_t zgen = 6971;
@@ -66,14 +66,14 @@ int32_t intValueNoise(const glm::ivec3& pos, int32_t seed) {
 	return (n * (n * n * 60493 + 19990303) + 1376312589) & std::numeric_limits<int32_t>::max();
 }
 
-double doubleValueNoise(const glm::ivec3& pos, int32_t seed) {
+double Noise::doubleValueNoise(const glm::ivec3& pos, int32_t seed) const {
 	constexpr double div = static_cast<double>(std::numeric_limits<int32_t>::max() / 2 + 1);
 	const int ni = intValueNoise(pos, seed);
 	const double n = static_cast<double>(ni / div);
 	return 1.0 - glm::abs(n);
 }
 
-double voronoi(const glm::dvec3& pos, bool enableDistance, double frequency, int seed) {
+double Noise::voronoi(const glm::dvec3& pos, bool enableDistance, double frequency, int seed) const {
 	const glm::dvec3 p = pos * frequency;
 	const glm::ivec3 rp(
 			(p.x > 0.0 ? (int)(p.x) : (int)(p.x) - 1),
@@ -107,7 +107,7 @@ double voronoi(const glm::dvec3& pos, bool enableDistance, double frequency, int
 	return ret;
 }
 
-float swissTurbulence(const glm::vec2& p, float offset, int octaves, float lacunarity, float gain, float warp) {
+float Noise::swissTurbulence(const glm::vec2& p, float offset, int octaves, float lacunarity, float gain, float warp) const {
 	float sum = 0.0f;
 	float freq = 1.0f;
 	float amp = 1.0f;
@@ -123,7 +123,7 @@ float swissTurbulence(const glm::vec2& p, float offset, int octaves, float lacun
 	return (sum - 1.0f) * 0.5f;
 }
 
-float jordanTurbulence(const glm::vec2& p, float offset, int octaves, float lacunarity, float gain1, float gain, float warp0, float warp, float damp0, float damp, float damp_scale) {
+float Noise::jordanTurbulence(const glm::vec2& p, float offset, int octaves, float lacunarity, float gain1, float gain, float warp0, float warp, float damp0, float damp, float damp_scale) const {
 	glm::vec3 n = dnoise(p + glm::vec2(offset));
 	glm::vec3 n2 = n * n.x;
 	float sum = n2.x;
@@ -146,6 +146,39 @@ float jordanTurbulence(const glm::vec2& p, float offset, int octaves, float lacu
 		dampedAmp = amp * (1 - damp_scale / (1 + dot(dsumDamp, dsumDamp)));
 	}
 	return sum;
+}
+
+void Noise::seamlessNoise2DRGB(uint8_t* buffer, int size, int octaves, float persistence, float frequency, float amplitude) const {
+	const int components = 3;
+	uint8_t bufferChannel[size * size];
+	const float pi2 = glm::two_pi<float>();
+	const float d = 1.0f / size;
+	for (int channel = 0; channel < components; ++channel) {
+		// seamless noise: http://www.gamedev.net/blog/33/entry-2138456-seamless-noise/
+		float s = 0.0f;
+		for (int x = 0; x < size; x++, s += d) {
+			const float s_pi2 = s * pi2;
+			const float nx = glm::cos(s_pi2);
+			const float nz = glm::sin(s_pi2);
+			float t = 0.0f;
+			for (int y = 0; y < size; y++, t += d) {
+				const float t_pi2 = t * pi2;
+				const float ny = glm::cos(t_pi2);
+				const float nw = glm::sin(t_pi2);
+				float noise = fbmNoise4D(glm::vec4(nx, ny, nz, nw) + glm::vec4(channel), octaves, persistence, frequency, amplitude);
+				noise = noise::norm(noise);
+				const unsigned char color = (unsigned char) (noise * 255.0f);
+				const int channelIndex = y * size + x;
+				bufferChannel[channelIndex + 1] = color;
+			}
+		}
+		int index = 0;
+		for (int x = 0; x < size; ++x) {
+			for (int y = 0; y < size; ++y, ++index) {
+				buffer[index * components + channel] = bufferChannel[index];
+			}
+		}
+	}
 }
 
 }
