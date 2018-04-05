@@ -55,9 +55,9 @@ Noise::~Noise() {
 bool Noise::init() {
 	_useShader = _shader.setup();
 	if (_useShader) {
-		Log::info("Noise shaders can be used");
+		Log::debug("Noise shaders can be used");
 	} else {
-		Log::info("Noise shaders can't be used");
+		Log::debug("Noise shaders can't be used");
 	}
 	return true;
 }
