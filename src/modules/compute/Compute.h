@@ -18,6 +18,7 @@
 #include "Types.h"
 #include "cl/CLTypes.h"
 #include "core/Vector.h"
+#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 

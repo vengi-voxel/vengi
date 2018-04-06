@@ -8,6 +8,7 @@
 #include "core/ReadWriteLock.h"
 #include "math/Random.h"
 #include "Type.h"
+#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <stack>
 #include <memory>

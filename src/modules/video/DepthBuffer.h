@@ -6,6 +6,7 @@
 
 #include "Renderer.h"
 #include "Texture.h"
+#include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 
 namespace video {

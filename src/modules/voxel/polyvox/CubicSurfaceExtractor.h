@@ -11,6 +11,7 @@
 #include "core/NonCopyable.h"
 #include "Region.h"
 #include <vector>
+#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <list>
 #include "core/Trace.h"

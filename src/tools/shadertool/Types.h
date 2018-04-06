@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
 enum PassBy {

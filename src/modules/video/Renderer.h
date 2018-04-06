@@ -11,6 +11,7 @@
 #include "Types.h"
 #include "core/Assert.h"
 #include "image/Image.h"
+#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
 namespace video {

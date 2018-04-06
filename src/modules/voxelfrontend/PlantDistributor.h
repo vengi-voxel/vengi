@@ -5,6 +5,7 @@
 
 #include "core/Common.h"
 #include <vector>
+#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
 namespace voxel {

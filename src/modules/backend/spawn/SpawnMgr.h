@@ -8,6 +8,7 @@
 #include "backend/ForwardDecl.h"
 #include "core/IComponent.h"
 #include "ai/common/Types.h"
+#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
 namespace backend {

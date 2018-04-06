@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Array.h"
+#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
 namespace voxel {

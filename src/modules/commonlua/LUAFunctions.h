@@ -5,12 +5,7 @@
 
 #include "LUA.h"
 #include "core/Log.h"
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/gtc/epsilon.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
+#include "core/GLM.h"
 #include <vector>
 
 template<class T>

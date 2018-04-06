@@ -13,6 +13,7 @@
 #include "MapId.h"
 #include <memory>
 #include <unordered_map>
+#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
 namespace backend {

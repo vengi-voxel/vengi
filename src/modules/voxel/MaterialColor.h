@@ -7,6 +7,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include "io/File.h"
 
+#include <glm/fwd.hpp>
 #include <glm/vec4.hpp>
 #include <vector>
 

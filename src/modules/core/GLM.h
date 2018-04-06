@@ -9,14 +9,6 @@
 #include <glm/gtc/integer.hpp>
 #include <glm/glm.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-
-#include <glm/exponential.hpp>
-#include <glm/common.hpp>
-#include <glm/trigonometric.hpp>
-
 #include <glm/gtc/round.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>

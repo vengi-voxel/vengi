@@ -7,6 +7,7 @@
 #include "compute/Shader.h"
 #include "core/Singleton.h"
 #include "core/Assert.h"
+#include <glm/fwd.hpp>
 #include <glm/gtc/vec1.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
