@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 enum PassBy {
 	Value,
@@ -40,7 +41,10 @@ struct Variable {
 		MAT2, MAT3, MAT4, MAT3X4, MAT4X3,
 		SAMPLER1D, SAMPLER2D, SAMPLER3D,
 		SAMPLERCUBEMAP, SAMPLER2DARRAYSHADOW, SAMPLER2DARRAY,
-		SAMPLER1DSHADOW, SAMPLER2DSHADOW, MAX
+		SAMPLER1DSHADOW, SAMPLER2DSHADOW,
+		// compute shaders
+		IMAGE2D,
+		MAX
 		// TODO: atomics
 	};
 	Type type;
@@ -53,7 +57,8 @@ struct Variable {
 
 	inline bool isSampler() const {
 		return type == Variable::SAMPLER1D || type == Variable::SAMPLER2D || type == Variable::SAMPLER3D
-		 || type == Variable::SAMPLER2DSHADOW || type == Variable::SAMPLER1DSHADOW || type == Variable::SAMPLERCUBEMAP;
+		 || type == Variable::SAMPLER2DSHADOW || type == Variable::SAMPLER1DSHADOW || type == Variable::SAMPLERCUBEMAP
+		 || type == Variable::IMAGE2D;
 	}
 
 	inline bool isInteger() const {
@@ -69,14 +74,15 @@ struct Types {
 	const char* glsltype;
 };
 
+// https://www.khronos.org/opengl/wiki/Layout_Qualifier_(GLSL)
 struct Layout {
-	int binding = 0;
-	int components = 0;
-	int offset = 0;
-	int index = 0;
+	int binding = -1;
+	int components = -1;
+	int offset = -1;
+	int index = -1;
 	int location = -1;
-	int transformFeedbackOffset = -1; // 4-4
-	int transformFeedbackBuffer = -1; // 4-4
+	int transformFeedbackOffset = -1; // 4.4
+	int transformFeedbackBuffer = -1; // 4.4
 	int tesselationVertices = -1; // 4.0
 	int maxGeometryVertices = -1; // 4.0
 	bool originUpperLeft = false; // 4.0
@@ -103,6 +109,7 @@ struct ShaderStruct {
 	std::string filename;
 	// both
 	std::vector<Variable> uniforms;
+	std::unordered_map<std::string, Layout> layouts;
 	std::vector<UniformBlock> uniformBlocks;
 	// vertex only
 	std::vector<Variable> attributes;

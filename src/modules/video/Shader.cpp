@@ -121,6 +121,18 @@ bool Shader::loadFromFile(const std::string& filename, ShaderType shaderType) {
 	return load(filename, buffer, shaderType);
 }
 
+bool Shader::loadComputeProgram(const std::string& filename) {
+	video::checkError();
+	const bool compute = loadFromFile(filename + COMPUTE_POSTFIX, ShaderType::Compute);
+	if (!compute) {
+		return false;
+	}
+
+	_name = filename;
+	video::checkError();
+	return init();
+}
+
 bool Shader::loadProgram(const std::string& filename) {
 	video::checkError();
 	const bool vertex = loadFromFile(filename + VERTEX_POSTFIX, ShaderType::Vertex);
@@ -325,7 +337,11 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 	}
 	std::string src;
 	src.append("#version ");
-	src.append(std::to_string(glslVersion));
+	if (shaderType == ShaderType::Compute) {
+		src.append("430");
+	} else {
+		src.append(std::to_string(glslVersion));
+	}
 	src.append("\n");
 	if (glslVersion < GLSLVersion::V140) {
 		//src.append("#extension GL_EXT_draw_instanced : enable\n");
@@ -412,11 +428,24 @@ bool Shader::createProgramFromShaders() {
 		_program = video::genProgram();
 	}
 
+	const Id comp = _shader[ShaderType::Compute];
+	if (comp != InvalidId) {
+		return video::linkComputeShader(_program, comp, _name);
+	}
+
 	const Id vert = _shader[ShaderType::Vertex];
 	const Id frag = _shader[ShaderType::Fragment];
 	const Id geom = _shader[ShaderType::Geometry];
 
 	return video::linkShader(_program, vert, frag, geom, _name);
+}
+
+bool Shader::run(const glm::uvec3& workGroups) {
+	const Id comp = _shader[ShaderType::Compute];
+	if (comp == InvalidId) {
+		return false;
+	}
+	return video::runShader(_program, workGroups);
 }
 
 }

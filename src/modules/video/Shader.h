@@ -134,6 +134,7 @@ public:
 	 * @see FRAGMENT_POSTFIX
 	 */
 	bool loadProgram(const std::string& filename);
+	bool loadComputeProgram(const std::string& filename);
 	bool reload();
 
 	/**
@@ -156,6 +157,12 @@ public:
 	virtual bool deactivate() const;
 
 	bool isActive() const;
+
+	/**
+	 * @brief Run the compute shader.
+	 * @return @c false if this is no compute shader, or the execution failed.
+	 */
+	bool run(const glm::uvec3& workGroups);
 
 	void checkAttribute(const std::string& attribute);
 	void checkUniform(const std::string& uniform);

@@ -58,10 +58,10 @@ macro(generate_shaders TARGET)
 		set(_dir ${ROOT_DIR}/${GAME_BASE_DIR}/${shader_dir}/shaders)
 		if (IS_DIRECTORY ${_dir})
 			foreach (_file ${files})
+				convert_to_camel_case(${_file} _f)
+				set(_shaderfile "${_f}Shader.h")
+				set(_shader "${GEN_DIR}${_shaderfile}")
 				if (EXISTS ${_dir}/${_file}.frag AND EXISTS ${_dir}/${_file}.vert)
-					convert_to_camel_case(${_file} _f)
-					set(_shaderfile "${_f}Shader.h")
-					set(_shader "${GEN_DIR}${_shaderfile}")
 					add_custom_command(
 						OUTPUT ${_shader}
 						IMPLICIT_DEPENDS C ${_dir}/${_file}.frag C ${_dir}/${_file}.vert
@@ -70,6 +70,17 @@ macro(generate_shaders TARGET)
 						DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template} ${_template_ub}
 					)
 					list(APPEND _headers ${_shader})
+				elseif (EXISTS ${_dir}/${_file}.comp)
+					add_custom_command(
+						OUTPUT ${_shader}
+						IMPLICIT_DEPENDS C ${_dir}/${_file}.comp
+						COMMENT "Validate ${_file} and generate ${_shaderfile}"
+						COMMAND ${CMAKE_BINARY_DIR}/shadertool --glslang ${CMAKE_BINARY_DIR}/glslangValidator --shader ${_dir}/${_file} --shadertemplate ${_template} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+						DEPENDS shadertool ${_dir}/${_file}.comp ${_template} ${_template_ub}
+					)
+					list(APPEND _headers ${_shader})
+				else()
+					message(FATAL_ERROR "Could not find shader for ${_file}")
 				endif()
 			endforeach()
 		endif()

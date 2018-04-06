@@ -39,6 +39,7 @@ static const Types cTypes[] = {
 	{ Variable::MAT4,            1, "glm::mat4",    Reference, "mat4" },
 	{ Variable::MAT3X4,          1, "glm::mat3x4",  Reference, "mat3x4" },
 	{ Variable::MAT4X3,          1, "glm::mat4x3",  Reference, "mat4x3" },
+	{ Variable::IMAGE2D,         1, "video::TextureUnit", Value,      "image2D" },
 	{ Variable::SAMPLER1D,       1, "video::TextureUnit", Value,      "sampler1D" },
 	{ Variable::SAMPLER2D,       1, "video::TextureUnit", Value,      "sampler2D" },
 	{ Variable::SAMPLER2DARRAY,  1, "video::TextureUnit", Value,      "sampler2DArray" },
@@ -139,6 +140,7 @@ std::string uniformSetterPostfix(const Variable::Type type, int amount) {
 			return "Matrixv";
 		}
 		return "Matrix";
+	case Variable::IMAGE2D:
 	case Variable::SAMPLER1D:
 	case Variable::SAMPLER2D:
 	case Variable::SAMPLER3D:

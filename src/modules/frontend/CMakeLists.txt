@@ -13,7 +13,7 @@ set(SRCS
 
 set(LIB frontend)
 add_library(${LIB} ${SRCS})
-generate_shaders(${LIB} mesh shadowmap shadowmap_instanced shadowmap_render color color_instanced)
+generate_shaders(${LIB} mesh shadowmap shadowmap_instanced shadowmap_render color color_instanced noise)
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES network noise cooldown attrib)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 

@@ -247,6 +247,8 @@ extern bool hasFeature(Feature feature);
 extern void enableDebug(DebugSeverity severity);
 extern bool compileShader(Id id, ShaderType shaderType, const std::string& source, const std::string& name);
 extern bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name);
+extern bool linkComputeShader(Id program, Id comp, const std::string& name);
+extern bool runShader(Id program, const glm::uvec3& workGroups);
 extern int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name);
 extern int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string& name);
 extern void flush();

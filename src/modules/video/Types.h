@@ -211,6 +211,13 @@ enum class Limit {
 	MaxElementVertices,
 	MaxFragmentInputComponents,
 	MaxFragmentUniformComponents,
+	MaxComputeWorkGroupSizeX,
+	MaxComputeWorkGroupSizeY,
+	MaxComputeWorkGroupSizeZ,
+	MaxComputeWorkGroupCountX,
+	MaxComputeWorkGroupCountY,
+	MaxComputeWorkGroupCountZ,
+	MaxComputeWorkGroupInvocations,
 
 	Max
 };
@@ -227,6 +234,7 @@ enum class Feature {
 	DirectStateAccess,
 	BufferStorage,
 	MultiDrawIndirect,
+	ComputeShaders,
 
 	Max
 };

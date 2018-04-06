@@ -11,6 +11,25 @@
 
 namespace shadertool {
 
+static const char *convertToTexUnit(int unit) {
+	switch (unit) {
+	default:
+		// fallthrough
+	case 0:
+		return "Zero";
+	case 1:
+		return "One";
+	case 2:
+		return "Two";
+	case 3:
+		return "Three";
+	case 4:
+		return "Four";
+	case 5:
+		return "Five";
+	}
+}
+
 bool generateSrc(const std::string& templateShader, const std::string& templateUniformBuffer, const ShaderStruct& shaderStruct,
 		const io::FilesystemPtr& filesystem, const std::string& namespaceSrc, const std::string& sourceDirectory, const std::string& shaderDirectory) {
 	std::string src(templateShader);
@@ -83,6 +102,12 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		const std::string& uniformName = util::convertName(v.name, true);
 		setters << "\tinline bool set" << uniformName << "(";
 		const Types& cType = util::resolveTypes(v.type);
+		auto layoutIter = shaderStruct.layouts.find(v.name);
+		Layout layout;
+		if (layoutIter != shaderStruct.layouts.end()) {
+			layout = layoutIter->second;
+		}
+
 		if (v.arraySize > 0 && isInteger) {
 			setters << "const ";
 		} else if (cType.passBy == PassBy::Reference) {
@@ -103,15 +128,25 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		} else {
 			setters << " " << v.name;
 		}
+
+		if (v.isSampler() && layout.binding != -1) {
+			setters << " = video::TextureUnit::" << convertToTexUnit(layout.binding);
+		}
+
 		if (v.arraySize == -1) {
 			setters << ", int amount";
 		}
 		setters << ") const {\n";
 
-		setters << "\t\tconst int location = getUniformLocation(\"" << v.name;
-		setters << "\");\n\t\tif (location == -1) {\n";
-		setters << "\t\t\treturn false;\n";
-		setters << "\t\t}\n";
+		setters << "\t\tconst int location = ";
+		if (layout.location != -1) {
+			setters << layout.location << ";\n";
+		} else {
+			setters << "getUniformLocation(\"" << v.name << "\");\n";
+			setters << "\t\tif (location == -1) {\n";
+			setters << "\t\t\treturn false;\n";
+			setters << "\t\t}\n";
+		}
 		setters << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
 		setters << "(location, " << v.name;
 		if (v.arraySize > 0) {
@@ -122,6 +157,23 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		setters << ");\n";
 		setters << "\t\treturn true;\n";
 		setters << "\t}\n";
+
+		if (v.isSampler()) {
+			auto iter = shaderStruct.layouts.find(v.name);
+			if (iter != shaderStruct.layouts.end()) {
+				const Layout& layout = iter->second;
+				if (layout.binding != -1) {
+					setters << "\n\tinline video::TextureUnit getBound" << uniformName << "TexUnit() const {\n";
+					setters << "\t\treturn video::TextureUnit::" << convertToTexUnit(layout.binding) << ";\n\t}\n";
+				}
+				if (layout.primitiveType != PrimitiveType::None) {
+				}
+				if (layout.blockLayout != BlockLayout::unknown) {
+				}
+			}
+			// TODO: generate texture with correct format and constraints.
+		}
+
 		if (v.arraySize > 0) {
 			setters << "\n\tinline bool set" << uniformName << "(" << "const std::vector<" << cType.ctype << ">& var) const {\n";
 			setters << "\t\tconst int location = getUniformLocation(\"" << v.name;

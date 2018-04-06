@@ -24,9 +24,12 @@ protected:
 	std::string _glslangValidatorBin;
 	std::string _uniformBufferTemplateFile;
 	std::string _shaderfile;
+	std::string _shaderpath;
+	std::vector<std::string> _includes;
 
 	bool parse(const std::string& src, bool vertex);
 	void validate(const std::string& name);
+	bool printInfo();
 public:
 	ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 

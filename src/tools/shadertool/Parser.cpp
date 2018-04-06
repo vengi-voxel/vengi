@@ -127,6 +127,16 @@ bool parseLayout(TokenIterator& tok, Layout& layout) {
 				return false;
 			}
 			layout.primitiveType = layoutPrimitiveType(tok.next());
+		} else if (token == "rgba32f") {
+			// TODO: compute shader data types - see glTexImage2D
+		} else if (token == "rgba8ui") {
+			// TODO: compute shader data types - see glTexImage2D
+		} else if (token == "local_size_x") {
+			// TODO: compute shaders
+		} else if (token == "local_size_y") {
+			// TODO: compute shaders
+		} else if (token == "local_size_z") {
+			// TODO: compute shaders
 		}
 	} while (token != ")");
 
@@ -152,6 +162,8 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 	TokenIterator tok;
 	tok.init(&output);
 
+	Layout layout;
+	bool hasLayout = false;
 	while (tok.hasNext()) {
 		const std::string token = tok.next();
 		Log::trace("token: %s", token.c_str());
@@ -174,7 +186,9 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 			// that's why we only reset the layout after we finished parsing the variable and/or the
 			// uniform buffer. The last defined value for the mutually-exclusive qualifiers or for numeric
 			// qualifiers prevails.
-			if (!parseLayout(tok, block.layout)) {
+			layout = Layout();
+			hasLayout = true;
+			if (!parseLayout(tok, layout)) {
 				Log::warn("Could not parse layout");
 			}
 		} else if (token == "buffer") {
@@ -184,6 +198,7 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 		} else if (uniformBlock) {
 			if (token == "}") {
 				uniformBlock = false;
+				hasLayout = false;
 				Log::trace("End of uniform block: %s", block.name.c_str());
 				shaderStruct.uniformBlocks.push_back(block);
 				core_assert_always(tok.next() == ";");
@@ -220,7 +235,6 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 		if (name == "{") {
 			block.name = type;
 			block.members.clear();
-			block.layout = Layout();
 			Log::trace("Found uniform block: %s", type.c_str());
 			uniformBlock = true;
 			continue;
@@ -246,7 +260,12 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 			auto findIter = std::find_if(v->begin(), v->end(), [&] (const Variable& var) {return var.name == name;});
 			if (findIter == v->end()) {
 				v->push_back(Variable{typeEnum, name, arraySize});
+				if (hasLayout) {
+					shaderStruct.layouts[name] = layout;
+					hasLayout = false;
+				}
 			} else if (typeEnum != findIter->type) {
+				// TODO: check layout differences
 				Log::error("Found duplicate variable %s (%s versus %s)",
 					name.c_str(), util::resolveTypes(findIter->type).ctype, util::resolveTypes(typeEnum).ctype);
 				return false;

@@ -155,13 +155,34 @@ void setupLimits() {
 	} else {
 		renderState().limits[std::enum_value(Limit::MaxFragmentInputComponents)] = 60;
 	}
+	if (_priv::s.glVersion.majorVersion > 4 || (_priv::s.glVersion.majorVersion == 4 && _priv::s.glVersion.minorVersion >= 3)) {
+#ifdef GL_MAX_COMPUTE_WORK_GROUP_COUNT
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountX)]);
+		checkError();
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountY)]);
+		checkError();
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountZ)]);
+		checkError();
+#endif
+#ifdef GL_MAX_COMPUTE_WORK_GROUP_SIZE
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupSizeX)]);
+		checkError();
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupSizeY)]);
+		checkError();
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupSizeZ)]);
+		checkError();
+#endif
+#ifdef GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS
+		glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupInvocations)]);
+		checkError();
+#endif
+	}
 #ifdef GL_MAX_VERTEX_UNIFORM_VECTORS
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &renderState().limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
 	checkError();
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &renderState().limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
 	checkError();
 #else
-	checkError();
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &renderState().limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
 	checkError();
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &renderState().limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
@@ -186,7 +207,8 @@ void setupFeatures() {
 		// https://www.opengl.org/registry/specs/ARB/direct_state_access.txt
 		{"GL_ARB_direct_state_access"},
 		{"GL_ARB_buffer_storage"},
-		{"GL_ARB_multi_draw_indirect"}
+		{"GL_ARB_multi_draw_indirect"},
+		{"GL_ARB_compute_shader"}
 	};
 	static_assert(std::enum_value(Feature::Max) == (int)SDL_arraysize(array), "Array sizes don't match for Feature enum");
 

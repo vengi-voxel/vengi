@@ -964,6 +964,73 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 	return true;
 }
 
+bool linkComputeShader(Id program, Id comp, const std::string& name) {
+	glAttachShader(program, comp);
+	glLinkProgram(program);
+	GLint status;
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	checkError();
+	GLint infoLogLength;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+	if (infoLogLength > 0) {
+		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
+		glGetShaderInfoLog(program, infoLogLength, nullptr, strInfoLog.get());
+		video::checkError();
+		const std::string linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
+		if (status != GL_TRUE) {
+			Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
+		} else {
+			Log::info("%s: %s", name.c_str(), linkLog.c_str());
+		}
+	}
+	glDetachShader(program, comp);
+	checkError();
+	if (status != GL_TRUE) {
+		deleteProgram(program);
+		return false;
+	}
+
+#ifdef DEBUG
+	glValidateProgram(program);
+	GLint success, logLength;
+	glGetProgramiv(program, GL_VALIDATE_STATUS, &success);
+	if (success == GL_FALSE) {
+		Log::error("Failed to validate: %s", name.c_str());
+	}
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+	if (logLength > 0) {
+		std::string message(logLength, '\n');
+		if (message.size() > 1) {
+			glGetProgramInfoLog(program, message.size(), nullptr, &message[0]);
+		}
+		message.resize(std::max(logLength, 1) - 1);
+		Log::info("Validation output: %s\n%s", name.c_str(), message.c_str());
+	}
+#endif
+	return true;
+}
+
+bool runShader(Id program, const glm::uvec3& workGroups) {
+#if 0
+	int tex_w = 512, tex_h = 512;
+	GLuint tex_output;
+	glGenTextures(1, &tex_output);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex_output);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, tex_w, tex_h, 0, GL_RGBA, GL_FLOAT, NULL);
+	glBindImageTexture(0, tex_output, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+#endif
+	// TODO: check that all work group dimensions are > 0
+	glDispatchCompute((GLuint)workGroups.x, (GLuint)workGroups.y, (GLuint)workGroups.z);
+	//glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	return false;
+}
+
 bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) {
 	glAttachShader(program, vert);
 	glAttachShader(program, frag);
