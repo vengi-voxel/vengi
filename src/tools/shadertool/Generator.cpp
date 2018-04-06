@@ -167,12 +167,26 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 				setters << "\n\tinline int getImageFormat" << uniformName << "() const {\n";
 				setters << "\t\treturn 0; // TODO\n\t}\n";
 			}
+			// TODO: generate texture with correct format and constraints.
 		}
 		if (layout.primitiveType != PrimitiveType::None) {
+			// TODO:
 		}
 		if (layout.blockLayout != BlockLayout::unknown) {
+			// TODO:
 		}
-		// TODO: generate texture with correct format and constraints.
+		if (layout.localSize.x != -1) {
+			setters << "\n\tinline int getLocalSizeX() const {\n";
+			setters << "\t\treturn " << layout.localSize.x << ";\n\t}\n";
+		}
+		if (layout.localSize.y != -1) {
+			setters << "\n\tinline int getLocalSizeY() const {\n";
+			setters << "\t\treturn " << layout.localSize.y << ";\n\t}\n";
+		}
+		if (layout.localSize.z != -1) {
+			setters << "\n\tinline int getLocalSizeZ() const {\n";
+			setters << "\t\treturn " << layout.localSize.z << ";\n\t}\n";
+		}
 
 		if (v.arraySize > 0) {
 			setters << "\n\tinline bool set" << uniformName << "(" << "const std::vector<" << cType.ctype << ">& var) const {\n";
