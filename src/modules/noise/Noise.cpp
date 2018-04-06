@@ -3,9 +3,12 @@
  */
 
 #include "Noise.h"
+#include "NoiseShaders.h"
 #include "core/Trace.h"
 #include "core/Log.h"
 #include "core/Common.h"
+#include <glm/gtc/constants.hpp>
+#include <glm/trigonometric.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 #include <limits>
@@ -146,7 +149,7 @@ float Noise::swissTurbulence(const glm::vec2& p, float offset, int octaves, floa
 	glm::vec2 dsum(0.0f);
 	for (int i = 0; i < octaves; i++) {
 		const glm::vec2 in(p + glm::vec2(offset + i) + warp * dsum);
-		const glm::vec3& n = noise::dnoise(in * freq);
+		const glm::vec3& n = dnoise(in * freq);
 		sum += amp * (1.0f - glm::abs(n.x));
 		dsum += amp * glm::vec2(n.y, n.z) * -(n.x * 1.5f);
 		freq *= lacunarity;
@@ -168,7 +171,7 @@ float Noise::jordanTurbulence(const glm::vec2& p, float offset, int octaves, flo
 
 	for (int i = 1; i < octaves; i++) {
 		const glm::vec2 in((p + glm::vec2(offset + i / 256.0f)) * freq + glm::vec2(dsumWarp));
-		n = noise::dnoise(in);
+		n = dnoise(in);
 		n2 = n * n.x;
 		sum += dampedAmp * n2.x;
 		dsumWarp += warp * glm::vec2(n2.y, n2.z);
@@ -178,6 +181,20 @@ float Noise::jordanTurbulence(const glm::vec2& p, float offset, int octaves, flo
 		dampedAmp = amp * (1 - damp_scale / (1 + dot(dsumDamp, dsumDamp)));
 	}
 	return sum;
+}
+
+float Noise::sphereNoise(float longitude, float latitude) {
+	const float latRad = glm::radians(latitude);
+	const float longRad = glm::radians(longitude);
+	const float r = glm::cos(latRad);
+	glm::vec3 pos(glm::sin(longRad) * r,
+			glm::sin(latRad),
+			glm::cos(longRad) * r);
+#if GLM_NOISE == 1
+	return glm::simplex(pos);
+#else
+	return noise(pos);
+#endif
 }
 
 void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persistence, float frequency, float amplitude) const {
@@ -203,7 +220,7 @@ void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persiste
 				const float ny = glm::cos(t_pi2);
 				const float nw = glm::sin(t_pi2);
 				float noise = fbmNoise4D(glm::vec4(nx, ny, nz, nw) + glm::vec4(channel), octaves, persistence, frequency, amplitude);
-				noise = noise::norm(noise);
+				noise = norm(noise);
 				const unsigned char color = (unsigned char) (noise * 255.0f);
 				const int channelIndex = y * size + x;
 				bufferChannel[channelIndex + 1] = color;

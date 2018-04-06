@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "NoiseNode.h"
 #include "noise/Noise.h"
 #include "core/App.h"
@@ -61,7 +65,7 @@ float NoiseNode::getNoise(int x, int y, int z) {
 		return _noise.doubleValueNoise(p3, 0);
 	}
 	case NoiseType::simplexNoise:
-		return noise::noise(position);
+		return _noise.simplex(position);
 	case NoiseType::ridgedNoise:
 		return noise::ridgedNoise(position);
 	case NoiseType::flowNoise:

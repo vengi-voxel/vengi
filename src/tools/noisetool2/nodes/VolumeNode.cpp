@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "VolumeNode.h"
 #include "image/Image.h"
 #include "core/GLM.h"

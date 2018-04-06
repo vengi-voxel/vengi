@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "NNode.h"
 #include <glm/common.hpp>
 

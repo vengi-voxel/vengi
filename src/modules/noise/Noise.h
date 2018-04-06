@@ -4,12 +4,14 @@
 
 #pragma once
 
-#include "Simplex.h"
-#include "NoiseShaders.h"
 #include "core/IComponent.h"
-#include <glm/trigonometric.hpp>
-#include <glm/gtc/constants.hpp>
+#include "Simplex.h"
+#include <glm/glm.hpp>
 #include <stdint.h>
+
+namespace compute {
+class NoiseShader;
+}
 
 namespace noise {
 
@@ -50,7 +52,7 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
-	float fbmNoise2D(const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
+	[[deprecated]] float fbmNoise2D(const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
 
 	/**
 	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
@@ -60,7 +62,7 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
-	float fbmNoise3D(const glm::vec3& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
+	[[deprecated]] float fbmNoise3D(const glm::vec3& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
 
 	/**
 	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
@@ -70,7 +72,7 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
-	float fbmNoise4D(const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
+	[[deprecated]] float fbmNoise4D(const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
 
 	/**
 	 * @brief Fills the given target buffer with RGB values for the noise.
@@ -109,10 +111,39 @@ public:
 	 */
 	float jordanTurbulence(const glm::vec2&p, float offset, int octaves, float lacunarity = 2.0f, float gain1 = 0.8f, float gain = 0.5f, float warp0 = 0.4f, float warp = 0.35f,
 			float damp0 = 1.0f, float damp = 0.8f, float damp_scale = 1.0f) const;
+
+	/**
+	 * @brief Transforms the latitude and longitude unit sphere coordinates into the
+	 * cartesian coordinates and uses those as input for the noise function.
+	 * @param[in] latitude Given in degrees - must be [-90,90]
+	 * @param[in] longitude Given in degrees - must be [-180,180]
+	 */
+	float sphereNoise(float longitude, float latitude);
+
+	inline float simplex(float in) const;
+	inline float simplex(const glm::vec2& in) const;
+	inline float simplex(const glm::vec3& in) const;
+	inline float simplex(const glm::vec4& in) const;
 };
 
 inline bool Noise::canUseShader() const {
 	return _useShader && _enableShader;
+}
+
+inline float Noise::simplex(float in) const {
+	return noise::noise(in);
+}
+
+inline float Noise::simplex(const glm::vec2& in) const {
+	return noise::noise(in);
+}
+
+inline float Noise::simplex(const glm::vec3& in) const {
+	return noise::noise(in);
+}
+
+inline float Noise::simplex(const glm::vec4& in) const {
+	return noise::noise(in);
 }
 
 }

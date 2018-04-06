@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "NormalizeNode.h"
 #include "noise/Noise.h"
 

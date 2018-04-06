@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "NodeGraph.h"
 #include "nodes/NoiseNode.h"
 #include "nodes/NormalizeNode.h"

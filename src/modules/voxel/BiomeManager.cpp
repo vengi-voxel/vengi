@@ -36,6 +36,7 @@ BiomeManager::~BiomeManager() {
 }
 
 void BiomeManager::shutdown() {
+	_noise.shutdown();
 	_defaultBiome = nullptr;
 	for (const Biome* biome : _bioms) {
 		delete biome;
@@ -50,6 +51,9 @@ void BiomeManager::shutdown() {
 }
 
 bool BiomeManager::init(const std::string& luaString) {
+	if (!_noise.init()) {
+		return false;
+	}
 	_defaultBiome = &getDefaultBiome();
 
 	lua::LUA lua;
@@ -93,7 +97,7 @@ float BiomeManager::getHumidity(int x, int z) const {
 	core_trace_scoped(BiomeGetHumidity);
 	const float frequency = 0.001f;
 	const glm::vec2 noisePos(x * frequency, z * frequency);
-	const float n = noise::noise(noisePos);
+	const float n = _noise.simplex(noisePos);
 	return noise::norm(n);
 }
 
@@ -103,7 +107,7 @@ float BiomeManager::getTemperature(int x, int z) const {
 	// TODO: apply y value
 	// const float scaleY = pos.y / (float)MAX_HEIGHT;
 	const glm::vec2 noisePos(x * frequency, z * frequency);
-	const float n = noise::noise(noisePos);
+	const float n = _noise.simplex(noisePos);
 	return noise::norm(n);
 }
 

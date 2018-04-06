@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "GraphNode.h"
 #include "image/Image.h"
 #include "noise/Noise.h"
