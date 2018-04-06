@@ -576,10 +576,10 @@ bool Model::extractCursorVolume() {
 	return false;
 }
 
-void Model::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noise::NoiseType type) {
+void Model::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noisegen::NoiseType type) {
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
-	voxel::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
+	voxel::noisegen::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
 	modified(modelVolume()->region());
 }
 

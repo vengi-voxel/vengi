@@ -165,7 +165,7 @@ public:
 	const frontend::RawVolumeRenderer& rawVolumeSelectionRenderer() const;
 
 	void spaceColonization();
-	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noise::NoiseType type);
+	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noisegen::NoiseType type);
 	void lsystem(const voxel::lsystem::LSystemContext& lsystemCtx);
 	void createTree(voxel::TreeContext ctx);
 	void createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx);

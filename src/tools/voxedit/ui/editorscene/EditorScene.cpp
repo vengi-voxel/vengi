@@ -254,7 +254,7 @@ bool EditorScene::loadModel(const std::string& file) {
 	return true;
 }
 
-void EditorScene::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noise::NoiseType type) {
+void EditorScene::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noisegen::NoiseType type) {
 	m().noise(octaves, lacunarity, frequency, gain, type);
 }
 

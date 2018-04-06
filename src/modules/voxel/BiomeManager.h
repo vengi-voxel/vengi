@@ -57,7 +57,7 @@ private:
 	std::vector<Zone*> _zones[int(ZoneType::Max)];
 	const Biome* _defaultBiome = nullptr;
 	void distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const;
-	::noise::Noise _noise;
+	noise::Noise _noise;
 
 public:
 	BiomeManager();

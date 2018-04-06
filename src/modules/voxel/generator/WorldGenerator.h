@@ -29,7 +29,7 @@ private:
 	BiomeManager& _biomeManager;
 	long _seed;
 	math::Random _random;
-	::noise::Noise _noise;
+	noise::Noise _noise;
 
 	int fillVoxels(int x, int y, int z, const WorldContext& worldCtx, Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const;
 	float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const;

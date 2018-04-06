@@ -9,7 +9,7 @@
 #include "voxel/MaterialColor.h"
 
 namespace voxel {
-namespace noise {
+namespace noisegen {
 
 enum class NoiseType {
 	ridgedMF,
@@ -21,7 +21,7 @@ static inline float getNoise(const glm::ivec2& pos, int octaves, float lacunarit
 	const glm::vec2 fpos(pos.x * frequency, pos.y * frequency);
 	switch (type) {
 	case NoiseType::ridgedMF:
-		return ::noise::ridgedMF(fpos, octaves, lacunarity, gain);
+		return noise::ridgedMF(fpos, octaves, lacunarity, gain);
 	default:
 		return 0.0f;
 	}
@@ -47,7 +47,7 @@ void generate(Volume& volume, int octaves, float lacunarity, float frequency, fl
 		for (int z = lowerZ; z < lowerZ + depth; ++z) {
 			glm::vec2 p(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 			const float n = getNoise(p, octaves, lacunarity, frequency, gain, type);
-			const int ni = ::noise::norm(n) * (height - 1);
+			const int ni = noise::norm(n) * (height - 1);
 			glm::ivec3 vp(x, lowerY, z);
 			if (ni > 0) {
 				volume.setVoxel(vp, dirt);

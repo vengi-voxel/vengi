@@ -71,7 +71,7 @@ public:
 
 	void spaceColonization();
 
-	void noise(int octaves, float persistence, float frequency, float amplitude, voxel::noise::NoiseType type);
+	void noise(int octaves, float persistence, float frequency, float amplitude, voxel::noisegen::NoiseType type);
 	void lsystem(const voxel::lsystem::LSystemContext& ctx);
 	void createTree(const voxel::TreeContext& ctx);
 	void createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx);
