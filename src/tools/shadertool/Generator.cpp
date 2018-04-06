@@ -159,20 +159,20 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		setters << "\t}\n";
 
 		if (v.isSampler()) {
-			auto iter = shaderStruct.layouts.find(v.name);
-			if (iter != shaderStruct.layouts.end()) {
-				const Layout& layout = iter->second;
-				if (layout.binding != -1) {
-					setters << "\n\tinline video::TextureUnit getBound" << uniformName << "TexUnit() const {\n";
-					setters << "\t\treturn video::TextureUnit::" << convertToTexUnit(layout.binding) << ";\n\t}\n";
-				}
-				if (layout.primitiveType != PrimitiveType::None) {
-				}
-				if (layout.blockLayout != BlockLayout::unknown) {
-				}
+			if (layout.binding != -1) {
+				setters << "\n\tinline video::TextureUnit getBound" << uniformName << "TexUnit() const {\n";
+				setters << "\t\treturn video::TextureUnit::" << convertToTexUnit(layout.binding) << ";\n\t}\n";
 			}
-			// TODO: generate texture with correct format and constraints.
+			if (layout.imageFormat != LayoutImageFormat::Max) {
+				setters << "\n\tinline int getImageFormat" << uniformName << "() const {\n";
+				setters << "\t\treturn 0; // TODO\n\t}\n";
+			}
 		}
+		if (layout.primitiveType != PrimitiveType::None) {
+		}
+		if (layout.blockLayout != BlockLayout::unknown) {
+		}
+		// TODO: generate texture with correct format and constraints.
 
 		if (v.arraySize > 0) {
 			setters << "\n\tinline bool set" << uniformName << "(" << "const std::vector<" << cType.ctype << ">& var) const {\n";

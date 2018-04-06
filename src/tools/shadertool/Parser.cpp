@@ -57,6 +57,12 @@ bool parseLayout(TokenIterator& tok, Layout& layout) {
 		}
 		token = tok.next();
 		Log::trace("token: %s", token.c_str());
+		if (token == ")") {
+			break;
+		}
+		if (token == ",") {
+			continue;
+		}
 		if (token == "std140") {
 			layout.blockLayout = BlockLayout::std140;
 		} else if (token == "std430") {
@@ -127,16 +133,31 @@ bool parseLayout(TokenIterator& tok, Layout& layout) {
 				return false;
 			}
 			layout.primitiveType = layoutPrimitiveType(tok.next());
-		} else if (token == "rgba32f") {
-			// TODO: compute shader data types - see glTexImage2D
-		} else if (token == "rgba8ui") {
-			// TODO: compute shader data types - see glTexImage2D
 		} else if (token == "local_size_x") {
-			// TODO: compute shaders
+			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.localSize.x = core::string::toInt(tok.next());
 		} else if (token == "local_size_y") {
-			// TODO: compute shaders
+			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.localSize.y = core::string::toInt(tok.next());
 		} else if (token == "local_size_z") {
-			// TODO: compute shaders
+			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.localSize.z = core::string::toInt(tok.next());
+		} else {
+			LayoutImageFormat format = util::getLayoutImageFormat(token, tok.line());
+			if (format != LayoutImageFormat::Max) {
+				layout.imageFormat = format;
+			} else {
+				Log::warn("Unknown token given for layout: %s (line %i)", token.c_str(), tok.line());
+			}
 		}
 	} while (token != ")");
 

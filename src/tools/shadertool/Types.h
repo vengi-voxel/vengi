@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <glm/vec3.hpp>
 
 enum PassBy {
 	Value,
@@ -66,6 +67,55 @@ struct Variable {
 	}
 };
 
+enum class LayoutImageFormat {
+	// floating point
+	RGBA32F,
+	RGBA16F,
+	RG32F,
+	RG16F,
+	R11F_G11F_B10F,
+	R32F,
+	R16F,
+	RGBA16,
+	RGB10_A2,
+	RGBA8,
+	RG16,
+	RG8,
+	R16,
+	R8,
+	RGBA16_SNORM,
+	RGBA8_SNORM,
+	RG16_SNORM,
+	RG8_SNORM,
+	R16_SNORM,
+	R8_SNORM,
+
+	// signed integer
+	RGBA32I,
+	RGBA16I,
+	RGBA8I,
+	RG32I,
+	RG16I,
+	RG8I,
+	R32I,
+	R16I,
+	R8I,
+
+	// unsigned integer
+	RGBA32UI,
+	RGBA16UI,
+	RGB10_A2UI,
+	RGBA8UI,
+	RG32UI,
+	RG16UI,
+	RG8UI,
+	R32UI,
+	R16UI,
+	R8UI,
+
+	Max
+};
+
 struct Types {
 	Variable::Type type;
 	int components;
@@ -88,14 +138,22 @@ struct Layout {
 	bool originUpperLeft = false; // 4.0
 	bool pixelCenterInteger = false; // 4.0
 	bool earlyFragmentTests = false; // 4.2
+	glm::ivec3 localSize { -1 };
 	PrimitiveType primitiveType = PrimitiveType::None;
 	BlockLayout blockLayout = BlockLayout::unknown;
+	LayoutImageFormat imageFormat = LayoutImageFormat::Max;
 
 	std::string typeAlign(const Variable& v) const;
 
 	size_t typeSize(const Variable& v) const;
 
 	std::string typePadding(const Variable& v, int& padding) const;
+};
+
+struct LayoutImageFormatType {
+	LayoutImageFormat type;
+	const char* glsltype;
+	const char* ctype;
 };
 
 struct UniformBlock {
