@@ -184,7 +184,7 @@ void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persiste
 	const int components = 3;
 	if (canUseShader()) {
 		const glm::ivec2 workSize(size);
-		_shader.seamlessNoise(buffer, size * size * components, size, octaves, persistence, frequency, amplitude, workSize);
+		_shader.seamlessNoise(buffer, size * size * components, size, components, octaves, persistence, amplitude, workSize);
 		return;
 	}
 	uint8_t bufferChannel[size * size];

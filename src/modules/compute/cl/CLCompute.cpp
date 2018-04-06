@@ -523,27 +523,39 @@ bool init() {
 	error = clGetPlatformIDs(_priv::_ctx.platformIdCount,
 			_priv::_ctx.platformIds.data(), nullptr);
 	checkError(error);
+	if (_priv::_ctx.platformIdCount == 0u) {
+		Log::debug("Didn't find any OpenCL platforms");
+		return false;
+	}
 
 	for (cl_uint i = 0; i < _priv::_ctx.platformIdCount; ++i) {
 		const std::string& platform = getPlatformName(_priv::_ctx.platformIds[i]);
 		Log::info("* (%i): %s", i + 1, platform.c_str());
 	}
 
-	error = clGetDeviceIDs(_priv::_ctx.platformIds[0], CL_DEVICE_TYPE_ALL, 0,
-			nullptr, &_priv::_ctx.deviceIdCount);
-	if (error != CL_DEVICE_NOT_FOUND) {
-		checkError(error);
-	}
+	cl_uint platformIndex = 0;
+	for (; platformIndex < _priv::_ctx.platformIdCount; ++platformIndex) {
+		error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_ALL, 0,
+				nullptr, &_priv::_ctx.deviceIdCount);
+		if (error != CL_DEVICE_NOT_FOUND) {
+			checkError(error);
+		}
 
-	if (_priv::_ctx.deviceIdCount == 0u) {
-		Log::error("No OpenCL devices found");
+		if (_priv::_ctx.deviceIdCount == 0u) {
+			Log::info("No devices found for platform");
+			continue;
+		} else {
+			Log::info("Found %u device(s)", _priv::_ctx.deviceIdCount);
+			break;
+		}
+	}
+	if (platformIndex == _priv::_ctx.platformIdCount) {
+		Log::debug("No OpenCL devices found");
 		return false;
-	} else {
-		Log::info("Found %u device(s)", _priv::_ctx.deviceIdCount);
 	}
 
 	_priv::_ctx.deviceIds.reserve(_priv::_ctx.deviceIdCount);
-	error = clGetDeviceIDs(_priv::_ctx.platformIds[0], CL_DEVICE_TYPE_ALL,
+	error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_ALL,
 			_priv::_ctx.deviceIdCount, _priv::_ctx.deviceIds.data(), nullptr);
 	checkError(error);
 
@@ -554,11 +566,11 @@ bool init() {
 
 	const cl_context_properties contextProperties[] = {
 			CL_CONTEXT_PLATFORM,
-			reinterpret_cast<cl_context_properties>(_priv::_ctx.platformIds[0]),
+			reinterpret_cast<cl_context_properties>(_priv::_ctx.platformIds[platformIndex]),
 			0,
 			0 };
 
-	error = clGetDeviceIDs(_priv::_ctx.platformIds[0], CL_DEVICE_TYPE_DEFAULT,
+	error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_DEFAULT,
 			1, &_priv::_ctx.deviceId, nullptr);
 	checkError(error);
 	if (error != CL_SUCCESS) {
