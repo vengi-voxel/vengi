@@ -134,7 +134,6 @@ public:
 	 * @see FRAGMENT_POSTFIX
 	 */
 	bool loadProgram(const std::string& filename);
-	bool loadComputeProgram(const std::string& filename);
 	bool reload();
 
 	/**

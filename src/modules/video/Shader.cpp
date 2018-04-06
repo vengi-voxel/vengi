@@ -121,33 +121,23 @@ bool Shader::loadFromFile(const std::string& filename, ShaderType shaderType) {
 	return load(filename, buffer, shaderType);
 }
 
-bool Shader::loadComputeProgram(const std::string& filename) {
-	video::checkError();
-	const bool compute = loadFromFile(filename + COMPUTE_POSTFIX, ShaderType::Compute);
-	if (!compute) {
-		return false;
-	}
-
-	_name = filename;
-	video::checkError();
-	return init();
-}
-
 bool Shader::loadProgram(const std::string& filename) {
 	video::checkError();
 	const bool vertex = loadFromFile(filename + VERTEX_POSTFIX, ShaderType::Vertex);
 	if (!vertex) {
-		return false;
+		const bool compute = loadFromFile(filename + COMPUTE_POSTFIX, ShaderType::Compute);
+		if (!compute) {
+			return false;
+		}
+	} else {
+		const bool fragment = loadFromFile(filename + FRAGMENT_POSTFIX, ShaderType::Fragment);
+		if (!fragment) {
+			return false;
+		}
+
+		// optional
+		loadFromFile(filename + GEOMETRY_POSTFIX, ShaderType::Geometry);
 	}
-
-	const bool fragment = loadFromFile(filename + FRAGMENT_POSTFIX, ShaderType::Fragment);
-	if (!fragment) {
-		return false;
-	}
-
-	// optional
-	loadFromFile(filename + GEOMETRY_POSTFIX, ShaderType::Geometry);
-
 	_name = filename;
 	video::checkError();
 	return init();
