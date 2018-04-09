@@ -167,7 +167,7 @@ doc: cmake
 	$(call COMPILE, codegen)
 	$(call COMPILE, $@)
 
-server client voxedit shapetool mapedit shadertool noisetool noisetool2 databasetool uitool tests tests-math tests-core tests-persistence tests-voxel benchmarks-voxel tests-noise tests-computeshadertool testmesh testcamera testdepthbuffer testnuklear testtexture testvoxelfont testplane testimgui testoctree testglslcomp testluaui testoctreevisit testshapebuilder tests-shadertool flatc computeshadertool: cmake
+server client voxedit shapetool mapedit shadertool noisetool databasetool uitool tests tests-math tests-core tests-persistence tests-voxel benchmarks-voxel tests-noise tests-computeshadertool testmesh testcamera testdepthbuffer testnuklear testtexture testvoxelfont testplane testimgui testoctree testglslcomp testluaui testoctreevisit testshapebuilder tests-shadertool flatc computeshadertool: cmake
 	$(call COMPILE, $@)
 	$(call COMPILE, copy-data-shared)
 	$(call COMPILE, copy-data-$@)
@@ -247,7 +247,6 @@ update-backward:
 	sed -i 's/backward.hpp/backward.h/g' contrib/libs/backward/backward.cpp
 
 update-dearimgui:
-	$(call UPDATE_GIT,imgui-addons,https://github.com/Flix01/imgui.git)
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
 	cp $(UPDATEDIR)/imgui.sync/imgui*.h $(UPDATEDIR)/imgui.sync/imgui*.cpp $(UPDATEDIR)/imgui.sync/stb_*.h contrib/libs/dearimgui/dearimgui
 	mv contrib/libs/dearimgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp

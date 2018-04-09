@@ -6,12 +6,6 @@ set(SRCS
 	dearimgui/stb_rect_pack.h
 	dearimgui/stb_textedit.h
 	dearimgui/stb_truetype.h
-
-	dearimgui/addons/imguinodegrapheditor/imguinodegrapheditor.h
-	dearimgui/addons/imguinodegrapheditor/imguinodegrapheditor.cpp
-
-	dearimgui/addons/imguihelper/imguihelper.h
-	dearimgui/addons/imguihelper/imguihelper.cpp
 )
 set(LIB_NAME dearimgui)
 engine_add_library(
@@ -26,5 +20,4 @@ if (HAS_IMPLICIT_FALLTHROUGH)
 endif()
 set_target_properties(${LIB_NAME} PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS}")
 
-add_definitions(-DIMGUI_INCLUDE_IMGUI_USER_H -DIMGUI_INCLUDE_IMGUI_USER_INL)
 target_include_directories(dearimgui PRIVATE dearimgui)
