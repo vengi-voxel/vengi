@@ -17,7 +17,8 @@ protected:
 	bool _supported = true;
 public:
 	void SetUp() override {
-		core::Var::get(cfg::ClientOpenGLVersion, "3.2", core::CV_READONLY);
+		// 4.3 is the minimum version where compute shaders are supported
+		core::Var::get(cfg::ClientOpenGLVersion, "4.3", core::CV_READONLY);
 		core::Var::get(cfg::ClientMultiSampleBuffers, "1");
 		core::Var::get(cfg::ClientMultiSampleSamples, "4");
 		core::Var::get(cfg::ClientVSync, "false");

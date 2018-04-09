@@ -28,4 +28,13 @@ TEST_F(FrontendShaderTest, testColorShader) {
 	shader.shutdown();
 }
 
+TEST_F(FrontendShaderTest, testComputeNoiseShader) {
+	if (!_supported) {
+		return;
+	}
+	shader::NoiseShader shader;
+	ASSERT_TRUE(shader.setup());
+	shader.shutdown();
+}
+
 }
