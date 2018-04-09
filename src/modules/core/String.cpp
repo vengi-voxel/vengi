@@ -63,6 +63,18 @@ std::string toLower(const char* string) {
 	return convert;
 }
 
+std::string toUpper(const std::string& string) {
+	std::string convert = string;
+	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) std::toupper);
+	return convert;
+}
+
+std::string toUpper(const char* string) {
+	std::string convert(string);
+	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) std::toupper);
+	return convert;
+}
+
 static bool patternMatch(const char *pattern, const char *text);
 static bool patternMatchMulti(const char* pattern, const char* text) {
 	const char *p = pattern;

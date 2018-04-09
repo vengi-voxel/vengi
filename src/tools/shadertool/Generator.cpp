@@ -164,9 +164,11 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 				setters << "\n\tinline video::TextureUnit getBound" << uniformName << "TexUnit() const {\n";
 				setters << "\t\treturn video::TextureUnit::" << convertToTexUnit(layout.binding) << ";\n\t}\n";
 			}
+		}
+		if (v.isSampler() || v.isImage()) {
 			if (layout.imageFormat != video::ImageFormat::Max) {
-				setters << "\n\tinline int getImageFormat" << uniformName << "() const {\n";
-				setters << "\t\treturn 0; // TODO\n\t}\n";
+				setters << "\n\tinline video::ImageFormat getImageFormat" << uniformName << "() const {\n";
+				setters << "\t\treturn video::ImageFormat::" << util::getImageFormatTypeString(layout.imageFormat) << ";\n\t}\n";
 			}
 			// TODO: generate texture with correct format and constraints.
 		}

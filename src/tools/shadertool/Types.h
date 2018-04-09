@@ -53,13 +53,16 @@ struct Variable {
 	int arraySize = 0;
 
 	inline bool isSingleInteger() const {
-		return isSampler() || type == Variable::INT || type == Variable::UNSIGNED_INT;
+		return isSampler() || isImage() || type == Variable::INT || type == Variable::UNSIGNED_INT;
 	}
 
 	inline bool isSampler() const {
 		return type == Variable::SAMPLER1D || type == Variable::SAMPLER2D || type == Variable::SAMPLER3D
-		 || type == Variable::SAMPLER2DSHADOW || type == Variable::SAMPLER1DSHADOW || type == Variable::SAMPLERCUBEMAP
-		 || type == Variable::IMAGE2D;
+		 || type == Variable::SAMPLER2DSHADOW || type == Variable::SAMPLER1DSHADOW || type == Variable::SAMPLERCUBEMAP;
+	}
+
+	inline bool isImage() const {
+		return type == Variable::IMAGE2D;
 	}
 
 	inline bool isInteger() const {

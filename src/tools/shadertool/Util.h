@@ -28,6 +28,7 @@ extern video::ImageFormat getImageFormat(const std::string& type, int line);
  * @return @c nullptr if no mapping was found
  */
 extern const char* getImageFormatGLType(video::ImageFormat format);
+extern const char* getImageFormatTypeString(video::ImageFormat format);
 
 extern int getComponents(const Variable::Type type);
 
