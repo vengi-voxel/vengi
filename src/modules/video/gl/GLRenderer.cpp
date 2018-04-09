@@ -1012,8 +1012,8 @@ bool linkComputeShader(Id program, Id comp, const std::string& name) {
 	return true;
 }
 
-bool bindImage(Id id, AccessMode mode, ImageFormat format) {
-	if (_priv::s.imageHandle == id && _priv::s.imageFormat == format && _priv::s.imageAccessMode == mode) {
+bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
+	if (_priv::s.imageHandle == textureHandle && _priv::s.imageFormat == format && _priv::s.imageAccessMode == mode) {
 		return false;
 	}
 	core_assert(glBindImageTexture != nullptr);
@@ -1023,7 +1023,7 @@ bool bindImage(Id id, AccessMode mode, ImageFormat format) {
 	const GLint level = 0;
 	const GLboolean layered = GL_FALSE;
 	const GLint layer = 0;
-	glBindImageTexture(unit, (GLuint)id, level, layered, layer, glAccessMode, glFormat);
+	glBindImageTexture(unit, (GLuint)textureHandle, level, layered, layer, glAccessMode, glFormat);
 	return true;
 }
 

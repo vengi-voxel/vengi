@@ -430,12 +430,12 @@ bool Shader::createProgramFromShaders() {
 	return video::linkShader(_program, vert, frag, geom, _name);
 }
 
-bool Shader::run(const glm::uvec3& workGroups) {
+bool Shader::run(const glm::uvec3& workGroups, bool wait) {
 	const Id comp = _shader[ShaderType::Compute];
 	if (comp == InvalidId) {
 		return false;
 	}
-	return video::runShader(_program, workGroups);
+	return video::runShader(_program, workGroups, wait);
 }
 
 }

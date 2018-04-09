@@ -79,8 +79,6 @@ macro(generate_shaders TARGET)
 						DEPENDS shadertool ${_dir}/${_file}.comp ${_template} ${_template_ub}
 					)
 					list(APPEND _headers ${_shader})
-				else()
-					message(FATAL_ERROR "Could not find shader for ${_file}")
 				endif()
 			endforeach()
 		endif()

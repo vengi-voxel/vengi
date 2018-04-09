@@ -20,7 +20,8 @@ static const struct Formats {
 } textureFormats[] = {
 	{32, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},
 	{24, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE},
-	{32, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8}
+	{32, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8},
+	{32, GL_RGBA32F, GL_RGBA, GL_FLOAT}
 };
 static_assert(std::enum_value(TextureFormat::Max) == lengthof(textureFormats), "Array sizes don't match Max");
 

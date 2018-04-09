@@ -161,7 +161,7 @@ public:
 	 * @brief Run the compute shader.
 	 * @return @c false if this is no compute shader, or the execution failed.
 	 */
-	bool run(const glm::uvec3& workGroups);
+	bool run(const glm::uvec3& workGroups, bool wait = false);
 
 	void checkAttribute(const std::string& attribute);
 	void checkUniform(const std::string& uniform);

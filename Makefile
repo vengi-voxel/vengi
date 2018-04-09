@@ -167,7 +167,7 @@ doc: cmake
 	$(call COMPILE, codegen)
 	$(call COMPILE, $@)
 
-server client voxedit shapetool mapedit shadertool noisetool noisetool2 databasetool uitool tests tests-math tests-core tests-persistence tests-voxel benchmarks-voxel tests-noise tests-computeshadertool testmesh testcamera testdepthbuffer testnuklear testtexture testvoxelfont testplane testimgui testoctree testluaui testoctreevisit testshapebuilder tests-shadertool flatc computeshadertool: cmake
+server client voxedit shapetool mapedit shadertool noisetool noisetool2 databasetool uitool tests tests-math tests-core tests-persistence tests-voxel benchmarks-voxel tests-noise tests-computeshadertool testmesh testcamera testdepthbuffer testnuklear testtexture testvoxelfont testplane testimgui testoctree testglslcomp testluaui testoctreevisit testshapebuilder tests-shadertool flatc computeshadertool: cmake
 	$(call COMPILE, $@)
 	$(call COMPILE, copy-data-shared)
 	$(call COMPILE, copy-data-$@)

@@ -241,6 +241,7 @@ enum class TextureFormat {
 	RGBA,
 	RGB,
 	D24S8,
+	RGBA32F,
 
 	Max
 };
