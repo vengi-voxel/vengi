@@ -37,6 +37,7 @@ target_include_directories(${LIB} PUBLIC ${PostgreSQL_INCLUDE_DIRS} /usr/include
 set(TEST_SRCS
 	tests/DatabaseModelTest.cpp
 	tests/SQLGeneratorTest.cpp
+	tests/LongCounterTest.cpp
 )
 
 if (PostgreSQL_FOUND)

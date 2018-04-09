@@ -18,17 +18,28 @@ private:
 	long _current;
 	long _persisted;
 public:
-	LongCounter(long initial = 0L, long persisted = 0L) :
-			_current(initial), _persisted(persisted) {
+	/**
+	 * @param[in] initial The initial known value. It's assumed that this is the base for relative updates.
+	 */
+	LongCounter(long initial = 0L) :
+			_current(initial), _persisted(initial) {
+	}
+
+	void change(int delta) {
+		_current += delta;
+	}
+
+	void set(int current) {
+		_current = current;
 	}
 
 	/**
 	 * @return The delta between the value that is persisted and the value that is currently in memory.
 	 */
 	long update() {
-		const long c = _current;
-		_current = _persisted;
-		return c - _persisted;
+		const long p = _persisted;
+		_persisted = _current;
+		return _persisted - p;
 	}
 
 	/**
