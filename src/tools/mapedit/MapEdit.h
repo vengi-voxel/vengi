@@ -6,7 +6,7 @@
 
 #include "ui/imgui/IMGUIApp.h"
 #include "RenderShaders.h"
-#include "voxelfrontend/WorldRenderer.h"
+#include "voxelrender/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "render/Axis.h"
 #include "frontend/Movement.h"
@@ -27,7 +27,7 @@ protected:
 	using Super = ui::imgui::IMGUIApp;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
-	voxelfrontend::WorldRenderer _worldRenderer;
+	voxelrender::WorldRenderer _worldRenderer;
 	voxel::WorldMgrPtr _world;
 	render::Axis _axis;
 	core::VarPtr _speed;

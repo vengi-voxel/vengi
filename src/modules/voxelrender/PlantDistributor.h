@@ -13,7 +13,7 @@ class WorldMgr;
 typedef std::shared_ptr<WorldMgr> WorldMgrPtr;
 }
 
-namespace voxelfrontend {
+namespace voxelrender {
 
 extern void distributePlants(const voxel::WorldMgrPtr& world, const glm::ivec3& pos, std::vector<glm::vec3>& translations);
 

@@ -9,7 +9,7 @@
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 
-namespace voxelfrontend {
+namespace voxelrender {
 
 /**
  * @brief Class to render the minimap and the worldmap of the voxel chunks

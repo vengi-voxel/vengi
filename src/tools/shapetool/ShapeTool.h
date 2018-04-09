@@ -6,7 +6,7 @@
 
 #include "ui/turbobadger/UIApp.h"
 #include "RenderShaders.h"
-#include "voxelfrontend/OctreeRenderer.h"
+#include "voxelrender/OctreeRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/Movement.h"
 #include "render/Axis.h"
@@ -25,7 +25,7 @@ protected:
 	using Super = ui::turbobadger::UIApp;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
-	voxelfrontend::OctreeRenderer _octreeRenderer;
+	voxelrender::OctreeRenderer _octreeRenderer;
 	voxel::WorldPager _pager;
 	voxel::PagedVolume *_volumeData = nullptr;
 	voxel::BiomeManager _biomeManager;

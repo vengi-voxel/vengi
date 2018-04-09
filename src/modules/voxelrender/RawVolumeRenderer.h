@@ -6,7 +6,7 @@
 
 #include "voxel/polyvox/RawVolume.h"
 #include "video/VertexBuffer.h"
-#include "VoxelfrontendShaders.h"
+#include "VoxelrenderShaders.h"
 #include "RenderShaders.h"
 #include "voxel/polyvox/Mesh.h"
 #include "render/Shadow.h"
@@ -19,7 +19,7 @@ namespace video {
 class Camera;
 }
 
-namespace voxelfrontend {
+namespace voxelrender {
 
 /**
  * @brief Handles the shaders, vertex buffers and rendering of a voxel::RawVolume

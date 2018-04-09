@@ -3,10 +3,10 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "voxelfrontend/WorldRenderer.h"
+#include "voxelrender/WorldRenderer.h"
 #include "voxel/WorldMgr.h"
 
-namespace voxelfrontend {
+namespace voxelrender {
 
 class WorldRendererTest: public core::AbstractTest {
 public:

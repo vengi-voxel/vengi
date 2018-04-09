@@ -7,7 +7,7 @@
 #include "ServerMessages_generated.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/Movement.h"
-#include "voxelfrontend/WorldRenderer.h"
+#include "voxelrender/WorldRenderer.h"
 #include "voxel/font/VoxelFont.h"
 #include "util/PosLerp.h"
 #include "core/Var.h"
@@ -36,7 +36,7 @@ protected:
 	network::ClientNetworkPtr _network;
 	voxel::WorldMgrPtr _world;
 	network::ClientMessageSenderPtr _messageSender;
-	voxelfrontend::WorldRenderer _worldRenderer;
+	voxelrender::WorldRenderer _worldRenderer;
 	flatbuffers::FlatBufferBuilder _moveFbb;
 	frontend::Movement _movement;
 	network::MoveDirection _lastMoveMask = network::MoveDirection::NONE;

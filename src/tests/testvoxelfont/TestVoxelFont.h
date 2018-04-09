@@ -6,7 +6,7 @@
 
 #include "testcore/TestApp.h"
 #include "voxel/font/VoxelFont.h"
-#include "voxelfrontend/RawVolumeRenderer.h"
+#include "voxelrender/RawVolumeRenderer.h"
 #include "video/VertexBuffer.h"
 #include "RenderShaders.h"
 
@@ -15,7 +15,7 @@ private:
 	using Super = TestApp;
 
 	voxel::VoxelFont _voxelFont;
-	voxelfrontend::RawVolumeRenderer _rawVolumeRenderer;
+	voxelrender::RawVolumeRenderer _rawVolumeRenderer;
 
 	int _fontSize = 20;
 	int _thickness = 4;

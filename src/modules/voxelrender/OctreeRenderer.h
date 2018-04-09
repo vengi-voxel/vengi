@@ -8,7 +8,7 @@
 #include "render/RandomColorTexture.h"
 #include "video/Camera.h"
 #include "video/DepthBuffer.h"
-#include "VoxelfrontendShaders.h"
+#include "VoxelrenderShaders.h"
 #include "RenderShaders.h"
 #include "video/Shader.h"
 #include "video/VertexBuffer.h"
@@ -16,7 +16,7 @@
 #include "video/Texture.h"
 #include "core/Color.h"
 
-namespace voxelfrontend {
+namespace voxelrender {
 
 class OctreeRenderer {
 private:

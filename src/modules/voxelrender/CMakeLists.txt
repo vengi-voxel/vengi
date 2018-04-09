@@ -7,7 +7,7 @@ set(SRCS
 	WorldRenderer.h WorldRenderer.cpp
 )
 
-set(LIB voxelfrontend)
+set(LIB voxelrender)
 add_library(${LIB} ${SRCS})
 generate_shaders(${LIB} world water world_instanced)
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES frontend render voxel)
@@ -18,4 +18,4 @@ gtest_suite_files(tests
 	tests/MaterialTest.cpp
 	tests/WorldRendererTest.cpp
 )
-gtest_suite_deps(tests ${LIB} voxelfrontend image)
+gtest_suite_deps(tests ${LIB} voxelrender image)

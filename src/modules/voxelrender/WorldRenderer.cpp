@@ -17,7 +17,7 @@
 #include "video/ScopedPolygonMode.h"
 #include "ShaderAttribute.h"
 
-namespace voxelfrontend {
+namespace voxelrender {
 
 const std::string MaxDepthBufferUniformName = "u_cascades";
 

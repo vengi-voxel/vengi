@@ -5,7 +5,7 @@
 #include "core/Trace.h"
 #include "voxel/WorldMgr.h"
 
-namespace voxelfrontend {
+namespace voxelrender {
 
 void distributePlants(const voxel::WorldMgrPtr& world, const glm::ivec3& pos, std::vector<glm::vec3>& translations) {
 	core_trace_scoped(WorldRendererDistributePlants);

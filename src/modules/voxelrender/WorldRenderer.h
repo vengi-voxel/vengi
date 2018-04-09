@@ -13,7 +13,7 @@
 #include "video/UniformBuffer.h"
 #include "video/GBuffer.h"
 #include "video/DepthBuffer.h"
-#include "VoxelfrontendShaders.h"
+#include "VoxelrenderShaders.h"
 #include "RenderShaders.h"
 #include "core/GLM.h"
 #include "math/Octree.h"
@@ -28,7 +28,7 @@
 #include <unordered_map>
 #include <list>
 
-namespace voxelfrontend {
+namespace voxelrender {
 
 /**
  * @brief Class that performs the rendering and extraction of the needed chunks.

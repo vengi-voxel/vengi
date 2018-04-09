@@ -11,7 +11,7 @@
 #include "voxel/TreeContext.h"
 #include "voxel/generator/BuildingGeneratorContext.h"
 #include "voxel/generator/NoiseGenerator.h"
-#include "voxelfrontend/RawVolumeRenderer.h"
+#include "voxelrender/RawVolumeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "render/ShapeRenderer.h"
 #include "render/GridRenderer.h"
@@ -40,8 +40,8 @@ static constexpr int SelectionVolumeIndex = 0;
  */
 class Model {
 private:
-	voxelfrontend::RawVolumeRenderer _rawVolumeRenderer;
-	voxelfrontend::RawVolumeRenderer _rawVolumeSelectionRenderer;
+	voxelrender::RawVolumeRenderer _rawVolumeRenderer;
+	voxelrender::RawVolumeRenderer _rawVolumeSelectionRenderer;
 	render::GridRenderer _gridRenderer;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
@@ -156,13 +156,13 @@ public:
 	voxel::RawVolume* cursorPositionVolume();
 	const voxel::RawVolume* cursorPositionVolume() const;
 
-	voxelfrontend::RawVolumeRenderer& rawVolumeRenderer();
-	const voxelfrontend::RawVolumeRenderer& rawVolumeRenderer() const;
+	voxelrender::RawVolumeRenderer& rawVolumeRenderer();
+	const voxelrender::RawVolumeRenderer& rawVolumeRenderer() const;
 
 	render::GridRenderer& gridRenderer();
 
-	voxelfrontend::RawVolumeRenderer& rawVolumeSelectionRenderer();
-	const voxelfrontend::RawVolumeRenderer& rawVolumeSelectionRenderer() const;
+	voxelrender::RawVolumeRenderer& rawVolumeSelectionRenderer();
+	const voxelrender::RawVolumeRenderer& rawVolumeSelectionRenderer() const;
 
 	void spaceColonization();
 	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noisegen::NoiseType type);
@@ -316,11 +316,11 @@ inline Action Model::uiAction() const {
 	return _uiAction;
 }
 
-inline voxelfrontend::RawVolumeRenderer& Model::rawVolumeRenderer() {
+inline voxelrender::RawVolumeRenderer& Model::rawVolumeRenderer() {
 	return _rawVolumeRenderer;
 }
 
-inline const voxelfrontend::RawVolumeRenderer& Model::rawVolumeRenderer() const {
+inline const voxelrender::RawVolumeRenderer& Model::rawVolumeRenderer() const {
 	return _rawVolumeRenderer;
 }
 
@@ -328,11 +328,11 @@ inline render::GridRenderer& Model::gridRenderer() {
 	return _gridRenderer;
 }
 
-inline voxelfrontend::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() {
+inline voxelrender::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() {
 	return _rawVolumeSelectionRenderer;
 }
 
-inline const voxelfrontend::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() const {
+inline const voxelrender::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() const {
 	return _rawVolumeSelectionRenderer;
 }
 
