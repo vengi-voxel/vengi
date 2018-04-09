@@ -36,7 +36,7 @@ protected:
 	network::ClientNetworkPtr _network;
 	voxel::WorldMgrPtr _world;
 	network::ClientMessageSenderPtr _messageSender;
-	frontend::WorldRenderer _worldRenderer;
+	voxelfrontend::WorldRenderer _worldRenderer;
 	flatbuffers::FlatBufferBuilder _moveFbb;
 	frontend::Movement _movement;
 	network::MoveDirection _lastMoveMask = network::MoveDirection::NONE;

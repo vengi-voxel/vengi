@@ -207,7 +207,7 @@ void Client::beforeUI() {
 void Client::afterRootWidget() {
 	const glm::vec3& pos = _camera.position();
 	const glm::vec3& target = _camera.target();
-	frontend::WorldRenderer::Stats stats;
+	voxelfrontend::WorldRenderer::Stats stats;
 	_worldRenderer.stats(stats);
 	const int x = 5;
 	enqueueShowStr(x, core::Color::White, "drawcalls world: %i", _drawCallsWorld);

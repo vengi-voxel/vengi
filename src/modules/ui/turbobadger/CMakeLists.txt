@@ -11,12 +11,10 @@ set(SRCS
 )
 set(LIB turbobadger)
 add_library(${LIB} ${SRCS})
-generate_shaders(${LIB} texture)
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core io video util libturbobadger)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core io render util libturbobadger)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
-	tests/UIShaderTest.cpp
 	tests/ConsoleTest.cpp
 	tests/UITest.h
 )

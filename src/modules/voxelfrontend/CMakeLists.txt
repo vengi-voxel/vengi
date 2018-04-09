@@ -10,7 +10,7 @@ set(SRCS
 set(LIB voxelfrontend)
 add_library(${LIB} ${SRCS})
 generate_shaders(${LIB} world water world_instanced)
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES frontend voxel)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES frontend render voxel)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests

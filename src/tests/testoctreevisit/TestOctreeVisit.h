@@ -8,7 +8,7 @@
 #include "math/Octree.h"
 #include "math/Random.h"
 #include "video/ShapeBuilder.h"
-#include "frontend/ShapeRenderer.h"
+#include "render/ShapeRenderer.h"
 
 class TestOctreeVisit: public TestApp {
 private:
@@ -30,7 +30,7 @@ private:
 
 	Tree _octree { math::AABB<int>(glm::ivec3(-1024, 0, -1024), glm::ivec3(1024, 2048, 1024)), 10 };
 	mutable video::ShapeBuilder _shapeBuilder;
-	frontend::ShapeRenderer _shapeRenderer;
+	render::ShapeRenderer _shapeRenderer;
 	video::Camera _octreeCamera;
 	int32_t _itemMesh = -1;
 	int32_t _frustumMesh = -1;

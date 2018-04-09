@@ -14,21 +14,21 @@
 #include "video/GBuffer.h"
 #include "video/DepthBuffer.h"
 #include "VoxelfrontendShaders.h"
-#include "FrontendShaders.h"
+#include "RenderShaders.h"
 #include "core/GLM.h"
 #include "math/Octree.h"
 #include "core/Var.h"
 #include "core/Color.h"
 #include "frontend/ClientEntity.h"
-#include "frontend/Shadow.h"
-#include "frontend/RandomColorTexture.h"
+#include "render/Shadow.h"
+#include "render/RandomColorTexture.h"
 #include "video/ShapeBuilder.h"
-#include "frontend/ShapeRenderer.h"
+#include "render/ShapeRenderer.h"
 
 #include <unordered_map>
 #include <list>
 
-namespace frontend {
+namespace voxelfrontend {
 
 /**
  * @brief Class that performs the rendering and extraction of the needed chunks.
@@ -108,15 +108,15 @@ protected:
 	glm::ivec3 _worldScale {4, 4, 4};
 	int _maxAllowedDistance = -1;
 
-	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
+	typedef std::unordered_map<frontend::ClientEntityId, frontend::ClientEntityPtr> Entities;
 	Entities _entities;
 
-	Shadow _shadow;
-	RandomColorTexture _colorTexture;
+	render::Shadow _shadow;
+	render::RandomColorTexture _colorTexture;
 	voxel::PlantGenerator _plantGenerator;
 
 	video::ShapeBuilder _shapeBuilder;
-	frontend::ShapeRenderer _shapeRenderer;
+	render::ShapeRenderer _shapeRenderer;
 	int32_t _aabbMeshes = -1;
 	core::VarPtr _renderAABBs;
 	core::VarPtr _occlusionThreshold;
@@ -124,7 +124,7 @@ protected:
 	core::VarPtr _renderOccluded;
 
 	video::ShapeBuilder _shapeBuilderOcclusionQuery;
-	frontend::ShapeRenderer _shapeRendererOcclusionQuery;
+	render::ShapeRenderer _shapeRendererOcclusionQuery;
 	int32_t _aabbMeshesOcclusionQuery = -1;
 	int _maxDepthBuffers = -1;
 
@@ -194,9 +194,9 @@ public:
 
 	void extractMeshes(const video::Camera& camera);
 
-	ClientEntityPtr getEntity(ClientEntityId id) const;
-	bool addEntity(const ClientEntityPtr& entity);
-	bool removeEntity(ClientEntityId id);
+	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
+	bool addEntity(const frontend::ClientEntityPtr& entity);
+	bool removeEntity(frontend::ClientEntityId id);
 
 	struct Stats {
 		int meshes = 0;

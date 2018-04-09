@@ -7,7 +7,7 @@
 #include "testcore/TestApp.h"
 #include "math/Plane.h"
 #include "video/ShapeBuilder.h"
-#include "frontend/ShapeRenderer.h"
+#include "render/ShapeRenderer.h"
 
 /**
  * @brief Renders a plane
@@ -17,7 +17,7 @@ private:
 	using Super = TestApp;
 
 	video::ShapeBuilder _shapeBuilder;
-	frontend::ShapeRenderer _shapeRenderer;
+	render::ShapeRenderer _shapeRenderer;
 	math::Plane _plane;
 
 	void doRender() override;

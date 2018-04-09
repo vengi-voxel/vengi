@@ -8,10 +8,10 @@
 #include "core/Color.h"
 #include "math/Plane.h"
 #include "video/ShapeBuilder.h"
-#include "frontend/ShapeRenderer.h"
+#include "render/ShapeRenderer.h"
 #include "core/IComponent.h"
 
-namespace frontend {
+namespace render {
 
 /**
  * @brief Renders a plane
@@ -22,7 +22,7 @@ namespace frontend {
 class Plane : public core::IComponent {
 private:
 	video::ShapeBuilder _shapeBuilder;
-	frontend::ShapeRenderer _shapeRenderer;
+	render::ShapeRenderer _shapeRenderer;
 	int32_t _planeMesh = -1;
 public:
 	void render(const video::Camera& camera, video::Shader* shader = nullptr);

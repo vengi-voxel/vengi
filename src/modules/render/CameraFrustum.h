@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "frontend/ShapeRenderer.h"
+#include "render/ShapeRenderer.h"
 #include "core/Common.h"
 #include "core/Color.h"
 #include "video/Camera.h"
 #include "video/ShapeBuilder.h"
 
-namespace frontend {
+namespace render {
 
 /**
  * @brief Renders a video::Camera math::Frustum
@@ -21,7 +21,7 @@ namespace frontend {
 class CameraFrustum {
 protected:
 	video::ShapeBuilder _shapeBuilder;
-	frontend::ShapeRenderer _shapeRenderer;
+	render::ShapeRenderer _shapeRenderer;
 
 	int _splitFrustum = -1;
 	int32_t _frustumMesh = -1;

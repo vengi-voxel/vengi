@@ -4,7 +4,7 @@
 
 #include "Plane.h"
 
-namespace frontend {
+namespace render {
 
 void Plane::render(const video::Camera& camera, video::Shader* shader) {
 	render(camera, glm::mat4(1.f), shader);

@@ -5,7 +5,7 @@
 #include "video/tests/AbstractGLTest.h"
 #include "VoxelfrontendShaders.h"
 
-namespace frontend {
+namespace voxelfrontend {
 
 class VoxelFrontendShaderTest : public video::AbstractGLTest {
 };

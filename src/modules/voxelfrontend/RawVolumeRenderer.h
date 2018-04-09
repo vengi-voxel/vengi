@@ -7,9 +7,9 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "video/VertexBuffer.h"
 #include "VoxelfrontendShaders.h"
-#include "FrontendShaders.h"
+#include "RenderShaders.h"
 #include "voxel/polyvox/Mesh.h"
-#include "frontend/Shadow.h"
+#include "render/Shadow.h"
 #include "video/UniformBuffer.h"
 #include "video/Texture.h"
 #include "video/DepthBuffer.h"
@@ -19,7 +19,7 @@ namespace video {
 class Camera;
 }
 
-namespace frontend {
+namespace voxelfrontend {
 
 /**
  * @brief Handles the shaders, vertex buffers and rendering of a voxel::RawVolume
@@ -38,7 +38,7 @@ protected:
 	shader::ShadowmapShader& _shadowMapShader;
 	shader::WorldShader& _worldShader;
 	video::DepthBuffer _depthBuffer;
-	frontend::Shadow _shadow;
+	render::Shadow _shadow;
 
 	video::TexturePtr _whiteTexture;
 

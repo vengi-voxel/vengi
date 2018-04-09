@@ -6,7 +6,7 @@
 #include "voxelfrontend/WorldRenderer.h"
 #include "voxel/WorldMgr.h"
 
-namespace frontend {
+namespace voxelfrontend {
 
 class WorldRendererTest: public core::AbstractTest {
 public:

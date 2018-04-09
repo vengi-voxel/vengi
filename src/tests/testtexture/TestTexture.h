@@ -6,15 +6,13 @@
 
 #include "testcore/TestApp.h"
 #include "video/Texture.h"
-#include "FrontendShaders.h"
-#include "video/VertexBuffer.h"
+#include "render/TextureRenderer.h"
 
 class TestTexture: public TestApp {
 private:
 	using Super = TestApp;
 	video::TexturePtr _texture;
-	shader::TextureShader _textureShader;
-	video::VertexBuffer _texturedFullscreenQuad;
+	render::TextureRenderer _renderer;
 
 	void doRender() override;
 public:

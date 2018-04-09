@@ -7,7 +7,7 @@
 #include "ui/turbobadger/Widget.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
-#include "frontend/Axis.h"
+#include "render/Axis.h"
 #include "video/MeshPool.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/generator/LSystemGenerator.h"
@@ -25,9 +25,9 @@
 class EditorScene: public ui::turbobadger::Widget {
 private:
 	using Super = ui::turbobadger::Widget;
-	frontend::Axis _axis;
+	render::Axis _axis;
 	video::ShapeBuilder _shapeBuilder;
-	frontend::ShapeRenderer _shapeRenderer;
+	render::ShapeRenderer _shapeRenderer;
 	video::FrameBuffer _frameBuffer;
 	tb::UIBitmapGL _bitmap;
 	voxedit::Controller _controller;

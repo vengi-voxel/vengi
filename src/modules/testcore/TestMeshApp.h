@@ -8,8 +8,8 @@
 #include "video/DepthBuffer.h"
 #include "video/MeshPool.h"
 #include "video/VertexBuffer.h"
-#include "frontend/Shadow.h"
-#include "FrontendShaders.h"
+#include "render/Shadow.h"
+#include "RenderShaders.h"
 
 /**
  * @brief Application that is able to render meshes
@@ -22,7 +22,7 @@ protected:
 	video::DepthBuffer _depthBuffer;
 	video::MeshPtr _mesh;
 	video::MeshPool _meshPool;
-	frontend::Shadow _shadow;
+	render::Shadow _shadow;
 	shader::MeshShader _meshShader;
 	shader::ColorShader& _colorShader;
 	shader::ShadowmapShader _shadowMapShader;

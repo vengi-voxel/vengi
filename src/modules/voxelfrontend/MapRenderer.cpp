@@ -5,7 +5,7 @@
 #include "MapRenderer.h"
 #include "video/ScopedFrameBuffer.h"
 
-namespace frontend {
+namespace voxelfrontend {
 
 MapRenderer::MapRenderer(const voxel::WorldMgrPtr& world) :
 		_world(world) {

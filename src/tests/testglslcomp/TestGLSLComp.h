@@ -8,7 +8,7 @@
 #include "video/Texture.h"
 #include "video/VertexBuffer.h"
 #include "TestglslcompShaders.h"
-#include "FrontendShaders.h"
+#include "render/TextureRenderer.h"
 
 /**
  * @brief Visual test for GLSL compute shaders
@@ -20,9 +20,8 @@ class TestGLSLComp: public TestApp {
 private:
 	using Super = TestApp;
 	shader::TestShader _testShader;
+	render::TextureRenderer _renderer;
 	video::TexturePtr _texture;
-	shader::TextureShader _textureShader;
-	video::VertexBuffer _texturedFullscreenQuad;
 
 	void doRender() override;
 public:

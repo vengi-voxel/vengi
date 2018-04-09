@@ -8,9 +8,8 @@
 #include "core/IComponent.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
-#include "FrontendShaders.h"
 
-namespace frontend {
+namespace voxelfrontend {
 
 /**
  * @brief Class to render the minimap and the worldmap of the voxel chunks

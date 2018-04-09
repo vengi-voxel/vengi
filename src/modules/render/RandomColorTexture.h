@@ -11,7 +11,7 @@
 #include <vector>
 #include <future>
 
-namespace frontend {
+namespace render {
 
 class RandomColorTexture : public core::IComponent {
 private:

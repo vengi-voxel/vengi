@@ -10,7 +10,7 @@
 
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
-namespace frontend {
+namespace voxelfrontend {
 
 OctreeRenderer::RenderOctreeNode::RenderOctreeNode(const video::Shader& shader) {
 	for (uint8_t z = 0u; z < 2u; ++z) {

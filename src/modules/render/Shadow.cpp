@@ -7,7 +7,7 @@
 #include "core/GLM.h"
 #include "core/Trace.h"
 
-namespace frontend {
+namespace render {
 
 bool Shadow::init() {
 	const float length = 50.0f;

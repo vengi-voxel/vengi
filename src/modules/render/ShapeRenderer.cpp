@@ -6,7 +6,7 @@
 #include "video/Shader.h"
 #include "video/ScopedPolygonMode.h"
 
-namespace frontend {
+namespace render {
 
 ShapeRenderer::ShapeRenderer() :
 		_colorShader(shader::ColorShader::getInstance()),

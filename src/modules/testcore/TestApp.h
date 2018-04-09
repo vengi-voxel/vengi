@@ -9,8 +9,8 @@
 #include "ui/imgui/IMGUI.h"
 #include "video/Mesh.h"
 #include "video/Camera.h"
-#include "frontend/Axis.h"
-#include "frontend/Plane.h"
+#include "render/Axis.h"
+#include "render/Plane.h"
 #include "frontend/Movement.h"
 
 class TestApp: public ui::imgui::IMGUIApp {
@@ -21,8 +21,8 @@ protected:
 	bool _renderPlane = false;
 	bool _renderAxis = true;
 	video::Camera _camera;
-	frontend::Axis _axis;
-	frontend::Plane _plane;
+	render::Axis _axis;
+	render::Plane _plane;
 	frontend::Movement _movement;
 	core::VarPtr _rotationSpeed;
 	float _cameraSpeed = 0.1f;

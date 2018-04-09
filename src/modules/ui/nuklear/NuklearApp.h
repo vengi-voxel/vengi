@@ -9,7 +9,7 @@
 #include "video/VertexBuffer.h"
 #include "video/Texture.h"
 #include "Console.h"
-#include "NuklearShaders.h"
+#include "RenderShaders.h"
 #include "Nuklear.h"
 
 namespace ui {

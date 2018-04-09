@@ -143,7 +143,7 @@ void MapEdit::beforeUI() {
 
 void MapEdit::onRenderUI() {
 	const glm::vec3& pos = _camera.position();
-	frontend::WorldRenderer::Stats stats;
+	voxelfrontend::WorldRenderer::Stats stats;
 	_worldRenderer.stats(stats);
 	ImGui::Text("%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
 	ImGui::Text("%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());

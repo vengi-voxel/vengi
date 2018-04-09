@@ -1,13 +1,13 @@
 #pragma once
 
-#include "frontend/ShapeRenderer.h"
+#include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "video/Camera.h"
 
 class FrustumEntity {
 private:
 	video::ShapeBuilder _shapeBuilder;
-	frontend::ShapeRenderer _shapeRenderer;
+	render::ShapeRenderer _shapeRenderer;
 
 	int32_t _sphereMesh = 0;
 	glm::vec4 _color;

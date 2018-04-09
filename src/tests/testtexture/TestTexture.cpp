@@ -21,8 +21,8 @@ core::AppState TestTexture::onInit() {
 	_camera.setNearPlane(-1.0f);
 	_camera.setFarPlane(1.0f);
 
-	if (!_textureShader.setup()) {
-		Log::error("Failed to init the texture shader");
+	if (!_renderer.init(dimension())) {
+		Log::error("Failed to init the texture renderer");
 		return core::AppState::InitFailure;
 	}
 
@@ -32,25 +32,6 @@ core::AppState TestTexture::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createTexturedQuad(glm::vec2(0), dimension());
-	video::Attribute attributePos;
-	attributePos.bufferIndex = fullscreenQuadIndices.x;
-	attributePos.index = _textureShader.getLocationPos();
-	attributePos.size = _textureShader.getComponentsPos();
-	_texturedFullscreenQuad.addAttribute(attributePos);
-
-	video::Attribute attributeTexcoord;
-	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
-	attributeTexcoord.index = _textureShader.getLocationTexcoord();
-	attributeTexcoord.size = _textureShader.getComponentsTexcoord();
-	_texturedFullscreenQuad.addAttribute(attributeTexcoord);
-
-	video::Attribute attributeColor;
-	attributeColor.bufferIndex = _texturedFullscreenQuad.createWhiteColorForQuad();
-	attributeColor.index = _textureShader.getLocationColor();
-	attributeColor.size = _textureShader.getComponentsColor();
-	_texturedFullscreenQuad.addAttribute(attributeColor);
-
 	video::clearColor(::core::Color::White);
 
 	return state;
@@ -58,22 +39,16 @@ core::AppState TestTexture::onInit() {
 
 void TestTexture::doRender() {
 	video::ScopedViewPort viewPort(0, 0, dimension().x, dimension().y);
-	video::ScopedShader scoped(_textureShader);
-	_textureShader.setProjection(_camera.projectionMatrix());
 	_texture->bind();
-	_texturedFullscreenQuad.bind();
-	const int elements = _texturedFullscreenQuad.elements(0, _textureShader.getComponentsPos());
-	video::drawArrays(video::Primitive::Triangles, elements);
-	_texturedFullscreenQuad.unbind();
+	_renderer.render(_camera.projectionMatrix());
 	_texture->unbind();
 }
 
 core::AppState TestTexture::onCleanup() {
-	_textureShader.shutdown();
 	if (_texture) {
 		_texture->shutdown();
 	}
-	_texturedFullscreenQuad.shutdown();
+	_renderer.shutdown();
 	return Super::onCleanup();
 }
 

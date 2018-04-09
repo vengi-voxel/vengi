@@ -3,20 +3,20 @@
  */
 
 #include "voxel/OctreeVolume.h"
-#include "frontend/Shadow.h"
+#include "render/Shadow.h"
 #include "ShaderAttribute.h"
-#include "frontend/RandomColorTexture.h"
+#include "render/RandomColorTexture.h"
 #include "video/Camera.h"
 #include "video/DepthBuffer.h"
 #include "VoxelfrontendShaders.h"
-#include "FrontendShaders.h"
+#include "RenderShaders.h"
 #include "video/Shader.h"
 #include "video/VertexBuffer.h"
 #include "video/UniformBuffer.h"
 #include "video/Texture.h"
 #include "core/Color.h"
 
-namespace frontend {
+namespace voxelfrontend {
 
 class OctreeRenderer {
 private:
@@ -56,8 +56,8 @@ private:
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	float _fogRange = 250.0f;
-	Shadow _shadow;
-	RandomColorTexture _colorTexture;
+	render::Shadow _shadow;
+	render::RandomColorTexture _colorTexture;
 
 	video::VertexBuffer _shadowMapDebugBuffer;
 	video::DepthBuffer _depthBuffer;

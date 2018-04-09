@@ -8,14 +8,14 @@
 #include "voxel/font/VoxelFont.h"
 #include "voxelfrontend/RawVolumeRenderer.h"
 #include "video/VertexBuffer.h"
-#include "FrontendShaders.h"
+#include "RenderShaders.h"
 
 class TestVoxelFont: public TestApp {
 private:
 	using Super = TestApp;
 
 	voxel::VoxelFont _voxelFont;
-	frontend::RawVolumeRenderer _rawVolumeRenderer;
+	voxelfrontend::RawVolumeRenderer _rawVolumeRenderer;
 
 	int _fontSize = 20;
 	int _thickness = 4;

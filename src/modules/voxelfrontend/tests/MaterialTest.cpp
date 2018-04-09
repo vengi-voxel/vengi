@@ -8,7 +8,7 @@
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
 
-namespace frontend {
+namespace voxelfrontend {
 
 class MaterialTest: public core::AbstractTest {
 protected:

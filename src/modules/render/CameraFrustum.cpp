@@ -6,7 +6,7 @@
 #include "video/Renderer.h"
 #include "math/AABB.h"
 
-namespace frontend {
+namespace render {
 
 bool CameraFrustum::init(const video::Camera& frustumCamera, const glm::vec4& color, int splitFrustum) {
 	_splitFrustum = splitFrustum;

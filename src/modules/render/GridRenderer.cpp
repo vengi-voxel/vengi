@@ -7,7 +7,7 @@
 #include "math/AABB.h"
 #include "math/Plane.h"
 
-namespace frontend {
+namespace render {
 
 GridRenderer::GridRenderer(bool renderAABB, bool renderGrid) :
 		_renderAABB(renderAABB), _renderGrid(renderGrid) {

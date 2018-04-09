@@ -5,12 +5,12 @@
 #pragma once
 
 #include "video/Camera.h"
-#include "frontend/ShapeRenderer.h"
+#include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "voxel/polyvox/Region.h"
 #include "core/IComponent.h"
 
-namespace frontend {
+namespace render {
 
 /**
  * @brief Renders a grid or bounding box for a given region
@@ -20,7 +20,7 @@ namespace frontend {
 class GridRenderer {
 protected:
 	video::ShapeBuilder _shapeBuilder;
-	frontend::ShapeRenderer _shapeRenderer;
+	render::ShapeRenderer _shapeRenderer;
 
 	int32_t _aabbMeshIndex = -1;
 	int32_t _gridMeshIndexXYNear = -1;

@@ -18,7 +18,7 @@
 #include "core/Var.h"
 #include "core/GameConfig.h"
 
-namespace frontend {
+namespace voxelfrontend {
 
 /// implementation of a function object for deciding when
 /// the cubic surface extractor should insert a face between two voxels.

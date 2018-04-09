@@ -5,10 +5,10 @@
 #pragma once
 
 #include "ui/imgui/IMGUIApp.h"
-#include "FrontendShaders.h"
+#include "RenderShaders.h"
 #include "voxelfrontend/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
-#include "frontend/Axis.h"
+#include "render/Axis.h"
 #include "frontend/Movement.h"
 #include "video/Camera.h"
 #include "video/MeshPool.h"
@@ -27,9 +27,9 @@ protected:
 	using Super = ui::imgui::IMGUIApp;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
-	frontend::WorldRenderer _worldRenderer;
+	voxelfrontend::WorldRenderer _worldRenderer;
 	voxel::WorldMgrPtr _world;
-	frontend::Axis _axis;
+	render::Axis _axis;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;

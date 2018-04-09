@@ -14,7 +14,7 @@ namespace video {
 class Camera;
 }
 
-namespace frontend {
+namespace render {
 
 /**
  * @brief Helper class for calculating the cascaded shadow map data

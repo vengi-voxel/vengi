@@ -6,11 +6,11 @@
 
 #include "video/Camera.h"
 #include "video/ShapeBuilder.h"
-#include "frontend/ShapeRenderer.h"
+#include "render/ShapeRenderer.h"
 #include "video/ScopedLineWidth.h"
 #include "core/IComponent.h"
 
-namespace frontend {
+namespace render {
 
 /**
  * @brief Renders a world axis (xyz)
@@ -21,7 +21,7 @@ namespace frontend {
 class Axis : public core::IComponent {
 private:
 	video::ShapeBuilder _shapeBuilder;
-	frontend::ShapeRenderer _shapeRenderer;
+	render::ShapeRenderer _shapeRenderer;
 	float _lineWidth = 4.0f;
 public:
 	void render(const video::Camera& camera) {

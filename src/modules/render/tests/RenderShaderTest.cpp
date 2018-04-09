@@ -3,14 +3,14 @@
  */
 
 #include "video/tests/AbstractGLTest.h"
-#include "FrontendShaders.h"
+#include "RenderShaders.h"
 
-namespace frontend {
+namespace render {
 
-class FrontendShaderTest : public video::AbstractGLTest {
+class RenderShaderTest : public video::AbstractGLTest {
 };
 
-TEST_F(FrontendShaderTest, testMeshShader) {
+TEST_F(RenderShaderTest, testMeshShader) {
 	if (!_supported) {
 		return;
 	}
@@ -19,7 +19,13 @@ TEST_F(FrontendShaderTest, testMeshShader) {
 	shader.shutdown();
 }
 
-TEST_F(FrontendShaderTest, testColorShader) {
+TEST_F(RenderShaderTest, testTextureShader) {
+	shader::TextureShader shader;
+	ASSERT_TRUE(shader.setup());
+	shader.shutdown();
+}
+
+TEST_F(RenderShaderTest, testColorShader) {
 	if (!_supported) {
 		return;
 	}
@@ -28,7 +34,7 @@ TEST_F(FrontendShaderTest, testColorShader) {
 	shader.shutdown();
 }
 
-TEST_F(FrontendShaderTest, testComputeNoiseShader) {
+TEST_F(RenderShaderTest, testComputeNoiseShader) {
 	if (!_supported) {
 		return;
 	}

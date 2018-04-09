@@ -17,7 +17,7 @@
 #include "video/ScopedPolygonMode.h"
 #include "ShaderAttribute.h"
 
-namespace frontend {
+namespace voxelfrontend {
 
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
@@ -71,15 +71,15 @@ void WorldRenderer::shutdown() {
 	_plantGenerator.shutdown();
 }
 
-ClientEntityPtr WorldRenderer::getEntity(ClientEntityId id) const {
+frontend::ClientEntityPtr WorldRenderer::getEntity(frontend::ClientEntityId id) const {
 	auto i = _entities.find(id);
 	if (i == _entities.end()) {
-		return ClientEntityPtr();
+		return frontend::ClientEntityPtr();
 	}
 	return i->second;
 }
 
-bool WorldRenderer::addEntity(const ClientEntityPtr& entity) {
+bool WorldRenderer::addEntity(const frontend::ClientEntityPtr& entity) {
 	auto i = _entities.find(entity->id());
 	if (i != _entities.end()) {
 		return false;
@@ -88,7 +88,7 @@ bool WorldRenderer::addEntity(const ClientEntityPtr& entity) {
 	return true;
 }
 
-bool WorldRenderer::removeEntity(ClientEntityId id) {
+bool WorldRenderer::removeEntity(frontend::ClientEntityId id) {
 	auto i = _entities.find(id);
 	if (i == _entities.end()) {
 		return false;

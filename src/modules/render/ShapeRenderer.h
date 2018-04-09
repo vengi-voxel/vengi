@@ -14,7 +14,7 @@
 #include "ColorShader.h"
 #include "ColorInstancedShader.h"
 
-namespace frontend {
+namespace render {
 
 /**
  * @brief Renderer for the shapes that you can build with the ShapeBuilder.

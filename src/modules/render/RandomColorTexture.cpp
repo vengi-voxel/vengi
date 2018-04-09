@@ -4,7 +4,7 @@
 #include "RandomColorTexture.h"
 #include "core/App.h"
 
-namespace frontend {
+namespace render {
 
 bool RandomColorTexture::init() {
 	if (!_noise.init()) {

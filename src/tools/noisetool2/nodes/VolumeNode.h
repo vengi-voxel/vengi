@@ -16,7 +16,7 @@
 
 class VolumeNode : public NodeBase, public io::IEventObserver {
 private:
-	frontend::RawVolumeRenderer _rawVolumeRenderer;
+	voxelfrontend::RawVolumeRenderer _rawVolumeRenderer;
 	video::FrameBuffer _frameBuffer;
 	video::Camera _camera;
 	core::VarPtr _rotationSpeed;

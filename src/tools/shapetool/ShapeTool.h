@@ -5,11 +5,11 @@
 #pragma once
 
 #include "ui/turbobadger/UIApp.h"
-#include "FrontendShaders.h"
+#include "RenderShaders.h"
 #include "voxelfrontend/OctreeRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/Movement.h"
-#include "frontend/Axis.h"
+#include "render/Axis.h"
 #include "video/Camera.h"
 #include "video/MeshPool.h"
 #include "video/VertexBuffer.h"
@@ -25,12 +25,12 @@ protected:
 	using Super = ui::turbobadger::UIApp;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
-	frontend::OctreeRenderer _octreeRenderer;
+	voxelfrontend::OctreeRenderer _octreeRenderer;
 	voxel::WorldPager _pager;
 	voxel::PagedVolume *_volumeData = nullptr;
 	voxel::BiomeManager _biomeManager;
 	voxel::WorldContext _ctx;
-	frontend::Axis _axis;
+	render::Axis _axis;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;
