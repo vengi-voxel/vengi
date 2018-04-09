@@ -14,6 +14,9 @@ Shader::~Shader() {
 }
 
 bool Shader::init() {
+	if (!compute::supported()) {
+		return false;
+	}
 	if (_initialized) {
 		return true;
 	}

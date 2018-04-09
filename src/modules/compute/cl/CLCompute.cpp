@@ -494,6 +494,10 @@ bool finish() {
 	return error == CL_SUCCESS;
 }
 
+bool supported() {
+	return _priv::_ctx.context != nullptr;
+}
+
 bool init() {
 	core_assert(_priv::_ctx.context == nullptr);
 	if (computeCLInit() == -1) {
@@ -516,10 +520,9 @@ bool init() {
 	if (_priv::_ctx.platformIdCount == 0u) {
 		Log::debug("No OpenCL platform found");
 		return false;
-	} else {
-		Log::info("Found %u platform(s)", _priv::_ctx.platformIdCount);
 	}
 
+	Log::info("Found %u platform(s)", _priv::_ctx.platformIdCount);
 	_priv::_ctx.platformIds.reserve(_priv::_ctx.platformIdCount);
 	error = clGetPlatformIDs(_priv::_ctx.platformIdCount,
 			_priv::_ctx.platformIds.data(), nullptr);
@@ -545,10 +548,9 @@ bool init() {
 		if (_priv::_ctx.deviceIdCount == 0u) {
 			Log::info("No devices found for platform");
 			continue;
-		} else {
-			Log::info("Found %u device(s)", _priv::_ctx.deviceIdCount);
-			break;
 		}
+		Log::info("Found %u device(s)", _priv::_ctx.deviceIdCount);
+		break;
 	}
 	if (platformIndex == _priv::_ctx.platformIdCount) {
 		Log::debug("No OpenCL devices found");

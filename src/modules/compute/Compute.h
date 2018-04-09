@@ -24,6 +24,10 @@
 
 namespace compute {
 
+/**
+ * @brief This will only return @c true if init() was called before.
+ */
+bool supported();
 bool init();
 void shutdown();
 
