@@ -65,11 +65,11 @@ public:
 	size_t bufferSize(int32_t idx) const;
 
 	template<class T>
-	T* data(int32_t idx, video::VertexBufferAccessMode mode) const {
+	T* data(int32_t idx, video::AccessMode mode) const {
 		return (T*)mapData(idx, mode);
 	}
 
-	void* mapData(int32_t idx, video::VertexBufferAccessMode mode) const;
+	void* mapData(int32_t idx, video::AccessMode mode) const;
 	void unmapData(int32_t idx) const;
 
 	bool update(int32_t idx, const void* data, size_t size);

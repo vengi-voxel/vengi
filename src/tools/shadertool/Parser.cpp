@@ -152,8 +152,8 @@ bool parseLayout(TokenIterator& tok, Layout& layout) {
 			}
 			layout.localSize.z = core::string::toInt(tok.next());
 		} else {
-			LayoutImageFormat format = util::getLayoutImageFormat(token, tok.line());
-			if (format != LayoutImageFormat::Max) {
+			video::ImageFormat format = util::getImageFormat(token, tok.line());
+			if (format != video::ImageFormat::Max) {
 				layout.imageFormat = format;
 			} else {
 				Log::warn("Unknown token given for layout: %s (line %i)", token.c_str(), tok.line());

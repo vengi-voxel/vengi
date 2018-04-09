@@ -5,6 +5,7 @@
 #include "Generator.h"
 #include "core/Log.h"
 #include "core/String.h"
+#include "video/Types.h"
 #include "Util.h"
 #include <string>
 #include <sstream>
@@ -163,7 +164,7 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 				setters << "\n\tinline video::TextureUnit getBound" << uniformName << "TexUnit() const {\n";
 				setters << "\t\treturn video::TextureUnit::" << convertToTexUnit(layout.binding) << ";\n\t}\n";
 			}
-			if (layout.imageFormat != LayoutImageFormat::Max) {
+			if (layout.imageFormat != video::ImageFormat::Max) {
 				setters << "\n\tinline int getImageFormat" << uniformName << "() const {\n";
 				setters << "\t\treturn 0; // TODO\n\t}\n";
 			}

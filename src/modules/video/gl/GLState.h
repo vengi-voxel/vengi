@@ -36,6 +36,9 @@ struct GLState {
 	BlendEquation blendEquation = BlendEquation::Max;
 	TextureUnit textureUnit = TextureUnit::Zero;
 	Id textureHandle = InvalidId;
+	Id imageHandle = InvalidId;
+	AccessMode imageAccessMode = AccessMode::Max;
+	ImageFormat imageFormat = ImageFormat::Max;
 	Id occlusionQuery = InvalidId;
 	int viewportX = 0;
 	int viewportY = 0;

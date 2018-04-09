@@ -25,7 +25,7 @@ size_t VertexBuffer::bufferSize(int32_t idx) const {
 	return video::bufferSize(type);
 }
 
-void* VertexBuffer::mapData(int32_t idx, video::VertexBufferAccessMode mode) const {
+void* VertexBuffer::mapData(int32_t idx, video::AccessMode mode) const {
 	if (!isValid(idx)) {
 		return nullptr;
 	}

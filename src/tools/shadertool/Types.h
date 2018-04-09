@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "video/Types.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -43,9 +44,7 @@ struct Variable {
 		MAT2, MAT3, MAT4, MAT3X4, MAT4X3,
 		SAMPLER1D, SAMPLER2D, SAMPLER3D,
 		SAMPLERCUBEMAP, SAMPLER2DARRAYSHADOW, SAMPLER2DARRAY,
-		SAMPLER1DSHADOW, SAMPLER2DSHADOW,
-		// compute shaders
-		IMAGE2D,
+		SAMPLER1DSHADOW, SAMPLER2DSHADOW, IMAGE2D,
 		MAX
 		// TODO: atomics
 	};
@@ -66,55 +65,6 @@ struct Variable {
 	inline bool isInteger() const {
 		return type == Variable::UNSIGNED_INT || type == Variable::INT || type == Variable::IVEC2 || type == Variable::IVEC3 || type == Variable::IVEC4;
 	}
-};
-
-enum class LayoutImageFormat {
-	// floating point
-	RGBA32F,
-	RGBA16F,
-	RG32F,
-	RG16F,
-	R11F_G11F_B10F,
-	R32F,
-	R16F,
-	RGBA16,
-	RGB10_A2,
-	RGBA8,
-	RG16,
-	RG8,
-	R16,
-	R8,
-	RGBA16_SNORM,
-	RGBA8_SNORM,
-	RG16_SNORM,
-	RG8_SNORM,
-	R16_SNORM,
-	R8_SNORM,
-
-	// signed integer
-	RGBA32I,
-	RGBA16I,
-	RGBA8I,
-	RG32I,
-	RG16I,
-	RG8I,
-	R32I,
-	R16I,
-	R8I,
-
-	// unsigned integer
-	RGBA32UI,
-	RGBA16UI,
-	RGB10_A2UI,
-	RGBA8UI,
-	RG32UI,
-	RG16UI,
-	RG8UI,
-	R32UI,
-	R16UI,
-	R8UI,
-
-	Max
 };
 
 struct Types {
@@ -142,7 +92,7 @@ struct Layout {
 	glm::ivec3 localSize { -1 };
 	PrimitiveType primitiveType = PrimitiveType::None;
 	BlockLayout blockLayout = BlockLayout::unknown;
-	LayoutImageFormat imageFormat = LayoutImageFormat::Max;
+	video::ImageFormat imageFormat = video::ImageFormat::Max;
 
 	std::string typeAlign(const Variable& v) const;
 
@@ -151,8 +101,8 @@ struct Layout {
 	std::string typePadding(const Variable& v, int& padding) const;
 };
 
-struct LayoutImageFormatType {
-	LayoutImageFormat type;
+struct ImageFormatType {
+	video::ImageFormat type;
 	const char* glsltype;
 	const char* ctype;
 };

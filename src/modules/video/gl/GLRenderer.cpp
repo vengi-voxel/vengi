@@ -412,12 +412,12 @@ Id boundBuffer(VertexBufferType type) {
 	return _priv::s.bufferHandle[typeIndex];
 }
 
-void* mapBuffer(VertexBufferType type, VertexBufferAccessMode mode) {
+void* mapBuffer(VertexBufferType type, AccessMode mode) {
 	const int typeIndex = std::enum_value(type);
 	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
 
 	const int modeIndex = std::enum_value(mode);
-	const GLenum glMode = _priv::VertexBufferAccessModes[modeIndex];
+	const GLenum glMode = _priv::AccessModes[modeIndex];
 	return glMapBuffer(glType, glMode);
 }
 
@@ -1012,23 +1012,41 @@ bool linkComputeShader(Id program, Id comp, const std::string& name) {
 	return true;
 }
 
-bool runShader(Id program, const glm::uvec3& workGroups) {
-#if 0
-	int tex_w = 512, tex_h = 512;
-	GLuint tex_output;
-	glGenTextures(1, &tex_output);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tex_output);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, tex_w, tex_h, 0, GL_RGBA, GL_FLOAT, NULL);
-	glBindImageTexture(0, tex_output, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-#endif
-	// TODO: check that all work group dimensions are > 0
+bool bindImage(Id id, AccessMode mode, ImageFormat format) {
+	if (_priv::s.imageHandle == id && _priv::s.imageFormat == format && _priv::s.imageAccessMode == mode) {
+		return false;
+	}
+	core_assert(glBindImageTexture != nullptr);
+	const GLenum glFormat = _priv::ImageFormatTypes[std::enum_value(format)];
+	const GLenum glAccessMode = _priv::AccessModes[std::enum_value(mode)];
+	const GLuint unit = 0u;
+	const GLint level = 0;
+	const GLboolean layered = GL_FALSE;
+	const GLint layer = 0;
+	glBindImageTexture(unit, (GLuint)id, level, layered, layer, glAccessMode, glFormat);
+	return true;
+}
+
+bool runShader(Id program, const glm::uvec3& workGroups, bool wait) {
+	if (workGroups.x <= 0 || workGroups.y <= 0 || workGroups.z <= 0) {
+		return false;
+	}
+	const uint32_t limitx = renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountX)];
+	const uint32_t limity = renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountY)];
+	const uint32_t limitz = renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountZ)];
+	if (limitx > 0 && workGroups.x > limitx) {
+		return false;
+	}
+	if (limity > 0 && workGroups.y > limity) {
+		return false;
+	}
+	if (limitz > 0 && workGroups.z > limitz) {
+		return false;
+	}
 	glDispatchCompute((GLuint)workGroups.x, (GLuint)workGroups.y, (GLuint)workGroups.z);
-	//glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	if (wait && glMemoryBarrier != nullptr) {
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	}
 	return false;
 }
 

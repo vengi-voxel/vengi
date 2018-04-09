@@ -67,64 +67,64 @@ Variable::Type getType(const std::string& type, int line) {
 	return Variable::FLOAT;
 }
 
-static const LayoutImageFormatType cLayoutImageFormat[] = {
-	{LayoutImageFormat::RGBA32F,               "rgba32f",         "GL_RGBA32F" },
-	{LayoutImageFormat::RGBA16F,               "rgba16f",         "GL_RGBA16F" },
-	{LayoutImageFormat::RG32F,                 "rg32f",           "GL_RG32F" },
-	{LayoutImageFormat::RG16F,                 "rg16f",           "GL_RG16F" },
-	{LayoutImageFormat::R11F_G11F_B10F,        "r11f_g11f_b10f",  "GL_R11F_G11F_B10F" },
-	{LayoutImageFormat::R32F,                  "r32f",            "GL_R32F" },
-	{LayoutImageFormat::R16F,                  "r16f",            "GL_R16F" },
-	{LayoutImageFormat::RGBA16,                "rgba16",          "GL_RGBA16" },
-	{LayoutImageFormat::RGB10_A2,              "rgb10_a2",        "GL_RGB10_A2" },
-	{LayoutImageFormat::RGBA8,                 "rgba8",           "GL_RGBA8" },
-	{LayoutImageFormat::RG16,                  "rg16",            "GL_RG16" },
-	{LayoutImageFormat::RG8,                   "rg8",             "GL_RG8" },
-	{LayoutImageFormat::R16,                   "r16",             "GL_R16" },
-	{LayoutImageFormat::R8,                    "r8",              "GL_R8" },
-	{LayoutImageFormat::RGBA16_SNORM,          "rgba16_snorm",    "GL_RGBA16_SNORM" },
-	{LayoutImageFormat::RGBA8_SNORM,           "rgba8_snorm",     "GL_RGBA8_SNORM" },
-	{LayoutImageFormat::RG16_SNORM,            "rg16_snorm",      "GL_RG16_SNORM" },
-	{LayoutImageFormat::RG8_SNORM,             "rg8_snorm",       "GL_RG8_SNORM" },
-	{LayoutImageFormat::R16_SNORM,             "r16_snorm",       "GL_R16_SNORM" },
-	{LayoutImageFormat::R8_SNORM,              "r8_snorm",        "GL_R8_SNORM" },
-	{LayoutImageFormat::RGBA32I,               "rgba32i",         "GL_RGBA32I" },
-	{LayoutImageFormat::RGBA16I,               "rgba16i",         "GL_RGBA16I" },
-	{LayoutImageFormat::RGBA8I,                "rgba8i",          "GL_RGBA8I" },
-	{LayoutImageFormat::RG32I,                 "rg32i",           "GL_RG32I" },
-	{LayoutImageFormat::RG16I,                 "rg16i",           "GL_RG16I" },
-	{LayoutImageFormat::RG8I,                  "rg8i",            "GL_RG8I" },
-	{LayoutImageFormat::R32I,                  "r32i",            "GL_R32I" },
-	{LayoutImageFormat::R16I,                  "r16i",            "GL_R16I" },
-	{LayoutImageFormat::R8I,                   "r8i",             "GL_R8I" },
-	{LayoutImageFormat::RGBA32UI,              "rgba32ui",        "GL_RGBA32UI" },
-	{LayoutImageFormat::RGBA16UI,              "rgba16ui",        "GL_RGBA16UI" },
-	{LayoutImageFormat::RGB10_A2UI,            "rgb10_a2ui",      "GL_RGB10_A2UI" },
-	{LayoutImageFormat::RGBA8UI,               "rgba8ui",         "GL_RGBA8UI" },
-	{LayoutImageFormat::RG32UI,                "rg32ui",          "GL_RG32UI" },
-	{LayoutImageFormat::RG16UI,                "rg16ui",          "GL_RG16UI" },
-	{LayoutImageFormat::RG8UI,                 "rg8ui",           "GL_RG8UI" },
-	{LayoutImageFormat::R32UI,                 "r32ui",           "GL_R32UI" },
-	{LayoutImageFormat::R16UI,                 "r16ui",           "GL_R16UI" },
-	{LayoutImageFormat::R8UI,                  "r8ui",            "GL_R8UI" }
+static const ImageFormatType cImageFormat[] = {
+	{video::ImageFormat::RGBA32F,               "rgba32f",         "GL_RGBA32F" },
+	{video::ImageFormat::RGBA16F,               "rgba16f",         "GL_RGBA16F" },
+	{video::ImageFormat::RG32F,                 "rg32f",           "GL_RG32F" },
+	{video::ImageFormat::RG16F,                 "rg16f",           "GL_RG16F" },
+	{video::ImageFormat::R11F_G11F_B10F,        "r11f_g11f_b10f",  "GL_R11F_G11F_B10F" },
+	{video::ImageFormat::R32F,                  "r32f",            "GL_R32F" },
+	{video::ImageFormat::R16F,                  "r16f",            "GL_R16F" },
+	{video::ImageFormat::RGBA16,                "rgba16",          "GL_RGBA16" },
+	{video::ImageFormat::RGB10_A2,              "rgb10_a2",        "GL_RGB10_A2" },
+	{video::ImageFormat::RGBA8,                 "rgba8",           "GL_RGBA8" },
+	{video::ImageFormat::RG16,                  "rg16",            "GL_RG16" },
+	{video::ImageFormat::RG8,                   "rg8",             "GL_RG8" },
+	{video::ImageFormat::R16,                   "r16",             "GL_R16" },
+	{video::ImageFormat::R8,                    "r8",              "GL_R8" },
+	{video::ImageFormat::RGBA16_SNORM,          "rgba16_snorm",    "GL_RGBA16_SNORM" },
+	{video::ImageFormat::RGBA8_SNORM,           "rgba8_snorm",     "GL_RGBA8_SNORM" },
+	{video::ImageFormat::RG16_SNORM,            "rg16_snorm",      "GL_RG16_SNORM" },
+	{video::ImageFormat::RG8_SNORM,             "rg8_snorm",       "GL_RG8_SNORM" },
+	{video::ImageFormat::R16_SNORM,             "r16_snorm",       "GL_R16_SNORM" },
+	{video::ImageFormat::R8_SNORM,              "r8_snorm",        "GL_R8_SNORM" },
+	{video::ImageFormat::RGBA32I,               "rgba32i",         "GL_RGBA32I" },
+	{video::ImageFormat::RGBA16I,               "rgba16i",         "GL_RGBA16I" },
+	{video::ImageFormat::RGBA8I,                "rgba8i",          "GL_RGBA8I" },
+	{video::ImageFormat::RG32I,                 "rg32i",           "GL_RG32I" },
+	{video::ImageFormat::RG16I,                 "rg16i",           "GL_RG16I" },
+	{video::ImageFormat::RG8I,                  "rg8i",            "GL_RG8I" },
+	{video::ImageFormat::R32I,                  "r32i",            "GL_R32I" },
+	{video::ImageFormat::R16I,                  "r16i",            "GL_R16I" },
+	{video::ImageFormat::R8I,                   "r8i",             "GL_R8I" },
+	{video::ImageFormat::RGBA32UI,              "rgba32ui",        "GL_RGBA32UI" },
+	{video::ImageFormat::RGBA16UI,              "rgba16ui",        "GL_RGBA16UI" },
+	{video::ImageFormat::RGB10_A2UI,            "rgb10_a2ui",      "GL_RGB10_A2UI" },
+	{video::ImageFormat::RGBA8UI,               "rgba8ui",         "GL_RGBA8UI" },
+	{video::ImageFormat::RG32UI,                "rg32ui",          "GL_RG32UI" },
+	{video::ImageFormat::RG16UI,                "rg16ui",          "GL_RG16UI" },
+	{video::ImageFormat::RG8UI,                 "rg8ui",           "GL_RG8UI" },
+	{video::ImageFormat::R32UI,                 "r32ui",           "GL_R32UI" },
+	{video::ImageFormat::R16UI,                 "r16ui",           "GL_R16UI" },
+	{video::ImageFormat::R8UI,                  "r8ui",            "GL_R8UI" }
 };
-static_assert((size_t)LayoutImageFormat::Max == lengthof(cLayoutImageFormat), "mismatch in layout image formats");
+static_assert((size_t)video::ImageFormat::Max == lengthof(cImageFormat), "mismatch in image formats");
 
-LayoutImageFormat getLayoutImageFormat(const std::string& glslType, int line) {
-	const int max = std::enum_value(LayoutImageFormat::Max);
+video::ImageFormat getImageFormat(const std::string& glslType, int line) {
+	const int max = std::enum_value(video::ImageFormat::Max);
 	for (int i = 0; i < max; ++i) {
-		if (glslType == cLayoutImageFormat[i].glsltype) {
-			return cLayoutImageFormat[i].type;
+		if (glslType == cImageFormat[i].glsltype) {
+			return cImageFormat[i].type;
 		}
 	}
-	return LayoutImageFormat::Max;
+	return video::ImageFormat::Max;
 }
 
-const char* getLayoutImageFormatGLType(LayoutImageFormat format) {
-	const int max = std::enum_value(LayoutImageFormat::Max);
+const char* getImageFormatGLType(video::ImageFormat format) {
+	const int max = std::enum_value(video::ImageFormat::Max);
 	for (int i = 0; i < max; ++i) {
-		if (format == cLayoutImageFormat[i].type) {
-			return cLayoutImageFormat[i].ctype;
+		if (format == cImageFormat[i].type) {
+			return cImageFormat[i].ctype;
 		}
 	}
 	return nullptr;

@@ -59,6 +59,10 @@ int flextInit(void)
         FLEXT_ARB_instanced_arrays = GL_TRUE;
     }
 
+    if (SDL_GL_ExtensionSupported("GL_ARB_shader_image_load_store")) {
+        FLEXT_ARB_shader_image_load_store = GL_TRUE;
+    }
+
     if (SDL_GL_ExtensionSupported("GL_ARB_compute_shader")) {
         FLEXT_ARB_compute_shader = GL_TRUE;
     }
@@ -200,6 +204,11 @@ void flextLoadOpenGLFunctions(void)
 
     glpfMultiDrawArraysIndirect = (PFNGLMULTIDRAWARRAYSINDIRECT_PROC*)SDL_GL_GetProcAddress("glMultiDrawArraysIndirect");
     glpfMultiDrawElementsIndirect = (PFNGLMULTIDRAWELEMENTSINDIRECT_PROC*)SDL_GL_GetProcAddress("glMultiDrawElementsIndirect");
+
+    /* GL_ARB_shader_image_load_store */
+
+    glpfBindImageTexture = (PFNGLBINDIMAGETEXTURE_PROC*)SDL_GL_GetProcAddress("glBindImageTexture");
+    glpfMemoryBarrier = (PFNGLMEMORYBARRIER_PROC*)SDL_GL_GetProcAddress("glMemoryBarrier");
 
     /* GL_VERSION_1_0 */
 
@@ -590,6 +599,7 @@ int FLEXT_ARB_buffer_storage = GL_FALSE;
 int FLEXT_ARB_multi_draw_indirect = GL_FALSE;
 int FLEXT_ARB_draw_indirect = GL_FALSE;
 int FLEXT_ARB_instanced_arrays = GL_FALSE;
+int FLEXT_ARB_shader_image_load_store = GL_FALSE;
 int FLEXT_ARB_compute_shader = GL_FALSE;
 
 /* ---------------------- Function pointer definitions --------------------- */
@@ -723,6 +733,11 @@ PFNGLVERTEXATTRIBDIVISORARB_PROC* glpfVertexAttribDivisorARB = NULL;
 
 PFNGLMULTIDRAWARRAYSINDIRECT_PROC* glpfMultiDrawArraysIndirect = NULL;
 PFNGLMULTIDRAWELEMENTSINDIRECT_PROC* glpfMultiDrawElementsIndirect = NULL;
+
+/* GL_ARB_shader_image_load_store */
+
+PFNGLBINDIMAGETEXTURE_PROC* glpfBindImageTexture = NULL;
+PFNGLMEMORYBARRIER_PROC* glpfMemoryBarrier = NULL;
 
 /* GL_VERSION_1_0 */
 

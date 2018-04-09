@@ -357,12 +357,12 @@ core::AppState NuklearApp::onRunning() {
 	video::disable(video::State::DepthTest);
 	video::enable(video::State::Scissor);
 
-	void *vertices = _vbo.mapData(_vertexBufferIndex, video::VertexBufferAccessMode::Write);
+	void *vertices = _vbo.mapData(_vertexBufferIndex, video::AccessMode::Write);
 	if (vertices == nullptr) {
 		Log::warn("Failed to map vertices");
 		return core::AppState::Cleanup;
 	}
-	void *elements = _vbo.mapData(_elementBufferIndex, video::VertexBufferAccessMode::Write);
+	void *elements = _vbo.mapData(_elementBufferIndex, video::AccessMode::Write);
 	if (elements == nullptr) {
 		Log::warn("Failed to map indices");
 		return core::AppState::Cleanup;

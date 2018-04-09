@@ -61,12 +61,12 @@ static GLenum VertexBufferModes[] {
 };
 static_assert(std::enum_value(VertexBufferMode::Max) == lengthof(VertexBufferModes), "Array sizes don't match Max");
 
-static GLenum VertexBufferAccessModes[] {
+static GLenum AccessModes[] {
 	GL_READ_ONLY,
 	GL_WRITE_ONLY,
 	GL_READ_WRITE
 };
-static_assert(std::enum_value(VertexBufferAccessMode::Max) == lengthof(VertexBufferAccessModes), "Array sizes don't match Max");
+static_assert(std::enum_value(AccessMode::Max) == lengthof(AccessModes), "Array sizes don't match Max");
 
 static GLenum VertexBufferTypes[] {
 	GL_ARRAY_BUFFER,
@@ -182,6 +182,49 @@ static GLenum DataTypes[] {
 	GL_INT
 };
 static_assert(std::enum_value(DataType::Max) == lengthof(DataTypes), "Array sizes don't match Max");
+
+static GLenum ImageFormatTypes[] = {
+	GL_RGBA32F,
+	GL_RGBA16F,
+	GL_RG32F,
+	GL_RG16F,
+	GL_R11F_G11F_B10F,
+	GL_R32F,
+	GL_R16F,
+	GL_RGBA16,
+	GL_RGB10_A2,
+	GL_RGBA8,
+	GL_RG16,
+	GL_RG8,
+	GL_R16,
+	GL_R8,
+	GL_RGBA16_SNORM,
+	GL_RGBA8_SNORM,
+	GL_RG16_SNORM,
+	GL_RG8_SNORM,
+	GL_R16_SNORM,
+	GL_R8_SNORM,
+	GL_RGBA32I,
+	GL_RGBA16I,
+	GL_RGBA8I,
+	GL_RG32I,
+	GL_RG16I,
+	GL_RG8I,
+	GL_R32I,
+	GL_R16I,
+	GL_R8I,
+	GL_RGBA32UI,
+	GL_RGBA16UI,
+	GL_RGB10_A2UI,
+	GL_RGBA8UI,
+	GL_RG32UI,
+	GL_RG16UI,
+	GL_RG8UI,
+	GL_R32UI,
+	GL_R16UI,
+	GL_R8UI
+};
+static_assert((size_t)video::ImageFormat::Max == lengthof(ImageFormatTypes), "mismatch in image formats");
 
 }
 
