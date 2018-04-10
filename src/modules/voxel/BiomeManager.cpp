@@ -97,7 +97,7 @@ float BiomeManager::getHumidity(int x, int z) const {
 	core_trace_scoped(BiomeGetHumidity);
 	const float frequency = 0.001f;
 	const glm::vec2 noisePos(x * frequency, z * frequency);
-	const float n = _noise.simplex(noisePos);
+	const float n = noise::noise(noisePos);
 	return noise::norm(n);
 }
 
@@ -107,7 +107,7 @@ float BiomeManager::getTemperature(int x, int z) const {
 	// TODO: apply y value
 	// const float scaleY = pos.y / (float)MAX_HEIGHT;
 	const glm::vec2 noisePos(x * frequency, z * frequency);
-	const float n = _noise.simplex(noisePos);
+	const float n = noise::noise(noisePos);
 	return noise::norm(n);
 }
 

@@ -90,7 +90,7 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 		return _noise.doubleValueNoise(p3, 0);
 	}
 	case NoiseType::simplexNoise:
-		return _noise.simplex(position);
+		return noise::noise(position);
 	case NoiseType::ridgedNoise:
 		return noise::ridgedNoise(position);
 	case NoiseType::flowNoise:
@@ -124,7 +124,7 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 	}
 	case NoiseType::noiseCurlNoise: {
 		const glm::vec2& n = noise::curlNoise(position, data.millis);
-		return _noise.simplex(glm::vec2(position.x + n.x, position.y + n.x));
+		return noise::noise(glm::vec2(position.x + n.x, position.y + n.x));
 	}
 	case NoiseType::voronoi: {
 		const glm::dvec3 p3(position.x, position.y, 0.0);

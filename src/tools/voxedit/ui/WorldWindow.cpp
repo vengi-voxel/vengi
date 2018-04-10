@@ -13,18 +13,18 @@ using WORLDCTX = voxel::WorldContext;
 static const ui::turbobadger::Window::Field WORLDFIELDS[] = {
 	{INT_FIELD("landscapeoctaves", WORLDCTX, landscapeNoiseOctaves)},
 	{FLOAT_FIELD("landscapefrequency", WORLDCTX, landscapeNoiseFrequency)},
-	{FLOAT_FIELD("landscapeamplitude", WORLDCTX, landscapeNoiseAmplitude)},
-	{FLOAT_FIELD("landscapepersistence", WORLDCTX, landscapeNoisePersistence)},
+	{FLOAT_FIELD("landscapegain", WORLDCTX, landscapeNoiseGain)},
+	{FLOAT_FIELD("landscapelacunarity", WORLDCTX, landscapeNoiseLacunarity)},
 
 	{INT_FIELD("mountainoctaves", WORLDCTX, mountainNoiseOctaves)},
 	{FLOAT_FIELD("mountainfrequency", WORLDCTX, mountainNoiseFrequency)},
-	{FLOAT_FIELD("mountainamplitude", WORLDCTX, mountainNoiseAmplitude)},
-	{FLOAT_FIELD("mountainpersistence", WORLDCTX, mountainNoisePersistence)},
+	{FLOAT_FIELD("mountaingain", WORLDCTX, mountainNoiseGain)},
+	{FLOAT_FIELD("mountainlacunarity", WORLDCTX, mountainNoiseLacunarity)},
 
 	{INT_FIELD("caveoctaves", WORLDCTX, caveNoiseOctaves)},
 	{FLOAT_FIELD("cavefrequency", WORLDCTX, caveNoiseFrequency)},
-	{FLOAT_FIELD("caveamplitude", WORLDCTX, caveNoiseAmplitude)},
-	{FLOAT_FIELD("cavepersistence", WORLDCTX, caveNoisePersistence)},
+	{FLOAT_FIELD("cavegain", WORLDCTX, caveNoiseGain)},
+	{FLOAT_FIELD("cavelacunarity", WORLDCTX, caveNoiseLacunarity)},
 	{FLOAT_FIELD("cavedensitythreshold", WORLDCTX, caveDensityThreshold)}
 };
 

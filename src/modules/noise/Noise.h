@@ -24,6 +24,16 @@ inline float norm(float noise) {
 
 /**
  * @brief Wrapper class that picks the best path to calculate the noise. This is either on the gpu or the cpu.
+ *
+ * fBM (fractional Brownian motion) is a composite Perlin noise algorithm. It creates more turbolence with more octaves.
+ *
+ * To cover all possible scales, the octaves are typically a bit less than @code log(width) / log(lacunarity)@endcode.
+ * So, for a 1024x1024 heightfield, about 10 octaves are needed. The persistence influences the terrain turbolence.
+ *
+ * The amount of octaves controls the level of detail. Adding more octaves increases the detail level, but also the computation time.
+ * The persistence is a multiplier that defines how fast the amplitude diminishes for each successive octave.
+ * The lacunarity is a multiplier that defines how quickly the frequency changes for each successive octave.
+ * The amplitude is the maximum absolute value that the noise function can output.
  */
 class Noise : public core::IComponent {
 private:
@@ -43,36 +53,6 @@ public:
 
 	bool init() override;
 	void shutdown() override;
-
-	/**
-	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
-	 * @param[in] octaves the amount of noise calls that contribute to the final result
-	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
-	 * sense if you have @c octaves > 1). The higher this value is (ranges from 0-1) the more each new octave will add to the result.
-	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
-	 * @param[in] amplitude the amplitude defines how high the noise will be.
-	 */
-	[[deprecated]] float fbmNoise2D(const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
-
-	/**
-	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
-	 * @param[in] octaves the amount of noise calls that contribute to the final result
-	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
-	 * sense if you have @c octaves > 1). The higher this value is (ranges from 0-1) the more each new octave will add to the result.
-	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
-	 * @param[in] amplitude the amplitude defines how high the noise will be.
-	 */
-	[[deprecated]] float fbmNoise3D(const glm::vec3& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
-
-	/**
-	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
-	 * @param[in] octaves the amount of noise calls that contribute to the final result
-	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
-	 * sense if you have @c octaves > 1). The higher this value is (ranges from 0-1) the more each new octave will add to the result.
-	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
-	 * @param[in] amplitude the amplitude defines how high the noise will be.
-	 */
-	[[deprecated]] float fbmNoise4D(const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) const;
 
 	/**
 	 * @brief Fills the given target buffer with RGB values for the noise.
@@ -119,31 +99,10 @@ public:
 	 * @param[in] longitude Given in degrees - must be [-180,180]
 	 */
 	float sphereNoise(float longitude, float latitude);
-
-	inline float simplex(float in) const;
-	inline float simplex(const glm::vec2& in) const;
-	inline float simplex(const glm::vec3& in) const;
-	inline float simplex(const glm::vec4& in) const;
 };
 
 inline bool Noise::canUseShader() const {
 	return _useShader && _enableShader;
-}
-
-inline float Noise::simplex(float in) const {
-	return noise::noise(in);
-}
-
-inline float Noise::simplex(const glm::vec2& in) const {
-	return noise::noise(in);
-}
-
-inline float Noise::simplex(const glm::vec3& in) const {
-	return noise::noise(in);
-}
-
-inline float Noise::simplex(const glm::vec4& in) const {
-	return noise::noise(in);
 }
 
 }

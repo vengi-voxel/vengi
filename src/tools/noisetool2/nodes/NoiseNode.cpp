@@ -65,7 +65,7 @@ float NoiseNode::getNoise(int x, int y, int z) {
 		return _noise.doubleValueNoise(p3, 0);
 	}
 	case NoiseType::simplexNoise:
-		return _noise.simplex(position);
+		return noise::noise(position);
 	case NoiseType::ridgedNoise:
 		return noise::ridgedNoise(position);
 	case NoiseType::flowNoise:

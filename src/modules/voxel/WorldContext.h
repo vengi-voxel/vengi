@@ -13,20 +13,20 @@ struct WorldContext {
 	bool load(const std::string& lua);
 
 	int landscapeNoiseOctaves;
-	float landscapeNoisePersistence;
+	float landscapeNoiseLacunarity;
 	float landscapeNoiseFrequency;
-	float landscapeNoiseAmplitude;
+	float landscapeNoiseGain;
 
 	int caveNoiseOctaves;
-	float caveNoisePersistence;
+	float caveNoiseLacunarity;
 	float caveNoiseFrequency;
-	float caveNoiseAmplitude;
+	float caveNoiseGain;
 	float caveDensityThreshold;
 
 	int mountainNoiseOctaves;
-	float mountainNoisePersistence;
+	float mountainNoiseLacunarity;
 	float mountainNoiseFrequency;
-	float mountainNoiseAmplitude;
+	float mountainNoiseGain;
 };
 
 }

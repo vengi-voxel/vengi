@@ -15,11 +15,11 @@ WorldGenerator::~WorldGenerator() {
 
 float WorldGenerator::getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const {
 	// TODO: move the noise settings into the biome
-	const float landscapeNoise = _noise.fbmNoise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
-			worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
+	const float landscapeNoise = noise::fBm(noisePos2d * worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseOctaves,
+			worldCtx.landscapeNoiseLacunarity, worldCtx.landscapeNoiseGain);
 	const float noiseNormalized = noise::norm(landscapeNoise);
-	const float mountainNoise = _noise.fbmNoise2D(noisePos2d, worldCtx.mountainNoiseOctaves,
-			worldCtx.mountainNoisePersistence, worldCtx.mountainNoiseFrequency, worldCtx.mountainNoiseAmplitude);
+	const float mountainNoise = noise::fBm(noisePos2d * worldCtx.mountainNoiseFrequency, worldCtx.mountainNoiseOctaves,
+			worldCtx.mountainNoiseLacunarity, worldCtx.mountainNoiseGain);
 	const float mountainNoiseNormalized = noise::norm(mountainNoise);
 	const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 	const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
@@ -51,8 +51,7 @@ int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& wor
 		const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
 		// TODO: move the noise settings into the biome
 		const float noiseVal = noise::norm(
-				_noise.fbmNoise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
-						worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
+				noise::fBm(noisePos3d * worldCtx.caveNoiseFrequency, worldCtx.caveNoiseOctaves, worldCtx.caveNoiseLacunarity, worldCtx.caveNoiseGain));
 		const float finalDensity = n + noiseVal;
 		if (finalDensity > worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;

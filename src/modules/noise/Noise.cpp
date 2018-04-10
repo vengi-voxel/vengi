@@ -18,35 +18,6 @@
 
 namespace noise {
 
-/**
- * @brief Fractional Brownian Motion
- *
- * fBM (fractional Brownian motion) is a composite Perlin noise algorithm. It creates more turbolence with more octaves.
- *
- * To cover all possible scales, the octaves are typically a bit less than @code log(width) / log(lacunarity)@endcode.
- * So, for a 1024x1024 heightfield, about 10 octaves are needed. The persistence influences the terrain turbolence.
- *
- * @param[in] octaves The amount of octaves controls the level of detail. Adding more octaves increases the detail level, but also the computation time.
- * @param[in] persistence A multiplier that defines how fast the amplitude diminishes for each successive octave.
- * @param[in] lacunarity A multiplier that defines how quickly the frequency changes for each successive octave.
- * @param[in] amplitude The maximum absolute value that the noise function can output.
- */
-template<class VecType>
-static float NoiseFBM(const VecType& pos, int octaves, float persistence, float lacunarity, float frequency, float amplitude) {
-	core_trace_scoped(Noise);
-	float total = 0.0f;
-	for (int i = 0; i < octaves; ++i) {
-#if GLM_NOISE == 1
-		total += glm::simplex(pos * frequency) * amplitude;
-#elif CINDER_NOISE == 1
-		total += noise(pos * frequency) * amplitude;
-#endif
-		frequency *= lacunarity;
-		amplitude *= persistence;
-	}
-	return total;
-}
-
 Noise::Noise() :
 		_shader(compute::NoiseShader::getInstance()) {
 }
@@ -77,18 +48,6 @@ bool Noise::useShader(bool enableShader) {
 	}
 	_enableShader = enableShader;
 	return true;
-}
-
-float Noise::fbmNoise2D(const glm::vec2& pos, int octaves, float persistence, float frequency, float amplitude) const {
-	return NoiseFBM(pos, octaves, persistence, 2.0f, frequency, amplitude);
-}
-
-float Noise::fbmNoise3D(const glm::vec3& pos, int octaves, float persistence, float frequency, float amplitude) const {
-	return NoiseFBM(pos, octaves, persistence, 2.0f, frequency, amplitude);
-}
-
-float Noise::fbmNoise4D(const glm::vec4& pos, int octaves, float persistence, float frequency, float amplitude) const {
-	return NoiseFBM(pos, octaves, persistence, 2.0f, frequency, amplitude);
 }
 
 int32_t Noise::intValueNoise(const glm::ivec3& pos, int32_t seed) const {
@@ -219,7 +178,7 @@ void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persiste
 				const float t_pi2 = t * pi2;
 				const float ny = glm::cos(t_pi2);
 				const float nw = glm::sin(t_pi2);
-				float noise = fbmNoise4D(glm::vec4(nx, ny, nz, nw) + glm::vec4(channel), octaves, persistence, frequency, amplitude);
+				float noise = fBm(glm::vec4(nx, ny, nz, nw) + glm::vec4(channel), octaves, persistence, amplitude);
 				noise = norm(noise);
 				const unsigned char color = (unsigned char) (noise * 255.0f);
 				const int channelIndex = y * size + x;
