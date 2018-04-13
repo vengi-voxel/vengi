@@ -145,9 +145,6 @@ void TestMeshApp::onRenderUI() {
 		ImGui::CheckboxVar("Show shadow cascades", _debugShadowCascade);
 		static const char* items[] = { "Disable", "First", "Second", "Third", "Fourth" };
 		ImGui::Combo("Bone weight", &_boneInfluence, items, IM_ARRAYSIZE(items));
-		if (ImGui::Checkbox("Render axis", &_renderAxis)) {
-			setRenderAxis(_renderAxis);
-		}
 		ImGui::Checkbox("Render mesh", &_renderMesh);
 		ImGui::Checkbox("Render normals", &_renderNormals);
 		ImGui::Checkbox("Render bones", &_renderBones);
@@ -158,15 +155,6 @@ void TestMeshApp::onRenderUI() {
 			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
 		}
-		if (ImGui::Checkbox("Render plane", &_renderPlane)) {
-			setRenderPlane(_renderPlane);
-		}
-		if (ImGui::Checkbox("Camera motion", &_cameraMotion)) {
-			setCameraMotion(_cameraMotion);
-		}
-		if (ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f)) {
-			setCameraSpeed(_cameraSpeed);
-		}
 		if (ImGui::InputFloat3("Camera omega", glm::value_ptr(_omega))) {
 			_camera.setOmega(_omega);
 		}
@@ -174,7 +162,6 @@ void TestMeshApp::onRenderUI() {
 		ImGui::InputFloat("Shadow bias slope", &_shadowBiasSlope, 0.01f, 0.1f);
 		ImGui::InputFloat("Shadow range", &_shadowRangeZ, 0.01f, 0.1f);
 		ImGui::InputFloat("Fog range", &_fogRange, 0.01f, 0.1f);
-		ImGui::InputVarFloat("Rotation speed", _rotationSpeed, 0.01f, 0.1f);
 		if (_mesh->animations() > 1 && ImGui::InputVarInt("Animation index", _animationIndex, 1, 1)) {
 			_animationIndex->setVal(_mesh->currentAnimation());
 		}
@@ -320,7 +307,7 @@ void TestMeshApp::doRender() {
 		_shadowMapRenderShader.setNear(_camera.nearPlane());
 
 		// bind buffers
-		core_assert_always(_shadowMapDebugBuffer.bind());
+		video::ScopedVertexBuffer scopedBuf(_shadowMapDebugBuffer);
 
 		// configure shadow map texture
 		video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
@@ -341,9 +328,6 @@ void TestMeshApp::doRender() {
 		if (_depthBuffer.depthCompare()) {
 			video::setupDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
 		}
-
-		// unbind buffer
-		_shadowMapDebugBuffer.unbind();
 	}
 
 	if (!oldDepth) {

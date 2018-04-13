@@ -143,6 +143,29 @@ const char* getImageFormatTypeString(video::ImageFormat format) {
 	return nullptr;
 }
 
+#define PRIMITVEENTRY(x) {video::Primitive::x, #x}
+static const PrimitiveType cPrimitiveType[] = {
+	PRIMITVEENTRY(Points),
+	PRIMITVEENTRY(Lines),
+	PRIMITVEENTRY(LinesAdjacency),
+	PRIMITVEENTRY(Triangles),
+	PRIMITVEENTRY(TrianglesAdjacency),
+	PRIMITVEENTRY(LineStrip),
+	PRIMITVEENTRY(TriangleStrip)
+};
+#undef PRIMITVEENTRY
+static_assert((size_t)video::Primitive::Max == lengthof(cPrimitiveType), "mismatch in primitive types");
+
+const char* getPrimitiveTypeString(video::Primitive primitive) {
+	const int max = std::enum_value(video::Primitive::Max);
+	for (int i = 0; i < max; ++i) {
+		if (primitive == cPrimitiveType[i].type) {
+			return cPrimitiveType[i].str;
+		}
+	}
+	return nullptr;
+}
+
 std::string uniformSetterPostfix(const Variable::Type type, int amount) {
 	switch (type) {
 	case Variable::MAX:

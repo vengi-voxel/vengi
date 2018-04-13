@@ -32,7 +32,7 @@ static const char *convertToTexUnit(int unit) {
 }
 
 bool generateSrc(const std::string& templateShader, const std::string& templateUniformBuffer, const ShaderStruct& shaderStruct,
-		const io::FilesystemPtr& filesystem, const std::string& namespaceSrc, const std::string& sourceDirectory, const std::string& shaderDirectory) {
+		const io::FilesystemPtr& filesystem, const std::string& namespaceSrc, const std::string& sourceDirectory, const std::string& shaderDirectory, const std::string& postfix) {
 	std::string src(templateShader);
 	const std::string& name = shaderStruct.name + "Shader";
 
@@ -93,15 +93,30 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		attributes << "// no attributes";
 	}
 
-	std::stringstream setters;
+	std::stringstream methods;
 	if (uniformSize > 0 || attributeSize > 0) {
-		setters << "\n";
+		methods << "\n";
+	}
+	if (shaderStruct.out.layout.maxGeometryVertices > 0) {
+		methods << "\tint getMaxGeometryVertices() const {\n";
+		methods << "\t\treturn " << shaderStruct.out.layout.maxGeometryVertices << ";\n";
+		methods << "\t}\n\n;";
+	}
+	if (shaderStruct.out.layout.primitiveType != video::Primitive::Max) {
+		methods << "\tvideo::Primitive getPrimitiveTypeOut() const {\n";
+		methods << "\t\treturn video::Primitive::" << util::getPrimitiveTypeString(shaderStruct.out.layout.primitiveType) << ";\n";
+		methods << "\t}\n\n;";
+	}
+	if (shaderStruct.in.layout.primitiveType != video::Primitive::Max) {
+		methods << "\tvideo::Primitive getPrimitiveTypeIn() const {\n";
+		methods << "\t\treturn video::Primitive::" << util::getPrimitiveTypeString(shaderStruct.in.layout.primitiveType) << ";\n";
+		methods << "\t}\n\n;";
 	}
 	for (int i = 0; i < uniformSize; ++i) {
 		const Variable& v = shaderStruct.uniforms[i];
 		const bool isInteger = v.isSingleInteger();
 		const std::string& uniformName = util::convertName(v.name, true);
-		setters << "\tinline bool set" << uniformName << "(";
+		methods << "\tinline bool set" << uniformName << "(";
 		const Types& cType = util::resolveTypes(v.type);
 		auto layoutIter = shaderStruct.layouts.find(v.name);
 		Layout layout;
@@ -110,126 +125,119 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		}
 
 		if (v.arraySize > 0 && isInteger) {
-			setters << "const ";
+			methods << "const ";
 		} else if (cType.passBy == PassBy::Reference) {
-			setters << "const ";
+			methods << "const ";
 		}
-		setters << cType.ctype;
+		methods << cType.ctype;
 		if (v.arraySize == -1 || cType.passBy == PassBy::Pointer) {
-			setters << "*";
+			methods << "*";
 		} else if (cType.passBy == PassBy::Reference) {
 			if (v.arraySize <= 0) {
-				setters << "&";
+				methods << "&";
 			}
 		} else if (cType.passBy == PassBy::Value) {
 		}
 
 		if (v.arraySize > 0) {
-			setters << " (&" << v.name << ")[" << v.arraySize << "]";
+			methods << " (&" << v.name << ")[" << v.arraySize << "]";
 		} else {
-			setters << " " << v.name;
+			methods << " " << v.name;
 		}
 
 		if (v.isSampler() && layout.binding != -1) {
-			setters << " = video::TextureUnit::" << convertToTexUnit(layout.binding);
+			methods << " = video::TextureUnit::" << convertToTexUnit(layout.binding);
 		}
 
 		if (v.arraySize == -1) {
-			setters << ", int amount";
+			methods << ", int amount";
 		}
-		setters << ") const {\n";
+		methods << ") const {\n";
 
-		setters << "\t\tconst int location = ";
+		methods << "\t\tconst int location = ";
 		if (layout.location != -1) {
-			setters << layout.location << ";\n";
+			methods << layout.location << ";\n";
 		} else {
-			setters << "getUniformLocation(\"" << v.name << "\");\n";
-			setters << "\t\tif (location == -1) {\n";
-			setters << "\t\t\treturn false;\n";
-			setters << "\t\t}\n";
+			methods << "getUniformLocation(\"" << v.name << "\");\n";
+			methods << "\t\tif (location == -1) {\n";
+			methods << "\t\t\treturn false;\n";
+			methods << "\t\t}\n";
 		}
-		setters << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
-		setters << "(location, " << v.name;
+		methods << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
+		methods << "(location, " << v.name;
 		if (v.arraySize > 0) {
-			setters << ", " << v.arraySize;
+			methods << ", " << v.arraySize;
 		} else if (v.arraySize == -1) {
-			setters << ", amount";
+			methods << ", amount";
 		}
-		setters << ");\n";
-		setters << "\t\treturn true;\n";
-		setters << "\t}\n";
+		methods << ");\n";
+		methods << "\t\treturn true;\n";
+		methods << "\t}\n";
 
 		if (v.isSampler()) {
 			if (layout.binding != -1) {
-				setters << "\n\tinline video::TextureUnit getBound" << uniformName << "TexUnit() const {\n";
-				setters << "\t\treturn video::TextureUnit::" << convertToTexUnit(layout.binding) << ";\n\t}\n";
+				methods << "\n\tinline video::TextureUnit getBound" << uniformName << "TexUnit() const {\n";
+				methods << "\t\treturn video::TextureUnit::" << convertToTexUnit(layout.binding) << ";\n\t}\n";
 			}
 		}
 		if (v.isSampler() || v.isImage()) {
 			if (layout.imageFormat != video::ImageFormat::Max) {
-				setters << "\n\tinline video::ImageFormat getImageFormat" << uniformName << "() const {\n";
-				setters << "\t\treturn video::ImageFormat::" << util::getImageFormatTypeString(layout.imageFormat) << ";\n\t}\n";
+				methods << "\n\tinline video::ImageFormat getImageFormat" << uniformName << "() const {\n";
+				methods << "\t\treturn video::ImageFormat::" << util::getImageFormatTypeString(layout.imageFormat) << ";\n\t}\n";
 			}
-			// TODO: generate texture with correct format and constraints.
-		}
-		if (layout.primitiveType != PrimitiveType::None) {
-			// TODO:
-		}
-		if (layout.blockLayout != BlockLayout::unknown) {
-			// TODO:
 		}
 		if (layout.localSize.x != -1) {
-			setters << "\n\tinline int getLocalSizeX() const {\n";
-			setters << "\t\treturn " << layout.localSize.x << ";\n\t}\n";
+			methods << "\n\tinline int getLocalSizeX() const {\n";
+			methods << "\t\treturn " << layout.localSize.x << ";\n\t}\n";
 		}
 		if (layout.localSize.y != -1) {
-			setters << "\n\tinline int getLocalSizeY() const {\n";
-			setters << "\t\treturn " << layout.localSize.y << ";\n\t}\n";
+			methods << "\n\tinline int getLocalSizeY() const {\n";
+			methods << "\t\treturn " << layout.localSize.y << ";\n\t}\n";
 		}
 		if (layout.localSize.z != -1) {
-			setters << "\n\tinline int getLocalSizeZ() const {\n";
-			setters << "\t\treturn " << layout.localSize.z << ";\n\t}\n";
+			methods << "\n\tinline int getLocalSizeZ() const {\n";
+			methods << "\t\treturn " << layout.localSize.z << ";\n\t}\n";
 		}
 
 		if (v.arraySize > 0) {
-			setters << "\n\tinline bool set" << uniformName << "(" << "const std::vector<" << cType.ctype << ">& var) const {\n";
-			setters << "\t\tconst int location = getUniformLocation(\"" << v.name;
-			setters << "\");\n\t\tif (location == -1) {\n";
-			setters << "\t\t\treturn false;\n";
-			setters << "\t\t}\n";
-			setters << "\t\tcore_assert((int)var.size() == " << v.arraySize << ");\n";
-			setters << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize) << "(location, &var.front(), var.size());\n";
-			setters << "\t\treturn true;\n";
-			setters << "\t}\n";
+			methods << "\n\tinline bool set" << uniformName << "(" << "const std::vector<" << cType.ctype << ">& var) const {\n";
+			methods << "\t\tconst int location = getUniformLocation(\"" << v.name;
+			methods << "\");\n\t\tif (location == -1) {\n";
+			methods << "\t\t\treturn false;\n";
+			methods << "\t\t}\n";
+			methods << "\t\tcore_assert((int)var.size() == " << v.arraySize << ");\n";
+			methods << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize) << "(location, &var.front(), var.size());\n";
+			methods << "\t\treturn true;\n";
+			methods << "\t}\n";
 		} else if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::VEC4) {
-			setters << "\n\tinline bool set" << uniformName << "(" << "const std::vector<float>& var) const {\n";
-			setters << "\t\tconst int location = getUniformLocation(\"" << v.name;
-			setters << "\");\n\t\tif (location == -1) {\n";
-			setters << "\t\t\treturn false;\n";
-			setters << "\t\t}\n";
-			setters << "\t\tcore_assert(int(var.size()) % " << cType.components << " == 0);\n";
-			setters << "\t\tsetUniformfv(location, &var.front(), " << cType.components << ", " << cType.components << ");\n";
-			setters << "\t\treturn true;\n";
-			setters << "\t}\n";
+			methods << "\n\tinline bool set" << uniformName << "(" << "const std::vector<float>& var) const {\n";
+			methods << "\t\tconst int location = getUniformLocation(\"" << v.name;
+			methods << "\");\n\t\tif (location == -1) {\n";
+			methods << "\t\t\treturn false;\n";
+			methods << "\t\t}\n";
+			methods << "\t\tcore_assert(int(var.size()) % " << cType.components << " == 0);\n";
+			methods << "\t\tsetUniformfv(location, &var.front(), " << cType.components << ", " << cType.components << ");\n";
+			methods << "\t\treturn true;\n";
+			methods << "\t}\n";
 		}
 		if (i < uniformSize- - 2) {
-			setters << "\n";
+			methods << "\n";
 		}
 
 #if 0
 		if (v.arraySize == -1 || v.arraySize > 1) {
-			setters << "\tinline bool set" << uniformName << "(";
+			methods << "\tinline bool set" << uniformName << "(";
 			const Types& cType = util::getTypes(v.type);
-			setters << "const std::vector<" << cType.ctype << ">& " << v.name << ") const {\n";
-			setters << "\t\tif (!hasUniform(\"" << v.name << "[0]\")) {\n";
-			setters << "\t\t\treturn false;\n";
-			setters << "\t\t}\n";
-			setters << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
-			setters << "(\"" << v.name << "[0]\", &" << v.name << "[0], " << v.name << ".size());\n";
-			setters << "\t\treturn true;\n";
-			setters << "\t}\n";
+			methods << "const std::vector<" << cType.ctype << ">& " << v.name << ") const {\n";
+			methods << "\t\tif (!hasUniform(\"" << v.name << "[0]\")) {\n";
+			methods << "\t\t\treturn false;\n";
+			methods << "\t\t}\n";
+			methods << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
+			methods << "(\"" << v.name << "[0]\", &" << v.name << "[0], " << v.name << ".size());\n";
+			methods << "\t\treturn true;\n";
+			methods << "\t}\n";
 			if (i < uniformSize- - 2) {
-				setters << "\n";
+				methods << "\n";
 			}
 		}
 #endif
@@ -238,70 +246,70 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		const Variable& v = shaderStruct.attributes[i];
 		const std::string& attributeName = util::convertName(v.name, true);
 		const bool isInt = v.isInteger();
-		setters << "\tinline bool init" << attributeName << "Custom(size_t stride = ";
-		setters << "sizeof(" << util::resolveTypes(v.type).ctype << ")";
-		setters << ", const void* pointer = nullptr, video::DataType type = ";
+		methods << "\tinline bool init" << attributeName << "Custom(size_t stride = ";
+		methods << "sizeof(" << util::resolveTypes(v.type).ctype << ")";
+		methods << ", const void* pointer = nullptr, video::DataType type = ";
 		if (isInt) {
-			setters << "video::DataType::Int";
+			methods << "video::DataType::Int";
 		} else {
-			setters << "video::DataType::Float";
+			methods << "video::DataType::Float";
 		}
-		setters << ", int size = ";
-		setters << util::resolveTypes(v.type).components << ", ";
-		setters << "bool isInt = ";
-		setters << (isInt ? "true" : "false");
-		setters << ", bool normalize = false) const {\n";
-		setters << "\t\tconst int loc = enableVertexAttributeArray(\"" << v.name << "\");\n";
-		setters << "\t\tif (loc == -1) {\n";
-		setters << "\t\t\treturn false;\n";
-		setters << "\t\t}\n";
-		setters << "\t\tif (isInt) {\n";
-		setters << "\t\t\tsetVertexAttributeInt(loc, size, type, stride, pointer);\n";
-		setters << "\t\t} else {\n";
-		setters << "\t\t\tsetVertexAttribute(loc, size, type, normalize, stride, pointer);\n";
-		setters << "\t\t}\n";
-		setters << "\t\treturn true;\n";
-		setters << "\t}\n\n";
-		setters << "\tinline int getLocation" << attributeName << "() const {\n";
-		setters << "\t\treturn getAttributeLocation(\"" << v.name << "\");\n";
-		setters << "\t}\n\n";
-		setters << "\tinline int getComponents" << attributeName << "() const {\n";
-		setters << "\t\treturn getAttributeComponents(\"" << v.name << "\");\n";
-		setters << "\t}\n\n";
-		setters << "\tinline bool init" << attributeName << "() const {\n";
-		setters << "\t\tconst int loc = enableVertexAttributeArray(\"" << v.name << "\");\n";
-		setters << "\t\tif (loc == -1) {\n";
-		setters << "\t\t\treturn false;\n";
-		setters << "\t\t}\n";
-		setters << "\t\tconst size_t stride = sizeof(" << util::resolveTypes(v.type).ctype << ");\n";
-		setters << "\t\tconst void* pointer = nullptr;\n";
-		setters << "\t\tconst video::DataType type = ";
+		methods << ", int size = ";
+		methods << util::resolveTypes(v.type).components << ", ";
+		methods << "bool isInt = ";
+		methods << (isInt ? "true" : "false");
+		methods << ", bool normalize = false) const {\n";
+		methods << "\t\tconst int loc = enableVertexAttributeArray(\"" << v.name << "\");\n";
+		methods << "\t\tif (loc == -1) {\n";
+		methods << "\t\t\treturn false;\n";
+		methods << "\t\t}\n";
+		methods << "\t\tif (isInt) {\n";
+		methods << "\t\t\tsetVertexAttributeInt(loc, size, type, stride, pointer);\n";
+		methods << "\t\t} else {\n";
+		methods << "\t\t\tsetVertexAttribute(loc, size, type, normalize, stride, pointer);\n";
+		methods << "\t\t}\n";
+		methods << "\t\treturn true;\n";
+		methods << "\t}\n\n";
+		methods << "\tinline int getLocation" << attributeName << "() const {\n";
+		methods << "\t\treturn getAttributeLocation(\"" << v.name << "\");\n";
+		methods << "\t}\n\n";
+		methods << "\tinline int getComponents" << attributeName << "() const {\n";
+		methods << "\t\treturn getAttributeComponents(\"" << v.name << "\");\n";
+		methods << "\t}\n\n";
+		methods << "\tinline bool init" << attributeName << "() const {\n";
+		methods << "\t\tconst int loc = enableVertexAttributeArray(\"" << v.name << "\");\n";
+		methods << "\t\tif (loc == -1) {\n";
+		methods << "\t\t\treturn false;\n";
+		methods << "\t\t}\n";
+		methods << "\t\tconst size_t stride = sizeof(" << util::resolveTypes(v.type).ctype << ");\n";
+		methods << "\t\tconst void* pointer = nullptr;\n";
+		methods << "\t\tconst video::DataType type = ";
 		if (isInt) {
-			setters << "video::DataType::Int";
+			methods << "video::DataType::Int";
 		} else {
-			setters << "video::DataType::Float";
+			methods << "video::DataType::Float";
 		}
-		setters << ";\n";
-		setters << "\t\tconst int size = getAttributeComponents(loc);\n";
+		methods << ";\n";
+		methods << "\t\tconst int size = getAttributeComponents(loc);\n";
 		if (isInt) {
-			setters << "\t\tsetVertexAttributeInt(loc, size, type, stride, pointer);\n";
+			methods << "\t\tsetVertexAttributeInt(loc, size, type, stride, pointer);\n";
 		} else {
-			setters << "\t\tsetVertexAttribute(loc, size, type, false, stride, pointer);\n";
+			methods << "\t\tsetVertexAttribute(loc, size, type, false, stride, pointer);\n";
 		}
-		setters << "\t\treturn true;\n";
-		setters << "\t}\n\n";
-		setters << "\tinline bool set" << attributeName << "Divisor(uint32_t divisor) const {\n";
-		setters << "\t\tconst int location = getAttributeLocation(\"" << v.name << "\");\n";
-		setters << "\t\treturn setDivisor(location, divisor);\n";
-		setters << "\t}\n";
+		methods << "\t\treturn true;\n";
+		methods << "\t}\n\n";
+		methods << "\tinline bool set" << attributeName << "Divisor(uint32_t divisor) const {\n";
+		methods << "\t\tconst int location = getAttributeLocation(\"" << v.name << "\");\n";
+		methods << "\t\treturn setDivisor(location, divisor);\n";
+		methods << "\t}\n";
 
 		if (i < attributeSize - 1) {
-			setters << "\n";
+			methods << "\n";
 		}
 	}
 
 	if (!shaderStruct.uniformBlocks.empty()) {
-		setters << "\n";
+		methods << "\n";
 	}
 	std::stringstream ub;
 	std::stringstream shutdown;
@@ -354,17 +362,17 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		ub << "\n\tinline operator const video::UniformBuffer&() const {\n";
 		ub << "\t\treturn _" << uniformBufferName << ";\n";
 		ub << "\t}\n";
-		setters << "\t/**\n";
-		setters << "\t * @brief The the uniform buffer for the uniform block " << ubuf.name << "\n";
-		setters << "\t */\n";
-		setters << "\tinline bool set" << uniformBufferStructName << "(const video::UniformBuffer& buf) {\n";
-		setters << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", buf);\n";
-		setters << "\t}\n";
+		methods << "\t/**\n";
+		methods << "\t * @brief The the uniform buffer for the uniform block " << ubuf.name << "\n";
+		methods << "\t */\n";
+		methods << "\tinline bool set" << uniformBufferStructName << "(const video::UniformBuffer& buf) {\n";
+		methods << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", buf);\n";
+		methods << "\t}\n";
 
 		std::string generatedUb = core::string::replaceAll(templateUniformBuffer, "$name$", uniformBufferStructName);
 		generatedUb = core::string::replaceAll(generatedUb, "$namespace$", namespaceSrc);
 		generatedUb = core::string::replaceAll(generatedUb, "$uniformbuffers$", ub.str());
-		generatedUb = core::string::replaceAll(generatedUb, "$setters$", "");
+		generatedUb = core::string::replaceAll(generatedUb, "$methods$", "");
 		generatedUb = core::string::replaceAll(generatedUb, "$shutdown$", shutdown.str());
 
 		const std::string targetFileUb = sourceDirectory + uniformBufferStructName + ".h";
@@ -379,10 +387,10 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 	}
 
 	src = core::string::replaceAll(src, "$attributes$", attributes.str());
-	src = core::string::replaceAll(src, "$setters$", setters.str());
+	src = core::string::replaceAll(src, "$methods$", methods.str());
 	src = core::string::replaceAll(src, "$includes$", includes.str());
 
-	const std::string targetFile = sourceDirectory + filename + ".h";
+	const std::string targetFile = sourceDirectory + filename + ".h" + postfix;
 	Log::debug("Generate shader bindings for %s at %s", shaderStruct.name.c_str(), targetFile.c_str());
 	if (!filesystem->syswrite(targetFile, src)) {
 		Log::error("Failed to write %s", targetFile.c_str());

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ShaderManager.h"
 #include "core/Var.h"
 #include "core/Log.h"

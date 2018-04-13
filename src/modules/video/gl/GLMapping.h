@@ -157,7 +157,11 @@ static_assert(std::enum_value(Face::Max) == lengthof(Faces), "Array sizes don't 
 static GLenum Primitives[] {
 	GL_POINTS,
 	GL_LINES,
-	GL_TRIANGLES
+	GL_LINES_ADJACENCY,
+	GL_TRIANGLES,
+	GL_TRIANGLES_ADJACENCY,
+	GL_LINE_STRIP,
+	GL_TRIANGLE_STRIP,
 };
 static_assert(std::enum_value(Primitive::Max) == lengthof(Primitives), "Array sizes don't match Max");
 

@@ -62,7 +62,7 @@ $uniformarrayinfo$
 		}
 	}
 
-$setters$
+$methods$
 };
 
 typedef std::shared_ptr<$name$> $name$Ptr;

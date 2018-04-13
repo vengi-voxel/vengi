@@ -17,8 +17,7 @@
 
 namespace shadertool {
 
-static const char* PrimitiveTypeStr[] {
-	nullptr,
+static const char* PrimitiveStr[] {
 	"points",
 	"lines",
 	"lines_adjacency",
@@ -27,18 +26,15 @@ static const char* PrimitiveTypeStr[] {
 	"line_strip",
 	"triangle_strip"
 };
-static_assert(lengthof(PrimitiveTypeStr) == std::enum_value(PrimitiveType::Max), "PrimitiveTypeStr doesn't match enum");
+static_assert(lengthof(PrimitiveStr) == std::enum_value(video::Primitive::Max), "PrimitiveStr doesn't match enum");
 
-static PrimitiveType layoutPrimitiveType(const std::string& token) {
-	for (int i = 0; i < lengthof(PrimitiveTypeStr); ++i) {
-		if (PrimitiveTypeStr[i] == nullptr) {
-			continue;
-		}
-		if (token == PrimitiveTypeStr[i]) {
-			return (PrimitiveType)i;
+static video::Primitive layoutPrimitiveType(const std::string& token) {
+	for (int i = 0; i < lengthof(PrimitiveStr); ++i) {
+		if (token == PrimitiveStr[i]) {
+			return (video::Primitive)i;
 		}
 	}
-	return PrimitiveType::None;
+	return video::Primitive::Max;
 }
 
 bool parseLayout(TokenIterator& tok, Layout& layout) {
@@ -156,7 +152,12 @@ bool parseLayout(TokenIterator& tok, Layout& layout) {
 			if (format != video::ImageFormat::Max) {
 				layout.imageFormat = format;
 			} else {
-				Log::warn("Unknown token given for layout: %s (line %i)", token.c_str(), tok.line());
+				video::Primitive primitiveType = layoutPrimitiveType(token);
+				if (primitiveType != video::Primitive::Max) {
+					layout.primitiveType = primitiveType;
+				} else {
+					Log::warn("Unknown token given for layout: %s (line %i)", token.c_str(), tok.line());
+				}
 			}
 		}
 	} while (token != ")");
@@ -216,6 +217,10 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 			Log::warn("SSBO not supported");
 		} else if (token == "uniform") {
 			v = &shaderStruct.uniforms;
+		} else if (hasLayout && token == "in") {
+			shaderStruct.in.layout = layout;
+		} else if (hasLayout && token == "out") {
+			shaderStruct.out.layout = layout;
 		} else if (uniformBlock) {
 			if (token == "}") {
 				uniformBlock = false;

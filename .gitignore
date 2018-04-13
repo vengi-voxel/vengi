@@ -8,3 +8,5 @@
 gmon.out
 /*.sync
 /perf.data*
+luac.out
+*.patch

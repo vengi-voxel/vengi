@@ -19,6 +19,7 @@ protected:
 	ShaderStruct _shaderStruct;
 	std::string _namespaceSrc;
 	std::string _sourceDirectory;
+	std::string _postfix;
 	std::string _shaderDirectory;
 	std::string _shaderTemplateFile;
 	std::string _glslangValidatorBin;

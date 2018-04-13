@@ -17,12 +17,12 @@
 
 namespace video {
 
-#ifdef GL_ES_VERSION_2_0
+#ifdef GL_ES_VERSION_3_1
 // default to opengles3
-int Shader::glslVersion = GLSLVersion::V300;
+int Shader::glslVersion = GLSLVersion::V310;
 #else
-// default to opengl3
-int Shader::glslVersion = GLSLVersion::V330;
+// default to opengl4
+int Shader::glslVersion = GLSLVersion::V430;
 #endif
 
 Shader::Shader() {
@@ -327,14 +327,12 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 	}
 	std::string src;
 	src.append("#version ");
-	if (shaderType == ShaderType::Compute) {
-		src.append("430");
-	} else {
-		src.append(std::to_string(glslVersion));
-	}
+	src.append(std::to_string(glslVersion));
 	src.append("\n");
-	if (glslVersion < GLSLVersion::V140) {
-		//src.append("#extension GL_EXT_draw_instanced : enable\n");
+	if (shaderType == ShaderType::Compute) {
+		src.append("#extension GL_ARB_compute_shader : enable\n");
+		src.append("#extension GL_ARB_shader_storage_buffer_object : enable\n");
+		src.append("#extension GL_ARB_compute_variable_group_size : enable\n");
 	}
 
 	core::Var::visitSorted([&] (const core::VarPtr& var) {

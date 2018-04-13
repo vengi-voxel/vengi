@@ -30,6 +30,8 @@ extern video::ImageFormat getImageFormat(const std::string& type, int line);
 extern const char* getImageFormatGLType(video::ImageFormat format);
 extern const char* getImageFormatTypeString(video::ImageFormat format);
 
+extern const char* getPrimitiveTypeString(video::Primitive primitive);
+
 extern int getComponents(const Variable::Type type);
 
 extern Variable::Type getType(const std::string& type, int line);

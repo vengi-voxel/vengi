@@ -41,6 +41,7 @@ core::AppState ComputeShaderTool::onRunning() {
 	_shaderDirectory                      = getArgVal("--shaderdir");
 	_sourceDirectory                      = getArgVal("--sourcedir",
 			_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
+	_postfix                              = getArgVal("--postfix", "");
 
 	if (!core::string::endsWith(_shaderDirectory, "/")) {
 		_shaderDirectory = _shaderDirectory + "/";
@@ -68,7 +69,7 @@ core::AppState ComputeShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 	const std::string& templateShader = filesystem()->load(_shaderTemplateFile);
-	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs)) {
+	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs, _postfix)) {
 		_exitCode = 100;
 		return core::AppState::Cleanup;
 	}

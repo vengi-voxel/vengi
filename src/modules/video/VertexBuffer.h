@@ -170,4 +170,18 @@ inline void VertexBuffer::setMode(int32_t idx, VertexBufferMode mode) {
 	_modes[idx] = mode;
 }
 
+class ScopedVertexBuffer {
+private:
+	const VertexBuffer& _buf;
+public:
+	ScopedVertexBuffer(const VertexBuffer& buf) :
+			_buf(buf) {
+		buf.bind();
+	}
+
+	~ScopedVertexBuffer() {
+		_buf.unbind();
+	}
+};
+
 }

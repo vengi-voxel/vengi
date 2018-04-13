@@ -23,18 +23,6 @@ enum class BlockLayout {
 	std430
 };
 
-enum class PrimitiveType {
-	None,
-	Points,
-	Lines,
-	LinesAdjacency,
-	Triangles,
-	TrianglesAdjacency,
-	LineStrip,
-	TriangleStrip,
-	Max
-};
-
 struct Variable {
 	enum Type {
 		DOUBLE = 0, FLOAT, UNSIGNED_INT, INT, BOOL,
@@ -93,7 +81,7 @@ struct Layout {
 	bool pixelCenterInteger = false; // 4.0
 	bool earlyFragmentTests = false; // 4.2
 	glm::ivec3 localSize { -1 };
-	PrimitiveType primitiveType = PrimitiveType::None;
+	video::Primitive primitiveType = video::Primitive::Max;
 	BlockLayout blockLayout = BlockLayout::unknown;
 	video::ImageFormat imageFormat = video::ImageFormat::Max;
 
@@ -110,9 +98,18 @@ struct ImageFormatType {
 	const char* ctype;
 };
 
+struct PrimitiveType {
+	video::Primitive type;
+	const char* str;
+};
+
 struct UniformBlock {
 	std::string name;
 	std::vector<Variable> members;
+	Layout layout;
+};
+
+struct InOut {
 	Layout layout;
 };
 
@@ -129,4 +126,6 @@ struct ShaderStruct {
 	std::vector<Variable> varyings;
 	// fragment only
 	std::vector<Variable> outs;
+	InOut in;
+	InOut out;
 };

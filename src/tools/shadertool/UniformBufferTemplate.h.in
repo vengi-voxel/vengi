@@ -21,7 +21,7 @@ $uniformbuffers$
 	void shutdown() {
 $shutdown$
 	}
-$setters$
+$methods$
 };
 
 };

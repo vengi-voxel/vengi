@@ -9,6 +9,9 @@
 namespace video {
 
 /**
+ * Register @c Shader instances here to let them automatically recompile
+ * on @c core::CV_SHADER @c core::CVar change.
+ *
  * @ingroup Video
  */
 class ShaderManager {

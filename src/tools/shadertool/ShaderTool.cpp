@@ -95,6 +95,7 @@ core::AppState ShaderTool::onRunning() {
 		_shaderDirectory                  = getArgVal("--shaderdir");
 		_sourceDirectory                  = getArgVal("--sourcedir",
 				_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
+		_postfix                          = getArgVal("--postfix", "");
 
 		if (!core::string::endsWith(_shaderDirectory, "/")) {
 			_shaderDirectory = _shaderDirectory + "/";
@@ -138,7 +139,7 @@ core::AppState ShaderTool::onRunning() {
 		}
 
 		if (!shadertool::generateSrc(templateShader, templateUniformBuffer, _shaderStruct,
-				filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory)) {
+				filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix)) {
 			Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
 			_exitCode = 1;
 			return core::AppState::Cleanup;
@@ -199,7 +200,7 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	if (!shadertool::generateSrc(templateShader, templateUniformBuffer, _shaderStruct,
-			filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory)) {
+			filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix)) {
 		Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
 		_exitCode = 1;
 		return core::AppState::Cleanup;

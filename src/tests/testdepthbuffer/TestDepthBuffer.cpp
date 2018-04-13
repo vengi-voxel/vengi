@@ -15,11 +15,10 @@ void TestDepthBuffer::doRender() {
 	const int quadHeight = (int) (height / 3.0f);
 	video::ScopedShader scopedShader(_shadowMapRenderShader);
 	video::ScopedViewPort scopedViewport(width - quadWidth, 0, quadWidth, quadHeight);
-	core_assert_always(_texturedFullscreenQuad.bind());
+	video::ScopedVertexBuffer scopedBuf(_texturedFullscreenQuad);
 	video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
 	_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
 	video::drawArrays(video::Primitive::Triangles, _texturedFullscreenQuad.elements(0));
-	_texturedFullscreenQuad.unbind();
 }
 
 core::AppState TestDepthBuffer::onInit() {

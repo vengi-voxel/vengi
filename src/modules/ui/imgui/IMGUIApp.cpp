@@ -342,7 +342,7 @@ core::AppState IMGUIApp::onRunning() {
 
 		core_assert_always(_vbo.update(_bufferIndex, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert)));
 		core_assert_always(_vbo.update(_indexBufferIndex, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx)));
-		core_assert_always(_vbo.bind());
+		video::ScopedVertexBuffer scopedBuf(_vbo);
 
 		for (int i = 0; i < cmdList->CmdBuffer.Size; ++i) {
 			const ImDrawCmd* cmd = &cmdList->CmdBuffer[i];
@@ -356,7 +356,6 @@ core::AppState IMGUIApp::onRunning() {
 			}
 			idxBufferOffset += cmd->ElemCount;
 		}
-		_vbo.unbind();
 	}
 
 	video::scissor(0, 0, renderTargetW, renderTargetH);

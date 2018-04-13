@@ -220,7 +220,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 			if (nIndices == 0) {
 				continue;
 			}
-			core_assert_always(_vertexBuffer[idx].bind());
+			video::ScopedVertexBuffer scopedBuf(_vertexBuffer[idx]);
 			_shadowMapShader.setModel(glm::translate(_offsets[idx]));
 			for (int i = 0; i < maxDepthBuffers; ++i) {
 				_depthBuffer.bindTexture(i);
@@ -228,7 +228,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 				static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 			}
-			_vertexBuffer[idx].unbind();
 		}
 		video::cullFace(video::Face::Back);
 		if (oldBlend) {
@@ -255,11 +254,10 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 			if (nIndices == 0) {
 				continue;
 			}
-			core_assert_always(_vertexBuffer[idx].bind());
+			video::ScopedVertexBuffer scopedBuf(_vertexBuffer[idx]);
 			_worldShader.setModel(glm::translate(_offsets[idx]));
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
-			_vertexBuffer[idx].unbind();
 		}
 	}
 	_whiteTexture->unbind();

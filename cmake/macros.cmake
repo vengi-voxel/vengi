@@ -48,115 +48,122 @@ endmacro()
 macro(generate_shaders TARGET)
 	set(files ${ARGV})
 	list(REMOVE_AT files 0)
-	set(_headers)
 	set(GEN_DIR ${GENERATE_DIR}/shaders/${TARGET}/)
 	set(_template ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.h.in)
 	set(_template_ub ${ROOT_DIR}/src/tools/shadertool/UniformBufferTemplate.h.in)
 	file(MAKE_DIRECTORY ${GEN_DIR})
 	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
-	foreach (shader_dir "${TARGET}" shared)
-		set(_dir ${ROOT_DIR}/${GAME_BASE_DIR}/${shader_dir}/shaders)
-		if (IS_DIRECTORY ${_dir})
-			foreach (_file ${files})
-				convert_to_camel_case(${_file} _f)
-				set(_shaderfile "${_f}Shader.h")
-				set(_shader "${GEN_DIR}${_shaderfile}")
-				if (EXISTS ${_dir}/${_file}.frag AND EXISTS ${_dir}/${_file}.vert)
-					add_custom_command(
-						OUTPUT ${_shader}
-						IMPLICIT_DEPENDS C ${_dir}/${_file}.frag C ${_dir}/${_file}.vert
-						COMMENT "Validate ${_file} and generate ${_shaderfile}"
-						COMMAND ${CMAKE_BINARY_DIR}/shadertool --glslang ${CMAKE_BINARY_DIR}/glslangValidator --shader ${_dir}/${_file} --shadertemplate ${_template} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
-						DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template} ${_template_ub}
-					)
-					list(APPEND _headers ${_shader})
-				elseif (EXISTS ${_dir}/${_file}.comp)
-					add_custom_command(
-						OUTPUT ${_shader}
-						IMPLICIT_DEPENDS C ${_dir}/${_file}.comp
-						COMMENT "Validate ${_file} and generate ${_shaderfile}"
-						COMMAND ${CMAKE_BINARY_DIR}/shadertool --glslang ${CMAKE_BINARY_DIR}/glslangValidator --shader ${_dir}/${_file} --shadertemplate ${_template} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
-						DEPENDS shadertool ${_dir}/${_file}.comp ${_template} ${_template_ub}
-					)
-					list(APPEND _headers ${_shader})
-				endif()
-			endforeach()
+	set(_headers)
+	add_custom_target(UpdateShaders${TARGET})
+	file(WRITE ${CMAKE_BINARY_DIR}/GenerateShaderHeader${TARGET}.cmake "configure_file(\${SRC} \${DST} @ONLY)")
+	foreach (_file ${files})
+		set(_shaders)
+		set(_lastdir)
+		foreach (shader_dir "${TARGET}" shared)
+			set(_dir ${ROOT_DIR}/${GAME_BASE_DIR}/${shader_dir}/shaders)
+			if (EXISTS ${_dir}/${_file}.frag AND EXISTS ${_dir}/${_file}.vert)
+				list(APPEND _shaders ${_dir}/${_file}.frag ${_dir}/${_file}.vert)
+				set(_lastdir ${_dir})
+			endif()
+			if (EXISTS ${_dir}/${_file}.geom)
+				list(APPEND _shaders ${_dir}/${_file}.geom)
+				set(_lastdir ${_dir})
+			endif()
+			if (EXISTS ${_dir}/${_file}.comp)
+				list(APPEND _shaders ${_dir}/${_file}.comp)
+				set(_lastdir ${_dir})
+			endif()
+		endforeach()
+		if (_shaders)
+			convert_to_camel_case(${_file} _f)
+			set(_shaderfile "${_f}Shader.h")
+			set(_shader "${GEN_DIR}${_shaderfile}")
+			add_custom_command(
+				OUTPUT ${_shader}.in
+				IMPLICIT_DEPENDS C ${_shaders}
+				COMMENT "Validate ${_file} and generate ${_shaderfile}"
+				COMMAND ${CMAKE_BINARY_DIR}/shadertool --glslang ${CMAKE_BINARY_DIR}/glslangValidator --postfix .in --shader ${_lastdir}/${_file} --shadertemplate ${_template} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+				DEPENDS shadertool ${_shaders} ${_template} ${_template_ub}
+			)
+			list(APPEND _headers ${_shader})
+			add_custom_command(OUTPUT ${_shader} COMMAND ${CMAKE_COMMAND} -D SRC=${_shader}.in -D DST=${_shader} -P ${CMAKE_BINARY_DIR}/GenerateShaderHeader${TARGET}.cmake DEPENDS ${_shader}.in)
+		else()
+			message(FATAL_ERROR "Could not find any shader files for ${_file} and target '${TARGET}'")
 		endif()
 	endforeach()
+
 	convert_to_camel_case(${TARGET} _filetarget)
-	# TODO: not regenerated if files were added, renamed or removed
 	set(_h ${GEN_DIR}/${_filetarget}Shaders.h)
 	file(WRITE ${_h}.in "#pragma once\n")
-	foreach(header_path ${_headers})
+	foreach (header_path ${_headers})
 		string(REPLACE "${GEN_DIR}" "" header "${header_path}")
 		file(APPEND ${_h}.in "#include \"${header}\"\n")
 	endforeach()
-	add_custom_command(
-		OUTPUT  ${_h}
-		COMMAND ${CMAKE_COMMAND}
-		ARGS    -E copy_if_different ${_h}.in ${_h}
-		COMMENT "Generate ${_h}"
-	)
 	add_custom_target(GenerateShaderBindings${TARGET}
-		DEPENDS ${_headers} ${_h}
+		DEPENDS ${_headers}
 		COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
 	)
-	#target_sources(${TARGET} PUBLIC ${_headers} ${_h})
-	set_source_files_properties(${_headers} ${_h} ${_h}.in PROPERTIES GENERATED TRUE)
-	add_dependencies(${TARGET} GenerateShaderBindings${TARGET})
-	add_dependencies(codegen GenerateShaderBindings${TARGET})
+	set_source_files_properties(${_headers} ${_h} PROPERTIES GENERATED TRUE)
+	add_custom_target(GenerateShaderHeader${TARGET} ${CMAKE_COMMAND} -D SRC=${_h}.in -D DST=${_h} -P ${CMAKE_BINARY_DIR}/GenerateShaderHeader${TARGET}.cmake)
+	add_dependencies(${TARGET} GenerateShaderHeader${TARGET} UpdateShaders${TARGET})
+	add_dependencies(GenerateShaderHeader${TARGET} GenerateShaderBindings${TARGET})
+	add_dependencies(codegen GenerateShaderHeader${TARGET} UpdateShaders${TARGET})
 endmacro()
 
 macro(generate_compute_shaders TARGET)
 	set(files ${ARGV})
 	list(REMOVE_AT files 0)
-	set(_headers)
 	set(GEN_DIR ${GENERATE_DIR}/compute-shaders/${TARGET}/)
 	set(_template ${ROOT_DIR}/src/tools/computeshadertool/ComputeShaderTemplate.h.in)
 	file(MAKE_DIRECTORY ${GEN_DIR})
 	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
-	foreach (shader_dir "${TARGET}" shared)
-		set(_dir ${ROOT_DIR}/${GAME_BASE_DIR}/${shader_dir}/shaders)
-		if (IS_DIRECTORY ${_dir})
-			foreach (_file ${files})
-				if (EXISTS ${_dir}/${_file}.cl)
-					convert_to_camel_case(${_file} _f)
-					set(_shaderfile "${_f}Shader.h")
-					set(_shader "${GEN_DIR}${_shaderfile}")
-					add_custom_command(
-						OUTPUT ${_shader}
-						IMPLICIT_DEPENDS C ${_dir}/${_file}.cl
-						COMMENT "Generate ${_shaderfile}"
-						COMMAND ${CMAKE_BINARY_DIR}/computeshadertool --shader ${_dir}/${_file} --shadertemplate ${_template} --sourcedir ${GEN_DIR}
-						DEPENDS computeshadertool ${_dir}/${_file}.cl ${_template}
-					)
-					list(APPEND _headers ${_shader})
-				endif()
-			endforeach()
+	set(_headers)
+	add_custom_target(UpdateComputeShaders${TARGET})
+	file(WRITE ${CMAKE_BINARY_DIR}/GenerateComputeShaderHeader${TARGET}.cmake "configure_file(\${SRC} \${DST} @ONLY)")
+	foreach (_file ${files})
+		set(_shaders)
+		set(_lastdir)
+		foreach (shader_dir "${TARGET}" shared)
+			set(_dir ${ROOT_DIR}/${GAME_BASE_DIR}/${shader_dir}/shaders)
+			if (EXISTS ${_dir}/${_file}.cl)
+				list(APPEND _shaders ${_dir}/${_file}.cl)
+				set(_lastdir ${_dir})
+			endif()
+		endforeach()
+		if (_shaders)
+			convert_to_camel_case(${_file} _f)
+			set(_shaderfile "${_f}Shader.h")
+			set(_shader "${GEN_DIR}${_shaderfile}")
+			add_custom_command(
+				OUTPUT ${_shader}.in
+				IMPLICIT_DEPENDS C ${_shaders}
+				COMMENT "Validate ${_file} and generate ${_shaderfile}"
+				COMMAND ${CMAKE_BINARY_DIR}/computeshadertool --shader ${_dir}/${_file} --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
+				DEPENDS computeshadertool ${_shaders} ${_template}
+			)
+			list(APPEND _headers ${_shader})
+			add_custom_command(OUTPUT ${_shader} COMMAND ${CMAKE_COMMAND} -D SRC=${_shader}.in -D DST=${_shader} -P ${CMAKE_BINARY_DIR}/GenerateComputeShaderHeader${TARGET}.cmake DEPENDS ${_shader}.in)
+		else()
+			message(FATAL_ERROR "Could not find any shader files for ${_file} and target '${TARGET}'")
 		endif()
 	endforeach()
+
 	convert_to_camel_case(${TARGET} _filetarget)
-	# TODO: not regenerated if files were added, renamed or removed
 	set(_h ${GEN_DIR}/${_filetarget}Shaders.h)
 	file(WRITE ${_h}.in "#pragma once\n")
-	foreach(header_path ${_headers})
+	foreach (header_path ${_headers})
 		string(REPLACE "${GEN_DIR}" "" header "${header_path}")
 		file(APPEND ${_h}.in "#include \"${header}\"\n")
 	endforeach()
-	add_custom_command(
-		OUTPUT  ${_h}
-		COMMAND ${CMAKE_COMMAND}
-		ARGS    -E copy_if_different ${_h}.in ${_h}
-		COMMENT "Generate ${_h}"
-	)
 	add_custom_target(GenerateComputeShaderBindings${TARGET}
-		DEPENDS ${_headers} ${_h}
-		COMMENT "Generate compute shader bindings for ${TARGET} in ${GEN_DIR}"
+		DEPENDS ${_headers}
+		COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
 	)
-	#target_sources(${TARGET} PUBLIC ${_headers} ${_h})
-	set_source_files_properties(${_headers} ${_h} ${_h}.in PROPERTIES GENERATED TRUE)
-	add_dependencies(${TARGET} GenerateComputeShaderBindings${TARGET})
-	add_dependencies(codegen GenerateComputeShaderBindings${TARGET})
+	set_source_files_properties(${_headers} ${_h} PROPERTIES GENERATED TRUE)
+	add_custom_target(GenerateComputeShaderHeader${TARGET} ${CMAKE_COMMAND} -D SRC=${_h}.in -D DST=${_h} -P ${CMAKE_BINARY_DIR}/GenerateComputeShaderHeader${TARGET}.cmake)
+	add_dependencies(${TARGET} GenerateComputeShaderHeader${TARGET} UpdateComputeShaders${TARGET})
+	add_dependencies(GenerateComputeShaderHeader${TARGET} GenerateComputeShaderBindings${TARGET})
+	add_dependencies(codegen GenerateComputeShaderHeader${TARGET} UpdateComputeShaders${TARGET})
 endmacro()
 
 macro(generate_db_models TARGET INPUT OUTPUT)

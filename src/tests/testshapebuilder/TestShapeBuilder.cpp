@@ -171,9 +171,6 @@ void TestShapeBuilder::onRenderUI() {
 
 	ImGui::Separator();
 
-	ImGui::Checkbox("Render Axis", &_renderAxis);
-	ImGui::Checkbox("Render Plane", &_renderPlane);
-
 	if (ImGui::Button("Clear")) {
 		for (int i = 0; i < _meshCount; ++i) {
 			_shapeRenderer.deleteMesh(_meshes[i]);

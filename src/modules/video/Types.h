@@ -144,7 +144,11 @@ enum class VertexBufferMode {
 enum class Primitive {
 	Points,
 	Lines,
+	LinesAdjacency,
 	Triangles,
+	TrianglesAdjacency,
+	LineStrip,
+	TriangleStrip,
 
 	Max
 };

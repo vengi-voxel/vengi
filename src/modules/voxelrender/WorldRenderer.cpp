@@ -339,9 +339,8 @@ bool WorldRenderer::renderOpaqueBuffers() {
 	if (numIndices == 0u) {
 		return false;
 	}
-	_opaqueBuffer.bind();
+	video::ScopedVertexBuffer scopedBuf(_opaqueBuffer);
 	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
-	_opaqueBuffer.unbind();
 	return true;
 }
 
@@ -350,9 +349,8 @@ bool WorldRenderer::renderWaterBuffers() {
 	if (numIndices == 0u) {
 		return false;
 	}
-	_waterBuffer.bind();
+	video::ScopedVertexBuffer scopedBuf(_waterBuffer);
 	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
-	_waterBuffer.unbind();
 	return true;
 }
 
@@ -364,7 +362,7 @@ int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertic
 			continue;
 		}
 
-		vbo->vb.bind();
+		video::ScopedVertexBuffer scopedBuf(vbo->vb);
 		if (vbo->amount == 1) {
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
 		} else {
@@ -557,7 +555,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_shadowMapRenderShader.setNear(camera.nearPlane());
 
 		// bind buffers
-		core_assert_always(_shadowMapDebugBuffer.bind());
+		video::ScopedVertexBuffer scopedBuf(_shadowMapDebugBuffer);
 
 		// configure shadow map texture
 		video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
@@ -578,9 +576,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		if (_depthBuffer.depthCompare()) {
 			video::setupDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
 		}
-
-		// unbind buffer
-		_shadowMapDebugBuffer.unbind();
 	}
 
 	if (_renderAABBs->boolVal()) {

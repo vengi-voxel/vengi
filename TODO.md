@@ -14,10 +14,6 @@ INFO: (0) Validation output: shaders/world
 active samplers with a different type refer to the same texture image unit
 ```
 
-## Code generation
-
-Only replace the files if something has really changed. (`configure_file`?)
-
 # Data handling
 
 The current approach with data dir must be extended/redone someone. There are way too many files installed per artifact atm. Also there should be CPack support to generate debian packages.

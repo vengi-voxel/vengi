@@ -592,7 +592,7 @@ int Mesh::render() {
 	if (_state != io::IOSTATE_LOADED) {
 		return 0;
 	}
-	_vertexBuffer.bind();
+	video::ScopedVertexBuffer scopedBuf(_vertexBuffer);
 	int drawCalls = 0;
 	for (const RenderMeshData& mesh : _meshData) {
 		const uint32_t matIdx = mesh.materialIndex;
@@ -602,8 +602,6 @@ int Mesh::render() {
 		video::drawElementsBaseVertex<Indices::value_type>(video::Primitive::Triangles, mesh.noOfIndices, mesh.baseIndex, mesh.baseVertex);
 		++drawCalls;
 	}
-	_vertexBuffer.unbind();
-
 	return drawCalls;
 }
 
@@ -638,11 +636,10 @@ int Mesh::renderBones(video::Shader& shader) {
 	boneData.reserve(_boneMapping.size() * 2);
 	traverseBones(boneData, _scene->mRootNode, glm::mat4(1.0f), glm::vec3(0), false);
 	_vertexBufferLines.update(_vertexBufferLinesIndex, boneData.data);
-	_vertexBufferLines.bind();
+	video::ScopedVertexBuffer scopedBuf(_vertexBufferLines);
 	ScopedLineWidth lineWidth(2.0f);
 	const int elements = _vertexBufferLines.elements(_vertexBufferLinesIndex, 2);
 	video::drawArrays(video::Primitive::Lines, elements);
-	_vertexBufferLines.unbind();
 
 	return 1;
 }
@@ -681,11 +678,10 @@ int Mesh::renderNormals(video::Shader& shader) {
 	}
 
 	_vertexBufferLines.update(_vertexBufferLinesIndex, normalData.data);
-	_vertexBufferLines.bind();
+	video::ScopedVertexBuffer scopedBuf(_vertexBufferLines);
 	ScopedLineWidth lineWidth(2.0f);
 	const int elements = _vertexBufferLines.elements(_vertexBufferLinesIndex, 2);
 	video::drawArrays(video::Primitive::Lines, elements);
-	_vertexBufferLines.unbind();
 
 	return 1;
 }

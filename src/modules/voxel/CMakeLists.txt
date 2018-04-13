@@ -75,8 +75,6 @@ else()
 	target_compile_options(${LIB} PRIVATE -O3)
 endif()
 
-generate_compute_shaders(voxel meshextractor)
-
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
