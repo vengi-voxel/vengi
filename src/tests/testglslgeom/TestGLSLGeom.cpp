@@ -62,7 +62,7 @@ core::AppState TestGLSLGeom::onCleanup() {
 
 void TestGLSLGeom::onRenderUI() {
 	ImGui::SliderFloat("radius", &_radius, 1.0f, 20.0f);
-	ImGui::SliderInt("sides", &_sides, 2, _testShader.getMaxGeometryVertices());
+	ImGui::SliderInt("sides", &_sides, 2, _testShader.getMaxGeometryVertices() - 1);
 	Super::onRenderUI();
 }
 
