@@ -19,7 +19,7 @@ core::AppState TestGLSLGeom::onInit() {
 	}
 
 	if (!_testShader.setup()) {
-		Log::error("Failed to init the compute shader");
+		Log::error("Failed to init the geometry shader");
 		return core::AppState::InitFailure;
 	}
 
