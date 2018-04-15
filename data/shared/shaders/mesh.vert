@@ -22,16 +22,13 @@ $out vec4 v_color;
 void main(void) {
 	vec4 mpos;
 	if (bool(u_vertexskinning)) {
-		vec4 vertex = (u_bonetransforms[a_boneids[0]] * vec4(a_pos, 1.0)) * a_boneweights[0];
-		vertex     += (u_bonetransforms[a_boneids[1]] * vec4(a_pos, 1.0)) * a_boneweights[1];
-		vertex     += (u_bonetransforms[a_boneids[2]] * vec4(a_pos, 1.0)) * a_boneweights[2];
-		vertex     += (u_bonetransforms[a_boneids[3]] * vec4(a_pos, 1.0)) * a_boneweights[3];
-
-		vec4 normal = (u_bonetransforms[a_boneids[0]] * vec4(a_norm, 0.0)) * a_boneweights[0];
-		normal     += (u_bonetransforms[a_boneids[1]] * vec4(a_norm, 0.0)) * a_boneweights[1];
-		normal     += (u_bonetransforms[a_boneids[2]] * vec4(a_norm, 0.0)) * a_boneweights[2];
-		normal     += (u_bonetransforms[a_boneids[3]] * vec4(a_norm, 0.0)) * a_boneweights[3];
-
+		mat4 m;
+		m = u_bonetransforms[a_boneids[0]] * a_boneweights[0]
+		  + u_bonetransforms[a_boneids[1]] * a_boneweights[1]
+		  + u_bonetransforms[a_boneids[2]] * a_boneweights[2]
+		  + u_bonetransforms[a_boneids[3]] * a_boneweights[3];
+		vec4 vertex = m * vec4(a_pos, 1.0);
+		vec4 normal = m * vec4(a_norm, 0.0);
 		mpos        = u_model * vertex;
 		v_norm      = normal.xyz;
 	} else {
