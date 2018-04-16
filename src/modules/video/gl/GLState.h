@@ -40,6 +40,7 @@ struct GLState {
 	AccessMode imageAccessMode = AccessMode::Max;
 	ImageFormat imageFormat = ImageFormat::Max;
 	Id occlusionQuery = InvalidId;
+	Id transformFeedback = InvalidId;
 	int viewportX = 0;
 	int viewportY = 0;
 	int viewportW = 0;

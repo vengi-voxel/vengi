@@ -65,6 +65,9 @@ protected:
 
 	ShaderUniforms _uniforms;
 
+	TransformFeedbackCaptureMode _transformFormat = TransformFeedbackCaptureMode::Max;
+	std::vector<std::string> _transformVaryings;
+
 	// can be used to validate that every uniform was set. The value type is the location index
 	mutable std::unordered_set<int> _usedUniforms;
 	bool _recordUsedUniforms = false;
@@ -115,9 +118,19 @@ public:
 	 */
 	bool init();
 
+	/**
+	 * @brief Make sure to configure feedback transform varying before you link the shader
+	 * @see setupTransformFeedback()
+	 */
 	virtual bool setup() {
 		return false;
 	}
+
+	/**
+	 * @note Must be called before calling @c setup()
+	 * @see setup()
+	 */
+	void setupTransformFeedback(const std::vector<std::string>& transformVaryings, TransformFeedbackCaptureMode mode);
 
 	void recordUsedUniforms(bool state);
 
@@ -162,6 +175,8 @@ public:
 	 * @return @c false if this is no compute shader, or the execution failed.
 	 */
 	bool run(const glm::uvec3& workGroups, bool wait = false);
+
+	bool transformFeedback() const;
 
 	void checkAttribute(const std::string& attribute);
 	void checkUniform(const std::string& uniform);

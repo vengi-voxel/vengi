@@ -425,6 +425,10 @@ bool Shader::createProgramFromShaders() {
 	const Id frag = _shader[ShaderType::Fragment];
 	const Id geom = _shader[ShaderType::Geometry];
 
+	if (!bindTransformFeedbackVaryings(_program, _transformFormat, _transformVaryings)) {
+		_transformFormat = TransformFeedbackCaptureMode::Max;
+	}
+
 	return video::linkShader(_program, vert, frag, geom, _name);
 }
 
@@ -434,6 +438,15 @@ bool Shader::run(const glm::uvec3& workGroups, bool wait) {
 		return false;
 	}
 	return video::runShader(_program, workGroups, wait);
+}
+
+bool Shader::transformFeedback() const {
+	return _transformFormat != TransformFeedbackCaptureMode::Max;
+}
+
+void Shader::setupTransformFeedback(const std::vector<std::string>& varyings, TransformFeedbackCaptureMode format) {
+	_transformVaryings = varyings;
+	_transformFormat = format;
 }
 
 }

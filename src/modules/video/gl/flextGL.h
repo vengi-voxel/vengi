@@ -1010,6 +1010,27 @@ typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLen
 
 #define GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ARB 0x88FE
 
+/* GL_ARB_compute_shader */
+
+#define GL_COMPUTE_SHADER 0x91B9
+#define GL_MAX_COMPUTE_UNIFORM_BLOCKS 0x91BB
+#define GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS 0x91BC
+#define GL_MAX_COMPUTE_IMAGE_UNIFORMS 0x91BD
+#define GL_MAX_COMPUTE_SHARED_MEMORY_SIZE 0x8262
+#define GL_MAX_COMPUTE_UNIFORM_COMPONENTS 0x8263
+#define GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS 0x8264
+#define GL_MAX_COMPUTE_ATOMIC_COUNTERS 0x8265
+#define GL_MAX_COMBINED_COMPUTE_UNIFORM_COMPONENTS 0x8266
+#define GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS 0x90EB
+#define GL_MAX_COMPUTE_WORK_GROUP_COUNT 0x91BE
+#define GL_MAX_COMPUTE_WORK_GROUP_SIZE 0x91BF
+#define GL_COMPUTE_WORK_GROUP_SIZE 0x8267
+#define GL_UNIFORM_BLOCK_REFERENCED_BY_COMPUTE_SHADER 0x90EC
+#define GL_ATOMIC_COUNTER_BUFFER_REFERENCED_BY_COMPUTE_SHADER 0x90ED
+#define GL_DISPATCH_INDIRECT_BUFFER 0x90EE
+#define GL_DISPATCH_INDIRECT_BUFFER_BINDING 0x90EF
+#define GL_COMPUTE_SHADER_BIT 0x00000020
+
 /* GL_ARB_shader_image_load_store */
 
 #define GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT 0x00000001
@@ -1077,26 +1098,12 @@ typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_MAX_FRAGMENT_IMAGE_UNIFORMS 0x90CE
 #define GL_MAX_COMBINED_IMAGE_UNIFORMS 0x90CF
 
-/* GL_ARB_compute_shader */
+/* GL_ARB_transform_feedback2 */
 
-#define GL_COMPUTE_SHADER 0x91B9
-#define GL_MAX_COMPUTE_UNIFORM_BLOCKS 0x91BB
-#define GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS 0x91BC
-#define GL_MAX_COMPUTE_IMAGE_UNIFORMS 0x91BD
-#define GL_MAX_COMPUTE_SHARED_MEMORY_SIZE 0x8262
-#define GL_MAX_COMPUTE_UNIFORM_COMPONENTS 0x8263
-#define GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS 0x8264
-#define GL_MAX_COMPUTE_ATOMIC_COUNTERS 0x8265
-#define GL_MAX_COMBINED_COMPUTE_UNIFORM_COMPONENTS 0x8266
-#define GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS 0x90EB
-#define GL_MAX_COMPUTE_WORK_GROUP_COUNT 0x91BE
-#define GL_MAX_COMPUTE_WORK_GROUP_SIZE 0x91BF
-#define GL_COMPUTE_WORK_GROUP_SIZE 0x8267
-#define GL_UNIFORM_BLOCK_REFERENCED_BY_COMPUTE_SHADER 0x90EC
-#define GL_ATOMIC_COUNTER_BUFFER_REFERENCED_BY_COMPUTE_SHADER 0x90ED
-#define GL_DISPATCH_INDIRECT_BUFFER 0x90EE
-#define GL_DISPATCH_INDIRECT_BUFFER_BINDING 0x90EF
-#define GL_COMPUTE_SHADER_BIT 0x00000020
+#define GL_TRANSFORM_FEEDBACK 0x8E22
+#define GL_TRANSFORM_FEEDBACK_BUFFER_PAUSED 0x8E23
+#define GL_TRANSFORM_FEEDBACK_BUFFER_ACTIVE 0x8E24
+#define GL_TRANSFORM_FEEDBACK_BINDING 0x8E25
 
 /* --------------------------- FUNCTION PROTOTYPES --------------------------- */
 
@@ -1480,6 +1487,33 @@ GLAPI PFNGLMEMORYBARRIER_PROC* glpfMemoryBarrier;
 
 #define glBindImageTexture glpfBindImageTexture
 #define glMemoryBarrier glpfMemoryBarrier
+
+
+/* GL_ARB_transform_feedback2 */
+
+typedef void (APIENTRY PFNGLBINDTRANSFORMFEEDBACK_PROC (GLenum target, GLuint id));
+typedef void (APIENTRY PFNGLDELETETRANSFORMFEEDBACKS_PROC (GLsizei n, const GLuint * ids));
+typedef void (APIENTRY PFNGLDRAWTRANSFORMFEEDBACK_PROC (GLenum mode, GLuint id));
+typedef void (APIENTRY PFNGLGENTRANSFORMFEEDBACKS_PROC (GLsizei n, GLuint * ids));
+typedef GLboolean (APIENTRY PFNGLISTRANSFORMFEEDBACK_PROC (GLuint id));
+typedef void (APIENTRY PFNGLPAUSETRANSFORMFEEDBACK_PROC (void));
+typedef void (APIENTRY PFNGLRESUMETRANSFORMFEEDBACK_PROC (void));
+
+GLAPI PFNGLBINDTRANSFORMFEEDBACK_PROC* glpfBindTransformFeedback;
+GLAPI PFNGLDELETETRANSFORMFEEDBACKS_PROC* glpfDeleteTransformFeedbacks;
+GLAPI PFNGLDRAWTRANSFORMFEEDBACK_PROC* glpfDrawTransformFeedback;
+GLAPI PFNGLGENTRANSFORMFEEDBACKS_PROC* glpfGenTransformFeedbacks;
+GLAPI PFNGLISTRANSFORMFEEDBACK_PROC* glpfIsTransformFeedback;
+GLAPI PFNGLPAUSETRANSFORMFEEDBACK_PROC* glpfPauseTransformFeedback;
+GLAPI PFNGLRESUMETRANSFORMFEEDBACK_PROC* glpfResumeTransformFeedback;
+
+#define glBindTransformFeedback glpfBindTransformFeedback
+#define glDeleteTransformFeedbacks glpfDeleteTransformFeedbacks
+#define glDrawTransformFeedback glpfDrawTransformFeedback
+#define glGenTransformFeedbacks glpfGenTransformFeedbacks
+#define glIsTransformFeedback glpfIsTransformFeedback
+#define glPauseTransformFeedback glpfPauseTransformFeedback
+#define glResumeTransformFeedback glpfResumeTransformFeedback
 
 
 /* GL_VERSION_1_0 */
@@ -2596,6 +2630,7 @@ GLAPI PFNGLVERTEXATTRIBP4UIV_PROC* glpfVertexAttribP4uiv;
 #define GL_ARB_instanced_arrays
 #define GL_ARB_multi_draw_indirect
 #define GL_ARB_shader_image_load_store
+#define GL_ARB_transform_feedback2
 #define GL_VERSION_1_0
 #define GL_VERSION_1_1
 #define GL_VERSION_1_2
@@ -2618,8 +2653,9 @@ extern int FLEXT_ARB_buffer_storage;
 extern int FLEXT_ARB_multi_draw_indirect;
 extern int FLEXT_ARB_draw_indirect;
 extern int FLEXT_ARB_instanced_arrays;
-extern int FLEXT_ARB_shader_image_load_store;
 extern int FLEXT_ARB_compute_shader;
+extern int FLEXT_ARB_shader_image_load_store;
+extern int FLEXT_ARB_transform_feedback2;
 
 int flextInit(void);
 

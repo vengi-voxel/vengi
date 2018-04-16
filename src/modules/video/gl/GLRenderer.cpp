@@ -618,6 +618,82 @@ Id genOcclusionQuery() {
 	return id;
 }
 
+Id genTransformFeedback() {
+	if (!FLEXT_ARB_transform_feedback2) {
+		return InvalidId;
+	}
+	Id id;
+	glGenTransformFeedbacks(1, &id);
+	checkError();
+	return id;
+}
+
+void deleteTransformFeedback(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	glDeleteTransformFeedbacks(1, &id);
+	id = InvalidId;
+	checkError();
+}
+
+bool bindTransformFeedback(Id id) {
+	if (id == InvalidId) {
+		return false;
+	}
+	if (_priv::s.transformFeedback == id) {
+		return true;
+	}
+	_priv::s.transformFeedback = id;
+	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, (GLuint)id);
+	return true;
+}
+
+bool bindTransforFeebackBuffer(int index, Id bufferId) {
+	if (!FLEXT_ARB_transform_feedback2) {
+		return false;
+	}
+	// the buffer must be of type GL_TRANSFORM_FEEDBACK_BUFFER
+	if (bufferId == InvalidId) {
+		return false;
+	}
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, index, (GLuint)bufferId);
+	return true;
+}
+
+bool beginTransformFeedback(Primitive primitive) {
+	if (!FLEXT_ARB_transform_feedback2) {
+		return false;
+	}
+	const GLenum glMode = _priv::Primitives[std::enum_value(primitive)];
+	if (glMode == GL_POINTS || glMode ==  GL_LINES || glMode == GL_TRIANGLES) {
+		glBeginTransformFeedback(glMode);
+		return true;
+	}
+	return false;
+}
+
+void pauseTransformFeedback() {
+	if (!FLEXT_ARB_transform_feedback2) {
+		return;
+	}
+	glPauseTransformFeedback();
+}
+
+void resumeTransformFeedback() {
+	if (!FLEXT_ARB_transform_feedback2) {
+		return;
+	}
+	glResumeTransformFeedback();
+}
+
+void endTransformFeedback() {
+	if (!FLEXT_ARB_transform_feedback2) {
+		return;
+	}
+	glEndTransformFeedback();
+}
+
 void deleteOcclusionQuery(Id& id) {
 	if (id == InvalidId) {
 		return;
@@ -962,6 +1038,25 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 		deleteShader(id);
 		return false;
 	}
+	return true;
+}
+
+bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode, const std::vector<std::string>& varyings) {
+	if (!FLEXT_ARB_transform_feedback2) {
+		return false;
+	}
+	if (varyings.empty() || mode == TransformFeedbackCaptureMode::Max) {
+		// nothing to do is success
+		return true;
+	}
+	std::vector<const GLchar*> transformFeedbackStarts(varyings.size());
+	for (auto& transformFeedbackVaryings : varyings) {
+		transformFeedbackStarts.push_back(transformFeedbackVaryings.c_str());
+	}
+	glTransformFeedbackVaryings((GLuint) program,
+			(GLsizei) transformFeedbackStarts.size(),
+			transformFeedbackStarts.data(),
+			(GLenum)_priv::TransformFeedbackCaptureModes[std::enum_value(mode)]);
 	return true;
 }
 

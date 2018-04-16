@@ -129,6 +129,7 @@ enum class VertexBufferType {
 	ArrayBuffer,
 	IndexBuffer,
 	UniformBuffer,
+	TransformBuffer,
 
 	Max
 };
@@ -137,6 +138,13 @@ enum class VertexBufferMode {
 	Static,
 	Dynamic,
 	Stream,
+
+	Max
+};
+
+enum class TransformFeedbackCaptureMode {
+	Interleaved,
+	Separate,
 
 	Max
 };

@@ -59,12 +59,16 @@ int flextInit(void)
         FLEXT_ARB_instanced_arrays = GL_TRUE;
     }
 
+    if (SDL_GL_ExtensionSupported("GL_ARB_compute_shader")) {
+        FLEXT_ARB_compute_shader = GL_TRUE;
+    }
+
     if (SDL_GL_ExtensionSupported("GL_ARB_shader_image_load_store")) {
         FLEXT_ARB_shader_image_load_store = GL_TRUE;
     }
 
-    if (SDL_GL_ExtensionSupported("GL_ARB_compute_shader")) {
-        FLEXT_ARB_compute_shader = GL_TRUE;
+    if (SDL_GL_ExtensionSupported("GL_ARB_transform_feedback2")) {
+        FLEXT_ARB_transform_feedback2 = GL_TRUE;
     }
 
 
@@ -209,6 +213,16 @@ void flextLoadOpenGLFunctions(void)
 
     glpfBindImageTexture = (PFNGLBINDIMAGETEXTURE_PROC*)SDL_GL_GetProcAddress("glBindImageTexture");
     glpfMemoryBarrier = (PFNGLMEMORYBARRIER_PROC*)SDL_GL_GetProcAddress("glMemoryBarrier");
+
+    /* GL_ARB_transform_feedback2 */
+
+    glpfBindTransformFeedback = (PFNGLBINDTRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glBindTransformFeedback");
+    glpfDeleteTransformFeedbacks = (PFNGLDELETETRANSFORMFEEDBACKS_PROC*)SDL_GL_GetProcAddress("glDeleteTransformFeedbacks");
+    glpfDrawTransformFeedback = (PFNGLDRAWTRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glDrawTransformFeedback");
+    glpfGenTransformFeedbacks = (PFNGLGENTRANSFORMFEEDBACKS_PROC*)SDL_GL_GetProcAddress("glGenTransformFeedbacks");
+    glpfIsTransformFeedback = (PFNGLISTRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glIsTransformFeedback");
+    glpfPauseTransformFeedback = (PFNGLPAUSETRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glPauseTransformFeedback");
+    glpfResumeTransformFeedback = (PFNGLRESUMETRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glResumeTransformFeedback");
 
     /* GL_VERSION_1_0 */
 
@@ -599,8 +613,9 @@ int FLEXT_ARB_buffer_storage = GL_FALSE;
 int FLEXT_ARB_multi_draw_indirect = GL_FALSE;
 int FLEXT_ARB_draw_indirect = GL_FALSE;
 int FLEXT_ARB_instanced_arrays = GL_FALSE;
-int FLEXT_ARB_shader_image_load_store = GL_FALSE;
 int FLEXT_ARB_compute_shader = GL_FALSE;
+int FLEXT_ARB_shader_image_load_store = GL_FALSE;
+int FLEXT_ARB_transform_feedback2 = GL_FALSE;
 
 /* ---------------------- Function pointer definitions --------------------- */
 
@@ -738,6 +753,16 @@ PFNGLMULTIDRAWELEMENTSINDIRECT_PROC* glpfMultiDrawElementsIndirect = NULL;
 
 PFNGLBINDIMAGETEXTURE_PROC* glpfBindImageTexture = NULL;
 PFNGLMEMORYBARRIER_PROC* glpfMemoryBarrier = NULL;
+
+/* GL_ARB_transform_feedback2 */
+
+PFNGLBINDTRANSFORMFEEDBACK_PROC* glpfBindTransformFeedback = NULL;
+PFNGLDELETETRANSFORMFEEDBACKS_PROC* glpfDeleteTransformFeedbacks = NULL;
+PFNGLDRAWTRANSFORMFEEDBACK_PROC* glpfDrawTransformFeedback = NULL;
+PFNGLGENTRANSFORMFEEDBACKS_PROC* glpfGenTransformFeedbacks = NULL;
+PFNGLISTRANSFORMFEEDBACK_PROC* glpfIsTransformFeedback = NULL;
+PFNGLPAUSETRANSFORMFEEDBACK_PROC* glpfPauseTransformFeedback = NULL;
+PFNGLRESUMETRANSFORMFEEDBACK_PROC* glpfResumeTransformFeedback = NULL;
 
 /* GL_VERSION_1_0 */
 

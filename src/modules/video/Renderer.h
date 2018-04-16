@@ -255,6 +255,16 @@ extern int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string
 extern int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string& name);
 extern void flush();
 
+extern bool beginTransformFeedback(Primitive primitive);
+extern void pauseTransformFeedback();
+extern void resumeTransformFeedback();
+extern void endTransformFeedback();
+extern bool bindTransforFeebackBuffer(int index, Id bufferId);
+extern bool bindTransformFeedback(Id id);
+extern void deleteTransformFeedback(Id& id);
+extern Id genTransformFeedback();
+extern bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode transformFormat, const std::vector<std::string>& transformVaryings);
+
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices, void* offset = nullptr) {
 	drawElements(mode, numIndices, mapType<IndexType>(), offset);

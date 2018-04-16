@@ -72,7 +72,8 @@ static_assert(std::enum_value(AccessMode::Max) == lengthof(AccessModes), "Array 
 static GLenum VertexBufferTypes[] {
 	GL_ARRAY_BUFFER,
 	GL_ELEMENT_ARRAY_BUFFER,
-	GL_UNIFORM_BUFFER
+	GL_UNIFORM_BUFFER,
+	GL_TRANSFORM_FEEDBACK_BUFFER
 };
 static_assert(std::enum_value(VertexBufferType::Max) == lengthof(VertexBufferTypes), "Array sizes don't match Max");
 
@@ -161,9 +162,15 @@ static GLenum Primitives[] {
 	GL_TRIANGLES,
 	GL_TRIANGLES_ADJACENCY,
 	GL_LINE_STRIP,
-	GL_TRIANGLE_STRIP,
+	GL_TRIANGLE_STRIP
 };
 static_assert(std::enum_value(Primitive::Max) == lengthof(Primitives), "Array sizes don't match Max");
+
+static GLenum TransformFeedbackCaptureModes[] = {
+	GL_INTERLEAVED_ATTRIBS,
+	GL_SEPARATE_ATTRIBS
+};
+static_assert(std::enum_value(TransformFeedbackCaptureMode::Max) == lengthof(TransformFeedbackCaptureModes), "Array sizes don't match Max");
 
 static GLenum TextureUnits[] {
 	GL_TEXTURE0,
