@@ -32,6 +32,7 @@ protected:
 	float _aspect = 1.0f;
 	int _fps = 0;
 	uint32_t _frameCounter = 0;
+	float _dpiFactor = 1.0f;
 	double _frameCounterResetTime = 0.0;
 
 	std::unordered_set<int32_t> _keys;

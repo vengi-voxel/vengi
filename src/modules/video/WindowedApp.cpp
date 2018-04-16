@@ -268,7 +268,9 @@ core::AppState WindowedApp::onInit() {
 		float ddpi = -1.0f;
 		float hdpi = -1.0f;
 		float vdpi = -1.0f;
-		SDL_GetDisplayDPI(i, &ddpi, &hdpi, &vdpi);
+		if (SDL_GetDisplayDPI(i, &ddpi, &hdpi, &vdpi) == 0) {
+			_dpiFactor = ddpi / 96.0;
+		}
 		Log::info("Display %i: %i:%i x %i:%i (dpi: %f, h: %f, v: %f)", i, dr.x, dr.y, dr.w, dr.h, ddpi, hdpi, vdpi);
 	}
 

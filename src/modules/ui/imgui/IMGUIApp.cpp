@@ -12,6 +12,7 @@
 #include "core/Array.h"
 #include "math/Rect.h"
 #include "video/Renderer.h"
+#include "video/Shader.h"
 #include "video/ScopedViewPort.h"
 #include "IMGUI.h"
 
@@ -203,7 +204,9 @@ core::AppState IMGUIApp::onInit() {
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.DisplaySize = ImVec2((float)_dimension.x, (float)_dimension.y);
-	io.Fonts->AddFontDefault();
+	ImFontConfig fontCfg;
+	fontCfg.SizePixels = 13.0f * _dpiFactor;
+	io.Fonts->AddFontDefault(&fontCfg);
 
 	unsigned char* pixels;
 	int width, height;
