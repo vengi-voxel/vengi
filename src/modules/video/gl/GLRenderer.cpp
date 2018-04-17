@@ -96,27 +96,27 @@ bool setupDepthbuffer() {
 
 //TODO: use FrameBufferConfig
 bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texCount, Id depthTexture) {
-	const Id prev = bindFramebuffer(FrameBufferMode::Default, fbo);
+	const Id prev = bindFramebuffer(fbo);
 
+	TextureConfig cfg;
+	// we are going to write vec3 into the out vars in the shaders
+	cfg.format(TextureFormat::RGB32F).filter(TextureFilter::Nearest);
 	for (std::size_t i = 0; i < texCount; ++i) {
 		bindTexture(TextureUnit::Upload, TextureType::Texture2D, textures[i]);
-		// we are going to write vec3 into the out vars in the shaders
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, dimension.x, dimension.y, 0, GL_RGB, GL_FLOAT, nullptr);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i], 0);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		setupTexture(cfg);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, textures[i], 0);
 	}
 
 	bindTexture(TextureUnit::Upload, TextureType::Texture2D, depthTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
 	core_assert(texCount == GBUFFER_NUM_TEXTURES);
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
 
 	const bool retVal = _priv::checkFramebufferStatus();
-	bindFramebuffer(FrameBufferMode::Default, prev);
+	bindFramebuffer(prev);
 	return retVal;
 }
 
@@ -802,7 +802,7 @@ int getOcclusionQueryResult(Id id, bool wait) {
 	return (int)samples;
 }
 
-Id bindFramebuffer(FrameBufferMode mode, Id handle) {
+Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 	const Id old = _priv::s.framebufferHandle;
 #if SANITY_CHECKS_GL
 	GLint _oldFramebuffer;

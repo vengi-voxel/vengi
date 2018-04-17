@@ -42,16 +42,16 @@ bool GBuffer::init(const glm::ivec2& dimension) {
 }
 
 void GBuffer::bindForWriting() {
-	video::bindFramebuffer(FrameBufferMode::Draw, _fbo);
+	video::bindFramebuffer(_fbo, FrameBufferMode::Draw);
 }
 
 void GBuffer::bindForReading(bool gbuffer) {
 	if (gbuffer) {
-		bindFramebuffer(FrameBufferMode::Read, _fbo);
+		video::bindFramebuffer(_fbo, FrameBufferMode::Read);
 		return;
 	}
 
-	bindFramebuffer(FrameBufferMode::Draw, InvalidId);
+	video::bindFramebuffer(InvalidId, FrameBufferMode::Draw);
 
 	// activate the textures to read from
 	const video::TextureUnit texUnits[] = { TextureUnit::Zero, TextureUnit::One, TextureUnit::Two };
@@ -63,7 +63,7 @@ void GBuffer::bindForReading(bool gbuffer) {
 }
 
 void GBuffer::unbind() {
-	bindFramebuffer(FrameBufferMode::Default, InvalidId);
+	video::bindFramebuffer(InvalidId, FrameBufferMode::Default);
 }
 
 void GBuffer::setReadBuffer(GBufferTextureType textureType) {

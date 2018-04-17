@@ -48,12 +48,12 @@ bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
 bool FrameBuffer::init(const FrameBufferConfig& cfg) {
 	_dimension = cfg.dimension();
 	_fbo = genFramebuffer();
-	Id prev = video::bindFramebuffer(FrameBufferMode::Default, _fbo);
+	Id prev = video::bindFramebuffer(_fbo);
 	bool retVal = prepareAttachments(cfg);
 	if (retVal) {
 		retVal = video::setupFramebuffer(_colorAttachments, _bufferAttachments);
 	}
-	video::bindFramebuffer(FrameBufferMode::Default, prev);
+	video::bindFramebuffer(prev);
 	return retVal;
 }
 
@@ -84,13 +84,14 @@ Id FrameBuffer::texture() const {
 void FrameBuffer::bind() {
 	video::getViewport(_viewport[0], _viewport[1], _viewport[2], _viewport[3]);
 	video::viewport(0, 0, _dimension.x, _dimension.y);
-	_oldFramebuffer = video::bindFramebuffer(FrameBufferMode::Default, _fbo);
+	_oldFramebuffer = video::bindFramebuffer(_fbo);
+	// TODO: check which attachments are bound - maybe also stencil is used, maybe no depth is attached.
 	video::clear(ClearFlag::Color | ClearFlag::Depth);
 }
 
 void FrameBuffer::unbind() {
 	video::viewport(_viewport[0], _viewport[1], _viewport[2], _viewport[3]);
-	video::bindFramebuffer(FrameBufferMode::Default, _oldFramebuffer);
+	video::bindFramebuffer(_oldFramebuffer);
 	_oldFramebuffer = InvalidId;
 }
 

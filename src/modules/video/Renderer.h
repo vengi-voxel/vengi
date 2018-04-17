@@ -242,7 +242,7 @@ extern int getOcclusionQueryResult(Id id, bool wait = false);
  * @param textureHandle The Id that represents the texture that should be bound as frame buffer color attachment.
  * @return The previously bound frame buffer Id
  */
-extern Id bindFramebuffer(FrameBufferMode mode, Id handle);
+extern Id bindFramebuffer(Id handle, FrameBufferMode mode = FrameBufferMode::Default);
 extern bool setupRenderBuffer(TextureFormat format, int w, int h, int samples);
 extern Id bindRenderbuffer(Id handle);
 extern void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size);

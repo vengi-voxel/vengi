@@ -20,11 +20,11 @@ public:
 	}
 
 	explicit ScopedFrameBuffer(Id bindHandle) {
-		_oldFramebuffer = video::bindFramebuffer(video::FrameBufferMode::Default, bindHandle);
+		_oldFramebuffer = video::bindFramebuffer(bindHandle);
 	}
 
 	~ScopedFrameBuffer() {
-		video::bindFramebuffer(video::FrameBufferMode::Default, _oldFramebuffer);
+		video::bindFramebuffer(_oldFramebuffer);
 	}
 };
 

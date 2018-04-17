@@ -34,18 +34,18 @@ bool DepthBuffer::init(const glm::ivec2& dimension, int textureCount) {
 	_fbo = video::genFramebuffer();
 	TextureConfig cfg;
 	cfg.format(TextureFormat::D24S8).type(TextureType::Texture2DArray).wrap(TextureWrap::ClampToEdge);
+	cfg.compareFunc(CompareFunc::Less).compareMode(TextureCompareMode::RefToTexture);
 	_depthTexture = createTexture(cfg, 1, 1, "**depthmap**");
 	_depthTexture->upload(cfg.format(), dimension.x, dimension.y, nullptr, textureCount);
-	video::setupDepthCompareTexture(_depthTexture->type(), CompareFunc::Less, TextureCompareMode::RefToTexture);
-	const Id prev = bindFramebuffer(FrameBufferMode::Default, _fbo);
+	const Id prev = video::bindFramebuffer(_fbo);
 	const bool retVal = video::setupDepthbuffer();
-	bindFramebuffer(FrameBufferMode::Default, prev);
+	video::bindFramebuffer(prev);
 	return retVal;
 }
 
 bool DepthBuffer::bind() {
 	video::getViewport(_oldViewport[0], _oldViewport[1], _oldViewport[2], _oldViewport[3]);
-	_oldFramebuffer = video::bindFramebuffer(video::FrameBufferMode::Default, _fbo);
+	_oldFramebuffer = video::bindFramebuffer(_fbo);
 	video::viewport(0, 0, _depthTexture->width(), _depthTexture->height());
 	return true;
 }
@@ -60,7 +60,7 @@ bool DepthBuffer::bindTexture(int textureIndex) {
 
 void DepthBuffer::unbind() {
 	video::viewport(_oldViewport[0], _oldViewport[1], _oldViewport[2], _oldViewport[3]);
-	video::bindFramebuffer(video::FrameBufferMode::Default, _oldFramebuffer);
+	video::bindFramebuffer(_oldFramebuffer);
 	_oldFramebuffer = video::InvalidId;
 }
 
