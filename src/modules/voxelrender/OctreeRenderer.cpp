@@ -160,15 +160,17 @@ void OctreeRenderer::render(const video::Camera& camera) {
 	const glm::vec2 offset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
 	const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
 
-	_depthBuffer.bind();
-	for (int i = 0; i < maxDepthBuffers; ++i) {
-		_depthBuffer.bindTexture(i);
+	{
 		video::ScopedShader scoped(_shadowMapShader);
-		_shadowMapShader.setLightviewprojection(cascades[i]);
-		_shadowMapShader.setModel(glm::mat4(1.0f));
-		renderOctreeNode(camera, _rootNode);
+		_depthBuffer.bind();
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			_depthBuffer.bindTexture(i);
+			_shadowMapShader.setLightviewprojection(cascades[i]);
+			_shadowMapShader.setModel(glm::mat4(1.0f));
+			renderOctreeNode(camera, _rootNode);
+		}
+		_depthBuffer.unbind();
 	}
-	_depthBuffer.unbind();
 	video::cullFace(video::Face::Back);
 	video::enable(video::State::Blend);
 	_colorTexture.bind(video::TextureUnit::Zero);
