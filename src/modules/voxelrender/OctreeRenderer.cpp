@@ -234,7 +234,7 @@ bool OctreeRenderer::init(voxel::PagedVolume* volume, const voxel::Region& regio
 
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
-	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
+	if (!_depthBuffer.init(smSize, maxDepthBuffers)) {
 		return false;
 	}
 

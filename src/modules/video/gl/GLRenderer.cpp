@@ -69,17 +69,9 @@ void checkError() {
 }
 
 //TODO: use FrameBufferConfig
-bool bindDepthTexture(int textureIndex, DepthBufferMode mode, Id depthTexture) {
-	const bool depthCompare = mode == DepthBufferMode::DEPTH_CMP;
-	const bool depthAttachment = mode == DepthBufferMode::DEPTH || depthCompare;
-	if (depthAttachment) {
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0, textureIndex);
-		clear(ClearFlag::Depth);
-	} else {
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, depthTexture, 0, textureIndex);
-		clear(ClearFlag::Color | ClearFlag::Depth);
-	}
-
+bool bindDepthTexture(int textureIndex, Id depthTexture) {
+	glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0, textureIndex);
+	clear(ClearFlag::Depth);
 	if (!_priv::checkFramebufferStatus()) {
 		return false;
 	}
@@ -94,17 +86,10 @@ void readBuffer(GBufferTextureType textureType) {
 }
 
 //TODO: use FrameBufferConfig
-bool setupDepthbuffer(DepthBufferMode mode) {
-	const bool depthCompare = mode == DepthBufferMode::DEPTH_CMP;
-	const bool depthAttachment = mode == DepthBufferMode::DEPTH || depthCompare;
-
-	if (depthAttachment) {
-		glDrawBuffer(GL_NONE);
-		glReadBuffer(GL_NONE);
-	} else {
-		const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-		glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
-	}
+bool setupDepthbuffer() {
+	glDrawBuffer(GL_NONE);
+	checkError();
+	glReadBuffer(GL_NONE);
 	checkError();
 	return true;
 }
@@ -126,6 +111,7 @@ bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texC
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 
+	core_assert(texCount == GBUFFER_NUM_TEXTURES);
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
 
@@ -943,6 +929,10 @@ bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTe
 		glDrawBuffers(lengthof(buffers), buffers);
 		checkError();
 	} else {
+		if (renderState().limit(Limit::MaxDrawBuffers) < (int)attachments.size()) {
+			Log::warn("Max draw buffers exceeded");
+			return false;
+		}
 		std::sort(attachments.begin(), attachments.end());
 		glDrawBuffers((GLsizei) attachments.size(), attachments.data());
 		checkError();

@@ -20,7 +20,7 @@ class DepthBuffer {
 public:
 	~DepthBuffer();
 
-	bool init(const glm::ivec2& dimension, DepthBufferMode mode = DepthBufferMode::RGBA, int textureCount = 1);
+	bool init(const glm::ivec2& dimension, int textureCount);
 	void shutdown();
 
 	/**
@@ -38,24 +38,13 @@ public:
 	glm::ivec2 dimension() const;
 	Id texture() const;
 	TextureType textureType() const;
-	bool depthAttachment() const;
-	bool depthCompare() const;
 private:
 	int _oldViewport[4] = {0, 0, 0, 0};
 	Id _oldFramebuffer = video::InvalidId;
 	Id _fbo = video::InvalidId;
 	Id _rbo = video::InvalidId;
 	TexturePtr _depthTexture;
-	DepthBufferMode _mode = DepthBufferMode::RGBA;
 };
-
-inline bool DepthBuffer::depthAttachment() const {
-	return _mode == DepthBufferMode::DEPTH || depthCompare();
-}
-
-inline bool DepthBuffer::depthCompare() const {
-	return _mode == DepthBufferMode::DEPTH_CMP;
-}
 
 inline bool bindTexture(TextureUnit unit, const DepthBuffer& depthBuffer) {
 	video::bindTexture(unit, depthBuffer.textureType(), depthBuffer.texture());

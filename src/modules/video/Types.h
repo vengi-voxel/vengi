@@ -199,14 +199,6 @@ enum class Primitive {
 	Max
 };
 
-enum class DepthBufferMode {
-	// stores -1..1 window-space depth values
-	RGBA,
-	// stores 0..1 window-space depth values
-	DEPTH,
-	DEPTH_CMP
-};
-
 enum class FrameBufferMode {
 	Read,
 	Draw,

@@ -559,9 +559,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 		// configure shadow map texture
 		video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
-		if (_depthBuffer.depthCompare()) {
-			video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::None);
-		}
+		video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::None);
 
 		// render shadow maps
 		for (int i = 0; i < maxDepthBuffers; ++i) {
@@ -573,9 +571,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		}
 
 		// restore texture
-		if (_depthBuffer.depthCompare()) {
-			video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
-		}
+		video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
 	}
 
 	if (_renderAABBs->boolVal()) {
@@ -840,7 +836,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	}
 
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
-	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, _maxDepthBuffers)) {
+	if (!_depthBuffer.init(smSize, _maxDepthBuffers)) {
 		return false;
 	}
 

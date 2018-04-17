@@ -95,7 +95,7 @@ core::AppState TestMeshApp::onInit() {
 	}
 	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
-	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
+	if (!_depthBuffer.init(smSize, maxDepthBuffers)) {
 		Log::error("Failed to init the depthbuffer");
 		return core::AppState::InitFailure;
 	}
@@ -311,9 +311,7 @@ void TestMeshApp::doRender() {
 
 		// configure shadow map texture
 		video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
-		if (_depthBuffer.depthCompare()) {
-			video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::None);
-		}
+		video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::None);
 
 		// render shadow maps
 		for (int i = 0; i < maxDepthBuffers; ++i) {
@@ -325,9 +323,7 @@ void TestMeshApp::doRender() {
 		}
 
 		// restore texture
-		if (_depthBuffer.depthCompare()) {
-			video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
-		}
+		video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
 	}
 
 	if (!oldDepth) {

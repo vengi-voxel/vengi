@@ -88,7 +88,15 @@ public:
 
 struct RenderState {
 	int limits[std::enum_value(video::Limit::Max)] = { };
+
+	inline int limit(video::Limit limit) const {
+		return limits[std::enum_value(limit)];
+	}
 	bool features[std::enum_value(video::Feature::Max)] = { };
+
+	inline bool supports(video::Feature feature) const {
+		return features[std::enum_value(feature)];
+	}
 };
 
 extern RenderState& renderState();
@@ -140,8 +148,8 @@ extern void endFrame(SDL_Window* window);
 extern void checkError();
 extern bool setupCubemap(Id handle, const image::ImagePtr images[6]);
 extern void readBuffer(GBufferTextureType textureType);
-extern bool setupDepthbuffer(DepthBufferMode mode);
-extern bool bindDepthTexture(int textureIndex, DepthBufferMode mode, Id depthTexture);
+extern bool setupDepthbuffer();
+extern bool bindDepthTexture(int textureIndex, Id depthTexture);
 extern bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, int texCount, Id depthTexture);
 /**
  * @brief Change the renderer line width
