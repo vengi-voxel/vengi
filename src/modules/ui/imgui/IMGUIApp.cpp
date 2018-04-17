@@ -214,7 +214,7 @@ core::AppState IMGUIApp::onInit() {
 
 	_texture = video::genTexture();
 	video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, _texture);
-	video::setupTexture(video::TextureType::Texture2D, video::TextureWrap::None);
+	video::setupTexture(video::TextureType::Texture2D, video::TextureWrap::None, video::TextureFilter::Linear);
 	video::uploadTexture(video::TextureType::Texture2D, video::TextureFormat::RGBA, width, height, pixels, 0);
 	io.Fonts->TexID = (void *) (intptr_t) _texture;
 

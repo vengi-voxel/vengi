@@ -8,8 +8,8 @@
 
 namespace video {
 
-Texture::Texture(TextureType type, TextureFormat format, const std::string& name, int width, int height, int index, TextureWrap wrap) :
-		io::IOResource(), _name(name), _width(width), _height(height), _type(type), _format(format), _wrap(wrap) {
+Texture::Texture(TextureType type, TextureFormat format, const std::string& name, int width, int height, int index, TextureWrap wrap, TextureFilter filter) :
+		io::IOResource(), _name(name), _width(width), _height(height), _type(type), _format(format), _wrap(wrap), _filter(filter) {
 }
 
 Texture::~Texture() {
@@ -21,6 +21,11 @@ Texture::~Texture() {
 
 void Texture::shutdown() {
 	video::deleteTexture(_handle);
+}
+
+void Texture::upload(TextureFormat format, TextureFilter filter, int width, int height, const uint8_t* data, int index) {
+	_filter = filter;
+	upload(format, width, height, data, index);
 }
 
 void Texture::upload(TextureFormat format, int width, int height, const uint8_t* data, int index) {
@@ -39,7 +44,7 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	_width = width;
 	_height = height;
 	video::bindTexture(TextureUnit::Upload, _type, _handle);
-	video::setupTexture(_type, _wrap);
+	video::setupTexture(_type, _wrap, _filter);
 	video::uploadTexture(_type, _format, _width, _height, data, index);
 	_state = io::IOSTATE_LOADED;
 }

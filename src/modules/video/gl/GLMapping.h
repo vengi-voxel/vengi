@@ -99,6 +99,12 @@ static GLenum TextureTypes[] {
 };
 static_assert(std::enum_value(TextureType::Max) == lengthof(TextureTypes), "Array sizes don't match Max");
 
+static GLenum TextureFilters[] {
+	GL_LINEAR,
+	GL_NEAREST
+};
+static_assert(std::enum_value(TextureFilter::Max) == lengthof(TextureFilters), "Array sizes don't match Max");
+
 static GLenum TextureWraps[] {
 	GL_CLAMP_TO_EDGE,
 	GL_REPEAT,

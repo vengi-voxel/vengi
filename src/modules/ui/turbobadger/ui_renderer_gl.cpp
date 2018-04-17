@@ -52,7 +52,7 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 
 	_texture = video::genTexture();
 	video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, _texture);
-	video::setupTexture(video::TextureType::Texture2D, video::TextureWrap::None);
+	video::setupTexture(video::TextureType::Texture2D, video::TextureWrap::None, video::TextureFilter::Linear);
 	SetData(data);
 
 	return true;

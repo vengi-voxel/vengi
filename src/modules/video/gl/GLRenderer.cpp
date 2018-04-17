@@ -895,11 +895,12 @@ bool setupFramebuffer(Id& fbo, Id& texture, Id& depth, const glm::ivec2& dimensi
 	return retVal;
 }
 
-void setupTexture(TextureType type, TextureWrap wrap) {
+void setupTexture(TextureType type, TextureWrap wrap, TextureFilter filter) {
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	const GLenum glFilter = _priv::TextureFilters[std::enum_value(filter)];
+	glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, glFilter);
+	glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilter);
 	if (wrap != TextureWrap::None) {
 		const GLenum glWrap = _priv::TextureWraps[std::enum_value(wrap)];
 		glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrap);

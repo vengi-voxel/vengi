@@ -25,22 +25,25 @@ private:
 	TextureType _type;
 	TextureFormat _format;
 	TextureWrap _wrap;
+	TextureFilter _filter;
 	mutable TextureUnit _boundUnit = TextureUnit::Zero;
 
 public:
-	Texture(TextureType type, TextureFormat format, const std::string& name, int width = 1, int height = 1, int index = 1, TextureWrap wrap = TextureWrap::Repeat);
+	Texture(TextureType type, TextureFormat format, const std::string& name, int width = 1, int height = 1, int index = 1, TextureWrap wrap = TextureWrap::Repeat, TextureFilter filter = TextureFilter::Linear);
 	~Texture();
 	void shutdown();
 
 	operator Id () const;
 	TextureType type() const;
 	TextureFormat format() const;
+	TextureFilter filter() const;
 	TextureWrap wrap() const;
 	int width() const;
 	int height() const;
 	Id handle() const;
 
 	// updates the texture with the new data
+	void upload(TextureFormat format, TextureFilter filter, int width, int height, const uint8_t* data = nullptr, int index = 1);
 	void upload(TextureFormat format, int width, int height, const uint8_t* data = nullptr, int index = 1);
 	void upload(int width, int height, const uint8_t* data = nullptr, int index = 1);
 	void upload(const uint8_t* data = nullptr, int index = 1);
@@ -64,6 +67,10 @@ inline TextureWrap Texture::wrap() const {
 
 inline TextureFormat Texture::format() const {
 	return _format;
+}
+
+inline TextureFilter Texture::filter() const {
+	return _filter;
 }
 
 inline int Texture::width() const {

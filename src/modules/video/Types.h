@@ -19,6 +19,13 @@ enum class TextureType {
 	Max
 };
 
+enum class TextureFilter {
+	Linear,
+	Nearest,
+
+	Max
+};
+
 enum class TextureWrap {
 	ClampToEdge,
 	Repeat,
