@@ -4,6 +4,7 @@
 
 #include "Renderer.h"
 #include "RenderBuffer.h"
+#include "core/Log.h"
 
 namespace video {
 

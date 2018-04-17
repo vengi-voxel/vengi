@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Types.h"
-#include "core/Log.h"
 #include <memory>
 
 namespace video {
