@@ -35,6 +35,6 @@ inline Id RenderBuffer::handle() const {
 	return _rbo;
 }
 
-static RenderBufferPtr createRenderBuffer(TextureFormat format, int w, int h, int samples = 0);
+extern RenderBufferPtr createRenderBuffer(TextureFormat format, int w, int h, int samples = 0);
 
 }

@@ -18,7 +18,11 @@ void MapRenderer::shutdown() {
 bool MapRenderer::init() {
 	// TODO: size
 	const glm::vec2 dim(42, 42);
-	if (!_frameBuffer.init(dim)) {
+	video::TextureConfig textureCfg;
+	textureCfg.wrap(video::TextureWrap::ClampToEdge);
+	video::FrameBufferConfig cfg;
+	cfg.dimension(dim).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addColorTexture(textureCfg);
+	if (!_frameBuffer.init(cfg)) {
 		return false;
 	}
 	// TODO: setup shader

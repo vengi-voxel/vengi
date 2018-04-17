@@ -35,7 +35,7 @@ private:
 public:
 	~FrameBuffer();
 
-	bool init(const glm::ivec2& dimension);
+	bool init(const FrameBufferConfig& cfg);
 	void shutdown();
 
 	void bind();

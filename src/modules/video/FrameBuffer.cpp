@@ -45,15 +45,10 @@ bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
 	return true;
 }
 
-bool FrameBuffer::init(const glm::ivec2& dimension) {
-	_dimension = dimension;
+bool FrameBuffer::init(const FrameBufferConfig& cfg) {
+	_dimension = cfg.dimension();
 	_fbo = genFramebuffer();
-
-	video::TextureConfig textureCfg;
-	textureCfg.wrap(TextureWrap::ClampToEdge);
 	Id prev = video::bindFramebuffer(FrameBufferMode::Default, _fbo);
-	FrameBufferConfig cfg;
-	cfg.dimension(_dimension).depthBuffer(true).depthBufferFormat(TextureFormat::D24).addColorTexture(textureCfg);
 	bool retVal = prepareAttachments(cfg);
 	if (retVal) {
 		retVal = video::setupFramebuffer(_colorAttachments, _bufferAttachments);

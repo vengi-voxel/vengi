@@ -420,7 +420,11 @@ void EditorScene::OnResized(int oldw, int oldh) {
 	const glm::ivec2 dim(rect.w, rect.h);
 	_controller.onResize(dim);
 	_frameBuffer.shutdown();
-	_frameBuffer.init(dim);
+	video::TextureConfig textureCfg;
+	textureCfg.wrap(video::TextureWrap::ClampToEdge);
+	video::FrameBufferConfig cfg;
+	cfg.dimension(dim).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addColorTexture(textureCfg);
+	_frameBuffer.init(cfg);
 	_bitmap.Init(dim.x, dim.y, _frameBuffer.texture());
 	m().onResize(dim);
 }
