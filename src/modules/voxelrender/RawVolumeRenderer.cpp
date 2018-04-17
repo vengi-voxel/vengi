@@ -236,9 +236,8 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		_depthBuffer.unbind();
 	}
 
-	_whiteTexture->bind(video::TextureUnit::Zero);
-
 	{
+		video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setViewprojection(camera.viewProjectionMatrix());
 		_worldShader.setViewdistance(camera.farPlane());
@@ -260,7 +259,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 		}
 	}
-	_whiteTexture->unbind();
 
 	if (!oldDepth) {
 		video::disable(video::State::DepthTest);

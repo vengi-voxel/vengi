@@ -53,10 +53,9 @@ void TestGLSLComp::doRender() {
 	_testShader.activate();
 	_testShader.run(glm::uvec3(_texture->width(), _texture->height(), 1), true);
 
-	_texture->bind(video::TextureUnit::Zero);
+	video::ScopedTexture texture(_texture, video::TextureUnit::Zero);
 	video::ScopedViewPort viewPort(0, 0, dimension().x, dimension().y);
 	_renderer.render(_camera.projectionMatrix());
-	_texture->unbind();
 }
 
 TEST_APP(TestGLSLComp)

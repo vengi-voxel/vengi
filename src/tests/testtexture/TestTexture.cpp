@@ -39,9 +39,8 @@ core::AppState TestTexture::onInit() {
 
 void TestTexture::doRender() {
 	video::ScopedViewPort viewPort(0, 0, dimension().x, dimension().y);
-	_texture->bind();
+	video::ScopedTexture texture(_texture, video::TextureUnit::Zero);
 	_renderer.render(_camera.projectionMatrix());
-	_texture->unbind();
 }
 
 core::AppState TestTexture::onCleanup() {

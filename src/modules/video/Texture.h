@@ -77,6 +77,20 @@ inline Id Texture::handle() const {
 	return _handle;
 }
 
+class ScopedTexture {
+private:
+	const TexturePtr& _texture;
+public:
+	ScopedTexture(const TexturePtr& texture, TextureUnit unit = video::TextureUnit::Zero) :
+			_texture(texture) {
+		_texture->bind(unit);
+	}
+
+	~ScopedTexture() {
+		_texture->unbind();
+	}
+};
+
 typedef std::shared_ptr<Texture> TexturePtr;
 
 /** @brief creates empty texture with placeholder pixel in */
