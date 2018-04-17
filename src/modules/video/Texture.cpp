@@ -8,7 +8,7 @@
 
 namespace video {
 
-Texture::Texture(TextureType type, TextureFormat format, const std::string& name, int width, int height, int index, TextureWrap wrap, TextureFilter filter) :
+Texture::Texture(TextureType type, TextureFormat format, const std::string& name, int width, int height, TextureWrap wrap, TextureFilter filter) :
 		io::IOResource(), _name(name), _width(width), _height(height), _type(type), _format(format), _wrap(wrap), _filter(filter) {
 }
 

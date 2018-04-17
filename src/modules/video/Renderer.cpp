@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Renderer.h"
 #include "core/Log.h"
 

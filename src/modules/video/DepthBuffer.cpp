@@ -13,7 +13,7 @@
 namespace video {
 
 DepthBuffer::DepthBuffer() :
-		_depthTexture(TextureType::Texture2DArray, TextureFormat::D24S8, "**depthmap**", 1, 1, 1, TextureWrap::ClampToEdge) {
+		_depthTexture(TextureType::Texture2DArray, TextureFormat::D24S8, "**depthmap**", 1, 1, TextureWrap::ClampToEdge) {
 }
 
 DepthBuffer::~DepthBuffer() {

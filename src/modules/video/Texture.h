@@ -29,15 +29,13 @@ private:
 	mutable TextureUnit _boundUnit = TextureUnit::Zero;
 
 public:
-	Texture(TextureType type, TextureFormat format, const std::string& name, int width = 1, int height = 1, int index = 1, TextureWrap wrap = TextureWrap::Repeat, TextureFilter filter = TextureFilter::Linear);
+	Texture(TextureType type, TextureFormat format, const std::string& name, int width = 1, int height = 1, TextureWrap wrap = TextureWrap::Repeat, TextureFilter filter = TextureFilter::Linear);
 	~Texture();
 	void shutdown();
 
 	operator Id () const;
 	TextureType type() const;
 	TextureFormat format() const;
-	TextureFilter filter() const;
-	TextureWrap wrap() const;
 	int width() const;
 	int height() const;
 	Id handle() const;
@@ -61,16 +59,8 @@ inline Texture::operator Id() const {
 	return _handle;
 }
 
-inline TextureWrap Texture::wrap() const {
-	return _wrap;
-}
-
 inline TextureFormat Texture::format() const {
 	return _format;
-}
-
-inline TextureFilter Texture::filter() const {
-	return _filter;
 }
 
 inline int Texture::width() const {
