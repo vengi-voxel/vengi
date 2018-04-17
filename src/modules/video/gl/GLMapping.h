@@ -35,6 +35,7 @@ static GLenum TextureFormats[] {
 	GL_RGBA8,
 	GL_RGB8,
 	GL_RGBA32F,
+	GL_RGB32F,
 
 	GL_DEPTH24_STENCIL8,
 	GL_DEPTH32F_STENCIL8,
