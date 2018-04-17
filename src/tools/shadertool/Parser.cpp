@@ -203,6 +203,19 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 			} else {
 				v = &shaderStruct.outs;
 			}
+		} else if (token == "$constant") {
+			if (!tok.hasNext()) {
+				return false;
+			}
+			const std::string varname = tok.next();
+			if (!tok.hasNext()) {
+				return false;
+			}
+			const std::string varvalue = tok.next();
+			if (!shaderStruct.constants.insert(std::make_pair(varname, varvalue)).second) {
+				Log::error("Could not register constant %s with value %s (duplicate)", varname.c_str(), varvalue.c_str());
+				return false;
+			}
 		} else if (token == "layout") {
 			// there can be multiple layouts per definition since GL 4.2 (or ARB_shading_language_420pack)
 			// that's why we only reset the layout after we finished parsing the variable and/or the

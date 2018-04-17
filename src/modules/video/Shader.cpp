@@ -401,6 +401,7 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 	});
 
 	if (finalize) {
+		src = core::string::replaceAll(src, "$constant", "//");
 		src = core::string::replaceAll(src, "$in", replaceIn);
 		src = core::string::replaceAll(src, "$out", replaceOut);
 		src = core::string::replaceAll(src, "$texture1D", replaceTexture1D);

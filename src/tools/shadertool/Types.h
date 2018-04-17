@@ -7,6 +7,7 @@
 #include "video/Types.h"
 #include <string>
 #include <vector>
+#include <map>
 #include <unordered_map>
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
@@ -119,6 +120,7 @@ struct ShaderStruct {
 	// both
 	std::vector<Variable> uniforms;
 	std::unordered_map<std::string, Layout> layouts;
+	std::map<std::string, std::string> constants;
 	std::vector<UniformBlock> uniformBlocks;
 	// vertex only
 	std::vector<Variable> attributes;

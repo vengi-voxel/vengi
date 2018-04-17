@@ -21,3 +21,7 @@ There are several variables in the template file that are replaced by the genera
 * `$uniformbuffers$`
 
 The parser includes a preprocessor.
+
+You can export constants from the GLSL shader code to the generated C++ code by using `$constant`.
+
+Use `$constant varname 42` to generate a method that returns 42 with a name `getVarname`
