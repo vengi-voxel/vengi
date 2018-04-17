@@ -79,55 +79,18 @@ inline Id Texture::handle() const {
 
 typedef std::shared_ptr<Texture> TexturePtr;
 
-// creates empty texture with placeholder pixel in
-inline TexturePtr createEmptyTexture(const std::string& name) {
-	const TexturePtr& p = std::make_shared<Texture>(TextureType::Texture2D, TextureFormat::RGBA, name, 1, 1);
-	const uint32_t empty = 0x00000000;
-	p->upload((const uint8_t*)&empty);
-	return p;
-}
+/** @brief creates empty texture with placeholder pixel in */
+extern TexturePtr createEmptyTexture(const std::string& name);
 
-// creates white texture with placeholder pixel in
-inline TexturePtr createWhiteTexture(const std::string& name) {
-	const TexturePtr& p = std::make_shared<Texture>(TextureType::Texture2D, TextureFormat::RGBA, name, 1, 1);
-	const uint32_t empty = 0xFFFFFFFF;
-	p->upload((const uint8_t*)&empty);
-	return p;
-}
+/** @brief creates white texture with placeholder pixel in */
+extern TexturePtr createWhiteTexture(const std::string& name);
 
-inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {
-	if (!image) {
-		Log::warn("Could not load texture");
-		return TexturePtr();
-	}
-	if (image->width() == -1) {
-		Log::warn("Could not load texture from image %s", image->name().c_str());
-		return TexturePtr();
-	}
-	TextureFormat format;
-	if (image->depth() == 4) {
-		format = TextureFormat::RGBA;
-	} else {
-		format = TextureFormat::RGB;
-	}
-	const TexturePtr& t = std::make_shared<Texture>(TextureType::Texture2D, format, image->name(), image->width(), image->height());
-	t->upload(image->data());
-	return t;
-}
+extern TexturePtr createTextureFromImage(const image::ImagePtr& image);
 
-inline TexturePtr createTextureFromImage(const std::string& filename) {
-	return createTextureFromImage(image::loadImage(filename, false));
-}
+extern TexturePtr createTextureFromImage(const std::string& filename);
 
-inline TexturePtr createTexture(const TextureConfig& cfg, int width = 1, int height = 1, const std::string& name = "") {
-	const TexturePtr& ptr = std::make_shared<Texture>(cfg, width, height, name);
-	ptr->upload();
-	return ptr;
-}
+extern TexturePtr createTexture(const TextureConfig& cfg, int width = 1, int height = 1, const std::string& name = "");
 
-inline bool bindTexture(TextureUnit unit, const Texture& texture) {
-	texture.bind(unit);
-	return true;
-}
+extern bool bindTexture(TextureUnit unit, const Texture& texture);
 
 }

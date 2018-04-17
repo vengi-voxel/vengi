@@ -5,18 +5,19 @@
 #pragma once
 
 #include "Renderer.h"
-#include "Texture.h"
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
+#include <memory>
 
 namespace video {
+
+typedef std::shared_ptr<Texture> TexturePtr;
 
 /**
  * @ingroup Video
  */
 class DepthBuffer {
 public:
-	DepthBuffer();
 	~DepthBuffer();
 
 	bool init(const glm::ivec2& dimension, DepthBufferMode mode = DepthBufferMode::RGBA, int textureCount = 1);
@@ -44,21 +45,9 @@ private:
 	Id _oldFramebuffer = video::InvalidId;
 	Id _fbo = video::InvalidId;
 	Id _rbo = video::InvalidId;
-	Texture _depthTexture;
+	TexturePtr _depthTexture;
 	DepthBufferMode _mode = DepthBufferMode::RGBA;
 };
-
-inline glm::ivec2 DepthBuffer::dimension() const {
-	return glm::ivec2(_depthTexture.width(), _depthTexture.height());
-}
-
-inline Id DepthBuffer::texture() const {
-	return _depthTexture.handle();
-}
-
-inline TextureType DepthBuffer::textureType() const {
-	return _depthTexture.type();
-}
 
 inline bool DepthBuffer::depthAttachment() const {
 	return _mode == DepthBufferMode::DEPTH || depthCompare();
