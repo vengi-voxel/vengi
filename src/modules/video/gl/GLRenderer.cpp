@@ -10,6 +10,7 @@
 #include "GLMapping.h"
 #include "GLHelper.h"
 #include "video/Shader.h"
+#include "video/Texture.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Var.h"
@@ -20,6 +21,7 @@
 #include <glm/common.hpp>
 #include <glm/gtc/constants.hpp>
 #include <SDL.h>
+#include <map>
 
 namespace video {
 
@@ -66,6 +68,7 @@ void checkError() {
 #endif
 }
 
+//TODO: use FrameBufferConfig
 bool bindDepthTexture(int textureIndex, DepthBufferMode mode, Id depthTexture) {
 	const bool depthCompare = mode == DepthBufferMode::DEPTH_CMP;
 	const bool depthAttachment = mode == DepthBufferMode::DEPTH || depthCompare;
@@ -84,13 +87,14 @@ bool bindDepthTexture(int textureIndex, DepthBufferMode mode, Id depthTexture) {
 	return true;
 }
 
+//TODO: use FrameBufferConfig
 void readBuffer(GBufferTextureType textureType) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
 	checkError();
 }
 
-bool setupDepthbuffer(Id fbo, DepthBufferMode mode) {
-	const Id prev = bindFramebuffer(FrameBufferMode::Default, fbo);
+//TODO: use FrameBufferConfig
+bool setupDepthbuffer(DepthBufferMode mode) {
 	const bool depthCompare = mode == DepthBufferMode::DEPTH_CMP;
 	const bool depthAttachment = mode == DepthBufferMode::DEPTH || depthCompare;
 
@@ -102,10 +106,10 @@ bool setupDepthbuffer(Id fbo, DepthBufferMode mode) {
 		glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
 	}
 	checkError();
-	bindFramebuffer(FrameBufferMode::Default, prev);
 	return true;
 }
 
+//TODO: use FrameBufferConfig
 bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texCount, Id depthTexture) {
 	const Id prev = bindFramebuffer(FrameBufferMode::Default, fbo);
 
@@ -307,6 +311,37 @@ bool depthFunc(CompareFunc func) {
 	checkError();
 	_priv::s.depthFunc = func;
 	return true;
+}
+
+bool setupStencil(const StencilConfig& config) {
+	bool dirty = false;
+	CompareFunc func = config.func();
+	if (_priv::s.stencilFunc != func || _priv::s.stencilValue != config.value() || _priv::s.stencilMask != config.mask()) {
+		glStencilFunc(_priv::CompareFuncs[std::enum_value(func)], config.value(), config.mask());
+		checkError();
+		_priv::s.stencilFunc = func;
+		dirty = true;
+	}
+	// fail, zfail, zpass
+	if (_priv::s.stencilOpFail != config.failOp()
+			|| _priv::s.stencilOpZfail != config.zfailOp()
+			|| _priv::s.stencilOpZpass != config.zpassOp()) {
+		const GLenum failop = _priv::StencilOps[std::enum_value(config.failOp())];
+		const GLenum zfailop = _priv::StencilOps[std::enum_value(config.zfailOp())];
+		const GLenum zpassop = _priv::StencilOps[std::enum_value(config.zpassOp())];
+		glStencilOp(failop, zfailop, zpassop);
+		checkError();
+		_priv::s.stencilOpFail = config.failOp();
+		_priv::s.stencilOpZfail = config.zfailOp();
+		_priv::s.stencilOpZpass = config.zpassOp();
+		dirty = true;
+	}
+	if (_priv::s.stencilMask != config.mask()) {
+		glStencilMask(config.mask());
+		_priv::s.stencilMask = config.mask();
+		dirty = true;
+	}
+	return dirty;
 }
 
 bool blendEquation(BlendEquation func) {
@@ -781,32 +816,44 @@ int getOcclusionQueryResult(Id id, bool wait) {
 	return (int)samples;
 }
 
-Id bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle) {
+Id bindFramebuffer(FrameBufferMode mode, Id handle) {
 	const Id old = _priv::s.framebufferHandle;
 #if SANITY_CHECKS_GL
 	GLint _oldFramebuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
 	core_assert_always(_oldFramebuffer == (GLint)old);
 #endif
-	if (old == handle && _priv::s.framebufferTextureHandle == textureHandle) {
+	if (old == handle) {
 		return handle;
 	}
 	_priv::s.framebufferHandle = handle;
-	_priv::s.framebufferTextureHandle = textureHandle;
 	const int typeIndex = std::enum_value(mode);
 	const GLenum glType = _priv::FrameBufferModes[typeIndex];
 	glBindFramebuffer(glType, handle);
-	if (textureHandle != InvalidId) {
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureHandle, 0);
-	}
 	checkError();
 	return old;
 }
 
-bool bindRenderbuffer(Id handle) {
+bool setupRenderBuffer(TextureFormat format, int w, int h, int samples) {
+	if (samples > 1) {
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, (GLsizei)samples, _priv::TextureFormats[std::enum_value(format)], w, h);
+		checkError();
+	} else {
+		glRenderbufferStorage(GL_RENDERBUFFER, _priv::TextureFormats[std::enum_value(format)], w, h);
+		checkError();
+	}
+	return true;
+}
+
+Id bindRenderbuffer(Id handle) {
+	if (_priv::s.renderBufferHandle == handle) {
+		return handle;
+	}
+	Id prev = _priv::s.renderBufferHandle;
+	_priv::s.renderBufferHandle = handle;
 	glBindRenderbuffer(GL_RENDERBUFFER, handle);
 	checkError();
-	return true;
+	return prev;
 }
 
 void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size) {
@@ -846,18 +893,15 @@ void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, siz
 	checkError();
 }
 
-void disableDepthCompareTexture(TextureUnit unit, TextureType type, Id depthTexture) {
-	bindTexture(unit, type, depthTexture);
+//TODO: use FrameBufferConfig
+void setupDepthCompareTexture(TextureType type, CompareFunc func, TextureCompareMode mode) {
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
-	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-	checkError();
-}
-
-void setupDepthCompareTexture(TextureUnit unit, TextureType type, Id depthTexture) {
-	bindTexture(unit, type, depthTexture);
-	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
-	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
+	const GLenum glMode = _priv::TextureCompareModes[std::enum_value(mode)];
+	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, glMode);
+	if (mode == TextureCompareMode::RefToTexture) {
+		const GLenum glFunc = _priv::CompareFuncs[std::enum_value(func)];
+		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
+	}
 	checkError();
 }
 
@@ -867,47 +911,78 @@ const glm::vec4& framebufferUV() {
 	return uv;
 }
 
-bool setupFramebuffer(Id& fbo, Id& texture, Id& depth, TextureWrap wrap, TextureFilter filter, const glm::ivec2& dimension) {
-	fbo = genFramebuffer();
-	Id prev = bindFramebuffer(FrameBufferMode::Default, fbo);
-	texture = genTexture();
-	bindTexture(TextureUnit::Upload, TextureType::Texture2D, texture);
-	const GLenum glWrap = _priv::TextureWraps[std::enum_value(wrap)];
-	const GLenum glFilter = _priv::TextureFilters[std::enum_value(filter)];
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrap);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrap);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, dimension.x, dimension.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTextures, const std::map<FrameBufferAttachment, RenderBufferPtr>& bufferAttachments) {
+	std::vector<GLenum> attachments;
+	attachments.reserve(colorTextures.size() + bufferAttachments.size());
 
-	depth = genRenderbuffer();
-	bindRenderbuffer(depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, dimension.x, dimension.y);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
+	for (auto &bufferAttachment : bufferAttachments) {
+		const GLenum glAttachmentType = _priv::FrameBufferAttachments[std::enum_value(bufferAttachment.first)];
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, glAttachmentType, GL_RENDERBUFFER, bufferAttachment.second->handle());
+		checkError();
+		if (glAttachmentType >= GL_COLOR_ATTACHMENT0 && glAttachmentType <= GL_COLOR_ATTACHMENT15) {
+			attachments.push_back(glAttachmentType);
+		}
+	}
 
-	checkError();
-
-	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, drawBuffers);
-
-	const bool retVal = _priv::checkFramebufferStatus();
-	bindFramebuffer(FrameBufferMode::Default, prev);
-	return retVal;
+	for (auto &textureAttachment : colorTextures) {
+		const TextureType textureTarget = textureAttachment.second->type();
+		const GLenum glAttachmentType = _priv::FrameBufferAttachments[std::enum_value(textureAttachment.first)];
+		if (textureTarget == TextureType::TextureCube) {
+			glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_CUBE_MAP_POSITIVE_X, textureAttachment.second->handle(), 0);
+			checkError();
+		} else {
+			glFramebufferTexture(GL_FRAMEBUFFER, glAttachmentType, textureAttachment.second->handle(), 0);
+			checkError();
+		}
+		if (glAttachmentType >= GL_COLOR_ATTACHMENT0 && glAttachmentType <= GL_COLOR_ATTACHMENT15) {
+			attachments.push_back(glAttachmentType);
+		}
+	}
+	if (attachments.empty()) {
+		GLenum buffers[] = {GL_NONE};
+		glDrawBuffers(lengthof(buffers), buffers);
+		checkError();
+	} else {
+		std::sort(attachments.begin(), attachments.end());
+		glDrawBuffers((GLsizei) attachments.size(), attachments.data());
+		checkError();
+	}
+	return _priv::checkFramebufferStatus();
 }
 
-void setupTexture(TextureType type, TextureWrap wrap, TextureFilter filter) {
-	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	const GLenum glFilter = _priv::TextureFilters[std::enum_value(filter)];
-	glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, glFilter);
-	glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilter);
-	if (wrap != TextureWrap::None) {
-		const GLenum glWrap = _priv::TextureWraps[std::enum_value(wrap)];
-		glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrap);
-		glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrap);
+void setupTexture(const TextureConfig& config) {
+	const GLenum glType = _priv::TextureTypes[std::enum_value(config.type())];
+	if (config.filterMag() != TextureFilter::Max) {
+		const GLenum glFilterMag = _priv::TextureFilters[std::enum_value(config.filterMag())];
+		glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, glFilterMag);
+		checkError();
 	}
+	if (config.filterMin() != TextureFilter::Max) {
+		const GLenum glFilterMin = _priv::TextureFilters[std::enum_value(config.filterMin())];
+		glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilterMin);
+		checkError();
+	}
+	if (config.wrapS() != TextureWrap::Max) {
+		const GLenum glWrapS = _priv::TextureWraps[std::enum_value(config.wrapS())];
+		glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrapS);
+		checkError();
+	}
+	if (config.wrapT() != TextureWrap::Max) {
+		const GLenum glWrapT = _priv::TextureWraps[std::enum_value(config.wrapT())];
+		glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrapT);
+		checkError();
+	}
+	if (config.compareMode() != TextureCompareMode::Max) {
+		const GLenum glMode = _priv::TextureCompareModes[std::enum_value(config.compareMode())];
+		glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, glMode);
+		checkError();
+	}
+	if (config.compareFunc() != CompareFunc::Max) {
+		const GLenum glFunc = _priv::CompareFuncs[std::enum_value(config.compareFunc())];
+		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
+		checkError();
+	}
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
 	checkError();
@@ -916,6 +991,7 @@ void setupTexture(TextureType type, TextureWrap wrap, TextureFilter filter) {
 void uploadTexture(TextureType type, TextureFormat format, int width, int height, const uint8_t* data, int index) {
 	const _priv::Formats& f = _priv::textureFormats[std::enum_value(format)];
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
+	core_assert(type != TextureType::Max);
 	if (type == TextureType::Texture2D) {
 		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const void*)data);
 		checkError();

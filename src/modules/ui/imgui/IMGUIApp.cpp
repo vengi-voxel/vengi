@@ -213,9 +213,11 @@ core::AppState IMGUIApp::onInit() {
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
 	_texture = video::genTexture();
-	video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, _texture);
-	video::setupTexture(video::TextureType::Texture2D, video::TextureWrap::None, video::TextureFilter::Linear);
-	video::uploadTexture(video::TextureType::Texture2D, video::TextureFormat::RGBA, width, height, pixels, 0);
+	video::TextureConfig cfg;
+	cfg.format(video::TextureFormat::RGBA);
+	video::bindTexture(video::TextureUnit::Upload, cfg.type(), _texture);
+	video::setupTexture(cfg);
+	video::uploadTexture(cfg.type(), cfg.format(), width, height, pixels, 0);
 	io.Fonts->TexID = (void *) (intptr_t) _texture;
 
 	io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;

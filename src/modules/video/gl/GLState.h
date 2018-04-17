@@ -26,6 +26,12 @@ struct GLState {
 	glm::vec4 clearColor {0.0f};
 	Face cullFace = Face::Back;
 	CompareFunc depthFunc = CompareFunc::Less;
+	CompareFunc stencilFunc = CompareFunc::Always;
+	StencilOp stencilOpFail = StencilOp::Keep;
+	StencilOp stencilOpZfail = StencilOp::Keep;
+	StencilOp stencilOpZpass = StencilOp::Keep;
+	uint32_t stencilMask = 0xFFFFFFFF;
+	uint32_t stencilValue = 0;
 	Id programHandle = InvalidId;
 	Id vertexArrayHandle = InvalidId;
 	glm::vec2 polygonOffset {0.0f};
@@ -52,7 +58,7 @@ struct GLState {
 	std::bitset<std::enum_value(State::Max)> states;
 	Id bufferHandle[std::enum_value(VertexBufferType::Max)] = {};
 	Id framebufferHandle = InvalidId;
-	Id framebufferTextureHandle = InvalidId;
+	Id renderBufferHandle = InvalidId;
 	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
 	glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
 	float lineWidth = 1.0f;

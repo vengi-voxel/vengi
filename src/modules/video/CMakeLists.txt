@@ -11,12 +11,15 @@ set(SRCS
 	UniformBuffer.cpp UniformBuffer.h
 	VertexBuffer.cpp VertexBuffer.h
 	FrameBuffer.cpp FrameBuffer.h
+	FrameBufferConfig.cpp FrameBufferConfig.h
 	GBuffer.cpp GBuffer.h
 	Shader.cpp Shader.h
 	Camera.cpp Camera.h
 	DepthBuffer.cpp DepthBuffer.h
 	Cubemap.cpp Cubemap.h
+	RenderBuffer.cpp RenderBuffer.h
 	Texture.cpp Texture.h
+	TextureConfig.cpp TextureConfig.h
 	TexturePool.cpp TexturePool.h
 	Types.h
 	Version.h
@@ -30,6 +33,7 @@ set(SRCS
 	ScopedFrameBuffer.h
 	ScopedScissor.h
 	ScopedPolygonMode.h
+	StencilConfig.h StencilConfig.cpp
 )
 set(LIB video)
 find_package(OpenGL)

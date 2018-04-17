@@ -312,7 +312,7 @@ void TestMeshApp::doRender() {
 		// configure shadow map texture
 		video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
 		if (_depthBuffer.depthCompare()) {
-			video::disableDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
+			video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::None);
 		}
 
 		// render shadow maps
@@ -326,7 +326,7 @@ void TestMeshApp::doRender() {
 
 		// restore texture
 		if (_depthBuffer.depthCompare()) {
-			video::setupDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
+			video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
 		}
 	}
 

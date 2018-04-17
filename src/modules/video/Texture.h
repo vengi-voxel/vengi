@@ -22,14 +22,12 @@ private:
 	Id _handle = video::InvalidId;
 	int _width;
 	int _height;
-	TextureType _type;
-	TextureFormat _format;
-	TextureWrap _wrap;
-	TextureFilter _filter;
+	TextureConfig _config;
 	mutable TextureUnit _boundUnit = TextureUnit::Zero;
 
 public:
 	Texture(TextureType type, TextureFormat format, const std::string& name, int width = 1, int height = 1, TextureWrap wrap = TextureWrap::Repeat, TextureFilter filter = TextureFilter::Linear);
+	Texture(const TextureConfig& cfg, int width = 1, int height = 1, const std::string& name = "");
 	~Texture();
 	void shutdown();
 
@@ -60,7 +58,7 @@ inline Texture::operator Id() const {
 }
 
 inline TextureFormat Texture::format() const {
-	return _format;
+	return _config.format();
 }
 
 inline int Texture::width() const {
@@ -72,7 +70,7 @@ inline int Texture::height() const {
 }
 
 inline TextureType Texture::type() const {
-	return _type;
+	return _config.type();
 }
 
 inline Id Texture::handle() const {
@@ -119,6 +117,12 @@ inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 
 inline TexturePtr createTextureFromImage(const std::string& filename) {
 	return createTextureFromImage(image::loadImage(filename, false));
+}
+
+inline TexturePtr createTexture(const TextureConfig& cfg, int width = 1, int height = 1, const std::string& name = "") {
+	const TexturePtr& ptr = std::make_shared<Texture>(cfg, width, height, name);
+	ptr->upload();
+	return ptr;
 }
 
 inline bool bindTexture(TextureUnit unit, const Texture& texture) {

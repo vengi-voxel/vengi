@@ -8,8 +8,13 @@
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
+#include <map>
+#include <memory>
 
 namespace video {
+
+typedef std::shared_ptr<Texture> TexturePtr;
+typedef std::shared_ptr<RenderBuffer> RenderBufferPtr;
 
 /**
  * @ingroup Video
@@ -18,13 +23,15 @@ class FrameBuffer {
 	friend class ScopedFrameBuffer;
 private:
 	Id _fbo = video::InvalidId;
-	Id _texture = video::InvalidId;
-	Id _depth = video::InvalidId;
 	Id _oldFramebuffer = video::InvalidId;
+	std::map<FrameBufferAttachment, TexturePtr> _colorAttachments;
+	std::map<FrameBufferAttachment, RenderBufferPtr> _bufferAttachments;
 
 	glm::ivec2 _dimension;
 
 	int32_t _viewport[4] = {0, 0, 0, 0};
+
+	bool prepareAttachments(const FrameBufferConfig& cfg);
 public:
 	~FrameBuffer();
 
@@ -43,10 +50,6 @@ public:
 
 	const glm::ivec2& dimension() const;
 };
-
-inline Id FrameBuffer::texture() const {
-	return _texture;
-}
 
 inline const glm::ivec2& FrameBuffer::dimension() const {
 	return _dimension;

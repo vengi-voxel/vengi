@@ -45,10 +45,12 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 	}
 	_depthTexture.upload(format, dimension.x, dimension.y, nullptr, textureCount);
 	if (depthCompare) {
-		const TextureType type = textureType();
-		video::setupDepthCompareTexture(TextureUnit::Upload, type, _depthTexture);
+		video::setupDepthCompareTexture(_depthTexture.type(), CompareFunc::Less, TextureCompareMode::RefToTexture);
 	}
-	return video::setupDepthbuffer(_fbo, _mode);
+	const Id prev = bindFramebuffer(FrameBufferMode::Default, _fbo);
+	const bool retVal = video::setupDepthbuffer(_mode);
+	bindFramebuffer(FrameBufferMode::Default, prev);
+	return retVal;
 }
 
 bool DepthBuffer::bind() {

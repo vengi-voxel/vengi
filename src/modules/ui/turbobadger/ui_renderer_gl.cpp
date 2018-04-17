@@ -29,7 +29,7 @@ UIBitmapGL::~UIBitmapGL() {
 }
 
 void UIBitmapGL::bind(video::TextureUnit unit) {
-	video::bindTexture(unit, video::TextureType::Texture2D, _texture);
+	video::bindTexture(unit, _textureConfig.type(), _texture);
 }
 
 bool UIBitmapGL::Init(int width, int height, video::Id texture) {
@@ -51,8 +51,9 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 	_destroy = true;
 
 	_texture = video::genTexture();
-	video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, _texture);
-	video::setupTexture(video::TextureType::Texture2D, video::TextureWrap::None, video::TextureFilter::Linear);
+	_textureConfig.format(video::TextureFormat::RGBA);
+	video::bindTexture(video::TextureUnit::Upload, _textureConfig.type(), _texture);
+	video::setupTexture(_textureConfig);
 	SetData(data);
 
 	return true;
@@ -60,9 +61,9 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 
 void UIBitmapGL::SetData(uint32 *data) {
 	_renderer->FlushBitmap(this);
-	video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, _texture);
+	video::bindTexture(video::TextureUnit::Upload, _textureConfig.type(), _texture);
 	if (data != nullptr) {
-		video::uploadTexture(video::TextureType::Texture2D, video::TextureFormat::RGBA, _w, _h, (const uint8_t*)data, 0);
+		video::uploadTexture(_textureConfig.type(), _textureConfig.format(), _w, _h, (const uint8_t*)data, 0);
 	}
 	TB_IF_DEBUG_SETTING(RENDER_BATCHES, dbg_bitmap_validations++);
 }

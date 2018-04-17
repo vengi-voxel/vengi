@@ -39,6 +39,7 @@ public:
 	UIRendererGL *_renderer;
 	int _w, _h;
 	video::Id _texture;
+	video::TextureConfig _textureConfig;
 	bool _destroy = true;
 };
 

@@ -560,7 +560,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		// configure shadow map texture
 		video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
 		if (_depthBuffer.depthCompare()) {
-			video::disableDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
+			video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::None);
 		}
 
 		// render shadow maps
@@ -574,7 +574,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 		// restore texture
 		if (_depthBuffer.depthCompare()) {
-			video::setupDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
+			video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
 		}
 	}
 

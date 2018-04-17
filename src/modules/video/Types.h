@@ -28,8 +28,16 @@ enum class TextureFilter {
 
 enum class TextureWrap {
 	ClampToEdge,
+	ClampToBorder,
 	Repeat,
+	MirroredRepeat,
+
+	Max
+};
+
+enum class TextureCompareMode {
 	None,
+	RefToTexture,
 
 	Max
 };
@@ -55,6 +63,28 @@ enum class PolygonMode {
 	Points,
 	WireFrame,
 	Solid,
+
+	Max
+};
+
+enum class StencilOp {
+	/** The current value is kept. */
+	Keep,
+	/** The stencil value is set to 0. */
+	Zero,
+	/** The stencil value is set to the reference value. */
+	Replace,
+	/** The stencil value is increased by 1 if it is lower than the maximum value. */
+	Incr,
+	/** Same as @c Incr, with the exception that the value is set to 0 if the maximum value is exceeded. */
+	IncrWrap,
+	/** The stencil value is decreased by 1 if it is higher than 0. */
+	Decr,
+	/** Same as @c Decr, with the exception that the value is set to the maximum value if the current value
+	 * is 0 (the stencil buffer stores unsigned integers). */
+	DecrWrap,
+	/** A bitwise invert is applied to the value. */
+	Invert,
 
 	Max
 };
@@ -185,6 +215,30 @@ enum class FrameBufferMode {
 	Max
 };
 
+enum class FrameBufferAttachment {
+	DepthStencil,
+	Depth,
+	Stencil,
+	Color0,
+	Color1,
+	Color2,
+	Color3,
+	Color4,
+	Color5,
+	Color6,
+	Color7,
+	Color8,
+	Color9,
+	Color10,
+	Color11,
+	Color12,
+	Color13,
+	Color14,
+	Color15,
+
+	Max
+};
+
 enum class ShaderType {
 	Vertex,
 	Fragment,
@@ -260,8 +314,13 @@ enum class ImageFormat {
 enum class TextureFormat {
 	RGBA,
 	RGB,
-	D24S8,
 	RGBA32F,
+
+	D24S8,
+	D32FS8,
+	D24,
+	D32F,
+	S8,
 
 	Max
 };

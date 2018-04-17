@@ -13,8 +13,16 @@
 #include "image/Image.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
+#include "TextureConfig.h"
+#include "FrameBufferConfig.h"
+#include "StencilConfig.h"
+#include "RenderBuffer.h"
 
 namespace video {
+
+class Texture;
+typedef std::shared_ptr<Texture> TexturePtr;
 
 /**
  * @brief Maps data types to GL enums
@@ -132,7 +140,7 @@ extern void endFrame(SDL_Window* window);
 extern void checkError();
 extern bool setupCubemap(Id handle, const image::ImagePtr images[6]);
 extern void readBuffer(GBufferTextureType textureType);
-extern bool setupDepthbuffer(Id fbo, DepthBufferMode mode);
+extern bool setupDepthbuffer(DepthBufferMode mode);
 extern bool bindDepthTexture(int textureIndex, DepthBufferMode mode, Id depthTexture);
 extern bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, int texCount, Id depthTexture);
 /**
@@ -166,6 +174,7 @@ extern bool disable(State state);
 extern void colorMask(bool red, bool green, bool blue, bool alpha);
 extern bool cullFace(Face face);
 extern bool depthFunc(CompareFunc func);
+extern bool setupStencil(const StencilConfig& config);
 extern bool blendFunc(BlendMode src, BlendMode dest);
 extern bool blendEquation(BlendEquation func);
 extern PolygonMode polygonMode(Face face, PolygonMode mode);
@@ -225,19 +234,19 @@ extern int getOcclusionQueryResult(Id id, bool wait = false);
  * @param textureHandle The Id that represents the texture that should be bound as frame buffer color attachment.
  * @return The previously bound frame buffer Id
  */
-extern Id bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle = InvalidId);
-extern bool bindRenderbuffer(Id handle);
+extern Id bindFramebuffer(FrameBufferMode mode, Id handle);
+extern bool setupRenderBuffer(TextureFormat format, int w, int h, int samples);
+extern Id bindRenderbuffer(Id handle);
 extern void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size);
 extern void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size);
 /**
  * @return The size of the buffer object, measured in bytes.
  */
 extern size_t bufferSize(VertexBufferType type);
-extern void disableDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture);
-extern void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture);
+extern void setupDepthCompareTexture(video::TextureType type, CompareFunc func, TextureCompareMode mode);
 extern const glm::vec4& framebufferUV();
-extern bool setupFramebuffer(Id& fbo, Id& texture, Id& depth, TextureWrap wrap, TextureFilter filter, const glm::ivec2& dimension);
-extern void setupTexture(video::TextureType type, video::TextureWrap wrap, video::TextureFilter filter);
+extern bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTextures, const std::map<FrameBufferAttachment, RenderBufferPtr>& bufferAttachments);
+extern void setupTexture(const TextureConfig& config);
 extern void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t* data, int index);
 extern void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset = nullptr);
 extern void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount);
