@@ -236,7 +236,7 @@ extern size_t bufferSize(VertexBufferType type);
 extern void disableDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture);
 extern void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture);
 extern const glm::vec4& framebufferUV();
-extern bool setupFramebuffer(Id& _fbo, Id& _texture, Id& _depth, const glm::ivec2& dimension);
+extern bool setupFramebuffer(Id& fbo, Id& texture, Id& depth, TextureWrap wrap, TextureFilter filter, const glm::ivec2& dimension);
 extern void setupTexture(video::TextureType type, video::TextureWrap wrap, video::TextureFilter filter);
 extern void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t* data, int index);
 extern void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset = nullptr);

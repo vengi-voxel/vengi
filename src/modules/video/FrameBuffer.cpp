@@ -13,7 +13,7 @@ FrameBuffer::~FrameBuffer() {
 
 bool FrameBuffer::init(const glm::ivec2& dimension) {
 	_dimension = dimension;
-	return video::setupFramebuffer(_fbo, _texture, _depth, dimension);
+	return video::setupFramebuffer(_fbo, _texture, _depth, TextureWrap::ClampToEdge, TextureFilter::Linear, dimension);
 }
 
 glm::vec4 FrameBuffer::uv() const {
