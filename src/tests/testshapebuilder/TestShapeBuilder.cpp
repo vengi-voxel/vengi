@@ -52,6 +52,7 @@ void TestShapeBuilder::doRender() {
 }
 
 void TestShapeBuilder::onRenderUI() {
+	Super::onRenderUI();
 	const int width = 95;
 	bool buildMesh = false;
 	_shapeBuilder.clear();
@@ -59,11 +60,6 @@ void TestShapeBuilder::onRenderUI() {
 	glm::ivec3& pos = _position[_meshCount];
 	glm::vec3& scale = _scale[_meshCount];
 	_shapeBuilder.setPosition(pos);
-
-	ImGui::SetNextWindowSize(ImVec2(400, 120));
-	ImGui::Begin("Keys and information");
-	Super::onRenderUI();
-	ImGui::End();
 
 	ImGui::SetNextWindowSize(ImVec2(540, 300));
 	ImGui::Begin("Actions and Settings");
