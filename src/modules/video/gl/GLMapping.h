@@ -79,6 +79,7 @@ static_assert(std::enum_value(VertexBufferType::Max) == lengthof(VertexBufferTyp
 
 static GLenum States[] {
 	0,
+	GL_STENCIL_TEST,
 	GL_DEPTH_TEST,
 	GL_CULL_FACE,
 	GL_BLEND,

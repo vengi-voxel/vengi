@@ -109,6 +109,7 @@ enum class Vendor {
 
 enum class State {
 	DepthMask,
+	StencilTest,
 	DepthTest,
 	// Cull triangles whose normal is not towards the camera
 	CullFace,
