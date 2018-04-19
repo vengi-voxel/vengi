@@ -31,7 +31,9 @@ core::AppState TestGLSLComp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	_texture = std::make_shared<video::Texture>(video::TextureType::Texture2D, video::TextureFormat::RGBA32F, appname(), 512, 512);
+	video::TextureConfig cfg;
+	cfg.format(video::TextureFormat::RGBA32F);
+	_texture = video::createTexture(cfg, 512, 512, appname());
 	_texture->upload(nullptr);
 	video::bindImage(_texture->handle(), video::AccessMode::Write, _testShader.getImageFormatImgOutput());
 
