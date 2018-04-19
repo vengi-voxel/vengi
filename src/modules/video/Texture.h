@@ -26,7 +26,6 @@ private:
 	mutable TextureUnit _boundUnit = TextureUnit::Zero;
 
 public:
-	Texture(TextureType type, TextureFormat format, const std::string& name, int width = 1, int height = 1, TextureWrap wrap = TextureWrap::Repeat, TextureFilter filter = TextureFilter::Linear);
 	Texture(const TextureConfig& cfg, int width = 1, int height = 1, const std::string& name = "");
 	~Texture();
 	void shutdown();
