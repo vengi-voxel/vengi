@@ -215,6 +215,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		const std::string& sourceDirectory,
 		const std::vector<Kernel>& _kernels,
 		const std::vector<Struct>& _structs,
+		const std::map<std::string, std::string>& _constants,
 		const std::string& postfix) {
 	const std::string name = _name + "Shader";
 
@@ -256,10 +257,20 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		}
 	}
 
+	for (const auto& e : _constants) {
+		kernels << "\t/**\n";
+		kernels << "\t * @brief Exported from shader code by @code $constant " << e.first << " " << e.second << " @endcode\n";
+		kernels << "\t */\n";
+		kernels << "\tinline const char* get" << util::convertName(e.first, true) << "() const {\n";
+		kernels << "\t\treturn \"" << e.second << "\";\n";
+		kernels << "\t}\n";
+	}
+
 	std::stringstream structs;
 	generateStructs(_structs, structs);
 
 	std::string src(templateShader);
+	src = core::string::replaceAll(src, "$constant", "//");
 	src = core::string::replaceAll(src, "$name$", filename);
 	src = core::string::replaceAll(src, "$namespace$", namespaceSrc);
 	src = core::string::replaceAll(src, "$filename$", shaderDirectory + _name);

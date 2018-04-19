@@ -6,6 +6,8 @@
 #include "compute/Types.h"
 #include "../Util.h"
 
+namespace computeshadertool {
+
 class ComputeShaderToolTest: public core::AbstractTest {
 };
 
@@ -35,4 +37,6 @@ TEST_F(ComputeShaderToolTest, testToString) {
 	EXPECT_EQ("compute::BufferFlag::ReadWrite", util::toString(compute::BufferFlag::ReadWrite));
 	EXPECT_EQ("compute::BufferFlag::ReadWrite | compute::BufferFlag::ReadOnly",
 			util::toString(compute::BufferFlag::ReadWrite | compute::BufferFlag::ReadOnly));
+}
+
 }

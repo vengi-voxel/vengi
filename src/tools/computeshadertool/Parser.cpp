@@ -345,7 +345,7 @@ static const simplecpp::Token *parseKernel(const simplecpp::Token *tok, std::vec
 }
 
 bool parse(const std::string& buffer, const std::string& computeFilename, std::vector<Kernel>& kernels,
-		std::vector<Struct>& structs) {
+		std::vector<Struct>& structs, std::map<std::string, std::string>& constants) {
 	simplecpp::DUI dui;
 	simplecpp::OutputList outputList;
 	std::vector<std::string> files;
@@ -367,6 +367,21 @@ bool parse(const std::string& buffer, const std::string& computeFilename, std::v
 			tok = parseKernel(tok, kernels);
 		} else if (token == "struct") {
 			tok = parseStruct(tok, structs);
+		} else if (token == "$constant") {
+			if (!tok->next) {
+				return false;
+			}
+			tok = tok->next;
+			const std::string varname = tok->str;
+			if (!tok->next) {
+				return false;
+			}
+			tok = tok->next;
+			const std::string varvalue = tok->str;
+			if (!constants.insert(std::make_pair(varname, varvalue)).second) {
+				Log::error("Could not register constant %s with value %s (duplicate)", varname.c_str(), varvalue.c_str());
+				return false;
+			}
 		}
 		comment.clear();
 		if (tok == nullptr) {

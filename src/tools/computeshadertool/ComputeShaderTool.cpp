@@ -22,7 +22,7 @@ ComputeShaderTool::~ComputeShaderTool() {
 }
 
 bool ComputeShaderTool::parse(const std::string& buffer) {
-	return computeshadertool::parse(buffer, _computeFilename, _kernels, _structs);
+	return computeshadertool::parse(buffer, _computeFilename, _kernels, _structs, _constants);
 }
 
 core::AppState ComputeShaderTool::onConstruct() {
@@ -69,7 +69,7 @@ core::AppState ComputeShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 	const std::string& templateShader = filesystem()->load(_shaderTemplateFile);
-	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs, _postfix)) {
+	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs, _constants, _postfix)) {
 		_exitCode = 100;
 		return core::AppState::Cleanup;
 	}

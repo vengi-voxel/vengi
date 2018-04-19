@@ -38,6 +38,7 @@ protected:
 	std::string _name;
 	std::vector<computeshadertool::Kernel> _kernels;
 	std::vector<computeshadertool::Struct> _structs;
+	std::map<std::string, std::string> _constants;
 
 	bool parse(const std::string& src);
 public:

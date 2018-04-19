@@ -6,6 +6,7 @@
 #include "compute/Types.h"
 #include <string>
 
+namespace computeshadertool {
 namespace util {
 
 struct CLTypeMapping {
@@ -19,6 +20,15 @@ extern CLTypeMapping vectorType(const std::string& type);
 
 extern int alignment(const std::string& type);
 
+/**
+ * @brief convert the given input string into lower- or upper-camel-case
+ * @param in The string to convert
+ * @param firstUpper Convert to upper camel case
+ * @return The camel case string
+ */
+extern std::string convertName(const std::string& in, bool firstUpper);
+
 extern std::string toString(compute::BufferFlag flagMask);
 
+}
 }
