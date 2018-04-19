@@ -946,6 +946,25 @@ bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTe
 	return _priv::checkFramebufferStatus();
 }
 
+bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
+	const GLenum glAttachment = _priv::FrameBufferAttachments[std::enum_value(attachment)];
+	glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachment, texture, 0, layerIndex);
+	checkError();
+	if (shouldClear) {
+		if (attachment == FrameBufferAttachment::Depth) {
+			clear(ClearFlag::Depth);
+		} else if (attachment == FrameBufferAttachment::Stencil) {
+			clear(ClearFlag::Stencil);
+		} else if (attachment == FrameBufferAttachment::DepthStencil) {
+			clear(ClearFlag::Depth | ClearFlag::Stencil);
+		}
+	}
+	if (!_priv::checkFramebufferStatus()) {
+		return false;
+	}
+	return true;
+}
+
 void setupTexture(const TextureConfig& config) {
 	const GLenum glType = _priv::TextureTypes[std::enum_value(config.type())];
 	if (config.filterMag() != TextureFilter::Max) {

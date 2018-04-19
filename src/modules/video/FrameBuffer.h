@@ -39,10 +39,11 @@ public:
 	bool init(const FrameBufferConfig& cfg);
 	void shutdown();
 
+	bool bindTextureAttachment(FrameBufferAttachment attachment, int layerIndex, bool clear = true);
 	void bind(bool clear = true);
 	void unbind();
 
-	Id texture() const;
+	TexturePtr texture(FrameBufferAttachment attachment = FrameBufferAttachment::Color0) const;
 
 	/**
 	 * @return two uv coordinates lower left and upper right (a and c)
@@ -55,5 +56,7 @@ public:
 inline const glm::ivec2& FrameBuffer::dimension() const {
 	return _dimension;
 }
+
+extern bool bindTexture(TextureUnit unit, const FrameBuffer& frameBuffer, FrameBufferAttachment attachment = FrameBufferAttachment::Color0);
 
 }

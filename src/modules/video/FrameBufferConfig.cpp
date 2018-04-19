@@ -54,4 +54,14 @@ FrameBufferConfig& FrameBufferConfig::stencilBuffer(bool stencilBuffer) {
 	return *this;
 }
 
+FrameBufferConfig defaultDepthBufferConfig(const glm::ivec2& dimension, int maxDepthBuffers) {
+	TextureConfig cfg;
+	cfg.format(TextureFormat::D24S8).type(TextureType::Texture2DArray).wrap(TextureWrap::ClampToEdge);
+	cfg.compareFunc(CompareFunc::Less).compareMode(TextureCompareMode::RefToTexture).layers(maxDepthBuffers);
+	FrameBufferConfig fboCfg;
+	fboCfg.dimension(dimension).colorTexture(false);
+	fboCfg.addTextureAttachment(cfg, FrameBufferAttachment::Depth);
+	return fboCfg;
+}
+
 }

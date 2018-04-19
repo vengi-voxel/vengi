@@ -89,4 +89,6 @@ inline const std::map<FrameBufferAttachment, TextureConfig>& FrameBufferConfig::
 	return _colorTextures;
 }
 
+extern FrameBufferConfig defaultDepthBufferConfig(const glm::ivec2& dimension, int maxDepthBuffers);
+
 }

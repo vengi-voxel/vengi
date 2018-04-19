@@ -5,6 +5,8 @@
 #include "FrameBuffer.h"
 #include "Texture.h"
 #include "RenderBuffer.h"
+#include "core/Log.h"
+#include "core/Assert.h"
 
 namespace video {
 
@@ -89,12 +91,12 @@ void FrameBuffer::shutdown() {
 	_bufferAttachments.clear();
 }
 
-Id FrameBuffer::texture() const {
-	auto i = _colorAttachments.find(FrameBufferAttachment::Color0);
+TexturePtr FrameBuffer::texture(FrameBufferAttachment attachment) const {
+	auto i = _colorAttachments.find(attachment);
 	if (i == _colorAttachments.end()) {
-		return InvalidId;
+		return TexturePtr();
 	}
-	return i->second->handle();
+	return i->second;
 }
 
 void FrameBuffer::bind(bool clear) {
@@ -106,10 +108,32 @@ void FrameBuffer::bind(bool clear) {
 	}
 }
 
+bool FrameBuffer::bindTextureAttachment(FrameBufferAttachment attachment, int layerIndex, bool clear) {
+	auto i = _colorAttachments.find(attachment);
+	if (i == _colorAttachments.end()) {
+		Log::warn("Could not find texture attachment for attachment %i", (int)attachment);
+		return false;
+	}
+	if (layerIndex < 0 || layerIndex >= i->second->layers()) {
+		Log::warn("Given layer index (%i) is out of bounds: %i", layerIndex, (int)i->second->layers());
+		return false;
+	}
+	return video::bindFrameBufferAttachment(i->second->handle(), attachment, layerIndex, clear);
+}
+
 void FrameBuffer::unbind() {
 	video::viewport(_viewport[0], _viewport[1], _viewport[2], _viewport[3]);
 	video::bindFramebuffer(_oldFramebuffer);
 	_oldFramebuffer = InvalidId;
+}
+
+bool bindTexture(TextureUnit unit, const FrameBuffer& frameBuffer, FrameBufferAttachment attachment) {
+	const TexturePtr& tex = frameBuffer.texture(attachment);
+	if (!tex) {
+		return false;
+	}
+	video::bindTexture(unit, tex->type(), tex->handle());
+	return true;
 }
 
 }
