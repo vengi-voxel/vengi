@@ -43,6 +43,7 @@ enum class TextureCompareMode {
 };
 
 enum class ClearFlag {
+	None,
 	Color,
 	Depth,
 	Stencil,

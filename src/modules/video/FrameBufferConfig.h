@@ -12,6 +12,9 @@
 
 namespace video {
 
+/**
+ * @brief Configuration options or the @c FrameBuffer
+ */
 class FrameBufferConfig {
 private:
 	bool _depth = false;

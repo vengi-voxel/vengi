@@ -22,6 +22,7 @@ typedef std::shared_ptr<RenderBuffer> RenderBufferPtr;
 class FrameBuffer {
 	friend class ScopedFrameBuffer;
 private:
+	ClearFlag _clearFlag = ClearFlag::None;
 	Id _fbo = video::InvalidId;
 	Id _oldFramebuffer = video::InvalidId;
 	std::map<FrameBufferAttachment, TexturePtr> _colorAttachments;
@@ -38,7 +39,7 @@ public:
 	bool init(const FrameBufferConfig& cfg);
 	void shutdown();
 
-	void bind();
+	void bind(bool clear = true);
 	void unbind();
 
 	Id texture() const;
