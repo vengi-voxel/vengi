@@ -373,7 +373,7 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 			methods << "\t/**\n";
 			methods << "\t * @brief Exported from shader code by @code $constant " << e.first << " " << e.second << " @endcode\n";
 			methods << "\t */\n";
-			methods << "\tinline const char* get" << util::convertName(e.first, true) << "() const {\n";
+			methods << "\tinline static const char* get" << util::convertName(e.first, true) << "() {\n";
 			methods << "\t\treturn \"" << e.second << "\";\n";
 			methods << "\t}\n";
 		}

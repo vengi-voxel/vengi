@@ -261,7 +261,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		kernels << "\t/**\n";
 		kernels << "\t * @brief Exported from shader code by @code $constant " << e.first << " " << e.second << " @endcode\n";
 		kernels << "\t */\n";
-		kernels << "\tinline const char* get" << util::convertName(e.first, true) << "() const {\n";
+		kernels << "\tinline static const char* get" << util::convertName(e.first, true) << "() {\n";
 		kernels << "\t\treturn \"" << e.second << "\";\n";
 		kernels << "\t}\n";
 	}

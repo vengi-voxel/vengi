@@ -36,8 +36,6 @@ struct CustomIsQuadNeeded {
 	}
 };
 
-const std::string MaxDepthBufferUniformName = "u_cascades";
-
 RawVolumeRenderer::RawVolumeRenderer() :
 		_shadowMapShader(shader::ShadowmapShader::getInstance()),
 		_worldShader(shader::WorldShader::getInstance()) {
@@ -68,7 +66,7 @@ bool RawVolumeRenderer::init() {
 		}
 	}
 
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	const int maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
 	if (!_depthBuffer.init(smSize, maxDepthBuffers)) {
 		return false;
@@ -199,7 +197,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	const bool oldCullFace = video::enable(video::State::CullFace);
 	const bool oldDepthMask = video::enable(video::State::DepthMask);
 
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	const int maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
 	_shadow.calculateShadowData(camera, true, maxDepthBuffers, _depthBuffer.dimension());
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();

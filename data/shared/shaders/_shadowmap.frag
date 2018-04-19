@@ -11,6 +11,7 @@ $in vec3 v_lightspacepos;
 $in float v_viewz;
 uniform vec2 u_depthsize;
 uniform vec4 u_distances;
+$constant MaxDepthBufferUniformName u_cascades
 uniform mat4 u_cascades[4];
 
 /**

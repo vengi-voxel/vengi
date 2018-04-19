@@ -19,8 +19,6 @@
 
 namespace voxelrender {
 
-const std::string MaxDepthBufferUniformName = "u_cascades";
-
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxel::WorldMgrPtr& world) :
 		_octree(math::AABB<int>(), 30), _world(world) {
@@ -459,7 +457,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	const int maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
 
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();
@@ -813,7 +811,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		return false;
 	}
 
-	_maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	_maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
 
 	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
 	video::Attribute attributePos;
