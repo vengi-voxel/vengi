@@ -123,9 +123,13 @@ bool RawVolume::setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& voxel) {
  * @return @c true if the voxel was placed, @c false if it was already the same voxel
  */
 bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
-	core_assert_msg(_region.containsPoint(pos), "Position is outside valid region %i:%i:%i",
-			pos.x, pos.y, pos.z);
-
+	const bool inside = _region.containsPoint(pos);
+	core_assert_msg(inside, "Position is outside valid region %i:%i:%i (mins[%i:%i:%i], maxs[%i:%i:%i])",
+			pos.x, pos.y, pos.z, _region.getLowerX(), _region.getLowerY(), _region.getLowerZ(),
+			_region.getUpperX(), _region.getUpperY(), _region.getUpperZ());
+	if (!inside) {
+		return false;
+	}
 	const glm::ivec3& lowerCorner = _region.getLowerCorner();
 	const int32_t localXPos = pos.x - lowerCorner.x;
 	const int32_t localYPos = pos.y - lowerCorner.y;

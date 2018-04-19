@@ -28,8 +28,9 @@
 				continue; /* go again. */ \
 			} else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
 				SDL_TriggerBreakpoint(); \
+			} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE) { \
+				core_stacktrace \
 			} \
-			core_stacktrace \
 			break; /* not retrying. */ \
 		} \
 	} while (SDL_NULL_WHILE_LOOP_CONDITION)
@@ -56,8 +57,9 @@
 				continue; /* go again. */ \
 			} else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
 				SDL_TriggerBreakpoint(); \
+			} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE) { \
+				core_stacktrace \
 			} \
-			core_stacktrace \
 			break; /* not retrying. */ \
 		} \
 	} while (SDL_NULL_WHILE_LOOP_CONDITION)
