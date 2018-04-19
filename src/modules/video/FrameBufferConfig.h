@@ -36,8 +36,8 @@ public:
 	bool useColorTexture() const;
 	TextureFormat colorTextureFormat() const;
 
-	FrameBufferConfig& addColorTexture(const TextureConfig& cfg);
-	const std::map<FrameBufferAttachment, TextureConfig>& colorTextures() const;
+	FrameBufferConfig& addTextureAttachment(const TextureConfig& cfg, video::FrameBufferAttachment attachment = video::FrameBufferAttachment::Color0);
+	const std::map<FrameBufferAttachment, TextureConfig>& textureAttachments() const;
 
 	FrameBufferConfig& depthTexture(bool depthTexture);
 	FrameBufferConfig& depthTextureFormat(TextureFormat format);
@@ -85,7 +85,7 @@ inline TextureFormat FrameBufferConfig::depthBufferFormat() const {
 	return _depthBufferFormat;
 }
 
-inline const std::map<FrameBufferAttachment, TextureConfig>& FrameBufferConfig::colorTextures() const {
+inline const std::map<FrameBufferAttachment, TextureConfig>& FrameBufferConfig::textureAttachments() const {
 	return _colorTextures;
 }
 

@@ -3,11 +3,14 @@
  */
 
 #include "FrameBufferConfig.h"
+#include "TextureConfig.h"
+#include "core/Assert.h"
 
 namespace video {
 
-FrameBufferConfig& FrameBufferConfig::addColorTexture(const TextureConfig& cfg) {
-	_colorTextures[FrameBufferAttachment::Color0] = cfg;
+FrameBufferConfig& FrameBufferConfig::addTextureAttachment(const TextureConfig& cfg, video::FrameBufferAttachment attachment) {
+	core_assert_msg(_colorTextures.count(attachment) == 0, "There is already a binding for the given attachment type");
+	_colorTextures[attachment] = cfg;
 	return *this;
 }
 

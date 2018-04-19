@@ -423,7 +423,7 @@ void EditorScene::OnResized(int oldw, int oldh) {
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
 	video::FrameBufferConfig cfg;
-	cfg.dimension(dim).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addColorTexture(textureCfg);
+	cfg.dimension(dim).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addTextureAttachment(textureCfg);
 	_frameBuffer.init(cfg);
 	_bitmap.Init(dim.x, dim.y, _frameBuffer.texture());
 	m().onResize(dim);

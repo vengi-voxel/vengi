@@ -15,7 +15,7 @@ FrameBuffer::~FrameBuffer() {
 
 bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
 	const glm::ivec2& dim = cfg.dimension();
-	for (const auto& a : cfg.colorTextures()) {
+	for (const auto& a : cfg.textureAttachments()) {
 		_colorAttachments[a.first] = video::createTexture(a.second, dim.x, dim.y);
 		if (a.first == FrameBufferAttachment::Depth) {
 			_clearFlag |= ClearFlag::Depth;

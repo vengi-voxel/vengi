@@ -21,7 +21,7 @@ bool MapRenderer::init() {
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
 	video::FrameBufferConfig cfg;
-	cfg.dimension(dim).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addColorTexture(textureCfg);
+	cfg.dimension(dim).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addTextureAttachment(textureCfg);
 	if (!_frameBuffer.init(cfg)) {
 		return false;
 	}
