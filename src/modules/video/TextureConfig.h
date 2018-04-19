@@ -8,8 +8,12 @@
 
 namespace video {
 
+/**
+ * @brief Configuration options or a @c Texture
+ */
 class TextureConfig {
 private:
+	TextureWrap _wrapR = TextureWrap::Max;
 	TextureWrap _wrapS = TextureWrap::Max;
 	TextureWrap _wrapT = TextureWrap::Max;
 	TextureFilter _filterMag = TextureFilter::Linear;
@@ -18,8 +22,11 @@ private:
 	TextureFormat _format = TextureFormat::RGBA;
 	CompareFunc _compareFunc = CompareFunc::Max;
 	TextureCompareMode _compareMode = TextureCompareMode::Max;
+	uint8_t _layers = 1u;
+	uint8_t _alignment = 1u;
 public:
 	TextureConfig& wrap(TextureWrap wrap);
+	TextureConfig& wrapR(TextureWrap wrap);
 	TextureConfig& wrapS(TextureWrap wrap);
 	TextureConfig& wrapT(TextureWrap wrap);
 	TextureConfig& filter(TextureFilter filter);
@@ -29,13 +36,26 @@ public:
 	TextureConfig& format(TextureFormat format);
 	TextureConfig& compareFunc(CompareFunc func);
 	TextureConfig& compareMode(TextureCompareMode mode);
+	/**
+	 * @param[in] layers The amount of layers for the given texture.
+	 * @see TextureType
+	 */
+	TextureConfig& layers(uint8_t layers);
+	/**
+	 * @param[in] alignment A value of 0 doesn't change the default.
+	 * Valid values are @c 0, @c 1, @c 2, @c 4 and @c 8.
+	 */
+	TextureConfig& alignment(uint8_t alignment);
 
+	TextureWrap wrapR() const;
 	TextureWrap wrapS() const;
 	TextureWrap wrapT() const;
 	TextureFilter filterMag() const;
 	TextureFilter filterMin() const;
 	TextureType type() const;
 	TextureFormat format() const;
+	uint8_t layers() const;
+	uint8_t alignment() const;
 	CompareFunc compareFunc() const;
 	TextureCompareMode compareMode() const;
 };
@@ -46,6 +66,10 @@ inline TextureFilter TextureConfig::filterMag() const{
 
 inline TextureFilter TextureConfig::filterMin() const{
 	return _filterMin;
+}
+
+inline TextureWrap TextureConfig::wrapR() const {
+	return _wrapR;
 }
 
 inline TextureWrap TextureConfig::wrapS() const {
@@ -70,6 +94,14 @@ inline CompareFunc TextureConfig::compareFunc() const {
 
 inline TextureCompareMode TextureConfig::compareMode() const {
 	return _compareMode;
+}
+
+inline uint8_t TextureConfig::layers() const {
+	return _layers;
+}
+
+inline uint8_t TextureConfig::alignment() const {
+	return _alignment;
 }
 
 }

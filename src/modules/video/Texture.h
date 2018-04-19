@@ -22,6 +22,7 @@ private:
 	Id _handle = video::InvalidId;
 	int _width;
 	int _height;
+	int _layerCount = 1;
 	TextureConfig _config;
 	mutable TextureUnit _boundUnit = TextureUnit::Zero;
 
@@ -35,6 +36,7 @@ public:
 	TextureFormat format() const;
 	int width() const;
 	int height() const;
+	int layers() const;
 	Id handle() const;
 
 	// updates the texture with the new data
@@ -51,6 +53,10 @@ public:
 	 */
 	void unbind() const;
 };
+
+inline int Texture::layers() const {
+	return _layerCount;
+}
 
 inline Texture::operator Id() const {
 	return _handle;
@@ -105,5 +111,7 @@ extern TexturePtr createTextureFromImage(const std::string& filename);
 extern TexturePtr createTexture(const TextureConfig& cfg, int width = 1, int height = 1, const std::string& name = "");
 
 extern bool bindTexture(TextureUnit unit, const Texture& texture);
+
+extern bool bindTexture(TextureUnit unit, const TexturePtr& texture);
 
 }

@@ -7,7 +7,12 @@
 namespace video {
 
 TextureConfig& TextureConfig::wrap(TextureWrap wrap) {
-	_wrapS = _wrapT = wrap;
+	_wrapR = _wrapS = _wrapT = wrap;
+	return *this;
+}
+
+TextureConfig& TextureConfig::wrapR(TextureWrap wrap) {
+	_wrapR = wrap;
 	return *this;
 }
 
@@ -53,6 +58,16 @@ TextureConfig& TextureConfig::compareFunc(CompareFunc func) {
 
 TextureConfig& TextureConfig::compareMode(TextureCompareMode mode) {
 	_compareMode = mode;
+	return *this;
+}
+
+TextureConfig& TextureConfig::layers(uint8_t layers) {
+	_layers = layers;
+	return *this;
+}
+
+TextureConfig& TextureConfig::alignment(uint8_t alignment) {
+	_alignment = alignment;
 	return *this;
 }
 

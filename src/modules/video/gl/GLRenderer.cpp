@@ -102,7 +102,7 @@ bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texC
 	// we are going to write vec3 into the out vars in the shaders
 	cfg.format(TextureFormat::RGB32F).filter(TextureFilter::Nearest);
 	for (std::size_t i = 0; i < texCount; ++i) {
-		bindTexture(TextureUnit::Upload, TextureType::Texture2D, textures[i]);
+		bindTexture(TextureUnit::Upload, cfg.type(), textures[i]);
 		setupTexture(cfg);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, textures[i], 0);
 	}
@@ -138,6 +138,7 @@ bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
 		glTexImage2D(types[i], 0, mode, img->width(), img->height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data());
 	}
 
+	// TODO: use setupTexture
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -957,6 +958,11 @@ void setupTexture(const TextureConfig& config) {
 		glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilterMin);
 		checkError();
 	}
+	if (config.wrapR() != TextureWrap::Max) {
+		const GLenum glWrapR = _priv::TextureWraps[std::enum_value(config.wrapR())];
+		glTexParameteri(glType, GL_TEXTURE_WRAP_R, glWrapR);
+		checkError();
+	}
 	if (config.wrapS() != TextureWrap::Max) {
 		const GLenum glWrapS = _priv::TextureWraps[std::enum_value(config.wrapS())];
 		glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrapS);
@@ -977,9 +983,15 @@ void setupTexture(const TextureConfig& config) {
 		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
 		checkError();
 	}
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
+	const uint8_t alignment = config.alignment();
+	if (alignment > 0u) {
+		core_assert(alignment == 1 || alignment == 2 || alignment == 4 || alignment == 8);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+	}
+	/** Specifies the index of the lowest defined mipmap level. This is an integer value. The initial value is 0. */
+	//glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
+	/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
+	//glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
 	checkError();
 }
 

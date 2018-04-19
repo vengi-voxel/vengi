@@ -47,6 +47,7 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	video::bindTexture(TextureUnit::Upload, type(), _handle);
 	video::setupTexture(_config);
 	video::uploadTexture(type(), format(), _width, _height, data, index);
+	_layerCount = std::max(_layerCount, index);
 	_state = io::IOSTATE_LOADED;
 }
 
@@ -107,12 +108,24 @@ TexturePtr createTextureFromImage(const std::string& filename) {
 
 TexturePtr createTexture(const TextureConfig& cfg, int width, int height, const std::string& name) {
 	const TexturePtr& ptr = std::make_shared<Texture>(cfg, width, height, name);
-	ptr->upload();
+	if (cfg.type() == TextureType::Texture2D && cfg.layers() > 1) {
+		Log::error("Texture with layers given, but normal 2d texture was defined");
+		return TexturePtr();
+	}
+	ptr->upload(nullptr, cfg.layers());
 	return ptr;
 }
 
 bool bindTexture(TextureUnit unit, const Texture& texture) {
 	texture.bind(unit);
+	return true;
+}
+
+bool bindTexture(TextureUnit unit, const TexturePtr& texture) {
+	if (!texture) {
+		return false;
+	}
+	texture->bind(unit);
 	return true;
 }
 
