@@ -176,7 +176,6 @@ protected:
 	bool renderOpaqueBuffers();
 	bool renderWaterBuffers();
 	ChunkBuffer* findFreeChunkBuffer();
-	bool checkShaders() const;
 
 	bool initOpaqueBuffer();
 	bool initWaterBuffer();

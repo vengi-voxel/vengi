@@ -196,16 +196,6 @@ WorldRenderer::ChunkBuffer* WorldRenderer::findFreeChunkBuffer() {
 	return nullptr;
 }
 
-bool WorldRenderer::checkShaders() const {
-	const int loc1 = _worldShader.getLocationPos();
-	const int loc2 = _worldInstancedShader.getLocationPos();
-	const int loc3 = _waterShader.getLocationPos();
-	const int loc4 = _shadowMapShader.getLocationPos();
-	const bool same = loc1 == loc2 && loc2 == loc3 && loc3 == loc4;
-	core_assert_msg(same, "attribute locations for a_pos differ: %i, %i, %i, %i", loc1, loc2, loc3, loc4);
-	return same;
-}
-
 static size_t transform(size_t indexOffset, const voxel::Mesh& mesh, std::vector<voxel::VoxelVertex>& verts, std::vector<voxel::IndexType>& idxs) {
 	const std::vector<voxel::IndexType>& indices = mesh.getIndexVector();
 	std::transform(indices.begin(), indices.end(),
@@ -447,8 +437,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_waterShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 		}
 	}
-
-	core_assert_msg(checkShaders(), "Shader attributes don't have the same order");
 
 	int drawCallsWorld = 0;
 
