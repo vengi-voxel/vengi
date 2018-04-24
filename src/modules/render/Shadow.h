@@ -29,6 +29,7 @@ private:
 
 public:
 	bool init();
+	void shutdown();
 
 	const glm::vec2& depthDimension() const;
 	/**

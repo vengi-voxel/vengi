@@ -295,6 +295,7 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_worldShader.shutdown();
 	_shadowMapShader.shutdown();
+	_shadow.shutdown();
 	_materialBlock.shutdown();
 	std::vector<voxel::RawVolume*> old(MAX_VOLUMES);
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {

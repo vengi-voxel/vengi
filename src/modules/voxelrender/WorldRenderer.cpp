@@ -43,6 +43,7 @@ void WorldRenderer::shutdown() {
 	_shadowMapDebugBuffer.shutdown();
 	_shadowMapRenderShader.shutdown();
 	_shadowMapInstancedShader.shutdown();
+	_shadow.shutdown();
 	_worldShader.shutdown();
 	_worldInstancedShader.shutdown();
 	_waterShader.shutdown();

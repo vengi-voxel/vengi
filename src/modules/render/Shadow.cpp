@@ -19,6 +19,9 @@ bool Shadow::init() {
 	return true;
 }
 
+void Shadow::shutdown() {
+}
+
 void Shadow::calculateShadowData(const video::Camera& camera, bool active, int maxDepthBuffers, const glm::ivec2& depthBufferSize, float sliceWeight) {
 	core_trace_scoped(ShadowCalculate);
 	_cascades.resize(maxDepthBuffers);
