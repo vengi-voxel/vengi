@@ -491,7 +491,7 @@ void EditorScene::OnProcess() {
 
 	video::clearColor(core::Color::Clear);
 	core_trace_scoped(EditorSceneRenderFramebuffer);
-	_frameBuffer.bind();
+	_frameBuffer.bind(true);
 	render();
 	_frameBuffer.unbind();
 }

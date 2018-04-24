@@ -39,8 +39,8 @@ public:
 	bool init(const FrameBufferConfig& cfg);
 	void shutdown();
 
-	bool bindTextureAttachment(FrameBufferAttachment attachment, int layerIndex, bool clear = true);
-	void bind(bool clear = true);
+	bool bindTextureAttachment(FrameBufferAttachment attachment, int layerIndex, bool clear);
+	void bind(bool clear);
 	void unbind();
 
 	TexturePtr texture(FrameBufferAttachment attachment = FrameBufferAttachment::Color0) const;
