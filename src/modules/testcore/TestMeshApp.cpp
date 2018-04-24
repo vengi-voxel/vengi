@@ -54,13 +54,6 @@ core::AppState TestMeshApp::onInit() {
 		return state;
 	}
 
-	_shadowRangeZ = _camera.farPlane() * 3.0f;
-
-	if (!_shadow.init()) {
-		Log::error("Failed to init shadow object");
-		return core::AppState::InitFailure;
-	}
-
 	_camera.setType(video::CameraType::FirstPerson);
 	_camera.setMode(video::CameraMode::Perspective);
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
@@ -68,20 +61,18 @@ core::AppState TestMeshApp::onInit() {
 	_camera.setTargetDistance(50.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);
 
-	if (!_shadowMapShader.setup()) {
-		Log::error("Failed to init shadowmap shader");
-		return core::AppState::InitFailure;
-	}
-	if (!_shadowMapRenderShader.setup()) {
-		Log::error("Failed to init shadowmap debug shader");
-		return core::AppState::InitFailure;
-	}
 	if (!_meshShader.setup()) {
 		Log::error("Failed to init mesh shader");
 		return core::AppState::InitFailure;
 	}
 	if (!_colorShader.setup()) {
 		Log::error("Failed to init color shader");
+		return core::AppState::InitFailure;
+	}
+
+	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
+	if (!_shadow.init(maxDepthBuffers)) {
+		Log::error("Failed to init shadow object");
 		return core::AppState::InitFailure;
 	}
 
@@ -93,25 +84,6 @@ core::AppState TestMeshApp::onInit() {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::InitFailure;
 	}
-	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
-	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
-	if (!_depthBuffer.init(smSize, maxDepthBuffers)) {
-		Log::error("Failed to init the depthbuffer");
-		return core::AppState::InitFailure;
-	}
-
-	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
-	video::Attribute attributePos;
-	attributePos.bufferIndex = fullscreenQuadIndices.x;
-	attributePos.index = _shadowMapRenderShader.getLocationPos();
-	attributePos.size = _shadowMapRenderShader.getComponentsPos();
-	_shadowMapDebugBuffer.addAttribute(attributePos);
-
-	video::Attribute attributeTexcoord;
-	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
-	attributeTexcoord.index = _shadowMapRenderShader.getLocationTexcoord();
-	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();
-	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
 
 	return state;
 }
@@ -158,9 +130,11 @@ void TestMeshApp::onRenderUI() {
 		if (ImGui::InputFloat3("Camera omega", glm::value_ptr(_omega))) {
 			_camera.setOmega(_omega);
 		}
+#if 0
 		ImGui::InputFloat("Shadow bias", &_shadowBias, 0.001f, 0.01f);
 		ImGui::InputFloat("Shadow bias slope", &_shadowBiasSlope, 0.01f, 0.1f);
 		ImGui::InputFloat("Shadow range", &_shadowRangeZ, 0.01f, 0.1f);
+#endif
 		ImGui::InputFloat("Fog range", &_fogRange, 0.01f, 0.1f);
 		if (_mesh->animations() > 1 && ImGui::InputVarInt("Animation index", _animationIndex, 1, 1)) {
 			_animationIndex->setVal(_mesh->currentAnimation());
@@ -199,80 +173,60 @@ void TestMeshApp::doRender() {
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 
 	_model = glm::translate(glm::mat4(1.0f), _position);
-	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
-	_shadow.calculateShadowData(_camera, true, maxDepthBuffers, _depthBuffer.dimension());
+	_shadow.setShadowRangeZ(_camera.farPlane() * 3.0f);
+	_shadow.calculateShadowData(_camera, true);
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();
 
 	{
 		core_trace_scoped(TestMeshAppDoRenderShadows);
-		const bool oldBlend = video::disable(video::State::Blend);
-		// put shadow acne into the dark
-		const bool cullFaceChanged = video::cullFace(video::Face::Front);
-		const glm::vec2 offset(_shadowBiasSlope, (_shadowBias / _shadowRangeZ) * (1 << 24));
-		const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
-
-		_depthBuffer.bind();
-		video::ScopedShader scoped(_shadowMapShader);
-		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
-			_shadowMapShader.recordUsedUniforms(true);
-			_shadowMapShader.clearUsedUniforms();
-			_shadowMapShader.setModel(_model);
-			for (int i = 0; i < maxDepthBuffers; ++i) {
-				_depthBuffer.bindTexture(i);
-				_shadowMapShader.setLightviewprojection(cascades[i]);
-				if (_renderPlane) {
-					renderPlane(&_shadowMapShader);
+		_shadow.render([this, timeInSeconds, animationIndex] (int index, shader::ShadowmapShader& shader) {
+			if (index == 0) {
+				if (!_mesh->initMesh(shader, timeInSeconds, animationIndex)) {
+					return false;
 				}
-				if (_renderMesh) {
-					// TODO: why does only the plane appear in the depth map?
-					_mesh->render();
-				}
+				shader.setModel(_model);
 			}
-		} else {
-			_shadowMapShader.recordUsedUniforms(false);
-		}
-		_depthBuffer.unbind();
-		if (cullFaceChanged) {
-			video::cullFace(video::Face::Back);
-		}
-		if (oldBlend) {
-			video::enable(video::State::Blend);
-		}
+			if (_renderPlane) {
+				renderPlane(&shader);
+			}
+			if (_renderMesh) {
+				// TODO: why does only the plane appear in the depth map?
+				_mesh->render();
+			}
+			return true;
+		}, [] (int, shader::ShadowmapInstancedShader&) {return true;});
 	}
 
 	bool meshInitialized = true;
-	{
-		if (_renderPlane) {
-			renderPlane();
-		}
-
-		if (_renderMesh) {
-			video::ScopedShader scoped(_meshShader);
-			_meshShader.clearUsedUniforms();
-			_meshShader.recordUsedUniforms(true);
-			meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
-			if (meshInitialized) {
-				_meshShader.setViewprojection(_camera.viewProjectionMatrix());
-				_meshShader.setFogrange(_fogRange);
-				_meshShader.setViewdistance(_camera.farPlane());
-				_meshShader.setModel(_model);
-				_meshShader.setTexture(video::TextureUnit::Zero);
-				_meshShader.setDiffuseColor(_diffuseColor);
-				_meshShader.setAmbientColor(_ambientColor);
-				_meshShader.setShadowmap(video::TextureUnit::One);
-				_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
-				_meshShader.setFogcolor(_fogColor);
-				_meshShader.setCascades(cascades);
-				_meshShader.setDistances(distances);
-				_meshShader.setLightdir(_shadow.sunDirection());
-				_meshShader.setBoneinfluence(_boneInfluence - 1);
-				video::bindTexture(video::TextureUnit::One, _depthBuffer);
-				const video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
-				_mesh->render();
-			} else {
-				_meshShader.recordUsedUniforms(false);
-			}
+	if (_renderPlane) {
+		renderPlane();
+	}
+	if (_renderMesh) {
+		video::ScopedShader scoped(_meshShader);
+		_meshShader.clearUsedUniforms();
+		_meshShader.recordUsedUniforms(true);
+		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
+		if (meshInitialized) {
+			_meshShader.setViewprojection(_camera.viewProjectionMatrix());
+			_meshShader.setFogrange(_fogRange);
+			_meshShader.setViewdistance(_camera.farPlane());
+			_meshShader.setModel(_model);
+			_meshShader.setTexture(video::TextureUnit::Zero);
+			_meshShader.setDiffuseColor(_diffuseColor);
+			_meshShader.setAmbientColor(_ambientColor);
+			_meshShader.setShadowmap(video::TextureUnit::One);
+			_meshShader.setDepthsize(glm::vec2(_shadow.dimension()));
+			_meshShader.setFogcolor(_fogColor);
+			_meshShader.setCascades(cascades);
+			_meshShader.setDistances(distances);
+			_meshShader.setLightdir(_shadow.sunDirection());
+			_meshShader.setBoneinfluence(_boneInfluence - 1);
+			_shadow.bind(video::TextureUnit::One);
+			const video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
+			_mesh->render();
+		} else {
+			_meshShader.recordUsedUniforms(false);
 		}
 	}
 	if (meshInitialized) {
@@ -294,36 +248,7 @@ void TestMeshApp::doRender() {
 	}
 
 	if (_shadowMapShow->boolVal()) {
-		core_trace_scoped(TestMeshAppDoShowShadowMap);
-		const int width = _camera.width();
-		const int height = _camera.height();
-
-		// activate shader
-		video::ScopedShader scopedShader(_shadowMapRenderShader);
-		_shadowMapRenderShader.recordUsedUniforms(true);
-		_shadowMapRenderShader.clearUsedUniforms();
-		_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
-		_shadowMapRenderShader.setFar(_camera.farPlane());
-		_shadowMapRenderShader.setNear(_camera.nearPlane());
-
-		// bind buffers
-		video::ScopedVertexBuffer scopedBuf(_shadowMapDebugBuffer);
-
-		// configure shadow map texture
-		video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
-		video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::None);
-
-		// render shadow maps
-		for (int i = 0; i < maxDepthBuffers; ++i) {
-			const int halfWidth = (int) (width / 4.0f);
-			const int halfHeight = (int) (height / 4.0f);
-			video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
-			_shadowMapRenderShader.setCascade(i);
-			video::drawArrays(video::Primitive::Triangles, _shadowMapDebugBuffer.elements(0));
-		}
-
-		// restore texture
-		video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
+		_shadow.renderShadowMap(_camera);
 	}
 
 	if (!oldDepth) {
@@ -342,16 +267,12 @@ void TestMeshApp::renderPlane(video::Shader* shader) {
 }
 
 core::AppState TestMeshApp::onCleanup() {
-	_shadowMapDebugBuffer.shutdown();
-	_shadowMapRenderShader.shutdown();
-	_depthBuffer.shutdown();
 	_meshShader.shutdown();
 	_colorShader.shutdown();
-	_shadowMapShader.shutdown();
-	_shadow.shutdown();
 	if (_mesh) {
 		_mesh->shutdown();
 	}
+	_shadow.shutdown();
 	_meshPool.shutdown();
 	return Super::onCleanup();
 }

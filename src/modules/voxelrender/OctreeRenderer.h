@@ -7,7 +7,6 @@
 #include "ShaderAttribute.h"
 #include "render/RandomColorTexture.h"
 #include "video/Camera.h"
-#include "video/DepthBuffer.h"
 #include "VoxelrenderShaders.h"
 #include "RenderShaders.h"
 #include "video/Shader.h"
@@ -45,12 +44,9 @@ private:
 	voxel::OctreeVolume* _volume = nullptr;
 
 	shader::Materialblock _materialBlock;
-	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	shader::WorldShader _worldShader;
 	shader::WorldInstancedShader _worldInstancedShader;
-	shader::ShadowmapInstancedShader _shadowMapInstancedShader;
 	shader::WaterShader _waterShader;
-	shader::ShadowmapShader _shadowMapShader;
 
 	glm::vec4 _clearColor = core::Color::LightBlue;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
@@ -58,9 +54,6 @@ private:
 	float _fogRange = 250.0f;
 	render::Shadow _shadow;
 	render::RandomColorTexture _colorTexture;
-
-	video::VertexBuffer _shadowMapDebugBuffer;
-	video::DepthBuffer _depthBuffer;
 
 	void processOctreeNodeStructure(voxel::OctreeNode* octreeNode, RenderOctreeNode* openGLOctreeNode);
 	void renderOctreeNode(const video::Camera& camera, RenderOctreeNode* openGLOctreeNode);

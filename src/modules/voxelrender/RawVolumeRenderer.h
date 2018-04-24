@@ -12,7 +12,6 @@
 #include "render/Shadow.h"
 #include "video/UniformBuffer.h"
 #include "video/Texture.h"
-#include "video/DepthBuffer.h"
 #include "core/GLM.h"
 
 namespace video {
@@ -35,9 +34,7 @@ protected:
 
 	video::VertexBuffer _vertexBuffer[MAX_VOLUMES];
 	shader::Materialblock _materialBlock;
-	shader::ShadowmapShader& _shadowMapShader;
 	shader::WorldShader& _worldShader;
-	video::DepthBuffer _depthBuffer;
 	render::Shadow _shadow;
 
 	video::TexturePtr _whiteTexture;

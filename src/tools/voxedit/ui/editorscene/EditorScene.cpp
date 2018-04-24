@@ -425,7 +425,8 @@ void EditorScene::OnResized(int oldw, int oldh) {
 	video::FrameBufferConfig cfg;
 	cfg.dimension(dim).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addTextureAttachment(textureCfg);
 	_frameBuffer.init(cfg);
-	_bitmap.Init(dim.x, dim.y, _frameBuffer.texture());
+	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+	_bitmap.Init(dim.x, dim.y, fboTexture->handle());
 	m().onResize(dim);
 }
 

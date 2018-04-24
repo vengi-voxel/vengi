@@ -147,36 +147,22 @@ void OctreeRenderer::render(const video::Camera& camera) {
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();
-	video::disable(video::State::Blend);
-	// put shadow acne into the dark
-	video::cullFace(video::Face::Front);
-	const float shadowBiasSlope = 2;
-	const float shadowBias = 0.09f;
-	const float shadowRangeZ = camera.farPlane() * 3.0f;
-	const glm::vec2 offset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
-	const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
 
-	{
-		video::ScopedShader scoped(_shadowMapShader);
-		_depthBuffer.bind();
-		for (int i = 0; i < maxDepthBuffers; ++i) {
-			_depthBuffer.bindTexture(i);
-			_shadowMapShader.setLightviewprojection(cascades[i]);
-			_shadowMapShader.setModel(glm::mat4(1.0f));
-			renderOctreeNode(camera, _rootNode);
-		}
-		_depthBuffer.unbind();
-	}
+	_shadow.render([this, camera] (int i, shader::ShadowmapShader& shader) {
+		shader.setModel(glm::mat4(1.0f));
+		renderOctreeNode(camera, _rootNode);
+		return true;
+	}, [] (int, shader::ShadowmapInstancedShader&) {
+		return true;
+	});
 	video::cullFace(video::Face::Back);
 	video::enable(video::State::Blend);
 	_colorTexture.bind(video::TextureUnit::Zero);
 	video::clearColor(_clearColor);
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
-	video::bindTexture(video::TextureUnit::One, _depthBuffer);
+	_shadow.bind(video::TextureUnit::One);
 	video::ScopedShader scoped(_worldShader);
 	_worldShader.setMaterialblock(_materialBlock);
 	_worldShader.setViewdistance(camera.farPlane());
@@ -188,7 +174,7 @@ void OctreeRenderer::render(const video::Camera& camera) {
 	_worldShader.setFogrange(_fogRange);
 	_worldShader.setViewprojection(camera.viewProjectionMatrix());
 	_worldShader.setShadowmap(video::TextureUnit::One);
-	_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+	_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
 	_worldShader.setModel(glm::mat4(1.0f));
 	_worldShader.setCascades(cascades);
 	_worldShader.setDistances(distances);
@@ -204,16 +190,7 @@ bool OctreeRenderer::init(voxel::PagedVolume* volume, const voxel::Region& regio
 	if (!_worldInstancedShader.setup()) {
 		return false;
 	}
-	if (!_shadowMapInstancedShader.setup()) {
-		return false;
-	}
 	if (!_waterShader.setup()) {
-		return false;
-	}
-	if (!_shadowMapShader.setup()) {
-		return false;
-	}
-	if (!_shadowMapRenderShader.setup()) {
 		return false;
 	}
 
@@ -221,22 +198,8 @@ bool OctreeRenderer::init(voxel::PagedVolume* volume, const voxel::Region& regio
 	_volume = new voxel::OctreeVolume(volume, region, baseNodeSize);
 	_colorTexture.init();
 
-	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
-	video::Attribute attributePos;
-	attributePos.bufferIndex = fullscreenQuadIndices.x;
-	attributePos.index = _shadowMapRenderShader.getLocationPos();
-	attributePos.size = _shadowMapRenderShader.getComponentsPos();
-	_shadowMapDebugBuffer.addAttribute(attributePos);
-
-	video::Attribute attributeTexcoord;
-	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
-	attributeTexcoord.index = _shadowMapRenderShader.getLocationTexcoord();
-	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();
-	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
-
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
-	if (!_depthBuffer.init(smSize, maxDepthBuffers)) {
+	if (!_shadow.init(maxDepthBuffers)) {
 		return false;
 	}
 
@@ -252,10 +215,6 @@ bool OctreeRenderer::init(voxel::PagedVolume* volume, const voxel::Region& regio
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 
-	if (!_shadow.init()) {
-		return false;
-	}
-
 	return true;
 }
 
@@ -263,21 +222,16 @@ int OctreeRenderer::update(long dt, const video::Camera& camera) {
 	if (_volume == nullptr) {
 		return 0;
 	}
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-	_shadow.calculateShadowData(camera, true, maxDepthBuffers, _depthBuffer.dimension());
+	_shadow.setShadowRangeZ(camera.farPlane() * 3.0f);
+	_shadow.calculateShadowData(camera, true);
 	return _volume->update(dt, camera.position(), 1.0f);
 }
 
 void OctreeRenderer::shutdown() {
-	_shadowMapDebugBuffer.shutdown();
-	_shadowMapRenderShader.shutdown();
-	_shadowMapInstancedShader.shutdown();
 	_shadow.shutdown();
 	_worldShader.shutdown();
 	_worldInstancedShader.shutdown();
 	_waterShader.shutdown();
-	_shadowMapShader.shutdown();
-	_depthBuffer.shutdown();
 	_materialBlock.shutdown();
 	_colorTexture.shutdown();
 	delete _rootNode;

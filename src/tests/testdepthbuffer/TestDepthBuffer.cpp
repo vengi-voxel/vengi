@@ -9,48 +9,7 @@ TestDepthBuffer::TestDepthBuffer(const metric::MetricPtr& metric, const io::File
 
 void TestDepthBuffer::doRender() {
 	Super::doRender();
-	const int width = _camera.width();
-	const int height = _camera.height();
-	const int quadWidth = (int) (width / 3.0f);
-	const int quadHeight = (int) (height / 3.0f);
-	video::ScopedShader scopedShader(_shadowMapRenderShader);
-	video::ScopedViewPort scopedViewport(width - quadWidth, 0, quadWidth, quadHeight);
-	video::ScopedVertexBuffer scopedBuf(_texturedFullscreenQuad);
-	video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
-	_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
-	video::drawArrays(video::Primitive::Triangles, _texturedFullscreenQuad.elements(0));
-}
-
-core::AppState TestDepthBuffer::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
-		return state;
-	}
-	if (!_shadowMapRenderShader.setup()) {
-		Log::error("Failed to init shadowmaprender shader");
-		return core::AppState::InitFailure;
-	}
-	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
-
-	video::Attribute attributePos;
-	attributePos.bufferIndex = fullscreenQuadIndices.x;
-	attributePos.index = _shadowMapRenderShader.getLocationPos();
-	attributePos.size = _shadowMapRenderShader.getComponentsPos();
-	_texturedFullscreenQuad.addAttribute(attributePos);
-
-	video::Attribute attributeTexcoord;
-	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
-	attributeTexcoord.index = _shadowMapRenderShader.getLocationTexcoord();
-	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();
-	_texturedFullscreenQuad.addAttribute(attributeTexcoord);
-
-	return state;
-}
-
-core::AppState TestDepthBuffer::onCleanup() {
-	_texturedFullscreenQuad.shutdown();
-	_shadowMapRenderShader.shutdown();
-	return Super::onCleanup();
+	_shadow.renderShadowMap(_camera);
 }
 
 TEST_APP(TestDepthBuffer)

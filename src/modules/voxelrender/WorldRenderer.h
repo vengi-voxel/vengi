@@ -12,7 +12,6 @@
 #include "video/VertexBuffer.h"
 #include "video/UniformBuffer.h"
 #include "video/GBuffer.h"
-#include "video/DepthBuffer.h"
 #include "VoxelrenderShaders.h"
 #include "RenderShaders.h"
 #include "core/GLM.h"
@@ -126,7 +125,6 @@ protected:
 	video::ShapeBuilder _shapeBuilderOcclusionQuery;
 	render::ShapeRenderer _shapeRendererOcclusionQuery;
 	int32_t _aabbMeshesOcclusionQuery = -1;
-	int _maxDepthBuffers = -1;
 
 	float _fogRange = 300.0f;
 	// TODO: get the view distance from the server - entity attributes
@@ -141,17 +139,11 @@ protected:
 	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapShow;
 
-	video::VertexBuffer _shadowMapDebugBuffer;
-	video::DepthBuffer _depthBuffer;
-
 	shader::Materialblock _materialBlock;
-	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	shader::WorldShader _worldShader;
 	shader::WorldInstancedShader _worldInstancedShader;
-	shader::ShadowmapInstancedShader _shadowMapInstancedShader;
 	shader::WaterShader _waterShader;
 	shader::MeshShader _meshShader;
-	shader::ShadowmapShader _shadowMapShader;
 
 	/**
 	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.

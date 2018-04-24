@@ -5,7 +5,6 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "video/DepthBuffer.h"
 #include "video/MeshPool.h"
 #include "video/VertexBuffer.h"
 #include "render/Shadow.h"
@@ -18,15 +17,11 @@ class TestMeshApp: public TestApp {
 private:
 	using Super = TestApp;
 protected:
-	video::VertexBuffer _shadowMapDebugBuffer;
-	video::DepthBuffer _depthBuffer;
 	video::MeshPtr _mesh;
 	video::MeshPool _meshPool;
 	render::Shadow _shadow;
 	shader::MeshShader _meshShader;
 	shader::ColorShader& _colorShader;
-	shader::ShadowmapShader _shadowMapShader;
-	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	glm::vec3 _position {0.0f, 0.0f, 0.0f};
 	glm::vec3 _diffuseColor {1.0, 1.0, 1.0};
 	glm::vec3 _ambientColor {0.2, 0.2, 0.2};
@@ -37,9 +32,6 @@ protected:
 	bool _renderNormals = true;
 	bool _renderBones = false;
 	float _fogRange = 250.0f;
-	float _shadowBiasSlope = 2.0f;
-	float _shadowBias = 0.09f;
-	float _shadowRangeZ = 0.0f;
 	int _boneInfluence = 0;
 	glm::mat4 _model {1.0f};
 	core::VarPtr _shadowMapShow;
