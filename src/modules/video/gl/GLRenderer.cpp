@@ -196,7 +196,12 @@ void clear(ClearFlag flag) {
 	if (glValue == 0) {
 		return;
 	}
+	// intel told me so... 5% performance gain if clear is called with disabled scissors.
+	const bool enabled = disable(State::Scissor);
 	glClear(glValue);
+	if (enabled) {
+		enable(State::Scissor);
+	}
 	checkError();
 }
 
