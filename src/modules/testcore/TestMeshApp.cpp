@@ -128,11 +128,18 @@ void TestMeshApp::onRenderUI() {
 		if (ImGui::InputFloat3("Camera omega", glm::value_ptr(_omega))) {
 			_camera.setOmega(_omega);
 		}
-#if 0
-		ImGui::InputFloat("Shadow bias", &_shadowBias, 0.001f, 0.01f);
-		ImGui::InputFloat("Shadow bias slope", &_shadowBiasSlope, 0.01f, 0.1f);
-		ImGui::InputFloat("Shadow range", &_shadowRangeZ, 0.01f, 0.1f);
-#endif
+		float bias = _shadow.shadowBias();
+		if (ImGui::InputFloat("Shadow bias", &bias, 0.001f, 0.01f)) {
+			_shadow.setShadowBias(bias);
+		}
+		float biasSlope = _shadow.shadowBiasSlope();
+		if (ImGui::InputFloat("Shadow bias slope", &biasSlope, 0.01f, 0.1f)) {
+			_shadow.setShadowBiasSlope(bias);
+		}
+		float farPlane = _camera.farPlane();
+		if (ImGui::InputFloat("Far plane", &farPlane, 0.01f, 0.1f)) {
+			_camera.setFarPlane(farPlane);
+		}
 		ImGui::InputFloat("Fog range", &_fogRange, 0.01f, 0.1f);
 		if (_mesh->animations() > 1 && ImGui::InputVarInt("Animation index", _animationIndex, 1, 1)) {
 			_animationIndex->setVal(_mesh->currentAnimation());
@@ -162,13 +169,11 @@ void TestMeshApp::doRender() {
 	const uint8_t animationIndex = _animationIndex->intVal();
 	const float timeInSeconds = lifetimeInSecondsf();
 
+	const bool shadowMap = _shadowMap->boolVal();
 	const bool oldDepth = video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	const bool oldCullFace = video::enable(video::State::CullFace);
 	const bool oldDepthMask = video::enable(video::State::DepthMask);
-
-	video::clearColor(_clearColor);
-	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 
 	_model = glm::translate(glm::mat4(1.0f), _position);
 	_shadow.setShadowRangeZ(_camera.farPlane() * 3.0f);
@@ -176,7 +181,7 @@ void TestMeshApp::doRender() {
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();
 
-	{
+	if (shadowMap) {
 		core_trace_scoped(TestMeshAppDoRenderShadows);
 		_shadow.render([this, timeInSeconds, animationIndex] (int index, shader::ShadowmapShader& shader) {
 			if (index == 0) {
@@ -196,6 +201,11 @@ void TestMeshApp::doRender() {
 		}, [] (int, shader::ShadowmapInstancedShader&) {return true;});
 	}
 
+	video::clearColor(_clearColor);
+	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
+
+	_shadow.bind(video::TextureUnit::One);
+
 	bool meshInitialized = true;
 	if (_renderPlane) {
 		renderPlane();
@@ -206,21 +216,22 @@ void TestMeshApp::doRender() {
 		_meshShader.recordUsedUniforms(true);
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
-			_meshShader.setViewprojection(_camera.viewProjectionMatrix());
 			_meshShader.setFogrange(_fogRange);
 			_meshShader.setViewdistance(_camera.farPlane());
 			_meshShader.setModel(_model);
 			_meshShader.setTexture(video::TextureUnit::Zero);
 			_meshShader.setDiffuseColor(_diffuseColor);
 			_meshShader.setAmbientColor(_ambientColor);
-			_meshShader.setShadowmap(video::TextureUnit::One);
-			_meshShader.setDepthsize(glm::vec2(_shadow.dimension()));
 			_meshShader.setFogcolor(_fogColor);
-			_meshShader.setCascades(cascades);
-			_meshShader.setDistances(distances);
 			_meshShader.setLightdir(_shadow.sunDirection());
 			_meshShader.setBoneinfluence(_boneInfluence - 1);
-			_shadow.bind(video::TextureUnit::One);
+			if (shadowMap) {
+				_meshShader.setViewprojection(_camera.viewProjectionMatrix());
+				_meshShader.setShadowmap(video::TextureUnit::One);
+				_meshShader.setDepthsize(glm::vec2(_shadow.dimension()));
+				_meshShader.setCascades(cascades);
+				_meshShader.setDistances(distances);
+			}
 			const video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
 			_mesh->render();
 		} else {

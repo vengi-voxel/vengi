@@ -59,6 +59,12 @@ public:
 	void render(funcRender renderCallback, funcRenderInstance renderInstancedCallback);
 
 	void setShadowRangeZ(float shadowRangeZ);
+	void setShadowBiasSlope(float biasSlope);
+	void setShadowBias(float biasSlope);
+
+	float shadowRangeZ() const;
+	float shadowBiasSlope() const;
+	float shadowBias() const;
 
 	const std::vector<glm::mat4>& cascades() const;
 	const std::vector<float>& distances() const;
@@ -80,6 +86,26 @@ inline const glm::vec3& Shadow::sunDirection() const {
 
 inline void Shadow::setShadowRangeZ(float shadowRangeZ) {
 	_shadowRangeZ = shadowRangeZ;
+}
+
+inline void Shadow::setShadowBias(float bias) {
+	_shadowBias = bias;
+}
+
+inline void Shadow::setShadowBiasSlope(float biasSlope) {
+	_shadowBiasSlope = biasSlope;
+}
+
+inline float Shadow::shadowRangeZ() const {
+	return _shadowRangeZ;
+}
+
+inline float Shadow::shadowBiasSlope() const {
+	return _shadowBiasSlope;
+}
+
+inline float Shadow::shadowBias() const {
+	return _shadowBias;
 }
 
 }

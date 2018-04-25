@@ -441,8 +441,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
-	const std::vector<glm::mat4>& cascades = _shadow.cascades();
-	const std::vector<float>& distances = _shadow.distances();
 	if (shadowMap) {
 		core_trace_scoped(WorldRendererRenderShadow);
 		const glm::mat4& model = glm::scale(glm::vec3(_worldScale));
@@ -468,6 +466,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	}
 
 	const glm::mat4& model = glm::scale(glm::vec3(_worldScale));
+	const std::vector<glm::mat4>& cascades = _shadow.cascades();
+	const std::vector<float>& distances = _shadow.distances();
 	{
 		core_trace_scoped(WorldRendererRenderOpaque);
 		video::ScopedShader scoped(_worldShader);
