@@ -44,6 +44,9 @@ public:
 	bool init(int maxDepthBuffers);
 	void shutdown();
 
+	typedef std::function<bool(int, shader::ShadowmapShader&)> funcRender;
+	typedef std::function<bool(int, shader::ShadowmapInstancedShader&)> funcRenderInstance;
+
 	/**
 	 * @param[in] maxDepthBuffers the amount of cascades
 	 */
@@ -53,40 +56,7 @@ public:
 
 	void renderShadowMap(const video::Camera& camera);
 
-	template<typename FUNC, typename FUNCINSTANCED>
-	void render(FUNC&& renderCallback, FUNCINSTANCED&& renderInstancedCallback) {
-		const bool oldBlend = video::disable(video::State::Blend);
-		// put shadow acne into the dark
-		const bool cullFaceChanged = video::cullFace(video::Face::Front);
-		const glm::vec2 offset(_shadowBiasSlope, (_shadowBias / _shadowRangeZ) * (1 << 24));
-		const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
-
-		_depthBuffer.bind(false);
-		for (int i = 0; i < _maxDepthBuffers; ++i) {
-			_depthBuffer.bindTextureAttachment(video::FrameBufferAttachment::Depth, i, true);
-			{
-				video::ScopedShader scoped(_shadowMapShader);
-				_shadowMapShader.setLightviewprojection(_cascades[i]);
-				if (!renderCallback(i, _shadowMapShader)) {
-					break;
-				}
-			}
-			{
-				video::ScopedShader scoped(_shadowMapInstancedShader);
-				_shadowMapInstancedShader.setLightviewprojection(_cascades[i]);
-				if (!renderInstancedCallback(i, _shadowMapInstancedShader)) {
-					break;
-				}
-			}
-		}
-		_depthBuffer.unbind();
-		if (cullFaceChanged) {
-			video::cullFace(video::Face::Back);
-		}
-		if (oldBlend) {
-			video::enable(video::State::Blend);
-		}
-	}
+	void render(funcRender renderCallback, funcRenderInstance renderInstancedCallback);
 
 	void setShadowRangeZ(float shadowRangeZ);
 
