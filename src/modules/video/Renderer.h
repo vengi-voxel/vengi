@@ -148,8 +148,6 @@ extern void endFrame(SDL_Window* window);
 extern void checkError();
 extern bool setupCubemap(Id handle, const image::ImagePtr images[6]);
 extern void readBuffer(GBufferTextureType textureType);
-extern bool setupDepthbuffer();
-extern bool bindDepthTexture(int textureIndex, Id depthTexture);
 extern bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear);
 extern bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, int texCount, Id depthTexture);
 /**

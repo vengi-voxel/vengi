@@ -69,29 +69,9 @@ void checkError() {
 }
 
 //TODO: use FrameBufferConfig
-bool bindDepthTexture(int textureIndex, Id depthTexture) {
-	glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0, textureIndex);
-	clear(ClearFlag::Depth);
-	if (!_priv::checkFramebufferStatus()) {
-		return false;
-	}
-	checkError();
-	return true;
-}
-
-//TODO: use FrameBufferConfig
 void readBuffer(GBufferTextureType textureType) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
 	checkError();
-}
-
-//TODO: use FrameBufferConfig
-bool setupDepthbuffer() {
-	glDrawBuffer(GL_NONE);
-	checkError();
-	glReadBuffer(GL_NONE);
-	checkError();
-	return true;
 }
 
 //TODO: use FrameBufferConfig

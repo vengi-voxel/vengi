@@ -41,8 +41,10 @@ bool Shadow::init(int maxDepthBuffers) {
 		Log::error("Failed to init shadowmap instanced debug shader");
 		return false;
 	}
+
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
-	if (!_depthBuffer.init(smSize, _maxDepthBuffers)) {
+	const video::FrameBufferConfig& cfg = video::defaultDepthBufferConfig(smSize, maxDepthBuffers);
+	if (!_depthBuffer.init(cfg)) {
 		Log::error("Failed to init the depthbuffer");
 		return false;
 	}
@@ -116,7 +118,7 @@ void Shadow::calculateShadowData(const video::Camera& camera, bool active, float
 }
 
 bool Shadow::bind(video::TextureUnit unit) {
-	const bool state = video::bindTexture(unit, _depthBuffer);
+	const bool state = video::bindTexture(unit, _depthBuffer, video::FrameBufferAttachment::Depth);
 	core_assert(state);
 	return state;
 }
@@ -138,8 +140,9 @@ void Shadow::renderShadowMap(const video::Camera& camera) {
 	video::ScopedVertexBuffer scopedBuf(_shadowMapDebugBuffer);
 
 	// configure shadow map texture
-	video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
-	video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::None);
+	const video::TexturePtr& depthTex = _depthBuffer.texture(video::FrameBufferAttachment::Depth);
+	video::bindTexture(video::TextureUnit::Zero, depthTex);
+	video::setupDepthCompareTexture(depthTex->type(), video::CompareFunc::Less, video::TextureCompareMode::None);
 
 	// render shadow maps
 	for (int i = 0; i < _maxDepthBuffers; ++i) {
@@ -151,10 +154,10 @@ void Shadow::renderShadowMap(const video::Camera& camera) {
 	}
 
 	// restore texture
-	video::setupDepthCompareTexture(_depthBuffer.textureType(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
+	video::setupDepthCompareTexture(depthTex->type(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
 }
 
-glm::ivec2 Shadow::dimension() const {
+const glm::ivec2& Shadow::dimension() const {
 	return _depthBuffer.dimension();
 }
 

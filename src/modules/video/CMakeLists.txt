@@ -15,7 +15,6 @@ set(SRCS
 	GBuffer.cpp GBuffer.h
 	Shader.cpp Shader.h
 	Camera.cpp Camera.h
-	DepthBuffer.cpp DepthBuffer.h
 	Cubemap.cpp Cubemap.h
 	RenderBuffer.cpp RenderBuffer.h
 	Texture.cpp Texture.h

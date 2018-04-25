@@ -10,7 +10,7 @@
 #include <glm/mat4x4.hpp>
 #include <vector>
 #include "RenderShaders.h"
-#include "video/DepthBuffer.h"
+#include "video/FrameBuffer.h"
 #include "video/VertexBuffer.h"
 #include "video/ScopedPolygonMode.h"
 
@@ -30,7 +30,7 @@ private:
 	std::vector<glm::mat4> _cascades;
 	std::vector<float> _distances;
 	video::VertexBuffer _shadowMapDebugBuffer;
-	video::DepthBuffer _depthBuffer;
+	video::FrameBuffer _depthBuffer;
 	shader::ShadowmapShader& _shadowMapShader;
 	shader::ShadowmapRenderShader& _shadowMapRenderShader;
 	shader::ShadowmapInstancedShader& _shadowMapInstancedShader;
@@ -61,9 +61,9 @@ public:
 		const glm::vec2 offset(_shadowBiasSlope, (_shadowBias / _shadowRangeZ) * (1 << 24));
 		const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
 
-		_depthBuffer.bind();
+		_depthBuffer.bind(false);
 		for (int i = 0; i < _maxDepthBuffers; ++i) {
-			_depthBuffer.bindTexture(i);
+			_depthBuffer.bindTextureAttachment(video::FrameBufferAttachment::Depth, i, true);
 			{
 				video::ScopedShader scoped(_shadowMapShader);
 				_shadowMapShader.setLightviewprojection(_cascades[i]);
@@ -93,7 +93,7 @@ public:
 	const std::vector<glm::mat4>& cascades() const;
 	const std::vector<float>& distances() const;
 	const glm::vec3& sunDirection() const;
-	glm::ivec2 dimension() const;
+	const glm::ivec2& dimension() const;
 };
 
 inline const std::vector<glm::mat4>& Shadow::cascades() const {
