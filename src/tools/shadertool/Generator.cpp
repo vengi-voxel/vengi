@@ -369,15 +369,6 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		methods << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", buf);\n";
 		methods << "\t}\n";
 
-		for (const auto& e : shaderStruct.constants) {
-			methods << "\t/**\n";
-			methods << "\t * @brief Exported from shader code by @code $constant " << e.first << " " << e.second << " @endcode\n";
-			methods << "\t */\n";
-			methods << "\tinline static const char* get" << util::convertName(e.first, true) << "() {\n";
-			methods << "\t\treturn \"" << e.second << "\";\n";
-			methods << "\t}\n";
-		}
-
 		std::string generatedUb = core::string::replaceAll(templateUniformBuffer, "$name$", uniformBufferStructName);
 		generatedUb = core::string::replaceAll(generatedUb, "$namespace$", namespaceSrc);
 		generatedUb = core::string::replaceAll(generatedUb, "$uniformbuffers$", ub.str());
@@ -393,6 +384,15 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 			Log::error("Failed to write %s", targetFileUb.c_str());
 			return false;
 		}
+	}
+
+	for (const auto& e : shaderStruct.constants) {
+		methods << "\t/**\n";
+		methods << "\t * @brief Exported from shader code by @code $constant " << e.first << " " << e.second << " @endcode\n";
+		methods << "\t */\n";
+		methods << "\tinline static const char* get" << util::convertName(e.first, true) << "() {\n";
+		methods << "\t\treturn \"" << e.second << "\";\n";
+		methods << "\t}\n";
 	}
 
 	src = core::string::replaceAll(src, "$attributes$", attributes.str());

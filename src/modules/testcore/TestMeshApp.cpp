@@ -10,8 +10,6 @@
 #include "video/ScopedViewPort.h"
 #include "io/Filesystem.h"
 
-#define MaxDepthBufferUniformName "u_cascades"
-
 TestMeshApp::TestMeshApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider), _colorShader(shader::ColorShader::getInstance()) {
 	setCameraMotion(true);
@@ -70,7 +68,7 @@ core::AppState TestMeshApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
+	const int maxDepthBuffers = _meshShader.getUniformArraySize(shader::MeshShader::getMaxDepthBufferUniformName());
 	if (!_shadow.init(maxDepthBuffers)) {
 		Log::error("Failed to init shadow object");
 		return core::AppState::InitFailure;
