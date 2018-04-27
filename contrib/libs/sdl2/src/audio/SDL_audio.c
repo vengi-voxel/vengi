@@ -651,7 +651,7 @@ SDL_RunAudio(void *devicep)
     SDL_assert(!device->iscapture);
 
     /* The audio mixing is always a high priority thread */
-    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
+    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_TIME_CRITICAL);
 
     /* Perform any thread setup */
     device->threadid = SDL_ThreadID();
@@ -831,6 +831,8 @@ SDL_CaptureAudio(void *devicep)
             SDL_UnlockMutex(device->mixer_lock);
         }
     }
+
+    current_audio.impl.PrepareToClose(device);
 
     current_audio.impl.FlushCapture(device);
 
