@@ -1,4 +1,3 @@
-
 static int
 overview(struct nk_context *ctx)
 {
@@ -221,7 +220,6 @@ overview(struct nk_context *ctx)
                 option = nk_option_label(ctx, "optionB", option == B) ? B : option;
                 option = nk_option_label(ctx, "optionC", option == C) ? C : option;
 
-
                 nk_layout_row(ctx, NK_STATIC, 30, 2, ratio);
                 nk_labelf(ctx, NK_TEXT_LEFT, "Slider int");
                 nk_slider_int(ctx, 0, &int_slider, 10, 1);
@@ -252,6 +250,32 @@ overview(struct nk_context *ctx)
 
                 nk_tree_pop(ctx);
             }
+
+            if (nk_tree_push(ctx, NK_TREE_NODE, "Inactive", NK_MINIMIZED))
+            {
+                static int inactive = 1;
+                nk_layout_row_dynamic(ctx, 30, 1);
+                nk_checkbox_label(ctx, "Inactive", &inactive);
+
+                nk_layout_row_static(ctx, 30, 80, 1);
+                if (inactive) {
+                    struct nk_style_button button;
+                    button = ctx->style.button;
+                    ctx->style.button.normal = nk_style_item_color(nk_rgb(40,40,40));
+                    ctx->style.button.hover = nk_style_item_color(nk_rgb(40,40,40));
+                    ctx->style.button.active = nk_style_item_color(nk_rgb(40,40,40));
+                    ctx->style.button.border_color = nk_rgb(60,60,60);
+                    ctx->style.button.text_background = nk_rgb(60,60,60);
+                    ctx->style.button.text_normal = nk_rgb(60,60,60);
+                    ctx->style.button.text_hover = nk_rgb(60,60,60);
+                    ctx->style.button.text_active = nk_rgb(60,60,60);
+                    nk_button_label(ctx, "button");
+                    ctx->style.button = button;
+                } else if (nk_button_label(ctx, "button"))
+                    fprintf(stdout, "button pressed\n");
+                nk_tree_pop(ctx);
+            }
+
 
             if (nk_tree_push(ctx, NK_TREE_NODE, "Selectable", NK_MINIMIZED))
             {
@@ -887,7 +911,38 @@ overview(struct nk_context *ctx)
                 }
                 nk_tree_pop(ctx);
             }
-
+            if (nk_tree_push(ctx, NK_TREE_NODE, "Tree", NK_MINIMIZED))
+            {
+                static int root_selected = 0;
+                int sel = root_selected;
+                if (nk_tree_element_push(ctx, NK_TREE_NODE, "Root", NK_MINIMIZED, &sel)) {
+                    static int selected[8];
+                    int i = 0, node_select = selected[0];
+                    if (sel != root_selected) {
+                        root_selected = sel;
+                        for (i = 0; i < 8; ++i)
+                            selected[i] = sel;
+                    }
+                    if (nk_tree_element_push(ctx, NK_TREE_NODE, "Node", NK_MINIMIZED, &node_select)) {
+                        int j = 0;
+                        static int sel_nodes[4];
+                        if (node_select != selected[0]) {
+                            selected[0] = node_select;
+                            for (i = 0; i < 8; ++i)
+                                sel_nodes[i] = node_select;
+                        }
+                        nk_layout_row_static(ctx, 18, 100, 1);
+                        for (j = 0; j < 4; ++j)
+                            nk_selectable_symbol_label(ctx, NK_SYMBOL_CIRCLE_SOLID, (sel_nodes[j]) ? "Selected": "Unselected", NK_TEXT_RIGHT, &sel_nodes[j]);
+                        nk_tree_element_pop(ctx);
+                    }
+                    nk_layout_row_static(ctx, 18, 100, 1);
+                    for (i = 1; i < 8; ++i)
+                        nk_selectable_symbol_label(ctx, NK_SYMBOL_CIRCLE_SOLID, (selected[i]) ? "Selected": "Unselected", NK_TEXT_RIGHT, &selected[i]);
+                    nk_tree_element_pop(ctx);
+                }
+                nk_tree_pop(ctx);
+            }
             if (nk_tree_push(ctx, NK_TREE_NODE, "Notebook", NK_MINIMIZED))
             {
                 static int current_tab = 0;
