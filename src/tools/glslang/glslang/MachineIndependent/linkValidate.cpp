@@ -268,12 +268,13 @@ void TIntermediate::mergeLinkerObjects(TInfoSink& infoSink, TIntermSequence& lin
 // Recursively merge the implicit array sizes through the objects' respective type trees.
 void TIntermediate::mergeImplicitArraySizes(TType& type, const TType& unitType)
 {
-    if (type.isUnsizedArray() && unitType.isArray()) {
-        int newImplicitArraySize = unitType.isSizedArray() ? unitType.getOuterArraySize() : 
-                                                             unitType.getImplicitArraySize();
-        type.updateImplicitArraySize(type.getImplicitArraySize());
-        if (unitType.isArrayVariablyIndexed())
-            type.setArrayVariablyIndexed();
+    if (type.isUnsizedArray()) {
+        if (unitType.isUnsizedArray()) {
+            type.updateImplicitArraySize(unitType.getImplicitArraySize());
+            if (unitType.isArrayVariablyIndexed())
+                type.setArrayVariablyIndexed();
+        } else if (unitType.isSizedArray())
+            type.changeOuterArraySize(unitType.getOuterArraySize());
     }
 
     // Type mismatches are caught and reported after this, just be careful for now.
@@ -296,8 +297,13 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
 
     // Types have to match
     if (symbol.getType() != unitSymbol.getType()) {
-        error(infoSink, "Types must match:");
-        writeTypeComparison = true;
+        // but, we make an exception if one is an implicit array and the other is sized
+        if (! (symbol.getType().isArray() && unitSymbol.getType().isArray() &&
+                symbol.getType().sameElementType(unitSymbol.getType()) &&
+                (symbol.getType().isUnsizedArray() || unitSymbol.getType().isUnsizedArray()))) {
+            error(infoSink, "Types must match:");
+            writeTypeComparison = true;
+        }
     }
 
     // Qualifiers have to (almost) match
@@ -841,8 +847,8 @@ int TIntermediate::addUsedLocation(const TQualifier& qualifier, const TType& typ
         // combine location and component ranges
         TIoRange range(locationRange, componentRange, type.getBasicType(), qualifier.hasIndex() ? qualifier.layoutIndex : 0);
 
-        // check for collisions, except for vertex inputs on desktop
-        if (! (profile != EEsProfile && language == EShLangVertex && qualifier.isPipeInput()))
+        // check for collisions, except for vertex inputs on desktop targeting OpenGL
+        if (! (profile != EEsProfile && language == EShLangVertex && qualifier.isPipeInput()) || spvVersion.vulkan > 0)
             collision = checkLocationRange(set, range, type, typeCollision);
 
         if (collision < 0)

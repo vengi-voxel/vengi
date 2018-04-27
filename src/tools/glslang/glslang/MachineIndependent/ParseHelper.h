@@ -340,7 +340,7 @@ public:
     bool arrayError(const TSourceLoc&, const TType&);
     void arraySizeRequiredCheck(const TSourceLoc&, const TArraySizes&);
     void structArrayCheck(const TSourceLoc&, const TType& structure);
-    void arraySizesCheck(const TSourceLoc&, const TQualifier&, TArraySizes*, bool initializer, bool lastMember);
+    void arraySizesCheck(const TSourceLoc&, const TQualifier&, TArraySizes*, const TIntermTyped* initializer, bool lastMember);
     void arrayOfArrayVersionCheck(const TSourceLoc&, const TArraySizes*);
     bool voidErrorCheck(const TSourceLoc&, const TString&, TBasicType);
     void boolCheck(const TSourceLoc&, const TIntermTyped*);
@@ -427,6 +427,8 @@ protected:
     TVariable* makeInternalVariable(const char* name, const TType&) const;
     TVariable* declareNonArray(const TSourceLoc&, const TString& identifier, const TType&);
     void declareArray(const TSourceLoc&, const TString& identifier, const TType&, TSymbol*&);
+    void checkRuntimeSizable(const TSourceLoc&, const TIntermTyped&);
+    bool isRuntimeLength(const TIntermTyped&) const;
     TIntermNode* executeInitializer(const TSourceLoc&, TIntermTyped* initializer, TVariable* variable);
     TIntermTyped* convertInitializerList(const TSourceLoc&, const TType&, TIntermTyped* initializer);
     void finish() override;
