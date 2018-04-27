@@ -8,8 +8,6 @@
 #include "core/Trace.h"
 #include "core/Array.h"
 
-const std::string MaxDepthBufferUniformName = "u_cascades";
-
 namespace voxelrender {
 
 OctreeRenderer::RenderOctreeNode::RenderOctreeNode(const video::Shader& shader) {
@@ -198,7 +196,7 @@ bool OctreeRenderer::init(voxel::PagedVolume* volume, const voxel::Region& regio
 	_volume = new voxel::OctreeVolume(volume, region, baseNodeSize);
 	_colorTexture.init();
 
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	const int maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
 	if (!_shadow.init(maxDepthBuffers)) {
 		return false;
 	}
