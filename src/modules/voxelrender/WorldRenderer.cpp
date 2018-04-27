@@ -796,8 +796,7 @@ void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
 	_world->updateExtractionOrder(camera.position(), camera.frustum());
 
 	const bool shadowMap = _shadowMap->boolVal();
-	_shadow.setShadowRangeZ(camera.farPlane() * 3.0f);
-	_shadow.calculateShadowData(camera, shadowMap);
+	_shadow.update(camera, shadowMap);
 
 	const glm::ivec3 cameraPos(camera.position() / glm::vec3(_worldScale));
 

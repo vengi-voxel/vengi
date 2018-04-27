@@ -73,8 +73,9 @@ void Shadow::shutdown() {
 	_shadowMapInstancedShader.shutdown();
 }
 
-void Shadow::calculateShadowData(const video::Camera& camera, bool active, float sliceWeight) {
+void Shadow::update(const video::Camera& camera, bool active, float sliceWeight) {
 	core_trace_scoped(ShadowCalculate);
+	_shadowRangeZ = camera.farPlane() * 3.0f;
 	_cascades.resize(_maxDepthBuffers);
 	_distances.resize(_maxDepthBuffers);
 	const glm::ivec2& dim = dimension();
@@ -90,7 +91,6 @@ void Shadow::calculateShadowData(const video::Camera& camera, bool active, float
 	std::vector<float> planes(_maxDepthBuffers * 2);
 	camera.sliceFrustum(&planes.front(), planes.size(), _maxDepthBuffers, sliceWeight);
 	const glm::mat4& inverseView = camera.inverseViewMatrix();
-	const float shadowRangeZ = camera.farPlane() * 3.0f;
 
 	for (int i = 0; i < _maxDepthBuffers; ++i) {
 		const float near = planes[i * 2 + 0];
@@ -110,7 +110,7 @@ void Shadow::calculateShadowData(const video::Camera& camera, bool active, float
 				 lightCenterRounded.x + lightRadius,
 				 lightCenterRounded.y - lightRadius,
 				 lightCenterRounded.y + lightRadius,
-				-lightCenterRounded.z - (shadowRangeZ - lightRadius),
+				-lightCenterRounded.z - (_shadowRangeZ - lightRadius),
 				-lightCenterRounded.z + lightRadius);
 		_cascades[i] = lightProjection * _lightView;
 		_distances[i] = far;

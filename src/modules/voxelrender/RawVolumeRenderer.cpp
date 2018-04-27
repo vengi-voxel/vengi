@@ -186,8 +186,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	const bool oldCullFace = video::enable(video::State::CullFace);
 	const bool oldDepthMask = video::enable(video::State::DepthMask);
 
-	_shadow.setShadowRangeZ(camera.farPlane() * 3.0f);
-	_shadow.calculateShadowData(camera, true);
+	_shadow.update(camera, true);
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();
 	_shadow.render([this] (int i, shader::ShadowmapShader& shader) {

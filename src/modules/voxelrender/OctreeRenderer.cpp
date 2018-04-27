@@ -145,9 +145,6 @@ void OctreeRenderer::render(const video::Camera& camera) {
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
-	const std::vector<glm::mat4>& cascades = _shadow.cascades();
-	const std::vector<float>& distances = _shadow.distances();
-
 	_shadow.render([this, camera] (int i, shader::ShadowmapShader& shader) {
 		shader.setModel(glm::mat4(1.0f));
 		renderOctreeNode(camera, _rootNode);
@@ -170,12 +167,12 @@ void OctreeRenderer::render(const video::Camera& camera) {
 	_worldShader.setDiffuseColor(_diffuseColor);
 	_worldShader.setAmbientColor(_ambientColor);
 	_worldShader.setFogrange(_fogRange);
+	_worldShader.setModel(glm::mat4(1.0f));
 	_worldShader.setViewprojection(camera.viewProjectionMatrix());
 	_worldShader.setShadowmap(video::TextureUnit::One);
 	_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
-	_worldShader.setModel(glm::mat4(1.0f));
-	_worldShader.setCascades(cascades);
-	_worldShader.setDistances(distances);
+	_worldShader.setCascades(_shadow.cascades());
+	_worldShader.setDistances(_shadow.distances());
 	renderOctreeNode(camera, _rootNode);
 
 	_colorTexture.unbind();
@@ -220,8 +217,7 @@ int OctreeRenderer::update(long dt, const video::Camera& camera) {
 	if (_volume == nullptr) {
 		return 0;
 	}
-	_shadow.setShadowRangeZ(camera.farPlane() * 3.0f);
-	_shadow.calculateShadowData(camera, true);
+	_shadow.update(camera, true);
 	return _volume->update(dt, camera.position(), 1.0f);
 }
 

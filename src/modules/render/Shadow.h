@@ -50,7 +50,7 @@ public:
 	/**
 	 * @param[in] maxDepthBuffers the amount of cascades
 	 */
-	void calculateShadowData(const video::Camera& camera, bool active, float sliceWeight = 1.0f);
+	void update(const video::Camera& camera, bool active, float sliceWeight = 1.0f);
 
 	bool bind(video::TextureUnit unit);
 
@@ -58,7 +58,6 @@ public:
 
 	void render(funcRender renderCallback, funcRenderInstance renderInstancedCallback);
 
-	void setShadowRangeZ(float shadowRangeZ);
 	void setShadowBiasSlope(float biasSlope);
 	void setShadowBias(float biasSlope);
 
@@ -82,10 +81,6 @@ inline const std::vector<float>& Shadow::distances() const {
 
 inline const glm::vec3& Shadow::sunDirection() const {
 	return _sunDirection;
-}
-
-inline void Shadow::setShadowRangeZ(float shadowRangeZ) {
-	_shadowRangeZ = shadowRangeZ;
 }
 
 inline void Shadow::setShadowBias(float bias) {

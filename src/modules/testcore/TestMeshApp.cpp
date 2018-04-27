@@ -176,8 +176,7 @@ void TestMeshApp::doRender() {
 	const bool oldDepthMask = video::enable(video::State::DepthMask);
 
 	_model = glm::translate(glm::mat4(1.0f), _position);
-	_shadow.setShadowRangeZ(_camera.farPlane() * 3.0f);
-	_shadow.calculateShadowData(_camera, true);
+	_shadow.update(_camera, true);
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();
 
