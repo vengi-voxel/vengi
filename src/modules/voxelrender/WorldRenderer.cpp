@@ -466,15 +466,13 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	}
 
 	const glm::mat4& model = glm::scale(glm::vec3(_worldScale));
-	const std::vector<glm::mat4>& cascades = _shadow.cascades();
-	const std::vector<float>& distances = _shadow.distances();
 	{
 		core_trace_scoped(WorldRendererRenderOpaque);
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setModel(model);
 		if (shadowMap) {
-			_worldShader.setCascades(cascades);
-			_worldShader.setDistances(distances);
+			_worldShader.setCascades(_shadow.cascades());
+			_worldShader.setDistances(_shadow.distances());
 		}
 		if (renderOpaqueBuffers()) {
 			++drawCallsWorld;
@@ -485,8 +483,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		video::ScopedShader scoped(_worldInstancedShader);
 		_worldInstancedShader.setModel(glm::scale(glm::vec3(0.4f)));
 		if (shadowMap) {
-			_worldInstancedShader.setCascades(cascades);
-			_worldInstancedShader.setDistances(distances);
+			_worldInstancedShader.setCascades(_shadow.cascades());
+			_worldInstancedShader.setDistances(_shadow.distances());
 		}
 		drawCallsWorld += renderPlants(_visiblePlant, vertices);
 	}
@@ -495,8 +493,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		video::ScopedShader scoped(_waterShader);
 		_waterShader.setModel(model);
 		if (shadowMap) {
-			_waterShader.setCascades(cascades);
-			_waterShader.setDistances(distances);
+			_waterShader.setCascades(_shadow.cascades());
+			_waterShader.setDistances(_shadow.distances());
 		}
 		if (renderWaterBuffers()) {
 			++drawCallsWorld;

@@ -177,8 +177,6 @@ void TestMeshApp::doRender() {
 
 	_model = glm::translate(glm::mat4(1.0f), _position);
 	_shadow.update(_camera, true);
-	const std::vector<glm::mat4>& cascades = _shadow.cascades();
-	const std::vector<float>& distances = _shadow.distances();
 
 	if (shadowMap) {
 		core_trace_scoped(TestMeshAppDoRenderShadows);
@@ -228,8 +226,8 @@ void TestMeshApp::doRender() {
 				_meshShader.setViewprojection(_camera.viewProjectionMatrix());
 				_meshShader.setShadowmap(video::TextureUnit::One);
 				_meshShader.setDepthsize(glm::vec2(_shadow.dimension()));
-				_meshShader.setCascades(cascades);
-				_meshShader.setDistances(distances);
+				_meshShader.setCascades(_shadow.cascades());
+				_meshShader.setDistances(_shadow.distances());
 			}
 			const video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
 			_mesh->render();

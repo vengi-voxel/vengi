@@ -187,8 +187,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	const bool oldDepthMask = video::enable(video::State::DepthMask);
 
 	_shadow.update(camera, true);
-	const std::vector<glm::mat4>& cascades = _shadow.cascades();
-	const std::vector<float>& distances = _shadow.distances();
 	_shadow.render([this] (int i, shader::ShadowmapShader& shader) {
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
@@ -209,8 +207,8 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		_worldShader.setViewprojection(camera.viewProjectionMatrix());
 		_worldShader.setViewdistance(camera.farPlane());
 		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
-		_worldShader.setCascades(cascades);
-		_worldShader.setDistances(distances);
+		_worldShader.setCascades(_shadow.cascades());
+		_worldShader.setDistances(_shadow.distances());
 		_worldShader.setLightdir(_shadow.sunDirection());
 
 		video::ScopedPolygonMode polygonMode(camera.polygonMode());
