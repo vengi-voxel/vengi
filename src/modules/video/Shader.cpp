@@ -224,7 +224,7 @@ bool Shader::checkUniformCache(int location, const void* value, size_t length) c
 	return true;
 #else
 	auto i = _uniformStateMap.find(location);
-	const uint32_t hash = core::fastHash(value, length);
+	const uint32_t hash = core::hash(value, length);
 	if (i == _uniformStateMap.end()) {
 		_uniformStateMap[location] = hash;
 		return true;
