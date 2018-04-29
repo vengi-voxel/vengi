@@ -297,7 +297,19 @@ inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIn
 }
 
 inline bool hasFeature(Feature f) {
-	return renderState().features[std::enum_value(f)];
+	return renderState().supports(f);
+}
+
+inline int limit(Limit l) {
+	return renderState().limit(l);
+}
+
+/**
+ * @brief Checks whether a given hardware limit is exceeded.
+ */
+inline bool checkLimit(int amount, Limit l) {
+	const int v = renderState().limit(l);
+	return v >= amount;
 }
 
 }

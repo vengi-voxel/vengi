@@ -915,7 +915,7 @@ bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTe
 		glDrawBuffers(lengthof(buffers), buffers);
 		checkError();
 	} else {
-		if (renderState().limit(Limit::MaxDrawBuffers) < (int)attachments.size()) {
+		if (!checkLimit(attachments.size(), Limit::MaxDrawBuffers)) {
 			Log::warn("Max draw buffers exceeded");
 			return false;
 		}
@@ -1211,16 +1211,13 @@ bool runShader(Id program, const glm::uvec3& workGroups, bool wait) {
 	if (workGroups.x <= 0 || workGroups.y <= 0 || workGroups.z <= 0) {
 		return false;
 	}
-	const uint32_t limitx = renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountX)];
-	const uint32_t limity = renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountY)];
-	const uint32_t limitz = renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountZ)];
-	if (limitx > 0 && workGroups.x > limitx) {
+	if (!checkLimit(workGroups.x, Limit::MaxComputeWorkGroupCountX)) {
 		return false;
 	}
-	if (limity > 0 && workGroups.y > limity) {
+	if (!checkLimit(workGroups.y, Limit::MaxComputeWorkGroupCountY)) {
 		return false;
 	}
-	if (limitz > 0 && workGroups.z > limitz) {
+	if (!checkLimit(workGroups.z, Limit::MaxComputeWorkGroupCountZ)) {
 		return false;
 	}
 	glDispatchCompute((GLuint)workGroups.x, (GLuint)workGroups.y, (GLuint)workGroups.z);

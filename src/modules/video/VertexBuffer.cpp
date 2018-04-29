@@ -53,6 +53,10 @@ bool VertexBuffer::addAttribute(const Attribute& attribute) {
 	if (attribute.size <= 0) {
 		return false;
 	}
+	if (!video::checkLimit(_attributes.size(), video::Limit::MaxVertexAttribs)) {
+		Log::error("The max vertex attributes are exceeded");
+		return false;
+	}
 	_attributes.push_back(attribute);
 	_dirtyAttributes = true;
 	return true;
