@@ -605,6 +605,7 @@ void deleteRenderbuffers(uint8_t amount, Id* ids) {
 }
 
 void configureAttribute(const Attribute& a) {
+	core_assert(_priv::s.programHandle != InvalidId);
 	glEnableVertexAttribArray(a.index);
 	const GLenum glType = _priv::DataTypes[std::enum_value(a.type)];
 	if (a.typeIsInt) {
