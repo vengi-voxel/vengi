@@ -10,13 +10,19 @@
 
 namespace tb {
 
+#ifndef TB_RUNTIME_DEBUG_INFO
+#if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L || _MSC_VER >= 1900
+#define TB_SUPPORT_CONSTEXPR
+#endif
+#endif
+
 /** TBColor contains a 32bit color. */
 
 class TBColor
 {
 public:
-	TBColor() : b(0), g(0), r(0), a(255) {}
-	TBColor(int r, int g, int b, int a = 255) : b(b), g(g), r(r), a(a) {}
+	constexpr TBColor() : b(0), g(0), r(0), a(255) {}
+	constexpr TBColor(int r, int g, int b, int a = 255) : b(b), g(g), r(r), a(a) {}
 
 	uint8 b, g, r, a;
 

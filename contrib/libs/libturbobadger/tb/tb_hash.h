@@ -17,9 +17,11 @@ namespace tb {
 //
 // Note: GCC may need -std=c++0x or -std=c++11 to enable this feature.
 
+#ifndef TB_SUPPORT_CONSTEXPR
 #ifndef TB_RUNTIME_DEBUG_INFO
 #if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L || _MSC_VER >= 1900
 #define TB_SUPPORT_CONSTEXPR
+#endif
 #endif
 #endif
 
