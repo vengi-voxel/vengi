@@ -62,6 +62,10 @@ LSystem parameter window needs the voxel options and should show information abo
 
 Move space colonization tree generator into the tree submenu and take the ToolWindow parameters into account
 
+Improve selections and implement invert-selection
+
+Fix assert when cropping
+
 # EventMgr
 
 ## Proper event-end-while-application-is-not-running handling
