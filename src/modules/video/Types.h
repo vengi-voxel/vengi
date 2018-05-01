@@ -417,7 +417,7 @@ struct Attribute {
 	 */
 	uint8_t divisor = 0;
 	bool normalized = false;
-	/** use glVertexAttribPointer or glVertexAttribIPointer for uploading */
+	/** if this is true, the values are not converted to float, but are kept as integers */
 	bool typeIsInt = false;
 };
 
