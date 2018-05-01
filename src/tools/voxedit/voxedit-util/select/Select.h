@@ -20,12 +20,14 @@ protected:
 	void goDown(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, int& cnt) const;
 	void goSixDirections(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, const voxel::Voxel voxel, int& cnt) const;
 
-	virtual int execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const;
+	virtual int execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection);
 
 public:
 	virtual ~Select();
 
-	virtual int execute(const voxel::RawVolume *model, voxel::RawVolume *selection, const glm::ivec3& pos) const;
+	virtual void unselect() {}
+
+	virtual int execute(const voxel::RawVolume *model, voxel::RawVolume *selection, const glm::ivec3& pos);
 };
 
 }

@@ -35,7 +35,8 @@ static const struct {
 	{TBIDC("actionselectsame"),			SelectType::Same},
 	{TBIDC("actionselecthorizontal"),	SelectType::LineHorizontal},
 	{TBIDC("actionselectvertical"),		SelectType::LineVertical},
-	{TBIDC("actionselectedge"),			SelectType::Edge}
+	{TBIDC("actionselectedge"),			SelectType::Edge},
+	{TBIDC("actionselectaabb"),			SelectType::AABB}
 };
 
 static const struct {

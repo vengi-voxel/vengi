@@ -14,6 +14,7 @@ enum class SelectType : uint8_t {
 	LineVertical,
 	LineHorizontal,
 	Edge,
+	AABB,
 
 	Max
 };

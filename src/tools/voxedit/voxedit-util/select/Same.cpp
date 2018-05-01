@@ -7,7 +7,7 @@
 namespace voxedit {
 namespace selections {
 
-int Same::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
+int Same::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) {
 	selection.setVoxel(model.voxel());
 	const glm::ivec3& pos = model.position();
 	int cnt = 0;

@@ -7,7 +7,7 @@
 namespace voxedit {
 namespace selections {
 
-int LineHorizontal::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
+int LineHorizontal::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) {
 	int cnt = 0;
 	if (selection.setVoxel(model.voxel())) {
 		++cnt;

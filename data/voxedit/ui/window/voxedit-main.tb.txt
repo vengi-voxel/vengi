@@ -189,6 +189,12 @@ TBLayout: distribution: gravity, axis: y
 								TBRadioButton
 									id actionselectedge
 									@include definitions>selectbutton
+							TBClickLabel
+								text AABB
+								TBSkinImage: skin: voxedit-selection
+								TBRadioButton
+									id actionselectaabb
+									@include definitions>selectbutton
 
 					TBSection: value: 1, text: "Operations"
 						TBLayout: position: left top, axis: y

@@ -124,11 +124,11 @@ void Select::goSixDirections(voxel::RawVolume::Sampler& model, voxel::RawVolume:
 	model.setPosition(pos);
 }
 
-int Select::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
+int Select::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) {
 	return selection.setVoxel(model.voxel()) ? 1 : 0;
 }
 
-int Select::execute(const voxel::RawVolume *model, voxel::RawVolume *selection, const glm::ivec3& pos) const {
+int Select::execute(const voxel::RawVolume *model, voxel::RawVolume *selection, const glm::ivec3& pos) {
 	if (!model->region().containsPoint(pos)) {
 		Log::error("Given position is outside of the region");
 		return 0;

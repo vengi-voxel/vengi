@@ -7,6 +7,7 @@ set(SRCS
 	select/LineVertical.h select/LineVertical.cpp
 	select/Same.h select/Same.cpp
 	select/Single.h
+	select/AABB.h select/AABB.cpp
 	select/Select.h select/Select.cpp
 
 	tool/Fill.h tool/Fill.cpp
