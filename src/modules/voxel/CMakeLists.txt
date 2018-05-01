@@ -53,6 +53,7 @@ set(SRCS
 	polyvox/VolumeRescaler.h
 	polyvox/VolumeRotator.h polyvox/VolumeRotator.cpp
 	polyvox/VolumeCropper.h
+	polyvox/VolumeVisitor.h
 	SurfaceExtractionTask.h SurfaceExtractionTask.cpp
 	OctreeNode.h OctreeNode.cpp
 	OctreeVolume.h OctreeVolume.cpp

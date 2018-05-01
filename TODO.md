@@ -50,7 +50,7 @@ Validate that each `$out` of the vertex shader has a `$in` in the fragment shade
 
 # VoxEdit
 
-Extract meshes in max 32x32x32 boundaries - `RawVolumeRenderer` maybe? This allows us to only re-extract the chunk that was modified, not always the whole volume.
+Extract meshes in max 32x32x32 boundaries - `RawVolumeRenderer` maybe? This allows us to only re-extract the chunk that was modified, not always the whole volume. See `Model::modified`.
 
 Voxelizer via assimp
 
@@ -65,6 +65,9 @@ Move space colonization tree generator into the tree submenu and take the ToolWi
 Improve selections and implement invert-selection
 
 Fix assert when cropping
+
+Improve deletion of selected voxels - x should trigger popup like in blender which shows amount of voxels and enter to perform
+the delete step (or esc to close the dialog without deleting anything).
 
 # EventMgr
 

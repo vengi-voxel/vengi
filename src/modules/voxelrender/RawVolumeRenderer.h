@@ -44,7 +44,6 @@ protected:
 
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
-	glm::vec3 _sunDirection;
 public:
 	RawVolumeRenderer();
 
@@ -55,7 +54,7 @@ public:
 	 * @sa extract()
 	 */
 	bool update(int idx, const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices);
-	void update(int idx, voxel::Mesh* mesh);
+	bool update(int idx, voxel::Mesh* mesh);
 
 	/**
 	 * @brief Reextract the whole volume region and updates the vertex buffers.
@@ -82,7 +81,6 @@ public:
 	const voxel::RawVolume* volume(int idx = 0) const;
 
 	void setAmbientColor(const glm::vec3& color);
-	void setSunDirection(const glm::vec3& sunDirection);
 
 	/**
 	 * @sa shutdown()
@@ -97,10 +95,6 @@ public:
 	 */
 	std::vector<voxel::RawVolume*> shutdown();
 };
-
-inline void RawVolumeRenderer::setSunDirection(const glm::vec3& sunDirection) {
-	_sunDirection = sunDirection;
-}
 
 inline void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {
 	_ambientColor = color;

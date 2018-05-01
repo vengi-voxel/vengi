@@ -37,7 +37,6 @@ struct CustomIsQuadNeeded {
 
 RawVolumeRenderer::RawVolumeRenderer() :
 		_worldShader(shader::WorldShader::getInstance()) {
-	_sunDirection = glm::vec3(glm::left.x, glm::down.y, 0.0f);
 }
 
 bool RawVolumeRenderer::init() {
@@ -136,6 +135,9 @@ void RawVolumeRenderer::extractAll() {
 }
 
 bool RawVolumeRenderer::extract(int idx) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return false;
+	}
 	voxel::RawVolume* volume = _rawVolume[idx];
 	if (volume == nullptr) {
 		return false;
@@ -150,7 +152,10 @@ bool RawVolumeRenderer::extract(int idx) {
 	return true;
 }
 
-void RawVolumeRenderer::update(int idx, voxel::Mesh* mesh) {
+bool RawVolumeRenderer::update(int idx, voxel::Mesh* mesh) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return false;
+	}
 	if (_mesh[idx] != mesh) {
 		delete _mesh[idx];
 		_mesh[idx] = mesh;
@@ -159,9 +164,9 @@ void RawVolumeRenderer::update(int idx, voxel::Mesh* mesh) {
 	if (meshNumberIndices == 0u) {
 		_vertexBuffer[idx].update(_vertexBufferIndex[idx], nullptr, 0);
 		_vertexBuffer[idx].update(_indexBufferIndex[idx], nullptr, 0);
-		return;
+		return true;
 	}
-	update(idx, mesh->getVertexVector(), mesh->getIndexVector());
+	return update(idx, mesh->getVertexVector(), mesh->getIndexVector());
 }
 
 void RawVolumeRenderer::extract(voxel::RawVolume* volume, voxel::Mesh* mesh) const {

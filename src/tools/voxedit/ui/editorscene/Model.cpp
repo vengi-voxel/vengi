@@ -8,6 +8,7 @@
 #include "voxel/polyvox/VolumeRotator.h"
 #include "voxel/polyvox/VolumeMover.h"
 #include "voxel/polyvox/VolumeRescaler.h"
+#include "voxel/polyvox/VolumeVisitor.h"
 #include "voxel/polyvox//RawVolumeWrapper.h"
 #include "voxel/polyvox//RawVolumeMoveWrapper.h"
 #include "voxel/generator/WorldGenerator.h"
@@ -195,8 +196,28 @@ bool Model::place() {
 	return extract;
 }
 
-// TODO: delete selected volume from model volume
 bool Model::remove() {
+	if (_selectionHandler.selectedVoxels() > 0) {
+		const voxel::RawVolume* selection = _rawVolumeSelectionRenderer.volume(SelectionVolumeIndex);
+		glm::ivec3 mins(0);
+		glm::ivec3 maxs(0);
+
+		const bool extract = voxel::visitVolume(*selection, [this, &mins, &maxs] (int x, int y, int z, const voxel::Voxel& voxel) {
+			modelVolume()->setVoxel(x, y, z, voxel::Voxel());
+			mins.x = glm::min(mins.x, x);
+			mins.y = glm::min(mins.y, y);
+			mins.z = glm::min(mins.z, z);
+			maxs.x = glm::max(maxs.x, x);
+			maxs.y = glm::max(maxs.y, y);
+			maxs.z = glm::max(maxs.z, z);
+		}) > 0;
+		if (extract) {
+			const voxel::Region modifiedRegion(mins, maxs);
+			modified(modifiedRegion);
+			return true;
+		}
+		return false;
+	}
 	const bool extract = setVoxel(_cursorPos, voxel::Voxel());
 	if (extract) {
 		const voxel::Region modifiedRegion(_cursorPos, _cursorPos);

@@ -23,6 +23,7 @@ public:
 
 	bool select(const voxel::RawVolume* volume, voxel::RawVolume* selectionVolume, const glm::ivec3& pos);
 	void unselectAll();
+	int selectedVoxels() const;
 };
 
 inline void SelectionHandler::setSelectionType(SelectType type) {
@@ -31,6 +32,10 @@ inline void SelectionHandler::setSelectionType(SelectType type) {
 
 inline SelectType SelectionHandler::selectionType() const {
 	return _selectionType;
+}
+
+inline int SelectionHandler::selectedVoxels() const {
+	return _selectedVoxels;
 }
 
 }
