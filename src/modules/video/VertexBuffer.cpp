@@ -79,7 +79,7 @@ bool VertexBuffer::bind() const {
 	const int size = _attributes.size();
 	for (int i = 0; i < size; i++) {
 		const Attribute& a = _attributes[i];
-		if (_targets[a.bufferIndex] == VertexBufferType::IndexBuffer) {
+		if (_targets[a.bufferIndex] != VertexBufferType::ArrayBuffer) {
 			continue;
 		}
 		video::bindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
