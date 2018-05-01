@@ -59,10 +59,12 @@ void Controller::onResize(const glm::ivec2& size) {
 
 void Controller::zoom(float level) {
 	const float value = _cameraSpeed * level;
-	const glm::vec3& moveDelta = glm::backward * value;
-	_camera.move(moveDelta);
 	const float targetDistance = glm::clamp(_camera.targetDistance() + value, 0.0f, 1000.0f);
-	_camera.setTargetDistance(targetDistance);
+	if (targetDistance > 1.0f) {
+		const glm::vec3& moveDelta = glm::backward * value;
+		_camera.move(moveDelta);
+		_camera.setTargetDistance(targetDistance);
+	}
 }
 
 bool Controller::move(bool rotate, int x, int y) {
