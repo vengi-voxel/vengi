@@ -132,7 +132,7 @@ private:
 	void togglelockaxis();
 	void togglemirroraxis();
 	void setReferencePosition(int x = 0, int y = 0, int z = 0);
-	void setReferencePositionToCursor();
+	void setreferencepositiontocursor();
 	void unselectall();
 	bool voxelize(const std::string& file);
 	bool importHeightmp(const std::string& file);

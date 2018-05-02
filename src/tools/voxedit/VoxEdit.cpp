@@ -199,7 +199,7 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(load, "Load a scene from the given file");
 	COMMAND_FILE(voxelize, "Load a scene from the given file");
 
-	COMMAND_MAINWINDOW(setReferencePositionToCursor, "Set the reference position to the current cursor position");
+	COMMAND_MAINWINDOW(setreferencepositiontocursor, "Set the reference position to the current cursor position");
 	COMMAND_MAINWINDOW(unselectall, "Unselect every voxel");
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
 	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");

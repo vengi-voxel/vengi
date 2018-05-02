@@ -358,7 +358,7 @@ void VoxEditWindow::setReferencePosition(int x, int y, int z) {
 	_scene->setReferencePosition(glm::ivec3(x, y, z));
 }
 
-void VoxEditWindow::setReferencePositionToCursor() {
+void VoxEditWindow::setreferencepositiontocursor() {
 	_scene->setReferencePosition(_scene->cursorPosition());
 }
 
