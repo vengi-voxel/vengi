@@ -14,6 +14,9 @@ struct CropSkipEmpty {
 	}
 };
 
+/**
+ * @brief Resizes a volume to cut off empty parts
+ */
 template<class CropSkipCondition = CropSkipEmpty>
 RawVolume* cropVolume(const RawVolume* volume, const glm::ivec3& mins, const glm::ivec3& maxs, CropSkipCondition condition = CropSkipCondition()) {
 	core_trace_scoped(CropRawVolume);
@@ -26,6 +29,9 @@ RawVolume* cropVolume(const RawVolume* volume, const glm::ivec3& mins, const glm
 	return newVolume;
 }
 
+/**
+ * @brief Resizes a volume to cut off empty parts
+ */
 template<class CropSkipCondition = CropSkipEmpty>
 RawVolume* cropVolume(const RawVolume* volume, CropSkipCondition condition = CropSkipCondition()) {
 	core_trace_scoped(CropRawVolume);

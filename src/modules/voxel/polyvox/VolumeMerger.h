@@ -38,6 +38,9 @@ int mergeVolumes(Volume1* destination, const Volume2* source, const Region& dest
 					continue;
 				}
 				const int destX = destReg.getLowerX() + x - sourceReg.getLowerX();
+				if (!destReg.containsPoint(destX, destY, destZ)) {
+					continue;
+				}
 				if (destination->setVoxel(destX, destY, destZ, voxel)) {
 					++cnt;
 				}
