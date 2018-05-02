@@ -241,6 +241,20 @@ void VoxEditWindow::update() {
 	_sceneFront->update();
 }
 
+bool VoxEditWindow::isFocused() const {
+	return tb::TBWidget::focused_widget == _scene
+			|| tb::TBWidget::focused_widget == _sceneTop
+			|| tb::TBWidget::focused_widget == _sceneLeft
+			|| tb::TBWidget::focused_widget == _sceneFront;
+}
+
+bool VoxEditWindow::isHovered() const {
+	return tb::TBWidget::hovered_widget == _scene
+			|| tb::TBWidget::hovered_widget == _sceneTop
+			|| tb::TBWidget::hovered_widget == _sceneLeft
+			|| tb::TBWidget::hovered_widget == _sceneFront;
+}
+
 void VoxEditWindow::setCursorPosition(int x, int y, int z, bool relative) {
 	if (relative) {
 		glm::ivec3 p = _scene->cursorPosition();
@@ -614,7 +628,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 
-#ifdef DEBUG
+#ifdef TB_RUNTIME_DEBUG_INFO
 	Log::debug("Unknown event %s - %s", ev.target->GetID().debug_string.CStr(), ev.ref_id.debug_string.CStr());
 #endif
 

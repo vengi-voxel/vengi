@@ -19,6 +19,7 @@ class UIApp: public video::WindowedApp, private tb::TBWidgetListener {
 private:
 	using Super = video::WindowedApp;
 protected:
+	static constexpr uint32_t _logId = Log::logid("UIAPP");
 	tb::TBWidget _root;
 	Console _console;
 	core::VarPtr _renderUI;

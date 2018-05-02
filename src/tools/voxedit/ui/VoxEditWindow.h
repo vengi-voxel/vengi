@@ -149,11 +149,18 @@ public:
 	bool init();
 
 	void update();
+	bool isFocused() const;
+	bool isHovered() const;
+	bool isActive() const;
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 	void OnProcess() override;
 	void OnDie() override;
 };
+
+inline bool VoxEditWindow::isActive() const {
+	return isFocused() || isHovered();
+}
 
 inline void VoxEditWindow::rotatex() {
 	rotate(90, 0, 0);

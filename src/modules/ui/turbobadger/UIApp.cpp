@@ -153,6 +153,7 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 #else
 	bool shortcutKey = (mod & tb::TB_CTRL) ? true : false;
 #endif
+	Log::debug(_logId, "invoke key: %s (%i)", down ? "down" : "up", key);
 	if (tb::TBWidget::focused_widget && down && shortcutKey && key != 0) {
 		bool reverseKey = (mod & tb::TB_SHIFT) ? true : false;
 		if (key >= 'a' && key <= 'z') {
@@ -189,9 +190,9 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 			return false;
 		}
 
-		tb::TBWidgetEvent ev(tb::EVENT_TYPE_SHORTCUT);
-		ev.modifierkeys = mod;
+		tb::TBWidgetEvent ev(tb::EVENT_TYPE_SHORTCUT, 0, 0, false, mod);
 		ev.ref_id = id;
+		Log::debug(_logId, "invoke shortcut event: %i", key);
 		return tb::TBWidget::focused_widget->InvokeEvent(ev);
 	}
 
@@ -308,10 +309,10 @@ bool UIApp::onKeyRelease(int32_t key) {
 	tb::MODIFIER_KEYS mod = getModifierKeys();
 	mod |= mapModifier(key, 0);
 	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
-		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU);
-		ev.modifierkeys = mod;
-		tb::TBWidget::focused_widget->InvokeEvent(ev);
-		return true;
+		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, 0, 0, false, mod);
+		if (tb::TBWidget::focused_widget->InvokeEvent(ev)) {
+			return true;
+		}
 	}
 	return invokeKey(mapKey(key), mapSpecialKey(key), mod, false);
 }
@@ -343,6 +344,17 @@ void UIApp::OnWidgetFocusChanged(tb::TBWidget *widget, bool focused) {
 	} else {
 		SDL_StopTextInput();
 	}
+	if (focused) {
+#ifdef TB_RUNTIME_DEBUG_INFO
+		Log::debug(_logId, "Focus widget Id: '%s'", widget->GetID().debug_string.CStr());
+#endif
+	} else {
+#ifdef TB_RUNTIME_DEBUG_INFO
+		if (tb::TBWidget::focused_widget != nullptr) {
+			Log::debug(_logId, "Unfocus widget Id: '%s'", tb::TBWidget::focused_widget->GetID().debug_string.CStr());
+		}
+#endif
+	}
 }
 
 void UIApp::afterRootWidget() {
@@ -357,7 +369,7 @@ core::AppState UIApp::onInit() {
 		return state;
 	}
 	if (!tb::tb_core_init(&_renderer)) {
-		Log::error("failed to initialize the ui");
+		Log::error(_logId, "failed to initialize the ui");
 		return core::AppState::InitFailure;
 	}
 
@@ -365,7 +377,7 @@ core::AppState UIApp::onInit() {
 	_uiInitialized = true;
 
 	if (!tb::g_tb_lng->Load("ui/lang/en.tb.txt")) {
-		Log::warn("could not load the translation");
+		Log::warn(_logId, "could not load the translation");
 	}
 
 	if (_applicationSkin.empty()) {
@@ -378,19 +390,19 @@ core::AppState UIApp::onInit() {
 	tb::TBWidgetsAnimationManager::Init();
 
 	if (!tb::g_tb_skin->Load("ui/skin/skin.tb.txt", _applicationSkin.empty() ? nullptr : _applicationSkin.c_str())) {
-		Log::error("could not load the skin");
+		Log::error(_logId, "could not load the skin");
 		return core::AppState::InitFailure;
 	}
 
 	if (!_renderer.init(dimension())) {
-		Log::error("could not init ui renderer");
+		Log::error(_logId, "could not init ui renderer");
 		return core::AppState::InitFailure;
 	}
 
 	initFonts();
 	tb::TBFontFace *font = getFont(14, true);
 	if (font == nullptr) {
-		Log::error("could not create the font face");
+		Log::error(_logId, "could not create the font face");
 		return core::AppState::InitFailure;
 	}
 
