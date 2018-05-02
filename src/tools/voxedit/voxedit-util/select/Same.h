@@ -9,6 +9,9 @@
 namespace voxedit {
 namespace selections {
 
+/**
+ * @brief Selects all voxels that are touching the selected voxel and are of the same type.
+ */
 class Same : public Select {
 public:
 	SelectionSingleton(Same)

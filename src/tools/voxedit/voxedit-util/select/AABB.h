@@ -9,6 +9,9 @@
 namespace voxedit {
 namespace selections {
 
+/**
+ * @brief Selection mode that spans an AABB by the given mins and maxs vectors
+ */
 class AABB : public Select {
 private:
 	glm::ivec3 _mins {0};

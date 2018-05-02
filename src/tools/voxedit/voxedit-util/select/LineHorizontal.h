@@ -9,6 +9,9 @@
 namespace voxedit {
 namespace selections {
 
+/**
+ * @brief Selects all voxel along the line horizontally
+ */
 class LineHorizontal : public Select {
 public:
 	SelectionSingleton(LineHorizontal)
