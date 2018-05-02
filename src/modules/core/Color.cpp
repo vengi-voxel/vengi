@@ -154,6 +154,11 @@ unsigned int Color::getRGBA(const glm::vec4& color) {
 			| static_cast<int>(color.r * magnitude);
 }
 
+unsigned int Color::getBGRA(const glm::vec4& color) {
+	return static_cast<int>(color.a * magnitude) << 24 | static_cast<int>(color.r * magnitude) << 16 | static_cast<int>(color.g * magnitude) << 8
+			| static_cast<int>(color.b * magnitude);
+}
+
 void Color::getHSB(const glm::vec4& color, float& chue, float& csaturation, float& cbrightness) {
 	cbrightness = brightness(color);
 	const float minBrightness = std::min(color.r, std::min(color.g, color.b));
