@@ -54,20 +54,19 @@ Extract meshes in max 32x32x32 boundaries - `RawVolumeRenderer` maybe? This allo
 
 Voxelizer via assimp
 
-Extrude
+LSystem parameter window needs the voxel options and should show information about the used alphabet.
 
-Scale/move/rotate selections - not only the cursor or whole model
+Move space colonization tree generator into the tree submenu and take the `TreeWindow` parameters into account.
 
-LSystem parameter window needs the voxel options and should show information about the used alphabet
+## Improve selections
 
-Move space colonization tree generator into the tree submenu and take the ToolWindow parameters into account
-
-Improve selections and implement invert-selection
-
-Improve deletion of selected voxels - x should trigger popup like in blender which shows amount of voxels and enter to perform
-the delete step (or esc to close the dialog without deleting anything).
-
-Improve replacing of selection with something else - e.g. generators should maybe only operate on the selection?
+- implement invert-selection.
+- Improve deletion of selected voxels - x should trigger popup like in blender which shows amount of voxels and enter to perform the delete step (or esc to close the dialog without deleting anything).
+- Scale/move/rotate selections - not only the cursor or whole model.
+- Extrude selection or voxel under cursor.
+- Improve replacing of selection with something else - e.g. generators should maybe only operate on the selection?
+- Implement selection operations like replace-selection, add-to-selection, remove-from-selection, only-keep-intersection.
+- Same-Select mode should get a threshold with a threshold value. So e.g. select all gray voxels, but not the yellow ones.
 
 # EventMgr
 
