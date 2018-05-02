@@ -15,14 +15,14 @@
 
 namespace voxel {
 
+static int VolumePrintThreshold = 10;
+
 inline bool operator==(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2) {
-	for (int i = 0; i < 3; ++i) {
-		if (volume1.mins()[i] != volume2.mins()[i]) {
-			return false;
-		}
-		if (volume1.maxs()[i] != volume2.maxs()[i]) {
-			return false;
-		}
+	const Region& r1 = volume1.region();
+	const Region& r2 = volume2.region();
+	if (r1 != r2) {
+		Log::debug("region differs");
+		return false;
 	}
 
 	const voxel::Region& region = volume1.region();
@@ -32,13 +32,20 @@ inline bool operator==(const voxel::RawVolume& volume1, const voxel::RawVolume& 
 	const int32_t upperX = region.getUpperX();
 	const int32_t upperY = region.getUpperY();
 	const int32_t upperZ = region.getUpperZ();
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+
 	for (int32_t z = lowerZ; z <= upperZ; ++z) {
 		for (int32_t y = lowerY; y <= upperY; ++y) {
 			for (int32_t x = lowerX; x <= upperX; ++x) {
 				const glm::ivec3 pos(x, y, z);
 				const voxel::Voxel& voxel1 = volume1.voxel(pos);
 				const voxel::Voxel& voxel2 = volume2.voxel(pos);
-				if (!voxel1.isSame(voxel2)) {
+				const glm::vec4& c1 = materialColors[std::enum_value(voxel1.getMaterial())];
+				const glm::vec4& c2 = materialColors[std::enum_value(voxel2.getMaterial())];
+				const glm::vec4& delta = c1 - c2;
+				if (glm::any(glm::greaterThan(delta, glm::vec4(glm::epsilon<float>())))) {
+					Log::debug("Voxel differs at %i:%i:%i - voxel1[%s, %i], voxel2[%s, %i]", x, y, z,
+							voxel::VoxelTypeStr[(int)voxel1.getMaterial()], (int)voxel1.getColor(), voxel::VoxelTypeStr[(int)voxel2.getMaterial()], (int)voxel2.getColor());
 					return false;
 				}
 			}
@@ -62,8 +69,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Voxel& voxel)
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::RawVolume& volume) {
 	const voxel::Region& region = volume.region();
 	os << "volume[" << region;
-	const int threshold = 6;
-	if (volume.depth() <= threshold && volume.width() <= threshold && volume.height() <= threshold) {
+	if (volume.depth() <= VolumePrintThreshold && volume.width() <= VolumePrintThreshold && volume.height() <= VolumePrintThreshold) {
 		const int32_t lowerX = region.getLowerX();
 		const int32_t lowerY = region.getLowerY();
 		const int32_t lowerZ = region.getLowerZ();
@@ -139,6 +145,7 @@ public:
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 		_random.setSeed(_seed);
 		_ctx = PagedVolumeWrapper(&_volData, _volData.chunk(_region.getCentre()), _region);
+		VolumePrintThreshold = 10;
 	}
 };
 

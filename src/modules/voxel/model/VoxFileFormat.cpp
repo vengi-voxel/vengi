@@ -11,13 +11,9 @@
 
 namespace voxel {
 
-const glm::vec4& VoxFileFormat::getColor(VoxelType type) const {
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	return materialColors[std::enum_value(type)];
-}
-
 const glm::vec4& VoxFileFormat::getColor(const Voxel& voxel) const {
-	return getColor(voxel.getMaterial());
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	return materialColors[voxel.getColor()];
 }
 
 uint8_t VoxFileFormat::convertPaletteIndex(uint32_t paletteIndex) const {
@@ -36,7 +32,7 @@ glm::vec4 VoxFileFormat::findClosestMatch(const glm::vec4& color) const {
 uint8_t VoxFileFormat::findClosestIndex(const glm::vec4& color) const {
 	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
 	materialColors.erase(materialColors.begin());
-	return core::Color::getClosestMatch(color, materialColors) + 1;
+	return core::Color::getClosestMatch(color, materialColors);
 }
 
 }

@@ -15,7 +15,6 @@ protected:
 	size_t _paletteSize = 0;
 
 	const glm::vec4& getColor(const Voxel& voxel) const;
-	const glm::vec4& getColor(VoxelType type) const;
 	glm::vec4 findClosestMatch(const glm::vec4& color) const;
 	uint8_t findClosestIndex(const glm::vec4& color) const;
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;

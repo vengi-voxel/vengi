@@ -56,6 +56,8 @@ private:
 	voxel::Voxel getVoxel(io::FileStream& stream);
 	RawVolume* loadMatrix(io::FileStream& stream);
 	RawVolume* loadFromStream(io::FileStream& stream);
+
+	bool saveMatrix(io::FileStream& stream, const RawVolume* volume) const;
 public:
 	RawVolume* load(const io::FilePtr& file) override;
 	bool save(const RawVolume* volume, const io::FilePtr& file) override;

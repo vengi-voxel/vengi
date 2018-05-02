@@ -21,6 +21,13 @@ const int NEXT_SLICE_FLAG = 6;
 		return false; \
 	}
 
+#define wrapSaveColor(color) \
+	wrapSave(stream.addByte(color.x)) \
+	wrapSave(stream.addByte(color.y)) \
+	wrapSave(stream.addByte(color.z)) \
+	wrapSave(stream.addByte(color.w))
+
+
 #define wrap(read) \
 	if (read != 0) { \
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
@@ -41,18 +48,7 @@ const int NEXT_SLICE_FLAG = 6;
 
 #define setBit(val, index) val &= (1 << (index))
 
-bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
-	io::FileStream stream(file.get());
-	wrapSave(stream.addInt(257))
-	ColorFormat colorFormat = ColorFormat::RGBA;
-	ZAxisOrientation zAxisOrientation = ZAxisOrientation::Right;
-	Compression compression = Compression::RLE;
-	VisibilityMask visibilityMask = VisibilityMask::AlphaChannelVisibleByValue;
-	wrapSave(stream.addInt((uint32_t)colorFormat))
-	wrapSave(stream.addInt((uint32_t)zAxisOrientation))
-	wrapSave(stream.addInt((uint32_t)compression))
-	wrapSave(stream.addInt((uint32_t)visibilityMask))
-	wrapSave(stream.addInt(1))
+bool QBFormat::saveMatrix(io::FileStream& stream, const RawVolume* volume) const {
 	wrapSave(stream.addByte(0)); // no name
 
 	const voxel::Region& region = volume->region();
@@ -66,133 +62,91 @@ bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	wrapSave(stream.addInt(offset));
 	wrapSave(stream.addInt(offset));
 
-	int axisIndex1;
-	int axisIndex2;
-	if (zAxisOrientation == ZAxisOrientation::Right) {
-		axisIndex1 = 0;
-		axisIndex2 = 2;
-	} else {
-		axisIndex1 = 2;
-		axisIndex2 = 0;
-	}
-
 	constexpr voxel::Voxel Empty;
-	const int32_t EmptyColor = core::Color::getRGB(getColor(Empty));
+	const glm::ivec4 EmptyColor(0);
 
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
 
-	int32_t currentColor = EmptyColor;
+	glm::ivec4 currentColor = EmptyColor;
 	int count = 0;
 
-	for (int axis1 = mins[axisIndex2]; axis1 <= maxs[axisIndex2]; ++axis1) {
-		for (int y = maxs[1]; y >= mins[1]; --y) {
-			for (int axis2 = mins[axisIndex1]; axis2 <= maxs[axisIndex1]; ++axis2) {
-				int x, z;
-				const bool rightHanded = zAxisOrientation == ZAxisOrientation::Right;
-				if (rightHanded) {
-					x = axis2;
-					z = axis1;
-				} else {
-					x = axis1;
-					z = axis2;
-				}
+	for (int z = mins.z; z <= maxs.z; ++z) {
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			for (int x = mins.x; x <= maxs.x; ++x) {
 				const Voxel& voxel = volume->voxel(x, y, z);
-				Log::debug("Save voxel: x %i, y %i, z %i (color: %i)", x, y, z, (int)voxel.getColor());
-				int32_t newColor;
+				glm::ivec4 newColor;
 				if (voxel == Empty) {
 					newColor = EmptyColor;
+					Log::debug("Save empty voxel: x %i, y %i, z %i", x, y, z);
 				} else {
-					uint8_t visible;
-					if (visibilityMask == VisibilityMask::AlphaChannelVisibleSidesEncoded) {
-						// TODO: this looks wrong - use the Sides enum
-						voxel::RawVolume::Sampler sampler(volume);
-						sampler.setPosition(x, y, z);
-						visible = 0;
-						if (sampler.peekVoxel0px0py1pz() == Empty) {
-							setBit(visible, rightHanded ? 1 : 6);
-						}
-						if (sampler.peekVoxel0px0py1nz() == Empty) {
-							setBit(visible, rightHanded ? 2 : 5);
-						}
-						if (sampler.peekVoxel0px1py0pz() == Empty) {
-							setBit(visible, 3);
-						}
-						if (sampler.peekVoxel0px1ny0pz() == Empty) {
-							setBit(visible, 4);
-						}
-						if (sampler.peekVoxel1nx0py0pz() == Empty) {
-							setBit(visible, rightHanded ? 5 : 1);
-						}
-						if (sampler.peekVoxel1px0py0pz() == Empty) {
-							setBit(visible, rightHanded ? 6 : 2);
-						}
-					} else {
-						visible = 255;
-					}
-					const int32_t voxelColor = core::Color::getRGBA(getColor(voxel));
-					const uint8_t red = (voxelColor >> 24) & 0xFF;
-					const uint8_t green = (voxelColor >> 16) & 0xFF;
-					const uint8_t blue = (voxelColor >> 8) & 0xFF;
-					if (colorFormat == ColorFormat::RGBA) {
-						newColor = ((uint32_t)red) << 24 | ((uint32_t)green) << 16 | ((uint32_t)blue) << 8 | ((uint32_t)visible) << 0;
-					} else {
-						newColor = ((uint32_t)blue) << 24 | ((uint32_t)green) << 16 | ((uint32_t)red) << 8 | ((uint32_t)visible) << 0;
-					}
+					const glm::vec4& voxelColor = getColor(voxel);
+					const uint8_t red = voxelColor.r * 255.0f;
+					const uint8_t green = voxelColor.g * 255.0f;
+					const uint8_t blue = voxelColor.b * 255.0f;
+					const uint8_t alpha = voxelColor.a * 255.0f;
+					newColor = glm::ivec4(red, green, blue, alpha);
+					Log::debug("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
+							x, y, z, (int)voxel.getColor(), (int)red, (int)green, (int)blue, (int)alpha);
 				}
 
-				if (compression == Compression::RLE) {
-					if (newColor != currentColor) {
-						if (count == 1) {
-							wrapSave(stream.addInt(currentColor))
-						} else if (count == 2) {
-							wrapSave(stream.addInt(currentColor))
-							wrapSave(stream.addInt(currentColor))
-						} else if (count == 3) {
-							wrapSave(stream.addInt(currentColor))
-							wrapSave(stream.addInt(currentColor))
-							wrapSave(stream.addInt(currentColor))
-						} else if (count > 3) {
-							wrapSave(stream.addInt(RLE_FLAG))
-							wrapSave(stream.addInt(count))
-							wrapSave(stream.addInt(currentColor))
-						}
-						count = 0;
+				if (newColor != currentColor) {
+					if (count == 1) {
+						wrapSaveColor(currentColor)
+					} else if (count == 2) {
+						wrapSaveColor(currentColor)
+						wrapSaveColor(currentColor)
+					} else if (count == 3) {
+						wrapSaveColor(currentColor)
+						wrapSaveColor(currentColor)
+						wrapSaveColor(currentColor)
+					} else if (count > 3) {
+						wrapSave(stream.addInt(RLE_FLAG))
+						wrapSave(stream.addInt(count))
+						wrapSaveColor(currentColor)
 					}
+					count = 0;
 					currentColor = newColor;
-					count++;
-				} else {
-					wrapSave(stream.addInt(newColor))
 				}
+				count++;
 			}
 		}
-		if (compression == Compression::RLE) {
-			if (count == 1) {
-				wrapSave(stream.addInt(currentColor))
-			} else if (count == 2) {
-				wrapSave(stream.addInt(currentColor))
-				wrapSave(stream.addInt(currentColor))
-			} else if (count == 3) {
-				wrapSave(stream.addInt(currentColor))
-				wrapSave(stream.addInt(currentColor))
-				wrapSave(stream.addInt(currentColor))
-			} else if (count > 3) {
-				wrapSave(stream.addInt(RLE_FLAG))
-				wrapSave(stream.addInt(count))
-				wrapSave(stream.addInt(currentColor))
-			}
-			count = 0;
-			wrapSave(stream.addInt(NEXT_SLICE_FLAG));
+		if (count == 1) {
+			wrapSaveColor(currentColor)
+		} else if (count == 2) {
+			wrapSaveColor(currentColor)
+			wrapSaveColor(currentColor)
+		} else if (count == 3) {
+			wrapSaveColor(currentColor)
+			wrapSaveColor(currentColor)
+			wrapSaveColor(currentColor)
+		} else if (count > 3) {
+			wrapSave(stream.addInt(RLE_FLAG))
+			wrapSave(stream.addInt(count))
+			wrapSaveColor(currentColor)
 		}
+		count = 0;
+		wrapSave(stream.addInt(NEXT_SLICE_FLAG));
 	}
 	return true;
+}
+
+bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
+	io::FileStream stream(file.get());
+	wrapSave(stream.addInt(257))
+	wrapSave(stream.addInt((uint32_t)ColorFormat::RGBA))
+	wrapSave(stream.addInt((uint32_t)ZAxisOrientation::Right))
+	wrapSave(stream.addInt((uint32_t)Compression::RLE))
+	wrapSave(stream.addInt((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
+	wrapSave(stream.addInt(1)) // only one matrix
+	return saveMatrix(stream, volume);
 }
 
 void QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel) {
 	const int32_t fx = offset.x + x;
 	const int32_t fy = offset.y + y;
 	const int32_t fz = offset.z + z;
-	Log::debug("Set voxel %i to %i:%i:%i", (int)voxel.getMaterial(), fx, fy, fz);
+	Log::debug("Set voxel %i to %i:%i:%i (z-axis: %i)", (int)voxel.getMaterial(), fx, fy, fz, (int)_zAxisOrientation);
 	if (_zAxisOrientation == ZAxisOrientation::Right) {
 		volume->setVoxel(fx, fy, fz, voxel);
 	} else {
@@ -215,10 +169,14 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	}
 	glm::vec4 color(0.0f);
 	if (_colorFormat == ColorFormat::RGBA) {
-		color = core::Color::fromRGBA(((uint32_t)red) << 24 | ((uint32_t)green) << 16 | ((uint32_t)blue) << 8 | ((uint32_t)255) << 0);
+		color.r = red / 255.0f;
+		color.b = blue / 255.0f;
 	} else {
-		color = core::Color::fromRGBA(((uint32_t)blue) << 24 | ((uint32_t)green) << 16 | ((uint32_t)red) << 8 | ((uint32_t)255) << 0);
+		color.r = blue / 255.0f;
+		color.b = red / 255.0f;
 	}
+	color.g = green / 255.0f;
+	color.a = alpha / 255.0f;
 	const uint8_t index = findClosestIndex(color);
 	return voxel::createVoxel(voxel::VoxelType::Generic, index);
 }
@@ -250,13 +208,15 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 	Log::debug("Matrix offset: %i:%i:%i", offset.x, offset.y, offset.z);
 
 	voxel::Region region;
-	const glm::ivec3 maxs(offset.x + size.x, offset.y + size.y, offset.z + size.z);
+	const glm::ivec3 maxs(offset.x + size.x - 1, offset.y + size.y - 1, offset.z + size.z - 1);
 	if (_zAxisOrientation == ZAxisOrientation::Right) {
 		region = voxel::Region(offset.x, offset.y, offset.z, maxs.x, maxs.y, maxs.z);
 	} else {
 		region = voxel::Region(offset.z, offset.y, offset.x, maxs.z, maxs.y, maxs.x);
 	}
-	core_assert(region.getDimensionsInCells() == glm::ivec3(size));
+	core_assert_msg(region.getDimensionsInVoxels() == glm::ivec3(size),
+			"%i:%i:%i versus %i:%i:%i", region.getDimensionsInVoxels().x, region.getDimensionsInVoxels().y, region.getDimensionsInVoxels().z,
+			size.x, size.y, size.z);
 	if (!region.isValid()) {
 		return nullptr;
 	}
@@ -278,7 +238,7 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 
 	uint32_t z = 0u;
 	while (z < size.z) {
-		int index = -1;
+		int index = 0;
 		for (;;) {
 			uint32_t data;
 			wrap(stream.peekInt(data))
@@ -295,11 +255,12 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 			}
 
 			const voxel::Voxel& voxel = getVoxel(stream);
-			for (uint32_t j = 0; j < count; ++j, ++index) {
-				const int x = (index + 1) % size.x;
-				const int y = (index + 1) / size.x;
+			for (uint32_t j = 0; j < count; ++j) {
+				const int x = (index + j) % size.x;
+				const int y = (index + j) / size.x;
 				setVoxel(volume, x, y, z, offset, voxel);
 			}
+			index += count;
 		}
 		++z;
 	}
@@ -350,6 +311,9 @@ RawVolume* QBFormat::loadFromStream(io::FileStream& stream) {
 	if (volumes.empty()) {
 		return nullptr;
 	}
+	if (volumes.size() == 1) {
+		return volumes[0];
+	}
 
 	const voxel::Region mergedRegion(glm::ivec3(0), maxs - mins);
 	Log::debug("Starting to merge volumes into one: %i:%i:%i - %i:%i:%i",
@@ -357,12 +321,9 @@ RawVolume* QBFormat::loadFromStream(io::FileStream& stream) {
 			mergedRegion.getUpperX(), mergedRegion.getUpperY(), mergedRegion.getUpperZ());
 	Log::debug("Mins: %i:%i:%i Maxs %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
-	const glm::ivec3& center = mergedRegion.getCentre();
-	const glm::ivec3 lc(center.x, 0, center.z);
-	const glm::ivec3 uc(center.x, mergedRegion.getUpperY(), center.z);
 	for (voxel::RawVolume* v : volumes) {
 		const voxel::Region& sr = v->region();
-		const glm::ivec3& destMins = lc + sr.getLowerCorner();
+		const glm::ivec3& destMins = sr.getLowerCorner() - mins;
 		const voxel::Region dr(destMins, destMins + sr.getDimensionsInCells());
 		Log::debug("Merge %i:%i:%i - %i:%i:%i into %i:%i:%i - %i:%i:%i",
 				sr.getLowerX(), sr.getLowerY(), sr.getLowerZ(),
