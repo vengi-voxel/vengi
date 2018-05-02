@@ -98,6 +98,7 @@ bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 					z = axis2;
 				}
 				const Voxel& voxel = volume->voxel(x, y, z);
+				Log::debug("Save voxel: x %i, y %i, z %i (color: %i)", x, y, z, (int)voxel.getColor());
 				int32_t newColor;
 				if (voxel == Empty) {
 					newColor = EmptyColor;

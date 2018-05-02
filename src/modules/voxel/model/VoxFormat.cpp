@@ -40,9 +40,9 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	stream.addInt(3 * sizeof(uint32_t));
 	stream.addInt(0);
 	const voxel::Region& region = volume->region();
-	stream.addInt(region.getWidthInVoxels());
-	stream.addInt(region.getDepthInVoxels());
-	stream.addInt(region.getHeightInVoxels());
+	stream.addInt(region.getWidthInCells());
+	stream.addInt(region.getDepthInCells());
+	stream.addInt(region.getHeightInCells());
 
 	// voxel data
 	Log::debug("add XYZI chunk at pos %i", (int)stream.pos());
