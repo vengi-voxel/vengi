@@ -69,6 +69,10 @@ Fix assert when cropping
 Improve deletion of selected voxels - x should trigger popup like in blender which shows amount of voxels and enter to perform
 the delete step (or esc to close the dialog without deleting anything).
 
+Saving to magicavoxel vox adds 1 voxel to the region of the original volume
+
+Improve replacing of selection with something else - e.g. generators should maybe only operate on the selection?
+
 # EventMgr
 
 ## Proper event-end-while-application-is-not-running handling
