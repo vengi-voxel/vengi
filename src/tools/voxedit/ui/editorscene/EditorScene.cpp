@@ -178,28 +178,33 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 	}
 
 	vx_mesh_t* mesh = vx_mesh_alloc(positions.size(), indices.size());
+	if (mesh == nullptr) {
+		Log::error("Failed to allocate voxelize mesh");
+		return false;
+	}
 
-	for (size_t f = 0; f < indices.size(); f++) {
+	for (size_t f = 0; f < mesh->nindices; f++) {
 		mesh->indices[f] = indices[f];
 	}
 
-	const int components = decltype(core::Vertex::_pos)::length();
-	Log::info("components: %i", components);
-	const int steps = positions.size() / components;
-	for (int v = 0; v < steps; ++v) {
+	const int steps = positions.size();
+	for (int v = 0; v < mesh->nvertices; ++v) {
 		const core::Vertex& vertex = positions[v];
 		mesh->vertices[v].x = vertex._pos.x;
 		mesh->vertices[v].y = vertex._pos.y;
 		mesh->vertices[v].z = vertex._pos.z;
 	}
 
-	vx_mesh_t* result = vx_voxelize(mesh, 1.0f, 1.0f, 1.0f, 0.1f);
+	const glm::vec3& meshMins = meshPtr->mins();
+	const glm::vec3& meshMaxs = meshPtr->maxs();
+	// TODO: use mins and maxs to get the scaling for the voxelization right.
+
+	vx_point_cloud_t* result = vx_voxelize_pc(mesh, 10.0f, 10.0f, 10.0f, 0.1f);
 	Log::info("Number of vertices: %i", (int)result->nvertices);
-	Log::info("Number of indices: %i", (int)result->nindices);
 
-	m().vertices((float*)result->vertices, sizeof(vx_vertex_t), result->nvertices, result->indices, result->nindices);
+	m().pointCloud((float*)result->vertices, (float*)result->colors, result->nvertices * 3);
 
-	vx_mesh_free(result);
+	vx_point_cloud_free(result);
 	vx_mesh_free(mesh);
 
 	return false;

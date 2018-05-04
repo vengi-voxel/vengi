@@ -226,17 +226,20 @@ bool Model::remove() {
 	return extract;
 }
 
-void Model::vertices(float* vertices, size_t vertexSize, size_t verticesSize, uint32_t* indices, size_t indicesSize) {
+void Model::pointCloud(float* points, float *colors, size_t bufferSize) {
 	glm::ivec3 mins(std::numeric_limits<glm::ivec3::value_type>::max());
 	glm::ivec3 maxs(std::numeric_limits<glm::ivec3::value_type>::min());
-	// TODO: add uv support and apply colored voxels from the texture
-	const voxel::Voxel& voxel = voxel::createColorVoxel(voxel::VoxelType::Generic, 0);
 
-	for (size_t idx = 0u; idx < indicesSize; ++idx) {
-		const uint32_t vertexIndex = indices[idx];
-		const float* vertex = &vertices[vertexIndex * vertexSize];
+	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
+	materialColors.erase(materialColors.begin());
+
+	for (size_t idx = 0u; idx < bufferSize / 3; ++idx) {
+		const float* vertex = &points[idx * 3];
+		const float* color = &colors[idx * 3];
 		const glm::ivec3 pos(_cursorPos.x + vertex[0], _cursorPos.y + vertex[1], _cursorPos.z + vertex[2]);
-		setVoxel(pos, voxel);
+		const glm::vec4 cvec(color[0] * 255.0f, color[1] * 255.0f, color[2] * 255.0f, 255.0f);
+		const uint8_t index = core::Color::getClosestMatch(cvec, materialColors);
+		setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, index));
 		mins = glm::min(mins, pos);
 		maxs = glm::max(maxs, pos);
 	}
