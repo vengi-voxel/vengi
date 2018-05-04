@@ -17,15 +17,20 @@ static uint32 dbg_bitmap_validations = 0;
 #endif
 
 UIBitmapGL::UIBitmapGL(UIRendererGL *renderer) :
-		_renderer(renderer), _w(0), _h(0), _texture(0) {
+		_renderer(renderer) {
 }
 
 UIBitmapGL::~UIBitmapGL() {
 	_renderer->FlushBitmap(this);
 
+	shutdown();
+}
+
+void UIBitmapGL::shutdown() {
 	if (_destroy) {
 		video::deleteTexture(_texture);
 	}
+	_destroy = false;
 }
 
 void UIBitmapGL::bind(video::TextureUnit unit) {
@@ -73,6 +78,7 @@ UIRendererGL::UIRendererGL() :
 }
 
 void UIRendererGL::shutdown() {
+	_white.shutdown();
 	_shader.shutdown();
 	_vbo.shutdown();
 }

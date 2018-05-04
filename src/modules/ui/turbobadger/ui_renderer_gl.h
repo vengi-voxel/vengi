@@ -26,6 +26,8 @@ public:
 
 	void bind(video::TextureUnit unit = video::TextureUnit::Zero);
 
+	void shutdown();
+
 	virtual int Width() override {
 		return _w;
 	}
@@ -37,10 +39,11 @@ public:
 	virtual void SetData(uint32 *data) override;
 public:
 	UIRendererGL *_renderer;
-	int _w, _h;
-	video::Id _texture;
+	int _w = 0;
+	int _h = 0;
+	video::Id _texture = video::InvalidId;
 	video::TextureConfig _textureConfig;
-	bool _destroy = true;
+	bool _destroy = false;
 };
 
 class UIRendererGL: public TBRendererBatcher {
