@@ -51,6 +51,7 @@ Validate that each `$out` of the vertex shader has a `$in` in the fragment shade
 # VoxEdit
 
 Extract meshes in max 32x32x32 boundaries - `RawVolumeRenderer` maybe? This allows us to only re-extract the chunk that was modified, not always the whole volume. See `Model::modified`.
+Maybe introduce `PagedVolumeRenderer`.
 
 Voxelizer via assimp
 
