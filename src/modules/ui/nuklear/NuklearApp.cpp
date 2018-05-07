@@ -256,31 +256,13 @@ core::AppState NuklearApp::onInit() {
 	_camera.init(glm::ivec2(0), dimension());
 	_camera.update(0L);
 
-	video::Attribute attributeColor;
-	attributeColor.bufferIndex = _vertexBufferIndex;
-	attributeColor.index = _shader.getLocationColor();
-	attributeColor.size = _shader.getComponentsColor();
-	attributeColor.stride = sizeof(Vertex);
-	attributeColor.offset = offsetof(Vertex, col);
+	video::Attribute attributeColor = _shader.getColorAttribute(_vertexBufferIndex, sizeof(Vertex), offsetof(Vertex, col));
 	attributeColor.type = video::DataType::UnsignedByte;
 	attributeColor.normalized = true;
 	_vbo.addAttribute(attributeColor);
 
-	video::Attribute attributeTexCoord;
-	attributeTexCoord.bufferIndex = _vertexBufferIndex;
-	attributeTexCoord.index = _shader.getLocationTexcoord();
-	attributeTexCoord.size = _shader.getComponentsTexcoord();
-	attributeTexCoord.stride = sizeof(Vertex);
-	attributeTexCoord.offset = offsetof(Vertex, u);
-	_vbo.addAttribute(attributeTexCoord);
-
-	video::Attribute attributePosition;
-	attributePosition.bufferIndex = _vertexBufferIndex;
-	attributePosition.index = _shader.getLocationPos();
-	attributePosition.size = _shader.getComponentsPos();
-	attributePosition.stride = sizeof(Vertex);
-	attributePosition.offset = offsetof(Vertex, x);
-	_vbo.addAttribute(attributePosition);
+	_vbo.addAttribute(_shader.getTexcoordAttribute(_vertexBufferIndex, sizeof(Vertex), offsetof(Vertex, u)));
+	_vbo.addAttribute(_shader.getPosAttribute(_vertexBufferIndex, sizeof(Vertex), offsetof(Vertex, x)));
 
 	if (!_vbo.update(_vertexBufferIndex, nullptr, MAX_VERTEX_MEMORY)) {
 		Log::error("Failed to upload vertex buffer data with %i bytes", MAX_VERTEX_MEMORY);

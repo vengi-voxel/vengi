@@ -13,24 +13,9 @@ bool TextureRenderer::init(const glm::vec2& size) {
 	}
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createTexturedQuad(glm::vec2(0.0f), size);
-	video::Attribute attributePos;
-	attributePos.bufferIndex = fullscreenQuadIndices.x;
-	attributePos.index = _textureShader.getLocationPos();
-	attributePos.size = _textureShader.getComponentsPos();
-	_texturedFullscreenQuad.addAttribute(attributePos);
-
-	video::Attribute attributeTexcoord;
-	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
-	attributeTexcoord.index = _textureShader.getLocationTexcoord();
-	attributeTexcoord.size = _textureShader.getComponentsTexcoord();
-	_texturedFullscreenQuad.addAttribute(attributeTexcoord);
-
-	video::Attribute attributeColor;
-	attributeColor.bufferIndex = _texturedFullscreenQuad.createWhiteColorForQuad();
-	attributeColor.index = _textureShader.getLocationColor();
-	attributeColor.size = _textureShader.getComponentsColor();
-	_texturedFullscreenQuad.addAttribute(attributeColor);
-
+	_texturedFullscreenQuad.addAttribute(_textureShader.getPosAttribute(fullscreenQuadIndices.x));
+	_texturedFullscreenQuad.addAttribute(_textureShader.getTexcoordAttribute(fullscreenQuadIndices.y));
+	_texturedFullscreenQuad.addAttribute(_textureShader.getColorAttribute(_texturedFullscreenQuad.createWhiteColorForQuad()));
 	return true;
 }
 

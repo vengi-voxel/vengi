@@ -175,31 +175,12 @@ core::AppState IMGUIApp::onInit() {
 	_camera.init(glm::ivec2(0), _dimension);
 	_camera.update(0L);
 
-	video::Attribute attributeColor;
-	attributeColor.bufferIndex = _bufferIndex;
-	attributeColor.index = _shader.getLocationColor();
-	attributeColor.size = _shader.getComponentsColor();
-	attributeColor.stride = sizeof(ImDrawVert);
-	attributeColor.offset = offsetof(ImDrawVert, col);
+	video::Attribute attributeColor = _shader.getColorAttribute(_bufferIndex, sizeof(ImDrawVert), offsetof(ImDrawVert, col));
 	attributeColor.type = video::DataType::UnsignedByte;
 	attributeColor.normalized = true;
 	_vbo.addAttribute(attributeColor);
-
-	video::Attribute attributeTexCoord;
-	attributeTexCoord.bufferIndex = _bufferIndex;
-	attributeTexCoord.index = _shader.getLocationTexcoord();
-	attributeTexCoord.size = _shader.getComponentsTexcoord();
-	attributeTexCoord.stride = sizeof(ImDrawVert);
-	attributeTexCoord.offset = offsetof(ImDrawVert, uv);
-	_vbo.addAttribute(attributeTexCoord);
-
-	video::Attribute attributePosition;
-	attributePosition.bufferIndex = _bufferIndex;
-	attributePosition.index = _shader.getLocationPos();
-	attributePosition.size = _shader.getComponentsPos();
-	attributePosition.stride = sizeof(ImDrawVert);
-	attributePosition.offset = offsetof(ImDrawVert, pos);
-	_vbo.addAttribute(attributePosition);
+	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, sizeof(ImDrawVert), offsetof(ImDrawVert, uv)));
+	_vbo.addAttribute(_shader.getPosAttribute(_bufferIndex, sizeof(ImDrawVert), offsetof(ImDrawVert, pos)));
 
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();

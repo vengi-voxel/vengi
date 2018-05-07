@@ -50,17 +50,8 @@ bool Shadow::init(int maxDepthBuffers) {
 	}
 
 	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
-	video::Attribute attributePos;
-	attributePos.bufferIndex = fullscreenQuadIndices.x;
-	attributePos.index = _shadowMapRenderShader.getLocationPos();
-	attributePos.size = _shadowMapRenderShader.getComponentsPos();
-	_shadowMapDebugBuffer.addAttribute(attributePos);
-
-	video::Attribute attributeTexcoord;
-	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
-	attributeTexcoord.index = _shadowMapRenderShader.getLocationTexcoord();
-	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();
-	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
+	_shadowMapDebugBuffer.addAttribute(_shadowMapRenderShader.getPosAttribute(fullscreenQuadIndices.x));
+	_shadowMapDebugBuffer.addAttribute(_shadowMapRenderShader.getTexcoordAttribute(fullscreenQuadIndices.y));
 
 	return true;
 }
