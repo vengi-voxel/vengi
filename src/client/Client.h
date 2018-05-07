@@ -8,7 +8,7 @@
 #include "frontend/ClientEntity.h"
 #include "frontend/Movement.h"
 #include "voxelrender/WorldRenderer.h"
-#include "voxel/font/VoxelFont.h"
+#include "voxelfont/VoxelFont.h"
 #include "util/PosLerp.h"
 #include "core/Var.h"
 #include "core/Common.h"

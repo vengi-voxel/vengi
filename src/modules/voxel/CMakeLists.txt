@@ -1,6 +1,4 @@
 set(SRCS
-	font/stb_truetype.h
-	font/VoxelFont.h font/VoxelFont.cpp
 	BiomeLUAFunctions.h BiomeLUAFunctions.cpp
 	Biome.h Biome.cpp
 	BiomeManager.h BiomeManager.cpp

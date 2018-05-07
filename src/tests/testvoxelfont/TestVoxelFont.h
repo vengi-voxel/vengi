@@ -5,7 +5,7 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "voxel/font/VoxelFont.h"
+#include "voxelfont/VoxelFont.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "video/VertexBuffer.h"
 #include "RenderShaders.h"
