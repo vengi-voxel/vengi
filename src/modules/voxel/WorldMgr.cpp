@@ -114,14 +114,10 @@ bool WorldMgr::init(const std::string& luaParameters, const std::string& luaBiom
 		Log::error("Failed to init the biome mgr");
 		return false;
 	}
-	if (!_ctx.load(luaParameters)) {
-		Log::error("Failed to load the world context");
-		return false;
-	}
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
 	_volumeData = new PagedVolume(&_pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 
-	_pager.init(_volumeData, &_biomeManager, &_ctx);
+	_pager.init(_volumeData, &_biomeManager, luaParameters);
 	if (_clientData) {
 		_pager.setCreateFlags(voxel::world::WORLDGEN_CLIENT);
 	} else {
@@ -175,7 +171,6 @@ void WorldMgr::shutdown() {
 	_biomeManager.shutdown();
 	delete _volumeData;
 	_volumeData = nullptr;
-	_ctx = WorldContext();
 }
 
 void WorldMgr::reset() {

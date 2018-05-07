@@ -21,7 +21,6 @@
 #include <list>
 
 #include "WorldPager.h"
-#include "WorldContext.h"
 #include "io/Filesystem.h"
 #include "BiomeManager.h"
 #include "collection/ConcurrentQueue.h"
@@ -183,7 +182,6 @@ private:
 	WorldPager _pager;
 	PagedVolume *_volumeData = nullptr;
 	BiomeManager _biomeManager;
-	WorldContext _ctx;
 	mutable std::mt19937 _engine;
 	long _seed = 0l;
 	bool _clientData = false;

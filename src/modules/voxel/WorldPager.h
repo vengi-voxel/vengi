@@ -5,6 +5,7 @@
 
 #include "voxel/polyvox/PagedVolume.h"
 #include "voxel/WorldPersister.h"
+#include "voxel/WorldContext.h"
 
 namespace voxel {
 
@@ -24,7 +25,7 @@ private:
 
 	PagedVolume *_volumeData = nullptr;
 	BiomeManager* _biomeManager = nullptr;
-	WorldContext* _ctx = nullptr;
+	WorldContext _ctx;
 
 	// don't access the volume in anything that is called here
 	void create(PagedVolume::PagerContext& ctx);
@@ -34,11 +35,10 @@ public:
 	 * @brief Initializes the pager
 	 * @param volumeData The volume data to operate on
 	 * @param biomeManager The already initialized BiomeManager
-	 * @param ctx The already initialized WorldContext
 	 * @return @c true if initialization was successful, @c false otherwise
 	 * @sa shutdown()
 	 */
-	bool init(PagedVolume *volumeData, BiomeManager* biomeManager, WorldContext* ctx);
+	bool init(PagedVolume *volumeData, BiomeManager* biomeManager, const std::string& worldParamsLua);
 	/**
 	 * @brief Free resources and persist (if activated) the world data
 	 * @sa init()
