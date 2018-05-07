@@ -20,6 +20,9 @@ TEST_F(RenderShaderTest, testMeshShader) {
 }
 
 TEST_F(RenderShaderTest, testTextureShader) {
+	if (!_supported) {
+		return;
+	}
 	shader::TextureShader shader;
 	ASSERT_TRUE(shader.setup());
 	shader.shutdown();
