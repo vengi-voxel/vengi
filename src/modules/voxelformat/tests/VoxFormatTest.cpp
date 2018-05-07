@@ -2,12 +2,12 @@
  * @file
  */
 
-#include "AbstractVoxelTest.h"
-#include "voxel/model/VoxFormat.h"
+#include "AbstractVoxFormatTest.h"
+#include "voxelformat/VoxFormat.h"
 
 namespace voxel {
 
-class VoxFormatTest: public AbstractVoxelTest {
+class VoxFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(VoxFormatTest, testLoad) {

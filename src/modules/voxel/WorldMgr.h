@@ -9,9 +9,9 @@
 
 #include "core/GLM.h"
 #include "core/Common.h"
-#include "polyvox/Mesh.h"
-#include "polyvox/PagedVolume.h"
-#include "polyvox/Raycast.h"
+#include "voxel/polyvox/Mesh.h"
+#include "voxel/polyvox/PagedVolume.h"
+#include "voxel/polyvox/Raycast.h"
 #include "math/Frustum.h"
 #include "voxel/Constants.h"
 #include "voxel/polyvox/Picking.h"

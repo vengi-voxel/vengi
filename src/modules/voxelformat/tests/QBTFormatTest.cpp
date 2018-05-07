@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxel/model/QBTFormat.h"
+#include "voxelformat/QBTFormat.h"
 
 namespace voxel {
 

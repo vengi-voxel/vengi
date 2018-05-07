@@ -6,7 +6,7 @@
 #include "core/Common.h"
 #include "core/Var.h"
 #include "core/Color.h"
-#include "voxel/model/MeshExporter.h"
+#include "voxelformat/MeshExporter.h"
 #include "ui/turbobadger/UIApp.h"
 #include "io/Filesystem.h"
 #include "Model.h"

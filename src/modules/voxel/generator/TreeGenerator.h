@@ -9,6 +9,7 @@
 #include "voxel/RandomVoxel.h"
 #include "voxel/TreeContext.h"
 #include "voxel/Constants.h"
+#include "voxel/Spiral.h"
 #include "ShapeGenerator.h"
 #include "SpaceColonization.h"
 #include "CactusGenerator.h"

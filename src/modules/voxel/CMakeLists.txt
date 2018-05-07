@@ -1,10 +1,5 @@
 set(SRCS
 	font/stb_truetype.h
-	model/VoxFileFormat.h model/VoxFileFormat.cpp
-	model/VoxFormat.h model/VoxFormat.cpp
-	model/QBTFormat.h model/QBTFormat.cpp
-	model/QBFormat.h model/QBFormat.cpp
-	model/MeshExporter.h model/MeshExporter.cpp
 	font/VoxelFont.h font/VoxelFont.cpp
 	BiomeLUAFunctions.h BiomeLUAFunctions.cpp
 	Biome.h Biome.cpp
@@ -72,7 +67,6 @@ endif()
 
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
-	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
 	tests/WorldMgrTest.cpp
 	tests/WorldPersisterTest.cpp
 	tests/LSystemGeneratorTest.cpp
@@ -81,10 +75,6 @@ set(TEST_SRCS
 	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
 	tests/PagedVolumeBufferedSamplerTest.cpp
-	tests/VoxFormatTest.cpp
-	tests/QBTFormatTest.cpp
-	tests/QBFormatTest.cpp
-	tests/MeshExporterTest.cpp
 	tests/VolumeMergerTest.cpp
 	tests/VolumeRotatorTest.cpp
 	tests/VolumeCropperTest.cpp

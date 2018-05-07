@@ -2,8 +2,8 @@
  * @file
  */
 
-#include "AbstractVoxelTest.h"
-#include "voxel/model/VoxFileFormat.h"
+#include "voxel/tests/AbstractVoxelTest.h"
+#include "voxelformat/VoxFileFormat.h"
 
 namespace voxel {
 

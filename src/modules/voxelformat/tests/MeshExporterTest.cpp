@@ -2,16 +2,16 @@
  * @file
  */
 
-#include "AbstractVoxelTest.h"
+#include "AbstractVoxFormatTest.h"
 #include "voxel/polyvox/Region.h"
 #include "voxel/polyvox/PagedVolume.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
-#include "voxel/model/MeshExporter.h"
+#include "voxelformat/MeshExporter.h"
 
 namespace voxel {
 
-class MeshExporterTest: public AbstractVoxelTest {
+class MeshExporterTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(MeshExporterTest, testExport) {
