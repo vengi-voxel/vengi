@@ -14,7 +14,6 @@
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/polyvox/PagedVolumeWrapper.h"
 #include "voxel/polyvox/Voxel.h"
-#include "voxel/generator/WorldGenerator.h"
 #include "voxel/Constants.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/Spiral.h"
@@ -119,9 +118,9 @@ bool WorldMgr::init(const std::string& luaParameters, const std::string& luaBiom
 
 	_pager.init(_volumeData, &_biomeManager, luaParameters);
 	if (_clientData) {
-		_pager.setCreateFlags(voxel::world::WORLDGEN_CLIENT);
+		_pager.setCreateFlags(voxel::WORLDGEN_CLIENT);
 	} else {
-		_pager.setCreateFlags(voxel::world::WORLDGEN_SERVER);
+		_pager.setCreateFlags(voxel::WORLDGEN_SERVER);
 	}
 
 	for (size_t i = 0u; i < _threadPool.size(); ++i) {

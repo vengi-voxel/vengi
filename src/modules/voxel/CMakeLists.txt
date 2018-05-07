@@ -24,7 +24,6 @@ set(SRCS
 	generator/SpaceColonization.h generator/SpaceColonization.cpp
 	generator/TreeGenerator.h generator/TreeGenerator.cpp
 	generator/BuildingGenerator.h
-	generator/WorldGenerator.h generator/WorldGenerator.cpp
 	generator/LSystemGenerator.h
 	generator/NoiseGenerator.h
 	generator/CactusGenerator.h

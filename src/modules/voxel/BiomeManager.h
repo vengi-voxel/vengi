@@ -10,7 +10,7 @@
 #include "TreeContext.h"
 #include <glm/glm.hpp>
 
-namespace core {
+namespace math {
 class Random;
 }
 

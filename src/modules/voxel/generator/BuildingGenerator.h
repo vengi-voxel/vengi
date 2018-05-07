@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxel/polyvox/Voxel.h"
+#include "voxel/RandomVoxel.h"
 #include "voxel/generator/ShapeGenerator.h"
 #include "BuildingGeneratorContext.h"
 #include "math/Random.h"
