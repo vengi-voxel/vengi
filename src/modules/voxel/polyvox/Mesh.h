@@ -68,7 +68,7 @@ public:
 private:
 	std::vector<IndexType> _vecIndices;
 	std::vector<VoxelVertex> _vecVertices;
-	glm::ivec3 _offset;
+	glm::ivec3 _offset = glm::zero<glm::ivec3>();
 	bool _mayGetResized;
 };
 
@@ -160,6 +160,7 @@ inline IndexType Mesh::addVertex(const VoxelVertex& vertex) {
 inline void Mesh::clear() {
 	_vecVertices.clear();
 	_vecIndices.clear();
+	_offset = glm::zero<glm::ivec3>();
 }
 
 inline bool Mesh::isEmpty() const {
