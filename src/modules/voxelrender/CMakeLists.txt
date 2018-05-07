@@ -3,6 +3,7 @@ set(SRCS
 	OctreeRenderer.cpp OctreeRenderer.h
 	PlantDistributor.cpp PlantDistributor.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
+	PagedVolumeRenderer.cpp PagedVolumeRenderer.h
 	ShaderAttribute.h
 	WorldRenderer.h WorldRenderer.cpp
 )
