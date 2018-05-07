@@ -54,10 +54,6 @@ set(SRCS
 	polyvox/VolumeRotator.h polyvox/VolumeRotator.cpp
 	polyvox/VolumeCropper.h
 	polyvox/VolumeVisitor.h
-	SurfaceExtractionTask.h SurfaceExtractionTask.cpp
-	OctreeNode.h OctreeNode.cpp
-	OctreeVolume.h OctreeVolume.cpp
-	Octree.h Octree.cpp
 )
 set(LIB voxel)
 add_library(${LIB} ${SRCS})
@@ -86,7 +82,6 @@ set(TEST_SRCS
 	tests/PickingTest.cpp
 	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
-	tests/OctreeTest.cpp
 	tests/PagedVolumeBufferedSamplerTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/QBTFormatTest.cpp

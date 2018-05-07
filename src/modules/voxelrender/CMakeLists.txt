@@ -1,6 +1,5 @@
 set(SRCS
 	MapRenderer.cpp MapRenderer.h
-	OctreeRenderer.cpp OctreeRenderer.h
 	PlantDistributor.cpp PlantDistributor.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	PagedVolumeRenderer.cpp PagedVolumeRenderer.h
