@@ -458,8 +458,8 @@ void Model::paste() {
 void Model::cut() {
 	voxel::RawVolume* cursorVolume = cursorPositionVolume();
 	voxel::mergeRawVolumesSameDimension(cursorVolume, _rawVolumeSelectionRenderer.volume(SelectionVolumeIndex));
-	// TODO: see remove
-	// TODO: delete selected volume from model volume
+	markCursorExtract();
+	remove();
 }
 
 void Model::render(const video::Camera& camera) {
