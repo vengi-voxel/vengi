@@ -107,6 +107,31 @@ void WorldPager::shutdown() {
 	_ctx = WorldContext();
 }
 
+// use a 2d noise to switch between different noises - to generate steep mountains
+void WorldPager::createWorld(const WorldContext& worldCtx, PagedVolumeWrapper& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const {
+	core_trace_scoped(WorldGeneration);
+	const Region& region = volume.region();
+	Log::debug("Create new chunk at %i:%i:%i", region.getLowerX(), region.getLowerY(), region.getLowerZ());
+	const int width = region.getWidthInVoxels();
+	const int depth = region.getDepthInVoxels();
+	const int lowerX = region.getLowerX();
+	const int lowerY = region.getLowerY();
+	const int lowerZ = region.getLowerZ();
+	core_assert(region.getLowerY() >= 0);
+	Voxel voxels[MAX_TERRAIN_HEIGHT];
+
+	// TODO: store voxel data in local buffer and transfer in one step into the volume to reduce locking
+	const int size = 2;
+	core_assert(depth % size == 0);
+	core_assert(width % size == 0);
+	for (int z = lowerZ; z < lowerZ + depth; z += size) {
+		for (int x = lowerX; x < lowerX + width; x += size) {
+			const int ni = fillVoxels(x, lowerY, z, worldCtx, voxels, noiseSeedOffsetX, noiseSeedOffsetZ, MAX_TERRAIN_HEIGHT - 1);
+			volume.setVoxels(x, lowerY, z, size, size, voxels, ni);
+		}
+	}
+}
+
 float WorldPager::getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const {
 	// TODO: move the noise settings into the biome
 	const float landscapeNoise = noise::fBm(noisePos2d * worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseOctaves,
