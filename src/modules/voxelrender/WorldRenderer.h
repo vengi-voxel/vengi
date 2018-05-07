@@ -9,7 +9,7 @@
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/Camera.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "video/UniformBuffer.h"
 #include "video/GBuffer.h"
 #include "VoxelrenderShaders.h"
@@ -50,7 +50,7 @@ protected:
 		int32_t indexBuffer = -1;
 		int32_t vertexBuffer = -1;
 		uint32_t amount = 1u;
-		video::VertexBuffer vb;
+		video::Buffer vb;
 		std::vector<glm::vec3> instancedPositions;
 	};
 
@@ -96,12 +96,12 @@ protected:
 	std::list<PlantBuffer*> _visiblePlant;
 	std::vector<voxel::VoxelVertex> _opaqueVertices;
 	std::vector<voxel::IndexType> _opaqueIndices;
-	video::VertexBuffer _opaqueBuffer;
+	video::Buffer _opaqueBuffer;
 	int32_t _opaqueIbo = -1;
 	int32_t _opaqueVbo = -1;
 	std::vector<voxel::VoxelVertex> _waterVertices;
 	std::vector<voxel::IndexType> _waterIndices;
-	video::VertexBuffer _waterBuffer;
+	video::Buffer _waterBuffer;
 	int32_t _waterIbo = -1;
 	int32_t _waterVbo = -1;
 	glm::ivec3 _worldScale {4, 4, 4};
@@ -148,8 +148,8 @@ protected:
 	/**
 	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	 */
-	bool createVertexBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, PlantBuffer& vbo);
-	bool createInstancedVertexBuffer(const voxel::Mesh &mesh, int amount, PlantBuffer& vbo);
+	bool createBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, PlantBuffer& vbo);
+	bool createInstancedBuffer(const voxel::Mesh &mesh, int amount, PlantBuffer& vbo);
 	void handleMeshQueue();
 	void updateAABB(ChunkBuffer& chunkBuffer) const;
 	/**

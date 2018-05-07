@@ -53,7 +53,7 @@ bool RawVolumeRenderer::init() {
 			return false;
 		}
 
-		_indexBufferIndex[idx] = _vertexBuffer[idx].create(nullptr, 0, video::VertexBufferType::IndexBuffer);
+		_indexBufferIndex[idx] = _vertexBuffer[idx].create(nullptr, 0, video::BufferType::IndexBuffer);
 		if (_indexBufferIndex[idx] == -1) {
 			Log::error("Could not create the vertex buffer object for the indices");
 			return false;
@@ -199,7 +199,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 			if (nIndices == 0) {
 				continue;
 			}
-			video::ScopedVertexBuffer scopedBuf(_vertexBuffer[idx]);
+			video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 			shader.setModel(glm::translate(_offsets[idx]));
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
@@ -224,7 +224,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 			if (nIndices == 0) {
 				continue;
 			}
-			video::ScopedVertexBuffer scopedBuf(_vertexBuffer[idx]);
+			video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 			_worldShader.setModel(glm::translate(_offsets[idx]));
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);

@@ -7,7 +7,7 @@
 #include "testcore/TestApp.h"
 #include "voxelfont/VoxelFont.h"
 #include "voxelrender/RawVolumeRenderer.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "RenderShaders.h"
 
 class TestVoxelFont: public TestApp {

@@ -56,7 +56,7 @@ struct GLState {
 	int scissorW = 0;
 	int scissorH = 0;
 	std::bitset<std::enum_value(State::Max)> states;
-	Id bufferHandle[std::enum_value(VertexBufferType::Max)] = {};
+	Id bufferHandle[std::enum_value(BufferType::Max)] = {};
 	Id framebufferHandle = InvalidId;
 	Id renderBufferHandle = InvalidId;
 	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);

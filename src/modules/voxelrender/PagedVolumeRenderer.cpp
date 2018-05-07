@@ -52,7 +52,7 @@ bool PagedVolumeRenderer::init() {
 		return false;
 	}
 
-	_indexBufferIndex = _vertexBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
+	_indexBufferIndex = _vertexBuffer.create(nullptr, 0, video::BufferType::IndexBuffer);
 	if (_indexBufferIndex == -1) {
 		Log::error("Could not create the vertex buffer object for the indices");
 		return false;
@@ -168,7 +168,7 @@ void PagedVolumeRenderer::render(const video::Camera& camera) {
 	_shadow.update(camera, true);
 	_shadow.render([this] (int i, shader::ShadowmapShader& shader) {
 		const uint32_t nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(voxel::IndexType));
-		video::ScopedVertexBuffer scopedBuf(_vertexBuffer);
+		video::ScopedBuffer scopedBuf(_vertexBuffer);
 		shader.setModel(glm::mat4());
 		static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
@@ -187,7 +187,7 @@ void PagedVolumeRenderer::render(const video::Camera& camera) {
 	video::ScopedPolygonMode polygonMode(camera.polygonMode());
 	_shadow.bind(video::TextureUnit::One);
 	const uint32_t nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(voxel::IndexType));
-	video::ScopedVertexBuffer scopedBuf(_vertexBuffer);
+	video::ScopedBuffer scopedBuf(_vertexBuffer);
 	_worldShader.setModel(glm::mat4());
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);

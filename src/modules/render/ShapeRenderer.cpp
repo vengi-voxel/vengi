@@ -88,7 +88,7 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 	}
 
 	const video::ShapeBuilder::Indices& indices = shapeBuilder.getIndices();
-	_indexIndex[meshIndex] = _vbo[meshIndex].create(indices, video::VertexBufferType::IndexBuffer);
+	_indexIndex[meshIndex] = _vbo[meshIndex].create(indices, video::BufferType::IndexBuffer);
 	if (_indexIndex[meshIndex] == -1) {
 		_vertexIndex[meshIndex] = -1;
 		_vbo[meshIndex].shutdown();
@@ -151,7 +151,7 @@ void ShapeRenderer::shutdown() {
 void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder) {
 	std::vector<glm::vec4> vertices;
 	shapeBuilder.convertVertices(vertices);
-	video::VertexBuffer& vbo = _vbo[meshIndex];
+	video::Buffer& vbo = _vbo[meshIndex];
 	core_assert_always(vbo.update(_vertexIndex[meshIndex], vertices));
 	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
 	vbo.update(_indexIndex[meshIndex], indices);
@@ -175,13 +175,13 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const std::vector<glm::v
 }
 
 bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, size_t posBufLength) {
-	video::VertexBuffer& vbo = _vbo[meshIndex];
+	video::Buffer& vbo = _vbo[meshIndex];
 	if (_offsetIndex[meshIndex] == -1) {
 		_offsetIndex[meshIndex] = vbo.create(posBuf, posBufLength);
 		if (_offsetIndex[meshIndex] == -1) {
 			return false;
 		}
-		vbo.setMode(_offsetIndex[meshIndex], video::VertexBufferMode::Stream);
+		vbo.setMode(_offsetIndex[meshIndex], video::BufferMode::Stream);
 
 		video::Attribute attributeOffset;
 		attributeOffset.bufferIndex = _offsetIndex[meshIndex];

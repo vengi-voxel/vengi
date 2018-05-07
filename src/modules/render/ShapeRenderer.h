@@ -5,7 +5,7 @@
 #pragma once
 
 #include "video/ShapeBuilder.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "video/Camera.h"
 #include "video/Types.h"
 #include "video/Shader.h"
@@ -20,13 +20,13 @@ namespace render {
  * @brief Renderer for the shapes that you can build with the ShapeBuilder.
  *
  * @see video::ShapeBuilder
- * @see video::VertexBuffer
+ * @see video::Buffer
  */
 class ShapeRenderer : public core::IComponent {
 public:
 	static constexpr int MAX_MESHES = 16;
 private:
-	video::VertexBuffer _vbo[MAX_MESHES];
+	video::Buffer _vbo[MAX_MESHES];
 	int32_t _vertexIndex[MAX_MESHES];
 	int32_t _indexIndex[MAX_MESHES];
 	int32_t _colorIndex[MAX_MESHES];

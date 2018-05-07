@@ -11,7 +11,7 @@
 #include <vector>
 #include "RenderShaders.h"
 #include "video/FrameBuffer.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "video/ScopedPolygonMode.h"
 
 namespace video {
@@ -29,7 +29,7 @@ private:
 	glm::mat4 _lightView;
 	std::vector<glm::mat4> _cascades;
 	std::vector<float> _distances;
-	video::VertexBuffer _shadowMapDebugBuffer;
+	video::Buffer _shadowMapDebugBuffer;
 	video::FrameBuffer _depthBuffer;
 	shader::ShadowmapShader& _shadowMapShader;
 	shader::ShadowmapRenderShader& _shadowMapRenderShader;

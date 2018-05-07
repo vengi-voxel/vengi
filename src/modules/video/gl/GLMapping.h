@@ -110,12 +110,12 @@ static const char* VendorStrings[] {
 };
 static_assert(std::enum_value(Vendor::Max) == lengthof(VendorStrings), "Array sizes don't match Max");
 
-static GLenum VertexBufferModes[] {
+static GLenum BufferModes[] {
 	GL_STATIC_DRAW,
 	GL_DYNAMIC_DRAW,
 	GL_STREAM_DRAW
 };
-static_assert(std::enum_value(VertexBufferMode::Max) == lengthof(VertexBufferModes), "Array sizes don't match Max");
+static_assert(std::enum_value(BufferMode::Max) == lengthof(BufferModes), "Array sizes don't match Max");
 
 static GLenum AccessModes[] {
 	GL_READ_ONLY,
@@ -124,13 +124,13 @@ static GLenum AccessModes[] {
 };
 static_assert(std::enum_value(AccessMode::Max) == lengthof(AccessModes), "Array sizes don't match Max");
 
-static GLenum VertexBufferTypes[] {
+static GLenum BufferTypes[] {
 	GL_ARRAY_BUFFER,
 	GL_ELEMENT_ARRAY_BUFFER,
 	GL_UNIFORM_BUFFER,
 	GL_TRANSFORM_FEEDBACK_BUFFER
 };
-static_assert(std::enum_value(VertexBufferType::Max) == lengthof(VertexBufferTypes), "Array sizes don't match Max");
+static_assert(std::enum_value(BufferType::Max) == lengthof(BufferTypes), "Array sizes don't match Max");
 
 static GLenum States[] {
 	0,

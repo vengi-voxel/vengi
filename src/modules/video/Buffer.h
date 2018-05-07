@@ -15,13 +15,13 @@ namespace video {
  * @brief Wrapper for the opengl vertex buffer objects and vertex array objects.
  * @ingroup Video
  */
-class VertexBuffer {
+class Buffer {
 private:
 	static constexpr int MAX_HANDLES = 6;
 	size_t _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
 	Id _handles[MAX_HANDLES] = {InvalidId, InvalidId, InvalidId, InvalidId, InvalidId, InvalidId};
-	VertexBufferType _targets[MAX_HANDLES] = {VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max};
-	VertexBufferMode _modes[MAX_HANDLES] = {VertexBufferMode::Static, VertexBufferMode::Static, VertexBufferMode::Static, VertexBufferMode::Static, VertexBufferMode::Static, VertexBufferMode::Static};
+	BufferType _targets[MAX_HANDLES] = {BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max};
+	BufferMode _modes[MAX_HANDLES] = {BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static};
 	uint32_t _handleIdx = 0u;
 
 	std::vector<Attribute> _attributes;
@@ -32,18 +32,18 @@ public:
 	 * @brief Ctor that also creates buffer handle.
 	 * @note Keep in mind that you need a valid context for this constructor.
 	 */
-	VertexBuffer(const void* data, size_t size, VertexBufferType target = VertexBufferType::ArrayBuffer);
+	Buffer(const void* data, size_t size, BufferType target = BufferType::ArrayBuffer);
 	/**
 	 * @brief Ctor that doesn't create the underlying buffer
 	 * @note This ctor can be used to put this as members to other classes.
 	 */
-	VertexBuffer();
-	~VertexBuffer();
+	Buffer();
+	~Buffer();
 
 	void clearAttributes();
 	int attributes() const;
 
-	void setMode(int32_t idx, VertexBufferMode mode);
+	void setMode(int32_t idx, BufferMode mode);
 	void shutdown();
 
 	bool addAttribute(const Attribute& attribute);
@@ -78,14 +78,14 @@ public:
 	 * @return -1 on error - otherwise the index [0,n) of the created buffer (not the Id)
 	 */
 	template<class T>
-	inline int32_t create(const std::vector<T>& data, VertexBufferType target = VertexBufferType::ArrayBuffer) {
+	inline int32_t create(const std::vector<T>& data, BufferType target = BufferType::ArrayBuffer) {
 		return create(&data.front(), core::vectorSize(data), target);
 	}
 
 	/**
 	 * @return -1 on error - otherwise the index [0,n) of the created buffer (not the Id)
 	 */
-	int32_t create(const void* data = nullptr, size_t size = 0, VertexBufferType target = VertexBufferType::ArrayBuffer);
+	int32_t create(const void* data = nullptr, size_t size = 0, BufferType target = BufferType::ArrayBuffer);
 	/**
 	 * @brief Fullscreen buffer with normalized device coordinates with 3 float components
 	 */
@@ -137,11 +137,11 @@ public:
 	Id handle() const;
 };
 
-inline Id VertexBuffer::handle() const {
+inline Id Buffer::handle() const {
 	return _vao;
 }
 
-inline bool VertexBuffer::isValid(int32_t idx) const {
+inline bool Buffer::isValid(int32_t idx) const {
 	if (idx < 0) {
 		return false;
 	}
@@ -151,35 +151,35 @@ inline bool VertexBuffer::isValid(int32_t idx) const {
 	return _handles[idx] != InvalidId;
 }
 
-inline uint32_t VertexBuffer::size(int32_t idx) const {
+inline uint32_t Buffer::size(int32_t idx) const {
 	core_assert(idx >= 0 && idx < MAX_HANDLES);
 	return _size[idx];
 }
 
-inline uint32_t VertexBuffer::elements(int32_t idx, int components, size_t componentSize) const {
+inline uint32_t Buffer::elements(int32_t idx, int components, size_t componentSize) const {
 	return size(idx) / (components * componentSize);
 }
 
-inline Id VertexBuffer::bufferHandle(int32_t idx) const {
+inline Id Buffer::bufferHandle(int32_t idx) const {
 	core_assert(idx >= 0 && idx < MAX_HANDLES);
 	return _handles[idx];
 }
 
-inline void VertexBuffer::setMode(int32_t idx, VertexBufferMode mode) {
+inline void Buffer::setMode(int32_t idx, BufferMode mode) {
 	core_assert(idx >= 0 && idx < MAX_HANDLES);
 	_modes[idx] = mode;
 }
 
-class ScopedVertexBuffer {
+class ScopedBuffer {
 private:
-	const VertexBuffer& _buf;
+	const Buffer& _buf;
 public:
-	ScopedVertexBuffer(const VertexBuffer& buf) :
+	ScopedBuffer(const Buffer& buf) :
 			_buf(buf) {
 		buf.bind();
 	}
 
-	~ScopedVertexBuffer() {
+	~ScopedBuffer() {
 		_buf.unbind();
 	}
 };

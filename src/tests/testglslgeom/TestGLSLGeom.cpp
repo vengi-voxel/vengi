@@ -31,7 +31,7 @@ core::AppState TestGLSLGeom::onInit() {
 	};
 	Buf buf;
 	int32_t bufIndex = _buffer.create(&buf, sizeof(buf));
-	_buffer.setMode(bufIndex, video::VertexBufferMode::Static);
+	_buffer.setMode(bufIndex, video::BufferMode::Static);
 
 	video::Attribute attributePos;
 	attributePos.bufferIndex = bufIndex;
@@ -72,7 +72,7 @@ void TestGLSLGeom::doRender() {
 	_testShader.setRadius(_radius);
 	_testShader.setView(_camera.viewMatrix());
 	_testShader.setProjection(_camera.projectionMatrix());
-	video::ScopedVertexBuffer scopedBuf(_buffer);
+	video::ScopedBuffer scopedBuf(_buffer);
 	const int elements = _buffer.elements(0, _testShader.getComponentsPos());
 	video::drawArrays(_testShader.getPrimitiveTypeIn(), elements);
 }

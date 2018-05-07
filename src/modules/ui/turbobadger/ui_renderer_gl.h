@@ -6,7 +6,7 @@
 
 #include "video/Renderer.h"
 #include "video/Camera.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "RenderShaders.h"
 
 #include <renderers/tb_renderer_batcher.h>
@@ -51,7 +51,7 @@ private:
 	UIBitmapGL _white;
 	shader::TextureShader _shader;
 	video::Camera _camera;
-	video::VertexBuffer _vbo;
+	video::Buffer _vbo;
 	int32_t _bufferIndex = -1;
 
 	void bindBitmap(TBBitmap *bitmap);

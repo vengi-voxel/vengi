@@ -9,7 +9,7 @@ set(SRCS
 	gl/GLShader.cpp
 	gl/GLHelper.cpp gl/GLHelper.h
 	UniformBuffer.cpp UniformBuffer.h
-	VertexBuffer.cpp VertexBuffer.h
+	Buffer.cpp Buffer.h
 	FrameBuffer.cpp FrameBuffer.h
 	FrameBufferConfig.cpp FrameBufferConfig.h
 	GBuffer.cpp GBuffer.h

@@ -243,9 +243,9 @@ core::AppState NuklearApp::onInit() {
 		Log::error("Failed to create ui vbo");
 		return core::AppState::InitFailure;
 	}
-	_vbo.setMode(_vertexBufferIndex, video::VertexBufferMode::Stream);
+	_vbo.setMode(_vertexBufferIndex, video::BufferMode::Stream);
 
-	_elementBufferIndex = _vbo.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
+	_elementBufferIndex = _vbo.create(nullptr, 0, video::BufferType::IndexBuffer);
 	if (_elementBufferIndex < 0) {
 		Log::error("Failed to create ui ibo");
 		return core::AppState::InitFailure;

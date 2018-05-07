@@ -163,8 +163,8 @@ core::AppState IMGUIApp::onInit() {
 		Log::error("Failed to create ui vertex buffer");
 		return core::AppState::InitFailure;
 	}
-	_vbo.setMode(_bufferIndex, video::VertexBufferMode::Stream);
-	_indexBufferIndex = _vbo.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
+	_vbo.setMode(_bufferIndex, video::BufferMode::Stream);
+	_indexBufferIndex = _vbo.create(nullptr, 0, video::BufferType::IndexBuffer);
 	if (_indexBufferIndex < 0) {
 		Log::error("Failed to create ui index buffer");
 		return core::AppState::InitFailure;
@@ -349,7 +349,7 @@ core::AppState IMGUIApp::onRunning() {
 
 		core_assert_always(_vbo.update(_bufferIndex, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert)));
 		core_assert_always(_vbo.update(_indexBufferIndex, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx)));
-		video::ScopedVertexBuffer scopedBuf(_vbo);
+		video::ScopedBuffer scopedBuf(_vbo);
 
 		for (int i = 0; i < cmdList->CmdBuffer.Size; ++i) {
 			const ImDrawCmd* cmd = &cmdList->CmdBuffer[i];

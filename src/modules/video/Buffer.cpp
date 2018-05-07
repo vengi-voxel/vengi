@@ -2,47 +2,47 @@
  * @file
  */
 
-#include "VertexBuffer.h"
+#include "Buffer.h"
 #include "core/Common.h"
 #include <vector>
 
 namespace video {
 
-VertexBuffer::VertexBuffer(const void* data, size_t size, VertexBufferType target) {
+Buffer::Buffer(const void* data, size_t size, BufferType target) {
 	create(data, size, target);
 }
 
-VertexBuffer::VertexBuffer() {
+Buffer::Buffer() {
 }
 
-size_t VertexBuffer::bufferSize(int32_t idx) const {
+size_t Buffer::bufferSize(int32_t idx) const {
 	if (!isValid(idx)) {
 		return 0u;
 	}
 
-	const VertexBufferType type = _targets[idx];
+	const BufferType type = _targets[idx];
 	core_assert(video::boundBuffer(type) == _handles[idx]);
 	return video::bufferSize(type);
 }
 
-void* VertexBuffer::mapData(int32_t idx, video::AccessMode mode) const {
+void* Buffer::mapData(int32_t idx, video::AccessMode mode) const {
 	if (!isValid(idx)) {
 		return nullptr;
 	}
 	bind();
-	const VertexBufferType type = _targets[idx];
+	const BufferType type = _targets[idx];
 	return video::mapBuffer(_handles[idx], type, mode);
 }
 
-void VertexBuffer::unmapData(int32_t idx) const {
+void Buffer::unmapData(int32_t idx) const {
 	if (!isValid(idx)) {
 		return;
 	}
-	const VertexBufferType type = _targets[idx];
+	const BufferType type = _targets[idx];
 	video::unmapBuffer(type);
 }
 
-bool VertexBuffer::addAttribute(const Attribute& attribute) {
+bool Buffer::addAttribute(const Attribute& attribute) {
 	if (attribute.bufferIndex < 0) {
 		return false;
 	}
@@ -61,7 +61,7 @@ bool VertexBuffer::addAttribute(const Attribute& attribute) {
 	return true;
 }
 
-bool VertexBuffer::bind() const {
+bool Buffer::bind() const {
 	if (!isValid(0)) {
 		return false;
 	}
@@ -78,14 +78,14 @@ bool VertexBuffer::bind() const {
 	const int size = _attributes.size();
 	for (int i = 0; i < size; i++) {
 		const Attribute& a = _attributes[i];
-		if (_targets[a.bufferIndex] != VertexBufferType::ArrayBuffer) {
+		if (_targets[a.bufferIndex] != BufferType::ArrayBuffer) {
 			continue;
 		}
 		video::bindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
 		video::configureAttribute(a);
 	}
 	for (unsigned int i = 0; i < _handleIdx; ++i) {
-		if (_targets[i] != VertexBufferType::IndexBuffer) {
+		if (_targets[i] != BufferType::IndexBuffer) {
 			continue;
 		}
 		if (_size[i] == 0u) {
@@ -102,7 +102,7 @@ bool VertexBuffer::bind() const {
 	return true;
 }
 
-bool VertexBuffer::unbind() const {
+bool Buffer::unbind() const {
 	if (_vao == InvalidId) {
 		return false;
 	}
@@ -113,15 +113,15 @@ bool VertexBuffer::unbind() const {
 	return false;
 }
 
-bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
+bool Buffer::update(int32_t idx, const void* data, size_t size) {
 	if (!isValid(idx)) {
 		return false;
 	}
 
 	core_assert(video::boundVertexArray() == InvalidId);
-	const VertexBufferType type = _targets[idx];
+	const BufferType type = _targets[idx];
 	const Id id = _handles[idx];
-	if (_size[idx] >= size && _modes[idx] != VertexBufferMode::Static) {
+	if (_size[idx] >= size && _modes[idx] != BufferMode::Static) {
 		video::bufferSubData(id, type, 0, data, size);
 	} else {
 #if 1
@@ -137,7 +137,7 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 	return true;
 }
 
-int32_t VertexBuffer::create(const void* data, size_t size, VertexBufferType target) {
+int32_t Buffer::create(const void* data, size_t size, BufferType target) {
 	// we already have a buffer
 	if (_handleIdx >= MAX_HANDLES) {
 		return -1;
@@ -157,7 +157,7 @@ int32_t VertexBuffer::create(const void* data, size_t size, VertexBufferType tar
 	return idx;
 }
 
-int32_t VertexBuffer::createFullscreenQuad() {
+int32_t Buffer::createFullscreenQuad() {
 	// counter clock wise winding
 	//
 	// -1/1    1/1
@@ -179,7 +179,7 @@ int32_t VertexBuffer::createFullscreenQuad() {
 	return create(vecs, sizeof(vecs));
 }
 
-int32_t VertexBuffer::createFullscreenTextureBuffer() {
+int32_t Buffer::createFullscreenTextureBuffer() {
 	// counter clock wise winding
 	//
 	// 0/0    1/0
@@ -199,7 +199,7 @@ int32_t VertexBuffer::createFullscreenTextureBuffer() {
 	return create(vecs, sizeof(vecs));
 }
 
-int32_t VertexBuffer::createFullscreenTextureBufferYFlipped() {
+int32_t Buffer::createFullscreenTextureBufferYFlipped() {
 	// counter clock wise winding
 	//
 	// 0/1    1/1
@@ -219,14 +219,14 @@ int32_t VertexBuffer::createFullscreenTextureBufferYFlipped() {
 	return create(vecs, sizeof(vecs));
 }
 
-int32_t VertexBuffer::createWhiteColorForQuad() {
+int32_t Buffer::createWhiteColorForQuad() {
 	static const glm::vec4 color[] = {
 		glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f)
 	};
 	return create(color, sizeof(color));
 }
 
-glm::ivec2 VertexBuffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension) {
+glm::ivec2 Buffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension) {
 	// counter clock wise winding
 	//
 	// -1/1    1/1
@@ -251,7 +251,7 @@ glm::ivec2 VertexBuffer::createTexturedQuad(const glm::ivec2& xy, const glm::ive
 	return indices;
 }
 
-glm::ivec2 VertexBuffer::createFullscreenTexturedQuad(bool yFlipped) {
+glm::ivec2 Buffer::createFullscreenTexturedQuad(bool yFlipped) {
 	glm::ivec2 indices;
 	indices.x = createFullscreenQuad();
 	if (yFlipped) {
@@ -262,29 +262,29 @@ glm::ivec2 VertexBuffer::createFullscreenTexturedQuad(bool yFlipped) {
 	return indices;
 }
 
-VertexBuffer::~VertexBuffer() {
+Buffer::~Buffer() {
 	core_assert_msg(_vao == InvalidId, "Vertex buffer was not properly shut down");
 	shutdown();
 }
 
-void VertexBuffer::shutdown() {
+void Buffer::shutdown() {
 	video::deleteVertexArray(_vao);
 	video::deleteBuffers(_handleIdx, _handles);
 	_handleIdx = 0;
 	for (int i = 0; i < MAX_HANDLES; ++i) {
-		_targets[i] = VertexBufferType::Max;
-		_modes[i] = VertexBufferMode::Static;
+		_targets[i] = BufferType::Max;
+		_modes[i] = BufferMode::Static;
 		_size[i] = 0u;
 	}
 	clearAttributes();
 }
 
-void VertexBuffer::clearAttributes() {
+void Buffer::clearAttributes() {
 	_dirtyAttributes = false;
 	_attributes.clear();
 }
 
-int VertexBuffer::attributes() const {
+int Buffer::attributes() const {
 	return (int)_attributes.size();
 }
 

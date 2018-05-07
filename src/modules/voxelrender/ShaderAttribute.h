@@ -1,6 +1,6 @@
 #pragma once
 
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "video/Types.h"
 #include "video/Renderer.h"
 #include "voxel/polyvox/VoxelVertex.h"

@@ -6,7 +6,7 @@
 
 #include "testcore/TestApp.h"
 #include "video/MeshPool.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "render/Shadow.h"
 #include "RenderShaders.h"
 

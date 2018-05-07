@@ -5,7 +5,7 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "TestglslgeomShaders.h"
 
 /**
@@ -17,7 +17,7 @@ class TestGLSLGeom: public TestApp {
 private:
 	using Super = TestApp;
 	shader::TestShader _testShader;
-	video::VertexBuffer _buffer;
+	video::Buffer _buffer;
 	int _sides = 16;
 	float _radius = 10.0f;
 

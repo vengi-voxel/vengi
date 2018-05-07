@@ -164,7 +164,7 @@ enum class AccessMode {
 	Max
 };
 
-enum class VertexBufferType {
+enum class BufferType {
 	ArrayBuffer,
 	IndexBuffer,
 	UniformBuffer,
@@ -173,7 +173,7 @@ enum class VertexBufferType {
 	Max
 };
 
-enum class VertexBufferMode {
+enum class BufferMode {
 	Static,
 	Dynamic,
 	Stream,

@@ -320,10 +320,10 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 		_state = io::IOSTATE_LOADED;
 
 		_vertexBufferLinesIndex = _vertexBufferLines.create();
-		_vertexBufferLines.setMode(_vertexBufferLinesIndex, VertexBufferMode::Dynamic);
+		_vertexBufferLines.setMode(_vertexBufferLinesIndex, BufferMode::Dynamic);
 
 		_vertexBufferIndex = _vertexBuffer.create(_vertices);
-		_vertexBuffer.create(_indices, VertexBufferType::IndexBuffer);
+		_vertexBuffer.create(_indices, BufferType::IndexBuffer);
 	}
 
 	_timeInSeconds = timeInSeconds;
@@ -592,7 +592,7 @@ int Mesh::render() {
 	if (_state != io::IOSTATE_LOADED) {
 		return 0;
 	}
-	video::ScopedVertexBuffer scopedBuf(_vertexBuffer);
+	video::ScopedBuffer scopedBuf(_vertexBuffer);
 	int drawCalls = 0;
 	for (const RenderMeshData& mesh : _meshData) {
 		const uint32_t matIdx = mesh.materialIndex;
@@ -636,7 +636,7 @@ int Mesh::renderBones(video::Shader& shader) {
 	boneData.reserve(_boneMapping.size() * 2);
 	traverseBones(boneData, _scene->mRootNode, glm::mat4(1.0f), glm::vec3(0), false);
 	_vertexBufferLines.update(_vertexBufferLinesIndex, boneData.data);
-	video::ScopedVertexBuffer scopedBuf(_vertexBufferLines);
+	video::ScopedBuffer scopedBuf(_vertexBufferLines);
 	ScopedLineWidth lineWidth(2.0f);
 	const int elements = _vertexBufferLines.elements(_vertexBufferLinesIndex, 2);
 	video::drawArrays(video::Primitive::Lines, elements);
@@ -678,7 +678,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 	}
 
 	_vertexBufferLines.update(_vertexBufferLinesIndex, normalData.data);
-	video::ScopedVertexBuffer scopedBuf(_vertexBufferLines);
+	video::ScopedBuffer scopedBuf(_vertexBufferLines);
 	ScopedLineWidth lineWidth(2.0f);
 	const int elements = _vertexBufferLines.elements(_vertexBufferLinesIndex, 2);
 	video::drawArrays(video::Primitive::Lines, elements);

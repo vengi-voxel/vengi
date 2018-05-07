@@ -193,12 +193,12 @@ extern bool useProgram(Id handle);
 extern Id getProgram();
 extern bool bindVertexArray(Id handle);
 extern Id boundVertexArray();
-extern Id boundBuffer(VertexBufferType type);
-extern void unmapBuffer(VertexBufferType type);
-extern void* mapBuffer(Id handle, VertexBufferType type, AccessMode mode);
-extern bool bindBuffer(VertexBufferType type, Id handle);
-extern bool unbindBuffer(VertexBufferType type);
-extern bool bindBufferBase(VertexBufferType type, Id handle, uint32_t index = 0u);
+extern Id boundBuffer(BufferType type);
+extern void unmapBuffer(BufferType type);
+extern void* mapBuffer(Id handle, BufferType type, AccessMode mode);
+extern bool bindBuffer(BufferType type, Id handle);
+extern bool unbindBuffer(BufferType type);
+extern bool bindBufferBase(BufferType type, Id handle, uint32_t index = 0u);
 extern void genBuffers(uint8_t amount, Id* ids);
 extern Id genBuffer();
 extern void deleteBuffers(uint8_t amount, Id* ids);
@@ -245,12 +245,12 @@ extern int getOcclusionQueryResult(Id id, bool wait = false);
 extern Id bindFramebuffer(Id handle, FrameBufferMode mode = FrameBufferMode::Default);
 extern bool setupRenderBuffer(TextureFormat format, int w, int h, int samples);
 extern Id bindRenderbuffer(Id handle);
-extern void bufferData(Id handle, VertexBufferType type, VertexBufferMode mode, const void* data, size_t size);
-extern void bufferSubData(Id handle, VertexBufferType type, intptr_t offset, const void* data, size_t size);
+extern void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, size_t size);
+extern void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data, size_t size);
 /**
  * @return The size of the buffer object, measured in bytes.
  */
-extern size_t bufferSize(VertexBufferType type);
+extern size_t bufferSize(BufferType type);
 extern void setupDepthCompareTexture(video::TextureType type, CompareFunc func, TextureCompareMode mode);
 extern const glm::vec4& framebufferUV();
 extern bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTextures, const std::map<FrameBufferAttachment, RenderBufferPtr>& bufferAttachments);

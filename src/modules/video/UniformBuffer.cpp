@@ -23,7 +23,7 @@ bool UniformBuffer::update(const void *data, size_t size) {
 	if (_handle == video::InvalidId) {
 		return false;
 	}
-	video::bufferData(_handle, VertexBufferType::UniformBuffer, VertexBufferMode::Dynamic, data, size);
+	video::bufferData(_handle, BufferType::UniformBuffer, BufferMode::Dynamic, data, size);
 	return true;
 }
 
@@ -31,7 +31,7 @@ bool UniformBuffer::bind(uint32_t index) const {
 	if (_handle == video::InvalidId) {
 		return false;
 	}
-	video::bindBufferBase(VertexBufferType::UniformBuffer, _handle, index);
+	video::bindBufferBase(BufferType::UniformBuffer, _handle, index);
 	return true;
 }
 

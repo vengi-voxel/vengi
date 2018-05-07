@@ -6,7 +6,7 @@
 
 #include "video/WindowedApp.h"
 #include "video/Camera.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "RenderShaders.h"
 #include "Console.h"
 #include <atomic>
@@ -30,7 +30,7 @@ protected:
 	video::Id _texture = video::InvalidId;
 	shader::TextureShader _shader;
 	video::Camera _camera;
-	video::VertexBuffer _vbo;
+	video::Buffer _vbo;
 	Console _console;
 	int32_t _bufferIndex = -1;
 	int32_t _indexBufferIndex = -1;

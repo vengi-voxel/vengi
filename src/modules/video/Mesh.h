@@ -7,7 +7,7 @@
 #include "io/IOResource.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
-#include "VertexBuffer.h"
+#include "Buffer.h"
 #include "core/Vertex.h"
 #include "core/Color.h"
 #include <vector>
@@ -81,8 +81,8 @@ private:
 	std::vector<TexturePtr> _textures;
 	Vertices _vertices;
 	Indices _indices;
-	VertexBuffer _vertexBuffer;
-	VertexBuffer _vertexBufferLines;
+	Buffer _vertexBuffer;
+	Buffer _vertexBufferLines;
 	int32_t _vertexBufferLinesIndex = -1;
 	int32_t _vertexBufferIndex = -1;
 

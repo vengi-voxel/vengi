@@ -6,7 +6,7 @@
 
 #include "testcore/TestApp.h"
 #include "video/Texture.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "TestglslcompShaders.h"
 #include "render/TextureRenderer.h"
 

@@ -12,7 +12,7 @@
 #include "frontend/Movement.h"
 #include "video/Camera.h"
 #include "video/MeshPool.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "voxel/WorldMgr.h"
 
 /**

@@ -9,7 +9,7 @@
 #include "core/GLM.h"
 #include "core/Trace.h"
 #include "video/ScopedViewPort.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "video/Renderer.h"
 
 namespace render {
@@ -171,7 +171,7 @@ void Shadow::renderShadowMap(const video::Camera& camera) {
 	_shadowMapRenderShader.setNear(camera.nearPlane());
 
 	// bind buffers
-	video::ScopedVertexBuffer scopedBuf(_shadowMapDebugBuffer);
+	video::ScopedBuffer scopedBuf(_shadowMapDebugBuffer);
 
 	// configure shadow map texture
 	const video::TexturePtr& depthTex = _depthBuffer.texture(video::FrameBufferAttachment::Depth);

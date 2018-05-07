@@ -323,7 +323,7 @@ bool WorldRenderer::renderOpaqueBuffers() {
 	if (numIndices == 0u) {
 		return false;
 	}
-	video::ScopedVertexBuffer scopedBuf(_opaqueBuffer);
+	video::ScopedBuffer scopedBuf(_opaqueBuffer);
 	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
 	return true;
 }
@@ -333,7 +333,7 @@ bool WorldRenderer::renderWaterBuffers() {
 	if (numIndices == 0u) {
 		return false;
 	}
-	video::ScopedVertexBuffer scopedBuf(_waterBuffer);
+	video::ScopedBuffer scopedBuf(_waterBuffer);
 	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
 	return true;
 }
@@ -346,7 +346,7 @@ int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertic
 			continue;
 		}
 
-		video::ScopedVertexBuffer scopedBuf(vbo->vb);
+		video::ScopedBuffer scopedBuf(vbo->vb);
 		if (vbo->amount == 1) {
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
 		} else {
@@ -549,7 +549,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	return drawCallsEntities;
 }
 
-bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amount, PlantBuffer& vbo) {
+bool WorldRenderer::createInstancedBuffer(const voxel::Mesh &mesh, int amount, PlantBuffer& vbo) {
 	if (mesh.getNoOfIndices() == 0) {
 		return false;
 	}
@@ -561,7 +561,7 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 		Log::error("Failed to create vertex buffer");
 		return false;
 	}
-	vbo.indexBuffer = vbo.vb.create(mesh.getIndexVector(), video::VertexBufferType::IndexBuffer);
+	vbo.indexBuffer = vbo.vb.create(mesh.getIndexVector(), video::BufferType::IndexBuffer);
 	if (vbo.indexBuffer == -1) {
 		Log::error("Failed to create index buffer");
 		return false;
@@ -571,7 +571,7 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 		Log::error("Failed to create offset buffer");
 		return false;
 	}
-	vbo.vb.setMode(vbo.offsetBuffer, video::VertexBufferMode::Stream);
+	vbo.vb.setMode(vbo.offsetBuffer, video::BufferMode::Stream);
 
 	const int locationPos = _worldInstancedShader.getLocationPos();
 	const video::Attribute& posAttrib = getPositionVertexAttribute(vbo.vertexBuffer, locationPos, _worldInstancedShader.getAttributeComponents(locationPos));
@@ -631,13 +631,13 @@ bool WorldRenderer::initOpaqueBuffer() {
 		Log::error("Failed to create vertex buffer");
 		return false;
 	}
-	_opaqueBuffer.setMode(_opaqueVbo, video::VertexBufferMode::Stream);
-	_opaqueIbo = _opaqueBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
+	_opaqueBuffer.setMode(_opaqueVbo, video::BufferMode::Stream);
+	_opaqueIbo = _opaqueBuffer.create(nullptr, 0, video::BufferType::IndexBuffer);
 	if (_opaqueIbo == -1) {
 		Log::error("Failed to create index buffer");
 		return false;
 	}
-	_opaqueBuffer.setMode(_opaqueIbo, video::VertexBufferMode::Stream);
+	_opaqueBuffer.setMode(_opaqueIbo, video::BufferMode::Stream);
 
 	const int locationPos = _worldShader.getLocationPos();
 	const video::Attribute& posAttrib = getPositionVertexAttribute(_opaqueVbo, locationPos, _worldShader.getAttributeComponents(locationPos));
@@ -662,13 +662,13 @@ bool WorldRenderer::initWaterBuffer() {
 		Log::error("Failed to create water vertex buffer");
 		return false;
 	}
-	_waterBuffer.setMode(_waterVbo, video::VertexBufferMode::Stream);
-	_waterIbo = _waterBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
+	_waterBuffer.setMode(_waterVbo, video::BufferMode::Stream);
+	_waterIbo = _waterBuffer.create(nullptr, 0, video::BufferType::IndexBuffer);
 	if (_waterIbo == -1) {
 		Log::error("Failed to create water index buffer");
 		return false;
 	}
-	_waterBuffer.setMode(_waterIbo, video::VertexBufferMode::Stream);
+	_waterBuffer.setMode(_waterIbo, video::BufferMode::Stream);
 
 	const int locationPos = _waterShader.getLocationPos();
 	_waterShader.enableVertexAttributeArray(locationPos);
@@ -725,7 +725,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	_visiblePlant.clear();
 	for (int i = 0; i < (int)voxel::PlantType::MaxPlantTypes; ++i) {
 		const voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
-		createInstancedVertexBuffer(*mesh, 40, _meshPlantList[i]);
+		createInstancedBuffer(*mesh, 40, _meshPlantList[i]);
 		_visiblePlant.push_back(&_meshPlantList[i]);
 	}
 

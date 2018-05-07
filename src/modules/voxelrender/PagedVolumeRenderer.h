@@ -5,7 +5,7 @@
 #pragma once
 
 #include "voxel/polyvox/PagedVolume.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "VoxelrenderShaders.h"
 #include "RenderShaders.h"
 #include "voxel/polyvox/Mesh.h"
@@ -31,7 +31,7 @@ protected:
 	voxel::PagedVolume* _volume = nullptr;
 	voxel::Mesh* _mesh = nullptr;
 
-	video::VertexBuffer _vertexBuffer;
+	video::Buffer _vertexBuffer;
 	shader::Materialblock _materialBlock;
 	shader::WorldShader& _worldShader;
 	render::Shadow _shadow;

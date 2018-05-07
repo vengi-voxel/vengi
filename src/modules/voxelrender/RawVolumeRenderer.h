@@ -5,7 +5,7 @@
 #pragma once
 
 #include "voxel/polyvox/RawVolume.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "VoxelrenderShaders.h"
 #include "RenderShaders.h"
 #include "voxel/polyvox/Mesh.h"
@@ -32,7 +32,7 @@ protected:
 	voxel::Mesh* _mesh[MAX_VOLUMES] {};
 	glm::ivec3 _offsets[MAX_VOLUMES] {};
 
-	video::VertexBuffer _vertexBuffer[MAX_VOLUMES];
+	video::Buffer _vertexBuffer[MAX_VOLUMES];
 	shader::Materialblock _materialBlock;
 	shader::WorldShader& _worldShader;
 	render::Shadow _shadow;

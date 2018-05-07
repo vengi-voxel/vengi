@@ -6,7 +6,7 @@
 
 #include "video/WindowedApp.h"
 #include "video/Camera.h"
-#include "video/VertexBuffer.h"
+#include "video/Buffer.h"
 #include "video/Texture.h"
 #include "Console.h"
 #include "RenderShaders.h"
@@ -42,7 +42,7 @@ protected:
 
 	shader::TextureShader _shader;
 	video::Camera _camera;
-	video::VertexBuffer _vbo;
+	video::Buffer _vbo;
 	video::TexturePtr _fontTexture;
 
 	int32_t _vertexBufferIndex = -1;
