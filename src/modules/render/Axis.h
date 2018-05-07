@@ -8,6 +8,7 @@
 #include "video/ShapeBuilder.h"
 #include "render/ShapeRenderer.h"
 #include "video/ScopedLineWidth.h"
+#include "video/ScopedState.h"
 #include "core/IComponent.h"
 
 namespace render {
@@ -25,12 +26,9 @@ private:
 	float _lineWidth = 4.0f;
 public:
 	void render(const video::Camera& camera) {
-		const bool active = video::disable(video::State::DepthTest);
+		video::ScopedState disableDepthTest(video::State::DepthTest, false);
 		video::ScopedLineWidth width(_lineWidth);
 		_shapeRenderer.renderAll(camera);
-		if (active) {
-			video::enable(video::State::DepthTest);
-		}
 	}
 
 	void shutdown() override {

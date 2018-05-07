@@ -30,6 +30,7 @@ set(SRCS
 	ScopedLineWidth.h ScopedLineWidth.cpp
 	ScopedViewPort.h
 	ScopedFrameBuffer.h
+	ScopedState.h
 	ScopedBlendMode.h ScopedBlendMode.cpp
 	ScopedScissor.h
 	ScopedPolygonMode.h

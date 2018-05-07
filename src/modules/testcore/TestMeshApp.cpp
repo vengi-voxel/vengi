@@ -170,10 +170,11 @@ void TestMeshApp::doRender() {
 	const float timeInSeconds = lifetimeInSecondsf();
 
 	const bool shadowMap = _shadowMap->boolVal();
-	const bool oldDepth = video::enable(video::State::DepthTest);
+
+	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
-	const bool oldCullFace = video::enable(video::State::CullFace);
-	const bool oldDepthMask = video::enable(video::State::DepthMask);
+	video::ScopedState scopedCullFace(video::State::CullFace);
+	video::ScopedState scopedDepthMask(video::State::DepthMask);
 
 	_model = glm::translate(glm::mat4(1.0f), _position);
 	_shadow.update(_camera, true);
@@ -255,16 +256,6 @@ void TestMeshApp::doRender() {
 
 	if (_shadowMapShow->boolVal()) {
 		_shadow.renderShadowMap(_camera);
-	}
-
-	if (!oldDepth) {
-		video::disable(video::State::DepthTest);
-	}
-	if (!oldCullFace) {
-		video::disable(video::State::CullFace);
-	}
-	if (!oldDepthMask) {
-		video::disable(video::State::DepthMask);
 	}
 }
 

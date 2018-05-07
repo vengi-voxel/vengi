@@ -10,6 +10,7 @@
 #include "video/Camera.h"
 #include "video/Types.h"
 #include "video/Renderer.h"
+#include "video/ScopedState.h"
 #include "video/Shader.h"
 #include "core/Color.h"
 #include "core/Array.h"
@@ -186,10 +187,10 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		return;
 	}
 
-	const bool oldDepth = video::enable(video::State::DepthTest);
+	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
-	const bool oldCullFace = video::enable(video::State::CullFace);
-	const bool oldDepthMask = video::enable(video::State::DepthMask);
+	video::ScopedState scopedCullFace(video::State::CullFace);
+	video::ScopedState scopedDepthMask(video::State::DepthMask);
 
 	_shadow.update(camera, true);
 	_shadow.render([this] (int i, shader::ShadowmapShader& shader) {
@@ -228,16 +229,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 		}
-	}
-
-	if (!oldDepth) {
-		video::disable(video::State::DepthTest);
-	}
-	if (!oldCullFace) {
-		video::disable(video::State::CullFace);
-	}
-	if (!oldDepthMask) {
-		video::disable(video::State::DepthMask);
 	}
 }
 
