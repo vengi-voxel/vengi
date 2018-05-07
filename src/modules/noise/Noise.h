@@ -25,10 +25,10 @@ inline float norm(float noise) {
 /**
  * @brief Wrapper class that picks the best path to calculate the noise. This is either on the gpu or the cpu.
  *
- * fBM (fractional Brownian motion) is a composite Perlin noise algorithm. It creates more turbolence with more octaves.
+ * fBM (fractional Brownian motion) is a composite Perlin noise algorithm. It creates more turbulence with more octaves.
  *
  * To cover all possible scales, the octaves are typically a bit less than @code log(width) / log(lacunarity)@endcode.
- * So, for a 1024x1024 heightfield, about 10 octaves are needed. The persistence influences the terrain turbolence.
+ * So, for a 1024x1024 heightfield, about 10 octaves are needed. The persistence influences the terrain turbulence.
  *
  * The amount of octaves controls the level of detail. Adding more octaves increases the detail level, but also the computation time.
  * The persistence is a multiplier that defines how fast the amplitude diminishes for each successive octave.
