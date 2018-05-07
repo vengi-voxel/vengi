@@ -43,6 +43,7 @@ void ThreadPool::init() {
 				core_trace_end_frame();
 			}
 			++_shutdownCount;
+			std::unique_lock<std::mutex> lock(_shutdownMutex);
 			_shutdownCondition.notify_all();
 		});
 	}
@@ -58,7 +59,10 @@ void ThreadPool::shutdown(bool wait) {
 	}
 	_force = !wait;
 	_stop = true;
-	_queueCondition.notify_all();
+	{
+		std::unique_lock<std::mutex> lock(this->_queueMutex);
+		_queueCondition.notify_all();
+	}
 	{
 		std::unique_lock<std::mutex> lock(_shutdownMutex);
 		_shutdownCondition.wait(lock, [&] { return _shutdownCount == (int)_workers.size(); });

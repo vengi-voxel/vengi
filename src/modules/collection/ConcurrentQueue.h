@@ -26,6 +26,7 @@ public:
 
 	void abortWait() {
 		_abort = true;
+		std::unique_lock<std::mutex> lock(_mutex);
 		_conditionVariable.notify_all();
 	}
 
