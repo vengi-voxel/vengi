@@ -14,6 +14,10 @@ namespace video {
 
 /**
  * @brief Configuration options or the @c FrameBuffer
+ *
+ * @sa FrameBuffer
+ * @sa TextureConfig
+ * @ingroup Video
  */
 class FrameBufferConfig {
 private:
@@ -31,6 +35,9 @@ public:
 	FrameBufferConfig& dimension(const glm::ivec2& dimension);
 	const glm::ivec2& dimension() const;
 
+	/**
+	 * @brief Enable or disable the color texture binding
+	 */
 	FrameBufferConfig& colorTexture(bool colorTexture);
 	FrameBufferConfig& colorTextureFormat(TextureFormat format);
 	bool useColorTexture() const;
@@ -39,16 +46,25 @@ public:
 	FrameBufferConfig& addTextureAttachment(const TextureConfig& cfg, video::FrameBufferAttachment attachment = video::FrameBufferAttachment::Color0);
 	const std::map<FrameBufferAttachment, TextureConfig>& textureAttachments() const;
 
+	/**
+	 * @brief Enable or disable the depth texture binding
+	 */
 	FrameBufferConfig& depthTexture(bool depthTexture);
 	FrameBufferConfig& depthTextureFormat(TextureFormat format);
 	bool useDepthTexture() const;
 	TextureFormat depthTextureFormat() const;
 
-	FrameBufferConfig& depthBufferFormat(TextureFormat format);
+	/**
+	 * @brief Enable or disable the depth buffer binding
+	 */
 	FrameBufferConfig& depthBuffer(bool depthBuffer);
+	FrameBufferConfig& depthBufferFormat(TextureFormat format);
 	bool useDepthBuffer() const;
 	TextureFormat depthBufferFormat() const;
 
+	/**
+	 * @brief Enable or disable the stencil buffer binding
+	 */
 	FrameBufferConfig& stencilBuffer(bool depthBuffer);
 	bool useStencilBuffer() const;
 };

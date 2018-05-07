@@ -8,6 +8,11 @@
 
 namespace video {
 
+/**
+ * @brief Enables or disables a given state and restore the previous state once the scope is left.
+ *
+ * @ingroup Video
+ */
 class ScopedState {
 private:
 	const video::State _state;

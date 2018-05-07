@@ -10,6 +10,7 @@ namespace video {
 
 /**
  * @brief Configuration options or a @c Texture
+ * @ingroup Video
  */
 class TextureConfig {
 private:

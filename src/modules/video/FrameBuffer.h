@@ -17,6 +17,9 @@ typedef std::shared_ptr<Texture> TexturePtr;
 typedef std::shared_ptr<RenderBuffer> RenderBufferPtr;
 
 /**
+ * @brief A frame buffer is a collection of buffers that can be used as the destination for rendering.
+ *
+ * @sa FrameBufferConfig
  * @ingroup Video
  */
 class FrameBuffer {

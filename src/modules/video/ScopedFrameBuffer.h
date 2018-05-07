@@ -9,6 +9,7 @@
 namespace video {
 
 /**
+ * @sa FrameBuffer
  * @ingroup Video
  */
 class ScopedFrameBuffer {
