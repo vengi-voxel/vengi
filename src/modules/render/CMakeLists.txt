@@ -11,7 +11,7 @@ set(SRCS
 
 set(LIB render)
 add_library(${LIB} ${SRCS})
-generate_shaders(${LIB} mesh shadowmap shadowmap_instanced shadowmap_render color color_instanced noise texture)
+generate_shaders(${LIB} mesh shadowmap shadowmap_instanced shadowmap_render color color_instanced texture)
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES video noise)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 

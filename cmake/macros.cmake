@@ -138,7 +138,7 @@ macro(generate_compute_shaders TARGET)
 				OUTPUT ${_shader}.in
 				IMPLICIT_DEPENDS C ${_shaders}
 				COMMENT "Validate ${_file} and generate ${_shaderfile}"
-				COMMAND ${CMAKE_BINARY_DIR}/computeshadertool --shader ${_dir}/${_file} --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
+				COMMAND ${CMAKE_BINARY_DIR}/computeshadertool --shader ${_lastdir}/${_file} --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
 				DEPENDS computeshadertool ${_shaders} ${_template}
 			)
 			list(APPEND _headers ${_shader})

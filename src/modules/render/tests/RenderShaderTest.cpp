@@ -37,13 +37,4 @@ TEST_F(RenderShaderTest, testColorShader) {
 	shader.shutdown();
 }
 
-TEST_F(RenderShaderTest, testComputeNoiseShader) {
-	if (!_supported) {
-		return;
-	}
-	shader::NoiseShader shader;
-	ASSERT_TRUE(shader.setup());
-	shader.shutdown();
-}
-
 }
