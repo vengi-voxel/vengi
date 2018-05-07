@@ -19,7 +19,7 @@ namespace voxel {
  * more of them meaning voxel access could be slower.
  */
 PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint16_t uChunkSideLength) :
-		_chunkSideLength(uChunkSideLength), _pager(pPager) {
+		_chunkSideLength(uChunkSideLength), _pager(pPager), _region(0, 0, 0, -1, -1, -1) {
 	// Validation of parameters
 	core_assert_msg(pPager, "You must provide a valid pager when constructing a PagedVolume");
 	core_assert_msg(uTargetMemoryUsageInBytes >= 1 * 1024 * 1024, "Target memory usage is too small to be practical");
@@ -95,6 +95,11 @@ const Voxel& PagedVolume::voxel(const glm::ivec3& v3dPos) const {
  * @param uZPos the @c z position of the voxel
  */
 void PagedVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue) {
+	if (!_region.isValid()) {
+		_region = Region(uXPos, uYPos, uZPos, uXPos, uYPos, uZPos);
+	} else {
+		_region.accumulate(uXPos, uYPos, uZPos);
+	}
 	const int32_t chunkX = uXPos >> _chunkSideLengthPower;
 	const int32_t chunkY = uYPos >> _chunkSideLengthPower;
 	const int32_t chunkZ = uZPos >> _chunkSideLengthPower;
@@ -119,6 +124,11 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, i
 }
 
 void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx, int nz, const Voxel* tArray, int amount) {
+	if (!_region.isValid()) {
+		_region = Region(uXPos, uYPos, uZPos, uXPos + nx, uYPos, uZPos + nz);
+	} else {
+		_region.accumulate(Region(uXPos, uYPos, uZPos, uXPos + nx, uYPos, uZPos + nz));
+	}
 	for (int x = uXPos; x < uXPos + nx; ++x) {
 		const int32_t chunkX = x >> _chunkSideLengthPower;
 		const uint16_t xOffset = static_cast<uint16_t>(x & _chunkMask);

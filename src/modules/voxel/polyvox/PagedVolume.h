@@ -293,6 +293,8 @@ public:
 	void addChunkListener(IChunkListener* listener);
 	void removeChunkListener(IChunkListener* listener);
 
+	const Region& region() const;
+
 	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
 	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue);
 	/// Sets the voxel at the position given by a 3D vector
@@ -349,6 +351,8 @@ private:
 	int32_t _chunkMask;
 
 	Pager* _pager = nullptr;
+
+	Region _region;
 
 	mutable core::RecursiveReadWriteLock _rwLock{"pagedvolume"};
 	mutable core::RecursiveReadWriteLock _listenerLock{"listener"};
@@ -761,6 +765,10 @@ inline Region PagedVolume::Chunk::region() const {
 	 const glm::ivec3 mins = _chunkSpacePosition * static_cast<int32_t>(_sideLength);
 	 const glm::ivec3 maxs = mins + glm::ivec3(_sideLength - 1);
 	 return Region(mins, maxs);
+}
+
+inline const Region& PagedVolume::region() const {
+	return _region;
 }
 
 inline void PagedVolume::addChunkListener(IChunkListener* listener) {
