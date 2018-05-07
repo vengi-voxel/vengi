@@ -3,9 +3,11 @@
 #include <SDL.h>
 #include <vector>
 #include <string>
+#include <thread>
 #include "core/Var.h"
 #include "core/IComponent.h"
 #include "math/Rect.h"
+#include "collection/ConcurrentQueue.h"
 
 namespace util {
 
@@ -20,8 +22,10 @@ protected:
 	typedef std::vector<std::string> Messages;
 	typedef Messages::const_reverse_iterator MessagesIter;
 	Messages _messages;
+	core::ConcurrentQueue<std::string> _messageQueue;
 	Messages _history;
 	uint32_t _historyPos = 0;
+	const std::thread::id _mainThread;
 	bool _consoleActive = false;
 	SDL_LogOutputFunction _logFunction = nullptr;
 	core::VarPtr _autoEnable;
@@ -75,6 +79,7 @@ public:
 	virtual bool init() override;
 	virtual void shutdown() override;
 	virtual bool toggle();
+	void update(uint64_t dt);
 	void clear();
 	void clearCommandLine();
 	void render(const math::Rect<int> &rect, long deltaFrame);

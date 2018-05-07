@@ -326,6 +326,8 @@ core::AppState NuklearApp::onConstruct() {
 }
 
 core::AppState NuklearApp::onRunning() {
+	_console.update(_deltaFrameMillis);
+
 	nk_input_begin(&_ctx);
 	core::AppState state = Super::onRunning();
 	nk_input_motion(&_ctx, _mousePos.x, _mousePos.y);

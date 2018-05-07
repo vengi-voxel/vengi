@@ -433,6 +433,7 @@ void UIApp::doLayout() {
 
 core::AppState UIApp::onRunning() {
 	core::AppState state = Super::onRunning();
+	_console.update(_deltaFrameMillis);
 
 	_lastShowTextY = 5;
 

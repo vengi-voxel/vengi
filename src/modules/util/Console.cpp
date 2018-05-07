@@ -59,7 +59,8 @@ static inline void skipColor(const char **cstr) {
 	*cstr += 2;
 }
 
-Console::Console() {
+Console::Console() :
+		_mainThread(std::this_thread::get_id()) {
 	SDL_LogGetOutputFunction(&_logFunction, nullptr);
 	SDL_LogSetOutputFunction(logConsole, this);
 }
@@ -494,6 +495,10 @@ void Console::logConsole(void *userdata, int category, SDL_LogPriority priority,
 	Console* console = (Console*)userdata;
 	const bool hasColor = isColor(cleaned.c_str());
 	const std::string& color = hasColor ? "" : getColor(priorityColors[priority]);
+	if (std::this_thread::get_id() != console->_mainThread) {
+		console->_messageQueue.push(color + cleaned);
+		return;
+	}
 	console->_messages.push_back(color + cleaned);
 	if (hasColor) {
 		skipColor(&message);
@@ -510,6 +515,14 @@ void Console::logConsole(void *userdata, int category, SDL_LogPriority priority,
 bool Console::toggle() {
 	_consoleActive ^= true;
 	return _consoleActive;
+}
+
+void Console::update(uint64_t dt) {
+	core_assert(_mainThread == std::this_thread::get_id());
+	std::string msg;
+	while (_messageQueue.pop(msg)) {
+		_messages.push_back(msg);
+	}
 }
 
 void Console::clear() {

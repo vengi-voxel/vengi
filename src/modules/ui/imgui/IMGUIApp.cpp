@@ -267,6 +267,8 @@ core::AppState IMGUIApp::onRunning() {
 		return state;
 	}
 
+	_console.update(_deltaFrameMillis);
+
 	ImGuiIO& io = ImGui::GetIO();
 	io.MousePos = ImVec2(_mousePos.x, _mousePos.y);
 
