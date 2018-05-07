@@ -182,7 +182,7 @@ void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persiste
 				noise = norm(noise);
 				const unsigned char color = (unsigned char) (noise * 255.0f);
 				const int channelIndex = y * size + x;
-				bufferChannel[channelIndex + 1] = color;
+				bufferChannel[channelIndex] = color;
 			}
 		}
 		int index = 0;
