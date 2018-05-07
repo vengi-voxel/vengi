@@ -88,12 +88,20 @@ public:
 
 struct RenderState {
 	int limits[std::enum_value(video::Limit::Max)] = { };
-
 	inline int limit(video::Limit limit) const {
 		return limits[std::enum_value(limit)];
 	}
-	bool features[std::enum_value(video::Feature::Max)] = { };
 
+	double specs[std::enum_value(video::Spec::Max)] = { };
+	inline int specificationi(video::Spec spec) const {
+		return (int)(specification(spec) + 0.5);
+	}
+
+	inline double specification(video::Spec spec) const {
+		return specs[std::enum_value(spec)];
+	}
+
+	bool features[std::enum_value(video::Feature::Max)] = { };
 	inline bool supports(video::Feature feature) const {
 		return features[std::enum_value(feature)];
 	}
@@ -303,6 +311,14 @@ inline bool hasFeature(Feature f) {
 
 inline int limit(Limit l) {
 	return renderState().limit(l);
+}
+
+inline int specificationi(Spec l) {
+	return renderState().specificationi(l);
+}
+
+inline double specification(Spec l) {
+	return renderState().specification(l);
 }
 
 /**

@@ -43,7 +43,7 @@ static int fillUniforms(Id program, ShaderUniforms& uniformMap, const std::strin
 extern void debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
 		const GLchar* message, const GLvoid* userParam);
 extern bool checkFramebufferStatus();
-extern void setupLimits();
+extern void setupLimitsAndSpecs();
 extern void setupFeatures();
 
 }

@@ -130,7 +130,7 @@ bool checkFramebufferStatus() {
 	return false;
 }
 
-void setupLimits() {
+void setupLimitsAndSpecs() {
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &renderState().limits[std::enum_value(Limit::MaxTextureSize)]);
 	checkError();
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &renderState().limits[std::enum_value(Limit::MaxCubeMapTextureSize)]);
@@ -186,7 +186,11 @@ void setupLimits() {
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &renderState().limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
 	checkError();
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &renderState().limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
+	checkError();
 #endif
+	GLint uniformBufferAlignment;
+	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBufferAlignment);
+	renderState().specs[std::enum_value(Spec::UniformBufferAlignment)] = uniformBufferAlignment;
 	checkError();
 	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[std::enum_value(Limit::MaxElementVertices)]);
 	Log::info("GL_MAX_ELEMENTS_INDICES: %i", renderState().limits[std::enum_value(Limit::MaxElementIndices)]);

@@ -119,20 +119,23 @@ bool Buffer::update(int32_t idx, const void* data, size_t size) {
 	}
 
 	core_assert(video::boundVertexArray() == InvalidId);
+	const size_t oldSize = _size[idx];
+	_size[idx] = align(size, _targets[idx]);
+	core_assert_16byte_aligned(data);
+	core_assert_msg((_size[idx] & 15) == 0, "Size is not aligned properly");
 	const BufferType type = _targets[idx];
 	const Id id = _handles[idx];
-	if (_size[idx] >= size && _modes[idx] != BufferMode::Static) {
-		video::bufferSubData(id, type, 0, data, size);
+	if (oldSize >= size && _modes[idx] != BufferMode::Static) {
+		video::bufferSubData(id, type, 0, data, _size[idx]);
 	} else {
 #if 1
-		video::bufferData(id, type, _modes[idx], data, size);
+		video::bufferData(id, type, _modes[idx], data, _size[idx]);
 #else
 		void* target = video::mapBuffer(type, video::AccessMode::Write);
-		memcpy(target, data, size);
+		memcpy(target, data, _size[idx]);
 		video::unmapBuffer(type);
 #endif
 	}
-	_size[idx] = size;
 
 	return true;
 }
@@ -149,9 +152,9 @@ int32_t Buffer::create(const void* data, size_t size, BufferType target) {
 		Log::error("Failed to create buffer (size: %i)", (int)size);
 		return -1;
 	}
-	_size[idx] = size;
+	_size[idx] = align(size, target);
 	if (data != nullptr) {
-		update(idx, data, size);
+		update(idx, data, _size[idx]);
 	}
 	++_handleIdx;
 	return idx;

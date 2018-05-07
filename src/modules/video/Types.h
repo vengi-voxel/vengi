@@ -319,6 +319,12 @@ enum class TextureFormat {
 	Max
 };
 
+enum class Spec {
+	UniformBufferAlignment,
+
+	Max
+};
+
 enum class Limit {
 	MaxTextureSize,
 	MaxCubeMapTextureSize,

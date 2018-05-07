@@ -27,6 +27,8 @@ private:
 	std::vector<Attribute> _attributes;
 	mutable Id _vao = InvalidId;
 	mutable bool _dirtyAttributes = true;
+
+	size_t align(size_t x, BufferType type) const;
 public:
 	/**
 	 * @brief Ctor that also creates buffer handle.
@@ -136,6 +138,21 @@ public:
 	 */
 	Id handle() const;
 };
+
+inline size_t Buffer::align(size_t x, BufferType type) const {
+	size_t a = 32;
+	switch (type) {
+	case BufferType::IndexBuffer:
+		a = 16;
+		break;
+	case BufferType::UniformBuffer:
+		a = video::specificationi(Spec::UniformBufferAlignment);
+		break;
+	default:
+		break;
+	}
+	return ( ( ( x ) + ((a)-1) ) & ~((a)-1) );
+}
 
 inline Id Buffer::handle() const {
 	return _vao;

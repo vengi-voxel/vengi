@@ -1409,7 +1409,7 @@ bool init() {
 		return false;
 	}
 
-	_priv::setupLimits();
+	_priv::setupLimitsAndSpecs();
 	_priv::setupFeatures();
 
 	const std::string vendor((const char*)glGetString(GL_VENDOR));
