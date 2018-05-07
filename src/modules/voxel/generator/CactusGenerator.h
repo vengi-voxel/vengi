@@ -6,7 +6,6 @@
 
 #include "math/Random.h"
 #include "voxel/BiomeManager.h"
-#include "voxel/WorldContext.h"
 #include "voxel/Spiral.h"
 #include "ShapeGenerator.h"
 #include "LSystemGenerator.h"

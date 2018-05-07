@@ -20,7 +20,6 @@
 #include "voxedit-util/ShapeHandler.h"
 #include "voxedit-util/UndoHandler.h"
 #include "math/Axis.h"
-#include "voxel/WorldContext.h"
 #include <vector>
 
 namespace voxel {

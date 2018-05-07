@@ -15,7 +15,6 @@
 #include "voxel/generator/PlantType.h"
 #include "voxel/generator/BuildingGeneratorContext.h"
 #include "voxel/generator/NoiseGenerator.h"
-#include "voxel/WorldContext.h"
 #include "Action.h"
 #include "Controller.h"
 #include "voxedit-util/Shape.h"

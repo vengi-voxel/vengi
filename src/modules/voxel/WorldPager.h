@@ -8,13 +8,11 @@
 #include "voxel/Constants.h"
 #include "core/Trace.h"
 #include "core/Log.h"
-#include "voxel/WorldContext.h"
 #include "noise/Noise.h"
 
 namespace voxel {
 
 class BiomeManager;
-struct WorldContext;
 class PagedVolumeWrapper;
 
 constexpr int WORLDGEN_TREES = 1 << 0;
@@ -28,6 +26,27 @@ constexpr int WORLDGEN_SERVER = WORLDGEN_TREES;
  */
 class WorldPager: public PagedVolume::Pager {
 private:
+	struct WorldContext {
+		WorldContext();
+		bool load(const std::string& lua);
+
+		int landscapeNoiseOctaves;
+		float landscapeNoiseLacunarity;
+		float landscapeNoiseFrequency;
+		float landscapeNoiseGain;
+
+		int caveNoiseOctaves;
+		float caveNoiseLacunarity;
+		float caveNoiseFrequency;
+		float caveNoiseGain;
+		float caveDensityThreshold;
+
+		int mountainNoiseOctaves;
+		float mountainNoiseLacunarity;
+		float mountainNoiseFrequency;
+		float mountainNoiseGain;
+	};
+
 	WorldPersister _worldPersister;
 	long _seed = 0l;
 	int _createFlags = 0;

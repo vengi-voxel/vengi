@@ -2,7 +2,6 @@
 #include "voxel/WorldPager.h"
 #include "voxel/polyvox/PagedVolume.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
-#include "voxel/WorldContext.h"
 #include "voxel/BiomeManager.h"
 #include "voxel/Constants.h"
 #include "voxel/IsQuadNeeded.h"

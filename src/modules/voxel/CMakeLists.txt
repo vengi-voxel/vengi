@@ -18,7 +18,6 @@ set(SRCS
 	WorldPersister.h WorldPersister.cpp
 	WorldPager.h WorldPager.cpp
 	WorldEvents.h
-	WorldContext.h WorldContext.cpp
 	generator/CloudGenerator.h
 	generator/ShapeGenerator.h
 	generator/SpaceColonization.h generator/SpaceColonization.cpp

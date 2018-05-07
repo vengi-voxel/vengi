@@ -7,7 +7,6 @@
 #include "voxel/polyvox/PagedVolume.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/polyvox/Voxel.h"
-#include "voxel/WorldContext.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Constants.h"
 #include "math/Random.h"
