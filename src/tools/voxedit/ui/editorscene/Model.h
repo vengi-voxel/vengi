@@ -38,7 +38,7 @@ static constexpr int SelectionVolumeIndex = 0;
 /**
  * The model is shared across all viewports
  */
-class Model {
+class Model : public core::IComponent {
 private:
 	voxelrender::RawVolumeRenderer _volumeRenderer;
 	voxelrender::RawVolumeRenderer _cursorVolumeRenderer;
@@ -107,9 +107,9 @@ public:
 	const glm::ivec3& referencePosition() const;
 	void setReferencePosition(const glm::ivec3& pos);
 
-	void init();
+	bool init() override;
 	void update();
-	void shutdown();
+	void shutdown() override;
 
 	void copy();
 	void paste();

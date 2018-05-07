@@ -497,9 +497,9 @@ void Model::onResize(const glm::ivec2& size) {
 	_selectionVolumeRenderer.onResize(glm::ivec2(0), size);
 }
 
-void Model::init() {
+bool Model::init() {
 	if (_initialized > 0) {
-		return;
+		return true;
 	}
 	++_initialized;
 	_volumeRenderer.init();
@@ -518,6 +518,7 @@ void Model::init() {
 
 	_lockedAxis = math::Axis::None;
 	_mirrorAxis = math::Axis::None;
+	return true;
 }
 
 void Model::update() {
