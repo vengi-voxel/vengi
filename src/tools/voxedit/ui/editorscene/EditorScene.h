@@ -78,7 +78,6 @@ public:
 	void createPlant(voxel::PlantType type);
 	void createCloud();
 	void createCactus();
-	void world(const voxel::WorldContext& ctx);
 
 	const glm::ivec3& cursorPosition() const;
 	void setCursorPosition(const glm::ivec3& pos, bool force = false);

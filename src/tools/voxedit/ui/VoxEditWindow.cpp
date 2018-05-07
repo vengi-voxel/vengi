@@ -1,7 +1,6 @@
 #include "VoxEditWindow.h"
 #include "LSystemWindow.h"
 #include "NoiseWindow.h"
-#include "WorldWindow.h"
 #include "TreeWindow.h"
 #include "editorscene/EditorScene.h"
 #include "palette/PaletteWidget.h"
@@ -525,11 +524,6 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (isAny(ev, TBIDC("dialog_noise"))) {
 		new NoiseWindow(this, _scene);
-		return true;
-	} else if (isAny(ev, TBIDC("dialog_world"))) {
-		const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
-		const std::string& luaString = filesystem->load("worldparams.lua");
-		new WorldWindow(this, _scene, luaString);
 		return true;
 	} else if (isAny(ev, TBIDC("optionshowgrid"))) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);

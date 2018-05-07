@@ -46,8 +46,6 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-lsystem
 						TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: dialog_noise
 							TBSkinImage: skin: voxedit-noise
-						TBButton: gravity: left, @include: definitions>menubutton, text: World, id: dialog_world
-							TBSkinImage: skin: voxedit-world
 			TBLayout: distribution: gravity, position: top
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBSection: value: 1, text: "Palette"

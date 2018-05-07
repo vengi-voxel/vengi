@@ -174,7 +174,6 @@ public:
 	void createCloud();
 	void createCactus();
 	void bezier(const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control);
-	void world(const voxel::WorldContext& ctx);
 
 	bool extractVolume();
 	bool extractCursorVolume();

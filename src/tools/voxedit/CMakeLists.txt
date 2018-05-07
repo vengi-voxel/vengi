@@ -21,7 +21,6 @@ set(SRCS
 	ui/LSystemWindow.h ui/LSystemWindow.cpp
 	ui/TreeWindow.h ui/TreeWindow.cpp
 	ui/NoiseWindow.h ui/NoiseWindow.cpp
-	ui/WorldWindow.h ui/WorldWindow.cpp
 
 	VoxEdit.h VoxEdit.cpp
 )

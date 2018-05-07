@@ -638,21 +638,6 @@ void Model::bezier(const glm::ivec3& start, const glm::ivec3& end, const glm::iv
 	modified(voxel::Region(mins, maxs));
 }
 
-void Model::world(const voxel::WorldContext& ctx) {
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(127, 63, 127));
-	setNewVolume(new voxel::RawVolume(region));
-	voxel::BiomeManager mgr;
-	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
-	mgr.init(filesystem->load("biomes.lua"));
-	voxel::RawVolumeWrapper wrapper(modelVolume());
-	voxel::world::WorldGenerator gen(mgr, 1L);
-	gen.createWorld(ctx, wrapper, 0.0f, 0.0f);
-	voxel::cloud::CloudContext cloudCtx;
-	gen.createClouds(wrapper, cloudCtx);
-	gen.createTrees(wrapper);
-	modified(modelVolume()->region());
-}
-
 void Model::createCactus() {
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());

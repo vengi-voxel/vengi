@@ -188,7 +188,6 @@ core::AppState VoxEdit::onConstruct() {
 	}).setHelp("Set the reference position to the specified position");
 
 	COMMAND_MAINWINDOW_EVENT("dialog_lsystem", "Opens the lsystem dialog");
-	COMMAND_MAINWINDOW_EVENT("dialog_world", "Opens the world dialog");
 	COMMAND_MAINWINDOW_EVENT("dialog_noise", "Opens the noise dialog");
 
 	COMMAND_CALL("new", newFile(), "Create a new scene");
