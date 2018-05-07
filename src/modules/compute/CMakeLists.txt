@@ -24,3 +24,4 @@ set(TEST_SRCS
 
 gtest_suite_files(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
+generate_compute_shaders(tests test)

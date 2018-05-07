@@ -56,10 +56,10 @@ gtest_suite_files(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
 
 generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl PersistenceModels.h)
-test_generate_db_models(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.tbl TestModels.h)
+generate_db_models(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.tbl TestModels.h)
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_files(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
 gtest_suite_deps(tests-${LIB} ${LIB})
-test_generate_db_models(tests-${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.tbl TestModels.h)
+generate_db_models(tests-${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.tbl TestModels.h)
 gtest_suite_end(tests-${LIB})
