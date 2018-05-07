@@ -73,7 +73,7 @@ public:
 	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, const glm::ivec3& offset = glm::zero<glm::ivec3>());
 	bool setOffset(int idx, const glm::ivec3& offset);
 
-	const voxel::Mesh* mesh(int idx) const;
+	const voxel::Mesh* mesh(int idx = 0) const;
 	/**
 	 * @sa setVolume()
 	 */

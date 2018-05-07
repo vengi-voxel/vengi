@@ -32,7 +32,7 @@ class Tree;
 namespace voxedit {
 
 static constexpr int ModelVolumeIndex = 0;
-static constexpr int CursorVolumeIndex = 1;
+static constexpr int CursorVolumeIndex = 0;
 static constexpr int SelectionVolumeIndex = 0;
 
 /**
@@ -40,8 +40,9 @@ static constexpr int SelectionVolumeIndex = 0;
  */
 class Model {
 private:
-	voxelrender::RawVolumeRenderer _rawVolumeRenderer;
-	voxelrender::RawVolumeRenderer _rawVolumeSelectionRenderer;
+	voxelrender::RawVolumeRenderer _volumeRenderer;
+	voxelrender::RawVolumeRenderer _cursorVolumeRenderer;
+	voxelrender::RawVolumeRenderer _selectionVolumeRenderer;
 	render::GridRenderer _gridRenderer;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
@@ -156,13 +157,13 @@ public:
 	voxel::RawVolume* cursorPositionVolume();
 	const voxel::RawVolume* cursorPositionVolume() const;
 
-	voxelrender::RawVolumeRenderer& rawVolumeRenderer();
+	voxelrender::RawVolumeRenderer& volumeRenderer();
 	const voxelrender::RawVolumeRenderer& rawVolumeRenderer() const;
 
 	render::GridRenderer& gridRenderer();
 
-	voxelrender::RawVolumeRenderer& rawVolumeSelectionRenderer();
-	const voxelrender::RawVolumeRenderer& rawVolumeSelectionRenderer() const;
+	voxelrender::RawVolumeRenderer& selectionVolumeRenderer();
+	const voxelrender::RawVolumeRenderer& selectionVolumeRenderer() const;
 
 	void spaceColonization();
 	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noisegen::NoiseType type);
@@ -297,43 +298,43 @@ inline Action Model::keyAction() const {
 }
 
 inline voxel::RawVolume* Model::modelVolume() {
-	return _rawVolumeRenderer.volume(ModelVolumeIndex);
+	return _volumeRenderer.volume(ModelVolumeIndex);
 }
 
 inline const voxel::RawVolume* Model::modelVolume() const {
-	return _rawVolumeRenderer.volume(ModelVolumeIndex);
+	return _volumeRenderer.volume(ModelVolumeIndex);
 }
 
 inline voxel::RawVolume* Model::cursorPositionVolume() {
-	return _rawVolumeRenderer.volume(CursorVolumeIndex);
+	return _cursorVolumeRenderer.volume(CursorVolumeIndex);
 }
 
 inline const voxel::RawVolume* Model::cursorPositionVolume() const {
-	return _rawVolumeRenderer.volume(CursorVolumeIndex);
+	return _cursorVolumeRenderer.volume(CursorVolumeIndex);
 }
 
 inline Action Model::uiAction() const {
 	return _uiAction;
 }
 
-inline voxelrender::RawVolumeRenderer& Model::rawVolumeRenderer() {
-	return _rawVolumeRenderer;
+inline voxelrender::RawVolumeRenderer& Model::volumeRenderer() {
+	return _volumeRenderer;
 }
 
 inline const voxelrender::RawVolumeRenderer& Model::rawVolumeRenderer() const {
-	return _rawVolumeRenderer;
+	return _volumeRenderer;
 }
 
 inline render::GridRenderer& Model::gridRenderer() {
 	return _gridRenderer;
 }
 
-inline voxelrender::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() {
-	return _rawVolumeSelectionRenderer;
+inline voxelrender::RawVolumeRenderer& Model::selectionVolumeRenderer() {
+	return _selectionVolumeRenderer;
 }
 
-inline const voxelrender::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() const {
-	return _rawVolumeSelectionRenderer;
+inline const voxelrender::RawVolumeRenderer& Model::selectionVolumeRenderer() const {
+	return _selectionVolumeRenderer;
 }
 
 inline bool Model::actionRequiresExistingVoxel(Action action) const {

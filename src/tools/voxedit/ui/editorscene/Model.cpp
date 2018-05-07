@@ -16,6 +16,7 @@
 #include "voxel/generator/CactusGenerator.h"
 #include "voxel/generator/BuildingGenerator.h"
 #include "voxel/generator/PlantGenerator.h"
+#include "voxel/BiomeManager.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QBTFormat.h"
 #include "voxel/model/QBFormat.h"
@@ -119,13 +120,13 @@ bool Model::load(const std::string& file) {
 }
 
 void Model::select(const glm::ivec3& pos) {
-	voxel::RawVolume* selectionVolume = _rawVolumeSelectionRenderer.volume(SelectionVolumeIndex);
+	voxel::RawVolume* selectionVolume = _selectionVolumeRenderer.volume(SelectionVolumeIndex);
 	_extractSelection |= _selectionHandler.select(modelVolume(), selectionVolume, pos);
 }
 
 void Model::unselectAll() {
 	_selectionHandler.unselectAll();
-	_rawVolumeSelectionRenderer.volume(SelectionVolumeIndex)->clear();
+	_selectionVolumeRenderer.volume(SelectionVolumeIndex)->clear();
 	_extractSelection = true;
 }
 
@@ -199,7 +200,7 @@ bool Model::place() {
 
 bool Model::remove() {
 	if (_selectionHandler.selectedVoxels() > 0) {
-		const voxel::RawVolume* selection = _rawVolumeSelectionRenderer.volume(SelectionVolumeIndex);
+		const voxel::RawVolume* selection = _selectionVolumeRenderer.volume(SelectionVolumeIndex);
 		glm::ivec3 mins(0);
 		glm::ivec3 maxs(0);
 
@@ -352,9 +353,9 @@ void Model::resetLastTrace() {
 void Model::setNewVolume(voxel::RawVolume* volume) {
 	const voxel::Region& region = volume->region();
 
-	delete _rawVolumeSelectionRenderer.setVolume(SelectionVolumeIndex, new voxel::RawVolume(region));
-	delete _rawVolumeRenderer.setVolume(ModelVolumeIndex, volume);
-	delete _rawVolumeRenderer.setVolume(CursorVolumeIndex, new voxel::RawVolume(region));
+	delete _selectionVolumeRenderer.setVolume(SelectionVolumeIndex, new voxel::RawVolume(region));
+	delete _volumeRenderer.setVolume(ModelVolumeIndex, volume);
+	delete _cursorVolumeRenderer.setVolume(CursorVolumeIndex, new voxel::RawVolume(region));
 
 #if 0
 	if (_spaceColonizationTree != nullptr) {
@@ -444,7 +445,7 @@ bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 }
 
 void Model::copy() {
-	voxel::mergeRawVolumesSameDimension(cursorPositionVolume(), _rawVolumeSelectionRenderer.volume());
+	voxel::mergeRawVolumesSameDimension(cursorPositionVolume(), _selectionVolumeRenderer.volume());
 	markCursorExtract();
 }
 
@@ -458,16 +459,17 @@ void Model::paste() {
 
 void Model::cut() {
 	voxel::RawVolume* cursorVolume = cursorPositionVolume();
-	voxel::mergeRawVolumesSameDimension(cursorVolume, _rawVolumeSelectionRenderer.volume(SelectionVolumeIndex));
+	voxel::mergeRawVolumesSameDimension(cursorVolume, _selectionVolumeRenderer.volume(SelectionVolumeIndex));
 	markCursorExtract();
 	remove();
 }
 
 void Model::render(const video::Camera& camera) {
-	const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(ModelVolumeIndex);
+	const voxel::Mesh* mesh = _volumeRenderer.mesh(ModelVolumeIndex);
 	_empty = mesh != nullptr ? mesh->getNoOfIndices() == 0 : true;
 	_gridRenderer.render(camera, modelVolume()->region());
-	_rawVolumeRenderer.render(camera);
+	_volumeRenderer.render(camera);
+	_cursorVolumeRenderer.render(camera);
 	// TODO: render error if rendered last - but be before grid renderer to get transparency.
 	if (_renderLockAxis) {
 		for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
@@ -479,19 +481,20 @@ void Model::render(const video::Camera& camera) {
 }
 
 void Model::renderSelection(const video::Camera& camera) {
-	const voxel::Mesh* mesh = _rawVolumeSelectionRenderer.mesh(SelectionVolumeIndex);
+	const voxel::Mesh* mesh = _selectionVolumeRenderer.mesh(SelectionVolumeIndex);
 	if (mesh == nullptr || mesh->getNoOfIndices() == 0) {
 		return;
 	}
 	video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(-2.0f));
 	video::ScopedLineWidth lineWidth(3.0f);
 	video::ScopedBlendMode blendMode(video::BlendMode::One, video::BlendMode::One);
-	_rawVolumeSelectionRenderer.render(camera);
+	_selectionVolumeRenderer.render(camera);
 }
 
 void Model::onResize(const glm::ivec2& size) {
-	_rawVolumeRenderer.onResize(glm::ivec2(0), size);
-	_rawVolumeSelectionRenderer.onResize(glm::ivec2(0), size);
+	_volumeRenderer.onResize(glm::ivec2(0), size);
+	_cursorVolumeRenderer.onResize(glm::ivec2(0), size);
+	_selectionVolumeRenderer.onResize(glm::ivec2(0), size);
 }
 
 void Model::init() {
@@ -499,8 +502,9 @@ void Model::init() {
 		return;
 	}
 	++_initialized;
-	_rawVolumeRenderer.init();
-	_rawVolumeSelectionRenderer.init();
+	_volumeRenderer.init();
+	_cursorVolumeRenderer.init();
+	_selectionVolumeRenderer.init();
 	_shapeRenderer.init();
 	_gridRenderer.init();
 
@@ -548,17 +552,17 @@ void Model::shutdown() {
 		return;
 	}
 	_initialized = 0;
-	{
-		const std::vector<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
-		for (voxel::RawVolume* v : old) {
-			delete v;
-		}
+	std::vector<voxel::RawVolume*> old = _volumeRenderer.shutdown();
+	for (voxel::RawVolume* v : old) {
+		delete v;
 	}
-	{
-		const std::vector<voxel::RawVolume*>& old = _rawVolumeSelectionRenderer.shutdown();
-		for (voxel::RawVolume* v : old) {
-			delete v;
-		}
+	old = _cursorVolumeRenderer.shutdown();
+	for (voxel::RawVolume* v : old) {
+		delete v;
+	}
+	old = _selectionVolumeRenderer.shutdown();
+	for (voxel::RawVolume* v : old) {
+		delete v;
 	}
 
 	if (_spaceColonizationTree != nullptr) {
@@ -575,7 +579,7 @@ void Model::shutdown() {
 bool Model::extractSelectionVolume() {
 	if (_extractSelection) {
 		_extractSelection = false;
-		_rawVolumeSelectionRenderer.extract(SelectionVolumeIndex);
+		_selectionVolumeRenderer.extract(SelectionVolumeIndex);
 		return true;
 	}
 	return false;
@@ -584,7 +588,7 @@ bool Model::extractSelectionVolume() {
 bool Model::extractVolume() {
 	if (_extract) {
 		_extract = false;
-		_rawVolumeRenderer.extract(ModelVolumeIndex);
+		_volumeRenderer.extract(ModelVolumeIndex);
 		return true;
 	}
 	return false;
@@ -593,7 +597,7 @@ bool Model::extractVolume() {
 bool Model::extractCursorVolume() {
 	if (_extractCursor) {
 		_extractCursor = false;
-		_rawVolumeRenderer.extract(CursorVolumeIndex);
+		_cursorVolumeRenderer.extract(CursorVolumeIndex);
 		return true;
 	}
 	return false;
@@ -725,7 +729,7 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	}
 	_cursorPos = pos;
 	const voxel::Region& cursorRegion = cursorPositionVolume()->region();
-	_rawVolumeRenderer.setOffset(CursorVolumeIndex, -cursorRegion.getCentre() + _cursorPos);
+	_cursorVolumeRenderer.setOffset(CursorVolumeIndex, -cursorRegion.getCentre() + _cursorPos);
 
 	updateLockedPlane(math::Axis::X);
 	updateLockedPlane(math::Axis::Y);

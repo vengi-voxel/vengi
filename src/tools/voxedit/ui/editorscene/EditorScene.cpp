@@ -248,7 +248,7 @@ bool EditorScene::exportModel(const std::string& file) {
 	if (!(bool)filePtr) {
 		return false;
 	}
-	return voxel::exportMesh(m().rawVolumeRenderer().mesh(0), filePtr->name().c_str());
+	return voxel::exportMesh(m().volumeRenderer().mesh(), filePtr->name().c_str());
 }
 
 bool EditorScene::loadModel(const std::string& file) {
