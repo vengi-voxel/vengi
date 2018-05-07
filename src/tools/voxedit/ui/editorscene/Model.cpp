@@ -21,6 +21,7 @@
 #include "voxel/model/QBFormat.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
+#include "video/ScopedBlendMode.h"
 #include "math/Random.h"
 #include "core/Array.h"
 #include "core/App.h"
@@ -484,10 +485,8 @@ void Model::renderSelection(const video::Camera& camera) {
 	}
 	video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(-2.0f));
 	video::ScopedLineWidth lineWidth(3.0f);
-	video::enable(video::State::Blend);
-	video::blendFunc(video::BlendMode::One, video::BlendMode::One);
+	video::ScopedBlendMode blendMode(video::BlendMode::One, video::BlendMode::One);
 	_rawVolumeSelectionRenderer.render(camera);
-	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 }
 
 void Model::onResize(const glm::ivec2& size) {

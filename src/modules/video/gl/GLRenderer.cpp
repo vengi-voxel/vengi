@@ -327,6 +327,14 @@ bool blendEquation(BlendEquation func) {
 	return true;
 }
 
+void getBlendState(bool& enabled, BlendMode& src, BlendMode& dest, BlendEquation& func) {
+	const int stateIndex = std::enum_value(State::Blend);
+	enabled = _priv::s.states[stateIndex];
+	src = _priv::s.blendSrc;
+	dest = _priv::s.blendDest;
+	func = _priv::s.blendEquation;
+}
+
 bool blendFunc(BlendMode src, BlendMode dest) {
 	if (_priv::s.blendSrc == src && _priv::s.blendDest == dest) {
 		return false;

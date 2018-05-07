@@ -182,6 +182,7 @@ extern void colorMask(bool red, bool green, bool blue, bool alpha);
 extern bool cullFace(Face face);
 extern bool depthFunc(CompareFunc func);
 extern bool setupStencil(const StencilConfig& config);
+extern void getBlendState(bool& enabled, BlendMode& src, BlendMode& dest, BlendEquation& func);
 extern bool blendFunc(BlendMode src, BlendMode dest);
 extern bool blendEquation(BlendEquation func);
 extern PolygonMode polygonMode(Face face, PolygonMode mode);
