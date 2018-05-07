@@ -427,13 +427,18 @@ Id boundBuffer(VertexBufferType type) {
 	return _priv::s.bufferHandle[typeIndex];
 }
 
-void* mapBuffer(VertexBufferType type, AccessMode mode) {
-	const int typeIndex = std::enum_value(type);
-	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
-
+void* mapBuffer(Id handle, VertexBufferType type, AccessMode mode) {
 	const int modeIndex = std::enum_value(mode);
 	const GLenum glMode = _priv::AccessModes[modeIndex];
-	return glMapBuffer(glType, glMode);
+	if (FLEXT_ARB_direct_state_access) {
+		return glMapNamedBuffer(handle, glMode);
+	}
+	bindBuffer(type, handle);
+	const int typeIndex = std::enum_value(type);
+	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
+	void *data = glMapBuffer(glType, glMode);
+	unbindBuffer(type);
+	return data;
 }
 
 void unmapBuffer(VertexBufferType type) {
@@ -480,7 +485,11 @@ bool bindBufferBase(VertexBufferType type, Id handle, uint32_t index) {
 }
 
 void genBuffers(uint8_t amount, Id* ids) {
-	glGenBuffers((GLsizei)amount, (GLuint*)ids);
+	if (FLEXT_ARB_direct_state_access) {
+		glCreateBuffers((GLsizei)amount, (GLuint*)ids);
+	} else {
+		glGenBuffers((GLsizei)amount, (GLuint*)ids);
+	}
 	checkError();
 }
 
@@ -839,13 +848,27 @@ Id bindRenderbuffer(Id handle) {
 	return prev;
 }
 
-void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size) {
+void bufferData(Id handle, VertexBufferType type, VertexBufferMode mode, const void* data, size_t size) {
 	if (size <= 0) {
 		return;
 	}
-	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
 	const GLenum usage = _priv::VertexBufferModes[std::enum_value(mode)];
-	glBufferData(glType, (GLsizeiptr)size, data, usage);
+	if (FLEXT_ARB_direct_state_access) {
+		glNamedBufferData(handle, (GLsizeiptr)size, data, usage);
+		checkError();
+	} else {
+#if 1
+		const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
+		bindBuffer(type, handle);
+		glBufferData(glType, (GLsizeiptr)size, data, usage);
+		checkError();
+		unbindBuffer(type);
+#else
+		void *target = mapBuffer(handle, type, AccessMode::Write);
+		memcpy(target, data, size);
+		unmapBuffer(type);
+#endif
+	}
 	if (_priv::s.vendor[std::enum_value(Vendor::Nouveau)]) {
 		// nouveau needs this if doing the buffer update short before the draw call
 		glFlush(); // TODO: use glFenceSync here glClientWaitSync
@@ -861,19 +884,30 @@ size_t bufferSize(VertexBufferType type) {
 	return size;
 }
 
-void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size) {
+void bufferSubData(Id handle, VertexBufferType type, intptr_t offset, const void* data, size_t size) {
 	if (size == 0) {
 		return;
 	}
 	const int typeIndex = std::enum_value(type);
-	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
 #if SANITY_CHECKS_GL
 	core_assert(_priv::s.bufferHandle[typeIndex] != InvalidId);
 #endif
-	void *target = glMapBufferRange(glType, offset, size, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-	memcpy(target, data, size);
-	glUnmapBuffer(glType);
-	checkError();
+	if (FLEXT_ARB_direct_state_access) {
+		glNamedBufferSubData(handle, (GLintptr)offset, (GLsizeiptr)size, data);
+		checkError();
+	} else {
+#if 1
+		const GLenum glType = _priv::VertexBufferTypes[typeIndex];
+		bindBuffer(type, handle);
+		glBufferSubData(glType, (GLintptr)offset, (GLsizeiptr)size, data);
+		checkError();
+		unbindBuffer(type);
+#else
+		void *target = mapBufferRange(...);
+		memcpy(target, data, size);
+		unmapBuffer(type);
+#endif
+	}
 }
 
 //TODO: use FrameBufferConfig

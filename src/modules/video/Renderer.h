@@ -195,7 +195,7 @@ extern bool bindVertexArray(Id handle);
 extern Id boundVertexArray();
 extern Id boundBuffer(VertexBufferType type);
 extern void unmapBuffer(VertexBufferType type);
-extern void* mapBuffer(VertexBufferType type, AccessMode mode);
+extern void* mapBuffer(Id handle, VertexBufferType type, AccessMode mode);
 extern bool bindBuffer(VertexBufferType type, Id handle);
 extern bool unbindBuffer(VertexBufferType type);
 extern bool bindBufferBase(VertexBufferType type, Id handle, uint32_t index = 0u);
@@ -245,8 +245,8 @@ extern int getOcclusionQueryResult(Id id, bool wait = false);
 extern Id bindFramebuffer(Id handle, FrameBufferMode mode = FrameBufferMode::Default);
 extern bool setupRenderBuffer(TextureFormat format, int w, int h, int samples);
 extern Id bindRenderbuffer(Id handle);
-extern void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size);
-extern void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size);
+extern void bufferData(Id handle, VertexBufferType type, VertexBufferMode mode, const void* data, size_t size);
+extern void bufferSubData(Id handle, VertexBufferType type, intptr_t offset, const void* data, size_t size);
 /**
  * @return The size of the buffer object, measured in bytes.
  */

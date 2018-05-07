@@ -31,8 +31,7 @@ void* VertexBuffer::mapData(int32_t idx, video::AccessMode mode) const {
 	}
 	bind();
 	const VertexBufferType type = _targets[idx];
-	video::bindBuffer(type, _handles[idx]);
-	return video::mapBuffer(type, mode);
+	return video::mapBuffer(_handles[idx], type, mode);
 }
 
 void VertexBuffer::unmapData(int32_t idx) const {
@@ -122,13 +121,17 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 	core_assert(video::boundVertexArray() == InvalidId);
 	const VertexBufferType type = _targets[idx];
 	const Id id = _handles[idx];
-	video::bindBuffer(type, id);
 	if (_size[idx] >= size && _modes[idx] != VertexBufferMode::Static) {
-		video::bufferSubData(type, 0, data, size);
+		video::bufferSubData(id, type, 0, data, size);
 	} else {
-		video::bufferData(type, _modes[idx], data, size);
+#if 1
+		video::bufferData(id, type, _modes[idx], data, size);
+#else
+		void* target = video::mapBuffer(type, video::AccessMode::Write);
+		memcpy(target, data, size);
+		video::unmapBuffer(type);
+#endif
 	}
-	video::unbindBuffer(type);
 	_size[idx] = size;
 
 	return true;
