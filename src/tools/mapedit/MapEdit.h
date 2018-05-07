@@ -28,7 +28,7 @@ protected:
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
 	voxelrender::WorldRenderer _worldRenderer;
-	voxel::WorldMgrPtr _world;
+	voxel::WorldMgrPtr _worldMgr;
 	render::Axis _axis;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;

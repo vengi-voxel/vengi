@@ -18,9 +18,9 @@
 #include "voxel/MaterialColor.h"
 
 MapEdit::MapEdit(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world) :
-		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
+		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _worldMgr(world) {
 	init(ORGANISATION, "mapedit");
-	_world->setClientData(true);
+	_worldMgr->setClientData(true);
 }
 
 MapEdit::~MapEdit() {
@@ -48,7 +48,7 @@ core::AppState MapEdit::onConstruct() {
 	}).setHelp("Toggle free look");
 
 	_worldRenderer.construct();
-	_world->setPersist(false);
+	_worldMgr->setPersist(false);
 
 	return state;
 }
@@ -74,11 +74,11 @@ core::AppState MapEdit::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_world->init(filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
+	if (!_worldMgr->init(filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
 		return core::AppState::InitFailure;
 	}
 
-	_world->setSeed(1);
+	_worldMgr->setSeed(1);
 	if (!_worldRenderer.init(glm::ivec2(0), _dimension)) {
 		return core::AppState::InitFailure;
 	}
@@ -205,7 +205,7 @@ core::AppState MapEdit::onCleanup() {
 	_movement.shutdown();
 	_entity = frontend::ClientEntityPtr();
 	const core::AppState state = Super::onCleanup();
-	_world->shutdown();
+	_worldMgr->shutdown();
 	return state;
 }
 
@@ -217,12 +217,6 @@ void MapEdit::onWindowResize() {
 bool MapEdit::onKeyPress(int32_t key, int16_t modifier) {
 	if (key == SDLK_ESCAPE) {
 		toggleRelativeMouseMode();
-	} else if (key == SDLK_PLUS || key == SDLK_KP_PLUS) {
-		const float speed = _speed->floatVal() + 0.1f;
-		_speed->setVal(speed);
-	} else if (key == SDLK_MINUS || key == SDLK_KP_MINUS) {
-		const float speed = std::max(0.1f, _speed->floatVal() - 0.1f);
-		_speed->setVal(speed);
 	}
 	return Super::onKeyPress(key, modifier);
 }
@@ -231,11 +225,11 @@ void MapEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t c
 	Super::onMouseButtonPress(x, y, button, clicks);
 	const video::Ray& ray = _camera.mouseRay(glm::ivec2(_mousePos.x, _mousePos.y));
 	const glm::vec3& dirWithLength = ray.direction * _camera.farPlane();
-	const voxel::PickResult& result = _world->pickVoxel(ray.origin, dirWithLength);
+	const voxel::PickResult& result = _worldMgr->pickVoxel(ray.origin, dirWithLength);
 	if (result.didHit && button == SDL_BUTTON_RIGHT) {
-		_world->setVoxel(result.hitVoxel, voxel::createVoxel(voxel::VoxelType::Air, 0));
+		_worldMgr->setVoxel(result.hitVoxel, voxel::createVoxel(voxel::VoxelType::Air, 0));
 	} else if (result.validPreviousPosition && button == SDL_BUTTON_LEFT) {
-		_world->setVoxel(result.previousPosition, voxel::createRandomColorVoxel(voxel::VoxelType::Grass));
+		_worldMgr->setVoxel(result.previousPosition, voxel::createRandomColorVoxel(voxel::VoxelType::Grass));
 	}
 }
 
