@@ -431,20 +431,28 @@ void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	const int modeIndex = std::enum_value(mode);
 	const GLenum glMode = _priv::AccessModes[modeIndex];
 	if (FLEXT_ARB_direct_state_access) {
-		return glMapNamedBuffer(handle, glMode);
+		void* data = glMapNamedBuffer(handle, glMode);
+		checkError();
+		return data;
 	}
 	bindBuffer(type, handle);
 	const int typeIndex = std::enum_value(type);
 	const GLenum glType = _priv::BufferTypes[typeIndex];
 	void *data = glMapBuffer(glType, glMode);
+	checkError();
 	unbindBuffer(type);
 	return data;
 }
 
-void unmapBuffer(BufferType type) {
+void unmapBuffer(Id handle, BufferType type) {
 	const int typeIndex = std::enum_value(type);
 	const GLenum glType = _priv::BufferTypes[typeIndex];
-	glUnmapBuffer(glType);
+	if (FLEXT_ARB_direct_state_access) {
+		glUnmapNamedBuffer(handle);
+	} else {
+		glUnmapBuffer(glType);
+	}
+	checkError();
 }
 
 bool bindBuffer(BufferType type, Id handle) {
@@ -487,10 +495,11 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 void genBuffers(uint8_t amount, Id* ids) {
 	if (FLEXT_ARB_direct_state_access) {
 		glCreateBuffers((GLsizei)amount, (GLuint*)ids);
+		checkError();
 	} else {
 		glGenBuffers((GLsizei)amount, (GLuint*)ids);
+		checkError();
 	}
-	checkError();
 }
 
 void deleteBuffers(uint8_t amount, Id* ids) {
@@ -624,6 +633,7 @@ void deleteRenderbuffers(uint8_t amount, Id* ids) {
 void configureAttribute(const Attribute& a) {
 	core_assert(_priv::s.programHandle != InvalidId);
 	glEnableVertexAttribArray(a.index);
+	checkError();
 	const GLenum glType = _priv::DataTypes[std::enum_value(a.type)];
 	if (a.typeIsInt) {
 		glVertexAttribIPointer(a.index, a.size, glType, a.stride, GL_OFFSET_CAST(a.offset));

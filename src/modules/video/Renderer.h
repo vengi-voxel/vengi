@@ -202,7 +202,7 @@ extern Id getProgram();
 extern bool bindVertexArray(Id handle);
 extern Id boundVertexArray();
 extern Id boundBuffer(BufferType type);
-extern void unmapBuffer(BufferType type);
+extern void unmapBuffer(Id handle, BufferType type);
 extern void* mapBuffer(Id handle, BufferType type, AccessMode mode);
 extern bool bindBuffer(BufferType type, Id handle);
 extern bool unbindBuffer(BufferType type);

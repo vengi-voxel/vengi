@@ -39,7 +39,7 @@ void Buffer::unmapData(int32_t idx) const {
 		return;
 	}
 	const BufferType type = _targets[idx];
-	video::unmapBuffer(type);
+	video::unmapBuffer(_handles[idx], type);
 }
 
 bool Buffer::addAttribute(const Attribute& attribute) {
