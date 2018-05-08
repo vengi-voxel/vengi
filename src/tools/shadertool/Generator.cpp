@@ -247,7 +247,7 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		const std::string& attributeName = util::convertName(v.name, true);
 		const bool isInt = v.isInteger();
 
-		methods << "\tvideo::Attribute get" << attributeName << "Attribute(const int32_t bufferIndex, int stride = 0, intptr_t offset = 0, bool normalized = false) {\n";
+		methods << "\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, int stride = 0, intptr_t offset = 0, bool normalized = false) const {\n";
 		methods << "\t\tvideo::Attribute attribute" << attributeName << ";\n";
 		methods << "\t\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
 		methods << "\t\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
@@ -265,7 +265,7 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		methods << "\t};\n\n";
 
 		methods << "\ttemplate<typename CLASS, typename TYPE>\n";
-		methods << "\tvideo::Attribute get" << attributeName << "Attribute(const int32_t bufferIndex, TYPE CLASS::* member, bool normalized = false) {\n";
+		methods << "\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, TYPE CLASS::* member, bool normalized = false) const {\n";
 		methods << "\t\tvideo::Attribute attribute" << attributeName << ";\n";
 		methods << "\t\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
 		methods << "\t\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
