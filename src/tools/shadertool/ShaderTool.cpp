@@ -32,6 +32,7 @@ core::AppState ShaderTool::onConstruct() {
 	registerArg("--namespace").setShort("-n").setDescription("Namespace to generate the source in").setDefaultValue("shader");
 	registerArg("--shaderdir").setShort("-d").setDescription("Directory to load the shader from").setDefaultValue("shaders/");
 	registerArg("--sourcedir").setDescription("Directory to generate the source in").setMandatory();
+	registerArg("-I").setDescription("Add additional include dir");
 	registerArg("--printincludes").setDescription("Print the includes for the given shader");
 	Log::trace("Set some shader config vars to let the validation work");
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
