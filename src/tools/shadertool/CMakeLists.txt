@@ -14,7 +14,7 @@ set(SRCS
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} NOINSTALL)
 add_dependencies(${PROJECT_NAME} glslangValidator)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES video simplecpp)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES video util simplecpp)
 
 set(TEST_SRCS
 	${SHARED_SRCS}

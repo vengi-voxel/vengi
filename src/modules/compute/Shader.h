@@ -30,11 +30,6 @@ protected:
 	std::string _name;
 
 	std::string handlePragmas(const std::string& buffer) const;
-	/**
-	 * @brief Manually resolve @c #include statements. We need to parse the complete shader
-	 * to be able to identify each struct and kernel.
-	 */
-	std::string handleIncludes(const std::string& buffer) const;
 
 	BufferFlag bufferFlags(const void* bufPtr, size_t size) const;
 

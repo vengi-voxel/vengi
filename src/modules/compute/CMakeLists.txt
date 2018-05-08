@@ -11,7 +11,7 @@ set(SRCS
 set(LIB compute)
 find_package(OpenCL)
 add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core util)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 set(OPENCL_LIBRARY ${OpenCL_LIBRARY})
 if (OpenCL_INCLUDE_DIRS)

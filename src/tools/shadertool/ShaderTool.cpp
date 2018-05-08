@@ -10,6 +10,7 @@
 #include "core/Var.h"
 #include "core/Assert.h"
 #include "core/GameConfig.h"
+#include "util/IncludeUtil.h"
 #include "video/Shader.h"
 #include "Generator.h"
 #include "Parser.h"
@@ -88,10 +89,10 @@ std::string ShaderTool::getSource(const std::string& file) const {
 	const io::FilesystemPtr& fs = filesystem();
 	std::string src = fs->load(file);
 
-	src = video::Shader::handleIncludes(src, _includeDirs);
+	src = util::handleIncludes(src, _includeDirs);
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		src = video::Shader::handleIncludes(src, _includeDirs);
+		src = util::handleIncludes(src, _includeDirs);
 		++level;
 		if (level >= 10) {
 			Log::warn("Abort shader include loop for %s", file.c_str());

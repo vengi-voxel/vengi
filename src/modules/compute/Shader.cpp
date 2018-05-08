@@ -6,6 +6,7 @@
 #include "core/Log.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
+#include "util/IncludeUtil.h"
 
 namespace compute {
 
@@ -29,52 +30,6 @@ std::string Shader::handlePragmas(const std::string& buffer) const {
 	//#pragma OPENCL EXTENSION cl_amd_printf : enable
 	//#pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
 	return buffer;
-}
-
-std::string Shader::handleIncludes(const std::string& buffer) const {
-	std::string src;
-	const std::string_view include = "#include";
-	int index = 0;
-	for (std::string::const_iterator i = buffer.begin(); i != buffer.end(); ++i, ++index) {
-		const char *c = &buffer[index];
-		if (*c != '#') {
-			src.append(c, 1);
-			continue;
-		}
-		if (::strncmp(include.data(), c, include.length())) {
-			src.append(c, 1);
-			continue;
-		}
-		for (; i != buffer.end(); ++i, ++index) {
-			const char *cStart = &buffer[index];
-			if (*cStart != '"') {
-				continue;
-			}
-
-			++index;
-			++i;
-			for (; i != buffer.end(); ++i, ++index) {
-				const char *cEnd = &buffer[index];
-				if (*cEnd != '"') {
-					continue;
-				}
-
-				const std::string_view dir = core::string::extractPath(_name);
-				const std::string_view includeFile(cStart + 1, (size_t)(cEnd - (cStart + 1)));
-				const std::string& includeBuffer = core::App::getInstance()->filesystem()->load(core::string::concat(dir, includeFile));
-				if (includeBuffer.empty()) {
-					Log::error("could not load shader include %s from dir %s (shader %s)", includeFile.data(), dir.data(), _name.c_str());
-				}
-				src.append(includeBuffer);
-				break;
-			}
-			break;
-		}
-		if (i == buffer.end()) {
-			break;
-		}
-	}
-	return src;
 }
 
 void Shader::update(uint32_t deltaTime) {
@@ -210,10 +165,12 @@ std::string Shader::getSource(const std::string& buffer, bool finalize) const {
 		src.append("#endif\n");
 	}
 
-	src += handleIncludes(buffer);
+	std::vector<std::string> includeDirs;
+	includeDirs.push_back(std::string(core::string::extractPath(_name)));
+	src += util::handleIncludes(buffer, includeDirs);
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		src = handleIncludes(src);
+		src = util::handleIncludes(src, includeDirs);
 		++level;
 		if (level >= 10) {
 			Log::warn("Abort shader include loop for %s", _name.c_str());

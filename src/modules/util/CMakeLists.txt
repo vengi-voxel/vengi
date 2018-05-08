@@ -5,6 +5,7 @@ set(SRCS
 	Console.h Console.cpp
 	KeybindingParser.h KeybindingParser.cpp
 	KeybindingHandler.h KeybindingHandler.cpp
+	IncludeUtil.h IncludeUtil.cpp
 )
 set(LIB util)
 add_library(${LIB} ${SRCS})

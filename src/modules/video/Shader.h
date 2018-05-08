@@ -97,12 +97,10 @@ protected:
 	 * @return @c false if no change is needed, @c true if we have to update the value
 	 */
 	bool checkUniformCache(int location, const void* value, size_t length) const;
-
 public:
 	Shader();
 	virtual ~Shader();
 
-	static std::string handleIncludes(const std::string& buffer, const std::vector<std::string>& includeDirs, std::vector<std::string>* includedFiles = nullptr);
 	static std::string validPreprocessorName(const std::string& name);
 
 	static int glslVersion;

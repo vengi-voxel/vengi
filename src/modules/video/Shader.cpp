@@ -14,6 +14,7 @@
 #include "ShaderManager.h"
 #include "UniformBuffer.h"
 #include "video/Renderer.h"
+#include "util/IncludeUtil.h"
 
 namespace video {
 
@@ -264,63 +265,6 @@ int Shader::fetchAttributes() {
 	return video::fetchAttributes(_program, _attributes, _name);
 }
 
-std::string Shader::handleIncludes(const std::string& buffer, const std::vector<std::string>& includeDirs, std::vector<std::string>* includedFiles) {
-	std::string src;
-	const std::string_view include = "#include";
-	int index = 0;
-	for (std::string::const_iterator i = buffer.begin(); i != buffer.end(); ++i, ++index) {
-		const char *c = &buffer[index];
-		if (*c != '#') {
-			src.append(c, 1);
-			continue;
-		}
-		if (::strncmp(include.data(), c, include.length())) {
-			src.append(c, 1);
-			continue;
-		}
-		for (; i != buffer.end(); ++i, ++index) {
-			const char *cStart = &buffer[index];
-			if (*cStart != '"') {
-				continue;
-			}
-
-			++index;
-			++i;
-			for (; i != buffer.end(); ++i, ++index) {
-				const char *cEnd = &buffer[index];
-				if (*cEnd != '"') {
-					continue;
-				}
-
-				const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
-				for (const std::string& dir : includeDirs) {
-					const std::string_view includeFile(cStart + 1, (size_t)(cEnd - (cStart + 1)));
-					const std::string& fullPath = core::string::concat(dir + "/", includeFile);
-					if (!fs->exists(fullPath)) {
-						continue;
-					}
-					const std::string& includeBuffer = fs->load(fullPath);
-					if (includeBuffer.empty()) {
-						Log::error("could not load shader include %s from dir %s", includeFile.data(), dir.data());
-					} else {
-						if (includedFiles != nullptr) {
-							includedFiles->push_back(fullPath);
-						}
-						src.append(includeBuffer);
-					}
-					break;
-				}
-				break;
-			}
-			break;
-		}
-		if (i == buffer.end()) {
-			break;
-		}
-	}
-	return src;
-}
-
 /**
  * Some drivers don't support underscores in their defines...
  */
@@ -373,10 +317,10 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 
 	std::vector<std::string> includeDirs;
 	includeDirs.push_back(std::string(core::string::extractPath(_name)));
-	src += handleIncludes(buffer, includeDirs, includedFiles);
+	src += util::handleIncludes(buffer, includeDirs, includedFiles);
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		src = handleIncludes(src, includeDirs, includedFiles);
+		src = util::handleIncludes(src, includeDirs, includedFiles);
 		++level;
 		if (level >= 10) {
 			Log::warn("Abort shader include loop for %s", _name.c_str());
