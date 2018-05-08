@@ -364,24 +364,6 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 		src.append("#endif\n");
 	}
 
-	// TODO: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
-	// https://www.khronos.org/opengl/wiki/GLSL_Optimizations
-	std::string_view replaceIn = "in";
-	std::string_view replaceOut = "out";
-	std::string_view replaceTexture1D = "texture1D";
-	std::string_view replaceTexture2D = "texture2D";
-	std::string_view replaceTexture3D = "texture3D";
-	std::string_view replaceShadow2D = "shadow2D";
-	if (glslVersion < GLSLVersion::V130) {
-		replaceIn = "attribute";
-		replaceOut = "varying";
-	} else {
-		replaceTexture1D = "texture";
-		replaceTexture2D = "texture";
-		replaceTexture3D = "texture";
-		replaceShadow2D = "texture";
-	}
-
 	src += handleIncludes(buffer, includedFiles);
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
@@ -401,6 +383,24 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 	});
 
 	if (finalize) {
+		// TODO: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
+		// https://www.khronos.org/opengl/wiki/GLSL_Optimizations
+		std::string_view replaceIn = "in";
+		std::string_view replaceOut = "out";
+		std::string_view replaceTexture1D = "texture1D";
+		std::string_view replaceTexture2D = "texture2D";
+		std::string_view replaceTexture3D = "texture3D";
+		std::string_view replaceShadow2D = "shadow2D";
+		if (glslVersion < GLSLVersion::V130) {
+			replaceIn = "attribute";
+			replaceOut = "varying";
+		} else {
+			replaceTexture1D = "texture";
+			replaceTexture2D = "texture";
+			replaceTexture3D = "texture";
+			replaceShadow2D = "texture";
+		}
+
 		src = core::string::replaceAll(src, "$constant", "//");
 		src = core::string::replaceAll(src, "$in", replaceIn);
 		src = core::string::replaceAll(src, "$out", replaceOut);
