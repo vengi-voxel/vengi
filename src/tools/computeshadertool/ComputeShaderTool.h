@@ -39,7 +39,9 @@ protected:
 	std::vector<computeshadertool::Kernel> _kernels;
 	std::vector<computeshadertool::Struct> _structs;
 	std::map<std::string, std::string> _constants;
+	std::vector<std::string> _includeDirs;
 
+	std::string getSource(const std::string& file) const;
 	bool parse(const std::string& src);
 public:
 	ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

@@ -82,7 +82,7 @@ macro(generate_shaders TARGET)
 				OUTPUT ${_shader}.in
 				IMPLICIT_DEPENDS C ${_shaders}
 				COMMENT "Validate ${_file} and generate ${_shaderfile}"
-				COMMAND ${CMAKE_BINARY_DIR}/shadertool --glslang ${CMAKE_BINARY_DIR}/glslangValidator --postfix .in --shader ${_lastdir}/${_file} --shadertemplate ${_template} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+				COMMAND ${CMAKE_BINARY_DIR}/shadertool --glslang ${CMAKE_BINARY_DIR}/glslangValidator -I ${CMAKE_CURRENT_SOURCE_DIR} --postfix .in --shader ${_lastdir}/${_file} --shadertemplate ${_template} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
 				DEPENDS shadertool ${_shaders} ${_template} ${_template_ub}
 			)
 			list(APPEND _headers ${_shader})
@@ -138,7 +138,7 @@ macro(generate_compute_shaders TARGET)
 				OUTPUT ${_shader}.in
 				IMPLICIT_DEPENDS C ${_shaders}
 				COMMENT "Validate ${_file} and generate ${_shaderfile}"
-				COMMAND ${CMAKE_BINARY_DIR}/computeshadertool --shader ${_lastdir}/${_file} --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
+				COMMAND ${CMAKE_BINARY_DIR}/computeshadertool --shader ${_lastdir}/${_file} -I ${CMAKE_CURRENT_SOURCE_DIR} --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
 				DEPENDS computeshadertool ${_shaders} ${_template}
 			)
 			list(APPEND _headers ${_shader})

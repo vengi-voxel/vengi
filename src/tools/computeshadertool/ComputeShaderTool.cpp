@@ -10,6 +10,7 @@
 #include "Generator.h"
 #include "Parser.h"
 #include "Util.h"
+#include "util/IncludeUtil.h"
 #include <stack>
 #include <string>
 
@@ -31,7 +32,25 @@ core::AppState ComputeShaderTool::onConstruct() {
 	registerArg("--namespace").setShort("-n").setDescription("Namespace to generate the source in").setDefaultValue("compute");
 	registerArg("--shaderdir").setShort("-d").setDescription("Directory to load the shader from").setDefaultValue("shaders/");
 	registerArg("--sourcedir").setDescription("Directory to generate the source in").setMandatory();
+	registerArg("-I").setDescription("Add additional include dir");
 	return Super::onConstruct();
+}
+
+std::string ComputeShaderTool::getSource(const std::string& file) const {
+	const io::FilesystemPtr& fs = filesystem();
+	std::string src = fs->load(file);
+
+	src = util::handleIncludes(src, _includeDirs);
+	int level = 0;
+	while (core::string::contains(src, "#include")) {
+		src = util::handleIncludes(src, _includeDirs);
+		++level;
+		if (level >= 10) {
+			Log::warn("Abort shader include loop for %s", file.c_str());
+			break;
+		}
+	}
+	return src;
 }
 
 core::AppState ComputeShaderTool::onRunning() {
@@ -43,6 +62,17 @@ core::AppState ComputeShaderTool::onRunning() {
 			_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
 	_postfix                              = getArgVal("--postfix", "");
 
+	// handle include dirs
+	_includeDirs.push_back(".");
+	int index = 0;
+	for (;;) {
+		const std::string& dir = getArgVal("-I", "", &index);
+		if (dir.empty()) {
+			break;
+		}
+		_includeDirs.push_back(dir);
+	}
+
 	if (!core::string::endsWith(_shaderDirectory, "/")) {
 		_shaderDirectory = _shaderDirectory + "/";
 	}
@@ -53,7 +83,7 @@ core::AppState ComputeShaderTool::onRunning() {
 	Log::debug("Preparing shader file %s", shaderfile.c_str());
 	_computeFilename = shaderfile + COMPUTE_POSTFIX;
 	const bool changedDir = filesystem()->pushDir(std::string(core::string::extractPath(shaderfile.c_str())));
-	const std::string computeBuffer = filesystem()->load(_computeFilename);
+	const std::string computeBuffer = getSource(_computeFilename);
 	if (computeBuffer.empty()) {
 		Log::error("Could not load %s", _computeFilename.c_str());
 		_exitCode = 127;

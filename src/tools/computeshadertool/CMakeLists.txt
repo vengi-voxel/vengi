@@ -12,7 +12,7 @@ set(SRCS
 	ComputeShaderTool.h ComputeShaderTool.cpp
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} NOINSTALL)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES compute simplecpp)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES util compute simplecpp)
 
 set(TEST_SRCS
 	${SHARED_SRCS}
