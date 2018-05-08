@@ -33,8 +33,8 @@ core::AppState TestGLSLGeom::onInit() {
 	int32_t bufIndex = _buffer.create(&buf, sizeof(buf));
 	_buffer.setMode(bufIndex, video::BufferMode::Static);
 
-	_buffer.addAttribute(_testShader.getPosAttribute(bufIndex, sizeof(Buf), offsetof(Buf, pos)));
-	_buffer.addAttribute(_testShader.getColorAttribute(bufIndex, sizeof(Buf), offsetof(Buf, color)));
+	_buffer.addAttribute(_testShader.getPosAttribute(bufIndex, &Buf::pos));
+	_buffer.addAttribute(_testShader.getColorAttribute(bufIndex, &Buf::color));
 
 	video::clearColor(::core::Color::Black);
 	return state;
