@@ -27,9 +27,11 @@ protected:
 	std::string _shaderfile;
 	std::string _shaderpath;
 	std::vector<std::string> _includes;
+	std::vector<std::string> _includeDirs;
 
 	bool parse(const std::string& src, bool vertex);
 	void validate(const std::string& name);
+	std::string getSource(const std::string& file) const;
 	bool printInfo();
 public:
 	ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

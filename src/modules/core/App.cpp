@@ -472,12 +472,16 @@ bool App::hasArg(const std::string& arg) const {
 	return false;
 }
 
-std::string App::getArgVal(const std::string& arg, const std::string& defaultVal) {
-	for (int i = 1; i < _argc; ++i) {
+std::string App::getArgVal(const std::string& arg, const std::string& defaultVal, int* argi) {
+	int start = argi == nullptr ? 1 : std::max(1, *argi);
+	for (int i = start; i < _argc; ++i) {
 		if (arg != _argv[i]) {
 			continue;
 		}
 		if (i + 1 < _argc) {
+			if (argi != nullptr) {
+				*argi = i + 1;
+			}
 			return _argv[i + 1];
 		}
 	}
@@ -488,11 +492,14 @@ std::string App::getArgVal(const std::string& arg, const std::string& defaultVal
 		if (a.longArg() != arg && a.shortArg() != arg) {
 			continue;
 		}
-		for (int i = 1; i < _argc; ++i) {
+		for (int i = start; i < _argc; ++i) {
 			if (a.longArg() != _argv[i] && a.shortArg() != _argv[i]) {
 				continue;
 			}
 			if (i + 1 < _argc) {
+				if (argi != nullptr) {
+					*argi = i + 1;
+				}
 				return _argv[i + 1];
 			}
 		}

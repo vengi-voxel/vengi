@@ -84,6 +84,23 @@ bool ShaderTool::printInfo() {
 	return true;
 }
 
+std::string ShaderTool::getSource(const std::string& file) const {
+	const io::FilesystemPtr& fs = filesystem();
+	std::string src = fs->load(file);
+
+	src = video::Shader::handleIncludes(src, _includeDirs);
+	int level = 0;
+	while (core::string::contains(src, "#include")) {
+		src = video::Shader::handleIncludes(src, _includeDirs);
+		++level;
+		if (level >= 10) {
+			Log::warn("Abort shader include loop for %s", file.c_str());
+			break;
+		}
+	}
+	return src;
+}
+
 core::AppState ShaderTool::onRunning() {
 	const std::string& shaderfile         = getArgVal("--shader");
 	const bool printIncludes              = hasArg("--printincludes");
@@ -96,6 +113,17 @@ core::AppState ShaderTool::onRunning() {
 		_sourceDirectory                  = getArgVal("--sourcedir",
 				_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
 		_postfix                          = getArgVal("--postfix", "");
+
+		// handle include dirs
+		_includeDirs.push_back(".");
+		int index = 0;
+		for (;;) {
+			const std::string& dir = getArgVal("-I", "", &index);
+			if (dir.empty()) {
+				break;
+			}
+			_includeDirs.push_back(dir);
+		}
 
 		if (!core::string::endsWith(_shaderDirectory, "/")) {
 			_shaderDirectory = _shaderDirectory + "/";
@@ -125,7 +153,7 @@ core::AppState ShaderTool::onRunning() {
 	const std::string& templateUniformBuffer = fs->load(_uniformBufferTemplateFile);
 
 	const std::string& computeFilename = _shaderfile + COMPUTE_POSTFIX;
-	const std::string& computeBuffer = fs->load(computeFilename);
+	const std::string& computeBuffer = getSource(computeFilename);
 	if (!computeBuffer.empty()) {
 		const std::string& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer, false, &_includes);
 		if (!parse(computeSrcSource, false)) {
@@ -155,7 +183,7 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	const std::string& fragmentFilename = _shaderfile + FRAGMENT_POSTFIX;
-	const std::string& fragmentBuffer = fs->load(fragmentFilename);
+	const std::string& fragmentBuffer = getSource(fragmentFilename);
 	if (fragmentBuffer.empty()) {
 		Log::error("Could not load %s", fragmentFilename.c_str());
 		_exitCode = 127;
@@ -163,7 +191,7 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	const std::string& vertexFilename = _shaderfile + VERTEX_POSTFIX;
-	const std::string& vertexBuffer = fs->load(vertexFilename);
+	const std::string& vertexBuffer = getSource(vertexFilename);
 	if (vertexBuffer.empty()) {
 		Log::error("Could not load %s", vertexFilename.c_str());
 		_exitCode = 127;
@@ -171,7 +199,7 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	const std::string& geometryFilename = _shaderfile + GEOMETRY_POSTFIX;
-	const std::string& geometryBuffer = fs->load(geometryFilename);
+	const std::string& geometryBuffer = getSource(geometryFilename);
 
 	const std::string& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, false, &_includes);
 	const std::string& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, false, &_includes);

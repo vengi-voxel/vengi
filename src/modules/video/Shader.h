@@ -98,11 +98,11 @@ protected:
 	 */
 	bool checkUniformCache(int location, const void* value, size_t length) const;
 
-	std::string handleIncludes(const std::string& buffer, std::vector<std::string>* includedFiles) const;
 public:
 	Shader();
 	virtual ~Shader();
 
+	static std::string handleIncludes(const std::string& buffer, const std::vector<std::string>& includeDirs, std::vector<std::string>* includedFiles = nullptr);
 	static std::string validPreprocessorName(const std::string& name);
 
 	static int glslVersion;

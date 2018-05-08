@@ -259,7 +259,7 @@ public:
 	 * @note Only valid after
 	 */
 	bool hasArg(const std::string& arg) const;
-	std::string getArgVal(const std::string& arg, const std::string& defaultVal = "");
+	std::string getArgVal(const std::string& arg, const std::string& defaultVal = "", int* argi = nullptr);
 	Argument& registerArg(const std::string& arg);
 
 	// handle the app state changes here
