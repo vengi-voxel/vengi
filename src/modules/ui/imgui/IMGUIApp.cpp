@@ -175,9 +175,8 @@ core::AppState IMGUIApp::onInit() {
 	_camera.init(glm::ivec2(0), _dimension);
 	_camera.update(0L);
 
-	video::Attribute attributeColor = _shader.getColorAttribute(_bufferIndex, sizeof(ImDrawVert), offsetof(ImDrawVert, col));
+	video::Attribute attributeColor = _shader.getColorAttribute(_bufferIndex, sizeof(ImDrawVert), offsetof(ImDrawVert, col), true);
 	attributeColor.type = video::DataType::UnsignedByte;
-	attributeColor.normalized = true;
 	_vbo.addAttribute(attributeColor);
 	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, sizeof(ImDrawVert), offsetof(ImDrawVert, uv)));
 	_vbo.addAttribute(_shader.getPosAttribute(_bufferIndex, sizeof(ImDrawVert), offsetof(ImDrawVert, pos)));

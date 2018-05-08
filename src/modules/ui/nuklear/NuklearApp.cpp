@@ -256,13 +256,9 @@ core::AppState NuklearApp::onInit() {
 	_camera.init(glm::ivec2(0), dimension());
 	_camera.update(0L);
 
-	video::Attribute attributeColor = _shader.getColorAttribute(_vertexBufferIndex, sizeof(Vertex), offsetof(Vertex, col));
-	attributeColor.type = video::DataType::UnsignedByte;
-	attributeColor.normalized = true;
-	_vbo.addAttribute(attributeColor);
-
-	_vbo.addAttribute(_shader.getTexcoordAttribute(_vertexBufferIndex, sizeof(Vertex), offsetof(Vertex, u)));
-	_vbo.addAttribute(_shader.getPosAttribute(_vertexBufferIndex, sizeof(Vertex), offsetof(Vertex, x)));
+	_vbo.addAttribute(_shader.getColorAttribute(_vertexBufferIndex, &Vertex::r, true));
+	_vbo.addAttribute(_shader.getTexcoordAttribute(_vertexBufferIndex, &Vertex::u));
+	_vbo.addAttribute(_shader.getPosAttribute(_vertexBufferIndex, &Vertex::x));
 
 	if (!_vbo.update(_vertexBufferIndex, nullptr, MAX_VERTEX_MEMORY)) {
 		Log::error("Failed to upload vertex buffer data with %i bytes", MAX_VERTEX_MEMORY);

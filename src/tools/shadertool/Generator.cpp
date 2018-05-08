@@ -247,19 +247,33 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		const std::string& attributeName = util::convertName(v.name, true);
 		const bool isInt = v.isInteger();
 
-		methods << "\tvideo::Attribute get" << attributeName << "Attribute(const int32_t bufferIndex, int stride = 0, intptr_t offset = 0) {\n";
+		methods << "\tvideo::Attribute get" << attributeName << "Attribute(const int32_t bufferIndex, int stride = 0, intptr_t offset = 0, bool normalized = false) {\n";
 		methods << "\t\tvideo::Attribute attribute" << attributeName << ";\n";
 		methods << "\t\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
 		methods << "\t\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
 		methods << "\t\tattribute" << attributeName << ".size = getComponents" << attributeName << "();\n";
 		methods << "\t\tattribute" << attributeName << ".offset = offset;\n";
 		methods << "\t\tattribute" << attributeName << ".stride = stride;\n";
+		methods << "\t\tattribute" << attributeName << ".normalized = normalized;\n";
 		methods << "\t\tattribute" << attributeName << ".type = ";
 		if (isInt) {
 			methods << "video::DataType::Int;\n";
 		} else {
 			methods << "video::DataType::Float;\n";
 		}
+		methods << "\t\treturn attribute" << attributeName << ";\n";
+		methods << "\t};\n\n";
+
+		methods << "\ttemplate<typename CLASS, typename TYPE>\n";
+		methods << "\tvideo::Attribute get" << attributeName << "Attribute(const int32_t bufferIndex, TYPE CLASS::* member, bool normalized = false) {\n";
+		methods << "\t\tvideo::Attribute attribute" << attributeName << ";\n";
+		methods << "\t\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
+		methods << "\t\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
+		methods << "\t\tattribute" << attributeName << ".size = getComponents" << attributeName << "();\n";
+		methods << "\t\tattribute" << attributeName << ".offset = reinterpret_cast<std::size_t>(&(((CLASS*)nullptr)->*member));\n";
+		methods << "\t\tattribute" << attributeName << ".stride = sizeof(CLASS);\n";
+		methods << "\t\tattribute" << attributeName << ".normalized = normalized;\n";
+		methods << "\t\tattribute" << attributeName << ".type = video::mapType<TYPE>();\n";
 		methods << "\t\treturn attribute" << attributeName << ";\n";
 		methods << "\t};\n\n";
 

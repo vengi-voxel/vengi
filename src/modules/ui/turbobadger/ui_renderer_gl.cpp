@@ -107,12 +107,9 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 	_camera.init(glm::ivec2(0), dimensions);
 	_camera.update(0L);
 
-	video::Attribute attributeColor = _shader.getColorAttribute(_bufferIndex, sizeof(Vertex), offsetof(Vertex, col));
-	attributeColor.type = video::DataType::UnsignedByte;
-	attributeColor.normalized = true;
-	_vbo.addAttribute(attributeColor);
-	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, sizeof(Vertex), offsetof(Vertex, u)));
-	_vbo.addAttribute(_shader.getPosAttribute(_bufferIndex, sizeof(Vertex), offsetof(Vertex, x)));
+	_vbo.addAttribute(_shader.getColorAttribute(_bufferIndex, &Vertex::r, true));
+	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, &Vertex::u));
+	_vbo.addAttribute(_shader.getPosAttribute(_bufferIndex, &Vertex::x));
 
 	uint32_t data = 0xffffffff;
 	_white.Init(1, 1, &data);

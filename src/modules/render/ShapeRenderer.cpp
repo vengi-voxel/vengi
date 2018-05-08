@@ -177,10 +177,7 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, siz
 		}
 		vbo.setMode(_offsetIndex[meshIndex], video::BufferMode::Stream);
 
-		video::Attribute attributeOffset;
-		attributeOffset.bufferIndex = _offsetIndex[meshIndex];
-		attributeOffset.index = _colorInstancedShader.getLocationOffset();
-		attributeOffset.size = _colorInstancedShader.getComponentsOffset();
+		video::Attribute attributeOffset = _colorInstancedShader.getOffsetAttribute(_offsetIndex[meshIndex]);
 		attributeOffset.divisor = 1;
 		attributeOffset.stride = attributeOffset.size * sizeof(float);
 		core_assert_always(_vbo[meshIndex].addAttribute(attributeOffset));
