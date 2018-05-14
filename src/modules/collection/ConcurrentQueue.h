@@ -39,18 +39,14 @@ public:
 	}
 
 	void push(Data const& data) {
-		{
-			std::unique_lock<std::mutex> lock(_mutex);
-			_data.push(data);
-		}
+		std::unique_lock<std::mutex> lock(_mutex);
+		_data.push(data);
 		_conditionVariable.notify_one();
 	}
 
 	void push(Data&& data) {
-		{
-			std::unique_lock<std::mutex> lock(_mutex);
-			_data.push(data);
-		}
+		std::unique_lock<std::mutex> lock(_mutex);
+		_data.push(data);
 		_conditionVariable.notify_one();
 	}
 
