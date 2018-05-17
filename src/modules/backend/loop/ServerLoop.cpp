@@ -261,7 +261,7 @@ void ServerLoop::shutdown() {
 
 void ServerLoop::update(long dt) {
 	core_trace_scoped(ServerLoop);
-	// not everything is ticket in here directly, a lot is handled by libuv timers
+	// not everything is ticked in here directly, a lot is handled by libuv timers
 	uv_run(_loop, UV_RUN_NOWAIT);
 	_network->update();
 	const int eventSkip = _eventBus->update(200);
