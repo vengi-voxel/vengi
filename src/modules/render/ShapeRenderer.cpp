@@ -122,7 +122,7 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 	core_assert(attributePos.size == _colorInstancedShader.getComponentsPos());
 	core_assert_always(_vbo[meshIndex].addAttribute(attributePos));
 
-	video::Attribute attributeColor = _colorShader.getPosAttribute(_colorIndex[meshIndex]);
+	video::Attribute attributeColor = _colorShader.getColorAttribute(_colorIndex[meshIndex]);
 	core_assert(attributeColor.index == _colorInstancedShader.getLocationColor());
 	core_assert(attributeColor.size == _colorInstancedShader.getComponentsColor());
 	core_assert_always(_vbo[meshIndex].addAttribute(attributeColor));
