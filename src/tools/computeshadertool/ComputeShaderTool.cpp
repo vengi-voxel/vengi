@@ -99,7 +99,7 @@ core::AppState ComputeShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 	const std::string& templateShader = filesystem()->load(_shaderTemplateFile);
-	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs, _constants, _postfix)) {
+	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs, _constants, _postfix, computeBuffer)) {
 		_exitCode = 100;
 		return core::AppState::Cleanup;
 	}

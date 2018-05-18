@@ -334,6 +334,9 @@ AppState App::onInit() {
 			// already handled
 			continue;
 		}
+		if (Command::getCommand(command) == nullptr) {
+			continue;
+		}
 		std::string args;
 		args.reserve(256);
 		for (++i; i < _argc;) {

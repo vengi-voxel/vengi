@@ -6,9 +6,14 @@ set(SRCS
 	ShaderAttribute.h
 	WorldRenderer.h WorldRenderer.cpp
 )
+set(SRCS_SHADERS
+	shaders/water.vert shaders/water.frag
+	shaders/world_instanced.vert shaders/world_instanced.frag
+	shaders/world.vert shaders/world.frag
+)
 
 set(LIB voxelrender)
-add_library(${LIB} ${SRCS})
+add_library(${LIB} ${SRCS} ${SRCS_SHADERS})
 generate_shaders(${LIB} world water world_instanced)
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES frontend render voxel)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})

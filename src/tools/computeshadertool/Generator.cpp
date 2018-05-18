@@ -216,7 +216,8 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		const std::vector<Kernel>& _kernels,
 		const std::vector<Struct>& _structs,
 		const std::map<std::string, std::string>& _constants,
-		const std::string& postfix) {
+		const std::string& postfix,
+		const std::string& shaderBuffer) {
 	const std::string name = _name + "Shader";
 
 	std::vector<std::string> shaderNameParts;
@@ -279,6 +280,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	src = core::string::replaceAll(src, "$shutdown$", shutdown.str());
 	src = core::string::replaceAll(src, "$structs$", structs.str());
 	src = core::string::replaceAll(src, "$createkernels$", createKernels.str());
+	src = core::string::replaceAll(src, "$shaderbuffer$", shaderBuffer);
 	const std::string targetFile = sourceDirectory + filename + ".h" + postfix;
 	Log::info("Generate shader bindings for %s at %s", _name.c_str(), targetFile.c_str());
 	if (!filesystem->syswrite(targetFile, src)) {

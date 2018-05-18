@@ -169,7 +169,8 @@ core::AppState ShaderTool::onRunning() {
 		}
 
 		if (!shadertool::generateSrc(templateShader, templateUniformBuffer, _shaderStruct,
-				filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix)) {
+				filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix,
+				"", "", "", computeBuffer)) {
 			Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
 			_exitCode = 1;
 			return core::AppState::Cleanup;
@@ -230,7 +231,8 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	if (!shadertool::generateSrc(templateShader, templateUniformBuffer, _shaderStruct,
-			filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix)) {
+			filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix,
+			vertexBuffer, geometryBuffer, fragmentBuffer, computeBuffer)) {
 		Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
 		_exitCode = 1;
 		return core::AppState::Cleanup;

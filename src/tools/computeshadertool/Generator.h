@@ -21,6 +21,7 @@ extern bool generateSrc(const io::FilesystemPtr& filesystem,
 		const std::vector<Kernel>& kernels,
 		const std::vector<Struct>& structs,
 		const std::map<std::string, std::string>& constants,
-		const std::string& postfix);
+		const std::string& postfix,
+		const std::string& shaderBuffer);
 
 }

@@ -108,6 +108,10 @@ configure_file(src/engine-config.h.in engine-config.h @ONLY)
 message(STATUS "Generate config.h in ${CMAKE_CURRENT_BINARY_DIR}")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+# These includes are needed to let the include for IMPLICIT_DEPENDS for shaders work
+include_directories(src/modules/video/shaders)
+include_directories(src/modules/compute/shaders)
+
 include_directories(src/modules)
 
 add_subdirectory(contrib/libs)

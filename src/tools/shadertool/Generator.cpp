@@ -32,7 +32,8 @@ static const char *convertToTexUnit(int unit) {
 }
 
 bool generateSrc(const std::string& templateShader, const std::string& templateUniformBuffer, const ShaderStruct& shaderStruct,
-		const io::FilesystemPtr& filesystem, const std::string& namespaceSrc, const std::string& sourceDirectory, const std::string& shaderDirectory, const std::string& postfix) {
+		const io::FilesystemPtr& filesystem, const std::string& namespaceSrc, const std::string& sourceDirectory, const std::string& shaderDirectory, const std::string& postfix,
+		const std::string& vertexBuffer, const std::string& geometryBuffer, const std::string& fragmentBuffer, const std::string& computeBuffer) {
 	std::string src(templateShader);
 	const std::string& name = shaderStruct.name + "Shader";
 
@@ -429,6 +430,11 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 	src = core::string::replaceAll(src, "$attributes$", attributes.str());
 	src = core::string::replaceAll(src, "$methods$", methods.str());
 	src = core::string::replaceAll(src, "$includes$", includes.str());
+
+	src = core::string::replaceAll(src, "$vertexshaderbuffer$", vertexBuffer);
+	src = core::string::replaceAll(src, "$computeshaderbuffer$", computeBuffer);
+	src = core::string::replaceAll(src, "$fragmentshaderbuffer$", fragmentBuffer);
+	src = core::string::replaceAll(src, "$geometryshaderbuffer$", geometryBuffer);
 
 	const std::string targetFile = sourceDirectory + filename + ".h" + postfix;
 	Log::debug("Generate shader bindings for %s at %s", shaderStruct.name.c_str(), targetFile.c_str());

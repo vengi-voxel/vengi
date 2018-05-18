@@ -36,12 +36,17 @@ set(SRCS
 	ScopedPolygonMode.h
 	StencilConfig.h StencilConfig.cpp
 )
+set(SRCS_SHADERS
+	shaders/_fog.vert shaders/_fog.frag
+	shaders/_fullscreen.vert
+	shaders/_shadowmap.vert shaders/_shadowmap.frag
+)
+#set_source_files_properties(${SRCS_SHADERS} PROPERTIES LANGUAGE C)
 set(LIB video)
 find_package(OpenGL)
-add_library(${LIB} ${SRCS})
+add_library(${LIB} ${SRCS} ${SRCS_SHADERS})
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math image util assimp zlib)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
-target_include_directories(${LIB} PUBLIC ${OPENGL_INCLUDE_DIRS})
 
 gtest_suite_files(tests
 	tests/AbstractGLTest.h

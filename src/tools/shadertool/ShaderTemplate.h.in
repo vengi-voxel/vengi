@@ -14,6 +14,15 @@ $includes$
 
 namespace $namespace$ {
 
+namespace priv$name$ {
+
+static const char* VertexShaderBuffer = R"($vertexshaderbuffer$)";
+static const char* ComputeShaderBuffer = R"($computeshaderbuffer$)";
+static const char* FragmentShaderBuffer = R"($fragmentshaderbuffer$)";
+static const char* GeometryShaderBuffer = R"($geometryshaderbuffer$)";
+
+}
+
 /**
  * @ingroup Video
  * @brief Shader wrapper for $filename$
@@ -39,7 +48,22 @@ public:
 		if (_initialized) {
 			return true;
 		}
-		if (!loadProgram("$filename$")) {
+		const bool vertex = load("$filename$", priv$name$::VertexShaderBuffer, video::ShaderType::Vertex);
+		if (!vertex) {
+			const bool compute = load("$filename$", priv$name$::ComputeShaderBuffer, video::ShaderType::Compute);
+			if (!compute) {
+				return false;
+			}
+		} else {
+			const bool fragment = load("$filename$", priv$name$::FragmentShaderBuffer, video::ShaderType::Fragment);
+			if (!fragment) {
+				return false;
+			}
+			// optional
+			load("$filename$", priv$name$::GeometryShaderBuffer, video::ShaderType::Geometry);
+		}
+		_name = "$filename$";
+		if (!init()) {
 			return false;
 		}
 		$attributes$
