@@ -1638,7 +1638,9 @@ class CppGenerator : public BaseGenerator {
           auto full_struct_name = GetUnionElement(ev, true, true);
 
           // @TODO: Mby make this decisions more universal? How?
-          code_.SetValue("U_GET_TYPE", Name(field) + UnionTypeFieldSuffix());
+          code_.SetValue(
+              "U_GET_TYPE",
+              EscapeKeyword(field.name + UnionTypeFieldSuffix()));
           code_.SetValue(
               "U_ELEMENT_TYPE",
               WrapInNameSpace(u->defined_namespace, GetEnumValUse(*u, ev)));
@@ -1994,8 +1996,9 @@ class CppGenerator : public BaseGenerator {
   std::string GenUnionUnpackVal(const FieldDef &afield,
                                 const char *vec_elem_access,
                                 const char *vec_type_access) {
-    return afield.value.type.enum_def->name + "Union::UnPack(" + "_e" +
-           vec_elem_access + ", " + Name(afield) + UnionTypeFieldSuffix() +
+    return afield.value.type.enum_def->name +
+           "Union::UnPack(" + "_e" + vec_elem_access + ", " +
+           EscapeKeyword(afield.name + UnionTypeFieldSuffix()) +
            "()" + vec_type_access + ", _resolver)";
   }
 
@@ -2044,7 +2047,7 @@ class CppGenerator : public BaseGenerator {
         auto cpp_type = field.attributes.Lookup("cpp_type");
         std::string indexing;
         if (field.value.type.enum_def) {
-          indexing += "(" + field.value.type.enum_def->name + ")";
+          indexing += "(" + WrapInNameSpace(*field.value.type.enum_def) + ")";
         }
         indexing += "_e->Get(_i)";
         if (field.value.type.element == BASE_TYPE_BOOL) { indexing += " != 0"; }
