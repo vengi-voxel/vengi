@@ -50,6 +50,26 @@ namespace glm
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_DECL vec<L, T, Q> fmod(vec<L, T, Q> const& v);
 
+	/// Returns whether vector components values are within an interval. A open interval excludes its endpoints, and is denoted with square brackets.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point or integer scalar types
+	/// @tparam Q Value from qualifier enum
+	///
+	/// @see ext_vector_relational
+	template <length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, bool, Q> openBounded(vec<L, T, Q> const& Value, vec<L, T, Q> const& Min, vec<L, T, Q> const& Max);
+
+	/// Returns whether vector components values are within an interval. A closed interval includes its endpoints, and is denoted with square brackets.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point or integer scalar types
+	/// @tparam Q Value from qualifier enum
+	///
+	/// @see ext_vector_relational
+	template <length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, bool, Q> closeBounded(vec<L, T, Q> const& Value, vec<L, T, Q> const& Min, vec<L, T, Q> const& Max);
+
 	/// @}
 }//namespace glm
 

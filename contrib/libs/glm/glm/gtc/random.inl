@@ -176,84 +176,30 @@ namespace detail
 		}
 	};
 
-	template<length_t L>
-	struct compute_linearRand<L, float, lowp>
+	template<length_t L, qualifier Q>
+	struct compute_linearRand<L, float, Q>
 	{
-		GLM_FUNC_QUALIFIER static vec<L, float, lowp> call(vec<L, float, lowp> const& Min, vec<L, float, lowp> const& Max)
+		GLM_FUNC_QUALIFIER static vec<L, float, Q> call(vec<L, float, Q> const& Min, vec<L, float, Q> const& Max)
 		{
-			return vec<L, float, lowp>(compute_rand<L, uint8, lowp>::call()) / static_cast<float>(std::numeric_limits<uint8>::max()) * (Max - Min) + Min;
+			return vec<L, float, Q>(compute_rand<L, uint32, Q>::call()) / static_cast<float>(std::numeric_limits<uint32>::max()) * (Max - Min) + Min;
 		}
 	};
 
-	template<length_t L>
-	struct compute_linearRand<L, float, mediump>
+	template<length_t L, qualifier Q>
+	struct compute_linearRand<L, double, Q>
 	{
-		GLM_FUNC_QUALIFIER static vec<L, float, mediump> call(vec<L, float, mediump> const& Min, vec<L, float, mediump> const& Max)
+		GLM_FUNC_QUALIFIER static vec<L, double, Q> call(vec<L, double, Q> const& Min, vec<L, double, Q> const& Max)
 		{
-			return vec<L, float, mediump>(compute_rand<L, uint16, mediump>::call()) / static_cast<float>(std::numeric_limits<uint16>::max()) * (Max - Min) + Min;
+			return vec<L, double, Q>(compute_rand<L, uint64, Q>::call()) / static_cast<double>(std::numeric_limits<uint64>::max()) * (Max - Min) + Min;
 		}
 	};
 
-	template<length_t L>
-	struct compute_linearRand<L, float, highp>
+	template<length_t L, qualifier Q>
+	struct compute_linearRand<L, long double, Q>
 	{
-		GLM_FUNC_QUALIFIER static vec<L, float, highp> call(vec<L, float, highp> const& Min, vec<L, float, highp> const& Max)
+		GLM_FUNC_QUALIFIER static vec<L, long double, Q> call(vec<L, long double, Q> const& Min, vec<L, long double, Q> const& Max)
 		{
-			return vec<L, float, highp>(compute_rand<L, uint32, highp>::call()) / static_cast<float>(std::numeric_limits<uint32>::max()) * (Max - Min) + Min;
-		}
-	};
-
-	template<length_t L>
-	struct compute_linearRand<L, double, lowp>
-	{
-		GLM_FUNC_QUALIFIER static vec<L, double, lowp> call(vec<L, double, lowp> const& Min, vec<L, double, lowp> const& Max)
-		{
-			return vec<L, double, lowp>(compute_rand<L, uint16, lowp>::call()) / static_cast<double>(std::numeric_limits<uint16>::max()) * (Max - Min) + Min;
-		}
-	};
-
-	template<length_t L>
-	struct compute_linearRand<L, double, mediump>
-	{
-		GLM_FUNC_QUALIFIER static vec<L, double, mediump> call(vec<L, double, mediump> const& Min, vec<L, double, mediump> const& Max)
-		{
-			return vec<L, double, mediump>(compute_rand<L, uint32, mediump>::call()) / static_cast<double>(std::numeric_limits<uint32>::max()) * (Max - Min) + Min;
-		}
-	};
-
-	template<length_t L>
-	struct compute_linearRand<L, double, highp>
-	{
-		GLM_FUNC_QUALIFIER static vec<L, double, highp> call(vec<L, double, highp> const& Min, vec<L, double, highp> const& Max)
-		{
-			return vec<L, double, highp>(compute_rand<L, uint64, highp>::call()) / static_cast<double>(std::numeric_limits<uint64>::max()) * (Max - Min) + Min;
-		}
-	};
-
-	template<length_t L>
-	struct compute_linearRand<L, long double, lowp>
-	{
-		GLM_FUNC_QUALIFIER static vec<L, long double, lowp> call(vec<L, long double, lowp> const& Min, vec<L, long double, lowp> const& Max)
-		{
-			return vec<L, long double, lowp>(compute_rand<L, uint32, lowp>::call()) / static_cast<long double>(std::numeric_limits<uint32>::max()) * (Max - Min) + Min;
-		}
-	};
-
-	template<length_t L>
-	struct compute_linearRand<L, long double, mediump>
-	{
-		GLM_FUNC_QUALIFIER static vec<L, long double, mediump> call(vec<L, long double, mediump> const& Min, vec<L, long double, mediump> const& Max)
-		{
-			return vec<L, long double, mediump>(compute_rand<L, uint64, mediump>::call()) / static_cast<long double>(std::numeric_limits<uint64>::max()) * (Max - Min) + Min;
-		}
-	};
-
-	template<length_t L>
-	struct compute_linearRand<L, long double, highp>
-	{
-		GLM_FUNC_QUALIFIER static vec<L, long double, highp> call(vec<L, long double, highp> const& Min, vec<L, long double, highp> const& Max)
-		{
-			return vec<L, long double, highp>(compute_rand<L, uint64, highp>::call()) / static_cast<long double>(std::numeric_limits<uint64>::max()) * (Max - Min) + Min;
+			return vec<L, long double, Q>(compute_rand<L, uint64, Q>::call()) / static_cast<long double>(std::numeric_limits<uint64>::max()) * (Max - Min) + Min;
 		}
 	};
 }//namespace detail

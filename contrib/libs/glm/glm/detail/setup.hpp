@@ -754,7 +754,11 @@
 #endif
 
 #if GLM_LANG >= GLM_LANG_CXX14
-#	define GLM_CONSTEXPR_CXX14 GLM_CONSTEXPR
+#	if ((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER <= GLM_COMPILER_VC14)) // Visual C++ < 2017 does not support extended const expressions https://msdn.microsoft.com/en-us/library/hh567368.aspx https://github.com/g-truc/glm/issues/749
+#		define GLM_CONSTEXPR_CXX14
+#	else
+#		define GLM_CONSTEXPR_CXX14 GLM_CONSTEXPR
+#	endif
 #	define GLM_CONSTEXPR_CTOR_CXX14 GLM_CONSTEXPR_CTOR
 #else
 #	define GLM_CONSTEXPR_CXX14

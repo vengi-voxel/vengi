@@ -315,7 +315,7 @@ namespace glm
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL mat<4, 4, T, Q> mat4_cast(tquat<T, Q> const& x);
 
-	/// Converts a 3 * 3 matrix to a quaternion.
+	/// Converts a pure rotation 3 * 3 matrix to a quaternion.
 	///
 	/// @tparam T Floating-point scalar types.
 	///
@@ -323,7 +323,7 @@ namespace glm
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL tquat<T, Q> quat_cast(mat<3, 3, T, Q> const& x);
 
-	/// Converts a 4 * 4 matrix to a quaternion.
+	/// Converts a pure rotation 4 * 4 matrix to a quaternion.
 	///
 	/// @tparam T Floating-point scalar types.
 	///

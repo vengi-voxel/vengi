@@ -33,6 +33,8 @@ namespace glm
 #		endif
 	};
 
+	typedef qualifier precision;
+
 	template<length_t L, typename T, qualifier Q = defaultp> struct vec;
 	template<length_t C, length_t R, typename T, qualifier Q = defaultp> struct mat;
 

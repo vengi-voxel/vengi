@@ -28,8 +28,8 @@ namespace glm
 		template<typename T, qualifier Q>
 		GLM_FUNC_QUALIFIER GLM_CONSTEXPR tdualquat<T, Q>::tdualquat()
 #			ifdef GLM_FORCE_CTOR_INIT
-			: real(tquat<T, P>())
-			, dual(tquat<T, P>(0, 0, 0, 0))
+			: real(tquat<T, Q>())
+			, dual(tquat<T, Q>(0, 0, 0, 0))
 #			endif
 		{}
 #	endif
