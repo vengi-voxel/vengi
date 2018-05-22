@@ -493,6 +493,21 @@ GetClosestSupportedFormat(SDL_Renderer * renderer, Uint32 format)
     return renderer->info.texture_formats[0];
 }
 
+SDL_ScaleMode SDL_GetScaleMode(void)
+{
+    const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
+
+    if (!hint || SDL_strcasecmp(hint, "nearest") == 0) {
+        return SDL_ScaleModeNearest;
+    } else if (SDL_strcasecmp(hint, "linear") == 0) {
+        return SDL_ScaleModeLinear;
+    } else if (SDL_strcasecmp(hint, "best") == 0) {
+        return SDL_ScaleModeBest;
+    } else {
+        return (SDL_ScaleMode)SDL_atoi(hint);
+    }
+}
+
 SDL_Texture *
 SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int h)
 {
@@ -534,6 +549,7 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
     texture->g = 255;
     texture->b = 255;
     texture->a = 255;
+    texture->scaleMode = SDL_GetScaleMode();
     texture->renderer = renderer;
     texture->next = renderer->textures;
     if (renderer->textures) {
@@ -1259,6 +1275,7 @@ UpdateLogicalSize(SDL_Renderer *renderer)
 
     hint = SDL_GetHint(SDL_HINT_RENDER_LOGICAL_SIZE_MODE);
     if (hint && (*hint == '1' || SDL_strcasecmp(hint, "overscan") == 0))  {
+#if SDL_VIDEO_RENDER_D3D
         SDL_bool overscan_supported = SDL_TRUE;
         /* Unfortunately, Direct3D 9 doesn't support negative viewport numbers
            which the overscan implementation relies on.
@@ -1269,6 +1286,9 @@ UpdateLogicalSize(SDL_Renderer *renderer)
         if (overscan_supported) {
             scale_policy = 1;
         }
+#else
+        scale_policy = 1;
+#endif
     }
 
     want_aspect = (float)renderer->logical_w / renderer->logical_h;
