@@ -193,7 +193,7 @@ public:
 
 	/**
 	 * @return -1 if uniform wasn't found, or no size is known. If the uniform is known, but
-	 * it is no array, this might even return 0
+	 * it is no array, this will return 0
 	 */
 	int getUniformArraySize(const std::string& name) const;
 
