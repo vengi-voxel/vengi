@@ -39,6 +39,6 @@ set(COMPILER_SRCS
 	compiler/reflection.cpp
 	compiler/util.cpp
 )
-engine_add_executable(TARGET flatc SRCS ${COMPILER_SRCS})
+engine_add_executable(TARGET flatc SRCS ${COMPILER_SRCS} NOINSTALL)
 target_link_libraries(flatc flatbuffers)
 target_include_directories(flatc PRIVATE compiler/)

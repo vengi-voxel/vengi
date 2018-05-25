@@ -90,5 +90,5 @@ set(BENCHMARK_SRCS
 	../core/benchmark/AbstractBenchmark.cpp
 	benchmarks/VoxelBenchmark.cpp
 )
-engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS})
+engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
 engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark ${LIB})
