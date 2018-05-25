@@ -31,16 +31,14 @@ static const char *convertToTexUnit(int unit) {
 	}
 }
 
-bool generateSrc(const std::string& templateShader, const std::string& templateUniformBuffer, const ShaderStruct& shaderStruct,
+bool generateSrc(const std::string& templateHeader, const std::string& templateSource, const std::string& templateUniformBuffer, const ShaderStruct& shaderStruct,
 		const io::FilesystemPtr& filesystem, const std::string& namespaceSrc, const std::string& sourceDirectory, const std::string& shaderDirectory, const std::string& postfix,
 		const std::string& vertexBuffer, const std::string& geometryBuffer, const std::string& fragmentBuffer, const std::string& computeBuffer) {
-	std::string src(templateShader);
+	std::string srcHeader(templateHeader);
+	std::string srcSource(templateSource);
 	const std::string& name = shaderStruct.name + "Shader";
 
 	const std::string& filename = util::convertName(name, true);
-	src = core::string::replaceAll(src, "$name$", filename);
-	src = core::string::replaceAll(src, "$namespace$", namespaceSrc);
-	src = core::string::replaceAll(src, "$filename$", shaderDirectory + shaderStruct.filename);
 	std::stringstream uniforms;
 	std::stringstream uniformArrayInfo;
 	const int uniformSize = int(shaderStruct.uniforms.size());
@@ -67,8 +65,6 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 	} else {
 		uniforms << "// no uniforms";
 	}
-	src = core::string::replaceAll(src, "$uniformarrayinfo$", uniformArrayInfo.str());
-	src = core::string::replaceAll(src, "$uniforms$", uniforms.str());
 
 	std::stringstream attributes;
 	const int attributeSize = int(shaderStruct.attributes.size());
@@ -95,29 +91,35 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 	}
 
 	std::stringstream methods;
+	std::stringstream prototypes;
 	if (uniformSize > 0 || attributeSize > 0) {
 		methods << "\n";
+		prototypes << "\n";
 	}
 	if (shaderStruct.out.layout.maxGeometryVertices > 0) {
-		methods << "\tint getMaxGeometryVertices() const {\n";
-		methods << "\t\treturn " << shaderStruct.out.layout.maxGeometryVertices << ";\n";
-		methods << "\t}\n\n;";
+		prototypes << "\n\tint getMaxGeometryVertices() const;\n";
+		methods << "int " << filename << "::getMaxGeometryVertices() const {\n";
+		methods << "\treturn " << shaderStruct.out.layout.maxGeometryVertices << ";\n";
+		methods << "}\n";
 	}
 	if (shaderStruct.out.layout.primitiveType != video::Primitive::Max) {
-		methods << "\tvideo::Primitive getPrimitiveTypeOut() const {\n";
-		methods << "\t\treturn video::Primitive::" << util::getPrimitiveTypeString(shaderStruct.out.layout.primitiveType) << ";\n";
-		methods << "\t}\n\n;";
+		prototypes << "\n\tvideo::Primitive getPrimitiveTypeOut() const;\n";
+		methods << "\nvideo::Primitive " << filename << "::getPrimitiveTypeOut() const {\n";
+		methods << "\treturn video::Primitive::" << util::getPrimitiveTypeString(shaderStruct.out.layout.primitiveType) << ";\n";
+		methods << "}\n";
 	}
 	if (shaderStruct.in.layout.primitiveType != video::Primitive::Max) {
-		methods << "\tvideo::Primitive getPrimitiveTypeIn() const {\n";
-		methods << "\t\treturn video::Primitive::" << util::getPrimitiveTypeString(shaderStruct.in.layout.primitiveType) << ";\n";
-		methods << "\t}\n\n;";
+		prototypes << "\n\tvideo::Primitive getPrimitiveTypeIn() const;\n";
+		methods << "\nvideo::Primitive " << filename << "::getPrimitiveTypeIn() const {\n";
+		methods << "\treturn video::Primitive::" << util::getPrimitiveTypeString(shaderStruct.in.layout.primitiveType) << ";\n";
+		methods << "}\n";
 	}
 	for (int i = 0; i < uniformSize; ++i) {
 		const Variable& v = shaderStruct.uniforms[i];
 		const bool isInteger = v.isSingleInteger();
 		const std::string& uniformName = util::convertName(v.name, true);
-		methods << "\tinline bool set" << uniformName << "(";
+		std::stringstream mproto;
+		mproto << "set" << uniformName << "(";
 		const Types& cType = util::resolveTypes(v.type);
 		auto layoutIter = shaderStruct.layouts.find(v.name);
 		Layout layout;
@@ -126,45 +128,51 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		}
 
 		if (v.arraySize > 0 && isInteger) {
-			methods << "const ";
+			mproto << "const ";
 		} else if (cType.passBy == PassBy::Reference) {
-			methods << "const ";
+			mproto << "const ";
 		}
-		methods << cType.ctype;
+		mproto << cType.ctype;
 		if (v.arraySize == -1 || cType.passBy == PassBy::Pointer) {
-			methods << "*";
+			mproto << "*";
 		} else if (cType.passBy == PassBy::Reference) {
 			if (v.arraySize <= 0) {
-				methods << "&";
+				mproto << "&";
 			}
 		} else if (cType.passBy == PassBy::Value) {
 		}
 
 		if (v.arraySize > 0) {
-			methods << " (&" << v.name << ")[" << v.arraySize << "]";
+			mproto << " (&" << v.name << ")[" << v.arraySize << "]";
 		} else {
-			methods << " " << v.name;
+			mproto << " " << v.name;
 		}
 
 		if (v.isSampler() && layout.binding != -1) {
-			methods << " = video::TextureUnit::" << convertToTexUnit(layout.binding);
+			mproto << " = video::TextureUnit::" << convertToTexUnit(layout.binding);
 		}
 
 		if (v.arraySize == -1) {
-			methods << ", int amount";
+			mproto << ", int amount";
 		}
-		methods << ") const {\n";
-
-		methods << "\t\tconst int location = ";
+		mproto << ") const";
+		methods << "\nbool " << filename << "::" << mproto.str() << " {\n";
+		prototypes << "\n";
+		prototypes << "\t/**\n";
+		prototypes << "\t * @brief Set the shader uniform value for " << v.name << "\n";
+		prototypes << "\t * @note The uniform setter uses an internal cache and only perform the real update if something has changed.\n";
+		prototypes << "\t */\n";
+		prototypes << "\tbool " << mproto.str() << ";\n";
+		methods << "\tconst int location = ";
 		if (layout.location != -1) {
 			methods << layout.location << ";\n";
 		} else {
 			methods << "getUniformLocation(\"" << v.name << "\");\n";
-			methods << "\t\tif (location == -1) {\n";
-			methods << "\t\t\treturn false;\n";
-			methods << "\t\t}\n";
+			methods << "\tif (location == -1) {\n";
+			methods << "\t\treturn false;\n";
+			methods << "\t}\n";
 		}
-		methods << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
+		methods << "\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
 		methods << "(location, " << v.name;
 		if (v.arraySize > 0) {
 			methods << ", " << v.arraySize;
@@ -172,168 +180,117 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 			methods << ", amount";
 		}
 		methods << ");\n";
-		methods << "\t\treturn true;\n";
-		methods << "\t}\n";
+		methods << "\treturn true;\n";
+		methods << "}\n";
 
 		if (v.isSampler()) {
 			if (layout.binding != -1) {
-				methods << "\n\tinline video::TextureUnit getBound" << uniformName << "TexUnit() const {\n";
-				methods << "\t\treturn video::TextureUnit::" << convertToTexUnit(layout.binding) << ";\n\t}\n";
+				prototypes << "\n\tvideo::TextureUnit getBound" << uniformName << "TexUnit() const;\n";
+				methods << "\n\nvideo::TextureUnit " << filename << "::getBound" << uniformName << "TexUnit() const {\n";
+				methods << "\treturn video::TextureUnit::" << convertToTexUnit(layout.binding) << ";\n}\n";
 			}
 		}
 		if (v.isSampler() || v.isImage()) {
 			if (layout.imageFormat != video::ImageFormat::Max) {
-				methods << "\n\tinline video::ImageFormat getImageFormat" << uniformName << "() const {\n";
-				methods << "\t\treturn video::ImageFormat::" << util::getImageFormatTypeString(layout.imageFormat) << ";\n\t}\n";
+				prototypes << "\n\tvideo::ImageFormat getImageFormat" << uniformName << "() const;\n";
+				methods << "\nvideo::ImageFormat " << filename << "::getImageFormat" << uniformName << "() const {\n";
+				methods << "\treturn video::ImageFormat::" << util::getImageFormatTypeString(layout.imageFormat) << ";\n}\n";
 			}
 		}
 		if (layout.localSize.x != -1) {
-			methods << "\n\tinline int getLocalSizeX() const {\n";
-			methods << "\t\treturn " << layout.localSize.x << ";\n\t}\n";
+			prototypes << "\n\tint getLocalSizeX() const;\n";
+			methods << "\nint getLocalSizeX() const {\n";
+			methods << "\treturn " << layout.localSize.x << ";\n\t}\n";
 		}
 		if (layout.localSize.y != -1) {
-			methods << "\n\tinline int getLocalSizeY() const {\n";
-			methods << "\t\treturn " << layout.localSize.y << ";\n\t}\n";
+			prototypes << "\n\tint getLocalSizeY() const;\n";
+			methods << "\nint getLocalSizeY() const {\n";
+			methods << "\treturn " << layout.localSize.y << ";\n\t}\n";
 		}
 		if (layout.localSize.z != -1) {
-			methods << "\n\tinline int getLocalSizeZ() const {\n";
-			methods << "\t\treturn " << layout.localSize.z << ";\n\t}\n";
+			prototypes << "\n\tint getLocalSizeY() const;\n";
+			methods << "\nint getLocalSizeZ() const {\n";
+			methods << "\treturn " << layout.localSize.z << ";\n\t}\n";
 		}
 
 		if (v.arraySize > 0) {
-			methods << "\n\tinline bool set" << uniformName << "(" << "const std::vector<" << cType.ctype << ">& var) const {\n";
-			methods << "\t\tconst int location = getUniformLocation(\"" << v.name;
-			methods << "\");\n\t\tif (location == -1) {\n";
-			methods << "\t\t\treturn false;\n";
-			methods << "\t\t}\n";
-			methods << "\t\tcore_assert((int)var.size() == " << v.arraySize << ");\n";
-			methods << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize) << "(location, &var.front(), var.size());\n";
-			methods << "\t\treturn true;\n";
+			prototypes << "\n\tbool set" << uniformName << "(" << "const std::vector<" << cType.ctype << ">& var) const;\n\n";
+			methods << "\nbool " << filename << "::set" << uniformName << "(" << "const std::vector<" << cType.ctype << ">& var) const {\n";
+			methods << "\tconst int location = getUniformLocation(\"" << v.name;
+			methods << "\");\n\tif (location == -1) {\n";
+			methods << "\t\treturn false;\n";
 			methods << "\t}\n";
+			methods << "\tcore_assert((int)var.size() == " << v.arraySize << ");\n";
+			methods << "\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize) << "(location, &var.front(), var.size());\n";
+			methods << "\treturn true;\n";
+			methods << "}\n";
 		} else if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::VEC4) {
-			methods << "\n\tinline bool set" << uniformName << "(" << "const std::vector<float>& var) const {\n";
-			methods << "\t\tconst int location = getUniformLocation(\"" << v.name;
-			methods << "\");\n\t\tif (location == -1) {\n";
-			methods << "\t\t\treturn false;\n";
-			methods << "\t\t}\n";
-			methods << "\t\tcore_assert(int(var.size()) % " << cType.components << " == 0);\n";
-			methods << "\t\tsetUniformfv(location, &var.front(), " << cType.components << ", " << cType.components << ");\n";
-			methods << "\t\treturn true;\n";
+			prototypes << "\n\tbool set" << uniformName << "(" << "const std::vector<float>& var) const;\n";
+			methods << "\nbool " << filename << "::set" << uniformName << "(" << "const std::vector<float>& var) const {\n";
+			methods << "\tconst int location = getUniformLocation(\"" << v.name;
+			methods << "\");\n\tif (location == -1) {\n";
+			methods << "\t\treturn false;\n";
 			methods << "\t}\n";
+			methods << "\tcore_assert(int(var.size()) % " << cType.components << " == 0);\n";
+			methods << "\tsetUniformfv(location, &var.front(), " << cType.components << ", " << cType.components << ");\n";
+			methods << "\treturn true;\n";
+			methods << "}\n";
 		}
 		if (i < uniformSize- - 2) {
 			methods << "\n";
 		}
-
-#if 0
-		if (v.arraySize == -1 || v.arraySize > 1) {
-			methods << "\tinline bool set" << uniformName << "(";
-			const Types& cType = util::getTypes(v.type);
-			methods << "const std::vector<" << cType.ctype << ">& " << v.name << ") const {\n";
-			methods << "\t\tif (!hasUniform(\"" << v.name << "[0]\")) {\n";
-			methods << "\t\t\treturn false;\n";
-			methods << "\t\t}\n";
-			methods << "\t\tsetUniform" << util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
-			methods << "(\"" << v.name << "[0]\", &" << v.name << "[0], " << v.name << ".size());\n";
-			methods << "\t\treturn true;\n";
-			methods << "\t}\n";
-			if (i < uniformSize- - 2) {
-				methods << "\n";
-			}
-		}
-#endif
 	}
 	for (int i = 0; i < attributeSize; ++i) {
 		const Variable& v = shaderStruct.attributes[i];
 		const std::string& attributeName = util::convertName(v.name, true);
 		const bool isInt = v.isInteger();
 
-		methods << "\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, int stride = 0, intptr_t offset = 0, bool normalized = false) const {\n";
-		methods << "\t\tvideo::Attribute attribute" << attributeName << ";\n";
-		methods << "\t\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
-		methods << "\t\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
-		methods << "\t\tattribute" << attributeName << ".size = getComponents" << attributeName << "();\n";
-		methods << "\t\tattribute" << attributeName << ".offset = offset;\n";
-		methods << "\t\tattribute" << attributeName << ".stride = stride;\n";
-		methods << "\t\tattribute" << attributeName << ".normalized = normalized;\n";
-		methods << "\t\tattribute" << attributeName << ".type = ";
+		prototypes << "\n\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, int stride = 0, intptr_t offset = 0, bool normalized = false) const;\n";
+		methods << "\nvideo::Attribute " << filename << "::get" << attributeName << "Attribute(int32_t bufferIndex, int stride, intptr_t offset, bool normalized) const {\n";
+		methods << "\tvideo::Attribute attribute" << attributeName << ";\n";
+		methods << "\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
+		methods << "\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
+		methods << "\tattribute" << attributeName << ".size = getComponents" << attributeName << "();\n";
+		methods << "\tattribute" << attributeName << ".offset = offset;\n";
+		methods << "\tattribute" << attributeName << ".stride = stride;\n";
+		methods << "\tattribute" << attributeName << ".normalized = normalized;\n";
+		methods << "\tattribute" << attributeName << ".type = ";
 		if (isInt) {
 			methods << "video::DataType::Int;\n";
 		} else {
 			methods << "video::DataType::Float;\n";
 		}
-		methods << "\t\treturn attribute" << attributeName << ";\n";
-		methods << "\t};\n\n";
+		methods << "\treturn attribute" << attributeName << ";\n";
+		methods << "}\n";
 
-		methods << "\ttemplate<typename CLASS, typename TYPE>\n";
-		methods << "\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, TYPE CLASS::* member, bool normalized = false) const {\n";
-		methods << "\t\tvideo::Attribute attribute" << attributeName << ";\n";
-		methods << "\t\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
-		methods << "\t\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
-		methods << "\t\tattribute" << attributeName << ".size = getComponents" << attributeName << "();\n";
-		methods << "\t\tattribute" << attributeName << ".offset = reinterpret_cast<std::size_t>(&(((CLASS*)nullptr)->*member));\n";
-		methods << "\t\tattribute" << attributeName << ".stride = sizeof(CLASS);\n";
-		methods << "\t\tattribute" << attributeName << ".normalized = normalized;\n";
-		methods << "\t\tattribute" << attributeName << ".type = video::mapType<TYPE>();\n";
-		methods << "\t\treturn attribute" << attributeName << ";\n";
-		methods << "\t};\n\n";
+		prototypes << "\n\ttemplate<typename CLASS, typename TYPE>\n";
+		prototypes << "\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, TYPE CLASS::* member = nullptr, bool normalized = false) const {\n";
+		prototypes << "\t\tvideo::Attribute attribute" << attributeName << ";\n";
+		prototypes << "\t\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
+		prototypes << "\t\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
+		prototypes << "\t\tattribute" << attributeName << ".size = getComponents" << attributeName << "();\n";
+		prototypes << "\t\tattribute" << attributeName << ".offset = member == nullptr ? 0 : reinterpret_cast<std::size_t>(&(((CLASS*)nullptr)->*member));\n";
+		prototypes << "\t\tattribute" << attributeName << ".stride = member == nullptr ? 0 : sizeof(CLASS);\n";
+		prototypes << "\t\tattribute" << attributeName << ".normalized = normalized;\n";
+		prototypes << "\t\tattribute" << attributeName << ".type = video::mapType<TYPE>();\n";
+		prototypes << "\t\treturn attribute" << attributeName << ";\n";
+		prototypes << "\t}\n";
 
-		methods << "\tinline bool init" << attributeName << "Custom(size_t stride = ";
-		methods << "sizeof(" << util::resolveTypes(v.type).ctype << ")";
-		methods << ", const void* pointer = nullptr, video::DataType type = ";
-		if (isInt) {
-			methods << "video::DataType::Int";
-		} else {
-			methods << "video::DataType::Float";
-		}
-		methods << ", int size = ";
-		methods << util::resolveTypes(v.type).components << ", ";
-		methods << "bool isInt = ";
-		methods << (isInt ? "true" : "false");
-		methods << ", bool normalize = false) const {\n";
-		methods << "\t\tconst int loc = enableVertexAttributeArray(\"" << v.name << "\");\n";
-		methods << "\t\tif (loc == -1) {\n";
-		methods << "\t\t\treturn false;\n";
-		methods << "\t\t}\n";
-		methods << "\t\tif (isInt) {\n";
-		methods << "\t\t\tsetVertexAttributeInt(loc, size, type, stride, pointer);\n";
-		methods << "\t\t} else {\n";
-		methods << "\t\t\tsetVertexAttribute(loc, size, type, normalize, stride, pointer);\n";
-		methods << "\t\t}\n";
-		methods << "\t\treturn true;\n";
-		methods << "\t}\n\n";
-		methods << "\tinline int getLocation" << attributeName << "() const {\n";
-		methods << "\t\treturn getAttributeLocation(\"" << v.name << "\");\n";
-		methods << "\t}\n\n";
-		methods << "\tinline int getComponents" << attributeName << "() const {\n";
-		methods << "\t\treturn getAttributeComponents(\"" << v.name << "\");\n";
-		methods << "\t}\n\n";
-		methods << "\tinline bool init" << attributeName << "() const {\n";
-		methods << "\t\tconst int loc = enableVertexAttributeArray(\"" << v.name << "\");\n";
-		methods << "\t\tif (loc == -1) {\n";
-		methods << "\t\t\treturn false;\n";
-		methods << "\t\t}\n";
-		methods << "\t\tconst size_t stride = sizeof(" << util::resolveTypes(v.type).ctype << ");\n";
-		methods << "\t\tconst void* pointer = nullptr;\n";
-		methods << "\t\tconst video::DataType type = ";
-		if (isInt) {
-			methods << "video::DataType::Int";
-		} else {
-			methods << "video::DataType::Float";
-		}
-		methods << ";\n";
-		methods << "\t\tconst int size = getAttributeComponents(loc);\n";
-		if (isInt) {
-			methods << "\t\tsetVertexAttributeInt(loc, size, type, stride, pointer);\n";
-		} else {
-			methods << "\t\tsetVertexAttribute(loc, size, type, false, stride, pointer);\n";
-		}
-		methods << "\t\treturn true;\n";
-		methods << "\t}\n\n";
-		methods << "\tinline bool set" << attributeName << "Divisor(uint32_t divisor) const {\n";
-		methods << "\t\tconst int location = getAttributeLocation(\"" << v.name << "\");\n";
-		methods << "\t\treturn setDivisor(location, divisor);\n";
-		methods << "\t}\n";
+		prototypes << "\n\t/**\n\t * @brief Return the binding location of the shader attribute @c " << attributeName << "\n\t */\n";
+		prototypes << "\tinline int getLocation" << attributeName << "() const {\n";
+		prototypes << "\t\treturn getAttributeLocation(\"" << v.name << "\");\n";
+		prototypes << "\t}\n";
+
+		prototypes << "\n\t/**\n\t * @brief Return the components if the attribute @c " << attributeName << " is a vector type, or 1 if it is no vector\n\t */\n";
+		prototypes << "\tstatic inline int getComponents" << attributeName << "() {\n";
+		prototypes << "\t\treturn " << util::getComponents(v.type) << ";\n";
+		prototypes << "\t}\n";
+
+		prototypes << "\n\tbool set" << attributeName << "Divisor(uint32_t divisor) const;\n\n";
+		methods << "\nbool " << filename << "::set" << attributeName << "Divisor(uint32_t divisor) const {\n";
+		methods << "\tconst int location = getAttributeLocation(\"" << v.name << "\");\n";
+		methods << "\treturn setDivisor(location, divisor);\n";
+		methods << "}\n";
 
 		if (i < attributeSize - 1) {
 			methods << "\n";
@@ -394,12 +351,12 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 		ub << "\n\tinline operator const video::UniformBuffer&() const {\n";
 		ub << "\t\treturn _" << uniformBufferName << ";\n";
 		ub << "\t}\n";
-		methods << "\t/**\n";
-		methods << "\t * @brief The the uniform buffer for the uniform block " << ubuf.name << "\n";
-		methods << "\t */\n";
-		methods << "\tinline bool set" << uniformBufferStructName << "(const video::UniformBuffer& buf) {\n";
-		methods << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", buf);\n";
-		methods << "\t}\n";
+		prototypes << "\n\t/**\n";
+		prototypes << "\t * @brief The the uniform buffer for the uniform block " << ubuf.name << "\n";
+		prototypes << "\t */\n";
+		prototypes << "\tinline bool set" << uniformBufferStructName << "(const video::UniformBuffer& buf) {\n";
+		prototypes << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", buf);\n";
+		prototypes << "\t}\n";
 
 		std::string generatedUb = core::string::replaceAll(templateUniformBuffer, "$name$", uniformBufferStructName);
 		generatedUb = core::string::replaceAll(generatedUb, "$namespace$", namespaceSrc);
@@ -419,27 +376,56 @@ bool generateSrc(const std::string& templateShader, const std::string& templateU
 	}
 
 	for (const auto& e : shaderStruct.constants) {
-		methods << "\t/**\n";
-		methods << "\t * @brief Exported from shader code by @code $constant " << e.first << " " << e.second << " @endcode\n";
-		methods << "\t */\n";
-		methods << "\tinline static const char* get" << util::convertName(e.first, true) << "() {\n";
-		methods << "\t\treturn \"" << e.second << "\";\n";
-		methods << "\t}\n";
+		prototypes << "\t/**\n";
+		prototypes << "\t * @brief Exported from shader code by @code $constant " << e.first << " " << e.second << " @endcode\n";
+		prototypes << "\t */\n";
+		prototypes << "\tinline static const char* get" << util::convertName(e.first, true) << "() {\n";
+		prototypes << "\t\treturn \"" << e.second << "\";\n";
+		prototypes << "\t}\n";
 	}
 
-	src = core::string::replaceAll(src, "$attributes$", attributes.str());
-	src = core::string::replaceAll(src, "$methods$", methods.str());
-	src = core::string::replaceAll(src, "$includes$", includes.str());
+	srcHeader = core::string::replaceAll(srcHeader, "$name$", filename);
+	srcHeader = core::string::replaceAll(srcHeader, "$namespace$", namespaceSrc);
+	srcHeader = core::string::replaceAll(srcHeader, "$filename$", shaderDirectory + shaderStruct.filename);
+	srcHeader = core::string::replaceAll(srcHeader, "$uniformarrayinfo$", uniformArrayInfo.str());
+	srcHeader = core::string::replaceAll(srcHeader, "$uniforms$", uniforms.str());
 
-	src = core::string::replaceAll(src, "$vertexshaderbuffer$", vertexBuffer);
-	src = core::string::replaceAll(src, "$computeshaderbuffer$", computeBuffer);
-	src = core::string::replaceAll(src, "$fragmentshaderbuffer$", fragmentBuffer);
-	src = core::string::replaceAll(src, "$geometryshaderbuffer$", geometryBuffer);
+	srcHeader = core::string::replaceAll(srcHeader, "$attributes$", attributes.str());
+	srcHeader = core::string::replaceAll(srcHeader, "$methods$", methods.str());
+	srcHeader = core::string::replaceAll(srcHeader, "$prototypes$", prototypes.str());
+	srcHeader = core::string::replaceAll(srcHeader, "$includes$", includes.str());
 
-	const std::string targetFile = sourceDirectory + filename + ".h" + postfix;
-	Log::debug("Generate shader bindings for %s at %s", shaderStruct.name.c_str(), targetFile.c_str());
-	if (!filesystem->syswrite(targetFile, src)) {
-		Log::error("Failed to write %s", targetFile.c_str());
+	srcHeader = core::string::replaceAll(srcHeader, "$vertexshaderbuffer$", vertexBuffer);
+	srcHeader = core::string::replaceAll(srcHeader, "$computeshaderbuffer$", computeBuffer);
+	srcHeader = core::string::replaceAll(srcHeader, "$fragmentshaderbuffer$", fragmentBuffer);
+	srcHeader = core::string::replaceAll(srcHeader, "$geometryshaderbuffer$", geometryBuffer);
+
+	srcSource = core::string::replaceAll(srcSource, "$name$", filename);
+	srcSource = core::string::replaceAll(srcSource, "$namespace$", namespaceSrc);
+	srcSource = core::string::replaceAll(srcSource, "$filename$", shaderDirectory + shaderStruct.filename);
+	srcSource = core::string::replaceAll(srcSource, "$uniformarrayinfo$", uniformArrayInfo.str());
+	srcSource = core::string::replaceAll(srcSource, "$uniforms$", uniforms.str());
+
+	srcSource = core::string::replaceAll(srcSource, "$attributes$", attributes.str());
+	srcSource = core::string::replaceAll(srcSource, "$methods$", methods.str());
+	srcSource = core::string::replaceAll(srcSource, "$prototypes$", prototypes.str());
+	srcSource = core::string::replaceAll(srcSource, "$includes$", includes.str());
+
+	srcSource = core::string::replaceAll(srcSource, "$vertexshaderbuffer$", vertexBuffer);
+	srcSource = core::string::replaceAll(srcSource, "$computeshaderbuffer$", computeBuffer);
+	srcSource = core::string::replaceAll(srcSource, "$fragmentshaderbuffer$", fragmentBuffer);
+	srcSource = core::string::replaceAll(srcSource, "$geometryshaderbuffer$", geometryBuffer);
+
+	Log::debug("Generate shader bindings for %s", shaderStruct.name.c_str());
+	const std::string targetHeaderFile = sourceDirectory + filename + ".h" + postfix;
+	if (!filesystem->syswrite(targetHeaderFile, srcHeader)) {
+		Log::error("Failed to write %s", targetHeaderFile.c_str());
+		return false;
+	}
+
+	const std::string targetSourceFile = sourceDirectory + filename + ".cpp" + postfix;
+	if (!filesystem->syswrite(targetSourceFile, srcSource)) {
+		Log::error("Failed to write %s", targetSourceFile.c_str());
 		return false;
 	}
 	return true;

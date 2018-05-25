@@ -21,7 +21,8 @@ protected:
 	std::string _sourceDirectory;
 	std::string _postfix;
 	std::string _shaderDirectory;
-	std::string _shaderTemplateFile;
+	std::string _headerTemplateFile;
+	std::string _sourceTemplateFile;
 	std::string _glslangValidatorBin;
 	std::string _uniformBufferTemplateFile;
 	std::string _shaderfile;

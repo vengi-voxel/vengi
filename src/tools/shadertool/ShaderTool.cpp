@@ -108,7 +108,8 @@ core::AppState ShaderTool::onRunning() {
 	const bool printIncludes              = hasArg("--printincludes");
 	if (!printIncludes) {
 		_glslangValidatorBin              = getArgVal("--glslang");
-		_shaderTemplateFile               = getArgVal("--shadertemplate");
+		_headerTemplateFile               = getArgVal("--headertemplate");
+		_sourceTemplateFile               = getArgVal("--sourcetemplate");
 		_uniformBufferTemplateFile        = getArgVal("--buffertemplate");
 		_namespaceSrc                     = getArgVal("--namespace");
 		_shaderDirectory                  = getArgVal("--shaderdir");
@@ -151,7 +152,8 @@ core::AppState ShaderTool::onRunning() {
 	const std::string& writePath = fs->homePath();
 	Log::debug("Writing shader file %s to %s", _shaderfile.c_str(), writePath.c_str());
 
-	const std::string& templateShader = fs->load(_shaderTemplateFile);
+	const std::string& templateShaderHeader = fs->load(_headerTemplateFile);
+	const std::string& templateShaderSource = fs->load(_sourceTemplateFile);
 	const std::string& templateUniformBuffer = fs->load(_uniformBufferTemplateFile);
 
 	const std::string& computeFilename = _shaderfile + COMPUTE_POSTFIX;
@@ -168,7 +170,7 @@ core::AppState ShaderTool::onRunning() {
 			return core::AppState::Cleanup;
 		}
 
-		if (!shadertool::generateSrc(templateShader, templateUniformBuffer, _shaderStruct,
+		if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateUniformBuffer, _shaderStruct,
 				filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix,
 				"", "", "", computeBuffer)) {
 			Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
@@ -230,7 +232,7 @@ core::AppState ShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!shadertool::generateSrc(templateShader, templateUniformBuffer, _shaderStruct,
+	if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateUniformBuffer, _shaderStruct,
 			filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix,
 			vertexBuffer, geometryBuffer, fragmentBuffer, computeBuffer)) {
 		Log::error("Failed to generate shader source for %s", _shaderfile.c_str());

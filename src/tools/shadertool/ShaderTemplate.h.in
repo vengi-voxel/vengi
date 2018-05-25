@@ -14,15 +14,6 @@ $includes$
 
 namespace $namespace$ {
 
-namespace priv$name$ {
-
-static const char* VertexShaderBuffer = R"($vertexshaderbuffer$)";
-static const char* ComputeShaderBuffer = R"($computeshaderbuffer$)";
-static const char* FragmentShaderBuffer = R"($fragmentshaderbuffer$)";
-static const char* GeometryShaderBuffer = R"($geometryshaderbuffer$)";
-
-}
-
 /**
  * @ingroup Video
  * @brief Shader wrapper for $filename$
@@ -43,50 +34,14 @@ public:
 	 * @note Multiple setup() calls are fine. Just make sure that shutdown() is called as many times.
 	 * @see shutdown()
 	 */
-	bool setup() override {
-		++_setupCalls;
-		if (_initialized) {
-			return true;
-		}
-		const bool vertex = load("$filename$", priv$name$::VertexShaderBuffer, video::ShaderType::Vertex);
-		if (!vertex) {
-			const bool compute = load("$filename$", priv$name$::ComputeShaderBuffer, video::ShaderType::Compute);
-			if (!compute) {
-				return false;
-			}
-		} else {
-			const bool fragment = load("$filename$", priv$name$::FragmentShaderBuffer, video::ShaderType::Fragment);
-			if (!fragment) {
-				return false;
-			}
-			// optional
-			load("$filename$", priv$name$::GeometryShaderBuffer, video::ShaderType::Geometry);
-		}
-		_name = "$filename$";
-		if (!init()) {
-			return false;
-		}
-		$attributes$
-		$uniforms$
-$uniformarrayinfo$
-		return true;
-	}
+	bool setup() override;
 
 	/**
 	 * @brief If no other instance is active anymore the shader is unloaded.
 	 * @see setup()
 	 */
-	void shutdown() override {
-		if (_setupCalls == 0) {
-			return;
-		}
-		--_setupCalls;
-		if (_setupCalls == 0) {
-			Super::shutdown();
-		}
-	}
-
-$methods$
+	void shutdown() override;
+$prototypes$
 };
 
 typedef std::shared_ptr<$name$> $name$Ptr;
