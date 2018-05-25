@@ -1,0 +1,10 @@
+[Unit]
+Description=@DESCRIPTION@
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=@_EXE_TARGET@
+
+[Install]
+WantedBy=multi-user.target
