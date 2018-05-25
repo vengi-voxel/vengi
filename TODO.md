@@ -154,3 +154,8 @@ doing one query per chunk is most likely a little bit overkill.
 
 - testmesh (`TestMeshApp.cpp`) should render the sunlight and allow to change the position to test lighting
 - normal rendering must be fixed
+
+# Deployment
+
+- build docker images
+- set up kubernetes manifests
