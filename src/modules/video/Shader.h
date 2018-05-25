@@ -201,9 +201,6 @@ public:
 	int getAttributeLocation(const std::string& name) const;
 
 	int getUniformLocation(const std::string& name) const;
-	// returns a vector with offsets for the specified member names in the same order as the names
-	// these offsets can be used to e.g. memcpy the data in.
-	std::vector<int> getUniformBlockOffsets(const char **names, int amount) const;
 
 	void setUniformui(const std::string& name, unsigned int value) const;
 	void setUniform(const std::string& name, TextureUnit value) const;
