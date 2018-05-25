@@ -93,7 +93,7 @@ bool TBMessageHandler::PostMessage(TBID message, TBMessageData *data)
 		m_messages.AddLast(msg);
 
 		// If we added it and there was no messages, the next fire time has
-		// changed and we have to rescedule the timer.
+		// changed and we have to reschedule the timer.
 		if (g_all_normal_messages.GetFirst() == msg)
 			TBSystem::RescheduleTimer(0);
 		return true;

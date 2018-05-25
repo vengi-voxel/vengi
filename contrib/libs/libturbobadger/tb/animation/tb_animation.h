@@ -121,7 +121,7 @@ public:
 	/** Update all running animations. */
 	static void Update();
 
-	/** Return true if there is running animations. */
+	/** Return true if there are running animations. */
 	static bool HasAnimationsRunning();
 
 	static void StartAnimation(TBAnimationObject *obj,

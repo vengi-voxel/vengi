@@ -631,7 +631,7 @@ public:
 	virtual void OnProcessAfterChildren() {}
 
 	/** Callback for doing state updates that depend on your application state.
-		F.ex setting the disabled state on a widget which action is currently not
+		F.ex setting the disabled state on a widget whose action is currently not
 		available. This callback is called for all widgets before OnProcess if
 		something has called InvalidateStates().*/
 	virtual void OnProcessStates() {}
@@ -713,7 +713,7 @@ public:
 	virtual void OnInflateChild(TBWidget *child);
 
 	/** Called when this widget is inflated from resources, before any children
-		has been inflated. This will read generic widget properties and add the
+		have been inflated. This will read generic widget properties and add the
 		widget to the hierarchy if it's not already added. If overridden, you
 		must call the super implementation. */
 	virtual void OnInflate(const INFLATE_INFO &info);
@@ -748,7 +748,7 @@ public:
 	/** Return translation the children should have. Any scrolling of child widgets
 		should be done with this method, by returning the wanted translation.
 
-		When implementing this, you must also implement ScrollTo and GetScrollInfo
+		When reimplementing this, you must also implement ScrollTo and GetScrollInfo
 		so focus-scroll and panning will work automatically when dragging this or
 		any child widget. Note: You can apply the translation on one widget and
 		implement those methods on a parent, by returning this widget from the

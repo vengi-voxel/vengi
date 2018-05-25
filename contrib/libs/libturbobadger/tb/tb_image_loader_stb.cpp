@@ -16,6 +16,7 @@
 #define STBI_NO_STDIO
 #define STBI_NO_FAILURE_STRINGS
 #define STBI_NO_HDR
+#define STBI_NO_GIF
 
 // Disable unused function warnings for stb_image.h. Since STB_IMAGE_STATIC is
 // defined, it will contain a couple of unused static functions.

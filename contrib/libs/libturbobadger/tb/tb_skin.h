@@ -42,10 +42,11 @@ MAKE_ENUM_FLAG_COMBO(SKIN_STATE);
 
 /** Type of painting that should be done for a TBSkinElement. */
 enum SKIN_ELEMENT_TYPE {
-	SKIN_ELEMENT_TYPE_STRETCH_BOX,
-	SKIN_ELEMENT_TYPE_STRETCH_BORDER,
-	SKIN_ELEMENT_TYPE_STRETCH_IMAGE,
-	SKIN_ELEMENT_TYPE_TILE,
+	SKIN_ELEMENT_TYPE_STRETCH_BOX,		///< Default element type, cut
+										///  bitmap into 9 pieces "cut" wide
+	SKIN_ELEMENT_TYPE_STRETCH_BORDER,	///< Same as above, but dont fill the center
+	SKIN_ELEMENT_TYPE_STRETCH_IMAGE,	///< Scale the bitmap to the dest rect
+	SKIN_ELEMENT_TYPE_TILE,				///< Tile the bitmap to the dest rect
 	SKIN_ELEMENT_TYPE_IMAGE
 };
 

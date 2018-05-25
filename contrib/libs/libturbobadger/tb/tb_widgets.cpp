@@ -415,7 +415,7 @@ void TBWidget::SetSkinBg(const TBID &skin_bg, WIDGET_INVOKE_INFO info)
 		return;
 
 	// Set the skin and m_skin_bg_expected. During InvokeProcess, we will detect
-	// if any widget get a different element due to conditions and strong override.
+	// if any widget gets a different element due to conditions and strong override.
 	// If that happens, OnSkinChanged will be called and m_skin_bg_expected updated to
 	// match that override.
 	m_skin_bg = skin_bg;
@@ -931,7 +931,7 @@ PreferredSize TBWidget::OnCalculatePreferredContentSize(const SizeConstraints &c
 {
 	// The default preferred size is calculated to satisfy the children
 	// in the best way. Since this is the default, it's probably not a
-	// layouting widget and children are resized purely by gravity.
+	// layout widget and children are resized purely by gravity.
 
 	// Allow this widget a larger maximum if our gravity wants both ways,
 	// otherwise don't grow more than the largest child.

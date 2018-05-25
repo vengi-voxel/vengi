@@ -16,7 +16,7 @@ namespace tb {
 	and destination. */
 void UnescapeString(char *str);
 
-/** Check if buf is pointing at a end quote. It may need to iterate
+/** Check if buf is pointing at an end quote. It may need to iterate
 	buf backwards toward buf_start to check if any preceding backslashes
 	make it a escaped quote (which should not be the end quote) */
 bool IsEndQuote(const char *buf_start, const char *buf, const char quote_type);

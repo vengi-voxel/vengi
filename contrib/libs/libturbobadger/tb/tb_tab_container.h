@@ -45,7 +45,7 @@ public:
 
 	/** Set which page should be selected and visible. */
 	virtual void SetValue(int value);
-	virtual int GetValue() { return m_current_page; }
+	virtual int GetValue() const { return m_current_page; }
 
 	/** Set which page should be selected and visible. */
 	void SetCurrentPage(int index) { SetValue(index); }

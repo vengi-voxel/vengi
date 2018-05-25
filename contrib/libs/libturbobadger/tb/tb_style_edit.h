@@ -215,7 +215,7 @@ public:
 	int32 CalculateLineHeight(TBFontFace *font) const;
 	int32 CalculateBaseline(TBFontFace *font) const;
 
-	void Invalidate();
+	void Invalidate() const;
 	void BuildSelectionRegion(int32 translate_x, int32 translate_y, TBTextProps *props,
 		TBRegion &bg_region, TBRegion &fg_region);
 	void Paint(int32 translate_x, int32 translate_y, TBTextProps *props);

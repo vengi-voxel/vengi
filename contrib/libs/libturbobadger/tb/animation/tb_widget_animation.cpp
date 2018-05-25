@@ -104,6 +104,8 @@ void TBWidgetAnimationRect::OnAnimationUpdate(float progress)
 		{
 			// Widget hasn't been laid out yet,
 			// the animation was started too soon.
+			//! \TODO this is certainly a BUG because it can be called from within the
+			// 		TBAnimationManager::Update() loop which ALSO deletes the animation objevt.
 			TBAnimationManager::AbortAnimation(this, true);
 			return;
 		}

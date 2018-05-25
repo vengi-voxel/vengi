@@ -31,7 +31,7 @@ public:
 		TBAnimationObject::animation_duration = animation_duration;
 	}
 
-	float GetValue() { return src_val + (dst_val - src_val) * current_progress; }
+	float GetValue() const { return src_val + (dst_val - src_val) * current_progress; }
 	void SetValueAnimated(float value) { src_val = GetValue(); dst_val = value; TBAnimationManager::StartAnimation(this, animation_curve, animation_duration); }
 	void SetValueImmediately(float value) { TBAnimationManager::AbortAnimation(this, false); src_val = dst_val = value; OnAnimationUpdate(1.0f); }
 

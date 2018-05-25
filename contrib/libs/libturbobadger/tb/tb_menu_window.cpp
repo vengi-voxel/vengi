@@ -28,6 +28,11 @@ TBMenuWindow::~TBMenuWindow()
 	RemoveChild(&m_select_list);
 }
 
+void TBMenuWindow::OnDie()
+{
+	m_select_list.SetSource(nullptr);
+}
+
 bool TBMenuWindow::Show(TBSelectItemSource *source, const TBPopupAlignment &alignment, int initial_value)
 {
 	m_select_list.SetValue(initial_value);
@@ -48,7 +53,7 @@ bool TBMenuWindow::OnEvent(const TBWidgetEvent &ev)
 		target_ev.ref_id = ev.ref_id;
 		InvokeEvent(target_ev);
 
-		// If target got deleted, close
+		// If target not deleted, close
 		if (this_widget.Get())
 			Close();
 		return true;

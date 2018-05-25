@@ -350,7 +350,7 @@ void TBFontFace::RenderGlyph(TBFontGlyph *glyph)
 
 TBID TBFontFace::GetHashId(UCS4 cp) const
 {
-	return cp * 31 + m_font_desc.GetFontFaceID();
+	return cp * 3111 + m_font_desc.GetFontFaceID();
 }
 
 TBFontGlyph *TBFontFace::GetGlyph(UCS4 cp, bool render_if_needed)

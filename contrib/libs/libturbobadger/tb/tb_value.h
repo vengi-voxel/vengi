@@ -32,7 +32,7 @@ bool is_number_only(const char *str);
 	Should only be called when you've verified it's a number with is_number(). */
 bool is_number_float(const char *str);
 
-/** TBValueArray is a array of TBValue */
+/** TBValueArray is an array of TBValue */
 class TBValueArray
 {
 public:
@@ -92,7 +92,7 @@ public:
 	void TakeOver(TBValue &source_value);
 
 	/** Copy the content of source_value to this value.
-		Note: This value will become TYPE_NULL if source_value holds an object. We can't copy objects. */
+		Note: This value will become TYPE_NULL if source_value holds an owned object. We can't copy objects. */
 	void Copy(const TBValue &source_value);
 
 	void SetNull();

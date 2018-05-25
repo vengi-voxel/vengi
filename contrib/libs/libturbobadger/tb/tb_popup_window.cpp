@@ -28,6 +28,7 @@ TBRect TBPopupAlignment::GetAlignedRect(TBWidget *popup, TBWidget *target) const
 	if (pos_in_root.x != UNSPECIFIED &&
 		pos_in_root.y != UNSPECIFIED)
 	{
+		// Position is specified in absolute root coords
 		x = pos_in_root.x;
 		y = pos_in_root.y;
 		avoid_w = pos_offset.x;

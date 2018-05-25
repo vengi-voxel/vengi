@@ -84,7 +84,7 @@ public:
 
 /**
 	TBWidgetsReader parse a resource file (or buffer) into a TBNode tree,
-	and turn it into a hierarchy of widgets. It can create all types of widgets
+	and turns it into a hierarchy of widgets. It can create all types of widgets
 	that have a registered factory (TBWidgetFactory). All core widgets have
 	a factory by default, and you can also add your own.
 

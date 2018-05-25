@@ -19,14 +19,14 @@ namespace tb {
 enum LAYOUT_SIZE {
 	LAYOUT_SIZE_GRAVITY,	///< Sizes depend on the gravity for each widget. (If the widget pulls
 							///< towards both directions, it should grow to all available space)
-	LAYOUT_SIZE_PREFERRED,	///< Size will be the preferred so each widget may be sized differently.
+	LAYOUT_SIZE_PREFERRED,	///< Size will be the preferred so each widget may be sized differently. [default]
 	LAYOUT_SIZE_AVAILABLE	///< Size should grow to all available space
 };
 
 /** Specifies which y position widgets in a AXIS_X layout should have,
 	or which x position widgets in a AXIS_Y layout should have. */
 enum LAYOUT_POSITION {
-	LAYOUT_POSITION_CENTER,			///< Position is centered
+	LAYOUT_POSITION_CENTER,			///< Position is centered. [default]
 	LAYOUT_POSITION_LEFT_TOP,		///< Position is to the left for AXIS_Y layout and top for AXIS_X layout.
 	LAYOUT_POSITION_RIGHT_BOTTOM,	///< Position is to the right for AXIS_Y layout and bottom for AXIS_X layout.
 	LAYOUT_POSITION_GRAVITY,		///< Position depend on the gravity for each widget. (If the widget pulls
@@ -36,7 +36,7 @@ enum LAYOUT_POSITION {
 /** Specifies which width widgets in a AXIS_X layout should have,
 	or which height widgets in a AXIS_Y layout should have. */
 enum LAYOUT_DISTRIBUTION {
-	LAYOUT_DISTRIBUTION_PREFERRED,	///< Size will be the preferred so each widget may be sized differently.
+	LAYOUT_DISTRIBUTION_PREFERRED,	///< Size will be the preferred so each widget may be sized differently. [default]
 	LAYOUT_DISTRIBUTION_AVAILABLE,	///< Size should grow to all available space
 	LAYOUT_DISTRIBUTION_GRAVITY		///< Sizes depend on the gravity for each widget. (If the widget pulls
 									///< towards both directions, it should grow to all available space)
@@ -46,9 +46,9 @@ enum LAYOUT_DISTRIBUTION {
 	layout (or vertically in a AXIS_Y layout) if there is extra space
 	available. */
 enum LAYOUT_DISTRIBUTION_POSITION {
-	LAYOUT_DISTRIBUTION_POSITION_CENTER,
-	LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP,
-	LAYOUT_DISTRIBUTION_POSITION_RIGHT_BOTTOM
+	LAYOUT_DISTRIBUTION_POSITION_CENTER,		///< Position centered. [default]
+	LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP,		///< Position to the upper left.
+	LAYOUT_DISTRIBUTION_POSITION_RIGHT_BOTTOM	///< Position to the lower right.
 };
 
 /** Layout order parameter for TBLayout::SetLayoutOrder. */
@@ -60,8 +60,8 @@ enum LAYOUT_ORDER {
 /** Specifies what happens when there is not enough room for the layout, even
 	when all the children have been shrunk to their minimum size. */
 enum LAYOUT_OVERFLOW {
-	LAYOUT_OVERFLOW_CLIP,
-	LAYOUT_OVERFLOW_SCROLL
+	LAYOUT_OVERFLOW_CLIP,	///< Clip the chilren widgtes. [default]
+	LAYOUT_OVERFLOW_SCROLL	///< Create a scroller.
 	//LAYOUT_OVERFLOW_WRAP
 };
 
@@ -152,6 +152,7 @@ protected:
 		uint32 m_packed_init;
 	};
 	void ValidateLayout(const SizeConstraints &constraints, PreferredSize *calculate_ps = nullptr);
+	/** Can this TBLayout expand in its direction? */
 	bool QualifyForExpansion(WIDGET_GRAVITY gravity) const;
 	int GetWantedHeight(WIDGET_GRAVITY gravity, const PreferredSize &ps, int available_height) const;
 	TBWidget *GetNextNonCollapsedWidget(TBWidget *child) const;

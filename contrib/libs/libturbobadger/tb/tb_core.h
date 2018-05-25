@@ -1,4 +1,4 @@
-/** @mainpage Turbo Badger - Fast UI toolkit
+/** @page page_license License
 
 Turbo Badger
 Copyright (C) 2011-2014 Emil Segerås

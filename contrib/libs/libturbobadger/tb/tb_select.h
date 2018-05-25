@@ -131,7 +131,7 @@ public:
 	virtual int GetValue() override { return m_value; }
 
 	/** Get the ID of the selected item, or 0 if there is no item selected. */
-	TBID GetSelectedItemID();
+	TBID GetSelectedItemID() const;
 
 	/** Open the window if the model has items. */
 	void OpenWindow();

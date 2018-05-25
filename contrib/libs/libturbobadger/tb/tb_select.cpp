@@ -399,7 +399,7 @@ void TBSelectDropdown::SetValue(int value)
 	InvokeEvent(ev);
 }
 
-TBID TBSelectDropdown::GetSelectedItemID()
+TBID TBSelectDropdown::GetSelectedItemID() const
 {
 	if (m_source && m_value >= 0 && m_value < m_source->GetNumItems())
 		return m_source->GetItemID(m_value);

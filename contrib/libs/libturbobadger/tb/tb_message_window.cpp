@@ -57,6 +57,7 @@ bool TBMessageWindow::Show(const char *title, const char *message, TBMessageWind
 	TBEditField *editfield = GetWidgetByIDAndType<TBEditField>(1);
 	editfield->SetStyling(settings->styling);
 	editfield->SetText(message);
+	editfield->SetTextAlign(settings->align);
 	editfield->SetSkinBg("");
 
 	// Create buttons
@@ -73,6 +74,12 @@ bool TBMessageWindow::Show(const char *title, const char *message, TBMessageWind
 	{
 		AddButton("TBMessageWindow.yes", true);
 		AddButton("TBMessageWindow.no", false);
+	}
+	else if (settings->msg == TB_MSG_YES_NO_CANCEL)
+	{
+		AddButton("TBMessageWindow.yes", true);
+		AddButton("TBMessageWindow.no", false);
+		AddButton("TBMessageWindow.cancel", false);
 	}
 
 	// Size to fit content. This will use the default size of the textfield.
