@@ -157,15 +157,12 @@ build: cmake
 clean:
 	$(Q)rm -rf $(BUILDDIR)
 
-clean-local-config:
-	$(Q)rm -rf $(LOCAL_CONFIG_DIR)
-
-edit-local-config:
-	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/mapedit/mapedit.vars
-
 doc: cmake
 	$(call COMPILE, codegen)
 	$(call COMPILE, $@)
+
+package: cmake
+	$(call COMPILE, package)
 
 server client voxedit mapedit shadertool noisetool databasetool uitool tests tests-math tests-core tests-persistence tests-voxel benchmarks-voxel tests-noise tests-computeshadertool testmesh testcamera testdepthbuffer testturbobadger testnuklear testtexture testvoxelfont testplane testimgui testoctree testglslgeom testglslcomp testluaui testoctreevisit testshapebuilder tests-shadertool flatc computeshadertool: cmake
 	$(call COMPILE, $@)
