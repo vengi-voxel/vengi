@@ -43,6 +43,7 @@ set(SRCS_SHADERS
 )
 #set_source_files_properties(${SRCS_SHADERS} PROPERTIES LANGUAGE C)
 set(LIB video)
+set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
 add_library(${LIB} ${SRCS} ${SRCS_SHADERS})
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math image util assimp zlib)
