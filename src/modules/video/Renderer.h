@@ -30,7 +30,10 @@ typedef std::shared_ptr<Texture> TexturePtr;
 template<class DATATYPE>
 constexpr inline DataType mapType() {
 	if (std::is_floating_point<DATATYPE>()) {
-		return DataType::Float;
+		if (sizeof(DATATYPE) == 4u) {
+			return DataType::Float;
+		}
+		return DataType::Double;
 	}
 
 	if (sizeof(DATATYPE) == 1u) {
