@@ -29,7 +29,8 @@ void TextureRenderer::render(const glm::mat4& projection) {
 }
 
 void TextureRenderer::shutdown() {
-
+	_textureShader.shutdown();
+	_texturedFullscreenQuad.shutdown();
 }
 
 }

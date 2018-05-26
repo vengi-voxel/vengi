@@ -245,7 +245,7 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 		const std::string& attributeName = util::convertName(v.name, true);
 		const bool isInt = v.isInteger();
 
-		prototypes << "\n\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, int stride = 0, intptr_t offset = 0, bool normalized = false) const;\n";
+		prototypes << "\n\t[[deprecated]] video::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, int stride = 0, intptr_t offset = 0, bool normalized = false) const;\n";
 		methods << "\nvideo::Attribute " << filename << "::get" << attributeName << "Attribute(int32_t bufferIndex, int stride, intptr_t offset, bool normalized) const {\n";
 		methods << "\tvideo::Attribute attribute" << attributeName << ";\n";
 		methods << "\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
