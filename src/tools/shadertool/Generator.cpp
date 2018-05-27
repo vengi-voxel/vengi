@@ -243,9 +243,12 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 	for (int i = 0; i < attributeSize; ++i) {
 		const Variable& v = shaderStruct.attributes[i];
 		const std::string& attributeName = util::convertName(v.name, true);
-		const bool isInt = v.isInteger();
 
-		prototypes << "\n\t[[deprecated]] video::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, int stride = 0, intptr_t offset = 0, bool normalized = false) const;\n";
+		prototypes << "\n\t/**\n";
+		prototypes << "\t * @brief This version takes the shader attribute data type as a reference to automatically detect the type\n";
+		prototypes << "\t * @note If the given data type from c++ side is e.g. of type byte and stuffed into a ivec3 on the shader side, this won't work\n";
+		prototypes << "\t */\n";
+		prototypes << "\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, int stride = 0, intptr_t offset = 0, bool normalized = false) const;\n";
 		methods << "\nvideo::Attribute " << filename << "::get" << attributeName << "Attribute(int32_t bufferIndex, int stride, intptr_t offset, bool normalized) const {\n";
 		methods << "\tvideo::Attribute attribute" << attributeName << ";\n";
 		methods << "\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
@@ -254,25 +257,24 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 		methods << "\tattribute" << attributeName << ".offset = offset;\n";
 		methods << "\tattribute" << attributeName << ".stride = stride;\n";
 		methods << "\tattribute" << attributeName << ".normalized = normalized;\n";
-		methods << "\tattribute" << attributeName << ".type = ";
-		if (isInt) {
-			methods << "video::DataType::Int;\n";
-		} else {
-			methods << "video::DataType::Float;\n";
-		}
+		methods << "\tattribute" << attributeName << ".type = " << v.dataType() << ";\n";
 		methods << "\treturn attribute" << attributeName << ";\n";
 		methods << "}\n";
 
-		prototypes << "\n\ttemplate<typename CLASS, typename TYPE>\n";
-		prototypes << "\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, TYPE CLASS::* member = nullptr, bool normalized = false) const {\n";
+		prototypes << "\n\t/**\n";
+		prototypes << "\t * @brief This version takes the c++ data type as a reference\n";
+		prototypes << "\t */\n";
+		prototypes << "\ttemplate<typename CLASS, typename TYPE>\n";
+		prototypes << "\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, TYPE CLASS::* member, bool normalized = false) const {\n";
 		prototypes << "\t\tvideo::Attribute attribute" << attributeName << ";\n";
 		prototypes << "\t\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
 		prototypes << "\t\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
 		prototypes << "\t\tattribute" << attributeName << ".size = getComponents" << attributeName << "();\n";
-		prototypes << "\t\tattribute" << attributeName << ".offset = member == nullptr ? 0 : reinterpret_cast<std::size_t>(&(((CLASS*)nullptr)->*member));\n";
-		prototypes << "\t\tattribute" << attributeName << ".stride = member == nullptr ? 0 : sizeof(CLASS);\n";
+		prototypes << "\t\tattribute" << attributeName << ".offset = reinterpret_cast<std::size_t>(&(((CLASS*)nullptr)->*member));\n";
+		prototypes << "\t\tattribute" << attributeName << ".stride = sizeof(CLASS);\n";
 		prototypes << "\t\tattribute" << attributeName << ".normalized = normalized;\n";
 		prototypes << "\t\tattribute" << attributeName << ".type = video::mapType<TYPE>();\n";
+		// TODO: add validation that the given c++ data type fits the specified glsl type.
 		prototypes << "\t\treturn attribute" << attributeName << ";\n";
 		prototypes << "\t}\n";
 

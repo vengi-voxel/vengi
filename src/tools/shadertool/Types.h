@@ -41,6 +41,54 @@ struct Variable {
 	std::string name;
 	int arraySize = 0;
 
+	inline const char* dataType() const {
+		switch (type) {
+		case DVEC2:
+		case DVEC3:
+		case DVEC4:
+		case DOUBLE:
+			return "video::DataType::Double";
+		case VEC2:
+		case VEC3:
+		case VEC4:
+		case MAT2:
+		case MAT3:
+		case MAT4:
+		case MAT3X4:
+		case MAT4X3:
+		case FLOAT:
+			return "video::DataType::Float";
+		case UVEC2:
+		case UVEC3:
+		case UVEC4:
+		case UNSIGNED_INT:
+			return "video::DataType::UnsignedInt";
+		case IVEC2:
+		case IVEC3:
+		case IVEC4:
+		case INT:
+			return "video::DataType::Int";
+		case BVEC2:
+		case BVEC3:
+		case BVEC4:
+		case BOOL:
+			return "video::DataType::Byte";
+		case SAMPLER1D:
+		case SAMPLER2D:
+		case SAMPLER3D:
+		case SAMPLERCUBEMAP:
+		case SAMPLER2DARRAYSHADOW:
+		case SAMPLER2DARRAY:
+		case SAMPLER1DSHADOW:
+		case SAMPLER2DSHADOW:
+		case IMAGE2D:
+			return "video::DataType::Int";
+		case MAX:
+			break;
+		}
+		return "video::DataType::Max";
+	}
+
 	inline bool isSingleInteger() const {
 		return isSampler() || isImage() || type == Variable::INT || type == Variable::UNSIGNED_INT;
 	}
