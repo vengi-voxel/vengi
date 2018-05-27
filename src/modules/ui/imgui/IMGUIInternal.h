@@ -12,6 +12,33 @@
  * @{
  */
 
+#define IMGUI_OVERRIDE_DRAWVERT_STRUCT_LAYOUT \
+struct ImDrawVert { \
+	union { \
+		ImVec2 pos; \
+		struct { \
+			float x; \
+			float y; \
+		}; \
+	}; \
+	union { \
+		ImVec2 uv; \
+		struct { \
+			float u; \
+			float v; \
+		}; \
+	}; \
+	union { \
+		ImU32 col; \
+		struct { \
+			uint8_t r; \
+			uint8_t g; \
+			uint8_t b; \
+			uint8_t a; \
+		}; \
+	}; \
+};
+
 #define IM_VEC2_CLASS_EXTRA                                                   \
         ImVec2(const glm::ivec2& f) { x = f.x; y = f.y; }                     \
         operator glm::ivec2() const { return glm::ivec2(x,y); }
