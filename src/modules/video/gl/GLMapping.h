@@ -49,11 +49,7 @@ static GLenum ShaderTypes[] {
 	GL_VERTEX_SHADER,
 	GL_FRAGMENT_SHADER,
 	GL_GEOMETRY_SHADER,
-#ifdef GL_COMPUTE_SHADER
 	GL_COMPUTE_SHADER
-#else
-	0
-#endif
 };
 static_assert(std::enum_value(ShaderType::Max) == lengthof(ShaderTypes), "Array sizes don't match Max");
 

@@ -529,10 +529,6 @@ void deleteShader(Id& id) {
 
 Id genShader(ShaderType type) {
 	const GLenum glType = _priv::ShaderTypes[std::enum_value(type)];
-	if (glType == 0) {
-		Log::warn("Invalid gl mapping for shader type");
-		return InvalidId;
-	}
 	const Id id = glCreateShader(glType);
 	checkError();
 	return id;
