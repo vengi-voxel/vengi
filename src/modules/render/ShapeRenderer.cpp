@@ -117,12 +117,12 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 	}
 
 	// configure shader attributes
-	video::Attribute attributePos = _colorShader.getPosAttribute(_vertexIndex[meshIndex]);
+	video::Attribute attributePos = _colorShader.getPosAttribute(_vertexIndex[meshIndex], &glm::vec4::r);
 	core_assert(attributePos.index == _colorInstancedShader.getLocationPos());
 	core_assert(attributePos.size == _colorInstancedShader.getComponentsPos());
 	core_assert_always(_vbo[meshIndex].addAttribute(attributePos));
 
-	video::Attribute attributeColor = _colorShader.getColorAttribute(_colorIndex[meshIndex]);
+	video::Attribute attributeColor = _colorShader.getColorAttribute(_colorIndex[meshIndex], &glm::vec4::r);
 	core_assert(attributeColor.index == _colorInstancedShader.getLocationColor());
 	core_assert(attributeColor.size == _colorInstancedShader.getComponentsColor());
 	core_assert_always(_vbo[meshIndex].addAttribute(attributeColor));
@@ -178,7 +178,7 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, siz
 		vbo.setMode(_offsetIndex[meshIndex], video::BufferMode::Stream);
 
 		// TODO: this looks broken... somehow
-		video::Attribute attributeOffset = _colorInstancedShader.getOffsetAttribute(_offsetIndex[meshIndex]);
+		video::Attribute attributeOffset = _colorInstancedShader.getOffsetAttribute(_offsetIndex[meshIndex], &glm::vec3::x);
 		attributeOffset.divisor = 1;
 		attributeOffset.stride = attributeOffset.size * sizeof(float);
 		core_assert_always(_vbo[meshIndex].addAttribute(attributeOffset));

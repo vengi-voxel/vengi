@@ -13,9 +13,9 @@ bool TextureRenderer::init(const glm::vec2& size) {
 	}
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createTexturedQuad(glm::vec2(0.0f), size);
-	_texturedFullscreenQuad.addAttribute(_textureShader.getPosAttribute(fullscreenQuadIndices.x));
-	_texturedFullscreenQuad.addAttribute(_textureShader.getTexcoordAttribute(fullscreenQuadIndices.y));
-	_texturedFullscreenQuad.addAttribute(_textureShader.getColorAttribute(_texturedFullscreenQuad.createWhiteColorForQuad()));
+	_texturedFullscreenQuad.addAttribute(_textureShader.getPosAttribute(fullscreenQuadIndices.x, &glm::vec2::x));
+	_texturedFullscreenQuad.addAttribute(_textureShader.getTexcoordAttribute(fullscreenQuadIndices.y, &glm::vec2::x));
+	_texturedFullscreenQuad.addAttribute(_textureShader.getColorAttribute(_texturedFullscreenQuad.createWhiteColorForQuad(), &glm::vec2::x));
 	return true;
 }
 
