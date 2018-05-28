@@ -23,6 +23,7 @@
 #include "persistence/DBHandler.h"
 #include "persistence/PersistenceMgr.h"
 #include "stock/StockDataProvider.h"
+#include "compute/Compute.h"
 #include <stdlib.h>
 
 Server::Server(const metric::MetricPtr& metric, const backend::ServerLoopPtr& serverLoop,
@@ -62,6 +63,11 @@ core::AppState Server::onInit() {
 	const core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
+	}
+
+	if (!compute::init()) {
+		Log::warn("Failed to initialize the compute module");
+		// no hard error...
 	}
 
 	if (!_serverLoop->init()) {
