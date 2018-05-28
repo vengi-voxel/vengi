@@ -565,6 +565,15 @@ bool init() {
 	for (cl_uint i = 0; i < _priv::_ctx.deviceIdCount; ++i) {
 		const std::string& device = getDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_NAME);
 		Log::info("* (%i): %s", i + 1, device.c_str());
+		size_t extensionSize;
+		error = clGetDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_EXTENSIONS, 0, nullptr, &extensionSize);
+		checkError(error);
+		if (extensionSize > 0) {
+			std::unique_ptr<char[]> extensions(new char[extensionSize + 1]);
+			error = clGetDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_EXTENSIONS,	extensionSize, (void*)extensions.get(), &extensionSize);
+			checkError(error);
+			Log::info("%s", extensions.get());
+		}
 	}
 
 	const cl_context_properties contextProperties[] = {
