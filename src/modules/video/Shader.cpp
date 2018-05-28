@@ -338,8 +338,12 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 	if (finalize) {
 		// TODO: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
 		// https://www.khronos.org/opengl/wiki/GLSL_Optimizations
+		// https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)
 		std::string_view replaceIn = "in";
 		std::string_view replaceOut = "out";
+		std::string_view replaceWriteOnly = "writeonly";
+		std::string_view replaceReadOnly = "readonly";
+		std::string_view replaceRestrict = "restrict";
 		std::string_view replaceTexture1D = "texture1D";
 		std::string_view replaceTexture2D = "texture2D";
 		std::string_view replaceTexture3D = "texture3D";
@@ -354,8 +358,17 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 			replaceShadow2D = "texture";
 		}
 
+		if (glslVersion < GLSLVersion::V420) {
+			// ARB_shader_image_load_store
+			replaceWriteOnly = "";
+			replaceReadOnly = "";
+			replaceRestrict = "";
+		}
 		src = core::string::replaceAll(src, "$constant", "//");
 		src = core::string::replaceAll(src, "$in", replaceIn);
+		src = core::string::replaceAll(src, "$writeonly", replaceWriteOnly);
+		src = core::string::replaceAll(src, "$readonly", replaceReadOnly);
+		src = core::string::replaceAll(src, "$restrict", replaceRestrict);
 		src = core::string::replaceAll(src, "$out", replaceOut);
 		src = core::string::replaceAll(src, "$texture1D", replaceTexture1D);
 		src = core::string::replaceAll(src, "$texture2D", replaceTexture2D);
