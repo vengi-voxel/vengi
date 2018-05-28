@@ -245,23 +245,6 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 		const std::string& attributeName = util::convertName(v.name, true);
 
 		prototypes << "\n\t/**\n";
-		prototypes << "\t * @brief This version takes the shader attribute data type as a reference to automatically detect the type\n";
-		prototypes << "\t * @note If the given data type from c++ side is e.g. of type byte and stuffed into a ivec3 on the shader side, this won't work\n";
-		prototypes << "\t */\n";
-		prototypes << "\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, int stride = 0, intptr_t offset = 0, bool normalized = false) const;\n";
-		methods << "\nvideo::Attribute " << filename << "::get" << attributeName << "Attribute(int32_t bufferIndex, int stride, intptr_t offset, bool normalized) const {\n";
-		methods << "\tvideo::Attribute attribute" << attributeName << ";\n";
-		methods << "\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
-		methods << "\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
-		methods << "\tattribute" << attributeName << ".size = getComponents" << attributeName << "();\n";
-		methods << "\tattribute" << attributeName << ".offset = offset;\n";
-		methods << "\tattribute" << attributeName << ".stride = stride;\n";
-		methods << "\tattribute" << attributeName << ".normalized = normalized;\n";
-		methods << "\tattribute" << attributeName << ".type = " << v.dataType() << ";\n";
-		methods << "\treturn attribute" << attributeName << ";\n";
-		methods << "}\n";
-
-		prototypes << "\n\t/**\n";
 		prototypes << "\t * @brief This version takes the c++ data type as a reference\n";
 		prototypes << "\t */\n";
 		prototypes << "\ttemplate<typename CLASS, typename TYPE>\n";
