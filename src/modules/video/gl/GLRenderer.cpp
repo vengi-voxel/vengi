@@ -1383,9 +1383,11 @@ void setup() {
 	const core::VarPtr& glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
 	int glMinor = 0, glMajor = 0;
 	if (std::sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
-		glMajor = 3;
-		glMinor = 0;
+		const GLVersion& version = GL4_3;
+		glMajor = version.majorVersion;
+		glMinor = version.minorVersion;
 	}
+	Log::info("Request gl context %i.%i", glMajor, glMinor);
 	GLVersion glv(glMajor, glMinor);
 	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
 		if (GLVersions[i].version == glv) {
