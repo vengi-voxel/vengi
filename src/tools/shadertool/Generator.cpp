@@ -288,7 +288,8 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 		prototypes << "\t\treturn " << util::getComponents(v.type) << ";\n";
 		prototypes << "\t}\n";
 
-		prototypes << "\n\tbool set" << attributeName << "Divisor(uint32_t divisor) const;\n\n";
+		prototypes << "\n\t/**\n\t * @brief Used for instance rendering\n\t */\n";
+		prototypes << "\tbool set" << attributeName << "Divisor(uint32_t divisor) const;\n\n";
 		methods << "\nbool " << filename << "::set" << attributeName << "Divisor(uint32_t divisor) const {\n";
 		methods << "\tconst int location = getAttributeLocation(\"" << v.name << "\");\n";
 		methods << "\treturn setDivisor(location, divisor);\n";
