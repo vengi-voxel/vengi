@@ -77,4 +77,13 @@ void disableDebug() {
 	Log::info("disable render debug messages");
 }
 
+bool checkLimit(int amount, Limit l) {
+	const int v = renderState().limit(l);
+	if (v <= 0) {
+		Log::trace("No limit found for %i", (int)l);
+		return true;
+	}
+	return v >= amount;
+}
+
 }

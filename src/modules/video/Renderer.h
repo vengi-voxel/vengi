@@ -327,9 +327,6 @@ inline double specification(Spec l) {
 /**
  * @brief Checks whether a given hardware limit is exceeded.
  */
-inline bool checkLimit(int amount, Limit l) {
-	const int v = renderState().limit(l);
-	return v >= amount;
-}
+extern bool checkLimit(int amount, Limit l);
 
 }
