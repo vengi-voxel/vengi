@@ -47,7 +47,7 @@ bool Buffer::addAttribute(const Attribute& attribute) {
 		Log::debug("No buffer index is set");
 		return false;
 	}
-	if (attribute.index < 0) {
+	if (attribute.location < 0) {
 		Log::debug("No attribute location is set");
 		return false;
 	}

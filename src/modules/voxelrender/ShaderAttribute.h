@@ -9,11 +9,11 @@
 
 namespace voxelrender {
 
-inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_t attributeIndex, int components = sizeof(voxel::VoxelVertex::position) / sizeof(decltype(voxel::VoxelVertex::position)::value_type)) {
+inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components = sizeof(voxel::VoxelVertex::position) / sizeof(decltype(voxel::VoxelVertex::position)::value_type)) {
 	static_assert(voxel::MAX_TERRAIN_HEIGHT < 256, "Max terrain height exceeds the valid voxel positions");
 	video::Attribute attrib;
 	attrib.bufferIndex = bufferIndex;
-	attrib.index = attributeIndex;
+	attrib.location = attributeLocation;
 	attrib.stride = sizeof(voxel::VoxelVertex);
 	attrib.size = components;
 	attrib.type = video::mapType<decltype(voxel::VoxelVertex::position)::value_type>();
@@ -25,7 +25,7 @@ inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_
 /**
  * @note we are uploading multiple bytes at once here
  */
-inline video::Attribute getInfoVertexAttribute(uint32_t bufferIndex, uint32_t attributeIndex, int components) {
+inline video::Attribute getInfoVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components) {
 	static_assert(sizeof(voxel::VoxelVertex::colorIndex) == sizeof(uint8_t), "Voxel color size doesn't match");
 	static_assert(sizeof(voxel::VoxelVertex::ambientOcclusion) == sizeof(uint8_t), "AO type size doesn't match");
 	static_assert(sizeof(voxel::VoxelVertex::material) == sizeof(uint8_t), "Material type size doesn't match");
@@ -33,7 +33,7 @@ inline video::Attribute getInfoVertexAttribute(uint32_t bufferIndex, uint32_t at
 	static_assert(offsetof(voxel::VoxelVertex, colorIndex) < offsetof(voxel::VoxelVertex, material), "Layout change of VoxelVertex without change in upload");
 	video::Attribute attrib;
 	attrib.bufferIndex = bufferIndex;
-	attrib.index = attributeIndex;
+	attrib.location = attributeLocation;
 	attrib.stride = sizeof(voxel::VoxelVertex);
 	attrib.size = components;
 	attrib.type = video::mapType<decltype(voxel::VoxelVertex::ambientOcclusion)>();
@@ -42,10 +42,10 @@ inline video::Attribute getInfoVertexAttribute(uint32_t bufferIndex, uint32_t at
 	return attrib;
 }
 
-inline video::Attribute getOffsetVertexAttribute(uint32_t bufferIndex, uint32_t attributeIndex, int components) {
+inline video::Attribute getOffsetVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components) {
 	video::Attribute voxelAttributeOffsets;
 	voxelAttributeOffsets.bufferIndex = bufferIndex;
-	voxelAttributeOffsets.index = attributeIndex;
+	voxelAttributeOffsets.location = attributeLocation;
 	voxelAttributeOffsets.stride = sizeof(glm::vec3);
 	voxelAttributeOffsets.size = components;
 	voxelAttributeOffsets.type = video::mapType<glm::vec3::value_type>();

@@ -628,18 +628,18 @@ void deleteRenderbuffers(uint8_t amount, Id* ids) {
 
 void configureAttribute(const Attribute& a) {
 	core_assert(_priv::s.programHandle != InvalidId);
-	glEnableVertexAttribArray(a.index);
+	glEnableVertexAttribArray(a.location);
 	checkError();
 	const GLenum glType = _priv::DataTypes[std::enum_value(a.type)];
 	if (a.typeIsInt) {
-		glVertexAttribIPointer(a.index, a.size, glType, a.stride, GL_OFFSET_CAST(a.offset));
+		glVertexAttribIPointer(a.location, a.size, glType, a.stride, GL_OFFSET_CAST(a.offset));
 		checkError();
 	} else {
-		glVertexAttribPointer(a.index, a.size, glType, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
+		glVertexAttribPointer(a.location, a.size, glType, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
 		checkError();
 	}
 	if (a.divisor > 0) {
-		glVertexAttribDivisor(a.index, a.divisor);
+		glVertexAttribDivisor(a.location, a.divisor);
 		checkError();
 	}
 }

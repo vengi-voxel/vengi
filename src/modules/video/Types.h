@@ -403,7 +403,7 @@ typedef std::unordered_map<std::string, Uniform> ShaderUniforms;
  */
 struct Attribute {
 	/** shader attribute index */
-	int32_t index = -1;
+	int32_t location = -1;
 	/** The internal buffer index that was returned by @c create() */
 	int32_t bufferIndex = -1;
 	/** The size behind your attribute (not sizeof but lengthof). */

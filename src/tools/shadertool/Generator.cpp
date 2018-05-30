@@ -251,7 +251,7 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 		prototypes << "\tvideo::Attribute get" << attributeName << "Attribute(int32_t bufferIndex, TYPE CLASS::* member, bool normalized = false) const {\n";
 		prototypes << "\t\tvideo::Attribute attribute" << attributeName << ";\n";
 		prototypes << "\t\tattribute" << attributeName << ".bufferIndex = bufferIndex;\n";
-		prototypes << "\t\tattribute" << attributeName << ".index = getLocation" << attributeName << "();\n";
+		prototypes << "\t\tattribute" << attributeName << ".location = getLocation" << attributeName << "();\n";
 		prototypes << "\t\tattribute" << attributeName << ".size = getComponents" << attributeName << "();\n";
 		prototypes << "\t\tattribute" << attributeName << ".offset = reinterpret_cast<std::size_t>(&(((CLASS*)nullptr)->*member));\n";
 		prototypes << "\t\tattribute" << attributeName << ".stride = sizeof(CLASS);\n";
