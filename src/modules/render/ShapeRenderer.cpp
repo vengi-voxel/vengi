@@ -206,24 +206,31 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 	if (meshIndex == (uint32_t)-1) {
 		return false;
 	}
-	core_assert_always(_vbo[meshIndex].bind());
 	const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
 
 	if (_amounts[meshIndex] > 0) {
 		core_assert(_offsetIndex[meshIndex] != -1);
 		if (shader == nullptr) {
-			video::ScopedShader scoped(_colorInstancedShader);
+			_colorInstancedShader.activate();
 			core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
 			core_assert_always(_colorInstancedShader.setModel(model));
 		}
+		core_assert_always(_vbo[meshIndex].bind());
 		video::drawElementsInstanced<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices, _amounts[meshIndex]);
+		if (shader == nullptr) {
+			_colorInstancedShader.deactivate();
+		}
 	} else {
 		if (shader == nullptr) {
-			video::ScopedShader scoped(_colorShader);
+			_colorShader.activate();
 			core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
 			core_assert_always(_colorShader.setModel(model));
 		}
+		core_assert_always(_vbo[meshIndex].bind());
 		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
+		if (shader == nullptr) {
+			_colorShader.deactivate();
+		}
 	}
 	_vbo[meshIndex].unbind();
 	return true;
