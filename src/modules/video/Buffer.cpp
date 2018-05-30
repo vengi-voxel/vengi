@@ -44,12 +44,15 @@ void Buffer::unmapData(int32_t idx) const {
 
 bool Buffer::addAttribute(const Attribute& attribute) {
 	if (attribute.bufferIndex < 0) {
+		Log::debug("No buffer index is set");
 		return false;
 	}
 	if (attribute.index < 0) {
+		Log::debug("No attribute location is set");
 		return false;
 	}
 	if (attribute.size <= 0) {
+		Log::debug("No attribute size is set");
 		return false;
 	}
 	if (!video::checkLimit(_attributes.size(), video::Limit::MaxVertexAttribs)) {

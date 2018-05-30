@@ -116,6 +116,8 @@ public:
 	 */
 	bool init();
 
+	bool isInitialized() const;
+
 	/**
 	 * @brief Make sure to configure feedback transform varying before you link the shader
 	 * @see setupTransformFeedback()
@@ -317,6 +319,10 @@ public:
 	void enableVertexAttributeArray(int location) const;
 	bool setDivisor(int location, uint32_t divisor) const;
 };
+
+inline bool Shader::isInitialized() const {
+	return _initialized;
+}
 
 inline void Shader::addUsedUniform(int location) const {
 	_usedUniforms.insert(location);
@@ -568,6 +574,7 @@ inline int Shader::getAttributeComponents(int location) const {
 	if (i != _attributeComponents.end()) {
 		return i->second;
 	}
+	Log::debug("Could not find components for attributes at location %i", location);
 	return -1;
 }
 
@@ -576,6 +583,7 @@ inline int Shader::getAttributeComponents(const std::string& name) const {
 	if (loc == -1) {
 		return -1;
 	}
+	Log::debug("Could not find components for attributes at location %s", name.c_str());
 	return getAttributeComponents(loc);
 }
 
