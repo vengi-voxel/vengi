@@ -332,9 +332,14 @@ update-voxelizer:
 	$(call UPDATE_GIT,voxelizer,https://github.com/karimnaaji/voxelizer)
 	cp $(UPDATEDIR)/voxelizer.sync/voxelizer.h src/tools/voxedit/ui/editorscene/
 
+update-curl:
+	$(call UPDATE_GIT,curl,https://github.com/curl/curl.git)
+	cp $(UPDATEDIR)/curl.sync/lib/*.[ch] contrib/libs/libcurl/lib
+	cp $(UPDATEDIR)/curl.sync/include/curl/*.h contrib/libs/libcurl/include/curl
+
 # TODO native file dialog support
 # TODO simpleai support
-updatelibs: update-voxelizer update-nuklear update-stringview update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-glslang
+updatelibs: update-voxelizer update-nuklear update-stringview update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-curl update-glslang
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
