@@ -75,7 +75,7 @@ protected:
 public:
 	Console();
 	virtual ~Console() {}
-	virtual void construct();
+	virtual void construct() override;
 	virtual bool init() override;
 	virtual void shutdown() override;
 	virtual bool toggle();
