@@ -73,7 +73,7 @@ public:
 	bool init() override;
 	void shutdown() override;
 	void update(long dt);
-	void onEvent(const network::DisconnectEvent& event);
+	void onEvent(const network::DisconnectEvent& event) override;
 };
 
 typedef std::shared_ptr<ServerLoop> ServerLoopPtr;

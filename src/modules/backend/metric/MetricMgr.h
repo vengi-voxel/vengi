@@ -28,12 +28,12 @@ private:
 public:
 	MetricMgr(const metric::MetricPtr& metric, const core::EventBusPtr& eventBus);
 
-	void onEvent(const metric::MetricEvent& event);
-	void onEvent(const network::NewConnectionEvent& event);
-	void onEvent(const EntityRemoveFromMapEvent& event);
-	void onEvent(const EntityAddToMapEvent& event);
-	void onEvent(const EntityDeleteEvent& event);
-	void onEvent(const EntityAddEvent& event);
+	void onEvent(const metric::MetricEvent& event) override;
+	void onEvent(const network::NewConnectionEvent& event) override;
+	void onEvent(const EntityRemoveFromMapEvent& event) override;
+	void onEvent(const EntityAddToMapEvent& event) override;
+	void onEvent(const EntityDeleteEvent& event) override;
+	void onEvent(const EntityAddEvent& event) override;
 
 	metric::MetricPtr& metric();
 
