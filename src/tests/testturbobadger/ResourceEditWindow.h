@@ -42,16 +42,16 @@ public:
 	void RefreshFromSource();
 
 	// == TBWindow ======================================================================
-	virtual bool OnEvent(const TBWidgetEvent &ev);
-	virtual void OnPaintChildren(const PaintProps &paint_props);
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
+	virtual void OnPaintChildren(const PaintProps &paint_props) override;
 
 	// == TBMessageHandler ==============================================================
-	virtual void OnMessageReceived(TBMessage *msg);
+	virtual void OnMessageReceived(TBMessage *msg) override;
 
 	// == TBWidgetListener ========================================================
-	virtual bool OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev);
-	virtual void OnWidgetAdded(TBWidget *parent, TBWidget *child);
-	virtual void OnWidgetRemove(TBWidget *parent, TBWidget *child);
+	virtual bool OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) override;
+	virtual void OnWidgetAdded(TBWidget *parent, TBWidget *child) override;
+	virtual void OnWidgetRemove(TBWidget *parent, TBWidget *child) override;
 private:
 	TBSelectList *m_widget_list;
 	TBSelectItemSourceList<ResourceItem> m_widget_list_source;
