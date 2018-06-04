@@ -21,7 +21,6 @@ namespace video {
  */
 class FrameBufferConfig {
 private:
-	bool _depth = false;
 	glm::ivec2 _dimension;
 	std::map<FrameBufferAttachment, TextureConfig> _colorTextures;
 	TextureFormat _colorTextureFormat = TextureFormat::RGBA;
