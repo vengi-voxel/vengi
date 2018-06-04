@@ -179,7 +179,7 @@ static void nk_sdl_clipbard_copy(nk_handle usr, const char *text, int len) {
 	if (len <= 0) {
 		return;
 	}
-	char* str = new char(len + 1);
+	char* str = new char[len + 1];
 	memcpy(str, text, (size_t) len);
 	str[len] = '\0';
 	SDL_SetClipboardText(str);
