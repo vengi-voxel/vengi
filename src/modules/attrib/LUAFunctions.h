@@ -29,7 +29,7 @@ static int luaCreateContainer(lua_State * l) {
 static int luaContainerGC(lua_State * l) {
 	LUAContainer *container = luaGetContainerContext(l, 1);
 	if (!container->registered()) {
-		const int ret = luaL_error(l, "Container '%s' wasn't registered", container->name());
+		const int ret = luaL_error(l, "Container '%s' wasn't registered", container->name().c_str());
 		delete container;
 		return ret;
 	}
