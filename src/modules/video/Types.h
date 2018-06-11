@@ -12,8 +12,10 @@
 namespace video {
 
 enum class TextureType {
+	Texture1D,
 	Texture2D,
 	Texture2DArray,
+	Texture3D,
 	TextureCube,
 
 	Max

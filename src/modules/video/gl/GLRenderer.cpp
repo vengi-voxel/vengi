@@ -1008,12 +1008,12 @@ void setupTexture(const TextureConfig& config) {
 		glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilterMin);
 		checkError();
 	}
-	if (config.wrapR() != TextureWrap::Max) {
+	if (config.type() == TextureType::Texture3D && config.wrapR() != TextureWrap::Max) {
 		const GLenum glWrapR = _priv::TextureWraps[std::enum_value(config.wrapR())];
 		glTexParameteri(glType, GL_TEXTURE_WRAP_R, glWrapR);
 		checkError();
 	}
-	if (config.wrapS() != TextureWrap::Max) {
+	if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&  config.wrapS() != TextureWrap::Max) {
 		const GLenum glWrapS = _priv::TextureWraps[std::enum_value(config.wrapS())];
 		glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrapS);
 		checkError();
@@ -1049,7 +1049,10 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 	const _priv::Formats& f = _priv::textureFormats[std::enum_value(format)];
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	core_assert(type != TextureType::Max);
-	if (type == TextureType::Texture2D) {
+	if (type == TextureType::Texture1D) {
+		core_assert(height == 1);
+		glTexImage1D(glType, 0, f.internalFormat, width, 0, f.dataFormat, f.dataType, (const void*)data);
+	} else if (type == TextureType::Texture2D) {
 		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const void*)data);
 		checkError();
 	} else {

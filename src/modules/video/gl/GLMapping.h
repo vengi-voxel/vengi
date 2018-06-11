@@ -145,8 +145,10 @@ static GLenum States[] {
 static_assert(std::enum_value(State::Max) == lengthof(States), "Array sizes don't match Max");
 
 static GLenum TextureTypes[] {
+	GL_TEXTURE_1D,
 	GL_TEXTURE_2D,
 	GL_TEXTURE_2D_ARRAY,
+	GL_TEXTURE_3D,
 	GL_TEXTURE_CUBE_MAP
 };
 static_assert(std::enum_value(TextureType::Max) == lengthof(TextureTypes), "Array sizes don't match Max");
