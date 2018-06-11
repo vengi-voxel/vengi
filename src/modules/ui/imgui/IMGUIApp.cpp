@@ -316,6 +316,7 @@ core::AppState IMGUIApp::onRunning() {
 
 	const math::Rect<int> rect(0, 0, _dimension.x, _dimension.y);
 	_console.render(rect, _deltaFrameMillis);
+	ImGui::EndFrame();
 	ImGui::Render();
 
 	ImDrawData* drawData = ImGui::GetDrawData();
