@@ -45,7 +45,7 @@ namespace glm
 	)
 	{
 		tquat<T, Q> invQuat = inverse(curr);
-		return exp((log(next + invQuat) + log(prev + invQuat)) / static_cast<T>(-4)) * curr;
+		return exp((log(next * invQuat) + log(prev * invQuat)) / static_cast<T>(-4)) * curr;
 	}
 
 	template<typename T, qualifier Q>
