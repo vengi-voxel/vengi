@@ -29,7 +29,7 @@
 //
 // Author: wan@google.com (Zhanyong Wan)
 
-// Google Test - The Google C++ Testing Framework
+// Google Test - The Google C++ Testing and Mocking Framework
 //
 // This file implements a universal value printer that can print a
 // value of any type T:
@@ -635,6 +635,10 @@ inline void PrintTo(absl::string_view sp, ::std::ostream* os) {
   PrintTo(::std::string(sp), os);
 }
 #endif  // GTEST_HAS_ABSL
+
+#if GTEST_LANG_CXX11
+inline void PrintTo(std::nullptr_t, ::std::ostream* os) { *os << "(nullptr)"; }
+#endif  // GTEST_LANG_CXX11
 
 #if GTEST_HAS_TR1_TUPLE || GTEST_HAS_STD_TUPLE_
 // Helper function for printing a tuple.  T must be instantiated with
