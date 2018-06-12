@@ -91,7 +91,7 @@ template<typename T> struct IndirectHelper<const T *> {
 template<typename T, typename IT> struct VectorIterator {
   typedef std::random_access_iterator_tag iterator_category;
   typedef IT value_type;
-  typedef uoffset_t difference_type;
+  typedef ptrdiff_t difference_type;
   typedef IT *pointer;
   typedef IT &reference;
 
@@ -121,7 +121,7 @@ template<typename T, typename IT> struct VectorIterator {
     return data_ != other.data_;
   }
 
-  ptrdiff_t operator-(const VectorIterator &other) const {
+  difference_type operator-(const VectorIterator &other) const {
     return (data_ - other.data_) / IndirectHelper<T>::element_stride;
   }
 
@@ -1540,6 +1540,7 @@ class FlatBufferBuilder {
   /// in the buffer.
   template<typename T>
   Offset<Vector<T>> CreateUninitializedVector(size_t len, T **buf) {
+    AssertScalarT<T>();
     return CreateUninitializedVector(len, sizeof(T),
                                      reinterpret_cast<uint8_t **>(buf));
   }
