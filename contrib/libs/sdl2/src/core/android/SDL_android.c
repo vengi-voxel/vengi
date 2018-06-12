@@ -76,7 +76,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
         JNIEnv* env, jclass jcls,
-        jint width, jint height, jint format, jfloat rate);
+        jint surfaceWidth, jint surfaceHeight,
+		jint deviceWidth, jint deviceHeight, jint format, jfloat rate);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(
         JNIEnv* env, jclass jcls);
@@ -102,7 +103,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
         JNIEnv* env, jclass jcls,
-        jint button, jint action, jfloat x, jfloat y);
+        jint button, jint action, jfloat x, jfloat y, jboolean relative);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
         JNIEnv* env, jclass jcls,
@@ -213,6 +214,7 @@ static jmethodID midSetWindowStyle;
 static jmethodID midSetOrientation;
 static jmethodID midGetContext;
 static jmethodID midIsAndroidTV;
+static jmethodID midIsChromebook;
 static jmethodID midInputGetInputDeviceIds;
 static jmethodID midSendMessage;
 static jmethodID midShowTextInput;
@@ -226,6 +228,8 @@ static jmethodID midGetDisplayDPI;
 static jmethodID midCreateCustomCursor;
 static jmethodID midSetCustomCursor;
 static jmethodID midSetSystemCursor;
+static jmethodID midSupportsRelativeMouse;
+static jmethodID midSetRelativeMouseEnabled;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -314,6 +318,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
                                 "getContext","()Landroid/content/Context;");
     midIsAndroidTV = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "isAndroidTV","()Z");
+    midIsChromebook = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "isChromebook", "()Z");
     midInputGetInputDeviceIds = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "inputGetInputDeviceIds", "(I)[I");
     midSendMessage = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
@@ -339,12 +345,16 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
     midSetCustomCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setCustomCursor", "(I)Z");
     midSetSystemCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setSystemCursor", "(I)Z");
 
+    midSupportsRelativeMouse = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "supportsRelativeMouse", "()Z");
+    midSetRelativeMouseEnabled = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
+
     if (!midGetNativeSurface ||
        !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsAndroidTV || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
        !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
-       !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor) {
+       !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor || !midSupportsRelativeMouse || !midSetRelativeMouseEnabled ||
+       !midIsChromebook) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -509,9 +519,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 /* Resize */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
                                     JNIEnv* env, jclass jcls,
-                                    jint width, jint height, jint format, jfloat rate)
+                                    jint surfaceWidth, jint surfaceHeight,
+									jint deviceWidth, jint deviceHeight, jint format, jfloat rate)
 {
-    Android_SetScreenResolution(width, height, format, rate);
+    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, format, rate);
 }
 
 /* Paddown */
@@ -682,9 +693,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
 /* Mouse */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
                                     JNIEnv* env, jclass jcls,
-                                    jint button, jint action, jfloat x, jfloat y)
+                                    jint button, jint action, jfloat x, jfloat y, jboolean relative)
 {
-    Android_OnMouse(button, action, x, y);
+    Android_OnMouse(button, action, x, y, relative);
 }
 
 /* Accelerometer */
@@ -2019,6 +2030,12 @@ SDL_bool SDL_IsAndroidTV(void)
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsAndroidTV);
 }
 
+SDL_bool SDL_IsChromebook(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsChromebook);
+}
+
 const char * SDL_AndroidGetInternalStoragePath(void)
 {
     static char *s_AndroidInternalFilesPath = NULL;
@@ -2201,6 +2218,19 @@ SDL_bool Android_JNI_SetSystemCursor(int cursorID)
     JNIEnv *mEnv = Android_JNI_GetEnv();
     return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSetSystemCursor, cursorID);
 }
+
+SDL_bool Android_JNI_SupportsRelativeMouse()
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSupportsRelativeMouse);
+}
+
+SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSetRelativeMouseEnabled, (enabled == 1));
+}
+
 
 #endif /* __ANDROID__ */
 
