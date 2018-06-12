@@ -50,4 +50,4 @@ BENCHMARK_DEFINE_F(PagedVolumeBenchmark, pageIn) (benchmark::State& state) {
 
 BENCHMARK_REGISTER_F(PagedVolumeBenchmark, pageIn)->RangeMultiplier(2)->Range(8, 256);
 
-BENCHMARK_MAIN()
+BENCHMARK_MAIN();

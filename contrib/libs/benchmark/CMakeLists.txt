@@ -23,6 +23,8 @@ set(SRCS
 	src/reporter.cc
 	src/sleep.cc
 	src/sleep.h
+	src/statistics.cc
+	src/statistics.h
 	src/stat.h
 	src/string_util.cc
 	src/string_util.h
