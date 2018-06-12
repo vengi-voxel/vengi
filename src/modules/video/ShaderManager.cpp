@@ -5,6 +5,7 @@
 #include "ShaderManager.h"
 #include "core/Var.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 
 namespace video {
 
@@ -21,6 +22,7 @@ void ShaderManager::unregisterShader(Shader* shader) {
 }
 
 void ShaderManager::update() {
+	core_trace_scoped(ShaderManagerUpdate);
 	bool refreshShaders = core::Var::check([&] (const core::VarPtr& var) {
 		if (!var->isDirty()) {
 			return false;
