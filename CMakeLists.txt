@@ -66,7 +66,6 @@ else()
 	set(RELEASE True)
 endif()
 
-message(STATUS "Place binaries in ${CMAKE_BINARY_DIR}")
 # First for the generic no-config case (e.g. with mingw)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib)
@@ -147,6 +146,7 @@ if (DOXYGEN_FOUND)
 	add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		COMMENT "Generating API documentation with Doxygen" VERBATIM
+		DEPENDS codegen
 	)
 endif(DOXYGEN_FOUND)
 
