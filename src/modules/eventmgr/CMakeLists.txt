@@ -16,4 +16,7 @@ generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl EventMgrModels.
 gtest_suite_files(tests
 	tests/EventMgrTest.cpp
 )
+gtest_suite_files(tests
+	tests/test-events.lua
+)
 gtest_suite_deps(tests ${LIB})

@@ -66,8 +66,10 @@ TEST_F(EventMgrTest, testEventMgrInit) {
 		return;
 	}
 	EventMgr mgr(_eventProvider, _testApp->timeProvider());
-	const std::string& events = _testApp->filesystem()->load("events.lua");
-	ASSERT_TRUE(mgr.init(events)) << "Could not initialize eventmgr";
+	ASSERT_TRUE(_testApp->filesystem()->exists("test-events.lua"));
+	const std::string& events = _testApp->filesystem()->load("test-events.lua");
+	ASSERT_NE("", events) << "Failed to load test-events.lua";
+	ASSERT_TRUE(mgr.init(events)) << "Could not initialize eventmgr from: " << events;
 	mgr.shutdown();
 }
 
@@ -163,8 +165,10 @@ TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
 	createEvent(Type::GENERIC, model, eventStartSeconds, eventStopTime);
 
 	EventMgr mgr(_eventProvider, timeProvider);
-	const std::string& events = _testApp->filesystem()->load("events.lua");
-	ASSERT_TRUE(mgr.init(events)) << "Could not initialize eventmgr";
+	ASSERT_TRUE(_testApp->filesystem()->exists("test-events.lua"));
+	const std::string& events = _testApp->filesystem()->load("test-events.lua");
+	ASSERT_NE("", events) << "Failed to load test-events.lua";
+	ASSERT_TRUE(mgr.init(events)) << "Could not initialize eventmgr from: " << events;
 	ASSERT_EQ(0, mgr.runningEvents());
 
 	// current tick time is 1s, event starts at 2s
