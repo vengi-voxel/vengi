@@ -55,13 +55,13 @@ public:
 
 TEST_F(WorldTest, testInitShutdown) {
 	create(world);
-	world.init();
+	ASSERT_TRUE(world.init());
 	world.shutdown();
 }
 
 TEST_F(WorldTest, testUpdate) {
 	create(world);
-	world.init();
+	ASSERT_TRUE(world.init());
 	world.update(0ul);
 	world.shutdown();
 }
