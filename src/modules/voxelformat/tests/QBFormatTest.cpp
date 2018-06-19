@@ -20,22 +20,12 @@ TEST_F(QBFormatTest, testLoad) {
 	// feets
 	ASSERT_NE(Empty, volume->voxel(18, 0, 1)) << *volume;
 	ASSERT_NE(Empty, volume->voxel(18, 0, 2)) << *volume;
-	ASSERT_NE(Empty, volume->voxel(18, 0, 3)) << *volume;
+	ASSERT_EQ(Empty, volume->voxel(18, 0, 3)) << *volume;
 	ASSERT_EQ(Empty, volume->voxel(18, 0, 4)) << *volume;
 	ASSERT_NE(Empty, volume->voxel(22, 0, 1)) << *volume;
 	ASSERT_NE(Empty, volume->voxel(22, 0, 2)) << *volume;
-	ASSERT_NE(Empty, volume->voxel(22, 0, 3)) << *volume;
+	ASSERT_EQ(Empty, volume->voxel(22, 0, 3)) << *volume;
 	ASSERT_EQ(Empty, volume->voxel(22, 0, 4)) << *volume;
-
-	// legs
-	ASSERT_NE(Empty, volume->voxel(18, 1, 3)) << *volume;
-	ASSERT_NE(Empty, volume->voxel(18, 2, 3)) << *volume;
-	ASSERT_NE(Empty, volume->voxel(18, 3, 3)) << *volume;
-	ASSERT_EQ(Empty, volume->voxel(18, 4, 3)) << *volume;
-	ASSERT_NE(Empty, volume->voxel(22, 1, 3)) << *volume;
-	ASSERT_NE(Empty, volume->voxel(22, 2, 3)) << *volume;
-	ASSERT_NE(Empty, volume->voxel(22, 3, 3)) << *volume;
-	ASSERT_EQ(Empty, volume->voxel(22, 4, 3)) << *volume;
 }
 
 TEST_F(QBFormatTest, testSaveSmallVoxel) {
