@@ -1,118 +1,16 @@
--include Makefile.local
+Q           ?= @
+UPDATEDIR   := /tmp
+BUILDDIR    ?= ./build
+INSTALL_DIR ?= $(BUILDDIRPATH)$(shell uname)
 
-# Building
-## Release or Debug
-#
-#  make BUILD_TYPE=Debug
-#  make BUILD_TYPE=Release
-#
-# To build either in debug mode, or in release mode
-#
-# Debugging
-## Run in debugger
-#
-#  make tests DEBUG=1 ARGS=--gtest_filter=World*
-#
-# to only build the tests targets, and run it via gdb afterwards.
-# It will automatically start the execution and forward the arguments
-# that are given via ARGS to the target
-#
-## Verbose output
-#
-#  make Q=
-#
-# This will print out information about the commands that are executed to build
-# and run the target(s)
-
-Q                ?= @
-OS               := $(shell uname)
-LOCAL_CONFIG_DIR  = ~/.local/share/engine
-UPDATEDIR        := /tmp
-RUN_POSTFIX       = -run
-
-VALGRIND         ?=
-ifneq ($(VALGRIND),)
-RUN_POSTFIX       = -memcheck
-endif
-
-VOGL             ?=
-ifneq ($(VOGL),)
-RUN_POSTFIX       = -vogl
-endif
-
-PERF             ?=
-ifneq ($(PERF),)
-RUN_POSTFIX       = -perf
-PERF_REPORT_CMD  ?= perf report -g srcline -s dso,sym,srcline --inline -n --stdio
-endif
-
-DEBUG            ?=
-ifeq ($(DEBUG),)
-DEBUG_CMD        ?=
-else
-DEBUGGER         := $(shell (gdb --help >/dev/null 2>&1 && echo GDB) || (lldb --help >/dev/null 2>&1 && echo LLDB))
-ifeq ($(DEBUGGER),GDB)
-DEBUG_CMD        ?= gdb -ex run --args
-else ifeq ($(DEBUGGER),LLDB)
-DEBUG_CMD        ?= lldb -b -o run
-else
-DEBUG_CMD        ?=
-endif
-endif
-
-CMAKE_OPTIONS    ?=
-
-BUILD_TYPE       ?= Debug
-# override this in your Makefile.local to use a different directory
-BUILDDIRPATH     ?= ./
-BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)
-
-MAKE_PID     := $$PPID
-JOB_FLAG     := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
-MAKE_OPTIONS := --no-print-directory -C $(BUILDDIR)
-
-ifeq ($(OS),Darwin)
-CMAKE_GENERATOR ?= "Xcode"
-CMAKE_BINARY    ?= $(shell which cmake)
-ifeq ($(CMAKE_BINARY),)
-CMAKE_BINARY    ?= /Applications/CMake.app/Contents/bin/cmake
-endif
-DARWIN          := 1
-else ifeq ($(OS),Linux)
-CMAKE_GENERATOR ?= "Eclipse CDT4 - Unix Makefiles"
-CMAKE_BINARY    ?= cmake
-LINUX           := 1
-else
-CMAKE_GENERATOR ?= "MSYS Makefiles"
-CMAKE_BINARY    ?= cmake
-WINDOWS         := 1
-endif
-INSTALL_DIR     ?= $(BUILDDIRPATH)$(OS)
-
-all: install
-
-.PHONY: cmake
-cmake:
+$(BUILDDIR)/CMakeCache.txt:
 	$(Q)mkdir -p $(BUILDDIR)
-	$(Q)cd $(BUILDDIR); $(CMAKE_BINARY) -G$(CMAKE_GENERATOR) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(CURDIR) $(CMAKE_OPTIONS)
+	$(Q)cd $(BUILDDIR); cmake -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) $(CURDIR)
 
-define COMPILE
-$(if $(LINUX),\
-	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1) \
-$(else),\
-	$(if $(DARWIN),\
-		$(Q)cd $(BUILDDIR); xcodebuild build -target $(1) install -project tests.xcodeproj -configuration $(BUILD_TYPE) CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO && exit ${PIPESTATUS[0]} \
-	$(else),\
-		$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1) \
-	)
-)
-endef
+%: force $(BUILDDIR)/CMakeCache.txt
+	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR) $@
 
-rcon tests tests-math tests-core tests-persistence tests-voxel tests-noise tests-computeshadertool tests-shadertool benchmarks-voxel server client voxedit mapedit shadertool noisetool databasetool uitool testmesh testcamera testdepthbuffer testturbobadger testnuklear testtexture testvoxelfont testplane testimgui testoctree testglslgeom testglslcomp testluaui testoctreevisit testvoxelgpu testshapebuilder flatc computeshadertool: cmake
-	$(call COMPILE, $@$(RUN_POSTFIX))
-
-install doc package install clean assimp backward benchmark dearimgui flatbuffers glm gtest libcurl libenet libturbobadger libuv lua53 nativefiledialog restclient-cpp sdl2 selene simplecpp zlib: cmake
-	$(call COMPILE, $@)
+force: ;
 
 define UPDATE_GIT
 	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
