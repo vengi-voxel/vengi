@@ -1,6 +1,7 @@
 include(CMakeParseArguments)
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
+include(GNUInstallDirs)
 
 set(LIBS_DIR ${PROJECT_SOURCE_DIR}/contrib/libs)
 
@@ -78,7 +79,7 @@ macro(generate_shaders TARGET)
 				OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in
 				IMPLICIT_DEPENDS C ${_shaders}
 				COMMENT "Validate ${_file}"
-				COMMAND ${CMAKE_BINARY_DIR}/shadertool --glslang ${CMAKE_BINARY_DIR}/glslangValidator -I ${_dir} -I ${PROJECT_SOURCE_DIR}/src/modules/video/shaders --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+				COMMAND $<TARGET_FILE:shadertool> --glslang ${CMAKE_BINARY_DIR}/glslangValidator -I ${_dir} -I ${PROJECT_SOURCE_DIR}/src/modules/video/shaders --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
 				DEPENDS shadertool ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub}
 			)
 			list(APPEND _headers ${_shaderheaderpath})
@@ -143,7 +144,7 @@ macro(generate_compute_shaders TARGET)
 				OUTPUT ${_shader}.in
 				IMPLICIT_DEPENDS C ${_shaders}
 				COMMENT "Validate ${_file} and generate ${_shaderfile}"
-				COMMAND ${CMAKE_BINARY_DIR}/computeshadertool --shader ${_dir}/${_file} -I ${_dir} -I ${PROJECT_SOURCE_DIR}/src/modules/compute/shaders --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
+				COMMAND $<TARGET_FILE:computeshadertool> --shader ${_dir}/${_file} -I ${_dir} -I ${PROJECT_SOURCE_DIR}/src/modules/compute/shaders --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
 				DEPENDS computeshadertool ${_shaders} ${_template}
 				VERBATIM
 			)
@@ -183,7 +184,7 @@ macro(generate_db_models TARGET INPUT OUTPUT)
 	add_custom_command(
 		OUTPUT ${GEN_DIR}${OUTPUT}
 		COMMENT "Generate ${OUTPUT}"
-		COMMAND ${CMAKE_BINARY_DIR}/databasetool --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT}
+		COMMAND $<TARGET_FILE:databasetool> --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT}
 		DEPENDS databasetool ${INPUT}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 	)
@@ -210,7 +211,7 @@ macro(generate_protocol TARGET)
 		list(APPEND _headers ${GEN_DIR}${HEADER})
 		add_custom_command(
 			OUTPUT ${GEN_DIR}${HEADER}
-			COMMAND ${CMAKE_BINARY_DIR}/flatc -c -I ${CMAKE_CURRENT_SOURCE_DIR}/../attrib/definitions --scoped-enums -o ${GEN_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
+			COMMAND $<TARGET_FILE:flatc> -c -I ${CMAKE_CURRENT_SOURCE_DIR}/../attrib/definitions --scoped-enums -o ${GEN_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
 			DEPENDS flatc ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 			COMMENT "Generating source code for ${DEFINITION}"
@@ -485,10 +486,6 @@ macro(gtest_suite_deps name)
 	endif()
 endmacro()
 
-#-------------------------------------------------------------------------------
-#   gtest_suite_end()
-#   End defining a unittest suite
-#
 macro(gtest_suite_end name)
 	if (UNITTESTS)
 		project(${name})
@@ -604,7 +601,7 @@ macro(engine_target_link_libraries)
 	set(_ONE_VALUE_ARGS TARGET)
 	set(_MULTI_VALUE_ARGS DEPENDENCIES)
 
-	cmake_parse_arguments(_LIBS "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
+	cmake_parse_arguments(_LIBS "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
 
 	target_link_libraries(${_LIBS_TARGET} ${_LIBS_DEPENDENCIES})
 endmacro()

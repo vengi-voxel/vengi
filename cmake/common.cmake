@@ -74,6 +74,8 @@ endif()
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
+find_program(DESKTOP_FILE_VALIDATE_EXECUTABLE desktop-file-validate)
+
 if (USE_GPROF)
 	check_cxx_compiler_flag("-pg" COMPILER_SUPPORTS_GNUPROF)
 	if (COMPILER_SUPPORTS_GNUPROF)
