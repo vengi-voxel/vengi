@@ -377,7 +377,7 @@ core::AppState UIApp::onInit() {
 	_uiInitialized = true;
 
 	if (!tb::g_tb_lng->Load("ui/lang/en.tb.txt")) {
-		Log::warn(_logId, "could not load the translation");
+		Log::warn(_logId, "could not load the translation ui/lang/en.tb.txt");
 	}
 
 	if (_applicationSkin.empty()) {
@@ -390,7 +390,8 @@ core::AppState UIApp::onInit() {
 	tb::TBWidgetsAnimationManager::Init();
 
 	if (!tb::g_tb_skin->Load("ui/skin/skin.tb.txt", _applicationSkin.empty() ? nullptr : _applicationSkin.c_str())) {
-		Log::error(_logId, "could not load the skin");
+		Log::error(_logId, "could not load the skin at ui/skin/skin.tb.txt and/or %s",
+				_applicationSkin.empty() ? "none" : _applicationSkin.c_str());
 		return core::AppState::InitFailure;
 	}
 
