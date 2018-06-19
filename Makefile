@@ -24,7 +24,7 @@
 # This will print out information about the commands that are executed to build
 # and run the target(s)
 
-Q                 = @
+Q                ?= @
 OS               := $(shell uname)
 LOCAL_CONFIG_DIR  = ~/.local/share/engine
 UPDATEDIR        := /tmp
