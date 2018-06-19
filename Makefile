@@ -343,6 +343,3 @@ update-curl:
 # TODO native file dialog support
 # TODO simpleai support
 updatelibs: update-voxelizer update-nuklear update-stringview update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-curl update-glslang
-
-updategl:
-	cd tools/flextGL && ./flextgl.sh

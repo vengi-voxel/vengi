@@ -49,6 +49,16 @@ add_library(${LIB} ${SRCS} ${SRCS_SHADERS})
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math image util assimp zlib)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
+find_program(PYTHON3_EXECUTABLE NAMES python3)
+add_custom_target(update-glbindings)
+if (PYTHON3_EXECUTABLE)
+	add_custom_command(TARGET update-glbindings
+		COMMAND ${PYTHON3_EXECUTABLE} flextGLgen.py -T sdl -D ${CMAKE_CURRENT_SOURCE_DIR}/gl flextgl_profile.txt
+		DEPENDS flextgl_profile.txt ${ROOT_DIR}/tools/flextGL/flextGLgen.py
+		WORKING_DIRECTORY ${ROOT_DIR}/tools/flextGL
+	)
+endif()
+
 gtest_suite_files(tests
 	tests/AbstractGLTest.h
 	tests/ShaderTest.cpp
