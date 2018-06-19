@@ -420,6 +420,7 @@ macro(engine_add_valgrind TARGET)
 				--trace-children=no --log-file=$<TARGET_FILE:${TARGET}>.memcheck.log
 				$<TARGET_FILE:${TARGET}>
 			COMMENT "memcheck log for ${TARGET}: $<TARGET_FILE:${TARGET}>.memcheck.log"
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
 		)
 		add_custom_target(${TARGET}-helgrind)
@@ -429,6 +430,7 @@ macro(engine_add_valgrind TARGET)
 				--trace-children=no --log-file=$<TARGET_FILE:${TARGET}>.helgrind.log
 				$<TARGET_FILE:${TARGET}>
 			COMMENT "helgrind log for ${TARGET}: $<TARGET_FILE:${TARGET}>.helgrind.log"
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
 		)
 	endif()
@@ -442,6 +444,7 @@ macro(engine_add_perf TARGET)
 			COMMAND
 				${PERF_EXECUTABLE} record --call-graph dwarf
 				$<TARGET_FILE:${TARGET}>
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
 		)
 	endif()
@@ -458,9 +461,20 @@ macro(engina_add_vogl TARGET)
 				--vogl_force_debug_context
 				$<TARGET_FILE:${TARGET}>
 			COMMENT "vogl trace file for ${TARGET}: ${CMAKE_BINARY_DIR}/${TARGET}.trace.bin"
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
 		)
 	endif()
+endmacro()
+
+macro(engine_add_debuggger TARGET)
+	add_custom_target(${TARGET}-debug)
+	add_custom_command(TARGET ${TARGET}-debug
+		COMMAND ${DEBUGGER_COMMAND} $<TARGET_FILE:${TARGET}>
+		COMMENT "Starting debugger session for ${TARGET}"
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
+		DEPENDS ${TARGET}
+	)
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -742,7 +756,9 @@ macro(engine_add_executable)
 		if (INSTALL_DATA)
 			install(FILES lua/${luasrc} DESTINATION ${INSTALL_DATA_DIR}/${luasrcdir} COMPONENT ${_EXE_TARGET})
 		endif()
-		configure_file(lua/${luasrc} ${INSTALL_DATA_DIR}/${luasrcdir}/${luasrc})
+		get_filename_component(filename ${luasrc} NAME)
+		get_filename_component(datafiledir ${luasrc} DIRECTORY)
+		configure_file(lua/${luasrc} ${CMAKE_BINARY_DIR}/${_EXE_TARGET}/${datafiledir}/${filename} COPYONLY)
 	endforeach()
 	set(ICON "${_EXE_TARGET}-icon.png")
 	if (EXISTS ${ROOT_DIR}/contrib/${ICON})
@@ -755,12 +771,13 @@ macro(engine_add_executable)
 		if (INSTALL_DATA)
 			install(FILES ${DATA_DIR}/${KEYBINDINGS} DESTINATION ${INSTALL_DATA_DIR}/ COMPONENT ${_EXE_TARGET})
 		endif()
-		configure_file(${DATA_DIR}/${KEYBINDINGS} ${INSTALL_DATA_DIR}/${KEYBINDINGS})
+		configure_file(${DATA_DIR}/${KEYBINDINGS} ${CMAKE_BINARY_DIR}/${_EXE_TARGET}/${KEYBINDINGS} COPYONLY)
 	endif()
 	if (INSTALL_DATA)
 		install(TARGETS ${_EXE_TARGET} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_EXE_TARGET})
 	endif()
 	add_custom_target(${_EXE_TARGET}-run COMMAND $<TARGET_FILE:${_EXE_TARGET}> DEPENDS ${_EXE_TARGET} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${_EXE_TARGET}")
+	engine_add_debuggger(${_EXE_TARGET})
 	engine_add_valgrind(${_EXE_TARGET})
 	engine_add_perf(${_EXE_TARGET})
 	if (_EXE_WINDOWED)

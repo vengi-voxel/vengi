@@ -155,11 +155,6 @@ update-stb:
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxelfont/stb_truetype.h
 	cp $(UPDATEDIR)/stb.sync/stb_image.h contrib/libs/libturbobadger/tb/thirdparty
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h contrib/libs/libturbobadger/tb/thirdparty
-# TODO: dearimgui
-
-update-simplecpp:
-	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)
-	cp $(UPDATEDIR)/simplecpp.sync/simplecpp.* contrib/libs/simplecpp
 
 update-googletest:
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
@@ -252,22 +247,10 @@ update-nuklear:
 	cp $(UPDATEDIR)/nuklear.sync/nuklear.h src/modules/ui/nuklear/private
 	cp $(UPDATEDIR)/nuklear.sync/demo/overview.c src/tests/testnuklear
 
-update-json:
-	$(call UPDATE_GIT,json,https://github.com/nlohmann/json)
-	cp $(UPDATEDIR)/json.sync/src/json.hpp src/modules/core
-
 # currently not part of updatelibs - intentional - we adopted the original code.
 update-simplexnoise:
 	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
 	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
-
-update-stringview:
-	$(call UPDATE_GIT,string_view,https://github.com/satoren/string_view.git)
-	cp $(UPDATEDIR)/string_view.sync/string_view.hpp contrib/libs/string_view
-
-update-voxelizer:
-	$(call UPDATE_GIT,voxelizer,https://github.com/karimnaaji/voxelizer)
-	cp $(UPDATEDIR)/voxelizer.sync/voxelizer.h src/tools/voxedit/ui/editorscene/
 
 update-curl:
 	$(call UPDATE_GIT,curl,https://github.com/curl/curl.git)
@@ -279,4 +262,5 @@ update-curl:
 
 # TODO native file dialog support
 # TODO simpleai support
-updatelibs: update-voxelizer update-nuklear update-stringview update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-curl update-glslang
+updatelibs: update-nuklear update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-curl update-glslang
+	$(MAKE) -C $(BUILDDIR) update-libs
