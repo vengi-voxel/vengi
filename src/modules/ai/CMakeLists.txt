@@ -105,7 +105,7 @@ set(SRCS
 	tree/TreeNodeParser.h
 )
 set(LIB ai)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua glm)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua)
 target_include_directories(${LIB} PUBLIC .)
 target_compile_definitions(${LIB} PUBLIC -DAI_INCLUDE_LUA=1)
 

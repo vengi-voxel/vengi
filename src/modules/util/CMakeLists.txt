@@ -8,7 +8,7 @@ set(SRCS
 	IncludeUtil.h IncludeUtil.cpp
 )
 set(LIB util)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core math io)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math)
 
 gtest_suite_sources(tests
 	tests/KeybindingParserTest.cpp

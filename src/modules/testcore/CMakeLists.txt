@@ -3,4 +3,4 @@ set(SRCS
 	TestMeshApp.cpp TestMeshApp.h
 	TestAppMain.h
 )
-engine_add_module(TARGET testcore SRCS ${SRCS} DEPENDENCIES core frontend render video imgui)
+engine_add_module(TARGET testcore SRCS ${SRCS} DEPENDENCIES frontend imgui)

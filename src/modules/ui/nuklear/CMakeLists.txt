@@ -12,4 +12,4 @@ set(SRCS
 set(FILES
 	shared/font.ttf
 )
-engine_add_module(TARGET nuklear SRCS ${SRCS} FILES ${FILES} DEPENDENCIES core io render util commonlua)
+engine_add_module(TARGET nuklear SRCS ${SRCS} FILES ${FILES} DEPENDENCIES render commonlua)

@@ -10,7 +10,7 @@ set(SRCS
 )
 set(LIB compute)
 find_package(OpenCL)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core util)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util)
 set(OPENCL_LIBRARY ${OpenCL_LIBRARY})
 if (OpenCL_INCLUDE_DIRS)
 	target_include_directories(${LIB} PRIVATE ${OpenCL_INCLUDE_DIRS})

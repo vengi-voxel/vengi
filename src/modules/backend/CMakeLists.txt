@@ -56,7 +56,7 @@ set(FILES
 )
 
 set(LIB backend)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES network io core metric util voxel attrib eventmgr poi cooldown persistence ai stock util)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES eventmgr poi ai stock)
 generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl BackendModels.h)
 
 gtest_suite_files(tests

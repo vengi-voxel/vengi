@@ -8,7 +8,7 @@ set(SRCS
 # TODO: maybe provide two noise modules, one noisefast (for e.g. client only stuff) and one noise-slow for stuff that must be cross plattform
 
 set(LIB noise)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core math compute)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES compute)
 #set(MARCH native)
 set(MARCH generic)
 # http://christian-seiler.de/projekte/fpmath/

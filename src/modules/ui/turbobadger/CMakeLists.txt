@@ -77,7 +77,7 @@ set(FILES
 	shared/ui/skin/window_mover_overlay.png
 	shared/ui/skin/window.png
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES core io render util libturbobadger)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES render libturbobadger)
 
 gtest_suite_sources(tests
 	tests/ConsoleTest.cpp

@@ -8,7 +8,7 @@ set(LIB attrib)
 # the network module will assemble the header with the attribute types
 # link it in because we need the directory where the c++ headers are
 # generated to be also added to this lib.
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core commonlua network)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua network)
 
 gtest_suite_sources(tests
 	tests/AttributesTest.cpp

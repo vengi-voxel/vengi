@@ -21,7 +21,7 @@ set(SRCS
 	ShapeHandler.h ShapeHandler.cpp
 )
 set(LIB voxedit-util)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelrender util voxelformat voxel math)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelrender voxelformat)
 
 gtest_suite_sources(tests
 	tests/UndoHandlerTest.cpp

@@ -9,7 +9,7 @@ set(SRCS
 )
 
 set(LIB stock)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core attrib network cooldown commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES attrib cooldown)
 
 gtest_suite_sources(tests
 	tests/StockTest.cpp

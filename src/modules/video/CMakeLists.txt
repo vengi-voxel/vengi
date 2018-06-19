@@ -45,7 +45,7 @@ set(SRCS_SHADERS
 set(LIB video)
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES core math image util assimp zlib)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES image util assimp)
 
 find_program(PYTHON3_EXECUTABLE NAMES python3)
 add_custom_target(update-glbindings)

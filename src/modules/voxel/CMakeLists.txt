@@ -52,7 +52,7 @@ set(FILES
 	shared/palette-nippon.png
 	shared/biomes.lua
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES core math collection noise zlib image assimp commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES noise image commonlua)
 set(MARCH native)
 #set(MARCH generic)
 # http://christian-seiler.de/projekte/fpmath/
