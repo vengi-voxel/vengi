@@ -5,10 +5,9 @@ stages:
   - test
   - analyse
 
-before_script:
-  - mkdir -p ccache
-  - export CCACHE_BASEDIR=${PWD}
-  - export CCACHE_DIR=${PWD}/ccache
+variables:
+  CCACHE_BASEDIR: ${CI_PROJECT_DIR}
+  CCACHE_DIR: ${CI_PROJECT_DIR}/ccache
 
 cache:
   paths:
@@ -17,23 +16,32 @@ cache:
 build:
   stage: build
   script:
-    - make -j 4
+    - make -j 4 all
   artifacts:
     paths:
-    - build/Debug
+    - build/compile_commands.json
 
 test:
+  variables:
+    POSTGRES_DB: enginetest
+    POSTGRES_USER: engine
+    POSTGRES_PASSWORD: engine
+    DB_HOST: postgres
+    DB_USER: engine
+    DB_PASSWORD: engine
+    DB_NAME: enginetest
+  services:
+    - postgres:latest
   stage: test
   dependencies:
     - build
   script:
-    - cd build/Debug
-    - ./tests
+    - make -j 4 tests-run
 
 .analyse:cppcheck:
   stage: analyse
   script:
-    - cppcheck --xml-version=2 -j 4 --enable=all --config-exclude=contrib/libs/ --project=build/Debug/compile_commands.json src 2> cppcheck.xml
+    - cppcheck --xml-version=2 -j 4 --enable=all --config-exclude=contrib/libs/ --project=build/compile_commands.json src 2> cppcheck.xml
   artifacts:
     paths:
     - cppcheck.xml
@@ -43,16 +51,15 @@ analyse:valgrind:
   dependencies:
     - build
   script:
-    - cd build/Debug
-    - valgrind --xml=yes --xml-file=valgrind.xml ./tests --gtest_filter=CoreTest.*:CameraTest.*:StringTest.*
+    - make -j 4 tests-memcheck
   artifacts:
     paths:
-    - build/Debug/valgrind.xml
+    - build/memcheck*.xml
 
 pages:
   script:
     - make doc
-    - mv build/Debug/html/ public/
+    - mv build/html/ public/
   artifacts:
     paths:
     - public

@@ -415,7 +415,8 @@ macro(engine_add_valgrind TARGET)
 		add_custom_target(${TARGET}-memcheck)
 		add_custom_command(TARGET ${TARGET}-memcheck
 			COMMAND
-				${VALGRIND_EXECUTABLE} --tool=memcheck --leak-check=full --show-reachable=yes
+				${VALGRIND_EXECUTABLE} --xml=yes --xml-file=${CMAKE_BINARY_DIR}/memcheck-${TARGET}.xml
+				--tool=memcheck --leak-check=full --show-reachable=yes
 				--undef-value-errors=yes --track-origins=no --child-silent-after-fork=no
 				--trace-children=no --log-file=$<TARGET_FILE:${TARGET}>.memcheck.log
 				$<TARGET_FILE:${TARGET}>
@@ -426,7 +427,8 @@ macro(engine_add_valgrind TARGET)
 		add_custom_target(${TARGET}-helgrind)
 		add_custom_command(TARGET ${TARGET}-helgrind
 			COMMAND
-				${VALGRIND_EXECUTABLE} --tool=helgrind --child-silent-after-fork=no
+				${VALGRIND_EXECUTABLE} --xml=yes --xml-file=${CMAKE_BINARY_DIR}/helgrind-${TARGET}.xml
+				--tool=helgrind --child-silent-after-fork=no
 				--trace-children=no --log-file=$<TARGET_FILE:${TARGET}>.helgrind.log
 				$<TARGET_FILE:${TARGET}>
 			COMMENT "helgrind log for ${TARGET}: $<TARGET_FILE:${TARGET}>.helgrind.log"
