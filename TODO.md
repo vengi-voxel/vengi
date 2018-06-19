@@ -12,11 +12,6 @@ is related to the bonetrans matrix. Not taking it into account fixes gl_FragCoor
 ERROR: (0) Failed to validate: shaders/world
 INFO: (0) Validation output: shaders/world
 active samplers with a different type refer to the same texture image unit
-```
-
-# Data handling
-
-The current approach with data dir must be extended/redone someone. There are way too many files installed per artifact atm. Also there should be CPack support to generate debian packages.
 
 # Persistence
 ## Checks
@@ -159,3 +154,10 @@ doing one query per chunk is most likely a little bit overkill.
 
 - build docker images
 - set up kubernetes manifests
+
+# File handling / installation
+
+## keybinding cfg
+
+* move all visual test configs into one file and load a default one in testcore::TestApp
+* module related tests might need data, too. Find a good way to let the dependency tree automatically figure out which files must be installed.

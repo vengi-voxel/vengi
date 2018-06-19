@@ -45,9 +45,7 @@ set(SRCS_SHADERS
 set(LIB video)
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
-add_library(${LIB} ${SRCS} ${SRCS_SHADERS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math image util assimp zlib)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES core math image util assimp zlib)
 
 find_program(PYTHON3_EXECUTABLE NAMES python3)
 add_custom_target(update-glbindings)
@@ -59,7 +57,7 @@ if (PYTHON3_EXECUTABLE)
 	)
 endif()
 
-gtest_suite_files(tests
+gtest_suite_sources(tests
 	tests/AbstractGLTest.h
 	tests/ShaderTest.cpp
 	tests/CameraTest.cpp

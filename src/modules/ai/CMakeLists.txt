@@ -105,13 +105,12 @@ set(SRCS
 	tree/TreeNodeParser.h
 )
 set(LIB ai)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES commonlua glm)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua glm)
 target_include_directories(${LIB} PUBLIC .)
 target_compile_definitions(${LIB} PUBLIC -DAI_INCLUDE_LUA=1)
 
-gtest_suite_files(tests
+gtest_suite_files(tests tests/testluaregistry.lua)
+gtest_suite_sources(tests
 	tests/AggroTest.cpp
 	tests/GeneralTest.cpp
 	tests/GroupTest.cpp

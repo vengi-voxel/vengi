@@ -51,13 +51,21 @@ set(SRCS
 	entity/EntityStorage.cpp entity/EntityStorage.h
 	entity/Entity.cpp entity/Entity.h
 )
+set(FILES
+	shared/worldparams.lua
+)
+
 set(LIB backend)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES network io core metric util voxel attrib eventmgr poi cooldown persistence ai stock util)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES network io core metric util voxel attrib eventmgr poi cooldown persistence ai stock util)
 generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl BackendModels.h)
 
 gtest_suite_files(tests
+	tests/behaviourtrees.lua
+	tests/test-attributes.lua
+	shared/worldparams.lua
+	shared/biomes.lua
+)
+gtest_suite_sources(tests
 	tests/AITest.cpp
 	tests/UserCooldownMgrTest.cpp
 	tests/MapProviderTest.cpp

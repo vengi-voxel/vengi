@@ -28,25 +28,21 @@ Q                ?= @
 OS               := $(shell uname)
 LOCAL_CONFIG_DIR  = ~/.local/share/engine
 UPDATEDIR        := /tmp
+RUN_POSTFIX       = -run
 
 VALGRIND         ?=
-ifeq ($(VALGRIND),)
-VALGRIND_OPTIONS ?=
-VALGRIND_CMD     ?=
-else
-VALGRIND_OPTIONS ?=
-VALGRIND_CMD     ?= valgrind $(VALGRIND_OPTIONS)
+ifneq ($(VALGRIND),)
+RUN_POSTFIX       = -memcheck
+endif
+
+VOGL             ?=
+ifneq ($(VOGL),)
+RUN_POSTFIX       = -vogl
 endif
 
 PERF             ?=
-ifeq ($(PERF),)
-PERF_OPTIONS     ?=
-PERF_CMD         ?=
-PERF_REPORT_CMD  ?=
-else
-PERF_OPTIONS     ?= --call-graph dwarf
-#sudo sh -c 'echo -1 >/proc/sys/kernel/perf_event_paranoid'
-PERF_CMD         ?= perf record $(PERF_OPTIONS)
+ifneq ($(PERF),)
+RUN_POSTFIX       = -perf
 PERF_REPORT_CMD  ?= perf report -g srcline -s dso,sym,srcline --inline -n --stdio
 endif
 
@@ -66,41 +62,10 @@ endif
 
 CMAKE_OPTIONS    ?=
 
-GPROF            ?=
-GCOV             ?=
 BUILD_TYPE       ?= Debug
 # override this in your Makefile.local to use a different directory
 BUILDDIRPATH     ?= ./
-#BUILDDIR         ?= $(BUILDDIRPATH)build-$(shell echo $(BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
-ifeq ($(GPROF),)
-ifneq ($(GCOV),)
-BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)/gcov
-CMAKE_OPTIONS    += -DUSE_GCOV=True
-else
 BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)
-endif
-else
-BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)/gprof
-CMAKE_OPTIONS    += -DUSE_GPROF=True
-endif
-
-
-ifneq ($(THREADS),)
-BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)/threads
-CMAKE_OPTIONS    += -DSANITIZER_THREADS=True
-endif
-
-#VOGL_OPTIONS     ?= --vogl_force_debug_context --vogl_exit_after_x_frames 2000
-VOGL_OPTIONS     ?= --vogl_force_debug_context
-VOGL             ?=
-ifeq ($(VOGL),)
-VOGL_CMD         ?=
-else
-VOGL_BIN         ?= vogl
-VOGL_CMD         ?= $(VOGL_BIN) trace --vogl_tracepath $(BUILDDIR) --vogl_tracefile $@.trace.bin $(VOGL_OPTIONS)
-ARGS_TMP         := $(ARGS)
-ARGS              = "--args $(ARGS_TMP)"
-endif
 
 MAKE_PID     := $$PPID
 JOB_FLAG     := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
@@ -124,14 +89,7 @@ WINDOWS         := 1
 endif
 INSTALL_DIR     ?= $(BUILDDIRPATH)$(OS)
 
-all: build
-
-run: mapedit
-
-.PHONY: clangtidy
-clangtidy:
-	$(Q)mkdir -p $(BUILDDIR)/tidy
-	$(Q)cd $(BUILDDIR)/tidy; $(CMAKE_BINARY) -DCMAKE_CXX_CLANG_TIDY:STRING="clang-tidy-4.0;-checks=readability-uniqueptr-delete-release,readability-non-const-parameter,readability-redundant-smartptr-get,performance-unnecessary-value-param,performance-unnecessary-copy-initialization,performance-inefficient-string-concatenation,performance-implicit-cast-in-loop,performance-for-range-copy,performance-faster-string-find,modernize-make-shared,clang-analyzer-security.*;-fix" $(CURDIR) $(CMAKE_OPTIONS) && cmake --build .
+all: install
 
 .PHONY: cmake
 cmake:
@@ -150,32 +108,11 @@ $(else),\
 )
 endef
 
-.PHONY: build
-build: cmake
-	$(call COMPILE, install)
+rcon tests tests-math tests-core tests-persistence tests-voxel tests-noise tests-computeshadertool tests-shadertool benchmarks-voxel server client voxedit mapedit shadertool noisetool databasetool uitool testmesh testcamera testdepthbuffer testturbobadger testnuklear testtexture testvoxelfont testplane testimgui testoctree testglslgeom testglslcomp testluaui testoctreevisit testvoxelgpu testshapebuilder flatc computeshadertool: cmake
+	$(call COMPILE, $@$(RUN_POSTFIX))
 
-clean:
-	$(Q)rm -rf $(BUILDDIR)
-
-doc: cmake
-	$(call COMPILE, codegen)
+install doc package install clean assimp backward benchmark dearimgui flatbuffers glm gtest libcurl libenet libturbobadger libuv lua53 nativefiledialog restclient-cpp sdl2 selene simplecpp zlib: cmake
 	$(call COMPILE, $@)
-
-package: cmake
-	$(call COMPILE, package)
-
-server client voxedit mapedit shadertool noisetool databasetool uitool tests tests-math tests-core tests-persistence tests-voxel benchmarks-voxel tests-noise tests-computeshadertool testmesh testcamera testdepthbuffer testturbobadger testnuklear testtexture testvoxelfont testplane testimgui testoctree testglslgeom testglslcomp testluaui testoctreevisit testvoxelgpu testshapebuilder tests-shadertool flatc computeshadertool: cmake
-	$(call COMPILE, $@)
-	$(call COMPILE, copy-data-shared)
-	$(call COMPILE, copy-data-$@)
-	$(Q)cd $(BUILDDIR); $(PERF_CMD) $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
-
-assimp backward benchmark dearimgui flatbuffers glm gtest libcurl libenet libturbobadger libuv lua53 nativefiledialog restclient-cpp sdl2 selene simplecpp zlib: cmake
-	$(call COMPILE, $@)
-
-rcon: cmake
-	$(call COMPILE, $@)
-	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
 define UPDATE_GIT
 	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \

@@ -8,9 +8,7 @@ set(SRCS
 # TODO: maybe provide two noise modules, one noisefast (for e.g. client only stuff) and one noise-slow for stuff that must be cross plattform
 
 set(LIB noise)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math compute)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core math compute)
 #set(MARCH native)
 set(MARCH generic)
 # http://christian-seiler.de/projekte/fpmath/
@@ -29,14 +27,15 @@ else()
 endif()
 generate_compute_shaders(noise noise)
 
-gtest_suite_files(tests
+set(TEST_SRCS
 	tests/IslandNoiseTest.cpp
 	tests/NoiseTest.cpp
 	tests/PoissonDiskDistributionTest.cpp
 )
+gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB} image)
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
-gtest_suite_files(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
 gtest_suite_deps(tests-${LIB} ${LIB} image)
 gtest_suite_end(tests-${LIB})

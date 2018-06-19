@@ -9,11 +9,9 @@ set(SRCS
 )
 
 set(LIB stock)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core attrib network cooldown commonlua)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core attrib network cooldown commonlua)
 
-gtest_suite_files(tests
+gtest_suite_sources(tests
 	tests/StockTest.cpp
 	tests/ShapeTest.cpp
 	tests/InventoryTest.cpp

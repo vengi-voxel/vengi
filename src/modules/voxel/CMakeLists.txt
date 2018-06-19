@@ -1,3 +1,4 @@
+set(LIB voxel)
 set(SRCS
 	BiomeLUAFunctions.h BiomeLUAFunctions.cpp
 	Biome.h Biome.cpp
@@ -46,10 +47,12 @@ set(SRCS
 	polyvox/VolumeCropper.h
 	polyvox/VolumeVisitor.h
 )
-set(LIB voxel)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core math collection noise zlib image assimp commonlua)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+set(FILES
+	shared/palette-nippon.lua
+	shared/palette-nippon.png
+	shared/biomes.lua
+)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES core math collection noise zlib image assimp commonlua)
 set(MARCH native)
 #set(MARCH generic)
 # http://christian-seiler.de/projekte/fpmath/
@@ -78,11 +81,13 @@ set(TEST_SRCS
 	tests/VolumeCropperTest.cpp
 )
 
-gtest_suite_files(tests ${TEST_SRCS})
+gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
+gtest_suite_files(tests ${FILES})
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
-gtest_suite_files(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_files(tests-${LIB} ${FILES} shared/worldparams.lua)
 gtest_suite_deps(tests-${LIB} ${LIB})
 gtest_suite_end(tests-${LIB})
 
@@ -90,5 +95,5 @@ set(BENCHMARK_SRCS
 	../core/benchmark/AbstractBenchmark.cpp
 	benchmarks/VoxelBenchmark.cpp
 )
-engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
+engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} FILES ${FILES} shared/worldparams.lua NOINSTALL)
 engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark ${LIB})

@@ -6,7 +6,5 @@ set(SRCS
 	IMGUIAddons.h
 )
 set(LIB imgui)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core io render dearimgui)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core io render dearimgui)
 target_include_directories(${LIB} PUBLIC .)

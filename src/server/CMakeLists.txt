@@ -2,9 +2,11 @@ project(server)
 set(SRCS
 	Server.cpp Server.h
 )
-engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS})
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES backend)
 set(LUA_SRCS
+	ai/blacksmith.lua
+	ai/rabbit.lua
+	ai/shared.lua
+	ai/wolf.lua
 	behaviourtrees.lua
 	attributes.lua
 	event/generic.lua
@@ -12,4 +14,7 @@ set(LUA_SRCS
 	stock.lua
 	map/map001.lua
 )
-check_lua_files(${PROJECT_NAME} ${LUA_SRCS})
+set(FILES)
+
+engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS})
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES backend)

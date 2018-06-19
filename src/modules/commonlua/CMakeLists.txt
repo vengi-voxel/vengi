@@ -3,11 +3,9 @@ set(SRCS
 	LUAFunctions.h LUAFunctions.cpp
 )
 set(LIB commonlua)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core lua53)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core lua53)
 
-gtest_suite_files(tests
+gtest_suite_sources(tests
 	tests/LUAFunctionsTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

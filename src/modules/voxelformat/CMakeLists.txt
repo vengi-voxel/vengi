@@ -1,3 +1,4 @@
+set(LIB voxelformat)
 set(SRCS
 	VoxFileFormat.h VoxFileFormat.cpp
 	VoxFormat.h VoxFormat.cpp
@@ -5,10 +6,7 @@ set(SRCS
 	QBFormat.h QBFormat.cpp
 	MeshExporter.h MeshExporter.cpp
 )
-set(LIB voxelformat)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES voxel assimp)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel assimp)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
@@ -17,6 +15,6 @@ set(TEST_SRCS
 	tests/QBFormatTest.cpp
 	tests/MeshExporterTest.cpp
 )
-
-gtest_suite_files(tests ${TEST_SRCS})
+gtest_suite_files(tests tests/qubicle.qb tests/magicavoxel.vox)
+gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})

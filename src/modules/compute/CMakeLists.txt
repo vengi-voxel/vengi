@@ -10,18 +10,16 @@ set(SRCS
 )
 set(LIB compute)
 find_package(OpenCL)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core util)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core util)
 set(OPENCL_LIBRARY ${OpenCL_LIBRARY})
 if (OpenCL_INCLUDE_DIRS)
-	target_include_directories(${LIB} PUBLIC ${OpenCL_INCLUDE_DIRS})
+	target_include_directories(${LIB} PRIVATE ${OpenCL_INCLUDE_DIRS})
 endif()
 
 set(TEST_SRCS
 	tests/ComputeShaderTest.cpp
 )
 
-gtest_suite_files(tests ${TEST_SRCS})
+gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
 generate_compute_shaders(tests test)

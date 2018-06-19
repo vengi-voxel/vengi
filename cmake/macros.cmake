@@ -409,6 +409,60 @@ macro(engine_add_library)
 	endif()
 endmacro()
 
+macro(engine_add_valgrind TARGET)
+	find_program(VALGRIND_EXECUTABLE NAMES valgrind)
+	if (VALGRIND_EXECUTABLE)
+		add_custom_target(${TARGET}-memcheck)
+		add_custom_command(TARGET ${TARGET}-memcheck
+			COMMAND
+				${VALGRIND_EXECUTABLE} --tool=memcheck --leak-check=full --show-reachable=yes
+				--undef-value-errors=yes --track-origins=no --child-silent-after-fork=no
+				--trace-children=no --log-file=$<TARGET_FILE:${TARGET}>.memcheck.log
+				$<TARGET_FILE:${TARGET}>
+			COMMENT "memcheck log for ${TARGET}: $<TARGET_FILE:${TARGET}>.memcheck.log"
+			DEPENDS ${TARGET}
+		)
+		add_custom_target(${TARGET}-helgrind)
+		add_custom_command(TARGET ${TARGET}-helgrind
+			COMMAND
+				${VALGRIND_EXECUTABLE} --tool=helgrind --child-silent-after-fork=no
+				--trace-children=no --log-file=$<TARGET_FILE:${TARGET}>.helgrind.log
+				$<TARGET_FILE:${TARGET}>
+			COMMENT "helgrind log for ${TARGET}: $<TARGET_FILE:${TARGET}>.helgrind.log"
+			DEPENDS ${TARGET}
+		)
+	endif()
+endmacro()
+
+macro(engine_add_perf TARGET)
+	find_program(PERF_EXECUTABLE NAMES perf)
+	if (PERF_EXECUTABLE)
+		add_custom_target(${TARGET}-perf)
+		add_custom_command(TARGET ${TARGET}-perf
+			COMMAND
+				${PERF_EXECUTABLE} record --call-graph dwarf
+				$<TARGET_FILE:${TARGET}>
+			DEPENDS ${TARGET}
+		)
+	endif()
+endmacro()
+
+macro(engina_add_vogl TARGET)
+	find_program(VOGL_EXECUTABLE NAMES vogl)
+	if (VOGL_EXECUTABLE)
+		add_custom_target(${TARGET}-vogl)
+		add_custom_command(TARGET ${TARGET}-vogl
+			COMMAND
+				${VOGL_EXECUTABLE} trace --vogl_tracepath ${CMAKE_BINARY_DIR}
+				--vogl_tracefile ${TARGET}.trace.bin
+				--vogl_force_debug_context
+				$<TARGET_FILE:${TARGET}>
+			COMMENT "vogl trace file for ${TARGET}: ${CMAKE_BINARY_DIR}/${TARGET}.trace.bin"
+			DEPENDS ${TARGET}
+		)
+	endif()
+endmacro()
+
 #-------------------------------------------------------------------------------
 #   Macros for generating google unit tests.
 #-------------------------------------------------------------------------------
@@ -456,11 +510,7 @@ macro(gtest_suite_begin name)
 	endif()
 endmacro()
 
-#-------------------------------------------------------------------------------
-#   gtest_suite_files(files)
-#   Adds files to a test suite
-#
-macro(gtest_suite_files name)
+macro(gtest_suite_sources name)
 	if (UNITTESTS)
 		set(ARG_LIST ${ARGV})
 		list(REMOVE_AT ARG_LIST 0)
@@ -472,10 +522,18 @@ macro(gtest_suite_files name)
 	endif()
 endmacro()
 
-#-------------------------------------------------------------------------------
-#   gtest_suite_deps(files)
-#   Adds files to a test suite
-#
+macro(gtest_suite_files name)
+	if (UNITTESTS)
+		set(ARG_LIST ${ARGV})
+		list(REMOVE_AT ARG_LIST 0)
+		get_property(list GLOBAL PROPERTY ${name}_Files)
+		foreach(entry ${ARG_LIST})
+			list(APPEND list ${entry})
+		endforeach()
+		set_property(GLOBAL PROPERTY ${name}_Files ${list})
+	endif()
+endmacro()
+
 macro(gtest_suite_deps name)
 	if (UNITTESTS)
 		set(ARG_LIST ${ARGV})
@@ -501,15 +559,82 @@ macro(gtest_suite_end name)
 			list(GET inout 1 out)
 			generate_db_models(${name} ${in} ${out})
 		endforeach()
+
+		get_property(files GLOBAL PROPERTY ${name}_Files)
+		foreach (datafile ${files})
+			string(REPLACE "${name}/" "" target_datafile "${datafile}")
+			string(REPLACE "shared/" "" target_datafile "${target_datafile}")
+			get_filename_component(datafiledir ${target_datafile} DIRECTORY)
+			get_filename_component(filename ${target_datafile} NAME)
+			configure_file(${DATA_DIR}/${datafile} ${CMAKE_BINARY_DIR}/${datafiledir}/${filename} COPYONLY)
+		endforeach()
 		target_link_libraries(${name} ${deps})
-		# generate a command line app
-		set_target_properties(${name} PROPERTIES FOLDER "tests")
-
-		# add as cmake unit test
-		add_test(NAME ${name} COMMAND ${name})
-
-		copy_data_files(${name})
+		set_target_properties(${name} PROPERTIES FOLDER ${name})
+		add_test(NAME ${name} COMMAND $<TARGET_FILE:${name}>)
+		add_custom_target(${name}-run COMMAND $<TARGET_FILE:${name}> DEPENDS ${_EXE_TARGET} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+		engine_add_valgrind(${name})
+		engine_add_perf(${name})
 	endif()
+endmacro()
+
+macro(check_lua_files TARGET)
+	set(files ${ARGV})
+	list(REMOVE_AT files 0)
+	find_program(LUA_EXECUTABLE NAMES ${DEFAULT_LUA_EXECUTABLE})
+	if (LUA_EXECUTABLE)
+		message("${LUA_EXECUTABLE} found")
+		foreach(_file ${files})
+			string(REGEX REPLACE "[/]" "_" targetname ${_file})
+			add_custom_target(
+				${targetname}
+				COMMAND ${LUA_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/lua/${_file}
+				COMMENT "Validate ${_file}"
+				WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+			)
+			add_dependencies(${TARGET} ${targetname})
+		endforeach()
+	else()
+		foreach(_file ${files})
+			string(REGEX REPLACE "[/]" "_" targetname ${_file})
+			add_custom_target(
+				${targetname}
+				COMMAND $<TARGET_FILE:luac> ${CMAKE_CURRENT_SOURCE_DIR}/lua/${_file}
+				COMMENT "Validate ${_file}"
+				DEPENDS luac
+				WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+			)
+			add_dependencies(${TARGET} ${targetname})
+		endforeach()
+	endif()
+endmacro()
+
+macro(check_ui_turbobadger TARGET)
+	set(_workingdir "${DATA_DIR}/${TARGET}")
+	set(_dir "${_workingdir}/ui/window")
+	file(GLOB UI_FILES ${_dir}/*.tb.txt)
+	foreach(_file ${UI_FILES})
+		get_filename_component(_filename ${_file} NAME)
+		add_custom_target(
+			${_filename}
+			COMMAND $<TARGET_FILE:uitool> ui/window/${_filename}
+			COMMENT "Validate ui file: ${_filename}"
+			DEPENDS uitool
+			WORKING_DIRECTORY ${_workingdir}
+		)
+		add_dependencies(${TARGET} ${_filename})
+	endforeach()
+	if (UI_FILES)
+		add_dependencies(${TARGET} uitool)
+	endif()
+endmacro()
+
+macro(engine_install TARGET FILE DESTINATION INSTALL_DATA)
+	set(INSTALL_DATA_DIR "${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME}-${TARGET}")
+	if (INSTALL_DATA)
+		install(FILES ${DATA_DIR}/${FILE} DESTINATION ${INSTALL_DATA_DIR}/${DESTINATION} COMPONENT ${TARGET})
+	endif()
+	get_filename_component(filename ${FILE} NAME)
+	configure_file(${DATA_DIR}/${FILE} ${CMAKE_BINARY_DIR}/${TARGET}/${DESTINATION}/${filename} COPYONLY)
 endmacro()
 
 #
@@ -527,7 +652,7 @@ endmacro()
 macro(engine_add_executable)
 	set(_OPTIONS_ARGS WINDOWED NOINSTALL)
 	set(_ONE_VALUE_ARGS TARGET)
-	set(_MULTI_VALUE_ARGS SRCS)
+	set(_MULTI_VALUE_ARGS SRCS LUA_SRCS FILES)
 
 	cmake_parse_arguments(_EXE "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
 
@@ -552,48 +677,113 @@ macro(engine_add_executable)
 			endif()
 		endif()
 	endif()
+	set_target_properties(${_EXE_TARGET} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
+	set_target_properties(${_EXE_TARGET} PROPERTIES
+		ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${_EXE_TARGET}"
+		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${_EXE_TARGET}"
+		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${_EXE_TARGET}"
+	)
+	foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+		string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+		set_target_properties(${_EXE_TARGET} PROPERTIES
+			ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${CMAKE_BINARY_DIR}/${_EXE_TARGET}"
+			LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${CMAKE_BINARY_DIR}/${_EXE_TARGET}"
+			RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${CMAKE_BINARY_DIR}/${_EXE_TARGET}"
+		)
+	endforeach()
 
-	set(RESOURCE_DIRS ${ROOT_DIR}/${GAME_BASE_DIR}/${_EXE_TARGET}/ ${ROOT_DIR}/${GAME_BASE_DIR}/shared/)
-	copy_data_files(${_EXE_TARGET})
-	# by default, put system related files into the current binary dir on install
-	set(SHARE_DIR ".")
-	# by default, put data files into the current binary dir on install
-	set(GAMES_DIR "${_EXE_TARGET}")
-	# by default, put the binary into a subdir with the target name
-	set(BIN_DIR "${_EXE_TARGET}")
-	set(ICON_DIR ".")
+	if (_EXE_LUA_SRCS)
+		check_lua_files(${_EXE_TARGET} ${_EXE_LUA_SRCS})
+	endif()
+
+	set(INSTALL_DATA_DIR "${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
+	set(INSTALL_ICON_DIR "${CMAKE_INSTALL_DATADIR}/icons")
+	set(INSTALL_APPLICATION_DIR "${CMAKE_INSTALL_DATADIR}/applications")
 
 	if (SANITIZER_THREADS AND NOT ${_EXE_TARGET} STREQUAL "databasetool" AND NOT ${_EXE_TARGET} STREQUAL "shadertool" AND NOT ${_EXE_TARGET} STREQUAL "uitool")
 		set_target_properties(${_EXE_TARGET} PROPERTIES COMPILE_FLAGS "${SANITIZE_THREAD_FLAG}")
 		set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "${SANITIZE_THREAD_FLAG}")
 	endif()
 
-	if (NOT _EXE_NOINSTALL)
-		set(ICON "${_EXE_TARGET}-icon.png")
-		if (EXISTS ${ROOT_DIR}/contrib/${ICON})
-			install(FILES ${ROOT_DIR}/contrib/${ICON} DESTINATION ${ICON_DIR} COMPONENT ${_EXE_TARGET})
-		endif()
-
-		if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-			set(SHARE_DIR "share")
-			set(GAMES_DIR "${SHARE_DIR}/${_EXE_TARGET}")
-			set(ICON_DIR "${SHARE_DIR}/icons")
-			set(BIN_DIR "games")
-			configure_file(${ROOT_DIR}/contrib/installer/linux/desktop.in ${PROJECT_BINARY_DIR}/${_EXE_TARGET}.desktop)
-			install(FILES ${PROJECT_BINARY_DIR}/${_EXE_TARGET}.desktop DESTINATION ${SHARE_DIR}/applications)
-			if (EXISTS ${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.service.in)
-				configure_file(${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.service.in ${PROJECT_BINARY_DIR}/${_EXE_TARGET}.service)
-				install(FILES ${PROJECT_BINARY_DIR}/${_EXE_TARGET}.service DESTINATION lib/systemd/user)
-			endif()
-		endif()
-
-		foreach (dir ${RESOURCE_DIRS})
-			if (IS_DIRECTORY ${dir})
-				install(DIRECTORY ${dir} DESTINATION ${GAMES_DIR}/ COMPONENT ${_EXE_TARGET})
-			endif()
-		endforeach()
-		install(TARGETS ${_EXE_TARGET} DESTINATION ${BIN_DIR} COMPONENT ${_EXE_TARGET})
+	if (_EXE_NOINSTALL)
+		set(INSTALL_DATA False)
+	else()
+		set(INSTALL_DATA True)
 	endif()
+
+	if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+		# TODO: only if WINDOWED is given?
+		configure_file(${ROOT_DIR}/contrib/installer/linux/desktop.in ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop)
+		if (DESKTOP_FILE_VALIDATE_EXECUTABLE)
+			add_custom_command(TARGET ${_EXE_TARGET} POST_BUILD
+				COMMAND ${DESKTOP_FILE_VALIDATE_EXECUTABLE} ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop
+				COMMENT "Validate ${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop"
+			)
+		endif()
+		if (INSTALL_DATA)
+			install(FILES ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop DESTINATION ${INSTALL_APPLICATION_DIR})
+		endif()
+		if (EXISTS ${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.service.in)
+			# TODO systemd-analyze --user  verify build/Debug/src/server/vengi-server.service
+			configure_file(${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.service.in ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.service)
+			if (INSTALL_DATA)
+				install(FILES ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.service DESTINATION lib/systemd/user)
+			endif()
+		endif()
+	endif()
+
+	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_EXECUTABLE True)
+	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_INSTALL ${INSTALL_DATA})
+	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_FILES "${_EXE_FILES}")
+
+	foreach (luasrc ${_EXE_LUA_SRCS})
+		get_filename_component(luasrcdir ${luasrc} DIRECTORY)
+		if (INSTALL_DATA)
+			install(FILES lua/${luasrc} DESTINATION ${INSTALL_DATA_DIR}/${luasrcdir} COMPONENT ${_EXE_TARGET})
+		endif()
+		configure_file(lua/${luasrc} ${INSTALL_DATA_DIR}/${luasrcdir}/${luasrc})
+	endforeach()
+	set(ICON "${_EXE_TARGET}-icon.png")
+	if (EXISTS ${ROOT_DIR}/contrib/${ICON})
+		if (INSTALL_DATA)
+			install(FILES ${ROOT_DIR}/contrib/${ICON} DESTINATION ${INSTALL_ICON_DIR} COMPONENT ${_EXE_TARGET})
+		endif()
+	endif()
+	set(KEYBINDINGS "${_EXE_TARGET}-keybindings.cfg")
+	if (EXISTS ${ROOT_DIR}/data/${KEYBINDINGS})
+		if (INSTALL_DATA)
+			install(FILES ${DATA_DIR}/${KEYBINDINGS} DESTINATION ${INSTALL_DATA_DIR}/ COMPONENT ${_EXE_TARGET})
+		endif()
+		configure_file(${DATA_DIR}/${KEYBINDINGS} ${INSTALL_DATA_DIR}/${KEYBINDINGS})
+	endif()
+	if (INSTALL_DATA)
+		install(TARGETS ${_EXE_TARGET} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_EXE_TARGET})
+	endif()
+	add_custom_target(${_EXE_TARGET}-run COMMAND $<TARGET_FILE:${_EXE_TARGET}> DEPENDS ${_EXE_TARGET} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${_EXE_TARGET}")
+	engine_add_valgrind(${_EXE_TARGET})
+	engine_add_perf(${_EXE_TARGET})
+	if (WINDOWED)
+		engina_add_vogl(${_EXE_TARGET})
+	endif()
+endmacro()
+
+macro(engine_add_module)
+	set(_OPTIONS_ARGS)
+	set(_ONE_VALUE_ARGS TARGET)
+	set(_MULTI_VALUE_ARGS SRCS FILES DEPENDENCIES)
+
+	cmake_parse_arguments(_LIB "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
+
+	add_library(${_LIB_TARGET} ${_LIB_SRCS})
+	set_target_properties(${_LIB_TARGET} PROPERTIES FOLDER ${_LIB_TARGET})
+	if (_LIB_DEPENDENCIES)
+		target_link_libraries(${_LIB_TARGET} ${_LIB_DEPENDENCIES})
+		foreach (dep ${_LIB_DEPENDENCIES})
+			get_property(DEP_FILES GLOBAL PROPERTY ${dep}_FILES)
+			list(APPEND _LIB_FILES ${DEP_FILES})
+		endforeach()
+	endif()
+	set_property(GLOBAL PROPERTY ${_LIB_TARGET}_FILES ${_LIB_FILES})
 endmacro()
 
 macro(engine_target_link_libraries)
@@ -604,4 +794,24 @@ macro(engine_target_link_libraries)
 	cmake_parse_arguments(_LIBS "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
 
 	target_link_libraries(${_LIBS_TARGET} ${_LIBS_DEPENDENCIES})
+
+	get_property(EXECUTABLE GLOBAL PROPERTY ${_LIBS_TARGET}_EXECUTABLE)
+	if (EXECUTABLE)
+		get_property(INSTALL_DATA GLOBAL PROPERTY ${_LIBS_TARGET}_INSTALL)
+		get_property(INSTALL_FILES GLOBAL PROPERTY ${_LIBS_TARGET}_FILES)
+		foreach (dep ${_LIBS_DEPENDENCIES})
+			get_property(FILES GLOBAL PROPERTY ${dep}_FILES)
+			list(APPEND INSTALL_FILES ${FILES})
+		endforeach()
+
+		if (INSTALL_FILES)
+			list(REMOVE_DUPLICATES INSTALL_FILES)
+			foreach (datafile ${INSTALL_FILES})
+				string(REPLACE "${_LIBS_TARGET}/" "" target_datafile "${datafile}")
+				string(REPLACE "shared/" "" target_datafile "${target_datafile}")
+				get_filename_component(datafiledir ${target_datafile} DIRECTORY)
+				engine_install(${_LIBS_TARGET} "${datafile}" "${datafiledir}" ${INSTALL_DATA})
+			endforeach()
+		endif()
+	endif()
 endmacro()

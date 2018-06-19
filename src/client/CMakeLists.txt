@@ -16,10 +16,26 @@ set(SRCS
 	ui/DisconnectWindow.h
 	ui/LostPasswordWindow.h
 )
-engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
+set(FILES
+	client/mesh/animal_chicken.dae
+	client/mesh/animal_chicken.png
+	client/mesh/animal_rabbit.dae
+	client/mesh/animal_rabbit.png
+	client/mesh/animal_wolf.dae
+	client/mesh/animal_wolf.png
+	client/mesh/chr_fatkid.dae
+	client/mesh/chr_fatkid.png
+	client/ui/lang/en.tb.txt
+	client/ui/window/client-authfailed.tb.txt
+	client/ui/window/client-disconnect.tb.txt
+	client/ui/window/client-hud.tb.txt
+	client/ui/window/client-login.tb.txt
+	client/ui/window/client-lostpassword.tb.txt
+	client/ui/window/client-signup.tb.txt
+
+	shared/font.ttf
+	shared/worldparams.lua
+)
+engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger voxelfont voxelrender util)
 check_ui_turbobadger(${PROJECT_NAME})
-
-gtest_suite_files(tests
-	tests/ClientUITest.cpp
-)

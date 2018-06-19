@@ -3,11 +3,9 @@ set(SRCS
 	Type.h
 )
 set(LIB poi)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES voxel network)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel network)
 
-gtest_suite_files(tests
+gtest_suite_sources(tests
 	tests/PoiProviderTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

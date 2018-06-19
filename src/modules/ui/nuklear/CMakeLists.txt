@@ -9,7 +9,7 @@ set(SRCS
 
 	private/nuklear.h
 )
-set(LIB nuklear)
-add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core io render util commonlua)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+set(FILES
+	shared/font.ttf
+)
+engine_add_module(TARGET nuklear SRCS ${SRCS} FILES ${FILES} DEPENDENCIES core io render util commonlua)

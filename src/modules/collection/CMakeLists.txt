@@ -5,13 +5,12 @@ set(SRCS
 	dummy.cpp
 )
 set(LIB collection)
-add_library(${LIB} ${SRCS})
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS})
 
 set(TEST_SRCS
 	tests/ConcurrentQueueTest.cpp
 	tests/SetTest.cpp
 )
 
-gtest_suite_files(tests ${TEST_SRCS})
+gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})

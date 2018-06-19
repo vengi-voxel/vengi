@@ -1,3 +1,4 @@
+set(LIB voxelrender)
 set(SRCS
 	MapRenderer.cpp MapRenderer.h
 	PlantDistributor.cpp PlantDistributor.h
@@ -11,14 +12,13 @@ set(SRCS_SHADERS
 	shaders/world_instanced.vert shaders/world_instanced.frag
 	shaders/world.vert shaders/world.frag
 )
-
-set(LIB voxelrender)
-add_library(${LIB} ${SRCS} ${SRCS_SHADERS})
+set(FILES
+	shared/worldparams.lua
+)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend render voxel)
 generate_shaders(${LIB} world water world_instanced)
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES frontend render voxel)
-set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
-gtest_suite_files(tests
+gtest_suite_sources(tests
 	tests/VoxelFrontendShaderTest.cpp
 	tests/MaterialTest.cpp
 	tests/WorldRendererTest.cpp

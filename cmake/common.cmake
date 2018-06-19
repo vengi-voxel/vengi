@@ -1,68 +1,10 @@
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
+include(CheckCCompilerFlag)
 
 set(DEFAULT_LUA_EXECUTABLE lua lua5.2 lua5.3 luac luac5.2 luac5.3)
-set(GAME_BASE_DIR data CACHE STRING "" FORCE)
-
-macro(copy_data_files TARGET)
-	add_custom_target(copy-data-${TARGET} ALL
-		COMMAND cmake -E copy_directory "${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}/" ${CMAKE_BINARY_DIR}
-		COMMENT "Copy ${TARGET} data files...")
-endmacro()
-
-macro(check_lua_files TARGET)
-	set(files ${ARGV})
-	list(REMOVE_AT files 0)
-	find_program(LUA_EXECUTABLE NAMES ${DEFAULT_LUA_EXECUTABLE})
-	if (LUA_EXECUTABLE)
-		message("${LUA_EXECUTABLE} found")
-		foreach(_file ${files})
-			string(REGEX REPLACE "[/]" "_" targetname ${_file})
-			add_custom_target(
-				${targetname}
-				COMMAND ${LUA_EXECUTABLE} ${_file}
-				COMMENT "Validate ${_file}"
-				WORKING_DIRECTORY ${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}
-			)
-			add_dependencies(${TARGET} ${targetname})
-		endforeach()
-	else()
-		foreach(_file ${files})
-			string(REGEX REPLACE "[/]" "_" targetname ${_file})
-			add_custom_target(
-				${targetname}
-				COMMAND ${CMAKE_BINARY_DIR}/luac ${_file}
-				COMMENT "Validate ${_file}"
-				DEPENDS luac
-				WORKING_DIRECTORY ${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}
-			)
-			add_dependencies(${TARGET} ${targetname})
-		endforeach()
-	endif()
-endmacro()
-
-macro(check_ui_turbobadger TARGET)
-	set(_workingdir "${ROOT_DIR}/${GAME_BASE_DIR}/${TARGET}")
-	set(_dir "${_workingdir}/ui/window")
-	file(GLOB UI_FILES ${_dir}/*.tb.txt)
-	foreach(_file ${UI_FILES})
-		get_filename_component(_filename ${_file} NAME)
-		add_custom_target(
-			${_filename}
-			COMMAND ${CMAKE_BINARY_DIR}/uitool ui/window/${_filename}
-			COMMENT "Validate ui file: ${_filename}"
-			DEPENDS uitool
-			WORKING_DIRECTORY ${_workingdir}
-		)
-		add_dependencies(${TARGET} ${_filename})
-	endforeach()
-	if (UI_FILES)
-		add_dependencies(${TARGET} uitool)
-	endif()
-endmacro()
-
-include(CheckCCompilerFlag)
+set(DATA_DIR ${ROOT_DIR}/data CACHE STRING "" FORCE)
 
 check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
 if (COMPILER_SUPPORTS_CXX14)
