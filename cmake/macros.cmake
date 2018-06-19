@@ -712,16 +712,17 @@ macro(engine_add_executable)
 	endif()
 
 	if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-		# TODO: only if WINDOWED is given?
-		configure_file(${ROOT_DIR}/contrib/installer/linux/desktop.in ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop)
-		if (DESKTOP_FILE_VALIDATE_EXECUTABLE)
-			add_custom_command(TARGET ${_EXE_TARGET} POST_BUILD
-				COMMAND ${DESKTOP_FILE_VALIDATE_EXECUTABLE} ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop
-				COMMENT "Validate ${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop"
-			)
-		endif()
-		if (INSTALL_DATA)
-			install(FILES ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop DESTINATION ${INSTALL_APPLICATION_DIR})
+		if (_EXE_WINDOWED)
+			configure_file(${ROOT_DIR}/contrib/installer/linux/desktop.in ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop)
+			if (DESKTOP_FILE_VALIDATE_EXECUTABLE)
+				add_custom_command(TARGET ${_EXE_TARGET} POST_BUILD
+					COMMAND ${DESKTOP_FILE_VALIDATE_EXECUTABLE} ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop
+					COMMENT "Validate ${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop"
+				)
+			endif()
+			if (INSTALL_DATA)
+				install(FILES ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop DESTINATION ${INSTALL_APPLICATION_DIR})
+			endif()
 		endif()
 		if (EXISTS ${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.service.in)
 			# TODO systemd-analyze --user  verify build/Debug/src/server/vengi-server.service
@@ -762,7 +763,7 @@ macro(engine_add_executable)
 	add_custom_target(${_EXE_TARGET}-run COMMAND $<TARGET_FILE:${_EXE_TARGET}> DEPENDS ${_EXE_TARGET} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${_EXE_TARGET}")
 	engine_add_valgrind(${_EXE_TARGET})
 	engine_add_perf(${_EXE_TARGET})
-	if (WINDOWED)
+	if (_EXE_WINDOWED)
 		engina_add_vogl(${_EXE_TARGET})
 	endif()
 endmacro()
