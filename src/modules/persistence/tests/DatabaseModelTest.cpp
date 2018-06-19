@@ -276,7 +276,8 @@ TEST_F(DatabaseModelTest, testTimestamp) {
 	_dbHandler.select(db::TestModel(), db::DBConditionTestModelId(u.id()), [=] (db::TestModel&& model) {
 		const persistence::Timestamp& ts = model.registrationdate();
 		const persistence::Timestamp tsNow(now / 1000);
-		ASSERT_NEAR(ts.millis(), now, 10) << "db: " << ts.toString() << " now: " << tsNow.toString();
+		// it may vary at max 1 second
+		ASSERT_NEAR(ts.millis(), now, 1000) << "db: " << ts.toString() << " now: " << tsNow.toString();
 	});
 }
 
