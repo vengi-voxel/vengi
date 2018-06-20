@@ -243,6 +243,7 @@
 #include "common/MoveVector.h"
 #include "common/Random.h"
 #include "common/Thread.h"
+#include "common/ThreadPool.h"
 #include "common/ExecutionTime.h"
 
 #include "AI.h"

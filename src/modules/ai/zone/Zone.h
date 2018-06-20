@@ -16,7 +16,7 @@
 #include "ICharacter.h"
 #include "group/GroupMgr.h"
 #include "common/Thread.h"
-#include "core/ThreadPool.h"
+#include "common/ThreadPool.h"
 #include "common/Types.h"
 #include "common/ExecutionTime.h"
 #include <unordered_map>
@@ -55,7 +55,7 @@ protected:
 	ReadWriteLock _lock {"zone"};
 	ReadWriteLock _scheduleLock {"zone-schedulelock"};
 	ai::GroupMgr _groupManager;
-	mutable core::ThreadPool _threadPool;
+	mutable ThreadPool _threadPool;
 
 	/**
 	 * @brief called in the zone update to add new @c AI instances.

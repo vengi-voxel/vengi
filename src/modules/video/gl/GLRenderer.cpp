@@ -1458,10 +1458,6 @@ bool init() {
 		Log::info("Activated vsync");
 	}
 
-	if (FLEXT_ARB_direct_state_access) {
-		Log::info("Use direct state access");
-	}
-
 	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
 	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
 	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
