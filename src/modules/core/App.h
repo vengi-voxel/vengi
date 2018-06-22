@@ -168,7 +168,9 @@ public:
 	int startMainLoop(int argc, char *argv[]);
 
 	/**
-	 * e.g. register your commands here
+	 * @brief Register your commands and cvars here
+	 * @note The registered commands and cvars are automatically printed in --help. If you register them in a later application state,
+	 * this is no longer the case.
 	 * @return @c AppState::Init as next phase
 	 */
 	virtual AppState onConstruct();
