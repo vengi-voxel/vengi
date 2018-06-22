@@ -453,6 +453,8 @@ void App::usage() const {
 	core::Command::visitSorted([=] (const core::Command& c) {
 		Log::info("   %-*s %s", maxWidth, c.name(), c.help());
 	});
+	Log::info("---");
+	Log::info("Config variables can either be set via autoexec.cfg, $appname.vars, environment or commandline parameter");
 }
 
 void App::onAfterRunning() {
