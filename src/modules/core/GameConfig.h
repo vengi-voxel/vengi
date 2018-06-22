@@ -49,8 +49,6 @@ constexpr const char *ServerHost = "sv_host";
 constexpr const char *ServerPort = "sv_port";
 constexpr const char *ServerMaxClients = "sv_maxclients";
 
-constexpr const char *ShapeToolExtractRadius = "sh_extractradius";
-
 constexpr const char *CoreLogLevel = "core_loglevel";
 constexpr const char *CoreSysLog = "core_syslog";
 
