@@ -160,5 +160,6 @@ update-curl:
 
 # TODO native file dialog support
 # TODO simpleai support
+# TODO lua support
 updatelibs: update-nuklear update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-curl update-glslang
 	$(MAKE) -C $(BUILDDIR) update-libs

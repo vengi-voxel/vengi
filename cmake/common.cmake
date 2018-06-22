@@ -3,7 +3,8 @@ include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 include(CheckCCompilerFlag)
 
-set(DEFAULT_LUA_EXECUTABLE lua lua5.2 lua5.3 luac luac5.2 luac5.3)
+set(DEFAULT_LUA_EXECUTABLE lua lua5.2 lua5.3)
+set(DEFAULT_LUAC_EXECUTABLE luac luac5.2 luac5.3)
 set(DATA_DIR ${ROOT_DIR}/data CACHE STRING "" FORCE)
 
 check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
