@@ -15,7 +15,7 @@ set(SRCS
 	common/Random.h
 	common/String.h
 	common/Thread.h
-	common/ThreadPool.h
+	common/ThreadPool.cpp common/ThreadPool.h
 	common/Types.h
 	conditions/And.h
 	conditions/ConditionParser.h
