@@ -568,6 +568,21 @@ macro(gtest_suite_end name)
 
 		target_sources(${name} PRIVATE ${srcs})
 
+		set_target_properties(${name} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${name}")
+		set_target_properties(${name} PROPERTIES
+			ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${name}"
+			LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${name}"
+			RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${name}"
+		)
+		foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+			string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+			set_target_properties(${name} PROPERTIES
+				ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${CMAKE_BINARY_DIR}/${name}"
+				LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${CMAKE_BINARY_DIR}/${name}"
+				RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${CMAKE_BINARY_DIR}/${name}"
+			)
+		endforeach()
+
 		get_property(models GLOBAL PROPERTY ${name}_Models)
 		foreach(entry ${models})
 			string(REPLACE ":" ";" inout ${entry})
@@ -582,12 +597,13 @@ macro(gtest_suite_end name)
 			string(REPLACE "shared/" "" target_datafile "${target_datafile}")
 			get_filename_component(datafiledir ${target_datafile} DIRECTORY)
 			get_filename_component(filename ${target_datafile} NAME)
-			configure_file(${DATA_DIR}/${datafile} ${CMAKE_BINARY_DIR}/${datafiledir}/${filename} COPYONLY)
+			configure_file(${DATA_DIR}/${datafile} ${CMAKE_BINARY_DIR}/${name}/${datafiledir}/${filename} COPYONLY)
 		endforeach()
 		target_link_libraries(${name} ${deps})
 		set_target_properties(${name} PROPERTIES FOLDER ${name})
 		add_test(NAME ${name} COMMAND $<TARGET_FILE:${name}>)
-		add_custom_target(${name}-run COMMAND $<TARGET_FILE:${name}> DEPENDS ${_EXE_TARGET} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+		add_custom_target(${name}-run COMMAND $<TARGET_FILE:${name}> DEPENDS ${_EXE_TARGET} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${name}")
+		engine_add_debuggger(${name})
 		engine_add_valgrind(${name})
 		engine_add_perf(${name})
 	endif()
