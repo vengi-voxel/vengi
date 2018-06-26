@@ -8,6 +8,21 @@
 #include <QtCore>
 #include <vector>
 #include "Version.h"
+#include "ai/server/IProtocolHandler.h"
+#include "ai/server/AIStateMessage.h"
+#include "ai/server/AINamesMessage.h"
+#include "ai/server/AIPauseMessage.h"
+#include "ai/server/AISelectMessage.h"
+#include "ai/server/AIStepMessage.h"
+#include "ai/server/AIChangeMessage.h"
+#include "ai/server/AIAddNodeMessage.h"
+#include "ai/server/AIUpdateNodeMessage.h"
+#include "ai/server/AIDeleteNodeMessage.h"
+#include "ai/server/AINamesMessage.h"
+#include "ai/server/AIStubTypes.h"
+#include "ai/server/AICharacterDetailsMessage.h"
+#include "ai/server/AICharacterStaticMessage.h"
+#include "ai/server/ProtocolMessageFactory.h"
 
 namespace ai {
 namespace debug {

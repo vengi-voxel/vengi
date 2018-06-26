@@ -1,10 +1,9 @@
 set(SRCS
-	SimpleAI.cpp
 	aggro/AggroMgr.h
 	aggro/Entry.h
 	AI.h
 	AIFactories.h
-	AIRegistry.h
+	AIRegistry.h AIRegistry.cpp
 	common/IFactoryRegistry.h
 	common/IParser.h
 	common/Log.h
@@ -72,15 +71,13 @@ set(SRCS
 	server/DeleteNodeHandler.h
 	server/IProtocolHandler.h
 	server/IProtocolMessage.h
-	server/Network.h
-	server/NetworkImpl.h
+	server/Network.h server/Network.cpp
 	server/PauseHandler.h
 	server/ProtocolHandlerRegistry.h
 	server/ProtocolMessageFactory.h
 	server/ResetHandler.h
 	server/SelectHandler.h
-	server/Server.h
-	server/ServerImpl.h
+	server/Server.h server/Server.cpp
 	server/StepHandler.h
 	server/UpdateNodeHandler.h
 	zone/Zone.h
@@ -100,8 +97,7 @@ set(SRCS
 	tree/Sequence.h
 	tree/Steer.h
 	tree/Succeed.h
-	tree/TreeNode.h
-	tree/TreeNodeImpl.h
+	tree/TreeNode.h tree/TreeNode.cpp
 	tree/TreeNodeParser.h
 )
 set(LIB ai)
@@ -109,8 +105,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua)
 target_include_directories(${LIB} PUBLIC .)
 target_compile_definitions(${LIB} PUBLIC -DAI_INCLUDE_LUA=1)
 
-gtest_suite_files(tests tests/testluaregistry.lua)
-gtest_suite_sources(tests
+set(TEST_SRCS
 	tests/AggroTest.cpp
 	tests/GeneralTest.cpp
 	tests/GroupTest.cpp
@@ -123,4 +118,11 @@ gtest_suite_sources(tests
 	tests/TestShared.cpp
 	tests/ZoneTest.cpp
 )
+gtest_suite_files(tests tests/testluaregistry.lua)
+gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
+
+gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_deps(tests-${LIB} ${LIB})
+gtest_suite_end(tests-${LIB})

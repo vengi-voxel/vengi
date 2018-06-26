@@ -36,7 +36,7 @@
 #pragma once
 
 #include "tree/loaders/ITreeLoader.h"
-#include "tree/TreeNodeImpl.h"
+#include "tree/TreeNode.h"
 #include "AIRegistry.h"
 #include "conditions/ConditionParser.h"
 #include "tree/TreeNodeParser.h"

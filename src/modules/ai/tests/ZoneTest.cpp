@@ -1,4 +1,9 @@
+/**
+ * @file
+ */
+
 #include "ZoneTest.h"
+#include "tree/PrioritySelector.h"
 
 class ZoneTest: public TestSuite {
 };

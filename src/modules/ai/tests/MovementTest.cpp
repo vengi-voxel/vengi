@@ -1,4 +1,17 @@
+/**
+ * @file
+ */
+
 #include "MovementTest.h"
+#include "movement/SelectionSeek.h"
+#include "movement/SelectionFlee.h"
+#include "movement/GroupFlee.h"
+#include "movement/GroupSeek.h"
+#include "movement/Steering.h"
+#include "movement/TargetFlee.h"
+#include "movement/TargetSeek.h"
+#include "movement/Wander.h"
+#include "movement/WeightedSteering.h"
 
 class MovementTest: public TestSuite {
 protected:

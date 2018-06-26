@@ -1,4 +1,29 @@
+/**
+ * @file
+ */
+
 #include "NodeTest.h"
+#include "tree/Fail.h"
+#include "tree/Limit.h"
+#include "tree/Invert.h"
+#include "tree/Idle.h"
+#include "tree/Parallel.h"
+#include "tree/PrioritySelector.h"
+#include "tree/ProbabilitySelector.h"
+#include "tree/RandomSelector.h"
+#include "tree/Sequence.h"
+#include "tree/Steer.h"
+#include "tree/Succeed.h"
+#include "conditions/And.h"
+#include "conditions/False.h"
+#include "conditions/HasEnemies.h"
+#include "conditions/Not.h"
+#include "conditions/Filter.h"
+#include "conditions/Or.h"
+#include "conditions/True.h"
+#include "conditions/IsInGroup.h"
+#include "conditions/IsGroupLeader.h"
+#include "conditions/IsCloseToGroup.h"
 
 class NodeTest: public TestSuite {
 };

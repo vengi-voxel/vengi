@@ -1,7 +1,6 @@
 /**
  * @file
  */
-#pragma once
 
 #include "Network.h"
 #include "IProtocolMessage.h"
@@ -40,18 +39,18 @@
 
 namespace ai {
 
-inline Network::Network(uint16_t port, const std::string& hostname) :
+Network::Network(uint16_t port, const std::string& hostname) :
 		_port(port), _hostname(hostname), _socketFD(INVALID_SOCKET), _time(0L) {
 	FD_ZERO(&_readFDSet);
 	FD_ZERO(&_writeFDSet);
 }
 
-inline Network::~Network() {
+Network::~Network() {
 	closesocket(_socketFD);
 	network_cleanup();
 }
 
-inline bool Network::start() {
+bool Network::start() {
 #ifdef WIN32
 	WSADATA wsaData;
 	const int wsaResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -117,7 +116,7 @@ inline bool Network::start() {
 	return true;
 }
 
-inline Network::ClientSocketsIter Network::closeClient(ClientSocketsIter& iter) {
+Network::ClientSocketsIter Network::closeClient(ClientSocketsIter& iter) {
 	Client& client = *iter;
 	const SOCKET clientSocket = client.socket;
 	FD_CLR(clientSocket, &_readFDSet);
@@ -130,7 +129,7 @@ inline Network::ClientSocketsIter Network::closeClient(ClientSocketsIter& iter) 
 	return _clientSockets.erase(iter);
 }
 
-inline bool Network::sendMessage(Client& client) {
+bool Network::sendMessage(Client& client) {
 	if (client.out.empty()) {
 		return true;
 	}
@@ -153,7 +152,7 @@ inline bool Network::sendMessage(Client& client) {
 	return true;
 }
 
-inline void Network::update(int64_t deltaTime) {
+void Network::update(int64_t deltaTime) {
 	_time += deltaTime;
 	if (_time > 5000L) {
 		if (!broadcast(AIPingMessage())) {
@@ -227,7 +226,7 @@ inline void Network::update(int64_t deltaTime) {
 	}
 }
 
-inline bool Network::broadcast(const IProtocolMessage& msg) {
+bool Network::broadcast(const IProtocolMessage& msg) {
 	if (_clientSockets.empty()) {
 		return false;
 	}
@@ -249,7 +248,7 @@ inline bool Network::broadcast(const IProtocolMessage& msg) {
 	return true;
 }
 
-inline bool Network::sendToClient(Client* client, const IProtocolMessage& msg) {
+bool Network::sendToClient(Client* client, const IProtocolMessage& msg) {
 	assert(client != nullptr);
 	if (client->socket == INVALID_SOCKET) {
 		return false;

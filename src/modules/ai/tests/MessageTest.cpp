@@ -1,4 +1,9 @@
+/**
+ * @file
+ */
+
 #include "MessageTest.h"
+#include "server/ProtocolMessageFactory.h"
 
 class MessageTest: public TestSuite {
 protected:

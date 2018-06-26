@@ -1,7 +1,6 @@
 /**
  * @file
  */
-#pragma once
 
 #include "Server.h"
 #include "SelectHandler.h"
@@ -20,7 +19,7 @@ const int SV_BROADCAST_CHRDETAILS = 1 << 0;
 const int SV_BROADCAST_STATE      = 1 << 1;
 }
 
-inline Server::Server(AIRegistry& aiRegistry, short port, const std::string& hostname) :
+Server::Server(AIRegistry& aiRegistry, short port, const std::string& hostname) :
 		_aiRegistry(aiRegistry), _network(port, hostname), _selectedCharacterId(AI_NOTHING_SELECTED), _time(0L),
 		_selectHandler(new SelectHandler(*this)), _pauseHandler(new PauseHandler(*this)), _resetHandler(new ResetHandler(*this)),
 		_stepHandler(new StepHandler(*this)), _changeHandler(new ChangeHandler(*this)), _addNodeHandler(new AddNodeHandler(*this)),
@@ -38,7 +37,7 @@ inline Server::Server(AIRegistry& aiRegistry, short port, const std::string& hos
 	r.registerHandler(ai::PROTO_UPDATENODE, _updateNodeHandler);
 }
 
-inline Server::~Server() {
+Server::~Server() {
 	delete _selectHandler;
 	delete _pauseHandler;
 	delete _resetHandler;
@@ -50,19 +49,19 @@ inline Server::~Server() {
 	_network.removeListener(this);
 }
 
-inline void Server::enqueueEvent(const Event& event) {
+void Server::enqueueEvent(const Event& event) {
 	ScopedWriteLock scopedLock(_lock);
 	_events.push_back(event);
 }
 
-inline void Server::onConnect(Client* client) {
+void Server::onConnect(Client* client) {
 	Event event;
 	event.type = EV_NEWCONNECTION;
 	event.data.newClient = client;
 	enqueueEvent(event);
 }
 
-inline void Server::onDisconnect(Client* /*client*/) {
+void Server::onDisconnect(Client* /*client*/) {
 	ai_log("remote debugger disconnect (%i)", _network.getConnectedClients());
 	Zone* zone = _zone;
 	if (zone == nullptr) {
@@ -87,11 +86,11 @@ inline void Server::onDisconnect(Client* /*client*/) {
 	}
 }
 
-inline bool Server::start() {
+bool Server::start() {
 	return _network.start();
 }
 
-inline void Server::addChildren(const TreeNodePtr& node, std::vector<AIStateNodeStatic>& out) const {
+void Server::addChildren(const TreeNodePtr& node, std::vector<AIStateNodeStatic>& out) const {
 	for (const TreeNodePtr& childNode : node->getChildren()) {
 		const int32_t nodeId = childNode->getId();
 		out.push_back(AIStateNodeStatic(nodeId, childNode->getName(), childNode->getType(), childNode->getParameters(), childNode->getCondition()->getName(), childNode->getCondition()->getParameters()));
@@ -99,7 +98,7 @@ inline void Server::addChildren(const TreeNodePtr& node, std::vector<AIStateNode
 	}
 }
 
-inline void Server::addChildren(const TreeNodePtr& node, AIStateNode& parent, const AIPtr& ai) const {
+void Server::addChildren(const TreeNodePtr& node, AIStateNode& parent, const AIPtr& ai) const {
 	const TreeNodes& children = node->getChildren();
 	std::vector<bool> currentlyRunning(children.size());
 	node->getRunningChildren(ai, currentlyRunning);
@@ -118,7 +117,7 @@ inline void Server::addChildren(const TreeNodePtr& node, AIStateNode& parent, co
 	}
 }
 
-inline void Server::broadcastState(const Zone* zone) {
+void Server::broadcastState(const Zone* zone) {
 	_broadcastMask |= SV_BROADCAST_STATE;
 	AIStateMessage msg;
 	auto func = [&] (const AIPtr& ai) {
@@ -130,7 +129,7 @@ inline void Server::broadcastState(const Zone* zone) {
 	_network.broadcast(msg);
 }
 
-inline void Server::broadcastStaticCharacterDetails(const Zone* zone) {
+void Server::broadcastStaticCharacterDetails(const Zone* zone) {
 	const CharacterId id = _selectedCharacterId;
 	if (id == AI_NOTHING_SELECTED) {
 		return;
@@ -155,7 +154,7 @@ inline void Server::broadcastStaticCharacterDetails(const Zone* zone) {
 	}
 }
 
-inline void Server::broadcastCharacterDetails(const Zone* zone) {
+void Server::broadcastCharacterDetails(const Zone* zone) {
 	_broadcastMask |= SV_BROADCAST_CHRDETAILS;
 	const CharacterId id = _selectedCharacterId;
 	if (id == AI_NOTHING_SELECTED) {
@@ -189,7 +188,7 @@ inline void Server::broadcastCharacterDetails(const Zone* zone) {
 	}
 }
 
-inline void Server::handleEvents(Zone* zone, bool pauseState) {
+void Server::handleEvents(Zone* zone, bool pauseState) {
 	std::vector<Event> events;
 	{
 		ScopedReadLock scopedLock(_lock);
@@ -310,11 +309,11 @@ inline void Server::handleEvents(Zone* zone, bool pauseState) {
 	}
 }
 
-inline void Server::resetSelection() {
+void Server::resetSelection() {
 	_selectedCharacterId = AI_NOTHING_SELECTED;
 }
 
-inline bool Server::updateNode(const CharacterId& characterId, int32_t nodeId, const std::string& name, const std::string& type, const std::string& condition) {
+bool Server::updateNode(const CharacterId& characterId, int32_t nodeId, const std::string& name, const std::string& type, const std::string& condition) {
 	Zone* zone = _zone;
 	if (zone == nullptr) {
 		return false;
@@ -360,7 +359,7 @@ inline bool Server::updateNode(const CharacterId& characterId, int32_t nodeId, c
 	return true;
 }
 
-inline bool Server::addNode(const CharacterId& characterId, int32_t parentNodeId, const std::string& name, const std::string& type, const std::string& condition) {
+bool Server::addNode(const CharacterId& characterId, int32_t parentNodeId, const std::string& name, const std::string& type, const std::string& condition) {
 	Zone* zone = _zone;
 	if (zone == nullptr) {
 		return false;
@@ -397,7 +396,7 @@ inline bool Server::addNode(const CharacterId& characterId, int32_t parentNodeId
 	return true;
 }
 
-inline bool Server::deleteNode(const CharacterId& characterId, int32_t nodeId) {
+bool Server::deleteNode(const CharacterId& characterId, int32_t nodeId) {
 	Zone* zone = _zone;
 	if (zone == nullptr) {
 		return false;
@@ -422,28 +421,28 @@ inline bool Server::deleteNode(const CharacterId& characterId, int32_t nodeId) {
 	return true;
 }
 
-inline void Server::addZone(Zone* zone) {
+void Server::addZone(Zone* zone) {
 	Event event;
 	event.type = EV_ZONEADD;
 	event.data.zone = zone;
 	enqueueEvent(event);
 }
 
-inline void Server::removeZone(Zone* zone) {
+void Server::removeZone(Zone* zone) {
 	Event event;
 	event.type = EV_ZONEREMOVE;
 	event.data.zone = zone;
 	enqueueEvent(event);
 }
 
-inline void Server::setDebug(const std::string& zoneName) {
+void Server::setDebug(const std::string& zoneName) {
 	Event event;
 	event.type = EV_SETDEBUG;
 	event.strData = zoneName;
 	enqueueEvent(event);
 }
 
-inline void Server::reset() {
+void Server::reset() {
 	Zone* zone = _zone;
 	if (zone == nullptr) {
 		return;
@@ -454,28 +453,28 @@ inline void Server::reset() {
 	enqueueEvent(event);
 }
 
-inline void Server::select(const ClientId& /*clientId*/, const CharacterId& id) {
+void Server::select(const ClientId& /*clientId*/, const CharacterId& id) {
 	Event event;
 	event.type = EV_SELECTION;
 	event.data.characterId = id;
 	enqueueEvent(event);
 }
 
-inline void Server::pause(const ClientId& /*clientId*/, bool state) {
+void Server::pause(const ClientId& /*clientId*/, bool state) {
 	Event event;
 	event.type = EV_PAUSE;
 	event.data.pauseState = state;
 	enqueueEvent(event);
 }
 
-inline void Server::step(int64_t stepMillis) {
+void Server::step(int64_t stepMillis) {
 	Event event;
 	event.type = EV_STEP;
 	event.data.stepMillis = stepMillis;
 	enqueueEvent(event);
 }
 
-inline void Server::update(int64_t deltaTime) {
+void Server::update(int64_t deltaTime) {
 	_time += deltaTime;
 	const int clients = _network.getConnectedClients();
 	Zone* zone = _zone;

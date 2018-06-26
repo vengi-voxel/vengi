@@ -17,7 +17,7 @@
 #include "ProtocolHandlerRegistry.h"
 #include "conditions/ConditionParser.h"
 #include "tree/TreeNodeParser.h"
-#include "tree/TreeNodeImpl.h"
+#include "tree/TreeNode.h"
 
 namespace ai {
 
