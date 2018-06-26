@@ -72,8 +72,8 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 	{
 		std::unique_lock<std::mutex> lock(_queueMutex);
 		_tasks.emplace([task]() {(*task)();});
-		_condition.notify_one();
 	}
+	_condition.notify_one();
 	return res;
 }
 
