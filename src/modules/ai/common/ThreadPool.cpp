@@ -7,8 +7,7 @@
 namespace ai {
 
 // the constructor just launches some amount of workers
-ThreadPool::ThreadPool(size_t threads) :
-		_stop(false) {
+ThreadPool::ThreadPool(size_t threads) {
 	_workers.reserve(threads);
 	for (size_t i = 0; i < threads; ++i) {
 		_workers.emplace_back([this, i] {
@@ -18,7 +17,7 @@ ThreadPool::ThreadPool(size_t threads) :
 				std::function<void()> task;
 				{
 					std::unique_lock<std::mutex> lock(this->_queueMutex);
-					this->_condition.wait(lock, [this] {
+					this->_queueCondition.wait(lock, [this] {
 						return this->_stop || !this->_tasks.empty();
 					});
 					if (this->_stop && this->_tasks.empty()) {
@@ -36,9 +35,11 @@ ThreadPool::ThreadPool(size_t threads) :
 
 ThreadPool::~ThreadPool() {
 	_stop = true;
-	_condition.notify_all();
-	for (std::thread &worker : _workers)
+	_queueCondition.notify_all();
+	for (std::thread &worker : _workers) {
 		worker.join();
+	}
+	_workers.clear();
 }
 
 }
