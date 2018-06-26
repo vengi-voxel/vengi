@@ -16,7 +16,7 @@
 #include "ICharacter.h"
 #include "group/GroupMgr.h"
 #include "common/Thread.h"
-#include "common/ThreadPool.h"
+#include "core/ThreadPool.h"
 #include "common/Types.h"
 #include "common/ExecutionTime.h"
 #include <unordered_map>
@@ -55,7 +55,7 @@ protected:
 	ReadWriteLock _lock {"zone"};
 	ReadWriteLock _scheduleLock {"zone-schedulelock"};
 	ai::GroupMgr _groupManager;
-	mutable ThreadPool _threadPool;
+	mutable core::ThreadPool _threadPool;
 
 	/**
 	 * @brief called in the zone update to add new @c AI instances.
@@ -80,9 +80,12 @@ protected:
 public:
 	Zone(const std::string& name, int threadCount = std::min(1u, std::thread::hardware_concurrency())) :
 			_name(name), _debug(false), _threadPool(threadCount) {
+		_threadPool.init();
 	}
 
-	virtual ~Zone() {}
+	virtual ~Zone() {
+		_threadPool.shutdown();
+	}
 
 	/**
 	 * @brief Update all the @c ICharacter and @c AI instances in this zone.
