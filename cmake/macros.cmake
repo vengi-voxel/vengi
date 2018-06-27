@@ -75,6 +75,7 @@ macro(generate_shaders TARGET)
 			convert_to_camel_case(${_file} _f)
 			set(_shaderheaderpath "${GEN_DIR}${_f}Shader.h")
 			set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
+			# TODO We have to add the shader/ dirs of all dependencies to the include path
 			add_custom_command(
 				OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in
 				IMPLICIT_DEPENDS C ${_shaders}
@@ -140,6 +141,7 @@ macro(generate_compute_shaders TARGET)
 			convert_to_camel_case(${_file} _f)
 			set(_shaderfile "${_f}Shader.h")
 			set(_shader "${GEN_DIR}${_shaderfile}")
+			# TODO We have to add the shader/ dirs of all dependencies to the include path
 			add_custom_command(
 				OUTPUT ${_shader}.in
 				IMPLICIT_DEPENDS C ${_shaders}
