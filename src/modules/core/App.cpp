@@ -319,16 +319,7 @@ AppState App::onInit() {
 			flagsMask = (int32_t)flagsMaskFromFile;
 		}
 
-		// environment variables have higher priority than config file values
-		const char* envValue = SDL_getenv(name.c_str());
-		if (envValue == nullptr) {
-			const std::string& upper = string::toUpper(name);
-			envValue = SDL_getenv(upper.c_str());
-		}
-		if (envValue == nullptr) {
-			envValue = value.c_str();
-		}
-		core::Var::get(name, envValue, flagsMask);
+		core::Var::get(name, value.c_str(), flagsMask);
 	}
 
 	Log::init();

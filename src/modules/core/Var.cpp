@@ -55,7 +55,18 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags) {
 		if (value == nullptr) {
 			return VarPtr();
 		}
-		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flagsMask);
+
+		// environment variables have higher priority than config file values
+		const char* envValue = SDL_getenv(name.c_str());
+		if (envValue == nullptr) {
+			const std::string& upper = string::toUpper(name);
+			envValue = SDL_getenv(upper.c_str());
+		}
+		if (envValue == nullptr) {
+			envValue = value;
+		}
+
+		const VarPtr& p = std::make_shared<make_shared_enabler>(name, envValue, flagsMask);
 		ScopedWriteLock lock(_lock);
 		_vars[name] = p;
 		return p;
