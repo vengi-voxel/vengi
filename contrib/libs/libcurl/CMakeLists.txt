@@ -98,7 +98,7 @@ if (NOT CURL_FOUND)
 
 	include(CurlSymbolHiding)
 
-	option(HTTP_ONLY "disables all protocols except HTTP (This overrides all CURL_DISABLE_* options)" ON)
+	option(HTTP_ONLY "disables all protocols except HTTP (This overrides all CURL_DISABLE_* options)" OFF)
 	mark_as_advanced(HTTP_ONLY)
 	set(CURL_DISABLE_FTP ON)
 	set(CURL_DISABLE_LDAP ON)
@@ -110,7 +110,7 @@ if (NOT CURL_FOUND)
 	set(CURL_DISABLE_RTSP ON)
 	set(CURL_DISABLE_POP3 ON)
 	set(CURL_DISABLE_IMAP ON)
-	set(CURL_DISABLE_SMTP ON)
+	set(CURL_DISABLE_SMTP OFF)
 	set(CURL_DISABLE_GOPHER ON)
 
 	option(CURL_DISABLE_COOKIES "to disable cookies support" OFF)
