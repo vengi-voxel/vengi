@@ -23,7 +23,7 @@ set(SRCS
 	Timestamp.cpp Timestamp.h
 )
 
-set(PostgreSQL_ADDITIONAL_VERSIONS "10")
+set(PostgreSQL_ADDITIONAL_VERSIONS "10;10.4")
 find_package(PostgreSQL)
 message(STATUS "Postgresql include dirs: ${PostgreSQL_INCLUDE_DIRS}")
 message(STATUS "Postgresql libs: ${PostgreSQL_LIBRARIES}")

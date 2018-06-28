@@ -92,10 +92,11 @@ bool Connection::connect() {
 #endif
 	PQinitSSL(1);
 	_connection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), nullptr, dbname, user, password);
+	Log::debug("Database connection %p", _connection);
 #else
 	_connection = nullptr;
+	Log::warn("No postgres support compiled in");
 #endif
-	Log::debug("Database connection %p", _connection);
 	if (!status()) {
 #ifdef HAVE_POSTGRES
 		Log::error("Connection to database failed: '%s'", PQerrorMessage(_connection));

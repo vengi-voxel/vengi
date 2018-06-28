@@ -37,7 +37,11 @@ bool ConnectionPool::init() {
 		addConnection();
 	}
 
-	return _connectionAmount > 0;
+	if (_connectionAmount > 0) {
+		return true;
+	}
+	Log::error("Failed to connect to %s@%s to database %s", _dbUser->strVal().c_str(), _dbHost->strVal().c_str(), _dbName->strVal().c_str());
+	return false;
 }
 
 void ConnectionPool::shutdown() {
