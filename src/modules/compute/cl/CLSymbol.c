@@ -5,6 +5,7 @@
 #include <SDL.h>
 #include <SDL_platform.h>
 #include <stdio.h>
+#include <string.h>
 
 #if defined(__LINUX__) || defined(__ANDROID__)
 #include <dirent.h>
