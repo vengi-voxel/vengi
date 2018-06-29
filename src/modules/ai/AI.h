@@ -201,13 +201,6 @@ inline TreeNodePtr AI::getBehaviour() const {
 	return _behaviour;
 }
 
-inline TreeNodePtr AI::setBehaviour(const TreeNodePtr& newBehaviour) {
-	TreeNodePtr current = _behaviour;
-	_behaviour = newBehaviour;
-	_reset = true;
-	return current;
-}
-
 inline void AI::setPause(bool pause) {
 	_pause = pause;
 }
@@ -270,29 +263,6 @@ inline CharacterId AI::getId() const {
 		return AI_NOTHING_SELECTED;
 	}
 	return _character->getId();
-}
-
-inline void AI::update(int64_t dt, bool debuggingActive) {
-	if (isPause()) {
-		return;
-	}
-
-	if (_character) {
-		_character->update(dt, debuggingActive);
-	}
-
-	if (_reset) {
-		// safe to do it like this, because update is not called from multiple threads
-		_reset = false;
-		_lastStatus.clear();
-		_lastExecMillis.clear();
-		_filteredEntities.clear();
-		_selectorStates.clear();
-	}
-
-	_debuggingActive = debuggingActive;
-	_time += dt;
-	_aggroMgr.update(dt);
 }
 
 typedef std::shared_ptr<AI> AIPtr;

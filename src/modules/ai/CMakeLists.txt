@@ -1,7 +1,7 @@
 set(SRCS
-	aggro/AggroMgr.h
+	aggro/AggroMgr.h aggro/AggroMgr.cpp
 	aggro/Entry.h
-	AI.h
+	AI.h AI.cpp
 	AIFactories.h
 	AIRegistry.h AIRegistry.cpp
 	common/IFactoryRegistry.h
@@ -44,7 +44,7 @@ set(SRCS
 	IAIFactory.h
 	ICharacter.h
 	group/GroupId.h
-	group/GroupMgr.h
+	group/GroupMgr.h group/GroupMgr.cpp
 	movement/SelectionSeek.h
 	movement/GroupFlee.h
 	movement/GroupSeek.h
@@ -79,7 +79,7 @@ set(SRCS
 	server/Server.h server/Server.cpp
 	server/StepHandler.h
 	server/UpdateNodeHandler.h
-	zone/Zone.h
+	zone/Zone.h zone/Zone.cpp
 	SimpleAI.h
 	tree/Fail.h
 	tree/Limit.h

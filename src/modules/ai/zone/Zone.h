@@ -171,15 +171,7 @@ public:
 	 *
 	 * @note This locks the zone for reading to perform the CharacterId lookup
 	 */
-	inline AIPtr getAI(CharacterId id) const {
-		ScopedReadLock scopedLock(_lock);
-		auto i = _ais.find(id);
-		if (i == _ais.end()) {
-			return AIPtr();
-		}
-		const AIPtr& ai = i->second;
-		return ai;
-	}
+	AIPtr getAI(CharacterId id) const;
 
 	/**
 	 * @brief Executes a lambda or functor for the given character
@@ -328,10 +320,7 @@ public:
 		}
 	}
 
-	inline std::size_t size() const {
-		ScopedReadLock scopedLock(_lock);
-		return _ais.size();
-	}
+	std::size_t size() const;
 };
 
 inline void Zone::setDebug (bool debug) {
@@ -352,104 +341,6 @@ inline GroupMgr& Zone::getGroupMgr() {
 
 inline const GroupMgr& Zone::getGroupMgr() const {
 	return _groupManager;
-}
-
-inline bool Zone::doAddAI(const AIPtr& ai) {
-	if (ai == nullptr) {
-		return false;
-	}
-	const CharacterId& id = ai->getCharacter()->getId();
-	if (_ais.find(id) != _ais.end()) {
-		return false;
-	}
-	_ais.insert(std::make_pair(id, ai));
-	ai->setZone(this);
-	return true;
-}
-
-inline bool Zone::doRemoveAI(const AIPtr& ai) {
-	if (!ai) {
-		return false;
-	}
-	const CharacterId& id = ai->getCharacter()->getId();
-	AIMapIter i = _ais.find(id);
-	if (i == _ais.end()) {
-		return false;
-	}
-	i->second->setZone(nullptr);
-	_groupManager.removeFromAllGroups(i->second);
-	_ais.erase(i);
-	return true;
-}
-
-inline bool Zone::doDestroyAI(const CharacterId& id) {
-	AIMapIter i = _ais.find(id);
-	if (i == _ais.end()) {
-		return false;
-	}
-	_ais.erase(i);
-	return true;
-}
-
-inline bool Zone::addAI(const AIPtr& ai) {
-	if (!ai) {
-		return false;
-	}
-	ScopedWriteLock scopedLock(_scheduleLock);
-	_scheduledAdd.push_back(ai);
-	return true;
-}
-
-inline bool Zone::destroyAI(const CharacterId& id) {
-	ScopedWriteLock scopedLock(_scheduleLock);
-	_scheduledDestroy.push_back(id);
-	return true;
-}
-
-inline bool Zone::removeAI(const AIPtr& ai) {
-	if (!ai) {
-		return false;
-	}
-	ScopedWriteLock scopedLock(_scheduleLock);
-	_scheduledRemove.push_back(ai);
-	return true;
-}
-
-inline void Zone::update(int64_t dt) {
-	{
-		AIScheduleList scheduledRemove;
-		AIScheduleList scheduledAdd;
-		CharacterIdList scheduledDestroy;
-		{
-			ScopedWriteLock scopedLock(_scheduleLock);
-			scheduledAdd.swap(_scheduledAdd);
-			scheduledRemove.swap(_scheduledRemove);
-			scheduledDestroy.swap(_scheduledDestroy);
-		}
-		ScopedWriteLock scopedLock(_lock);
-		for (const AIPtr& ai : scheduledAdd) {
-			doAddAI(ai);
-		}
-		scheduledAdd.clear();
-		for (const AIPtr& ai : scheduledRemove) {
-			doRemoveAI(ai);
-		}
-		scheduledRemove.clear();
-		for (auto id : scheduledDestroy) {
-			doDestroyAI(id);
-		}
-		scheduledDestroy.clear();
-	}
-
-	auto func = [&] (const AIPtr& ai) {
-		if (ai->isPause()) {
-			return;
-		}
-		ai->update(dt, _debug);
-		ai->getBehaviour()->execute(ai, dt);
-	};
-	executeParallel(func);
-	_groupManager.update(dt);
 }
 
 }
