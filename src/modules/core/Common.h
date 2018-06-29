@@ -70,6 +70,14 @@
 #define core_zerop SDL_zerop
 #endif
 
+#if (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 800)) || defined(__clang__) || (defined(__GNUC__) && (__GNUC__ >= 3))
+#define CORE_EXPECT(expr, value) (__builtin_expect((expr), (value)))
+#else
+#define CORE_EXPECT(expr, value) (expr)
+#endif
+#define core_likely(expr) CORE_EXPECT((expr) != 0, 1)
+#define core_unlikely(expr) CORE_EXPECT((expr) != 0, 0)
+
 #define MAKE_SHARED_INVIS_CTOR(classname) \
 	struct make_shared_enabler: public classname { \
 		template<typename ... Args> \
