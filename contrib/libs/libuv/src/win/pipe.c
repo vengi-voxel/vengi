@@ -21,7 +21,6 @@
 
 #include <assert.h>
 #include <io.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1294,7 +1293,7 @@ static int uv__pipe_write_data(uv_loop_t* loop,
                                size_t nbufs,
                                uv_stream_t* send_handle,
                                uv_write_cb cb,
-                               bool copy_always) {
+                               int copy_always) {
   int err;
   int result;
   uv_buf_t write_buf;
@@ -1536,7 +1535,7 @@ int uv__pipe_write_ipc(uv_loop_t* loop,
   /* Write buffers. We set the `always_copy` flag, so it is not a problem that
    * some of the written data lives on the stack. */
   err = uv__pipe_write_data(
-      loop, req, handle, bufs, buf_count, send_handle, cb, true);
+      loop, req, handle, bufs, buf_count, send_handle, cb, 1);
 
   /* If we had to heap-allocate the bufs array, free it now. */
   if (bufs != stack_bufs) {
@@ -1561,7 +1560,7 @@ int uv__pipe_write(uv_loop_t* loop,
     /* Non-IPC pipe write: put data on the wire directly. */
     assert(send_handle == NULL);
     return uv__pipe_write_data(
-        loop, req, handle, bufs, nbufs, NULL, cb, false);
+        loop, req, handle, bufs, nbufs, NULL, cb, 0);
   }
 }
 
@@ -1658,7 +1657,8 @@ static DWORD uv__pipe_read_data(uv_loop_t* loop,
    *   (a) the length of the user-allocated buffer.
    *   (b) the maximum data length as specified by the `max_bytes` argument.
    */
-  max_bytes = min(buf.len, max_bytes);
+  if (max_bytes > buf.len)
+    max_bytes = buf.len;
 
   /* Read into the user buffer. */
   if (!ReadFile(handle->handle, buf.base, max_bytes, &bytes_read, NULL)) {
@@ -1674,7 +1674,7 @@ static DWORD uv__pipe_read_data(uv_loop_t* loop,
 
 
 static DWORD uv__pipe_read_ipc(uv_loop_t* loop, uv_pipe_t* handle) {
-  DWORD* data_remaining = &handle->pipe.conn.ipc_data_frame.payload_remaining;
+  uint32_t* data_remaining = &handle->pipe.conn.ipc_data_frame.payload_remaining;
   int err;
 
   if (*data_remaining > 0) {

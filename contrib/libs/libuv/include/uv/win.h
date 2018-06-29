@@ -53,13 +53,13 @@ typedef struct pollfd {
 #include <sys/stat.h>
 
 #if defined(_MSC_VER) && _MSC_VER < 1600
-# include "stdint-msvc2008.h"
+# include "uv/stdint-msvc2008.h"
 #else
 # include <stdint.h>
 #endif
 
-#include "tree.h"
-#include "uv-threadpool.h"
+#include "uv/tree.h"
+#include "uv/threadpool.h"
 
 #define MAX_PIPENAME_LEN 256
 
@@ -308,8 +308,6 @@ typedef struct {
   char* errmsg;
 } uv_lib_t;
 
-RB_HEAD(uv_timer_tree_s, uv_timer_s);
-
 #define UV_LOOP_PRIVATE_FIELDS                                                \
     /* The loop's I/O completion port */                                      \
   HANDLE iocp;                                                                \
@@ -321,8 +319,8 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
   uv_req_t* pending_reqs_tail;                                                \
   /* Head of a single-linked list of closed handles */                        \
   uv_handle_t* endgame_handles;                                               \
-  /* The head of the timers tree */                                           \
-  struct uv_timer_tree_s timers;                                              \
+  /* TODO(bnoordhuis) Stop heap-allocating |timer_heap| in libuv v2.x. */     \
+  void* timer_heap;                                                           \
     /* Lists of active loop (prepare / check / idle) watchers */              \
   uv_prepare_t* prepare_handles;                                              \
   uv_check_t* check_handles;                                                  \
@@ -529,8 +527,9 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
   unsigned char events;
 
 #define UV_TIMER_PRIVATE_FIELDS                                               \
-  RB_ENTRY(uv_timer_s) tree_entry;                                            \
-  uint64_t due;                                                               \
+  void* heap_node[3];                                                         \
+  int unused;                                                                 \
+  uint64_t timeout;                                                           \
   uint64_t repeat;                                                            \
   uint64_t start_id;                                                          \
   uv_timer_cb timer_cb;

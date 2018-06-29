@@ -25,7 +25,7 @@
 #include "uv.h"
 #include "../uv-common.h"
 
-#include "tree.h"
+#include "uv/tree.h"
 #include "winapi.h"
 #include "winsock.h"
 
@@ -244,15 +244,6 @@ void uv_process_poll_req(uv_loop_t* loop, uv_poll_t* handle,
 
 int uv_poll_close(uv_loop_t* loop, uv_poll_t* handle);
 void uv_poll_endgame(uv_loop_t* loop, uv_poll_t* handle);
-
-
-/*
- * Timers
- */
-void uv_timer_endgame(uv_loop_t* loop, uv_timer_t* handle);
-
-DWORD uv__next_timeout(const uv_loop_t* loop);
-void uv_process_timers(uv_loop_t* loop);
 
 
 /*

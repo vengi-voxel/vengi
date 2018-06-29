@@ -3,14 +3,15 @@ set(LIB libuv)
 include_directories(include src)
 set(SOURCES
 	include/uv.h
-	include/tree.h
-	include/uv-errno.h
-	include/uv-threadpool.h
-	include/uv-version.h
+	include/uv/tree.h
+	include/uv/errno.h
+	include/uv/threadpool.h
+	include/uv/version.h
 	src/fs-poll.c
 	src/heap-inl.h
 	src/inet.c
 	src/queue.h
+	src/timer.c
 	src/threadpool.c
 	src/uv-common.c
 	src/uv-common.h
@@ -21,7 +22,7 @@ set(SOURCES
 if(WIN32)
 	add_definitions(-D_WIN32_WINNT=0x0600 -D_GNU_SOURCE -D_CRT_SECURE_NO_WARNINGS)
 	set (SOURCES ${SOURCES}
-		include/uv-win.h
+		include/uv/win.h
 		src/win/async.c
 		src/win/atomicops-inl.h
 		src/win/core.c
@@ -66,12 +67,12 @@ else()
 	add_definitions(-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64)
 	include_directories(src/unix)
 	set(SOURCES ${SOURCES}
-		include/uv-unix.h
-		include/uv-linux.h
-		include/uv-sunos.h
-		include/uv-darwin.h
-		include/uv-bsd.h
-		include/uv-aix.h
+		include/uv/unix.h
+		include/uv/linux.h
+		include/uv/sunos.h
+		include/uv/darwin.h
+		include/uv/bsd.h
+		include/uv/aix.h
 		src/unix/async.c
 		src/unix/atomic-ops.h
 		src/unix/core.c
@@ -90,7 +91,6 @@ else()
 		src/unix/stream.c
 		src/unix/tcp.c
 		src/unix/thread.c
-		src/unix/timer.c
 		src/unix/tty.c
 		src/unix/udp.c
 	)
@@ -166,7 +166,7 @@ else()
 
 	if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
 		set (SOURCES ${SOURCES}
-			include/android-ifaddrs.h
+			include/uv/android-ifaddrs.h
 			src/unix/android-ifaddrs.c
 		)
 	endif()

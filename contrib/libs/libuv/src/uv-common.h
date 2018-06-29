@@ -32,13 +32,13 @@
 #include <stddef.h>
 
 #if defined(_MSC_VER) && _MSC_VER < 1600
-# include "stdint-msvc2008.h"
+# include "uv/stdint-msvc2008.h"
 #else
 # include <stdint.h>
 #endif
 
 #include "uv.h"
-#include "tree.h"
+#include "uv/tree.h"
 #include "queue.h"
 
 #if EDOM > 0
@@ -131,6 +131,10 @@ size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
 int uv__socket_sockopt(uv_handle_t* handle, int optname, int* value);
 
 void uv__fs_scandir_cleanup(uv_fs_t* req);
+
+int uv__next_timeout(const uv_loop_t* loop);
+void uv__run_timers(uv_loop_t* loop);
+void uv__timer_close(uv_timer_t* handle);
 
 #define uv__has_active_reqs(loop)                                             \
   ((loop)->active_reqs.count > 0)
