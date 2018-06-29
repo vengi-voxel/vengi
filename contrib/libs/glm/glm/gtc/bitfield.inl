@@ -334,20 +334,20 @@ namespace detail
 		uint16 REG1(x);
 		uint16 REG2(x >>= 1);
 
-		REG1 = REG1 & static_cast<uint16>(0x5555555555555555ull);
-		REG2 = REG2 & static_cast<uint16>(0x5555555555555555ull);
+		REG1 = REG1 & static_cast<uint16>(0x5555);
+		REG2 = REG2 & static_cast<uint16>(0x5555);
 
-		REG1 = ((REG1 >> 1) | REG1) & static_cast<uint16>(0x3333333333333333ull);
-		REG2 = ((REG2 >> 1) | REG2) & static_cast<uint16>(0x3333333333333333ull);
+		REG1 = ((REG1 >> 1) | REG1) & static_cast<uint16>(0x3333);
+		REG2 = ((REG2 >> 1) | REG2) & static_cast<uint16>(0x3333);
 
-		REG1 = ((REG1 >> 2) | REG1) & static_cast<uint16>(0x0F0F0F0F0F0F0F0Full);
-		REG2 = ((REG2 >> 2) | REG2) & static_cast<uint16>(0x0F0F0F0F0F0F0F0Full);
+		REG1 = ((REG1 >> 2) | REG1) & static_cast<uint16>(0x0F0F);
+		REG2 = ((REG2 >> 2) | REG2) & static_cast<uint16>(0x0F0F);
 
-		REG1 = ((REG1 >> 4) | REG1) & static_cast<uint16>(0x00FF00FF00FF00FFull);
-		REG2 = ((REG2 >> 4) | REG2) & static_cast<uint16>(0x00FF00FF00FF00FFull);
+		REG1 = ((REG1 >> 4) | REG1) & static_cast<uint16>(0x00FF);
+		REG2 = ((REG2 >> 4) | REG2) & static_cast<uint16>(0x00FF);
 
-		REG1 = ((REG1 >> 8) | REG1) & static_cast<uint16>(0x0000FFFF0000FFFFull);
-		REG2 = ((REG2 >> 8) | REG2) & static_cast<uint16>(0x0000FFFF0000FFFFull);
+		REG1 = ((REG1 >> 8) | REG1) & static_cast<uint16>(0xFFFF);
+		REG2 = ((REG2 >> 8) | REG2) & static_cast<uint16>(0xFFFF);
 
 		return glm::u8vec2(REG1, REG2);
 	}
@@ -388,20 +388,20 @@ namespace detail
 		glm::uint32 REG1(x);
 		glm::uint32 REG2(x >>= 1);
 
-		REG1 = REG1 & static_cast<glm::uint32>(0x5555555555555555ull);
-		REG2 = REG2 & static_cast<glm::uint32>(0x5555555555555555ull);
+		REG1 = REG1 & static_cast<glm::uint32>(0x55555555);
+		REG2 = REG2 & static_cast<glm::uint32>(0x55555555);
 
-		REG1 = ((REG1 >> 1) | REG1) & static_cast<glm::uint32>(0x3333333333333333ull);
-		REG2 = ((REG2 >> 1) | REG2) & static_cast<glm::uint32>(0x3333333333333333ull);
+		REG1 = ((REG1 >> 1) | REG1) & static_cast<glm::uint32>(0x33333333);
+		REG2 = ((REG2 >> 1) | REG2) & static_cast<glm::uint32>(0x33333333);
 
-		REG1 = ((REG1 >> 2) | REG1) & static_cast<glm::uint32>(0x0F0F0F0F0F0F0F0Full);
-		REG2 = ((REG2 >> 2) | REG2) & static_cast<glm::uint32>(0x0F0F0F0F0F0F0F0Full);
+		REG1 = ((REG1 >> 2) | REG1) & static_cast<glm::uint32>(0x0F0F0F0F);
+		REG2 = ((REG2 >> 2) | REG2) & static_cast<glm::uint32>(0x0F0F0F0F);
 
-		REG1 = ((REG1 >> 4) | REG1) & static_cast<glm::uint32>(0x00FF00FF00FF00FFull);
-		REG2 = ((REG2 >> 4) | REG2) & static_cast<glm::uint32>(0x00FF00FF00FF00FFull);
+		REG1 = ((REG1 >> 4) | REG1) & static_cast<glm::uint32>(0x00FF00FF);
+		REG2 = ((REG2 >> 4) | REG2) & static_cast<glm::uint32>(0x00FF00FF);
 
-		REG1 = ((REG1 >> 8) | REG1) & static_cast<glm::uint32>(0x0000FFFF0000FFFFull);
-		REG2 = ((REG2 >> 8) | REG2) & static_cast<glm::uint32>(0x0000FFFF0000FFFFull);
+		REG1 = ((REG1 >> 8) | REG1) & static_cast<glm::uint32>(0x0000FFFF);
+		REG2 = ((REG2 >> 8) | REG2) & static_cast<glm::uint32>(0x0000FFFF);
 
 		return glm::u16vec2(REG1, REG2);
 	}
