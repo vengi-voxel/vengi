@@ -53,6 +53,7 @@ struct ChunkMeshes {
 typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
 
 /**
+ * @brief The WorldMgr class is responsible to maintaining the voxel volumes and handle the needed mesh extraction
  * @ingroup Voxel
  */
 class WorldMgr {
@@ -139,6 +140,7 @@ public:
 
 	/**
 	 * @brief We need to pop the mesh extractor queue to find out if there are new and ready to use meshes for us
+	 * @return @c false if this isn't the case, @c true if the given reference was filled with valid data.
 	 */
 	bool pop(ChunkMeshes& item);
 
