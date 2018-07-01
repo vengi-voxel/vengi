@@ -233,6 +233,7 @@ inline void WorldMgr::setPersist(bool persist) {
 inline long WorldMgr::seed() const {
 	return _seed;
 }
+
 inline BiomeManager& WorldMgr::biomeManager() {
 	return _biomeManager;
 }
