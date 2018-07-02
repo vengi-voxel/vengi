@@ -155,7 +155,7 @@ update-simplexnoise:
 update-curl:
 	$(call UPDATE_GIT,curl,https://github.com/curl/curl.git)
 	cp $(UPDATEDIR)/curl.sync/lib/*.[ch]* contrib/libs/libcurl/lib
-	cp -r $(UPDATEDIR)/curl.sync/CMake/* contrib/libs/libcurl/cmake
+	cp -r $(UPDATEDIR)/curl.sync/CMake/* contrib/libs/libcurl/CMake
 	cp $(UPDATEDIR)/curl.sync/lib/vauth/*.[ch]* contrib/libs/libcurl/lib/vauth
 	cp $(UPDATEDIR)/curl.sync/lib/vtls/*.[ch]* contrib/libs/libcurl/lib/vtls
 	cp $(UPDATEDIR)/curl.sync/include/curl/*.[ch]* contrib/libs/libcurl/include/curl
