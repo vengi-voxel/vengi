@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -51,7 +51,7 @@
 #include "warnless.h"
 
 /* Convenience local macros */
-#define ELAPSED_MS()  (int)curlx_tvdiff(curlx_tvnow(), initial_tv)
+#define ELAPSED_MS() (int)Curl_timediff(Curl_now(), initial_tv)
 
 int Curl_ack_eintr = 0;
 #define ERROR_NOT_EINTR(error) (Curl_ack_eintr || error != EINTR)
@@ -78,9 +78,8 @@ int Curl_wait_ms(int timeout_ms)
 #ifndef HAVE_POLL_FINE
   struct timeval pending_tv;
 #endif
-  struct timeval initial_tv;
+  struct curltime initial_tv;
   int pending_ms;
-  int error;
 #endif
   int r = 0;
 
@@ -96,8 +95,9 @@ int Curl_wait_ms(int timeout_ms)
   Sleep(timeout_ms);
 #else
   pending_ms = timeout_ms;
-  initial_tv = curlx_tvnow();
+  initial_tv = Curl_now();
   do {
+    int error;
 #if defined(HAVE_POLL_FINE)
     r = poll(NULL, 0, pending_ms);
 #else
@@ -129,7 +129,7 @@ int Curl_wait_ms(int timeout_ms)
  * and a file descriptor is too large for FD_SETSIZE.
  *
  * A negative timeout value makes this function wait indefinitely,
- * unles no valid file descriptor is given, when this happens the
+ * unless no valid file descriptor is given, when this happens the
  * negative timeout is ignored and the function times out immediately.
  *
  * Return values:
@@ -158,13 +158,12 @@ int Curl_socket_check(curl_socket_t readfd0, /* two sockets to read from */
   fd_set fds_err;
   curl_socket_t maxfd;
 #endif
-  struct timeval initial_tv = {0, 0};
+  struct curltime initial_tv = {0, 0};
   int pending_ms = 0;
-  int error;
   int r;
   int ret;
 
-#if SIZEOF_LONG != SIZEOF_INT
+#if SIZEOF_TIME_T != SIZEOF_INT
   /* wrap-around precaution */
   if(timeout_ms >= INT_MAX)
     timeout_ms = INT_MAX;
@@ -177,14 +176,14 @@ int Curl_socket_check(curl_socket_t readfd0, /* two sockets to read from */
     return r;
   }
 
-  /* Avoid initial timestamp, avoid curlx_tvnow() call, when elapsed
+  /* Avoid initial timestamp, avoid Curl_now() call, when elapsed
      time in this function does not need to be measured. This happens
      when function is called with a zero timeout or a negative timeout
      value indicating a blocking call should be performed. */
 
   if(timeout_ms > 0) {
     pending_ms = (int)timeout_ms;
-    initial_tv = curlx_tvnow();
+    initial_tv = Curl_now();
   }
 
 #ifdef HAVE_POLL_FINE
@@ -210,6 +209,7 @@ int Curl_socket_check(curl_socket_t readfd0, /* two sockets to read from */
   }
 
   do {
+    int error;
     if(timeout_ms < 0)
       pending_ms = -1;
     else if(!timeout_ms)
@@ -291,6 +291,7 @@ int Curl_socket_check(curl_socket_t readfd0, /* two sockets to read from */
   ptimeout = (timeout_ms < 0) ? NULL : &pending_tv;
 
   do {
+    int error;
     if(timeout_ms > 0) {
       pending_tv.tv_sec = pending_ms / 1000;
       pending_tv.tv_usec = (pending_ms % 1000) * 1000;
@@ -380,7 +381,7 @@ int Curl_socket_check(curl_socket_t readfd0, /* two sockets to read from */
  * select() is used instead.  An error is returned if select() is
  * being used and a file descriptor is too large for FD_SETSIZE.
  * A negative timeout value makes this function wait indefinitely,
- * unles no valid file descriptor is given, when this happens the
+ * unless no valid file descriptor is given, when this happens the
  * negative timeout is ignored and the function times out immediately.
  *
  * Return values:
@@ -398,11 +399,10 @@ int Curl_poll(struct pollfd ufds[], unsigned int nfds, int timeout_ms)
   fd_set fds_err;
   curl_socket_t maxfd;
 #endif
-  struct timeval initial_tv = {0, 0};
+  struct curltime initial_tv = {0, 0};
   bool fds_none = TRUE;
   unsigned int i;
   int pending_ms = 0;
-  int error;
   int r;
 
   if(ufds) {
@@ -418,19 +418,20 @@ int Curl_poll(struct pollfd ufds[], unsigned int nfds, int timeout_ms)
     return r;
   }
 
-  /* Avoid initial timestamp, avoid curlx_tvnow() call, when elapsed
+  /* Avoid initial timestamp, avoid Curl_now() call, when elapsed
      time in this function does not need to be measured. This happens
      when function is called with a zero timeout or a negative timeout
      value indicating a blocking call should be performed. */
 
   if(timeout_ms > 0) {
     pending_ms = timeout_ms;
-    initial_tv = curlx_tvnow();
+    initial_tv = Curl_now();
   }
 
 #ifdef HAVE_POLL_FINE
 
   do {
+    int error;
     if(timeout_ms < 0)
       pending_ms = -1;
     else if(!timeout_ms)
@@ -502,6 +503,7 @@ int Curl_poll(struct pollfd ufds[], unsigned int nfds, int timeout_ms)
   ptimeout = (timeout_ms < 0) ? NULL : &pending_tv;
 
   do {
+    int error;
     if(timeout_ms > 0) {
       pending_tv.tv_sec = pending_ms / 1000;
       pending_tv.tv_usec = (pending_ms % 1000) * 1000;
@@ -571,8 +573,8 @@ int Curl_poll(struct pollfd ufds[], unsigned int nfds, int timeout_ms)
  *
  * Return values are the same as select's.
  */
-int tpf_select_libcurl(int maxfds, fd_set* reads, fd_set* writes,
-                       fd_set* excepts, struct timeval* tv)
+int tpf_select_libcurl(int maxfds, fd_set *reads, fd_set *writes,
+                       fd_set *excepts, struct timeval *tv)
 {
    int rc;
 
