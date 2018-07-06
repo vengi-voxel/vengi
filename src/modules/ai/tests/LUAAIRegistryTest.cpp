@@ -82,27 +82,27 @@ protected:
 		const ai::TreeNodePtr& node = _registry.createNode(nodeName, ctx);
 		ASSERT_TRUE((bool)node) << "Could not create lua provided node '" << nodeName << "'";
 		const ai::AIPtr& ai = std::make_shared<ai::AI>(node);
-		EXPECT_EQ(1, ai.use_count()) << "We are holding more references than expected. Here should be the old reference at the moment.";
+		EXPECT_EQ(1, ai.use_count()) << "We are holding more references than expected. Here should be the old reference at the moment. Nodename: " << nodeName;
 		ai->setCharacter(_chr);
-		EXPECT_EQ(1, ai.use_count()) << "We are holding more references than expected. Here should be the old reference at the moment.";
+		EXPECT_EQ(1, ai.use_count()) << "We are holding more references than expected. Here should be the old reference at the moment. Nodename: " << nodeName;
 		ASSERT_TRUE(zone.addAI(ai));
-		EXPECT_EQ(2, ai.use_count()) << "We are holding more references than expected. One is here, one should be in the pending zone add queue.";
+		EXPECT_EQ(2, ai.use_count()) << "We are holding more references than expected. One is here, one should be in the pending zone add queue. Nodename: " << nodeName;
 		ai->setPause(true);
 		zone.update(1l);
-		EXPECT_EQ(2, ai.use_count()) << "We are holding more references than expected. One is here, one should be in the zone ai collection.";
+		EXPECT_EQ(2, ai.use_count()) << "We are holding more references than expected. One is here, one should be in the zone ai collection. Nodename: " << nodeName;
 		ai->setPause(false);
 		for (int i = 0; i < n; ++i) {
 			const ai::TreeNodeStatus executionStatus = node->execute(ai, 1L);
-			ASSERT_EQ(status, executionStatus) << "Lua script returned an unexpected TreeNodeStatus value";
+			ASSERT_EQ(status, executionStatus) << "Lua script returned an unexpected TreeNodeStatus value for node: " << nodeName;
 		}
-		ASSERT_TRUE(zone.removeAI(ai));
+		ASSERT_TRUE(zone.removeAI(ai)) << "Nodename: " << nodeName;
 		ai->setPause(true);
 		zone.update(1l);
 		ai->setPause(false);
 		ai->setBehaviour(ai::TreeNodePtr());
-		EXPECT_EQ(1, node.use_count()) << "Someone is still referencing the LUATreeNode";
+		EXPECT_EQ(1, node.use_count()) << "Someone is still referencing the LUATreeNode. Nodename: " << nodeName;
 		lua_gc(_registry.getLuaState(), LUA_GCCOLLECT, 0);
-		EXPECT_EQ(1, ai.use_count()) << "Someone is still referencing the AI instance";
+		EXPECT_EQ(1, ai.use_count()) << "Someone is still referencing the AI instance. Nodename: " << nodeName;
 	}
 };
 
