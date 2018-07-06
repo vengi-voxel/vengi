@@ -52,7 +52,7 @@ __kernel void exampleVectorAddFloat3(__global const float3 *A, __global const fl
 	C[i1] = A[i1] + B[i1];
 }
 
-__kernel void exampleVectorAddFloat3NoPointer(const float3 A, const float3 B, __write_only float3 C) {
+__kernel void exampleVectorAddFloat3NoPointer(const float3 A, const float3 B, float3 C) {
 	int i1 = get_global_id(0);
 }
 
