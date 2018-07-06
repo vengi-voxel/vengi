@@ -35,9 +35,10 @@ Map::Map(MapId mapId,
 		const network::ServerMessageSenderPtr& messageSender,
 		const AILoaderPtr& loader,
 		const attrib::ContainerProviderPtr& containerProvider,
-		const cooldown::CooldownProviderPtr& cooldownProvider) :
+		const cooldown::CooldownProviderPtr& cooldownProvider,
+		const persistence::PersistenceMgrPtr& persistenceMgr) :
 		_mapId(mapId), _mapIdStr(std::to_string(mapId)),
-		_eventBus(eventBus), _filesystem(filesystem), _attackMgr(this),
+		_eventBus(eventBus), _filesystem(filesystem), _persistenceMgr(persistenceMgr), _attackMgr(this),
 		_quadTree(math::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
 	_poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
 	_spawnMgr = std::make_shared<backend::SpawnMgr>(this, filesystem, entityStorage, messageSender,
@@ -46,6 +47,10 @@ Map::Map(MapId mapId,
 
 Map::~Map() {
 	shutdown();
+}
+
+bool Map::getDirtyModels(Models& models) {
+	return false;
 }
 
 bool Map::updateEntity(const EntityPtr& entity, long dt) {

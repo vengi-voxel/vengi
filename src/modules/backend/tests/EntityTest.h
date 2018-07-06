@@ -17,6 +17,7 @@
 #include "backend/entity/ai/AILoader.h"
 #include "backend/entity/EntityStorage.h"
 #include "voxel/MaterialColor.h"
+#include "persistence/tests/Mocks.h"
 
 #pragma once
 
@@ -63,6 +64,7 @@ protected:
 	core::EventBusPtr eventBus;
 	io::FilesystemPtr filesystem;
 	core::TimeProviderPtr timeProvider;
+	persistence::PersistenceMgrPtr persistenceMgr;
 	MapProviderPtr mapProvider;
 	MapPtr map;
 
@@ -84,8 +86,9 @@ protected:
 		filesystem = _testApp->filesystem();
 		eventBus = _testApp->eventBus();
 		timeProvider = _testApp->timeProvider();
+		persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 		mapProvider = std::make_shared<MapProvider>(filesystem, eventBus, timeProvider,
-				entityStorage, messageSender, loader, containerProvider, cooldownProvider);
+				entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr);
 		ASSERT_TRUE(mapProvider->init()) << "Failed to initialize the map provider";
 		map = mapProvider->map(1);
 	}

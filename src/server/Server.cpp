@@ -107,9 +107,10 @@ int main(int argc, char *argv[]) {
 
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
 	const persistence::DBHandlerPtr& dbHandler = std::make_shared<persistence::DBHandler>();
+	const persistence::PersistenceMgrPtr& persistenceMgr = std::make_shared<persistence::PersistenceMgr>(dbHandler);
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(eventBus);
 	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus, timeProvider,
-			entityStorage, messageSender, loader, containerProvider, cooldownProvider);
+			entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr);
 
 	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
@@ -117,7 +118,6 @@ int main(int argc, char *argv[]) {
 	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, registry, eventBus, filesystem);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const backend::MetricMgrPtr& metricMgr = std::make_shared<backend::MetricMgr>(metric, eventBus);
-	const persistence::PersistenceMgrPtr& persistenceMgr = std::make_shared<persistence::PersistenceMgr>(dbHandler);
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(timeProvider, mapProvider,
 			messageSender, world, dbHandler, network, filesystem, entityStorage, eventBus, containerProvider,
 			cooldownProvider, eventMgr, stockDataProvider, metricMgr, persistenceMgr);

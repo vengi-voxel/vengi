@@ -10,6 +10,8 @@
 #include "ai/common/Types.h"
 #include "core/IComponent.h"
 #include "backend/attack/AttackMgr.h"
+#include "persistence/ISavable.h"
+#include "persistence/ForwardDecl.h"
 #include "MapId.h"
 #include <memory>
 #include <unordered_map>
@@ -21,7 +23,7 @@ namespace backend {
 /**
  * @brief A map contains the Entity instances. This is where the players are moving and npcs are living.
  */
-class Map : public std::enable_shared_from_this<Map>, public core::IComponent {
+class Map : public std::enable_shared_from_this<Map>, public core::IComponent, public persistence::ISavable {
 private:
 	MapId _mapId;
 	std::string _mapIdStr;
@@ -31,6 +33,7 @@ private:
 	SpawnMgrPtr _spawnMgr;
 	poi::PoiProviderPtr _poiProvider;
 	io::FilesystemPtr _filesystem;
+	persistence::PersistenceMgrPtr _persistenceMgr;
 
 	ai::Zone* _zone = nullptr;
 
@@ -70,13 +73,16 @@ public:
 			const network::ServerMessageSenderPtr& messageSender,
 			const AILoaderPtr& loader,
 			const attrib::ContainerProviderPtr& containerProvider,
-			const cooldown::CooldownProviderPtr& cooldownProvider);
+			const cooldown::CooldownProviderPtr& cooldownProvider,
+			const persistence::PersistenceMgrPtr& persistenceMgr);
 	~Map();
 
 	void update(long dt);
 
 	bool init() override;
 	void shutdown() override;
+
+	bool getDirtyModels(Models& models) override;
 
 	/**
 	 * If the object is currently maintained by a shared_ptr, you can get a shared_ptr from a raw pointer

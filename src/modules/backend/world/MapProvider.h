@@ -27,6 +27,7 @@ private:
 	AILoaderPtr _loader;
 	attrib::ContainerProviderPtr _containerProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
+	persistence::PersistenceMgrPtr _persistenceMgr;
 	std::unordered_map<MapId, MapPtr> _maps;
 public:
 	MapProvider(
@@ -37,7 +38,8 @@ public:
 			const network::ServerMessageSenderPtr& messageSender,
 			const AILoaderPtr& loader,
 			const attrib::ContainerProviderPtr& containerProvider,
-			const cooldown::CooldownProviderPtr& cooldownProvider);
+			const cooldown::CooldownProviderPtr& cooldownProvider,
+			const persistence::PersistenceMgrPtr& persistenceMgr);
 	~MapProvider();
 
 	/**

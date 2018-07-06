@@ -13,6 +13,7 @@
 #include "backend/entity/ai/AILoader.h"
 #include "backend/entity/EntityStorage.h"
 #include "voxel/MaterialColor.h"
+#include "persistence/tests/Mocks.h"
 
 namespace backend {
 
@@ -25,6 +26,7 @@ public:
 	AILoaderPtr _loader;
 	attrib::ContainerProviderPtr _containerProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
+	persistence::PersistenceMgrPtr _persistenceMgr;
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
@@ -40,12 +42,13 @@ public:
 		_loader = std::make_shared<AILoader>(registry);
 		_containerProvider = std::make_shared<attrib::ContainerProvider>();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
+		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 	}
 };
 
 #define create(name, id) \
 	Map name(id, _testApp->eventBus(), _testApp->timeProvider(), _testApp->filesystem(), _entityStorage, \
-			_messageSender, _loader, _containerProvider, _cooldownProvider);
+			_messageSender, _loader, _containerProvider, _cooldownProvider, _persistenceMgr);
 
 TEST_F(MapTest, testInitShutdown) {
 	create(map, 1);
