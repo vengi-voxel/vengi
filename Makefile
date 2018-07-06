@@ -62,7 +62,10 @@ update-googletest:
 	rm -rf contrib/libs/gtest/include
 	cp -r $(UPDATEDIR)/googletest.sync/googletest/src contrib/libs/gtest
 	cp -r $(UPDATEDIR)/googletest.sync/googletest/include contrib/libs/gtest/include
+	cp -r $(UPDATEDIR)/googletest.sync/googlemock/src contrib/libs/gmock
+	cp -r $(UPDATEDIR)/googletest.sync/googlemock/include contrib/libs/gmock/include
 	git checkout -f contrib/libs/gtest/include/gtest/internal/custom
+	git checkout -f contrib/libs/gtest/include/gmock/internal/custom
 
 update-benchmark:
 	$(call UPDATE_GIT,benchmark,https://github.com/google/benchmark.git)

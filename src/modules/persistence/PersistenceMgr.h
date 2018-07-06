@@ -28,9 +28,10 @@ private:
 	const DBHandlerPtr _dbHandler;
 public:
 	PersistenceMgr(const DBHandlerPtr& dbHandler);
+	virtual ~PersistenceMgr() {}
 
-	bool registerSavable(uint32_t fourcc, ISavable *savable);
-	bool unregisterSavable(uint32_t fourcc, ISavable *savable);
+	virtual bool registerSavable(uint32_t fourcc, ISavable *savable);
+	virtual bool unregisterSavable(uint32_t fourcc, ISavable *savable);
 
 	bool init() override;
 	/**

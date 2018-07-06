@@ -1,5 +1,6 @@
 set(SRCS
 	src/gtest-all.cc
+	src/gmock-all.cc
 )
 set(DEFINES GTEST_HAS_EXCEPTIONS=0 GTEST_HAS_RTTI=0 GTEST_HAS_PTHREAD=0)
 if (DARWIN)

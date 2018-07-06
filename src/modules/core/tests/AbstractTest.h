@@ -3,6 +3,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "core/ConsoleApp.h"
 #include "core/EventBus.h"
 #include "io/Filesystem.h"

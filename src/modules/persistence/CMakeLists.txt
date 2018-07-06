@@ -35,6 +35,7 @@ set(TEST_SRCS
 	tests/DatabaseModelTest.cpp
 	tests/SQLGeneratorTest.cpp
 	tests/LongCounterTest.cpp
+	tests/Mocks.h
 )
 
 if (PostgreSQL_FOUND)

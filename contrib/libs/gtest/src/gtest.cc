@@ -184,13 +184,14 @@ bool g_help_flag = false;
 
 }  // namespace internal
 
+// Bazel passes in the argument to '--test_filter' via the TESTBRIDGE_TEST_ONLY
+// environment variable.
 static const char* GetDefaultFilter() {
-#ifdef GTEST_TEST_FILTER_ENV_VAR_
-  const char* const testbridge_test_only = getenv(GTEST_TEST_FILTER_ENV_VAR_);
+  const char* const testbridge_test_only =
+      internal::posix::GetEnv("TESTBRIDGE_TEST_ONLY");
   if (testbridge_test_only != NULL) {
     return testbridge_test_only;
   }
-#endif  // GTEST_TEST_FILTER_ENV_VAR_
   return kUniversalFilter;
 }
 
@@ -4907,11 +4908,11 @@ TestCase* UnitTestImpl::GetTestCase(const char* test_case_name,
                                     Test::SetUpTestCaseFunc set_up_tc,
                                     Test::TearDownTestCaseFunc tear_down_tc) {
   // Can we find a TestCase with the given name?
-  const std::vector<TestCase*>::const_iterator test_case =
-      std::find_if(test_cases_.begin(), test_cases_.end(),
+  const std::vector<TestCase*>::const_reverse_iterator test_case =
+      std::find_if(test_cases_.rbegin(), test_cases_.rend(),
                    TestCaseNameIs(test_case_name));
 
-  if (test_case != test_cases_.end())
+  if (test_case != test_cases_.rend())
     return *test_case;
 
   // No.  Let's create one.
