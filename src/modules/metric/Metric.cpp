@@ -100,7 +100,7 @@ bool Metric::assemble(const char* key, int value, const char* type, const TagMap
 		if (!createTags(tagsBuffer, sizeof(tagsBuffer), tags, "=", ",", ",")) {
 			return false;
 		}
-		written = SDL_snprintf(buffer, sizeof(buffer), "%s_%s,type=%s%s %s=%i", _prefix.c_str(), key, type, tagsBuffer, key, value);
+		written = SDL_snprintf(buffer, sizeof(buffer), "%s_%s,type=%s%s value=%i", _prefix.c_str(), key, type, tagsBuffer, value);
 		break;
 	case Flavor::Telegraf:
 	default:
