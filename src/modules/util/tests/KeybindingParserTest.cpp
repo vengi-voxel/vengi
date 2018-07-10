@@ -7,6 +7,7 @@
 
 namespace util {
 
+namespace keybindingparser {
 static const std::string CFG = R"(
 w +foo
 alt+w "somecommand +"
@@ -17,9 +18,10 @@ SHIFT+w +xyz
 SHIFT+ctrl+ALT+w allmodscommand
 ctrl+SHIFT+w ctrlshiftmodcommand
 )";
+}
 
 TEST(KeybindingParserTest, testParsing) {
-	KeybindingParser p(CFG);
+	KeybindingParser p(keybindingparser::CFG);
 	const BindMap& m = p.getBindings();
 	ASSERT_FALSE(m.empty());
 	ASSERT_EQ(0, p.invalidBindings());

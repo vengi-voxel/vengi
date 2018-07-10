@@ -11,7 +11,9 @@
 
 namespace backend {
 
+namespace userattribmgr {
 static constexpr uint32_t FOURCC = FourCC('A','T','T','R');
+}
 
 UserAttribMgr::UserAttribMgr(EntityId userId,
 		attrib::Attributes& attribs,
@@ -42,12 +44,12 @@ bool UserAttribMgr::init() {
 		model.setAttribtype(i);
 		model.setUserid(_userId);
 	}
-	_persistenceMgr->registerSavable(FOURCC, this);
+	_persistenceMgr->registerSavable(userattribmgr::FOURCC, this);
 	return true;
 }
 
 void UserAttribMgr::shutdown() {
-	_persistenceMgr->unregisterSavable(FOURCC, this);
+	_persistenceMgr->unregisterSavable(userattribmgr::FOURCC, this);
 }
 
 bool UserAttribMgr::getDirtyModels(Models& models) {

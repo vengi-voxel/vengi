@@ -20,6 +20,7 @@
 
 namespace voxelrender {
 
+namespace raw {
 /// implementation of a function object for deciding when
 /// the cubic surface extractor should insert a face between two voxels.
 ///
@@ -35,6 +36,7 @@ struct CustomIsQuadNeeded {
 		return false;
 	}
 };
+}
 
 RawVolumeRenderer::RawVolumeRenderer() :
 		_worldShader(shader::WorldShader::getInstance()) {
@@ -173,7 +175,7 @@ bool RawVolumeRenderer::update(int idx, voxel::Mesh* mesh) {
 void RawVolumeRenderer::extract(voxel::RawVolume* volume, voxel::Mesh* mesh) const {
 	voxel::Region region = volume->region();
 	region.shiftUpperCorner(1, 1, 1);
-	voxel::extractCubicMesh(volume, region, mesh, CustomIsQuadNeeded());
+	voxel::extractCubicMesh(volume, region, mesh, raw::CustomIsQuadNeeded());
 }
 
 void RawVolumeRenderer::render(const video::Camera& camera) {

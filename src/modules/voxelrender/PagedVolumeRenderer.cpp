@@ -20,6 +20,7 @@
 
 namespace voxelrender {
 
+namespace paged {
 /// implementation of a function object for deciding when
 /// the cubic surface extractor should insert a face between two voxels.
 ///
@@ -35,6 +36,7 @@ struct CustomIsQuadNeeded {
 		return false;
 	}
 };
+}
 
 PagedVolumeRenderer::PagedVolumeRenderer() :
 		_worldShader(shader::WorldShader::getInstance()) {
@@ -136,7 +138,7 @@ bool PagedVolumeRenderer::extract() {
 
 	voxel::Region region = _volume->region();
 	region.shiftUpperCorner(1, 1, 1);
-	voxel::extractCubicMesh(_volume, region, _mesh, CustomIsQuadNeeded());
+	voxel::extractCubicMesh(_volume, region, _mesh, paged::CustomIsQuadNeeded());
 
 	update();
 	return true;

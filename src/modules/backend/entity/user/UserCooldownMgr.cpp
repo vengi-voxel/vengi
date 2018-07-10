@@ -11,7 +11,9 @@
 
 namespace backend {
 
+namespace usercooldownmgr {
 static constexpr uint32_t FOURCC = FourCC('C','O','O','L');
+}
 
 UserCooldownMgr::UserCooldownMgr(User* user,
 		const core::TimeProviderPtr& timeProvider,
@@ -43,11 +45,11 @@ bool UserCooldownMgr::init() {
 		model.setCooldownid(i);
 		model.setUserid(_user->id());
 	}
-	return _persistenceMgr->registerSavable(FOURCC, this);
+	return _persistenceMgr->registerSavable(usercooldownmgr::FOURCC, this);
 }
 
 void UserCooldownMgr::shutdown() {
-	_persistenceMgr->unregisterSavable(FOURCC, this);
+	_persistenceMgr->unregisterSavable(usercooldownmgr::FOURCC, this);
 }
 
 cooldown::CooldownTriggerState UserCooldownMgr::triggerCooldown(cooldown::Type type, cooldown::CooldownCallback callback) {

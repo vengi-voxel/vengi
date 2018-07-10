@@ -11,6 +11,7 @@
 
 namespace math {
 
+namespace oc {
 class Item {
 private:
 	AABB<int> _bounds;
@@ -28,6 +29,7 @@ public:
 		return rhs._id == _id;
 	}
 };
+}
 
 class OctreeTest : public core::AbstractTest {
 public:
@@ -35,7 +37,7 @@ public:
 		EXPECT_TRUE(glm::isPowerOfTwo(size));
 		n = 0;
 		const math::AABB<int> aabb(mins, maxs);
-		Octree<Item> octree(aabb);
+		Octree<oc::Item> octree(aabb);
 		math::Frustum frustum(aabb);
 		const math::AABB<float>& frustumAABB = frustum.aabb();
 		EXPECT_TRUE(glm::all(glm::epsilonEqual(mins, frustumAABB.mins(), 0.1f)))
@@ -92,7 +94,7 @@ public:
 };
 
 TEST_F(OctreeTest, testAdd) {
-	Octree<Item, int> octree({0, 0, 0, 100, 100, 100});
+	Octree<oc::Item, int> octree({0, 0, 0, 100, 100, 100});
 	EXPECT_EQ(0, octree.count())<< "Expected to have no entries in the octree";
 	EXPECT_TRUE(octree.insert({{51, 51, 51, 53, 53, 53}, 1}));
 	EXPECT_EQ(1, octree.count())<< "Expected to have 1 entry in the octree";
@@ -101,17 +103,17 @@ TEST_F(OctreeTest, testAdd) {
 }
 
 TEST_F(OctreeTest, testAddAABBTooBig) {
-	Octree<Item, int> octree({0, 0, 0, 100, 100, 100});
+	Octree<oc::Item, int> octree({0, 0, 0, 100, 100, 100});
 	EXPECT_EQ(0, octree.count())<< "Expected to have no entries in the octree";
 	EXPECT_FALSE(octree.insert({{-100, -100, -100, 200, 200, 200}, 1}));
 }
 
 TEST_F(OctreeTest, testRemove) {
-	Octree<Item, int> octree({0, 0, 0, 100, 100, 100});
+	Octree<oc::Item, int> octree({0, 0, 0, 100, 100, 100});
 	EXPECT_EQ(0, octree.count())<< "Expected to have no entries in the octree";
-	const Item item({51, 51, 51, 53, 53, 53}, 1);
+	const oc::Item item({51, 51, 51, 53, 53, 53}, 1);
 	EXPECT_TRUE(octree.insert(item));
-	const Item item2({52, 52, 52, 54, 55, 55}, 2);
+	const oc::Item item2({52, 52, 52, 54, 55, 55}, 2);
 	EXPECT_TRUE(octree.insert(item2));
 	EXPECT_EQ(2, octree.count())<< "Expected to have 2 entries in the octree";
 	EXPECT_TRUE(octree.remove(item));
@@ -119,31 +121,31 @@ TEST_F(OctreeTest, testRemove) {
 }
 
 TEST_F(OctreeTest, testQuery) {
-	Octree<Item, int> octree({0, 0, 0, 100, 100, 100}, 3);
+	Octree<oc::Item, int> octree({0, 0, 0, 100, 100, 100}, 3);
 	{
-		Octree<Item, int>::Contents contents;
+		Octree<oc::Item, int>::Contents contents;
 		octree.query({50, 50, 50, 60, 60, 60}, contents);
 		EXPECT_EQ(0u, contents.size())<<"Expected to find nothing in an empty tree";
 	}
 	{
-		Octree<Item, int>::Contents contents;
+		Octree<oc::Item, int>::Contents contents;
 		octree.query({52, 52, 52, 54, 54, 54}, contents);
 		EXPECT_EQ(0u, contents.size())<<"Expected to find nothing in an empty tree";
 	}
-	Item item1({51, 51, 51, 53, 53, 53}, 1);
+	oc::Item item1({51, 51, 51, 53, 53, 53}, 1);
 	EXPECT_TRUE(octree.insert(item1));
 	{
-		Octree<Item, int>::Contents contents;
+		Octree<oc::Item, int>::Contents contents;
 		octree.query(item1.aabb(), contents);
 		EXPECT_EQ(1u, contents.size())<<"Expected to find one entry for the item aabb";
 	}
 	{
-		Octree<Item, int>::Contents contents;
+		Octree<oc::Item, int>::Contents contents;
 		octree.query({52, 52, 52, 54, 54, 54}, contents);
 		EXPECT_EQ(1u, contents.size())<<"Expected to find one entry for the overlapping aabb";
 	}
 	{
-		Octree<Item, int>::Contents contents;
+		Octree<oc::Item, int>::Contents contents;
 		octree.query({50, 50, 50, 52, 52, 52}, contents);
 		EXPECT_TRUE(intersects(item1.aabb(), {50, 50, 50, 52, 52, 52}));
 		EXPECT_EQ(1u, contents.size())<<"Expected to find one entry for the overlapping aabb";
@@ -151,10 +153,10 @@ TEST_F(OctreeTest, testQuery) {
 }
 
 TEST_F(OctreeTest, testOctreeCache) {
-	Octree<Item, int> octree({0, 0, 0, 100, 100, 100});
-	OctreeCache<Item, int> cache(octree);
+	Octree<oc::Item, int> octree({0, 0, 0, 100, 100, 100});
+	OctreeCache<oc::Item, int> cache(octree);
 	{
-		Octree<Item, int>::Contents contents;
+		Octree<oc::Item, int>::Contents contents;
 		octree.query({50, 50, 50, 60, 60, 60}, contents);
 		EXPECT_EQ(0u, contents.size())<<"Expected to find nothing in an empty tree";
 		contents.clear();
@@ -162,15 +164,15 @@ TEST_F(OctreeTest, testOctreeCache) {
 		contents.clear();
 		EXPECT_TRUE(cache.query({50, 50, 50, 60, 60, 60}, contents));
 	}
-	Item item({51, 51, 51, 53, 53, 53}, 1);
+	oc::Item item({51, 51, 51, 53, 53, 53}, 1);
 	EXPECT_TRUE(octree.insert(item));
 	{
-		Octree<Item, int>::Contents contents;
+		Octree<oc::Item, int>::Contents contents;
 		EXPECT_FALSE(cache.query({50, 50, 50, 60, 60, 60}, contents)) << "Expected to have the cache cleared, the octree was in a dirty state";
 		EXPECT_EQ(1u, contents.size())<<"Expected to find one entry for the enclosing aabb";
 	}
 	{
-		Octree<Item, int>::Contents contents;
+		Octree<oc::Item, int>::Contents contents;
 		octree.query({50, 50, 50, 52, 52, 52}, contents);
 		EXPECT_EQ(1u, contents.size())<<"Expected to find one entry for the overlapping aabb";
 		contents.clear();
@@ -185,7 +187,7 @@ TEST_F(OctreeTest, testOctreeVisitOrthoFrustum) {
 	const glm::vec3 maxs(128.0f);
 	const int slices = 8;
 	const math::AABB<int> aabb(mins, maxs);
-	Octree<Item> octree(aabb);
+	Octree<oc::Item> octree(aabb);
 	math::Frustum frustum(aabb);
 	const math::AABB<float>& frustumAABB = frustum.aabb();
 	ASSERT_EQ(mins, frustumAABB.mins())

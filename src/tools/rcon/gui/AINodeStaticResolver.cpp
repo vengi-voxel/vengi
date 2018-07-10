@@ -9,8 +9,8 @@
 namespace ai {
 namespace debug {
 
-namespace {
-const AIStateNodeStatic UNKNOWN(-1, "unknown", "unknown", "unknown", "unknown", "unknown");
+namespace anon {
+static const AIStateNodeStatic UNKNOWN(-1, "unknown", "unknown", "unknown", "unknown", "unknown");
 }
 
 AINodeStaticResolver::AINodeStaticResolver() {
@@ -29,7 +29,7 @@ const AIStateNodeStatic& AINodeStaticResolver::get(int32_t id) const {
 	const AIStateNodeStatic* s = _hash[id];
 	if (s == nullptr) {
 		qDebug() << "entry for " << id << " wasn't found";
-		return UNKNOWN;
+		return anon::UNKNOWN;
 	}
 	return *s;
 }

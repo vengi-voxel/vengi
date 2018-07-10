@@ -9,6 +9,7 @@
 
 namespace util {
 
+namespace keybindingtest {
 static const std::string CFG = R"(
 w +foo
 lalt+w "somecommand +"
@@ -18,6 +19,7 @@ SHIFT+w +xyz
 SHIFT+ctrl+ALT+w allmodscommand
 ctrl+SHIFT+w ctrlshiftmodcommand
 )";
+}
 
 class KeybindingHandlerTest : public core::AbstractTest {
 protected:
@@ -28,7 +30,7 @@ protected:
 	bool _xyz = false;
 
 	KeybindingHandlerTest() :
-			_parser(CFG) {
+			_parser(keybindingtest::CFG) {
 	}
 
 	bool onInitApp() override {
