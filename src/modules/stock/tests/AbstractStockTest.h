@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/tests/AbstractTest.h"
 #include "stock/StockDataProvider.h"
 #include "stock/Inventory.h"

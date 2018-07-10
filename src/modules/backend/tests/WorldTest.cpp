@@ -69,4 +69,6 @@ TEST_F(WorldTest, testUpdate) {
 	world.shutdown();
 }
 
+#undef create
+
 }

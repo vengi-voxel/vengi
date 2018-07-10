@@ -406,4 +406,6 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 	return volume;
 }
 
+#undef wrap
+
 }

@@ -226,4 +226,6 @@ RawVolume* QBTFormat::load(const io::FilePtr& file) {
 	return nullptr;
 }
 
+#undef wrap
+
 }

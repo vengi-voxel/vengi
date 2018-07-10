@@ -63,4 +63,6 @@ TEST_F(MapTest, testUpdate) {
 	map.shutdown();
 }
 
+#undef create
+
 }

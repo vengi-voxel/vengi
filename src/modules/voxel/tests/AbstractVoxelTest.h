@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/tests/AbstractTest.h"
 #include "voxel/polyvox/PagedVolumeWrapper.h"
 #include "voxel/polyvox/PagedVolume.h"

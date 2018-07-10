@@ -1,6 +1,4 @@
 set(SRCS
-	Camera.cpp Camera.h
-	WindowedApp.cpp WindowedApp.h
 	gl/flextGL.c gl/flextGL.h
 	gl/GLRenderer.cpp
 	gl/GLProfiler.cpp
@@ -8,23 +6,17 @@ set(SRCS
 	gl/GLMapping.h
 	gl/GLShader.cpp
 	gl/GLHelper.cpp gl/GLHelper.h
-	UniformBuffer.cpp UniformBuffer.h
 	Buffer.cpp Buffer.h
+	Camera.cpp Camera.h
+	Cubemap.cpp Cubemap.h
 	FrameBuffer.cpp FrameBuffer.h
 	FrameBufferConfig.cpp FrameBufferConfig.h
 	GBuffer.cpp GBuffer.h
-	Shader.cpp Shader.h
-	Camera.cpp Camera.h
-	Cubemap.cpp Cubemap.h
-	RenderBuffer.cpp RenderBuffer.h
-	Texture.cpp Texture.h
-	TextureConfig.cpp TextureConfig.h
-	TexturePool.cpp TexturePool.h
-	Types.h
-	Version.h
-	Renderer.cpp Renderer.h
 	Mesh.cpp Mesh.h
 	MeshPool.cpp MeshPool.h
+	Renderer.cpp Renderer.h
+	RenderBuffer.cpp RenderBuffer.h
+	Shader.cpp Shader.h
 	ShapeBuilder.cpp ShapeBuilder.h
 	ShaderManager.cpp ShaderManager.h
 	ScopedLineWidth.h ScopedLineWidth.cpp
@@ -35,6 +27,13 @@ set(SRCS
 	ScopedScissor.h
 	ScopedPolygonMode.h
 	StencilConfig.h StencilConfig.cpp
+	Texture.cpp Texture.h
+	TextureConfig.cpp TextureConfig.h
+	TexturePool.cpp TexturePool.h
+	Types.h
+	UniformBuffer.cpp UniformBuffer.h
+	Version.h
+	WindowedApp.cpp WindowedApp.h
 )
 set(SRCS_SHADERS
 	shaders/_fog.vert shaders/_fog.frag

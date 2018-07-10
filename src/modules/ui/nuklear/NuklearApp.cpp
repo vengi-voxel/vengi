@@ -7,8 +7,12 @@
 #include "video/ScopedViewPort.h"
 #include "core/UTF8.h"
 #include "io/Filesystem.h"
+#include "core/Assert.h"
+
 #define NK_IMPLEMENTATION
 #include "Nuklear.h"
+#undef NK_IMPLEMENTATION
+
 #include <SDL.h>
 
 namespace ui {

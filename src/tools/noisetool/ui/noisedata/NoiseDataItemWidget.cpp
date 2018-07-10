@@ -68,6 +68,8 @@ NoiseDataItemWidget::NoiseDataItemWidget(NoiseTool* tool, NoiseItem *item, Noise
 	}
 }
 
+#undef NOISEDATADETAILDATA
+
 bool NoiseDataItemWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (ev.target->GetID() == TBIDC("delete")) {

@@ -44,6 +44,8 @@ void NoiseDataNodeWidget::setItem(NoiseItem* item) {
 	NOISEDATADETAIL("Gain: %f", gain);
 }
 
+#undef NOISEDATADETAIL
+
 bool NoiseDataNodeWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		_clicked = true;

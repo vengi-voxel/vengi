@@ -1,3 +1,9 @@
+/**
+ * @file
+ */
+
+#pragma once
+
 #include <benchmark/benchmark.h>
 #include "core/ConsoleApp.h"
 #include "io/Filesystem.h"

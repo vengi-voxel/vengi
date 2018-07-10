@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/VoxFileFormat.h"
 

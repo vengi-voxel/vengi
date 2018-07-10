@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "persistence/ForwardDecl.h"
 #include "backend/entity/EntityId.h"
 #include "attrib/Attributes.h"
@@ -10,7 +12,6 @@
 #include "collection/ConcurrentSet.h"
 #include "AttribModel.h"
 #include <vector>
-#include <unordered_set>
 
 namespace backend {
 

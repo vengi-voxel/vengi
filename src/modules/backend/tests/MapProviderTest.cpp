@@ -65,4 +65,6 @@ TEST_F(MapProviderTest, testCreateMap) {
 	provider.shutdown();
 }
 
+#undef create
+
 }

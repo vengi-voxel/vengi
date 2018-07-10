@@ -1,3 +1,9 @@
+/**
+ * @file
+ */
+
+#pragma once
+
 #include "core/tests/AbstractTest.h"
 #include "core/Var.h"
 #include "core/GameConfig.h"

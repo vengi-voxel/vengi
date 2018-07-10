@@ -290,39 +290,39 @@ static uint32_t uilua_checkflag(lua_State *s, int index, const Flags* flags) {
 	return luaL_argerror(s, index, msg);
 }
 
-static nk_flags uilua_checkalign(lua_State *s, int index) {
+static inline nk_flags uilua_checkalign(lua_State *s, int index) {
 	return (nk_flags)uilua_checkflag(s, index, alignFlags);
 }
 
-static nk_symbol_type uilua_checksymbol(lua_State *s, int index) {
+static inline nk_symbol_type uilua_checksymbol(lua_State *s, int index) {
 	return (nk_symbol_type)uilua_checkflag(s, index, symbolFlags);
 }
 
-static nk_layout_format uilua_checkformat(lua_State *s, int index) {
+static inline nk_layout_format uilua_checkformat(lua_State *s, int index) {
 	return (nk_layout_format)uilua_checkflag(s, index, layoutFlags);
 }
 
-static nk_tree_type uilua_checktree(lua_State *s, int index) {
+static inline nk_tree_type uilua_checktree(lua_State *s, int index) {
 	return (nk_tree_type)uilua_checkflag(s, index, treeFlags);
 }
 
-static nk_collapse_states uilua_checkstate(lua_State *s, int index) {
+static inline nk_collapse_states uilua_checkstate(lua_State *s, int index) {
 	return (nk_collapse_states)uilua_checkflag(s, index, stateFlags);
 }
 
-static nk_button_behavior uilua_checkbehavior(lua_State *s, int index) {
+static inline nk_button_behavior uilua_checkbehavior(lua_State *s, int index) {
 	return (nk_button_behavior)uilua_checkflag(s, index, behaviorFlags);
 }
 
-static nk_color_format uilua_checkcolorformat(lua_State *s, int index) {
+static inline nk_color_format uilua_checkcolorformat(lua_State *s, int index) {
 	return (nk_color_format)uilua_checkflag(s, index, colorFormatFlags);
 }
 
-static nk_flags uilua_checkedittype(lua_State *s, int index) {
+static inline nk_flags uilua_checkedittype(lua_State *s, int index) {
 	return (nk_flags)uilua_checkflag(s, index, editTypeFlags);
 }
 
-static nk_popup_type uilua_checkpopup(lua_State *s, int index) {
+static inline nk_popup_type uilua_checkpopup(lua_State *s, int index) {
 	return (nk_popup_type)uilua_checkflag(s, index, popupFlags);
 }
 
