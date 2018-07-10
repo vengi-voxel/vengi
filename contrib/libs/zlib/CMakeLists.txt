@@ -19,4 +19,5 @@ set(SRCS
 engine_add_library(
 	LIB zlib
 	SRCS ${SRCS}
+	UNITY
 )

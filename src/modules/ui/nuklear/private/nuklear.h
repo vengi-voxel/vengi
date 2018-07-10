@@ -5846,7 +5846,7 @@ NK_LIB void nk_widget_text(struct nk_command_buffer *o, struct nk_rect b, const 
 NK_LIB void nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b, const char *string, int len, const struct nk_text *t, const struct nk_user_font *f);
 
 /* button */
-NK_LIB int nk_button_behavior(nk_flags *state, struct nk_rect r, const struct nk_input *i, enum nk_button_behavior behavior);
+NK_LIB int nk_button_behavior2(nk_flags *state, struct nk_rect r, const struct nk_input *i, enum nk_button_behavior behavior);
 NK_LIB const struct nk_style_item* nk_draw_button(struct nk_command_buffer *out, const struct nk_rect *bounds, nk_flags state, const struct nk_style_button *style);
 NK_LIB int nk_do_button(nk_flags *state, struct nk_command_buffer *out, struct nk_rect r, const struct nk_style_button *style, const struct nk_input *in, enum nk_button_behavior behavior, struct nk_rect *content);
 NK_LIB void nk_draw_button_text(struct nk_command_buffer *out, const struct nk_rect *bounds, const struct nk_rect *content, nk_flags state, const struct nk_style_button *style, const char *txt, int len, nk_flags text_alignment, const struct nk_user_font *font);
@@ -18243,7 +18243,7 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
     /* update node state */
     in = (!(layout->flags & NK_WINDOW_ROM)) ? &ctx->input: 0;
     in = (in && widget_state == NK_WIDGET_VALID) ? &ctx->input : 0;
-    if (nk_button_behavior(&ws, header, in, NK_BUTTON_DEFAULT))
+    if (nk_button_behavior2(&ws, header, in, NK_BUTTON_DEFAULT))
         *state = (*state == NK_MAXIMIZED) ? NK_MINIMIZED : NK_MAXIMIZED;
 
     /* select correct button style */
@@ -19516,7 +19516,7 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
     }
 }
 NK_LIB int
-nk_button_behavior(nk_flags *state, struct nk_rect r,
+nk_button_behavior2(nk_flags *state, struct nk_rect r,
     const struct nk_input *i, enum nk_button_behavior behavior)
 {
     int ret = 0;
@@ -19585,7 +19585,7 @@ nk_do_button(nk_flags *state, struct nk_command_buffer *out, struct nk_rect r,
     bounds.y = r.y - style->touch_padding.y;
     bounds.w = r.w + 2 * style->touch_padding.x;
     bounds.h = r.h + 2 * style->touch_padding.y;
-    return nk_button_behavior(state, bounds, in, behavior);
+    return nk_button_behavior2(state, bounds, in, behavior);
 }
 NK_LIB void
 nk_draw_button_text(struct nk_command_buffer *out,
@@ -20134,7 +20134,7 @@ nk_toggle_behavior(const struct nk_input *in, struct nk_rect select,
     nk_flags *state, int active)
 {
     nk_widget_state_reset(state);
-    if (nk_button_behavior(state, select, in, NK_BUTTON_DEFAULT)) {
+    if (nk_button_behavior2(state, select, in, NK_BUTTON_DEFAULT)) {
         *state = NK_WIDGET_STATE_ACTIVE;
         active = !active;
     }
@@ -20526,7 +20526,7 @@ nk_do_selectable(nk_flags *state, struct nk_command_buffer *out,
     touch.h = bounds.h + style->touch_padding.y * 2;
 
     /* update button */
-    if (nk_button_behavior(state, touch, in, NK_BUTTON_DEFAULT))
+    if (nk_button_behavior2(state, touch, in, NK_BUTTON_DEFAULT))
         *value = !(*value);
 
     /* draw selectable */
@@ -20561,7 +20561,7 @@ nk_do_selectable_image(nk_flags *state, struct nk_command_buffer *out,
     touch.y = bounds.y - style->touch_padding.y;
     touch.w = bounds.w + style->touch_padding.x * 2;
     touch.h = bounds.h + style->touch_padding.y * 2;
-    if (nk_button_behavior(state, touch, in, NK_BUTTON_DEFAULT))
+    if (nk_button_behavior2(state, touch, in, NK_BUTTON_DEFAULT))
         *value = !(*value);
 
     icon.y = bounds.y + style->padding.y;
@@ -20608,7 +20608,7 @@ nk_do_selectable_symbol(nk_flags *state, struct nk_command_buffer *out,
     touch.y = bounds.y - style->touch_padding.y;
     touch.w = bounds.w + style->touch_padding.x * 2;
     touch.h = bounds.h + style->touch_padding.y * 2;
-    if (nk_button_behavior(state, touch, in, NK_BUTTON_DEFAULT))
+    if (nk_button_behavior2(state, touch, in, NK_BUTTON_DEFAULT))
         *value = !(*value);
 
     icon.y = bounds.y + style->padding.y;
@@ -21213,13 +21213,13 @@ nk_scrollbar_behavior(nk_flags *state, struct nk_input *in,
             in->mouse.buttons[NK_BUTTON_LEFT].clicked_pos.x = cursor_x + cursor->w/2.0f;
         }
     } else if ((nk_input_is_key_pressed(in, NK_KEY_SCROLL_UP) && o == NK_VERTICAL && has_scrolling)||
-            nk_button_behavior(&ws, *empty0, in, NK_BUTTON_DEFAULT)) {
+            nk_button_behavior2(&ws, *empty0, in, NK_BUTTON_DEFAULT)) {
         /* scroll page up by click on empty space or shortcut */
         if (o == NK_VERTICAL)
             scroll_offset = NK_MAX(0, scroll_offset - scroll->h);
         else scroll_offset = NK_MAX(0, scroll_offset - scroll->w);
     } else if ((nk_input_is_key_pressed(in, NK_KEY_SCROLL_DOWN) && o == NK_VERTICAL && has_scrolling) ||
-        nk_button_behavior(&ws, *empty1, in, NK_BUTTON_DEFAULT)) {
+        nk_button_behavior2(&ws, *empty1, in, NK_BUTTON_DEFAULT)) {
         /* scroll page down by click on empty space or shortcut */
         if (o == NK_VERTICAL)
             scroll_offset = NK_MIN(scroll_offset + scroll->h, target - scroll->h);
@@ -23349,7 +23349,7 @@ nk_property_behavior(nk_flags *ws, const struct nk_input *in,
     float inc_per_pixel)
 {
     if (in && *state == NK_PROPERTY_DEFAULT) {
-        if (nk_button_behavior(ws, edit, in, NK_BUTTON_DEFAULT))
+        if (nk_button_behavior2(ws, edit, in, NK_BUTTON_DEFAULT))
             *state = NK_PROPERTY_EDIT;
         else if (nk_input_is_mouse_click_down_in_rect(in, NK_BUTTON_LEFT, label, nk_true))
             *state = NK_PROPERTY_DRAG;
@@ -24135,19 +24135,19 @@ nk_color_picker_behavior(nk_flags *state,
 
     /* color matrix */
     nk_colorf_hsva_fv(hsva, *color);
-    if (nk_button_behavior(state, *matrix, in, NK_BUTTON_REPEATER)) {
+    if (nk_button_behavior2(state, *matrix, in, NK_BUTTON_REPEATER)) {
         hsva[1] = NK_SATURATE((in->mouse.pos.x - matrix->x) / (matrix->w-1));
         hsva[2] = 1.0f - NK_SATURATE((in->mouse.pos.y - matrix->y) / (matrix->h-1));
         value_changed = hsv_changed = 1;
     }
     /* hue bar */
-    if (nk_button_behavior(state, *hue_bar, in, NK_BUTTON_REPEATER)) {
+    if (nk_button_behavior2(state, *hue_bar, in, NK_BUTTON_REPEATER)) {
         hsva[0] = NK_SATURATE((in->mouse.pos.y - hue_bar->y) / (hue_bar->h-1));
         value_changed = hsv_changed = 1;
     }
     /* alpha bar */
     if (alpha_bar) {
-        if (nk_button_behavior(state, *alpha_bar, in, NK_BUTTON_REPEATER)) {
+        if (nk_button_behavior2(state, *alpha_bar, in, NK_BUTTON_REPEATER)) {
             hsva[3] = 1.0f - NK_SATURATE((in->mouse.pos.y - alpha_bar->y) / (alpha_bar->h-1));
             value_changed = 1;
         }
@@ -24382,7 +24382,7 @@ nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
         return 0;
 
     in = (win->layout->flags & NK_WINDOW_ROM || s == NK_WIDGET_ROM)? 0: &ctx->input;
-    if (nk_button_behavior(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
+    if (nk_button_behavior2(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
         is_clicked = nk_true;
 
     /* draw combo box header background and border */
@@ -24473,7 +24473,7 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
         return 0;
 
     in = (win->layout->flags & NK_WINDOW_ROM || s == NK_WIDGET_ROM)? 0: &ctx->input;
-    if (nk_button_behavior(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
+    if (nk_button_behavior2(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
         is_clicked = nk_true;
 
     /* draw combo box header background and border */
@@ -24552,7 +24552,7 @@ nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct
         return 0;
 
     in = (win->layout->flags & NK_WINDOW_ROM || s == NK_WIDGET_ROM)? 0: &ctx->input;
-    if (nk_button_behavior(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
+    if (nk_button_behavior2(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
         is_clicked = nk_true;
 
     /* draw combo box header background and border */
@@ -24639,7 +24639,7 @@ nk_combo_begin_symbol_text(struct nk_context *ctx, const char *selected, int len
     if (!s) return 0;
 
     in = (win->layout->flags & NK_WINDOW_ROM || s == NK_WIDGET_ROM)? 0: &ctx->input;
-    if (nk_button_behavior(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
+    if (nk_button_behavior2(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
         is_clicked = nk_true;
 
     /* draw combo box header background and border */
@@ -24733,7 +24733,7 @@ nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2
         return 0;
 
     in = (win->layout->flags & NK_WINDOW_ROM || s == NK_WIDGET_ROM)? 0: &ctx->input;
-    if (nk_button_behavior(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
+    if (nk_button_behavior2(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
         is_clicked = nk_true;
 
     /* draw combo box header background and border */
@@ -24811,7 +24811,7 @@ nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
     if (!s) return 0;
 
     in = (win->layout->flags & NK_WINDOW_ROM || s == NK_WIDGET_ROM)? 0: &ctx->input;
-    if (nk_button_behavior(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
+    if (nk_button_behavior2(&ctx->last_widget_state, header, in, NK_BUTTON_DEFAULT))
         is_clicked = nk_true;
 
     /* draw combo box header background and border */

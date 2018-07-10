@@ -38,6 +38,7 @@ set(LIB lua53)
 engine_add_library(
 	LIB ${LIB}
 	SRCS ${SRCS}
+	UNITY
 	DEFINES LUA_USE_LONGJMP LUA_COMPAT_MODULE
 )
 # TODO: compile lua and luac binaries to check if there is no system wide installation

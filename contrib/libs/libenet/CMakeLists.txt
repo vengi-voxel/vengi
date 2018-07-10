@@ -13,6 +13,7 @@ set(SRCS
 engine_add_library(
 	LIB libenet
 	SRCS ${SRCS}
+	UNITY
 )
 
 if (NOT LIBENET_FOUND)

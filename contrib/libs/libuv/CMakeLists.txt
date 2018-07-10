@@ -58,7 +58,7 @@ if(WIN32)
 		src/win/winsock.h
 		)
 
-	engine_add_library(LIB ${LIB} SRCS ${SOURCES})
+	engine_add_library(LIB ${LIB} SRCS ${SOURCES} UNITY)
 	if (NOT LIBUV_FOUND)
 		target_link_libraries(${LIB} advapi32 iphlpapi psapi userenv shell32 ws2_32)
 		target_include_directories(${LIB} PUBLIC include/)
