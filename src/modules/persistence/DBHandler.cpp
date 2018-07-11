@@ -7,6 +7,7 @@
 #include "core/Assert.h"
 #include "ConnectionPool.h"
 #include "core/Log.h"
+#include "postgres/PQSymbol.h"
 
 namespace persistence {
 
@@ -22,6 +23,9 @@ bool DBHandler::init() {
 	if (_initialized) {
 		return true;
 	}
+	if (!postgresInit()) {
+		return false;
+	}
 	if (!core::Singleton<ConnectionPool>::getInstance().init()) {
 		Log::error(logid, "Failed to init the connection pool");
 		return false;
@@ -33,6 +37,7 @@ bool DBHandler::init() {
 void DBHandler::shutdown() {
 	_initialized = false;
 	core::Singleton<ConnectionPool>::getInstance().shutdown();
+	postgresShutdown();
 }
 
 Connection* DBHandler::connection() const {

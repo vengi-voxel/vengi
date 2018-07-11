@@ -6,10 +6,7 @@
 #include "ConnectionPool.h"
 #include "core/Log.h"
 #include "core/Singleton.h"
-#include "engine-config.h"
-#ifdef HAVE_POSTGRES
-#include <libpq-fe.h>
-#endif
+#include "postgres/PQSymbol.h"
 
 namespace persistence {
 

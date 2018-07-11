@@ -21,6 +21,8 @@ set(SRCS
 	State.cpp State
 	Structs.h
 	Timestamp.cpp Timestamp.h
+
+	postgres/PQSymbol.h postgres/PQSymbol.cpp
 )
 
 set(PostgreSQL_ADDITIONAL_VERSIONS "10;10.4")
@@ -29,7 +31,7 @@ message(STATUS "Postgresql include dirs: ${PostgreSQL_INCLUDE_DIRS}")
 message(STATUS "Postgresql libs: ${PostgreSQL_LIBRARIES}")
 
 set(LIB persistence)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core ${PostgreSQL_LIBRARIES})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
 
 set(TEST_SRCS
 	tests/DatabaseModelTest.cpp

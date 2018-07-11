@@ -7,10 +7,7 @@
 #include "core/Assert.h"
 #include "core/String.h"
 #include "Connection.h"
-#include "engine-config.h"
-#ifdef HAVE_POSTGRES
-#include <libpq-fe.h>
-#endif
+#include "postgres/PQSymbol.h"
 
 namespace persistence {
 
