@@ -22,6 +22,7 @@ class User;
  */
 class UserCooldownMgr : public cooldown::CooldownMgr, public persistence::ISavable {
 private:
+	static constexpr uint32_t FOURCC = FourCC('C','O','O','L');
 	using Super = cooldown::CooldownMgr;
 	persistence::DBHandlerPtr _dbHandler;
 	persistence::PersistenceMgrPtr _persistenceMgr;

@@ -10,8 +10,6 @@
 
 namespace persistence {
 
-static constexpr uint32_t logid = FourCC('P','E','R','M');
-
 PersistenceMgr::PersistenceMgr(const DBHandlerPtr& dbHandler) :
 		_lock("persistencemgr"), _dbHandler(dbHandler) {
 }

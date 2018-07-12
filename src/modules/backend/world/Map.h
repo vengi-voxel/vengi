@@ -25,6 +25,7 @@ namespace backend {
  */
 class Map : public std::enable_shared_from_this<Map>, public core::IComponent, public persistence::ISavable {
 private:
+	static constexpr uint32_t FOURCC = FourCC('M', 'A', 'P', '\0');
 	MapId _mapId;
 	std::string _mapIdStr;
 	voxel::WorldMgr* _voxelWorldMgr = nullptr;

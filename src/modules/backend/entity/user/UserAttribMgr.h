@@ -23,6 +23,7 @@ namespace backend {
  */
 class UserAttribMgr : public persistence::ISavable, public core::IComponent {
 private:
+	static constexpr uint32_t FOURCC = FourCC('A','T','T','R');
 	EntityId _userId;
 	attrib::Attributes& _attribs;
 	using Collection = collection::ConcurrentSet<attrib::DirtyValue>;

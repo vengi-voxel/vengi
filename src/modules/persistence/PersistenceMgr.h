@@ -21,6 +21,7 @@ namespace persistence {
  */
 class PersistenceMgr : public core::IComponent {
 private:
+	static constexpr uint32_t logid = FourCC('P','E','R','M');
 	using Savables = std::unordered_set<ISavable*>;
 	using Map = std::map<uint32_t, Savables>;
 	Map _savables;

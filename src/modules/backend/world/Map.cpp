@@ -125,7 +125,7 @@ bool Map::init() {
 		return false;
 	}
 
-	return true;
+	return _persistenceMgr->registerSavable(FOURCC, this);
 }
 
 void Map::shutdown() {
@@ -138,6 +138,7 @@ void Map::shutdown() {
 	}
 	delete _zone;
 	_zone = nullptr;
+	_persistenceMgr->unregisterSavable(FOURCC, this);
 }
 
 glm::vec3 Map::findStartPosition(const EntityPtr& entity) const {
