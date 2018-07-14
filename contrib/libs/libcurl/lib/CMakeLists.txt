@@ -1,7 +1,7 @@
 if (CURL_FOUND)
 set(HHEADERS)
 set(CSOURCES dummy.c)
-else()
+else(CURL_FOUND)
 set(LIB_NAME libcurl)
 
 configure_file(curl_config.h.cmake
@@ -134,7 +134,7 @@ else()
   set(CURL_USER_DEFINED_DYNAMIC_OR_STATIC SHARED)
 endif()
 
-endif (NOT CURL_FOUND)
+endif(CURL_FOUND)
 
 engine_add_library(
 	LIB ${LIB_NAME}
