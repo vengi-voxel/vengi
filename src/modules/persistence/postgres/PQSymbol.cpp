@@ -118,10 +118,12 @@ bool postgresInit() {
 			|| PQinitSSL == nullptr || PQsetdbLogin == nullptr
 			|| PQsslInUse == nullptr || PQsetNoticeProcessor == nullptr
 			|| PQflush == nullptr || PQfname == nullptr) {
+		Log::error("Could not load all the needed symbols from libpg");
 		return false;
 	}
 	return true;
 #else
+	Log::error("No postgres support");
 	return false;
 #endif
 }
