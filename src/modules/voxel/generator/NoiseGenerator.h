@@ -28,7 +28,8 @@ static inline float getNoise(const glm::ivec2& pos, int octaves, float lacunarit
 }
 
 template<class Volume>
-void generate(Volume& volume, int octaves, float lacunarity, float frequency, float gain, NoiseType type, math::Random& random) {
+int generate(Volume& volume, int octaves, float lacunarity, float frequency, float gain, NoiseType type, math::Random& random) {
+	int amount = 0;
 	const Region& region = volume.region();
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
@@ -49,15 +50,19 @@ void generate(Volume& volume, int octaves, float lacunarity, float frequency, fl
 			const float n = getNoise(p, octaves, lacunarity, frequency, gain, type);
 			const int ni = noise::norm(n) * (height - 1);
 			glm::ivec3 vp(x, lowerY, z);
-			if (ni > 0) {
-				volume.setVoxel(vp, dirt);
-			}
-			for (int y = 1; y < ni; ++y) {
+			for (int y = 0; y < ni - 1; ++y) {
 				vp.y = lowerY + y;
-				volume.setVoxel(vp, grass);
+				if (volume.setVoxel(vp, dirt)) {
+					++amount;
+				}
+			}
+			vp.y = ni - 1;
+			if (volume.setVoxel(vp, grass)) {
+				++amount;
 			}
 		}
 	}
+	return amount;
 }
 
 }

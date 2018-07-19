@@ -375,6 +375,7 @@ bool readBuffer(Id buffer, size_t size, void* data) {
  * @li <a href="https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clCreateImage2D.html">clCreateImage2D</a>
  * @li <a href="https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clCreateImage3D.html">clCreateImage3D</a>
  */
+// TODO: data alignment
 Id createTexture(const Texture& texture, const uint8_t* data) {
 	if (!_priv::_ctx.imageSupport) {
 		Log::warn("No image support for the selected device");
