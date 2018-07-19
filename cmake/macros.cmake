@@ -816,7 +816,13 @@ macro(engine_add_executable)
 
 	cmake_parse_arguments(_EXE "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
 
-	set(_EXE_CATEGORIES "Game")
+	# e.g. used in desktop files
+	set(COMMANDLINE "${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
+	set(CATEGORIES "Game")
+	set(DESCRIPTION "")
+	set(NAME ${_EXE_TARGET})
+	set(APPICON "${_EXE_TARGET}-icon")
+	set(ICON "${APPICON}.png")
 
 	if (_EXE_WINDOWED)
 		generate_unity_sources(WINDOWED EXECUTABLE TARGET ${_EXE_TARGET} SRCS ${_EXE_SRCS})
@@ -892,7 +898,7 @@ macro(engine_add_executable)
 		get_filename_component(datafiledir ${luasrc} DIRECTORY)
 		configure_file(lua/${luasrc} ${CMAKE_BINARY_DIR}/${_EXE_TARGET}/${datafiledir}/${filename} COPYONLY)
 	endforeach()
-	set(ICON "${_EXE_TARGET}-icon.png")
+
 	if (EXISTS ${ROOT_DIR}/contrib/${ICON})
 		if (INSTALL_DATA)
 			install(FILES ${ROOT_DIR}/contrib/${ICON} DESTINATION ${INSTALL_ICON_DIR} COMPONENT ${_EXE_TARGET})
