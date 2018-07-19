@@ -43,104 +43,138 @@ static Context _ctx;
 }
 
 #ifdef DEBUG
+#define CLCOMPUTEERR(x) case x: return #x
+#define CLCOMPUTEERRCTX(ctx, x) case x: return ctx ": " #x
+
 static const char *convertCLError(cl_int err) {
 	switch (err) {
-	case CL_SUCCESS:
-		return "Success";
-	case CL_DEVICE_NOT_FOUND:
-		return "Device not found";
-	case CL_DEVICE_NOT_AVAILABLE:
-		return "Device not available";
-	case CL_COMPILER_NOT_AVAILABLE:
-		return "Compiler not available";
-	case CL_MEM_OBJECT_ALLOCATION_FAILURE:
-		return "Memory object allocation failure";
-	case CL_OUT_OF_RESOURCES:
-		return "Out of resources";
-	case CL_OUT_OF_HOST_MEMORY:
-		return "Out of host memory";
-	case CL_PROFILING_INFO_NOT_AVAILABLE:
-		return "Profiling information not available";
-	case CL_MEM_COPY_OVERLAP:
-		return "Memory copy overlap";
-	case CL_IMAGE_FORMAT_MISMATCH:
-		return "Image format mismatch";
-	case CL_IMAGE_FORMAT_NOT_SUPPORTED:
-		return "Image format not supported";
-	case CL_BUILD_PROGRAM_FAILURE:
-		return "Program build failure";
-	case CL_MAP_FAILURE:
-		return "Map failure";
-	case CL_INVALID_VALUE:
-		return "Invalid value";
-	case CL_INVALID_DEVICE_TYPE:
-		return "Invalid device type";
-	case CL_INVALID_PLATFORM:
-		return "Invalid platform";
-	case CL_INVALID_DEVICE:
-		return "Invalid device";
-	case CL_INVALID_CONTEXT:
-		return "Invalid context";
-	case CL_INVALID_QUEUE_PROPERTIES:
-		return "Invalid queue properties";
-	case CL_INVALID_COMMAND_QUEUE:
-		return "Invalid command queue";
-	case CL_INVALID_HOST_PTR:
-		return "Invalid host pointer";
-	case CL_INVALID_MEM_OBJECT:
-		return "Invalid memory object";
-	case CL_INVALID_IMAGE_FORMAT_DESCRIPTOR:
-		return "Invalid image format descriptor";
-	case CL_INVALID_IMAGE_SIZE:
-		return "Invalid image size";
-	case CL_INVALID_SAMPLER:
-		return "Invalid sampler";
-	case CL_INVALID_BINARY:
-		return "Invalid binary";
-	case CL_INVALID_BUILD_OPTIONS:
-		return "Invalid build options";
-	case CL_INVALID_PROGRAM:
-		return "Invalid program";
-	case CL_INVALID_PROGRAM_EXECUTABLE:
-		return "Invalid program executable";
-	case CL_INVALID_KERNEL_NAME:
-		return "Invalid kernel name";
-	case CL_INVALID_KERNEL_DEFINITION:
-		return "Invalid kernel definition";
-	case CL_INVALID_KERNEL:
-		return "Invalid kernel";
-	case CL_INVALID_ARG_INDEX:
-		return "Invalid argument index";
-	case CL_INVALID_ARG_VALUE:
-		return "Invalid argument value";
-	case CL_INVALID_ARG_SIZE:
-		return "Invalid argument size";
-	case CL_INVALID_KERNEL_ARGS:
-		return "Invalid kernel arguments";
-	case CL_INVALID_WORK_DIMENSION:
-		return "Invalid work dimension";
-	case CL_INVALID_WORK_GROUP_SIZE:
-		return "Invalid work group size";
-	case CL_INVALID_WORK_ITEM_SIZE:
-		return "Invalid work item size";
-	case CL_INVALID_GLOBAL_OFFSET:
-		return "Invalid global offset";
-	case CL_INVALID_EVENT_WAIT_LIST:
-		return "Invalid event wait list";
-	case CL_INVALID_EVENT:
-		return "Invalid event";
-	case CL_INVALID_OPERATION:
-		return "Invalid operation";
-	case CL_INVALID_GL_OBJECT:
-		return "Invalid OpenGL object";
-	case CL_INVALID_BUFFER_SIZE:
-		return "Invalid buffer size";
-	case CL_INVALID_MIP_LEVEL:
-		return "Invalid mip-map level";
+	#ifdef CL_VERSION_1_0
+	CLCOMPUTEERR(CL_SUCCESS);
+	CLCOMPUTEERR(CL_DEVICE_NOT_FOUND);
+	CLCOMPUTEERR(CL_DEVICE_NOT_AVAILABLE);
+	CLCOMPUTEERR(CL_COMPILER_NOT_AVAILABLE);
+	CLCOMPUTEERR(CL_MEM_OBJECT_ALLOCATION_FAILURE);
+	CLCOMPUTEERR(CL_OUT_OF_RESOURCES);
+	CLCOMPUTEERR(CL_OUT_OF_HOST_MEMORY);
+	CLCOMPUTEERR(CL_PROFILING_INFO_NOT_AVAILABLE);
+	CLCOMPUTEERR(CL_MEM_COPY_OVERLAP);
+	CLCOMPUTEERR(CL_IMAGE_FORMAT_MISMATCH);
+	CLCOMPUTEERR(CL_IMAGE_FORMAT_NOT_SUPPORTED);
+	CLCOMPUTEERR(CL_BUILD_PROGRAM_FAILURE);
+	CLCOMPUTEERR(CL_MAP_FAILURE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_VALUE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_DEVICE_TYPE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_PLATFORM);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_DEVICE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_CONTEXT);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_QUEUE_PROPERTIES);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_COMMAND_QUEUE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_HOST_PTR);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_MEM_OBJECT);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_IMAGE_FORMAT_DESCRIPTOR);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_IMAGE_SIZE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_SAMPLER);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_BINARY);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_BUILD_OPTIONS);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_PROGRAM);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_PROGRAM_EXECUTABLE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_KERNEL_NAME);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_KERNEL_DEFINITION);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_KERNEL);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_ARG_INDEX);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_ARG_VALUE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_ARG_SIZE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_KERNEL_ARGS);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_WORK_DIMENSION);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_WORK_GROUP_SIZE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_WORK_ITEM_SIZE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_GLOBAL_OFFSET);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_EVENT_WAIT_LIST);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_EVENT);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_OPERATION);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_GL_OBJECT);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_BUFFER_SIZE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_MIP_LEVEL);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_GLOBAL_WORK_SIZE);
+	#endif
+
+	#ifdef CL_VERSION_1_1
+	CLCOMPUTEERR(CL_MISALIGNED_SUB_BUFFER_OFFSET);
+	CLCOMPUTEERR(CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_PROPERTY);
+	#endif
+
+	#ifdef CL_VERSION_1_2
+	CLCOMPUTEERR(CL_COMPILE_PROGRAM_FAILURE);
+	CLCOMPUTEERR(CL_LINKER_NOT_AVAILABLE);
+	CLCOMPUTEERR(CL_LINK_PROGRAM_FAILURE);
+	CLCOMPUTEERR(CL_DEVICE_PARTITION_FAILED);
+	CLCOMPUTEERR(CL_KERNEL_ARG_INFO_NOT_AVAILABLE);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_IMAGE_DESCRIPTOR);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_COMPILER_OPTIONS);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_LINKER_OPTIONS);
+	CLCOMPUTEERRCTX("Compile error", CL_INVALID_DEVICE_PARTITION_COUNT);
+	#endif
+
+	#if defined(CL_VERSION_2_0)
+	CLCOMPUTEERR(CL_INVALID_PIPE_SIZE);
+	CLCOMPUTEERR(CL_INVALID_DEVICE_QUEUE);
+	#endif
+
+	#if defined(__OPENCL_CL_GL_H) && defined(cl_khr_gl_sharing)
+	CLCOMPUTEERR(CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR);
+	#endif
+
+	#if defined(__CL_EXT_H) && defined (cl_khr_icd)
+	CLCOMPUTEERR(CL_PLATFORM_NOT_FOUND_KHR);
+	#else
+	case -1001: return "CL_PLATFORM_NOT_FOUND_KHR";
+	#endif
+
+	#if defined(__OPENCL_CL_D3D10_H)
+	CLCOMPUTEERR(CL_INVALID_D3D10_DEVICE_KHR);
+	CLCOMPUTEERR(CL_INVALID_D3D10_RESOURCE_KHR);
+	CLCOMPUTEERR(CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR);
+	CLCOMPUTEERR(CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR);
+	#endif
+
+	#if defined(__OPENCL_CL_D3D11_H)
+	CLCOMPUTEERR(CL_INVALID_D3D11_DEVICE_KHR);
+	CLCOMPUTEERR(CL_INVALID_D3D11_RESOURCE_KHR);
+	CLCOMPUTEERR(CL_D3D11_RESOURCE_ALREADY_ACQUIRED_KHR);
+	CLCOMPUTEERR(CL_D3D11_RESOURCE_NOT_ACQUIRED_KHR);
+	#endif
+
+	#if defined(__OPENCL_CL_DX9_MEDIA_SHARING_H)
+	CLCOMPUTEERR(CL_INVALID_DX9_MEDIA_ADAPTER_KHR);
+	CLCOMPUTEERR(CL_INVALID_DX9_MEDIA_SURFACE_KHR);
+	CLCOMPUTEERR(CL_DX9_MEDIA_SURFACE_ALREADY_ACQUIRED_KHR);
+	CLCOMPUTEERR(CL_DX9_MEDIA_SURFACE_NOT_ACQUIRED_KHR);
+	#endif
+
+	#if defined(__CL_EXT_H) && defined(cl_ext_device_fission)
+	CLCOMPUTEERR(CL_DEVICE_PARTITION_FAILED_EXT);
+	CLCOMPUTEERR(CL_INVALID_PARTITION_COUNT_EXT);
+	CLCOMPUTEERR(CL_INVALID_PARTITION_NAME_EXT);
+	#endif
+
+	#if defined(__OPENCL_CL_EGL_H)
+	CLCOMPUTEERR(CL_EGL_RESOURCE_NOT_ACQUIRED_KHR);
+	CLCOMPUTEERR(CL_INVALID_EGL_OBJECT_KHR);
+	#endif
+
+	#if defined(__CL_EXT_H) && defined(cl_intel_accelerator)
+	CLCOMPUTEERR(CL_INVALID_ACCELERATOR_INTEL);
+	CLCOMPUTEERR(CL_INVALID_ACCELERATOR_TYPE_INTEL);
+	CLCOMPUTEERR(CL_INVALID_ACCELERATOR_DESCRIPTOR_INTEL);
+	CLCOMPUTEERR(CL_ACCELERATOR_TYPE_NOT_SUPPORTED_INTEL);
+	#endif
 	default:
-		return "Unknown";
+		return "Unknown error";
 	}
 }
+#undef CLCOMPUTEERR
+#undef CLCOMPUTEERRCTX
 #endif
 
 #ifdef DEBUG
@@ -608,7 +642,7 @@ bool kernelRun(Id kernel, const glm::ivec3& workSize, int workDim, bool blocking
 	checkError(error);
 	if (error == CL_SUCCESS) {
 		if (blocking) {
-			clFinish(_priv::_ctx.commandQueue);
+			return finish();
 		}
 		return true;
 	}
@@ -633,7 +667,12 @@ Id createKernel(Id program, const char *name) {
 bool finish() {
 	core_assert(_priv::_ctx.context != nullptr);
 	core_assert(_priv::_ctx.commandQueue != nullptr);
-	const cl_int error = clFinish(_priv::_ctx.commandQueue);
+	cl_int error = clFlush(_priv::_ctx.commandQueue);
+	checkError(error);
+	if (error != CL_SUCCESS) {
+		return false;
+	}
+	error = clFinish(_priv::_ctx.commandQueue);
 	checkError(error);
 	return error == CL_SUCCESS;
 }
@@ -670,7 +709,7 @@ bool init() {
 	}
 
 	if (_priv::_ctx.platformIdCount == 0u) {
-		Log::debug("No OpenCL platform found");
+		Log::debug("No OpenCL platform found. Is the native runtime or driver installed?");
 		return false;
 	}
 
