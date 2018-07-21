@@ -46,21 +46,23 @@ static void generateKernelHeader(const Kernel& k, std::stringstream& kernels, bo
 	kernels << "\tbool " << k.name << "(\n\t\t";
 	bool first = true;
 	for (const Parameter& p : k.parameters) {
+		if (p.datatype == DataType::Sampler) {
+			continue;
+		}
 		if (!first) {
 			kernels << ",\n\t\t";
 		}
 		if (!p.qualifier.empty()) {
 			kernels << p.qualifier << " ";
 		}
+		const util::CLTypeMapping& clType = util::vectorType(p.type);
 		if (isBuffer(p.type)) {
-			const util::CLTypeMapping& clType = util::vectorType(p.type);
 			if (useVector) {
 				kernels << "std::vector<" << clType.type << ">& " << p.name;
 			} else {
 				kernels << clType.type << "* " << p.name << ", size_t " << p.name << "Size";
 			}
 		} else {
-			const util::CLTypeMapping& clType = util::vectorType(p.type);
 			kernels << clType.type;
 			if (p.byReference || (p.flags & compute::BufferFlag::ReadOnly) != compute::BufferFlag::None) {
 				kernels << "&";
@@ -78,6 +80,9 @@ static void generateKernelHeader(const Kernel& k, std::stringstream& kernels, bo
 static void generateKernelParameterTransfer(const Kernel& k, std::stringstream& kernels, bool useVector) {
 	for (size_t i = 0; i < k.parameters.size(); ++i) {
 		const Parameter& p = k.parameters[i];
+		if (p.datatype == DataType::Sampler) {
+			continue;
+		}
 		if (isBuffer(p.type)) {
 			const std::string& bufferName = getBufferName(k, p);
 			kernels << "\t\tif (" << bufferName << " == InvalidId) {\n";
@@ -102,6 +107,11 @@ static void generateKernelParameterTransfer(const Kernel& k, std::stringstream& 
 			kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
 			kernels << i << ", ";
 			kernels << p.name;
+			if (i < k.parameters.size() - 1 && (p.datatype == DataType::Image2D || p.datatype == DataType::Image3D)) {
+				if (k.parameters[i + 1].datatype == DataType::Sampler) {
+					kernels << ", " << (i + 1);
+				}
+			}
 			kernels << ");\n";
 		}
 	}

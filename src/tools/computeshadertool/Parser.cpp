@@ -297,7 +297,13 @@ static const simplecpp::Token *parseKernel(const simplecpp::Token *tok, std::vec
 			parameter.flags |= compute::BufferFlag::ReadOnly;
 			parameter.qualifier = token;
 		} else {
-			// TODO: opencl data types - image2d_t, sampler_t
+			if (token == "image2d_t") {
+				parameter.datatype = DataType::Image2D;
+			} else if (token == "image3d_t") {
+				parameter.datatype = DataType::Image3D;
+			} else if (token == "sampler_t") {
+				parameter.datatype = DataType::Sampler;
+			}
 			if (!parameter.type.empty()) {
 				parameter.type = token + " " + parameter.type;
 			} else {

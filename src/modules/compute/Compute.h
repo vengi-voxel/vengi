@@ -16,6 +16,7 @@
 #include <string.h>
 #include <vector>
 #include "Types.h"
+#include "Texture.h"
 #include "cl/CLTypes.h"
 #include "core/Vector.h"
 #include <glm/fwd.hpp>
@@ -74,6 +75,12 @@ bool readBufferIntoVector(Id buffer, std::vector<T>& data) {
 	return readBuffer(buffer, core::vectorCapacity(data), data.data());
 }
 
+Id createTexture(const Texture& texture, const uint8_t* data);
+void deleteTexture(Id& id);
+
+Id createSampler(const TextureConfig& config);
+void deleteSampler(Id& id);
+
 Id createProgram(const std::string& source);
 size_t requiredAlignment();
 bool configureProgram(Id program);
@@ -81,6 +88,7 @@ bool deleteProgram(Id& program);
 
 Id createKernel(Id program, const char *name);
 bool deleteKernel(Id& kernel);
+bool kernelArg(Id kernel, uint32_t index, const Texture& texture, int32_t samplerIndex = -1);
 bool kernelArg(Id kernel, uint32_t index, size_t size, const void* data);
 bool kernelRun(Id kernel, const glm::ivec3& globalWorkSize, int workDim, bool blocking = true);
 bool finish();

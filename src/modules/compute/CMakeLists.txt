@@ -1,12 +1,15 @@
 set(SRCS
 	cl/CL.h
 	cl/CLCompute.cpp
+	cl/CLMapping.h
 	cl/CLTypes.h
 	cl/CLSymbol.c cl/CLSymbol.h
 
+	Texture.h Texture.cpp
 	Types.h
 	Compute.h
 	Shader.h Shader.cpp
+	TextureConfig.h TextureConfig.cpp
 )
 set(LIB compute)
 find_package(OpenCL)

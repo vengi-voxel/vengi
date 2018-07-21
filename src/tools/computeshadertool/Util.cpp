@@ -13,18 +13,20 @@ static const struct TypeMapping {
 	const char* computeType;
 	const std::string ctype;
 } Types[] = {
-	{"char",     "int8_t"},
-	{"uchar",    "uint8_t"},
-	{"short",    "int16_t"},
-	{"ushort",   "uint16_t"},
-	{"int",      "int32_t"},
-	{"uint",     "uint32_t"},
-	{"long",     "int64_t"},
-	{"ulong",    "uint64_t"},
-	{"float",    "float"},
-	{"double",   "double"},
-	{"half",     "uint16_t"},
-	{nullptr,    ""}
+	{"char",      "int8_t"},
+	{"uchar",     "uint8_t"},
+	{"short",     "int16_t"},
+	{"ushort",    "uint16_t"},
+	{"int",       "int32_t"},
+	{"uint",      "uint32_t"},
+	{"long",      "int64_t"},
+	{"ulong",     "uint64_t"},
+	{"float",     "float"},
+	{"double",    "double"},
+	{"half",      "uint16_t"},
+	{"image3d_t", "Texture"},
+	{"image2d_t", "Texture"},
+	{nullptr,     ""}
 };
 
 static const struct VecMapping {

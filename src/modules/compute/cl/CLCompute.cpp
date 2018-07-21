@@ -5,6 +5,7 @@
  */
 #include "CL.h"
 #include "CLSymbol.h"
+#include "CLMapping.h"
 #include "compute/Compute.h"
 #include "core/Log.h"
 #include "core/App.h"
@@ -30,6 +31,9 @@ struct Context {
 	cl_command_queue commandQueue = nullptr;
 	cl_device_id deviceId = nullptr;
 	cl_uint alignment = 4096;
+	cl_bool imageSupport = CL_FALSE;
+	size_t image2DSize[2] = {};
+	size_t image3DSize[3] = {};
 };
 
 static std::unordered_map<void*, size_t> _sizes;
@@ -329,6 +333,129 @@ bool readBuffer(Id buffer, size_t size, void* data) {
 	return error == CL_SUCCESS;
 }
 
+/**
+ * @param[in] data A pointer to the image data that may already be allocated by the application. The size of the buffer that host_ptr points to must be greater
+ * than or equal to image_slice_pitch * image_depth. The size of each element in bytes must be a power of 2. The image data specified by host_ptr is stored as
+ * a linear sequence of adjacent 2D slices. Each 2D slice is a linear sequence of adjacent scanlines. Each scanline is a linear sequence of image elements.
+ *
+ * @li <a href="https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clCreateImage2D.html">clCreateImage2D</a>
+ * @li <a href="https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clCreateImage3D.html">clCreateImage3D</a>
+ */
+Id createTexture(const Texture& texture, const uint8_t* data) {
+	if (!_priv::_ctx.imageSupport) {
+		Log::warn("No image support for the selected device");
+		return InvalidId;
+	}
+	cl_int error = CL_SUCCESS;
+	cl_mem id;
+
+	/**
+	 * A pointer to a structure that describes format properties of the image to be allocated. See cl_image_format for a detailed description
+	 * of the image format descriptor.
+	 */
+	cl_image_format fmt;
+	fmt.image_channel_order = _priv::TextureFormats[std::enum_value(texture.format())];
+	fmt.image_channel_data_type = _priv::TextureDataFormats[std::enum_value(texture.dataformat())];
+	const size_t channelSize = _priv::TextureDataFormatSizes[std::enum_value(texture.dataformat())];
+	const size_t components = _priv::TextureFormatComponents[std::enum_value(texture.format())];
+
+	/**
+	 * A bit-field that is used to specify allocation and usage information about the image memory object being created and is described in the table List of
+	 * supported cl_mem_flags values for clCreateBuffer.
+	 */
+	const cl_mem_flags flags = CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR;
+	if (texture.type() == TextureType::Texture3D) {
+		/**
+		 * The width and height of the image in pixels. These must be values greater than or equal to 1.
+		 * The depth of the image in pixels. This must be a value greater than 1.
+		 */
+		const glm::ivec3 size = glm::ivec3(texture.width(), texture.height(), texture.layers());
+		if ((size_t)size.x > _priv::_ctx.image3DSize[0]) {
+			Log::error("Max 3d texture width exceeded");
+			return InvalidId;
+		}
+		if ((size_t)size.y > _priv::_ctx.image3DSize[1]) {
+			Log::error("Max 3d texture height exceeded");
+			return InvalidId;
+		}
+		if ((size_t)size.z > _priv::_ctx.image3DSize[2]) {
+			Log::error("Max 3d texture depth exceeded");
+			return InvalidId;
+		}
+		/**
+		 * The scan-line pitch in bytes. This must be 0 if host_ptr is NULL and can be either 0 or greater than or equal to image_width * size of element in
+		 * bytes if host_ptr is not NULL. If host_ptr is not NULL and image_row_pitch is equal to 0, image_row_pitch is calculated as image_width * size of
+		 * element in bytes. If image_row_pitch is not 0, it must be a multiple of the image element size in bytes.
+		 */
+		const size_t imageRowPitch = size[0] * channelSize * components;
+		/**
+		 * The size in bytes of each 2D slice in the 3D image. This must be 0 if host_ptr is NULL and can be either 0 or greater than or equal to
+		 * image_row_pitch * image_height if host_ptr is not NULL. If host_ptr is not NULL and image_slice_pitch equal to 0, image_slice_pitch is calculated
+		 * as image_row_pitch * image_height. If image_slice_pitch is not 0, it must be a multiple of the image_row_pitch.
+		 */
+		const size_t imageSlicePitch = imageRowPitch * size[1];
+		id = clCreateImage3D(_priv::_ctx.context,
+				flags, &fmt,
+				size[0], size[1], size[2], imageRowPitch,
+				imageSlicePitch, const_cast<void*>((const void*)data), &error);
+		checkError(error);
+	} else {
+		const glm::ivec2 size = glm::ivec2(texture.width(), texture.height());
+		if ((size_t)size.x > _priv::_ctx.image2DSize[0]) {
+			Log::error("Max 2d texture width exceeded");
+			return InvalidId;
+		}
+		if ((size_t)size.y > _priv::_ctx.image2DSize[1]) {
+			Log::error("Max 2d texture height exceeded");
+			return InvalidId;
+		}
+		/**
+		 * The scan-line pitch in bytes. This must be 0 if host_ptr is NULL and can be either 0 or greater than or equal to image_width * size of element in
+		 * bytes if host_ptr is not NULL. If host_ptr is not NULL and image_row_pitch is equal to 0, image_row_pitch is calculated as image_width * size of
+		 * element in bytes. If image_row_pitch is not 0, it must be a multiple of the image element size in bytes.
+		 */
+		const size_t imageRowPitch = size[0] * channelSize * components;
+		id = clCreateImage2D(_priv::_ctx.context,
+				flags, &fmt,
+				size[0], size[1], imageRowPitch,
+				const_cast<void*>((const void*)data), &error);
+		checkError(error);
+	}
+	return id;
+}
+
+void deleteTexture(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	const cl_int error = clReleaseMemObject((cl_mem)id);
+	id = InvalidId;
+	checkError(error);
+}
+
+Id createSampler(const TextureConfig& config) {
+	cl_int error = CL_SUCCESS;
+	/* Specifies how out-of-range image coordinates are handled when reading from an image. This can be set to
+	 * CL_ADDRESS_REPEAT, CL_ADDRESS_CLAMP_TO_EDGE, CL_ADDRESS_CLAMP, and CL_ADDRESS_NONE. */
+	const cl_addressing_mode wrapMode = _priv::TextureWraps[std::enum_value(config.wrap())];
+	/* Specifies the type of filter that must be applied when reading an image. This can be CL_FILTER_NEAREST or CL_FILTER_LINEAR. */
+	const cl_filter_mode filterMode = _priv::TextureFilters[std::enum_value(config.filter())];
+	/* Determines if the image coordinates specified are normalized (if normalized_coords is CL_TRUE) or not (if normalized_coords is CL_FALSE). */
+	const cl_bool normalized = (cl_bool)config.normalizedCoordinates();
+	const Id id = clCreateSampler(_priv::_ctx.context, normalized, wrapMode, filterMode, &error);
+	checkError(error);
+	return id;
+}
+
+void deleteSampler(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	const cl_int error = clReleaseSampler((cl_sampler)id);
+	id = InvalidId;
+	checkError(error);
+}
+
 Id createProgram(const std::string& source) {
 	if (_priv::_ctx.context == nullptr) {
 		return InvalidId;
@@ -359,6 +486,22 @@ bool deleteKernel(Id& kernel) {
 	}
 	return false;
 }
+
+bool kernelArg(Id kernel, uint32_t index, const Texture& texture, int32_t samplerIndex) {
+	if (kernel == InvalidId) {
+		return false;
+	}
+	Id textureId = texture.handle();
+	cl_int error = clSetKernelArg((cl_kernel)kernel, index, sizeof(cl_mem), &textureId);
+	checkError(error);
+	if (samplerIndex >= 0) {
+		Id samplerId = texture.sampler();
+		error = clSetKernelArg((cl_kernel)kernel, samplerIndex, sizeof(cl_sampler), &samplerId);
+		checkError(error);
+	}
+	return error == CL_SUCCESS;
+}
+
 
 bool kernelArg(Id kernel, uint32_t index, size_t size, const void* data) {
 	if (kernel == InvalidId) {
@@ -498,6 +641,14 @@ bool supported() {
 	return _priv::_ctx.context != nullptr;
 }
 
+template<typename T>
+auto getActualDeviceInfo(int info) {
+	T val = (T)0;
+	const cl_int error = clGetDeviceInfo(_priv::_ctx.deviceId, (cl_device_info)info, sizeof(T), &val, nullptr);
+	checkError(error);
+	return val;
+}
+
 bool init() {
 	core_assert(_priv::_ctx.context == nullptr);
 	if (computeCLInit() == -1) {
@@ -588,6 +739,13 @@ bool init() {
 	if (error != CL_SUCCESS) {
 		return false;
 	}
+
+	_priv::_ctx.imageSupport = getActualDeviceInfo<cl_bool>(CL_DEVICE_IMAGE_SUPPORT);
+	_priv::_ctx.image2DSize[0] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE2D_MAX_WIDTH);
+	_priv::_ctx.image2DSize[1] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE2D_MAX_HEIGHT);
+	_priv::_ctx.image3DSize[0] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE3D_MAX_WIDTH);
+	_priv::_ctx.image3DSize[1] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE3D_MAX_HEIGHT);
+	_priv::_ctx.image3DSize[2] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE3D_MAX_DEPTH);
 
 	error = clGetDeviceInfo(_priv::_ctx.deviceId,
 			CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof(_priv::_ctx.alignment), &_priv::_ctx.alignment, 0);
