@@ -141,6 +141,10 @@ public:
 
 	void clear();
 
+	inline const uint8_t* data() const {
+		return (const uint8_t*)_data;
+	}
+
 private:
 	void initialise(const Region& region);
 
