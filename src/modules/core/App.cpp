@@ -221,17 +221,13 @@ AppState App::onConstruct() {
 		if (command != "set") {
 			continue;
 		}
-		std::string args;
-		args.reserve(256);
-		for (++i; i < _argc;) {
-			if (_argv[i][0] == '-') {
-				--i;
-				break;
-			}
-			args.append(_argv[i++]);
-			args.append(" ");
+		if (i + 2 < _argc) {
+			std::string var = _argv[i + 1];
+			const char *value = _argv[i + 2];
+			i += 2;
+			Log::debug("Set %s to %s", var.c_str(), value);
+			core::Var::get(var, value, (int32_t)CV_FROMCOMMANDLINE);
 		}
-		core::executeCommands(command + " " + args);
 	}
 
 	core::Var::get(cfg::MetricFlavor, "telegraf");
@@ -303,27 +299,27 @@ AppState App::onInit() {
 		for (char c : flags) {
 			if (c == 'R') {
 				flagsMaskFromFile |= CV_READONLY;
-				Log::trace("read only flag for %s", name.c_str());
+				Log::debug("read only flag for %s", name.c_str());
 			} else if (c == 'S') {
 				flagsMaskFromFile |= CV_SHADER;
-				Log::trace("shader flag for %s", name.c_str());
+				Log::debug("shader flag for %s", name.c_str());
 			} else if (c == 'X') {
 				flagsMaskFromFile |= CV_SECRET;
-				Log::trace("secret flag for %s", name.c_str());
+				Log::debug("secret flag for %s", name.c_str());
 			}
 		}
 		const VarPtr& old = core::Var::get(name);
 		if (old) {
-			flagsMask = (int32_t)(flagsMaskFromFile | old->getFlags());
+			flagsMask = (int32_t)(flagsMaskFromFile | old->getFlags() | CV_FROMFILE);
 		} else if (flagsMaskFromFile != 0u) {
-			flagsMask = (int32_t)flagsMaskFromFile;
+			flagsMask = (int32_t)(flagsMaskFromFile | CV_FROMFILE);
 		}
 
 		core::Var::get(name, value.c_str(), flagsMask);
 	}
 
 	Log::init();
-	Log::trace("handle %i command line arguments", _argc);
+	Log::debug("handle %i command line arguments", _argc);
 	for (int i = 0; i < _argc; ++i) {
 		// every command is started with a '-'
 		if (_argv[i][0] != '-' || (_argv[i][0] != '\0' &&_argv[i][1] == '-')) {
@@ -348,7 +344,7 @@ AppState App::onInit() {
 			args.append(_argv[i++]);
 			args.append(" ");
 		}
-		Log::trace("Execute %s with %i arguments", command.c_str(), (int)args.size());
+		Log::debug("Execute %s with %i arguments", command.c_str(), (int)args.size());
 		core::executeCommands(command + " " + args);
 	}
 	core::Var::visit([&] (const core::VarPtr& var) {

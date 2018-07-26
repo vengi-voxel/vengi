@@ -73,6 +73,18 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags) {
 	}
 	const VarPtr& v = i->second;
 	if (flags >= 0) {
+		if ((flagsMask & CV_FROMFILE) == CV_FROMFILE && (flagsMask & CV_FROMCOMMANDLINE) == 0u) {
+			// environment variables have higher priority than config file values
+			const char* envValue = SDL_getenv(name.c_str());
+			if (envValue == nullptr) {
+				const std::string& upper = string::toUpper(name);
+				envValue = SDL_getenv(upper.c_str());
+			}
+			if (envValue != nullptr) {
+				value = envValue;
+			}
+			v->setVal(value);
+		}
 		v->_flags = flagsMask;
 	}
 	return v;
