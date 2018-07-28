@@ -35,7 +35,6 @@ protected:
 
 	inline void setCameraMotion(bool cameraMotion) {
 		_cameraMotion = cameraMotion;
-		SDL_SetRelativeMouseMode(_cameraMotion ? SDL_TRUE : SDL_FALSE);
 	}
 
 	inline void setRenderPlane(bool renderPlane) {
