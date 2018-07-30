@@ -21,8 +21,8 @@ public:
 	void SetUp() override {
 		// 4.3 is the minimum version where compute shaders are supported
 		core::Var::get(cfg::ClientOpenGLVersion, "4.3", core::CV_READONLY);
-		core::Var::get(cfg::ClientMultiSampleBuffers, "1");
-		core::Var::get(cfg::ClientMultiSampleSamples, "4");
+		core::Var::get(cfg::ClientMultiSampleBuffers, "0");
+		core::Var::get(cfg::ClientMultiSampleSamples, "0");
 		core::Var::get(cfg::ClientVSync, "false");
 		core::AbstractTest::SetUp();
 		SDL_Init(SDL_INIT_VIDEO);

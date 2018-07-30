@@ -368,8 +368,8 @@ core::AppState WindowedApp::onInit() {
 
 core::AppState WindowedApp::onConstruct() {
 	core::AppState state = Super::onConstruct();
-	core::Var::get(cfg::ClientMultiSampleBuffers, "1");
-	core::Var::get(cfg::ClientMultiSampleSamples, "4");
+	core::Var::get(cfg::ClientMultiSampleBuffers, "0");
+	core::Var::get(cfg::ClientMultiSampleSamples, "0");
 	core::Var::get(cfg::ClientFullscreen, "true");
 	core::Var::get(cfg::ClientFog, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
