@@ -1400,14 +1400,22 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
 	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, multisampleBuffers->intVal());
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, multisampleSamples->intVal());
+	int samples = multisampleSamples->intVal();
+	int buffers = multisampleBuffers->intVal();
+	if (samples <= 0) {
+		buffers = 0;
+	} else if (buffers <= 0) {
+		samples = 0;
+	}
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, buffers);
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
 #ifdef DEBUG
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glv.majorVersion);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glv.minorVersion);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 }
 
 bool init() {
