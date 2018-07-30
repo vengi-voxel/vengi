@@ -442,7 +442,9 @@ core::AppState WindowedApp::onConstruct() {
 core::AppState WindowedApp::onCleanup() {
 	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
 	video::destroyContext(_rendererContext);
-	SDL_DestroyWindow(_window);
+	if (_window != nullptr) {
+		SDL_DestroyWindow(_window);
+	}
 	SDL_Quit();
 	core_trace_gl_shutdown();
 
