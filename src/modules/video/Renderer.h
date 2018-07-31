@@ -156,7 +156,13 @@ extern void destroyContext(RendererContext& context);
 extern RendererContext createContext(SDL_Window* window);
 extern void startFrame(SDL_Window* window, RendererContext& context);
 extern void endFrame(SDL_Window* window);
-extern void checkError();
+/**
+ * @brief Checks the error state since the last call to this function.
+ * @param[in] triggerAssert Triggers an assert whenever a failure happened. If @c false is given here, you might
+ * just want to delete the error state for future checks or the previous state chnages are expected to fail.
+ * @return @c false if no error was found, @c true if an error occurred
+ */
+extern bool checkError(bool triggerAssert = true);
 extern bool setupCubemap(Id handle, const image::ImagePtr images[6]);
 extern void readBuffer(GBufferTextureType textureType);
 extern bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear);

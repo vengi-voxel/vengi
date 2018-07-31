@@ -33,11 +33,12 @@ static RenderState s;
 
 #define SANITY_CHECKS_GL 0
 
-void checkError() {
+bool checkError(bool triggerAssert) {
 #ifdef DEBUG
 	if (glGetError == nullptr) {
-		return;
+		return false;
 	}
+	bool hasError = false;
 	/* check gl errors (can return multiple errors) */
 	for (;;) {
 		const GLenum glError = glGetError();
@@ -63,8 +64,14 @@ void checkError() {
 			break;
 		}
 
-		core_assert_msg(glError == GL_NO_ERROR, "GL err: %s => %i", error, glError);
+		if (triggerAssert) {
+			core_assert_msg(glError == GL_NO_ERROR, "GL err: %s => %i", error, glError);
+		}
+		hasError |= (glError == GL_NO_ERROR);
 	}
+	return hasError;
+#else
+	return false;
 #endif
 }
 
@@ -145,10 +152,11 @@ float lineWidth(float width) {
 	const float oldWidth = _priv::s.lineWidth;
 	if (_priv::s.states[std::enum_value(State::LineSmooth)]) {
 		glLineWidth((GLfloat)glm::clamp(width, _priv::s.smoothedLineWidth.x, _priv::s.smoothedLineWidth.y));
+		checkError(false);
 	} else {
 		glLineWidth((GLfloat)glm::clamp(width, _priv::s.aliasedLineWidth.x, _priv::s.aliasedLineWidth.y));
+		checkError(false);
 	}
-	checkError();
 	_priv::s.lineWidth = width;
 	return oldWidth;
 }
