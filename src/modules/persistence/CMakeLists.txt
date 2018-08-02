@@ -18,7 +18,7 @@ set(SRCS
 	ScopedConnection.cpp ScopedConnection.h
 	ScopedTransaction.cpp ScopedTransaction.h
 	SQLGenerator.cpp SQLGenerator.h
-	State.cpp State
+	State.cpp State.h
 	Structs.h
 	Timestamp.cpp Timestamp.h
 

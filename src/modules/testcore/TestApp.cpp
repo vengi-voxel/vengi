@@ -80,7 +80,6 @@ core::AppState TestApp::onInit() {
 	video::enable(video::State::Blend);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
-
 	return state;
 }
 
@@ -112,8 +111,13 @@ void TestApp::beforeUI() {
 	}
 }
 
-void TestApp::onRenderUI() {
+core::AppState TestApp::onRunning() {
+	const core::AppState state = Super::onRunning();
 	SDL_SetRelativeMouseMode(_cameraMotion ? SDL_TRUE : SDL_FALSE);
+	return state;
+}
+
+void TestApp::onRenderUI() {
 	ImGui::BulletText("ESC: toggle camera free look");
 	bool temp = _renderTracing;
 	if (ImGui::Checkbox("Toggle profiler", &temp)) {
