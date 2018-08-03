@@ -7,6 +7,7 @@
 #include "backend/ForwardDecl.h"
 #include "math/QuadTree.h"
 #include "math/Rect.h"
+#include "core/Common.h"
 #include "ai/common/Types.h"
 #include "core/IComponent.h"
 #include "backend/attack/AttackMgr.h"

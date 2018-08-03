@@ -16,6 +16,7 @@
 #include "poi/PoiProvider.h"
 #include "backend/eventbus/Event.h"
 #include "backend/spawn/SpawnMgr.h"
+#include "persistence/PersistenceMgr.h"
 
 namespace backend {
 
