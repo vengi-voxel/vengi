@@ -2,7 +2,9 @@
  * @file
  */
 
+#define PQSYMBOL_IMPLEMENTATION
 #include "PQSymbol.h"
+#undef PQSYMBOL_IMPLEMENTATION
 #include "core/Var.h"
 #include "core/Log.h"
 #include "core/GameConfig.h"

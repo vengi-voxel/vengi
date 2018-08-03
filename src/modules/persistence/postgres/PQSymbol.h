@@ -15,7 +15,11 @@ extern bool postgresInit();
 extern void postgresShutdown();
 
 #ifdef HAVE_POSTGRES
+#ifdef PQSYMBOL_IMPLEMENTATION
 #define DYNDEFINE(NAME) decltype(::NAME) *NAME
+#else
+#define DYNDEFINE(NAME) extern decltype(::NAME) *NAME
+#endif
 
 DYNDEFINE(PQescapeStringConn);
 DYNDEFINE(PQescapeString);
