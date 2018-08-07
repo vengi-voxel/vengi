@@ -171,6 +171,7 @@ enum class BufferType {
 	IndexBuffer,
 	UniformBuffer,
 	TransformBuffer,
+	PixelBuffer,
 
 	Max
 };
