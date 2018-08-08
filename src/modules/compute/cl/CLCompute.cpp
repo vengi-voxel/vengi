@@ -543,6 +543,7 @@ bool kernelArg(Id kernel, uint32_t index, size_t size, const void* data) {
 bool kernelRun(Id kernel, const glm::ivec3& workSize, int workDim, bool blocking) {
 	// TODO: check contraints/limits of the hardware for workSize and workDim
 	if (kernel == InvalidId) {
+		Log::error("Given kernel handle is invalid");
 		return false;
 	}
 	core_assert_always(workDim > 0);
