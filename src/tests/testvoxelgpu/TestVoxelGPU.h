@@ -5,10 +5,12 @@
 #pragma once
 
 #include "testcore/TestApp.h"
+#include "TestvoxelgpuShaders.h"
 
 class TestVoxelGPU: public TestApp {
 private:
 	using Super = TestApp;
+	compute::MesherShader& _mesher;
 
 	void doRender() override;
 public:
