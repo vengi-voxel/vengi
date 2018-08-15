@@ -2,7 +2,9 @@
  * @file
  */
 
+#ifdef PQSYMBOL_IMPLEMENTATION
 #pragma once
+#endif
 
 #include "engine-config.h"
 #ifdef HAVE_POSTGRES
