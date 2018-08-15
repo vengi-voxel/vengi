@@ -252,6 +252,10 @@ public:
 		const Voxel& peekVoxel1px1py0pz() const;
 		const Voxel& peekVoxel1px1py1pz() const;
 
+		inline const uint8_t* data() const {
+			return (const uint8_t*)_buffer.data();
+		}
+
 	protected:
 		uint16_t index(int x, int y, int z) const;
 

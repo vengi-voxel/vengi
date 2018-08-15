@@ -74,7 +74,7 @@ public:
 		Voxel peekVoxel1px1py0pz() const;
 		Voxel peekVoxel1px1py1pz() const;
 
-	private:
+	protected:
 		RawVolume* _volume;
 
 		//The current position in the volume
@@ -94,6 +94,9 @@ public:
 	public:
 		BufferedSampler(const RawVolume& volume, const Region& region) : Sampler(volume) {}
 		BufferedSampler(const RawVolume* volume, const Region& region) : Sampler(volume) {}
+		inline const uint8_t* data() const {
+			return _volume->data();
+		}
 	};
 
 public:
