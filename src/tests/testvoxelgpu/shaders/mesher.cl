@@ -5,6 +5,8 @@ __constant sampler_t volumeSampler =
     | CLK_FILTER_NEAREST;
 #endif
 
+#include "voxel.cl"
+
 __kernel void render(__read_only image3d_t volume, sampler_t volumeSampler, __global uchar *output, uint imageWidth, uint imageHeight, float w) {
 	uint x = get_global_id(0);
 	uint y = get_global_id(1);
@@ -18,11 +20,11 @@ __kernel void render(__read_only image3d_t volume, sampler_t volumeSampler, __gl
 		uint i = (((imageHeight - 1) - y) * imageWidth * 4) + x * 4;
 		output[i + 0] = output[i + 1] = output[i + 2] = 0;
 		output[i + 3] = 255;
-		if (voxel[0] == 0) { // empty
+		if (voxel[0] == Air) {
 			output[i + 2] = 255;
-		} else if (voxel[0] == 3) { // grass
+		} else if (voxel[0] == Grass) {
 			output[i + 1] = 255;
-		} else if (voxel[0] == 14) { // dirt
+		} else if (voxel[0] == Dirt) {
 			output[i + 0] = 127;
 			output[i + 1] = 64;
 		} else { // unknown 0xff00ffff
