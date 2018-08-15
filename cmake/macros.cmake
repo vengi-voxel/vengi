@@ -148,6 +148,21 @@ macro(generate_shaders TARGET)
 	set(_sources)
 	add_custom_target(UpdateShaders${TARGET})
 	file(WRITE ${CMAKE_BINARY_DIR}/UpdateShaderFile${TARGET}.cmake "configure_file(\${SRC} \${DST} @ONLY)")
+	if (NOT DEFINED video_SOURCE_DIR)
+		message(FATAL_ERROR "video project not found")
+	endif()
+	set(SHADERTOOL_INCLUDE_DIRS "-I;${video_SOURCE_DIR}/shaders")
+	get_property(DEPENDENCIES GLOBAL PROPERTY ${TARGET}_DEPENDENCIES)
+	foreach (D ${DEPENDENCIES})
+		if (NOT DEFINED ${D}_SOURCE_DIR)
+			continue()
+		endif()
+		if (EXISTS ${${D}_SOURCE_DIR}/shaders)
+			message(STATUS "Adding ${${D}_SOURCE_DIR}/shaders as include dir for target ${TARGET}")
+			string(APPEND SHADERTOOL_INCLUDE_DIRS ";-I;${${D}_SOURCE_DIR}/shaders")
+		endif()
+	endforeach()
+	list(REMOVE_DUPLICATES SHADERTOOL_INCLUDE_DIRS)
 	foreach (_file ${files})
 		set(_shaders)
 		set(_dir ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
@@ -169,7 +184,7 @@ macro(generate_shaders TARGET)
 				OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in
 				IMPLICIT_DEPENDS C ${_shaders}
 				COMMENT "Validate ${_file}"
-				COMMAND $<TARGET_FILE:shadertool> --glslang ${CMAKE_BINARY_DIR}/glslangValidator -I ${_dir} -I ${PROJECT_SOURCE_DIR}/src/modules/video/shaders --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+				COMMAND $<TARGET_FILE:shadertool> --glslang ${CMAKE_BINARY_DIR}/glslangValidator -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS} --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
 				DEPENDS shadertool ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub}
 			)
 			list(APPEND _headers ${_shaderheaderpath})
@@ -222,6 +237,21 @@ macro(generate_compute_shaders TARGET)
 	set(_headers)
 	add_custom_target(UpdateComputeShaders${TARGET})
 	file(WRITE ${CMAKE_BINARY_DIR}/GenerateComputeShaderHeader${TARGET}.cmake "configure_file(\${SRC} \${DST} @ONLY)")
+	if (NOT DEFINED compute_SOURCE_DIR)
+		message(FATAL_ERROR "compute project not found")
+	endif()
+	set(SHADERTOOL_INCLUDE_DIRS "-I;${compute_SOURCE_DIR}/shaders")
+	get_property(DEPENDENCIES GLOBAL PROPERTY ${TARGET}_DEPENDENCIES)
+	foreach (D ${DEPENDENCIES})
+		if (NOT DEFINED ${D}_SOURCE_DIR)
+			continue()
+		endif()
+		if (EXISTS ${${D}_SOURCE_DIR}/shaders)
+			message(STATUS "Adding ${${D}_SOURCE_DIR}/shaders as include dir for target ${TARGET}")
+			string(APPEND SHADERTOOL_INCLUDE_DIRS ";-I;${${D}_SOURCE_DIR}/shaders")
+		endif()
+	endforeach()
+	list(REMOVE_DUPLICATES SHADERTOOL_INCLUDE_DIRS)
 	foreach (_file ${files})
 		set(_shaders)
 		set(_dir ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
@@ -237,7 +267,7 @@ macro(generate_compute_shaders TARGET)
 				OUTPUT ${_shader}.in
 				IMPLICIT_DEPENDS C ${_shaders}
 				COMMENT "Validate ${_file} and generate ${_shaderfile}"
-				COMMAND $<TARGET_FILE:computeshadertool> --shader ${_dir}/${_file} -I ${_dir} -I ${PROJECT_SOURCE_DIR}/src/modules/compute/shaders --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
+				COMMAND $<TARGET_FILE:computeshadertool> --shader ${_dir}/${_file} -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS} --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
 				DEPENDS computeshadertool ${_shaders} ${_template}
 				VERBATIM
 			)
@@ -824,6 +854,7 @@ macro(engine_add_executable)
 	set(APPICON "${_EXE_TARGET}-icon")
 	set(ICON "${APPICON}.png")
 
+	set(${_EXE_TARGET}_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "${_EXE_TARGET} source directory")
 	if (_EXE_WINDOWED)
 		generate_unity_sources(WINDOWED EXECUTABLE TARGET ${_EXE_TARGET} SRCS ${_EXE_SRCS})
 	else()
@@ -930,6 +961,7 @@ macro(engine_add_module)
 
 	cmake_parse_arguments(_LIB "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
 
+	set(${_LIB_TARGET}_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "${_LIB_TARGET} module source directory")
 	generate_unity_sources(LIBRARY TARGET ${_LIB_TARGET} SRCS ${_LIB_SRCS})
 
 	set_target_properties(${_LIB_TARGET} PROPERTIES FOLDER ${_LIB_TARGET})
@@ -941,6 +973,7 @@ macro(engine_add_module)
 		endforeach()
 	endif()
 	set_property(GLOBAL PROPERTY ${_LIB_TARGET}_FILES ${_LIB_FILES})
+	set_property(GLOBAL PROPERTY ${_LIB_TARGET}_DEPENDENCIES ${_LIB_DEPENDENCIES})
 endmacro()
 
 macro(engine_target_link_libraries)
@@ -950,6 +983,7 @@ macro(engine_target_link_libraries)
 
 	cmake_parse_arguments(_LIBS "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
 
+	set_property(GLOBAL PROPERTY ${_LIBS_TARGET}_DEPENDENCIES ${_LIBS_DEPENDENCIES})
 	target_link_libraries(${_LIBS_TARGET} ${_LIBS_DEPENDENCIES})
 
 	get_property(EXECUTABLE GLOBAL PROPERTY ${_LIBS_TARGET}_EXECUTABLE)
