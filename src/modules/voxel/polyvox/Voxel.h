@@ -12,6 +12,7 @@ namespace voxel {
 
 /**
  * @brief material types 0 - 255 (8 bits)
+ * @note These must match the compute kernel source enum
  */
 enum class VoxelType : uint8_t {
 	// this must be 0

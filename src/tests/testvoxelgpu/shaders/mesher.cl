@@ -7,12 +7,14 @@ __constant sampler_t volumeSampler =
 
 #include "voxel.cl"
 
-__kernel void render(__read_only image3d_t volume, sampler_t volumeSampler, __global uchar *output, uint imageWidth, uint imageHeight, float w) {
+__kernel void extractCubicMesh(__read_only image3d_t volume, sampler_t volumeSampler, __global uchar *output, uint imageWidth, uint imageHeight, uint imageDepth) {
 	uint x = get_global_id(0);
 	uint y = get_global_id(1);
+	uint z = get_global_id(2);
 
 	float u = x / (float) imageWidth;
 	float v = y / (float) imageHeight;
+	float w = z / (float) imageDepth;
 
 	uint4 voxel = read_imageui(volume, volumeSampler, (float4)(u, v, w, 1.0f));
 
