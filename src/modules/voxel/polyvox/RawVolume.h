@@ -92,8 +92,8 @@ public:
 
 	class BufferedSampler : public Sampler {
 	public:
-		BufferedSampler(const RawVolume& volume, const Region& region) : Sampler(volume) {}
-		BufferedSampler(const RawVolume* volume, const Region& region) : Sampler(volume) {}
+		BufferedSampler(const RawVolume& volume, const Region& region = Region()) : Sampler(volume) {}
+		BufferedSampler(const RawVolume* volume, const Region& region = Region()) : Sampler(volume) {}
 		inline const uint8_t* data() const {
 			return _volume->data();
 		}
