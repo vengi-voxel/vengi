@@ -36,21 +36,24 @@ core::AppState ComputeShaderTool::onConstruct() {
 	return Super::onConstruct();
 }
 
-std::string ComputeShaderTool::getSource(const std::string& file) const {
+std::pair<std::string, bool> ComputeShaderTool::getSource(const std::string& file) const {
 	const io::FilesystemPtr& fs = filesystem();
-	std::string src = fs->load(file);
 
-	src = util::handleIncludes(src, _includeDirs);
+	const std::pair<std::string, bool>& retIncludes = util::handleIncludes(fs->load(file), _includeDirs);
+	std::string src = retIncludes.first;
 	int level = 0;
+	bool success = retIncludes.second;
 	while (core::string::contains(src, "#include")) {
-		src = util::handleIncludes(src, _includeDirs);
+		const std::pair<std::string, bool>& ret = util::handleIncludes(src, _includeDirs);
+		src = ret.first;
+		success |= ret.second;
 		++level;
 		if (level >= 10) {
 			Log::warn("Abort shader include loop for %s", file.c_str());
 			break;
 		}
 	}
-	return src;
+	return std::make_pair(src, success);
 }
 
 core::AppState ComputeShaderTool::onRunning() {
@@ -83,15 +86,15 @@ core::AppState ComputeShaderTool::onRunning() {
 	Log::debug("Preparing shader file %s", shaderfile.c_str());
 	_computeFilename = shaderfile + COMPUTE_POSTFIX;
 	const bool changedDir = filesystem()->pushDir(std::string(core::string::extractPath(shaderfile.c_str())));
-	const std::string computeBuffer = getSource(_computeFilename);
-	if (computeBuffer.empty()) {
+	const std::pair<std::string, bool>& computeBuffer = getSource(_computeFilename);
+	if (computeBuffer.first.empty() || !computeBuffer.second) {
 		Log::error("Could not load %s", _computeFilename.c_str());
 		_exitCode = 127;
 		return core::AppState::Cleanup;
 	}
 
 	compute::Shader shader;
-	const std::string& computeSrcSource = shader.getSource(computeBuffer, false);
+	const std::string& computeSrcSource = shader.getSource(computeBuffer.first, false);
 
 	_name = std::string(core::string::extractFilename(shaderfile.c_str()));
 	if (!parse(computeSrcSource)) {
@@ -99,12 +102,12 @@ core::AppState ComputeShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 	const std::string& templateShader = filesystem()->load(_shaderTemplateFile);
-	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs, _constants, _postfix, computeBuffer)) {
+	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs, _constants, _postfix, computeBuffer.first)) {
 		_exitCode = 100;
 		return core::AppState::Cleanup;
 	}
 
-	const std::string& computeSource = shader.getSource(computeBuffer, true);
+	const std::string& computeSource = shader.getSource(computeBuffer.first, true);
 
 	if (changedDir) {
 		filesystem()->popDir();

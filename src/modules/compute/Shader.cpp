@@ -130,7 +130,7 @@ std::string Shader::validPreprocessorName(const std::string& name) {
 	return core::string::replaceAll(name, "_", "");
 }
 
-std::string Shader::getSource(const std::string& buffer, bool finalize) const {
+std::string Shader::getSource(const std::string& buffer, bool finalize, std::vector<std::string>* includedFiles) const {
 	if (buffer.empty()) {
 		return "";
 	}
@@ -167,10 +167,12 @@ std::string Shader::getSource(const std::string& buffer, bool finalize) const {
 
 	std::vector<std::string> includeDirs;
 	includeDirs.push_back(std::string(core::string::extractPath(_name)));
-	src += util::handleIncludes(buffer, includeDirs);
+	const std::pair<std::string, bool>& ret = util::handleIncludes(buffer, includeDirs, includedFiles);
+	src += ret.first;
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		src = util::handleIncludes(src, includeDirs);
+		const std::pair<std::string, bool>& ret = util::handleIncludes(src, includeDirs, includedFiles);
+		src += ret.first;
 		++level;
 		if (level >= 10) {
 			Log::warn("Abort shader include loop for %s", _name.c_str());

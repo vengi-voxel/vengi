@@ -80,7 +80,7 @@ public:
 
 	void deleteKernel(Id& kernel);
 
-	std::string getSource(const std::string& buffer, bool finalize = true) const;
+	std::string getSource(const std::string& buffer, bool finalize = true, std::vector<std::string>* includedFiles = nullptr) const;
 
 	/**
 	 * If the shaders were loaded manually via @c ::load, then you have to initialize the shader manually, too

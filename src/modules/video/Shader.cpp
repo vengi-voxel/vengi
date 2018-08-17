@@ -317,10 +317,12 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 
 	std::vector<std::string> includeDirs;
 	includeDirs.push_back(std::string(core::string::extractPath(_name)));
-	src += util::handleIncludes(buffer, includeDirs, includedFiles);
+	const std::pair<std::string, bool>& ret = util::handleIncludes(buffer, includeDirs, includedFiles);
+	src += ret.first;
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		src = util::handleIncludes(src, includeDirs, includedFiles);
+		const std::pair<std::string, bool>& ret = util::handleIncludes(src, includeDirs, includedFiles);
+		src += ret.first;
 		++level;
 		if (level >= 10) {
 			Log::warn("Abort shader include loop for %s", _name.c_str());

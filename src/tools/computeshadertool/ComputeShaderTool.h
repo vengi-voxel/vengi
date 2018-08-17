@@ -41,7 +41,7 @@ protected:
 	std::map<std::string, std::string> _constants;
 	std::vector<std::string> _includeDirs;
 
-	std::string getSource(const std::string& file) const;
+	std::pair<std::string, bool> getSource(const std::string& file) const;
 	bool parse(const std::string& src);
 public:
 	ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
