@@ -46,6 +46,11 @@ macro(convert_to_camel_case IN OUT)
 	set(${OUT} ${_final})
 endmacro()
 
+macro(engine_mark_as_generated)
+	set_source_files_properties(${ARGN} PROPERTIES GENERATED TRUE)
+	#set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CXX)
+endmacro()
+
 macro(generate_unity_sources)
 	set(_OPTIONS_ARGS SOURCES EXECUTABLE LIBRARY WINDOWED)
 	set(_ONE_VALUE_ARGS TARGET UNITY_SRC)
@@ -101,7 +106,7 @@ macro(generate_unity_sources)
 			DEPENDS ${SRCS}
 			COMMENT "Generate unity sources for ${TARGET}"
 		)
-		set_source_files_properties(${UNITY_SRC} ${UNITY_SRC}.in PROPERTIES GENERATED TRUE)
+		engine_mark_as_generated(${UNITY_SRC} ${UNITY_SRC}.in)
 		foreach(SRC ${SRCS})
 			get_filename_component(extension ${SRC} EXT)
 			if (NOT "${extension}" STREQUAL ".cpp")
@@ -220,9 +225,7 @@ macro(generate_shaders TARGET)
 		DEPENDS ${_headers}
 		COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
 	)
-	set_source_files_properties(${_headers} PROPERTIES GENERATED TRUE)
-	set_source_files_properties(${_sources} PROPERTIES GENERATED TRUE)
-	set_source_files_properties(${_shadersheader} PROPERTIES GENERATED TRUE)
+	engine_mark_as_generated(${_headers} ${_sources} ${_shadersheader})
 	generate_unity_sources(SOURCES TARGET ${TARGET} SRCS ${_sources} UNITY_SRC "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_shaders_unity.cpp")
 	target_sources(${TARGET} PRIVATE ${_headers} ${_shadersheader})
 
@@ -303,7 +306,7 @@ macro(generate_compute_shaders TARGET)
 		DEPENDS ${_headers}
 		COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
 	)
-	set_source_files_properties(${_headers} ${_h} PROPERTIES GENERATED TRUE)
+	engine_mark_as_generated(${_headers} ${_h})
 	add_custom_target(GenerateComputeShaderHeader${TARGET} ${CMAKE_COMMAND} -D SRC=${_h}.in -D DST=${_h} -P ${CMAKE_BINARY_DIR}/GenerateComputeShaderHeader${TARGET}.cmake)
 	add_dependencies(${TARGET} GenerateComputeShaderHeader${TARGET} UpdateComputeShaders${TARGET})
 	add_dependencies(GenerateComputeShaderHeader${TARGET} GenerateComputeShaderBindings${TARGET})
@@ -325,7 +328,7 @@ macro(generate_db_models TARGET INPUT OUTPUT)
 		DEPENDS ${GEN_DIR}${OUTPUT}
 		COMMENT "Generate database model bindings for ${TARGET} in ${GEN_DIR}"
 	)
-	set_source_files_properties(${GEN_DIR}${OUTPUT} PROPERTIES GENERATED TRUE)
+	engine_mark_as_generated(${GEN_DIR}${OUTPUT})
 	add_dependencies(${TARGET} GenerateDatabaseModelBindings${TARGET})
 	add_dependencies(codegen GenerateDatabaseModelBindings${TARGET})
 endmacro()
@@ -349,7 +352,7 @@ macro(generate_protocol TARGET)
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 			COMMENT "Generating source code for ${DEFINITION}"
 		)
-		set_source_files_properties(${GEN_DIR}/${HEADER} PROPERTIES GENERATED TRUE)
+		engine_mark_as_generated(${GEN_DIR}/${HEADER})
 	endforeach()
 
 	add_custom_target(GenerateNetworkMessages${TARGET}
