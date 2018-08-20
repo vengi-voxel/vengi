@@ -25,7 +25,7 @@ else()
 	endif()
 	target_compile_options(${LIB} PRIVATE -O3)
 endif()
-generate_compute_shaders(noise noise)
+generate_compute_shaders(${LIB} noise)
 
 set(TEST_SRCS
 	tests/IslandNoiseTest.cpp
