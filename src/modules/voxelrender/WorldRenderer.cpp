@@ -341,6 +341,9 @@ bool WorldRenderer::renderWaterBuffers() {
 int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertices) {
 	int drawCalls = 0;
 	for (PlantBuffer* vbo : vbos) {
+		if (vbo->indexBuffer == -1) {
+			continue;
+		}
 		const uint32_t numIndices = vbo->vb.elements(vbo->indexBuffer, 1, sizeof(voxel::IndexType));
 		if (numIndices == 0u) {
 			continue;
