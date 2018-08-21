@@ -380,19 +380,17 @@ void ShapeBuilder::plane(uint32_t tesselation, float scale) {
 void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 	setPrimitive(Primitive::Triangles);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
-	static constexpr float pi = glm::pi<float>();
-	static constexpr float twoPi = glm::two_pi<float>();
 	const float du = 1.0f / numSlices;
 	const float dv = 1.0f / numStacks;
 
 	reserve(numStacks * numSlices);
 
 	for (int stack = 0; stack <= numStacks; stack++) {
-		const float stackAngle = (pi * stack) / numStacks;
+		const float stackAngle = (glm::pi<float>() * stack) / numStacks;
 		const float sinStack = glm::sin(stackAngle);
 		const float cosStack = glm::cos(stackAngle);
 		for (int slice = 0; slice <= numSlices; slice++) {
-			const float sliceAngle = (twoPi * slice) / numSlices;
+			const float sliceAngle = (glm::two_pi<float>() * slice) / numSlices;
 			const float sinSlice = glm::sin(sliceAngle);
 			const float cosSlice = glm::cos(sliceAngle);
 			const glm::vec3 norm(sinSlice * sinStack, cosSlice * sinStack, cosStack);
