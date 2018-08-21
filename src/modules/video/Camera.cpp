@@ -14,9 +14,6 @@ Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _pos(glm::vec3(0.0f)), _omega(0.0f) {
 }
 
-Camera::~Camera() {
-}
-
 void Camera::init(const glm::ivec2& position, const glm::ivec2& dimension) {
 	if (_position == position && _dimension == dimension) {
 		return;

@@ -12,10 +12,6 @@ ByteStream::ByteStream(int size) :
 	_buffer.reserve(size);
 }
 
-ByteStream::~ByteStream() {
-	_buffer.clear();
-}
-
 int32_t ByteStream::peekInt() const {
 	const int l = 4;
 	if (size() < l) {

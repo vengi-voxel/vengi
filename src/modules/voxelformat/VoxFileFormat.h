@@ -19,8 +19,7 @@ protected:
 	uint8_t findClosestIndex(const glm::vec4& color) const;
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
 public:
-	virtual ~VoxFileFormat() {
-	}
+	virtual ~VoxFileFormat() = default;
 
 	virtual RawVolume* load(const io::FilePtr& file) = 0;
 	virtual bool save(const RawVolume* volume, const io::FilePtr& file) = 0;

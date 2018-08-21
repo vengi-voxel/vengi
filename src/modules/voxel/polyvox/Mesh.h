@@ -25,7 +25,6 @@ typedef uint32_t IndexType;
 class Mesh {
 public:
 	Mesh(int vertices, int indices, bool mayGetResized = false);
-	~Mesh();
 
 	/**
 	 * @brief Calculate the memory amount this mesh is using
@@ -79,9 +78,6 @@ inline Mesh::Mesh(int vertices, int indices, bool mayGetResized) : _mayGetResize
 	if (indices > 0) {
 		_vecIndices.reserve(indices);
 	}
-}
-
-inline Mesh::~Mesh() {
 }
 
 inline const std::vector<IndexType>& Mesh::getIndexVector() const {

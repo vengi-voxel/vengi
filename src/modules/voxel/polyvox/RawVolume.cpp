@@ -19,7 +19,7 @@ RawVolume::RawVolume(const RawVolume* copy) :
 	_mins = copy->_mins;
 	_maxs = copy->_maxs;
 	_boundsValid = copy->_boundsValid;
-	memcpy(_data, copy->_data, calculateSizeInBytes());
+	std::copy(_data, _data + (width() * height() * depth()), copy->_data);
 }
 
 RawVolume::RawVolume(RawVolume&& move) {

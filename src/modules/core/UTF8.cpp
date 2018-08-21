@@ -47,7 +47,7 @@ size_t length(const char* str) {
 	size_t result = 0;
 
 	while (str[0] != '\0') {
-		const int n = lengthChar((const unsigned char) *str);
+		const size_t n = lengthChar((uint8_t) *str);
 		str += n;
 		result++;
 	}

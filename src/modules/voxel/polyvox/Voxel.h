@@ -77,6 +77,12 @@ public:
 		_material(voxel._material), _colorIndex(voxel._colorIndex) {
 	}
 
+	constexpr Voxel& operator=(const Voxel& voxel) {
+		_material = voxel._material;
+		_colorIndex = voxel._colorIndex;
+		return *this;
+	}
+
 	/**
 	 * @brief Compares by the material type
 	 */

@@ -25,7 +25,7 @@ protected:
 	}
 
 	inline NpcPtr create(network::EntityType type = network::EntityType::ANIMAL_RABBIT) {
-		constexpr glm::ivec3 pos(0);
+		glm::ivec3 pos = glm::zero<glm::ivec3>();
 		const NpcPtr& npc = map->spawnMgr()->spawn(type, &pos);
 		map->zone()->update(0L);
 		return npc;

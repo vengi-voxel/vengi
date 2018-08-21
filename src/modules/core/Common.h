@@ -62,6 +62,10 @@
 #define core_memset SDL_memset
 #endif
 
+#ifndef core_memcpy
+#define core_memcpy SDL_memcpy
+#endif
+
 #ifndef core_zero
 #define core_zero SDL_zero
 #endif

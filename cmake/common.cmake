@@ -48,6 +48,8 @@ endif()
 
 # thread sanitizer doesn't work in combination with address and leak
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=2 -O1")
+
 # Set -Werror to catch "argument unused during compilation" warnings
 set(CMAKE_REQUIRED_FLAGS "-Werror -fthread-sanitizer") # Also needs to be a link flag for test to pass
 check_c_compiler_flag("-fthread-sanitizer" HAVE_FLAG_THREAD_SANITIZER)

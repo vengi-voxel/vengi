@@ -48,7 +48,7 @@ static bool validate(Kernel& kernel) {
 	return !error;
 }
 
-static const simplecpp::Token *parseStruct(const simplecpp::Token *tok, std::vector<Struct>& structs) {
+static const simplecpp::Token *parseStruct(const std::string& filename, const simplecpp::Token *tok, std::vector<Struct>& structs) {
 	tok = tok->next;
 	if (!tok) {
 		Log::error("%s:%i:%i: error: Failed to parse struct - not enough tokens - expected name",
@@ -132,7 +132,7 @@ static const simplecpp::Token *parseStruct(const simplecpp::Token *tok, std::vec
 	return tok;
 }
 
-static const simplecpp::Token *parseEnum(const simplecpp::Token *tok, std::vector<Struct>& structs) {
+static const simplecpp::Token *parseEnum(const std::string& filename, const simplecpp::Token *tok, std::vector<Struct>& structs) {
 	tok = tok->next;
 	if (!tok) {
 		// anonymous enums don't generate structs
@@ -140,23 +140,26 @@ static const simplecpp::Token *parseEnum(const simplecpp::Token *tok, std::vecto
 	}
 	Struct structVar;
 	structVar.isEnum = true;
-	structVar.name = tok->str;
-	Log::info("enum name %s", structVar.name.c_str());
-	if (!tok->next) {
-		Log::error("%s:%i:%i: error: Failed to parse enum - not enough tokens",
-				tok->location.file().c_str(), tok->location.line, tok->location.col);
-		return tok;
-	}
-	tok = tok->next;
-	if (!tok->next) {
-		Log::error("%s:%i:%i: error: Failed to parse enum - not enough tokens",
-				tok->location.file().c_str(), tok->location.line, tok->location.col);
-		return tok;
-	}
 	if (tok->str != "{") {
-		Log::error("%s:%i:%i: error: Failed to parse enum - invalid token: %s",
-				tok->location.file().c_str(), tok->location.line, tok->location.col, tok->str.c_str());
-		return tok;
+		structVar.name = tok->str;
+		if (!tok->next) {
+			Log::error("%s:%i:%i: error: Failed to parse enum - not enough tokens",
+					tok->location.file().c_str(), tok->location.line, tok->location.col);
+			return tok;
+		}
+		tok = tok->next;
+		if (!tok->next) {
+			Log::error("%s:%i:%i: error: Failed to parse enum - not enough tokens",
+					tok->location.file().c_str(), tok->location.line, tok->location.col);
+			return tok;
+		}
+		if (tok->str != "{") {
+			Log::error("%s:%i:%i: error: Failed to parse enum - invalid token: %s",
+					tok->location.file().c_str(), tok->location.line, tok->location.col, tok->str.c_str());
+			return tok;
+		}
+	} else {
+		Log::warn("Anonymous enums are not supported by every OpenCL compiler");
 	}
 	if (!tok) {
 		return nullptr;
@@ -191,7 +194,7 @@ static const simplecpp::Token *parseEnum(const simplecpp::Token *tok, std::vecto
 	return tok;
 }
 
-static const simplecpp::Token *parseKernel(const simplecpp::Token *tok, std::vector<Kernel>& kernels) {
+static const simplecpp::Token *parseKernel(const std::string& filename, const simplecpp::Token *tok, std::vector<Kernel>& kernels) {
 	if (!tok) {
 		return tok;
 	}
@@ -434,11 +437,11 @@ bool parse(const std::string& buffer, const std::string& computeFilename, std::v
 			continue;
 		}
 		if (token == "__kernel" || token == "kernel") {
-			tok = parseKernel(tok, kernels);
+			tok = parseKernel(computeFilename, tok, kernels);
 		} else if (token == "struct") {
-			tok = parseStruct(tok, structs);
+			tok = parseStruct(computeFilename, tok, structs);
 		} else if (token == "enum") {
-			tok = parseEnum(tok, structs);
+			tok = parseEnum(computeFilename, tok, structs);
 		} else if (token == "$constant") {
 			if (!tok->next) {
 				return false;

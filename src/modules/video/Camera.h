@@ -96,7 +96,6 @@ protected:
 	math::Frustum _frustum;
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
-	~Camera();
 
 	void init(const glm::ivec2& position, const glm::ivec2& dimension);
 	const glm::ivec2& dimension() const;

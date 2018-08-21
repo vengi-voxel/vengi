@@ -40,7 +40,6 @@ private:
 
 public:
 	ByteStream(int size = 0);
-	virtual ~ByteStream();
 
 	void addBool(bool value, bool prepend = false);
 	void addByte(uint8_t byte, bool prepend = false);

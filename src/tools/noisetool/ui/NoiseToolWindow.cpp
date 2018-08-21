@@ -224,8 +224,8 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 		uint8_t* noiseBuffer = qd.noiseBuffer;
 		uint8_t* graphBuffer = qd.graphBuffer;
 
-		memset(noiseBuffer, 255, noiseBufferSize);
-		memcpy(graphBuffer, _graphBufferBackground, graphBufferSize);
+		core_memset(noiseBuffer, 255, noiseBufferSize);
+		core_memcpy(graphBuffer, _graphBufferBackground, graphBufferSize);
 
 		if (qd.data.noiseType == NoiseType::poissonDiskDistribution) {
 			const math::Rect<int> area(0, 0, _noiseWidth - 1, _noiseHeight - 1);
@@ -266,18 +266,18 @@ void NoiseToolWindow::update() {
 		return;
 	}
 	NoiseData& data = qd.data;
-	char buf[512];
-	char fullbuf[512];
 
-	std::snprintf(buf, sizeof(buf), "-%f-%i-%f-%i-%f-%i-%f-%f-%f", data.ridgedOffset, (int)data.noiseType, data.separation, (int)data.enableDistance, data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
+	const std::string& buf = core::string::format("-%f-%i-%f-%i-%f-%i-%f-%f-%f",
+			data.ridgedOffset, (int)data.noiseType, data.separation, (int)data.enableDistance,
+			data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
 
-	std::snprintf(fullbuf, sizeof(fullbuf), IMAGE_PREFIX "%s", buf);
-	data.noise = tb::g_image_manager->GetImage(fullbuf, (uint32_t*)qd.noiseBuffer, _noiseWidth, _noiseHeight);
+	const std::string imageBuf = IMAGE_PREFIX + buf;
+	data.noise = tb::g_image_manager->GetImage(imageBuf.c_str(), (uint32_t*)qd.noiseBuffer, _noiseWidth, _noiseHeight);
 
-	std::snprintf(fullbuf, sizeof(fullbuf), GRAPH_PREFIX "%s", buf);
-	data.graph = tb::g_image_manager->GetImage(fullbuf, (uint32_t*)qd.graphBuffer, _noiseWidth, _graphHeight);
+	const std::string graphBuf = GRAPH_PREFIX + buf;
+	data.graph = tb::g_image_manager->GetImage(graphBuf.c_str(), (uint32_t*)qd.graphBuffer, _noiseWidth, _graphHeight);
 
-	_noiseTool->add(TBIDC(fullbuf), data);
+	_noiseTool->add(TBIDC(graphBuf.c_str()), data);
 
 	const int n = _select->GetSource()->GetNumItems();
 	_select->SetValue(n - 1);

@@ -32,8 +32,7 @@ public:
 		static_assert(std::is_base_of<IEventBusEvent, T>::value, "Wrong type given, must extend IEventBusEvent");
 	}
 
-	virtual ~IEventBusHandler() {
-	}
+	virtual ~IEventBusHandler() = default;
 
 	/**
 	 * @brief Callback for the event. Keep in mind that this can be called from different threads
@@ -53,8 +52,7 @@ protected:
 			_index(typeid(*this)) {
 	}
 public:
-	virtual ~IEventBusTopic() {
-	}
+	virtual ~IEventBusTopic() = default;
 
 	inline bool operator==(const IEventBusTopic& other) const {
 		return _index == other._index;
@@ -78,8 +76,7 @@ private:
 	}
 public:
 
-	virtual ~IEventBusEvent() {
-	}
+	virtual ~IEventBusEvent() = default;
 };
 
 typedef std::shared_ptr<IEventBusEvent> IEventBusEventPtr;

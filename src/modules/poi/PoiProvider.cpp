@@ -39,7 +39,7 @@ size_t PoiProvider::count() const {
 }
 
 PoiResult PoiProvider::query(Type type) const {
-	static constexpr PoiResult empty{glm::zero<glm::vec3>(), false};
+	static PoiResult empty{glm::zero<glm::vec3>(), false};
 	core::ScopedReadLock scoped(_lock);
 	if (_pois.empty()) {
 		return empty;
