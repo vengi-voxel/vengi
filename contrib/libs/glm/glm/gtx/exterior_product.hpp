@@ -17,7 +17,7 @@
 #include "../detail/setup.hpp"
 #include "../detail/qualifier.hpp"
 
-#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
+#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_exterior_product extension included")
 #endif
 

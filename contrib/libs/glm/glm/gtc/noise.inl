@@ -1,5 +1,4 @@
 /// @ref gtc_noise
-/// @file glm/gtc/noise.inl
 ///
 // Based on the work of Stefan Gustavson and Ashima Arts on "webgl-noise":
 // https://github.com/ashima/webgl-noise

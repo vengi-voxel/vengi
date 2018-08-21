@@ -1,16 +1,7 @@
 /// @ref gtc_constants
-/// @file glm/gtc/constants.inl
-
-#include <limits>
 
 namespace glm
 {
-	template<typename genType>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR genType epsilon()
-	{
-		return std::numeric_limits<genType>::epsilon();
-	}
-
 	template<typename genType>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR genType zero()
 	{
@@ -21,12 +12,6 @@ namespace glm
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR genType one()
 	{
 		return genType(1);
-	}
-
-	template<typename genType>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR genType pi()
-	{
-		return genType(3.14159265358979323846264338327950288);
 	}
 
 	template<typename genType>

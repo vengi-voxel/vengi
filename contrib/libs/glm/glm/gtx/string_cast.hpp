@@ -32,7 +32,7 @@
 #	error "GLM_GTX_string_cast is not supported on CUDA compiler"
 #endif
 
-#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
+#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_string_cast extension included")
 #endif
 

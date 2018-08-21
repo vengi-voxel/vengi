@@ -1,5 +1,4 @@
 /// @ref gtx_string_cast
-/// @file glm/gtx/string_cast.inl
 
 #include <cstdarg>
 #include <cstdio>
@@ -440,9 +439,9 @@ namespace detail
 
 
 	template<typename T, qualifier Q>
-	struct compute_to_string<tquat<T, Q> >
+	struct compute_to_string<qua<T, Q> >
 	{
-		GLM_FUNC_QUALIFIER static std::string call(tquat<T, Q> const& x)
+		GLM_FUNC_QUALIFIER static std::string call(qua<T, Q> const& x)
 		{
 			char const * PrefixStr = prefix<T>::value();
 			char const * LiteralStr = literal<T, std::numeric_limits<T>::is_iec559>::value();

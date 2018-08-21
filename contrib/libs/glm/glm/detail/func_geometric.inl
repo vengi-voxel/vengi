@@ -1,11 +1,5 @@
-/// @ref core
-/// @file glm/detail/func_geometric.inl
-
 #include "../exponential.hpp"
 #include "../common.hpp"
-#include "type_vec2.hpp"
-#include "type_vec4.hpp"
-#include "type_float.hpp"
 
 namespace glm{
 namespace detail
@@ -180,7 +174,7 @@ namespace detail
 	{
 		return detail::compute_cross<T, Q, detail::is_aligned<Q>::value>::call(x, y);
 	}
-
+/*
 	// normalize
 	template<typename genType>
 	GLM_FUNC_QUALIFIER genType normalize(genType const& x)
@@ -189,7 +183,7 @@ namespace detail
 
 		return x < genType(0) ? genType(-1) : genType(1);
 	}
-
+*/
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<L, T, Q> normalize(vec<L, T, Q> const& x)
 	{
@@ -242,6 +236,6 @@ namespace detail
 	}
 }//namespace glm
 
-#if GLM_ARCH != GLM_ARCH_PURE && GLM_HAS_UNRESTRICTED_UNIONS
+#if GLM_CONFIG_SIMD == GLM_ENABLE
 #	include "func_geometric_simd.inl"
 #endif

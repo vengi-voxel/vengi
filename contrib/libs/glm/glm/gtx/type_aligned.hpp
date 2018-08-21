@@ -17,12 +17,13 @@
 
 // Dependency:
 #include "../gtc/type_precision.hpp"
+#include "../gtc/quaternion.hpp"
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #	error "GLM: GLM_GTX_type_aligned is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
 #endif
 
-#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
+#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_type_aligned extension included")
 #endif
 
@@ -959,7 +960,7 @@ namespace glm
 
 	/// Single-qualifier floating-point aligned quaternion.
 	/// @see gtx_type_aligned
-	GLM_ALIGNED_TYPEDEF(fquat, aligned_fquat, 16);
+	GLM_ALIGNED_TYPEDEF(quat, aligned_fquat, 16);
 
 	/// Double-qualifier floating-point aligned quaternion.
 	/// @see gtx_type_aligned

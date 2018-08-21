@@ -14,7 +14,6 @@
 
 #pragma once
 
-#include "detail/setup.hpp"
 #include "detail/qualifier.hpp"
 #include "common.hpp"
 #include "vector_relational.hpp"

@@ -1,5 +1,4 @@
 /// @ref gtx_common
-/// @file glm/gtx/common.inl
 
 #include <cmath>
 #include "../gtc/epsilon.hpp"
@@ -13,7 +12,7 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static vec<L, T, Q> call(vec<L, T, Q> const& a, vec<L, T, Q> const& b)
 		{
-			return detail::functor2<L, T, Q>::call(std::fmod, a, b);
+			return detail::functor2<vec, L, T, Q>::call(std::fmod, a, b);
 		}
 	};
 

@@ -1,5 +1,4 @@
 /// @ref gtc_round
-/// @file glm/gtc/round.inl
 
 #include "../integer.hpp"
 
@@ -253,7 +252,7 @@ namespace detail
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<L, T, Q> floorPowerOfTwo(vec<L, T, Q> const& v)
 	{
-		return detail::functor1<L, T, T, Q>::call(floorPowerOfTwo, v);
+		return detail::functor1<vec, L, T, T, Q>::call(floorPowerOfTwo, v);
 	}
 
 	///////////////////
@@ -273,7 +272,7 @@ namespace detail
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<L, T, Q> roundPowerOfTwo(vec<L, T, Q> const& v)
 	{
-		return detail::functor1<L, T, T, Q>::call(roundPowerOfTwo, v);
+		return detail::functor1<vec, L, T, T, Q>::call(roundPowerOfTwo, v);
 	}
 
 	////////////////
@@ -309,7 +308,7 @@ namespace detail
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<L, T, Q> ceilMultiple(vec<L, T, Q> const& Source, vec<L, T, Q> const& Multiple)
 	{
-		return detail::functor2<L, T, Q>::call(ceilMultiple, Source, Multiple);
+		return detail::functor2<vec, L, T, Q>::call(ceilMultiple, Source, Multiple);
 	}
 
 	//////////////////////
@@ -324,7 +323,7 @@ namespace detail
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<L, T, Q> floorMultiple(vec<L, T, Q> const& Source, vec<L, T, Q> const& Multiple)
 	{
-		return detail::functor2<L, T, Q>::call(floorMultiple, Source, Multiple);
+		return detail::functor2<vec, L, T, Q>::call(floorMultiple, Source, Multiple);
 	}
 
 	//////////////////////
@@ -339,6 +338,6 @@ namespace detail
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<L, T, Q> roundMultiple(vec<L, T, Q> const& Source, vec<L, T, Q> const& Multiple)
 	{
-		return detail::functor2<L, T, Q>::call(roundMultiple, Source, Multiple);
+		return detail::functor2<vec, L, T, Q>::call(roundMultiple, Source, Multiple);
 	}
 }//namespace glm

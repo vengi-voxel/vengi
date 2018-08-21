@@ -1,6 +1,3 @@
-/// @ref core
-/// @file glm/detail/func_integer_simd.inl
-
 #include "../simd/integer.h"
 
 #if GLM_ARCH & GLM_ARCH_SSE2_BIT
@@ -9,9 +6,9 @@ namespace glm{
 namespace detail
 {
 	template<qualifier Q>
-	struct compute_bitfieldReverseStep<4, uint32, Q, true, true>
+	struct compute_bitfieldReverseStep<4, uint, Q, true, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, uint32, Q> call(vec<4, uint32, Q> const& v, uint32 Mask, uint32 Shift)
+		GLM_FUNC_QUALIFIER static vec<4, uint, Q> call(vec<4, uint, Q> const& v, uint Mask, uint Shift)
 		{
 			__m128i const set0 = v.data;
 
@@ -30,9 +27,9 @@ namespace detail
 	};
 
 	template<qualifier Q>
-	struct compute_bitfieldBitCountStep<4, uint32, Q, true, true>
+	struct compute_bitfieldBitCountStep<4, uint, Q, true, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, uint32, Q> call(vec<4, uint32, Q> const& v, uint32 Mask, uint32 Shift)
+		GLM_FUNC_QUALIFIER static vec<4, uint, Q> call(vec<4, uint, Q> const& v, uint Mask, uint Shift)
 		{
 			__m128i const set0 = v.data;
 
@@ -49,14 +46,14 @@ namespace detail
 
 #	if GLM_ARCH & GLM_ARCH_AVX_BIT
 	template<>
-	GLM_FUNC_QUALIFIER int bitCount(uint32 x)
+	GLM_FUNC_QUALIFIER int bitCount(uint x)
 	{
 		return _mm_popcnt_u32(x);
 	}
 
 #	if(GLM_MODEL == GLM_MODEL_64)
 	template<>
-	GLM_FUNC_QUALIFIER int bitCount(uint64 x)
+	GLM_FUNC_QUALIFIER int bitCount(detail::uint64 x)
 	{
 		return static_cast<int>(_mm_popcnt_u64(x));
 	}

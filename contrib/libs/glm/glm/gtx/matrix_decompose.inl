@@ -1,5 +1,4 @@
 /// @ref gtx_matrix_decompose
-/// @file glm/gtx/matrix_decompose.inl
 
 #include "../gtc/constants.hpp"
 #include "../gtc/epsilon.hpp"
@@ -30,7 +29,7 @@ namespace detail
 	// Decomposes the mode matrix to translations,rotation scale components
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_QUALIFIER bool decompose(mat<4, 4, T, Q> const& ModelMatrix, vec<3, T, Q> & Scale, tquat<T, Q> & Orientation, vec<3, T, Q> & Translation, vec<3, T, Q> & Skew, vec<4, T, Q> & Perspective)
+	GLM_FUNC_QUALIFIER bool decompose(mat<4, 4, T, Q> const& ModelMatrix, vec<3, T, Q> & Scale, qua<T, Q> & Orientation, vec<3, T, Q> & Translation, vec<3, T, Q> & Skew, vec<4, T, Q> & Perspective)
 	{
 		mat<4, 4, T, Q> LocalMatrix(ModelMatrix);
 

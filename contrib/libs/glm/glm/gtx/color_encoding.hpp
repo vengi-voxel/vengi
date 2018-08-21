@@ -19,7 +19,7 @@
 #include "../vec3.hpp"
 #include <limits>
 
-#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
+#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTC_color_encoding extension included")
 #endif
 

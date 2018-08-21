@@ -1,5 +1,4 @@
 /// @ref gtc_type_ptr
-/// @file glm/gtc/type_ptr.inl
 
 #include <cstring>
 
@@ -153,13 +152,13 @@ namespace glm
 	}
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_QUALIFIER T const * value_ptr(tquat<T, Q> const& q)
+	GLM_FUNC_QUALIFIER T const * value_ptr(qua<T, Q> const& q)
 	{
 		return &(q[0]);
 	}
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_QUALIFIER T* value_ptr(tquat<T, Q>& q)
+	GLM_FUNC_QUALIFIER T* value_ptr(qua<T, Q>& q)
 	{
 		return &(q[0]);
 	}
@@ -375,10 +374,10 @@ namespace glm
 	}
 
 	template<typename T>
-	GLM_FUNC_QUALIFIER tquat<T, defaultp> make_quat(T const *const ptr)
+	GLM_FUNC_QUALIFIER qua<T, defaultp> make_quat(T const *const ptr)
 	{
-		tquat<T, defaultp> Result;
-		memcpy(value_ptr(Result), ptr, sizeof(tquat<T, defaultp>));
+		qua<T, defaultp> Result;
+		memcpy(value_ptr(Result), ptr, sizeof(qua<T, defaultp>));
 		return Result;
 	}
 

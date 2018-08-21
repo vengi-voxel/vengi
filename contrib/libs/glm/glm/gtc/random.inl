@@ -1,10 +1,7 @@
-/// @ref gtc_random
-/// @file glm/gtc/random.inl
-
 #include "../geometric.hpp"
 #include "../exponential.hpp"
 #include "../trigonometric.hpp"
-#include "../ext/vec1.hpp"
+#include "../detail/type_vec1.hpp"
 #include <cstdlib>
 #include <ctime>
 #include <cassert>
@@ -237,12 +234,14 @@ namespace detail
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER vec<L, T, Q> gaussRand(vec<L, T, Q> const& Mean, vec<L, T, Q> const& Deviation)
 	{
-		return detail::functor2<L, T, Q>::call(gaussRand, Mean, Deviation);
+		return detail::functor2<vec, L, T, Q>::call(gaussRand, Mean, Deviation);
 	}
 
 	template<typename T>
 	GLM_FUNC_QUALIFIER vec<2, T, defaultp> diskRand(T Radius)
 	{
+		assert(Radius > static_cast<T>(0));
+
 		vec<2, T, defaultp> Result(T(0));
 		T LenRadius(T(0));
 
@@ -261,6 +260,8 @@ namespace detail
 	template<typename T>
 	GLM_FUNC_QUALIFIER vec<3, T, defaultp> ballRand(T Radius)
 	{
+		assert(Radius > static_cast<T>(0));
+
 		vec<3, T, defaultp> Result(T(0));
 		T LenRadius(T(0));
 
@@ -279,6 +280,8 @@ namespace detail
 	template<typename T>
 	GLM_FUNC_QUALIFIER vec<2, T, defaultp> circularRand(T Radius)
 	{
+		assert(Radius > static_cast<T>(0));
+
 		T a = linearRand(T(0), static_cast<T>(6.283185307179586476925286766559));
 		return vec<2, T, defaultp>(glm::cos(a), glm::sin(a)) * Radius;
 	}
@@ -286,6 +289,8 @@ namespace detail
 	template<typename T>
 	GLM_FUNC_QUALIFIER vec<3, T, defaultp> sphericalRand(T Radius)
 	{
+		assert(Radius > static_cast<T>(0));
+
 		T theta = linearRand(T(0), T(6.283185307179586476925286766559f));
 		T phi = std::acos(linearRand(T(-1.0f), T(1.0f)));
 

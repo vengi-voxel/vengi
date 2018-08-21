@@ -1,5 +1,4 @@
 /// @ref gtc_matrix_inverse
-/// @file glm/gtc/matrix_inverse.inl
 
 namespace glm
 {

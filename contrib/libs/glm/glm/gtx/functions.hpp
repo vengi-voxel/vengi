@@ -18,7 +18,7 @@
 #include "../detail/qualifier.hpp"
 #include "../detail/type_vec2.hpp"
 
-#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
+#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_functions extension included")
 #endif
 
