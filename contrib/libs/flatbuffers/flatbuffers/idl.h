@@ -408,6 +408,8 @@ struct IDLOptions {
     kTs = 1 << 9,
     kJsonSchema = 1 << 10,
     kDart = 1 << 11,
+    kLua = 1 << 12,
+    kLobster = 1 << 13,
     kMAX
   };
 
@@ -420,6 +422,10 @@ struct IDLOptions {
   // The corresponding language bit will be set if a language is included
   // for code generation.
   unsigned long lang_to_generate;
+
+  // If set (default behavior), empty string and vector fields will be set to
+  // nullptr to make the flatbuffer more compact.
+  bool set_empty_to_null;
 
   IDLOptions()
       : strict_json(false),
@@ -456,7 +462,8 @@ struct IDLOptions {
         force_defaults(false),
         lang(IDLOptions::kJava),
         mini_reflect(IDLOptions::kNone),
-        lang_to_generate(0) {}
+        lang_to_generate(0),
+        set_empty_to_null(true) {}
 };
 
 // This encapsulates where the parser is in the current source file.
@@ -557,6 +564,7 @@ class Parser : public ParserState {
     known_attributes_["native_type"] = true;
     known_attributes_["native_default"] = true;
     known_attributes_["flexbuffer"] = true;
+    known_attributes_["private"] = true;
   }
 
   ~Parser() {
@@ -813,6 +821,18 @@ extern bool GeneratePhp(const Parser &parser,
 extern bool GeneratePython(const Parser &parser,
                            const std::string &path,
                            const std::string &file_name);
+
+// Generate Lobster files from the definitions in the Parser object.
+// See idl_gen_lobster.cpp.
+extern bool GenerateLobster(const Parser &parser,
+                            const std::string &path,
+                            const std::string &file_name);
+
+// Generate Lua files from the definitions in the Parser object.
+// See idl_gen_lua.cpp.
+extern bool GenerateLua(const Parser &parser,
+	                    const std::string &path,
+	                    const std::string &file_name);
 
 // Generate Json schema file
 // See idl_gen_json_schema.cpp.

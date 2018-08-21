@@ -25,13 +25,15 @@ set(COMPILER_SRCS
 	compiler/flatc.cpp
 	compiler/flatc_main.cpp
 	compiler/idl_gen_cpp.cpp
+	compiler/idl_gen_dart.cpp
 	compiler/idl_gen_fbs.cpp
 	compiler/idl_gen_general.cpp
 	compiler/idl_gen_go.cpp
 	compiler/idl_gen_grpc.cpp
 	compiler/idl_gen_js.cpp
 	compiler/idl_gen_json_schema.cpp
-	compiler/idl_gen_dart.cpp
+	compiler/idl_gen_lobster.cpp
+	compiler/idl_gen_lua.cpp
 	compiler/idl_gen_php.cpp
 	compiler/idl_gen_python.cpp
 	compiler/idl_gen_text.cpp
