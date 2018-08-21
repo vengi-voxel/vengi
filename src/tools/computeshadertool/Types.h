@@ -24,6 +24,7 @@ struct Parameter {
 	std::string type;
 	std::string name;
 	std::string comment;
+	std::string value;
 	bool byReference = false;
 	DataType datatype = DataType::None;
 	compute::BufferFlag flags = compute::BufferFlag::ReadWrite;
@@ -41,6 +42,7 @@ struct Kernel {
 };
 
 struct Struct {
+	bool isEnum = false;
 	std::string comment;
 	std::string name;
 	std::vector<Parameter> parameters;

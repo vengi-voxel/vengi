@@ -57,6 +57,11 @@ static const simplecpp::Token *parseStruct(const simplecpp::Token *tok, std::vec
 	}
 	Struct structVar;
 	structVar.name = tok->str;
+	if (!tok->next) {
+		Log::error("%s:%i:%i: error: Failed to parse struct - not enough tokens",
+				tok->location.file().c_str(), tok->location.line, tok->location.col);
+		return tok;
+	}
 	tok = tok->next;
 	if (!tok->next) {
 		Log::error("%s:%i:%i: error: Failed to parse struct - not enough tokens",
@@ -123,6 +128,65 @@ static const simplecpp::Token *parseStruct(const simplecpp::Token *tok, std::vec
 	}
 	if (valid) {
 		structs.push_back(structVar);
+	}
+	return tok;
+}
+
+static const simplecpp::Token *parseEnum(const simplecpp::Token *tok, std::vector<Struct>& structs) {
+	tok = tok->next;
+	if (!tok) {
+		// anonymous enums don't generate structs
+		return tok;
+	}
+	Struct structVar;
+	structVar.isEnum = true;
+	structVar.name = tok->str;
+	Log::info("enum name %s", structVar.name.c_str());
+	if (!tok->next) {
+		Log::error("%s:%i:%i: error: Failed to parse enum - not enough tokens",
+				tok->location.file().c_str(), tok->location.line, tok->location.col);
+		return tok;
+	}
+	tok = tok->next;
+	if (!tok->next) {
+		Log::error("%s:%i:%i: error: Failed to parse enum - not enough tokens",
+				tok->location.file().c_str(), tok->location.line, tok->location.col);
+		return tok;
+	}
+	if (tok->str != "{") {
+		Log::error("%s:%i:%i: error: Failed to parse enum - invalid token: %s",
+				tok->location.file().c_str(), tok->location.line, tok->location.col, tok->str.c_str());
+		return tok;
+	}
+	if (!tok) {
+		return nullptr;
+	}
+	Parameter param;
+	for (tok = tok->next; tok; tok = tok->next) {
+		const std::string& token = tok->str;
+		if (token == "}") {
+			break;
+		}
+		param.name = token;
+		if (tok->next) {
+			if (tok->next->str == "=") {
+				tok = tok->next;
+				for (tok = tok->next; tok; tok = tok->next) {
+					if (tok->str == "," || tok->str == "}") {
+						break;
+					}
+					param.value.append(tok->str);
+				}
+			} else if (tok->next->str == ",") {
+				tok = tok->next;
+			}
+		}
+		structVar.parameters.push_back(param);
+		param = Parameter();
+	}
+	structs.push_back(structVar);
+	if (tok) {
+		tok = tok->next;
 	}
 	return tok;
 }
@@ -373,6 +437,8 @@ bool parse(const std::string& buffer, const std::string& computeFilename, std::v
 			tok = parseKernel(tok, kernels);
 		} else if (token == "struct") {
 			tok = parseStruct(tok, structs);
+		} else if (token == "enum") {
+			tok = parseEnum(tok, structs);
 		} else if (token == "$constant") {
 			if (!tok->next) {
 				return false;

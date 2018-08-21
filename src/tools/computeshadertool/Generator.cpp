@@ -187,24 +187,46 @@ static void generateStructs(const std::vector<Struct>& _structs, std::stringstre
 		if (!s.comment.empty()) {
 			structs << "/** " << s.comment << "*/\n";
 		}
-		structs << "\tstruct /*alignas(4)*/ " << s.name << " {\n";
-		for (const Parameter& p : s.parameters) {
-			const util::CLTypeMapping& clType = util::vectorType(p.type);
+		structs << "\t";
+		if (s.isEnum) {
+			structs << "enum ";
+		} else {
+			structs << "struct /*alignas(4)*/ ";
+		}
+		structs << s.name << " {\n";
+		const size_t size = s.parameters.size();
+		for (size_t i = 0; i < size; ++i) {
+			const Parameter& p = s.parameters[i];
 			if (!p.comment.empty()) {
 				structs << "\t\t/** " << p.comment << "*/\n";
 			}
 			structs << "\t\t";
-			const int alignment = util::alignment(clType.type);
-			if (alignment > 1) {
-				structs << "alignas(" << alignment << ") ";
+			if (s.isEnum) {
+				structs << p.name;
+				if (!p.value.empty()) {
+					structs << " = " << p.value;
+				}
+			} else {
+				const util::CLTypeMapping& clType = util::vectorType(p.type);
+				const int alignment = util::alignment(clType.type);
+				if (alignment > 1) {
+					structs << "alignas(" << alignment << ") ";
+				}
+				structs << clType.type;
+				structs << " /* '" << p.type << "' */ ";
+				structs << p.name;
+				if (clType.arraySize > 0) {
+					structs << "[" << clType.arraySize << "]";
+				}
 			}
-			structs << clType.type;
-			structs << " /* '" << p.type << "' */ ";
-			structs << p.name;
-			if (clType.arraySize > 0) {
-				structs << "[" << clType.arraySize << "]";
+			if (s.isEnum) {
+				if (i < size - 1) {
+					structs << ",";
+				}
+				structs << "\n";
+			} else {
+				structs << ";\n";
 			}
-			structs << ";\n";
 		}
 		structs << "\t};\n";
 	}
