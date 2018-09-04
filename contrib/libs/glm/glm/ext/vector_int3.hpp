@@ -6,7 +6,7 @@
 
 namespace glm
 {
-	/// @addtogroup core
+	/// @addtogroup core_vector
 	/// @{
 
 	/// 3 components vector of signed integer numbers.

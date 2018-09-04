@@ -1,14 +1,15 @@
 /// @ref ext_vector_int1
 /// @file glm/ext/vector_int1.hpp
 ///
-/// @see core (dependence)
-///
 /// @defgroup ext_vector_int1 GLM_EXT_vector_int1
 /// @ingroup ext
 ///
+/// Exposes ivec1 vector type.
+///
 /// Include <glm/ext/vector_int1.hpp> to use the features of this extension.
 ///
-/// Exposes ivec1 vector type.
+/// @see ext_vector_uint1 extension.
+/// @see ext_vector_int1_precision extension.
 
 #pragma once
 
@@ -24,8 +25,6 @@ namespace glm
 	/// @{
 
 	/// 1 component vector of signed integer numbers.
-	///
-	/// @see ext_vector_int1 extension.
 	typedef vec<1, int, defaultp>			ivec1;
 
 	/// @}

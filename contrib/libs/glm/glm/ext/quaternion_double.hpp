@@ -1,14 +1,21 @@
 /// @ref ext_quaternion_double
 /// @file glm/ext/quaternion_double.hpp
 ///
-/// @see core (dependence)
-///
 /// @defgroup ext_quaternion_double GLM_EXT_quaternion_double
 /// @ingroup ext
 ///
+/// Exposes double-precision floating point quaternion type.
+///
 /// Include <glm/ext/quaternion_double.hpp> to use the features of this extension.
 ///
-/// Defines a templated quaternion type and several quaternion operations.
+/// @see ext_quaternion_float
+/// @see ext_quaternion_double_precision
+/// @see ext_quaternion_common
+/// @see ext_quaternion_exponential
+/// @see ext_quaternion_geometric
+/// @see ext_quaternion_relational
+/// @see ext_quaternion_transform
+/// @see ext_quaternion_trigonometric
 
 #pragma once
 
@@ -25,8 +32,6 @@ namespace glm
 	/// @{
 
 	/// Quaternion of double-precision floating-point numbers.
-	///
-	/// @see ext_quaternion_double
 	typedef qua<double, defaultp>		dquat;
 
 	/// @}

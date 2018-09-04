@@ -1,14 +1,15 @@
 /// @ref ext_scalar_common
 /// @file glm/ext/scalar_common.hpp
 ///
-/// @see core (dependence)
-///
 /// @defgroup ext_scalar_common GLM_EXT_scalar_common
 /// @ingroup ext
 ///
+/// Exposes min and max functions for 3 to 4 scalar parameters.
+///
 /// Include <glm/ext/scalar_common.hpp> to use the features of this extension.
 ///
-/// Min and max functions for 3 to 4 parameters.
+/// @see core_func_common
+/// @see ext_vector_common
 
 #pragma once
 
@@ -27,26 +28,24 @@ namespace glm
 	/// Returns the minimum component-wise values of 3 inputs
 	///
 	/// @tparam T A floating-point scalar type.
-	///
-	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T min(T a, T b, T c);
 
 	/// Returns the minimum component-wise values of 4 inputs
-	/// @see ext_scalar_common
+	///
+	/// @tparam T A floating-point scalar type.
 	template<typename T>
 	GLM_FUNC_DECL T min(T a, T b, T c, T d);
 
 	/// Returns the maximum component-wise values of 3 inputs
 	///
 	/// @tparam T A floating-point scalar type.
-	///
-	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T max(T a, T b, T c);
 
 	/// Returns the maximum component-wise values of 4 inputs
-	/// @see ext_scalar_common
+	///
+	/// @tparam T A floating-point scalar type.
 	template<typename T>
 	GLM_FUNC_DECL T max(T a, T b, T c, T d);
 
@@ -54,7 +53,6 @@ namespace glm
 	///
 	/// @tparam T A floating-point scalar type.
 	///
-	/// @see ext_scalar_common
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmin">std::fmin documentation</a>
 	template<typename T>
 	GLM_FUNC_DECL T fmin(T a, T b);
@@ -63,7 +61,6 @@ namespace glm
 	///
 	/// @tparam T A floating-point scalar type.
 	///
-	/// @see ext_scalar_common
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmin">std::fmin documentation</a>
 	template<typename T>
 	GLM_FUNC_DECL T fmin(T a, T b, T c);
@@ -72,7 +69,6 @@ namespace glm
 	///
 	/// @tparam T A floating-point scalar type.
 	///
-	/// @see ext_scalar_common
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmin">std::fmin documentation</a>
 	template<typename T>
 	GLM_FUNC_DECL T fmin(T a, T b, T c, T d);
@@ -81,7 +77,6 @@ namespace glm
 	///
 	/// @tparam T A floating-point scalar type.
 	///
-	/// @see ext_scalar_common
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmax">std::fmax documentation</a>
 	template<typename T>
 	GLM_FUNC_DECL T fmax(T a, T b);
@@ -90,7 +85,6 @@ namespace glm
 	///
 	/// @tparam T A floating-point scalar type.
 	///
-	/// @see ext_scalar_common
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmax">std::fmax documentation</a>
 	template<typename T>
 	GLM_FUNC_DECL T fmax(T a, T b, T C);
@@ -99,7 +93,6 @@ namespace glm
 	///
 	/// @tparam T A floating-point scalar type.
 	///
-	/// @see ext_scalar_common
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmax">std::fmax documentation</a>
 	template<typename T>
 	GLM_FUNC_DECL T fmax(T a, T b, T C, T D);

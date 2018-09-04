@@ -1,14 +1,22 @@
 /// @ref ext_quaternion_common
 /// @file glm/ext/quaternion_common.hpp
 ///
-/// @see core (dependence)
-///
 /// @defgroup ext_quaternion_common GLM_EXT_quaternion_common
 /// @ingroup ext
 ///
+/// Provides common functions for quaternion types
+///
 /// Include <glm/ext/quaternion_common.hpp> to use the features of this extension.
 ///
-/// Defines a templated quaternion type and several quaternion operations.
+/// @see ext_scalar_common
+/// @see ext_vector_common
+/// @see ext_quaternion_float
+/// @see ext_quaternion_double
+/// @see ext_quaternion_exponential
+/// @see ext_quaternion_geometric
+/// @see ext_quaternion_relational
+/// @see ext_quaternion_trigonometric
+/// @see ext_quaternion_transform
 
 #pragma once
 
@@ -36,10 +44,11 @@ namespace glm
 	/// @param x A quaternion
 	/// @param y A quaternion
 	/// @param a Interpolation factor. The interpolation is defined beyond the range [0, 1].
-	/// @tparam T Floating-point scalar types.
+	///
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
 	///
 	/// @see - slerp(qua<T, Q> const& x, qua<T, Q> const& y, T const& a)
-	/// @see ext_quaternion_common
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL qua<T, Q> mix(qua<T, Q> const& x, qua<T, Q> const& y, T a);
 
@@ -49,9 +58,9 @@ namespace glm
 	/// @param x A quaternion
 	/// @param y A quaternion
 	/// @param a Interpolation factor. The interpolation is defined in the range [0, 1].
-	/// @tparam T Floating-point scalar types.
 	///
-	/// @see ext_quaternion_common
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL qua<T, Q> lerp(qua<T, Q> const& x, qua<T, Q> const& y, T a);
 
@@ -61,25 +70,23 @@ namespace glm
 	/// @param x A quaternion
 	/// @param y A quaternion
 	/// @param a Interpolation factor. The interpolation is defined beyond the range [0, 1].
-	/// @tparam T Floating-point scalar types.
 	///
-	/// @see ext_quaternion_common
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL qua<T, Q> slerp(qua<T, Q> const& x, qua<T, Q> const& y, T a);
 
 	/// Returns the q conjugate.
 	///
-	/// @tparam T Floating-point scalar types.
-	///
-	/// @see ext_quaternion_common
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL qua<T, Q> conjugate(qua<T, Q> const& q);
 
 	/// Returns the q inverse.
 	///
-	/// @tparam T Floating-point scalar types.
-	///
-	/// @see ext_quaternion_common
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL qua<T, Q> inverse(qua<T, Q> const& q);
 
@@ -91,9 +98,8 @@ namespace glm
 	///
 	/// /!\ When using compiler fast math, this function may fail.
 	///
-	/// @tparam T Floating-point scalar types.
-	///
-	/// @see ext_quaternion_common
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL vec<4, bool, Q> isnan(qua<T, Q> const& x);
 
@@ -103,9 +109,8 @@ namespace glm
 	/// otherwise, including for implementations with no infinity
 	/// representations.
 	///
-	/// @tparam T Floating-point scalar types.
-	///
-	/// @see ext_quaternion_common
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL vec<4, bool, Q> isinf(qua<T, Q> const& x);
 

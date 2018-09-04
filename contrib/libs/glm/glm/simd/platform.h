@@ -251,7 +251,9 @@
 #define GLM_ARCH_MIPS		(GLM_ARCH_MIPS_BIT)
 #define GLM_ARCH_PPC		(GLM_ARCH_PPC_BIT)
 
-#if defined(GLM_FORCE_PURE) || defined(GLM_FORCE_XYZW_ONLY)
+#ifdef GLM_FORCE_ARCH_UNKNOWN
+#	define GLM_ARCH GLM_ARCH_UNKNOWN
+#elif defined(GLM_FORCE_PURE) || defined(GLM_FORCE_XYZW_ONLY)
 #	if defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86) || defined(__i386__)
 #		define GLM_ARCH (GLM_ARCH_X86)
 #	elif defined(__arm__ ) || defined(_M_ARM)

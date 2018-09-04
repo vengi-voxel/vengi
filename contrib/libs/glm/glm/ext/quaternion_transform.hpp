@@ -1,14 +1,19 @@
 /// @ref ext_quaternion_transform
 /// @file glm/ext/quaternion_transform.hpp
 ///
-/// @see core (dependence)
-///
 /// @defgroup ext_quaternion_transform GLM_EXT_quaternion_transform
 /// @ingroup ext
 ///
+/// Provides transformation functions for quaternion types
+///
 /// Include <glm/ext/quaternion_transform.hpp> to use the features of this extension.
 ///
-/// Defines a templated quaternion type and several quaternion operations.
+/// @see ext_quaternion_float
+/// @see ext_quaternion_double
+/// @see ext_quaternion_exponential
+/// @see ext_quaternion_geometric
+/// @see ext_quaternion_relational
+/// @see ext_quaternion_trigonometric
 
 #pragma once
 
@@ -34,8 +39,6 @@ namespace glm
 	///
 	/// @tparam T Floating-point scalar types
 	/// @tparam Q Value from qualifier enum
-	///
-	/// @see ext_quaternion_transform
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL qua<T, Q> rotate(qua<T, Q> const& q, T const& angle, vec<3, T, Q> const& axis);
 	/// @}

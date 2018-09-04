@@ -11,8 +11,7 @@
 ///
 /// Handles the interaction between pointers and vector, matrix types.
 ///
-/// This extension defines an overloaded function, glm::value_ptr, which
-/// takes any of the \ref core_template "core template types". It returns
+/// This extension defines an overloaded function, glm::value_ptr. It returns
 /// a pointer to the memory layout of the object. Matrix types store their values
 /// in column-major order.
 ///

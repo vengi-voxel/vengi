@@ -6,7 +6,7 @@
 
 namespace glm
 {
-	/// @addtogroup core
+	/// @addtogroup core_vector
 	/// @{
 
 	/// 4 components vector of single-precision floating-point numbers.

@@ -116,7 +116,9 @@ namespace detail
 		{
 			T const dotValue(dot(N, I));
 			T const k(static_cast<T>(1) - eta * eta * (static_cast<T>(1) - dotValue * dotValue));
-			return (eta * I - (eta * dotValue + std::sqrt(k)) * N) * static_cast<T>(k >= static_cast<T>(0));
+			vec<L, T, Q> const Result =
+                (k >= static_cast<T>(0)) ? (eta * I - (eta * dotValue + std::sqrt(k)) * N) : vec<L, T, Q>(0);
+			return Result;
 		}
 	};
 }//namespace detail

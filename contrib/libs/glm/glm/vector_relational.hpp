@@ -6,14 +6,16 @@
 /// @defgroup core_func_vector_relational Vector Relational Functions
 /// @ingroup core
 ///
-/// Include <glm/vector_relational.hpp> to use these core features.
-///
 /// Relational and equality operators (<, <=, >, >=, ==, !=) are defined to
 /// operate on scalars and produce scalar Boolean results. For vector results,
 /// use the following built-in functions.
 ///
 /// In all cases, the sizes of all the input and return vectors for any particular
 /// call must match.
+///
+/// Include <glm/vector_relational.hpp> to use these core features.
+///
+/// @see ext_vector_relational
 
 #pragma once
 

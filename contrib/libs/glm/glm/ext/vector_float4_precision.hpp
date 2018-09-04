@@ -1,12 +1,12 @@
 /// @ref core
-/// @file glm/vector_float4_precision.hpp
+/// @file glm/ext/vector_float4_precision.hpp
 
 #pragma once
 #include "../detail/type_vec4.hpp"
 
 namespace glm
 {
-	/// @addtogroup core_precision
+	/// @addtogroup core_vector_precision
 	/// @{
 
 	/// 4 components vector of high single-qualifier floating-point numbers.

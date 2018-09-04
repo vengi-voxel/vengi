@@ -10,8 +10,6 @@
 /// Include <glm/gtx/type_aligned.hpp> to use the features of this extension.
 ///
 /// Defines aligned types.
-///
-/// @ref core_precision defines aligned types.
 
 #pragma once
 

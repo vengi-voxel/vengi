@@ -1,14 +1,15 @@
 /// @ref ext_scalar_float_sized
 /// @file glm/ext/scalar_float_sized.hpp
 ///
-/// @see core (dependence)
-///
 /// @defgroup ext_scalar_float_sized GLM_EXT_scalar_float_sized
 /// @ingroup ext
 ///
+/// Exposes sized float scalar types.
+///
 /// Include <glm/ext/scalar_float_sized.hpp> to use the features of this extension.
 ///
-/// Exposes float scalar type.
+/// @see ext_scalar_int_sized
+/// @see ext_scalar_uint_sized
 
 #pragma once
 
@@ -20,26 +21,19 @@
 
 namespace glm
 {
-	/// @addtogroup ext_scalar_float
+	/// @addtogroup ext_scalar_float_sized
 	/// @{
 
-	/// Low qualifier floating-point numbers.
-	/// There is no guarantee on the actual qualifier.
-	///
-	/// @see ext_vector_relational
+	/// Single precision floating-point numbers.
 	typedef float			float32;
 
 
 #	ifndef GLM_FORCE_SINGLE_ONLY
 
-	/// Low qualifier floating-point numbers.
-	/// There is no guarantee on the actual qualifier.
-	///
-	/// @see ext_vector_relational
+	/// Double precision floating-point numbers.
 	typedef double			float64;
 
 #	endif//GLM_FORCE_SINGLE_ONLY
 
 	/// @}
-
 }//namespace glm

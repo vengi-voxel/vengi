@@ -1,12 +1,12 @@
 /// @ref core
-/// @file glm/matrix_dmat2x2_precision.hpp
+/// @file glm/ext/matrix_double2x2_precision.hpp
 
 #pragma once
 #include "../detail/type_mat2x2.hpp"
 
 namespace glm
 {
-	/// @addtogroup core_precision
+	/// @addtogroup core_matrix_precision
 	/// @{
 
 	/// 2 columns of 2 components matrix of double-precision floating-point numbers using low precision arithmetic in term of ULPs.

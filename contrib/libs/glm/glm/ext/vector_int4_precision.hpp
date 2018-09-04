@@ -1,12 +1,12 @@
 /// @ref core
-/// @file glm/vector_int4_precision.hpp
+/// @file glm/ext/vector_int4_precision.hpp
 
 #pragma once
 #include "../detail/type_vec4.hpp"
 
 namespace glm
 {
-	/// @addtogroup core_precision
+	/// @addtogroup core_vector_precision
 	/// @{
 
 	/// 4 components vector of high qualifier signed integer numbers.

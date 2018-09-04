@@ -6,9 +6,9 @@
 /// @defgroup core_func_geometric Geometric functions
 /// @ingroup core
 ///
-/// Include <glm/geometric.hpp> to use these core features.
-///
 /// These operate on vectors as vectors, not component-wise.
+///
+/// Include <glm/geometric.hpp> to use these core features.
 
 #pragma once
 

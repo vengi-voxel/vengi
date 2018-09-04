@@ -1,14 +1,12 @@
 /// @ref ext_scalar_constants
 /// @file glm/ext/scalar_constants.hpp
 ///
-/// @see core (dependence)
-///
 /// @defgroup ext_scalar_constants GLM_EXT_scalar_constants
 /// @ingroup ext
 ///
-/// Include <glm/ext/scalar_constants.hpp> to use the features of this extension.
+/// Provides a list of constants and precomputed useful values.
 ///
-/// Provide a list of constants and precomputed useful values.
+/// Include <glm/ext/scalar_constants.hpp> to use the features of this extension.
 
 #pragma once
 
@@ -25,12 +23,10 @@ namespace glm
 	/// @{
 
 	/// Return the epsilon constant for floating point types.
-	/// @see ext_scalar_constants
 	template<typename genType>
 	GLM_FUNC_DECL GLM_CONSTEXPR genType epsilon();
 
 	/// Return the pi constant for floating point types.
-	/// @see ext_scalar_constants
 	template<typename genType>
 	GLM_FUNC_DECL GLM_CONSTEXPR genType pi();
 

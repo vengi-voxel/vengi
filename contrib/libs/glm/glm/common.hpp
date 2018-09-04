@@ -6,9 +6,11 @@
 /// @defgroup core_func_common Common functions
 /// @ingroup core
 ///
-/// Include <glm/common.hpp> to use these core features.
+/// Provides GLSL common functions
 ///
 /// These all operate component-wise. The description is per component.
+///
+/// Include <glm/common.hpp> to use these core features.
 
 #pragma once
 
@@ -26,7 +28,6 @@ namespace glm
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/abs.xml">GLSL abs man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
-	/// @see qualifier
 	template<typename genType>
 	GLM_FUNC_DECL GLM_CONSTEXPR genType abs(genType x);
 

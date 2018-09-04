@@ -1,14 +1,14 @@
 /// @ref ext_scalar_uint_sized
 /// @file glm/ext/scalar_uint_sized.hpp
 ///
-/// @see core (dependence)
-///
 /// @defgroup ext_scalar_uint_sized GLM_EXT_scalar_uint_sized
 /// @ingroup ext
 ///
+/// Exposes sized unsigned integer scalar types.
+///
 /// Include <glm/ext/scalar_uint_sized.hpp> to use the features of this extension.
 ///
-/// Exposes unsigned integer scalar type.
+/// @see ext_scalar_int_sized
 
 #pragma once
 
@@ -55,19 +55,15 @@ namespace detail
 	/// @{
 
 	/// 8 bit unsigned integer type.
-	/// @see ext_scalar_uint_sized
 	typedef detail::uint8		uint8;
 
 	/// 16 bit unsigned integer type.
-	/// @see ext_scalar_uint_sized
 	typedef detail::uint16		uint16;
 
 	/// 32 bit unsigned integer type.
-	/// @see ext_scalar_uint_sized
 	typedef detail::uint32		uint32;
 
 	/// 64 bit unsigned integer type.
-	/// @see ext_scalar_uint_sized
 	typedef detail::uint64		uint64;
 
 	/// @}

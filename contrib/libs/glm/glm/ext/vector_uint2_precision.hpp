@@ -6,7 +6,7 @@
 
 namespace glm
 {
-	/// @addtogroup core_precision
+	/// @addtogroup core_vector_precision
 	/// @{
 
 	/// 2 components vector of high qualifier unsigned integer numbers.

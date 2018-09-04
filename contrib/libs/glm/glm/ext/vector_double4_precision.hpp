@@ -1,5 +1,5 @@
 /// @ref core
-/// @file glm/vector_double4_precision.hpp
+/// @file glm/ext/vector_double4_precision.hpp
 
 #pragma once
 #include "../detail/setup.hpp"
@@ -7,7 +7,7 @@
 
 namespace glm
 {
-	/// @addtogroup core_precision
+	/// @addtogroup core_vector_precision
 	/// @{
 
 	/// 4 components vector of high double-qualifier floating-point numbers.

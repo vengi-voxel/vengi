@@ -1,14 +1,16 @@
 /// @ref ext_scalar_relational
 /// @file glm/ext/scalar_relational.hpp
 ///
-/// @see core (dependence)
-///
-/// @defgroup ext_vector_relational GLM_EXT_scalar_relational
+/// @defgroup ext_scalar_relational GLM_EXT_scalar_relational
 /// @ingroup ext
+///
+/// Exposes comparison functions for scalar types that take a user defined epsilon values.
 ///
 /// Include <glm/ext/scalar_relational.hpp> to use the features of this extension.
 ///
-/// Comparison functions for a user defined epsilon values.
+/// @see core_vector_relational
+/// @see ext_vector_relational
+/// @see ext_matrix_relational
 
 #pragma once
 
@@ -25,8 +27,6 @@ namespace glm
 	/// True if this expression is satisfied.
 	///
 	/// @tparam genType Floating-point or integer scalar types
-	///
-	/// @see ext_vector_relational
 	template<typename genType>
 	GLM_FUNC_DECL GLM_CONSTEXPR bool equal(genType const& x, genType const& y, genType const& epsilon);
 
@@ -34,8 +34,6 @@ namespace glm
 	/// True if this expression is not satisfied.
 	///
 	/// @tparam genType Floating-point or integer scalar types
-	///
-	/// @see ext_vector_relational
 	template<typename genType>
 	GLM_FUNC_DECL GLM_CONSTEXPR bool notEqual(genType const& x, genType const& y, genType const& epsilon);
 

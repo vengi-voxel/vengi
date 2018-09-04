@@ -6,7 +6,7 @@
 
 namespace glm
 {
-	/// @addtogroup core
+	/// @addtogroup core_matrix
 	/// @{
 
 	/// 2 columns of 2 components matrix of double-precision floating-point numbers.

@@ -1,12 +1,12 @@
 /// @ref core
-/// @file glm/matrix_dmat4x3_precision.hpp
+/// @file glm/ext/matrix_double4x3_precision.hpp
 
 #pragma once
 #include "../detail/type_mat4x3.hpp"
 
 namespace glm
 {
-	/// @addtogroup core_precision
+	/// @addtogroup core_matrix_precision
 	/// @{
 
 	/// 4 columns of 3 components matrix of double-precision floating-point numbers using low precision arithmetic in term of ULPs.

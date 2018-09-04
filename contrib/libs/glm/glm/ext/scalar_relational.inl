@@ -1,7 +1,3 @@
-/// @ref ext_scalar_relational
-/// @file glm/ext/scalar_relational.inl
-
-// Dependency:
 #include "../common.hpp"
 
 namespace glm

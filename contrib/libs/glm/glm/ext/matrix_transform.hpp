@@ -1,12 +1,8 @@
 /// @ref ext_matrix_transform
 /// @file glm/ext/matrix_transform.hpp
 ///
-/// @see core (dependence)
-///
 /// @defgroup ext_matrix_transform GLM_EXT_matrix_transform
 /// @ingroup ext
-///
-/// Include <glm/ext/matrix_transform.hpp> to use the features of this extension.
 ///
 /// Defines functions that generate common transformation matrices.
 ///
@@ -15,6 +11,11 @@
 /// space into the specific eye space that the projective matrix functions
 /// (perspective, ortho, etc) are designed to expect. The OpenGL compatibility
 /// specifications defines the particular layout of this eye space.
+///
+/// Include <glm/ext/matrix_transform.hpp> to use the features of this extension.
+///
+/// @see ext_matrix_projection
+/// @see ext_matrix_clip_space
 
 #pragma once
 
@@ -41,7 +42,10 @@ namespace glm
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
 	/// @param v Coordinates of a translation vector.
-	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommended), float or double.
+	///
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
+	///
 	/// @code
 	/// #include <glm/glm.hpp>
 	/// #include <glm/gtc/matrix_transform.hpp>
@@ -52,7 +56,7 @@ namespace glm
 	/// // m[2][0] == 0.0f, m[2][1] == 0.0f, m[2][2] == 1.0f, m[2][3] == 0.0f
 	/// // m[3][0] == 1.0f, m[3][1] == 1.0f, m[3][2] == 1.0f, m[3][3] == 1.0f
 	/// @endcode
-	/// @see gtc_matrix_transform
+	///
 	/// @see - translate(mat<4, 4, T, Q> const& m, T x, T y, T z)
 	/// @see - translate(vec<3, T, Q> const& v)
 	/// @see <a href="https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glTranslate.xml">glTranslate man page</a>
@@ -65,8 +69,10 @@ namespace glm
 	/// @param m Input matrix multiplied by this rotation matrix.
 	/// @param angle Rotation angle expressed in radians.
 	/// @param axis Rotation axis, recommended to be normalized.
-	/// @tparam T Value type used to build the matrix. Supported: half, float or double.
-	/// @see gtc_matrix_transform
+	///
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
+	///
 	/// @see - rotate(mat<4, 4, T, Q> const& m, T angle, T x, T y, T z)
 	/// @see - rotate(T angle, vec<3, T, Q> const& v)
 	/// @see <a href="https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glRotate.xml">glRotate man page</a>
@@ -78,8 +84,10 @@ namespace glm
 	///
 	/// @param m Input matrix multiplied by this scale matrix.
 	/// @param v Ratio of scaling for each axis.
-	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommended), float or double.
-	/// @see gtc_matrix_transform
+	///
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
+	///
 	/// @see - scale(mat<4, 4, T, Q> const& m, T x, T y, T z)
 	/// @see - scale(vec<3, T, Q> const& v)
 	/// @see <a href="https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glScale.xml">glScale man page</a>
@@ -92,7 +100,10 @@ namespace glm
 	/// @param eye Position of the camera
 	/// @param center Position where the camera is looking at
 	/// @param up Normalized up vector, how the camera is oriented. Typically (0, 0, 1)
-	/// @see gtc_matrix_transform
+	///
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
+	///
 	/// @see - frustum(T const& left, T const& right, T const& bottom, T const& top, T const& nearVal, T const& farVal) frustum(T const& left, T const& right, T const& bottom, T const& top, T const& nearVal, T const& farVal)
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL mat<4, 4, T, Q> lookAtRH(
@@ -103,7 +114,10 @@ namespace glm
 	/// @param eye Position of the camera
 	/// @param center Position where the camera is looking at
 	/// @param up Normalized up vector, how the camera is oriented. Typically (0, 0, 1)
-	/// @see gtc_matrix_transform
+	///
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
+	///
 	/// @see - frustum(T const& left, T const& right, T const& bottom, T const& top, T const& nearVal, T const& farVal) frustum(T const& left, T const& right, T const& bottom, T const& top, T const& nearVal, T const& farVal)
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL mat<4, 4, T, Q> lookAtLH(
@@ -114,7 +128,10 @@ namespace glm
 	/// @param eye Position of the camera
 	/// @param center Position where the camera is looking at
 	/// @param up Normalized up vector, how the camera is oriented. Typically (0, 0, 1)
-	/// @see gtc_matrix_transform
+	///
+	/// @tparam T A floating-point scalar type
+	/// @tparam Q A value from qualifier enum
+	///
 	/// @see - frustum(T const& left, T const& right, T const& bottom, T const& top, T const& nearVal, T const& farVal) frustum(T const& left, T const& right, T const& bottom, T const& top, T const& nearVal, T const& farVal)
 	/// @see <a href="https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluLookAt.xml">gluLookAt man page</a>
 	template<typename T, qualifier Q>

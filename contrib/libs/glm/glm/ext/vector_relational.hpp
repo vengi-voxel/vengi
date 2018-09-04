@@ -1,14 +1,16 @@
 /// @ref ext_vector_relational
 /// @file glm/ext/vector_relational.hpp
 ///
-/// @see core (dependence)
-///
 /// @defgroup ext_vector_relational GLM_EXT_vector_relational
 /// @ingroup ext
 ///
+/// Exposes comparison functions for vector types that take a user defined epsilon values.
+///
 /// Include <glm/ext/vector_relational.hpp> to use the features of this extension.
 ///
-/// Comparison functions for a user defined epsilon values.
+/// @see core_vector_relational
+/// @see ext_scalar_relational
+/// @see ext_matrix_relational
 
 #pragma once
 
@@ -30,8 +32,6 @@ namespace glm
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
 	/// @tparam T Floating-point or integer scalar types
 	/// @tparam Q Value from qualifier enum
-	///
-	/// @see ext_vector_relational
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_DECL GLM_CONSTEXPR vec<L, bool, Q> equal(vec<L, T, Q> const& x, vec<L, T, Q> const& y, T epsilon);
 
@@ -41,8 +41,6 @@ namespace glm
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
 	/// @tparam T Floating-point or integer scalar types
 	/// @tparam Q Value from qualifier enum
-	///
-	/// @see ext_vector_relational
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_DECL GLM_CONSTEXPR vec<L, bool, Q> equal(vec<L, T, Q> const& x, vec<L, T, Q> const& y, vec<L, T, Q> const& epsilon);
 
@@ -52,8 +50,6 @@ namespace glm
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
 	/// @tparam T Floating-point or integer scalar types
 	/// @tparam Q Value from qualifier enum
-	///
-	/// @see ext_vector_relational
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_DECL GLM_CONSTEXPR vec<L, bool, Q> notEqual(vec<L, T, Q> const& x, vec<L, T, Q> const& y, T epsilon);
 
@@ -63,8 +59,6 @@ namespace glm
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
 	/// @tparam T Floating-point or integer scalar types
 	/// @tparam Q Value from qualifier enum
-	///
-	/// @see ext_vector_relational
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_DECL GLM_CONSTEXPR vec<L, bool, Q> notEqual(vec<L, T, Q> const& x, vec<L, T, Q> const& y, vec<L, T, Q> const& epsilon);
 

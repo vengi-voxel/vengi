@@ -40,17 +40,6 @@ namespace glm
 	/// @addtogroup gtc_quaternion
 	/// @{
 
-	/// Rotates a quaternion from a vector of 3 components axis and an angle.
-	///
-	/// @param q Source orientation
-	/// @param angle Angle expressed in radians.
-	/// @param axis Axis of the rotation
-	/// @tparam T Floating-point scalar types.
-	///
-	/// @see gtc_quaternion
-	template<typename T, qualifier Q>
-	GLM_FUNC_DECL qua<T, Q> rotate(qua<T, Q> const& q, T const& angle, vec<3, T, Q> const& axis);
-
 	/// Returns euler angles, pitch as x, yaw as y, roll as z.
 	/// The result is expressed in radians.
 	///

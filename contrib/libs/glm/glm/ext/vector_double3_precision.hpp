@@ -1,12 +1,12 @@
 /// @ref core
-/// @file glm/vector_double3_precision.hpp
+/// @file glm/ext/vector_double3_precision.hpp
 
 #pragma once
 #include "../detail/type_vec3.hpp"
 
 namespace glm
 {
-	/// @addtogroup core_precision
+	/// @addtogroup core_vector_precision
 	/// @{
 
 	/// 3 components vector of high double-qualifier floating-point numbers.
