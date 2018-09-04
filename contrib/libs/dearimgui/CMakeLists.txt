@@ -1,5 +1,6 @@
 set(SRCS
 	dearimgui/imgui.cpp dearimgui/imgui_draw.cpp
+	dearimgui/imgui_widgets.cpp
 	dearimgui/imgui.h
 	dearimgui/imgui_internal.h
 	dearimgui/imconfig.h
