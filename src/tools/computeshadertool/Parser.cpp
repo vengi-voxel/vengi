@@ -56,7 +56,7 @@ static const simplecpp::Token *parseStruct(const std::string& filename, const si
 		return tok;
 	}
 	Struct structVar;
-	structVar.name = tok->str;
+	structVar.name = tok->str();
 	if (!tok->next) {
 		Log::error("%s:%i:%i: error: Failed to parse struct - not enough tokens",
 				tok->location.file().c_str(), tok->location.line, tok->location.col);
@@ -68,9 +68,9 @@ static const simplecpp::Token *parseStruct(const std::string& filename, const si
 				tok->location.file().c_str(), tok->location.line, tok->location.col);
 		return tok;
 	}
-	if (tok->str != "{") {
+	if (tok->str() != "{") {
 		for (; tok; tok = tok->next) {
-			const std::string& token = tok->str;
+			const std::string& token = tok->str();
 			if (token == ";") {
 				structs.push_back(structVar);
 				tok = tok->next;
@@ -89,7 +89,7 @@ static const simplecpp::Token *parseStruct(const std::string& filename, const si
 	bool valid = false;
 	Parameter param;
 	for (tok = tok->next; tok; tok = tok->next) {
-		const std::string& token = tok->str;
+		const std::string& token = tok->str();
 		if (token == "{") {
 			++depth;
 		} else if (token == "}") {
@@ -98,12 +98,12 @@ static const simplecpp::Token *parseStruct(const std::string& filename, const si
 				valid = true;
 				break;
 			}
-		} else if (tok->next && (tok->next->str == ";" || tok->next->str == "[")) {
+		} else if (tok->next && (tok->next->str() == ";" || tok->next->str() == "[")) {
 			param.name = token;
-			if (tok->next->str == "[") {
+			if (tok->next->str() == "[") {
 				for (tok = tok->next; tok; tok = tok->next) {
-					param.name.append(tok->str);
-					if (tok->str == "]") {
+					param.name.append(tok->str());
+					if (tok->str() == "]") {
 						break;
 					}
 				}
@@ -140,8 +140,8 @@ static const simplecpp::Token *parseEnum(const std::string& filename, const simp
 	}
 	Struct structVar;
 	structVar.isEnum = true;
-	if (tok->str != "{") {
-		structVar.name = tok->str;
+	if (tok->str() != "{") {
+		structVar.name = tok->str();
 		if (!tok->next) {
 			Log::error("%s:%i:%i: error: Failed to parse enum - not enough tokens",
 					tok->location.file().c_str(), tok->location.line, tok->location.col);
@@ -153,9 +153,9 @@ static const simplecpp::Token *parseEnum(const std::string& filename, const simp
 					tok->location.file().c_str(), tok->location.line, tok->location.col);
 			return tok;
 		}
-		if (tok->str != "{") {
+		if (tok->str() != "{") {
 			Log::error("%s:%i:%i: error: Failed to parse enum - invalid token: %s",
-					tok->location.file().c_str(), tok->location.line, tok->location.col, tok->str.c_str());
+					tok->location.file().c_str(), tok->location.line, tok->location.col, tok->str().c_str());
 			return tok;
 		}
 	} else {
@@ -166,21 +166,21 @@ static const simplecpp::Token *parseEnum(const std::string& filename, const simp
 	}
 	Parameter param;
 	for (tok = tok->next; tok; tok = tok->next) {
-		const std::string& token = tok->str;
+		const std::string& token = tok->str();
 		if (token == "}") {
 			break;
 		}
 		param.name = token;
 		if (tok->next) {
-			if (tok->next->str == "=") {
+			if (tok->next->str() == "=") {
 				tok = tok->next;
 				for (tok = tok->next; tok; tok = tok->next) {
-					if (tok->str == "," || tok->str == "}") {
+					if (tok->str() == "," || tok->str() == "}") {
 						break;
 					}
-					param.value.append(tok->str);
+					param.value.append(tok->str());
 				}
-			} else if (tok->next->str == ",") {
+			} else if (tok->next->str() == ",") {
 				tok = tok->next;
 			}
 		}
@@ -202,7 +202,7 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 	std::string prev;
 	int inAttribute = 0;
 	for (tok = tok->next; tok; tok = tok->next) {
-		std::string token = tok->str;
+		std::string token = tok->str();
 		if (token == "{") {
 			break;
 		}
@@ -211,13 +211,13 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 				continue;
 			}
 			tok = tok->next;
-			if (tok->str != "(") {
+			if (tok->str() != "(") {
 				tok = tok->previous;
 				continue;
 			}
 			++inAttribute;
 			for (tok = tok->next; tok; tok = tok->next) {
-				token = tok->str;
+				token = tok->str();
 				if (token == "(") {
 					++inAttribute;
 				} else if (token == ")") {
@@ -241,9 +241,9 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 	}
 
 	int kernelDimensions = 1;
-	core_assert(tok->str == "{");
+	core_assert(tok->str() == "{");
 	for (tok = tok->next; tok; tok = tok->next) {
-		const std::string& token = tok->str;
+		const std::string& token = tok->str();
 		if (token == "}") {
 			break;
 		}
@@ -254,8 +254,8 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 				Log::error("Expected (");
 				return tok;
 			}
-			if (tok->str != "(") {
-				Log::error("Expected ( - got %s", tok->str.c_str());
+			if (tok->str() != "(") {
+				Log::error("Expected ( - got %s", tok->str().c_str());
 				return tok;
 			}
 			tok = tok->next;
@@ -264,10 +264,10 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 				return tok;
 			}
 			if (!tok->number) {
-				Log::error("Expected number, got %s", tok->str.c_str());
+				Log::error("Expected number, got %s", tok->str().c_str());
 				return tok;
 			}
-			const int dimension = (int)(tok->str[0] - '0') + 1;
+			const int dimension = (int)(tok->str()[0] - '0') + 1;
 			Log::debug("found dimension %i", dimension);
 			kernelDimensions = std::max(kernelDimensions, dimension);
 			tok = tok->next;
@@ -275,8 +275,8 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 				Log::error("Expected )");
 				return tok;
 			}
-			if (tok->str != ")") {
-				Log::error("Expected ) - got %s", tok->str.c_str());
+			if (tok->str() != ")") {
+				Log::error("Expected ) - got %s", tok->str().c_str());
 				return tok;
 			}
 		}
@@ -431,7 +431,7 @@ bool parse(const std::string& buffer, const std::string& computeFilename, std::v
 	simplecpp::Location loc(files);
 	std::stringstream comment;
 	for (const simplecpp::Token *tok = output.cfront(); tok != nullptr; tok = tok->next) {
-		const std::string& token = tok->str;
+		const std::string& token = tok->str();
 		if (tok->comment) {
 			comment << token;
 			continue;
@@ -447,12 +447,12 @@ bool parse(const std::string& buffer, const std::string& computeFilename, std::v
 				return false;
 			}
 			tok = tok->next;
-			const std::string varname = tok->str;
+			const std::string varname = tok->str();
 			if (!tok->next) {
 				return false;
 			}
 			tok = tok->next;
-			const std::string varvalue = tok->str;
+			const std::string varvalue = tok->str();
 			if (!constants.insert(std::make_pair(varname, varvalue)).second) {
 				Log::error("Could not register constant %s with value %s (duplicate)", varname.c_str(), varvalue.c_str());
 				return false;

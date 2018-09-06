@@ -23,14 +23,14 @@ public:
 	}
 
 	inline std::string next() {
-		const std::string& token = _tok->str;
+		const std::string& token = _tok->str();
 		_tok = _tok->next;
 		return token;
 	}
 
 	inline std::string prev() {
 		_tok = _tok->previous;
-		return _tok->str;
+		return _tok->str();
 	}
 
 	inline int line() const {
@@ -44,7 +44,7 @@ public:
 		if (!_tok) {
 			return "";
 		}
-		return _tok->str;
+		return _tok->str();
 	}
 };
 
