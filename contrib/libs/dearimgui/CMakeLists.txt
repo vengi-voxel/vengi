@@ -1,12 +1,13 @@
 set(SRCS
 	dearimgui/imgui.cpp dearimgui/imgui_draw.cpp
 	dearimgui/imgui_widgets.cpp
+	dearimgui/imgui_stl.cpp dearimgui/imgui_stl.h
 	dearimgui/imgui.h
 	dearimgui/imgui_internal.h
 	dearimgui/imconfig.h
-	dearimgui/stb_rect_pack.h
-	dearimgui/stb_textedit.h
-	dearimgui/stb_truetype.h
+	dearimgui/imstb_rectpack.h
+	dearimgui/imstb_textedit.h
+	dearimgui/imstb_truetype.h
 )
 set(LIB_NAME dearimgui)
 engine_add_library(
