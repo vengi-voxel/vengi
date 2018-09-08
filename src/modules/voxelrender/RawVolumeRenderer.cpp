@@ -151,7 +151,9 @@ bool RawVolumeRenderer::extract(int idx) {
 		return false;
 	}
 	extract(volume, mesh);
-	update(idx, mesh);
+	if (!update(idx, mesh)) {
+		Log::error("Failed to update the mesh at index %i", idx);
+	}
 	return true;
 }
 
@@ -164,6 +166,7 @@ bool RawVolumeRenderer::update(int idx, voxel::Mesh* mesh) {
 		_mesh[idx] = mesh;
 	}
 	const size_t meshNumberIndices = mesh->getNoOfIndices();
+	Log::debug("Perform buffer update for idx: %i with %i mesh indices", idx, (int)meshNumberIndices);
 	if (meshNumberIndices == 0u) {
 		_vertexBuffer[idx].update(_vertexBufferIndex[idx], nullptr, 0);
 		_vertexBuffer[idx].update(_indexBufferIndex[idx], nullptr, 0);

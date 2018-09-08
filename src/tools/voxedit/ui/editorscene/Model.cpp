@@ -591,8 +591,11 @@ bool Model::extractSelectionVolume() {
 
 bool Model::extractVolume() {
 	if (_extract) {
+		Log::debug("Extract the mesh");
 		_extract = false;
-		_volumeRenderer.extract(ModelVolumeIndex);
+		if (!_volumeRenderer.extract(ModelVolumeIndex)) {
+			Log::error("Failed to extract the model mesh");
+		}
 		return true;
 	}
 	return false;
