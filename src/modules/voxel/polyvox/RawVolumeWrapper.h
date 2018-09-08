@@ -15,6 +15,7 @@ class RawVolumeWrapper {
 private:
 	RawVolume* _volume;
 	const Region& _region;
+	Region _dirtyRegion;
 
 public:
 	class Sampler : public RawVolume::Sampler {
@@ -66,16 +67,27 @@ public:
 		return setVoxel(pos.x, pos.y, pos.z, voxel);
 	}
 
+	inline const Region& dirtyRegion() const {
+		return _dirtyRegion;
+	}
+
 	/**
 	 * @return @c false if the voxel was not placed because the given position is outside of the valid region, @c
 	 * true if the voxel was placed in the region.
 	 * @note The return values have a different meaning as for the wrapped RawVolume.
 	 */
 	inline bool setVoxel(int x, int y, int z, const Voxel& voxel) {
-		if (!_region.containsPoint(x, y, z)) {
+		const glm::ivec3 p(x, y, z);
+		if (!_region.containsPoint(p)) {
 			return false;
 		}
-		_volume->setVoxel(x, y, z, voxel);
+		if (_volume->setVoxel(p, voxel)) {
+			if (_dirtyRegion.isValid()) {
+				_dirtyRegion.accumulate(p);
+			} else {
+				_dirtyRegion = Region(p, p);
+			}
+		}
 		return true;
 	}
 

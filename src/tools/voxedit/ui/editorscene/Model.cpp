@@ -136,6 +136,9 @@ void Model::setMousePos(int x, int y) {
 }
 
 void Model::modified(const voxel::Region& modifiedRegion, bool markUndo) {
+	if (!modifiedRegion.isValid()) {
+		return;
+	}
 	if (markUndo) {
 		undoHandler().markUndo(modelVolume());
 	}
@@ -530,7 +533,7 @@ void Model::update() {
 		math::Random random;
 		const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, random);
 		_spaceColonizationTree->generate(wrapper, woodRandomVoxel);
-		modified(modelVolume()->region());
+		modified(wrapper.dirtyRegion());
 		if (!growing) {
 			const voxel::RandomVoxel leavesRandomVoxel(voxel::VoxelType::Leaf, random);
 			_spaceColonizationTree->generateLeaves(wrapper, leavesRandomVoxel, glm::ivec3(leafSize));
@@ -608,7 +611,7 @@ void Model::noise(int octaves, float lacunarity, float frequency, float gain, vo
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::noisegen::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
-	modified(modelVolume()->region());
+	modified(wrapper.dirtyRegion());
 }
 
 void Model::spaceColonization() {
@@ -625,7 +628,7 @@ void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	if (voxel::lsystem::generate(wrapper, lsystemCtx, random)) {
-		modified(modelVolume()->region());
+		modified(wrapper.dirtyRegion());
 	}
 }
 
@@ -633,16 +636,14 @@ void Model::bezier(const glm::ivec3& start, const glm::ivec3& end, const glm::iv
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	const int steps = glm::distance2(glm::vec3(start), glm::vec3(end)) * 10;
 	voxel::shape::createBezier(wrapper,start, end, control, _shapeHandler.currentVoxel(), steps);
-	const glm::ivec3 mins = glm::min(start, end);
-	const glm::ivec3 maxs = glm::max(start, end);
-	modified(voxel::Region(mins, maxs));
+	modified(wrapper.dirtyRegion());
 }
 
 void Model::createCactus() {
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::cactus::createCactus(wrapper, _referencePos, 18, 2, random);
-	modified(modelVolume()->region());
+	modified(wrapper.dirtyRegion());
 }
 
 void Model::createCloud() {
@@ -665,20 +666,23 @@ void Model::createPlant(voxel::PlantType type) {
 	voxel::PlantGenerator g;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	if (type == voxel::PlantType::Flower) {
+		Log::info("create flower");
 		g.createFlower(5, _referencePos, wrapper);
 	} else if (type == voxel::PlantType::Grass) {
+		Log::info("create grass");
 		g.createGrass(10, _referencePos, wrapper);
 	} else if (type == voxel::PlantType::Mushroom) {
+		Log::info("create mushroom");
 		g.createMushroom(7, _referencePos, wrapper);
 	}
 	g.shutdown();
-	modified(modelVolume()->region());
+	modified(wrapper.dirtyRegion());
 }
 
 void Model::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::building::createBuilding(wrapper, _referencePos, type);
-	modified(modelVolume()->region());
+	modified(wrapper.dirtyRegion());
 }
 
 void Model::createTree(voxel::TreeContext ctx) {
@@ -686,7 +690,7 @@ void Model::createTree(voxel::TreeContext ctx) {
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	ctx.pos = _referencePos;
 	voxel::tree::createTree(wrapper, ctx, random);
-	modified(modelVolume()->region());
+	modified(wrapper.dirtyRegion());
 }
 
 void Model::setReferencePosition(const glm::ivec3& pos) {
