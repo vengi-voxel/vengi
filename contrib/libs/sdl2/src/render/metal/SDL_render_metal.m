@@ -752,8 +752,12 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load)
 static void
 METAL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 {
-    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED ||
-        event->event == SDL_WINDOWEVENT_SHOWN ||
+    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+        data.mtllayer.drawableSize = CGSizeMake(event->data1, event->data2);
+    }
+
+    if (event->event == SDL_WINDOWEVENT_SHOWN ||
         event->event == SDL_WINDOWEVENT_HIDDEN) {
         // !!! FIXME: write me
     }
@@ -956,8 +960,8 @@ METAL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
                     const Uint8 *Vplane, int Vpitch)
 { @autoreleasepool {
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
-    int Uslice = texture->format == SDL_PIXELFORMAT_YV12 ? 1 : 0;
-    int Vslice = texture->format == SDL_PIXELFORMAT_YV12 ? 0 : 1;
+    const int Uslice = 0;
+    const int Vslice = 1;
 
     /* Bail out if we're supposed to update an empty rectangle */
     if (rect->w <= 0 || rect->h <= 0) {

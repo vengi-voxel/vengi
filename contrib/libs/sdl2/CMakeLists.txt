@@ -10,6 +10,7 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/dynapi/*.c
   ${SDL2_SOURCE_DIR}/src/events/*.c
   ${SDL2_SOURCE_DIR}/src/file/*.c
+  ${SDL2_SOURCE_DIR}/src/hidapi/*.c
   ${SDL2_SOURCE_DIR}/src/libm/*.c
   ${SDL2_SOURCE_DIR}/src/render/*.c
   ${SDL2_SOURCE_DIR}/src/render/*/*.c
@@ -259,7 +260,7 @@ endif()
 
 set(SDL_SUBSYSTEMS
     Atomic Audio Video Render Events Joystick Haptic Power Threads Timers
-    File Loadso CPUinfo Filesystem Dlopen)
+    File Loadso CPUinfo Filesystem Dlopen Sensor)
 foreach(_SUB ${SDL_SUBSYSTEMS})
   string(TOUPPER ${_SUB} _OPT)
   if (NOT DEFINED SDL_${_OPT}_ENABLED_BY_DEFAULT)
@@ -710,7 +711,7 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
   endif()
 endforeach()
 if(SDL_JOYSTICK)
-  file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/*.c)
+  file(GLOB_RECURSE JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
 endif()
 if(SDL_HAPTIC)
@@ -720,6 +721,10 @@ if(SDL_HAPTIC)
   endif()
   file(GLOB HAPTIC_SOURCES ${SDL2_SOURCE_DIR}/src/haptic/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${HAPTIC_SOURCES})
+endif()
+if(SDL_SENSOR)
+   file(GLOB SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/*.c)
+   set(SOURCE_FILES ${SOURCE_FILES} ${SENSOR_SOURCES})
 endif()
 if(SDL_POWER)
   file(GLOB POWER_SOURCES ${SDL2_SOURCE_DIR}/src/power/*.c)
@@ -821,6 +826,12 @@ if(ANDROID)
     file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/unix/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${TIMER_SOURCES})
     set(HAVE_SDL_TIMERS TRUE)
+  endif()
+  if(SDL_SENSOR)
+    set(SDL_SENSOR_ANDROID 1)
+    set(HAVE_SDL_SENSORS TRUE)
+    file(GLOB ANDROID_SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/android/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_SENSOR_SOURCES})
   endif()
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_ANDROID 1)
@@ -1534,6 +1545,11 @@ if(NOT HAVE_SDL_FILESYSTEM)
   set(SDL_FILESYSTEM_DISABLED 1)
   file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/dummy/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
+endif()
+if(NOT HAVE_SDL_SENSORS)
+  set(SDL_SENSOR_DISABLED 1)
+  file(GLOB SENSORS_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/dummy/*.c)
+  set(SOURCE_FILES ${SOURCE_FILES} ${SENSORS_SOURCES})
 endif()
 
 # We always need to have threads and timers around

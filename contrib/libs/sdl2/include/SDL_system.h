@@ -136,6 +136,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
 
 /**
+ \brief Trigger the Android system back button behavior.
+ */
+extern DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
+
+/**
    See the official Android developer guide for more information:
    http://developer.android.com/guide/topics/data/data-storage.html
 */
@@ -257,6 +262,11 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
 extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 
 #endif /* __WINRT__ */
+
+/**
+ \brief Return true if the current device is a tablet.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

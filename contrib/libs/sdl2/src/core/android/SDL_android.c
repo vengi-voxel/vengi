@@ -135,6 +135,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeEnvironmentVariablesSet)(
         JNIEnv* env, jclass cls);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
+        JNIEnv* env, jclass cls,
+        jint orientation);
+
 /* Java class SDLInputConnection */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
         JNIEnv* env, jclass cls,
@@ -213,9 +217,11 @@ static jmethodID midSetActivityTitle;
 static jmethodID midSetWindowStyle;
 static jmethodID midSetOrientation;
 static jmethodID midGetContext;
+static jmethodID midIsTablet;
 static jmethodID midIsAndroidTV;
 static jmethodID midIsChromebook;
 static jmethodID midIsDeXMode;
+static jmethodID midManualBackButton;
 static jmethodID midInputGetInputDeviceIds;
 static jmethodID midSendMessage;
 static jmethodID midShowTextInput;
@@ -252,6 +258,7 @@ static jclass mControllerManagerClass;
 static jmethodID midPollInputDevices;
 static jmethodID midPollHapticDevices;
 static jmethodID midHapticRun;
+static jmethodID midHapticStop;
 
 /* static fields */
 static jfieldID fidSeparateMouseAndTouch;
@@ -317,12 +324,16 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
                                 "setOrientation","(IIZLjava/lang/String;)V");
     midGetContext = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "getContext","()Landroid/content/Context;");
+    midIsTablet = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "isTablet", "()Z");
     midIsAndroidTV = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "isAndroidTV","()Z");
     midIsChromebook = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "isChromebook", "()Z");
     midIsDeXMode = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "isDeXMode", "()Z");
+    midManualBackButton = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "manualBackButton", "()V");
     midInputGetInputDeviceIds = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "inputGetInputDeviceIds", "(I)[I");
     midSendMessage = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
@@ -351,13 +362,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
     midSupportsRelativeMouse = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "supportsRelativeMouse", "()Z");
     midSetRelativeMouseEnabled = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
 
+
     if (!midGetNativeSurface ||
-       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsAndroidTV || !midInputGetInputDeviceIds ||
+       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
        !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
        !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor || !midSupportsRelativeMouse || !midSetRelativeMouseEnabled ||
-       !midIsChromebook || !midIsDeXMode) {
+       !midIsChromebook || !midIsDeXMode || !midManualBackButton) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -419,8 +431,10 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv* mEn
                                 "pollHapticDevices", "()V");
     midHapticRun = (*mEnv)->GetStaticMethodID(mEnv, mControllerManagerClass,
                                 "hapticRun", "(II)V");
+    midHapticStop = (*mEnv)->GetStaticMethodID(mEnv, mControllerManagerClass,
+                                "hapticStop", "(I)V");
 
-    if (!midPollInputDevices || !midPollHapticDevices || !midHapticRun) {
+    if (!midPollInputDevices || !midPollHapticDevices || !midHapticRun || !midHapticStop) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
@@ -526,6 +540,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
 									jint deviceWidth, jint deviceHeight, jint format, jfloat rate)
 {
     Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, format, rate);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
+                                    JNIEnv *env, jclass jcls,
+                                    jint orientation)
+{
+    SDL_VideoDisplay *display = SDL_GetDisplay(0);
+    SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
 }
 
 /* Paddown */
@@ -1873,6 +1895,11 @@ void Android_JNI_HapticRun(int device_id, int length)
     (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticRun, device_id, length);
 }
 
+void Android_JNI_HapticStop(int device_id)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticStop, device_id);
+}
 
 /* See SDLActivity.java for constants. */
 #define COMMAND_SET_KEEP_SCREEN_ON    5
@@ -2027,6 +2054,12 @@ void *SDL_AndroidGetActivity(void)
     return (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
 }
 
+SDL_bool SDL_IsAndroidTablet(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsTablet);
+}
+
 SDL_bool SDL_IsAndroidTV(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
@@ -2043,6 +2076,12 @@ SDL_bool SDL_IsDeXMode(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsDeXMode);
+}
+
+void SDL_AndroidBackButton(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticVoidMethod(env, mActivityClass, midManualBackButton);
 }
 
 const char * SDL_AndroidGetInternalStoragePath(void)
