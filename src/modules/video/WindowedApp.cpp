@@ -51,19 +51,26 @@ core::AppState WindowedApp::onRunning() {
 	SDL_GetMouseState(&_mousePos.x, &_mousePos.y);
 	SDL_GetRelativeMouseState(&_mouseRelativePos.x, &_mouseRelativePos.y);
 	SDL_Event event;
+	bool quit = false;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 		case SDL_QUIT:
-			return core::AppState::Cleanup;
+			// continue to handle any other following event
+			quit = true;
+			break;
 		default: {
 			core_trace_scoped(WindowedAppEventHandler);
 			const bool running = core::Singleton<io::EventHandler>::getInstance().handleEvent(event);
 			if (!running) {
-				return core::AppState::Cleanup;
+				quit = true;
 			}
 			break;
 		}
 		}
+	}
+
+	if (quit) {
+		return core::AppState::Cleanup;
 	}
 
 	core_trace_scoped(WindowedAppStartFrame);
