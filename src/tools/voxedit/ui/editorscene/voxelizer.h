@@ -790,9 +790,9 @@ vx_hash_table_t* vx__voxelize(vx_mesh_t const* m,
                             c2 = triangle.colors[1];
                             c3 = triangle.colors[2];
 
-                            vx_triangle_t t1 = {v1, v2, boxcenter};
-                            vx_triangle_t t2 = {v2, v3, boxcenter};
-                            vx_triangle_t t3 = {v3, v1, boxcenter};
+                            vx_triangle_t t1 = {v1, v2, boxcenter, {0.0f, 0.0f, 0.0f}};
+                            vx_triangle_t t2 = {v2, v3, boxcenter, {0.0f, 0.0f, 0.0f}};
+                            vx_triangle_t t3 = {v3, v1, boxcenter, {0.0f, 0.0f, 0.0f}};
 
                             a1 = vx__triangle_area(&t1);
                             a2 = vx__triangle_area(&t2);
