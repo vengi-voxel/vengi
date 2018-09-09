@@ -41,6 +41,8 @@
 #include "../Public/ShaderLang.h"
 #include "Versions.h"
 
+#include <string>
+#include <vector>
 #include <algorithm>
 #include <set>
 #include <array>
@@ -231,6 +233,7 @@ public:
         useUnknownFormat(false),
         hlslOffsets(false),
         useStorageBuffer(false),
+        useVulkanMemoryModel(false),
         hlslIoMapping(false),
         textureSamplerTransformMode(EShTexSampTransKeep),
         needToLegalize(false),
@@ -349,7 +352,7 @@ public:
         if (hlslOffsets)
             processes.addProcess("hlsl-offsets");
     }
-    bool usingHlslOFfsets() const { return hlslOffsets; }
+    bool usingHlslOffsets() const { return hlslOffsets; }
     void setUseStorageBuffer()
     {
         useStorageBuffer = true;
@@ -363,6 +366,12 @@ public:
             processes.addProcess("hlsl-iomap");
     }
     bool usingHlslIoMapping() { return hlslIoMapping; }
+    void setUseVulkanMemoryModel()
+    {
+        useVulkanMemoryModel = true;
+        processes.addProcess("use-vulkan-memory-model");
+    }
+    bool usingVulkanMemoryModel() const { return useVulkanMemoryModel; }
 
     template<class T> T addCounterBufferName(const T& name) const { return name + implicitCounterName; }
     bool hasCounterBufferName(const TString& name) const {
@@ -732,6 +741,7 @@ protected:
     bool useUnknownFormat;
     bool hlslOffsets;
     bool useStorageBuffer;
+    bool useVulkanMemoryModel;
     bool hlslIoMapping;
 
     std::set<TString> ioAccessed;           // set of names of statically read/written I/O that might need extra checking
