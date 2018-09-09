@@ -3,14 +3,13 @@ UPDATEDIR   := /tmp
 BUILDDIR    ?= ./build
 INSTALL_DIR ?= $(BUILDDIRPATH)$(shell uname)
 
-$(BUILDDIR)/CMakeCache.txt:
-	$(Q)mkdir -p $(BUILDDIR)
-	$(Q)cd $(BUILDDIR); cmake -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) $(CURDIR)
-
-%: force $(BUILDDIR)/CMakeCache.txt
+all:
+	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
 	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR) $@
 
-force: ;
+%:
+	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
+	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR) $@
 
 define UPDATE_GIT
 	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
