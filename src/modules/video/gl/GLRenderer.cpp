@@ -1439,15 +1439,18 @@ bool init() {
 	_priv::setupLimitsAndSpecs();
 	_priv::setupFeatures();
 
-	const std::string vendor((const char*)glGetString(GL_VENDOR));
+	const char *glvendor = (const char*)glGetString(GL_VENDOR);
 	const char* glrenderer = (const char*)glGetString(GL_RENDERER);
 	const char* glversion = (const char*)glGetString(GL_VERSION);
-	Log::info("GL_VENDOR: %s", vendor.c_str());
+	Log::info("GL_VENDOR: %s", glvendor);
 	Log::info("GL_RENDERER: %s", glrenderer);
 	Log::info("GL_VERSION: %s", glversion);
-	for (int i = 0; i < std::enum_value(Vendor::Max); ++i) {
-		const bool match = core::string::icontains(vendor, _priv::VendorStrings[i]);
-		_priv::s.vendor[i] = match;
+	if (glvendor != nullptr) {
+		const std::string vendor(glvendor);
+		for (int i = 0; i < std::enum_value(Vendor::Max); ++i) {
+			const bool match = core::string::icontains(vendor, _priv::VendorStrings[i]);
+			_priv::s.vendor[i] = match;
+		}
 	}
 
 	for (int i = 0; i < std::enum_value(Vendor::Max); ++i) {
