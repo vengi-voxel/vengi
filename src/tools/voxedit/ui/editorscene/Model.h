@@ -126,6 +126,7 @@ public:
 	bool importHeightmap(const std::string& file);
 	bool save(const std::string& file);
 	bool load(const std::string& file);
+	bool prefab(const std::string& file);
 
 	bool newVolume(bool force);
 

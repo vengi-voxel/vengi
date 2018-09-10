@@ -11,7 +11,7 @@
 namespace voxel {
 
 template<class Volume1, class Volume2>
-int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& offsets, const Voxel& skipVoxel) {
+int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& offsets, const Voxel& skipVoxel = voxel::Voxel()) {
 	core_trace_scoped(MoveVolume);
 	int cnt = 0;
 

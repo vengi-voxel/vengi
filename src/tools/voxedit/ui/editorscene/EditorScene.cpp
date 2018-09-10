@@ -251,6 +251,14 @@ bool EditorScene::exportModel(const std::string& file) {
 	return voxel::exportMesh(m().volumeRenderer().mesh(), filePtr->name().c_str());
 }
 
+bool EditorScene::prefab(const std::string& file) {
+	core_trace_scoped(EditorSceneLoadModel);
+	if (!m().prefab(file)) {
+		return false;
+	}
+	return true;
+}
+
 bool EditorScene::loadModel(const std::string& file) {
 	core_trace_scoped(EditorSceneLoadModel);
 	if (!m().load(file)) {

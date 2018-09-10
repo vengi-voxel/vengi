@@ -87,6 +87,38 @@ bool Model::save(const std::string& file) {
 	return false;
 }
 
+bool Model::prefab(const std::string& file) {
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file);
+	if (!(bool)filePtr) {
+		Log::error("Failed to open model file %s", file.data());
+		return false;
+	}
+	voxel::RawVolume* newVolume;
+
+	if (filePtr->extension() == "qbt") {
+		voxel::QBTFormat f;
+		newVolume = f.load(filePtr);
+	} else if (filePtr->extension() == "vox") {
+		voxel::VoxFormat f;
+		newVolume = f.load(filePtr);
+	} else if (filePtr->extension() == "qb") {
+		voxel::QBFormat f;
+		newVolume = f.load(filePtr);
+	} else {
+		newVolume = nullptr;
+	}
+	if (newVolume == nullptr) {
+		Log::error("Failed to load model file %s", file.c_str());
+		return false;
+	}
+	Log::info("Import model file %s", file.c_str());
+	voxel::RawVolumeMoveWrapper wrapper(modelVolume());
+	voxel::moveVolume(&wrapper, newVolume, _referencePos);
+	modified(newVolume->region());
+	delete newVolume;
+	return true;
+}
+
 bool Model::load(const std::string& file) {
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file);
 	if (!(bool)filePtr) {
@@ -111,7 +143,7 @@ bool Model::load(const std::string& file) {
 		Log::error("Failed to load model file %s", file.c_str());
 		return false;
 	}
-	Log::info("Loaded model file %s", file.c_str());
+	Log::info("Load model file %s", file.c_str());
 	undoHandler().clearUndoStates();
 	setNewVolume(newVolume);
 	modified(newVolume->region());
@@ -410,7 +442,7 @@ void Model::move(int x, int y, int z) {
 	const voxel::RawVolume* model = modelVolume();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
-	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z), voxel::Voxel());
+	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z));
 	setNewVolume(newVolume);
 	modified(newVolume->region());
 }

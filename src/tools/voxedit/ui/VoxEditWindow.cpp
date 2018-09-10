@@ -104,6 +104,7 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addMenuItem(_fileItems, "Load");
 	addMenuItem(_fileItems, "Save");
 	addMenuItem(_fileItems, "Import");
+	addMenuItem(_fileItems, "Prefab");
 	addMenuItem(_fileItems, "Export");
 	addMenuItem(_fileItems, "Heightmap");
 	addMenuItem(_fileItems, "Quit");
@@ -479,6 +480,9 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (isAny(ev, TBIDC("import"))) {
 		voxelize("");
+		return true;
+	} else if (isAny(ev, TBIDC("prefab"))) {
+		prefab("");
 		return true;
 	} else if (isAny(ev, TBIDC("spacecolonization"))) {
 		_scene->spaceColonization();
@@ -1047,6 +1051,20 @@ void VoxEditWindow::resetcamera() {
 	if (_sceneFront != nullptr) {
 		_sceneFront->resetCamera();
 	}
+}
+
+bool VoxEditWindow::prefab(const std::string& file) {
+	std::string f;
+	if (file.empty()) {
+		f = _voxedit->openDialog("vox,qbt,qb");
+		if (f.empty()) {
+			return false;
+		}
+	} else {
+		f = file;
+	}
+
+	return _scene->prefab(f);
 }
 
 bool VoxEditWindow::load(const std::string& file) {

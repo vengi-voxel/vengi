@@ -39,6 +39,10 @@ bool VoxEdit::loadFile(const std::string& file) {
 	return _mainWindow->load(file);
 }
 
+bool VoxEdit::prefabFile(const std::string& file) {
+	return _mainWindow->prefab(file);
+}
+
 bool VoxEdit::voxelizeFile(const std::string& file) {
 	return _mainWindow->voxelize(file);
 }
@@ -196,6 +200,7 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(save, "Save the current state to the given file");
 	COMMAND_FILE(export, "Export the current state to the given file");
 	COMMAND_FILE(load, "Load a scene from the given file");
+	COMMAND_FILE(prefab, "Import a model from the given file");
 	COMMAND_FILE(voxelize, "Load a scene from the given file");
 
 	COMMAND_MAINWINDOW(setreferencepositiontocursor, "Set the reference position to the current cursor position");

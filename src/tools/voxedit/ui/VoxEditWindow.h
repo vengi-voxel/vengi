@@ -138,6 +138,7 @@ private:
 	bool importHeightmp(const std::string& file);
 	bool save(const std::string& file);
 	bool load(const std::string& file);
+	bool prefab(const std::string& file);
 	bool exportFile(const std::string& file);
 	bool createNew(bool force);
 	void selectCursor();

@@ -55,6 +55,7 @@ public:
 	bool importHeightmap(const std::string& file);
 	bool saveModel(const std::string& file);
 	bool loadModel(const std::string& file);
+	bool prefab(const std::string& file);
 	bool exportModel(const std::string& file);
 	bool newModel(bool force);
 
