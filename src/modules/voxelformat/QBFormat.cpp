@@ -3,7 +3,6 @@
  */
 
 #include "QBFormat.h"
-#include "voxel/polyvox/VolumeMerger.h"
 #include "core/Common.h"
 #include "core/Zip.h"
 #include "core/Color.h"
@@ -31,13 +30,13 @@ const int NEXT_SLICE_FLAG = 6;
 #define wrap(read) \
 	if (read != 0) { \
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
-		return nullptr; \
+		return false; \
 	}
 
 #define wrapBool(read) \
 	if (read == false) { \
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
-		return nullptr; \
+		return false; \
 	}
 
 #define wrapColor(read) \
@@ -181,7 +180,7 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	return voxel::createVoxel(voxel::VoxelType::Generic, index);
 }
 
-voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
+bool QBFormat::loadMatrix(io::FileStream& stream, voxel::RawVolume*& volume) {
 	char buf[260] = "";
 	uint8_t nameLength;
 	wrap(stream.readByte(nameLength));
@@ -198,7 +197,7 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 
 	if (size.x == 0 || size.y == 0 || size.z == 0) {
 		Log::error("Invalid size");
-		return nullptr;
+		return false;
 	}
 
 	glm::ivec3 offset(0);
@@ -218,9 +217,9 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 			"%i:%i:%i versus %i:%i:%i", region.getDimensionsInVoxels().x, region.getDimensionsInVoxels().y, region.getDimensionsInVoxels().z,
 			size.x, size.y, size.z);
 	if (!region.isValid()) {
-		return nullptr;
+		return false;
 	}
-	voxel::RawVolume* volume = new voxel::RawVolume(region);
+	volume = new voxel::RawVolume(region);
 	if (_compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
@@ -231,7 +230,7 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 				}
 			}
 		}
-		return volume;
+		return true;
 	}
 
 	Log::debug("Matrix rle compressed");
@@ -265,10 +264,10 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 		++z;
 	}
 	Log::debug("Matrix read");
-	return volume;
+	return true;
 }
 
-RawVolume* QBFormat::loadFromStream(io::FileStream& stream) {
+bool QBFormat::loadFromStream(io::FileStream& stream, std::vector<RawVolume*>& volumes) {
 	wrap(stream.readInt(_version))
 	uint32_t colorFormat;
 	wrap(stream.readInt(colorFormat))
@@ -293,57 +292,29 @@ RawVolume* QBFormat::loadFromStream(io::FileStream& stream) {
 	Log::debug("VisibilityMaskEncoded: %u", std::enum_value(_visibilityMaskEncoded));
 	Log::debug("NumMatrices: %u", numMatrices);
 
-	glm::ivec3 mins(std::numeric_limits<int32_t>::max());
-	glm::ivec3 maxs(std::numeric_limits<int32_t>::min());
-	std::vector<voxel::RawVolume*> volumes;
 	volumes.reserve(numMatrices);
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
-		voxel::RawVolume* v = loadMatrix(stream);
-		if (v == nullptr) {
+		voxel::RawVolume* v = nullptr;
+		if (!loadMatrix(stream, v)) {
 			break;
 		}
-		const voxel::Region& region = v->region();
-		mins = glm::min(mins, region.getLowerCorner());
-		maxs = glm::max(maxs, region.getUpperCorner());
 		volumes.push_back(v);
 	}
-	if (volumes.empty()) {
-		return nullptr;
-	}
-	if (volumes.size() == 1) {
-		return volumes[0];
-	}
-
-	const voxel::Region mergedRegion(glm::ivec3(0), maxs - mins);
-	Log::debug("Starting to merge volumes into one: %i:%i:%i - %i:%i:%i",
-			mergedRegion.getLowerX(), mergedRegion.getLowerY(), mergedRegion.getLowerZ(),
-			mergedRegion.getUpperX(), mergedRegion.getUpperY(), mergedRegion.getUpperZ());
-	Log::debug("Mins: %i:%i:%i Maxs %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
-	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
-	for (voxel::RawVolume* v : volumes) {
-		const voxel::Region& sr = v->region();
-		const glm::ivec3& destMins = sr.getLowerCorner() - mins;
-		const voxel::Region dr(destMins, destMins + sr.getDimensionsInCells());
-		Log::debug("Merge %i:%i:%i - %i:%i:%i into %i:%i:%i - %i:%i:%i",
-				sr.getLowerX(), sr.getLowerY(), sr.getLowerZ(),
-				sr.getUpperX(), sr.getUpperY(), sr.getUpperZ(),
-				dr.getLowerX(), dr.getLowerY(), dr.getLowerZ(),
-				dr.getUpperX(), dr.getUpperY(), dr.getUpperZ());
-		voxel::mergeVolumes(merged, v, dr, sr);
-		delete v;
-	}
-	return merged;
+	return true;
 }
 
-RawVolume* QBFormat::load(const io::FilePtr& file) {
+std::vector<voxel::RawVolume*> QBFormat::loadGroups(const io::FilePtr& file) {
 	if (!(bool)file || !file->exists()) {
 		Log::error("Could not load qb file: File doesn't exist");
-		return nullptr;
+		return std::vector<voxel::RawVolume*>();
 	}
 	io::FileStream stream(file.get());
-	voxel::RawVolume* volume = loadFromStream(stream);
-	return volume;
+	std::vector<RawVolume*> volumes;
+	if (!loadFromStream(stream, volumes)) {
+		return std::vector<RawVolume*>();
+	}
+	return volumes;
 }
 
 }

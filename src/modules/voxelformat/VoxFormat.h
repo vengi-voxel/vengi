@@ -16,7 +16,7 @@ namespace voxel {
  */
 class VoxFormat : public VoxFileFormat {
 public:
-	RawVolume* load(const io::FilePtr& file) override;
+	std::vector<RawVolume*> loadGroups(const io::FilePtr& file) override;
 	bool save(const RawVolume* volume, const io::FilePtr& file) override;
 };
 

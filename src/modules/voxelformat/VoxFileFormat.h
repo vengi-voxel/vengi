@@ -6,6 +6,7 @@
 
 #include "voxel/polyvox/RawVolume.h"
 #include "io/File.h"
+#include <vector>
 
 namespace voxel {
 
@@ -21,7 +22,8 @@ protected:
 public:
 	virtual ~VoxFileFormat() = default;
 
-	virtual RawVolume* load(const io::FilePtr& file) = 0;
+	virtual std::vector<RawVolume*> loadGroups(const io::FilePtr& file) = 0;
+	RawVolume* load(const io::FilePtr& file);
 	virtual bool save(const RawVolume* volume, const io::FilePtr& file) = 0;
 };
 

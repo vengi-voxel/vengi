@@ -31,8 +31,8 @@ bool QBTFormat::skipNode(io::FileStream& stream) {
 	return true;
 }
 
-bool QBTFormat::loadCompound(io::FileStream& stream) {
-	if (!loadMatrix(stream)) {
+bool QBTFormat::loadCompound(io::FileStream& stream, std::vector<RawVolume*>& volumes) {
+	if (!loadMatrix(stream, volumes)) {
 		return false;
 	}
 	uint32_t childCount;
@@ -44,7 +44,7 @@ bool QBTFormat::loadCompound(io::FileStream& stream) {
 				return false;
 			}
 		} else {
-			if (!loadNode(stream)) {
+			if (!loadNode(stream, volumes)) {
 				return false;
 			}
 		}
@@ -52,7 +52,7 @@ bool QBTFormat::loadCompound(io::FileStream& stream) {
 	return true;
 }
 
-bool QBTFormat::loadMatrix(io::FileStream& stream) {
+bool QBTFormat::loadMatrix(io::FileStream& stream, std::vector<RawVolume*>& volumes) {
 	char buf[1024];
 	uint32_t nameLength;
 	wrap(stream.readInt(nameLength));
@@ -117,24 +117,22 @@ bool QBTFormat::loadMatrix(io::FileStream& stream) {
 	}
 	delete [] voxelData;
 	delete [] voxelDataDecompressed;
-	// TODO: do something with the volume, don't just free it after loading it.
-	delete volume;
+	volumes.push_back(volume);
 	return true;
 }
 
-bool QBTFormat::loadModel(io::FileStream& stream) {
+bool QBTFormat::loadModel(io::FileStream& stream, std::vector<RawVolume*>& volumes) {
 	uint32_t childCount;
 	wrap(stream.readInt(childCount));
 	for (uint32_t i = 0; i < childCount; i++) {
-		if (!loadNode(stream)) {
+		if (!loadNode(stream, volumes)) {
 			return false;
 		}
 	}
 	return true;
 }
 
-
-bool QBTFormat::loadNode(io::FileStream& stream) {
+bool QBTFormat::loadNode(io::FileStream& stream, std::vector<RawVolume*>& volumes) {
 	uint32_t nodeTypeID;
 	wrap(stream.readInt(nodeTypeID));
 	uint32_t dataSize;
@@ -142,11 +140,11 @@ bool QBTFormat::loadNode(io::FileStream& stream) {
 
 	switch (nodeTypeID) {
 	case 0:
-		return loadMatrix(stream);
+		return loadMatrix(stream, volumes);
 	case 1:
-		return loadModel(stream);
+		return loadModel(stream, volumes);
 	case 2:
-		return loadCompound(stream);
+		return loadCompound(stream, volumes);
 	default:
 		// skip node if unknown
 		stream.skip(dataSize);
@@ -155,7 +153,7 @@ bool QBTFormat::loadNode(io::FileStream& stream) {
 	return true;
 }
 
-bool QBTFormat::loadFromStream(io::FileStream& stream) {
+bool QBTFormat::loadFromStream(io::FileStream& stream, std::vector<RawVolume*>& volumes) {
 	uint32_t header;
 	wrap(stream.readInt(header))
 	constexpr uint32_t headerMagic = FourCC('Q','B',' ','2');
@@ -211,19 +209,20 @@ bool QBTFormat::loadFromStream(io::FileStream& stream) {
 		return false;
 	}
 
-	return loadNode(stream);
+	return loadNode(stream, volumes);
 }
 
-RawVolume* QBTFormat::load(const io::FilePtr& file) {
+std::vector<RawVolume*> QBTFormat::loadGroups(const io::FilePtr& file) {
 	if (!(bool)file || !file->exists()) {
 		Log::error("Could not load qbt file: File doesn't exist");
-		return nullptr;
+		return std::vector<RawVolume*>();
 	}
 	io::FileStream stream(file.get());
-	if (!loadFromStream(stream)) {
-		return nullptr;
+	std::vector<RawVolume*> volumes;
+	if (!loadFromStream(stream, volumes)) {
+		return std::vector<RawVolume*>();
 	}
-	return nullptr;
+	return volumes;
 }
 
 #undef wrap

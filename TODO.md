@@ -161,3 +161,8 @@ doing one query per chunk is most likely a little bit overkill.
 
 * move all visual test configs into one file and load a default one in testcore::TestApp
 * module related tests might need data, too. Find a good way to let the dependency tree automatically figure out which files must be installed.
+
+# VoxEdit
+
+* support multiple RawVolumes - and allow to move/scale/rotate complete volumes
+  * the importers support multiple volumes to preserve the groups (and of course also the export)

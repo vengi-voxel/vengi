@@ -14,7 +14,7 @@ namespace voxel {
 #define wrap(read) \
 	if (read != 0) { \
 		Log::error("Could not load vox file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
-		return nullptr; \
+		return std::vector<RawVolume*>(); \
 	}
 
 bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
@@ -110,10 +110,10 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	return true;
 }
 
-RawVolume* VoxFormat::load(const io::FilePtr& file) {
+std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 	if (!(bool)file || !file->exists()) {
 		Log::error("Could not load vox file: File doesn't exist");
-		return nullptr;
+		return std::vector<RawVolume*>();
 	}
 	io::FileStream stream(file.get());
 
@@ -157,7 +157,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 	constexpr uint32_t headerMagic = FourCC('V','O','X',' ');
 	if (header != headerMagic) {
 		Log::error("Could not load vox file: Invalid magic found (%u vs %u)", header, headerMagic);
-		return nullptr;
+		return std::vector<RawVolume*>();
 	}
 
 	uint32_t version;
@@ -183,7 +183,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 	// 3. Chunk id 'MAIN' : the root chunk and parent chunk of all the other chunks
 	if (mainChunk != FourCC('M','A','I','N')) {
 		Log::error("Could not load vox file: Invalid magic for main chunk found");
-		return nullptr;
+		return std::vector<RawVolume*>();
 	}
 
 	uint32_t numBytesMainChunk;
@@ -193,7 +193,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 
 	if (stream.remaining() < numBytesMainChildrenChunks) {
 		Log::error("Could not load vox file: Incomplete file");
-		return nullptr;
+		return std::vector<RawVolume*>();
 	}
 
 	const int64_t resetPos = stream.pos();
@@ -331,7 +331,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 			wrap(stream.readInt(numVoxels))
 			if (volume == nullptr) {
 				Log::error("Could not load vox file: Missed SIZE chunk");
-				return nullptr;
+				return std::vector<RawVolume*>();
 			}
 			Log::debug("Found voxel chunk with %u voxels", numVoxels);
 			for (uint32_t i = 0; i < numVoxels; ++i) {
@@ -403,7 +403,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		wrap(stream.seek(nextChunkPos));
 	} while (stream.remaining() > 0);
 
-	return volume;
+	return std::vector<RawVolume*>{volume};
 }
 
 #undef wrap
