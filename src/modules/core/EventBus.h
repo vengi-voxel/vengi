@@ -52,8 +52,6 @@ protected:
 			_index(typeid(*this)) {
 	}
 public:
-	virtual ~IEventBusTopic() = default;
-
 	inline bool operator==(const IEventBusTopic& other) const {
 		return _index == other._index;
 	}
@@ -74,9 +72,6 @@ private:
 	inline const IEventBusTopic* getTopic() const {
 		return _topic;
 	}
-public:
-
-	virtual ~IEventBusEvent() = default;
 };
 
 typedef std::shared_ptr<IEventBusEvent> IEventBusEventPtr;
