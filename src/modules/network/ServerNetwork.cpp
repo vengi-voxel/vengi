@@ -64,6 +64,17 @@ bool ServerNetwork::bind(uint16_t port, const std::string& hostname, int maxPeer
 	return true;
 }
 
+bool ServerNetwork::broadcast(ENetPacket* packet, int channel) {
+	if (_server == nullptr) {
+		return false;
+	}
+	if (packet == nullptr) {
+		return false;
+	}
+	enet_host_broadcast(_server, channel, packet);
+	return true;
+}
+
 void ServerNetwork::shutdown() {
 	if (_server != nullptr) {
 		enet_host_flush(_server);
