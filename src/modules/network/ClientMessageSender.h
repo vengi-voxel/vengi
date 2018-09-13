@@ -20,7 +20,10 @@ private:
 	ClientNetworkPtr _network;
 public:
 	ClientMessageSender(const ClientNetworkPtr& network);
-	void sendClientMessage(FlatBufferBuilder& fbb, ClientMsgType type, Offset<void> data, uint32_t flags = ENET_PACKET_FLAG_RELIABLE);
+	/**
+	 * @return @c true if the message was queued for sending.
+	 */
+	bool sendClientMessage(FlatBufferBuilder& fbb, ClientMsgType type, Offset<void> data, uint32_t flags = ENET_PACKET_FLAG_RELIABLE);
 };
 
 typedef std::shared_ptr<ClientMessageSender> ClientMessageSenderPtr;

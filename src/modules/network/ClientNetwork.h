@@ -23,6 +23,12 @@ public:
 	bool isConnected() const;
 
 	inline bool sendMessage(ENetPacket* packet, int channel = 0) {
+		if (_peer == nullptr) {
+			return false;
+		}
+		if (packet == nullptr) {
+			return false;
+		}
 		return Super::sendMessage(_peer, packet, channel);
 	}
 

@@ -20,9 +20,10 @@ ClientMessageSender::ClientMessageSender(const ClientNetworkPtr& network) :
 		_network(network) {
 }
 
-void ClientMessageSender::sendClientMessage(FlatBufferBuilder& fbb, ClientMsgType type, Offset<void> data, uint32_t flags) {
-	_network->sendMessage(createClientPacket(fbb, type, data, flags));
+bool ClientMessageSender::sendClientMessage(FlatBufferBuilder& fbb, ClientMsgType type, Offset<void> data, uint32_t flags) {
+	const bool retVal = _network->sendMessage(createClientPacket(fbb, type, data, flags));
 	fbb.Clear();
+	return retVal;
 }
 
 }
