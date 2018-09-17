@@ -40,11 +40,15 @@ set(SRCS_SHADERS
 	shaders/_fullscreen.vert
 	shaders/_shadowmap.vert shaders/_shadowmap.frag
 )
+set(FILES
+	shared/keybindings.cfg
+)
+
 #set_source_files_properties(${SRCS_SHADERS} PROPERTIES LANGUAGE C)
 set(LIB video)
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES image util assimp)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES image util assimp)
 
 find_program(PYTHON3_EXECUTABLE NAMES python3)
 add_custom_target(update-glbindings)
