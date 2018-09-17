@@ -69,6 +69,39 @@ set(FILES
 	voxedit/ui/window/voxedit-noise.tb.txt
 	voxedit/ui/window/voxedit-tree.tb.txt
 	voxedit/ui/window/voxedit-world.tb.txt
+	voxedit/models/armchair.vox
+	voxedit/models/bowl_bone.vox
+	voxedit/models/brick_wall.vox
+	voxedit/models/carter.vox
+	voxedit/models/cart_full.vox
+	voxedit/models/cart.vox
+	voxedit/models/cat_01.vox
+	voxedit/models/cat_02.vox
+	voxedit/models/cat_03.vox
+	voxedit/models/chimney.vox
+	voxedit/models/christmas_scene.vox
+	voxedit/models/christmas_tree.vox
+	voxedit/models/couch.vox
+	voxedit/models/dog_house.vox
+	voxedit/models/dog_scene.vox
+	voxedit/models/dog.vox
+	voxedit/models/door.vox
+	voxedit/models/gifts.vox
+	voxedit/models/horse.vox
+	voxedit/models/lantern.vox
+	voxedit/models/mailbox.vox
+	voxedit/models/man.vox
+	voxedit/models/odyssey_scene.vox
+	voxedit/models/paperboy.vox
+	voxedit/models/README.md
+	voxedit/models/santa.vox
+	voxedit/models/snowman.vox
+	voxedit/models/spaceship_interior.vox
+	voxedit/models/spacesuit.vox
+	voxedit/models/street_scene.vox
+	voxedit/models/street.vox
+	voxedit/models/treehouse.vox
+	voxedit/models/woman.vox
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
