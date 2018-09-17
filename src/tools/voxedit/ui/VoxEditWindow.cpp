@@ -513,6 +513,9 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	} else if (isAny(ev, TBIDC("rotatez"))) {
 		rotatez();
 		return true;
+	} else if (isAny(ev, TBIDC("resample"))) {
+		resample(2);
+		return true;
 	} else if (isAny(ev, TBIDC("menu_structure"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("structure_popup"))) {
 			menu->Show(&_structureItems, tb::TBPopupAlignment());

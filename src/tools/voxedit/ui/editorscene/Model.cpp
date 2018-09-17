@@ -456,6 +456,9 @@ static voxel::RawVolume* resample_(const voxel::RawVolume* srcVolume, const voxe
 	upperCorner = upperCorner + lowerCorner;
 
 	const voxel::Region dstRegion(lowerCorner, upperCorner);
+	if (!dstRegion.isValid()) {
+		return nullptr;
+	}
 	voxel::RawVolume *dstVolume = new voxel::RawVolume(dstRegion);
 	voxel::rescaleVolume(*srcVolume, srcRegion, *dstVolume, dstRegion);
 	return dstVolume;
@@ -473,6 +476,9 @@ bool Model::resample(int factor) {
 	factor /= 2;
 	while (factor > 1) {
 		voxel::RawVolume* v = resample_(newVolume, newVolume->region());
+		if (v == nullptr) {
+			break;
+		}
 		delete newVolume;
 		newVolume = v;
 		factor /= 2;

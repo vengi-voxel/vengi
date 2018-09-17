@@ -27,8 +27,8 @@ glm::ivec3 Region::moveInto(int32_t x, int32_t y, int32_t z) const {
 	const int32_t oy = ny % size.y;
 	const int32_t oz = nz % size.z;
 	core_assert_msg(containsPoint(ox, oy, oz),
-			"shifted(%i:%i:%i) is outside the valid region for pos(%i:%i:%i), size(%i:%i:%i)",
-			ox, oy, oz, x, y, z, size.x, size.y, size.z);
+			"shifted(%i:%i:%i) is outside the valid region for pos(%i:%i:%i), size(%i:%i:%i), mins(%i:%i:%i)",
+			ox, oy, oz, x, y, z, size.x, size.y, size.z, getLowerX(), getLowerY(), getLowerZ());
 	return glm::ivec3(ox, oy, oz);
 }
 
