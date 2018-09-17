@@ -90,6 +90,7 @@ void EditorScene::setReferencePosition(const glm::ivec3& pos) {
 	_shapeBuilder.setPosition(pos);
 	_shapeBuilder.sphere(5, 4, 1.0f);
 	_shapeRenderer.createOrUpdate(_referencePointMesh, _shapeBuilder);
+	camera().setTarget(pos);
 }
 
 math::Axis EditorScene::lockedAxis() const {
