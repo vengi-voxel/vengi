@@ -36,7 +36,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 				const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
 				const glm::ivec3 dstPos = destRegion.getLowerCorner() + curPos;
 
-				uint32_t solidVoxels = 0u;
+				float solidVoxels = 0.0f;
 				float avgOf8Red = 0.0f;
 				float avgOf8Green = 0.0f;
 				float avgOf8Blue = 0.0f;
@@ -59,8 +59,8 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 
 				// We only make a voxel solid if the eight corresponding voxels are also all solid. This
 				// means that higher LOD meshes actually shrink away which ensures cracks aren't visible.
-				if (solidVoxels > 7) {
-					const glm::vec4 avgColor(avgOf8Red / (float)solidVoxels, avgOf8Green / (float)solidVoxels, avgOf8Blue / (float)solidVoxels, 1.0f);
+				if (solidVoxels >= 7.0f) {
+					const glm::vec4 avgColor(avgOf8Red / solidVoxels, avgOf8Green / solidVoxels, avgOf8Blue / solidVoxels, 1.0f);
 					const int index = core::Color::getClosestMatch(avgColor, colors);
 					Voxel voxel = createVoxel(VoxelType::Generic, index);
 					destVolume.setVoxel(dstPos, voxel);
@@ -87,71 +87,74 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 				dstSampler.setPosition(dstPos);
 
 				// Skip empty voxels
-				if (dstSampler.voxel().getMaterial() != VoxelType::Air) {
-					// Only process voxels on a material-air boundary.
-					if (dstSampler.peekVoxel0px0py1nz().getMaterial() == VoxelType::Air || dstSampler.peekVoxel0px0py1pz().getMaterial() == VoxelType::Air
-							|| dstSampler.peekVoxel0px1ny0pz().getMaterial() == VoxelType::Air || dstSampler.peekVoxel0px1py0pz().getMaterial() == VoxelType::Air
-							|| dstSampler.peekVoxel1nx0py0pz().getMaterial() == VoxelType::Air || dstSampler.peekVoxel1px0py0pz().getMaterial() == VoxelType::Air) {
-						const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
+				if (dstSampler.voxel().getMaterial() == VoxelType::Air) {
+					continue;
+				}
+				// Only process voxels on a material-air boundary.
+				if (dstSampler.peekVoxel0px0py1nz().getMaterial() != VoxelType::Air && dstSampler.peekVoxel0px0py1pz().getMaterial() != VoxelType::Air
+						&& dstSampler.peekVoxel0px1ny0pz().getMaterial() != VoxelType::Air && dstSampler.peekVoxel0px1py0pz().getMaterial() != VoxelType::Air
+						&& dstSampler.peekVoxel1nx0py0pz().getMaterial() != VoxelType::Air && dstSampler.peekVoxel1px0py0pz().getMaterial() != VoxelType::Air) {
+					continue;
+				}
+				const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
 
-						float totalRed = 0.0f;
-						float totalGreen = 0.0f;
-						float totalBlue = 0.0f;
-						uint32_t totalExposedFaces = 0u;
+				float totalRed = 0.0f;
+				float totalGreen = 0.0f;
+				float totalBlue = 0.0f;
+				float totalExposedFaces = 0.0f;
 
-						// Look ate the 64 (4x4x4) children
-						for (int32_t childZ = -1; childZ < 3; childZ++) {
-							for (int32_t childY = -1; childY < 3; childY++) {
-								for (int32_t childX = -1; childX < 3; childX++) {
-									srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
+				// Look at the 64 (4x4x4) children
+				for (int32_t childZ = -1; childZ < 3; childZ++) {
+					for (int32_t childY = -1; childY < 3; childY++) {
+						for (int32_t childX = -1; childX < 3; childX++) {
+							srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
 
-									const Voxel& child = srcSampler.voxel();
-
-									if (child.getColor() > 0) {
-										// For each small voxel, count the exposed faces and use this
-										// to determine the importance of the color contribution.
-										uint32_t exposedFaces = 0;
-										if (srcSampler.peekVoxel0px0py1nz().getMaterial() == VoxelType::Air) {
-											++exposedFaces;
-										}
-										if (srcSampler.peekVoxel0px0py1pz().getMaterial() == VoxelType::Air) {
-											++exposedFaces;
-										}
-										if (srcSampler.peekVoxel0px1ny0pz().getMaterial() == VoxelType::Air) {
-											++exposedFaces;
-										}
-										if (srcSampler.peekVoxel0px1py0pz().getMaterial() == VoxelType::Air) {
-											++exposedFaces;
-										}
-										if (srcSampler.peekVoxel1nx0py0pz().getMaterial() == VoxelType::Air) {
-											++exposedFaces;
-										}
-										if (srcSampler.peekVoxel1px0py0pz().getMaterial() == VoxelType::Air) {
-											++exposedFaces;
-										}
-
-										const glm::vec4& color = colors[child.getColor()];
-										totalRed += color.r * (float)exposedFaces;
-										totalGreen += color.r * (float)exposedFaces;
-										totalBlue += color.r * (float)exposedFaces;
-
-										totalExposedFaces += exposedFaces;
-									}
-								}
+							const Voxel& child = srcSampler.voxel();
+							if (child.getMaterial() == VoxelType::Air) {
+								continue;
 							}
-						}
 
-						// Avoid divide by zero if there were no exposed faces.
-						if (totalExposedFaces == 0) {
-							++totalExposedFaces;
-						}
+							// For each small voxel, count the exposed faces and use this
+							// to determine the importance of the color contribution.
+							float exposedFaces = 0.0f;
+							if (srcSampler.peekVoxel0px0py1nz().getMaterial() == VoxelType::Air) {
+								++exposedFaces;
+							}
+							if (srcSampler.peekVoxel0px0py1pz().getMaterial() == VoxelType::Air) {
+								++exposedFaces;
+							}
+							if (srcSampler.peekVoxel0px1ny0pz().getMaterial() == VoxelType::Air) {
+								++exposedFaces;
+							}
+							if (srcSampler.peekVoxel0px1py0pz().getMaterial() == VoxelType::Air) {
+								++exposedFaces;
+							}
+							if (srcSampler.peekVoxel1nx0py0pz().getMaterial() == VoxelType::Air) {
+								++exposedFaces;
+							}
+							if (srcSampler.peekVoxel1px0py0pz().getMaterial() == VoxelType::Air) {
+								++exposedFaces;
+							}
 
-						const glm::vec4 avgColor(totalRed / (float)totalExposedFaces, totalGreen / (float)totalExposedFaces, totalBlue / (float)totalExposedFaces, 1.0f);
-						const int index = core::Color::getClosestMatch(avgColor, colors);
-						const Voxel voxel = createVoxel(VoxelType::Generic, index);
-						destVolume.setVoxel(dstPos, voxel);
+							const glm::vec4& color = colors[child.getColor()];
+							totalRed += color.r * exposedFaces;
+							totalGreen += color.g * exposedFaces;
+							totalBlue += color.b * exposedFaces;
+
+							totalExposedFaces += exposedFaces;
+						}
 					}
 				}
+
+				// Avoid divide by zero if there were no exposed faces.
+				if (totalExposedFaces <= 0.01f) {
+					++totalExposedFaces;
+				}
+
+				const glm::vec4 avgColor(totalRed / totalExposedFaces, totalGreen / totalExposedFaces, totalBlue / totalExposedFaces, 1.0f);
+				const int index = core::Color::getClosestMatch(avgColor, colors);
+				const Voxel voxel = createVoxel(VoxelType::Generic, index);
+				destVolume.setVoxel(dstPos, voxel);
 			}
 		}
 	}
