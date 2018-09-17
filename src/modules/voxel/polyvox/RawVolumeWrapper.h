@@ -25,6 +25,10 @@ public:
 		Sampler(const RawVolumeWrapper* volume) : Super(volume->volume()) {}
 
 		Sampler(const RawVolumeWrapper& volume) : Super(volume.volume()) {};
+
+		Sampler(RawVolumeWrapper* volume) : Super(volume->volume()) {}
+
+		Sampler(RawVolumeWrapper& volume) : Super(volume.volume()) {};
 	};
 
 	RawVolumeWrapper(voxel::RawVolume* volume) :
