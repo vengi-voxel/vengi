@@ -63,6 +63,7 @@ public:
 	void remove();
 	void rotate(int angleX, int angleY, int angleZ);
 	void move(int x, int y, int z);
+	bool resample(int factor);
 
 	void unselectAll();
 	void select(const glm::ivec3& pos);

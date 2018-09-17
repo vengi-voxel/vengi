@@ -140,6 +140,7 @@ public:
 
 	void rotate(int angleX, int angleY, int angleZ);
 	void move(int x, int y, int z);
+	bool resample(int factor);
 
 	void render(const video::Camera& camera);
 	void renderSelection(const video::Camera& camera);

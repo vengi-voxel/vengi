@@ -208,10 +208,19 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
 	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");
 	COMMAND_MAINWINDOW(rotatez, "Rotate the volume around the z axis");
-	COMMAND_MAINWINDOW(scalex, "Scale the cursor volume in x direction");
-	COMMAND_MAINWINDOW(scaley, "Scale the cursor volume in y direction");
-	COMMAND_MAINWINDOW(scalez, "Scale the cursor volume in z direction");
+	COMMAND_MAINWINDOW(scalecursorx, "Scale the cursor volume in x direction");
+	COMMAND_MAINWINDOW(scalecursory, "Scale the cursor volume in y direction");
+	COMMAND_MAINWINDOW(scalecursorz, "Scale the cursor volume in z direction");
 	COMMAND_MAINWINDOW(crop, "Crop your volume");
+	core::Command::registerCommand("resample", [this] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc != 1) {
+			Log::info("Expected to get a pot resample value");
+			return;
+		}
+		const int factor = core::string::toInt(args[0]);
+		_mainWindow->resample(factor);
+	}).setHelp("Resample the volume");
 	core::Command::registerCommand("resize", [this] (const core::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc == 1) {

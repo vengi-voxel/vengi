@@ -447,6 +447,42 @@ void Model::move(int x, int y, int z) {
 	modified(newVolume->region());
 }
 
+static voxel::RawVolume* resample_(const voxel::RawVolume* srcVolume, const voxel::Region& srcRegion) {
+	const glm::ivec3& lowerCorner = srcRegion.getLowerCorner();
+	glm::ivec3 upperCorner = srcRegion.getUpperCorner();
+
+	upperCorner = upperCorner - lowerCorner;
+	upperCorner = upperCorner / static_cast<int32_t>(2);
+	upperCorner = upperCorner + lowerCorner;
+
+	const voxel::Region dstRegion(lowerCorner, upperCorner);
+	voxel::RawVolume *dstVolume = new voxel::RawVolume(dstRegion);
+	voxel::rescaleVolume(*srcVolume, srcRegion, *dstVolume, dstRegion);
+	return dstVolume;
+}
+
+bool Model::resample(int factor) {
+	if (!glm::isPowerOfTwo(factor)) {
+		return false;
+	}
+	const voxel::RawVolume* model = modelVolume();
+	voxel::Region srcRegion = model->region();
+	srcRegion.grow(factor);
+
+	voxel::RawVolume* newVolume = resample_(model, srcRegion);
+	factor /= 2;
+	while (factor > 1) {
+		voxel::RawVolume* v = resample_(newVolume, newVolume->region());
+		delete newVolume;
+		newVolume = v;
+		factor /= 2;
+	}
+
+	setNewVolume(newVolume);
+	modified(newVolume->region());
+	return true;
+}
+
 const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 	return modelVolume()->voxel(pos);
 }

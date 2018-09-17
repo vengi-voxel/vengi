@@ -20,7 +20,6 @@ template<typename SourceVolume, typename DestVolume>
 void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion, DestVolume& destVolume, const Region& destRegion) {
 	core_trace_scoped(RescaleVolume);
 	typename SourceVolume::Sampler srcSampler(sourceVolume);
-	typename DestVolume::Sampler dstSampler(destVolume);
 
 	const MaterialColorArray& colors = getMaterialColors();
 
@@ -78,6 +77,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 	// color changes, as this is very noticable. Our solution is to process again only those voxels
 	// which lie on a material-air boundary, and to recompute their color using a larger naighbourhood
 	// while also accounting for how visible the child voxels are.
+	typename DestVolume::Sampler dstSampler(destVolume);
 	for (int32_t z = 0; z < destRegion.getDepthInVoxels(); ++z) {
 		for (int32_t y = 0; y < destRegion.getHeightInVoxels(); ++y) {
 			for (int32_t x = 0; x < destRegion.getWidthInVoxels(); ++x) {

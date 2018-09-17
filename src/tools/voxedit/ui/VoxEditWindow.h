@@ -108,10 +108,11 @@ private:
 	void rotatey();
 	void rotatez();
 	void rotate(int x, int y, int z);
-	void scalex();
-	void scaley();
-	void scalez();
-	void scale(float x, float y, float z);
+	void scalecursorx();
+	void scalecursory();
+	void scalecursorz();
+	bool resample(int factor);
+	void scaleCursor(float x, float y, float z);
 	void movex();
 	void movey();
 	void movez();
@@ -187,16 +188,16 @@ inline void VoxEditWindow::movez() {
 	move(0, 0, 1);
 }
 
-inline void VoxEditWindow::scalex() {
-	scale(2.0f, 1.0f, 1.0f);
+inline void VoxEditWindow::scalecursorx() {
+	scaleCursor(2.0f, 1.0f, 1.0f);
 }
 
-inline void VoxEditWindow::scaley() {
-	scale(1.0f, 2.0f, 1.0f);
+inline void VoxEditWindow::scalecursory() {
+	scaleCursor(1.0f, 2.0f, 1.0f);
 }
 
-inline void VoxEditWindow::scalez() {
-	scale(1.0f, 1.0f, 2.0f);
+inline void VoxEditWindow::scalecursorz() {
+	scaleCursor(1.0f, 1.0f, 2.0f);
 }
 
 

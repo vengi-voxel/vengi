@@ -128,6 +128,10 @@ void EditorScene::rotate(int angleX, int angleY, int angleZ) {
 	m().rotate(angleX, angleY, angleZ);
 }
 
+bool EditorScene::resample(int factor) {
+	return m().resample(factor);
+}
+
 void EditorScene::move(int x, int y, int z) {
 	m().move(x, y, z);
 }

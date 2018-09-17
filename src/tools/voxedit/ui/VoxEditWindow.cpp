@@ -280,8 +280,13 @@ void VoxEditWindow::rotate(int x, int y, int z) {
 	_scene->rotate(x, y, z);
 }
 
-void VoxEditWindow::scale(float x, float y, float z) {
-	Log::debug("execute scale by %f:%f:%f", x, y, z);
+bool VoxEditWindow::resample(int factor) {
+	Log::debug("execute resample with factor %i", factor);
+	return _scene->resample(factor);
+}
+
+void VoxEditWindow::scaleCursor(float x, float y, float z) {
+	Log::debug("execute cursor scale by %f:%f:%f", x, y, z);
 	_scene->scaleCursorShape(glm::vec3(x, y, z));
 }
 
@@ -311,7 +316,7 @@ void VoxEditWindow::executeMode() {
 			if ((_axis & math::Axis::Z) != math::Axis::None) {
 				values.z = value;
 			}
-			scale(values.x, values.y, values.z);
+			scaleCursor(values.x, values.y, values.z);
 		} else {
 			const int value = core::string::toInt(_modeNumberBuf);
 			glm::ivec3 values(0, 0, 0);
