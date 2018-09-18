@@ -1515,6 +1515,8 @@ void TParseContext::memorySemanticsCheck(const TSourceLoc& loc, const TFunction&
         storageClassSemantics = (*argp)[1]->getAsConstantUnion()->getConstArray()[0].getIConst();
         semantics = (*argp)[2]->getAsConstantUnion()->getConstArray()[0].getIConst();
         break;
+    default:
+        break;
     }
 
     if ((semantics & gl_SemanticsAcquire) && 
