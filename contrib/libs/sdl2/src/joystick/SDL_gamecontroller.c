@@ -432,12 +432,12 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
         pSupportedController = pSupportedController->next;
     }
     if (!exact_match) {
-        if (guid->data[14] == 'h') {
+        if (SDL_IsJoystickHIDAPI(*guid)) {
             /* This is a HIDAPI device */
             return s_pHIDAPIMapping;
         }
 #if SDL_JOYSTICK_XINPUT
-        if (guid->data[14] == 'x') {
+        if (SDL_IsJoystickXInput(*guid)) {
             /* This is an XInput device */
             return s_pXInputMapping;
         }
@@ -1026,8 +1026,8 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
         }
     }
 #ifdef __ANDROID__
-    if (!mapping) {
-        mapping = SDL_CreateMappingForAndroidController(name, guid);
+    if (!mapping && name && !SDL_IsJoystickHIDAPI(guid)) {
+		mapping = SDL_CreateMappingForAndroidController(name, guid);
     }
 #endif
     if (!mapping) {
@@ -1462,6 +1462,7 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     int i;
     Uint16 vendor;
     Uint16 product;
+    Uint16 version;
     Uint32 vidpid;
 
     if (SDL_allowed_controllers.num_entries == 0 &&
@@ -1469,7 +1470,7 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
         return SDL_FALSE;
     }
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version);
 
     if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE)) {
         /* We shouldn't ignore Steam's virtual gamepad since it's using the hints to filter out the real controllers so it can remap input for the virtual controller */
@@ -1477,7 +1478,7 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
 #if defined(__LINUX__)
         bSteamVirtualGamepad = (vendor == 0x28DE && product == 0x11FF);
 #elif defined(__MACOSX__)
-        bSteamVirtualGamepad = (SDL_strncmp(name, "GamePad-", 8) == 0);
+        bSteamVirtualGamepad = (vendor == 0x045E && product == 0x028E && version == 1);
 #elif defined(__WIN32__)
         /* We can't tell on Windows, but Steam will block others in input hooks */
         bSteamVirtualGamepad = SDL_TRUE;
