@@ -89,7 +89,7 @@ namespace detail
 #	if GLM_CONFIG_DEFAULTED_FUNCTIONS == GLM_DISABLE
 		template<typename T, qualifier Q>
 		GLM_FUNC_QUALIFIER GLM_CONSTEXPR qua<T, Q>::qua()
-#			if GLM_CONFIG_DEFAULTED_FUNCTIONS != GLM_DISABLE
+#			if GLM_CONFIG_CTOR_INIT != GLM_CTOR_INIT_DISABLE
 			: x(0), y(0), z(0), w(1)
 #			endif
 		{}
