@@ -247,7 +247,7 @@ class GeneralGenerator : public BaseGenerator {
     // clang-format off
   static const char * const java_typename[] = {
     #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
-        CTYPE, JTYPE, GTYPE, NTYPE, PTYPE) \
+        CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE) \
         #JTYPE,
       FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
     #undef FLATBUFFERS_TD
@@ -255,7 +255,7 @@ class GeneralGenerator : public BaseGenerator {
 
   static const char * const csharp_typename[] = {
     #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
-        CTYPE, JTYPE, GTYPE, NTYPE, PTYPE) \
+        CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE) \
         #NTYPE,
       FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
     #undef FLATBUFFERS_TD
@@ -1113,12 +1113,21 @@ class GeneralGenerator : public BaseGenerator {
             code += "); }\n";
             break;
           case IDLOptions::kCSharp:
+            code += "#if ENABLE_SPAN_T\n";
+            code += "  public Span<byte> Get";
+            code += MakeCamel(field.name, lang_.first_camel_upper);
+            code += "Bytes() { return ";
+            code += lang_.accessor_prefix + "__vector_as_span(";
+            code += NumToString(field.value.offset);
+            code += "); }\n";
+            code += "#else\n";
             code += "  public ArraySegment<byte>? Get";
             code += MakeCamel(field.name, lang_.first_camel_upper);
             code += "Bytes() { return ";
             code += lang_.accessor_prefix + "__vector_as_arraysegment(";
             code += NumToString(field.value.offset);
             code += "); }\n";
+            code += "#endif\n";
 
             // For direct blockcopying the data into a typed array
             code += "  public ";
