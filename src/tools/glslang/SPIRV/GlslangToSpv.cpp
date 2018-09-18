@@ -2729,10 +2729,6 @@ spv::Id TGlslangToSpvTraverser::convertGlslangToSpvType(const glslang::TType& ty
         spvType = builder.makeFloatType(64);
         break;
     case glslang::EbtFloat16:
-#if AMD_EXTENSIONS
-        if (builder.getSpvVersion() < glslang::EShTargetSpv_1_3)
-            builder.addExtension(spv::E_SPV_AMD_gpu_shader_half_float);
-#endif
         spvType = builder.makeFloatType(16);
         break;
     case glslang::EbtBool:
@@ -2750,17 +2746,9 @@ spv::Id TGlslangToSpvTraverser::convertGlslangToSpvType(const glslang::TType& ty
         spvType = builder.makeUintType(8);
         break;
     case glslang::EbtInt16:
-#ifdef AMD_EXTENSIONS
-        if (builder.getSpvVersion() < glslang::EShTargetSpv_1_3)
-            builder.addExtension(spv::E_SPV_AMD_gpu_shader_int16);
-#endif
         spvType = builder.makeIntType(16);
         break;
     case glslang::EbtUint16:
-#ifdef AMD_EXTENSIONS
-        if (builder.getSpvVersion() < glslang::EShTargetSpv_1_3)
-            builder.addExtension(spv::E_SPV_AMD_gpu_shader_int16);
-#endif
         spvType = builder.makeUintType(16);
         break;
     case glslang::EbtInt:
@@ -5718,7 +5706,7 @@ spv::Id TGlslangToSpvTraverser::createInvocationsOperation(glslang::TOperator op
         spv::IdImmediate scope = { true, builder.makeUintConstant(spv::ScopeSubgroup) };
         spvGroupOperands.push_back(scope);
         if (groupOperation != spv::GroupOperationMax) {
-            spv::IdImmediate groupOp = { false, groupOperation };
+            spv::IdImmediate groupOp = { false, (unsigned)groupOperation };
             spvGroupOperands.push_back(groupOp);
         }
 #endif
@@ -5915,7 +5903,7 @@ spv::Id TGlslangToSpvTraverser::CreateInvocationsVectorOperation(spv::Op op, spv
         } else {
             spv::IdImmediate scope = { true, builder.makeUintConstant(spv::ScopeSubgroup) };
             spvGroupOperands.push_back(scope);
-            spv::IdImmediate groupOp = { false, groupOperation };
+            spv::IdImmediate groupOp = { false, (unsigned)groupOperation };
             spvGroupOperands.push_back(groupOp);
             spvGroupOperands.push_back(scalar);
         }
@@ -6261,7 +6249,7 @@ spv::Id TGlslangToSpvTraverser::createSubgroupOperation(glslang::TOperator op, s
 
     // Next, for all operations that use a Group Operation, push that as an operand.
     if (groupOperation != spv::GroupOperationMax) {
-        spv::IdImmediate groupOperand = { false, groupOperation };
+        spv::IdImmediate groupOperand = { false, (unsigned)groupOperation };
         spvGroupOperands.push_back(groupOperand);
     }
 
