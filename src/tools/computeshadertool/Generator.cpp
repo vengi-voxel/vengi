@@ -253,7 +253,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	const std::string name = _name + "Shader";
 
 	std::vector<std::string> shaderNameParts;
-	core::string::splitString(name, shaderNameParts, "_");
+	core::string::splitString(name, shaderNameParts, "_-");
 	std::string filename = "";
 	for (std::string n : shaderNameParts) {
 		if (n.length() > 1 || shaderNameParts.size() < 2) {
