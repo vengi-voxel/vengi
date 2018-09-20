@@ -68,6 +68,7 @@ set(SRCS
 	data/resources.qrc
 )
 
+set_property(GLOBAL PROPERTY ${PROJECT_NAME}_NOUNITY TRUE)
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ai)
 target_include_directories(${PROJECT_NAME} PRIVATE
