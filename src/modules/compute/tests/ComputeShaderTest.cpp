@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "TestsShaders.h"
+#include "TestsComputeShaders.h"
 
 namespace compute {
 

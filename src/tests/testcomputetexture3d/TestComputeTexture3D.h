@@ -8,7 +8,7 @@
 #include "compute/Texture.h"
 #include "video/Texture.h"
 #include "voxel/polyvox/RawVolume.h"
-#include "Testcomputetexture3dShaders.h"
+#include "Testcomputetexture3dComputeShaders.h"
 #include "render/TextureRenderer.h"
 #include <memory>
 

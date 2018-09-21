@@ -297,7 +297,7 @@ macro(generate_compute_shaders TARGET)
 	endforeach()
 
 	convert_to_camel_case(${TARGET} _filetarget)
-	set(_h ${GEN_DIR}/${_filetarget}Shaders.h)
+	set(_h ${GEN_DIR}/${_filetarget}ComputeShaders.h)
 	file(WRITE ${_h}.in "#pragma once\n")
 	foreach (header_path ${_headers})
 		string(REPLACE "${GEN_DIR}" "" header "${header_path}")

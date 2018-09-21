@@ -7,7 +7,7 @@
 #include "testcore/TestApp.h"
 #include "compute/Texture.h"
 #include "voxel/polyvox/RawVolume.h"
-#include "TestvoxelgpuShaders.h"
+#include "TestvoxelgpuComputeShaders.h"
 #include <memory>
 
 class TestVoxelGPU: public TestApp {

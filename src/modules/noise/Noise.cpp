@@ -3,7 +3,7 @@
  */
 
 #include "Noise.h"
-#include "NoiseShaders.h"
+#include "NoiseComputeShaders.h"
 #include "core/Trace.h"
 #include "core/Log.h"
 #include "core/Common.h"
