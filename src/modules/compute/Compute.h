@@ -81,6 +81,7 @@ void deleteTexture(Id& id);
 Id createSampler(const TextureConfig& config);
 void deleteSampler(Id& id);
 
+bool readTexture(compute::Texture& texture, void *data, const glm::uvec3& origin, const glm::uvec3& region, bool blocking = true);
 Id createProgram(const std::string& source);
 size_t requiredAlignment();
 bool configureProgram(Id program);

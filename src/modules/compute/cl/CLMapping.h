@@ -17,7 +17,8 @@ static size_t TextureFormatComponents[] {
 	3,
 	4,
 	4,
-	2
+	2,
+	1
 };
 static_assert(std::enum_value(TextureFormat::Max) == lengthof(TextureFormatComponents), "Array sizes don't match Max");
 
@@ -26,7 +27,8 @@ static cl_channel_order TextureFormats[] {
 	CL_RGB,
 	CL_BGRA,
 	CL_ARGB,
-	CL_RG
+	CL_RG,
+	CL_R
 };
 static_assert(std::enum_value(TextureFormat::Max) == lengthof(TextureFormats), "Array sizes don't match Max");
 

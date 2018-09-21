@@ -491,6 +491,34 @@ void deleteSampler(Id& id) {
 	checkError(error);
 }
 
+bool readTexture(compute::Texture& texture, void *data, const glm::uvec3& origin, const glm::uvec3& region, bool blocking) {
+	if (data == nullptr) {
+		return false;
+	}
+	const int rowPitch = 0;
+	const int slicePitch = 0;
+	const uint32_t numEventsInWaitList = 0u;
+	core_assert_msg(origin.x < (glm::uvec3::value_type)texture.width() && origin.y < (glm::uvec3::value_type)texture.height(),
+			"origin (%u:%u:%u) may not exceed the texture dimensions (%i:%i:%i)",
+			origin.x, origin.y, origin.z, texture.width(), texture.height(), texture.layers());
+	core_assert_msg(region.x > 0 && region.y > 0 && region.z > 0, "Region must be bigger than 0 in every dimension");
+	core_assert_msg((int)region.x <= (texture.width() - (int)origin.x) && (int)region.y <= (texture.height() - (int)origin.y) && (int)region.z <= (texture.layers() - (int)origin.z),
+			"region (%u:%u:%u) and offset (%u:%u:%u) exceed the texture boundaries (%i,%i,%i)",
+			region.x, region.y, region.z, origin.x, origin.y, origin.z, texture.width(), texture.height(), texture.layers());
+	const cl_int error = clEnqueueReadImage(
+			_priv::_ctx.commandQueue, (cl_mem)texture.handle(), blocking ? CL_TRUE : CL_FALSE,
+			(const size_t *)glm::value_ptr(origin), (const size_t *)glm::value_ptr(region),
+			rowPitch, slicePitch, data, numEventsInWaitList, nullptr, nullptr);
+	checkError(error);
+	if (error == CL_SUCCESS) {
+		if (blocking) {
+			return finish();
+		}
+		return true;
+	}
+	return false;
+}
+
 Id createProgram(const std::string& source) {
 	if (_priv::_ctx.context == nullptr) {
 		return InvalidId;

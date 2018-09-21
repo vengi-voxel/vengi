@@ -43,6 +43,7 @@ enum class TextureFormat {
 	BGRA,
 	ARGB,
 	RG,
+	R,
 
 	Max
 };
