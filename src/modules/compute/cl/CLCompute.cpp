@@ -421,6 +421,18 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 			Log::error("Max 3d texture depth exceeded");
 			return InvalidId;
 		}
+		if (size.x == 0) {
+			Log::error("Texture width is 0");
+			return InvalidId;
+		}
+		if (size.y == 0) {
+			Log::error("Texture height is 0");
+			return InvalidId;
+		}
+		if (size.z <= 1) {
+			Log::error("There must be more than 1 layer in a 3d texture");
+			return InvalidId;
+		}
 		/**
 		 * The scan-line pitch in bytes. This must be 0 if host_ptr is NULL and can be either 0 or greater than or equal to image_width * size of element in
 		 * bytes if host_ptr is not NULL. If host_ptr is not NULL and image_row_pitch is equal to 0, image_row_pitch is calculated as image_width * size of
@@ -446,6 +458,14 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 		}
 		if ((size_t)size.y > _priv::_ctx.image2DSize[1]) {
 			Log::error("Max 2d texture height exceeded");
+			return InvalidId;
+		}
+		if (size.x == 0) {
+			Log::error("Texture width is 0");
+			return InvalidId;
+		}
+		if (size.y == 0) {
+			Log::error("Texture height is 0");
 			return InvalidId;
 		}
 		/**
