@@ -398,7 +398,11 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 	 * A bit-field that is used to specify allocation and usage information about the image memory object being created and is described in the table List of
 	 * supported cl_mem_flags values for clCreateBuffer.
 	 */
-	const cl_mem_flags flags = CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR;
+	cl_mem_flags flags = (cl_mem_flags)0;
+	if (data != nullptr) {
+		//flags |= CL_MEM_READ_ONLY;
+		flags |= CL_MEM_COPY_HOST_PTR;
+	}
 	if (texture.type() == TextureType::Texture3D) {
 		/**
 		 * The width and height of the image in pixels. These must be values greater than or equal to 1.
