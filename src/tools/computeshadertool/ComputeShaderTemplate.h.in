@@ -7,6 +7,10 @@
 #include "compute/Shader.h"
 #include "core/Singleton.h"
 #include "core/Assert.h"
+#include "core/Vector.h"
+#ifdef COMPUTEVIDEO
+#include "computevideo/ComputeVideo.h"
+#endif
 #include <glm/fwd.hpp>
 #include <glm/gtc/vec1.hpp>
 #include <glm/vec2.hpp>

@@ -11,6 +11,12 @@
 
 namespace computeshadertool {
 
+enum class BodyType {
+	Pointer,
+	Vector,
+	Video
+};
+
 static bool isBuffer(const std::string& str) {
 	return core::string::contains(str, "*");
 }
@@ -19,7 +25,7 @@ static std::string getBufferName(const Kernel& k, const Parameter& p) {
 	return core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
 }
 
-static int generateKernelDoxygen(const Kernel& k, std::stringstream& kernels, bool useVector) {
+static int generateKernelDoxygen(const Kernel& k, std::stringstream& kernels, BodyType type) {
 	int buffers = 0;
 	kernels << "\t/**\n";
 	kernels << "\t * @brief Kernel code for '" << k.name << "'\n";
@@ -29,8 +35,14 @@ static int generateKernelDoxygen(const Kernel& k, std::stringstream& kernels, bo
 			continue;
 		}
 		kernels << "\t * @param " << p.name;
-		kernels << " vector with datatype that matches the CL type " << p.type << ". Note\n";
-		kernels << "\t * that the base pointer of this vector should be aligned (64 bytes) for optimal performance.\n";
+		if (type == BodyType::Vector) {
+			kernels << " vector with datatype that matches the CL type " << p.type;
+		} else if (type == BodyType::Pointer) {
+			kernels << " buffer that matches the CL type " << p.type;;
+		} else if (type == BodyType::Video) {
+			kernels << " GL vbo";
+		}
+		kernels << "\n\t * @note The base pointer of this vector should be aligned (64 bytes) for optimal performance.\n";
 		if ((p.flags & compute::BufferFlag::ReadOnly) != compute::BufferFlag::None) {
 			continue;
 		}
@@ -42,7 +54,7 @@ static int generateKernelDoxygen(const Kernel& k, std::stringstream& kernels, bo
 	return buffers;
 }
 
-static void generateKernelHeader(const Kernel& k, std::stringstream& kernels, bool useVector) {
+static void generateKernelHeader(const Kernel& k, std::stringstream& kernels, BodyType type) {
 	kernels << "\tbool " << k.name << "(\n\t\t";
 	bool first = true;
 	for (const Parameter& p : k.parameters) {
@@ -57,10 +69,16 @@ static void generateKernelHeader(const Kernel& k, std::stringstream& kernels, bo
 		}
 		const util::CLTypeMapping& clType = util::vectorType(p.type);
 		if (isBuffer(p.type)) {
-			if (useVector) {
+			if (type == BodyType::Vector) {
 				kernels << "std::vector<" << clType.type << ">& " << p.name;
+			} else if (type == BodyType::Video) {
+				kernels << "video::Buffer& " << p.name;
 			} else {
-				kernels << clType.type << "* " << p.name << ", size_t " << p.name << "Size";
+				kernels << clType.type << " ";
+				if (isBuffer(clType.type) && !p.qualifier.empty()) {
+					kernels << p.qualifier << " ";
+				}
+				kernels << "* " << p.name << ", size_t " << p.name << "Size";
 			}
 		} else {
 			kernels << clType.type;
@@ -77,7 +95,7 @@ static void generateKernelHeader(const Kernel& k, std::stringstream& kernels, bo
 	kernels << ",\n\t\tconst glm::ivec" << k.workDimension << "& workSize\n\t) const";
 }
 
-static void generateKernelParameterTransfer(const Kernel& k, std::stringstream& kernels, bool useVector) {
+static void generateKernelParameterTransfer(const Kernel& k, std::stringstream& kernels, BodyType type) {
 	for (size_t i = 0; i < k.parameters.size(); ++i) {
 		const Parameter& p = k.parameters[i];
 		if (p.datatype == DataType::Sampler) {
@@ -86,18 +104,18 @@ static void generateKernelParameterTransfer(const Kernel& k, std::stringstream& 
 		if (isBuffer(p.type)) {
 			const std::string& bufferName = getBufferName(k, p);
 			kernels << "\t\tif (" << bufferName << " == InvalidId) {\n";
-			if (useVector) {
-				const std::string size = "core::vectorSize(" + p.name + ")";
-				kernels << "\t\t\tconst compute::BufferFlag flags = " << util::toString(p.flags) << " | bufferFlags(&" << p.name << "[0], " << size << ");\n";
-				kernels << "\t\t\t" << bufferName << " = compute::createBufferFromType(flags, " << p.name << ");\n";
+			const util::CLTypeMapping& clType = util::vectorType(p.type);
+			kernels << "\t\t\tconst compute::BufferFlag flags = " << util::toString(p.flags);
+			if (type == BodyType::Video) {
+				kernels << ";\n";
+				kernels << "\t\t\t" << bufferName << " = computevideo::createBuffer(flags, " << p.name << ");\n";
 			} else {
-				const util::CLTypeMapping& clType = util::vectorType(p.type);
-				kernels << "\t\t\tconst compute::BufferFlag flags = " << util::toString(p.flags) << " | bufferFlags(" << p.name << ", " << p.name << "Size);\n";
+				kernels << " | bufferFlags(" << p.name << ", " << p.name << "Size);\n";
 				kernels << "\t\t\t" << bufferName << " = compute::createBuffer(flags, " << p.name << "Size, const_cast<" << clType.type << "*>(" << p.name << "));\n";
 			}
 			kernels << "\t\t} else {\n";
-			if (useVector) {
-				kernels << "\t\t\tcompute::updateBufferFromType(" << bufferName << ", " << p.name << ");\n";
+			if (type == BodyType::Video) {
+				kernels << "\t\t\t// TODO\n";
 			} else {
 				kernels << "\t\t\tcompute::updateBuffer(" << bufferName << ", " << p.name << "Size, " << p.name << ");\n";
 			}
@@ -117,19 +135,32 @@ static void generateKernelParameterTransfer(const Kernel& k, std::stringstream& 
 	}
 }
 
-static void generateKernelExecution(const Kernel& k, std::stringstream& kernels) {
+static void generateKernelExecution(const Kernel& k, std::stringstream& kernels, BodyType type) {
 	kernels << "\t\tglm::ivec3 globalWorkSize(0);\n";
 	kernels << "\t\tfor (int i = 0; i < " << k.workDimension << "; ++i) {\n";
 	kernels << "\t\t\tglobalWorkSize[i] += workSize[i];\n";
 	kernels << "\t\t}\n";
+
+	if (type == BodyType::Video) {
+		for (size_t i = 0; i < k.parameters.size(); ++i) {
+			const Parameter& p = k.parameters[i];
+			if (!isBuffer(p.type)) {
+				continue;
+			}
+			const std::string& bufferName = getBufferName(k, p);
+			kernels << "\t\tcomputevideo::enqueueAcquire(" << bufferName << ");\n";
+		}
+	}
+
 	kernels << "\t\tconst bool state = compute::kernelRun(";
 	kernels << "_kernel" << k.name << ", ";
 	kernels << "globalWorkSize, ";
 	kernels << k.workDimension;
 	kernels << ");\n";
+
 }
 
-static void generateKernelResultTransfer(const Kernel& k, std::stringstream& kernels, bool useVector) {
+static void generateKernelResultTransfer(const Kernel& k, std::stringstream& kernels, BodyType type) {
 	for (size_t i = 0; i < k.parameters.size(); ++i) {
 		const Parameter& p = k.parameters[i];
 		if (!isBuffer(p.type)) {
@@ -137,26 +168,23 @@ static void generateKernelResultTransfer(const Kernel& k, std::stringstream& ker
 		}
 		if ((p.flags & (compute::BufferFlag::ReadWrite | compute::BufferFlag::WriteOnly)) != compute::BufferFlag::None) {
 			const std::string& bufferName = getBufferName(k, p);
-			kernels << "#ifdef DEBUG\n";
-			kernels << "\t\tcompute::finish();\n";
-			kernels << "#endif\n";
-			kernels << "\t\tif (state) {\n";
-			if (useVector) {
-				kernels << "\t\t\tcore_assert_always(compute::readBufferIntoVector(" << bufferName << ", " << p.name << "));\n";
+			if (type == BodyType::Video) {
+				kernels << "\t\tcomputevideo::enqueueRelease(" << bufferName << ");\n";
 			} else {
+				kernels << "\t\tif (state) {\n";
 				kernels << "\t\t\tcore_assert_always(compute::readBuffer(" << bufferName << ", " << p.name << "Size, " << p.name << "));\n";
+				kernels << "\t\t}\n";
 			}
-			kernels << "\t\t}\n";
 		}
 	}
+	kernels << "\t\treturn state;\n";
 }
 
-static void generateKernelBody(const Kernel& k, std::stringstream& kernels, bool useVector) {
-	kernels << "{\n";
-	generateKernelParameterTransfer(k, kernels, useVector);
-	generateKernelExecution(k, kernels);
-	generateKernelResultTransfer(k, kernels, useVector);
-	kernels << "\t\treturn state;\n";
+static void generateKernelBody(const Kernel& k, std::stringstream& kernels, BodyType type) {
+	kernels << " {\n";
+	generateKernelParameterTransfer(k, kernels, type);
+	generateKernelExecution(k, kernels, type);
+	generateKernelResultTransfer(k, kernels, type);
 	kernels << "\t}\n";
 }
 
@@ -232,10 +260,45 @@ static void generateStructs(const std::vector<Struct>& _structs, std::stringstre
 	}
 }
 
-static int generateKernel(const Kernel& k, std::stringstream& kernels, bool useVector) {
-	const int buffers = generateKernelDoxygen(k, kernels, useVector);
-	generateKernelHeader(k, kernels, useVector);
-	generateKernelBody(k, kernels, useVector);
+static int generateKernel(const Kernel& k, std::stringstream& kernels, BodyType type) {
+	if (type == BodyType::Video) {
+		kernels << "#ifdef COMPUTEVIDEO\n";
+	}
+
+	const int buffers = generateKernelDoxygen(k, kernels, type);
+	generateKernelHeader(k, kernels, type);
+	switch (type) {
+	case BodyType::Vector: {
+		kernels << " {\n";
+		kernels << "\t\treturn " << k.name << "(";
+		bool first = true;
+		for (const Parameter& p : k.parameters) {
+			if (p.datatype == DataType::Sampler) {
+				continue;
+			}
+			if (!first) {
+				kernels << ", ";
+			}
+			const util::CLTypeMapping& clType = util::vectorType(p.type);
+			if (isBuffer(p.type)) {
+				const util::CLTypeMapping& clType = util::vectorType(p.type);
+				kernels << p.name << ".data(), core::vectorSize(" << p.name << ")";
+			} else {
+				kernels << p.name;
+			}
+			first = false;
+		}
+		kernels << ", workSize);";
+		kernels << "\n\t}\n";
+		break;
+	}
+	default:
+		generateKernelBody(k, kernels, type);
+		break;
+	}
+	if (type == BodyType::Video) {
+		kernels << "#endif\n";
+	}
 	return buffers;
 }
 
@@ -279,9 +342,10 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	std::stringstream kernels;
 	for (const Kernel& k : _kernels) {
 		kernels << "\n";
-		const int buffers = generateKernel(k, kernels, true);
+		const int buffers = generateKernel(k, kernels, BodyType::Pointer);
 		if (buffers > 0) {
-			generateKernel(k, kernels, false);
+			generateKernel(k, kernels, BodyType::Vector);
+			generateKernel(k, kernels, BodyType::Video);
 		}
 
 		if (k.returnValue.type != "void") {
