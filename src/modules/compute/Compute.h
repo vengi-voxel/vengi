@@ -19,6 +19,7 @@
 #include "Texture.h"
 #include "cl/CLTypes.h"
 #include "core/Vector.h"
+#include "core/Log.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -96,18 +97,31 @@ bool finish();
 
 template<class T>
 inline bool kernelArg(Id kernel, uint32_t index, T& t) {
+	Log::debug("Set kernel arg for index %u", index);
 	return kernelArg(kernel, index, sizeof(T), (const void*)&t);
 }
 
 template<>
 inline bool kernelArg(Id kernel, uint32_t index, const glm::vec3& t) {
 	const glm::vec4 fourComponents(t, 0.0f);
+	Log::debug("Set kernel arg for index %u with (%f, %f, %f)", index, t.x, t.y, t.z);
 	return kernelArg(kernel, index, sizeof(fourComponents), (const void*)&fourComponents);
+}
+
+template<>
+inline bool kernelArg(Id kernel, uint32_t index, const Texture& t) {
+	return kernelArg(kernel, index, t, -1);
+}
+
+template<>
+inline bool kernelArg(Id kernel, uint32_t index, Texture& t) {
+	return kernelArg(kernel, index, t, -1);
 }
 
 template<>
 inline bool kernelArg(Id kernel, uint32_t index, glm::vec3& t) {
 	const glm::vec4 fourComponents(t, 0.0f);
+	Log::debug("Set kernel arg for index %u with (%f, %f, %f)", index, t.x, t.y, t.z);
 	return kernelArg(kernel, index, sizeof(fourComponents), (const void*)&fourComponents);
 }
 
@@ -116,6 +130,7 @@ inline bool kernelArg(Id kernel, uint32_t index, glm::vec3& t) {
  */
 template<>
 inline bool kernelArg(Id kernel, uint32_t index, Id& t) {
+	Log::debug("Set kernel arg for index %u to compute object with ref %p", index, t);
 	return kernelArg(kernel, index, sizeof(Id), (const void*)&t);
 }
 

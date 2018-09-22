@@ -558,6 +558,7 @@ bool kernelArg(Id kernel, uint32_t index, const Texture& texture, int32_t sample
 	if (kernel == InvalidId) {
 		return false;
 	}
+	Log::debug("Set kernel arg for index %u to texture %p", index, texture.handle());
 	Id textureId = texture.handle();
 	cl_int error = clSetKernelArg((cl_kernel)kernel, index, sizeof(cl_mem), &textureId);
 	checkError(error);
@@ -574,6 +575,7 @@ bool kernelArg(Id kernel, uint32_t index, size_t size, const void* data) {
 	if (kernel == InvalidId) {
 		return false;
 	}
+	Log::debug("Set kernel arg for index %u", index);
 	const cl_int error = clSetKernelArg((cl_kernel)kernel, index, size, data);
 	checkError(error);
 	return error == CL_SUCCESS;
