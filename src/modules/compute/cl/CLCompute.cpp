@@ -438,13 +438,13 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 		 * bytes if host_ptr is not NULL. If host_ptr is not NULL and image_row_pitch is equal to 0, image_row_pitch is calculated as image_width * size of
 		 * element in bytes. If image_row_pitch is not 0, it must be a multiple of the image element size in bytes.
 		 */
-		const size_t imageRowPitch = size[0] * channelSize * components;
+		const size_t imageRowPitch = data == nullptr ? 0 : (size[0] * channelSize * components);
 		/**
 		 * The size in bytes of each 2D slice in the 3D image. This must be 0 if host_ptr is NULL and can be either 0 or greater than or equal to
 		 * image_row_pitch * image_height if host_ptr is not NULL. If host_ptr is not NULL and image_slice_pitch equal to 0, image_slice_pitch is calculated
 		 * as image_row_pitch * image_height. If image_slice_pitch is not 0, it must be a multiple of the image_row_pitch.
 		 */
-		const size_t imageSlicePitch = imageRowPitch * size[1];
+		const size_t imageSlicePitch = data == nullptr ? 0 : (imageRowPitch * size[1]);
 		id = clCreateImage3D(_priv::_ctx.context,
 				flags, &fmt,
 				size[0], size[1], size[2], imageRowPitch,
@@ -473,7 +473,7 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 		 * bytes if host_ptr is not NULL. If host_ptr is not NULL and image_row_pitch is equal to 0, image_row_pitch is calculated as image_width * size of
 		 * element in bytes. If image_row_pitch is not 0, it must be a multiple of the image element size in bytes.
 		 */
-		const size_t imageRowPitch = size[0] * channelSize * components;
+		const size_t imageRowPitch = data == nullptr ? 0 : (size[0] * channelSize * components);
 		id = clCreateImage2D(_priv::_ctx.context,
 				flags, &fmt,
 				size[0], size[1], imageRowPitch,
