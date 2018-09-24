@@ -1,6 +1,6 @@
 set(SRCS
 	cl/CL.h
-	cl/CLCompute.cpp
+	cl/CLCompute.cpp cl/CLCompute.h
 	cl/CLMapping.h
 	cl/CLTypes.h
 	cl/CLSymbol.c cl/CLSymbol.h

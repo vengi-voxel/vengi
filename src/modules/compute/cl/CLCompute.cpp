@@ -3,10 +3,7 @@
  *
  * @ingroup Compute
  */
-#include "CL.h"
-#include "CLSymbol.h"
-#include "CLMapping.h"
-#include "compute/Compute.h"
+#include "CLCompute.h"
 #include "core/Log.h"
 #include "core/App.h"
 #include "core/Assert.h"
@@ -15,31 +12,38 @@
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>
 #include <glm/gtc/round.hpp>
-#include <vector>
 #include <string>
 #include <unordered_map>
 
 namespace compute {
 
 namespace _priv {
-struct Context {
-	cl_uint platformIdCount = 0;
-	std::vector<cl_platform_id> platformIds;
-	cl_uint deviceIdCount = 0;
-	std::vector<cl_device_id> deviceIds;
-	cl_context context = nullptr;
-	cl_command_queue commandQueue = nullptr;
-	cl_device_id deviceId = nullptr;
-	cl_uint alignment = 4096;
-	cl_bool imageSupport = CL_FALSE;
-	size_t image2DSize[2] = {};
-	size_t image3DSize[3] = {};
-};
 
 static std::unordered_map<void*, size_t> _sizes;
 
-static Context _ctx;
+Context _ctx;
 
+cl_mem_flags convertFlags(BufferFlag flags) {
+	cl_mem_flags clValue = (cl_mem_flags)0;
+	if ((flags & BufferFlag::ReadWrite) != BufferFlag::None) {
+		clValue |= CL_MEM_READ_WRITE;
+	}
+	if ((flags & BufferFlag::WriteOnly) != BufferFlag::None) {
+		clValue |= CL_MEM_WRITE_ONLY;
+	}
+	if ((flags & BufferFlag::ReadOnly) != BufferFlag::None) {
+		clValue |= CL_MEM_READ_ONLY;
+	}
+	if ((flags & BufferFlag::UseHostPointer) != BufferFlag::None) {
+		clValue |= CL_MEM_USE_HOST_PTR;
+	}
+	if ((flags & BufferFlag::AllocHostPointer) != BufferFlag::None) {
+		clValue |= CL_MEM_ALLOC_HOST_PTR;
+	}
+	if ((flags & BufferFlag::CopyHostPointer) != BufferFlag::None) {
+		clValue |= CL_MEM_COPY_HOST_PTR;
+	}
+	return clValue;
 }
 
 #ifdef DEBUG
@@ -177,24 +181,27 @@ static const char *convertCLError(cl_int err) {
 #undef CLCOMPUTEERRCTX
 #endif
 
-#ifdef DEBUG
-#define checkError(clError) core_assert_msg(clError == CL_SUCCESS, "CL err: %s => %i", convertCLError(clError), clError)
-#else
-#define checkError(clError) (void)error
-#endif
+bool checkError(cl_int clError, bool triggerAssert) {
+	if (triggerAssert) {
+		core_assert_msg(clError == CL_SUCCESS, "CL err: %s => %i", convertCLError(clError), clError);
+	}
+	return clError == CL_SUCCESS;
+}
+
+} // end _priv namespace
 
 static std::string getPlatformName(cl_platform_id id) {
 	size_t size = 0u;
 	cl_int error;
 
 	error = clGetPlatformInfo(id, CL_PLATFORM_NAME, 0, nullptr, &size);
-	checkError(error);
+	_priv::checkError(error);
 
 	std::string result;
 	result.resize(size);
 	error = clGetPlatformInfo(id, CL_PLATFORM_NAME, size,
 			const_cast<char*>(result.data()), nullptr);
-	checkError(error);
+	_priv::checkError(error);
 
 	return result;
 }
@@ -204,13 +211,13 @@ static std::string getDeviceInfo(cl_device_id id, cl_device_info param) {
 	cl_int error;
 
 	error = clGetDeviceInfo(id, param, 0, nullptr, &size);
-	checkError(error);
+	_priv::checkError(error);
 
 	std::string result;
 	result.resize(size);
 	error = clGetDeviceInfo(id, param, size,
 			const_cast<char*>(result.data()), nullptr);
-	checkError(error);
+	_priv::checkError(error);
 
 	return result;
 }
@@ -238,7 +245,7 @@ bool configureProgram(Id program) {
 			Log::error("Failed to build program, but couldn't query the reason");
 		}
 	}
-	checkError(error);
+	_priv::checkError(error);
 	return error == CL_SUCCESS;
 }
 
@@ -247,7 +254,7 @@ bool deleteProgram(Id& program) {
 		return true;
 	}
 	const cl_int error = clReleaseProgram((cl_program)program);
-	checkError(error);
+	_priv::checkError(error);
 	if (error == CL_SUCCESS) {
 		program = InvalidId;
 		return true;
@@ -260,40 +267,21 @@ Id createBuffer(BufferFlag flags, size_t size, void* data) {
 		return InvalidId;
 	}
 	core_assert(size > 0);
-	cl_int error;
 
-	cl_mem_flags clValue = 0;
-	if ((flags & BufferFlag::ReadWrite) != BufferFlag::None) {
-		clValue |= CL_MEM_READ_WRITE;
-	}
-	if ((flags & BufferFlag::WriteOnly) != BufferFlag::None) {
-		clValue |= CL_MEM_WRITE_ONLY;
-	}
-	if ((flags & BufferFlag::ReadOnly) != BufferFlag::None) {
-		clValue |= CL_MEM_READ_ONLY;
-	}
-	if ((flags & BufferFlag::UseHostPointer) != BufferFlag::None) {
-		clValue |= CL_MEM_USE_HOST_PTR;
-	}
-	if ((flags & BufferFlag::AllocHostPointer) != BufferFlag::None) {
-		clValue |= CL_MEM_ALLOC_HOST_PTR;
-	}
-	if ((flags & BufferFlag::CopyHostPointer) != BufferFlag::None) {
-		clValue |= CL_MEM_COPY_HOST_PTR;
-	}
-
+	const cl_mem_flags clValue = _priv::convertFlags(flags);
 	const bool useHostPtr = (flags & BufferFlag::UseHostPointer) != BufferFlag::None;
 
+	cl_int error;
 	cl_mem bufferObject = clCreateBuffer(_priv::_ctx.context, clValue,
 			size, useHostPtr ? data : nullptr, &error);
-	checkError(error);
+	_priv::checkError(error);
 	if (error != CL_SUCCESS) {
 		return InvalidId;
 	}
 	if (!useHostPtr && data != nullptr) {
 		void *target = clEnqueueMapBuffer(_priv::_ctx.commandQueue, bufferObject, CL_TRUE, CL_MAP_WRITE,
 				0, size, 0, nullptr, nullptr, &error);
-		checkError(error);
+		_priv::checkError(error);
 		if (target == nullptr) {
 			clReleaseMemObject(bufferObject);
 			return InvalidId;
@@ -301,13 +289,13 @@ Id createBuffer(BufferFlag flags, size_t size, void* data) {
 		memcpy(target, data, size);
 		cl_event event;
 		error = clEnqueueUnmapMemObject(_priv::_ctx.commandQueue, bufferObject, target, 0, nullptr, &event);
-		checkError(error);
+		_priv::checkError(error);
 		if (error != CL_SUCCESS) {
 			clReleaseMemObject(bufferObject);
 			return InvalidId;
 		}
 		error = clWaitForEvents(1, &event);
-		checkError(error);
+		_priv::checkError(error);
 	}
 	_priv::_sizes[bufferObject] = size;
 	return (Id)bufferObject;
@@ -318,7 +306,7 @@ bool deleteBuffer(Id& buffer) {
 		return true;
 	}
 	const cl_int error = clReleaseMemObject((cl_mem)buffer);
-	checkError(error);
+	_priv::checkError(error);
 	if (error == CL_SUCCESS) {
 		_priv::_sizes.erase(buffer);
 		buffer = InvalidId;
@@ -337,7 +325,7 @@ bool updateBuffer(Id buffer, size_t size, const void* data, bool blockingWrite) 
 	const cl_int error = clEnqueueWriteBuffer(_priv::_ctx.commandQueue,
 			(cl_mem) buffer, blockingWrite ? CL_TRUE : CL_FALSE, 0, size, data,
 			0, nullptr, nullptr);
-	checkError(error);
+	_priv::checkError(error);
 	if (error == CL_SUCCESS) {
 		_priv::_sizes[buffer] = size;
 		return true;
@@ -363,7 +351,7 @@ bool readBuffer(Id buffer, size_t size, void* data) {
 	core_assert_msg(i->second == size, "Expected to read %i bytes, but was asked to read %i", (int)i->second, (int)size);
 	const cl_int error = clEnqueueReadBuffer(_priv::_ctx.commandQueue,
 			(cl_mem) buffer, CL_TRUE, 0, size, data, 0, nullptr, nullptr);
-	checkError(error);
+	_priv::checkError(error);
 	return error == CL_SUCCESS;
 }
 
@@ -449,7 +437,7 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 				flags, &fmt,
 				size[0], size[1], size[2], imageRowPitch,
 				imageSlicePitch, const_cast<void*>((const void*)data), &error);
-		checkError(error);
+		_priv::checkError(error);
 	} else {
 		const glm::ivec2 size = glm::ivec2(texture.width(), texture.height());
 		if ((size_t)size.x > _priv::_ctx.image2DSize[0]) {
@@ -478,7 +466,7 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 				flags, &fmt,
 				size[0], size[1], imageRowPitch,
 				const_cast<void*>((const void*)data), &error);
-		checkError(error);
+		_priv::checkError(error);
 	}
 	return id;
 }
@@ -489,7 +477,7 @@ void deleteTexture(Id& id) {
 	}
 	const cl_int error = clReleaseMemObject((cl_mem)id);
 	id = InvalidId;
-	checkError(error);
+	_priv::checkError(error);
 }
 
 Id createSampler(const TextureConfig& config) {
@@ -502,7 +490,7 @@ Id createSampler(const TextureConfig& config) {
 	/* Determines if the image coordinates specified are normalized (if normalized_coords is CL_TRUE) or not (if normalized_coords is CL_FALSE). */
 	const cl_bool normalized = (cl_bool)config.normalizedCoordinates();
 	const Id id = clCreateSampler(_priv::_ctx.context, normalized, wrapMode, filterMode, &error);
-	checkError(error);
+	_priv::checkError(error);
 	return id;
 }
 
@@ -512,7 +500,7 @@ void deleteSampler(Id& id) {
 	}
 	const cl_int error = clReleaseSampler((cl_sampler)id);
 	id = InvalidId;
-	checkError(error);
+	_priv::checkError(error);
 }
 
 bool readTexture(compute::Texture& texture, void *data, const glm::uvec3& origin, const glm::uvec3& region, bool blocking) {
@@ -533,7 +521,7 @@ bool readTexture(compute::Texture& texture, void *data, const glm::uvec3& origin
 			_priv::_ctx.commandQueue, (cl_mem)texture.handle(), blocking ? CL_TRUE : CL_FALSE,
 			(const size_t *)glm::value_ptr(origin), (const size_t *)glm::value_ptr(region),
 			rowPitch, slicePitch, data, numEventsInWaitList, nullptr, nullptr);
-	checkError(error);
+	_priv::checkError(error);
 	if (error == CL_SUCCESS) {
 		if (blocking) {
 			return finish();
@@ -557,7 +545,7 @@ Id createProgram(const std::string& source) {
 			sources,
 			lengths,
 			&error);
-	checkError(error);
+	_priv::checkError(error);
 	return program;
 }
 
@@ -566,7 +554,7 @@ bool deleteKernel(Id& kernel) {
 		return false;
 	}
 	const cl_int error = clReleaseKernel((cl_kernel)kernel);
-	checkError(error);
+	_priv::checkError(error);
 	if (error == CL_SUCCESS) {
 		kernel = InvalidId;
 		return true;
@@ -581,11 +569,11 @@ bool kernelArg(Id kernel, uint32_t index, const Texture& texture, int32_t sample
 	Log::debug("Set kernel arg for index %u to texture %p", index, texture.handle());
 	Id textureId = texture.handle();
 	cl_int error = clSetKernelArg((cl_kernel)kernel, index, sizeof(cl_mem), &textureId);
-	checkError(error);
+	_priv::checkError(error);
 	if (samplerIndex >= 0) {
 		Id samplerId = texture.sampler();
 		error = clSetKernelArg((cl_kernel)kernel, samplerIndex, sizeof(cl_sampler), &samplerId);
-		checkError(error);
+		_priv::checkError(error);
 	}
 	return error == CL_SUCCESS;
 }
@@ -597,7 +585,7 @@ bool kernelArg(Id kernel, uint32_t index, size_t size, const void* data) {
 	}
 	Log::debug("Set kernel arg for index %u", index);
 	const cl_int error = clSetKernelArg((cl_kernel)kernel, index, size, data);
-	checkError(error);
+	_priv::checkError(error);
 	return error == CL_SUCCESS;
 }
 
@@ -694,7 +682,7 @@ bool kernelRun(Id kernel, const glm::ivec3& workSize, int workDim, bool blocking
 	const cl_int error = clEnqueueNDRangeKernel(_priv::_ctx.commandQueue,
 			clKernel, workDim, globalWorkOffset, globalWorkSize,
 			localWorkSize, numEventsInWaitList, eventWaitList, &event);
-	checkError(error);
+	_priv::checkError(error);
 	if (error == CL_SUCCESS) {
 		if (blocking) {
 			return finish();
@@ -712,7 +700,7 @@ Id createKernel(Id program, const char *name) {
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateKernel.html
 	cl_int error = CL_SUCCESS;
 	cl_kernel kernel = clCreateKernel((cl_program)program, name, &error);
-	checkError(error);
+	_priv::checkError(error);
 	if (error == CL_SUCCESS) {
 		return kernel;
 	}
@@ -723,12 +711,12 @@ bool finish() {
 	core_assert(_priv::_ctx.context != nullptr);
 	core_assert(_priv::_ctx.commandQueue != nullptr);
 	cl_int error = clFlush(_priv::_ctx.commandQueue);
-	checkError(error);
+	_priv::checkError(error);
 	if (error != CL_SUCCESS) {
 		return false;
 	}
 	error = clFinish(_priv::_ctx.commandQueue);
-	checkError(error);
+	_priv::checkError(error);
 	return error == CL_SUCCESS;
 }
 
@@ -740,7 +728,7 @@ template<typename T>
 auto getActualDeviceInfo(int info) {
 	T val = (T)0;
 	const cl_int error = clGetDeviceInfo(_priv::_ctx.deviceId, (cl_device_info)info, sizeof(T), &val, nullptr);
-	checkError(error);
+	_priv::checkError(error);
 	return val;
 }
 
@@ -760,7 +748,7 @@ bool init() {
 	if (error != CL_PLATFORM_NOT_FOUND_KHR)
 #endif
 	{
-		checkError(error);
+		_priv::checkError(error);
 	}
 
 	if (_priv::_ctx.platformIdCount == 0u) {
@@ -772,7 +760,7 @@ bool init() {
 	_priv::_ctx.platformIds.reserve(_priv::_ctx.platformIdCount);
 	error = clGetPlatformIDs(_priv::_ctx.platformIdCount,
 			_priv::_ctx.platformIds.data(), nullptr);
-	checkError(error);
+	_priv::checkError(error);
 	if (_priv::_ctx.platformIdCount == 0u) {
 		Log::debug("Didn't find any OpenCL platforms");
 		return false;
@@ -788,7 +776,7 @@ bool init() {
 		error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_ALL, 0,
 				nullptr, &_priv::_ctx.deviceIdCount);
 		if (error != CL_DEVICE_NOT_FOUND) {
-			checkError(error);
+			_priv::checkError(error);
 		}
 
 		if (_priv::_ctx.deviceIdCount == 0u) {
@@ -806,32 +794,34 @@ bool init() {
 	_priv::_ctx.deviceIds.reserve(_priv::_ctx.deviceIdCount);
 	error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_ALL,
 			_priv::_ctx.deviceIdCount, _priv::_ctx.deviceIds.data(), nullptr);
-	checkError(error);
+	_priv::checkError(error);
 
 	for (cl_uint i = 0; i < _priv::_ctx.deviceIdCount; ++i) {
 		const std::string& device = getDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_NAME);
 		Log::info("* (%i): %s", i + 1, device.c_str());
 		size_t extensionSize;
 		error = clGetDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_EXTENSIONS, 0, nullptr, &extensionSize);
-		checkError(error);
+		_priv::checkError(error);
 		if (extensionSize > 0) {
 			std::unique_ptr<char[]> extensions(new char[extensionSize + 1]);
 			error = clGetDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_EXTENSIONS,	extensionSize, (void*)extensions.get(), &extensionSize);
-			checkError(error);
+			_priv::checkError(error);
 			Log::info("%s", extensions.get());
 			// TODO: check e.g. for cl_khr_3d_image_writes
 		}
 	}
 
-	const cl_context_properties contextProperties[] = {
-			CL_CONTEXT_PLATFORM,
-			reinterpret_cast<cl_context_properties>(_priv::_ctx.platformIds[platformIndex]),
-			0,
-			0 };
+	std::vector<cl_context_properties> contextProperties;
+	contextProperties.push_back(CL_CONTEXT_PLATFORM);
+	contextProperties.push_back((cl_context_properties)_priv::_ctx.platformIds[platformIndex]);
+	for (auto& v : _priv::_ctx.externalProperties) {
+		contextProperties.push_back(v);
+	}
+	contextProperties.push_back(0);
 
 	error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_DEFAULT,
 			1, &_priv::_ctx.deviceId, nullptr);
-	checkError(error);
+	_priv::checkError(error);
 	if (error != CL_SUCCESS) {
 		return false;
 	}
@@ -845,7 +835,7 @@ bool init() {
 
 	error = clGetDeviceInfo(_priv::_ctx.deviceId,
 			CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof(_priv::_ctx.alignment), &_priv::_ctx.alignment, 0);
-	checkError(error);
+	_priv::checkError(error);
 	if (error != CL_SUCCESS) {
 		_priv::_ctx.alignment = 4096;
 	} else {
@@ -854,9 +844,9 @@ bool init() {
 	Log::debug("Device memory alignment: %u", _priv::_ctx.alignment);
 
 	error = CL_SUCCESS;
-	_priv::_ctx.context = clCreateContext(contextProperties, 1,
-			&_priv::_ctx.deviceId, nullptr, nullptr, &error);
-	checkError(error);
+	const cl_context_properties* properties = contextProperties.data();
+	_priv::_ctx.context = clCreateContext(properties, 1, &_priv::_ctx.deviceId, nullptr, nullptr, &error);
+	_priv::checkError(error);
 
 	if (!_priv::_ctx.context) {
 		Log::error("Failed to create the context");
@@ -885,7 +875,7 @@ bool init() {
 	_priv::_ctx.commandQueue = clCreateCommandQueue(
 			_priv::_ctx.context, _priv::_ctx.deviceId, 0, &error);
 #endif
-	checkError(error);
+	_priv::checkError(error);
 
 	Log::info("OpenCL Context created");
 	return true;
@@ -894,11 +884,11 @@ bool init() {
 void shutdown() {
 	if (_priv::_ctx.commandQueue != nullptr) {
 		const cl_int error = clReleaseCommandQueue(_priv::_ctx.commandQueue);
-		checkError(error);
+		_priv::checkError(error);
 	}
 	if (_priv::_ctx.context != nullptr) {
 		const cl_int error = clReleaseContext(_priv::_ctx.context);
-		checkError(error);
+		_priv::checkError(error);
 	}
 	_priv::_ctx = _priv::Context();
 	computeCLShutdown();
