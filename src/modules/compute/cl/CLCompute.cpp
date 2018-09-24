@@ -793,6 +793,7 @@ bool init() {
 			error = clGetDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_EXTENSIONS,	extensionSize, (void*)extensions.get(), &extensionSize);
 			checkError(error);
 			Log::info("%s", extensions.get());
+			// TODO: check e.g. for cl_khr_3d_image_writes
 		}
 	}
 
