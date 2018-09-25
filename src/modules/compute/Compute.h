@@ -26,6 +26,13 @@
 
 namespace compute {
 
+enum class Feature {
+	VideoSharing,
+	Write3dTextures,
+
+	Max
+};
+
 /**
  * @brief This will only return @c true if init() was called before.
  */
@@ -82,7 +89,7 @@ void deleteTexture(Id& id);
 Id createSampler(const TextureConfig& config);
 void deleteSampler(Id& id);
 
-bool readTexture(compute::Texture& texture, void *data, const glm::uvec3& origin, const glm::uvec3& region, bool blocking = true);
+bool readTexture(compute::Texture& texture, void *data, const glm::ivec3& origin, const glm::ivec3& region, bool blocking = true);
 Id createProgram(const std::string& source);
 size_t requiredAlignment();
 bool configureProgram(Id program);
@@ -112,6 +119,8 @@ template<>
 inline bool kernelArg(Id kernel, uint32_t index, const Texture& t) {
 	return kernelArg(kernel, index, t, -1);
 }
+
+bool hasFeature(Feature f);
 
 template<>
 inline bool kernelArg(Id kernel, uint32_t index, Texture& t) {

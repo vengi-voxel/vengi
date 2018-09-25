@@ -9,6 +9,7 @@
 #include "CLMapping.h"
 #include "compute/Compute.h"
 #include "core/Assert.h"
+#include "core/Common.h"
 #include <vector>
 
 namespace compute {
@@ -24,9 +25,15 @@ struct Context {
 	cl_device_id deviceId = nullptr;
 	cl_uint alignment = 4096;
 	cl_bool imageSupport = CL_FALSE;
+	size_t image1DSize = 0;
 	size_t image2DSize[2] = {};
 	size_t image3DSize[3] = {};
 	std::vector<cl_context_properties> externalProperties;
+
+	bool features[std::enum_value(compute::Feature::Max)] = { };
+	inline bool supports(compute::Feature feature) const {
+		return features[std::enum_value(feature)];
+	}
 };
 
 extern Context _ctx;

@@ -6,6 +6,7 @@
 #include "CLCompute.h"
 #include "core/Log.h"
 #include "core/App.h"
+#include "core/String.h"
 #include "core/Assert.h"
 #include "io/Filesystem.h"
 #include <glm/fwd.hpp>
@@ -377,10 +378,25 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 	 * of the image format descriptor.
 	 */
 	cl_image_format fmt;
+	memset(&fmt, 0, sizeof(fmt));
 	fmt.image_channel_order = _priv::TextureFormats[std::enum_value(texture.format())];
 	fmt.image_channel_data_type = _priv::TextureDataFormats[std::enum_value(texture.dataformat())];
 	const size_t channelSize = _priv::TextureDataFormatSizes[std::enum_value(texture.dataformat())];
 	const size_t components = _priv::TextureFormatComponents[std::enum_value(texture.format())];
+
+	cl_image_desc desc;
+	memset(&desc, 0, sizeof(desc));
+	desc.image_width = texture.width();
+	desc.image_height = texture.height();
+
+	if (desc.image_width == 0) {
+		Log::error("Texture width is 0");
+		return InvalidId;
+	}
+	if (desc.image_height == 0) {
+		Log::error("Texture height is 0");
+		return InvalidId;
+	}
 
 	/**
 	 * A bit-field that is used to specify allocation and usage information about the image memory object being created and is described in the table List of
@@ -391,33 +407,26 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 		//flags |= CL_MEM_READ_ONLY;
 		flags |= CL_MEM_COPY_HOST_PTR;
 	}
+
 	if (texture.type() == TextureType::Texture3D) {
+		if (desc.image_width > _priv::_ctx.image3DSize[0]) {
+			Log::error("Max 3d texture width exceeded");
+			return InvalidId;
+		}
+		if (desc.image_height > _priv::_ctx.image3DSize[1]) {
+			Log::error("Max 3d texture height exceeded");
+			return InvalidId;
+		}
 		/**
 		 * The width and height of the image in pixels. These must be values greater than or equal to 1.
 		 * The depth of the image in pixels. This must be a value greater than 1.
 		 */
-		const glm::ivec3 size = glm::ivec3(texture.width(), texture.height(), texture.layers());
-		if ((size_t)size.x > _priv::_ctx.image3DSize[0]) {
-			Log::error("Max 3d texture width exceeded");
-			return InvalidId;
-		}
-		if ((size_t)size.y > _priv::_ctx.image3DSize[1]) {
-			Log::error("Max 3d texture height exceeded");
-			return InvalidId;
-		}
-		if ((size_t)size.z > _priv::_ctx.image3DSize[2]) {
+		desc.image_depth = texture.layers();
+		if (desc.image_depth > _priv::_ctx.image3DSize[2]) {
 			Log::error("Max 3d texture depth exceeded");
 			return InvalidId;
 		}
-		if (size.x == 0) {
-			Log::error("Texture width is 0");
-			return InvalidId;
-		}
-		if (size.y == 0) {
-			Log::error("Texture height is 0");
-			return InvalidId;
-		}
-		if (size.z <= 1) {
+		if (desc.image_depth < 1) {
 			Log::error("There must be more than 1 layer in a 3d texture");
 			return InvalidId;
 		}
@@ -426,34 +435,21 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 		 * bytes if host_ptr is not NULL. If host_ptr is not NULL and image_row_pitch is equal to 0, image_row_pitch is calculated as image_width * size of
 		 * element in bytes. If image_row_pitch is not 0, it must be a multiple of the image element size in bytes.
 		 */
-		const size_t imageRowPitch = data == nullptr ? 0 : (size[0] * channelSize * components);
+		desc.image_row_pitch = data == nullptr ? 0 : (desc.image_width * channelSize * components);
 		/**
 		 * The size in bytes of each 2D slice in the 3D image. This must be 0 if host_ptr is NULL and can be either 0 or greater than or equal to
 		 * image_row_pitch * image_height if host_ptr is not NULL. If host_ptr is not NULL and image_slice_pitch equal to 0, image_slice_pitch is calculated
 		 * as image_row_pitch * image_height. If image_slice_pitch is not 0, it must be a multiple of the image_row_pitch.
 		 */
-		const size_t imageSlicePitch = data == nullptr ? 0 : (imageRowPitch * size[1]);
-		id = clCreateImage3D(_priv::_ctx.context,
-				flags, &fmt,
-				size[0], size[1], size[2], imageRowPitch,
-				imageSlicePitch, const_cast<void*>((const void*)data), &error);
-		_priv::checkError(error);
-	} else {
-		const glm::ivec2 size = glm::ivec2(texture.width(), texture.height());
-		if ((size_t)size.x > _priv::_ctx.image2DSize[0]) {
+		desc.image_slice_pitch = data == nullptr ? 0 : (desc.image_row_pitch * desc.image_height);
+		desc.image_type = CL_MEM_OBJECT_IMAGE3D;
+	} else if (texture.type() == TextureType::Texture2D) {
+		if (desc.image_width > _priv::_ctx.image2DSize[0]) {
 			Log::error("Max 2d texture width exceeded");
 			return InvalidId;
 		}
-		if ((size_t)size.y > _priv::_ctx.image2DSize[1]) {
+		if (desc.image_height > _priv::_ctx.image2DSize[1]) {
 			Log::error("Max 2d texture height exceeded");
-			return InvalidId;
-		}
-		if (size.x == 0) {
-			Log::error("Texture width is 0");
-			return InvalidId;
-		}
-		if (size.y == 0) {
-			Log::error("Texture height is 0");
 			return InvalidId;
 		}
 		/**
@@ -461,13 +457,17 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 		 * bytes if host_ptr is not NULL. If host_ptr is not NULL and image_row_pitch is equal to 0, image_row_pitch is calculated as image_width * size of
 		 * element in bytes. If image_row_pitch is not 0, it must be a multiple of the image element size in bytes.
 		 */
-		const size_t imageRowPitch = data == nullptr ? 0 : (size[0] * channelSize * components);
-		id = clCreateImage2D(_priv::_ctx.context,
-				flags, &fmt,
-				size[0], size[1], imageRowPitch,
-				const_cast<void*>((const void*)data), &error);
-		_priv::checkError(error);
+		desc.image_row_pitch = data == nullptr ? 0 : (desc.image_width * channelSize * components);
+		desc.image_type = CL_MEM_OBJECT_IMAGE2D;
+	} else if (texture.type() == TextureType::Texture1D) {
+		if (desc.image_width > _priv::_ctx.image1DSize) {
+			Log::error("Max 1d texture width exceeded");
+			return InvalidId;
+		}
+		desc.image_type = CL_MEM_OBJECT_IMAGE1D;
 	}
+	id = clCreateImage(_priv::_ctx.context, flags, &fmt, &desc, const_cast<void*>((const void*)data), &error);
+	_priv::checkError(error);
 	return id;
 }
 
@@ -503,24 +503,82 @@ void deleteSampler(Id& id) {
 	_priv::checkError(error);
 }
 
-bool readTexture(compute::Texture& texture, void *data, const glm::uvec3& origin, const glm::uvec3& region, bool blocking) {
+/**
+ * @brief Enqueues a command to read from a 2D or 3D image object to host memory.
+ * @p Parameters
+ * @param command_queue: Refers to the command-queue in which the read command will be queued. command_queue and image must be created with the same OpenCL contex
+ * @param image: Refers to a valid 2D or 3D image object.
+ * @param blocking_read: Indicates if the read operations are blocking or non-blocking.
+ * If blocking_read is CL_TRUE i.e. the read command is blocking, clEnqueueReadImage does not return until the buffer data has been read and copied into memory pointed to by ptr.
+ * If blocking_read is CL_FALSE i.e. map operation is non-blocking, clEnqueueReadImage queues a non-blocking read command and returns. The contents of the buffer that ptr points to cannot be used until the read command has completed. The event argument returns an event object which can be used to query the execution status of the read command. When the read command has completed, the contents of the buffer that ptr points to can be used by the application.
+ * @param origin: Defines the (x, y, z) offset in pixels in the image from where to read. If image is a 2D image object, the z value given by origin[2] must be 0.
+ * @param region: Defines the (width, height, depth) in pixels of the 2D or 3D rectangle being read. If image is a 2D image object, the depth value given by region[2] must be 1.
+ * @param row_pitch: The length of each row in bytes. This value must be greater than or equal to the element size in bytes * width. If row_pitch is set to 0, the appropriate row pitch is calculated based on the size of each element in bytes multiplied by width.
+ * @param slice_pitch: Size in bytes of the 2D slice of the 3D region of a 3D image being read. This must be 0 if image is a 2D image. This value must be greater than or equal to row_pitch * height. If slice_pitch is set to 0, the appropriate slice pitch is calculated based on the row_pitch * height.
+ * @param ptr: The pointer to a buffer in host memory where image data is to be written to.
+ * @param event_wait_list , num_events_in_wait_list: Specify events that need to complete before this particular command can be executed. If event_wait_list is NULL, then this particular command does not wait on any event to complete. If event_wait_list is NULL, num_events_in_wait_list must be 0. If event_wait_list is not NULL, the list of events pointed to by event_wait_list must be valid and num_events_in_wait_list must be greater than 0. The events specified in event_wait_list act as synchronization points. The context associated with events in event_wait_list and command_queue must be the same.
+ * @param event: Returns an event object that identifies this particular read command and can be used to query or queue a wait for this particular command to complete. event can be NULL in which case it will not be possible for the application to query the status of this command or queue a wait for this command to complete.
+ * @p Notes
+ * Calling clEnqueueReadImage to read a region of the image object with the ptr argument value set to host_ptr + (origin[2] * image slice pitch + origin[1] * image row pitch + origin[0] * bytes per pixel), where host_ptr is a pointer to the memory region specified when the image object being read is created with CL_MEM_USE_HOST_PTR, must meet the following requirements in order to avoid undefined behavior:
+ * All commands that use this image object have finished execution before the read command begins execution.
+ * The row_pitch and slice_pitch argument values in clEnqueueReadImage must be set to the image row pitch and slice pitch.
+ * The image object is not mapped.
+ * The image object is not used by any command-queue until the read command has finished execution.
+ * @p Errors
+ * clEnqueueReadImage return CL_SUCCESS if the function is executed successfully. Otherwise, it returns one of the following errors.
+ * CL_INVALID_COMMAND_QUEUE if command_queue is not a valid command-queue.
+ * CL_INVALID_CONTEXT if the context associated with command_queue and image are not the same or if the context associated with command_queue and events in event_wait_list are not the same.
+ * CL_INVALID_MEM_OBJECT if image is not a valid image object.
+ * CL_INVALID_VALUE if the region being read specified by origin and region is out of bounds or if ptr is a NULL value.
+ * CL_INVALID_VALUE if image is a 2D image object and origin[2] is not equal to 0 or region[2] is not equal to 1 or slice_pitch is not equal to 0.
+ * CL_INVALID_EVENT_WAIT_LIST if event_wait_list is NULL and num_events_in_wait_list greater than 0, or event_wait_list is not NULL and num_events_in_wait_list is 0, or if event objects in event_wait_list are not valid events.
+ * CL_MEM_OBJECT_ALLOCATION_FAILURE if there is a failure to allocate memory for data store associated with image.
+ * CL_OUT_OF_HOST_MEMORY if there is a failure to allocate resources required by the OpenCL implementation on the host.
+ */
+bool readTexture(compute::Texture& texture, void *data, const glm::ivec3& origin, const glm::ivec3& region, bool blocking) {
 	if (data == nullptr) {
 		return false;
 	}
-	const int rowPitch = 0;
-	const int slicePitch = 0;
-	const uint32_t numEventsInWaitList = 0u;
-	core_assert_msg(origin.x < (glm::uvec3::value_type)texture.width() && origin.y < (glm::uvec3::value_type)texture.height(),
-			"origin (%u:%u:%u) may not exceed the texture dimensions (%i:%i:%i)",
-			origin.x, origin.y, origin.z, texture.width(), texture.height(), texture.layers());
-	core_assert_msg(region.x > 0 && region.y > 0 && region.z > 0, "Region must be bigger than 0 in every dimension");
-	core_assert_msg((int)region.x <= (texture.width() - (int)origin.x) && (int)region.y <= (texture.height() - (int)origin.y) && (int)region.z <= (texture.layers() - (int)origin.z),
-			"region (%u:%u:%u) and offset (%u:%u:%u) exceed the texture boundaries (%i,%i,%i)",
+	if (origin.x < 0 || origin.x >= texture.width()) {
+		Log::debug("origin (%u:%u:%u) may not exceed the texture dimensions (%i:%i:%i)",
+				origin.x, origin.y, origin.z, texture.width(), texture.height(), texture.layers());
+		return false;
+	}
+	if (origin.y < 0 || origin.y >= texture.height()) {
+		Log::debug("origin (%u:%u:%u) may not exceed the texture dimensions (%i:%i:%i)",
+				origin.x, origin.y, origin.z, texture.width(), texture.height(), texture.layers());
+		return false;
+	}
+	if (region.x <= 0 || region.y <= 0 || region.z <= 0) {
+		Log::debug("Region must be bigger than 0 in every dimension");
+		return false;
+	}
+	if (region.x > (texture.width() - origin.x)) {
+		Log::debug("region (%u:%u:%u) and offset (%u:%u:%u) exceed the texture boundaries (%i,%i,%i)",
 			region.x, region.y, region.z, origin.x, origin.y, origin.z, texture.width(), texture.height(), texture.layers());
+		return false;
+	}
+	if (region.y > (texture.height() - origin.y)) {
+		Log::debug("region (%u:%u:%u) and offset (%u:%u:%u) exceed the texture boundaries (%i,%i,%i)",
+			region.x, region.y, region.z, origin.x, origin.y, origin.z, texture.width(), texture.height(), texture.layers());
+		return false;
+	}
+	if (region.z > (texture.layers() - origin.z)) {
+		Log::debug("region (%u:%u:%u) and offset (%u:%u:%u) exceed the texture boundaries (%i,%i,%i)",
+			region.x, region.y, region.z, origin.x, origin.y, origin.z, texture.width(), texture.height(), texture.layers());
+		return false;
+	}
+
+	const compute::Id textureId = texture.handle();
+	if (textureId == compute::InvalidId) {
+		Log::debug("Invalid texture given");
+		return false;
+	}
+	const size_t clOrigin[] = {origin.x, origin.y, origin.z};
+	const size_t clRegion[] = {region.x, region.y, region.z};
 	const cl_int error = clEnqueueReadImage(
-			_priv::_ctx.commandQueue, (cl_mem)texture.handle(), blocking ? CL_TRUE : CL_FALSE,
-			(const size_t *)glm::value_ptr(origin), (const size_t *)glm::value_ptr(region),
-			rowPitch, slicePitch, data, numEventsInWaitList, nullptr, nullptr);
+			_priv::_ctx.commandQueue, (cl_mem)textureId, blocking ? CL_TRUE : CL_FALSE,
+			clOrigin, clRegion, 0, 0, data, 0, nullptr, nullptr);
 	_priv::checkError(error);
 	if (error == CL_SUCCESS) {
 		if (blocking) {
@@ -732,6 +790,37 @@ auto getActualDeviceInfo(int info) {
 	return val;
 }
 
+static bool extensionSupported(const char *extensions, const char *extension) {
+	const char *where = SDL_strchr(extension, ' ');
+	if (where || *extension == '\0') {
+		return false;
+	}
+
+	if (extensions == nullptr) {
+		return false;
+	}
+
+	const char *start = extensions;
+
+	for (;;) {
+		where = SDL_strstr(start, extension);
+		if (where == nullptr) {
+			break;
+		}
+
+		const char *terminator = where + SDL_strlen(extension);
+		if (where == extensions || *(where - 1) == ' ') {
+			if (*terminator == ' ' || *terminator == '\0') {
+				Log::info("Detected feature: %s", extension);
+				return true;
+			}
+		}
+
+		start = terminator;
+	}
+	return false;
+}
+
 bool init() {
 	core_assert(_priv::_ctx.context == nullptr);
 	if (computeCLInit() == -1) {
@@ -796,21 +885,6 @@ bool init() {
 			_priv::_ctx.deviceIdCount, _priv::_ctx.deviceIds.data(), nullptr);
 	_priv::checkError(error);
 
-	for (cl_uint i = 0; i < _priv::_ctx.deviceIdCount; ++i) {
-		const std::string& device = getDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_NAME);
-		Log::info("* (%i): %s", i + 1, device.c_str());
-		size_t extensionSize;
-		error = clGetDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_EXTENSIONS, 0, nullptr, &extensionSize);
-		_priv::checkError(error);
-		if (extensionSize > 0) {
-			std::unique_ptr<char[]> extensions(new char[extensionSize + 1]);
-			error = clGetDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_EXTENSIONS,	extensionSize, (void*)extensions.get(), &extensionSize);
-			_priv::checkError(error);
-			Log::info("%s", extensions.get());
-			// TODO: check e.g. for cl_khr_3d_image_writes
-		}
-	}
-
 	std::vector<cl_context_properties> contextProperties;
 	contextProperties.push_back(CL_CONTEXT_PLATFORM);
 	contextProperties.push_back((cl_context_properties)_priv::_ctx.platformIds[platformIndex]);
@@ -826,7 +900,34 @@ bool init() {
 		return false;
 	}
 
+	const std::string& device = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_NAME);
+	const std::string& vendor = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_VENDOR);
+	const std::string& version = getDeviceInfo(_priv::_ctx.deviceId, CL_DRIVER_VERSION);
+	Log::info("CL_VENDOR: %s", vendor.c_str());
+	Log::info("CL_DEVICE_NAME: %s", device.c_str());
+	Log::info("CL_DRIVER_VERSION: %s", version.c_str());
+	size_t extensionSize;
+	error = clGetDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_EXTENSIONS, 0, nullptr, &extensionSize);
+	_priv::checkError(error);
+	if (extensionSize > 0) {
+		std::unique_ptr<char[]> extensions(new char[extensionSize + 1]);
+		error = clGetDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_EXTENSIONS,	extensionSize, (void*)extensions.get(), &extensionSize);
+		_priv::checkError(error);
+		std::string extensionsStr = extensions.get();
+
+		Log::info("OpenCL extensions:");
+		std::vector<std::string> extensionsVec;
+		core::string::splitString(extensionsStr, extensionsVec, " ");
+		for (const auto& e : extensionsVec) {
+			Log::info("ext: %s", e.c_str());
+		}
+
+		_priv::_ctx.features[std::enum_value(Feature::VideoSharing)] = extensionSupported(extensions.get(), "cl_khr_gl_sharing");
+		_priv::_ctx.features[std::enum_value(Feature::Write3dTextures)] = extensionSupported(extensions.get(), "cl_khr_3d_image_writes");
+	}
+
 	_priv::_ctx.imageSupport = getActualDeviceInfo<cl_bool>(CL_DEVICE_IMAGE_SUPPORT);
+	_priv::_ctx.image1DSize = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE_MAX_BUFFER_SIZE);
 	_priv::_ctx.image2DSize[0] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE2D_MAX_WIDTH);
 	_priv::_ctx.image2DSize[1] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE2D_MAX_HEIGHT);
 	_priv::_ctx.image3DSize[0] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE3D_MAX_WIDTH);
@@ -892,6 +993,10 @@ void shutdown() {
 	}
 	_priv::_ctx = _priv::Context();
 	computeCLShutdown();
+}
+
+bool hasFeature(Feature f) {
+	return _priv::_ctx.supports(f);
 }
 
 }
