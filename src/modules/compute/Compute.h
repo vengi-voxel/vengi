@@ -83,7 +83,7 @@ bool readBufferIntoVector(Id buffer, std::vector<T>& data) {
 	return readBuffer(buffer, core::vectorCapacity(data), data.data());
 }
 
-Id createTexture(const Texture& texture, const uint8_t* data);
+Id createTexture(const Texture& texture, const uint8_t* data = nullptr);
 void deleteTexture(Id& id);
 
 Id createSampler(const TextureConfig& config);
