@@ -912,11 +912,10 @@ bool init() {
 		contextProperties.push_back(v);
 	}
 	contextProperties.push_back(0);
-
-	error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_DEFAULT,
-			1, &_priv::_ctx.deviceId, nullptr);
+	error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_DEFAULT, 1, &_priv::_ctx.deviceId, nullptr);
 	_priv::checkError(error);
 	if (error != CL_SUCCESS) {
+		Log::error("Failed to query the device");
 		return false;
 	}
 
@@ -944,6 +943,11 @@ bool init() {
 
 		_priv::_ctx.features[std::enum_value(Feature::VideoSharing)] = extensionSupported(extensions.get(), "cl_khr_gl_sharing");
 		_priv::_ctx.features[std::enum_value(Feature::Write3dTextures)] = extensionSupported(extensions.get(), "cl_khr_3d_image_writes");
+	}
+
+	if (_priv::_ctx.useGL && !hasFeature(Feature::VideoSharing)) {
+		Log::error("Missing video context sharing");
+		return false;
 	}
 
 	_priv::_ctx.imageSupport = getActualDeviceInfo<cl_bool>(CL_DEVICE_IMAGE_SUPPORT);

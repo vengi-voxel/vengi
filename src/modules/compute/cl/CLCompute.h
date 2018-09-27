@@ -25,6 +25,7 @@ struct Context {
 	cl_device_id deviceId = nullptr;
 	cl_uint alignment = 4096;
 	cl_bool imageSupport = CL_FALSE;
+	cl_bool useGL = CL_FALSE;
 	size_t image1DSize = 0;
 	size_t image2DSize[2] = {};
 	size_t image3DSize[3] = {};
