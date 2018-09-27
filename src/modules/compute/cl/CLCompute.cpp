@@ -575,8 +575,8 @@ bool readTexture(compute::Texture& texture, void *data, const glm::ivec3& origin
 		Log::debug("Invalid texture given");
 		return false;
 	}
-	const size_t clOrigin[] = {origin.x, origin.y, origin.z};
-	const size_t clRegion[] = {region.x, region.y, region.z};
+	const size_t clOrigin[] = {(size_t)origin.x, (size_t)origin.y, (size_t)origin.z};
+	const size_t clRegion[] = {(size_t)region.x, (size_t)region.y, (size_t)region.z};
 	const cl_int error = clEnqueueReadImage(
 			_priv::_ctx.commandQueue, (cl_mem)textureId, blocking ? CL_TRUE : CL_FALSE,
 			clOrigin, clRegion, 0, 0, data, 0, nullptr, nullptr);
