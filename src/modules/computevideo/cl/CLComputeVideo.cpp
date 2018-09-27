@@ -13,6 +13,10 @@
 namespace computevideo {
 
 bool init() {
+	if (compute::_priv::_ctx.context) {
+		Log::error("Init must happen before a context is created");
+		return false;
+	}
 #if defined(__APPLE__)
 	compute::_priv::_ctx.externalProperties.push_back(CL_CGL_SHAREGROUP_KHR);
 	compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()));
