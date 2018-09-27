@@ -40,16 +40,17 @@ bool init() {
 	compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)drawableFunc());
 #endif
 #endif
+	compute::_priv::_ctx.useGL = true;
 	return true;
 }
 
 void shutdown() {
 }
 
-compute::Id createBuffer(compute::BufferFlag flags, video::Buffer& buffer) {
+compute::Id createBuffer(compute::BufferFlag flags, video::Buffer& buffer, int idx) {
 	const cl_mem_info clFlags = compute::_priv::convertFlags(flags);
 	cl_int error;
-	const video::Id bufferId = buffer.handle();
+	const video::Id bufferId = buffer.bufferHandle(idx);
 	if (bufferId == video::InvalidId) {
 		Log::debug("Invalid buffer handle");
 		return compute::InvalidId;

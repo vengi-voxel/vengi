@@ -27,7 +27,7 @@ bool init();
 void shutdown();
 
 compute::Id createTexture(compute::BufferFlag flags, video::Texture& texture);
-compute::Id createBuffer(compute::BufferFlag flags, video::Buffer& buffer);
+compute::Id createBuffer(compute::BufferFlag flags, video::Buffer& buffer, int idx = 0);
 bool enqueueAcquire(compute::Id id);
 bool enqueueRelease(compute::Id id);
 
