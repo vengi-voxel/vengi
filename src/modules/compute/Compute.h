@@ -90,6 +90,7 @@ Id createSampler(const TextureConfig& config);
 void deleteSampler(Id& id);
 
 bool readTexture(compute::Texture& texture, void *data, const glm::ivec3& origin, const glm::ivec3& region, bool blocking = true);
+bool copyBufferToImage(compute::Id buffer, compute::Id image, size_t bufferOffset, const glm::ivec3& origin, const glm::ivec3& region);
 Id createProgram(const std::string& source);
 size_t requiredAlignment();
 bool configureProgram(Id program);

@@ -589,6 +589,25 @@ bool readTexture(compute::Texture& texture, void *data, const glm::ivec3& origin
 	return false;
 }
 
+bool copyBufferToImage(compute::Id buffer, compute::Id image, size_t bufferOffset, const glm::ivec3& origin, const glm::ivec3& region) {
+	if (origin.x < 0) {
+		return false;
+	}
+	if (origin.y < 0) {
+		return false;
+	}
+	if (region.x <= 0 || region.y <= 0 || region.z <= 0) {
+		Log::debug("Region must be bigger than 0 in every dimension");
+		return false;
+	}
+	const size_t clOrigin[] = {(size_t)origin.x, (size_t)origin.y, (size_t)origin.z};
+	const size_t clRegion[] = {(size_t)region.x, (size_t)region.y, (size_t)region.z};
+	const cl_int error = clEnqueueCopyBufferToImage(
+			_priv::_ctx.commandQueue, (cl_mem)buffer, (cl_mem)image, bufferOffset, clOrigin, clRegion, 0u, nullptr, nullptr);
+	_priv::checkError(error);
+	return error == CL_SUCCESS;
+}
+
 Id createProgram(const std::string& source) {
 	if (_priv::_ctx.context == nullptr) {
 		return InvalidId;
