@@ -4,6 +4,7 @@
  * Some great tips here: https://developer.nvidia.com/opengl-vulkan
  */
 
+#include "GLRenderer.h"
 #include "video/Renderer.h"
 #include "GLTypes.h"
 #include "GLState.h"

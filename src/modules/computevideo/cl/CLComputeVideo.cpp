@@ -5,6 +5,7 @@
  */
 #include "compute/cl/CLCompute.h"
 #include "video/Buffer.h"
+#include "video/gl/GLRenderer.h"
 #include "video/Texture.h"
 #include <CL/cl_gl.h>
 #include <SDL.h>
@@ -68,7 +69,19 @@ compute::Id createBuffer(compute::BufferFlag flags, video::Buffer& buffer, int i
 }
 
 compute::Id createTexture(compute::BufferFlag flags, video::Texture& texture) {
-	// TODO: implement me
+	const cl_mem_info clFlags = compute::_priv::convertFlags(flags);
+	cl_int error;
+	const video::Id textureId = texture.handle();
+	if (textureId == video::InvalidId) {
+		Log::debug("Invalid texture handle");
+		return compute::InvalidId;
+	}
+	compute::Id object = clCreateFromGLTexture(compute::_priv::_ctx.context, clFlags, video::_priv::TextureTypes[std::enum_value(texture.type())],
+			0, (cl_GLuint)textureId, &error);
+	if (error == CL_SUCCESS) {
+		return object;
+	}
+	compute::_priv::checkError(error);
 	return compute::InvalidId;
 }
 
