@@ -31,7 +31,7 @@ static const struct Formats {
 };
 static_assert(std::enum_value(TextureFormat::Max) == lengthof(textureFormats), "Array sizes don't match Max");
 
-static GLenum TextureFormats[] {
+static const GLenum TextureFormats[] {
 	GL_RGBA8,
 	GL_RGB8,
 	GL_RGBA32F,
@@ -45,7 +45,7 @@ static GLenum TextureFormats[] {
 };
 static_assert(std::enum_value(TextureFormat::Max) == lengthof(TextureFormats), "Array sizes don't match Max");
 
-static GLenum ShaderTypes[] {
+static const GLenum ShaderTypes[] {
 	GL_VERTEX_SHADER,
 	GL_FRAGMENT_SHADER,
 	GL_GEOMETRY_SHADER,
@@ -53,7 +53,7 @@ static GLenum ShaderTypes[] {
 };
 static_assert(std::enum_value(ShaderType::Max) == lengthof(ShaderTypes), "Array sizes don't match Max");
 
-static GLenum StencilOps[] {
+static const GLenum StencilOps[] {
 	GL_KEEP,
 	GL_ZERO,
 	GL_REPLACE,
@@ -65,7 +65,7 @@ static GLenum StencilOps[] {
 };
 static_assert(std::enum_value(StencilOp::Max) == lengthof(StencilOps), "Array sizes don't match Max");
 
-static GLenum FrameBufferAttachments[] {
+static const GLenum FrameBufferAttachments[] {
 	GL_DEPTH_STENCIL_ATTACHMENT,
 	GL_DEPTH_ATTACHMENT,
 	GL_STENCIL_ATTACHMENT,
@@ -88,7 +88,7 @@ static GLenum FrameBufferAttachments[] {
 };
 static_assert(std::enum_value(FrameBufferAttachment::Max) == lengthof(FrameBufferAttachments), "Array sizes don't match Max");
 
-static GLenum FrameBufferModes[] {
+static const GLenum FrameBufferModes[] {
 	GL_READ_FRAMEBUFFER,
 	GL_DRAW_FRAMEBUFFER,
 	GL_FRAMEBUFFER
@@ -106,21 +106,21 @@ static const char* VendorStrings[] {
 };
 static_assert(std::enum_value(Vendor::Max) == lengthof(VendorStrings), "Array sizes don't match Max");
 
-static GLenum BufferModes[] {
+static const GLenum BufferModes[] {
 	GL_STATIC_DRAW,
 	GL_DYNAMIC_DRAW,
 	GL_STREAM_DRAW
 };
 static_assert(std::enum_value(BufferMode::Max) == lengthof(BufferModes), "Array sizes don't match Max");
 
-static GLenum AccessModes[] {
+static const GLenum AccessModes[] {
 	GL_READ_ONLY,
 	GL_WRITE_ONLY,
 	GL_READ_WRITE
 };
 static_assert(std::enum_value(AccessMode::Max) == lengthof(AccessModes), "Array sizes don't match Max");
 
-static GLenum BufferTypes[] {
+static const GLenum BufferTypes[] {
 	GL_ARRAY_BUFFER,
 	GL_ELEMENT_ARRAY_BUFFER,
 	GL_UNIFORM_BUFFER,
@@ -129,7 +129,7 @@ static GLenum BufferTypes[] {
 };
 static_assert(std::enum_value(BufferType::Max) == lengthof(BufferTypes), "Array sizes don't match Max");
 
-static GLenum States[] {
+static const GLenum States[] {
 	0,
 	GL_STENCIL_TEST,
 	GL_DEPTH_TEST,
@@ -154,13 +154,13 @@ const GLenum TextureTypes[] {
 };
 static_assert(std::enum_value(TextureType::Max) == lengthof(TextureTypes), "Array sizes don't match Max");
 
-static GLenum TextureFilters[] {
+static const GLenum TextureFilters[] {
 	GL_LINEAR,
 	GL_NEAREST
 };
 static_assert(std::enum_value(TextureFilter::Max) == lengthof(TextureFilters), "Array sizes don't match Max");
 
-static GLenum TextureWraps[] {
+static const GLenum TextureWraps[] {
 	GL_CLAMP_TO_EDGE,
 	GL_CLAMP_TO_BORDER,
 	GL_REPEAT,
@@ -168,7 +168,7 @@ static GLenum TextureWraps[] {
 };
 static_assert(std::enum_value(TextureWrap::Max) == lengthof(TextureWraps), "Array sizes don't match Max");
 
-static GLenum BlendModes[] {
+static const GLenum BlendModes[] {
 	GL_ZERO,
 	GL_ONE,
 	GL_SRC_COLOR,
@@ -182,7 +182,7 @@ static GLenum BlendModes[] {
 };
 static_assert(std::enum_value(BlendMode::Max) == lengthof(BlendModes), "Array sizes don't match Max");
 
-static GLenum BlendEquations[] {
+static const GLenum BlendEquations[] {
 	GL_FUNC_ADD,
 	GL_FUNC_SUBTRACT,
 	GL_FUNC_REVERSE_SUBTRACT,
@@ -191,7 +191,7 @@ static GLenum BlendEquations[] {
 };
 static_assert(std::enum_value(BlendEquation::Max) == lengthof(BlendEquations), "Array sizes don't match Max");
 
-static GLenum CompareFuncs[] {
+static const GLenum CompareFuncs[] {
 	GL_NEVER,
 	GL_LESS,
 	GL_EQUAL,
@@ -203,27 +203,27 @@ static GLenum CompareFuncs[] {
 };
 static_assert(std::enum_value(CompareFunc::Max) == lengthof(CompareFuncs), "Array sizes don't match Max");
 
-static GLenum TextureCompareModes[] {
+static const GLenum TextureCompareModes[] {
 	GL_NONE,
 	GL_COMPARE_REF_TO_TEXTURE
 };
 static_assert(std::enum_value(TextureCompareMode::Max) == lengthof(TextureCompareModes), "Array sizes don't match Max");
 
-static GLenum PolygonModes[] {
+static const GLenum PolygonModes[] {
 	GL_POINT,
 	GL_LINE,
 	GL_FILL
 };
 static_assert(std::enum_value(PolygonMode::Max) == lengthof(PolygonModes), "Array sizes don't match Max");
 
-static GLenum Faces[] {
+static const GLenum Faces[] {
 	GL_FRONT,
 	GL_BACK,
 	GL_FRONT_AND_BACK
 };
 static_assert(std::enum_value(Face::Max) == lengthof(Faces), "Array sizes don't match Max");
 
-static GLenum Primitives[] {
+static const GLenum Primitives[] {
 	GL_POINTS,
 	GL_LINES,
 	GL_LINES_ADJACENCY,
@@ -234,13 +234,13 @@ static GLenum Primitives[] {
 };
 static_assert(std::enum_value(Primitive::Max) == lengthof(Primitives), "Array sizes don't match Max");
 
-static GLenum TransformFeedbackCaptureModes[] = {
+static const GLenum TransformFeedbackCaptureModes[] = {
 	GL_INTERLEAVED_ATTRIBS,
 	GL_SEPARATE_ATTRIBS
 };
 static_assert(std::enum_value(TransformFeedbackCaptureMode::Max) == lengthof(TransformFeedbackCaptureModes), "Array sizes don't match Max");
 
-static GLenum TextureUnits[] {
+static const GLenum TextureUnits[] {
 	GL_TEXTURE0,
 	GL_TEXTURE1,
 	GL_TEXTURE2,
@@ -251,7 +251,7 @@ static GLenum TextureUnits[] {
 };
 static_assert(std::enum_value(TextureUnit::Max) == lengthof(TextureUnits), "Array sizes don't match Max");
 
-static GLenum DataTypes[] {
+static const GLenum DataTypes[] {
 	GL_DOUBLE,
 	GL_FLOAT,
 	GL_UNSIGNED_BYTE,
@@ -263,7 +263,7 @@ static GLenum DataTypes[] {
 };
 static_assert(std::enum_value(DataType::Max) == lengthof(DataTypes), "Array sizes don't match Max");
 
-static GLenum ImageFormatTypes[] = {
+static const GLenum ImageFormatTypes[] = {
 	GL_RGBA32F,
 	GL_RGBA16F,
 	GL_RG32F,
