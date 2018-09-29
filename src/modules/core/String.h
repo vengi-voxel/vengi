@@ -84,6 +84,7 @@ inline float toFloat(const std::string& str) {
 }
 
 extern void splitString(const std::string& string, std::vector<std::string>& tokens, const std::string& delimiters = " \t\r\n\f\v");
+extern void splitString(const std::string& string, std::vector<std::string_view>& tokens, const std::string& delimiters = " \t\r\n\f\v");
 
 extern std::string toLower(const std::string& string);
 extern std::string toLower(const char* string);

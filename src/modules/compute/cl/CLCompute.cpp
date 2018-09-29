@@ -934,7 +934,7 @@ bool init() {
 		_priv::checkError(error);
 		std::string extensionsStr = extensions.get();
 
-		Log::info("OpenCL extensions:");
+		Log::info("OpenCL device extensions:");
 		std::vector<std::string> extensionsVec;
 		core::string::splitString(extensionsStr, extensionsVec, " ");
 		for (const auto& e : extensionsVec) {
@@ -943,6 +943,25 @@ bool init() {
 
 		_priv::_ctx.features[std::enum_value(Feature::VideoSharing)] = extensionSupported(extensions.get(), "cl_khr_gl_sharing");
 		_priv::_ctx.features[std::enum_value(Feature::Write3dTextures)] = extensionSupported(extensions.get(), "cl_khr_3d_image_writes");
+	}
+
+	error = clGetPlatformInfo(_priv::_ctx.platformIds[platformIndex], CL_PLATFORM_EXTENSIONS, 0, nullptr, &extensionSize);
+	_priv::checkError(error);
+	if (extensionSize > 0) {
+		std::unique_ptr<char[]> extensions(new char[extensionSize + 1]);
+		error = clGetPlatformInfo(_priv::_ctx.platformIds[platformIndex], CL_PLATFORM_EXTENSIONS, extensionSize, (void*)extensions.get(), &extensionSize);
+		_priv::checkError(error);
+		std::string extensionsStr = extensions.get();
+
+		Log::info("OpenCL platform extensions:");
+		std::vector<std::string> extensionsVec;
+		core::string::splitString(extensionsStr, extensionsVec, " ");
+		for (const auto& e : extensionsVec) {
+			Log::info("ext: %s", e.c_str());
+		}
+
+		_priv::_ctx.features[std::enum_value(Feature::VideoSharing)] |= extensionSupported(extensions.get(), "cl_khr_gl_sharing");
+		_priv::_ctx.features[std::enum_value(Feature::Write3dTextures)] |= extensionSupported(extensions.get(), "cl_khr_3d_image_writes");
 	}
 
 	if (_priv::_ctx.useGL && !hasFeature(Feature::VideoSharing)) {
