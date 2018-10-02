@@ -42,24 +42,42 @@ Renders a test 2d image.
 
 # testmesh
 
-Render a mesh with shadows and bones and normals (NOTE: there is no mesh in the repo to display - was removed in b33dd4c853514addeb6f09d1a3c009e9549ffd2c).
+Render a mesh with shadows and bones and normals.
 
 # testcamera
 
 Test camera options and collisions.
 
 # testvoxelfont
+
+Display a true type font as 3d voxel volume.
+
 # testplane
+
+Renders a plane object.
+
 # testshapebuilder
 # testoctree
 
 Renders the octree internals.
 
 # testglslcomp
+
+Uses GLSL compute shader to render a circle.
+
 # testgpumc
+
+Conversion of OpenCL marching cubes taken from: https://github.com/smistad/GPU-Marching-Cubes.git
+
 # testturbobadger
+
+Renders the turbobadger demo.
+
 # testluaui
 # testoctreevisit
+
+Visit the frustum in the octree.
+
 # testtemplate
 
 Just an empty template for new test applications.
