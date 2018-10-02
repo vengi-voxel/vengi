@@ -36,7 +36,7 @@ core::AppState TestMeshApp::onConstruct() {
 		}
 	}).setHelp("Load a mesh from the pool. The name is without extension and the file must be in the mesh/ dir.");
 
-	_meshName = core::Var::get("mesh", "chr_skelett2_bake");
+	_meshName = core::Var::get("mesh", "chr_skelett");
 	_animationIndex = core::Var::get("animation", "0");
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");

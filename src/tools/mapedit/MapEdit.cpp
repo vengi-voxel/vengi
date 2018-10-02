@@ -91,7 +91,7 @@ core::AppState MapEdit::onInit() {
 
 	_meshPool->init();
 
-	const char *meshName = "chr_skelett2_bake";
+	const char *meshName = "chr_skelett";
 	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
 	if (!mesh) {
 		Log::error("Failed to load the mesh '%s'", meshName);

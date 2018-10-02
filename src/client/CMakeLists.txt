@@ -33,6 +33,9 @@ set(FILES
 	client/ui/window/client-lostpassword.tb.txt
 	client/ui/window/client-signup.tb.txt
 
+	testmesh/chr_skelett.fbx
+	testmesh/chr_skelett2.png
+
 	shared/font.ttf
 	shared/worldparams.lua
 )

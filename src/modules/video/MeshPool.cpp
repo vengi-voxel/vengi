@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include <assimp/scene.h>
 #include <assimp/importerdesc.h>
+#include <array>
 
 namespace video {
 
@@ -39,10 +40,13 @@ void MeshPool::shutdown() {
 
 std::string MeshPool::getName(std::string_view id) const {
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
-	for (const char **format = supportedFormats; *format != nullptr; format++) {
-		const std::string& name = core::string::format("mesh/%s.%s", id.data(), *format);
-		if (filesystem->exists(name)) {
-			return name;
+	const std::array<std::string, 2> directories {".", "mesh"};
+	for (const auto& dir : directories) {
+		for (const char **format = supportedFormats; *format != nullptr; format++) {
+			const std::string& name = core::string::format("%s/%s.%s", dir.c_str(), id.data(), *format);
+			if (filesystem->exists(name)) {
+				return name;
+			}
 		}
 	}
 
