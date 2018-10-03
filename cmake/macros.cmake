@@ -1016,9 +1016,12 @@ macro(engine_target_link_libraries)
 
 		if (INSTALL_FILES)
 			list(REMOVE_DUPLICATES INSTALL_FILES)
+			list(REVERSE INSTALL_FILES)
 			foreach (datafile ${INSTALL_FILES})
 				string(REPLACE "${_LIBS_TARGET}/" "" target_datafile "${datafile}")
 				string(REPLACE "shared/" "" target_datafile "${target_datafile}")
+				# TODO: hack - every module should have its name removed from the src dir
+				string(REPLACE "testcore/" "" target_datafile "${target_datafile}")
 				get_filename_component(datafiledir ${target_datafile} DIRECTORY)
 				engine_install(${_LIBS_TARGET} "${datafile}" "${datafiledir}" ${INSTALL_DATA})
 			endforeach()
