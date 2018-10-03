@@ -12,8 +12,10 @@
 #include "core/Assert.h"
 #include "image/Image.h"
 #include <glm/fwd.hpp>
+#include <glm/vec4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+#include <type_traits>
 #include "TextureConfig.h"
 #include "FrameBufferConfig.h"
 #include "StencilConfig.h"
@@ -24,40 +26,85 @@ namespace video {
 class Texture;
 typedef std::shared_ptr<Texture> TexturePtr;
 
+namespace _priv {
+
+template<typename DATATYPE>
+struct to_type {
+	typedef typename std::remove_reference<typename std::remove_pointer<DATATYPE>::type>::type type;
+};
+
+}
+
 /**
  * @brief Maps data types to GL enums
  */
-template<class DATATYPE>
+template<typename DATATYPE>
 constexpr inline DataType mapType() {
-	if (std::is_floating_point<DATATYPE>()) {
-		if (sizeof(DATATYPE) == 4u) {
+	static_assert(std::is_fundamental<typename _priv::to_type<DATATYPE>::type>::value, "Given datatype is not fundamental");
+
+	constexpr size_t size = sizeof(typename _priv::to_type<DATATYPE>::type);
+	static_assert(size != 8u, "Long types are not supported");
+	static_assert(size != 12u, "Invalid data type given (size 12)");
+	static_assert(size != 16u, "Invalid data type given (size 16)");
+	static_assert(size != 36u, "Invalid data type given (size 36)");
+	static_assert(size != 64u, "Invalid data type given (size 64)");
+	static_assert(size == 1u || size == 2u || size == 4u, "Only datatypes of size 1, 2 or 4 are supported");
+	if (std::is_floating_point<typename _priv::to_type<DATATYPE>::type>()) {
+		if (size == 4u) {
 			return DataType::Float;
 		}
 		return DataType::Double;
 	}
 
-	if (sizeof(DATATYPE) == 1u) {
-		if (std::is_unsigned<DATATYPE>()) {
+	constexpr bool isUnsigned = std::is_unsigned<typename _priv::to_type<DATATYPE>::type>();
+	if (size == 1u) {
+		if (isUnsigned) {
 			return DataType::UnsignedByte;
 		}
 		return DataType::Byte;
 	}
-
-	if (sizeof(DATATYPE) == 2u) {
-		if (std::is_unsigned<DATATYPE>()) {
+	if (size == 2u) {
+		if (isUnsigned) {
 			return DataType::UnsignedShort;
 		}
 		return DataType::Short;
 	}
 
-	if (sizeof(DATATYPE) == 4u) {
-		if (std::is_unsigned<DATATYPE>()) {
-			return DataType::UnsignedInt;
-		}
-		return DataType::Int;
+	static_assert(size <= 4u, "No match found");
+	if (isUnsigned) {
+		return DataType::UnsignedInt;
 	}
+	return DataType::Int;
+}
 
-	return DataType::Max;
+template<>
+constexpr inline DataType mapType<glm::ivec2>() {
+	return mapType<typename glm::ivec2::value_type>();
+}
+
+template<>
+constexpr inline DataType mapType<glm::vec2>() {
+	return mapType<typename glm::vec2::value_type>();
+}
+
+template<>
+constexpr inline DataType mapType<glm::ivec3>() {
+	return mapType<typename glm::ivec3::value_type>();
+}
+
+template<>
+constexpr inline DataType mapType<glm::vec3>() {
+	return mapType<typename glm::vec3::value_type>();
+}
+
+template<>
+constexpr inline DataType mapType<glm::ivec4>() {
+	return mapType<typename glm::ivec4::value_type>();
+}
+
+template<>
+constexpr inline DataType mapType<glm::vec4>() {
+	return mapType<typename glm::vec4::value_type>();
 }
 
 /**

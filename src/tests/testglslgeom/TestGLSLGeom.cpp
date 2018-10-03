@@ -30,7 +30,7 @@ core::AppState TestGLSLGeom::onInit() {
 		glm::vec3 color{1, 1, 1};
 	};
 	Buf buf;
-	int32_t bufIndex = _buffer.create(&buf, sizeof(buf));
+	const int32_t bufIndex = _buffer.create(&buf, sizeof(buf));
 	_buffer.setMode(bufIndex, video::BufferMode::Static);
 
 	_buffer.addAttribute(_testShader.getPosAttribute(bufIndex, &Buf::pos));
