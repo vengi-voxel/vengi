@@ -27,14 +27,17 @@ core::AppState TestComputeTexture3D::onInit() {
 	_camera.setFarPlane(1.0f);
 
 	if (!compute::init()) {
+		Log::error("Failed to initialize the compute context");
 		return core::AppState::InitFailure;
 	}
 
 	if (!_renderShader.setup()) {
+		Log::error("Failed to setup the compute shader");
 		return core::AppState::InitFailure;
 	}
 
 	if (!_renderer.init(dimension())) {
+		Log::error("Failed to setup the renderer");
 		return core::AppState::InitFailure;
 	}
 
