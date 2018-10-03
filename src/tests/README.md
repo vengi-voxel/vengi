@@ -87,5 +87,4 @@ Just an empty template for new test applications.
 ## Currently broken
 
 - The imgui free look mode is currently broken - usually you should be able to hit esc to toggle the free look and camera move mode.
-- The mesh rendering is currently broken - testmesh and testdepthbuffer are affected.
-- testglslgeom throws an invalid enum error on my notebook.
+- The mesh rendering is currently broken - testdepthbuffer are affected.
