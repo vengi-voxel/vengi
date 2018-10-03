@@ -102,6 +102,8 @@ set(FILES
 	voxedit/models/street.vox
 	voxedit/models/treehouse.vox
 	voxedit/models/woman.vox
+
+	voxedit/voxedit-keybindings.cfg
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)

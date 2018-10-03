@@ -3,4 +3,7 @@ set(SRCS
 	TestMeshApp.cpp TestMeshApp.h
 	TestAppMain.h
 )
-engine_add_module(TARGET testcore SRCS ${SRCS} DEPENDENCIES frontend imgui)
+set(FILES
+	testcore/keybindings.cfg
+)
+engine_add_module(TARGET testcore FILES ${FILES} SRCS ${SRCS} DEPENDENCIES frontend imgui)
