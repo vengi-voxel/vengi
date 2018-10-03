@@ -153,15 +153,6 @@ core::AppState TestApp::onCleanup() {
 	return Super::onCleanup();
 }
 
-bool TestApp::onKeyPress(int32_t key, int16_t modifier) {
-	if (key == SDLK_ESCAPE) {
-		const SDL_bool current = SDL_GetRelativeMouseMode();
-		const SDL_bool mode = current ? SDL_FALSE : SDL_TRUE;
-		SDL_SetRelativeMouseMode(mode);
-	}
-	return Super::onKeyPress(key, modifier);
-}
-
 void TestApp::onMouseWheel(int32_t x, int32_t y) {
 	Super::onMouseWheel(x, y);
 	const float targetDistance = glm::clamp(_camera.targetDistance() - y, 0.0f, 500.0f);

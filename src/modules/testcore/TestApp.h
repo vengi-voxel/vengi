@@ -57,7 +57,6 @@ public:
 	virtual void beforeUI() override;
 	virtual void onRenderUI() override;
 	virtual core::AppState onCleanup() override;
-	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual void onMouseWheel(int32_t x, int32_t y) override;
 	virtual void onWindowResize() override;
 };
