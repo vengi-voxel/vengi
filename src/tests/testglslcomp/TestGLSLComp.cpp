@@ -17,6 +17,12 @@ core::AppState TestGLSLComp::onInit() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
+
+	if (!video::hasFeature(video::Feature::ComputeShaders)) {
+		Log::error("This test needs compute shader support");
+		return core::AppState::InitFailure;
+	}
+
 	_camera.setMode(video::CameraMode::Orthogonal);
 	_camera.setNearPlane(-1.0f);
 	_camera.setFarPlane(1.0f);
