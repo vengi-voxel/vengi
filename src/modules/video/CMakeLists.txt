@@ -51,11 +51,11 @@ find_package(OpenGL)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES image util assimp)
 
 find_program(PYTHON3_EXECUTABLE NAMES python3)
-add_custom_target(update-glbindings)
+add_custom_target(update-videobindings)
 if (PYTHON3_EXECUTABLE)
-	add_custom_command(TARGET update-glbindings
-		COMMAND ${PYTHON3_EXECUTABLE} flextGLgen.py -T sdl -D ${CMAKE_CURRENT_SOURCE_DIR}/gl flextgl_profile.txt
-		DEPENDS flextgl_profile.txt ${ROOT_DIR}/tools/flextGL/flextGLgen.py
+	add_custom_command(TARGET update-videobindings
+		COMMAND ${PYTHON3_EXECUTABLE} flextGLgen.py -T sdl -D ${CMAKE_CURRENT_SOURCE_DIR}/gl profiles/gl33.txt
+		DEPENDS profiles/gl33.txt ${ROOT_DIR}/tools/flextGL/flextGLgen.py
 		WORKING_DIRECTORY ${ROOT_DIR}/tools/flextGL
 	)
 endif()

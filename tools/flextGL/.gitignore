@@ -1,2 +1,4 @@
-/__pycache__
-/spec
+spec
+__pycache__
+.coverage
+htmlcov

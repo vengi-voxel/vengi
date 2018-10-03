@@ -1,27 +1,38 @@
 #!/usr/bin/env python3
 
+import os.path
 from optparse import OptionParser
 
 import flext
 
 
-def main():
-    # Read command line arguments and profile settings
-    options,profile = parse_args()    
+def main(options, profile):
     version,extensions,funcslist,funcsblacklist = flext.parse_profile(profile)
 
     # Download spec file(s) if necessary
-    flext.download_spec(options.download)
+    if version.api == 'vulkan':
+        if version.release:
+            version_string = 'v{}.{}.{}'.format(version.major, version.minor, version.release)
+            spec_url = flext.vk_spec_url.format(version_string)
+            spec_file = 'vk.{}.xml'.format(version_string)
+        else:
+            spec_url = flext.vk_spec_url.format('master')
+            spec_file = 'vk.xml'
+    else:
+        spec_url = flext.gl_spec_url
+        spec_file = 'gl.xml'
+
+    flext.download_spec(spec_url, spec_file, options.download)
 
     # Parse spec
-    passthru, enums, functions, types, raw_enums = flext.parse_xml(version, extensions, funcslist, funcsblacklist)
+    passthru, enums, functions, types, raw_enums = flext.parse_xml(spec_file, version, extensions, funcslist, funcsblacklist)
 
     # Generate source from templates
     flext.generate_source(options, version, enums, functions, passthru,
                           extensions, types, raw_enums)
 
-    
-def parse_args():
+
+def parse_args(): # pragma: no cover
     parser = OptionParser(usage='Usage: %prog [options] filename')
     parser.add_option('-d', '--download',
                       action='store_true', dest='download', default=False,
@@ -42,10 +53,11 @@ def parse_args():
         exit(1)
 
     if options.template_dir == None:
-        options.template_dir = flext.default_template_root + options.template
+        options.template_dir = os.path.join(flext.default_template_root, options.template)
 
     return options, args[0]
-    
 
-if __name__ == "__main__":
-    main()
+
+if __name__ == "__main__": # pragma: no cover
+    # Read command line arguments and profile settings
+    main(*parse_args())

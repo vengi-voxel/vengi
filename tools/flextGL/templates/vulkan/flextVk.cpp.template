@@ -1,0 +1,41 @@
+@require(passthru, functions, enums, options, version, extensions)
+#include "flextVk.h"
+
+@for category,funcs in functions:
+@if funcs:
+@for f in funcs:
+@if f.name not in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
+@f.returntype\
+(VKAPI_PTR *flextvk@f.name)(@f.param_type_list_string()) = nullptr;
+@end
+@end
+@end
+@end
+
+void flextVkInit() {
+    /* All functions that are present already in 1.0 are loaded statically, but
+       the following are not, so we have to load them at runtime */
+    @for category,funcs in functions:
+    @if funcs:
+    @for f in funcs:
+    @if f.name in ['EnumerateInstanceVersion']:
+    flextvk@f.name = reinterpret_cast<@f.returntype\
+(VKAPI_PTR*)(@f.param_type_list_string())>(vkGetInstanceProcAddr(nullptr, "vk@f.name"));
+    @end
+    @end
+    @end
+    @end
+}
+
+void flextVkInitInstance(VkInstance instance) {
+    @for category,funcs in functions:
+    @if funcs:
+    @for f in funcs:
+    @if f.name not in ['GetInstanceProcAddr', 'EnumerateInstanceVersion', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
+    flextvk@f.name = reinterpret_cast<@f.returntype\
+(VKAPI_PTR*)(@f.param_type_list_string())>(vkGetInstanceProcAddr(instance, "vk@f.name"));
+    @end
+    @end
+    @end
+    @end
+}

@@ -1,0 +1,94 @@
+@require(passthru, functions, enums, options, version, extensions)
+#ifndef _flextvk_h_
+#define _flextvk_h_
+
+#include <stdint.h>
+#include <stddef.h>
+
+/* Defensive include guards */
+
+#if defined(VULKAN_H_)
+#error Attempt to include auto-generated header after including vulkan.h
+#endif
+#if defined(VK_PLATFORM_H_)
+#error Attempt to include auto-generated header after including vk_platform.h
+#endif
+
+#define VULKAN_H_
+#define VK_PLATFORM_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Verbatim copied from upstream vk_platform.h */
+#if defined(_WIN32)
+    // On Windows, Vulkan commands use the stdcall convention
+    #define VKAPI_ATTR
+    #define VKAPI_CALL __stdcall
+    #define VKAPI_PTR  VKAPI_CALL
+#elif defined(__ANDROID__) && defined(__ARM_ARCH) && __ARM_ARCH < 7
+    #error "Vulkan isn't supported for the 'armeabi' NDK ABI"
+#elif defined(__ANDROID__) && defined(__ARM_ARCH) && __ARM_ARCH >= 7 && defined(__ARM_32BIT_STATE)
+    // On Android 32-bit ARM targets, Vulkan functions use the "hardfloat"
+    // calling convention, i.e. float parameters are passed in registers. This
+    // is true even if the rest of the application passes floats on the stack,
+    // as it does by default when compiling for the armeabi-v7a NDK ABI.
+    #define VKAPI_ATTR __attribute__((pcs("aapcs-vfp")))
+    #define VKAPI_CALL
+    #define VKAPI_PTR  VKAPI_ATTR
+#else
+    // On other platforms, use the default calling convention
+    #define VKAPI_ATTR
+    #define VKAPI_CALL
+    #define VKAPI_PTR
+#endif
+
+/* Enums */
+
+@enums
+
+/* Data types */
+
+@passthru
+
+/* I'll bite the bullet and expect that vkCreateInstance(),
+   vkEnumerateInstanceExtensionProperties() and vkEnumerateInstanceLayerProperties()
+   functions can be loaded statically to avoid the need for a global
+   flextVkInit() that needs to be called before everything else */
+@for cat,funcs in functions:
+@for f in funcs:
+@if f.name in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
+VKAPI_ATTR @f.returntype VKAPI_CALL vk@f.name\
+(@f.param_type_list_string());
+@end
+@end
+@end
+
+/* Function pointers */
+@for cat,funcs in functions:
+@if funcs:
+
+/* VK_@cat */
+
+@for f in funcs:
+@if f.name not in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
+extern @f.returntype\
+(VKAPI_PTR *flextvk@f.name)(@f.param_type_list_string());
+#define vk@f.name flextvk@f.name
+@end
+@end
+@end
+@end
+
+/* Global function pointer initialization */
+void flextVkInit();
+
+/* Instance-specific function pointer initialization */
+void flextVkInitInstance(VkInstance instance);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
