@@ -27,6 +27,7 @@ public:
 
 	bool init() override;
 	void shutdown() override;
+	void clear();
 };
 
 typedef std::shared_ptr<TexturePool> TexturePoolPtr;

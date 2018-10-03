@@ -29,6 +29,10 @@ bool TexturePool::init() {
 }
 
 void TexturePool::shutdown() {
+	clear();
+}
+
+void TexturePool::clear() {
 	_cache.clear();
 }
 
