@@ -187,13 +187,6 @@ core::AppState TestGPUMC::onInit() {
 	}
 
 	_vboIdx = _vbo.create();
-	if (!_writingTo3DTextures) {
-		_vboComputeBufferId = computevideo::createBuffer(compute::BufferFlag::ReadWrite, _vbo, _vboIdx);
-		if (_vboComputeBufferId == compute::InvalidId) {
-			Log::error("Failed to generate the vbo compute buffer");
-			return core::AppState::InitFailure;
-		}
-	}
 
 	struct V {
 		glm::vec3 pos;
@@ -294,6 +287,15 @@ void TestGPUMC::extractSurfaces() {
 	Log::info("Prepare the vbo.");
 	const size_t vboSize = _totalSum * 18 * sizeof(float);
 	_vbo.update(_vboIdx, nullptr, vboSize);
+
+	if (!_writingTo3DTextures && _vboComputeBufferId == compute::InvalidId) {
+		_vboComputeBufferId = computevideo::createBuffer(compute::BufferFlag::ReadWrite, _vbo, _vboIdx);
+		if (_vboComputeBufferId == compute::InvalidId) {
+			Log::error("Failed to generate the vbo compute buffer");
+			return;
+		}
+	}
+
 	// Increase the globalWorkSize so that it is divideable by 64
 	int globalWorkSize = _totalSum + 64 - (_totalSum - 64 * (_totalSum / 64));
 
