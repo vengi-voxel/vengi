@@ -306,7 +306,6 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 	Log::debug("found kernel %s with dimension %i", kernel.name.c_str(), kernel.workDimension);
 	stack.pop();
 
-	bool added = false;
 	Parameter parameter;
 	while (!parameterTokens.empty()) {
 		const std::string token = parameterTokens.back();
@@ -314,11 +313,21 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 		if (token.empty()) {
 			continue;
 		}
-		if (token == ",") {
-			core_assert(!parameter.name.empty());
+		if (parameter.name.empty()) {
+			// the last parameter must be the name
+			parameter.name = token;
 			if (core::string::startsWith(parameter.name, "*")) {
 				parameter.name = parameter.name.substr(1, parameter.name.size());
 				parameter.type.append(" *");
+			}
+			continue;
+		}
+
+		// the next token will be a new parameter
+		if (token == ",") {
+			if (parameter.name.empty()) {
+				Log::error("Syntax error in compute shader at line %i", tok->location.line);
+				return nullptr;
 			}
 			kernel.parameters.insert(kernel.parameters.begin(), parameter);
 			parameter = Parameter();
@@ -326,66 +335,53 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 		}
 		// TODO: __local size must be the size in bytes for the buffer that create
 		// TODO: handle these: __global, __local, __private
+		const char *startToken = token.c_str();
+
+		// The "__" prefix is not required before the qualifiers, but we will continue to use the
+		// prefix in this text for consistency. If the qualifier is not specified, the variable
+		// gets allocated to "__private", which is the default qualifier.
 		if (core::string::startsWith(token, "__")) {
-			// The "__" prefix is not required before the qualifiers, but we will continue to use the
-			// prefix in this text for consistency. If the qualifier is not specified, the variable
-			// gets allocated to "__private", which is the default qualifier.
-			if (core::string::startsWith(&token[2], "constant")
-			 || core::string::startsWith(&token[2], "read_only")) {
-				parameter.flags &= ~(compute::BufferFlag::ReadWrite);
-				parameter.flags |= compute::BufferFlag::ReadOnly;
-			} else if (core::string::startsWith(&token[2], "write_only")) {
-				parameter.flags &= ~(compute::BufferFlag::ReadWrite);
-				parameter.flags |= compute::BufferFlag::WriteOnly;
-				parameter.byReference = true;
-			}
+			startToken = &token[2];
+		}
+		if (core::string::startsWith(startToken, "read_only")) {
+			parameter.flags &= ~(compute::BufferFlag::ReadWrite);
+			parameter.flags |= compute::BufferFlag::ReadOnly;
+			Log::info("Detected read only parameter %s", parameter.name.c_str());
 			continue;
-		} else {
-			if (token == "constant" || token == "read_only") {
-				parameter.flags &= ~(compute::BufferFlag::ReadWrite);
-				parameter.flags |= compute::BufferFlag::ReadOnly;
-				parameter.qualifier = "const";
-				continue;
-			} else if (token == "write_only") {
-				parameter.flags &= ~(compute::BufferFlag::ReadWrite);
-				parameter.flags |= compute::BufferFlag::WriteOnly;
-				parameter.byReference = true;
-				continue;
-			}
+		} else if (core::string::startsWith(startToken, "write_only")) {
+			parameter.flags &= ~(compute::BufferFlag::ReadWrite);
+			parameter.flags |= compute::BufferFlag::WriteOnly;
+			parameter.byReference = true;
+			continue;
+		} else if (core::string::startsWith(token, "__")) {
+			// skip any other opencl keyword
+			Log::debug("Ignore %s", token.c_str());
+			continue;
 		}
 
-		added = true;
-		if (parameter.name.empty()) {
-			parameter.name = token;
-		} else if (token == "const") {
+		if (core::string::startsWith(startToken, "const")) {
 			core_assert_msg(parameter.qualifier.empty(), "found %s, but already have %s",
 					token.c_str(), parameter.qualifier.c_str());
 			parameter.flags &= ~(compute::BufferFlag::ReadWrite | compute::BufferFlag::WriteOnly);
 			parameter.flags |= compute::BufferFlag::ReadOnly;
-			parameter.qualifier = token;
+			parameter.qualifier = "const";
+			continue;
+		}
+		if (token == "image2d_t") {
+			parameter.datatype = DataType::Image2D;
+		} else if (token == "image3d_t") {
+			parameter.datatype = DataType::Image3D;
+		} else if (token == "sampler_t") {
+			parameter.datatype = DataType::Sampler;
+		}
+		if (!parameter.type.empty()) {
+			parameter.type = token + " " + parameter.type;
 		} else {
-			if (token == "image2d_t") {
-				parameter.datatype = DataType::Image2D;
-			} else if (token == "image3d_t") {
-				parameter.datatype = DataType::Image3D;
-			} else if (token == "sampler_t") {
-				parameter.datatype = DataType::Sampler;
-			}
-			if (!parameter.type.empty()) {
-				parameter.type = token + " " + parameter.type;
-			} else {
-				parameter.type = token;
-			}
+			parameter.type = token;
 		}
 	}
-	if (added) {
-		if (core::string::startsWith(parameter.name, "*")) {
-			parameter.name = parameter.name.substr(1, parameter.name.size());
-			parameter.type.append(" *");
-		}
-		core_assert(!parameter.name.empty());
-		kernel.parameters.insert(kernel.parameters.begin(), parameter);
-	}
+	core_assert(!parameter.name.empty());
+	kernel.parameters.insert(kernel.parameters.begin(), parameter);
 
 	std::stack<std::string> returnTokens;
 	while (!stack.empty()) {
