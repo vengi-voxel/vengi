@@ -922,8 +922,10 @@ bool init() {
 	const std::string& device = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_NAME);
 	const std::string& vendor = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_VENDOR);
 	const std::string& version = getDeviceInfo(_priv::_ctx.deviceId, CL_DRIVER_VERSION);
-	Log::info("CL_VENDOR: %s", vendor.c_str());
+	const std::string& devVersion = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_VERSION);
+	Log::info("CL_DEVICE_VENDOR: %s", vendor.c_str());
 	Log::info("CL_DEVICE_NAME: %s", device.c_str());
+	Log::info("CL_DEVICE_VERSION: %s", devVersion.c_str());
 	Log::info("CL_DRIVER_VERSION: %s", version.c_str());
 	size_t extensionSize;
 	error = clGetDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_EXTENSIONS, 0, nullptr, &extensionSize);
@@ -976,6 +978,8 @@ bool init() {
 	_priv::_ctx.image3DSize[0] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE3D_MAX_WIDTH);
 	_priv::_ctx.image3DSize[1] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE3D_MAX_HEIGHT);
 	_priv::_ctx.image3DSize[2] = getActualDeviceInfo<size_t>(CL_DEVICE_IMAGE3D_MAX_DEPTH);
+	_priv::_ctx.maxComputeUnits = getActualDeviceInfo<size_t>(CL_DEVICE_MAX_COMPUTE_UNITS);
+	Log::debug("Max compute units: %i", (int)_priv::_ctx.maxComputeUnits);
 
 	error = clGetDeviceInfo(_priv::_ctx.deviceId,
 			CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof(_priv::_ctx.alignment), &_priv::_ctx.alignment, 0);
@@ -1006,7 +1010,7 @@ bool init() {
 	// TODO: this segfaults on nvidia/linux
 //#ifdef CL_VERSION_2_0
 	// TODO: CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE??
-	7/ TODO: CL_QUEUE_PROFILING_ENABLE
+	// TODO: CL_QUEUE_PROFILING_ENABLE
 	cl_queue_properties properties[] = { CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0 };
 	/**
 	 * Must be a device associated with context. It can either be in the list of devices specified when context

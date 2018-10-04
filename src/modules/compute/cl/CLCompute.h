@@ -29,6 +29,7 @@ struct Context {
 	size_t image1DSize = 0;
 	size_t image2DSize[2] = {};
 	size_t image3DSize[3] = {};
+	size_t maxComputeUnits = 0;
 	std::vector<cl_context_properties> externalProperties;
 
 	bool features[std::enum_value(compute::Feature::Max)] = { };
