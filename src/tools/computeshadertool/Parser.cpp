@@ -329,6 +329,8 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 				Log::error("Syntax error in compute shader at line %i", tok->location.line);
 				return nullptr;
 			}
+			const std::string& flags = util::toString(parameter.flags);
+			Log::debug("Parameter (%s for kernel %s) flags: %s", parameter.name.c_str(), kernel.name.c_str(), flags.c_str());
 			kernel.parameters.insert(kernel.parameters.begin(), parameter);
 			parameter = Parameter();
 			continue;
@@ -346,7 +348,7 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 		if (core::string::startsWith(startToken, "read_only")) {
 			parameter.flags &= ~(compute::BufferFlag::ReadWrite);
 			parameter.flags |= compute::BufferFlag::ReadOnly;
-			Log::info("Detected read only parameter %s", parameter.name.c_str());
+			Log::debug("Detected read only parameter %s for kernel %s", parameter.name.c_str(), kernel.name.c_str());
 			continue;
 		} else if (core::string::startsWith(startToken, "write_only")) {
 			parameter.flags &= ~(compute::BufferFlag::ReadWrite);
@@ -380,8 +382,11 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 			parameter.type = token;
 		}
 	}
-	core_assert(!parameter.name.empty());
-	kernel.parameters.insert(kernel.parameters.begin(), parameter);
+	if (!parameter.name.empty()) {
+		const std::string& flags = util::toString(parameter.flags);
+		Log::debug("Parameter (%s for kernel %s) flags: %s", parameter.name.c_str(), kernel.name.c_str(), flags.c_str());
+		kernel.parameters.insert(kernel.parameters.begin(), parameter);
+	}
 
 	std::stack<std::string> returnTokens;
 	while (!stack.empty()) {
