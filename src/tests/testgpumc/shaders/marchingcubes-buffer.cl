@@ -50,7 +50,7 @@ __constant int4 cubeOffsets[8] = { { 0, 0, 0, 0 }, { 1, 0, 0, 0 },
 				1, 0 }, { 1, 1, 1, 0 }, };
 
 __kernel void constructHPLevelCharChar(
-		__global uchar * readHistoPyramid,
+		__global __read_only uchar * readHistoPyramid,
 		__global uchar * writeHistoPyramid
 ) {
 
@@ -69,7 +69,7 @@ __kernel void constructHPLevelCharChar(
 }
 
 __kernel void constructHPLevelCharShort(
-		__global uchar * readHistoPyramid,
+		__global __read_only uchar * readHistoPyramid,
 		__global ushort * writeHistoPyramid
 ) {
 
@@ -87,7 +87,7 @@ __kernel void constructHPLevelCharShort(
 	writeHistoPyramid[writePos] = writeValue;
 }
 __kernel void constructHPLevelShortShort(
-		__global ushort * readHistoPyramid,
+		__global __read_only ushort * readHistoPyramid,
 		__global ushort * writeHistoPyramid
 ) {
 
@@ -106,7 +106,7 @@ __kernel void constructHPLevelShortShort(
 }
 
 __kernel void constructHPLevelShortInt(
-		__global ushort * readHistoPyramid,
+		__global __read_only ushort * readHistoPyramid,
 		__global int * writeHistoPyramid
 ) {
 
@@ -125,7 +125,7 @@ __kernel void constructHPLevelShortInt(
 }
 
 __kernel void constructHPLevel(
-		__global int * readHistoPyramid,
+		__global __read_only int * readHistoPyramid,
 		__global int * writeHistoPyramid
 ) {
 
@@ -143,7 +143,7 @@ __kernel void constructHPLevel(
 	writeHistoPyramid[writePos] = writeValue;
 }
 
-int4 scanHPLevelShort(int target, __global ushort * hp, int4 current) {
+int4 scanHPLevelShort(int target, __global __read_only ushort * hp, int4 current) {
 
 	int8 neighbors = {
 		hp[EncodeMorton(current)],
@@ -189,7 +189,7 @@ int4 scanHPLevelShort(int target, __global ushort * hp, int4 current) {
 	return current;
 
 }
-int4 scanHPLevelChar(int target, __global uchar * hp, int4 current) {
+int4 scanHPLevelChar(int target, __global __read_only uchar * hp, int4 current) {
 
 	int8 neighbors = {
 		hp[EncodeMorton(current)],
@@ -236,7 +236,7 @@ int4 scanHPLevelChar(int target, __global uchar * hp, int4 current) {
 
 }
 
-int4 scanHPLevel(int target, __global int * hp, int4 current) {
+int4 scanHPLevel(int target, __global __read_only int * hp, int4 current) {
 
 	int8 neighbors = {
 		hp[EncodeMorton(current)],
@@ -514,23 +514,23 @@ __constant char triTable[4096] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 __kernel void traverseHP(
 		__read_only image3d_t rawData,
 		__read_only image3d_t cubeIndexes,
-		__global uchar * hp0, // Largest HP
-		__global uchar * hp1,
-		__global ushort * hp2,
-		__global ushort * hp3,
-		__global ushort * hp4,
-		__global int * hp5,
+		__global __read_only uchar * hp0, // Largest HP
+		__global __read_only uchar * hp1,
+		__global __read_only ushort * hp2,
+		__global __read_only ushort * hp3,
+		__global __read_only ushort * hp4,
+		__global __read_only int * hp5,
 #if SIZE > 64
-		__global int * hp6,
+		__global __read_only int * hp6,
 #endif
 #if SIZE > 128
-		__global int * hp7,
+		__global __read_only int * hp7,
 #endif
 #if SIZE > 256
-		__global int * hp8,
+		__global __read_only int * hp8,
 #endif
 #if SIZE > 512
-		__global int * hp9,
+		__global __read_only int * hp9,
 #endif
 		__global float * VBOBuffer,
 		__private int isolevel,
