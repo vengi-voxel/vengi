@@ -1495,6 +1495,18 @@ bool init() {
 		Log::info("Got FSAA context with %i buffers and %i samples", buffers, samples);
 	}
 
+	int profile;
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile);
+	if (profile == SDL_GL_CONTEXT_PROFILE_CORE) {
+		Log::info("Got core profile");
+	} else if (profile == SDL_GL_CONTEXT_PROFILE_ES) {
+		Log::info("Got ES profile");
+	} else if (profile == SDL_GL_CONTEXT_PROFILE_COMPATIBILITY) {
+		Log::info("Got compatibility profile");
+	} else {
+		Log::warn("Unknown profile: %i", profile);
+	}
+
 	if (multisampling) {
 		video::enable(video::State::MultiSample);
 	}
