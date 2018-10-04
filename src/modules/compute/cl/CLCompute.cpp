@@ -912,7 +912,10 @@ bool init() {
 		contextProperties.push_back(v);
 	}
 	contextProperties.push_back(0);
-	error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_DEFAULT, 1, &_priv::_ctx.deviceId, nullptr);
+	error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_GPU, 1, &_priv::_ctx.deviceId, nullptr);
+	if (error == CL_DEVICE_NOT_FOUND) {
+		error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_DEFAULT, 1, &_priv::_ctx.deviceId, nullptr);
+	}
 	_priv::checkError(error);
 	if (error != CL_SUCCESS) {
 		Log::error("Failed to query the device");
