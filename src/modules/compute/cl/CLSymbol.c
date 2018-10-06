@@ -126,17 +126,17 @@ void computeCLShutdown() {
 
 #if defined(__MACOSX__)
 static const char *default_so_paths[] = {
-	"libOpenCL.so",
-	"/System/Library/Frameworks/OpenCL.framework/OpenCL"
+	"/System/Library/Frameworks/OpenCL.framework/OpenCL",
+	"libOpenCL.so"
 };
 #elif defined(__ANDROID__)
 static const char *default_so_paths[] = {
+	"libOpenCL.so",
 	"/system/lib/libOpenCL.so",
 	"/system/vendor/lib/libOpenCL.so",
 	"/system/vendor/lib/egl/libGLES_mali.so",
 	"/system/vendor/lib/libPVROCL.so",
-	"/data/data/org.pocl.libs/files/lib/libpocl.so",
-	"libOpenCL.so"
+	"/data/data/org.pocl.libs/files/lib/libpocl.so"
 };
 #elif defined(__WINDOWS__)
 static const char *default_so_paths[] = {
@@ -145,8 +145,9 @@ static const char *default_so_paths[] = {
 #elif defined(__LINUX__)
 static const char *default_so_paths[] = {
 	"libOpenCL.so",
+	"libOpenCL.so.0",
 	"libOpenCL.so.1",
-	"libpocl.so"
+	"libOpenCL.so.2"
 };
 #else
 #error "Unsupported platform"
