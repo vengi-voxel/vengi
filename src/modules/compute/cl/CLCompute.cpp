@@ -924,7 +924,7 @@ bool init() {
 		cl_device_id interopDevice = nullptr;
 		error = clGetGLContextInfoKHR(contextProperties.data(), CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &interopDevice, nullptr);
 		_priv::checkError(error);
-		if (error == CL_SUCCESS && _priv::_ctx.deviceId != interopDevice) {
+		if (error == CL_SUCCESS && _priv::_ctx.deviceId != interopDevice && interopDevice != nullptr) {
 			Log::info("Use new device as gl/cl interop");
 			_priv::_ctx.deviceId = interopDevice;
 		}
