@@ -899,8 +899,8 @@ bool init() {
 		}
 		_priv::checkError(error);
 		if (error != CL_SUCCESS) {
-			Log::error("Failed to query the device");
-			return false;
+			Log::error("Failed to query the device on platform %s", platform.c_str());
+			continue;
 		}
 		Log::info("Use platform %s", platform.c_str());
 		break;
