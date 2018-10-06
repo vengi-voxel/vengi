@@ -911,7 +911,7 @@ bool init() {
 	}
 
 	std::vector<cl_context_properties> contextProperties;
-	contextProperties.reserve(2 + _priv::_ctx.externalProperties.size());
+	contextProperties.reserve(3 + _priv::_ctx.externalProperties.size());
 	contextProperties.push_back(CL_CONTEXT_PLATFORM);
 	contextProperties.push_back((cl_context_properties)_priv::_ctx.platformIds[platformIndex]);
 	core_assert(_priv::_ctx.externalProperties.size() % 2 == 0);
