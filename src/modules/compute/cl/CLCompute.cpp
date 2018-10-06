@@ -902,7 +902,7 @@ bool init() {
 			Log::error("Failed to query the device on platform %s", platform.c_str());
 			continue;
 		}
-		Log::info("Use platform %s", platform.c_str());
+		Log::info("Use platform %s (%i/%i)", platform.c_str(), platformIndex, _priv::_ctx.platformIdCount);
 		break;
 	}
 	if (platformIndex >= _priv::_ctx.platformIdCount) {
@@ -992,14 +992,10 @@ bool init() {
 
 	const cl_context_properties* properties = contextProperties.data();
 	_priv::_ctx.context = clCreateContext(properties, 1, &_priv::_ctx.deviceId, nullptr, nullptr, &error);
-	_priv::checkError(error);
 
 	if (!_priv::_ctx.context) {
 		Log::error("Failed to create the context");
-		return false;
-	}
-	if (!_priv::_ctx.deviceId) {
-		Log::error("Failed to get the default device id");
+		_priv::checkError(error);
 		return false;
 	}
 
