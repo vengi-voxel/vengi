@@ -7,7 +7,7 @@ set(SRCS
 )
 set(LIB compute)
 find_package(OpenCL)
-if (OpenCL_FOUND)
+if (OpenCL_INCLUDE_DIRS)
 	list(APPEND SRCS
 		cl/CL.h
 		cl/CLCompute.cpp cl/CLCompute.h
@@ -31,13 +31,11 @@ if (CUDA_FOUND)
 endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util)
-if (OpenCL_FOUND)
-	if (OpenCL_INCLUDE_DIRS)
-		target_include_directories(${LIB} PRIVATE ${OpenCL_INCLUDE_DIRS})
-	endif()
+if (OpenCL_INCLUDE_DIRS)
+	target_include_directories(${LIB} PRIVATE ${OpenCL_INCLUDE_DIRS})
 endif()
 
-if (NOT OpenCL_FOUND AND NOT CUDA_FOUND)
+if (NOT OpenCL_FOUND AND NOT OpenCL_INCLUDE_DIRS)
 	message(FATAL_ERROR "Neither cuda nor opencl was found")
 endif()
 
