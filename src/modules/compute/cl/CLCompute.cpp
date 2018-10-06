@@ -230,8 +230,8 @@ size_t requiredAlignment() {
 // https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clBuildProgram.html
 bool configureProgram(Id program) {
 	const cl_int error = clBuildProgram((cl_program)program,
-		_priv::_ctx.deviceIdCount,
-		_priv::_ctx.deviceIds.data(),
+		0,
+		nullptr,
 		"-cl-no-signed-zeros -cl-denorms-are-zero -cl-fast-relaxed-math -cl-finite-math-only -Werror",
 		nullptr,
 		nullptr);
