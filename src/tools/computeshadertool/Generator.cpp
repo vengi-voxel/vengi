@@ -52,13 +52,14 @@ static void generateKernelDoxygen(const Kernel& k, std::stringstream& kernels, B
 		if (type == BodyType::Vector) {
 			kernels << " vector with datatype that matches the CL type " << p.type;
 		} else if (type == BodyType::Pointer) {
-			kernels << " buffer that matches the CL type " << p.type;;
-			kernels << "\n\t * @note The base pointer of this vector should be aligned (64 bytes) for optimal performance.\n";
+			kernels << " buffer that matches the CL type " << p.type;
+			kernels << "\n\t * @note The base pointer of this vector should be aligned (64 bytes) for optimal performance.";
 		} else if (type == BodyType::Video) {
 			kernels << " GL vbo";
 		} else if (type == BodyType::Native) {
 			kernels << " Native handle";
 		}
+		kernels << "\n";
 	}
 	kernels << "\t * @param[in] workSize Specify the number of global work-items per dimension (" << k.workDimension << ")\n";
 	kernels << "\t * that will execute the kernel function\n";
