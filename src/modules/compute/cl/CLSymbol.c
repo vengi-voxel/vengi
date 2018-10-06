@@ -371,7 +371,9 @@ int computeCLInit() {
 	clpfEnqueueMarkerWithWaitList = (PFNCLEnqueueMarkerWithWaitList_PROC*)SDL_LoadFunction(obj, "clEnqueueMarkerWithWaitList");
 	clpfEnqueueBarrierWithWaitList = (PFNCLEnqueueBarrierWithWaitList_PROC*)SDL_LoadFunction(obj, "clEnqueueBarrierWithWaitList");
 	clpfGetExtensionFunctionAddressForPlatform = (PFNCLGetExtensionFunctionAddressForPlatform_PROC*)SDL_LoadFunction(obj, "clGetExtensionFunctionAddressForPlatform");
+	// deprecated
 	clpfCreateImage2D = (PFNCLCreateImage2D_PROC*)SDL_LoadFunction(obj, "clCreateImage2D");
+	// deprecated
 	clpfCreateImage3D = (PFNCLCreateImage3D_PROC*)SDL_LoadFunction(obj, "clCreateImage3D");
 	clpfEnqueueMarker = (PFNCLEnqueueMarker_PROC*)SDL_LoadFunction(obj, "clEnqueueMarker");
 	clpfEnqueueWaitForEvents = (PFNCLEnqueueWaitForEvents_PROC*)SDL_LoadFunction(obj, "clEnqueueWaitForEvents");
@@ -384,11 +386,11 @@ int computeCLInit() {
 	clpfGetGLTextureInfo = (PFNCLGetGLTextureInfo_PROC*)SDL_LoadFunction(obj, "clGetGLTextureInfo");
 	clpfEnqueueAcquireGLObjects = (PFNCLEnqueueAcquireGLObjects_PROC*)SDL_LoadFunction(obj, "clEnqueueAcquireGLObjects");
 	clpfEnqueueReleaseGLObjects = (PFNCLEnqueueReleaseGLObjects_PROC*)SDL_LoadFunction(obj, "clEnqueueReleaseGLObjects");
+	// deprecated
 	clpfCreateFromGLTexture2D = (PFNCLCreateFromGLTexture2D_PROC*)SDL_LoadFunction(obj, "clCreateFromGLTexture2D");
+	// deprecated
 	clpfCreateFromGLTexture3D = (PFNCLCreateFromGLTexture3D_PROC*)SDL_LoadFunction(obj, "clCreateFromGLTexture3D");
-#if cl_khr_gl_sharing
 	clpfGetGLContextInfoKHR = (PFNCLGetGLContextInfoKHR_PROC*)SDL_LoadFunction(obj, "clGetGLContextInfoKHR");
-#endif
 
 	if (clGetPlatformIDs == NULL) {
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Given OpenCL library doesn't contain needed symbols");
@@ -496,9 +498,7 @@ PFNCLEnqueueAcquireGLObjects_PROC* clpfEnqueueAcquireGLObjects = NULL;
 PFNCLEnqueueReleaseGLObjects_PROC* clpfEnqueueReleaseGLObjects = NULL;
 PFNCLCreateFromGLTexture2D_PROC* clpfCreateFromGLTexture2D = NULL;
 PFNCLCreateFromGLTexture3D_PROC* clpfCreateFromGLTexture3D = NULL;
-#if cl_khr_gl_sharing
 PFNCLGetGLContextInfoKHR_PROC* clpfGetGLContextInfoKHR = NULL;
-#endif
 
 #ifdef __cplusplus
 }

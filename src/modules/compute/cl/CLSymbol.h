@@ -352,9 +352,7 @@ CLAPI PFNCLGetGLContextInfoKHR_PROC* clpfGetGLContextInfoKHR;
 #define clEnqueueReleaseGLObjects clpfEnqueueReleaseGLObjects
 #define clCreateFromGLTexture2D clpfCreateFromGLTexture2D
 #define clCreateFromGLTexture3D clpfCreateFromGLTexture3D
-#if cl_khr_gl_sharing
 #define clGetGLContextInfoKHR clpfGetGLContextInfoKHR
-#endif
 
 #ifdef __cplusplus
 }
