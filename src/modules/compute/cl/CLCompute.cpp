@@ -953,7 +953,12 @@ bool init() {
 		for (const auto& e : extensionsVec) {
 			Log::info("ext: %s", e.c_str());
 		}
+
+#if defined (__APPLE__)
+		_priv::_ctx.features[std::enum_value(Feature::VideoSharingEvent)] = extensionSupported(extensions.get(), "cl_APPLE_gl_sharing");
+#else
 		_priv::_ctx.features[std::enum_value(Feature::VideoSharingEvent)] = extensionSupported(extensions.get(), "cl_khr_gl_event");
+#endif
 		_priv::_ctx.features[std::enum_value(Feature::VideoSharing)] = extensionSupported(extensions.get(), "cl_khr_gl_sharing");
 		_priv::_ctx.features[std::enum_value(Feature::Write3dTextures)] = extensionSupported(extensions.get(), "cl_khr_3d_image_writes");
 	}
