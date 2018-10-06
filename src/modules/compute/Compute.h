@@ -28,6 +28,7 @@ namespace compute {
 
 enum class Feature {
 	VideoSharing,
+	VideoSharingEvent,
 	Write3dTextures,
 
 	Max

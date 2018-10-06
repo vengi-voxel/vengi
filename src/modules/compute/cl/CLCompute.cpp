@@ -865,7 +865,6 @@ bool init() {
 		return false;
 	}
 
-	Log::info("Found %u platform(s)", _priv::_ctx.platformIdCount);
 	_priv::_ctx.platformIds.reserve(_priv::_ctx.platformIdCount);
 	error = clGetPlatformIDs(_priv::_ctx.platformIdCount,
 			_priv::_ctx.platformIds.data(), nullptr);
@@ -875,50 +874,39 @@ bool init() {
 		return false;
 	}
 
-	for (cl_uint i = 0; i < _priv::_ctx.platformIdCount; ++i) {
-		const std::string& platform = getPlatformName(_priv::_ctx.platformIds[i]);
-		Log::info("* (%i): %s", i + 1, platform.c_str());
-	}
-
 	cl_uint platformIndex = 0;
 	for (; platformIndex < _priv::_ctx.platformIdCount; ++platformIndex) {
+		const std::string& platform = getPlatformName(_priv::_ctx.platformIds[platformIndex]);
 		error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_ALL, 0,
 				nullptr, &_priv::_ctx.deviceIdCount);
 		if (error != CL_DEVICE_NOT_FOUND) {
 			_priv::checkError(error);
 		}
 
+		Log::info("Found %u device(s) on platform %s", _priv::_ctx.deviceIdCount, platform.c_str());
 		if (_priv::_ctx.deviceIdCount == 0u) {
-			Log::info("No devices found for platform");
 			continue;
 		}
-		Log::info("Found %u device(s)", _priv::_ctx.deviceIdCount);
+
+		_priv::_ctx.deviceIds.reserve(_priv::_ctx.deviceIdCount);
+		error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_ALL,
+				_priv::_ctx.deviceIdCount, _priv::_ctx.deviceIds.data(), nullptr);
+		_priv::checkError(error);
+
+		error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_GPU, 1, &_priv::_ctx.deviceId, nullptr);
+		if (error == CL_DEVICE_NOT_FOUND) {
+			error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_DEFAULT, 1, &_priv::_ctx.deviceId, nullptr);
+		}
+		_priv::checkError(error);
+		if (error != CL_SUCCESS) {
+			Log::error("Failed to query the device");
+			return false;
+		}
+		Log::info("Use platform %s", platform.c_str());
 		break;
 	}
-	if (platformIndex == _priv::_ctx.platformIdCount) {
-		Log::debug("No OpenCL devices found");
-		return false;
-	}
-
-	_priv::_ctx.deviceIds.reserve(_priv::_ctx.deviceIdCount);
-	error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_ALL,
-			_priv::_ctx.deviceIdCount, _priv::_ctx.deviceIds.data(), nullptr);
-	_priv::checkError(error);
-
-	std::vector<cl_context_properties> contextProperties;
-	contextProperties.push_back(CL_CONTEXT_PLATFORM);
-	contextProperties.push_back((cl_context_properties)_priv::_ctx.platformIds[platformIndex]);
-	for (auto& v : _priv::_ctx.externalProperties) {
-		contextProperties.push_back(v);
-	}
-	contextProperties.push_back(0);
-	error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_GPU, 1, &_priv::_ctx.deviceId, nullptr);
-	if (error == CL_DEVICE_NOT_FOUND) {
-		error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_DEFAULT, 1, &_priv::_ctx.deviceId, nullptr);
-	}
-	_priv::checkError(error);
-	if (error != CL_SUCCESS) {
-		Log::error("Failed to query the device");
+	if (platformIndex >= _priv::_ctx.platformIdCount) {
+		Log::debug("No valid OpenCL devices found");
 		return false;
 	}
 
@@ -945,28 +933,9 @@ bool init() {
 		for (const auto& e : extensionsVec) {
 			Log::info("ext: %s", e.c_str());
 		}
-
+		_priv::_ctx.features[std::enum_value(Feature::VideoSharingEvent)] = extensionSupported(extensions.get(), "cl_khr_gl_event");
 		_priv::_ctx.features[std::enum_value(Feature::VideoSharing)] = extensionSupported(extensions.get(), "cl_khr_gl_sharing");
 		_priv::_ctx.features[std::enum_value(Feature::Write3dTextures)] = extensionSupported(extensions.get(), "cl_khr_3d_image_writes");
-	}
-
-	error = clGetPlatformInfo(_priv::_ctx.platformIds[platformIndex], CL_PLATFORM_EXTENSIONS, 0, nullptr, &extensionSize);
-	_priv::checkError(error);
-	if (extensionSize > 0) {
-		std::unique_ptr<char[]> extensions(new char[extensionSize + 1]);
-		error = clGetPlatformInfo(_priv::_ctx.platformIds[platformIndex], CL_PLATFORM_EXTENSIONS, extensionSize, (void*)extensions.get(), &extensionSize);
-		_priv::checkError(error);
-		std::string extensionsStr = extensions.get();
-
-		Log::info("OpenCL platform extensions:");
-		std::vector<std::string> extensionsVec;
-		core::string::splitString(extensionsStr, extensionsVec, " ");
-		for (const auto& e : extensionsVec) {
-			Log::info("ext: %s", e.c_str());
-		}
-
-		_priv::_ctx.features[std::enum_value(Feature::VideoSharing)] |= extensionSupported(extensions.get(), "cl_khr_gl_sharing");
-		_priv::_ctx.features[std::enum_value(Feature::Write3dTextures)] |= extensionSupported(extensions.get(), "cl_khr_3d_image_writes");
 	}
 
 	if (_priv::_ctx.useGL && !hasFeature(Feature::VideoSharing)) {
@@ -995,6 +964,17 @@ bool init() {
 	Log::debug("Device memory alignment: %u", _priv::_ctx.alignment);
 
 	error = CL_SUCCESS;
+
+	std::vector<cl_context_properties> contextProperties;
+	contextProperties.reserve(2 + _priv::_ctx.externalProperties.size());
+	contextProperties.push_back(CL_CONTEXT_PLATFORM);
+	contextProperties.push_back((cl_context_properties)_priv::_ctx.platformIds[platformIndex]);
+	core_assert(_priv::_ctx.externalProperties.size() % 2 == 0);
+	for (auto& v : _priv::_ctx.externalProperties) {
+		contextProperties.push_back(v);
+	}
+	contextProperties.push_back(0);
+
 	const cl_context_properties* properties = contextProperties.data();
 	_priv::_ctx.context = clCreateContext(properties, 1, &_priv::_ctx.deviceId, nullptr, nullptr, &error);
 	_priv::checkError(error);
