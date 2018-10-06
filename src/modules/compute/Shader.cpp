@@ -60,6 +60,7 @@ void Shader::shutdown() {
 bool Shader::load(const std::string& name, const std::string& buffer) {
 	core_assert(_initialized);
 	_name = name;
+	Log::info("Load compute shader %s", name.c_str());
 	const std::string& source = getSource(buffer);
 	_program = compute::createProgram(source);
 	if (_program == InvalidId) {

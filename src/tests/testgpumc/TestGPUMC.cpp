@@ -89,14 +89,18 @@ core::AppState TestGPUMC::onInit() {
 	}
 
 	_computeShader.addDefine("SIZE", std::to_string(SIZE));
-	_computeShaderBuffer.addDefine("SIZE", std::to_string(SIZE));
 	if (!_computeShader.setup()) {
 		Log::error("Failed to init compute shader for using 3d textures");
-		return core::AppState::InitFailure;
+		if (_writingTo3DTextures) {
+			return core::AppState::InitFailure;
+		}
 	}
+	_computeShaderBuffer.addDefine("SIZE", std::to_string(SIZE));
 	if (!_computeShaderBuffer.setup()) {
 		Log::error("Failed to init compute shader for using buffer");
-		return core::AppState::InitFailure;
+		if (!_writingTo3DTextures) {
+			return core::AppState::InitFailure;
+		}
 	}
 
 	if (_writingTo3DTextures) {
