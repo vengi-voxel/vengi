@@ -910,6 +910,26 @@ bool init() {
 		return false;
 	}
 
+	std::vector<cl_context_properties> contextProperties;
+	contextProperties.reserve(2 + _priv::_ctx.externalProperties.size());
+	contextProperties.push_back(CL_CONTEXT_PLATFORM);
+	contextProperties.push_back((cl_context_properties)_priv::_ctx.platformIds[platformIndex]);
+	core_assert(_priv::_ctx.externalProperties.size() % 2 == 0);
+	for (auto& v : _priv::_ctx.externalProperties) {
+		contextProperties.push_back(v);
+	}
+	contextProperties.push_back(0);
+
+	if (_priv::_ctx.useGL && clGetGLContextInfoKHR) {
+		cl_device_id interopDevice;
+		error = clGetGLContextInfoKHR(contextProperties.data(), CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &interopDevice, nullptr);
+		_priv::checkError(error);
+		if (error == CL_SUCCESS) {
+			Log::info("Use new device as gl/cl interop");
+			_priv::_ctx.deviceId = interopDevice;
+		}
+	}
+
 	const std::string& device = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_NAME);
 	const std::string& vendor = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_VENDOR);
 	const std::string& version = getDeviceInfo(_priv::_ctx.deviceId, CL_DRIVER_VERSION);
@@ -964,16 +984,6 @@ bool init() {
 	Log::debug("Device memory alignment: %u", _priv::_ctx.alignment);
 
 	error = CL_SUCCESS;
-
-	std::vector<cl_context_properties> contextProperties;
-	contextProperties.reserve(2 + _priv::_ctx.externalProperties.size());
-	contextProperties.push_back(CL_CONTEXT_PLATFORM);
-	contextProperties.push_back((cl_context_properties)_priv::_ctx.platformIds[platformIndex]);
-	core_assert(_priv::_ctx.externalProperties.size() % 2 == 0);
-	for (auto& v : _priv::_ctx.externalProperties) {
-		contextProperties.push_back(v);
-	}
-	contextProperties.push_back(0);
 
 	const cl_context_properties* properties = contextProperties.data();
 	_priv::_ctx.context = clCreateContext(properties, 1, &_priv::_ctx.deviceId, nullptr, nullptr, &error);
