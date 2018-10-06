@@ -912,16 +912,16 @@ bool init() {
 
 	std::vector<cl_context_properties> contextProperties;
 	contextProperties.reserve(3 + _priv::_ctx.externalProperties.size());
-	contextProperties.push_back(CL_CONTEXT_PLATFORM);
-	contextProperties.push_back((cl_context_properties)_priv::_ctx.platformIds[platformIndex]);
 	core_assert(_priv::_ctx.externalProperties.size() % 2 == 0);
 	for (auto& v : _priv::_ctx.externalProperties) {
 		contextProperties.push_back(v);
 	}
+	contextProperties.push_back(CL_CONTEXT_PLATFORM);
+	contextProperties.push_back((cl_context_properties)_priv::_ctx.platformIds[platformIndex]);
 	contextProperties.push_back(0);
 
 	if (_priv::_ctx.useGL && clGetGLContextInfoKHR) {
-		cl_device_id interopDevice;
+		cl_device_id interopDevice = nullptr;
 		error = clGetGLContextInfoKHR(contextProperties.data(), CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &interopDevice, nullptr);
 		_priv::checkError(error);
 		if (error == CL_SUCCESS && _priv::_ctx.deviceId != interopDevice) {
