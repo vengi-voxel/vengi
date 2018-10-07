@@ -777,6 +777,11 @@ void flush() {
 	checkError();
 }
 
+void finish() {
+	glFinish();
+	checkError();
+}
+
 bool endOcclusionQuery(Id id) {
 	if (_priv::s.occlusionQuery != id || id == InvalidId) {
 		return false;

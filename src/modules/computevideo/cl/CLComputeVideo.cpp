@@ -445,6 +445,7 @@ compute::Id createTexture(compute::BufferFlag flags, video::Texture& texture) {
  * CL_OUT_OF_HOST_MEMORY if there is a failure to allocate resources required by the OpenCL implementation on the host.
  */
 bool enqueueAcquire(compute::Id id) {
+	video::finish();
 	const cl_int error = clEnqueueAcquireGLObjects(compute::_priv::_ctx.commandQueue, 1, (cl_mem*)&id, 0, nullptr, nullptr);
 	if (error == CL_SUCCESS) {
 		return true;

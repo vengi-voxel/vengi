@@ -335,6 +335,7 @@ extern bool runShader(Id program, const glm::uvec3& workGroups, bool wait = fals
 extern int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name);
 extern int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string& name);
 extern void flush();
+extern void finish();
 
 extern bool beginTransformFeedback(Primitive primitive);
 extern void pauseTransformFeedback();
