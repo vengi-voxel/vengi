@@ -25,9 +25,6 @@ else()
 			cuda/CUDACompute.cpp cuda/CUDACompute.h
 			cuda/CUDATypes.h
 		)
-		if (CUDA_TOOLKIT_INCLUDE)
-			target_include_directories(${LIB} PRIVATE ${CUDA_TOOLKIT_INCLUDE})
-		endif()
 	endif()
 endif()
 
@@ -40,6 +37,9 @@ endif()
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util)
 if (OpenCL_INCLUDE_DIRS)
 	target_include_directories(${LIB} PRIVATE ${OpenCL_INCLUDE_DIRS})
+endif()
+if (CUDA_TOOLKIT_INCLUDE)
+	target_include_directories(${LIB} PRIVATE ${CUDA_TOOLKIT_INCLUDE})
 endif()
 
 set(TEST_SRCS
