@@ -125,8 +125,6 @@ Currently only voxedit makes use of this library.
 # Compute module (opencl)
 
 - Support adding `#pragma unroll` automatically?
-- Support opencl data types - `image2d_t`, `sampler_t`
-- `clEnqueueWriteImage` and friends
 
 # LUA
 
@@ -154,13 +152,6 @@ doing one query per chunk is most likely a little bit overkill.
 
 - build docker images
 - set up kubernetes manifests
-
-# File handling / installation
-
-## keybinding cfg
-
-* move all visual test configs into one file and load a default one in testcore::TestApp
-* module related tests might need data, too. Find a good way to let the dependency tree automatically figure out which files must be installed.
 
 # VoxEdit
 
