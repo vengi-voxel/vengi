@@ -96,7 +96,7 @@ std::pair<std::string, bool> ShaderTool::getSource(const std::string& file) cons
 	while (core::string::contains(src, "#include")) {
 		const std::pair<std::string, bool>& ret = util::handleIncludes(src, _includeDirs);
 		src = ret.first;
-		success |= ret.second;
+		success &= ret.second;
 		++level;
 		if (level >= 10) {
 			Log::warn("Abort shader include loop for %s", file.c_str());
