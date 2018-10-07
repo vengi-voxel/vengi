@@ -912,6 +912,7 @@ bool init() {
 
 	std::vector<cl_context_properties> contextProperties;
 	contextProperties.reserve(3 + _priv::_ctx.externalProperties.size());
+	// e.g. contributed properties by the computevideo submodule if you want to have gl-cl sharing
 	core_assert(_priv::_ctx.externalProperties.size() % 2 == 0);
 	for (auto& v : _priv::_ctx.externalProperties) {
 		contextProperties.push_back(v);
