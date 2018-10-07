@@ -992,7 +992,9 @@ bool init() {
 
 	const cl_context_properties* properties = contextProperties.data();
 	_priv::_ctx.context = clCreateContext(properties, 1, &_priv::_ctx.deviceId, nullptr, nullptr, &error);
-
+	if (_priv::_ctx.useGL && error != CL_SUCCESS) {
+		_priv::_ctx.context = clCreateContextFromType(properties, CL_DEVICE_TYPE_GPU, nullptr, nullptr, &error);
+	}
 	if (!_priv::_ctx.context) {
 		Log::error("Failed to create the context");
 		_priv::checkError(error);
