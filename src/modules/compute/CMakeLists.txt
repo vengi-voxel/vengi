@@ -16,27 +16,30 @@ if (OpenCL_INCLUDE_DIRS)
 		cl/CLSymbol.c cl/CLSymbol.h
 	)
 	set(OPENCL_LIBRARY ${OpenCL_LIBRARY})
+else()
+	# if opencl wasn't found, cuda might take over
+	find_package(CUDA)
+	if (CUDA_FOUND)
+		list(APPEND SRCS
+			cuda/CUDA.h
+			cuda/CUDACompute.cpp cuda/CUDACompute.h
+			cuda/CUDATypes.h
+		)
+		if (CUDA_TOOLKIT_INCLUDE)
+			target_include_directories(${LIB} PRIVATE ${CUDA_TOOLKIT_INCLUDE})
+		endif()
+	endif()
 endif()
 
-find_package(CUDA)
-if (CUDA_FOUND)
+if (NOT OpenCL_FOUND AND NOT OpenCL_INCLUDE_DIRS)
 	list(APPEND SRCS
-		cuda/CUDA.h
-		cuda/CUDACompute.cpp cuda/CUDACompute.h
-		cuda/CUDATypes.h
+		dummy/DummyCompute.cpp
 	)
-	if (CUDA_TOOLKIT_INCLUDE)
-		target_include_directories(${LIB} PRIVATE ${CUDA_TOOLKIT_INCLUDE})
-	endif()
 endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util)
 if (OpenCL_INCLUDE_DIRS)
 	target_include_directories(${LIB} PRIVATE ${OpenCL_INCLUDE_DIRS})
-endif()
-
-if (NOT OpenCL_FOUND AND NOT OpenCL_INCLUDE_DIRS)
-	message(FATAL_ERROR "Neither cuda nor opencl was found")
 endif()
 
 set(TEST_SRCS

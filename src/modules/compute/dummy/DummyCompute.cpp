@@ -1,21 +1,9 @@
 /**
  * @file
+ *
+ * @ingroup Compute
  */
-#pragma once
-
-#include <SDL_platform.h>
-#include "compute/Compute.h"
-#include "CUDATypes.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "cuda.h"
-
-#ifdef __cplusplus
-}
-#endif
+#include "Compute.h"
 
 namespace compute {
 
