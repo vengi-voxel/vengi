@@ -27,7 +27,7 @@ std::pair<std::string, bool> handleIncludes(const std::string& buffer, const std
 		}
 		for (; i != buffer.end(); ++i, ++index) {
 			const char *cStart = &buffer[index];
-			if (*cStart != '"') {
+			if (*cStart != '"' && *cStart != '<') {
 				continue;
 			}
 
@@ -36,7 +36,7 @@ std::pair<std::string, bool> handleIncludes(const std::string& buffer, const std
 			const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
 			for (; i != buffer.end(); ++i, ++index) {
 				const char *cEnd = &buffer[index];
-				if (*cEnd != '"') {
+				if (*cEnd != '"' && *cEnd != '>') {
 					continue;
 				}
 
