@@ -61,64 +61,30 @@ void TestShapeBuilder::onRenderUI() {
 	glm::vec3& scale = _scale[_meshCount];
 	_shapeBuilder.setPosition(pos);
 
-	ImGui::SetNextWindowSize(ImVec2(540, 300));
 	ImGui::Begin("Actions and Settings");
 
+	ImGui::Text("General settings");
+	ImGui::Indent();
 	ImGui::ColorEdit4("color", glm::value_ptr(_color), false);
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("x", &pos.x);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("y", &pos.y);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("z", &pos.z);
+	ImGui::InputInt3("pos", glm::value_ptr(pos));
+	ImGui::InputFloat3("scale", glm::value_ptr(scale));
+	ImGui::Unindent();
 
-	ImGui::PushItemWidth(width);
-	ImGui::InputFloat("sx", &scale.x);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputFloat("sy", &scale.y);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputFloat("sz", &scale.z);
-
-	int numSlices = 5;
-	int numStacks = 4;
-	float radius = 20.0f;
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("slices", &numSlices);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("stacks", &numStacks);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputFloat("radius", &radius);
-	ImGui::SameLine();
+	ImGui::Text("Sphere");
+	ImGui::Indent();
+	ImGui::InputInt("slices", &_sphere.numSlices);
+	ImGui::InputInt("stacks", &_sphere.numStacks);
+	ImGui::InputFloat("radius", &_sphere.radius);
 	if (ImGui::Button("Sphere")) {
-		_shapeBuilder.sphere(numSlices, numStacks, radius);
+		_shapeBuilder.sphere(_sphere.numSlices, _sphere.numStacks, _sphere.radius);
 		buildMesh = true;
 	}
-	ImGui::Separator();
+	ImGui::Unindent();
 
-	ImGui::PushItemWidth(width);
-	ImGui::InputFloat("mins.x", &_mins.x);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputFloat("mins.y", &_mins.y);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputFloat("mins.z", &_mins.z);
-
-	ImGui::PushItemWidth(width);
-	ImGui::InputFloat("maxs.x", &_maxs.x);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputFloat("maxs.y", &_maxs.y);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputFloat("maxs.z", &_maxs.z);
-
+	ImGui::Text("Cube");
+	ImGui::Indent();
+	ImGui::InputFloat3("Mins", glm::value_ptr(_mins));
+	ImGui::InputFloat3("Maxs", glm::value_ptr(_maxs));
 	if (ImGui::Button("Cube")) {
 		_shapeBuilder.cube(_mins, _maxs);
 		buildMesh = true;
@@ -134,30 +100,48 @@ void TestShapeBuilder::onRenderUI() {
 		_shapeBuilder.aabb(math::AABB<float>(_mins, _maxs));
 		buildMesh = true;
 	}
+	ImGui::Unindent();
 
-	ImGui::Checkbox("Near plane", &_near);
-	ImGui::SameLine();
-	ImGui::InputFloat("Step width", &_stepWidth);
-	if (ImGui::Button("AABB Grid XY")) {
-		_shapeBuilder.aabbGridXY(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
+	if (ImGui::CollapsingHeader("AABB grid", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		ImGui::Checkbox("Near plane", &_near);
+		ImGui::InputFloat("Step width", &_stepWidth);
+		if (ImGui::Button("AABB Grid XY")) {
+			_shapeBuilder.aabbGridXY(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
+			buildMesh = true;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("AABB Grid XZ")) {
+			_shapeBuilder.aabbGridXZ(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
+			buildMesh = true;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("AABB Grid YZ")) {
+			_shapeBuilder.aabbGridYZ(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
+			buildMesh = true;
+		}
+	}
+
+	if (ImGui::Button("Line")) {
+		_shapeBuilder.line(_mins, _maxs);
 		buildMesh = true;
 	}
-	ImGui::SameLine();
-	if (ImGui::Button("AABB Grid XZ")) {
-		_shapeBuilder.aabbGridXZ(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
+
+	if (ImGui::Button("Pyramid")) {
+		_shapeBuilder.pyramid(scale);
 		buildMesh = true;
 	}
-	ImGui::SameLine();
-	if (ImGui::Button("AABB Grid YZ")) {
-		_shapeBuilder.aabbGridYZ(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
+
+	if (ImGui::Button("Axis")) {
+		_shapeBuilder.axis(scale);
 		buildMesh = true;
 	}
-	ImGui::Separator();
 
 	if (buildMesh && _meshCount < lengthof(_meshes)) {
 		_meshes[_meshCount] = _shapeRenderer.create(_shapeBuilder);
 		if (_meshes[_meshCount] != -1) {
 			++_meshCount;
+			_position[_meshCount] = _position[_meshCount - 1];
+			_scale[_meshCount] = _scale[_meshCount - 1];
 		}
 	}
 

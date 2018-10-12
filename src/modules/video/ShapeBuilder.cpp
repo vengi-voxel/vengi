@@ -52,6 +52,13 @@ void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float st
 	}
 }
 
+void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end) {
+	setPrimitive(Primitive::Lines);
+	reserve(2);
+	addIndex(addVertex(start));
+	addIndex(addVertex(end));
+}
+
 void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs) {
 	setPrimitive(Primitive::Triangles);
 
@@ -258,6 +265,33 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 	addIndex(startIndex + 5);
 }
 
+void ShapeBuilder::pyramid(const glm::vec3& size) {
+	setPrimitive(Primitive::Triangles);
+
+	reserve(12);
+
+	const glm::vec3& tip = glm::vec3(_position.x, _position.y + size.y, _position.z);
+	const glm::vec3& vlfl = glm::vec3(_position.x - size.x, _position.y, _position.z + size.z);
+	const glm::vec3& vlfr = glm::vec3(_position.x + size.x, _position.y, _position.z + size.z);
+	const glm::vec3& vlbl = glm::vec3(_position.x - size.x, _position.y, _position.z - size.z);
+	const glm::vec3& vlbr = glm::vec3(_position.x + size.x, _position.y, _position.z - size.z);
+	addIndex(addVertex(tip));
+	addIndex(addVertex(vlfl));
+	addIndex(addVertex(vlfr));
+
+	addIndex(addVertex(tip));
+	addIndex(addVertex(vlbl));
+	addIndex(addVertex(vlbr));
+
+	addIndex(addVertex(tip));
+	addIndex(addVertex(vlbl));
+	addIndex(addVertex(vlfl));
+
+	addIndex(addVertex(tip));
+	addIndex(addVertex(vlbr));
+	addIndex(addVertex(vlfr));
+}
+
 void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	setPrimitive(Primitive::Lines);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
@@ -311,16 +345,16 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	}
 }
 
-void ShapeBuilder::axis(float scale) {
+void ShapeBuilder::axis(const glm::vec3& scale) {
 	setPrimitive(Primitive::Lines);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	const glm::vec3 verticesAxis[] = {
-			 glm::vec3( 0.0f,   0.0f,   0.0f),
-			 glm::vec3(scale,   0.0f,   0.0f),
-			 glm::vec3( 0.0f,   0.0f,   0.0f),
-			 glm::vec3( 0.0f,  scale,   0.0f),
-			 glm::vec3( 0.0f,   0.0f,   0.0f),
-			 glm::vec3( 0.0f,   0.0f,  scale)};
+			 glm::vec3(_position.x,           _position.y,           _position.z),
+			 glm::vec3(_position.x + scale.x, _position.y,           _position.z),
+			 glm::vec3(_position.x,           _position.y,           _position.z),
+			 glm::vec3(_position.x,           _position.y + scale.y, _position.z),
+			 glm::vec3(_position.x,           _position.y,           _position.z),
+			 glm::vec3(_position.x,           _position.y,           _position.z + scale.z)};
 
 	reserve(SDL_arraysize(verticesAxis));
 

@@ -89,6 +89,8 @@ public:
 
 	void cube(const glm::vec3& mins, const glm::vec3& maxs);
 
+	void line(const glm::vec3& start, const glm::vec3& end);
+
 	void aabb(const math::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
 	void aabb(const math::AABB<int>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
 	/**
@@ -98,6 +100,7 @@ public:
 	void frustum(const Camera& camera, int splitFrustum = 0);
 	void geom(const std::vector<glm::vec3>& vert, const std::vector<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
 	void plane(const math::Plane& plane, bool normal);
+	void pyramid(const glm::vec3& size = glm::one<glm::vec3>());
 	/**
 	 * Geometry layout for spheres is as follows (for 5 slices, 4 stacks):
 	 *
@@ -116,7 +119,8 @@ public:
 	 * +  +  +  +  +  +        south pole
 	 */
 	void sphere(int numSlices, int numStacks, float radius);
-	void axis(float scale);
+	void axis(float scale) { axis(glm::vec3(scale)); }
+	void axis(const glm::vec3& scale);
 	/**
 	 * @brief Frees the memory
 	 */

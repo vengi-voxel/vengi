@@ -23,6 +23,11 @@ private:
 	glm::vec3 _maxs { 10.0f,  10.0f,  10.0f};
 	int _meshes[render::ShapeRenderer::MAX_MESHES] {-1};
 	int _meshUnitCube = -1;
+	struct {
+		int numSlices = 5;
+		int numStacks = 4;
+		float radius = 20.0f;
+	} _sphere;
 
 	void doRender() override;
 	void onRenderUI() override;
