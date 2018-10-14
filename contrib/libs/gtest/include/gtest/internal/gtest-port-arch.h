@@ -38,14 +38,15 @@
 // Determines the platform on which Google Test is compiled.
 #ifdef __CYGWIN__
 # define GTEST_OS_CYGWIN 1
+# elif defined(__MINGW__) || defined(__MINGW32__) || defined(__MINGW64__)
+#  define GTEST_OS_WINDOWS_MINGW 1
+#  define GTEST_OS_WINDOWS 1
 #elif defined __SYMBIAN32__
 # define GTEST_OS_SYMBIAN 1
 #elif defined _WIN32
 # define GTEST_OS_WINDOWS 1
 # ifdef _WIN32_WCE
 #  define GTEST_OS_WINDOWS_MOBILE 1
-# elif defined(__MINGW__) || defined(__MINGW32__)
-#  define GTEST_OS_WINDOWS_MINGW 1
 # elif defined(WINAPI_FAMILY)
 #  include <winapifamily.h>
 #  if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
@@ -65,6 +66,8 @@
 # else
 #  define GTEST_OS_WINDOWS_DESKTOP 1
 # endif  // _WIN32_WCE
+#elif defined __OS2__
+# define GTEST_OS_OS2 1
 #elif defined __APPLE__
 # define GTEST_OS_MAC 1
 # if TARGET_OS_IPHONE

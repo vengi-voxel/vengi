@@ -587,8 +587,8 @@ GTEST_DISABLE_MSC_WARNINGS_POP_()  //  4251
 // returns NULL if no comma is found in 'str'.
 inline const char* SkipComma(const char* str) {
   const char* comma = strchr(str, ',');
-  if (comma == NULL) {
-    return NULL;
+  if (comma == nullptr) {
+    return nullptr;
   }
   while (IsSpace(*(++comma))) {}
   return comma;
@@ -598,13 +598,44 @@ inline const char* SkipComma(const char* str) {
 // the entire string if it contains no comma.
 inline std::string GetPrefixUntilComma(const char* str) {
   const char* comma = strchr(str, ',');
-  return comma == NULL ? str : std::string(str, comma);
+  return comma == nullptr ? str : std::string(str, comma);
 }
 
 // Splits a given string on a given delimiter, populating a given
 // vector with the fields.
 void SplitString(const ::std::string& str, char delimiter,
                  ::std::vector< ::std::string>* dest);
+
+// The default argument to the template below for the case when the user does
+// not provide a name generator.
+struct DefaultNameGenerator {
+  template <typename T>
+  static std::string GetName(int i) {
+    return StreamableToString(i);
+  }
+};
+
+template <typename Provided = DefaultNameGenerator>
+struct NameGeneratorSelector {
+  typedef Provided type;
+};
+
+template <typename NameGenerator>
+void GenerateNamesRecursively(Types0, std::vector<std::string>*, int) {}
+
+template <typename NameGenerator, typename Types>
+void GenerateNamesRecursively(Types, std::vector<std::string>* result, int i) {
+  result->push_back(NameGenerator::template GetName<typename Types::Head>(i));
+  GenerateNamesRecursively<NameGenerator>(typename Types::Tail(), result,
+                                          i + 1);
+}
+
+template <typename NameGenerator, typename Types>
+std::vector<std::string> GenerateNames() {
+  std::vector<std::string> result;
+  GenerateNamesRecursively<NameGenerator>(Types(), &result, 0);
+  return result;
+}
 
 // TypeParameterizedTest<Fixture, TestSel, Types>::Register()
 // registers a list of type-parameterized tests with Google Test.  The
@@ -620,10 +651,10 @@ class TypeParameterizedTest {
   // specified in INSTANTIATE_TYPED_TEST_CASE_P(Prefix, TestCase,
   // Types).  Valid values for 'index' are [0, N - 1] where N is the
   // length of Types.
-  static bool Register(const char* prefix,
-                       const CodeLocation& code_location,
-                       const char* case_name, const char* test_names,
-                       int index) {
+  static bool Register(const char* prefix, const CodeLocation& code_location,
+                       const char* case_name, const char* test_names, int index,
+                       const std::vector<std::string>& type_names =
+                           GenerateNames<DefaultNameGenerator, Types>()) {
     typedef typename Types::Head Type;
     typedef Fixture<Type> FixtureClass;
     typedef typename GTEST_BIND_(TestSel, Type) TestClass;
@@ -631,20 +662,23 @@ class TypeParameterizedTest {
     // First, registers the first type-parameterized test in the type
     // list.
     MakeAndRegisterTestInfo(
-        (std::string(prefix) + (prefix[0] == '\0' ? "" : "/") + case_name + "/"
-         + StreamableToString(index)).c_str(),
+        (std::string(prefix) + (prefix[0] == '\0' ? "" : "/") + case_name +
+         "/" + type_names[index])
+            .c_str(),
         StripTrailingSpaces(GetPrefixUntilComma(test_names)).c_str(),
         GetTypeName<Type>().c_str(),
-        NULL,  // No value parameter.
-        code_location,
-        GetTypeId<FixtureClass>(),
-        TestClass::SetUpTestCase,
-        TestClass::TearDownTestCase,
-        new TestFactoryImpl<TestClass>);
+        nullptr,  // No value parameter.
+        code_location, GetTypeId<FixtureClass>(), TestClass::SetUpTestCase,
+        TestClass::TearDownTestCase, new TestFactoryImpl<TestClass>);
 
     // Next, recurses (at compile time) with the tail of the type list.
-    return TypeParameterizedTest<Fixture, TestSel, typename Types::Tail>
-        ::Register(prefix, code_location, case_name, test_names, index + 1);
+    return TypeParameterizedTest<Fixture, TestSel,
+                                 typename Types::Tail>::Register(prefix,
+                                                                 code_location,
+                                                                 case_name,
+                                                                 test_names,
+                                                                 index + 1,
+                                                                 type_names);
   }
 };
 
@@ -654,7 +688,9 @@ class TypeParameterizedTest<Fixture, TestSel, Types0> {
  public:
   static bool Register(const char* /*prefix*/, const CodeLocation&,
                        const char* /*case_name*/, const char* /*test_names*/,
-                       int /*index*/) {
+                       int /*index*/,
+                       const std::vector<std::string>& =
+                           std::vector<std::string>() /*type_names*/) {
     return true;
   }
 };
@@ -667,8 +703,10 @@ template <GTEST_TEMPLATE_ Fixture, typename Tests, typename Types>
 class TypeParameterizedTestCase {
  public:
   static bool Register(const char* prefix, CodeLocation code_location,
-                       const TypedTestCasePState* state,
-                       const char* case_name, const char* test_names) {
+                       const TypedTestCasePState* state, const char* case_name,
+                       const char* test_names,
+                       const std::vector<std::string>& type_names =
+                           GenerateNames<DefaultNameGenerator, Types>()) {
     std::string test_name = StripTrailingSpaces(
         GetPrefixUntilComma(test_names));
     if (!state->TestExists(test_name)) {
@@ -685,12 +723,14 @@ class TypeParameterizedTestCase {
 
     // First, register the first test in 'Test' for each type in 'Types'.
     TypeParameterizedTest<Fixture, Head, Types>::Register(
-        prefix, test_location, case_name, test_names, 0);
+        prefix, test_location, case_name, test_names, 0, type_names);
 
     // Next, recurses (at compile time) with the tail of the test list.
-    return TypeParameterizedTestCase<Fixture, typename Tests::Tail, Types>
-        ::Register(prefix, code_location, state,
-                   case_name, SkipComma(test_names));
+    return TypeParameterizedTestCase<Fixture, typename Tests::Tail,
+                                     Types>::Register(prefix, code_location,
+                                                      state, case_name,
+                                                      SkipComma(test_names),
+                                                      type_names);
   }
 };
 
@@ -700,7 +740,9 @@ class TypeParameterizedTestCase<Fixture, Templates0, Types> {
  public:
   static bool Register(const char* /*prefix*/, const CodeLocation&,
                        const TypedTestCasePState* /*state*/,
-                       const char* /*case_name*/, const char* /*test_names*/) {
+                       const char* /*case_name*/, const char* /*test_names*/,
+                       const std::vector<std::string>& =
+                           std::vector<std::string>() /*type_names*/) {
     return true;
   }
 };
@@ -900,7 +942,6 @@ struct IsAProtocolMessage
 // IsContainerTest(typename C::const_iterator*) and
 // IsContainerTest(...) doesn't work with Visual Age C++ and Sun C++.
 typedef int IsContainer;
-#if GTEST_LANG_CXX11
 template <class C,
           class Iterator = decltype(::std::declval<const C&>().begin()),
           class = decltype(::std::declval<const C&>().end()),
@@ -910,14 +951,6 @@ template <class C,
 IsContainer IsContainerTest(int /* dummy */) {
   return 0;
 }
-#else
-template <class C>
-IsContainer IsContainerTest(int /* dummy */,
-                            typename C::iterator* /* it */ = NULL,
-                            typename C::const_iterator* /* const_it */ = NULL) {
-  return 0;
-}
-#endif  // GTEST_LANG_CXX11
 
 typedef char IsNotContainer;
 template <class C>
@@ -938,7 +971,7 @@ struct IsHashTable {
   static char test(...);
 
  public:
-  static const bool value = sizeof(test<T>(0, 0)) == sizeof(int);
+  static const bool value = sizeof(test<T>(nullptr, nullptr)) == sizeof(int);
 };
 
 template <typename T>
@@ -972,12 +1005,8 @@ struct IsRecursiveContainerImpl<C, true, false> : public false_type {};
 
 template <typename C>
 struct IsRecursiveContainerImpl<C, true, true> {
-  #if GTEST_LANG_CXX11
   typedef typename IteratorTraits<typename C::const_iterator>::value_type
       value_type;
-#else
-  typedef typename IteratorTraits<typename C::iterator>::value_type value_type;
-#endif
   typedef is_same<value_type, C> type;
 };
 
@@ -1166,7 +1195,10 @@ class NativeArray {
 #define GTEST_SUCCESS_(message) \
   GTEST_MESSAGE_(message, ::testing::TestPartResult::kSuccess)
 
-// Suppress MSVC warning 4702 (unreachable code) for the code following
+#define GTEST_SKIP_(message) \
+  return GTEST_MESSAGE_(message, ::testing::TestPartResult::kSkip)
+
+// Suppress MSVC warning 4072 (unreachable code) for the code following
 // statement if it returns or throws (or doesn't return or throw in some
 // situations).
 #define GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement) \
