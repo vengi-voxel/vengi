@@ -23,6 +23,7 @@ protected:
 	video::Camera _camera;
 	render::Axis _axis;
 	render::Plane _plane;
+	glm::vec4 _planeColor = core::Color::White;
 	frontend::Movement _movement;
 	core::VarPtr _rotationSpeed;
 	float _cameraSpeed = 0.1f;
@@ -37,8 +38,9 @@ protected:
 		_cameraMotion = cameraMotion;
 	}
 
-	inline void setRenderPlane(bool renderPlane) {
+	inline void setRenderPlane(bool renderPlane, const glm::vec4& color = core::Color::White) {
 		_renderPlane = renderPlane;
+		_planeColor = color;
 	}
 
 	inline void setRenderAxis(bool renderAxis) {

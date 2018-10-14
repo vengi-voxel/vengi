@@ -12,8 +12,8 @@
 TestShapeBuilder::TestShapeBuilder(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider), _color(core::Color::DarkGreen) {
 	init(ORGANISATION, "testshapebuilder");
-	setCameraMotion(true);
-	setRenderPlane(true);
+	setCameraMotion(false);
+	setRenderPlane(true, glm::vec4(1.0f, 1.0f, 1.0f, 0.8f));
 	setRenderAxis(true);
 	setCameraSpeed(0.5f);
 }
