@@ -28,6 +28,10 @@ private:
 		int numStacks = 4;
 		float radius = 20.0f;
 	} _sphere;
+	struct {
+		glm::vec3 start {0.0f};
+		glm::vec3 end {10.0f};
+	} _line;
 
 	void doRender() override;
 	void onRenderUI() override;

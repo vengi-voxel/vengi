@@ -64,4 +64,13 @@ bool Combo(const char* label, int* current_item, const std::vector<std::string>&
 		(void*) &items, items_count, height_in_items);
 }
 
+void TooltipText(const char* text) {
+	if (ImGui::IsItemHovered()) {
+		ImGui::BeginTooltip();
+		ImGui::Text(text);
+		ImGui::EndTooltip();
+	}
+}
+
+
 }

@@ -53,7 +53,6 @@ void TestShapeBuilder::doRender() {
 
 void TestShapeBuilder::onRenderUI() {
 	Super::onRenderUI();
-	const int width = 95;
 	bool buildMesh = false;
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(_color);
@@ -68,72 +67,80 @@ void TestShapeBuilder::onRenderUI() {
 	ImGui::ColorEdit4("color", glm::value_ptr(_color), false);
 	ImGui::InputInt3("pos", glm::value_ptr(pos));
 	ImGui::InputFloat3("scale", glm::value_ptr(scale));
+	ImGui::TooltipText("Applies rendering only scale");
 	ImGui::Unindent();
 
-	ImGui::Text("Sphere");
-	ImGui::Indent();
-	ImGui::InputInt("slices", &_sphere.numSlices);
-	ImGui::InputInt("stacks", &_sphere.numStacks);
-	ImGui::InputFloat("radius", &_sphere.radius);
-	if (ImGui::Button("Sphere")) {
-		_shapeBuilder.sphere(_sphere.numSlices, _sphere.numStacks, _sphere.radius);
-		buildMesh = true;
-	}
-	ImGui::Unindent();
-
-	ImGui::Text("Cube");
-	ImGui::Indent();
-	ImGui::InputFloat3("Mins", glm::value_ptr(_mins));
-	ImGui::InputFloat3("Maxs", glm::value_ptr(_maxs));
-	if (ImGui::Button("Cube")) {
-		_shapeBuilder.cube(_mins, _maxs);
-		buildMesh = true;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("UnitCube")) {
-		if (_meshCount < lengthof(_meshes)) {
-			_meshes[_meshCount++] = _meshUnitCube;
+	if (ImGui::CollapsingHeader("Sphere", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		ImGui::InputInt("slices", &_sphere.numSlices);
+		ImGui::InputInt("stacks", &_sphere.numStacks);
+		ImGui::InputFloat("radius", &_sphere.radius);
+		if (ImGui::Button("Add sphere")) {
+			_shapeBuilder.sphere(_sphere.numSlices, _sphere.numStacks, _sphere.radius);
+			buildMesh = true;
 		}
 	}
-	ImGui::SameLine();
-	if (ImGui::Button("AABB")) {
-		_shapeBuilder.aabb(math::AABB<float>(_mins, _maxs));
-		buildMesh = true;
-	}
-	ImGui::Unindent();
 
+	if (ImGui::CollapsingHeader("Cube", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		ImGui::InputFloat3("Mins", glm::value_ptr(_mins));
+		ImGui::InputFloat3("Maxs", glm::value_ptr(_maxs));
+		if (ImGui::Button("Add cube")) {
+			_shapeBuilder.cube(_mins, _maxs);
+			buildMesh = true;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Add unitcube")) {
+			if (_meshCount < lengthof(_meshes)) {
+				_meshes[_meshCount++] = _meshUnitCube;
+			}
+		}
+		ImGui::TooltipText("Creates a cube of size 1 with the given scale values\napplied on rendering only.\nIgnores mins/maxs");
+		ImGui::SameLine();
+		if (ImGui::Button("Add AABB")) {
+			_shapeBuilder.aabb(math::AABB<float>(_mins, _maxs));
+			buildMesh = true;
+		}
+	}
 	if (ImGui::CollapsingHeader("AABB grid", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		ImGui::InputFloat3("Mins", glm::value_ptr(_mins));
+		ImGui::InputFloat3("Maxs", glm::value_ptr(_maxs));
 		ImGui::Checkbox("Near plane", &_near);
 		ImGui::InputFloat("Step width", &_stepWidth);
-		if (ImGui::Button("AABB Grid XY")) {
+		if (ImGui::Button("Add AABB Grid XY")) {
 			_shapeBuilder.aabbGridXY(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
 			buildMesh = true;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("AABB Grid XZ")) {
+		if (ImGui::Button("Add AABB Grid XZ")) {
 			_shapeBuilder.aabbGridXZ(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
 			buildMesh = true;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("AABB Grid YZ")) {
+		if (ImGui::Button("Add AABB Grid YZ")) {
 			_shapeBuilder.aabbGridYZ(math::AABB<float>(_mins, _maxs), _near, _stepWidth);
 			buildMesh = true;
 		}
 	}
 
-	if (ImGui::Button("Line")) {
-		_shapeBuilder.line(_mins, _maxs);
-		buildMesh = true;
+	if (ImGui::CollapsingHeader("Line", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		ImGui::InputFloat3("Start", glm::value_ptr(_line.start));
+		ImGui::InputFloat3("End", glm::value_ptr(_line.end));
+		if (ImGui::Button("Add Line")) {
+			_shapeBuilder.line(_line.start, _line.end);
+			buildMesh = true;
+		}
+	}
+	if (ImGui::CollapsingHeader("Pyramid", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		if (ImGui::Button("Add Pyramid")) {
+			_shapeBuilder.pyramid(scale);
+			buildMesh = true;
+		}
 	}
 
-	if (ImGui::Button("Pyramid")) {
-		_shapeBuilder.pyramid(scale);
-		buildMesh = true;
-	}
-
-	if (ImGui::Button("Axis")) {
-		_shapeBuilder.axis(scale);
-		buildMesh = true;
+	if (ImGui::CollapsingHeader("Axis", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		if (ImGui::Button("Add Axis")) {
+			_shapeBuilder.axis(scale);
+			buildMesh = true;
+		}
 	}
 
 	if (buildMesh && _meshCount < lengthof(_meshes)) {
@@ -142,12 +149,14 @@ void TestShapeBuilder::onRenderUI() {
 			++_meshCount;
 			_position[_meshCount] = _position[_meshCount - 1];
 			_scale[_meshCount] = _scale[_meshCount - 1];
+		} else {
+			Log::warn("Failed to create the mesh");
 		}
 	}
 
 	ImGui::Separator();
 
-	ImGui::Text("meshes: %i", _meshCount);
+	ImGui::Text("meshes: %i/%i", _meshCount, (int)lengthof(_meshes));
 
 	ImGui::Separator();
 
