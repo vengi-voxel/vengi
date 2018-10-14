@@ -752,11 +752,6 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load)
 static void
 METAL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 {
-    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-        METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-        data.mtllayer.drawableSize = CGSizeMake(event->data1, event->data2);
-    }
-
     if (event->event == SDL_WINDOWEVENT_SHOWN ||
         event->event == SDL_WINDOWEVENT_HIDDEN) {
         // !!! FIXME: write me
@@ -848,12 +843,20 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         mtltexdesc.height = (texture->h + 1) / 2;
         mtltexdesc.textureType = MTLTextureType2DArray;
         mtltexdesc.arrayLength = 2;
-        mtltexture_uv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
     } else if (nv12) {
         mtltexdesc.pixelFormat = MTLPixelFormatRG8Unorm;
         mtltexdesc.width = (texture->w + 1) / 2;
         mtltexdesc.height = (texture->h + 1) / 2;
+    }
+
+    if (yuv || nv12) {
         mtltexture_uv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+        if (mtltexture_uv == nil) {
+#if !__has_feature(objc_arc)
+            [mtltexture release];
+#endif
+            return SDL_SetError("Texture allocation failed");
+        }
     }
 
     METAL_TextureData *texturedata = [[METAL_TextureData alloc] init];
@@ -1348,10 +1351,23 @@ static int
 METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 { @autoreleasepool {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+
+    /* Make sure we have a valid MTLTexture to read from, and an active command
+     * buffer we can wait for. */
     METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad);
 
-    // !!! FIXME: this probably needs to commit the current command buffer, and probably waitUntilCompleted
-    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    /* Wait for the current command buffer to finish, so we don't read from the
+     * texture before the GPU finishes rendering to it. */
+    if (data.mtlcmdencoder) {
+        [data.mtlcmdencoder endEncoding];
+        [data.mtlcmdbuffer commit];
+        [data.mtlcmdbuffer waitUntilCompleted];
+
+        data.mtlcmdencoder = nil;
+        data.mtlcmdbuffer = nil;
+    }
+
     id<MTLTexture> mtltexture = data.mtlpassdesc.colorAttachments[0].texture;
     MTLRegion mtlregion = MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h);
 
@@ -1367,6 +1383,13 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     const Uint32 temp_format = (mtltexture.pixelFormat == MTLPixelFormatBGRA8Unorm) ? SDL_PIXELFORMAT_ARGB8888 : SDL_PIXELFORMAT_ABGR8888;
     const int status = SDL_ConvertPixels(rect->w, rect->h, temp_format, temp_pixels, temp_pitch, pixel_format, pixels, pitch);
     SDL_free(temp_pixels);
+
+    /* Set up an active command buffer and encoder once we're done. It will use
+     * the same texture that was active before (even if it's part of the swap
+     * chain), since we didn't clear that when waiting for the command buffer to
+     * complete. */
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad);
+
     return status;
 }}
 

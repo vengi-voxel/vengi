@@ -336,7 +336,7 @@ static jmethodID g_midHIDDeviceManagerSendFeatureReport;
 static jmethodID g_midHIDDeviceManagerGetFeatureReport;
 static jmethodID g_midHIDDeviceManagerClose;
 
-uint64_t get_timespec_ms( const struct timespec &ts )
+static uint64_t get_timespec_ms( const struct timespec &ts )
 {
 	return (uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
@@ -694,8 +694,34 @@ static void ThreadDestroyed(void* value)
 	}
 }
 
+
 extern "C"
-JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallback)(JNIEnv *env, jobject thiz, jobject callbackHandler)
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallback)(JNIEnv *env, jobject thiz);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceReleaseCallback)(JNIEnv *env, jobject thiz);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceConnected)(JNIEnv *env, jobject thiz, int nDeviceID, jstring sIdentifier, int nVendorId, int nProductId, jstring sSerialNumber, int nReleaseNumber, jstring sManufacturer, jstring sProduct, int nInterface );
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenPending)(JNIEnv *env, jobject thiz, int nDeviceID);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenResult)(JNIEnv *env, jobject thiz, int nDeviceID, bool bOpened);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceDisconnected)(JNIEnv *env, jobject thiz, int nDeviceID);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceInputReport)(JNIEnv *env, jobject thiz, int nDeviceID, jbyteArray value);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceFeatureReport)(JNIEnv *env, jobject thiz, int nDeviceID, jbyteArray value);
+
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallback)(JNIEnv *env, jobject thiz )
 {
 	LOGV( "HIDDeviceRegisterCallback()");
 
@@ -709,11 +735,19 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallba
 		__android_log_print(ANDROID_LOG_ERROR, TAG, "Error initializing pthread key");
 	}
 
-	g_HIDDeviceManagerCallbackHandler = env->NewGlobalRef( callbackHandler );
-	jclass objClass = env->GetObjectClass( callbackHandler );
+	if ( g_HIDDeviceManagerCallbackHandler != NULL )
+	{
+		env->DeleteGlobalRef( g_HIDDeviceManagerCallbackClass );
+		g_HIDDeviceManagerCallbackClass = NULL;
+		env->DeleteGlobalRef( g_HIDDeviceManagerCallbackHandler );
+		g_HIDDeviceManagerCallbackHandler = NULL;
+	}
+
+	g_HIDDeviceManagerCallbackHandler = env->NewGlobalRef( thiz );
+	jclass objClass = env->GetObjectClass( thiz );
 	if ( objClass )
 	{
-		g_HIDDeviceManagerCallbackClass = reinterpret_cast< jclass >( env->NewGlobalRef(objClass) );
+		g_HIDDeviceManagerCallbackClass = reinterpret_cast< jclass >( env->NewGlobalRef( objClass ) );
 		g_midHIDDeviceManagerOpen = env->GetMethodID( g_HIDDeviceManagerCallbackClass, "openDevice", "(I)Z" );
 		if ( !g_midHIDDeviceManagerOpen )
 		{
@@ -747,8 +781,13 @@ extern "C"
 JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceReleaseCallback)(JNIEnv *env, jobject thiz)
 {
 	LOGV("HIDDeviceReleaseCallback");
-	env->DeleteGlobalRef( g_HIDDeviceManagerCallbackClass );
-	env->DeleteGlobalRef( g_HIDDeviceManagerCallbackHandler );
+	if ( env->IsSameObject( thiz, g_HIDDeviceManagerCallbackHandler ) )
+	{
+		env->DeleteGlobalRef( g_HIDDeviceManagerCallbackClass );
+		g_HIDDeviceManagerCallbackClass = NULL;
+		env->DeleteGlobalRef( g_HIDDeviceManagerCallbackHandler );
+		g_HIDDeviceManagerCallbackHandler = NULL;
+	}
 }
 
 extern "C"

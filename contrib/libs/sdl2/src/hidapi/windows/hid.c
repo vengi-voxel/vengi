@@ -22,10 +22,7 @@
 
 #include <windows.h>
 
-#ifndef _NTDEF_
-typedef LONG NTSTATUS;
-#endif
-
+#if 0 /* can cause redefinition errors on some toolchains */
 #ifdef __MINGW32__
 #include <ntdef.h>
 #include <winbase.h>
@@ -35,8 +32,14 @@ typedef LONG NTSTATUS;
 #include <ntdef.h>
 #define _wcsdup wcsdup
 #endif
+#endif /* */
+
+#ifndef _NTDEF_
+typedef LONG NTSTATUS;
+#endif
 
 /* SDL C runtime functions */
+#include "../../SDL_internal.h"
 #include "SDL_stdinc.h"
 
 #define calloc SDL_calloc
@@ -905,17 +908,18 @@ int HID_API_EXPORT_CALL HID_API_CALL hid_get_indexed_string(hid_device *dev, int
 	return 0;
 }
 
-
 HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 {
 	return (wchar_t*)dev->last_error_str;
 }
 
 
+#if 0
+
 /*#define PICPGM*/
 /*#define S11*/
 #define P32
-#ifdef S11 
+#ifdef S11
   unsigned short VendorID = 0xa0a0;
 	unsigned short ProductID = 0x0001;
 #endif
@@ -925,14 +929,11 @@ HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 	unsigned short ProductID = 0x3f;
 #endif
 
-
 #ifdef PICPGM
   unsigned short VendorID = 0x04d8;
   unsigned short ProductID = 0x0033;
 #endif
 
-
-#if 0
 int __cdecl main(int argc, char* argv[])
 {
 	int res;
