@@ -389,7 +389,8 @@ void ImGui::ShowDemoWindow(bool* p_open)
             // Color buttons, demonstrate using PushID() to add unique identifier in the ID stack, and changing style.
             for (int i = 0; i < 7; i++)
             {
-                if (i > 0) ImGui::SameLine();
+                if (i > 0) 
+                    ImGui::SameLine();
                 ImGui::PushID(i);
                 ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i/7.0f, 0.6f, 0.6f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i/7.0f, 0.7f, 0.7f));
@@ -399,7 +400,12 @@ void ImGui::ShowDemoWindow(bool* p_open)
                 ImGui::PopID();
             }
 
-            // Arrow buttons
+            // Use AlignTextToFramePadding() to align text baseline to the baseline of framed elements (otherwise a Text+SameLine+Button sequence will have the text a little too high by default)
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("Hold to repeat:");
+            ImGui::SameLine();
+
+            // Arrow buttons with Repeater
             static int counter = 0;
             float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
             ImGui::PushButtonRepeat(true);
@@ -442,7 +448,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
                 static char str0[128] = "Hello, world!";
                 static int i0 = 123;
                 ImGui::InputText("input text", str0, IM_ARRAYSIZE(str0));
-                ImGui::SameLine(); ShowHelpMarker("USER:\nHold SHIFT or use mouse to select text.\n" "CTRL+Left/Right to word jump.\n" "CTRL+A or double-click to select all.\n" "CTRL+X,CTRL+C,CTRL+V clipboard.\n" "CTRL+Z,CTRL+Y undo/redo.\n" "ESCAPE to revert.\n\nPROGRAMMER:\nYou can use the ImGuiInputTextFlags_CallbackResize facility if you need to wire InputText() to a dynamic string type. See misc/stl/imgui_stl.h for an example (this is not demonstrated in imgui_demo.cpp).");
+                ImGui::SameLine(); ShowHelpMarker("USER:\nHold SHIFT or use mouse to select text.\n" "CTRL+Left/Right to word jump.\n" "CTRL+A or double-click to select all.\n" "CTRL+X,CTRL+C,CTRL+V clipboard.\n" "CTRL+Z,CTRL+Y undo/redo.\n" "ESCAPE to revert.\n\nPROGRAMMER:\nYou can use the ImGuiInputTextFlags_CallbackResize facility if you need to wire InputText() to a dynamic string type. See misc/cpp/imgui_stdlib.h for an example (this is not demonstrated in imgui_demo.cpp).");
 
                 ImGui::InputInt("input int", &i0);
                 ImGui::SameLine(); ShowHelpMarker("You can apply arithmetic operators +,*,/ on numerical values.\n  e.g. [ 100 ], input \'*2\', result becomes [ 200 ]\nUse +- to subtract.\n");
@@ -889,7 +895,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
                 "label:\n"
                 "\tlock cmpxchg8b eax\n";
 
-            ShowHelpMarker("You can use the ImGuiInputTextFlags_CallbackResize facility if you need to wire InputTextMultiline() to a dynamic string type. See misc/stl/imgui_stl.h for an example. (This is not demonstrated in imgui_demo.cpp)");
+            ShowHelpMarker("You can use the ImGuiInputTextFlags_CallbackResize facility if you need to wire InputTextMultiline() to a dynamic string type. See misc/cpp/imgui_stdlib.h for an example. (This is not demonstrated in imgui_demo.cpp)");
             ImGui::Checkbox("Read-only", &read_only);
             ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput | (read_only ? ImGuiInputTextFlags_ReadOnly : 0);
             ImGui::InputTextMultiline("##source", text, IM_ARRAYSIZE(text), ImVec2(-1.0f, ImGui::GetTextLineHeight() * 16), flags);
@@ -1505,10 +1511,10 @@ void ImGui::ShowDemoWindow(bool* p_open)
                 {
                     ImGui::Text("%04d: scrollable region", i);
                     if (goto_line && line == i)
-                        ImGui::SetScrollHere();
+                        ImGui::SetScrollHereY();
                 }
                 if (goto_line && line >= 100)
-                    ImGui::SetScrollHere();
+                    ImGui::SetScrollHereY();
                 ImGui::EndChild();
             }
 
@@ -1767,7 +1773,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
 
         if (ImGui::TreeNode("Scrolling"))
         {
-            ImGui::TextWrapped("(Use SetScrollHere() or SetScrollFromPosY() to scroll to a given position.)");
+            ImGui::TextWrapped("(Use SetScrollHereY() or SetScrollFromPosY() to scroll to a given position.)");
             static bool track = true;
             static int track_line = 50, scroll_to_px = 200;
             ImGui::Checkbox("Track", &track);
@@ -1791,7 +1797,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
                     if (track && line == track_line)
                     {
                         ImGui::TextColored(ImColor(255,255,0), "Line %d", line);
-                        ImGui::SetScrollHere(i * 0.25f); // 0.0f:top, 0.5f:center, 1.0f:bottom
+                        ImGui::SetScrollHereY(i * 0.25f); // 0.0f:top, 0.5f:center, 1.0f:bottom
                     }
                     else
                     {
@@ -2886,7 +2892,7 @@ struct ExampleAppConsole
         if (copy_to_clipboard)
             ImGui::LogFinish();
         if (ScrollToBottom)
-            ImGui::SetScrollHere(1.0f);
+            ImGui::SetScrollHereY(1.0f);
         ScrollToBottom = false;
         ImGui::PopStyleVar();
         ImGui::EndChild();
@@ -3128,7 +3134,7 @@ struct ExampleAppLog
         }
 
         if (ScrollToBottom)
-            ImGui::SetScrollHere(1.0f);
+            ImGui::SetScrollHereY(1.0f);
         ScrollToBottom = false;
         ImGui::EndChild();
         ImGui::End();
