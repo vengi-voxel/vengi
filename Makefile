@@ -59,10 +59,12 @@ update-googletest:
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
 	rm -rf contrib/libs/gtest/src
 	rm -rf contrib/libs/gtest/include
-	cp -r $(UPDATEDIR)/googletest.sync/googletest/src contrib/libs/gtest
-	cp -r $(UPDATEDIR)/googletest.sync/googletest/include contrib/libs/gtest/include
-	cp -r $(UPDATEDIR)/googletest.sync/googlemock/src contrib/libs/gmock
-	cp -r $(UPDATEDIR)/googletest.sync/googlemock/include contrib/libs/gmock/include
+	mkdir -p contrib/libs/gtest/src
+	mkdir -p contrib/libs/gtest/include
+	cp -r $(UPDATEDIR)/googletest.sync/googletest/src/ contrib/libs/gtest
+	cp -r $(UPDATEDIR)/googletest.sync/googletest/include/ contrib/libs/gtest
+	cp -r $(UPDATEDIR)/googletest.sync/googlemock/src/ contrib/libs/gtest
+	cp -r $(UPDATEDIR)/googletest.sync/googlemock/include/ contrib/libs/gtest
 	git checkout -f contrib/libs/gtest/include/gtest/internal/custom
 	git checkout -f contrib/libs/gtest/include/gmock/internal/custom
 
