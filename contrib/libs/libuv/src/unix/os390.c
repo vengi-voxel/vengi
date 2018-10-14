@@ -357,13 +357,11 @@ uint64_t uv_get_total_memory(void) {
 
 
 int uv_resident_set_memory(size_t* rss) {
-  char* psa;
   char* ascb;
   char* rax;
   size_t nframes;
 
-  psa = PSA_PTR;
-  ascb  = *(char* __ptr32 *)(psa + PSAAOLD);
+  ascb  = *(char* __ptr32 *)(PSA_PTR + PSAAOLD);
   rax = *(char* __ptr32 *)(ascb + ASCBRSME);
   nframes = *(unsigned int*)(rax + RAXFMCT);
 
@@ -512,7 +510,7 @@ static int uv__interface_addresses_v6(uv_interface_address_t** addresses,
     /* TODO: Retrieve netmask using SIOCGIFNETMASK ioctl */
 
     address->is_internal = flg.__nif6e_flags & _NIF6E_FLAGS_LOOPBACK ? 1 : 0;
-
+    memset(address->phys_addr, 0, sizeof(address->phys_addr));
     address++;
   }
 
@@ -624,6 +622,7 @@ int uv_interface_addresses(uv_interface_address_t** addresses, int* count) {
     }
 
     address->is_internal = flg.ifr_flags & IFF_LOOPBACK ? 1 : 0;
+    memset(address->phys_addr, 0, sizeof(address->phys_addr));
     address++;
   }
 
