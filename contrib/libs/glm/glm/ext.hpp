@@ -61,7 +61,6 @@
 #include "./ext/quaternion_relational.hpp"
 
 #include "./ext/scalar_constants.hpp"
-#include "./ext/scalar_float_sized.hpp"
 #include "./ext/scalar_int_sized.hpp"
 #include "./ext/scalar_relational.hpp"
 

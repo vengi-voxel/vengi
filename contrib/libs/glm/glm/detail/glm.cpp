@@ -5,7 +5,6 @@
 #include <glm/gtx/dual_quaternion.hpp>
 #include <glm/gtc/vec1.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <glm/ext/scalar_float_sized.hpp>
 #include <glm/ext/scalar_int_sized.hpp>
 #include <glm/ext/scalar_uint_sized.hpp>
 #include <glm/glm.hpp>

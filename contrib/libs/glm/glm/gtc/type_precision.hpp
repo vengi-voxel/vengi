@@ -16,7 +16,6 @@
 // Dependency:
 #include "../gtc/quaternion.hpp"
 #include "../gtc/vec1.hpp"
-#include "../ext/scalar_float_sized.hpp"
 #include "../ext/scalar_int_sized.hpp"
 #include "../ext/scalar_uint_sized.hpp"
 #include "../detail/type_vec2.hpp"
@@ -703,6 +702,14 @@ namespace glm
 
 	//////////////////////
 	// Float vector types
+
+	/// Single-qualifier floating-point scalar.
+	/// @see gtc_type_precision
+	typedef float float32;
+
+	/// Double-qualifier floating-point scalar.
+	/// @see gtc_type_precision
+	typedef double float64;
 
 	/// Low 32 bit single-qualifier floating-point scalar.
 	/// @see gtc_type_precision
