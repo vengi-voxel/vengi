@@ -169,7 +169,7 @@ inline bool Buffer::isValid(int32_t idx) const {
 }
 
 inline uint32_t Buffer::size(int32_t idx) const {
-	core_assert(idx >= 0 && idx < MAX_HANDLES);
+	core_assert_msg(idx >= 0 && idx < MAX_HANDLES, "Given index %i is out of range", idx);
 	return _size[idx];
 }
 
