@@ -70,7 +70,7 @@
 // This should always increase, as some paths to do not consume
 // a more major number.
 // It should increment by one when new functionality is added.
-#define GLSLANG_MINOR_VERSION 9
+#define GLSLANG_MINOR_VERSION 10
 
 //
 // Call before doing any other compiler/linker operations.
@@ -94,6 +94,14 @@ typedef enum {
     EShLangGeometry,
     EShLangFragment,
     EShLangCompute,
+    EShLangRayGenNV,
+    EShLangIntersectNV,
+    EShLangAnyHitNV,
+    EShLangClosestHitNV,
+    EShLangMissNV,
+    EShLangCallableNV,
+    EShLangTaskNV,
+    EShLangMeshNV,
     EShLangCount,
 } EShLanguage;         // would be better as stage, but this is ancient now
 
@@ -104,6 +112,14 @@ typedef enum {
     EShLangGeometryMask       = (1 << EShLangGeometry),
     EShLangFragmentMask       = (1 << EShLangFragment),
     EShLangComputeMask        = (1 << EShLangCompute),
+    EShLangRayGenNVMask       = (1 << EShLangRayGenNV),
+    EShLangIntersectNVMask    = (1 << EShLangIntersectNV),
+    EShLangAnyHitNVMask       = (1 << EShLangAnyHitNV),
+    EShLangClosestHitNVMask   = (1 << EShLangClosestHitNV),
+    EShLangMissNVMask         = (1 << EShLangMissNV),
+    EShLangCallableNVMask     = (1 << EShLangCallableNV),
+    EShLangTaskNVMask         = (1 << EShLangTaskNV),
+    EShLangMeshNVMask         = (1 << EShLangMeshNV),
 } EShLanguageMask;
 
 namespace glslang {
@@ -397,6 +413,8 @@ public:
     void setResourceSetBinding(const std::vector<std::string>& base);
     void setAutoMapBindings(bool map);
     void setAutoMapLocations(bool map);
+    void addUniformLocationOverride(const char* name, int loc);
+    void setUniformLocationBase(int base);
     void setInvertY(bool invert);
     void setHlslIoMapping(bool hlslIoMap);
     void setFlattenUniformArrays(bool flatten);

@@ -460,6 +460,9 @@ bool TIntermediate::isConversionAllowed(TOperator op, TIntermTyped* node) const
         return false;
     case EbtAtomicUint:
     case EbtSampler:
+#ifdef NV_EXTENSIONS
+    case EbtAccStructNV:
+#endif
         // opaque types can be passed to functions
         if (op == EOpFunction)
             break;
@@ -1573,27 +1576,29 @@ bool TIntermediate::canImplicitlyPromote(TBasicType from, TBasicType to, TOperat
                 return false;
             }
         case EbtFloat16:
-            switch (from) {
 #ifdef AMD_EXTENSIONS
+            switch (from) {
             case EbtInt16:
             case EbtUint16:
                 return extensionRequested(E_GL_AMD_gpu_shader_int16);
             case EbtFloat16:
                 return extensionRequested(E_GL_AMD_gpu_shader_half_float);
-#endif
             default:
-                return false;
-        }
+                break;
+            }
+#endif
+            return false;
         case EbtUint16:
-            switch (from) {
 #ifdef AMD_EXTENSIONS
+            switch (from) {
             case EbtInt16:
             case EbtUint16:
                 return extensionRequested(E_GL_AMD_gpu_shader_int16);
-#endif
             default:
-                return false;
-        }
+                break;
+            }
+#endif
+            return false;
         default:
             return false;
         }
