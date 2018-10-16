@@ -118,13 +118,7 @@ void TestMeshApp::onRenderUI() {
 		ImGui::Checkbox("Render mesh", &_renderMesh);
 		ImGui::Checkbox("Render normals", &_renderNormals);
 		ImGui::Checkbox("Render bones", &_renderBones);
-		if (ImGui::IsItemHovered()) {
-			ImGui::BeginTooltip();
-			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-			ImGui::TextUnformatted("Leaf bones are not rendered");
-			ImGui::PopTextWrapPos();
-			ImGui::EndTooltip();
-		}
+		ImGui::TooltipText("Leaf bones are not rendered");
 		if (ImGui::InputFloat3("Camera omega", glm::value_ptr(_omega))) {
 			_camera.setOmega(_omega);
 		}
