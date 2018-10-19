@@ -35,6 +35,10 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		_homePath = prefPath;
 		SDL_free(prefPath);
 	}
+
+	registerPath(_basePath);
+	registerPath(_homePath);
+
 	Log::debug("basepath: %s", _basePath.c_str());
 	Log::debug("homepath: %s", _homePath.c_str());
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
@@ -161,6 +165,14 @@ bool Filesystem::isRelativeFilename(const std::string& name) const {
 #endif
 }
 
+bool Filesystem::registerPath(const std::string& path) {
+	if (!core::string::endsWith(path, "/")) {
+		return false;
+	}
+	_paths.push_back(path);
+	return true;
+}
+
 bool Filesystem::unwatch(const std::string& path) {
 	auto i = _watches.find(path);
 	if (i == _watches.end()) {
@@ -231,12 +243,13 @@ io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
 		Log::debug("loading file %s from current working dir", filename.c_str());
 		return std::make_shared<make_shared_enabler>(filename, mode);
 	}
-	const std::string homePath = _homePath + filename;
-	if (io::File(homePath, FileMode::Read).exists()) {
-		Log::debug("loading file %s from %s", filename.c_str(), _homePath.c_str());
-		return std::make_shared<make_shared_enabler>(homePath, mode);
+	for (const std::string& p : _paths) {
+		const std::string fullpath = p + filename;
+		if (io::File(fullpath, FileMode::Read).exists()) {
+			Log::debug("loading file %s from %s", filename.c_str(), p.c_str());
+			return std::make_shared<make_shared_enabler>(fullpath, mode);
+		}
 	}
-	Log::debug("loading file %s from %s (doesn't exist at %s)", filename.c_str(), _basePath.c_str(), homePath.c_str());
 	return std::make_shared<make_shared_enabler>(_basePath + filename, mode);
 }
 

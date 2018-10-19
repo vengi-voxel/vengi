@@ -30,6 +30,7 @@ private:
 
 	std::string _basePath;
 	std::string _homePath;
+	std::vector<std::string> _paths;
 
 	std::stack<std::string> _dirStack;
 	std::unordered_map<std::string, uv_fs_event_t*> _watches;
@@ -42,6 +43,8 @@ public:
 	void shutdown();
 
 	void update();
+
+	bool registerPath(const std::string& path);
 
 	bool unwatch(const std::string& path);
 	bool watch(const std::string& path, FileWatcher watcher);
