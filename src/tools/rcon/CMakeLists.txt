@@ -95,6 +95,6 @@ message(STATUS "Build the rcon")
 
 else()
 
-message(WARN "Could not findl qt5 modules for network gui and widget support")
+message(WARNING "Could not findl qt5 modules for network gui and widget support")
 
 endif() # NO QT
