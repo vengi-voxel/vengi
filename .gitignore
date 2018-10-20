@@ -3,10 +3,10 @@
 /.project
 /.cproject
 /.settings
-/Makefile.local
 /typescript
 gmon.out
 /*.sync
 /perf.data*
 luac.out
 *.patch
+/CMakeLists.local

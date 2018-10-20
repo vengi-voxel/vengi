@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
+include(CMakeLists.local OPTIONAL)
 set(ROOT_PROJECT_VERSION 0.0.1)
 set(ROOT_PROJECT_NAME vengi)
 project(${ROOT_PROJECT_NAME} VERSION ${ROOT_PROJECT_VERSION})
