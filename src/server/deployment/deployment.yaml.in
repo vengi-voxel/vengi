@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: @PROJECT_NAME@-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: @PROJECT_NAME@
+  template:
+    metadata:
+      labels:
+        app: @PROJECT_NAME@
+    spec:
+      containers:
+      - name: @PROJECT_NAME@
+        image: @DOCKER_IMAGE_NAME_TAG@
+        ports:
+        - name: service-port
+          containerPort: @SERVER_PORT@
+        env:
+        - name: DB_HOST
+          value: postgres-@FQDN@
+        livenessProbe:
+          failureThreshold: 3
+          exec:
+            command:
+            - /opt/@ROOT_PROJECT_NAME@/vengi-@PROJECT_NAME@-healthcheck
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          failureThreshold: 3
+          exec:
+            command:
+            - /opt/@ROOT_PROJECT_NAME@/vengi-@PROJECT_NAME@-healthcheck
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 1000m
+          limits:
+            memory: 4096Mi
+            cpu: 10000m

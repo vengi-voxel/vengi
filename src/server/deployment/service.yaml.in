@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: @PROJECT_NAME@
+spec:
+  ports:
+  - name: tcp
+    port: @SERVER_PORT@
+    protocol: TCP
+    targetPort: @SERVER_PORT@
+  selector:
+    app: @PROJECT_NAME@
