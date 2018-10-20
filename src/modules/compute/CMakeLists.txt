@@ -42,10 +42,12 @@ if (CUDA_TOOLKIT_INCLUDE)
 	target_include_directories(${LIB} PRIVATE ${CUDA_TOOLKIT_INCLUDE})
 endif()
 
-set(TEST_SRCS
-	tests/ComputeShaderTest.cpp
-)
+if (TESTS)
+	set(TEST_SRCS
+		tests/ComputeShaderTest.cpp
+	)
 
-gtest_suite_sources(tests ${TEST_SRCS})
-gtest_suite_deps(tests ${LIB})
-generate_compute_shaders(tests test)
+	gtest_suite_sources(tests ${TEST_SRCS})
+	gtest_suite_deps(tests ${LIB})
+	generate_compute_shaders(tests test)
+endif()
