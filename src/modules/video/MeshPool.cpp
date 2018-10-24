@@ -12,7 +12,7 @@
 
 namespace video {
 
-static const char* supportedFormats[] = { "ogex", "dae", "fbx", "DAE", "FBX", "md5mesh", nullptr };
+static const char* supportedFormats[] = { "ogex", "obj", "dae", "fbx", "DAE", "FBX", "md5mesh", nullptr };
 
 MeshPool::MeshPool() {
 }
