@@ -158,3 +158,7 @@ doing one query per chunk is most likely a little bit overkill.
 
 * support multiple RawVolumes - and allow to move/scale/rotate complete volumes
   * the importers support multiple volumes to preserve the groups (and of course also the export)
+
+ # Meshes
+
+ Don't use assimp at runtime - use it only in the asset-pipeline to generate a 'better' ready-to-render format.
