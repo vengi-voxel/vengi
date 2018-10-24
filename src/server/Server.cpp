@@ -25,6 +25,7 @@
 #include "stock/StockDataProvider.h"
 #include "compute/Compute.h"
 #include <stdlib.h>
+#include "engine-config.h"
 
 Server::Server(const metric::MetricPtr& metric, const backend::ServerLoopPtr& serverLoop,
 		const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
@@ -44,10 +45,10 @@ core::AppState Server::onConstruct() {
 	core::Var::get(cfg::DatabaseName, "engine");
 	core::Var::get(cfg::DatabaseHost, "localhost");
 	core::Var::get(cfg::DatabaseUser, "engine");
-	core::Var::get(cfg::DatabasePassword, "engine", core::CV_SECRET);
+	core::Var::get(cfg::DatabasePassword, DB_PW, core::CV_SECRET);
 	core::Var::get(cfg::ServerUserTimeout, "60000");
-	core::Var::get(cfg::ServerPort, "11337");
-	core::Var::get(cfg::ServerHost, "");
+	core::Var::get(cfg::ServerPort, SERVER_PORT);
+	core::Var::get(cfg::ServerHost, SERVER_HOST);
 	core::Var::get(cfg::ServerMaxClients, "1024");
 	core::Var::get(cfg::ServerSeed, "1");
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
