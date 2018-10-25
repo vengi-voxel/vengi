@@ -69,6 +69,7 @@ set(FILES
 	voxedit/ui/window/voxedit-noise.tb.txt
 	voxedit/ui/window/voxedit-tree.tb.txt
 	voxedit/ui/window/voxedit-world.tb.txt
+	voxedit/ui/lang/en.tb.txt
 	voxedit/models/armchair.vox
 	voxedit/models/bowl_bone.vox
 	voxedit/models/brick_wall.vox
