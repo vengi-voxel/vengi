@@ -692,6 +692,9 @@ void Model::noise(int octaves, float lacunarity, float frequency, float gain, vo
 }
 
 void Model::spaceColonization() {
+	if (_spaceColonizationTree) {
+		return;
+	}
 	const voxel::Region& region = modelVolume()->region();
 	const math::AABB<int>& aabb = region.aabb();
 	const int trunkHeight = aabb.getWidthY() / 2;
