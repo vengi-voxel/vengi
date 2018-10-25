@@ -609,6 +609,7 @@ void Model::update() {
 		_spaceColonizationTree->generate(wrapper, woodRandomVoxel);
 		modified(wrapper.dirtyRegion());
 		if (!growing) {
+			Log::info("done with growing the tree");
 			const voxel::RandomVoxel leavesRandomVoxel(voxel::VoxelType::Leaf, random);
 			_spaceColonizationTree->generateLeaves(wrapper, leavesRandomVoxel, glm::ivec3(leafSize));
 			delete _spaceColonizationTree;
@@ -697,11 +698,15 @@ void Model::spaceColonization() {
 	}
 	const voxel::Region& region = modelVolume()->region();
 	const math::AABB<int>& aabb = region.aabb();
-	const int trunkHeight = aabb.getWidthY() / 2;
+	const int trunkHeight = aabb.getWidthY() / 3;
 	_lastGrow = core::App::getInstance()->systemMillis();
 
-	_spaceColonizationTree = new voxel::tree::Tree(referencePosition(), trunkHeight, 6,
-			aabb.getWidthX() - leafSize, aabb.getWidthY() - trunkHeight - leafSize, aabb.getWidthZ() - leafSize, 4.0f, _lastGrow);
+	const int branchLength = 6;
+	const float branchSize = 4.0f;
+	Log::info("Create spacecolonization tree with branch length %i, branch size %f, trunk height: %i, leaf size: %i",
+			branchLength, branchSize, trunkHeight, leafSize);
+	_spaceColonizationTree = new voxel::tree::Tree(referencePosition(), trunkHeight, branchLength,
+			aabb.getWidthX() - leafSize, aabb.getWidthY() - trunkHeight - leafSize, aabb.getWidthZ() - leafSize, branchSize, _lastGrow);
 }
 
 void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
