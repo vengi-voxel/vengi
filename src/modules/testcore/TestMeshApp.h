@@ -23,6 +23,7 @@ protected:
 	shader::MeshShader _meshShader;
 	shader::ColorShader& _colorShader;
 	glm::vec3 _position {0.0f, 0.0f, 0.0f};
+	glm::vec3 _scale {1.0f, 1.0f, 1.0f};
 	glm::vec3 _diffuseColor {1.0, 1.0, 1.0};
 	glm::vec3 _ambientColor {0.2, 0.2, 0.2};
 	glm::vec4 _fogColor;

@@ -150,6 +150,7 @@ void TestMeshApp::onRenderUI() {
 			_meshName->markClean();
 		}
 		ImGui::InputFloat3("Position", glm::value_ptr(_position));
+		ImGui::InputFloat3("Scale", glm::value_ptr(_scale));
 		ImGui::ColorEdit3("Diffuse color", glm::value_ptr(_diffuseColor));
 		ImGui::ColorEdit3("Ambient color", glm::value_ptr(_ambientColor));
 		ImGui::ColorEdit4("Fog color", glm::value_ptr(_fogColor));
@@ -170,7 +171,7 @@ void TestMeshApp::doRender() {
 	video::ScopedState scopedCullFace(video::State::CullFace);
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
 
-	_model = glm::translate(glm::mat4(1.0f), _position);
+	_model = glm::scale(glm::translate(glm::mat4(1.0f), _position), _scale);
 	_shadow.update(_camera, true);
 
 	if (shadowMap) {

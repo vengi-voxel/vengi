@@ -430,7 +430,7 @@ template<class OUT, class IN>
 static OUT interpolate(const IN& current, const IN& next, float animationTime) {
 	const float deltaTime = (float) (next.mTime - current.mTime);
 	const float factor = (animationTime - (float) current.mTime) / deltaTime;
-	core_assert(factor >= 0.0f && factor <= 1.0f);
+	core_assert_msg(factor >= -1.0f && factor <= 1.0f, "Factor is not clamped: %f", factor);
 	const OUT& start = convert(current.mValue);
 	const OUT& end = convert(next.mValue);
 	return glm::lerp(start, end, factor);
@@ -458,7 +458,7 @@ glm::mat4 Mesh::calcInterpolatedRotation(float animationTime, const aiNodeAnim* 
 	core_assert(nextRotationIndex < nodeAnim->mNumRotationKeys);
 	const float deltaTime = (float) (nodeAnim->mRotationKeys[nextRotationIndex].mTime - nodeAnim->mRotationKeys[rotationIndex].mTime);
 	const float factor = (animationTime - (float) nodeAnim->mRotationKeys[rotationIndex].mTime) / deltaTime;
-	core_assert(factor >= 0.0f && factor <= 1.0f);
+	core_assert_msg(factor >= -1.0f && factor <= 1.0f, "Factor is not clamped: %f", factor);
 	const glm::quat& startRotationQ = convert(nodeAnim->mRotationKeys[rotationIndex].mValue);
 	const glm::quat& endRotationQ = convert(nodeAnim->mRotationKeys[nextRotationIndex].mValue);
 	const glm::quat& out = glm::normalize(glm::slerp(startRotationQ, endRotationQ, factor));
