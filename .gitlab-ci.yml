@@ -37,6 +37,9 @@ test:
     - build
   script:
     - make -j 4 tests-run
+  artifacts:
+    reports:
+      junit: build/*/gtest.xml
 
 .analyse:cppcheck:
   stage: analyse
