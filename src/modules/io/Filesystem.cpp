@@ -271,6 +271,10 @@ std::string Filesystem::load(const std::string& filename) const {
 	return f->load();
 }
 
+const std::string Filesystem::writePath(const char* name) const {
+	return _homePath + name;
+}
+
 bool Filesystem::write(const std::string& filename, const uint8_t* content, size_t length) {
 	io::File f(_homePath + filename, FileMode::Write);
 	createDir(f.path());

@@ -62,6 +62,11 @@ public:
 	 */
 	const std::string& homePath() const;
 
+	/**
+	 * @brief Returns a path where the given file can be saved.
+	 */
+	const std::string writePath(const char* name) const;
+
 	bool exists(const std::string& filename) const;
 
 	struct DirEntry {
