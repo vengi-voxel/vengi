@@ -32,6 +32,10 @@ protected:
 	bool _renderMesh = true;
 	bool _renderNormals = true;
 	bool _renderBones = false;
+	bool _showInfo = true;
+	bool _showOptions = true;
+	bool _showMeshDetails = true;
+
 	float _fogRange = 250.0f;
 	int _boneInfluence = 0;
 	glm::mat4 _model {1.0f};

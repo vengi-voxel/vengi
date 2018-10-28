@@ -90,11 +90,10 @@ core::AppState TestMeshApp::onInit() {
 void TestMeshApp::onRenderUI() {
 	const int windowPadding = 20;
 
-	static bool showMeshDetails = true;
 	const int meshDetailsWidth = 360;
 	const int meshDetailsHeight = 200;
 	ImGui::SetNextWindowPos(ImVec2(width() - meshDetailsWidth - windowPadding, windowPadding), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin("Mesh details", &showMeshDetails, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (_showMeshDetails && ImGui::Begin("Mesh details", &_showMeshDetails, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Mesh %s", _mesh->filename().c_str());
 		ImGui::Text("%i vertices", (int)_mesh->vertices().size());
 		ImGui::Text("%i indices", (int)_mesh->indices().size());
@@ -103,16 +102,14 @@ void TestMeshApp::onRenderUI() {
 		ImGui::End();
 	}
 
-	static bool showInfo = true;
 	ImGui::SetNextWindowPos(ImVec2(windowPadding, windowPadding), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin("Info", &showInfo, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (_showInfo && ImGui::Begin("Info", &_showInfo, ImGuiWindowFlags_AlwaysAutoResize)) {
 		Super::onRenderUI();
 		ImGui::End();
 	}
 
 	ImGui::SetNextWindowPos(ImVec2(windowPadding, 420), ImGuiCond_FirstUseEver);
-	static bool showOptions = true;
-	if (ImGui::Begin("Options", &showOptions, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (_showOptions && ImGui::Begin("Options", &_showOptions, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::CheckboxVar("Fog", cfg::ClientFog);
 		ImGui::CheckboxVar("Shadow map", _shadowMap);
 		ImGui::CheckboxVar("Show shadow map", _shadowMapShow);
