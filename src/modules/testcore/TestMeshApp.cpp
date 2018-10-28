@@ -91,7 +91,6 @@ void TestMeshApp::onRenderUI() {
 	const int windowPadding = 20;
 
 	const int meshDetailsWidth = 360;
-	const int meshDetailsHeight = 200;
 	ImGui::SetNextWindowPos(ImVec2(width() - meshDetailsWidth - windowPadding, windowPadding), ImGuiCond_FirstUseEver);
 	if (_showMeshDetails && ImGui::Begin("Mesh details", &_showMeshDetails, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Mesh %s", _mesh->filename().c_str());
@@ -108,7 +107,7 @@ void TestMeshApp::onRenderUI() {
 		ImGui::End();
 	}
 
-	ImGui::SetNextWindowPos(ImVec2(windowPadding, 420), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(windowPadding, 400), ImGuiCond_FirstUseEver);
 	if (_showOptions && ImGui::Begin("Options", &_showOptions, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::CheckboxVar("Fog", cfg::ClientFog);
 		ImGui::CheckboxVar("Shadow map", _shadowMap);
