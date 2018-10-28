@@ -2391,10 +2391,12 @@ bool ImGui::SliderFloat4(const char* label, float v[4], float v_min, float v_max
     return SliderScalarN(label, ImGuiDataType_Float, v, 4, &v_min, &v_max, format, power);
 }
 
-bool ImGui::SliderAngle(const char* label, float* v_rad, float v_degrees_min, float v_degrees_max)
+bool ImGui::SliderAngle(const char* label, float* v_rad, float v_degrees_min, float v_degrees_max, const char* format)
 {
+    if (format == NULL)
+        format = "%.0f deg";
     float v_deg = (*v_rad) * 360.0f / (2*IM_PI);
-    bool value_changed = SliderFloat(label, &v_deg, v_degrees_min, v_degrees_max, "%.0f deg", 1.0f);
+    bool value_changed = SliderFloat(label, &v_deg, v_degrees_min, v_degrees_max, format, 1.0f);
     *v_rad = v_deg * (2*IM_PI) / 360.0f;
     return value_changed;
 }
@@ -3404,7 +3406,7 @@ bool ImGui::InputTextEx(const char* label, char* buf, int buf_size, const ImVec2
             {
                 // Filter pasted buffer
                 const int clipboard_len = (int)strlen(clipboard);
-                ImWchar* clipboard_filtered = (ImWchar*)ImGui::MemAlloc((clipboard_len+1) * sizeof(ImWchar));
+                ImWchar* clipboard_filtered = (ImWchar*)MemAlloc((clipboard_len+1) * sizeof(ImWchar));
                 int clipboard_filtered_len = 0;
                 for (const char* s = clipboard; *s; )
                 {
@@ -3422,7 +3424,7 @@ bool ImGui::InputTextEx(const char* label, char* buf, int buf_size, const ImVec2
                     stb_textedit_paste(&edit_state, &edit_state.StbState, clipboard_filtered, clipboard_filtered_len);
                     edit_state.CursorFollow = true;
                 }
-                ImGui::MemFree(clipboard_filtered);
+                MemFree(clipboard_filtered);
             }
         }
     }
@@ -4532,38 +4534,38 @@ void ImGui::ColorPickerOptionsPopup(const float* ref_col, ImGuiColorEditFlags fl
 {
     bool allow_opt_picker = !(flags & ImGuiColorEditFlags__PickerMask);
     bool allow_opt_alpha_bar = !(flags & ImGuiColorEditFlags_NoAlpha) && !(flags & ImGuiColorEditFlags_AlphaBar);
-    if ((!allow_opt_picker && !allow_opt_alpha_bar) || !ImGui::BeginPopup("context"))
+    if ((!allow_opt_picker && !allow_opt_alpha_bar) || !BeginPopup("context"))
         return;
     ImGuiContext& g = *GImGui;
     if (allow_opt_picker)
     {
-        ImVec2 picker_size(g.FontSize * 8, ImMax(g.FontSize * 8 - (ImGui::GetFrameHeight() + g.Style.ItemInnerSpacing.x), 1.0f)); // FIXME: Picker size copied from main picker function
-        ImGui::PushItemWidth(picker_size.x);
+        ImVec2 picker_size(g.FontSize * 8, ImMax(g.FontSize * 8 - (GetFrameHeight() + g.Style.ItemInnerSpacing.x), 1.0f)); // FIXME: Picker size copied from main picker function
+        PushItemWidth(picker_size.x);
         for (int picker_type = 0; picker_type < 2; picker_type++)
         {
             // Draw small/thumbnail version of each picker type (over an invisible button for selection)
-            if (picker_type > 0) ImGui::Separator();
-            ImGui::PushID(picker_type);
+            if (picker_type > 0) Separator();
+            PushID(picker_type);
             ImGuiColorEditFlags picker_flags = ImGuiColorEditFlags_NoInputs|ImGuiColorEditFlags_NoOptions|ImGuiColorEditFlags_NoLabel|ImGuiColorEditFlags_NoSidePreview|(flags & ImGuiColorEditFlags_NoAlpha);
             if (picker_type == 0) picker_flags |= ImGuiColorEditFlags_PickerHueBar;
             if (picker_type == 1) picker_flags |= ImGuiColorEditFlags_PickerHueWheel;
-            ImVec2 backup_pos = ImGui::GetCursorScreenPos();
-            if (ImGui::Selectable("##selectable", false, 0, picker_size)) // By default, Selectable() is closing popup
+            ImVec2 backup_pos = GetCursorScreenPos();
+            if (Selectable("##selectable", false, 0, picker_size)) // By default, Selectable() is closing popup
                 g.ColorEditOptions = (g.ColorEditOptions & ~ImGuiColorEditFlags__PickerMask) | (picker_flags & ImGuiColorEditFlags__PickerMask);
-            ImGui::SetCursorScreenPos(backup_pos);
+            SetCursorScreenPos(backup_pos);
             ImVec4 dummy_ref_col;
             memcpy(&dummy_ref_col.x, ref_col, sizeof(float) * (picker_flags & ImGuiColorEditFlags_NoAlpha ? 3 : 4));
-            ImGui::ColorPicker4("##dummypicker", &dummy_ref_col.x, picker_flags);
-            ImGui::PopID();
+            ColorPicker4("##dummypicker", &dummy_ref_col.x, picker_flags);
+            PopID();
         }
-        ImGui::PopItemWidth();
+        PopItemWidth();
     }
     if (allow_opt_alpha_bar)
     {
-        if (allow_opt_picker) ImGui::Separator();
-        ImGui::CheckboxFlags("Alpha Bar", (unsigned int*)&g.ColorEditOptions, ImGuiColorEditFlags_AlphaBar);
+        if (allow_opt_picker) Separator();
+        CheckboxFlags("Alpha Bar", (unsigned int*)&g.ColorEditOptions, ImGuiColorEditFlags_AlphaBar);
     }
-    ImGui::EndPopup();
+    EndPopup();
 }
 
 //-------------------------------------------------------------------------
