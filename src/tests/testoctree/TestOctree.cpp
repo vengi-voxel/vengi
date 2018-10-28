@@ -127,21 +127,22 @@ void TestOctree::handleDirtyState() {
 
 void TestOctree::onRenderUI() {
 	handleDirtyState();
-	ImGui::SetNextWindowSize(ImVec2(400, 120));
+	ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(400, 120), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Keys and information");
 	ImGui::BulletText("+/INSERT: Insert new element");
 	ImGui::BulletText("DELETE: Remove all elements");
 	Super::onRenderUI();
 	ImGui::End();
 
-	ImGui::SetNextWindowSize(ImVec2(500, 260));
+	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(500, 260), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Actions");
 	if (ImGui::Button("Clear")) {
 		clear();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Random Insert")) {
-		// TODO: insert with position and size
 		insert();
 	}
 	ImGui::Separator();
@@ -149,24 +150,8 @@ void TestOctree::onRenderUI() {
 	ImGui::Checkbox("Render Items", &_renderItems);
 	ImGui::Separator();
 
-	const int width = 95;
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("mins.x", &_queryMins.x);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("mins.y", &_queryMins.y);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("mins.z", &_queryMins.z);
-
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("maxs.x", &_queryMaxs.x);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("maxs.y", &_queryMaxs.y);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(width);
-	ImGui::InputInt("maxs.z", &_queryMaxs.z);
+	ImGui::InputInt3("mins", (int*)glm::value_ptr(_queryMins));
+	ImGui::InputInt3("maxs", (int*)glm::value_ptr(_queryMaxs));
 
 	if (ImGui::Button("Query")) {
 		_results.clear();
