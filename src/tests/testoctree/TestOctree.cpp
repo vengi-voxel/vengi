@@ -11,8 +11,6 @@
 TestOctree::TestOctree(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "testoctree");
-	setCameraMotion(true);
-	//setRenderPlane(true);
 	setRenderAxis(true);
 	setCameraSpeed(0.5f);
 }
@@ -70,6 +68,9 @@ core::AppState TestOctree::onInit() {
 
 	_octree.setListener(&_listener);
 	_camera.setFarPlane(4000.0f);
+	_camera.setPosition(glm::vec3(0.0f, 1250.0f, 2500.0f));
+
+	insert();
 
 	return state;
 }

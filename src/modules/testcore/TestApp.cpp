@@ -139,6 +139,10 @@ void TestApp::onRenderUI() {
 	if (ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f)) {
 		setCameraSpeed(_cameraSpeed);
 	}
+	glm::vec3 cameraPos = _camera.position();
+	if (ImGui::InputFloat3("Camera position", glm::value_ptr(cameraPos))) {
+		_camera.setPosition(cameraPos);
+	}
 	ImGui::InputVarFloat("Rotation speed", _rotationSpeed, 0.01f, 0.1f);
 	ImGui::Separator();
 	if (ImGui::Button("Quit")) {
