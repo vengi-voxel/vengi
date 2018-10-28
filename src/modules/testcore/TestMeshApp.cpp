@@ -10,11 +10,12 @@
 #include "video/ScopedViewPort.h"
 #include "io/Filesystem.h"
 
-TestMeshApp::TestMeshApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+TestMeshApp::TestMeshApp(const char *appName, const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider), _colorShader(shader::ColorShader::getInstance()) {
 	setCameraMotion(false);
 	setRenderPlane(false);
 	_fogColor = core::Color::LightBlue;
+	init(ORGANISATION, appName);
 }
 
 core::AppState TestMeshApp::onConstruct() {

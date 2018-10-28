@@ -181,6 +181,12 @@ core::AppState IMGUIApp::onInit() {
 
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
+	const std::string iniFile = _appname + "-imgui.ini";
+	_writePathIni = _filesystem->writePath(iniFile.c_str());
+	io.IniFilename = _writePathIni.c_str();
+	const std::string logFile = _appname + "-imgui.log";
+	_writePathLog = _filesystem->writePath(logFile.c_str());
+	io.LogFilename = _writePathLog.c_str();
 	io.DisplaySize = ImVec2((float)_dimension.x, (float)_dimension.y);
 	ImFontConfig fontCfg;
 	fontCfg.SizePixels = 13.0f * _dpiFactor;

@@ -9,6 +9,6 @@ int main(int argc, char *argv[]) {
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	TestMeshApp app(metric, filesystem, eventBus, timeProvider);
+	TestMeshApp app("testmesh", metric, filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

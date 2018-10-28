@@ -73,6 +73,8 @@ protected:
 	Measures _traceMeasuresLastFrame;
 	using FramesMillis = std::array<uint64_t, _maxMeasureSize>;
 	FramesMillis _frameMillis {0ul};
+	std::string _writePathIni;
+	std::string _writePathLog;
 
 	virtual void traceBeginFrame(const char *threadName) override;
 	virtual void traceBegin(const char *threadName, const char* name) override;

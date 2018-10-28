@@ -34,6 +34,7 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 	} else {
 		_homePath = prefPath;
 		SDL_free(prefPath);
+		createDir(_homePath);
 	}
 
 	registerPath(_basePath);
