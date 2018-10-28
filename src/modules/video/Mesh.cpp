@@ -107,9 +107,10 @@ bool Mesh::loadMesh(const std::string& filename) {
 		Log::error("Scene doesn't have a root node'%s': '%s'", filename.c_str(), _importer->GetErrorString());
 		return false;
 	}
+	Log::info("Animations found %i", (int)_scene->mNumAnimations);
 	for (uint32_t i = 0; i < _scene->mNumAnimations; ++i) {
 		const aiAnimation* animation = _scene->mAnimations[i];
-		Log::debug("Animation %i: %s", i, animation->mName.C_Str());
+		Log::info("Animation %i: %s", i, animation->mName.C_Str());
 	}
 	if (_scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE) {
 		Log::warn("Scene incomplete '%s': '%s'", filename.c_str(), _importer->GetErrorString());
