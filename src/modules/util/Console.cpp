@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Console.h"
 #include "core/App.h"
 #include "core/Assert.h"
@@ -61,7 +65,7 @@ static inline void skipColor(const char **cstr) {
 
 Console::Console() :
 		_mainThread(std::this_thread::get_id()) {
-	SDL_LogGetOutputFunction(&_logFunction, nullptr);
+	SDL_LogGetOutputFunction(&_logFunction, &_logUserData);
 	SDL_LogSetOutputFunction(logConsole, this);
 }
 
@@ -491,25 +495,36 @@ std::string Console::removeAnsiColors(const char* message) {
 }
 
 void Console::logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message) {
-	const std::string& cleaned = removeAnsiColors(message);
-	Console* console = (Console*)userdata;
-	const bool hasColor = isColor(cleaned.c_str());
-	const std::string& color = hasColor ? "" : getColor(priorityColors[priority]);
-	if (std::this_thread::get_id() != console->_mainThread) {
-		console->_messageQueue.push(color + cleaned);
+	if ((int) priority < 0 || priority >= SDL_NUM_LOG_PRIORITIES) {
 		return;
 	}
-	console->_messages.push_back(color + cleaned);
-	if (hasColor) {
-		skipColor(&message);
+	if (priority < SDL_LogGetPriority(category)) {
+		return;
 	}
-	console->_logFunction(userdata, category, priority, message);
+	Console* console = (Console*)userdata;
+	if (std::this_thread::get_id() != console->_mainThread) {
+		core_assert(message);
+		console->_messageQueue.emplace(category, priority, message);
+		return;
+	}
+	console->addLogLine(category, priority, message);
 	if (priority < SDL_LOG_PRIORITY_ERROR) {
 		return;
 	}
 	if (!console->_consoleActive && console->_autoEnable->boolVal()) {
 		console->toggle();
 	}
+}
+
+void Console::addLogLine(int category, SDL_LogPriority priority, const char *message) {
+	const std::string& cleaned = removeAnsiColors(message);
+	const bool hasColor = isColor(cleaned.c_str());
+	const std::string& color = hasColor ? "" : getColor(priorityColors[priority]);
+	_messages.emplace_back(color + cleaned);
+	if (hasColor) {
+		skipColor(&message);
+	}
+	_logFunction(_logUserData, category, priority, message);
 }
 
 bool Console::toggle() {
@@ -519,9 +534,18 @@ bool Console::toggle() {
 
 void Console::update(uint64_t dt) {
 	core_assert(_mainThread == std::this_thread::get_id());
-	std::string msg;
+	LogLine msg;
+	bool toggleConsole = false;
 	while (_messageQueue.pop(msg)) {
-		_messages.push_back(msg);
+		core_assert(msg.message);
+		addLogLine(msg.category, msg.priority, msg.message);
+		toggleConsole |= msg.priority >= SDL_LOG_PRIORITY_ERROR;
+	}
+	if (toggleConsole) {
+		return;
+	}
+	if (!_consoleActive && _autoEnable->boolVal()) {
+		toggle();
 	}
 }
 

@@ -22,12 +22,59 @@ protected:
 	typedef std::vector<std::string> Messages;
 	typedef Messages::const_reverse_iterator MessagesIter;
 	Messages _messages;
-	core::ConcurrentQueue<std::string> _messageQueue;
+
+	/**
+	 * @brief Data structure to store a log entry call from a different thread.
+	 */
+	struct LogLine {
+		LogLine(int _category = 0, SDL_LogPriority _priority = (SDL_LogPriority)0, const char* _message = nullptr) :
+				category(_category), priority(_priority), message(_message ? SDL_strdup(_message) : nullptr) {
+		}
+		~LogLine() {
+			SDL_free(message);
+			message = (char*)(void*)0xdeadbeef;
+		}
+		LogLine(LogLine&& o) {
+			category = o.category;
+			priority = o.priority;
+			message = o.message;
+			o.message = nullptr;
+		}
+		int category;
+		SDL_LogPriority priority;
+		char* message;
+
+		LogLine& operator=(LogLine&& o) {
+			if (this != &o) {
+				category = o.category;
+				priority = o.priority;
+				message = o.message;
+				o.message = nullptr;
+			}
+			return *this;
+		}
+
+		LogLine& operator=(const LogLine& o) {
+			category = o.category;
+			priority = o.priority;
+			if (message) {
+				SDL_free(message);
+			}
+			message = SDL_strdup(o.message);
+			return *this;
+		}
+
+		inline bool operator<(const LogLine& logLine) const {
+			return category < logLine.category && priority < logLine.priority && message < logLine.message;
+		}
+	};
+	core::ConcurrentQueue<LogLine> _messageQueue;
 	Messages _history;
 	uint32_t _historyPos = 0;
 	const std::thread::id _mainThread;
 	bool _consoleActive = false;
 	SDL_LogOutputFunction _logFunction = nullptr;
+	void *_logUserData = nullptr;
 	core::VarPtr _autoEnable;
 	std::string _commandLine;
 	// commandline character will get overwritten if this is true
@@ -40,6 +87,7 @@ protected:
 
 	static std::string removeAnsiColors(const char* message);
 	static void logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message);
+	void addLogLine(int category, SDL_LogPriority priority, const char *message);
 
 	// cursor move on the commandline
 	void cursorLeft();
