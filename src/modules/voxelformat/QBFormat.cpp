@@ -146,11 +146,7 @@ void QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32
 	const int32_t fy = offset.y + y;
 	const int32_t fz = offset.z + z;
 	Log::debug("Set voxel %i to %i:%i:%i (z-axis: %i)", (int)voxel.getMaterial(), fx, fy, fz, (int)_zAxisOrientation);
-	if (_zAxisOrientation == ZAxisOrientation::Right) {
-		volume->setVoxel(fx, fy, fz, voxel);
-	} else {
-		volume->setVoxel(fz, fy, fx, voxel);
-	}
+	volume->setVoxel(fx, fy, fz, voxel);
 }
 
 voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
@@ -190,9 +186,9 @@ bool QBFormat::loadMatrix(io::FileStream& stream, voxel::RawVolume*& volume) {
 	Log::debug("Matrix name: %s", buf);
 
 	glm::uvec3 size(0);
-	wrap(stream.readInt(size.x));
-	wrap(stream.readInt(size.y));
-	wrap(stream.readInt(size.z));
+	wrap(stream.readInt((uint32_t&)size.x));
+	wrap(stream.readInt((uint32_t&)size.y));
+	wrap(stream.readInt((uint32_t&)size.z));
 	Log::debug("Matrix size: %i:%i:%i", size.x, size.y, size.z);
 
 	if (size.x == 0 || size.y == 0 || size.z == 0) {
@@ -206,13 +202,8 @@ bool QBFormat::loadMatrix(io::FileStream& stream, voxel::RawVolume*& volume) {
 	wrap(stream.readInt((uint32_t&)offset.z));
 	Log::debug("Matrix offset: %i:%i:%i", offset.x, offset.y, offset.z);
 
-	voxel::Region region;
 	const glm::ivec3 maxs(offset.x + size.x - 1, offset.y + size.y - 1, offset.z + size.z - 1);
-	if (_zAxisOrientation == ZAxisOrientation::Right) {
-		region = voxel::Region(offset.x, offset.y, offset.z, maxs.x, maxs.y, maxs.z);
-	} else {
-		region = voxel::Region(offset.z, offset.y, offset.x, maxs.z, maxs.y, maxs.x);
-	}
+	const voxel::Region region(offset.x, offset.y, offset.z, maxs.x, maxs.y, maxs.z);
 	core_assert_msg(region.getDimensionsInVoxels() == glm::ivec3(size),
 			"%i:%i:%i versus %i:%i:%i", region.getDimensionsInVoxels().x, region.getDimensionsInVoxels().y, region.getDimensionsInVoxels().z,
 			size.x, size.y, size.z);
@@ -274,7 +265,7 @@ bool QBFormat::loadFromStream(io::FileStream& stream, std::vector<RawVolume*>& v
 	_colorFormat = (ColorFormat)colorFormat;
 	uint32_t zAxisOrientation;
 	wrap(stream.readInt(zAxisOrientation))
-	_zAxisOrientation = (ZAxisOrientation)zAxisOrientation;
+	_zAxisOrientation = ZAxisOrientation::Right; //(ZAxisOrientation)zAxisOrientation;
 	uint32_t compressed;
 	wrap(stream.readInt(compressed))
 	_compressed = (Compression)compressed;
