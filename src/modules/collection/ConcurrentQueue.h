@@ -54,6 +54,15 @@ public:
 		_conditionVariable.notify_one();
 	}
 
+	template<typename ... _Args>
+	void emplace(_Args&&... __args) {
+		{
+			std::unique_lock<std::mutex> lock(_mutex);
+			_data.emplace(std::forward<_Args>(__args)...);
+		}
+		_conditionVariable.notify_one();
+	}
+
 	inline bool empty() const {
 		std::unique_lock<std::mutex> lock(_mutex);
 		return _data.empty();
