@@ -562,30 +562,43 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 		dir = filename.substr(0, slashIndex);
 	}
 
+	Log::info("Load %i textures for %s", (int)scene->mNumMaterials, filename.c_str());
+
 	_images.resize(scene->mNumMaterials);
 	for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
 		const aiMaterial* material = scene->mMaterials[i];
 		const aiTextureType texType = aiTextureType_DIFFUSE;
-		if (material->GetTextureCount(texType) <= 0) {
+		const int textureCount = material->GetTextureCount(texType);
+		if (textureCount <= 0) {
 			Log::debug("No textures for texture type %i at index %i", texType, i);
 			continue;
 		}
 
-		aiString path;
-		if (material->GetTexture(texType, 0, &path) != AI_SUCCESS) {
-			Log::warn("Could not get texture path for material index %i", i);
-			continue;
+		for (int n = 0; n < textureCount; ++n) {
+			aiString path;
+			if (material->GetTexture(texType, i, &path) != AI_SUCCESS) {
+				Log::warn("Could not get texture path for material index %i", i);
+				continue;
+			}
+			Log::debug("Texture for texture type %i at index %i: %s", texType, i, path.data);
+
+			std::string p(path.data);
+
+			if (p.substr(0, 2) == ".\\") {
+				p = p.substr(2, p.size() - 2);
+			}
+
+			const std::string fullPath = dir + "/" + p;
+			_images[i] = image::loadImage(fullPath, false);
+			if (_images[i]->isLoaded()) {
+				break;
+			}
 		}
-		Log::debug("Texture for texture type %i at index %i: %s", texType, i, path.data);
-
-		std::string p(path.data);
-
-		if (p.substr(0, 2) == ".\\") {
-			p = p.substr(2, p.size() - 2);
+		if (!_images[i]->isLoaded()) {
+			// as a fallback try to load a texture in the same dir as the model with the same base naem
+			const std::string_view& basename = core::string::extractFilename(filename.c_str());
+			_images[i] = image::loadImage(dir + "/" + std::string(basename) + ".png", false);
 		}
-
-		const std::string fullPath = dir + "/" + p;
-		_images[i] = image::loadImage(fullPath, false);
 	}
 }
 

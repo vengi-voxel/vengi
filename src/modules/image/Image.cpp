@@ -66,6 +66,7 @@ ImagePtr loadImage(const std::string& filename, bool async) {
 bool Image::load(uint8_t* buffer, int length) {
 	if (!buffer || length <= 0) {
 		_state = io::IOSTATE_FAILED;
+		Log::debug("Failed to load image %s: buffer empty", _name.c_str());
 		return false;
 	}
 	if (_data) {
@@ -76,10 +77,11 @@ bool Image::load(uint8_t* buffer, int length) {
 	_depth = 4;
 	if (_data == nullptr) {
 		_state = io::IOSTATE_FAILED;
-	} else {
-		_state = io::IOSTATE_LOADED;
+		Log::debug("Failed to load image %s: unsupported format", _name.c_str());
+		return false;
 	}
-
+	Log::debug("Loaded image %s", _name.c_str());
+	_state = io::IOSTATE_LOADED;
 	return true;
 }
 
