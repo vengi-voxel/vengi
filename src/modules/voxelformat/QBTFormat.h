@@ -23,6 +23,8 @@ private:
 	bool loadCompound(io::FileStream& stream, std::vector<RawVolume*>& volumes);
 	bool loadModel(io::FileStream& stream, std::vector<RawVolume*>& volumes);
 	bool loadNode(io::FileStream& stream, std::vector<RawVolume*>& volumes);
+
+	bool loadColorMap(io::FileStream& stream);
 	bool loadFromStream(io::FileStream& stream, std::vector<RawVolume*>& volumes);
 public:
 	std::vector<RawVolume*> loadGroups(const io::FilePtr& file) override;

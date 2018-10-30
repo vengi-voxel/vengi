@@ -5,7 +5,7 @@
 #include "VoxFileFormat.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/polyvox/VolumeMerger.h"
-	#include "core/Common.h"
+#include "core/Common.h"
 #include "core/Log.h"
 #include "core/Color.h"
 #include <limits>

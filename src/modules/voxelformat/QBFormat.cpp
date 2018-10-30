@@ -309,3 +309,10 @@ std::vector<voxel::RawVolume*> QBFormat::loadGroups(const io::FilePtr& file) {
 }
 
 }
+
+#undef wrap
+#undef wrapBool
+#undef wrapSave
+#undef wrapSaveColor
+#undef wrapColor
+#undef setBit
