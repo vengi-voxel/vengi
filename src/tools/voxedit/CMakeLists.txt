@@ -105,6 +105,9 @@ set(FILES
 	voxedit/models/woman.vox
 
 	voxedit/voxedit-keybindings.cfg
+
+	client/mesh/source/chr_knight/chr_knight.qb
+	client/mesh/source/chr_knight/chr_knight.qbt
 )
 
 if (NATIVEFILEDIALOG_FOUND)
