@@ -7,8 +7,6 @@
 #include "cooldown/CooldownType.h"
 #include "backend/entity/ai/AICommon.h"
 
-using namespace ai;
-
 namespace backend {
 
 /**
@@ -16,7 +14,7 @@ namespace backend {
  * the same entity again and again.
  * @ingroup AI
  */
-class SelectIncreasePartner: public IFilter {
+class SelectIncreasePartner: public ai::IFilter {
 private:
 	cooldown::Type _cooldownId;
 public:
@@ -28,7 +26,7 @@ public:
 	 */
 	SelectIncreasePartner(const std::string& parameters = "");
 
-	void filter(const AIPtr& entity) override;
+	void filter(const ai::AIPtr& entity) override;
 };
 
 }

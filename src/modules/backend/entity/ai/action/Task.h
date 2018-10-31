@@ -7,22 +7,20 @@
 #include "backend/entity/ai/AICommon.h"
 #include "backend/entity/ai/AICharacter.h"
 
-using namespace ai;
-
 namespace backend {
 
 /**
  * @ingroup AI
  */
-class Task: public ITask {
+class Task: public ai::ITask {
 public:
 	TASK_CLASS(Task)
 
-	TreeNodeStatus doAction(const AIPtr& entity, int64_t deltaMillis) override {
+	ai::TreeNodeStatus doAction(const ai::AIPtr& entity, int64_t deltaMillis) override {
 		return doAction(ai::character_cast<AICharacter>(entity->getCharacter()), deltaMillis);
 	}
 
-	virtual TreeNodeStatus doAction(backend::AICharacter& chr, int64_t deltaMillis) = 0;
+	virtual ai::TreeNodeStatus doAction(backend::AICharacter& chr, int64_t deltaMillis) = 0;
 };
 
 #define AI_TASK(TaskName) \
@@ -30,13 +28,13 @@ public:
  * @ingroup AI \
  */ \
 struct TaskName: public Task { \
-	TaskName(const std::string& name, const std::string& parameters, const ConditionPtr& condition) : \
+	TaskName(const std::string& name, const std::string& parameters, const ai::ConditionPtr& condition) : \
 			Task(name, parameters, condition) {} \
 	virtual ~TaskName() {} \
 	NODE_FACTORY(TaskName) \
-	TreeNodeStatus doAction(backend::AICharacter& chr, int64_t deltaMillis) override; \
+	ai::TreeNodeStatus doAction(backend::AICharacter& chr, int64_t deltaMillis) override; \
 }; \
-inline TreeNodeStatus TaskName::doAction(backend::AICharacter& chr, int64_t deltaMillis)
+inline ai::TreeNodeStatus TaskName::doAction(backend::AICharacter& chr, int64_t deltaMillis)
 
 }
 

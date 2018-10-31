@@ -7,21 +7,19 @@
 #include "Task.h"
 #include "backend/entity/Npc.h"
 
-using namespace ai;
-
 namespace backend {
 
 AI_TASK(AttackOnSelection) {
 	backend::Npc& npc = chr.getNpc();
-	const FilteredEntities& selection = npc.ai()->getFilteredEntities();
+	const ai::FilteredEntities& selection = npc.ai()->getFilteredEntities();
 	if (selection.empty()) {
-		return FAILED;
+		return ai::TreeNodeStatus::FAILED;
 	}
 	bool attacked = false;
-	for (CharacterId id : selection) {
+	for (ai::CharacterId id : selection) {
 		attacked |= npc.attack(id);
 	}
-	return attacked ? FINISHED : FAILED;
+	return attacked ? ai::TreeNodeStatus::FINISHED : ai::TreeNodeStatus::FAILED;
 }
 
 }

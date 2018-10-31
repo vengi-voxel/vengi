@@ -6,19 +6,17 @@
 
 #include "backend/entity/ai/AICommon.h"
 
-using namespace ai;
-
 namespace backend {
 
 /**
  * @ingroup AI
  */
-class SelectVisible: public IFilter {
+class SelectVisible: public ai::IFilter {
 public:
 	FILTER_FACTORY(SelectVisible)
 	FILTER_CLASS(SelectVisible)
 
-	void filter (const AIPtr& entity) override;
+	void filter (const ai::AIPtr& entity) override;
 };
 
 }

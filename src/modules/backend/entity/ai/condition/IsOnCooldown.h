@@ -10,25 +10,23 @@
 #include "backend/entity/ai/AICharacter.h"
 #include "backend/entity/Npc.h"
 
-using namespace ai;
-
 namespace backend {
 
 /**
  * @ingroup AI
  */
-class IsOnCooldown: public ICondition {
+class IsOnCooldown: public ai::ICondition {
 private:
 	cooldown::Type _cooldownId;
 public:
 	IsOnCooldown(const std::string& parameters) :
-			ICondition("IsOnCooldown", parameters) {
+			ai::ICondition("IsOnCooldown", parameters) {
 		_cooldownId = cooldown::getType(parameters);
 		core_assert_always(_cooldownId != cooldown::Type::NONE);
 	}
 	CONDITION_FACTORY(IsOnCooldown)
 
-	bool evaluate(const AIPtr& entity) override {
+	bool evaluate(const ai::AIPtr& entity) override {
 		const AICharacter& chr = ai::character_cast<AICharacter>(entity->getCharacter());
 		return chr.getNpc().cooldownMgr().isCooldown(_cooldownId);
 	}

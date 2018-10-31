@@ -8,8 +8,8 @@
 
 namespace backend {
 
-void SelectVisible::filter(const AIPtr& entity) {
-	FilteredEntities& entities = getFilteredEntities(entity);
+void SelectVisible::filter(const ai::AIPtr& entity) {
+	ai::FilteredEntities& entities = getFilteredEntities(entity);
 	backend::Npc& chr = getNpc(entity);
 	chr.visitVisible([&] (const EntityPtr& e) {
 		entities.push_back(e->id());

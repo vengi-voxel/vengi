@@ -12,8 +12,8 @@ namespace ai {
  * @brief Macro for the constructor of a task. Just give the class name as parameter.
  */
 #define TASK_CLASS_CTOR(TaskName) \
-	TaskName(const std::string& name, const std::string& parameters, const ConditionPtr& condition) : \
-			ITask(name, parameters, condition)
+	TaskName(const std::string& name, const std::string& parameters, const ::ai::ConditionPtr& condition) : \
+			::ai::ITask(name, parameters, condition)
 /**
  * @brief Macro for the destructor of a task. Just give the class name as parameter.
  */

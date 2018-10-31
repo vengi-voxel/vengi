@@ -3,6 +3,8 @@
  */
 #pragma once
 
+#ifndef SIMPLEAI_SKIP_LOG
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -68,3 +70,4 @@ static inline void error(const char* msg, ...) {
 
 }
 }
+#endif

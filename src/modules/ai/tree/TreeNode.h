@@ -52,9 +52,9 @@ enum TreeNodeStatus {
  * @brief A node factory macro to ease and unify the registration at AIRegistry.
  */
 #define NODE_FACTORY(NodeName) \
-	class Factory: public ITreeNodeFactory { \
+	class Factory: public ::ai::ITreeNodeFactory { \
 	public: \
-		TreeNodePtr create (const TreeNodeFactoryContext *ctx) const override { \
+		::ai::TreeNodePtr create (const ::ai::TreeNodeFactoryContext *ctx) const override { \
 			return std::make_shared<NodeName>(ctx->name, ctx->parameters, ctx->condition); \
 		} \
 	}; \
@@ -67,8 +67,8 @@ enum TreeNodeStatus {
  * @brief A node class macro that also defines a factory.
  */
 #define NODE_CLASS(NodeName) \
-	NodeName(const std::string& name, const std::string& parameters, const ConditionPtr& condition) : \
-		TreeNode(name, parameters, condition) { \
+	NodeName(const std::string& name, const std::string& parameters, const ::ai::ConditionPtr& condition) : \
+		::ai::TreeNode(name, parameters, condition) { \
 		_type = AI_STRINGIFY(NodeName); \
 	} \
 	virtual ~NodeName() { \

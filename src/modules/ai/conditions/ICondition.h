@@ -28,7 +28,7 @@ typedef std::shared_ptr<AI> AIPtr;
  */
 #define CONDITION_CLASS(ConditionName) \
 	explicit ConditionName(const std::string& parameters = "") : \
-		ICondition(#ConditionName, parameters) { \
+		::ai::ICondition(#ConditionName, parameters) { \
 	} \
 public: \
 	virtual ~ConditionName() { \
@@ -40,9 +40,9 @@ public: \
  */
 #define CONDITION_FACTORY_NO_IMPL(ConditionName) \
 public: \
-	class Factory: public IConditionFactory { \
+	class Factory: public ::ai::IConditionFactory { \
 	public: \
-		ConditionPtr create (const ConditionFactoryContext *ctx) const override; \
+		::ai::ConditionPtr create (const ::ai::ConditionFactoryContext *ctx) const override; \
 	}; \
 	static const Factory& getFactory() { \
 		static Factory FACTORY; \
@@ -54,9 +54,9 @@ public: \
  */
 #define CONDITION_FACTORY(ConditionName) \
 public: \
-	class Factory: public IConditionFactory { \
+	class Factory: public ::ai::IConditionFactory { \
 	public: \
-		ConditionPtr create (const ConditionFactoryContext *ctx) const override { \
+		::ai::ConditionPtr create (const ::ai::ConditionFactoryContext *ctx) const override { \
 			return std::make_shared<ConditionName>(ctx->parameters); \
 		} \
 	}; \
@@ -72,8 +72,8 @@ public: \
  */
 #define CONDITION_FACTORY_SINGLETON \
 public: \
-	class Factory: public IConditionFactory { \
-		ConditionPtr create (const ConditionFactoryContext */*ctx*/) const { \
+	class Factory: public ::ai::IConditionFactory { \
+		::ai::ConditionPtr create (const ::ai::ConditionFactoryContext */*ctx*/) const { \
 			return get(); \
 		} \
 	}; \
@@ -98,10 +98,10 @@ public: \
 	CONDITION_FACTORY_SINGLETON
 
 #define CONDITION_PRINT_SUBCONDITIONS_GETCONDITIONNAMEWITHVALUE \
-	void getConditionNameWithValue(std::stringstream& s, const AIPtr& entity) override { \
+	void getConditionNameWithValue(std::stringstream& s, const ::ai::AIPtr& entity) override { \
 		bool first = true; \
 		s << "("; \
-		for (ConditionsConstIter i = _conditions.begin(); i != _conditions.end(); ++i) { \
+		for (::ai::ConditionsConstIter i = _conditions.begin(); i != _conditions.end(); ++i) { \
 			if (!first) { \
 				s << ","; \
 			} \

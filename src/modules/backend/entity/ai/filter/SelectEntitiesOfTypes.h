@@ -9,14 +9,12 @@
 #include "core/Common.h"
 #include <bitset>
 
-using namespace ai;
-
 namespace backend {
 
 /**
  * @ingroup AI
  */
-class SelectEntitiesOfTypes: public IFilter {
+class SelectEntitiesOfTypes: public ai::IFilter {
 private:
 	std::bitset<std::enum_value(network::EntityType::MAX)> _entityTypes;
 public:
@@ -24,7 +22,7 @@ public:
 
 	SelectEntitiesOfTypes(const std::string& parameters);
 
-	void filter(const AIPtr& entity) override;
+	void filter(const ai::AIPtr& entity) override;
 };
 
 }

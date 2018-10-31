@@ -41,7 +41,7 @@ TEST_F(AITest, testFilterSelectVisible) {
 	const ai::FilterPtr& filter = SelectVisible::getFactory().create(&ctx);
 	filter->filter(npc->ai());
 
-	const FilteredEntities& fe = npc->ai()->getFilteredEntities();
+	const ai::FilteredEntities& fe = npc->ai()->getFilteredEntities();
 	EXPECT_EQ(2u, fe.size())
 		<< "Expected to have two of the npcs visible, but " << fe.size() << " are";
 	EXPECT_TRUE(std::find(fe.begin(), fe.end(), npcNotVisible->id()) == fe.end())
@@ -60,7 +60,7 @@ TEST_F(AITest, testFilterSelectEntitiesOfTypes) {
 	const ai::FilterPtr& filter = SelectEntitiesOfTypes::getFactory().create(&ctx);
 	filter->filter(npc->ai());
 
-	const FilteredEntities& fe = npc->ai()->getFilteredEntities();
+	const ai::FilteredEntities& fe = npc->ai()->getFilteredEntities();
 	EXPECT_EQ(2u, fe.size())
 		<< "Expected to have two of the npcs visible, but " << fe.size() << " are";
 }

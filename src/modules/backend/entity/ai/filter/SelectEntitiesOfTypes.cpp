@@ -5,12 +5,10 @@
 #include "backend/entity/ai/AICharacter.h"
 #include "network/ProtocolEnum.h"
 
-using namespace ai;
-
 namespace backend {
 
 SelectEntitiesOfTypes::SelectEntitiesOfTypes(const std::string& parameters) :
-		IFilter("SelectEntitiesOfTypes", parameters) {
+		ai::IFilter("SelectEntitiesOfTypes", parameters) {
 	std::vector<std::string> types;
 	core::string::splitString(parameters, types, ",");
 	for (const std::string& type : types) {
@@ -20,8 +18,8 @@ SelectEntitiesOfTypes::SelectEntitiesOfTypes(const std::string& parameters) :
 	}
 }
 
-void SelectEntitiesOfTypes::filter(const AIPtr& entity) {
-	FilteredEntities& entities = getFilteredEntities(entity);
+void SelectEntitiesOfTypes::filter(const ai::AIPtr& entity) {
+	ai::FilteredEntities& entities = getFilteredEntities(entity);
 	backend::Npc& chr = getNpc(entity);
 	chr.visitVisible([&] (const backend::EntityPtr& e) {
 		if (!_entityTypes[std::enum_value(e->entityType())]) {

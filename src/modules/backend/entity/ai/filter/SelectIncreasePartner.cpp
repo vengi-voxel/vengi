@@ -12,13 +12,13 @@
 namespace backend {
 
 SelectIncreasePartner::SelectIncreasePartner(const std::string& parameters) :
-		IFilter("SelectIncreasePartner", parameters) {
+		ai::IFilter("SelectIncreasePartner", parameters) {
 	_cooldownId = cooldown::getType(parameters);
 	core_assert_always(_cooldownId != cooldown::Type::NONE);
 }
 
-void SelectIncreasePartner::filter(const AIPtr& entity) {
-	FilteredEntities& entities = getFilteredEntities(entity);
+void SelectIncreasePartner::filter(const ai::AIPtr& entity) {
+	ai::FilteredEntities& entities = getFilteredEntities(entity);
 	entities.clear();
 	backend::Npc& chr = getNpc(entity);
 	chr.visitVisible([&] (const backend::EntityPtr& e) {

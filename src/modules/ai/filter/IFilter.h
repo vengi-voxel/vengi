@@ -41,7 +41,7 @@ namespace ai {
  */
 #define FILTER_CLASS(FilterName) \
 	explicit FilterName(const std::string& parameters = "") : \
-		IFilter(#FilterName, parameters) { \
+		::ai::IFilter(#FilterName, parameters) { \
 	} \
 public: \
 	virtual ~FilterName() { \
@@ -49,9 +49,9 @@ public: \
 
 #define FILTER_FACTORY(FilterName) \
 public: \
-	class Factory: public IFilterFactory { \
+	class Factory: public ::ai::IFilterFactory { \
 	public: \
-		FilterPtr create (const FilterFactoryContext *ctx) const override { \
+		::ai::FilterPtr create (const ::ai::FilterFactoryContext *ctx) const override { \
 			return std::make_shared<FilterName>(ctx->parameters); \
 		} \
 	}; \
@@ -61,21 +61,21 @@ public: \
 	}
 
 #define FILTER_ACTION_CLASS(FilterName) \
-	FilterName(const std::string& parameters, const Filters& filters) : \
-		IFilter(#FilterName, parameters), _filters(filters) { \
+	FilterName(const std::string& parameters, const ::ai::Filters& filters) : \
+		::ai::IFilter(#FilterName, parameters), _filters(filters) { \
 		ai_assert(_filters.size() > 1, #FilterName " must contain at least two sub filters"); \
 	} \
 protected: \
-	const Filters _filters; \
+	const ::ai::Filters _filters; \
 public: \
 	virtual ~FilterName() { \
 	}
 
 #define FILTER_ACTION_FACTORY(FilterName) \
 public: \
-	class Factory: public IFilterFactory { \
+	class Factory: public ::ai::IFilterFactory { \
 	public: \
-		FilterPtr create (const FilterFactoryContext *ctx) const override { \
+		::ai::FilterPtr create (const ::ai::FilterFactoryContext *ctx) const override { \
 			return std::make_shared<FilterName>(ctx->parameters, ctx->filters); \
 		} \
 	}; \
@@ -86,8 +86,8 @@ public: \
 
 #define FILTER_FACTORY_SINGLETON \
 public: \
-	class Factory: public IFilterFactory { \
-		FilterPtr create (const FilterFactoryContext */*ctx*/) const override { \
+	class Factory: public ::ai::IFilterFactory { \
+		::ai::FilterPtr create (const ::ai::FilterFactoryContext */*ctx*/) const override { \
 			return get(); \
 		} \
 	}; \
@@ -103,10 +103,10 @@ public: \
 private: \
 FILTER_CLASS(FilterName) \
 public: \
-	static FilterPtr& get() { \
+	static ::ai::FilterPtr& get() { \
 		AI_THREAD_LOCAL FilterName* c = nullptr; \
 		if (c == nullptr) { c = new FilterName; } \
-		AI_THREAD_LOCAL FilterPtr _instance(c); \
+		AI_THREAD_LOCAL ::ai::FilterPtr _instance(c); \
 		return _instance; \
 	} \
 	FILTER_FACTORY_SINGLETON

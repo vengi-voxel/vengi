@@ -7,20 +7,18 @@
 #include "backend/entity/ai/AICommon.h"
 #include "backend/entity/EntityStorage.h"
 
-using namespace ai;
-
 namespace backend {
 
 /**
  * @ingroup AI
  */
-class IsCloseToSelection: public ICondition {
+class IsCloseToSelection: public ai::ICondition {
 protected:
 	int _distance;
 
 public:
 	IsCloseToSelection(const std::string& parameters) :
-			ICondition("IsCloseToSelection", parameters) {
+			ai::ICondition("IsCloseToSelection", parameters) {
 		if (_parameters.empty()) {
 			_distance = 1;
 		} else {
@@ -29,19 +27,19 @@ public:
 	}
 	CONDITION_FACTORY(IsCloseToSelection)
 
-	bool evaluate(const AIPtr& entity) override {
+	bool evaluate(const ai::AIPtr& entity) override {
 		ai::Zone* zone = entity->getZone();
 		if (zone == nullptr) {
 			return false;
 		}
 
-		const FilteredEntities& selection = entity->getFilteredEntities();
+		const ai::FilteredEntities& selection = entity->getFilteredEntities();
 		if (selection.empty()) {
 			return false;
 		}
 
-		for (CharacterId id : selection) {
-			const AIPtr& ai = zone->getAI(id);
+		for (ai::CharacterId id : selection) {
+			const ai::AIPtr& ai = zone->getAI(id);
 			const Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
 			const glm::vec3& pos = npc.pos();
 			const glm::vec3& ownPos = entity->getCharacter()->getPosition();

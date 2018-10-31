@@ -10,8 +10,6 @@
 #include "backend/entity/Npc.h"
 #include "backend/world/Map.h"
 
-using namespace ai;
-
 namespace backend {
 
 /**
@@ -22,9 +20,9 @@ AI_TASK(Spawn) {
 	const glm::ivec3 pos = glm::ivec3(npc.pos());
 	const SpawnMgrPtr& spawnMgr = npc.map()->spawnMgr();
 	if (spawnMgr->spawn(npc.entityType(), 1, &pos) == 1) {
-		return FINISHED;
+		return ai::TreeNodeStatus::FINISHED;
 	}
-	return FAILED;
+	return ai::TreeNodeStatus::FAILED;
 }
 
 }
