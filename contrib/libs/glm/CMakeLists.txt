@@ -1,2 +1,5 @@
 set(SRCS glm/detail/glm.cpp)
 engine_add_library(LIB glm SRCS ${SRCS})
+if (NOT GLM_FOUND)
+	target_compile_definitions(glm PUBLIC GLM_FORCE_CXX14)
+endif()
