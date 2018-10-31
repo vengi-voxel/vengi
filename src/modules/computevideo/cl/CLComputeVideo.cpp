@@ -10,6 +10,7 @@
 #include <CL/cl_gl.h>
 #include <SDL.h>
 #include <SDL_platform.h>
+#include <SDL_config.h>
 
 namespace computevideo {
 
