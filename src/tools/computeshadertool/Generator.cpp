@@ -188,9 +188,7 @@ static void generateKernelExecution(const Kernel& k, std::stringstream& kernels,
 		if (!first) {
 			kernels << ", ";
 		}
-		const util::CLTypeMapping& clType = util::vectorType(p.type);
 		if (isBuffer(p.type)) {
-			const util::CLTypeMapping& clType = util::vectorType(p.type);
 			const std::string& bufferName = getBufferName(k, p);
 			if (type == BodyType::Vector) {
 				kernels << p.name << ".data(), core::vectorSize(" << p.name << ")";
