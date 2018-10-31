@@ -100,26 +100,28 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, std::vector<RawVolume*>& volu
 	char buf[1024];
 	uint32_t nameLength;
 	wrap(stream.readInt(nameLength));
-	if (nameLength >= sizeof(buf)) {
+	if ((size_t)nameLength >= sizeof(buf)) {
 		return false;
 	}
 	wrapBool(stream.readString(nameLength, buf));
+	buf[nameLength] = '\0';
+	Log::debug("Matrix name: %s", buf);
 	glm::ivec3 position;
-	glm::ivec3 localScale;
+	glm::uvec3 localScale;
 	glm::vec3 pivot;
-	glm::ivec3 size;
+	glm::uvec3 size;
 	wrap(stream.readInt((uint32_t&)position.x));
 	wrap(stream.readInt((uint32_t&)position.y));
 	wrap(stream.readInt((uint32_t&)position.z));
-	wrap(stream.readInt((uint32_t&)localScale.x));
-	wrap(stream.readInt((uint32_t&)localScale.y));
-	wrap(stream.readInt((uint32_t&)localScale.z));
+	wrap(stream.readInt(localScale.x));
+	wrap(stream.readInt(localScale.y));
+	wrap(stream.readInt(localScale.z));
 	wrap(stream.readFloat(pivot.x));
 	wrap(stream.readFloat(pivot.y));
 	wrap(stream.readFloat(pivot.z));
-	wrap(stream.readInt((uint32_t&)size.x));
-	wrap(stream.readInt((uint32_t&)size.y));
-	wrap(stream.readInt((uint32_t&)size.z));
+	wrap(stream.readInt(size.x));
+	wrap(stream.readInt(size.y));
+	wrap(stream.readInt(size.z));
 
 	uint32_t voxelDataSize;
 	wrap(stream.readInt(voxelDataSize));
@@ -128,7 +130,7 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, std::vector<RawVolume*>& volu
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
-	if (glm::any(glm::greaterThan(size, glm::ivec3(2048)))) {
+	if (glm::any(glm::greaterThan(size, glm::uvec3(2048)))) {
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
@@ -141,6 +143,9 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, std::vector<RawVolume*>& volu
 	core::Zip z;
 	if (!z.uncompress(voxelData, voxelDataSize, voxelDataDecompressed, voxelDataSizeDecompressed)) {
 		Log::error("Could not load qbt file: Failed to extract zip data");
+		if (voxelDataSize >= 4) {
+			Log::debug("First 4 bytes: 0x%x 0x%x 0x%x 0x%x", voxelData[0], voxelData[1], voxelData[2], voxelData[3]);
+		}
 		delete [] voxelData;
 		delete [] voxelDataDecompressed;
 		return false;
@@ -148,9 +153,9 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, std::vector<RawVolume*>& volu
 	const voxel::Region region(0, 0, 0, size.x, size.y, size.z);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	uint32_t byteCounter = 0u;
-	for (int32_t x = 0; x < size.x; x++) {
-		for (int32_t z = 0; z < size.z; z++) {
-			for (int32_t y = 0; y < size.y; y++) {
+	for (int32_t z = 0; z < size.z; z++) {
+		for (int32_t y = 0; y < size.y; y++) {
+			for (int32_t x = 0; x < size.x; x++) {
 				const uint32_t red   = ((uint32_t)voxelDataDecompressed[byteCounter++]) << 0;
 				const uint32_t green = ((uint32_t)voxelDataDecompressed[byteCounter++]) << 8;
 				const uint32_t blue  = ((uint32_t)voxelDataDecompressed[byteCounter++]) << 16;
