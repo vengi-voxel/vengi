@@ -10,13 +10,13 @@ namespace voxel {
 class QBTFormatTest: public AbstractVoxFormatTest {
 };
 
-TEST_F(QBTFormatTest, DISABLED_testLoad) {
-	const io::FilePtr& file = _testApp->filesystem()->open("qubicle.qbt");
-	ASSERT_TRUE((bool)file) << "Could not open qbt file";
+TEST_F(QBTFormatTest, testLoad) {
 	QBTFormat f;
-	RawVolume* volume = f.load(file);
+	std::unique_ptr<RawVolume> volume(load("qubicle.qbt", f));
 	ASSERT_NE(nullptr, volume) << "Could not load qbt file";
-	delete volume;
+}
+
+TEST_F(QBTFormatTest, testSave) {
 }
 
 }

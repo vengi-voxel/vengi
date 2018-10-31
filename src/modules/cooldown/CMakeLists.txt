@@ -11,8 +11,6 @@ set(FILES
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES core commonlua network)
 
-gtest_suite_files(tests ${FILES})
-
 gtest_suite_sources(tests
 	tests/CooldownProviderTest.cpp
 	tests/CooldownMgrTest.cpp
