@@ -7,7 +7,14 @@
 #include "video/Buffer.h"
 #include "video/gl/GLRenderer.h"
 #include "video/Texture.h"
+#ifdef __APPLE__
+#include <OpenCL/cl_gl_ext.h>
+#include <OpenCL/opencl.h>
+#include <OpenGL/CGLCurrent.h>
+#include <OpenGL/CGLDevice.h>
+#else
 #include <CL/cl_gl.h>
+#endif
 #include <SDL.h>
 #include <SDL_platform.h>
 #include <SDL_config.h>
@@ -19,12 +26,15 @@ bool init() {
 		Log::error("Init must happen before a context is created");
 		return false;
 	}
+	bool valid = false;
 #ifdef __APPLE__
 #if SDL_VIDEO_OPENGL_CGL
 	compute::_priv::_ctx.externalProperties.push_back(CL_CGL_SHAREGROUP_KHR);
 	compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()));
+	valid = true;
 #else
-#error "Unknown opengl mode"
+	Log::warn("Unknown OpenGL mode");
+	return false;
 #endif // SDL_VIDEO_OPENGL_CGL
 #else // __APPLE__
 	SDL_GLContext glCtx = SDL_GL_GetCurrentContext();
@@ -33,43 +43,35 @@ bool init() {
 	}
 	compute::_priv::_ctx.externalProperties.push_back(CL_GL_CONTEXT_KHR);
 	compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)glCtx);
-#ifdef __WINDOWS__
-#if SDL_VIDEO_OPENGL_WGL
-	void* (*drawableFunc) (void) = (void*(*)(void)) SDL_GL_GetProcAddress("wglGetCurrentDC");
-	if (drawableFunc == nullptr) {
-		return false;
+	void* (*drawableFuncWGL) (void) = (void*(*)(void)) SDL_GL_GetProcAddress("wglGetCurrentDC");
+	if (drawableFuncWGL != nullptr) {
+		compute::_priv::_ctx.externalProperties.push_back(CL_WGL_HDC_KHR);
+		compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)drawableFuncWGL());
+		valid = true;
 	}
-	compute::_priv::_ctx.externalProperties.push_back(CL_WGL_HDC_KHR);
-	compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)drawableFunc());
-#else
-#error "Unknown opengl mode"
-#endif // SDL_VIDEO_OPENGL_WGL
-#endif // __WINDOWS__
-#ifdef __LINUX__
-#if SDL_VIDEO_OPENGL_GLX
-	void* (*drawableFunc) (void) = (void*(*)(void)) SDL_GL_GetProcAddress("glXGetCurrentDisplay");
-	if (drawableFunc == nullptr) {
-		return false;
+	void* (*drawableFuncGLX) (void) = (void*(*)(void)) SDL_GL_GetProcAddress("glXGetCurrentDisplay");
+	if (drawableFuncGLX != nullptr) {
+		compute::_priv::_ctx.externalProperties.push_back(CL_GLX_DISPLAY_KHR);
+		compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)drawableFuncGLX());
+		valid = true;
 	}
-	compute::_priv::_ctx.externalProperties.push_back(CL_GLX_DISPLAY_KHR);
-	compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)drawableFunc());
-#elif SDL_VIDEO_OPENGL_EGL || SDL_VIDEO_OPENGL_ES2
-	void* (*drawableFunc) (void) = (void*(*)(void)) SDL_GL_GetProcAdress("eglGetCurrentDisplay");
-	if (drawableFunc == nullptr) {
-		return false;
+	void* (*drawableFuncEGL) (void) = (void*(*)(void)) SDL_GL_GetProcAddress("eglGetCurrentDisplay");
+	if (drawableFuncEGL == nullptr) {
+		compute::_priv::_ctx.externalProperties.push_back(CL_EGL_DISPLAY_KHR);
+		compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)drawableFuncEGL());
+		valid = true;
 	}
-	compute::_priv::_ctx.externalProperties.push_back(CL_EGL_DISPLAY_KHR);
-	compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)drawableFunc());
-#else
-#error "Unknown opengl mode"
-#endif // SDL_VIDEO_OPENGL_GLX
-#endif // __LINUX__
 #endif // __APPLE__
+	if (!valid) {
+		Log::warn("Could not create sharing context");
+		return false;
+	}
 	compute::_priv::_ctx.useGL = true;
 	return true;
 }
 
 void shutdown() {
+	compute::_priv::_ctx.useGL = false;
 }
 
 /**
