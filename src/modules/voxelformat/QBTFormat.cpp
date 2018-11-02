@@ -140,8 +140,7 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, std::vector<RawVolume*>& volu
 	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * 4;
 	uint8_t* voxelDataDecompressed = new uint8_t[voxelDataSizeDecompressed];
 
-	core::Zip z;
-	if (!z.uncompress(voxelData, voxelDataSize, voxelDataDecompressed, voxelDataSizeDecompressed)) {
+	if (!core::zip::uncompress(voxelData, voxelDataSize, voxelDataDecompressed, voxelDataSizeDecompressed)) {
 		Log::error("Could not load qbt file: Failed to extract zip data");
 		if (voxelDataSize >= 4) {
 			Log::debug("First 4 bytes: 0x%x 0x%x 0x%x 0x%x", voxelData[0], voxelData[1], voxelData[2], voxelData[3]);

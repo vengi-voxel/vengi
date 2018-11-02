@@ -38,7 +38,7 @@ set(SRCS
 	Var.cpp Var.h
 	Vector.h
 	Vertex.h
-	Zip.h
+	Zip.cpp Zip.h
 )
 set(LIB core)
 set(FILES
@@ -61,6 +61,7 @@ set(TEST_SRCS
 	tests/PoolAllocatorTest.cpp
 	tests/StringTest.cpp
 	tests/ReadWriteLockTest.cpp
+	tests/ZipTest.cpp
 )
 
 gtest_suite_sources(tests ${TEST_SRCS})
