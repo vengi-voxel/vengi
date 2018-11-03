@@ -112,6 +112,19 @@ inline bool startsWith(const char* string, const char* token) {
 	return !std::string_view(string).compare(0, strlen(token), token);
 }
 
+/**
+ * @brief Locate the string after the last occurrence of the given character in the input string
+ * @return nullptr if the character is not part of the input string. Otherwise the pointer to the character
+ * followed by the last found match.
+ */
+inline const char* after(const char* input, int character) {
+	const char *s = strrchr(input, character);
+	if (s != nullptr) {
+		++s;
+	}
+	return s;
+}
+
 inline bool endsWith(const std::string& string, const std::string& end) {
 	const std::size_t strLength = string.length();
 	const std::size_t endLength = end.length();
