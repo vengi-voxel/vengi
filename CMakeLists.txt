@@ -179,6 +179,7 @@ find_host_program(GDB_EXECUTABLE NAMES ${GDB_BINARY} gdb)
 find_host_program(LLDB_EXECUTABLE NAMES ${LLDB_BINARY} lldb)
 find_host_program(GIT_EXECUTABLE NAMES ${GIT_BINARY} git)
 find_host_program(HG_EXECUTABLE NAMES ${HG_BINARY} hg)
+check_include_files("uuid/uuid.h" HAVE_UUID_H)
 
 configure_file(src/engine-config.h.in engine-config.h @ONLY)
 message(STATUS "Generate config.h in ${CMAKE_CURRENT_BINARY_DIR}")

@@ -35,6 +35,7 @@ set(SRCS
 	Tokenizer.h Tokenizer.cpp
 	Trace.cpp Trace.h
 	UTF8.cpp UTF8.h
+	UUID.cpp UUID.h
 	Var.cpp Var.h
 	Vector.h
 	Vertex.h
@@ -44,7 +45,10 @@ set(LIB core)
 set(FILES
 	shared/autoexec.cfg
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES collection io metric restclient-cpp zlib ${CMAKE_DL_LIBS})
+
+find_package(UUID)
+
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES collection io metric restclient-cpp zlib ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
 
 set(TEST_SRCS
 	tests/AbstractTest.cpp
@@ -61,6 +65,7 @@ set(TEST_SRCS
 	tests/PoolAllocatorTest.cpp
 	tests/StringTest.cpp
 	tests/ReadWriteLockTest.cpp
+	tests/UUIDTest.cpp
 	tests/ZipTest.cpp
 )
 
