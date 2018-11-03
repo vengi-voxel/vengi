@@ -4,6 +4,7 @@
 
 #pragma once
 
+#define JSON_NOEXCEPTION
 #include "json.hpp"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
