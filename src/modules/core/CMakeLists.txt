@@ -60,6 +60,7 @@ set(TEST_SRCS
 	tests/CommandTest.cpp
 	tests/CommandHandlerTest.cpp
 	tests/MD5Test.cpp
+	tests/JSONTest.cpp
 	tests/LogTest.cpp
 	tests/TokenizerTest.cpp
 	tests/PoolAllocatorTest.cpp
