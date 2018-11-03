@@ -22,7 +22,7 @@ static const int MAX_VERTEX_MEMORY = 32768 * sizeof(NuklearApp::Vertex);
 static const int MAX_ELEMENT_MEMORY = 65536;
 
 NuklearApp::NuklearApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider), _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {
+		Super(metric, filesystem, eventBus, timeProvider), _console(&_ctx), _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {
 }
 
 NuklearApp::~NuklearApp() {
@@ -291,7 +291,7 @@ core::AppState NuklearApp::onInit() {
 	_config.shape_AA = NK_ANTI_ALIASING_ON;
 	_config.line_AA = NK_ANTI_ALIASING_ON;
 
-	_console.init(&_ctx);
+	_console.init();
 
 	return state;
 }

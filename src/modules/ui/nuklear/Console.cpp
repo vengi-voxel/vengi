@@ -9,16 +9,8 @@
 namespace ui {
 namespace nuklear {
 
-Console::Console() :
-		Super() {
-}
-
-bool Console::init(struct nk_context* ctx) {
-	if (!Super::init()) {
-		return false;
-	}
-	_ctx = ctx;
-	return true;
+Console::Console(struct nk_context* ctx) :
+		Super(), _ctx(ctx) {
 }
 
 void Console::drawString(int x, int y, const glm::ivec4& color, const char* str, int len) {

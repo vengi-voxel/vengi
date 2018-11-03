@@ -27,8 +27,7 @@ private:
 	void beforeRender(const math::Rect<int> &rect) override;
 
 public:
-	Console();
-	bool init(struct nk_context* ctx);
+	Console(struct nk_context* ctx);
 };
 
 }
