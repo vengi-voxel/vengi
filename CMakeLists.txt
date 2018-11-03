@@ -12,6 +12,7 @@ add_custom_target(update-libs)
 include(CMakeParseArguments)
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
+include(CheckIncludeFiles)
 include(GNUInstallDirs)
 
 if (CMAKE_COMPILER_IS_GNUCC)
