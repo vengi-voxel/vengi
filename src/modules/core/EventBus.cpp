@@ -3,6 +3,7 @@
  */
 
 #include "EventBus.h"
+#include "Log.h"
 
 namespace core {
 
@@ -15,14 +16,14 @@ EventBus::~EventBus() {
 	_handlers.clear();
 }
 
-void EventBus::subscribe(const std::type_index& index, void *handler, const IEventBusTopic* topic) {
+void EventBus::subscribe(ClassTypeId index, void *handler, const IEventBusTopic* topic) {
 	ScopedWriteLock lock(_lock);
 	EventBusHandlerReferences& handlers = _handlers[index];
 	const EventBusHandlerReference registration(handler, topic);
 	handlers.push_back(registration);
 }
 
-int EventBus::unsubscribe(const std::type_index& index, void* handler, const IEventBusTopic* topic) {
+int EventBus::unsubscribe(ClassTypeId index, void* handler, const IEventBusTopic* topic) {
 	int unsubscribedHandlers = 0;
 	ScopedWriteLock lock(_lock);
 	EventBusHandlerReferences& handlers = _handlers[index];
@@ -53,7 +54,7 @@ int EventBus::update(int limit) {
 	IEventBusEventPtr event;
 	while (_queue.pop(event)) {
 		publish(*event);
-		if (limit > 0 && ++i > limit) {
+		if (limit > 0 && ++i >= limit) {
 			break;
 		}
 	}
@@ -65,7 +66,7 @@ void EventBus::enqueue(const IEventBusEventPtr& e) {
 }
 
 int EventBus::publish(const IEventBusEvent& e) {
-	const std::type_index& index = typeid(e);
+	const ClassTypeId index = e.typeId();
 	// must be locked until the execution is done, because we are dealing with raw pointers here.
 	// that means nobody may unsubscribe/subscribe during a publish as we are iterating the list.
 	// if someone would unsubscribe he would maybe still get notified otherwise - or even worse,

@@ -11,18 +11,7 @@
 
 namespace network {
 
-class NewConnectionEvent: public core::IEventBusEvent {
-private:
-	ENetPeer* _peer;
-public:
-	NewConnectionEvent(ENetPeer* peer) :
-			_peer(peer) {
-		Log::trace("Connect peer event %u", peer->connectID);
-	}
-	inline ENetPeer* peer() const {
-		return _peer;
-	}
-};
+EVENTBUSPAYLOADEVENT(NewConnectionEvent, ENetPeer*);
 
 /**
  * @brief This event is thrown if a client drops the connection.
@@ -34,7 +23,12 @@ class DisconnectEvent: public core::IEventBusEvent {
 private:
 	ENetPeer* _peer;
 	DisconnectReason _reason;
+
+	DisconnectEvent(): _peer(nullptr), _reason(DisconnectReason::Unknown) {}
+
 public:
+	EVENTBUSTYPEID(DisconnectEvent)
+
 	DisconnectEvent(ENetPeer* peer, DisconnectReason reason) :
 			_peer(peer), _reason(reason) {
 	}

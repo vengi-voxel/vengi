@@ -2,7 +2,7 @@
  * @file
  */
 
-#include <gtest/gtest.h>
+#include "core/tests/AbstractTest.h"
 #include "core/EventBus.h"
 
 namespace core {
@@ -28,7 +28,10 @@ public:
 class HandlerTest: public CountHandlerTest<TestEvent> {
 };
 
-TEST(EventBusTest, testSubscribeAndPublish_1) {
+class EventBusTest : public core::AbstractTest {
+};
+
+TEST_F(EventBusTest, testSubscribeAndPublish_1) {
 	EventBus eventBus;
 	HandlerTest handler;
 	TestEvent event;
@@ -42,7 +45,34 @@ TEST(EventBusTest, testSubscribeAndPublish_1) {
 	ASSERT_EQ(1, handler.getCount()) << "Expected the handler not to be notified twice because we unsubscribed it before we published the event";
 }
 
-TEST(EventBusTest, testMassSubscribeAndPublish_10000000) {
+TEST_F(EventBusTest, testSubscribeAndQueue_1) {
+	EventBus eventBus;
+	HandlerTest handler;
+	TestEvent event;
+
+	eventBus.subscribe(handler);
+	eventBus.enqueue(std::make_shared<TestEvent>());
+	ASSERT_EQ(0, handler.getCount()) << "Expected the handler to be not yet notified";
+
+	ASSERT_EQ(0, eventBus.update());
+	ASSERT_EQ(1, handler.getCount()) << "Expected the handler to be notified once";
+}
+
+TEST_F(EventBusTest, testSubscribeAndQueuePendingLeft) {
+	EventBus eventBus;
+	HandlerTest handler;
+	TestEvent event;
+
+	eventBus.subscribe(handler);
+	eventBus.enqueue(std::make_shared<TestEvent>());
+	eventBus.enqueue(std::make_shared<TestEvent>());
+	ASSERT_EQ(0, handler.getCount()) << "Expected the handler to be not yet notified";
+
+	ASSERT_EQ(1, eventBus.update(1)) << "Expected to still have one pending event left in the queue";
+	ASSERT_EQ(1, handler.getCount()) << "Expected the handler to be notified once";
+}
+
+TEST_F(EventBusTest, testMassSubscribeAndPublish_10000000) {
 	EventBus eventBus;
 	HandlerTest handler;
 	TestEvent event;
@@ -59,7 +89,7 @@ TEST(EventBusTest, testMassSubscribeAndPublish_10000000) {
 	ASSERT_EQ(n, handler.getCount()) << "Expected the handler not to be notified again because we unsubscribed it before we published the event";
 }
 
-TEST(EventBusTest, testSubscribeAndUnsubscribe_1000) {
+TEST_F(EventBusTest, testSubscribeAndUnsubscribe_1000) {
 	EventBus eventBus;
 	HandlerTest handler;
 
@@ -70,7 +100,7 @@ TEST(EventBusTest, testSubscribeAndUnsubscribe_1000) {
 	ASSERT_EQ(n, eventBus.unsubscribe(handler));
 }
 
-TEST(EventBusTest, testMassPublish_10000000) {
+TEST_F(EventBusTest, testMassPublish_10000000) {
 	EventBus eventBus;
 	HandlerTest handler;
 	TestEvent event;
@@ -87,26 +117,17 @@ TEST(EventBusTest, testMassPublish_10000000) {
 	ASSERT_EQ(n, handler.getCount()) << "Expected the handler not to be notified again because we unsubscribed it before we published the event";
 }
 
-#define TOPIC(topic) \
-class topic: public IEventBusTopic {}; \
-topic __##topic
-
-#define EVENT(event, topic) \
-class event: public IEventBusEvent { public: event(topic _##topic) : IEventBusEvent(&_##topic) {} event() : IEventBusEvent(nullptr) {}  }
-
-#define EVENTTOPIC(event, topic) \
-TOPIC(topic); \
-EVENT(event, topic);
-
 #define EVENTTOPICHANDLER(event, topic, handler) \
-EVENTTOPIC(event, topic); \
+EVENTBUSTOPIC(topic); \
+topic __##topic; \
+EVENTBUSEVENT(event); \
 class handler: public CountHandlerTest<event> {}
 
-TEST(EventBusTest, testTopic_1) {
+TEST_F(EventBusTest, testTopic_1) {
 	EVENTTOPICHANDLER(Topic1Event, Topic1, Topic1EventHandler);
 	EventBus eventBus;
 	Topic1EventHandler handler;
-	Topic1Event event(__Topic1);
+	Topic1Event event(&__Topic1);
 
 	eventBus.subscribe(handler, &__Topic1);
 	ASSERT_EQ(1, eventBus.publish(event)) << "Unexpected amount of handlers notified - topic filtering isn't working";
@@ -117,11 +138,11 @@ TEST(EventBusTest, testTopic_1) {
 	ASSERT_EQ(1, handler.getCount()) << "Unexpected handler notification amount";
 }
 
-TEST(EventBusTest, testMultipleTopics_1) {
+TEST_F(EventBusTest, testMultipleTopics_1) {
 	EVENTTOPICHANDLER(Topic1Event, Topic1, Topic1EventHandler);
 	EventBus eventBus;
 	Topic1EventHandler handler;
-	Topic1Event event(__Topic1);
+	Topic1Event event(&__Topic1);
 
 	eventBus.subscribe(handler, &__Topic1);
 	eventBus.subscribe(handler);

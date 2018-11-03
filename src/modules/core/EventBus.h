@@ -6,7 +6,6 @@
 
 #include <unordered_map>
 #include <list>
-#include <typeindex>
 #include <type_traits>
 #include <vector>
 #include <memory>
@@ -15,7 +14,10 @@
 
 namespace core {
 
+using ClassTypeId = intptr_t;
+
 class IEventBusEvent;
+typedef std::shared_ptr<IEventBusEvent> IEventBusEventPtr;
 
 /**
  * @brief The handler will get notified for every published IEventBusEvent that it is registered for.
@@ -45,15 +47,12 @@ public:
  * @see EventBus::subscribe() for more details.
  */
 class IEventBusTopic {
-protected:
-	const std::type_index _index;
-
-	IEventBusTopic() :
-			_index(typeid(*this)) {
-	}
 public:
+	virtual ~IEventBusTopic() = default;
+
+	virtual ClassTypeId typeId() const = 0;
 	inline bool operator==(const IEventBusTopic& other) const {
-		return _index == other._index;
+		return typeId() == other.typeId();
 	}
 };
 
@@ -61,12 +60,15 @@ public:
  * @brief Base class for all the events that EventBus::publish() is publishing
  */
 class IEventBusEvent {
+public:
+	virtual ClassTypeId typeId() const = 0;
 protected:
 	const IEventBusTopic *_topic;
 
 	IEventBusEvent(const IEventBusTopic* const topic = nullptr) :
 			_topic(topic) {
 	}
+	virtual ~IEventBusEvent() = default;
 private:
 	friend class EventBus;
 	inline const IEventBusTopic* getTopic() const {
@@ -74,23 +76,61 @@ private:
 	}
 };
 
-typedef std::shared_ptr<IEventBusEvent> IEventBusEventPtr;
+
+/**
+ * @brief Used to identify different classes by their types
+ */
+#define EVENTBUSTYPEID(name) \
+	virtual ::core::ClassTypeId typeId() const override { \
+		static char _typeId; \
+		return (::core::ClassTypeId)&_typeId; \
+	} \
+	static ::core::ClassTypeId classTypeId() { \
+		static name _instance; \
+		return _instance.typeId(); \
+	}
+
+#define EVENTBUSTOPIC(name) \
+class name : public ::core::IEventBusTopic { \
+	EVENTBUSTYPEID(name) \
+}
 
 /**
  * @brief Generates a new default event without a topic and any state attached
  */
-#define EVENTBUSEVENT(name) class name: public IEventBusEvent { public: name() : IEventBusEvent(nullptr) { } }
+#define EVENTBUSEVENT(name) \
+class name: public ::core::IEventBusEvent { \
+public: \
+	EVENTBUSTYPEID(name) \
+	name(const ::core::IEventBusTopic* const topic = nullptr) : ::core::IEventBusEvent(topic) { \
+	} \
+}
+
+#define EVENTBUSPAYLOADEVENT(name, payload) \
+class name: public ::core::IEventBusEvent { \
+private: \
+	payload _p; \
+	name() : ::core::IEventBusEvent(nullptr), _p() { \
+	} \
+public: \
+	EVENTBUSTYPEID(name) \
+	name(payload p, const ::core::IEventBusTopic* const topic = nullptr) : ::core::IEventBusEvent(topic), _p(p) { \
+	} \
+	inline payload get() const { \
+		return _p; \
+	} \
+}
 
 /**
  * @brief EventBus with topic (IEventBusTopic) support
  *
- * Use subscribe() and unsubscribe() to manager your IEventBusHandler instances.
+ * Use subscribe() and unsubscribe() to manage your @c IEventBusHandler instances.
  */
 class EventBus {
 private:
 	class EventBusHandlerReference;
 	typedef std::list<EventBusHandlerReference> EventBusHandlerReferences;
-	typedef std::unordered_map<std::type_index, EventBusHandlerReferences> EventBusHandlerReferenceMap;
+	typedef std::unordered_map<ClassTypeId, EventBusHandlerReferences> EventBusHandlerReferenceMap;
 	core::ReadWriteLock _lock;
 
 	core::ConcurrentQueue<IEventBusEventPtr> _queue;
@@ -116,8 +156,8 @@ private:
 
 	EventBusHandlerReferenceMap _handlers;
 
-	int unsubscribe(const std::type_index& index, void* handler, const IEventBusTopic* topic);
-	void subscribe(const std::type_index& index, void *handler, const IEventBusTopic* topic);
+	int unsubscribe(ClassTypeId index, void* handler, const IEventBusTopic* topic);
+	void subscribe(ClassTypeId index, void *handler, const IEventBusTopic* topic);
 
 public:
 	/**
@@ -136,7 +176,7 @@ public:
 	 */
 	template<class T>
 	void subscribe(IEventBusHandler<T>& handler, const IEventBusTopic* topic = nullptr) {
-		const std::type_index& index = typeid(T);
+		const ClassTypeId index = T::classTypeId();
 		subscribe(index, (void*)&handler, topic);
 	}
 
@@ -150,7 +190,7 @@ public:
 	 */
 	template<class T>
 	int unsubscribe(IEventBusHandler<T>& handler, const IEventBusTopic* topic = nullptr) {
-		const std::type_index& index = typeid(T);
+		const ClassTypeId index = T::classTypeId();
 		return unsubscribe(index, (void*)&handler, topic);
 	}
 

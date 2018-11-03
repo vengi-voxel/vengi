@@ -29,7 +29,10 @@ private:
 	const int32_t _value;
 	const MetricEventType _type;
 	TagMap _tags;
+	MetricEvent() : _value(0), _type(MetricEventType::Count) {}
 public:
+	EVENTBUSTYPEID(MetricEvent)
+
 	MetricEvent(const std::string& key, int32_t value, MetricEventType type, const TagMap& tags) :
 			_key(key), _value(value), _type(type), _tags(tags) {
 	}

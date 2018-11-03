@@ -53,12 +53,12 @@ void MetricMgr::onEvent(const metric::MetricEvent& event) {
 }
 
 void MetricMgr::onEvent(const network::NewConnectionEvent& event) {
-	Log::info("new connection - waiting for login request from %u", event.peer()->connectID);
+	Log::info("new connection - waiting for login request from %u", event.get()->connectID);
 	_metric->increment("count.user");
 }
 
 void MetricMgr::onEvent(const EntityAddEvent& event) {
-	const EntityPtr& entity = event.entity();
+	const EntityPtr& entity = event.get();
 	const network::EntityType type = entity->entityType();
 	const char *typeName = network::EnumNameEntityType(type);
 	_metric->increment("count.entity", {{"type", typeName}});
@@ -71,7 +71,7 @@ void MetricMgr::onEvent(const EntityDeleteEvent& event) {
 }
 
 void MetricMgr::onEvent(const EntityAddToMapEvent& event) {
-	const EntityPtr& entity = event.entity();
+	const EntityPtr& entity = event.get();
 	const MapPtr& map = entity->map();
 	const network::EntityType type = entity->entityType();
 	const char *typeName = network::EnumNameEntityType(type);
@@ -79,7 +79,7 @@ void MetricMgr::onEvent(const EntityAddToMapEvent& event) {
 }
 
 void MetricMgr::onEvent(const EntityRemoveFromMapEvent& event) {
-	const EntityPtr& entity = event.entity();
+	const EntityPtr& entity = event.get();
 	const MapPtr& map = entity->map();
 	const network::EntityType type = entity->entityType();
 	const char *typeName = network::EnumNameEntityType(type);

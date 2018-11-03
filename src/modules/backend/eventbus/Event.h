@@ -6,21 +6,16 @@
 
 namespace backend {
 
-#define ENTITYEVENT(name) \
-	class name: public core::IEventBusEvent { \
-	private: \
-		EntityPtr _entity; \
-	public: \
-		name(const EntityPtr& entity) : _entity(entity) {} \
-		inline const EntityPtr& entity() const { return _entity; } \
-	};
+#define ENTITYEVENT(name) EVENTBUSPAYLOADEVENT(name, EntityPtr);
 
 #define ENTITYIDTYPEEVENT(name) \
 	class name: public core::IEventBusEvent { \
 	private: \
 		EntityId _entityId; \
 		network::EntityType _type; \
+		name() : _entityId(EntityIdNone), _type(network::EntityType::NONE) {} \
 	public: \
+		EVENTBUSTYPEID(name) \
 		name(EntityId entityId, network::EntityType type) : _entityId(entityId), _type(type) {} \
 		inline EntityId entityId() const { return _entityId; } \
 		inline network::EntityType entityType() const { return _type; } \
