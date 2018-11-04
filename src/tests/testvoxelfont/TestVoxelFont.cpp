@@ -56,14 +56,14 @@ bool TestVoxelFont::changeFontSize(int delta) {
 	_indices = 0;
 	_voxelFont.shutdown();
 	_fontSize = glm::clamp(_fontSize + delta, 2, 250);
-	if (!_voxelFont.init("font.ttf", _fontSize, _thickness, _mergeQuads, " Helowrd!")) {
+	if (!_voxelFont.init("font.ttf", _fontSize, _thickness, _mergeQuads, " Helowrd!NxtLin")) {
 		return false;
 	}
 
 	std::vector<voxel::VoxelVertex> vertices;
 	std::vector<voxel::IndexType> indices;
 
-	const char* str = "Hello world!";
+	const char* str = "Hello world!\nNext Line";
 	const int renderedChars = _voxelFont.render(str, vertices, indices);
 	if ((int)strlen(str) != renderedChars) {
 		Log::error("Failed to render string '%s' (chars: %i)", str, renderedChars);

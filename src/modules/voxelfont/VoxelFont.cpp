@@ -99,6 +99,7 @@ bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
 		int w;
 		int h;
+		// TODO: newlines - alignment isn't correct
 		unsigned char *bitmap = stbtt_GetCodepointBitmap(_font, 0.0f, _scale, c, &w, &h, 0, 0);
 		if (bitmap == nullptr) {
 			Log::debug("Could not create voxelfont mesh for character: %i", c);
