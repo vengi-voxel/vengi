@@ -804,7 +804,7 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	}
 	_cursorPos = pos;
 	const voxel::Region& cursorRegion = cursorPositionVolume()->region();
-	_cursorVolumeRenderer.setOffset(CursorVolumeIndex, -cursorRegion.getCentre() + _cursorPos);
+	_cursorVolumeRenderer.setModelMatrix(CursorVolumeIndex, glm::translate(-cursorRegion.getCentre() + _cursorPos));
 
 	updateLockedPlane(math::Axis::X);
 	updateLockedPlane(math::Axis::Y);

@@ -30,7 +30,7 @@ protected:
 	static constexpr int MAX_VOLUMES = 4;
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
 	voxel::Mesh* _mesh[MAX_VOLUMES] {};
-	glm::ivec3 _offsets[MAX_VOLUMES] {};
+	glm::mat4 _model[MAX_VOLUMES] {};
 
 	video::Buffer _vertexBuffer[MAX_VOLUMES];
 	shader::Materialblock _materialBlock;
@@ -70,8 +70,8 @@ public:
 	 *
 	 * @sa volume()
 	 */
-	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, const glm::ivec3& offset = glm::zero<glm::ivec3>());
-	bool setOffset(int idx, const glm::ivec3& offset);
+	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume);
+	bool setModelMatrix(int idx, const glm::mat4& model);
 
 	const voxel::Mesh* mesh(int idx = 0) const;
 	/**

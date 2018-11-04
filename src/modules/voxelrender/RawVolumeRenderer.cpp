@@ -49,6 +49,7 @@ bool RawVolumeRenderer::init() {
 	}
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		_model[idx] = glm::mat4(1.0f);
 		_vertexBufferIndex[idx] = _vertexBuffer[idx].create();
 		if (_vertexBufferIndex[idx] == -1) {
 			Log::error("Could not create the vertex buffer object");
@@ -205,7 +206,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 				continue;
 			}
 			video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
-			shader.setModel(glm::translate(_offsets[idx]));
+			shader.setModel(_model[idx]);
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 		}
@@ -230,24 +231,24 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 				continue;
 			}
 			video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
-			_worldShader.setModel(glm::translate(_offsets[idx]));
+			_worldShader.setModel(_model[idx]);
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 		}
 	}
 }
 
-bool RawVolumeRenderer::setOffset(int idx, const glm::ivec3& offset) {
+bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
 
-	_offsets[idx] = offset;
+	_model[idx] = model;
 
 	return true;
 }
 
-voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, const glm::ivec3& offset) {
+voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
@@ -255,7 +256,6 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 
 	voxel::RawVolume* old = _rawVolume[idx];
 	_rawVolume[idx] = volume;
-	_offsets[idx] = offset;
 
 	return old;
 }
