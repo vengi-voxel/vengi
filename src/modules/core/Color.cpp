@@ -145,6 +145,18 @@ glm::vec4 Color::fromHSB(const float hue, const float saturation, const float br
 	return color;
 }
 
+glm::vec4 Color::fromHex(const char* hex) {
+	int32_t r = 0x00;
+	int32_t g = 0x00;
+	int32_t b = 0x00;
+	int32_t a = 0xff;
+	if (0 == strncmp(hex, "0x", 2) || 0 == strncmp(hex, "0X", 2)) {
+		hex += 2;
+	}
+	sscanf(hex, "%02x%02x%02x%02x", &r, &g, &b, &a);
+	return fromRGBA(r, g, b, a);
+}
+
 unsigned int Color::getRGB(const glm::vec4& color) {
 	return static_cast<int>(color.g * magnitude) << 16 | static_cast<int>(color.b * magnitude) << 8 | static_cast<int>(color.r * magnitude);
 }
