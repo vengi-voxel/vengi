@@ -278,5 +278,7 @@ extern std::string lowerCamelCase(const std::string& str);
 
 extern char* append(char* buf, size_t bufsize, const char* string);
 
+extern int count(const char *buf, char chr);
+
 }
 }

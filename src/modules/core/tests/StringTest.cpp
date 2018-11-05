@@ -41,6 +41,11 @@ TEST_F(StringTest, testJoinFunc) {
 	ASSERT_EQ("b,c,d,e", core::string::join(test.begin(), test.end(), ",", [] (char c) { return (char)(c + 1); }));
 }
 
+TEST_F(StringTest, testCount) {
+	const char *inputString = "Foo;;;Bar;;;Foo;Bar;Foo:Fas:sasdfasdf::M;;;";
+	ASSERT_EQ(11, core::string::count(inputString, ';'));
+}
+
 TEST_F(StringTest, testJoin) {
 	std::string test = "abcd";
 	ASSERT_EQ("a,b,c,d", core::string::join(test.begin(), test.end(), ","));

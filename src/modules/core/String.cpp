@@ -241,5 +241,21 @@ char* append(char* buf, size_t bufsize, const char* string) {
 	return p;
 }
 
+int count(const char *buf, char chr) {
+	if (buf == nullptr) {
+		return 0;
+	}
+	int count = 0;
+	for (;;) {
+		buf = strchr(buf, chr);
+		if (buf == nullptr) {
+			break;
+		}
+		++buf;
+		++count;
+	}
+	return count;
+}
+
 }
 }
