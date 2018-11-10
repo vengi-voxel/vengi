@@ -9,6 +9,7 @@
 #include "math/Rect.h"
 #include "math/Random.h"
 #include <glm/common.hpp>
+#include <glm/vec3.hpp>
 
 namespace voxel {
 
