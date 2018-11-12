@@ -53,6 +53,7 @@ set(SRCS
 )
 set(FILES
 	shared/worldparams.lua
+	shared/biomes.lua
 )
 
 set(LIB backend)
@@ -62,8 +63,6 @@ generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl BackendModels.h
 gtest_suite_files(tests
 	tests/behaviourtrees.lua
 	tests/test-attributes.lua
-	shared/worldparams.lua
-	shared/biomes.lua
 )
 gtest_suite_sources(tests
 	tests/AITest.cpp
