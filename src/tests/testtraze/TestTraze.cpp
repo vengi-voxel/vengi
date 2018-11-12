@@ -153,9 +153,9 @@ void TestTraze::onEvent(const traze::PlayerListEvent& event) {
 }
 
 core::AppState TestTraze::onRunning() {
-	const int remaining = _eventBus->update(20);
+	const int remaining = _eventBus->update(2);
 	if (remaining) {
-		Log::warn("Remaining events in queue: %i", remaining);
+		Log::debug("Remaining events in queue: %i", remaining);
 	}
 	core::AppState state = Super::onRunning();
 	if (_currentGameIndex != -1) {
