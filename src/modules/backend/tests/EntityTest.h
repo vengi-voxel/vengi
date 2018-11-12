@@ -64,7 +64,7 @@ protected:
 	core::EventBusPtr eventBus;
 	io::FilesystemPtr filesystem;
 	core::TimeProviderPtr timeProvider;
-	persistence::PersistenceMgrPtr persistenceMgr;
+	std::shared_ptr<persistence::PersistenceMgrMock> persistenceMgr;
 	MapProviderPtr mapProvider;
 	MapPtr map;
 
@@ -87,6 +87,9 @@ protected:
 		eventBus = _testApp->eventBus();
 		timeProvider = _testApp->timeProvider();
 		persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
+		EXPECT_CALL(*persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
+		EXPECT_CALL(*persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
+		testing::Mock::AllowLeak(persistenceMgr.get());
 		mapProvider = std::make_shared<MapProvider>(filesystem, eventBus, timeProvider,
 				entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr);
 		ASSERT_TRUE(mapProvider->init()) << "Failed to initialize the map provider";

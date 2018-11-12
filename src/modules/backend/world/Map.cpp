@@ -107,6 +107,7 @@ void Map::update(long dt) {
 
 bool Map::init() {
 	if (!_attackMgr.init()) {
+		Log::error("Failed to init attack mgr");
 		return false;
 	}
 	_voxelWorldMgr = new voxel::WorldMgr();
