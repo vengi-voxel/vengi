@@ -12,12 +12,13 @@
 
 namespace persistence {
 
-static void* obj = NULL;
+static void* obj = nullptr;
 
 #define DYNLOAD(HNDL, NAME) NAME = reinterpret_cast<decltype(NAME)>(SDL_LoadFunction(HNDL, #NAME))
 
 void postgresShutdown() {
 	SDL_UnloadObject(obj);
+	obj = nullptr;
 
 #ifdef HAVE_POSTGRES
 	PQescapeStringConn = nullptr;
