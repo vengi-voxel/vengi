@@ -26,7 +26,7 @@ public:
 	AILoaderPtr _loader;
 	attrib::ContainerProviderPtr _containerProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
-	persistence::PersistenceMgrPtr _persistenceMgr;
+	std::shared_ptr<persistence::PersistenceMgrMock> _persistenceMgr;
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
@@ -43,6 +43,9 @@ public:
 		_containerProvider = std::make_shared<attrib::ContainerProvider>();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
+		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
+		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
+		testing::Mock::AllowLeak(_persistenceMgr.get());
 	}
 };
 
