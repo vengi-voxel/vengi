@@ -110,7 +110,7 @@ TEST_F(MetricTest, testTimingSingleTag) {
 		<< "Expected to get tags after key in telegraf flavor";
 	ASSERT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#key1:value1")
 		<< "Expected to get tags after type in datadog flavor";
-	ASSERT_EQ(timing("testkey", 1, Flavor::Influx, map), PREFIX "_testkey,type=ms,key1=value1 testkey=1")
+	ASSERT_EQ(timing("testkey", 1, Flavor::Influx, map), PREFIX "_testkey,type=ms,key1=value1 value=1")
 		<< "Unexpected influx format";
 }
 
