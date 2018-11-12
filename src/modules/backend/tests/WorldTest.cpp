@@ -29,7 +29,7 @@ public:
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	AIRegistryPtr _aiRegistry;
 	MapProviderPtr _mapProvider;
-	persistence::PersistenceMgrPtr _persistenceMgr;
+	std::shared_ptr<persistence::PersistenceMgrMock> _persistenceMgr;
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
@@ -48,6 +48,9 @@ public:
 		ASSERT_TRUE(_containerProvider->init(attributes)) << _containerProvider->error();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
+		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
+		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
+		testing::Mock::AllowLeak(_persistenceMgr.get());
 		_mapProvider = std::make_shared<MapProvider>(_testApp->filesystem(), _testApp->eventBus(), _testApp->timeProvider(),
 				_entityStorage, _messageSender, _loader, _containerProvider, _cooldownProvider, _persistenceMgr);
 	}
