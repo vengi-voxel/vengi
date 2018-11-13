@@ -48,7 +48,7 @@ private:
 		const int newlines = core::string::count(string, '\n');
 
 		int xBase = 0;
-		int yBase = newlines * _size;
+		int yBase = newlines * lineHeight();
 
 		int charCount = 0;
 
@@ -59,7 +59,7 @@ private:
 			}
 			if (c == '\n') {
 				xBase = 0;
-				yBase -= _size;
+				yBase -= lineHeight();
 				continue;
 			}
 
@@ -117,6 +117,10 @@ public:
 	void shutdown();
 
 	int stringWidth(const char *str, int length = std::numeric_limits<int>::max()) const;
+
+	inline int lineHeight() const {
+		return _size;
+	}
 
 	int render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices);
 	int render(const char* string, std::vector<voxel::VoxelVertex>& vertices, std::vector<uint32_t>& indices);
