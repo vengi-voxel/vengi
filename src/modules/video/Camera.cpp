@@ -203,17 +203,17 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 	core_assert_always(splits >= 1);
 	const float near = nearPlane();
 	const float far = farPlane();
-
+	const float ratio = far / near;
 	int bufIdx = 0;
 	for (int split = 0; split < splits; ++split) {
 		const float nearK = float(bufIdx) / splits;
-		const float nearLogd = near * glm::pow(far / near, nearK);
+		const float nearLogd = near * glm::pow(ratio, nearK);
 		const float nearLind = glm::mix(near, far, nearK);
 		const float nearSplitVal = glm::mix(nearLogd, nearLind, sliceWeight);
 		sliceBuf[bufIdx++] = nearSplitVal;
 
 		const float farK = float(bufIdx) / splits;
-		const float farLogd = near * glm::pow(far / near, farK);
+		const float farLogd = near * glm::pow(ratio, farK);
 		const float farLind = glm::mix(near, far, farK);
 		const float farSplitVal = glm::mix(farLogd, farLind, sliceWeight);
 		sliceBuf[bufIdx++] = farSplitVal;
