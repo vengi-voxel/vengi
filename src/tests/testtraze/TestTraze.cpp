@@ -98,12 +98,27 @@ void TestTraze::onEvent(const traze::NewGamesEvent& event) {
 }
 
 void TestTraze::onEvent(const traze::BikeEvent& event) {
+	const traze::Bike& bike = event.get();
+	Log::debug("Received bike event for player %u", bike.playerId);
 }
 
 void TestTraze::onEvent(const traze::TickerEvent& event) {
+	const traze::Ticker& ticker = event.get();
+	switch (ticker.type) {
+	case traze::TickerType::Frag:
+		Log::info("Received frag event");
+		break;
+	case traze::TickerType::Suicide:
+		Log::info("Received suicide event");
+		break;
+	default:
+		break;
+	}
 }
 
 void TestTraze::onEvent(const traze::SpawnEvent& event) {
+	const glm::ivec2& position = event.get();
+	Log::info("Spawn at position %i:%i", position.x, position.y);
 }
 
 void TestTraze::onEvent(const traze::NewGridEvent& event) {
