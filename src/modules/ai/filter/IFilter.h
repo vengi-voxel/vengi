@@ -15,7 +15,7 @@
  *
  * There are some filters that accept subfilters - like _Union_, _Intersection_, _Last_, _First_,
  * _Difference_, _Complement_ and _Random_. _Last_, _First_ and _Random_ accept one sub filter as
- * parameter, _Union_ and _Intersection_ accept at least two śub filters.
+ * parameter, _Union_ and _Intersection_ accept at least two sub filters.
  * @code
  * someNode:addNode("AttackTarget", "attack"):setCondition("Filter(First(SelectZone))")
  * @endcode
