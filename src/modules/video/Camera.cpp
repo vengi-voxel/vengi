@@ -204,6 +204,22 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 	const float near = nearPlane();
 	const float far = farPlane();
 	const float ratio = far / near;
+#if 1
+	const int8_t numSlices = splits * 2;
+	const float splitsf = (float)numSlices;
+	const float dist = far - near;
+	const float sliceWeightInv = 1.0f - sliceWeight;
+
+	sliceBuf[0] = near;
+	sliceBuf[numSlices - 1] = far;
+
+	for (uint8_t farIdx = 2, nearIdx = 1; farIdx < numSlices; farIdx += 2, nearIdx += 2) {
+		const float si = float(int8_t(nearIdx)) / splitsf;
+		const float nearp = sliceWeight * (near * glm::pow(ratio, si)) + sliceWeightInv * (near + dist * si);
+		sliceBuf[nearIdx] = nearp;
+		sliceBuf[farIdx] = nearp * 1.005f;
+	}
+#else
 	int bufIdx = 0;
 	for (int split = 0; split < splits; ++split) {
 		const float nearK = float(bufIdx) / splits;
@@ -218,6 +234,7 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 		const float farSplitVal = glm::mix(farLogd, farLind, sliceWeight);
 		sliceBuf[bufIdx++] = farSplitVal;
 	}
+#endif
 }
 
 void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::FRUSTUM_VERTICES_MAX]) const {
