@@ -50,7 +50,7 @@ public:
 	/**
 	 * @param[in] maxDepthBuffers the amount of cascades
 	 */
-	void update(const video::Camera& camera, bool active, float sliceWeight = 1.0f);
+	void update(const video::Camera& camera, bool active, float sliceWeight = 0.05f);
 
 	bool bind(video::TextureUnit unit);
 
