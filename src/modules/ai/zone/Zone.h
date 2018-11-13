@@ -255,7 +255,7 @@ public:
 		_lock.lockRead();
 		AIMap copy(_ais);
 		_lock.unlockRead();
-		for (auto i = copy.begin(); i != _ais.end(); ++i) {
+		for (auto i = copy.begin(); i != copy.end(); ++i) {
 			const AIPtr& ai = i->second;
 			results.emplace_back(executeAsync(ai, func));
 		}
