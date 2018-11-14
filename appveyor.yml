@@ -24,14 +24,17 @@ before_build:
 
 build:
   parallel: true
-  project: tests.sln
+  project: tests-core.sln
 
 artifacts:
   - name: Tests
-    path: tests.exe
+    path: vengi-tests-core.exe
+
+services:
+  - postgresql          # start PostgreSQL 9.5 service
 
 test_script:
-  - cmd: tests.exe --gtest_output=xml:tests.xml
+  - cmd: vengi-tests-core.exe --gtest_output=xml:tests.xml
 
 on_finish:
   - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\tests.xml))
