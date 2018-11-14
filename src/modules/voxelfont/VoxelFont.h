@@ -42,6 +42,22 @@ private:
 
 	void getGlyphMetrics(int c, int& advance, int& xOffset, int& yOffset, int& ascent);
 
+public:
+	~VoxelFont();
+
+	/**
+	 * @param[in] mergeQuads @c false if you want to set e.g. a different color to each voxel. @c true
+	 * if you want to keep the index and vertex count as small as possible.
+	 */
+	bool init(const char* font, int fontSize, int thickness, bool mergeQuads, const char* glyphs);
+	void shutdown();
+
+	int stringWidth(const char *str, int length = std::numeric_limits<int>::max()) const;
+
+	inline int lineHeight() const {
+		return _size;
+	}
+
 	template<class T, class FUNC>
 	int render(const char* string, std::vector<T>& out, std::vector<uint32_t>& indices, FUNC&& func) {
 		const char **s = &string;
@@ -104,22 +120,6 @@ private:
 			xBase += advance;
 		}
 		return charCount;
-	}
-
-public:
-	~VoxelFont();
-
-	/**
-	 * @param[in] mergeQuads @c false if you want to set e.g. a different color to each voxel. @c true
-	 * if you want to keep the index and vertex count as small as possible.
-	 */
-	bool init(const char* font, int fontSize, int thickness, bool mergeQuads, const char* glyphs);
-	void shutdown();
-
-	int stringWidth(const char *str, int length = std::numeric_limits<int>::max()) const;
-
-	inline int lineHeight() const {
-		return _size;
 	}
 
 	int render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices);

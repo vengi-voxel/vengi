@@ -8,6 +8,8 @@
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelfont/VoxelFont.h"
 #include "core/EventBus.h"
+#include "video/Buffer.h"
+#include "RenderShaders.h"
 
 #include "TrazeEvents.h"
 #include "TrazeProtocol.h"
@@ -30,6 +32,15 @@ private:
 	traze::Protocol _protocol;
 	voxelrender::RawVolumeRenderer _rawVolumeRenderer;
 	voxel::VoxelFont _voxelFont;
+
+	shader::ColorShader& _colorShader;
+	video::Buffer _vertexBuffer;
+	int32_t _vertexBufferId = -1;
+	int32_t _vertexBufferIndexId = -1;
+	glm::mat4 _namesModel { 1.0f };
+
+	bool _renderBoard = true;
+	bool _renderPlayerNames = true;
 
 	std::vector<traze::GameInfo> _games;
 	std::vector<traze::Player> _players;

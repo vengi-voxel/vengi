@@ -5,9 +5,11 @@
 #pragma once
 
 #include "core/EventBus.h"
+#include "voxel/polyvox/RawVolume.h"
 #include <mosquitto.h>
 #include <string>
 #include "TrazeTypes.h"
+#include <unordered_map>
 
 namespace traze {
 
@@ -22,6 +24,7 @@ private:
 	struct mosquitto *_mosquitto = nullptr;
 	bool _connected = false;
 	bool _subscribed = false;
+	std::unordered_map<uint32_t, Player> _players;;
 
 	enum ConnectState : uint8_t {
 		Success = 0,
@@ -70,7 +73,7 @@ public:
 	 * ]
 	 * @endcode
 	 */
-	void parsePlayers(const std::string& json) const;
+	void parsePlayers(const std::string& json);
 
 	/**
 	 * @code

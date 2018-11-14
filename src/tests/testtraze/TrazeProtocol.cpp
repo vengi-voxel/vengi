@@ -16,6 +16,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 namespace traze {
 
@@ -181,21 +182,30 @@ void Protocol::parseOwnPlayer(const std::string& json) {
 	Log::info("Player token %s with id %u", _playerToken.c_str(), _playerId);
 }
 
-void Protocol::parsePlayers(const std::string& json) const {
+void Protocol::parsePlayers(const std::string& json) {
 	const core::json j = core::json::parse(json);
 	std::vector<Player> players;
 	players.reserve(j.size());
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	for (const auto& player : j) {
 		Player p;
 		p.name = player["name"];
 		const std::string& hex = player["color"];
-		p.color = core::Color::fromHex(hex.c_str());
+		const glm::vec4& color = core::Color::fromHex(hex.c_str());
+		const uint8_t index = core::Color::getClosestMatch(color, materialColors);
+		p.colorIndex = index;
+		p.color = materialColors[index];
 		p.id = player["id"].get<int>();
 		p.frags = player["frags"].get<int>();
 		players.push_back(p);
 		Log::debug("Player %s with id %i", p.name.c_str(), p.id);
 	}
 	_eventBus->enqueue(std::make_shared<PlayerListEvent>(players));
+	std::unordered_map<uint32_t, Player> playerMap;
+	for (const auto& p : players) {
+		playerMap[p.id] = p;
+	}
+	_players = playerMap;
 }
 
 void Protocol::parseTicker(const std::string& json) const {
@@ -281,7 +291,12 @@ void Protocol::parseGridAndUpdateVolume(const std::string& json) {
 			}
 			const int data = voxel.get<int>();
 			if (data != 0) {
-				v->setVoxel(glm::ivec3(z, 1, x), voxel::createColorVoxel(voxel::VoxelType::Generic, data));
+				const auto& iter = _players.find(data);
+				if (iter == _players.end()) {
+					Log::error("Can't find grid player id %i in player list", data);
+					continue;
+				}
+				v->setVoxel(glm::ivec3(z, 1, x), voxel::createColorVoxel(voxel::VoxelType::Generic, iter->second.colorIndex));
 			}
 			++z;
 		}

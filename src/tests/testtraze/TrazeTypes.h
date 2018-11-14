@@ -31,6 +31,7 @@ struct Player {
 	std::string name;
 	uint32_t id;
 	uint32_t frags;
+	uint8_t colorIndex;
 	glm::vec4 color;
 };
 
