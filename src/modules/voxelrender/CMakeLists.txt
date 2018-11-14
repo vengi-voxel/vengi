@@ -5,6 +5,7 @@ set(SRCS
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	PagedVolumeRenderer.cpp PagedVolumeRenderer.h
 	ShaderAttribute.h
+	VoxelFontRenderer.h VoxelFontRenderer.cpp
 	WorldRenderer.h WorldRenderer.cpp
 )
 set(SRCS_SHADERS
@@ -15,7 +16,7 @@ set(SRCS_SHADERS
 set(FILES
 	shared/worldparams.lua
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend render voxel)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend render voxelfont)
 generate_shaders(${LIB} world water world_instanced)
 
 gtest_suite_sources(tests

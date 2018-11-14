@@ -79,7 +79,7 @@ bool VoxelFont::init(const char* filename, int size, int thickness, bool mergeQu
 	const int offset = stbtt_GetFontOffsetForIndex(_ttfBuffer, 0);
 	_font = new stbtt_fontinfo();
 	stbtt_InitFont(_font, _ttfBuffer, offset);
-	_size = (int) (size * 1.3f); // FIX: Constant taken out of thin air because fonts get too small.
+	_size = size;
 	_scale = stbtt_ScaleForPixelHeight(_font, (float)_size);
 
 	_thickness = glm::max(1, thickness);

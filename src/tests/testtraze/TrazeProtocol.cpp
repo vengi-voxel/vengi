@@ -13,6 +13,7 @@
 #include "TrazeProtocol.h"
 #include "voxel/polyvox/Region.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/polyvox/RawVolume.h"
 #include "voxel/polyvox/Voxel.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -179,7 +180,7 @@ void Protocol::parseOwnPlayer(const std::string& json) {
 	_playerToken = j["secretUserToken"];
 	_playerId = j["id"].get<int>();
 	const glm::ivec2& position = j["position"];
-	Log::info("Player token %s with id %u", _playerToken.c_str(), _playerId);
+	Log::info("Player token %s with id %u at pos %i:%i", _playerToken.c_str(), _playerId, position.x, position.y);
 }
 
 void Protocol::parsePlayers(const std::string& json) {
