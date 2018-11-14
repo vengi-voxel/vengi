@@ -152,9 +152,9 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, std::vector<RawVolume*>& volu
 	const voxel::Region region(0, 0, 0, size.x, size.y, size.z);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	uint32_t byteCounter = 0u;
-	for (int32_t z = 0; z < size.z; z++) {
-		for (int32_t y = 0; y < size.y; y++) {
-			for (int32_t x = 0; x < size.x; x++) {
+	for (uint32_t z = 0; z < size.z; z++) {
+		for (uint32_t y = 0; y < size.y; y++) {
+			for (uint32_t x = 0; x < size.x; x++) {
 				const uint32_t red   = ((uint32_t)voxelDataDecompressed[byteCounter++]) << 0;
 				const uint32_t green = ((uint32_t)voxelDataDecompressed[byteCounter++]) << 8;
 				const uint32_t blue  = ((uint32_t)voxelDataDecompressed[byteCounter++]) << 16;
