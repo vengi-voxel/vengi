@@ -20,7 +20,7 @@ union RGBA {
 class Color {
 public:
 	static const unsigned int magnitude = 255;
-	static const unsigned int magnitudef = 255.0f;
+	static constexpr float magnitudef = 255.0f;
 	static constexpr float scaleFactor = 0.7f;
 	static const glm::vec4
 		Clear,

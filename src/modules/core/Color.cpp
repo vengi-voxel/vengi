@@ -152,8 +152,12 @@ glm::vec4 Color::fromHex(const char* hex) {
 	int32_t a = 0xff;
 	if (0 == strncmp(hex, "0x", 2) || 0 == strncmp(hex, "0X", 2)) {
 		hex += 2;
+	} else if (hex[0] == '#') {
+		hex += 1;
 	}
-	sscanf(hex, "%02x%02x%02x%02x", &r, &g, &b, &a);
+	if (sscanf(hex, "%02x%02x%02x%02x", &r, &g, &b, &a) == 3) {
+		a = 0xff;
+	}
 	return fromRGBA(r, g, b, a);
 }
 

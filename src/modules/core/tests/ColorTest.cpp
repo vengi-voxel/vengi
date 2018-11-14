@@ -2,13 +2,16 @@
  * @file
  */
 
-#include <gtest/gtest.h>
+#include "AbstractTest.h"
 #include "core/Color.h"
 #include <SDL_endian.h>
 
 namespace core {
 
-TEST(ColorTest, testRGBA) {
+class ColorTest: public AbstractTest {
+};
+
+TEST_F(ColorTest, testRGBA) {
 	core::RGBA color;
 	color.rgba = SDL_SwapLE32(0xff6699fe);
 	EXPECT_EQ(0xfe, color.r);
@@ -29,6 +32,15 @@ TEST(ColorTest, testRGBA) {
 	EXPECT_EQ(0x99, convertedBack.g);
 	EXPECT_EQ(0x66, convertedBack.b);
 	EXPECT_EQ(0xff, convertedBack.a);
+}
+
+TEST_F(ColorTest, testHex) {
+	EXPECT_EQ(glm::vec4(1.0f), core::Color::fromHex("#ffffff"));
+	EXPECT_EQ(glm::vec4(1.0f), core::Color::fromHex("0xffffff"));
+	EXPECT_EQ(glm::vec4(1.0f), core::Color::fromHex("0xffffffff"));
+	EXPECT_EQ(glm::vec4(0.0f), core::Color::fromHex("0x00000000"));
+	EXPECT_EQ(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), core::Color::fromHex("0xff0000ff"));
+	EXPECT_EQ(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), core::Color::fromHex("#ff0000ff"));
 }
 
 }

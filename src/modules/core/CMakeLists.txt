@@ -58,6 +58,7 @@ set(TEST_SRCS
 	tests/EventBusTest.cpp
 	tests/VarTest.cpp
 	tests/CommandTest.cpp
+	tests/ColorTest.cpp
 	tests/CommandHandlerTest.cpp
 	tests/MD5Test.cpp
 	tests/JSONTest.cpp
