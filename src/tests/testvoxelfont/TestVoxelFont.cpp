@@ -55,7 +55,7 @@ bool TestVoxelFont::changeFontSize(int delta) {
 	_indices = 0;
 	_voxelFont.shutdown();
 	_fontSize = glm::clamp(_fontSize + delta, 2, 250);
-	if (!_voxelFont.init("font.ttf", _fontSize, _thickness, _mergeQuads, " Helowrd!NxtLin")) {
+	if (!_voxelFont.init("font.ttf", _fontSize, _thickness, _mergeQuads ? voxel::VoxelFont::MergeQuads : 0u, " Helowrd!NxtLin")) {
 		return false;
 	}
 
