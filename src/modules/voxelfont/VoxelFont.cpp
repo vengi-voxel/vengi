@@ -71,6 +71,7 @@ bool VoxelFont::init(const char* filename, int size, int thickness, bool mergeQu
 		Log::info("Failed to initialize voxel font, %s doesn't exist", filename);
 		return false;
 	}
+	delete[] _ttfBuffer;
 	file->read((void**)&_ttfBuffer);
 	if (_ttfBuffer == nullptr) {
 		Log::info("Failed to initialize voxel font, can not read %s", filename);
