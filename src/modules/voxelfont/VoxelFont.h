@@ -47,6 +47,7 @@ public:
 	~VoxelFont();
 
 	static const uint8_t MergeQuads        = 1 << 0;
+	static const uint8_t OriginUpperLeft   = 1 << 1;
 
 	bool init(const char* font, int fontSize, int thickness, uint8_t optionMask, const char* glyphs);
 	void shutdown();

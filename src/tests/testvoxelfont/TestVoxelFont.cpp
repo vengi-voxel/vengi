@@ -131,6 +131,9 @@ void TestVoxelFont::onRenderUI() {
 	if (ImGui::Checkbox("Merge Quads", &_mergeQuads)) {
 		changeFontSize(0);
 	}
+	if (ImGui::Checkbox("Upper left (origin)", &_upperLeft)) {
+		changeFontSize(0);
+	}
 	ImGui::Text("Font vertices: %i, indices: %i", _vertices, _indices);
 	ImGui::Text("Ctrl/+ Ctrl/-: Change font thickness");
 	ImGui::Text("Space: Toggle merge quads");

@@ -41,7 +41,7 @@ private:
 	const int _depth;
 	const uint8_t _optionMask;
 public:
-	VoxelFontRenderer(int fontSize, int depth = 4, uint8_t optionMask = voxel::VoxelFont::MergeQuads);
+	VoxelFontRenderer(int fontSize, int depth = 4, uint8_t optionMask = voxel::VoxelFont::OriginUpperLeft | voxel::VoxelFont::MergeQuads);
 
 	bool init() override;
 	void shutdown() override;

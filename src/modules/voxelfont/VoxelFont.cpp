@@ -128,6 +128,7 @@ bool VoxelFont::renderGlyphs(const char* string) {
 	int spaceWidth = 0;
 	int chars = 0;
 	const bool mergeQuads = _optionMask & MergeQuads;
+	const bool originUpperLeft = _optionMask & OriginUpperLeft;
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
 		int w;
 		int h;
@@ -156,8 +157,14 @@ bool VoxelFont::renderGlyphs(const char* string) {
 		for (int y = 0; y < h; ++y) {
 			for (int x = 0; x < w; ++x) {
 				if (bitmap[y * w + x] >= 25) {
+					int finalY;
+					if (originUpperLeft) {
+						finalY = y;
+					} else {
+						finalY = regionH - y;
+					}
 					for (int i = 0; i < _thickness; ++i) {
-						v.setVoxel(glm::ivec3(x + ix0, regionH - y, i), voxel);
+						v.setVoxel(glm::ivec3(x + ix0, finalY, i), voxel);
 					}
 				}
 			}

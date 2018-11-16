@@ -20,6 +20,7 @@ private:
 	int _fontSize = 20;
 	int _thickness = 4;
 	bool _mergeQuads = false;
+	bool _upperLeft = false;
 
 	int _vertices = 0;
 	int _indices = 0;
