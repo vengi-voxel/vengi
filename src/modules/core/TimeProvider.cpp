@@ -20,12 +20,10 @@ TimeProvider::TimeProvider() :
 }
 
 uint64_t TimeProvider::systemMillis() const {
-#if 0
-	auto unix_timestamp = std::chrono::seconds(std::time(NULL));
-	const uint64_t millis = unix_timestamp.count() * 1000UL;
-	timeval curTime;
-	gettimeofday(&curTime, nullptr);
-	const uint64_t timestamp = millis + curTime.tv_usec / 1000L;
+#if 1
+	struct timeval tp;
+	gettimeofday(&tp, nullptr);
+	uint64_t timestamp = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 #else
 	const uint64_t timestamp = SDL_GetPerformanceCounter() / 1000000UL;
 #endif
