@@ -38,8 +38,9 @@ private:
 	VertexData _data;
 	const int _fontSize;
 	const int _depth;
+	const uint8_t _optionMask;
 public:
-	VoxelFontRenderer(int fontSize, int depth = 4);
+	VoxelFontRenderer(int fontSize, int depth = 4, uint8_t optionMask = voxel::VoxelFont::MergeQuads);
 
 	bool init() override;
 	void shutdown() override;

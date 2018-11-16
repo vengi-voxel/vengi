@@ -37,19 +37,18 @@ private:
 	 * descent is the coordinate below the baseline the font extends (i.e. it is typically negative)
 	 */
 	int _descent = 0;
+	uint8_t _optionMask = 0u;
 
-	bool renderGlyphs(const char* string, bool mergeQuads);
+	bool renderGlyphs(const char* string);
 
 	void getGlyphMetrics(int c, int& advance, int& xOffset, int& yOffset, int& ascent);
 
 public:
 	~VoxelFont();
 
-	/**
-	 * @param[in] mergeQuads @c false if you want to set e.g. a different color to each voxel. @c true
-	 * if you want to keep the index and vertex count as small as possible.
-	 */
-	bool init(const char* font, int fontSize, int thickness, bool mergeQuads, const char* glyphs);
+	static const uint8_t MergeQuads        = 1 << 0;
+
+	bool init(const char* font, int fontSize, int thickness, uint8_t optionMask, const char* glyphs);
 	void shutdown();
 
 	int stringWidth(const char *str, int length = std::numeric_limits<int>::max()) const;

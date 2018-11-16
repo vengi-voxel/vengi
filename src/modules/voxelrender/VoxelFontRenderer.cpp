@@ -6,8 +6,8 @@
 
 namespace voxelrender {
 
-VoxelFontRenderer::VoxelFontRenderer(int fontSize, int depth) :
-		_colorShader(shader::ColorShader::getInstance()), _fontSize(fontSize), _depth(depth) {
+VoxelFontRenderer::VoxelFontRenderer(int fontSize, int depth, uint8_t optionMask) :
+		_colorShader(shader::ColorShader::getInstance()), _fontSize(fontSize), _depth(depth), _optionMask(optionMask) {
 }
 
 bool VoxelFontRenderer::init() {
@@ -26,7 +26,7 @@ bool VoxelFontRenderer::init() {
 		return false;
 	}
 
-	if (!_voxelFont.init("font.ttf", _fontSize, _depth, true, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^"
+	if (!_voxelFont.init("font.ttf", _fontSize, _depth, _optionMask, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^"
 			"_`abcdefghijklmnopqrstuvwxyz{|}~€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸"
 			"¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ")) {
 		Log::error("Failed to init voxel font");

@@ -63,7 +63,8 @@ int VoxelFont::stringWidth(const char *str, int len) const {
 	return width;
 }
 
-bool VoxelFont::init(const char* filename, int size, int thickness, bool mergeQuads, const char* glyphs) {
+bool VoxelFont::init(const char* filename, int size, int thickness, uint8_t optionMask, const char* glyphs) {
+	_optionMask = optionMask;
 	core_assert_msg(size < 255, "size %i exceeds max vertices position due to limited data type in Vertex class", size);
 	core_assert_msg(size > 0, "size must be > 0, but is %i", size);
 	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(filename);
@@ -91,7 +92,7 @@ bool VoxelFont::init(const char* filename, int size, int thickness, bool mergeQu
 
 	Log::debug("ascent: %i, descent: %i, linegap: %i", _ascent, _descent, _lineGap);
 
-	if (!renderGlyphs(glyphs, mergeQuads)) {
+	if (!renderGlyphs(glyphs)) {
 		Log::info("Failed to initialize voxel font, failed to render glyphs for %s", filename);
 		return false;
 	}
@@ -121,12 +122,12 @@ void VoxelFont::shutdown() {
 	_spaceWidth = 0;
 }
 
-bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
+bool VoxelFont::renderGlyphs(const char* string) {
 	static const voxel::Voxel& voxel = voxel::createColorVoxel(VoxelType::Generic, 0);
 	const char **s = &string;
 	int spaceWidth = 0;
 	int chars = 0;
-
+	const bool mergeQuads = _optionMask & MergeQuads;
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
 		int w;
 		int h;
