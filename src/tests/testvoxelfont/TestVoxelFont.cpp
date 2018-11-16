@@ -122,20 +122,15 @@ bool TestVoxelFont::onKeyPress(int32_t key, int16_t modifier) {
 			return true;
 		}
 	}
-	if (key == SDLK_SPACE) {
-		_mergeQuads ^= true;
-		changeFontSize(0);
-		return true;
-	}
-
 	return retVal;
 }
 
 void TestVoxelFont::onRenderUI() {
 	ImGui::Text("Fontsize: %i", _fontSize);
 	ImGui::Text("Thickness: %i", _thickness);
-	const char *state = _mergeQuads ? "true" : "false";
-	ImGui::Text("Merge Quads: %s", state);
+	if (ImGui::Checkbox("Merge Quads", &_mergeQuads)) {
+		changeFontSize(0);
+	}
 	ImGui::Text("Font vertices: %i, indices: %i", _vertices, _indices);
 	ImGui::Text("Ctrl/+ Ctrl/-: Change font thickness");
 	ImGui::Text("Space: Toggle merge quads");
