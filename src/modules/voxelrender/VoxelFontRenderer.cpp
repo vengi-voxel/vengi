@@ -86,8 +86,17 @@ void VoxelFontRenderer::shutdown() {
 	_viewProjectionMatrix = glm::mat4(1.0f);
 }
 
-void VoxelFontRenderer::text(const char *string, const glm::ivec3& pos, const glm::vec4& color) {
-	_voxelFont.render(string, _data.vertices, _indices, [&] (const voxel::VoxelVertex& vertex, std::vector<VertexData::AttributeData>& data, int x, int y) {
+void VoxelFontRenderer::text(const glm::ivec3& pos, const glm::vec4& color, const char *string, ...) {
+	va_list ap;
+	constexpr std::size_t bufSize = 4096;
+	char buf[bufSize];
+
+	va_start(ap, string);
+	SDL_vsnprintf(buf, bufSize, string, ap);
+	buf[sizeof(buf) - 1] = '\0';
+	va_end(ap);
+
+	_voxelFont.render(buf, _data.vertices, _indices, [&] (const voxel::VoxelVertex& vertex, std::vector<VertexData::AttributeData>& data, int x, int y) {
 		const VertexData::AttributeData vp{glm::vec4(vertex.position.x + x + pos.x, vertex.position.y + y + pos.y, vertex.position.z + pos.z, 1.0f), color};
 		data.push_back(vp);
 	});

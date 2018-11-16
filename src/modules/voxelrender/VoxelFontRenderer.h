@@ -10,6 +10,7 @@
 #include "voxelfont/VoxelFont.h"
 #include "RenderShaders.h"
 #include <limits>
+#include <SDL.h>
 
 namespace voxelrender {
 
@@ -48,8 +49,21 @@ public:
 	void setViewProjectionMatrix(const glm::mat4& viewProjectionMatrix);
 	void setModelMatrix(const glm::mat4& modelMatrix);
 
-	void text(const char *string, const glm::ivec3& pos, const glm::vec4& color);
+	/**
+	 * @brief Add the indices and vertices data to the local buffers to render the given string
+	 * @note Before rendering the buffers, you have to call @c swapBuffers()
+	 */
+	void text(const glm::ivec3& pos, const glm::vec4& color, SDL_PRINTF_FORMAT_STRING const char *string, ...) SDL_PRINTF_VARARG_FUNC(4);
 
+	/**
+	 * @brief Update the gpu buffers and reset local vertex and index buffers for the next usage
+	 */
+	void swapBuffers();
+
+	/**
+	 * @brief Render the prepared buffers
+	 * @note You have to call @c swapBuffers() at least once before using this.
+	 */
 	void render();
 
 	inline int stringWidth(const char *str, int length = std::numeric_limits<int>::max()) const {
