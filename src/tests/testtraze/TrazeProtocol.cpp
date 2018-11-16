@@ -39,9 +39,6 @@ bool Protocol::init() {
 		return false;
 	}
 
-	const char *host = core::Var::getSafe("mosquitto_host")->strVal().c_str();
-	const int port = core::Var::getSafe("mosquitto_port")->intVal();
-
 	mosquitto_message_callback_set(_mosquitto, [] (struct mosquitto *, void *userdata, const struct mosquitto_message *msg) { ((Protocol*)userdata)->onMessage(msg); });
 	mosquitto_connect_callback_set(_mosquitto, [] (struct mosquitto *, void *userdata, int rc) {
 		uint8_t s = (uint8_t)rc;
@@ -52,14 +49,23 @@ bool Protocol::init() {
 		((Protocol*)userdata)->onConnect(state);
 	});
 
+	return true;
+}
+
+bool Protocol::connect() {
+	if (_connected) {
+		return true;
+	}
+	const char *host = core::Var::getSafe("mosquitto_host")->strVal().c_str();
+	const int port = core::Var::getSafe("mosquitto_port")->intVal();
 	Log::info("Trying to connect to %s at port %i...", host, port);
-	if (mosquitto_connect_async(_mosquitto, host, port, 0) != MOSQ_ERR_SUCCESS) {
-		Log::error("Failed to connect to the mqtt broker");
+	const int rc = mosquitto_connect_async(_mosquitto, host, port, 0);
+	if (rc != MOSQ_ERR_SUCCESS) {
+		Log::error("Failed to connect to the mqtt broker %s", mosquitto_strerror(rc));
 		return false;
 	}
 
 	mosquitto_loop_start(_mosquitto);
-
 	return true;
 }
 
@@ -362,6 +368,7 @@ void Protocol::onMessage(const struct mosquitto_message *msg) {
 
 void Protocol::onConnect(ConnectState status) {
 	if (status != ConnectState::Success) {
+		_connected = false;
 		Log::error("Failed to connect to mqtt broker: %i", (int)status);
 		return;
 	}

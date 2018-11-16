@@ -34,9 +34,12 @@ private:
 	bool _renderBoard = true;
 	bool _renderPlayerNames = true;
 
+	int _maxLength = 200;
+
 	std::vector<traze::GameInfo> _games;
 	std::vector<traze::Player> _players;
 	int8_t _currentGameIndex = -1;
+	uint64_t _nextConnectTime = 0;
 
 	void doRender() override;
 public:

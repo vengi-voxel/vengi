@@ -45,7 +45,10 @@ public:
 	bool init();
 	void shutdown();
 
+	bool connect();
+
 	bool joined() const;
+	bool connected() const;
 
 	bool unsubscribe();
 	bool subscribe(const GameInfo& games);
@@ -197,6 +200,10 @@ public:
 
 inline bool Protocol::joined() const {
 	return _playerId != 0u;
+}
+
+inline bool Protocol::connected() const {
+	return _connected;
 }
 
 }
