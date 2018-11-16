@@ -9,7 +9,6 @@
 TestVoxelFont::TestVoxelFont(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "testvoxelfont");
-	setCameraMotion(true);
 }
 
 core::AppState TestVoxelFont::onInit() {
