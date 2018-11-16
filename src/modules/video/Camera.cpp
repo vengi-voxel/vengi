@@ -124,8 +124,8 @@ void Camera::updateTarget() {
 }
 
 void Camera::update(uint64_t deltaFrame) {
-	const float dt = deltaFrame / 1000.0f;
-	if (dt > 0.0f) {
+	if (deltaFrame > 0) {
+		const float dt = deltaFrame / 1000.0f;
 		rotate(_omega * dt);
 	}
 	updateTarget();
