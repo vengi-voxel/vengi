@@ -9,7 +9,7 @@
 
 namespace {
 const int PlayFieldVolume = 0;
-const int FontSize = 24;
+const int FontSize = 48;
 }
 
 TestTraze::TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
@@ -134,7 +134,7 @@ void TestTraze::onEvent(const traze::PlayerListEvent& event) {
 	_players = event.get();
 	_maxLength = 200;
 	for (const traze::Player& p : _players) {
-		_maxLength = glm::max(_maxLength, _voxelFontRender.stringWidth(p.name.c_str()) + 20);
+		_maxLength = glm::max(_maxLength, _voxelFontRender.stringWidth(p.name.c_str()) + 60);
 	}
 }
 
@@ -199,41 +199,36 @@ void TestTraze::doRender() {
 		_rawVolumeRenderer.render(_camera);
 	}
 
-	video::Camera camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal);
-	camera.init(glm::ivec2(0), dimension());
+	video::Camera camera;
+	camera.setMode(video::CameraMode::Orthogonal);
 	camera.setNearPlane(-1.0f);
 	camera.setFarPlane(1.0f);
+	camera.init(glm::ivec2(0), dimension());
 	camera.update(0L);
 
-	const glm::mat4& namesTranslate = glm::translate(glm::vec3(0.0f, 0.0f, -100.0f));
-	const glm::mat4& rotatation = glm::rotate(glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	const glm::mat4& model = glm::scale(glm::vec3(0.3f));
-	_voxelFontRender.setModelMatrix(rotatation * namesTranslate * model);
 	_voxelFontRender.setViewProjectionMatrix(camera.viewProjectionMatrix());
+	glm::mat4 move = glm::translate(glm::vec3(20.0f, 20.0f, 0.0f));
+	_voxelFontRender.setModelMatrix(move);
 
 	if (!_protocol.connected()) {
 		const char* connecting = "Connecting";
 		const int w = _voxelFontRender.stringWidth(connecting);
-		const glm::ivec3 pos(dimension().x / 2 - w / 2, dimension().y / 2, 0);
-		_voxelFontRender.text(connecting, pos, core::Color::Red);
-		_voxelFontRender.text(".", glm::ivec3(pos.x + (lifetimeInSeconds() % 60), pos.y + _voxelFontRender.lineHeight(), pos.z), core::Color::Red);
-	}
-
-	if (_renderPlayerNames) {
+		const glm::ivec3 pos(0, 0, 0);
+		_voxelFontRender.text(pos, core::Color::Red, "%s", connecting);
+		const int offset = int((_now - _initMillis) / 75);
+		_voxelFontRender.text(glm::ivec3(pos.x + (offset % w), pos.y + _voxelFontRender.lineHeight(), pos.z), core::Color::Red, ".");
+	} else if (_renderPlayerNames) {
 		int yOffset = 0;
-		_voxelFontRender.text("Players", glm::ivec3(0, yOffset, 0), core::Color::Red);
+		_voxelFontRender.text(glm::ivec3(0, yOffset, 0), core::Color::White, "Players");
 		yOffset += _voxelFontRender.lineHeight();
 		for (const traze::Player& p : _players) {
-			const std::string& frags = core::string::format("%i", p.frags);
-			_voxelFontRender.text(p.name.c_str(), glm::ivec3(0, yOffset, 0), p.color);
-			_voxelFontRender.text(frags.c_str(), glm::ivec3(_maxLength, yOffset, 0), p.color);
+			_voxelFontRender.text(glm::ivec3(0, yOffset, 0), p.color, "* %s", p.name.c_str());
+			_voxelFontRender.text(glm::ivec3(_maxLength, yOffset, 0), p.color, "%i", p.frags);
 			yOffset += _voxelFontRender.lineHeight();
 		}
 	}
 
-	const int renderTargetW = camera.width();
-	const int renderTargetH = camera.height();
-	video::viewport(0, 0, renderTargetW, renderTargetH);
+	_voxelFontRender.swapBuffers();
 	_voxelFontRender.render();
 }
 

@@ -102,16 +102,19 @@ void VoxelFontRenderer::text(const glm::ivec3& pos, const glm::vec4& color, cons
 	});
 }
 
+void VoxelFontRenderer::swapBuffers() {
+	// TODO: the vertices should only be uploaded once for the whole glyph set. only the ibo should be dynamic and re-uploaded
+	_vertexBuffer.update(_vertexBufferId, _data.vertices);
+	_vertexBuffer.update(_vertexBufferIndexId, _indices);
+
+	_indices.clear();
+	_data.vertices.clear();
+}
+
 void VoxelFontRenderer::render() {
 	const size_t elements = _vertexBuffer.elements(_vertexBufferIndexId, 1, sizeof(uint32_t));
 	if (elements <= 0u) {
 		return;
-	}
-
-	if (!_indices.empty()) {
-		// TODO: the vertices should only be uploaded once for the whole glyph set. only the ibo should be dynamic and re-uploaded
-		_vertexBuffer.update(_vertexBufferId, _data.vertices);
-		_vertexBuffer.update(_vertexBufferIndexId, _indices);
 	}
 
 	video::ScopedShader scoped(_colorShader);
@@ -120,9 +123,6 @@ void VoxelFontRenderer::render() {
 
 	video::ScopedBuffer scopedBuf(_vertexBuffer);
 	video::drawElements<uint32_t>(video::Primitive::Triangles, elements);
-
-	_indices.clear();
-	_data.vertices.clear();
 }
 
 }
