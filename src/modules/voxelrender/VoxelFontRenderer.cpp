@@ -79,6 +79,11 @@ void VoxelFontRenderer::shutdown() {
 
 	_vertexBufferId = -1;
 	_vertexBufferIndexId = -1;
+
+	_indices.clear();
+	_data.vertices.clear();
+	_modelMatrix = glm::mat4(1.0f);
+	_viewProjectionMatrix = glm::mat4(1.0f);
 }
 
 void VoxelFontRenderer::text(const char *string, const glm::ivec3& pos, const glm::vec4& color) {
