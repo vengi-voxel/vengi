@@ -35,6 +35,7 @@ private:
 	bool _renderPlayerNames = true;
 
 	int _maxLength = 200;
+	video::Camera _textCamera;
 
 	std::vector<traze::GameInfo> _games;
 	std::vector<traze::Player> _players;

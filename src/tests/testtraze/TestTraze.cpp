@@ -73,6 +73,14 @@ core::AppState TestTraze::onInit() {
 	_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_INFO));
 	Log::init();
 
+	_textCamera.setMode(video::CameraMode::Orthogonal);
+	_textCamera.setNearPlane(-10.0f);
+	_textCamera.setFarPlane(10.0f);
+	_textCamera.init(glm::ivec2(0), dimension());
+	_textCamera.update(0L);
+
+	_voxelFontRender.setViewProjectionMatrix(_textCamera.viewProjectionMatrix());
+
 	return state;
 }
 
@@ -199,25 +207,17 @@ void TestTraze::doRender() {
 		_rawVolumeRenderer.render(_camera);
 	}
 
-	video::Camera camera;
-	camera.setMode(video::CameraMode::Orthogonal);
-	camera.setNearPlane(-1.0f);
-	camera.setFarPlane(1.0f);
-	camera.init(glm::ivec2(0), dimension());
-	camera.update(0L);
-
-	_voxelFontRender.setViewProjectionMatrix(camera.viewProjectionMatrix());
-	glm::mat4 move = glm::translate(glm::vec3(20.0f, 20.0f, 0.0f));
-	_voxelFontRender.setModelMatrix(move);
-
 	if (!_protocol.connected()) {
 		const char* connecting = "Connecting";
 		const int w = _voxelFontRender.stringWidth(connecting);
+		const glm::ivec2& dim = dimension();
+		_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(dim.x / 2 - w / 2, dim.y / 2 - _voxelFontRender.lineHeight() / 2, 0.0f)));
 		const glm::ivec3 pos(0, 0, 0);
 		_voxelFontRender.text(pos, core::Color::Red, "%s", connecting);
 		const int offset = int((_now - _initMillis) / 75);
 		_voxelFontRender.text(glm::ivec3(pos.x + (offset % w), pos.y + _voxelFontRender.lineHeight(), pos.z), core::Color::Red, ".");
 	} else if (_renderPlayerNames) {
+		_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(20.0f, 20.0f, 0.0f)));
 		int yOffset = 0;
 		_voxelFontRender.text(glm::ivec3(0, yOffset, 0), core::Color::White, "Players");
 		yOffset += _voxelFontRender.lineHeight();
