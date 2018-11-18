@@ -188,6 +188,9 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	uint32_t numIndices = 0u;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		numIndices += _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
+		if (numIndices > 0) {
+			break;
+		}
 	}
 	if (numIndices == 0u) {
 		return;
