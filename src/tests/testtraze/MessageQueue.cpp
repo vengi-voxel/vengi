@@ -6,7 +6,7 @@
 #include "core/command/Command.h"
 
 namespace {
-const uint64_t MessageDelay = 6000;
+const uint64_t MessageDelay = 2000;
 }
 
 void MessageQueue::message(const char *msg, ...) {

@@ -175,7 +175,6 @@ core::AppState TestTraze::onRunning() {
 	if (!_protocol.connected()) {
 		const uint64_t current = lifetimeInSeconds();
 		if (_nextConnectTime < current) {
-			_messageQueue.message("Failed to connect...");
 			const uint64_t delaySeconds = 3;
 			_nextConnectTime += delaySeconds;
 			_protocol.connect();
@@ -230,7 +229,8 @@ void TestTraze::doRender() {
 		_rawVolumeRenderer.render(_camera);
 	}
 
-	_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(300.0f, 0.0f, 0.0f)));
+	const glm::ivec2& dim = dimension();
+	_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(dim.x / 3, 0.0f, 0.0f)));
 	int messageOffset = 0;
 	_messageQueue.visitMessages([&] (int64_t /*remainingMillis*/, const std::string& msg) {
 		_voxelFontRender.text(glm::ivec3(0.0f, (float)messageOffset, 0.0f), core::Color::White, "%s", msg.c_str());
@@ -242,7 +242,6 @@ void TestTraze::doRender() {
 	if (!_protocol.connected()) {
 		const char* connecting = "Connecting";
 		const int w = _voxelFontRender.stringWidth(connecting);
-		const glm::ivec2& dim = dimension();
 		_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(dim.x / 2 - w / 2, dim.y / 2 - _voxelFontRender.lineHeight() / 2, 0.0f)));
 		const glm::ivec3 pos(0, 0, 0);
 		_voxelFontRender.text(pos, core::Color::Red, "%s", connecting);
