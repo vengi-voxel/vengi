@@ -21,18 +21,20 @@ enum class BikeDirection {
 	N, S, W, E
 };
 
+using PlayerId = uint32_t;
+
 struct Bike {
-	uint32_t playerId;
+	PlayerId playerId;
 	glm::ivec2 currentLocation;
 	BikeDirection direction;
 };
 
 struct Player {
 	std::string name;
-	uint32_t id;
-	uint32_t frags;
-	uint8_t colorIndex;
-	glm::vec4 color;
+	PlayerId id = 0u;
+	uint32_t frags = 0u;
+	uint8_t colorIndex = 0u;
+	glm::vec4 color {0.0f};
 };
 
 enum class TickerType {
@@ -42,7 +44,7 @@ enum class TickerType {
 struct Ticker {
 	TickerType type = TickerType::Unknown;
 	int casualty;
-	uint32_t fragger;
+	PlayerId fragger;
 };
 
 }

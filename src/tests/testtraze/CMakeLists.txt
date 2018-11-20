@@ -7,6 +7,7 @@ if (MOSQUITTO_FOUND)
 		TrazeProtocol.h TrazeProtocol.cpp
 		TrazeTypes.h
 		TestTraze.h TestTraze.cpp
+		MessageQueue.h MessageQueue.cpp
 	)
 	set(FILES
 		shared/font.ttf

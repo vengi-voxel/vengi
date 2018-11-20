@@ -13,7 +13,7 @@ const int FontSize = 48;
 }
 
 TestTraze::TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider), _protocol(eventBus), _voxelFontRender(FontSize) {
+		Super(metric, filesystem, eventBus, timeProvider), _protocol(eventBus), _voxelFontRender(FontSize, 4, voxel::VoxelFont::OriginUpperLeft) {
 	init(ORGANISATION, "testtraze");
 	setRenderAxis(false);
 	_eventBus->subscribe<traze::NewGridEvent>(*this);
@@ -22,6 +22,20 @@ TestTraze::TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& f
 	_eventBus->subscribe<traze::TickerEvent>(*this);
 	_eventBus->subscribe<traze::SpawnEvent>(*this);
 	_eventBus->subscribe<traze::BikeEvent>(*this);
+}
+
+const std::string& TestTraze::playerName(traze::PlayerId playerId) const {
+	return player(playerId).name;
+}
+
+const traze::Player& TestTraze::player(traze::PlayerId playerId) const {
+	for (auto& p : _players) {
+		if (p.id == playerId) {
+			return p;
+		}
+	}
+	static traze::Player player;
+	return player;
 }
 
 core::AppState TestTraze::onConstruct() {
@@ -40,6 +54,7 @@ core::AppState TestTraze::onConstruct() {
 			Log::info("%s", p.name.c_str());
 		}
 	});
+	_messageQueue.construct();
 	return state;
 }
 
@@ -62,6 +77,10 @@ core::AppState TestTraze::onInit() {
 	}
 	if (!_rawVolumeRenderer.onResize(glm::ivec2(0), dimension())) {
 		Log::error("Failed to initialize the raw volume renderer");
+		return core::AppState::InitFailure;
+	}
+	if (!_messageQueue.init()) {
+		Log::error("Failed to init message queue");
 		return core::AppState::InitFailure;
 	}
 	if (!_voxelFontRender.init()) {
@@ -109,12 +128,13 @@ void TestTraze::onEvent(const traze::BikeEvent& event) {
 
 void TestTraze::onEvent(const traze::TickerEvent& event) {
 	const traze::Ticker& ticker = event.get();
+	const std::string& name = playerName(ticker.fragger);
 	switch (ticker.type) {
 	case traze::TickerType::Frag:
-		Log::info("Received frag event");
+		_messageQueue.message("%s fragged another player", name.c_str());
 		break;
 	case traze::TickerType::Suicide:
-		Log::info("Received suicide event");
+		_messageQueue.message("%s commited suicide", name.c_str());
 		break;
 	default:
 		break;
@@ -155,6 +175,7 @@ core::AppState TestTraze::onRunning() {
 	if (!_protocol.connected()) {
 		const uint64_t current = lifetimeInSeconds();
 		if (_nextConnectTime < current) {
+			_messageQueue.message("Failed to connect...");
 			const uint64_t delaySeconds = 3;
 			_nextConnectTime += delaySeconds;
 			_protocol.connect();
@@ -162,6 +183,7 @@ core::AppState TestTraze::onRunning() {
 	} else if (_currentGameIndex != -1) {
 		_protocol.subscribe(_games[_currentGameIndex]);
 	}
+	_messageQueue.update(_deltaFrameMillis);
 	return state;
 }
 
@@ -173,6 +195,7 @@ core::AppState TestTraze::onCleanup() {
 		delete v;
 	}
 	_protocol.shutdown();
+	_messageQueue.shutdown();
 	return state;
 }
 
@@ -206,6 +229,15 @@ void TestTraze::doRender() {
 	if (_renderBoard) {
 		_rawVolumeRenderer.render(_camera);
 	}
+
+	_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(300.0f, 0.0f, 0.0f)));
+	int messageOffset = 0;
+	_messageQueue.visitMessages([&] (int64_t /*remainingMillis*/, const std::string& msg) {
+		_voxelFontRender.text(glm::ivec3(0.0f, (float)messageOffset, 0.0f), core::Color::White, "%s", msg.c_str());
+		messageOffset += _voxelFontRender.lineHeight();
+	});
+	_voxelFontRender.swapBuffers();
+	_voxelFontRender.render();
 
 	if (!_protocol.connected()) {
 		const char* connecting = "Connecting";

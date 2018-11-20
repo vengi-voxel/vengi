@@ -12,6 +12,8 @@
 #include "TrazeEvents.h"
 #include "TrazeProtocol.h"
 
+#include "MessageQueue.h"
+
 /**
  * @brief Example application that renders the state of a traze board. See https://traze.iteratec.de/ for more details.
  */
@@ -30,6 +32,7 @@ private:
 	traze::Protocol _protocol;
 	voxelrender::RawVolumeRenderer _rawVolumeRenderer;
 	voxelrender::VoxelFontRenderer _voxelFontRender;
+	MessageQueue _messageQueue;
 
 	bool _renderBoard = true;
 	bool _renderPlayerNames = true;
@@ -43,6 +46,9 @@ private:
 	uint64_t _nextConnectTime = 0;
 
 	void doRender() override;
+
+	const std::string& playerName(traze::PlayerId playerId) const;
+	const traze::Player& player(traze::PlayerId playerId) const;
 public:
 	TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
