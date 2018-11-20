@@ -1,5 +1,5 @@
 set(DOCKER_BUILD_ARGS "--pull" CACHE STRING "Docker cli arguments for building an image")
-set(DOCKER_RUN_ARGS "" CACHE STRING "Docker cli arguments for running an image")
+set(DOCKER_RUN_ARGS "-it" CACHE STRING "Docker cli arguments for running an image")
 set(DOCKER_DELETE_IUMAGE_ARGS "" CACHE STRING "Docker cli arguments for deleting an image")
 set(DOCKER_PUSH_ARGS "" CACHE STRING "Docker cli arguments for pushing an image")
 
@@ -46,7 +46,6 @@ macro(engine_docker NAME)
 			COMMAND
 				${DOCKER_EXECUTABLE}
 				run
-				-it
 				${DOCKER_RUN_ARGS}
 				${DOCKER_IMAGE_NAME_TAG}
 			VERBATIM
@@ -58,12 +57,12 @@ macro(engine_docker NAME)
 				${DOCKER_EXECUTABLE}
 				push
 				${DOCKER_PUSH_ARGS}
-				"${DOCKER_IMAGE_NAME_TAG}"
+				${DOCKER_IMAGE_NAME_TAG}
 			COMMAND
 				${DOCKER_EXECUTABLE}
 				rmi
 				${DOCKER_DELETE_IUMAGE_ARGS}
-				"${DOCKER_IMAGE_NAME_TAG}"
+				${DOCKER_IMAGE_NAME_TAG}
 			VERBATIM
 		)
 	endif()
