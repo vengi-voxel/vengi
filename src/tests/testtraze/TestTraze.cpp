@@ -123,7 +123,8 @@ void TestTraze::onEvent(const traze::NewGamesEvent& event) {
 
 void TestTraze::onEvent(const traze::BikeEvent& event) {
 	const traze::Bike& bike = event.get();
-	Log::debug("Received bike event for player %u", bike.playerId);
+	Log::debug("Received bike event for player %u (%i:%i)",
+			bike.playerId, bike.currentLocation.x, bike.currentLocation.y);
 }
 
 void TestTraze::onEvent(const traze::TickerEvent& event) {
@@ -143,11 +144,18 @@ void TestTraze::onEvent(const traze::TickerEvent& event) {
 
 void TestTraze::onEvent(const traze::SpawnEvent& event) {
 	const glm::ivec2& position = event.get();
-	Log::info("Spawn at position %i:%i", position.x, position.y);
+	Log::debug("Spawn at position %i:%i", position.x, position.y);
+	_spawnPosition = position;
+	_spawnTime = _now;
 }
 
 void TestTraze::onEvent(const traze::NewGridEvent& event) {
 	voxel::RawVolume* v = event.get();
+	if (_spawnTime > 0 && _now - _spawnTime < 4000) {
+		const voxel::Voxel voxel = voxel::createRandomColorVoxel(voxel::VoxelType::Generic);
+		v->setVoxel(glm::ivec3(_spawnPosition.y, 0, _spawnPosition.x), voxel);
+		v->setVoxel(glm::ivec3(_spawnPosition.y, 1, _spawnPosition.x), voxel);
+	}
 	delete _rawVolumeRenderer.setVolume(PlayFieldVolume, v);
 	const glm::mat4& translate = glm::translate(-v->region().getCentre());
 	const glm::mat4& rotateY = glm::rotate(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));

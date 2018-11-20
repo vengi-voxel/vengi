@@ -37,6 +37,9 @@ private:
 	bool _renderBoard = true;
 	bool _renderPlayerNames = true;
 
+	glm::ivec2 _spawnPosition { 0 };
+	uint64_t _spawnTime = 0u;
+
 	int _maxLength = 200;
 	video::Camera _textCamera;
 
