@@ -23,6 +23,11 @@ enum class BikeDirection {
 
 using PlayerId = uint32_t;
 
+struct Spawn {
+	glm::ivec2 position;
+	bool own;
+};
+
 struct Bike {
 	PlayerId playerId;
 	glm::ivec2 currentLocation;

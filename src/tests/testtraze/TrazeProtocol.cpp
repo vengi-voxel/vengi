@@ -187,6 +187,7 @@ void Protocol::parseOwnPlayer(const std::string& json) {
 	_playerId = j["id"].get<int>();
 	const glm::ivec2& position = j["position"];
 	Log::info("Player token %s with id %u at pos %i:%i", _playerToken.c_str(), _playerId, position.x, position.y);
+	_eventBus->enqueue(std::make_shared<SpawnEvent>(Spawn{position, true}));
 }
 
 void Protocol::parsePlayers(const std::string& json) {
@@ -335,7 +336,7 @@ void Protocol::parseGridAndUpdateVolume(const std::string& json) {
 		const auto& spawns = j["spawns"];
 		for (const auto& spawn : spawns) {
 			const glm::ivec2 spawnPos(spawn[0].get<int>(), spawn[1].get<int>());
-			_eventBus->enqueue(std::make_shared<SpawnEvent>(spawnPos));
+			_eventBus->enqueue(std::make_shared<SpawnEvent>(Spawn{spawnPos, false}));
 		}
 	}
 	_eventBus->enqueue(std::make_shared<NewGridEvent>(v));

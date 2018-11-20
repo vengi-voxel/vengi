@@ -143,10 +143,12 @@ void TestTraze::onEvent(const traze::TickerEvent& event) {
 }
 
 void TestTraze::onEvent(const traze::SpawnEvent& event) {
-	const glm::ivec2& position = event.get();
-	Log::debug("Spawn at position %i:%i", position.x, position.y);
-	_spawnPosition = position;
-	_spawnTime = _now;
+	const traze::Spawn& spawn = event.get();
+	Log::debug("Spawn at position %i:%i", spawn.position.x, spawn.position.y);
+	if (spawn.own) {
+		_spawnPosition = spawn.position;
+		_spawnTime = _now;
+	}
 }
 
 void TestTraze::onEvent(const traze::NewGridEvent& event) {
