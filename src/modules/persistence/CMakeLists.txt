@@ -25,7 +25,7 @@ set(SRCS
 	postgres/PQSymbol.h postgres/PQSymbol.cpp
 )
 
-set(PostgreSQL_ADDITIONAL_VERSIONS "10;10.4")
+set(PostgreSQL_ADDITIONAL_VERSIONS "10;10.4;11")
 find_package(PostgreSQL)
 message(STATUS "Postgresql include dirs: ${PostgreSQL_INCLUDE_DIRS}")
 message(STATUS "Postgresql libs: ${PostgreSQL_LIBRARIES}")
