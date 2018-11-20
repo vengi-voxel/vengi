@@ -4,8 +4,8 @@ MAINTAINER Martin Gerhardy <martin.gerhardy@gmail.com>
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update -q && apt-get install -y cmake g++ pkg-config \
-	libpq-dev opencl-c-headers libcurl4-openssl-dev \
-	libsdl2-dev zlib1g-dev libuv1-dev
+	opencl-c-headers libcurl4-openssl-dev postgresql-server-dev-11 \
+	libsdl2-dev zlib1g-dev libuv1-dev uuid-dev ocl-icd-libopencl1
 
 COPY contrib /tmp/@ROOT_PROJECT_NAME@/contrib
 COPY tools /tmp/@ROOT_PROJECT_NAME@/tools
@@ -20,7 +20,7 @@ RUN make -C /tmp/@ROOT_PROJECT_NAME@/build -j $(nproc) server
 
 FROM debian:buster
 RUN apt-get update -q && \
-	apt-get install -y libatomic1 libcurl4 zlib1g libuv1 libpq5 libsdl2-2.0.0 && \
+	apt-get install -y libatomic1 libcurl4 zlib1g libuv1 libpq5 libsdl2-2.0.0 ocl-icd-libopencl1 uuid-runtime && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/*
 
