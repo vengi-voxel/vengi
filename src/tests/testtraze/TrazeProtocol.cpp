@@ -127,7 +127,7 @@ bool Protocol::send(const std::string& topic, const std::string& json) const {
 	if (rc != MOSQ_ERR_SUCCESS) {
 		Log::warn("Failed to send to topic '%s' with error %s", topic.c_str(), mosquitto_strerror(rc));
 	} else {
-		Log::info("Sent to topic '%s' with payload '%s'", topic.c_str(), json.c_str());
+		Log::debug("Sent to topic '%s' with payload '%s'", topic.c_str(), json.c_str());
 	}
 	return rc == MOSQ_ERR_SUCCESS;
 }
