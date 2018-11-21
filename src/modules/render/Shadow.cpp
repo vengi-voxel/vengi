@@ -25,10 +25,7 @@ bool Shadow::init(int maxDepthBuffers) {
 	core_assert(_maxDepthBuffers >= 1);
 	const float length = 50.0f;
 	const glm::vec3 sunPos(length, length, -length);
-	const glm::vec3 center(0.0f);
-	_lightView = glm::lookAt(sunPos, center, glm::up);
-	//_sunDirection = normalize(center - sunPos);
-	_sunDirection = glm::vec3(glm::column(glm::inverse(_lightView), 2));
+	setPosition(sunPos);
 	if (!_shadowMapShader.setup()) {
 		Log::error("Failed to init shadowmap shader");
 		return false;
@@ -186,5 +183,14 @@ const glm::ivec2& Shadow::dimension() const {
 	return _depthBuffer.dimension();
 }
 
+void Shadow::setPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up) {
+	setLightViewMatrix(glm::lookAt(eye, center, up));
+}
+
+void Shadow::setLightViewMatrix(const glm::mat4& lightView) {
+	_lightView = lightView;
+	//_sunDirection = normalize(center - sunPos);
+	_sunDirection = glm::vec3(glm::column(glm::inverse(_lightView), 2));
+}
 
 }

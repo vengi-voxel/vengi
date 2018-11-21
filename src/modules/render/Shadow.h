@@ -58,6 +58,8 @@ public:
 
 	void render(funcRender renderCallback, funcRenderInstance renderInstancedCallback);
 
+	void setPosition(const glm::vec3& eye, const glm::vec3& center = glm::zero<glm::vec3>(), const glm::vec3& up = glm::up);
+	void setLightViewMatrix(const glm::mat4& lightView);
 	void setShadowBiasSlope(float biasSlope);
 	void setShadowBias(float biasSlope);
 
