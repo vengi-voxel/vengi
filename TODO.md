@@ -151,7 +151,6 @@ doing one query per chunk is most likely a little bit overkill.
 
 # Deployment
 
-- build docker images
 - set up kubernetes manifests
 
 # VoxEdit
