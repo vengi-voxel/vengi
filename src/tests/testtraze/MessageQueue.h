@@ -11,6 +11,11 @@
 #include <vector>
 #include <SDL.h>
 
+/**
+ * @brief Class that implements messages with lifetime. The messages are removed once the got old enough.
+ *
+ * This can e.g. be used to display hud messages
+ */
 class MessageQueue : public core::IComponent {
 private:
 	struct MessageEvent {
@@ -32,11 +37,28 @@ private:
 	MessageEventComparator _messageEventQueueComp;
 	uint64_t _time = 0u;
 public:
+	/**
+	 * @brief Registers a console command to add messages from scripts or console
+	 */
 	void construct() override;
+	/**
+	 * @brief Initializes this component
+	 * @sa @c shutdown()
+	 */
 	bool init() override;
+	/**
+	 * @brief The update method will remove outdated messages.
+	 */
 	void update(uint64_t dt);
+	/**
+	 * @brief Perform a cleanup of the component.
+	 * @sa @c init()
+	 */
 	void shutdown() override;
 
+	/**
+	 * @brief Adds a message to the message queue
+	 */
 	void message(SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 	/**
