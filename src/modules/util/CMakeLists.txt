@@ -6,6 +6,7 @@ set(SRCS
 	KeybindingParser.h KeybindingParser.cpp
 	KeybindingHandler.h KeybindingHandler.cpp
 	IncludeUtil.h IncludeUtil.cpp
+	MessageQueue.h MessageQueue.cpp
 )
 set(LIB util)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math)

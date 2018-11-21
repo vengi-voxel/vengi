@@ -12,7 +12,7 @@
 #include "TrazeEvents.h"
 #include "TrazeProtocol.h"
 
-#include "MessageQueue.h"
+#include "util/MessageQueue.h"
 
 /**
  * @brief Example application that renders the state of a traze board. See https://traze.iteratec.de/ for more details.
