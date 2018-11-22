@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:11
+    restart: always
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: engine
+      POSTGRES_USER: engine
+      POSTGRES_PASSWORD: engine
+    ports:
+      - 5432:5432
+
+  app:
+    image: server:0.0.1
+    restart: always
+    ports:
+      - 11337:11337
+    environment:
+      DB_HOST: db
+      DB_NAME: engine
+      DB_USER: engine
+      DB_PASSWORD: engine
+    depends_on:
+      - db
+
+volumes:
+  db:
+
