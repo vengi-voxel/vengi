@@ -48,7 +48,7 @@ core::AppState Server::onConstruct() {
 	core::Var::get(cfg::DatabasePassword, DB_PW, core::CV_SECRET);
 	core::Var::get(cfg::ServerUserTimeout, "60000");
 	core::Var::get(cfg::ServerPort, SERVER_PORT);
-	core::Var::get(cfg::ServerHost, SERVER_HOST);
+	core::Var::get(cfg::ServerHost, "0.0.0.0");
 	core::Var::get(cfg::ServerMaxClients, "1024");
 	core::Var::get(cfg::ServerSeed, "1");
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
