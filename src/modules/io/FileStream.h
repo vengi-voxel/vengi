@@ -123,7 +123,7 @@ public:
 	 * the position of the stream is still advanced by the given length
 	 * @param[in] length The fixed length of the string in the file and the min length
 	 * of the output buffer.
-	 * @param{out] strbuff The output buffer
+	 * @param[out] strbuff The output buffer
 	 */
 	bool readString(int length, char *strbuff);
 	bool readFormat(const char *fmt, ...);

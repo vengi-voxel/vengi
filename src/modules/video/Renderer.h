@@ -303,7 +303,6 @@ extern int getOcclusionQueryResult(Id id, bool wait = false);
  * Binds a new frame buffer
  * @param mode The FrameBufferMode to bind the frame buffer with
  * @param handle The Id that represents the handle of the frame buffer
- * @param textureHandle The Id that represents the texture that should be bound as frame buffer color attachment.
  * @return The previously bound frame buffer Id
  */
 extern Id bindFramebuffer(Id handle, FrameBufferMode mode = FrameBufferMode::Default);

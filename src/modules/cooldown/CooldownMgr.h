@@ -62,7 +62,7 @@ public:
 	/**
 	 * @brief Tries to trigger the specified cooldown for the given entity
 	 * @param[in] type The cooldown type to trigger - needed to lookup the cooldown data like expire times
-	 * @param]in] callback A @c CooldownCallback that is called with the @c CallbackType parameter whenever the
+	 * @param[in] callback A @c CooldownCallback that is called with the @c CallbackType parameter whenever the
 	 * cooldown switches to a new state.
 	 */
 	virtual CooldownTriggerState triggerCooldown(Type type, CooldownCallback callback = CooldownCallback());

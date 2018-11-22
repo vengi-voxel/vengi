@@ -41,15 +41,15 @@ private:
 
 public:
 	Shadow();
+	/**
+	 * @param[in] maxDepthBuffers the amount of cascades
+	 */
 	bool init(int maxDepthBuffers);
 	void shutdown();
 
 	typedef std::function<bool(int, shader::ShadowmapShader&)> funcRender;
 	typedef std::function<bool(int, shader::ShadowmapInstancedShader&)> funcRenderInstance;
 
-	/**
-	 * @param[in] maxDepthBuffers the amount of cascades
-	 */
 	void update(const video::Camera& camera, bool active, float sliceWeight = 0.05f);
 
 	bool bind(video::TextureUnit unit);

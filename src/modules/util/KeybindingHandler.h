@@ -13,7 +13,7 @@ namespace util {
 /**
  * @param bindings Map of bindings
  * @param key The key that was pressed
- * @param modififer The modifier mask
+ * @param modifier The modifier mask
  * @return @c true if the key+modifier combination lead to a command execution via
  * key bindings, @c false otherwise
  */
