@@ -20,6 +20,7 @@ COPY CMakeLists.txt /tmp/@ROOT_PROJECT_NAME@/
 RUN mkdir /tmp/@ROOT_PROJECT_NAME@/build
 RUN cmake --version
 RUN cmake -H/tmp/@ROOT_PROJECT_NAME@ -B/tmp/@ROOT_PROJECT_NAME@/build -DUNITTESTS=OFF -DVISUALTESTS=OFF -DTOOLS=OFF -DCLIENT=OFF -DSERVER=ON -DRCON=OFF -DCMAKE_INSTALL_PREFIX=installation -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+RUN cat /tmp/@ROOT_PROJECT_NAME@/build/engine-config.h
 RUN make -C /tmp/@ROOT_PROJECT_NAME@/build -j $(nproc) server
 
 FROM debian:buster
