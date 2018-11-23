@@ -42,9 +42,9 @@ Server::Server(const metric::MetricPtr& metric, const backend::ServerLoopPtr& se
 core::AppState Server::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 
-	core::Var::get(cfg::DatabaseName, "engine");
+	core::Var::get(cfg::DatabaseName, "vengi");
 	core::Var::get(cfg::DatabaseHost, "localhost");
-	core::Var::get(cfg::DatabaseUser, "engine");
+	core::Var::get(cfg::DatabaseUser, "vengi");
 	core::Var::get(cfg::DatabasePassword, DB_PW, core::CV_SECRET);
 	core::Var::get(cfg::ServerUserTimeout, "60000");
 	core::Var::get(cfg::ServerPort, SERVER_PORT);
