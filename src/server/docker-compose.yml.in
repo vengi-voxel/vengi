@@ -7,22 +7,26 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: engine
-      POSTGRES_USER: engine
-      POSTGRES_PASSWORD: engine
+      POSTGRES_DB: vengi
+      POSTGRES_USER: vengi
+      POSTGRES_PASSWORD: @DB_PW@
     ports:
       - 5432:5432
 
   app:
-    image: server:0.0.1
+    build:
+      context: @ROOT_DIR@
+      dockerfile: @DOCKERFILE_TARGET@
+      args:
+        buildno: 1
     restart: always
     ports:
       - 11337:11337
     environment:
       DB_HOST: db
-      DB_NAME: engine
-      DB_USER: engine
-      DB_PASSWORD: engine
+      DB_NAME: vengi
+      DB_USER: vengi
+      DB_PASSWORD: @DB_PW@
     depends_on:
       - db
 

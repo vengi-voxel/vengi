@@ -20,6 +20,12 @@ macro(engine_docker NAME)
 		configure_file(${DOCKERFILE_SRC} ${DOCKERFILE_TARGET} COPYONLY)
 	endif()
 
+	if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/docker-compose.yml.in)
+		configure_file(docker-compose.yml.in docker-compose.yml @ONLY)
+	elseif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/docker-compose.yml)
+		configure_file(docker-compose.yml docker-compose.yml COPYONLY)
+	endif()
+
 	if (DOCKER_REGISTRY)
 		set(DOCKER_IMAGE_NAME_TAG "${DOCKER_REGISTRY}/${NAME}:${ROOT_PROJECT_VERSION}")
 	else()
