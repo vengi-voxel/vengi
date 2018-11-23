@@ -22,6 +22,7 @@ namespace _priv {
  * A list of default gl states: http://www.glprogramming.com/red/appendixb.html
  */
 struct GLState {
+	bool clipOriginLowerLeft = true;
 	GLVersion glVersion {0, 0};
 	glm::vec4 clearColor {0.0f};
 	Face cullFace = Face::Back;

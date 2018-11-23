@@ -244,6 +244,13 @@ void setupFeatures() {
 		}
 	}
 
+#ifdef GL_CLIP_ORIGIN
+	GLenum clipOrigin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&clipOrigin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
+	if (clipOrigin == GL_UPPER_LEFT) {
+		s.clipOriginLowerLeft = false;
+	}
+#endif
+
 #if SDL_VIDEO_OPENGL_ES2
 	renderState().features[std::enum_value(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("GL_ARB_texture_half_float");
 #else
