@@ -2,6 +2,9 @@ set(DOCKER_BUILD_ARGS "--pull" CACHE STRING "Docker cli arguments for building a
 set(DOCKER_RUN_ARGS "-it" CACHE STRING "Docker cli arguments for running an image")
 set(DOCKER_DELETE_IUMAGE_ARGS "" CACHE STRING "Docker cli arguments for deleting an image")
 set(DOCKER_PUSH_ARGS "" CACHE STRING "Docker cli arguments for pushing an image")
+set(DOCKER_EXECUTABLE "docker" CACHE STRING "The docker cli to use for the docker target")
+set(DOCKERCOMPOSE_UP_ARGS "" CACHE STRING "Docker-compose cli arguments for starting the services")
+set(DOCKERCOMPOSE_EXECUTABLE "docker-compose" CACHE STRING "The docker-compose cli to use for the docker-compose target")
 
 #
 # Adds a docker target to a project if a Dockerfile (copied) or Dockerfile.in (template) is in the directory
@@ -11,6 +14,7 @@ set(DOCKER_PUSH_ARGS "" CACHE STRING "Docker cli arguments for pushing an image"
 #
 macro(engine_docker NAME)
 	set(DOCKERFILE_SRC)
+	set(DOCKERCOMPOSEFILE_SRC)
 	set(DOCKERFILE_TARGET ${CMAKE_CURRENT_BINARY_DIR}/Dockerfile)
 	if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Dockerfile.in)
 		set(DOCKERFILE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/Dockerfile.in)
@@ -21,9 +25,11 @@ macro(engine_docker NAME)
 	endif()
 
 	if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/docker-compose.yml.in)
-		configure_file(docker-compose.yml.in docker-compose.yml @ONLY)
+		set(DOCKERCOMPOSEFILE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/docker-compose.yml.in)
+		configure_file(${DOCKERCOMPOSEFILE_SRC} docker-compose.yml @ONLY)
 	elseif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/docker-compose.yml)
-		configure_file(docker-compose.yml docker-compose.yml COPYONLY)
+		set(DOCKERCOMPOSEFILE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/docker-compose.yml)
+		configure_file(${DOCKERCOMPOSEFILE_SRC} docker-compose.yml COPYONLY)
 	endif()
 
 	if (DOCKER_REGISTRY)
@@ -71,5 +77,17 @@ macro(engine_docker NAME)
 				${DOCKER_IMAGE_NAME_TAG}
 			VERBATIM
 		)
+
+		if (DOCKERCOMPOSE_EXECUTABLE AND DOCKERCOMPOSEFILE_SRC)
+			add_custom_target(${NAME}-docker-compose-up
+				COMMAND
+					${DOCKERCOMPOSE_EXECUTABLE}
+					${DOCKERCOMPOSE_UP_ARGS}
+					up
+				WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+				VERBATIM
+			)
+		endif()
+
 	endif()
 endmacro()
