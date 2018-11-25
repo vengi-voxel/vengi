@@ -210,7 +210,7 @@ namespace glm
 #		elif((GLM_COMPILER & GLM_COMPILER_VC) || ((GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_PLATFORM & GLM_PLATFORM_WINDOWS)))
 			return detail::nextafter(x, std::numeric_limits<double>::max());
 #		elif(GLM_PLATFORM & GLM_PLATFORM_ANDROID)
-			return __builtin_nextafter(x, FLT_MAX);
+			return __builtin_nextafter(x, DBL_MAX);
 #		else
 			return nextafter(x, DBL_MAX);
 #		endif

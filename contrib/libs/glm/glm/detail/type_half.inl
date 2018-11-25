@@ -112,7 +112,7 @@ namespace detail
 		// Our floating point number, f, is represented by the bit
 		// pattern in integer i.  Disassemble that bit pattern into
 		// the sign, s, the exponent, e, and the significand, m.
-		// Shift s into the position where it will go in in the
+		// Shift s into the position where it will go in the
 		// resulting half number.
 		// Adjust e, accounting for the different exponent bias
 		// of float and half (127 versus 15).

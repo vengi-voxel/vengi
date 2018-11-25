@@ -35,6 +35,9 @@ namespace glm
 #			elif GLM_COMPILER & GLM_COMPILER_VC
 #				pragma warning(push)
 #				pragma warning(disable: 4201)  // nonstandard extension used : nameless struct/union
+#				if GLM_CONFIG_ALIGNED_GENTYPES == GLM_ENABLE
+#					pragma warning(disable: 4324)  // structure was padded due to alignment specifier
+#				endif
 #			endif
 #		endif
 
