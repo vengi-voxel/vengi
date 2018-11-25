@@ -3,6 +3,7 @@ set(DOCKER_RUN_ARGS "-it" CACHE STRING "Docker cli arguments for running an imag
 set(DOCKER_DELETE_IUMAGE_ARGS "" CACHE STRING "Docker cli arguments for deleting an image")
 set(DOCKER_PUSH_ARGS "" CACHE STRING "Docker cli arguments for pushing an image")
 set(DOCKER_EXECUTABLE "docker" CACHE STRING "The docker cli to use for the docker target")
+set(DOCKERCOMPOSE_BUILD_ARGS "" CACHE STRING "Docker-compose cli arguments for biilding the services")
 set(DOCKERCOMPOSE_UP_ARGS "" CACHE STRING "Docker-compose cli arguments for starting the services")
 set(DOCKERCOMPOSE_EXECUTABLE "docker-compose" CACHE STRING "The docker-compose cli to use for the docker-compose target")
 
@@ -79,6 +80,15 @@ macro(engine_docker NAME)
 		)
 
 		if (DOCKERCOMPOSE_EXECUTABLE AND DOCKERCOMPOSEFILE_SRC)
+			add_custom_target(${NAME}-docker-compose-build
+				COMMAND
+					${DOCKERCOMPOSE_EXECUTABLE}
+					${DOCKERCOMPOSE_BUILD_ARGS}
+					build
+				WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+				VERBATIM
+				DEPENDS ${DOCKERCOMPOSEFILE_SRC} ${DOCKERFILE_TARGET} ${DOCKERFILE_SRC}
+			)
 			add_custom_target(${NAME}-docker-compose-up
 				COMMAND
 					${DOCKERCOMPOSE_EXECUTABLE}
