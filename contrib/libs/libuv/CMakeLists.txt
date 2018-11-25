@@ -7,6 +7,7 @@ set(SOURCES
 	include/uv/errno.h
 	include/uv/threadpool.h
 	include/uv/version.h
+	src/idna.c
 	src/fs-poll.c
 	src/heap-inl.h
 	src/inet.c
