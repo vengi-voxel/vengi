@@ -445,7 +445,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv* mEn
     midPollHapticDevices = (*mEnv)->GetStaticMethodID(mEnv, mControllerManagerClass,
                                 "pollHapticDevices", "()V");
     midHapticRun = (*mEnv)->GetStaticMethodID(mEnv, mControllerManagerClass,
-                                "hapticRun", "(II)V");
+                                "hapticRun", "(IFI)V");
     midHapticStop = (*mEnv)->GetStaticMethodID(mEnv, mControllerManagerClass,
                                 "hapticStop", "(I)V");
 
@@ -481,10 +481,11 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv* env, jclass cls,
             int argc;
             int len;
             char **argv;
+            SDL_bool isstack;
 
             /* Prepare the arguments. */
             len = (*env)->GetArrayLength(env, array);
-            argv = SDL_stack_alloc(char*, 1 + len + 1);
+            argv = SDL_small_alloc(char*, 1 + len + 1, &isstack);  /* !!! FIXME: check for NULL */
             argc = 0;
             /* Use the name "app_process" so PHYSFS_platformCalcBaseDir() works.
                https://bitbucket.org/MartinFelis/love-android-sdl2/issue/23/release-build-crash-on-start
@@ -517,7 +518,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv* env, jclass cls,
             for (i = 0; i < argc; ++i) {
                 SDL_free(argv[i]);
             }
-            SDL_stack_free(argv);
+            SDL_small_free(argv, isstack);
 
         } else {
             __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
@@ -1260,7 +1261,7 @@ int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     jboolean isCopy = JNI_FALSE;
-    jint br;
+    jint br = -1;
 
     switch (captureBufferFormat) {
     case ENCODING_PCM_8BIT:
@@ -2005,10 +2006,10 @@ void Android_JNI_PollHapticDevices(void)
     (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midPollHapticDevices);
 }
 
-void Android_JNI_HapticRun(int device_id, int length)
+void Android_JNI_HapticRun(int device_id, float intensity, int length)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticRun, device_id, length);
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticRun, device_id, intensity, length);
 }
 
 void Android_JNI_HapticStop(int device_id)

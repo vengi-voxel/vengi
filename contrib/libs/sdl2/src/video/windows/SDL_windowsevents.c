@@ -908,7 +908,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_TOUCH:
         if (data->videodata->GetTouchInputInfo && data->videodata->CloseTouchInputHandle) {
             UINT i, num_inputs = LOWORD(wParam);
-            PTOUCHINPUT inputs = SDL_stack_alloc(TOUCHINPUT, num_inputs);
+            SDL_bool isstack;
+            PTOUCHINPUT inputs = SDL_small_alloc(TOUCHINPUT, num_inputs, &isstack);
             if (data->videodata->GetTouchInputInfo((HTOUCHINPUT)lParam, num_inputs, inputs, sizeof(TOUCHINPUT))) {
                 RECT rect;
                 float x, y;
@@ -916,7 +917,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 if (!GetClientRect(hwnd, &rect) ||
                     (rect.right == rect.left && rect.bottom == rect.top)) {
                     if (inputs) {
-                        SDL_stack_free(inputs);
+                        SDL_small_free(inputs, isstack);
                     }
                     break;
                 }
@@ -931,7 +932,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     PTOUCHINPUT input = &inputs[i];
 
                     const SDL_TouchID touchId = (SDL_TouchID)((size_t)input->hSource);
-                    if (SDL_AddTouch(touchId, "") < 0) {
+
+                    /* TODO: Can we use GetRawInputDeviceInfo and HID info to
+                       determine if this is a direct or indirect touch device?
+                     */
+                    if (SDL_AddTouch(touchId, SDL_TOUCH_DEVICE_DIRECT, "") < 0) {
                         continue;
                     }
 
@@ -950,7 +955,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                 }
             }
-            SDL_stack_free(inputs);
+            SDL_small_free(inputs, isstack);
 
             data->videodata->CloseTouchInputHandle((HTOUCHINPUT)lParam);
             return 0;
@@ -963,15 +968,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             HDROP drop = (HDROP) wParam;
             UINT count = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
             for (i = 0; i < count; ++i) {
+                SDL_bool isstack;
                 UINT size = DragQueryFile(drop, i, NULL, 0) + 1;
-                LPTSTR buffer = SDL_stack_alloc(TCHAR, size);
+                LPTSTR buffer = SDL_small_alloc(TCHAR, size, &isstack);
                 if (buffer) {
                     if (DragQueryFile(drop, i, buffer, size)) {
                         char *file = WIN_StringToUTF8(buffer);
                         SDL_SendDropFile(data->window, file);
                         SDL_free(file);
                     }
-                    SDL_stack_free(buffer);
+                    SDL_small_free(buffer, isstack);
                 }
             }
             SDL_SendDropComplete(data->window);

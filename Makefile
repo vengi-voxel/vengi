@@ -116,6 +116,7 @@ update-sdl2:
 	$(call UPDATE_HG,sdl2,https://hg.libsdl.org/SDL)
 	rm -rf contrib/libs/sdl2/src/* contrib/libs/sdl2/include/* contrib/libs/sdl2/cmake/*
 	cp -r $(UPDATEDIR)/sdl2.sync/src/* contrib/libs/sdl2/src
+	cp -r $(UPDATEDIR)/sdl2.sync/wayland-protocols/* contrib/libs/sdl2/wayland-protocols
 	cp -r $(UPDATEDIR)/sdl2.sync/include/* contrib/libs/sdl2/include
 	cp -r $(UPDATEDIR)/sdl2.sync/cmake/* contrib/libs/sdl2/cmake
 

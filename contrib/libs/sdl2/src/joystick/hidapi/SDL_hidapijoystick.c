@@ -308,6 +308,7 @@ HIDAPI_UpdateDiscovery()
     }
 
 #if defined(__WIN32__)
+#if 0 /* just let the usual SDL_PumpEvents loop dispatch these, fixing bug 4286. --ryan. */
     /* We'll only get messages on the same thread that created the window */
     if (SDL_ThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
         MSG msg;
@@ -319,6 +320,7 @@ HIDAPI_UpdateDiscovery()
         }
     }
 #endif
+#endif /* __WIN32__ */
 
 #if defined(__MACOSX__)
     if (SDL_HIDAPI_discovery.m_notificationPort) {
@@ -932,6 +934,12 @@ HIDAPI_JoystickGetDeviceName(int device_index)
     return HIDAPI_GetJoystickByIndex(device_index)->name;
 }
 
+static int
+HIDAPI_JoystickGetDevicePlayerIndex(int device_index)
+{
+    return -1;
+}
+
 static SDL_JoystickGUID
 HIDAPI_JoystickGetDeviceGUID(int device_index)
 {
@@ -1048,6 +1056,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickGetCount,
     HIDAPI_JoystickDetect,
     HIDAPI_JoystickGetDeviceName,
+    HIDAPI_JoystickGetDevicePlayerIndex,
     HIDAPI_JoystickGetDeviceGUID,
     HIDAPI_JoystickGetDeviceInstanceID,
     HIDAPI_JoystickOpen,

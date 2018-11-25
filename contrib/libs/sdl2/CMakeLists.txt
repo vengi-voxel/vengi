@@ -47,10 +47,13 @@ include(cmake/sdlchecks.cmake)
 # set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 0)
-set(SDL_MICRO_VERSION 8)
+set(SDL_MICRO_VERSION 9)
 set(SDL_INTERFACE_AGE 0)
-set(SDL_BINARY_AGE 8)
+set(SDL_BINARY_AGE 9)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
+# the following should match the versions in Xcode project file:
+set(DYLIB_CURRENT_VERSION 10.0.0)
+set(DYLIB_COMPATIBILITY_VERSION 1.0.0)
 
 # Calculate a libtool-like version number
 math(EXPR LT_CURRENT "${SDL_MICRO_VERSION} - ${SDL_INTERFACE_AGE}")
@@ -206,11 +209,11 @@ endif()
 
 # Those are used for pkg-config and friends, so that the SDL2.pc, sdl2-config,
 # etc. are created correctly.
-set(SDL_LIBS "")
+set(SDL_LIBS "-lSDL2")
 set(SDL_CFLAGS "")
 
-# Emscripten toolchain has a nonempty default value for this, and the checks 
-# in this file need to change that, so remember the original value, and 
+# Emscripten toolchain has a nonempty default value for this, and the checks
+# in this file need to change that, so remember the original value, and
 # restore back to that afterwards. For check_function_exists() to work in
 # Emscripten, this value must be at its default value.
 set(ORIG_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
@@ -243,7 +246,7 @@ endif()
 set(OPT_DEF_ASM TRUE)
 if(EMSCRIPTEN)
   # Set up default values for the currently supported set of subsystems:
-  # Emscripten/Javascript does not have assembly support, a dynamic library 
+  # Emscripten/Javascript does not have assembly support, a dynamic library
   # loading architecture, low-level CPU inspection or multithreading.
   set(OPT_DEF_ASM FALSE)
   set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
@@ -316,8 +319,6 @@ set_option(VIDEO_X11           "Use X11 video driver" ${UNIX_SYS})
 set_option(VIDEO_WAYLAND       "Use Wayland video driver" ${UNIX_SYS})
 dep_option(WAYLAND_SHARED      "Dynamically load Wayland support" ON "VIDEO_WAYLAND" OFF)
 dep_option(VIDEO_WAYLAND_QT_TOUCH  "QtWayland server support for Wayland video driver" ON "VIDEO_WAYLAND" OFF)
-set_option(VIDEO_MIR           "Use Mir video driver" ${UNIX_SYS})
-dep_option(MIR_SHARED          "Dynamically load Mir support" ON "VIDEO_MIR" OFF)
 set_option(VIDEO_RPI           "Use Raspberry Pi video driver" ${UNIX_SYS})
 dep_option(X11_SHARED          "Dynamically load X11 support" ON "VIDEO_X11" OFF)
 set(SDL_X11_OPTIONS Xcursor Xinerama XInput Xrandr Xscrnsaver XShape Xvm)
@@ -327,6 +328,7 @@ foreach(_SUB ${SDL_X11_OPTIONS})
 endforeach()
 set_option(VIDEO_COCOA         "Use Cocoa video driver" ${APPLE})
 set_option(DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
+set_option(WASAPI              "Use the Windows WASAPI audio driver" ${WINDOWS})
 set_option(RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS})
 set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
 dep_option(VIDEO_VULKAN        "Enable Vulkan support" ON "ANDROID OR APPLE OR LINUX OR WINDOWS" OFF)
@@ -425,6 +427,8 @@ if(USE_GCC OR USE_CLANG)
 
   if(APPLE)
     list(APPEND EXTRA_LDFLAGS "-Wl,-undefined,error")
+    list(APPEND EXTRA_LDFLAGS "-Wl,-compatibility_version,${DYLIB_COMPATIBILITY_VERSION}")
+    list(APPEND EXTRA_LDFLAGS "-Wl,-current_version,${DYLIB_CURRENT_VERSION}")
   else()
     set(CMAKE_REQUIRED_FLAGS "-Wl,--no-undefined")
     check_c_compiler_flag("" HAVE_NO_UNDEFINED)
@@ -562,6 +566,8 @@ if(ASSEMBLY)
       endif()
     endif()
 
+    check_include_file("immintrin.h" HAVE_IMMINTRIN_H)
+
     if(ALTIVEC)
       set(CMAKE_REQUIRED_FLAGS "-maltivec")
       check_c_source_compiles("
@@ -622,8 +628,8 @@ if(LIBC)
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf
             acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf
-            copysign copysignf cos cosf fabs fabsf floor floorf fmod fmodf
-            log logf pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
+            copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf
+            log logf log10 log10f pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
       string(TOUPPER ${_FN} _UPPER)
       set(HAVE_${_UPPER} 1)
     endforeach()
@@ -711,7 +717,7 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
   endif()
 endforeach()
 if(SDL_JOYSTICK)
-  file(GLOB_RECURSE JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/*.c)
+  file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
 endif()
 if(SDL_HAPTIC)
@@ -723,8 +729,8 @@ if(SDL_HAPTIC)
   set(SOURCE_FILES ${SOURCE_FILES} ${HAPTIC_SOURCES})
 endif()
 if(SDL_SENSOR)
-   file(GLOB SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/*.c)
-   set(SOURCE_FILES ${SOURCE_FILES} ${SENSOR_SOURCES})
+  file(GLOB SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/*.c)
+  set(SOURCE_FILES ${SOURCE_FILES} ${SENSOR_SOURCES})
 endif()
 if(SDL_POWER)
   file(GLOB POWER_SOURCES ${SDL2_SOURCE_DIR}/src/power/*.c)
@@ -964,7 +970,6 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
     # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
     CheckRPI()
     CheckX11()
-    CheckMir()
     CheckDirectFB()
     CheckOpenGLX11()
     CheckOpenGLESX11()
@@ -990,7 +995,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
         #include <linux/kd.h>
         #include <linux/keyboard.h>
 
-        int main(int argc, char **argv) 
+        int main(int argc, char **argv)
         {
             struct kbentry kbe;
             kbe.kb_table = KG_CTRL;
@@ -1030,6 +1035,12 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
         set(HAVE_IBUS_IBUS_H TRUE)
         include_directories(${IBUS_INCLUDE_DIRS})
         list(APPEND EXTRA_LIBS ${IBUS_LIBRARIES})
+      endif()
+      if(HAVE_LIBUNWIND_H)
+        # We've already found the header, so REQUIRE the lib to be present
+        pkg_search_module(UNWIND REQUIRED libunwind)
+        pkg_search_module(UNWIND_GENERIC REQUIRED libunwind-generic)
+        list(APPEND EXTRA_LIBS ${UNWIND_LIBRARIES} ${UNWIND_GENERIC_LIBRARIES})
       endif()
     endif()
 
@@ -1172,11 +1183,8 @@ elseif(WINDOWS)
     check_include_file(ddraw.h HAVE_DDRAW_H)
     check_include_file(dsound.h HAVE_DSOUND_H)
     check_include_file(dinput.h HAVE_DINPUT_H)
-    check_include_file(xaudio2.h HAVE_XAUDIO2_H)
-    check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
-    check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
     check_include_file(dxgi.h HAVE_DXGI_H)
-    if(HAVE_D3D_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H OR HAVE_XAUDIO2_H)
+    if(HAVE_D3D_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H)
       set(HAVE_DIRECTX TRUE)
       if(NOT CMAKE_COMPILER_IS_MINGW AND NOT USE_WINSDK_DIRECTX)
       # TODO: change $ENV{DXSDL_DIR} to get the path from the include checks
@@ -1186,6 +1194,11 @@ elseif(WINDOWS)
     endif()
     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
   endif()
+
+  # headers needed elsewhere ...
+  check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
+  check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
+  check_include_file(endpointvolume.h HAVE_ENDPOINTVOLUME_H)
 
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_WINMM 1)
@@ -1199,13 +1212,7 @@ elseif(WINDOWS)
       set(SOURCE_FILES ${SOURCE_FILES} ${DSOUND_AUDIO_SOURCES})
     endif()
 
-    if(HAVE_XAUDIO2_H)
-      set(SDL_AUDIO_DRIVER_XAUDIO2 1)
-      file(GLOB XAUDIO2_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/xaudio2/*.c)
-      set(SOURCE_FILES ${SOURCE_FILES} ${XAUDIO2_AUDIO_SOURCES})
-    endif()
-
-    if(HAVE_AUDIOCLIENT_H AND HAVE_MMDEVICEAPI_H)
+    if(WASAPI AND HAVE_AUDIOCLIENT_H AND HAVE_MMDEVICEAPI_H)
       set(SDL_AUDIO_DRIVER_WASAPI 1)
       file(GLOB WASAPI_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/wasapi/*.c)
       set(SOURCE_FILES ${SOURCE_FILES} ${WASAPI_AUDIO_SOURCES})
@@ -1257,7 +1264,7 @@ elseif(WINDOWS)
   endif()
 
   # Libraries for Win32 native and MinGW
-  list(APPEND EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid)
+  list(APPEND EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 shell32)
 
   # TODO: in configure.in the check for timers is set on
   # cygwin | mingw32* - does this include mingw32CE?
@@ -1337,7 +1344,8 @@ elseif(WINDOWS)
   if(MINGW OR CYGWIN)
     list(APPEND EXTRA_LIBS mingw32)
     list(APPEND EXTRA_LDFLAGS "-mwindows")
-    list(APPEND SDL_LIBS "-lmingw32" "-mwindows")
+    set(SDL_CFLAGS "${SDL_CFLAGS} -Dmain=SDL_main")
+    list(APPEND SDL_LIBS "-lmingw32" "-lSDL2main" "-mwindows")
   endif()
 elseif(APPLE)
   # TODO: rework this all for proper MacOS X, iOS and Darwin support
@@ -1475,6 +1483,13 @@ elseif(APPLE)
         set(SDL_VIDEO_RENDER_OGL 1)
         set(HAVE_VIDEO_OPENGL TRUE)
       endif()
+
+      if(VIDEO_OPENGLES)
+        set(SDL_VIDEO_OPENGL_EGL 1)
+        set(SDL_VIDEO_OPENGL_ES2 1)
+        set(SDL_VIDEO_RENDER_OGL_ES2 1)
+        set(HAVE_VIDEO_OPENGLES TRUE)
+      endif()
     endif()
   endif()
 
@@ -1513,6 +1528,7 @@ endif()
 
 if(VIDEO_VULKAN)
   set(SDL_VIDEO_VULKAN 1)
+  set(HAVE_VIDEO_VULKAN TRUE)
 endif()
 
 # Dummies
@@ -1524,7 +1540,7 @@ endif()
 # This leads to missing internal references on building, since the
 # src/X/*.c does not get included.
 if(NOT HAVE_SDL_JOYSTICK)
-  set(SDL_JOYSTICK_DISABLED 1)
+  set(SDL_JOYSTICK_DUMMY 1)
   if(SDL_JOYSTICK AND NOT APPLE) # results in unresolved symbols on OSX
 
     file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/dummy/*.c)
@@ -1532,9 +1548,14 @@ if(NOT HAVE_SDL_JOYSTICK)
   endif()
 endif()
 if(NOT HAVE_SDL_HAPTIC)
-  set(SDL_HAPTIC_DISABLED 1)
+  set(SDL_HAPTIC_DUMMY 1)
   file(GLOB HAPTIC_SOURCES ${SDL2_SOURCE_DIR}/src/haptic/dummy/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${HAPTIC_SOURCES})
+endif()
+if(NOT HAVE_SDL_SENSORS)
+  set(SDL_SENSOR_DUMMY 1)
+  file(GLOB SENSORS_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/dummy/*.c)
+  set(SOURCE_FILES ${SOURCE_FILES} ${SENSORS_SOURCES})
 endif()
 if(NOT HAVE_SDL_LOADSO)
   set(SDL_LOADSO_DISABLED 1)
@@ -1545,11 +1566,6 @@ if(NOT HAVE_SDL_FILESYSTEM)
   set(SDL_FILESYSTEM_DISABLED 1)
   file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/dummy/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
-endif()
-if(NOT HAVE_SDL_SENSORS)
-  set(SDL_SENSOR_DISABLED 1)
-  file(GLOB SENSORS_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/dummy/*.c)
-  set(SOURCE_FILES ${SOURCE_FILES} ${SENSORS_SOURCES})
 endif()
 
 # We always need to have threads and timers around
@@ -1702,13 +1718,15 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 
 # Always build SDLmain
 add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
-target_include_directories(SDL2main PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include/SDL2>)
 set(_INSTALL_LIBS "SDL2main")
 
 if(SDL_SHARED)
   add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
   if(APPLE)
-    set_target_properties(SDL2 PROPERTIES MACOSX_RPATH 1)
+    set_target_properties(SDL2 PROPERTIES
+      MACOSX_RPATH 1
+      OUTPUT_NAME "SDL2-${LT_RELEASE}")
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES
       VERSION ${LT_VERSION}
@@ -1728,7 +1746,7 @@ if(SDL_SHARED)
   endif()
   set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
   target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
-  target_include_directories(SDL2 PUBLIC $<INSTALL_INTERFACE:include>)
+  target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include/SDL2>)
 endif()
 
 if(SDL_STATIC)
@@ -1751,7 +1769,7 @@ if(SDL_STATIC)
   # libraries - do we need to consider this?
   set(_INSTALL_LIBS "SDL2-static" ${_INSTALL_LIBS})
   target_link_libraries(SDL2-static ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
-  target_include_directories(SDL2-static PUBLIC $<INSTALL_INTERFACE:include>)
+  target_include_directories(SDL2-static PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include/SDL2>)
 endif()
 
 ##### Installation targets #####
@@ -1819,18 +1837,6 @@ if(NOT (WINDOWS OR CYGWIN))
   install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION bin)
   # TODO: what about the .spec file? Is it only needed for RPM creation?
   install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_FULL_DATAROOTDIR}/aclocal")
-endif()
-
-##### Uninstall target #####
-
-if(NOT TARGET uninstall)
-  configure_file(
-      "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-      "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-      IMMEDIATE @ONLY)
-
-  add_custom_target(uninstall
-      COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
 
 endif(FALSE)

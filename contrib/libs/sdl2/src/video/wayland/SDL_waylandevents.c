@@ -178,6 +178,8 @@ Wayland_PumpEvents(_THIS)
 {
     SDL_VideoData *d = _this->driverdata;
 
+    WAYLAND_wl_display_flush(d->display);
+
     if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0)) {
         WAYLAND_wl_display_dispatch(d->display);
     }
@@ -612,7 +614,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
     }
 
     if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !input->touch) {
-        SDL_AddTouch(1, "wayland_touch");
+        SDL_AddTouch(1, SDL_TOUCH_DEVICE_DIRECT, "wayland_touch");
         input->touch = wl_seat_get_touch(seat);
         wl_touch_set_user_data(input->touch, input);
         wl_touch_add_listener(input->touch, &touch_listener,
