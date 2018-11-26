@@ -336,7 +336,7 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 
 void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos) {
 	Log::info("Entity %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
-	const std::string_view& meshName = "chr_skelett"; // TODO: core::string::toLower(network::EnumNameEntityType(type));
+	const std::string_view& meshName = "chr_knight"; // TODO: core::string::toLower(network::EnumNameEntityType(type));
 	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
 	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, mesh));
 }
@@ -349,7 +349,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	removeState(CLIENT_CONNECTING);
 	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);
 	_camera.setTarget(pos);
-	const video::MeshPtr& mesh = _meshPool->getMesh("chr_skelett2_bake");
+	const video::MeshPtr& mesh = _meshPool->getMesh("chr_knight");
 	const network::EntityType type = network::EntityType::PLAYER;
 	_player = std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, mesh);
 	_worldRenderer.addEntity(_player);

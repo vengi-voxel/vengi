@@ -13,6 +13,7 @@ set(SRCS
 	FrameBufferConfig.cpp FrameBufferConfig.h
 	GBuffer.cpp GBuffer.h
 	Mesh.cpp Mesh.h
+	MeshLUAFunctions.cpp MeshLUAFunctions.h
 	MeshPool.cpp MeshPool.h
 	Renderer.cpp Renderer.h
 	RenderBuffer.cpp RenderBuffer.h
@@ -42,13 +43,17 @@ set(SRCS_SHADERS
 )
 set(FILES
 	shared/keybindings.cfg
+
+	client/mesh/chr_knight.fbx
+	client/mesh/chr_knight.png
+	client/mesh/chr_knight.lua
 )
 
 #set_source_files_properties(${SRCS_SHADERS} PROPERTIES LANGUAGE C)
 set(LIB video)
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES image util assimp)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES image util assimp commonlua)
 
 find_program(PYTHON3_EXECUTABLE NAMES python3)
 add_custom_target(update-videobindings)
@@ -64,6 +69,7 @@ set(TEST_SRCS
 	tests/AbstractGLTest.h
 	tests/ShaderTest.cpp
 	tests/CameraTest.cpp
+	tests/MeshTest.cpp
 	tests/RendererTest.cpp
 )
 
