@@ -21,6 +21,12 @@ TEST_F(StringTest, testEraseAllSpaces) {
 	ASSERT_EQ(",", core::string::eraseAllSpaces("  ,  "));
 }
 
+TEST_F(StringTest, testStripExtension) {
+	ASSERT_EQ("foo", core::string::stripExtension("foo.bar"));
+	ASSERT_EQ("foo", core::string::eraseAllSpaces("foo"));
+	ASSERT_EQ("foo.bar", core::string::stripExtension("foo.bar.foo"));
+}
+
 TEST_F(StringTest, testAppendSmall1) {
 	char buf1[4] = { '\0' };
 	ASSERT_EQ(&buf1[1], core::string::append(buf1, sizeof(buf1), "a"));

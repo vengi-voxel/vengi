@@ -169,6 +169,14 @@ inline std::string_view extractPath(const std::string_view str) {
 	return str.substr(0, pos + 1) ;
 }
 
+inline std::string_view stripExtension(const std::string_view str) {
+	const size_t pos = str.rfind(".");
+	if (pos == std::string::npos) {
+		return str;
+	}
+	return str.substr(0, pos) ;
+}
+
 inline std::string_view extractFilename(std::string_view str) {
 	const size_t pathPos = str.rfind('/');
 	if (pathPos != std::string::npos) {
