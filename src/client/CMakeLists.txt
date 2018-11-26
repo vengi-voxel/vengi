@@ -23,8 +23,9 @@ set(FILES
 	client/mesh/animal_rabbit.png
 	client/mesh/animal_wolf.dae
 	client/mesh/animal_wolf.png
-	client/mesh/chr_fatkid.dae
-	client/mesh/chr_fatkid.png
+	client/mesh/chr_knight.fbx
+	client/mesh/chr_knight.png
+	client/mesh/chr_knight.lua
 	client/ui/lang/en.tb.txt
 	client/ui/window/client-authfailed.tb.txt
 	client/ui/window/client-disconnect.tb.txt
@@ -33,9 +34,6 @@ set(FILES
 	client/ui/window/client-lostpassword.tb.txt
 	client/ui/window/client-signup.tb.txt
 	client/client-keybindings.cfg
-
-	testmesh/chr_skelett.fbx
-	testmesh/chr_skelett2.png
 
 	shared/font.ttf
 	shared/worldparams.lua

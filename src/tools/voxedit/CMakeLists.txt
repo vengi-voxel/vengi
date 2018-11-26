@@ -103,11 +103,10 @@ set(FILES
 	voxedit/models/street.vox
 	voxedit/models/treehouse.vox
 	voxedit/models/woman.vox
+	voxedit/models/chr_knight.qb
+	voxedit/models/chr_knight.qbt
 
 	voxedit/voxedit-keybindings.cfg
-
-	client/mesh/source/chr_knight/chr_knight.qb
-	client/mesh/source/chr_knight/chr_knight.qbt
 )
 
 if (NATIVEFILEDIALOG_FOUND)
