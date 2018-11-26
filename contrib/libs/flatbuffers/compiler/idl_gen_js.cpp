@@ -128,8 +128,7 @@ class JsGenerator : public BaseGenerator {
       const auto basename =
           flatbuffers::StripPath(flatbuffers::StripExtension(file));
       if (basename != file_name_) {
-        const auto file_name = basename + kGeneratedFileNamePostfix;
-        code += GenPrefixedImport(file, file_name);
+        code += GenPrefixedImport(file, basename);
       }
     }
   }
@@ -149,10 +148,8 @@ class JsGenerator : public BaseGenerator {
       const auto basename =
           flatbuffers::StripPath(flatbuffers::StripExtension(file.first));
       if (basename != file_name_) {
-        const auto file_name = basename + kGeneratedFileNamePostfix;
-
         if (imported_files.find(file.first) == imported_files.end()) {
-          code += GenPrefixedImport(file.first, file_name);
+          code += GenPrefixedImport(file.first, basename);
           imported_files.emplace(file.first);
         }
 
@@ -355,9 +352,22 @@ class JsGenerator : public BaseGenerator {
         if (it != enum_def.vals.vec.begin()) { code += '\n'; }
         GenDocComment(ev.doc_comment, code_ptr, "", "  ");
       }
+
+      // Generate mapping between EnumName: EnumValue(int)
       code += "  " + ev.name;
       code += lang_.language == IDLOptions::kTs ? "= " : ": ";
       code += NumToString(ev.value);
+
+      if (lang_.language == IDLOptions::kJs) {
+        // In pure Javascript, generate mapping between EnumValue(int):
+        // 'EnumName' so enums can be looked up by their ID.
+        code += ", ";
+
+        code += NumToString(ev.value);
+        code += lang_.language == IDLOptions::kTs ? "= " : ": ";
+        code += "'" + ev.name + "'";
+      }
+
       code += (it + 1) != enum_def.vals.vec.end() ? ",\n" : "\n";
 
       if (ev.union_type.struct_def) {
@@ -446,8 +456,9 @@ class JsGenerator : public BaseGenerator {
       case BASE_TYPE_LONG:
       case BASE_TYPE_ULONG: {
         int64_t constant = StringToInt(value.constant.c_str());
-        return context + ".createLong(" + NumToString((int32_t)constant) +
-               ", " + NumToString((int32_t)(constant >> 32)) + ")";
+        return context + ".createLong(" +
+               NumToString(static_cast<int32_t>(constant)) + ", " +
+               NumToString(static_cast<int32_t>(constant >> 32)) + ")";
       }
 
       default: return value.constant;
@@ -507,14 +518,29 @@ class JsGenerator : public BaseGenerator {
   }
 
   static std::string GenFileNamespacePrefix(const std::string &file) {
-    return "NS" + std::to_string(static_cast<unsigned long long>(
-                      std::hash<std::string>()(file)));
+    return "NS" + std::to_string(HashFnv1a<uint64_t>(file.c_str()));
   }
 
-  static std::string GenPrefixedImport(const std::string &full_file_name,
-                                       const std::string &base_file_name) {
+  std::string GenPrefixedImport(const std::string &full_file_name,
+                                const std::string &base_name) {
+    // Either keep the include path as it was
+    // or use only the base_name + kGeneratedFileNamePostfix
+    std::string path;
+    if (parser_.opts.keep_include_path) {
+      auto it = parser_.included_files_.find(full_file_name);
+      FLATBUFFERS_ASSERT(it != parser_.included_files_.end());
+      path =
+          flatbuffers::StripExtension(it->second) + kGeneratedFileNamePostfix;
+    } else {
+      path = base_name + kGeneratedFileNamePostfix;
+    }
+
+    // Add the include prefix and make the path always relative
+    path = flatbuffers::ConCatPathFileName(parser_.opts.include_prefix, path);
+    path = std::string(".") + kPathSeparator + path;
+
     return "import * as " + GenFileNamespacePrefix(full_file_name) +
-           " from \"./" + base_file_name + "\";\n";
+           " from \"" + path + "\";\n";
   }
 
   // Adds a source-dependent prefix, for of import * statements.
@@ -1090,8 +1116,7 @@ class JsGenerator : public BaseGenerator {
            it != struct_def.fields.vec.end(); ++it) {
         auto &field = **it;
         if (field.deprecated) continue;
-        auto argname = MakeCamel(field.name, false);
-        if (!IsScalar(field.value.type.base_type)) { argname += "Offset"; }
+        const auto argname = GetArgName(field);
 
         // Generate the field insertion method
         GenDocComment(
@@ -1101,16 +1126,8 @@ class JsGenerator : public BaseGenerator {
                                   argname, false));
 
         if (lang_.language == IDLOptions::kTs) {
-          std::string argType;
-          if (field.value.type.enum_def) {
-            argType = GenPrefixedTypeName(GenTypeName(field.value.type, true),
-                                          field.value.type.enum_def->file);
-          } else {
-            argType = GenTypeName(field.value.type, true);
-          }
-
           code += "static add" + MakeCamel(field.name);
-          code += "(builder:flatbuffers.Builder, " + argname + ":" + argType +
+          code += "(builder:flatbuffers.Builder, " + argname + ":" + GetArgType(field) +
                   ") {\n";
         } else {
           code += object_name + ".add" + MakeCamel(field.name);
@@ -1240,12 +1257,55 @@ class JsGenerator : public BaseGenerator {
         code += ");\n";
         code += "};\n\n";
       }
+
+      if (lang_.language == IDLOptions::kTs) {
+          // Generate a convenient CreateX function
+          code += "static create" + struct_def.name + "(builder:flatbuffers.Builder";
+          for (auto it = struct_def.fields.vec.begin();
+               it != struct_def.fields.vec.end(); ++it) {
+            const auto &field = **it;
+            if (field.deprecated)
+              continue;
+
+            code += ", " + GetArgName(field) + ":" + GetArgType(field);
+          }
+
+          code += "):flatbuffers.Offset {\n";
+          code += "  " + struct_def.name + ".start" + struct_def.name + "(builder);\n";
+
+          for (auto it = struct_def.fields.vec.begin();
+               it != struct_def.fields.vec.end(); ++it) {
+              const auto &field = **it;
+              if (field.deprecated)
+                continue;
+
+              code += "  " + struct_def.name + ".add" + MakeCamel(field.name) +"(";
+              code += "builder, " + GetArgName(field) + ");\n";
+          }
+
+          code += "  return " + struct_def.name + ".end" + struct_def.name + "(builder);\n";
+          code += "}\n";
+      }
     }
 
     if (lang_.language == IDLOptions::kTs) {
       if (!object_namespace.empty()) { code += "}\n"; }
       code += "}\n";
     }
+  }
+
+  std::string GetArgType(const FieldDef &field) {
+    if (field.value.type.enum_def)
+      return GenPrefixedTypeName(GenTypeName(field.value.type, true),
+                                 field.value.type.enum_def->file);
+    return GenTypeName(field.value.type, true);
+  }
+
+  static std::string GetArgName(const FieldDef &field) {
+      auto argname = MakeCamel(field.name, false);
+      if (!IsScalar(field.value.type.base_type)) { argname += "Offset"; }
+
+      return argname;
   }
 };
 }  // namespace js

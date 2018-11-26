@@ -56,6 +56,7 @@ struct LanguageParameters {
   std::string optional_suffix;
   std::string includes;
   std::string class_annotation;
+  std::string generated_type_annotation;
   CommentConfig comment_config;
 };
 
@@ -87,7 +88,8 @@ const LanguageParameters &GetLangParams(IDLOptions::Language lang) {
         "",
         "import java.nio.*;\nimport java.lang.*;\nimport "
         "java.util.*;\nimport com.google.flatbuffers.*;\n",
-        "\n@SuppressWarnings(\"unused\")\n",
+        "\n@SuppressWarnings(\"unused\")",
+        "\n@javax.annotation.Generated(value=\"flatc\")\n",
         {
             "/**",
             " *",
@@ -119,6 +121,7 @@ const LanguageParameters &GetLangParams(IDLOptions::Language lang) {
         "Table.",
         "?",
         "using global::System;\nusing global::FlatBuffers;\n\n",
+        "",
         "",
         {
             nullptr,
@@ -217,6 +220,9 @@ class GeneralGenerator : public BaseGenerator {
         code += "\nimport javax.annotation.Nullable;\n";
       }
       code += lang_.class_annotation;
+    }
+    if (parser_.opts.gen_generated) {
+      code += lang_.generated_type_annotation;
     }
     code += classcode;
     if (!namespace_name.empty()) code += lang_.namespace_end;
