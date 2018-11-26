@@ -27,9 +27,6 @@ set(SRCS
 
 set(PostgreSQL_ADDITIONAL_VERSIONS "10;10.4;11")
 find_package(PostgreSQL)
-message(STATUS "Postgresql include dirs: ${PostgreSQL_INCLUDE_DIRS}")
-message(STATUS "Postgresql libs: ${PostgreSQL_LIBRARIES}")
-message(STATUS "Postgresql found: ${PostgreSQL_FOUND}")
 
 set(LIB persistence)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
@@ -53,6 +50,10 @@ else()
 	message(WARNING "No postgres was found on your system. Make sure to have libpq and pg_type.h installed on your system")
 endif()
 set(HAVE_POSTGRES ${PostgreSQL_FOUND} CACHE BOOL "Found postgres" FORCE)
+
+message(STATUS "Postgresql include dirs: ${PostgreSQL_INCLUDE_DIRS}")
+message(STATUS "Postgresql libs: ${PostgreSQL_LIBRARIES}")
+message(STATUS "Postgresql found: ${HAVE_POSTGRES}")
 
 generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl PersistenceModels.h)
 
