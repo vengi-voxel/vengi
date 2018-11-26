@@ -21,3 +21,5 @@
 #cmakedefine OPENCL_LIBRARY "@OPENCL_LIBRARY@"
 #cmakedefine BASE_URL "@BASE_URL@"
 #cmakedefine DB_PW "@DB_PW@"
+
+#cmakedefine POSTGRESQL_LIBS "@POSTGRESQL_LIBS@"

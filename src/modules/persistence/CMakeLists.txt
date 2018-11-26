@@ -50,6 +50,7 @@ else()
 	message(WARNING "No postgres was found on your system. Make sure to have libpq and pg_type.h installed on your system")
 endif()
 set(HAVE_POSTGRES ${PostgreSQL_FOUND} CACHE BOOL "Found postgres" FORCE)
+set(POSTGRESQL_LIBS "${PostgreSQL_LIBRARIES}" CACHE STRING "PostgreSQL libraries" FORCE)
 
 message(STATUS "Postgresql include dirs: ${PostgreSQL_INCLUDE_DIRS}")
 message(STATUS "Postgresql libs: ${PostgreSQL_LIBRARIES}")

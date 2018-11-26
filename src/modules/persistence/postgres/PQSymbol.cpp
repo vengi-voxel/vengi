@@ -67,7 +67,11 @@ bool postgresInit() {
 	}
 
 	if (obj == nullptr) {
-		const char *searchPaths[] = {"libpq.so", nullptr};
+		const char *searchPaths[] = {
+#ifdef POSTGRESQL_LIBS
+				POSTGRESQL_LIBS
+#endif
+				"libpq.so", nullptr};
 		for (const char **searchPath = searchPaths; *searchPath; ++searchPath) {
 			obj = SDL_LoadObject(*searchPath);
 			if (obj != nullptr) {
