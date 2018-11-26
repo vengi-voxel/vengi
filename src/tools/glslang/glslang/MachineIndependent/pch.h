@@ -1,7 +1,7 @@
+#ifndef _PCH_H
+#define _PCH_H
 //
-// Copyright (C) 2014-2016 LunarG, Inc.
-// Copyright (C) 2018 Google, Inc.
-//
+// Copyright (C) 2018 The Khronos Group Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,49 +32,18 @@
 // LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-
 //
-// Call into SPIRV-Tools to disassemble, validate, and optimize.
-//
+#include <sstream>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <climits>
+#include <iostream>
+#include <sstream>
+#include <memory>
+#include "SymbolTable.h"
+#include "ParseHelper.h"
+#include "Scan.h"
+#include "ScanContext.h"
 
-#pragma once
-#ifndef GLSLANG_SPV_TOOLS_H
-#define GLSLANG_SPV_TOOLS_H
-
-#include <vector>
-#include <ostream>
-
-#include "../glslang/MachineIndependent/localintermediate.h"
-#include "Logger.h"
-
-namespace glslang {
-
-struct SpvOptions {
-    SpvOptions() : generateDebugInfo(false), disableOptimizer(true),
-        optimizeSize(false), disassemble(false), validate(false) { }
-    bool generateDebugInfo;
-    bool disableOptimizer;
-    bool optimizeSize;
-    bool disassemble;
-    bool validate;
-};
-
-#if ENABLE_OPT
-
-// Use the SPIRV-Tools disassembler to print SPIR-V.
-void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& spirv);
-
-// Apply the SPIRV-Tools validator to generated SPIR-V.
-void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
-                        spv::SpvBuildLogger*);
-
-// Apply the SPIRV-Tools optimizer to generated SPIR-V, for the purpose of
-// legalizing HLSL SPIR-V.
-void SpirvToolsLegalize(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
-                        spv::SpvBuildLogger*, const SpvOptions*);
-
-#endif
-
-}; // end namespace glslang
-
-#endif // GLSLANG_SPV_TOOLS_H
+#endif /* _PCH_H */

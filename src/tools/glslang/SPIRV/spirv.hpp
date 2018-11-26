@@ -26,13 +26,14 @@
 // the Binary Section of the SPIR-V specification.
 
 // Enumeration tokens for SPIR-V, in various styles:
-//   C, C++, C++11, JSON, Lua, Python
+//   C, C++, C++11, JSON, Lua, Python, C#
 // 
 // - C will have tokens with a "Spv" prefix, e.g.: SpvSourceLanguageGLSL
 // - C++ will have tokens in the "spv" name space, e.g.: spv::SourceLanguageGLSL
 // - C++11 will use enum classes in the spv namespace, e.g.: spv::SourceLanguage::GLSL
 // - Lua will use tables, e.g.: spv.SourceLanguage.GLSL
 // - Python will use dictionaries, e.g.: spv['SourceLanguage']['GLSL']
+// - C# will use enum classes in the Specification class located in the "Spv" namespace, e.g.: Spv.Specification.SourceLanguage.GLSL
 // 
 // Some tokens act like mask values, which can be OR'd together,
 // while others are mutually exclusive.  The mask-like ones have
@@ -75,12 +76,12 @@ enum ExecutionModel {
     ExecutionModelKernel = 6,
     ExecutionModelTaskNV = 5267,
     ExecutionModelMeshNV = 5268,
-    ExecutionModelRayGenerationNVX = 5313,
-    ExecutionModelIntersectionNVX = 5314,
-    ExecutionModelAnyHitNVX = 5315,
-    ExecutionModelClosestHitNVX = 5316,
-    ExecutionModelMissNVX = 5317,
-    ExecutionModelCallableNVX = 5318,
+    ExecutionModelRayGenerationNV = 5313,
+    ExecutionModelIntersectionNV = 5314,
+    ExecutionModelAnyHitNV = 5315,
+    ExecutionModelClosestHitNV = 5316,
+    ExecutionModelMissNV = 5317,
+    ExecutionModelCallableNV = 5318,
     ExecutionModelMax = 0x7fffffff,
 };
 
@@ -162,10 +163,12 @@ enum StorageClass {
     StorageClassAtomicCounter = 10,
     StorageClassImage = 11,
     StorageClassStorageBuffer = 12,
-    StorageClassRayPayloadNVX = 5338,
-    StorageClassHitAttributeNVX = 5339,
-    StorageClassIncomingRayPayloadNVX = 5342,
-    StorageClassShaderRecordBufferNVX = 5343,
+    StorageClassCallableDataNV = 5328,
+    StorageClassIncomingCallableDataNV = 5329,
+    StorageClassRayPayloadNV = 5338,
+    StorageClassHitAttributeNV = 5339,
+    StorageClassIncomingRayPayloadNV = 5342,
+    StorageClassShaderRecordBufferNV = 5343,
     StorageClassMax = 0x7fffffff,
 };
 
@@ -510,21 +513,24 @@ enum BuiltIn {
     BuiltInMeshViewIndicesNV = 5281,
     BuiltInBaryCoordNV = 5286,
     BuiltInBaryCoordNoPerspNV = 5287,
+    BuiltInFragSizeEXT = 5292,
     BuiltInFragmentSizeNV = 5292,
+    BuiltInFragInvocationCountEXT = 5293,
     BuiltInInvocationsPerPixelNV = 5293,
-    BuiltInLaunchIdNVX = 5319,
-    BuiltInLaunchSizeNVX = 5320,
-    BuiltInWorldRayOriginNVX = 5321,
-    BuiltInWorldRayDirectionNVX = 5322,
-    BuiltInObjectRayOriginNVX = 5323,
-    BuiltInObjectRayDirectionNVX = 5324,
-    BuiltInRayTminNVX = 5325,
-    BuiltInRayTmaxNVX = 5326,
-    BuiltInInstanceCustomIndexNVX = 5327,
-    BuiltInObjectToWorldNVX = 5330,
-    BuiltInWorldToObjectNVX = 5331,
-    BuiltInHitTNVX = 5332,
-    BuiltInHitKindNVX = 5333,
+    BuiltInLaunchIdNV = 5319,
+    BuiltInLaunchSizeNV = 5320,
+    BuiltInWorldRayOriginNV = 5321,
+    BuiltInWorldRayDirectionNV = 5322,
+    BuiltInObjectRayOriginNV = 5323,
+    BuiltInObjectRayDirectionNV = 5324,
+    BuiltInRayTminNV = 5325,
+    BuiltInRayTmaxNV = 5326,
+    BuiltInInstanceCustomIndexNV = 5327,
+    BuiltInObjectToWorldNV = 5330,
+    BuiltInWorldToObjectNV = 5331,
+    BuiltInHitTNV = 5332,
+    BuiltInHitKindNV = 5333,
+    BuiltInIncomingRayFlagsNV = 5351,
     BuiltInMax = 0x7fffffff,
 };
 
@@ -767,6 +773,7 @@ enum Capability {
     CapabilityImageFootprintNV = 5282,
     CapabilityFragmentBarycentricNV = 5284,
     CapabilityComputeDerivativeGroupQuadsNV = 5288,
+    CapabilityFragmentDensityEXT = 5291,
     CapabilityShadingRateNV = 5291,
     CapabilityGroupNonUniformPartitionedNV = 5297,
     CapabilityShaderNonUniformEXT = 5301,
@@ -781,7 +788,7 @@ enum Capability {
     CapabilityInputAttachmentArrayNonUniformIndexingEXT = 5310,
     CapabilityUniformTexelBufferArrayNonUniformIndexingEXT = 5311,
     CapabilityStorageTexelBufferArrayNonUniformIndexingEXT = 5312,
-    CapabilityRaytracingNVX = 5340,
+    CapabilityRayTracingNV = 5340,
     CapabilityVulkanMemoryModelKHR = 5345,
     CapabilityVulkanMemoryModelDeviceScopeKHR = 5346,
     CapabilityComputeDerivativeGroupLinearNV = 5350,
@@ -1151,11 +1158,12 @@ enum Op {
     OpImageSampleFootprintNV = 5283,
     OpGroupNonUniformPartitionNV = 5296,
     OpWritePackedPrimitiveIndices4x8NV = 5299,
-    OpReportIntersectionNVX = 5334,
-    OpIgnoreIntersectionNVX = 5335,
-    OpTerminateRayNVX = 5336,
-    OpTraceNVX = 5337,
-    OpTypeAccelerationStructureNVX = 5341,
+    OpReportIntersectionNV = 5334,
+    OpIgnoreIntersectionNV = 5335,
+    OpTerminateRayNV = 5336,
+    OpTraceNV = 5337,
+    OpTypeAccelerationStructureNV = 5341,
+    OpExecuteCallableNV = 5344,
     OpSubgroupShuffleINTEL = 5571,
     OpSubgroupShuffleDownINTEL = 5572,
     OpSubgroupShuffleUpINTEL = 5573,
