@@ -43,7 +43,6 @@ set(TEST_SRCS
 
 if (PostgreSQL_FOUND)
 	target_include_directories(${LIB} PRIVATE ${PostgreSQL_INCLUDE_DIRS} /usr/include/postgresql/)
-	set(HAVE_POSTGRES 1 CACHE INTERNAL "Found postgres")
 	list(APPEND TEST_SRCS
 		tests/PersistenceMgrTest.cpp
 		tests/ConnectionPoolTest.cpp
@@ -51,9 +50,9 @@ if (PostgreSQL_FOUND)
 		tests/DatabaseSchemaUpdateTest.cpp
 	)
 else()
-	set(HAVE_POSTGRES 0 CACHE INTERNAL "Found postgres")
 	message(WARNING "No postgres was found on your system. Make sure to have libpq and pg_type.h installed on your system")
 endif()
+set(HAVE_POSTGRES ${PostgreSQL_FOUND} CACHE BOOL "Found postgres" FORCE)
 
 generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl PersistenceModels.h)
 
