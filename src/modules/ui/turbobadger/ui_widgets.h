@@ -22,7 +22,7 @@ public:
 	}
 
 	void SetValue(int value) override;
-	int GetValue() override {
+	int GetValue() const override {
 		return (int) _value;
 	}
 

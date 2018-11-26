@@ -822,7 +822,7 @@ public:
 	/** Set the value of this widget. Implemented by most widgets (that has a value).
 		Note: Some widgets also provide special setters with other types (such as double). */
 	virtual void SetValue(int value) {}
-	virtual int GetValue() { return 0; }
+	virtual int GetValue() const { return 0; }
 
 	/** Set the value in double precision. It only makes sense to use this instead
 		of SetValue() on widgets that store the value as double. F.ex TBScrollBar, TBSlider. */
@@ -830,7 +830,7 @@ public:
 
 	/** Return the value in double precision. It only makes sense to use this instead
 		of GetValue() on widgets that store the value as double. F.ex TBScrollBar, TBSlider. */
-	virtual double GetValueDouble() { return (double) GetValue(); }
+	virtual double GetValueDouble() const { return (double) GetValue(); }
 
 	/** Set the text of this widget. Implemented by most widgets (that has text). */
 	virtual bool SetText(const char *text) { return true; }

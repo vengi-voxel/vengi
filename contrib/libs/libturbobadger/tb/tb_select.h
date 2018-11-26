@@ -54,7 +54,7 @@ public:
 	/** The value is the selected item. In lists with multiple selectable
 		items it's the item that is the current focus. */
 	virtual void SetValue(int value) override;
-	virtual int GetValue() override { return m_value; }
+	virtual int GetValue() const override { return m_value; }
 
 	/** Get the ID of the selected item, or 0 if there is no item selected. */
 	TBID GetSelectedItemID();
@@ -128,7 +128,7 @@ public:
 
 	/** Set the selected item. */
 	virtual void SetValue(int value) override;
-	virtual int GetValue() override { return m_value; }
+	virtual int GetValue() const override { return m_value; }
 
 	/** Get the ID of the selected item, or 0 if there is no item selected. */
 	TBID GetSelectedItemID() const;

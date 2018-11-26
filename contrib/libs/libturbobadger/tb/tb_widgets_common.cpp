@@ -202,7 +202,7 @@ void TBButton::SetValue(int value)
 		TBRadioCheckBox::UpdateGroupWidgets(this);
 }
 
-int TBButton::GetValue()
+int TBButton::GetValue() const
 {
 	return GetState(WIDGET_STATE_PRESSED);
 }

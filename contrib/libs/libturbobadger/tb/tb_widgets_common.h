@@ -123,7 +123,7 @@ public:
 	using TBWidget::GetText; ///< Make all versions in base class available.
 
 	virtual void SetValue(int value) override;
-	virtual int GetValue() override;
+	virtual int GetValue() const override;
 
 	virtual void OnInflate(const INFLATE_INFO &info) override;
 	virtual void OnCaptureChanged(bool captured) override;
@@ -231,7 +231,7 @@ public:
 	/** Setting the value to 1 will start the spinner.
 		Setting it to 0 will stop it. */
 	virtual void SetValue(int value) override;
-	virtual int GetValue() override { return m_value; }
+	virtual int GetValue() const override { return m_value; }
 
 	virtual void OnPaint(const PaintProps &paint_props) override;
 
@@ -253,7 +253,7 @@ public:
 	TBRadioCheckBox();
 
 	virtual void SetValue(int value) override;
-	virtual int GetValue() override { return m_value; }
+	virtual int GetValue() const override { return m_value; }
 
 	virtual PreferredSize OnCalculatePreferredSize(const SizeConstraints &constraints) override;
 	virtual bool OnEvent(const TBWidgetEvent &ev) override;
@@ -323,10 +323,10 @@ public:
 
 	/** Same as SetValue, but with double precision. */
 	virtual void SetValueDouble(double value) override;
-	virtual double GetValueDouble() override { return m_value; }
+	virtual double GetValueDouble() const override { return m_value; }
 
 	virtual void SetValue(int value) override { SetValueDouble(value); }
-	virtual int GetValue() override { return (int) GetValueDouble(); }
+	virtual int GetValue() const override { return (int) GetValueDouble(); }
 
 	virtual void OnInflate(const INFLATE_INFO &info) override;
 	virtual bool OnEvent(const TBWidgetEvent &ev) override;
@@ -368,10 +368,10 @@ public:
 
 	/** Same as SetValue, but with double precision. */
 	virtual void SetValueDouble(double value) override;
-	virtual double GetValueDouble() override { return m_value; }
+	virtual double GetValueDouble() const override { return m_value; }
 
 	virtual void SetValue(int value) override { SetValueDouble(value); }
-	virtual int GetValue() override { return (int) GetValueDouble(); }
+	virtual int GetValue() const override { return (int) GetValueDouble(); }
 
 	virtual void OnInflate(const INFLATE_INFO &info) override;
 	virtual bool OnEvent(const TBWidgetEvent &ev) override;

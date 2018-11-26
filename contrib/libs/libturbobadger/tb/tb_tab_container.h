@@ -18,8 +18,8 @@ public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBTabLayout, TBLayout);
 
-	virtual void OnChildAdded(TBWidget *child);
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints);
+	virtual void OnChildAdded(TBWidget *child) override;
+	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override;
 };
 
 /** TBTabContainer - A container with tabs for multiple pages. */

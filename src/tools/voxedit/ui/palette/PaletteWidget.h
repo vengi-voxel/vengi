@@ -30,7 +30,7 @@ public:
 	bool isDirty() const;
 
 	void SetValue(int value) override;
-	int GetValue() override;
+	int GetValue() const override;
 	tb::PreferredSize OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
 	void OnPaint(const PaintProps &paint_props) override;
 	void OnInflate(const tb::INFLATE_INFO &info) override;
@@ -40,7 +40,7 @@ public:
 
 UIWIDGET_FACTORY(PaletteWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)
 
-inline int PaletteWidget::GetValue() {
+inline int PaletteWidget::GetValue() const {
 	return _value;
 }
 

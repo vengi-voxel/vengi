@@ -37,7 +37,7 @@ public:
 	int GetMaxValue() const { return m_max; }
 
 	virtual void SetValue(int value) override { SetValueInternal(value, true); }
-	virtual int GetValue() override { return m_value; }
+	virtual int GetValue() const override { return m_value; }
 
 	virtual void OnInflate(const INFLATE_INFO &info) override;
 	virtual void OnSkinChanged() override;
