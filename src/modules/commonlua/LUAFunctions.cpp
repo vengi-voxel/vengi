@@ -1,7 +1,9 @@
 /**
  * @file
  */
+
 #include "LUAFunctions.h"
+#include "core/Log.h"
 
 int clua_assignmetatable(lua_State* s, const char *name) {
 	luaL_getmetatable(s, name);

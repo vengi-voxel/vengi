@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "BiomeManager.h"
 #include "BiomeLUAFunctions.h"
 #include "commonlua/LUAFunctions.h"
