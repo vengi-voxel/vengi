@@ -157,7 +157,6 @@ void TestMeshApp::onRenderUI() {
 		ImGui::ColorEdit3("Ambient color", glm::value_ptr(_ambientColor));
 		ImGui::ColorEdit4("Fog color", glm::value_ptr(_fogColor));
 		ImGui::ColorEdit4("Clear color", glm::value_ptr(_clearColor));
-		ImGui::InputFloat3("Scale", glm::value_ptr(_scale));
 		if (ImGui::InputFloat3("Sun position", glm::value_ptr(_sunEye))) {
 			_shadow.setPosition(_sunEye, _sunLookAt);
 		}
