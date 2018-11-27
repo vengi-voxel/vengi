@@ -170,6 +170,9 @@ unsigned int Color::getRGBA(const glm::vec4& color) {
 			| static_cast<int>(color.r * magnitude);
 }
 
+glm::u8vec4 Color::getRGBAVec(const glm::vec4& color) {
+	return glm::u8vec4(static_cast<int>(color.a * magnitude), static_cast<int>(color.b * magnitude), static_cast<int>(color.g * magnitude), static_cast<int>(color.r * magnitude));
+}
 unsigned int Color::getBGRA(const glm::vec4& color) {
 	return static_cast<int>(color.a * magnitude) << 24 | static_cast<int>(color.r * magnitude) << 16 | static_cast<int>(color.g * magnitude) << 8
 			| static_cast<int>(color.b * magnitude);
