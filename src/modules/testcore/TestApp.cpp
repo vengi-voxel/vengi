@@ -127,19 +127,11 @@ void TestApp::onRenderUI() {
 	if (ImGui::Checkbox("Toggle profiler", &temp)) {
 		_renderTracing = toggleTrace();
 	}
-	if (ImGui::Checkbox("Render axis", &_renderAxis)) {
-		setRenderAxis(_renderAxis);
-	}
-	if (ImGui::Checkbox("Render plane", &_renderPlane)) {
-		setRenderPlane(_renderPlane);
-	}
-	if (ImGui::Checkbox("Camera motion", &_cameraMotion)) {
-		setCameraMotion(_cameraMotion);
-	}
-	if (ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f)) {
-		setCameraSpeed(_cameraSpeed);
-	}
-	static glm::vec3 cameraPos = _camera.position();
+	ImGui::Checkbox("Render axis", &_renderAxis);
+	ImGui::Checkbox("Render plane", &_renderPlane);
+	ImGui::Checkbox("Camera motion", &_cameraMotion);
+	ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f);
+	glm::vec3 cameraPos = _camera.position();
 	if (ImGui::InputFloat3("Camera position", glm::value_ptr(cameraPos))) {
 		_camera.setPosition(cameraPos);
 	}
