@@ -91,6 +91,8 @@ private:
 	glm::vec3 _aabbMins;
 	glm::vec3 _aabbMaxs;
 
+	glm::vec3 _scale { 1.0f };
+
 	std::unordered_map<std::string, uint32_t> _boneMapping;
 	uint32_t _numBones = 0u;
 	std::vector<BoneInfo> _boneInfo;
@@ -119,6 +121,10 @@ public:
 	const Vertices& vertices() const;
 	const Indices& indices() const;
 
+	void setScale(const glm::vec3& scale);
+	const glm::vec3& scale() const;
+	glm::vec3& scale();
+
 	int bones() const;
 	int animations() const;
 	uint8_t currentAnimation() const;
@@ -129,6 +135,18 @@ public:
 	int renderNormals(video::Shader& shader);
 	int renderBones(video::Shader& shader);
 };
+
+inline void Mesh::setScale(const glm::vec3& scale) {
+	_scale = scale;
+}
+
+inline const glm::vec3& Mesh::scale() const {
+	return _scale;
+}
+
+inline glm::vec3& Mesh::scale() {
+	return _scale;
+}
 
 inline const Mesh::Vertices& Mesh::vertices() const {
 	return _vertices;
