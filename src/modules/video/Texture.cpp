@@ -52,6 +52,7 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 }
 
 void Texture::bind(TextureUnit unit) const {
+	core_assert_always(_handle != InvalidId);
 	video::bindTexture(unit, type(), _handle);
 	_boundUnit = unit;
 }
