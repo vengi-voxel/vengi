@@ -579,10 +579,13 @@ AppState App::onCleanup() {
 		_metric->shutdown();
 	}
 
+	SDL_Quit();
+
 	return AppState::Destroy;
 }
 
 AppState App::onDestroy() {
+	SDL_Quit();
 	return AppState::InvalidAppState;
 }
 
