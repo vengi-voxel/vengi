@@ -192,7 +192,6 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 		mesh->indices[f] = indices[f];
 	}
 
-	const int steps = positions.size();
 	for (size_t v = 0u; v < mesh->nvertices; ++v) {
 		const video::Mesh::Vertices::value_type& vertex = positions[v];
 		mesh->vertices[v].x = vertex._pos.x;
@@ -202,10 +201,18 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 
 	const glm::vec3& meshMins = meshPtr->mins();
 	const glm::vec3& meshMaxs = meshPtr->maxs();
-	// TODO: use mins and maxs to get the scaling for the voxelization right.
+	const glm::vec3& meshDimension = meshMaxs - meshMins;
 
-	vx_point_cloud_t* result = vx_voxelize_pc(mesh, 10.0f, 10.0f, 10.0f, 0.1f);
-	Log::info("Number of vertices: %i", (int)result->nvertices);
+	const voxel::RawVolume* model = m().modelVolume();
+	const voxel::Region& region = model->region();
+	const glm::vec3 regionDimension(region.getDimensionsInCells());
+	const glm::vec3 factor = regionDimension / meshDimension;
+	Log::debug("%f:%f:%f", factor.x, factor.y, factor.z);
+
+	const float voxelSize = glm::min(glm::min(factor.x, factor.y), factor.z);
+	const float precision = voxelSize / 10.0f;
+	vx_point_cloud_t* result = vx_voxelize_pc(mesh, voxelSize, voxelSize, voxelSize, precision);
+	Log::debug("Number of vertices: %i", (int)result->nvertices);
 
 	m().pointCloud((float*)result->vertices, (float*)result->colors, result->nvertices * 3);
 
