@@ -194,7 +194,7 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 
 	const int steps = positions.size();
 	for (size_t v = 0u; v < mesh->nvertices; ++v) {
-		const core::Vertex& vertex = positions[v];
+		const video::Mesh::Vertices::value_type& vertex = positions[v];
 		mesh->vertices[v].x = vertex._pos.x;
 		mesh->vertices[v].y = vertex._pos.y;
 		mesh->vertices[v].z = vertex._pos.z;
