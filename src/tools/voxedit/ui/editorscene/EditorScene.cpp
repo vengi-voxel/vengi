@@ -197,6 +197,12 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 		mesh->vertices[v].x = vertex._pos.x;
 		mesh->vertices[v].y = vertex._pos.y;
 		mesh->vertices[v].z = vertex._pos.z;
+		mesh->normals[v].x = vertex._norm.x;
+		mesh->normals[v].y = vertex._norm.y;
+		mesh->normals[v].z = vertex._norm.z;
+		mesh->colors[v].x = vertex._color.x;
+		mesh->colors[v].y = vertex._color.y;
+		mesh->colors[v].z = vertex._color.z;
 	}
 
 	const glm::vec3& meshMins = meshPtr->mins();
