@@ -216,10 +216,10 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 		video::Attribute attribPos;
 		attribPos.bufferIndex = _vertexBufferIndex;
 		attribPos.location = posLocation;
-		attribPos.stride = sizeof(core::Vertex);
+		attribPos.stride = sizeof(Vertices::value_type);
 		attribPos.size = shader.getAttributeComponents(attribPos.location);
-		attribPos.type = video::mapType<decltype(core::Vertex::_pos)::value_type>();
-		attribPos.offset = offsetof(core::Vertex, _pos);
+		attribPos.type = video::mapType<decltype(Vertices::value_type::_pos)::value_type>();
+		attribPos.offset = offsetof(Vertices::value_type, _pos);
 		core_assert_always(_vertexBuffer.addAttribute(attribPos));
 	}
 
@@ -228,10 +228,10 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 		video::Attribute attribTexCoord;
 		attribTexCoord.bufferIndex = _vertexBufferIndex;
 		attribTexCoord.location = texcoordsLocation;
-		attribTexCoord.stride = sizeof(core::Vertex);
+		attribTexCoord.stride = sizeof(Vertices::value_type);
 		attribTexCoord.size = shader.getAttributeComponents(attribTexCoord.location);
-		attribTexCoord.type = video::mapType<decltype(core::Vertex::_texcoords)::value_type>();
-		attribTexCoord.offset = offsetof(core::Vertex, _texcoords);
+		attribTexCoord.type = video::mapType<decltype(Vertices::value_type::_texcoords)::value_type>();
+		attribTexCoord.offset = offsetof(Vertices::value_type, _texcoords);
 		core_assert_always(_vertexBuffer.addAttribute(attribTexCoord));
 	}
 
@@ -240,10 +240,10 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 		video::Attribute attribColor;
 		attribColor.bufferIndex = _vertexBufferIndex;
 		attribColor.location = colorLocation;
-		attribColor.stride = sizeof(core::Vertex);
+		attribColor.stride = sizeof(Vertices::value_type);
 		attribColor.size = shader.getAttributeComponents(attribColor.location);
-		attribColor.type = video::mapType<decltype(core::Vertex::_color)::value_type>();
-		attribColor.offset = offsetof(core::Vertex, _color);
+		attribColor.type = video::mapType<decltype(Vertices::value_type::_color)::value_type>();
+		attribColor.offset = offsetof(Vertices::value_type, _color);
 		core_assert_always(_vertexBuffer.addAttribute(attribColor));
 	}
 
@@ -252,10 +252,10 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 		video::Attribute attribNorm;
 		attribNorm.bufferIndex = _vertexBufferIndex;
 		attribNorm.location = normLocation;
-		attribNorm.stride = sizeof(core::Vertex);
+		attribNorm.stride = sizeof(Vertices::value_type);
 		attribNorm.size = shader.getAttributeComponents(attribNorm.location);
-		attribNorm.type = video::mapType<decltype(core::Vertex::_norm)::value_type>();
-		attribNorm.offset = offsetof(core::Vertex, _norm);
+		attribNorm.type = video::mapType<decltype(Vertices::value_type::_norm)::value_type>();
+		attribNorm.offset = offsetof(Vertices::value_type, _norm);
 		core_assert_always(_vertexBuffer.addAttribute(attribNorm));
 	}
 
@@ -264,10 +264,10 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 		video::Attribute attribBoneIds;
 		attribBoneIds.bufferIndex = _vertexBufferIndex;
 		attribBoneIds.location = boneIdsLocation;
-		attribBoneIds.stride = sizeof(core::Vertex);
+		attribBoneIds.stride = sizeof(Vertices::value_type);
 		attribBoneIds.size = shader.getAttributeComponents(attribBoneIds.location);
-		attribBoneIds.type = video::mapType<decltype(core::Vertex::_boneIds[0])>();
-		attribBoneIds.offset = offsetof(core::Vertex, _boneIds);
+		attribBoneIds.type = video::mapType<decltype(Vertices::value_type::_boneIds[0])>();
+		attribBoneIds.offset = offsetof(Vertices::value_type, _boneIds);
 		attribBoneIds.typeIsInt = true;
 		core_assert_always(_vertexBuffer.addAttribute(attribBoneIds));
 	}
@@ -277,10 +277,10 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 		video::Attribute attribBoneWeights;
 		attribBoneWeights.bufferIndex = _vertexBufferIndex;
 		attribBoneWeights.location = boneweightsLocation;
-		attribBoneWeights.stride = sizeof(core::Vertex);
+		attribBoneWeights.stride = sizeof(Vertices::value_type);
 		attribBoneWeights.size = shader.getAttributeComponents(attribBoneWeights.location);
-		attribBoneWeights.type = video::mapType<decltype(core::Vertex::_boneWeights[0])>();
-		attribBoneWeights.offset = offsetof(core::Vertex, _boneWeights);
+		attribBoneWeights.type = video::mapType<decltype(Vertices::value_type::_boneWeights[0])>();
+		attribBoneWeights.offset = offsetof(Vertices::value_type, _boneWeights);
 		core_assert_always(_vertexBuffer.addAttribute(attribBoneWeights));
 	}
 }
