@@ -190,6 +190,7 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 
 	for (size_t f = 0; f < mesh->nindices; f++) {
 		mesh->indices[f] = indices[f];
+		mesh->normalindices[f] = indices[f];
 	}
 
 	for (size_t v = 0u; v < mesh->nvertices; ++v) {
