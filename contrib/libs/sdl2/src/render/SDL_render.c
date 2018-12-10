@@ -2415,8 +2415,8 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
 
     for (i = 0; i < count-1; ++i) {
         if (points[i].x == points[i+1].x) {
-            const int minY = SDL_min(points[i].y, points[i+1].y);
-            const int maxY = SDL_max(points[i].y, points[i+1].y);
+            const int minY = (int)SDL_min(points[i].y, points[i+1].y);
+            const int maxY = (int)SDL_max(points[i].y, points[i+1].y);
 
             frect = &frects[nrects++];
             frect->x = points[i].x * renderer->scale.x;
@@ -2424,8 +2424,8 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
             frect->w = renderer->scale.x;
             frect->h = (maxY - minY + 1) * renderer->scale.y;
         } else if (points[i].y == points[i+1].y) {
-            const int minX = SDL_min(points[i].x, points[i+1].x);
-            const int maxX = SDL_max(points[i].x, points[i+1].x);
+            const int minX = (int)SDL_min(points[i].x, points[i+1].x);
+            const int maxX = (int)SDL_max(points[i].x, points[i+1].x);
 
             frect = &frects[nrects++];
             frect->x = minX * renderer->scale.x;
@@ -2658,6 +2658,7 @@ SDL_RenderFillRect(SDL_Renderer * renderer, const SDL_Rect * rect)
         frect.h = (float) rect->h;
     } else {
         SDL_Rect r;
+        SDL_zero(r);
         SDL_RenderGetViewport(renderer, &r);
         frect.x = 0.0f;
         frect.y = 0.0f;
@@ -2677,6 +2678,7 @@ SDL_RenderFillRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
     /* If 'rect' == NULL, then outline the whole surface */
     if (!rect) {
         SDL_Rect r;
+        SDL_zero(r);
         SDL_RenderGetViewport(renderer, &r);
         frect.x = 0.0f;
         frect.y = 0.0f;

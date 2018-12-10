@@ -51,6 +51,8 @@ static void RPI_FreeCursor(SDL_Cursor * cursor);
 static void RPI_WarpMouse(SDL_Window * window, int x, int y);
 static int RPI_WarpMouseGlobal(int x, int y);
 
+static SDL_Cursor *global_cursor;
+
 static SDL_Cursor *
 RPI_CreateDefaultCursor(void)
 {
@@ -126,21 +128,25 @@ RPI_ShowCursor(SDL_Cursor * cursor)
         return -1;
     }
     
-    if (cursor == NULL) {
-        /* FIXME: We hide the current mouse's cursor, what we actually need is *_HideCursor */
+    if (cursor == global_cursor) {
+        return 0;
+    }
 
-        if (mouse->cur_cursor != NULL && mouse->cur_cursor->driverdata != NULL) {
-            curdata = (RPI_CursorData *) mouse->cur_cursor->driverdata;
-            if (curdata->element > DISPMANX_NO_HANDLE) {
-                update = vc_dispmanx_update_start(10);
-                SDL_assert(update);
-                ret = vc_dispmanx_element_remove(update, curdata->element);
-                SDL_assert(ret == DISPMANX_SUCCESS);
-                ret = vc_dispmanx_update_submit_sync(update);
-                SDL_assert(ret == DISPMANX_SUCCESS);
-                curdata->element = DISPMANX_NO_HANDLE;
-            }
+    if (global_cursor != NULL) {
+        curdata = (RPI_CursorData *) global_cursor->driverdata;
+        if (curdata && curdata->element > DISPMANX_NO_HANDLE) {
+            update = vc_dispmanx_update_start(0);
+            SDL_assert(update);
+            ret = vc_dispmanx_element_remove(update, curdata->element);
+            SDL_assert(ret == DISPMANX_SUCCESS);
+            ret = vc_dispmanx_update_submit_sync(update);
+            SDL_assert(ret == DISPMANX_SUCCESS);
+            curdata->element = DISPMANX_NO_HANDLE;
         }
+    }
+    global_cursor = cursor;
+
+    if (cursor == NULL) {
         return 0;
     }
     
@@ -152,7 +158,7 @@ RPI_ShowCursor(SDL_Cursor * cursor)
     if (mouse->focus == NULL) {
         return -1;
     }
-    
+
     display = SDL_GetDisplayForWindow(mouse->focus);
     if (display == NULL) {
         return -1;
@@ -165,9 +171,9 @@ RPI_ShowCursor(SDL_Cursor * cursor)
     
     if (curdata->element == DISPMANX_NO_HANDLE) {
         vc_dispmanx_rect_set(&src_rect, 0, 0, curdata->w << 16, curdata->h << 16);
-        vc_dispmanx_rect_set(&dst_rect, mouse->x, mouse->y, curdata->w, curdata->h);
+        vc_dispmanx_rect_set(&dst_rect, mouse->x - curdata->hot_x, mouse->y - curdata->hot_y, curdata->w, curdata->h);
         
-        update = vc_dispmanx_update_start(10);
+        update = vc_dispmanx_update_start(0);
         SDL_assert(update);
 
         env = SDL_GetHint(SDL_HINT_RPI_VIDEO_LAYER);
@@ -184,7 +190,7 @@ RPI_ShowCursor(SDL_Cursor * cursor)
                                                     DISPMANX_PROTECTION_NONE,
                                                     &alpha,
                                                     DISPMANX_NO_HANDLE, // clamp
-                                                    VC_IMAGE_ROT0);
+                                                    DISPMANX_NO_ROTATE);
         SDL_assert(curdata->element > DISPMANX_NO_HANDLE);
         ret = vc_dispmanx_update_submit_sync(update);
         SDL_assert(ret == DISPMANX_SUCCESS);
@@ -206,7 +212,7 @@ RPI_FreeCursor(SDL_Cursor * cursor)
         
         if (curdata != NULL) {
             if (curdata->element != DISPMANX_NO_HANDLE) {
-                update = vc_dispmanx_update_start(10);
+                update = vc_dispmanx_update_start(0);
                 SDL_assert(update);
                 ret = vc_dispmanx_element_remove(update, curdata->element);
                 SDL_assert(ret == DISPMANX_SUCCESS);
@@ -255,7 +261,7 @@ RPI_WarpMouseGlobal(int x, int y)
         return 0;
     }
 
-    update = vc_dispmanx_update_start(10);
+    update = vc_dispmanx_update_start(0);
     if (!update) {
         return 0;
     }
@@ -264,8 +270,8 @@ RPI_WarpMouseGlobal(int x, int y)
     src_rect.y = 0;
     src_rect.width  = curdata->w << 16;
     src_rect.height = curdata->h << 16;
-    dst_rect.x = x;
-    dst_rect.y = y;
+    dst_rect.x = x - curdata->hot_x;
+    dst_rect.y = y - curdata->hot_y;
     dst_rect.width  = curdata->w;
     dst_rect.height = curdata->h;
 
@@ -311,7 +317,7 @@ RPI_WarpMouseGlobalGraphicOnly(int x, int y)
         return 0;
     }
 
-    update = vc_dispmanx_update_start(10);
+    update = vc_dispmanx_update_start(0);
     if (!update) {
         return 0;
     }
@@ -320,8 +326,8 @@ RPI_WarpMouseGlobalGraphicOnly(int x, int y)
     src_rect.y = 0;
     src_rect.width  = curdata->w << 16;
     src_rect.height = curdata->h << 16;
-    dst_rect.x = x;
-    dst_rect.y = y;
+    dst_rect.x = x - curdata->hot_x;
+    dst_rect.y = y - curdata->hot_y;
     dst_rect.width  = curdata->w;
     dst_rect.height = curdata->h;
 
@@ -368,7 +374,6 @@ RPI_InitMouse(_THIS)
 void
 RPI_QuitMouse(_THIS)
 {
-    
 }
 
 /* This is called when a mouse motion event occurs */

@@ -78,6 +78,12 @@
 #endif
 #endif
 
+#if defined(__ANDROID__) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
+#if __ARM_ARCH < 8
+#include <cpu-features.h>
+#endif
+#endif
+
 #define CPU_HAS_RDTSC   (1 << 0)
 #define CPU_HAS_ALTIVEC (1 << 1)
 #define CPU_HAS_MMX     (1 << 2)
@@ -320,7 +326,7 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
+#if defined(__LINUX__) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
 static int
 readProcAuxvForNeon(void)
 {
@@ -346,8 +352,18 @@ CPU_haveNEON(void)
 {
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */
-#if defined(SDL_CPUINFO_DISABLED) || !defined(__ARM_ARCH)
-    return 0;  /* disabled or not an ARM CPU at all. */
+#if defined(SDL_CPUINFO_DISABLED)
+   return 0; /* disabled */
+#elif (defined(__WINDOWS__) || defined(__WINRT__)) && (defined(_M_ARM) || defined(_M_ARM64))
+/* Visual Studio, for ARM, doesn't define __ARM_ARCH. Handle this first. */
+/* Seems to have been removed */
+#  if !defined(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE)
+#    define PF_ARM_NEON_INSTRUCTIONS_AVAILABLE 19
+#  endif
+/* All WinRT ARM devices are required to support NEON, but just in case. */
+    return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
+#elif !defined(__ARM_ARCH)
+    return 0;  /* not an ARM CPU at all. */
 #elif __ARM_ARCH >= 8
     return 1;  /* ARMv8 always has non-optional NEON support. */
 #elif defined(__APPLE__) && (__ARM_ARCH >= 7)
@@ -359,11 +375,20 @@ CPU_haveNEON(void)
     return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
     return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON);
-#elif (defined(__LINUX__) || defined(__ANDROID__))
-    return readProcAuxvForNeon();   /* Android offers a static library for this, but it just parses /proc/self/auxv */
-#elif (defined(__WINDOWS__) || defined(__WINRT__)) && defined(_M_ARM)
-    /* All WinRT ARM devices are required to support NEON, but just in case. */
-    return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
+#elif defined(__LINUX__)
+    return readProcAuxvForNeon();
+#elif defined(__ANDROID__)
+    /* Use NDK cpufeatures to read either /proc/self/auxv or /proc/cpuinfo */
+    {
+        AndroidCpuFamily cpu_family = android_getCpuFamily();
+        if (cpu_family == ANDROID_CPU_FAMILY_ARM) {
+            uint64_t cpu_features = android_getCpuFeatures();
+            if ((cpu_features & ANDROID_CPU_ARM_FEATURE_NEON) != 0) {
+                return 1;
+            }
+        }
+        return 0;
+    }
 #else
 #warning SDL_HasNEON is not implemented for this ARM platform. Write me.
     return 0;

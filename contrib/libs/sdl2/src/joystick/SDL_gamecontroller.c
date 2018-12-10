@@ -1308,15 +1308,17 @@ SDL_GameControllerLoadHints()
 
 /*
  * Fill the given buffer with the expected controller mapping filepath. 
- * Usually this will just be CONTROLLER_MAPPING_FILE, but for Android,
- * we want to get the internal storage path.
+ * Usually this will just be SDL_HINT_GAMECONTROLLERCONFIG_FILE, but for
+ * Android, we want to get the internal storage path.
  */
 static SDL_bool SDL_GetControllerMappingFilePath(char *path, size_t size)
 {
-#ifdef CONTROLLER_MAPPING_FILE
-#define STRING(X) SDL_STRINGIFY_ARG(X)
-    return SDL_strlcpy(path, STRING(CONTROLLER_MAPPING_FILE), size) < size;
-#elif defined(__ANDROID__)
+    const char *hint = SDL_GetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE);
+    if (hint && *hint) {
+        return SDL_strlcpy(path, hint, size) < size;
+    }
+
+#if defined(__ANDROID__)
     return SDL_snprintf(path, size, "%s/controller_map.txt", SDL_AndroidGetInternalStoragePath()) < size;
 #else
     return SDL_FALSE;
@@ -1465,6 +1467,13 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     Uint16 product;
     Uint16 version;
     Uint32 vidpid;
+
+#if defined(__LINUX__)
+    if (name && SDL_strcmp(name, "Sony Interactive Entertainment Wireless Controller Motion Sensors") == 0) {
+        /* Don't treat the PS4 motion controls as a separate game controller */
+        return SDL_TRUE;
+    }
+#endif
 
     if (SDL_allowed_controllers.num_entries == 0 &&
         SDL_ignored_controllers.num_entries == 0) {

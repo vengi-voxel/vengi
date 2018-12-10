@@ -690,7 +690,7 @@ D3D_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 static void
 D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    /*D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;*/
+    D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
 
     if (!texturedata) {
@@ -706,6 +706,9 @@ D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     } else {
         IDirect3DTexture9_UnlockRect(texturedata->texture.staging, 0);
         texturedata->texture.dirty = SDL_TRUE;
+        if (data->drawstate.texture == texture) {
+            data->drawstate.texture = NULL;
+        }
    }
 }
 
@@ -995,11 +998,10 @@ D3D_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
 }
 
 static int
-BindTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, DWORD sampler)
+UpdateDirtyTexture(IDirect3DDevice9 *device, D3D_TextureRep *texture)
 {
-    HRESULT result;
-
     if (texture->dirty && texture->staging) {
+        HRESULT result;
         if (!texture->texture) {
             result = IDirect3DDevice9_CreateTexture(device, texture->w, texture->h, 1, texture->usage,
                 PixelFormatToD3DFMT(texture->format), D3DPOOL_DEFAULT, &texture->texture, NULL);
@@ -1014,6 +1016,14 @@ BindTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, DWORD sampler)
         }
         texture->dirty = SDL_FALSE;
     }
+    return 0;
+}
+
+static int
+BindTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, DWORD sampler)
+{
+    HRESULT result;
+    UpdateDirtyTexture(device, texture);
     result = IDirect3DDevice9_SetTexture(device, sampler, (IDirect3DBaseTexture9 *)texture->texture);
     if (FAILED(result)) {
         return D3D_SetError("SetTexture()", result);
@@ -1544,8 +1554,10 @@ static int
 D3D_Reset(SDL_Renderer * renderer)
 {
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
+    const Float4X4 d3dmatrix = MatrixIdentity();
     HRESULT result;
     SDL_Texture *texture;
+    int i;
 
     /* Release the default render target before reset */
     if (data->defaultRenderTarget) {
@@ -1564,6 +1576,14 @@ D3D_Reset(SDL_Renderer * renderer)
         } else {
             D3D_RecreateTexture(renderer, texture);
         }
+    }
+
+	/* Release all vertex buffers */
+    for (i = 0; i < SDL_arraysize(data->vertexBuffers); ++i) {
+        if (data->vertexBuffers[i]) {
+            IDirect3DVertexBuffer9_Release(data->vertexBuffers[i]);
+        }
+        data->vertexBuffers[i] = NULL;
     }
 
     result = IDirect3DDevice9_Reset(data->device, &data->pparams);
@@ -1587,6 +1607,13 @@ D3D_Reset(SDL_Renderer * renderer)
     D3D_InitRenderState(data);
     D3D_SetRenderTargetInternal(renderer, renderer->target);
     data->drawstate.viewport_dirty = SDL_TRUE;
+    data->drawstate.cliprect_dirty = SDL_TRUE;
+    data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
+    data->drawstate.texture = NULL;
+    data->drawstate.shader = NULL;
+    data->drawstate.blend = SDL_BLENDMODE_INVALID;
+    data->drawstate.is_copy_ex = SDL_FALSE;
+    IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, (D3DMATRIX*)&d3dmatrix);
 
     /* Let the application know that render targets were reset */
     {
