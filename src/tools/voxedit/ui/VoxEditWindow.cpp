@@ -1025,7 +1025,7 @@ bool VoxEditWindow::importMesh(const std::string& file) {
 	popup("Unsaved Modifications",
 			"There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?",
 			ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_voxelize");
-	return false;
+	return true;
 }
 
 bool VoxEditWindow::exportFile(const std::string& file) {
