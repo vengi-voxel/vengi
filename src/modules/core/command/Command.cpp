@@ -167,7 +167,11 @@ void Command::shutdown() {
 }
 
 Command& Command::setHelp(const char* help) {
-	_help = help;
+	if (help == nullptr) {
+		_help = "";
+	} else {
+		_help = help;
+	}
 	return *this;
 }
 
