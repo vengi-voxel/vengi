@@ -135,7 +135,7 @@ private:
 	void setReferencePosition(int x = 0, int y = 0, int z = 0);
 	void setreferencepositiontocursor();
 	void unselectall();
-	bool voxelize(const std::string& file);
+	bool importMesh(const std::string& file);
 	bool importHeightmp(const std::string& file);
 	bool save(const std::string& file);
 	bool load(const std::string& file);

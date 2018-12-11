@@ -484,7 +484,7 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		exportFile("");
 		return true;
 	} else if (isAny(ev, TBIDC("import"))) {
-		voxelize("");
+		importMesh("");
 		return true;
 	} else if (isAny(ev, TBIDC("prefab"))) {
 		prefab("");
@@ -1006,7 +1006,7 @@ bool VoxEditWindow::save(const std::string& file) {
 	return true;
 }
 
-bool VoxEditWindow::voxelize(const std::string& file) {
+bool VoxEditWindow::importMesh(const std::string& file) {
 	std::string f;
 	if (file.empty()) {
 		f = _voxedit->openDialog(_importFilter);

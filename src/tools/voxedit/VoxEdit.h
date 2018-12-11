@@ -54,7 +54,7 @@ public:
 	bool saveFile(const std::string& file);
 	bool loadFile(const std::string& file);
 	bool prefabFile(const std::string& file);
-	bool voxelizeFile(const std::string& file);
+	bool importmeshFile(const std::string& file);
 	bool exportFile(const std::string& file);
 	bool newFile(bool force = false);
 	void selectCursor();

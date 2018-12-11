@@ -43,8 +43,8 @@ bool VoxEdit::prefabFile(const std::string& file) {
 	return _mainWindow->prefab(file);
 }
 
-bool VoxEdit::voxelizeFile(const std::string& file) {
-	return _mainWindow->voxelize(file);
+bool VoxEdit::importmeshFile(const std::string& file) {
+	return _mainWindow->importMesh(file);
 }
 
 void VoxEdit::select(const glm::ivec3& pos) {
@@ -196,12 +196,12 @@ core::AppState VoxEdit::onConstruct() {
 
 	COMMAND_CALL("new", newFile(), "Create a new scene");
 
-	COMMAND_FILE(importheightmap, "Import a heightmap into the volume");
 	COMMAND_FILE(save, "Save the current state to the given file");
 	COMMAND_FILE(export, "Export the current state to the given file");
 	COMMAND_FILE(load, "Load a scene from the given file");
-	COMMAND_FILE(prefab, "Import a model from the given file");
-	COMMAND_FILE(voxelize, "Load a scene from the given file");
+	COMMAND_FILE(prefab, "Add a model to the existing scene from the given file");
+	COMMAND_FILE(importmesh, "Import a mesh from the given file and tries to voxelize it");
+	COMMAND_FILE(importheightmap, "Import a heightmap into the volume");
 
 	COMMAND_MAINWINDOW(setreferencepositiontocursor, "Set the reference position to the current cursor position");
 	COMMAND_MAINWINDOW(unselectall, "Unselect every voxel");
