@@ -28,6 +28,8 @@ public:
 		return core::Singleton<$name$>::getInstance();
 	}
 
+	~$name$();
+
 	/**
 	 * @brief Load the vertex and fragment shaders and verifies that its attributes and uniforms are used.
 	 * @note If an attribute or an uniform isn't active, a message will be printed about that fact - but

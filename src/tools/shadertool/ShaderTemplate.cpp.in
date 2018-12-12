@@ -23,6 +23,10 @@ static const char* GeometryShaderBuffer = R"($geometryshaderbuffer$)";
 
 }
 
+$name$::~$name$() {
+	core_assert_msg(_program == video::InvalidId, "Shader %s was not properly shut down - %i setup calls left", _name.c_str(), _setupCalls);
+}
+
 bool $name$::setup() {
 	++_setupCalls;
 	if (_initialized) {

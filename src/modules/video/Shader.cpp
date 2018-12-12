@@ -30,7 +30,6 @@ Shader::Shader() {
 }
 
 Shader::~Shader() {
-	core_assert_msg(_program == InvalidId, "Shader %s was not properly shut down", _name.c_str());
 	shutdown();
 }
 
