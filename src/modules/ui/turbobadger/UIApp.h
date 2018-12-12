@@ -20,7 +20,7 @@ private:
 	using Super = video::WindowedApp;
 protected:
 	static constexpr uint32_t _logId = Log::logid("UIAPP");
-	tb::TBWidget _root;
+	tb::TBWidget* _root = nullptr;
 	Console _console;
 	core::VarPtr _renderUI;
 	int _lastShowTextY = -1;
@@ -72,7 +72,7 @@ public:
 
 template<class T>
 inline T* UIApp::getWidgetByType(const char *name) {
-	return _root.GetWidgetByIDAndType<T>(tb::TBID(name));
+	return _root->GetWidgetByIDAndType<T>(tb::TBID(name));
 }
 
 }

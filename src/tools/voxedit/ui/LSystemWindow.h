@@ -22,6 +22,7 @@ private:
 	void load(const std::string& file);
 public:
 	LSystemWindow(ui::turbobadger::Window* window, EditorScene* scene);
+	~LSystemWindow();
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };

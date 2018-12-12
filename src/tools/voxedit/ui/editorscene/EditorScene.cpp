@@ -26,6 +26,9 @@ EditorScene::EditorScene() :
 		_bitmap((tb::UIRendererGL*) tb::g_renderer) {
 	//_rawVolumeRenderer.setAmbientColor(glm::vec3(core::Color::White));
 	SetIsFocusable(true);
+	_axis.init();
+	_shapeRenderer.init();
+	m().init();
 }
 
 EditorScene::~EditorScene() {
@@ -488,9 +491,6 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 
 void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	Super::OnInflate(info);
-	_axis.init();
-	_shapeRenderer.init();
-	m().init();
 
 	Controller::SceneCameraMode mode = Controller::SceneCameraMode::Free;
 	const char *cameraMode = info.node->GetValueString("camera", "free");

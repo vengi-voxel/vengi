@@ -575,10 +575,10 @@ void Model::onResize(const glm::ivec2& size) {
 }
 
 bool Model::init() {
-	if (_initialized > 0) {
+	++_initialized;
+	if (_initialized > 1) {
 		return true;
 	}
-	++_initialized;
 	_volumeRenderer.init();
 	_cursorVolumeRenderer.init();
 	_selectionVolumeRenderer.init();
@@ -624,13 +624,9 @@ void Model::update() {
 
 void Model::shutdown() {
 	--_initialized;
-	if (_initialized > 0) {
-		return;
-	} else if (_initialized < 0) {
-		_initialized = 0;
+	if (_initialized != 0) {
 		return;
 	}
-	_initialized = 0;
 	std::vector<voxel::RawVolume*> old = _volumeRenderer.shutdown();
 	for (voxel::RawVolume* v : old) {
 		delete v;

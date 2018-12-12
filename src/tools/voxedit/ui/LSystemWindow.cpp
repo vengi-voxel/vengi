@@ -46,6 +46,12 @@ LSystemWindow::LSystemWindow(ui::turbobadger::Window* window, EditorScene* scene
 	}
 }
 
+LSystemWindow::~LSystemWindow() {
+	if (_productionRules != nullptr) {
+		_productionRules->SetSource(nullptr);
+	}
+}
+
 bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (ev.target->GetID() == TBIDC("lsystem_ok")) {
@@ -66,7 +72,8 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			_scene->lsystem(ctx);
 			return true;
 		} else if (ev.target->GetID() == TBIDC("lsystem_cancel")) {
-			Close();
+			tb::TBWidgetEvent click_ev(tb::EVENT_TYPE_CLICK);
+			m_close_button.InvokeEvent(click_ev);
 			return true;
 		} else if (ev.target->GetID() == TBIDC("lsystem_add_rule")) {
 			tb::TBWidget* wStr = getWidget("lsystem_add_rule_string");
@@ -86,7 +93,8 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
 		if (ev.special_key == tb::TB_KEY_ESC) {
-			Close();
+			tb::TBWidgetEvent click_ev(tb::EVENT_TYPE_CLICK);
+			m_close_button.InvokeEvent(click_ev);
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_CHANGED) {

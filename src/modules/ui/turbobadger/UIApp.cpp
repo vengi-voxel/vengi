@@ -11,6 +11,8 @@
 #include "core/Color.h"
 #include "core/UTF8.h"
 #include "core/Common.h"
+#include "core/Trace.h"
+#include "math/Rect.h"
 #include "ui_renderer_gl.h"
 #include "ui_widgets.h"
 #include <stdarg.h>
@@ -200,10 +202,10 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 		return true;
 	}
 
-	if (_root.GetVisibility() != tb::WIDGET_VISIBILITY_VISIBLE) {
+	if (_root->GetVisibility() != tb::WIDGET_VISIBILITY_VISIBLE) {
 		return false;
 	}
-	return _root.InvokeKey(key, special, mod, down);
+	return _root->InvokeKey(key, special, mod, down);
 }
 
 void UIApp::showStr(int x, int y, const glm::vec4& color, const char *fmt, ...) {
@@ -212,7 +214,7 @@ void UIApp::showStr(int x, int y, const glm::vec4& color, const char *fmt, ...) 
 	va_start(ap, fmt);
 	SDL_vsnprintf(buf, sizeof(buf), fmt, ap);
 	buf[sizeof(buf) - 1] = '\0';
-	_root.GetFont()->DrawString(x, y, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
+	_root->GetFont()->DrawString(x, y, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
 	va_end(ap);
 }
 
@@ -222,9 +224,9 @@ void UIApp::enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) 
 	va_start(ap, fmt);
 	SDL_vsnprintf(buf, sizeof(buf), fmt, ap);
 	buf[sizeof(buf) - 1] = '\0';
-	tb::TBFontFace* font = _root.GetFont();
+	tb::TBFontFace* font = _root->GetFont();
 	font->DrawString(x, _lastShowTextY, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
-	_lastShowTextY += _root.GetFont()->GetHeight() + 5;
+	_lastShowTextY += _root->GetFont()->GetHeight() + 5;
 	va_end(ap);
 }
 
@@ -234,7 +236,7 @@ void UIApp::onMouseWheel(int32_t x, int32_t y) {
 	}
 	int posX, posY;
 	SDL_GetMouseState(&posX, &posY);
-	_root.InvokeWheel(posX, posY, x, -y, getModifierKeys());
+	_root->InvokeWheel(posX, posY, x, -y, getModifierKeys());
 }
 
 void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
@@ -246,7 +248,7 @@ void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t cli
 	}
 
 	const tb::MODIFIER_KEYS modKeys = getModifierKeys();
-	_root.InvokePointerDown(x, y, clicks, modKeys, false);
+	_root->InvokePointerDown(x, y, clicks, modKeys, false);
 }
 
 tb::MODIFIER_KEYS UIApp::getModifierKeys() const {
@@ -259,17 +261,17 @@ void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 	}
 	const tb::MODIFIER_KEYS modKeys = getModifierKeys();
 	if (button == SDL_BUTTON_RIGHT) {
-		_root.InvokePointerMove(x, y, modKeys, false);
+		_root->InvokePointerMove(x, y, modKeys, false);
 		tb::TBWidget* hover = tb::TBWidget::hovered_widget;
 		if (hover != nullptr) {
 			hover->ConvertFromRoot(x, y);
 			tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, x, y, false, modKeys);
 			hover->InvokeEvent(ev);
 		} else {
-			_root.InvokePointerUp(x, y, modKeys, false);
+			_root->InvokePointerUp(x, y, modKeys, false);
 		}
 	} else {
-		_root.InvokePointerUp(x, y, modKeys, false);
+		_root->InvokePointerUp(x, y, modKeys, false);
 	}
 }
 
@@ -283,8 +285,8 @@ bool UIApp::onTextInput(const std::string& text) {
 		if (key == -1) {
 			return true;
 		}
-		_root.InvokeKey(key, tb::TB_KEY_UNDEFINED, tb::TB_MODIFIER_NONE, true);
-		_root.InvokeKey(key, tb::TB_KEY_UNDEFINED, tb::TB_MODIFIER_NONE, false);
+		_root->InvokeKey(key, tb::TB_KEY_UNDEFINED, tb::TB_MODIFIER_NONE, true);
+		_root->InvokeKey(key, tb::TB_KEY_UNDEFINED, tb::TB_MODIFIER_NONE, false);
 	}
 	return true;
 }
@@ -320,14 +322,14 @@ bool UIApp::onKeyRelease(int32_t key) {
 void UIApp::onWindowResize() {
 	Super::onWindowResize();
 	_renderer.onWindowResize(dimension());
-	_root.SetRect(tb::TBRect(0, 0, dimension().x, dimension().y));
+	_root->SetRect(tb::TBRect(0, 0, dimension().x, dimension().y));
 }
 
 core::AppState UIApp::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 	core::Command::registerCommand("cl_ui_debug", [&] (const core::CmdArgs& args) {
 #ifdef DEBUG
-		tb::ShowDebugInfoSettingsWindow(&_root);
+		tb::ShowDebugInfoSettingsWindow(_root);
 #endif
 	}).setHelp("Show ui debug information - only available in debug builds");
 
@@ -407,9 +409,10 @@ core::AppState UIApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	_root.SetRect(tb::TBRect(0, 0, _dimension.x, _dimension.y));
-	_root.SetSkinBg(TBIDC("background"));
-	_root.SetGravity(tb::WIDGET_GRAVITY_ALL);
+	_root = new tb::TBWidget();
+	_root->SetRect(tb::TBRect(0, 0, _dimension.x, _dimension.y));
+	_root->SetSkinBg(TBIDC("background"));
+	_root->SetGravity(tb::WIDGET_GRAVITY_ALL);
 
 	_console.init();
 
@@ -417,19 +420,19 @@ core::AppState UIApp::onInit() {
 }
 
 void UIApp::addChild(Window* window) {
-	_root.AddChild(window);
+	_root->AddChild(window);
 }
 
 tb::TBWidget* UIApp::getWidget(const char *name) {
-	return _root.GetWidgetByID(tb::TBID(name));
+	return _root->GetWidgetByID(tb::TBID(name));
 }
 
 tb::TBWidget* UIApp::getWidgetAt(int x, int y, bool includeChildren) {
-	return _root.GetWidgetAt(x, y, includeChildren);
+	return _root->GetWidgetAt(x, y, includeChildren);
 }
 
 void UIApp::doLayout() {
-	_root.InvalidateLayout(tb::TBWidget::INVALIDATE_LAYOUT_RECURSIVE);
+	_root->InvalidateLayout(tb::TBWidget::INVALIDATE_LAYOUT_RECURSIVE);
 }
 
 core::AppState UIApp::onRunning() {
@@ -439,7 +442,7 @@ core::AppState UIApp::onRunning() {
 	_lastShowTextY = 5;
 
 	if (!_console.isActive()) {
-		_root.InvokePointerMove(_mousePos.x, _mousePos.y, getModifierKeys(), false);
+		_root->InvokePointerMove(_mousePos.x, _mousePos.y, getModifierKeys(), false);
 	}
 
 	const bool running = state == core::AppState::Running;
@@ -453,11 +456,11 @@ core::AppState UIApp::onRunning() {
 		if (renderUI) {
 			core_trace_scoped(UIAppUpdateUI);
 			tb::TBAnimationManager::Update();
-			_root.InvokeProcessStates();
-			_root.InvokeProcess();
+			_root->InvokeProcessStates();
+			_root->InvokeProcess();
 
 			_renderer.BeginPaint(_dimension.x, _dimension.y);
-			_root.InvokePaint(tb::TBWidget::PaintProps());
+			_root->InvokePaint(tb::TBWidget::PaintProps());
 
 			enqueueShowStr(5, core::Color::White, "FPS: %d", _fps);
 		}
@@ -470,7 +473,7 @@ core::AppState UIApp::onRunning() {
 			_renderer.EndPaint();
 			// If animations are running, reinvalidate immediately
 			if (tb::TBAnimationManager::HasAnimationsRunning()) {
-				_root.Invalidate();
+				_root->Invalidate();
 			}
 		}
 		double next_fire_time = tb::TBMessageHandler::GetNextMessageFireTime();
@@ -492,9 +495,12 @@ core::AppState UIApp::onCleanup() {
 
 	tb::tb_core_shutdown();
 
-	_root.DeleteAllChildren();
+	Log::debug("shutdown ui widgets");
+	_root->Die();
+	_root = nullptr;
 
 	_console.shutdown();
+
 	_renderer.shutdown();
 
 	return Super::onCleanup();

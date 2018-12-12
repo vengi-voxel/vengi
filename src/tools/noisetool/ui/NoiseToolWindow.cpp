@@ -25,6 +25,9 @@ NoiseToolWindow::~NoiseToolWindow() {
 	if (_noiseType != nullptr) {
 		_noiseType->SetSource(nullptr);
 	}
+	if (_select != nullptr) {
+		_select->SetSource(nullptr);
+	}
 	delete[] _graphBufferBackground;
 	_graphBufferBackground = nullptr;
 	_noise.shutdown();
@@ -287,9 +290,6 @@ void NoiseToolWindow::update() {
 }
 
 void NoiseToolWindow::OnDie() {
-	if (_noiseType != nullptr) {
-		_noiseType->SetSource(nullptr);
-	}
 	Super::OnDie();
 	requestQuit();
 }

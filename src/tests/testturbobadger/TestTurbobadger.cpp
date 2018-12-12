@@ -72,15 +72,15 @@ core::AppState TestTurbobadger::onInit() {
 	// Give the first item a skin image
 	popup_menu_source.GetItem(0)->SetSkinImage(TBIDC("Icon16"));
 
-	new MainWindow(&_root);
+	new MainWindow(_root);
 
-	new EditWindow(&_root);
+	new EditWindow(_root);
 
-	new ListWindow(&_root, &name_source);
+	new ListWindow(_root, &name_source);
 
-	new AdvancedListWindow(&_root, &advanced_source);
+	new AdvancedListWindow(_root, &advanced_source);
 
-	new TabContainerWindow(&_root);
+	new TabContainerWindow(_root);
 
 	return state;
 }

@@ -23,6 +23,8 @@ public:
 	Widget() :
 			tb::TBWidget() {
 	}
+
+	~Widget() override {}
 };
 
 }

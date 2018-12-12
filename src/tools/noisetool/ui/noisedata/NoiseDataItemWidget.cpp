@@ -99,6 +99,12 @@ NoiseDataList::NoiseDataList() {
 	}
 }
 
+NoiseDataList::~NoiseDataList() {
+	if (_select != nullptr) {
+		_select->SetSource(nullptr);
+	}
+}
+
 bool NoiseDataList::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (_select != nullptr) {
 		const tb::TBID& id = ev.target->GetID();

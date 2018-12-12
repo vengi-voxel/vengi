@@ -53,6 +53,7 @@ public:
 	UIWIDGET_SUBCLASS(NoiseDataList, Super);
 
 	NoiseDataList();
+	~NoiseDataList();
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };
