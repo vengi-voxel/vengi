@@ -17,7 +17,7 @@
 NoiseToolWindow::NoiseToolWindow(NoiseTool* tool) :
 		Super(tool), _noiseTool(tool) {
 	for (int i = 0; i < (int)NoiseType::Max; ++i) {
-		addMenuItem(_noiseTypeSource, getNoiseTypeName((NoiseType)i));
+		addStringItem(_noiseTypeSource, getNoiseTypeName((NoiseType)i));
 	}
 }
 

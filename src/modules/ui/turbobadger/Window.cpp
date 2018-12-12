@@ -22,7 +22,7 @@ Window::Window(UIApp* app) :
 }
 
 Window::Window(Window* parent) :
-		Super(), _app(nullptr) {
+		Super(), _app(parent == nullptr ? nullptr : parent->_app) {
 	// if this is null, make sure to add the window on your own
 	if (parent != nullptr) {
 		parent->AddChild(this);
@@ -35,15 +35,15 @@ Window::~Window() {
 	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
 }
 
-tb::TBGenericStringItem* Window::addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id) {
+tb::TBGenericStringItem* Window::addStringItem(tb::TBGenericStringItemSource& items, const char *text, const char *id, bool translate) {
 	tb::TBGenericStringItem* item;
 	if (id == nullptr) {
 		const std::string& lowerId = core::string::toLower(text);
-		item = new tb::TBGenericStringItem(tr(text), TBIDC(lowerId.c_str()));
+		item = new tb::TBGenericStringItem(translate ? tr(text) : text, TBIDC(lowerId.c_str()));
 		const std::string& iconId = core::App::getInstance()->appname() + "-" + lowerId;
 		item->SetSkinImage(TBIDC(iconId.c_str()));
 	} else {
-		item = new tb::TBGenericStringItem(tr(text), TBIDC(id));
+		item = new tb::TBGenericStringItem(translate ? tr(text) : text, TBIDC(id));
 		char buf[128];
 		SDL_snprintf(buf, sizeof(buf), "%s-%s", core::App::getInstance()->appname().c_str(), id);
 		item->SetSkinImage(TBIDC(buf));

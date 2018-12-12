@@ -50,11 +50,11 @@ private:
 	std::string _voxelizeFile;
 	std::string _loadFile;
 
-	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _treeItems;
-	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _fileItems;
-	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _structureItems;
-	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _plantItems;
-	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _buildingItems;
+	tb::TBGenericStringItemSource _treeItems;
+	tb::TBGenericStringItemSource _fileItems;
+	tb::TBGenericStringItemSource _structureItems;
+	tb::TBGenericStringItemSource _plantItems;
+	tb::TBGenericStringItemSource _buildingItems;
 
 	tb::TBCheckBox *_showGrid = nullptr;
 	tb::TBCheckBox *_showAABB = nullptr;
@@ -136,7 +136,7 @@ private:
 	void setreferencepositiontocursor();
 	void unselectall();
 	bool importMesh(const std::string& file);
-	bool importHeightmp(const std::string& file);
+	bool importHeightmap(const std::string& file);
 	bool save(const std::string& file);
 	bool load(const std::string& file);
 	bool prefab(const std::string& file);

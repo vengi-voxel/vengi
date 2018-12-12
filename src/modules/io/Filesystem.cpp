@@ -153,7 +153,9 @@ void Filesystem::shutdown() {
 std::string Filesystem::absolutePath(const std::string& path) const {
 	uv_fs_t req;
 	uv_fs_realpath(nullptr, &req, path.c_str(), nullptr);
-	return uv_fs_get_path(&req);
+	std::string abspath = uv_fs_get_path(&req);
+	normalizePath(abspath);
+	return abspath;
 }
 
 bool Filesystem::isRelativeFilename(const std::string& name) const {

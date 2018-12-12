@@ -307,6 +307,12 @@ core::AppState WindowedApp::onInit() {
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
+#ifdef SDL_HINT_MOUSE_DOUBLE_CLICK_TIME
+	SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "500");
+#endif
+#ifdef SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS
+	SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS, "32");
+#endif
 
 	const bool fullscreen = core::Var::getSafe(cfg::ClientFullscreen)->boolVal();
 
@@ -512,9 +518,8 @@ void WindowedApp::setRelativeMouseMode(bool mode) {
 	SDL_SetRelativeMouseMode(mode ? SDL_TRUE : SDL_FALSE);
 }
 
-std::string WindowedApp::fileDialog(OpenFileMode mode, const std::string& filter) {
+void WindowedApp::fileDialog(const std::function<void(const std::string&)>& callback, OpenFileMode mode, const std::string& filter) {
 	Log::warn("This is not implemented in the base windowed application");
-	return "";
 }
 
 WindowedApp* WindowedApp::getInstance() {

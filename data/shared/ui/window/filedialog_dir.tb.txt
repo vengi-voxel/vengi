@@ -1,0 +1,2 @@
+TBSkinImage: id: icon, skin: icon-filedialog-dir, ignore-input: 1
+TBTextField: id: name, text-align: left

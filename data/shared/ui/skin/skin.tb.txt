@@ -484,3 +484,13 @@ elements
 	separator
 		bitmap item_separator_x.png
 		type Stretch Image
+
+	icon-filedialog-file
+		bitmap filedialog-file.png
+		type Image
+		padding 5
+
+	icon-filedialog-dir
+		bitmap filedialog-dir.png
+		type Image
+		padding 5

@@ -5,6 +5,7 @@
 #include "UIApp.h"
 #include "ui/turbobadger/TurboBadger.h"
 #include "ui/turbobadger/FontUtil.h"
+#include "FileDialogWindow.h"
 
 #include "io/Filesystem.h"
 #include "core/command/Command.h"
@@ -228,6 +229,12 @@ void UIApp::enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) 
 	font->DrawString(x, _lastShowTextY, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
 	_lastShowTextY += _root->GetFont()->GetHeight() + 5;
 	va_end(ap);
+}
+
+void UIApp::fileDialog(const std::function<void(const std::string&)>& callback, OpenFileMode mode, const std::string& filter) {
+	FileDialogWindow* dialog = new FileDialogWindow(this, callback);
+	//dialog->setFilter(filter);
+	dialog->setMode(mode);
 }
 
 void UIApp::onMouseWheel(int32_t x, int32_t y) {

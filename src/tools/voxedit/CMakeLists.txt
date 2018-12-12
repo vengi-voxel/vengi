@@ -109,11 +109,7 @@ set(FILES
 	voxedit/voxedit-keybindings.cfg
 )
 
-if (NATIVEFILEDIALOG_FOUND)
-	engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
-	engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger voxedit-util nativefiledialog)
-	include_directories(.)
-	check_ui_turbobadger(${PROJECT_NAME})
-else()
-	message(WARNING "${PROJECT_NAME} is disabled, nativefiledialog can't be used")
-endif()
+engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger voxedit-util)
+include_directories(.)
+check_ui_turbobadger(${PROJECT_NAME})

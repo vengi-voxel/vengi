@@ -85,10 +85,10 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			}
 			return true;
 		} else if (ev.target->GetID() == TBIDC("lsystem_load")) {
-			load(((ui::turbobadger::UIApp*)core::App::getInstance())->openDialog("txt"));
+			getApp()->openDialog([this] (const std::string& file) {load(file);}, "txt");
 			return true;
 		} else if (ev.target->GetID() == TBIDC("lsystem_save")) {
-			save(((ui::turbobadger::UIApp*)core::App::getInstance())->saveDialog("txt"));
+			getApp()->saveDialog([this] (const std::string& file) {save(file);}, "txt");
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {

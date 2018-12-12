@@ -9,7 +9,6 @@
 #include "video/Renderer.h"
 #include "ui/VoxEditWindow.h"
 #include "io/Filesystem.h"
-#include <nfd.h>
 
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \
@@ -28,7 +27,7 @@ VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& files
 }
 
 bool VoxEdit::importheightmapFile(const std::string& file) {
-	return _mainWindow->importHeightmp(std::string(file));
+	return _mainWindow->importHeightmap(file);
 }
 
 bool VoxEdit::saveFile(const std::string& file) {
@@ -306,38 +305,6 @@ void VoxEdit::update() {
 		_lastMove[i] = _now;
 	}
 	_mainWindow->update();
-}
-
-std::string VoxEdit::fileDialog(OpenFileMode mode, const std::string& filter) {
-	nfdchar_t *outPath = nullptr;
-	nfdresult_t result;
-	if (mode == OpenFileMode::Open) {
-		result = NFD_OpenDialog(filter.c_str(), nullptr, &outPath);
-	} else if (mode == OpenFileMode::Save) {
-		result = NFD_SaveDialog(filter.c_str(), nullptr, &outPath);
-	} else {
-		result = NFD_PickFolder(nullptr, &outPath);
-	}
-	if (outPath && result == NFD_OKAY) {
-		Log::info("Selected %s", outPath);
-		std::string path = outPath;
-		free(outPath);
-		SDL_RaiseWindow(_window);
-		SDL_SetWindowInputFocus(_window);
-		return path;
-	} else if (result == NFD_CANCEL) {
-		Log::info("Cancel selection");
-	} else if (result == NFD_ERROR) {
-		const char *error = NFD_GetError();
-		if (error == nullptr) {
-			error = "Unknown";
-		}
-		Log::info("Error: %s", error);
-	}
-	free(outPath);
-	SDL_RaiseWindow(_window);
-	SDL_SetWindowInputFocus(_window);
-	return "";
 }
 
 core::AppState VoxEdit::onRunning() {

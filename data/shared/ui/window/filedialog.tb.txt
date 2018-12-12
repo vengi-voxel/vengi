@@ -1,0 +1,17 @@
+WindowInfo
+	title File dialog
+	size 350 500
+
+TBLayout: distribution: gravity, axis: y, size: available
+	TBSelectList
+		id files
+		gravity all
+
+	TBSeparator: gravity: left right, skin: separator
+	TBLayout: distribution: gravity, axis: x
+		TBButton: text: Ok, id: ok, autofocus: 1, gravity: left right, size: gravity
+		TBButton: text: Cancel, id: cancel, gravity: left right, size: gravity
+
+		TBSelectDropdown
+			gravity right
+			id filter

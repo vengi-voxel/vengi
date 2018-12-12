@@ -5,6 +5,7 @@ set(SRCS
 	Window.cpp Window.h
 	Widget.h
 	FontUtil.h
+	FileDialogWindow.h FileDialogWindow.cpp
 	WaitingMessage.h WaitingMessage.cpp
 	Console.cpp Console.h
 	ui_renderer_gl.cpp ui_renderer_gl.h
@@ -35,6 +36,8 @@ set(FILES
 	shared/ui/skin/editfield.png
 	shared/ui/skin/fadeout_x.png
 	shared/ui/skin/fadeout_y.png
+	shared/ui/skin/filedialog-dir.png
+	shared/ui/skin/filedialog-file.png
 	shared/ui/skin/focus_r4.png
 	shared/ui/skin/focus_tabbutton_left.png
 	shared/ui/skin/focus_tabbutton_top.png
@@ -76,6 +79,9 @@ set(FILES
 	shared/ui/skin/window_mover_bg_tile.png
 	shared/ui/skin/window_mover_overlay.png
 	shared/ui/skin/window.png
+	shared/ui/window/filedialog_dir.tb.txt
+	shared/ui/window/filedialog_file.tb.txt
+	shared/ui/window/filedialog.tb.txt
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES render libturbobadger)
 

@@ -117,11 +117,6 @@ Extend statsd support with more events
 Implement signup with email verification, Lost password and co - also see password related point in the persistence section.
 Maybe use https://github.com/est31/csrp-gmp
 
-# UI
-
-Get rid of nativefiledialog - e.g. for nuklear use their file dialog implementation.
-Currently only voxedit makes use of this library.
-
 # Compute module (opencl)
 
 - Support adding `#pragma unroll` automatically?

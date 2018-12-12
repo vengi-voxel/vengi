@@ -70,22 +70,23 @@ public:
 	 * @brief Opens a file dialog
 	 * @param[in] mode @c OpenFileMode
 	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
-	 * @return The selected string of the file (or directory) - or an empty string if the selection was aborted.
 	 */
-	virtual std::string fileDialog(OpenFileMode mode, const std::string& filter = "");
+	virtual void fileDialog(const std::function<void(const std::string&)>& callback, OpenFileMode mode, const std::string& filter = "");
 
 	/**
 	 * @brief Wrapper method for @c fileDialog()
+	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
 	 */
-	std::string saveDialog(const std::string& filter = "");
+	void saveDialog(const std::function<void(const std::string&)>& callback, const std::string& filter = "");
+	/**
+	 * @brief Wrapper method for @c fileDialog()
+	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
+	 */
+	void openDialog(const std::function<void(const std::string&)>& callback, const std::string& filter = "");
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 */
-	std::string openDialog(const std::string& filter = "");
-	/**
-	 * @brief Wrapper method for @c fileDialog()
-	 */
-	std::string directoryDialog();
+	void directoryDialog(const std::function<void(const std::string&)>& callback);
 
 	virtual core::AppState onRunning() override;
 	virtual void onAfterRunning() override;
@@ -111,16 +112,16 @@ inline int WindowedApp::height() const {
 	return _dimension.y;
 }
 
-inline std::string WindowedApp::saveDialog(const std::string& filter) {
-	return fileDialog(OpenFileMode::Save, filter);
+inline void WindowedApp::saveDialog(const std::function<void(const std::string&)>& callback, const std::string& filter) {
+	fileDialog(callback, OpenFileMode::Save, filter);
 }
 
-inline std::string WindowedApp::openDialog(const std::string& filter) {
-	return fileDialog(OpenFileMode::Open, filter);
+inline void WindowedApp::openDialog(const std::function<void(const std::string&)>& callback, const std::string& filter) {
+	fileDialog(callback, OpenFileMode::Open, filter);
 }
 
-inline std::string WindowedApp::directoryDialog() {
-	return fileDialog(OpenFileMode::Directory);
+inline void WindowedApp::directoryDialog(const std::function<void(const std::string&)>& callback) {
+	fileDialog(callback, OpenFileMode::Directory);
 }
 
 inline bool WindowedApp::isPressed(int32_t key) const {

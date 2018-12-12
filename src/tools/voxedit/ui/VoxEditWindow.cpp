@@ -98,30 +98,30 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		Super(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 	for (int i = 0; i < lengthof(treeTypes); ++i) {
-		addMenuItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
+		addStringItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
 	}
-	addMenuItem(_fileItems, "New");
-	addMenuItem(_fileItems, "Load");
-	addMenuItem(_fileItems, "Save");
-	addMenuItem(_fileItems, "Import");
-	addMenuItem(_fileItems, "Prefab");
-	addMenuItem(_fileItems, "Export");
-	addMenuItem(_fileItems, "Heightmap");
-	addMenuItem(_fileItems, "Quit");
+	addStringItem(_fileItems, "New");
+	addStringItem(_fileItems, "Load");
+	addStringItem(_fileItems, "Save");
+	addStringItem(_fileItems, "Import");
+	addStringItem(_fileItems, "Prefab");
+	addStringItem(_fileItems, "Export");
+	addStringItem(_fileItems, "Heightmap");
+	addStringItem(_fileItems, "Quit");
 
-	addMenuItem(_plantItems, "Cactus", "cactus");
+	addStringItem(_plantItems, "Cactus", "cactus");
 	for (int i = 0; i < lengthof(plantTypes); ++i) {
-		addMenuItem(_plantItems, plantTypes[i].name, plantTypes[i].id);
+		addStringItem(_plantItems, plantTypes[i].name, plantTypes[i].id);
 	}
 
 	for (int i = 0; i < lengthof(buildingTypes); ++i) {
-		addMenuItem(_buildingItems, buildingTypes[i].name, buildingTypes[i].id);
+		addStringItem(_buildingItems, buildingTypes[i].name, buildingTypes[i].id);
 	}
 
-	addMenuItem(_structureItems, "Trees")->sub_source = &_treeItems;
-	addMenuItem(_structureItems, "Plants", "plants")->sub_source = &_plantItems;
-	addMenuItem(_structureItems, "Clouds", "clouds");
-	addMenuItem(_structureItems, "Buildings", "buildings")->sub_source = &_buildingItems;
+	addStringItem(_structureItems, "Trees")->sub_source = &_treeItems;
+	addStringItem(_structureItems, "Plants", "plants")->sub_source = &_plantItems;
+	addStringItem(_structureItems, "Clouds", "clouds");
+	addStringItem(_structureItems, "Buildings", "buildings")->sub_source = &_buildingItems;
 }
 
 VoxEditWindow::~VoxEditWindow() {
@@ -493,7 +493,7 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		_scene->spaceColonization();
 		return true;
 	} else if (isAny(ev, TBIDC("heightmap"))) {
-		importHeightmp("");
+		importHeightmap("");
 		return true;
 	} else if (isAny(ev, TBIDC("save"))) {
 		save("");
@@ -970,58 +970,42 @@ void VoxEditWindow::quit() {
 	Close();
 }
 
-bool VoxEditWindow::importHeightmp(const std::string& file) {
-	std::string f;
+bool VoxEditWindow::importHeightmap(const std::string& file) {
 	if (file.empty()) {
-		f = _voxedit->openDialog("png");
-		if (f.empty()) {
-			return false;
-		}
-	} else {
-		f = file;
+		getApp()->openDialog([this] (const std::string& file) { importHeightmap(file); }, "png");
+		return true;
 	}
 
-	if (!_scene->importHeightmap(f)) {
+	if (!_scene->importHeightmap(file)) {
 		return false;
 	}
 	return true;
 }
 
 bool VoxEditWindow::save(const std::string& file) {
-	std::string f;
 	if (file.empty()) {
-		f = _voxedit->saveDialog("vox,qbt,qb");
-		if (f.empty()) {
-			return false;
-		}
-	} else {
-		f = file;
+		getApp()->saveDialog([this] (const std::string& file) {save(file); }, "vox,qbt,qb");
+		return true;
 	}
-
-	if (!_scene->saveModel(f)) {
+	if (!_scene->saveModel(file)) {
 		Log::warn("Failed to save the model");
 		return false;
 	}
-	Log::info("Saved the model to %s", f.c_str());
+	Log::info("Saved the model to %s", file.c_str());
 	return true;
 }
 
 bool VoxEditWindow::importMesh(const std::string& file) {
-	std::string f;
 	if (file.empty()) {
-		f = _voxedit->openDialog(_importFilter);
-		if (f.empty()) {
-			return false;
-		}
-	} else {
-		f = file;
+		getApp()->openDialog([this] (const std::string& file) {importMesh(file);}, _importFilter);
+		return true;
 	}
 	if (!_scene->isDirty()) {
-		const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(f, false);
+		const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
 		return _scene->voxelizeModel(mesh);
 	}
 
-	_voxelizeFile = f;
+	_voxelizeFile = file;
 	popup("Unsaved Modifications",
 			"There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?",
 			ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_voxelize");
@@ -1033,19 +1017,14 @@ bool VoxEditWindow::exportFile(const std::string& file) {
 		return false;
 	}
 
-	std::string f;
 	if (file.empty()) {
 		if (_exportFilter.empty()) {
 			return false;
 		}
-		f = _voxedit->saveDialog(_exportFilter);
-		if (f.empty()) {
-			return false;
-		}
-	} else {
-		f = file;
+		getApp()->saveDialog([this] (const std::string& file) { exportFile(file); }, _exportFilter);
+		return true;
 	}
-	return _scene->exportModel(f);
+	return _scene->exportModel(file);
 }
 
 void VoxEditWindow::resetcamera() {
@@ -1062,39 +1041,29 @@ void VoxEditWindow::resetcamera() {
 }
 
 bool VoxEditWindow::prefab(const std::string& file) {
-	std::string f;
 	if (file.empty()) {
-		f = _voxedit->openDialog("vox,qbt,qb");
-		if (f.empty()) {
-			return false;
-		}
-	} else {
-		f = file;
+		getApp()->openDialog([this] (const std::string& file) { prefab(file); }, "vox,qbt,qb");
+		return true;
 	}
 
-	return _scene->prefab(f);
+	return _scene->prefab(file);
 }
 
 bool VoxEditWindow::load(const std::string& file) {
-	std::string f;
 	if (file.empty()) {
-		f = _voxedit->openDialog("vox,qbt,qb");
-		if (f.empty()) {
-			return false;
-		}
-	} else {
-		f = file;
+		getApp()->openDialog([this] (const std::string& file) { load(file); }, "vox,qbt,qb");
+		return true;
 	}
 
 	if (!_scene->isDirty()) {
-		if (_scene->loadModel(f)) {
+		if (_scene->loadModel(file)) {
 			resetcamera();
 			return true;
 		}
 		return false;
 	}
 
-	_loadFile = f;
+	_loadFile = file;
 	popup("Unsaved Modifications",
 			"There are unsaved modifications.\nDo you wish to discard them and load?",
 			ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_load");

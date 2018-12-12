@@ -63,6 +63,11 @@ public:
 
 	void doLayout();
 
+	/**
+	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
+	 */
+	void fileDialog(const std::function<void(const std::string&)>& callback, OpenFileMode mode, const std::string& filter) override;
+
 	virtual void onWindowResize() override;
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;

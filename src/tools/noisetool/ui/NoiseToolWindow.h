@@ -25,7 +25,7 @@ private:
 	tb::TBSelectList* _select = nullptr;
 
 	tb::TBSelectDropdown* _noiseType = nullptr;
-	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _noiseTypeSource;
+	tb::TBGenericStringItemSource _noiseTypeSource;
 
 	struct QueueData {
 		NoiseData data;

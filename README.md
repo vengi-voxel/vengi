@@ -15,7 +15,6 @@ Voxel MMO RPG engine.
   * libcurl
   * postgresql-server-dev >= 9.5
   * libpq
-  * nativefiledialog (+gtk3 or qt on linux)
   * enet
   * zlib
   * libuv

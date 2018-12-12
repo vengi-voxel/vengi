@@ -35,7 +35,7 @@ protected:
 	float _percentHeight = 0.0f;
 	std::string _filename;
 
-	tb::TBGenericStringItem* addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id = nullptr);
+	tb::TBGenericStringItem* addStringItem(tb::TBGenericStringItemSource& items, const char *text, const char *id = nullptr, bool translate = true);
 
 public:
 	static inline const char *getTranslation(const char *input) {
