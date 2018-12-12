@@ -182,7 +182,7 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 		return false;
 	}
 
-	vx_mesh_t* mesh = vx_mesh_alloc(positions.size(), indices.size());
+	vx_mesh_t* mesh = vx_color_mesh_alloc(positions.size(), indices.size());
 	if (mesh == nullptr) {
 		Log::error("Failed to allocate voxelize mesh");
 		return false;
@@ -220,12 +220,17 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 	vx_point_cloud_t* result = vx_voxelize_pc(mesh, voxelSize, voxelSize, voxelSize, precision);
 	Log::debug("Number of vertices: %i", (int)result->nvertices);
 
-	m().pointCloud((float*)result->vertices, (float*)result->colors, result->nvertices * 3);
+	for (size_t i = 0u; i < result->nvertices; ++i) {
+		result->vertices[i].x -= meshMins.x;
+		result->vertices[i].y -= meshMins.y;
+		result->vertices[i].z -= meshMins.z;
+	}
+	m().pointCloud((const glm::vec3*)result->vertices, (const glm::vec3*)result->colors, result->nvertices);
 
 	vx_point_cloud_free(result);
 	vx_mesh_free(mesh);
 
-	return false;
+	return true;
 }
 
 bool EditorScene::isEmpty() const {

@@ -122,7 +122,15 @@ public:
 	void scaleHalf();
 	void fill(int x, int y, int z);
 
-	void pointCloud(float* points, float *colors, size_t bufferSize);
+	/**
+	 * @brief Convert a given point cloud to voxels
+	 * @param[in] vertices 3 component vertex data.
+	 * @param[in] vertexColors 3 component color data
+	 * @param[in] amount The amount of vertices in the buffers
+	 * @note The given @c vertices coordinates must be aligned to the region of the volume already
+	 * @note The color is expected to be in the range [0.0f,1.0f]
+	 */
+	void pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount);
 	bool importHeightmap(const std::string& file);
 	bool save(const std::string& file);
 	bool load(const std::string& file);

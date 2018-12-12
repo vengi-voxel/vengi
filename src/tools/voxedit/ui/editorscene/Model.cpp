@@ -263,18 +263,18 @@ bool Model::remove() {
 	return extract;
 }
 
-void Model::pointCloud(float* points, float *colors, size_t bufferSize) {
+void Model::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount) {
 	glm::ivec3 mins(std::numeric_limits<glm::ivec3::value_type>::max());
 	glm::ivec3 maxs(std::numeric_limits<glm::ivec3::value_type>::min());
 
 	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
 	materialColors.erase(materialColors.begin());
 
-	for (size_t idx = 0u; idx < bufferSize / 3; ++idx) {
-		const float* vertex = &points[idx * 3];
-		const float* color = &colors[idx * 3];
-		const glm::ivec3 pos(_cursorPos.x + vertex[0], _cursorPos.y + vertex[1], _cursorPos.z + vertex[2]);
-		const glm::vec4 cvec(color[0] * 255.0f, color[1] * 255.0f, color[2] * 255.0f, 255.0f);
+	for (size_t idx = 0u; idx < amount; ++idx) {
+		const glm::vec3& vertex = vertices[idx];
+		const glm::vec3& color = vertexColors[idx];
+		const glm::ivec3 pos(_cursorPos.x + vertex.x, _cursorPos.y + vertex.y, _cursorPos.z + vertex.z);
+		const glm::vec4 cvec(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, 255.0f);
 		const uint8_t index = core::Color::getClosestMatch(cvec, materialColors);
 		setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, index));
 		mins = glm::min(mins, pos);

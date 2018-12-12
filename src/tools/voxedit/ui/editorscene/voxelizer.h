@@ -332,7 +332,7 @@ vx_mesh_t* vx_mesh_alloc(int nvertices, int nindices)
     mesh->normalindices = VX_CALLOC(unsigned int, nindices);
     mesh->vertices = VX_CALLOC(vx_vertex_t, nvertices);
     mesh->normals = VX_CALLOC(vx_vec3_t, nvertices);
-    mesh->colors = VX_CALLOC(vx_color_t, nvertices);
+    mesh->colors = NULL;
     mesh->nindices = nindices;
     mesh->nnormals = nvertices;
     mesh->nvertices = nvertices;
