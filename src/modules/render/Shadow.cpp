@@ -20,6 +20,10 @@ Shadow::Shadow() :
 		_shadowMapInstancedShader(shader::ShadowmapInstancedShader::getInstance()) {
 }
 
+Shadow::~Shadow() {
+	shutdown();
+}
+
 bool Shadow::init(int maxDepthBuffers) {
 	_maxDepthBuffers = maxDepthBuffers;
 	core_assert(_maxDepthBuffers >= 1);

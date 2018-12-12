@@ -41,6 +41,7 @@ private:
 
 public:
 	Shadow();
+	~Shadow();
 	/**
 	 * @param[in] maxDepthBuffers the amount of cascades
 	 */
