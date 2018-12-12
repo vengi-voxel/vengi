@@ -122,7 +122,7 @@ protected:
 
 public:
 	Console();
-	virtual ~Console() {}
+	virtual ~Console();
 	virtual void construct() override;
 	virtual bool init() override;
 	virtual void shutdown() override;
