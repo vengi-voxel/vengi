@@ -150,6 +150,12 @@ void Filesystem::shutdown() {
 	_watches.clear();
 }
 
+std::string Filesystem::absolutePath(const std::string& path) const {
+	uv_fs_t req;
+	uv_fs_realpath(nullptr, &req, path.c_str(), nullptr);
+	return uv_fs_get_path(&req);
+}
+
 bool Filesystem::isRelativeFilename(const std::string& name) const {
 	const size_t size = name.size();
 #ifdef __WINDOWS__

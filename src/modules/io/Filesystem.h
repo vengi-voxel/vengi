@@ -83,6 +83,8 @@ public:
 
 	bool isRelativeFilename(const std::string& name) const;
 
+	std::string absolutePath(const std::string& path) const;
+
 	/**
 	 * @brief Changes the current working directory
 	 * @see popDir()
