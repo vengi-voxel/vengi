@@ -335,6 +335,7 @@ extern "C" uintptr_t _Unwind_GetIPInfo(_Unwind_Context*, int*);
 	} // namespace details
 	} // namespace backward
 #else // NOT BACKWARD_ATLEAST_CXX11
+#	define nullptr NULL
 #	define override
 #	include <map>
 	namespace backward {
@@ -472,7 +473,7 @@ public:
 	}
 	operator const dummy*() const {
 		if (_empty) {
-			return 0;
+			return nullptr;
 		}
 		return reinterpret_cast<const dummy*>(_val);
 	}
@@ -523,7 +524,7 @@ struct demangler_impl<system_tag::current_tag> {
 	std::string demangle(const char* funcname) {
 		using namespace details;
 		char* result = abi::__cxa_demangle(funcname,
-			_demangle_buffer.release(), &_demangle_buffer_length, 0);
+			_demangle_buffer.release(), &_demangle_buffer_length, nullptr);
 		if(result) {
 			_demangle_buffer.reset(result);
 			return result;
@@ -550,7 +551,7 @@ struct Trace {
 	size_t   idx;
 
 	Trace():
-		addr(0), idx(0) {}
+		addr(nullptr), idx(0) {}
 
 	explicit Trace(void* _addr, size_t _idx):
 		addr(_addr), idx(_idx) {}
@@ -631,11 +632,11 @@ protected:
 	void load_thread_info() {
 #ifdef BACKWARD_SYSTEM_LINUX
 #ifndef __ANDROID__
-		_thread_id = (size_t)syscall(SYS_gettid);
+		_thread_id = static_cast<size_t>(syscall(SYS_gettid));
 #else
-		_thread_id = (size_t)gettid();
+		_thread_id = static_cast<size_t>(gettid());
 #endif
-		if (_thread_id == (size_t) getpid()) {
+		if (_thread_id == static_cast<size_t>(getpid())) {
 			// If the thread is the main one, let's hide that.
 			// I like to keep little secret sometimes.
 			_thread_id = 0;
@@ -671,7 +672,7 @@ public:
 		if (size()) {
 			return &_stacktrace[skip_n_firsts()];
 		}
-		return 0;
+		return nullptr;
 	}
 
 protected:
@@ -691,7 +692,7 @@ public:
 		_index = -1;
 		_depth = depth;
 		_Unwind_Backtrace(&this->backtrace_trampoline, this);
-		return _index;
+		return static_cast<size_t>(_index);
 	}
 
 private:
@@ -701,7 +702,7 @@ private:
 
 	static _Unwind_Reason_Code backtrace_trampoline(
 			_Unwind_Context* ctx, void *self) {
-		return ((Unwinder*)self)->backtrace(ctx);
+		return (static_cast<Unwinder*>(self))->backtrace(ctx);
 	}
 
 	_Unwind_Reason_Code backtrace(_Unwind_Context* ctx) {
@@ -718,10 +719,10 @@ private:
 			} else {
 				ip -= 1; // else just normally decrement it (no overflow/underflow will happen)
 			}
-		}
+    }
 
 		if (_index >= 0) { // ignore first frame.
-			(*_f)(_index, (void*)ip);
+			(*_f)(static_cast<size_t>(_index), reinterpret_cast<void*>(ip));
 		}
 		_index += 1;
 		return _URC_NO_REASON;
@@ -911,11 +912,11 @@ class TraceResolverLinuxImpl<trace_resolver_tag::libbfd>:
 			if(len < 0) {
 				return "";
 			}
-			if ((size_t)len == path.size()) {
+			if (static_cast<size_t>(len) == path.size()) {
 				path.resize(path.size() * 2);
 			}
 			else {
-				path.resize(len);
+				path.resize(static_cast<std::string::size_type>(len));
 				break;
 			}
 		}
@@ -1163,7 +1164,7 @@ private:
 
 		if (symtab_storage_size > 0) {
 			symtab.reset(
-					(bfd_symbol**) malloc(symtab_storage_size)
+					static_cast<bfd_symbol**>(malloc(static_cast<size_t>(symtab_storage_size)))
 					);
 			symcount = bfd_canonicalize_symtab(
 					bfd_handle.get(), symtab.get()
@@ -1172,7 +1173,7 @@ private:
 
 		if (dyn_symtab_storage_size > 0) {
 			dynamic_symtab.reset(
-					(bfd_symbol**) malloc(dyn_symtab_storage_size)
+					static_cast<bfd_symbol**>(malloc(static_cast<size_t>(dyn_symtab_storage_size)))
 					);
 			dyn_symcount = bfd_canonicalize_dynamic_symtab(
 					bfd_handle.get(), dynamic_symtab.get()
@@ -1214,7 +1215,7 @@ private:
 		context.base_addr = base_addr;
 		context.result.found = false;
 		bfd_map_over_sections(fobj.handle.get(), &find_in_section_trampoline,
-				(void*)&context);
+				static_cast<void*>(&context));
 		return context.result;
 	}
 
@@ -1249,6 +1250,10 @@ private:
 			}
 		}
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
+#endif
 		if (!result.found && fobj.symtab) {
 			result.found = bfd_find_nearest_line(fobj.handle.get(), section,
 					fobj.symtab.get(), addr - sec_addr, &result.filename,
@@ -1260,6 +1265,9 @@ private:
 					fobj.dynamic_symtab.get(), addr - sec_addr,
 					&result.filename, &result.funcname, &result.line);
 		}
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 	}
 
@@ -1899,7 +1907,7 @@ private:
 	}
 
 	dwarf_fileobject& load_object_with_dwarf(
-			const std::string filename_object) {
+			const std::string& filename_object) {
 
 		if (!_dwarf_loaded) {
 			// Set the ELF library operating version
@@ -2328,7 +2336,8 @@ private:
 						&ranges_count, &byte_count, &error) == DW_DLV_OK) {
 					has_ranges = ranges_count != 0;
 					for (int i = 0; i < ranges_count; i++) {
-						if (pc >= ranges[i].dwr_addr1 + low_pc &&
+						if (ranges[i].dwr_addr1 != 0 &&
+							pc >= ranges[i].dwr_addr1 + low_pc &&
 							pc < ranges[i].dwr_addr2 + low_pc) {
 							result = true;
 							break;
@@ -2428,8 +2437,9 @@ private:
 			while (dwarf_next_cu_header_d(dwarf, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 					&next_cu_header, 0, &error) == DW_DLV_OK) {
 				// Reset the cu header state. Unfortunately, libdwarf's
-				// next_cu_header API keeps its own iterator per Dwarf_Debug that
-				// can't be reset. We need to keep fetching elements until the end.
+				// next_cu_header API keeps its own iterator per Dwarf_Debug
+				// that can't be reset. We need to keep fetching elements until
+				// the end.
 			}
 		} else {
 			// If we couldn't resolve the type just print out the signature
@@ -2437,7 +2447,8 @@ private:
 			string_stream << "<0x" <<
 					std::hex << std::setfill('0');
 			for (int i = 0; i < 8; ++i) {
-				string_stream << std::setw(2) << std::hex << (int)(unsigned char)(signature.signature[i]);
+				string_stream << std::setw(2) << std::hex
+						<< (int)(unsigned char)(signature.signature[i]);
 			}
 			string_stream << ">";
 			result = string_stream.str();
@@ -2561,7 +2572,8 @@ private:
 
 		context.is_const = next_type_is_const;
 
-		Dwarf_Die ref = get_referenced_die(fobj.dwarf_handle.get(), die, DW_AT_type, true);
+		Dwarf_Die ref = get_referenced_die(
+				fobj.dwarf_handle.get(), die, DW_AT_type, true);
 		if (ref) {
 			set_parameter_string(fobj, ref, context);
 			dwarf_dealloc(fobj.dwarf_handle.get(), ref, DW_DLA_DIE);
@@ -3028,27 +3040,36 @@ private:
 		// The search for aranges failed. Try to find our address by scanning
 		// all compilation units.
 		Dwarf_Unsigned next_cu_header;
-		while (dwarf_next_cu_header_d(dwarf, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		Dwarf_Half tag = 0;
+		returnDie = 0;
+
+		while (!found && dwarf_next_cu_header_d(dwarf, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 				&next_cu_header, 0, &error) == DW_DLV_OK) {
-			if (dwarf_siblingof(dwarf, 0, &returnDie, &error) == DW_DLV_OK) {
-				if (die_has_pc(fobj, returnDie, addr)) {
-					found = true;
-					break;
-				}
+
+			if (returnDie)
 				dwarf_dealloc(dwarf, returnDie, DW_DLA_DIE);
+
+			if (dwarf_siblingof(dwarf, 0, &returnDie, &error) == DW_DLV_OK) {
+				if ((dwarf_tag(returnDie, &tag, &error) == DW_DLV_OK)
+					&& tag == DW_TAG_compile_unit) {
+					if (die_has_pc(fobj, returnDie, addr)) {
+						found = true;
+					}
+                }
 			}
 		}
 
-		while (dwarf_next_cu_header_d(dwarf, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-				&next_cu_header, 0, &error) == DW_DLV_OK) {
-			// Reset the cu header state. Unfortunately, libdwarf's
-			// next_cu_header API keeps its own iterator per Dwarf_Debug that
-			// can't be reset. We need to keep fetching elements until the end.
+		if (found) {
+			while (dwarf_next_cu_header_d(dwarf, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+					&next_cu_header, 0, &error) == DW_DLV_OK) {
+				// Reset the cu header state. Libdwarf's next_cu_header API
+				// keeps its own iterator per Dwarf_Debug that can't be reset.
+				// We need to keep fetching elements until the end.
+			}
 		}
 
 		if (found)
 			return returnDie;
-
 
 		// We couldn't find any compilation units with ranges or a high/low pc.
 		// Try again by looking at all DIEs in all compilation units.
@@ -3067,11 +3088,13 @@ private:
 			}
 		}
 
-		while (dwarf_next_cu_header_d(dwarf, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-				&next_cu_header, 0, &error) == DW_DLV_OK) {
-			// Reset the cu header state. Unfortunately, libdwarf's
-			// next_cu_header API keeps its own iterator per Dwarf_Debug that
-			// can't be reset. We need to keep fetching elements until the end.
+		if (found) {
+			while (dwarf_next_cu_header_d(dwarf, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+					&next_cu_header, 0, &error) == DW_DLV_OK) {
+				// Reset the cu header state. Libdwarf's next_cu_header API
+				// keeps its own iterator per Dwarf_Debug that can't be reset.
+				// We need to keep fetching elements until the end.
+			}
 		}
 
 		if (found)
@@ -3259,7 +3282,7 @@ public:
 	}
 
 #ifdef BACKWARD_ATLEAST_CXX11
-	SourceFile(SourceFile&& from): _file(0) {
+	SourceFile(SourceFile&& from): _file(nullptr) {
 		swap(from);
 	}
 	SourceFile& operator=(SourceFile&& from) {
@@ -3370,7 +3393,7 @@ public:
 	}
 
 	std::streamsize xsputn(const char_type* s, std::streamsize count) override {
-		return fwrite(s, sizeof *s, count, sink);
+		return static_cast<std::streamsize>(fwrite(s, sizeof *s, static_cast<size_t>(count), sink));
 	}
 
 #ifdef BACKWARD_ATLEAST_CXX11
@@ -3594,7 +3617,7 @@ private:
 		typedef SnippetFactory::lines_t lines_t;
 
 		lines_t lines = _snippets.get_snippet(source_loc.filename,
-				source_loc.line, context_size);
+				source_loc.line, static_cast<unsigned>(context_size));
 
 		for (lines_t::const_iterator it = lines.begin();
 				it != lines.end(); ++it) {
@@ -3616,7 +3639,7 @@ private:
 
 	void print_source_loc(std::ostream& os, const char* indent,
 			const ResolvedTrace::SourceLoc& source_loc,
-			void* addr=0) {
+			void* addr=nullptr) {
 		os << indent
 		   << "Source \""
 		   << source_loc.filename
@@ -3625,7 +3648,7 @@ private:
 		   << ", in "
 		   << source_loc.function;
 
-		if (address && addr != 0) {
+		if (address && addr != nullptr) {
 			os << " [" << addr << "]";
 		}
 		os << "\n";
@@ -3665,13 +3688,13 @@ public:
 		bool success = true;
 
 		const size_t stack_size = 1024 * 1024 * 8;
-		_stack_content.reset((char*)malloc(stack_size));
+		_stack_content.reset(static_cast<char*>(malloc(stack_size)));
 		if (_stack_content) {
 			stack_t ss;
 			ss.ss_sp = _stack_content.get();
 			ss.ss_size = stack_size;
 			ss.ss_flags = 0;
-			if (sigaltstack(&ss, 0) < 0) {
+			if (sigaltstack(&ss, nullptr) < 0) {
 				success = false;
 			}
 		} else {
@@ -3681,13 +3704,20 @@ public:
 		for (size_t i = 0; i < posix_signals.size(); ++i) {
 			struct sigaction action;
 			memset(&action, 0, sizeof action);
-			action.sa_flags = (SA_SIGINFO | SA_ONSTACK | SA_NODEFER |
+			action.sa_flags = static_cast<int>(SA_SIGINFO | SA_ONSTACK | SA_NODEFER |
 					SA_RESETHAND);
 			sigfillset(&action.sa_mask);
 			sigdelset(&action.sa_mask, posix_signals[i]);
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
+#endif
 			action.sa_sigaction = &sig_handler;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
-			int r = sigaction(posix_signals[i], &action, 0);
+			int r = sigaction(posix_signals[i], &action, nullptr);
 			if (r < 0) success = false;
 		}
 
@@ -3697,10 +3727,10 @@ public:
 	bool loaded() const { return _loaded; }
 
 	static void handleSignal(int, siginfo_t* info, void* _ctx) {
-		ucontext_t *uctx = (ucontext_t*) _ctx;
+		ucontext_t *uctx = static_cast<ucontext_t*>(_ctx);
 
 		StackTrace st;
-		void* error_addr = 0;
+		void* error_addr = nullptr;
 #ifdef REG_RIP // x86_64
 		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.gregs[REG_RIP]);
 #elif defined(REG_EIP) // x86_32
@@ -3731,7 +3761,7 @@ public:
 		printer.print(st, stderr);
 
 #if _XOPEN_SOURCE >= 700 || _POSIX_C_SOURCE >= 200809L
-		psiginfo(info, 0);
+		psiginfo(info, nullptr);
 #else
 		(void)info;
 #endif
