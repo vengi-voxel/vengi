@@ -137,6 +137,9 @@ void TestTraze::onEvent(const traze::TickerEvent& event) {
 	case traze::TickerType::Suicide:
 		_messageQueue.message("%s committed suicide", name.c_str());
 		break;
+	case traze::TickerType::Collision:
+		_messageQueue.message("%s - collision with another player", name.c_str());
+		break;
 	default:
 		break;
 	}

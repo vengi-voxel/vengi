@@ -224,6 +224,8 @@ void Protocol::parseTicker(const std::string& json) const {
 		ticker.type = TickerType::Suicide;
 	} else if (type == "frag") {
 		ticker.type = TickerType::Frag;
+	} else if (type == "collision") {
+		ticker.type = TickerType::Collision;
 	} else {
 		ticker.type = TickerType::Unknown;
 	}

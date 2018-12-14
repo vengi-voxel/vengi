@@ -43,7 +43,7 @@ struct Player {
 };
 
 enum class TickerType {
-	Frag, Suicide, Unknown
+	Frag, Suicide, Collision, Unknown
 };
 
 struct Ticker {
