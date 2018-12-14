@@ -7,9 +7,12 @@
 // Releases change-log at https://github.com/ocornut/imgui/releases
 // Technical Support for Getting Started https://discourse.dearimgui.org/c/getting-started
 // Gallery (please post your screenshots/video there!): https://github.com/ocornut/imgui/issues/1269
+
 // Developed by Omar Cornut and every direct or indirect contributors to the GitHub.
+// See LICENSE.txt for copyright and licensing details (standard MIT License).
 // This library is free but I need your support to sustain development and maintenance.
-// If you work for a company, please consider financial support, see README. For individuals: https://www.patreon.com/imgui
+// Businesses: you can support continued maintenance and development via support contracts or sponsoring, see docs/README.
+// Individuals: you can support continued maintenance and development via donations or Patreon https://www.patreon.com/imgui.
 
 // It is recommended that you don't modify imgui.cpp! It will become difficult for you to update the library.
 // Note that 'ImGui::' being a namespace, you can add functions into the namespace from your own source files, without
@@ -26,17 +29,17 @@ DOCUMENTATION
 - MISSION STATEMENT
 - END-USER GUIDE
 - PROGRAMMER GUIDE (read me!)
-  - Read first
-  - How to update to a newer version of Dear ImGui
-  - Getting started with integrating Dear ImGui in your code/engine
-  - This is how a simple application may look like (2 variations)
-  - This is how a simple rendering function may look like
-  - Using gamepad/keyboard navigation controls
+  - Read first.
+  - How to update to a newer version of Dear ImGui.
+  - Getting started with integrating Dear ImGui in your code/engine.
+  - This is how a simple application may look like (2 variations).
+  - This is how a simple rendering function may look like.
+  - Using gamepad/keyboard navigation controls.
 - API BREAKING CHANGES (read me when you update!)
 - FREQUENTLY ASKED QUESTIONS (FAQ), TIPS
   - How can I tell whether to dispatch mouse/keyboard to imgui or to my application?
   - How can I display an image? What is ImTextureID, how does it works?
-  - How can I have multiple widgets with the same label or without a label? A primer on labels and the ID Stack.
+  - How can I have multiple widgets with the same label or with an empty label? A primer on labels and the ID Stack.
   - How can I use my own math types instead of ImVec2/ImVec4? 
   - How can I load a different font than the default?
   - How can I easily use icons in my application?
@@ -84,19 +87,19 @@ CODE
  MISSION STATEMENT
  =================
 
- - Easy to use to create code-driven and data-driven tools
- - Easy to use to create ad hoc short-lived tools and long-lived, more elaborate tools
- - Easy to hack and improve
- - Minimize screen real-estate usage
- - Minimize setup and maintenance
- - Minimize state storage on user side
- - Portable, minimize dependencies, run on target (consoles, phones, etc.)
- - Efficient runtime and memory consumption (NB- we do allocate when "growing" content e.g. creating a window,
-   opening a tree node for the first time, etc. but a typical frame should not allocate anything)
+ - Easy to use to create code-driven and data-driven tools.
+ - Easy to use to create ad hoc short-lived tools and long-lived, more elaborate tools.
+ - Easy to hack and improve.
+ - Minimize screen real-estate usage.
+ - Minimize setup and maintenance.
+ - Minimize state storage on user side.
+ - Portable, minimize dependencies, run on target (consoles, phones, etc.).
+ - Efficient runtime and memory consumption (NB- we do allocate when "growing" content e.g. creating a window,.
+   opening a tree node for the first time, etc. but a typical frame should not allocate anything).
 
  Designed for developers and content-creators, not the typical end-user! Some of the weaknesses includes:
- - Doesn't look fancy, doesn't animate
- - Limited layout features, intricate layouts are typically crafted in code
+ - Doesn't look fancy, doesn't animate.
+ - Limited layout features, intricate layouts are typically crafted in code.
 
 
  END-USER GUIDE
@@ -126,16 +129,29 @@ CODE
  PROGRAMMER GUIDE
  ================
 
- READ FIRST
+ READ FIRST:
 
  - Read the FAQ below this section!
  - Your code creates the UI, if your code doesn't run the UI is gone! The UI can be highly dynamic, there are no construction
    or destruction steps, less superfluous data retention on your side, less state duplication, less state synchronization, less bugs.
  - Call and read ImGui::ShowDemoWindow() for demo code demonstrating most features.
- - You can learn about immediate-mode GUI principles at http://www.johno.se/book/imgui.html or watch http://mollyrocket.com/861
-   See README.md for more links describing the IMGUI paradigm. Dear ImGui is an implementation of the IMGUI paradigm.
+ - The library is designed to be built from sources. Avoid pre-compiled binaries and packaged versions. See imconfig.h to configure your build.
+ - Dear ImGui is an implementation of the IMGUI paradigm (immediate-mode graphical user interface, a term coined by Casey Muratori).
+   You can learn about IMGUI principles at http://www.johno.se/book/imgui.html, http://mollyrocket.com/861 & more links docs/README.md.
+ - Dear ImGui is a "single pass" rasterizing implementation of the IMGUI paradigm, aimed at ease of use and high-performances.
+   For every application frame your UI code will be called only once. This is in contrast to e.g. Unity's own implementation of an IMGUI,
+   where the UI code is called multiple times ("multiple passes") from a single entry point. There are pros and cons to both approaches.
+ - Our origin are on the top-left. In axis aligned bounding boxes, Min = top-left, Max = bottom-right.
+ - This codebase is also optimized to yield decent performances with typical "Debug" builds settings.
+ - Please make sure you have asserts enabled (IM_ASSERT redirects to assert() by default, but can be redirected).
+   If you get an assert, read the messages and comments around the assert.
+ - C++: this is a very C-ish codebase: we don't rely on C++11, we don't include any C++ headers, and ImGui:: is a namespace.
+ - C++: ImVec2/ImVec4 do not expose math operators by default, because it is expected that you use your own math types.
+   See FAQ "How can I use my own math types instead of ImVec2/ImVec4?" for details about setting up imconfig.h for that.
+   However, imgui_internal.h can optionally export math operators for ImVec2/ImVec4, which we use in this codebase.
+ - C++: pay attention that ImVector<> manipulates plain-old-data and does not honor construction/destruction (avoid using it in your code!).
 
- HOW TO UPDATE TO A NEWER VERSION OF DEAR IMGUI
+ HOW TO UPDATE TO A NEWER VERSION OF DEAR IMGUI:
 
  - Overwrite all the sources files except for imconfig.h (if you have made modification to your copy of imconfig.h)
  - Or maintain your own branch where you have imconfig.h modified.
@@ -145,7 +161,7 @@ CODE
    likely be a comment about it. Please report any issue to the GitHub page!
  - Try to keep your copy of dear imgui reasonably up to date.
 
- GETTING STARTED WITH INTEGRATING DEAR IMGUI IN YOUR CODE/ENGINE
+ GETTING STARTED WITH INTEGRATING DEAR IMGUI IN YOUR CODE/ENGINE:
 
  - Run and study the examples and demo in imgui_demo.cpp to get acquainted with the library.
  - Add the Dear ImGui source files to your projects or using your preferred build system.
@@ -158,8 +174,8 @@ CODE
  - Refer to the bindings and demo applications in the examples/ folder for instruction on how to setup your code.
  - If you are running over a standard OS with a common graphics API, you should be able to use unmodified imgui_impl_*** files from the examples/ folder.
 
- HOW A SIMPLE APPLICATION MAY LOOK LIKE
- EXHIBIT 1: USING THE EXAMPLE BINDINGS (imgui_impl_XXX.cpp files from the examples/ folder)
+ HOW A SIMPLE APPLICATION MAY LOOK LIKE:
+ EXHIBIT 1: USING THE EXAMPLE BINDINGS (imgui_impl_XXX.cpp files from the examples/ folder).
 
      // Application init: create a dear imgui context, setup some options, load fonts
      ImGui::CreateContext();
@@ -194,8 +210,8 @@ CODE
      ImGui_ImplWin32_Shutdown();
      ImGui::DestroyContext();
 
- HOW A SIMPLE APPLICATION MAY LOOK LIKE
- EXHIBIT 2: IMPLEMENTING CUSTOM BINDING / CUSTOM ENGINE
+ HOW A SIMPLE APPLICATION MAY LOOK LIKE:
+ EXHIBIT 2: IMPLEMENTING CUSTOM BINDING / CUSTOM ENGINE.
 
      // Application init: create a dear imgui context, setup some options, load fonts
      ImGui::CreateContext();
@@ -249,16 +265,17 @@ CODE
      // Shutdown
      ImGui::DestroyContext();
 
- HOW A SIMPLE RENDERING FUNCTION MAY LOOK LIKE
+ HOW A SIMPLE RENDERING FUNCTION MAY LOOK LIKE:
 
     void void MyImGuiRenderFunction(ImDrawData* draw_data)
     {
        // TODO: Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled
-       // TODO: Setup viewport using draw_data->DisplaySize
+       // TODO: Setup viewport covering draw_data->DisplayPos to draw_data->DisplayPos + draw_data->DisplaySize
        // TODO: Setup orthographic projection matrix cover draw_data->DisplayPos to draw_data->DisplayPos + draw_data->DisplaySize
        // TODO: Setup shader: vertex { float2 pos, float2 uv, u32 color }, fragment shader sample color from 1 texture, multiply by vertex color.
        for (int n = 0; n < draw_data->CmdListsCount; n++)
        {
+          const ImDrawList* cmd_list = draw_data->CmdLists[n]; 
           const ImDrawVert* vtx_buffer = cmd_list->VtxBuffer.Data;  // vertex buffer generated by ImGui
           const ImDrawIdx* idx_buffer = cmd_list->IdxBuffer.Data;   // index buffer generated by ImGui
           for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
@@ -346,6 +363,8 @@ CODE
  When you are not sure about a old symbol or function name, try using the Search/Find function of your IDE to look for comments or references in all imgui files.
  You can read releases logs https://github.com/ocornut/imgui/releases for more details.
 
+ - 2019/01/06 (1.67) - renamed io.InputCharacters[], marked internal as was always intended. Please don't access directly, and use AddInputCharacter() instead!
+ - 2019/01/06 (1.67) - renamed ImFontAtlas::GlyphRangesBuilder to ImFontGlyphRangesBuilder. Keep redirection typedef (will obsolete).
  - 2018/12/10 (1.67) - renamed io.ConfigResizeWindowsFromEdges to io.ConfigWindowsResizeFromEdges as we are doing a large pass on configuration flags.
  - 2018/10/12 (1.66) - renamed misc/stl/imgui_stl.* to misc/cpp/imgui_stdlib.* in prevision for other C++ helper files.
  - 2018/09/28 (1.66) - renamed SetScrollHere() to SetScrollHereY(). Kept redirection function (will obsolete).
@@ -362,6 +381,9 @@ CODE
  - 2018/08/01 (1.63) - renamed io.OptCursorBlink to io.ConfigCursorBlink [-> io.ConfigInputTextCursorBlink in 1.65], io.OptMacOSXBehaviors to ConfigMacOSXBehaviors for consistency.
  - 2018/07/22 (1.63) - changed ImGui::GetTime() return value from float to double to avoid accumulating floating point imprecisions over time.
  - 2018/07/08 (1.63) - style: renamed ImGuiCol_ModalWindowDarkening to ImGuiCol_ModalWindowDimBg for consistency with other features. Kept redirection enum (will obsolete).
+ - 2018/06/08 (1.62) - examples: the imgui_impl_xxx files have been split to separate platform (Win32, Glfw, SDL2, etc.) from renderer (DX11, OpenGL, Vulkan,  etc.).
+                       old binding will still work as is, however prefer using the separated bindings as they will be updated to be multi-viewport conformant.
+                       when adopting new bindings follow the main.cpp code of your preferred examples/ folder to know which functions to call.
  - 2018/06/06 (1.62) - renamed GetGlyphRangesChinese() to GetGlyphRangesChineseFull() to distinguish other variants and discourage using the full set.
  - 2018/06/06 (1.62) - TreeNodeEx()/TreeNodeBehavior(): the ImGuiTreeNodeFlags_CollapsingHeader helper now include the ImGuiTreeNodeFlags_NoTreePushOnOpen flag. See Changelog for details. 
  - 2018/05/03 (1.61) - DragInt(): the default compile-time format string has been changed from "%.0f" to "%d", as we are not using integers internally any more.
@@ -410,6 +432,7 @@ CODE
                        removed the IsItemRectHovered()/IsWindowRectHovered() names introduced in 1.51 since they were merely more consistent names for the two functions we are now obsoleting.
  - 2017/10/17 (1.52) - marked the old 5-parameters version of Begin() as obsolete (still available). Use SetNextWindowSize()+Begin() instead!
  - 2017/10/11 (1.52) - renamed AlignFirstTextHeightToWidgets() to AlignTextToFramePadding(). Kept inline redirection function (will obsolete).
+ - 2017/09/26 (1.52) - renamed ImFont::Glyph to ImFontGlyph. Keep redirection typedef (will obsolete).
  - 2017/09/25 (1.52) - removed SetNextWindowPosCenter() because SetNextWindowPos() now has the optional pivot information to do the same and more. Kept redirection function (will obsolete).
  - 2017/08/25 (1.52) - io.MousePos needs to be set to ImVec2(-FLT_MAX,-FLT_MAX) when mouse is unavailable/missing. Previously ImVec2(-1,-1) was enough but we now accept negative mouse coordinates. In your binding if you need to support unavailable mouse, make sure to replace "io.MousePos = ImVec2(-1,-1)" with "io.MousePos = ImVec2(-FLT_MAX,-FLT_MAX)".
  - 2017/08/22 (1.51) - renamed IsItemHoveredRect() to IsItemRectHovered(). Kept inline redirection function (will obsolete). -> (1.52) use IsItemHovered(ImGuiHoveredFlags_RectOnly)!
@@ -467,7 +490,7 @@ CODE
                      - the signature of the io.RenderDrawListsFn handler has changed!
                        old: ImGui_XXXX_RenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
                        new: ImGui_XXXX_RenderDrawLists(ImDrawData* draw_data).
-                         argument:   'cmd_lists' becomes 'draw_data->CmdLists', 'cmd_lists_count' becomes 'draw_data->CmdListsCount'
+                         parameters: 'cmd_lists' becomes 'draw_data->CmdLists', 'cmd_lists_count' becomes 'draw_data->CmdListsCount'
                          ImDrawList: 'commands' becomes 'CmdBuffer', 'vtx_buffer' becomes 'VtxBuffer', 'IdxBuffer' is new.
                          ImDrawCmd:  'vtx_count' becomes 'ElemCount', 'clip_rect' becomes 'ClipRect', 'user_callback' becomes 'UserCallback', 'texture_id' becomes 'TextureId'.
                      - each ImDrawList now contains both a vertex buffer and an index buffer. For each command, render ElemCount/3 triangles using indices from the index buffer.
@@ -500,9 +523,9 @@ CODE
  - 2015/01/19 (1.30) - renamed ImGuiStorage::GetIntPtr()/GetFloatPtr() to GetIntRef()/GetIntRef() because Ptr was conflicting with actual pointer storage functions.
  - 2015/01/11 (1.30) - big font/image API change! now loads TTF file. allow for multiple fonts. no need for a PNG loader.
               (1.30) - removed GetDefaultFontData(). uses io.Fonts->GetTextureData*() API to retrieve uncompressed pixels.
-                       font init:  const void* png_data; unsigned int png_size; ImGui::GetDefaultFontData(NULL, NULL, &png_data, &png_size); <..Upload texture to GPU..>
-                       became:     unsigned char* pixels; int width, height; io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height); <..Upload texture to GPU>; io.Fonts->TexId = YourTextureIdentifier;
-                       you now more flexibility to load multiple TTF fonts and manage the texture buffer for internal needs.
+                       font init:  { const void* png_data; unsigned int png_size; ImGui::GetDefaultFontData(NULL, NULL, &png_data, &png_size); <..Upload texture to GPU..>; }
+                       became:     { unsigned char* pixels; int width, height; io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height); <..Upload texture to GPU>; io.Fonts->TexId = YourTextureIdentifier; }
+                       you now have more flexibility to load multiple TTF fonts and manage the texture buffer for internal needs.
                        it is now recommended that you sample the font texture with bilinear interpolation.
               (1.30) - added texture identifier in ImDrawCmd passed to your render function (we can now render images). make sure to set io.Fonts->TexID.
               (1.30) - removed IO.PixelCenterOffset (unnecessary, can be handled in user projection matrix)
@@ -624,7 +647,7 @@ CODE
 
     Finally, you may call ImGui::ShowMetricsWindow() to explore/visualize/understand how the ImDrawList are generated.
 
- Q: How can I have multiple widgets with the same label or without a label?
+ Q: How can I have multiple widgets with the same label or with an empty label?
  Q: I have multiple widgets with the same label, and only the first one works. Why is that?
  A: A primer on labels and the ID Stack...
 
@@ -645,6 +668,9 @@ CODE
 
        Begin("MyWindow");
        Button("OK");          // Label = "OK",     ID = hash of ("MyWindow", "OK")
+       End();
+       Begin("MyOtherWindow");
+       Button("OK");          // Label = "OK",     ID = hash of ("MyOtherWindow", "OK")
        End();
 
    - If you have a same ID twice in the same location, you'll have a conflict:
@@ -685,47 +711,48 @@ CODE
      within the same window. This is the most convenient way of distinguishing ID when iterating and
      creating many UI elements programmatically.
      You can push a pointer, a string or an integer value into the ID stack.
-     Remember that ID are formed from the concatenation of _everything_ in the ID stack!
+     Remember that ID are formed from the concatenation of _everything_ pushed into the ID stack.
+     At each level of the stack we store the seed used for items at this level of the ID stack.
 
-       Begin("Window");
+     Begin("Window");
        for (int i = 0; i < 100; i++)
        {
-         PushID(i);         // Push i to the id tack
-         Button("Click");   // Label = "Click",  ID = Hash of ("Window", i, "Click")
+         PushID(i);           // Push i to the id tack
+         Button("Click");     // Label = "Click",  ID = hash of ("Window", i, "Click")
          PopID();
        }
        for (int i = 0; i < 100; i++)
        {
          MyObject* obj = Objects[i];
          PushID(obj);
-         Button("Click");   // Label = "Click",  ID = Hash of ("Window", obj pointer, "Click")
+         Button("Click");     // Label = "Click",  ID = hash of ("Window", obj pointer, "Click")
          PopID();
        }
        for (int i = 0; i < 100; i++)
        {
          MyObject* obj = Objects[i];
          PushID(obj->Name);
-         Button("Click");   // Label = "Click",  ID = Hash of ("Window", obj->Name, "Click")
+         Button("Click");     // Label = "Click",  ID = hash of ("Window", obj->Name, "Click")
          PopID();
        }
        End();
 
-   - More example showing that you can stack multiple prefixes into the ID stack:
+   - You can stack multiple prefixes into the ID stack:
 
-       Button("Click");     // Label = "Click",  ID = hash of (..., "Click")
+       Button("Click");       // Label = "Click",  ID = hash of (..., "Click")
        PushID("node");
-       Button("Click");     // Label = "Click",  ID = hash of (..., "node", "Click")
+       Button("Click");       // Label = "Click",  ID = hash of (..., "node", "Click")
          PushID(my_ptr);
-           Button("Click"); // Label = "Click",  ID = hash of (..., "node", my_ptr, "Click")
+           Button("Click");   // Label = "Click",  ID = hash of (..., "node", my_ptr, "Click")
          PopID();
        PopID();
 
    - Tree nodes implicitly creates a scope for you by calling PushID().
 
-       Button("Click");     // Label = "Click",  ID = hash of (..., "Click")
-       if (TreeNode("node"))
+       Button("Click");       // Label = "Click",  ID = hash of (..., "Click")
+       if (TreeNode("node"))  // <-- this function call will do a PushID() for you (unless instructed not to, with a special flag)
        {
-         Button("Click");   // Label = "Click",  ID = hash of (..., "node", "Click")
+         Button("Click");     // Label = "Click",  ID = hash of (..., "node", "Click")
          TreePop();
        }
 
@@ -745,7 +772,8 @@ CODE
       ImGuiIO& io = ImGui::GetIO();
       io.Fonts->AddFontFromFileTTF("myfontfile.ttf", size_in_pixels);
       io.Fonts->GetTexDataAsRGBA32() or GetTexDataAsAlpha8()
-    Default is ProggyClean.ttf, rendered at size 13, embedded in dear imgui's source code.
+    Default is ProggyClean.ttf, monospace, rendered at size 13, embedded in dear imgui's source code.
+    (Tip: monospace fonts are convenient because they allow to facilitate horizontal alignment directly at the string level.) 
     (Read the 'misc/fonts/README.txt' file for more details about font loading.)
 
     New programmers: remember that in C/C++ and most programming languages if you want to use a
@@ -757,6 +785,7 @@ CODE
  Q: How can I easily use icons in my application?
  A: The most convenient and practical way is to merge an icon font such as FontAwesome inside you
     main font. Then you can refer to icons within your strings. 
+    You may want to see ImFontConfig::GlyphMinAdvanceX to make your icon look monospace to facilitate alignment.
     (Read the 'misc/fonts/README.txt' file for more details about icons font loading.)
 
  Q: How can I load multiple fonts?
@@ -795,7 +824,7 @@ CODE
 
       // Or create your own custom ranges (e.g. for a game you can feed your entire game script and only build the characters the game need)
       ImVector<ImWchar> ranges;
-      ImFontAtlas::GlyphRangesBuilder builder;
+      ImFontGlyphRangesBuilder builder;
       builder.AddText("Hello world");                        // Add a string (here "Hello world" contains 7 unique characters)
       builder.AddChar(0x7262);                               // Add a specific character
       builder.AddRanges(io.Fonts->GetGlyphRangesJapanese()); // Add one of the default ranges
@@ -846,10 +875,12 @@ CODE
     Rectangles provided by ImGui are defined as (x1=left,y1=top,x2=right,y2=bottom) and NOT as (x1,y1,width,height).
 
  Q: How can I help?
- A: - If you are experienced with Dear ImGui and C++, look at the github issues, or docs/TODO.txt and see how you want/can help!
-    - Convince your company to sponsor/fund development! Individual users: you can also become a Patron (patreon.com/imgui) or donate on PayPal! See README.
+ A: - If you are experienced with Dear ImGui and C++, look at the github issues, look at the Wiki, read docs/TODO.txt 
+      and see how you want to help and can help!
+    - Businesses: convince your company to fund development via support contracts/sponsoring! This is among the most useful thing you can do for dear imgui.
+    - Individuals: you can also become a Patron (http://www.patreon.com/imgui) or donate on PayPal! See README.
     - Disclose your usage of dear imgui via a dev blog post, a tweet, a screenshot, a mention somewhere etc.
-      You may post screenshot or links in the gallery threads (github.com/ocornut/imgui/issues/1269). Visuals are ideal as they inspire other programmers.
+      You may post screenshot or links in the gallery threads (github.com/ocornut/imgui/issues/1902). Visuals are ideal as they inspire other programmers.
       But even without visuals, disclosing your use of dear imgui help the library grow credibility, and help other teams and programmers with taking decisions.
     - If you have issues or if you need to hack into the library, even if you don't expect any support it is useful that you share your issues (on github or privately).
 
@@ -1111,6 +1142,7 @@ ImGuiIO::ImGuiIO()
 
     // Platform Functions
     BackendPlatformName = BackendRendererName = NULL;
+    BackendPlatformUserData = BackendRendererUserData = BackendLanguageUserData = NULL;
     GetClipboardTextFn = GetClipboardTextFn_DefaultImpl;   // Platform dependent default implementations
     SetClipboardTextFn = SetClipboardTextFn_DefaultImpl;
     ClipboardUserData = NULL;
@@ -1135,22 +1167,23 @@ ImGuiIO::ImGuiIO()
 // - on Windows you can get those using ToAscii+keyboard state, or via the WM_CHAR message
 void ImGuiIO::AddInputCharacter(ImWchar c)
 {
-    const int n = ImStrlenW(InputCharacters);
-    if (n + 1 < IM_ARRAYSIZE(InputCharacters))
-    {
-        InputCharacters[n] = c;
-        InputCharacters[n+1] = '\0';
-    }
+    InputQueueCharacters.push_back(c);
 }
 
 void ImGuiIO::AddInputCharactersUTF8(const char* utf8_chars)
 {
-    // We can't pass more wchars than ImGuiIO::InputCharacters[] can hold so don't convert more
-    const int wchars_buf_len = sizeof(ImGuiIO::InputCharacters) / sizeof(ImWchar);
-    ImWchar wchars[wchars_buf_len];
-    ImTextStrFromUtf8(wchars, wchars_buf_len, utf8_chars, NULL);
-    for (int i = 0; i < wchars_buf_len && wchars[i] != 0; i++)
-        AddInputCharacter(wchars[i]);
+    while (*utf8_chars != 0)
+    {
+        unsigned int c = 0;
+        utf8_chars += ImTextCharFromUtf8(&c, utf8_chars, NULL);
+        if (c > 0 && c <= 0xFFFF)
+            InputQueueCharacters.push_back((ImWchar)c);
+    }
+}
+
+void ImGuiIO::ClearInputCharacters()
+{
+    InputQueueCharacters.resize(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -2504,6 +2537,7 @@ void ImGui::SetActiveID(ImGuiID id, ImGuiWindow* window)
     }
 }
 
+// FIXME-NAV: The existence of SetNavID/SetNavIDWithRectRel/SetFocusID is incredibly messy and confusing and needs some explanation or refactoring.
 void ImGui::SetFocusID(ImGuiID id, ImGuiWindow* window)
 {
     ImGuiContext& g = *GImGui;
@@ -2943,7 +2977,7 @@ void ImGui::StartMouseMovingWindow(ImGuiWindow* window)
 
 // Handle mouse moving window
 // Note: moving window with the navigation keys (Square + d-pad / CTRL+TAB + Arrows) are processed in NavUpdateWindowing()
-void ImGui::UpdateMouseMovingWindow()
+void ImGui::UpdateMouseMovingWindowNewFrame()
 {
     ImGuiContext& g = *GImGui;
     if (g.MovingWindow != NULL)
@@ -2978,6 +3012,56 @@ void ImGui::UpdateMouseMovingWindow()
             if (!g.IO.MouseDown[0])
                 ClearActiveID();
         }
+    }
+}
+
+// Initiate moving window, handle left-click and right-click focus
+void ImGui::UpdateMouseMovingWindowEndFrame()
+{
+    // Initiate moving window
+    ImGuiContext& g = *GImGui;
+    if (g.ActiveId != 0 || g.HoveredId != 0)
+        return;
+
+    // Unless we just made a window/popup appear
+    if (g.NavWindow && g.NavWindow->Appearing)
+        return;
+
+    // Click to focus window and start moving (after we're done with all our widgets)
+    if (g.IO.MouseClicked[0])
+    {
+        if (g.HoveredRootWindow != NULL)
+        {
+            StartMouseMovingWindow(g.HoveredWindow);
+            if (g.IO.ConfigWindowsMoveFromTitleBarOnly && !(g.HoveredRootWindow->Flags & ImGuiWindowFlags_NoTitleBar))
+                if (!g.HoveredRootWindow->TitleBarRect().Contains(g.IO.MouseClickedPos[0]))
+                    g.MovingWindow = NULL;
+        }
+        else if (g.NavWindow != NULL && GetFrontMostPopupModal() == NULL)
+        {
+            FocusWindow(NULL);  // Clicking on void disable focus
+        }
+    }
+
+    // With right mouse button we close popups without changing focus
+    // (The left mouse button path calls FocusWindow which will lead NewFrame->ClosePopupsOverWindow to trigger)
+    if (g.IO.MouseClicked[1])
+    {
+        // Find the top-most window between HoveredWindow and the front most Modal Window.
+        // This is where we can trim the popup stack.
+        ImGuiWindow* modal = GetFrontMostPopupModal();
+        bool hovered_window_above_modal = false;
+        if (modal == NULL)
+            hovered_window_above_modal = true;
+        for (int i = g.Windows.Size - 1; i >= 0 && hovered_window_above_modal == false; i--)
+        {
+            ImGuiWindow* window = g.Windows[i];
+            if (window == modal)
+                break;
+            if (window == g.HoveredWindow)
+                hovered_window_above_modal = true;
+        }
+        ClosePopupsOverWindow(hovered_window_above_modal ? g.HoveredWindow : modal);
     }
 }
 
@@ -3272,7 +3356,7 @@ void ImGui::NewFrame()
     g.IO.Framerate = (g.FramerateSecPerFrameAccum > 0.0f) ? (1.0f / (g.FramerateSecPerFrameAccum / (float)IM_ARRAYSIZE(g.FramerateSecPerFrame))) : FLT_MAX;
 
     // Handle user moving window with mouse (at the beginning of the frame to avoid input lag or sheering)
-    UpdateMouseMovingWindow();
+    UpdateMouseMovingWindowNewFrame();
     UpdateHoveredWindowAndCaptureFlags();
 
     // Background darkening/whitening
@@ -3323,6 +3407,7 @@ void ImGui::NewFrame()
     // This fallback is particularly important as it avoid ImGui:: calls from crashing.
     SetNextWindowSize(ImVec2(400,400), ImGuiCond_FirstUseEver);
     Begin("Debug##Default");
+    g.FrameScopePushedImplicitWindow = true;
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
     ImGuiTestEngineHook_PostNewFrame();
@@ -3552,7 +3637,7 @@ void ImGui::EndFrame()
     IM_ASSERT(g.Initialized);
     if (g.FrameCountEnded == g.FrameCount)          // Don't process EndFrame() multiple times.
         return;
-    IM_ASSERT(g.FrameScopeActive && "Forgot to call ImGui::NewFrame()");
+    IM_ASSERT(g.FrameScopeActive && "Forgot to call ImGui::NewFrame()?");
 
     // Notify OS when our Input Method Editor cursor has moved (e.g. CJK inputs using Microsoft IME)
     if (g.IO.ImeSetInputScreenPosFn && ImLengthSqr(g.PlatformImeLastPos - g.PlatformImePos) > 0.0001f)
@@ -3561,13 +3646,29 @@ void ImGui::EndFrame()
         g.PlatformImeLastPos = g.PlatformImePos;
     }
 
-    // Hide implicit "Debug" window if it hasn't been used
-    IM_ASSERT(g.CurrentWindowStack.Size == 1);    // Mismatched Begin()/End() calls, did you forget to call end on g.CurrentWindow->Name?
+    // Report when there is a mismatch of Begin/BeginChild vs End/EndChild calls. Important: Remember that the Begin/BeginChild API requires you
+    // to always call End/EndChild even if Begin/BeginChild returns false! (this is unfortunately inconsistent with most other Begin* API).
+    if (g.CurrentWindowStack.Size != 1)
+    {
+        if (g.CurrentWindowStack.Size > 1)
+        {
+            IM_ASSERT(g.CurrentWindowStack.Size == 1 && "Mismatched Begin/BeginChild vs End/EndChild calls: did you forget to call End/EndChild?");
+            while (g.CurrentWindowStack.Size > 1) // FIXME-ERRORHANDLING
+                End();
+        }
+        else
+        {
+            IM_ASSERT(g.CurrentWindowStack.Size == 1 && "Mismatched Begin/BeginChild vs End/EndChild calls: did you call End/EndChild too much?");
+        }
+    }
+
+    // Hide implicit/fallback "Debug" window if it hasn't been used
+    g.FrameScopePushedImplicitWindow = false;
     if (g.CurrentWindow && !g.CurrentWindow->WriteAccessed)
         g.CurrentWindow->Active = false;
     End();
 
-    // Show CTRL+TAB list
+    // Show CTRL+TAB list window
     if (g.NavWindowingTarget)
         NavUpdateWindowingList();
 
@@ -3588,49 +3689,12 @@ void ImGui::EndFrame()
         g.DragDropWithinSourceOrTarget = false;
     }
 
-    // Initiate moving window
-    if (g.ActiveId == 0 && g.HoveredId == 0)
-    {
-        if (!g.NavWindow || !g.NavWindow->Appearing) // Unless we just made a window/popup appear
-        {
-            // Click to focus window and start moving (after we're done with all our widgets)
-            if (g.IO.MouseClicked[0])
-            {
-                if (g.HoveredRootWindow != NULL)
-                {
-                    StartMouseMovingWindow(g.HoveredWindow);
-                    if (g.IO.ConfigWindowsMoveFromTitleBarOnly && !(g.HoveredRootWindow->Flags & ImGuiWindowFlags_NoTitleBar))
-                        if (!g.HoveredRootWindow->TitleBarRect().Contains(g.IO.MouseClickedPos[0]))
-                            g.MovingWindow = NULL;
-                }
-                else if (g.NavWindow != NULL && GetFrontMostPopupModal() == NULL)
-                {
-                    FocusWindow(NULL);  // Clicking on void disable focus
-                }
-            }
+    // End frame
+    g.FrameScopeActive = false;
+    g.FrameCountEnded = g.FrameCount;
 
-            // With right mouse button we close popups without changing focus
-            // (The left mouse button path calls FocusWindow which will lead NewFrame->ClosePopupsOverWindow to trigger)
-            if (g.IO.MouseClicked[1])
-            {
-                // Find the top-most window between HoveredWindow and the front most Modal Window.
-                // This is where we can trim the popup stack.
-                ImGuiWindow* modal = GetFrontMostPopupModal();
-                bool hovered_window_above_modal = false;
-                if (modal == NULL)
-                    hovered_window_above_modal = true;
-                for (int i = g.Windows.Size - 1; i >= 0 && hovered_window_above_modal == false; i--)
-                {
-                    ImGuiWindow* window = g.Windows[i];
-                    if (window == modal)
-                        break;
-                    if (window == g.HoveredWindow)
-                        hovered_window_above_modal = true;
-                }
-                ClosePopupsOverWindow(hovered_window_above_modal ? g.HoveredWindow : modal);
-            }
-        }
-    }
+    // Initiate moving window + handle left-click and right-click focus
+    UpdateMouseMovingWindowEndFrame();
 
     // Sort the window list so that all child windows are after their parent
     // We cannot do that on FocusWindow() because childs may not exist yet
@@ -3653,11 +3717,8 @@ void ImGui::EndFrame()
 
     // Clear Input data for next frame
     g.IO.MouseWheel = g.IO.MouseWheelH = 0.0f;
-    memset(g.IO.InputCharacters, 0, sizeof(g.IO.InputCharacters));
+    g.IO.InputQueueCharacters.resize(0);
     memset(g.IO.NavInputs, 0, sizeof(g.IO.NavInputs));
-
-    g.FrameScopeActive = false;
-    g.FrameCountEnded = g.FrameCount;
 }
 
 void ImGui::Render()
@@ -3698,7 +3759,7 @@ void ImGui::Render()
     g.IO.MetricsRenderVertices = g.DrawData.TotalVtxCount;
     g.IO.MetricsRenderIndices = g.DrawData.TotalIdxCount;
 
-    // Render. If user hasn't set a callback then they may retrieve the draw data via GetDrawData()
+    // (Legacy) Call the Render callback function. The current prefer way is to let the user retrieve GetDrawData() and call the render function themselves.
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     if (g.DrawData.CmdListsCount > 0 && g.IO.RenderDrawListsFn != NULL)
         g.IO.RenderDrawListsFn(&g.DrawData);
@@ -4620,7 +4681,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
 {
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
-    IM_ASSERT(name != NULL);                        // Window name required
+    IM_ASSERT(name != NULL && name[0] != '\0');     // Window name required
     IM_ASSERT(g.FrameScopeActive);                  // Forgot to call ImGui::NewFrame()
     IM_ASSERT(g.FrameCountEnded != g.FrameCount);   // Called ImGui::Render() or ImGui::EndFrame() and haven't called ImGui::NewFrame() again yet
 
@@ -4857,6 +4918,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         // Position child window
         if (flags & ImGuiWindowFlags_ChildWindow)
         {
+            IM_ASSERT(parent_window->Active);
             window->BeginOrderWithinParent = (short)parent_window->DC.ChildWindows.Size;
             parent_window->DC.ChildWindows.push_back(window);
             if (!(flags & ImGuiWindowFlags_Popup) && !window_pos_set_by_api && !window_is_child_tooltip)
@@ -5241,6 +5303,14 @@ bool ImGui::Begin(const char* name, bool* p_open, const ImVec2& size_first_use, 
 void ImGui::End()
 {
     ImGuiContext& g = *GImGui;
+
+    if (g.CurrentWindowStack.Size <= 1 && g.FrameScopePushedImplicitWindow)
+    {
+        IM_ASSERT(g.CurrentWindowStack.Size > 1 && "Calling End() too many times!");
+        return; // FIXME-ERRORHANDLING
+    }
+    IM_ASSERT(g.CurrentWindowStack.Size > 0);
+
     ImGuiWindow* window = g.CurrentWindow;
 
     if (window->DC.ColumnsSet != NULL)
@@ -5316,7 +5386,7 @@ void ImGui::FocusWindow(ImGuiWindow* window)
         g.NavId = window ? window->NavLastIds[0] : 0; // Restore NavId
         g.NavIdIsAlive = false;
         g.NavLayer = ImGuiNavLayer_Main;
-        //printf("[%05d] FocusWindow(\"%s\")\n", g.FrameCount, window ? window->Name : NULL);
+        //IMGUI_DEBUG_LOG("FocusWindow(\"%s\")\n", g.FrameCount, window ? window->Name : NULL);
     }
 
     // Passing NULL allow to disable keyboard focus
@@ -6493,7 +6563,7 @@ void ImGui::OpenPopupEx(ImGuiID id)
     popup_ref.OpenPopupPos = NavCalcPreferredRefPos();
     popup_ref.OpenMousePos = IsMousePosValid(&g.IO.MousePos) ? g.IO.MousePos : popup_ref.OpenPopupPos;
 
-    //printf("[%05d] OpenPopupEx(0x%08X)\n", g.FrameCount, id);
+    //IMGUI_DEBUG_LOG("OpenPopupEx(0x%08X)\n", g.FrameCount, id);
     if (g.OpenPopupStack.Size < current_stack_size + 1)
     {
         g.OpenPopupStack.push_back(popup_ref);
@@ -7283,7 +7353,7 @@ static void ImGui::NavUpdate()
     ImGuiContext& g = *GImGui;
     g.IO.WantSetMousePos = false;
 #if 0
-    if (g.NavScoringCount > 0) printf("[%05d] NavScoringCount %d for '%s' layer %d (Init:%d, Move:%d)\n", g.FrameCount, g.NavScoringCount, g.NavWindow ? g.NavWindow->Name : "NULL", g.NavLayer, g.NavInitRequest || g.NavInitResultId != 0, g.NavMoveRequest);
+    if (g.NavScoringCount > 0) IMGUI_DEBUG_LOG("NavScoringCount %d for '%s' layer %d (Init:%d, Move:%d)\n", g.FrameCount, g.NavScoringCount, g.NavWindow ? g.NavWindow->Name : "NULL", g.NavLayer, g.NavInitRequest || g.NavInitResultId != 0, g.NavMoveRequest);
 #endif
 
     // Set input source as Gamepad when buttons are pressed before we map Keyboard (some features differs when used with Gamepad vs Keyboard)
