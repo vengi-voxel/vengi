@@ -233,8 +233,19 @@ void UIApp::enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) 
 
 void UIApp::fileDialog(const std::function<void(const std::string&)>& callback, OpenFileMode mode, const std::string& filter) {
 	FileDialogWindow* dialog = new FileDialogWindow(this, callback);
-	//dialog->setFilter(filter);
 	dialog->setMode(mode);
+	if (!filter.empty()) {
+		std::vector<std::string> tokens;
+		core::string::splitString(filter, tokens, ";");
+		const char **filters = new const char*[tokens.size() + 1];
+		int n = 0;
+		for (const auto& f : tokens) {
+			filters[n++] = f.c_str();
+		}
+		filters[n] = nullptr;
+		dialog->setFilter((const char**)filters);
+	}
+	dialog->changeDir("");
 }
 
 void UIApp::onMouseWheel(int32_t x, int32_t y) {

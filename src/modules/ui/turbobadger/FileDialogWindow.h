@@ -41,21 +41,20 @@ public:
  * the viewer is populated with the customized widget for each item.
  */
 class FileDialogItemSource: public tb::TBSelectItemSourceList<FileDialogItem> {
+private:
+	video::WindowedApp::OpenFileMode _mode;
 public:
-	bool Filter(int index, const char *filter) override {
-		return TBSelectItemSource::Filter(index, filter);
-	}
-	tb::TBWidget *CreateItemWidget(int index, tb::TBSelectItemViewer *viewer) override {
-		return new FileDialogItemWidget(GetItem(index));
-	}
+	bool Filter(int index, const char *filter) override;
+	tb::TBWidget *CreateItemWidget(int index, tb::TBSelectItemViewer *viewer) override;
+
+	inline void setMode(video::WindowedApp::OpenFileMode mode) { _mode = mode; }
 };
 
 class FileDialogWindow: public ui::turbobadger::Window {
 private:
 	using Super = ui::turbobadger::Window;
-	std::string _filter;
 	std::string _directory;
-	video::WindowedApp::OpenFileMode _mode = video::WindowedApp::OpenFileMode::Open;
+	video::WindowedApp::OpenFileMode _mode;
 	FileDialogItemSource _entityList;
 	tb::TBGenericStringItemSource _filterList;
 	std::function<void(const std::string&)> _callback;
@@ -63,7 +62,7 @@ private:
 public:
 	FileDialogWindow(UIApp* app, const std::function<void(const std::string&)>& callback);
 	~FileDialogWindow();
-	void changeDir(const std::string& dir);
+	void changeDir(const std::string& dir = "");
 
 	void setFilter(const char **filter);
 	void setMode(video::WindowedApp::OpenFileMode mode);
@@ -71,10 +70,6 @@ public:
 	void OnAdded() override;
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };
-
-inline void FileDialogWindow::setMode(video::WindowedApp::OpenFileMode mode) {
-	_mode = mode;
-}
 
 }
 }

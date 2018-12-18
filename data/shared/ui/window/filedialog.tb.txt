@@ -1,6 +1,6 @@
 WindowInfo
 	title File dialog
-	size 350 500
+	size 550 500
 
 TBLayout: distribution: gravity, axis: y, size: available
 	TBSelectList
@@ -11,7 +11,4 @@ TBLayout: distribution: gravity, axis: y, size: available
 	TBLayout: distribution: gravity, axis: x
 		TBButton: text: Ok, id: ok, autofocus: 1, gravity: left right, size: gravity
 		TBButton: text: Cancel, id: cancel, gravity: left right, size: gravity
-
-		TBSelectDropdown
-			gravity right
-			id filter
+		TBSelectDropdown: id: filter
