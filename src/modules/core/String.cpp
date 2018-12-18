@@ -155,6 +155,13 @@ bool matches(const std::string& pattern, const char* text) {
 	return patternMatch(pattern.c_str(), text);
 }
 
+bool matches(const char* pattern, const char* text) {
+	if (pattern == nullptr || pattern[0] == '\0') {
+		return true;
+	}
+	return patternMatch(pattern, text);
+}
+
 std::string concat(std::string_view first, std::string_view second) {
 	std::string target;
 	target.reserve(first.size() + second.size());

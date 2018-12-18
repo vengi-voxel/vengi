@@ -265,6 +265,7 @@ std::string join(const ITER& begin, const ITER& end, const char *delimiter, FUNC
  * @param[in] pattern The pattern can deal with wildcards like * and ?
  * @param[in] text The text to match against the pattern
  */
+extern bool matches(const char* pattern, const char* text);
 extern bool matches(const std::string& pattern, const char* text);
 inline bool matches(const std::string& pattern, const std::string& text) {
 	return matches(pattern, text.c_str());
