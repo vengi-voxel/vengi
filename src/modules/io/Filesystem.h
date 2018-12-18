@@ -79,7 +79,8 @@ public:
 		Type type;
 	};
 
-	bool list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter = "") const;
+	bool list(const std::string& directory, std::vector<DirEntry>& entities) const;
+	bool list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const;
 
 	bool isRelativeFilename(const std::string& name) const;
 

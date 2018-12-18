@@ -119,7 +119,33 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 			Log::debug("Unknown directory entry found: %s", ent.name);
 			continue;
 		}
-		if (!filter.empty() && !core::string::matches(filter, ent.name)) {
+		if (!filter.empty()) {
+			if (!core::string::matches(filter.c_str(), ent.name)) {
+				continue;
+			}
+		}
+		entities.push_back(DirEntry{ent.name, type});
+	}
+	return true;
+}
+
+bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entities) const {
+	uv_fs_t req;
+	const int amount = uv_fs_scandir(_loop, &req, directory.c_str(), 0, nullptr);
+	if (amount <= 0) {
+		return false;
+	}
+	uv_dirent_t ent;
+	while (uv_fs_scandir_next(&req, &ent) != UV_EOF) {
+		DirEntry::Type type = DirEntry::Type::unknown;
+		if (ent.type == UV_DIRENT_DIR) {
+			type = DirEntry::Type::dir;
+		} else if (ent.type == UV_DIRENT_FILE) {
+			type = DirEntry::Type::file;
+		} else if (ent.type == UV_DIRENT_UNKNOWN) {
+			type = DirEntry::Type::unknown;
+		} else {
+			Log::debug("Unknown directory entry found: %s", ent.name);
 			continue;
 		}
 		entities.push_back(DirEntry{ent.name, type});
