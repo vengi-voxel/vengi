@@ -103,10 +103,6 @@ core::AppState VoxEdit::onConstruct() {
 		selectCursor();
 	}).setHelp("Select voxels from the given position");
 
-	core::Command::registerCommand("togglerelativemousemode", [this] (const core::CmdArgs& args) {
-		toggleRelativeMouseMode();
-	}).setHelp("Toggle relative mouse mode which provides free look");
-
 	core::Command::registerCommand("rotate", [this] (const core::CmdArgs& args) {
 		if (args.size() < 3) {
 			Log::info("Expected to get x, y and z angles in degrees");
@@ -318,6 +314,17 @@ core::AppState VoxEdit::onRunning() {
 	}
 	update();
 	return state;
+}
+
+bool VoxEdit::onKeyPress(int32_t key, int16_t modifier) {
+	if (Super::onKeyPress(key, modifier)) {
+		return true;
+	}
+	if (key == SDLK_ESCAPE) {
+		toggleRelativeMouseMode();
+		return true;
+	}
+	return false;
 }
 
 int main(int argc, char *argv[]) {

@@ -64,6 +64,7 @@ public:
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;
 	core::AppState onRunning() override;
+	bool onKeyPress(int32_t key, int16_t modifier) override;
 };
 
 inline video::MeshPoolPtr VoxEdit::meshPool() const {
