@@ -232,6 +232,9 @@ void UIApp::enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) 
 }
 
 void UIApp::fileDialog(const std::function<void(const std::string&)>& callback, OpenFileMode mode, const std::string& filter) {
+	if (isRelativeMouseMode()) {
+		toggleRelativeMouseMode();
+	}
 	FileDialogWindow* dialog = new FileDialogWindow(this, callback);
 	dialog->setMode(mode);
 	if (!filter.empty()) {
