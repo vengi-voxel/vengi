@@ -27,6 +27,7 @@ Index of this file:
 
 // [SECTION] Forward Declarations, Helpers
 // [SECTION] Demo Window / ShowDemoWindow()
+// [SECTION] About Window / ShowAboutWindow()
 // [SECTION] Style Editor / ShowStyleEditor()
 // [SECTION] Example App: Main Menu Bar / ShowExampleAppMainMenuBar()
 // [SECTION] Example App: Debug Console / ShowExampleAppConsole()
@@ -39,6 +40,7 @@ Index of this file:
 // [SECTION] Example App: Simple Overlay / ShowExampleAppSimpleOverlay()
 // [SECTION] Example App: Manipulating Window Titles / ShowExampleAppWindowTitles()
 // [SECTION] Example App: Custom Rendering using ImDrawList API / ShowExampleAppCustomRendering()
+// [SECTION] Example App: Documents Handling / ShowExampleAppDocuments()
 
 */
 
@@ -101,6 +103,7 @@ Index of this file:
 #if !defined(IMGUI_DISABLE_DEMO_WINDOWS)
 
 // Forward Declarations
+static void ShowExampleAppDocuments(bool* p_open);
 static void ShowExampleAppMainMenuBar();
 static void ShowExampleAppConsole(bool* p_open);
 static void ShowExampleAppLog(bool* p_open);
@@ -167,6 +170,7 @@ static void ShowDemoWindowMisc();
 void ImGui::ShowDemoWindow(bool* p_open)
 {
     // Examples Apps (accessible from the "Examples" menu)
+    static bool show_app_documents = false;
     static bool show_app_main_menu_bar = false;
     static bool show_app_console = false;
     static bool show_app_log = false;
@@ -179,6 +183,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
     static bool show_app_window_titles = false;
     static bool show_app_custom_rendering = false;
 
+    if (show_app_documents)           ShowExampleAppDocuments(&show_app_documents);     // Process the Document app next, as it may also use a DockSpace()
     if (show_app_main_menu_bar)       ShowExampleAppMainMenuBar();
     if (show_app_console)             ShowExampleAppConsole(&show_app_console);
     if (show_app_log)                 ShowExampleAppLog(&show_app_log);
@@ -198,15 +203,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
 
     if (show_app_metrics)             { ImGui::ShowMetricsWindow(&show_app_metrics); }
     if (show_app_style_editor)        { ImGui::Begin("Style Editor", &show_app_style_editor); ImGui::ShowStyleEditor(); ImGui::End(); }
-    if (show_app_about)
-    {
-        ImGui::Begin("About Dear ImGui", &show_app_about, ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::Text("Dear ImGui, %s", ImGui::GetVersion());
-        ImGui::Separator();
-        ImGui::Text("By Omar Cornut and all dear imgui contributors.");
-        ImGui::Text("Dear ImGui is licensed under the MIT License, see LICENSE for more information.");
-        ImGui::End();
-    }
+    if (show_app_about)               { ImGui::ShowAboutWindow(&show_app_about); }
 
     // Demonstrate the various window flags. Typically you would just use the default!
     static bool no_titlebar = false;
@@ -270,6 +267,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::MenuItem("Simple overlay", NULL, &show_app_simple_overlay);
             ImGui::MenuItem("Manipulating window titles", NULL, &show_app_window_titles);
             ImGui::MenuItem("Custom rendering", NULL, &show_app_custom_rendering);
+            ImGui::MenuItem("Documents", NULL, &show_app_documents);
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Help"))
@@ -323,8 +321,9 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::SameLine(); ShowHelpMarker("Instruct back-end to not alter mouse cursor shape and visibility.");
             ImGui::Checkbox("io.ConfigInputTextCursorBlink", &io.ConfigInputTextCursorBlink);
             ImGui::SameLine(); ShowHelpMarker("Set to false to disable blinking cursor, for users who consider it distracting");
-            ImGui::Checkbox("io.ConfigResizeWindowsFromEdges [beta]", &io.ConfigResizeWindowsFromEdges);
+            ImGui::Checkbox("io.ConfigWindowsResizeFromEdges", &io.ConfigWindowsResizeFromEdges);
             ImGui::SameLine(); ShowHelpMarker("Enable resizing of windows from their edges and from the lower-left corner.\nThis requires (io.BackendFlags & ImGuiBackendFlags_HasMouseCursors) because it needs mouse cursor feedback.");
+            ImGui::Checkbox("io.ConfigWindowsMoveFromTitleBarOnly", &io.ConfigWindowsMoveFromTitleBarOnly);
             ImGui::Checkbox("io.MouseDrawCursor", &io.MouseDrawCursor);
             ImGui::SameLine(); ShowHelpMarker("Instruct Dear ImGui to render a mouse cursor for you. Note that a mouse cursor rendered via your application GPU rendering path will feel more laggy than hardware cursor, but will be more in sync with your other visuals.\n\nSome desktop applications may use both kinds of cursors (e.g. enable software cursor only when resizing/dragging something).");
             ImGui::TreePop();
@@ -909,6 +908,8 @@ static void ShowDemoWindowWidgets()
 
     if (ImGui::TreeNode("Multi-line Text Input"))
     {
+        // Note: we are using a fixed-sized buffer for simplicity here. See ImGuiInputTextFlags_CallbackResize 
+        // and the code in misc/cpp/imgui_stdlib.h for how to setup InputText() for dynamically resizing strings.
         static bool read_only = false;
         static char text[1024*16] =
             "/*\n"
@@ -1487,7 +1488,7 @@ static void ShowDemoWindowWidgets()
             ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow));
 
         ImGui::BeginChild("child", ImVec2(0, 50), true);
-        ImGui::Text("This is another child window for testing with the _ChildWindows flag.");
+        ImGui::Text("This is another child window for testing the _ChildWindows flag.");
         ImGui::EndChild();
         if (embed_all_inside_a_child_window)
             ImGui::EndChild();
@@ -1520,8 +1521,9 @@ static void ShowDemoWindowLayout()
     if (!ImGui::CollapsingHeader("Layout"))
         return;
 
-    if (ImGui::TreeNode("Child regions"))
+    if (ImGui::TreeNode("Child windows"))
     {
+        ShowHelpMarker("Use child windows to begin into a self-contained independent scrolling/clipping regions within a host window.");
         static bool disable_mouse_wheel = false;
         static bool disable_menu = false;
         ImGui::Checkbox("Disable Mouse Wheel", &disable_mouse_wheel);
@@ -1536,7 +1538,8 @@ static void ShowDemoWindowLayout()
 
         // Child 1: no border, enable horizontal scrollbar
         {
-            ImGui::BeginChild("Child1", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 300), false, ImGuiWindowFlags_HorizontalScrollbar | (disable_mouse_wheel ? ImGuiWindowFlags_NoScrollWithMouse : 0));
+            ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar | (disable_mouse_wheel ? ImGuiWindowFlags_NoScrollWithMouse : 0);
+            ImGui::BeginChild("Child1", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260), false, window_flags);
             for (int i = 0; i < 100; i++)
             {
                 ImGui::Text("%04d: scrollable region", i);
@@ -1552,8 +1555,9 @@ static void ShowDemoWindowLayout()
 
         // Child 2: rounded border
         {
+            ImGuiWindowFlags window_flags = (disable_mouse_wheel ? ImGuiWindowFlags_NoScrollWithMouse : 0) | (disable_menu ? 0 : ImGuiWindowFlags_MenuBar);
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
-            ImGui::BeginChild("Child2", ImVec2(0, 300), true, (disable_mouse_wheel ? ImGuiWindowFlags_NoScrollWithMouse : 0) | (disable_menu ? 0 : ImGuiWindowFlags_MenuBar));
+            ImGui::BeginChild("Child2", ImVec2(0, 260), true, window_flags);
             if (!disable_menu && ImGui::BeginMenuBar())
             {
                 if (ImGui::BeginMenu("Menu"))
@@ -1573,6 +1577,27 @@ static void ShowDemoWindowLayout()
             }
             ImGui::EndChild();
             ImGui::PopStyleVar();
+        }
+
+        ImGui::Separator();
+
+        // Demonstrate a few extra things
+        // - Changing ImGuiCol_ChildBg (which is transparent black in default styles)
+        // - Using SetCursorPos() to position the child window (because the child window is an item from the POV of the parent window)
+        //   You can also call SetNextWindowPos() to position the child window. The parent window will effectively layout from this position.
+        // - Using ImGui::GetItemRectMin/Max() to query the "item" state (because the child window is an item from the POV of the parent window)
+        //   See "Widgets" -> "Querying Status (Active/Focused/Hovered etc.)" section for more details about this.
+        {
+            ImGui::SetCursorPosX(50);
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(255, 0, 0, 100));
+            ImGui::BeginChild("blah", ImVec2(200, 100), true, ImGuiWindowFlags_None);
+            for (int n = 0; n < 50; n++)
+                ImGui::Text("Some test %d", n);
+            ImGui::EndChild();
+            ImVec2 child_rect_min = ImGui::GetItemRectMin();
+            ImVec2 child_rect_max = ImGui::GetItemRectMax();
+            ImGui::PopStyleColor();
+            ImGui::Text("Rect of child window is: (%.0f,%.0f) (%.0f,%.0f)", child_rect_min.x, child_rect_min.y, child_rect_max.x, child_rect_max.y);
         }
 
         ImGui::TreePop();
@@ -1702,9 +1727,79 @@ static void ShowDemoWindowLayout()
         ImGui::TreePop();
     }
 
+    if (ImGui::TreeNode("Tabs"))
+    {
+        if (ImGui::TreeNode("Basic"))
+        {
+            ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+            if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+            {
+                if (ImGui::BeginTabItem("Avocado"))
+                {
+                    ImGui::Text("This is the Avocado tab!\nblah blah blah blah blah");
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("Broccoli"))
+                {
+                    ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("Cucumber"))
+                {
+                    ImGui::Text("This is the Cucumber tab!\nblah blah blah blah blah");
+                    ImGui::EndTabItem();
+                }
+                ImGui::EndTabBar();
+            }
+            ImGui::Separator();
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Advanced & Close Button"))
+        {
+            // Expose a couple of the available flags. In most cases you may just call BeginTabBar() with no flags (0).
+            static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable;
+            ImGui::CheckboxFlags("ImGuiTabBarFlags_Reorderable", (unsigned int*)&tab_bar_flags, ImGuiTabBarFlags_Reorderable);
+            ImGui::CheckboxFlags("ImGuiTabBarFlags_AutoSelectNewTabs", (unsigned int*)&tab_bar_flags, ImGuiTabBarFlags_AutoSelectNewTabs);
+            ImGui::CheckboxFlags("ImGuiTabBarFlags_NoCloseWithMiddleMouseButton", (unsigned int*)&tab_bar_flags, ImGuiTabBarFlags_NoCloseWithMiddleMouseButton);
+            if ((tab_bar_flags & ImGuiTabBarFlags_FittingPolicyMask_) == 0)
+                tab_bar_flags |= ImGuiTabBarFlags_FittingPolicyDefault_;
+            if (ImGui::CheckboxFlags("ImGuiTabBarFlags_FittingPolicyResizeDown", (unsigned int*)&tab_bar_flags, ImGuiTabBarFlags_FittingPolicyResizeDown))
+                tab_bar_flags &= ~(ImGuiTabBarFlags_FittingPolicyMask_ ^ ImGuiTabBarFlags_FittingPolicyResizeDown);
+            if (ImGui::CheckboxFlags("ImGuiTabBarFlags_FittingPolicyScroll", (unsigned int*)&tab_bar_flags, ImGuiTabBarFlags_FittingPolicyScroll))
+                tab_bar_flags &= ~(ImGuiTabBarFlags_FittingPolicyMask_ ^ ImGuiTabBarFlags_FittingPolicyScroll);
+
+            // Tab Bar
+            const char* names[4] = { "Artichoke", "Beetroot", "Celery", "Daikon" };
+            static bool opened[4] = { true, true, true, true }; // Persistent user state
+            for (int n = 0; n < IM_ARRAYSIZE(opened); n++)
+            {
+                if (n > 0) { ImGui::SameLine(); }
+                ImGui::Checkbox(names[n], &opened[n]);
+            }
+
+            // Passing a bool* to BeginTabItem() is similar to passing one to Begin(): the underlying bool will be set to false when the tab is closed.
+            if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+            {
+                for (int n = 0; n < IM_ARRAYSIZE(opened); n++)
+                    if (opened[n] && ImGui::BeginTabItem(names[n], &opened[n]))
+                    {
+                        ImGui::Text("This is the %s tab!", names[n]);
+                        if (n & 1)
+                            ImGui::Text("I am an odd tab.");
+                        ImGui::EndTabItem();
+                    }
+                ImGui::EndTabBar();
+            }
+            ImGui::Separator();
+            ImGui::TreePop();
+        }
+        ImGui::TreePop();
+    }
+
     if (ImGui::TreeNode("Groups"))
     {
-        ImGui::TextWrapped("(Using ImGui::BeginGroup()/EndGroup() to layout items. BeginGroup() basically locks the horizontal position. EndGroup() bundles the whole group so that you can use functions such as IsItemHovered() on it.)");
+        ShowHelpMarker("Using ImGui::BeginGroup()/EndGroup() to layout items. BeginGroup() basically locks the horizontal position. EndGroup() bundles the whole group so that you can use functions such as IsItemHovered() on it.");
         ImGui::BeginGroup();
         {
             ImGui::BeginGroup();
@@ -1748,7 +1843,7 @@ static void ShowDemoWindowLayout()
 
     if (ImGui::TreeNode("Text Baseline Alignment"))
     {
-        ImGui::TextWrapped("(This is testing the vertical alignment that occurs on text to keep it at the same baseline as widgets. Lines only composed of text or \"small\" widgets fit in less vertical spaces than lines with normal widgets)");
+        ShowHelpMarker("This is testing the vertical alignment that gets applied on text to keep it aligned with widgets. Lines only composed of text or \"small\" widgets fit in less vertical spaces than lines with normal widgets.");
 
         ImGui::Text("One\nTwo\nThree"); ImGui::SameLine();
         ImGui::Text("Hello\nWorld"); ImGui::SameLine();
@@ -1803,7 +1898,8 @@ static void ShowDemoWindowLayout()
 
     if (ImGui::TreeNode("Scrolling"))
     {
-        ImGui::TextWrapped("(Use SetScrollHereY() or SetScrollFromPosY() to scroll to a given position.)");
+        ShowHelpMarker("Use SetScrollHereY() or SetScrollFromPosY() to scroll to a given position.");
+
         static bool track = true;
         static int track_line = 50, scroll_to_px = 200;
         ImGui::Checkbox("Track", &track);
@@ -1844,8 +1940,7 @@ static void ShowDemoWindowLayout()
 
     if (ImGui::TreeNode("Horizontal Scrolling"))
     {
-        ImGui::Bullet(); ImGui::TextWrapped("Horizontal scrolling for a window has to be enabled explicitly via the ImGuiWindowFlags_HorizontalScrollbar flag.");
-        ImGui::Bullet(); ImGui::TextWrapped("You may want to explicitly specify content width by calling SetNextWindowContentWidth() before Begin().");
+        ShowHelpMarker("Horizontal scrolling for a window has to be enabled explicitly via the ImGuiWindowFlags_HorizontalScrollbar flag.\n\nYou may want to explicitly specify content width by calling SetNextWindowContentWidth() before Begin().");
         static int lines = 7;
         ImGui::SliderInt("Lines", &lines, 1, 15);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
@@ -1910,12 +2005,13 @@ static void ShowDemoWindowPopups()
     if (!ImGui::CollapsingHeader("Popups & Modal windows"))
         return;
 
-    // Popups are windows with a few special properties:
+    // The properties of popups windows are:
     // - They block normal mouse hovering detection outside them. (*)
     // - Unless modal, they can be closed by clicking anywhere outside them, or by pressing ESCAPE.
     // - Their visibility state (~bool) is held internally by imgui instead of being held by the programmer as we are used to with regular Begin() calls.
+    //   User can manipulate the visibility state by calling OpenPopup().
     // (*) One can use IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup) to bypass it and detect hovering even when normally blocked by a popup.
-    // Those three properties are intimately connected. The library needs to hold their visibility state because it can close popups at any time.
+    // Those three properties are connected. The library needs to hold their visibility state because it can close popups at any time.
 
     // Typical use for regular windows:
     //   bool my_tool_is_active = false; if (ImGui::Button("Open")) my_tool_is_active = true; [...] if (my_tool_is_active) Begin("My Tool", &my_tool_is_active) { [...] } End();
@@ -2044,6 +2140,7 @@ static void ShowDemoWindowPopups()
 
         if (ImGui::Button("Delete.."))
             ImGui::OpenPopup("Delete?");
+
         if (ImGui::BeginPopupModal("Delete?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("All those beautiful files will be deleted.\nThis operation cannot be undone!\n\n");
@@ -2076,7 +2173,11 @@ static void ShowDemoWindowPopups()
 
             if (ImGui::Button("Add another modal.."))
                 ImGui::OpenPopup("Stacked 2");
-            if (ImGui::BeginPopupModal("Stacked 2"))
+
+            // Also demonstrate passing a bool* to BeginPopupModal(), this will create a regular close button which will close the popup.
+            // Note that the visibility state of popups is owned by imgui, so the input value of the bool actually doesn't matter here.
+            bool dummy_open = true;
+            if (ImGui::BeginPopupModal("Stacked 2", &dummy_open))
             {
                 ImGui::Text("Hello from Stacked The Second!");
                 if (ImGui::Button("Close"))
@@ -2457,6 +2558,128 @@ static void ShowDemoWindowMisc()
 }
 
 //-----------------------------------------------------------------------------
+// [SECTION] About Window / ShowAboutWindow()
+// Access from ImGui Demo -> Help -> About
+//-----------------------------------------------------------------------------
+
+void ImGui::ShowAboutWindow(bool* p_open)
+{
+    if (!ImGui::Begin("About Dear ImGui", p_open, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::End();
+        return;
+    }
+    ImGui::Text("Dear ImGui %s", ImGui::GetVersion());
+    ImGui::Separator();
+    ImGui::Text("By Omar Cornut and all dear imgui contributors.");
+    ImGui::Text("Dear ImGui is licensed under the MIT License, see LICENSE for more information.");
+
+    static bool show_config_info = false;
+    ImGui::Checkbox("Config/Build Information", &show_config_info);
+    if (show_config_info)
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGuiStyle& style = ImGui::GetStyle();
+
+        bool copy_to_clipboard = ImGui::Button("Copy to clipboard");
+        ImGui::BeginChildFrame(ImGui::GetID("cfginfos"), ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 18), ImGuiWindowFlags_NoMove);
+        if (copy_to_clipboard)
+            ImGui::LogToClipboard();
+
+        ImGui::Text("Dear ImGui %s (%d)", IMGUI_VERSION, IMGUI_VERSION_NUM);
+        ImGui::Separator();
+        ImGui::Text("sizeof(size_t): %d, sizeof(ImDrawIdx): %d, sizeof(ImDrawVert): %d", (int)sizeof(size_t), (int)sizeof(ImDrawIdx), (int)sizeof(ImDrawVert));
+        ImGui::Text("define: __cplusplus=%d", (int)__cplusplus);
+#ifdef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+        ImGui::Text("define: IMGUI_DISABLE_OBSOLETE_FUNCTIONS");
+#endif
+#ifdef IMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS
+        ImGui::Text("define: IMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS");
+#endif
+#ifdef IMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCTIONS
+        ImGui::Text("define: IMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCTIONS");
+#endif
+#ifdef IMGUI_DISABLE_WIN32_FUNCTIONS
+        ImGui::Text("define: IMGUI_DISABLE_WIN32_FUNCTIONS");
+#endif
+#ifdef IMGUI_DISABLE_FORMAT_STRING_FUNCTIONS
+        ImGui::Text("define: IMGUI_DISABLE_FORMAT_STRING_FUNCTIONS");
+#endif
+#ifdef IMGUI_DISABLE_MATH_FUNCTIONS
+        ImGui::Text("define: IMGUI_DISABLE_MATH_FUNCTIONS");
+#endif
+#ifdef IMGUI_DISABLE_DEFAULT_ALLOCATORS
+        ImGui::Text("define: IMGUI_DISABLE_DEFAULT_ALLOCATORS");
+#endif
+#ifdef IMGUI_USE_BGRA_PACKED_COLOR
+        ImGui::Text("define: IMGUI_USE_BGRA_PACKED_COLOR");
+#endif
+#ifdef _WIN32
+        ImGui::Text("define: _WIN32");
+#endif
+#ifdef _WIN64
+        ImGui::Text("define: _WIN64");
+#endif
+#ifdef __linux__
+        ImGui::Text("define: __linux__");
+#endif
+#ifdef __APPLE__
+        ImGui::Text("define: __APPLE__");
+#endif
+#ifdef _MSC_VER
+        ImGui::Text("define: _MSC_VER=%d", _MSC_VER);
+#endif
+#ifdef __MINGW32__
+        ImGui::Text("define: __MINGW32__");
+#endif
+#ifdef __MINGW64__
+        ImGui::Text("define: __MINGW64__");
+#endif
+#ifdef __GNUC__
+        ImGui::Text("define: __GNUC__=%d", (int)__GNUC__);
+#endif
+#ifdef __clang_version__
+        ImGui::Text("define: __clang_version__=%s", __clang_version__);
+#endif
+        ImGui::Separator();
+        ImGui::Text("io.BackendPlatformName: %s", io.BackendPlatformName ? io.BackendPlatformName : "NULL");
+        ImGui::Text("io.BackendRendererName: %s", io.BackendRendererName ? io.BackendRendererName : "NULL");
+        ImGui::Text("io.ConfigFlags: 0x%08X", io.ConfigFlags);
+        if (io.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard)        ImGui::Text(" NavEnableKeyboard");
+        if (io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad)         ImGui::Text(" NavEnableGamepad");
+        if (io.ConfigFlags & ImGuiConfigFlags_NavEnableSetMousePos)     ImGui::Text(" NavEnableSetMousePos");
+        if (io.ConfigFlags & ImGuiConfigFlags_NavNoCaptureKeyboard)     ImGui::Text(" NavNoCaptureKeyboard");
+        if (io.ConfigFlags & ImGuiConfigFlags_NoMouse)                  ImGui::Text(" NoMouse");
+        if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)      ImGui::Text(" NoMouseCursorChange");
+        if (io.MouseDrawCursor)                                         ImGui::Text("io.MouseDrawCursor");
+        if (io.ConfigMacOSXBehaviors)                                   ImGui::Text("io.ConfigMacOSXBehaviors");
+        if (io.ConfigInputTextCursorBlink)                              ImGui::Text("io.ConfigInputTextCursorBlink");
+        if (io.ConfigWindowsResizeFromEdges)                            ImGui::Text("io.ConfigWindowsResizeFromEdges");
+        if (io.ConfigWindowsMoveFromTitleBarOnly)                       ImGui::Text("io.ConfigWindowsMoveFromTitleBarOnly");
+        ImGui::Text("io.BackendFlags: 0x%08X", io.BackendFlags);
+        if (io.BackendFlags & ImGuiBackendFlags_HasGamepad)             ImGui::Text(" HasGamepad");
+        if (io.BackendFlags & ImGuiBackendFlags_HasMouseCursors)        ImGui::Text(" HasMouseCursors");
+        if (io.BackendFlags & ImGuiBackendFlags_HasSetMousePos)         ImGui::Text(" HasSetMousePos");
+        ImGui::Separator();
+        ImGui::Text("io.Fonts: %d fonts, Flags: 0x%08X, TexSize: %d,%d", io.Fonts->Fonts.Size, io.Fonts->Flags, io.Fonts->TexWidth, io.Fonts->TexHeight);
+        ImGui::Text("io.DisplaySize: %.2f,%.2f", io.DisplaySize.x, io.DisplaySize.y);
+        ImGui::Separator();
+        ImGui::Text("style.WindowPadding: %.2f,%.2f", style.WindowPadding.x, style.WindowPadding.y);
+        ImGui::Text("style.WindowBorderSize: %.2f", style.WindowBorderSize);
+        ImGui::Text("style.FramePadding: %.2f,%.2f", style.FramePadding.x, style.FramePadding.y);
+        ImGui::Text("style.FrameRounding: %.2f", style.FrameRounding);
+        ImGui::Text("style.FrameBorderSize: %.2f", style.FrameBorderSize);
+        ImGui::Text("style.ItemSpacing: %.2f,%.2f", style.ItemSpacing.x, style.ItemSpacing.y);
+        ImGui::Text("style.ItemInnerSpacing: %.2f,%.2f", style.ItemInnerSpacing.x, style.ItemInnerSpacing.y);
+
+        if (copy_to_clipboard)
+            ImGui::LogFinish();
+        ImGui::EndChildFrame();
+    }
+    ImGui::End();
+}
+
+//-----------------------------------------------------------------------------
 // [SECTION] Style Editor / ShowStyleEditor()
 //-----------------------------------------------------------------------------
 
@@ -2537,186 +2760,198 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
     ImGui::SameLine();
     ShowHelpMarker("Save/Revert in local non-persistent storage. Default Colors definition are not affected. Use \"Export Colors\" below to save them somewhere.");
 
-    if (ImGui::TreeNode("Rendering"))
-    {
-        ImGui::Checkbox("Anti-aliased lines", &style.AntiAliasedLines); ImGui::SameLine(); ShowHelpMarker("When disabling anti-aliasing lines, you'll probably want to disable borders in your style as well.");
-        ImGui::Checkbox("Anti-aliased fill", &style.AntiAliasedFill);
-        ImGui::PushItemWidth(100);
-        ImGui::DragFloat("Curve Tessellation Tolerance", &style.CurveTessellationTol, 0.02f, 0.10f, FLT_MAX, "%.2f", 2.0f);
-        if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
-        ImGui::DragFloat("Global Alpha", &style.Alpha, 0.005f, 0.20f, 1.0f, "%.2f"); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
-        ImGui::PopItemWidth();
-        ImGui::TreePop();
-    }
+    ImGui::Separator();
 
-    if (ImGui::TreeNode("Settings"))
+    if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_None))
     {
-        ImGui::SliderFloat2("WindowPadding", (float*)&style.WindowPadding, 0.0f, 20.0f, "%.0f");
-        ImGui::SliderFloat("PopupRounding", &style.PopupRounding, 0.0f, 16.0f, "%.0f");
-        ImGui::SliderFloat2("FramePadding", (float*)&style.FramePadding, 0.0f, 20.0f, "%.0f");
-        ImGui::SliderFloat2("ItemSpacing", (float*)&style.ItemSpacing, 0.0f, 20.0f, "%.0f");
-        ImGui::SliderFloat2("ItemInnerSpacing", (float*)&style.ItemInnerSpacing, 0.0f, 20.0f, "%.0f");
-        ImGui::SliderFloat2("TouchExtraPadding", (float*)&style.TouchExtraPadding, 0.0f, 10.0f, "%.0f");
-        ImGui::SliderFloat("IndentSpacing", &style.IndentSpacing, 0.0f, 30.0f, "%.0f");
-        ImGui::SliderFloat("ScrollbarSize", &style.ScrollbarSize, 1.0f, 20.0f, "%.0f");
-        ImGui::SliderFloat("GrabMinSize", &style.GrabMinSize, 1.0f, 20.0f, "%.0f");
-        ImGui::Text("BorderSize");
-        ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 1.0f, "%.0f");
-        ImGui::SliderFloat("ChildBorderSize", &style.ChildBorderSize, 0.0f, 1.0f, "%.0f");
-        ImGui::SliderFloat("PopupBorderSize", &style.PopupBorderSize, 0.0f, 1.0f, "%.0f");
-        ImGui::SliderFloat("FrameBorderSize", &style.FrameBorderSize, 0.0f, 1.0f, "%.0f");
-        ImGui::Text("Rounding");
-        ImGui::SliderFloat("WindowRounding", &style.WindowRounding, 0.0f, 14.0f, "%.0f");
-        ImGui::SliderFloat("ChildRounding", &style.ChildRounding, 0.0f, 16.0f, "%.0f");
-        ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f");
-        ImGui::SliderFloat("ScrollbarRounding", &style.ScrollbarRounding, 0.0f, 12.0f, "%.0f");
-        ImGui::SliderFloat("GrabRounding", &style.GrabRounding, 0.0f, 12.0f, "%.0f");
-        ImGui::Text("Alignment");
-        ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
-        ImGui::SliderFloat2("ButtonTextAlign", (float*)&style.ButtonTextAlign, 0.0f, 1.0f, "%.2f"); ImGui::SameLine(); ShowHelpMarker("Alignment applies when a button is larger than its text content.");
-        ImGui::Text("Safe Area Padding"); ImGui::SameLine(); ShowHelpMarker("Adjust if you cannot see the edges of your screen (e.g. on a TV where scaling has not been configured).");
-        ImGui::SliderFloat2("DisplaySafeAreaPadding", (float*)&style.DisplaySafeAreaPadding, 0.0f, 30.0f, "%.0f");
-        ImGui::TreePop();
-    }
-
-    if (ImGui::TreeNode("Colors"))
-    {
-        static int output_dest = 0;
-        static bool output_only_modified = true;
-        if (ImGui::Button("Export Unsaved"))
+        if (ImGui::BeginTabItem("Sizes"))
         {
-            if (output_dest == 0)
-                ImGui::LogToClipboard();
-            else
-                ImGui::LogToTTY();
-            ImGui::LogText("ImVec4* colors = ImGui::GetStyle().Colors;" IM_NEWLINE);
+            ImGui::Text("Main");
+            ImGui::SliderFloat2("WindowPadding", (float*)&style.WindowPadding, 0.0f, 20.0f, "%.0f");
+            ImGui::SliderFloat("PopupRounding", &style.PopupRounding, 0.0f, 16.0f, "%.0f");
+            ImGui::SliderFloat2("FramePadding", (float*)&style.FramePadding, 0.0f, 20.0f, "%.0f");
+            ImGui::SliderFloat2("ItemSpacing", (float*)&style.ItemSpacing, 0.0f, 20.0f, "%.0f");
+            ImGui::SliderFloat2("ItemInnerSpacing", (float*)&style.ItemInnerSpacing, 0.0f, 20.0f, "%.0f");
+            ImGui::SliderFloat2("TouchExtraPadding", (float*)&style.TouchExtraPadding, 0.0f, 10.0f, "%.0f");
+            ImGui::SliderFloat("IndentSpacing", &style.IndentSpacing, 0.0f, 30.0f, "%.0f");
+            ImGui::SliderFloat("ScrollbarSize", &style.ScrollbarSize, 1.0f, 20.0f, "%.0f");
+            ImGui::SliderFloat("GrabMinSize", &style.GrabMinSize, 1.0f, 20.0f, "%.0f");
+            ImGui::Text("Borders");
+            ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 1.0f, "%.0f");
+            ImGui::SliderFloat("ChildBorderSize", &style.ChildBorderSize, 0.0f, 1.0f, "%.0f");
+            ImGui::SliderFloat("PopupBorderSize", &style.PopupBorderSize, 0.0f, 1.0f, "%.0f");
+            ImGui::SliderFloat("FrameBorderSize", &style.FrameBorderSize, 0.0f, 1.0f, "%.0f");
+            ImGui::SliderFloat("TabBorderSize", &style.TabBorderSize, 0.0f, 1.0f, "%.0f");
+            ImGui::Text("Rounding");
+            ImGui::SliderFloat("WindowRounding", &style.WindowRounding, 0.0f, 14.0f, "%.0f");
+            ImGui::SliderFloat("ChildRounding", &style.ChildRounding, 0.0f, 16.0f, "%.0f");
+            ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f");
+            ImGui::SliderFloat("ScrollbarRounding", &style.ScrollbarRounding, 0.0f, 12.0f, "%.0f");
+            ImGui::SliderFloat("GrabRounding", &style.GrabRounding, 0.0f, 12.0f, "%.0f");
+            ImGui::SliderFloat("TabRounding", &style.TabRounding, 0.0f, 12.0f, "%.0f");
+            ImGui::Text("Alignment");
+            ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
+            ImGui::SliderFloat2("ButtonTextAlign", (float*)&style.ButtonTextAlign, 0.0f, 1.0f, "%.2f"); ImGui::SameLine(); ShowHelpMarker("Alignment applies when a button is larger than its text content.");
+            ImGui::Text("Safe Area Padding"); ImGui::SameLine(); ShowHelpMarker("Adjust if you cannot see the edges of your screen (e.g. on a TV where scaling has not been configured).");
+            ImGui::SliderFloat2("DisplaySafeAreaPadding", (float*)&style.DisplaySafeAreaPadding, 0.0f, 30.0f, "%.0f");
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Colors"))
+        {
+            static int output_dest = 0;
+            static bool output_only_modified = true;
+            if (ImGui::Button("Export Unsaved"))
+            {
+                if (output_dest == 0)
+                    ImGui::LogToClipboard();
+                else
+                    ImGui::LogToTTY();
+                ImGui::LogText("ImVec4* colors = ImGui::GetStyle().Colors;" IM_NEWLINE);
+                for (int i = 0; i < ImGuiCol_COUNT; i++)
+                {
+                    const ImVec4& col = style.Colors[i];
+                    const char* name = ImGui::GetStyleColorName(i);
+                    if (!output_only_modified || memcmp(&col, &ref->Colors[i], sizeof(ImVec4)) != 0)
+                        ImGui::LogText("colors[ImGuiCol_%s]%*s= ImVec4(%.2ff, %.2ff, %.2ff, %.2ff);" IM_NEWLINE, name, 23 - (int)strlen(name), "", col.x, col.y, col.z, col.w);
+                }
+                ImGui::LogFinish();
+            }
+            ImGui::SameLine(); ImGui::PushItemWidth(120); ImGui::Combo("##output_type", &output_dest, "To Clipboard\0To TTY\0"); ImGui::PopItemWidth();
+            ImGui::SameLine(); ImGui::Checkbox("Only Modified Colors", &output_only_modified);
+
+            static ImGuiTextFilter filter;
+            filter.Draw("Filter colors", ImGui::GetFontSize() * 16);
+
+            static ImGuiColorEditFlags alpha_flags = 0;
+            ImGui::RadioButton("Opaque", &alpha_flags, 0); ImGui::SameLine();
+            ImGui::RadioButton("Alpha", &alpha_flags, ImGuiColorEditFlags_AlphaPreview); ImGui::SameLine();
+            ImGui::RadioButton("Both", &alpha_flags, ImGuiColorEditFlags_AlphaPreviewHalf); ImGui::SameLine();
+            ShowHelpMarker("In the color list:\nLeft-click on colored square to open color picker,\nRight-click to open edit options menu.");
+
+            ImGui::BeginChild("##colors", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
+            ImGui::PushItemWidth(-160);
             for (int i = 0; i < ImGuiCol_COUNT; i++)
             {
-                const ImVec4& col = style.Colors[i];
                 const char* name = ImGui::GetStyleColorName(i);
-                if (!output_only_modified || memcmp(&col, &ref->Colors[i], sizeof(ImVec4)) != 0)
-                    ImGui::LogText("colors[ImGuiCol_%s]%*s= ImVec4(%.2ff, %.2ff, %.2ff, %.2ff);" IM_NEWLINE, name, 23-(int)strlen(name), "", col.x, col.y, col.z, col.w);
-            }
-            ImGui::LogFinish();
-        }
-        ImGui::SameLine(); ImGui::PushItemWidth(120); ImGui::Combo("##output_type", &output_dest, "To Clipboard\0To TTY\0"); ImGui::PopItemWidth();
-        ImGui::SameLine(); ImGui::Checkbox("Only Modified Colors", &output_only_modified);
-
-        ImGui::Text("Tip: Left-click on colored square to open color picker,\nRight-click to open edit options menu.");
-
-        static ImGuiTextFilter filter;
-        filter.Draw("Filter colors", 200);
-
-        static ImGuiColorEditFlags alpha_flags = 0;
-        ImGui::RadioButton("Opaque", &alpha_flags, 0); ImGui::SameLine();
-        ImGui::RadioButton("Alpha", &alpha_flags, ImGuiColorEditFlags_AlphaPreview); ImGui::SameLine();
-        ImGui::RadioButton("Both", &alpha_flags, ImGuiColorEditFlags_AlphaPreviewHalf);
-
-        ImGui::BeginChild("#colors", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
-        ImGui::PushItemWidth(-160);
-        for (int i = 0; i < ImGuiCol_COUNT; i++)
-        {
-            const char* name = ImGui::GetStyleColorName(i);
-            if (!filter.PassFilter(name))
-                continue;
-            ImGui::PushID(i);
-            ImGui::ColorEdit4("##color", (float*)&style.Colors[i], ImGuiColorEditFlags_AlphaBar | alpha_flags);
-            if (memcmp(&style.Colors[i], &ref->Colors[i], sizeof(ImVec4)) != 0)
-            {
-                // Tips: in a real user application, you may want to merge and use an icon font into the main font, so instead of "Save"/"Revert" you'd use icons.
-                // Read the FAQ and misc/fonts/README.txt about using icon fonts. It's really easy and super convenient!
-                ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Save")) ref->Colors[i] = style.Colors[i];
-                ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Revert")) style.Colors[i] = ref->Colors[i];
-            }
-            ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-            ImGui::TextUnformatted(name);
-            ImGui::PopID();
-        }
-        ImGui::PopItemWidth();
-        ImGui::EndChild();
-
-        ImGui::TreePop();
-    }
-
-    bool fonts_opened = ImGui::TreeNode("Fonts", "Fonts (%d)", ImGui::GetIO().Fonts->Fonts.Size);
-    if (fonts_opened)
-    {
-        ImFontAtlas* atlas = ImGui::GetIO().Fonts;
-        if (ImGui::TreeNode("Atlas texture", "Atlas texture (%dx%d pixels)", atlas->TexWidth, atlas->TexHeight))
-        {
-            ImGui::Image(atlas->TexID, ImVec2((float)atlas->TexWidth, (float)atlas->TexHeight), ImVec2(0,0), ImVec2(1,1), ImColor(255,255,255,255), ImColor(255,255,255,128));
-            ImGui::TreePop();
-        }
-        ImGui::PushItemWidth(100);
-        for (int i = 0; i < atlas->Fonts.Size; i++)
-        {
-            ImFont* font = atlas->Fonts[i];
-            ImGui::PushID(font);
-            bool font_details_opened = ImGui::TreeNode(font, "Font %d: \'%s\', %.2f px, %d glyphs", i, font->ConfigData ? font->ConfigData[0].Name : "", font->FontSize, font->Glyphs.Size);
-            ImGui::SameLine(); if (ImGui::SmallButton("Set as default")) ImGui::GetIO().FontDefault = font;
-            if (font_details_opened)
-            {
-                ImGui::PushFont(font);
-                ImGui::Text("The quick brown fox jumps over the lazy dog");
-                ImGui::PopFont();
-                ImGui::DragFloat("Font scale", &font->Scale, 0.005f, 0.3f, 2.0f, "%.1f");   // Scale only this font
-                ImGui::SameLine(); ShowHelpMarker("Note than the default embedded font is NOT meant to be scaled.\n\nFont are currently rendered into bitmaps at a given size at the time of building the atlas. You may oversample them to get some flexibility with scaling. You can also render at multiple sizes and select which one to use at runtime.\n\n(Glimmer of hope: the atlas system should hopefully be rewritten in the future to make scaling more natural and automatic.)");
-                ImGui::InputFloat("Font offset", &font->DisplayOffset.y, 1, 1, "%.0f");
-                ImGui::Text("Ascent: %f, Descent: %f, Height: %f", font->Ascent, font->Descent, font->Ascent - font->Descent);
-                ImGui::Text("Fallback character: '%c' (%d)", font->FallbackChar, font->FallbackChar);
-                ImGui::Text("Texture surface: %d pixels (approx) ~ %dx%d", font->MetricsTotalSurface, (int)sqrtf((float)font->MetricsTotalSurface), (int)sqrtf((float)font->MetricsTotalSurface));
-                for (int config_i = 0; config_i < font->ConfigDataCount; config_i++)
-                    if (ImFontConfig* cfg = &font->ConfigData[config_i])
-                        ImGui::BulletText("Input %d: \'%s\', Oversample: (%d,%d), PixelSnapH: %d", config_i, cfg->Name, cfg->OversampleH, cfg->OversampleV, cfg->PixelSnapH);
-                if (ImGui::TreeNode("Glyphs", "Glyphs (%d)", font->Glyphs.Size))
+                if (!filter.PassFilter(name))
+                    continue;
+                ImGui::PushID(i);
+                ImGui::ColorEdit4("##color", (float*)&style.Colors[i], ImGuiColorEditFlags_AlphaBar | alpha_flags);
+                if (memcmp(&style.Colors[i], &ref->Colors[i], sizeof(ImVec4)) != 0)
                 {
-                    // Display all glyphs of the fonts in separate pages of 256 characters
-                    for (int base = 0; base < 0x10000; base += 256)
+                    // Tips: in a real user application, you may want to merge and use an icon font into the main font, so instead of "Save"/"Revert" you'd use icons.
+                    // Read the FAQ and misc/fonts/README.txt about using icon fonts. It's really easy and super convenient!
+                    ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Save")) ref->Colors[i] = style.Colors[i];
+                    ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Revert")) style.Colors[i] = ref->Colors[i];
+                }
+                ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+                ImGui::TextUnformatted(name);
+                ImGui::PopID();
+            }
+            ImGui::PopItemWidth();
+            ImGui::EndChild();
+
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Fonts"))
+        {
+            ImFontAtlas* atlas = ImGui::GetIO().Fonts;
+            ShowHelpMarker("Read FAQ and misc/fonts/README.txt for details on font loading.");
+            ImGui::PushItemWidth(120);
+            for (int i = 0; i < atlas->Fonts.Size; i++)
+            {
+                ImFont* font = atlas->Fonts[i];
+                ImGui::PushID(font);
+                bool font_details_opened = ImGui::TreeNode(font, "Font %d: \"%s\"\n%.2f px, %d glyphs, %d file(s)", i, font->ConfigData ? font->ConfigData[0].Name : "", font->FontSize, font->Glyphs.Size, font->ConfigDataCount);
+                ImGui::SameLine(); if (ImGui::SmallButton("Set as default")) ImGui::GetIO().FontDefault = font;
+                if (font_details_opened)
+                {
+                    ImGui::PushFont(font);
+                    ImGui::Text("The quick brown fox jumps over the lazy dog");
+                    ImGui::PopFont();
+                    ImGui::DragFloat("Font scale", &font->Scale, 0.005f, 0.3f, 2.0f, "%.1f");   // Scale only this font
+                    ImGui::SameLine(); ShowHelpMarker("Note than the default embedded font is NOT meant to be scaled.\n\nFont are currently rendered into bitmaps at a given size at the time of building the atlas. You may oversample them to get some flexibility with scaling. You can also render at multiple sizes and select which one to use at runtime.\n\n(Glimmer of hope: the atlas system should hopefully be rewritten in the future to make scaling more natural and automatic.)");
+                    ImGui::InputFloat("Font offset", &font->DisplayOffset.y, 1, 1, "%.0f");
+                    ImGui::Text("Ascent: %f, Descent: %f, Height: %f", font->Ascent, font->Descent, font->Ascent - font->Descent);
+                    ImGui::Text("Fallback character: '%c' (%d)", font->FallbackChar, font->FallbackChar);
+                    ImGui::Text("Texture surface: %d pixels (approx) ~ %dx%d", font->MetricsTotalSurface, (int)sqrtf((float)font->MetricsTotalSurface), (int)sqrtf((float)font->MetricsTotalSurface));
+                    for (int config_i = 0; config_i < font->ConfigDataCount; config_i++)
+                        if (ImFontConfig* cfg = &font->ConfigData[config_i])
+                            ImGui::BulletText("Input %d: \'%s\', Oversample: (%d,%d), PixelSnapH: %d", config_i, cfg->Name, cfg->OversampleH, cfg->OversampleV, cfg->PixelSnapH);
+                    if (ImGui::TreeNode("Glyphs", "Glyphs (%d)", font->Glyphs.Size))
                     {
-                        int count = 0;
-                        for (int n = 0; n < 256; n++)
-                            count += font->FindGlyphNoFallback((ImWchar)(base + n)) ? 1 : 0;
-                        if (count > 0 && ImGui::TreeNode((void*)(intptr_t)base, "U+%04X..U+%04X (%d %s)", base, base+255, count, count > 1 ? "glyphs" : "glyph"))
+                        // Display all glyphs of the fonts in separate pages of 256 characters
+                        for (int base = 0; base < 0x10000; base += 256)
                         {
-                            float cell_size = font->FontSize * 1;
-                            float cell_spacing = style.ItemSpacing.y;
-                            ImVec2 base_pos = ImGui::GetCursorScreenPos();
-                            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                            int count = 0;
                             for (int n = 0; n < 256; n++)
+                                count += font->FindGlyphNoFallback((ImWchar)(base + n)) ? 1 : 0;
+                            if (count > 0 && ImGui::TreeNode((void*)(intptr_t)base, "U+%04X..U+%04X (%d %s)", base, base + 255, count, count > 1 ? "glyphs" : "glyph"))
                             {
-                                ImVec2 cell_p1(base_pos.x + (n % 16) * (cell_size + cell_spacing), base_pos.y + (n / 16) * (cell_size + cell_spacing));
-                                ImVec2 cell_p2(cell_p1.x + cell_size, cell_p1.y + cell_size);
-                                const ImFontGlyph* glyph = font->FindGlyphNoFallback((ImWchar)(base+n));
-                                draw_list->AddRect(cell_p1, cell_p2, glyph ? IM_COL32(255,255,255,100) : IM_COL32(255,255,255,50));
-                                if (glyph)
-                                    font->RenderChar(draw_list, cell_size, cell_p1, ImGui::GetColorU32(ImGuiCol_Text), (ImWchar)(base+n)); // We use ImFont::RenderChar as a shortcut because we don't have UTF-8 conversion functions available to generate a string.
-                                if (glyph && ImGui::IsMouseHoveringRect(cell_p1, cell_p2))
+                                float cell_size = font->FontSize * 1;
+                                float cell_spacing = style.ItemSpacing.y;
+                                ImVec2 base_pos = ImGui::GetCursorScreenPos();
+                                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                                for (int n = 0; n < 256; n++)
                                 {
-                                    ImGui::BeginTooltip();
-                                    ImGui::Text("Codepoint: U+%04X", base+n);
-                                    ImGui::Separator();
-                                    ImGui::Text("AdvanceX: %.1f", glyph->AdvanceX);
-                                    ImGui::Text("Pos: (%.2f,%.2f)->(%.2f,%.2f)", glyph->X0, glyph->Y0, glyph->X1, glyph->Y1);
-                                    ImGui::Text("UV: (%.3f,%.3f)->(%.3f,%.3f)", glyph->U0, glyph->V0, glyph->U1, glyph->V1);
-                                    ImGui::EndTooltip();
+                                    ImVec2 cell_p1(base_pos.x + (n % 16) * (cell_size + cell_spacing), base_pos.y + (n / 16) * (cell_size + cell_spacing));
+                                    ImVec2 cell_p2(cell_p1.x + cell_size, cell_p1.y + cell_size);
+                                    const ImFontGlyph* glyph = font->FindGlyphNoFallback((ImWchar)(base + n));
+                                    draw_list->AddRect(cell_p1, cell_p2, glyph ? IM_COL32(255, 255, 255, 100) : IM_COL32(255, 255, 255, 50));
+                                    if (glyph)
+                                        font->RenderChar(draw_list, cell_size, cell_p1, ImGui::GetColorU32(ImGuiCol_Text), (ImWchar)(base + n)); // We use ImFont::RenderChar as a shortcut because we don't have UTF-8 conversion functions available to generate a string.
+                                    if (glyph && ImGui::IsMouseHoveringRect(cell_p1, cell_p2))
+                                    {
+                                        ImGui::BeginTooltip();
+                                        ImGui::Text("Codepoint: U+%04X", base + n);
+                                        ImGui::Separator();
+                                        ImGui::Text("AdvanceX: %.1f", glyph->AdvanceX);
+                                        ImGui::Text("Pos: (%.2f,%.2f)->(%.2f,%.2f)", glyph->X0, glyph->Y0, glyph->X1, glyph->Y1);
+                                        ImGui::Text("UV: (%.3f,%.3f)->(%.3f,%.3f)", glyph->U0, glyph->V0, glyph->U1, glyph->V1);
+                                        ImGui::EndTooltip();
+                                    }
                                 }
+                                ImGui::Dummy(ImVec2((cell_size + cell_spacing) * 16, (cell_size + cell_spacing) * 16));
+                                ImGui::TreePop();
                             }
-                            ImGui::Dummy(ImVec2((cell_size + cell_spacing) * 16, (cell_size + cell_spacing) * 16));
-                            ImGui::TreePop();
                         }
+                        ImGui::TreePop();
                     }
                     ImGui::TreePop();
                 }
+                ImGui::PopID();
+            }
+            if (ImGui::TreeNode("Atlas texture", "Atlas texture (%dx%d pixels)", atlas->TexWidth, atlas->TexHeight))
+            {
+                ImGui::Image(atlas->TexID, ImVec2((float)atlas->TexWidth, (float)atlas->TexHeight), ImVec2(0, 0), ImVec2(1, 1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
                 ImGui::TreePop();
             }
-            ImGui::PopID();
+
+            static float window_scale = 1.0f;
+            if (ImGui::DragFloat("this window scale", &window_scale, 0.005f, 0.3f, 2.0f, "%.1f"))           // scale only this window
+                ImGui::SetWindowFontScale(window_scale);
+            ImGui::DragFloat("global scale", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.3f, 2.0f, "%.1f");  // scale everything
+            ImGui::PopItemWidth();
+
+            ImGui::EndTabItem();
         }
-        static float window_scale = 1.0f;
-        ImGui::DragFloat("this window scale", &window_scale, 0.005f, 0.3f, 2.0f, "%.1f");              // scale only this window
-        ImGui::DragFloat("global scale", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.3f, 2.0f, "%.1f"); // scale everything
-        ImGui::PopItemWidth();
-        ImGui::SetWindowFontScale(window_scale);
-        ImGui::TreePop();
+
+        if (ImGui::BeginTabItem("Rendering"))
+        {
+            ImGui::Checkbox("Anti-aliased lines", &style.AntiAliasedLines); ImGui::SameLine(); ShowHelpMarker("When disabling anti-aliasing lines, you'll probably want to disable borders in your style as well.");
+            ImGui::Checkbox("Anti-aliased fill", &style.AntiAliasedFill);
+            ImGui::PushItemWidth(100);
+            ImGui::DragFloat("Curve Tessellation Tolerance", &style.CurveTessellationTol, 0.02f, 0.10f, FLT_MAX, "%.2f", 2.0f);
+            if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
+            ImGui::DragFloat("Global Alpha", &style.Alpha, 0.005f, 0.20f, 1.0f, "%.2f"); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
+            ImGui::PopItemWidth();
+
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
     }
 
     ImGui::PopItemWidth();
@@ -3226,7 +3461,7 @@ static void ShowExampleAppLog(bool* p_open)
 static void ShowExampleAppLayout(bool* p_open)
 {
     ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("Example: Layout", p_open, ImGuiWindowFlags_MenuBar))
+    if (ImGui::Begin("Example: Simple layout", p_open, ImGuiWindowFlags_MenuBar))
     {
         if (ImGui::BeginMenuBar())
         {
@@ -3256,7 +3491,20 @@ static void ShowExampleAppLayout(bool* p_open)
             ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
                 ImGui::Text("MyObject: %d", selected);
                 ImGui::Separator();
-                ImGui::TextWrapped("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ");
+                if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
+                {
+                    if (ImGui::BeginTabItem("Description"))
+                    {
+                        ImGui::TextWrapped("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ");
+                        ImGui::EndTabItem();
+                    }
+                    if (ImGui::BeginTabItem("Details"))
+                    {
+                        ImGui::Text("ID: 0123456789");
+                        ImGui::EndTabItem();
+                    }
+                    ImGui::EndTabBar();
+                }
             ImGui::EndChild();
             if (ImGui::Button("Revert")) {}
             ImGui::SameLine();
@@ -3483,7 +3731,7 @@ static void ShowExampleAppSimpleOverlay(bool* p_open)
     if (corner != -1)
         ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
     ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
-    if (ImGui::Begin("Example: Simple Overlay", p_open, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+    if (ImGui::Begin("Example: Simple overlay", p_open, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
     {
         ImGui::Text("Simple overlay\n" "in the corner of the screen.\n" "(right-click to change position)");
         ImGui::Separator();
@@ -3647,9 +3895,280 @@ static void ShowExampleAppCustomRendering(bool* p_open)
     ImGui::End();
 }
 
+//-----------------------------------------------------------------------------
+// [SECTION] Example App: Documents Handling / ShowExampleAppDocuments()
+//-----------------------------------------------------------------------------
+
+// Simplified structure to mimic a Document model
+struct MyDocument
+{
+    const char* Name;           // Document title
+    bool        Open;           // Set when the document is open (in this demo, we keep an array of all available documents to simplify the demo)
+    bool        OpenPrev;       // Copy of Open from last update.
+    bool        Dirty;          // Set when the document has been modified
+    bool        WantClose;      // Set when the document 
+    ImVec4      Color;          // An arbitrary variable associated to the document
+
+    MyDocument(const char* name, bool open = true, const ImVec4& color = ImVec4(1.0f,1.0f,1.0f,1.0f))
+    { 
+        Name = name; 
+        Open = OpenPrev = open; 
+        Dirty = false; 
+        WantClose = false; 
+        Color = color; 
+    }
+    void DoOpen()       { Open = true; }
+    void DoQueueClose() { WantClose = true; }
+    void DoForceClose() { Open = false; Dirty = false; }
+    void DoSave()       { Dirty = false; }
+
+    // Display dummy contents for the Document
+    static void DisplayContents(MyDocument* doc)
+    {
+        ImGui::PushID(doc);
+        ImGui::Text("Document \"%s\"", doc->Name);
+        ImGui::PushStyleColor(ImGuiCol_Text, doc->Color);
+        ImGui::TextWrapped("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+        ImGui::PopStyleColor();
+        if (ImGui::Button("Modify", ImVec2(100, 0)))
+            doc->Dirty = true;
+        ImGui::SameLine();
+        if (ImGui::Button("Save", ImVec2(100, 0)))
+            doc->DoSave();
+        ImGui::ColorEdit3("color", &doc->Color.x);  // Useful to test drag and drop and hold-dragged-to-open-tab behavior.
+        ImGui::PopID();
+    }
+
+    // Display context menu for the Document
+    static void DisplayContextMenu(MyDocument* doc)
+    {
+        if (!ImGui::BeginPopupContextItem())
+            return;
+
+        char buf[256];
+        sprintf(buf, "Save %s", doc->Name);
+        if (ImGui::MenuItem(buf, "CTRL+S", false, doc->Open))
+            doc->DoSave();
+        if (ImGui::MenuItem("Close", "CTRL+W", false, doc->Open))
+            doc->DoQueueClose();
+        ImGui::EndPopup();
+    }
+};
+
+struct ExampleAppDocuments
+{
+    ImVector<MyDocument> Documents;
+
+    ExampleAppDocuments()
+    {
+        Documents.push_back(MyDocument("Lettuce",             true,  ImVec4(0.4f, 0.8f, 0.4f, 1.0f)));
+        Documents.push_back(MyDocument("Eggplant",            true,  ImVec4(0.8f, 0.5f, 1.0f, 1.0f)));
+        Documents.push_back(MyDocument("Carrot",              true,  ImVec4(1.0f, 0.8f, 0.5f, 1.0f)));
+        Documents.push_back(MyDocument("Tomato",              false, ImVec4(1.0f, 0.3f, 0.4f, 1.0f)));
+        Documents.push_back(MyDocument("A Rather Long Title", false));
+        Documents.push_back(MyDocument("Some Document",       false));
+    }
+};
+
+// [Optional] Notify the system of Tabs/Windows closure that happened outside the regular tab interface.
+// If a tab has been closed programmatically (aka closed from another source such as the Checkbox() in the demo, as opposed
+// to clicking on the regular tab closing button) and stops being submitted, it will take a frame for the tab bar to notice its absence. 
+// During this frame there will be a gap in the tab bar, and if the tab that has disappeared was the selected one, the tab bar 
+// will report no selected tab during the frame. This will effectively give the impression of a flicker for one frame.
+// We call SetTabItemClosed() to manually notify the Tab Bar or Docking system of removed tabs to avoid this glitch.
+// Note that this completely optional, and only affect tab bars with the ImGuiTabBarFlags_Reorderable flag.
+static void NotifyOfDocumentsClosedElsewhere(ExampleAppDocuments& app)
+{
+    for (int doc_n = 0; doc_n < app.Documents.Size; doc_n++)
+    {
+        MyDocument* doc = &app.Documents[doc_n];
+        if (!doc->Open && doc->OpenPrev)
+            ImGui::SetTabItemClosed(doc->Name);
+        doc->OpenPrev = doc->Open;
+    }
+}
+
+void ShowExampleAppDocuments(bool* p_open)
+{
+    static ExampleAppDocuments app;
+
+    if (!ImGui::Begin("Examples: Documents", p_open, ImGuiWindowFlags_MenuBar))
+    {
+        ImGui::End();
+        return;
+    }
+
+    // Options
+    static bool opt_reorderable = true;
+    static ImGuiTabBarFlags opt_fitting_flags = ImGuiTabBarFlags_FittingPolicyDefault_;
+
+    // Menu
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            int open_count = 0;
+            for (int doc_n = 0; doc_n < app.Documents.Size; doc_n++)
+                open_count += app.Documents[doc_n].Open ? 1 : 0;
+
+            if (ImGui::BeginMenu("Open", open_count < app.Documents.Size))
+            {
+                for (int doc_n = 0; doc_n < app.Documents.Size; doc_n++)
+                {
+                    MyDocument* doc = &app.Documents[doc_n];
+                    if (!doc->Open)
+                        if (ImGui::MenuItem(doc->Name))
+                            doc->DoOpen();
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::MenuItem("Close All Documents", NULL, false, open_count > 0))
+                for (int doc_n = 0; doc_n < app.Documents.Size; doc_n++)
+                    app.Documents[doc_n].DoQueueClose();
+            if (ImGui::MenuItem("Exit", "Alt+F4")) {}
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
+    // [Debug] List documents with one checkbox for each
+    for (int doc_n = 0; doc_n < app.Documents.Size; doc_n++)
+    {
+        MyDocument* doc = &app.Documents[doc_n];
+        if (doc_n > 0)
+            ImGui::SameLine();
+        ImGui::PushID(doc);
+        if (ImGui::Checkbox(doc->Name, &doc->Open))
+            if (!doc->Open)
+                doc->DoForceClose();
+        ImGui::PopID();
+    }
+
+    ImGui::Separator();
+
+    // Submit Tab Bar and Tabs
+    {
+        ImGuiTabBarFlags tab_bar_flags = (opt_fitting_flags) | (opt_reorderable ? ImGuiTabBarFlags_Reorderable : 0);
+        if (ImGui::BeginTabBar("##tabs", tab_bar_flags))
+        {
+            if (opt_reorderable)
+                NotifyOfDocumentsClosedElsewhere(app);
+
+            // [DEBUG] Stress tests
+            //if ((ImGui::GetFrameCount() % 30) == 0) docs[1].Open ^= 1;            // [DEBUG] Automatically show/hide a tab. Test various interactions e.g. dragging with this on.
+            //if (ImGui::GetIO().KeyCtrl) ImGui::SetTabItemSelected(docs[1].Name);  // [DEBUG] Test SetTabItemSelected(), probably not very useful as-is anyway..
+
+            // Submit Tabs
+            for (int doc_n = 0; doc_n < app.Documents.Size; doc_n++)
+            {
+                MyDocument* doc = &app.Documents[doc_n];
+                if (!doc->Open)
+                    continue;
+
+                ImGuiTabItemFlags tab_flags = (doc->Dirty ? ImGuiTabItemFlags_UnsavedDocument : 0);
+                bool visible = ImGui::BeginTabItem(doc->Name, &doc->Open, tab_flags);
+
+                // Cancel attempt to close when unsaved add to save queue so we can display a popup.
+                if (!doc->Open && doc->Dirty)
+                {
+                    doc->Open = true;
+                    doc->DoQueueClose();
+                }
+
+                MyDocument::DisplayContextMenu(doc);
+                if (visible)
+                {
+                    MyDocument::DisplayContents(doc);
+                    ImGui::EndTabItem();
+                }
+            }
+
+            ImGui::EndTabBar();
+        }
+    }
+
+    // Update closing queue
+    static ImVector<MyDocument*> close_queue;
+    if (close_queue.empty())
+    {
+        // Close queue is locked once we started a popup
+        for (int doc_n = 0; doc_n < app.Documents.Size; doc_n++)
+        {
+            MyDocument* doc = &app.Documents[doc_n];
+            if (doc->WantClose)
+            {
+                doc->WantClose = false;
+                close_queue.push_back(doc);
+            }
+        }
+    }
+
+    // Display closing confirmation UI
+    if (!close_queue.empty())
+    {
+        int close_queue_unsaved_documents = 0;
+        for (int n = 0; n < close_queue.Size; n++)
+            if (close_queue[n]->Dirty)
+                close_queue_unsaved_documents++;
+
+        if (close_queue_unsaved_documents == 0)
+        {
+            // Close documents when all are unsaved
+            for (int n = 0; n < close_queue.Size; n++)
+                close_queue[n]->DoForceClose();
+            close_queue.clear();
+        }
+        else
+        {
+            if (!ImGui::IsPopupOpen("Save?"))
+                ImGui::OpenPopup("Save?");
+            if (ImGui::BeginPopupModal("Save?"))
+            {
+                ImGui::Text("Save change to the following items?");
+                ImGui::PushItemWidth(-1.0f);
+                ImGui::ListBoxHeader("##", close_queue_unsaved_documents, 6);
+                for (int n = 0; n < close_queue.Size; n++)
+                    if (close_queue[n]->Dirty)
+                        ImGui::Text("%s", close_queue[n]->Name);
+                ImGui::ListBoxFooter();
+
+                if (ImGui::Button("Yes", ImVec2(80, 0)))
+                {
+                    for (int n = 0; n < close_queue.Size; n++)
+                    {
+                        if (close_queue[n]->Dirty)
+                            close_queue[n]->DoSave();
+                        close_queue[n]->DoForceClose();
+                    }
+                    close_queue.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("No", ImVec2(80, 0)))
+                {
+                    for (int n = 0; n < close_queue.Size; n++)
+                        close_queue[n]->DoForceClose();
+                    close_queue.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(80, 0)))
+                {
+                    close_queue.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+    }
+
+    ImGui::End();
+}
+
 // End of Demo code
 #else
 
+void ImGui::ShowAboutWindow(bool*) {}
 void ImGui::ShowDemoWindow(bool*) {}
 void ImGui::ShowUserGuide() {}
 void ImGui::ShowStyleEditor(ImGuiStyle*) {}
