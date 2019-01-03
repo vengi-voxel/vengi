@@ -182,7 +182,7 @@ void RawVolumeRenderer::extract(voxel::RawVolume* volume, voxel::Mesh* mesh) con
 	voxel::extractCubicMesh(volume, region, mesh, raw::CustomIsQuadNeeded());
 }
 
-void RawVolumeRenderer::render(const video::Camera& camera) {
+void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	uint32_t numIndices = 0u;
@@ -201,30 +201,34 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	video::ScopedState scopedCullFace(video::State::CullFace);
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
 
-	_shadow.update(camera, true);
-	_shadow.render([this] (int i, shader::ShadowmapShader& shader) {
-		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-			const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
-			if (nIndices == 0) {
-				continue;
+	_shadow.update(camera, shadow);
+	if (shadow) {
+		_shadow.render([this] (int i, shader::ShadowmapShader& shader) {
+			for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+				const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
+				if (nIndices == 0) {
+					continue;
+				}
+				video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
+				shader.setModel(_model[idx]);
+				static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 			}
-			video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
-			shader.setModel(_model[idx]);
-			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
-		}
-		return true;
-	}, [] (int, shader::ShadowmapInstancedShader&) {return true;});
+			return true;
+		}, [] (int, shader::ShadowmapInstancedShader&) {return true;});
+	}
 
 	{
 		video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setViewprojection(camera.viewProjectionMatrix());
-		_worldShader.setViewdistance(camera.farPlane());
-		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
-		_worldShader.setCascades(_shadow.cascades());
-		_worldShader.setDistances(_shadow.distances());
-		_worldShader.setLightdir(_shadow.sunDirection());
+		if (shadow) {
+			_worldShader.setViewdistance(camera.farPlane());
+			_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
+			_worldShader.setCascades(_shadow.cascades());
+			_worldShader.setDistances(_shadow.distances());
+			_worldShader.setLightdir(_shadow.sunDirection());
+		}
 
 		video::ScopedPolygonMode polygonMode(camera.polygonMode());
 		_shadow.bind(video::TextureUnit::One);

@@ -47,7 +47,7 @@ protected:
 public:
 	RawVolumeRenderer();
 
-	void render(const video::Camera& camera);
+	void render(const video::Camera& camera, bool shadow = true);
 
 	/**
 	 * @brief Updates the vertex buffers manually
