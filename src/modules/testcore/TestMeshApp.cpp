@@ -180,7 +180,7 @@ void TestMeshApp::doRender() {
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
 
 	_model = glm::scale(glm::translate(glm::mat4(1.0f), _position), _mesh->scale());
-	_shadow.update(_camera, true);
+	_shadow.update(_camera, shadowMap);
 
 	if (shadowMap) {
 		core_trace_scoped(TestMeshAppDoRenderShadows);
