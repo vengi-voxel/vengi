@@ -59,18 +59,18 @@ static void DeleteTouchInfo(uint32 id)
 class TBLongClickTimer : private TBMessageHandler
 {
 public:
-	TBLongClickTimer(TBWidget *widget, bool touch) : m_widget(widget), m_touch(touch)
+	TBLongClickTimer(TBWidget *widget, BUTTON_TYPE type) : m_widget(widget), m_type(type)
 	{
 		PostMessageDelayed(TBIDC("TBLongClickTimer"), nullptr, TBSystem::GetLongClickDelayMS());
 	}
 	virtual void OnMessageReceived(TBMessage *msg)
 	{
 		assert(msg->message == TBIDC("TBLongClickTimer"));
-		m_widget->MaybeInvokeLongClickOrContextMenu(m_touch);
+		m_widget->MaybeInvokeLongClickOrContextMenu(m_type);
 	}
 private:
 	TBWidget *m_widget;
-	bool m_touch;
+	BUTTON_TYPE m_type;
 };
 
 // == TBWidget::PaintProps ==============================================================
@@ -1283,10 +1283,10 @@ bool TBWidget::InvokeEvent(TBWidgetEvent &ev)
 	return handled;
 }
 
-void TBWidget::StartLongClickTimer(bool touch)
+void TBWidget::StartLongClickTimer(BUTTON_TYPE type)
 {
 	StopLongClickTimer();
-	m_long_click_timer = new TBLongClickTimer(this, touch);
+	m_long_click_timer = new TBLongClickTimer(this, type);
 }
 
 void TBWidget::StopLongClickTimer()
@@ -1297,12 +1297,12 @@ void TBWidget::StopLongClickTimer()
 	m_long_click_timer = nullptr;
 }
 
-bool TBWidget::InvokePointerDown(int x, int y, int click_count, MODIFIER_KEYS modifierkeys, bool touch)
+bool TBWidget::InvokePointerDown(int x, int y, int click_count, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type)
 {
 	if (!captured_widget)
 	{
 		SetCapturedWidget(GetWidgetAt(x, y, true));
-		SetHoveredWidget(captured_widget, touch);
+		SetHoveredWidget(captured_widget, type);
 		//captured_button = button;
 
 		// Hide focus when we use the pointer, if it's not on the focused widget.
@@ -1310,8 +1310,8 @@ bool TBWidget::InvokePointerDown(int x, int y, int click_count, MODIFIER_KEYS mo
 			SetAutoFocusState(false);
 
 		// Start long click timer. Only for touch events for now.
-		if (touch && captured_widget && captured_widget->GetWantLongClick())
-			captured_widget->StartLongClickTimer(touch);
+		if (type == TB_TOUCH && captured_widget && captured_widget->GetWantLongClick())
+			captured_widget->StartLongClickTimer(type);
 
 		// Get the closest parent window and bring it to the top
 		TBWindow *window = captured_widget ? captured_widget->GetParentWindow() : nullptr;
@@ -1350,7 +1350,7 @@ bool TBWidget::InvokePointerDown(int x, int y, int click_count, MODIFIER_KEYS mo
 		captured_widget->ConvertFromRoot(x, y);
 		pointer_move_widget_x = pointer_down_widget_x = x;
 		pointer_move_widget_y = pointer_down_widget_y = y;
-		TBWidgetEvent ev(EVENT_TYPE_POINTER_DOWN, x, y, touch, modifierkeys);
+		TBWidgetEvent ev(EVENT_TYPE_POINTER_DOWN, x, y, type, modifierkeys);
 		ev.count = click_count;
 		captured_widget->InvokeEvent(ev);
 
@@ -1361,13 +1361,13 @@ bool TBWidget::InvokePointerDown(int x, int y, int click_count, MODIFIER_KEYS mo
 	return false;
 }
 
-bool TBWidget::InvokePointerUp(int x, int y, MODIFIER_KEYS modifierkeys, bool touch)
+bool TBWidget::InvokePointerUp(int x, int y, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type)
 {
 	if (captured_widget)
 	{
 		captured_widget->ConvertFromRoot(x, y);
-		TBWidgetEvent ev_up(EVENT_TYPE_POINTER_UP, x, y, touch, modifierkeys);
-		TBWidgetEvent ev_click(EVENT_TYPE_CLICK, x, y, touch, modifierkeys);
+		TBWidgetEvent ev_up(EVENT_TYPE_POINTER_UP, x, y, type, modifierkeys);
+		TBWidgetEvent ev_click(EVENT_TYPE_CLICK, x, y, type, modifierkeys);
 		captured_widget->InvokeEvent(ev_up);
 		if (!cancel_click && captured_widget && captured_widget->GetHitStatus(x, y))
 			captured_widget->InvokeEvent(ev_click);
@@ -1381,7 +1381,7 @@ bool TBWidget::InvokePointerUp(int x, int y, MODIFIER_KEYS modifierkeys, bool to
 	return false;
 }
 
-void TBWidget::MaybeInvokeLongClickOrContextMenu(bool touch)
+void TBWidget::MaybeInvokeLongClickOrContextMenu(BUTTON_TYPE type)
 {
 	StopLongClickTimer();
 	if (captured_widget == this &&
@@ -1389,12 +1389,12 @@ void TBWidget::MaybeInvokeLongClickOrContextMenu(bool touch)
 		captured_widget->GetHitStatus(pointer_move_widget_x, pointer_move_widget_y))
 	{
 		// Invoke long click
-		TBWidgetEvent ev_long_click(EVENT_TYPE_LONG_CLICK, pointer_move_widget_x, pointer_move_widget_y, touch, TB_MODIFIER_NONE);
+		TBWidgetEvent ev_long_click(EVENT_TYPE_LONG_CLICK, pointer_move_widget_x, pointer_move_widget_y, type, TB_MODIFIER_NONE);
 		bool handled = captured_widget->InvokeEvent(ev_long_click);
 		if (!handled)
 		{
 			// Long click not handled so invoke a context menu event instead
-			TBWidgetEvent ev_context_menu(EVENT_TYPE_CONTEXT_MENU, pointer_move_widget_x, pointer_move_widget_y, touch, TB_MODIFIER_NONE);
+			TBWidgetEvent ev_context_menu(EVENT_TYPE_CONTEXT_MENU, pointer_move_widget_x, pointer_move_widget_y, type, TB_MODIFIER_NONE);
 			handled = captured_widget->InvokeEvent(ev_context_menu);
 		}
 		// If any event was handled, suppress click when releasing pointer.
@@ -1403,8 +1403,9 @@ void TBWidget::MaybeInvokeLongClickOrContextMenu(bool touch)
 	}
 }
 
-void TBWidget::InvokePointerMove(int x, int y, MODIFIER_KEYS modifierkeys, bool touch)
+void TBWidget::InvokePointerMove(int x, int y, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type)
 {
+	const bool touch = type == TB_TOUCH;
 	SetHoveredWidget(GetWidgetAt(x, y, true), touch);
 
 	TBWidget *target = captured_widget ? captured_widget : hovered_widget;
@@ -1414,7 +1415,7 @@ void TBWidget::InvokePointerMove(int x, int y, MODIFIER_KEYS modifierkeys, bool 
 		pointer_move_widget_x = x;
 		pointer_move_widget_y = y;
 
-		TBWidgetEvent ev(EVENT_TYPE_POINTER_MOVE, x, y, touch, modifierkeys);
+		TBWidgetEvent ev(EVENT_TYPE_POINTER_MOVE, x, y, type, modifierkeys);
 
 		if (target->InvokeEvent(ev))
 			return;
@@ -1487,7 +1488,7 @@ void TBWidget::InvokePointerCancel()
 bool TBWidget::InvokeTouchDown(int x, int y, uint32 id, int click_count, MODIFIER_KEYS modifierkeys)
 {
 	if (id == 0)
-		return InvokePointerDown(x, y, click_count, modifierkeys, true);
+		return InvokePointerDown(x, y, click_count, modifierkeys, TB_TOUCH);
 
 	TOUCH_INFO *ti = NewTouchInfo(id);
 	if (!ti)
@@ -1503,7 +1504,7 @@ bool TBWidget::InvokeTouchDown(int x, int y, uint32 id, int click_count, MODIFIE
 		ti->captured_widget->ConvertFromRoot(x, y);
 		ti->move_widget_x = ti->down_widget_x = x;
 		ti->move_widget_y = ti->down_widget_y = y;
-		TBWidgetEvent ev(EVENT_TYPE_TOUCH_DOWN, x, y, true, modifierkeys);
+		TBWidgetEvent ev(EVENT_TYPE_TOUCH_DOWN, x, y, TB_TOUCH, modifierkeys);
 		ev.count = click_count;
 		ev.ref_id = id;
 		ti->captured_widget->InvokeEvent(ev);
@@ -1515,12 +1516,12 @@ bool TBWidget::InvokeTouchDown(int x, int y, uint32 id, int click_count, MODIFIE
 bool TBWidget::InvokeTouchUp(int x, int y, uint32 id, MODIFIER_KEYS modifierkeys)
 {
 	if (id == 0)
-		return InvokePointerUp(x, y, modifierkeys, true);
+		return InvokePointerUp(x, y, modifierkeys, TB_TOUCH);
 	TOUCH_INFO *ti = GetTouchInfo(id);
 	if (ti && ti->captured_widget)
 	{
 		ti->captured_widget->ConvertFromRoot(x, y);
-		TBWidgetEvent ev(EVENT_TYPE_TOUCH_UP, x, y, true, modifierkeys);
+		TBWidgetEvent ev(EVENT_TYPE_TOUCH_UP, x, y, TB_TOUCH, modifierkeys);
 		ev.ref_id = id;
 		ti->captured_widget->InvokeEvent(ev);
 		DeleteTouchInfo(id);
@@ -1532,7 +1533,7 @@ bool TBWidget::InvokeTouchUp(int x, int y, uint32 id, MODIFIER_KEYS modifierkeys
 void TBWidget::InvokeTouchMove(int x, int y, uint32 id, MODIFIER_KEYS modifierkeys)
 {
 	if (id == 0)
-		return InvokePointerMove(x, y, modifierkeys, true);
+		return InvokePointerMove(x, y, modifierkeys, TB_TOUCH);
 
 	TOUCH_INFO *ti = GetTouchInfo(id);
 	if (!ti)
@@ -1544,7 +1545,7 @@ void TBWidget::InvokeTouchMove(int x, int y, uint32 id, MODIFIER_KEYS modifierke
 		ti->captured_widget->ConvertFromRoot(x, y);
 		ti->move_widget_x = x;
 		ti->move_widget_y = y;
-		TBWidgetEvent ev(EVENT_TYPE_TOUCH_MOVE, x, y, true, modifierkeys);
+		TBWidgetEvent ev(EVENT_TYPE_TOUCH_MOVE, x, y, TB_TOUCH, modifierkeys);
 		ev.ref_id = id;
 		if (ti->captured_widget->InvokeEvent(ev))
 			return;
@@ -1561,7 +1562,7 @@ void TBWidget::InvokeTouchCancel(uint32 id)
 	{
 		if (ti->captured_widget)
 		{
-			TBWidgetEvent ev(EVENT_TYPE_TOUCH_CANCEL, 0, 0, true);
+			TBWidgetEvent ev(EVENT_TYPE_TOUCH_CANCEL, 0, 0, TB_TOUCH);
 			ev.ref_id = id;
 			ti->captured_widget->InvokeEvent(ev);
 		}
@@ -1579,7 +1580,7 @@ bool TBWidget::InvokeWheel(int x, int y, int delta_x, int delta_y, MODIFIER_KEYS
 		target->ConvertFromRoot(x, y);
 		pointer_move_widget_x = x;
 		pointer_move_widget_y = y;
-		TBWidgetEvent ev(EVENT_TYPE_WHEEL, x, y, true, modifierkeys);
+		TBWidgetEvent ev(EVENT_TYPE_WHEEL, x, y, TB_TOUCH, modifierkeys);
 		ev.delta_x = delta_x;
 		ev.delta_y = delta_y;
 		target->InvokeEvent(ev);
@@ -1624,7 +1625,7 @@ bool TBWidget::InvokeKey(int key, SPECIAL_KEY special_key, MODIFIER_KEYS modifie
 			// Invoke the click event
 			if (!down)
 			{
-				TBWidgetEvent ev(EVENT_TYPE_CLICK, m_rect.w / 2, m_rect.h / 2, true);
+				TBWidgetEvent ev(EVENT_TYPE_CLICK, m_rect.w / 2, m_rect.h / 2, TB_TOUCH);
 				focused_widget->InvokeEvent(ev);
 			}
 			handled = true;

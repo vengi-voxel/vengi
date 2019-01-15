@@ -120,7 +120,7 @@ private:
 	void crop();
 	// fill at cursor position
 	void fill();
-	void fill(int x, int y, int z);
+	void fill(const glm::ivec3& pos);
 	void extend(const glm::ivec3& size = glm::ivec3(1));
 	void scaleHalf();
 	void setCursorPosition(int x, int y, int z, bool relative = false);

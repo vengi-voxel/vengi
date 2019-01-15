@@ -222,7 +222,7 @@ bool TBEditField::OnEvent(const TBWidgetEvent &ev)
 		TBRect padding_rect = GetPaddingRect();
 		if (m_style_edit.MouseDown(
 			TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y),
-			1, ev.count, TB_MODIFIER_NONE, ev.touch))
+			1, ev.count, TB_MODIFIER_NONE, ev.button_type == TB_TOUCH))
 		{
 			// Post a message to start selection scroll
 			PostMessageDelayed(TBIDC("selscroll"), nullptr, SELECTION_SCROLL_DELAY);
@@ -238,7 +238,7 @@ bool TBEditField::OnEvent(const TBWidgetEvent &ev)
 	{
 		TBRect padding_rect = GetPaddingRect();
 		return m_style_edit.MouseUp(TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y),
-										1, TB_MODIFIER_NONE, ev.touch);
+										1, TB_MODIFIER_NONE, ev.button_type == TB_TOUCH);
 	}
 	else if (ev.type == EVENT_TYPE_KEY_DOWN)
 	{

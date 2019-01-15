@@ -97,6 +97,15 @@ enum MODIFIER_KEYS {
 };
 MAKE_ENUM_FLAG_COMBO(MODIFIER_KEYS);
 
+enum BUTTON_TYPE {
+	TB_LEFT			= 0,
+	TB_RIGHT		= 1,
+	TB_MIDDLE		= 2,
+	TB_TOUCH		= 4,
+	TB_UNKNOWN		= 8
+};
+MAKE_ENUM_FLAG_COMBO(BUTTON_TYPE);
+
 enum SPECIAL_KEY
 {
 	TB_KEY_UNDEFINED = 0,
@@ -123,18 +132,18 @@ public:
 	SPECIAL_KEY special_key;
 	MODIFIER_KEYS modifierkeys;
 	TBID ref_id;		///< Sometimes (when documented) events have a ref_id (The id that caused this event)
-	bool touch;			///< Set for pointer events. True if the event is a touch event (finger or pen on screen)
-						///< False if mouse or other cursor input.
+	BUTTON_TYPE button_type;	///< Set for pointer events. True if the event is a touch event (finger or pen on screen)
+								///< False if mouse or other cursor input.
 
 	TBOBJECT_SUBCLASS(TBWidgetEvent, TBTypedObject);
 
 	TBWidgetEvent(EVENT_TYPE type) : target(nullptr), type(type), target_x(0), target_y(0), delta_x(0), delta_y(0), count(1),
-											key(0), special_key(TB_KEY_UNDEFINED), modifierkeys(TB_MODIFIER_NONE), touch(false) {}
+											key(0), special_key(TB_KEY_UNDEFINED), modifierkeys(TB_MODIFIER_NONE), button_type(TB_UNKNOWN) {}
 
-	TBWidgetEvent(EVENT_TYPE type, int x, int y, bool touch, MODIFIER_KEYS modifierkeys = TB_MODIFIER_NONE) :
+	TBWidgetEvent(EVENT_TYPE type, int x, int y, BUTTON_TYPE button_type, MODIFIER_KEYS modifierkeys = TB_MODIFIER_NONE) :
 											target(nullptr), type(type), target_x(x), target_y(y), delta_x(0), delta_y(0),
 											count(1), key(0), special_key(TB_KEY_UNDEFINED), modifierkeys(modifierkeys),
-											touch(touch) {}
+											button_type(button_type) {}
 
 	/** The count value may be 1 to infinity. If you f.ex want to see which count it is for something
 		handling click and double click, call GetCountCycle(2). If you also handle triple click, call
@@ -935,9 +944,9 @@ public:
 		this call and are not sure what the event will cause, use TBWidgetSafePointer to detect self deletion. */
 	bool InvokeEvent(TBWidgetEvent &ev);
 
-	bool InvokePointerDown(int x, int y, int click_count, MODIFIER_KEYS modifierkeys, bool touch);
-	bool InvokePointerUp(int x, int y, MODIFIER_KEYS modifierkeys, bool touch);
-	void InvokePointerMove(int x, int y, MODIFIER_KEYS modifierkeys, bool touch);
+	bool InvokePointerDown(int x, int y, int click_count, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type);
+	bool InvokePointerUp(int x, int y, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type);
+	void InvokePointerMove(int x, int y, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type);
 	void InvokePointerCancel();
 
 	/** Invoke touch events with ref_id set as the given id.
@@ -1072,10 +1081,10 @@ private:
 	static void SetHoveredWidget(TBWidget *widget, bool touch);
 	static void SetCapturedWidget(TBWidget *widget);
 	void HandlePanningOnMove(int x, int y);
-	void StartLongClickTimer(bool touch);
+	void StartLongClickTimer(BUTTON_TYPE type);
 	void StopLongClickTimer();
 	friend class TBLongClickTimer;
-	void MaybeInvokeLongClickOrContextMenu(bool touch);
+	void MaybeInvokeLongClickOrContextMenu(BUTTON_TYPE type);
 	/** Returns the opacity for this widget multiplied with its skin opacity and state opacity. */
 	float CalculateOpacityInternal(WIDGET_STATE state, TBSkinElement *skin_element) const;
 };

@@ -216,10 +216,20 @@ void Model::scaleHalf() {
 	modified(newVolume->region());
 }
 
-void Model::fill(int x, int y, int z) {
+void Model::fill(const glm::ivec3& pos) {
 	const bool overwrite = evalAction() == Action::OverrideVoxel;
 	voxel::Region modifiedRegion;
-	if (voxedit::tool::fill(*modelVolume(), glm::ivec3(x, y, z), _lockedAxis, _shapeHandler.currentVoxel(), overwrite, &modifiedRegion)) {
+	if (voxedit::tool::fill(*modelVolume(), pos, _lockedAxis, _shapeHandler.cursorVoxel(), overwrite, &modifiedRegion)) {
+		modified(modifiedRegion);
+	}
+}
+
+void Model::fill(const glm::ivec3& mins, const glm::ivec3& maxs) {
+	const bool deleteVoxels = evalAction() == Action::DeleteVoxel;
+	const bool overwrite = deleteVoxels ? true : evalAction() == Action::OverrideVoxel;
+	voxel::Region modifiedRegion;
+	voxel::Voxel voxel = deleteVoxels ? voxel::createVoxel(voxel::VoxelType::Air, 0) : _shapeHandler.cursorVoxel();
+	if (voxedit::tool::aabb(*modelVolume(), mins, maxs, voxel, overwrite, &modifiedRegion)) {
 		modified(modifiedRegion);
 	}
 }
@@ -284,7 +294,28 @@ void Model::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors,
 	modified(modifiedRegion);
 }
 
-void Model::executeAction(uint64_t now) {
+bool Model::aabbStart() {
+	if (_aabbMode) {
+		return false;
+	}
+	_aabbFirstPos = cursorPosition();
+	_aabbMode = true;
+	return true;
+}
+
+bool Model::aabbEnd() {
+	if (!_aabbMode) {
+		return false;
+	}
+	_aabbMode = false;
+	const glm::ivec3& pos = cursorPosition();
+	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
+	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos);
+	fill(mins, maxs);
+	return true;
+}
+
+void Model::executeAction(uint64_t now, bool start) {
 	const Action execAction = evalAction();
 	if (execAction == Action::None) {
 		Log::warn("Nothing to execute");
@@ -292,6 +323,20 @@ void Model::executeAction(uint64_t now) {
 	}
 
 	core_trace_scoped(EditorSceneExecuteAction);
+
+	if (!start) {
+		if (execAction == Action::PlaceVoxels) {
+			aabbEnd();
+		}
+		// only handled in the end-case is the aabb placement
+		return;
+	} else {
+		if (execAction == Action::PlaceVoxels) {
+			aabbStart();
+			return;
+		}
+	}
+
 	if (_lastAction == execAction) {
 		if (now - _lastActionExecution < _actionExecutionDelay) {
 			return;
@@ -304,7 +349,7 @@ void Model::executeAction(uint64_t now) {
 	const bool didHit = _result.didHit;
 	voxel::Region modifiedRegion;
 	if (didHit && execAction == Action::CopyVoxel) {
-		shapeHandler().setVoxel(getVoxel(_cursorPos));
+		shapeHandler().setCursorVoxel(getVoxel(_cursorPos));
 	} else if (didHit && execAction == Action::SelectVoxels) {
 		select(_cursorPos);
 	} else if (didHit && execAction == Action::OverrideVoxel) {
@@ -547,6 +592,13 @@ void Model::render(const video::Camera& camera) {
 	_gridRenderer.render(camera, modelVolume()->region());
 	_volumeRenderer.render(camera);
 	_cursorVolumeRenderer.render(camera);
+	if (_aabbMode) {
+		_shapeBuilder.clear();
+		_shapeBuilder.setColor(core::Color::Red);
+		_shapeBuilder.cube(_aabbFirstPos, cursorPosition());
+		_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
+		_shapeRenderer.render(_aabbMeshIndex, camera);
+	}
 	// TODO: render error if rendered last - but be before grid renderer to get transparency.
 	if (_renderLockAxis) {
 		for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
@@ -586,6 +638,7 @@ bool Model::init() {
 	_gridRenderer.init();
 
 	_mirrorMeshIndex = -1;
+	_aabbMeshIndex = -1;
 	for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
 		_planeMeshIndex[i] = -1;
 	}
@@ -716,7 +769,7 @@ void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
 void Model::bezier(const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control) {
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	const int steps = glm::distance2(glm::vec3(start), glm::vec3(end)) * 10;
-	voxel::shape::createBezier(wrapper,start, end, control, _shapeHandler.currentVoxel(), steps);
+	voxel::shape::createBezier(wrapper,start, end, control, _shapeHandler.cursorVoxel(), steps);
 	modified(wrapper.dirtyRegion());
 }
 

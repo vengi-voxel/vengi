@@ -248,7 +248,7 @@ void TBButton::OnMessageReceived(TBMessage *msg)
 		assert(captured_widget == this);
 		if (!cancel_click && GetHitStatus(pointer_move_widget_x, pointer_move_widget_y))
 		{
-			TBWidgetEvent ev(EVENT_TYPE_CLICK, pointer_move_widget_x, pointer_move_widget_y, true);
+			TBWidgetEvent ev(EVENT_TYPE_CLICK, pointer_move_widget_x, pointer_move_widget_y, TB_TOUCH);
 			captured_widget->InvokeEvent(ev);
 		}
 		if (auto_click_repeat_delay)
@@ -321,7 +321,7 @@ bool TBClickLabel::OnEvent(const TBWidgetEvent &ev)
 		click_target->SetState(WIDGET_STATE_PRESSED, pressed_state);
 
 		TBWidgetEvent target_ev(ev.type, ev.target_x - click_target->GetRect().x, ev.target_y - click_target->GetRect().y,
-								ev.touch, ev.modifierkeys);
+								ev.button_type, ev.modifierkeys);
 		return click_target->InvokeEvent(target_ev);
 	}
 	return false;

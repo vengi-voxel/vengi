@@ -208,7 +208,7 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 			return false;
 		}
 
-		tb::TBWidgetEvent ev(tb::EVENT_TYPE_SHORTCUT, 0, 0, false, mod);
+		tb::TBWidgetEvent ev(tb::EVENT_TYPE_SHORTCUT, 0, 0, tb::TB_UNKNOWN, mod);
 		ev.ref_id = id;
 		Log::debug(_logId, "invoke shortcut event: %i", key);
 		return tb::TBWidget::focused_widget->InvokeEvent(ev);
@@ -279,12 +279,18 @@ void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t cli
 	if (_console.onMouseButtonPress(x, y, button)) {
 		return;
 	}
-	if (button != SDL_BUTTON_LEFT) {
-		return;
+	const tb::MODIFIER_KEYS modKeys = getModifierKeys();
+
+	tb::BUTTON_TYPE type = tb::BUTTON_TYPE::TB_UNKNOWN;
+	if (button == SDL_BUTTON_LEFT) {
+		type = tb::TB_LEFT;
+	} else if (button == SDL_BUTTON_RIGHT) {
+		type = tb::TB_RIGHT;
+	} else if (button == SDL_BUTTON_MIDDLE) {
+		type = tb::TB_MIDDLE;
 	}
 
-	const tb::MODIFIER_KEYS modKeys = getModifierKeys();
-	_root->InvokePointerDown(x, y, clicks, modKeys, false);
+	_root->InvokePointerDown(x, y, clicks, modKeys, type);
 }
 
 tb::MODIFIER_KEYS UIApp::getModifierKeys() const {
@@ -296,18 +302,28 @@ void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 		return;
 	}
 	const tb::MODIFIER_KEYS modKeys = getModifierKeys();
+	tb::BUTTON_TYPE type = tb::BUTTON_TYPE::TB_UNKNOWN;
+	if (button == SDL_BUTTON_LEFT) {
+		type = tb::TB_LEFT;
+	} else if (button == SDL_BUTTON_RIGHT) {
+		type = tb::TB_RIGHT;
+	} else if (button == SDL_BUTTON_MIDDLE) {
+		type = tb::TB_MIDDLE;
+	}
 	if (button == SDL_BUTTON_RIGHT) {
-		_root->InvokePointerMove(x, y, modKeys, false);
+		_root->InvokePointerMove(x, y, modKeys, type);
 		tb::TBWidget* hover = tb::TBWidget::hovered_widget;
 		if (hover != nullptr) {
 			hover->ConvertFromRoot(x, y);
-			tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, x, y, false, modKeys);
-			hover->InvokeEvent(ev);
+			tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, x, y, type, modKeys);
+			if (!hover->InvokeEvent(ev)) {
+				_root->InvokePointerUp(x, y, modKeys, type);
+			}
 		} else {
-			_root->InvokePointerUp(x, y, modKeys, false);
+			_root->InvokePointerUp(x, y, modKeys, type);
 		}
 	} else {
-		_root->InvokePointerUp(x, y, modKeys, false);
+		_root->InvokePointerUp(x, y, modKeys, type);
 	}
 }
 
@@ -347,7 +363,7 @@ bool UIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	tb::MODIFIER_KEYS mod = mapModifier(0, modifier);
 	mod |= mapModifier(key, 0);
 	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
-		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, 0, 0, false, mod);
+		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, 0, 0, tb::TB_UNKNOWN, mod);
 		if (tb::TBWidget::focused_widget->InvokeEvent(ev)) {
 			return true;
 		}
@@ -478,7 +494,7 @@ core::AppState UIApp::onRunning() {
 	_lastShowTextY = 5;
 
 	if (!_console.isActive()) {
-		_root->InvokePointerMove(_mousePos.x, _mousePos.y, getModifierKeys(), false);
+		_root->InvokePointerMove(_mousePos.x, _mousePos.y, getModifierKeys(), tb::TB_UNKNOWN);
 	}
 
 	const bool running = state == core::AppState::Running;

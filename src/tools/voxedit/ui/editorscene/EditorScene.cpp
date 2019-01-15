@@ -172,8 +172,12 @@ void EditorScene::scaleHalf() {
 	m().scaleHalf();
 }
 
-void EditorScene::fill(int x, int y, int z) {
-	m().fill(x, y, z);
+void EditorScene::fill(const glm::ivec3& pos) {
+	m().fill(pos);
+}
+
+void EditorScene::fill(const glm::ivec3& mins, const glm::ivec3& maxs) {
+	m().fill(mins, maxs);
 }
 
 bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
@@ -330,8 +334,8 @@ void EditorScene::resetCamera() {
 	_controller.resetCamera(m().modelVolume());
 }
 
-void EditorScene::setVoxel(const voxel::Voxel& voxel) {
-	m().setVoxel(voxel);
+void EditorScene::setCursorVoxel(const voxel::Voxel& voxel) {
+	m().setCursorVoxel(voxel);
 }
 
 void EditorScene::unselectAll() {
@@ -397,16 +401,27 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	Model& mdl = m();
 	bool& mouseDown = _controller._mouseDown;
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
-		mouseDown = true;
-		mdl.executeAction(now);
-		setInternalAction(mdl.keyAction());
-		return true;
+		if (ev.button_type == tb::TB_LEFT || ev.button_type == tb::TB_RIGHT) {
+			mouseDown = true;
+			mdl.executeAction(now, true);
+			setInternalAction(mdl.keyAction());
+			return true;
+		}
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
-		mouseDown = false;
-		setInternalAction(Action::None);
-		return true;
+		if (ev.button_type == tb::TB_LEFT || ev.button_type == tb::TB_RIGHT) {
+			mouseDown = false;
+			mdl.executeAction(now, false);
+			setInternalAction(Action::None);
+			return true;
+		}
+	} else if (ev.type == tb::EVENT_TYPE_KEY_UP) {
+		if (ev.special_key == tb::TB_KEY_SHIFT && mdl.aabbEnd()) {
+			return true;
+		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
-		if (ev.modifierkeys) {
+		if (ev.special_key == tb::TB_KEY_SHIFT && mdl.aabbStart()) {
+			return true;
+		} else if (ev.modifierkeys) {
 			if (ev.modifierkeys & tb::TB_ALT) {
 				setKeyAction(Action::CopyVoxel);
 			} else if (ev.modifierkeys & tb::TB_SHIFT) {
@@ -440,7 +455,8 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		const bool alt = mdl.action() == Action::None && (ev.modifierkeys & tb::TB_ALT);
 		if (_controller.move(relative || middle || alt, ev.target_x, ev.target_y)) {
 			if (mouseDown) {
-				mdl.executeAction(now);
+				// execute a defined action while the mouse is moving
+				mdl.executeAction(now, true);
 			}
 		}
 		mdl.setMousePos(ev.target_x, ev.target_y);

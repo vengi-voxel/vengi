@@ -25,12 +25,12 @@ public:
 	bool scaleCursorShape(const glm::vec3& scale, voxel::RawVolume* cursorVolume);
 	bool setCursorShape(Shape type, voxel::RawVolume* cursorVolume, bool force);
 
-	const voxel::Voxel& currentVoxel() const;
+	const voxel::Voxel& cursorVoxel() const;
 	Shape cursorShape() const;
-	void setVoxel(const voxel::Voxel& type);
+	void setCursorVoxel(const voxel::Voxel& type);
 };
 
-inline const voxel::Voxel& ShapeHandler::currentVoxel() const {
+inline const voxel::Voxel& ShapeHandler::cursorVoxel() const {
 	return _currentVoxel;
 }
 
@@ -38,7 +38,7 @@ inline Shape ShapeHandler::cursorShape() const {
 	return _cursorShape;
 }
 
-inline void ShapeHandler::setVoxel(const voxel::Voxel& type) {
+inline void ShapeHandler::setCursorVoxel(const voxel::Voxel& type) {
 	_currentVoxel = type;
 }
 

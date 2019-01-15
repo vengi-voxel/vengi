@@ -98,7 +98,7 @@ public:
 
 	void setAction(voxedit::Action action);
 
-	void setVoxel(const voxel::Voxel& voxel);
+	void setCursorVoxel(const voxel::Voxel& voxel);
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);
@@ -132,7 +132,8 @@ public:
 	void crop();
 	void extend(const glm::ivec3& size);
 	void scaleHalf();
-	void fill(int x, int y, int z);
+	void fill(const glm::ivec3& pos);
+	void fill(const glm::ivec3& mins, const glm::ivec3& maxs);
 
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;

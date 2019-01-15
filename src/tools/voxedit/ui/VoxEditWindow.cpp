@@ -27,6 +27,7 @@ static const struct {
 	{TBIDC("actiondelete"),		Action::DeleteVoxel, false},
 	{TBIDC("actioncopy"),		Action::CopyVoxel, false},
 	{TBIDC("actionplace"),		Action::PlaceVoxel, true},
+	{TBIDC("actionplacebox"),	Action::PlaceVoxels, true},
 	{TBIDC("actionselect"),		Action::SelectVoxels, false}
 };
 
@@ -149,7 +150,7 @@ bool VoxEditWindow::init() {
 	}
 	const int8_t index = (uint8_t)_paletteWidget->GetValue();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-	_scene->setVoxel(voxel);
+	_scene->setCursorVoxel(voxel);
 	_paletteWidget->markAsClean();
 
 	_sceneTop = getWidgetByType<EditorScene>("editorscenetop");
@@ -475,8 +476,7 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		extend();
 		return true;
 	} else if (isAny(ev, TBIDC("fill"))) {
-		const glm::ivec3& pos = _scene->cursorPosition();
-		fill(pos.x, pos.y, pos.z);
+		fill();
 		return true;
 	} else if (isAny(ev, TBIDC("new"))) {
 		createNew(false);
@@ -690,12 +690,11 @@ void VoxEditWindow::scaleHalf() {
 }
 
 void VoxEditWindow::fill() {
-	const glm::ivec3& pos = _scene->referencePosition();
-	fill(pos.x, pos.y, pos.z);
+	fill(_scene->referencePosition());
 }
 
-void VoxEditWindow::fill(int x, int y, int z) {
-	_scene->fill(x, y, z);
+void VoxEditWindow::fill(const glm::ivec3& pos) {
+	_scene->fill(pos);
 }
 
 bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
@@ -786,7 +785,7 @@ void VoxEditWindow::OnProcess() {
 	if (_paletteWidget->isDirty()) {
 		const int8_t index = (uint8_t)_paletteWidget->GetValue();
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-		_scene->setVoxel(voxel);
+		_scene->setCursorVoxel(voxel);
 		_paletteWidget->markAsClean();
 	}
 	const bool empty = _scene->isEmpty();
@@ -899,14 +898,19 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.type == tb::EVENT_TYPE_SHORTCUT) {
 		if (ev.ref_id == TBIDC("undo")) {
 			undo();
+			return true;
 		} else if (ev.ref_id == TBIDC("redo")) {
 			redo();
+			return true;
 		} else if (ev.ref_id == TBIDC("copy")) {
 			copy();
+			return true;
 		} else if (ev.ref_id == TBIDC("paste")) {
 			paste();
+			return true;
 		} else if (ev.ref_id == TBIDC("cut")) {
 			cut();
+			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
 		const int key = ev.key;
@@ -917,20 +921,25 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 					_modeNumberBuf[l++] = (uint8_t)key;
 					_modeNumberBuf[l] = '\0';
 					_lastModePress = core::App::getInstance()->timeProvider()->tickMillis();
+					return true;
 				}
 			} else if (ev.special_key == tb::TB_KEY_ENTER) {
 				executeMode();
+				return true;
 			}
 		} else if (_mode != ModifierMode::None) {
 			if (key == SDLK_x) {
 				Log::debug("Set axis to x");
 				_axis |= math::Axis::X;
+				return true;
 			} else if (key == SDLK_y) {
 				_axis |= math::Axis::Y;
 				Log::debug("Set axis to y");
+				return true;
 			} else if (key == SDLK_z) {
 				_axis |= math::Axis::Z;
 				Log::debug("Set axis to z");
+				return true;
 			}
 			_lastModePress = core::App::getInstance()->timeProvider()->tickMillis();
 		}

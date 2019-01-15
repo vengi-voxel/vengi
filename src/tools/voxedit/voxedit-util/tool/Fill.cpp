@@ -60,5 +60,36 @@ bool fill(voxel::RawVolume& target, const glm::ivec3& position, const math::Axis
 	return true;
 }
 
+bool aabb(voxel::RawVolume& target, const glm::ivec3& mins, const glm::ivec3& maxs, const voxel::Voxel& voxel, bool overwrite, voxel::Region* modifiedRegion) {
+	glm::ivec3 modifiedMins(std::numeric_limits<int>::max());
+	glm::ivec3 modifiedMaxs(std::numeric_limits<int>::min());
+	int cnt = 0;
+	for (int32_t z = mins.z; z <= maxs.z; ++z) {
+		for (int32_t y = mins.y; y <= maxs.y; ++y) {
+			for (int32_t x = mins.x; x <= maxs.x; ++x) {
+				if (overwrite || isAir(target.voxel(x, y, z).getMaterial())) {
+					if (target.setVoxel(x, y, z, voxel)) {
+						++cnt;
+						modifiedMins.x = glm::min(modifiedMins.x, x);
+						modifiedMins.y = glm::min(modifiedMins.y, y);
+						modifiedMins.z = glm::min(modifiedMins.z, z);
+
+						modifiedMaxs.x = glm::max(modifiedMaxs.x, x);
+						modifiedMaxs.y = glm::max(modifiedMaxs.y, y);
+						modifiedMaxs.z = glm::max(modifiedMaxs.z, z);
+					}
+				}
+			}
+		}
+	}
+	if (cnt <= 0) {
+		return false;
+	}
+	if (modifiedRegion != nullptr) {
+		*modifiedRegion = voxel::Region(modifiedMins, modifiedMaxs);
+	}
+	return true;
+}
+
 }
 }

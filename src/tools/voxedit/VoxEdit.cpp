@@ -120,7 +120,7 @@ core::AppState VoxEdit::onConstruct() {
 			const int x = core::string::toInt(args[0]);
 			const int y = core::string::toInt(args[1]);
 			const int z = core::string::toInt(args[2]);
-			this->_mainWindow->fill(x, y, z);
+			this->_mainWindow->fill(glm::ivec3(x, y, z));
 		} else {
 			this->_mainWindow->fill();
 		}

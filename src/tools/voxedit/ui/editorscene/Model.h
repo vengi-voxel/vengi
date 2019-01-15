@@ -54,6 +54,9 @@ private:
 	glm::ivec3 _referencePos;
 	glm::ivec3 _mirrorPos;
 
+	glm::ivec3 _aabbFirstPos;
+	bool _aabbMode = false;
+
 	math::Axis _lockedAxis = math::Axis::None;
 	math::Axis _mirrorAxis = math::Axis::None;
 
@@ -66,6 +69,7 @@ private:
 
 	int32_t _planeMeshIndex[3] = {-1, -1, -1};
 	int32_t _mirrorMeshIndex = -1;
+	int32_t _aabbMeshIndex = -1;
 
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
@@ -117,10 +121,14 @@ public:
 	bool place();
 	bool remove();
 
+	bool aabbStart();
+	bool aabbEnd();
+
 	void crop();
 	void extend(const glm::ivec3& size);
 	void scaleHalf();
-	void fill(int x, int y, int z);
+	void fill(const glm::ivec3& pos);
+	void fill(const glm::ivec3& mins, const glm::ivec3& maxs);
 
 	/**
 	 * @brief Convert a given point cloud to voxels
@@ -193,7 +201,7 @@ public:
 	bool trace(const video::Camera& camera);
 	void select(const glm::ivec3& pos);
 	void unselectAll();
-	void executeAction(uint64_t now);
+	void executeAction(uint64_t now, bool start);
 	void resetLastTrace();
 
 	void setSelectionType(SelectType type);
@@ -215,7 +223,7 @@ public:
 
 	void scaleCursorShape(const glm::vec3& scale);
 	void setCursorShape(Shape shape);
-	void setVoxel(const voxel::Voxel& voxel);
+	void setCursorVoxel(const voxel::Voxel& voxel);
 	ShapeHandler& shapeHandler();
 	const ShapeHandler& shapeHandler() const;
 
@@ -226,7 +234,7 @@ public:
 	// the key action - has a higher priority than the ui action
 	Action _keyAction = Action::None;
 	// action that is selected via ui
-	Action _uiAction = Action::PlaceVoxel;
+	Action _uiAction = Action::PlaceVoxels;
 	uint64_t _actionExecutionDelay = 20;
 };
 
@@ -240,8 +248,8 @@ inline void Model::scaleCursorShape(const glm::vec3& scale) {
 	markCursorExtract();
 }
 
-inline void Model::setVoxel(const voxel::Voxel& type) {
-	_shapeHandler.setVoxel(type);
+inline void Model::setCursorVoxel(const voxel::Voxel& type) {
+	_shapeHandler.setCursorVoxel(type);
 	voxel::RawVolume* cursorVolume = cursorPositionVolume();
 	if (cursorVolume != nullptr) {
 		_shapeHandler.setCursorShape(_shapeHandler.cursorShape(), cursorVolume, true);
