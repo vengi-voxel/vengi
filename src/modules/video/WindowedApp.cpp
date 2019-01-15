@@ -98,7 +98,7 @@ void WindowedApp::onWindowResize() {
 	video::viewport(0, 0, _width, _height);
 }
 
-bool WindowedApp::onKeyRelease(int32_t key) {
+bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
 	bool handled = false;
 	int16_t code = 0;
 	switch (key) {

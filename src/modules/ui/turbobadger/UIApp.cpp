@@ -115,7 +115,22 @@ static tb::SPECIAL_KEY mapSpecialKey(int32_t key) {
 		return tb::TB_KEY_ENTER;
 	case SDLK_ESCAPE:
 		return tb::TB_KEY_ESC;
+	case SDLK_LSHIFT:
+	case SDLK_RSHIFT:
+		return tb::TB_KEY_SHIFT;
+	case SDLK_LALT:
+	case SDLK_RALT:
+		return tb::TB_KEY_ALT;
+	case SDLK_RGUI:
+	case SDLK_LGUI:
+		return tb::TB_KEY_GUI;
+	case SDLK_LCTRL:
+	case SDLK_RCTRL:
+		return tb::TB_KEY_CTRL;
+	case SDLK_MODE:
+		return tb::TB_KEY_MODE;
 	}
+
 	return tb::TB_KEY_UNDEFINED;
 }
 
@@ -324,12 +339,12 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 	return invokeKey(mapKey(key), mapSpecialKey(key), mapModifier(key, modifier), true);
 }
 
-bool UIApp::onKeyRelease(int32_t key) {
+bool UIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	if (_console.isActive()) {
 		return true;
 	}
-	Super::onKeyRelease(key);
-	tb::MODIFIER_KEYS mod = getModifierKeys();
+	Super::onKeyRelease(key, modifier);
+	tb::MODIFIER_KEYS mod = mapModifier(0, modifier);
 	mod |= mapModifier(key, 0);
 	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
 		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, 0, 0, false, mod);

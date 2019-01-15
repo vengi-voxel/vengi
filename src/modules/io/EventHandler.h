@@ -66,7 +66,7 @@ public:
 	void mouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks);
 	void mouseButtonRelease(int32_t x, int32_t y, uint8_t button);
 	void textInput(const std::string& text);
-	void keyRelease(int32_t key);
+	void keyRelease(int32_t key, int16_t modifier = 0);
 	void keyPress(int32_t key, int16_t modifier = 0);
 	void fingerPress(int64_t finger, float x, float y);
 	void fingerRelease(int64_t finger, float x, float y);

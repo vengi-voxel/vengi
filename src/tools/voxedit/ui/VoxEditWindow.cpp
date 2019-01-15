@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "VoxEditWindow.h"
 #include "LSystemWindow.h"
 #include "NoiseWindow.h"

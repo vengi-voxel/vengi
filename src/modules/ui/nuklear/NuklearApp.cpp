@@ -160,14 +160,13 @@ bool NuklearApp::onKeyPress(int32_t key, int16_t modifier) {
 	return onKeyEvent(key, modifier, true);
 }
 
-bool NuklearApp::onKeyRelease(int32_t key) {
+bool NuklearApp::onKeyRelease(int32_t key, int16_t modifier) {
 	if (_console.isActive()) {
 		return true;
 	}
-	if (Super::onKeyRelease(key)) {
+	if (Super::onKeyRelease(key, modifier)) {
 		return true;
 	}
-	const int16_t modifier = SDL_GetModState();
 	return onKeyEvent(key, modifier, false);
 }
 

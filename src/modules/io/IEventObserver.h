@@ -81,7 +81,7 @@ public:
 	}
 
 	// returns true if the key release was handled
-	virtual bool onKeyRelease(int32_t key) {
+	virtual bool onKeyRelease(int32_t key, int16_t modifier) {
 		return false;
 	}
 

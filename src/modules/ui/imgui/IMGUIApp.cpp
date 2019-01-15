@@ -84,7 +84,7 @@ bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
 	return Super::onKeyPress(key, modifier);
 }
 
-bool IMGUIApp::onKeyRelease(int32_t key) {
+bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	if (_console.isActive()) {
 		return true;
 	}
@@ -92,12 +92,11 @@ bool IMGUIApp::onKeyRelease(int32_t key) {
 	key &= ~SDLK_SCANCODE_MASK;
 	core_assert(key >= 0 && key < lengthof(io.KeysDown));
 	io.KeysDown[key] = false;
-	const int16_t modifier = SDL_GetModState();
 	io.KeyShift = (modifier & KMOD_SHIFT) != 0;
 	io.KeyCtrl  = (modifier & KMOD_CTRL) != 0;
 	io.KeyAlt   = (modifier & KMOD_ALT) != 0;
 	io.KeySuper = (modifier & KMOD_GUI) != 0;
-	return Super::onKeyRelease(key);
+	return Super::onKeyRelease(key, modifier);
 }
 
 void IMGUIApp::onWindowResize() {

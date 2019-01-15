@@ -44,7 +44,7 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		textInput(std::string(event.text.text));
 		break;
 	case SDL_KEYUP:
-		keyRelease((int32_t) event.key.keysym.sym);
+		keyRelease((int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
 		break;
 	case SDL_KEYDOWN:
 		keyPress((int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
@@ -285,9 +285,9 @@ void EventHandler::textInput(const std::string& text) {
 	}
 }
 
-void EventHandler::keyRelease(int32_t key) {
+void EventHandler::keyRelease(int32_t key, int16_t modifier) {
 	for (IEventObserver* observer : _observers) {
-		observer->onKeyRelease(key);
+		observer->onKeyRelease(key, modifier);
 	}
 }
 

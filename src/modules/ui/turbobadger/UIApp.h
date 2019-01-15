@@ -27,7 +27,7 @@ protected:
 	std::string _applicationSkin;
 	bool _uiInitialized = false;
 
-	virtual bool onKeyRelease(int32_t key) override;
+	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual bool onTextInput(const std::string& text) override;
 	virtual void onMouseWheel(int32_t x, int32_t y) override;
