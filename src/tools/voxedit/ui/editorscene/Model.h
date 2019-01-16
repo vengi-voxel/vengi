@@ -122,13 +122,13 @@ public:
 	bool remove();
 
 	bool aabbStart();
-	bool aabbEnd();
+	bool aabbEnd(bool deleteVoxels, bool overwriteVoxels);
 
 	void crop();
 	void extend(const glm::ivec3& size);
 	void scaleHalf();
 	void fill(const glm::ivec3& pos);
-	void fill(const glm::ivec3& mins, const glm::ivec3& maxs);
+	void fill(const glm::ivec3& mins, const glm::ivec3& maxs, bool deleteVoxels, bool overwriteVoxels);
 
 	/**
 	 * @brief Convert a given point cloud to voxels

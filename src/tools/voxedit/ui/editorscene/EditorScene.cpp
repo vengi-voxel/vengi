@@ -176,10 +176,6 @@ void EditorScene::fill(const glm::ivec3& pos) {
 	m().fill(pos);
 }
 
-void EditorScene::fill(const glm::ivec3& mins, const glm::ivec3& maxs) {
-	m().fill(mins, maxs);
-}
-
 bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 	const video::Mesh::Vertices& positions = meshPtr->vertices();
 	const video::Mesh::Indices& indices = meshPtr->indices();
@@ -408,15 +404,25 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
-		if (ev.button_type == tb::TB_LEFT || ev.button_type == tb::TB_RIGHT) {
+		if (ev.button_type == tb::TB_LEFT) {
+			mouseDown = false;
+			mdl.executeAction(now, false);
+			setInternalAction(Action::None);
+			return true;
+		} else if (ev.button_type == tb::TB_RIGHT) {
 			mouseDown = false;
 			mdl.executeAction(now, false);
 			setInternalAction(Action::None);
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_UP) {
-		if (ev.special_key == tb::TB_KEY_SHIFT && mdl.aabbEnd()) {
-			return true;
+		if (ev.special_key == tb::TB_KEY_SHIFT) {
+			const Action action = mdl.evalAction();
+			const bool deleteVoxels = action == Action::DeleteVoxel;
+			const bool overwrite = deleteVoxels ? true : action == Action::OverrideVoxel;
+			if (mdl.aabbEnd(deleteVoxels, overwrite)) {
+				return true;
+			}
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
 		if (ev.special_key == tb::TB_KEY_SHIFT && mdl.aabbStart()) {

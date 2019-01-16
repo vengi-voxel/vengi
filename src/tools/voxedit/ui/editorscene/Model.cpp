@@ -224,12 +224,10 @@ void Model::fill(const glm::ivec3& pos) {
 	}
 }
 
-void Model::fill(const glm::ivec3& mins, const glm::ivec3& maxs) {
-	const bool deleteVoxels = evalAction() == Action::DeleteVoxel;
-	const bool overwrite = deleteVoxels ? true : evalAction() == Action::OverrideVoxel;
+void Model::fill(const glm::ivec3& mins, const glm::ivec3& maxs, bool deleteVoxels, bool overwriteVoxels) {
 	voxel::Region modifiedRegion;
 	voxel::Voxel voxel = deleteVoxels ? voxel::createVoxel(voxel::VoxelType::Air, 0) : _shapeHandler.cursorVoxel();
-	if (voxedit::tool::aabb(*modelVolume(), mins, maxs, voxel, overwrite, &modifiedRegion)) {
+	if (voxedit::tool::aabb(*modelVolume(), mins, maxs, voxel, overwriteVoxels, &modifiedRegion)) {
 		modified(modifiedRegion);
 	}
 }
@@ -303,7 +301,7 @@ bool Model::aabbStart() {
 	return true;
 }
 
-bool Model::aabbEnd() {
+bool Model::aabbEnd(bool deleteVoxels, bool overwriteVoxels) {
 	if (!_aabbMode) {
 		return false;
 	}
@@ -311,7 +309,7 @@ bool Model::aabbEnd() {
 	const glm::ivec3& pos = cursorPosition();
 	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
 	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos);
-	fill(mins, maxs);
+	fill(mins, maxs, deleteVoxels, overwriteVoxels);
 	return true;
 }
 
@@ -325,9 +323,6 @@ void Model::executeAction(uint64_t now, bool start) {
 	core_trace_scoped(EditorSceneExecuteAction);
 
 	if (!start) {
-		if (execAction == Action::PlaceVoxels) {
-			aabbEnd();
-		}
 		// only handled in the end-case is the aabb placement
 		return;
 	} else {

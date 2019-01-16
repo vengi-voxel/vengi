@@ -133,7 +133,6 @@ public:
 	void extend(const glm::ivec3& size);
 	void scaleHalf();
 	void fill(const glm::ivec3& pos);
-	void fill(const glm::ivec3& mins, const glm::ivec3& maxs);
 
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;
