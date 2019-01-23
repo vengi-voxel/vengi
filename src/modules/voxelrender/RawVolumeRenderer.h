@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxel/polyvox/RawVolume.h"
+#include "voxel/polyvox/Region.h"
 #include "video/Buffer.h"
 #include "VoxelrenderShaders.h"
 #include "RenderShaders.h"
@@ -29,13 +30,16 @@ class RawVolumeRenderer {
 protected:
 	static constexpr int MAX_VOLUMES = 4;
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
-	voxel::Mesh* _mesh[MAX_VOLUMES] {};
 	glm::mat4 _model[MAX_VOLUMES] {};
+	typedef std::array<voxel::Mesh*, MAX_VOLUMES> Meshes;
+	typedef std::unordered_map<glm::ivec3, Meshes, std::hash<glm::ivec3> > MeshesMap;
+	MeshesMap _meshes;
 
 	video::Buffer _vertexBuffer[MAX_VOLUMES];
 	shader::Materialblock _materialBlock;
 	shader::WorldShader& _worldShader;
 	render::Shadow _shadow;
+	core::VarPtr _meshSize;
 
 	video::TexturePtr _whiteTexture;
 
@@ -44,6 +48,9 @@ protected:
 
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
+
+	void extract(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
+
 public:
 	RawVolumeRenderer();
 
@@ -53,16 +60,11 @@ public:
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
 	 */
-	bool update(int idx, const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices);
-	bool update(int idx, voxel::Mesh* mesh);
+	bool update(int idx);
 
-	/**
-	 * @brief Reextract the whole volume region and updates the vertex buffers.
-	 * @sa update()
-	 */
-	void extractAll();
-	bool extract(int i);
-	void extract(voxel::RawVolume* volume, voxel::Mesh* mesh) const;
+	bool extract(int idx, const voxel::Region& region);
+
+	bool toMesh(int idx, voxel::Mesh* mesh);
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer
@@ -73,7 +75,7 @@ public:
 	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume);
 	bool setModelMatrix(int idx, const glm::mat4& model);
 
-	const voxel::Mesh* mesh(int idx = 0) const;
+	bool empty(int idx = 0) const;
 	/**
 	 * @sa setVolume()
 	 */
@@ -82,12 +84,13 @@ public:
 
 	void setAmbientColor(const glm::vec3& color);
 
+	void construct();
+
 	/**
 	 * @sa shutdown()
 	 */
 	bool init();
 
-	bool onResize(const glm::ivec2& position, const glm::ivec2& dimension);
 	/**
 	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.
 	 *
@@ -112,13 +115,6 @@ inline const voxel::RawVolume* RawVolumeRenderer::volume(int idx) const {
 		return nullptr;
 	}
 	return _rawVolume[idx];
-}
-
-inline const voxel::Mesh* RawVolumeRenderer::mesh(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return nullptr;
-	}
-	return _mesh[idx];
 }
 
 }

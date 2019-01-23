@@ -11,6 +11,11 @@ TestVoxelFont::TestVoxelFont(const metric::MetricPtr& metric, const io::Filesyst
 	init(ORGANISATION, "testvoxelfont");
 }
 
+core::AppState TestVoxelFont::onConstruct() {
+	_rawVolumeRenderer.construct();
+	return Super::onConstruct();
+}
+
 core::AppState TestVoxelFont::onInit() {
 	core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
@@ -22,10 +27,6 @@ core::AppState TestVoxelFont::onInit() {
 		return core::AppState::InitFailure;
 	}
 	if (!_rawVolumeRenderer.init()) {
-		Log::error("Failed to initialize the raw volume renderer");
-		return core::AppState::InitFailure;
-	}
-	if (!_rawVolumeRenderer.onResize(glm::ivec2(0), dimension())) {
 		Log::error("Failed to initialize the raw volume renderer");
 		return core::AppState::InitFailure;
 	}

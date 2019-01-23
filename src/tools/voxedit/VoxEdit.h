@@ -42,8 +42,6 @@ private:
 
 	core::ActionButton _move[lengthof(DIRECTIONS)];
 	uint64_t _lastMove[lengthof(DIRECTIONS)];
-	core::ActionButton _remove;
-	core::ActionButton _place;
 
 public:
 	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool);
@@ -55,8 +53,6 @@ public:
 	bool importmeshFile(const std::string& file);
 	bool exportFile(const std::string& file);
 	bool newFile(bool force = false);
-	void selectCursor();
-	void select(const glm::ivec3& pos);
 
 	video::MeshPoolPtr meshPool() const;
 

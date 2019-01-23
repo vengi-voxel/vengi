@@ -54,6 +54,7 @@ core::AppState TestTraze::onConstruct() {
 			Log::info("%s", p.name.c_str());
 		}
 	});
+	_rawVolumeRenderer.construct();
 	_messageQueue.construct();
 	return state;
 }
@@ -72,10 +73,6 @@ core::AppState TestTraze::onInit() {
 		return core::AppState::InitFailure;
 	}
 	if (!_rawVolumeRenderer.init()) {
-		Log::error("Failed to initialize the raw volume renderer");
-		return core::AppState::InitFailure;
-	}
-	if (!_rawVolumeRenderer.onResize(glm::ivec2(0), dimension())) {
 		Log::error("Failed to initialize the raw volume renderer");
 		return core::AppState::InitFailure;
 	}
@@ -166,7 +163,7 @@ void TestTraze::onEvent(const traze::NewGridEvent& event) {
 	const glm::mat4& rotateY = glm::rotate(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	const glm::mat4& rotateX = glm::rotate(glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	_rawVolumeRenderer.setModelMatrix(PlayFieldVolume, rotateX * rotateY * translate);
-	if (!_rawVolumeRenderer.extract(PlayFieldVolume)) {
+	if (!_rawVolumeRenderer.extract(PlayFieldVolume, v->region())) {
 		Log::error("Failed to extract the volume");
 	}
 }

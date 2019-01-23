@@ -3,12 +3,13 @@
  */
 
 #include "NoiseWindow.h"
-#include "editorscene/EditorScene.h"
+
+#include "editorscene/ViewportSingleton.h"
 
 namespace voxedit {
 
-NoiseWindow::NoiseWindow(ui::turbobadger::Window* window, EditorScene* scene) :
-		Super(window), _scene(scene) {
+NoiseWindow::NoiseWindow(ui::turbobadger::Window* window) :
+		Super(window) {
 	core_assert_always(loadResourceFile("ui/window/voxedit-noise.tb.txt"));
 
 	_octaves     = getWidgetByType<tb::TBEditField>("octaves");
@@ -32,7 +33,7 @@ bool NoiseWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			const tb::TBStr& gainStr = _gain->GetText();
 			const float lacunarity = core::string::toFloat(lacunarityStr.CStr());
 			const float gain = core::string::toFloat(gainStr.CStr());
-			_scene->noise(octaves, lacunarity, frequency, gain, voxel::noisegen::NoiseType::ridgedMF);
+			ViewportSingleton::getInstance().noise(octaves, lacunarity, frequency, gain, voxel::noisegen::NoiseType::ridgedMF);
 			Close();
 			return true;
 		} else if (ev.target->GetID() == TBIDC("cancel")) {

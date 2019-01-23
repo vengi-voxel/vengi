@@ -29,24 +29,12 @@ elements
 		bitmap voxedit-undo.png
 	voxedit-voxel
 		bitmap voxedit-voxel.png
-	voxedit-cursor-circle
-		bitmap voxedit-cursor-circle.png
-	voxedit-cursor-cone
-		bitmap voxedit-cursor-cone.png
-	voxedit-cursor-dome
-		bitmap voxedit-cursor-dome.png
-	voxedit-cursor-plane
-		bitmap voxedit-cursor-plane.png
-	voxedit-cursor-single
-		bitmap voxedit-cursor-single.png
 	voxedit-reset-camera
 		bitmap voxedit-reset-camera.png
 	voxedit-override
 		bitmap voxedit-override.png
 	voxedit-export
 		bitmap voxedit-export.png
-	voxedit-selection
-		bitmap voxedit-selection.png
 	voxedit-axis-x
 		bitmap voxedit-axis-x.png
 	voxedit-axis-y
@@ -63,12 +51,8 @@ elements
 		bitmap voxedit-extend.png
 	voxedit-crop
 		bitmap voxedit-crop.png
-	voxedit-lsystem
-		bitmap voxedit-lsystem.png
 	voxedit-tree_pine
 		bitmap voxedit-tree_pine.png
-	voxedit-fill
-		bitmap voxedit-fill.png
 
 	grid-button
 		bitmap voxedit-show-grid.png

@@ -6,10 +6,12 @@
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
 #include "core/command/Command.h"
+#include "ui/editorscene/ViewportSingleton.h"
 #include "video/Renderer.h"
 #include "ui/VoxEditWindow.h"
 #include "io/Filesystem.h"
 
+#define COMMAND_VIEWPORTSINGLETON(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {::voxedit::ViewportSingleton::getInstance().command();}).setHelp(help)
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \
 	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
@@ -46,14 +48,6 @@ bool VoxEdit::importmeshFile(const std::string& file) {
 	return _mainWindow->importMesh(file);
 }
 
-void VoxEdit::select(const glm::ivec3& pos) {
-	_mainWindow->select(pos);
-}
-
-void VoxEdit::selectCursor() {
-	_mainWindow->selectCursor();
-}
-
 bool VoxEdit::newFile(bool force) {
 	return _mainWindow->createNew(force);
 }
@@ -87,22 +81,6 @@ core::AppState VoxEdit::onConstruct() {
 		return i;
 	};
 
-	core::Command::registerCommand("select", [this] (const core::CmdArgs& args) {
-		if (args.size() != 3) {
-			Log::info("Expected to get x, y and z coordinates");
-			return;
-		}
-		const int x = core::string::toInt(args[0]);
-		const int y = core::string::toInt(args[1]);
-		const int z = core::string::toInt(args[2]);
-		const glm::ivec3 pos(x, y, z);
-		select(pos);
-	}).setHelp("Select voxels from the given position");
-
-	core::Command::registerCommand("pick", [this] (const core::CmdArgs& args) {
-		selectCursor();
-	}).setHelp("Select voxels from the given position");
-
 	core::Command::registerCommand("rotate", [this] (const core::CmdArgs& args) {
 		if (args.size() < 3) {
 			Log::info("Expected to get x, y and z angles in degrees");
@@ -113,18 +91,6 @@ core::AppState VoxEdit::onConstruct() {
 		const int z = core::string::toInt(args[2]);
 		this->_mainWindow->rotate(x, y, z);
 	}).setHelp("Rotate voxels by the given angles (in degree)");
-
-	core::Command::registerCommand("fill", [this] (const core::CmdArgs& args) {
-		const int argc = args.size();
-		if (argc >= 3) {
-			const int x = core::string::toInt(args[0]);
-			const int y = core::string::toInt(args[1]);
-			const int z = core::string::toInt(args[2]);
-			this->_mainWindow->fill(glm::ivec3(x, y, z));
-		} else {
-			this->_mainWindow->fill();
-		}
-	}).setHelp("Fill with the current selected voxel");
 
 	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
 		if (args.size() < 3) {
@@ -141,11 +107,6 @@ core::AppState VoxEdit::onConstruct() {
 		core::Command::registerActionButton(core::string::format("movecursor%s", DIRECTIONS[i].postfix), _move[i]);
 		_lastMove[i] = _now;
 	}
-	core::Command::registerActionButton("remove", _remove);
-	core::Command::registerActionButton("place", _place);
-
-	COMMAND_MAINWINDOW(remove, "Remove the cursor shape from the current cursor position");
-	COMMAND_MAINWINDOW(place, "Place the cursor shape at the current cursor position");
 
 	core::Command::registerCommand("movecursor", [this] (const core::CmdArgs& args) {
 		if (args.size() < 3) {
@@ -156,23 +117,6 @@ core::AppState VoxEdit::onConstruct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		this->_mainWindow->setCursorPosition(x, y, z, true);
-	}).setHelp("Move the cursor by the specified offsets");
-
-	core::Command::registerCommand("bezier", [this] (const core::CmdArgs& args) {
-		if (args.size() != 9) {
-			Log::info("Expected to get 3 x (x, y, z) coordinates (start, end, control)");
-			return;
-		}
-		const int x1 = core::string::toInt(args[0]);
-		const int y1 = core::string::toInt(args[1]);
-		const int z1 = core::string::toInt(args[2]);
-		const int x2 = core::string::toInt(args[3]);
-		const int y2 = core::string::toInt(args[4]);
-		const int z2 = core::string::toInt(args[5]);
-		const int x3 = core::string::toInt(args[6]);
-		const int y3 = core::string::toInt(args[7]);
-		const int z3 = core::string::toInt(args[8]);
-		this->_mainWindow->bezier(glm::ivec3(x1, y1, z1), glm::ivec3(x2, y2, z2), glm::ivec3(x3, y3, z3));
 	}).setHelp("Move the cursor by the specified offsets");
 
 	core::Command::registerCommand("setreferenceposition", [this] (const core::CmdArgs& args) {
@@ -186,7 +130,6 @@ core::AppState VoxEdit::onConstruct() {
 		this->_mainWindow->setReferencePosition(x, y, z);
 	}).setHelp("Set the reference position to the specified position");
 
-	COMMAND_MAINWINDOW_EVENT("dialog_lsystem", "Opens the lsystem dialog");
 	COMMAND_MAINWINDOW_EVENT("dialog_noise", "Opens the noise dialog");
 
 	COMMAND_CALL("new", newFile(), "Create a new scene");
@@ -199,23 +142,10 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(importheightmap, "Import a heightmap into the volume");
 
 	COMMAND_MAINWINDOW(setreferencepositiontocursor, "Set the reference position to the current cursor position");
-	COMMAND_MAINWINDOW(unselectall, "Unselect every voxel");
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
 	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");
 	COMMAND_MAINWINDOW(rotatez, "Rotate the volume around the z axis");
-	COMMAND_MAINWINDOW(scalecursorx, "Scale the cursor volume in x direction");
-	COMMAND_MAINWINDOW(scalecursory, "Scale the cursor volume in y direction");
-	COMMAND_MAINWINDOW(scalecursorz, "Scale the cursor volume in z direction");
-	COMMAND_MAINWINDOW(crop, "Crop your volume");
-	core::Command::registerCommand("resample", [this] (const core::CmdArgs& args) {
-		const int argc = args.size();
-		if (argc != 1) {
-			Log::info("Expected to get a pot resample value");
-			return;
-		}
-		const int factor = core::string::toInt(args[0]);
-		_mainWindow->resample(factor);
-	}).setHelp("Resample the volume");
+	COMMAND_VIEWPORTSINGLETON(crop, "Crop your volume");
 	core::Command::registerCommand("resize", [this] (const core::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc == 1) {
@@ -231,19 +161,11 @@ core::AppState VoxEdit::onConstruct() {
 			_mainWindow->extend();
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
-	COMMAND_MAINWINDOW(scaleHalf, "Scale your volume by 50%");
+	COMMAND_VIEWPORTSINGLETON(scaleHalf, "Scale your volume by 50%");
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
 	COMMAND_MAINWINDOW(redo, "Redo your last step");
-	COMMAND_MAINWINDOW(copy, "Copy selection into cursor");
-	COMMAND_MAINWINDOW(paste, "Insert cursor volume into model volume");
-	COMMAND_MAINWINDOW(cut, "Delete selected volume from model volume");
 	COMMAND_MAINWINDOW(toggleviewport, "Toggle quad view on/off");
 	COMMAND_MAINWINDOW(togglefreelook, "Toggle free look on/off");
-	COMMAND_MAINWINDOW(rotatemode, "Activates the rotate mode (next keys are axis x, y, or z and the rotation value in degrees)");
-	COMMAND_MAINWINDOW(scalemode, "Activates the scale mode (next keys are axis x, y, or z and the numeric scale value)");
-	COMMAND_MAINWINDOW(movemode, "Activates the move mode (next keys are axis x, y, or z and the translation values in voxels)");
-	COMMAND_MAINWINDOW(togglelockaxis, "Activates the lock mode (next key is axis x, y, or z)");
-	COMMAND_MAINWINDOW(togglemirroraxis, "Activates the mirror mode (next key is axis x, y, or z)");
 	COMMAND_MAINWINDOW(resetcamera, "Reset cameras");
 
 	return state;
@@ -284,11 +206,6 @@ core::AppState VoxEdit::onInit() {
 }
 
 void VoxEdit::update() {
-	if (_place.pressed()) {
-		_mainWindow->place();
-	} else if (_remove.pressed()) {
-		_mainWindow->remove();
-	}
 	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
 			continue;

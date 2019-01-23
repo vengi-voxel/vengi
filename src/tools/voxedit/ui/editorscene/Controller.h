@@ -31,7 +31,6 @@ public:
 
 	void init(Controller::SceneCameraMode mode);
 	void resetCamera(const voxel::RawVolume* volume);
-	void changeCameraRotationType(video::CameraRotationType type);
 
 	void onResize(const glm::ivec2& size);
 

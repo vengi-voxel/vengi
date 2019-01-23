@@ -28,10 +28,6 @@ void Controller::resetCamera(const voxel::RawVolume* volume) {
 	_camera.lookAt(center);
 }
 
-void Controller::changeCameraRotationType(video::CameraRotationType type) {
-	_camera.setRotationType(type);
-}
-
 void Controller::update(long deltaFrame) {
 	_camera.update(deltaFrame);
 }

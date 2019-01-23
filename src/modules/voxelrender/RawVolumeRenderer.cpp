@@ -17,6 +17,7 @@
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/GameConfig.h"
+#include <unordered_set>
 
 namespace voxelrender {
 
@@ -40,6 +41,10 @@ struct CustomIsQuadNeeded {
 
 RawVolumeRenderer::RawVolumeRenderer() :
 		_worldShader(shader::WorldShader::getInstance()) {
+}
+
+void RawVolumeRenderer::construct() {
+	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 }
 
 bool RawVolumeRenderer::init() {
@@ -103,23 +108,43 @@ bool RawVolumeRenderer::init() {
 
 	_whiteTexture = video::createWhiteTexture("**whitetexture**");
 
-	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		_mesh[idx] = new voxel::Mesh(128, 128, true);
-	}
+	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
 
 	return true;
 }
 
-bool RawVolumeRenderer::onResize(const glm::ivec2& position, const glm::ivec2& dimension) {
-	core_trace_scoped(RawVolumeRendererOnResize);
-	return true;
-}
-
-bool RawVolumeRenderer::update(int idx, const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices) {
+bool RawVolumeRenderer::update(int idx) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
 	core_trace_scoped(RawVolumeRendererUpdate);
+	std::vector<voxel::VoxelVertex> vertices;
+	std::vector<voxel::IndexType> indices;
+
+	voxel::IndexType offset = (voxel::IndexType)0;
+	for (auto& i : _meshes) {
+		const Meshes& meshes = i.second;
+		const voxel::Mesh* mesh = meshes[idx];
+		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
+			continue;
+		}
+		const std::vector<voxel::VoxelVertex>& vertexVector = mesh->getVertexVector();
+		const std::vector<voxel::IndexType>& indexVector = mesh->getIndexVector();
+		std::copy(vertexVector.begin(), vertexVector.end(), std::back_inserter(vertices));
+
+		for (const auto& i : indexVector) {
+			indices.push_back(i + offset);
+		}
+
+		offset += vertexVector.size();
+	}
+
+	if (offset == 0u) {
+		_vertexBuffer[idx].update(_vertexBufferIndex[idx], nullptr, 0);
+		_vertexBuffer[idx].update(_indexBufferIndex[idx], nullptr, 0);
+		return true;
+	}
+
 	if (!_vertexBuffer[idx].update(_vertexBufferIndex[idx], vertices)) {
 		Log::error("Failed to update the vertex buffer");
 		return false;
@@ -131,14 +156,20 @@ bool RawVolumeRenderer::update(int idx, const std::vector<voxel::VoxelVertex>& v
 	return true;
 }
 
-void RawVolumeRenderer::extractAll() {
-	core_trace_scoped(RawVolumeRendererExtract);
-	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		extract(idx);
+bool RawVolumeRenderer::empty(int idx) const {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return true;
 	}
+	for (auto& i : _meshes) {
+		const Meshes& meshes = i.second;
+		if (meshes[idx] != nullptr && meshes[idx]->getNoOfIndices() > 0) {
+			return true;
+		}
+	}
+	return false;
 }
 
-bool RawVolumeRenderer::extract(int idx) {
+bool RawVolumeRenderer::toMesh(int idx, voxel::Mesh* mesh) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
@@ -147,39 +178,85 @@ bool RawVolumeRenderer::extract(int idx) {
 		return false;
 	}
 
-	voxel::Mesh* mesh = _mesh[idx];
-	if (mesh == nullptr) {
+	extract(volume, volume->region(), mesh);
+	return true;
+}
+
+bool RawVolumeRenderer::extract(int idx, const voxel::Region& region) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
-	extract(volume, mesh);
-	if (!update(idx, mesh)) {
+	voxel::RawVolume* volume = _rawVolume[idx];
+	if (volume == nullptr) {
+		return false;
+	}
+
+	const int s = _meshSize->intVal();
+	glm::ivec3 meshSize(s, s, s);
+	const glm::vec3& size = meshSize;
+
+	const glm::ivec3& lower = region.getLowerCorner();
+	const glm::ivec3& upper = region.getUpperCorner();
+
+	const int border = 1;
+	const voxel::Region& completeRegion = volume->region();
+	const glm::ivec3& cmins = completeRegion.getLowerCorner();
+	const glm::ivec3& cmaxs = completeRegion.getUpperCorner();
+	const int xGap = lower.x % meshSize.x;
+	const int yGap = lower.y % meshSize.y;
+	const int zGap = lower.z % meshSize.z;
+	const int lowerX = lower.x - ((xGap == 0) ? border : 0);
+	const int lowerY = lower.y - ((yGap == 0) ? border : 0);
+	const int lowerZ = lower.z - ((zGap == 0) ? border : 0);
+
+	const int upperX = upper.x + ((xGap == meshSize.x - 1) ? border : 0);
+	const int upperY = upper.y + ((yGap == meshSize.y - 1) ? border : 0);
+	const int upperZ = upper.z + ((zGap == meshSize.z - 1) ? border : 0);
+
+	std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > extracted;
+
+	for (int cx = lowerX; cx <= upperX; ++cx) {
+		if (!completeRegion.containsPointInX(cx)) {
+			continue;
+		}
+		const int x = glm::floor(cx / size.x);
+		for (int cy = lowerY; cy <= upperY; ++cy) {
+			if (!completeRegion.containsPointInY(cy)) {
+				continue;
+			}
+			const int y = glm::floor(cy / size.y);
+			for (int cz = lowerZ; cz <= upperZ; ++cz) {
+				if (!completeRegion.containsPointInZ(cz)) {
+					continue;
+				}
+				const int z = glm::floor(cz / size.z);
+				const glm::ivec3 mins(x * meshSize.x, y * meshSize.y, z * meshSize.z);
+
+				auto i = extracted.insert(mins);
+				if (!i.second) {
+					continue;
+				}
+
+				const glm::ivec3 maxs = mins + meshSize - 1;
+
+				Meshes& meshes = _meshes[mins];
+				if (meshes[idx] == nullptr) {
+					meshes[idx] = new voxel::Mesh(128, 128, true);
+				}
+				extract(volume, voxel::Region{mins, maxs}, meshes[idx]);
+			}
+		}
+	}
+	if (!update(idx)) {
 		Log::error("Failed to update the mesh at index %i", idx);
 	}
 	return true;
 }
 
-bool RawVolumeRenderer::update(int idx, voxel::Mesh* mesh) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return false;
-	}
-	if (_mesh[idx] != mesh) {
-		delete _mesh[idx];
-		_mesh[idx] = mesh;
-	}
-	const size_t meshNumberIndices = mesh->getNoOfIndices();
-	Log::debug("Perform buffer update for idx: %i with %i mesh indices", idx, (int)meshNumberIndices);
-	if (meshNumberIndices == 0u) {
-		_vertexBuffer[idx].update(_vertexBufferIndex[idx], nullptr, 0);
-		_vertexBuffer[idx].update(_indexBufferIndex[idx], nullptr, 0);
-		return true;
-	}
-	return update(idx, mesh->getVertexVector(), mesh->getIndexVector());
-}
-
-void RawVolumeRenderer::extract(voxel::RawVolume* volume, voxel::Mesh* mesh) const {
-	voxel::Region region = volume->region();
-	region.shiftUpperCorner(1, 1, 1);
-	voxel::extractCubicMesh(volume, region, mesh, raw::CustomIsQuadNeeded());
+void RawVolumeRenderer::extract(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const {
+	voxel::Region reg = region;
+	reg.shiftUpperCorner(1, 1, 1);
+	voxel::extractCubicMesh(volume, reg, mesh, raw::CustomIsQuadNeeded());
 }
 
 void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
@@ -222,7 +299,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setViewprojection(camera.viewProjectionMatrix());
-		if (shadow) {
+		if (true || shadow) {
 			_worldShader.setViewdistance(camera.farPlane());
 			_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
 			_worldShader.setCascades(_shadow.cascades());
@@ -270,13 +347,23 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_worldShader.shutdown();
 	_materialBlock.shutdown();
+	for (auto& iter : _meshes) {
+		for (auto& mesh : iter.second) {
+			delete mesh;
+		}
+	}
+	_meshes.clear();
 	std::vector<voxel::RawVolume*> old(MAX_VOLUMES);
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		_vertexBuffer[idx].shutdown();
 		_vertexBufferIndex[idx] = -1;
 		_indexBufferIndex[idx] = -1;
-		delete _mesh[idx];
-		_mesh[idx] = nullptr;
+		for (auto i : _meshes) {
+			for (auto &mesh : i.second) {
+				delete mesh;
+				mesh = nullptr;
+			}
+		}
 		old.push_back(_rawVolume[idx]);
 		_rawVolume[idx] = nullptr;
 	}

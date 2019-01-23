@@ -203,7 +203,7 @@ inline void WorldMgr::setClientData(bool clientData) {
 }
 
 inline glm::ivec3 WorldMgr::meshPos(const glm::ivec3& pos) const {
-	const glm::vec3 size(meshSize());
+	const glm::vec3& size = meshSize();
 	const int x = glm::floor(pos.x / size.x);
 	const int y = glm::floor(pos.y / size.y);
 	const int z = glm::floor(pos.z / size.z);

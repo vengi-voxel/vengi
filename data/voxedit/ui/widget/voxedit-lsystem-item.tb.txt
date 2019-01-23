@@ -1,4 +1,0 @@
-TBLayout: axis: y, position: left, spacing: 0, size: available, position: left top
-	TBEditField: id: rule, text-align: left
-	TBTextField: id: character, text-align: left, state: disabled
-TBButton: id: delete, skin: TBWindow.close

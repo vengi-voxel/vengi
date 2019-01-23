@@ -3,12 +3,13 @@
  */
 
 #include "TreeWindow.h"
-#include "editorscene/EditorScene.h"
+
+#include "editorscene/ViewportSingleton.h"
 
 namespace voxedit {
 
-TreeWindow::TreeWindow(ui::turbobadger::Window* window, EditorScene* scene, voxel::TreeType type) :
-		Super(window), _scene(scene) {
+TreeWindow::TreeWindow(ui::turbobadger::Window* window, voxel::TreeType type) :
+		Super(window) {
 	core_assert_always(loadResourceFile("ui/window/voxedit-tree.tb.txt"));
 
 	_trunkHeight     = getWidgetByType<tb::TBInlineSelect>("trunkheight");
@@ -54,7 +55,7 @@ bool TreeWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			_ctx.leavesWidth = _leavesWidth->GetValue();
 			_ctx.leavesHeight = _leavesHeight->GetValue();
 			_ctx.leavesDepth = _leavesDepth->GetValue();
-			_scene->createTree(_ctx);
+			ViewportSingleton::getInstance().createTree(_ctx);
 			Close();
 			return true;
 		} else if (ev.target->GetID() == TBIDC("cancel")) {

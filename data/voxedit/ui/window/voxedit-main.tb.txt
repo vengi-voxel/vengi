@@ -18,11 +18,17 @@ definitions
 		group-id selectgroup
 
 cameramode
-	TBSelectDropdown: gravity: right top, @include: definitions>menubutton, id: cammode
+	TBSelectDropdown: gravity: right bottom, @include: definitions>menubutton, id: cammode
 		items
-			item: text: "FILL", id: 0
-			item: text: "POINTS", id: 1
-			item: text: "LINES", id: 2
+			item: text: "Solid", id: 0
+			item: text: "Points", id: 1
+			item: text: "Lines", id: 2
+
+camerarottype
+	TBSelectDropdown: gravity: left bottom, @include: definitions>menubutton, id: camrottype
+		items
+			item: text: "Reference Point", id: 0
+			item: text: "Eye", id: 1
 
 TBLayout: distribution: gravity, axis: y
 	TBContainer: gravity: all, id: maincontainer
@@ -42,103 +48,40 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-structure
 						TBButton: gravity: left, @include: definitions>menubutton, text: Structure, id: menu_structure
 							TBSkinImage: skin: voxedit-structure
-						TBButton: gravity: left, @include: definitions>menubutton, text: L-System, id: dialog_lsystem
-							TBSkinImage: skin: voxedit-lsystem
 						TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: dialog_noise
 							TBSkinImage: skin: voxedit-noise
 			TBLayout: distribution: gravity, position: top
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBSection: value: 1, text: "Palette"
 						TBLayout: position: left top, axis: y
-							TBScrollContainer
-								lp: height: 300, width: 200
+							TBScrollContainer: scroll-mode: y
+								lp: height: 640, width: 200
 								PaletteWidget: id: palettecontainer, width: 23, height: 20, amount-x: 8, connection: current-voxel-color
 
 					TBSection: value: 1, text: "Tools", is-group-root: 1
 						TBLayout: position: left top, axis: y
 							TBClickLabel
-								text Box
-								TBSkinImage: skin: voxedit-voxel
-								TBRadioButton
-									value 1
-									id actionplacebox
-									@include definitions>toolbutton
-							TBClickLabel
 								text Place
 								TBSkinImage: skin: voxedit-voxel
 								TBRadioButton
 									id actionplace
-									@include definitions>toolbutton
-							TBClickLabel
-								text Override
-								TBSkinImage: skin: voxedit-override
-								TBRadioButton
-									id actionoverride
-									@include definitions>toolbutton
-							TBClickLabel
-								text Copy
-								TBSkinImage: skin: voxedit-copy
-								TBRadioButton
-									id actioncopy
+									value 1
+									data 1
 									@include definitions>toolbutton
 							TBClickLabel
 								text Delete
 								TBSkinImage: skin: voxedit-delete
 								TBRadioButton
 									id actiondelete
+									data 2
 									@include definitions>toolbutton
 							TBClickLabel
-								text Select
-								TBSkinImage: skin: voxedit-selection
+								text Override
+								TBSkinImage: skin: voxedit-override
 								TBRadioButton
-									id actionselect
+									id actionoverride
+									data 3
 									@include definitions>toolbutton
-
-					TBSection: value: 1, text: "Shapes", is-group-root: 1
-						TBLayout: position: left top, axis: y
-							TBClickLabel
-								text Single
-								TBSkinImage: skin: voxedit-cursor-single
-								TBRadioButton
-									value 1
-									id shapesingle
-									@include definitions>cursorbutton
-							TBClickLabel
-								text Sphere
-								TBSkinImage: skin: voxedit-cursor-circle
-								TBRadioButton
-									id shapesphere
-									@include definitions>cursorbutton
-							TBClickLabel
-								text Torus
-								TBSkinImage: skin: voxedit-cursor-torus
-								TBRadioButton
-									id shapetorus
-									@include definitions>cursorbutton
-							TBClickLabel
-								text Plane
-								TBSkinImage: skin: voxedit-cursor-plane
-								TBRadioButton
-									id shapeplane
-									@include definitions>cursorbutton
-							TBClickLabel
-								text Cone
-								TBSkinImage: skin: voxedit-cursor-cone
-								TBRadioButton
-									id shapecone
-									@include definitions>cursorbutton
-							TBClickLabel
-								text Dome
-								TBSkinImage: skin: voxedit-cursor-dome
-								TBRadioButton
-									id shapedome
-									@include definitions>cursorbutton
-							TBClickLabel
-								text Circle
-								TBSkinImage: skin: voxedit-cursor-circle
-								TBRadioButton
-									id shapecircle
-									@include definitions>cursorbutton
 
 					TBSeparator: gravity: left right, skin: separator
 
@@ -148,57 +91,21 @@ TBLayout: distribution: gravity, axis: y
 					TBLayout: distribution: gravity, id: editorcontainer
 						TBLayout: distribution: gravity, axis: y
 							TBLayout: distribution: gravity, axis: x
-								EditorScene: id: editorscene, gravity: left right top bottom, skin: container, camera: free, want-long-click: true
+								Viewport: id: editorscene, gravity: left right top bottom, skin: container, camera: free
 									@include cameramode
-								EditorScene: id: editorscenetop, gravity: left right top bottom, skin: container, camera: top, want-long-click: true
+									@include camerarottype
+								Viewport: id: editorscenetop, gravity: left right top bottom, skin: container, camera: top
 									@include cameramode
+									@include camerarottype
 							TBLayout: distribution: gravity, axis: x
-								EditorScene: id: editorsceneleft, gravity: left right top bottom, skin: container, camera: left, want-long-click: true
+								Viewport: id: editorsceneleft, gravity: left right top bottom, skin: container, camera: left
 									@include cameramode
-								EditorScene: id: editorscenefront, gravity: left right top bottom, skin: container, camera: front, want-long-click: true
+									@include camerarottype
+								Viewport: id: editorscenefront, gravity: left right top bottom, skin: container, camera: front
 									@include cameramode
+									@include camerarottype
 
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
-					TBSection: value: 1, text: "Select", is-group-root: 1
-						lp: width: 150
-						TBLayout: position: left top, axis: y
-							TBClickLabel
-								text Single
-								TBSkinImage: skin: voxedit-selection
-								TBRadioButton
-									value 1
-									id actionselectsingle
-									@include definitions>selectbutton
-							TBClickLabel
-								text Same
-								TBSkinImage: skin: voxedit-selection
-								TBRadioButton
-									id actionselectsame
-									@include definitions>selectbutton
-							TBClickLabel
-								text Horizontal
-								TBSkinImage: skin: voxedit-selection
-								TBRadioButton
-									id actionselecthorizontal
-									@include definitions>selectbutton
-							TBClickLabel
-								text Vertical
-								TBSkinImage: skin: voxedit-selection
-								TBRadioButton
-									id actionselectvertical
-									@include definitions>selectbutton
-							TBClickLabel
-								text Edge
-								TBSkinImage: skin: voxedit-selection
-								TBRadioButton
-									id actionselectedge
-									@include definitions>selectbutton
-							TBClickLabel
-								text AABB
-								TBSkinImage: skin: voxedit-selection
-								TBRadioButton
-									id actionselectaabb
-									@include definitions>selectbutton
 
 					TBSection: value: 1, text: "Operations"
 						TBLayout: position: left top, axis: y
@@ -206,10 +113,6 @@ TBLayout: distribution: gravity, axis: y
 								TBSkinImage: skin: voxedit-crop
 							TBButton: @include: definitions>menubutton, text: Extend, id: extend
 								TBSkinImage: skin: voxedit-extend
-							TBButton: @include: definitions>menubutton, text: Fill, id: fill
-								TBSkinImage: skin: voxedit-fill
-							TBButton: @include: definitions>menubutton, text: Resample, id: resample
-								TBSkinImage: skin: voxedit-resample
 
 					TBSection: value: 1, text: "Cursor"
 						TBLayout: position: left top, axis: y, distribution: gravity
@@ -273,6 +176,8 @@ TBLayout: distribution: gravity, axis: y
 			TBLayout: distribution: gravity
 				TBContainer: skin: container, gravity: left right
 					TBLayout: distribution: gravity
+						TBLayout: gravity: left
+							TBTextField: id: status, text: -
 						TBLayout: gravity: left right
 							TBWidget
 						TBButton: @include: definitions>menubutton, text: Reset View, id: resetcamera
