@@ -640,17 +640,18 @@ void ViewportSingleton::createTree(voxel::TreeContext ctx) {
 void ViewportSingleton::setCursorVoxel(const voxel::Voxel& voxel) {
 	_cursorVoxel = voxel;
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(voxel::getMaterialColor(voxel), 0.75f));
+	_shapeBuilder.setColor(core::Color::alpha(voxel::getMaterialColor(voxel), 0.7f));
 	_shapeBuilder.setPosition(glm::zero<glm::vec3>());
-	_shapeBuilder.cube(glm::zero<glm::vec3>(), glm::one<glm::vec3>());
+	_shapeBuilder.cube(glm::vec3(-0.01f), glm::vec3(1.01f));
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
 void ViewportSingleton::setReferencePosition(const glm::ivec3& pos) {
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
-	_shapeBuilder.setPosition(pos);
-	_shapeBuilder.sphere(5, 4, 1.0f);
+	const glm::vec3 posalgined{pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f};
+	_shapeBuilder.setPosition(posalgined);
+	_shapeBuilder.sphere(8, 6, 0.5f);
 	_shapeRenderer.createOrUpdate(_referencePointMesh, _shapeBuilder);
 	_referencePos = pos;
 }
