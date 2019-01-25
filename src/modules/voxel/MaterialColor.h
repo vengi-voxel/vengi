@@ -24,6 +24,7 @@ typedef std::vector<uint8_t> MaterialColorIndices;
 extern bool initDefaultMaterialColors();
 extern bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile);
 extern const MaterialColorArray& getMaterialColors();
+extern const glm::vec4& getMaterialColor(const Voxel& voxel);
 /**
  * @brief Get all known material color indices for the given VoxelType
  * @param type The VoxelType to get the indices for

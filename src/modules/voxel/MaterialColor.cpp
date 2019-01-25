@@ -223,6 +223,10 @@ const MaterialColorArray& getMaterialColors() {
 	return getInstance().getColors();
 }
 
+const glm::vec4& getMaterialColor(const Voxel& voxel) {
+	return getMaterialColors()[voxel.getColor()];
+}
+
 const MaterialColorIndices& getMaterialIndices(VoxelType type) {
 	return getInstance().getColorIndices(type);
 }
