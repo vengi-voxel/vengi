@@ -101,9 +101,10 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 	_name = name;
 	const std::string& source = getSource(shaderType, buffer);
 
-	Id& id = _shader[shaderType];
+	Id id = getShader(shaderType);
 	if (id == InvalidId) {
 		id = video::genShader(shaderType);
+		_shader.insert(std::make_pair(shaderType, id));
 	}
 	if (!video::compileShader(id, shaderType, source, _name)) {
 		Log::error("compile failure in %s\n", name.c_str());
@@ -384,14 +385,14 @@ bool Shader::createProgramFromShaders() {
 		_program = video::genProgram();
 	}
 
-	const Id comp = _shader[ShaderType::Compute];
+	const Id comp = getShader(ShaderType::Compute);
 	if (comp != InvalidId) {
 		return video::linkComputeShader(_program, comp, _name);
 	}
 
-	const Id vert = _shader[ShaderType::Vertex];
-	const Id frag = _shader[ShaderType::Fragment];
-	const Id geom = _shader[ShaderType::Geometry];
+	const Id vert = getShader(ShaderType::Vertex);
+	const Id frag = getShader(ShaderType::Fragment);
+	const Id geom = getShader(ShaderType::Geometry);
 
 	if (!bindTransformFeedbackVaryings(_program, _transformFormat, _transformVaryings)) {
 		_transformFormat = TransformFeedbackCaptureMode::Max;
@@ -401,7 +402,7 @@ bool Shader::createProgramFromShaders() {
 }
 
 bool Shader::run(const glm::uvec3& workGroups, bool wait) {
-	const Id comp = _shader[ShaderType::Compute];
+	const Id comp = getShader(ShaderType::Compute);
 	if (comp == InvalidId) {
 		return false;
 	}

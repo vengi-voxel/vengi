@@ -100,8 +100,8 @@ constexpr typename underlying_type<T>::type enum_value(const T& val) {
 
 struct EnumClassHash {
 template<typename T>
-auto operator()(T t) const {
-	return std::enum_value(t);
+size_t operator()(T t) const {
+	return static_cast<size_t>(std::enum_value(t));
 }
 };
 
