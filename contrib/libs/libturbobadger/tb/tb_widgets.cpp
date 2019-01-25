@@ -1271,6 +1271,7 @@ bool TBWidget::InvokeEvent(TBWidgetEvent &ev)
 	case EVENT_TYPE_KEY_DOWN:
 	case EVENT_TYPE_KEY_UP:
 		InvalidateStates();
+		break;
 	default:
 		break;
 	}

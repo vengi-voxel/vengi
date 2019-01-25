@@ -439,11 +439,11 @@ void TBRadioCheckBox::SetValue(int value)
 
 	SetState(WIDGET_STATE_SELECTED, value ? true : false);
 
-	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
-	InvokeEvent(ev);
-
 	if (value && GetGroupID())
 		UpdateGroupWidgets(this);
+
+	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
+	InvokeEvent(ev);
 }
 
 PreferredSize TBRadioCheckBox::OnCalculatePreferredSize(const SizeConstraints &constraints)
