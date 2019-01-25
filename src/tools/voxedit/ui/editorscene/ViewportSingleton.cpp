@@ -459,7 +459,7 @@ void ViewportSingleton::render(const video::Camera& camera) {
 		glm::ivec3 cursor = cursorPosition();
 		glm::vec3 mins = glm::min(_aabbFirstPos, cursor);
 		glm::vec3 maxs = glm::max(_aabbFirstPos, cursor);
-		_shapeBuilder.cube(mins - 0.01f, maxs + 1.01f);
+		_shapeBuilder.cube(mins - 0.001f, maxs + 1.001f);
 		_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
