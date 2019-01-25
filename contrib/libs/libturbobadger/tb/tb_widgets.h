@@ -159,6 +159,7 @@ public:
 											type == EVENT_TYPE_TOUCH_CANCEL; }
 	bool IsKeyEvent() const { return	type == EVENT_TYPE_KEY_DOWN ||
 										type == EVENT_TYPE_KEY_UP; }
+	bool IsAny(const tb::TBID& id) const;
 };
 
 /** TBWidgetEventFileDrop is a event of type EVENT_TYPE_FILE_DROP.
@@ -1088,6 +1089,9 @@ private:
 	/** Returns the opacity for this widget multiplied with its skin opacity and state opacity. */
 	float CalculateOpacityInternal(WIDGET_STATE state, TBSkinElement *skin_element) const;
 };
+
+inline bool TBWidgetEvent::IsAny(const tb::TBID& id) const { return target->GetID() == id || ref_id == id; }
+
 
 } // namespace tb
 
