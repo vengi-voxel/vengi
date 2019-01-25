@@ -21,7 +21,7 @@ Shadow::Shadow() :
 }
 
 Shadow::~Shadow() {
-	shutdown();
+	core_assert_msg(_maxDepthBuffers == -1, "Shadow::shutdown() wasn't called");
 }
 
 bool Shadow::init(int maxDepthBuffers) {
@@ -63,6 +63,7 @@ void Shadow::shutdown() {
 	_depthBuffer.shutdown();
 	_shadowMapShader.shutdown();
 	_shadowMapInstancedShader.shutdown();
+	_maxDepthBuffers = -1;
 }
 
 void Shadow::update(const video::Camera& camera, bool active, float sliceWeight) {

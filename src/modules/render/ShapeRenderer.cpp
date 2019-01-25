@@ -23,7 +23,6 @@ ShapeRenderer::ShapeRenderer() :
 
 ShapeRenderer::~ShapeRenderer() {
 	core_assert_msg(_currentMeshIndex == 0, "ShapeRenderer::shutdown() wasn't called");
-	shutdown();
 }
 
 bool ShapeRenderer::init() {

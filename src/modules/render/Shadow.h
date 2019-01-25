@@ -37,7 +37,7 @@ private:
 	float _shadowBiasSlope = 2.0f;
 	float _shadowBias = 0.09f;
 	float _shadowRangeZ = 0.0f;
-	int _maxDepthBuffers = 0;
+	int _maxDepthBuffers = -1;
 
 public:
 	Shadow();
