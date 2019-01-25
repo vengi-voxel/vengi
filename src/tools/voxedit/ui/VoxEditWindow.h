@@ -63,7 +63,7 @@ private:
 	tb::TBCheckBox *_showAABB = nullptr;
 	tb::TBCheckBox *_showAxis = nullptr;
 	tb::TBCheckBox *_showLockAxis = nullptr;
-	tb::TBCheckBox *_freeLook = nullptr;
+	tb::TBCheckBox *_renderShadow = nullptr;
 
 	std::string _exportFilter;
 	std::string _importFilter;
@@ -95,7 +95,6 @@ private:
 	void extend(const glm::ivec3& size = glm::ivec3(1));
 	void setCursorPosition(int x, int y, int z, bool relative = false);
 	void toggleviewport();
-	void togglefreelook();
 	void setReferencePosition(int x = 0, int y = 0, int z = 0);
 	void setreferencepositiontocursor();
 	bool importMesh(const std::string& file);

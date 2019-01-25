@@ -64,7 +64,7 @@ private:
 
 	bool _extract = false;
 
-	bool _renderShadow = false;
+	bool _renderShadow = true;
 	bool _renderAxis = true;
 	bool _renderLockAxis = true;
 
@@ -187,10 +187,14 @@ public:
 	void setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
 	void updateMirrorPlane();
 
-	void setRenderAxis(bool renderAxis);
 	bool renderAxis() const;
+	void setRenderAxis(bool renderAxis);
+
 	bool renderLockAxis() const;
 	void setRenderLockAxis(bool renderLockAxis);
+
+	bool renderShadow() const;
+	void setRenderShadow(bool shadow);
 
 	ModifierType modifierType() const;
 	void setModifierType(ModifierType type);

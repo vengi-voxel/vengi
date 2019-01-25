@@ -698,6 +698,15 @@ void ViewportSingleton::setRenderLockAxis(bool renderLockAxis) {
 	_renderLockAxis = renderLockAxis;
 }
 
+bool ViewportSingleton::renderShadow() const {
+	return _renderShadow;
+}
+
+void ViewportSingleton::setRenderShadow(bool shadow) {
+	_renderShadow = shadow;
+	Log::info("render shadow: %i", shadow ? 1 : 0);
+}
+
 bool ViewportSingleton::addModifierType(ModifierType type) {
 	if ((_modifierType & type) == type) {
 		return false;

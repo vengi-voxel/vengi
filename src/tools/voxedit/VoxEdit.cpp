@@ -165,7 +165,6 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
 	COMMAND_MAINWINDOW(redo, "Redo your last step");
 	COMMAND_MAINWINDOW(toggleviewport, "Toggle quad view on/off");
-	COMMAND_MAINWINDOW(togglefreelook, "Toggle free look on/off");
 	COMMAND_MAINWINDOW(resetcamera, "Reset cameras");
 
 	return state;

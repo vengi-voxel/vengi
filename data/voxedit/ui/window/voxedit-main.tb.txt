@@ -162,16 +162,10 @@ TBLayout: distribution: gravity, axis: y
 								TBCheckBox: id: optionshowaxis
 							TBClickLabel: text: Show locked axis
 								TBCheckBox: id: optionshowlockaxis
-							TBClickLabel: text: Free look
-								TBCheckBox: id: optionfreelook
 							TBClickLabel: text: Bounding box
 								TBCheckBox: id: optionshowaabb
-							TBClickLabel: text: Size
-								TBSlider: id: size, axis: x, min: 1, max: 128, value: 64
-							TBClickLabel: text: Click delay
-								TBSlider: id: executiondelay, axis: x, min: 0, max: 50, value: 1
-							TBClickLabel: text: Camera speed
-								TBSlider: id: cameraspeed, axis: x, min: 0.05, max: 0.2, value: 0.01
+							TBClickLabel: text: Shadow
+								TBCheckBox: id: optionrendershadow
 
 			TBLayout: distribution: gravity
 				TBContainer: skin: container, gravity: left right

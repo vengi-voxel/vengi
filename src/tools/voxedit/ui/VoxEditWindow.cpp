@@ -157,8 +157,9 @@ bool VoxEditWindow::init() {
 	_showGrid = getWidgetByType<tb::TBCheckBox>("optionshowgrid");
 	_showAxis = getWidgetByType<tb::TBCheckBox>("optionshowaxis");
 	_showLockAxis = getWidgetByType<tb::TBCheckBox>("optionshowlockaxis");
-	_freeLook = getWidgetByType<tb::TBCheckBox>("optionfreelook");
-	if (_showAABB == nullptr || _showGrid == nullptr || _showLockAxis == nullptr || _showAxis == nullptr || _freeLook == nullptr) {
+	_renderShadow = getWidgetByType<tb::TBCheckBox>("optionrendershadow");
+	if (_showAABB == nullptr || _showGrid == nullptr || _showLockAxis == nullptr
+	 || _showAxis == nullptr || _renderShadow == nullptr) {
 		Log::error("Could not load all required widgets");
 		return false;
 	}
@@ -168,7 +169,7 @@ bool VoxEditWindow::init() {
 	_showGrid->SetValue(gridRenderer.renderGrid() ? 1 : 0);
 	_showAxis->SetValue(vps().renderAxis() ? 1 : 0);
 	_showLockAxis->SetValue(vps().renderLockAxis() ? 1 : 0);
-	_freeLook->SetValue(_scene->camera().rotationType() == video::CameraRotationType::Eye ? 1 : 0);
+	_renderShadow->SetValue(vps().renderShadow() ? 1 : 0);
 
 	Assimp::Exporter exporter;
 	const size_t exporterNum = exporter.GetExportFormatCount();
@@ -277,20 +278,6 @@ void VoxEditWindow::setreferencepositiontocursor() {
 	vps().setReferencePosition(vps().cursorPosition());
 }
 
-void VoxEditWindow::togglefreelook() {
-	if (_freeLook == nullptr) {
-		return;
-	}
-	const int v = _freeLook->GetValue();
-	_freeLook->SetValue(v == 0 ? 1 : 0);
-	video::Camera& c = _scene->camera();
-	if (v == 0) {
-		c.setRotationType(video::CameraRotationType::Eye);
-	} else {
-		c.setRotationType(video::CameraRotationType::Target);
-	}
-}
-
 void VoxEditWindow::setQuadViewport(bool active) {
 	const tb::WIDGET_VISIBILITY vis = active ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
 	if (_sceneTop != nullptr) {
@@ -393,15 +380,8 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.IsAny(TBIDC("optionshowaabb"))) {
 		vps().gridRenderer().setRenderAABB(ev.target->GetValue() == 1);
 		return true;
-	} else if (ev.IsAny(TBIDC("optionfreelook"))) {
-		// TODO: all scenes
-		video::Camera& c = _scene->camera();
-		const int v = ev.target->GetValue();
-		if (v == 0) {
-			c.setRotationType(video::CameraRotationType::Eye);
-		} else {
-			c.setRotationType(video::CameraRotationType::Target);
-		}
+	} else if (ev.IsAny(TBIDC("optionrendershadow"))) {
+		vps().setRenderShadow(ev.target->GetValue() == 1);
 		return true;
 	}
 	return false;

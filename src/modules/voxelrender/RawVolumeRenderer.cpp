@@ -299,13 +299,11 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setViewprojection(camera.viewProjectionMatrix());
-		if (true || shadow) {
-			_worldShader.setViewdistance(camera.farPlane());
-			_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
-			_worldShader.setCascades(_shadow.cascades());
-			_worldShader.setDistances(_shadow.distances());
-			_worldShader.setLightdir(_shadow.sunDirection());
-		}
+		_worldShader.setViewdistance(camera.farPlane());
+		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
+		_worldShader.setCascades(_shadow.cascades());
+		_worldShader.setDistances(_shadow.distances());
+		_worldShader.setLightdir(_shadow.sunDirection());
 
 		video::ScopedPolygonMode polygonMode(camera.polygonMode());
 		_shadow.bind(video::TextureUnit::One);
