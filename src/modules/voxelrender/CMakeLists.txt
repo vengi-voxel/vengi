@@ -23,5 +23,5 @@ gtest_suite_sources(tests
 	tests/MaterialTest.cpp
 	tests/WorldRendererTest.cpp
 )
-gtest_suite_files(tests shared/worldparams.lua)
+gtest_suite_files(tests shared/worldparams.lua shared/biomes.lua)
 gtest_suite_deps(tests ${LIB} voxelrender image)

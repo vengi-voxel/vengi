@@ -4,6 +4,7 @@ set(SRCS
 )
 set(FILES
 	shared/worldparams.lua
+	shared/biomes.lua
 	mapedit/mapedit-keybindings.cfg
 	testmesh/chr_skelett.fbx
 	testmesh/chr_skelett2.png

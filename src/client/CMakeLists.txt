@@ -36,6 +36,7 @@ set(FILES
 	client/client-keybindings.cfg
 
 	shared/font.ttf
+	shared/biomes.lua
 	shared/worldparams.lua
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
