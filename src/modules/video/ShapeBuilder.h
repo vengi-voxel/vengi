@@ -56,6 +56,12 @@ public:
 		_indices.push_back(index);
 	}
 
+	inline void addIndex(uint32_t index1, uint32_t index2, uint32_t index3) {
+		_indices.push_back(index1);
+		_indices.push_back(index2);
+		_indices.push_back(index3);
+	}
+
 	inline void setPrimitive(Primitive primitive) {
 		core_assert(_vertices.empty() || primitive == _primitive);
 		_primitive = primitive;

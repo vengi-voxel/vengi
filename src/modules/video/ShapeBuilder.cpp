@@ -62,68 +62,45 @@ void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end) {
 void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs) {
 	setPrimitive(Primitive::Triangles);
 
-	reserve(24);
+	// indices
+	const uint32_t startIndex = (uint32_t)_vertices.size();
 
-	// counter clock wise
+	reserve(8, 12);
 
-	// left side
-	int offset = _vertices.size();
-	addVertex(glm::vec3(mins[0], mins[1], mins[2]));
-	addVertex(glm::vec3(mins[0], maxs[1], mins[2]));
-	addVertex(glm::vec3(mins[0], maxs[1], maxs[2]));
-	addVertex(glm::vec3(mins[0], mins[1], maxs[2]));
-	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
-	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
+	// front
+	addVertex(glm::vec3(mins.x, mins.y, maxs.z));
+	addVertex(glm::vec3(maxs.x, mins.y, maxs.z));
+	addVertex(glm::vec3(maxs.x, maxs.y, maxs.z));
+	addVertex(glm::vec3(mins.x, maxs.y, maxs.z));
+	// back
+	addVertex(glm::vec3(mins.x, mins.y, mins.z));
+	addVertex(glm::vec3(maxs.x, mins.y, mins.z));
+	addVertex(glm::vec3(maxs.x, maxs.y, mins.z));
+	addVertex(glm::vec3(mins.x, maxs.y, mins.z));
 
-	// right side
-	offset = _vertices.size();
-	addVertex(glm::vec3(maxs[0], mins[1], maxs[2]));
-	addVertex(glm::vec3(maxs[0], maxs[1], maxs[2]));
-	addVertex(glm::vec3(maxs[0], maxs[1], mins[2]));
-	addVertex(glm::vec3(maxs[0], mins[1], mins[2]));
-	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
-	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
-
-	// back side
-	offset = _vertices.size();
-	addVertex(glm::vec3(mins[0], mins[1], maxs[2]));
-	addVertex(glm::vec3(mins[0], maxs[1], maxs[2]));
-	addVertex(glm::vec3(maxs[0], maxs[1], maxs[2]));
-	addVertex(glm::vec3(maxs[0], mins[1], maxs[2]));
-	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
-	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
-
-	// front side
-	offset = _vertices.size();
-	addVertex(glm::vec3(maxs[0], mins[1], mins[2]));
-	addVertex(glm::vec3(maxs[0], maxs[1], mins[2]));
-	addVertex(glm::vec3(mins[0], maxs[1], mins[2]));
-	addVertex(glm::vec3(mins[0], mins[1], mins[2]));
-	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
-	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
-
-	// bottom side
-	offset = _vertices.size();
-	addVertex(glm::vec3(mins[0], mins[1], mins[2]));
-	addVertex(glm::vec3(mins[0], mins[1], maxs[2]));
-	addVertex(glm::vec3(maxs[0], mins[1], maxs[2]));
-	addVertex(glm::vec3(maxs[0], mins[1], mins[2]));
-	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
-	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
-
-	// top side
-	offset = _vertices.size();
-	addVertex(glm::vec3(maxs[0], maxs[1], mins[2]));
-	addVertex(glm::vec3(maxs[0], maxs[1], maxs[2]));
-	addVertex(glm::vec3(mins[0], maxs[1], maxs[2]));
-	addVertex(glm::vec3(mins[0], maxs[1], mins[2]));
-	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
-	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
+	// front
+	addIndex(startIndex + 0, startIndex + 1, startIndex + 2);
+	addIndex(startIndex + 2, startIndex + 3, startIndex + 0);
+	// right
+	addIndex(startIndex + 1, startIndex + 5, startIndex + 6);
+	addIndex(startIndex + 6, startIndex + 2, startIndex + 1);
+	// back
+	addIndex(startIndex + 7, startIndex + 6, startIndex + 5);
+	addIndex(startIndex + 5, startIndex + 4, startIndex + 7);
+	// left
+	addIndex(startIndex + 4, startIndex + 0, startIndex + 3);
+	addIndex(startIndex + 3, startIndex + 7, startIndex + 4);
+	// bottom
+	addIndex(startIndex + 4, startIndex + 5, startIndex + 1);
+	addIndex(startIndex + 1, startIndex + 0, startIndex + 4);
+	// top
+	addIndex(startIndex + 3, startIndex + 2, startIndex + 6);
+	addIndex(startIndex + 6, startIndex + 7, startIndex + 3);
 }
 
 void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float stepWidth) {
 	setPrimitive(Primitive::Lines);
-	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
+	const uint32_t startIndex = (uint32_t)_vertices.size();
 	static const glm::vec3 vecs[8] = {
 		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
 		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
