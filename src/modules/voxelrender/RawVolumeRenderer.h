@@ -62,6 +62,8 @@ public:
 	 */
 	bool update(int idx);
 
+	bool update(int idx, const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices);
+
 	bool extract(int idx, const voxel::Region& region);
 
 	bool toMesh(int idx, voxel::Mesh* mesh);

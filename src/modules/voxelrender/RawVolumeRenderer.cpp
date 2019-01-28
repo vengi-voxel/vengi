@@ -139,7 +139,16 @@ bool RawVolumeRenderer::update(int idx) {
 		offset += vertexVector.size();
 	}
 
-	if (offset == 0u) {
+	return update(idx, vertices, indices);
+}
+
+bool RawVolumeRenderer::update(int idx, const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return false;
+	}
+	core_trace_scoped(RawVolumeRendererUpdate);
+
+	if (indices.empty()) {
 		_vertexBuffer[idx].update(_vertexBufferIndex[idx], nullptr, 0);
 		_vertexBuffer[idx].update(_indexBufferIndex[idx], nullptr, 0);
 		return true;
