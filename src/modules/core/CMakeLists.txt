@@ -43,7 +43,6 @@ set(SRCS
 )
 set(LIB core)
 set(FILES
-	shared/autoexec.cfg
 )
 
 find_package(UUID)

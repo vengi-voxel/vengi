@@ -14,7 +14,9 @@ set(LUA_SRCS
 	stock.lua
 	map/map001.lua
 )
-set(FILES)
+set(FILES
+	server/server-autoexec.cfg
+)
 set(MANIFESTS
 	deployment/deployment.yaml.in
 	deployment/route.yaml.in
