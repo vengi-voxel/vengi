@@ -19,9 +19,9 @@ class TBID
 {
 public:
 #ifdef TB_SUPPORT_CONSTEXPR
-	constexpr TBID(uint32 id = 0)		{ id = newid; }
-	constexpr TBID(const char *string)	{ id = TBGetHash(string); }
-	constexpr TBID(const TBID &id)		{ id = newid; }
+	constexpr TBID(uint32 newid = 0) : id(newid) {}
+	constexpr TBID(const char *string) : id(TBGetHash(string)) {}
+	constexpr TBID(const TBID &newid) : id(newid.id) {}
 #else
 	TBID(uint32 id = 0)				{ Set(id); }
 	TBID(const char *string)		{ Set(string); }
