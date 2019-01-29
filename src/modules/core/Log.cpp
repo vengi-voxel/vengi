@@ -35,12 +35,12 @@
 static bool _syslog = false;
 static constexpr int bufSize = 4096;
 static SDL_LogPriority _logLevel = SDL_LOG_PRIORITY_INFO;
+static std::unordered_map<uint32_t, int> _logActive;
 
 #ifdef HAVE_SYSLOG_H
 static SDL_LogOutputFunction _sdlCallback = nullptr;
 static void *_sdlCallbackUserData = nullptr;
 
-static std::unordered_map<uint32_t, int> _logActive;
 
 static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	int syslogLevel = LOG_DEBUG;
