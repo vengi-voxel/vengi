@@ -45,7 +45,11 @@ set(LIB core)
 set(FILES
 )
 
-find_package(UUID)
+if (WINDOWS)
+	set(UUID_LIBRARIES rpcrt4)
+else()
+	find_package(UUID)
+endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES collection io metric restclient-cpp zlib ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
 
