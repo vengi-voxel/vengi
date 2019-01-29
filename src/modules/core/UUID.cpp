@@ -8,6 +8,8 @@
 
 #ifdef HAVE_UUID_H
 #include <uuid/uuid.h>
+#elif WIN32
+#include <windows.h>
 #else
 #warning "No uuid implementation found"
 #endif
@@ -21,6 +23,14 @@ std::string generateUUID() {
 	char buf[37];
 	uuid_unparse(uuid, buf);
 	return std::string(buf);
+#elif WIN32
+	UUID uuid;
+	UuidCreate(&uuid);
+	char *str;
+	UuidToStringA(&uuid, (RPC_CSTR*)&str);
+	std::string uuidStr = str;
+	RpcStringFreeA((RPC_CSTR*)&str);
+	return uuidStr;
 #else
 	return "";
 #endif
