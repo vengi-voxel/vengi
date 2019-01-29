@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=forking
-ExecStart=@CMAKE_PROJECT_NAME@-@_EXE_TARGET@
+ExecStart=@CMAKE_PROJECT_NAME@-@NAME@
 
 [Install]
 WantedBy=multi-user.target
