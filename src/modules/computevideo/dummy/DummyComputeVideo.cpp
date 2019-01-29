@@ -3,7 +3,7 @@
  *
  * @ingroup Compute
  */
-#include "compute/cl/CLCompute.h"
+#include "compute/Compute.h"
 #include "video/Buffer.h"
 #include "video/Texture.h"
 
