@@ -86,7 +86,7 @@ protected:
 
 	AppState _curState = AppState::Construct;
 	AppState _nextState = AppState::InvalidAppState;
-	std::unordered_set<AppState> _blockers;
+	std::unordered_set<AppState, EnumClassHash> _blockers;
 	bool _suspendRequested = false;
 
 	/**
