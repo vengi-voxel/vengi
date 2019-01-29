@@ -446,13 +446,12 @@ uint32_t Mesh::findScaling(float animationTime, const aiNodeAnim* nodeAnim) {
 	return 0u;
 }
 
-template<class OUT, class IN>
-static OUT interpolate(const IN& current, const IN& next, float animationTime) {
-	const float deltaTime = (float) (next.mTime - current.mTime);
-	const float factor = (animationTime - (float) current.mTime) / deltaTime;
+static glm::vec3 interpolateStep(const aiVectorKey& currentStep, const aiVectorKey& nextStep, float animationTime) {
+	const float deltaTime = (float) (nextStep.mTime - currentStep.mTime);
+	const float factor = (animationTime - (float) currentStep.mTime) / deltaTime;
 	core_assert_msg(factor >= -1.0f && factor <= 1.0f, "Factor is not clamped: %f", factor);
-	const OUT& start = convert(current.mValue);
-	const OUT& end = convert(next.mValue);
+	const glm::vec3& start = convert(currentStep.mValue);
+	const glm::vec3& end = convert(nextStep.mValue);
 	return glm::lerp(start, end, factor);
 }
 
@@ -464,7 +463,7 @@ glm::vec3 Mesh::calcInterpolatedPosition(float animationTime, const aiNodeAnim* 
 	const uint32_t positionIndex = findPosition(animationTime, nodeAnim);
 	const uint32_t nextPositionIndex = (positionIndex + 1);
 	core_assert(nextPositionIndex < nodeAnim->mNumPositionKeys);
-	return interpolate<glm::vec3, aiVectorKey>(nodeAnim->mPositionKeys[positionIndex], nodeAnim->mPositionKeys[nextPositionIndex], animationTime);
+	return interpolateStep(nodeAnim->mPositionKeys[positionIndex], nodeAnim->mPositionKeys[nextPositionIndex], animationTime);
 }
 
 glm::mat4 Mesh::calcInterpolatedRotation(float animationTime, const aiNodeAnim* nodeAnim) {
@@ -493,7 +492,7 @@ glm::vec3 Mesh::calcInterpolatedScaling(float animationTime, const aiNodeAnim* n
 	const uint32_t scalingIndex = findScaling(animationTime, nodeAnim);
 	const uint32_t nextScalingIndex = (scalingIndex + 1);
 	core_assert(nextScalingIndex < nodeAnim->mNumScalingKeys);
-	return interpolate<glm::vec3, aiVectorKey>(nodeAnim->mScalingKeys[scalingIndex], nodeAnim->mScalingKeys[nextScalingIndex], animationTime);
+	return interpolateStep(nodeAnim->mScalingKeys[scalingIndex], nodeAnim->mScalingKeys[nextScalingIndex], animationTime);
 }
 
 void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform) {
