@@ -15,7 +15,12 @@ namespace _priv {
 
 static int _recompileErrors = 0;
 
-void debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+#if WIN32
+void __stdcall
+#else
+void
+#endif
+debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
 	if (id == 131218) {
 		++_recompileErrors;
 		if (_recompileErrors <= 10) {
