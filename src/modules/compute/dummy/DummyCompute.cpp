@@ -3,7 +3,7 @@
  *
  * @ingroup Compute
  */
-#include "Compute.h"
+#include "compute/Compute.h"
 
 namespace compute {
 
