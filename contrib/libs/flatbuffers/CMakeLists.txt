@@ -43,6 +43,8 @@ set(COMPILER_SRCS
 	compiler/util.cpp
 )
 set_property(GLOBAL PROPERTY flatc_NOUNITY True)
-engine_add_executable(TARGET flatc SRCS ${COMPILER_SRCS} NOINSTALL)
-target_link_libraries(flatc flatbuffers)
-target_include_directories(flatc PRIVATE compiler/)
+engine_add_build_executable(TARGET flatc SRCS ${COMPILER_SRCS} NOINSTALL)
+if(NOT CMAKE_CROSSCOMPILING)
+	target_link_libraries(flatc flatbuffers)
+	target_include_directories(flatc PRIVATE compiler/)
+endif()

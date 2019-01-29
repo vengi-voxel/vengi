@@ -1,7 +1,7 @@
 set(CMAKE_SYSTEM_NAME Windows)
 
 set(CMAKE_CROSSCOMPILING TRUE)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-qual -Wcast-align -Wpointer-arith -Wshadow -Wall -Wextra -Wreturn-type -Wwrite-strings -Wno-unused-parameter -DWINVER=0x501")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-qual -Wcast-align -Wpointer-arith -Wshadow -Wall -Wextra -Wreturn-type -Wwrite-strings -Wno-unused-parameter -DWINVER=0x501 -D__STDC_FORMAT_MACROS")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ftree-vectorize -msse3 -DNDEBUG -D_FORTIFY_SOURCE=2")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -DDEBUG=1 -ggdb")
 

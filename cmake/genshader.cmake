@@ -52,7 +52,7 @@ macro(generate_shaders TARGET)
 				OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in
 				IMPLICIT_DEPENDS C ${_shaders}
 				COMMENT "Validate ${_file}"
-				COMMAND $<TARGET_FILE:shadertool> --glslang ${CMAKE_BINARY_DIR}/glslangValidator -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+				COMMAND shadertool --glslang ${CMAKE_BINARY_DIR}/glslangValidator -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
 				DEPENDS shadertool ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub}
 			)
 			list(APPEND _headers ${_shaderheaderpath})

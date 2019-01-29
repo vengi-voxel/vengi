@@ -12,7 +12,8 @@ set(SRCS
 	ShaderTool.h ShaderTool.cpp
 	${SHARED_SRCS}
 )
-engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} NOINSTALL)
+engine_add_build_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} NOINSTALL)
+if(NOT CMAKE_CROSSCOMPILING)
 add_dependencies(${PROJECT_NAME} glslangValidator)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES video util simplecpp)
 
@@ -28,3 +29,4 @@ gtest_suite_end(tests-${PROJECT_NAME})
 
 gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests video simplecpp)
+endif(NOT CMAKE_CROSSCOMPILING)

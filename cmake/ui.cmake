@@ -6,7 +6,7 @@ macro(check_ui_turbobadger TARGET)
 		get_filename_component(_filename ${_file} NAME)
 		add_custom_target(
 			${_filename}
-			COMMAND $<TARGET_FILE:uitool> ui/window/${_filename}
+			COMMAND uitool ui/window/${_filename}
 			COMMENT "Validate ui file: ${_filename}"
 			DEPENDS uitool
 			WORKING_DIRECTORY ${_workingdir}
@@ -14,6 +14,6 @@ macro(check_ui_turbobadger TARGET)
 		add_dependencies(${TARGET} ${_filename})
 	endforeach()
 	if (UI_FILES)
-		add_dependencies(${TARGET} uitool)
+		#add_dependencies(${TARGET} uitool)
 	endif()
 endmacro()

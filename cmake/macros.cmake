@@ -127,6 +127,33 @@ macro(engine_add_executable)
 	endif()
 endmacro()
 
+macro(engine_add_build_executable)
+	set(_OPTIONS_ARGS WINDOWED NOINSTALL)
+	set(_ONE_VALUE_ARGS TARGET)
+	set(_MULTI_VALUE_ARGS SRCS LUA_SRCS FILES)
+
+	cmake_parse_arguments(_EXE "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
+
+	if(CMAKE_CROSSCOMPILING)
+		set(NATIVE_BINARY "${NATIVE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
+		add_custom_target("build-native-${_EXE_TARGET}"
+			COMMAND ${CMAKE_COMMAND}
+				--build "${NATIVE_BUILD_DIR}"
+				--target "${_EXE_TARGET}"
+			DEPENDS ${NATIVE_BUILD_TARGET}
+			BYPRODUCTS ${NATIVE_BINARY}
+			WORKING_DIRECTORY ${NATIVE_BUILD_DIR}
+			VERBATIM USES_TERMINAL
+		)
+
+		add_executable(${_EXE_TARGET} IMPORTED)
+		add_dependencies(${_EXE_TARGET} "build-native-${_EXE_TARGET}")
+		set_property(TARGET ${_EXE_TARGET} PROPERTY IMPORTED_LOCATION ${NATIVE_BINARY})
+	else()
+		engine_add_executable(${ARGN})
+	endif()
+endmacro()
+
 macro(engine_add_module)
 	set(_OPTIONS_ARGS)
 	set(_ONE_VALUE_ARGS TARGET)

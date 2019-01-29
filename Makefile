@@ -174,5 +174,5 @@ updatelibs: update-nuklear update-restclient-cpp update-libuv update-stb update-
 	$(MAKE) -C $(BUILDDIR) update-libs
 
 windows:
-	$(Q)if [ ! -f $(BUILDDIR)-windows/CMakeCache.txt ]; then i686-w64-mingw32.static-cmake -H. -B$(BUILDDIR)-windows -DCURL_CA_PATH=none -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)-windows; fi
+	$(Q)if [ ! -f $(BUILDDIR)-windows/CMakeCache.txt ]; then i686-w64-mingw32.static-cmake -H. -B$(BUILDDIR)-windows -DCURL_CA_PATH=none -DVOXEDIT_ONLY=True -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
 	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR)-windows install

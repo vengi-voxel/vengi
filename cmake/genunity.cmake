@@ -20,7 +20,7 @@ macro(generate_unity_sources)
 	set(SRCS ${_UNITY_SRCS})
 
 	get_property(NOUNITY GLOBAL PROPERTY ${TARGET}_NOUNITY)
-	if (NOUNITY)
+	if (NOUNITY OR CMAKE_CROSSCOMPILING)
 		if (_UNITY_SOURCES)
 			target_sources(${TARGET} PRIVATE ${SRCS})
 		elseif (_UNITY_EXECUTABLE)

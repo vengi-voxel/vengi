@@ -5,7 +5,7 @@ macro(generate_db_models TARGET INPUT OUTPUT)
 	add_custom_command(
 		OUTPUT ${GEN_DIR}${OUTPUT}
 		COMMENT "Generate ${OUTPUT}"
-		COMMAND $<TARGET_FILE:databasetool> --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT}
+		COMMAND databasetool --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT}
 		DEPENDS databasetool ${INPUT}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 	)

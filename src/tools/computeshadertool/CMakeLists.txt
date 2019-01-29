@@ -11,7 +11,8 @@ set(SRCS
 	${SHARED_SRCS}
 	ComputeShaderTool.h ComputeShaderTool.cpp
 )
-engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} NOINSTALL)
+engine_add_build_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} NOINSTALL)
+if(NOT CMAKE_CROSSCOMPILING)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES util compute simplecpp)
 
 set(TEST_SRCS
@@ -26,3 +27,4 @@ gtest_suite_end(tests-${PROJECT_NAME})
 
 gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests compute simplecpp)
+endif(NOT CMAKE_CROSSCOMPILING)
