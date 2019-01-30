@@ -336,21 +336,21 @@ core::AppState WindowedApp::onInit() {
 		Log::info("use fake fullscreen for display %i: %i:%i", displayIndex, width, height);
 	}
 
-#define CreateWindow() SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags)
+#define InternalCreateWindow() SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags)
 
-	_window = CreateWindow();
+	_window = InternalCreateWindow();
 	if (!_window) {
 		Log::warn("Failed to get multisampled window - try to disable it");
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-		_window = CreateWindow();
+		_window = InternalCreateWindow();
 		if (!_window) {
 			sdlCheckError();
 			return core::AppState::InitFailure;
 		}
 	}
 
-#undef CreateWindow
+#undef InternalCreateWindow
 
 	_rendererContext = video::createContext(_window);
 
