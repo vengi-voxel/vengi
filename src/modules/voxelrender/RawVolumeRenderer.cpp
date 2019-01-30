@@ -209,8 +209,6 @@ bool RawVolumeRenderer::extract(int idx, const voxel::Region& region) {
 
 	const int border = 1;
 	const voxel::Region& completeRegion = volume->region();
-	const glm::ivec3& cmins = completeRegion.getLowerCorner();
-	const glm::ivec3& cmaxs = completeRegion.getUpperCorner();
 	const int xGap = lower.x % meshSize.x;
 	const int yGap = lower.y % meshSize.y;
 	const int zGap = lower.z % meshSize.z;
