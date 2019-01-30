@@ -1,2 +1,5 @@
 set(SRCS simplecpp.cpp simplecpp.h)
 engine_add_library(LIB simplecpp SRCS ${SRCS})
+if (NOT MSVC)
+	set_target_properties(simplecpp PROPERTIES COMPILE_FLAGS "-fexceptions")
+endif()

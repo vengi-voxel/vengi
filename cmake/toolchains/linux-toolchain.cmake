@@ -72,6 +72,7 @@ if (USE_COVERAGE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
 endif()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra")
 foreach(_FLAG
 	-Wreturn-type -Wwrite-strings -Wno-unused-parameter -fdiagnostics-color=auto)

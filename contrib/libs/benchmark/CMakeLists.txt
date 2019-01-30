@@ -37,6 +37,6 @@ set(SRCS
 engine_add_library(
 	LIB benchmark
 	SRCS ${SRCS}
-	DEFINES HAVE_STD_REGEX=1 BENCHMARK_HAS_NO_EXCEPTIONS=1
+	DEFINES HAVE_STD_REGEX=1
 )
 	target_include_directories(benchmark PUBLIC include)
