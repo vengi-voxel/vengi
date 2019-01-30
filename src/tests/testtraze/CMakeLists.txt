@@ -1,7 +1,7 @@
+project(testtraze)
 find_package(Mosquitto)
 
 if (MOSQUITTO_FOUND)
-	project(testtraze)
 	set(SRCS
 		TrazeEvents.h
 		TrazeProtocol.h TrazeProtocol.cpp
@@ -15,5 +15,5 @@ if (MOSQUITTO_FOUND)
 	engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED NOINSTALL)
 	engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES testcore voxelrender voxelfont util ${MOSQUITTO_LIBRARIES})
 else()
-	message(WARNING "${CMAKE_PROJECT_NAME} is disabled - libmosquitto wasn't found")
+	message(WARNING "${PROJECT_NAME} is disabled - libmosquitto wasn't found")
 endif()
