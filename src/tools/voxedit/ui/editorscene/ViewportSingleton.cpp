@@ -633,7 +633,7 @@ void ViewportSingleton::createCloud() {
 	hasClouds.pos = glm::vec2(_referencePos.x, _referencePos.z);
 	voxel::cloud::CloudContext cloudCtx;
 	if (voxel::cloud::createClouds(wrapper, wrapper.region(), hasClouds, cloudCtx)) {
-		modified(modelVolume()->region());
+		modified(wrapper.dirtyRegion());
 	}
 }
 
