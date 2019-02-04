@@ -46,7 +46,6 @@ private:
 	int32_t _referencePointMesh = -1;
 	int32_t _voxelCursorMesh = -1;
 
-	glm::ivec3 _lastPlacement;
 	glm::ivec3 _cursorPos;
 	glm::ivec3 _referencePos;
 	glm::ivec3 _mirrorPos;
@@ -57,7 +56,7 @@ private:
 	math::Axis _lockedAxis = math::Axis::None;
 	math::Axis _mirrorAxis = math::Axis::None;
 
-	voxel::Region _extractRegion;
+	std::vector<voxel::Region> _extractRegions;
 
 	bool _empty = true;
 	bool _dirty = false;
@@ -93,7 +92,6 @@ private:
 	int getIndexForMirrorAxis(math::Axis axis) const;
 	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color);
 	void modified(const voxel::Region& modifiedRegion, bool markUndo = true);
-	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 	ViewportSingleton();
 public:
 	~ViewportSingleton();
@@ -118,6 +116,7 @@ public:
 
 	bool aabbStart();
 	bool aabbEnd();
+	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 
 	void crop();
 	void extend(const glm::ivec3& size);

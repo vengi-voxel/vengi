@@ -26,6 +26,7 @@
 #include "math/Random.h"
 #include "core/Array.h"
 #include "core/App.h"
+#include "core/Log.h"
 #include "io/Filesystem.h"
 #include "voxedit-util/tool/Crop.h"
 #include "voxedit-util/tool/Expand.h"
@@ -238,7 +239,7 @@ void ViewportSingleton::modified(const voxel::Region& modifiedRegion, bool markU
 	if (markUndo) {
 		mementoHandler().markUndo(modelVolume());
 	}
-	_extractRegion = modifiedRegion;
+	_extractRegions.push_back(modifiedRegion);
 	_dirty = true;
 	_extract = true;
 }
@@ -286,16 +287,23 @@ void ViewportSingleton::pointCloud(const glm::vec3* vertices, const glm::vec3 *v
 
 	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
 	materialColors.erase(materialColors.begin());
+	voxel::RawVolumeWrapper wrapper(modelVolume());
 
+	bool change = false;
 	for (size_t idx = 0u; idx < amount; ++idx) {
 		const glm::vec3& vertex = vertices[idx];
 		const glm::vec3& color = vertexColors[idx];
 		const glm::ivec3 pos(_cursorPos.x + vertex.x, _cursorPos.y + vertex.y, _cursorPos.z + vertex.z);
 		const glm::vec4 cvec(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, 255.0f);
 		const uint8_t index = core::Color::getClosestMatch(cvec, materialColors);
-		setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, index));
-		mins = glm::min(mins, pos);
-		maxs = glm::max(maxs, pos);
+		if (wrapper.setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, index))) {
+			mins = glm::min(mins, pos);
+			maxs = glm::max(maxs, pos);
+			change = true;
+		}
+	}
+	if (!change) {
+		return;
 	}
 	const voxel::Region modifiedRegion(mins, maxs);
 	modified(modifiedRegion);
@@ -318,10 +326,24 @@ bool ViewportSingleton::aabbStart() {
 	return true;
 }
 
+bool ViewportSingleton::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
+	if (_mirrorAxis == math::Axis::None) {
+		return false;
+	}
+	const int index = getIndexForMirrorAxis(_mirrorAxis);
+	int deltaMaxs = _mirrorPos[index] - maxs[index] - 1;
+	deltaMaxs *= 2;
+	deltaMaxs += (maxs[index] - mins[index] + 1);
+	mins[index] += deltaMaxs;
+	maxs[index] += deltaMaxs;
+	return true;
+}
+
 bool ViewportSingleton::aabbEnd() {
 	if (!_aabbMode) {
 		return false;
 	}
+	voxel::RawVolumeWrapper wrapper(modelVolume());
 	_aabbMode = false;
 	const glm::ivec3& pos = cursorPosition();
 	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
@@ -330,8 +352,26 @@ bool ViewportSingleton::aabbEnd() {
 	const bool overwriteVoxels = (_modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 	const voxel::Voxel voxel = (deleteVoxels && !overwriteVoxels) ? voxel::createVoxel(voxel::VoxelType::Air, 0) : _cursorVoxel;
 	voxel::Region modifiedRegion;
-	if (voxedit::tool::aabb(*modelVolume(), mins, maxs, voxel, overwriteVoxels || deleteVoxels, &modifiedRegion)) {
-		modified(modifiedRegion);
+	glm::ivec3 minsMirror = mins;
+	glm::ivec3 maxsMirror = maxs;
+	if (!getMirrorAABB(minsMirror, maxsMirror)) {
+		if (voxedit::tool::aabb(wrapper, mins, maxs, voxel, overwriteVoxels || deleteVoxels, &modifiedRegion)) {
+			modified(modifiedRegion);
+			resetLastTrace();
+		}
+		return true;
+	}
+	const math::AABB<int> first(mins, maxs);
+	const math::AABB<int> second(minsMirror, maxsMirror);
+	voxel::Region modifiedRegionMirror;
+	bool success;
+	if (math::intersects(first, second)) {
+		success = voxedit::tool::aabb(wrapper, mins, maxsMirror, voxel, overwriteVoxels || deleteVoxels, &modifiedRegionMirror);
+	} else {
+		success = voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, voxel, overwriteVoxels || deleteVoxels, &modifiedRegionMirror);
+	}
+	if (success) {
+		modified(modifiedRegionMirror);
 		resetLastTrace();
 	}
 	return true;
@@ -379,7 +419,6 @@ void ViewportSingleton::setNewVolume(voxel::RawVolume* volume) {
 	}
 
 	_dirty = false;
-	_lastPlacement = glm::ivec3(-1);
 	_result = voxel::PickResult();
 	const glm::ivec3 pos = _cursorPos;
 	_cursorPos = pos * 10 + 10;
@@ -420,34 +459,6 @@ const voxel::Voxel& ViewportSingleton::getVoxel(const glm::ivec3& pos) const {
 	return modelVolume()->voxel(pos);
 }
 
-bool ViewportSingleton::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
-	voxel::RawVolumeWrapper wrapper(modelVolume());
-	const bool placed = wrapper.setVoxel(pos, voxel);
-	if (!placed) {
-		return false;
-	}
-	_lastPlacement = pos;
-
-	if (_mirrorAxis == math::Axis::None) {
-		return true;
-	}
-	const int index = getIndexForMirrorAxis(_mirrorAxis);
-	const int delta = _mirrorPos[index] - pos[index] - 1;
-	if (delta == 0) {
-		return true;
-	}
-	glm::ivec3 mirror;
-	for (int i = 0; i < 3; ++i) {
-		if (i == index) {
-			mirror[i] = _mirrorPos[i] + delta;
-		} else {
-			mirror[i] = pos[i];
-		}
-	}
-	wrapper.setVoxel(mirror, voxel);
-	return true;
-}
-
 void ViewportSingleton::render(const video::Camera& camera) {
 	const bool depthTest = video::enable(video::State::DepthTest);
 	_empty = _volumeRenderer.empty(ModelVolumeIndex);
@@ -457,9 +468,22 @@ void ViewportSingleton::render(const video::Camera& camera) {
 		_shapeBuilder.clear();
 		_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.5f));
 		glm::ivec3 cursor = cursorPosition();
-		glm::vec3 mins = glm::min(_aabbFirstPos, cursor);
-		glm::vec3 maxs = glm::max(_aabbFirstPos, cursor);
-		_shapeBuilder.cube(mins - 0.001f, maxs + 1.001f);
+		glm::ivec3 mins = glm::min(_aabbFirstPos, cursor);
+		glm::ivec3 maxs = glm::max(_aabbFirstPos, cursor);
+		glm::ivec3 minsMirror = mins;
+		glm::ivec3 maxsMirror = maxs;
+		if (getMirrorAABB(minsMirror, maxsMirror)) {
+			const math::AABB<int> first(mins, maxs);
+			const math::AABB<int> second(minsMirror, maxsMirror);
+			if (math::intersects(first, second)) {
+				_shapeBuilder.cube(glm::vec3(mins) - 0.001f, glm::vec3(maxsMirror) + 1.001f);
+			} else {
+				_shapeBuilder.cube(glm::vec3(mins) - 0.001f, glm::vec3(maxs) + 1.001f);
+				_shapeBuilder.cube(glm::vec3(minsMirror) - 0.001f, glm::vec3(maxsMirror) + 1.001f);
+			}
+		} else {
+			_shapeBuilder.cube(glm::vec3(mins) - 0.001f, glm::vec3(maxs) + 1.001f);
+		}
 		_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
@@ -551,9 +575,12 @@ bool ViewportSingleton::extractVolume() {
 	if (_extract) {
 		Log::debug("Extract the mesh");
 		_extract = false;
-		if (!_volumeRenderer.extract(ModelVolumeIndex, _extractRegion)) {
-			Log::error("Failed to extract the model mesh");
+		for (const voxel::Region& region : _extractRegions) {
+			if (!_volumeRenderer.extract(ModelVolumeIndex, region)) {
+				Log::error("Failed to extract the model mesh");
+			}
 		}
+		_extractRegions.clear();
 		return true;
 	}
 	return false;
@@ -825,7 +852,7 @@ void ViewportSingleton::updateLockedPlane(math::Axis axis) {
 		core::Color::LightGreen,
 		core::Color::LightBlue
 	};
-	updateShapeBuilderForPlane(false, _cursorPos, axis, core::Color::alpha(colors[index], 0.3f));
+	updateShapeBuilderForPlane(false, _cursorPos, axis, core::Color::alpha(colors[index], 0.4f));
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 
@@ -855,7 +882,7 @@ void ViewportSingleton::updateMirrorPlane() {
 		return;
 	}
 
-	updateShapeBuilderForPlane(true, _mirrorPos, _mirrorAxis, core::Color::alpha(core::Color::LightGray, 0.1f));
+	updateShapeBuilderForPlane(true, _mirrorPos, _mirrorAxis, core::Color::alpha(core::Color::LightGray, 0.3f));
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 
