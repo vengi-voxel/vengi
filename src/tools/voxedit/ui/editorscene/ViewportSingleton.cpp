@@ -131,8 +131,9 @@ bool ViewportSingleton::importHeightmap(const std::string& file) {
 	if (!img->isLoaded()) {
 		return false;
 	}
-	voxedit::importHeightmap(*v, img);
-	modified(v->region());
+	voxel::RawVolumeWrapper wrapper(v);
+	voxedit::importHeightmap(wrapper, img);
+	modified(wrapper.dirtyRegion());
 	return true;
 }
 
