@@ -649,13 +649,15 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		}
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		if (Viewport* viewport = ev.target->SafeCastTo<Viewport>()) {
-			if (ev.button_type == tb::TB_RIGHT) {
-				_modBeforeMouse = vps().modifierType();
-				vps().setModifierType(ModifierType::Delete);
-				vps().trace(viewport->camera(), true);
+			if (ev.button_type == tb::TB_LEFT || ev.button_type == tb::TB_RIGHT) {
+				if (ev.button_type == tb::TB_RIGHT) {
+					_modBeforeMouse = vps().modifierType();
+					vps().setModifierType(ModifierType::Delete);
+					vps().trace(viewport->camera(), true);
+				}
+				vps().aabbStart();
+				return true;
 			}
-			vps().aabbStart();
-			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		if (Viewport* viewport = ev.target->SafeCastTo<Viewport>()) {
