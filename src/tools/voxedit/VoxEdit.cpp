@@ -11,7 +11,7 @@
 #include "ui/VoxEditWindow.h"
 #include "io/Filesystem.h"
 
-#define COMMAND_VIEWPORTSINGLETON(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {::voxedit::ViewportSingleton::getInstance().command();}).setHelp(help)
+#define COMMAND_VIEWPORTSINGLETON(command, help) core::Command::registerCommand(#command, [] (const core::CmdArgs& args) {::voxedit::ViewportSingleton::getInstance().command();}).setHelp(help)
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \
 	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \

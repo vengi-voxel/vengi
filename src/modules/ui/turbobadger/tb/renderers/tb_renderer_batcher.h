@@ -38,7 +38,7 @@ public:
 		void Flush(TBRendererBatcher *batch_renderer);
 		Vertex *Reserve(TBRendererBatcher *batch_renderer, int count);
 
-		Vertex vertex[VERTEX_BATCH_SIZE];
+		alignas(16) Vertex vertex[VERTEX_BATCH_SIZE];
 		int vertex_count;
 
 		TBBitmap *bitmap;
