@@ -71,7 +71,7 @@ bool postgresInit() {
 #ifdef POSTGRESQL_LIBS
 				POSTGRESQL_LIBS
 #endif
-				"libpq.so", nullptr};
+				"libpq.dll", "libpq.so", nullptr};
 		for (const char **searchPath = searchPaths; *searchPath; ++searchPath) {
 			obj = SDL_LoadObject(*searchPath);
 			if (obj != nullptr) {
@@ -81,7 +81,7 @@ bool postgresInit() {
 	}
 
 	if (obj == nullptr) {
-		Log::error("Could not load libpg");
+		Log::error("Could not load libpq - use %s to specify the full path", cfg::ServerPostgresLib);
 		return false;
 	}
 
