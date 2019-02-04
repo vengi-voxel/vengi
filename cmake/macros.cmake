@@ -20,7 +20,7 @@ endmacro()
 #            time.
 #
 macro(engine_add_executable)
-	set(_OPTIONS_ARGS WINDOWED NOINSTALL)
+	set(_OPTIONS_ARGS WINDOWED NOINSTALL NATIVE)
 	set(_ONE_VALUE_ARGS TARGET)
 	set(_MULTI_VALUE_ARGS SRCS LUA_SRCS FILES)
 
@@ -62,10 +62,15 @@ macro(engine_add_executable)
 	set(INSTALL_DATA_DIR "${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
 	set(INSTALL_ICON_DIR "${CMAKE_INSTALL_DATADIR}/icons")
 	set(INSTALL_APPLICATION_DIR "${CMAKE_INSTALL_DATADIR}/applications")
+	if (${_EXE_NATIVE})
+		message(STATUS "Build native ${_EXE_TARGET}")
+	endif()
 
-	if (SANITIZER_THREADS AND NOT ${_EXE_TARGET} STREQUAL "databasetool" AND NOT ${_EXE_TARGET} STREQUAL "shadertool" AND NOT ${_EXE_TARGET} STREQUAL "uitool")
-		set_target_properties(${_EXE_TARGET} PROPERTIES COMPILE_FLAGS "${SANITIZE_THREAD_FLAG}")
-		set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "${SANITIZE_THREAD_FLAG}")
+	if (SANITIZER_THREADS AND NOT ${_EXE_NATIVE})
+		set_target_properties(${_EXE_TARGET} PROPERTIES
+				COMPILE_FLAGS "${SANITIZE_THREAD_FLAG}"
+				LINK_FLAGS "${SANITIZE_THREAD_FLAG}"
+		)
 	endif()
 
 	if (_EXE_NOINSTALL)
@@ -118,7 +123,11 @@ macro(engine_add_executable)
 	if (INSTALL_DATA)
 		install(TARGETS ${_EXE_TARGET} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_EXE_TARGET})
 	endif()
-	add_custom_target(${_EXE_TARGET}-run COMMAND $<TARGET_FILE:${_EXE_TARGET}> DEPENDS ${_EXE_TARGET} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${_EXE_TARGET}")
+	add_custom_target(${_EXE_TARGET}-run
+		COMMAND $<TARGET_FILE:${_EXE_TARGET}>
+		DEPENDS ${_EXE_TARGET}
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${_EXE_TARGET}"
+	)
 	engine_add_debuggger(${_EXE_TARGET})
 	engine_add_valgrind(${_EXE_TARGET})
 	engine_add_perf(${_EXE_TARGET})
@@ -150,7 +159,7 @@ macro(engine_add_build_executable)
 		add_dependencies(${_EXE_TARGET} "build-native-${_EXE_TARGET}")
 		set_property(TARGET ${_EXE_TARGET} PROPERTY IMPORTED_LOCATION ${NATIVE_BINARY})
 	else()
-		engine_add_executable(${ARGN})
+		engine_add_executable("${ARGN};NATIVE")
 	endif()
 endmacro()
 
