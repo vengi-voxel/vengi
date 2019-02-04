@@ -77,6 +77,7 @@ bool postgresInit() {
 			if (obj != nullptr) {
 				break;
 			}
+			Log::debug("Failed to load %s", *searchPath);
 		}
 	}
 
