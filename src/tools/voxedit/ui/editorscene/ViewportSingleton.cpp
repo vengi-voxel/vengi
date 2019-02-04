@@ -243,6 +243,7 @@ void ViewportSingleton::modified(const voxel::Region& modifiedRegion, bool markU
 	_extractRegions.push_back(modifiedRegion);
 	_dirty = true;
 	_extract = true;
+	resetLastTrace();
 }
 
 void ViewportSingleton::crop() {
@@ -358,7 +359,6 @@ bool ViewportSingleton::aabbEnd() {
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
 		if (voxedit::tool::aabb(wrapper, mins, maxs, voxel, overwriteVoxels || deleteVoxels, &modifiedRegion)) {
 			modified(modifiedRegion);
-			resetLastTrace();
 		}
 		return true;
 	}
@@ -367,13 +367,16 @@ bool ViewportSingleton::aabbEnd() {
 	voxel::Region modifiedRegionMirror;
 	bool success;
 	if (math::intersects(first, second)) {
-		success = voxedit::tool::aabb(wrapper, mins, maxsMirror, voxel, overwriteVoxels || deleteVoxels, &modifiedRegionMirror);
+		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, voxel, overwriteVoxels || deleteVoxels, &modifiedRegionMirror)) {
+			modified(modifiedRegionMirror);
+		}
 	} else {
-		success = voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, voxel, overwriteVoxels || deleteVoxels, &modifiedRegionMirror);
-	}
-	if (success) {
-		modified(modifiedRegionMirror);
-		resetLastTrace();
+		if (voxedit::tool::aabb(wrapper, mins, maxs, voxel, overwriteVoxels || deleteVoxels, &modifiedRegion)) {
+			modified(modifiedRegion);
+		}
+		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, voxel, overwriteVoxels || deleteVoxels, &modifiedRegionMirror)) {
+			modified(modifiedRegionMirror);
+		}
 	}
 	return true;
 }
