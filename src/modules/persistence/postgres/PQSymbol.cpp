@@ -69,7 +69,7 @@ bool postgresInit() {
 	if (obj == nullptr) {
 		const char *searchPaths[] = {
 #ifdef POSTGRESQL_LIBS
-				POSTGRESQL_LIBS
+				POSTGRESQL_LIBS,
 #endif
 				"libpq.dll", "libpq.so", nullptr};
 		for (const char **searchPath = searchPaths; *searchPath; ++searchPath) {
