@@ -350,8 +350,6 @@ bool ViewportSingleton::aabbEnd() {
 	const glm::ivec3& pos = cursorPosition();
 	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
 	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos);
-	const bool deleteVoxels = (_modifierType & ModifierType::Delete) == ModifierType::Delete;
-	const bool overwriteVoxels = (_modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 	voxel::Region modifiedRegion;
 	glm::ivec3 minsMirror = mins;
 	glm::ivec3 maxsMirror = maxs;
@@ -364,7 +362,6 @@ bool ViewportSingleton::aabbEnd() {
 	const math::AABB<int> first(mins, maxs);
 	const math::AABB<int> second(minsMirror, maxsMirror);
 	voxel::Region modifiedRegionMirror;
-	bool success;
 	if (math::intersects(first, second)) {
 		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
 			modified(modifiedRegionMirror);
