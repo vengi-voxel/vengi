@@ -10,6 +10,7 @@
 #include "io/Filesystem.h"
 #include "ViewportSingleton.h"
 #include "Viewport.h"
+#include "voxedit-util/ModifierType.h"
 
 using namespace voxedit;
 
@@ -122,7 +123,19 @@ void Viewport::updateStatusBar() {
 			str.SetFormatted("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
 			status->SetText(str);
 		} else {
-			status->SetText("-");
+			const ModifierType modifierType = vps().modifierType();
+			const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
+			const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
+			const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
+			if (overwrite) {
+				status->SetText(tr("Override"));
+			} else if (deleteVoxels) {
+				status->SetText(tr("Delete"));
+			} else if (update) {
+				status->SetText(tr("Update"));
+			} else {
+				status->SetText(tr("Place"));
+			}
 		}
 	}
 }

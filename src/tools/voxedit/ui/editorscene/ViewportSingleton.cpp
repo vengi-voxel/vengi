@@ -345,7 +345,6 @@ bool ViewportSingleton::aabbEnd() {
 	if (!_aabbMode) {
 		return false;
 	}
-	// TODO: we need a update modifier type to not place but only e.g. recolor voxels in your selection
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	_aabbMode = false;
 	const glm::ivec3& pos = cursorPosition();
@@ -353,12 +352,11 @@ bool ViewportSingleton::aabbEnd() {
 	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos);
 	const bool deleteVoxels = (_modifierType & ModifierType::Delete) == ModifierType::Delete;
 	const bool overwriteVoxels = (_modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
-	const voxel::Voxel voxel = (deleteVoxels && !overwriteVoxels) ? voxel::createVoxel(voxel::VoxelType::Air, 0) : _cursorVoxel;
 	voxel::Region modifiedRegion;
 	glm::ivec3 minsMirror = mins;
 	glm::ivec3 maxsMirror = maxs;
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
-		if (voxedit::tool::aabb(wrapper, mins, maxs, voxel, overwriteVoxels || deleteVoxels, &modifiedRegion)) {
+		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
 			modified(modifiedRegion);
 		}
 		return true;
@@ -368,14 +366,14 @@ bool ViewportSingleton::aabbEnd() {
 	voxel::Region modifiedRegionMirror;
 	bool success;
 	if (math::intersects(first, second)) {
-		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, voxel, overwriteVoxels || deleteVoxels, &modifiedRegionMirror)) {
+		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
 			modified(modifiedRegionMirror);
 		}
 	} else {
-		if (voxedit::tool::aabb(wrapper, mins, maxs, voxel, overwriteVoxels || deleteVoxels, &modifiedRegion)) {
+		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
 			modified(modifiedRegion);
 		}
-		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, voxel, overwriteVoxels || deleteVoxels, &modifiedRegionMirror)) {
+		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
 			modified(modifiedRegionMirror);
 		}
 	}
@@ -745,6 +743,9 @@ bool ViewportSingleton::addModifierType(ModifierType type) {
 		return false;
 	}
 	_modifierType &= type;
+	// the modifier type has an influence on which voxel is taken. So make
+	// sure the next trace is executed even if we don't move the mouse.
+	resetLastTrace();
 	return true;
 }
 
@@ -760,7 +761,7 @@ ModifierType ViewportSingleton::modifierType() const {
 }
 
 bool ViewportSingleton::modifierTypeRequiresExistingVoxel() const {
-	return (_modifierType & ModifierType::Delete) == ModifierType::Delete;
+	return (_modifierType & ModifierType::Delete) == ModifierType::Delete || (_modifierType & ModifierType::Update) == ModifierType::Delete;
 }
 
 bool ViewportSingleton::trace(const video::Camera& camera, bool force) {

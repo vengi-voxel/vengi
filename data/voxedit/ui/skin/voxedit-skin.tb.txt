@@ -1,6 +1,6 @@
 elements
-	voxedit-copy
-		bitmap voxedit-copy.png
+	voxedit-color
+		bitmap voxedit-color.png
 	voxedit-delete
 		bitmap voxedit-delete.png
 	voxedit-flip-horizontal

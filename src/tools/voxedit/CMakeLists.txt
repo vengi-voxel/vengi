@@ -21,7 +21,7 @@ set(FILES
 	voxedit/ui/skin/voxedit-axis-y.png
 	voxedit/ui/skin/voxedit-axis-z.png
 	voxedit/ui/skin/voxedit-color-picker.png
-	voxedit/ui/skin/voxedit-copy.png
+	voxedit/ui/skin/voxedit-color.png
 	voxedit/ui/skin/voxedit-crop.png
 	voxedit/ui/skin/voxedit-delete.png
 	voxedit/ui/skin/voxedit-export.png

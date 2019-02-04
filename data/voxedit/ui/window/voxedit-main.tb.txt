@@ -82,6 +82,13 @@ TBLayout: distribution: gravity, axis: y
 									id actionoverride
 									data 3
 									@include definitions>toolbutton
+							TBClickLabel
+								text Colorize
+								TBSkinImage: skin: voxedit-color
+								TBRadioButton
+									id actionupdate
+									data 3
+									@include definitions>toolbutton
 
 					TBSeparator: gravity: left right, skin: separator
 

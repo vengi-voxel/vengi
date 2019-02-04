@@ -2,6 +2,8 @@ set(SRCS
 	ImportHeightmap.h ImportHeightmap.cpp
 	MementoHandler.h MementoHandler.cpp
 
+	ModifierType.h
+
 	tool/Fill.h tool/Fill.cpp
 	tool/Crop.h tool/Crop.cpp
 	tool/Expand.h tool/Expand.cpp

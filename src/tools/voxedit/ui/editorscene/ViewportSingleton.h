@@ -18,7 +18,7 @@
 #include "video/MeshPool.h"
 #include "math/Axis.h"
 #include "voxedit-util/MementoHandler.h"
-#include "ModifierType.h"
+#include "voxedit-util/ModifierType.h"
 #include <vector>
 
 namespace voxel {
