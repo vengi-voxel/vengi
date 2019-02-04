@@ -345,6 +345,7 @@ bool ViewportSingleton::aabbEnd() {
 	if (!_aabbMode) {
 		return false;
 	}
+	// TODO: we need a update modifier type to not place but only e.g. recolor voxels in your selection
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	_aabbMode = false;
 	const glm::ivec3& pos = cursorPosition();
