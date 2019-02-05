@@ -7,8 +7,9 @@
 namespace ui {
 namespace turbobadger {
 
-const char *FILELIST = "files";
-const char *FILTERLIST = "filter";
+static const char *FILELIST = "files";
+static const char *FILTERLIST = "filter";
+static const char *INPUT = "input";
 
 FileDialogItemWidget::FileDialogItemWidget(FileDialogItem *item) : tb::TBLayout() {
 	SetSkinBg(TBIDC("TBSelectItem"));
@@ -104,6 +105,10 @@ FileDialogWindow::~FileDialogWindow() {
 void FileDialogWindow::setMode(video::WindowedApp::OpenFileMode mode) {
 	_mode = mode;
 	_entityList.setMode(mode);
+	const bool inputVisible = _mode == video::WindowedApp::OpenFileMode::Save;
+	if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
+		input->SetVisibility(inputVisible ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE);
+	}
 }
 
 void FileDialogWindow::setFilter(const char **filter) {
@@ -149,15 +154,27 @@ bool FileDialogWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 					changeDir(dirEntry.name);
 					return true;
 				}
-				_callback(_directory + "/" + dirEntry.name);
-				tb::TBWidgetEvent click_ev(tb::EVENT_TYPE_CLICK);
-				m_close_button.InvokeEvent(click_ev);
+				if (_mode == video::WindowedApp::OpenFileMode::Save) {
+					if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
+						input->SetText(dirEntry.name.c_str());
+					}
+				} else {
+					_callback(_directory + "/" + dirEntry.name);
+					tb::TBWidgetEvent click_ev(tb::EVENT_TYPE_CLICK);
+					m_close_button.InvokeEvent(click_ev);
+				}
 				return true;
 			}
 		}
 	} else if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (id == TBIDC("ok")) {
-			if (tb::TBSelectList *select = getWidgetByType<tb::TBSelectList>(FILELIST)) {
+			if (_mode == video::WindowedApp::OpenFileMode::Save) {
+				if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
+					_callback(_directory + "/" + std::string(input->GetText().CStr()));
+				} else {
+					Log::error("Failed to get input node");
+				}
+			} else if (tb::TBSelectList *select = getWidgetByType<tb::TBSelectList>(FILELIST)) {
 				const int index = select->GetValue();
 				if (index >= 0 && index < _entityList.GetNumItems()) {
 					const FileDialogItem* item = _entityList.GetItem(index);

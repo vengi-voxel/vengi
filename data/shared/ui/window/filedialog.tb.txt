@@ -3,6 +3,10 @@ WindowInfo
 	size 550 500
 
 TBLayout: distribution: gravity, axis: y, size: available
+	TBEditField
+		id input
+
+	TBSeparator: gravity: left right, skin: separator
 	TBSelectList
 		id files
 		gravity all
