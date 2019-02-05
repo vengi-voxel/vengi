@@ -85,6 +85,21 @@ bool Image::load(uint8_t* buffer, int length) {
 	return true;
 }
 
+void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
+	uint32_t *srcPtr = reinterpret_cast<uint32_t *>(pixels);
+	uint32_t *dstPtr = srcPtr + intptr_t((h - 1) * w);
+	for (int y = 0; y < h / 2; ++y) {
+		for (int x = 0; x < w; ++x) {
+			const uint32_t d = dstPtr[x];
+			const uint32_t s = srcPtr[x];
+			dstPtr[x] = s;
+			srcPtr[x] = d;
+		}
+		srcPtr += w;
+		dstPtr -= w;
+	}
+}
+
 bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {
 	return stbi_write_png(name, width, height, depth, (const void*)buffer, width * depth) != 0;
 }

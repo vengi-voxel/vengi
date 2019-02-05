@@ -42,12 +42,17 @@ bool Viewport::newModel(bool force) {
 
 bool Viewport::saveImage(const char* filename) {
 	const video::TextureConfig& cfg = _frameBufferTexture._textureConfig;
+	core_assert(cfg.format() == video::TextureFormat::RGBA);
+	if (cfg.format() != video::TextureFormat::RGBA) {
+		return false;
+	}
 	uint8_t *pixels;
 	if (!video::readTexture(video::TextureUnit::Upload,
 			cfg.type(), cfg.format(), _frameBufferTexture._texture,
 			_frameBufferTexture._w, _frameBufferTexture._h, &pixels)) {
 		return false;
 	}
+	image::Image::flipVerticalRGBA(pixels, _frameBufferTexture._w, _frameBufferTexture._h);
 	const bool val = image::Image::writePng(filename, pixels, _frameBufferTexture._w, _frameBufferTexture._h, 4);
 	SDL_free(pixels);
 	return val;

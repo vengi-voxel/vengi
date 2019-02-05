@@ -36,6 +36,10 @@ bool VoxEdit::saveFile(const std::string& file) {
 	return _mainWindow->save(file);
 }
 
+bool VoxEdit::screenshotFile(const std::string& file) {
+	return _mainWindow->saveScreenshot(file);
+}
+
 bool VoxEdit::loadFile(const std::string& file) {
 	return _mainWindow->load(file);
 }
@@ -134,6 +138,7 @@ core::AppState VoxEdit::onConstruct() {
 
 	COMMAND_CALL("new", newFile(), "Create a new scene");
 
+	COMMAND_FILE(screenshot, "Save the current viewport as screenshot");
 	COMMAND_FILE(save, "Save the current state to the given file");
 	COMMAND_FILE(export, "Export the current state to the given file");
 	COMMAND_FILE(load, "Load a scene from the given file");

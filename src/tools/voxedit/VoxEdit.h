@@ -49,6 +49,7 @@ public:
 	bool importheightmapFile(const std::string& file);
 	bool saveFile(const std::string& file);
 	bool loadFile(const std::string& file);
+	bool screenshotFile(const std::string& file);
 	bool prefabFile(const std::string& file);
 	bool importmeshFile(const std::string& file);
 	bool exportFile(const std::string& file);

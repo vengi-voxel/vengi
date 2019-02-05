@@ -740,6 +740,19 @@ bool VoxEditWindow::save(const std::string& file) {
 	return true;
 }
 
+bool VoxEditWindow::saveScreenshot(const std::string& file) {
+	if (file.empty()) {
+		getApp()->saveDialog([this] (const std::string& file) {save(file); }, "png");
+		return true;
+	}
+	if (!_scene->saveImage(file.c_str())) {
+		Log::warn("Failed to save screenshot");
+		return false;
+	}
+	Log::info("Screenshot created at '%s'", file.c_str());
+	return true;
+}
+
 bool VoxEditWindow::importMesh(const std::string& file) {
 	if (file.empty()) {
 		getApp()->openDialog([this] (const std::string& file) {importMesh(file);}, _importFilter);
