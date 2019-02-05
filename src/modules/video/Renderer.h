@@ -253,6 +253,10 @@ extern PolygonMode polygonMode(Face face, PolygonMode mode);
 extern bool polygonOffset(const glm::vec2& offset);
 extern bool activeTextureUnit(TextureUnit unit);
 extern bool bindTexture(TextureUnit unit, TextureType type, Id handle);
+/**
+ * @note The returned buffer should get freed with SDL_free
+ */
+extern bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels);
 extern bool useProgram(Id handle);
 extern Id getProgram();
 extern bool bindVertexArray(Id handle);
@@ -283,6 +287,10 @@ extern void genFramebuffers(uint8_t amount, Id* ids);
 extern Id genFramebuffer();
 extern void deleteFramebuffers(uint8_t amount, Id* ids);
 extern void deleteFramebuffer(Id& id);
+/**
+ * @note The returned buffer should get freed with SDL_free
+ */
+extern bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t** pixels);
 extern void genRenderbuffers(uint8_t amount, Id* ids);
 extern Id genRenderbuffer();
 extern void deleteRenderbuffers(uint8_t amount, Id* ids);

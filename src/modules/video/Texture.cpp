@@ -38,6 +38,17 @@ void Texture::upload(const uint8_t* data, int index) {
 	upload(_width, _height, data, index);
 }
 
+uint8_t* Texture::data() {
+	if (_handle == InvalidId) {
+		return nullptr;
+	}
+	uint8_t *pixels;
+	if (!video::readTexture(TextureUnit::Upload, _config.type(), _config.format(), _handle, _width, _height, &pixels)) {
+		return nullptr;
+	}
+	return pixels;
+}
+
 void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	if (_handle == InvalidId) {
 		_handle = video::genTexture();

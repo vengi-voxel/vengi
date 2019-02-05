@@ -44,6 +44,12 @@ public:
 	void upload(TextureFormat format, int width, int height, const uint8_t* data = nullptr, int index = 1);
 	void upload(int width, int height, const uint8_t* data = nullptr, int index = 1);
 	void upload(const uint8_t* data = nullptr, int index = 1);
+
+	/**
+	 * @note The returned buffer should get freed with SDL_free
+	 */
+	uint8_t* data();
+
 	/**
 	 * @sa unbind()
 	 */

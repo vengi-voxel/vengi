@@ -407,6 +407,21 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	return false;
 }
 
+bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
+	bindTexture(unit, type, handle);
+	const _priv::Formats& f = _priv::textureFormats[std::enum_value(format)];
+	const int pitch = w * f.bits / 8;
+	*pixels = (uint8_t*)SDL_malloc(h * pitch);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glGetTexImage(_priv::TextureTypes[std::enum_value(type)], 0, f.dataFormat, f.dataType, (void*)*pixels);
+	if (checkError()) {
+		SDL_free(*pixels);
+		*pixels = nullptr;
+		return false;
+	}
+	return true;
+}
+
 bool useProgram(Id handle) {
 	if (_priv::s.programHandle == handle) {
 		return false;
@@ -605,6 +620,24 @@ void deleteTextures(uint8_t amount, Id* ids) {
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
+}
+
+bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t** pixels) {
+	core_assert(_priv::s.framebufferHandle != InvalidId);
+	if (_priv::s.framebufferHandle == InvalidId) {
+		return false;
+	}
+	const _priv::Formats& f = _priv::textureFormats[std::enum_value(format)];
+	const int pitch = w * f.bits / 8;
+	*pixels = (uint8_t*)SDL_malloc(h * pitch);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glReadPixels(x, y, w, h, f.dataFormat, f.dataType, (void*)*pixels);
+	if (checkError()) {
+		SDL_free(*pixels);
+		*pixels = nullptr;
+		return false;
+	}
+	return true;
 }
 
 void genFramebuffers(uint8_t amount, Id* ids) {
