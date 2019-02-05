@@ -37,6 +37,7 @@ public:
 	void update();
 	void resetCamera();
 	bool newModel(bool force);
+	bool saveImage(const char* filename);
 
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;

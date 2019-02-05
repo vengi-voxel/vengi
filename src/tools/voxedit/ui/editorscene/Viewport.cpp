@@ -11,6 +11,7 @@
 #include "ViewportSingleton.h"
 #include "Viewport.h"
 #include "voxedit-util/ModifierType.h"
+#include "image/Image.h"
 
 using namespace voxedit;
 
@@ -37,6 +38,19 @@ bool Viewport::newModel(bool force) {
 	}
 	resetCamera();
 	return true;
+}
+
+bool Viewport::saveImage(const char* filename) {
+	const video::TextureConfig& cfg = _frameBufferTexture._textureConfig;
+	uint8_t *pixels;
+	if (!video::readTexture(video::TextureUnit::Upload,
+			cfg.type(), cfg.format(), _frameBufferTexture._texture,
+			_frameBufferTexture._w, _frameBufferTexture._h, &pixels)) {
+		return false;
+	}
+	const bool val = image::Image::writePng(filename, pixels, _frameBufferTexture._w, _frameBufferTexture._h, 4);
+	SDL_free(pixels);
+	return val;
 }
 
 void Viewport::resetCamera() {
