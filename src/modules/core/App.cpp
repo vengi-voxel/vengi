@@ -183,7 +183,7 @@ void App::onFrame() {
 }
 
 AppState App::onConstruct() {
-	VarPtr logVar = core::Var::get(cfg::CoreLogLevel, SDL_LOG_PRIORITY_INFO);
+	VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
 	registerArg("--loglevel").setShort("-l").setDescription("Change log level from 1 (trace) to 6 (only critical)");
 	const std::string& logLevelVal = getArgVal("--loglevel");
 	if (!logLevelVal.empty()) {

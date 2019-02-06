@@ -81,6 +81,8 @@ protected:
 	int _argc = 0;
 	char **_argv = nullptr;
 
+	int _initialLogLevel = SDL_LOG_PRIORITY_INFO;
+
 	std::string _organisation;
 	std::string _appname;
 

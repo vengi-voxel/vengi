@@ -17,6 +17,7 @@
 ComputeShaderTool::ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "computeshadertool");
+	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 }
 
 ComputeShaderTool::~ComputeShaderTool() {

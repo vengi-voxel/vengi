@@ -15,6 +15,7 @@
 DatabaseTool::DatabaseTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "databasetool");
+	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 }
 
 bool DatabaseTool::generateSrc() const {
