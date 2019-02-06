@@ -205,7 +205,8 @@ void TBValue::Copy(const TBValue &source_value)
 	else
 	{
 		SetNull();
-		memcpy(this, &source_value, sizeof(TBValue));
+		this->m_packed_init = source_value.m_packed_init;
+		this->val_obj = source_value.val_obj;
 	}
 }
 
