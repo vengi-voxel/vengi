@@ -202,9 +202,11 @@ bool Filesystem::isRelativeFilename(const std::string& name) const {
 
 bool Filesystem::registerPath(const std::string& path) {
 	if (!core::string::endsWith(path, "/")) {
+		Log::error("Failed to register data path: '%s'.", path.c_str());
 		return false;
 	}
 	_paths.push_back(path);
+	Log::info("Registered data path: '%s'", path.c_str());
 	return true;
 }
 
