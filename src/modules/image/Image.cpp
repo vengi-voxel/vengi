@@ -11,6 +11,9 @@
 #define STBI_MALLOC core_malloc
 #define STBI_REALLOC core_realloc
 #define STBI_FREE core_free
+#define STBI_NO_FAILURE_STRINGS
+#define STBI_NO_HDR
+#define STBI_NO_GIF
 
 #define STBIW_ASSERT core_assert
 #define STBIW_MALLOC core_malloc
@@ -28,6 +31,9 @@ namespace image {
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+
+#undef STB_IMAGE_IMPLEMENTATION
+#undef STB_IMAGE_WRITE_IMPLEMENTATION
 
 Image::Image(const std::string& name) :
 		io::IOResource(), _name(name) {

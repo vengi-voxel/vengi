@@ -9,7 +9,6 @@ set(SRCS
 	tb/utf8/utf8.h
 	tb/renderers/tb_renderer_batcher.cpp
 	tb/renderers/tb_renderer_batcher.h
-	tb/thirdparty/stb_image.h
 	tb/thirdparty/stb_truetype.h
 	tb/parser/tb_parser.h
 	tb/parser/tb_parser.cpp

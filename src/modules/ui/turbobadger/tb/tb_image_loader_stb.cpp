@@ -9,24 +9,10 @@
 
 #ifdef TB_IMAGE_LOADER_STB
 
-// Configure stb image and remove some features we don't use to reduce binary size.
-#define STB_IMAGE_STATIC
-#define STB_IMAGE_IMPLEMENTATION
-//#define STBI_SIMD
-#define STBI_NO_STDIO
-#define STBI_NO_FAILURE_STRINGS
-#define STBI_NO_HDR
-#define STBI_NO_GIF
-
-// Disable unused function warnings for stb_image.h. Since STB_IMAGE_STATIC is
-// defined, it will contain a couple of unused static functions.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-
 // Include stb image - Tiny portable and reasonable fast image loader from http://nothings.org/
 // Should not be used for content not distributed with your app (May not be secure and doesn't
 // support all formats fully)
-#include "thirdparty/stb_image.h"
+#include "image/stb_image.h"
 
 #pragma GCC diagnostic pop
 
