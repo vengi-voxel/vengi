@@ -37,11 +37,12 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		createDir(_homePath);
 	}
 
-	registerPath(_basePath);
-	registerPath(_homePath);
+	core_assert_always(registerPath(_homePath));
+#ifdef PKGDATADIR
+	core_assert_always(registerPath(PKGDATADIR));
+#endif
+	core_assert_always(registerPath(_basePath));
 
-	Log::debug("basepath: %s", _basePath.c_str());
-	Log::debug("homepath: %s", _homePath.c_str());
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 
