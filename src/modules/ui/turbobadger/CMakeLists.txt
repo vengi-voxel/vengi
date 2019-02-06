@@ -23,10 +23,8 @@ set(SRCS
 	tb/tb_debug.cpp
 	tb/tb_dimension.cpp
 	tb/tb_editfield.cpp
-	tb/tb_file_posix.cpp
 	tb/tb_file_sdl.cpp
 	tb/tb_font_renderer.cpp
-	tb/tb_font_renderer_freetype.cpp
 	tb/tb_font_renderer_stb.cpp
 	tb/tb_font_renderer_tbbf.cpp
 	tb/tb_geometry.cpp
