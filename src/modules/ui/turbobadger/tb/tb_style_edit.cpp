@@ -1291,7 +1291,7 @@ int32_t TBTextFragment::GetWidth(const TBBlock *block, TBFontFace *font)
 		width = block->CalculateTabWidth(font, xpos);
 	else
 		width = block->CalculateStringWidth(font, block->str.CStr() + ofs, len);
-	if ((((uint32_t) width) & WIDTH_CACHE_MASK) == width)
+	if ((((uint32_t) width) & WIDTH_CACHE_MASK) == (uint32_t)width)
 	{
 		m_packed.is_width_valid = 1;
 		m_packed.width = (uint32_t) width;

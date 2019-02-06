@@ -33,14 +33,14 @@ protected:
 	std::string _rawPath;
 	FileMode _mode;
 
+	File(const std::string& rawPath, FileMode mode);
+public:
+	virtual ~File();
+
 	void close();
 	int read(void *buf, size_t size, size_t maxnum);
 	long tell() const;
 	long seek(long offset, int seekType) const;
-
-	File(const std::string& rawPath, FileMode mode);
-public:
-	virtual ~File();
 
 	/**
 	 * @return The FileMode the file was opened with

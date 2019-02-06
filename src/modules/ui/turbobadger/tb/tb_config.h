@@ -17,7 +17,6 @@
 #define TB_IMAGE
 #define TB_CLIPBOARD_SDL
 #define TB_SYSTEM_SDL
-#define TB_FILE_SDL
 
 #if defined(__linux) || defined(__linux__)
 #define TB_TARGET_LINUX
