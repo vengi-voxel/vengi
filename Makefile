@@ -52,8 +52,8 @@ update-stb:
 	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/stb_image.h
 	cp $(UPDATEDIR)/stb.sync/stb_image_write.h src/modules/image/stb_image_write.h
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxelfont/stb_truetype.h
-	cp $(UPDATEDIR)/stb.sync/stb_image.h contrib/libs/libturbobadger/tb/thirdparty
-	cp $(UPDATEDIR)/stb.sync/stb_truetype.h contrib/libs/libturbobadger/tb/thirdparty
+	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/ui/turbobadger/tb/thirdparty
+	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/ui/turbobadger/tb/thirdparty
 
 update-googletest:
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
@@ -120,20 +120,6 @@ update-sdl2:
 	cp -r $(UPDATEDIR)/sdl2.sync/include/* contrib/libs/sdl2/include
 	cp -r $(UPDATEDIR)/sdl2.sync/cmake/* contrib/libs/sdl2/cmake
 
-update-turbobadger:
-	$(call UPDATE_GIT,turbobadger,https://github.com/fruxo/turbobadger.git)
-	rm -rf contrib/libs/libturbobadger/tb/*
-	cp -r $(UPDATEDIR)/turbobadger.sync/src/tb/* contrib/libs/libturbobadger/tb
-	git checkout master contrib/libs/libturbobadger/tb/tb_clipboard_sdl.cpp
-	git checkout master contrib/libs/libturbobadger/tb/tb_system_sdl.cpp
-	git checkout master contrib/libs/libturbobadger/tb/tb_file_sdl.cpp
-	git checkout contrib/libs/libturbobadger/tb/thirdparty/
-	rm contrib/libs/libturbobadger/tb/CMakeLists.txt
-	rm -rf contrib/libs/libturbobadger/tb/utf8/test\ files
-	rm -rf contrib/libs/libturbobadger/tb/tests
-	git diff contrib/libs/libturbobadger/ > $(UPDATEDIR)/turbobadger.sync/upstream.diff
-	git checkout contrib/libs/libturbobadger/tb/tb_id.cpp
-
 update-glslang:
 	$(call UPDATE_GIT,glslang,https://github.com/KhronosGroup/glslang.git)
 	rm -rf src/tools/glslang/External
@@ -170,7 +156,7 @@ update-curl:
 # TODO native file dialog support
 # TODO simpleai support
 # TODO lua support
-updatelibs: update-nuklear update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-turbobadger update-curl update-glslang
+updatelibs: update-nuklear update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-curl update-glslang
 	$(MAKE) -C $(BUILDDIR) update-libs
 
 windows:

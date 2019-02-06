@@ -13,7 +13,7 @@
 namespace tb {
 
 #ifdef TB_RUNTIME_DEBUG_INFO
-static uint32 dbg_bitmap_validations = 0;
+static uint32_t tb_dbg_bitmap_validations = 0;
 #endif
 
 UIBitmapGL::UIBitmapGL(UIRendererGL *renderer) :
@@ -46,7 +46,7 @@ bool UIBitmapGL::Init(int width, int height, video::Id texture) {
 	return true;
 }
 
-bool UIBitmapGL::Init(int width, int height, uint32 *data) {
+bool UIBitmapGL::Init(int width, int height, uint32_t *data) {
 	core_assert(width == TBGetNearestPowerOfTwo(width));
 	core_assert(height == TBGetNearestPowerOfTwo(height));
 
@@ -64,13 +64,13 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 	return true;
 }
 
-void UIBitmapGL::SetData(uint32 *data) {
+void UIBitmapGL::SetData(uint32_t *data) {
 	_renderer->FlushBitmap(this);
 	video::bindTexture(video::TextureUnit::Upload, _textureConfig.type(), _texture);
 	if (data != nullptr) {
 		video::uploadTexture(_textureConfig.type(), _textureConfig.format(), _w, _h, (const uint8_t*)data, 0);
 	}
-	TB_IF_DEBUG_SETTING(RENDER_BATCHES, dbg_bitmap_validations++);
+	TB_IF_DEBUG_SETTING(RENDER_BATCHES, tb_dbg_bitmap_validations++);
 }
 
 UIRendererGL::UIRendererGL() :
@@ -119,7 +119,7 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 
 void UIRendererGL::BeginPaint(int, int) {
 #ifdef TB_RUNTIME_DEBUG_INFO
-	dbg_bitmap_validations = 0;
+	tb_dbg_bitmap_validations = 0;
 #endif
 
 	const int renderTargetW = _camera.width();
@@ -146,7 +146,7 @@ void UIRendererGL::EndPaint() {
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	if (TB_DEBUG_SETTING(RENDER_BATCHES)) {
-		TBDebugPrint("Frame caused %d bitmap validations.\n", dbg_bitmap_validations);
+		TBDebugPrint("Frame caused %d bitmap validations.\n", tb_dbg_bitmap_validations);
 	}
 #endif
 }
@@ -159,7 +159,7 @@ void UIRendererGL::bindBitmap(TBBitmap *bitmap) {
 	static_cast<UIBitmapGL*>(bitmap)->bind();
 }
 
-TBBitmap *UIRendererGL::CreateBitmap(int width, int height, uint32 *data) {
+TBBitmap *UIRendererGL::CreateBitmap(int width, int height, uint32_t *data) {
 	UIBitmapGL *bitmap = new UIBitmapGL(this);
 	if (!bitmap->Init(width, height, data)) {
 		delete bitmap;

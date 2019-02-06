@@ -20,7 +20,7 @@ public:
 	UIBitmapGL(UIRendererGL *renderer);
 	~UIBitmapGL();
 
-	bool Init(int width, int height, uint32 *data);
+	bool Init(int width, int height, uint32_t *data);
 
 	bool Init(int width, int height, video::Id texture);
 
@@ -36,7 +36,7 @@ public:
 		return _h;
 	}
 
-	virtual void SetData(uint32 *data) override;
+	virtual void SetData(uint32_t *data) override;
 public:
 	UIRendererGL *_renderer;
 	int _w = 0;
@@ -66,7 +66,7 @@ public:
 	virtual void BeginPaint(int renderTargetW, int renderTargetH) override;
 	virtual void EndPaint() override;
 
-	virtual TBBitmap *CreateBitmap(int width, int height, uint32 *data) override;
+	virtual TBBitmap *CreateBitmap(int width, int height, uint32_t *data) override;
 
 	virtual void RenderBatch(Batch *batch) override;
 	virtual void SetClipRect(const TBRect &rect) override;
