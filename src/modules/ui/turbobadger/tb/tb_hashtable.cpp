@@ -29,9 +29,6 @@ TBHashTable::~TBHashTable()
 
 void TBHashTable::RemoveAll(bool delete_content)
 {
-#ifdef TB_RUNTIME_DEBUG_INFO
-	//Debug();
-#endif
 	for (uint32_t i = 0; i < m_num_buckets; i++)
 	{
 		ITEM *item = m_buckets[i];

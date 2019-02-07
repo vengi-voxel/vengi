@@ -448,10 +448,6 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 
-#ifdef TB_RUNTIME_DEBUG_INFO
-	Log::debug("Unknown event %s - %s", id.debug_string.CStr(), ev.ref_id.debug_string.CStr());
-#endif
-
 	return false;
 }
 

@@ -28,9 +28,7 @@ set(SRCS
 	tb/tb_font_renderer_stb.cpp
 	tb/tb_font_renderer_tbbf.cpp
 	tb/tb_geometry.cpp
-	tb/tb_hash.cpp
 	tb/tb_hashtable.cpp
-	tb/tb_id.cpp
 	tb/tb_image_loader_stb.cpp
 	tb/tb_inline_select.cpp
 	tb/tb_language.cpp

@@ -398,17 +398,6 @@ void UIApp::OnWidgetFocusChanged(tb::TBWidget *widget, bool focused) {
 	} else {
 		SDL_StopTextInput();
 	}
-	if (focused) {
-#ifdef TB_RUNTIME_DEBUG_INFO
-		Log::debug(_logId, "Focus widget Id: '%s'", widget->GetID().debug_string.CStr());
-#endif
-	} else {
-#ifdef TB_RUNTIME_DEBUG_INFO
-		if (tb::TBWidget::focused_widget != nullptr) {
-			Log::debug(_logId, "Unfocus widget Id: '%s'", tb::TBWidget::focused_widget->GetID().debug_string.CStr());
-		}
-#endif
-	}
 }
 
 void UIApp::afterRootWidget() {

@@ -46,13 +46,7 @@ const char *TBLanguage::GetString(const TBID &id)
 {
 	if (TBStr *str = strings.Get(id))
 		return *str;
-#ifdef TB_RUNTIME_DEBUG_INFO
-	static TBStr tmp;
-	tmp.SetFormatted("<TRANSLATE:%s>", id.debug_string.CStr());
-	return tmp;
-#else
 	return "<TRANSLATE!>";
-#endif
 }
 
 } // namespace tb
