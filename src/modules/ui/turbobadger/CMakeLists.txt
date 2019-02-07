@@ -17,13 +17,11 @@ set(SRCS
 	tb/image/tb_image_widget.h
 	tb/image/tb_image_manager.h
 	tb/tb_bitmap_fragment.cpp
-	tb/tb_clipboard_sdl.cpp
 	tb/tb_color.cpp
 	tb/tb_core.cpp
 	tb/tb_debug.cpp
 	tb/tb_dimension.cpp
 	tb/tb_editfield.cpp
-	tb/tb_file_io.cpp
 	tb/tb_font_renderer.cpp
 	tb/tb_font_renderer_stb.cpp
 	tb/tb_font_renderer_tbbf.cpp
@@ -52,7 +50,7 @@ set(SRCS
 	tb/tb_str.cpp
 	tb/tb_style_edit.cpp
 	tb/tb_style_edit_content.cpp
-	tb/tb_system_sdl.cpp
+	tb/tb_system.cpp
 	tb/tb_tab_container.cpp
 	tb/tb_tempbuffer.cpp
 	tb/tb_toggle_container.cpp
