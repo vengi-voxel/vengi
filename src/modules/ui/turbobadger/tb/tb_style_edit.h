@@ -149,7 +149,7 @@ public:
 	public:
 		TBFontDescription font_desc;
 		TBColor text_color;
-		bool underline;
+		bool underline = false;
 	};
 	TBTextProps() {}
 
@@ -160,10 +160,10 @@ public:
 	/** Get the font face from the current font description. */
 	TBFontFace *GetFont() const;
 public:
-	int next_index;
+	int next_index = 0;
 	TBListOf<Data> list;
 	Data base;
-	Data *data;
+	Data *data = nullptr;
 };
 
 /** TBPaintProps holds paint related data during paint of TBStyleEdit. */
