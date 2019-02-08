@@ -146,7 +146,7 @@ public:
 	~TBFontFace();
 
 	/** Render all glyphs needed to display the string. */
-	bool RenderGlyphs(const char *glyph_str, int glyph_str_len = TB_ALL_TO_TERMinATION);
+	bool RenderGlyphs(const char *glyph_str, int glyph_str_len = TB_ALL_TO_TERMINATION);
 
 	/** Get the vertical distance (positive) from the horizontal baseline to the highest character coordinate
 		in a font face. */
@@ -167,11 +167,11 @@ public:
 	TBFontEffect *GetEffect() { return &m_effect; }
 
 	/** Draw string at position x, y (marks the upper left corner of the text). */
-	void DrawString(int x, int y, const TBColor &color, const char *str, int len = TB_ALL_TO_TERMinATION);
+	void DrawString(int x, int y, const TBColor &color, const char *str, int len = TB_ALL_TO_TERMINATION);
 
 	/** Measure the width of the given string. Should measure len characters or to the null
 		termination (whatever comes first). */
-	int GetStringWidth(const char *str, int len = TB_ALL_TO_TERMinATION);
+	int GetStringWidth(const char *str, int len = TB_ALL_TO_TERMINATION);
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	/** Render the glyph bitmaps on screen, to analyze fragment positioning. */

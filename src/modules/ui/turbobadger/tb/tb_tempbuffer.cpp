@@ -6,16 +6,9 @@
 #include "tb_tempbuffer.h"
 #include "tb_system.h"
 #include "core/Assert.h"
-#include <stdlib.h>
-#if !defined(__native_client__)
-#include <memory.h>
-#endif
 #include <string.h>
 
 namespace tb {
-
-static char *p_realloc(char *buf, size_t size) { return (char *) realloc(buf, size); }
-static void p_free(char *buf) { free(buf); }
 
 TBTempBuffer::TBTempBuffer()
 	: m_data(nullptr)
@@ -26,7 +19,7 @@ TBTempBuffer::TBTempBuffer()
 
 TBTempBuffer::~TBTempBuffer()
 {
-	p_free(m_data);
+	SDL_free(m_data);
 }
 
 void TBTempBuffer::SetAppendPos(int append_pos)
@@ -39,7 +32,7 @@ bool TBTempBuffer::Reserve(int size)
 {
 	if (size > m_data_size)
 	{
-		char *new_data = p_realloc(m_data, size);
+		char *new_data = (char*)SDL_realloc(m_data, size);
 		if (!new_data)
 			return false;
 		m_data = new_data;
@@ -59,7 +52,7 @@ bool TBTempBuffer::Append(const char *data, int size)
 {
 	if (m_append_pos + size > m_data_size && !Reserve(GetAppendReserveSize(m_append_pos + size)))
 		return false;
-	memcpy(m_data + m_append_pos, data, size);
+	SDL_memcpy(m_data + m_append_pos, data, size);
 	m_append_pos += size;
 	return true;
 }
@@ -75,7 +68,7 @@ bool TBTempBuffer::AppendSpace(int size)
 bool TBTempBuffer::AppendString(const char *str)
 {
 	// Add 1 to include the null termination in the data.
-	if (Append(str, strlen(str) + 1))
+	if (Append(str, SDL_strlen(str) + 1))
 	{
 		// Now remove the null termination from the append position
 		// again, so another call will append to the same string (instead of

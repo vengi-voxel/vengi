@@ -104,7 +104,7 @@ UCS4 decode_next(const char *str, int *i, int i_max)
 
 	// Handle wrapping that could happen if the caller use
 	// something really large for i_max if src is known to
-	// be null terminated (like TB_ALL_TO_TERMinATION)
+	// be null terminated (like TB_ALL_TO_TERMINATION)
 	const char *str_end = str + i_max;
 	if (str_end < str)
 		str_end = (const char *) (-1);

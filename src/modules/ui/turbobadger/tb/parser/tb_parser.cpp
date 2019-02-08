@@ -27,7 +27,7 @@ static uint32_t parse_hex(char *&src, int max_count)
 		if (!is_hex(c))
 			break;
 		hex <<= 4;
-		hex |= isdigit(c) ? c - '0' : tolower(c) - 'a' + 10;
+		hex |= SDL_isdigit(c) ? c - '0' : SDL_tolower(c) - 'a' + 10;
 		src++;
 	}
 	return hex;

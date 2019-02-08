@@ -8,8 +8,6 @@
 #include "tb_system.h"
 #include "tb_tempbuffer.h"
 #include "tb_value.h"
-#include <stdlib.h>
-#include <ctype.h>
 #include <math.h>
 
 namespace tb {
@@ -65,11 +63,11 @@ int TBDimensionConverter::GetPxFromString(const char *str, int def_value) const
 {
 	if (!str || !is_start_of_number(str))
 		return def_value;
-	const int len = strlen(str);
-	const int val = atoi(str);
-	if (len > 2 && strcmp(str + len - 2, "px") == 0)
+	const int len = SDL_strlen(str);
+	const int val = SDL_atoi(str);
+	if (len > 2 && SDL_strcmp(str + len - 2, "px") == 0)
 		return val;
-	if (len > 2 && strcmp(str + len - 2, "mm") == 0)
+	if (len > 2 && SDL_strcmp(str + len - 2, "mm") == 0)
 		return MmToPx(val);
 	// "dp", unspecified or unknown unit is treated as dp.
 	return DpToPx(val);
@@ -79,11 +77,11 @@ float TBDimensionConverter::GetPxFromStringF(const char *str, float def_value) c
 {
 	if (!str || !is_start_of_number(str))
 		return def_value;
-	const int len = strlen(str);
-	const float val = (float) atof(str);
-	if (len > 2 && strcmp(str + len - 2, "px") == 0)
+	const int len = SDL_strlen(str);
+	const float val = (float) SDL_atof(str);
+	if (len > 2 && SDL_strcmp(str + len - 2, "px") == 0)
 		return val;
-	if (len > 2 && strcmp(str + len - 2, "mm") == 0)
+	if (len > 2 && SDL_strcmp(str + len - 2, "mm") == 0)
 		return MmToPxF(val);
 	// "dp", unspecified or unknown unit is treated as dp.
 	return DpToPxF(val);

@@ -23,8 +23,8 @@ void DrawEdgeFadeout(const TBRect &dst_rect, TBID skin_x, TBID skin_y,
 	{
 		if (skin->bitmap)
 		{
-			int bw = skin->bitmap->Width();
-			int bh = skin->bitmap->Height();
+			const int bw = skin->bitmap->Width();
+			const int bh = skin->bitmap->Height();
 			int dw;
 			if ((dw = GetFadeoutSize(left, bw)) > 0)
 				g_renderer->DrawBitmap(TBRect(dst_rect.x, dst_rect.y, dw, dst_rect.h), TBRect(0, 0, bw, bh), skin->bitmap);
@@ -36,8 +36,8 @@ void DrawEdgeFadeout(const TBRect &dst_rect, TBID skin_x, TBID skin_y,
 	{
 		if (skin->bitmap)
 		{
-			int bw = skin->bitmap->Width();
-			int bh = skin->bitmap->Height();
+			const int bw = skin->bitmap->Width();
+			const int bh = skin->bitmap->Height();
 			int dh;
 			if ((dh = GetFadeoutSize(top, bh)) > 0)
 				g_renderer->DrawBitmap(TBRect(dst_rect.x, dst_rect.y, dst_rect.w, dh), TBRect(0, 0, bw, bh), skin->bitmap);

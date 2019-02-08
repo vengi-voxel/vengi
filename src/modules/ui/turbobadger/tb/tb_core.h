@@ -25,15 +25,14 @@ freely, subject to the following restrictions:
     distribution.
 */
 
-#ifndef TB_CORE_H
-#define TB_CORE_H
+#pragma once
 
 #include "tb_types.h"
 #include "tb_hash.h"
 #include "tb_debug.h"
 
 #define TB_VERSION_MAJOR 0
-#define TB_VERSION_MinOR 1
+#define TB_VERSION_MINOR 1
 #define TB_VERSION_REVISION 1
 #define TB_VERSION_STR "0.1.1"
 
@@ -61,5 +60,3 @@ void tb_core_shutdown();
 bool tb_core_is_initialized();
 
 } // namespace tb
-
-#endif // TB_CORE_H

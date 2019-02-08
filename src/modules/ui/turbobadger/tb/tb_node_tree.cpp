@@ -5,8 +5,6 @@
 
 #include "tb_node_tree.h"
 #include "tb_node_ref_tree.h"
-#include <stdlib.h>
-#include <string.h>
 #include "core/Assert.h"
 #include "tb_system.h"
 #include "tb_tempbuffer.h"
@@ -23,7 +21,7 @@ TBNode::~TBNode()
 TBNode *TBNode::Create(const char *name)
 {
 	TBNode *n = new TBNode;
-	if (!n || !(n->m_name = strdup(name)))
+	if (!n || !(n->m_name = SDL_strdup(name)))
 	{
 		delete n;
 		return nullptr;
@@ -35,12 +33,12 @@ TBNode *TBNode::Create(const char *name)
 TBNode *TBNode::Create(const char *name, int name_len)
 {
 	TBNode *n = new TBNode;
-	if (!n || !(n->m_name = (char *) malloc(name_len + 1)))
+	if (!n || !(n->m_name = (char *) SDL_malloc(name_len + 1)))
 	{
 		delete n;
 		return nullptr;
 	}
-	memcpy(n->m_name, name, name_len);
+	SDL_memcpy(n->m_name, name, name_len);
 	n->m_name[name_len] = 0;
 	return n;
 }
@@ -86,7 +84,7 @@ TBNode *TBNode::GetNodeInternal(const char *name, int name_len) const
 {
 	for (TBNode *n = GetFirstChild(); n; n = n->GetNext())
 	{
-		if (strncmp(n->m_name, name, name_len) == 0 && n->m_name[name_len] == 0)
+		if (SDL_strncmp(n->m_name, name, name_len) == 0 && n->m_name[name_len] == 0)
 			return n;
 	}
 	return nullptr;
@@ -186,8 +184,8 @@ public:
 	}
 	virtual int GetMoreData(char *buf, int buf_len)
 	{
-		int consume = Min(buf_len, m_data_len);
-		memcpy(buf, m_data, consume);
+		const int consume = Min(buf_len, m_data_len);
+		SDL_memcpy(buf, m_data, consume);
 		m_data += consume;
 		m_data_len -= consume;
 		return consume;
@@ -218,9 +216,9 @@ public:
 	{
 		if (!m_target_node)
 			return;
-		if (strcmp(name, "@file") == 0)
+		if (SDL_strcmp(name, "@file") == 0)
 			IncludeFile(line_nr, value.GetString());
-		else if (strcmp(name, "@include") == 0)
+		else if (SDL_strcmp(name, "@include") == 0)
 			IncludeRef(line_nr, value.GetString());
 		else if (TBNode *n = TBNode::Create(name))
 		{
@@ -318,7 +316,7 @@ bool TBNode::ReadFile(const char *filename, TB_NODE_READ_FLAGS flags)
 
 bool TBNode::ReadData(const char *data, TB_NODE_READ_FLAGS flags)
 {
-	return ReadData(data, strlen(data), flags);
+	return ReadData(data, SDL_strlen(data), flags);
 }
 
 bool TBNode::ReadData(const char *data, int data_len, TB_NODE_READ_FLAGS flags)
@@ -336,7 +334,7 @@ bool TBNode::ReadData(const char *data, int data_len, TB_NODE_READ_FLAGS flags)
 
 void TBNode::Clear()
 {
-	free(m_name);
+	SDL_free(m_name);
 	m_name = nullptr;
 	m_children.DeleteAll();
 }

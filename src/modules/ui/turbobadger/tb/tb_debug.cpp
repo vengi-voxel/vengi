@@ -156,7 +156,7 @@ public:
 		// Append the line to the output textfield
 		TBStyleEdit *se = output->GetStyleEdit();
 		se->selection.SelectNothing();
-		se->AppendText(buf.GetData(), TB_ALL_TO_TERMinATION, true);
+		se->AppendText(buf.GetData(), TB_ALL_TO_TERMINATION, true);
 		se->ScrollIfNeeded(false, true);
 
 		// Remove lines from the top if we exceed the height limit.

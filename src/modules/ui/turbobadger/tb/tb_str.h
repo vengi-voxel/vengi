@@ -13,7 +13,7 @@ namespace tb {
 
 /** Use as parameter for string length if you know the string is null terminated.
 	Can be used in functions that support it. */
-#define TB_ALL_TO_TERMinATION 2147483647
+#define TB_ALL_TO_TERMINATION 2147483647
 
 /** Some useful C-like functions that's missing in the standard. */
 const char *stristr(const char *arg1, const char *arg2);
@@ -59,14 +59,14 @@ public:
 	TBStr(const char* str);
 	TBStr(const char* str, int len);
 
-	bool Set(const char* str, int len = TB_ALL_TO_TERMinATION);
+	bool Set(const char* str, int len = TB_ALL_TO_TERMINATION);
 	bool SetFormatted(const char* format, ...);
 
 	void Clear();
 
 	void Remove(int ofs, int len);
-	bool Insert(int ofs, const char *ins, int ins_len = TB_ALL_TO_TERMinATION);
-	bool Append(const char *ins, int ins_len = TB_ALL_TO_TERMinATION)	{ return Insert(strlen(s), ins, ins_len); }
+	bool Insert(int ofs, const char *ins, int ins_len = TB_ALL_TO_TERMINATION);
+	bool Append(const char *ins, int ins_len = TB_ALL_TO_TERMINATION)	{ return Insert(strlen(s), ins, ins_len); }
 
 	inline operator char *() const						{ return s; }
 	char *CStr() const									{ return s; }

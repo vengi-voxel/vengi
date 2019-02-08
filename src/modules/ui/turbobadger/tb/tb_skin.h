@@ -110,6 +110,7 @@ private:
 class TBSkinConditionContext
 {
 public:
+	virtual ~TBSkinConditionContext() {}
 	/** Return true if the given target and property equals the given value. */
 	virtual bool GetCondition(TBSkinCondition::TARGET target, const TBSkinCondition::CONDITION_INFO &info) = 0;
 };
@@ -273,6 +274,7 @@ public:
 class TBSkinListener
 {
 public:
+	virtual ~TBSkinListener() {}
 	/** Called when a skin element has been loaded from the given TBNode.
 		NOTE: This may be called multiple times on elements that occur multiple times
 		in the skin or is overridden in an override skin.

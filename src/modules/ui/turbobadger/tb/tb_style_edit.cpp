@@ -1639,12 +1639,12 @@ void TBStyleEdit::InsertBreak()
 	if (!packed.multiline_on)
 		return;
 
-	const char *new_line_str = packed.win_style_br ? "\r\n" : "\n";
+	const char *new_line_str = "\n";
 
 	// If we stand at the end and don't have any ending break, we're standing at the last line and
 	// should insert breaks twice. One to end the current line, and one for the new empty line.
 	if (caret.pos.ofs == caret.pos.block->str_len && !caret.pos.block->fragments.GetLast()->IsBreak())
-		new_line_str = packed.win_style_br ? "\r\n\r\n" : "\n\n";
+		new_line_str = "\n\n";
 
 	InsertText(new_line_str);
 
@@ -1655,8 +1655,8 @@ void TBStyleEdit::InsertBreak()
 
 void TBStyleEdit::InsertText(const char *text, int32_t len, bool after_last, bool clear_undo_redo)
 {
-	if (len == TB_ALL_TO_TERMinATION)
-		len = strlen(text);
+	if (len == TB_ALL_TO_TERMINATION)
+		len = SDL_strlen(text);
 
 	selection.RemoveContent();
 
@@ -1930,7 +1930,7 @@ void TBStyleEdit::Focus(bool focus)
 
 bool TBStyleEdit::SetText(const char *text, TB_CARET_POS pos)
 {
-	return SetText(text, strlen(text), pos);
+	return SetText(text, SDL_strlen(text), pos);
 }
 
 bool TBStyleEdit::SetText(const char *text, int text_len, TB_CARET_POS pos)

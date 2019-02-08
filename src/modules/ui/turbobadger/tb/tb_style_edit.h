@@ -29,7 +29,7 @@ public:
 	virtual void OnChange() {};
 	virtual bool OnEnter() { return false; };
 	virtual void Invalidate(const TBRect &rect) = 0;
-	virtual void DrawString(int32_t x, int32_t y, TBFontFace *font, const TBColor &color, const char *str, int32_t len = TB_ALL_TO_TERMinATION) = 0;
+	virtual void DrawString(int32_t x, int32_t y, TBFontFace *font, const TBColor &color, const char *str, int32_t len = TB_ALL_TO_TERMINATION) = 0;
 	virtual void DrawRect(const TBRect &rect, const TBColor &color) = 0;
 	virtual void DrawRectFill(const TBRect &rect, const TBColor &color) = 0;
 	virtual void DrawTextSelectionBg(const TBRect &rect) = 0;
@@ -210,7 +210,7 @@ public:
 	TBTextFragment *FindFragment(int32_t ofs, bool prefer_first = false) const;
 	TBTextFragment *FindFragment(int32_t x, int32_t y) const;
 
-	int32_t CalculateStringWidth(TBFontFace *font, const char *str, int len = TB_ALL_TO_TERMinATION) const;
+	int32_t CalculateStringWidth(TBFontFace *font, const char *str, int len = TB_ALL_TO_TERMINATION) const;
 	int32_t CalculateTabWidth(TBFontFace *font, int32_t xpos) const;
 	int32_t CalculateLineHeight(TBFontFace *font) const;
 	int32_t CalculateBaseline(TBFontFace *font) const;
@@ -396,14 +396,6 @@ public:
 	void SetPassword(bool password = true);
 	void SetWrapping(bool wrapping = true);
 
-	/** Set if line breaks should be inserted in windows style (\r\n)
-		or unix style (\n). The default is windows style on the windows
-		platform and disabled elsewhere.
-
-		Note: This only affects InsertBreak (pressing enter). Content set from
-		      SetText (and clipboard etc.) maintains the used line break. */
-	void SetWindowsStyleBreak(bool win_style_br) { packed.win_style_br = win_style_br; }
-
 	void Cut();
 	void Copy();
 	void Paste();
@@ -414,8 +406,8 @@ public:
 	bool CanUndo() const { return undoredo.undos.GetNumItems() ? true : false; }
 	bool CanRedo() const { return undoredo.redos.GetNumItems() ? true : false; }
 
-	void InsertText(const char *text, int32_t len = TB_ALL_TO_TERMinATION, bool after_last = false, bool clear_undo_redo = false);
-	void AppendText(const char *text, int32_t len = TB_ALL_TO_TERMinATION, bool clear_undo_redo = false) { InsertText(text, len, true, clear_undo_redo); }
+	void InsertText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool after_last = false, bool clear_undo_redo = false);
+	void AppendText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool clear_undo_redo = false) { InsertText(text, len, true, clear_undo_redo); }
 	void InsertBreak();
 
 	TBBlock *FindBlock(int32_t y) const;
@@ -467,9 +459,8 @@ public:
 		uint32_t show_whitespace : 1;
 		uint32_t password_on : 1;
 		uint32_t wrapping : 1;
-		uint32_t win_style_br : 1;
 		uint32_t calculate_content_width_needed : 1;	///< If content_width needs to be updated next GetContentWidth-
-		uint32_t lock_scrollbars_counter : 5;			///< Incremental counter for if UpdateScrollbar should be probhited.
+		uint32_t lock_scrollbars_counter : 5;			///< Incremental counter for if UpdateScrollbar should be prohibited.
 	} packed;
 	uint32_t packed_init;
 	};

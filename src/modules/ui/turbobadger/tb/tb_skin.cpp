@@ -7,9 +7,8 @@
 #include "tb_system.h"
 #include "tb_tempbuffer.h"
 #include "tb_node_tree.h"
-#include <string.h>
 #include "core/Assert.h"
-#include <stdio.h>
+#include "core/Log.h"
 
 namespace tb {
 
@@ -18,35 +17,35 @@ namespace tb {
 /*TB_TEXT_ALIGN StringToTextAlign(const char *align_str)
 {
 	TB_TEXT_ALIGN align = TB_TEXT_ALIGN_CENTER;
-	if (strstr(state_str, "left"))		align = TB_TEXT_ALIGN_LEFT;
-	if (strstr(state_str, "center"))	align = TB_TEXT_ALIGN_CENTER;
-	if (strstr(state_str, "right"))		align = TB_TEXT_ALIGN_RIGHT;
+	if (SDL_strstr(state_str, "left"))		align = TB_TEXT_ALIGN_LEFT;
+	if (SDL_strstr(state_str, "center"))	align = TB_TEXT_ALIGN_CENTER;
+	if (SDL_strstr(state_str, "right"))		align = TB_TEXT_ALIGN_RIGHT;
 	return state;
 }*/
 
 SKIN_STATE StringToState(const char *state_str)
 {
 	SKIN_STATE state = SKIN_STATE_NONE;
-	if (strstr(state_str, "all"))		state |= SKIN_STATE_ALL;
-	if (strstr(state_str, "disabled"))	state |= SKIN_STATE_DISABLED;
-	if (strstr(state_str, "focused"))	state |= SKIN_STATE_FOCUSED;
-	if (strstr(state_str, "pressed"))	state |= SKIN_STATE_PRESSED;
-	if (strstr(state_str, "selected"))	state |= SKIN_STATE_SELECTED;
-	if (strstr(state_str, "hovered"))	state |= SKIN_STATE_HOVERED;
+	if (SDL_strstr(state_str, "all"))		state |= SKIN_STATE_ALL;
+	if (SDL_strstr(state_str, "disabled"))	state |= SKIN_STATE_DISABLED;
+	if (SDL_strstr(state_str, "focused"))	state |= SKIN_STATE_FOCUSED;
+	if (SDL_strstr(state_str, "pressed"))	state |= SKIN_STATE_PRESSED;
+	if (SDL_strstr(state_str, "selected"))	state |= SKIN_STATE_SELECTED;
+	if (SDL_strstr(state_str, "hovered"))	state |= SKIN_STATE_HOVERED;
 	return state;
 }
 
 SKIN_ELEMENT_TYPE StringToType(const char *type_str)
 {
-	if (strcmp(type_str, "StretchBox") == 0)
+	if (SDL_strcmp(type_str, "StretchBox") == 0)
 		return SKIN_ELEMENT_TYPE_STRETCH_BOX;
-	else if (strcmp(type_str, "Image") == 0)
+	else if (SDL_strcmp(type_str, "Image") == 0)
 		return SKIN_ELEMENT_TYPE_IMAGE;
-	else if (strcmp(type_str, "Stretch Image") == 0)
+	else if (SDL_strcmp(type_str, "Stretch Image") == 0)
 		return SKIN_ELEMENT_TYPE_STRETCH_IMAGE;
-	else if (strcmp(type_str, "Tile") == 0)
+	else if (SDL_strcmp(type_str, "Tile") == 0)
 		return SKIN_ELEMENT_TYPE_TILE;
-	else if (strcmp(type_str, "StretchBorder") == 0)
+	else if (SDL_strcmp(type_str, "StretchBorder") == 0)
 		return SKIN_ELEMENT_TYPE_STRETCH_BORDER;
 	Log::debug("Skin error: Unknown skin type!");
 	return SKIN_ELEMENT_TYPE_STRETCH_BOX;
@@ -54,15 +53,15 @@ SKIN_ELEMENT_TYPE StringToType(const char *type_str)
 
 TBSkinCondition::TARGET StringToTarget(const char *target_str)
 {
-	if (strcmp(target_str, "this") == 0)
+	if (SDL_strcmp(target_str, "this") == 0)
 		return TBSkinCondition::TARGET_THIS;
-	else if (strcmp(target_str, "parent") == 0)
+	else if (SDL_strcmp(target_str, "parent") == 0)
 		return TBSkinCondition::TARGET_PARENT;
-	else if (strcmp(target_str, "ancestors") == 0)
+	else if (SDL_strcmp(target_str, "ancestors") == 0)
 		return TBSkinCondition::TARGET_ANCESTORS;
-	else if (strcmp(target_str, "prev sibling") == 0)
+	else if (SDL_strcmp(target_str, "prev sibling") == 0)
 		return TBSkinCondition::TARGET_PREV_SIBLING;
-	else if (strcmp(target_str, "next sibling") == 0)
+	else if (SDL_strcmp(target_str, "next sibling") == 0)
 		return TBSkinCondition::TARGET_NEXT_SIBLING;
 	Log::debug("Skin error: Unknown target in condition!");
 	return TBSkinCondition::TARGET_THIS;
@@ -70,25 +69,25 @@ TBSkinCondition::TARGET StringToTarget(const char *target_str)
 
 TBSkinCondition::PROPERTY StringToProperty(const char *prop_str)
 {
-	if (strcmp(prop_str, "skin") == 0)
+	if (SDL_strcmp(prop_str, "skin") == 0)
 		return TBSkinCondition::PROPERTY_SKIN;
-	else if (strcmp(prop_str, "window active") == 0)
+	else if (SDL_strcmp(prop_str, "window active") == 0)
 		return TBSkinCondition::PROPERTY_WINDOW_ACTIVE;
-	else if (strcmp(prop_str, "axis") == 0)
+	else if (SDL_strcmp(prop_str, "axis") == 0)
 		return TBSkinCondition::PROPERTY_AXIS;
-	else if (strcmp(prop_str, "align") == 0)
+	else if (SDL_strcmp(prop_str, "align") == 0)
 		return TBSkinCondition::PROPERTY_ALIGN;
-	else if (strcmp(prop_str, "id") == 0)
+	else if (SDL_strcmp(prop_str, "id") == 0)
 		return TBSkinCondition::PROPERTY_ID;
-	else if (strcmp(prop_str, "state") == 0)
+	else if (SDL_strcmp(prop_str, "state") == 0)
 		return TBSkinCondition::PROPERTY_STATE;
-	else if (strcmp(prop_str, "value") == 0)
+	else if (SDL_strcmp(prop_str, "value") == 0)
 		return TBSkinCondition::PROPERTY_VALUE;
-	else if (strcmp(prop_str, "hover") == 0)
+	else if (SDL_strcmp(prop_str, "hover") == 0)
 		return TBSkinCondition::PROPERTY_HOVER;
-	else if (strcmp(prop_str, "capture") == 0)
+	else if (SDL_strcmp(prop_str, "capture") == 0)
 		return TBSkinCondition::PROPERTY_CAPTURE;
-	else if (strcmp(prop_str, "focus") == 0)
+	else if (SDL_strcmp(prop_str, "focus") == 0)
 		return TBSkinCondition::PROPERTY_FOCUS;
 	return TBSkinCondition::PROPERTY_CUSTOM;
 }
@@ -106,7 +105,7 @@ TBSkinCondition::TBSkinCondition(TARGET target, PROPERTY prop, const TBID &custo
 
 bool TBSkinCondition::GetCondition(TBSkinConditionContext &context) const
 {
-	bool equal = context.GetCondition(m_target, m_info);
+	const bool equal = context.GetCondition(m_target, m_info);
 	return equal == (m_test == TEST_EQUAL);
 }
 
@@ -173,7 +172,7 @@ bool TBSkin::LoadInternal(const char *skin_file)
 
 	// Read skin constants
 	if (const char *color = node.GetValueString("defaults>text-color", nullptr))
-		m_default_text_color.SetFromString(color, strlen(color));
+		m_default_text_color.SetFromString(color, SDL_strlen(color));
 	m_default_disabled_opacity = node.GetValueFloat("defaults>disabled>opacity",
 		m_default_disabled_opacity);
 	m_default_placeholder_opacity = node.GetValueFloat("defaults>placeholder>opacity",
@@ -244,7 +243,7 @@ bool TBSkin::ReloadBitmaps()
 		success = m_frag_manager.ValidateBitmaps();
 
 #ifdef TB_RUNTIME_DEBUG_INFO
-	Log::debug("Skin loaded using %d bitmaps.\n", m_frag_manager.GetNumMaps());
+	Log::debug("Skin loaded using %d bitmaps.", m_frag_manager.GetNumMaps());
 #endif
 	return success;
 }
@@ -480,7 +479,7 @@ void TBSkin::PaintElementBGColor(const TBRect &dst_rect, TBSkinElement *element)
 
 void TBSkin::PaintElementImage(const TBRect &dst_rect, TBSkinElement *element)
 {
-	TBRect src_rect(0, 0, element->bitmap->Width(), element->bitmap->Height());
+	const TBRect src_rect(0, 0, element->bitmap->Width(), element->bitmap->Height());
 	TBRect rect = dst_rect.Expand(element->expand, element->expand);
 	rect.Set(rect.x + element->img_ofs_x + (rect.w - src_rect.w) * element->img_position_x / 100,
 			rect.y + element->img_ofs_y + (rect.h - src_rect.h) * element->img_position_y / 100,
@@ -490,7 +489,7 @@ void TBSkin::PaintElementImage(const TBRect &dst_rect, TBSkinElement *element)
 
 void TBSkin::PaintElementTile(const TBRect &dst_rect, TBSkinElement *element)
 {
-	TBRect rect = dst_rect.Expand(element->expand, element->expand);
+	const TBRect& rect = dst_rect.Expand(element->expand, element->expand);
 	g_renderer->DrawBitmapTile(rect, element->bitmap->GetBitmap());
 }
 
@@ -498,8 +497,8 @@ void TBSkin::PaintElementStretchImage(const TBRect &dst_rect, TBSkinElement *ele
 {
 	if (dst_rect.IsEmpty())
 		return;
-	TBRect rect = dst_rect.Expand(element->expand, element->expand);
-	TBRect src_rect = GetFlippedRect(TBRect(0, 0, element->bitmap->Width(), element->bitmap->Height()), element);
+	const TBRect& rect = dst_rect.Expand(element->expand, element->expand);
+	const TBRect& src_rect = GetFlippedRect(TBRect(0, 0, element->bitmap->Width(), element->bitmap->Height()), element);
 	g_renderer->DrawBitmap(rect, src_rect, element->bitmap);
 }
 
@@ -512,14 +511,14 @@ void TBSkin::PaintElementStretchBox(const TBRect &dst_rect, TBSkinElement *eleme
 
 	// Stretch the dst_cut (if rect is smaller than the skin size)
 	// FIX: the expand should also be stretched!
-	int cut = element->cut;
+	const int cut = element->cut;
 	int dst_cut_w = Min(cut, rect.w / 2);
 	int dst_cut_h = Min(cut, rect.h / 2);
-	int bw = element->bitmap->Width();
-	int bh = element->bitmap->Height();
+	const int bw = element->bitmap->Width();
+	const int bh = element->bitmap->Height();
 
-	bool has_left_right_edges = rect.h > dst_cut_h * 2;
-	bool has_top_bottom_edges = rect.w > dst_cut_w * 2;
+	const bool has_left_right_edges = rect.h > dst_cut_h * 2;
+	const bool has_top_bottom_edges = rect.w > dst_cut_w * 2;
 
 	rect = GetFlippedRect(rect, element);
 	if (element->flip_x)
@@ -738,10 +737,10 @@ void TBSkinElement::Load(TBNode *n, TBSkin *skin, const char *skin_path)
 	opacity = n->GetValueFloat("opacity", opacity);
 
 	if (const char *color = n->GetValueString("text-color", nullptr))
-		text_color.SetFromString(color, strlen(color));
+		text_color.SetFromString(color, SDL_strlen(color));
 
 	if (const char *color = n->GetValueString("background-color", nullptr))
-		bg_color.SetFromString(color, strlen(color));
+		bg_color.SetFromString(color, SDL_strlen(color));
 
 	if (const char *type_str = n->GetValueString("type", nullptr))
 		type = StringToType(type_str);
@@ -842,9 +841,9 @@ void TBSkinElementStateList::Load(TBNode *n)
 		// Loop through all nodes, read state and create all found conditions.
 		for (TBNode *condition_node = element_node->GetFirstChild(); condition_node; condition_node = condition_node->GetNext())
 		{
-			if (strcmp(condition_node->GetName(), "state") == 0)
+			if (SDL_strcmp(condition_node->GetName(), "state") == 0)
 				state->state = StringToState(condition_node->GetValue().GetString());
-			else if (strcmp(condition_node->GetName(), "condition") == 0)
+			else if (SDL_strcmp(condition_node->GetName(), "condition") == 0)
 			{
 				TBSkinCondition::TARGET target = StringToTarget(condition_node->GetValueString("target", ""));
 
@@ -870,7 +869,7 @@ void TBSkinElementStateList::Load(TBNode *n)
 				TBSkinCondition::TEST test = TBSkinCondition::TEST_EQUAL;
 				if (const char *test_str = condition_node->GetValueString("test", nullptr))
 				{
-					if (strcmp(test_str, "!=") == 0)
+					if (SDL_strcmp(test_str, "!=") == 0)
 						test = TBSkinCondition::TEST_NOT_EQUAL;
 				}
 
