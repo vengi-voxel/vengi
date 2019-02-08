@@ -14,6 +14,7 @@ using namespace tb;
 
 #define STB_TRUETYPE_IMPLEMENTATION  // force following include to generate implementation
 #include "thirdparty/stb_truetype.h"
+#undef STB_TRUETYPE_IMPLEMENTATION
 
 /** STBFontRenderer renders fonts using stb_truetype.h (http://nothings.org/) */
 
@@ -34,13 +35,12 @@ public:
 private:
 	stbtt_fontinfo font;
 	TBTempBuffer ttf_buffer;
-	unsigned char *render_data;
-	int font_size;
-	float scale;
+	unsigned char *render_data = nullptr;
+	int font_size = 0;
+	float scale = 0.0f;
 };
 
 STBFontRenderer::STBFontRenderer()
-	: render_data(nullptr)
 {
 }
 
