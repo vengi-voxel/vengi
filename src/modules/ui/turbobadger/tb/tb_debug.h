@@ -8,12 +8,6 @@
 
 #include "tb_types.h"
 
-#ifdef TB_RUNTIME_DEBUG_INFO
-#define TB_IF_DEBUG(debug) debug
-#else
-#define TB_IF_DEBUG(debug) 
-#endif
-
 namespace tb {
 
 #ifdef TB_RUNTIME_DEBUG_INFO

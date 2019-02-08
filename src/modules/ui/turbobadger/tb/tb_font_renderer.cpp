@@ -342,9 +342,8 @@ void TBFontFace::RenderGlyph(TBFontGlyph *glyph)
 	//char glyph_str[9];
 	//int len = utf8::encode(cp, glyph_str);
 	//glyph_str[len] = 0;
-	//TBStr info;
-	//info.SetFormatted("Created glyph %d (\"%s\"). Cache contains %d glyphs (%d%% full) using %d bitmaps.\n", cp, glyph_str, m_all_glyphs.CountLinks(), m_frag_manager.GetUseRatio(), m_frag_manager.GetNumMaps());
-	//TBDebugOut(info);
+	//Log::debug("Created glyph %d (\"%s\"). Cache contains %d glyphs (%d%% full) using %d bitmaps.",
+	//cp, glyph_str, m_all_glyphs.CountLinks(), m_frag_manager.GetUseRatio(), m_frag_manager.GetNumMaps());
 #endif
 }
 

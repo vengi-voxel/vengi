@@ -146,7 +146,7 @@ void UIRendererGL::EndPaint() {
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	if (TB_DEBUG_SETTING(RENDER_BATCHES)) {
-		TBDebugPrint("Frame caused %d bitmap validations.\n", tb_dbg_bitmap_validations);
+		Log::debug("Frame caused %d bitmap validations.", tb_dbg_bitmap_validations);
 	}
 #endif
 }

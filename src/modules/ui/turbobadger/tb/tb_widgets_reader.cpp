@@ -219,7 +219,7 @@ void TBLayout::OnInflate(const INFLATE_INFO &info)
 			ls = LAYOUT_SIZE_GRAVITY;
 		else if (strstr(size, "preferred")) {
 		} else
-			TBDebugPrint("TBLayout: Unknown size '%s'\n", size);
+			Log::debug("TBLayout: Unknown size '%s'", size);
 		SetLayoutSize(ls);
 	}
 	if (const char *pos = info.node->GetValueString("position", nullptr))
@@ -233,7 +233,7 @@ void TBLayout::OnInflate(const INFLATE_INFO &info)
 			lp = LAYOUT_POSITION_GRAVITY;
 		else if (!strcmp(pos, "center")) {
 		} else
-			TBDebugPrint("TBLayout: Unknown position '%s'\n", pos);
+			Log::debug("TBLayout: Unknown position '%s'", pos);
 		SetLayoutPosition(lp);
 	}
 	if (const char *pos = info.node->GetValueString("overflow", nullptr))
@@ -243,7 +243,7 @@ void TBLayout::OnInflate(const INFLATE_INFO &info)
 			lo = LAYOUT_OVERFLOW_SCROLL;
 		else if (strstr(pos, "clip")) {
 		} else
-			TBDebugPrint("TBLayout: Unknown overflow '%s'\n", pos);
+			Log::debug("TBLayout: Unknown overflow '%s'", pos);
 		SetLayoutOverflow(lo);
 	}
 	if (const char *dist = info.node->GetValueString("distribution", nullptr))
@@ -255,7 +255,7 @@ void TBLayout::OnInflate(const INFLATE_INFO &info)
 			ld = LAYOUT_DISTRIBUTION_GRAVITY;
 		else if (strstr(dist, "preferred")) {
 		} else
-			TBDebugPrint("TBLayout: Unknown distribution '%s'\n", dist);
+			Log::debug("TBLayout: Unknown distribution '%s'", dist);
 		SetLayoutDistribution(ld);
 	}
 	if (const char *dist = info.node->GetValueString("distribution-position", nullptr))
@@ -283,7 +283,7 @@ void TBScrollContainer::OnInflate(const INFLATE_INFO &info)
 		else if (!strcmp(mode, "y-auto"))	SetScrollMode(SCROLL_MODE_Y_AUTO);
 		else if (!strcmp(mode, "auto"))		SetScrollMode(SCROLL_MODE_X_AUTO_Y_AUTO);
 		else if (!strcmp(mode, "off"))		SetScrollMode(SCROLL_MODE_OFF);
-		else TBDebugPrint("TBScrollContainer: Unknown scroll-mode '%s'\n", mode);
+		else Log::debug("TBScrollContainer: Unknown scroll-mode '%s'", mode);
 	}
 	TBWidget::OnInflate(info);
 }
@@ -299,7 +299,7 @@ void TBTabContainer::OnInflate(const INFLATE_INFO &info)
 		else if (!strcmp(align, "top"))		SetAlignment(TB_ALIGN_TOP);
 		else if (!strcmp(align, "right"))	SetAlignment(TB_ALIGN_RIGHT);
 		else if (!strcmp(align, "bottom"))	SetAlignment(TB_ALIGN_BOTTOM);
-		else TBDebugPrint("TBTabContainer: Unknown align '%s'\n", align);
+		else Log::debug("TBTabContainer: Unknown align '%s'", align);
 	}
 	// Allow additional attributes to be specified for the "tabs", "content" and "root" layouts by
 	// calling OnInflate.

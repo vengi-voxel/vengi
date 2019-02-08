@@ -8,14 +8,8 @@
 
 #include "tb_core.h"
 #include "tb_str.h"
-
-#ifdef TB_RUNTIME_DEBUG_INFO
-void TBDebugOut(const char *str);
-#define TBDebugPrint(str, ...) { tb::TBStr tmp; tmp.SetFormatted(str, __VA_ARGS__); TBDebugOut(tmp); }
-#else
-#define TBDebugOut(str) ((void)0)
-#define TBDebugPrint(str, ...) ((void)0)
-#endif
+#include "core/Assert.h"
+#include "core/Log.h"
 
 namespace tb {
 

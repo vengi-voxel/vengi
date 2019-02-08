@@ -177,7 +177,7 @@ void TBHashTable::Debug()
 	}
 	TBStr tmp; tmp.SetFormatted(" (total: %d of %d buckets)\n", total_count, m_num_buckets);
 	line.AppendString(tmp);
-	TBDebugOut(line.GetData());
+	Log::debug("%s", line.GetData());
 }
 
 #endif // TB_RUNTIME_DEBUG_INFO

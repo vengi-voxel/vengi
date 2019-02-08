@@ -12,15 +12,6 @@
 #include "io/Filesystem.h"
 #include <SDL.h>
 
-#ifdef TB_RUNTIME_DEBUG_INFO
-
-void TBDebugOut(const char *str)
-{
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s", str);
-}
-
-#endif // TB_RUNTIME_DEBUG_INFO
-
 namespace tb {
 
 // == TBSystem ========================================

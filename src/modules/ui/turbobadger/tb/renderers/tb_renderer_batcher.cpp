@@ -106,7 +106,7 @@ void TBRendererBatcher::EndPaint()
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	if (TB_DEBUG_SETTING(RENDER_BATCHES))
-		TBDebugPrint("Frame rendered using %d batches and a total of %d triangles.\n",
+		Log::debug("Frame rendered using %d batches and a total of %d triangles.",
 						batch.batch_id - dbg_begin_paint_batch_id,
 						dbg_frame_triangle_count);
 #endif // TB_RUNTIME_DEBUG_INFO

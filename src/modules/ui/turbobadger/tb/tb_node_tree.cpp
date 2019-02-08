@@ -208,9 +208,7 @@ public:
 	virtual void OnError(int line_nr, const char *error)
 	{
 #ifdef TB_RUNTIME_DEBUG_INFO
-		TBStr err;
-		err.SetFormatted("%s(%d):Parse error: %s\n", m_filename, line_nr, error);
-		TBDebugOut(err);
+		Log::debug("%s(%d):Parse error: %s", m_filename, line_nr, error);
 #endif // TB_RUNTIME_DEBUG_INFO
 	}
 	virtual void OnComment(int line_nr, const char *comment)
