@@ -7,6 +7,11 @@
 #include "tb_renderer.h"
 #include "tb_system.h"
 
+// Include stb image - Tiny portable and reasonable fast image loader from http://nothings.org/
+// Should not be used for content not distributed with your app (May not be secure and doesn't
+// support all formats fully)
+#include "image/stb_image.h"
+
 namespace tb {
 
 int TBGetNearestPowerOfTwo(int val)
@@ -416,13 +421,20 @@ TBBitmapFragment *TBBitmapFragmentManager::GetFragmentFromFile(const char *filen
 		return frag;
 
 	// Load the file
-	TBImageLoader *img = TBImageLoader::CreateFromFile(filename);
-	if (!img)
-		return nullptr;
+	TBTempBuffer buf;
+	if (buf.AppendFile(filename))
+	{
+		int w, h, comp;
+		if (unsigned char *img_data = stbi_load_from_memory(
+			(unsigned char*) buf.GetData(), buf.GetAppendPos(), &w, &h, &comp, 4))
+		{
+			frag = CreateNewFragment(id, dedicated_map, w, h, w, (uint32_t*)img_data);
+			stbi_image_free(img_data);
+			return frag;
+		}
+	}
 
-	frag = CreateNewFragment(id, dedicated_map, img->Width(), img->Height(), img->Width(), img->Data());
-	delete img;
-	return frag;
+	return nullptr;
 }
 
 TBBitmapFragment *TBBitmapFragmentManager::CreateNewFragment(const TBID &id, bool dedicated_map,

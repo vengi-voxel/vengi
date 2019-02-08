@@ -9,6 +9,7 @@
 #include "tb_system.h"
 #include "tb_node_tree.h"
 #include "tb_hashtable.h"
+#include "image/Image.h"
 
 #ifdef TB_FONT_RENDERER_TBBF
 
@@ -77,7 +78,7 @@ public:
 private:
 	TBNode m_node;
 	TBFontMetrics m_metrics;
-	TBImageLoader *m_img;
+	image::ImagePtr m_img;
 	int m_size;
 	int m_x_ofs;
 	int m_advance_delta;
@@ -87,8 +88,7 @@ private:
 };
 
 TBBFRenderer::TBBFRenderer()
-	: m_img(nullptr)
-	, m_size(0)
+	: m_size(0)
 	, m_x_ofs(0)
 	, m_advance_delta(0)
 	, m_space_advance(0)
@@ -98,7 +98,6 @@ TBBFRenderer::TBBFRenderer()
 
 TBBFRenderer::~TBBFRenderer()
 {
-	delete m_img;
 }
 
 TBFontMetrics TBBFRenderer::GetMetrics()
@@ -115,9 +114,9 @@ bool TBBFRenderer::RenderGlyph(TBFontGlyphData *data, UCS4 cp)
 		(glyph = m_glyph_table.Get('?')))
 	{
 		data->w = glyph->w;
-		data->h = m_img->Height();
-		data->stride = m_img->Width();
-		data->data32 = m_img->Data() + glyph->x;
+		data->h = m_img->height();
+		data->stride = m_img->width();
+		data->data32 = (uint32_t*)(m_img->data()) + glyph->x;
 		data->rgb = m_rgb ? true : false;
 		return true;
 	}
@@ -176,7 +175,7 @@ bool TBBFRenderer::Load(const char *filename, int size)
 	// Append the bitmap filename for the given size.
 	bitmap_filename.AppendString(size_node->GetValueString("bitmap", ""));
 
-	m_img = TBImageLoader::CreateFromFile(bitmap_filename.GetData());
+	m_img = image::loadImage(bitmap_filename.GetData(), false);
 
 	return FindGlyphs();
 }
@@ -213,9 +212,9 @@ bool TBBFRenderer::FindGlyphs()
 
 GLYPH *TBBFRenderer::FindNext(UCS4 cp, int x)
 {
-	int width = m_img->Width();
-	int height = m_img->Height();
-	uint32_t *data32 = m_img->Data();
+	int width = m_img->width();
+	int height = m_img->height();
+	uint32_t *data32 = (uint32_t*)m_img->data();
 
 	if (x >= width)
 		return nullptr;
