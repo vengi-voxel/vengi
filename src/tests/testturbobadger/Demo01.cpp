@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Demo.h"
 #include "ListWindow.h"
 #include "ResourceEditWindow.h"
@@ -573,7 +577,7 @@ bool MainWindow::OnEvent(const TBWidgetEvent &ev)
 			if (ev.target->GetValue() == 1)
 			{
 				// Post the first "busy" message when we check the checkbox.
-				assert(!GetMessageByID(TBIDC("busy")));
+				core_assert(!GetMessageByID(TBIDC("busy")));
 				if (!GetMessageByID(TBIDC("busy")))
 				{
 					PostMessage(TBIDC("busy"), nullptr);
@@ -585,7 +589,7 @@ bool MainWindow::OnEvent(const TBWidgetEvent &ev)
 			else
 			{
 				// Remove any pending "busy" message when we uncheck the checkbox.
-				assert(GetMessageByID(TBIDC("busy")));
+				core_assert(GetMessageByID(TBIDC("busy")));
 				if (TBMessage *busymsg = GetMessageByID(TBIDC("busy")))
 					DeleteMessage(busymsg);
 			}

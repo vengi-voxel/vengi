@@ -5,7 +5,7 @@
 
 #include "tb_list.h"
 #include "tb_core.h"
-#include <assert.h>
+#include "core/Assert.h"
 #include <stdlib.h>
 #if !defined(__native_client__)
 #include <memory.h>
@@ -24,7 +24,7 @@ bool TBListBackend::Add(void *data)
 
 bool TBListBackend::Add(void *data, int index)
 {
-	assert(index >= 0 && index <= GetNumItems());
+	core_assert(index >= 0 && index <= GetNumItems());
 	if (!GrowIfNeeded())
 		return false;
 	if (index < m_data->num)
@@ -36,13 +36,13 @@ bool TBListBackend::Add(void *data, int index)
 
 void TBListBackend::Set(void *data, int index)
 {
-	assert(index >= 0 && index < GetNumItems());
+	core_assert(index >= 0 && index < GetNumItems());
 	m_data->list[index] = data;
 }
 
 void *TBListBackend::RemoveFast(int index)
 {
-	assert(index >= 0 && index < GetNumItems());
+	core_assert(index >= 0 && index < GetNumItems());
 	void *data = m_data->list[index];
 	m_data->list[index] = m_data->list[m_data->num - 1];
 	m_data->num--;
@@ -51,7 +51,7 @@ void *TBListBackend::RemoveFast(int index)
 
 void *TBListBackend::Remove(int index)
 {
-	assert(index >= 0 && index < GetNumItems());
+	core_assert(index >= 0 && index < GetNumItems());
 	void *data = m_data->list[index];
 	if(index < m_data->num - 1)
 		memmove(&m_data->list[index], &m_data->list[index + 1], (m_data->num - index - 1) * sizeof(void*));
@@ -67,8 +67,8 @@ void TBListBackend::RemoveAll()
 
 void TBListBackend::Swap(int index1, int index2)
 {
-	assert(index1 >= 0 && index1 < GetNumItems());
-	assert(index2 >= 0 && index2 < GetNumItems());
+	core_assert(index1 >= 0 && index1 < GetNumItems());
+	core_assert(index2 >= 0 && index2 < GetNumItems());
 	void *tmp = m_data->list[index1];
 	m_data->list[index1] = m_data->list[index2];
 	m_data->list[index2] = tmp;
@@ -87,13 +87,13 @@ int TBListBackend::Find(void *data) const
 
 void *TBListBackend::Get(int index) const
 {
-	assert(index >= 0 && index < GetNumItems());
+	core_assert(index >= 0 && index < GetNumItems());
 	return m_data->list[index];
 }
 
 bool TBListBackend::Reserve(int new_capacity)
 {
-	assert(new_capacity > 0);
+	core_assert(new_capacity > 0);
 	if (new_capacity > GetCapacity())
 	{
 		int num = GetNumItems();

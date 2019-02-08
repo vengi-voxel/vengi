@@ -109,7 +109,7 @@ bool TBHashTable::Add(uint32_t key, void *content)
 {
 	if (NeedRehash() && !Rehash(GetSuitableBucketsCount()))
 		return false;
-	assert(!Get(key));
+	core_assert(!Get(key));
 	if (ITEM *item = new ITEM)
 	{
 		uint32_t bucket = key & (m_num_buckets - 1);
@@ -146,7 +146,7 @@ void *TBHashTable::Remove(uint32_t key)
 		prev_item = item;
 		item = item->next;
 	}
-	assert(!"This hash table didn't contain the given key!");
+	core_assert(!"This hash table didn't contain the given key!");
 	return nullptr;
 }
 

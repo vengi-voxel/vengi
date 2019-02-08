@@ -6,7 +6,7 @@
 #include "parser/tb_parser.h"
 #include "tb_tempbuffer.h"
 #include "utf8/utf8.h"
-#include <assert.h>
+#include "core/Assert.h"
 #include <ctype.h>
 
 namespace tb {
@@ -267,7 +267,7 @@ void TBParser::OnLine(char *line, TBParserTarget *target)
 	if (indent > current_indent)
 	{
 		// FIX: Report indentation error if more than 1 higher!
-		assert(indent - current_indent == 1);
+		core_assert(indent - current_indent == 1);
 		target->Enter();
 		current_indent++;
 	}

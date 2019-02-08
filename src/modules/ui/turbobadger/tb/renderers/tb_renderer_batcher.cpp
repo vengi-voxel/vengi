@@ -36,7 +36,7 @@ void TBRendererBatcher::Batch::Flush(TBRendererBatcher *batch_renderer)
 		// with TB_VALIDATE_ALWAYS should guarantee that its data is validated.
 		TBBitmap *frag_bitmap = fragment->GetBitmap(TB_VALIDATE_ALWAYS);
 		((void)frag_bitmap); // silence warning about unused variable
-		assert(frag_bitmap == bitmap);
+		core_assert(frag_bitmap == bitmap);
 	}
 
 	batch_renderer->RenderBatch(this);
@@ -69,7 +69,7 @@ void TBRendererBatcher::Batch::Flush(TBRendererBatcher *batch_renderer)
 
 TBRendererBatcher::Vertex *TBRendererBatcher::Batch::Reserve(TBRendererBatcher *batch_renderer, int count)
 {
-	assert(count < VERTEX_BATCH_SIZE);
+	core_assert(count < VERTEX_BATCH_SIZE);
 	if (vertex_count + count > VERTEX_BATCH_SIZE)
 		Flush(batch_renderer);
 	Vertex *ret = &vertex[vertex_count];

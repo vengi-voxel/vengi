@@ -5,7 +5,7 @@
 
 #include "tb_tempbuffer.h"
 #include "tb_system.h"
-#include <assert.h>
+#include "core/Assert.h"
 #include <stdlib.h>
 #if !defined(__native_client__)
 #include <memory.h>
@@ -31,7 +31,7 @@ TBTempBuffer::~TBTempBuffer()
 
 void TBTempBuffer::SetAppendPos(int append_pos)
 {
-	assert(append_pos >= 0 && append_pos <= m_data_size);
+	core_assert(append_pos >= 0 && append_pos <= m_data_size);
 	m_append_pos = append_pos;
 }
 

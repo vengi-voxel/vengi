@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 
@@ -147,7 +147,7 @@ TBValue::TBValue(TYPE type)
 			SetArray(arr, SET_TAKE_OWNERSHIP);
 		break;
 	default:
-		assert(!"Not implemented!");
+		core_assert(!"Not implemented!");
 	}
 }
 
@@ -199,7 +199,7 @@ void TBValue::Copy(const TBValue &source_value)
 		SetArray(source_value.val_arr, SET_NEW_COPY);
 	else if (source_value.m_packed.type == TYPE_OBJECT)
 	{
-		assert(!"We can't copy objects! The value will be nulled!");
+		core_assert(!"We can't copy objects! The value will be nulled!");
 		SetObject(nullptr);
 	}
 	else
@@ -307,7 +307,7 @@ void TBValue::SetFromStringAuto(const char *str, SET set)
 		SetNull();
 		if (TBValueArray *arr = new TBValueArray)
 		{
-			assert(!"not implemented! Split out the tokenizer code above!");
+			core_assert(!"not implemented! Split out the tokenizer code above!");
 			SetArray(arr, SET_TAKE_OWNERSHIP);
 		}
 	}

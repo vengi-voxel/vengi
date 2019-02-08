@@ -112,7 +112,7 @@ TBMessage *TBMessageHandler::GetMessageByID(TBID message)
 
 void TBMessageHandler::DeleteMessage(TBMessage *msg)
 {
-	assert(msg->mh == this); // This is not the message handler owning the message!
+	core_assert(msg->mh == this); // This is not the message handler owning the message!
 
 	// Remove from global list (g_all_delayed_messages or g_all_normal_messages)
 	if (g_all_delayed_messages.ContainsLink(msg))

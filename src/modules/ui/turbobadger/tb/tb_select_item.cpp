@@ -7,7 +7,7 @@
 #include "tb_menu_window.h"
 #include "tb_widgets_listener.h"
 #include "tb_language.h"
-#include <assert.h>
+#include "core/Assert.h"
 #include <stdlib.h>
 
 namespace tb {
@@ -85,7 +85,7 @@ bool TBSimpleLayoutItemWidget::OnEvent(const TBWidgetEvent &ev)
 
 void TBSimpleLayoutItemWidget::OnWidgetDelete(TBWidget *widget)
 {
-	assert(widget == m_menu);
+	core_assert(widget == m_menu);
 	CloseSubMenu();
 }
 
@@ -136,9 +136,9 @@ void TBSelectItemViewer::SetSource(TBSelectItemSource *source)
 
 TBSelectItemSource::~TBSelectItemSource()
 {
-	// If this assert trig, you are deleting a model that's still set on some
+	// If this core_assert trig, you are deleting a model that's still set on some
 	// TBSelect widget. That might be dangerous.
-	assert(!m_viewers.HasLinks());
+	core_assert(!m_viewers.HasLinks());
 }
 
 bool TBSelectItemSource::Filter(int index, const char *filter)

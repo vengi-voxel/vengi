@@ -5,7 +5,7 @@
 
 #include "tb_style_edit.h"
 #include "tb_style_edit_content.h"
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 

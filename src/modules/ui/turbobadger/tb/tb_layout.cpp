@@ -6,7 +6,7 @@
 #include "tb_layout.h"
 #include "tb_system.h"
 #include "tb_skin_util.h"
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 
@@ -214,7 +214,7 @@ int TBLayout::CalculateSpacing()
 		if (TBSkinElement *e = GetSkinBgElement())
 			spacing = e->spacing;
 
-		assert(SPACING_FROM_SKIN == SKIN_VALUE_NOT_SPECIFIED);
+		core_assert(SPACING_FROM_SKIN == SKIN_VALUE_NOT_SPECIFIED);
 		if (spacing == SPACING_FROM_SKIN /*|| spacing == SKIN_VALUE_NOT_SPECIFIED*/)
 			spacing = g_tb_skin->GetDefaultSpacing();
 	}

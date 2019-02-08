@@ -7,7 +7,7 @@
 #define TB_LINKLIST_H
 
 #include "tb_core.h"
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 

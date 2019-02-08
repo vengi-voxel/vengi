@@ -5,7 +5,7 @@
 
 #include "tb_scroll_container.h"
 #include "tb_system.h"
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 

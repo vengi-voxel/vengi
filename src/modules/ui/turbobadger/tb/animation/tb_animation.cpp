@@ -172,7 +172,7 @@ void TBAnimationManager::BeginBlockAnimations()
 //static
 void TBAnimationManager::EndBlockAnimations()
 {
-	assert(block_animations_counter > 0);
+	core_assert(block_animations_counter > 0);
 	block_animations_counter--;
 }
 

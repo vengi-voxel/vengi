@@ -7,7 +7,7 @@
 #include "tb_node_ref_tree.h"
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include "core/Assert.h"
 #include "tb_system.h"
 #include "tb_tempbuffer.h"
 #include "tb_language.h"
@@ -237,7 +237,7 @@ public:
 	}
 	virtual void Leave()
 	{
-		assert(m_target_node != m_root_node);
+		core_assert(m_target_node != m_root_node);
 		if (m_target_node)
 			m_target_node = m_target_node->m_parent;
 	}

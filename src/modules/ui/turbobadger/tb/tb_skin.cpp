@@ -8,7 +8,7 @@
 #include "tb_tempbuffer.h"
 #include "tb_node_tree.h"
 #include <string.h>
-#include <assert.h>
+#include "core/Assert.h"
 #include <stdio.h>
 
 namespace tb {
@@ -154,7 +154,7 @@ bool TBSkin::LoadInternal(const char *skin_file)
 		int supported_dpi = base_dpi;
 		if (TBNode *supported_dpi_node = node.GetNode("description>supported-dpi"))
 		{
-			assert(supported_dpi_node->GetValue().IsArray() || supported_dpi_node->GetValue().GetInt() == base_dpi);
+			core_assert(supported_dpi_node->GetValue().IsArray() || supported_dpi_node->GetValue().GetInt() == base_dpi);
 			if (TBValueArray *arr = supported_dpi_node->GetValue().GetArray())
 			{
 				int screen_dpi = TBSystem::GetDPI();
@@ -261,7 +261,7 @@ bool TBSkin::ReloadBitmapsInternal()
 	{
 		if (!element->bitmap_file.IsEmpty())
 		{
-			assert(!element->bitmap);
+			core_assert(!element->bitmap);
 
 			// FIX: dedicated_map is not needed for all backends (only deprecated fixed function GL)
 			bool dedicated_map = element->type == SKIN_ELEMENT_TYPE_TILE;

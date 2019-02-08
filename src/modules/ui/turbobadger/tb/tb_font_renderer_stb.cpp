@@ -7,11 +7,13 @@
 #include "tb_renderer.h"
 #include "tb_system.h"
 #include "tb_tempbuffer.h"
+#include "core/Assert.h"
 
 #ifdef TB_FONT_RENDERER_STB
 
 using namespace tb;
 
+#define STBTT_assert core_assert
 #define STB_TRUETYPE_IMPLEMENTATION  // force following include to generate implementation
 #include "thirdparty/stb_truetype.h"
 #undef STB_TRUETYPE_IMPLEMENTATION

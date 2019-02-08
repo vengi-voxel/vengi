@@ -12,7 +12,7 @@
 #include "tb_system.h"
 #include "tb_scroller.h"
 #include "tb_font_renderer.h"
-#include <assert.h>
+#include "core/Assert.h"
 #ifdef TB_ALWAYS_SHOW_EDIT_FOCUS
 #include "tb_editfield.h"
 #endif // TB_ALWAYS_SHOW_EDIT_FOCUS
@@ -41,7 +41,7 @@ TBWidget::TOUCH_INFO *TBWidget::GetTouchInfo(uint32_t id)
 
 static TBWidget::TOUCH_INFO *NewTouchInfo(uint32_t id)
 {
-	assert(!s_touch_info.Get(id));
+	core_assert(!s_touch_info.Get(id));
 	TBWidget::TOUCH_INFO *ti = new TBWidget::TOUCH_INFO;
 	memset(ti, 0, sizeof(TBWidget::TOUCH_INFO));
 	s_touch_info.Add(id, ti);
@@ -65,7 +65,7 @@ public:
 	}
 	virtual void OnMessageReceived(TBMessage *msg)
 	{
-		assert(msg->message == TBIDC("TBLongClickTimer"));
+		core_assert(msg->message == TBIDC("TBLongClickTimer"));
 		m_widget->MaybeInvokeLongClickOrContextMenu(m_type);
 	}
 private:
@@ -102,7 +102,7 @@ TBWidget::TBWidget()
 
 TBWidget::~TBWidget()
 {
-	assert(!m_parent); ///< A widget must be removed from parent before deleted
+	core_assert(!m_parent); ///< A widget must be removed from parent before deleted
 	m_packed.is_dying = true;
 
 	// Unreference from pointer capture
@@ -131,7 +131,7 @@ TBWidget::~TBWidget()
 
 	StopLongClickTimer();
 
-	assert(!m_listeners.HasLinks()); // There's still listeners added to this widget!
+	core_assert(!m_listeners.HasLinks()); // There's still listeners added to this widget!
 }
 
 void TBWidget::SetRect(const TBRect &rect)
@@ -326,7 +326,7 @@ void TBWidget::AddChild(TBWidget *child, WIDGET_Z z, WIDGET_INVOKE_INFO info)
 
 void TBWidget::AddChildRelative(TBWidget *child, WIDGET_Z_REL z, TBWidget *reference, WIDGET_INVOKE_INFO info)
 {
-	assert(!child->m_parent);
+	core_assert(!child->m_parent);
 	child->m_parent = this;
 
 	if (reference)
@@ -357,7 +357,7 @@ void TBWidget::AddChildRelative(TBWidget *child, WIDGET_Z_REL z, TBWidget *refer
 
 void TBWidget::RemoveChild(TBWidget *child, WIDGET_INVOKE_INFO info)
 {
-	assert(child->m_parent);
+	core_assert(child->m_parent);
 
 	if (info == WIDGET_INVOKE_INFO_NORMAL)
 	{
@@ -740,7 +740,7 @@ TBWidget *TBWidget::GetChildFromIndex(int index) const
 
 int TBWidget::GetIndexFromChild(TBWidget *child) const
 {
-	assert(child->GetParent() == this);
+	core_assert(child->GetParent() == this);
 	int i = 0;
 	for (TBWidget *tmp = GetFirstChild(); tmp; tmp = tmp->GetNext(), i++)
 		if (tmp == child)
@@ -975,8 +975,8 @@ PreferredSize TBWidget::OnCalculatePreferredContentSize(const SizeConstraints &c
 PreferredSize TBWidget::OnCalculatePreferredSize(const SizeConstraints &constraints)
 {
 	PreferredSize ps = OnCalculatePreferredContentSize(constraints);
-	assert(ps.pref_w >= ps.min_w);
-	assert(ps.pref_h >= ps.min_h);
+	core_assert(ps.pref_w >= ps.min_w);
+	core_assert(ps.pref_h >= ps.min_h);
 
 	if (TBSkinElement *e = GetSkinBgElement())
 	{
@@ -1193,7 +1193,7 @@ void TBWidget::InvokePaint(const PaintProps &parent_paint_props)
 	TBRect local_rect(0, 0, m_rect.w, m_rect.h);
 	TBWidgetSkinConditionContext context(this);
 	TBSkinElement *used_element = g_tb_skin->PaintSkin(local_rect, skin_element, static_cast<SKIN_STATE>(state), context);
-	assert(!!used_element == !!skin_element);
+	core_assert(!!used_element == !!skin_element);
 
 	TB_IF_DEBUG_SETTING(LAYOUT_BOUNDS, g_tb_skin->PaintRect(local_rect, TBColor(255, 255, 255, 50), 1));
 

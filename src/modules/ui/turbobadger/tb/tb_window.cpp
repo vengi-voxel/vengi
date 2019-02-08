@@ -4,7 +4,7 @@
 // ================================================================================
 
 #include "tb_window.h"
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 

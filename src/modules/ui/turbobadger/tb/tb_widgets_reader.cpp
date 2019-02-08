@@ -540,8 +540,8 @@ bool TBWidgetsReader::CreateWidget(TBWidget *target, TBNode *node)
 	// Read properties and add i to the hierarchy.
 	new_widget->OnInflate(info);
 
-	// If this assert is trigged, you probably forgot to call TBWidget::OnInflate from an overridden version.
-	assert(new_widget->GetParent());
+	// If this core_assert is trigged, you probably forgot to call TBWidget::OnInflate from an overridden version.
+	core_assert(new_widget->GetParent());
 
 	// Iterate through all nodes and create widgets
 	for (TBNode *n = node->GetFirstChild(); n; n = n->GetNext())

@@ -10,7 +10,7 @@
 #include "tb_tempbuffer.h"
 #include "tb_font_renderer.h"
 #include "utf8/utf8.h"
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 
@@ -408,7 +408,7 @@ bool TBTextOfs::SetGlobalOfs(TBStyleEdit *se, int32_t gofs)
 		gofs -= b_len;
 		b = b->GetNext();
 	}
-	assert(!"out of range! not a valid global offset!");
+	core_assert(!"out of range! not a valid global offset!");
 	return false;
 }
 
@@ -1311,7 +1311,7 @@ int32_t TBTextFragment::GetBaseline(const TBBlock *block, TBFontFace *font)
 
 int32_t TBTextFragment::GetCharX(const TBBlock *block, TBFontFace *font, int32_t ofs)
 {
-	assert(ofs >= 0 && ofs <= len);
+	core_assert(ofs >= 0 && ofs <= len);
 
 	if (IsEmbedded() || IsTab())
 		return ofs == 0 ? 0 :  GetWidth(block, font);
@@ -2057,11 +2057,11 @@ void TBUndoRedoStack::Apply(TBStyleEdit *styledit, TBUndoEvent *e, bool reverse)
 	{
 		styledit->selection.SelectNothing();
 		styledit->caret.SetGlobalOfs(e->gofs, false);
-		assert(TBTextOfs(styledit->caret.pos).GetGlobalOfs(styledit) == e->gofs);
+		core_assert(TBTextOfs(styledit->caret.pos).GetGlobalOfs(styledit) == e->gofs);
 
 		TBTextOfs start = styledit->caret.pos;
 		styledit->caret.SetGlobalOfs(e->gofs + e->text.Length(), false);
-		assert(TBTextOfs(styledit->caret.pos).GetGlobalOfs(styledit) == e->gofs + e->text.Length());
+		core_assert(TBTextOfs(styledit->caret.pos).GetGlobalOfs(styledit) == e->gofs + e->text.Length());
 
 		styledit->selection.Select(start, styledit->caret.pos);
 		styledit->selection.RemoveContent();
@@ -2081,7 +2081,7 @@ void TBUndoRedoStack::Apply(TBStyleEdit *styledit, TBUndoEvent *e, bool reverse)
 
 void TBUndoRedoStack::Clear(bool clear_undo, bool clear_redo)
 {
-	assert(!applying);
+	core_assert(!applying);
 	if (clear_undo)
 		undos.DeleteAll();
 	if (clear_redo)

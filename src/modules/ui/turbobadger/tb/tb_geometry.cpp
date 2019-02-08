@@ -4,7 +4,7 @@
 // ================================================================================
 
 #include "tb_geometry.h"
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 
@@ -34,8 +34,8 @@ TBRect TBRect::CenterIn(const TBRect &bounding_rect) const
 
 TBRect TBRect::Union(const TBRect &rect) const
 {
-	assert(!IsInsideOut());
-	assert(!rect.IsInsideOut());
+	core_assert(!IsInsideOut());
+	core_assert(!rect.IsInsideOut());
 
 	if (IsEmpty())
 		return rect;
@@ -53,7 +53,7 @@ TBRect TBRect::Union(const TBRect &rect) const
 
 TBRect TBRect::Clip(const TBRect &clip_rect) const
 {
-	assert(!clip_rect.IsInsideOut());
+	core_assert(!clip_rect.IsInsideOut());
 	TBRect tmp;
 	if (!Intersects(clip_rect))
 		return tmp;
@@ -80,7 +80,7 @@ TBRegion::~TBRegion()
 
 void TBRegion::RemoveRect(int index)
 {
-	assert(index >= 0 && index < m_num_rects);
+	core_assert(index >= 0 && index < m_num_rects);
 	for (int i = index; i < m_num_rects - 1; i++)
 		m_rects[i] = m_rects[i + 1];
 	m_num_rects--;
@@ -88,7 +88,7 @@ void TBRegion::RemoveRect(int index)
 
 void TBRegion::RemoveRectFast(int index)
 {
-	assert(index >= 0 && index < m_num_rects);
+	core_assert(index >= 0 && index < m_num_rects);
 	m_rects[index] = m_rects[--m_num_rects];
 }
 
@@ -207,7 +207,7 @@ bool TBRegion::ExcludeRect(const TBRect &exclude_rect)
 
 bool TBRegion::AddExcludingRects(const TBRect &rect, const TBRect &exclude_rect, bool coalesce)
 {
-	assert(rect.Intersects(exclude_rect));
+	core_assert(rect.Intersects(exclude_rect));
 	TBRect remove = exclude_rect.Clip(rect);
 
 	if (remove.y > rect.y)
@@ -227,7 +227,7 @@ bool TBRegion::AddExcludingRects(const TBRect &rect, const TBRect &exclude_rect,
 
 const TBRect &TBRegion::GetRect(int index) const
 {
-	assert(index >= 0 && index < m_num_rects);
+	core_assert(index >= 0 && index < m_num_rects);
 	return m_rects[index];
 }
 

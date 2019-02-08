@@ -7,7 +7,7 @@
 #include "tb_font_renderer.h"
 #include "tb_widgets_listener.h"
 #include "tb_system.h"
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 
@@ -245,7 +245,7 @@ void TBButton::OnMessageReceived(TBMessage *msg)
 {
 	if (msg->message == TBIDC("auto_click"))
 	{
-		assert(captured_widget == this);
+		core_assert(captured_widget == this);
 		if (!cancel_click && GetHitStatus(pointer_move_widget_x, pointer_move_widget_y))
 		{
 			TBWidgetEvent ev(EVENT_TYPE_CLICK, pointer_move_widget_x, pointer_move_widget_y, TB_TOUCH);
@@ -365,7 +365,7 @@ void TBProgressSpinner::SetValue(int value)
 	if (value == m_value)
 		return;
 	InvalidateSkinStates();
-	assert(value >= 0); // If this happens, you probably have unballanced Begin/End calls.
+	core_assert(value >= 0); // If this happens, you probably have unballanced Begin/End calls.
 	m_value = value;
 	if (value > 0)
 	{
@@ -419,7 +419,7 @@ TBRadioCheckBox::TBRadioCheckBox()
 //static
 void TBRadioCheckBox::UpdateGroupWidgets(TBWidget *new_leader)
 {
-	assert(new_leader->GetValue() && new_leader->GetGroupID());
+	core_assert(new_leader->GetValue() && new_leader->GetGroupID());
 
 	// Find the group root widget.
 	TBWidget *group = new_leader;

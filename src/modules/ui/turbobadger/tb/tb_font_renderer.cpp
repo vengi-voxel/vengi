@@ -47,7 +47,7 @@ static void blurGlyph(const unsigned char* src, int srcw, int srch, int srcStrid
 
 void TBFontEffect::SetBlurRadius(int blur_radius)
 {
-	assert(blur_radius >= 0);
+	core_assert(blur_radius >= 0);
 	if (m_blur_radius == blur_radius)
 		return;
 	m_blur_radius = blur_radius;
@@ -153,7 +153,7 @@ TBFontGlyph *TBFontGlyphCache::GetGlyph(const TBID &hash_id, UCS4 cp)
 
 TBFontGlyph *TBFontGlyphCache::CreateAndCacheGlyph(const TBID &hash_id, UCS4 cp)
 {
-	assert(!GetGlyph(hash_id, cp));
+	core_assert(!GetGlyph(hash_id, cp));
 	TBFontGlyph *glyph = new TBFontGlyph(hash_id, cp);
 	if (glyph && m_glyphs.Add(glyph->hash_id, glyph))
 		return glyph;
@@ -163,7 +163,7 @@ TBFontGlyph *TBFontGlyphCache::CreateAndCacheGlyph(const TBID &hash_id, UCS4 cp)
 
 TBBitmapFragment *TBFontGlyphCache::CreateFragment(TBFontGlyph *glyph, int w, int h, int stride, uint32_t *data)
 {
-	assert(GetGlyph(glyph->hash_id, glyph->cp));
+	core_assert(GetGlyph(glyph->hash_id, glyph->cp));
 	// Don't bother if the requested glyph is too large.
 	if (w > TB_GLYPH_CACHE_WIDTH || h > TB_GLYPH_CACHE_HEIGHT)
 		return nullptr;
@@ -211,7 +211,7 @@ TBBitmapFragment *TBFontGlyphCache::CreateFragment(TBFontGlyph *glyph, int w, in
 
 void TBFontGlyphCache::DropGlyphFragment(TBFontGlyph *glyph)
 {
-	assert(glyph->frag);
+	core_assert(glyph->frag);
 	m_frag_manager.FreeFragment(glyph->frag);
 	glyph->frag = nullptr;
 	m_all_rendered_glyphs.Remove(glyph);
@@ -300,7 +300,7 @@ TBFontGlyph *TBFontFace::CreateAndCacheGlyph(const TBID &hash_id, UCS4 cp)
 
 void TBFontFace::RenderGlyph(TBFontGlyph *glyph)
 {
-	assert(!glyph->frag);
+	core_assert(!glyph->frag);
 	TBFontGlyphData glyph_data;
 	if (m_font_renderer->RenderGlyph(&glyph_data, glyph->cp))
 	{
@@ -475,7 +475,7 @@ TBFontFace *TBFontManager::GetFontFace(const TBFontDescription &font_desc)
 
 TBFontFace *TBFontManager::CreateFontFace(const TBFontDescription &font_desc)
 {
-	assert(!HasFontFace(font_desc)); // There is already a font added with this description!
+	core_assert(!HasFontFace(font_desc)); // There is already a font added with this description!
 
 	TBFontInfo *fi = GetFontInfo(font_desc.GetID());
 	if (!fi)

@@ -82,7 +82,7 @@ TBWidgetAnimationRect::TBWidgetAnimationRect(TBWidget *widget, const TBRect &del
 	, m_delta_rect(delta_rect)
 	, m_mode(mode)
 {
-	assert(mode == MODE_DELTA_IN || mode == MODE_DELTA_OUT);
+	core_assert(mode == MODE_DELTA_IN || mode == MODE_DELTA_OUT);
 }
 
 void TBWidgetAnimationRect::OnAnimationStart()

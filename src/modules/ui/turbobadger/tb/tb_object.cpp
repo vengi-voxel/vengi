@@ -4,7 +4,7 @@
 // ================================================================================
 
 #include "tb_object.h"
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 

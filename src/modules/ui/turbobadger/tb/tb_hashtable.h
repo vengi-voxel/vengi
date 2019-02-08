@@ -7,7 +7,7 @@
 #define TB_HASHTABLE_H
 
 #include "tb_core.h"
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 
@@ -62,7 +62,7 @@ public:
 protected:
 	/** Delete the content of a item. This is called if calling DeleteAll, and must be
 		implemented in a subclass that knows about the content type. */
-	virtual void DeleteContent(void *content) { assert(!"You need to subclass and implement!"); }
+	virtual void DeleteContent(void *content) { core_assert(!"You need to subclass and implement!"); }
 private:
 	friend class TBHashTableIterator;
 	void RemoveAll(bool delete_content);

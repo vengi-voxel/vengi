@@ -48,7 +48,7 @@ float TBScrollerFunction::GetSpeedFromDistance(float distance)
 
 float TBScrollerFunction::GetDistanceAtTime(float start_speed, float elapsed_time_ms)
 {
-	assert(elapsed_time_ms >= 0);
+	core_assert(elapsed_time_ms >= 0);
 	return start_speed * (1 - expf(-elapsed_time_ms / m_decay)) * m_decay;
 }
 

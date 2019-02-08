@@ -8,7 +8,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <assert.h>
+#include "core/Assert.h"
 
 namespace tb {
 
@@ -127,7 +127,7 @@ void TBStr::Clear()
 
 void TBStr::Remove(int ofs, int len)
 {
-	assert(ofs >= 0 && (ofs + len <= (int)strlen(s)));
+	core_assert(ofs >= 0 && (ofs + len <= (int)strlen(s)));
 	if (!len)
 		return;
 	char *dst = s + ofs;

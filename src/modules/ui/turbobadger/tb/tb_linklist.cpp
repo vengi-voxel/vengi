@@ -112,7 +112,7 @@ TBLinkList::~TBLinkList()
 
 void TBLinkList::AddFirst(TBLink *link)
 {
-	assert(!link->linklist); // Link is already in some list!
+	core_assert(!link->linklist); // Link is already in some list!
 	link->linklist = this;
 	link->next = first;
 	if (first)
@@ -124,7 +124,7 @@ void TBLinkList::AddFirst(TBLink *link)
 
 void TBLinkList::AddLast(TBLink *link)
 {
-	assert(!link->linklist); // Link is already in some list!
+	core_assert(!link->linklist); // Link is already in some list!
 	link->linklist = this;
 	link->prev = last;
 	if (last)
@@ -136,7 +136,7 @@ void TBLinkList::AddLast(TBLink *link)
 
 void TBLinkList::AddBefore(TBLink *link, TBLink *reference)
 {
-	assert(reference->linklist == this); // Reference is not added to this list!
+	core_assert(reference->linklist == this); // Reference is not added to this list!
 	link->linklist = this;
 	link->prev = reference->prev;
 	link->next = reference;
@@ -149,7 +149,7 @@ void TBLinkList::AddBefore(TBLink *link, TBLink *reference)
 
 void TBLinkList::AddAfter(TBLink *link, TBLink *reference)
 {
-	assert(reference->linklist == this); // Reference is not added to this list!
+	core_assert(reference->linklist == this); // Reference is not added to this list!
 	link->linklist = this;
 	link->prev = reference;
 	link->next = reference->next;
@@ -162,7 +162,7 @@ void TBLinkList::AddAfter(TBLink *link, TBLink *reference)
 
 void TBLinkList::Remove(TBLink *link)
 {
-	assert(link->linklist == this); // Link is not added to this list!
+	core_assert(link->linklist == this); // Link is not added to this list!
 
 	// Go through iterators and make sure there are no pointers
 	// to the link we remove.

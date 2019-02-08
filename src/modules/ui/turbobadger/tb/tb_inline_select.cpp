@@ -4,7 +4,7 @@
 // ================================================================================
 
 #include "tb_inline_select.h"
-#include <assert.h>
+#include "core/Assert.h"
 #include <stdlib.h>
 
 namespace tb {
@@ -52,7 +52,7 @@ TBInlineSelect::~TBInlineSelect()
 
 void TBInlineSelect::SetLimits(int min, int max)
 {
-	assert(min <= max);
+	core_assert(min <= max);
 	m_min = min;
 	m_max = max;
 	SetValue(m_value);

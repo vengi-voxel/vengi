@@ -71,7 +71,7 @@ void TBWidgetValue::SetFromWidget(TBWidget *source_widget)
 			m_value.SetFloat((float)source_widget->GetValueDouble());
 			break;
 		default:
-			assert(!"Unsupported value type!");
+			core_assert(!"Unsupported value type!");
 	}
 
 	SyncToWidgets(source_widget);
@@ -113,7 +113,7 @@ bool TBWidgetValue::SyncToWidget(TBWidget *dst_widget)
 			dst_widget->SetValueDouble(m_value.GetFloat());
 			break;
 		default:
-			assert(!"Unsupported value type!");
+			core_assert(!"Unsupported value type!");
 	}
 	m_syncing = false;
 	return ret;

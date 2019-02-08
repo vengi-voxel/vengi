@@ -36,7 +36,7 @@ TBValue &TBNodeRefTree::GetValue(const char *request)
 //static
 TBValue &TBNodeRefTree::GetValueFromTree(const char *request)
 {
-	assert(*request == '@');
+	core_assert(*request == '@');
 	TBNode tmp;
 	tmp.GetValue().SetString(request, TBValue::SET_AS_STATIC);
 	TBNode *node = TBNodeRefTree::FollowNodeRef(&tmp);

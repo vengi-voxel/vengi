@@ -171,7 +171,7 @@ TBImage TBImageManager::GetImage(const char *name, uint32_t *buffer, int width, 
 
 void TBImageManager::RemoveImageRep(TBImageRep *image_rep)
 {
-	assert(image_rep->ref_count == 0);
+	core_assert(image_rep->ref_count == 0);
 	if (image_rep->fragment)
 	{
 		m_frag_manager.FreeFragment(image_rep->fragment);
