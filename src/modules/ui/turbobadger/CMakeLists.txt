@@ -37,7 +37,6 @@ set(SRCS
 	tb/tb_msg.cpp
 	tb/tb_node_ref_tree.cpp
 	tb/tb_node_tree.cpp
-	tb/tb_object.cpp
 	tb/tb_popup_window.cpp
 	tb/tb_renderer.cpp
 	tb/tb_scroll_container.cpp

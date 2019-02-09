@@ -6,10 +6,6 @@
 #include "tb_list.h"
 #include "tb_core.h"
 #include "core/Assert.h"
-#include <stdlib.h>
-#if !defined(__native_client__)
-#include <memory.h>
-#endif
 
 namespace tb {
 
@@ -28,7 +24,7 @@ bool TBListBackend::Add(void *data, int index)
 	if (!GrowIfNeeded())
 		return false;
 	if (index < m_data->num)
-		memmove(&m_data->list[index + 1], &m_data->list[index], (m_data->num - index) * sizeof(void*));
+		SDL_memmove(&m_data->list[index + 1], &m_data->list[index], (m_data->num - index) * sizeof(void*));
 	m_data->list[index] = data;
 	m_data->num++;
 	return true;
@@ -54,14 +50,14 @@ void *TBListBackend::Remove(int index)
 	core_assert(index >= 0 && index < GetNumItems());
 	void *data = m_data->list[index];
 	if(index < m_data->num - 1)
-		memmove(&m_data->list[index], &m_data->list[index + 1], (m_data->num - index - 1) * sizeof(void*));
+		SDL_memmove(&m_data->list[index], &m_data->list[index + 1], (m_data->num - index - 1) * sizeof(void*));
 	m_data->num--;
 	return data;
 }
 
 void TBListBackend::RemoveAll()
 {
-	free(m_data);
+	SDL_free(m_data);
 	m_data = nullptr;
 }
 
@@ -97,7 +93,7 @@ bool TBListBackend::Reserve(int new_capacity)
 	if (new_capacity > GetCapacity())
 	{
 		int num = GetNumItems();
-		if (char *new_data = (char *) realloc(m_data, sizeof(TBLIST_DATA) + sizeof(void *) * (new_capacity)))
+		if (char *new_data = (char *) SDL_realloc(m_data, sizeof(TBLIST_DATA) + sizeof(void *) * (new_capacity)))
 		{
 			m_data = (TBLIST_DATA *) new_data;
 			m_data->num = num;

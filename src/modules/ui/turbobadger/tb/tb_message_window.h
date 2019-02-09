@@ -29,7 +29,7 @@ public:
 	TBID icon_skin;		///< The icon skin (0 for no icon)
 	bool dimmer;		///< Set to true to dim background widgets by a TBDimmer.
 	bool styling;		///< Enable styling in the textfield.
-	TB_TEXT_ALIGN align;	///< Text alignment in message box.
+	TB_TEXT_ALIGN align = TB_TEXT_ALIGN_LEFT;	///< Text alignment in message box.
 };
 
 /** TBMessageWindow is a window for showing simple messages.

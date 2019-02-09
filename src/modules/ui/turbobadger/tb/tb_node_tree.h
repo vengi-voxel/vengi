@@ -48,9 +48,6 @@ public:
 	/** Clear the contens of this node. */
 	void Clear();
 
-	// FIX: Add write support!
-	//bool WriteFile(const char *filename);
-
 	/** Add node as child to this node. */
 	void Add(TBNode *n) { m_children.AddLast(n); n->m_parent = this; }
 

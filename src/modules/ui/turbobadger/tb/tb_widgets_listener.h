@@ -28,6 +28,7 @@ class TBWidgetListenerGlobalLink : public TBLinkOf<TBWidgetListenerGlobalLink> {
 class TBWidgetListener : public TBLinkOf<TBWidgetListener>, public TBWidgetListenerGlobalLink
 {
 public:
+	virtual ~TBWidgetListener() {}
 	/** Add a listener to all widgets. */
 	static void AddGlobalListener(TBWidgetListener *listener);
 	static void RemoveGlobalListener(TBWidgetListener *listener);
@@ -76,7 +77,7 @@ class TBWidgetSafePointer : private TBWidgetListener
 public:
 	TBWidgetSafePointer() : m_widget(nullptr)					{ }
 	TBWidgetSafePointer(TBWidget *widget) : m_widget(nullptr)	{ Set(widget); }
-	~TBWidgetSafePointer()										{ Set(nullptr); }
+	virtual ~TBWidgetSafePointer()								{ Set(nullptr); }
 
 	/** Set the widget pointer that should be nulled if deleted. */
 	void Set(TBWidget *widget);
