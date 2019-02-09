@@ -1,15 +1,10 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_IMAGE_MANAGER_H
-#define TB_IMAGE_MANAGER_H
+#pragma once
 
 #include "tb_core.h"
-
-#ifdef TB_IMAGE
-
 #include "tb_linklist.h"
 #include "tb_hashtable.h"
 #include "tb_bitmap_fragment.h"
@@ -20,7 +15,6 @@ namespace tb {
 class TBImageManager;
 
 /** TBImageRep is the internal contents of a TBImage. Owned by reference counting from TBImage. */
-
 class TBImageRep
 {
 	friend class TBImageManager;
@@ -42,7 +36,6 @@ class TBImageRep
 	It may be empty if the image has not yet been set, or if the TBImageManager is destroyed
 	when the image is still alive.
 */
-
 class TBImage
 {
 public:
@@ -110,6 +103,3 @@ private:
 extern TBImageManager *g_image_manager;
 
 } // namespace tb
-
-#endif // TB_IMAGE
-#endif // TB_IMAGE_MANAGER_H

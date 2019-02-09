@@ -1,7 +1,6 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_select.h"
 #include "tb_menu_window.h"
@@ -19,8 +18,6 @@ int select_list_sort_cb(TBSelectItemSource *source, const int *a, const int *b)
 	int value = strcmp(source->GetItemString(*a), source->GetItemString(*b));
 	return source->GetSort() == TB_SORT_DESCENDING ? -value : value;
 }
-
-// == TBSelectList ==============================================
 
 TBSelectList::TBSelectList()
 	: m_value(-1)

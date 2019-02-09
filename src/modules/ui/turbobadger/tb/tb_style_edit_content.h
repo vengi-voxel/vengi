@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_STYLE_EDIT_CONTENT_H
-#define TB_STYLE_EDIT_CONTENT_H
+#pragma once
 
 #include "tb_core.h"
 
@@ -13,7 +11,6 @@ namespace tb {
 class TBTextFragment;
 
 /** Content for a non-text TBTextFragment. */
-
 class TBTextFragmentContent
 {
 public:
@@ -35,7 +32,6 @@ public:
 };
 
 /** A horizontal line for TBStyleEdit. */
-
 class TBTextFragmentContentHR : public TBTextFragmentContent
 {
 public:
@@ -49,7 +45,6 @@ private:
 };
 
 /** Fragment content that enables underline in a TBStyleEdit */
-
 class TBTextFragmentContentUnderline : public TBTextFragmentContent
 {
 public:
@@ -60,7 +55,6 @@ public:
 };
 
 /** Fragment content that changes color in a TBStyleEdit */
-
 class TBTextFragmentContentTextColor : public TBTextFragmentContent
 {
 public:
@@ -72,7 +66,6 @@ public:
 };
 
 /** Fragment content that ends a change of style in a TBStyleEdit */
-
 class TBTextFragmentContentStylePop : public TBTextFragmentContent
 {
 public:
@@ -82,5 +75,3 @@ public:
 };
 
 } // namespace tb
-
-#endif // TB_STYLE_EDIT_CONTENT_H

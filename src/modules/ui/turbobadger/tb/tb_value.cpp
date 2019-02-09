@@ -1,21 +1,16 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_value.h"
 #include "tb_object.h"
 #include "tb_str.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <SDL.h>
 #include "core/Assert.h"
 
 namespace tb {
 
 // FIX: ## Floating point string conversions might be locale dependant. Force "." as decimal!
-
-// == Helper functions ============================
 
 char *next_token(char *&str, const char *delim) {
 	str += strspn(str, delim);
@@ -39,7 +34,7 @@ bool is_start_of_number(const char *str)
 
 bool contains_non_trailing_space(const char *str)
 {
-	if (const char *p = strstr(str, " "))
+	if (const char *p = SDL_strstr(str, " "))
 	{
 		while (*p == ' ')
 			p++;
@@ -53,7 +48,7 @@ bool is_number_only(const char *s)
 	if (!s || *s == 0 || *s == ' ')
 		return 0;
 	char *p;
-	strtod(s, &p);
+	SDL_strtod(s, &p);
 	while (*p == ' ')
 		p++;
 	return *p == '\0';
@@ -64,8 +59,6 @@ bool is_number_float(const char *str)
 	while (*str) if (*str++ == '.') return true;
 	return false;
 }
-
-// == TBValueArray ==================================
 
 TBValueArray::TBValueArray()
 {
@@ -108,8 +101,6 @@ TBValueArray *TBValueArray::Clone(TBValueArray *source)
 	}
 	return new_arr;
 }
-
-// == TBValue =======================================
 
 TBValue::TBValue()
 	: m_packed_init(0)
@@ -215,7 +206,7 @@ void TBValue::SetNull()
 	if (m_packed.allocated)
 	{
 		if (m_packed.type == TYPE_STRING)
-			free(val_str);
+			SDL_free(val_str);
 		else if (m_packed.type == TYPE_OBJECT)
 			delete val_obj;
 		else if (m_packed.type == TYPE_ARRAY)
@@ -247,7 +238,7 @@ void TBValue::SetString(const char *val, SET set)
 		val_str = const_cast<char *>(val);
 		m_packed.type = TYPE_STRING;
 	}
-	else if ((val_str = strdup(val)))
+	else if ((val_str = SDL_strdup(val)))
 		m_packed.type = TYPE_STRING;
 }
 
@@ -348,13 +339,13 @@ const char *TBValue::GetString()
 	if (m_packed.type == TYPE_INT)
 	{
 		char tmp[32];
-		sprintf(tmp, "%d", val_int);
+		SDL_snprintf(tmp, sizeof(tmp), "%d", val_int);
 		SetString(tmp, SET_NEW_COPY);
 	}
 	else if (m_packed.type == TYPE_FLOAT)
 	{
 		char tmp[32];
-		sprintf(tmp, "%f", val_float);
+		SDL_snprintf(tmp, sizeof(tmp), "%f", val_float);
 		SetString(tmp, SET_NEW_COPY);
 	}
 	else if (m_packed.type == TYPE_OBJECT)

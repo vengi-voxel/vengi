@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_SORT_H
-#define TB_SORT_H
+#pragma once
 
 namespace tb {
 
@@ -22,5 +20,3 @@ static void insertion_sort(TYPE *elements, size_t element_count, CONTEXT context
 }
 
 } // namespace tb
-
-#endif // TB_SORT_H

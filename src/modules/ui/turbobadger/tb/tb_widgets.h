@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_WIDGETS_H
-#define TB_WIDGETS_H
+#pragma once
 
 #include "tb_core.h"
 #include "tb_geometry.h"
@@ -1092,7 +1090,4 @@ private:
 
 inline bool TBWidgetEvent::IsAny(const tb::TBID& id) const { return target->GetID() == id || ref_id == id; }
 
-
 } // namespace tb
-
-#endif // TB_WIDGETS_H

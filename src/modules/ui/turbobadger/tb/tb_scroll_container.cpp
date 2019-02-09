@@ -1,15 +1,12 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_scroll_container.h"
 #include "tb_system.h"
 #include "core/Assert.h"
 
 namespace tb {
-
-// == TBScrollBarVisibility ===================================
 
 TBScrollBarVisibility TBScrollBarVisibility::Solve(SCROLL_MODE mode, int content_w, int content_h,
 																	int available_w, int available_h,
@@ -63,8 +60,6 @@ TBScrollBarVisibility TBScrollBarVisibility::Solve(SCROLL_MODE mode, int content
 	return visibility;
 }
 
-// == TBScrollContainerRoot ===================================
-
 void TBScrollContainerRoot::OnPaintChildren(const PaintProps &paint_props)
 {
 	// We only want clipping in one axis (the overflowing one) so we
@@ -91,8 +86,6 @@ void TBScrollContainerRoot::GetChildTranslation(int &x, int &y) const
 	x = (int) -sc->m_scrollbar_x.GetValue();
 	y = (int) -sc->m_scrollbar_y.GetValue();
 }
-
-// == TBScrollContainer =======================================
 
 TBScrollContainer::TBScrollContainer()
 	: m_adapt_to_content_size(false)

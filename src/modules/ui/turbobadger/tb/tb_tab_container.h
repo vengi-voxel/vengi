@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_TAB_CONTAINER_H
-#define TB_TAB_CONTAINER_H
+#pragma once
 
 #include "tb_widgets_common.h"
 
@@ -23,7 +21,6 @@ public:
 };
 
 /** TBTabContainer - A container with tabs for multiple pages. */
-
 class TBTabContainer : public TBWidget
 {
 public:
@@ -70,6 +67,4 @@ protected:
 	TB_ALIGN m_align;
 };
 
-};
-
-#endif // TB_TAB_CONTAINER_H
+}

@@ -1,7 +1,6 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "parser/tb_parser.h"
 #include "tb_tempbuffer.h"
@@ -10,8 +9,6 @@
 #include <ctype.h>
 
 namespace tb {
-
-// == Util functions ====================================================================
 
 static bool is_hex(char c)
 {
@@ -159,8 +156,6 @@ bool IsEndQuote(const char *buf_start, const char *buf, const char quote_type)
 		num_backslashes++;
 	return !(num_backslashes & 1);
 }
-
-// == Parser ============================================================================
 
 TBParser::STATUS TBParser::Read(TBParserStream *stream, TBParserTarget *target)
 {

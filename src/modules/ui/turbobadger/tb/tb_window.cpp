@@ -1,14 +1,11 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_window.h"
 #include "core/Assert.h"
 
 namespace tb {
-
-// == TBWindow ==========================================================================
 
 TBWindow::TBWindow()
 	: m_settings(WINDOW_SETTINGS_DEFAULT)

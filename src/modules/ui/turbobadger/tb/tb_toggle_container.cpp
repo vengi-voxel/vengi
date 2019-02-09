@@ -1,15 +1,12 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_toggle_container.h"
 #include "tb_widgets_reader.h"
 #include "tb_node_tree.h"
 
 namespace tb {
-
-// == TBSectionHeader =====================================
 
 TBSectionHeader::TBSectionHeader()
 {

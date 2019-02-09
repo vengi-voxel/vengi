@@ -1,23 +1,17 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_IMAGE_WIDGET_H
-#define TB_IMAGE_WIDGET_H
+#pragma once
 
 #include "tb_widgets.h"
-
-#ifdef TB_IMAGE
-
-#include "image/tb_image_manager.h"
+#include "tb_image_manager.h"
 
 namespace tb {
 
 /** TBImageWidget is a widget showing a image loaded by TBImageManager,
 	constrained in size to its skin.
 	If you need to show a image from the skin, you can use TBSkinImage. */
-
 class TBImageWidget : public TBWidget
 {
 public:
@@ -38,6 +32,3 @@ private:
 };
 
 } // namespace tb
-
-#endif // TB_IMAGE
-#endif // TB_IMAGE_WIDGET_H

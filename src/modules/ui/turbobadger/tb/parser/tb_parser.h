@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_PARSER_H
-#define TB_PARSER_H
+#pragma once
 
 #include "tb_value.h"
 #include "tb_tempbuffer.h"
@@ -50,12 +48,12 @@ public:
 	TBParser() {}
 	STATUS Read(TBParserStream *stream, TBParserTarget *target);
 private:
-	int current_indent;
-	int current_line_nr;
+	int current_indent = 0;
+	int current_line_nr = 0;
 	TBStr multi_line_token;
 	TBTempBuffer multi_line_value;
-	int multi_line_sub_level;
-	bool pending_multiline;
+	int multi_line_sub_level = 0;
+	bool pending_multiline = false;
 	void OnLine(char *line, TBParserTarget *target);
 	void OnCompactLine(char *line, TBParserTarget *target);
 	void OnMultiline(char *line, TBParserTarget *target);
@@ -63,5 +61,3 @@ private:
 };
 
 } // namespace tb
-
-#endif // TB_PARSER_H

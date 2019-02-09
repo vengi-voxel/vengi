@@ -1,7 +1,6 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_font_renderer.h"
 #include "tb_renderer.h"
@@ -10,8 +9,6 @@
 #include <math.h>
 
 namespace tb {
-
-// ================================================================================================
 
 static void blurGlyph(const unsigned char* src, int srcw, int srch, int srcStride, unsigned char* dst, int dstw, int dsth, int dstStride, float* temp, const float* kernel, int kernelRadius)
 {

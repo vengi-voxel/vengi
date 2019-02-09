@@ -1,13 +1,10 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_renderer.h"
 
 namespace tb {
-
-// == TBRenderer ========================================================================
 
 void TBRenderer::InvokeContextLost()
 {

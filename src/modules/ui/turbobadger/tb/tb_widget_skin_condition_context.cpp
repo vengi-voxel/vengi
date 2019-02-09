@@ -1,7 +1,6 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_widget_skin_condition_context.h"
 #include "tb_widgets_common.h"
@@ -9,8 +8,6 @@
 #include "tb_tab_container.h"
 
 namespace tb {
-
-// == TBWidgetSkinConditionContext ======================================================
 
 bool TBWidgetSkinConditionContext::GetCondition(TBSkinCondition::TARGET target, const TBSkinCondition::CONDITION_INFO &info)
 {

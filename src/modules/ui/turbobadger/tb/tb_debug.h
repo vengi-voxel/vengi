@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_DEBUG_H
-#define TB_DEBUG_H
+#pragma once
 
 #include "tb_types.h"
 
@@ -58,5 +56,3 @@ void ShowDebugInfoSettingsWindow(class TBWidget *root);
 #endif // TB_RUNTIME_DEBUG_INFO
 
 } // namespace tb
-
-#endif // TB_DEBUG_H

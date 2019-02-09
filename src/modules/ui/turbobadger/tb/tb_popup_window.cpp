@@ -1,14 +1,11 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_widgets_listener.h"
 #include "tb_popup_window.h"
 
 namespace tb {
-
-// == TBPopupAlignment ======================================================================================
 
 TBRect TBPopupAlignment::GetAlignedRect(TBWidget *popup, TBWidget *target) const
 {
@@ -70,8 +67,6 @@ TBRect TBPopupAlignment::GetAlignedRect(TBWidget *popup, TBWidget *target) const
 	}
 	return TBRect(x, y, w, h);
 }
-
-// == TBPopupWindow =========================================================================================
 
 TBPopupWindow::TBPopupWindow(TBWidget *target)
 	: m_target(target)

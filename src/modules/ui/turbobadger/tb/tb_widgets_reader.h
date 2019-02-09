@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TBWIDGETS_READER_H
-#define TBWIDGETS_READER_H
+#pragma once
 
 #include "tb_linklist.h"
 #include "tb_widgets.h"
@@ -35,6 +33,7 @@ class TBWidgetFactory : public TBLinkOf<TBWidgetFactory>
 {
 public:
 	TBWidgetFactory(const char *name, TBValue::TYPE sync_type);
+	virtual ~TBWidgetFactory() {}
 
 	/** Create and return the new widget or nullptr on out of memory. */
 	virtual TBWidget *Create(INFLATE_INFO *info) = 0;
@@ -162,5 +161,3 @@ private:
 };
 
 } // namespace tb
-
-#endif // TBWIDGETS_READER_H

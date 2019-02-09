@@ -1,7 +1,6 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_msg.h"
 #include "tb_system.h"
@@ -15,8 +14,6 @@ TBLinkListOf<TBMessageLink> g_all_delayed_messages;
 /** List of all nondelayed messages. */
 TBLinkListOf<TBMessageLink> g_all_normal_messages;
 
-// == TBMessage =========================================================================
-
 TBMessage::TBMessage(TBID message, TBMessageData *data, double fire_time_ms, TBMessageHandler *mh)
 	: message(message), data(data), fire_time_ms(fire_time_ms), mh(mh)
 {
@@ -26,8 +23,6 @@ TBMessage::~TBMessage()
 {
 	delete data;
 }
-
-// == TBMessageHandler ==================================================================
 
 TBMessageHandler::TBMessageHandler()
 {

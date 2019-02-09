@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_POPUP_WINDOW_H
-#define TB_POPUP_WINDOW_H
+#pragma once
 
 #include "tb_window.h"
 #include "tb_widgets_listener.h"
@@ -82,5 +80,3 @@ private:
 };
 
 } // namespace tb
-
-#endif // TB_POPUP_WINDOW_H

@@ -1,5 +1,8 @@
-#ifndef BASIC_UTF8_H
-#define BASIC_UTF8_H
+/**
+ * @file
+ */
+
+#pragma once
 
 typedef unsigned int UCS4;
 
@@ -48,5 +51,3 @@ void move_dec(const char *str, int *i);
 int count_characters(const char *str, int i_max);
 
 } // namespace utf8
-
-#endif // BASIC_UTF8_H

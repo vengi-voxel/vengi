@@ -1,13 +1,10 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "renderers/tb_renderer_batcher.h"
 #include "tb_bitmap_fragment.h"
 #include "tb_system.h"
-
-#ifdef TB_RENDERER_BATCHER
 
 namespace tb {
 
@@ -273,5 +270,3 @@ void TBRendererBatcher::FlushBitmapFragment(TBBitmapFragment *bitmap_fragment)
 }
 
 } // namespace tb
-
-#endif // TB_RENDERER_BATCHER

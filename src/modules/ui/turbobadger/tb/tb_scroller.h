@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_SCROLLER_H
-#define TB_SCROLLER_H
+#pragma once
 
 #include "tb_core.h"
 #include "tb_msg.h"
@@ -18,7 +16,6 @@ class TBWidget;
 
 	Note: Speed is in pixels per millisecond. Duration is in milliseconds
 		  and distance is in pixels. Distance and speed may be negative! */
-
 class TBScrollerFunction
 {
 public:
@@ -129,5 +126,3 @@ private:
 };
 
 } // namespace tb
-
-#endif // TB_SCROLLER_H

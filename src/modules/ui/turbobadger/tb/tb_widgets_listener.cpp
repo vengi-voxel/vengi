@@ -1,15 +1,12 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_widgets_listener.h"
 
 namespace tb {
 
 TBLinkListOf<TBWidgetListenerGlobalLink> g_listeners;
-
-// == TBWidgetListener ================================================================================
 
 void TBWidgetListener::AddGlobalListener(TBWidgetListener *listener)
 {
@@ -84,8 +81,6 @@ bool TBWidgetListener::InvokeWidgetInvokeEvent(TBWidget *widget, const TBWidgetE
 		handled |= static_cast<TBWidgetListener*>(link)->OnWidgetInvokeEvent(widget, ev);
 	return handled;
 }
-
-// == TBWidgetSafePointer ===================================================================================
 
 void TBWidgetSafePointer::Set(TBWidget *widget)
 {

@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_ANIMATION_UTILS_H
-#define TB_ANIMATION_UTILS_H
+#pragma once
 
 #include "animation/tb_animation.h"
 
@@ -60,5 +58,3 @@ public:
 };
 
 } // namespace tb
-
-#endif // TB_ANIMATION_UTILS_H

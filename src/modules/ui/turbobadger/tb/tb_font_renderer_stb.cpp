@@ -1,15 +1,12 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_font_renderer.h"
 #include "tb_renderer.h"
 #include "tb_system.h"
 #include "tb_tempbuffer.h"
 #include "core/Assert.h"
-
-#ifdef TB_FONT_RENDERER_STB
 
 using namespace tb;
 
@@ -113,5 +110,3 @@ void register_stb_font_renderer()
 	if (STBFontRenderer *fr = new STBFontRenderer)
 		g_font_manager->AddRenderer(fr);
 }
-
-#endif // TB_FONT_RENDERER_STB

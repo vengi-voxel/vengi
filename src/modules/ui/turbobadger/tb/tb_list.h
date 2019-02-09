@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_LIST_H
-#define TB_LIST_H
+#pragma once
 
 #include "tb_core.h"
 namespace tb {
@@ -122,5 +120,3 @@ public:
 };
 
 } // namespace tb
-
-#endif // TB_LIST_H

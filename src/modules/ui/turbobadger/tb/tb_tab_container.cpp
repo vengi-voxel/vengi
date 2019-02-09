@@ -1,14 +1,11 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_tab_container.h"
 #include "core/Assert.h"
 
 namespace tb {
-
-// == TBTabLayout =======================================================================
 
 void TBTabLayout::OnChildAdded(TBWidget *child)
 {
@@ -32,8 +29,6 @@ PreferredSize TBTabLayout::OnCalculatePreferredContentSize(const SizeConstraints
 		ps.min_h = Min(ps.min_h, 1);
 	return ps;
 }
-
-// == TBTabContainer ====================================================================
 
 TBTabContainer::TBTabContainer()
 	: m_need_page_update(true)

@@ -1,7 +1,6 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "animation/tb_widget_animation.h"
 #include "tb_window.h"
@@ -15,8 +14,6 @@ namespace tb {
 TBLinkListOf<TBWidgetAnimationObject> widget_animations;
 
 #define LERP(src, dst, progress) (src + (dst - src) * progress)
-
-// == TBWidgetAnimationObject =============================================================
 
 TBWidgetAnimationObject::TBWidgetAnimationObject(TBWidget *widget)
 	: m_widget(widget)

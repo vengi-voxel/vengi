@@ -1,15 +1,12 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "animation/tb_animation.h"
 #include "tb_system.h"
 #include "core/Assert.h"
 
 namespace tb {
-
-// == Helpers =======================================================
 
 #define SMOOTHSTEP(x) ((x) * (x) * (3.0f - 2.0f * (x)))
 

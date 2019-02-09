@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_HASHTABLE_H
-#define TB_HASHTABLE_H
+#pragma once
 
 #include "tb_core.h"
 #include "core/Assert.h"
@@ -124,5 +122,3 @@ protected:
 };
 
 } // namespace tb
-
-#endif // TB_HASHTABLE_H

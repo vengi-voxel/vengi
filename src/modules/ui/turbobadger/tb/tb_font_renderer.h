@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_FONT_RENDERER_H
-#define TB_FONT_RENDERER_H
+#pragma once
 
 #include "tb_core.h"
 #include "tb_bitmap_fragment.h"
@@ -281,5 +279,3 @@ private:
 };
 
 } // namespace tb
-
-#endif // TB_FONT_RENDERER_H

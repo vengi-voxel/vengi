@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_NODE_TREE_H
-#define TB_NODE_TREE_H
+#pragma once
 
 #include "parser/tb_parser.h"
 #include "tb_linklist.h"
@@ -136,5 +134,3 @@ friend class TBNodeRefTree;
 };
 
 } // namespace tb
-
-#endif // TB_NODE_TREE_H

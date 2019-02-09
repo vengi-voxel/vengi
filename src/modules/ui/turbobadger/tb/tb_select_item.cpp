@@ -1,7 +1,6 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_select.h"
 #include "tb_menu_window.h"
@@ -17,7 +16,6 @@ namespace tb {
 	-TBTextField showing the item string.
 	-TBSkinImage showing the arrow for items with a submenu.
 	It also handles submenu events. */
-
 class TBSimpleLayoutItemWidget : public TBLayout, private TBWidgetListener
 {
 public:
@@ -34,8 +32,6 @@ private:
 	void OpenSubMenu();
 	void CloseSubMenu();
 };
-
-// == TBSimpleLayoutItemWidget ==============================================================================
 
 TBSimpleLayoutItemWidget::TBSimpleLayoutItemWidget(TBID image, TBSelectItemSource *source, const char *str)
 	: m_source(source)
@@ -116,8 +112,6 @@ void TBSimpleLayoutItemWidget::CloseSubMenu()
 	m_menu = nullptr;
 }
 
-// == TBSelectItemViewer ==============================================================================
-
 void TBSelectItemViewer::SetSource(TBSelectItemSource *source)
 {
 	if (m_source == source)
@@ -131,8 +125,6 @@ void TBSelectItemViewer::SetSource(TBSelectItemSource *source)
 
 	OnSourceChanged();
 }
-
-// == TBSelectItemSource ====================================================================================
 
 TBSelectItemSource::~TBSelectItemSource()
 {

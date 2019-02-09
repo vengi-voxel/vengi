@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_SELECT_ITEM_H
-#define TB_SELECT_ITEM_H
+#pragma once
 
 #include "tb_linklist.h"
 #include "tb_list.h"
@@ -68,7 +66,6 @@ protected:
 	use the subclass TBSelectItemSourceList. If you implement your own storage,
 	remember to call InvokeItem[Added/...] to notify viewers that they need to update.
 */
-
 class TBSelectItemSource
 {
 public:
@@ -119,7 +116,6 @@ private:
 
 /** TBSelectItemSourceList is a item provider for list widgets (TBSelectList and
 	TBSelectDropdown). It stores items of the type specified by the template in an array. */
-
 template<class T>
 class TBSelectItemSourceList : public TBSelectItemSource
 {
@@ -207,5 +203,3 @@ public:
 class TBGenericStringItemSource : public TBSelectItemSourceList<TBGenericStringItem> { };
 
 } // namespace tb
-
-#endif // TB_SELECT_ITEM_H

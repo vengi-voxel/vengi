@@ -1,15 +1,12 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_style_edit.h"
 #include "tb_style_edit_content.h"
 #include "core/Assert.h"
 
 namespace tb {
-
-// == TBTextFragmentContentFactory ==========================================================================
 
 int TBTextFragmentContentFactory::GetContent(const char *text)
 {
@@ -44,8 +41,6 @@ TBTextFragmentContent *TBTextFragmentContentFactory::CreateFragmentContent(const
 	return nullptr;
 }
 
-// == PHorizontalLineContent ================================================================================
-
 TBTextFragmentContentHR::TBTextFragmentContentHR(int32_t width_in_percent, int32_t height)
 	: width_in_percent(width_in_percent)
 	, height(height)
@@ -67,8 +62,6 @@ void TBTextFragmentContentHR::Paint(const TBPaintProps *props, TBTextFragment *f
 int32_t TBTextFragmentContentHR::GetWidth(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment) { return Max(block->styledit->layout_width, 0); }
 
 int32_t TBTextFragmentContentHR::GetHeight(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment) { return height; }
-
-// ============================================================================
 
 void TBTextFragmentContentUnderline::Paint(const TBPaintProps *props, TBTextFragment *fragment)
 {

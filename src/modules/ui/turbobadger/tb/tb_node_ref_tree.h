@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_NODE_REF_TREE_H
-#define TB_NODE_REF_TREE_H
+#pragma once
 
 #include "tb_linklist.h"
 #include "tb_node_tree.h"
@@ -78,11 +76,10 @@ private:
 class TBNodeRefTreeListener : public TBLinkOf<TBNodeRefTreeListener>
 {
 public:
+	virtual ~TBNodeRefTreeListener() {}
 	/** Called when the value is changed for the given node
 		in the given ref tree. The request is without tree name. */
 	virtual void OnDataChanged(TBNodeRefTree *rt, const char *request) = 0;
 };
 
 } // namespace tb
-
-#endif // TB_NODE_REF_TREE_H

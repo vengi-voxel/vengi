@@ -1,13 +1,10 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_linklist.h"
 
 namespace tb {
-
-// == TBLinkListIterator ====================================================================================
 
 TBLinkListIterator::TBLinkListIterator(TBLinkList *linklist, TBLink *current_link, bool forward)
 	: m_linklist(linklist)
@@ -98,8 +95,6 @@ void TBLinkListIterator::RemoveLink(TBLink *link)
 	if (m_current_link == link)
 		GetAndStep();
 }
-
-// == TBLinkList ============================================================================================
 
 TBLinkList::~TBLinkList()
 {

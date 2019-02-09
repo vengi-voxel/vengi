@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_HASH_H
-#define TB_HASH_H
+#pragma once
 
 #include "tb_types.h"
 
@@ -32,6 +30,4 @@ constexpr uint32_t TBGetHash(const char* str)
 #define TBIDC(str) tb::TBGetHash(str)
 
 } // namespace tb
-
-#endif // TB_HASH_H
 

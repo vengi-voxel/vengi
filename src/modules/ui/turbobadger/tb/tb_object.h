@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_OBJECT_H
-#define TB_OBJECT_H
+#pragma once
 
 #include "tb_core.h"
 #include "tb_linklist.h"
@@ -58,5 +56,3 @@ template<class T> const T *TBSafeCast(const TBTypedObject *obj) {
 		{ return GetTypeId<clazz>() == type_id ? true : baseclazz::IsOfTypeId(type_id); }
 
 } // namespace tb
-
-#endif // TB_OBJECT_H

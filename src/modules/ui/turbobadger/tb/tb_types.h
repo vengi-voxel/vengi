@@ -1,13 +1,9 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_TYPES_H
-#define TB_TYPES_H
+#pragma once
 
-// Include <tb_config.h> so it may be overridden in application directory.
-// The default "tb_config.h" (local) will be used if there is no other match.
 #include <tb_config.h>
 
 #include <string.h>
@@ -51,5 +47,3 @@ T ClampClipMax(const T& value, const T& min, const T& max)
 	inline Enum operator ~ (Enum a)  { return static_cast<Enum>(~static_cast<uint32_t>(a)); }
 
 } // namespace tb
-
-#endif // TB_TYPES_H

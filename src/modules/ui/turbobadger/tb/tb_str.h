@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_STR_H
-#define TB_STR_H
+#pragma once
 
 #include "tb_types.h"
 #include <string.h>
@@ -74,5 +72,3 @@ public:
 };
 
 } // namespace tb
-
-#endif // TB_STR_H

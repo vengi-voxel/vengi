@@ -1,14 +1,10 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_RENDERER_BATCHER_H
-#define TB_RENDERER_BATCHER_H
+#pragma once
 
 #include "tb_renderer.h"
-
-#ifdef TB_RENDERER_BATCHER
 
 namespace tb {
 
@@ -92,7 +88,3 @@ protected:
 };
 
 } // namespace tb
-
-#endif // TB_RENDERER_BATCHER
-
-#endif // TB_RENDERER_BATCHER_H

@@ -1,7 +1,6 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_widgets_common.h"
 #include "tb_font_renderer.h"
@@ -10,8 +9,6 @@
 #include "core/Assert.h"
 
 namespace tb {
-
-// == TBWidgetString =======================================
 
 TBWidgetString::TBWidgetString()
 	: m_text_align(TB_TEXT_ALIGN_CENTER)
@@ -91,8 +88,6 @@ void TBWidgetString::Paint(TBWidget *widget, const TBRect &rect, const TBColor &
 	}
 }
 
-// == TBTextField =======================================
-
 /** This value on m_cached_text_width means it needs to be updated again. */
 #define UPDATE_TEXT_WIDTH_CACHE -1
 
@@ -148,8 +143,6 @@ void TBTextField::OnPaint(const PaintProps &paint_props)
 {
 	m_text.Paint(this, GetPaddingRect(), paint_props.text_color);
 }
-
-// == TBButton =======================================
 
 const int auto_click_first_delay = 500;
 const int auto_click_repeat_delay = 100;
@@ -281,8 +274,6 @@ void TBButton::ButtonLayout::OnChildRemove(TBWidget *child)
 	static_cast<TBButton*>(GetParent())->UpdateTextFieldVisibility();
 }
 
-// == TBClickLabel ==========================================================================================
-
 TBClickLabel::TBClickLabel()
 {
 	AddChild(&m_layout);
@@ -327,8 +318,6 @@ bool TBClickLabel::OnEvent(const TBWidgetEvent &ev)
 	return false;
 }
 
-// == TBSkinImage =======================================
-
 PreferredSize TBSkinImage::OnCalculatePreferredSize(const SizeConstraints &constraints)
 {
 	PreferredSize ps = TBWidget::OnCalculatePreferredSize(constraints);
@@ -338,15 +327,11 @@ PreferredSize TBSkinImage::OnCalculatePreferredSize(const SizeConstraints &const
 	return ps;
 }
 
-// == TBSeparator ===========================================
-
 TBSeparator::TBSeparator()
 {
 	SetSkinBg(TBIDC("TBSeparator"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 	SetState(WIDGET_STATE_DISABLED, true);
 }
-
-// == TBProgressSpinner =====================================
 
 // FIX: Add spin_speed to skin!
 // FIX: Make it post messages only if visible
@@ -407,8 +392,6 @@ void TBProgressSpinner::OnMessageReceived(TBMessage *msg)
 	PostMessageDelayed(TBID(1), nullptr, spin_speed);
 }
 
-// == TBRadioCheckBox =======================================
-
 TBRadioCheckBox::TBRadioCheckBox()
 	: m_value(0)
 {
@@ -466,8 +449,6 @@ bool TBRadioCheckBox::OnEvent(const TBWidgetEvent &ev)
 	}
 	return false;
 }
-
-// == TBScrollBar =======================================
 
 TBScrollBar::TBScrollBar()
 	: m_axis(AXIS_Y) ///< Make SetAxis below always succeed and set the skin
@@ -613,8 +594,6 @@ void TBScrollBar::OnResized(int old_w, int old_h)
 	UpdateHandle();
 }
 
-// == TBSlider ============================================
-
 TBSlider::TBSlider()
 	: m_axis(AXIS_Y) ///< Make SetAxis below always succeed and set the skin
 	, m_value(0)
@@ -744,14 +723,10 @@ void TBSlider::OnResized(int old_w, int old_h)
 	UpdateHandle();
 }
 
-// == TBContainer ===================================
-
 TBContainer::TBContainer()
 {
 	SetSkinBg(TBIDC("TBContainer"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 }
-
-// == TBMover =======================================
 
 TBMover::TBMover()
 {
@@ -779,8 +754,6 @@ bool TBMover::OnEvent(const TBWidgetEvent &ev)
 	}
 	return false;
 }
-
-// == TBResizer =======================================
 
 TBResizer::TBResizer()
 {
@@ -818,8 +791,6 @@ bool TBResizer::OnEvent(const TBWidgetEvent &ev)
 		return false;
 	return true;
 }
-
-// == TBDimmer =======================================
 
 TBDimmer::TBDimmer()
 {

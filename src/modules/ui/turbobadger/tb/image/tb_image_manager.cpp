@@ -1,19 +1,13 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#include "image/tb_image_manager.h"
-
-#ifdef TB_IMAGE
-
+#include "tb_image_manager.h"
 #include "tb_system.h"
 #include "tb_tempbuffer.h"
 #include "tb_skin.h"
 
 namespace tb {
-
-// == TBImageRep ========================================================================
 
 TBImageRep::TBImageRep(TBImageManager *image_manager, TBBitmapFragment *fragment, uint32_t hash_key)
 	: ref_count(0), hash_key(hash_key), image_manager(image_manager), fragment(fragment)
@@ -35,8 +29,6 @@ void TBImageRep::DecRef()
 		delete this;
 	}
 }
-
-// == TBImage ===========================================================================
 
 TBImage::TBImage(TBImageRep *rep)
 	: m_image_rep(rep)
@@ -95,8 +87,6 @@ void TBImage::SetImageRep(TBImageRep *image_rep)
 	if (m_image_rep)
 		m_image_rep->IncRef();
 }
-
-// == TBImageManager ====================================================================
 
 TBImageManager *g_image_manager = nullptr;
 
@@ -193,5 +183,3 @@ void TBImageManager::OnContextRestored()
 }
 
 } // namespace tb
-
-#endif // TB_IMAGE

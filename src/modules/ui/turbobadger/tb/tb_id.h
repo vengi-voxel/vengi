@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_ID_H
-#define TB_ID_H
+#pragma once
 
 #include "tb_types.h"
 #include "tb_hash.h"
@@ -32,5 +30,3 @@ private:
 };
 
 } // namespace tb
-
-#endif // TB_ID_H

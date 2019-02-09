@@ -1,13 +1,10 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "image/tb_image_widget.h"
 #include "tb_widgets_reader.h"
 #include "tb_node_tree.h"
-
-#ifdef TB_IMAGE
 
 namespace tb {
 
@@ -23,5 +20,3 @@ void TBImageWidget::OnPaint(const PaintProps &paint_props)
 }
 
 } // namespace tb
-
-#endif // TB_IMAGE

@@ -1,14 +1,11 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_menu_window.h"
 #include "tb_widgets_listener.h"
 
 namespace tb {
-
-// == TBMenuWindow ==========================================
 
 TBMenuWindow::TBMenuWindow(TBWidget *target, TBID id)
 	: TBPopupWindow(target)

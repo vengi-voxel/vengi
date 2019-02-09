@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_WIDGET_VALUE_H
-#define TB_WIDGET_VALUE_H
+#pragma once
 
 #include "tb_core.h"
 #include "tb_linklist.h"
@@ -23,7 +21,7 @@ class TBValueGroup;
 class TBWidgetValueConnection : public TBLinkOf<TBWidgetValueConnection>
 {
 public:
-	TBWidgetValueConnection() : m_value(nullptr) {}
+	TBWidgetValueConnection() {}
 	~TBWidgetValueConnection() { Unconnect(); }
 
 	/** Connect the value and widget. */
@@ -37,8 +35,8 @@ public:
 	void SyncFromWidget(TBWidget *source_widget);
 private:
 	friend class TBWidgetValue;
-	TBWidgetValue *m_value;
-	TBWidget *m_widget;
+	TBWidgetValue *m_value = nullptr;
+	TBWidget *m_widget = nullptr;
 };
 
 /** TBWidgetValue stores a TBValue that will be synchronized with all widgets connected to it.
@@ -55,7 +53,6 @@ private:
 
 	Note: The type that is synchronized changes if you request it in a different format!
 */
-
 class TBWidgetValue
 {
 public:
@@ -104,7 +101,6 @@ private:
 };
 
 /** Listener that will be notified when any of the values in a TBValueGroup is changed. */
-
 class TBValueGroupListener : public TBLinkOf<TBValueGroupListener>
 {
 public:
@@ -117,7 +113,6 @@ public:
 /** TBValueGroup is a collection of widget values (TBWidgetValue) that can be fetched
 	by name (using a TBID). It also keeps a list of TBValueGroupListener that listens to
 	changes to any of the values. */
-
 class TBValueGroup
 {
 public:
@@ -146,5 +141,3 @@ private:
 extern TBValueGroup g_value_group;
 
 } // namespace tb
-
-#endif // TB_WIDGET_VALUE_H

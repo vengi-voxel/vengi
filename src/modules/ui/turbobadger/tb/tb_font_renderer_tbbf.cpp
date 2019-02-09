@@ -1,7 +1,6 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_font_renderer.h"
 #include "tb_renderer.h"
@@ -10,8 +9,6 @@
 #include "tb_node_tree.h"
 #include "tb_hashtable.h"
 #include "image/Image.h"
-
-#ifdef TB_FONT_RENDERER_TBBF
 
 using namespace tb;
 
@@ -280,5 +277,3 @@ void register_tbbf_font_renderer()
 	if (TBBFRenderer *fr = new TBBFRenderer)
 		g_font_manager->AddRenderer(fr);
 }
-
-#endif // TB_FONT_RENDERER_TBBF

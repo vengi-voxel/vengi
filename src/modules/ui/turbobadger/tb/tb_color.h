@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TB_COLOR_H
-#define TB_COLOR_H
+#pragma once
 
 #include "tb_types.h"
 
@@ -50,5 +48,3 @@ public:
 };
 
 } // namespace tb
-
-#endif // TB_COLOR_H

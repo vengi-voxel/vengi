@@ -1,14 +1,11 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
 #include "tb_geometry.h"
 #include "core/Assert.h"
 
 namespace tb {
-
-// == TBRect ============================================================================
 
 bool TBRect::Intersects(const TBRect &rect) const
 {

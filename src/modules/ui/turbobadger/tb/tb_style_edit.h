@@ -1,10 +1,8 @@
-// ================================================================================
-// ==      This file is a part of Turbo Badger. (C) 2011-2014, Emil Segerås      ==
-// ==                     See tb_core.h for more information.                    ==
-// ================================================================================
+/**
+ * @file
+ */
 
-#ifndef TBStyleEdit_H
-#define TBStyleEdit_H
+#pragma once
 
 #include "tb_core.h"
 #include "tb_linklist.h"
@@ -20,7 +18,6 @@ class TBTextFragmentContent;
 class TBTextFragmentContentFactory;
 
 /** Listener for TBStyleEdit. Implement in the enviorment the TBStyleEdit should render its content. */
-
 class TBStyleEditListener
 {
 public:
@@ -106,7 +103,6 @@ enum TB_CARET_POS {
 };
 
 /** The caret in a TBStyleEdit. */
-
 class TBCaret
 {
 public:
@@ -478,5 +474,3 @@ public:
 };
 
 } // namespace tb
-
-#endif
