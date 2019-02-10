@@ -3,6 +3,7 @@
  */
 
 #include "FileDialogWindow.h"
+#include "ui/turbobadger/UIApp.h"
 
 namespace ui {
 namespace turbobadger {

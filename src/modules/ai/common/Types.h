@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/Assert.h"
+#include "core/Log.h"
 #define ai_assert core_assert_msg
 
 #include "Log.h"

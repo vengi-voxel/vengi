@@ -14,6 +14,7 @@
 #include "video/UniformBuffer.h"
 #include "video/Texture.h"
 #include "core/GLM.h"
+#include "core/Var.h"
 
 namespace video {
 class Camera;

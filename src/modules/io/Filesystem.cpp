@@ -3,6 +3,7 @@
  */
 
 #include "Filesystem.h"
+#include "core/Assert.h"
 #include "core/Var.h"
 #include "core/Log.h"
 #include "core/Common.h"
