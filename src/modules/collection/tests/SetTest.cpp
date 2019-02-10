@@ -13,75 +13,74 @@ class SetTest: public AbstractTest {
 };
 
 TEST_F(SetTest, testDiff) {
-	std::unordered_set<int> set1;
+	std::unordered_set<int> setDiff1;
 	const int n = 1000;
 	for (int i = 0; i < n; ++i) {
-		set1.insert(i);
+		setDiff1.insert(i);
 	}
-	std::unordered_set<int> set2;
+	std::unordered_set<int> setDiff2;
 	for (int i = 0; i < n; ++i) {
-		set2.insert(i);
+		setDiff2.insert(i);
 	}
-	set2.insert(n + 1);
-	auto diff = core::setDifference(set1, set2);
+	setDiff2.insert(n + 1);
+	auto diff = core::setDifference(setDiff1, setDiff2);
 	EXPECT_FALSE(diff.empty());
 	EXPECT_EQ(1u, diff.size());
 }
 
 TEST_F(SetTest, testDiff2) {
-	std::unordered_set<int> set1;
+	std::unordered_set<int> setDiff1;
 	const int n = 1000;
 	for (int i = 0; i < n; ++i) {
-		set1.insert(i);
-		set1.insert(-n - i);
+		setDiff1.insert(i);
+		setDiff1.insert(-n - i);
 	}
-	std::unordered_set<int> set2;
+	std::unordered_set<int> setDiff2;
 	for (int i = 0; i < n; ++i) {
-		set2.insert(i);
-		set2.insert(n + i);
+		setDiff2.insert(i);
+		setDiff2.insert(n + i);
 	}
-	auto diff = core::setDifference(set1, set2);
+	auto diff = core::setDifference(setDiff1, setDiff2);
 	EXPECT_FALSE(diff.empty());
 	EXPECT_EQ(2000u, diff.size());
 }
 
 // exactly what is done for calculating the visible entities
 TEST_F(SetTest, testVisibleActions) {
-	std::unordered_set<int> set1;
-	std::unordered_set<int> set2;
+	std::unordered_set<int> setVisible1;
+	std::unordered_set<int> setVisible2;
 
-	set1.insert(1);
-	set1.insert(2);
-	set1.insert(3);
+	setVisible1.insert(1);
+	setVisible1.insert(2);
+	setVisible1.insert(3);
 
-	set2.insert(1);
-	set2.insert(4);
-	set2.insert(5);
-	set2.insert(6);
+	setVisible2.insert(1);
+	setVisible2.insert(4);
+	setVisible2.insert(5);
+	setVisible2.insert(6);
 
-	const auto& inBoth = core::setIntersection(set1, set2);
+	const auto& inBoth = core::setIntersection(setVisible1, setVisible2);
 	EXPECT_EQ(1u, inBoth.size());
 	EXPECT_EQ(1, *inBoth.begin());
-	const std::unordered_set<int>& removeFromSet2 = core::setDifference(inBoth, set2);
+	const std::unordered_set<int>& removeFromSet2 = core::setDifference(inBoth, setVisible2);
 	EXPECT_EQ(3u, removeFromSet2.size());
-	const std::unordered_set<int>& addToSet2 = core::setDifference(set1, inBoth);
+	const std::unordered_set<int>& addToSet2 = core::setDifference(setVisible1, inBoth);
 	EXPECT_EQ(2u, addToSet2.size());
-	set2 = core::setUnion(inBoth, addToSet2);
-	EXPECT_EQ(3u, set2.size());
-	EXPECT_EQ(inBoth.size() + addToSet2.size(), set2.size());
+	setVisible2 = core::setUnion(inBoth, addToSet2);
+	EXPECT_EQ(3u, setVisible2.size());
+	EXPECT_EQ(inBoth.size() + addToSet2.size(), setVisible2.size());
 }
-
-const int offset = 1000;
-const int n = 5000000;
-static std::vector<int> v1;
-static std::vector<int> v2;
-static std::vector<int> v3;
-static std::vector<int> v4;
-static std::unordered_set<int> set1;
-static std::unordered_set<int> set2;
 
 class SetMassTest: public AbstractTest {
 public:
+	static const int offset = 1000;
+	static const int n = 5000000;
+	static std::vector<int> v1;
+	static std::vector<int> v2;
+	static std::vector<int> v3;
+	static std::vector<int> v4;
+	static std::unordered_set<int> set1;
+	static std::unordered_set<int> set2;
 	static void SetUpTestCase() {
 		v1.resize(n);
 		v2.resize(n);
@@ -105,6 +104,13 @@ public:
 	}
 };
 
+std::vector<int> SetMassTest::v1;
+std::vector<int> SetMassTest::v2;
+std::vector<int> SetMassTest::v3;
+std::vector<int> SetMassTest::v4;
+std::unordered_set<int> SetMassTest::set1;
+std::unordered_set<int> SetMassTest::set2;
+
 TEST_F(SetMassTest, testVectorIntersectionSorted) {
 	std::vector<int> out;
 	core::vectorIntersection(v1, v2, out);
@@ -122,26 +128,26 @@ TEST_F(SetMassTest, testMassVisibleActions) {
 	const size_t n2 = 22031;
 	const size_t overlap = 120;
 
-	std::unordered_set<int> set1(n1);
-	std::unordered_set<int> set2(n2);
+	std::unordered_set<int> setMass1(n1);
+	std::unordered_set<int> setMass2(n2);
 
 	for (size_t i = 0; i < n1; ++i) {
-		set1.insert(i);
+		setMass1.insert(i);
 	}
 	for (size_t i = n1 - overlap; i < n1 - overlap + n2; ++i) {
-		set2.insert(i);
+		setMass2.insert(i);
 	}
 
-	const auto& inBoth = core::setIntersection(set1, set2);
+	const auto& inBoth = core::setIntersection(setMass1, setMass2);
 	EXPECT_EQ(overlap, inBoth.size());
 	EXPECT_EQ(int(n1 - overlap), *inBoth.begin());
-	const std::unordered_set<int>& removeFromSet2 = core::setDifference(inBoth, set2);
+	const std::unordered_set<int>& removeFromSet2 = core::setDifference(inBoth, setMass2);
 	EXPECT_EQ(n2 - overlap, removeFromSet2.size());
-	const std::unordered_set<int>& addToSet2 = core::setDifference(set1, inBoth);
+	const std::unordered_set<int>& addToSet2 = core::setDifference(setMass1, inBoth);
 	EXPECT_EQ(n1 - overlap, addToSet2.size());
-	set2 = core::setUnion(inBoth, addToSet2);
-	EXPECT_EQ(n1, set2.size());
-	EXPECT_EQ(inBoth.size() + addToSet2.size(), set2.size());
+	setMass2 = core::setUnion(inBoth, addToSet2);
+	EXPECT_EQ(n1, setMass2.size());
+	EXPECT_EQ(inBoth.size() + addToSet2.size(), setMass2.size());
 }
 
 }

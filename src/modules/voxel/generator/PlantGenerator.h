@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "voxel/polyvox/Mesh.h"
@@ -87,8 +91,7 @@ public:
 					if (distance > circleRadius) {
 						continue;
 					}
-					const glm::ivec3 pos(planePos.x + x, planePos.y, planePos.z + z);
-					volume.setVoxel(pos, voxel);
+					volume.setVoxel({planePos.x + x, planePos.y, planePos.z + z}, voxel);
 				}
 			}
 		}
