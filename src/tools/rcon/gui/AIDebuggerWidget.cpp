@@ -29,7 +29,7 @@ namespace ai {
 namespace debug {
 
 AIDebuggerWidget::AIDebuggerWidget(AIDebugger& debugger, AINodeStaticResolver& resolver, bool standalone) :
-		QWidget(), _resolver(resolver), _model(debugger, resolver), _debugger(debugger), _proxy(this), _standalone(standalone) {
+		_resolver(resolver), _model(debugger, resolver), _debugger(debugger), _proxy(this), _standalone(standalone) {
 	createView();
 	createActions();
 
@@ -110,8 +110,9 @@ void AIDebuggerWidget::onNamesReceived() {
 	}
 	const int index = _namesComboBox->findText(name);
 	if (index == -1) {
-		if (!names.empty())
+		if (!names.empty()) {
 			_namesComboBox->setCurrentIndex(0);
+		}
 		return;
 	}
 

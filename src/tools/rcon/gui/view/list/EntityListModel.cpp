@@ -18,8 +18,9 @@ EntityListModel::~EntityListModel() {
 QModelIndex EntityListModel::characterIndex(CharacterId id) const {
 	int row = 0;
 	for (const AIStateWorld& state : _list) {
-		if (state.getId() == id)
+		if (state.getId() == id) {
 			return createIndex(row, 0);
+		}
 		++row;
 	}
 	qDebug() << "Could not find entity " << id << " in the model";
@@ -42,14 +43,17 @@ int EntityListModel::columnCount(const QModelIndex & /*parent*/) const {
 }
 
 QVariant EntityListModel::headerData(int section, Qt::Orientation orientation, int role) const {
-	if (orientation != Qt::Horizontal)
+	if (orientation != Qt::Horizontal) {
 		return QVariant();
-	if (section != 0)
+	}
+	if (section != 0) {
 		return QVariant();
+	}
 
 	if (role == Qt::DisplayRole) {
 		return tr("Entities");
-	} else if (role == Qt::ToolTipRole) {
+	}
+	if (role == Qt::ToolTipRole) {
 		return tr("The character id");
 	}
 	return QVariant();

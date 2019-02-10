@@ -47,7 +47,7 @@ IComboBox::IComboBox(const QString& title, const QString& detailImageSubdir, int
 		QWidget(objParent), _proxy(&_comboBox), _detailsClickFilter(&_details, this),
 		_flags(flags), _detailImageSubdir(detailImageSubdir) {
 	setLayout(&_vLayout);
-	if (_flags & COMBOBOX_DETAILS) {
+	if ((_flags & COMBOBOX_DETAILS) != 0) {
 		connect(&_comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeDetails()));
 		_vLayout.addWidget(&_details);
 		_details.installEventFilter(&_detailsClickFilter);
@@ -67,7 +67,7 @@ IComboBox::IComboBox(const QString& title, const QString& detailImageSubdir, int
 	_comboBox.setModel(&_proxy);
 	_refresh = new QPushButton(QIcon(":/images/refresh.png"), "");
 	_refresh->setToolTip(title);
-	if (!(_flags & COMBOBOX_NO_REFRESH)) {
+	if ((_flags & COMBOBOX_NO_REFRESH) == 0) {
 		connect(_refresh, SIGNAL(clicked()), this, SLOT(onRefresh()));
 		_hLayout.addWidget(_refresh);
 	}
@@ -107,8 +107,9 @@ void IComboBox::onRefresh() {
 }
 
 void IComboBox::onChangeDetails() {
-	if (_detailImageSubdir.isEmpty())
+	if (_detailImageSubdir.isEmpty()) {
 		return;
+	}
 	const int id = getId();
 	const QString& imagePath(_detailImageSubdir + QDir::separator() + id + ".png");
 	const QPixmap pixmap(imagePath);
@@ -116,8 +117,9 @@ void IComboBox::onChangeDetails() {
 }
 
 int IComboBox::getId() const {
-	if (_comboBox.count() == 0 || _comboBox.currentIndex() == -1)
+	if (_comboBox.count() == 0 || _comboBox.currentIndex() == -1) {
 		return -1;
+	}
 	const int id = _comboBox.itemData(_comboBox.currentIndex()).toString().toInt();
 	return id;
 }

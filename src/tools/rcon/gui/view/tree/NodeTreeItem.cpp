@@ -35,7 +35,7 @@ NodeTreeItem::~NodeTreeItem () {
 }
 
 void NodeTreeItem::init() {
-	setOffset(QPointF(100.0f, fullSize().height() / 2.0f - _height));
+	setOffset(QPointF(100.0F, fullSize().height() / 2.0F - _height));
 }
 
 void NodeTreeItem::setOffset (const QPointF& offset) {
@@ -47,11 +47,11 @@ void NodeTreeItem::setOffset (const QPointF& offset) {
 		setPos(_parent->pos() + _offset);
 	}
 
-	float yOffset = 0.0f;
+	float yOffset = 0.0F;
 	foreach (NodeTreeItem* node, _children) {
-		const float halfHeight = node->fullSize().height() / 2.0f;
+		const float halfHeight = node->fullSize().height() / 2.0F;
 		yOffset += halfHeight;
-		float heightOffset = -_size.height() / 2.0f + yOffset;
+		float heightOffset = -_size.height() / 2.0F + yOffset;
 		yOffset += halfHeight + _verticalSpacing;
 		const QPointF offsetF(_width + _horizontalSpacing, heightOffset);
 		node->setOffset(offsetF);
@@ -63,10 +63,11 @@ QRectF NodeTreeItem::boundingRect () const {
 }
 
 QRectF NodeTreeItem::fullSize() {
-	if (!_size.isEmpty())
+	if (!_size.isEmpty()) {
 		return _size;
+	}
 
-	_size = QRectF(0.0f, 0.0f, _width + _horizontalSpacing, _height + _verticalSpacing);
+	_size = QRectF(0.0F, 0.0F, _width + _horizontalSpacing, _height + _verticalSpacing);
 
 	if (_children.empty()) {
 		return _size;
@@ -75,11 +76,11 @@ QRectF NodeTreeItem::fullSize() {
 	QRectF total;
 	foreach (NodeTreeItem* node, _children) {
 		QRectF childDimension = node->fullSize();
-		childDimension.translate(node->_width + _horizontalSpacing, total.height() + childDimension.height() / 2.0f);
+		childDimension.translate(node->_width + _horizontalSpacing, total.height() + childDimension.height() / 2.0F);
 		total |= childDimension;
 	}
 
-	total.moveTo(total.x(), _size.center().y() - total.height() / 2.0f);
+	total.moveTo(total.x(), _size.center().y() - total.height() / 2.0F);
 
 	_size |= total;
 
@@ -97,20 +98,21 @@ void NodeTreeItem::paint (QPainter *painter, const QStyleOptionGraphicsItem *opt
 	Q_UNUSED(option);
 	Q_UNUSED(widget);
 	//painter->setClipRect(option->exposedRect);
-	const qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
+	const qreal lod = QStyleOptionGraphicsItem::levelOfDetailFromTransform(painter->worldTransform());
 	const bool running = _node.isRunning();
 	QBrush b = painter->brush();
-	if (running)
+	if (running) {
 		painter->setBrush(runningBackgroundColor);
-	else
+	} else {
 		painter->setBrush(backgroundColor);
-	painter->drawRect(0.0f, 0.0f, _width, _height);
+	}
+	painter->drawRect(0.0F, 0.0F, _width, _height);
 
 	if (!_children.empty()) {
 		// location of the vertical line
-		const float seperatorX = _width + _horizontalSpacing / 2.0f;
+		const float seperatorX = _width + _horizontalSpacing / 2.0F;
 		// draw the (right) vertical line for connecting the parent with the separator vertical line
-		painter->drawLine(_width, _height / 2.0f, seperatorX, _height / 2.0f);
+		painter->drawLine(_width, _height / 2.0F, seperatorX, _height / 2.0F);
 		foreach (NodeTreeItem* child, _children) {
 			const QPointF& childPos = getChildPos(child);
 			// draw the (left) vertical line for connecting the separator with the children's left side
@@ -126,8 +128,9 @@ void NodeTreeItem::paint (QPainter *painter, const QStyleOptionGraphicsItem *opt
 
 	painter->setBrush(b);
 
-	if (lod < 0.4)
+	if (lod < 0.4) {
 		return;
+	}
 
 	painter->setFont(font);
 	painter->save();
@@ -143,10 +146,11 @@ void NodeTreeItem::paint (QPainter *painter, const QStyleOptionGraphicsItem *opt
 	rect.setY(rect.y() + _lineHeight);
 	painter->drawText(rect, _condition);
 	int seconds;
-	if (lastRun == -1)
+	if (lastRun == -1) {
 		seconds = 255;
-	else
+	} else {
 		seconds = lastRun / 1000;
+	}
 	QColor activityColor(std::max(0, 255 - seconds), 0, 0, 255);
 	painter->setBrush(activityColor);
 	painter->drawEllipse(center, radius, radius);

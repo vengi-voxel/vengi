@@ -54,7 +54,7 @@ void AIApplication::init() {
 
 	const QList<QString>& args = QCoreApplication::arguments();
 	if (args.size() == 3) {
-		const QString hostname = args.at(1);
+		const QString& hostname = args.at(1);
 		const short port = args.at(2).toShort();
 		qDebug() << "connect to " << hostname << " on port " << port;
 		_widget->connectToAIServer(hostname, port);

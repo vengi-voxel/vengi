@@ -52,7 +52,7 @@ NodeTreeItem* NodeTreeView::buildTreeItems(const AIStateNode& node, NodeTreeItem
 	return thisNode;
 }
 
-void NodeTreeView::scalingTime(qreal) {
+void NodeTreeView::scalingTime(qreal /*unused*/) {
 	const qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
 	scale(factor, factor);
 }

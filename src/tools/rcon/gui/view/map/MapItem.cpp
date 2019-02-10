@@ -15,7 +15,7 @@ namespace ai {
 namespace debug {
 
 namespace {
-const float OrientationScale = 2.0f;
+const float OrientationScale = 2.0F;
 }
 
 MapItem::MapItem(QGraphicsItem* parent, const AIStateWorld& state, AIDebugger& aiDebugger) :

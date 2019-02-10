@@ -35,7 +35,7 @@ private:
 	QString _editedCondition;
 
 public:
-	BehaviourTreeModelItem(AIStateNode* node, AINodeStaticResolver& resolver, BehaviourTreeModelItem* parent = nullptr);
+	BehaviourTreeModelItem(AIStateNode* stateNodePtr, AINodeStaticResolver& resolver, BehaviourTreeModelItem* modelItem = nullptr);
 	virtual ~BehaviourTreeModelItem();
 
 	void setData(int column, const QVariant& data);

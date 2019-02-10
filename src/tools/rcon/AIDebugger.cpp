@@ -35,7 +35,7 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void execute(const ClientId&, const AIStateMessage* msg) override {
+	void execute(const ClientId& /*clientId*/, const AIStateMessage* msg) override {
 		_aiDebugger.setEntities(msg->getStates());
 		emit _aiDebugger.onEntitiesUpdated();
 	}
@@ -49,7 +49,7 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void execute(const ClientId&, const AICharacterDetailsMessage* msg) override {
+	void execute(const ClientId& /*clientId*/, const AICharacterDetailsMessage* msg) override {
 		_aiDebugger.setCharacterDetails(msg->getCharacterId(), msg->getAggro(), msg->getNode());
 		emit _aiDebugger.onSelected();
 	}
@@ -63,7 +63,7 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void execute(const ClientId&, const AICharacterStaticMessage* msg) override {
+	void execute(const ClientId& /*clientId*/, const AICharacterStaticMessage* msg) override {
 		_aiDebugger.addCharacterStaticData(*msg);
 		emit _aiDebugger.onSelected();
 	}
@@ -77,7 +77,7 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void execute(const ClientId&, const AINamesMessage* msg) override {
+	void execute(const ClientId& /*clientId*/, const AINamesMessage* msg) override {
 		_aiDebugger.setNames(msg->getNames());
 		emit _aiDebugger.onNamesReceived();
 	}
@@ -91,7 +91,7 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void execute(const ClientId&, const AIPauseMessage* msg) override {
+	void execute(const ClientId& /*clientId*/, const AIPauseMessage* msg) override {
 		const bool pause = msg->isPause();
 		_aiDebugger._pause = pause;
 		emit _aiDebugger.onPause(pause);
@@ -99,7 +99,7 @@ public:
 };
 
 AIDebugger::AIDebugger(AINodeStaticResolver& resolver) :
-		QObject(), _stateHandler(new StateHandler(*this)), _characterHandler(new CharacterHandler(*this)), _characterStaticHandler(
+		_stateHandler(new StateHandler(*this)), _characterHandler(new CharacterHandler(*this)), _characterStaticHandler(
 				new CharacterStaticHandler(*this)), _pauseHandler(new PauseHandler(*this)), _namesHandler(new NamesHandler(*this)), _nopHandler(
 				new NopHandler()), _selectedId(AI_NOTHING_SELECTED), _socket(this), _pause(false), _resolver(resolver) {
 	connect(&_socket, SIGNAL(readyRead()), SLOT(readTcpData()));
@@ -129,8 +129,8 @@ bool AIDebugger::isSelected(const ai::AIStateWorld& ai) const {
 
 void AIDebugger::setCharacterDetails(const CharacterId& id, const AIStateAggro& aggro, const AIStateNode& node) {
 	_selectedId = id;
-	_aggro = std::move(aggro.getAggro());
-	_node = std::move(node);
+	_aggro = aggro.getAggro();
+	_node = node;
 	_attributes.clear();
 	const AIStateWorld& state = _entities.value(id);
 	const CharacterAttributes& attributes = state.getAttributes();
@@ -294,18 +294,19 @@ void AIDebugger::readTcpData() {
 		}
 		ai::ProtocolMessageFactory& mf = ai::ProtocolMessageFactory::get();
 		for (;;) {
-			if (!mf.isNewMessageAvailable(_stream))
+			if (!mf.isNewMessageAvailable(_stream)) {
 				break;
+			}
 			// don't free this - preallocated memory that is reused
 			ai::IProtocolMessage* msg = mf.create(_stream);
-			if (!msg) {
+			if (msg == nullptr) {
 				qDebug() << "unknown server message - disconnecting";
 				disconnectFromAIServer();
 				break;
 			}
 			ai::ProtocolHandlerRegistry& r = ai::ProtocolHandlerRegistry::get();
 			ai::IProtocolHandler* handler = r.getHandler(*msg);
-			if (handler) {
+			if (handler != nullptr) {
 				handler->execute(1, *msg);
 			} else {
 				qDebug() << "no handler for " << msg->getId();

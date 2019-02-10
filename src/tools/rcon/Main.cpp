@@ -16,5 +16,5 @@ int main(int argc, char **argv) {
 
 	rcon::RconAIApplication app(argc, argv);
 	app.init();
-	return app.exec();
+	return rcon::RconAIApplication::exec();
 }

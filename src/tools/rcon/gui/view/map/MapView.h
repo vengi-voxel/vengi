@@ -37,7 +37,7 @@ public:
 	MapView(AIDebugger& debugger);
 	virtual ~MapView();
 
-	virtual void wheelEvent(QWheelEvent * event) override;
+	virtual void wheelEvent(QWheelEvent * wheelEventPtr) override;
 
 	virtual void updateMapView();
 	virtual bool center(CharacterId id);

@@ -18,7 +18,7 @@ IDialog::IDialog(const QString &title, int flags) :
 }
 
 IDialog::~IDialog() {
-	if (!(_flags & DIALOG_NO_APPLY_BUTTON)) {
+	if ((_flags & DIALOG_NO_APPLY_BUTTON) == 0) {
 		delete _applyButton;
 	}
 	delete _closeButton;
@@ -46,7 +46,7 @@ int IDialog::run() {
 }
 
 void IDialog::addButtons(QBoxLayout& boxLayout) {
-	if (!(_flags & DIALOG_NO_APPLY_BUTTON)) {
+	if ((_flags & DIALOG_NO_APPLY_BUTTON) == 0) {
 		_applyButton = new QPushButton(tr("Apply"));
 		connect(_applyButton, SIGNAL(clicked()), this, SLOT(apply()));
 		boxLayout.addWidget(_applyButton);

@@ -17,7 +17,7 @@ private:
 	const AIDebugger& _debugger;
 	QTableView* _parent;
 public:
-	AggroTableModel(const AIDebugger& debugger, QTableView *parent);
+	AggroTableModel(const AIDebugger& debugger, QTableView *tableView);
 	~AggroTableModel();
 
 	inline const AIDebugger::Entities& getEntities() const {

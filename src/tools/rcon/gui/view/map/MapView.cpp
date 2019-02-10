@@ -10,7 +10,7 @@ namespace ai {
 namespace debug {
 
 MapView::MapView(AIDebugger& debugger) :
-		QGraphicsView(), _debugger(debugger) {
+		_debugger(debugger) {
 	_scene.setItemIndexMethod(QGraphicsScene::NoIndex);
 	setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 	setCacheMode(QGraphicsView::CacheBackground);
@@ -24,7 +24,7 @@ MapView::~MapView() {
 	_scene.clear();
 }
 
-void MapView::scalingTime(qreal) {
+void MapView::scalingTime(qreal /*unused*/) {
 	const qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
 	scale(factor, factor);
 }

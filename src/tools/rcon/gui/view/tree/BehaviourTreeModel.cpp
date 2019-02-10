@@ -47,7 +47,7 @@ QModelIndex BehaviourTreeModel::index(int row, int column, const QModelIndex &pa
 	}
 
 	BehaviourTreeModelItem *childItem = parentItem->child(row);
-	if (childItem) {
+	if (childItem != nullptr) {
 		return createIndex(row, column, childItem);
 	}
 	return QModelIndex();
@@ -69,16 +69,19 @@ QModelIndex BehaviourTreeModel::parent(const QModelIndex &mdlIndex) const {
 
 int BehaviourTreeModel::rowCount(const QModelIndex &parentIndex) const {
 	BehaviourTreeModelItem *parentItem;
-	if (parentIndex.column() > 0)
+	if (parentIndex.column() > 0) {
 		return 0;
+	}
 
-	if (!parentIndex.isValid())
+	if (!parentIndex.isValid()) {
 		parentItem = _rootItem;
-	else
+	} else {
 		parentItem = item(parentIndex);
+	}
 
-	if (parentItem == nullptr)
+	if (parentItem == nullptr) {
 		return 0;
+	}
 
 	return parentItem->childCount();
 }
@@ -119,7 +122,7 @@ QVariant BehaviourTreeModel::data(const QModelIndex &mdlIndex, int role) const {
 	if (role == Qt::DisplayRole || role == Qt::EditRole) {
 		return nodeItem->data(mdlIndex.column());
 	}
-	else if (role == Qt::ToolTipRole) {
+	if (role == Qt::ToolTipRole) {
 		return nodeItem->tooltip(mdlIndex.column());
 	}
 	return QVariant();
@@ -171,7 +174,7 @@ bool BehaviourTreeModel::setRootNode(AIStateNode* node) {
 		return false;
 	}
 	beginResetModel();
-	if (_rootItem) {
+	if (_rootItem != nullptr) {
 		delete _rootItem;
 		_rootItem = nullptr;
 	}

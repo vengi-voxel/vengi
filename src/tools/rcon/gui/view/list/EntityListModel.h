@@ -19,7 +19,7 @@ private:
 	QTableView* _parent;
 	QList<AIStateWorld> _list;
 public:
-	EntityListModel(AIDebugger& debugger, QTableView *parent);
+	EntityListModel(AIDebugger& debugger, QTableView *tableView);
 	~EntityListModel();
 
 	inline const QList<AIStateWorld>& getEntities() const {

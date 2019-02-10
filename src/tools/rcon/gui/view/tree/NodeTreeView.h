@@ -36,7 +36,7 @@ public:
 	NodeTreeView(AIDebugger& debugger, AINodeStaticResolver& resolver, QWidget* parent = nullptr);
 	virtual ~NodeTreeView();
 
-	void wheelEvent(QWheelEvent * event) override;
+	void wheelEvent(QWheelEvent * wheelEventPtr) override;
 
 	void updateTreeWidget();
 };

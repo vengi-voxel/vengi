@@ -9,7 +9,7 @@ namespace ai {
 namespace debug {
 
 EntityList::EntityList(AIDebugger& debugger, QLineEdit* entityFilter) :
-		QTableView(), _model(debugger, this), _debugger(debugger), _entityFilter(entityFilter) {
+		_model(debugger, this), _debugger(debugger), _entityFilter(entityFilter) {
 	setFixedWidth(200);
 	_proxyModel.setSourceModel(&_model);
 	setModel(&_proxyModel);

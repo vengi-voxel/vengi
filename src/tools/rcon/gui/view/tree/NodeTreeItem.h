@@ -37,10 +37,10 @@ protected:
 	inline QPointF getChildPos (NodeTreeItem* child) const;
 	void setOffset(const QPointF& offset);
 	QRectF boundingRect() const override;
-	void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
+	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 public:
-	NodeTreeItem (QGraphicsItem* parentItem, const AIStateNode& node, const AIStateNodeStatic& staticNodeData, NodeTreeItem* parent, int height, int horizontalSpacing, int verticalSpacing);
+	NodeTreeItem (QGraphicsItem* parentGraphicsItem, const AIStateNode& node, const AIStateNodeStatic& staticNodeData, NodeTreeItem* parent, int height, int horizontalSpacing, int verticalSpacing);
 	virtual ~NodeTreeItem ();
 
 	void init();

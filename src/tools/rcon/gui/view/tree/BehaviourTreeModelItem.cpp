@@ -115,21 +115,25 @@ QVariant BehaviourTreeModelItem::headerData(int column) const {
 QVariant BehaviourTreeModelItem::data(int column) const {
 	switch (column) {
 	case COL_NAME:
-		if (!_editedName.isEmpty())
+		if (!_editedName.isEmpty()) {
 			return _editedName;
+		}
 		return QString::fromStdString(_staticNodeData.getName());
 	case COL_TYPE:
-		if (!_editedType.isEmpty())
+		if (!_editedType.isEmpty()) {
 			return _editedType;
+		}
 		return QString::fromStdString(_staticNodeData.getType());
 	case COL_CONDITION:
-		if (!_editedCondition.isEmpty())
+		if (!_editedCondition.isEmpty()) {
 			return _editedCondition;
+		}
 		return QString::fromStdString(_node->getCondition());
 	case COL_STATE: {
 		const TreeNodeStatus status = _node->getStatus();
-		if (status >= UNKNOWN && status < MAX_TREENODESTATUS)
+		if (status >= UNKNOWN && status < MAX_TREENODESTATUS) {
 			return stateNames[status];
+		}
 		return stateNames[UNKNOWN];
 	}
 	case COL_LASTRUN:
