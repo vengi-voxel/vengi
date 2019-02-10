@@ -1,4 +1,0 @@
----
-Checks:          'clang-diagnostic-*,clang-analyzer-*,modernizer*,-clang-analyzer-alpha*'
-...
-
