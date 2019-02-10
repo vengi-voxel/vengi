@@ -3,59 +3,59 @@
 // == AdvancedItemWidget ======================================================
 
 AdvancedItemWidget::AdvancedItemWidget(AdvancedItem *item, AdvancedItemSource *source,
-										TBSelectItemViewer *source_viewer, int index)
+										TBSelectItemViewer *sourceViewer, int index)
 	: m_source(source)
-	, m_source_viewer(source_viewer)
+	, m_source_viewer(sourceViewer)
 	, m_index(index)
 {
-	SetSkinBg(TBIDC("TBSelectItem"));
-	SetLayoutDistribution(LAYOUT_DISTRIBUTION_GRAVITY);
-	SetLayoutDistributionPosition(LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
-	SetPaintOverflowFadeout(false);
+	setSkinBg(TBIDC("TBSelectItem"));
+	setLayoutDistribution(LAYOUT_DISTRIBUTION_GRAVITY);
+	setLayoutDistributionPosition(LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
+	setPaintOverflowFadeout(false);
 
-	g_widgets_reader->LoadFile(GetContentRoot(), "demo01/ui_resources/test_list_item.tb.txt");
-	TBCheckBox *checkbox = GetWidgetByIDAndType<TBCheckBox>(TBIDC("check"));
-	TBTextField *name = GetWidgetByIDAndType<TBTextField>(TBIDC("name"));
-	TBTextField *info = GetWidgetByIDAndType<TBTextField>(TBIDC("info"));
-	checkbox->SetValue(item->GetChecked() ? true : false);
-	name->SetText(item->str);
-	info->SetText(item->GetMale() ? "Male" : "Female");
+	g_widgets_reader->loadFile(getContentRoot(), "demo01/ui_resources/test_list_item.tb.txt");
+	TBCheckBox *checkbox = getWidgetByIDAndType<TBCheckBox>(TBIDC("check"));
+	TBTextField *name = getWidgetByIDAndType<TBTextField>(TBIDC("name"));
+	TBTextField *info = getWidgetByIDAndType<TBTextField>(TBIDC("info"));
+	checkbox->setValue(item->getChecked() ? true : false);
+	name->setText(item->str);
+	info->setText(item->getMale() ? "Male" : "Female");
 }
 
-bool AdvancedItemWidget::OnEvent(const TBWidgetEvent &ev)
+bool AdvancedItemWidget::onEvent(const TBWidgetEvent &ev)
 {
-	if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("check"))
+	if (ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("check"))
 	{
-		AdvancedItem *item = m_source->GetItem(m_index);
-		item->SetChecked(ev.target->GetValue() ? true : false);
+		AdvancedItem *item = m_source->getItem(m_index);
+		item->setChecked(ev.target->getValue() ? true : false);
 
-		m_source->InvokeItemChanged(m_index, m_source_viewer);
+		m_source->invokeItemChanged(m_index, m_source_viewer);
 		return true;
 	}
-	else if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("delete"))
+	else if (ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("delete"))
 	{
-		m_source->DeleteItem(m_index);
+		m_source->deleteItem(m_index);
 		return true;
 	}
-	return TBLayout::OnEvent(ev);
+	return TBLayout::onEvent(ev);
 }
 
 // == AdvancedItemSource ======================================================
 
-bool AdvancedItemSource::Filter(int index, const char *filter)
+bool AdvancedItemSource::filter(int index, const char *filter)
 {
 	// Override this method so we can return hits for our extra data too.
 
-	if (TBSelectItemSource::Filter(index, filter))
+	if (TBSelectItemSource::filter(index, filter))
 		return true;
 
-	AdvancedItem *item = GetItem(index);
-	return stristr(item->GetMale() ? "Male" : "Female", filter) ? true : false;
+	AdvancedItem *item = getItem(index);
+	return stristr(item->getMale() ? "Male" : "Female", filter) ? true : false;
 }
 
-TBWidget *AdvancedItemSource::CreateItemWidget(int index, TBSelectItemViewer *viewer)
+TBWidget *AdvancedItemSource::createItemWidget(int index, TBSelectItemViewer *viewer)
 {
-	if (TBLayout *layout = new AdvancedItemWidget(GetItem(index), this, viewer, index))
+	if (TBLayout *layout = new AdvancedItemWidget(getItem(index), this, viewer, index))
 		return layout;
 	return nullptr;
 }
@@ -64,23 +64,23 @@ TBWidget *AdvancedItemSource::CreateItemWidget(int index, TBSelectItemViewer *vi
 
 ListWindow::ListWindow(TBWidget *root, TBSelectItemSource *source) : DemoWindow(root)
 {
-	LoadResourceFile("demo01/ui_resources/test_select.tb.txt");
-	if (TBSelectList *select = GetWidgetByIDAndType<TBSelectList>("list"))
+	loadResourceFile("demo01/ui_resources/test_select.tb.txt");
+	if (TBSelectList *select = getWidgetByIDAndType<TBSelectList>("list"))
 	{
-		select->SetSource(source);
-		select->GetScrollContainer()->SetScrollMode(SCROLL_MODE_Y_AUTO);
+		select->setSource(source);
+		select->getScrollContainer()->setScrollMode(SCROLL_MODE_Y_AUTO);
 	}
 }
 
-bool ListWindow::OnEvent(const TBWidgetEvent &ev)
+bool ListWindow::onEvent(const TBWidgetEvent &ev)
 {
-	if (ev.type == EVENT_TYPE_CHANGED && ev.target->GetID() == TBIDC("filter"))
+	if (ev.type == EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC("filter"))
 	{
-		if (TBSelectList *select = GetWidgetByIDAndType<TBSelectList>("list"))
-			select->SetFilter(ev.target->GetText());
+		if (TBSelectList *select = getWidgetByIDAndType<TBSelectList>("list"))
+			select->setFilter(ev.target->getText());
 		return true;
 	}
-	return DemoWindow::OnEvent(ev);
+	return DemoWindow::onEvent(ev);
 }
 
 // == AdvancedListWindow ==============================================================
@@ -89,33 +89,33 @@ AdvancedListWindow::AdvancedListWindow(TBWidget *root, AdvancedItemSource *sourc
 	: DemoWindow(root)
 	, m_source(source)
 {
-	LoadResourceFile("demo01/ui_resources/test_select_advanced.tb.txt");
-	if (TBSelectList *select = GetWidgetByIDAndType<TBSelectList>("list"))
+	loadResourceFile("demo01/ui_resources/test_select_advanced.tb.txt");
+	if (TBSelectList *select = getWidgetByIDAndType<TBSelectList>("list"))
 	{
-		select->SetSource(source);
-		select->GetScrollContainer()->SetScrollMode(SCROLL_MODE_X_AUTO_Y_AUTO);
+		select->setSource(source);
+		select->getScrollContainer()->setScrollMode(SCROLL_MODE_X_AUTO_Y_AUTO);
 	}
 }
 
-bool AdvancedListWindow::OnEvent(const TBWidgetEvent &ev)
+bool AdvancedListWindow::onEvent(const TBWidgetEvent &ev)
 {
-	TBSelectList *select = GetWidgetByIDAndType<TBSelectList>("list");
-	if (select && ev.type == EVENT_TYPE_CHANGED && ev.target->GetID() == TBIDC("filter"))
+	TBSelectList *select = getWidgetByIDAndType<TBSelectList>("list");
+	if (select && ev.type == EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC("filter"))
 	{
-		select->SetFilter(ev.target->GetText());
+		select->setFilter(ev.target->getText());
 		return true;
 	}
-	else if (select && ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("add"))
+	else if (select && ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("add"))
 	{
-		TBStr name = GetTextByID(TBIDC("add_name"));
-		if (!name.IsEmpty())
-			m_source->AddItem(new AdvancedItem(name, TBIDC("boy_item"), true));
+		TBStr name = getTextByID(TBIDC("add_name"));
+		if (!name.isEmpty())
+			m_source->addItem(new AdvancedItem(name, TBIDC("boy_item"), true));
 		return true;
 	}
-	else if (select && ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("delete all"))
+	else if (select && ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("delete all"))
 	{
-		m_source->DeleteAllItems();
+		m_source->deleteAllItems();
 		return true;
 	}
-	return DemoWindow::OnEvent(ev);
+	return DemoWindow::onEvent(ev);
 }

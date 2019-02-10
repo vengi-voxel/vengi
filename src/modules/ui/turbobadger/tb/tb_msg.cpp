@@ -14,8 +14,8 @@ TBLinkListOf<TBMessageLink> g_all_delayed_messages;
 /** List of all nondelayed messages. */
 TBLinkListOf<TBMessageLink> g_all_normal_messages;
 
-TBMessage::TBMessage(TBID message, TBMessageData *data, double fire_time_ms, TBMessageHandler *mh)
-	: message(message), data(data), fire_time_ms(fire_time_ms), mh(mh)
+TBMessage::TBMessage(TBID message, TBMessageData *data, double fireTimeMs, TBMessageHandler *mh)
+	: message(message), data(data), fire_time_ms(fireTimeMs), mh(mh)
 {
 }
 
@@ -30,17 +30,17 @@ TBMessageHandler::TBMessageHandler()
 
 TBMessageHandler::~TBMessageHandler()
 {
-	DeleteAllMessages();
+	deleteAllMessages();
 }
 
-bool TBMessageHandler::PostMessageDelayed(TBID message, TBMessageData *data, uint32_t delay_in_ms)
+bool TBMessageHandler::postMessageDelayed(TBID message, TBMessageData *data, uint32_t delayInMs)
 {
-	return PostMessageOnTime(message, data, TBSystem::GetTimeMS() + (double)delay_in_ms);
+	return postMessageOnTime(message, data, TBSystem::getTimeMS() + (double)delayInMs);
 }
 
-bool TBMessageHandler::PostMessageOnTime(TBID message, TBMessageData *data, double fire_time)
+bool TBMessageHandler::postMessageOnTime(TBID message, TBMessageData *data, double fireTime)
 {
-	if (TBMessage *msg = new TBMessage(message, data, fire_time, this))
+	if (TBMessage *msg = new TBMessage(message, data, fireTime, this))
 	{
 		// Find the message that is already in the list that should fire later, so we can
 		// insert msg just before that. (Always keep the list ordered after fire time)
@@ -50,7 +50,7 @@ bool TBMessageHandler::PostMessageOnTime(TBID message, TBMessageData *data, doub
 		// after the message being processed!
 
 		TBMessage *later_msg = nullptr;
-		TBMessageLink *link = g_all_delayed_messages.GetFirst();
+		TBMessageLink *link = g_all_delayed_messages.getFirst();
 		while (link)
 		{
 			TBMessage *msg_in_list = static_cast<TBMessage*>(link);
@@ -59,64 +59,64 @@ bool TBMessageHandler::PostMessageOnTime(TBID message, TBMessageData *data, doub
 				later_msg = msg_in_list;
 				break;
 			}
-			link = link->GetNext();
+			link = link->getNext();
 		}
 
 		// Add it to the global list in the right order.
 		if (later_msg)
-			g_all_delayed_messages.AddBefore(msg, later_msg);
+			g_all_delayed_messages.addBefore(msg, later_msg);
 		else
-			g_all_delayed_messages.AddLast(msg);
+			g_all_delayed_messages.addLast(msg);
 
 		// Add it to the list in messagehandler.
-		m_messages.AddLast(msg);
+		m_messages.addLast(msg);
 
 		// If we added it first and there's no normal messages, the next fire time has
 		// changed and we have to reschedule the timer.
-		if (!g_all_normal_messages.GetFirst() && g_all_delayed_messages.GetFirst() == msg)
-			TBSystem::RescheduleTimer(msg->fire_time_ms);
+		if (!g_all_normal_messages.getFirst() && g_all_delayed_messages.getFirst() == msg)
+			TBSystem::rescheduleTimer(msg->fire_time_ms);
 		return true;
 	}
 	return false;
 }
 
-bool TBMessageHandler::PostMessage(TBID message, TBMessageData *data)
+bool TBMessageHandler::postMessage(TBID message, TBMessageData *data)
 {
 	if (TBMessage *msg = new TBMessage(message, data, 0, this))
 	{
-		g_all_normal_messages.AddLast(msg);
-		m_messages.AddLast(msg);
+		g_all_normal_messages.addLast(msg);
+		m_messages.addLast(msg);
 
 		// If we added it and there was no messages, the next fire time has
 		// changed and we have to reschedule the timer.
-		if (g_all_normal_messages.GetFirst() == msg)
-			TBSystem::RescheduleTimer(0);
+		if (g_all_normal_messages.getFirst() == msg)
+			TBSystem::rescheduleTimer(0);
 		return true;
 	}
 	return false;
 }
 
-TBMessage *TBMessageHandler::GetMessageByID(TBID message)
+TBMessage *TBMessageHandler::getMessageByID(TBID message)
 {
-	TBLinkListOf<TBMessage>::Iterator iter = m_messages.IterateForward();
-	while (TBMessage *msg = iter.GetAndStep())
+	TBLinkListOf<TBMessage>::Iterator iter = m_messages.iterateForward();
+	while (TBMessage *msg = iter.getAndStep())
 		if (msg->message == message)
 			return msg;
 	return nullptr;
 }
 
-void TBMessageHandler::DeleteMessage(TBMessage *msg)
+void TBMessageHandler::deleteMessage(TBMessage *msg)
 {
 	core_assert(msg->mh == this); // This is not the message handler owning the message!
 
 	// Remove from global list (g_all_delayed_messages or g_all_normal_messages)
-	if (g_all_delayed_messages.ContainsLink(msg))
-		g_all_delayed_messages.Remove(msg);
-	else if (g_all_normal_messages.ContainsLink(msg))
-		g_all_normal_messages.Remove(msg);
+	if (g_all_delayed_messages.containsLink(msg))
+		g_all_delayed_messages.remove(msg);
+	else if (g_all_normal_messages.containsLink(msg))
+		g_all_normal_messages.remove(msg);
 
 	// Remove from local list
-	m_messages.Remove(msg);
+	m_messages.remove(msg);
 
 	delete msg;
 
@@ -124,27 +124,27 @@ void TBMessageHandler::DeleteMessage(TBMessage *msg)
 	// this message changed the time for the next message.
 }
 
-void TBMessageHandler::DeleteAllMessages()
+void TBMessageHandler::deleteAllMessages()
 {
-	while (TBMessage *msg = m_messages.GetFirst())
-		DeleteMessage(msg);
+	while (TBMessage *msg = m_messages.getFirst())
+		deleteMessage(msg);
 }
 
 //static
-void TBMessageHandler::ProcessMessages()
+void TBMessageHandler::processMessages()
 {
 	// Handle delayed messages
-	TBLinkListOf<TBMessageLink>::Iterator iter = g_all_delayed_messages.IterateForward();
-	while (TBMessage *msg = static_cast<TBMessage*>(iter.GetAndStep()))
+	TBLinkListOf<TBMessageLink>::Iterator iter = g_all_delayed_messages.iterateForward();
+	while (TBMessage *msg = static_cast<TBMessage*>(iter.getAndStep()))
 	{
-		if (TBSystem::GetTimeMS() >= msg->fire_time_ms)
+		if (TBSystem::getTimeMS() >= msg->fire_time_ms)
 		{
 			// Remove from global list
-			g_all_delayed_messages.Remove(msg);
+			g_all_delayed_messages.remove(msg);
 			// Remove from local list
-			msg->mh->m_messages.Remove(msg);
+			msg->mh->m_messages.remove(msg);
 
-			msg->mh->OnMessageReceived(msg);
+			msg->mh->onMessageReceived(msg);
 
 			delete msg;
 		}
@@ -153,29 +153,29 @@ void TBMessageHandler::ProcessMessages()
 	}
 
 	// Handle normal messages
-	iter = g_all_normal_messages.IterateForward();
-	while (TBMessage *msg = static_cast<TBMessage*>(iter.GetAndStep()))
+	iter = g_all_normal_messages.iterateForward();
+	while (TBMessage *msg = static_cast<TBMessage*>(iter.getAndStep()))
 	{
 		// Remove from global list
-		g_all_normal_messages.Remove(msg);
+		g_all_normal_messages.remove(msg);
 		// Remove from local list
-		msg->mh->m_messages.Remove(msg);
+		msg->mh->m_messages.remove(msg);
 
-		msg->mh->OnMessageReceived(msg);
+		msg->mh->onMessageReceived(msg);
 
 		delete msg;
 	}
 }
 
 //static
-double TBMessageHandler::GetNextMessageFireTime()
+double TBMessageHandler::getNextMessageFireTime()
 {
-	if (g_all_normal_messages.GetFirst())
+	if (g_all_normal_messages.getFirst())
 		return 0;
 
-	if (g_all_delayed_messages.GetFirst())
+	if (g_all_delayed_messages.getFirst())
 	{
-		TBMessage *first_delayed_msg = static_cast<TBMessage*>(g_all_delayed_messages.GetFirst());
+		TBMessage *first_delayed_msg = static_cast<TBMessage*>(g_all_delayed_messages.getFirst());
 		return first_delayed_msg->fire_time_ms;
 	}
 

@@ -14,7 +14,7 @@ class TBWidgetFactory;
 class TBWidget;
 class TBNode;
 
-/** INFLATE_INFO contains info passed to TBWidget::OnInflate during resource loading. */
+/** INFLATE_INFO contains info passed to TBWidget::onInflate during resource loading. */
 struct INFLATE_INFO {
 	INFLATE_INFO(TBWidgetsReader *reader, TBWidget *target, TBNode *node, TBValue::TYPE sync_type)
 		: reader(reader), target(target), node(node), sync_type(sync_type) {}
@@ -36,9 +36,9 @@ public:
 	virtual ~TBWidgetFactory() {}
 
 	/** Create and return the new widget or nullptr on out of memory. */
-	virtual TBWidget *Create(INFLATE_INFO *info) = 0;
+	virtual TBWidget *create(INFLATE_INFO *info) = 0;
 
-	void Register();
+	void doRegister();
 public:
 	const char *name;
 	TBValue::TYPE sync_type;
@@ -54,7 +54,7 @@ public:
 
 	It should be followed by an empty block (may eventually be removed).
 	Reading custom properties from resources can be done by overriding
-	TBWidget::OnInflate.
+	TBWidget::onInflate.
 
 	Example:
 
@@ -65,21 +65,21 @@ public:
 	{ \
 	public: \
 		classname##WidgetFactory() \
-			: tb::TBWidgetFactory(#classname, sync_type) { Register(); } \
+			: tb::TBWidgetFactory(#classname, sync_type) { doRegister(); } \
 		virtual ~classname##WidgetFactory() {} \
-		virtual tb::TBWidget *Create(tb::INFLATE_INFO *info) \
+		virtual tb::TBWidget *create(tb::INFLATE_INFO *info) \
 		{ \
 			classname *widget = new classname(); \
 			if (widget) { \
-				widget->GetContentRoot()->SetZInflate(add_child_z); \
-				ReadCustomProps(widget, info); \
+				widget->getContentRoot()->setZInflate(add_child_z); \
+				readCustomProps(widget, info); \
 			} \
 			return widget; \
 		} \
-		void ReadCustomProps(classname *widget, tb::INFLATE_INFO *info); \
+		void readCustomProps(classname *widget, tb::INFLATE_INFO *info); \
 	}; \
 	static classname##WidgetFactory classname##_wf; \
-	void classname##WidgetFactory::ReadCustomProps(classname *widget, tb::INFLATE_INFO *info)
+	void classname##WidgetFactory::readCustomProps(classname *widget, tb::INFLATE_INFO *info)
 
 /**
 	TBWidgetsReader parse a resource file (or buffer) into a TBNode tree,
@@ -108,29 +108,29 @@ public:
 
 	id					TBWidget::m_id				TBID (string or int)
 	group-id			TBWidget::m_group_id		TBID (string or int)
-	value				TBWidget::SetValue			integer
+	value				TBWidget::setValue			integer
 	data				TBWidget::m_data			integer
-	is-group-root		TBWidget::SetIsGroupRoot	boolean
-	is-focusable		TBWidget::SetIsFocusable	boolean
-	want-long-click		TBWidget::SetWantLongClick	boolean
-	ignore-input		TBWidget::SetIgnoreInput	boolean
-	opacity				TBWidget::SetOpacity		float (0 - 1)
-	text				TBWidget::SetText			string
+	is-group-root		TBWidget::setIsGroupRoot	boolean
+	is-focusable		TBWidget::setIsFocusable	boolean
+	want-long-click		TBWidget::setWantLongClick	boolean
+	ignore-input		TBWidget::setIgnoreInput	boolean
+	opacity				TBWidget::setOpacity		float (0 - 1)
+	text				TBWidget::setText			string
 	connection			TBWidget::Connect			string
-	axis				TBWidget::SetAxis			x or y
-	gravity				TBWidget::SetGravity		string (combination of left, top, right, bottom, or all)
-	visibility			TBWidget::SetVisibility		string (visible, invisible, gone)
-	state				TBWidget::SetState			string (disabled)
-	skin				TBWidget::SetSkinBg			TBID (string or int)
-	rect				TBWidget::SetRect			4 integers (x, y, width, height)
-	lp>width			TBWidget::SetLayoutParams	dimension
-	lp>min-width		TBWidget::SetLayoutParams	dimension
-	lp>max-width		TBWidget::SetLayoutParams	dimension
-	lp>pref-width		TBWidget::SetLayoutParams	dimension
-	lp>height			TBWidget::SetLayoutParams	dimension
-	lp>min-height		TBWidget::SetLayoutParams	dimension
-	lp>max-height		TBWidget::SetLayoutParams	dimension
-	lp>pref-height		TBWidget::SetLayoutParams	dimension
+	axis				TBWidget::setAxis			x or y
+	gravity				TBWidget::setGravity		string (combination of left, top, right, bottom, or all)
+	visibility			TBWidget::setVisibility		string (visible, invisible, gone)
+	state				TBWidget::setState			string (disabled)
+	skin				TBWidget::setSkinBg			TBID (string or int)
+	rect				TBWidget::setRect			4 integers (x, y, width, height)
+	lp>width			TBWidget::setLayoutParams	dimension
+	lp>min-width		TBWidget::setLayoutParams	dimension
+	lp>max-width		TBWidget::setLayoutParams	dimension
+	lp>pref-width		TBWidget::setLayoutParams	dimension
+	lp>height			TBWidget::setLayoutParams	dimension
+	lp>min-height		TBWidget::setLayoutParams	dimension
+	lp>max-height		TBWidget::setLayoutParams	dimension
+	lp>pref-height		TBWidget::setLayoutParams	dimension
 	autofocus			The TBWidget will be focused automatically the first time its TBWindow is activated.
 	font>name			Font name
 	font>size			Font size
@@ -138,25 +138,25 @@ public:
 class TBWidgetsReader
 {
 public:
-	static TBWidgetsReader *Create();
+	static TBWidgetsReader *create();
 	~TBWidgetsReader();
 
 	/** Add a widget factory. Does not take ownership of the factory.
 		The easiest way to add factories for custom widget types, is using the
 		TB_WIDGET_FACTORY macro that automatically register it during startup. */
-	bool AddFactory(TBWidgetFactory *wf) { factories.AddLast(wf); return true; }
-	void RemoveFactory(TBWidgetFactory *wf) { factories.Remove(wf); }
+	bool addFactory(TBWidgetFactory *wf) { factories.addLast(wf); return true; }
+	void removeFactory(TBWidgetFactory *wf) { factories.remove(wf); }
 
 	/** Set the id from the given node. */
-	static void SetIDFromNode(TBID &id, TBNode *node);
+	static void setIDFromNode(TBID &id, TBNode *node);
 
-	bool LoadFile(TBWidget *target, const char *filename);
-	bool LoadData(TBWidget *target, const char *data);
-	bool LoadData(TBWidget *target, const char *data, int data_len);
-	void LoadNodeTree(TBWidget *target, TBNode *node);
+	bool loadFile(TBWidget *target, const char *filename);
+	bool loadData(TBWidget *target, const char *data);
+	bool loadData(TBWidget *target, const char *data, int data_len);
+	void loadNodeTree(TBWidget *target, TBNode *node);
 private:
-	bool Init();
-	bool CreateWidget(TBWidget *target, TBNode *node);
+	bool init();
+	bool createWidget(TBWidget *target, TBNode *node);
 	TBLinkListOf<TBWidgetFactory> factories;
 };
 

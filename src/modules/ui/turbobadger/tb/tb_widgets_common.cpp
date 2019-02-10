@@ -17,41 +17,41 @@ TBWidgetString::TBWidgetString()
 {
 }
 
-void TBWidgetString::ValidatCachedSize(TBWidget *widget)
+void TBWidgetString::validatCachedSize(TBWidget *widget)
 {
-	const TBFontDescription fd = widget->GetCalculatedFontDescription();
+	const TBFontDescription fd = widget->getCalculatedFontDescription();
 	if (!m_height || fd != m_fd)
 	{
 		m_fd = fd;
-		TBFontFace *font = g_font_manager->GetFontFace(fd);
-		m_width = font->GetStringWidth(m_text);
-		m_height = font->GetHeight();
+		TBFontFace *font = g_font_manager->getFontFace(fd);
+		m_width = font->getStringWidth(m_text);
+		m_height = font->getHeight();
 	}
 }
 
-int TBWidgetString::GetWidth(TBWidget *widget)
+int TBWidgetString::getWidth(TBWidget *widget)
 {
-	ValidatCachedSize(widget);
+	validatCachedSize(widget);
 	return m_width;
 }
 
-int TBWidgetString::GetHeight(TBWidget *widget)
+int TBWidgetString::getHeight(TBWidget *widget)
 {
-	ValidatCachedSize(widget);
+	validatCachedSize(widget);
 	return m_height;
 }
 
-bool TBWidgetString::SetText(const char *text)
+bool TBWidgetString::setText(const char *text)
 {
 	// Invalidate cache
 	m_height = 0;
-	return m_text.Set(text);
+	return m_text.set(text);
 }
 
-void TBWidgetString::Paint(TBWidget *widget, const TBRect &rect, const TBColor &color)
+void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &color)
 {
-	ValidatCachedSize(widget);
-	TBFontFace *font = widget->GetFont();
+	validatCachedSize(widget);
+	TBFontFace *font = widget->getFont();
 
 	int x = rect.x;
 	if (m_text_align == TB_TEXT_ALIGN_RIGHT)
@@ -61,7 +61,7 @@ void TBWidgetString::Paint(TBWidget *widget, const TBRect &rect, const TBColor &
 	int y = rect.y + (rect.h - m_height) / 2;
 
 	if (m_width <= rect.w)
-		font->DrawString(x, y, color, m_text);
+		font->drawString(x, y, color, m_text);
 	else
 	{
 		// There's not enough room for the entire string
@@ -71,20 +71,20 @@ void TBWidgetString::Paint(TBWidget *widget, const TBRect &rect, const TBColor &
 		// Some fonts seem to render ellipsis a lot uglier than three dots.
 		const char *end = "...";
 
-		int endw = font->GetStringWidth(end);
+		int endw = font->getStringWidth(end);
 		int startw = 0;
 		int startlen = 0;
-		while (m_text.CStr()[startlen])
+		while (m_text.c_str()[startlen])
 		{
-			int new_startw = font->GetStringWidth(m_text, startlen);
+			int new_startw = font->getStringWidth(m_text, startlen);
 			if (new_startw + endw > rect.w)
 				break;
 			startw = new_startw;
 			startlen++;
 		}
 		startlen = Max(0, startlen - 1);
-		font->DrawString(x, y, color, m_text, startlen);
-		font->DrawString(x + startw, y, color, end);
+		font->drawString(x, y, color, m_text, startlen);
+		font->drawString(x + startw, y, color, end);
 	}
 }
 
@@ -95,53 +95,53 @@ TBTextField::TBTextField()
 	: m_cached_text_width(UPDATE_TEXT_WIDTH_CACHE)
 	, m_squeezable(false)
 {
-	SetSkinBg(TBIDC("TBTextField"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	setSkinBg(TBIDC("TBTextField"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 }
 
-bool TBTextField::SetText(const char *text)
+bool TBTextField::setText(const char *text)
 {
-	if (m_text.Equals(text))
+	if (m_text.equals(text))
 		return true;
 	m_cached_text_width = UPDATE_TEXT_WIDTH_CACHE;
-	Invalidate();
-	InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
-	return m_text.SetText(text);
+	invalidate();
+	invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+	return m_text.setText(text);
 }
 
-void TBTextField::SetSqueezable(bool squeezable)
+void TBTextField::setSqueezable(bool squeezable)
 {
 	if (squeezable == m_squeezable)
 		return;
 	m_squeezable = squeezable;
-	Invalidate();
-	InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+	invalidate();
+	invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 }
 
-PreferredSize TBTextField::OnCalculatePreferredContentSize(const SizeConstraints &constraints)
+PreferredSize TBTextField::onCalculatePreferredContentSize(const SizeConstraints &constraints)
 {
 	PreferredSize ps;
 	if (m_cached_text_width == UPDATE_TEXT_WIDTH_CACHE)
-		m_cached_text_width = m_text.GetWidth(this);
+		m_cached_text_width = m_text.getWidth(this);
 	ps.pref_w = m_cached_text_width;
-	ps.pref_h = ps.min_h = m_text.GetHeight(this);
+	ps.pref_h = ps.min_h = m_text.getHeight(this);
 	// If gravity pull both up and down, use default max_h (grow as much as possible).
 	// Otherwise it makes sense to only accept one line height.
-	if (!((GetGravity() & WIDGET_GRAVITY_TOP) && (GetGravity() & WIDGET_GRAVITY_BOTTOM)))
+	if (!((getGravity() & WIDGET_GRAVITY_TOP) && (getGravity() & WIDGET_GRAVITY_BOTTOM)))
 		ps.max_h = ps.pref_h;
 	if (!m_squeezable)
 		ps.min_w = ps.pref_w;
 	return ps;
 }
 
-void TBTextField::OnFontChanged()
+void TBTextField::onFontChanged()
 {
 	m_cached_text_width = UPDATE_TEXT_WIDTH_CACHE;
-	InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+	invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 }
 
-void TBTextField::OnPaint(const PaintProps &paint_props)
+void TBTextField::onPaint(const PaintProps &paintProps)
 {
-	m_text.Paint(this, GetPaddingRect(), paint_props.text_color);
+	m_text.paint(this, getPaddingRect(), paintProps.text_color);
 }
 
 const int auto_click_first_delay = 500;
@@ -151,176 +151,176 @@ TBButton::TBButton()
 	: m_auto_repeat_click(false)
 	, m_toggle_mode(false)
 {
-	SetIsFocusable(true);
-	SetClickByKey(true);
-	SetSkinBg(TBIDC("TBButton"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	AddChild(&m_layout);
+	setIsFocusable(true);
+	setClickByKey(true);
+	setSkinBg(TBIDC("TBButton"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	addChild(&m_layout);
 	// Set the textfield gravity to all, even though it would display the same with default gravity.
 	// This will make the buttons layout expand if there is space available, without forcing the parent
 	// layout to grow to make the space available.
-	m_textfield.SetGravity(WIDGET_GRAVITY_ALL);
-	m_layout.AddChild(&m_textfield);
-	m_layout.SetRect(GetPaddingRect());
-	m_layout.SetGravity(WIDGET_GRAVITY_ALL);
-	m_layout.SetPaintOverflowFadeout(false);
+	m_textfield.setGravity(WIDGET_GRAVITY_ALL);
+	m_layout.addChild(&m_textfield);
+	m_layout.setRect(getPaddingRect());
+	m_layout.setGravity(WIDGET_GRAVITY_ALL);
+	m_layout.setPaintOverflowFadeout(false);
 }
 
 TBButton::~TBButton()
 {
-	m_layout.RemoveChild(&m_textfield);
-	RemoveChild(&m_layout);
+	m_layout.removeChild(&m_textfield);
+	removeChild(&m_layout);
 }
 
-bool TBButton::SetText(const char *text)
+bool TBButton::setText(const char *text)
 {
-	bool ret = m_textfield.SetText(text);
-	UpdateTextFieldVisibility();
+	bool ret = m_textfield.setText(text);
+	updateTextFieldVisibility();
 	return ret;
 }
 
-void TBButton::SetValue(int value)
+void TBButton::setValue(int value)
 {
-	if (value == GetValue())
+	if (value == getValue())
 		return;
-	SetState(WIDGET_STATE_PRESSED, value ? true : false);
+	setState(WIDGET_STATE_PRESSED, value ? true : false);
 
-	if (CanToggle())
+	if (canToggle())
 	{
 		// Invoke a changed event.
 		TBWidgetEvent ev(EVENT_TYPE_CHANGED);
-		InvokeEvent(ev);
+		invokeEvent(ev);
 	}
 
-	if (value && GetGroupID())
-		TBRadioCheckBox::UpdateGroupWidgets(this);
+	if (value && getGroupID())
+		TBRadioCheckBox::updateGroupWidgets(this);
 }
 
-int TBButton::GetValue() const
+int TBButton::getValue() const
 {
-	return GetState(WIDGET_STATE_PRESSED);
+	return getState(WIDGET_STATE_PRESSED);
 }
 
-void TBButton::OnCaptureChanged(bool captured)
+void TBButton::onCaptureChanged(bool captured)
 {
 	if (captured && m_auto_repeat_click)
-		PostMessageDelayed(TBIDC("auto_click"), nullptr, auto_click_first_delay);
+		postMessageDelayed(TBIDC("auto_click"), nullptr, auto_click_first_delay);
 	else if (!captured)
 	{
-		if (TBMessage *msg = GetMessageByID(TBIDC("auto_click")))
-			DeleteMessage(msg);
+		if (TBMessage *msg = getMessageByID(TBIDC("auto_click")))
+			deleteMessage(msg);
 	}
 }
 
-void TBButton::OnSkinChanged()
+void TBButton::onSkinChanged()
 {
-	m_layout.SetRect(GetPaddingRect());
+	m_layout.setRect(getPaddingRect());
 }
 
-bool TBButton::OnEvent(const TBWidgetEvent &ev)
+bool TBButton::onEvent(const TBWidgetEvent &ev)
 {
-	if (CanToggle() && ev.type == EVENT_TYPE_CLICK && ev.target == this)
+	if (canToggle() && ev.type == EVENT_TYPE_CLICK && ev.target == this)
 	{
 		TBWidgetSafePointer this_widget(this);
 
 		// Toggle the value, if it's not a grouped widget with value on.
-		if (!(GetGroupID() && GetValue()))
-			SetValue(!GetValue());
+		if (!(getGroupID() && getValue()))
+			setValue(!getValue());
 
-		if (!this_widget.Get())
+		if (!this_widget.get())
 			return true; // We got removed so we actually handled this event.
 
 		// Intentionally don't return true for this event. We want it to continue propagating.
 	}
-	return TBWidget::OnEvent(ev);
+	return TBWidget::onEvent(ev);
 }
 
-void TBButton::OnMessageReceived(TBMessage *msg)
+void TBButton::onMessageReceived(TBMessage *msg)
 {
 	if (msg->message == TBIDC("auto_click"))
 	{
 		core_assert(captured_widget == this);
-		if (!cancel_click && GetHitStatus(pointer_move_widget_x, pointer_move_widget_y))
+		if (!cancel_click && getHitStatus(pointer_move_widget_x, pointer_move_widget_y))
 		{
 			TBWidgetEvent ev(EVENT_TYPE_CLICK, pointer_move_widget_x, pointer_move_widget_y, TB_TOUCH);
-			captured_widget->InvokeEvent(ev);
+			captured_widget->invokeEvent(ev);
 		}
 		if (auto_click_repeat_delay)
-			PostMessageDelayed(TBIDC("auto_click"), nullptr, auto_click_repeat_delay);
+			postMessageDelayed(TBIDC("auto_click"), nullptr, auto_click_repeat_delay);
 	}
 }
 
-WIDGET_HIT_STATUS TBButton::GetHitStatus(int x, int y)
+WIDGET_HIT_STATUS TBButton::getHitStatus(int x, int y)
 {
 	// Never hit any of the children to the button. We always want to the button itself.
-	return TBWidget::GetHitStatus(x, y) ? WIDGET_HIT_STATUS_HIT_NO_CHILDREN : WIDGET_HIT_STATUS_NO_HIT;
+	return TBWidget::getHitStatus(x, y) ? WIDGET_HIT_STATUS_HIT_NO_CHILDREN : WIDGET_HIT_STATUS_NO_HIT;
 }
 
-void TBButton::UpdateTextFieldVisibility()
+void TBButton::updateTextFieldVisibility()
 {
 	// Auto-collapse the textfield if the text is empty and there are other
 	// widgets added apart from the textfield. This removes the extra spacing
 	// added between the textfield and the other widget.
-	bool collapse_textfield = m_textfield.IsEmpty() && m_layout.GetFirstChild() != m_layout.GetLastChild();
-	m_textfield.SetVisibility(collapse_textfield ? WIDGET_VISIBILITY_GONE : WIDGET_VISIBILITY_VISIBLE);
+	bool collapse_textfield = m_textfield.isEmpty() && m_layout.getFirstChild() != m_layout.getLastChild();
+	m_textfield.setVisibility(collapse_textfield ? WIDGET_VISIBILITY_GONE : WIDGET_VISIBILITY_VISIBLE);
 }
 
-void TBButton::ButtonLayout::OnChildAdded(TBWidget *child)
+void TBButton::ButtonLayout::onChildAdded(TBWidget *child)
 {
-	static_cast<TBButton*>(GetParent())->UpdateTextFieldVisibility();
+	static_cast<TBButton*>(getParent())->updateTextFieldVisibility();
 }
 
-void TBButton::ButtonLayout::OnChildRemove(TBWidget *child)
+void TBButton::ButtonLayout::onChildRemove(TBWidget *child)
 {
-	static_cast<TBButton*>(GetParent())->UpdateTextFieldVisibility();
+	static_cast<TBButton*>(getParent())->updateTextFieldVisibility();
 }
 
 TBClickLabel::TBClickLabel()
 {
-	AddChild(&m_layout);
-	m_layout.AddChild(&m_textfield);
-	m_layout.SetRect(GetPaddingRect());
-	m_layout.SetGravity(WIDGET_GRAVITY_ALL);
-	m_layout.SetLayoutDistributionPosition(LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
+	addChild(&m_layout);
+	m_layout.addChild(&m_textfield);
+	m_layout.setRect(getPaddingRect());
+	m_layout.setGravity(WIDGET_GRAVITY_ALL);
+	m_layout.setLayoutDistributionPosition(LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
 }
 
 TBClickLabel::~TBClickLabel()
 {
-	m_layout.RemoveChild(&m_textfield);
-	RemoveChild(&m_layout);
+	m_layout.removeChild(&m_textfield);
+	removeChild(&m_layout);
 }
 
-bool TBClickLabel::OnEvent(const TBWidgetEvent &ev)
+bool TBClickLabel::onEvent(const TBWidgetEvent &ev)
 {
 	// Get a widget from the layout that isn't the textfield, or just bail out
 	// if we only have the textfield.
-	if (m_layout.GetFirstChild() == m_layout.GetLastChild())
+	if (m_layout.getFirstChild() == m_layout.getLastChild())
 		return false;
-	TBWidget *click_target = (m_layout.GetFirstChild() == &m_textfield ? m_layout.GetLastChild() : m_layout.GetFirstChild());
+	TBWidget *click_target = (m_layout.getFirstChild() == &m_textfield ? m_layout.getLastChild() : m_layout.getFirstChild());
 	// Invoke the event on it, as if it was invoked on the target itself.
 	if (click_target && ev.target != click_target)
 	{
 		// Focus the target if we clicked the label.
 		if (ev.type == EVENT_TYPE_CLICK)
-			click_target->SetFocus(WIDGET_FOCUS_REASON_POINTER);
+			click_target->setFocus(WIDGET_FOCUS_REASON_POINTER);
 
 		// Sync our pressed state with the click target. Special case for when we're just about to
 		// lose it ourself (pointer is being released).
-		bool pressed_state = (ev.target->GetAutoState() & WIDGET_STATE_PRESSED) ? true : false;
+		bool pressed_state = (ev.target->getAutoState() & WIDGET_STATE_PRESSED) ? true : false;
 		if (ev.type == EVENT_TYPE_POINTER_UP || ev.type == EVENT_TYPE_CLICK)
 			pressed_state = false;
 
-		click_target->SetState(WIDGET_STATE_PRESSED, pressed_state);
+		click_target->setState(WIDGET_STATE_PRESSED, pressed_state);
 
-		TBWidgetEvent target_ev(ev.type, ev.target_x - click_target->GetRect().x, ev.target_y - click_target->GetRect().y,
+		TBWidgetEvent target_ev(ev.type, ev.target_x - click_target->getRect().x, ev.target_y - click_target->getRect().y,
 								ev.button_type, ev.modifierkeys);
-		return click_target->InvokeEvent(target_ev);
+		return click_target->invokeEvent(target_ev);
 	}
 	return false;
 }
 
-PreferredSize TBSkinImage::OnCalculatePreferredSize(const SizeConstraints &constraints)
+PreferredSize TBSkinImage::onCalculatePreferredSize(const SizeConstraints &constraints)
 {
-	PreferredSize ps = TBWidget::OnCalculatePreferredSize(constraints);
+	PreferredSize ps = TBWidget::onCalculatePreferredSize(constraints);
 	// FIX: Make it stretched proportionally if shrunk.
 	ps.max_w = ps.pref_w;
 	ps.max_h = ps.pref_h;
@@ -329,8 +329,8 @@ PreferredSize TBSkinImage::OnCalculatePreferredSize(const SizeConstraints &const
 
 TBSeparator::TBSeparator()
 {
-	SetSkinBg(TBIDC("TBSeparator"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	SetState(WIDGET_STATE_DISABLED, true);
+	setSkinBg(TBIDC("TBSeparator"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	setState(WIDGET_STATE_DISABLED, true);
 }
 
 // FIX: Add spin_speed to skin!
@@ -341,151 +341,151 @@ TBProgressSpinner::TBProgressSpinner()
 	: m_value(0)
 	, m_frame(0)
 {
-	SetSkinBg(TBIDC("TBProgressSpinner"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	m_skin_fg.Set(TBIDC("TBProgressSpinner.fg"));
+	setSkinBg(TBIDC("TBProgressSpinner"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	m_skin_fg.set(TBIDC("TBProgressSpinner.fg"));
 }
 
-void TBProgressSpinner::SetValue(int value)
+void TBProgressSpinner::setValue(int value)
 {
 	if (value == m_value)
 		return;
-	InvalidateSkinStates();
+	invalidateSkinStates();
 	core_assert(value >= 0); // If this happens, you probably have unballanced Begin/End calls.
 	m_value = value;
 	if (value > 0)
 	{
 		// Start animation
-		if (!GetMessageByID(TBID(1)))
+		if (!getMessageByID(TBID(1)))
 		{
 			m_frame = 0;
-			PostMessageDelayed(TBID(1), nullptr, spin_speed);
+			postMessageDelayed(TBID(1), nullptr, spin_speed);
 		}
 	}
 	else
 	{
 		// Stop animation
-		if (TBMessage *msg = GetMessageByID(TBID(1)))
-			DeleteMessage(msg);
+		if (TBMessage *msg = getMessageByID(TBID(1)))
+			deleteMessage(msg);
 	}
 }
 
-void TBProgressSpinner::OnPaint(const PaintProps &paint_props)
+void TBProgressSpinner::onPaint(const PaintProps &paintProps)
 {
-	if (IsRunning())
+	if (isRunning())
 	{
-		TBSkinElement *e = g_tb_skin->GetSkinElement(m_skin_fg);
+		TBSkinElement *e = g_tb_skin->getSkinElement(m_skin_fg);
 		if (e && e->bitmap)
 		{
-			int size = e->bitmap->Height();
-			int num_frames = e->bitmap->Width() / e->bitmap->Height();
+			int size = e->bitmap->height();
+			int num_frames = e->bitmap->width() / e->bitmap->height();
 			int current_frame = m_frame % num_frames;
-			g_renderer->DrawBitmap(GetPaddingRect(), TBRect(current_frame * size, 0, size, size), e->bitmap);
+			g_renderer->drawBitmap(getPaddingRect(), TBRect(current_frame * size, 0, size, size), e->bitmap);
 		}
 	}
 }
 
-void TBProgressSpinner::OnMessageReceived(TBMessage *msg)
+void TBProgressSpinner::onMessageReceived(TBMessage *msg)
 {
 	m_frame++;
-	Invalidate();
+	invalidate();
 	// Keep animation running
-	PostMessageDelayed(TBID(1), nullptr, spin_speed);
+	postMessageDelayed(TBID(1), nullptr, spin_speed);
 }
 
 TBRadioCheckBox::TBRadioCheckBox()
 	: m_value(0)
 {
-	SetIsFocusable(true);
-	SetClickByKey(true);
+	setIsFocusable(true);
+	setClickByKey(true);
 }
 
 //static
-void TBRadioCheckBox::UpdateGroupWidgets(TBWidget *new_leader)
+void TBRadioCheckBox::updateGroupWidgets(TBWidget *newLeader)
 {
-	core_assert(new_leader->GetValue() && new_leader->GetGroupID());
+	core_assert(newLeader->getValue() && newLeader->getGroupID());
 
 	// Find the group root widget.
-	TBWidget *group = new_leader;
-	while (group && !group->GetIsGroupRoot() && group->GetParent())
-		group = group->GetParent();
+	TBWidget *group = newLeader;
+	while (group && !group->getIsGroupRoot() && group->getParent())
+		group = group->getParent();
 
-	for (TBWidget *child = group; child; child = child->GetNextDeep(group))
-		if (child != new_leader && child->GetGroupID() == new_leader->GetGroupID())
-			child->SetValue(0);
+	for (TBWidget *child = group; child; child = child->getNextDeep(group))
+		if (child != newLeader && child->getGroupID() == newLeader->getGroupID())
+			child->setValue(0);
 }
 
-void TBRadioCheckBox::SetValue(int value)
+void TBRadioCheckBox::setValue(int value)
 {
 	if (m_value == value)
 		return;
 	m_value = value;
 
-	SetState(WIDGET_STATE_SELECTED, value ? true : false);
+	setState(WIDGET_STATE_SELECTED, value ? true : false);
 
-	if (value && GetGroupID())
-		UpdateGroupWidgets(this);
+	if (value && getGroupID())
+		updateGroupWidgets(this);
 
 	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
-	InvokeEvent(ev);
+	invokeEvent(ev);
 }
 
-PreferredSize TBRadioCheckBox::OnCalculatePreferredSize(const SizeConstraints &constraints)
+PreferredSize TBRadioCheckBox::onCalculatePreferredSize(const SizeConstraints &constraints)
 {
-	PreferredSize ps = TBWidget::OnCalculatePreferredSize(constraints);
+	PreferredSize ps = TBWidget::onCalculatePreferredSize(constraints);
 	ps.min_w = ps.max_w = ps.pref_w;
 	ps.min_h = ps.max_h = ps.pref_h;
 	return ps;
 }
 
-bool TBRadioCheckBox::OnEvent(const TBWidgetEvent &ev)
+bool TBRadioCheckBox::onEvent(const TBWidgetEvent &ev)
 {
 	if (ev.target == this && ev.type == EVENT_TYPE_CLICK)
 	{
 		// Toggle the value, if it's not a grouped widget with value on.
-		if (!(GetGroupID() && GetValue()))
+		if (!(getGroupID() && getValue()))
 		{
-			SetValue(!GetValue());
+			setValue(!getValue());
 		}
 	}
 	return false;
 }
 
 TBScrollBar::TBScrollBar()
-	: m_axis(AXIS_Y) ///< Make SetAxis below always succeed and set the skin
+	: m_axis(AXIS_Y) ///< Make setAxis below always succeed and set the skin
 	, m_value(0)
 	, m_min(0)
 	, m_max(1)
 	, m_visible(1)
 	, m_to_pixel_factor(0)
 {
-	SetAxis(AXIS_X);
-	AddChild(&m_handle);
+	setAxis(AXIS_X);
+	addChild(&m_handle);
 }
 
 TBScrollBar::~TBScrollBar()
 {
-	RemoveChild(&m_handle);
+	removeChild(&m_handle);
 }
 
-void TBScrollBar::SetAxis(AXIS axis)
+void TBScrollBar::setAxis(AXIS axis)
 {
 	if (axis == m_axis)
 		return;
 	m_axis = axis;
 	if (axis == AXIS_X)
 	{
-		SetSkinBg(TBIDC("TBScrollBarBgX"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-		m_handle.SetSkinBg(TBIDC("TBScrollBarFgX"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+		setSkinBg(TBIDC("TBScrollBarBgX"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+		m_handle.setSkinBg(TBIDC("TBScrollBarFgX"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 	}
 	else
 	{
-		SetSkinBg(TBIDC("TBScrollBarBgY"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-		m_handle.SetSkinBg(TBIDC("TBScrollBarFgY"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+		setSkinBg(TBIDC("TBScrollBarBgY"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+		m_handle.setSkinBg(TBIDC("TBScrollBarFgY"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 	}
-	Invalidate();
+	invalidate();
 }
 
-void TBScrollBar::SetLimits(double min, double max, double visible)
+void TBScrollBar::setLimits(double min, double max, double visible)
 {
 	max = Max(min, max);
 	visible = Max(visible, 0.0);
@@ -494,33 +494,33 @@ void TBScrollBar::SetLimits(double min, double max, double visible)
 	m_min = min;
 	m_max = max;
 	m_visible = visible;
-	SetValueDouble(m_value);
+	setValueDouble(m_value);
 
 	// If we're currently dragging the scrollbar handle, convert the down point
 	// to root and then back after the applying the new limit.
 	// This prevents sudden jumps to unexpected positions when scrolling.
 	if (captured_widget == &m_handle)
-		m_handle.ConvertToRoot(pointer_down_widget_x, pointer_down_widget_y);
+		m_handle.convertToRoot(pointer_down_widget_x, pointer_down_widget_y);
 
-	UpdateHandle();
+	updateHandle();
 
 	if (captured_widget == &m_handle)
-		m_handle.ConvertFromRoot(pointer_down_widget_x, pointer_down_widget_y);
+		m_handle.convertFromRoot(pointer_down_widget_x, pointer_down_widget_y);
 }
 
-void TBScrollBar::SetValueDouble(double value)
+void TBScrollBar::setValueDouble(double value)
 {
 	value = Clamp(value, m_min, m_max);
 	if (value == m_value)
 		return;
 	m_value = value;
 
-	UpdateHandle();
+	updateHandle();
 	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
-	InvokeEvent(ev);
+	invokeEvent(ev);
 }
 
-bool TBScrollBar::OnEvent(const TBWidgetEvent &ev)
+bool TBScrollBar::onEvent(const TBWidgetEvent &ev)
 {
 	if (ev.type == EVENT_TYPE_POINTER_MOVE && captured_widget == &m_handle)
 	{
@@ -529,7 +529,7 @@ bool TBScrollBar::OnEvent(const TBWidgetEvent &ev)
 			int dx = ev.target_x - pointer_down_widget_x;
 			int dy = ev.target_y - pointer_down_widget_y;
 			double delta_val = (m_axis == AXIS_X ? dx : dy) / m_to_pixel_factor;
-			SetValueDouble(m_value + delta_val);
+			setValueDouble(m_value + delta_val);
 		}
 		return true;
 	}
@@ -537,25 +537,25 @@ bool TBScrollBar::OnEvent(const TBWidgetEvent &ev)
 		return true;
 	else if (ev.type == EVENT_TYPE_POINTER_DOWN && ev.target == this)
 	{
-		bool after_handle = (m_axis == AXIS_X ? ev.target_x > m_handle.GetRect().x : ev.target_y > m_handle.GetRect().y);
-		SetValueDouble(m_value + (after_handle ? m_visible : -m_visible));
+		bool after_handle = (m_axis == AXIS_X ? ev.target_x > m_handle.getRect().x : ev.target_y > m_handle.getRect().y);
+		setValueDouble(m_value + (after_handle ? m_visible : -m_visible));
 		return true;
 	}
 	else if (ev.type == EVENT_TYPE_WHEEL)
 	{
 		double old_val = m_value;
-		SetValueDouble(m_value + ev.delta_y * TBSystem::GetPixelsPerLine());
+		setValueDouble(m_value + ev.delta_y * TBSystem::getPixelsPerLine());
 		return m_value != old_val;
 	}
 	return false;
 }
 
-void TBScrollBar::UpdateHandle()
+void TBScrollBar::updateHandle()
 {
 	// Calculate the mover size and position
 	bool horizontal = m_axis == AXIS_X;
-	int available_pixels = horizontal ? GetRect().w : GetRect().h;
-	int min_thickness_pixels = Min(GetRect().h, GetRect().w);
+	int available_pixels = horizontal ? getRect().w : getRect().h;
+	int min_thickness_pixels = Min(getRect().h, getRect().w);
 
 	int visible_pixels = available_pixels;
 
@@ -582,77 +582,77 @@ void TBScrollBar::UpdateHandle()
 
 	TBRect rect;
 	if (horizontal)
-		rect.Set(pixel_pos, 0, visible_pixels, GetRect().h);
+		rect.set(pixel_pos, 0, visible_pixels, getRect().h);
 	else
-		rect.Set(0, pixel_pos, GetRect().w, visible_pixels);
+		rect.set(0, pixel_pos, getRect().w, visible_pixels);
 
-	m_handle.SetRect(rect);
+	m_handle.setRect(rect);
 }
 
-void TBScrollBar::OnResized(int old_w, int old_h)
+void TBScrollBar::onResized(int oldW, int oldH)
 {
-	UpdateHandle();
+	updateHandle();
 }
 
 TBSlider::TBSlider()
-	: m_axis(AXIS_Y) ///< Make SetAxis below always succeed and set the skin
+	: m_axis(AXIS_Y) ///< Make setAxis below always succeed and set the skin
 	, m_value(0)
 	, m_min(0)
 	, m_max(1)
 	, m_to_pixel_factor(0)
 {
-	SetIsFocusable(true);
-	SetAxis(AXIS_X);
-	AddChild(&m_handle);
+	setIsFocusable(true);
+	setAxis(AXIS_X);
+	addChild(&m_handle);
 }
 
 TBSlider::~TBSlider()
 {
-	RemoveChild(&m_handle);
+	removeChild(&m_handle);
 }
 
-void TBSlider::SetAxis(AXIS axis)
+void TBSlider::setAxis(AXIS axis)
 {
 	if (axis == m_axis)
 		return;
 	m_axis = axis;
 	if (axis == AXIS_X)
 	{
-		SetSkinBg(TBIDC("TBSliderBgX"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-		m_handle.SetSkinBg(TBIDC("TBSliderFgX"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+		setSkinBg(TBIDC("TBSliderBgX"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+		m_handle.setSkinBg(TBIDC("TBSliderFgX"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 	}
 	else
 	{
-		SetSkinBg(TBIDC("TBSliderBgY"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-		m_handle.SetSkinBg(TBIDC("TBSliderFgY"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+		setSkinBg(TBIDC("TBSliderBgY"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+		m_handle.setSkinBg(TBIDC("TBSliderFgY"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 	}
-	Invalidate();
+	invalidate();
 }
 
-void TBSlider::SetLimits(double min, double max)
+void TBSlider::setLimits(double min, double max)
 {
 	min = Min(min, max);
 	if (min == m_min && max == m_max)
 		return;
 	m_min = min;
 	m_max = max;
-	SetValueDouble(m_value);
-	UpdateHandle();
+	setValueDouble(m_value);
+	updateHandle();
 }
 
-void TBSlider::SetValueDouble(double value)
+void TBSlider::setValueDouble(double value)
 {
 	value = Clamp(value, m_min, m_max);
 	if (value == m_value)
 		return;
 	m_value = value;
 
-	UpdateHandle();
+	updateHandle();
 	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
-	InvokeEvent(ev);
+	invokeEvent(ev);
 }
 
-bool TBSlider::OnEvent(const TBWidgetEvent &ev)
+bool TBSlider::onEvent(const TBWidgetEvent &ev)
 {
 	if (ev.type == EVENT_TYPE_POINTER_MOVE && captured_widget == &m_handle)
 	{
@@ -661,24 +661,24 @@ bool TBSlider::OnEvent(const TBWidgetEvent &ev)
 			int dx = ev.target_x - pointer_down_widget_x;
 			int dy = ev.target_y - pointer_down_widget_y;
 			double delta_val = (m_axis == AXIS_X ? dx : -dy) / m_to_pixel_factor;
-			SetValueDouble(m_value + delta_val);
+			setValueDouble(m_value + delta_val);
 		}
 		return true;
 	}
 	else if (ev.type == EVENT_TYPE_WHEEL)
 	{
 		double old_val = m_value;
-		double step = (m_axis == AXIS_X ? GetSmallStep() : -GetSmallStep());
-		SetValueDouble(m_value + step * ev.delta_y);
+		double step = (m_axis == AXIS_X ? getSmallStep() : -getSmallStep());
+		setValueDouble(m_value + step * ev.delta_y);
 		return m_value != old_val;
 	}
 	else if (ev.type == EVENT_TYPE_KEY_DOWN)
 	{
-		double step = (m_axis == AXIS_X ? GetSmallStep() : -GetSmallStep());
+		double step = (m_axis == AXIS_X ? getSmallStep() : -getSmallStep());
 		if (ev.special_key == TB_KEY_LEFT || ev.special_key == TB_KEY_UP)
-			SetValueDouble(GetValueDouble() - step);
+			setValueDouble(getValueDouble() - step);
 		else if (ev.special_key == TB_KEY_RIGHT || ev.special_key == TB_KEY_DOWN)
-			SetValueDouble(GetValueDouble() + step);
+			setValueDouble(getValueDouble() + step);
 		else
 			return false;
 		return true;
@@ -692,64 +692,64 @@ bool TBSlider::OnEvent(const TBWidgetEvent &ev)
 	return false;
 }
 
-void TBSlider::UpdateHandle()
+void TBSlider::updateHandle()
 {
 	// Calculate the handle position
 	bool horizontal = m_axis == AXIS_X;
-	int available_pixels = horizontal ? GetRect().w : GetRect().h;
+	int available_pixels = horizontal ? getRect().w : getRect().h;
 
 	TBRect rect;
 	if (m_max - m_min > 0)
 	{
-		PreferredSize ps = m_handle.GetPreferredSize();
+		PreferredSize ps = m_handle.getPreferredSize();
 		int handle_pixels = horizontal ? ps.pref_w : ps.pref_h;
 		m_to_pixel_factor = (double)(available_pixels - handle_pixels) / (m_max - m_min)/*+ 0.5*/;
 
 		int pixel_pos = (int)((m_value - m_min) * m_to_pixel_factor);
 
 		if (horizontal)
-			rect.Set(pixel_pos, (GetRect().h - ps.pref_h) / 2, ps.pref_w, ps.pref_h);
+			rect.set(pixel_pos, (getRect().h - ps.pref_h) / 2, ps.pref_w, ps.pref_h);
 		else
-			rect.Set((GetRect().w - ps.pref_w) / 2, GetRect().h - handle_pixels - pixel_pos, ps.pref_w, ps.pref_h);
+			rect.set((getRect().w - ps.pref_w) / 2, getRect().h - handle_pixels - pixel_pos, ps.pref_w, ps.pref_h);
 	}
 	else
 		m_to_pixel_factor = 0;
 
-	m_handle.SetRect(rect);
+	m_handle.setRect(rect);
 }
 
-void TBSlider::OnResized(int old_w, int old_h)
+void TBSlider::onResized(int oldW, int oldH)
 {
-	UpdateHandle();
+	updateHandle();
 }
 
 TBContainer::TBContainer()
 {
-	SetSkinBg(TBIDC("TBContainer"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	setSkinBg(TBIDC("TBContainer"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 }
 
 TBMover::TBMover()
 {
-	SetSkinBg(TBIDC("TBMover"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	setSkinBg(TBIDC("TBMover"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 }
 
-bool TBMover::OnEvent(const TBWidgetEvent &ev)
+bool TBMover::onEvent(const TBWidgetEvent &ev)
 {
-	TBWidget *target = GetParent();
+	TBWidget *target = getParent();
 	if (!target)
 		return false;
 	if (ev.type == EVENT_TYPE_POINTER_MOVE && captured_widget == this)
 	{
 		int dx = ev.target_x - pointer_down_widget_x;
 		int dy = ev.target_y - pointer_down_widget_y;
-		TBRect rect = target->GetRect().Offset(dx, dy);
-		if (target->GetParent())
+		TBRect rect = target->getRect().offset(dx, dy);
+		if (target->getParent())
 		{
 			// Apply limit.
-			rect.x = Clamp(rect.x, -pointer_down_widget_x, target->GetParent()->GetRect().w - pointer_down_widget_x);
-			rect.y = Clamp(rect.y, -pointer_down_widget_y, target->GetParent()->GetRect().h - pointer_down_widget_y);
+			rect.x = Clamp(rect.x, -pointer_down_widget_x, target->getParent()->getRect().w - pointer_down_widget_x);
+			rect.y = Clamp(rect.y, -pointer_down_widget_y, target->getParent()->getRect().h - pointer_down_widget_y);
 		}
-		target->SetRect(rect);
+		target->setRect(rect);
 		return true;
 	}
 	return false;
@@ -757,35 +757,35 @@ bool TBMover::OnEvent(const TBWidgetEvent &ev)
 
 TBResizer::TBResizer()
 {
-	SetSkinBg(TBIDC("TBResizer"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	setSkinBg(TBIDC("TBResizer"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 }
 
-WIDGET_HIT_STATUS TBResizer::GetHitStatus(int x, int y)
+WIDGET_HIT_STATUS TBResizer::getHitStatus(int x, int y)
 {
 	// Shave off some of the upper left diagonal half from the hit area.
 	const int extra_hit_area = 3;
-	if (x < GetRect().w - y - extra_hit_area)
+	if (x < getRect().w - y - extra_hit_area)
 		return WIDGET_HIT_STATUS_NO_HIT;
-	return TBWidget::GetHitStatus(x, y);
+	return TBWidget::getHitStatus(x, y);
 }
 
-bool TBResizer::OnEvent(const TBWidgetEvent &ev)
+bool TBResizer::onEvent(const TBWidgetEvent &ev)
 {
-	TBWidget *target = GetParent();
+	TBWidget *target = getParent();
 	if (!target)
 		return false;
 	if (ev.type == EVENT_TYPE_POINTER_MOVE && captured_widget == this)
 	{
 		int dx = ev.target_x - pointer_down_widget_x;
 		int dy = ev.target_y - pointer_down_widget_y;
-		TBRect rect = target->GetRect();
+		TBRect rect = target->getRect();
 		rect.w += dx;
 		rect.h += dy;
 		// Apply limit. We should not use minimum size since we can squeeze
 		// the layout much more, and provide scroll/pan when smaller.
 		rect.w = Max(rect.w, 50);
 		rect.h = Max(rect.h, 50);
-		target->SetRect(rect);
+		target->setRect(rect);
 	}
 	else
 		return false;
@@ -794,13 +794,13 @@ bool TBResizer::OnEvent(const TBWidgetEvent &ev)
 
 TBDimmer::TBDimmer()
 {
-	SetSkinBg(TBIDC("TBDimmer"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	SetGravity(WIDGET_GRAVITY_ALL);
+	setSkinBg(TBIDC("TBDimmer"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	setGravity(WIDGET_GRAVITY_ALL);
 }
 
-void TBDimmer::OnAdded()
+void TBDimmer::onAdded()
 {
-	SetRect(TBRect(0, 0, GetParent()->GetRect().w, GetParent()->GetRect().h));
+	setRect(TBRect(0, 0, getParent()->getRect().w, getParent()->getRect().h));
 }
 
 } // namespace tb

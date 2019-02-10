@@ -13,7 +13,7 @@
 
 namespace tb {
 
-double TBSystem::GetTimeMS()
+double TBSystem::getTimeMS()
 {
 	Uint64 freq = SDL_GetPerformanceFrequency();
 	Uint64 now = SDL_GetPerformanceCounter();
@@ -24,26 +24,26 @@ double TBSystem::GetTimeMS()
 	If fire_time is 0, it should be fired ASAP.
 	If force is true, it will ask the platform to schedule it again, even if
 	the fire_time is the same as last time. */
-void TBSystem::RescheduleTimer(double fire_time)
+void TBSystem::rescheduleTimer(double fireTime)
 {
 }
 
-int TBSystem::GetLongClickDelayMS()
+int TBSystem::getLongClickDelayMS()
 {
 	return 500;
 }
 
-int TBSystem::GetPanThreshold()
+int TBSystem::getPanThreshold()
 {
-	return 5 * GetDPI() / 96;
+	return 5 * getDPI() / 96;
 }
 
-int TBSystem::GetPixelsPerLine()
+int TBSystem::getPixelsPerLine()
 {
-	return 40 * GetDPI() / 96;
+	return 40 * getDPI() / 96;
 }
 
-int TBSystem::GetDPI()
+int TBSystem::getDPI()
 {
 #if SDL_VERSION_ATLEAST(2,0,4)
 	float ddpi;
@@ -57,25 +57,25 @@ int TBSystem::GetDPI()
 #endif
 }
 
-void TBClipboard::Empty()
+void TBClipboard::empty()
 {
-	SetText("");
+	setText("");
 }
 
-bool TBClipboard::HasText()
+bool TBClipboard::hasText()
 {
 	return SDL_HasClipboardText();
 }
 
-bool TBClipboard::SetText(const char *text)
+bool TBClipboard::setText(const char *text)
 {
 	return (0 == SDL_SetClipboardText(text));
 }
 
-bool TBClipboard::GetText(TBStr &text)
+bool TBClipboard::getText(TBStr &text)
 {
 	if (const char *str = SDL_GetClipboardText())
-		return text.Set(str);
+		return text.set(str);
 	return false;
 }
 
@@ -85,10 +85,10 @@ public:
 			_file(file) {
 	}
 
-	virtual long Size() {
+	virtual long size() {
 		return _file->length();
 	}
-	virtual size_t Read(void *buf, size_t elemSize, size_t count) {
+	virtual size_t read(void *buf, size_t elemSize, size_t count) {
 		return _file->read(buf, elemSize, count);
 	}
 private:
@@ -96,7 +96,7 @@ private:
 };
 
 // static
-TBFile *TBFile::Open(const char *filename, TBFileMode mode) {
+TBFile *TBFile::open(const char *filename, TBFileMode mode) {
 	io::FilePtr f;
 	switch (mode) {
 	case MODE_READ:
@@ -106,7 +106,7 @@ TBFile *TBFile::Open(const char *filename, TBFileMode mode) {
 	default:
 		break;
 	}
-	if (!f) {
+	if (!f || !f->exists()) {
 		return nullptr;
 	}
 	return new File(f);

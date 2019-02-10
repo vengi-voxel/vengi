@@ -7,23 +7,23 @@
 
 namespace tb {
 
-void TBTabLayout::OnChildAdded(TBWidget *child)
+void TBTabLayout::onChildAdded(TBWidget *child)
 {
 	if (TBButton *button = TBSafeCast<TBButton>(child))
 	{
-		button->SetSqueezable(true);
-		button->SetSkinBg(TBIDC("TBTabContainer.tab"));
-		button->SetID(TBIDC("tab"));
+		button->setSqueezable(true);
+		button->setSkinBg(TBIDC("TBTabContainer.tab"));
+		button->setID(TBIDC("tab"));
 	}
 }
 
-PreferredSize TBTabLayout::OnCalculatePreferredContentSize(const SizeConstraints &constraints)
+PreferredSize TBTabLayout::onCalculatePreferredContentSize(const SizeConstraints &constraints)
 {
-	PreferredSize ps = TBLayout::OnCalculatePreferredContentSize(constraints);
+	PreferredSize ps = TBLayout::onCalculatePreferredContentSize(constraints);
 	// Make sure the number of tabs doesn't grow parents.
 	// It is only the content that should do that. The tabs
 	// will scroll anyway.
-	if (GetAxis() == AXIS_X)
+	if (getAxis() == AXIS_X)
 		ps.min_w = Min(ps.min_w, 1);
 	else
 		ps.min_h = Min(ps.min_h, 1);
@@ -35,40 +35,40 @@ TBTabContainer::TBTabContainer()
 	, m_current_page(0)
 	, m_align(TB_ALIGN_TOP)
 {
-	AddChild(&m_root_layout);
+	addChild(&m_root_layout);
 	// Put the tab layout on top of the content in Z order so their skin can make
 	// a seamless overlap over the border. Control which side they are layouted
 	// to by calling SetLayoutOrder.
-	m_root_layout.AddChild(&m_content_root);
-	m_root_layout.AddChild(&m_tab_layout);
-	m_root_layout.SetAxis(AXIS_Y);
-	m_root_layout.SetGravity(WIDGET_GRAVITY_ALL);
-	m_root_layout.SetLayoutDistribution(LAYOUT_DISTRIBUTION_AVAILABLE);
-	m_root_layout.SetLayoutOrder(LAYOUT_ORDER_TOP_TO_BOTTOM);
-	m_root_layout.SetSkinBg(TBIDC("TBTabContainer.rootlayout"));
-	m_tab_layout.SetLayoutDistributionPosition(LAYOUT_DISTRIBUTION_POSITION_CENTER);
-	m_tab_layout.SetSkinBg(TBIDC("TBTabContainer.tablayout_x"));
-	m_tab_layout.SetLayoutPosition(LAYOUT_POSITION_RIGHT_BOTTOM);
-	m_content_root.SetGravity(WIDGET_GRAVITY_ALL);
-	m_content_root.SetSkinBg(TBIDC("TBTabContainer.container"));
+	m_root_layout.addChild(&m_content_root);
+	m_root_layout.addChild(&m_tab_layout);
+	m_root_layout.setAxis(AXIS_Y);
+	m_root_layout.setGravity(WIDGET_GRAVITY_ALL);
+	m_root_layout.setLayoutDistribution(LAYOUT_DISTRIBUTION_AVAILABLE);
+	m_root_layout.setLayoutOrder(LAYOUT_ORDER_TOP_TO_BOTTOM);
+	m_root_layout.setSkinBg(TBIDC("TBTabContainer.rootlayout"));
+	m_tab_layout.setLayoutDistributionPosition(LAYOUT_DISTRIBUTION_POSITION_CENTER);
+	m_tab_layout.setSkinBg(TBIDC("TBTabContainer.tablayout_x"));
+	m_tab_layout.setLayoutPosition(LAYOUT_POSITION_RIGHT_BOTTOM);
+	m_content_root.setGravity(WIDGET_GRAVITY_ALL);
+	m_content_root.setSkinBg(TBIDC("TBTabContainer.container"));
 }
 
 TBTabContainer::~TBTabContainer()
 {
-	m_root_layout.RemoveChild(&m_content_root);
-	m_root_layout.RemoveChild(&m_tab_layout);
-	RemoveChild(&m_root_layout);
+	m_root_layout.removeChild(&m_content_root);
+	m_root_layout.removeChild(&m_tab_layout);
+	removeChild(&m_root_layout);
 }
 
-void TBTabContainer::SetAxis(AXIS axis)
+void TBTabContainer::setAxis(AXIS axis)
 {
-	m_root_layout.SetAxis(axis);
-	m_tab_layout.SetAxis(axis == AXIS_X ? AXIS_Y : AXIS_X);
-	m_tab_layout.SetSkinBg(axis == AXIS_X ? TBIDC("TBTabContainer.tablayout_y") :
+	m_root_layout.setAxis(axis);
+	m_tab_layout.setAxis(axis == AXIS_X ? AXIS_Y : AXIS_X);
+	m_tab_layout.setSkinBg(axis == AXIS_X ? TBIDC("TBTabContainer.tablayout_y") :
 											TBIDC("TBTabContainer.tablayout_x"));
 }
 
-void TBTabContainer::SetValue(int index)
+void TBTabContainer::setValue(int index)
 {
 	if (index == m_current_page)
 		return;
@@ -76,53 +76,53 @@ void TBTabContainer::SetValue(int index)
 
 	// Update the pages visibility and tabs pressed value.
 	index = 0;
-	TBWidget *page = m_content_root.GetFirstChild();
-	TBWidget *tab = m_tab_layout.GetFirstChild();
-	for (   ; page && tab; page = page->GetNext(), tab = tab->GetNext(), index++)
+	TBWidget *page = m_content_root.getFirstChild();
+	TBWidget *tab = m_tab_layout.getFirstChild();
+	for (   ; page && tab; page = page->getNext(), tab = tab->getNext(), index++)
 	{
 		bool active = index == m_current_page;
-		page->SetVisibility(active ? WIDGET_VISIBILITY_VISIBLE : WIDGET_VISIBILITY_INVISIBLE);
-		tab->SetValue(active ? 1 : 0);
+		page->setVisibility(active ? WIDGET_VISIBILITY_VISIBLE : WIDGET_VISIBILITY_INVISIBLE);
+		tab->setValue(active ? 1 : 0);
 	}
 }
 
-int TBTabContainer::GetNumPages()
+int TBTabContainer::getNumPages()
 {
 	int count = 0;
-	for (TBWidget *tab = m_tab_layout.GetFirstChild(); tab; tab = tab->GetNext())
+	for (TBWidget *tab = m_tab_layout.getFirstChild(); tab; tab = tab->getNext())
 		count++;
 	return count;
 }
 
-TBWidget *TBTabContainer::GetCurrentPageWidget() const
+TBWidget *TBTabContainer::getCurrentPageWidget() const
 {
-	return m_content_root.GetChildFromIndex(m_current_page);
+	return m_content_root.getChildFromIndex(m_current_page);
 }
 
-void TBTabContainer::SetAlignment(TB_ALIGN align)
+void TBTabContainer::setAlignment(TB_ALIGN align)
 {
 	bool horizontal = (align == TB_ALIGN_TOP || align == TB_ALIGN_BOTTOM);
 	bool reverse = (align == TB_ALIGN_TOP || align == TB_ALIGN_LEFT);
-	SetAxis(horizontal ? AXIS_Y : AXIS_X);
-	m_root_layout.SetLayoutOrder(reverse ? LAYOUT_ORDER_TOP_TO_BOTTOM : LAYOUT_ORDER_BOTTOM_TO_TOP);
-	m_tab_layout.SetLayoutPosition(reverse ? LAYOUT_POSITION_RIGHT_BOTTOM : LAYOUT_POSITION_LEFT_TOP);
+	setAxis(horizontal ? AXIS_Y : AXIS_X);
+	m_root_layout.setLayoutOrder(reverse ? LAYOUT_ORDER_TOP_TO_BOTTOM : LAYOUT_ORDER_BOTTOM_TO_TOP);
+	m_tab_layout.setLayoutPosition(reverse ? LAYOUT_POSITION_RIGHT_BOTTOM : LAYOUT_POSITION_LEFT_TOP);
 	m_align = align;
 }
 
-bool TBTabContainer::OnEvent(const TBWidgetEvent &ev)
+bool TBTabContainer::onEvent(const TBWidgetEvent &ev)
 {
 	if ((ev.type == EVENT_TYPE_CLICK || ev.type == EVENT_TYPE_POINTER_DOWN) &&
-		ev.target->GetID() == TBIDC("tab") &&
-		ev.target->GetParent() == &m_tab_layout)
+		ev.target->getID() == TBIDC("tab") &&
+		ev.target->getParent() == &m_tab_layout)
 	{
-		int clicked_index = m_tab_layout.GetIndexFromChild(ev.target);
-		SetValue(clicked_index);
+		int clicked_index = m_tab_layout.getIndexFromChild(ev.target);
+		setValue(clicked_index);
 		return true;
 	}
 	return false;
 }
 
-void TBTabContainer::OnProcess()
+void TBTabContainer::onProcess()
 {
 	if (m_need_page_update)
 	{
@@ -130,7 +130,7 @@ void TBTabContainer::OnProcess()
 		// Force update value
 		int current_page = m_current_page;
 		m_current_page = -1;
-		SetValue(current_page);
+		setValue(current_page);
 	}
 }
 

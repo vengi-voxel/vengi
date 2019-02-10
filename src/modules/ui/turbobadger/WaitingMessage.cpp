@@ -51,14 +51,14 @@ void WaitingMessage::render() {
 		_dotsIndex = (_dotsIndex + 1) % lengthof(dotsArray);
 		_connectingStart -= 2000ul;
 	}
-	const int y = _app->height() / 2 - _font->GetHeight() / 2;
-	const int w = _font->GetStringWidth(_translatedStr);
+	const int y = _app->height() / 2 - _font->getHeight() / 2;
+	const int w = _font->getStringWidth(_translatedStr);
 	const int x = _app->width() / 2 - w / 2;
-	_font->DrawString(x, y, _color, _translatedStr);
+	_font->drawString(x, y, _color, _translatedStr);
 
 	const int dotX = x + w + 5;
 	const char *dotsString = dotsArray[_dotsIndex];
-	_font->DrawString(dotX, y, _color, dotsString);
+	_font->drawString(dotX, y, _color, dotsString);
 }
 
 }

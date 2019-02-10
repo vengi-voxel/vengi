@@ -30,24 +30,24 @@ public:
 	};
 
 	/** Set what should toggle when the value changes. */
-	void SetToggle(TOGGLE toggle);
+	void setToggle(TOGGLE toggle);
 	TOGGLE GetToggle() const { return m_toggle; }
 
 	/** Set if the toggle state should be inverted. */
-	void SetInvert(bool invert);
-	bool GetInvert() const { return m_invert; }
+	void setInvert(bool invert);
+	bool getInvert() const { return m_invert; }
 
 	/** Get the current value, after checking the invert mode. */
-	bool GetIsOn() const { return m_invert ? !m_value : !!m_value; }
+	bool getIsOn() const { return m_invert ? !m_value : !!m_value; }
 
 	/** Set the value of this widget. 1 will turn on the toggle, 0 will turn it off (or
 		the opposite if the invert mode is set). */
-	virtual void SetValue(int value);
-	virtual int GetValue() const { return m_value; }
+	virtual void setValue(int value);
+	virtual int getValue() const { return m_value; }
 
-	virtual void OnInflate(const INFLATE_INFO &info);
+	virtual void onInflate(const INFLATE_INFO &info);
 private:
-	void UpdateInternal();
+	void updateInternal();
 	TOGGLE m_toggle;
 	bool m_invert;
 	int m_value;
@@ -64,7 +64,7 @@ public:
 
 	TBSectionHeader();
 
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual bool onEvent(const TBWidgetEvent &ev);
 };
 
 /** TBSection is a widget with a header that when clicked toggles its children
@@ -87,25 +87,25 @@ public:
 	TBSection();
 	~TBSection();
 
-	TBLayout *GetLayout() { return &m_layout; }
-	TBSectionHeader *GetHeader() { return &m_header; }
-	TBToggleContainer *GetContainer() { return &m_toggle_container; }
+	TBLayout *getLayout() { return &m_layout; }
+	TBSectionHeader *getHeader() { return &m_header; }
+	TBToggleContainer *getContainer() { return &m_toggle_container; }
 
 	/** Set if the section should be scrolled into view after next layout. */
-	void SetPendingScrollIntoView(bool pending_scroll) { m_pending_scroll = pending_scroll; }
+	void setPendingScrollIntoView(bool pending_scroll) { m_pending_scroll = pending_scroll; }
 
 	/** Set the text of the text field. */
-	virtual bool SetText(const char *text) { return m_header.SetText(text); }
-	virtual bool GetText(TBStr &text) { return m_header.GetText(text); }
-	using TBWidget::GetText; ///< Make all versions in base class available.
+	virtual bool setText(const char *text) { return m_header.setText(text); }
+	virtual bool getText(TBStr &text) { return m_header.getText(text); }
+	using TBWidget::getText; ///< Make all versions in base class available.
 
-	virtual void SetValue(int value);
-	virtual int GetValue() const { return m_toggle_container.GetValue(); }
+	virtual void setValue(int value);
+	virtual int getValue() const { return m_toggle_container.getValue(); }
 
-	virtual TBWidget *GetContentRoot() { return m_toggle_container.GetContentRoot(); }
-	virtual void OnProcessAfterChildren();
+	virtual TBWidget *getContentRoot() { return m_toggle_container.getContentRoot(); }
+	virtual void onProcessAfterChildren();
 
-	virtual PreferredSize OnCalculatePreferredSize(const SizeConstraints &constraints);
+	virtual PreferredSize onCalculatePreferredSize(const SizeConstraints &constraints);
 private:
 	TBLayout m_layout;
 	TBSectionHeader m_header;

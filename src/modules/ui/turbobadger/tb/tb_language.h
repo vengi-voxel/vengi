@@ -30,16 +30,16 @@ public:
 	/** Load a file into this language manager.
 		Note: This *adds* strings read from the file, without clearing any existing
 		strings first. */
-	bool Load(const char *filename);
+	bool load(const char *filename);
 
 	/** Clear the list of strings. */
-	void Clear();
+	void clear();
 
 	/** Return the string with the given id.
 		If there is no string with that id, "<TRANSLATE!>" will be returned
 		in release builds, and "<TRANSLATE:%s>" (populated with the id) will
 		be returned in debug builds. */
-	const char *GetString(const TBID &id);
+	const char *getString(const TBID &id);
 private:
 	TBHashTableOf<TBStr> strings;
 };

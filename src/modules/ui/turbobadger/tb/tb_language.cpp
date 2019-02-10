@@ -10,40 +10,40 @@ namespace tb {
 
 TBLanguage::~TBLanguage()
 {
-	Clear();
+	clear();
 }
 
-bool TBLanguage::Load(const char *filename)
+bool TBLanguage::load(const char *filename)
 {
 	// Read the file into a node tree (even though it's only a flat list)
 	TBNode node;
-	if (!node.ReadFile(filename))
+	if (!node.readFile(filename))
 		return false;
 
 	// Go through all nodes and add to the strings hash table
-	TBNode *n = node.GetFirstChild();
+	TBNode *n = node.getFirstChild();
 	while (n)
 	{
-		const char *str = n->GetValue().GetString();
+		const char *str = n->getValue().getString();
 		TBStr *new_str = new TBStr(str);
-		if (!new_str || !strings.Add(TBID(n->GetName()), new_str))
+		if (!new_str || !strings.add(TBID(n->getName()), new_str))
 		{
 			delete new_str;
 			return false;
 		}
-		n = n->GetNext();
+		n = n->getNext();
 	}
 	return true;
 }
 
-void TBLanguage::Clear()
+void TBLanguage::clear()
 {
-	strings.DeleteAll();
+	strings.deleteAll();
 }
 
-const char *TBLanguage::GetString(const TBID &id)
+const char *TBLanguage::getString(const TBID &id)
 {
-	if (TBStr *str = strings.Get(id))
+	if (TBStr *str = strings.get(id))
 		return *str;
 	return "<TRANSLATE!>";
 }

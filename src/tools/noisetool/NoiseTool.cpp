@@ -16,7 +16,7 @@ void NoiseTool::add(uint32_t dataId, const NoiseData& data) {
 	auto pair = _noiseData.insert(std::make_pair(dataId, data));
 	if (pair.second) {
 		const char* name = getNoiseTypeName(data.noiseType);
-		_noiseItemSource->AddItem(new NoiseItem(name, dataId, data));
+		_noiseItemSource->addItem(new NoiseItem(name, dataId, data));
 	}
 }
 
@@ -24,10 +24,10 @@ void NoiseTool::remove(uint32_t dataId) {
 	if (_noiseData.erase(dataId) <= 0) {
 		return;
 	}
-	const int n = _noiseItemSource->GetNumItems();
+	const int n = _noiseItemSource->getNumItems();
 	for (int i = 0; i < n; ++i) {
-		if (_noiseItemSource->GetItemID(i) == dataId) {
-			_noiseItemSource->DeleteItem(i);
+		if (_noiseItemSource->getItemID(i) == dataId) {
+			_noiseItemSource->deleteItem(i);
 			return;
 		}
 	}

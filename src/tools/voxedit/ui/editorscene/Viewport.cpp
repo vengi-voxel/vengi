@@ -22,7 +22,7 @@ static inline ViewportSingleton& vps() {
 Viewport::Viewport() :
 		Super(),
 		_frameBufferTexture((tb::UIRendererGL*) tb::g_renderer) {
-	SetIsFocusable(true);
+	setIsFocusable(true);
 	vps().init();
 }
 
@@ -62,7 +62,7 @@ void Viewport::resetCamera() {
 	_controller.resetCamera(vps().modelVolume());
 }
 
-bool Viewport::OnEvent(const tb::TBWidgetEvent &ev) {
+bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
 	core_trace_scoped(EditorSceneOnEvent);
 	if (ev.type == tb::EVENT_TYPE_WHEEL && ev.delta_y != 0) {
 		_controller.zoom((float)(ev.delta_y * 100));
@@ -76,13 +76,13 @@ bool Viewport::OnEvent(const tb::TBWidgetEvent &ev) {
 		ViewportSingleton::getInstance().setMousePos(ev.target_x, ev.target_y);
 		return true;
 	}
-	return Super::OnEvent(ev);
+	return Super::onEvent(ev);
 }
 
-void Viewport::OnResized(int oldw, int oldh) {
+void Viewport::onResized(int oldw, int oldh) {
 	core_trace_scoped(EditorSceneOnResized);
-	Super::OnResized(oldw, oldh);
-	const tb::TBRect& rect = GetRect();
+	Super::onResized(oldw, oldh);
+	const tb::TBRect& rect = getRect();
 	const glm::ivec2 dim(rect.w, rect.h);
 	_controller.onResize(dim);
 	_frameBuffer.shutdown();
@@ -92,14 +92,14 @@ void Viewport::OnResized(int oldw, int oldh) {
 	cfg.dimension(dim).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addTextureAttachment(textureCfg);
 	_frameBuffer.init(cfg);
 	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
-	_frameBufferTexture.Init(dim.x, dim.y, fboTexture->handle());
+	_frameBufferTexture.init(dim.x, dim.y, fboTexture->handle());
 }
 
-void Viewport::OnPaint(const PaintProps &paintProps) {
+void Viewport::onPaint(const PaintProps &paintProps) {
 	core_trace_scoped(EditorSceneOnPaint);
-	Super::OnPaint(paintProps);
+	Super::onPaint(paintProps);
 	const glm::ivec2& dimension = _frameBuffer.dimension();
-	ui::turbobadger::UIRect rect = GetRect();
+	ui::turbobadger::UIRect rect = getRect();
 	rect.x = 0;
 	rect.y = 0;
 	const glm::vec4& uv = _frameBuffer.uv();
@@ -113,16 +113,16 @@ void Viewport::OnPaint(const PaintProps &paintProps) {
 	const float h = (uvc.y - uva.y) * dimension.y;
 
 	const tb::TBRect srcRect(x, y, w, h);
-	tb::g_renderer->DrawBitmap(rect, srcRect, &_frameBufferTexture);
-	tb::TBFontFace* font = GetFont();
-	font->DrawString(0, 0, tb::TBColor(255.0f, 255.0f, 255.0f, 255.0f), _cameraMode.c_str());
+	tb::g_renderer->drawBitmap(rect, srcRect, &_frameBufferTexture);
+	tb::TBFontFace* font = getFont();
+	font->drawString(0, 0, tb::TBColor(255.0f, 255.0f, 255.0f, 255.0f), _cameraMode.c_str());
 }
 
-void Viewport::OnInflate(const tb::INFLATE_INFO &info) {
-	Super::OnInflate(info);
+void Viewport::onInflate(const tb::INFLATE_INFO &info) {
+	Super::onInflate(info);
 
 	Controller::SceneCameraMode mode = Controller::SceneCameraMode::Free;
-	const char *cameraMode = info.node->GetValueString("camera", "free");
+	const char *cameraMode = info.node->getValueString("camera", "free");
 	if (!strcmp(cameraMode, "top")) {
 		mode = Controller::SceneCameraMode::Top;
 	} else if (!strcmp(cameraMode, "front")) {
@@ -135,25 +135,25 @@ void Viewport::OnInflate(const tb::INFLATE_INFO &info) {
 }
 
 void Viewport::updateStatusBar() {
-	if (tb::TBTextField* status = GetParentRoot()->GetWidgetByIDAndType<tb::TBTextField>("status")) {
+	if (tb::TBTextField* status = getParentRoot()->getWidgetByIDAndType<tb::TBTextField>("status")) {
 		if (vps().aabbMode()) {
 			tb::TBStr str;
 			const glm::ivec3& dim = vps().aabbDim();
-			str.SetFormatted("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
-			status->SetText(str);
+			str.setFormatted("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
+			status->setText(str);
 		} else {
 			const ModifierType modifierType = vps().modifierType();
 			const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
 			const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 			const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
 			if (overwrite) {
-				status->SetText(tr("Override"));
+				status->setText(tr("Override"));
 			} else if (deleteVoxels) {
-				status->SetText(tr("Delete"));
+				status->setText(tr("Delete"));
 			} else if (update) {
-				status->SetText(tr("Update"));
+				status->setText(tr("Update"));
 			} else {
-				status->SetText(tr("Place"));
+				status->setText(tr("Place"));
 			}
 		}
 	}
@@ -165,9 +165,9 @@ void Viewport::update() {
 	camera().setTarget(glm::vec3(vps().referencePosition()));
 }
 
-void Viewport::OnProcess() {
-	Super::OnProcess();
-	if (!GetVisibilityCombined()) {
+void Viewport::onProcess() {
+	Super::onProcess();
+	if (!getVisibilityCombined()) {
 		return;
 	}
 	core_trace_scoped(EditorSceneOnProcess);

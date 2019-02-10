@@ -14,20 +14,20 @@ public:
 
 	ColorWidget();
 
-	void SetColor(const char *);
-	void SetColor(int r, int g, int b, int a);
+	void setColor(const char *);
+	void setColor(int r, int g, int b, int a);
 
-	const tb::TBColor& GetColor() const {
+	const tb::TBColor& getColor() const {
 		return _color;
 	}
 
-	void SetValue(int value) override;
-	int GetValue() const override {
+	void setValue(int value) override;
+	int getValue() const override {
 		return (int) _value;
 	}
 
-	void OnInflate(const tb::INFLATE_INFO &info) override;
-	void OnPaint(const PaintProps &paint_props) override;
+	void onInflate(const tb::INFLATE_INFO &info) override;
+	void onPaint(const PaintProps &paint_props) override;
 
 private:
 	tb::TBColor _color;
@@ -43,8 +43,8 @@ public:
 
 	NodeConnectorWidget();
 
-	void OnInflate(const tb::INFLATE_INFO &info) override;
-	void OnPaint(const PaintProps &paint_props) override;
+	void onInflate(const tb::INFLATE_INFO &info) override;
+	void onPaint(const PaintProps &paint_props) override;
 private:
 	tb::TBColor _color;
 };
@@ -56,6 +56,6 @@ private:
 public:
 	UIWIDGET_SUBCLASS(ImageWidget, Super);
 
-	tb::PreferredSize OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
+	tb::PreferredSize onCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
 };
 UIWIDGET_FACTORY(ImageWidget, tb::TBValue::TYPE_NULL, tb::WIDGET_Z_TOP)

@@ -27,26 +27,26 @@ public:
 	~TBInlineSelect();
 
 	/** Set along which axis the content should layouted. */
-	virtual void SetAxis(AXIS axis) override { m_layout.SetAxis(axis); }
-	virtual AXIS GetAxis() const override { return m_layout.GetAxis(); }
+	virtual void setAxis(AXIS axis) override { m_layout.setAxis(axis); }
+	virtual AXIS getAxis() const override { return m_layout.getAxis(); }
 
-	void SetLimits(int min, int max);
-	int GetMinValue() const { return m_min; }
-	int GetMaxValue() const { return m_max; }
+	void setLimits(int min, int max);
+	int getMinValue() const { return m_min; }
+	int getMaxValue() const { return m_max; }
 
-	virtual void SetValue(int value) override { SetValueInternal(value, true); }
-	virtual int GetValue() const override { return m_value; }
+	virtual void setValue(int value) override { setValueInternal(value, true); }
+	virtual int getValue() const override { return m_value; }
 
-	virtual void OnInflate(const INFLATE_INFO &info) override;
-	virtual void OnSkinChanged() override;
-	virtual bool OnEvent(const TBWidgetEvent &ev) override;
+	virtual void onInflate(const INFLATE_INFO &info) override;
+	virtual void onSkinChanged() override;
+	virtual bool onEvent(const TBWidgetEvent &ev) override;
 protected:
 	TBButton m_buttons[2];
 	TBLayout m_layout;
 	TBEditField m_editfield;
 	int m_value;
 	int m_min, m_max;
-	void SetValueInternal(int value, bool update_text);
+	void setValueInternal(int value, bool update_text);
 };
 
 } // namespace tb

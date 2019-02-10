@@ -20,55 +20,55 @@ TreeWindow::TreeWindow(ui::turbobadger::Window* window, voxel::TreeType type) :
 
 	if (_trunkHeight == nullptr) {
 		Log::error("trunkheight widget not found");
-		Close();
+		close();
 		return;
 	}
 	if (_trunkWidth == nullptr) {
 		Log::error("trunkwidth widget not found");
-		Close();
+		close();
 		return;
 	}
 	if (_leavesWidth == nullptr) {
 		Log::error("leaveswidth widget not found");
-		Close();
+		close();
 		return;
 	}
 	if (_leavesHeight == nullptr) {
 		Log::error("leavesheight widget not found");
-		Close();
+		close();
 		return;
 	}
 	if (_leavesDepth == nullptr) {
 		Log::error("leavesdepth widget not found");
-		Close();
+		close();
 		return;
 	}
 
 	_ctx.type = type;
 }
 
-bool TreeWindow::OnEvent(const tb::TBWidgetEvent &ev) {
+bool TreeWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK) {
-		if (ev.target->GetID() == TBIDC("ok")) {
-			_ctx.trunkHeight = _trunkHeight->GetValue();
-			_ctx.trunkWidth = _trunkWidth->GetValue();
-			_ctx.leavesWidth = _leavesWidth->GetValue();
-			_ctx.leavesHeight = _leavesHeight->GetValue();
-			_ctx.leavesDepth = _leavesDepth->GetValue();
+		if (ev.target->getID() == TBIDC("ok")) {
+			_ctx.trunkHeight = _trunkHeight->getValue();
+			_ctx.trunkWidth = _trunkWidth->getValue();
+			_ctx.leavesWidth = _leavesWidth->getValue();
+			_ctx.leavesHeight = _leavesHeight->getValue();
+			_ctx.leavesDepth = _leavesDepth->getValue();
 			ViewportSingleton::getInstance().createTree(_ctx);
-			Close();
+			close();
 			return true;
-		} else if (ev.target->GetID() == TBIDC("cancel")) {
-			Close();
+		} else if (ev.target->getID() == TBIDC("cancel")) {
+			close();
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
 		if (ev.special_key == tb::TB_KEY_ESC) {
-			Close();
+			close();
 			return true;
 		}
 	}
-	return Super::OnEvent(ev);
+	return Super::onEvent(ev);
 }
 
 }

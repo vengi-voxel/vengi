@@ -16,12 +16,12 @@ public:
 		core_assert_always(loadResourceFile("ui/window/client-authfailed.tb.txt"));
 	}
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override {
-		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("ok")) {
-			Close();
+	bool onEvent(const tb::TBWidgetEvent &ev) override {
+		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("ok")) {
+			close();
 			return true;
 		}
-		return ui::turbobadger::Window::OnEvent(ev);
+		return ui::turbobadger::Window::onEvent(ev);
 	}
 };
 

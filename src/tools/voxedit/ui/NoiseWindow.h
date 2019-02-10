@@ -19,7 +19,7 @@ private:
 public:
 	NoiseWindow(ui::turbobadger::Window* window);
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override;
+	bool onEvent(const tb::TBWidgetEvent &ev) override;
 };
 
 }

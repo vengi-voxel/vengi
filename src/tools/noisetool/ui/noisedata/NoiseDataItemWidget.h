@@ -29,8 +29,8 @@ private:
 public:
 	NoiseItemSource(NoiseTool* tool);
 
-	virtual bool Filter(int index, const char *filter);
-	virtual tb::TBWidget *CreateItemWidget(int index, tb::TBSelectItemViewer *viewer);
+	virtual bool filter(int index, const char *filter);
+	virtual tb::TBWidget *createItemWidget(int index, tb::TBSelectItemViewer *viewer);
 };
 
 class NoiseDataItemWidget: public tb::TBLayout {
@@ -42,7 +42,7 @@ private:
 public:
 	NoiseDataItemWidget(NoiseTool* tool, NoiseItem *item, NoiseItemSource *source, int index);
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override;
+	bool onEvent(const tb::TBWidgetEvent &ev) override;
 };
 
 class NoiseDataList : public tb::TBLayout {
@@ -55,7 +55,7 @@ public:
 	NoiseDataList();
 	~NoiseDataList();
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override;
+	bool onEvent(const tb::TBWidgetEvent &ev) override;
 };
 
 UIWIDGET_FACTORY(NoiseDataList, tb::TBValue::TYPE_NULL, tb::WIDGET_Z_TOP)

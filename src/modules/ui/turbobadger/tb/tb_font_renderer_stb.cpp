@@ -23,14 +23,14 @@ public:
 	STBFontRenderer();
 	~STBFontRenderer();
 
-	bool Load(const char *filename, int size);
+	bool load(const char *filename, int size);
 
-	virtual TBFontFace *Create(TBFontManager *font_manager, const char *filename,
-								const TBFontDescription &font_desc);
+	virtual TBFontFace *create(TBFontManager *fontManager, const char *filename,
+								const TBFontDescription &fontDesc);
 
-	virtual TBFontMetrics GetMetrics();
-	virtual bool RenderGlyph(TBFontGlyphData *dst_bitmap, UCS4 cp);
-	virtual void GetGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp);
+	virtual TBFontMetrics getMetrics();
+	virtual bool renderGlyph(TBFontGlyphData *dstBitmap, UCS4 cp);
+	virtual void getGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp);
 private:
 	stbtt_fontinfo font;
 	TBTempBuffer ttf_buffer;
@@ -48,7 +48,7 @@ STBFontRenderer::~STBFontRenderer()
 	delete [] render_data;
 }
 
-TBFontMetrics STBFontRenderer::GetMetrics()
+TBFontMetrics STBFontRenderer::getMetrics()
 {
 	TBFontMetrics metrics;
 	int ascent, descent, lineGap;
@@ -59,7 +59,7 @@ TBFontMetrics STBFontRenderer::GetMetrics()
 	return metrics;
 }
 
-bool STBFontRenderer::RenderGlyph(TBFontGlyphData *data, UCS4 cp)
+bool STBFontRenderer::renderGlyph(TBFontGlyphData *data, UCS4 cp)
 {
 	delete [] render_data;
 	render_data = stbtt_GetCodepointBitmap(&font, 0, scale, cp, &data->w, &data->h, 0, 0);
@@ -69,7 +69,7 @@ bool STBFontRenderer::RenderGlyph(TBFontGlyphData *data, UCS4 cp)
 	return data->data8 ? true : false;
 }
 
-void STBFontRenderer::GetGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp)
+void STBFontRenderer::getGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp)
 {
 	int advanceWidth, leftSideBearing;
 	stbtt_GetCodepointHMetrics(&font, cp, &advanceWidth, &leftSideBearing);
@@ -80,12 +80,12 @@ void STBFontRenderer::GetGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp)
 	metrics->y = iy0;
 }
 
-bool STBFontRenderer::Load(const char *filename, int size)
+bool STBFontRenderer::load(const char *filename, int size)
 {
-	if (!ttf_buffer.AppendFile(filename))
+	if (!ttf_buffer.appendFile(filename))
 		return false;
 
-	const unsigned char *ttf_ptr = (const unsigned char *) ttf_buffer.GetData();
+	const unsigned char *ttf_ptr = (const unsigned char *) ttf_buffer.getData();
 	stbtt_InitFont(&font, ttf_ptr, stbtt_GetFontOffsetForIndex(ttf_ptr, 0));
 
 	font_size = (int) (size * 1.3f); // FIX: Constant taken out of thin air because fonts get too small.
@@ -93,12 +93,12 @@ bool STBFontRenderer::Load(const char *filename, int size)
 	return true;
 }
 
-TBFontFace *STBFontRenderer::Create(TBFontManager *font_manager, const char *filename, const TBFontDescription &font_desc)
+TBFontFace *STBFontRenderer::create(TBFontManager *fontManager, const char *filename, const TBFontDescription &fontDesc)
 {
 	if (STBFontRenderer *fr = new STBFontRenderer())
 	{
-		if (fr->Load(filename, (int) font_desc.GetSize()))
-			if (TBFontFace *font = new TBFontFace(font_manager->GetGlyphCache(), fr, font_desc))
+		if (fr->load(filename, (int) fontDesc.getSize()))
+			if (TBFontFace *font = new TBFontFace(fontManager->getGlyphCache(), fr, fontDesc))
 				return font;
 		delete fr;
 	}
@@ -108,5 +108,5 @@ TBFontFace *STBFontRenderer::Create(TBFontManager *font_manager, const char *fil
 void register_stb_font_renderer()
 {
 	if (STBFontRenderer *fr = new STBFontRenderer)
-		g_font_manager->AddRenderer(fr);
+		g_font_manager->addRenderer(fr);
 }

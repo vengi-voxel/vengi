@@ -13,23 +13,23 @@ static const char *FILTERLIST = "filter";
 static const char *INPUT = "input";
 
 FileDialogItemWidget::FileDialogItemWidget(FileDialogItem *item) : tb::TBLayout() {
-	SetSkinBg(TBIDC("TBSelectItem"));
-	SetLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
-	SetLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
-	SetPaintOverflowFadeout(false);
+	setSkinBg(TBIDC("TBSelectItem"));
+	setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
+	setLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
+	setPaintOverflowFadeout(false);
 
 	if (item->entry().type == io::Filesystem::DirEntry::Type::dir) {
-		tb::g_widgets_reader->LoadFile(GetContentRoot(), "ui/window/filedialog_dir.tb.txt");
+		tb::g_widgets_reader->loadFile(getContentRoot(), "ui/window/filedialog_dir.tb.txt");
 	} else {
-		tb::g_widgets_reader->LoadFile(GetContentRoot(), "ui/window/filedialog_file.tb.txt");
+		tb::g_widgets_reader->loadFile(getContentRoot(), "ui/window/filedialog_file.tb.txt");
 	}
-	if (tb::TBTextField *name = GetWidgetByIDAndType<tb::TBTextField>(TBIDC("name"))) {
-		name->SetText(item->entry().name.c_str());
+	if (tb::TBTextField *name = getWidgetByIDAndType<tb::TBTextField>(TBIDC("name"))) {
+		name->setText(item->entry().name.c_str());
 	}
 }
 
-bool FileDialogItemSource::Filter(int index, const char *filter) {
-	const FileDialogItem* item = GetItem(index);
+bool FileDialogItemSource::filter(int index, const char *filter) {
+	const FileDialogItem* item = getItem(index);
 	if (item == nullptr) {
 		return false;
 	}
@@ -51,7 +51,7 @@ bool FileDialogItemSource::Filter(int index, const char *filter) {
 	if (sep == nullptr) {
 		char patternBuf[32];
 		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", buf);
-		return core::string::matches(patternBuf, item->str.CStr());
+		return core::string::matches(patternBuf, item->str.c_str());
 	}
 
 	char *f = buf;
@@ -59,7 +59,7 @@ bool FileDialogItemSource::Filter(int index, const char *filter) {
 		*sep = '\0';
 		char patternBuf[32];
 		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
-		if (core::string::matches(patternBuf, item->str.CStr())) {
+		if (core::string::matches(patternBuf, item->str.c_str())) {
 			return true;
 		}
 		f = ++sep;
@@ -70,11 +70,11 @@ bool FileDialogItemSource::Filter(int index, const char *filter) {
 	}
 	char patternBuf[32];
 	SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
-	return core::string::matches(patternBuf, item->str.CStr());
+	return core::string::matches(patternBuf, item->str.c_str());
 }
 
-tb::TBWidget *FileDialogItemSource::CreateItemWidget(int index, tb::TBSelectItemViewer *viewer) {
-	return new FileDialogItemWidget(GetItem(index));
+tb::TBWidget *FileDialogItemSource::createItemWidget(int index, tb::TBSelectItemViewer *viewer) {
+	return new FileDialogItemWidget(getItem(index));
 }
 
 FileDialogWindow::FileDialogWindow(UIApp* tool, const std::function<void(const std::string&)>& callback) :
@@ -82,24 +82,24 @@ FileDialogWindow::FileDialogWindow(UIApp* tool, const std::function<void(const s
 	_fs = tool->filesystem();
 	loadResourceFile("ui/window/filedialog.tb.txt");
 	if (tb::TBSelectList * select = getWidgetByType<tb::TBSelectList>(FILELIST)) {
-		select->SetSource(&_entityList);
-		select->GetScrollContainer()->SetScrollMode(tb::SCROLL_MODE_X_AUTO_Y_AUTO);
+		select->setSource(&_entityList);
+		select->getScrollContainer()->setScrollMode(tb::SCROLL_MODE_X_AUTO_Y_AUTO);
 	}
 	if (tb::TBSelectDropdown * select = getWidgetByType<tb::TBSelectDropdown>(FILTERLIST)) {
-		select->SetSource(&_filterList);
+		select->setSource(&_filterList);
 	}
 
-	_filterList.SetSort(tb::TB_SORT_ASCENDING);
+	_filterList.setSort(tb::TB_SORT_ASCENDING);
 	_directory = _fs->absolutePath(".");
 	setMode(video::WindowedApp::OpenFileMode::Open);
 }
 
 FileDialogWindow::~FileDialogWindow() {
 	if (tb::TBSelectList *select = getWidgetByType<tb::TBSelectList>(FILELIST)) {
-		select->SetSource(nullptr);
+		select->setSource(nullptr);
 	}
 	if (tb::TBSelectDropdown * select = getWidgetByType<tb::TBSelectDropdown>(FILTERLIST)) {
-		select->SetSource(nullptr);
+		select->setSource(nullptr);
 	}
 }
 
@@ -108,47 +108,47 @@ void FileDialogWindow::setMode(video::WindowedApp::OpenFileMode mode) {
 	_entityList.setMode(mode);
 	const bool inputVisible = _mode == video::WindowedApp::OpenFileMode::Save;
 	if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
-		input->SetVisibility(inputVisible ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE);
+		input->setVisibility(inputVisible ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE);
 	}
 }
 
 void FileDialogWindow::setFilter(const char **filter) {
-	_filterList.DeleteAllItems();
+	_filterList.deleteAllItems();
 	tb::TBSelectDropdown * select = getWidgetByType<tb::TBSelectDropdown>(FILTERLIST);
 	if (filter == nullptr) {
 		if (select != nullptr) {
-			select->SetVisibility(tb::WIDGET_VISIBILITY_INVISIBLE);
+			select->setVisibility(tb::WIDGET_VISIBILITY_INVISIBLE);
 		}
 		return;
 	}
 	for (const char** f = filter; *f; ++f) {
-		_filterList.AddItem(new tb::TBGenericStringItem(*f));
+		_filterList.addItem(new tb::TBGenericStringItem(*f));
 	}
-	_filterList.AddItem(new tb::TBGenericStringItem("*"));
-	if (select != nullptr && _filterList.GetNumItems() > 0) {
-		select->SetValue(0);
-		select->SetVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
+	_filterList.addItem(new tb::TBGenericStringItem("*"));
+	if (select != nullptr && _filterList.getNumItems() > 0) {
+		select->setValue(0);
+		select->setVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
 	}
 }
 
-bool FileDialogWindow::OnEvent(const tb::TBWidgetEvent &ev) {
-	if (ev.type == tb::EVENT_TYPE_CHANGED && ev.target->GetID() == TBIDC(FILTERLIST)) {
+bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
+	if (ev.type == tb::EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC(FILTERLIST)) {
 		if (tb::TBSelectList *select = getWidgetByType<tb::TBSelectList>(FILELIST)) {
-			select->SetFilter(ev.target->GetText());
+			select->setFilter(ev.target->getText());
 			return true;
 		}
 	}
 	if (ev.type == tb::EVENT_TYPE_KEY_DOWN && ev.special_key == tb::TB_KEY_ESC) {
 		tb::TBWidgetEvent click_ev(tb::EVENT_TYPE_CLICK);
-		m_close_button.InvokeEvent(click_ev);
+		m_close_button.invokeEvent(click_ev);
 		return true;
 	}
-	const tb::TBID& id = ev.target->GetID();
+	const tb::TBID& id = ev.target->getID();
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN && ev.count >= 2) {
 		if (tb::TBSelectList *select = getWidgetByType<tb::TBSelectList>(FILELIST)) {
-			const int index = select->GetValue();
-			if (index >= 0 && index < _entityList.GetNumItems()) {
-				const FileDialogItem* item = _entityList.GetItem(index);
+			const int index = select->getValue();
+			if (index >= 0 && index < _entityList.getNumItems()) {
+				const FileDialogItem* item = _entityList.getItem(index);
 				const auto& dirEntry = item->entry();
 				if (_mode != video::WindowedApp::OpenFileMode::Directory
 				 && dirEntry.type == io::Filesystem::DirEntry::Type::dir) {
@@ -157,12 +157,12 @@ bool FileDialogWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 				}
 				if (_mode == video::WindowedApp::OpenFileMode::Save) {
 					if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
-						input->SetText(dirEntry.name.c_str());
+						input->setText(dirEntry.name.c_str());
 					}
 				} else {
 					_callback(_directory + "/" + dirEntry.name);
 					tb::TBWidgetEvent click_ev(tb::EVENT_TYPE_CLICK);
-					m_close_button.InvokeEvent(click_ev);
+					m_close_button.invokeEvent(click_ev);
 				}
 				return true;
 			}
@@ -171,49 +171,49 @@ bool FileDialogWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		if (id == TBIDC("ok")) {
 			if (_mode == video::WindowedApp::OpenFileMode::Save) {
 				if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
-					_callback(_directory + "/" + std::string(input->GetText().CStr()));
+					_callback(_directory + "/" + std::string(input->getText().c_str()));
 				} else {
 					Log::error("Failed to get input node");
 				}
 			} else if (tb::TBSelectList *select = getWidgetByType<tb::TBSelectList>(FILELIST)) {
-				const int index = select->GetValue();
-				if (index >= 0 && index < _entityList.GetNumItems()) {
-					const FileDialogItem* item = _entityList.GetItem(index);
+				const int index = select->getValue();
+				if (index >= 0 && index < _entityList.getNumItems()) {
+					const FileDialogItem* item = _entityList.getItem(index);
 					const auto& dirEntry = item->entry();
 					_callback(_directory + "/" + dirEntry.name);
 				}
 			}
 			tb::TBWidgetEvent click_ev(tb::EVENT_TYPE_CLICK);
-			m_close_button.InvokeEvent(click_ev);
+			m_close_button.invokeEvent(click_ev);
 			return true;
 		} else if (id == TBIDC("cancel")) {
 			tb::TBWidgetEvent click_ev(tb::EVENT_TYPE_CLICK);
-			m_close_button.InvokeEvent(click_ev);
+			m_close_button.invokeEvent(click_ev);
 			return true;
 		}
 	}
 
-	return Super::OnEvent(ev);
+	return Super::onEvent(ev);
 }
 
-void FileDialogWindow::OnAdded() {
+void FileDialogWindow::onAdded() {
 	Log::info("Load entries");
-	Super::OnAdded();
+	Super::onAdded();
 }
 
 void FileDialogWindow::changeDir(const std::string& dir) {
 	if (!dir.empty()) {
 		_directory = _fs->absolutePath(_directory + "/" + dir);
 	}
-	_entityList.DeleteAllItems();
-	_entityList.AddItem(new FileDialogItem(io::Filesystem::DirEntry{"..", io::Filesystem::DirEntry::Type::dir}));
+	_entityList.deleteAllItems();
+	_entityList.addItem(new FileDialogItem(io::Filesystem::DirEntry{"..", io::Filesystem::DirEntry::Type::dir}));
 
 	std::vector<io::Filesystem::DirEntry> entities;
 	getApp()->filesystem()->list(_directory, entities);
 
 	Log::debug("Looking in %s and found %i entries", _directory.c_str(), (int)entities.size());
 	for (const io::Filesystem::DirEntry& e : entities) {
-		_entityList.AddItem(new FileDialogItem(e));
+		_entityList.addItem(new FileDialogItem(e));
 	}
 }
 

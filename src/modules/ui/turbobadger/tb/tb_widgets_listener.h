@@ -28,11 +28,11 @@ class TBWidgetListener : public TBLinkOf<TBWidgetListener>, public TBWidgetListe
 public:
 	virtual ~TBWidgetListener() {}
 	/** Add a listener to all widgets. */
-	static void AddGlobalListener(TBWidgetListener *listener);
-	static void RemoveGlobalListener(TBWidgetListener *listener);
+	static void addGlobalListener(TBWidgetListener *listener);
+	static void removeGlobalListener(TBWidgetListener *listener);
 
 	/** Called when widget is being deleted (in its destructor, so virtual functions are already gone). */
-	virtual void OnWidgetDelete(TBWidget *widget) {}
+	virtual void onWidgetDelete(TBWidget *widget) {}
 
 	/** This is called when the widget request to be deleted.
 		Return true if you want the widget to not die immediately, f.ex. to fade it out before it
@@ -41,31 +41,31 @@ public:
 		Remember that the widget may still be deleted prematurely for many other reasons (f.ex if its parent is
 		deleted or several listeners respond true and take on the task to delete it at some point). You can
 		use TBWidgetSafePointer to safely handle that. */
-	virtual bool OnWidgetDying(TBWidget *widget) { return false; }
+	virtual bool onWidgetDying(TBWidget *widget) { return false; }
 
 	/** Called when the child has been added to parent, after its parents OnChildAdded.
 		Local listeners are invoked on the parent widget. */
-	virtual void OnWidgetAdded(TBWidget *parent, TBWidget *child) {}
+	virtual void onWidgetAdded(TBWidget *parent, TBWidget *child) {}
 
 	/** Called when the child is about to be removed from parent, after its parents OnChildRemove.
 		Local listeners are invoked on the parent widget. */
-	virtual void OnWidgetRemove(TBWidget *parent, TBWidget *child) {}
+	virtual void onWidgetRemove(TBWidget *parent, TBWidget *child) {}
 
 	/** Called when widget focus has changed on a widget. */
-	virtual void OnWidgetFocusChanged(TBWidget *widget, bool focused) {}
+	virtual void onWidgetFocusChanged(TBWidget *widget, bool focused) {}
 
 	/** Called when a event is about to be invoked on a widget. This make it possible
 		to intercept events before they are handled, and block it (by returning true).
 		Note, if returning true, other global listeners will still also be notified. */
-	virtual bool OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) { return false; }
+	virtual bool onWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) { return false; }
 private:
 	friend class TBWidget;
-	static void InvokeWidgetDelete(TBWidget *widget);
-	static bool InvokeWidgetDying(TBWidget *widget);
-	static void InvokeWidgetAdded(TBWidget *parent, TBWidget *child);
-	static void InvokeWidgetRemove(TBWidget *parent, TBWidget *child);
-	static void InvokeWidgetFocusChanged(TBWidget *widget, bool focused);
-	static bool InvokeWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev);
+	static void invokeWidgetDelete(TBWidget *widget);
+	static bool invokeWidgetDying(TBWidget *widget);
+	static void invokeWidgetAdded(TBWidget *parent, TBWidget *child);
+	static void invokeWidgetRemove(TBWidget *parent, TBWidget *child);
+	static void invokeWidgetFocusChanged(TBWidget *widget, bool focused);
+	static bool invokeWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev);
 };
 
 /** TBWidgetSafePointer keeps a pointer to a widget that will be set to
@@ -74,16 +74,16 @@ class TBWidgetSafePointer : private TBWidgetListener
 {
 public:
 	TBWidgetSafePointer() : m_widget(nullptr)					{ }
-	TBWidgetSafePointer(TBWidget *widget) : m_widget(nullptr)	{ Set(widget); }
-	virtual ~TBWidgetSafePointer()								{ Set(nullptr); }
+	TBWidgetSafePointer(TBWidget *widget) : m_widget(nullptr)	{ set(widget); }
+	virtual ~TBWidgetSafePointer()								{ set(nullptr); }
 
 	/** Set the widget pointer that should be nulled if deleted. */
-	void Set(TBWidget *widget);
+	void set(TBWidget *widget);
 
 	/** Return the widget, or nullptr if it has been deleted. */
-	TBWidget *Get() const { return m_widget; }
+	TBWidget *get() const { return m_widget; }
 private:
-	virtual void OnWidgetDelete(TBWidget *widget);
+	virtual void onWidgetDelete(TBWidget *widget);
 	TBWidget *m_widget;
 };
 

@@ -25,189 +25,189 @@ ResourceEditWindow::ResourceEditWindow()
 	, m_source_edit(nullptr)
 {
 	// Register as global listener to intercept events in the build container
-	TBWidgetListener::AddGlobalListener(this);
+	TBWidgetListener::addGlobalListener(this);
 
-	g_widgets_reader->LoadFile(this, "demo01/ui_resources/resource_edit_window.tb.txt");
+	g_widgets_reader->loadFile(this, "demo01/ui_resources/resource_edit_window.tb.txt");
 
-	m_scroll_container = GetWidgetByIDAndType<TBScrollContainer>(TBIDC("scroll_container"));
-	m_build_container = m_scroll_container->GetContentRoot();
-	m_source_edit = GetWidgetByIDAndType<TBEditField>(TBIDC("source_edit"));
+	m_scroll_container = getWidgetByIDAndType<TBScrollContainer>(TBIDC("scroll_container"));
+	m_build_container = m_scroll_container->getContentRoot();
+	m_source_edit = getWidgetByIDAndType<TBEditField>(TBIDC("source_edit"));
 
-	m_widget_list = GetWidgetByIDAndType<TBSelectList>(TBIDC("widget_list"));
-	m_widget_list->SetSource(&m_widget_list_source);
+	m_widget_list = getWidgetByIDAndType<TBSelectList>(TBIDC("widget_list"));
+	m_widget_list->setSource(&m_widget_list_source);
 
-	SetRect(TBRect(100, 50, 900, 600));
+	setRect(TBRect(100, 50, 900, 600));
 }
 
 ResourceEditWindow::~ResourceEditWindow()
 {
-	TBWidgetListener::RemoveGlobalListener(this);
+	TBWidgetListener::removeGlobalListener(this);
 
 	// avoid assert
-	m_widget_list->SetSource(nullptr);
+	m_widget_list->setSource(nullptr);
 }
 
-void ResourceEditWindow::Load(const char *resource_file)
+void ResourceEditWindow::load(const char *resourceFile)
 {
-	m_resource_filename.Set(resource_file);
-	SetText(resource_file);
+	m_resource_filename.set(resourceFile);
+	setText(resourceFile);
 
 	TBTempBuffer buffer;
-	if (buffer.AppendFile(m_resource_filename))
-		m_source_edit->SetText(buffer.GetData(), buffer.GetAppendPos());
+	if (buffer.appendFile(m_resource_filename))
+		m_source_edit->setText(buffer.getData(), buffer.getAppendPos());
 	else // Error, clear and show message
 	{
-		m_source_edit->SetText("");
+		m_source_edit->setText("");
 		TBStr text;
-		text.SetFormatted("Could not load file %s", resource_file);
-		if (TBMessageWindow *msg_win = new TBMessageWindow(GetParentRoot(), TBIDC("")))
-			msg_win->Show("Error loading resource", text);
+		text.setFormatted("Could not load file %s", resourceFile);
+		if (TBMessageWindow *msg_win = new TBMessageWindow(getParentRoot(), TBIDC("")))
+			msg_win->show("Error loading resource", text);
 	}
 
-	RefreshFromSource();
+	refreshFromSource();
 }
 
-void ResourceEditWindow::RefreshFromSource()
+void ResourceEditWindow::refreshFromSource()
 {
 	// Clear old widgets
-	while (TBWidget *child = m_build_container->GetFirstChild())
+	while (TBWidget *child = m_build_container->getFirstChild())
 	{
-		m_build_container->RemoveChild(child);
+		m_build_container->removeChild(child);
 		delete child;
 	}
 
 	// Create new widgets from source
-	g_widgets_reader->LoadData(m_build_container, m_source_edit->GetText());
+	g_widgets_reader->loadData(m_build_container, m_source_edit->getText());
 
 	// Force focus back in case the edited resource has autofocus.
 	// FIX: It would be better to prevent the focus change instead!
-	m_source_edit->SetFocus(WIDGET_FOCUS_REASON_UNKNOWN);
+	m_source_edit->setFocus(WIDGET_FOCUS_REASON_UNKNOWN);
 }
 
-void ResourceEditWindow::UpdateWidgetList(bool immediately)
+void ResourceEditWindow::updateWidgetList(bool immediately)
 {
 	if (!immediately)
 	{
 		TBID id = TBIDC("update_widget_list");
-		if (!GetMessageByID(id))
-			PostMessage(id, nullptr);
+		if (!getMessageByID(id))
+			postMessage(id, nullptr);
 	}
 	else
 	{
-		m_widget_list_source.DeleteAllItems();
-		AddWidgetListItemsRecursive(m_build_container, 0);
+		m_widget_list_source.deleteAllItems();
+		addWidgetListItemsRecursive(m_build_container, 0);
 
-		m_widget_list->InvalidateList();
+		m_widget_list->invalidateList();
 	}
 }
 
-void ResourceEditWindow::AddWidgetListItemsRecursive(TBWidget *widget, int depth)
+void ResourceEditWindow::addWidgetListItemsRecursive(TBWidget *widget, int depth)
 {
 	if (depth > 0) // Ignore the root
 	{
 		// Add a new ResourceItem for this widget
 		TBStr str;
-		const char *classname = widget->GetClassName();
+		const char *classname = widget->getClassName();
 		if (!*classname)
 			classname = "<Unknown widget type>";
-		str.SetFormatted("% *s%s", depth - 1, "", classname);
+		str.setFormatted("% *s%s", depth - 1, "", classname);
 
 		if (ResourceItem *item = new ResourceItem(widget, str))
-			m_widget_list_source.AddItem(item);
+			m_widget_list_source.addItem(item);
 	}
 
-	for (TBWidget *child = widget->GetFirstChild(); child; child = child->GetNext())
-		AddWidgetListItemsRecursive(child, depth + 1);
+	for (TBWidget *child = widget->getFirstChild(); child; child = child->getNext())
+		addWidgetListItemsRecursive(child, depth + 1);
 }
 
-ResourceEditWindow::ITEM_INFO ResourceEditWindow::GetItemFromWidget(TBWidget *widget)
+ResourceEditWindow::ITEM_INFO ResourceEditWindow::getItemFromWidget(TBWidget *widget)
 {
 	ITEM_INFO item_info = { nullptr, -1 };
-	for (int i = 0; i < m_widget_list_source.GetNumItems(); i++)
-		if (m_widget_list_source.GetItem(i)->GetWidget() == widget)
+	for (int i = 0; i < m_widget_list_source.getNumItems(); i++)
+		if (m_widget_list_source.getItem(i)->getWidget() == widget)
 		{
 			item_info.index = i;
-			item_info.item = m_widget_list_source.GetItem(i);
+			item_info.item = m_widget_list_source.getItem(i);
 			break;
 		}
 	return item_info;
 }
 
-void ResourceEditWindow::SetSelectedWidget(TBWidget *widget)
+void ResourceEditWindow::setSelectedWidget(TBWidget *widget)
 {
-	m_selected_widget.Set(widget);
-	ITEM_INFO item_info = GetItemFromWidget(widget);
+	m_selected_widget.set(widget);
+	ITEM_INFO item_info = getItemFromWidget(widget);
 	if (item_info.item)
-		m_widget_list->SetValue(item_info.index);
+		m_widget_list->setValue(item_info.index);
 }
 
-bool ResourceEditWindow::OnEvent(const TBWidgetEvent &ev)
+bool ResourceEditWindow::onEvent(const TBWidgetEvent &ev)
 {
-	if (ev.type == EVENT_TYPE_CHANGED && ev.target->GetID() == TBIDC("widget_list_search"))
+	if (ev.type == EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC("widget_list_search"))
 	{
-		m_widget_list->SetFilter(ev.target->GetText());
+		m_widget_list->setFilter(ev.target->getText());
 		return true;
 	}
 	else if (ev.type == EVENT_TYPE_CHANGED && ev.target == m_widget_list)
 	{
-		if (m_widget_list->GetValue() >= 0 && m_widget_list->GetValue() < m_widget_list_source.GetNumItems())
-			if (ResourceItem *item = m_widget_list_source.GetItem(m_widget_list->GetValue()))
-				SetSelectedWidget(item->GetWidget());
+		if (m_widget_list->getValue() >= 0 && m_widget_list->getValue() < m_widget_list_source.getNumItems())
+			if (ResourceItem *item = m_widget_list_source.getItem(m_widget_list->getValue()))
+				setSelectedWidget(item->getWidget());
 	}
 	else if (ev.type == EVENT_TYPE_CHANGED && ev.target == m_source_edit)
 	{
-		RefreshFromSource();
+		refreshFromSource();
 		return true;
 	}
-	else if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("test"))
+	else if (ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("test"))
 	{
 		// Create a window containing the current layout, resize and center it.
 		if (TBWindow *win = new TBWindow())
 		{
-			win->SetText("Test window");
-			g_widgets_reader->LoadData(win->GetContentRoot(), m_source_edit->GetText());
-			TBRect bounds(0, 0, GetParent()->GetRect().w, GetParent()->GetRect().h);
-			win->SetRect(win->GetResizeToFitContentRect().CenterIn(bounds).MoveIn(bounds).Clip(bounds));
-			GetParent()->AddChild(win);
+			win->setText("Test window");
+			g_widgets_reader->loadData(win->getContentRoot(), m_source_edit->getText());
+			TBRect bounds(0, 0, getParent()->getRect().w, getParent()->getRect().h);
+			win->setRect(win->getResizeToFitContentRect().centerIn(bounds).moveIn(bounds).clip(bounds));
+			getParent()->addChild(win);
 		}
 		return true;
 	}
-	else if (ev.target->GetID() == TBIDC("constrained"))
+	else if (ev.target->getID() == TBIDC("constrained"))
 	{
-		m_scroll_container->SetAdaptContentSize(ev.target->GetValue() ? true : false);
+		m_scroll_container->setAdaptContentSize(ev.target->getValue() ? true : false);
 		return true;
 	}
 	else if (ev.type == EVENT_TYPE_FILE_DROP)
 	{
-		return OnDropFileEvent(ev);
+		return onDropFileEvent(ev);
 	}
-	return TBWindow::OnEvent(ev);
+	return TBWindow::onEvent(ev);
 }
 
-void ResourceEditWindow::OnPaintChildren(const PaintProps &paint_props)
+void ResourceEditWindow::onPaintChildren(const PaintProps &paintProps)
 {
-	TBWindow::OnPaintChildren(paint_props);
+	TBWindow::onPaintChildren(paintProps);
 
 	// Paint the selection of the selected widget
-	if (TBWidget *selected_widget = GetSelectedWidget())
+	if (TBWidget *selected_widget = getSelectedWidget())
 	{
-		TBRect widget_rect(0, 0, selected_widget->GetRect().w, selected_widget->GetRect().h);
-		selected_widget->ConvertToRoot(widget_rect.x, widget_rect.y);
-		ConvertFromRoot(widget_rect.x, widget_rect.y);
-		g_tb_skin->PaintRect(widget_rect, TBColor(255, 205, 0), 1);
+		TBRect widget_rect(0, 0, selected_widget->getRect().w, selected_widget->getRect().h);
+		selected_widget->convertToRoot(widget_rect.x, widget_rect.y);
+		convertFromRoot(widget_rect.x, widget_rect.y);
+		g_tb_skin->paintRect(widget_rect, TBColor(255, 205, 0), 1);
 	}
 }
 
-void ResourceEditWindow::OnMessageReceived(TBMessage *msg)
+void ResourceEditWindow::onMessageReceived(TBMessage *msg)
 {
 	if (msg->message == TBIDC("update_widget_list"))
-		UpdateWidgetList(true);
+		updateWidgetList(true);
 }
 
-bool ResourceEditWindow::OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev)
+bool ResourceEditWindow::onWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev)
 {
 	// Intercept all events to widgets in the build container
-	if (m_build_container->IsAncestorOf(ev.target))
+	if (m_build_container->isAncestorOf(ev.target))
 	{
 		// Let events through if alt is pressed so we can test some
 		// functionality right in the editor (like toggle hidden UI).
@@ -216,31 +216,31 @@ bool ResourceEditWindow::OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEve
 
 		// Select widget when clicking
 		if (ev.type == EVENT_TYPE_POINTER_DOWN)
-			SetSelectedWidget(ev.target);
+			setSelectedWidget(ev.target);
 
 		if (ev.type == EVENT_TYPE_FILE_DROP)
-			OnDropFileEvent(ev);
+			onDropFileEvent(ev);
 		return true;
 	}
 	return false;
 }
 
-void ResourceEditWindow::OnWidgetAdded(TBWidget *parent, TBWidget *child)
+void ResourceEditWindow::onWidgetAdded(TBWidget *parent, TBWidget *child)
 {
-	if (m_build_container && m_build_container->IsAncestorOf(child))
-		UpdateWidgetList(false);
+	if (m_build_container && m_build_container->isAncestorOf(child))
+		updateWidgetList(false);
 }
 
-void ResourceEditWindow::OnWidgetRemove(TBWidget *parent, TBWidget *child)
+void ResourceEditWindow::onWidgetRemove(TBWidget *parent, TBWidget *child)
 {
-	if (m_build_container && m_build_container->IsAncestorOf(child))
-		UpdateWidgetList(false);
+	if (m_build_container && m_build_container->isAncestorOf(child))
+		updateWidgetList(false);
 }
 
-bool ResourceEditWindow::OnDropFileEvent(const TBWidgetEvent &ev)
+bool ResourceEditWindow::onDropFileEvent(const TBWidgetEvent &ev)
 {
 	const TBWidgetEventFileDrop *fd_event = TBSafeCast<TBWidgetEventFileDrop>(&ev);
-	if (fd_event->files.GetNumItems() > 0)
-		Load(*fd_event->files.Get(0));
+	if (fd_event->files.getNumItems() > 0)
+		load(*fd_event->files.get(0));
 	return true;
 }

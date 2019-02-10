@@ -36,10 +36,10 @@ class TBValueArray
 public:
 	TBValueArray();
 	~TBValueArray();
-	TBValue *AddValue();
-	TBValue *GetValue(int index);
-	static TBValueArray *Clone(TBValueArray *source);
-	int GetLength() const { return m_list.GetNumItems(); }
+	TBValue *addValue();
+	TBValue *getValue(int index);
+	static TBValueArray *clone(TBValueArray *source);
+	int getLength() const { return m_list.getNumItems(); }
 private:
 	TBListAutoDeleteOf<TBValue> m_list;
 };
@@ -87,44 +87,44 @@ public:
 	/** Take over ownership of content of source_value.
 		Note:	-If source_value has string or array that are set with SET_AS_STATIC, it will make new copies of those.
 				-value will be nulled on source_value after this call. */
-	void TakeOver(TBValue &source_value);
+	void takeOver(TBValue &source_value);
 
 	/** Copy the content of source_value to this value.
 		Note: This value will become TYPE_NULL if source_value holds an owned object. We can't copy objects. */
-	void Copy(const TBValue &source_value);
+	void copy(const TBValue &source_value);
 
-	void SetNull();
-	void SetInt(int val);
-	void SetFloat(float val);
+	void setNull();
+	void setInt(int val);
+	void setFloat(float val);
 
 	/** Set the passed in string */
-	void SetString(const char *val, SET set);
+	void setString(const char *val, SET set);
 
 	/** Set the passed in object. Takes the ownership of the object! */
-	void SetObject(TBTypedObject *object);
+	void setObject(TBTypedObject *object);
 
 	/** Set the passed in array */
-	void SetArray(TBValueArray *arr, SET set);
+	void setArray(TBValueArray *arr, SET set);
 
 	/** Set the value either as a string, number or array of numbers, depending of the string syntax. */
-	void SetFromStringAuto(const char *str, SET set);
+	void setFromStringAuto(const char *str, SET set);
 
-	int GetInt() const;
-	float GetFloat() const;
-	const char *GetString();
-	TBTypedObject *GetObject() const { return IsObject() ? val_obj : nullptr; }
-	TBValueArray *GetArray() const { return IsArray() ? val_arr : nullptr; }
+	int getInt() const;
+	float getFloat() const;
+	const char *getString();
+	TBTypedObject *getObject() const { return isObject() ? val_obj : nullptr; }
+	TBValueArray *getArray() const { return isArray() ? val_arr : nullptr; }
 
-	TYPE GetType() const { return (TYPE) m_packed.type; }
-	bool IsNull() const { return m_packed.type == TYPE_NULL; }
-	bool IsString() const { return m_packed.type == TYPE_STRING; }
-	bool IsFloat() const { return m_packed.type == TYPE_FLOAT; }
-	bool IsInt() const { return m_packed.type == TYPE_INT; }
-	bool IsObject() const { return m_packed.type == TYPE_OBJECT; }
-	bool IsArray() const { return m_packed.type == TYPE_ARRAY; }
-	int GetArrayLength() const { return IsArray() ? val_arr->GetLength() : 0; }
+	TYPE getType() const { return (TYPE) m_packed.type; }
+	bool isNull() const { return m_packed.type == TYPE_NULL; }
+	bool isString() const { return m_packed.type == TYPE_STRING; }
+	bool isFloat() const { return m_packed.type == TYPE_FLOAT; }
+	bool isInt() const { return m_packed.type == TYPE_INT; }
+	bool isObject() const { return m_packed.type == TYPE_OBJECT; }
+	bool isArray() const { return m_packed.type == TYPE_ARRAY; }
+	int getArrayLength() const { return isArray() ? val_arr->getLength() : 0; }
 
-	const TBValue& operator = (const TBValue &val) { Copy(val); return *this; }
+	const TBValue& operator = (const TBValue &val) { copy(val); return *this; }
 private:
 	union {
 		float val_float;

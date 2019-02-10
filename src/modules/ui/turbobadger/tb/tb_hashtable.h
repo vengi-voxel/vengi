@@ -18,52 +18,52 @@ public:
 	virtual ~TBHashTable();
 
 	/** Remove all items without deleting the content. */
-	void RemoveAll() { RemoveAll(false); }
+	void removeAll() { removeAll(false); }
 
 	/** Remove all items and delete the content.
 		This requires TBHashTable to be subclassed and implementing DeleteContent.
 		You would typically do this by using TBHashTableOf or TBHashTableAutoDeleteOf. */
-	void DeleteAll() { RemoveAll(true); }
+	void deleteAll() { removeAll(true); }
 
 	/** Get the content for the given key, or nullptr if not found. */
-	void *Get(uint32_t key) const;
+	void *get(uint32_t key) const;
 
 	/** Add content with the given key.
 		Returns false if out of memory. */
-	bool Add(uint32_t key, void *content);
+	bool add(uint32_t key, void *content);
 
 	/** Remove the content with the given key. */
-	void *Remove(uint32_t key);
+	void *remove(uint32_t key);
 
 	/** Delete the content with the given key. */
-	void Delete(uint32_t key);
+	void deleteKey(uint32_t key);
 
 	/** Rehash the table so use the given number of buckets.
 		Returns false if out of memory. */
-	bool Rehash(uint32_t num_buckets);
+	bool rehash(uint32_t num_buckets);
 
 	/** Return true if the hashtable itself think it's time to rehash. */
-	bool NeedRehash() const;
+	bool needRehash() const;
 
 	/** Get the number of buckets the hashtable itself thinks is suitable for
 		the current number of items. */
-	uint32_t GetSuitableBucketsCount() const;
+	uint32_t getSuitableBucketsCount() const;
 
 	/** Get the number of items in the hash table. */
-	uint32_t GetNumItems() const { return m_num_items; }
+	uint32_t getNumItems() const { return m_num_items; }
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	/** Print out some debug info about the hash table. */
-	void Debug();
+	void debug();
 #endif
 
 protected:
 	/** Delete the content of a item. This is called if calling DeleteAll, and must be
 		implemented in a subclass that knows about the content type. */
-	virtual void DeleteContent(void *content) { core_assert(!"You need to subclass and implement!"); }
+	virtual void deleteContent(void *content) { core_assert(!"You need to subclass and implement!"); }
 private:
 	friend class TBHashTableIterator;
-	void RemoveAll(bool delete_content);
+	void removeAll(bool delete_content);
 	struct ITEM {
 		uint32_t key;
 		ITEM *next;
@@ -79,7 +79,7 @@ class TBHashTableIterator
 {
 public:
 	TBHashTableIterator(TBHashTable *hash_table);
-	void *GetNextContent();
+	void *getNextContent();
 private:
 	TBHashTable *m_hash_table;
 	uint32_t m_current_bucket;
@@ -92,7 +92,7 @@ class TBHashTableIteratorOf : private TBHashTableIterator
 {
 public:
 	TBHashTableIteratorOf(TBHashTable *hash_table) : TBHashTableIterator(hash_table) {}
-	T *GetNextContent() { return (T*) TBHashTableIterator::GetNextContent(); }
+	T *getNextContent() { return (T*) TBHashTableIterator::getNextContent(); }
 };
 
 /** TBHashTableOf is a TBHashTable with the given class type as content. */
@@ -101,10 +101,10 @@ class TBHashTableOf : public TBHashTable
 {
 // FIX: Don't do public inheritance! Either inherit privately and forward, or use a private member backend!
 public:
-	T *Get(uint32_t key) const { return (T*) TBHashTable::Get(key); }
-	T *Remove(uint32_t key) { return (T*) TBHashTable::Remove(key); }
+	T *get(uint32_t key) const { return (T*) TBHashTable::get(key); }
+	T *remove(uint32_t key) { return (T*) TBHashTable::remove(key); }
 protected:
-	virtual void DeleteContent(void *content) { delete (T*) content; }
+	virtual void deleteContent(void *content) { delete (T*) content; }
 };
 
 /** TBHashTableOf is a TBHashTable with the given class type as content.
@@ -113,12 +113,12 @@ template<class T>
 class TBHashTableAutoDeleteOf : public TBHashTable
 {
 public:
-	~TBHashTableAutoDeleteOf() { DeleteAll(); }
+	~TBHashTableAutoDeleteOf() { deleteAll(); }
 
-	T *Get(uint32_t key) const { return (T*) TBHashTable::Get(key); }
+	T *get(uint32_t key) const { return (T*) TBHashTable::get(key); }
 
 protected:
-	virtual void DeleteContent(void *content) { delete (T*) content; }
+	virtual void deleteContent(void *content) { delete (T*) content; }
 };
 
 } // namespace tb

@@ -38,13 +38,13 @@
 	{ \
 	public: \
 		classname##Factory() \
-			: tb::TBWidgetFactory(#classname, sync_type) { Register(); } \
+			: tb::TBWidgetFactory(#classname, sync_type) { doRegister(); } \
 		virtual ~classname##Factory() {} \
-		virtual tb::TBWidget *Create(tb::INFLATE_INFO *info) \
+		virtual tb::TBWidget *create(tb::INFLATE_INFO *info) \
 		{ \
 			classname *widget = new classname(); \
 			if (widget) { \
-				widget->GetContentRoot()->SetZInflate(add_child_z); \
+				widget->getContentRoot()->setZInflate(add_child_z); \
 			} \
 			return widget; \
 		} \

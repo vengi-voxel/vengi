@@ -23,7 +23,7 @@ enum ANIMATION_CURVE {
 /** Defines what the animation duration time is relative to. */
 enum ANIMATION_TIME {
 
-	/** The start time begins when the animation start in TBAnimationManager::StartAnimation. */
+	/** The start time begins when the animation start in TBAnimationManager::startAnimation. */
 	ANIMATION_TIME_IMMEDIATELY,
 
 	/** The animation start in StartAnimation just as with ANIMATION_TIME_IMMEDIATELY,
@@ -53,16 +53,16 @@ public:
 	virtual ~TBAnimationListener() {};
 
 	/** Called after the animation object handled its own OnAnimationStart.
-		See TBAnimationObject::OnAnimationStart for details. */
-	virtual void OnAnimationStart(TBAnimationObject *obj) = 0;
+		See TBAnimationObject::onAnimationStart for details. */
+	virtual void onAnimationStart(TBAnimationObject *obj) = 0;
 
 	/** Called after the animation object handled its own OnAnimationStart.
-		See TBAnimationObject::OnAnimationUpdate for details. */
-	virtual void OnAnimationUpdate(TBAnimationObject *obj, float progress) = 0;
+		See TBAnimationObject::onAnimationUpdate for details. */
+	virtual void onAnimationUpdate(TBAnimationObject *obj, float progress) = 0;
 
 	/** Called after the animation object handled its own OnAnimationStart.
-		See TBAnimationObject::OnAnimationStop for details. */
-	virtual void OnAnimationStop(TBAnimationObject *obj, bool aborted) = 0;
+		See TBAnimationObject::onAnimationStop for details. */
+	virtual void onAnimationStop(TBAnimationObject *obj, bool aborted) = 0;
 };
 
 /** TBAnimationObject - Base class for all animated object */
@@ -81,32 +81,32 @@ public:
 	virtual ~TBAnimationObject() {}
 
 	/** Return true if the object is currently animating. */
-	bool IsAnimating() const { return linklist ? true : false; }
+	bool isAnimating() const { return linklist ? true : false; }
 
 	/** Called on animation start */
-	virtual void OnAnimationStart() = 0;
+	virtual void onAnimationStart() = 0;
 
 	/** Called on animation update. progress is current progress from 0 to 1.
 		Note that it isn't called on start, so progress 0 might not happen.
 		It will be called with progress 1 before the animation is completed normally (not aborted) */
-	virtual void OnAnimationUpdate(float progress) = 0;
+	virtual void onAnimationUpdate(float progress) = 0;
 
 	/** Called on animation stop. aborted is true if it was aborted before completion.
 		Note that if a animation is started when it's already running, it will first
 		be aborted and then started again. */
-	virtual void OnAnimationStop(bool aborted) = 0;
+	virtual void onAnimationStop(bool aborted) = 0;
 
 	/** Add an listener to this animation object. */
-	void AddListener(TBAnimationListener *listener) { m_listeners.AddLast(listener); }
+	void addListener(TBAnimationListener *listener) { m_listeners.addLast(listener); }
 
 	/** Remove an listener from this animation object. */
-	void RemoveListener(TBAnimationListener *listener) { m_listeners.Remove(listener); }
+	void removeListener(TBAnimationListener *listener) { m_listeners.remove(listener); }
 private:
 	friend class TBAnimationManager;
 	TBLinkListOf<TBAnimationListener> m_listeners;
-	void InvokeOnAnimationStart();
-	void InvokeOnAnimationUpdate(float progress);
-	void InvokeOnAnimationStop(bool aborted);
+	void invokeOnAnimationStart();
+	void invokeOnAnimationUpdate(float progress);
+	void invokeOnAnimationStop(bool aborted);
 };
 
 /** TBAnimationManager - System class that manages all animated object */
@@ -117,12 +117,12 @@ private:
 	static TBLinkListOf<TBAnimationObject> animating_objects;
 public:
 	/** Update all running animations. */
-	static void Update();
+	static void update();
 
 	/** Return true if there are running animations. */
-	static bool HasAnimationsRunning();
+	static bool hasAnimationsRunning();
 
-	static void StartAnimation(TBAnimationObject *obj,
+	static void startAnimation(TBAnimationObject *obj,
 								ANIMATION_CURVE animation_curve = ANIMATION_DEFAULT_CURVE,
 								double animation_duration = ANIMATION_DEFAULT_DURATION,
 								ANIMATION_TIME animation_time = ANIMATION_TIME_FIRST_UPDATE);
@@ -130,21 +130,21 @@ public:
 		this call after running callbacks and listeners callbacks. In rare situations,
 		you might want to keep the animation around and delete it later (or start it
 		again). */
-	static void AbortAnimation(TBAnimationObject *obj, bool delete_animation);
+	static void abortAnimation(TBAnimationObject *obj, bool delete_animation);
 
 	/** Abort and delete all animations. */
-	static void AbortAllAnimations();
+	static void abortAllAnimations();
 
 	/** Return true if new animations are blocked. */
-	static bool IsAnimationsBlocked();
+	static bool isAnimationsBlocked();
 
 	/** Begin a period of blocking new animations. End the period with EndBlockAnimations.
 		If StartAnimation is called during the blocked period, the animation object will
 		finish the next animation update as it completed normally. */
-	static void BeginBlockAnimations();
+	static void beginBlockAnimations();
 
 	/** End a period of blocking new animations that was started with BeginBlockAnimations. */
-	static void EndBlockAnimations();
+	static void endBlockAnimations();
 };
 
 /** TBAnimationBlocker blocks new animations during its lifetime.
@@ -153,8 +153,8 @@ public:
 class TBAnimationBlocker
 {
 public:
-	TBAnimationBlocker() { TBAnimationManager::BeginBlockAnimations(); }
-	~TBAnimationBlocker() { TBAnimationManager::EndBlockAnimations(); }
+	TBAnimationBlocker() { TBAnimationManager::beginBlockAnimations(); }
+	~TBAnimationBlocker() { TBAnimationManager::endBlockAnimations(); }
 };
 
 } // namespace tb

@@ -8,19 +8,19 @@
 
 namespace tb {
 
-bool TBListBackend::Add(void *data)
+bool TBListBackend::add(void *data)
 {
-	if (!GrowIfNeeded())
+	if (!growIfNeeded())
 		return false;
 	m_data->list[m_data->num] = data;
 	m_data->num++;
 	return true;
 }
 
-bool TBListBackend::Add(void *data, int index)
+bool TBListBackend::add(void *data, int index)
 {
-	core_assert(index >= 0 && index <= GetNumItems());
-	if (!GrowIfNeeded())
+	core_assert(index >= 0 && index <= getNumItems());
+	if (!growIfNeeded())
 		return false;
 	if (index < m_data->num)
 		SDL_memmove(&m_data->list[index + 1], &m_data->list[index], (m_data->num - index) * sizeof(void*));
@@ -29,24 +29,24 @@ bool TBListBackend::Add(void *data, int index)
 	return true;
 }
 
-void TBListBackend::Set(void *data, int index)
+void TBListBackend::set(void *data, int index)
 {
-	core_assert(index >= 0 && index < GetNumItems());
+	core_assert(index >= 0 && index < getNumItems());
 	m_data->list[index] = data;
 }
 
-void *TBListBackend::RemoveFast(int index)
+void *TBListBackend::removeFast(int index)
 {
-	core_assert(index >= 0 && index < GetNumItems());
+	core_assert(index >= 0 && index < getNumItems());
 	void *data = m_data->list[index];
 	m_data->list[index] = m_data->list[m_data->num - 1];
 	m_data->num--;
 	return data;
 }
 
-void *TBListBackend::Remove(int index)
+void *TBListBackend::remove(int index)
 {
-	core_assert(index >= 0 && index < GetNumItems());
+	core_assert(index >= 0 && index < getNumItems());
 	void *data = m_data->list[index];
 	if(index < m_data->num - 1)
 		SDL_memmove(&m_data->list[index], &m_data->list[index + 1], (m_data->num - index - 1) * sizeof(void*));
@@ -54,49 +54,49 @@ void *TBListBackend::Remove(int index)
 	return data;
 }
 
-void TBListBackend::RemoveAll()
+void TBListBackend::removeAll()
 {
 	SDL_free(m_data);
 	m_data = nullptr;
 }
 
-void TBListBackend::Swap(int index1, int index2)
+void TBListBackend::swap(int index1, int index2)
 {
-	core_assert(index1 >= 0 && index1 < GetNumItems());
-	core_assert(index2 >= 0 && index2 < GetNumItems());
+	core_assert(index1 >= 0 && index1 < getNumItems());
+	core_assert(index2 >= 0 && index2 < getNumItems());
 	void *tmp = m_data->list[index1];
 	m_data->list[index1] = m_data->list[index2];
 	m_data->list[index2] = tmp;
 }
 
-int TBListBackend::Find(void *data) const
+int TBListBackend::find(void *data) const
 {
-	int num = GetNumItems();
+	int num = getNumItems();
 	for(int i = 0; i < num; i++)
 	{
-		if (Get(i) == data)
+		if (get(i) == data)
 			return i;
 	}
 	return -1;
 }
 
-void *TBListBackend::Get(int index) const
+void *TBListBackend::get(int index) const
 {
-	core_assert(index >= 0 && index < GetNumItems());
+	core_assert(index >= 0 && index < getNumItems());
 	return m_data->list[index];
 }
 
-bool TBListBackend::Reserve(int new_capacity)
+bool TBListBackend::reserve(int newCapacity)
 {
-	core_assert(new_capacity > 0);
-	if (new_capacity > GetCapacity())
+	core_assert(newCapacity > 0);
+	if (newCapacity > getCapacity())
 	{
-		int num = GetNumItems();
-		if (char *new_data = (char *) SDL_realloc(m_data, sizeof(TBLIST_DATA) + sizeof(void *) * (new_capacity)))
+		int num = getNumItems();
+		if (char *new_data = (char *) SDL_realloc(m_data, sizeof(TBLIST_DATA) + sizeof(void *) * (newCapacity)))
 		{
 			m_data = (TBLIST_DATA *) new_data;
 			m_data->num = num;
-			m_data->capacity = new_capacity;
+			m_data->capacity = newCapacity;
 			m_data->list = (void**) (new_data + sizeof(TBLIST_DATA));
 			return true;
 		}
@@ -105,11 +105,11 @@ bool TBListBackend::Reserve(int new_capacity)
 	return true;
 }
 
-bool TBListBackend::GrowIfNeeded()
+bool TBListBackend::growIfNeeded()
 {
-	int capacity = GetCapacity();
-	if (GetNumItems() == capacity)
-		return Reserve(capacity == 0 ? 4 : capacity * 2);
+	int capacity = getCapacity();
+	if (getNumItems() == capacity)
+		return reserve(capacity == 0 ? 4 : capacity * 2);
 	return true;
 }
 

@@ -25,15 +25,15 @@ protected:
 public:
 	TBStrC(const char *str) : s(const_cast<char *>(str)) {}
 
-	inline int Length() const							{ return strlen(s); }
-	inline bool IsEmpty() const							{ return s[0] == 0; }
+	inline int length() const							{ return strlen(s); }
+	inline bool isEmpty() const							{ return s[0] == 0; }
 
-	inline int Compare(const char* str) const			{ return strcmp(s, str); }
-	inline bool Equals(const char* str) const			{ return !strcmp(s, str); }
+	inline int compare(const char* str) const			{ return strcmp(s, str); }
+	inline bool equals(const char* str) const			{ return !strcmp(s, str); }
 
 	inline char operator[](int n) const					{ return s[n]; }
 	inline operator const char *() const				{ return s; }
-	const char *CStr() const							{ return s; }
+	const char *c_str() const							{ return s; }
 };
 
 /** TBStr is a simple string class.
@@ -57,18 +57,18 @@ public:
 	TBStr(const char* str);
 	TBStr(const char* str, int len);
 
-	bool Set(const char* str, int len = TB_ALL_TO_TERMINATION);
-	bool SetFormatted(const char* format, ...);
+	bool set(const char* str, int len = TB_ALL_TO_TERMINATION);
+	bool setFormatted(const char* format, ...);
 
-	void Clear();
+	void clear();
 
-	void Remove(int ofs, int len);
-	bool Insert(int ofs, const char *ins, int ins_len = TB_ALL_TO_TERMINATION);
-	bool Append(const char *ins, int ins_len = TB_ALL_TO_TERMINATION)	{ return Insert(strlen(s), ins, ins_len); }
+	void remove(int ofs, int len);
+	bool insert(int ofs, const char *ins, int ins_len = TB_ALL_TO_TERMINATION);
+	bool append(const char *ins, int ins_len = TB_ALL_TO_TERMINATION)	{ return insert(strlen(s), ins, ins_len); }
 
 	inline operator char *() const						{ return s; }
-	char *CStr() const									{ return s; }
-	const TBStr& operator = (const TBStr &str)			{ Set(str); return *this; }
+	char *c_str() const									{ return s; }
+	const TBStr& operator = (const TBStr &str)			{ set(str); return *this; }
 };
 
 } // namespace tb

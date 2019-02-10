@@ -49,7 +49,7 @@ enum LAYOUT_DISTRIBUTION_POSITION {
 	LAYOUT_DISTRIBUTION_POSITION_RIGHT_BOTTOM	///< Position to the lower right.
 };
 
-/** Layout order parameter for TBLayout::SetLayoutOrder. */
+/** Layout order parameter for TBLayout::setLayoutOrder. */
 enum LAYOUT_ORDER {
 	LAYOUT_ORDER_BOTTOM_TO_TOP,	///< From bottom to top widget (default creation order).
 	LAYOUT_ORDER_TOP_TO_BOTTOM	///< From top to bottom widget.
@@ -65,7 +65,7 @@ enum LAYOUT_OVERFLOW {
 
 /** TBLayout layouts its children along the given axis.
 
-	Each widgets size depend on its preferred size (See TBWidget::GetPreferredSize),
+	Each widgets size depend on its preferred size (See TBWidget::getPreferredSize),
 	gravity, and the specified layout settings (See SetLayoutSize, SetLayoutPosition
 	SetLayoutOverflow, SetLayoutDistribution, SetLayoutDistributionPosition), and
 	the available size.
@@ -82,55 +82,55 @@ public:
 	TBLayout(AXIS axis = AXIS_X);
 
 	/** Set along which axis the content should be layouted */
-	virtual void SetAxis(AXIS axis) override;
-	virtual AXIS GetAxis() const override { return m_axis; }
+	virtual void setAxis(AXIS axis) override;
+	virtual AXIS getAxis() const override { return m_axis; }
 
 	/** Set the spacing between widgets in this layout. Setting the default (SPACING_FROM_SKIN)
 		will make it use the spacing specified in the skin. */
-	void SetSpacing(int spacing);
-	int GetSpacing() const { return m_spacing; }
+	void setSpacing(int spacing);
+	int getSpacing() const { return m_spacing; }
 
 	/** Set the overflow scroll. If there is not enough room for all children in this layout,
 		it can scroll in the axis it's laid out. It does so automatically by wheel or panning also
 		for other LAYOUT_OVERFLOW than LAYOUT_OVERFLOW_SCROLL. */
-	void SetOverflowScroll(int overflow_scroll);
-	int GetOverflowScroll() const { return m_overflow_scroll; }
+	void setOverflowScroll(int overflow_scroll);
+	int getOverflowScroll() const { return m_overflow_scroll; }
 
 	/** Set if a fadeout should be painter where the layout overflows or not. */
-	void SetPaintOverflowFadeout(bool paint_fadeout) { m_packed.paint_overflow_fadeout = paint_fadeout; }
+	void setPaintOverflowFadeout(bool paint_fadeout) { m_packed.paint_overflow_fadeout = paint_fadeout; }
 
 	/** Set the layout size mode. See LAYOUT_SIZE. */
-	void SetLayoutSize(LAYOUT_SIZE size);
+	void setLayoutSize(LAYOUT_SIZE size);
 
 	/** Set the layout position mode. See LAYOUT_POSITION. */
-	void SetLayoutPosition(LAYOUT_POSITION pos);
+	void setLayoutPosition(LAYOUT_POSITION pos);
 
 	/** Set the layout size mode. See LAYOUT_OVERFLOW. */
-	void SetLayoutOverflow(LAYOUT_OVERFLOW overflow);
+	void setLayoutOverflow(LAYOUT_OVERFLOW overflow);
 
 	/** Set the layout distribution mode. See LAYOUT_DISTRIBUTION. */
-	void SetLayoutDistribution(LAYOUT_DISTRIBUTION distribution);
+	void setLayoutDistribution(LAYOUT_DISTRIBUTION distribution);
 
 	/** Set the layout distribution position mode. See LAYOUT_DISTRIBUTION_POSITION. */
-	void SetLayoutDistributionPosition(LAYOUT_DISTRIBUTION_POSITION distribution_pos);
+	void setLayoutDistributionPosition(LAYOUT_DISTRIBUTION_POSITION distribution_pos);
 
 	/** Set the layout order. The default is LAYOUT_ORDER_BOTTOM_TO_TOP, which begins
 		from bottom to top (default creation order). */
-	void SetLayoutOrder(LAYOUT_ORDER order);
+	void setLayoutOrder(LAYOUT_ORDER order);
 
-	virtual void InvalidateLayout(INVALIDATE_LAYOUT il) override;
+	virtual void invalidateLayout(INVALIDATE_LAYOUT il) override;
 
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override;
+	virtual PreferredSize onCalculatePreferredContentSize(const SizeConstraints &constraints) override;
 
-	virtual void OnInflate(const INFLATE_INFO &info) override;
-	virtual bool OnEvent(const TBWidgetEvent &ev) override;
-	virtual void OnPaintChildren(const PaintProps &paint_props) override;
-	virtual void OnProcess() override;
-	virtual void OnResized(int old_w, int old_h) override;
-	virtual void OnInflateChild(TBWidget *child) override;
-	virtual void GetChildTranslation(int &x, int &y) const override;
-	virtual void ScrollTo(int x, int y) override;
-	virtual TBWidget::ScrollInfo GetScrollInfo() override;
+	virtual void onInflate(const INFLATE_INFO &info) override;
+	virtual bool onEvent(const TBWidgetEvent &ev) override;
+	virtual void onPaintChildren(const PaintProps &paint_props) override;
+	virtual void onProcess() override;
+	virtual void onResized(int old_w, int old_h) override;
+	virtual void onInflateChild(TBWidget *child) override;
+	virtual void getChildTranslation(int &x, int &y) const override;
+	virtual void scrollTo(int x, int y) override;
+	virtual TBWidget::ScrollInfo getScrollInfo() override;
 protected:
 	AXIS m_axis;
 	int m_spacing;
@@ -149,15 +149,15 @@ protected:
 		} m_packed;
 		uint32_t m_packed_init;
 	};
-	void ValidateLayout(const SizeConstraints &constraints, PreferredSize *calculate_ps = nullptr);
+	void validateLayout(const SizeConstraints &constraints, PreferredSize *calculate_ps = nullptr);
 	/** Can this TBLayout expand in its direction? */
-	bool QualifyForExpansion(WIDGET_GRAVITY gravity) const;
-	int GetWantedHeight(WIDGET_GRAVITY gravity, const PreferredSize &ps, int available_height) const;
-	TBWidget *GetNextNonCollapsedWidget(TBWidget *child) const;
-	int GetTrailingSpace(TBWidget *child, int spacing) const;
-	int CalculateSpacing();
-	TBWidget *GetFirstInLayoutOrder() const;
-	TBWidget *GetNextInLayoutOrder(TBWidget *child) const;
+	bool qualifyForExpansion(WIDGET_GRAVITY gravity) const;
+	int getWantedHeight(WIDGET_GRAVITY gravity, const PreferredSize &ps, int available_height) const;
+	TBWidget *getNextNonCollapsedWidget(TBWidget *child) const;
+	int getTrailingSpace(TBWidget *child, int spacing) const;
+	int calculateSpacing();
+	TBWidget *getFirstInLayoutOrder() const;
+	TBWidget *getNextInLayoutOrder(TBWidget *child) const;
 };
 
 }

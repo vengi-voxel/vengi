@@ -94,7 +94,7 @@ public:
 	TBSkinCondition(TARGET target, PROPERTY prop, const TBID &custom_prop, const TBID &value, TEST test);
 
 	/** Return true if the condition is true for the given context. */
-	bool GetCondition(TBSkinConditionContext &context) const;
+	bool getCondition(TBSkinConditionContext &context) const;
 private:
 	TARGET m_target;
 	CONDITION_INFO m_info;
@@ -110,7 +110,7 @@ class TBSkinConditionContext
 public:
 	virtual ~TBSkinConditionContext() {}
 	/** Return true if the given target and property equals the given value. */
-	virtual bool GetCondition(TBSkinCondition::TARGET target, const TBSkinCondition::CONDITION_INFO &info) = 0;
+	virtual bool getCondition(TBSkinCondition::TARGET target, const TBSkinCondition::CONDITION_INFO &info) = 0;
 };
 
 /** TBSkinElementState has a skin element id that should be used if its state and condition
@@ -128,10 +128,10 @@ public:
 		MATCH_RULE_ONLY_SPECIFIC_STATE
 	};
 
-	bool IsMatch(SKIN_STATE state, TBSkinConditionContext &context,
+	bool isMatch(SKIN_STATE state, TBSkinConditionContext &context,
 				MATCH_RULE rule = MATCH_RULE_DEFAULT) const;
 
-	bool IsExactMatch(SKIN_STATE state, TBSkinConditionContext &context,
+	bool isExactMatch(SKIN_STATE state, TBSkinConditionContext &context,
 				MATCH_RULE rule = MATCH_RULE_DEFAULT) const;
 
 	TBID element_id;
@@ -146,16 +146,16 @@ class TBSkinElementStateList
 public:
 	~TBSkinElementStateList();
 
-	TBSkinElementState *GetStateElement(SKIN_STATE state, TBSkinConditionContext &context,
+	TBSkinElementState *getStateElement(SKIN_STATE state, TBSkinConditionContext &context,
 						TBSkinElementState::MATCH_RULE rule = TBSkinElementState::MATCH_RULE_DEFAULT) const;
 
-	TBSkinElementState *GetStateElementExactMatch(SKIN_STATE state, TBSkinConditionContext &context,
+	TBSkinElementState *getStateElementExactMatch(SKIN_STATE state, TBSkinConditionContext &context,
 						TBSkinElementState::MATCH_RULE rule = TBSkinElementState::MATCH_RULE_DEFAULT) const;
 
-	bool HasStateElements() const { return m_state_elements.HasLinks(); }
-	const TBSkinElementState *GetFirstElement() const { return m_state_elements.GetFirst(); }
+	bool hasStateElements() const { return m_state_elements.hasLinks(); }
+	const TBSkinElementState *getFirstElement() const { return m_state_elements.getFirst(); }
 
-	void Load(TBNode *n);
+	void load(TBNode *n);
 private:
 	TBLinkListOf<TBSkinElementState> m_state_elements;
 };
@@ -209,42 +209,42 @@ public:
 	TBValue tag;			///< This value is free to use for anything. It's not used internally.
 
 	/** Get the minimum width, or SKIN_VALUE_NOT_SPECIFIED if not specified. */
-	int GetMinWidth() const { return min_width; }
+	int getMinWidth() const { return min_width; }
 
 	/** Get the minimum height, or SKIN_VALUE_NOT_SPECIFIED if not specified. */
-	int GetMinHeight() const { return min_height; }
+	int getMinHeight() const { return min_height; }
 
 	/** Get the intrinsic minimum width. It will be calculated based on the skin properties. */
-	int GetIntrinsicMinWidth() const;
+	int getIntrinsicMinWidth() const;
 
 	/** Get the intrinsic minimum height. It will be calculated based on the skin properties. */
-	int GetIntrinsicMinHeight() const;
+	int getIntrinsicMinHeight() const;
 
 	/** Get the maximum width, or SKIN_VALUE_NOT_SPECIFIED if not specified. */
-	int GetMaxWidth() const { return max_width; }
+	int getMaxWidth() const { return max_width; }
 
 	/** Get the maximum height, or SKIN_VALUE_NOT_SPECIFIED if not specified. */
-	int GetMaxHeight() const { return max_height; }
+	int getMaxHeight() const { return max_height; }
 
 	/** Get the preferred width, or SKIN_VALUE_NOT_SPECIFIED if not specified. */
-	int GetPrefWidth() const { return pref_width; }
+	int getPrefWidth() const { return pref_width; }
 
 	/** Get the preferred height, or SKIN_VALUE_NOT_SPECIFIED if not specified. */
-	int GetPrefHeight() const { return pref_height; }
+	int getPrefHeight() const { return pref_height; }
 
 	/** Get the intrinsic width. If not specified using the "width" attribute, it will be
 		calculated based on the skin properties. If it can't be calculated it will return
 		SKIN_VALUE_NOT_SPECIFIED. */
-	int GetIntrinsicWidth() const;
+	int getIntrinsicWidth() const;
 
 	/** Get the intrinsic height. If not specified using the "height" attribute, it will be
 		calculated based on the skin properties. If it can't be calculated it will return
 		SKIN_VALUE_NOT_SPECIFIED. */
-	int GetIntrinsicHeight() const;
+	int getIntrinsicHeight() const;
 
 	/** Set the DPI that the bitmap was loaded in. This may modify properties
 		to compensate for the bitmap resolution. */
-	void SetBitmapDPI(const TBDimensionConverter &dim_conv, int bitmap_dpi);
+	void setBitmapDPI(const TBDimensionConverter &dim_conv, int bitmap_dpi);
 
 	/** List of override elements (See TBSkin::PaintSkin) */
 	TBSkinElementStateList m_override_elements;
@@ -261,12 +261,12 @@ public:
 	/** Check if there's a exact or partial match for the given state in either
 		override, child or overlay element list.
 		State elements with state "all" will be ignored. */
-	bool HasState(SKIN_STATE state, TBSkinConditionContext &context);
+	bool hasState(SKIN_STATE state, TBSkinConditionContext &context);
 
 	/** Return true if this element has overlay elements. */
-	bool HasOverlayElements() const { return m_overlay_elements.HasStateElements(); }
+	bool hasOverlayElements() const { return m_overlay_elements.hasStateElements(); }
 
-	void Load(TBNode *n, TBSkin *skin, const char *skin_path);
+	void load(TBNode *n, TBSkin *skin, const char *skin_path);
 };
 
 class TBSkinListener
@@ -277,7 +277,7 @@ public:
 		NOTE: This may be called multiple times on elements that occur multiple times
 		in the skin or is overridden in an override skin.
 		This method can be used to f.ex feed custom properties into element->tag. */
-	virtual void OnSkinElementLoaded(TBSkin *skin, TBSkinElement *element, TBNode *node) = 0;
+	virtual void onSkinElementLoaded(TBSkin *skin, TBSkinElement *element, TBNode *node) = 0;
 };
 
 /** TBSkin contains a list of TBSkinElement. */
@@ -288,8 +288,8 @@ public:
 	virtual ~TBSkin();
 
 	/** Set the listener for this skin. */
-	void SetListener(TBSkinListener *listener) { m_listener = listener; }
-	TBSkinListener *GetListener() const { return m_listener;  }
+	void setListener(TBSkinListener *listener) { m_listener = listener; }
+	TBSkinListener *getListener() const { return m_listener;  }
 
 	/** Load the skin file and the bitmaps it refers to.
 
@@ -299,40 +299,40 @@ public:
 		clone elements in the same file!
 
 		Returns true on success, and all bitmaps referred to also loaded successfully. */
-	bool Load(const char *skin_file, const char *override_skin_file = nullptr);
+	bool load(const char *skin_file, const char *override_skin_file = nullptr);
 
 	/** Unload all bitmaps used in this skin. */
-	void UnloadBitmaps();
+	void unloadBitmaps();
 
 	/** Reload all bitmaps used in this skin. Calls UnloadBitmaps first to ensure no bitmaps
 		are loaded before loading new ones. */
-	bool ReloadBitmaps();
+	bool reloadBitmaps();
 
 	/** Get the dimension converter used for the current skin. This dimension converter
 		converts to px by the same factor as the skin (based on the skin DPI settings). */
-	const TBDimensionConverter *GetDimensionConverter() const { return &m_dim_conv; }
+	const TBDimensionConverter *getDimensionConverter() const { return &m_dim_conv; }
 
 	/** Get the skin element with the given id.
 		Returns nullptr if there's no match. */
-	TBSkinElement *GetSkinElement(const TBID &skin_id) const;
+	TBSkinElement *getSkinElement(const TBID &skin_id) const;
 
 	/** Get the skin element with the given id and state.
 		This is like calling GetSkinElement and also following any strong overrides that
 		match the current state (if any). See details about strong overrides in PaintSkin.
 		Returns nullptr if there's no match. */
-	TBSkinElement *GetSkinElementStrongOverride(const TBID &skin_id, SKIN_STATE state, TBSkinConditionContext &context) const;
+	TBSkinElement *getSkinElementStrongOverride(const TBID &skin_id, SKIN_STATE state, TBSkinConditionContext &context) const;
 
 	/** Get the default text color for all skin elements */
-	TBColor GetDefaultTextColor() const { return m_default_text_color; }
+	TBColor getDefaultTextColor() const { return m_default_text_color; }
 
 	/** Get the default disabled opacity for all skin elements */
-	float GetDefaultDisabledOpacity() const { return m_default_disabled_opacity; }
+	float getDefaultDisabledOpacity() const { return m_default_disabled_opacity; }
 
 	/** Get the default placeholder opacity for all skin elements */
-	float GetDefaultPlaceholderOpacity() const { return m_default_placeholder_opacity; }
+	float getDefaultPlaceholderOpacity() const { return m_default_placeholder_opacity; }
 
 	/** Get the default layout spacing in pixels. */
-	int GetDefaultSpacing() const { return m_default_spacing; }
+	int getDefaultSpacing() const { return m_default_spacing; }
 
 	/** Paint the skin at dst_rect.
 
@@ -352,7 +352,7 @@ public:
 		 specified in the skin.
 
 		Special elements:
-		-There's some special generic skin elements used by TBWidget (see TBWidget::SetSkinBg)
+		-There's some special generic skin elements used by TBWidget (see TBWidget::setSkinBg)
 
 		Overlay elements:
 		-Overlay elements are painted separately, from PaintSkinOverlay (when all sibling
@@ -361,32 +361,32 @@ public:
 
 		Return the skin element used (after following override elements),
 		or nullptr if no skin element was found matching the skin_id. */
-	TBSkinElement *PaintSkin(const TBRect &dst_rect, const TBID &skin_id, SKIN_STATE state, TBSkinConditionContext &context);
+	TBSkinElement *paintSkin(const TBRect &dst_rect, const TBID &skin_id, SKIN_STATE state, TBSkinConditionContext &context);
 
 	/** Paint the skin at dst_rect. Just like the PaintSkin above, but takes a specific
 		skin element instead of looking it up from the id. */
-	TBSkinElement *PaintSkin(const TBRect &dst_rect, TBSkinElement *element, SKIN_STATE state, TBSkinConditionContext &context);
+	TBSkinElement *paintSkin(const TBRect &dst_rect, TBSkinElement *element, SKIN_STATE state, TBSkinConditionContext &context);
 
 	/** Paint the overlay elements for the given skin element and state. */
-	void PaintSkinOverlay(const TBRect &dst_rect, TBSkinElement *element, SKIN_STATE state, TBSkinConditionContext &context);
+	void paintSkinOverlay(const TBRect &dst_rect, TBSkinElement *element, SKIN_STATE state, TBSkinConditionContext &context);
 
 	/** Paint a rectangle outline inside dst_rect with the given thickness and color. */
-	void PaintRect(const TBRect &dst_rect, const TBColor &color, int thickness);
+	void paintRect(const TBRect &dst_rect, const TBColor &color, int thickness);
 
 	/** Paint a filled rectangle with the given color. */
-	void PaintRectFill(const TBRect &dst_rect, const TBColor &color);
+	void paintRectFill(const TBRect &dst_rect, const TBColor &color);
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	/** Render the skin bitmaps on screen, to analyze fragment positioning. */
-	void Debug();
+	void debug();
 #endif
 
 	/** Get the fragment manager. */
-	TBBitmapFragmentManager *GetFragmentManager() { return &m_frag_manager; }
+	TBBitmapFragmentManager *getFragmentManager() { return &m_frag_manager; }
 
 	// Implementing TBRendererListener
-	virtual void OnContextLost();
-	virtual void OnContextRestored();
+	virtual void onContextLost();
+	virtual void onContextRestored();
 private:
 	friend class TBSkinElement;
 	TBSkinListener *m_listener;
@@ -398,16 +398,16 @@ private:
 	float m_default_disabled_opacity;					///< Disabled opacity
 	float m_default_placeholder_opacity;				///< Placeholder opacity
 	int16_t m_default_spacing;							///< Default layout spacing
-	bool LoadInternal(const char *skin_file);
-	bool ReloadBitmapsInternal();
-	void PaintElement(const TBRect &dst_rect, TBSkinElement *element);
-	void PaintElementBGColor(const TBRect &dst_rect, TBSkinElement *element);
-	void PaintElementImage(const TBRect &dst_rect, TBSkinElement *element);
-	void PaintElementTile(const TBRect &dst_rect, TBSkinElement *element);
-	void PaintElementStretchImage(const TBRect &dst_rect, TBSkinElement *element);
-	void PaintElementStretchBox(const TBRect &dst_rect, TBSkinElement *element, bool fill_center);
-	TBRect GetFlippedRect(const TBRect &src_rect, TBSkinElement *element) const;
-	int GetPxFromNode(TBNode *node, int def_value) const;
+	bool loadInternal(const char *skin_file);
+	bool reloadBitmapsInternal();
+	void paintElement(const TBRect &dst_rect, TBSkinElement *element);
+	void paintElementBGColor(const TBRect &dst_rect, TBSkinElement *element);
+	void paintElementImage(const TBRect &dst_rect, TBSkinElement *element);
+	void paintElementTile(const TBRect &dst_rect, TBSkinElement *element);
+	void paintElementStretchImage(const TBRect &dst_rect, TBSkinElement *element);
+	void paintElementStretchBox(const TBRect &dst_rect, TBSkinElement *element, bool fill_center);
+	TBRect getFlippedRect(const TBRect &src_rect, TBSkinElement *element) const;
+	int getPxFromNode(TBNode *node, int def_value) const;
 };
 
 } // namespace tb

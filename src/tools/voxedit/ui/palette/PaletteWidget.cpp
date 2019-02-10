@@ -8,23 +8,23 @@
 
 PaletteWidget::PaletteWidget() :
 		Super() {
-	SetIsFocusable(true);
+	setIsFocusable(true);
 }
 
 PaletteWidget::~PaletteWidget() {
 }
 
-void PaletteWidget::SetValue(int value) {
+void PaletteWidget::setValue(int value) {
 	if (value == _value) {
 		return;
 	}
 	_value = value;
 	tb::TBWidgetEvent ev(tb::EVENT_TYPE_CHANGED);
-	InvokeEvent(ev);
+	invokeEvent(ev);
 }
 
-void PaletteWidget::OnPaint(const PaintProps &paint_props) {
-	Super::OnPaint(paint_props);
+void PaletteWidget::onPaint(const PaintProps &paintProps) {
+	Super::onPaint(paintProps);
 	const tb::TBRect renderRect(0, 0, _width, _height);
 	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
 	const glm::vec4& borderColor = core::Color::Black;
@@ -40,22 +40,22 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 			const int transX = x * _width;
 			const int transY = y * _height;
 			const tb::TBColor tbColor(color.r, color.g, color.b, color.a);
-			tb::g_renderer->Translate(transX, transY);
-			tb::g_tb_skin->PaintRectFill(renderRect, tbColor);
-			tb::g_tb_skin->PaintRect(renderRect, tbBorderColor, 1);
-			tb::g_renderer->Translate(-transX, -transY);
+			tb::g_renderer->translate(transX, transY);
+			tb::g_tb_skin->paintRectFill(renderRect, tbColor);
+			tb::g_tb_skin->paintRect(renderRect, tbBorderColor, 1);
+			tb::g_renderer->translate(-transX, -transY);
 			++i;
 		}
 	}
 }
 
-void PaletteWidget::OnResized(int oldWidth, int oldHeight) {
-	_amountX = GetPaddingRect().w / _width;
-	_amountY = GetPaddingRect().h / _height;
-	return Super::OnResized(oldWidth, oldHeight);
+void PaletteWidget::onResized(int oldWidth, int oldHeight) {
+	_amountX = getPaddingRect().w / _width;
+	_amountY = getPaddingRect().h / _height;
+	return Super::onResized(oldWidth, oldHeight);
 }
 
-bool PaletteWidget::OnEvent(const tb::TBWidgetEvent &ev) {
+bool PaletteWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		const int max = voxel::getMaterialColors().size();
 		const int col = ev.target_x / _width;
@@ -65,14 +65,14 @@ bool PaletteWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 			return false;
 		}
 		Log::info("Index: %i, xAmount: %i, yAmount: %i, col: %i, row: %i", index, _amountX, _amountY, col, row);
-		SetValue(index);
+		setValue(index);
 		_dirty = true;
 		return true;
 	}
-	return Super::OnEvent(ev);
+	return Super::onEvent(ev);
 }
 
-tb::PreferredSize PaletteWidget::OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) {
+tb::PreferredSize PaletteWidget::onCalculatePreferredContentSize(const tb::SizeConstraints &constraints) {
 	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
 	const int size = colors.size();
 	int maxAmountY = size / _amountX;
@@ -82,11 +82,11 @@ tb::PreferredSize PaletteWidget::OnCalculatePreferredContentSize(const tb::SizeC
 	return tb::PreferredSize(_amountX * _width, maxAmountY * _height);
 }
 
-void PaletteWidget::OnInflate(const tb::INFLATE_INFO &info) {
-	_width = info.node->GetValueInt("width", 20);
-	_height = info.node->GetValueInt("height", 20);
-	_amountX = info.node->GetValueInt("amount-x", 8);
-	Super::OnInflate(info);
+void PaletteWidget::onInflate(const tb::INFLATE_INFO &info) {
+	_width = info.node->getValueInt("width", 20);
+	_height = info.node->getValueInt("height", 20);
+	_amountX = info.node->getValueInt("amount-x", 8);
+	Super::onInflate(info);
 }
 
 static PaletteWidgetFactory paletteWidget_wf;

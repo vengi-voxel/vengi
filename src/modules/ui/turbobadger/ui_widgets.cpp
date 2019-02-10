@@ -9,8 +9,8 @@ ColorWidget::ColorWidget() :
 		Super(), _color(), _value(0) {
 }
 
-void ColorWidget::SetValue(int value) {
-	Log::info("SetValue to %i", value);
+void ColorWidget::setValue(int value) {
+	Log::info("setValue to %i", value);
 	if ((uint32_t)value == _value) {
 		return;
 	}
@@ -21,61 +21,61 @@ void ColorWidget::SetValue(int value) {
 	const int alpha = (_value >>  0) & 0xFF;
 	_color = tb::TBColor(red, green, blue, alpha);
 
-	InvalidateSkinStates();
-	Invalidate();
+	invalidateSkinStates();
+	invalidate();
 
 	tb::TBWidgetEvent ev(tb::EVENT_TYPE_CHANGED);
-	InvokeEvent(ev);
+	invokeEvent(ev);
 }
 
-void ColorWidget::SetColor(const char *name) {
+void ColorWidget::setColor(const char *name) {
 	if (!name) {
 		return;
 	}
-	_color.SetFromString(name, strlen(name));
-	SetValue((uint32_t)_color);
+	_color.setFromString(name, strlen(name));
+	setValue((uint32_t)_color);
 }
 
-void ColorWidget::SetColor(int r, int g, int b, int a) {
-	SetValue((uint32_t)tb::TBColor(r, g, b, a));
+void ColorWidget::setColor(int r, int g, int b, int a) {
+	setValue((uint32_t)tb::TBColor(r, g, b, a));
 }
 
-void ColorWidget::OnPaint(const PaintProps &paint_props) {
-	tb::TBRect local_rect = GetRect();
+void ColorWidget::onPaint(const PaintProps &paintProps) {
+	tb::TBRect local_rect = getRect();
 	local_rect.x = 0;
 	local_rect.y = 0;
-	tb::g_tb_skin->PaintRectFill(local_rect, _color);
+	tb::g_tb_skin->paintRectFill(local_rect, _color);
 }
 
-void ColorWidget::OnInflate(const tb::INFLATE_INFO &info) {
-	if (const char *color = info.node->GetValueString("color", nullptr)) {
-		SetColor(color);
+void ColorWidget::onInflate(const tb::INFLATE_INFO &info) {
+	if (const char *color = info.node->getValueString("color", nullptr)) {
+		setColor(color);
 	}
-	Super::OnInflate(info);
+	Super::onInflate(info);
 }
 
 NodeConnectorWidget::NodeConnectorWidget() :
 		Super(), _color() {
 }
 
-void NodeConnectorWidget::OnPaint(const PaintProps &paint_props) {
-	tb::TBRect local_rect = GetRect();
+void NodeConnectorWidget::onPaint(const PaintProps &paintProps) {
+	tb::TBRect local_rect = getRect();
 	local_rect.x = 0;
 	local_rect.y = 0;
-	tb::g_tb_skin->PaintRectFill(local_rect, _color);
+	tb::g_tb_skin->paintRectFill(local_rect, _color);
 }
 
-void NodeConnectorWidget::OnInflate(const tb::INFLATE_INFO &info) {
-	if (const char *color = info.node->GetValueString("color", nullptr)) {
-		_color.SetFromString(color, strlen(color));
+void NodeConnectorWidget::onInflate(const tb::INFLATE_INFO &info) {
+	if (const char *color = info.node->getValueString("color", nullptr)) {
+		_color.setFromString(color, strlen(color));
 	}
-	Super::OnInflate(info);
+	Super::onInflate(info);
 }
 
-tb::PreferredSize ImageWidget::OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) {
-	const tb::PreferredSize& prefSize = Super::OnCalculatePreferredContentSize(constraints);
+tb::PreferredSize ImageWidget::onCalculatePreferredContentSize(const tb::SizeConstraints &constraints) {
+	const tb::PreferredSize& prefSize = Super::onCalculatePreferredContentSize(constraints);
 	if (prefSize.max_w == 0 || prefSize.max_h == 0) {
-		return tb::TBWidget::OnCalculatePreferredContentSize(constraints);
+		return tb::TBWidget::onCalculatePreferredContentSize(constraints);
 	}
 	return prefSize;
 }

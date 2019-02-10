@@ -31,8 +31,8 @@ public:
 	{
 	public:
 		Batch() : vertex_count(0), bitmap(nullptr), fragment(nullptr), batch_id(0), is_flushing(false) {}
-		void Flush(TBRendererBatcher *batch_renderer);
-		Vertex *Reserve(TBRendererBatcher *batch_renderer, int count);
+		void flush(TBRendererBatcher *batch_renderer);
+		Vertex *reserve(TBRendererBatcher *batch_renderer, int count);
 
 		alignas(16) Vertex vertex[VERTEX_BATCH_SIZE];
 		int vertex_count;
@@ -47,32 +47,32 @@ public:
 	TBRendererBatcher();
 	virtual ~TBRendererBatcher();
 
-	virtual void BeginPaint(int render_target_w, int render_target_h);
-	virtual void EndPaint();
+	virtual void beginPaint(int render_target_w, int render_target_h);
+	virtual void endPaint();
 
-	virtual void Translate(int dx, int dy);
+	virtual void translate(int dx, int dy);
 
-	virtual void SetOpacity(float opacity);
-	virtual float GetOpacity();
+	virtual void setOpacity(float opacity);
+	virtual float getOpacity();
 
-	virtual TBRect SetClipRect(const TBRect &rect, bool add_to_current);
-	virtual TBRect GetClipRect();
+	virtual TBRect setClipRect(const TBRect &rect, bool add_to_current);
+	virtual TBRect getClipRect();
 
-	virtual void DrawBitmap(const TBRect &dst_rect, const TBRect &src_rect, TBBitmapFragment *bitmap_fragment);
-	virtual void DrawBitmap(const TBRect &dst_rect, const TBRect &src_rect, TBBitmap *bitmap);
-	virtual void DrawBitmapColored(const TBRect &dst_rect, const TBRect &src_rect, const TBColor &color, TBBitmapFragment *bitmap_fragment);
-	virtual void DrawBitmapColored(const TBRect &dst_rect, const TBRect &src_rect, const TBColor &color, TBBitmap *bitmap);
-	virtual void DrawBitmapTile(const TBRect &dst_rect, TBBitmap *bitmap);
-	virtual void FlushBitmap(TBBitmap *bitmap);
-	virtual void FlushBitmapFragment(TBBitmapFragment *bitmap_fragment);
+	virtual void drawBitmap(const TBRect &dst_rect, const TBRect &src_rect, TBBitmapFragment *bitmap_fragment);
+	virtual void drawBitmap(const TBRect &dst_rect, const TBRect &src_rect, TBBitmap *bitmap);
+	virtual void drawBitmapColored(const TBRect &dst_rect, const TBRect &src_rect, const TBColor &color, TBBitmapFragment *bitmap_fragment);
+	virtual void drawBitmapColored(const TBRect &dst_rect, const TBRect &src_rect, const TBColor &color, TBBitmap *bitmap);
+	virtual void drawBitmapTile(const TBRect &dst_rect, TBBitmap *bitmap);
+	virtual void flushBitmap(TBBitmap *bitmap);
+	virtual void flushBitmapFragment(TBBitmapFragment *bitmap_fragment);
 
-	virtual void BeginBatchHint(TBRenderer::BATCH_HINT hint) {}
-	virtual void EndBatchHint() {}
+	virtual void beginBatchHint(TBRenderer::BATCH_HINT hint) {}
+	virtual void endBatchHint() {}
 
 	// == Methods that need implementation in subclasses ================================
-	virtual TBBitmap *CreateBitmap(int width, int height, uint32_t *data) = 0;
-	virtual void RenderBatch(Batch *batch) = 0;
-	virtual void SetClipRect(const TBRect &rect) = 0;
+	virtual TBBitmap *createBitmap(int width, int height, uint32_t *data) = 0;
+	virtual void renderBatch(Batch *batch) = 0;
+	virtual void setClipRect(const TBRect &rect) = 0;
 protected:
 	uint8_t m_opacity;
 	TBRect m_screen_rect;
@@ -83,8 +83,8 @@ protected:
 	float m_u, m_v, m_uu, m_vv; ///< Some temp variables
 	Batch batch; ///< The one and only batch. this should be improved.
 
-	void AddQuadInternal(const TBRect &dst_rect, const TBRect &src_rect, uint32_t color, TBBitmap *bitmap, TBBitmapFragment *fragment);
-	void FlushAllInternal();
+	void addQuadInternal(const TBRect &dst_rect, const TBRect &src_rect, uint32_t color, TBBitmap *bitmap, TBBitmapFragment *fragment);
+	void flushAllInternal();
 };
 
 } // namespace tb

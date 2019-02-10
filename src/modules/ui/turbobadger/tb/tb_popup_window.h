@@ -41,7 +41,7 @@ public:
 
 	/** Calculate a good rect for the given popup window using its preferred size and
 		the preferred alignment information stored in this class. */
-	TBRect GetAlignedRect(TBWidget *popup, TBWidget *target) const;
+	TBRect getAlignedRect(TBWidget *popup, TBWidget *target) const;
 
 	TBPoint pos_in_root;
 	TBPoint pos_offset;
@@ -65,18 +65,18 @@ public:
 	TBPopupWindow(TBWidget *target);
 	~TBPopupWindow();
 
-	bool Show(const TBPopupAlignment &alignment);
+	bool show(const TBPopupAlignment &alignment);
 
-	virtual TBWidget *GetEventDestination() override { return m_target.Get(); }
+	virtual TBWidget *getEventDestination() override { return m_target.get(); }
 
-	virtual bool OnEvent(const TBWidgetEvent &ev) override;
+	virtual bool onEvent(const TBWidgetEvent &ev) override;
 private:
 	TBWidgetSafePointer m_target;
 	// TBWidgetListener
-	virtual void OnWidgetFocusChanged(TBWidget *widget, bool focused) override;
-	virtual bool OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) override;
-	virtual void OnWidgetDelete(TBWidget *widget) override;
-	virtual bool OnWidgetDying(TBWidget *widget) override;
+	virtual void onWidgetFocusChanged(TBWidget *widget, bool focused) override;
+	virtual bool onWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) override;
+	virtual void onWidgetDelete(TBWidget *widget) override;
+	virtual bool onWidgetDying(TBWidget *widget) override;
 };
 
 } // namespace tb

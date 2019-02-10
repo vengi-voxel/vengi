@@ -6,42 +6,42 @@
 
 namespace tb {
 
-static int GetFadeoutSize(int scrolled_distance, int fadeout_length)
+static int getFadeoutSize(int scrolledDistance, int fadeoutLength)
 {
 	// Make it appear gradually
 	//float factor = scrolled_distance / 10.f;
 	//factor = Clamp(factor, 0.5f, 1);
 	//return (int)(fadeout_length * factor);
-	return scrolled_distance > 0 ? fadeout_length : 0;
+	return scrolledDistance > 0 ? fadeoutLength : 0;
 }
 
-void DrawEdgeFadeout(const TBRect &dst_rect, TBID skin_x, TBID skin_y,
+void drawEdgeFadeout(const TBRect &dstRect, TBID skinX, TBID skinY,
 					 int left, int top, int right, int bottom)
 {
-	if (TBSkinElement *skin = g_tb_skin->GetSkinElement(skin_x))
+	if (TBSkinElement *skin = g_tb_skin->getSkinElement(skinX))
 	{
 		if (skin->bitmap)
 		{
-			const int bw = skin->bitmap->Width();
-			const int bh = skin->bitmap->Height();
+			const int bw = skin->bitmap->width();
+			const int bh = skin->bitmap->height();
 			int dw;
-			if ((dw = GetFadeoutSize(left, bw)) > 0)
-				g_renderer->DrawBitmap(TBRect(dst_rect.x, dst_rect.y, dw, dst_rect.h), TBRect(0, 0, bw, bh), skin->bitmap);
-			if ((dw = GetFadeoutSize(right, bw)) > 0)
-				g_renderer->DrawBitmap(TBRect(dst_rect.x + dst_rect.w - dw, dst_rect.y, dw, dst_rect.h), TBRect(bw, 0, -bw, bh), skin->bitmap);
+			if ((dw = getFadeoutSize(left, bw)) > 0)
+				g_renderer->drawBitmap(TBRect(dstRect.x, dstRect.y, dw, dstRect.h), TBRect(0, 0, bw, bh), skin->bitmap);
+			if ((dw = getFadeoutSize(right, bw)) > 0)
+				g_renderer->drawBitmap(TBRect(dstRect.x + dstRect.w - dw, dstRect.y, dw, dstRect.h), TBRect(bw, 0, -bw, bh), skin->bitmap);
 		}
 	}
-	if (TBSkinElement *skin = g_tb_skin->GetSkinElement(skin_y))
+	if (TBSkinElement *skin = g_tb_skin->getSkinElement(skinY))
 	{
 		if (skin->bitmap)
 		{
-			const int bw = skin->bitmap->Width();
-			const int bh = skin->bitmap->Height();
+			const int bw = skin->bitmap->width();
+			const int bh = skin->bitmap->height();
 			int dh;
-			if ((dh = GetFadeoutSize(top, bh)) > 0)
-				g_renderer->DrawBitmap(TBRect(dst_rect.x, dst_rect.y, dst_rect.w, dh), TBRect(0, 0, bw, bh), skin->bitmap);
-			if ((dh = GetFadeoutSize(bottom, bh)) > 0)
-				g_renderer->DrawBitmap(TBRect(dst_rect.x, dst_rect.y + dst_rect.h - dh, dst_rect.w, dh), TBRect(0, bh, bw, -bh), skin->bitmap);
+			if ((dh = getFadeoutSize(top, bh)) > 0)
+				g_renderer->drawBitmap(TBRect(dstRect.x, dstRect.y, dstRect.w, dh), TBRect(0, 0, bw, bh), skin->bitmap);
+			if ((dh = getFadeoutSize(bottom, bh)) > 0)
+				g_renderer->drawBitmap(TBRect(dstRect.x, dstRect.y + dstRect.h - dh, dstRect.w, dh), TBRect(0, bh, bw, -bh), skin->bitmap);
 		}
 	}
 }

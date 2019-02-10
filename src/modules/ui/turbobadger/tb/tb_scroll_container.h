@@ -23,8 +23,8 @@ private: // May only be used by TBScrollContainer.
 	friend class TBScrollContainer;
 	TBScrollContainerRoot() {}
 public:
-	virtual void OnPaintChildren(const PaintProps &paint_props) override;
-	virtual void GetChildTranslation(int &x, int &y) const override;
+	virtual void onPaintChildren(const PaintProps &paint_props) override;
+	virtual void getChildTranslation(int &x, int &y) const override;
 };
 
 /** TBScrollBarVisibility - Helper for TBScrollContainer or any other scrollable
@@ -34,11 +34,11 @@ class TBScrollBarVisibility
 public:
 	TBScrollBarVisibility () : x_on(false), y_on(false), visible_w(0), visible_h(0) {}
 
-	static TBScrollBarVisibility Solve(SCROLL_MODE mode, int content_w, int content_h,
+	static TBScrollBarVisibility solve(SCROLL_MODE mode, int content_w, int content_h,
 														int available_w, int available_h,
 														int scrollbar_x_h, int scrollbar_y_w);
-	static bool IsAlwaysOnX(SCROLL_MODE mode) { return mode == SCROLL_MODE_X_Y; }
-	static bool IsAlwaysOnY(SCROLL_MODE mode) { return mode == SCROLL_MODE_X_Y || mode == SCROLL_MODE_Y; }
+	static bool isAlwaysOnX(SCROLL_MODE mode) { return mode == SCROLL_MODE_X_Y; }
+	static bool isAlwaysOnY(SCROLL_MODE mode) { return mode == SCROLL_MODE_X_Y || mode == SCROLL_MODE_Y; }
 public:
 	bool x_on, y_on;
 	int visible_w, visible_h;
@@ -57,32 +57,32 @@ public:
 
 	/** Set to true if the preferred size of this container should adapt to the preferred
 		size of the content. This is disabled by default. */
-	void SetAdaptToContentSize(bool adapt);
-	bool GetAdaptToContentSize() { return m_adapt_to_content_size; }
+	void setAdaptToContentSize(bool adapt);
+	bool getAdaptToContentSize() { return m_adapt_to_content_size; }
 
 	/** Set to true if the content should adapt to the available size of this container
 		when it's larger than the preferred size. */
-	void SetAdaptContentSize(bool adapt);
-	bool GetAdaptContentSize() { return m_adapt_content_size; }
+	void setAdaptContentSize(bool adapt);
+	bool getAdaptContentSize() { return m_adapt_content_size; }
 
-	void SetScrollMode(SCROLL_MODE mode);
-	SCROLL_MODE GetScrollMode() { return m_mode; }
+	void setScrollMode(SCROLL_MODE mode);
+	SCROLL_MODE getScrollMode() { return m_mode; }
 
-	virtual void ScrollTo(int x, int y) override;
-	virtual TBWidget::ScrollInfo GetScrollInfo() override;
-	virtual TBWidget *GetScrollRoot() override { return &m_root; }
+	virtual void scrollTo(int x, int y) override;
+	virtual TBWidget::ScrollInfo getScrollInfo() override;
+	virtual TBWidget *getScrollRoot() override { return &m_root; }
 
-	virtual void InvalidateLayout(INVALIDATE_LAYOUT il) override;
+	virtual void invalidateLayout(INVALIDATE_LAYOUT il) override;
 
-	virtual TBRect GetPaddingRect() override;
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override;
+	virtual TBRect getPaddingRect() override;
+	virtual PreferredSize onCalculatePreferredContentSize(const SizeConstraints &constraints) override;
 
-	virtual void OnInflate(const INFLATE_INFO &info) override;
-	virtual bool OnEvent(const TBWidgetEvent &ev) override;
-	virtual void OnProcess() override;
-	virtual void OnResized(int old_w, int old_h) override;
+	virtual void onInflate(const INFLATE_INFO &info) override;
+	virtual bool onEvent(const TBWidgetEvent &ev) override;
+	virtual void onProcess() override;
+	virtual void onResized(int old_w, int old_h) override;
 
-	virtual TBWidget *GetContentRoot() override { return &m_root; }
+	virtual TBWidget *getContentRoot() override { return &m_root; }
 protected:
 	TBScrollBar m_scrollbar_x;
 	TBScrollBar m_scrollbar_y;
@@ -91,7 +91,7 @@ protected:
 	bool m_adapt_content_size;
 	bool m_layout_is_invalid;
 	SCROLL_MODE m_mode;
-	void ValidateLayout(const SizeConstraints &constraints);
+	void validateLayout(const SizeConstraints &constraints);
 };
 
 }

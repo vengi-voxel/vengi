@@ -44,8 +44,8 @@ class FileDialogItemSource: public tb::TBSelectItemSourceList<FileDialogItem> {
 private:
 	video::WindowedApp::OpenFileMode _mode;
 public:
-	bool Filter(int index, const char *filter) override;
-	tb::TBWidget *CreateItemWidget(int index, tb::TBSelectItemViewer *viewer) override;
+	bool filter(int index, const char *filter) override;
+	tb::TBWidget *createItemWidget(int index, tb::TBSelectItemViewer *viewer) override;
 
 	inline void setMode(video::WindowedApp::OpenFileMode mode) { _mode = mode; }
 };
@@ -67,8 +67,8 @@ public:
 	void setFilter(const char **filter);
 	void setMode(video::WindowedApp::OpenFileMode mode);
 
-	void OnAdded() override;
-	bool OnEvent(const tb::TBWidgetEvent &ev) override;
+	void onAdded() override;
+	bool onEvent(const tb::TBWidgetEvent &ev) override;
 };
 
 }

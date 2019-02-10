@@ -24,38 +24,38 @@ class TBValue;
 class TBDimensionConverter
 {
 	int m_src_dpi; ///< The source DPI (Normally the base_dpi from skin).
-	int m_dst_dpi; ///< The destination DPI (Normally the supported skin DPI nearest to TBSystem::GetDPI).
+	int m_dst_dpi; ///< The destination DPI (Normally the supported skin DPI nearest to TBSystem::getDPI).
 	TBStr m_dst_dpi_str; ///< The file suffix that should be used to load bitmaps in destinatin DPI.
 public:
 	TBDimensionConverter() : m_src_dpi(100), m_dst_dpi(100) {}
 
 	/** Set the source and destination DPI that will affect the conversion. */
-	void SetDPI(int src_dpi, int dst_dpi);
+	void setDPI(int src_dpi, int dst_dpi);
 
 	/** Get the source DPI. */
-	int GetSrcDPI() const { return m_src_dpi; }
+	int getSrcDPI() const { return m_src_dpi; }
 
 	/** Get the destination DPI. */
-	int GetDstDPI() const { return m_dst_dpi; }
+	int getDstDPI() const { return m_dst_dpi; }
 
 	/** Get the file name suffix that should be used to load bitmaps in the destination DPI.
 		Examples: "@96", "@196" */
-	const char *GetDstDPIStr() const { return m_dst_dpi_str; }
+	const char *getDstDPIStr() const { return m_dst_dpi_str; }
 
 	/** Get the file name with destination DPI suffix (F.ex "foo.png" becomes "foo@192.png").
 		The temp buffer will contain the resulting file name. */
-	void GetDstDPIFilename(const char *filename, TBTempBuffer *tempbuf) const;
+	void getDstDPIFilename(const char *filename, TBTempBuffer *tempbuf) const;
 
 	/** Return true if the source and destinatin DPI are different. */
-	bool NeedConversion() const { return m_src_dpi != m_dst_dpi; }
+	bool needConversion() const { return m_src_dpi != m_dst_dpi; }
 
 	/** Convert device independant point to pixel. */
-	int DpToPx(int dp) const;
-	float DpToPxF(float dp) const;
+	int dpToPx(int dp) const;
+	float dpToPxF(float dp) const;
 
 	/** Convert millimeter to pixel. */
-	int MmToPx(int mm) const;
-	float MmToPxF(float mm) const;
+	int mmToPx(int mm) const;
+	float mmToPxF(float mm) const;
 
 	/** Get a pixel value from string in any of the following formats:
 		str may be nullptr. def_value is returned on fail.
@@ -63,8 +63,8 @@ public:
 		Device independent point:		"1", "1dp"
 		Pixel value:					"1px"
 		*/
-	int GetPxFromString(const char *str, int def_value) const;
-	float GetPxFromStringF(const char *str, float def_value) const;
+	int getPxFromString(const char *str, int def_value) const;
+	float getPxFromStringF(const char *str, float def_value) const;
 
 	/** Get a pixel value from TBValue.
 		value may be nullptr. def_value is returned on fail.
@@ -72,8 +72,8 @@ public:
 		Number formats are treated as dp.
 		String format is treated like for GetPxFromString.
 		*/
-	int GetPxFromValue(TBValue *value, int def_value) const;
-	float GetPxFromValueF(TBValue *value, float def_value) const;
+	int getPxFromValue(TBValue *value, int def_value) const;
+	float getPxFromValueF(TBValue *value, float def_value) const;
 };
 
 } // namespace tb

@@ -36,7 +36,7 @@ enum EVENT_TYPE {
 
 		It is invoked on a widget after POINTER_UP if the pointer is still inside
 		its hit area. It can also be invoked by keyboard on some clickable widgets
-		(see TBWidget::SetClickByKey).
+		(see TBWidget::setClickByKey).
 
 		If panning of scrollable widgets start while the pointer is down, CLICK
 		won't be invoked when releasing the pointer (since that should stop panning). */
@@ -45,7 +45,7 @@ enum EVENT_TYPE {
 	/** Long click event is sent when the pointer has been down for some time
 		without moving much.
 
-		It is invoked on a widget that has enabled it (TBWidget::SetWantLongClick
+		It is invoked on a widget that has enabled it (TBWidget::setWantLongClick
 		If this event isn't handled, the widget will invoke a CONTEXT_MENU event.
 		If any of those are handled, the CLICK event that would normally be
 		invoked after the pending POINTER_UP will be suppressed. */
@@ -146,18 +146,18 @@ public:
 	/** The count value may be 1 to infinity. If you f.ex want to see which count it is for something
 		handling click and double click, call GetCountCycle(2). If you also handle triple click, call
 		GetCountCycle(3) and so on. That way you'll get a count that always cycle in the range you need. */
-	int GetCountCycle(int max) { return ((count - 1) % max) + 1; }
+	int getCountCycle(int max) { return ((count - 1) % max) + 1; }
 
-	bool IsPointerEvent() const { return	type == EVENT_TYPE_POINTER_DOWN ||
+	bool isPointerEvent() const { return	type == EVENT_TYPE_POINTER_DOWN ||
 											type == EVENT_TYPE_POINTER_UP ||
 											type == EVENT_TYPE_POINTER_MOVE; }
-	bool IsTouchEvent() const { return		type == EVENT_TYPE_TOUCH_DOWN ||
+	bool isTouchEvent() const { return		type == EVENT_TYPE_TOUCH_DOWN ||
 											type == EVENT_TYPE_TOUCH_UP ||
 											type == EVENT_TYPE_TOUCH_MOVE ||
 											type == EVENT_TYPE_TOUCH_CANCEL; }
-	bool IsKeyEvent() const { return	type == EVENT_TYPE_KEY_DOWN ||
+	bool isKeyEvent() const { return	type == EVENT_TYPE_KEY_DOWN ||
 										type == EVENT_TYPE_KEY_UP; }
-	bool IsAny(const tb::TBID& id) const;
+	bool isAny(const tb::TBID& id) const;
 };
 
 /** TBWidgetEventFileDrop is a event of type EVENT_TYPE_FILE_DROP.
@@ -264,10 +264,10 @@ public:
 								, pref_w(w), pref_h(h) {}
 
 	/** Set both min max and preferred width to the given width. */
-	void SetWidth(int width) { min_w = max_w = pref_w = width; }
+	void setWidth(int width) { min_w = max_w = pref_w = width; }
 
 	/** Set both min max and preferred height to the given height. */
-	void SetHeight(int height) { min_h = max_h = pref_h = height; }
+	void setHeight(int height) { min_h = max_h = pref_h = height; }
 
 	int min_w, min_h;			///< The minimal preferred width and height.
 	int max_w, max_h;			///< The maximum preferred width and height.
@@ -290,24 +290,24 @@ public:
 	SizeConstraints() : available_w(NO_RESTRICTION), available_h(NO_RESTRICTION) {}
 
 	/** Return new constraints reduced by the given padding. */
-	SizeConstraints ConstrainByPadding(int horizontal_padding, int vertical_padding) const
+	SizeConstraints constrainByPadding(int horizontal_padding, int vertical_padding) const
 	{
 		return SizeConstraints(available_w == NO_RESTRICTION ? NO_RESTRICTION : available_w - horizontal_padding,
 								available_h == NO_RESTRICTION ? NO_RESTRICTION : available_h - vertical_padding);
 	}
 
 	/** Return new constraints that are constrained by LayoutParams. */
-	SizeConstraints ConstrainByLayoutParams(const LayoutParams &lp) const
+	SizeConstraints constrainByLayoutParams(const LayoutParams &lp) const
 	{
-		return SizeConstraints(ConstrainByLPMax(available_w, lp.min_w, lp.max_w),
-								ConstrainByLPMax(available_h, lp.min_h, lp.max_h));
+		return SizeConstraints(constrainByLPMax(available_w, lp.min_w, lp.max_w),
+								constrainByLPMax(available_h, lp.min_h, lp.max_h));
 	}
 
 	bool operator == (const SizeConstraints &sc) const { return available_w == sc.available_w &&
 																available_h == sc.available_h; }
 
 private:
-	int ConstrainByLPMax(int constraint, int lp_min, int lp_max) const
+	int constrainByLPMax(int constraint, int lp_min, int lp_max) const
 	{
 		if (constraint == NO_RESTRICTION)
 			return lp_max != LayoutParams::UNSPECIFIED ? lp_max : NO_RESTRICTION;
@@ -320,7 +320,7 @@ private:
 	}
 };
 
-/** Defines widget z level, used with TBWidget::SetZ, TBWidget::AddChild. */
+/** Defines widget z level, used with TBWidget::setZ, TBWidget::AddChild. */
 enum WIDGET_Z {
 	WIDGET_Z_TOP,				///< The toplevel (Visually drawn on top of everything else).
 	WIDGET_Z_BOTTOM				///< The bottomlevel (Visually drawn behind everything else).
@@ -332,7 +332,7 @@ enum WIDGET_Z_REL {
 	WIDGET_Z_REL_AFTER			///< After the reference widget (visually above reference).
 };
 
-/** Defines widget visibility, used with TBWidget::SetVisibility. */
+/** Defines widget visibility, used with TBWidget::setVisibility. */
 enum WIDGET_VISIBILITY {
 	WIDGET_VISIBILITY_VISIBLE,		///< Visible (default)
 	WIDGET_VISIBILITY_INVISIBLE,	///< Invisible, but layouted. Interaction disabled.
@@ -351,7 +351,7 @@ enum WIDGET_FOCUS_REASON {
 	WIDGET_FOCUS_REASON_UNKNOWN		///< Set focus by anything else.
 };
 
-/** Hit status return value for TBWidget::GetHitStatus */
+/** Hit status return value for TBWidget::getHitStatus */
 enum WIDGET_HIT_STATUS {
 	WIDGET_HIT_STATUS_NO_HIT = 0,			///< The widget was not hit
 	WIDGET_HIT_STATUS_HIT,					///< The widget was hit, any child may be hit too.
@@ -377,18 +377,18 @@ public:
 
 	/** Set the rect for this widget in its parent. The rect is relative to the parent widget.
 		The skin may expand outside this rect to draw f.ex shadows. */
-	void SetRect(const TBRect &rect);
-	inline TBRect GetRect() const { return m_rect; }
+	void setRect(const TBRect &rect);
+	inline TBRect getRect() const { return m_rect; }
 
 	/** Set position of this widget in its parent. The position is relative to the parent widget. */
-	void SetPosition(const TBPoint &pos) { SetRect(TBRect(pos.x, pos.y, m_rect.w, m_rect.h)); }
+	void setPosition(const TBPoint &pos) { setRect(TBRect(pos.x, pos.y, m_rect.w, m_rect.h)); }
 
 	/** Set size of this widget. */
-	void SetSize(int width, int height) { SetRect(TBRect(m_rect.x, m_rect.y, width, height)); }
+	void setSize(int width, int height) { setRect(TBRect(m_rect.x, m_rect.y, width, height)); }
 
 	/** Invalidate should be called if the widget need to be repainted,
 		to make sure the renderer repaints it and its children next frame. */
-	void Invalidate();
+	void invalidate();
 
 	/** Call if something changes that might need other widgets to update their state.
 		F.ex if a action availability changes, some widget might have to become enabled/disabled.
@@ -396,57 +396,57 @@ public:
 		This is done automatically for all invoked events of type:
 			EVENT_TYPE_CLICK, EVENT_TYPE_LONG_CLICK, EVENT_TYPE_CHANGED, EVENT_TYPE_KEYDOWN,
 			EVENT_TYPE_KEYUP. */
-	void InvalidateStates();
+	void invalidateStates();
 
 	/** Call if something changes that might cause any skin to change due to different state
 		or conditions. This is called automatically from InvalidateStates(), when event
 		EVENT_TYPE_CHANGED is invoked, and in various other situations. */
-	void InvalidateSkinStates();
+	void invalidateSkinStates();
 
 	/** Delete the widget with the possibility for some extended life during animations.
 
-		If any widget listener responds true to OnWidgetDying it will be kept as a child and live
+		If any widget listener responds true to onWidgetDying it will be kept as a child and live
 		until the animations are done, but the widgets and all its children are marked as dying.
 		Dying widgets get no input or focus.
 
 		If no widget listener responded, it will be deleted immediately. */
-	void Die();
+	void die();
 
 	/** Return true if this widget or any of its parents is dying. */
-	bool GetIsDying() const { return m_packed.is_dying || (m_parent && m_parent->GetIsDying()); }
+	bool getIsDying() const { return m_packed.is_dying || (m_parent && m_parent->getIsDying()); }
 
 	/** Set the id reference for this widgets. This id is 0 by default.
 		You can use this id to receive the widget from GetWidgetByID (or
 		preferable TBSafeGetByID to avoid dangerous casts). */
-	void SetID(const TBID &id);
-	TBID &GetID() { return m_id; }
+	void setID(const TBID &id);
+	TBID &getID() { return m_id; }
 
 	/** Set the group id reference for this widgets. This id is 0 by default.
 		All widgets with the same group id under the same group root will
 		be automatically changed when one change its value. */
-	void SetGroupID(const TBID &id) { m_group_id = id; }
-	TBID &GetGroupID() { return m_group_id; }
+	void setGroupID(const TBID &id) { m_group_id = id; }
+	TBID &getGroupID() { return m_group_id; }
 
 	/** Get this widget or any child widget with a matching id, or nullptr if none is found. */
-	TBWidget *GetWidgetByID(const TBID &id) { return GetWidgetByIDInternal(id); }
+	TBWidget *getWidgetByID(const TBID &id) { return getWidgetByIDInternal(id); }
 
 	/** Get this widget or any child widget with a matching id and type, or nullptr if none is found. */
-	template<class T> T *GetWidgetByIDAndType(const TBID &id)
-		{ return (T*) GetWidgetByIDInternal(id, GetTypeId<T>()); }
+	template<class T> T *getWidgetByIDAndType(const TBID &id)
+		{ return (T*) getWidgetByIDInternal(id, getTypeId<T>()); }
 
 	/** Enable or disable the given state(s). The state affects which skin state is used when drawing.
 		Some states are set automatically on interaction. See GetAutoState(). */
-	void SetState(WIDGET_STATE state, bool on);
+	void setState(WIDGET_STATE state, bool on);
 
 	/** Get status of the given state(s). Returns true if the given state combination is set. */
-	bool GetState(WIDGET_STATE state) const { return (m_state & state) ? true : false; }
+	bool getState(WIDGET_STATE state) const { return (m_state & state) ? true : false; }
 
 	/** Set the widget state. Like SetState but setting the entire state as given, instead
 		of toggling individual states. See SetState for more info on states. */
-	void SetStateRaw(WIDGET_STATE state);
+	void setStateRaw(WIDGET_STATE state);
 
 	/** Get the widget state. */
-	WIDGET_STATE GetStateRaw() const { return m_state; }
+	WIDGET_STATE getStateRaw() const { return m_state; }
 
 	/** Return the current combined state for this widget. It will also add some
 		automatic states, such as hovered (if the widget is currently hovered), or pressed etc.
@@ -455,56 +455,56 @@ public:
 
 		Remarks for WIDGET_STATE_FOCUSED: May also be controlled by calling SetAutoFocusState and
 		the define TB_ALWAYS_SHOW_EDIT_FOCUS. */
-	WIDGET_STATE GetAutoState() const;
+	WIDGET_STATE getAutoState() const;
 
 	/** Set if the state WIDGET_STATE_FOCUSED should be set automatically for the focused widget.
 		This value is set to true when moving focus by keyboard, and set to off when clicking
 		with the pointer. */
-	static void SetAutoFocusState(bool on);
+	static void setAutoFocusState(bool on);
 
 	/** Set opacity for this widget and its children from 0.0 - 1.0.
 		If opacity is 0 (invisible), the widget won't receive any input. */
-	void SetOpacity(float opacity);
-	float GetOpacity() const { return m_opacity; }
+	void setOpacity(float opacity);
+	float getOpacity() const { return m_opacity; }
 
 	/** Set visibility for this widget and its children.
 		If visibility is not WIDGET_VISIBILITY_VISIBLE, the widget won't receive any input. */
-	void SetVisibility(WIDGET_VISIBILITY vis);
-	WIDGET_VISIBILITY GetVisibility() const;
+	void setVisibility(WIDGET_VISIBILITY vis);
+	WIDGET_VISIBILITY getVisibility() const;
 
 	/** Return true if this widget and all its ancestors are visible
 		(has a opacity > 0 and visibility WIDGET_VISIBILITY_VISIBLE) */
-	bool GetVisibilityCombined() const;
+	bool getVisibilityCombined() const;
 
 	/** Return true if this widget or any of its parents are disabled (has state WIDGET_STATE_DISABLED). */
-	bool GetDisabled() const;
+	bool getDisabled() const;
 
 	/** Add the child to this widget. The child widget will automatically be deleted when
 		this widget is deleted. (If the child isn't removed again with RemoveChild.) */
-	void AddChild(TBWidget *child, WIDGET_Z z = WIDGET_Z_TOP, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
+	void addChild(TBWidget *child, WIDGET_Z z = WIDGET_Z_TOP, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
 
 	/** Add the child to this widget. See AddChild for adding a child to the top or bottom.
 		This takes a relative Z and insert the child before or after the given reference widget.*/
-	void AddChildRelative(TBWidget *child, WIDGET_Z_REL z, TBWidget *reference, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
+	void addChildRelative(TBWidget *child, WIDGET_Z_REL z, TBWidget *reference, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
 
 	/** Remove child from this widget without deleting it. */
-	void RemoveChild(TBWidget *child, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
+	void removeChild(TBWidget *child, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
 
 	/** Remove this widget from parent if it has one. */
-	void RemoveFromParent() { if (m_parent) m_parent->RemoveChild(this); }
+	void removeFromParent() { if (m_parent) m_parent->removeChild(this); }
 
 	/** Remove and delete all children in this widget.
 		Note: This won't invoke Die so there's no chance for widgets to survive or
 		animate. They will be instantly removed and deleted. */
-	void DeleteAllChildren();
+	void deleteAllChildren();
 
 	/** Sets the z-order of this widget related to its siblings. When a widget is added with AddChild, it will be
 		placed at the top in the parent (Above previously added widget). SetZ can be used to change the order. */
-	void SetZ(WIDGET_Z z);
+	void setZ(WIDGET_Z z);
 
 	/** Set the z order in which children are added during resource loading. */
-	void SetZInflate(WIDGET_Z z) { m_packed.inflate_child_z = z; }
-	WIDGET_Z GetZInflate() const { return (WIDGET_Z) m_packed.inflate_child_z; }
+	void setZInflate(WIDGET_Z z) { m_packed.inflate_child_z = z; }
+	WIDGET_Z getZInflate() const { return (WIDGET_Z) m_packed.inflate_child_z; }
 
 	/** Set the widget gravity (any combination of WIDGET_GRAVITY).
 		For child widgets in a layout, the gravity affects how the layout is done depending on the layout settings.
@@ -513,8 +513,8 @@ public:
 			-!left && right: Widget follows the right edge when parent resize.
 			-top && bottom: Widget resize vertically when parent resize.
 			-!top && bottom: Widget follows the bottom edge when parent resize. */
-	void SetGravity(WIDGET_GRAVITY g);
-	WIDGET_GRAVITY GetGravity() const { return m_gravity; }
+	void setGravity(WIDGET_GRAVITY g);
+	WIDGET_GRAVITY getGravity() const { return m_gravity; }
 
 	/** Set the skin background for this widget and call OnSkinChanged if it changed.
 
@@ -526,124 +526,124 @@ public:
 		element called "generic_focus" (if it exist) after painting all widget children.
 
 		It's possible to omit the OnSkinChanged callback using WIDGET_INVOKE_INFO_NO_CALLBACKS. */
-	void SetSkinBg(const TBID &skin_bg, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
+	void setSkinBg(const TBID &skin_bg, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
 
 	/** Return the current skin background, as set by SetSkinBg. */
-	TBID GetSkinBg() const { return m_skin_bg; }
+	TBID getSkinBg() const { return m_skin_bg; }
 
 	/** Return the skin background element, or nullptr. */
-	TBSkinElement *GetSkinBgElement();
+	TBSkinElement *getSkinBgElement();
 
 	/** Set if this widget is a group root. Grouped widgets (such as TBRadioButton) will toggle all other
 		widgets with the same group_id under the nearest parent group root. TBWindow is a group root by default. */
-	void SetIsGroupRoot(bool group_root) { m_packed.is_group_root = group_root; }
-	bool GetIsGroupRoot() const { return m_packed.is_group_root; }
+	void setIsGroupRoot(bool group_root) { m_packed.is_group_root = group_root; }
+	bool getIsGroupRoot() const { return m_packed.is_group_root; }
 
 	/** Set if this widget should be able to receive focus or not. */
-	void SetIsFocusable(bool focusable) { m_packed.is_focusable = focusable; }
-	bool GetIsFocusable() const { return m_packed.is_focusable; }
+	void setIsFocusable(bool focusable) { m_packed.is_focusable = focusable; }
+	bool getIsFocusable() const { return m_packed.is_focusable; }
 
 	/** Set if this widget should emulate a click when it's focused and pressing enter or space. */
-	void SetClickByKey(bool click_by_key) { m_packed.click_by_key = click_by_key; }
-	bool GetClickByKey() const { return m_packed.click_by_key; }
+	void setClickByKey(bool click_by_key) { m_packed.click_by_key = click_by_key; }
+	bool getClickByKey() const { return m_packed.click_by_key; }
 
 	/** Set if this widget should generate long-click event (or context menu event if nothing
 		handles the long click event). The default is false. */
-	void SetWantLongClick(bool want_long_click) { m_packed.want_long_click = want_long_click; }
-	bool GetWantLongClick() const { return m_packed.want_long_click; }
+	void setWantLongClick(bool want_long_click) { m_packed.want_long_click = want_long_click; }
+	bool getWantLongClick() const { return m_packed.want_long_click; }
 
 	/** Set if this widget should ignore input, as if it didn't exist. */
-	void SetIgnoreInput(bool ignore_input) { m_packed.ignore_input = ignore_input; }
-	bool GetIgnoreInput() const { return m_packed.ignore_input; }
+	void setIgnoreInput(bool ignore_input) { m_packed.ignore_input = ignore_input; }
+	bool getIgnoreInput() const { return m_packed.ignore_input; }
 
 	/** Get if this widget wants interaction depending on various states.
 		Cares about zero opacity, visibility, flag set by SetIgnoreInput, disabled state,
 		and if the widget is currently dying. */
-	bool GetIsInteractable() const;
+	bool getIsInteractable() const;
 
 	/** Set this widget to be the focused widget. It will be the one receiving keyboard input.
 		Widgets can be focused only after enabling it (See SetIsFocusable(true)).
 		Invisible or disabled widgets can not be focused.
 
 		If SetFocus is called on a widget in a inactive window, it will succeed (return true),
-		but it won't actually become focused until that window is activated (See TBWindow::SetLastFocus).
+		but it won't actually become focused until that window is activated (See TBWindow::setLastFocus).
 
 		Returns true if successfully focused, or if set as last focus in its window. */
-	bool SetFocus(WIDGET_FOCUS_REASON reason, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
-	bool GetIsFocused() const { return focused_widget == this; }
+	bool setFocus(WIDGET_FOCUS_REASON reason, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
+	bool getIsFocused() const { return focused_widget == this; }
 
 	/** Call SetFocus on all children and their children, until a widget is found that accepts it.
 		Returns true if some child was successfully focused. */
-	bool SetFocusRecursive(WIDGET_FOCUS_REASON reason);
+	bool setFocusRecursive(WIDGET_FOCUS_REASON reason);
 
 	/** Move focus from the currently focused widget to another focusable widget. It will search
 		for a focusable widget in the same TBWindow (or top root if there is no window) forward or
 		backwards in the widget order. */
-	bool MoveFocus(bool forward);
+	bool moveFocus(bool forward);
 
 	/** Returns the child widget that contains the coordinate or nullptr if no one does. If include_children
 		is true, the search will recurse into the childrens children. */
-	TBWidget *GetWidgetAt(int x, int y, bool include_children) const;
+	TBWidget *getWidgetAt(int x, int y, bool include_children) const;
 
 	/** Get the child at the given index, or nullptr if there was no child at that index.
 		Note: Avoid calling this in loops since it does iteration. Consider iterating
 		the widgets directly instead! */
-	TBWidget *GetChildFromIndex(int index) const;
+	TBWidget *getChildFromIndex(int index) const;
 
 	/** Get the child index of the given widget (that must be a child of this widget).
 		Note: Avoid calling this in loops since it does iteration. Consider iterating
 		the widgets directly instead! */
-	int GetIndexFromChild(TBWidget *child) const;
+	int getIndexFromChild(TBWidget *child) const;
 
 	/** Get the text of a child widget with the given id, or an empty string if there was
 		no widget with that id. */
-	TBStr GetTextByID(const TBID &id);
+	TBStr getTextByID(const TBID &id);
 
 	/** Get the value of a child widget with the given id, or 0 if there was no widget
 		with that id. */
-	int GetValueByID(const TBID &id);
+	int getValueByID(const TBID &id);
 
-	TBWidget *GetNextDeep(const TBWidget *bounding_ancestor = nullptr) const;
-	TBWidget *GetPrevDeep() const;
-	TBWidget *GetLastLeaf() const;
-	inline TBWidget *GetFirstChild() const { return m_children.GetFirst(); }
-	inline TBWidget *GetLastChild() const { return m_children.GetLast(); }
-	TBLinkListOf<TBWidget>::Iterator GetIteratorForward() { return m_children.IterateForward(); }
-	TBLinkListOf<TBWidget>::Iterator GetIteratorBackward() { return m_children.IterateBackward(); }
+	TBWidget *getNextDeep(const TBWidget *bounding_ancestor = nullptr) const;
+	TBWidget *getPrevDeep() const;
+	TBWidget *getLastLeaf() const;
+	inline TBWidget *getFirstChild() const { return m_children.getFirst(); }
+	inline TBWidget *getLastChild() const { return m_children.getLast(); }
+	TBLinkListOf<TBWidget>::Iterator getIteratorForward() { return m_children.iterateForward(); }
+	TBLinkListOf<TBWidget>::Iterator getIteratorBackward() { return m_children.iterateBackward(); }
 
 	/** Return true if this widget is the same or a ancestor of other_widget. */
-	bool IsAncestorOf(TBWidget *other_widget) const;
+	bool isAncestorOf(TBWidget *other_widget) const;
 
 	/** Return true if this widget is the same as other_widget or if other_widget
 		events are going through this widget (See GetEventDestination()) */
-	bool IsEventDestinationFor(TBWidget *other_widget) const;
+	bool isEventDestinationFor(TBWidget *other_widget) const;
 
 	// == Callbacks ==============================================
 
 	/** Add a listener to this widget. It should be removed again with
 		RemoveListener before the widget is deleted. */
-	void AddListener(TBWidgetListener *listener);
-	void RemoveListener(TBWidgetListener *listener);
-	bool HasListener(TBWidgetListener *listener) const;
+	void addListener(TBWidgetListener *listener);
+	void removeListener(TBWidgetListener *listener);
+	bool hasListener(TBWidgetListener *listener) const;
 
 	/** Callback for handling events.
 		Return true if the event is handled and should not
 		continue to be handled by any parent widgets. */
-	virtual bool OnEvent(const TBWidgetEvent &ev) { return false; }
+	virtual bool onEvent(const TBWidgetEvent &ev) { return false; }
 
 	/** Callback for doing anything that might be needed before paint.
 		F.ex Updating invalid layout, formatting text etc. */
-	virtual void OnProcess() {}
+	virtual void onProcess() {}
 
 	/** Callback for doing anything that might be needed before paint.
 		This is called after OnProcess has been called on this widgets children. */
-	virtual void OnProcessAfterChildren() {}
+	virtual void onProcessAfterChildren() {}
 
 	/** Callback for doing state updates that depend on your application state.
 		F.ex setting the disabled state on a widget whose action is currently not
 		available. This callback is called for all widgets before OnProcess if
 		something has called InvalidateStates().*/
-	virtual void OnProcessStates() {}
+	virtual void onProcessStates() {}
 
 	/** PaintProps contains properties needed for painting a widget.
 		Properties may be inherited from the parent widget if not specified
@@ -660,15 +660,15 @@ public:
 	/** Callback for painting this widget.
 		The skin is already painted and the opacity set to reflect this widgets.
 		This is only called for widgets with a opacity > 0 */
-	virtual void OnPaint(const PaintProps &paint_props) {}
+	virtual void onPaint(const PaintProps &paint_props) {}
 
 	/** Callback for painting child widgets.
 		The default implementation is painting all children. */
-	virtual void OnPaintChildren(const PaintProps &paint_props);
+	virtual void onPaintChildren(const PaintProps &paint_props);
 
 	/** Callback for when this widget or any of its children have
 		called Invalidate() */
-	virtual void OnInvalid() {}
+	virtual void onInvalid() {}
 
 	/** Called when the background skin changes by calling SetSkinBg(), or when the skin
 		has changed indirectly after a skin condition changes in a way that may affect layout.
@@ -676,83 +676,83 @@ public:
 		For indirect skin changes, OnSkinChanged is called before validation of layouts is about
 		to happen in InvokeProcess().
 	*/
-	virtual void OnSkinChanged() {}
+	virtual void onSkinChanged() {}
 
 	/** Called when the font has changed. */
-	virtual void OnFontChanged() {}
+	virtual void onFontChanged() {}
 
 	/** Called when the focus has changed. */
-	virtual void OnFocusChanged(bool focused) {}
+	virtual void onFocusChanged(bool focused) {}
 
 	/** Called when the visibility has changed.
 		Note: This is not called when combined visibility change, so it may change visibility
 		because of ancestors without this being called. */
-	virtual void OnVisibilityChanged() {}
+	virtual void onVisibilityChanged() {}
 
 	/** Called when the capture has changed. */
-	virtual void OnCaptureChanged(bool captured) {}
+	virtual void onCaptureChanged(bool captured) {}
 
 	/** Called when a child widget has been added to this widget (before calling OnAdded on child). */
-	virtual void OnChildAdded(TBWidget *child) {}
+	virtual void onChildAdded(TBWidget *child) {}
 
 	/** Called when a child widget is about to be removed from this widget (before calling OnRemove on child). */
-	virtual void OnChildRemove(TBWidget *child) {}
+	virtual void onChildRemove(TBWidget *child) {}
 
 	/** Called when this widget has been added to a parent (after calling OnChildAdded on parent). */
-	virtual void OnAdded() {}
+	virtual void onAdded() {}
 
 	/** Called when a this widget has been removed from its parent (after calling OnChildRemove on parent). */
-	virtual void OnRemove() {}
+	virtual void onRemove() {}
 
 	/** Called when Die() is called on this widget. Note: Not called for children to the widget Die() was
 		invoked on even though they are also dying. */
-	virtual void OnDie() {}
+	virtual void onDie() {}
 
 	/** Called when this widget has been resized.
 		The default implementation move and resize all children according to their gravity. */
-	virtual void OnResized(int old_w, int old_h);
+	virtual void onResized(int old_w, int old_h);
 
 	/** Called when this widget has been scrolled. */
-	virtual void OnScroll(int scroll_x, int scroll_y) {}
+	virtual void onScroll(int scroll_x, int scroll_y) {}
 
 	/** Called just after a child has been inflated into this widget.
 		The default implementation will resize the child to it's preferred size
 		and position it according to the gravity. If you implement a layouting
 		widget, you should override this to prevent doing unnecessary measuring. */
-	virtual void OnInflateChild(TBWidget *child);
+	virtual void onInflateChild(TBWidget *child);
 
 	/** Called when this widget is inflated from resources, before any children
 		have been inflated. This will read generic widget properties and add the
 		widget to the hierarchy if it's not already added. If overridden, you
 		must call the super implementation. */
-	virtual void OnInflate(const INFLATE_INFO &info);
+	virtual void onInflate(const INFLATE_INFO &info);
 
 	/** Get hit status tests if this widget should be hit at the given coordinate.
 		The default implementation checks the visibility, ignored input flag, rectangle,
 		and disabled status. */
-	virtual WIDGET_HIT_STATUS GetHitStatus(int x, int y);
+	virtual WIDGET_HIT_STATUS getHitStatus(int x, int y);
 
 	/** Get if skin condition applies to this widget. This is called when a skin condition has the property
 		PROPERTY_CUSTOM (not a generic one known by skin and the default widget condition context).
 		This can be used to extend the skin conditions support with properties specific to different widgets. */
-	virtual bool GetCustomSkinCondition(const TBSkinCondition::CONDITION_INFO &info) { return false; }
+	virtual bool getCustomSkinCondition(const TBSkinCondition::CONDITION_INFO &info) { return false; }
 
 	/** Get this widget or a child widget that should be root for other children. This is useful
 		for widgets having multiple children by default, to specify which one that should get the children. */
-	virtual TBWidget *GetContentRoot() { return this; }
+	virtual TBWidget *getContentRoot() { return this; }
 
 	/** Get this widget or a parent widget that is the absolute root parent. */
-	TBWidget *GetParentRoot();
+	TBWidget *getParentRoot();
 
 	/** Get the closest parent widget that is a TBWindow or nullptr if there is none.
 		If this widget is a window itself, this will be returned. */
-	TBWindow *GetParentWindow();
+	TBWindow *getParentWindow();
 
 	/** Get the parent widget, or nullptr if this widget is not added. */
-	inline TBWidget *GetParent() const { return m_parent; }
+	inline TBWidget *getParent() const { return m_parent; }
 
 	/** Get the widget that should receive the events this widget invoke. By default the parent. */
-	virtual TBWidget *GetEventDestination() { return m_parent; }
+	virtual TBWidget *getEventDestination() { return m_parent; }
 
 	/** Return translation the children should have. Any scrolling of child widgets
 		should be done with this method, by returning the wanted translation.
@@ -762,37 +762,37 @@ public:
 		any child widget. Note: You can apply the translation on one widget and
 		implement those methods on a parent, by returning this widget from the
 		parents GetScrollRoot(). */
-	virtual void GetChildTranslation(int &x, int &y) const { x = y = 0; }
+	virtual void getChildTranslation(int &x, int &y) const { x = y = 0; }
 
 	/** If this is a widget that scroll children (see GetChildTranslation), it should
 		scroll to the coordinates x, y.
 		This must result in calling OnScroll if scrolling occured. */
-	virtual void ScrollTo(int x, int y) {}
+	virtual void scrollTo(int x, int y) {}
 
 	/** Start the TBScroller for this widget and scroll it to the given position.
 		Will cancel any on going smooth scroll operation. */
-	void ScrollToSmooth(int x, int y);
+	void scrollToSmooth(int x, int y);
 
 	/** If this is a widget that scroll children (see GetChildTranslation), it will
 		scroll by delta dx, dy relative to its current position. */
-	void ScrollBy(int dx, int dy);
+	void scrollBy(int dx, int dy);
 
 	/** Start the TBScroller for this widget and scroll it by the given delta.
 		Consecutive calls will accumulate the scroll speed. */
-	void ScrollBySmooth(int dx, int dy);
+	void scrollBySmooth(int dx, int dy);
 
 	/** Information about scrolling for a widget at the time of calling GetScrollInfo. */
 	class ScrollInfo
 	{
 	public:
 		ScrollInfo() : min_x(0), min_y(0), max_x(0), max_y(0), x(0), y(0) {}
-		bool CanScrollX() const { return max_x > min_x; }
-		bool CanScrollY() const { return max_y > min_y; }
-		bool CanScrollLeft() const { return x > min_x; }
-		bool CanScrollRight() const { return x < max_x; }
-		bool CanScrollUp() const { return y > min_y; }
-		bool CanScrollDown() const { return y < max_y; }
-		bool CanScroll() const { return CanScrollX() || CanScrollY(); }
+		bool canScrollX() const { return max_x > min_x; }
+		bool canScrollY() const { return max_y > min_y; }
+		bool canScrollLeft() const { return x > min_x; }
+		bool canScrollRight() const { return x < max_x; }
+		bool canScrollUp() const { return y > min_y; }
+		bool canScrollDown() const { return y < max_y; }
+		bool canScroll() const { return canScrollX() || canScrollY(); }
 		int min_x, min_y;	///< Minimum x and y scroll position.
 		int max_x, max_y;	///< Maximum x and y scroll position.
 		int x, y;			///< Current x and y scroll position.
@@ -800,56 +800,56 @@ public:
 
 	/** If this is a widget that scroll children (see GetChildTranslation),
 		it should return the current scroll information. */
-	virtual ScrollInfo GetScrollInfo() { return ScrollInfo(); }
+	virtual ScrollInfo getScrollInfo() { return ScrollInfo(); }
 
 	/** If this widget is implementing ScrollTo and GetScrollInfo but
 		the corresponding GetChildTranslation is implemented on a child,
 		you should return that child from this method. */
-	virtual TBWidget *GetScrollRoot() { return this; }
+	virtual TBWidget *getScrollRoot() { return this; }
 
 	/** Scroll this widget and/or any parent widgets by the given delta.
 		dx and dy will be reduced by the amount that was successfully
 		scrolled. */
-	void ScrollByRecursive(int &dx, int &dy);
+	void scrollByRecursive(int &dx, int &dy);
 
 	/** Make this widget visible by calling ScrollIntoView on all parent widgets */
-	void ScrollIntoViewRecursive();
+	void scrollIntoViewRecursive();
 
 	/** If this is a widget that scroll children (see GetChildTranslation), it will
 		scroll so that rect is visible. Rect is relative to this widget. */
-	void ScrollIntoView(const TBRect &rect);
+	void scrollIntoView(const TBRect &rect);
 
 	/** Return the TBScroller set up for this widget, or nullptr if creation failed. */
-	TBScroller *GetScroller();
+	TBScroller *getScroller();
 
 	// == Setter shared for many types of widgets ============
 
 	/** Set along which axis the content should be layouted. */
-	virtual void SetAxis(AXIS axis) {}
-	virtual AXIS GetAxis() const { return AXIS_X; }
+	virtual void setAxis(AXIS axis) {}
+	virtual AXIS getAxis() const { return AXIS_X; }
 
 	/** Set the value of this widget. Implemented by most widgets (that has a value).
 		Note: Some widgets also provide special setters with other types (such as double). */
-	virtual void SetValue(int value) {}
-	virtual int GetValue() const { return 0; }
+	virtual void setValue(int value) {}
+	virtual int getValue() const { return 0; }
 
 	/** Set the value in double precision. It only makes sense to use this instead
-		of SetValue() on widgets that store the value as double. F.ex TBScrollBar, TBSlider. */
-	virtual void SetValueDouble(double value) { SetValue((int) value); }
+		of setValue() on widgets that store the value as double. F.ex TBScrollBar, TBSlider. */
+	virtual void setValueDouble(double value) { setValue((int) value); }
 
 	/** Return the value in double precision. It only makes sense to use this instead
-		of GetValue() on widgets that store the value as double. F.ex TBScrollBar, TBSlider. */
-	virtual double GetValueDouble() const { return (double) GetValue(); }
+		of getValue() on widgets that store the value as double. F.ex TBScrollBar, TBSlider. */
+	virtual double getValueDouble() const { return (double) getValue(); }
 
 	/** Set the text of this widget. Implemented by most widgets (that has text). */
-	virtual bool SetText(const char *text) { return true; }
+	virtual bool setText(const char *text) { return true; }
 
 	/** Get the text of this widget. Implemented by most widgets (that has text).
 		returns false if it failed. */
-	virtual bool GetText(TBStr &text) { text.Clear(); return true; }
+	virtual bool getText(TBStr &text) { text.clear(); return true; }
 
 	/** Get the text of this widget. Implemented by most widgets (that has text). */
-	TBStr GetText() { TBStr str; GetText(str); return str; }
+	TBStr getText() { TBStr str; getText(str); return str; }
 
 	/** Connect this widget to a widget value.
 
@@ -858,32 +858,32 @@ public:
 
 		On connection, the value of this widget will be updated to the value of the
 		given TBWidgetValue. */
-	void Connect(TBWidgetValue *value) { m_connection.Connect(value, this); }
+	void connect(TBWidgetValue *value) { m_connection.connect(value, this); }
 
 	/** Unconnect, if this widget is connected to a TBWidgetValue. */
-	void Unconnect() { m_connection.Unconnect(); }
+	void unconnect() { m_connection.unconnect(); }
 
 	/** Get the rectangle inside any padding, relative to this widget. This is the
 		rectangle in which the content should be rendered.
 
 		This may be overridden to f.ex deduct space allocated by visible scrollbars
 		managed by this widget. Anything that removes space from the content area. */
-	virtual TBRect GetPaddingRect();
+	virtual TBRect getPaddingRect();
 
 	/** Calculate the preferred content size for this widget. This is the size of the actual
 		content. Don't care about padding or other decoration. */
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints);
+	virtual PreferredSize onCalculatePreferredContentSize(const SizeConstraints &constraints);
 
 	/** Calculate the preferred size for this widget. This is the full size of the widget,
 		content + padding + eventual other decoration (but not skin expansion).
 		This is the size that should be used for layouting a widget.
 		The returned PreferredSize also contains minimal size and maximum size. */
-	virtual PreferredSize OnCalculatePreferredSize(const SizeConstraints &constraints);
+	virtual PreferredSize onCalculatePreferredSize(const SizeConstraints &constraints);
 
 	/** Get the PreferredSize for this widget.
 		This returns cached data if valid, or calls OnCalculatePreferredSize if needed. */
-	PreferredSize GetPreferredSize(const SizeConstraints &constraints);
-	PreferredSize GetPreferredSize() { return GetPreferredSize(SizeConstraints()); }
+	PreferredSize getPreferredSize(const SizeConstraints &constraints);
+	PreferredSize getPreferredSize() { return getPreferredSize(SizeConstraints()); }
 
 	/** Type used for InvalidateLayout */
 	enum INVALIDATE_LAYOUT {
@@ -902,36 +902,36 @@ public:
 		  it should be called with INVALIDATE_LAYOUT_TARGET_ONLY to avoid recursing back up to parents when
 		  already recursing down, to avoid unnecessary computation.
 		*/
-	virtual void InvalidateLayout(INVALIDATE_LAYOUT il);
+	virtual void invalidateLayout(INVALIDATE_LAYOUT il);
 
 	/** Set layout params. Calls InvalidateLayout. */
-	void SetLayoutParams(const LayoutParams &lp);
+	void setLayoutParams(const LayoutParams &lp);
 
 	/** Get layout params, or nullptr if not specified.
 		Note: The layout params has already been applied to the PreferredSize returned
 		from GetPreferredSize so you normally don't need to check these params. */
-	const LayoutParams *GetLayoutParams() const { return m_layout_params; }
+	const LayoutParams *getLayoutParams() const { return m_layout_params; }
 
 	// == Misc methods for invoking events. Should normally be called only on the root widget ===============
 
 	/** Invoke OnProcess and OnProcessAfterChildren on this widget and its children. */
-	void InvokeProcess();
+	void invokeProcess();
 
 	/** Invoke OnProcessStates on all child widgets, if state processing
 		is needed (InvalidateStates() has been called) */
-	void InvokeProcessStates(bool force_update = false);
+	void invokeProcessStates(bool force_update = false);
 
 	/** Invoke paint on this widget and all its children */
-	void InvokePaint(const PaintProps &parent_paint_props);
+	void invokePaint(const PaintProps &parent_paint_props);
 
 	/** Invoke OnFontChanged on this widget and recursively on any children that inherit the font. */
-	void InvokeFontChanged();
+	void invokeFontChanged();
 
 	/** Invoke a event on this widget.
 
 		This will first check with all registered TBWidgetListener if the event should be dispatched.
 
-		If the widgets OnEvent returns false (event not handled), it will continue traversing to
+		If the widgets onEvent returns false (event not handled), it will continue traversing to
 		GetEventDestination (by default the parent) until a widget handles the event.
 
 		Note: When invoking event EVENT_TYPE_CHANGED, this will update the value of other widgets connected
@@ -941,38 +941,38 @@ public:
 
 		Note: Remember that this widgets may be deleted after this call! So if you really must do something after
 		this call and are not sure what the event will cause, use TBWidgetSafePointer to detect self deletion. */
-	bool InvokeEvent(TBWidgetEvent &ev);
+	bool invokeEvent(TBWidgetEvent &ev);
 
-	bool InvokePointerDown(int x, int y, int click_count, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type);
-	bool InvokePointerUp(int x, int y, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type);
-	void InvokePointerMove(int x, int y, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type);
-	void InvokePointerCancel();
+	bool invokePointerDown(int x, int y, int click_count, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type);
+	bool invokePointerUp(int x, int y, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type);
+	void invokePointerMove(int x, int y, MODIFIER_KEYS modifierkeys, BUTTON_TYPE type);
+	void invokePointerCancel();
 
 	/** Invoke touch events with ref_id set as the given id.
 		Note: For id 0, it will invoke EVENT_TYPE_POINTER_DOWN (with touch flag set to true), and EVENT_TYPE_TOUCH_DOWN
 		for other id > 0. This results in normal interaction for first finger, and optional handling of other
 		simultaneous interaction. GetTouchInfo(id) can be used to get additional interaction info. */
-	bool InvokeTouchDown(int x, int y, uint32_t id, int click_count, MODIFIER_KEYS modifierkeys);
-	bool InvokeTouchUp(int x, int y, uint32_t id, MODIFIER_KEYS modifierkeys);
-	void InvokeTouchMove(int x, int y, uint32_t id, MODIFIER_KEYS modifierkeys);
-	void InvokeTouchCancel(uint32_t id);
+	bool invokeTouchDown(int x, int y, uint32_t id, int click_count, MODIFIER_KEYS modifierkeys);
+	bool invokeTouchUp(int x, int y, uint32_t id, MODIFIER_KEYS modifierkeys);
+	void invokeTouchMove(int x, int y, uint32_t id, MODIFIER_KEYS modifierkeys);
+	void invokeTouchCancel(uint32_t id);
 
-	bool InvokeWheel(int x, int y, int delta_x, int delta_y, MODIFIER_KEYS modifierkeys);
+	bool invokeWheel(int x, int y, int delta_x, int delta_y, MODIFIER_KEYS modifierkeys);
 
 	/** Invoke the EVENT_TYPE_KEY_DOWN and EVENT_TYPE_KEY_UP events on the currently focused widget.
 		This will also do some generic key handling, such as cycling focus on tab etc. */
-	bool InvokeKey(int key, SPECIAL_KEY special_key, MODIFIER_KEYS modifierkeys, bool down);
+	bool invokeKey(int key, SPECIAL_KEY special_key, MODIFIER_KEYS modifierkeys, bool down);
 
 	/** A widget that receive a EVENT_TYPE_POINTER_DOWN event, will stay "captured" until EVENT_TYPE_POINTER_UP
 		is received. While captured, all EVENT_TYPE_POINTER_MOVE are sent to it. This method can force release the capture,
 		which may happen f.ex if the TBWidget is removed while captured. */
-	void ReleaseCapture();
+	void releaseCapture();
 
 	/** Make x and y (relative to this widget) relative to the upper left corner of the root widget. */
-	void ConvertToRoot(int &x, int &y) const;
+	void convertToRoot(int &x, int &y) const;
 
 	/** Make x and y (relative to the upper left corner of the root widget) relative to this widget. */
-	void ConvertFromRoot(int &x, int &y) const;
+	void convertFromRoot(int &x, int &y) const;
 
 	/** Set the font description for this widget and any children that inherit the font.
 
@@ -983,20 +983,20 @@ public:
 		font was successfully set.
 
 		Returns false and keep the font onchanged if it no matching font exists or fails creation. */
-	bool SetFontDescription(const TBFontDescription &font_desc);
+	bool setFontDescription(const TBFontDescription &font_desc);
 
 	/** Get the font description as set with SetFontDescription. Use GetCalculatedFontDescription()
 		to get the calculated font description (Inherit from parent widget etc.) */
-	TBFontDescription GetFontDescription() const { return m_font_desc; }
+	TBFontDescription getFontDescription() const { return m_font_desc; }
 
 	/** Calculate the font description for this widget. If this widget have unspecified font
 		description, it will be inheritted from parent. If no parent specify any font,
 		the default font description will be returned. */
-	TBFontDescription GetCalculatedFontDescription() const;
+	TBFontDescription getCalculatedFontDescription() const;
 
 	/** Get the TBFontFace for this widget from the current font description (calculated
 		by GetCalculatedFontDescription) */
-	TBFontFace *GetFont() const;
+	TBFontFace *getFont() const;
 
 private:
 	friend class TBWidgetListener;	///< It does iteration of m_listeners for us.
@@ -1067,27 +1067,27 @@ public:
 		int move_widget_y;				///< Touch y position on last touch event, relative to the captured widget.
 	};
 	/** Return TOUCH_INFO for the given id, or nullptr if no touch is active for that id. */
-	static TOUCH_INFO *GetTouchInfo(uint32_t id);
+	static TOUCH_INFO *getTouchInfo(uint32_t id);
 private:
 	/** Return this widget or the nearest parent that is scrollable
 		in the given axis, or nullptr if there is none. */
-	TBWidget *FindScrollableWidget(bool scroll_x, bool scroll_y);
-	TBScroller *FindStartedScroller();
-	TBScroller *GetReadyScroller(bool scroll_x, bool scroll_y);
-	TBWidget *GetWidgetByIDInternal(const TBID &id, const TB_TYPE_ID type_id = nullptr);
-	void InvokeSkinUpdatesInternal(bool force_update);
-	void InvokeProcessInternal();
-	static void SetHoveredWidget(TBWidget *widget, bool touch);
-	static void SetCapturedWidget(TBWidget *widget);
-	void HandlePanningOnMove(int x, int y);
-	void StartLongClickTimer(BUTTON_TYPE type);
-	void StopLongClickTimer();
+	TBWidget *findScrollableWidget(bool scroll_x, bool scroll_y);
+	TBScroller *findStartedScroller();
+	TBScroller *getReadyScroller(bool scroll_x, bool scroll_y);
+	TBWidget *getWidgetByIDInternal(const TBID &id, const TB_TYPE_ID type_id = nullptr);
+	void invokeSkinUpdatesInternal(bool force_update);
+	void invokeProcessInternal();
+	static void setHoveredWidget(TBWidget *widget, bool touch);
+	static void setCapturedWidget(TBWidget *widget);
+	void handlePanningOnMove(int x, int y);
+	void startLongClickTimer(BUTTON_TYPE type);
+	void stopLongClickTimer();
 	friend class TBLongClickTimer;
-	void MaybeInvokeLongClickOrContextMenu(BUTTON_TYPE type);
+	void maybeInvokeLongClickOrContextMenu(BUTTON_TYPE type);
 	/** Returns the opacity for this widget multiplied with its skin opacity and state opacity. */
-	float CalculateOpacityInternal(WIDGET_STATE state, TBSkinElement *skin_element) const;
+	float calculateOpacityInternal(WIDGET_STATE state, TBSkinElement *skin_element) const;
 };
 
-inline bool TBWidgetEvent::IsAny(const tb::TBID& id) const { return target->GetID() == id || ref_id == id; }
+inline bool TBWidgetEvent::isAny(const tb::TBID& id) const { return target->getID() == id || ref_id == id; }
 
 } // namespace tb

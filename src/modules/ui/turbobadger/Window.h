@@ -39,7 +39,7 @@ protected:
 
 public:
 	static inline const char *getTranslation(const char *input) {
-		const char *str = tb::g_tb_lng->GetString(tb::TBID(input));
+		const char *str = tb::g_tb_lng->getString(tb::TBID(input));
 		if (!strncmp(str, "<TRANSLATE", 10)) {
 			return input;
 		}
@@ -82,7 +82,6 @@ public:
 	int getInt(const char *nodeId);
 	int getSelectedId(const char *nodeId);
 	bool isToggled(const char *checkBoxNodeId);
-	void setText(const char *nodeId, const std::string& text);
 	void toggleViaVar(const char *checkBoxNodeId, const core::VarPtr& var);
 	void toggle(const char *checkBoxNodeId, bool state);
 
@@ -97,16 +96,17 @@ public:
 	tb::TBWidget* getWidgetAt(int x, int y, bool includeChildren = true);
 	bool setVisible(const char *name, bool visible);
 	bool setActive(const char *name, bool active);
+	void setStr(const char *nodeId, const std::string& text);
 
-	virtual void OnDie() override;
-	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
+	virtual void onDie() override;
+	virtual bool onEvent(const tb::TBWidgetEvent &ev) override;
 
 	virtual void onWindowResize() override;
 };
 
 template<class T>
 inline T* Window::getWidgetByType(const char *name) {
-	return GetWidgetByIDAndType<T>(tb::TBID(name));
+	return getWidgetByIDAndType<T>(tb::TBID(name));
 }
 
 }

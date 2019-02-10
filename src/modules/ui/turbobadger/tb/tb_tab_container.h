@@ -16,8 +16,8 @@ public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBTabLayout, TBLayout);
 
-	virtual void OnChildAdded(TBWidget *child) override;
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override;
+	virtual void onChildAdded(TBWidget *child) override;
+	virtual PreferredSize onCalculatePreferredContentSize(const SizeConstraints &constraints) override;
 };
 
 /** TBTabContainer - A container with tabs for multiple pages. */
@@ -32,32 +32,32 @@ public:
 
 	/** Set along which axis the content should layouted.
 		Use SetAlignment instead for more choice! Also, calling
-		SetAxis directly does not update the current alignment. */
-	virtual void SetAxis(AXIS axis) override;
-	virtual AXIS GetAxis() const override { return m_root_layout.GetAxis(); }
+		setAxis directly does not update the current alignment. */
+	virtual void setAxis(AXIS axis) override;
+	virtual AXIS getAxis() const override { return m_root_layout.getAxis(); }
 
 	/** Set alignment of the tabs. */
-	void SetAlignment(TB_ALIGN align);
-	TB_ALIGN GetAlignment() const { return m_align; }
+	void setAlignment(TB_ALIGN align);
+	TB_ALIGN getAlignment() const { return m_align; }
 
 	/** Set which page should be selected and visible. */
-	virtual void SetValue(int value) override;
-	virtual int GetValue() const override { return m_current_page; }
+	virtual void setValue(int value) override;
+	virtual int getValue() const override { return m_current_page; }
 
 	/** Set which page should be selected and visible. */
-	void SetCurrentPage(int index) { SetValue(index); }
-	int GetCurrentPage() { return GetValue(); }
-	int GetNumPages();
+	void setCurrentPage(int index) { setValue(index); }
+	int getCurrentPage() { return getValue(); }
+	int getNumPages();
 
 	/** Return the widget that is the current page, or nullptr if none is active. */
-	TBWidget *GetCurrentPageWidget() const;
+	TBWidget *getCurrentPageWidget() const;
 
-	virtual void OnInflate(const INFLATE_INFO &info) override;
-	virtual bool OnEvent(const TBWidgetEvent &ev) override;
-	virtual void OnProcess() override;
+	virtual void onInflate(const INFLATE_INFO &info) override;
+	virtual bool onEvent(const TBWidgetEvent &ev) override;
+	virtual void onProcess() override;
 
-	virtual TBWidget *GetContentRoot() override { return &m_content_root; }
-	TBLayout *GetTabLayout() { return &m_tab_layout; }
+	virtual TBWidget *getContentRoot() override { return &m_content_root; }
+	TBLayout *getTabLayout() { return &m_tab_layout; }
 protected:
 	TBLayout m_root_layout;
 	TBTabLayout m_tab_layout;

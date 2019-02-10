@@ -17,6 +17,7 @@
 #include "voxel/generator/PlantGenerator.h"
 #include "voxel/generator/TreeGenerator.h"
 #include "voxel/BiomeManager.h"
+#include "voxelformat/MeshExporter.h"
 #include "voxelformat/VoxFormat.h"
 #include "voxelformat/QBTFormat.h"
 #include "voxelformat/QBFormat.h"
@@ -57,7 +58,7 @@ bool ViewportSingleton::exportModel(const std::string& file) {
 		return false;
 	}
 	voxel::Mesh mesh(128, 128, true);
-	vps().volumeRenderer().toMesh(ModelVolumeIndex, &mesh);
+	volumeRenderer().toMesh(ModelVolumeIndex, &mesh);
 	return voxel::exportMesh(&mesh, filePtr->name().c_str());
 }
 

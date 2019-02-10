@@ -67,7 +67,7 @@ static_assert(lengthof(buildingTypes) == (int)voxel::BuildingType::Max, "Missing
 
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		Super(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
-	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
+	setSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 	for (int i = 0; i < lengthof(treeTypes); ++i) {
 		addStringItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
 	}
@@ -114,7 +114,7 @@ bool VoxEditWindow::init() {
 		Log::error("Failed to init the main window: Could not get the editor scene node with id 'palettecontainer'");
 		return false;
 	}
-	const int8_t index = (uint8_t)_paletteWidget->GetValue();
+	const int8_t index = (uint8_t)_paletteWidget->getValue();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 	vps().setCursorVoxel(voxel);
 	_paletteWidget->markAsClean();
@@ -127,8 +127,8 @@ bool VoxEditWindow::init() {
 
 	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
 	if (toggleViewPort != nullptr) {
-		toggleViewPort->SetState(tb::WIDGET_STATE_DISABLED, !_fourViewAvailable);
-		const int value = toggleViewPort->GetValue();
+		toggleViewPort->setState(tb::WIDGET_STATE_DISABLED, !_fourViewAvailable);
+		const int value = toggleViewPort->getValue();
 		setQuadViewport(value == 1);
 	}
 	_exportButton = getWidget("export");
@@ -165,11 +165,11 @@ bool VoxEditWindow::init() {
 	}
 
 	const render::GridRenderer& gridRenderer = vps().gridRenderer();
-	_showAABB->SetValue(gridRenderer.renderAABB() ? 1 : 0);
-	_showGrid->SetValue(gridRenderer.renderGrid() ? 1 : 0);
-	_showAxis->SetValue(vps().renderAxis() ? 1 : 0);
-	_showLockAxis->SetValue(vps().renderLockAxis() ? 1 : 0);
-	_renderShadow->SetValue(vps().renderShadow() ? 1 : 0);
+	_showAABB->setValue(gridRenderer.renderAABB() ? 1 : 0);
+	_showGrid->setValue(gridRenderer.renderGrid() ? 1 : 0);
+	_showAxis->setValue(vps().renderAxis() ? 1 : 0);
+	_showLockAxis->setValue(vps().renderLockAxis() ? 1 : 0);
+	_renderShadow->setValue(vps().renderShadow() ? 1 : 0);
 
 	Assimp::Exporter exporter;
 	const size_t exporterNum = exporter.GetExportFormatCount();
@@ -258,13 +258,13 @@ void VoxEditWindow::move(int x, int y, int z) {
 void VoxEditWindow::toggleviewport() {
 	bool vis = false;
 	if (_sceneTop != nullptr) {
-		vis = _sceneTop->GetVisibilityCombined();
+		vis = _sceneTop->getVisibilityCombined();
 	}
 	if (!vis && _sceneLeft != nullptr) {
-		vis = _sceneLeft->GetVisibilityCombined();
+		vis = _sceneLeft->getVisibilityCombined();
 	}
 	if (!vis && _sceneFront != nullptr) {
-		vis = _sceneFront->GetVisibilityCombined();
+		vis = _sceneFront->getVisibilityCombined();
 	}
 
 	setQuadViewport(!vis);
@@ -281,107 +281,107 @@ void VoxEditWindow::setreferencepositiontocursor() {
 void VoxEditWindow::setQuadViewport(bool active) {
 	const tb::WIDGET_VISIBILITY vis = active ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
 	if (_sceneTop != nullptr) {
-		_sceneTop->SetVisibility(vis);
+		_sceneTop->setVisibility(vis);
 	}
 	if (_sceneLeft != nullptr) {
-		_sceneLeft->SetVisibility(vis);
+		_sceneLeft->setVisibility(vis);
 	}
 	if (_sceneFront != nullptr) {
-		_sceneFront->SetVisibility(vis);
+		_sceneFront->setVisibility(vis);
 	}
 	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
 	if (toggleViewPort != nullptr) {
-		toggleViewPort->SetValue(active ? 1 : 0);
+		toggleViewPort->setValue(active ? 1 : 0);
 	}
 }
 
 bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
-	if (ev.IsAny(TBIDC("resetcamera"))) {
+	if (ev.isAny(TBIDC("resetcamera"))) {
 		_scene->resetCamera();
 		_sceneFront->resetCamera();
 		_sceneLeft->resetCamera();
 		_sceneTop->resetCamera();
 		return true;
-	} else if (ev.IsAny(TBIDC("quit"))) {
+	} else if (ev.isAny(TBIDC("quit"))) {
 		quit();
 		return true;
-	} else if (ev.IsAny(TBIDC("crop"))) {
+	} else if (ev.isAny(TBIDC("crop"))) {
 		vps().crop();
 		return true;
-	} else if (ev.IsAny(TBIDC("extend"))) {
+	} else if (ev.isAny(TBIDC("extend"))) {
 		extend();
 		return true;
-	} else if (ev.IsAny(TBIDC("new"))) {
+	} else if (ev.isAny(TBIDC("new"))) {
 		createNew(false);
 		return true;
-	} else if (ev.IsAny(TBIDC("load"))) {
+	} else if (ev.isAny(TBIDC("load"))) {
 		load("");
 		return true;
-	} else if (ev.IsAny(TBIDC("export"))) {
+	} else if (ev.isAny(TBIDC("export"))) {
 		exportFile("");
 		return true;
-	} else if (ev.IsAny(TBIDC("import"))) {
+	} else if (ev.isAny(TBIDC("import"))) {
 		importMesh("");
 		return true;
-	} else if (ev.IsAny(TBIDC("prefab"))) {
+	} else if (ev.isAny(TBIDC("prefab"))) {
 		prefab("");
 		return true;
-	} else if (ev.IsAny(TBIDC("spacecolonization"))) {
+	} else if (ev.isAny(TBIDC("spacecolonization"))) {
 		vps().spaceColonization();
 		return true;
-	} else if (ev.IsAny(TBIDC("heightmap"))) {
+	} else if (ev.isAny(TBIDC("heightmap"))) {
 		importHeightmap("");
 		return true;
-	} else if (ev.IsAny(TBIDC("save"))) {
+	} else if (ev.isAny(TBIDC("save"))) {
 		save("");
 		return true;
-	} else if (ev.IsAny(TBIDC("redo"))) {
+	} else if (ev.isAny(TBIDC("redo"))) {
 		redo();
 		return true;
-	} else if (ev.IsAny(TBIDC("undo"))) {
+	} else if (ev.isAny(TBIDC("undo"))) {
 		undo();
 		return true;
-	} else if (ev.IsAny(TBIDC("rotatex"))) {
+	} else if (ev.isAny(TBIDC("rotatex"))) {
 		rotatex();
 		return true;
-	} else if (ev.IsAny(TBIDC("rotatey"))) {
+	} else if (ev.isAny(TBIDC("rotatey"))) {
 		rotatey();
 		return true;
-	} else if (ev.IsAny(TBIDC("rotatez"))) {
+	} else if (ev.isAny(TBIDC("rotatez"))) {
 		rotatez();
 		return true;
-	} else if (ev.IsAny(TBIDC("menu_structure"))) {
+	} else if (ev.isAny(TBIDC("menu_structure"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("structure_popup"))) {
-			menu->Show(&_structureItems, tb::TBPopupAlignment());
+			menu->show(&_structureItems, tb::TBPopupAlignment());
 		}
 		return true;
-	} else if (ev.IsAny(TBIDC("menu_tree"))) {
+	} else if (ev.isAny(TBIDC("menu_tree"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_popup"))) {
-			menu->Show(&_treeItems, tb::TBPopupAlignment());
+			menu->show(&_treeItems, tb::TBPopupAlignment());
 		}
 		return true;
-	} else if (ev.IsAny(TBIDC("menu_file"))) {
+	} else if (ev.isAny(TBIDC("menu_file"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("menu_file_window"))) {
-			menu->Show(&_fileItems, tb::TBPopupAlignment());
+			menu->show(&_fileItems, tb::TBPopupAlignment());
 		}
 		return true;
-	} else if (ev.IsAny(TBIDC("dialog_noise"))) {
+	} else if (ev.isAny(TBIDC("dialog_noise"))) {
 		new NoiseWindow(this);
 		return true;
-	} else if (ev.IsAny(TBIDC("optionshowgrid"))) {
-		vps().gridRenderer().setRenderGrid(ev.target->GetValue() == 1);
+	} else if (ev.isAny(TBIDC("optionshowgrid"))) {
+		vps().gridRenderer().setRenderGrid(ev.target->getValue() == 1);
 		return true;
-	} else if (ev.IsAny(TBIDC("optionshowaxis"))) {
-		vps().setRenderAxis(ev.target->GetValue() == 1);
+	} else if (ev.isAny(TBIDC("optionshowaxis"))) {
+		vps().setRenderAxis(ev.target->getValue() == 1);
 		return true;
-	} else if (ev.IsAny(TBIDC("optionshowlockaxis"))) {
-		vps().setRenderLockAxis(ev.target->GetValue() == 1);
+	} else if (ev.isAny(TBIDC("optionshowlockaxis"))) {
+		vps().setRenderLockAxis(ev.target->getValue() == 1);
 		return true;
-	} else if (ev.IsAny(TBIDC("optionshowaabb"))) {
-		vps().gridRenderer().setRenderAABB(ev.target->GetValue() == 1);
+	} else if (ev.isAny(TBIDC("optionshowaabb"))) {
+		vps().gridRenderer().setRenderAABB(ev.target->getValue() == 1);
 		return true;
-	} else if (ev.IsAny(TBIDC("optionrendershadow"))) {
-		vps().setRenderShadow(ev.target->GetValue() == 1);
+	} else if (ev.isAny(TBIDC("optionrendershadow"))) {
+		vps().setRenderShadow(ev.target->getValue() == 1);
 		return true;
 	}
 	return false;
@@ -389,7 +389,7 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 
 bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	tb::TBWidget *widget = ev.target;
-	const tb::TBID &id = widget->GetID();
+	const tb::TBID &id = widget->getID();
 	if (id == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_scene->newModel(true);
@@ -397,7 +397,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (id == TBIDC("unsaved_changes_quit")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			Close();
+			close();
 		}
 		return true;
 	} else if (id == TBIDC("unsaved_changes_load")) {
@@ -419,13 +419,13 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	}
 
 	for (int i = 0; i < lengthof(treeTypes); ++i) {
-		if (ev.IsAny(treeTypes[i].tbid)) {
+		if (ev.isAny(treeTypes[i].tbid)) {
 			new TreeWindow(this, treeTypes[i].type);
 			return true;
 		}
 	}
 	for (int i = 0; i < lengthof(buildingTypes); ++i) {
-		if (ev.IsAny(buildingTypes[i].tbid)) {
+		if (ev.isAny(buildingTypes[i].tbid)) {
 			voxel::BuildingContext ctx;
 			if (buildingTypes[i].type == voxel::BuildingType::Tower) {
 				ctx.floors = 3;
@@ -435,15 +435,15 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		}
 	}
 	for (int i = 0; i < lengthof(plantTypes); ++i) {
-		if (ev.IsAny(plantTypes[i].tbid)) {
+		if (ev.isAny(plantTypes[i].tbid)) {
 			vps().createPlant(plantTypes[i].type);
 			return true;
 		}
 	}
-	if (ev.IsAny(TBIDC("clouds"))) {
+	if (ev.isAny(TBIDC("clouds"))) {
 		vps().createCloud();
 		return true;
-	} else if (ev.IsAny(TBIDC("cactus"))) {
+	} else if (ev.isAny(TBIDC("cactus"))) {
 		vps().createCactus();
 		return true;
 	}
@@ -457,11 +457,11 @@ void VoxEditWindow::extend(const glm::ivec3& size) {
 
 bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	tb::TBWidget *widget = ev.target;
-	const tb::TBID &id = widget->GetID();
+	const tb::TBID &id = widget->getID();
 	if (id == TBIDC("camrottype")) {
-		tb::TBWidget *parent = widget->GetParent();
-		if (Viewport *viewport = parent->SafeCastTo<Viewport>()) {
-			const int value = widget->GetValue();
+		tb::TBWidget *parent = widget->getParent();
+		if (Viewport *viewport = parent->safeCastTo<Viewport>()) {
+			const int value = widget->getValue();
 			const video::CameraRotationType type = value == 1 ?
 					video::CameraRotationType::Eye :
 					video::CameraRotationType::Target;
@@ -469,9 +469,9 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	} else if (id == TBIDC("cammode")) {
-		tb::TBWidget *parent = widget->GetParent();
-		if (Viewport *viewport = parent->SafeCastTo<Viewport>()) {
-			const int value = widget->GetValue();
+		tb::TBWidget *parent = widget->getParent();
+		if (Viewport *viewport = parent->safeCastTo<Viewport>()) {
+			const int value = widget->getValue();
 			video::PolygonMode mode = video::PolygonMode::Solid;
 			if (value == 1) {
 				mode = video::PolygonMode::Points;
@@ -482,17 +482,17 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	} else if (id == TBIDC("toggleviewport")) {
-		const int value = widget->GetValue();
+		const int value = widget->getValue();
 		setQuadViewport(value == 1);
 		return true;
 	} else if (id == TBIDC("lockx")) {
-		vps().setLockedAxis(math::Axis::X, widget->GetValue() != 1);
+		vps().setLockedAxis(math::Axis::X, widget->getValue() != 1);
 		return true;
 	} else if (id == TBIDC("locky")) {
-		vps().setLockedAxis(math::Axis::Y, widget->GetValue() != 1);
+		vps().setLockedAxis(math::Axis::Y, widget->getValue() != 1);
 		return true;
 	} else if (id == TBIDC("lockz")) {
-		vps().setLockedAxis(math::Axis::Z, widget->GetValue() != 1);
+		vps().setLockedAxis(math::Axis::Z, widget->getValue() != 1);
 		return true;
 	} else if (id == TBIDC("mirrorx")) {
 		vps().setMirrorAxis(math::Axis::X, vps().referencePosition());
@@ -507,8 +507,8 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		vps().setMirrorAxis(math::Axis::None, vps().referencePosition());
 		return true;
 	} else if (id == TBIDC("cursorx")) {
-		const tb::TBStr& str = widget->GetText();
-		if (str.IsEmpty()) {
+		const tb::TBStr& str = widget->getText();
+		if (str.isEmpty()) {
 			return true;
 		}
 		const int val = core::string::toInt(str);
@@ -517,8 +517,8 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		vps().setCursorPosition(pos, true);
 		return true;
 	} else if (id == TBIDC("cursory")) {
-		const tb::TBStr& str = widget->GetText();
-		if (str.IsEmpty()) {
+		const tb::TBStr& str = widget->getText();
+		if (str.isEmpty()) {
 			return true;
 		}
 		const int val = core::string::toInt(str);
@@ -527,8 +527,8 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		vps().setCursorPosition(pos, true);
 		return true;
 	} else if (id == TBIDC("cursorz")) {
-		const tb::TBStr& str = widget->GetText();
-		if (str.IsEmpty()) {
+		const tb::TBStr& str = widget->getText();
+		if (str.isEmpty()) {
 			return true;
 		}
 		const int val = core::string::toInt(str);
@@ -536,16 +536,16 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		pos.z = val;
 		vps().setCursorPosition(pos, true);
 		return true;
-	} else if (ev.IsAny(TBIDC("actionplace") && widget->GetValue() == 1)) {
+	} else if (ev.isAny(TBIDC("actionplace") && widget->getValue() == 1)) {
 		vps().setModifierType(ModifierType::Place);
 		return true;
-	} else if (ev.IsAny(TBIDC("actiondelete")) && widget->GetValue() == 1) {
+	} else if (ev.isAny(TBIDC("actiondelete")) && widget->getValue() == 1) {
 		vps().setModifierType(ModifierType::Delete);
 		return true;
-	} else if (ev.IsAny(TBIDC("actionupdate")) && widget->GetValue() == 1) {
+	} else if (ev.isAny(TBIDC("actionupdate")) && widget->getValue() == 1) {
 		vps().setModifierType(ModifierType::Update);
 		return true;
-	} else if (ev.IsAny(TBIDC("actionoverride")) && widget->GetValue() == 1) {
+	} else if (ev.isAny(TBIDC("actionoverride")) && widget->getValue() == 1) {
 		vps().setModifierType(ModifierType::Place | ModifierType::Delete);
 		return true;
 	}
@@ -553,11 +553,11 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	return false;
 }
 
-void VoxEditWindow::OnProcess() {
-	Super::OnProcess();
+void VoxEditWindow::onProcess() {
+	Super::onProcess();
 
 	if (_paletteWidget->isDirty()) {
-		const int8_t index = (uint8_t)_paletteWidget->GetValue();
+		const int8_t index = (uint8_t)_paletteWidget->getValue();
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		vps().setCursorVoxel(voxel);
 		_paletteWidget->markAsClean();
@@ -566,30 +566,30 @@ void VoxEditWindow::OnProcess() {
 	constexpr ModifierType overrideType = ModifierType::Delete | ModifierType::Place;
 	if ((modifierType & overrideType) == overrideType) {
 		if (_overrideModifier) {
-			_overrideModifier->SetValue(1);
+			_overrideModifier->setValue(1);
 		}
 	} else if ((modifierType & ModifierType::Place) == ModifierType::Place) {
 		if (_placeModifier) {
-			_placeModifier->SetValue(1);
+			_placeModifier->setValue(1);
 		}
 	} else if ((modifierType & ModifierType::Delete) == ModifierType::Delete) {
 		if (_deleteModifier) {
-			_deleteModifier->SetValue(1);
+			_deleteModifier->setValue(1);
 		}
 	}
 
 	const bool empty = vps().empty();
 	if (_exportButton != nullptr) {
-		_exportButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
+		_exportButton->setState(tb::WIDGET_STATE_DISABLED, empty);
 	}
 	if (_saveButton != nullptr) {
-		_saveButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
+		_saveButton->setState(tb::WIDGET_STATE_DISABLED, empty);
 	}
 	if (_undoButton != nullptr) {
-		_undoButton->SetState(tb::WIDGET_STATE_DISABLED, !vps().mementoHandler().canUndo());
+		_undoButton->setState(tb::WIDGET_STATE_DISABLED, !vps().mementoHandler().canUndo());
 	}
 	if (_redoButton != nullptr) {
-		_redoButton->SetState(tb::WIDGET_STATE_DISABLED, !vps().mementoHandler().canRedo());
+		_redoButton->setState(tb::WIDGET_STATE_DISABLED, !vps().mementoHandler().canRedo());
 	}
 	const glm::ivec3& pos = vps().cursorPosition();
 	if (_lastCursorPos != pos) {
@@ -597,57 +597,57 @@ void VoxEditWindow::OnProcess() {
 		char buf[64];
 		if (_cursorX != nullptr) {
 			SDL_snprintf(buf, sizeof(buf), "%i", pos.x);
-			if (strcmp(_cursorX->GetText().CStr(), buf)) {
-				_cursorX->SetText(buf);
+			if (SDL_strcmp(_cursorX->getText().c_str(), buf)) {
+				_cursorX->setText(buf);
 			}
 		}
 		if (_cursorY != nullptr) {
 			SDL_snprintf(buf, sizeof(buf), "%i", pos.y);
-			if (strcmp(_cursorY->GetText().CStr(), buf)) {
-				_cursorY->SetText(buf);
+			if (SDL_strcmp(_cursorY->getText().c_str(), buf)) {
+				_cursorY->setText(buf);
 			}
 		}
 		if (_cursorZ != nullptr) {
 			SDL_snprintf(buf, sizeof(buf), "%i", pos.z);
-			if (strcmp(_cursorZ->GetText().CStr(), buf)) {
-				_cursorZ->SetText(buf);
+			if (SDL_strcmp(_cursorZ->getText().c_str(), buf)) {
+				_cursorZ->setText(buf);
 			}
 		}
 	}
 
 	const math::Axis lockedAxis = vps().lockedAxis();
 	if (_lockedX != nullptr) {
-		_lockedX->SetValue((lockedAxis & math::Axis::X) != math::Axis::None);
+		_lockedX->setValue((lockedAxis & math::Axis::X) != math::Axis::None);
 	}
 	if (_lockedY != nullptr) {
-		_lockedY->SetValue((lockedAxis & math::Axis::Y) != math::Axis::None);
+		_lockedY->setValue((lockedAxis & math::Axis::Y) != math::Axis::None);
 	}
 	if (_lockedZ != nullptr) {
-		_lockedZ->SetValue((lockedAxis & math::Axis::Z) != math::Axis::None);
+		_lockedZ->setValue((lockedAxis & math::Axis::Z) != math::Axis::None);
 	}
 
 	const math::Axis mirrorAxis = vps().mirrorAxis();
 	if (_mirrorNone != nullptr) {
-		_mirrorNone->SetValue(mirrorAxis == math::Axis::None);
+		_mirrorNone->setValue(mirrorAxis == math::Axis::None);
 	}
 	if (_mirrorX != nullptr) {
-		_mirrorX->SetValue(mirrorAxis == math::Axis::X);
+		_mirrorX->setValue(mirrorAxis == math::Axis::X);
 	}
 	if (_mirrorY != nullptr) {
-		_mirrorY->SetValue(mirrorAxis == math::Axis::Y);
+		_mirrorY->setValue(mirrorAxis == math::Axis::Y);
 	}
 	if (_mirrorZ != nullptr) {
-		_mirrorZ->SetValue(mirrorAxis == math::Axis::Z);
+		_mirrorZ->setValue(mirrorAxis == math::Axis::Z);
 	}
 }
 
-bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
+bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CUSTOM) {
 		if (handleEvent(ev)) {
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
-		if (Viewport* viewport = ev.target->SafeCastTo<Viewport>()) {
+		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
 			if (ev.button_type == tb::TB_LEFT || ev.button_type == tb::TB_RIGHT) {
 				if (ev.button_type == tb::TB_RIGHT) {
 					_modBeforeMouse = vps().modifierType();
@@ -659,7 +659,7 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			}
 		}
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
-		if (Viewport* viewport = ev.target->SafeCastTo<Viewport>()) {
+		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
 			if (vps().aabbEnd()) {
 				if (_modBeforeMouse != ModifierType::None) {
 					vps().setModifierType(_modBeforeMouse);
@@ -688,11 +688,11 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		}
 	}
 
-	return Super::OnEvent(ev);
+	return Super::onEvent(ev);
 }
 
-void VoxEditWindow::OnDie() {
-	Super::OnDie();
+void VoxEditWindow::onDie() {
+	Super::onDie();
 	requestQuit();
 }
 
@@ -711,7 +711,7 @@ void VoxEditWindow::quit() {
 				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_quit");
 		return;
 	}
-	Close();
+	close();
 }
 
 bool VoxEditWindow::importHeightmap(const std::string& file) {

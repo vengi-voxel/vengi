@@ -25,12 +25,12 @@ public:
 	TBMenuWindow(TBWidget *target, TBID id);
 	~TBMenuWindow();
 
-	bool Show(TBSelectItemSource *source, const TBPopupAlignment &alignment, int initial_value = -1);
+	bool show(TBSelectItemSource *source, const TBPopupAlignment &alignment, int initial_value = -1);
 
-	TBSelectList *GetList() { return &m_select_list; }
+	TBSelectList *getList() { return &m_select_list; }
 
-	virtual bool OnEvent(const TBWidgetEvent &ev) override;
-	virtual void OnDie() override;
+	virtual bool onEvent(const TBWidgetEvent &ev) override;
+	virtual void onDie() override;
 private:
 	TBSelectList m_select_list;
 };

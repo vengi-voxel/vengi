@@ -23,16 +23,16 @@ public:
 
 	/** Calculate the duration needed until the end distance is reached
 		from the given start speed. */
-	float GetDurationFromSpeed(float start_speed);
+	float getDurationFromSpeed(float start_speed);
 
 	/** Calculate the start speed needed to reach the given distance. */
-	float GetSpeedFromDistance(float distance);
+	float getSpeedFromDistance(float distance);
 
 	/** Calculate the distance reached at the given elapsed_time_ms with the given start_speed. */
-	float GetDistanceAtTime(float start_speed, float elapsed_time_ms);
+	float getDistanceAtTime(float start_speed, float elapsed_time_ms);
 
 	/** Same as GetDistanceAtTime but rounded to integer. */
-	int GetDistanceAtTimeInt(float start_speed, float elapsed_time_ms);
+	int getDistanceAtTimeInt(float start_speed, float elapsed_time_ms);
 private:
 	float m_decay;
 };
@@ -52,7 +52,7 @@ public:
 
 		Note: The scroll positions are relative to the target widget (inner scrolled TBWidget).
 			  If there's nested scrollable widgets, only the inner scrolled widget applies snapping. */
-	virtual void OnScrollSnap(TBWidget *target_widget, int &target_x, int &target_y) = 0;
+	virtual void onScrollSnap(TBWidget *target_widget, int &target_x, int &target_y) = 0;
 };
 
 /** TBScroller handles panning while the pointer is down and measure the pan
@@ -65,30 +65,30 @@ public:
 	~TBScroller();
 
 	/** Set the listener that may override the target scroll position. */
-	void SetSnapListener(TBScrollerSnapListener *listener) { m_snap_listener = listener; }
+	void setSnapListener(TBScrollerSnapListener *listener) { m_snap_listener = listener; }
 
 	/** Start tracking pan movement from calls to OnPan. */
-	void Start();
+	void start();
 
 	/** Stop tracking pan movement from calls to OnPan,
 		or stop any ongoing scrolling. */
-	void Stop();
+	void stop();
 
 	/** Return true if the pan tracking is started or. */
-	bool IsStarted() const { return m_is_started; }
+	bool isStarted() const { return m_is_started; }
 
 	/** Get the widget that will be panned/scrolled. Any parent of this
 		widget may also be panned/scrolled. */
-	TBWidget *GetTarget() const { return m_target; }
+	TBWidget *getTarget() const { return m_target; }
 
 	/** Pan the target widget (or any parent) with the given deltas.
 		Should be called while the pointer is down.
 		This will track the pan speed over time. */
-	bool OnPan(int dx, int dy);
+	bool onPan(int dx, int dy);
 
 	/** The panning ends and the scroller should start scrolling.
 		Should be called when the pointer is released. */
-	void OnPanReleased();
+	void onPanReleased();
 
 	/** Start the scroller based on the given delta. Doesn't
 		require previous calls to OnPan or OnPanReleased.
@@ -96,17 +96,17 @@ public:
 		If accumulative is true, the given delta will be
 		added to any on going scroll. If it's false, any
 		ongoing scroll will be canceled. */
-	void OnScrollBy(int dx, int dy, bool accumulative);
+	void onScrollBy(int dx, int dy, bool accumulative);
 private:
-	virtual void OnMessageReceived(TBMessage *msg);
-	bool IsScrolling();
-	bool StopIfAlmostStill();
-	void StopOrSnapScroll();
-	void Reset();
-	void AdjustToSnappingAndScroll(float ppms_x, float ppms_y);
-	void Scroll(float start_speed_ppms_x, float start_speed_ppms_y);
-	void GetTargetChildTranslation(int &x, int &y) const;
-	void GetTargetScrollXY(int &x, int &y) const;
+	virtual void onMessageReceived(TBMessage *msg);
+	bool isScrolling();
+	bool stopIfAlmostStill();
+	void stopOrSnapScroll();
+	void reset();
+	void adjustToSnappingAndScroll(float ppms_x, float ppms_y);
+	void scroll(float start_speed_ppms_x, float start_speed_ppms_y);
+	void getTargetChildTranslation(int &x, int &y) const;
+	void getTargetScrollXY(int &x, int &y) const;
 	TBWidget *m_target;
 	TBScrollerSnapListener *m_snap_listener;
 	TBScrollerFunction m_func;

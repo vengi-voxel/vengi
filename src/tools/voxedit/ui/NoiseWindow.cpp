@@ -19,34 +19,34 @@ NoiseWindow::NoiseWindow(ui::turbobadger::Window* window) :
 
 	if (_octaves == nullptr || _frequency == nullptr || _lacunarity == nullptr || _gain == nullptr) {
 		Log::error("Not all needed widgets were found");
-		Close();
+		close();
 	}
 }
 
-bool NoiseWindow::OnEvent(const tb::TBWidgetEvent &ev) {
+bool NoiseWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK) {
-		if (ev.target->GetID() == TBIDC("ok")) {
-			const int octaves = _octaves->GetValue();
-			const tb::TBStr& frequencyStr = _frequency->GetText();
-			const float frequency = core::string::toFloat(frequencyStr.CStr());
-			const tb::TBStr& lacunarityStr = _lacunarity->GetText();
-			const tb::TBStr& gainStr = _gain->GetText();
-			const float lacunarity = core::string::toFloat(lacunarityStr.CStr());
-			const float gain = core::string::toFloat(gainStr.CStr());
+		if (ev.target->getID() == TBIDC("ok")) {
+			const int octaves = _octaves->getValue();
+			const tb::TBStr& frequencyStr = _frequency->getText();
+			const float frequency = core::string::toFloat(frequencyStr.c_str());
+			const tb::TBStr& lacunarityStr = _lacunarity->getText();
+			const tb::TBStr& gainStr = _gain->getText();
+			const float lacunarity = core::string::toFloat(lacunarityStr.c_str());
+			const float gain = core::string::toFloat(gainStr.c_str());
 			ViewportSingleton::getInstance().noise(octaves, lacunarity, frequency, gain, voxel::noisegen::NoiseType::ridgedMF);
-			Close();
+			close();
 			return true;
-		} else if (ev.target->GetID() == TBIDC("cancel")) {
-			Close();
+		} else if (ev.target->getID() == TBIDC("cancel")) {
+			close();
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
 		if (ev.special_key == tb::TB_KEY_ESC) {
-			Close();
+			close();
 			return true;
 		}
 	}
-	return Super::OnEvent(ev);
+	return Super::onEvent(ev);
 }
 
 }

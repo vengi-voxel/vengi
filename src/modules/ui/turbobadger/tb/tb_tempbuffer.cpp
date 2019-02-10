@@ -21,13 +21,13 @@ TBTempBuffer::~TBTempBuffer()
 	SDL_free(m_data);
 }
 
-void TBTempBuffer::SetAppendPos(int append_pos)
+void TBTempBuffer::setAppendPos(int appendPos)
 {
-	core_assert(append_pos >= 0 && append_pos <= m_data_size);
-	m_append_pos = append_pos;
+	core_assert(appendPos >= 0 && appendPos <= m_data_size);
+	m_append_pos = appendPos;
 }
 
-bool TBTempBuffer::Reserve(int size)
+bool TBTempBuffer::reserve(int size)
 {
 	if (size > m_data_size)
 	{
@@ -40,34 +40,34 @@ bool TBTempBuffer::Reserve(int size)
 	return true;
 }
 
-int TBTempBuffer::GetAppendReserveSize(int needed_size) const
+int TBTempBuffer::getAppendReserveSize(int neededSize) const
 {
 	// Reserve some extra memory to reduce the reserve calls.
-	needed_size *= 2;
-	return needed_size < 32 ? 32 : needed_size;
+	neededSize *= 2;
+	return neededSize < 32 ? 32 : neededSize;
 }
 
-bool TBTempBuffer::Append(const char *data, int size)
+bool TBTempBuffer::append(const char *data, int size)
 {
-	if (m_append_pos + size > m_data_size && !Reserve(GetAppendReserveSize(m_append_pos + size)))
+	if (m_append_pos + size > m_data_size && !reserve(getAppendReserveSize(m_append_pos + size)))
 		return false;
 	SDL_memcpy(m_data + m_append_pos, data, size);
 	m_append_pos += size;
 	return true;
 }
 
-bool TBTempBuffer::AppendSpace(int size)
+bool TBTempBuffer::appendSpace(int size)
 {
-	if (m_append_pos + size > m_data_size && !Reserve(GetAppendReserveSize(m_append_pos + size)))
+	if (m_append_pos + size > m_data_size && !reserve(getAppendReserveSize(m_append_pos + size)))
 		return false;
 	m_append_pos += size;
 	return true;
 }
 
-bool TBTempBuffer::AppendString(const char *str)
+bool TBTempBuffer::appendString(const char *str)
 {
 	// Add 1 to include the null termination in the data.
-	if (Append(str, SDL_strlen(str) + 1))
+	if (append(str, SDL_strlen(str) + 1))
 	{
 		// Now remove the null termination from the append position
 		// again, so another call will append to the same string (instead of
@@ -78,24 +78,24 @@ bool TBTempBuffer::AppendString(const char *str)
 	return false;
 }
 
-bool TBTempBuffer::AppendPath(const char *full_path_and_filename)
+bool TBTempBuffer::appendPath(const char *fullPathAndFilename)
 {
-	const char *str_start = full_path_and_filename;
-	while (const char *next = strpbrk(full_path_and_filename, "\\/"))
-		full_path_and_filename = next + 1;
+	const char *str_start = fullPathAndFilename;
+	while (const char *next = strpbrk(fullPathAndFilename, "\\/"))
+		fullPathAndFilename = next + 1;
 
-	if (str_start == full_path_and_filename) // Filename contained no path
+	if (str_start == fullPathAndFilename) // Filename contained no path
 	{
 		str_start = "./";
-		full_path_and_filename = str_start + 2;
+		fullPathAndFilename = str_start + 2;
 	}
 
-	const int len = full_path_and_filename - str_start;
-	if (Reserve(m_append_pos + len + 1))
+	const int len = fullPathAndFilename - str_start;
+	if (reserve(m_append_pos + len + 1))
 	{
 		// Add the string, and nulltermination.
-		Append(str_start, len);
-		Append("", 1);
+		append(str_start, len);
+		append("", 1);
 		// Remove null termination from append pos again (see details in AppendString).
 		m_append_pos--;
 		return true;
@@ -103,12 +103,12 @@ bool TBTempBuffer::AppendPath(const char *full_path_and_filename)
 	return false;
 }
 
-bool TBTempBuffer::AppendFile(const char *filename)
+bool TBTempBuffer::appendFile(const char *filename)
 {
-	if (TBFile *file = TBFile::Open(filename, TBFile::MODE_READ))
+	if (TBFile *file = TBFile::open(filename, TBFile::MODE_READ))
 	{
-		const size_t file_size = file->Size();
-		if (Reserve(m_append_pos + file_size + 1) && file->Read(m_data + m_append_pos, 1, file_size) == file_size)
+		const size_t file_size = file->size();
+		if (reserve(m_append_pos + file_size + 1) && file->read(m_data + m_append_pos, 1, file_size) == file_size)
 		{
 			// Increase append position and null terminate
 			m_append_pos += file_size;

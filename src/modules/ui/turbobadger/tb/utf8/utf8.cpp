@@ -9,11 +9,11 @@ namespace utf8 {
 /** is c the start of a UTF-8 sequence? */
 #define isutf(c) (((c)&0xC0)!=0x80)
 
-UCS4 decode(const char *&src, const char *src_end)
+UCS4 decode(const char *&src, const char *srcEnd)
 {
 	const char* start = src;
 
-	if (src == src_end)
+	if (src == srcEnd)
 		return 0;
 
 	unsigned char ch1 = *(src++);
@@ -21,7 +21,7 @@ UCS4 decode(const char *&src, const char *src_end)
 		return ch1;
 
 	// should not have continuation character here
-	if ((ch1 & 0xC0) != 0x80 && src < src_end)
+	if ((ch1 & 0xC0) != 0x80 && src < srcEnd)
 	{
 		unsigned char ch2 = *(src++);
 		// should be continuation
@@ -37,7 +37,7 @@ UCS4 decode(const char *&src, const char *src_end)
 			}
 			goto invalid;
 		}
-		if (src < src_end)
+		if (src < srcEnd)
 		{
 			unsigned char ch3 = *(src++);
 			// should be continuation
@@ -52,7 +52,7 @@ UCS4 decode(const char *&src, const char *src_end)
 					goto invalid;
 				return rv;
 			}
-			if (src < src_end)
+			if (src < srcEnd)
 			{
 				unsigned char ch4 = *(src++);
 				if ((ch4 & 0xC0) != 0x80)
@@ -100,16 +100,16 @@ int encode(UCS4 ch, char *dst)
 	}
 }
 
-UCS4 decode_next(const char *str, int *i, int i_max)
+UCS4 decode_next(const char *str, int *i, int iMax)
 {
 	str += *i;
-	i_max -= *i;
+	iMax -= *i;
 	const char *old_str = str;
 
 	// Handle wrapping that could happen if the caller use
 	// something really large for i_max if src is known to
 	// be null terminated (like TB_ALL_TO_TERMINATION)
-	const char *str_end = str + i_max;
+	const char *str_end = str + iMax;
 	if (str_end < str)
 		str_end = (const char *) (-1);
 
@@ -121,12 +121,12 @@ UCS4 decode_next(const char *str, int *i, int i_max)
 	return ch;
 }
 
-void move_inc(const char *str, int *i, int i_max)
+void move_inc(const char *str, int *i, int iMax)
 {
-	(void)	((*i < i_max && isutf(str[++(*i)])) ||
-			(*i < i_max && isutf(str[++(*i)])) ||
-			(*i < i_max && isutf(str[++(*i)])) ||
-			(*i < i_max && ++(*i)));
+	(void)	((*i < iMax && isutf(str[++(*i)])) ||
+			(*i < iMax && isutf(str[++(*i)])) ||
+			(*i < iMax && isutf(str[++(*i)])) ||
+			(*i < iMax && ++(*i)));
 }
 
 void move_dec(const char *str, int *i)
@@ -137,11 +137,11 @@ void move_dec(const char *str, int *i)
 			(*i > 0 && --(*i)));
 }
 
-int count_characters(const char *str, int i_max)
+int count_characters(const char *str, int iMax)
 {
 	int count = 0;
 	int i = 0;
-	while (i < i_max && decode_next(str, &i, i_max))
+	while (i < iMax && decode_next(str, &i, iMax))
 		count++;
 	return count;
 }

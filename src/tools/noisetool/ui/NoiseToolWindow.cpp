@@ -8,6 +8,7 @@
 #include "noise/Noise.h"
 #include "ui/turbobadger/UIApp.h"
 #include "core/Color.h"
+#include "math/Rect.h"
 #include "NoiseDataNodeWindow.h"
 #include "noise/PoissonDiskDistribution.h"
 
@@ -23,10 +24,10 @@ NoiseToolWindow::NoiseToolWindow(NoiseTool* tool) :
 
 NoiseToolWindow::~NoiseToolWindow() {
 	if (_noiseType != nullptr) {
-		_noiseType->SetSource(nullptr);
+		_noiseType->setSource(nullptr);
 	}
 	if (_select != nullptr) {
-		_select->SetSource(nullptr);
+		_select->setSource(nullptr);
 	}
 	delete[] _graphBufferBackground;
 	_graphBufferBackground = nullptr;
@@ -46,16 +47,16 @@ bool NoiseToolWindow::init() {
 		Log::error("Failed to init the main window: No type widget found");
 		return false;
 	}
-	_noiseType->SetSource(&_noiseTypeSource);
+	_noiseType->setSource(&_noiseTypeSource);
 
 	_select = getWidgetByType<tb::TBSelectList>("list");
 	if (_select == nullptr) {
 		return false;
 	}
-	_select->SetSource(_noiseTool->noiseItemSource());
-	_select->GetScrollContainer()->SetScrollMode(tb::SCROLL_MODE_X_AUTO_Y_AUTO);
+	_select->setSource(_noiseTool->noiseItemSource());
+	_select->getScrollContainer()->setScrollMode(tb::SCROLL_MODE_X_AUTO_Y_AUTO);
 
-	const tb::TBRect& rect = _select->GetPaddingRect();
+	const tb::TBRect& rect = _select->getPaddingRect();
 	_noiseHeight = rect.h;
 	_noiseWidth = rect.w - 60;
 	const size_t graphBufferSize = _noiseWidth * _graphHeight * BPP;
@@ -149,8 +150,8 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 	return 0.0f;
 }
 
-bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
-	const tb::TBID& id = ev.target->GetID();
+bool NoiseToolWindow::onEvent(const tb::TBWidgetEvent &ev) {
+	const tb::TBID& id = ev.target->getID();
 	if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (id == TBIDC("ok")) {
 			generateImage();
@@ -159,7 +160,7 @@ bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			generateAll();
 			return true;
 		} else if (id == TBIDC("quit")) {
-			Close();
+			close();
 			return true;
 		} else if (id == TBIDC("nodes")) {
 			NoiseDataNodeWindow* window = new NoiseDataNodeWindow(_noiseTool);
@@ -170,7 +171,7 @@ bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 
 	if (ev.type == tb::EVENT_TYPE_CHANGED) {
 		if (id == TBIDC("filter") && _select != nullptr) {
-			_select->SetFilter(ev.target->GetText());
+			_select->setFilter(ev.target->getText());
 			return true;
 		} else if (id == TBIDC("type")) {
 			const int type = getSelectedId("type");
@@ -181,7 +182,7 @@ bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
-	return Super::OnEvent(ev);
+	return Super::onEvent(ev);
 }
 
 void NoiseToolWindow::generateImage() {
@@ -275,21 +276,21 @@ void NoiseToolWindow::update() {
 			data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
 
 	const std::string imageBuf = IMAGE_PREFIX + buf;
-	data.noise = tb::g_image_manager->GetImage(imageBuf.c_str(), (uint32_t*)qd.noiseBuffer, _noiseWidth, _noiseHeight);
+	data.noise = tb::g_image_manager->getImage(imageBuf.c_str(), (uint32_t*)qd.noiseBuffer, _noiseWidth, _noiseHeight);
 
 	const std::string graphBuf = GRAPH_PREFIX + buf;
-	data.graph = tb::g_image_manager->GetImage(graphBuf.c_str(), (uint32_t*)qd.graphBuffer, _noiseWidth, _graphHeight);
+	data.graph = tb::g_image_manager->getImage(graphBuf.c_str(), (uint32_t*)qd.graphBuffer, _noiseWidth, _graphHeight);
 
 	_noiseTool->add(TBIDC(graphBuf.c_str()), data);
 
-	const int n = _select->GetSource()->GetNumItems();
-	_select->SetValue(n - 1);
+	const int n = _select->getSource()->getNumItems();
+	_select->setValue(n - 1);
 	Log::info("Generating noise for %s took %lums", getNoiseTypeName(data.noiseType), data.endmillis - data.millis);
 	delete [] qd.noiseBuffer;
 	delete [] qd.graphBuffer;
 }
 
-void NoiseToolWindow::OnDie() {
-	Super::OnDie();
+void NoiseToolWindow::onDie() {
+	Super::onDie();
 	requestQuit();
 }

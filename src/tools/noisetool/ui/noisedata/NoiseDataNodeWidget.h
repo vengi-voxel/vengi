@@ -18,8 +18,8 @@ private:
 public:
 	NoiseDataNodeWidget(NoiseItem *item);
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override;
-	void OnPaintChildren(const PaintProps &paintProps) override;
+	bool onEvent(const tb::TBWidgetEvent &ev) override;
+	void onPaintChildren(const PaintProps &paintProps) override;
 };
 
 

@@ -20,23 +20,23 @@ public:
 	UIBitmapGL(UIRendererGL *renderer);
 	~UIBitmapGL();
 
-	bool Init(int width, int height, uint32_t *data);
+	bool init(int width, int height, uint32_t *data);
 
-	bool Init(int width, int height, video::Id texture);
+	bool init(int width, int height, video::Id texture);
 
 	void bind(video::TextureUnit unit = video::TextureUnit::Zero);
 
 	void shutdown();
 
-	virtual int Width() override {
+	virtual int width() override {
 		return _w;
 	}
 
-	virtual int Height() override {
+	virtual int height() override {
 		return _h;
 	}
 
-	virtual void SetData(uint32_t *data) override;
+	virtual void setData(uint32_t *data) override;
 public:
 	UIRendererGL *_renderer;
 	int _w = 0;
@@ -63,13 +63,13 @@ public:
 	void shutdown();
 	void onWindowResize(const glm::ivec2& dimensions);
 
-	virtual void BeginPaint(int renderTargetW, int renderTargetH) override;
-	virtual void EndPaint() override;
+	virtual void beginPaint(int renderTargetW, int renderTargetH) override;
+	virtual void endPaint() override;
 
-	virtual TBBitmap *CreateBitmap(int width, int height, uint32_t *data) override;
+	virtual TBBitmap *createBitmap(int width, int height, uint32_t *data) override;
 
-	virtual void RenderBatch(Batch *batch) override;
-	virtual void SetClipRect(const TBRect &rect) override;
+	virtual void renderBatch(Batch *batch) override;
+	virtual void setClipRect(const TBRect &rect) override;
 };
 
 }

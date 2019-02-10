@@ -19,12 +19,12 @@ public:
 	constexpr TBID(uint32_t newid = 0) : id(newid) {}
 	constexpr TBID(const char *string) : id(TBGetHash(string)) {}
 	constexpr TBID(const TBID &newid) : id(newid.id) {}
-	void Set(uint32_t newid)			{ id = newid; }
-	void Set(const TBID &newid)		{ id = newid; }
-	void Set(const char *string)	{ id = TBGetHash(string); }
+	void set(uint32_t newid)			{ id = newid; }
+	void set(const TBID &newid)		{ id = newid; }
+	void set(const char *string)	{ id = TBGetHash(string); }
 
 	operator uint32_t () const		{ return id; }
-	const TBID& operator = (const TBID &id) { Set(id); return *this; }
+	const TBID& operator = (const TBID &newid) { set(newid); return *this; }
 private:
 	uint32_t id;
 };

@@ -211,17 +211,17 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 		tb::TBWidgetEvent ev(tb::EVENT_TYPE_SHORTCUT, 0, 0, tb::TB_UNKNOWN, mod);
 		ev.ref_id = id;
 		Log::debug(_logId, "invoke shortcut event: %i", key);
-		return tb::TBWidget::focused_widget->InvokeEvent(ev);
+		return tb::TBWidget::focused_widget->invokeEvent(ev);
 	}
 
 	if (special == tb::TB_KEY_UNDEFINED && SDL_IsTextInputActive()) {
 		return true;
 	}
 
-	if (_root->GetVisibility() != tb::WIDGET_VISIBILITY_VISIBLE) {
+	if (_root->getVisibility() != tb::WIDGET_VISIBILITY_VISIBLE) {
 		return false;
 	}
-	return _root->InvokeKey(key, special, mod, down);
+	return _root->invokeKey(key, special, mod, down);
 }
 
 void UIApp::showStr(int x, int y, const glm::vec4& color, const char *fmt, ...) {
@@ -230,7 +230,7 @@ void UIApp::showStr(int x, int y, const glm::vec4& color, const char *fmt, ...) 
 	va_start(ap, fmt);
 	SDL_vsnprintf(buf, sizeof(buf), fmt, ap);
 	buf[sizeof(buf) - 1] = '\0';
-	_root->GetFont()->DrawString(x, y, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
+	_root->getFont()->drawString(x, y, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
 	va_end(ap);
 }
 
@@ -240,9 +240,9 @@ void UIApp::enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) 
 	va_start(ap, fmt);
 	SDL_vsnprintf(buf, sizeof(buf), fmt, ap);
 	buf[sizeof(buf) - 1] = '\0';
-	tb::TBFontFace* font = _root->GetFont();
-	font->DrawString(x, _lastShowTextY, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
-	_lastShowTextY += _root->GetFont()->GetHeight() + 5;
+	tb::TBFontFace* font = _root->getFont();
+	font->drawString(x, _lastShowTextY, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
+	_lastShowTextY += _root->getFont()->getHeight() + 5;
 	va_end(ap);
 }
 
@@ -272,7 +272,7 @@ void UIApp::onMouseWheel(int32_t x, int32_t y) {
 	}
 	int posX, posY;
 	SDL_GetMouseState(&posX, &posY);
-	_root->InvokeWheel(posX, posY, x, -y, getModifierKeys());
+	_root->invokeWheel(posX, posY, x, -y, getModifierKeys());
 }
 
 void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
@@ -290,7 +290,7 @@ void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t cli
 		type = tb::TB_MIDDLE;
 	}
 
-	_root->InvokePointerDown(x, y, clicks, modKeys, type);
+	_root->invokePointerDown(x, y, clicks, modKeys, type);
 }
 
 tb::MODIFIER_KEYS UIApp::getModifierKeys() const {
@@ -311,19 +311,19 @@ void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 		type = tb::TB_MIDDLE;
 	}
 	if (button == SDL_BUTTON_RIGHT) {
-		_root->InvokePointerMove(x, y, modKeys, type);
+		_root->invokePointerMove(x, y, modKeys, type);
 		tb::TBWidget* hover = tb::TBWidget::hovered_widget;
 		if (hover != nullptr) {
-			hover->ConvertFromRoot(x, y);
+			hover->convertFromRoot(x, y);
 			tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, x, y, type, modKeys);
-			if (!hover->InvokeEvent(ev)) {
-				_root->InvokePointerUp(x, y, modKeys, type);
+			if (!hover->invokeEvent(ev)) {
+				_root->invokePointerUp(x, y, modKeys, type);
 			}
 		} else {
-			_root->InvokePointerUp(x, y, modKeys, type);
+			_root->invokePointerUp(x, y, modKeys, type);
 		}
 	} else {
-		_root->InvokePointerUp(x, y, modKeys, type);
+		_root->invokePointerUp(x, y, modKeys, type);
 	}
 }
 
@@ -337,8 +337,8 @@ bool UIApp::onTextInput(const std::string& text) {
 		if (key == -1) {
 			return true;
 		}
-		_root->InvokeKey(key, tb::TB_KEY_UNDEFINED, tb::TB_MODIFIER_NONE, true);
-		_root->InvokeKey(key, tb::TB_KEY_UNDEFINED, tb::TB_MODIFIER_NONE, false);
+		_root->invokeKey(key, tb::TB_KEY_UNDEFINED, tb::TB_MODIFIER_NONE, true);
+		_root->invokeKey(key, tb::TB_KEY_UNDEFINED, tb::TB_MODIFIER_NONE, false);
 	}
 	return true;
 }
@@ -364,7 +364,7 @@ bool UIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	mod |= mapModifier(key, 0);
 	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
 		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, 0, 0, tb::TB_UNKNOWN, mod);
-		if (tb::TBWidget::focused_widget->InvokeEvent(ev)) {
+		if (tb::TBWidget::focused_widget->invokeEvent(ev)) {
 			return true;
 		}
 	}
@@ -374,7 +374,7 @@ bool UIApp::onKeyRelease(int32_t key, int16_t modifier) {
 void UIApp::onWindowResize() {
 	Super::onWindowResize();
 	_renderer.onWindowResize(dimension());
-	_root->SetRect(tb::TBRect(0, 0, dimension().x, dimension().y));
+	_root->setRect(tb::TBRect(0, 0, dimension().x, dimension().y));
 }
 
 core::AppState UIApp::onConstruct() {
@@ -392,8 +392,8 @@ core::AppState UIApp::onConstruct() {
 	return state;
 }
 
-void UIApp::OnWidgetFocusChanged(tb::TBWidget *widget, bool focused) {
-	if (focused && widget->IsOfType<tb::TBEditField>()) {
+void UIApp::onWidgetFocusChanged(tb::TBWidget *widget, bool focused) {
+	if (focused && widget->isOfType<tb::TBEditField>()) {
 		SDL_StartTextInput();
 	} else {
 		SDL_StopTextInput();
@@ -416,10 +416,10 @@ core::AppState UIApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	tb::TBWidgetListener::AddGlobalListener(this);
+	tb::TBWidgetListener::addGlobalListener(this);
 	_uiInitialized = true;
 
-	if (!tb::g_tb_lng->Load("ui/lang/en.tb.txt")) {
+	if (!tb::g_tb_lng->load("ui/lang/en.tb.txt")) {
 		Log::warn(_logId, "could not load the translation ui/lang/en.tb.txt");
 	}
 
@@ -430,9 +430,9 @@ core::AppState UIApp::onInit() {
 		}
 	}
 
-	tb::TBWidgetsAnimationManager::Init();
+	tb::TBWidgetsAnimationManager::init();
 
-	if (!tb::g_tb_skin->Load("ui/skin/skin.tb.txt", _applicationSkin.empty() ? nullptr : _applicationSkin.c_str())) {
+	if (!tb::g_tb_skin->load("ui/skin/skin.tb.txt", _applicationSkin.empty() ? nullptr : _applicationSkin.c_str())) {
 		Log::error(_logId, "could not load the skin at ui/skin/skin.tb.txt and/or %s",
 				_applicationSkin.empty() ? "none" : _applicationSkin.c_str());
 		return core::AppState::InitFailure;
@@ -451,9 +451,9 @@ core::AppState UIApp::onInit() {
 	}
 
 	_root = new tb::TBWidget();
-	_root->SetRect(tb::TBRect(0, 0, _dimension.x, _dimension.y));
-	_root->SetSkinBg(TBIDC("background"));
-	_root->SetGravity(tb::WIDGET_GRAVITY_ALL);
+	_root->setRect(tb::TBRect(0, 0, _dimension.x, _dimension.y));
+	_root->setSkinBg(TBIDC("background"));
+	_root->setGravity(tb::WIDGET_GRAVITY_ALL);
 
 	_console.init();
 
@@ -461,19 +461,19 @@ core::AppState UIApp::onInit() {
 }
 
 void UIApp::addChild(Window* window) {
-	_root->AddChild(window);
+	_root->addChild(window);
 }
 
 tb::TBWidget* UIApp::getWidget(const char *name) {
-	return _root->GetWidgetByID(tb::TBID(name));
+	return _root->getWidgetByID(tb::TBID(name));
 }
 
 tb::TBWidget* UIApp::getWidgetAt(int x, int y, bool includeChildren) {
-	return _root->GetWidgetAt(x, y, includeChildren);
+	return _root->getWidgetAt(x, y, includeChildren);
 }
 
 void UIApp::doLayout() {
-	_root->InvalidateLayout(tb::TBWidget::INVALIDATE_LAYOUT_RECURSIVE);
+	_root->invalidateLayout(tb::TBWidget::INVALIDATE_LAYOUT_RECURSIVE);
 }
 
 core::AppState UIApp::onRunning() {
@@ -483,7 +483,7 @@ core::AppState UIApp::onRunning() {
 	_lastShowTextY = 5;
 
 	if (!_console.isActive()) {
-		_root->InvokePointerMove(_mousePos.x, _mousePos.y, getModifierKeys(), tb::TB_UNKNOWN);
+		_root->invokePointerMove(_mousePos.x, _mousePos.y, getModifierKeys(), tb::TB_UNKNOWN);
 	}
 
 	const bool running = state == core::AppState::Running;
@@ -496,12 +496,12 @@ core::AppState UIApp::onRunning() {
 		const bool renderUI = _renderUI->boolVal();
 		if (renderUI) {
 			core_trace_scoped(UIAppUpdateUI);
-			tb::TBAnimationManager::Update();
-			_root->InvokeProcessStates();
-			_root->InvokeProcess();
+			tb::TBAnimationManager::update();
+			_root->invokeProcessStates();
+			_root->invokeProcess();
 
-			_renderer.BeginPaint(_dimension.x, _dimension.y);
-			_root->InvokePaint(tb::TBWidget::PaintProps());
+			_renderer.beginPaint(_dimension.x, _dimension.y);
+			_root->invokePaint(tb::TBWidget::PaintProps());
 
 			enqueueShowStr(5, core::Color::White, "FPS: %d", _fps);
 		}
@@ -511,33 +511,33 @@ core::AppState UIApp::onRunning() {
 		}
 		if (renderUI) {
 			core_trace_scoped(UIAppEndPaint);
-			_renderer.EndPaint();
+			_renderer.endPaint();
 			// If animations are running, reinvalidate immediately
-			if (tb::TBAnimationManager::HasAnimationsRunning()) {
-				_root->Invalidate();
+			if (tb::TBAnimationManager::hasAnimationsRunning()) {
+				_root->invalidate();
 			}
 		}
-		double next_fire_time = tb::TBMessageHandler::GetNextMessageFireTime();
-		double now = tb::TBSystem::GetTimeMS();
+		double next_fire_time = tb::TBMessageHandler::getNextMessageFireTime();
+		double now = tb::TBSystem::getTimeMS();
 		if (next_fire_time == TB_NOT_SOON || (next_fire_time - now) <= 1.0) {
-			tb::TBMessageHandler::ProcessMessages();
+			tb::TBMessageHandler::processMessages();
 		}
 	}
 	return state;
 }
 
 core::AppState UIApp::onCleanup() {
-	tb::TBAnimationManager::AbortAllAnimations();
+	tb::TBAnimationManager::abortAllAnimations();
 	if (_uiInitialized) {
-		tb::TBWidgetListener::RemoveGlobalListener(this);
-		tb::TBWidgetsAnimationManager::Shutdown();
+		tb::TBWidgetListener::removeGlobalListener(this);
+		tb::TBWidgetsAnimationManager::shutdown();
 		_uiInitialized = false;
 	}
 
 	tb::tb_core_shutdown();
 
 	Log::debug("shutdown ui widgets");
-	_root->Die();
+	_root->die();
 	_root = nullptr;
 
 	_console.shutdown();

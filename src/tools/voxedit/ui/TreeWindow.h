@@ -22,7 +22,7 @@ private:
 public:
 	TreeWindow(ui::turbobadger::Window* window, voxel::TreeType type);
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override;
+	bool onEvent(const tb::TBWidgetEvent &ev) override;
 };
 
 }

@@ -20,13 +20,13 @@ public:
 
 	TBImageWidget() {}
 
-	void SetImage(const TBImage &image) { m_image = image; }
-	void SetImage(const char *filename) { m_image = g_image_manager->GetImage(filename); }
+	void setImage(const TBImage &image) { m_image = image; }
+	void setImage(const char *filename) { m_image = g_image_manager->getImage(filename); }
 
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override;
+	virtual PreferredSize onCalculatePreferredContentSize(const SizeConstraints &constraints) override;
 
-	virtual void OnInflate(const INFLATE_INFO &info) override;
-	virtual void OnPaint(const PaintProps &paint_props) override;
+	virtual void onInflate(const INFLATE_INFO &info) override;
+	virtual void onPaint(const PaintProps &paint_props) override;
 private:
 	TBImage m_image;
 };

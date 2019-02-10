@@ -11,7 +11,7 @@ class ListWindow : public DemoWindow
 {
 public:
 	ListWindow(TBWidget *root, TBSelectItemSource *source);
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual bool onEvent(const TBWidgetEvent &ev);
 };
 
 /** Shows a list of items from a source of type AdvancedItemSource. */
@@ -19,7 +19,7 @@ class AdvancedListWindow : public DemoWindow
 {
 public:
 	AdvancedListWindow(TBWidget *root, AdvancedItemSource *source);
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual bool onEvent(const TBWidgetEvent &ev);
 private:
 	AdvancedItemSource *m_source;
 };
@@ -32,9 +32,9 @@ public:
 		: TBGenericStringItem(str, id)
 		, m_checked(false)
 		, m_male(male) {}
-	void SetChecked(bool checked) { m_checked = checked; }
-	bool GetChecked() const { return m_checked; }
-	bool GetMale() const { return m_male; }
+	void setChecked(bool checked) { m_checked = checked; }
+	bool getChecked() const { return m_checked; }
+	bool getMale() const { return m_male; }
 private:
 	TBStr m_info;
 	bool m_checked;
@@ -46,8 +46,8 @@ private:
 class AdvancedItemSource : public TBSelectItemSourceList<AdvancedItem>
 {
 public:
-	virtual bool Filter(int index, const char *filter);
-	virtual TBWidget *CreateItemWidget(int index, TBSelectItemViewer *viewer);
+	virtual bool filter(int index, const char *filter);
+	virtual TBWidget *createItemWidget(int index, TBSelectItemViewer *viewer);
 };
 
 /** AdvancedItemWidget is the widget representing a AdvancedItem.
@@ -57,7 +57,7 @@ class AdvancedItemWidget : public TBLayout
 {
 public:
 	AdvancedItemWidget(AdvancedItem *item, AdvancedItemSource *source, TBSelectItemViewer *source_viewer, int index);
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual bool onEvent(const TBWidgetEvent &ev);
 private:
 	AdvancedItemSource *m_source;
 	TBSelectItemViewer *m_source_viewer;

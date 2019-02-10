@@ -10,36 +10,36 @@ namespace tb {
 TBMenuWindow::TBMenuWindow(TBWidget *target, TBID id)
 	: TBPopupWindow(target)
 {
-	SetID(id);
-	SetSkinBg(TBIDC("TBMenuWindow"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	m_select_list.GetScrollContainer()->SetAdaptToContentSize(true);
-	m_select_list.SetIsFocusable(false); ///< Avoid it autoclosing its window on click
-	m_select_list.SetSkinBg("");
-	m_select_list.SetRect(GetPaddingRect());
-	m_select_list.SetGravity(WIDGET_GRAVITY_ALL);
-	AddChild(&m_select_list);
+	setID(id);
+	setSkinBg(TBIDC("TBMenuWindow"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	m_select_list.getScrollContainer()->setAdaptToContentSize(true);
+	m_select_list.setIsFocusable(false); ///< Avoid it autoclosing its window on click
+	m_select_list.setSkinBg("");
+	m_select_list.setRect(getPaddingRect());
+	m_select_list.setGravity(WIDGET_GRAVITY_ALL);
+	addChild(&m_select_list);
 }
 
 TBMenuWindow::~TBMenuWindow()
 {
-	RemoveChild(&m_select_list);
+	removeChild(&m_select_list);
 }
 
-void TBMenuWindow::OnDie()
+void TBMenuWindow::onDie()
 {
-	m_select_list.SetSource(nullptr);
+	m_select_list.setSource(nullptr);
 }
 
-bool TBMenuWindow::Show(TBSelectItemSource *source, const TBPopupAlignment &alignment, int initial_value)
+bool TBMenuWindow::show(TBSelectItemSource *source, const TBPopupAlignment &alignment, int initialValue)
 {
-	m_select_list.SetValue(initial_value);
-	m_select_list.SetSource(source);
-	m_select_list.ValidateList();
+	m_select_list.setValue(initialValue);
+	m_select_list.setSource(source);
+	m_select_list.validateList();
 
-	return TBPopupWindow::Show(alignment);
+	return TBPopupWindow::show(alignment);
 }
 
-bool TBMenuWindow::OnEvent(const TBWidgetEvent &ev)
+bool TBMenuWindow::onEvent(const TBWidgetEvent &ev)
 {
 	if (ev.type == EVENT_TYPE_CLICK && &m_select_list == ev.target)
 	{
@@ -48,14 +48,14 @@ bool TBMenuWindow::OnEvent(const TBWidgetEvent &ev)
 		// Invoke the click on the target
 		TBWidgetEvent target_ev(EVENT_TYPE_CLICK);
 		target_ev.ref_id = ev.ref_id;
-		InvokeEvent(target_ev);
+		invokeEvent(target_ev);
 
 		// If target not deleted, close
-		if (this_widget.Get())
-			Close();
+		if (this_widget.get())
+			close();
 		return true;
 	}
-	return TBPopupWindow::OnEvent(ev);
+	return TBPopupWindow::onEvent(ev);
 }
 
 } // namespace tb

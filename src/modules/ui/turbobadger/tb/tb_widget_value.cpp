@@ -7,30 +7,29 @@
 
 namespace tb {
 
-void TBWidgetValueConnection::Connect(TBWidgetValue *value, TBWidget *widget)
+void TBWidgetValueConnection::connect(TBWidgetValue *value, TBWidget *widget)
 {
-	Unconnect();
+	unconnect();
 	m_widget = widget;
 	m_value = value;
-	m_value->m_connections.AddLast(this);
-	m_value->SyncToWidget(m_widget);
+	m_value->m_connections.addLast(this);
+	m_value->syncToWidget(m_widget);
 }
 
-void TBWidgetValueConnection::Unconnect()
+void TBWidgetValueConnection::unconnect()
 {
 	if (m_value)
-		m_value->m_connections.Remove(this);
+		m_value->m_connections.remove(this);
 	m_value = nullptr;
 	m_widget = nullptr;
 }
 
-void TBWidgetValueConnection::SyncFromWidget(TBWidget *source_widget)
+void TBWidgetValueConnection::syncFromWidget(TBWidget *sourceWidget)
 {
 	if (m_value)
-		m_value->SetFromWidget(source_widget);
+		m_value->setFromWidget(sourceWidget);
 }
 
-// == TBWidgetValue =====================================================================
 
 TBWidgetValue::TBWidgetValue(const TBID &name, TBValue::TYPE type)
 	: m_name(name)
@@ -41,73 +40,73 @@ TBWidgetValue::TBWidgetValue(const TBID &name, TBValue::TYPE type)
 
 TBWidgetValue::~TBWidgetValue()
 {
-	while (m_connections.GetFirst())
-		m_connections.GetFirst()->Unconnect();
+	while (m_connections.getFirst())
+		m_connections.getFirst()->unconnect();
 }
 
-void TBWidgetValue::SetFromWidget(TBWidget *source_widget)
+void TBWidgetValue::setFromWidget(TBWidget *sourceWidget)
 {
 	if (m_syncing)
 		return; // We ended up here because syncing is in progress.
 
 	// Get the value in the format
 	TBStr text;
-	switch (m_value.GetType())
+	switch (m_value.getType())
 	{
 		case TBValue::TYPE_STRING:
-			if (!source_widget->GetText(text))
+			if (!sourceWidget->getText(text))
 				return;
-			m_value.SetString(text, TBValue::SET_NEW_COPY);
+			m_value.setString(text, TBValue::SET_NEW_COPY);
 			break;
 		case TBValue::TYPE_NULL:
 		case TBValue::TYPE_INT:
-			m_value.SetInt(source_widget->GetValue());
+			m_value.setInt(sourceWidget->getValue());
 			break;
 		case TBValue::TYPE_FLOAT:
 			// FIX: TBValue should use double instead of float?
-			m_value.SetFloat((float)source_widget->GetValueDouble());
+			m_value.setFloat((float)sourceWidget->getValueDouble());
 			break;
 		default:
 			core_assert(!"Unsupported value type!");
 	}
 
-	SyncToWidgets(source_widget);
+	syncToWidgets(sourceWidget);
 }
 
-bool TBWidgetValue::SyncToWidgets(TBWidget *exclude_widget)
+bool TBWidgetValue::syncToWidgets(TBWidget *excludeWidget)
 {
 	// FIX: Assign group to each value. Currently we only have one global group.
-	g_value_group.InvokeOnValueChanged(this);
+	g_value_group.invokeOnValueChanged(this);
 
 	bool fail = false;
-	TBLinkListOf<TBWidgetValueConnection>::Iterator iter = m_connections.IterateForward();
-	while (TBWidgetValueConnection *connection = iter.GetAndStep())
+	TBLinkListOf<TBWidgetValueConnection>::Iterator iter = m_connections.iterateForward();
+	while (TBWidgetValueConnection *connection = iter.getAndStep())
 	{
-		if (connection->m_widget != exclude_widget)
-			fail |= !SyncToWidget(connection->m_widget);
+		if (connection->m_widget != excludeWidget)
+			fail |= !syncToWidget(connection->m_widget);
 	}
 	return !fail;
 }
 
-bool TBWidgetValue::SyncToWidget(TBWidget *dst_widget)
+bool TBWidgetValue::syncToWidget(TBWidget *dstWidget)
 {
 	if (m_syncing)
 		return true; // We ended up here because syncing is in progress.
 
 	m_syncing = true;
 	bool ret = true;
-	switch (m_value.GetType())
+	switch (m_value.getType())
 	{
 		case TBValue::TYPE_STRING:
-			ret = dst_widget->SetText(m_value.GetString());
+			ret = dstWidget->setText(m_value.getString());
 			break;
 		case TBValue::TYPE_NULL:
 		case TBValue::TYPE_INT:
-			dst_widget->SetValue(m_value.GetInt());
+			dstWidget->setValue(m_value.getInt());
 			break;
 		case TBValue::TYPE_FLOAT:
 			// FIX: TBValue should use double instead of float?
-			dst_widget->SetValueDouble(m_value.GetFloat());
+			dstWidget->setValueDouble(m_value.getFloat());
 			break;
 		default:
 			core_assert(!"Unsupported value type!");
@@ -116,36 +115,36 @@ bool TBWidgetValue::SyncToWidget(TBWidget *dst_widget)
 	return ret;
 }
 
-void TBWidgetValue::SetInt(int value)
+void TBWidgetValue::setInt(int value)
 {
-	m_value.SetInt(value);
-	SyncToWidgets(nullptr);
+	m_value.setInt(value);
+	syncToWidgets(nullptr);
 }
 
-bool TBWidgetValue::SetText(const char *text)
+bool TBWidgetValue::setText(const char *text)
 {
-	m_value.SetString(text, TBValue::SET_NEW_COPY);
-	return SyncToWidgets(nullptr);
+	m_value.setString(text, TBValue::SET_NEW_COPY);
+	return syncToWidgets(nullptr);
 }
 
-void TBWidgetValue::SetDouble(double value)
+void TBWidgetValue::setDouble(double value)
 {
 	// FIX: TBValue should use double instead of float?
-	m_value.SetFloat((float)value);
-	SyncToWidgets(nullptr);
+	m_value.setFloat((float)value);
+	syncToWidgets(nullptr);
 }
 
 // == TBValueGroup ================================================================================
 
 /*extern*/ TBValueGroup g_value_group;
 
-TBWidgetValue *TBValueGroup::CreateValueIfNeeded(const TBID &name, TBValue::TYPE type)
+TBWidgetValue *TBValueGroup::createValueIfNeeded(const TBID &name, TBValue::TYPE type)
 {
-	if (TBWidgetValue *val = GetValue(name))
+	if (TBWidgetValue *val = getValue(name))
 		return val;
 	if (TBWidgetValue *val = new TBWidgetValue(name, type))
 	{
-		if (m_values.Add(name, val))
+		if (m_values.add(name, val))
 			return val;
 		else
 			delete val;
@@ -153,11 +152,11 @@ TBWidgetValue *TBValueGroup::CreateValueIfNeeded(const TBID &name, TBValue::TYPE
 	return nullptr;
 }
 
-void TBValueGroup::InvokeOnValueChanged(const TBWidgetValue *value)
+void TBValueGroup::invokeOnValueChanged(const TBWidgetValue *value)
 {
-	TBLinkListOf<TBValueGroupListener>::Iterator iter = m_listeners.IterateForward();
-	while (TBValueGroupListener *listener = iter.GetAndStep())
-		listener->OnValueChanged(this, value);
+	TBLinkListOf<TBValueGroupListener>::Iterator iter = m_listeners.iterateForward();
+	while (TBValueGroupListener *listener = iter.getAndStep())
+		listener->onValueChanged(this, value);
 }
 
 } // namespace tb

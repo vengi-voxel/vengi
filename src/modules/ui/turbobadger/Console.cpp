@@ -30,21 +30,21 @@ bool Console::toggle() {
 }
 
 void Console::drawString(int x, int y, const glm::ivec4& color, const char* str, int len) {
-	_font->DrawString(x, y, tb::TBColor{color.r, color.g, color.b}, str, len);
+	_font->drawString(x, y, tb::TBColor{color.r, color.g, color.b}, str, len);
 }
 
 void Console::beforeRender(const math::Rect<int> &rect) {
 	const tb::TBRect r(rect.getMinX(), rect.getMinZ(), rect.getMaxX(), rect.getMaxZ());
-	tb::g_tb_skin->PaintRectFill(r, consoleBgColor);
+	tb::g_tb_skin->paintRectFill(r, consoleBgColor);
 }
 
 int Console::lineHeight() {
-	const int lineHeight = _font->GetFontDescription().GetSize();
+	const int lineHeight = _font->getFontDescription().getSize();
 	return lineHeight;
 }
 
 glm::ivec2 Console::stringSize(const char* s, int length) {
-	return glm::ivec2(_font->GetStringWidth(s, length), lineHeight());
+	return glm::ivec2(_font->getStringWidth(s, length), lineHeight());
 }
 
 }

@@ -22,8 +22,8 @@ class TBImageRep
 
 	TBImageRep(TBImageManager *image_manager, TBBitmapFragment *fragment, uint32_t hash_key);
 
-	void IncRef();
-	void DecRef();
+	void incRef();
+	void decRef();
 
 	int ref_count;
 	uint32_t hash_key;
@@ -45,22 +45,22 @@ public:
 	~TBImage();
 
 	/** Return true if this image is empty. */
-	bool IsEmpty() const;
+	bool isEmpty() const;
 
 	/** Return the width of this image, or 0 if empty. */
-	int Width() const;
+	int width() const;
 
 	/** Return the height of this image, or 0 if empty. */
-	int Height() const;
+	int height() const;
 
 	/** Return the bitmap fragment for this image, or nullptr if empty. */
-	TBBitmapFragment *GetBitmap() const;
+	TBBitmapFragment *getBitmap() const;
 
-	const TBImage& operator = (const TBImage &image) { SetImageRep(image.m_image_rep); return *this; }
+	const TBImage& operator = (const TBImage &image) { setImageRep(image.m_image_rep); return *this; }
 	bool operator == (const TBImage &image) const { return m_image_rep == image.m_image_rep; }
 	bool operator != (const TBImage &image) const { return m_image_rep != image.m_image_rep; }
 private:
-	void SetImageRep(TBImageRep *image_rep);
+	void setImageRep(TBImageRep *image_rep);
 	TBImageRep *m_image_rep;
 };
 
@@ -80,23 +80,23 @@ public:
 
 	/** Return a image object for the given filename.
 		If it fails, the returned TBImage object will be empty. */
-	TBImage GetImage(const char *filename);
-	TBImage GetImage(const char *name, uint32_t *buffer, int width, int height);
+	TBImage getImage(const char *filename);
+	TBImage getImage(const char *name, uint32_t *buffer, int width, int height);
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	/** Render the skin bitmaps on screen, to analyze fragment positioning. */
-	void Debug() { m_frag_manager.Debug(); }
+	void debug() { m_frag_manager.debug(); }
 #endif
 
 	// Implementing TBRendererListener
-	virtual void OnContextLost();
-	virtual void OnContextRestored();
+	virtual void onContextLost();
+	virtual void onContextRestored();
 private:
 	TBBitmapFragmentManager m_frag_manager;
 	TBHashTableOf<TBImageRep> m_image_rep_hash;
 
 	friend class TBImageRep;
-	void RemoveImageRep(TBImageRep *image_rep);
+	void removeImageRep(TBImageRep *image_rep);
 };
 
 /** The global TBImageManager. */

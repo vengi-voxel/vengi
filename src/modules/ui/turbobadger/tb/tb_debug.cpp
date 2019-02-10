@@ -8,7 +8,7 @@
 #include "tb_editfield.h"
 #include "tb_font_renderer.h"
 #include "tb_tempbuffer.h"
-#include <stdio.h>
+#include <SDL.h>
 
 namespace tb {
 
@@ -18,7 +18,7 @@ TBDebugInfo g_tb_debug;
 
 TBDebugInfo::TBDebugInfo()
 {
-	memset(settings, 0, sizeof(int) * NUM_SETTINGS);
+	SDL_memset(settings, 0, sizeof(int) * NUM_SETTINGS);
 }
 
 /** Window showing runtime debug settings. */
@@ -31,146 +31,146 @@ public:
 
 	DebugSettingsWindow(TBWidget *root)
 	{
-		SetText("Debug settings");
-		g_widgets_reader->LoadData(this,
+		setText("Debug settings");
+		g_widgets_reader->loadData(this,
 			"TBLayout: axis: y, distribution: available, position: left\n"
 			"	TBLayout: id: 'container', axis: y, size: available\n"
 			"	TBTextField: text: 'Event output:'\n"
 			"	TBEditField: id: 'output', gravity: all, multiline: 1, wrap: 0\n"
 			"		lp: pref-height: 100dp");
 
-		AddCheckbox(TBDebugInfo::LAYOUT_BOUNDS, "Layout bounds");
-		AddCheckbox(TBDebugInfo::LAYOUT_CLIPPING, "Layout clipping");
-		AddCheckbox(TBDebugInfo::LAYOUT_PS_DEBUGGING, "Layout size calculation");
-		AddCheckbox(TBDebugInfo::RENDER_BATCHES, "Render batches");
-		AddCheckbox(TBDebugInfo::RENDER_SKIN_BITMAP_FRAGMENTS, "Render skin bitmap fragments");
-		AddCheckbox(TBDebugInfo::RENDER_FONT_BITMAP_FRAGMENTS, "Render font bitmap fragments");
+		addCheckbox(TBDebugInfo::LAYOUT_BOUNDS, "Layout bounds");
+		addCheckbox(TBDebugInfo::LAYOUT_CLIPPING, "Layout clipping");
+		addCheckbox(TBDebugInfo::LAYOUT_PS_DEBUGGING, "Layout size calculation");
+		addCheckbox(TBDebugInfo::RENDER_BATCHES, "Render batches");
+		addCheckbox(TBDebugInfo::RENDER_SKIN_BITMAP_FRAGMENTS, "Render skin bitmap fragments");
+		addCheckbox(TBDebugInfo::RENDER_FONT_BITMAP_FRAGMENTS, "Render font bitmap fragments");
 
-		output = GetWidgetByIDAndType<TBEditField>(TBIDC("output"));
+		output = getWidgetByIDAndType<TBEditField>(TBIDC("output"));
 
-		TBRect bounds(0, 0, root->GetRect().w, root->GetRect().h);
-		SetRect(GetResizeToFitContentRect().CenterIn(bounds).MoveIn(bounds).Clip(bounds));
+		TBRect bounds(0, 0, root->getRect().w, root->getRect().h);
+		setRect(getResizeToFitContentRect().centerIn(bounds).moveIn(bounds).clip(bounds));
 
-		root->AddChild(this);
+		root->addChild(this);
 
-		TBWidgetListener::AddGlobalListener(this);
+		TBWidgetListener::addGlobalListener(this);
 	}
 
 	~DebugSettingsWindow()
 	{
-		TBWidgetListener::RemoveGlobalListener(this);
+		TBWidgetListener::removeGlobalListener(this);
 	}
 
-	void AddCheckbox(TBDebugInfo::SETTING setting, const char *str)
+	void addCheckbox(TBDebugInfo::SETTING setting, const char *str)
 	{
 		TBCheckBox *check = new TBCheckBox();
-		check->SetValue(g_tb_debug.settings[setting]);
-		check->data.SetInt(setting);
-		check->SetID(TBIDC("check"));
+		check->setValue(g_tb_debug.settings[setting]);
+		check->data.setInt(setting);
+		check->setID(TBIDC("check"));
 
 		TBClickLabel *label = new TBClickLabel();
-		label->SetText(str);
-		label->GetContentRoot()->AddChild(check, WIDGET_Z_BOTTOM);
+		label->setText(str);
+		label->getContentRoot()->addChild(check, WIDGET_Z_BOTTOM);
 
-		GetWidgetByID(TBIDC("container"))->AddChild(label);
+		getWidgetByID(TBIDC("container"))->addChild(label);
 	}
 
-	virtual bool OnEvent(const TBWidgetEvent &ev)
+	virtual bool onEvent(const TBWidgetEvent &ev)
 	{
-		if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("check"))
+		if (ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("check"))
 		{
 			// Update setting and invalidate
-			g_tb_debug.settings[ev.target->data.GetInt()] = ev.target->GetValue();
-			GetParentRoot()->Invalidate();
+			g_tb_debug.settings[ev.target->data.getInt()] = ev.target->getValue();
+			getParentRoot()->invalidate();
 			return true;
 		}
-		return TBWindow::OnEvent(ev);
+		return TBWindow::onEvent(ev);
 	}
 
-	virtual void OnPaint(const PaintProps &paint_props)
+	virtual void onPaint(const PaintProps &paintProps)
 	{
 		// Draw stuff to the right of the debug window
-		g_renderer->Translate(GetRect().w, 0);
+		g_renderer->translate(getRect().w, 0);
 
 		// Draw skin bitmap fragments
 		if (TB_DEBUG_SETTING(RENDER_SKIN_BITMAP_FRAGMENTS))
-			g_tb_skin->Debug();
+			g_tb_skin->debug();
 
 		// Draw font glyph fragments (the font of the hovered widget)
 		if (TB_DEBUG_SETTING(RENDER_FONT_BITMAP_FRAGMENTS))
 		{
 			TBWidget *widget = TBWidget::hovered_widget ? TBWidget::hovered_widget : TBWidget::focused_widget;
-			g_font_manager->GetFontFace(widget ?
-										widget->GetCalculatedFontDescription() :
-										g_font_manager->GetDefaultFontDescription())->Debug();
+			g_font_manager->getFontFace(widget ?
+										widget->getCalculatedFontDescription() :
+										g_font_manager->getDefaultFontDescription())->debug();
 		}
 
-		g_renderer->Translate(-GetRect().w, 0);
+		g_renderer->translate(-getRect().w, 0);
 	}
 
-	TBStr GetIDString(const TBID &id)
+	TBStr getIdString(const TBID &id)
 	{
 		TBStr str;
-		str.SetFormatted("%u", (uint32_t)id);
+		str.setFormatted("%u", (uint32_t)id);
 		return str;
 	}
 
 	// TBWidgetListener
-	virtual bool OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev)
+	virtual bool onWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev)
 	{
 		// Skip these events for now
-		if (ev.IsPointerEvent())
+		if (ev.isPointerEvent())
 			return false;
 
 		// Always ignore activity in this window (or we might get endless recursion)
-		if (TBWindow *window = widget->GetParentWindow())
+		if (TBWindow *window = widget->getParentWindow())
 			if (TBSafeCast<DebugSettingsWindow>(window))
 				return false;
 
 		TBTempBuffer buf;
-		buf.AppendString(GetEventTypeStr(ev.type));
-		buf.AppendString(" (");
-		buf.AppendString(widget->GetClassName());
-		buf.AppendString(")");
+		buf.appendString(getEventTypeStr(ev.type));
+		buf.appendString(" (");
+		buf.appendString(widget->getClassName());
+		buf.appendString(")");
 
-		buf.AppendString(" id: ");
-		buf.AppendString(GetIDString(ev.target->GetID()));
+		buf.appendString(" id: ");
+		buf.appendString(getIdString(ev.target->getID()));
 
 		if (ev.ref_id)
 		{
-			buf.AppendString(", ref_id: ");
-			buf.AppendString(GetIDString(ev.ref_id));
+			buf.appendString(", ref_id: ");
+			buf.appendString(getIdString(ev.ref_id));
 		}
 
 		if (ev.type == EVENT_TYPE_CHANGED)
 		{
 			TBStr extra, text;
-			if (ev.target->GetText(text) && text.Length() > 24)
-				sprintf(text.CStr() + 20, "...");
-			extra.SetFormatted(", value: %.2f (\"%s\")", ev.target->GetValueDouble(), text.CStr());
-			buf.AppendString(extra);
+			if (ev.target->getText(text) && text.length() > 24)
+				sprintf(text.c_str() + 20, "...");
+			extra.setFormatted(", value: %.2f (\"%s\")", ev.target->getValueDouble(), text.c_str());
+			buf.appendString(extra);
 		}
-		buf.AppendString("\n");
+		buf.appendString("\n");
 
 		// Append the line to the output textfield
-		TBStyleEdit *se = output->GetStyleEdit();
-		se->selection.SelectNothing();
-		se->AppendText(buf.GetData(), TB_ALL_TO_TERMINATION, true);
-		se->ScrollIfNeeded(false, true);
+		TBStyleEdit *se = output->getStyleEdit();
+		se->selection.selectNothing();
+		se->appendText(buf.getData(), TB_ALL_TO_TERMINATION, true);
+		se->scrollIfNeeded(false, true);
 
 		// Remove lines from the top if we exceed the height limit.
 		const int height_limit = 2000;
-		int current_height = se->GetContentHeight();
+		int current_height = se->getContentHeight();
 		if (current_height > height_limit)
 		{
-			se->caret.Place(TBPoint(0, current_height - height_limit));
-			se->selection.SelectToCaret(se->blocks.GetFirst(), 0);
-			se->Delete();
+			se->caret.place(TBPoint(0, current_height - height_limit));
+			se->selection.selectToCaret(se->blocks.getFirst(), 0);
+			se->del();
 		}
 		return false;
 	}
 
-	const char *GetEventTypeStr(EVENT_TYPE type) const
+	const char *getEventTypeStr(EVENT_TYPE type) const
 	{
 		switch (type)
 		{

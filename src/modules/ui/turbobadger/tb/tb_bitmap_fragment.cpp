@@ -20,82 +20,82 @@ int TBGetNearestPowerOfTwo(int val)
 
 // == TBSpaceAllocator ======================================================================================
 
-bool TBSpaceAllocator::HasSpace(int needed_w) const
+bool TBSpaceAllocator::hasSpace(int neededW) const
 {
-	if (needed_w > m_available_space)
+	if (neededW > m_available_space)
 		return false;
-	if (IsAllAvailable())
+	if (isAllAvailable())
 		return true;
-	for (Space *fs = m_free_space_list.GetFirst(); fs; fs = fs->GetNext())
+	for (Space *fs = m_free_space_list.getFirst(); fs; fs = fs->getNext())
 	{
-		if (needed_w <= fs->width)
+		if (neededW <= fs->width)
 			return true;
 	}
 	return false;
 }
 
-TBSpaceAllocator::Space *TBSpaceAllocator::AllocSpace(int needed_w)
+TBSpaceAllocator::Space *TBSpaceAllocator::allocSpace(int neededW)
 {
-	if (Space *available_space = GetSmallestAvailableSpace(needed_w))
+	if (Space *available_space = getSmallestAvailableSpace(neededW))
 	{
 		if (Space *new_space = new Space)
 		{
 			new_space->x = available_space->x;
-			new_space->width = needed_w;
-			m_used_space_list.AddLast(new_space);
+			new_space->width = neededW;
+			m_used_space_list.addLast(new_space);
 
 			// Consume the used space from the available space
-			available_space->x += needed_w;
-			available_space->width -= needed_w;
-			m_available_space -= needed_w;
+			available_space->x += neededW;
+			available_space->width -= neededW;
+			m_available_space -= neededW;
 
 			// Remove it if empty
 			if (!available_space->width)
-				m_free_space_list.Delete(available_space);
+				m_free_space_list.doDelete(available_space);
 			return new_space;
 		}
 	}
 	return nullptr;
 }
 
-TBSpaceAllocator::Space *TBSpaceAllocator::GetSmallestAvailableSpace(int needed_w)
+TBSpaceAllocator::Space *TBSpaceAllocator::getSmallestAvailableSpace(int neededW)
 {
-	core_assert(needed_w > 0);
+	core_assert(neededW > 0);
 
 	// Add free space covering all available space if empty.
-	if (!m_free_space_list.HasLinks() && IsAllAvailable())
+	if (!m_free_space_list.hasLinks() && isAllAvailable())
 	{
 		if (Space *fs = new Space)
 		{
 			fs->x = 0;
 			fs->width = m_available_space;
-			m_free_space_list.AddLast(fs);
+			m_free_space_list.addLast(fs);
 		}
 	}
 
 	// Check for the smallest space where we fit
 	Space *best_fs = nullptr;
-	for (Space *fs = m_free_space_list.GetFirst(); fs; fs = fs->GetNext())
+	for (Space *fs = m_free_space_list.getFirst(); fs; fs = fs->getNext())
 	{
-		if (needed_w == fs->width)
+		if (neededW == fs->width)
 			return fs; // It can't be better than a perfect match!
-		if (needed_w < fs->width)
+		if (neededW < fs->width)
 			if (!best_fs || fs->width < best_fs->width)
 				best_fs = fs;
 	}
 	return best_fs;
 }
 
-void TBSpaceAllocator::FreeSpace(Space *space)
+void TBSpaceAllocator::freeSpace(Space *space)
 {
-	m_used_space_list.Remove(space);
+	m_used_space_list.remove(space);
 	m_available_space += space->width;
 
 	// Find where in m_free_space_list we should insert the space,
 	// or which existing space we can extend.
 	Space *preceeding = nullptr;
 	Space *succeeding = nullptr;
-	for (Space *fs = m_free_space_list.GetFirst(); fs; fs = fs->GetNext())
+	for (Space *fs = m_free_space_list.getFirst(); fs; fs = fs->getNext())
 	{
 		if (fs->x < space->x)
 			preceeding = fs;
@@ -119,26 +119,26 @@ void TBSpaceAllocator::FreeSpace(Space *space)
 	else
 	{
 		if (preceeding)
-			m_free_space_list.AddAfter(space, preceeding);
+			m_free_space_list.addAfter(space, preceeding);
 		else if (succeeding)
-			m_free_space_list.AddBefore(space, succeeding);
+			m_free_space_list.addBefore(space, succeeding);
 		else
 		{
-			core_assert(!m_free_space_list.HasLinks());
-			m_free_space_list.AddLast(space);
+			core_assert(!m_free_space_list.hasLinks());
+			m_free_space_list.addLast(space);
 		}
 	}
 	// Merge free spaces
-	Space *fs = m_free_space_list.GetFirst();
+	Space *fs = m_free_space_list.getFirst();
 	while (fs)
 	{
-		Space *next_fs = fs->GetNext();
+		Space *next_fs = fs->getNext();
 		if (!next_fs)
 			break;
 		if (fs->x + fs->width == next_fs->x)
 		{
 			fs->width += next_fs->width;
-			m_free_space_list.Delete(next_fs);
+			m_free_space_list.doDelete(next_fs);
 			continue;
 		}
 		fs = next_fs;
@@ -146,13 +146,13 @@ void TBSpaceAllocator::FreeSpace(Space *space)
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	// Check that free space is in order
-	Space *tmp = m_free_space_list.GetFirst();
+	Space *tmp = m_free_space_list.getFirst();
 	int x = 0;
 	while (tmp)
 	{
 		core_assert(tmp->x >= x);
 		x = tmp->x + tmp->width;
-		tmp = tmp->GetNext();
+		tmp = tmp->getNext();
 	}
 #endif // TB_RUNTIME_DEBUG_INFO
 }
@@ -169,14 +169,14 @@ TBBitmapFragmentMap::TBBitmapFragmentMap()
 {
 }
 
-bool TBBitmapFragmentMap::Init(int bitmap_w, int bitmap_h)
+bool TBBitmapFragmentMap::init(int bitmapW, int bitmapH)
 {
-	m_bitmap_data = new uint32_t[bitmap_w * bitmap_h];
-	m_bitmap_w = bitmap_w;
-	m_bitmap_h = bitmap_h;
+	m_bitmap_data = new uint32_t[bitmapW * bitmapH];
+	m_bitmap_w = bitmapW;
+	m_bitmap_h = bitmapH;
 #ifdef TB_RUNTIME_DEBUG_INFO
 	if (m_bitmap_data)
-		memset(m_bitmap_data, 0x88, bitmap_w * bitmap_h * sizeof(uint32_t));
+		memset(m_bitmap_data, 0x88, bitmapW * bitmapH * sizeof(uint32_t));
 #endif
 	return m_bitmap_data ? true : false;
 }
@@ -187,7 +187,7 @@ TBBitmapFragmentMap::~TBBitmapFragmentMap()
 	delete [] m_bitmap_data;
 }
 
-TBBitmapFragment *TBBitmapFragmentMap::CreateNewFragment(int frag_w, int frag_h, int data_stride, uint32_t *frag_data, bool add_border)
+TBBitmapFragment *TBBitmapFragmentMap::createNewFragment(int fragW, int fragH, int dataStride, uint32_t *fragData, bool addBorder)
 {
 	// Finding available space works like this:
 	// The map size is sliced up horizontally in rows (initially just one row covering
@@ -201,9 +201,9 @@ TBBitmapFragment *TBBitmapFragmentMap::CreateNewFragment(int frag_w, int frag_h,
 	// the "clamp" of the image itself so we don't get any filtering artifacts at all.
 	// Allways add border except when we're using the entire map for one fragment.
 	int border = 0;
-	int needed_w = frag_w;
-	int needed_h = frag_h;
-	if (add_border)
+	int needed_w = fragW;
+	int needed_h = fragH;
+	if (addBorder)
 	{
 		if (needed_w != m_bitmap_w || needed_h != m_bitmap_h)
 		{
@@ -221,24 +221,24 @@ TBBitmapFragment *TBBitmapFragmentMap::CreateNewFragment(int frag_w, int frag_h,
 	//needed_w = (needed_w + granularity - 1) / granularity * granularity;
 	//needed_h = (needed_h + granularity - 1) / granularity * granularity;
 
-	if (!m_rows.GetNumItems())
+	if (!m_rows.getNumItems())
 	{
 		// Create a row covering the entire bitmap.
 		TBFragmentSpaceAllocator *row;
-		if (!m_rows.GrowIfNeeded() || !(row = new TBFragmentSpaceAllocator(0, m_bitmap_w, m_bitmap_h)))
+		if (!m_rows.growIfNeeded() || !(row = new TBFragmentSpaceAllocator(0, m_bitmap_w, m_bitmap_h)))
 			return nullptr;
-		m_rows.Add(row);
+		m_rows.add(row);
 	}
 	// Get the smallest row where we fit
 	int best_row_index = -1;
 	TBFragmentSpaceAllocator *best_row = nullptr;
-	for (int i = 0; i < m_rows.GetNumItems(); i++)
+	for (int i = 0; i < m_rows.getNumItems(); i++)
 	{
 		TBFragmentSpaceAllocator *row = m_rows[i];
 		if (!best_row || row->height < best_row->height)
 		{
 			// This is the best row so far, if we fit
-			if (needed_h <= row->height && row->HasSpace(needed_w))
+			if (needed_h <= row->height && row->hasSpace(needed_w))
 			{
 				best_row = row;
 				best_row_index = i;
@@ -251,38 +251,38 @@ TBBitmapFragment *TBBitmapFragmentMap::CreateNewFragment(int frag_w, int frag_h,
 	if (!best_row)
 		return nullptr;
 	// If the row is unused, create a smaller row to only consume needed height for fragment
-	if (best_row->IsAllAvailable() && needed_h < best_row->height)
+	if (best_row->isAllAvailable() && needed_h < best_row->height)
 	{
 		TBFragmentSpaceAllocator *row;
-		if (!m_rows.GrowIfNeeded() || !(row = new TBFragmentSpaceAllocator(best_row->y + needed_h, m_bitmap_w, best_row->height - needed_h)))
+		if (!m_rows.growIfNeeded() || !(row = new TBFragmentSpaceAllocator(best_row->y + needed_h, m_bitmap_w, best_row->height - needed_h)))
 			return nullptr;
 		// Keep the rows sorted from top to bottom
-		m_rows.Add(row, best_row_index + 1);
+		m_rows.add(row, best_row_index + 1);
 		best_row->height = needed_h;
 	}
 	// Allocate the fragment and copy the fragment data into the map data.
-	if (TBFragmentSpaceAllocator::Space *space = best_row->AllocSpace(needed_w))
+	if (TBFragmentSpaceAllocator::Space *space = best_row->allocSpace(needed_w))
 	{
 		if (TBBitmapFragment *frag = new TBBitmapFragment)
 		{
 			frag->m_map = this;
 			frag->m_row = best_row;
 			frag->m_space = space;
-			frag->m_rect.Set(space->x + border, best_row->y + border, frag_w, frag_h);
+			frag->m_rect.set(space->x + border, best_row->y + border, fragW, fragH);
 			frag->m_row_height = best_row->height;
 			frag->m_batch_id = 0xffffffff;
-			CopyData(frag, data_stride, frag_data, border);
+			copyData(frag, dataStride, fragData, border);
 			m_need_update = true;
 			m_allocated_pixels += frag->m_space->width * frag->m_row->height;
 			return frag;
 		}
 		else
-			best_row->FreeSpace(space);
+			best_row->freeSpace(space);
 	}
 	return nullptr;
 }
 
-void TBBitmapFragmentMap::FreeFragmentSpace(TBBitmapFragment *frag)
+void TBBitmapFragmentMap::freeFragmentSpace(TBBitmapFragment *frag)
 {
 	if (!frag)
 		return;
@@ -295,96 +295,96 @@ void TBBitmapFragmentMap::FreeFragmentSpace(TBBitmapFragment *frag)
 	{
 		static int c = 0;
 		memset(data32, (c++) * 32, sizeof(uint32_t) * frag->m_space->width * frag->m_row->height);
-		CopyData(frag, frag->m_space->width, data32, false);
+		copyData(frag, frag->m_space->width, data32, false);
 		m_need_update = true;
 		delete [] data32;
 	}
 #endif // TB_RUNTIME_DEBUG_INFO
 
 	m_allocated_pixels -= frag->m_space->width * frag->m_row->height;
-	frag->m_row->FreeSpace(frag->m_space);
+	frag->m_row->freeSpace(frag->m_space);
 	frag->m_space = nullptr;
 	frag->m_row_height = 0;
 
 	// If the row is now empty, merge empty rows so larger fragments
 	// have a chance of allocating the space.
-	if (frag->m_row->IsAllAvailable())
+	if (frag->m_row->isAllAvailable())
 	{
-		for (int i = 0; i < m_rows.GetNumItems() - 1; i++)
+		for (int i = 0; i < m_rows.getNumItems() - 1; i++)
 		{
 			core_assert(i >= 0);
-			core_assert(i < m_rows.GetNumItems() - 1);
-			TBFragmentSpaceAllocator *row = m_rows.Get(i);
-			TBFragmentSpaceAllocator *next_row = m_rows.Get(i + 1);
-			if (row->IsAllAvailable() && next_row->IsAllAvailable())
+			core_assert(i < m_rows.getNumItems() - 1);
+			TBFragmentSpaceAllocator *row = m_rows.get(i);
+			TBFragmentSpaceAllocator *next_row = m_rows.get(i + 1);
+			if (row->isAllAvailable() && next_row->isAllAvailable())
 			{
 				row->height += next_row->height;
-				m_rows.Delete(i + 1);
+				m_rows.doDelete(i + 1);
 				i--;
 			}
 		}
 	}
 }
 
-void TBBitmapFragmentMap::CopyData(TBBitmapFragment *frag, int data_stride, uint32_t *frag_data, int border)
+void TBBitmapFragmentMap::copyData(TBBitmapFragment *frag, int dataStride, uint32_t *fragData, int border)
 {
 	// Copy the bitmap data
 	uint32_t *dst = m_bitmap_data + frag->m_rect.x + frag->m_rect.y * m_bitmap_w;
-	uint32_t *src = frag_data;
+	uint32_t *src = fragData;
 	for (int i = 0; i < frag->m_rect.h; i++)
 	{
 		memcpy(dst, src, frag->m_rect.w * sizeof(uint32_t));
 		dst += m_bitmap_w;
-		src += data_stride;
+		src += dataStride;
 	}
 	// Copy the bitmap data to the border around the fragment
 	if (border)
 	{
-		TBRect rect = frag->m_rect.Expand(border, border);
+		TBRect rect = frag->m_rect.expand(border, border);
 		// Copy vertical edges
 		dst = m_bitmap_data + rect.x + (rect.y + 1) * m_bitmap_w;
-		src = frag_data;
+		src = fragData;
 		for (int i = 0; i < frag->m_rect.h; i++)
 		{
 			dst[0] = src[0] & 0x00ffffff;
 			dst[rect.w - 1] = src[frag->m_rect.w - 1] & 0x00ffffff;
 			dst += m_bitmap_w;
-			src += data_stride;
+			src += dataStride;
 		}
 		// Copy horizontal edges
 		dst = m_bitmap_data + rect.x + 1 + rect.y * m_bitmap_w;
-		src = frag_data;
+		src = fragData;
 		for (int i = 0; i < frag->m_rect.w; i++)
 			dst[i] = src[i] & 0x00ffffff;
 		dst = m_bitmap_data + rect.x + 1 + (rect.y + rect.h - 1) * m_bitmap_w;
-		src = frag_data + (frag->m_rect.h - 1) * data_stride;
+		src = fragData + (frag->m_rect.h - 1) * dataStride;
 		for (int i = 0; i < frag->m_rect.w; i++)
 			dst[i] = src[i] & 0x00ffffff;
 	}
 }
 
-TBBitmap *TBBitmapFragmentMap::GetBitmap(TB_VALIDATE_TYPE validate_type)
+TBBitmap *TBBitmapFragmentMap::getBitmap(TB_VALIDATE_TYPE validateType)
 {
-	if (m_bitmap && validate_type == TB_VALIDATE_FIRST_TIME)
+	if (m_bitmap && validateType == TB_VALIDATE_FIRST_TIME)
 		return m_bitmap;
-	ValidateBitmap();
+	validateBitmap();
 	return m_bitmap;
 }
 
-bool TBBitmapFragmentMap::ValidateBitmap()
+bool TBBitmapFragmentMap::validateBitmap()
 {
 	if (m_need_update)
 	{
 		if (m_bitmap)
-			m_bitmap->SetData(m_bitmap_data);
+			m_bitmap->setData(m_bitmap_data);
 		else
-			m_bitmap = g_renderer->CreateBitmap(m_bitmap_w, m_bitmap_h, m_bitmap_data);
+			m_bitmap = g_renderer->createBitmap(m_bitmap_w, m_bitmap_h, m_bitmap_data);
 		m_need_update = false;
 	}
 	return m_bitmap ? true : false;
 }
 
-void TBBitmapFragmentMap::DeleteBitmap()
+void TBBitmapFragmentMap::deleteBitmap()
 {
 	delete m_bitmap;
 	m_bitmap = nullptr;
@@ -403,64 +403,64 @@ TBBitmapFragmentManager::TBBitmapFragmentManager()
 
 TBBitmapFragmentManager::~TBBitmapFragmentManager()
 {
-	Clear();
+	clear();
 }
 
-TBBitmapFragment *TBBitmapFragmentManager::GetFragmentFromFile(const char *filename, bool dedicated_map)
+TBBitmapFragment *TBBitmapFragmentManager::getFragmentFromFile(const char *filename, bool dedicatedMap)
 {
 	TBID id(filename);
 
 	// If we already have a fragment for this filename, return that
-	TBBitmapFragment *frag = m_fragments.Get(id);
+	TBBitmapFragment *frag = m_fragments.get(id);
 	if (frag)
 		return frag;
 
 	// Load the file
 	const image::ImagePtr& img = image::loadImage(filename, false);
-	return CreateNewFragment(id, dedicated_map, img->width(), img->height(), img->width(), (uint32_t*)img->data());
+	return createNewFragment(id, dedicatedMap, img->width(), img->height(), img->width(), (uint32_t*)img->data());
 }
 
-TBBitmapFragment *TBBitmapFragmentManager::CreateNewFragment(const TBID &id, bool dedicated_map,
-															 int data_w, int data_h, int data_stride,
+TBBitmapFragment *TBBitmapFragmentManager::createNewFragment(const TBID &id, bool dedicatedMap,
+															 int dataW, int dataH, int dataStride,
 															 uint32_t *data)
 {
-	core_assert(!GetFragment(id));
+	core_assert(!getFragment(id));
 
 	TBBitmapFragment *frag = nullptr;
 
 	// Create a fragment in any of the fragment maps. Doing it in the reverse order
 	// would be faster since it's most likely to succeed, but we want to maximize
 	// the amount of fragments per map, so do it in the creation order.
-	if (!dedicated_map)
+	if (!dedicatedMap)
 	{
-		for (int i = 0; i < m_fragment_maps.GetNumItems(); i++)
+		for (int i = 0; i < m_fragment_maps.getNumItems(); i++)
 		{
-			if ((frag = m_fragment_maps[i]->CreateNewFragment(data_w, data_h, data_stride, data, m_add_border)))
+			if ((frag = m_fragment_maps[i]->createNewFragment(dataW, dataH, dataStride, data, m_add_border)))
 				break;
 		}
 	}
 	// If we couldn't create the fragment in any map, create a new map where we know it will fit.
-	bool allow_another_map = (m_num_maps_limit == 0 || m_fragment_maps.GetNumItems() < m_num_maps_limit);
-	if (!frag && allow_another_map && m_fragment_maps.GrowIfNeeded())
+	bool allow_another_map = (m_num_maps_limit == 0 || m_fragment_maps.getNumItems() < m_num_maps_limit);
+	if (!frag && allow_another_map && m_fragment_maps.growIfNeeded())
 	{
-		int po2w = TBGetNearestPowerOfTwo(Max(data_w, m_default_map_w));
-		int po2h = TBGetNearestPowerOfTwo(Max(data_h, m_default_map_h));
-		if (dedicated_map)
+		int po2w = TBGetNearestPowerOfTwo(Max(dataW, m_default_map_w));
+		int po2h = TBGetNearestPowerOfTwo(Max(dataH, m_default_map_h));
+		if (dedicatedMap)
 		{
-			po2w = TBGetNearestPowerOfTwo(data_w);
-			po2h = TBGetNearestPowerOfTwo(data_h);
+			po2w = TBGetNearestPowerOfTwo(dataW);
+			po2h = TBGetNearestPowerOfTwo(dataH);
 		}
 		TBBitmapFragmentMap *fm = new TBBitmapFragmentMap();
-		if (fm && fm->Init(po2w, po2h))
+		if (fm && fm->init(po2w, po2h))
 		{
-			m_fragment_maps.Add(fm);
-			frag = fm->CreateNewFragment(data_w, data_h, data_stride, data, m_add_border);
+			m_fragment_maps.add(fm);
+			frag = fm->createNewFragment(dataW, dataH, dataStride, data, m_add_border);
 		}
 		else
 			delete fm;
 	}
 	// Finally, add the new fragment to the hash.
-	if (frag && m_fragments.Add(id, frag))
+	if (frag && m_fragments.add(id, frag))
 	{
 		frag->m_id = id;
 		return frag;
@@ -469,54 +469,54 @@ TBBitmapFragment *TBBitmapFragmentManager::CreateNewFragment(const TBID &id, boo
 	return nullptr;
 }
 
-void TBBitmapFragmentManager::FreeFragment(TBBitmapFragment *frag)
+void TBBitmapFragmentManager::freeFragment(TBBitmapFragment *frag)
 {
 	if (frag)
 	{
-		g_renderer->FlushBitmapFragment(frag);
+		g_renderer->flushBitmapFragment(frag);
 
 		TBBitmapFragmentMap *map = frag->m_map;
-		frag->m_map->FreeFragmentSpace(frag);
-		m_fragments.Delete(frag->m_id);
+		frag->m_map->freeFragmentSpace(frag);
+		m_fragments.deleteKey(frag->m_id);
 
 		// If the map is now empty, delete it.
 		if (map->m_allocated_pixels == 0)
-			m_fragment_maps.Delete(m_fragment_maps.Find(map));
+			m_fragment_maps.doDelete(m_fragment_maps.find(map));
 	}
 }
 
-TBBitmapFragment *TBBitmapFragmentManager::GetFragment(const TBID &id) const
+TBBitmapFragment *TBBitmapFragmentManager::getFragment(const TBID &id) const
 {
-	return m_fragments.Get(id);
+	return m_fragments.get(id);
 }
 
-void TBBitmapFragmentManager::Clear()
+void TBBitmapFragmentManager::clear()
 {
-	m_fragment_maps.DeleteAll();
-	m_fragments.DeleteAll();
+	m_fragment_maps.deleteAll();
+	m_fragments.deleteAll();
 }
 
-bool TBBitmapFragmentManager::ValidateBitmaps()
+bool TBBitmapFragmentManager::validateBitmaps()
 {
 	bool success = true;
-	for (int i = 0; i < m_fragment_maps.GetNumItems(); i++)
-		if (!m_fragment_maps[i]->ValidateBitmap())
+	for (int i = 0; i < m_fragment_maps.getNumItems(); i++)
+		if (!m_fragment_maps[i]->validateBitmap())
 			success = false;
 	return success;
 }
 
-void TBBitmapFragmentManager::DeleteBitmaps()
+void TBBitmapFragmentManager::deleteBitmaps()
 {
-	for (int i = 0; i < m_fragment_maps.GetNumItems(); i++)
-		m_fragment_maps[i]->DeleteBitmap();
+	for (int i = 0; i < m_fragment_maps.getNumItems(); i++)
+		m_fragment_maps[i]->deleteBitmap();
 }
 
-void TBBitmapFragmentManager::SetNumMapsLimit(int num_maps_limit)
+void TBBitmapFragmentManager::setNumMapsLimit(int numMapsLimit)
 {
-	m_num_maps_limit = num_maps_limit;
+	m_num_maps_limit = numMapsLimit;
 }
 
-void TBBitmapFragmentManager::SetDefaultMapSize(int w, int h)
+void TBBitmapFragmentManager::setDefaultMapSize(int w, int h)
 {
 	core_assert(TBGetNearestPowerOfTwo(w) == w);
 	core_assert(TBGetNearestPowerOfTwo(h) == h);
@@ -524,11 +524,11 @@ void TBBitmapFragmentManager::SetDefaultMapSize(int w, int h)
 	m_default_map_h = h;
 }
 
-int TBBitmapFragmentManager::GetUseRatio() const
+int TBBitmapFragmentManager::getUseRatio() const
 {
 	int used = 0;
 	int total = 0;
-	for (int i = 0; i < m_fragment_maps.GetNumItems(); i++)
+	for (int i = 0; i < m_fragment_maps.getNumItems(); i++)
 	{
 		used += m_fragment_maps[i]->m_allocated_pixels;
 		total += m_fragment_maps[i]->m_bitmap_w * m_fragment_maps[i]->m_bitmap_h;
@@ -537,14 +537,14 @@ int TBBitmapFragmentManager::GetUseRatio() const
 }
 
 #ifdef TB_RUNTIME_DEBUG_INFO
-void TBBitmapFragmentManager::Debug()
+void TBBitmapFragmentManager::debug()
 {
 	int x = 0;
-	for (int i = 0; i < m_fragment_maps.GetNumItems(); i++)
+	for (int i = 0; i < m_fragment_maps.getNumItems(); i++)
 	{
 		TBBitmapFragmentMap *fm = m_fragment_maps[i];
-		if (TBBitmap *bitmap = fm->GetBitmap())
-			g_renderer->DrawBitmap(TBRect(x, 0, fm->m_bitmap_w, fm->m_bitmap_h), TBRect(0, 0, fm->m_bitmap_w, fm->m_bitmap_h), bitmap);
+		if (TBBitmap *bitmap = fm->getBitmap())
+			g_renderer->drawBitmap(TBRect(x, 0, fm->m_bitmap_w, fm->m_bitmap_h), TBRect(0, 0, fm->m_bitmap_w, fm->m_bitmap_h), bitmap);
 		x += fm->m_bitmap_w + 5;
 	}
 }

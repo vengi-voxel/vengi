@@ -13,64 +13,64 @@ TBLinkListOf<TBNodeRefTree> TBNodeRefTree::s_ref_trees;
 
 TBNodeRefTree::TBNodeRefTree(const char *name) : m_name(name), m_name_id(name)
 {
-	s_ref_trees.AddLast(this);
+	s_ref_trees.addLast(this);
 }
 
 TBNodeRefTree::~TBNodeRefTree()
 {
-	s_ref_trees.Remove(this);
+	s_ref_trees.remove(this);
 }
 
-TBValue &TBNodeRefTree::GetValue(const char *request)
+TBValue &TBNodeRefTree::getValue(const char *request)
 {
-	if (TBNode *node = m_node.GetNodeFollowRef(request))
-		return node->GetValue();
-	Log::debug("TBNodeRefTree::GetValue - Request not found: %s", request);
+	if (TBNode *node = m_node.getNodeFollowRef(request))
+		return node->getValue();
+	Log::debug("TBNodeRefTree::getValue - Request not found: %s", request);
 	static TBValue nullval;
 	return nullval;
 }
 
 //static
-TBValue &TBNodeRefTree::GetValueFromTree(const char *request)
+TBValue &TBNodeRefTree::getValueFromTree(const char *request)
 {
 	core_assert(*request == '@');
 	TBNode tmp;
-	tmp.GetValue().SetString(request, TBValue::SET_AS_STATIC);
-	TBNode *node = TBNodeRefTree::FollowNodeRef(&tmp);
+	tmp.getValue().setString(request, TBValue::SET_AS_STATIC);
+	TBNode *node = TBNodeRefTree::followNodeRef(&tmp);
 	if (node != &tmp)
-		return node->GetValue();
+		return node->getValue();
 	static TBValue nullval;
 	return nullval;
 }
 
-void TBNodeRefTree::SetValue(const char *request, const TBValue &value)
+void TBNodeRefTree::setValue(const char *request, const TBValue &value)
 {
-	if (TBNode *node = m_node.GetNode(request, TBNode::GET_MISS_POLICY_CREATE))
+	if (TBNode *node = m_node.getNode(request, TBNode::GET_MISS_POLICY_CREATE))
 	{
 		// FIX: Only invoke the listener if it really changed.
-		node->GetValue().Copy(value);
-		InvokeChangeListenersInternal(request);
+		node->getValue().copy(value);
+		invokeChangeListenersInternal(request);
 	}
 }
 
-void TBNodeRefTree::InvokeChangeListenersInternal(const char *request)
+void TBNodeRefTree::invokeChangeListenersInternal(const char *request)
 {
-	TBLinkListOf<TBNodeRefTreeListener>::Iterator iter = m_listeners.IterateForward();
-	while (TBNodeRefTreeListener *listener = iter.GetAndStep())
-		listener->OnDataChanged(this, request);
+	TBLinkListOf<TBNodeRefTreeListener>::Iterator iter = m_listeners.iterateForward();
+	while (TBNodeRefTreeListener *listener = iter.getAndStep())
+		listener->onDataChanged(this, request);
 }
 
 //static
-TBNodeRefTree *TBNodeRefTree::GetRefTree(const char *name, int name_len)
+TBNodeRefTree *TBNodeRefTree::getRefTree(const char *name, int nameLen)
 {
-	for (TBNodeRefTree *rt = s_ref_trees.GetFirst(); rt; rt = rt->GetNext())
-		if (strncmp(rt->GetName(), name, name_len) == 0)
+	for (TBNodeRefTree *rt = s_ref_trees.getFirst(); rt; rt = rt->getNext())
+		if (strncmp(rt->getName(), name, nameLen) == 0)
 			return rt;
 	return nullptr;
 }
 
 //static
-TBNode *TBNodeRefTree::FollowNodeRef(TBNode *node)
+TBNode *TBNodeRefTree::followNodeRef(TBNode *node)
 {
 	// Detect circular loops by letting this call get a unique id.
 	// Update the id on each visited node and if it's already set,
@@ -82,16 +82,16 @@ TBNode *TBNodeRefTree::FollowNodeRef(TBNode *node)
 	uint32_t cycle_id = ++s_cycle_id;
 	TBNode *start_node = node;
 
-	while (node->GetValue().IsString())
+	while (node->getValue().isString())
 	{
 		// If not a reference at all, we're done.
-		const char *node_str = node->GetValue().GetString();
+		const char *node_str = node->getValue().getString();
 		if (*node_str != '@')
 			break;
 
 		// If there's no tree name and request, we're done. It's probably a language string.
 		const char *name_start = node_str + 1;
-		const char *name_end = TBNode::GetNextNodeSeparator(name_start);
+		const char *name_end = TBNode::getNextNodeSeparator(name_start);
 		if (*name_end == 0)
 			break;
 
@@ -101,19 +101,19 @@ TBNode *TBNodeRefTree::FollowNodeRef(TBNode *node)
 		if (*name_start == '>')
 		{
 			TBNode *local_root = node;
-			while (local_root->GetParent())
-				local_root = local_root->GetParent();
-			next_node  = local_root->GetNode(name_start + 1, TBNode::GET_MISS_POLICY_NULL);
+			while (local_root->getParent())
+				local_root = local_root->getParent();
+			next_node  = local_root->getNode(name_start + 1, TBNode::GET_MISS_POLICY_NULL);
 		}
 		// We have a "@treename>noderequest" string. Go ahead and look it up from the right node tree.
-		else if (TBNodeRefTree *rt = TBNodeRefTree::GetRefTree(name_start, name_end - name_start))
+		else if (TBNodeRefTree *rt = TBNodeRefTree::getRefTree(name_start, name_end - name_start))
 		{
-			next_node = rt->m_node.GetNode(name_end + 1, TBNode::GET_MISS_POLICY_NULL);
+			next_node = rt->m_node.getNode(name_end + 1, TBNode::GET_MISS_POLICY_NULL);
 		}
 		else
 		{
 			Log::debug("TBNodeRefTree::ResolveNode - No tree found for request \"%s\" from node \"%s\"",
-						 node_str, node->GetValue().GetString());
+						 node_str, node->getValue().getString());
 			break;
 		}
 
@@ -130,7 +130,7 @@ TBNode *TBNodeRefTree::FollowNodeRef(TBNode *node)
 		else
 		{
 			Log::debug("TBNodeRefTree::ResolveNode - Reference loop detected on request \"%s\" from node \"%s\"",
-				node_str, node->GetValue().GetString());
+				node_str, node->getValue().getString());
 			return start_node;
 		}
 	}
@@ -138,22 +138,22 @@ TBNode *TBNodeRefTree::FollowNodeRef(TBNode *node)
 }
 
 //static
-void TBNodeRefTree::ResolveConditions(TBNode *parent_node)
+void TBNodeRefTree::resolveConditions(TBNode *parentNode)
 {
 	bool condition_ret = false;
-	TBNode *node = parent_node->GetFirstChild();
+	TBNode *node = parentNode->getFirstChild();
 	while (node)
 	{
 		bool delete_node = false;
 		bool move_children = false;
-		if (strcmp(node->GetName(), "@if") == 0)
+		if (strcmp(node->getName(), "@if") == 0)
 		{
-			condition_ret = node->GetValueFollowRef().GetInt() ? true : false;
+			condition_ret = node->getValueFollowRef().getInt() ? true : false;
 			if (condition_ret)
 				move_children = true;
 			delete_node = true;
 		}
-		else if (strcmp(node->GetName(), "@else") == 0)
+		else if (strcmp(node->getName(), "@else") == 0)
 		{
 			condition_ret = !condition_ret;
 			if (condition_ret)
@@ -162,23 +162,23 @@ void TBNodeRefTree::ResolveConditions(TBNode *parent_node)
 		}
 
 		// Make sure we'll skip any nodes added from a conditional branch.
-		TBNode *node_next = node->GetNext();
+		TBNode *node_next = node->getNext();
 
 		if (move_children)
 		{
 			// Resolve the branch first, since we'll skip it.
-			ResolveConditions(node);
-			while (TBNode *content = node->GetLastChild())
+			resolveConditions(node);
+			while (TBNode *content = node->getLastChild())
 			{
-				node->Remove(content);
-				parent_node->AddAfter(content, node);
+				node->remove(content);
+				parentNode->addAfter(content, node);
 			}
 		}
 
 		if (delete_node)
-			parent_node->Delete(node);
+			parentNode->doDelete(node);
 		else
-			ResolveConditions(node);
+			resolveConditions(node);
 		node = node_next;
 	}
 }

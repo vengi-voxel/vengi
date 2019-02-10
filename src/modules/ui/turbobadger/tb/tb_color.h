@@ -18,18 +18,18 @@ public:
 
 	uint8_t b, g, r, a;
 
-	void Set(const TBColor &color) { *this = color; }
+	void set(const TBColor &color) { *this = color; }
 
 	/** Set the color from string in any of the following formats:
 		"#rrggbbaa", "#rrggbb", "#rgba", "#rgb" */
-	void SetFromString(const char *str, int len);
+	void setFromString(const char *str, int len);
 
 	inline operator uint32_t () const		{ return *((uint32_t*)this); }
 	inline bool operator == (const TBColor &c) const { return *this == (uint32_t)c; }
 	inline bool operator != (const TBColor &c) const { return !(*this == c); }
 
 	/** Premultiply alpha on the r, g, b components */
-	inline void Premultiply() {
+	inline void premultiply() {
 		const uint32_t a32 = a;
 		r = (r * a32 + 1) >> 8;
 		g = (g * a32 + 1) >> 8;
@@ -37,7 +37,7 @@ public:
 	}
 
 	/** Unpremultiply alpha on the r, g, b components */
-	inline void Unpremultiply() {
+	inline void unpremultiply() {
 		const uint32_t a32 = a;
 		if (a32) {
 			r = r * 255 / a32;

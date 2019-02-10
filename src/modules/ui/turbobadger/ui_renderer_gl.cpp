@@ -21,7 +21,7 @@ UIBitmapGL::UIBitmapGL(UIRendererGL *renderer) :
 }
 
 UIBitmapGL::~UIBitmapGL() {
-	_renderer->FlushBitmap(this);
+	_renderer->flushBitmap(this);
 
 	shutdown();
 }
@@ -37,16 +37,16 @@ void UIBitmapGL::bind(video::TextureUnit unit) {
 	video::bindTexture(unit, _textureConfig.type(), _texture);
 }
 
-bool UIBitmapGL::Init(int width, int height, video::Id texture) {
+bool UIBitmapGL::init(int width, int height, video::Id texture) {
 	_w = width;
 	_h = height;
 	_texture = texture;
 	_destroy = false;
-	SetData(nullptr);
+	setData(nullptr);
 	return true;
 }
 
-bool UIBitmapGL::Init(int width, int height, uint32_t *data) {
+bool UIBitmapGL::init(int width, int height, uint32_t *data) {
 	core_assert(width == TBGetNearestPowerOfTwo(width));
 	core_assert(height == TBGetNearestPowerOfTwo(height));
 
@@ -59,13 +59,13 @@ bool UIBitmapGL::Init(int width, int height, uint32_t *data) {
 	_textureConfig.format(video::TextureFormat::RGBA);
 	video::bindTexture(video::TextureUnit::Upload, _textureConfig.type(), _texture);
 	video::setupTexture(_textureConfig);
-	SetData(data);
+	setData(data);
 
 	return true;
 }
 
-void UIBitmapGL::SetData(uint32_t *data) {
-	_renderer->FlushBitmap(this);
+void UIBitmapGL::setData(uint32_t *data) {
+	_renderer->flushBitmap(this);
 	video::bindTexture(video::TextureUnit::Upload, _textureConfig.type(), _texture);
 	if (data != nullptr) {
 		video::uploadTexture(_textureConfig.type(), _textureConfig.format(), _w, _h, (const uint8_t*)data, 0);
@@ -112,12 +112,12 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 	_vbo.addAttribute(_shader.getPosAttribute(_bufferIndex, &Vertex::x));
 
 	uint32_t data = 0xffffffff;
-	_white.Init(1, 1, &data);
+	_white.init(1, 1, &data);
 
 	return true;
 }
 
-void UIRendererGL::BeginPaint(int, int) {
+void UIRendererGL::beginPaint(int, int) {
 #ifdef TB_RUNTIME_DEBUG_INFO
 	tb_dbg_bitmap_validations = 0;
 #endif
@@ -125,7 +125,7 @@ void UIRendererGL::BeginPaint(int, int) {
 	const int renderTargetW = _camera.width();
 	const int renderTargetH = _camera.height();
 
-	TBRendererBatcher::BeginPaint(renderTargetW, renderTargetH);
+	TBRendererBatcher::beginPaint(renderTargetW, renderTargetH);
 
 	_shader.activate();
 	_shader.setProjection(_camera.projectionMatrix());
@@ -140,8 +140,8 @@ void UIRendererGL::BeginPaint(int, int) {
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 }
 
-void UIRendererGL::EndPaint() {
-	TBRendererBatcher::EndPaint();
+void UIRendererGL::endPaint() {
+	TBRendererBatcher::endPaint();
 	_shader.deactivate();
 
 #ifdef TB_RUNTIME_DEBUG_INFO
@@ -159,16 +159,16 @@ void UIRendererGL::bindBitmap(TBBitmap *bitmap) {
 	static_cast<UIBitmapGL*>(bitmap)->bind();
 }
 
-TBBitmap *UIRendererGL::CreateBitmap(int width, int height, uint32_t *data) {
+TBBitmap *UIRendererGL::createBitmap(int width, int height, uint32_t *data) {
 	UIBitmapGL *bitmap = new UIBitmapGL(this);
-	if (!bitmap->Init(width, height, data)) {
+	if (!bitmap->init(width, height, data)) {
 		delete bitmap;
 		return nullptr;
 	}
 	return bitmap;
 }
 
-void UIRendererGL::RenderBatch(Batch *batch) {
+void UIRendererGL::renderBatch(Batch *batch) {
 	bindBitmap(batch->bitmap);
 	core_assert_always(_vbo.update(_bufferIndex, batch->vertex, sizeof(Vertex) * batch->vertex_count));
 
@@ -177,7 +177,7 @@ void UIRendererGL::RenderBatch(Batch *batch) {
 	_vbo.unbind();
 }
 
-void UIRendererGL::SetClipRect(const TBRect &rect) {
+void UIRendererGL::setClipRect(const TBRect &rect) {
 	video::scissor(m_clip_rect.x, m_clip_rect.y, m_clip_rect.w, m_clip_rect.h);
 }
 

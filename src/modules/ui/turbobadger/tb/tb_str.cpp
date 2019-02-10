@@ -54,7 +54,7 @@ TBStr::TBStr(const TBStr &str)
 TBStr::TBStr(const char* str, int len)
 	: TBStrC(empty)
 {
-	Set(str, len);
+	set(str, len);
 }
 
 TBStr::~TBStr()
@@ -62,7 +62,7 @@ TBStr::~TBStr()
 	safe_delete(s);
 }
 
-bool TBStr::Set(const char* str, int len)
+bool TBStr::set(const char* str, int len)
 {
 	safe_delete(s);
 	if (len == TB_ALL_TO_TERMINATION)
@@ -77,7 +77,7 @@ bool TBStr::Set(const char* str, int len)
 	return false;
 }
 
-bool TBStr::SetFormatted(const char* format, ...)
+bool TBStr::setFormatted(const char* format, ...)
 {
 	safe_delete(s);
 	if (!format)
@@ -115,12 +115,12 @@ bool TBStr::SetFormatted(const char* format, ...)
 	return false;
 }
 
-void TBStr::Clear()
+void TBStr::clear()
 {
 	safe_delete(s);
 }
 
-void TBStr::Remove(int ofs, int len)
+void TBStr::remove(int ofs, int len)
 {
 	core_assert(ofs >= 0 && (ofs + len <= (int)SDL_strlen(s)));
 	if (!len)
@@ -132,17 +132,17 @@ void TBStr::Remove(int ofs, int len)
 	*dst = *src;
 }
 
-bool TBStr::Insert(int ofs, const char *ins, int ins_len)
+bool TBStr::insert(int ofs, const char *ins, int insLen)
 {
 	int len1 = SDL_strlen(s);
-	if (ins_len == TB_ALL_TO_TERMINATION)
-		ins_len = SDL_strlen(ins);
-	int newlen = len1 + ins_len;
+	if (insLen == TB_ALL_TO_TERMINATION)
+		insLen = SDL_strlen(ins);
+	int newlen = len1 + insLen;
 	if (char *news = (char *) SDL_malloc(newlen + 1))
 	{
 		SDL_memcpy(&news[0], s, ofs);
-		SDL_memcpy(&news[ofs], ins, ins_len);
-		SDL_memcpy(&news[ofs + ins_len], &s[ofs], len1 - ofs);
+		SDL_memcpy(&news[ofs], ins, insLen);
+		SDL_memcpy(&news[ofs + insLen], &s[ofs], len1 - ofs);
 		news[newlen] = 0;
 		safe_delete(s);
 		s = news;

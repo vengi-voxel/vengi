@@ -39,11 +39,11 @@ public:
 	bool newModel(bool force);
 	bool saveImage(const char* filename);
 
-	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
-	virtual void OnProcess() override;
-	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
-	virtual void OnPaint(const PaintProps &paintProps) override;
-	virtual void OnResized(int oldw, int oldh) override;
+	virtual void onInflate(const tb::INFLATE_INFO &info) override;
+	virtual void onProcess() override;
+	virtual bool onEvent(const tb::TBWidgetEvent &ev) override;
+	virtual void onPaint(const PaintProps &paintProps) override;
+	virtual void onResized(int oldw, int oldh) override;
 };
 
 inline video::Camera& Viewport::camera() {

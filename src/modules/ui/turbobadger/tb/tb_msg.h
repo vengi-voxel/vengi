@@ -14,7 +14,7 @@ namespace tb {
 
 class TBMessageHandler;
 
-/** TB_NOT_SOON is returned from TBMessageHandler::GetNextMessageFireTime
+/** TB_NOT_SOON is returned from TBMessageHandler::getNextMessageFireTime
 	and means that there is currently no more messages to process. */
 #define TB_NOT_SOON 0xffffffff
 
@@ -53,7 +53,7 @@ public:
 	TBMessageData *data;	///< The message data, or nullptr if no data is set
 
 	/** The time which a delayed message should have fired (0 for non delayed messages) */
-	double GetFireTime() { return fire_time_ms; }
+	double getFireTime() { return fire_time_ms; }
 
 private:
 	friend class TBMessageHandler;
@@ -76,45 +76,45 @@ public:
 	/** Posts a message to the target after a delay.
 		data may be nullptr if no extra data need to be sent. It will be deleted
 		automatically when the message is deleted. */
-	bool PostMessageDelayed(TBID message, TBMessageData *data, uint32_t delay_in_ms);
+	bool postMessageDelayed(TBID message, TBMessageData *data, uint32_t delay_in_ms);
 
-	/** Posts a message to the target at the given time (relative to TBSystem::GetTimeMS()).
+	/** Posts a message to the target at the given time (relative to TBSystem::getTimeMS()).
 		data may be nullptr if no extra data need to be sent. It will be deleted
 		automatically when the message is deleted. */
-	bool PostMessageOnTime(TBID message, TBMessageData *data, double fire_time);
+	bool postMessageOnTime(TBID message, TBMessageData *data, double fire_time);
 
 	/** Posts a message to the target.
 		data may be nullptr if no extra data need to be sent. It will be deleted
 		automatically when the message is deleted. */
-	bool PostMessage(TBID message, TBMessageData *data);
+	bool postMessage(TBID message, TBMessageData *data);
 
 	/** Check if this messagehandler has a pending message with the given id.
 		Returns the message if found, or nullptr.
 		If you want to delete the message, call DeleteMessage. */
-	TBMessage *GetMessageByID(TBID message);
+	TBMessage *getMessageByID(TBID message);
 
 	/** Delete the message from this message handler. */
-	void DeleteMessage(TBMessage *msg);
+	void deleteMessage(TBMessage *msg);
 
 	/** Delete all messages from this message handler. */
-	void DeleteAllMessages();
+	void deleteAllMessages();
 
 	/** Called when a message is delivered.
 
-		This message won't be found using GetMessageByID. It is already removed from the list.
+		This message won't be found using getMessageByID. It is already removed from the list.
 		You should not call DeleteMessage on this message. That is done automatically after this method exit. */
-	virtual void OnMessageReceived(TBMessage *msg) {}
+	virtual void onMessageReceived(TBMessage *msg) {}
 
 	// == static methods to handle the queue of messages ====================================================
 
 	/** Process any messages in queue. */
-	static void ProcessMessages();
+	static void processMessages();
 
 	/** Get when the time when ProcessMessages needs to be called again.
 		Always returns 0 if there is nondelayed messages to process, which means it needs to be called asap.
 		If there's only delayed messages to process, it returns the time that the earliest delayed message should be fired.
 		If there's no more messages to process at the moment, it returns TB_NOT_SOON (No call to ProcessMessages is needed). */
-	static double GetNextMessageFireTime();
+	static double getNextMessageFireTime();
 private:
 	TBLinkListOf<TBMessage> m_messages;
 };

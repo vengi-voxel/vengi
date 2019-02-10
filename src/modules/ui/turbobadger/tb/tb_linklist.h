@@ -14,8 +14,8 @@ class TBLink;
 
 /** TBLinkListIterator - The backend class for a safe iteration of a TBLinkList.
 
-	You would normally recieve a typed iterator from a TBLinkListOf::IterateForward
-	or TBLinkListOf::IterateBackward, instead of creating this object directly.
+	You would normally recieve a typed iterator from a TBLinkListOf::iterateForward
+	or TBLinkListOf::iterateBackward, instead of creating this object directly.
 
 	Safe iteration means that if a link is removed from a linked list, _all_ iterators that currently
 	point to that link will automatically step to the next link in the iterators direction. */
@@ -29,13 +29,13 @@ public:
 
 	/** Set the iterator to the first link in we iterate forward,
 		or set it to the last link if we iterate backward.  */
-	void Reset();
+	void reset();
 
 	/** Get the current link or nullptr if out of bounds. */
-	TBLink *Get() const { return m_current_link; }
+	TBLink *get() const { return m_current_link; }
 
 	/** Get the current link and step the iterator to the next (forward or backward). */
-	TBLink *GetAndStep();
+	TBLink *getAndStep();
 
 	operator TBLink *() const { return m_current_link; }
 
@@ -50,15 +50,15 @@ private:
 
 	/** RemoveLink is called when removing/deleting links in the target linklist.
 		This will make sure iterators skip the deleted item. */
-	void RemoveLink(TBLink *link);
+	void removeLink(TBLink *link);
 	friend class TBLinkList;
 
 	/** Add ourself to the chain of iterators in the linklist. */
-	void Register();
+	void doRegister();
 
 	/** Unlink ourself from the chain of iterators in the linklist. */
-	void Unregister();
-	void UnregisterAndClear();
+	void unregister();
+	void unregisterAndClear();
 };
 
 /** TBLink - The backend class to be inserted in TBLinkList.
@@ -70,7 +70,7 @@ public:
 	TBLink() : prev(nullptr), next(nullptr), linklist(nullptr) {}
 
 	/** Return true if the link is currently added to a list. */
-	bool IsInList() const { return linklist ? true : false; }
+	bool isInList() const { return linklist ? true : false; }
 public:
 	TBLink *prev;
 	TBLink *next;
@@ -81,8 +81,8 @@ template<class T>
 class TBLinkOf : public TBLink
 {
 public:
-	inline T *GetPrev() const { return (T *) prev; }
-	inline T *GetNext() const { return (T *) next; }
+	inline T *getPrev() const { return (T *) prev; }
+	inline T *getNext() const { return (T *) next; }
 };
 
 /** TBLinkList - This is the backend for TBLinkListOf and TBLinkListAutoDeleteOf.
@@ -94,20 +94,20 @@ public:
 	TBLinkList() : first(nullptr), last(nullptr), first_iterator(nullptr) {}
 	~TBLinkList();
 
-	void Remove(TBLink *link);
-	void RemoveAll();
+	void remove(TBLink *link);
+	void removeAll();
 
-	void AddFirst(TBLink *link);
-	void AddLast(TBLink *link);
+	void addFirst(TBLink *link);
+	void addLast(TBLink *link);
 
-	void AddBefore(TBLink *link, TBLink *reference);
-	void AddAfter(TBLink *link, TBLink *reference);
+	void addBefore(TBLink *link, TBLink *reference);
+	void addAfter(TBLink *link, TBLink *reference);
 
-	bool ContainsLink(TBLink *link) const { return link->linklist == this; }
+	bool containsLink(TBLink *link) const { return link->linklist == this; }
 
-	bool HasLinks() const { return first ? true : false; }
+	bool hasLinks() const { return first ? true : false; }
 
-	int CountLinks() const;
+	int countLinks() const;
 public:
 	TBLink *first;
 	TBLink *last;
@@ -121,43 +121,43 @@ class TBLinkListOf
 {
 public:
 	/** Remove link from this linklist. */
-	void Remove(T *link)			{ m_linklist.Remove(static_cast<TBLinkOf<T>*>(link)); }
+	void remove(T *link)			{ m_linklist.remove(static_cast<TBLinkOf<T>*>(link)); }
 
 	/** Remove link from this linklist and delete it. */
-	void Delete(T *link)			{ m_linklist.Remove(static_cast<TBLinkOf<T>*>(link)); delete link; }
+	void doDelete(T *link)			{ m_linklist.remove(static_cast<TBLinkOf<T>*>(link)); delete link; }
 
 	/** Remove all links without deleting them. */
-	void RemoveAll()				{ m_linklist.RemoveAll(); }
+	void removeAll()				{ m_linklist.removeAll(); }
 
 	/** Delete all links in this linklist. */
-	void DeleteAll()				{ while (T *t = GetFirst()) Delete(t); }
+	void deleteAll()				{ while (T *t = getFirst()) doDelete(t); }
 
 	/** Add link first in this linklist. */
-	void AddFirst(T *link)			{ m_linklist.AddFirst(static_cast<TBLinkOf<T>*>(link)); }
+	void addFirst(T *link)			{ m_linklist.addFirst(static_cast<TBLinkOf<T>*>(link)); }
 
 	/** Add link last in this linklist. */
-	void AddLast(T *link)			{ m_linklist.AddLast(static_cast<TBLinkOf<T>*>(link)); }
+	void addLast(T *link)			{ m_linklist.addLast(static_cast<TBLinkOf<T>*>(link)); }
 
 	/** Add link before the reference link (which must be added to this linklist). */
-	void AddBefore(T *link, T *reference) { m_linklist.AddBefore(static_cast<TBLinkOf<T>*>(link), reference); }
+	void addBefore(T *link, T *reference) { m_linklist.addBefore(static_cast<TBLinkOf<T>*>(link), reference); }
 
 	/** Add link after the reference link (which must be added to this linklist). */
-	void AddAfter(T *link, T *reference) { m_linklist.AddAfter(static_cast<TBLinkOf<T>*>(link), reference); }
+	void addAfter(T *link, T *reference) { m_linklist.addAfter(static_cast<TBLinkOf<T>*>(link), reference); }
 
 	/** Return true if the link is currently added to this linklist. */
-	bool ContainsLink(T *link) const { return m_linklist.ContainsLink(static_cast<TBLinkOf<T>*>(link)); }
+	bool containsLink(T *link) const { return m_linklist.containsLink(static_cast<TBLinkOf<T>*>(link)); }
 
 	/** Get the first link, or nullptr. */
-	T *GetFirst() const { return (T *) static_cast<TBLinkOf<T>*>(m_linklist.first); }
+	T *getFirst() const { return (T *) static_cast<TBLinkOf<T>*>(m_linklist.first); }
 
 	/** Get the last link, or nullptr. */
-	T *GetLast() const { return (T *) static_cast<TBLinkOf<T>*>(m_linklist.last); }
+	T *getLast() const { return (T *) static_cast<TBLinkOf<T>*>(m_linklist.last); }
 
 	/** Return true if this linklist contains any links. */
-	bool HasLinks() const { return m_linklist.HasLinks(); }
+	bool hasLinks() const { return m_linklist.hasLinks(); }
 
 	/** Count the number of links in this list by iterating through all links. */
-	int CountLinks() const { return m_linklist.CountLinks(); }
+	int countLinks() const { return m_linklist.countLinks(); }
 
 	/** Typed iterator for safe iteration. For more info, see TBLinkListIterator. */
 	class Iterator : public TBLinkListIterator
@@ -166,22 +166,22 @@ public:
 		Iterator(TBLinkListOf<T> *linklistof, bool forward)
 			: TBLinkListIterator(&linklistof->m_linklist, forward ? linklistof->m_linklist.first : linklistof->m_linklist.last, forward) {}
 		Iterator(TBLinkListOf<T> *linklistof, T *link, bool forward) : TBLinkListIterator(&linklistof->m_linklist, link, forward) {}
-		inline T *Get() const { return (T *) static_cast<TBLinkOf<T>*>(TBLinkListIterator::Get()); }
-		inline T *GetAndStep() { return (T *) static_cast<TBLinkOf<T>*>(TBLinkListIterator::GetAndStep()); }
-		inline operator T *() const { return (T *) static_cast<TBLinkOf<T>*>(Get()); }
+		inline T *get() const { return (T *) static_cast<TBLinkOf<T>*>(TBLinkListIterator::get()); }
+		inline T *getAndStep() { return (T *) static_cast<TBLinkOf<T>*>(TBLinkListIterator::getAndStep()); }
+		inline operator T *() const { return (T *) static_cast<TBLinkOf<T>*>(get()); }
 	};
 
 	/** Get a forward iterator that starts with the first link. */
-	Iterator IterateForward() { return Iterator(this, true); }
+	Iterator iterateForward() { return Iterator(this, true); }
 
 	/** Get a forward iterator that starts with the given link. */
-	Iterator IterateForward(T *link) { return Iterator(this, link, true); }
+	Iterator iterateForward(T *link) { return Iterator(this, link, true); }
 
 	/** Get a backward iterator that starts with the last link. */
-	Iterator IterateBackward() { return Iterator(this, false); }
+	Iterator iterateBackward() { return Iterator(this, false); }
 
 	/** Get a backward iterator that starts with the given link. */
-	Iterator IterateBackward(T *link) { return Iterator(this, link, false); }
+	Iterator iterateBackward(T *link) { return Iterator(this, link, false); }
 private:
 	TBLinkList m_linklist;
 };
@@ -192,7 +192,7 @@ template<class T>
 class TBLinkListAutoDeleteOf : public TBLinkListOf<T>
 {
 public:
-	~TBLinkListAutoDeleteOf() { TBLinkListOf<T>::DeleteAll(); }
+	~TBLinkListAutoDeleteOf() { TBLinkListOf<T>::deleteAll(); }
 };
 
 } // namespace tb

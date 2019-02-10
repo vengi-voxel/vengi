@@ -13,11 +13,11 @@ namespace tb {
 
 TBNode::~TBNode()
 {
-	Clear();
+	clear();
 }
 
 // static
-TBNode *TBNode::Create(const char *name)
+TBNode *TBNode::create(const char *name)
 {
 	TBNode *n = new TBNode;
 	if (!n || !(n->m_name = SDL_strdup(name)))
@@ -29,41 +29,41 @@ TBNode *TBNode::Create(const char *name)
 }
 
 // static
-TBNode *TBNode::Create(const char *name, int name_len)
+TBNode *TBNode::create(const char *name, int nameLen)
 {
 	TBNode *n = new TBNode;
-	if (!n || !(n->m_name = (char *) SDL_malloc(name_len + 1)))
+	if (!n || !(n->m_name = (char *) SDL_malloc(nameLen + 1)))
 	{
 		delete n;
 		return nullptr;
 	}
-	SDL_memcpy(n->m_name, name, name_len);
-	n->m_name[name_len] = 0;
+	SDL_memcpy(n->m_name, name, nameLen);
+	n->m_name[nameLen] = 0;
 	return n;
 }
 
 //static
-const char *TBNode::GetNextNodeSeparator(const char *request)
+const char *TBNode::getNextNodeSeparator(const char *request)
 {
 	while (*request != 0 && *request != '>')
 		request++;
 	return request;
 }
 
-TBNode *TBNode::GetNode(const char *request, GET_MISS_POLICY mp)
+TBNode *TBNode::getNode(const char *request, GET_MISS_POLICY mp)
 {
 	// Iterate one node deeper for each sub request (non recursive)
 	TBNode *n = this;
 	while (*request && n)
 	{
-		const char *nextend = GetNextNodeSeparator(request);
+		const char *nextend = getNextNodeSeparator(request);
 		int name_len = nextend - request;
-		TBNode *n_child = n->GetNodeInternal(request, name_len);
+		TBNode *n_child = n->getNodeInternal(request, name_len);
 		if (!n_child && mp == GET_MISS_POLICY_CREATE)
 		{
-			n_child = n->Create(request, name_len);
+			n_child = n->create(request, name_len);
 			if (n_child)
-				n->Add(n_child);
+				n->add(n_child);
 		}
 		n = n_child;
 		request = *nextend == 0 ? nextend : nextend + 1;
@@ -71,100 +71,101 @@ TBNode *TBNode::GetNode(const char *request, GET_MISS_POLICY mp)
 	return n;
 }
 
-TBNode *TBNode::GetNodeFollowRef(const char *request, GET_MISS_POLICY mp)
+TBNode *TBNode::getNodeFollowRef(const char *request, GET_MISS_POLICY mp)
 {
-	TBNode *node = GetNode(request, mp);
+	TBNode *node = getNode(request, mp);
 	if (node)
-		node = TBNodeRefTree::FollowNodeRef(node);
+		node = TBNodeRefTree::followNodeRef(node);
 	return node;
 }
 
-TBNode *TBNode::GetNodeInternal(const char *name, int name_len) const
+TBNode *TBNode::getNodeInternal(const char *name, int nameLen) const
 {
-	for (TBNode *n = GetFirstChild(); n; n = n->GetNext())
+	for (TBNode *n = getFirstChild(); n; n = n->getNext())
 	{
-		if (SDL_strncmp(n->m_name, name, name_len) == 0 && n->m_name[name_len] == 0)
+		if (SDL_strncmp(n->m_name, name, nameLen) == 0 && n->m_name[nameLen] == 0)
 			return n;
 	}
 	return nullptr;
 }
 
-bool TBNode::CloneChildren(TBNode *source, bool follow_refs)
+bool TBNode::cloneChildren(TBNode *source, bool followRefs)
 {
-	TBNode *item = source->GetFirstChild();
+	TBNode *item = source->getFirstChild();
 	while (item)
 	{
-		TBNode *new_child = Create(item->m_name);
+		TBNode *new_child = create(item->m_name);
 		if (!new_child)
 			return false;
 
-		new_child->m_value.Copy(follow_refs ? item->GetValueFollowRef() : item->m_value);
-		Add(new_child);
+		new_child->m_value.copy(followRefs ? item->getValueFollowRef() : item->m_value);
+		add(new_child);
 
-		if (!new_child->CloneChildren(item, follow_refs))
+		if (!new_child->cloneChildren(item, followRefs))
 			return false;
-		item = item->GetNext();
+		item = item->getNext();
 	}
 	return true;
 }
 
-TBValue &TBNode::GetValueFollowRef()
+TBValue &TBNode::getValueFollowRef()
 {
-	return TBNodeRefTree::FollowNodeRef(this)->GetValue();
+	return TBNodeRefTree::followNodeRef(this)->getValue();
 }
 
-int TBNode::GetValueInt(const char *request, int def)
+int TBNode::getValueInt(const char *request, int def)
 {
-	TBNode *n = GetNodeFollowRef(request);
-	return n ? n->m_value.GetInt() : def;
+	TBNode *n = getNodeFollowRef(request);
+	return n ? n->m_value.getInt() : def;
 }
 
-float TBNode::GetValueFloat(const char *request, float def)
+float TBNode::getValueFloat(const char *request, float def)
 {
-	TBNode *n = GetNodeFollowRef(request);
-	return n ? n->m_value.GetFloat() : def;
+	TBNode *n = getNodeFollowRef(request);
+	return n ? n->m_value.getFloat() : def;
 }
 
-const char *TBNode::GetValueString(const char *request, const char *def)
+const char *TBNode::getValueString(const char *request, const char *def)
 {
-	if (TBNode *node = GetNodeFollowRef(request))
+	if (TBNode *node = getNodeFollowRef(request))
 	{
 		// We might have a language string. Those are not
 		// looked up in GetNode/ResolveNode.
-		if (node->GetValue().IsString())
+		if (node->getValue().isString())
 		{
-			const char *string = node->GetValue().GetString();
-			if (*string == '@' && *TBNode::GetNextNodeSeparator(string) == 0)
-				string = g_tb_lng->GetString(string + 1);
+			const char *string = node->getValue().getString();
+			if (*string == '@' && *TBNode::getNextNodeSeparator(string) == 0)
+				string = g_tb_lng->getString(string + 1);
 			return string;
 		}
-		return node->GetValue().GetString();
+		return node->getValue().getString();
 	}
 	return def;
 }
 
-const char *TBNode::GetValueStringRaw(const char *request, const char *def)
+const char *TBNode::getValueStringRaw(const char *request, const char *def)
 {
-	TBNode *n = GetNodeFollowRef(request);
-	return n ? n->m_value.GetString() : def;
+	TBNode *n = getNodeFollowRef(request);
+	return n ? n->m_value.getString() : def;
 }
 
 class FileParser : public TBParserStream
 {
 public:
-	bool Read(const char *filename, TBParserTarget *target)
+	bool read(const char *filename, TBParserTarget *target)
 	{
-		f = TBFile::Open(filename, TBFile::MODE_READ);
-		if (!f)
+		f = TBFile::open(filename, TBFile::MODE_READ);
+		if (f == nullptr) {
 			return false;
+		}
 		TBParser p;
-		TBParser::STATUS status = p.Read(this, target);
+		TBParser::STATUS status = p.read(this, target);
 		delete f;
 		return status == TBParser::STATUS_OK ? true : false;
 	}
-	virtual int GetMoreData(char *buf, int buf_len)
+	virtual int getMoreData(char *buf, int bufLen)
 	{
-		return f->Read(buf, 1, buf_len);
+		return f->read(buf, 1, bufLen);
 	}
 private:
 	TBFile *f;
@@ -173,17 +174,17 @@ private:
 class DataParser : public TBParserStream
 {
 public:
-	bool Read(const char *data, int data_len, TBParserTarget *target)
+	bool read(const char *data, int dataLen, TBParserTarget *target)
 	{
 		m_data = data;
-		m_data_len = data_len;
+		m_data_len = dataLen;
 		TBParser p;
-		TBParser::STATUS status = p.Read(this, target);
+		TBParser::STATUS status = p.read(this, target);
 		return status == TBParser::STATUS_OK ? true : false;
 	}
-	virtual int GetMoreData(char *buf, int buf_len)
+	virtual int getMoreData(char *buf, int bufLen)
 	{
-		const int consume = Min(buf_len, m_data_len);
+		const int consume = Min(bufLen, m_data_len);
 		SDL_memcpy(buf, m_data, consume);
 		m_data += consume;
 		m_data_len -= consume;
@@ -202,78 +203,78 @@ public:
 		m_root_node = m_target_node = root;
 		m_filename = filename;
 	}
-	virtual void OnError(int line_nr, const char *error)
+	virtual void onError(int lineNr, const char *error)
 	{
 #ifdef TB_RUNTIME_DEBUG_INFO
-		Log::debug("%s(%d):Parse error: %s", m_filename, line_nr, error);
+		Log::debug("%s(%d):Parse error: %s", m_filename, lineNr, error);
 #endif // TB_RUNTIME_DEBUG_INFO
 	}
-	virtual void OnComment(int line_nr, const char *comment)
+	virtual void onComment(int lineNr, const char *comment)
 	{
 	}
-	virtual void OnToken(int line_nr, const char *name, TBValue &value)
+	virtual void onToken(int lineNr, const char *name, TBValue &value)
 	{
 		if (!m_target_node)
 			return;
 		if (SDL_strcmp(name, "@file") == 0)
-			IncludeFile(line_nr, value.GetString());
+			includeFile(lineNr, value.getString());
 		else if (SDL_strcmp(name, "@include") == 0)
-			IncludeRef(line_nr, value.GetString());
-		else if (TBNode *n = TBNode::Create(name))
+			includeRef(lineNr, value.getString());
+		else if (TBNode *n = TBNode::create(name))
 		{
-			n->m_value.TakeOver(value);
-			m_target_node->Add(n);
+			n->m_value.takeOver(value);
+			m_target_node->add(n);
 		}
 	}
-	virtual void Enter()
+	virtual void enter()
 	{
 		if (m_target_node)
-			m_target_node = m_target_node->GetLastChild();
+			m_target_node = m_target_node->getLastChild();
 	}
-	virtual void Leave()
+	virtual void leave()
 	{
 		core_assert(m_target_node != m_root_node);
 		if (m_target_node)
 			m_target_node = m_target_node->m_parent;
 	}
-	void IncludeFile(int line_nr, const char *filename)
+	void includeFile(int lineNr, const char *filename)
 	{
 		// Read the included file into a new TBNode and then
 		// move all the children to m_target_node.
 		TBTempBuffer include_filename;
-		include_filename.AppendPath(m_filename);
-		include_filename.AppendString(filename);
+		include_filename.appendPath(m_filename);
+		include_filename.appendString(filename);
 		TBNode content;
-		if (content.ReadFile(include_filename.GetData()))
+		if (content.readFile(include_filename.getData()))
 		{
-			while (TBNode *content_n = content.GetFirstChild())
+			while (TBNode *content_n = content.getFirstChild())
 			{
-				content.Remove(content_n);
-				m_target_node->Add(content_n);
+				content.remove(content_n);
+				m_target_node->add(content_n);
 			}
 		}
 		else
 		{
 			TBStr err;
-			err.SetFormatted("Referenced file \"%s\" was not found!", include_filename.GetData());
-			OnError(line_nr, err);
+			err.setFormatted("Referenced file \"%s\" was not found!", include_filename.getData());
+			onError(lineNr, err);
 		}
 	}
-	void IncludeRef(int line_nr, const char *refstr)
+	void includeRef(int lineNr, const char *refstr)
 	{
 		TBNode *refnode = nullptr;
 		if (*refstr == '@')
 		{
 			TBNode tmp;
-			tmp.GetValue().SetString(refstr, TBValue::SET_AS_STATIC);
-			refnode = TBNodeRefTree::FollowNodeRef(&tmp);
+			tmp.getValue().setString(refstr, TBValue::SET_AS_STATIC);
+			refnode = TBNodeRefTree::followNodeRef(&tmp);
 		}
 		else // Local look-up
 		{
 			// Note: If we read to a target node that already contains
 			//       nodes, we might look up nodes that's already there
 			//       instead of new nodes.
-			refnode = m_root_node->GetNode(refstr, TBNode::GET_MISS_POLICY_NULL);
+			refnode = m_root_node->getNode(refstr, TBNode::GET_MISS_POLICY_NULL);
 
 			// Detect cycles
 			TBNode *cycle_detection = m_target_node;
@@ -281,16 +282,16 @@ public:
 			{
 				if (cycle_detection == refnode)
 					refnode = nullptr; // We have a cycle, so just fail the inclusion.
-				cycle_detection = cycle_detection->GetParent();
+				cycle_detection = cycle_detection->getParent();
 			}
 		}
 		if (refnode)
-			m_target_node->CloneChildren(refnode);
+			m_target_node->cloneChildren(refnode);
 		else
 		{
 			TBStr err;
-			err.SetFormatted("Include \"%s\" was not found!", refstr);
-			OnError(line_nr, err);
+			err.setFormatted("Include \"%s\" was not found!", refstr);
+			onError(lineNr, err);
 		}
 	}
 private:
@@ -299,43 +300,43 @@ private:
 	const char *m_filename;
 };
 
-bool TBNode::ReadFile(const char *filename, TB_NODE_READ_FLAGS flags)
+bool TBNode::readFile(const char *filename, TB_NODE_READ_FLAGS flags)
 {
 	if (!(flags & TB_NODE_READ_FLAGS_APPEND))
-		Clear();
+		clear();
 	FileParser p;
 	TBNodeTarget t(this, filename);
-	if (p.Read(filename, &t))
+	if (p.read(filename, &t))
 	{
-		TBNodeRefTree::ResolveConditions(this);
+		TBNodeRefTree::resolveConditions(this);
 		return true;
 	}
 	return false;
 }
 
-bool TBNode::ReadData(const char *data, TB_NODE_READ_FLAGS flags)
+bool TBNode::readData(const char *data, TB_NODE_READ_FLAGS flags)
 {
-	return ReadData(data, SDL_strlen(data), flags);
+	return readData(data, SDL_strlen(data), flags);
 }
 
-bool TBNode::ReadData(const char *data, int data_len, TB_NODE_READ_FLAGS flags)
+bool TBNode::readData(const char *data, int dataLen, TB_NODE_READ_FLAGS flags)
 {
 	if (!(flags & TB_NODE_READ_FLAGS_APPEND))
-		Clear();
+		clear();
 	DataParser p;
 	TBNodeTarget t(this, "{data}");
-	if (!p.Read(data, data_len, &t)) {
+	if (!p.read(data, dataLen, &t)) {
 		return false;
 	}
-	TBNodeRefTree::ResolveConditions(this);
+	TBNodeRefTree::resolveConditions(this);
 	return true;
 }
 
-void TBNode::Clear()
+void TBNode::clear()
 {
 	SDL_free(m_name);
 	m_name = nullptr;
-	m_children.DeleteAll();
+	m_children.deleteAll();
 }
 
 } // namespace tb

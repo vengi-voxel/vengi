@@ -33,7 +33,7 @@ private:
 			Log::info("Failed to connect to server %s:%i", host->strVal().c_str(), port->intVal());
 			popup(tr("error"), tr("failed_to_connect"));
 		} else {
-			Close();
+			close();
 		}
 	}
 
@@ -41,38 +41,38 @@ public:
 	LoginWindow(Client* client) :
 			ui::turbobadger::Window(client), _client(client) {
 		core_assert_always(loadResourceFile("ui/window/client-login.tb.txt"));
-		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
+		setSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 
-		setText("email", core::Var::str(cfg::ClientEmail));
-		setText("password", core::Var::str(cfg::ClientPassword));
+		setStr("email", core::Var::str(cfg::ClientEmail));
+		setStr("password", core::Var::str(cfg::ClientPassword));
 		toggle("autologin", core::Var::boolean(cfg::ClientAutoLogin));
 	}
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override {
+	bool onEvent(const tb::TBWidgetEvent &ev) override {
 		if (ev.special_key == tb::TB_KEY_ENTER) {
 			doLogin();
 			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK) {
-			if (ev.target->GetID() == TBIDC("login")) {
+			if (ev.target->getID() == TBIDC("login")) {
 				doLogin();
 				return true;
-			} else if (ev.target->GetID() == TBIDC("cancel")) {
+			} else if (ev.target->getID() == TBIDC("cancel")) {
 				requestQuit();
 				return true;
-			} else if (ev.target->GetID() == TBIDC("signup")) {
+			} else if (ev.target->getID() == TBIDC("signup")) {
 				new SignupWindow(_client);
 				return true;
-			} else if (ev.target->GetID() == TBIDC("lostpassword")) {
+			} else if (ev.target->getID() == TBIDC("lostpassword")) {
 				new LostPasswordWindow(_client);
 				return true;
-			} else if (ev.target->GetID() == TBIDC("autologin")) {
+			} else if (ev.target->getID() == TBIDC("autologin")) {
 				const bool s = isToggled("autologin");
 				core::Var::getSafe(cfg::ClientAutoLogin)->setVal(s);
 				return true;
 			}
 		}
-		return ui::turbobadger::Window::OnEvent(ev);
+		return ui::turbobadger::Window::onEvent(ev);
 	}
 };
 

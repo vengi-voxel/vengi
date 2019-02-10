@@ -8,35 +8,35 @@
 #include "core/Color.h"
 
 #define NOISEDATADETAIL(text, type) \
-	if (tb::TBTextField *widget = GetWidgetByIDAndType<tb::TBTextField>(TBIDC(#type))) { \
+	if (tb::TBTextField *widget = getWidgetByIDAndType<tb::TBTextField>(TBIDC(#type))) { \
 		const NoiseData& data = item->data(); \
 		tb::TBStr str; \
-		str.SetFormatted(text, data.type); \
-		widget->SetText(str); \
+		str.setFormatted(text, data.type); \
+		widget->setText(str); \
 	} else { \
 		Log::warn("Could not get widget with id " #type); \
 	}
 
 NoiseDataNodeWidget::NoiseDataNodeWidget(NoiseItem *item) :
 			Super() {
-	SetLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
-	SetLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
-	SetIgnoreInput(false);
+	setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
+	setLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
+	setIgnoreInput(false);
 
-	core_assert_always(tb::g_widgets_reader->LoadFile(GetContentRoot(), "ui/widget/noisetool-noisedata-node.tb.txt"));
+	core_assert_always(tb::g_widgets_reader->loadFile(getContentRoot(), "ui/widget/noisetool-noisedata-node.tb.txt"));
 	setItem(item);
 }
 
 void NoiseDataNodeWidget::setItem(NoiseItem* item) {
-	tb::TBTextField *name = GetWidgetByIDAndType<tb::TBTextField>(TBIDC("name"));
+	tb::TBTextField *name = getWidgetByIDAndType<tb::TBTextField>(TBIDC("name"));
 	if (item == nullptr) {
 		if (name != nullptr) {
-			name->SetText("Empty");
+			name->setText("Empty");
 		}
 		return;
 	}
 	if (name != nullptr) {
-		name->SetText(item->str);
+		name->setText(item->str);
 	}
 	NOISEDATADETAIL("Frequency: %f", frequency);
 	NOISEDATADETAIL("Lacunarity: %f", lacunarity);
@@ -46,37 +46,37 @@ void NoiseDataNodeWidget::setItem(NoiseItem* item) {
 
 #undef NOISEDATADETAIL
 
-bool NoiseDataNodeWidget::OnEvent(const tb::TBWidgetEvent &ev) {
+bool NoiseDataNodeWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		_clicked = true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		int x = ev.target_x;
 		int y = ev.target_y;
-		ConvertToRoot(x, y);
+		convertToRoot(x, y);
 		createNewNodeAtPosition(x, y);
 		_clicked = false;
 	}
-	return Super::OnEvent(ev);
+	return Super::onEvent(ev);
 }
 
 void NoiseDataNodeWidget::createNewNodeAtPosition(int x, int y) {
 	NoiseDataNodeWidget* w = new NoiseDataNodeWidget(nullptr);
-	w->SetRect(tb::TBRect(x, y, 20, 20));
-	GetParent()->AddChild(w);
-	const tb::TBRect& rect = w->GetRect();
+	w->setRect(tb::TBRect(x, y, 20, 20));
+	getParent()->addChild(w);
+	const tb::TBRect& rect = w->getRect();
 	Log::info("x: %i, y: %i, w: %i, h: %i", rect.x, rect.y, rect.w, rect.h);
 }
 
-void NoiseDataNodeWidget::OnPaintChildren(const PaintProps &paintProps) {
-	Super::OnPaintChildren(paintProps);
+void NoiseDataNodeWidget::onPaintChildren(const PaintProps &paintProps) {
+	Super::onPaintChildren(paintProps);
 	if (!_clicked) {
 		return;
 	}
 	// render line from clicked pos to current mouse pos
-	tb::TBRect local_rect = GetRect();
+	tb::TBRect local_rect = getRect();
 	local_rect.x = 0;
 	local_rect.y = 0;
 	const glm::ivec4 color(core::Color::Cyan * 255.0f);
 	const tb::TBColor tbColor(color.r, color.g, color.b, color.a);
-	tb::g_tb_skin->PaintRectFill(local_rect, tbColor);
+	tb::g_tb_skin->paintRectFill(local_rect, tbColor);
 }

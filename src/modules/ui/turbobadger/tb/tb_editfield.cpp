@@ -19,7 +19,7 @@ const int CARET_BLINK_TIME = 500;
 const int SELECTION_SCROLL_DELAY = 1000/30;
 
 /** Get the delta that should be scrolled if dragging the pointer outside the range min-max */
-int GetSelectionScrollSpeed(int pointerpos, int min, int max)
+int getSelectionScrollSpeed(int pointerpos, int min, int max)
 {
 	int d = 0;
 	if (pointerpos < min)
@@ -36,123 +36,123 @@ TBEditField::TBEditField()
 	, m_adapt_to_content_size(false)
 	, m_virtual_width(250)
 {
-	SetIsFocusable(true);
-	SetWantLongClick(true);
-	AddChild(&m_scrollbar_x);
-	AddChild(&m_scrollbar_y);
-	AddChild(&m_root);
-	m_root.SetGravity(WIDGET_GRAVITY_ALL);
-	m_scrollbar_x.SetGravity(WIDGET_GRAVITY_BOTTOM | WIDGET_GRAVITY_LEFT_RIGHT);
-	m_scrollbar_y.SetGravity(WIDGET_GRAVITY_RIGHT | WIDGET_GRAVITY_TOP_BOTTOM);
-	m_scrollbar_y.SetAxis(AXIS_Y);
-	int scrollbar_y_w = m_scrollbar_y.GetPreferredSize().pref_w;
-	int scrollbar_x_h = m_scrollbar_x.GetPreferredSize().pref_h;
-	m_scrollbar_x.SetRect(TBRect(0, - scrollbar_x_h, - scrollbar_y_w, scrollbar_x_h));
-	m_scrollbar_y.SetRect(TBRect(- scrollbar_y_w, 0, scrollbar_y_w, 0));
-	m_scrollbar_x.SetOpacity(0);
-	m_scrollbar_y.SetOpacity(0);
+	setIsFocusable(true);
+	setWantLongClick(true);
+	addChild(&m_scrollbar_x);
+	addChild(&m_scrollbar_y);
+	addChild(&m_root);
+	m_root.setGravity(WIDGET_GRAVITY_ALL);
+	m_scrollbar_x.setGravity(WIDGET_GRAVITY_BOTTOM | WIDGET_GRAVITY_LEFT_RIGHT);
+	m_scrollbar_y.setGravity(WIDGET_GRAVITY_RIGHT | WIDGET_GRAVITY_TOP_BOTTOM);
+	m_scrollbar_y.setAxis(AXIS_Y);
+	int scrollbar_y_w = m_scrollbar_y.getPreferredSize().pref_w;
+	int scrollbar_x_h = m_scrollbar_x.getPreferredSize().pref_h;
+	m_scrollbar_x.setRect(TBRect(0, - scrollbar_x_h, - scrollbar_y_w, scrollbar_x_h));
+	m_scrollbar_y.setRect(TBRect(- scrollbar_y_w, 0, scrollbar_y_w, 0));
+	m_scrollbar_x.setOpacity(0);
+	m_scrollbar_y.setOpacity(0);
 
-	SetSkinBg(TBIDC("TBEditField"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	m_style_edit.SetListener(this);
+	setSkinBg(TBIDC("TBEditField"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	m_style_edit.setListener(this);
 
-	m_root.SetRect(GetVisibleRect());
+	m_root.setRect(getVisibleRect());
 
-	m_placeholder.SetTextAlign(TB_TEXT_ALIGN_LEFT);
+	m_placeholder.setTextAlign(TB_TEXT_ALIGN_LEFT);
 
 	m_content_factory.editfield = this;
-	m_style_edit.SetContentFactory(&m_content_factory);
+	m_style_edit.setContentFactory(&m_content_factory);
 }
 
 TBEditField::~TBEditField()
 {
-	RemoveChild(&m_root);
-	RemoveChild(&m_scrollbar_y);
-	RemoveChild(&m_scrollbar_x);
+	removeChild(&m_root);
+	removeChild(&m_scrollbar_y);
+	removeChild(&m_scrollbar_x);
 }
 
-TBRect TBEditField::GetVisibleRect()
+TBRect TBEditField::getVisibleRect()
 {
-	TBRect rect = GetPaddingRect();
-	if (m_scrollbar_y.GetOpacity())
-		rect.w -= m_scrollbar_y.GetRect().w;
-	if (m_scrollbar_x.GetOpacity())
-		rect.h -= m_scrollbar_x.GetRect().h;
+	TBRect rect = getPaddingRect();
+	if (m_scrollbar_y.getOpacity())
+		rect.w -= m_scrollbar_y.getRect().w;
+	if (m_scrollbar_x.getOpacity())
+		rect.h -= m_scrollbar_x.getRect().h;
 	return rect;
 }
 
-void TBEditField::UpdateScrollbarVisibility(bool multiline)
+void TBEditField::updateScrollbarVisibility(bool multiline)
 {
 	bool enable_vertical = multiline && !m_adapt_to_content_size;
-	m_scrollbar_y.SetOpacity(enable_vertical ? 1.f : 0.f);
-	m_root.SetRect(GetVisibleRect());
+	m_scrollbar_y.setOpacity(enable_vertical ? 1.f : 0.f);
+	m_root.setRect(getVisibleRect());
 }
 
-void TBEditField::SetAdaptToContentSize(bool adapt)
+void TBEditField::setAdaptToContentSize(bool adapt)
 {
 	if (m_adapt_to_content_size == adapt)
 		return;
 	m_adapt_to_content_size = adapt;
-	UpdateScrollbarVisibility(GetMultiline());
+	updateScrollbarVisibility(getMultiline());
 }
 
-void TBEditField::SetVirtualWidth(int virtual_width)
+void TBEditField::setVirtualWidth(int virtualWidth)
 {
-	if (m_virtual_width == virtual_width)
+	if (m_virtual_width == virtualWidth)
 		return;
-	m_virtual_width = virtual_width;
+	m_virtual_width = virtualWidth;
 
 	if (m_adapt_to_content_size && m_style_edit.packed.wrapping)
-		InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+		invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 }
 
-void TBEditField::SetMultiline(bool multiline)
+void TBEditField::setMultiline(bool multiline)
 {
-	if (multiline == GetMultiline())
+	if (multiline == getMultiline())
 		return;
-	UpdateScrollbarVisibility(multiline);
-	m_style_edit.SetMultiline(multiline);
-	SetWrapping(multiline);
-	InvalidateSkinStates();
-	TBWidget::Invalidate();
+	updateScrollbarVisibility(multiline);
+	m_style_edit.setMultiline(multiline);
+	setWrapping(multiline);
+	invalidateSkinStates();
+	TBWidget::invalidate();
 }
 
-void TBEditField::SetStyling(bool styling)
+void TBEditField::setStyling(bool styling)
 {
-	m_style_edit.SetStyling(styling);
+	m_style_edit.setStyling(styling);
 }
 
-void TBEditField::SetReadOnly(bool readonly)
+void TBEditField::setReadOnly(bool readonly)
 {
-	if (readonly == GetReadOnly())
+	if (readonly == getReadOnly())
 		return;
-	m_style_edit.SetReadOnly(readonly);
-	InvalidateSkinStates();
-	TBWidget::Invalidate();
+	m_style_edit.setReadOnly(readonly);
+	invalidateSkinStates();
+	TBWidget::invalidate();
 }
 
-void TBEditField::SetWrapping(bool wrapping)
+void TBEditField::setWrapping(bool wrapping)
 {
-	if (wrapping == GetWrapping())
+	if (wrapping == getWrapping())
 		return;
 
-	m_style_edit.SetWrapping(wrapping);
+	m_style_edit.setWrapping(wrapping);
 
 	// Invalidate the layout when the wrap mode change and we should adapt our size to it
 	if (m_adapt_to_content_size)
-		InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+		invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 }
 
-void TBEditField::SetEditType(EDIT_TYPE type)
+void TBEditField::setEditType(EDIT_TYPE type)
 {
 	if (m_edit_type == type)
 		return;
 	m_edit_type = type;
-	m_style_edit.SetPassword(type == EDIT_TYPE_PASSWORD);
-	InvalidateSkinStates();
-	TBWidget::Invalidate();
+	m_style_edit.setPassword(type == EDIT_TYPE_PASSWORD);
+	invalidateSkinStates();
+	TBWidget::invalidate();
 }
 
-bool TBEditField::GetCustomSkinCondition(const TBSkinCondition::CONDITION_INFO &info)
+bool TBEditField::getCustomSkinCondition(const TBSkinCondition::CONDITION_INFO &info)
 {
 	if (info.custom_prop == TBIDC("edit-type"))
 	{
@@ -168,102 +168,102 @@ bool TBEditField::GetCustomSkinCondition(const TBSkinCondition::CONDITION_INFO &
 		}
 	}
 	else if (info.custom_prop == TBIDC("multiline"))
-		return !((uint32_t)info.value) == !GetMultiline();
+		return !((uint32_t)info.value) == !getMultiline();
 	else if (info.custom_prop == TBIDC("readonly"))
-		return !((uint32_t)info.value) == !GetReadOnly();
+		return !((uint32_t)info.value) == !getReadOnly();
 	return false;
 }
 
-void TBEditField::ScrollTo(int x, int y)
+void TBEditField::scrollTo(int x, int y)
 {
-	int old_x = m_scrollbar_x.GetValue();
-	int old_y = m_scrollbar_y.GetValue();
-	m_style_edit.SetScrollPos(x, y);
-	if (old_x != m_scrollbar_x.GetValue() ||
-		old_y != m_scrollbar_y.GetValue())
-		TBWidget::Invalidate();
+	int old_x = m_scrollbar_x.getValue();
+	int old_y = m_scrollbar_y.getValue();
+	m_style_edit.setScrollPos(x, y);
+	if (old_x != m_scrollbar_x.getValue() ||
+		old_y != m_scrollbar_y.getValue())
+		TBWidget::invalidate();
 }
 
-TBWidget::ScrollInfo TBEditField::GetScrollInfo()
+TBWidget::ScrollInfo TBEditField::getScrollInfo()
 {
 	ScrollInfo info;
-	info.min_x = static_cast<int>(m_scrollbar_x.GetMinValue());
-	info.min_y = static_cast<int>(m_scrollbar_y.GetMinValue());
-	info.max_x = static_cast<int>(m_scrollbar_x.GetMaxValue());
-	info.max_y = static_cast<int>(m_scrollbar_y.GetMaxValue());
-	info.x = m_scrollbar_x.GetValue();
-	info.y = m_scrollbar_y.GetValue();
+	info.min_x = static_cast<int>(m_scrollbar_x.getMinValue());
+	info.min_y = static_cast<int>(m_scrollbar_y.getMinValue());
+	info.max_x = static_cast<int>(m_scrollbar_x.getMaxValue());
+	info.max_y = static_cast<int>(m_scrollbar_y.getMaxValue());
+	info.x = m_scrollbar_x.getValue();
+	info.y = m_scrollbar_y.getValue();
 	return info;
 }
 
-bool TBEditField::OnEvent(const TBWidgetEvent &ev)
+bool TBEditField::onEvent(const TBWidgetEvent &ev)
 {
 	if (ev.type == EVENT_TYPE_CHANGED && ev.target == &m_scrollbar_x)
 	{
-		m_style_edit.SetScrollPos(m_scrollbar_x.GetValue(), m_style_edit.scroll_y);
-		OnScroll(m_scrollbar_x.GetValue(), m_style_edit.scroll_y);
+		m_style_edit.setScrollPos(m_scrollbar_x.getValue(), m_style_edit.scroll_y);
+		onScroll(m_scrollbar_x.getValue(), m_style_edit.scroll_y);
 		return true;
 	}
 	else if (ev.type == EVENT_TYPE_CHANGED && ev.target == &m_scrollbar_y)
 	{
-		m_style_edit.SetScrollPos(m_style_edit.scroll_x, m_scrollbar_y.GetValue());
-		OnScroll(m_style_edit.scroll_x, m_scrollbar_y.GetValue());
+		m_style_edit.setScrollPos(m_style_edit.scroll_x, m_scrollbar_y.getValue());
+		onScroll(m_style_edit.scroll_x, m_scrollbar_y.getValue());
 		return true;
 	}
 	else if (ev.type == EVENT_TYPE_WHEEL && ev.modifierkeys == TB_MODIFIER_NONE)
 	{
-		int old_val = m_scrollbar_y.GetValue();
-		m_scrollbar_y.SetValue(old_val + ev.delta_y * TBSystem::GetPixelsPerLine());
-		return m_scrollbar_y.GetValue() != old_val;
+		int old_val = m_scrollbar_y.getValue();
+		m_scrollbar_y.setValue(old_val + ev.delta_y * TBSystem::getPixelsPerLine());
+		return m_scrollbar_y.getValue() != old_val;
 	}
 	else if (ev.type == EVENT_TYPE_POINTER_DOWN && ev.target == this)
 	{
-		TBRect padding_rect = GetPaddingRect();
-		if (m_style_edit.MouseDown(
+		TBRect padding_rect = getPaddingRect();
+		if (m_style_edit.mouseDown(
 			TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y),
 			1, ev.count, TB_MODIFIER_NONE, ev.button_type == TB_TOUCH))
 		{
 			// Post a message to start selection scroll
-			PostMessageDelayed(TBIDC("selscroll"), nullptr, SELECTION_SCROLL_DELAY);
+			postMessageDelayed(TBIDC("selscroll"), nullptr, SELECTION_SCROLL_DELAY);
 			return true;
 		}
 	}
 	else if (ev.type == EVENT_TYPE_POINTER_MOVE && ev.target == this)
 	{
-		TBRect padding_rect = GetPaddingRect();
-		return m_style_edit.MouseMove(TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y));
+		TBRect padding_rect = getPaddingRect();
+		return m_style_edit.mouseMove(TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y));
 	}
 	else if (ev.type == EVENT_TYPE_POINTER_UP && ev.target == this)
 	{
-		TBRect padding_rect = GetPaddingRect();
-		return m_style_edit.MouseUp(TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y),
+		TBRect padding_rect = getPaddingRect();
+		return m_style_edit.mouseUp(TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y),
 										1, TB_MODIFIER_NONE, ev.button_type == TB_TOUCH);
 	}
 	else if (ev.type == EVENT_TYPE_KEY_DOWN)
 	{
-		return m_style_edit.KeyDown(ev.key, ev.special_key, ev.modifierkeys);
+		return m_style_edit.keyDown(ev.key, ev.special_key, ev.modifierkeys);
 	}
 	else if (ev.type == EVENT_TYPE_KEY_UP)
 	{
 		return true;
 	}
-	else if ((ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("popupmenu")) ||
+	else if ((ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("popupmenu")) ||
 			(ev.type == EVENT_TYPE_SHORTCUT))
 	{
 		if (ev.ref_id == TBIDC("cut") && !m_style_edit.packed.read_only)
-			m_style_edit.Cut();
+			m_style_edit.cut();
 		else if (ev.ref_id == TBIDC("copy"))
-			m_style_edit.Copy();
+			m_style_edit.copy();
 		else if (ev.ref_id == TBIDC("paste") && !m_style_edit.packed.read_only)
-			m_style_edit.Paste();
+			m_style_edit.paste();
 		else if (ev.ref_id == TBIDC("delete") && !m_style_edit.packed.read_only)
-			m_style_edit.Delete();
+			m_style_edit.del();
 		else if (ev.ref_id == TBIDC("undo") && !m_style_edit.packed.read_only)
-			m_style_edit.Undo();
+			m_style_edit.undo();
 		else if (ev.ref_id == TBIDC("redo") && !m_style_edit.packed.read_only)
-			m_style_edit.Redo();
+			m_style_edit.redo();
 		else if (ev.ref_id == TBIDC("selectall"))
-			m_style_edit.selection.SelectAll();
+			m_style_edit.selection.selectAll();
 		else
 			return false;
 		return true;
@@ -271,98 +271,98 @@ bool TBEditField::OnEvent(const TBWidgetEvent &ev)
 	else if (ev.type == EVENT_TYPE_CONTEXT_MENU && ev.target == this)
 	{
 		TBPoint pos_in_root(ev.target_x, ev.target_y);
-		ev.target->ConvertToRoot(pos_in_root.x, pos_in_root.y);
+		ev.target->convertToRoot(pos_in_root.x, pos_in_root.y);
 
 		if (TBMenuWindow *menu = new TBMenuWindow(ev.target, TBIDC("popupmenu")))
 		{
-			TBGenericStringItemSource *source = menu->GetList()->GetDefaultSource();
-			source->AddItem(new TBGenericStringItem(g_tb_lng->GetString(TBIDC("cut")), TBIDC("cut")));
-			source->AddItem(new TBGenericStringItem(g_tb_lng->GetString(TBIDC("copy")), TBIDC("copy")));
-			source->AddItem(new TBGenericStringItem(g_tb_lng->GetString(TBIDC("paste")), TBIDC("paste")));
-			source->AddItem(new TBGenericStringItem(g_tb_lng->GetString(TBIDC("delete")), TBIDC("delete")));
-			source->AddItem(new TBGenericStringItem("-"));
-			source->AddItem(new TBGenericStringItem(g_tb_lng->GetString(TBIDC("selectall")), TBIDC("selectall")));
-			menu->Show(source, TBPopupAlignment(pos_in_root), -1);
+			TBGenericStringItemSource *source = menu->getList()->getDefaultSource();
+			source->addItem(new TBGenericStringItem(g_tb_lng->getString(TBIDC("cut")), TBIDC("cut")));
+			source->addItem(new TBGenericStringItem(g_tb_lng->getString(TBIDC("copy")), TBIDC("copy")));
+			source->addItem(new TBGenericStringItem(g_tb_lng->getString(TBIDC("paste")), TBIDC("paste")));
+			source->addItem(new TBGenericStringItem(g_tb_lng->getString(TBIDC("delete")), TBIDC("delete")));
+			source->addItem(new TBGenericStringItem("-"));
+			source->addItem(new TBGenericStringItem(g_tb_lng->getString(TBIDC("selectall")), TBIDC("selectall")));
+			menu->show(source, TBPopupAlignment(pos_in_root), -1);
 		}
 		return true;
 	}
 	return false;
 }
 
-void TBEditField::OnPaint(const PaintProps &paint_props)
+void TBEditField::onPaint(const PaintProps &paintProps)
 {
-	TBRect visible_rect = GetVisibleRect();
+	TBRect visible_rect = getVisibleRect();
 
-	bool clip = m_scrollbar_x.CanScroll() || m_scrollbar_y.CanScroll();
+	bool clip = m_scrollbar_x.canScroll() || m_scrollbar_y.canScroll();
 	TBRect old_clip;
 	if (clip)
-		old_clip = g_renderer->SetClipRect(visible_rect, true);
+		old_clip = g_renderer->setClipRect(visible_rect, true);
 
 	int trans_x = visible_rect.x, trans_y = visible_rect.y;
-	g_renderer->Translate(trans_x, trans_y);
+	g_renderer->translate(trans_x, trans_y);
 
 	// Draw text content, caret etc.
 	visible_rect.x = visible_rect.y = 0;
-	m_style_edit.Paint(visible_rect, GetCalculatedFontDescription(), paint_props.text_color);
+	m_style_edit.paint(visible_rect, getCalculatedFontDescription(), paintProps.text_color);
 
 	// If empty, draw placeholder text with some opacity.
-	if (m_style_edit.IsEmpty())
+	if (m_style_edit.isEmpty())
 	{
-		float old_opacity = g_renderer->GetOpacity();
-		g_renderer->SetOpacity(old_opacity * g_tb_skin->GetDefaultPlaceholderOpacity());
-		TBRect placeholder_rect(visible_rect.x, visible_rect.y, visible_rect.w, GetFont()->GetHeight());
-		m_placeholder.Paint(this, placeholder_rect, paint_props.text_color);
-		g_renderer->SetOpacity(old_opacity);
+		float old_opacity = g_renderer->getOpacity();
+		g_renderer->setOpacity(old_opacity * g_tb_skin->getDefaultPlaceholderOpacity());
+		TBRect placeholder_rect(visible_rect.x, visible_rect.y, visible_rect.w, getFont()->getHeight());
+		m_placeholder.paint(this, placeholder_rect, paintProps.text_color);
+		g_renderer->setOpacity(old_opacity);
 	}
-	g_renderer->Translate(-trans_x, -trans_y);
+	g_renderer->translate(-trans_x, -trans_y);
 
 	if (clip)
-		g_renderer->SetClipRect(old_clip, false);
+		g_renderer->setClipRect(old_clip, false);
 }
 
-void TBEditField::OnPaintChildren(const PaintProps &paint_props)
+void TBEditField::onPaintChildren(const PaintProps &paintProps)
 {
-	TBWidget::OnPaintChildren(paint_props);
+	TBWidget::onPaintChildren(paintProps);
 
 	// Draw fadeout skin at the needed edges.
-	DrawEdgeFadeout(GetVisibleRect(),
+	drawEdgeFadeout(getVisibleRect(),
 		TBIDC("TBEditField.fadeout_x"),
 		TBIDC("TBEditField.fadeout_y"),
-		m_scrollbar_x.GetValue(),
-		m_scrollbar_y.GetValue(),
-		(int)(m_scrollbar_x.GetMaxValue() - m_scrollbar_x.GetValueDouble()),
-		(int)(m_scrollbar_y.GetMaxValue() - m_scrollbar_y.GetValueDouble()));
+		m_scrollbar_x.getValue(),
+		m_scrollbar_y.getValue(),
+		(int)(m_scrollbar_x.getMaxValue() - m_scrollbar_x.getValueDouble()),
+		(int)(m_scrollbar_y.getMaxValue() - m_scrollbar_y.getValueDouble()));
 }
 
-void TBEditField::OnAdded()
+void TBEditField::onAdded()
 {
-	m_style_edit.SetFont(GetCalculatedFontDescription());
+	m_style_edit.setFont(getCalculatedFontDescription());
 }
 
-void TBEditField::OnFontChanged()
+void TBEditField::onFontChanged()
 {
-	m_style_edit.SetFont(GetCalculatedFontDescription());
+	m_style_edit.setFont(getCalculatedFontDescription());
 }
 
-void TBEditField::OnFocusChanged(bool focused)
+void TBEditField::onFocusChanged(bool focused)
 {
-	m_style_edit.Focus(focused);
+	m_style_edit.focus(focused);
 }
 
-void TBEditField::OnResized(int old_w, int old_h)
+void TBEditField::onResized(int oldW, int oldH)
 {
 	// Make the scrollbars move
-	TBWidget::OnResized(old_w, old_h);
+	TBWidget::onResized(oldW, oldH);
 
-	TBRect visible_rect = GetVisibleRect();
-	m_style_edit.SetLayoutSize(visible_rect.w, visible_rect.h, false);
+	TBRect visible_rect = getVisibleRect();
+	m_style_edit.setLayoutSize(visible_rect.w, visible_rect.h, false);
 
-	UpdateScrollbars();
+	updateScrollbars();
 }
 
-PreferredSize TBEditField::OnCalculatePreferredContentSize(const SizeConstraints &constraints)
+PreferredSize TBEditField::onCalculatePreferredContentSize(const SizeConstraints &constraints)
 {
-	int font_height = GetFont()->GetHeight();
+	int font_height = getFont()->getHeight();
 	PreferredSize ps;
 	if (m_adapt_to_content_size)
 	{
@@ -383,17 +383,17 @@ PreferredSize TBEditField::OnCalculatePreferredContentSize(const SizeConstraints
 			if (constraints.available_w != SizeConstraints::NO_RESTRICTION)
 			{
 				layout_width = constraints.available_w;
-				if (TBSkinElement *bg_skin = GetSkinBgElement())
+				if (TBSkinElement *bg_skin = getSkinBgElement())
 					layout_width -= bg_skin->padding_left + bg_skin->padding_right;
 			}
 
-			m_style_edit.SetLayoutSize(layout_width, old_layout_height, true);
+			m_style_edit.setLayoutSize(layout_width, old_layout_height, true);
 			ps.size_dependency = SIZE_DEP_HEIGHT_DEPEND_ON_WIDTH;
 		}
-		int width = m_style_edit.GetContentWidth();
-		int height = m_style_edit.GetContentHeight();
+		int width = m_style_edit.getContentWidth();
+		int height = m_style_edit.getContentHeight();
 		if (m_style_edit.packed.wrapping)
-			m_style_edit.SetLayoutSize(old_layout_width, old_layout_height, true);
+			m_style_edit.setLayoutSize(old_layout_width, old_layout_height, true);
 		height = Max(height, font_height);
 
 		ps.min_w = ps.pref_w /*= ps.max_w*/ = width; // should go with the hack above.
@@ -414,141 +414,141 @@ PreferredSize TBEditField::OnCalculatePreferredContentSize(const SizeConstraints
 	return ps;
 }
 
-void TBEditField::OnMessageReceived(TBMessage *msg)
+void TBEditField::onMessageReceived(TBMessage *msg)
 {
 	if (msg->message == TBIDC("blink"))
 	{
 		m_style_edit.caret.on = !m_style_edit.caret.on;
-		m_style_edit.caret.Invalidate();
+		m_style_edit.caret.invalidate();
 
 		// Post another blink message so we blink again.
-		PostMessageDelayed(TBIDC("blink"), nullptr, CARET_BLINK_TIME);
+		postMessageDelayed(TBIDC("blink"), nullptr, CARET_BLINK_TIME);
 	}
 	else if (msg->message == TBIDC("selscroll") && captured_widget == this)
 	{
 		// Get scroll speed from where mouse is relative to the padding rect.
-		TBRect padding_rect = GetVisibleRect().Shrink(2, 2);
-		int dx = GetSelectionScrollSpeed(pointer_move_widget_x, padding_rect.x, padding_rect.x + padding_rect.w);
-		int dy = GetSelectionScrollSpeed(pointer_move_widget_y, padding_rect.y, padding_rect.y + padding_rect.h);
-		m_scrollbar_x.SetValue(m_scrollbar_x.GetValue() + dx);
-		m_scrollbar_y.SetValue(m_scrollbar_y.GetValue() + dy);
+		TBRect padding_rect = getVisibleRect().shrink(2, 2);
+		int dx = getSelectionScrollSpeed(pointer_move_widget_x, padding_rect.x, padding_rect.x + padding_rect.w);
+		int dy = getSelectionScrollSpeed(pointer_move_widget_y, padding_rect.y, padding_rect.y + padding_rect.h);
+		m_scrollbar_x.setValue(m_scrollbar_x.getValue() + dx);
+		m_scrollbar_y.setValue(m_scrollbar_y.getValue() + dy);
 
 		// Handle mouse move at the new scroll position, so selection is updated
 		if (dx || dy)
-			m_style_edit.MouseMove(TBPoint(pointer_move_widget_x, pointer_move_widget_y));
+			m_style_edit.mouseMove(TBPoint(pointer_move_widget_x, pointer_move_widget_y));
 
 		// Post another setscroll message so we continue scrolling if we still should.
 		if (m_style_edit.select_state)
-			PostMessageDelayed(TBIDC("selscroll"), nullptr, SELECTION_SCROLL_DELAY);
+			postMessageDelayed(TBIDC("selscroll"), nullptr, SELECTION_SCROLL_DELAY);
 	}
 }
 
-void TBEditField::OnChange()
+void TBEditField::onChange()
 {
 	// Invalidate the layout when the content change and we should adapt our size to it
 	if (m_adapt_to_content_size)
-		InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+		invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 
 	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
-	InvokeEvent(ev);
+	invokeEvent(ev);
 }
 
-bool TBEditField::OnEnter()
+bool TBEditField::onEnter()
 {
 	return false;
 }
 
-void TBEditField::Invalidate(const TBRect &rect)
+void TBEditField::invalidate(const TBRect &rect)
 {
-	TBWidget::Invalidate();
+	TBWidget::invalidate();
 }
 
-void TBEditField::DrawString(int32_t x, int32_t y, TBFontFace *font, const TBColor &color, const char *str, int32_t len)
+void TBEditField::drawString(int32_t x, int32_t y, TBFontFace *font, const TBColor &color, const char *str, int32_t len)
 {
-	font->DrawString(x, y, color, str, len);
+	font->drawString(x, y, color, str, len);
 }
 
-void TBEditField::DrawRect(const TBRect &rect, const TBColor &color)
+void TBEditField::drawRect(const TBRect &rect, const TBColor &color)
 {
-	g_tb_skin->PaintRect(rect, color, 1);
+	g_tb_skin->paintRect(rect, color, 1);
 }
 
-void TBEditField::DrawRectFill(const TBRect &rect, const TBColor &color)
+void TBEditField::drawRectFill(const TBRect &rect, const TBColor &color)
 {
-	g_tb_skin->PaintRectFill(rect, color);
+	g_tb_skin->paintRectFill(rect, color);
 }
 
-void TBEditField::DrawTextSelectionBg(const TBRect &rect)
-{
-	TBWidgetSkinConditionContext context(this);
-	g_tb_skin->PaintSkin(rect, TBIDC("TBEditField.selection"), static_cast<SKIN_STATE>(GetAutoState()), context);
-}
-
-void TBEditField::DrawContentSelectionFg(const TBRect &rect)
+void TBEditField::drawTextSelectionBg(const TBRect &rect)
 {
 	TBWidgetSkinConditionContext context(this);
-	g_tb_skin->PaintSkin(rect, TBIDC("TBEditField.selection"), static_cast<SKIN_STATE>(GetAutoState()), context);
+	g_tb_skin->paintSkin(rect, TBIDC("TBEditField.selection"), static_cast<SKIN_STATE>(getAutoState()), context);
 }
 
-void TBEditField::DrawCaret(const TBRect &rect)
+void TBEditField::drawContentSelectionFg(const TBRect &rect)
 {
-	if (GetIsFocused() && !m_style_edit.packed.read_only)
-		DrawTextSelectionBg(rect);
+	TBWidgetSkinConditionContext context(this);
+	g_tb_skin->paintSkin(rect, TBIDC("TBEditField.selection"), static_cast<SKIN_STATE>(getAutoState()), context);
 }
 
-void TBEditField::Scroll(int32_t dx, int32_t dy)
+void TBEditField::drawCaret(const TBRect &rect)
 {
-	TBWidget::Invalidate();
-	m_scrollbar_x.SetValue(m_style_edit.scroll_x);
-	m_scrollbar_y.SetValue(m_style_edit.scroll_y);
+	if (getIsFocused() && !m_style_edit.packed.read_only)
+		drawTextSelectionBg(rect);
 }
 
-void TBEditField::UpdateScrollbars()
+void TBEditField::scroll(int32_t dx, int32_t dy)
+{
+	TBWidget::invalidate();
+	m_scrollbar_x.setValue(m_style_edit.scroll_x);
+	m_scrollbar_y.setValue(m_style_edit.scroll_y);
+}
+
+void TBEditField::updateScrollbars()
 {
 	int32_t w = m_style_edit.layout_width;
 	int32_t h = m_style_edit.layout_height;
-	m_scrollbar_x.SetLimits(0, m_style_edit.GetContentWidth() - w, w);
-	m_scrollbar_y.SetLimits(0, m_style_edit.GetContentHeight() - h, h);
+	m_scrollbar_x.setLimits(0, m_style_edit.getContentWidth() - w, w);
+	m_scrollbar_y.setLimits(0, m_style_edit.getContentHeight() - h, h);
 }
 
-void TBEditField::CaretBlinkStart()
+void TBEditField::caretBlinkStart()
 {
 	// Post the delayed blink message if we don't already have one
-	if (!GetMessageByID(TBIDC("blink")))
-		PostMessageDelayed(TBIDC("blink"), nullptr, CARET_BLINK_TIME);
+	if (!getMessageByID(TBIDC("blink")))
+		postMessageDelayed(TBIDC("blink"), nullptr, CARET_BLINK_TIME);
 }
 
-void TBEditField::CaretBlinkStop()
+void TBEditField::caretBlinkStop()
 {
 	// Remove the blink message if we have one
-	if (TBMessage *msg = GetMessageByID(TBIDC("blink")))
-		DeleteMessage(msg);
+	if (TBMessage *msg = getMessageByID(TBIDC("blink")))
+		deleteMessage(msg);
 }
 
 // == TBEditFieldScrollRoot =======================================================================
 
-void TBEditFieldScrollRoot::OnPaintChildren(const PaintProps &paint_props)
+void TBEditFieldScrollRoot::onPaintChildren(const PaintProps &paintProps)
 {
 	// Avoid setting clipping (can be expensive) if we have no children to paint anyway.
-	if (!GetFirstChild())
+	if (!getFirstChild())
 		return;
 	// Clip children
-	TBRect old_clip_rect = g_renderer->SetClipRect(GetPaddingRect(), true);
-	TBWidget::OnPaintChildren(paint_props);
-	g_renderer->SetClipRect(old_clip_rect, false);
+	TBRect old_clip_rect = g_renderer->setClipRect(getPaddingRect(), true);
+	TBWidget::onPaintChildren(paintProps);
+	g_renderer->setClipRect(old_clip_rect, false);
 }
 
-void TBEditFieldScrollRoot::GetChildTranslation(int &x, int &y) const
+void TBEditFieldScrollRoot::getChildTranslation(int &x, int &y) const
 {
-	TBEditField *edit_field = static_cast<TBEditField *>(GetParent());
-	x = (int) -edit_field->GetStyleEdit()->scroll_x;
-	y = (int) -edit_field->GetStyleEdit()->scroll_y;
+	TBEditField *edit_field = static_cast<TBEditField *>(getParent());
+	x = (int) -edit_field->getStyleEdit()->scroll_x;
+	y = (int) -edit_field->getStyleEdit()->scroll_y;
 }
 
-WIDGET_HIT_STATUS TBEditFieldScrollRoot::GetHitStatus(int x, int y)
+WIDGET_HIT_STATUS TBEditFieldScrollRoot::getHitStatus(int x, int y)
 {
 	// Return no hit on this widget, but maybe on any of the children.
-	if (TBWidget::GetHitStatus(x, y) && GetWidgetAt(x, y, false))
+	if (TBWidget::getHitStatus(x, y) && getWidgetAt(x, y, false))
 		return WIDGET_HIT_STATUS_HIT;
 	return WIDGET_HIT_STATUS_NO_HIT;
 }
@@ -561,10 +561,10 @@ public:
 	TBTextFragmentContentWidget(TBWidget *parent, TBWidget *widget);
 	virtual ~TBTextFragmentContentWidget();
 
-	virtual void UpdatePos(const TBBlock *block, int x, int y);
-	virtual int32_t GetWidth(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment);
-	virtual int32_t GetHeight(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment);
-	virtual int32_t GetBaseline(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment);
+	virtual void updatePos(const TBBlock *block, int x, int y);
+	virtual int32_t getWidth(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment);
+	virtual int32_t getHeight(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment);
+	virtual int32_t getBaseline(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment);
 private:
 	TBWidget *m_widget;
 };
@@ -572,46 +572,46 @@ private:
 TBTextFragmentContentWidget::TBTextFragmentContentWidget(TBWidget *parent, TBWidget *widget)
 	: m_widget(widget)
 {
-	parent->GetContentRoot()->AddChild(widget);
+	parent->getContentRoot()->addChild(widget);
 }
 
 TBTextFragmentContentWidget::~TBTextFragmentContentWidget()
 {
-	m_widget->RemoveFromParent();
+	m_widget->removeFromParent();
 	delete m_widget;
 }
 
-void TBTextFragmentContentWidget::UpdatePos(const TBBlock *block, int x, int y)
+void TBTextFragmentContentWidget::updatePos(const TBBlock *block, int x, int y)
 {
-	m_widget->SetRect(TBRect(x, y, GetWidth(block, nullptr, nullptr), GetHeight(block, nullptr, nullptr)));
+	m_widget->setRect(TBRect(x, y, getWidth(block, nullptr, nullptr), getHeight(block, nullptr, nullptr)));
 }
 
-int32_t TBTextFragmentContentWidget::GetWidth(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment)
+int32_t TBTextFragmentContentWidget::getWidth(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment)
 {
-	return m_widget->GetRect().w ? m_widget->GetRect().w : m_widget->GetPreferredSize().pref_w;
+	return m_widget->getRect().w ? m_widget->getRect().w : m_widget->getPreferredSize().pref_w;
 }
 
-int32_t TBTextFragmentContentWidget::GetHeight(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment)
+int32_t TBTextFragmentContentWidget::getHeight(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment)
 {
-	return m_widget->GetRect().h ? m_widget->GetRect().h : m_widget->GetPreferredSize().pref_h;
+	return m_widget->getRect().h ? m_widget->getRect().h : m_widget->getPreferredSize().pref_h;
 }
 
-int32_t TBTextFragmentContentWidget::GetBaseline(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment)
+int32_t TBTextFragmentContentWidget::getBaseline(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment)
 {
-	int height = GetHeight(block, font, fragment);
-	return (height + block->CalculateBaseline(font)) / 2;
+	int height = getHeight(block, font, fragment);
+	return (height + block->calculateBaseline(font)) / 2;
 }
 
 // == TBEditFieldContentFactory ===================================================================
 
-int TBEditFieldContentFactory::GetContent(const char *text)
+int TBEditFieldContentFactory::getContent(const char *text)
 {
-	return TBTextFragmentContentFactory::GetContent(text);
+	return TBTextFragmentContentFactory::getContent(text);
 }
 
-TBTextFragmentContent *TBEditFieldContentFactory::CreateFragmentContent(const char *text, int text_len)
+TBTextFragmentContent *TBEditFieldContentFactory::createFragmentContent(const char *text, int textLen)
 {
-	if (strncmp(text, "<widget ", Min(text_len, 8)) == 0)
+	if (strncmp(text, "<widget ", Min(textLen, 8)) == 0)
 	{
 		// Create a wrapper for the generated widget.
 		// Its size will adapt to the content.
@@ -619,14 +619,14 @@ TBTextFragmentContent *TBEditFieldContentFactory::CreateFragmentContent(const ch
 		{
 			if (TBTextFragmentContentWidget *cw = new TBTextFragmentContentWidget(editfield, widget))
 			{
-				g_widgets_reader->LoadData(widget, text + 8, text_len - 9);
+				g_widgets_reader->loadData(widget, text + 8, textLen - 9);
 				return cw;
 			}
 			delete widget;
 		}
 	}
 
-	return TBTextFragmentContentFactory::CreateFragmentContent(text, text_len);
+	return TBTextFragmentContentFactory::createFragmentContent(text, textLen);
 }
 
 } // namespace tb

@@ -18,29 +18,29 @@ public:
 	LostPasswordWindow(Client* client) :
 			ui::turbobadger::Window(client), _client(client) {
 		core_assert_always(loadResourceFile("ui/window/client-lostpassword.tb.txt"));
-		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
+		setSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 
-		setText("email", core::Var::getSafe(cfg::ClientEmail)->strVal());
+		setStr("email", core::Var::getSafe(cfg::ClientEmail)->strVal());
 	}
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override {
+	bool onEvent(const tb::TBWidgetEvent &ev) override {
 		const std::string& email = getStr("email");
 		if (ev.special_key == tb::TB_KEY_ENTER) {
 			_client->lostPassword(email);
-			Close();
+			close();
 			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK) {
-			if (ev.target->GetID() == TBIDC("lostpassword")) {
+			if (ev.target->getID() == TBIDC("lostpassword")) {
 				_client->lostPassword(email);
-				Close();
+				close();
 				return true;
-			} else if (ev.target->GetID() == TBIDC("cancel")) {
-				Close();
+			} else if (ev.target->getID() == TBIDC("cancel")) {
+				close();
 				return true;
 			}
 		}
-		return ui::turbobadger::Window::OnEvent(ev);
+		return ui::turbobadger::Window::onEvent(ev);
 	}
 };
 

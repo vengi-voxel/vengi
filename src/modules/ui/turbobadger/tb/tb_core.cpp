@@ -26,19 +26,15 @@ bool tb_core_init(TBRenderer *renderer)
 	g_tb_lng = new TBLanguage;
 	g_font_manager = new TBFontManager();
 	g_tb_skin = new TBSkin();
-	g_widgets_reader = TBWidgetsReader::Create();
-#ifdef TB_IMAGE
+	g_widgets_reader = TBWidgetsReader::create();
 	g_image_manager = new TBImageManager();
-#endif
 	return true;
 }
 
 void tb_core_shutdown()
 {
-	TBAnimationManager::AbortAllAnimations();
-#ifdef TB_IMAGE
+	TBAnimationManager::abortAllAnimations();
 	delete g_image_manager;
-#endif
 	delete g_widgets_reader;
 	delete g_tb_skin;
 	delete g_font_manager;

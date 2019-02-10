@@ -23,19 +23,19 @@ class TBStyleEditListener
 public:
 	virtual ~TBStyleEditListener() {}
 
-	virtual void OnChange() {};
-	virtual bool OnEnter() { return false; };
-	virtual void Invalidate(const TBRect &rect) = 0;
-	virtual void DrawString(int32_t x, int32_t y, TBFontFace *font, const TBColor &color, const char *str, int32_t len = TB_ALL_TO_TERMINATION) = 0;
-	virtual void DrawRect(const TBRect &rect, const TBColor &color) = 0;
-	virtual void DrawRectFill(const TBRect &rect, const TBColor &color) = 0;
-	virtual void DrawTextSelectionBg(const TBRect &rect) = 0;
-	virtual void DrawContentSelectionFg(const TBRect &rect) = 0;
-	virtual void DrawCaret(const TBRect &rect) = 0;
-	virtual void Scroll(int32_t dx, int32_t dy) = 0;
-	virtual void UpdateScrollbars() = 0;
-	virtual void CaretBlinkStart() = 0;
-	virtual void CaretBlinkStop() = 0;
+	virtual void onChange() {};
+	virtual bool onEnter() { return false; };
+	virtual void invalidate(const TBRect &rect) = 0;
+	virtual void drawString(int32_t x, int32_t y, TBFontFace *font, const TBColor &color, const char *str, int32_t len = TB_ALL_TO_TERMINATION) = 0;
+	virtual void drawRect(const TBRect &rect, const TBColor &color) = 0;
+	virtual void drawRectFill(const TBRect &rect, const TBColor &color) = 0;
+	virtual void drawTextSelectionBg(const TBRect &rect) = 0;
+	virtual void drawContentSelectionFg(const TBRect &rect) = 0;
+	virtual void drawCaret(const TBRect &rect) = 0;
+	virtual void scroll(int32_t dx, int32_t dy) = 0;
+	virtual void updateScrollbars() = 0;
+	virtual void caretBlinkStart() = 0;
+	virtual void caretBlinkStop() = 0;
 };
 
 /** Creates TBTextFragmentContent if the sequence of text matches known content. */
@@ -49,10 +49,10 @@ public:
 
 		F.ex if we can create contet for "<u>" it should return 3 if that is the beginning of
 		text. That length will be consumed from the text output for the created content. */
-	virtual int GetContent(const char *text);
+	virtual int getContent(const char *text);
 
 	/** Create content for a string previosly consumed by calling GetContent. */
-	virtual TBTextFragmentContent *CreateFragmentContent(const char *text, int text_len);
+	virtual TBTextFragmentContent *createFragmentContent(const char *text, int text_len);
 };
 
 class TBTextOfs
@@ -61,11 +61,11 @@ public:
 	TBTextOfs() : block(nullptr), ofs(0) {}
 	TBTextOfs(TBBlock *block, int32_t ofs) : block(block), ofs(ofs) {}
 
-	void Set(TBBlock *new_block, int32_t new_ofs) { block = new_block; ofs = new_ofs; }
-	void Set(const TBTextOfs &pos) { block = pos.block; ofs = pos.ofs; }
+	void set(TBBlock *new_block, int32_t new_ofs) { block = new_block; ofs = new_ofs; }
+	void set(const TBTextOfs &pos) { block = pos.block; ofs = pos.ofs; }
 
-	int32_t GetGlobalOfs(TBStyleEdit *se) const;
-	bool SetGlobalOfs(TBStyleEdit *se, int32_t gofs);
+	int32_t getGlobalOfs(TBStyleEdit *se) const;
+	bool setGlobalOfs(TBStyleEdit *se, int32_t gofs);
 
 public:
 	TBBlock *block;
@@ -78,20 +78,20 @@ class TBSelection
 {
 public:
 	TBSelection(TBStyleEdit *styledit);
-	void Invalidate() const;
-	void Select(const TBTextOfs &new_start, const TBTextOfs &new_stop);
-	void Select(const TBPoint &from, const TBPoint &to);
-	void Select(int glob_ofs_from, int glob_ofs_to);
-	void SelectToCaret(TBBlock *old_caret_block, int32_t old_caret_ofs);
-	void SelectAll();
-	void SelectNothing();
-	void CorrectOrder();
-	void CopyToClipboard();
-	bool IsBlockSelected(const TBBlock *block) const;
-	bool IsFragmentSelected(const TBBlock *block, TBTextFragment *elm) const;
-	bool IsSelected() const;
-	void RemoveContent();
-	bool GetText(TBStr &text) const;
+	void invalidate() const;
+	void select(const TBTextOfs &new_start, const TBTextOfs &new_stop);
+	void select(const TBPoint &from, const TBPoint &to);
+	void select(int glob_ofs_from, int glob_ofs_to);
+	void selectToCaret(TBBlock *old_caret_block, int32_t old_caret_ofs);
+	void selectAll();
+	void selectNothing();
+	void correctOrder();
+	void copyToClipboard();
+	bool isBlockSelected(const TBBlock *block) const;
+	bool isFragmentSelected(const TBBlock *block, TBTextFragment *elm) const;
+	bool isSelected() const;
+	void removeContent();
+	bool getText(TBStr &text) const;
 public:
 	TBStyleEdit *styledit;
 	TBTextOfs start, stop;
@@ -107,23 +107,23 @@ class TBCaret
 {
 public:
 	TBCaret(TBStyleEdit *styledit);
-	void Invalidate();
-	void UpdatePos();
-	bool Move(bool forward, bool word);
-	bool Place(const TBPoint &point);
-	bool Place(TBBlock *block, int ofs, bool allow_snap = true, bool snap_forward = false);
-	void Place(TB_CARET_POS place);
-	void AvoidLineBreak();
-	void Paint(int32_t translate_x, int32_t translate_y);
-	void ResetBlink();
-	void UpdateWantedX();
+	void invalidate();
+	void updatePos();
+	bool move(bool forward, bool word);
+	bool place(const TBPoint &point);
+	bool place(TBBlock *block, int ofs, bool allow_snap = true, bool snap_forward = false);
+	void place(TB_CARET_POS place);
+	void avoidLineBreak();
+	void paint(int32_t translate_x, int32_t translate_y);
+	void resetBlink();
+	void updateWantedX();
 
-	int32_t GetGlobalOfs() const { return pos.GetGlobalOfs(styledit); }
-	void SetGlobalOfs(int32_t gofs, bool allow_snap = true, bool snap_forward = false);
+	int32_t getGlobalOfs() const { return pos.getGlobalOfs(styledit); }
+	void setGlobalOfs(int32_t gofs, bool allow_snap = true, bool snap_forward = false);
 
-	TBTextFragment *GetFragment();
+	TBTextFragment *getFragment();
 private:
-	void SwitchBlock(bool second);
+	void switchBlock(bool second);
 public:
 	TBStyleEdit *styledit;
 	int32_t x, y; ///< Relative to the styledit
@@ -149,12 +149,12 @@ public:
 	};
 	TBTextProps() {}
 
-	void Reset(const TBFontDescription &font_desc, const TBColor &text_color);
-	Data *Push();
-	void Pop();
+	void reset(const TBFontDescription &font_desc, const TBColor &text_color);
+	Data *push();
+	void pop();
 
 	/** Get the font face from the current font description. */
-	TBFontFace *GetFont() const;
+	TBFontFace *getFont() const;
 public:
 	int next_index = 0;
 	TBListOf<Data> list;
@@ -181,40 +181,40 @@ public:
 	TBBlock(TBStyleEdit *styledit);
 	~TBBlock();
 
-	void Clear();
-	void Set(const char *newstr, int32_t len);
-	void SetAlign(TB_TEXT_ALIGN align);
+	void clear();
+	void set(const char *newstr, int32_t len);
+	void setAlign(TB_TEXT_ALIGN align);
 
-	int32_t InsertText(int32_t ofs, const char *text, int32_t len, bool allow_line_recurse);
-	void RemoveContent(int32_t ofs, int32_t len);
+	int32_t insertText(int32_t ofs, const char *text, int32_t len, bool allow_line_recurse);
+	void removeContent(int32_t ofs, int32_t len);
 
 	/** Check if this block contains extra line breaks and split into new blocks if it does. */
-	void Split();
+	void split();
 
 	/** Check if we've lost the ending break on this block and if so merge it with the next block. */
-	void Merge();
+	void merge();
 
 	/** Layout the block. To be called when the text has changed or the layout width has changed.
 		@param update_fragments Should be true if the text has been changed (will recreate elements).
 		@param propagate_height If true, all following blocks will be moved if the height changed. */
-	void Layout(bool update_fragments, bool propagate_height);
+	void layout(bool update_fragments, bool propagate_height);
 
 	/** Update the size of this block. If propagate_height is true, all following blocks will be
 		moved if the height changed. */
-	void SetSize(int32_t old_w, int32_t new_w, int32_t new_h, bool propagate_height);
+	void setSize(int32_t old_w, int32_t new_w, int32_t new_h, bool propagate_height);
 
-	TBTextFragment *FindFragment(int32_t ofs, bool prefer_first = false) const;
-	TBTextFragment *FindFragment(int32_t x, int32_t y) const;
+	TBTextFragment *findFragment(int32_t ofs, bool prefer_first = false) const;
+	TBTextFragment *findFragment(int32_t x, int32_t y) const;
 
-	int32_t CalculateStringWidth(TBFontFace *font, const char *str, int len = TB_ALL_TO_TERMINATION) const;
-	int32_t CalculateTabWidth(TBFontFace *font, int32_t xpos) const;
-	int32_t CalculateLineHeight(TBFontFace *font) const;
-	int32_t CalculateBaseline(TBFontFace *font) const;
+	int32_t calculateStringWidth(TBFontFace *font, const char *str, int len = TB_ALL_TO_TERMINATION) const;
+	int32_t calculateTabWidth(TBFontFace *font, int32_t xpos) const;
+	int32_t calculateLineHeight(TBFontFace *font) const;
+	int32_t calculateBaseline(TBFontFace *font) const;
 
-	void Invalidate() const;
-	void BuildSelectionRegion(int32_t translate_x, int32_t translate_y, TBTextProps *props,
+	void invalidate() const;
+	void buildSelectionRegion(int32_t translate_x, int32_t translate_y, TBTextProps *props,
 		TBRegion &bg_region, TBRegion &fg_region);
-	void Paint(int32_t translate_x, int32_t translate_y, TBTextProps *props);
+	void paint(int32_t translate_x, int32_t translate_y, TBTextProps *props);
 public:
 	TBStyleEdit *styledit;
 	TBLinkListOf<TBTextFragment> fragments;
@@ -229,7 +229,7 @@ public:
 	uint32_t syntax_data;		///< Free to use in any way from TBSyntaxHighlighter subclasses
 
 private:
-	int GetStartIndentation(TBFontFace *font, int first_line_len) const;
+	int getStartIndentation(TBFontFace *font, int first_line_len) const;
 };
 
 /** Event in the TBUndoRedoStack. Each insert or remove change is stored as a TBUndoEvent, but they may also be merged when appropriate. */
@@ -250,17 +250,17 @@ public:
 	TBUndoRedoStack() : applying(false) {}
 	~TBUndoRedoStack();
 
-	void Undo(TBStyleEdit *styledit);
-	void Redo(TBStyleEdit *styledit);
-	void Clear(bool clear_undo, bool clear_redo);
+	void undo(TBStyleEdit *styledit);
+	void redo(TBStyleEdit *styledit);
+	void clear(bool clear_undo, bool clear_redo);
 
-	TBUndoEvent *Commit(TBStyleEdit *styledit, int32_t gofs, int32_t len, const char *text, bool insert);
+	TBUndoEvent *commit(TBStyleEdit *styledit, int32_t gofs, int32_t len, const char *text, bool insert);
 public:
 	TBListOf<TBUndoEvent> undos;
 	TBListOf<TBUndoEvent> redos;
 	bool applying;
 private:
-	void Apply(TBStyleEdit *styledit, TBUndoEvent *e, bool reverse);
+	void apply(TBStyleEdit *styledit, TBUndoEvent *e, bool reverse);
 };
 
 /** TBSyntaxHighlighter can be subclassed to give syntax highlighting on TBStyleEdit
@@ -272,19 +272,19 @@ public:
 
 	/** Called when all fragments has been updated in the given block and syntax info should
 		be updated. syntax_data can be stored in TBBlock and TBTextFragment */
-	virtual void OnFragmentsUpdated(TBBlock *block) {}
+	virtual void onFragmentsUpdated(TBBlock *block) {}
 
 	/** Called after any change in TBStyleEdit when all blocks that changed have been updated. */
-	virtual void OnChange(TBStyleEdit *styledit) {}
+	virtual void onChange(TBStyleEdit *styledit) {}
 
 	/** Called before painting each block */
-	virtual void OnPaintBlock(const TBPaintProps *props) {}
+	virtual void onPaintBlock(const TBPaintProps *props) {}
 
 	/** Called before painting each fragment */
-	virtual void OnBeforePaintFragment(const TBPaintProps *props, TBTextFragment *fragment) {}
+	virtual void onBeforePaintFragment(const TBPaintProps *props, TBTextFragment *fragment) {}
 
 	/** Called after painting each fragment */
-	virtual void OnAfterPaintFragment(const TBPaintProps *props, TBTextFragment *fragment) {}
+	virtual void onAfterPaintFragment(const TBPaintProps *props, TBTextFragment *fragment) {}
 };
 
 /** The textfragment baseclass for TBStyleEdit.
@@ -308,34 +308,34 @@ public:
 				, content(content) {}
 	~TBTextFragment();
 
-	void Init(const TBBlock *block, uint16_t ofs, uint16_t len);
+	void init(const TBBlock *block, uint16_t ofs, uint16_t len);
 
-	void UpdateContentPos(const TBBlock *block);
+	void updateContentPos(const TBBlock *block);
 
-	void BuildSelectionRegion(const TBPaintProps *props, TBRegion &bg_region, TBRegion &fg_region);
-	void Paint(const TBPaintProps *props);
-	void Click(const TBBlock *block, int button, uint32_t modifierkeys);
+	void buildSelectionRegion(const TBPaintProps *props, TBRegion &bg_region, TBRegion &fg_region);
+	void paint(const TBPaintProps *props);
+	void click(const TBBlock *block, int button, uint32_t modifierkeys);
 
-	bool IsText() const					{ return !IsEmbedded(); }
-	bool IsEmbedded() const				{ return content ? true : false; }
-	bool IsBreak() const				{ return m_packed.is_break ? true : false; }
-	bool IsSpace() const				{ return m_packed.is_space ? true : false; }
-	bool IsTab() const					{ return m_packed.is_tab ? true : false; }
+	bool isText() const					{ return !isEmbedded(); }
+	bool isEmbedded() const				{ return content ? true : false; }
+	bool isBreak() const				{ return m_packed.is_break ? true : false; }
+	bool isSpace() const				{ return m_packed.is_space ? true : false; }
+	bool isTab() const					{ return m_packed.is_tab ? true : false; }
 
-	int32_t GetCharX(const TBBlock *block, TBFontFace *font, int32_t ofs);
-	int32_t GetCharOfs(const TBBlock *block, TBFontFace *font, int32_t x);
+	int32_t getCharX(const TBBlock *block, TBFontFace *font, int32_t ofs);
+	int32_t getCharOfs(const TBBlock *block, TBFontFace *font, int32_t x);
 
 	/** Get the stringwidth. Handles passwordmode, tab, linebreaks etc automatically. */
-	int32_t GetStringWidth(const TBBlock *block, TBFontFace *font, const char *str, int len);
+	int32_t getStringWidth(const TBBlock *block, TBFontFace *font, const char *str, int len);
 
-	bool GetAllowBreakBefore(const TBBlock *block) const;
-	bool GetAllowBreakAfter(const TBBlock *block) const;
+	bool getAllowBreakBefore(const TBBlock *block) const;
+	bool getAllowBreakAfter(const TBBlock *block) const;
 
-	const char *Str(const TBBlock *block) const { return block->str.CStr() + ofs; }
+	const char *str(const TBBlock *block) const { return block->str.c_str() + ofs; }
 
-	int32_t GetWidth(const TBBlock *block, TBFontFace *font);
-	int32_t GetHeight(const TBBlock *block, TBFontFace *font);
-	int32_t GetBaseline(const TBBlock *block, TBFontFace *font);
+	int32_t getWidth(const TBBlock *block, TBFontFace *font);
+	int32_t getHeight(const TBBlock *block, TBFontFace *font);
+	int32_t getBaseline(const TBBlock *block, TBFontFace *font);
 public:
 	int16_t xpos, ypos;
 	uint16_t ofs, len;
@@ -363,61 +363,61 @@ public:
 	TBStyleEdit();
 	virtual ~TBStyleEdit();
 
-	void SetListener(TBStyleEditListener *listener);
-	void SetContentFactory(TBTextFragmentContentFactory *content_factory);
-	void SetSyntaxHighlighter(TBSyntaxHighlighter *syntax_highlighter);
+	void setListener(TBStyleEditListener *listener);
+	void setContentFactory(TBTextFragmentContentFactory *content_factory);
+	void setSyntaxHighlighter(TBSyntaxHighlighter *syntax_highlighter);
 
-	void SetFont(const TBFontDescription &font_desc);
+	void setFont(const TBFontDescription &font_desc);
 
-	void Paint(const TBRect &rect, const TBFontDescription &font_desc, const TBColor &text_color);
-	bool KeyDown(int key, SPECIAL_KEY special_key, MODIFIER_KEYS modifierkeys);
-	bool MouseDown(const TBPoint &point, int button, int clicks, MODIFIER_KEYS modifierkeys, bool touch);
-	bool MouseUp(const TBPoint &point, int button, MODIFIER_KEYS modifierkeys, bool touch);
-	bool MouseMove(const TBPoint &point);
-	void Focus(bool focus);
+	void paint(const TBRect &rect, const TBFontDescription &font_desc, const TBColor &text_color);
+	bool keyDown(int key, SPECIAL_KEY special_key, MODIFIER_KEYS modifierkeys);
+	bool mouseDown(const TBPoint &point, int button, int clicks, MODIFIER_KEYS modifierkeys, bool touch);
+	bool mouseUp(const TBPoint &point, int button, MODIFIER_KEYS modifierkeys, bool touch);
+	bool mouseMove(const TBPoint &point);
+	void focus(bool focus);
 
-	void Clear(bool init_new = true);
-	bool SetText(const char *text, TB_CARET_POS pos = TB_CARET_POS_BEGINNING);
-	bool SetText(const char *text, int text_len, TB_CARET_POS pos = TB_CARET_POS_BEGINNING);
-	bool GetText(TBStr &text);
-	bool IsEmpty() const;
+	void clear(bool init_new = true);
+	bool setText(const char *text, TB_CARET_POS pos = TB_CARET_POS_BEGINNING);
+	bool setText(const char *text, int text_len, TB_CARET_POS pos = TB_CARET_POS_BEGINNING);
+	bool getText(TBStr &text);
+	bool isEmpty() const;
 
 	/** Set the default text alignment and all currently selected blocks,
 		or the block of the current caret position if nothing is selected. */
-	void SetAlign(TB_TEXT_ALIGN align);
-	void SetMultiline(bool multiline = true);
-	void SetStyling(bool styling = true);
-	void SetReadOnly(bool readonly = true);
-	void SetSelection(bool selection = true);
-	void SetPassword(bool password = true);
-	void SetWrapping(bool wrapping = true);
+	void setAlign(TB_TEXT_ALIGN align);
+	void setMultiline(bool multiline = true);
+	void setStyling(bool styling = true);
+	void setReadOnly(bool readonly = true);
+	void setSelection(bool selection = true);
+	void setPassword(bool password = true);
+	void setWrapping(bool wrapping = true);
 
-	void Cut();
-	void Copy();
-	void Paste();
-	void Delete();
+	void cut();
+	void copy();
+	void paste();
+	void del();
 
-	void Undo();
-	void Redo();
-	bool CanUndo() const { return undoredo.undos.GetNumItems() ? true : false; }
-	bool CanRedo() const { return undoredo.redos.GetNumItems() ? true : false; }
+	void undo();
+	void redo();
+	bool canUndo() const { return undoredo.undos.getNumItems() ? true : false; }
+	bool canRedo() const { return undoredo.redos.getNumItems() ? true : false; }
 
-	void InsertText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool after_last = false, bool clear_undo_redo = false);
-	void AppendText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool clear_undo_redo = false) { InsertText(text, len, true, clear_undo_redo); }
-	void InsertBreak();
+	void insertText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool after_last = false, bool clear_undo_redo = false);
+	void appendText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool clear_undo_redo = false) { insertText(text, len, true, clear_undo_redo); }
+	void insertBreak();
 
-	TBBlock *FindBlock(int32_t y) const;
+	TBBlock *findBlock(int32_t y) const;
 
-	void ScrollIfNeeded(bool x = true, bool y = true);
-	void SetScrollPos(int32_t x, int32_t y);
-	void SetLayoutSize(int32_t width, int32_t height, bool is_virtual_reformat);
-	void Reformat(bool update_fragments);
+	void scrollIfNeeded(bool x = true, bool y = true);
+	void setScrollPos(int32_t x, int32_t y);
+	void setLayoutSize(int32_t width, int32_t height, bool is_virtual_reformat);
+	void reformat(bool update_fragments);
 
-	int32_t GetContentWidth();
-	int32_t GetContentHeight() const;
+	int32_t getContentWidth();
+	int32_t getContentHeight() const;
 
-	int32_t GetOverflowX() const { return Max(content_width - layout_width, 0); }
-	int32_t GetOverflowY() const { return Max(content_height - layout_height, 0); }
+	int32_t getOverflowX() const { return Max(content_width - layout_width, 0); }
+	int32_t getOverflowY() const { return Max(content_height - layout_height, 0); }
 public:
 	TBStyleEditListener *listener;
 	TBTextFragmentContentFactory default_content_factory;
@@ -464,13 +464,13 @@ public:
 	/** Call BeginLockScrollbars & EndLockScrollbars around a scope which does lots of changes,
 		to prevent UpdateScrollbar from happening for each block (May cause recalculation of
 		content_width by iterating through all blocks) */
-	void BeginLockScrollbars();
-	void EndLockScrollbars();
+	void beginLockScrollbars();
+	void endLockScrollbars();
 
 	/** Return true if changing layout_width and layout_height requires relayouting. */
-	bool GetSizeAffectsLayout() const;
+	bool getSizeAffectsLayout() const;
 
-	void InvokeOnChange();
+	void invokeOnChange();
 };
 
 } // namespace tb

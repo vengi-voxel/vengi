@@ -14,7 +14,7 @@ class ResourceItem : public TBGenericStringItem
 {
 public:
 	ResourceItem(TBWidget *widget, const char *str);
-	TBWidget *GetWidget() { return m_widget; }
+	TBWidget *getWidget() { return m_widget; }
 private:
 	TBWidget *m_widget;
 };
@@ -28,30 +28,30 @@ public:
 	ResourceEditWindow();
 	~ResourceEditWindow();
 
-	void UpdateWidgetList(bool immediately);
+	void updateWidgetList(bool immediately);
 
 	struct ITEM_INFO {
 		ResourceItem *item;
 		int index;
 	};
-	ITEM_INFO GetItemFromWidget(TBWidget *widget);
-	TBWidget *GetSelectedWidget() { return m_selected_widget.Get(); }
-	void SetSelectedWidget(TBWidget *widget);
+	ITEM_INFO getItemFromWidget(TBWidget *widget);
+	TBWidget *getSelectedWidget() { return m_selected_widget.get(); }
+	void setSelectedWidget(TBWidget *widget);
 
-	void Load(const char *resource_file);
-	void RefreshFromSource();
+	void load(const char *resource_file);
+	void refreshFromSource();
 
 	// == TBWindow ======================================================================
-	virtual bool OnEvent(const TBWidgetEvent &ev) override;
-	virtual void OnPaintChildren(const PaintProps &paint_props) override;
+	virtual bool onEvent(const TBWidgetEvent &ev) override;
+	virtual void onPaintChildren(const PaintProps &paint_props) override;
 
 	// == TBMessageHandler ==============================================================
-	virtual void OnMessageReceived(TBMessage *msg) override;
+	virtual void onMessageReceived(TBMessage *msg) override;
 
 	// == TBWidgetListener ========================================================
-	virtual bool OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) override;
-	virtual void OnWidgetAdded(TBWidget *parent, TBWidget *child) override;
-	virtual void OnWidgetRemove(TBWidget *parent, TBWidget *child) override;
+	virtual bool onWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) override;
+	virtual void onWidgetAdded(TBWidget *parent, TBWidget *child) override;
+	virtual void onWidgetRemove(TBWidget *parent, TBWidget *child) override;
 private:
 	TBSelectList *m_widget_list;
 	TBSelectItemSourceList<ResourceItem> m_widget_list_source;
@@ -60,8 +60,8 @@ private:
 	TBEditField *m_source_edit;
 	TBStr m_resource_filename;
 	TBWidgetSafePointer m_selected_widget;
-	void AddWidgetListItemsRecursive(TBWidget *widget, int depth);
-	bool OnDropFileEvent(const TBWidgetEvent &ev);
+	void addWidgetListItemsRecursive(TBWidget *widget, int depth);
+	bool onDropFileEvent(const TBWidgetEvent &ev);
 };
 
 #endif // ResourceEditWindow_H

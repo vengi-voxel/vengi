@@ -58,8 +58,8 @@ public:
 	bool init();
 	void update();
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override;
-	void OnDie() override;
+	bool onEvent(const tb::TBWidgetEvent &ev) override;
+	void onDie() override;
 };
 
 inline int NoiseToolWindow::index(int x, int y) const {

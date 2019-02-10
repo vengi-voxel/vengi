@@ -14,21 +14,21 @@ class TBListBackend
 {
 public:
 	TBListBackend() : m_data(nullptr) {}
-	~TBListBackend() { RemoveAll(); }
-	bool Reserve(int num);
-	bool GrowIfNeeded();
-	bool Add(void *data);
-	bool Add(void *data, int index);
-	void Set(void *data, int index);
-	void *Get(int index) const;
-	void *operator [] (int index) const { return Get(index); }
-	void *RemoveFast(int index);
-	void *Remove(int index);
-	void RemoveAll();
-	void Swap(int index1, int index2);
-	int Find(void *data) const;
-	int GetNumItems() const { return m_data ? m_data->num : 0; }
-	int GetCapacity() const { return m_data ? m_data->capacity : 0; }
+	~TBListBackend() { removeAll(); }
+	bool reserve(int num);
+	bool growIfNeeded();
+	bool add(void *data);
+	bool add(void *data, int index);
+	void set(void *data, int index);
+	void *get(int index) const;
+	void *operator [] (int index) const { return get(index); }
+	void *removeFast(int index);
+	void *remove(int index);
+	void removeAll();
+	void swap(int index1, int index2);
+	int find(void *data) const;
+	int getNumItems() const { return m_data ? m_data->num : 0; }
+	int getCapacity() const { return m_data ? m_data->capacity : 0; }
 private:
 	struct TBLIST_DATA {
 		int num;
@@ -46,66 +46,66 @@ class TBListOf
 {
 public:
 	/** Make sure there is space for at least num items in the list. Returns false on OOM failure. */
-	bool Reserve(int num)					{ return m_list.Reserve(num); }
+	bool reserve(int num)					{ return m_list.reserve(num); }
 
 	/** Make sure there is space for at least one more item in the list. Returns false on OOM failure.
 		There's no need to call this, but it can make OOM handling easier in some situations since you
 		can guarantee there is space is in a list *before* you allocate an object to insert into it. */
-	bool GrowIfNeeded()						{ return m_list.GrowIfNeeded(); }
+	bool growIfNeeded()						{ return m_list.growIfNeeded(); }
 
 	/** Add data at the end of the list. Returns false on OOM failure. */
-	bool Add(T *data)						{ return m_list.Add(data); }
+	bool add(T *data)						{ return m_list.add(data); }
 
 	/** Add data at the given index in the list. Returns false on OOM failure. */
-	bool Add(T *data, int index)			{ return m_list.Add(data, index); }
+	bool add(T *data, int index)			{ return m_list.add(data, index); }
 
 	/** Replace the item at the index with the new data */
-	void Set(T *data, int index)			{ m_list.Set(data, index); }
+	void set(T *data, int index)			{ m_list.set(data, index); }
 
 	/** Returns the content at position index. */
-	T *Get(int index) const					{ return (T *) m_list.Get(index); }
+	T *get(int index) const					{ return (T *) m_list.get(index); }
 
 	/** Returns the content at position index. */
-	T *operator [] (int index) const		{ return (T *) m_list.Get(index); }
+	T *operator [] (int index) const		{ return (T *) m_list.get(index); }
 
 	/** Remove the item at position index from the list and returns the pointer.
 		This method should only be used when the order of the list is not important.
 		If the order is important, use Remove() */
-	T *RemoveFast(int index)				{ return (T *) m_list.RemoveFast(index); }
+	T *removeFast(int index)				{ return (T *) m_list.removeFast(index); }
 
 	/** Remove the item at position index from the list and returns the pointer. */
-	T *Remove(int index)					{ return (T *) m_list.Remove(index); }
+	T *remove(int index)					{ return (T *) m_list.remove(index); }
 
 	/** Deletes the item at position index after removing it from the list.
 		This method should only be used when the order of the list is not important.
 		If the order is important, use Delete() */
-	void DeleteFast(int index)				{ delete (T *) m_list.RemoveFast(index); }
+	void deleteFast(int index)				{ delete (T *) m_list.removeFast(index); }
 
 	/** Deletes the item at position index after removing it from the list. */
-	void Delete(int index)					{ delete (T *) m_list.Remove(index); }
+	void doDelete(int index)					{ delete (T *) m_list.remove(index); }
 
 	/** Remove all items without deleding them. */
-	void RemoveAll()						{ m_list.RemoveAll(); }
+	void removeAll()						{ m_list.removeAll(); }
 
 	/** Remove and delete all items from the list. */
-	void DeleteAll()
+	void deleteAll()
 	{
-		for (int i = 0; i < GetNumItems(); i++)
-			delete (T *) Get(i);
-		m_list.RemoveAll();
+		for (int i = 0; i < getNumItems(); i++)
+			delete (T *) get(i);
+		m_list.removeAll();
 	}
 
 	/** Swap the items at index1 and index2 */
-	void Swap(int index1, int index2)		{ m_list.Swap(index1, index2); }
+	void swap(int index1, int index2)		{ m_list.swap(index1, index2); }
 
 	/** Search for the item with the given data and return the found index, or -1 if not found. */
-	int Find(T *data) const					{ return m_list.Find(data); }
+	int find(T *data) const					{ return m_list.find(data); }
 
 	/** Get the number of items in the list. */
-	int GetNumItems() const					{ return m_list.GetNumItems(); }
+	int getNumItems() const					{ return m_list.getNumItems(); }
 
 	/** Get the capacity of the list number of items it can hold without allocating more memory) */
-	int GetCapacity() const					{ return m_list.GetCapacity(); }
+	int getCapacity() const					{ return m_list.getCapacity(); }
 private:
 	TBListBackend m_list;
 };
@@ -116,7 +116,7 @@ template<class T>
 class TBListAutoDeleteOf : public TBListOf<T>
 {
 public:
-	~TBListAutoDeleteOf() { TBListOf<T>::DeleteAll(); }
+	~TBListAutoDeleteOf() { TBListOf<T>::deleteAll(); }
 };
 
 } // namespace tb

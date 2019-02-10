@@ -34,7 +34,7 @@ protected:
 	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
 
-	virtual void OnWidgetFocusChanged(tb::TBWidget *widget, bool focused) override;
+	virtual void onWidgetFocusChanged(tb::TBWidget *widget, bool focused) override;
 
 	bool invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, bool down);
 	void showStr(int x, int y, const glm::vec4& color, CORE_FORMAT_STRING const char *fmt, ...) __attribute__((format(printf, 5, 6)));
@@ -77,7 +77,7 @@ public:
 
 template<class T>
 inline T* UIApp::getWidgetByType(const char *name) {
-	return _root->GetWidgetByIDAndType<T>(tb::TBID(name));
+	return _root->getWidgetByIDAndType<T>(tb::TBID(name));
 }
 
 }

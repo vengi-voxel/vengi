@@ -48,17 +48,17 @@ public:
 	TBMessageWindow(TBWidget *target, TBID id);
 	virtual ~TBMessageWindow();
 
-	bool Show(const char *title, const char *message, TBMessageWindowSettings *settings = nullptr);
+	bool show(const char *title, const char *message, TBMessageWindowSettings *settings = nullptr);
 
-	virtual TBWidget *GetEventDestination() override { return m_target.Get(); }
+	virtual TBWidget *getEventDestination() override { return m_target.get(); }
 
-	virtual bool OnEvent(const TBWidgetEvent &ev) override;
-	virtual void OnDie() override;
+	virtual bool onEvent(const TBWidgetEvent &ev) override;
+	virtual void onDie() override;
 private:
-	void AddButton(TBID id, bool focused);
+	void addButton(TBID id, bool focused);
 	// TBWidgetListener
-	virtual void OnWidgetDelete(TBWidget *widget) override;
-	virtual bool OnWidgetDying(TBWidget *widget) override;
+	virtual void onWidgetDelete(TBWidget *widget) override;
+	virtual bool onWidgetDying(TBWidget *widget) override;
 	TBWidgetSafePointer m_dimmer;
 	TBWidgetSafePointer m_target;
 };

@@ -32,41 +32,41 @@ public:
 	~TBNode();
 
 	/** Create a new node with the given name. */
-	static TBNode *Create(const char *name);
+	static TBNode *create(const char *name);
 
 	/** Read a tree of nodes from file into this node. Returns true on success. */
-	bool ReadFile(const char *filename, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
+	bool readFile(const char *filename, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
 
 	/** Read a tree of nodes from a null terminated string buffer. */
-	bool ReadData(const char *data, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
+	bool readData(const char *data, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
 
 	/** Read a tree of nodes from a buffer with a known length. */
-	bool ReadData(const char *data, int data_len, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
+	bool readData(const char *data, int data_len, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
 
 	/** Clear the contens of this node. */
-	void Clear();
+	void clear();
 
 	/** Add node as child to this node. */
-	void Add(TBNode *n) { m_children.AddLast(n); n->m_parent = this; }
+	void add(TBNode *n) { m_children.addLast(n); n->m_parent = this; }
 
 	/** Add node before the reference node (which must be a child to this node). */
-	void AddBefore(TBNode *n, TBNode *reference) { m_children.AddBefore(n, reference); n->m_parent = this; }
+	void addBefore(TBNode *n, TBNode *reference) { m_children.addBefore(n, reference); n->m_parent = this; }
 
 	/** Add node after the reference node (which must be a child to this node). */
-	void AddAfter(TBNode *n, TBNode *reference) { m_children.AddAfter(n, reference); n->m_parent = this; }
+	void addAfter(TBNode *n, TBNode *reference) { m_children.addAfter(n, reference); n->m_parent = this; }
 
 	/** Remove child node n from this node. */
-	void Remove(TBNode *n) { m_children.Remove(n); n->m_parent = nullptr; }
+	void remove(TBNode *n) { m_children.remove(n); n->m_parent = nullptr; }
 
 	/** Remove and delete child node n from this node. */
-	void Delete(TBNode *n) { m_children.Delete(n); }
+	void doDelete(TBNode *n) { m_children.doDelete(n); }
 
 	/** Create duplicates of all items in source and add them to this node.
 		If follow_refs is true, any references will be followed and the final target
 		will be cloned instead of the ref node.
 		Note: Nodes does not replace existing nodes with the same name. Cloned nodes
 		are added after any existing nodes. */
-	bool CloneChildren(TBNode *source, bool follow_refs = false);
+	bool cloneChildren(TBNode *source, bool follow_refs = false);
 
 	enum GET_MISS_POLICY {
 		/** GetNode will return nullptr if the node doesn't exist. */
@@ -81,51 +81,51 @@ public:
 		It can find nodes in children as well. Names are separated by a ">".
 
 		Ex: GetNode("dishes>pizza>special>batman") */
-	TBNode *GetNode(const char *request, GET_MISS_POLICY mp = GET_MISS_POLICY_NULL);
+	TBNode *getNode(const char *request, GET_MISS_POLICY mp = GET_MISS_POLICY_NULL);
 
 	/** Returns the name of this node. */
-	const char *GetName() const { return m_name; }
+	const char *getName() const { return m_name; }
 
 	/** Returns the value of this node. */
-	TBValue &GetValue() { return m_value; }
+	TBValue &getValue() { return m_value; }
 
 	/** Returns the value of this node.
 		Will follow eventual references to TBNodeRefTree. */
-	TBValue &GetValueFollowRef();
+	TBValue &getValueFollowRef();
 
 	/** Get a value from the given request as an integer.
 		Will follow eventual references to TBNodeRefTree.
 		If the value is not specified, it returns the default value (def). */
-	int GetValueInt(const char *request, int def);
+	int getValueInt(const char *request, int def);
 
 	/** Get a value from the given request as an float.
 		Will follow eventual references to TBNodeRefTree.
 		If the value is not specified, it returns the default value (def). */
-	float GetValueFloat(const char *request, float def);
+	float getValueFloat(const char *request, float def);
 
 	/** Get a value from the given request as an string.
 		Will follow eventual references to TBNodeRefTree.
 		Will also return any referenced language string.
 		If the value is not specified, it returns the default value (def). */
-	const char *GetValueString(const char *request, const char *def);
+	const char *getValueString(const char *request, const char *def);
 
-	/** Same as GetValueString, but won't look up language string references. */
-	const char *GetValueStringRaw(const char *request, const char *def);
+	/** Same as getValueString, but won't look up language string references. */
+	const char *getValueStringRaw(const char *request, const char *def);
 
 	/** Get the next position in request that is a sub node separator,
 		or the end of the string. */
-	static const char *GetNextNodeSeparator(const char *request);
+	static const char *getNextNodeSeparator(const char *request);
 
-	inline TBNode *GetParent() const { return m_parent; }
-	inline TBNode *GetFirstChild() const { return m_children.GetFirst(); }
-	inline TBNode *GetLastChild() const { return m_children.GetLast(); }
+	inline TBNode *getParent() const { return m_parent; }
+	inline TBNode *getFirstChild() const { return m_children.getFirst(); }
+	inline TBNode *getLastChild() const { return m_children.getLast(); }
 private:
 friend class TBNodeTarget;
 friend class TBNodeRefTree;
-	TBNode *GetNodeFollowRef(const char *request,
+	TBNode *getNodeFollowRef(const char *request,
 							GET_MISS_POLICY mp = GET_MISS_POLICY_NULL);
-	TBNode *GetNodeInternal(const char *name, int name_len) const;
-	static TBNode *Create(const char *name, int name_len);
+	TBNode *getNodeInternal(const char *name, int name_len) const;
+	static TBNode *create(const char *name, int name_len);
 	char *m_name;
 	TBValue m_value;
 	TBLinkListOf<TBNode> m_children;

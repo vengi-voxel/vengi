@@ -8,15 +8,15 @@
 
 namespace tb {
 
-PreferredSize TBImageWidget::OnCalculatePreferredContentSize(const SizeConstraints &constraints)
+PreferredSize TBImageWidget::onCalculatePreferredContentSize(const SizeConstraints &constraints)
 {
-	return PreferredSize(m_image.Width(), m_image.Height());
+	return PreferredSize(m_image.width(), m_image.height());
 }
 
-void TBImageWidget::OnPaint(const PaintProps &paint_props)
+void TBImageWidget::onPaint(const PaintProps &paintProps)
 {
-	if (TBBitmapFragment *fragment = m_image.GetBitmap())
-		g_renderer->DrawBitmap(GetPaddingRect(), TBRect(0, 0, m_image.Width(), m_image.Height()), fragment);
+	if (TBBitmapFragment *fragment = m_image.getBitmap())
+		g_renderer->drawBitmap(getPaddingRect(), TBRect(0, 0, m_image.width(), m_image.height()), fragment);
 }
 
 } // namespace tb

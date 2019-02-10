@@ -18,16 +18,16 @@ class TBFontDescription
 public:
 	/** Set the font ID of the font to use.
 		This ID maps to the font names in TBFontInfo, which is managed from
-		TBFontManager::AddFontInfo, TBFontManager::GetFontInfo.
+		TBFontManager::AddFontInfo, TBFontManager::getFontInfo.
 
 		Example:
 		If a font was added to the font manager with the name "Vera", you can
-		do font_description.SetID(TBIDC("Vera")).
+		do font_description.setID(TBIDC("Vera")).
 		*/
-	void SetID(const TBID &id)											{ m_id = id; }
+	void setID(const TBID &id)											{ m_id = id; }
 
 	/** Get the TBID for the font name (See SetID). */
-	TBID GetID() const { return m_id; }
+	TBID getID() const { return m_id; }
 
 	/** Get the TBID for the TBFontFace that matches this font description.
 		This is a ID combining both the font file, and variation (such as size and style),
@@ -35,18 +35,18 @@ public:
 
 		If this is 0, the font description is unspecified. For a widget, that means that the font
 		should be inherited from the parent widget. */
-	TBID GetFontFaceID() const { return m_id + m_packed_init; }
+	TBID getFontFaceID() const { return m_id + m_packed_init; }
 
-	void SetSize(uint32_t size)											{ m_packed.size = Min(size, 0x8000u); }
-	uint32_t GetSize() const												{ return m_packed.size; }
-
-	//not connected to anything yet
-	//void SetBold(bool bold)											{ m_packed.bold = bold; }
-	//bool GetBold() const												{ return m_packed.bold; }
+	void setSize(uint32_t size)											{ m_packed.size = Min(size, 0x8000u); }
+	uint32_t getSize() const												{ return m_packed.size; }
 
 	//not connected to anything yet
-	//void SetItalic(bool italic)										{ m_packed.italic = italic; }
-	//bool GetItalic() const											{ return m_packed.italic; }
+	//void setBold(bool bold)											{ m_packed.bold = bold; }
+	//bool getBold() const												{ return m_packed.bold; }
+
+	//not connected to anything yet
+	//void setItalic(bool italic)										{ m_packed.italic = italic; }
+	//bool getItalic() const											{ return m_packed.italic; }
 
 	TBFontDescription() : m_packed_init(0) {}
 	TBFontDescription(const TBFontDescription &src)						{ m_packed_init = src.m_packed_init; m_id = src.m_id; }

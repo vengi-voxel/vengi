@@ -22,89 +22,89 @@ namespace tb {
 	return state;
 }*/
 
-SKIN_STATE StringToState(const char *state_str)
+SKIN_STATE stringToState(const char *stateStr)
 {
 	SKIN_STATE state = SKIN_STATE_NONE;
-	if (SDL_strstr(state_str, "all"))		state |= SKIN_STATE_ALL;
-	if (SDL_strstr(state_str, "disabled"))	state |= SKIN_STATE_DISABLED;
-	if (SDL_strstr(state_str, "focused"))	state |= SKIN_STATE_FOCUSED;
-	if (SDL_strstr(state_str, "pressed"))	state |= SKIN_STATE_PRESSED;
-	if (SDL_strstr(state_str, "selected"))	state |= SKIN_STATE_SELECTED;
-	if (SDL_strstr(state_str, "hovered"))	state |= SKIN_STATE_HOVERED;
+	if (SDL_strstr(stateStr, "all"))		state |= SKIN_STATE_ALL;
+	if (SDL_strstr(stateStr, "disabled"))	state |= SKIN_STATE_DISABLED;
+	if (SDL_strstr(stateStr, "focused"))	state |= SKIN_STATE_FOCUSED;
+	if (SDL_strstr(stateStr, "pressed"))	state |= SKIN_STATE_PRESSED;
+	if (SDL_strstr(stateStr, "selected"))	state |= SKIN_STATE_SELECTED;
+	if (SDL_strstr(stateStr, "hovered"))	state |= SKIN_STATE_HOVERED;
 	return state;
 }
 
-SKIN_ELEMENT_TYPE StringToType(const char *type_str)
+SKIN_ELEMENT_TYPE stringToType(const char *typeStr)
 {
-	if (SDL_strcmp(type_str, "StretchBox") == 0)
+	if (SDL_strcmp(typeStr, "StretchBox") == 0)
 		return SKIN_ELEMENT_TYPE_STRETCH_BOX;
-	else if (SDL_strcmp(type_str, "Image") == 0)
+	else if (SDL_strcmp(typeStr, "Image") == 0)
 		return SKIN_ELEMENT_TYPE_IMAGE;
-	else if (SDL_strcmp(type_str, "Stretch Image") == 0)
+	else if (SDL_strcmp(typeStr, "Stretch Image") == 0)
 		return SKIN_ELEMENT_TYPE_STRETCH_IMAGE;
-	else if (SDL_strcmp(type_str, "Tile") == 0)
+	else if (SDL_strcmp(typeStr, "Tile") == 0)
 		return SKIN_ELEMENT_TYPE_TILE;
-	else if (SDL_strcmp(type_str, "StretchBorder") == 0)
+	else if (SDL_strcmp(typeStr, "StretchBorder") == 0)
 		return SKIN_ELEMENT_TYPE_STRETCH_BORDER;
 	Log::debug("Skin error: Unknown skin type!");
 	return SKIN_ELEMENT_TYPE_STRETCH_BOX;
 }
 
-TBSkinCondition::TARGET StringToTarget(const char *target_str)
+TBSkinCondition::TARGET stringToTarget(const char *targetStr)
 {
-	if (SDL_strcmp(target_str, "this") == 0)
+	if (SDL_strcmp(targetStr, "this") == 0)
 		return TBSkinCondition::TARGET_THIS;
-	else if (SDL_strcmp(target_str, "parent") == 0)
+	else if (SDL_strcmp(targetStr, "parent") == 0)
 		return TBSkinCondition::TARGET_PARENT;
-	else if (SDL_strcmp(target_str, "ancestors") == 0)
+	else if (SDL_strcmp(targetStr, "ancestors") == 0)
 		return TBSkinCondition::TARGET_ANCESTORS;
-	else if (SDL_strcmp(target_str, "prev sibling") == 0)
+	else if (SDL_strcmp(targetStr, "prev sibling") == 0)
 		return TBSkinCondition::TARGET_PREV_SIBLING;
-	else if (SDL_strcmp(target_str, "next sibling") == 0)
+	else if (SDL_strcmp(targetStr, "next sibling") == 0)
 		return TBSkinCondition::TARGET_NEXT_SIBLING;
 	Log::debug("Skin error: Unknown target in condition!");
 	return TBSkinCondition::TARGET_THIS;
 }
 
-TBSkinCondition::PROPERTY StringToProperty(const char *prop_str)
+TBSkinCondition::PROPERTY stringToProperty(const char *propStr)
 {
-	if (SDL_strcmp(prop_str, "skin") == 0)
+	if (SDL_strcmp(propStr, "skin") == 0)
 		return TBSkinCondition::PROPERTY_SKIN;
-	else if (SDL_strcmp(prop_str, "window active") == 0)
+	else if (SDL_strcmp(propStr, "window active") == 0)
 		return TBSkinCondition::PROPERTY_WINDOW_ACTIVE;
-	else if (SDL_strcmp(prop_str, "axis") == 0)
+	else if (SDL_strcmp(propStr, "axis") == 0)
 		return TBSkinCondition::PROPERTY_AXIS;
-	else if (SDL_strcmp(prop_str, "align") == 0)
+	else if (SDL_strcmp(propStr, "align") == 0)
 		return TBSkinCondition::PROPERTY_ALIGN;
-	else if (SDL_strcmp(prop_str, "id") == 0)
+	else if (SDL_strcmp(propStr, "id") == 0)
 		return TBSkinCondition::PROPERTY_ID;
-	else if (SDL_strcmp(prop_str, "state") == 0)
+	else if (SDL_strcmp(propStr, "state") == 0)
 		return TBSkinCondition::PROPERTY_STATE;
-	else if (SDL_strcmp(prop_str, "value") == 0)
+	else if (SDL_strcmp(propStr, "value") == 0)
 		return TBSkinCondition::PROPERTY_VALUE;
-	else if (SDL_strcmp(prop_str, "hover") == 0)
+	else if (SDL_strcmp(propStr, "hover") == 0)
 		return TBSkinCondition::PROPERTY_HOVER;
-	else if (SDL_strcmp(prop_str, "capture") == 0)
+	else if (SDL_strcmp(propStr, "capture") == 0)
 		return TBSkinCondition::PROPERTY_CAPTURE;
-	else if (SDL_strcmp(prop_str, "focus") == 0)
+	else if (SDL_strcmp(propStr, "focus") == 0)
 		return TBSkinCondition::PROPERTY_FOCUS;
 	return TBSkinCondition::PROPERTY_CUSTOM;
 }
 
 // == TBSkinCondition =======================================================
 
-TBSkinCondition::TBSkinCondition(TARGET target, PROPERTY prop, const TBID &custom_prop, const TBID &value, TEST test)
+TBSkinCondition::TBSkinCondition(TARGET target, PROPERTY prop, const TBID &customProp, const TBID &value, TEST test)
 	: m_target(target)
 	, m_test(test)
 {
 	m_info.prop = prop;
-	m_info.custom_prop = custom_prop;
+	m_info.custom_prop = customProp;
 	m_info.value = value;
 }
 
-bool TBSkinCondition::GetCondition(TBSkinConditionContext &context) const
+bool TBSkinCondition::getCondition(TBSkinConditionContext &context) const
 {
-	const bool equal = context.GetCondition(m_target, m_info);
+	const bool equal = context.getCondition(m_target, m_info);
 	return equal == (m_test == TEST_EQUAL);
 }
 
@@ -117,145 +117,145 @@ TBSkin::TBSkin()
 	, m_default_placeholder_opacity(0.2f)
 	, m_default_spacing(0)
 {
-	g_renderer->AddListener(this);
+	g_renderer->addListener(this);
 
 	// Avoid filtering artifacts at edges when we draw fragments stretched.
-	m_frag_manager.SetAddBorder(true);
+	m_frag_manager.setAddBorder(true);
 }
 
-bool TBSkin::Load(const char *skin_file, const char *override_skin_file)
+bool TBSkin::load(const char *skinFile, const char *overrideSkinFile)
 {
-	if (!LoadInternal(skin_file))
+	if (!loadInternal(skinFile))
 		return false;
-	if (override_skin_file && !LoadInternal(override_skin_file))
+	if (overrideSkinFile && !loadInternal(overrideSkinFile))
 		return false;
-	return ReloadBitmaps();
+	return reloadBitmaps();
 }
 
-bool TBSkin::LoadInternal(const char *skin_file)
+bool TBSkin::loadInternal(const char *skinFile)
 {
 	TBNode node;
-	if (!node.ReadFile(skin_file))
+	if (!node.readFile(skinFile))
 		return false;
 
 	TBTempBuffer skin_path;
-	if (!skin_path.AppendPath(skin_file))
+	if (!skin_path.appendPath(skinFile))
 		return false;
 
-	if (node.GetNode("description"))
+	if (node.getNode("description"))
 	{
 		// Check which DPI mode the dimension converter should use.
 		// The base-dpi is the dpi in which the padding, spacing (and so on)
 		// is specified in. If the skin supports a different DPI that is
 		// closer to the screen DPI, all such dimensions will be scaled.
-		int base_dpi = node.GetValueInt("description>base-dpi", 96);
+		int base_dpi = node.getValueInt("description>base-dpi", 96);
 		int supported_dpi = base_dpi;
-		if (TBNode *supported_dpi_node = node.GetNode("description>supported-dpi"))
+		if (TBNode *supported_dpi_node = node.getNode("description>supported-dpi"))
 		{
-			core_assert(supported_dpi_node->GetValue().IsArray() || supported_dpi_node->GetValue().GetInt() == base_dpi);
-			if (TBValueArray *arr = supported_dpi_node->GetValue().GetArray())
+			core_assert(supported_dpi_node->getValue().isArray() || supported_dpi_node->getValue().getInt() == base_dpi);
+			if (TBValueArray *arr = supported_dpi_node->getValue().getArray())
 			{
-				int screen_dpi = TBSystem::GetDPI();
+				int screen_dpi = TBSystem::getDPI();
 				int best_supported_dpi = 0;
-				for (int i = 0; i < arr->GetLength(); i++)
+				for (int i = 0; i < arr->getLength(); i++)
 				{
-					int candidate_dpi = arr->GetValue(i)->GetInt();
+					int candidate_dpi = arr->getValue(i)->getInt();
 					if (!best_supported_dpi || Abs(candidate_dpi - screen_dpi) < Abs(best_supported_dpi - screen_dpi))
 						best_supported_dpi = candidate_dpi;
 				}
 				supported_dpi = best_supported_dpi;
 			}
 		}
-		m_dim_conv.SetDPI(base_dpi, supported_dpi);
+		m_dim_conv.setDPI(base_dpi, supported_dpi);
 	}
 
 	// Read skin constants
-	if (const char *color = node.GetValueString("defaults>text-color", nullptr))
-		m_default_text_color.SetFromString(color, SDL_strlen(color));
-	m_default_disabled_opacity = node.GetValueFloat("defaults>disabled>opacity",
+	if (const char *color = node.getValueString("defaults>text-color", nullptr))
+		m_default_text_color.setFromString(color, SDL_strlen(color));
+	m_default_disabled_opacity = node.getValueFloat("defaults>disabled>opacity",
 		m_default_disabled_opacity);
-	m_default_placeholder_opacity = node.GetValueFloat("defaults>placeholder>opacity",
+	m_default_placeholder_opacity = node.getValueFloat("defaults>placeholder>opacity",
 		m_default_placeholder_opacity);
-	m_default_spacing = GetPxFromNode(node.GetNode("defaults>spacing"), m_default_spacing);
+	m_default_spacing = getPxFromNode(node.getNode("defaults>spacing"), m_default_spacing);
 
 	// Iterate through all elements nodes and add skin elements or patch already
 	// existing elements.
-	TBNode *elements = node.GetNode("elements");
+	TBNode *elements = node.getNode("elements");
 	if (elements)
 	{
-		TBNode *n = elements->GetFirstChild();
+		TBNode *n = elements->getFirstChild();
 		while (n)
 		{
 			// If we have a "clone" node, clone all children from that node
 			// into this node.
-			while (TBNode *clone = n->GetNode("clone"))
+			while (TBNode *clone = n->getNode("clone"))
 			{
-				n->Remove(clone);
+				n->remove(clone);
 
-				TBNode *clone_source = elements->GetNode(clone->GetValue().GetString());
+				TBNode *clone_source = elements->getNode(clone->getValue().getString());
 				if (clone_source)
-					n->CloneChildren(clone_source);
+					n->cloneChildren(clone_source);
 
 				delete clone;
 			}
 
 			// If the skin element already exist, we will call Load on it again.
 			// This will patch the element with any new data from the node.
-			TBID element_id(n->GetName());
-			TBSkinElement *e = GetSkinElement(element_id);
+			TBID element_id(n->getName());
+			TBSkinElement *e = getSkinElement(element_id);
 			if (!e)
 			{
 				e = new TBSkinElement;
 				if (!e)
 					return false;
-				m_elements.Add(element_id, e);
+				m_elements.add(element_id, e);
 			}
 
-			e->Load(n, this, skin_path.GetData());
+			e->load(n, this, skin_path.getData());
 			if (m_listener)
-				m_listener->OnSkinElementLoaded(this, e, n);
+				m_listener->onSkinElementLoaded(this, e, n);
 
-			n = n->GetNext();
+			n = n->getNext();
 		}
 	}
 	return true;
 }
 
-void TBSkin::UnloadBitmaps()
+void TBSkin::unloadBitmaps()
 {
 	// Unset all bitmap pointers.
 	TBHashTableIteratorOf<TBSkinElement> it(&m_elements);
-	while (TBSkinElement *element = it.GetNextContent())
+	while (TBSkinElement *element = it.getNextContent())
 		element->bitmap = nullptr;
 
 	// Clear all fragments and bitmaps.
-	m_frag_manager.Clear();
+	m_frag_manager.clear();
 	m_color_frag = nullptr;
 }
 
-bool TBSkin::ReloadBitmaps()
+bool TBSkin::reloadBitmaps()
 {
-	UnloadBitmaps();
-	bool success = ReloadBitmapsInternal();
+	unloadBitmaps();
+	bool success = reloadBitmapsInternal();
 	// Create all bitmaps for the bitmap fragment maps
 	if (success)
-		success = m_frag_manager.ValidateBitmaps();
+		success = m_frag_manager.validateBitmaps();
 
 #ifdef TB_RUNTIME_DEBUG_INFO
-	Log::debug("Skin loaded using %d bitmaps.", m_frag_manager.GetNumMaps());
+	Log::debug("Skin loaded using %d bitmaps.", m_frag_manager.getNumMaps());
 #endif
 	return success;
 }
 
-bool TBSkin::ReloadBitmapsInternal()
+bool TBSkin::reloadBitmapsInternal()
 {
 	// Load all bitmap files into new bitmap fragments.
 	TBTempBuffer filename_dst_DPI;
 	bool success = true;
 	TBHashTableIteratorOf<TBSkinElement> it(&m_elements);
-	while (TBSkinElement *element = it.GetNextContent())
+	while (TBSkinElement *element = it.getNextContent())
 	{
-		if (!element->bitmap_file.IsEmpty())
+		if (!element->bitmap_file.isEmpty())
 		{
 			core_assert(!element->bitmap);
 
@@ -263,19 +263,19 @@ bool TBSkin::ReloadBitmapsInternal()
 			bool dedicated_map = element->type == SKIN_ELEMENT_TYPE_TILE;
 
 			// Try to load bitmap fragment in the destination DPI (F.ex "foo.png" becomes "foo@192.png")
-			int bitmap_dpi = m_dim_conv.GetSrcDPI();
-			if (m_dim_conv.NeedConversion())
+			int bitmap_dpi = m_dim_conv.getSrcDPI();
+			if (m_dim_conv.needConversion())
 			{
-				m_dim_conv.GetDstDPIFilename(element->bitmap_file, &filename_dst_DPI);
-				element->bitmap = m_frag_manager.GetFragmentFromFile(filename_dst_DPI.GetData(), dedicated_map);
+				m_dim_conv.getDstDPIFilename(element->bitmap_file, &filename_dst_DPI);
+				element->bitmap = m_frag_manager.getFragmentFromFile(filename_dst_DPI.getData(), dedicated_map);
 				if (element->bitmap)
-					bitmap_dpi = m_dim_conv.GetDstDPI();
+					bitmap_dpi = m_dim_conv.getDstDPI();
 			}
-			element->SetBitmapDPI(m_dim_conv, bitmap_dpi);
+			element->setBitmapDPI(m_dim_conv, bitmap_dpi);
 
 			// If we still have no bitmap fragment, load from default file.
 			if (!element->bitmap)
-				element->bitmap = m_frag_manager.GetFragmentFromFile(element->bitmap_file, dedicated_map);
+				element->bitmap = m_frag_manager.getFragmentFromFile(element->bitmap_file, dedicated_map);
 
 			if (!element->bitmap)
 				success = false;
@@ -284,26 +284,26 @@ bool TBSkin::ReloadBitmapsInternal()
 	// Create fragment used for color fills. Use 2x2px and inset source rect to center 0x0
 	// to avoid filtering artifacts.
 	uint32_t data[4] = { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff };
-	m_color_frag = m_frag_manager.CreateNewFragment(TBID((uint32_t)0), false, 2, 2, 2, data);
-	m_color_frag->m_rect = m_color_frag->m_rect.Shrink(1, 1);
+	m_color_frag = m_frag_manager.createNewFragment(TBID((uint32_t)0), false, 2, 2, 2, data);
+	m_color_frag->m_rect = m_color_frag->m_rect.shrink(1, 1);
 	return success;
 }
 
 TBSkin::~TBSkin()
 {
-	g_renderer->RemoveListener(this);
+	g_renderer->removeListener(this);
 }
 
-TBSkinElement *TBSkin::GetSkinElement(const TBID &skin_id) const
+TBSkinElement *TBSkin::getSkinElement(const TBID &skinId) const
 {
-	if (!skin_id)
+	if (!skinId)
 		return nullptr;
-	return m_elements.Get(skin_id);
+	return m_elements.get(skinId);
 }
 
-TBSkinElement *TBSkin::GetSkinElementStrongOverride(const TBID &skin_id, SKIN_STATE state, TBSkinConditionContext &context) const
+TBSkinElement *TBSkin::getSkinElementStrongOverride(const TBID &skinId, SKIN_STATE state, TBSkinConditionContext &context) const
 {
-	if (TBSkinElement *skin_element = GetSkinElement(skin_id))
+	if (TBSkinElement *skin_element = getSkinElement(skinId))
 	{
 		// Avoid eternal recursion when overrides refer to elements referring back.
 		if (skin_element->is_getting)
@@ -311,10 +311,10 @@ TBSkinElement *TBSkin::GetSkinElementStrongOverride(const TBID &skin_id, SKIN_ST
 		skin_element->is_getting = true;
 
 		// Check if there's any strong overrides for this element with the given state.
-		TBSkinElementState *override_state = skin_element->m_strong_override_elements.GetStateElement(state, context);
+		TBSkinElementState *override_state = skin_element->m_strong_override_elements.getStateElement(state, context);
 		if (override_state)
 		{
-			if (TBSkinElement *override_element = GetSkinElementStrongOverride(override_state->element_id, state, context))
+			if (TBSkinElement *override_element = getSkinElementStrongOverride(override_state->element_id, state, context))
 			{
 				skin_element->is_getting = false;
 				return override_element;
@@ -327,12 +327,12 @@ TBSkinElement *TBSkin::GetSkinElementStrongOverride(const TBID &skin_id, SKIN_ST
 	return nullptr;
 }
 
-TBSkinElement *TBSkin::PaintSkin(const TBRect &dst_rect, const TBID &skin_id, SKIN_STATE state, TBSkinConditionContext &context)
+TBSkinElement *TBSkin::paintSkin(const TBRect &dstRect, const TBID &skinId, SKIN_STATE state, TBSkinConditionContext &context)
 {
-	return PaintSkin(dst_rect, GetSkinElement(skin_id), state, context);
+	return paintSkin(dstRect, getSkinElement(skinId), state, context);
 }
 
-TBSkinElement *TBSkin::PaintSkin(const TBRect &dst_rect, TBSkinElement *element, SKIN_STATE state, TBSkinConditionContext &context)
+TBSkinElement *TBSkin::paintSkin(const TBRect &dstRect, TBSkinElement *element, SKIN_STATE state, TBSkinConditionContext &context)
 {
 	if (!element || element->is_painting)
 		return nullptr;
@@ -348,10 +348,10 @@ TBSkinElement *TBSkin::PaintSkin(const TBRect &dst_rect, TBSkinElement *element,
 #endif
 
 	// If there's any override for this state, paint it.
-	TBSkinElementState *override_state = element->m_override_elements.GetStateElement(state, context);
+	TBSkinElementState *override_state = element->m_override_elements.getStateElement(state, context);
 	if (override_state)
 	{
-		if (TBSkinElement *used_override = PaintSkin(dst_rect, override_state->element_id, state, context))
+		if (TBSkinElement *used_override = paintSkin(dstRect, override_state->element_id, state, context))
 			return_element = used_override;
 		else
 		{
@@ -366,33 +366,33 @@ TBSkinElement *TBSkin::PaintSkin(const TBRect &dst_rect, TBSkinElement *element,
 
 	// If there was no override, paint the standard skin element.
 	if (!override_state)
-		PaintElement(dst_rect, element);
+		paintElement(dstRect, element);
 
 	// Paint all child elements that match the state (or should be painted for all states)
-	if (element->m_child_elements.HasStateElements())
+	if (element->m_child_elements.hasStateElements())
 	{
-		const TBSkinElementState *state_element = element->m_child_elements.GetFirstElement();
+		const TBSkinElementState *state_element = element->m_child_elements.getFirstElement();
 		while (state_element)
 		{
-			if (state_element->IsMatch(state, context))
-				PaintSkin(dst_rect, state_element->element_id, state_element->state & state, context);
-			state_element = state_element->GetNext();
+			if (state_element->isMatch(state, context))
+				paintSkin(dstRect, state_element->element_id, state_element->state & state, context);
+			state_element = state_element->getNext();
 		}
 	}
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	// Paint ugly rectangles on invalid skin elements in debug builds.
 	if (paint_error_highlight)
-		g_tb_skin->PaintRect(dst_rect.Expand(1, 1), TBColor(255, 205, 0), 1);
+		g_tb_skin->paintRect(dstRect.expand(1, 1), TBColor(255, 205, 0), 1);
 	if (paint_error_highlight)
-		g_tb_skin->PaintRect(dst_rect.Shrink(1, 1), TBColor(255, 0, 0), 1);
+		g_tb_skin->paintRect(dstRect.shrink(1, 1), TBColor(255, 0, 0), 1);
 #endif
 
 	element->is_painting = false;
 	return return_element;
 }
 
-void TBSkin::PaintSkinOverlay(const TBRect &dst_rect, TBSkinElement *element, SKIN_STATE state, TBSkinConditionContext &context)
+void TBSkin::paintSkinOverlay(const TBRect &dstRect, TBSkinElement *element, SKIN_STATE state, TBSkinConditionContext &context)
 {
 	if (!element || element->is_painting)
 		return;
@@ -401,38 +401,38 @@ void TBSkin::PaintSkinOverlay(const TBRect &dst_rect, TBSkinElement *element, SK
 	element->is_painting = true;
 
 	// Paint all overlay elements that matches the state (or should be painted for all states)
-	const TBSkinElementState *state_element = element->m_overlay_elements.GetFirstElement();
+	const TBSkinElementState *state_element = element->m_overlay_elements.getFirstElement();
 	while (state_element)
 	{
-		if (state_element->IsMatch(state, context))
-			PaintSkin(dst_rect, state_element->element_id, state_element->state & state, context);
-		state_element = state_element->GetNext();
+		if (state_element->isMatch(state, context))
+			paintSkin(dstRect, state_element->element_id, state_element->state & state, context);
+		state_element = state_element->getNext();
 	}
 
 	element->is_painting = false;
 }
 
-void TBSkin::PaintElement(const TBRect &dst_rect, TBSkinElement *element)
+void TBSkin::paintElement(const TBRect &dstRect, TBSkinElement *element)
 {
-	PaintElementBGColor(dst_rect, element);
+	paintElementBGColor(dstRect, element);
 	if (!element->bitmap)
 		return;
 	if (element->type == SKIN_ELEMENT_TYPE_IMAGE)
-		PaintElementImage(dst_rect, element);
+		paintElementImage(dstRect, element);
 	else if (element->type == SKIN_ELEMENT_TYPE_TILE)
-		PaintElementTile(dst_rect, element);
+		paintElementTile(dstRect, element);
 	else if (element->type == SKIN_ELEMENT_TYPE_STRETCH_IMAGE || element->cut == 0)
-		PaintElementStretchImage(dst_rect, element);
+		paintElementStretchImage(dstRect, element);
 	else if (element->type == SKIN_ELEMENT_TYPE_STRETCH_BORDER)
-		PaintElementStretchBox(dst_rect, element, false);
+		paintElementStretchBox(dstRect, element, false);
 	else
-		PaintElementStretchBox(dst_rect, element, true);
+		paintElementStretchBox(dstRect, element, true);
 }
 
-TBRect TBSkin::GetFlippedRect(const TBRect &src_rect, TBSkinElement *element) const
+TBRect TBSkin::getFlippedRect(const TBRect &srcRect, TBSkinElement *element) const
 {
 	// Turning the source rect "inside out" will flip the result when rendered.
-	TBRect tmp_rect = src_rect;
+	TBRect tmp_rect = srcRect;
 	if (element->flip_x)
 	{
 		tmp_rect.x += tmp_rect.w;
@@ -446,135 +446,135 @@ TBRect TBSkin::GetFlippedRect(const TBRect &src_rect, TBSkinElement *element) co
 	return tmp_rect;
 }
 
-void TBSkin::PaintRect(const TBRect &dst_rect, const TBColor &color, int thickness)
+void TBSkin::paintRect(const TBRect &dstRect, const TBColor &color, int thickness)
 {
-	if (dst_rect.w < thickness * 2 || dst_rect.h < thickness * 2)
+	if (dstRect.w < thickness * 2 || dstRect.h < thickness * 2)
 	{
-		PaintRectFill(dst_rect, color);
+		paintRectFill(dstRect, color);
 		return;
 	}
 	// Top
-	PaintRectFill(TBRect(dst_rect.x, dst_rect.y, dst_rect.w, thickness), color);
+	paintRectFill(TBRect(dstRect.x, dstRect.y, dstRect.w, thickness), color);
 	// Bottom
-	PaintRectFill(TBRect(dst_rect.x, dst_rect.y + dst_rect.h - thickness, dst_rect.w, thickness), color);
+	paintRectFill(TBRect(dstRect.x, dstRect.y + dstRect.h - thickness, dstRect.w, thickness), color);
 	// Left
-	PaintRectFill(TBRect(dst_rect.x, dst_rect.y + thickness, thickness, dst_rect.h - thickness * 2), color);
+	paintRectFill(TBRect(dstRect.x, dstRect.y + thickness, thickness, dstRect.h - thickness * 2), color);
 	// Right
-	PaintRectFill(TBRect(dst_rect.x + dst_rect.w - thickness, dst_rect.y + thickness, thickness, dst_rect.h - thickness * 2), color);
+	paintRectFill(TBRect(dstRect.x + dstRect.w - thickness, dstRect.y + thickness, thickness, dstRect.h - thickness * 2), color);
 }
 
-void TBSkin::PaintRectFill(const TBRect &dst_rect, const TBColor &color)
+void TBSkin::paintRectFill(const TBRect &dstRect, const TBColor &color)
 {
-	if (!dst_rect.IsEmpty())
-		g_renderer->DrawBitmapColored(dst_rect, TBRect(), color, m_color_frag);
+	if (!dstRect.isEmpty())
+		g_renderer->drawBitmapColored(dstRect, TBRect(), color, m_color_frag);
 }
 
-void TBSkin::PaintElementBGColor(const TBRect &dst_rect, TBSkinElement *element)
+void TBSkin::paintElementBGColor(const TBRect &dstRect, TBSkinElement *element)
 {
 	if (element->bg_color == 0)
 		return;
-	PaintRectFill(dst_rect, element->bg_color);
+	paintRectFill(dstRect, element->bg_color);
 }
 
-void TBSkin::PaintElementImage(const TBRect &dst_rect, TBSkinElement *element)
+void TBSkin::paintElementImage(const TBRect &dstRect, TBSkinElement *element)
 {
-	const TBRect src_rect(0, 0, element->bitmap->Width(), element->bitmap->Height());
-	TBRect rect = dst_rect.Expand(element->expand, element->expand);
-	rect.Set(rect.x + element->img_ofs_x + (rect.w - src_rect.w) * element->img_position_x / 100,
+	const TBRect src_rect(0, 0, element->bitmap->width(), element->bitmap->height());
+	TBRect rect = dstRect.expand(element->expand, element->expand);
+	rect.set(rect.x + element->img_ofs_x + (rect.w - src_rect.w) * element->img_position_x / 100,
 			rect.y + element->img_ofs_y + (rect.h - src_rect.h) * element->img_position_y / 100,
 			src_rect.w, src_rect.h);
-	g_renderer->DrawBitmap(rect, GetFlippedRect(src_rect, element), element->bitmap);
+	g_renderer->drawBitmap(rect, getFlippedRect(src_rect, element), element->bitmap);
 }
 
-void TBSkin::PaintElementTile(const TBRect &dst_rect, TBSkinElement *element)
+void TBSkin::paintElementTile(const TBRect &dstRect, TBSkinElement *element)
 {
-	const TBRect& rect = dst_rect.Expand(element->expand, element->expand);
-	g_renderer->DrawBitmapTile(rect, element->bitmap->GetBitmap());
+	const TBRect& rect = dstRect.expand(element->expand, element->expand);
+	g_renderer->drawBitmapTile(rect, element->bitmap->getBitmap());
 }
 
-void TBSkin::PaintElementStretchImage(const TBRect &dst_rect, TBSkinElement *element)
+void TBSkin::paintElementStretchImage(const TBRect &dstRect, TBSkinElement *element)
 {
-	if (dst_rect.IsEmpty())
+	if (dstRect.isEmpty())
 		return;
-	const TBRect& rect = dst_rect.Expand(element->expand, element->expand);
-	const TBRect& src_rect = GetFlippedRect(TBRect(0, 0, element->bitmap->Width(), element->bitmap->Height()), element);
-	g_renderer->DrawBitmap(rect, src_rect, element->bitmap);
+	const TBRect& rect = dstRect.expand(element->expand, element->expand);
+	const TBRect& src_rect = getFlippedRect(TBRect(0, 0, element->bitmap->width(), element->bitmap->height()), element);
+	g_renderer->drawBitmap(rect, src_rect, element->bitmap);
 }
 
-void TBSkin::PaintElementStretchBox(const TBRect &dst_rect, TBSkinElement *element, bool fill_center)
+void TBSkin::paintElementStretchBox(const TBRect &dstRect, TBSkinElement *element, bool fillCenter)
 {
-	if (dst_rect.IsEmpty())
+	if (dstRect.isEmpty())
 		return;
 
-	TBRect rect = dst_rect.Expand(element->expand, element->expand);
+	TBRect rect = dstRect.expand(element->expand, element->expand);
 
 	// Stretch the dst_cut (if rect is smaller than the skin size)
 	// FIX: the expand should also be stretched!
 	const int cut = element->cut;
 	int dst_cut_w = Min(cut, rect.w / 2);
 	int dst_cut_h = Min(cut, rect.h / 2);
-	const int bw = element->bitmap->Width();
-	const int bh = element->bitmap->Height();
+	const int bw = element->bitmap->width();
+	const int bh = element->bitmap->height();
 
 	const bool has_left_right_edges = rect.h > dst_cut_h * 2;
 	const bool has_top_bottom_edges = rect.w > dst_cut_w * 2;
 
-	rect = GetFlippedRect(rect, element);
+	rect = getFlippedRect(rect, element);
 	if (element->flip_x)
 		dst_cut_w = -dst_cut_w;
 	if (element->flip_y)
 		dst_cut_h = -dst_cut_h;
 
 	// Corners
-	g_renderer->DrawBitmap(TBRect(rect.x, rect.y, dst_cut_w, dst_cut_h), TBRect(0, 0, cut, cut), element->bitmap);
-	g_renderer->DrawBitmap(TBRect(rect.x + rect.w - dst_cut_w, rect.y, dst_cut_w, dst_cut_h), TBRect(bw - cut, 0, cut, cut), element->bitmap);
-	g_renderer->DrawBitmap(TBRect(rect.x, rect.y + rect.h - dst_cut_h, dst_cut_w, dst_cut_h), TBRect(0, bh - cut, cut, cut), element->bitmap);
-	g_renderer->DrawBitmap(TBRect(rect.x + rect.w - dst_cut_w, rect.y + rect.h - dst_cut_h, dst_cut_w, dst_cut_h), TBRect(bw - cut, bh - cut, cut, cut), element->bitmap);
+	g_renderer->drawBitmap(TBRect(rect.x, rect.y, dst_cut_w, dst_cut_h), TBRect(0, 0, cut, cut), element->bitmap);
+	g_renderer->drawBitmap(TBRect(rect.x + rect.w - dst_cut_w, rect.y, dst_cut_w, dst_cut_h), TBRect(bw - cut, 0, cut, cut), element->bitmap);
+	g_renderer->drawBitmap(TBRect(rect.x, rect.y + rect.h - dst_cut_h, dst_cut_w, dst_cut_h), TBRect(0, bh - cut, cut, cut), element->bitmap);
+	g_renderer->drawBitmap(TBRect(rect.x + rect.w - dst_cut_w, rect.y + rect.h - dst_cut_h, dst_cut_w, dst_cut_h), TBRect(bw - cut, bh - cut, cut, cut), element->bitmap);
 
 	// Left & right edge
 	if (has_left_right_edges)
 	{
-		g_renderer->DrawBitmap(TBRect(rect.x, rect.y + dst_cut_h, dst_cut_w, rect.h - dst_cut_h * 2), TBRect(0, cut, cut, bh - cut * 2), element->bitmap);
-		g_renderer->DrawBitmap(TBRect(rect.x + rect.w - dst_cut_w, rect.y + dst_cut_h, dst_cut_w, rect.h - dst_cut_h * 2), TBRect(bw - cut, cut, cut, bh - cut * 2), element->bitmap);
+		g_renderer->drawBitmap(TBRect(rect.x, rect.y + dst_cut_h, dst_cut_w, rect.h - dst_cut_h * 2), TBRect(0, cut, cut, bh - cut * 2), element->bitmap);
+		g_renderer->drawBitmap(TBRect(rect.x + rect.w - dst_cut_w, rect.y + dst_cut_h, dst_cut_w, rect.h - dst_cut_h * 2), TBRect(bw - cut, cut, cut, bh - cut * 2), element->bitmap);
 	}
 
 	// Top & bottom edge
 	if (has_top_bottom_edges)
 	{
-		g_renderer->DrawBitmap(TBRect(rect.x + dst_cut_w, rect.y, rect.w - dst_cut_w * 2, dst_cut_h), TBRect(cut, 0, bw - cut * 2, cut), element->bitmap);
-		g_renderer->DrawBitmap(TBRect(rect.x + dst_cut_w, rect.y + rect.h - dst_cut_h, rect.w - dst_cut_w * 2, dst_cut_h), TBRect(cut, bh - cut, bw - cut * 2, cut), element->bitmap);
+		g_renderer->drawBitmap(TBRect(rect.x + dst_cut_w, rect.y, rect.w - dst_cut_w * 2, dst_cut_h), TBRect(cut, 0, bw - cut * 2, cut), element->bitmap);
+		g_renderer->drawBitmap(TBRect(rect.x + dst_cut_w, rect.y + rect.h - dst_cut_h, rect.w - dst_cut_w * 2, dst_cut_h), TBRect(cut, bh - cut, bw - cut * 2, cut), element->bitmap);
 	}
 
 	// Center
-	if (fill_center && has_top_bottom_edges && has_left_right_edges)
-		g_renderer->DrawBitmap(TBRect(rect.x + dst_cut_w, rect.y + dst_cut_h, rect.w - dst_cut_w * 2, rect.h - dst_cut_h * 2), TBRect(cut, cut, bw - cut * 2, bh - cut * 2), element->bitmap);
+	if (fillCenter && has_top_bottom_edges && has_left_right_edges)
+		g_renderer->drawBitmap(TBRect(rect.x + dst_cut_w, rect.y + dst_cut_h, rect.w - dst_cut_w * 2, rect.h - dst_cut_h * 2), TBRect(cut, cut, bw - cut * 2, bh - cut * 2), element->bitmap);
 }
 
 #ifdef TB_RUNTIME_DEBUG_INFO
-void TBSkin::Debug()
+void TBSkin::debug()
 {
-	m_frag_manager.Debug();
+	m_frag_manager.debug();
 }
 #endif // TB_RUNTIME_DEBUG_INFO
 
-void TBSkin::OnContextLost()
+void TBSkin::onContextLost()
 {
 	// We could simply do: m_frag_manager.DeleteBitmaps() and then all bitmaps
 	// would be recreated automatically when needed. But because it's easy,
 	// we unload everything so we save some memory (by not keeping any image
 	// data around).
-	UnloadBitmaps();
+	unloadBitmaps();
 }
 
-void TBSkin::OnContextRestored()
+void TBSkin::onContextRestored()
 {
 	// Reload bitmaps (since we unloaded everything in OnContextLost())
-	ReloadBitmaps();
+	reloadBitmaps();
 }
 
-int TBSkin::GetPxFromNode(TBNode *node, int def_value) const
+int TBSkin::getPxFromNode(TBNode *node, int defValue) const
 {
-	return node ? m_dim_conv.GetPxFromValue(&node->GetValue(), def_value) : def_value;
+	return node ? m_dim_conv.getPxFromValue(&node->getValue(), defValue) : defValue;
 }
 
 // == TBSkinElement =========================================================
@@ -602,45 +602,45 @@ TBSkinElement::~TBSkinElement()
 {
 }
 
-int TBSkinElement::GetIntrinsicMinWidth() const
+int TBSkinElement::getIntrinsicMinWidth() const
 {
 	if (bitmap && type == SKIN_ELEMENT_TYPE_IMAGE)
-		return bitmap->Width() - expand * 2;
+		return bitmap->width() - expand * 2;
 	// Sizes below the skin cut size would start to shrink the skin below pretty,
 	// so assume that's the default minimum size if it's not specified (minus expansion)
 	return cut * 2 - expand * 2;
 }
 
-int TBSkinElement::GetIntrinsicMinHeight() const
+int TBSkinElement::getIntrinsicMinHeight() const
 {
 	if (bitmap && type == SKIN_ELEMENT_TYPE_IMAGE)
-		return bitmap->Height() - expand * 2;
+		return bitmap->height() - expand * 2;
 	// Sizes below the skin cut size would start to shrink the skin below pretty,
 	// so assume that's the default minimum size if it's not specified (minus expansion)
 	return cut * 2 - expand * 2;
 }
 
-int TBSkinElement::GetIntrinsicWidth() const
+int TBSkinElement::getIntrinsicWidth() const
 {
 	if (width != SKIN_VALUE_NOT_SPECIFIED)
 		return width;
 	if (bitmap)
-		return bitmap->Width() - expand * 2;
+		return bitmap->width() - expand * 2;
 	// FIX: We may want to check child elements etc.
 	return SKIN_VALUE_NOT_SPECIFIED;
 }
 
-int TBSkinElement::GetIntrinsicHeight() const
+int TBSkinElement::getIntrinsicHeight() const
 {
 	if (height != SKIN_VALUE_NOT_SPECIFIED)
 		return height;
 	if (bitmap)
-		return bitmap->Height() - expand * 2;
+		return bitmap->height() - expand * 2;
 	// FIX: We may want to check child elements etc.
 	return SKIN_VALUE_NOT_SPECIFIED;
 }
 
-void TBSkinElement::SetBitmapDPI(const TBDimensionConverter &dim_conv, int bitmap_dpi)
+void TBSkinElement::setBitmapDPI(const TBDimensionConverter &dimConv, int bitmapDpi)
 {
 	if (this->bitmap_dpi)
 	{
@@ -648,14 +648,14 @@ void TBSkinElement::SetBitmapDPI(const TBDimensionConverter &dim_conv, int bitma
 		// happen when we reload bitmaps without reloading the skin.
 		return;
 	}
-	if (dim_conv.NeedConversion())
+	if (dimConv.needConversion())
 	{
-		if (bitmap_dpi == dim_conv.GetDstDPI())
+		if (bitmapDpi == dimConv.getDstDPI())
 		{
 			// The bitmap was loaded in a different DPI than the base DPI so
 			// we must scale the bitmap properties.
-			expand = expand * dim_conv.GetDstDPI() / dim_conv.GetSrcDPI();
-			cut = cut * dim_conv.GetDstDPI() / dim_conv.GetSrcDPI();
+			expand = expand * dimConv.getDstDPI() / dimConv.getSrcDPI();
+			cut = cut * dimConv.getDstDPI() / dimConv.getSrcDPI();
 		}
 		else
 		{
@@ -663,118 +663,118 @@ void TBSkinElement::SetBitmapDPI(const TBDimensionConverter &dim_conv, int bitma
 			// Apply the DPI conversion to the skin element scale factor.
 			// FIX: For this to work well, we would need to apply scale to both
 			//      image and all the other types of drawing too.
-			// scale_x = scale_x * dim_conv.GetDstDPI() / dim_conv.GetSrcDPI();
-			// scale_y = scale_y * dim_conv.GetDstDPI() / dim_conv.GetSrcDPI();
+			// scale_x = scale_x * dim_conv.getDstDPI() / dim_conv.getSrcDPI();
+			// scale_y = scale_y * dim_conv.getDstDPI() / dim_conv.getSrcDPI();
 		}
 	}
-	this->bitmap_dpi = bitmap_dpi;
+	this->bitmap_dpi = bitmapDpi;
 }
 
-bool TBSkinElement::HasState(SKIN_STATE state, TBSkinConditionContext &context)
+bool TBSkinElement::hasState(SKIN_STATE state, TBSkinConditionContext &context)
 {
-	return	m_override_elements.GetStateElement(state, context, TBSkinElementState::MATCH_RULE_ONLY_SPECIFIC_STATE) ||
-			m_child_elements.GetStateElement(state, context, TBSkinElementState::MATCH_RULE_ONLY_SPECIFIC_STATE) ||
-			m_overlay_elements.GetStateElement(state, context, TBSkinElementState::MATCH_RULE_ONLY_SPECIFIC_STATE);
+	return	m_override_elements.getStateElement(state, context, TBSkinElementState::MATCH_RULE_ONLY_SPECIFIC_STATE) ||
+			m_child_elements.getStateElement(state, context, TBSkinElementState::MATCH_RULE_ONLY_SPECIFIC_STATE) ||
+			m_overlay_elements.getStateElement(state, context, TBSkinElementState::MATCH_RULE_ONLY_SPECIFIC_STATE);
 }
 
-void TBSkinElement::Load(TBNode *n, TBSkin *skin, const char *skin_path)
+void TBSkinElement::load(TBNode *n, TBSkin *skin, const char *skinPath)
 {
-	if (const char *bitmap = n->GetValueString("bitmap", nullptr))
+	if (const char *bitmap = n->getValueString("bitmap", nullptr))
 	{
-		bitmap_file.Clear();
-		bitmap_file.Append(skin_path);
-		bitmap_file.Append(bitmap);
+		bitmap_file.clear();
+		bitmap_file.append(skinPath);
+		bitmap_file.append(bitmap);
 	}
 
 	// Note: Always read cut and expand as pixels. These values might later be
 	//       recalculated depending on the DPI the bitmaps are available in.
-	cut = n->GetValueInt("cut", cut);
-	expand = n->GetValueInt("expand", expand);
+	cut = n->getValueInt("cut", cut);
+	expand = n->getValueInt("expand", expand);
 
-	name.Set(n->GetName());
-	id.Set(n->GetName());
+	name.set(n->getName());
+	id.set(n->getName());
 
-	const TBDimensionConverter *dim_conv = skin->GetDimensionConverter();
+	const TBDimensionConverter *dim_conv = skin->getDimensionConverter();
 
-	if (TBNode *padding_node = n->GetNode("padding"))
+	if (TBNode *padding_node = n->getNode("padding"))
 	{
-		TBValue &val = padding_node->GetValue();
-		if (val.GetArrayLength() == 4)
+		TBValue &val = padding_node->getValue();
+		if (val.getArrayLength() == 4)
 		{
-			padding_top = dim_conv->GetPxFromValue(val.GetArray()->GetValue(0), 0);
-			padding_right = dim_conv->GetPxFromValue(val.GetArray()->GetValue(1), 0);
-			padding_bottom = dim_conv->GetPxFromValue(val.GetArray()->GetValue(2), 0);
-			padding_left = dim_conv->GetPxFromValue(val.GetArray()->GetValue(3), 0);
+			padding_top = dim_conv->getPxFromValue(val.getArray()->getValue(0), 0);
+			padding_right = dim_conv->getPxFromValue(val.getArray()->getValue(1), 0);
+			padding_bottom = dim_conv->getPxFromValue(val.getArray()->getValue(2), 0);
+			padding_left = dim_conv->getPxFromValue(val.getArray()->getValue(3), 0);
 		}
-		else if (val.GetArrayLength() == 2)
+		else if (val.getArrayLength() == 2)
 		{
-			padding_top = padding_bottom = dim_conv->GetPxFromValue(val.GetArray()->GetValue(0), 0);
-			padding_left = padding_right = dim_conv->GetPxFromValue(val.GetArray()->GetValue(1), 0);
+			padding_top = padding_bottom = dim_conv->getPxFromValue(val.getArray()->getValue(0), 0);
+			padding_left = padding_right = dim_conv->getPxFromValue(val.getArray()->getValue(1), 0);
 		}
 		else
 		{
-			padding_top = padding_right = padding_bottom = padding_left = dim_conv->GetPxFromValue(&val, 0);
+			padding_top = padding_right = padding_bottom = padding_left = dim_conv->getPxFromValue(&val, 0);
 		}
 	}
-	width = skin->GetPxFromNode(n->GetNode("width"), width);
-	height = skin->GetPxFromNode(n->GetNode("height"), height);
-	pref_width = skin->GetPxFromNode(n->GetNode("pref-width"), pref_width);
-	pref_height = skin->GetPxFromNode(n->GetNode("pref-height"), pref_height);
-	min_width = skin->GetPxFromNode(n->GetNode("min-width"), min_width);
-	min_height = skin->GetPxFromNode(n->GetNode("min-height"), min_height);
-	max_width = skin->GetPxFromNode(n->GetNode("max-width"), max_width);
-	max_height = skin->GetPxFromNode(n->GetNode("max-height"), max_height);
-	spacing = skin->GetPxFromNode(n->GetNode("spacing"), spacing);
-	content_ofs_x = skin->GetPxFromNode(n->GetNode("content-ofs-x"), content_ofs_x);
-	content_ofs_y = skin->GetPxFromNode(n->GetNode("content-ofs-y"), content_ofs_y);
-	img_position_x = n->GetValueInt("img-position-x", img_position_x);
-	img_position_y = n->GetValueInt("img-position-y", img_position_y);
-	img_ofs_x = skin->GetPxFromNode(n->GetNode("img-ofs-x"), img_ofs_x);
-	img_ofs_y = skin->GetPxFromNode(n->GetNode("img-ofs-y"), img_ofs_y);
-	flip_x = n->GetValueInt("flip-x", flip_x);
-	flip_y = n->GetValueInt("flip-y", flip_y);
-	opacity = n->GetValueFloat("opacity", opacity);
+	width = skin->getPxFromNode(n->getNode("width"), width);
+	height = skin->getPxFromNode(n->getNode("height"), height);
+	pref_width = skin->getPxFromNode(n->getNode("pref-width"), pref_width);
+	pref_height = skin->getPxFromNode(n->getNode("pref-height"), pref_height);
+	min_width = skin->getPxFromNode(n->getNode("min-width"), min_width);
+	min_height = skin->getPxFromNode(n->getNode("min-height"), min_height);
+	max_width = skin->getPxFromNode(n->getNode("max-width"), max_width);
+	max_height = skin->getPxFromNode(n->getNode("max-height"), max_height);
+	spacing = skin->getPxFromNode(n->getNode("spacing"), spacing);
+	content_ofs_x = skin->getPxFromNode(n->getNode("content-ofs-x"), content_ofs_x);
+	content_ofs_y = skin->getPxFromNode(n->getNode("content-ofs-y"), content_ofs_y);
+	img_position_x = n->getValueInt("img-position-x", img_position_x);
+	img_position_y = n->getValueInt("img-position-y", img_position_y);
+	img_ofs_x = skin->getPxFromNode(n->getNode("img-ofs-x"), img_ofs_x);
+	img_ofs_y = skin->getPxFromNode(n->getNode("img-ofs-y"), img_ofs_y);
+	flip_x = n->getValueInt("flip-x", flip_x);
+	flip_y = n->getValueInt("flip-y", flip_y);
+	opacity = n->getValueFloat("opacity", opacity);
 
-	if (const char *color = n->GetValueString("text-color", nullptr))
-		text_color.SetFromString(color, SDL_strlen(color));
+	if (const char *color = n->getValueString("text-color", nullptr))
+		text_color.setFromString(color, SDL_strlen(color));
 
-	if (const char *color = n->GetValueString("background-color", nullptr))
-		bg_color.SetFromString(color, SDL_strlen(color));
+	if (const char *color = n->getValueString("background-color", nullptr))
+		bg_color.setFromString(color, SDL_strlen(color));
 
-	if (const char *type_str = n->GetValueString("type", nullptr))
-		type = StringToType(type_str);
+	if (const char *type_str = n->getValueString("type", nullptr))
+		type = stringToType(type_str);
 
 	// Create all state elements
-	m_override_elements.Load(n->GetNode("overrides"));
-	m_strong_override_elements.Load(n->GetNode("strong-overrides"));
-	m_child_elements.Load(n->GetNode("children"));
-	m_overlay_elements.Load(n->GetNode("overlays"));
+	m_override_elements.load(n->getNode("overrides"));
+	m_strong_override_elements.load(n->getNode("strong-overrides"));
+	m_child_elements.load(n->getNode("children"));
+	m_overlay_elements.load(n->getNode("overlays"));
 }
 
 // == TBSkinElementState ====================================================
 
-bool TBSkinElementState::IsMatch(SKIN_STATE state, TBSkinConditionContext &context, MATCH_RULE rule) const
+bool TBSkinElementState::isMatch(SKIN_STATE state, TBSkinConditionContext &context, MATCH_RULE rule) const
 {
 	if (rule == MATCH_RULE_ONLY_SPECIFIC_STATE && this->state == SKIN_STATE_ALL)
 		return false;
 	if ((state & this->state) || this->state == SKIN_STATE_ALL)
 	{
-		for (TBSkinCondition *condition = conditions.GetFirst(); condition; condition = condition->GetNext())
-			if (!condition->GetCondition(context))
+		for (TBSkinCondition *condition = conditions.getFirst(); condition; condition = condition->getNext())
+			if (!condition->getCondition(context))
 				return false;
 		return true;
 	}
 	return false;
 }
 
-bool TBSkinElementState::IsExactMatch(SKIN_STATE state, TBSkinConditionContext &context, MATCH_RULE rule) const
+bool TBSkinElementState::isExactMatch(SKIN_STATE state, TBSkinConditionContext &context, MATCH_RULE rule) const
 {
 	if (rule == MATCH_RULE_ONLY_SPECIFIC_STATE && this->state == SKIN_STATE_ALL)
 		return false;
 	if (state == this->state || this->state == SKIN_STATE_ALL)
 	{
-		for (TBSkinCondition *condition = conditions.GetFirst(); condition; condition = condition->GetNext())
-			if (!condition->GetCondition(context))
+		for (TBSkinCondition *condition = conditions.getFirst(); condition; condition = condition->getNext())
+			if (!condition->getCondition(context))
 				return false;
 		return true;
 	}
@@ -785,48 +785,48 @@ bool TBSkinElementState::IsExactMatch(SKIN_STATE state, TBSkinConditionContext &
 
 TBSkinElementStateList::~TBSkinElementStateList()
 {
-	while (TBSkinElementState *state = m_state_elements.GetFirst())
+	while (TBSkinElementState *state = m_state_elements.getFirst())
 	{
-		m_state_elements.Remove(state);
+		m_state_elements.remove(state);
 		delete state;
 	}
 }
 
-TBSkinElementState *TBSkinElementStateList::GetStateElement(SKIN_STATE state, TBSkinConditionContext &context, TBSkinElementState::MATCH_RULE rule) const
+TBSkinElementState *TBSkinElementStateList::getStateElement(SKIN_STATE state, TBSkinConditionContext &context, TBSkinElementState::MATCH_RULE rule) const
 {
 	// First try to get a state element with a exact match to the current state
-	if (TBSkinElementState *element_state = GetStateElementExactMatch(state, context, rule))
+	if (TBSkinElementState *element_state = getStateElementExactMatch(state, context, rule))
 		return element_state;
 	// No exact state match. Get a state with a partly match if there is one.
-	TBSkinElementState *state_element = m_state_elements.GetFirst();
+	TBSkinElementState *state_element = m_state_elements.getFirst();
 	while (state_element)
 	{
-		if (state_element->IsMatch(state, context, rule))
+		if (state_element->isMatch(state, context, rule))
 			return state_element;
-		state_element = state_element->GetNext();
+		state_element = state_element->getNext();
 	}
 	return nullptr;
 }
 
-TBSkinElementState *TBSkinElementStateList::GetStateElementExactMatch(SKIN_STATE state, TBSkinConditionContext &context, TBSkinElementState::MATCH_RULE rule) const
+TBSkinElementState *TBSkinElementStateList::getStateElementExactMatch(SKIN_STATE state, TBSkinConditionContext &context, TBSkinElementState::MATCH_RULE rule) const
 {
-	TBSkinElementState *state_element = m_state_elements.GetFirst();
+	TBSkinElementState *state_element = m_state_elements.getFirst();
 	while (state_element)
 	{
-		if (state_element->IsExactMatch(state, context, rule))
+		if (state_element->isExactMatch(state, context, rule))
 			return state_element;
-		state_element = state_element->GetNext();
+		state_element = state_element->getNext();
 	}
 	return nullptr;
 }
 
-void TBSkinElementStateList::Load(TBNode *n)
+void TBSkinElementStateList::load(TBNode *n)
 {
 	if (!n)
 		return;
 
 	// For each node, create a new state element.
-	TBNode *element_node = n->GetFirstChild();
+	TBNode *element_node = n->getFirstChild();
 	while (element_node)
 	{
 		TBSkinElementState *state = new TBSkinElementState;
@@ -835,51 +835,51 @@ void TBSkinElementStateList::Load(TBNode *n)
 
 		// By default, a state element applies to all combinations of states
 		state->state = SKIN_STATE_ALL;
-		state->element_id.Set(element_node->GetValue().GetString());
+		state->element_id.set(element_node->getValue().getString());
 
 		// Loop through all nodes, read state and create all found conditions.
-		for (TBNode *condition_node = element_node->GetFirstChild(); condition_node; condition_node = condition_node->GetNext())
+		for (TBNode *condition_node = element_node->getFirstChild(); condition_node; condition_node = condition_node->getNext())
 		{
-			if (SDL_strcmp(condition_node->GetName(), "state") == 0)
-				state->state = StringToState(condition_node->GetValue().GetString());
-			else if (SDL_strcmp(condition_node->GetName(), "condition") == 0)
+			if (SDL_strcmp(condition_node->getName(), "state") == 0)
+				state->state = stringToState(condition_node->getValue().getString());
+			else if (SDL_strcmp(condition_node->getName(), "condition") == 0)
 			{
-				TBSkinCondition::TARGET target = StringToTarget(condition_node->GetValueString("target", ""));
+				TBSkinCondition::TARGET target = stringToTarget(condition_node->getValueString("target", ""));
 
-				const char *prop_str = condition_node->GetValueString("property", "");
-				TBSkinCondition::PROPERTY prop = StringToProperty(prop_str);
+				const char *prop_str = condition_node->getValueString("property", "");
+				TBSkinCondition::PROPERTY prop = stringToProperty(prop_str);
 				TBID custom_prop;
 				if (prop == TBSkinCondition::PROPERTY_CUSTOM)
-					custom_prop.Set(prop_str);
+					custom_prop.set(prop_str);
 
 				TBID value;
-				if (TBNode *value_n = condition_node->GetNode("value"))
+				if (TBNode *value_n = condition_node->getNode("value"))
 				{
 					// Set the it to number or string. If it's a state, we must first convert the
 					// state string to the SKIN_STATE state combo.
 					if (prop == TBSkinCondition::PROPERTY_STATE)
-						value.Set(StringToState(value_n->GetValue().GetString()));
-					else if (value_n->GetValue().IsString())
-						value.Set(value_n->GetValue().GetString());
+						value.set(stringToState(value_n->getValue().getString()));
+					else if (value_n->getValue().isString())
+						value.set(value_n->getValue().getString());
 					else
-						value.Set(value_n->GetValue().GetInt());
+						value.set(value_n->getValue().getInt());
 				}
 
 				TBSkinCondition::TEST test = TBSkinCondition::TEST_EQUAL;
-				if (const char *test_str = condition_node->GetValueString("test", nullptr))
+				if (const char *test_str = condition_node->getValueString("test", nullptr))
 				{
 					if (SDL_strcmp(test_str, "!=") == 0)
 						test = TBSkinCondition::TEST_NOT_EQUAL;
 				}
 
 				if (TBSkinCondition *condition = new TBSkinCondition(target, prop, custom_prop, value, test))
-					state->conditions.AddLast(condition);
+					state->conditions.addLast(condition);
 			}
 		}
 
 		// State is reado to add
-		m_state_elements.AddLast(state);
-		element_node = element_node->GetNext();
+		m_state_elements.addLast(state);
+		element_node = element_node->getNext();
 	}
 }
 

@@ -62,16 +62,16 @@ public:
 	TBBFRenderer();
 	~TBBFRenderer();
 
-	bool Load(const char *filename, int size);
-	bool FindGlyphs();
-	GLYPH *FindNext(UCS4 cp, int x);
+	bool load(const char *filename, int size);
+	bool findGlyphs();
+	GLYPH *findNext(UCS4 cp, int x);
 
-	virtual TBFontFace *Create(TBFontManager *font_manager, const char *filename,
-								const TBFontDescription &font_desc);
+	virtual TBFontFace *create(TBFontManager *fontManager, const char *filename,
+								const TBFontDescription &fontDesc);
 
-	virtual TBFontMetrics GetMetrics();
-	virtual bool RenderGlyph(TBFontGlyphData *dst_bitmap, UCS4 cp);
-	virtual void GetGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp);
+	virtual TBFontMetrics getMetrics();
+	virtual bool renderGlyph(TBFontGlyphData *dstBitmap, UCS4 cp);
+	virtual void getGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp);
 private:
 	TBNode m_node;
 	TBFontMetrics m_metrics;
@@ -97,18 +97,18 @@ TBBFRenderer::~TBBFRenderer()
 {
 }
 
-TBFontMetrics TBBFRenderer::GetMetrics()
+TBFontMetrics TBBFRenderer::getMetrics()
 {
 	return m_metrics;
 }
 
-bool TBBFRenderer::RenderGlyph(TBFontGlyphData *data, UCS4 cp)
+bool TBBFRenderer::renderGlyph(TBFontGlyphData *data, UCS4 cp)
 {
 	if (cp == ' ')
 		return false;
 	GLYPH *glyph;
-	if ((glyph = m_glyph_table.Get(cp)) ||
-		(glyph = m_glyph_table.Get('?')))
+	if ((glyph = m_glyph_table.get(cp)) ||
+		(glyph = m_glyph_table.get('?')))
 	{
 		data->w = glyph->w;
 		data->h = m_img->height();
@@ -120,31 +120,31 @@ bool TBBFRenderer::RenderGlyph(TBFontGlyphData *data, UCS4 cp)
 	return false;
 }
 
-void TBBFRenderer::GetGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp)
+void TBBFRenderer::getGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp)
 {
 	metrics->x = m_x_ofs;
 	metrics->y = -m_metrics.ascent;
 	if (cp == ' ')
 		metrics->advance = m_space_advance;
-	else if (GLYPH *glyph = m_glyph_table.Get(cp))
+	else if (GLYPH *glyph = m_glyph_table.get(cp))
 		metrics->advance = glyph->w + m_advance_delta;
-	else if (GLYPH *glyph = m_glyph_table.Get('?'))
+	else if (GLYPH *glyph = m_glyph_table.get('?'))
 		metrics->advance = glyph->w + m_advance_delta;
 }
 
-bool TBBFRenderer::Load(const char *filename, int size)
+bool TBBFRenderer::load(const char *filename, int size)
 {
 	m_size = size;
-	if (!m_node.ReadFile(filename))
+	if (!m_node.readFile(filename))
 		return false;
 
 	// Check for size nodes and get the one closest to the size we want.
 	TBNode *size_node = nullptr;
-	for (TBNode *n = m_node.GetFirstChild(); n; n = n->GetNext())
+	for (TBNode *n = m_node.getFirstChild(); n; n = n->getNext())
 	{
-		if (strcmp(n->GetName(), "size") == 0)
+		if (strcmp(n->getName(), "size") == 0)
 		{
-			if (!size_node || Abs(m_size - n->GetValue().GetInt()) < Abs(m_size - size_node->GetValue().GetInt()))
+			if (!size_node || Abs(m_size - n->getValue().getInt()) < Abs(m_size - size_node->getValue().getInt()))
 				size_node = n;
 		}
 	}
@@ -152,29 +152,29 @@ bool TBBFRenderer::Load(const char *filename, int size)
 		return false;
 
 	// Metrics
-	m_metrics.ascent = size_node->GetValueInt("ascent", 0);
-	m_metrics.descent = size_node->GetValueInt("descent", 0);
+	m_metrics.ascent = size_node->getValueInt("ascent", 0);
+	m_metrics.descent = size_node->getValueInt("descent", 0);
 	m_metrics.height = m_metrics.ascent + m_metrics.descent;
 
 	// Other data
-	m_advance_delta = size_node->GetValueInt("advance_delta", 0);
-	m_space_advance = size_node->GetValueInt("space_advance", 0);
-	m_x_ofs = size_node->GetValueInt("x_ofs", 0);
+	m_advance_delta = size_node->getValueInt("advance_delta", 0);
+	m_space_advance = size_node->getValueInt("space_advance", 0);
+	m_x_ofs = size_node->getValueInt("x_ofs", 0);
 
 	// Info
-	m_rgb = m_node.GetValueInt("info>rgb", 0);
+	m_rgb = m_node.getValueInt("info>rgb", 0);
 
 	// Get the path for the bitmap file.
 	TBTempBuffer bitmap_filename;
-	if (!bitmap_filename.AppendPath(filename))
+	if (!bitmap_filename.appendPath(filename))
 		return false;
 
 	// Append the bitmap filename for the given size.
-	bitmap_filename.AppendString(size_node->GetValueString("bitmap", ""));
+	bitmap_filename.appendString(size_node->getValueString("bitmap", ""));
 
-	m_img = image::loadImage(bitmap_filename.GetData(), false);
+	m_img = image::loadImage(bitmap_filename.getData(), false);
 
-	return FindGlyphs();
+	return findGlyphs();
 }
 
 inline unsigned char GetAlpha(uint32_t color)
@@ -182,12 +182,12 @@ inline unsigned char GetAlpha(uint32_t color)
 	return (color & 0xff000000) >> 24;
 }
 
-bool TBBFRenderer::FindGlyphs()
+bool TBBFRenderer::findGlyphs()
 {
 	if (!m_img)
 		return false;
 
-	const char *glyph_str = m_node.GetValueString("info>glyph_str", nullptr);
+	const char *glyph_str = m_node.getValueString("info>glyph_str", nullptr);
 	if (!glyph_str)
 		return false;
 
@@ -196,9 +196,9 @@ bool TBBFRenderer::FindGlyphs()
 	int x = 0;
 	while (UCS4 uc = utf8::decode_next(glyph_str, &i, glyph_str_len))
 	{
-		if (GLYPH *glyph = FindNext(uc, x))
+		if (GLYPH *glyph = findNext(uc, x))
 		{
-			m_glyph_table.Add(uc, glyph); // OOM!
+			m_glyph_table.add(uc, glyph); // OOM!
 			x = glyph->x + glyph->w + 1;
 		}
 		else
@@ -207,7 +207,7 @@ bool TBBFRenderer::FindGlyphs()
 	return true;
 }
 
-GLYPH *TBBFRenderer::FindNext(UCS4 cp, int x)
+GLYPH *TBBFRenderer::findNext(UCS4 cp, int x)
 {
 	int width = m_img->width();
 	int height = m_img->height();
@@ -258,14 +258,14 @@ GLYPH *TBBFRenderer::FindNext(UCS4 cp, int x)
 	return glyph;
 }
 
-TBFontFace *TBBFRenderer::Create(TBFontManager *font_manager, const char *filename, const TBFontDescription &font_desc)
+TBFontFace *TBBFRenderer::create(TBFontManager *fontManager, const char *filename, const TBFontDescription &fontDesc)
 {
 	if (!strstr(filename, ".tb.txt"))
 		return nullptr;
 	if (TBBFRenderer *fr = new TBBFRenderer())
 	{
-		if (fr->Load(filename, (int) font_desc.GetSize()))
-			if (TBFontFace *font = new TBFontFace(font_manager->GetGlyphCache(), fr, font_desc))
+		if (fr->load(filename, (int) fontDesc.getSize()))
+			if (TBFontFace *font = new TBFontFace(fontManager->getGlyphCache(), fr, fontDesc))
 				return font;
 		delete fr;
 	}
@@ -275,5 +275,5 @@ TBFontFace *TBBFRenderer::Create(TBFontManager *font_manager, const char *filena
 void register_tbbf_font_renderer()
 {
 	if (TBBFRenderer *fr = new TBBFRenderer)
-		g_font_manager->AddRenderer(fr);
+		g_font_manager->addRenderer(fr);
 }

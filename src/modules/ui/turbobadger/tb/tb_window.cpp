@@ -10,30 +10,30 @@ namespace tb {
 TBWindow::TBWindow()
 	: m_settings(WINDOW_SETTINGS_DEFAULT)
 {
-	SetSkinBg(TBIDC("TBWindow"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	AddChild(&m_mover);
-	AddChild(&m_resizer);
-	m_mover.SetSkinBg(TBIDC("TBWindow.mover"));
-	m_mover.AddChild(&m_textfield);
-	m_textfield.SetIgnoreInput(true);
-	m_mover.AddChild(&m_close_button);
-	m_close_button.SetSkinBg(TBIDC("TBWindow.close"));
-	m_close_button.SetIsFocusable(false);
-	m_close_button.SetID(TBIDC("TBWindow.close"));
-	SetIsGroupRoot(true);
+	setSkinBg(TBIDC("TBWindow"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	addChild(&m_mover);
+	addChild(&m_resizer);
+	m_mover.setSkinBg(TBIDC("TBWindow.mover"));
+	m_mover.addChild(&m_textfield);
+	m_textfield.setIgnoreInput(true);
+	m_mover.addChild(&m_close_button);
+	m_close_button.setSkinBg(TBIDC("TBWindow.close"));
+	m_close_button.setIsFocusable(false);
+	m_close_button.setID(TBIDC("TBWindow.close"));
+	setIsGroupRoot(true);
 }
 
 TBWindow::~TBWindow()
 {
-	m_resizer.RemoveFromParent();
-	m_mover.RemoveFromParent();
-	m_close_button.RemoveFromParent();
-	m_textfield.RemoveFromParent();
+	m_resizer.removeFromParent();
+	m_mover.removeFromParent();
+	m_close_button.removeFromParent();
+	m_textfield.removeFromParent();
 }
 
-TBRect TBWindow::GetResizeToFitContentRect(RESIZE_FIT fit)
+TBRect TBWindow::getResizeToFitContentRect(RESIZE_FIT fit)
 {
-	PreferredSize ps = GetPreferredSize();
+	PreferredSize ps = getPreferredSize();
 	int new_w = ps.pref_w;
 	int new_h = ps.pref_h;
 	if (fit == RESIZE_FIT_MinIMAL)
@@ -43,103 +43,103 @@ TBRect TBWindow::GetResizeToFitContentRect(RESIZE_FIT fit)
 	}
 	else if (fit == RESIZE_FIT_CURRENT_OR_NEEDED)
 	{
-		new_w = Clamp(GetRect().w, ps.min_w, ps.max_w);
-		new_h = Clamp(GetRect().h, ps.min_h, ps.max_h);
+		new_w = Clamp(getRect().w, ps.min_w, ps.max_w);
+		new_h = Clamp(getRect().h, ps.min_h, ps.max_h);
 	}
-	if (GetParent())
+	if (getParent())
 	{
-		new_w = Min(new_w, GetParent()->GetRect().w);
-		new_h = Min(new_h, GetParent()->GetRect().h);
+		new_w = Min(new_w, getParent()->getRect().w);
+		new_h = Min(new_h, getParent()->getRect().h);
 	}
-	return TBRect(GetRect().x, GetRect().y, new_w, new_h);
+	return TBRect(getRect().x, getRect().y, new_w, new_h);
 }
 
-void TBWindow::ResizeToFitContent(RESIZE_FIT fit)
+void TBWindow::resizeToFitContent(RESIZE_FIT fit)
 {
-	SetRect(GetResizeToFitContentRect(fit));
+	setRect(getResizeToFitContentRect(fit));
 }
 
-void TBWindow::Close()
+void TBWindow::close()
 {
-	Die();
+	die();
 }
 
-bool TBWindow::IsActive() const
+bool TBWindow::isActive() const
 {
-	return GetState(WIDGET_STATE_SELECTED);
+	return getState(WIDGET_STATE_SELECTED);
 }
 
-TBWindow *TBWindow::GetTopMostOtherWindow(bool only_activable_windows)
+TBWindow *TBWindow::getTopMostOtherWindow(bool onlyActivableWindows)
 {
 	TBWindow *other_window = nullptr;
-	TBWidget *sibling = GetParent()->GetLastChild();
+	TBWidget *sibling = getParent()->getLastChild();
 	while (sibling && !other_window)
 	{
 		if (sibling != this)
 			other_window = TBSafeCast<TBWindow>(sibling);
 
-		if (only_activable_windows && other_window && !(other_window->m_settings & WINDOW_SETTINGS_CAN_ACTIVATE))
+		if (onlyActivableWindows && other_window && !(other_window->m_settings & WINDOW_SETTINGS_CAN_ACTIVATE))
 			other_window = nullptr;
 
-		sibling = sibling->GetPrev();
+		sibling = sibling->getPrev();
 	}
 	return other_window;
 }
 
-void TBWindow::Activate()
+void TBWindow::activate()
 {
-	if (!GetParent() || !(m_settings & WINDOW_SETTINGS_CAN_ACTIVATE))
+	if (!getParent() || !(m_settings & WINDOW_SETTINGS_CAN_ACTIVATE))
 		return;
-	if (IsActive())
+	if (isActive())
 	{
 		// Already active, but we may still have lost focus,
 		// so ensure it comes back to us.
-		EnsureFocus();
+		ensureFocus();
 		return;
 	}
 
 	// Deactivate currently active window
-	TBWindow *active_window = GetTopMostOtherWindow(true);
+	TBWindow *active_window = getTopMostOtherWindow(true);
 	if (active_window)
-		active_window->DeActivate();
+		active_window->deActivate();
 
 	// Activate this window
 
-	SetZ(WIDGET_Z_TOP);
-	SetWindowActiveState(true);
-	EnsureFocus();
+	setZ(WIDGET_Z_TOP);
+	setWindowActiveState(true);
+	ensureFocus();
 }
 
-bool TBWindow::EnsureFocus()
+bool TBWindow::ensureFocus()
 {
 	// If we already have focus, we're done.
-	if (focused_widget && IsAncestorOf(focused_widget))
+	if (focused_widget && isAncestorOf(focused_widget))
 		return true;
 
 	// Focus last focused widget (if we have one)
 	bool success = false;
-	if (m_last_focus.Get())
-		success = m_last_focus.Get()->SetFocus(WIDGET_FOCUS_REASON_UNKNOWN);
+	if (m_last_focus.get())
+		success = m_last_focus.get()->setFocus(WIDGET_FOCUS_REASON_UNKNOWN);
 	// We didn't have one or failed, so try focus any child.
 	if (!success)
-		success = SetFocusRecursive(WIDGET_FOCUS_REASON_UNKNOWN);
+		success = setFocusRecursive(WIDGET_FOCUS_REASON_UNKNOWN);
 	return success;
 }
 
-void TBWindow::DeActivate()
+void TBWindow::deActivate()
 {
-	if (!IsActive())
+	if (!isActive())
 		return;
-	SetWindowActiveState(false);
+	setWindowActiveState(false);
 }
 
-void TBWindow::SetWindowActiveState(bool active)
+void TBWindow::setWindowActiveState(bool active)
 {
-	SetState(WIDGET_STATE_SELECTED, active);
-	m_mover.SetState(WIDGET_STATE_SELECTED, active);
+	setState(WIDGET_STATE_SELECTED, active);
+	m_mover.setState(WIDGET_STATE_SELECTED, active);
 }
 
-void TBWindow::SetSettings(WINDOW_SETTINGS settings)
+void TBWindow::setSettings(WINDOW_SETTINGS settings)
 {
 	if (settings == m_settings)
 		return;
@@ -147,58 +147,58 @@ void TBWindow::SetSettings(WINDOW_SETTINGS settings)
 
 	if (settings & WINDOW_SETTINGS_TITLEBAR)
 	{
-		if (!m_mover.GetParent())
-			AddChild(&m_mover);
+		if (!m_mover.getParent())
+			addChild(&m_mover);
 	}
 	else if (!(settings & WINDOW_SETTINGS_TITLEBAR))
 	{
-		m_mover.RemoveFromParent();
+		m_mover.removeFromParent();
 	}
 	if (settings & WINDOW_SETTINGS_RESIZABLE)
 	{
-		if (!m_resizer.GetParent())
-			AddChild(&m_resizer);
+		if (!m_resizer.getParent())
+			addChild(&m_resizer);
 	}
 	else if (!(settings & WINDOW_SETTINGS_RESIZABLE))
 	{
-		m_resizer.RemoveFromParent();
+		m_resizer.removeFromParent();
 	}
 	if (settings & WINDOW_SETTINGS_CLOSE_BUTTON)
 	{
-		if (!m_close_button.GetParent())
-			m_mover.AddChild(&m_close_button);
+		if (!m_close_button.getParent())
+			m_mover.addChild(&m_close_button);
 	}
 	else if (!(settings & WINDOW_SETTINGS_CLOSE_BUTTON))
 	{
-		m_close_button.RemoveFromParent();
+		m_close_button.removeFromParent();
 	}
 
 	// FIX: invalidate layout / resize window!
-	Invalidate();
+	invalidate();
 }
 
-int TBWindow::GetTitleHeight()
+int TBWindow::getTitleHeight()
 {
 	if (m_settings & WINDOW_SETTINGS_TITLEBAR)
-		return m_mover.GetPreferredSize().pref_h;
+		return m_mover.getPreferredSize().pref_h;
 	return 0;
 }
 
-TBRect TBWindow::GetPaddingRect()
+TBRect TBWindow::getPaddingRect()
 {
-	TBRect padding_rect = TBWidget::GetPaddingRect();
-	int title_height = GetTitleHeight();
+	TBRect padding_rect = TBWidget::getPaddingRect();
+	int title_height = getTitleHeight();
 	padding_rect.y += title_height;
 	padding_rect.h -= title_height;
 	return padding_rect;
 }
 
-PreferredSize TBWindow::OnCalculatePreferredSize(const SizeConstraints &constraints)
+PreferredSize TBWindow::onCalculatePreferredSize(const SizeConstraints &constraints)
 {
-	PreferredSize ps = OnCalculatePreferredContentSize(constraints);
+	PreferredSize ps = onCalculatePreferredContentSize(constraints);
 
 	// Add window skin padding
-	if (TBSkinElement *e = GetSkinBgElement())
+	if (TBSkinElement *e = getSkinBgElement())
 	{
 		ps.min_w += e->padding_left + e->padding_right;
 		ps.pref_w += e->padding_left + e->padding_right;
@@ -206,67 +206,67 @@ PreferredSize TBWindow::OnCalculatePreferredSize(const SizeConstraints &constrai
 		ps.pref_h += e->padding_top + e->padding_bottom;
 	}
 	// Add window title bar height
-	int title_height = GetTitleHeight();
+	int title_height = getTitleHeight();
 	ps.min_h += title_height;
 	ps.pref_h += title_height;
 	return ps;
 }
 
-bool TBWindow::OnEvent(const TBWidgetEvent &ev)
+bool TBWindow::onEvent(const TBWidgetEvent &ev)
 {
 	if (ev.target == &m_close_button)
 	{
 		if (ev.type == EVENT_TYPE_CLICK)
-			Close();
+			close();
 		return true;
 	}
 	return false;
 }
 
-void TBWindow::OnAdded()
+void TBWindow::onAdded()
 {
 	// If we was added last, call Activate to update status etc.
-	if (GetParent()->GetLastChild() == this)
-		Activate();
+	if (getParent()->getLastChild() == this)
+		activate();
 }
 
-void TBWindow::OnRemove()
+void TBWindow::onRemove()
 {
-	DeActivate();
+	deActivate();
 
 	// Active the top most other window
-	if (TBWindow *active_window = GetTopMostOtherWindow(true))
-		active_window->Activate();
+	if (TBWindow *active_window = getTopMostOtherWindow(true))
+		active_window->activate();
 }
 
-void TBWindow::OnChildAdded(TBWidget *child)
+void TBWindow::onChildAdded(TBWidget *child)
 {
-	m_resizer.SetZ(WIDGET_Z_TOP);
+	m_resizer.setZ(WIDGET_Z_TOP);
 }
 
-void TBWindow::OnResized(int old_w, int old_h)
+void TBWindow::onResized(int oldW, int oldH)
 {
 	// Apply gravity on children
-	TBWidget::OnResized(old_w, old_h);
+	TBWidget::onResized(oldW, oldH);
 	// Manually move our own decoration children
 	// FIX: Put a layout in the TBMover so we can add things there nicely.
-	const int title_height = GetTitleHeight();
-	m_mover.SetRect(TBRect(0, 0, GetRect().w, title_height));
+	const int title_height = getTitleHeight();
+	m_mover.setRect(TBRect(0, 0, getRect().w, title_height));
 
-	PreferredSize ps = m_resizer.GetPreferredSize();
-	m_resizer.SetRect(TBRect(GetRect().w - ps.pref_w, GetRect().h - ps.pref_h, ps.pref_w, ps.pref_h));
+	PreferredSize ps = m_resizer.getPreferredSize();
+	m_resizer.setRect(TBRect(getRect().w - ps.pref_w, getRect().h - ps.pref_h, ps.pref_w, ps.pref_h));
 
-	const TBRect mover_rect = m_mover.GetRect();
-	const TBRect mover_padding_rect = m_mover.GetPaddingRect();
+	const TBRect mover_rect = m_mover.getRect();
+	const TBRect mover_padding_rect = m_mover.getPaddingRect();
 	const int mover_padding_right = mover_rect.x + mover_rect.w - (mover_padding_rect.x + mover_padding_rect.w);
-	const int button_w = m_close_button.GetPreferredSize().pref_w;
-	const int button_h = Max(m_close_button.GetPreferredSize().pref_h, mover_padding_rect.h);
-	m_close_button.SetRect(TBRect(mover_padding_rect.x + mover_padding_rect.w - button_w, mover_padding_rect.y, button_w, button_h));
+	const int button_w = m_close_button.getPreferredSize().pref_w;
+	const int button_h = Max(m_close_button.getPreferredSize().pref_h, mover_padding_rect.h);
+	m_close_button.setRect(TBRect(mover_padding_rect.x + mover_padding_rect.w - button_w, mover_padding_rect.y, button_w, button_h));
 
 	TBRect title_rect = mover_padding_rect;
 	if (m_settings & WINDOW_SETTINGS_CLOSE_BUTTON)
 		title_rect.w -= mover_padding_right + button_w;
-	m_textfield.SetRect(title_rect);
+	m_textfield.setRect(title_rect);
 }
 
 } // namespace tb

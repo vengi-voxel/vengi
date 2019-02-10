@@ -7,20 +7,20 @@
 
 namespace tb {
 
-TBRect TBPopupAlignment::GetAlignedRect(TBWidget *popup, TBWidget *target) const
+TBRect TBPopupAlignment::getAlignedRect(TBWidget *popup, TBWidget *target) const
 {
-	TBWidget *root = target->GetParentRoot();
+	TBWidget *root = target->getParentRoot();
 
-	SizeConstraints sc(root->GetRect().w, root->GetRect().h);
+	SizeConstraints sc(root->getRect().w, root->getRect().h);
 
-	PreferredSize ps = popup->GetPreferredSize(sc);
+	PreferredSize ps = popup->getPreferredSize(sc);
 
 	// Amount of pixels that should be avoided if the target rect needs to be moved.
 	int avoid_w = 0, avoid_h = 0;
 
 	int x = 0, y = 0;
-	int w = Min(ps.pref_w, root->GetRect().w);
-	int h = Min(ps.pref_h, root->GetRect().h);
+	int w = Min(ps.pref_w, root->getRect().w);
+	int h = Min(ps.pref_h, root->getRect().h);
 
 	if (pos_in_root.x != UNSPECIFIED &&
 		pos_in_root.y != UNSPECIFIED)
@@ -32,38 +32,38 @@ TBRect TBPopupAlignment::GetAlignedRect(TBWidget *popup, TBWidget *target) const
 		avoid_h = pos_offset.y;
 		// Make sure it's moved into view horizontally
 		if (align == TB_ALIGN_TOP || align == TB_ALIGN_BOTTOM)
-			x = Clamp(x, 0, root->GetRect().w - w);
+			x = Clamp(x, 0, root->getRect().w - w);
 	}
 	else
 	{
-		target->ConvertToRoot(x, y);
+		target->convertToRoot(x, y);
 
 		if (align == TB_ALIGN_TOP || align == TB_ALIGN_BOTTOM)
 		{
 			if (expand_to_target_width)
-				w = Max(w, target->GetRect().w);
+				w = Max(w, target->getRect().w);
 
 			// If the menu is aligned top or bottom, limit its height to the worst case available height.
 			// Being in the center of the root, that is half the root height minus the target rect.
-			h = Min(h, root->GetRect().h / 2 - target->GetRect().h);
+			h = Min(h, root->getRect().h / 2 - target->getRect().h);
 		}
-		avoid_w = target->GetRect().w;
-		avoid_h = target->GetRect().h;
+		avoid_w = target->getRect().w;
+		avoid_h = target->getRect().h;
 	}
 
 	if (align == TB_ALIGN_BOTTOM)
-		y = y + avoid_h + h > root->GetRect().h ? y - h : y + avoid_h;
+		y = y + avoid_h + h > root->getRect().h ? y - h : y + avoid_h;
 	else if (align == TB_ALIGN_TOP)
 		y = y - h < 0 ? y + avoid_h : y - h;
 	else if (align == TB_ALIGN_RIGHT)
 	{
-		x = x + avoid_w + w > root->GetRect().w ? x - w : x + avoid_w;
-		y = Min(y, root->GetRect().h - h);
+		x = x + avoid_w + w > root->getRect().w ? x - w : x + avoid_w;
+		y = Min(y, root->getRect().h - h);
 	}
 	else // if (align == TB_ALIGN_LEFT)
 	{
 		x = x - w < 0 ? x + avoid_w : x - w;
-		y = Min(y, root->GetRect().h - h);
+		y = Min(y, root->getRect().h - h);
 	}
 	return TBRect(x, y, w, h);
 }
@@ -71,62 +71,62 @@ TBRect TBPopupAlignment::GetAlignedRect(TBWidget *popup, TBWidget *target) const
 TBPopupWindow::TBPopupWindow(TBWidget *target)
 	: m_target(target)
 {
-	TBWidgetListener::AddGlobalListener(this);
-	SetSkinBg(TBIDC("TBPopupWindow"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	SetSettings(WINDOW_SETTINGS_NONE);
+	TBWidgetListener::addGlobalListener(this);
+	setSkinBg(TBIDC("TBPopupWindow"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	setSettings(WINDOW_SETTINGS_NONE);
 }
 
 TBPopupWindow::~TBPopupWindow()
 {
-	TBWidgetListener::RemoveGlobalListener(this);
+	TBWidgetListener::removeGlobalListener(this);
 }
 
-bool TBPopupWindow::Show(const TBPopupAlignment &alignment)
+bool TBPopupWindow::show(const TBPopupAlignment &alignment)
 {
 	// Calculate and set a good size for the popup window
-	SetRect(alignment.GetAlignedRect(this, m_target.Get()));
+	setRect(alignment.getAlignedRect(this, m_target.get()));
 
-	TBWidget *root = m_target.Get()->GetParentRoot();
-	root->AddChild(this);
+	TBWidget *root = m_target.get()->getParentRoot();
+	root->addChild(this);
 	return true;
 }
 
-bool TBPopupWindow::OnEvent(const TBWidgetEvent &ev)
+bool TBPopupWindow::onEvent(const TBWidgetEvent &ev)
 {
 	if (ev.type == EVENT_TYPE_KEY_DOWN && ev.special_key == TB_KEY_ESC)
 	{
-		Close();
+		close();
 		return true;
 	}
-	return TBWindow::OnEvent(ev);
+	return TBWindow::onEvent(ev);
 }
 
-void TBPopupWindow::OnWidgetFocusChanged(TBWidget *widget, bool focused)
+void TBPopupWindow::onWidgetFocusChanged(TBWidget *widget, bool focused)
 {
-	if (focused && !IsEventDestinationFor(widget))
-		Close();
+	if (focused && !isEventDestinationFor(widget))
+		close();
 }
 
-bool TBPopupWindow::OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev)
+bool TBPopupWindow::onWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev)
 {
 	if ((ev.type == EVENT_TYPE_POINTER_DOWN || ev.type == EVENT_TYPE_CONTEXT_MENU) &&
-		!IsEventDestinationFor(ev.target))
-		Close();
+		!isEventDestinationFor(ev.target))
+		close();
 	return false;
 }
 
-void TBPopupWindow::OnWidgetDelete(TBWidget *widget)
+void TBPopupWindow::onWidgetDelete(TBWidget *widget)
 {
 	// If the target widget is deleted, close!
-	if (!m_target.Get())
-		Close();
+	if (!m_target.get())
+		close();
 }
 
-bool TBPopupWindow::OnWidgetDying(TBWidget *widget)
+bool TBPopupWindow::onWidgetDying(TBWidget *widget)
 {
 	// If the target widget or an ancestor of it is dying, close!
-	if (widget == m_target.Get() || widget->IsAncestorOf(m_target.Get()))
-		Close();
+	if (widget == m_target.get() || widget->isAncestorOf(m_target.get()))
+		close();
 	return false;
 }
 

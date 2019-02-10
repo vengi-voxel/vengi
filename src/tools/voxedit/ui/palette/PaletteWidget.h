@@ -29,18 +29,18 @@ public:
 	void markAsClean();
 	bool isDirty() const;
 
-	void SetValue(int value) override;
-	int GetValue() const override;
-	tb::PreferredSize OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
-	void OnPaint(const PaintProps &paint_props) override;
-	void OnInflate(const tb::INFLATE_INFO &info) override;
-	void OnResized(int oldWidth, int oldHeight) override;
-	bool OnEvent(const tb::TBWidgetEvent &ev) override;
+	void setValue(int value) override;
+	int getValue() const override;
+	tb::PreferredSize onCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
+	void onPaint(const PaintProps &paint_props) override;
+	void onInflate(const tb::INFLATE_INFO &info) override;
+	void onResized(int oldWidth, int oldHeight) override;
+	bool onEvent(const tb::TBWidgetEvent &ev) override;
 };
 
 UIWIDGET_FACTORY(PaletteWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)
 
-inline int PaletteWidget::GetValue() const {
+inline int PaletteWidget::getValue() const {
 	return _value;
 }
 

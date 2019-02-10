@@ -6,6 +6,7 @@
 
 #include "ui/turbobadger/Window.h"
 #include "core/Common.h"
+#include "voxedit-util/ModifierType.h"
 #include "core/String.h"
 #include "math/Axis.h"
 
@@ -116,9 +117,9 @@ public:
 	bool isHovered() const;
 	bool isActive() const;
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override;
-	void OnProcess() override;
-	void OnDie() override;
+	bool onEvent(const tb::TBWidgetEvent &ev) override;
+	void onProcess() override;
+	void onDie() override;
 };
 
 inline bool VoxEditWindow::isActive() const {

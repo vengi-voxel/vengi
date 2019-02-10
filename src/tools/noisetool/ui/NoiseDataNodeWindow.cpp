@@ -27,15 +27,15 @@ bool NoiseDataNodeWindow::init() {
 
 	// TEST TEST TEST
 	NoiseItemSource* source = _noiseTool->noiseItemSource();
-	const int n = source->GetNumItems();
+	const int n = source->getNumItems();
 	for (int index = 0; index < n; ++index) {
-		NoiseItem* item = source->GetItem(index);
+		NoiseItem* item = source->getItem(index);
 		NoiseDataNodeWidget *itemWidget = new NoiseDataNodeWidget(item);
-		_nodesWidget->GetContentRoot()->AddChild(itemWidget);
+		_nodesWidget->getContentRoot()->addChild(itemWidget);
 	}
 	return true;
 }
 
-bool NoiseDataNodeWindow::OnEvent(const tb::TBWidgetEvent &ev) {
-	return Super::OnEvent(ev);
+bool NoiseDataNodeWindow::onEvent(const tb::TBWidgetEvent &ev) {
+	return Super::onEvent(ev);
 }

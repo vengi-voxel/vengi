@@ -31,24 +31,24 @@ public:
 	/** Set the source which should provide the items for this viewer.
 		This source needs to live longer than this viewer.
 		Set nullptr to unset currently set source. */
-	void SetSource(TBSelectItemSource *source);
-	TBSelectItemSource *GetSource() const { return m_source; }
+	void setSource(TBSelectItemSource *source);
+	TBSelectItemSource *getSource() const { return m_source; }
 
 	/** Called when the source has changed or been unset by calling SetSource. */
-	virtual void OnSourceChanged() = 0;
+	virtual void onSourceChanged() = 0;
 
 	/** Called when the item at the given index has changed in a way that should
 		update the viewer. */
-	virtual void OnItemChanged(int index) = 0;
+	virtual void onItemChanged(int index) = 0;
 
 	/** Called when the item at the given index has been added. */
-	virtual void OnItemAdded(int index) = 0;
+	virtual void onItemAdded(int index) = 0;
 
 	/** Called when the item at the given index has been removed. */
-	virtual void OnItemRemoved(int index) = 0;
+	virtual void onItemRemoved(int index) = 0;
 
 	/** Called when all items have been removed. */
-	virtual void OnAllItemsRemoved() = 0;
+	virtual void onAllItemsRemoved() = 0;
 protected:
 	TBSelectItemSource *m_source;
 };
@@ -74,40 +74,40 @@ public:
 
 	/** Return true if an item matches the given filter text.
 		By default, it returns true if GetItemString contains filter. */
-	virtual bool Filter(int index, const char *filter);
+	virtual bool filter(int index, const char *filter);
 
 	/** Get the string of a item. If a item has more than one string,
 		return the one that should be used for inline-find (pressing keys
 		in the list will scroll to the item starting with the same letters),
 		and for sorting the list. */
-	virtual const char *GetItemString(int index) const = 0;
+	virtual const char *getItemString(int index) const = 0;
 
 	/** Get the source to be used if this item should open a sub menu. */
-	virtual TBSelectItemSource *GetItemSubSource(int index) { return nullptr; }
+	virtual TBSelectItemSource *getItemSubSource(int index) { return nullptr; }
 
 	/** Get the skin image to be painted before the text for this item. */
-	virtual TBID GetItemImage(int /*index*/) const { return TBID(); }
+	virtual TBID getItemImage(int /*index*/) const { return TBID(); }
 
 	/** Get the id of the item. */
-	virtual TBID GetItemID(int /*index*/) const { return TBID(); }
+	virtual TBID getItemID(int /*index*/) const { return TBID(); }
 
 	/** Create the item representation widget(s). By default, it will create
 		a TBTextField for string-only items, and other types for items that
 		also has image or submenu. */
-	virtual TBWidget *CreateItemWidget(int index, TBSelectItemViewer *viewer);
+	virtual TBWidget *createItemWidget(int index, TBSelectItemViewer *viewer);
 
 	/** Get the number of items */
-	virtual int GetNumItems() const = 0;
+	virtual int getNumItems() const = 0;
 
 	/** Set sort type. Default is TB_SORT_NONE. */
-	void SetSort(TB_SORT sort) { m_sort = sort; }
-	TB_SORT GetSort() const { return m_sort; }
+	void setSort(TB_SORT sort) { m_sort = sort; }
+	TB_SORT getSort() const { return m_sort; }
 
 	/** Invoke OnItemChanged on all open viewers for this source. */
-	void InvokeItemChanged(int index, TBSelectItemViewer *exclude_viewer = nullptr);
-	void InvokeItemAdded(int index);
-	void InvokeItemRemoved(int index);
-	void InvokeAllItemsRemoved();
+	void invokeItemChanged(int index, TBSelectItemViewer *exclude_viewer = nullptr);
+	void invokeItemAdded(int index);
+	void invokeItemRemoved(int index);
+	void invokeAllItemsRemoved();
 private:
 	friend class TBSelectItemViewer;
 	TBLinkListOf<TBSelectItemViewer> m_viewers;
@@ -121,56 +121,56 @@ class TBSelectItemSourceList : public TBSelectItemSource
 {
 public:
 	TBSelectItemSourceList() {}
-	virtual ~TBSelectItemSourceList()					{ DeleteAllItems(); }
-	virtual const char *GetItemString(int index) const	{ return GetItem(index)->str; }
-	virtual TBSelectItemSource *GetItemSubSource(int index){ return GetItem(index)->sub_source; }
-	virtual TBID GetItemImage(int index) const			{ return GetItem(index)->skin_image; }
-	virtual TBID GetItemID(int index) const				{ return GetItem(index)->id; }
-	virtual int GetNumItems() const						{ return m_items.GetNumItems(); }
-	virtual TBWidget *CreateItemWidget(int index, TBSelectItemViewer *viewer)
+	virtual ~TBSelectItemSourceList()					{ deleteAllItems(); }
+	virtual const char *getItemString(int index) const	{ return getItem(index)->str; }
+	virtual TBSelectItemSource *getItemSubSource(int index){ return getItem(index)->sub_source; }
+	virtual TBID getItemImage(int index) const			{ return getItem(index)->skin_image; }
+	virtual TBID getItemID(int index) const				{ return getItem(index)->id; }
+	virtual int getNumItems() const						{ return m_items.getNumItems(); }
+	virtual TBWidget *createItemWidget(int index, TBSelectItemViewer *viewer)
 	{
-		if (TBWidget *widget = TBSelectItemSource::CreateItemWidget(index, viewer))
+		if (TBWidget *widget = TBSelectItemSource::createItemWidget(index, viewer))
 		{
 			T *item = m_items[index];
-			widget->SetID(item->id);
+			widget->setID(item->id);
 			return widget;
 		}
 		return nullptr;
 	}
 
 	/** Add a new item at the given index. */
-	bool AddItem(T *item, int index)
+	bool addItem(T *item, int index)
 	{
-		if (m_items.Add(item, index))
+		if (m_items.add(item, index))
 		{
-			InvokeItemAdded(index);
+			invokeItemAdded(index);
 			return true;
 		}
 		return false;
 	}
 
 	/** Add a new item last. */
-	bool AddItem(T *item)				{ return AddItem(item, m_items.GetNumItems()); }
+	bool addItem(T *item)				{ return addItem(item, m_items.getNumItems()); }
 
 	/** Get the item at the given index. */
-	T *GetItem(int index) const			{ return m_items[index]; }
+	T *getItem(int index) const			{ return m_items[index]; }
 
 	/** Delete the item at the given index. */
-	void DeleteItem(int index)
+	void deleteItem(int index)
 	{
-		if (!m_items.GetNumItems())
+		if (!m_items.getNumItems())
 			return;
-		m_items.Delete(index);
-		InvokeItemRemoved(index);
+		m_items.doDelete(index);
+		invokeItemRemoved(index);
 	}
 
 	/** Delete all items. */
-	void DeleteAllItems()
+	void deleteAllItems()
 	{
-		if (!m_items.GetNumItems())
+		if (!m_items.getNumItems())
 			return;
-		m_items.DeleteAll();
-		InvokeAllItemsRemoved();
+		m_items.deleteAll();
+		invokeAllItemsRemoved();
 	}
 private:
 	TBListOf<T> m_items;
@@ -185,9 +185,9 @@ public:
 	TBGenericStringItem(const char *str) : str(str), sub_source(nullptr) {}
 	TBGenericStringItem(const char *str, TBID id) : str(str), id(id), sub_source(nullptr) {}
 	TBGenericStringItem(const char *str, TBSelectItemSource *sub_source) : str(str), sub_source(sub_source) {}
-	const TBGenericStringItem& operator = (const TBGenericStringItem &other) { str.Set(other.str); id = other.id; sub_source = other.sub_source; tag = other.tag; return *this; }
+	const TBGenericStringItem& operator = (const TBGenericStringItem &other) { str.set(other.str); id = other.id; sub_source = other.sub_source; tag = other.tag; return *this; }
 
-	void SetSkinImage(const TBID &image) { skin_image = image; }
+	void setSkinImage(const TBID &image) { skin_image = image; }
 public:
 	TBStr str;
 	TBID id;

@@ -53,24 +53,24 @@ core::AppState TestTurbobadger::onInit() {
 	// for widgets that occur many times in a UI, always with the same items.
 	// Here we prepare the name source, that is used in a few places.
 	for (int i = 0; boy_names[i]; i++)
-		advanced_source.AddItem(new AdvancedItem(boy_names[i++], TBIDC("boy_item"), true));
+		advanced_source.addItem(new AdvancedItem(boy_names[i++], TBIDC("boy_item"), true));
 	for (int i = 0; girl_names[i]; i++)
-		advanced_source.AddItem(new AdvancedItem(girl_names[i++], TBIDC("girl_item"), false));
+		advanced_source.addItem(new AdvancedItem(girl_names[i++], TBIDC("girl_item"), false));
 	for (int i = 0; girl_names[i]; i++)
-		name_source.AddItem(new TBGenericStringItem(girl_names[i++], TBIDC("girl_item")));
+		name_source.addItem(new TBGenericStringItem(girl_names[i++], TBIDC("girl_item")));
 	for (int i = 0; boy_names[i]; i++)
-		name_source.AddItem(new TBGenericStringItem(boy_names[i++], TBIDC("boy_item")));
-	advanced_source.SetSort(TB_SORT_ASCENDING);
-	name_source.SetSort(TB_SORT_ASCENDING);
+		name_source.addItem(new TBGenericStringItem(boy_names[i++], TBIDC("boy_item")));
+	advanced_source.setSort(TB_SORT_ASCENDING);
+	name_source.setSort(TB_SORT_ASCENDING);
 
 	// Prepare a source with submenus (with eternal recursion) so we can test sub menu support.
-	popup_menu_source.AddItem(new TBGenericStringItem("Option 1", TBIDC("opt 1")));
-	popup_menu_source.AddItem(new TBGenericStringItem("Option 2", TBIDC("opt 2")));
-	popup_menu_source.AddItem(new TBGenericStringItem("-"));
-	popup_menu_source.AddItem(new TBGenericStringItem("Same submenu", &popup_menu_source));
-	popup_menu_source.AddItem(new TBGenericStringItem("Long submenu", &name_source));
+	popup_menu_source.addItem(new TBGenericStringItem("Option 1", TBIDC("opt 1")));
+	popup_menu_source.addItem(new TBGenericStringItem("Option 2", TBIDC("opt 2")));
+	popup_menu_source.addItem(new TBGenericStringItem("-"));
+	popup_menu_source.addItem(new TBGenericStringItem("Same submenu", &popup_menu_source));
+	popup_menu_source.addItem(new TBGenericStringItem("Long submenu", &name_source));
 	// Give the first item a skin image
-	popup_menu_source.GetItem(0)->SetSkinImage(TBIDC("Icon16"));
+	popup_menu_source.getItem(0)->setSkinImage(TBIDC("Icon16"));
 
 	new MainWindow(_root);
 

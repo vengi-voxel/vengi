@@ -10,24 +10,24 @@ namespace tb {
 
 TBSectionHeader::TBSectionHeader()
 {
-	SetSkinBg(TBIDC("TBSectionHeader"));
-	SetGravity(WIDGET_GRAVITY_LEFT | WIDGET_GRAVITY_RIGHT);
-	SetToggleMode(true);
+	setSkinBg(TBIDC("TBSectionHeader"));
+	setGravity(WIDGET_GRAVITY_LEFT | WIDGET_GRAVITY_RIGHT);
+	setToggleMode(true);
 }
 
-bool TBSectionHeader::OnEvent(const TBWidgetEvent &ev)
+bool TBSectionHeader::onEvent(const TBWidgetEvent &ev)
 {
-	if (ev.target == this && ev.type == EVENT_TYPE_CHANGED && GetParent()->GetParent())
+	if (ev.target == this && ev.type == EVENT_TYPE_CHANGED && getParent()->getParent())
 	{
-		if (TBSection *section = TBSafeCast<TBSection>(GetParent()->GetParent()))
+		if (TBSection *section = TBSafeCast<TBSection>(getParent()->getParent()))
 		{
-			section->GetContainer()->SetValue(GetValue());
+			section->getContainer()->setValue(getValue());
 
 			// Try to scroll the container into view when expanded
-			section->SetPendingScrollIntoView(GetValue() ? true : false);
+			section->setPendingScrollIntoView(getValue() ? true : false);
 		}
 	}
-	return TBButton::OnEvent(ev);
+	return TBButton::onEvent(ev);
 }
 
 // == TBSectionHeader =====================================
@@ -35,48 +35,48 @@ bool TBSectionHeader::OnEvent(const TBWidgetEvent &ev)
 TBSection::TBSection()
 	: m_pending_scroll(false)
 {
-	SetGravity(WIDGET_GRAVITY_LEFT | WIDGET_GRAVITY_RIGHT);
+	setGravity(WIDGET_GRAVITY_LEFT | WIDGET_GRAVITY_RIGHT);
 
-	SetSkinBg(TBIDC("TBSection"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	m_layout.SetSkinBg(TBIDC("TBSection.layout"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	setSkinBg(TBIDC("TBSection"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	m_layout.setSkinBg(TBIDC("TBSection.layout"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 
-	m_toggle_container.SetSkinBg(TBIDC("TBSection.container"));
-	m_toggle_container.SetToggle(TBToggleContainer::TOGGLE_EXPANDED);
-	m_toggle_container.SetGravity(WIDGET_GRAVITY_ALL);
-	m_layout.SetAxis(AXIS_Y);
-	m_layout.SetGravity(WIDGET_GRAVITY_ALL);
-	m_layout.SetLayoutSize(LAYOUT_SIZE_AVAILABLE);
+	m_toggle_container.setSkinBg(TBIDC("TBSection.container"));
+	m_toggle_container.setToggle(TBToggleContainer::TOGGLE_EXPANDED);
+	m_toggle_container.setGravity(WIDGET_GRAVITY_ALL);
+	m_layout.setAxis(AXIS_Y);
+	m_layout.setGravity(WIDGET_GRAVITY_ALL);
+	m_layout.setLayoutSize(LAYOUT_SIZE_AVAILABLE);
 
-	AddChild(&m_layout);
-	m_layout.AddChild(&m_header);
-	m_layout.AddChild(&m_toggle_container);
+	addChild(&m_layout);
+	m_layout.addChild(&m_header);
+	m_layout.addChild(&m_toggle_container);
 }
 
 TBSection::~TBSection()
 {
-	m_layout.RemoveChild(&m_toggle_container);
-	m_layout.RemoveChild(&m_header);
-	RemoveChild(&m_layout);
+	m_layout.removeChild(&m_toggle_container);
+	m_layout.removeChild(&m_header);
+	removeChild(&m_layout);
 }
 
-void TBSection::SetValue(int value)
+void TBSection::setValue(int value)
 {
-	m_header.SetValue(value);
-	m_toggle_container.SetValue(value);
+	m_header.setValue(value);
+	m_toggle_container.setValue(value);
 }
 
-void TBSection::OnProcessAfterChildren()
+void TBSection::onProcessAfterChildren()
 {
 	if (m_pending_scroll)
 	{
 		m_pending_scroll = false;
-		ScrollIntoViewRecursive();
+		scrollIntoViewRecursive();
 	}
 }
 
-PreferredSize TBSection::OnCalculatePreferredSize(const SizeConstraints &constraints)
+PreferredSize TBSection::onCalculatePreferredSize(const SizeConstraints &constraints)
 {
-	PreferredSize ps = TBWidget::OnCalculatePreferredContentSize(constraints);
+	PreferredSize ps = TBWidget::onCalculatePreferredContentSize(constraints);
 	// We should not grow larger than we are, when there's extra space available.
 	ps.max_h = ps.pref_h;
 	return ps;
@@ -89,56 +89,56 @@ TBToggleContainer::TBToggleContainer()
 	, m_invert(false)
 	, m_value(0)
 {
-	SetSkinBg(TBIDC("TBToggleContainer"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
+	setSkinBg(TBIDC("TBToggleContainer"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 }
 
-void TBToggleContainer::SetToggle(TOGGLE toggle)
+void TBToggleContainer::setToggle(TOGGLE toggle)
 {
 	if (toggle == m_toggle)
 		return;
 
 	if (m_toggle == TOGGLE_EXPANDED)
-		InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+		invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 
 	m_toggle = toggle;
-	UpdateInternal();
+	updateInternal();
 }
 
-void TBToggleContainer::SetInvert(bool invert)
+void TBToggleContainer::setInvert(bool invert)
 {
 	if (invert == m_invert)
 		return;
 	m_invert = invert;
-	UpdateInternal();
+	updateInternal();
 }
 
-void TBToggleContainer::SetValue(int value)
+void TBToggleContainer::setValue(int value)
 {
 	if (value == m_value)
 		return;
 	m_value = value;
-	UpdateInternal();
-	InvalidateSkinStates();
+	updateInternal();
+	invalidateSkinStates();
 }
 
-void TBToggleContainer::UpdateInternal()
+void TBToggleContainer::updateInternal()
 {
-	bool on = GetIsOn();
+	bool on = getIsOn();
 	switch (m_toggle)
 	{
 	case TOGGLE_NOTHING:
 		break;
 	case TOGGLE_ENABLED:
-		SetState(WIDGET_STATE_DISABLED, !on);
+		setState(WIDGET_STATE_DISABLED, !on);
 		break;
 	case TOGGLE_OPACITY:
-		SetOpacity(on ? 1.f : 0);
+		setOpacity(on ? 1.f : 0);
 		break;
 	case TOGGLE_EXPANDED:
-		SetVisibility(on ? WIDGET_VISIBILITY_VISIBLE : WIDGET_VISIBILITY_GONE);
+		setVisibility(on ? WIDGET_VISIBILITY_VISIBLE : WIDGET_VISIBILITY_GONE);
 
 		// Also disable when collapsed so tab focus skips the children.
-		SetState(WIDGET_STATE_DISABLED, !on);
+		setState(WIDGET_STATE_DISABLED, !on);
 		break;
 	}
 }

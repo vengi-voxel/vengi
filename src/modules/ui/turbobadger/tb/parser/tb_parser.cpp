@@ -15,10 +15,10 @@ static bool is_hex(char c)
 	return ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 }
 
-static uint32_t parse_hex(char *&src, int max_count)
+static uint32_t parse_hex(char *&src, int maxCount)
 {
 	uint32_t hex = 0;
-	for (int i = 0; i < max_count; i++)
+	for (int i = 0; i < maxCount; i++)
 	{
 		char c = *src;
 		if (!is_hex(c))
@@ -30,7 +30,7 @@ static uint32_t parse_hex(char *&src, int max_count)
 	return hex;
 }
 
-void UnescapeString(char *str)
+void unescapeString(char *str)
 {
 	// fast forward to any escape sequence
 	while (*str && *str != '\\')
@@ -147,20 +147,20 @@ bool is_pending_multiline(const char *str)
 	return str[0] == '\\' && str[1] == 0;
 }
 
-bool IsEndQuote(const char *buf_start, const char *buf, const char quote_type)
+bool isEndQuote(const char *bufStart, const char *buf, const char quoteType)
 {
-	if (*buf != quote_type)
+	if (*buf != quoteType)
 		return false;
 	int num_backslashes = 0;
-	while (buf_start < buf && *(buf-- - 1) == '\\')
+	while (bufStart < buf && *(buf-- - 1) == '\\')
 		num_backslashes++;
 	return !(num_backslashes & 1);
 }
 
-TBParser::STATUS TBParser::Read(TBParserStream *stream, TBParserTarget *target)
+TBParser::STATUS TBParser::read(TBParserStream *stream, TBParserTarget *target)
 {
 	TBTempBuffer line, work;
-	if (!line.Reserve(1024) || !work.Reserve(1024))
+	if (!line.reserve(1024) || !work.reserve(1024))
 		return STATUS_OUT_OF_MEMORY;
 
 	current_indent = 0;
@@ -168,9 +168,9 @@ TBParser::STATUS TBParser::Read(TBParserStream *stream, TBParserTarget *target)
 	pending_multiline = false;
 	multi_line_sub_level = 0;
 
-	while (int read_len = stream->GetMoreData((char *)work.GetData(), work.GetCapacity()))
+	while (int read_len = stream->getMoreData((char *)work.getData(), work.getCapacity()))
 	{
-		char *buf = work.GetData();
+		char *buf = work.getData();
 
 		// Skip BOM (BYTE ORDER MARK) character, often in the beginning of UTF-8 documents.
 		if (current_line_nr == 1 && read_len > 3 &&
@@ -195,55 +195,55 @@ TBParser::STATUS TBParser::Read(TBParserStream *stream, TBParserTarget *target)
 				// We have a line
 				// Skip preceding \r (if we have one)
 				int line_len = line_pos - line_start;
-				if (!line.Append(buf + line_start, line_len))
+				if (!line.append(buf + line_start, line_len))
 					return STATUS_OUT_OF_MEMORY;
 
 				// Strip away trailing '\r' if the line has it
-				char *linebuf = line.GetData();
-				int linebuf_len = line.GetAppendPos();
+				char *linebuf = line.getData();
+				int linebuf_len = line.getAppendPos();
 				if (linebuf_len > 0 && linebuf[linebuf_len - 1] == '\r')
 					linebuf[linebuf_len - 1] = 0;
 
 				// Terminate the line string
-				if (!line.Append("", 1))
+				if (!line.append("", 1))
 					return STATUS_OUT_OF_MEMORY;
 
 				// Handle line
-				OnLine(line.GetData(), target);
+				onLine(line.getData(), target);
 				current_line_nr++;
 
-				line.ResetAppendPos();
+				line.resetAppendPos();
 				line_pos++; // Skip this \n
 				// Find next line
 				continue;
 			}
 			// No more lines here so push the rest and break for more data
-			if (!line.Append(buf + line_start, read_len - line_start))
+			if (!line.append(buf + line_start, read_len - line_start))
 				return STATUS_OUT_OF_MEMORY;
 			break;
 		}
 	}
-	if (line.GetAppendPos())
+	if (line.getAppendPos())
 	{
-		if (!line.Append("", 1))
+		if (!line.append("", 1))
 			return STATUS_OUT_OF_MEMORY;
-		OnLine(line.GetData(), target);
+		onLine(line.getData(), target);
 		current_line_nr++;
 	}
 	return STATUS_OK;
 }
 
-void TBParser::OnLine(char *line, TBParserTarget *target)
+void TBParser::onLine(char *line, TBParserTarget *target)
 {
 	if (is_space_or_comment(line))
 	{
 		if (*line == '#')
-			target->OnComment(current_line_nr, line + 1);
+			target->onComment(current_line_nr, line + 1);
 		return;
 	}
 	if (pending_multiline)
 	{
-		OnMultiline(line, target);
+		onMultiline(line, target);
 		return;
 	}
 
@@ -255,7 +255,7 @@ void TBParser::OnLine(char *line, TBParserTarget *target)
 
 	if (indent - current_indent > 1)
 	{
-		target->OnError(current_line_nr, "Indentation error. (Line skipped)");
+		target->onError(current_line_nr, "Indentation error. (Line skipped)");
 		return;
 	}
 
@@ -263,14 +263,14 @@ void TBParser::OnLine(char *line, TBParserTarget *target)
 	{
 		// FIX: Report indentation error if more than 1 higher!
 		core_assert(indent - current_indent == 1);
-		target->Enter();
+		target->enter();
 		current_indent++;
 	}
 	else if (indent < current_indent)
 	{
 		while (indent < current_indent)
 		{
-			target->Leave();
+			target->leave();
 			current_indent--;
 		}
 	}
@@ -302,12 +302,12 @@ void TBParser::OnLine(char *line, TBParserTarget *target)
 				is_start_of_color(line) ||
 				is_start_of_reference(line))
 			{
-				ConsumeValue(value, line);
+				consumeValue(value, line);
 
 				if (pending_multiline)
 				{
 					// The value wrapped to the next line, so we should remember the token and continue.
-					multi_line_token.Set(token);
+					multi_line_token.set(token);
 					return;
 				}
 			}
@@ -315,19 +315,19 @@ void TBParser::OnLine(char *line, TBParserTarget *target)
 		else if (token[token_len])
 		{
 			token[token_len] = 0;
-			UnescapeString(line);
-			value.SetFromStringAuto(line, TBValue::SET_AS_STATIC);
+			unescapeString(line);
+			value.setFromStringAuto(line, TBValue::SET_AS_STATIC);
 		}
-		target->OnToken(current_line_nr, token, value);
+		target->onToken(current_line_nr, token, value);
 
 		if (is_compact_line)
-			OnCompactLine(line, target);
+			onCompactLine(line, target);
 	}
 }
 
-void TBParser::OnCompactLine(char *line, TBParserTarget *target)
+void TBParser::onCompactLine(char *line, TBParserTarget *target)
 {
-	target->Enter();
+	target->enter();
 	while (*line)
 	{
 		// consume any whitespace
@@ -347,49 +347,49 @@ void TBParser::OnCompactLine(char *line, TBParserTarget *target)
 			line++;
 
 		TBValue v;
-		ConsumeValue(v, line);
+		consumeValue(v, line);
 
 		if (pending_multiline)
 		{
 			// The value wrapped to the next line, so we should remember the token and continue.
-			multi_line_token.Set(token);
+			multi_line_token.set(token);
 			// Since we need to call target->Leave when the multiline is ready, set multi_line_sub_level.
 			multi_line_sub_level = 1;
 			return;
 		}
 
 		// Ready
-		target->OnToken(current_line_nr, token, v);
+		target->onToken(current_line_nr, token, v);
 	}
 
-	target->Leave();
+	target->leave();
 }
 
-void TBParser::OnMultiline(char *line, TBParserTarget *target)
+void TBParser::onMultiline(char *line, TBParserTarget *target)
 {
 	// consume any whitespace
 	while (is_white_space(line))
 		line++;
 
 	TBValue value;
-	ConsumeValue(value, line);
+	consumeValue(value, line);
 
 	if (!pending_multiline)
 	{
 		// Ready with all lines
-		value.SetString(multi_line_value.GetData(), TBValue::SET_AS_STATIC);
-		target->OnToken(current_line_nr, multi_line_token, value);
+		value.setString(multi_line_value.getData(), TBValue::SET_AS_STATIC);
+		target->onToken(current_line_nr, multi_line_token, value);
 
 		if (multi_line_sub_level)
-			target->Leave();
+			target->leave();
 
 		// Reset
-		multi_line_value.SetAppendPos(0);
+		multi_line_value.setAppendPos(0);
 		multi_line_sub_level = 0;
 	}
 }
 
-void TBParser::ConsumeValue(TBValue &dst_value, char *&line)
+void TBParser::consumeValue(TBValue &dstValue, char *&line)
 {
 	// Find value (As quoted string, or as auto)
 	char *value = line;
@@ -400,7 +400,7 @@ void TBParser::ConsumeValue(TBValue &dst_value, char *&line)
 		line++;
 		value++;
 		// Find ending quote or end
-		while (!IsEndQuote(value, line, quote_type) && *line != 0)
+		while (!isEndQuote(value, line, quote_type) && *line != 0)
 			line++;
 		// Terminate away the quote
 		if (*line == quote_type)
@@ -413,8 +413,8 @@ void TBParser::ConsumeValue(TBValue &dst_value, char *&line)
 		if (*line == ',')
 			line++;
 
-		UnescapeString(value);
-		dst_value.SetString(value, TBValue::SET_AS_STATIC);
+		unescapeString(value);
+		dstValue.setString(value, TBValue::SET_AS_STATIC);
 	}
 	else
 	{
@@ -425,8 +425,8 @@ void TBParser::ConsumeValue(TBValue &dst_value, char *&line)
 		if (*line == ',')
 			*line++ = 0;
 
-		UnescapeString(value);
-		dst_value.SetFromStringAuto(value, TBValue::SET_AS_STATIC);
+		unescapeString(value);
+		dstValue.setFromStringAuto(value, TBValue::SET_AS_STATIC);
 	}
 
 	// Check if we still have pending value data on the following line and set pending_multiline.
@@ -435,7 +435,7 @@ void TBParser::ConsumeValue(TBValue &dst_value, char *&line)
 
 	// Append the multi line value to the buffer.
 	if (continuing_multiline || pending_multiline)
-		multi_line_value.AppendString(dst_value.GetString());
+		multi_line_value.appendString(dstValue.getString());
 }
 
 } // namespace tb
