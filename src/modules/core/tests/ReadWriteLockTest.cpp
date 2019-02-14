@@ -13,9 +13,9 @@ protected:
 	int _value = 0;
 	const int limit { 100000 };
 
-	int read(int limit) {
+	int read(int loopLimit) {
 		int n = 0;
-		for (int i = 0; i < limit; ++i) {
+		for (int i = 0; i < loopLimit; ++i) {
 			core::ScopedReadLock scoped(_rwLock);
 			if (_value >= 0) {
 				++n;

@@ -65,7 +65,7 @@ extern void traceThread(const char* name);
 #define core_trace_gl_begin(name) core::traceGLBegin(#name)
 #define core_trace_gl_begin_dynamic(name) core::traceGLBegin(#name)
 #define core_trace_gl_end() core::traceGLEnd()
-#define core_trace_gl_scoped(name) core::TraceGLScoped name(#name)
-#define core_trace_scoped(name) core::TraceScoped name(#name)
+#define core_trace_gl_scoped(name) core::TraceGLScoped __trace__##name(#name)
+#define core_trace_scoped(name) core::TraceScoped __trace__##name(#name)
 
 }

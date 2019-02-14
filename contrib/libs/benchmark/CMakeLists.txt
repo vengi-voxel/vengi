@@ -39,4 +39,4 @@ engine_add_library(
 	SRCS ${SRCS}
 	DEFINES HAVE_STD_REGEX=1
 )
-	target_include_directories(benchmark PUBLIC include)
+target_include_directories(benchmark PUBLIC include)

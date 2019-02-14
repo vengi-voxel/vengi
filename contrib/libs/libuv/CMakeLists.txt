@@ -5,7 +5,7 @@ if(MSVC)
 elseif(CMAKE_C_COMPILER_ID MATCHES "AppleClang|Clang|GNU")
   list(APPEND uv_cflags -fvisibility=hidden --std=gnu89)
   list(APPEND uv_cflags -Wall -Wextra -Wstrict-prototypes)
-  list(APPEND uv_cflags -Wno-unused-parameter)
+  list(APPEND uv_cflags -Wno-unused-parameter -Wno-shadow -Wno-cast-function-type)
 endif()
 
 set(uv_sources

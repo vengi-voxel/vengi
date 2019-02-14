@@ -148,16 +148,16 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 	}
 
 	// Traverse through the list and try to find the specified observer
-	for (const Event& event : _events) {
-		if (event.remove) {
+	for (const Event& obsEvent : _events) {
+		if (obsEvent.remove) {
 			for (EventObservers::iterator i = _observers.begin(); i != _observers.end(); ++i) {
-				if (*i == event.observer) {
+				if (*i == obsEvent.observer) {
 					_observers.erase(i);
 					break;
 				}
 			}
 		} else {
-			_observers.push_back(event.observer);
+			_observers.push_back(obsEvent.observer);
 		}
 	}
 	_events.clear();

@@ -54,7 +54,7 @@ protected:
 	mutable UniformStateMap _uniformStateMap;
 
 	Id _program = InvalidId;
-	bool _initialized = false;;
+	bool _initialized = false;
 	mutable bool _active = false;
 
 	typedef std::map<std::string, std::string> ShaderDefines;

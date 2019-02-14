@@ -168,12 +168,12 @@ std::string Shader::getSource(const std::string& buffer, bool finalize, std::vec
 
 	std::vector<std::string> includeDirs;
 	includeDirs.push_back(std::string(core::string::extractPath(_name)));
-	const std::pair<std::string, bool>& ret = util::handleIncludes(buffer, includeDirs, includedFiles);
-	src += ret.first;
+	const std::pair<std::string, bool>& includeFirst = util::handleIncludes(buffer, includeDirs, includedFiles);
+	src += includeFirst.first;
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<std::string, bool>& ret = util::handleIncludes(src, includeDirs, includedFiles);
-		src += ret.first;
+		const std::pair<std::string, bool>& includeRecurse = util::handleIncludes(src, includeDirs, includedFiles);
+		src += includeRecurse.first;
 		++level;
 		if (level >= 10) {
 			Log::warn("Abort shader include loop for %s", _name.c_str());

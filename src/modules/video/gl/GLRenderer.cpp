@@ -1178,9 +1178,9 @@ void enableDebug(DebugSeverity severity) {
 }
 
 bool compileShader(Id id, ShaderType shaderType, const std::string& source, const std::string& name) {
-	const char *s = source.c_str();
+	const char *src = source.c_str();
 	video::checkError();
-	glShaderSource(id, 1, (const GLchar**) &s, nullptr);
+	glShaderSource(id, 1, (const GLchar**) &src, nullptr);
 	video::checkError();
 	glCompileShader(id);
 	video::checkError();

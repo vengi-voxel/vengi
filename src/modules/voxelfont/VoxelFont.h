@@ -79,8 +79,8 @@ public:
 				continue;
 			}
 
-			auto i = _cache.find(c);
-			if (i == _cache.end()) {
+			auto iter = _cache.find(c);
+			if (iter == _cache.end()) {
 				xBase += _spaceWidth;
 				Log::trace("Could not find character glyph cache for %i", c);
 				continue;
@@ -94,7 +94,7 @@ public:
 			const int x = xBase + xOffset;
 			const int y = yBase + yOffset + ascent;
 
-			const voxel::Mesh* mesh = i->second;
+			const voxel::Mesh* mesh = iter->second;
 			const voxel::IndexType* meshIndices = mesh->getRawIndexData();
 			const voxel::VoxelVertex* meshVertices = mesh->getRawVertexData();
 
@@ -108,13 +108,13 @@ public:
 			out.reserve(positionSize + meshNumberVertices);
 			indices.reserve(indicesSize + meshNumberIndices);
 
-			for (size_t i = 0; i < meshNumberVertices; ++i) {
-				const voxel::VoxelVertex& vp = meshVertices[i];
+			for (size_t mv = 0; mv < meshNumberVertices; ++mv) {
+				const voxel::VoxelVertex& vp = meshVertices[mv];
 				func(vp, out, x, y);
 			}
-			for (size_t i = 0; i < meshNumberIndices; ++i) {
+			for (size_t mi = 0; mi < meshNumberIndices; ++mi) {
 				// offset by the already added vertices
-				indices.push_back(meshIndices[i] + positionSize);
+				indices.push_back(meshIndices[mi] + positionSize);
 			}
 
 			xBase += advance;

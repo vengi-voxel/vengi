@@ -42,7 +42,7 @@ public:
 	bool hasClouds() const;
 
 	const std::vector<TreeType>& treeTypes() const;
-	void addTreeType(TreeType type);
+	void addTreeType(TreeType treeType);
 
 	Voxel voxel(math::Random& random) const;
 	Voxel voxel(uint8_t colorIndex) const;

@@ -25,7 +25,7 @@ class TBRect
 public:
 	int x, y, w, h;
 	TBRect() : x(0), y(0), w(0), h(0) {}
-	TBRect(int x, int y, int w, int h) : x(x), y(y), w(w), h(h) {}
+	TBRect(int _x, int _y, int _w, int _h) : x(_x), y(_y), w(_w), h(_h) {}
 
 	inline bool IsEmpty() const						{ return w <= 0 || h <= 0; }
 	inline bool IsInsideOut() const					{ return w < 0 || h < 0; }

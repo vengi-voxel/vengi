@@ -202,7 +202,7 @@ void setupLimitsAndSpecs() {
 }
 
 void setupFeatures() {
-	const std::vector<const char *> array[] = {
+	const std::vector<const char *> extensionArray[] = {
 		{"GL_ARB_texture_compression_s3tc", "GL_ARB_compressed_texture_s3tc", "GL_ARB_texture_compression_dxt1"},
 		{"GL_ARB_texture_compression_pvrtc", "GL_ARB_compressed_texture_pvrtc"},
 		{},
@@ -219,7 +219,7 @@ void setupFeatures() {
 		{"GL_ARB_multi_draw_indirect"},
 		{"GL_ARB_compute_shader"}
 	};
-	static_assert(std::enum_value(Feature::Max) == (int)SDL_arraysize(array), "Array sizes don't match for Feature enum");
+	static_assert(std::enum_value(Feature::Max) == (int)SDL_arraysize(extensionArray), "Array sizes don't match for Feature enum");
 
 	int numExts;
 	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
@@ -229,12 +229,12 @@ void setupFeatures() {
 		Log::info("ext: %s", extensionStr);
 	}
 
-	for (size_t i = 0; i < SDL_arraysize(array); ++i) {
-		const std::vector<const char *>& a = array[i];
-		for (const char *s : a) {
-			renderState().features[i] = SDL_GL_ExtensionSupported(s);
+	for (size_t i = 0; i < SDL_arraysize(extensionArray); ++i) {
+		const std::vector<const char *>& extStrVector = extensionArray[i];
+		for (const char *extStr : extStrVector) {
+			renderState().features[i] = SDL_GL_ExtensionSupported(extStr);
 			if (renderState().features[i]) {
-				Log::info("Detected feature: %s", s);
+				Log::info("Detected feature: %s", extStr);
 				break;
 			}
 		}

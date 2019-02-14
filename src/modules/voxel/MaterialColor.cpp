@@ -93,12 +93,12 @@ public:
 		luaL_Reg getmaterial = { "material", [] (lua_State* l) -> int {
 			MaterialColor* mc = lua::LUA::globalData<MaterialColor>(l, "MaterialColor");
 			lua_newtable(l);
-			const MaterialColorArray& colors = mc->getColors();
+			const MaterialColorArray& colorArray = mc->getColors();
 			lua_newtable(l);
 			const int top = lua_gettop(l);
-			for (size_t i = 0; i < colors.size(); ++i) {
+			for (size_t i = 0; i < colorArray.size(); ++i) {
 				lua_pushinteger(l, i);
-				clua_push(l, colors[i]);
+				clua_push(l, colorArray[i]);
 				lua_settable(l, top);
 			}
 			return 1;

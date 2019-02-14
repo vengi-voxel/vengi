@@ -247,8 +247,8 @@ const Uniform* Shader::getUniform(const std::string& name) const {
 	ShaderUniforms::const_iterator i = _uniforms.find(name);
 	if (i == _uniforms.end()) {
 		Log::debug("can't find uniform %s in shader %s", name.c_str(), _name.c_str());
-		for (auto i : _uniforms) {
-			Log::trace("uniform %s", i.first.c_str());
+		for (auto uniformEntry : _uniforms) {
+			Log::trace("uniform %s", uniformEntry.first.c_str());
 		}
 		return nullptr;
 	}
@@ -317,12 +317,12 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 
 	std::vector<std::string> includeDirs;
 	includeDirs.push_back(std::string(core::string::extractPath(_name)));
-	const std::pair<std::string, bool>& ret = util::handleIncludes(buffer, includeDirs, includedFiles);
-	src += ret.first;
+	const std::pair<std::string, bool>& includesFirst = util::handleIncludes(buffer, includeDirs, includedFiles);
+	src += includesFirst.first;
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<std::string, bool>& ret = util::handleIncludes(src, includeDirs, includedFiles);
-		src += ret.first;
+		const std::pair<std::string, bool>& includesRecurse = util::handleIncludes(src, includeDirs, includedFiles);
+		src += includesRecurse.first;
 		++level;
 		if (level >= 10) {
 			Log::warn("Abort shader include loop for %s", _name.c_str());

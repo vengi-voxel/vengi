@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ShapeBuilder.h"
 #include "math/Frustum.h"
 
@@ -287,9 +291,9 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 		reserve(math::FRUSTUM_VERTICES_MAX * splitFrustum + targetLineVertices);
 
-		for (int s = 0; s < splitFrustum; ++s) {
-			const float near = planes[s * 2 + 0];
-			const float far = planes[s * 2 + 1];
+		for (int splitStep = 0; splitStep < splitFrustum; ++splitStep) {
+			const float near = planes[splitStep * 2 + 0];
+			const float far = planes[splitStep * 2 + 1];
 			camera.splitFrustum(near, far, out);
 
 			for (size_t i = 0; i < SDL_arraysize(out); ++i) {

@@ -242,8 +242,8 @@ bool Filesystem::watch(const std::string& path, FileWatcher watcher) {
 		if (filename == nullptr) {
 			return;
 		}
-		FileWatcher watcher = (FileWatcher)handle->data;
-		watcher(filename);
+		FileWatcher watcherCallback = (FileWatcher)handle->data;
+		watcherCallback(filename);
 	}, path.c_str(), 0);
 	if (ret != 0) {
 		_watches.erase(_watches.find(path));

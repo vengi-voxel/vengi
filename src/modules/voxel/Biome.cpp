@@ -18,8 +18,8 @@ Biome::Biome(VoxelType _type, const MaterialColorIndices& _indices, int16_t _yMi
 	core_assert(!indices.empty());
 }
 
-void Biome::addTreeType(TreeType type) {
-	_treeTypes.push_back(type);
+void Biome::addTreeType(TreeType treeType) {
+	_treeTypes.push_back(treeType);
 }
 
 int Biome::calcTreeDistribution() const {

@@ -132,8 +132,8 @@ bool RawVolumeRenderer::update(int idx) {
 		const std::vector<voxel::IndexType>& indexVector = mesh->getIndexVector();
 		std::copy(vertexVector.begin(), vertexVector.end(), std::back_inserter(vertices));
 
-		for (const auto& i : indexVector) {
-			indices.push_back(i + offset);
+		for (const auto& iv : indexVector) {
+			indices.push_back(iv + offset);
 		}
 
 		offset += vertexVector.size();

@@ -14,7 +14,7 @@ class TBColor
 {
 public:
 	constexpr TBColor() : b(0), g(0), r(0), a(255) {}
-	constexpr TBColor(int r, int g, int b, int a = 255) : b(b), g(g), r(r), a(a) {}
+	constexpr TBColor(int _r, int _g, int _b, int _a = 255) : b(_b), g(_g), r(_r), a(_a) {}
 
 	uint8_t b, g, r, a;
 

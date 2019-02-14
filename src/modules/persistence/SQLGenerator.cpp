@@ -745,25 +745,25 @@ void createUpsertStatement(const Model& table, std::stringstream& stmt, bool pri
 			} else {
 				stmt << "UPDATE SET ";
 				int fieldIndex = 0;
-				for (const persistence::Field& f : table.fields()) {
-					if (!table.isValid(f)) {
+				for (const persistence::Field& tblField : table.fields()) {
+					if (!table.isValid(tblField)) {
 						continue;
 					}
-					if (f.isPrimaryKey() || f.isAutoincrement()) {
+					if (tblField.isPrimaryKey() || tblField.isAutoincrement()) {
 						continue;
 					}
-					if (set.find(f.name) != set.end()) {
+					if (set.find(tblField.name) != set.end()) {
 						continue;
 					}
 					if (fieldIndex > 0) {
 						stmt << ", ";
 					}
-					stmt << "\"" << f.name << "\" = ";
-					if (f.updateOperator != Operator::SET) {
-						stmt << "\"" << table.schema() << "\".\"" << table.tableName() << "\".\"" << f.name << "\"";
-						stmt << OperatorStrings[(int)f.updateOperator];
+					stmt << "\"" << tblField.name << "\" = ";
+					if (tblField.updateOperator != Operator::SET) {
+						stmt << "\"" << table.schema() << "\".\"" << table.tableName() << "\".\"" << tblField.name << "\"";
+						stmt << OperatorStrings[(int)tblField.updateOperator];
 					}
-					stmt << "EXCLUDED.\"" << f.name << "\"";
+					stmt << "EXCLUDED.\"" << tblField.name << "\"";
 					++fieldIndex;
 				}
 			}
