@@ -12,9 +12,9 @@
 	st.load_here(32); \
 	backward::TraceResolver tr; \
 	tr.load_stacktrace(st); \
-	for (size_t i = 0; i < st.size(); ++i) { \
-		const backward::ResolvedTrace& trace = tr.resolve(st[i]); \
-		printf("#%i %s %s [%p]\n", int(i), trace.object_filename.c_str(), trace.object_function.c_str(), trace.addr); \
+	for (size_t __stacktrace_i = 0; __stacktrace_i < st.size(); ++__stacktrace_i) { \
+		const backward::ResolvedTrace& trace = tr.resolve(st[__stacktrace_i]); \
+		printf("#%i %s %s [%p]\n", int(__stacktrace_i), trace.object_filename.c_str(), trace.object_function.c_str(), trace.addr); \
 	}
 
 #ifndef core_assert
