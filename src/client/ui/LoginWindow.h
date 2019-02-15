@@ -17,6 +17,7 @@ namespace frontend {
 // signup window
 class LoginWindow: public ui::turbobadger::Window {
 private:
+	using Super = ui::turbobadger::Window;
 	Client* _client;
 
 	void doLogin() {
@@ -39,7 +40,7 @@ private:
 
 public:
 	LoginWindow(Client* client) :
-			ui::turbobadger::Window(client), _client(client) {
+			Super(client), _client(client) {
 		core_assert_always(loadResourceFile("ui/window/client-login.tb.txt"));
 		setSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 
@@ -72,7 +73,7 @@ public:
 				return true;
 			}
 		}
-		return ui::turbobadger::Window::onEvent(ev);
+		return Super::onEvent(ev);
 	}
 };
 

@@ -10,9 +10,11 @@
 namespace frontend {
 
 class AuthFailedWindow: public ui::turbobadger::Window {
+private:
+	using Super = ui::turbobadger::Window;
 public:
 	AuthFailedWindow(Window* parent) :
-			ui::turbobadger::Window(parent) {
+		Super(parent) {
 		core_assert_always(loadResourceFile("ui/window/client-authfailed.tb.txt"));
 	}
 
@@ -21,7 +23,7 @@ public:
 			close();
 			return true;
 		}
-		return ui::turbobadger::Window::onEvent(ev);
+		return Super::onEvent(ev);
 	}
 };
 

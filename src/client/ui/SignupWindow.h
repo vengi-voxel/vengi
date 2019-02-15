@@ -13,17 +13,18 @@ namespace frontend {
 
 class SignupWindow: public ui::turbobadger::Window {
 private:
+	using Super = ui::turbobadger::Window;
 	Client* _client;
 public:
 	SignupWindow(Client* client) :
-			ui::turbobadger::Window(client), _client(client) {
+			Super(client), _client(client) {
 		core_assert_always(loadResourceFile("ui/window/client-signup.tb.txt"));
 		setSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 	}
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
 		if (ev.type != tb::EVENT_TYPE_CLICK) {
-			return ui::turbobadger::Window::onEvent(ev);
+			return Super::onEvent(ev);
 		}
 		if (ev.target->getID() == TBIDC("signup")) {
 			const std::string& email = getStr("email");
@@ -43,7 +44,7 @@ public:
 			close();
 			return true;
 		}
-		return ui::turbobadger::Window::onEvent(ev);
+		return Super::onEvent(ev);
 	}
 };
 
