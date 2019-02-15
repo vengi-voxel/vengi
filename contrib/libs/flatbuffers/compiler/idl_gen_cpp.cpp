@@ -39,7 +39,10 @@ class CppGenerator : public BaseGenerator {
   CppGenerator(const Parser &parser, const std::string &path,
                const std::string &file_name)
       : BaseGenerator(parser, path, file_name, "", "::"),
-        cur_name_space_(nullptr) {
+        cur_name_space_(nullptr),
+        float_const_gen_("std::numeric_limits<double>::",
+                         "std::numeric_limits<float>::", "quiet_NaN()",
+                         "infinity()") {
     static const char * const keywords[] = {
                                "alignas",
                                "alignof",
@@ -1392,9 +1395,10 @@ class CppGenerator : public BaseGenerator {
   }
 
   std::string GenDefaultConstant(const FieldDef &field) {
-    return field.value.type.base_type == BASE_TYPE_FLOAT
-               ? field.value.constant + "f"
-               : field.value.constant;
+    if(IsFloat(field.value.type.base_type))
+      return float_const_gen_.GenFloatConstant(field);
+    else
+      return field.value.constant;
   }
 
   std::string GetDefaultScalarValue(const FieldDef &field, bool is_ctor) {
@@ -2079,9 +2083,14 @@ class CppGenerator : public BaseGenerator {
         if (!field.deprecated) {
           code_.SetValue("FIELD_NAME", Name(field));
           if (field.value.type.base_type == BASE_TYPE_STRING) {
+            if (!field.shared) {
+              code_.SetValue("CREATE_STRING", "CreateString");
+            } else {
+              code_.SetValue("CREATE_STRING", "CreateSharedString");
+            }
             code_ +=
                 "  auto {{FIELD_NAME}}__ = {{FIELD_NAME}} ? "
-                "_fbb.CreateString({{FIELD_NAME}}) : 0;";
+                "_fbb.{{CREATE_STRING}}({{FIELD_NAME}}) : 0;";
           } else if (field.value.type.base_type == BASE_TYPE_VECTOR) {
             code_ += "  auto {{FIELD_NAME}}__ = {{FIELD_NAME}} ? \\";
             const auto vtype = field.value.type.VectorType();
@@ -2290,8 +2299,16 @@ class CppGenerator : public BaseGenerator {
     switch (field.value.type.base_type) {
       // String fields are of the form:
       //   _fbb.CreateString(_o->field)
+      // or
+      //   _fbb.CreateSharedString(_o->field)
       case BASE_TYPE_STRING: {
-        code += "_fbb.CreateString(" + value + ")";
+        if (!field.shared) {
+          code += "_fbb.CreateString(";
+        } else {
+          code += "_fbb.CreateSharedString(";
+        }
+        code += value;
+        code.push_back(')');
 
         // For optional fields, check to see if there actually is any data
         // in _o->field before attempting to access it. If there isn't,
@@ -2745,6 +2762,8 @@ class CppGenerator : public BaseGenerator {
 
     cur_name_space_ = ns;
   }
+
+  const TypedFloatConstantGenerator float_const_gen_;
 };
 
 }  // namespace cpp
