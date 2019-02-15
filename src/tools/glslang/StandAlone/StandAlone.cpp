@@ -152,6 +152,7 @@ void ProcessConfigFile()
     }
 }
 
+int ReflectOptions = EShReflectionDefault;
 int Options = 0;
 const char* ExecutableName = nullptr;
 const char* binaryFileName = nullptr;
@@ -160,6 +161,7 @@ const char* sourceEntryPointName = nullptr;
 const char* shaderStageName = nullptr;
 const char* variableName = nullptr;
 bool HlslEnable16BitTypes = false;
+bool HlslDX9compatible = false;
 std::vector<std::string> IncludeDirectoryList;
 
 // Source environment
@@ -509,6 +511,8 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                         Options |= EOptionHlslIoMapping;
                     } else if (lowerword == "hlsl-enable-16bit-types") {
                         HlslEnable16BitTypes = true;
+                    } else if (lowerword == "hlsl-dx9-compatible") {
+                        HlslDX9compatible = true;
                     } else if (lowerword == "invert-y" ||  // synonyms
                                lowerword == "iy") {
                         Options |= EOptionInvertY;
@@ -520,6 +524,18 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                         Options |= EOptionNoStorageFormat;
                     } else if (lowerword == "relaxed-errors") {
                         Options |= EOptionRelaxedErrors;
+                    } else if (lowerword == "reflect-strict-array-suffix") {
+                        ReflectOptions |= EShReflectionStrictArraySuffix;
+                    } else if (lowerword == "reflect-basic-array-suffix") {
+                        ReflectOptions |= EShReflectionBasicArraySuffix;
+                    } else if (lowerword == "reflect-intermediate-io") {
+                        ReflectOptions |= EShReflectionIntermediateIO;
+                    } else if (lowerword == "reflect-separate-buffers") {
+                        ReflectOptions |= EShReflectionSeparateBuffers;
+                    } else if (lowerword == "reflect-all-block-variables") {
+                        ReflectOptions |= EShReflectionAllBlockVariables;
+                    } else if (lowerword == "reflect-unwrap-io-blocks") {
+                        ReflectOptions |= EShReflectionUnwrapIOBlocks;
                     } else if (lowerword == "resource-set-bindings" ||  // synonyms
                                lowerword == "resource-set-binding"  ||
                                lowerword == "rsb") {
@@ -815,6 +831,8 @@ void SetMessageOptions(EShMessages& messages)
         messages = (EShMessages)(messages | EShMsgHlslEnable16BitTypes);
     if ((Options & EOptionOptimizeDisable) || !ENABLE_OPT)
         messages = (EShMessages)(messages | EShMsgHlslLegalization);
+    if (HlslDX9compatible)
+        messages = (EShMessages)(messages | EShMsgHlslDX9Compatible);
 }
 
 //
@@ -1046,7 +1064,7 @@ void CompileAndLinkShaderUnits(std::vector<ShaderCompUnit> compUnits)
 
     // Reflect
     if (Options & EOptionDumpReflection) {
-        program.buildReflection();
+        program.buildReflection(ReflectOptions);
         program.dumpReflection();
     }
 
@@ -1509,9 +1527,21 @@ void usage()
            "                                    works independently of source language\n"
            "  --hlsl-iomap                      perform IO mapping in HLSL register space\n"
            "  --hlsl-enable-16bit-types         allow 16-bit types in SPIR-V for HLSL\n"
+           "  --hlsl-dx9-compatible             interprets sampler declarations as a texture/sampler combo like DirectX9 would."
            "  --invert-y | --iy                 invert position.Y output in vertex shader\n"
            "  --keep-uncalled | --ku            don't eliminate uncalled functions\n"
            "  --no-storage-format | --nsf       use Unknown image format\n"
+           "  --reflect-strict-array-suffix     use strict array suffix rules when\n"
+           "                                    reflecting\n"
+           "  --reflect-basic-array-suffix      arrays of basic types will have trailing [0]\n"
+           "  --reflect-intermediate-io         reflection includes inputs/outputs of linked\n"
+           "                                    shaders rather than just vertex/fragment\n"
+           "  --reflect-separate-buffers        reflect buffer variables and blocks\n"
+           "                                    separately to uniforms\n"
+           "  --reflect-all-block-variables     reflect all variables in blocks, whether\n"
+           "                                    inactive or active\n"
+           "  --reflect-unwrap-io-blocks        unwrap input/output blocks the same as\n"
+           "                                    uniform blocks\n"
            "  --resource-set-binding [stage] name set binding\n"
            "                                    set descriptor set and binding for\n"
            "                                    individual resources\n"
