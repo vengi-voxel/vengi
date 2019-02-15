@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -44,6 +44,7 @@ extern void Android_JNI_ShowTextInput(SDL_Rect *inputRect);
 extern void Android_JNI_HideTextInput(void);
 extern SDL_bool Android_JNI_IsScreenKeyboardShown(void);
 extern ANativeWindow* Android_JNI_GetNativeWindow(void);
+extern void Android_JNI_SetSurfaceViewFormat(int format);
 
 extern int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi);
 
@@ -54,6 +55,7 @@ extern void Android_JNI_WriteAudioBuffer(void);
 extern int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen);
 extern void Android_JNI_FlushCapturedAudio(void);
 extern void Android_JNI_CloseAudioDevice(const int iscapture);
+extern void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id);
 
 /* Detecting device type */
 extern SDL_bool Android_IsDeXMode();
@@ -91,9 +93,8 @@ void Android_JNI_HapticStop(int device_id);
 void Android_JNI_SuspendScreenSaver(SDL_bool suspend);
 
 /* Touch support */
-int Android_JNI_InitTouch(void);
+void Android_JNI_InitTouch(void);
 void Android_JNI_SetSeparateMouseAndTouch(SDL_bool new_value);
-int Android_JNI_GetTouchDeviceIds(int **ids);
 
 /* Threads */
 #include <jni.h>

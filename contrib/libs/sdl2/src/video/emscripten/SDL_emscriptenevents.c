@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -345,6 +345,7 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
     Uint8 sdl_button;
     Uint8 sdl_button_state;
     SDL_EventType sdl_event_type;
+    double css_w, css_h;
 
     switch (mouseEvent->button) {
         case 0:
@@ -371,6 +372,14 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
         sdl_event_type = SDL_MOUSEBUTTONUP;
     }
     SDL_SendMouseButton(window_data->window, 0, sdl_button_state, sdl_button);
+
+    /* Do not consume the event if the mouse is outside of the canvas. */
+    emscripten_get_element_css_size(NULL, &css_w, &css_h);
+    if (mouseEvent->canvasX < 0 || mouseEvent->canvasX >= css_w ||
+        mouseEvent->canvasY < 0 || mouseEvent->canvasY >= css_h) {
+        return 0;
+    }
+
     return SDL_GetEventState(sdl_event_type) == SDL_ENABLE;
 }
 
@@ -458,6 +467,7 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
             }
             SDL_SendTouch(deviceId, id, SDL_TRUE, x, y, 1.0f);
 
+            /* disable browser scrolling/pinch-to-zoom if app handles touch events */
             if (!preventDefault && SDL_GetEventState(SDL_FINGERDOWN) == SDL_ENABLE) {
                 preventDefault = 1;
             }
@@ -466,10 +476,6 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
                 SDL_SendMouseMotion(window_data->window, SDL_TOUCH_MOUSEID, 0, mx, my);
             }
             SDL_SendTouchMotion(deviceId, id, x, y, 1.0f);
-
-            if (!preventDefault && SDL_GetEventState(SDL_FINGERMOTION) == SDL_ENABLE) {
-                preventDefault = 1;
-            }
         } else {
             if ((window_data->finger_touching) && (window_data->first_finger == id)) {
                 SDL_SendMouseButton(window_data->window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
@@ -477,9 +483,8 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
             }
             SDL_SendTouch(deviceId, id, SDL_FALSE, x, y, 1.0f);
 
-            if (!preventDefault && SDL_GetEventState(SDL_FINGERUP) == SDL_ENABLE) {
-                preventDefault = 1;
-            }
+            /* block browser's simulated mousedown/mouseup on touchscreen devices */
+            preventDefault = 1;
         }
     }
 
@@ -551,6 +556,8 @@ static EM_BOOL
 Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChangeEvent *fullscreenChangeEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
+    SDL_VideoDisplay *display;
+
     if(fullscreenChangeEvent->isFullscreen)
     {
         window_data->window->flags |= window_data->requested_fullscreen_mode;
@@ -563,6 +570,13 @@ Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChang
     else
     {
         window_data->window->flags &= ~FULLSCREEN_MASK;
+
+        /* reset fullscreen window if the browser left fullscreen */
+        display = SDL_GetDisplayForWindow(window_data->window);
+
+        if (display->fullscreen_window == window_data->window) {
+            display->fullscreen_window = NULL;
+        }
     }
 
     return 0;
@@ -590,7 +604,7 @@ Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *u
                 emscripten_get_element_css_size(NULL, &w, &h);
             }
 
-            emscripten_set_canvas_size(w * window_data->pixel_ratio, h * window_data->pixel_ratio);
+            emscripten_set_canvas_element_size(NULL, w * window_data->pixel_ratio, h * window_data->pixel_ratio);
 
             /* set_canvas_size unsets this */
             if (!window_data->external_size && window_data->pixel_ratio != 1.0f) {

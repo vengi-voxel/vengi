@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -250,7 +250,7 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
             SDL_bool okay = SDL_TRUE;
             char *buf = (char *) EM_ASM_INT({
                 var str =
-                    Pointer_stringify($0) + '\n\n' +
+                    UTF8ToString($0) + '\n\n' +
                     'Abort/Retry/Ignore/AlwaysIgnore? [ariA] :';
                 var reply = window.prompt(str, "i");
                 if (reply === null) {

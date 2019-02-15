@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -676,8 +676,10 @@ SDL_PrivateGameControllerParseControllerConfigString(SDL_GameController *gamecon
         pchPos++;
     }
 
-    SDL_PrivateGameControllerParseElement(gamecontroller, szGameButton, szJoystickButton);
-
+    /* No more values if the string was terminated by a comma. Don't report an error. */
+    if (szGameButton[0] != '\0' || szJoystickButton[0] != '\0') {
+        SDL_PrivateGameControllerParseElement(gamecontroller, szGameButton, szJoystickButton);
+    }
 }
 
 /*
@@ -995,6 +997,17 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(const char *na
     if (axis_mask & (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT)) {
         SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof(mapping_string));
     }
+
+    /* Remove trailing comma */
+    {
+        int pos = (int)SDL_strlen(mapping_string) - 1;
+        if (pos >= 0) {
+            if (mapping_string[pos] == ',') {
+                mapping_string[pos] = '\0';
+            }
+        }
+    }
+
     return SDL_PrivateAddMappingForGUID(guid, mapping_string,
                       &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
 }
@@ -1015,7 +1028,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
             /* The Linux driver xpad.c maps the wireless dpad to buttons */
             SDL_bool existing;
             mapping = SDL_PrivateAddMappingForGUID(guid,
-"none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
+"none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3",
                           &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
         }
     }
@@ -1469,7 +1482,7 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     Uint32 vidpid;
 
 #if defined(__LINUX__)
-    if (name && SDL_strcmp(name, "Sony Interactive Entertainment Wireless Controller Motion Sensors") == 0) {
+    if (name && SDL_strstr(name, "Wireless Controller Motion Sensors")) {
         /* Don't treat the PS4 motion controls as a separate game controller */
         return SDL_TRUE;
     }

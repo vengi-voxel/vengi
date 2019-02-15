@@ -1,6 +1,6 @@
 /*
  *  Simple DirectMedia Layer
- *  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+ *  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
  * 
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,7 @@
 #endif
 #if SDL_VIDEO_DRIVER_ANDROID
 #include <android/native_window.h>
+#include "../core/android/SDL_android.h"
 #endif
 
 #include "SDL_sysvideo.h"
@@ -885,6 +886,10 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
                                             EGL_NATIVE_VISUAL_ID, &format);
 
         ANativeWindow_setBuffersGeometry(nw, 0, 0, format);
+
+        /* Update SurfaceView holder format.
+         * May triggers a sequence surfaceDestroyed(), surfaceCreated(), surfaceChanged(). */
+        Android_JNI_SetSurfaceViewFormat(format);
     }
 #endif    
     if (_this->gl_config.framebuffer_srgb_capable) {

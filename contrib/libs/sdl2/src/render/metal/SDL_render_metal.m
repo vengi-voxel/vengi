@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -155,6 +155,9 @@ typedef struct METAL_ShaderPipelines
     @property (nonatomic, assign) BOOL nv12;
     @property (nonatomic, assign) size_t conversionBufferOffset;
     @property (nonatomic, assign) BOOL hasdata;
+
+    @property (nonatomic, retain) id<MTLBuffer> lockedbuffer;
+    @property (nonatomic, assign) SDL_Rect lockedrect;
 @end
 
 @implementation METAL_TextureData
@@ -783,15 +786,120 @@ METAL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 static int
 METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * rect, void **pixels, int *pitch)
-{
-    return SDL_Unsupported();   // !!! FIXME: write me
-}
+{ @autoreleasepool {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
+    int buffersize = 0;
+
+    if (rect->w <= 0 || rect->h <= 0) {
+        return SDL_SetError("Invalid rectangle dimensions for LockTexture.");
+    }
+
+    *pitch = SDL_BYTESPERPIXEL(texture->format) * rect->w;
+
+    if (texturedata.yuv || texturedata.nv12) {
+        buffersize = ((*pitch) * rect->h) + (2 * (*pitch + 1) / 2) * ((rect->h + 1) / 2);
+    } else {
+        buffersize = (*pitch) * rect->h;
+    }
+
+    texturedata.lockedrect = *rect;
+    texturedata.lockedbuffer = [data.mtldevice newBufferWithLength:buffersize options:MTLResourceStorageModeShared];
+    if (texturedata.lockedbuffer == nil) {
+        return SDL_OutOfMemory();
+    }
+
+    *pixels = [texturedata.lockedbuffer contents];
+
+    return 0;
+}}
 
 static void
 METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
-{
-    // !!! FIXME: write me
-}
+{ @autoreleasepool {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
+    SDL_Rect rect = texturedata.lockedrect;
+    int pitch = SDL_BYTESPERPIXEL(texture->format) * rect.w;
+    SDL_Rect UVrect = {rect.x / 2, rect.y / 2, (rect.w + 1) / 2, (rect.h + 1) / 2};
+
+    if (texturedata.lockedbuffer == nil) {
+        return;
+    }
+
+    if (data.mtlcmdencoder != nil) {
+        [data.mtlcmdencoder endEncoding];
+        data.mtlcmdencoder = nil;
+    }
+
+    if (data.mtlcmdbuffer == nil) {
+        data.mtlcmdbuffer = [data.mtlcmdqueue commandBuffer];
+    }
+
+    id<MTLBlitCommandEncoder> blitcmd = [data.mtlcmdbuffer blitCommandEncoder];
+
+    [blitcmd copyFromBuffer:texturedata.lockedbuffer
+               sourceOffset:0
+          sourceBytesPerRow:pitch
+        sourceBytesPerImage:0
+                 sourceSize:MTLSizeMake(rect.w, rect.h, 1)
+                  toTexture:texturedata.mtltexture
+           destinationSlice:0
+           destinationLevel:0
+          destinationOrigin:MTLOriginMake(rect.x, rect.y, 0)];
+
+    if (texturedata.yuv) {
+        int Uslice = texture->format == SDL_PIXELFORMAT_YV12 ? 1 : 0;
+        int Vslice = texture->format == SDL_PIXELFORMAT_YV12 ? 0 : 1;
+        int UVpitch = (pitch + 1) / 2;
+
+        [blitcmd copyFromBuffer:texturedata.lockedbuffer
+                   sourceOffset:rect.h * pitch
+              sourceBytesPerRow:UVpitch
+            sourceBytesPerImage:UVpitch * UVrect.h
+                     sourceSize:MTLSizeMake(UVrect.w, UVrect.h, 1)
+                      toTexture:texturedata.mtltexture_uv
+               destinationSlice:Uslice
+               destinationLevel:0
+              destinationOrigin:MTLOriginMake(UVrect.x, UVrect.y, 0)];
+
+        [blitcmd copyFromBuffer:texturedata.lockedbuffer
+                   sourceOffset:(rect.h * pitch) + UVrect.h * UVpitch
+              sourceBytesPerRow:UVpitch
+            sourceBytesPerImage:UVpitch * UVrect.h
+                     sourceSize:MTLSizeMake(UVrect.w, UVrect.h, 1)
+                      toTexture:texturedata.mtltexture_uv
+               destinationSlice:Vslice
+               destinationLevel:0
+              destinationOrigin:MTLOriginMake(UVrect.x, UVrect.y, 0)];
+    }
+
+    if (texturedata.nv12) {
+        int UVpitch = 2 * ((pitch + 1) / 2);
+
+        [blitcmd copyFromBuffer:texturedata.lockedbuffer
+                   sourceOffset:rect.h * pitch
+              sourceBytesPerRow:UVpitch
+            sourceBytesPerImage:0
+                     sourceSize:MTLSizeMake(UVrect.w, UVrect.h, 1)
+                      toTexture:texturedata.mtltexture_uv
+               destinationSlice:0
+               destinationLevel:0
+              destinationOrigin:MTLOriginMake(UVrect.x, UVrect.y, 0)];
+    }
+
+    [blitcmd endEncoding];
+
+    [data.mtlcmdbuffer commit];
+    data.mtlcmdbuffer = nil;
+
+#if !__has_feature(objc_arc)
+    [texturedata.lockedbuffer release];
+#endif
+
+    texturedata.lockedbuffer = nil;
+    texturedata.hasdata = YES;
+}}
 
 static int
 METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,12 +40,12 @@
 #define ACTION_POINTER_DOWN 5
 #define ACTION_POINTER_UP 6
 
-static void Android_GetWindowCoordinates(float x, float y,
+static void Android_GetWindowCoordinates(SDL_Window *window, float x, float y,
                                          int *window_x, int *window_y)
 {
     int window_w, window_h;
 
-    SDL_GetWindowSize(Android_Window, &window_w, &window_h);
+    SDL_GetWindowSize(window, &window_w, &window_h);
     *window_x = (int)(x * window_w);
     *window_y = (int)(y * window_h);
 }
@@ -63,19 +63,11 @@ SeparateEventsHintWatcher(void *userdata, const char *name,
 
 void Android_InitTouch(void)
 {
-    int i;
-    int* ids;
-    const int number = Android_JNI_GetTouchDeviceIds(&ids);
-
     SDL_AddHintCallback(SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH,
                         SeparateEventsHintWatcher, NULL);
 
-    if (0 < number) {
-        for (i = 0; i < number; ++i) {
-            SDL_AddTouch((SDL_TouchID) ids[i], SDL_TOUCH_DEVICE_DIRECT, ""); /* no error handling */
-        }
-        SDL_free(ids);
-    }
+    /* Add all touch devices */
+    Android_JNI_InitTouch();
 }
 
 void Android_QuitTouch(void)
@@ -85,14 +77,14 @@ void Android_QuitTouch(void)
     separate_mouse_and_touch = SDL_FALSE;
 }
 
-void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int action, float x, float y, float p)
+void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_finger_id_in, int action, float x, float y, float p)
 {
     SDL_TouchID touchDeviceId = 0;
     SDL_FingerID fingerId = 0;
     int window_x, window_y;
     static SDL_FingerID pointerFingerID = 0;
 
-    if (!Android_Window) {
+    if (!window) {
         return;
     }
 
@@ -106,11 +98,11 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
         case ACTION_DOWN:
             /* Primary pointer down */
             if (!separate_mouse_and_touch) {
-                Android_GetWindowCoordinates(x, y, &window_x, &window_y);
+                Android_GetWindowCoordinates(window, x, y, &window_x, &window_y);
                 /* send moved event */
-                SDL_SendMouseMotion(Android_Window, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
+                SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
                 /* send mouse down event */
-                SDL_SendMouseButton(Android_Window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+                SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
             }
             pointerFingerID = fingerId;
         case ACTION_POINTER_DOWN:
@@ -121,9 +113,9 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
         case ACTION_MOVE:
             if (!pointerFingerID) {
                 if (!separate_mouse_and_touch) {
-                    Android_GetWindowCoordinates(x, y, &window_x, &window_y);
+                    Android_GetWindowCoordinates(window, x, y, &window_x, &window_y);
                     /* send moved event */
-                    SDL_SendMouseMotion(Android_Window, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
+                    SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
                 }
             }
             SDL_SendTouchMotion(touchDeviceId, fingerId, x, y, p);
@@ -133,7 +125,7 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
             /* Primary pointer up */
             if (!separate_mouse_and_touch) {
                 /* send mouse up */
-                SDL_SendMouseButton(Android_Window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+                SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
             }
             pointerFingerID = (SDL_FingerID) 0;
         case ACTION_POINTER_UP:

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -91,6 +91,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #endif
 #if SDL_AUDIO_DRIVER_ANDROID
     &ANDROIDAUDIO_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_OPENSLES
+    &openslES_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_PSP
     &PSPAUDIO_bootstrap,
@@ -695,8 +698,16 @@ SDL_RunAudio(void *devicep)
 
     SDL_assert(!device->iscapture);
 
+#if SDL_AUDIO_DRIVER_ANDROID
+    {
+        /* Set thread priority to THREAD_PRIORITY_AUDIO */
+        extern void Android_JNI_AudioSetThreadPriority(int, int);
+        Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);
+    }
+#else
     /* The audio mixing is always a high priority thread */
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_TIME_CRITICAL);
+#endif
 
     /* Perform any thread setup */
     device->threadid = SDL_ThreadID();
@@ -792,8 +803,16 @@ SDL_CaptureAudio(void *devicep)
 
     SDL_assert(device->iscapture);
 
+#if SDL_AUDIO_DRIVER_ANDROID
+    {
+        /* Set thread priority to THREAD_PRIORITY_AUDIO */
+        extern void Android_JNI_AudioSetThreadPriority(int, int);
+        Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);
+    }
+#else
     /* The audio mixing is always a high priority thread */
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
+#endif
 
     /* Perform any thread setup */
     device->threadid = SDL_ThreadID();

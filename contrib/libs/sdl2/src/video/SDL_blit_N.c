@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -2149,6 +2149,62 @@ Blit4to4CopyAlpha(SDL_BlitInfo * info)
     }
 }
 
+/* permutation for mapping srcfmt to dstfmt, overloading or not the alpha channel */
+static void
+get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
+        int *_p0 , int *_p1, int *_p2, int *_p3, int *_alpha_channel)
+{
+    int alpha_channel = 0, p0, p1, p2, p3;
+    int Pixel = 0x04030201; /* identity permutation */
+
+    if (srcfmt->Amask) {
+        RGBA_FROM_PIXEL(Pixel, srcfmt, p0, p1, p2, p3);
+    } else {
+        RGB_FROM_PIXEL(Pixel, srcfmt, p0, p1, p2);
+        p3 = 0;
+    }
+
+    if (dstfmt->Amask) {
+        if (srcfmt->Amask) {
+            PIXEL_FROM_RGBA(Pixel, dstfmt, p0, p1, p2, p3);
+        } else {
+            PIXEL_FROM_RGBA(Pixel, dstfmt, p0, p1, p2, 0);
+        }
+    } else {
+        PIXEL_FROM_RGB(Pixel, dstfmt, p0, p1, p2);
+    }
+
+    p0 = Pixel & 0xFF;
+    p1 = (Pixel >> 8) & 0xFF;
+    p2 = (Pixel >> 16) & 0xFF;
+    p3 = (Pixel >> 24) & 0xFF;
+
+    if (p0 == 0) {
+        p0 = 1;
+        alpha_channel = 0;
+    } else if (p1 == 0) {
+        p1 = 1;
+        alpha_channel = 1;
+    } else if (p2 == 0) {
+        p2 = 1;
+        alpha_channel = 2;
+    } else if (p3 == 0) {
+        p3 = 1;
+        alpha_channel = 3;
+    }
+
+    *_p0 = p0 - 1;
+    *_p1 = p1 - 1;
+    *_p2 = p2 - 1;
+    *_p3 = p3 - 1;
+
+    if (_alpha_channel) {
+        *_alpha_channel = alpha_channel;
+    }
+    return;
+}
+
+
 static void
 BlitNtoN(SDL_BlitInfo * info)
 {
@@ -2163,6 +2219,97 @@ BlitNtoN(SDL_BlitInfo * info)
     SDL_PixelFormat *dstfmt = info->dst_fmt;
     int dstbpp = dstfmt->BytesPerPixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
+
+    /* Blit with permutation: 4->4 */
+    if (srcbpp == 4 && dstbpp == 4 &&
+        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
+        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+
+        Uint32 *src32 = (Uint32*)src;
+        Uint32 *dst32 = (Uint32*)dst;
+
+        /* Find the appropriate permutation */
+        int alpha_channel, p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, &alpha_channel);
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint8 *s8 = (Uint8 *)src32;
+                Uint8 *d8 = (Uint8 *)dst32;
+                d8[0] = s8[p0];
+                d8[1] = s8[p1];
+                d8[2] = s8[p2];
+                d8[3] = s8[p3];
+                d8[alpha_channel] = alpha;
+                ++src32;
+                ++dst32;
+            }, width);
+            /* *INDENT-ON* */
+            src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+            dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
+        }
+        return;
+    }
+
+    /* Blit with permutation: 4->3 */
+    if (srcbpp == 4 && dstbpp == 3 &&
+        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+
+        Uint32 *src32 = (Uint32*)src;
+
+        /* Find the appropriate permutation */
+        int p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, NULL);
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint8 *s8 = (Uint8 *)src32;
+                dst[0] = s8[p0];
+                dst[1] = s8[p1];
+                dst[2] = s8[p2];
+                ++src32;
+                dst += 3;
+            }, width);
+            /* *INDENT-ON* */
+            src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+            dst += dstskip;
+        }
+        return;
+    }
+
+    /* Blit with permutation: 3->4 */
+    if (srcbpp == 3 && dstbpp == 4 &&
+        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+
+        Uint32 *dst32 = (Uint32*)dst;
+
+        /* Find the appropriate permutation */
+        int alpha_channel, p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, &alpha_channel);
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint8 *d8 = (Uint8 *)dst32;
+                d8[0] = src[p0];
+                d8[1] = src[p1];
+                d8[2] = src[p2];
+                d8[3] = src[p3];
+                d8[alpha_channel] = alpha;
+                src += 3;
+                ++dst32;
+            }, width);
+            /* *INDENT-ON* */
+            src += srcskip;
+            dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
+        }
+        return;
+    }
 
     while (height--) {
         /* *INDENT-OFF* */
@@ -2198,6 +2345,38 @@ BlitNtoNCopyAlpha(SDL_BlitInfo * info)
     SDL_PixelFormat *dstfmt = info->dst_fmt;
     int dstbpp = dstfmt->BytesPerPixel;
     int c;
+
+    /* Blit with permutation: 4->4 */
+    if (srcbpp == 4 && dstbpp == 4 &&
+        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
+        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+
+        Uint32 *src32 = (Uint32*)src;
+        Uint32 *dst32 = (Uint32*)dst;
+
+        /* Find the appropriate permutation */
+        int p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, NULL);
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint8 *s8 = (Uint8 *)src32;
+                Uint8 *d8 = (Uint8 *)dst32;
+                d8[0] = s8[p0];
+                d8[1] = s8[p1];
+                d8[2] = s8[p2];
+                d8[3] = s8[p3];
+                ++src32;
+                ++dst32;
+            }, width);
+            /* *INDENT-ON* */
+            src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+            dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
+        }
+        return;
+    }
 
     while (height--) {
         for (c = width; c; --c) {
@@ -2329,31 +2508,222 @@ BlitNtoNKey(SDL_BlitInfo * info)
     int dstbpp = dstfmt->BytesPerPixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
     Uint32 rgbmask = ~srcfmt->Amask;
+    int sfmt = srcfmt->format;
+    int dfmt = dstfmt->format;
 
     /* Set up some basic variables */
     ckey &= rgbmask;
 
-    /* Fastpath: same source/destination format, no Amask, bpp 32, loop is vectorized. ~10x faster */
-    if (srcfmt->format == dstfmt->format &&
-        (srcfmt->format == SDL_PIXELFORMAT_RGB888 || srcfmt->format == SDL_PIXELFORMAT_BGR888)) {
+    /* BPP 4, same rgb */
+    if (srcbpp == 4 && dstbpp == 4 && srcfmt->Rmask == dstfmt->Rmask && srcfmt->Gmask == dstfmt->Gmask && srcfmt->Bmask == dstfmt->Bmask) {
         Uint32 *src32 = (Uint32*)src;
         Uint32 *dst32 = (Uint32*)dst;
-        srcskip /= sizeof(Uint32);
-        dstskip /= sizeof(Uint32);
+
+        if (dstfmt->Amask) {
+            /* RGB->RGBA, SET_ALPHA */
+            Uint32 mask = info->a << dstfmt->Ashift;
+            while (height--) {
+                /* *INDENT-OFF* */
+                DUFFS_LOOP(
+                {
+                    if ((*src32 & rgbmask) != ckey) {
+                        *dst32 = *src32 | mask;
+                    }
+                    ++dst32;
+                    ++src32;
+                }, width);
+                /* *INDENT-ON* */
+                src32 = (Uint32 *) ((Uint8 *) src32 + srcskip);
+                dst32 = (Uint32 *) ((Uint8 *) dst32 + dstskip);
+            }
+            return;
+        } else {
+            /* RGBA->RGB, NO_ALPHA */
+            Uint32 mask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+            while (height--) {
+                /* *INDENT-OFF* */
+                DUFFS_LOOP(
+                {
+                    if ((*src32 & rgbmask) != ckey) {
+                        *dst32 = *src32 & mask;
+                    }
+                    ++dst32;
+                    ++src32;
+                }, width);
+                /* *INDENT-ON* */
+                src32 = (Uint32 *) ((Uint8 *) src32 + srcskip);
+                dst32 = (Uint32 *) ((Uint8 *) dst32 + dstskip);
+            }
+            return;
+        }
+    }
+
+    /* Blit with permutation: 4->4 */
+    if (srcbpp == 4 && dstbpp == 4 &&
+        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
+        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+
+        Uint32 *src32 = (Uint32*)src;
+        Uint32 *dst32 = (Uint32*)dst;
+
+        /* Find the appropriate permutation */
+        int alpha_channel, p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, &alpha_channel);
+
         while (height--) {
             /* *INDENT-OFF* */
             DUFFS_LOOP(
             {
-                if (*src32 != ckey) {
-                    *dst32 = *src32;
+                if ((*src32 & rgbmask) != ckey) {
+                    Uint8 *s8 = (Uint8 *)src32;
+                    Uint8 *d8 = (Uint8 *)dst32;
+                    d8[0] = s8[p0];
+                    d8[1] = s8[p1];
+                    d8[2] = s8[p2];
+                    d8[3] = s8[p3];
+                    d8[alpha_channel] = alpha;
                 }
                 ++src32;
                 ++dst32;
+            }, width);
+            /* *INDENT-ON* */
+            src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+            dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
+        }
+        return;
+    }
+
+    /* BPP 3, same rgb triplet */
+    if ((sfmt == SDL_PIXELFORMAT_RGB24 && dfmt == SDL_PIXELFORMAT_RGB24) ||
+        (sfmt == SDL_PIXELFORMAT_BGR24 && dfmt == SDL_PIXELFORMAT_BGR24)) {
+
+        Uint8 k0 = ckey & 0x000000FF;
+        Uint8 k1 = (ckey & 0x0000FF00) >> 8;
+        Uint8 k2 = (ckey & 0x00FF0000) >> 16;
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint8 s0 = src[0];
+                Uint8 s1 = src[1];
+                Uint8 s2 = src[2];
+
+                if (k0 != s0 || k1 != s1 || k2 != s2) {
+                    dst[0] = s0;
+                    dst[1] = s1;
+                    dst[2] = s2;
+                }
+                src += 3;
+                dst += 3;
             },
             width);
             /* *INDENT-ON* */
-            src32 += srcskip;
-            dst32 += dstskip;
+            src += srcskip;
+            dst += dstskip;
+        }
+        return;
+    }
+
+    /* BPP 3, inversed rgb triplet */
+    if ((sfmt == SDL_PIXELFORMAT_RGB24 && dfmt == SDL_PIXELFORMAT_BGR24) ||
+        (sfmt == SDL_PIXELFORMAT_BGR24 && dfmt == SDL_PIXELFORMAT_RGB24)) {
+
+        Uint8 k0 = ckey & 0xFF;
+        Uint8 k1 = (ckey >> 8)  & 0xFF;
+        Uint8 k2 = (ckey >> 16) & 0xFF;
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint8 s0 = src[0];
+                Uint8 s1 = src[1];
+                Uint8 s2 = src[2];
+                if (k0 != s0 || k1 != s1 || k2 != s2) {
+                    /* Inversed RGB */
+                    dst[0] = s2;
+                    dst[1] = s1;
+                    dst[2] = s0;
+                }
+                src += 3;
+                dst += 3;
+            },
+            width);
+            /* *INDENT-ON* */
+            src += srcskip;
+            dst += dstskip;
+        }
+        return;
+    }
+
+    /* Blit with permutation: 4->3 */
+    if (srcbpp == 4 && dstbpp == 3 &&
+        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+
+        Uint32 *src32 = (Uint32*)src;
+
+        /* Find the appropriate permutation */
+        int p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, NULL);
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                if ((*src32 & rgbmask) != ckey) {
+                    Uint8 *s8 = (Uint8 *)src32;
+                    dst[0] = s8[p0];
+                    dst[1] = s8[p1];
+                    dst[2] = s8[p2];
+                }
+                ++src32;
+                dst += 3;
+            }, width);
+            /* *INDENT-ON* */
+            src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+            dst += dstskip;
+        }
+        return;
+    }
+
+    /* Blit with permutation: 3->4 */
+    if (srcbpp == 3 && dstbpp == 4 &&
+        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+
+        Uint32 *dst32 = (Uint32*)dst;
+
+        Uint8 k0 = ckey & 0xFF;
+        Uint8 k1 = (ckey >> 8)  & 0xFF;
+        Uint8 k2 = (ckey >> 16) & 0xFF;
+
+        /* Find the appropriate permutation */
+        int alpha_channel, p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, &alpha_channel);
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint8 s0 = src[0];
+                Uint8 s1 = src[1];
+                Uint8 s2 = src[2];
+
+                if (k0 != s0 || k1 != s1 || k2 != s2) {
+                    Uint8 *d8 = (Uint8 *)dst32;
+                    d8[0] = src[p0];
+                    d8[1] = src[p1];
+                    d8[2] = src[p2];
+                    d8[3] = src[p3];
+                    d8[alpha_channel] = alpha;
+                }
+                src += 3;
+                ++dst32;
+            }, width);
+            /* *INDENT-ON* */
+            src += srcskip;
+            dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
+
         }
         return;
     }
@@ -2406,29 +2776,64 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
     ckey &= rgbmask;
 
     /* Fastpath: same source/destination format, with Amask, bpp 32, loop is vectorized. ~10x faster */
-    if (srcfmt->format == dstfmt->format &&
-        (srcfmt->format == SDL_PIXELFORMAT_ARGB8888 ||
-         srcfmt->format == SDL_PIXELFORMAT_ABGR8888 ||
-         srcfmt->format == SDL_PIXELFORMAT_BGRA8888 ||
-         srcfmt->format == SDL_PIXELFORMAT_RGBA8888)) {
+    if (srcfmt->format == dstfmt->format) {
+
+        if (srcfmt->format == SDL_PIXELFORMAT_ARGB8888 ||
+            srcfmt->format == SDL_PIXELFORMAT_ABGR8888 ||
+            srcfmt->format == SDL_PIXELFORMAT_BGRA8888 ||
+            srcfmt->format == SDL_PIXELFORMAT_RGBA8888) {
+
+            Uint32 *src32 = (Uint32*)src;
+            Uint32 *dst32 = (Uint32*)dst;
+            while (height--) {
+                /* *INDENT-OFF* */
+                DUFFS_LOOP(
+                {
+                    if ((*src32 & rgbmask) != ckey) {
+                        *dst32 = *src32;
+                    }
+                    ++src32;
+                    ++dst32;
+                },
+                width);
+                /* *INDENT-ON* */
+                src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+                dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
+            }
+        }
+        return;
+    }
+
+    /* Blit with permutation: 4->4 */
+    if (srcbpp == 4 && dstbpp == 4 &&
+        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
+        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+
         Uint32 *src32 = (Uint32*)src;
         Uint32 *dst32 = (Uint32*)dst;
-        srcskip /= sizeof(Uint32);
-        dstskip /= sizeof(Uint32);
+
+        /* Find the appropriate permutation */
+        int p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, NULL);
+
         while (height--) {
             /* *INDENT-OFF* */
             DUFFS_LOOP(
             {
                 if ((*src32 & rgbmask) != ckey) {
-                    *dst32 = *src32;
+                    Uint8 *s8 = (Uint8 *)src32;
+                    Uint8 *d8 = (Uint8 *)dst32;
+                    d8[0] = s8[p0];
+                    d8[1] = s8[p1];
+                    d8[2] = s8[p2];
+                    d8[3] = s8[p3];
                 }
                 ++src32;
                 ++dst32;
-            },
-            width);
+            }, width);
             /* *INDENT-ON* */
-            src32 += srcskip;
-            dst32 += dstskip;
+            src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+            dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
         }
         return;
     }
@@ -2515,6 +2920,143 @@ BlitNto2101010(SDL_BlitInfo * info)
     }
 }
 
+/* Blit_3or4_to_3or4__same_rgb: 3 or 4 bpp, same RGB triplet */
+static void
+Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    SDL_PixelFormat *srcfmt = info->src_fmt;
+    int srcbpp = srcfmt->BytesPerPixel;
+    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    int dstbpp = dstfmt->BytesPerPixel;
+
+    if (dstfmt->Amask) {
+        /* SET_ALPHA */
+        Uint32 mask = info->a << dstfmt->Ashift;
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint32  *dst32 = (Uint32*)dst;
+                Uint8 s0 = src[0];
+                Uint8 s1 = src[1];
+                Uint8 s2 = src[2];
+                *dst32 = (s0) | (s1 << 8) | (s2 << 16) | mask;
+                dst += dstbpp;
+                src += srcbpp;
+            }, width);
+            /* *INDENT-ON* */
+            src += srcskip;
+            dst += dstskip;
+        }
+    } else {
+        /* NO_ALPHA */
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint32  *dst32 = (Uint32*)dst;
+                Uint8 s0 = src[0];
+                Uint8 s1 = src[1];
+                Uint8 s2 = src[2];
+                *dst32 = (s0) | (s1 << 8) | (s2 << 16);
+                dst += dstbpp;
+                src += srcbpp;
+            }, width);
+            /* *INDENT-ON* */
+            src += srcskip;
+            dst += dstskip;
+        }
+    }
+    return;
+}
+
+/* Blit_3or4_to_3or4__inversed_rgb: 3 or 4 bpp, inversed RGB triplet */
+static void
+Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    SDL_PixelFormat *srcfmt = info->src_fmt;
+    int srcbpp = srcfmt->BytesPerPixel;
+    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    int dstbpp = dstfmt->BytesPerPixel;
+
+    if (dstfmt->Amask) {
+        if (srcfmt->Amask) {
+            /* COPY_ALPHA */
+            /* Only to switch ABGR8888 <-> ARGB8888 */
+            while (height--) {
+                /* *INDENT-OFF* */
+                DUFFS_LOOP(
+                {
+                    Uint32 *dst32 = (Uint32*)dst;
+                    Uint8 s0 = src[0];
+                    Uint8 s1 = src[1];
+                    Uint8 s2 = src[2];
+                    Uint32 alphashift = src[3] << dstfmt->Ashift;
+                    /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
+                    *dst32 = (s0 << 16) | (s1 << 8) | (s2) | alphashift;
+                    dst += dstbpp;
+                    src += srcbpp;
+                }, width);
+                /* *INDENT-ON* */
+                src += srcskip;
+                dst += dstskip;
+            }
+        } else {
+            /* SET_ALPHA */
+            Uint32 mask = info->a << dstfmt->Ashift;
+            while (height--) {
+                /* *INDENT-OFF* */
+                DUFFS_LOOP(
+                {
+                    Uint32 *dst32 = (Uint32*)dst;
+                    Uint8 s0 = src[0];
+                    Uint8 s1 = src[1];
+                    Uint8 s2 = src[2];
+                    /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
+                    *dst32 = (s0 << 16) | (s1 << 8) | (s2) | mask;
+                    dst += dstbpp;
+                    src += srcbpp;
+                }, width);
+                /* *INDENT-ON* */
+                src += srcskip;
+                dst += dstskip;
+            }
+        }
+    } else {
+        /* NO_ALPHA */
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint32 *dst32 = (Uint32*)dst;
+                Uint8 s0 = src[0];
+                Uint8 s1 = src[1];
+                Uint8 s2 = src[2];
+                /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
+                *dst32 = (s0 << 16) | (s1 << 8) | (s2);
+                dst += dstbpp;
+                src += srcbpp;
+            }, width);
+            /* *INDENT-ON* */
+            src += srcskip;
+            dst += dstskip;
+        }
+    }
+    return;
+}
+
 /* Normal N to N optimized blitters */
 #define NO_ALPHA   1
 #define SET_ALPHA  2
@@ -2555,6 +3097,23 @@ static const struct blit_table normal_blit_2[] = {
 };
 
 static const struct blit_table normal_blit_3[] = {
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    /* 3->4 with same rgb triplet */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
+    /* 3->4 with inversed rgb triplet */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
+    /* 3->3 to switch RGB 24 <-> BGR 24 */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA },
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA },
+#endif
     /* Default for 24-bit RGB source, never optimized */
     {0, 0, 0, 0, 0, 0, 0, 0, BlitNtoN, 0}
 };
@@ -2571,6 +3130,24 @@ static const struct blit_table normal_blit_4[] = {
     {0x00000000, 0x00000000, 0x00000000, 2, 0x0000F800, 0x000007E0, 0x0000001F,
      2, Blit_RGB888_RGB565Altivec, NO_ALPHA},
 #endif
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    /* 4->3 with same rgb triplet */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 3, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
+    /* 4->3 with inversed rgb triplet */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
+#endif
+    /* 4->4 with inversed rgb triplet, and COPY_ALPHA to switch ABGR8888 <-> ARGB8888 */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA | COPY_ALPHA},
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA | COPY_ALPHA},
+    /* RGB 888 and RGB 565 */
     {0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x0000F800, 0x000007E0, 0x0000001F,
      0, Blit_RGB888_RGB565, NO_ALPHA},
     {0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x00007C00, 0x000003E0, 0x0000001F,
@@ -2623,7 +3200,7 @@ SDL_CalculateBlitN(SDL_Surface * surface)
             }
         } else {
             /* Now the meat, choose the blitter we want */
-            int a_need = NO_ALPHA;
+            Uint32 a_need = NO_ALPHA;
             if (dstfmt->Amask)
                 a_need = srcfmt->Amask ? COPY_ALPHA : SET_ALPHA;
             table = normal_blit[srcfmt->BytesPerPixel - 1];

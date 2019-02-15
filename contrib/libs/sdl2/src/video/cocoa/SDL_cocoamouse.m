@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -315,14 +315,8 @@ Cocoa_GetGlobalMouseState(int *x, int *y)
     const NSPoint cocoaLocation = [NSEvent mouseLocation];
     Uint32 retval = 0;
 
-    for (NSScreen *screen in [NSScreen screens]) {
-        NSRect frame = [screen frame];
-        if (NSMouseInRect(cocoaLocation, frame, NO)) {
-            *x = (int) cocoaLocation.x;
-            *y = (int) ((frame.origin.y + frame.size.height) - cocoaLocation.y);
-            break;
-        }
-    }
+    *x = (int) cocoaLocation.x;
+    *y = (int) (CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);
 
     retval |= (cocoaButtons & (1 << 0)) ? SDL_BUTTON_LMASK : 0;
     retval |= (cocoaButtons & (1 << 1)) ? SDL_BUTTON_RMASK : 0;

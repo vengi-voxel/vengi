@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -80,6 +80,9 @@ static const SDL_RenderDriver *render_drivers[] = {
 #if SDL_VIDEO_RENDER_D3D11
     &D3D11_RenderDriver,
 #endif
+#if SDL_VIDEO_RENDER_METAL
+    &METAL_RenderDriver,
+#endif
 #if SDL_VIDEO_RENDER_OGL
     &GL_RenderDriver,
 #endif
@@ -91,9 +94,6 @@ static const SDL_RenderDriver *render_drivers[] = {
 #endif
 #if SDL_VIDEO_RENDER_DIRECTFB
     &DirectFB_RenderDriver,
-#endif
-#if SDL_VIDEO_RENDER_METAL
-    &METAL_RenderDriver,
 #endif
 #if SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
@@ -1187,6 +1187,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
 {
     const SDL_PixelFormat *fmt;
     SDL_bool needAlpha;
+    SDL_bool direct_update;
     Uint32 i;
     Uint32 format;
     SDL_Texture *texture;
@@ -1205,6 +1206,18 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
     } else {
         needAlpha = SDL_FALSE;
     }
+
+    /* If Palette contains alpha values, promotes to alpha format */
+    if (fmt->palette) {
+        for (i = 0; i < fmt->palette->ncolors; i++) {
+            Uint8 alpha_value = fmt->palette->colors[i].a;
+            if (alpha_value != 0 || alpha_value != SDL_ALPHA_OPAQUE) {
+                needAlpha = SDL_TRUE;
+                break;
+            }
+        }
+    }
+
     format = renderer->info.texture_formats[0];
     for (i = 0; i < renderer->info.num_texture_formats; ++i) {
         if (!SDL_ISPIXELFORMAT_FOURCC(renderer->info.texture_formats[i]) &&
@@ -1221,6 +1234,20 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
     }
 
     if (format == surface->format->format) {
+        if (surface->format->Amask && SDL_HasColorKey(surface)) {
+            /* Surface and Renderer formats are identicals. 
+             * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
+            direct_update = SDL_FALSE;
+        } else {
+            /* Update Texture directly */
+            direct_update = SDL_TRUE;
+        }
+    } else {
+        /* Surface and Renderer formats are differents, it needs an intermediate conversion. */
+        direct_update = SDL_FALSE;
+    }
+
+    if (direct_update) {
         if (SDL_MUSTLOCK(surface)) {
             SDL_LockSurface(surface);
             SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
