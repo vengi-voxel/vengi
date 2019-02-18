@@ -301,90 +301,67 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		_sceneFront->resetCamera();
 		_sceneLeft->resetCamera();
 		_sceneTop->resetCamera();
-		return true;
 	} else if (ev.isAny(TBIDC("quit"))) {
 		quit();
-		return true;
 	} else if (ev.isAny(TBIDC("crop"))) {
 		vps().crop();
-		return true;
 	} else if (ev.isAny(TBIDC("extend"))) {
 		extend();
-		return true;
 	} else if (ev.isAny(TBIDC("new"))) {
 		createNew(false);
-		return true;
 	} else if (ev.isAny(TBIDC("load"))) {
 		load("");
-		return true;
 	} else if (ev.isAny(TBIDC("export"))) {
 		exportFile("");
-		return true;
 	} else if (ev.isAny(TBIDC("import"))) {
 		importMesh("");
-		return true;
 	} else if (ev.isAny(TBIDC("prefab"))) {
 		prefab("");
-		return true;
 	} else if (ev.isAny(TBIDC("spacecolonization"))) {
 		vps().spaceColonization();
-		return true;
 	} else if (ev.isAny(TBIDC("heightmap"))) {
 		importHeightmap("");
-		return true;
 	} else if (ev.isAny(TBIDC("save"))) {
 		save("");
-		return true;
 	} else if (ev.isAny(TBIDC("redo"))) {
 		redo();
 		return true;
 	} else if (ev.isAny(TBIDC("undo"))) {
 		undo();
-		return true;
 	} else if (ev.isAny(TBIDC("rotatex"))) {
 		rotatex();
-		return true;
 	} else if (ev.isAny(TBIDC("rotatey"))) {
 		rotatey();
-		return true;
 	} else if (ev.isAny(TBIDC("rotatez"))) {
 		rotatez();
-		return true;
 	} else if (ev.isAny(TBIDC("menu_structure"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("structure_popup"))) {
 			menu->show(&_structureItems, tb::TBPopupAlignment());
 		}
-		return true;
 	} else if (ev.isAny(TBIDC("menu_tree"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_popup"))) {
 			menu->show(&_treeItems, tb::TBPopupAlignment());
 		}
-		return true;
 	} else if (ev.isAny(TBIDC("menu_file"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("menu_file_window"))) {
 			menu->show(&_fileItems, tb::TBPopupAlignment());
 		}
-		return true;
 	} else if (ev.isAny(TBIDC("dialog_noise"))) {
 		new NoiseWindow(this);
-		return true;
 	} else if (ev.isAny(TBIDC("optionshowgrid"))) {
 		vps().gridRenderer().setRenderGrid(ev.target->getValue() == 1);
-		return true;
 	} else if (ev.isAny(TBIDC("optionshowaxis"))) {
 		vps().setRenderAxis(ev.target->getValue() == 1);
-		return true;
 	} else if (ev.isAny(TBIDC("optionshowlockaxis"))) {
 		vps().setRenderLockAxis(ev.target->getValue() == 1);
-		return true;
 	} else if (ev.isAny(TBIDC("optionshowaabb"))) {
 		vps().gridRenderer().setRenderAABB(ev.target->getValue() == 1);
-		return true;
 	} else if (ev.isAny(TBIDC("optionrendershadow"))) {
 		vps().setRenderShadow(ev.target->getValue() == 1);
-		return true;
+	} else {
+		return false;
 	}
-	return false;
+	return true;
 }
 
 bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
