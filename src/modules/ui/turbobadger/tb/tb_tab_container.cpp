@@ -7,18 +7,15 @@
 
 namespace tb {
 
-void TBTabLayout::onChildAdded(TBWidget *child)
-{
-	if (TBButton *button = TBSafeCast<TBButton>(child))
-	{
+void TBTabLayout::onChildAdded(TBWidget *child) {
+	if (TBButton *button = TBSafeCast<TBButton>(child)) {
 		button->setSqueezable(true);
 		button->setSkinBg(TBIDC("TBTabContainer.tab"));
 		button->setID(TBIDC("tab"));
 	}
 }
 
-PreferredSize TBTabLayout::onCalculatePreferredContentSize(const SizeConstraints &constraints)
-{
+PreferredSize TBTabLayout::onCalculatePreferredContentSize(const SizeConstraints &constraints) {
 	PreferredSize ps = TBLayout::onCalculatePreferredContentSize(constraints);
 	// Make sure the number of tabs doesn't grow parents.
 	// It is only the content that should do that. The tabs
@@ -30,11 +27,7 @@ PreferredSize TBTabLayout::onCalculatePreferredContentSize(const SizeConstraints
 	return ps;
 }
 
-TBTabContainer::TBTabContainer()
-	: m_need_page_update(true)
-	, m_current_page(0)
-	, m_align(TB_ALIGN_TOP)
-{
+TBTabContainer::TBTabContainer() : m_need_page_update(true), m_current_page(0), m_align(TB_ALIGN_TOP) {
 	addChild(&m_root_layout);
 	// Put the tab layout on top of the content in Z order so their skin can make
 	// a seamless overlap over the border. Control which side they are layouted
@@ -53,23 +46,19 @@ TBTabContainer::TBTabContainer()
 	m_content_root.setSkinBg(TBIDC("TBTabContainer.container"));
 }
 
-TBTabContainer::~TBTabContainer()
-{
+TBTabContainer::~TBTabContainer() {
 	m_root_layout.removeChild(&m_content_root);
 	m_root_layout.removeChild(&m_tab_layout);
 	removeChild(&m_root_layout);
 }
 
-void TBTabContainer::setAxis(AXIS axis)
-{
+void TBTabContainer::setAxis(AXIS axis) {
 	m_root_layout.setAxis(axis);
 	m_tab_layout.setAxis(axis == AXIS_X ? AXIS_Y : AXIS_X);
-	m_tab_layout.setSkinBg(axis == AXIS_X ? TBIDC("TBTabContainer.tablayout_y") :
-											TBIDC("TBTabContainer.tablayout_x"));
+	m_tab_layout.setSkinBg(axis == AXIS_X ? TBIDC("TBTabContainer.tablayout_y") : TBIDC("TBTabContainer.tablayout_x"));
 }
 
-void TBTabContainer::setValue(int index)
-{
+void TBTabContainer::setValue(int index) {
 	if (index == m_current_page)
 		return;
 	m_current_page = index;
@@ -78,29 +67,25 @@ void TBTabContainer::setValue(int index)
 	index = 0;
 	TBWidget *page = m_content_root.getFirstChild();
 	TBWidget *tab = m_tab_layout.getFirstChild();
-	for (   ; page && tab; page = page->getNext(), tab = tab->getNext(), index++)
-	{
+	for (; page && tab; page = page->getNext(), tab = tab->getNext(), index++) {
 		bool active = index == m_current_page;
 		page->setVisibility(active ? WIDGET_VISIBILITY_VISIBLE : WIDGET_VISIBILITY_INVISIBLE);
 		tab->setValue(active ? 1 : 0);
 	}
 }
 
-int TBTabContainer::getNumPages()
-{
+int TBTabContainer::getNumPages() {
 	int count = 0;
 	for (TBWidget *tab = m_tab_layout.getFirstChild(); tab; tab = tab->getNext())
 		count++;
 	return count;
 }
 
-TBWidget *TBTabContainer::getCurrentPageWidget() const
-{
+TBWidget *TBTabContainer::getCurrentPageWidget() const {
 	return m_content_root.getChildFromIndex(m_current_page);
 }
 
-void TBTabContainer::setAlignment(TB_ALIGN align)
-{
+void TBTabContainer::setAlignment(TB_ALIGN align) {
 	bool horizontal = (align == TB_ALIGN_TOP || align == TB_ALIGN_BOTTOM);
 	bool reverse = (align == TB_ALIGN_TOP || align == TB_ALIGN_LEFT);
 	setAxis(horizontal ? AXIS_Y : AXIS_X);
@@ -109,12 +94,9 @@ void TBTabContainer::setAlignment(TB_ALIGN align)
 	m_align = align;
 }
 
-bool TBTabContainer::onEvent(const TBWidgetEvent &ev)
-{
-	if ((ev.type == EVENT_TYPE_CLICK || ev.type == EVENT_TYPE_POINTER_DOWN) &&
-		ev.target->getID() == TBIDC("tab") &&
-		ev.target->getParent() == &m_tab_layout)
-	{
+bool TBTabContainer::onEvent(const TBWidgetEvent &ev) {
+	if ((ev.type == EVENT_TYPE_CLICK || ev.type == EVENT_TYPE_POINTER_DOWN) && ev.target->getID() == TBIDC("tab") &&
+		ev.target->getParent() == &m_tab_layout) {
 		int clicked_index = m_tab_layout.getIndexFromChild(ev.target);
 		setValue(clicked_index);
 		return true;
@@ -122,10 +104,8 @@ bool TBTabContainer::onEvent(const TBWidgetEvent &ev)
 	return false;
 }
 
-void TBTabContainer::onProcess()
-{
-	if (m_need_page_update)
-	{
+void TBTabContainer::onProcess() {
+	if (m_need_page_update) {
 		m_need_page_update = false;
 		// Force update value
 		int current_page = m_current_page;

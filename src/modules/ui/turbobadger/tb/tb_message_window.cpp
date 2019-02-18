@@ -3,34 +3,29 @@
  */
 
 #include "tb_message_window.h"
-#include "tb_widgets_reader.h"
+#include "core/Assert.h"
 #include "tb_editfield.h"
 #include "tb_language.h"
-#include "core/Assert.h"
+#include "tb_widgets_reader.h"
 
 namespace tb {
 
 // == TBMessageWindow =======================================================================================
 
-TBMessageWindow::TBMessageWindow(TBWidget *target, TBID id)
-	: m_target(target)
-{
+TBMessageWindow::TBMessageWindow(TBWidget *target, TBID id) : m_target(target) {
 	TBWidgetListener::addGlobalListener(this);
 	setID(id);
 }
 
-TBMessageWindow::~TBMessageWindow()
-{
+TBMessageWindow::~TBMessageWindow() {
 	TBWidgetListener::removeGlobalListener(this);
-	if (TBWidget *dimmer = m_dimmer.get())
-	{
+	if (TBWidget *dimmer = m_dimmer.get()) {
 		dimmer->removeFromParent();
 		delete dimmer;
 	}
 }
 
-bool TBMessageWindow::show(const char *title, const char *message, TBMessageWindowSettings *settings)
-{
+bool TBMessageWindow::show(const char *title, const char *message, TBMessageWindowSettings *settings) {
 	TBWidget *target = m_target.get();
 	if (!target)
 		return false;
@@ -41,11 +36,11 @@ bool TBMessageWindow::show(const char *title, const char *message, TBMessageWind
 
 	TBWidget *root = target->getParentRoot();
 
-	const char *source =	"TBLayout: axis: y, distribution: available\n"
-							"	TBLayout: distribution: available, size: available\n"
-							"		TBSkinImage: id: 2\n"
-							"		TBEditField: multiline: 1, readonly: 1, id: 1\n"
-							"	TBLayout: distribution-position: right bottom, id: 3\n";
+	const char *source = "TBLayout: axis: y, distribution: available\n"
+						 "	TBLayout: distribution: available, size: available\n"
+						 "		TBSkinImage: id: 2\n"
+						 "		TBEditField: multiline: 1, readonly: 1, id: 1\n"
+						 "	TBLayout: distribution-position: right bottom, id: 3\n";
 	if (!g_widgets_reader->loadData(getContentRoot(), source))
 		return false;
 
@@ -60,22 +55,15 @@ bool TBMessageWindow::show(const char *title, const char *message, TBMessageWind
 	editfield->setSkinBg("");
 
 	// Create buttons
-	if (settings->msg == TB_MSG_OK)
-	{
+	if (settings->msg == TB_MSG_OK) {
 		addButton("TBMessageWindow.ok", true);
-	}
-	else if (settings->msg == TB_MSG_OK_CANCEL)
-	{
+	} else if (settings->msg == TB_MSG_OK_CANCEL) {
 		addButton("TBMessageWindow.ok", true);
 		addButton("TBMessageWindow.cancel", false);
-	}
-	else if (settings->msg == TB_MSG_YES_NO)
-	{
+	} else if (settings->msg == TB_MSG_YES_NO) {
 		addButton("TBMessageWindow.yes", true);
 		addButton("TBMessageWindow.no", false);
-	}
-	else if (settings->msg == TB_MSG_YES_NO_CANCEL)
-	{
+	} else if (settings->msg == TB_MSG_YES_NO_CANCEL) {
 		addButton("TBMessageWindow.yes", true);
 		addButton("TBMessageWindow.no", false);
 		addButton("TBMessageWindow.cancel", false);
@@ -91,10 +79,8 @@ bool TBMessageWindow::show(const char *title, const char *message, TBMessageWind
 	rect.h += editfield->getStyleEdit()->getOverflowY();
 
 	// Create background dimmer
-	if (settings->dimmer)
-	{
-		if (TBDimmer *dimmer = new TBDimmer)
-		{
+	if (settings->dimmer) {
+		if (TBDimmer *dimmer = new TBDimmer) {
 			root->addChild(dimmer);
 			m_dimmer.set(dimmer);
 		}
@@ -107,13 +93,11 @@ bool TBMessageWindow::show(const char *title, const char *message, TBMessageWind
 	return true;
 }
 
-void TBMessageWindow::addButton(TBID id, bool focused)
-{
+void TBMessageWindow::addButton(TBID id, bool focused) {
 	TBLayout *layout = getWidgetByIDAndType<TBLayout>(3);
 	if (!layout)
 		return;
-	if (TBButton *btn = new TBButton)
-	{
+	if (TBButton *btn = new TBButton) {
 		btn->setID(id);
 		btn->setText(g_tb_lng->getString(btn->getID()));
 		layout->addChild(btn);
@@ -122,10 +106,8 @@ void TBMessageWindow::addButton(TBID id, bool focused)
 	}
 }
 
-bool TBMessageWindow::onEvent(const TBWidgetEvent &ev)
-{
-	if (ev.type == EVENT_TYPE_CLICK && ev.target->isOfType<TBButton>())
-	{
+bool TBMessageWindow::onEvent(const TBWidgetEvent &ev) {
+	if (ev.type == EVENT_TYPE_CLICK && ev.target->isOfType<TBButton>()) {
 		TBWidgetSafePointer this_widget(this);
 
 		// Invoke the click on the target
@@ -137,9 +119,7 @@ bool TBMessageWindow::onEvent(const TBWidgetEvent &ev)
 		if (this_widget.get())
 			close();
 		return true;
-	}
-	else if (ev.type == EVENT_TYPE_KEY_DOWN && ev.special_key == TB_KEY_ESC)
-	{
+	} else if (ev.type == EVENT_TYPE_KEY_DOWN && ev.special_key == TB_KEY_ESC) {
 		TBWidgetEvent click_ev(EVENT_TYPE_CLICK);
 		m_close_button.invokeEvent(click_ev);
 		return true;
@@ -147,21 +127,18 @@ bool TBMessageWindow::onEvent(const TBWidgetEvent &ev)
 	return TBWindow::onEvent(ev);
 }
 
-void TBMessageWindow::onDie()
-{
+void TBMessageWindow::onDie() {
 	if (TBWidget *dimmer = m_dimmer.get())
 		dimmer->die();
 }
 
-void TBMessageWindow::onWidgetDelete(TBWidget *widget)
-{
+void TBMessageWindow::onWidgetDelete(TBWidget *widget) {
 	// If the target widget is deleted, close!
 	if (!m_target.get())
 		close();
 }
 
-bool TBMessageWindow::onWidgetDying(TBWidget *widget)
-{
+bool TBMessageWindow::onWidgetDying(TBWidget *widget) {
 	// If the target widget or an ancestor of it is dying, close!
 	if (widget == m_target.get() || widget->isAncestorOf(m_target.get()))
 		close();

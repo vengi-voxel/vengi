@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "tb_widgets_listener.h"
 #include "animation/tb_animation.h"
+#include "tb_widgets_listener.h"
 
 namespace tb {
 
@@ -17,21 +17,20 @@ namespace tb {
 
 /** Base class for widget animations. This animation object will
 	be deleted automatically if the widget is deleted. */
-class TBWidgetAnimationObject : public TBAnimationObject, public TBLinkOf<TBWidgetAnimationObject>
-{
+class TBWidgetAnimationObject : public TBAnimationObject, public TBLinkOf<TBWidgetAnimationObject> {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBWidgetAnimationObject, TBAnimationObject);
 
 	TBWidgetAnimationObject(TBWidget *widget);
 	virtual ~TBWidgetAnimationObject();
+
 public:
 	TBWidget *m_widget;
 };
 
 /** Animate the opacity of the target widget. */
-class TBWidgetAnimationOpacity : public TBWidgetAnimationObject
-{
+class TBWidgetAnimationOpacity : public TBWidgetAnimationObject {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBWidgetAnimationOpacity, TBWidgetAnimationObject);
@@ -40,6 +39,7 @@ public:
 	virtual void onAnimationStart() override;
 	virtual void onAnimationUpdate(float progress) override;
 	virtual void onAnimationStop(bool aborted) override;
+
 private:
 	float m_src_opacity;
 	float m_dst_opacity;
@@ -47,8 +47,7 @@ private:
 };
 
 /** Animate the rectangle of the target widget. */
-class TBWidgetAnimationRect : public TBWidgetAnimationObject
-{
+class TBWidgetAnimationRect : public TBWidgetAnimationObject {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBWidgetAnimationRect, TBWidgetAnimationObject);
@@ -70,6 +69,7 @@ public:
 	virtual void onAnimationStart() override;
 	virtual void onAnimationUpdate(float progress) override;
 	virtual void onAnimationStop(bool aborted) override;
+
 private:
 	TBRect m_src_rect;
 	TBRect m_dst_rect;
@@ -77,10 +77,10 @@ private:
 	MODE m_mode;
 };
 
-class TBWidgetsAnimationManager : public TBWidgetListener
-{
+class TBWidgetsAnimationManager : public TBWidgetListener {
 public:
-	virtual ~TBWidgetsAnimationManager() {}
+	virtual ~TBWidgetsAnimationManager() {
+	}
 	/** Init the widgets animation manager. */
 	static void init();
 

@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "tb_window.h"
 #include "tb_widgets_listener.h"
+#include "tb_window.h"
 
 namespace tb {
 
@@ -14,30 +14,25 @@ namespace tb {
 
 	It calculates the rect to be used to match these preferences
 	for any given popup and target. */
-class TBPopupAlignment
-{
+class TBPopupAlignment {
 public:
 	static const int UNSPECIFIED = TB_INVALID_DIMENSION;
 
 	/** Align relative to the target widget. */
 	TBPopupAlignment(TB_ALIGN align = TB_ALIGN_BOTTOM)
-		: pos_in_root(UNSPECIFIED, UNSPECIFIED)
-		, align(align)
-		, expand_to_target_width(true) {}
+		: pos_in_root(UNSPECIFIED, UNSPECIFIED), align(align), expand_to_target_width(true) {
+	}
 
 	/** Align relative to the given position (coordinates relative to the root widget). */
 	TBPopupAlignment(const TBPoint &pos_in_root, TB_ALIGN align = TB_ALIGN_BOTTOM)
-		: pos_in_root(pos_in_root)
-		, align(align)
-		, expand_to_target_width(true) {}
+		: pos_in_root(pos_in_root), align(align), expand_to_target_width(true) {
+	}
 
 	/** Align relative to the given position (coordinates relative to the root widget).
 		Applies an additional offset. */
 	TBPopupAlignment(const TBPoint &pos_in_root, const TBPoint &pos_offset)
-		: pos_in_root(pos_in_root)
-		, pos_offset(pos_offset)
-		, align(TB_ALIGN_BOTTOM)
-		, expand_to_target_width(true) {}
+		: pos_in_root(pos_in_root), pos_offset(pos_offset), align(TB_ALIGN_BOTTOM), expand_to_target_width(true) {
+	}
 
 	/** Calculate a good rect for the given popup window using its preferred size and
 		the preferred alignment information stored in this class. */
@@ -56,8 +51,7 @@ public:
 	through the given target. It will automatically close on click events that
 	are not sent through this popup. */
 
-class TBPopupWindow : public TBWindow, private TBWidgetListener
-{
+class TBPopupWindow : public TBWindow, private TBWidgetListener {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBPopupWindow, TBWindow);
@@ -67,9 +61,12 @@ public:
 
 	bool show(const TBPopupAlignment &alignment);
 
-	virtual TBWidget *getEventDestination() override { return m_target.get(); }
+	virtual TBWidget *getEventDestination() override {
+		return m_target.get();
+	}
 
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
+
 private:
 	TBWidgetSafePointer m_target;
 	// TBWidgetListener

@@ -3,13 +3,13 @@
  */
 
 #include "tb_core.h"
-#include "tb_skin.h"
-#include "tb_widgets_reader.h"
-#include "tb_language.h"
-#include "tb_font_renderer.h"
-#include "tb_system.h"
 #include "animation/tb_animation.h"
 #include "image/tb_image_manager.h"
+#include "tb_font_renderer.h"
+#include "tb_language.h"
+#include "tb_skin.h"
+#include "tb_system.h"
+#include "tb_widgets_reader.h"
 
 namespace tb {
 
@@ -19,8 +19,7 @@ TBWidgetsReader *g_widgets_reader = nullptr;
 TBLanguage *g_tb_lng = nullptr;
 TBFontManager *g_font_manager = nullptr;
 
-bool tb_core_init(TBRenderer *renderer)
-{
+bool tb_core_init(TBRenderer *renderer) {
 	Log::debug("Initiating Turbo Badger - version " TB_VERSION_STR);
 	g_renderer = renderer;
 	g_tb_lng = new TBLanguage;
@@ -31,8 +30,7 @@ bool tb_core_init(TBRenderer *renderer)
 	return true;
 }
 
-void tb_core_shutdown()
-{
+void tb_core_shutdown() {
 	TBAnimationManager::abortAllAnimations();
 	delete g_image_manager;
 	delete g_widgets_reader;
@@ -41,8 +39,7 @@ void tb_core_shutdown()
 	delete g_tb_lng;
 }
 
-bool tb_core_is_initialized()
-{
+bool tb_core_is_initialized() {
 	return g_widgets_reader ? true : false;
 }
 

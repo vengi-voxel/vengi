@@ -7,9 +7,7 @@
 
 namespace tb {
 
-TBMenuWindow::TBMenuWindow(TBWidget *target, TBID id)
-	: TBPopupWindow(target)
-{
+TBMenuWindow::TBMenuWindow(TBWidget *target, TBID id) : TBPopupWindow(target) {
 	setID(id);
 	setSkinBg(TBIDC("TBMenuWindow"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 	m_select_list.getScrollContainer()->setAdaptToContentSize(true);
@@ -20,18 +18,15 @@ TBMenuWindow::TBMenuWindow(TBWidget *target, TBID id)
 	addChild(&m_select_list);
 }
 
-TBMenuWindow::~TBMenuWindow()
-{
+TBMenuWindow::~TBMenuWindow() {
 	removeChild(&m_select_list);
 }
 
-void TBMenuWindow::onDie()
-{
+void TBMenuWindow::onDie() {
 	m_select_list.setSource(nullptr);
 }
 
-bool TBMenuWindow::show(TBSelectItemSource *source, const TBPopupAlignment &alignment, int initialValue)
-{
+bool TBMenuWindow::show(TBSelectItemSource *source, const TBPopupAlignment &alignment, int initialValue) {
 	m_select_list.setValue(initialValue);
 	m_select_list.setSource(source);
 	m_select_list.validateList();
@@ -39,10 +34,8 @@ bool TBMenuWindow::show(TBSelectItemSource *source, const TBPopupAlignment &alig
 	return TBPopupWindow::show(alignment);
 }
 
-bool TBMenuWindow::onEvent(const TBWidgetEvent &ev)
-{
-	if (ev.type == EVENT_TYPE_CLICK && &m_select_list == ev.target)
-	{
+bool TBMenuWindow::onEvent(const TBWidgetEvent &ev) {
+	if (ev.type == EVENT_TYPE_CLICK && &m_select_list == ev.target) {
 		TBWidgetSafePointer this_widget(this);
 
 		// Invoke the click on the target

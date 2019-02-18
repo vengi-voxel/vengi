@@ -10,37 +10,64 @@ namespace tb {
 
 /** Simple point class. */
 
-class TBPoint
-{
+class TBPoint {
 public:
 	int x, y;
-	TBPoint() : x(0), y(0) {}
-	TBPoint(int _x, int _y) : x(_x), y(_y) {}
+	TBPoint() : x(0), y(0) {
+	}
+	TBPoint(int _x, int _y) : x(_x), y(_y) {
+	}
 };
 
 /** Simple rectangle class. */
 
-class TBRect
-{
+class TBRect {
 public:
 	int x, y, w, h;
-	TBRect() : x(0), y(0), w(0), h(0) {}
-	TBRect(int _x, int _y, int _w, int _h) : x(_x), y(_y), w(_w), h(_h) {}
+	TBRect() : x(0), y(0), w(0), h(0) {
+	}
+	TBRect(int _x, int _y, int _w, int _h) : x(_x), y(_y), w(_w), h(_h) {
+	}
 
-	inline bool isEmpty() const						{ return w <= 0 || h <= 0; }
-	inline bool isInsideOut() const					{ return w < 0 || h < 0; }
-	inline bool equals(const TBRect &rect) const	{ return rect.x == x && rect.y == y && rect.w == w && rect.h == h; }
+	inline bool isEmpty() const {
+		return w <= 0 || h <= 0;
+	}
+	inline bool isInsideOut() const {
+		return w < 0 || h < 0;
+	}
+	inline bool equals(const TBRect &rect) const {
+		return rect.x == x && rect.y == y && rect.w == w && rect.h == h;
+	}
 	bool intersects(const TBRect &rect) const;
-	bool contains(const TBPoint &p) const			{ return p.x >= x && p.y >= y && p.x < x + w && p.y < y + h; }
+	bool contains(const TBPoint &p) const {
+		return p.x >= x && p.y >= y && p.x < x + w && p.y < y + h;
+	}
 
-	inline void reset()								{ x = y = w = h = 0; }
-	inline void set(int _x, int _y, int _w, int _h)		{ this->x = _x; this->y = _y; this->w = _w; this->h = _h; }
+	inline void reset() {
+		x = y = w = h = 0;
+	}
+	inline void set(int _x, int _y, int _w, int _h) {
+		this->x = _x;
+		this->y = _y;
+		this->w = _w;
+		this->h = _h;
+	}
 
-	inline TBRect shrink(int left, int top, int right, int bottom) const	{ return TBRect(x + left, y + top, w - left - right, h - top - bottom); }
-	inline TBRect expand(int left, int top, int right, int bottom) const	{ return shrink(-left, -top, -right, -bottom); }
-	inline TBRect shrink(int tx, int ty) const		{ return TBRect(x + tx, y + ty, w - tx * 2, h - ty * 2); }
-	inline TBRect expand(int tx, int ty) const		{ return shrink(-tx, -ty); }
-	inline TBRect offset(int dx, int dy) const		{ return TBRect(x + dx, y + dy, w, h); }
+	inline TBRect shrink(int left, int top, int right, int bottom) const {
+		return TBRect(x + left, y + top, w - left - right, h - top - bottom);
+	}
+	inline TBRect expand(int left, int top, int right, int bottom) const {
+		return shrink(-left, -top, -right, -bottom);
+	}
+	inline TBRect shrink(int tx, int ty) const {
+		return TBRect(x + tx, y + ty, w - tx * 2, h - ty * 2);
+	}
+	inline TBRect expand(int tx, int ty) const {
+		return shrink(-tx, -ty);
+	}
+	inline TBRect offset(int dx, int dy) const {
+		return TBRect(x + dx, y + dy, w, h);
+	}
 
 	/** Return a rect moved inside bounding_rect. If the rect doesn't fit inside
 		bounding_rect, it will be placed so the x and/or y matches bounding_rect. */
@@ -55,8 +82,7 @@ public:
 
 /** TBRegion does calculations on regions represented by a list of rectangles. */
 
-class TBRegion
-{
+class TBRegion {
 public:
 	TBRegion();
 	~TBRegion();
@@ -93,9 +119,14 @@ public:
 	/** Add the rectangles that's left of rect after excluding exclude_rect. */
 	bool addExcludingRects(const TBRect &rect, const TBRect &exclude_rect, bool coalesce);
 
-	bool isEmpty() const							{ return m_num_rects == 0; }
-	int getNumRects() const							{ return m_num_rects; }
+	bool isEmpty() const {
+		return m_num_rects == 0;
+	}
+	int getNumRects() const {
+		return m_num_rects;
+	}
 	const TBRect &getRect(int index) const;
+
 private:
 	TBRect *m_rects;
 	int m_num_rects;

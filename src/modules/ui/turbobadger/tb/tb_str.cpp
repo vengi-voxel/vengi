@@ -8,19 +8,16 @@
 namespace tb {
 
 static const char *empty = "";
-inline void safe_delete(char *&str)
-{
+inline void safe_delete(char *&str) {
 	if (str != empty && str)
 		SDL_free(str);
-	str = const_cast<char*>(empty);
+	str = const_cast<char *>(empty);
 }
 
-const char *stristr(const char *arg1, const char *arg2)
-{
+const char *stristr(const char *arg1, const char *arg2) {
 	const char *a, *b;
 
-	for(;*arg1;arg1++)
-	{
+	for (; *arg1; arg1++) {
 		a = arg1;
 		b = arg2;
 		while (SDL_toupper(*a++) == SDL_toupper(*b++))
@@ -32,43 +29,32 @@ const char *stristr(const char *arg1, const char *arg2)
 
 // == TBStr ==========================================================
 
-TBStr::TBStr()
-	: TBStrC(empty)
-{
+TBStr::TBStr() : TBStrC(empty) {
 }
 
-TBStr::TBStr(const char* str)
-	: TBStrC(str == empty ? empty : SDL_strdup(str))
-{
+TBStr::TBStr(const char *str) : TBStrC(str == empty ? empty : SDL_strdup(str)) {
 	if (!s)
-		s = const_cast<char*>(empty);
+		s = const_cast<char *>(empty);
 }
 
-TBStr::TBStr(const TBStr &str)
-	: TBStrC(str.s == empty ? empty : SDL_strdup(str.s))
-{
+TBStr::TBStr(const TBStr &str) : TBStrC(str.s == empty ? empty : SDL_strdup(str.s)) {
 	if (!s)
-		s = const_cast<char*>(empty);
+		s = const_cast<char *>(empty);
 }
 
-TBStr::TBStr(const char* str, int len)
-	: TBStrC(empty)
-{
+TBStr::TBStr(const char *str, int len) : TBStrC(empty) {
 	set(str, len);
 }
 
-TBStr::~TBStr()
-{
+TBStr::~TBStr() {
 	safe_delete(s);
 }
 
-bool TBStr::set(const char* str, int len)
-{
+bool TBStr::set(const char *str, int len) {
 	safe_delete(s);
 	if (len == TB_ALL_TO_TERMINATION)
 		len = SDL_strlen(str);
-	if (char *new_s = (char *) SDL_malloc(len + 1))
-	{
+	if (char *new_s = (char *)SDL_malloc(len + 1)) {
 		s = new_s;
 		SDL_memcpy(s, str, len);
 		s[len] = 0;
@@ -77,18 +63,15 @@ bool TBStr::set(const char* str, int len)
 	return false;
 }
 
-bool TBStr::setFormatted(const char* format, ...)
-{
+bool TBStr::setFormatted(const char *format, ...) {
 	safe_delete(s);
 	if (!format)
 		return true;
 	va_list ap;
 	int max_len = 64;
 	char *new_s = nullptr;
-	while (true)
-	{
-		if (char *tris_try_new_s = (char *) SDL_realloc(new_s, max_len))
-		{
+	while (true) {
+		if (char *tris_try_new_s = (char *)SDL_realloc(new_s, max_len)) {
 			new_s = tris_try_new_s;
 
 			va_start(ap, format);
@@ -104,9 +87,7 @@ bool TBStr::setFormatted(const char* format, ...)
 				s = new_s;
 				return true;
 			}
-		}
-		else
-		{
+		} else {
 			// Out of memory
 			SDL_free(new_s);
 			break;
@@ -115,13 +96,11 @@ bool TBStr::setFormatted(const char* format, ...)
 	return false;
 }
 
-void TBStr::clear()
-{
+void TBStr::clear() {
 	safe_delete(s);
 }
 
-void TBStr::remove(int ofs, int len)
-{
+void TBStr::remove(int ofs, int len) {
 	core_assert(ofs >= 0 && (ofs + len <= (int)SDL_strlen(s)));
 	if (!len)
 		return;
@@ -132,14 +111,12 @@ void TBStr::remove(int ofs, int len)
 	*dst = *src;
 }
 
-bool TBStr::insert(int ofs, const char *ins, int insLen)
-{
+bool TBStr::insert(int ofs, const char *ins, int insLen) {
 	int len1 = SDL_strlen(s);
 	if (insLen == TB_ALL_TO_TERMINATION)
 		insLen = SDL_strlen(ins);
 	int newlen = len1 + insLen;
-	if (char *news = (char *) SDL_malloc(newlen + 1))
-	{
+	if (char *news = (char *)SDL_malloc(newlen + 1)) {
 		SDL_memcpy(&news[0], s, ofs);
 		SDL_memcpy(&news[ofs], ins, insLen);
 		SDL_memcpy(&news[ofs + insLen], &s[ofs], len1 - ofs);

@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "tb_types.h"
-#include "tb_hash.h"
 #include "tb_debug.h"
+#include "tb_hash.h"
+#include "tb_types.h"
 
 #define TB_VERSION_MAJOR 0
 #define TB_VERSION_MINOR 1

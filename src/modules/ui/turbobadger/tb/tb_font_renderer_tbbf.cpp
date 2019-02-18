@@ -2,13 +2,13 @@
  * @file
  */
 
-#include "tb_font_renderer.h"
-#include "tb_renderer.h"
-#include "tb_tempbuffer.h"
-#include "tb_system.h"
-#include "tb_node_tree.h"
-#include "tb_hashtable.h"
 #include "image/Image.h"
+#include "tb_font_renderer.h"
+#include "tb_hashtable.h"
+#include "tb_node_tree.h"
+#include "tb_renderer.h"
+#include "tb_system.h"
+#include "tb_tempbuffer.h"
 
 using namespace tb;
 
@@ -56,8 +56,7 @@ struct GLYPH {
 		is pixels with alpha > 0 between the two dots, otherwise the dots will
 		be identified as different glyphs.
 */
-class TBBFRenderer : public TBFontRenderer
-{
+class TBBFRenderer : public TBFontRenderer {
 public:
 	TBBFRenderer();
 	~TBBFRenderer();
@@ -66,12 +65,12 @@ public:
 	bool findGlyphs();
 	GLYPH *findNext(UCS4 cp, int x);
 
-	virtual TBFontFace *create(TBFontManager *fontManager, const char *filename,
-								const TBFontDescription &fontDesc);
+	virtual TBFontFace *create(TBFontManager *fontManager, const char *filename, const TBFontDescription &fontDesc);
 
 	virtual TBFontMetrics getMetrics();
 	virtual bool renderGlyph(TBFontGlyphData *dstBitmap, UCS4 cp);
 	virtual void getGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp);
+
 private:
 	TBNode m_node;
 	TBFontMetrics m_metrics;
@@ -84,44 +83,32 @@ private:
 	TBHashTableAutoDeleteOf<GLYPH> m_glyph_table;
 };
 
-TBBFRenderer::TBBFRenderer()
-	: m_size(0)
-	, m_x_ofs(0)
-	, m_advance_delta(0)
-	, m_space_advance(0)
-	, m_rgb(0)
-{
+TBBFRenderer::TBBFRenderer() : m_size(0), m_x_ofs(0), m_advance_delta(0), m_space_advance(0), m_rgb(0) {
 }
 
-TBBFRenderer::~TBBFRenderer()
-{
+TBBFRenderer::~TBBFRenderer() {
 }
 
-TBFontMetrics TBBFRenderer::getMetrics()
-{
+TBFontMetrics TBBFRenderer::getMetrics() {
 	return m_metrics;
 }
 
-bool TBBFRenderer::renderGlyph(TBFontGlyphData *data, UCS4 cp)
-{
+bool TBBFRenderer::renderGlyph(TBFontGlyphData *data, UCS4 cp) {
 	if (cp == ' ')
 		return false;
 	GLYPH *glyph;
-	if ((glyph = m_glyph_table.get(cp)) ||
-		(glyph = m_glyph_table.get('?')))
-	{
+	if ((glyph = m_glyph_table.get(cp)) || (glyph = m_glyph_table.get('?'))) {
 		data->w = glyph->w;
 		data->h = m_img->height();
 		data->stride = m_img->width();
-		data->data32 = (uint32_t*)(m_img->data()) + glyph->x;
+		data->data32 = (uint32_t *)(m_img->data()) + glyph->x;
 		data->rgb = m_rgb ? true : false;
 		return true;
 	}
 	return false;
 }
 
-void TBBFRenderer::getGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp)
-{
+void TBBFRenderer::getGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp) {
 	metrics->x = m_x_ofs;
 	metrics->y = -m_metrics.ascent;
 	if (cp == ' ')
@@ -132,18 +119,15 @@ void TBBFRenderer::getGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp)
 		metrics->advance = glyph->w + m_advance_delta;
 }
 
-bool TBBFRenderer::load(const char *filename, int size)
-{
+bool TBBFRenderer::load(const char *filename, int size) {
 	m_size = size;
 	if (!m_node.readFile(filename))
 		return false;
 
 	// Check for size nodes and get the one closest to the size we want.
 	TBNode *size_node = nullptr;
-	for (TBNode *n = m_node.getFirstChild(); n; n = n->getNext())
-	{
-		if (strcmp(n->getName(), "size") == 0)
-		{
+	for (TBNode *n = m_node.getFirstChild(); n; n = n->getNext()) {
+		if (strcmp(n->getName(), "size") == 0) {
 			if (!size_node || Abs(m_size - n->getValue().getInt()) < Abs(m_size - size_node->getValue().getInt()))
 				size_node = n;
 		}
@@ -177,13 +161,11 @@ bool TBBFRenderer::load(const char *filename, int size)
 	return findGlyphs();
 }
 
-inline unsigned char GetAlpha(uint32_t color)
-{
+inline unsigned char GetAlpha(uint32_t color) {
 	return (color & 0xff000000) >> 24;
 }
 
-bool TBBFRenderer::findGlyphs()
-{
+bool TBBFRenderer::findGlyphs() {
 	if (!m_img)
 		return false;
 
@@ -194,24 +176,20 @@ bool TBBFRenderer::findGlyphs()
 	int glyph_str_len = strlen(glyph_str);
 	int i = 0;
 	int x = 0;
-	while (UCS4 uc = utf8::decode_next(glyph_str, &i, glyph_str_len))
-	{
-		if (GLYPH *glyph = findNext(uc, x))
-		{
+	while (UCS4 uc = utf8::decode_next(glyph_str, &i, glyph_str_len)) {
+		if (GLYPH *glyph = findNext(uc, x)) {
 			m_glyph_table.add(uc, glyph); // OOM!
 			x = glyph->x + glyph->w + 1;
-		}
-		else
+		} else
 			break;
 	}
 	return true;
 }
 
-GLYPH *TBBFRenderer::findNext(UCS4 cp, int x)
-{
+GLYPH *TBBFRenderer::findNext(UCS4 cp, int x) {
 	int width = m_img->width();
 	int height = m_img->height();
-	uint32_t *data32 = (uint32_t*)m_img->data();
+	uint32_t *data32 = (uint32_t *)m_img->data();
 
 	if (x >= width)
 		return nullptr;
@@ -224,22 +202,18 @@ GLYPH *TBBFRenderer::findNext(UCS4 cp, int x)
 	glyph->w = -1;
 
 	// Find the left edge of the glyph
-	for (int i = x; i < width && glyph->x == -1; i++)
-	{
+	for (int i = x; i < width && glyph->x == -1; i++) {
 		for (int j = 0; j < height; j++)
-			if (GetAlpha(data32[i + j * width]))
-			{
+			if (GetAlpha(data32[i + j * width])) {
 				glyph->x = x = i;
 				break;
 			}
 	}
 
 	// Find the right edge of the glyph
-	for (int i = x; i < width; i++)
-	{
+	for (int i = x; i < width; i++) {
 		int j;
-		for (j = 0; j < height; j++)
-		{
+		for (j = 0; j < height; j++) {
 			if (GetAlpha(data32[i + j * width]))
 				break;
 		}
@@ -250,21 +224,18 @@ GLYPH *TBBFRenderer::findNext(UCS4 cp, int x)
 		}
 	}
 
-	if (glyph->x == -1 || glyph->w == -1)
-	{
+	if (glyph->x == -1 || glyph->w == -1) {
 		delete glyph;
 		return nullptr;
 	}
 	return glyph;
 }
 
-TBFontFace *TBBFRenderer::create(TBFontManager *fontManager, const char *filename, const TBFontDescription &fontDesc)
-{
+TBFontFace *TBBFRenderer::create(TBFontManager *fontManager, const char *filename, const TBFontDescription &fontDesc) {
 	if (!strstr(filename, ".tb.txt"))
 		return nullptr;
-	if (TBBFRenderer *fr = new TBBFRenderer())
-	{
-		if (fr->load(filename, (int) fontDesc.getSize()))
+	if (TBBFRenderer *fr = new TBBFRenderer()) {
+		if (fr->load(filename, (int)fontDesc.getSize()))
 			if (TBFontFace *font = new TBFontFace(fontManager->getGlyphCache(), fr, fontDesc))
 				return font;
 		delete fr;
@@ -272,8 +243,7 @@ TBFontFace *TBBFRenderer::create(TBFontManager *fontManager, const char *filenam
 	return nullptr;
 }
 
-void register_tbbf_font_renderer()
-{
+void register_tbbf_font_renderer() {
 	if (TBBFRenderer *fr = new TBBFRenderer)
 		g_font_manager->addRenderer(fr);
 }

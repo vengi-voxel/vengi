@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "tb_core.h"
-#include "tb_linklist.h"
-#include "tb_hashtable.h"
 #include "tb_bitmap_fragment.h"
+#include "tb_core.h"
+#include "tb_hashtable.h"
+#include "tb_linklist.h"
 #include "tb_renderer.h"
 
 namespace tb {
@@ -15,8 +15,7 @@ namespace tb {
 class TBImageManager;
 
 /** TBImageRep is the internal contents of a TBImage. Owned by reference counting from TBImage. */
-class TBImageRep
-{
+class TBImageRep {
 	friend class TBImageManager;
 	friend class TBImage;
 
@@ -36,10 +35,10 @@ class TBImageRep
 	It may be empty if the image has not yet been set, or if the TBImageManager is destroyed
 	when the image is still alive.
 */
-class TBImage
-{
+class TBImage {
 public:
-	TBImage() : m_image_rep(nullptr) {}
+	TBImage() : m_image_rep(nullptr) {
+	}
 	TBImage(TBImageRep *rep);
 	TBImage(const TBImage &image);
 	~TBImage();
@@ -56,9 +55,17 @@ public:
 	/** Return the bitmap fragment for this image, or nullptr if empty. */
 	TBBitmapFragment *getBitmap() const;
 
-	const TBImage& operator = (const TBImage &image) { setImageRep(image.m_image_rep); return *this; }
-	bool operator == (const TBImage &image) const { return m_image_rep == image.m_image_rep; }
-	bool operator != (const TBImage &image) const { return m_image_rep != image.m_image_rep; }
+	const TBImage &operator=(const TBImage &image) {
+		setImageRep(image.m_image_rep);
+		return *this;
+	}
+	bool operator==(const TBImage &image) const {
+		return m_image_rep == image.m_image_rep;
+	}
+	bool operator!=(const TBImage &image) const {
+		return m_image_rep != image.m_image_rep;
+	}
+
 private:
 	void setImageRep(TBImageRep *image_rep);
 	TBImageRep *m_image_rep;
@@ -72,8 +79,7 @@ private:
 	Images are forgotten when there are no longer any TBImage objects for a given file.
 */
 
-class TBImageManager : private TBRendererListener
-{
+class TBImageManager : private TBRendererListener {
 public:
 	TBImageManager();
 	~TBImageManager();
@@ -85,12 +91,15 @@ public:
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	/** Render the skin bitmaps on screen, to analyze fragment positioning. */
-	void debug() { m_frag_manager.debug(); }
+	void debug() {
+		m_frag_manager.debug();
+	}
 #endif
 
 	// Implementing TBRendererListener
 	virtual void onContextLost();
 	virtual void onContextRestored();
+
 private:
 	TBBitmapFragmentManager m_frag_manager;
 	TBHashTableOf<TBImageRep> m_image_rep_hash;

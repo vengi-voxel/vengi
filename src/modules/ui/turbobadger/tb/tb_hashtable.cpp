@@ -8,29 +8,21 @@
 
 namespace tb {
 
-//FIX: reduce memory (block allocation of ITEM)
-//FIX: should shrink when deleting single items (but not when adding items!)
-//FIX: should grow when about 70% full instead of 100%
+// FIX: reduce memory (block allocation of ITEM)
+// FIX: should shrink when deleting single items (but not when adding items!)
+// FIX: should grow when about 70% full instead of 100%
 
-TBHashTable::TBHashTable()
-	: m_buckets(nullptr)
-	, m_num_buckets(0)
-	, m_num_items(0)
-{
+TBHashTable::TBHashTable() : m_buckets(nullptr), m_num_buckets(0), m_num_items(0) {
 }
 
-TBHashTable::~TBHashTable()
-{
+TBHashTable::~TBHashTable() {
 	removeAll();
 }
 
-void TBHashTable::removeAll(bool delContent)
-{
-	for (uint32_t i = 0; i < m_num_buckets; i++)
-	{
+void TBHashTable::removeAll(bool delContent) {
+	for (uint32_t i = 0; i < m_num_buckets; i++) {
 		ITEM *item = m_buckets[i];
-		while (item)
-		{
+		while (item) {
 			ITEM *item_next = item->next;
 			if (delContent)
 				deleteContent(item->content);
@@ -38,24 +30,20 @@ void TBHashTable::removeAll(bool delContent)
 			item = item_next;
 		}
 	}
-	delete [] m_buckets;
+	delete[] m_buckets;
 	m_buckets = nullptr;
 	m_num_buckets = m_num_items = 0;
 }
 
-bool TBHashTable::rehash(uint32_t newNumBuckets)
-{
+bool TBHashTable::rehash(uint32_t newNumBuckets) {
 	if (newNumBuckets == m_num_buckets)
 		return true;
-	if (ITEM **new_buckets = new ITEM*[newNumBuckets])
-	{
-		SDL_memset(new_buckets, 0, sizeof(ITEM*) * newNumBuckets);
+	if (ITEM **new_buckets = new ITEM *[newNumBuckets]) {
+		SDL_memset(new_buckets, 0, sizeof(ITEM *) * newNumBuckets);
 		// Rehash all items into the new buckets
-		for (uint32_t i = 0; i < m_num_buckets; i++)
-		{
+		for (uint32_t i = 0; i < m_num_buckets; i++) {
 			ITEM *item = m_buckets[i];
-			while (item)
-			{
+			while (item) {
 				ITEM *item_next = item->next;
 				// Add it to new_buckets
 				uint32_t bucket = item->key & (newNumBuckets - 1);
@@ -65,7 +53,7 @@ bool TBHashTable::rehash(uint32_t newNumBuckets)
 			}
 		}
 		// Delete old buckets and update
-		delete [] m_buckets;
+		delete[] m_buckets;
 		m_buckets = new_buckets;
 		m_num_buckets = newNumBuckets;
 		return true;
@@ -73,28 +61,24 @@ bool TBHashTable::rehash(uint32_t newNumBuckets)
 	return false;
 }
 
-bool TBHashTable::needRehash() const
-{
+bool TBHashTable::needRehash() const {
 	// Grow if more items than buckets
 	return !m_num_buckets || m_num_items >= m_num_buckets;
 }
 
-uint32_t TBHashTable::getSuitableBucketsCount() const
-{
+uint32_t TBHashTable::getSuitableBucketsCount() const {
 	// As long as we use FNV for TBID (in TBGetHash), power of two hash sizes are the best.
 	if (!m_num_items)
 		return 16;
 	return m_num_items * 2;
 }
 
-void *TBHashTable::get(uint32_t key) const
-{
+void *TBHashTable::get(uint32_t key) const {
 	if (!m_num_buckets)
 		return nullptr;
 	uint32_t bucket = key & (m_num_buckets - 1);
 	ITEM *item = m_buckets[bucket];
-	while (item)
-	{
+	while (item) {
 		if (item->key == key)
 			return item->content;
 		item = item->next;
@@ -102,13 +86,11 @@ void *TBHashTable::get(uint32_t key) const
 	return nullptr;
 }
 
-bool TBHashTable::add(uint32_t key, void *content)
-{
+bool TBHashTable::add(uint32_t key, void *content) {
 	if (needRehash() && !rehash(getSuitableBucketsCount()))
 		return false;
 	core_assert(!get(key));
-	if (ITEM *item = new ITEM)
-	{
+	if (ITEM *item = new ITEM) {
 		uint32_t bucket = key & (m_num_buckets - 1);
 		item->key = key;
 		item->content = content;
@@ -120,17 +102,14 @@ bool TBHashTable::add(uint32_t key, void *content)
 	return false;
 }
 
-void *TBHashTable::remove(uint32_t key)
-{
+void *TBHashTable::remove(uint32_t key) {
 	if (!m_num_buckets)
 		return nullptr;
 	uint32_t bucket = key & (m_num_buckets - 1);
 	ITEM *item = m_buckets[bucket];
 	ITEM *prev_item = nullptr;
-	while (item)
-	{
-		if (item->key == key)
-		{
+	while (item) {
+		if (item->key == key) {
 			if (prev_item)
 				prev_item->next = item->next;
 			else
@@ -147,23 +126,19 @@ void *TBHashTable::remove(uint32_t key)
 	return nullptr;
 }
 
-void TBHashTable::deleteKey(uint32_t key)
-{
+void TBHashTable::deleteKey(uint32_t key) {
 	deleteContent(remove(key));
 }
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 
-void TBHashTable::debug()
-{
+void TBHashTable::debug() {
 	Log::debug("Hash table: ");
 	int total_count = 0;
-	for (uint32_t i = 0; i < m_num_buckets; i++)
-	{
+	for (uint32_t i = 0; i < m_num_buckets; i++) {
 		int count = 0;
 		ITEM *item = m_buckets[i];
-		while (item)
-		{
+		while (item) {
 			count++;
 			item = item->next;
 		}
@@ -176,26 +151,20 @@ void TBHashTable::debug()
 #endif // TB_RUNTIME_DEBUG_INFO
 
 TBHashTableIterator::TBHashTableIterator(TBHashTable *hashTable)
-	: m_hash_table(hashTable)
-	, m_current_bucket(0)
-	, m_current_item(nullptr)
-{
+	: m_hash_table(hashTable), m_current_bucket(0), m_current_item(nullptr) {
 }
 
-void *TBHashTableIterator::getNextContent()
-{
+void *TBHashTableIterator::getNextContent() {
 	if (m_current_bucket == m_hash_table->m_num_buckets)
 		return nullptr;
 	if (m_current_item && m_current_item->next)
 		m_current_item = m_current_item->next;
-	else
-	{
+	else {
 		if (m_current_item)
 			m_current_bucket++;
 		if (m_current_bucket == m_hash_table->m_num_buckets)
 			return nullptr;
-		while (m_current_bucket < m_hash_table->m_num_buckets)
-		{
+		while (m_current_bucket < m_hash_table->m_num_buckets) {
 			m_current_item = m_hash_table->m_buckets[m_current_bucket];
 			if (m_current_item)
 				break;

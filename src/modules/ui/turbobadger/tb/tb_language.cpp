@@ -3,18 +3,16 @@
  */
 
 #include "tb_language.h"
-#include "tb_system.h"
 #include "tb_node_tree.h"
+#include "tb_system.h"
 
 namespace tb {
 
-TBLanguage::~TBLanguage()
-{
+TBLanguage::~TBLanguage() {
 	clear();
 }
 
-bool TBLanguage::load(const char *filename)
-{
+bool TBLanguage::load(const char *filename) {
 	// Read the file into a node tree (even though it's only a flat list)
 	TBNode node;
 	if (!node.readFile(filename))
@@ -22,12 +20,10 @@ bool TBLanguage::load(const char *filename)
 
 	// Go through all nodes and add to the strings hash table
 	TBNode *n = node.getFirstChild();
-	while (n)
-	{
+	while (n) {
 		const char *str = n->getValue().getString();
 		TBStr *new_str = new TBStr(str);
-		if (!new_str || !strings.add(TBID(n->getName()), new_str))
-		{
+		if (!new_str || !strings.add(TBID(n->getName()), new_str)) {
 			delete new_str;
 			return false;
 		}
@@ -36,13 +32,11 @@ bool TBLanguage::load(const char *filename)
 	return true;
 }
 
-void TBLanguage::clear()
-{
+void TBLanguage::clear() {
 	strings.deleteAll();
 }
 
-const char *TBLanguage::getString(const TBID &id)
-{
+const char *TBLanguage::getString(const TBID &id) {
 	if (TBStr *str = strings.get(id))
 		return *str;
 	return "<TRANSLATE!>";

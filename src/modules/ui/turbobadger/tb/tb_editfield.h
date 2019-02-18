@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "tb_widgets_common.h"
 #include "tb_msg.h"
 #include "tb_style_edit.h"
+#include "tb_widgets_common.h"
 
 namespace tb {
 
@@ -38,8 +38,7 @@ enum EDIT_TYPE {
 		<widget TBSkinImage: skin: "Icon48">
 */
 
-class TBEditFieldContentFactory : public TBTextFragmentContentFactory
-{
+class TBEditFieldContentFactory : public TBTextFragmentContentFactory {
 public:
 	class TBEditField *editfield;
 	virtual int getContent(const char *text);
@@ -49,11 +48,12 @@ public:
 /** TBEditFieldScrollRoot - Internal for TBEditField.
 	Acts as a scrollable container for any widget created as embedded content. */
 
-class TBEditFieldScrollRoot : public TBWidget
-{
+class TBEditFieldScrollRoot : public TBWidget {
 private: // May only be used by TBEditField.
 	friend class TBEditField;
-	TBEditFieldScrollRoot() {}
+	TBEditFieldScrollRoot() {
+	}
+
 public:
 	virtual void onPaintChildren(const PaintProps &paint_props);
 	virtual void getChildTranslation(int &x, int &y) const;
@@ -68,8 +68,7 @@ public:
 	if enabled by SetStyling(true). Disabled by default.
 */
 
-class TBEditField : public TBWidget, private TBStyleEditListener, public TBMessageHandler
-{
+class TBEditField : public TBWidget, private TBStyleEditListener, public TBMessageHandler {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBEditField, TBWidget);
@@ -83,28 +82,38 @@ public:
 	/** Set if multiple lines should be allowed or not.
 		Will also set wrapping (to true if multiline, and false if not). */
 	void setMultiline(bool multiline);
-	bool getMultiline() const { return m_style_edit.packed.multiline_on; }
+	bool getMultiline() const {
+		return m_style_edit.packed.multiline_on;
+	}
 
 	/** Set if styling should be enabled or not. Default is disabled. */
 	void setStyling(bool styling);
-	bool getStyling() const { return m_style_edit.packed.styling_on; }
+	bool getStyling() const {
+		return m_style_edit.packed.styling_on;
+	}
 
 	/** Set if read only mode should be enabled. Default is disabled.
 		In read only mode, editing is disabled and caret is hidden.
 		The user is still able to focus, select and copy text. */
 	void setReadOnly(bool readonly);
-	bool getReadOnly() const { return m_style_edit.packed.read_only; }
+	bool getReadOnly() const {
+		return m_style_edit.packed.read_only;
+	}
 
 	/** Set to true if the text should wrap if multi line is enabled (See SetMultiline). */
 	void setWrapping(bool wrapping);
-	bool getWrapping() const { return m_style_edit.packed.wrapping; }
+	bool getWrapping() const {
+		return m_style_edit.packed.wrapping;
+	}
 
 	/** Set to true if the preferred size of this editfield should adapt to the
 		size of the content (disabled by default).
 		If wrapping is enabled, the result is partly dependant on the virtual
 		width (See SetVirtualWidth). */
 	void setAdaptToContentSize(bool adapt);
-	bool getAdaptToContentSize() const { return m_adapt_to_content_size; }
+	bool getAdaptToContentSize() const {
+		return m_adapt_to_content_size;
+	}
 
 	/** The virtual width is only used if the size is adapting to content size
 		(See SetAdaptToContentSize) and wrapping is enabled.
@@ -113,15 +122,21 @@ public:
 		the content. It is also up to the the layouter to decide if the size
 		should be respected or not. The default is 250. */
 	void setVirtualWidth(int virtual_width);
-	int getVirtualWidth() const { return m_virtual_width; }
+	int getVirtualWidth() const {
+		return m_virtual_width;
+	}
 
 	/** Get the TBStyleEdit object that contains more functions and settings. */
-	TBStyleEdit *getStyleEdit() { return &m_style_edit; }
+	TBStyleEdit *getStyleEdit() {
+		return &m_style_edit;
+	}
 
 	/** Set the edit type that is a hint for virtual keyboards about what the
 		content should be. */
 	void setEditType(EDIT_TYPE type);
-	EDIT_TYPE GetEditType() { return m_edit_type; }
+	EDIT_TYPE GetEditType() {
+		return m_edit_type;
+	}
 
 	/** Support custom skin condition properties. Currently supported properties are:
 		"edit-type", matching those of EDIT_TYPE.
@@ -133,31 +148,47 @@ public:
 		given when painting is larger than the text.
 		This changes the default for new blocks, as wel as the currently selected blocks or the block
 		of the current caret position if nothing is selected. */
-	void setTextAlign(TB_TEXT_ALIGN align) { m_style_edit.setAlign(align); }
-	TB_TEXT_ALIGN getTextAlign() { return m_style_edit.align; }
+	void setTextAlign(TB_TEXT_ALIGN align) {
+		m_style_edit.setAlign(align);
+	}
+	TB_TEXT_ALIGN getTextAlign() {
+		return m_style_edit.align;
+	}
 
-	virtual bool setText(const char *text) override { return m_style_edit.setText(text, TB_CARET_POS_BEGINNING); }
-	virtual bool getText(TBStr &text) override { return m_style_edit.getText(text); }
+	virtual bool setText(const char *text) override {
+		return m_style_edit.setText(text, TB_CARET_POS_BEGINNING);
+	}
+	virtual bool getText(TBStr &text) override {
+		return m_style_edit.getText(text);
+	}
 	using TBWidget::getText; ///< Make all versions in base class available.
 
 	using TBWidget::invalidate; ///< Make Invalidate in base class available.
 
 	/** Set the text and also specify if the caret should be positioned at the beginning
 		or end of the text. */
-	bool setText(const char *text, TB_CARET_POS pos)
-											{ return m_style_edit.setText(text, pos); }
+	bool setText(const char *text, TB_CARET_POS pos) {
+		return m_style_edit.setText(text, pos);
+	}
 	/** Set the text of the given length and also specify if the caret should be positioned
 		at the beginning or end of the text. */
-	bool setText(const char *text, int text_len, TB_CARET_POS pos = TB_CARET_POS_BEGINNING)
-											{ return m_style_edit.setText(text, text_len, pos); }
+	bool setText(const char *text, int text_len, TB_CARET_POS pos = TB_CARET_POS_BEGINNING) {
+		return m_style_edit.setText(text, text_len, pos);
+	}
 
 	/** Set the placeholder text. It will be visible only when the textfield is empty. */
-	virtual bool setPlaceholderText(const char *text) { return m_placeholder.setText(text); }
-	virtual bool getPlaceholderText(TBStr &text) { return m_placeholder.getText(text); }
+	virtual bool setPlaceholderText(const char *text) {
+		return m_placeholder.setText(text);
+	}
+	virtual bool getPlaceholderText(TBStr &text) {
+		return m_placeholder.getText(text);
+	}
 
 	virtual void scrollTo(int x, int y) override;
 	virtual TBWidget::ScrollInfo getScrollInfo() override;
-	virtual TBWidget *getScrollRoot() override { return &m_root; }
+	virtual TBWidget *getScrollRoot() override {
+		return &m_root;
+	}
 
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
 	virtual void onPaint(const PaintProps &paint_props) override;
@@ -167,11 +198,14 @@ public:
 	virtual void onFontChanged() override;
 	virtual void onFocusChanged(bool focused) override;
 	virtual void onResized(int old_w, int old_h) override;
-	virtual TBWidget *getContentRoot() override { return &m_root; }
+	virtual TBWidget *getContentRoot() override {
+		return &m_root;
+	}
 
 	virtual PreferredSize onCalculatePreferredContentSize(const SizeConstraints &constraints) override;
 
 	virtual void onMessageReceived(TBMessage *msg) override;
+
 private:
 	TBScrollBar m_scrollbar_x;
 	TBScrollBar m_scrollbar_y;
@@ -188,7 +222,8 @@ private:
 	virtual void onChange() override;
 	virtual bool onEnter() override;
 	virtual void invalidate(const TBRect &rect) override;
-	virtual void drawString(int32_t x, int32_t y, TBFontFace *font, const TBColor &color, const char *str, int32_t len) override;
+	virtual void drawString(int32_t x, int32_t y, TBFontFace *font, const TBColor &color, const char *str,
+							int32_t len) override;
 	virtual void drawRect(const TBRect &rect, const TBColor &color) override;
 	virtual void drawRectFill(const TBRect &rect, const TBColor &color) override;
 	virtual void drawTextSelectionBg(const TBRect &rect) override;

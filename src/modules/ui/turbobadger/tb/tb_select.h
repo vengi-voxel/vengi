@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "tb_window.h"
 #include "tb_scroll_container.h"
 #include "tb_select_item.h"
+#include "tb_window.h"
 
 namespace tb {
 
@@ -14,8 +14,7 @@ class TBMenuWindow;
 
 /** TBSelectList shows a scrollable list of items provided by a TBSelectItemSource. */
 
-class TBSelectList : public TBWidget, public TBSelectItemViewer
-{
+class TBSelectList : public TBWidget, public TBSelectItemViewer {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBSelectList, TBWidget);
@@ -30,16 +29,20 @@ public:
 		If you need to add other types of items, or if you want to share item sources
 		between several TBSelectDropDown/TBSelectList widgets, use SetSource using a
 		external item source. */
-	TBGenericStringItemSource *getDefaultSource() { return &m_default_source; }
+	TBGenericStringItemSource *getDefaultSource() {
+		return &m_default_source;
+	}
 
 	/** Set filter string so only matching items will be showed.
 		Set nullptr or empty string to remove filter and show all items. */
 	void setFilter(const char *filter);
-	const char *getFilter() const { return m_filter; }
+	const char *getFilter() const {
+		return m_filter;
+	}
 
 	/** Set the language string id for the header. The header is shown
 		at the top of the list when only a subset of all items are shown. */
-	void setHeaderString(const TBID& id);
+	void setHeaderString(const TBID &id);
 
 	/** Make the list update its items to reflect the items from the
 		in the current source. The update will take place next time
@@ -52,7 +55,9 @@ public:
 	/** The value is the selected item. In lists with multiple selectable
 		items it's the item that is the current focus. */
 	virtual void setValue(int value) override;
-	virtual int getValue() const override { return m_value; }
+	virtual int getValue() const override {
+		return m_value;
+	}
 
 	/** Get the ID of the selected item, or 0 if there is no item selected. */
 	TBID getSelectedItemID();
@@ -76,7 +81,9 @@ public:
 	void scrollToSelectedItem();
 
 	/** Return the scrollcontainer used in this list. */
-	TBScrollContainer *getScrollContainer() { return &m_container; }
+	TBScrollContainer *getScrollContainer() {
+		return &m_container;
+	}
 
 	virtual void onInflate(const INFLATE_INFO &info) override;
 	virtual void onSkinChanged() override;
@@ -90,6 +97,7 @@ public:
 	virtual void onItemAdded(int index) override;
 	virtual void onItemRemoved(int index) override;
 	virtual void onAllItemsRemoved() override;
+
 protected:
 	TBScrollContainer m_container;
 	TBLayout m_layout;
@@ -99,6 +107,7 @@ protected:
 	bool m_list_is_invalid;
 	bool m_scroll_to_current;
 	TBID m_header_lng_string_id;
+
 private:
 	TBWidget *createAndAddItemAfter(int index, TBWidget *reference);
 };
@@ -106,8 +115,7 @@ private:
 /** TBSelectDropdown shows a button that opens a popup with a TBSelectList with items
 	provided by a TBSelectItemSource. */
 
-class TBSelectDropdown : public TBButton, public TBSelectItemViewer
-{
+class TBSelectDropdown : public TBButton, public TBSelectItemViewer {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBSelectDropdown, TBButton);
@@ -122,11 +130,15 @@ public:
 		If you need to add other types of items, or if you want to share item sources
 		between several TBSelectDropDown/TBSelectList widgets, use SetSource using a
 		external item source. */
-	TBGenericStringItemSource *getDefaultSource() { return &m_default_source; }
+	TBGenericStringItemSource *getDefaultSource() {
+		return &m_default_source;
+	}
 
 	/** Set the selected item. */
 	virtual void setValue(int value) override;
-	virtual int getValue() const override { return m_value; }
+	virtual int getValue() const override {
+		return m_value;
+	}
 
 	/** Get the ID of the selected item, or 0 if there is no item selected. */
 	TBID getSelectedItemID() const;
@@ -146,9 +158,13 @@ public:
 	// == TBSelectItemViewer ==================================================
 	virtual void onSourceChanged() override;
 	virtual void onItemChanged(int index) override;
-	virtual void onItemAdded(int index) override {}
-	virtual void onItemRemoved(int index) override {}
-	virtual void onAllItemsRemoved() override {}
+	virtual void onItemAdded(int index) override {
+	}
+	virtual void onItemRemoved(int index) override {
+	}
+	virtual void onAllItemsRemoved() override {
+	}
+
 protected:
 	TBGenericStringItemSource m_default_source;
 	TBSkinImage m_arrow;

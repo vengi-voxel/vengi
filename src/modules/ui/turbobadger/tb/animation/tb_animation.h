@@ -13,11 +13,11 @@ class TBAnimationObject;
 
 /** Defines how the animation progress value is interpolated. */
 enum ANIMATION_CURVE {
-	ANIMATION_CURVE_LINEAR,		///< Linear
-	ANIMATION_CURVE_SLOW_DOWN,	///< Fast start, slow end
-	ANIMATION_CURVE_SPEED_UP,	///< Slow start, fast end
-	ANIMATION_CURVE_BEZIER,		///< Slow start, slow end. Almost linear.
-	ANIMATION_CURVE_SMOOTH		///< Slow start, slow end. Stronger than ANIMATION_CURVE_BEZIER.
+	ANIMATION_CURVE_LINEAR,	///< Linear
+	ANIMATION_CURVE_SLOW_DOWN, ///< Fast start, slow end
+	ANIMATION_CURVE_SPEED_UP,  ///< Slow start, fast end
+	ANIMATION_CURVE_BEZIER,	///< Slow start, slow end. Almost linear.
+	ANIMATION_CURVE_SMOOTH	 ///< Slow start, slow end. Stronger than ANIMATION_CURVE_BEZIER.
 };
 
 /** Defines what the animation duration time is relative to. */
@@ -42,15 +42,14 @@ enum ANIMATION_TIME {
 	ANIMATION_TIME_FIRST_UPDATE
 };
 
-#define ANIMATION_DEFAULT_CURVE			ANIMATION_CURVE_SLOW_DOWN
-#define ANIMATION_DEFAULT_DURATION		200
+#define ANIMATION_DEFAULT_CURVE ANIMATION_CURVE_SLOW_DOWN
+#define ANIMATION_DEFAULT_DURATION 200
 
 /** TBAnimationListener - Listens to the progress of TBAnimationObject. */
 
-class TBAnimationListener : public TBLinkOf<TBAnimationListener>
-{
+class TBAnimationListener : public TBLinkOf<TBAnimationListener> {
 public:
-	virtual ~TBAnimationListener() {};
+	virtual ~TBAnimationListener(){};
 
 	/** Called after the animation object handled its own OnAnimationStart.
 		See TBAnimationObject::onAnimationStart for details. */
@@ -67,21 +66,24 @@ public:
 
 /** TBAnimationObject - Base class for all animated object */
 
-class TBAnimationObject : public TBTypedObject, public TBLinkOf<TBAnimationObject>
-{
+class TBAnimationObject : public TBTypedObject, public TBLinkOf<TBAnimationObject> {
 public:
 	ANIMATION_CURVE animation_curve;
 	double animation_start_time;
 	double animation_duration;
 	bool adjust_start_time;
+
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBAnimationObject, TBTypedObject);
 
-	virtual ~TBAnimationObject() {}
+	virtual ~TBAnimationObject() {
+	}
 
 	/** Return true if the object is currently animating. */
-	bool isAnimating() const { return linklist ? true : false; }
+	bool isAnimating() const {
+		return linklist ? true : false;
+	}
 
 	/** Called on animation start */
 	virtual void onAnimationStart() = 0;
@@ -97,10 +99,15 @@ public:
 	virtual void onAnimationStop(bool aborted) = 0;
 
 	/** Add an listener to this animation object. */
-	void addListener(TBAnimationListener *listener) { m_listeners.addLast(listener); }
+	void addListener(TBAnimationListener *listener) {
+		m_listeners.addLast(listener);
+	}
 
 	/** Remove an listener from this animation object. */
-	void removeListener(TBAnimationListener *listener) { m_listeners.remove(listener); }
+	void removeListener(TBAnimationListener *listener) {
+		m_listeners.remove(listener);
+	}
+
 private:
 	friend class TBAnimationManager;
 	TBLinkListOf<TBAnimationListener> m_listeners;
@@ -111,10 +118,10 @@ private:
 
 /** TBAnimationManager - System class that manages all animated object */
 
-class TBAnimationManager
-{
+class TBAnimationManager {
 private:
 	static TBLinkListOf<TBAnimationObject> animating_objects;
+
 public:
 	/** Update all running animations. */
 	static void update();
@@ -122,10 +129,9 @@ public:
 	/** Return true if there are running animations. */
 	static bool hasAnimationsRunning();
 
-	static void startAnimation(TBAnimationObject *obj,
-								ANIMATION_CURVE animation_curve = ANIMATION_DEFAULT_CURVE,
-								double animation_duration = ANIMATION_DEFAULT_DURATION,
-								ANIMATION_TIME animation_time = ANIMATION_TIME_FIRST_UPDATE);
+	static void startAnimation(TBAnimationObject *obj, ANIMATION_CURVE animation_curve = ANIMATION_DEFAULT_CURVE,
+							   double animation_duration = ANIMATION_DEFAULT_DURATION,
+							   ANIMATION_TIME animation_time = ANIMATION_TIME_FIRST_UPDATE);
 	/** Abort the animation. If delete_animation is true, the animation will be deleted in
 		this call after running callbacks and listeners callbacks. In rare situations,
 		you might want to keep the animation around and delete it later (or start it
@@ -150,11 +156,14 @@ public:
 /** TBAnimationBlocker blocks new animations during its lifetime.
 	It's convenient to put on the stack to block new animations
 	within a scope of code. */
-class TBAnimationBlocker
-{
+class TBAnimationBlocker {
 public:
-	TBAnimationBlocker() { TBAnimationManager::beginBlockAnimations(); }
-	~TBAnimationBlocker() { TBAnimationManager::endBlockAnimations(); }
+	TBAnimationBlocker() {
+		TBAnimationManager::beginBlockAnimations();
+	}
+	~TBAnimationBlocker() {
+		TBAnimationManager::endBlockAnimations();
+	}
 };
 
 } // namespace tb

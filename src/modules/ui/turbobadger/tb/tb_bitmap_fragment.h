@@ -7,9 +7,9 @@
 #include "tb_core.h"
 #include "tb_geometry.h"
 #include "tb_hashtable.h"
-#include "tb_list.h"
 #include "tb_id.h"
 #include "tb_linklist.h"
+#include "tb_list.h"
 
 namespace tb {
 
@@ -21,21 +21,21 @@ class TBBitmap;
 int TBGetNearestPowerOfTwo(int val);
 
 /** Allocator of space out of a given available space. */
-class TBSpaceAllocator
-{
+class TBSpaceAllocator {
 public:
 	/** A chunk of space */
-	class Space : public TBLinkOf<Space>
-	{
+	class Space : public TBLinkOf<Space> {
 	public:
 		int x, width;
 	};
 
-	TBSpaceAllocator(int available_space)
-		: m_available_space(available_space) { }
+	TBSpaceAllocator(int available_space) : m_available_space(available_space) {
+	}
 
 	/** Return true if no allocations are currently live using this allocator. */
-	bool isAllAvailable() const { return !m_used_space_list.hasLinks(); }
+	bool isAllAvailable() const {
+		return !m_used_space_list.hasLinks();
+	}
 
 	/** Return true if the given width is currently available. */
 	bool hasSpace(int needed_w) const;
@@ -45,6 +45,7 @@ public:
 
 	/** Free the given space so it is available for new allocations. */
 	void freeSpace(Space *space);
+
 private:
 	Space *getSmallestAvailableSpace(int needed_w);
 	int m_available_space;
@@ -53,11 +54,10 @@ private:
 };
 
 /** Allocates space for TBBitmapFragment in a row (used in TBBitmapFragmentMap). */
-class TBFragmentSpaceAllocator : public TBSpaceAllocator
-{
+class TBFragmentSpaceAllocator : public TBSpaceAllocator {
 public:
-	TBFragmentSpaceAllocator(int _y, int width, int _height)
-		: TBSpaceAllocator(width), y(_y), height(_height) {}
+	TBFragmentSpaceAllocator(int _y, int width, int _height) : TBSpaceAllocator(width), y(_y), height(_height) {
+	}
 
 	int y, height;
 };
@@ -76,8 +76,7 @@ enum TB_VALIDATE_TYPE {
 /** TBBitmapFragmentMap is used to pack multiple bitmaps into a single TBBitmap.
 	When initialized (in a size suitable for a TBBitmap) it also creates a software buffer
 	that will make up the TBBitmap when all fragments have been added. */
-class TBBitmapFragmentMap
-{
+class TBBitmapFragmentMap {
 public:
 	TBBitmapFragmentMap();
 	~TBBitmapFragmentMap();
@@ -96,6 +95,7 @@ public:
 	/** Return the bitmap for this map.
 		By default, the bitmap is validated if needed before returning (See TB_VALIDATE_TYPE) */
 	TBBitmap *getBitmap(TB_VALIDATE_TYPE validate_type = TB_VALIDATE_ALWAYS);
+
 private:
 	friend class TBBitmapFragmentManager;
 	bool validateBitmap();
@@ -112,22 +112,30 @@ private:
 /** TBBitmapFragment represents a sub part of a TBBitmap.
 	It's owned by TBBitmapFragmentManager which pack multiple
 	TBBitmapFragment within TBBitmaps to reduce texture switching. */
-class TBBitmapFragment
-{
+class TBBitmapFragment {
 public:
 	/** Return the width of the bitmap fragment. */
-	int width() const { return m_rect.w; }
+	int width() const {
+		return m_rect.w;
+	}
 
 	/** Return the height of the bitmap fragment. */
-	int height() const { return m_rect.h; }
+	int height() const {
+		return m_rect.h;
+	}
 
 	/** Return the bitmap for this fragment.
 		By default, the bitmap is validated if needed before returning (See TB_VALIDATE_TYPE) */
-	TBBitmap *getBitmap(TB_VALIDATE_TYPE validate_type = TB_VALIDATE_ALWAYS) { return m_map->getBitmap(validate_type); }
+	TBBitmap *getBitmap(TB_VALIDATE_TYPE validate_type = TB_VALIDATE_ALWAYS) {
+		return m_map->getBitmap(validate_type);
+	}
 
 	/** Return the height allocated to this fragment. This may be larger than Height() depending
 		of the internal allocation of fragments in a map. It should rarely be used. */
-	int getAllocatedHeight() const { return m_row_height; }
+	int getAllocatedHeight() const {
+		return m_row_height;
+	}
+
 public:
 	TBBitmapFragmentMap *m_map;
 	TBRect m_rect;
@@ -147,16 +155,19 @@ public:
 	It also makes sure that only one instance of each file is loaded,
 	so f.ex loading "foo.png" many times still load and allocate one
 	TBBitmapFragment. */
-class TBBitmapFragmentManager
-{
+class TBBitmapFragmentManager {
 public:
 	TBBitmapFragmentManager();
 	~TBBitmapFragmentManager();
 
 	/** Set to true if a 1px border should be added to new fragments so stretched
 		drawing won't get filtering artifacts at the edges (default is disabled). */
-	void setAddBorder(bool add_border) { m_add_border = add_border; }
-	bool getAddBorder() const { return m_add_border; }
+	void setAddBorder(bool add_border) {
+		m_add_border = add_border;
+	}
+	bool getAddBorder() const {
+		return m_add_border;
+	}
 
 	/** Get the fragment with the given image filename. If it's not already loaded,
 		it will be loaded into a new fragment with the filename as id.
@@ -173,8 +184,7 @@ public:
 		@param data_h the height of the data.
 		@param data_stride the number of pixels in a row of the input data.
 		@param data pointer to the data in BGRA32 format. */
-	TBBitmapFragment *createNewFragment(const TBID &id, bool dedicated_map,
-										int data_w, int data_h, int data_stride,
+	TBBitmapFragment *createNewFragment(const TBID &id, bool dedicated_map, int data_w, int data_h, int data_stride,
 										uint32_t *data);
 
 	/** Delete the given fragment and free the space it used in its map,
@@ -196,7 +206,9 @@ public:
 	void deleteBitmaps();
 
 	/** Get number of fragment maps that is currently used. */
-	int getNumMaps() const { return m_fragment_maps.getNumItems(); }
+	int getNumMaps() const {
+		return m_fragment_maps.getNumItems();
+	}
 
 	/** Set the number of maps (TBBitmaps) this manager should be allowed to create.
 		If a new fragment can't fit into any existing bitmap and the limit is reached,

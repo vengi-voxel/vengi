@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "tb_types.h"
 #include "tb_debug.h"
 #include "tb_str.h"
+#include "tb_types.h"
 
 namespace tb {
 
@@ -21,33 +21,41 @@ class TBValue;
 	to pixels, based on two DPI values.
 	Dimensions in Turbo Badger are normally in pixels (if not specified differently)
 	and conversion normally take place when loading skin. */
-class TBDimensionConverter
-{
-	int m_src_dpi; ///< The source DPI (Normally the base_dpi from skin).
-	int m_dst_dpi; ///< The destination DPI (Normally the supported skin DPI nearest to TBSystem::getDPI).
+class TBDimensionConverter {
+	int m_src_dpi;		 ///< The source DPI (Normally the base_dpi from skin).
+	int m_dst_dpi;		 ///< The destination DPI (Normally the supported skin DPI nearest to TBSystem::getDPI).
 	TBStr m_dst_dpi_str; ///< The file suffix that should be used to load bitmaps in destinatin DPI.
 public:
-	TBDimensionConverter() : m_src_dpi(100), m_dst_dpi(100) {}
+	TBDimensionConverter() : m_src_dpi(100), m_dst_dpi(100) {
+	}
 
 	/** Set the source and destination DPI that will affect the conversion. */
 	void setDPI(int src_dpi, int dst_dpi);
 
 	/** Get the source DPI. */
-	int getSrcDPI() const { return m_src_dpi; }
+	int getSrcDPI() const {
+		return m_src_dpi;
+	}
 
 	/** Get the destination DPI. */
-	int getDstDPI() const { return m_dst_dpi; }
+	int getDstDPI() const {
+		return m_dst_dpi;
+	}
 
 	/** Get the file name suffix that should be used to load bitmaps in the destination DPI.
 		Examples: "@96", "@196" */
-	const char *getDstDPIStr() const { return m_dst_dpi_str; }
+	const char *getDstDPIStr() const {
+		return m_dst_dpi_str;
+	}
 
 	/** Get the file name with destination DPI suffix (F.ex "foo.png" becomes "foo@192.png").
 		The temp buffer will contain the resulting file name. */
 	void getDstDPIFilename(const char *filename, TBTempBuffer *tempbuf) const;
 
 	/** Return true if the source and destinatin DPI are different. */
-	bool needConversion() const { return m_src_dpi != m_dst_dpi; }
+	bool needConversion() const {
+		return m_src_dpi != m_dst_dpi;
+	}
 
 	/** Convert device independant point to pixel. */
 	int dpToPx(int dp) const;

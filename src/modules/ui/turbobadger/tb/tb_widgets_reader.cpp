@@ -3,23 +3,23 @@
  */
 
 #include "tb_widgets_reader.h"
-#include "tb_widgets_common.h"
-#include "tb_scroll_container.h"
-#include "tb_tab_container.h"
-#include "tb_select.h"
-#include "tb_inline_select.h"
-#include "tb_editfield.h"
-#include "tb_node_tree.h"
-#include "tb_system.h"
-#include "tb_font_renderer.h"
-#include "tb_toggle_container.h"
 #include "image/tb_image_widget.h"
+#include "tb_editfield.h"
+#include "tb_font_renderer.h"
+#include "tb_inline_select.h"
+#include "tb_node_tree.h"
+#include "tb_scroll_container.h"
+#include "tb_select.h"
+#include "tb_system.h"
+#include "tb_tab_container.h"
+#include "tb_toggle_container.h"
+#include "tb_widgets_common.h"
 
 namespace tb {
 
-TB_WIDGET_FACTORY(TBWidget, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
-void TBWidget::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBWidget, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
+}
+void TBWidget::onInflate(const INFLATE_INFO &info) {
 	TBWidgetsReader::setIDFromNode(getID(), info.node->getNode("id"));
 
 	TBWidgetsReader::setIDFromNode(getGroupID(), info.node->getNode("group-id"));
@@ -45,52 +45,53 @@ void TBWidget::onInflate(const INFLATE_INFO &info)
 	if (const char *text = info.node->getValueString("text", nullptr))
 		setText(text);
 
-	if (const char *connection = info.node->getValueStringRaw("connection", nullptr))
-	{
+	if (const char *connection = info.node->getValueStringRaw("connection", nullptr)) {
 		// If we already have a widget value with this name, just connect to it and the widget will
 		// adjust its value to it. Otherwise create a new widget value, and give it the value we
 		// got from the resource.
 		if (TBWidgetValue *value = g_value_group.getValue(connection))
 			connect(value);
-		else if (TBWidgetValue *value = g_value_group.createValueIfNeeded(connection, info.sync_type))
-		{
+		else if (TBWidgetValue *value = g_value_group.createValueIfNeeded(connection, info.sync_type)) {
 			value->setFromWidget(this);
 			connect(value);
 		}
 	}
 	if (const char *axis = info.node->getValueString("axis", nullptr))
 		setAxis(*axis == 'x' ? AXIS_X : AXIS_Y);
-	if (const char *gravity = info.node->getValueString("gravity", nullptr))
-	{
+	if (const char *gravity = info.node->getValueString("gravity", nullptr)) {
 		WIDGET_GRAVITY g = WIDGET_GRAVITY_NONE;
-		if (strstr(gravity, "left"))		g |= WIDGET_GRAVITY_LEFT;
-		if (strstr(gravity, "top"))			g |= WIDGET_GRAVITY_TOP;
-		if (strstr(gravity, "right"))		g |= WIDGET_GRAVITY_RIGHT;
-		if (strstr(gravity, "bottom"))		g |= WIDGET_GRAVITY_BOTTOM;
-		if (strstr(gravity, "all"))			g |= WIDGET_GRAVITY_ALL;
+		if (strstr(gravity, "left"))
+			g |= WIDGET_GRAVITY_LEFT;
+		if (strstr(gravity, "top"))
+			g |= WIDGET_GRAVITY_TOP;
+		if (strstr(gravity, "right"))
+			g |= WIDGET_GRAVITY_RIGHT;
+		if (strstr(gravity, "bottom"))
+			g |= WIDGET_GRAVITY_BOTTOM;
+		if (strstr(gravity, "all"))
+			g |= WIDGET_GRAVITY_ALL;
 		if (!(g & WIDGET_GRAVITY_LEFT_RIGHT))
 			g |= WIDGET_GRAVITY_LEFT;
 		if (!(g & WIDGET_GRAVITY_TOP_BOTTOM))
 			g |= WIDGET_GRAVITY_TOP;
 		setGravity(g);
 	}
-	if (const char *visibility = info.node->getValueString("visibility", nullptr))
-	{
-		if (!strcmp(visibility, "visible"))			setVisibility(WIDGET_VISIBILITY_VISIBLE);
-		else if (!strcmp(visibility, "invisible"))	setVisibility(WIDGET_VISIBILITY_INVISIBLE);
-		else if (!strcmp(visibility, "gone"))		setVisibility(WIDGET_VISIBILITY_GONE);
+	if (const char *visibility = info.node->getValueString("visibility", nullptr)) {
+		if (!strcmp(visibility, "visible"))
+			setVisibility(WIDGET_VISIBILITY_VISIBLE);
+		else if (!strcmp(visibility, "invisible"))
+			setVisibility(WIDGET_VISIBILITY_INVISIBLE);
+		else if (!strcmp(visibility, "gone"))
+			setVisibility(WIDGET_VISIBILITY_GONE);
 	}
-	if (const char *state = info.node->getValueString("state", nullptr))
-	{
+	if (const char *state = info.node->getValueString("state", nullptr)) {
 		if (strstr(state, "disabled"))
 			setState(WIDGET_STATE_DISABLED, true);
 	}
-	if (const char *skin = info.node->getValueString("skin", nullptr))
-	{
+	if (const char *skin = info.node->getValueString("skin", nullptr)) {
 		setSkinBg(skin);
 	}
-	if (TBNode *lp = info.node->getNode("lp"))
-	{
+	if (TBNode *lp = info.node->getNode("lp")) {
 		LayoutParams layout_params;
 		if (getLayoutParams())
 			layout_params = *getLayoutParams();
@@ -119,11 +120,9 @@ void TBWidget::onInflate(const INFLATE_INFO &info)
 		info.target->addChild(this, info.target->getZInflate());
 
 	// Read the font now when the widget is in the hiearchy so inheritance works.
-	if (TBNode *font = info.node->getNode("font"))
-	{
+	if (TBNode *font = info.node->getNode("font")) {
 		TBFontDescription fd = getCalculatedFontDescription();
-		if (const char *size = font->getValueString("size", nullptr))
-		{
+		if (const char *size = font->getValueString("size", nullptr)) {
 			int new_size = g_tb_skin->getDimensionConverter()->getPxFromString(size, fd.getSize());
 			fd.setSize(new_size);
 		}
@@ -134,47 +133,48 @@ void TBWidget::onInflate(const INFLATE_INFO &info)
 
 	info.target->onInflateChild(this);
 
-	if (TBNode *rect_node = info.node->getNode("rect"))
-	{
+	if (TBNode *rect_node = info.node->getNode("rect")) {
 		const TBDimensionConverter *dc = g_tb_skin->getDimensionConverter();
 		TBValue &val = rect_node->getValue();
-		if (val.getArrayLength() == 4)
-		{
+		if (val.getArrayLength() == 4) {
 			setRect(TBRect(dc->getPxFromValue(val.getArray()->getValue(0), 0),
-				dc->getPxFromValue(val.getArray()->getValue(1), 0),
-				dc->getPxFromValue(val.getArray()->getValue(2), 0),
-				dc->getPxFromValue(val.getArray()->getValue(3), 0)));
+						   dc->getPxFromValue(val.getArray()->getValue(1), 0),
+						   dc->getPxFromValue(val.getArray()->getValue(2), 0),
+						   dc->getPxFromValue(val.getArray()->getValue(3), 0)));
 		}
 	}
 }
 
-TB_WIDGET_FACTORY(TBWindow, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
+TB_WIDGET_FACTORY(TBWindow, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
+}
 
-TB_WIDGET_FACTORY(TBButton, TBValue::TYPE_NULL, WIDGET_Z_BOTTOM) {}
-void TBButton::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBButton, TBValue::TYPE_NULL, WIDGET_Z_BOTTOM) {
+}
+void TBButton::onInflate(const INFLATE_INFO &info) {
 	setSqueezable(info.node->getValueInt("squeezable", getSqueezable()) ? true : false);
 	setAutoRepeat(info.node->getValueInt("auto-repeat", getAutoRepeat()) ? true : false);
 	setToggleMode(info.node->getValueInt("toggle-mode", getToggleMode()) ? true : false);
 	TBWidget::onInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBInlineSelect, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
-void TBInlineSelect::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBInlineSelect, TBValue::TYPE_INT, WIDGET_Z_TOP) {
+}
+void TBInlineSelect::onInflate(const INFLATE_INFO &info) {
 	int min = info.node->getValueInt("min", getMinValue());
 	int max = info.node->getValueInt("max", getMaxValue());
 	setLimits(min, max);
 	TBWidget::onInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBClickLabel, TBValue::TYPE_STRING, WIDGET_Z_BOTTOM) {}
+TB_WIDGET_FACTORY(TBClickLabel, TBValue::TYPE_STRING, WIDGET_Z_BOTTOM) {
+}
 
-TB_WIDGET_FACTORY(TBMover, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
+TB_WIDGET_FACTORY(TBMover, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
+}
 
-TB_WIDGET_FACTORY(TBEditField, TBValue::TYPE_STRING, WIDGET_Z_TOP) {}
-void TBEditField::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBEditField, TBValue::TYPE_STRING, WIDGET_Z_TOP) {
+}
+void TBEditField::onInflate(const INFLATE_INFO &info) {
 	setMultiline(info.node->getValueInt("multiline", 0) ? true : false);
 	setStyling(info.node->getValueInt("styling", 0) ? true : false);
 	setReadOnly(info.node->getValueInt("readonly", 0) ? true : false);
@@ -184,33 +184,40 @@ void TBEditField::onInflate(const INFLATE_INFO &info)
 		setVirtualWidth(g_tb_skin->getDimensionConverter()->getPxFromString(virtual_width, getVirtualWidth()));
 	if (const char *text = info.node->getValueString("placeholder", nullptr))
 		setPlaceholderText(text);
-	if (const char *text_align = info.node->getValueString("text-align", nullptr))
-	{
-		if (!strcmp(text_align, "left"))		setTextAlign(TB_TEXT_ALIGN_LEFT);
-		else if (!strcmp(text_align, "center"))	setTextAlign(TB_TEXT_ALIGN_CENTER);
-		else if (!strcmp(text_align, "right"))	setTextAlign(TB_TEXT_ALIGN_RIGHT);
+	if (const char *text_align = info.node->getValueString("text-align", nullptr)) {
+		if (!strcmp(text_align, "left"))
+			setTextAlign(TB_TEXT_ALIGN_LEFT);
+		else if (!strcmp(text_align, "center"))
+			setTextAlign(TB_TEXT_ALIGN_CENTER);
+		else if (!strcmp(text_align, "right"))
+			setTextAlign(TB_TEXT_ALIGN_RIGHT);
 	}
-	if (const char *type = info.node->getValueString("type", nullptr))
-	{
-		if (stristr(type, "text"))			setEditType(EDIT_TYPE_TEXT);
-		else if (stristr(type, "search"))	setEditType(EDIT_TYPE_SEARCH);
-		else if (stristr(type, "password"))	setEditType(EDIT_TYPE_PASSWORD);
-		else if (stristr(type, "email"))	setEditType(EDIT_TYPE_EMAIL);
-		else if (stristr(type, "phone"))	setEditType(EDIT_TYPE_PHONE);
-		else if (stristr(type, "url"))		setEditType(EDIT_TYPE_URL);
-		else if (stristr(type, "number"))	setEditType(EDIT_TYPE_NUMBER);
+	if (const char *type = info.node->getValueString("type", nullptr)) {
+		if (stristr(type, "text"))
+			setEditType(EDIT_TYPE_TEXT);
+		else if (stristr(type, "search"))
+			setEditType(EDIT_TYPE_SEARCH);
+		else if (stristr(type, "password"))
+			setEditType(EDIT_TYPE_PASSWORD);
+		else if (stristr(type, "email"))
+			setEditType(EDIT_TYPE_EMAIL);
+		else if (stristr(type, "phone"))
+			setEditType(EDIT_TYPE_PHONE);
+		else if (stristr(type, "url"))
+			setEditType(EDIT_TYPE_URL);
+		else if (stristr(type, "number"))
+			setEditType(EDIT_TYPE_NUMBER);
 	}
 	TBWidget::onInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBLayout, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
-void TBLayout::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBLayout, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
+}
+void TBLayout::onInflate(const INFLATE_INFO &info) {
 	if (const char *spacing = info.node->getValueString("spacing", nullptr))
 		setSpacing(g_tb_skin->getDimensionConverter()->getPxFromString(spacing, SPACING_FROM_SKIN));
 	setGravity(WIDGET_GRAVITY_ALL);
-	if (const char *size = info.node->getValueString("size", nullptr))
-	{
+	if (const char *size = info.node->getValueString("size", nullptr)) {
 		LAYOUT_SIZE ls = LAYOUT_SIZE_PREFERRED;
 		if (strstr(size, "available"))
 			ls = LAYOUT_SIZE_AVAILABLE;
@@ -221,8 +228,7 @@ void TBLayout::onInflate(const INFLATE_INFO &info)
 			Log::debug("TBLayout: Unknown size '%s'", size);
 		setLayoutSize(ls);
 	}
-	if (const char *pos = info.node->getValueString("position", nullptr))
-	{
+	if (const char *pos = info.node->getValueString("position", nullptr)) {
 		LAYOUT_POSITION lp = LAYOUT_POSITION_CENTER;
 		if (strstr(pos, "left") || strstr(pos, "top"))
 			lp = LAYOUT_POSITION_LEFT_TOP;
@@ -235,8 +241,7 @@ void TBLayout::onInflate(const INFLATE_INFO &info)
 			Log::debug("TBLayout: Unknown position '%s'", pos);
 		setLayoutPosition(lp);
 	}
-	if (const char *pos = info.node->getValueString("overflow", nullptr))
-	{
+	if (const char *pos = info.node->getValueString("overflow", nullptr)) {
 		LAYOUT_OVERFLOW lo = LAYOUT_OVERFLOW_CLIP;
 		if (strstr(pos, "scroll"))
 			lo = LAYOUT_OVERFLOW_SCROLL;
@@ -245,8 +250,7 @@ void TBLayout::onInflate(const INFLATE_INFO &info)
 			Log::debug("TBLayout: Unknown overflow '%s'", pos);
 		setLayoutOverflow(lo);
 	}
-	if (const char *dist = info.node->getValueString("distribution", nullptr))
-	{
+	if (const char *dist = info.node->getValueString("distribution", nullptr)) {
 		LAYOUT_DISTRIBUTION ld = LAYOUT_DISTRIBUTION_PREFERRED;
 		if (strstr(dist, "available"))
 			ld = LAYOUT_DISTRIBUTION_AVAILABLE;
@@ -257,8 +261,7 @@ void TBLayout::onInflate(const INFLATE_INFO &info)
 			Log::debug("TBLayout: Unknown distribution '%s'", dist);
 		setLayoutDistribution(ld);
 	}
-	if (const char *dist = info.node->getValueString("distribution-position", nullptr))
-	{
+	if (const char *dist = info.node->getValueString("distribution-position", nullptr)) {
 		LAYOUT_DISTRIBUTION_POSITION ld = LAYOUT_DISTRIBUTION_POSITION_CENTER;
 		if (strstr(dist, "left") || strstr(dist, "top"))
 			ld = LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP;
@@ -269,41 +272,49 @@ void TBLayout::onInflate(const INFLATE_INFO &info)
 	TBWidget::onInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBScrollContainer, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
-void TBScrollContainer::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBScrollContainer, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
+}
+void TBScrollContainer::onInflate(const INFLATE_INFO &info) {
 	setGravity(WIDGET_GRAVITY_ALL);
 	setAdaptContentSize(info.node->getValueInt("adapt-content", getAdaptContentSize()) ? true : false);
 	setAdaptToContentSize(info.node->getValueInt("adapt-to-content", getAdaptToContentSize()) ? true : false);
-	if (const char *mode = info.node->getValueString("scroll-mode", nullptr))
-	{
-		if (!strcmp(mode, "xy"))			setScrollMode(SCROLL_MODE_X_Y);
-		else if (!strcmp(mode, "y"))		setScrollMode(SCROLL_MODE_Y);
-		else if (!strcmp(mode, "y-auto"))	setScrollMode(SCROLL_MODE_Y_AUTO);
-		else if (!strcmp(mode, "auto"))		setScrollMode(SCROLL_MODE_X_AUTO_Y_AUTO);
-		else if (!strcmp(mode, "off"))		setScrollMode(SCROLL_MODE_OFF);
-		else Log::debug("TBScrollContainer: Unknown scroll-mode '%s'", mode);
+	if (const char *mode = info.node->getValueString("scroll-mode", nullptr)) {
+		if (!strcmp(mode, "xy"))
+			setScrollMode(SCROLL_MODE_X_Y);
+		else if (!strcmp(mode, "y"))
+			setScrollMode(SCROLL_MODE_Y);
+		else if (!strcmp(mode, "y-auto"))
+			setScrollMode(SCROLL_MODE_Y_AUTO);
+		else if (!strcmp(mode, "auto"))
+			setScrollMode(SCROLL_MODE_X_AUTO_Y_AUTO);
+		else if (!strcmp(mode, "off"))
+			setScrollMode(SCROLL_MODE_OFF);
+		else
+			Log::debug("TBScrollContainer: Unknown scroll-mode '%s'", mode);
 	}
 	TBWidget::onInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBTabContainer, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
-void TBTabContainer::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBTabContainer, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
+}
+void TBTabContainer::onInflate(const INFLATE_INFO &info) {
 	TBWidget::onInflate(info);
 
-	if (const char *align = info.node->getValueString("align", nullptr))
-	{
-		if (!strcmp(align, "left"))			setAlignment(TB_ALIGN_LEFT);
-		else if (!strcmp(align, "top"))		setAlignment(TB_ALIGN_TOP);
-		else if (!strcmp(align, "right"))	setAlignment(TB_ALIGN_RIGHT);
-		else if (!strcmp(align, "bottom"))	setAlignment(TB_ALIGN_BOTTOM);
-		else Log::debug("TBTabContainer: Unknown align '%s'", align);
+	if (const char *align = info.node->getValueString("align", nullptr)) {
+		if (!strcmp(align, "left"))
+			setAlignment(TB_ALIGN_LEFT);
+		else if (!strcmp(align, "top"))
+			setAlignment(TB_ALIGN_TOP);
+		else if (!strcmp(align, "right"))
+			setAlignment(TB_ALIGN_RIGHT);
+		else if (!strcmp(align, "bottom"))
+			setAlignment(TB_ALIGN_BOTTOM);
+		else
+			Log::debug("TBTabContainer: Unknown align '%s'", align);
 	}
 	// Allow additional attributes to be specified for the "tabs", "content" and "root" layouts by
 	// calling onInflate.
-	if (TBNode *tabs = info.node->getNode("tabs"))
-	{
+	if (TBNode *tabs = info.node->getNode("tabs")) {
 		// Inflate the tabs widgets into the tab layout.
 		TBLayout *tab_layout = getTabLayout();
 		info.reader->loadNodeTree(tab_layout, tabs);
@@ -311,30 +322,28 @@ void TBTabContainer::onInflate(const INFLATE_INFO &info)
 		INFLATE_INFO inflate_info(info.reader, tab_layout->getContentRoot(), tabs, TBValue::TYPE_NULL);
 		tab_layout->onInflate(inflate_info);
 	}
-	if (TBNode *tabs = info.node->getNode("content"))
-	{
+	if (TBNode *tabs = info.node->getNode("content")) {
 		INFLATE_INFO inflate_info(info.reader, getContentRoot(), tabs, TBValue::TYPE_NULL);
 		getContentRoot()->onInflate(inflate_info);
 	}
-	if (TBNode *tabs = info.node->getNode("root"))
-	{
+	if (TBNode *tabs = info.node->getNode("root")) {
 		INFLATE_INFO inflate_info(info.reader, &m_root_layout, tabs, TBValue::TYPE_NULL);
 		m_root_layout.onInflate(inflate_info);
 	}
 }
 
-TB_WIDGET_FACTORY(TBScrollBar, TBValue::TYPE_FLOAT, WIDGET_Z_TOP) {}
-void TBScrollBar::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBScrollBar, TBValue::TYPE_FLOAT, WIDGET_Z_TOP) {
+}
+void TBScrollBar::onInflate(const INFLATE_INFO &info) {
 	const char *axis = info.node->getValueString("axis", "x");
 	setAxis(*axis == 'x' ? AXIS_X : AXIS_Y);
 	setGravity(*axis == 'x' ? WIDGET_GRAVITY_LEFT_RIGHT : WIDGET_GRAVITY_TOP_BOTTOM);
 	TBWidget::onInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBSlider, TBValue::TYPE_FLOAT, WIDGET_Z_TOP) {}
-void TBSlider::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBSlider, TBValue::TYPE_FLOAT, WIDGET_Z_TOP) {
+}
+void TBSlider::onInflate(const INFLATE_INFO &info) {
 	const char *axis = info.node->getValueString("axis", "x");
 	setAxis(*axis == 'x' ? AXIS_X : AXIS_Y);
 	setGravity(*axis == 'x' ? WIDGET_GRAVITY_LEFT_RIGHT : WIDGET_GRAVITY_TOP_BOTTOM);
@@ -344,14 +353,11 @@ void TBSlider::onInflate(const INFLATE_INFO &info)
 	TBWidget::onInflate(info);
 }
 
-void readItems(TBNode *node, TBGenericStringItemSource *targetSource)
-{
+void readItems(TBNode *node, TBGenericStringItemSource *targetSource) {
 	// If there is a items node, loop through all its children and add
 	// items to the target item source.
-	if (TBNode *items = node->getNode("items"))
-	{
-		for (TBNode *n = items->getFirstChild(); n; n = n->getNext())
-		{
+	if (TBNode *items = node->getNode("items")) {
+		for (TBNode *n = items->getFirstChild(); n; n = n->getNext()) {
 			if (strcmp(n->getName(), "item") != 0)
 				continue;
 			const char *item_str = n->getValueString("text", "");
@@ -360,8 +366,7 @@ void readItems(TBNode *node, TBGenericStringItemSource *targetSource)
 				TBWidgetsReader::setIDFromNode(item_id, n_id);
 
 			TBGenericStringItem *item = new TBGenericStringItem(item_str, item_id);
-			if (!item || !targetSource->addItem(item))
-			{
+			if (!item || !targetSource->addItem(item)) {
 				// Out of memory
 				delete item;
 				break;
@@ -370,60 +375,72 @@ void readItems(TBNode *node, TBGenericStringItemSource *targetSource)
 	}
 }
 
-TB_WIDGET_FACTORY(TBSelectList, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
-void TBSelectList::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBSelectList, TBValue::TYPE_INT, WIDGET_Z_TOP) {
+}
+void TBSelectList::onInflate(const INFLATE_INFO &info) {
 	// Read items (if there is any) into the default source
 	readItems(info.node, getDefaultSource());
 	TBWidget::onInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBSelectDropdown, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
-void TBSelectDropdown::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBSelectDropdown, TBValue::TYPE_INT, WIDGET_Z_TOP) {
+}
+void TBSelectDropdown::onInflate(const INFLATE_INFO &info) {
 	// Read items (if there is any) into the default source
 	readItems(info.node, getDefaultSource());
 	TBWidget::onInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBCheckBox, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
-TB_WIDGET_FACTORY(TBRadioButton, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
+TB_WIDGET_FACTORY(TBCheckBox, TBValue::TYPE_INT, WIDGET_Z_TOP) {
+}
+TB_WIDGET_FACTORY(TBRadioButton, TBValue::TYPE_INT, WIDGET_Z_TOP) {
+}
 
-TB_WIDGET_FACTORY(TBTextField, TBValue::TYPE_STRING, WIDGET_Z_TOP) {}
-void TBTextField::onInflate(const INFLATE_INFO &info)
-{
-	if (const char *text_align = info.node->getValueString("text-align", nullptr))
-	{
-		if (!strcmp(text_align, "left"))		setTextAlign(TB_TEXT_ALIGN_LEFT);
-		else if (!strcmp(text_align, "center"))	setTextAlign(TB_TEXT_ALIGN_CENTER);
-		else if (!strcmp(text_align, "right"))	setTextAlign(TB_TEXT_ALIGN_RIGHT);
+TB_WIDGET_FACTORY(TBTextField, TBValue::TYPE_STRING, WIDGET_Z_TOP) {
+}
+void TBTextField::onInflate(const INFLATE_INFO &info) {
+	if (const char *text_align = info.node->getValueString("text-align", nullptr)) {
+		if (!strcmp(text_align, "left"))
+			setTextAlign(TB_TEXT_ALIGN_LEFT);
+		else if (!strcmp(text_align, "center"))
+			setTextAlign(TB_TEXT_ALIGN_CENTER);
+		else if (!strcmp(text_align, "right"))
+			setTextAlign(TB_TEXT_ALIGN_RIGHT);
 	}
 	TBWidget::onInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBSkinImage, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
-TB_WIDGET_FACTORY(TBSeparator, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
-TB_WIDGET_FACTORY(TBProgressSpinner, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
-TB_WIDGET_FACTORY(TBContainer, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
-TB_WIDGET_FACTORY(TBSectionHeader, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
-TB_WIDGET_FACTORY(TBSection, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
+TB_WIDGET_FACTORY(TBSkinImage, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
+}
+TB_WIDGET_FACTORY(TBSeparator, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
+}
+TB_WIDGET_FACTORY(TBProgressSpinner, TBValue::TYPE_INT, WIDGET_Z_TOP) {
+}
+TB_WIDGET_FACTORY(TBContainer, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
+}
+TB_WIDGET_FACTORY(TBSectionHeader, TBValue::TYPE_INT, WIDGET_Z_TOP) {
+}
+TB_WIDGET_FACTORY(TBSection, TBValue::TYPE_INT, WIDGET_Z_TOP) {
+}
 
-TB_WIDGET_FACTORY(TBToggleContainer, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
-void TBToggleContainer::onInflate(const INFLATE_INFO &info)
-{
-	if (const char *toggle = info.node->getValueString("toggle", nullptr))
-	{
-		if (stristr(toggle, "enabled"))			setToggle(TBToggleContainer::TOGGLE_ENABLED);
-		else if (stristr(toggle, "opacity"))	setToggle(TBToggleContainer::TOGGLE_OPACITY);
-		else if (stristr(toggle, "expanded"))	setToggle(TBToggleContainer::TOGGLE_EXPANDED);
+TB_WIDGET_FACTORY(TBToggleContainer, TBValue::TYPE_INT, WIDGET_Z_TOP) {
+}
+void TBToggleContainer::onInflate(const INFLATE_INFO &info) {
+	if (const char *toggle = info.node->getValueString("toggle", nullptr)) {
+		if (stristr(toggle, "enabled"))
+			setToggle(TBToggleContainer::TOGGLE_ENABLED);
+		else if (stristr(toggle, "opacity"))
+			setToggle(TBToggleContainer::TOGGLE_OPACITY);
+		else if (stristr(toggle, "expanded"))
+			setToggle(TBToggleContainer::TOGGLE_EXPANDED);
 	}
 	setInvert(info.node->getValueInt("invert", getInvert()) ? true : false);
 	TBWidget::onInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBImageWidget, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
-void TBImageWidget::onInflate(const INFLATE_INFO &info)
-{
+TB_WIDGET_FACTORY(TBImageWidget, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
+}
+void TBImageWidget::onInflate(const INFLATE_INFO &info) {
 	if (const char *filename = info.node->getValueString("filename", nullptr))
 		setImage(filename);
 	TBWidget::onInflate(info);
@@ -435,45 +452,36 @@ void TBImageWidget::onInflate(const INFLATE_INFO &info)
 TBWidgetFactory *g_registered_factories = nullptr;
 
 TBWidgetFactory::TBWidgetFactory(const char *name, TBValue::TYPE syncType)
-	: name(name)
-	, sync_type(syncType)
-	, next_registered_wf(nullptr)
-{
+	: name(name), sync_type(syncType), next_registered_wf(nullptr) {
 }
 
-void TBWidgetFactory::doRegister()
-{
+void TBWidgetFactory::doRegister() {
 	next_registered_wf = g_registered_factories;
 	g_registered_factories = this;
 }
 
 // == TBWidgetsReader ===================================
 
-TBWidgetsReader *TBWidgetsReader::create()
-{
+TBWidgetsReader *TBWidgetsReader::create() {
 	TBWidgetsReader *w_reader = new TBWidgetsReader;
-	if (!w_reader || !w_reader->init())
-	{
+	if (!w_reader || !w_reader->init()) {
 		delete w_reader;
 		return nullptr;
 	}
 	return w_reader;
 }
 
-bool TBWidgetsReader::init()
-{
+bool TBWidgetsReader::init() {
 	for (TBWidgetFactory *wf = g_registered_factories; wf; wf = wf->next_registered_wf)
 		if (!addFactory(wf))
 			return false;
 	return true;
 }
 
-TBWidgetsReader::~TBWidgetsReader()
-{
+TBWidgetsReader::~TBWidgetsReader() {
 }
 
-bool TBWidgetsReader::loadFile(TBWidget *target, const char *filename)
-{
+bool TBWidgetsReader::loadFile(TBWidget *target, const char *filename) {
 	TBNode node;
 	if (!node.readFile(filename))
 		return false;
@@ -481,31 +489,27 @@ bool TBWidgetsReader::loadFile(TBWidget *target, const char *filename)
 	return true;
 }
 
-bool TBWidgetsReader::loadData(TBWidget *target, const char *data)
-{
+bool TBWidgetsReader::loadData(TBWidget *target, const char *data) {
 	TBNode node;
 	node.readData(data);
 	loadNodeTree(target, &node);
 	return true;
 }
 
-bool TBWidgetsReader::loadData(TBWidget *target, const char *data, int dataLen)
-{
+bool TBWidgetsReader::loadData(TBWidget *target, const char *data, int dataLen) {
 	TBNode node;
 	node.readData(data, dataLen);
 	loadNodeTree(target, &node);
 	return true;
 }
 
-void TBWidgetsReader::loadNodeTree(TBWidget *target, TBNode *node)
-{
+void TBWidgetsReader::loadNodeTree(TBWidget *target, TBNode *node) {
 	// Iterate through all nodes and create widgets
 	for (TBNode *child = node->getFirstChild(); child; child = child->getNext())
 		createWidget(target, child);
 }
 
-void TBWidgetsReader::setIDFromNode(TBID &id, TBNode *node)
-{
+void TBWidgetsReader::setIDFromNode(TBID &id, TBNode *node) {
 	if (!node)
 		return;
 	if (node->getValue().isString())
@@ -514,8 +518,7 @@ void TBWidgetsReader::setIDFromNode(TBID &id, TBNode *node)
 		id.set(node->getValue().getInt());
 }
 
-bool TBWidgetsReader::createWidget(TBWidget *target, TBNode *node)
-{
+bool TBWidgetsReader::createWidget(TBWidget *target, TBNode *node) {
 	// Find a widget creator from the node name
 	TBWidgetFactory *wc = nullptr;
 	for (wc = factories.getFirst(); wc; wc = wc->getNext())

@@ -6,15 +6,13 @@
 
 namespace tb {
 
-void TBRenderer::invokeContextLost()
-{
+void TBRenderer::invokeContextLost() {
 	TBLinkListOf<TBRendererListener>::Iterator iter = m_listeners.iterateForward();
 	while (TBRendererListener *listener = iter.getAndStep())
 		listener->onContextLost();
 }
 
-void TBRenderer::invokeContextRestored()
-{
+void TBRenderer::invokeContextRestored() {
 	TBLinkListOf<TBRendererListener>::Iterator iter = m_listeners.iterateForward();
 	while (TBRendererListener *listener = iter.getAndStep())
 		listener->onContextRestored();

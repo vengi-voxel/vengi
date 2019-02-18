@@ -4,17 +4,16 @@
 
 #include "tb_system.h"
 
-#include "tb_msg.h"
-#include "tb_types.h"
-#include <stdio.h>
 #include "core/App.h"
 #include "io/Filesystem.h"
+#include "tb_msg.h"
+#include "tb_types.h"
 #include <SDL.h>
+#include <stdio.h>
 
 namespace tb {
 
-double TBSystem::getTimeMS()
-{
+double TBSystem::getTimeMS() {
 	Uint64 freq = SDL_GetPerformanceFrequency();
 	Uint64 now = SDL_GetPerformanceCounter();
 	return 1000. * ((double)now / (double)freq);
@@ -24,31 +23,25 @@ double TBSystem::getTimeMS()
 	If fire_time is 0, it should be fired ASAP.
 	If force is true, it will ask the platform to schedule it again, even if
 	the fire_time is the same as last time. */
-void TBSystem::rescheduleTimer(double fireTime)
-{
+void TBSystem::rescheduleTimer(double fireTime) {
 }
 
-int TBSystem::getLongClickDelayMS()
-{
+int TBSystem::getLongClickDelayMS() {
 	return 500;
 }
 
-int TBSystem::getPanThreshold()
-{
+int TBSystem::getPanThreshold() {
 	return 5 * getDPI() / 96;
 }
 
-int TBSystem::getPixelsPerLine()
-{
+int TBSystem::getPixelsPerLine() {
 	return 40 * getDPI() / 96;
 }
 
-int TBSystem::getDPI()
-{
-#if SDL_VERSION_ATLEAST(2,0,4)
+int TBSystem::getDPI() {
+#if SDL_VERSION_ATLEAST(2, 0, 4)
 	float ddpi;
-	if (SDL_GetDisplayDPI(0, &ddpi, NULL, NULL))
-	{
+	if (SDL_GetDisplayDPI(0, &ddpi, NULL, NULL)) {
 		return 96;
 	}
 	return (int)ddpi;
@@ -57,32 +50,27 @@ int TBSystem::getDPI()
 #endif
 }
 
-void TBClipboard::empty()
-{
+void TBClipboard::empty() {
 	setText("");
 }
 
-bool TBClipboard::hasText()
-{
+bool TBClipboard::hasText() {
 	return SDL_HasClipboardText();
 }
 
-bool TBClipboard::setText(const char *text)
-{
+bool TBClipboard::setText(const char *text) {
 	return (0 == SDL_SetClipboardText(text));
 }
 
-bool TBClipboard::getText(TBStr &text)
-{
+bool TBClipboard::getText(TBStr &text) {
 	if (const char *str = SDL_GetClipboardText())
 		return text.set(str);
 	return false;
 }
 
-class File: public TBFile {
+class File : public TBFile {
 public:
-	File(const io::FilePtr& file) :
-			_file(file) {
+	File(const io::FilePtr &file) : _file(file) {
 	}
 
 	virtual long size() {
@@ -91,6 +79,7 @@ public:
 	virtual size_t read(void *buf, size_t elemSize, size_t count) {
 		return _file->read(buf, elemSize, count);
 	}
+
 private:
 	io::FilePtr _file;
 };
@@ -100,8 +89,7 @@ TBFile *TBFile::open(const char *filename, TBFileMode mode) {
 	io::FilePtr f;
 	switch (mode) {
 	case MODE_READ:
-		f = core::App::getInstance()->filesystem()->open(filename,
-				io::FileMode::Read);
+		f = core::App::getInstance()->filesystem()->open(filename, io::FileMode::Read);
 		break;
 	default:
 		break;

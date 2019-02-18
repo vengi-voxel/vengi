@@ -10,7 +10,7 @@
 namespace tb {
 
 enum TB_NODE_READ_FLAGS {
-	TB_NODE_READ_FLAGS_NONE	= 0,
+	TB_NODE_READ_FLAGS_NONE = 0,
 	/** Read nodes without clearing first. Can be used to append
 		data from multiple sources, or inject dependencies. */
 	TB_NODE_READ_FLAGS_APPEND = 1,
@@ -25,10 +25,10 @@ MAKE_ENUM_FLAG_COMBO(TB_NODE_READ_FLAGS);
 
 	During ReadFile/ReadData, it may also select which branches to include
 	or exclude conditionally by lookup up values in TBNodeRefTree. */
-class TBNode : public TBLinkOf<TBNode>
-{
+class TBNode : public TBLinkOf<TBNode> {
 public:
-	TBNode() : m_name(nullptr), m_parent(nullptr), m_cycle_id(0) {}
+	TBNode() : m_name(nullptr), m_parent(nullptr), m_cycle_id(0) {
+	}
 	~TBNode();
 
 	/** Create a new node with the given name. */
@@ -47,19 +47,33 @@ public:
 	void clear();
 
 	/** Add node as child to this node. */
-	void add(TBNode *n) { m_children.addLast(n); n->m_parent = this; }
+	void add(TBNode *n) {
+		m_children.addLast(n);
+		n->m_parent = this;
+	}
 
 	/** Add node before the reference node (which must be a child to this node). */
-	void addBefore(TBNode *n, TBNode *reference) { m_children.addBefore(n, reference); n->m_parent = this; }
+	void addBefore(TBNode *n, TBNode *reference) {
+		m_children.addBefore(n, reference);
+		n->m_parent = this;
+	}
 
 	/** Add node after the reference node (which must be a child to this node). */
-	void addAfter(TBNode *n, TBNode *reference) { m_children.addAfter(n, reference); n->m_parent = this; }
+	void addAfter(TBNode *n, TBNode *reference) {
+		m_children.addAfter(n, reference);
+		n->m_parent = this;
+	}
 
 	/** Remove child node n from this node. */
-	void remove(TBNode *n) { m_children.remove(n); n->m_parent = nullptr; }
+	void remove(TBNode *n) {
+		m_children.remove(n);
+		n->m_parent = nullptr;
+	}
 
 	/** Remove and delete child node n from this node. */
-	void doDelete(TBNode *n) { m_children.doDelete(n); }
+	void doDelete(TBNode *n) {
+		m_children.doDelete(n);
+	}
 
 	/** Create duplicates of all items in source and add them to this node.
 		If follow_refs is true, any references will be followed and the final target
@@ -84,10 +98,14 @@ public:
 	TBNode *getNode(const char *request, GET_MISS_POLICY mp = GET_MISS_POLICY_NULL);
 
 	/** Returns the name of this node. */
-	const char *getName() const { return m_name; }
+	const char *getName() const {
+		return m_name;
+	}
 
 	/** Returns the value of this node. */
-	TBValue &getValue() { return m_value; }
+	TBValue &getValue() {
+		return m_value;
+	}
 
 	/** Returns the value of this node.
 		Will follow eventual references to TBNodeRefTree. */
@@ -116,21 +134,27 @@ public:
 		or the end of the string. */
 	static const char *getNextNodeSeparator(const char *request);
 
-	inline TBNode *getParent() const { return m_parent; }
-	inline TBNode *getFirstChild() const { return m_children.getFirst(); }
-	inline TBNode *getLastChild() const { return m_children.getLast(); }
+	inline TBNode *getParent() const {
+		return m_parent;
+	}
+	inline TBNode *getFirstChild() const {
+		return m_children.getFirst();
+	}
+	inline TBNode *getLastChild() const {
+		return m_children.getLast();
+	}
+
 private:
-friend class TBNodeTarget;
-friend class TBNodeRefTree;
-	TBNode *getNodeFollowRef(const char *request,
-							GET_MISS_POLICY mp = GET_MISS_POLICY_NULL);
+	friend class TBNodeTarget;
+	friend class TBNodeRefTree;
+	TBNode *getNodeFollowRef(const char *request, GET_MISS_POLICY mp = GET_MISS_POLICY_NULL);
 	TBNode *getNodeInternal(const char *name, int name_len) const;
 	static TBNode *create(const char *name, int name_len);
 	char *m_name;
 	TBValue m_value;
 	TBLinkListOf<TBNode> m_children;
 	TBNode *m_parent;
-	uint32_t m_cycle_id;	///< Used to detect circular references.
+	uint32_t m_cycle_id; ///< Used to detect circular references.
 };
 
 } // namespace tb

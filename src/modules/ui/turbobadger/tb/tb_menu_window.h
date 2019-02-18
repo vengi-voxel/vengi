@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "tb_select.h"
 #include "tb_popup_window.h"
+#include "tb_select.h"
 
 namespace tb {
 
@@ -16,8 +16,7 @@ namespace tb {
 
 	It may open sub items as new windows at the same time as this window is open.*/
 
-class TBMenuWindow : public TBPopupWindow
-{
+class TBMenuWindow : public TBPopupWindow {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBMenuWindow, TBPopupWindow);
@@ -27,10 +26,13 @@ public:
 
 	bool show(TBSelectItemSource *source, const TBPopupAlignment &alignment, int initial_value = -1);
 
-	TBSelectList *getList() { return &m_select_list; }
+	TBSelectList *getList() {
+		return &m_select_list;
+	}
 
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
 	virtual void onDie() override;
+
 private:
 	TBSelectList m_select_list;
 };

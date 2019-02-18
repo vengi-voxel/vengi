@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "tb_id.h"
 #include "tb_linklist.h"
 #include "tb_node_tree.h"
-#include "tb_id.h"
 
 namespace tb {
 
@@ -18,24 +18,35 @@ class TBNodeRefTreeListener;
 	requesting a value (TBNode::getValueFollowRef), or while parsing the
 	node tree. While parsing, the values can be used for branch conditions
 	or branches of nodes can be included. */
-class TBNodeRefTree : public TBLinkOf<TBNodeRefTree>
-{
+class TBNodeRefTree : public TBLinkOf<TBNodeRefTree> {
 public:
 	TBNodeRefTree(const char *name);
 	virtual ~TBNodeRefTree();
 
-	const char *getName() const { return m_name; }
-	const TBID &getNameID() const { return m_name_id; }
+	const char *getName() const {
+		return m_name;
+	}
+	const TBID &getNameID() const {
+		return m_name_id;
+	}
 
 	/** Read the data file. This will *not* invoke any change listener! */
-	bool readFile(const char *filename) { return m_node.readFile(filename); }
-	void readData(const char *data) { m_node.readData(data); }
+	bool readFile(const char *filename) {
+		return m_node.readFile(filename);
+	}
+	void readData(const char *data) {
+		m_node.readData(data);
+	}
 
 	/** Add a listener that is invoked on changes in this tree. */
-	void addListener(TBNodeRefTreeListener *listener) { m_listeners.addLast(listener); }
+	void addListener(TBNodeRefTreeListener *listener) {
+		m_listeners.addLast(listener);
+	}
 
 	/** Remove a change listener from this tree. */
-	void removeListener(TBNodeRefTreeListener *listener) { m_listeners.remove(listener); }
+	void removeListener(TBNodeRefTreeListener *listener) {
+		m_listeners.remove(listener);
+	}
 
 	/** Set the value for the given request and invoke the change listener.
 		Creates the nodes that doesn't exist. */
@@ -55,6 +66,7 @@ public:
 	/** Go through the tree of nodes recursively and include
 		or remove branches depending on any conditions. */
 	static void resolveConditions(TBNode *parent_node);
+
 private:
 	friend class TBNode;
 	friend class TBNodeTarget;
@@ -73,10 +85,10 @@ private:
 /**	TBNodeRefTreeListener receive OnDataChanged when the
 	value of a node in a TBNodeRefTree is changed.
 	FIX: The listener can currently only listen to one tree. */
-class TBNodeRefTreeListener : public TBLinkOf<TBNodeRefTreeListener>
-{
+class TBNodeRefTreeListener : public TBLinkOf<TBNodeRefTreeListener> {
 public:
-	virtual ~TBNodeRefTreeListener() {}
+	virtual ~TBNodeRefTreeListener() {
+	}
 	/** Called when the value is changed for the given node
 		in the given ref tree. The request is without tree name. */
 	virtual void onDataChanged(TBNodeRefTree *rt, const char *request) = 0;

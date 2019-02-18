@@ -22,8 +22,7 @@ namespace tb {
 	Ex: TBButton: text: @close   (Create a button with text from lookup of "close")
 */
 
-class TBLanguage
-{
+class TBLanguage {
 public:
 	~TBLanguage();
 
@@ -40,8 +39,9 @@ public:
 		in release builds, and "<TRANSLATE:%s>" (populated with the id) will
 		be returned in debug builds. */
 	const char *getString(const TBID &id);
+
 private:
 	TBHashTableOf<TBStr> strings;
 };
 
-}
+} // namespace tb

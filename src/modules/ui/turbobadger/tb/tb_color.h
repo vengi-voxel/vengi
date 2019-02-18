@@ -10,23 +10,32 @@ namespace tb {
 
 /** TBColor contains a 32bit color. */
 
-class TBColor
-{
+class TBColor {
 public:
-	constexpr TBColor() : b(0), g(0), r(0), a(255) {}
-	constexpr TBColor(int _r, int _g, int _b, int _a = 255) : b(_b), g(_g), r(_r), a(_a) {}
+	constexpr TBColor() : b(0), g(0), r(0), a(255) {
+	}
+	constexpr TBColor(int _r, int _g, int _b, int _a = 255) : b(_b), g(_g), r(_r), a(_a) {
+	}
 
 	uint8_t b, g, r, a;
 
-	void set(const TBColor &color) { *this = color; }
+	void set(const TBColor &color) {
+		*this = color;
+	}
 
 	/** Set the color from string in any of the following formats:
 		"#rrggbbaa", "#rrggbb", "#rgba", "#rgb" */
 	void setFromString(const char *str, int len);
 
-	inline operator uint32_t () const		{ return *((uint32_t*)this); }
-	inline bool operator == (const TBColor &c) const { return *this == (uint32_t)c; }
-	inline bool operator != (const TBColor &c) const { return !(*this == c); }
+	inline operator uint32_t() const {
+		return *((uint32_t *)this);
+	}
+	inline bool operator==(const TBColor &c) const {
+		return *this == (uint32_t)c;
+	}
+	inline bool operator!=(const TBColor &c) const {
+		return !(*this == c);
+	}
 
 	/** Premultiply alpha on the r, g, b components */
 	inline void premultiply() {

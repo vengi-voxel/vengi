@@ -3,24 +3,20 @@
  */
 
 #include "tb_toggle_container.h"
-#include "tb_widgets_reader.h"
 #include "tb_node_tree.h"
+#include "tb_widgets_reader.h"
 
 namespace tb {
 
-TBSectionHeader::TBSectionHeader()
-{
+TBSectionHeader::TBSectionHeader() {
 	setSkinBg(TBIDC("TBSectionHeader"));
 	setGravity(WIDGET_GRAVITY_LEFT | WIDGET_GRAVITY_RIGHT);
 	setToggleMode(true);
 }
 
-bool TBSectionHeader::onEvent(const TBWidgetEvent &ev)
-{
-	if (ev.target == this && ev.type == EVENT_TYPE_CHANGED && getParent()->getParent())
-	{
-		if (TBSection *section = TBSafeCast<TBSection>(getParent()->getParent()))
-		{
+bool TBSectionHeader::onEvent(const TBWidgetEvent &ev) {
+	if (ev.target == this && ev.type == EVENT_TYPE_CHANGED && getParent()->getParent()) {
+		if (TBSection *section = TBSafeCast<TBSection>(getParent()->getParent())) {
 			section->getContainer()->setValue(getValue());
 
 			// Try to scroll the container into view when expanded
@@ -32,9 +28,7 @@ bool TBSectionHeader::onEvent(const TBWidgetEvent &ev)
 
 // == TBSectionHeader =====================================
 
-TBSection::TBSection()
-	: m_pending_scroll(false)
-{
+TBSection::TBSection() : m_pending_scroll(false) {
 	setGravity(WIDGET_GRAVITY_LEFT | WIDGET_GRAVITY_RIGHT);
 
 	setSkinBg(TBIDC("TBSection"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
@@ -52,30 +46,25 @@ TBSection::TBSection()
 	m_layout.addChild(&m_toggle_container);
 }
 
-TBSection::~TBSection()
-{
+TBSection::~TBSection() {
 	m_layout.removeChild(&m_toggle_container);
 	m_layout.removeChild(&m_header);
 	removeChild(&m_layout);
 }
 
-void TBSection::setValue(int value)
-{
+void TBSection::setValue(int value) {
 	m_header.setValue(value);
 	m_toggle_container.setValue(value);
 }
 
-void TBSection::onProcessAfterChildren()
-{
-	if (m_pending_scroll)
-	{
+void TBSection::onProcessAfterChildren() {
+	if (m_pending_scroll) {
 		m_pending_scroll = false;
 		scrollIntoViewRecursive();
 	}
 }
 
-PreferredSize TBSection::onCalculatePreferredSize(const SizeConstraints &constraints)
-{
+PreferredSize TBSection::onCalculatePreferredSize(const SizeConstraints &constraints) {
 	PreferredSize ps = TBWidget::onCalculatePreferredContentSize(constraints);
 	// We should not grow larger than we are, when there's extra space available.
 	ps.max_h = ps.pref_h;
@@ -84,16 +73,11 @@ PreferredSize TBSection::onCalculatePreferredSize(const SizeConstraints &constra
 
 // == TBToggleContainer ===================================
 
-TBToggleContainer::TBToggleContainer()
-	: m_toggle(TOGGLE_NOTHING)
-	, m_invert(false)
-	, m_value(0)
-{
+TBToggleContainer::TBToggleContainer() : m_toggle(TOGGLE_NOTHING), m_invert(false), m_value(0) {
 	setSkinBg(TBIDC("TBToggleContainer"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 }
 
-void TBToggleContainer::setToggle(TOGGLE toggle)
-{
+void TBToggleContainer::setToggle(TOGGLE toggle) {
 	if (toggle == m_toggle)
 		return;
 
@@ -104,16 +88,14 @@ void TBToggleContainer::setToggle(TOGGLE toggle)
 	updateInternal();
 }
 
-void TBToggleContainer::setInvert(bool invert)
-{
+void TBToggleContainer::setInvert(bool invert) {
 	if (invert == m_invert)
 		return;
 	m_invert = invert;
 	updateInternal();
 }
 
-void TBToggleContainer::setValue(int value)
-{
+void TBToggleContainer::setValue(int value) {
 	if (value == m_value)
 		return;
 	m_value = value;
@@ -121,11 +103,9 @@ void TBToggleContainer::setValue(int value)
 	invalidateSkinStates();
 }
 
-void TBToggleContainer::updateInternal()
-{
+void TBToggleContainer::updateInternal() {
 	bool on = getIsOn();
-	switch (m_toggle)
-	{
+	switch (m_toggle) {
 	case TOGGLE_NOTHING:
 		break;
 	case TOGGLE_ENABLED:

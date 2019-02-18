@@ -11,8 +11,7 @@ namespace tb {
 	The buffer size can grow by calling Reserve or Append, but it
 	will never shrink during the lifetime of the object.
 */
-class TBTempBuffer
-{
+class TBTempBuffer {
 public:
 	TBTempBuffer();
 	~TBTempBuffer();
@@ -22,10 +21,14 @@ public:
 	bool reserve(int size);
 
 	/** Get a pointer to the buffer data. */
-	char *getData() const { return m_data; }
+	char *getData() const {
+		return m_data;
+	}
 
 	/** Return the size of the buffer in bytes. */
-	int getCapacity() const { return m_data_size; }
+	int getCapacity() const {
+		return m_data_size;
+	}
 
 	/** Append data with size bytes at the end of the buffer and
 		increase the append position with the same amount.
@@ -61,10 +64,15 @@ public:
 	void setAppendPos(int append_pos);
 
 	/** Reset the append position to 0. */
-	void resetAppendPos() { m_append_pos = 0; }
+	void resetAppendPos() {
+		m_append_pos = 0;
+	}
 
 	/** Return the current append position in in bytes. */
-	int getAppendPos() const { return m_append_pos; }
+	int getAppendPos() const {
+		return m_append_pos;
+	}
+
 private:
 	int getAppendReserveSize(int needed_size) const;
 	char *m_data;

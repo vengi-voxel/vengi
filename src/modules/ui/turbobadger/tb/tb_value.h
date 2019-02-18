@@ -31,15 +31,17 @@ bool is_number_only(const char *str);
 bool is_number_float(const char *str);
 
 /** TBValueArray is an array of TBValue */
-class TBValueArray
-{
+class TBValueArray {
 public:
 	TBValueArray();
 	~TBValueArray();
 	TBValue *addValue();
 	TBValue *getValue(int index);
 	static TBValueArray *clone(TBValueArray *source);
-	int getLength() const { return m_list.getNumItems(); }
+	int getLength() const {
+		return m_list.getNumItems();
+	}
+
 private:
 	TBListAutoDeleteOf<TBValue> m_list;
 };
@@ -52,25 +54,17 @@ private:
 	its internal representation to that type. Exceptions are for array and
 	object, which will return 0 when getting as numbers, or "" or object name
 	when getting as string. */
-class TBValue
-{
+class TBValue {
 public:
 	/** The current type of the value.
 		It may change when using a getter of a different type. */
-	enum TYPE {
-		TYPE_NULL,
-		TYPE_STRING,
-		TYPE_FLOAT,
-		TYPE_INT,
-		TYPE_OBJECT,
-		TYPE_ARRAY
-	};
+	enum TYPE { TYPE_NULL, TYPE_STRING, TYPE_FLOAT, TYPE_INT, TYPE_OBJECT, TYPE_ARRAY };
 
 	/** How to deal with the dynamic memory when setting string and array. */
 	enum SET {
-		SET_NEW_COPY,			///< A new copy of the data will be made.
-		SET_TAKE_OWNERSHIP,		///< The data passed in will be stored and freed.
-		SET_AS_STATIC			///< The data passed in will be stored but never freed.
+		SET_NEW_COPY,		///< A new copy of the data will be made.
+		SET_TAKE_OWNERSHIP, ///< The data passed in will be stored and freed.
+		SET_AS_STATIC		///< The data passed in will be stored but never freed.
 	};
 
 	TBValue();
@@ -112,19 +106,43 @@ public:
 	int getInt() const;
 	float getFloat() const;
 	const char *getString();
-	TBTypedObject *getObject() const { return isObject() ? val_obj : nullptr; }
-	TBValueArray *getArray() const { return isArray() ? val_arr : nullptr; }
+	TBTypedObject *getObject() const {
+		return isObject() ? val_obj : nullptr;
+	}
+	TBValueArray *getArray() const {
+		return isArray() ? val_arr : nullptr;
+	}
 
-	TYPE getType() const { return (TYPE) m_packed.type; }
-	bool isNull() const { return m_packed.type == TYPE_NULL; }
-	bool isString() const { return m_packed.type == TYPE_STRING; }
-	bool isFloat() const { return m_packed.type == TYPE_FLOAT; }
-	bool isInt() const { return m_packed.type == TYPE_INT; }
-	bool isObject() const { return m_packed.type == TYPE_OBJECT; }
-	bool isArray() const { return m_packed.type == TYPE_ARRAY; }
-	int getArrayLength() const { return isArray() ? val_arr->getLength() : 0; }
+	TYPE getType() const {
+		return (TYPE)m_packed.type;
+	}
+	bool isNull() const {
+		return m_packed.type == TYPE_NULL;
+	}
+	bool isString() const {
+		return m_packed.type == TYPE_STRING;
+	}
+	bool isFloat() const {
+		return m_packed.type == TYPE_FLOAT;
+	}
+	bool isInt() const {
+		return m_packed.type == TYPE_INT;
+	}
+	bool isObject() const {
+		return m_packed.type == TYPE_OBJECT;
+	}
+	bool isArray() const {
+		return m_packed.type == TYPE_ARRAY;
+	}
+	int getArrayLength() const {
+		return isArray() ? val_arr->getLength() : 0;
+	}
 
-	const TBValue& operator = (const TBValue &val) { copy(val); return *this; }
+	const TBValue &operator=(const TBValue &val) {
+		copy(val);
+		return *this;
+	}
+
 private:
 	union {
 		float val_float;

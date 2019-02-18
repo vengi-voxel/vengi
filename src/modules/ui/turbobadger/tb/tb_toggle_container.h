@@ -13,8 +13,7 @@ namespace tb {
 	This is useful f.ex to toggle a whole group of child widgets depending
 	on the value of some other widget. By connecting the TBToggleContainer
 	with a widget connection, this can happen completly automatically. */
-class TBToggleContainer : public TBWidget
-{
+class TBToggleContainer : public TBWidget {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBToggleContainer, TBWidget);
@@ -23,29 +22,38 @@ public:
 
 	/** Defines what should toggle when the value changes. */
 	enum TOGGLE {
-		TOGGLE_NOTHING,		///< Nothing happens (the default)
-		TOGGLE_ENABLED,		///< Enabled/disabled state
-		TOGGLE_OPACITY,		///< Opacity 1/0
-		TOGGLE_EXPANDED		///< Expanded/collapsed (In parent axis direction)
+		TOGGLE_NOTHING, ///< Nothing happens (the default)
+		TOGGLE_ENABLED, ///< Enabled/disabled state
+		TOGGLE_OPACITY, ///< Opacity 1/0
+		TOGGLE_EXPANDED ///< Expanded/collapsed (In parent axis direction)
 	};
 
 	/** Set what should toggle when the value changes. */
 	void setToggle(TOGGLE toggle);
-	TOGGLE GetToggle() const { return m_toggle; }
+	TOGGLE GetToggle() const {
+		return m_toggle;
+	}
 
 	/** Set if the toggle state should be inverted. */
 	void setInvert(bool invert);
-	bool getInvert() const { return m_invert; }
+	bool getInvert() const {
+		return m_invert;
+	}
 
 	/** Get the current value, after checking the invert mode. */
-	bool getIsOn() const { return m_invert ? !m_value : !!m_value; }
+	bool getIsOn() const {
+		return m_invert ? !m_value : !!m_value;
+	}
 
 	/** Set the value of this widget. 1 will turn on the toggle, 0 will turn it off (or
 		the opposite if the invert mode is set). */
 	virtual void setValue(int value);
-	virtual int getValue() const { return m_value; }
+	virtual int getValue() const {
+		return m_value;
+	}
 
 	virtual void onInflate(const INFLATE_INFO &info);
+
 private:
 	void updateInternal();
 	TOGGLE m_toggle;
@@ -56,8 +64,7 @@ private:
 /** TBSectionHeader is just a thin wrapper for a TBButton that is in toggle
 	mode with the skin TBSectionHeader by default. It is used as the clickable
 	header in TBSection that toggles the section. */
-class TBSectionHeader : public TBButton
-{
+class TBSectionHeader : public TBButton {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBSectionHeader, TBButton);
@@ -78,8 +85,7 @@ public:
 		TBSection.container		- The toggle container with the children that expands/collapses.
 */
 
-class TBSection : public TBWidget
-{
+class TBSection : public TBWidget {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBSection, TBWidget);
@@ -87,25 +93,42 @@ public:
 	TBSection();
 	~TBSection();
 
-	TBLayout *getLayout() { return &m_layout; }
-	TBSectionHeader *getHeader() { return &m_header; }
-	TBToggleContainer *getContainer() { return &m_toggle_container; }
+	TBLayout *getLayout() {
+		return &m_layout;
+	}
+	TBSectionHeader *getHeader() {
+		return &m_header;
+	}
+	TBToggleContainer *getContainer() {
+		return &m_toggle_container;
+	}
 
 	/** Set if the section should be scrolled into view after next layout. */
-	void setPendingScrollIntoView(bool pending_scroll) { m_pending_scroll = pending_scroll; }
+	void setPendingScrollIntoView(bool pending_scroll) {
+		m_pending_scroll = pending_scroll;
+	}
 
 	/** Set the text of the text field. */
-	virtual bool setText(const char *text) { return m_header.setText(text); }
-	virtual bool getText(TBStr &text) { return m_header.getText(text); }
+	virtual bool setText(const char *text) {
+		return m_header.setText(text);
+	}
+	virtual bool getText(TBStr &text) {
+		return m_header.getText(text);
+	}
 	using TBWidget::getText; ///< Make all versions in base class available.
 
 	virtual void setValue(int value);
-	virtual int getValue() const { return m_toggle_container.getValue(); }
+	virtual int getValue() const {
+		return m_toggle_container.getValue();
+	}
 
-	virtual TBWidget *getContentRoot() { return m_toggle_container.getContentRoot(); }
+	virtual TBWidget *getContentRoot() {
+		return m_toggle_container.getContentRoot();
+	}
 	virtual void onProcessAfterChildren();
 
 	virtual PreferredSize onCalculatePreferredSize(const SizeConstraints &constraints);
+
 private:
 	TBLayout m_layout;
 	TBSectionHeader m_header;

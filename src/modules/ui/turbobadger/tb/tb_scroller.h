@@ -16,10 +16,10 @@ class TBWidget;
 
 	Note: Speed is in pixels per millisecond. Duration is in milliseconds
 		  and distance is in pixels. Distance and speed may be negative! */
-class TBScrollerFunction
-{
+class TBScrollerFunction {
 public:
-	TBScrollerFunction(float decay) : m_decay(decay) {}
+	TBScrollerFunction(float decay) : m_decay(decay) {
+	}
 
 	/** Calculate the duration needed until the end distance is reached
 		from the given start speed. */
@@ -33,16 +33,16 @@ public:
 
 	/** Same as GetDistanceAtTime but rounded to integer. */
 	int getDistanceAtTimeInt(float start_speed, float elapsed_time_ms);
+
 private:
 	float m_decay;
 };
 
 /** TBScrollerSnapListener may override the target scroll position of a TBScroller. */
 
-class TBScrollerSnapListener
-{
+class TBScrollerSnapListener {
 public:
-	virtual ~TBScrollerSnapListener() {};
+	virtual ~TBScrollerSnapListener(){};
 
 	/** Called when the target scroll position is calculated.
 
@@ -58,14 +58,15 @@ public:
 /** TBScroller handles panning while the pointer is down and measure the pan
 	speed over time. It also handles continued scrolling when the pointer has
 	been released with a flick. */
-class TBScroller : private TBMessageHandler
-{
+class TBScroller : private TBMessageHandler {
 public:
 	TBScroller(TBWidget *target);
 	~TBScroller();
 
 	/** Set the listener that may override the target scroll position. */
-	void setSnapListener(TBScrollerSnapListener *listener) { m_snap_listener = listener; }
+	void setSnapListener(TBScrollerSnapListener *listener) {
+		m_snap_listener = listener;
+	}
 
 	/** Start tracking pan movement from calls to OnPan. */
 	void start();
@@ -75,11 +76,15 @@ public:
 	void stop();
 
 	/** Return true if the pan tracking is started or. */
-	bool isStarted() const { return m_is_started; }
+	bool isStarted() const {
+		return m_is_started;
+	}
 
 	/** Get the widget that will be panned/scrolled. Any parent of this
 		widget may also be panned/scrolled. */
-	TBWidget *getTarget() const { return m_target; }
+	TBWidget *getTarget() const {
+		return m_target;
+	}
 
 	/** Pan the target widget (or any parent) with the given deltas.
 		Should be called while the pointer is down.
@@ -97,6 +102,7 @@ public:
 		added to any on going scroll. If it's false, any
 		ongoing scroll will be canceled. */
 	void onScrollBy(int dx, int dy, bool accumulative);
+
 private:
 	virtual void onMessageReceived(TBMessage *msg);
 	bool isScrolling();

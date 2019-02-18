@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "tb_color.h"
 #include "tb_core.h"
 #include "tb_geometry.h"
-#include "tb_color.h"
 #include "tb_linklist.h"
 
 namespace tb {
@@ -14,10 +14,10 @@ namespace tb {
 class TBBitmapFragment;
 
 /** TBRendererListener is a listener for TBRenderer. */
-class TBRendererListener : public TBLinkOf<TBRendererListener>
-{
+class TBRendererListener : public TBLinkOf<TBRendererListener> {
 public:
-	virtual ~TBRendererListener() {}
+	virtual ~TBRendererListener() {
+	}
 
 	/** Called when the context has been lost and all TBBitmaps need to be deleted.
 		NOTE: Only do cleanup here. It's not safe to do work on any bitmap since the
@@ -31,12 +31,12 @@ public:
 
 /** TBBitmap is a minimal interface for bitmap to be painted by TBRenderer. */
 
-class TBBitmap
-{
+class TBBitmap {
 public:
 	/** Note: Implementations for batched renderers should call TBRenderer::FlushBitmap
 		to make sure any active batch is being flushed before the bitmap is deleted. */
-	virtual ~TBBitmap() {}
+	virtual ~TBBitmap() {
+	}
 
 	virtual int width() = 0;
 	virtual int height() = 0;
@@ -49,10 +49,10 @@ public:
 
 /** TBRenderer is a minimal interface for painting strings and bitmaps. */
 
-class TBRenderer
-{
+class TBRenderer {
 public:
-	virtual ~TBRenderer() {}
+	virtual ~TBRenderer() {
+	}
 
 	/** Should be called before invoking paint on any widget.
 		render_target_w and render_target_h should be the size of the render target
@@ -88,12 +88,14 @@ public:
 	/** Draw the src_rect part of the fragment stretched to dst_rect.
 		The bitmap will be used as a mask for the color.
 		dst_rect or src_rect can have negative width and height to achieve horizontal and vertical flip. */
-	virtual void drawBitmapColored(const TBRect &dst_rect, const TBRect &src_rect, const TBColor &color, TBBitmapFragment *bitmap_fragment) = 0;
+	virtual void drawBitmapColored(const TBRect &dst_rect, const TBRect &src_rect, const TBColor &color,
+								   TBBitmapFragment *bitmap_fragment) = 0;
 
 	/** Draw the src_rect part of the bitmap stretched to dst_rect.
 		The bitmap will be used as a mask for the color.
 		dst_rect or src_rect can have negative width and height to achieve horizontal and vertical flip. */
-	virtual void drawBitmapColored(const TBRect &dst_rect, const TBRect &src_rect, const TBColor &color, TBBitmap *bitmap) = 0;
+	virtual void drawBitmapColored(const TBRect &dst_rect, const TBRect &src_rect, const TBColor &color,
+								   TBBitmap *bitmap) = 0;
 
 	/** Draw the bitmap tiled into dst_rect. */
 	virtual void drawBitmapTile(const TBRect &dst_rect, TBBitmap *bitmap) = 0;
@@ -108,10 +110,14 @@ public:
 	virtual TBBitmap *createBitmap(int width, int height, uint32_t *data) = 0;
 
 	/** Add a listener to this renderer. Does not take ownership. */
-	void addListener(TBRendererListener *listener) { m_listeners.addLast(listener); }
+	void addListener(TBRendererListener *listener) {
+		m_listeners.addLast(listener);
+	}
 
 	/** Remove a listener from this renderer. */
-	void removeListener(TBRendererListener *listener) { m_listeners.remove(listener); }
+	void removeListener(TBRendererListener *listener) {
+		m_listeners.remove(listener);
+	}
 
 	/** Invoke OnContextLost on all listeners.
 		Call when bitmaps should be forgotten. */
@@ -133,10 +139,13 @@ public:
 		The hint defines what operations are allowed between BeginBatchHint
 		until EndBatchHint is called. All other draw operations are invalid.
 		It's not valid to nest calls to BeginBatchHint. */
-	virtual void beginBatchHint(BATCH_HINT hint) {}
+	virtual void beginBatchHint(BATCH_HINT hint) {
+	}
 
 	/** End the hint scope started with BeginBatchHint. */
-	virtual void endBatchHint() {}
+	virtual void endBatchHint() {
+	}
+
 private:
 	TBLinkListOf<TBRendererListener> m_listeners;
 };

@@ -10,8 +10,7 @@ namespace tb {
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 
-class TBDebugInfo
-{
+class TBDebugInfo {
 public:
 	TBDebugInfo();
 
@@ -43,7 +42,10 @@ extern TBDebugInfo g_tb_debug;
 void ShowDebugInfoSettingsWindow(class TBWidget *root);
 
 #define TB_DEBUG_SETTING(setting) g_tb_debug.settings[TBDebugInfo::setting]
-#define TB_IF_DEBUG_SETTING(setting, code) if (TB_DEBUG_SETTING(setting)) { code; }
+#define TB_IF_DEBUG_SETTING(setting, code)                                                                             \
+	if (TB_DEBUG_SETTING(setting)) {                                                                                   \
+		code;                                                                                                          \
+	}
 
 #else // TB_RUNTIME_DEBUG_INFO
 
@@ -51,7 +53,7 @@ void ShowDebugInfoSettingsWindow(class TBWidget *root);
 #define ShowDebugInfoSettingsWindow(root) ((void)0)
 
 #define TB_DEBUG_SETTING(setting) false
-#define TB_IF_DEBUG_SETTING(setting, code) 
+#define TB_IF_DEBUG_SETTING(setting, code)
 
 #endif // TB_RUNTIME_DEBUG_INFO
 

@@ -4,18 +4,17 @@
 
 #pragma once
 
-#include "tb_core.h"
-#include "tb_str.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "tb_core.h"
+#include "tb_str.h"
 
 namespace tb {
 
 // == Platform interface ===================================================
 
 /** TBSystem is porting interface for the underlaying OS. */
-class TBSystem
-{
+class TBSystem {
 public:
 	/** Get the system time in milliseconds since some undefined epoch. */
 	static double getTimeMS();
@@ -42,8 +41,7 @@ public:
 };
 
 /** TBClipboard is a porting interface for the clipboard. */
-class TBClipboard
-{
+class TBClipboard {
 public:
 	/** Empty the contents of the clipboard. */
 	static void empty();
@@ -60,13 +58,13 @@ public:
 };
 
 /** TBFile is a porting interface for file access. */
-class TBFile
-{
+class TBFile {
 public:
 	enum TBFileMode { MODE_READ };
 	static TBFile *open(const char *filename, TBFileMode mode);
 
-	virtual ~TBFile() {}
+	virtual ~TBFile() {
+	}
 	virtual long size() = 0;
 	virtual size_t read(void *buf, size_t elemSize, size_t count) = 0;
 };

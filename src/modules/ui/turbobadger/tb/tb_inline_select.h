@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "tb_widgets_listener.h"
-#include "tb_select_item.h"
 #include "tb_editfield.h"
+#include "tb_select_item.h"
+#include "tb_widgets_listener.h"
 
 namespace tb {
 
@@ -17,8 +17,7 @@ namespace tb {
 	FIX: Should also be possible to set a list of strings that will be
 		shown instead of numbers.
 */
-class TBInlineSelect : public TBWidget
-{
+class TBInlineSelect : public TBWidget {
 public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBInlineSelect, TBWidget);
@@ -27,19 +26,32 @@ public:
 	~TBInlineSelect();
 
 	/** Set along which axis the content should layouted. */
-	virtual void setAxis(AXIS axis) override { m_layout.setAxis(axis); }
-	virtual AXIS getAxis() const override { return m_layout.getAxis(); }
+	virtual void setAxis(AXIS axis) override {
+		m_layout.setAxis(axis);
+	}
+	virtual AXIS getAxis() const override {
+		return m_layout.getAxis();
+	}
 
 	void setLimits(int min, int max);
-	int getMinValue() const { return m_min; }
-	int getMaxValue() const { return m_max; }
+	int getMinValue() const {
+		return m_min;
+	}
+	int getMaxValue() const {
+		return m_max;
+	}
 
-	virtual void setValue(int value) override { setValueInternal(value, true); }
-	virtual int getValue() const override { return m_value; }
+	virtual void setValue(int value) override {
+		setValueInternal(value, true);
+	}
+	virtual int getValue() const override {
+		return m_value;
+	}
 
 	virtual void onInflate(const INFLATE_INFO &info) override;
 	virtual void onSkinChanged() override;
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
+
 protected:
 	TBButton m_buttons[2];
 	TBLayout m_layout;

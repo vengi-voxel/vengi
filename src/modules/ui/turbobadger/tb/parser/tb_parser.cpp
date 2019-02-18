@@ -3,23 +3,20 @@
  */
 
 #include "parser/tb_parser.h"
+#include "core/Assert.h"
 #include "tb_tempbuffer.h"
 #include "utf8/utf8.h"
-#include "core/Assert.h"
 #include <ctype.h>
 
 namespace tb {
 
-static bool is_hex(char c)
-{
+static bool is_hex(char c) {
 	return ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 }
 
-static uint32_t parse_hex(char *&src, int maxCount)
-{
+static uint32_t parse_hex(char *&src, int maxCount) {
 	uint32_t hex = 0;
-	for (int i = 0; i < maxCount; i++)
-	{
+	for (int i = 0; i < maxCount; i++) {
 		char c = *src;
 		if (!is_hex(c))
 			break;
@@ -30,31 +27,49 @@ static uint32_t parse_hex(char *&src, int maxCount)
 	return hex;
 }
 
-void unescapeString(char *str)
-{
+void unescapeString(char *str) {
 	// fast forward to any escape sequence
 	while (*str && *str != '\\')
 		str++;
 
 	char *dst = str, *src = str;
-	while (*src)
-	{
-		if (*src == '\\')
-		{
+	while (*src) {
+		if (*src == '\\') {
 			bool code_found = true;
-			switch (src[1])
-			{
-			case 'a': *dst = '\a'; break;
-			case 'b': *dst = '\b'; break;
-			case 'f': *dst = '\f'; break;
-			case 'n': *dst = '\n'; break;
-			case 'r': *dst = '\r'; break;
-			case 't': *dst = '\t'; break;
-			case 'v': *dst = '\v'; break;
-			case '0': *dst = '\0'; break;
-			case '\"': *dst = '\"'; break;
-			case '\'': *dst = '\''; break;
-			case '\\': *dst = '\\'; break;
+			switch (src[1]) {
+			case 'a':
+				*dst = '\a';
+				break;
+			case 'b':
+				*dst = '\b';
+				break;
+			case 'f':
+				*dst = '\f';
+				break;
+			case 'n':
+				*dst = '\n';
+				break;
+			case 'r':
+				*dst = '\r';
+				break;
+			case 't':
+				*dst = '\t';
+				break;
+			case 'v':
+				*dst = '\v';
+				break;
+			case '0':
+				*dst = '\0';
+				break;
+			case '\"':
+				*dst = '\"';
+				break;
+			case '\'':
+				*dst = '\'';
+				break;
+			case '\\':
+				*dst = '\\';
+				break;
 			case 'x': // \xXX
 			case 'u': // \uXXXX
 			{
@@ -68,8 +83,7 @@ void unescapeString(char *str)
 			default:
 				code_found = false;
 			}
-			if (code_found)
-			{
+			if (code_found) {
 				src += 2;
 				dst++;
 				continue;
@@ -82,10 +96,8 @@ void unescapeString(char *str)
 	*dst = 0;
 }
 
-bool is_white_space(const char *str)
-{
-	switch (*str)
-	{
+bool is_white_space(const char *str) {
+	switch (*str) {
 	case ' ':
 	case '\t':
 		return true;
@@ -96,13 +108,11 @@ bool is_white_space(const char *str)
 
 /** Return true if the given string starts with a color.
 	Ex: #ffdd00, #fd0 */
-bool is_start_of_color(const char *str)
-{
+bool is_start_of_color(const char *str) {
 	if (*str++ != '#')
 		return false;
 	int digit_count = 0;
-	while (is_hex(*str))
-	{
+	while (is_hex(*str)) {
 		str++;
 		digit_count++;
 	}
@@ -111,12 +121,10 @@ bool is_start_of_color(const char *str)
 
 /** Return true if the given string may be a node reference, such
 	as language strings or TBNodeRefTree references. */
-bool is_start_of_reference(const char *str)
-{
+bool is_start_of_reference(const char *str) {
 	if (*str++ != '@')
 		return false;
-	while (*str && *str != ' ')
-	{
+	while (*str && *str != ' ') {
 		// If the token ends with colon, it's not a value but a key.
 		if (*str == ':')
 			return false;
@@ -127,28 +135,24 @@ bool is_start_of_reference(const char *str)
 
 /** Check if the line is a comment or empty space. If it is, consume the leading
 	whitespace from line. */
-bool is_space_or_comment(char *&line)
-{
+bool is_space_or_comment(char *&line) {
 	char *tmp = line;
 	while (is_white_space(tmp))
 		tmp++;
-	if (*tmp == '#' || *tmp == 0)
-	{
+	if (*tmp == '#' || *tmp == 0) {
 		line = tmp;
 		return true;
 	}
 	return false;
 }
 
-bool is_pending_multiline(const char *str)
-{
+bool is_pending_multiline(const char *str) {
 	while (is_white_space(str))
 		str++;
 	return str[0] == '\\' && str[1] == 0;
 }
 
-bool isEndQuote(const char *bufStart, const char *buf, const char quoteType)
-{
+bool isEndQuote(const char *bufStart, const char *buf, const char quoteType) {
 	if (*buf != quoteType)
 		return false;
 	int num_backslashes = 0;
@@ -157,8 +161,7 @@ bool isEndQuote(const char *bufStart, const char *buf, const char quoteType)
 	return !(num_backslashes & 1);
 }
 
-TBParser::STATUS TBParser::read(TBParserStream *stream, TBParserTarget *target)
-{
+TBParser::STATUS TBParser::read(TBParserStream *stream, TBParserTarget *target) {
 	TBTempBuffer line, work;
 	if (!line.reserve(1024) || !work.reserve(1024))
 		return STATUS_OUT_OF_MEMORY;
@@ -168,30 +171,24 @@ TBParser::STATUS TBParser::read(TBParserStream *stream, TBParserTarget *target)
 	pending_multiline = false;
 	multi_line_sub_level = 0;
 
-	while (int read_len = stream->getMoreData((char *)work.getData(), work.getCapacity()))
-	{
+	while (int read_len = stream->getMoreData((char *)work.getData(), work.getCapacity())) {
 		char *buf = work.getData();
 
 		// Skip BOM (BYTE ORDER MARK) character, often in the beginning of UTF-8 documents.
-		if (current_line_nr == 1 && read_len > 3 &&
-			(uint8_t)buf[0] == 239 &&
-			(uint8_t)buf[1] == 187 &&
-			(uint8_t)buf[2] == 191)
-		{
+		if (current_line_nr == 1 && read_len > 3 && (uint8_t)buf[0] == 239 && (uint8_t)buf[1] == 187 &&
+			(uint8_t)buf[2] == 191) {
 			read_len -= 3;
 			buf += 3;
 		}
 
 		int line_pos = 0;
-		while (true)
-		{
+		while (true) {
 			// Find line end
 			int line_start = line_pos;
 			while (line_pos < read_len && buf[line_pos] != '\n')
 				line_pos++;
 
-			if (line_pos < read_len)
-			{
+			if (line_pos < read_len) {
 				// We have a line
 				// Skip preceding \r (if we have one)
 				int line_len = line_pos - line_start;
@@ -223,8 +220,7 @@ TBParser::STATUS TBParser::read(TBParserStream *stream, TBParserTarget *target)
 			break;
 		}
 	}
-	if (line.getAppendPos())
-	{
+	if (line.getAppendPos()) {
 		if (!line.append("", 1))
 			return STATUS_OUT_OF_MEMORY;
 		onLine(line.getData(), target);
@@ -233,16 +229,13 @@ TBParser::STATUS TBParser::read(TBParserStream *stream, TBParserTarget *target)
 	return STATUS_OK;
 }
 
-void TBParser::onLine(char *line, TBParserTarget *target)
-{
-	if (is_space_or_comment(line))
-	{
+void TBParser::onLine(char *line, TBParserTarget *target) {
+	if (is_space_or_comment(line)) {
 		if (*line == '#')
 			target->onComment(current_line_nr, line + 1);
 		return;
 	}
-	if (pending_multiline)
-	{
+	if (pending_multiline) {
 		onMultiline(line, target);
 		return;
 	}
@@ -253,23 +246,18 @@ void TBParser::onLine(char *line, TBParserTarget *target)
 		indent++;
 	line += indent;
 
-	if (indent - current_indent > 1)
-	{
+	if (indent - current_indent > 1) {
 		target->onError(current_line_nr, "Indentation error. (Line skipped)");
 		return;
 	}
 
-	if (indent > current_indent)
-	{
+	if (indent > current_indent) {
 		// FIX: Report indentation error if more than 1 higher!
 		core_assert(indent - current_indent == 1);
 		target->enter();
 		current_indent++;
-	}
-	else if (indent < current_indent)
-	{
-		while (indent < current_indent)
-		{
+	} else if (indent < current_indent) {
+		while (indent < current_indent) {
 			target->leave();
 			current_indent--;
 		}
@@ -277,8 +265,7 @@ void TBParser::onLine(char *line, TBParserTarget *target)
 
 	if (*line == 0)
 		return;
-	else
-	{
+	else {
 		char *token = line;
 		// Read line while consuming it and copy over to token buf
 		while (!is_white_space(line) && *line != 0)
@@ -291,29 +278,22 @@ void TBParser::onLine(char *line, TBParserTarget *target)
 		bool is_compact_line = token_len && token[token_len - 1] == ':';
 
 		TBValue value;
-		if (is_compact_line)
-		{
+		if (is_compact_line) {
 			token_len--;
 			token[token_len] = 0;
 
 			// Check if the first argument is not a child but the value for this token
-			if (*line == '[' || *line == '\"' || *line == '\'' ||
-				is_start_of_number(line) ||
-				is_start_of_color(line) ||
-				is_start_of_reference(line))
-			{
+			if (*line == '[' || *line == '\"' || *line == '\'' || is_start_of_number(line) || is_start_of_color(line) ||
+				is_start_of_reference(line)) {
 				consumeValue(value, line);
 
-				if (pending_multiline)
-				{
+				if (pending_multiline) {
 					// The value wrapped to the next line, so we should remember the token and continue.
 					multi_line_token.set(token);
 					return;
 				}
 			}
-		}
-		else if (token[token_len])
-		{
+		} else if (token[token_len]) {
 			token[token_len] = 0;
 			unescapeString(line);
 			value.setFromStringAuto(line, TBValue::SET_AS_STATIC);
@@ -325,11 +305,9 @@ void TBParser::onLine(char *line, TBParserTarget *target)
 	}
 }
 
-void TBParser::onCompactLine(char *line, TBParserTarget *target)
-{
+void TBParser::onCompactLine(char *line, TBParserTarget *target) {
 	target->enter();
-	while (*line)
-	{
+	while (*line) {
 		// consume any whitespace
 		while (is_white_space(line))
 			line++;
@@ -349,8 +327,7 @@ void TBParser::onCompactLine(char *line, TBParserTarget *target)
 		TBValue v;
 		consumeValue(v, line);
 
-		if (pending_multiline)
-		{
+		if (pending_multiline) {
 			// The value wrapped to the next line, so we should remember the token and continue.
 			multi_line_token.set(token);
 			// Since we need to call target->Leave when the multiline is ready, set multi_line_sub_level.
@@ -365,8 +342,7 @@ void TBParser::onCompactLine(char *line, TBParserTarget *target)
 	target->leave();
 }
 
-void TBParser::onMultiline(char *line, TBParserTarget *target)
-{
+void TBParser::onMultiline(char *line, TBParserTarget *target) {
 	// consume any whitespace
 	while (is_white_space(line))
 		line++;
@@ -374,8 +350,7 @@ void TBParser::onMultiline(char *line, TBParserTarget *target)
 	TBValue value;
 	consumeValue(value, line);
 
-	if (!pending_multiline)
-	{
+	if (!pending_multiline) {
 		// Ready with all lines
 		value.setString(multi_line_value.getData(), TBValue::SET_AS_STATIC);
 		target->onToken(current_line_nr, multi_line_token, value);
@@ -389,12 +364,10 @@ void TBParser::onMultiline(char *line, TBParserTarget *target)
 	}
 }
 
-void TBParser::consumeValue(TBValue &dstValue, char *&line)
-{
+void TBParser::consumeValue(TBValue &dstValue, char *&line) {
 	// Find value (As quoted string, or as auto)
 	char *value = line;
-	if (*line == '\"' || *line == '\'')
-	{
+	if (*line == '\"' || *line == '\'') {
 		const char quote_type = *line;
 		// Consume starting quote
 		line++;
@@ -415,9 +388,7 @@ void TBParser::consumeValue(TBValue &dstValue, char *&line)
 
 		unescapeString(value);
 		dstValue.setString(value, TBValue::SET_AS_STATIC);
-	}
-	else
-	{
+	} else {
 		// Find next comma or end
 		while (*line != ',' && *line != 0)
 			line++;

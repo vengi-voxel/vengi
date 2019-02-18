@@ -7,9 +7,7 @@
 
 namespace tb {
 
-TBWindow::TBWindow()
-	: m_settings(WINDOW_SETTINGS_DEFAULT)
-{
+TBWindow::TBWindow() : m_settings(WINDOW_SETTINGS_DEFAULT) {
 	setSkinBg(TBIDC("TBWindow"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 	addChild(&m_mover);
 	addChild(&m_resizer);
@@ -23,58 +21,47 @@ TBWindow::TBWindow()
 	setIsGroupRoot(true);
 }
 
-TBWindow::~TBWindow()
-{
+TBWindow::~TBWindow() {
 	m_resizer.removeFromParent();
 	m_mover.removeFromParent();
 	m_close_button.removeFromParent();
 	m_textfield.removeFromParent();
 }
 
-TBRect TBWindow::getResizeToFitContentRect(RESIZE_FIT fit)
-{
+TBRect TBWindow::getResizeToFitContentRect(RESIZE_FIT fit) {
 	PreferredSize ps = getPreferredSize();
 	int new_w = ps.pref_w;
 	int new_h = ps.pref_h;
-	if (fit == RESIZE_FIT_MinIMAL)
-	{
+	if (fit == RESIZE_FIT_MinIMAL) {
 		new_w = ps.min_w;
 		new_h = ps.min_h;
-	}
-	else if (fit == RESIZE_FIT_CURRENT_OR_NEEDED)
-	{
+	} else if (fit == RESIZE_FIT_CURRENT_OR_NEEDED) {
 		new_w = Clamp(getRect().w, ps.min_w, ps.max_w);
 		new_h = Clamp(getRect().h, ps.min_h, ps.max_h);
 	}
-	if (getParent())
-	{
+	if (getParent()) {
 		new_w = Min(new_w, getParent()->getRect().w);
 		new_h = Min(new_h, getParent()->getRect().h);
 	}
 	return TBRect(getRect().x, getRect().y, new_w, new_h);
 }
 
-void TBWindow::resizeToFitContent(RESIZE_FIT fit)
-{
+void TBWindow::resizeToFitContent(RESIZE_FIT fit) {
 	setRect(getResizeToFitContentRect(fit));
 }
 
-void TBWindow::close()
-{
+void TBWindow::close() {
 	die();
 }
 
-bool TBWindow::isActive() const
-{
+bool TBWindow::isActive() const {
 	return getState(WIDGET_STATE_SELECTED);
 }
 
-TBWindow *TBWindow::getTopMostOtherWindow(bool onlyActivableWindows)
-{
+TBWindow *TBWindow::getTopMostOtherWindow(bool onlyActivableWindows) {
 	TBWindow *other_window = nullptr;
 	TBWidget *sibling = getParent()->getLastChild();
-	while (sibling && !other_window)
-	{
+	while (sibling && !other_window) {
 		if (sibling != this)
 			other_window = TBSafeCast<TBWindow>(sibling);
 
@@ -86,12 +73,10 @@ TBWindow *TBWindow::getTopMostOtherWindow(bool onlyActivableWindows)
 	return other_window;
 }
 
-void TBWindow::activate()
-{
+void TBWindow::activate() {
 	if (!getParent() || !(m_settings & WINDOW_SETTINGS_CAN_ACTIVATE))
 		return;
-	if (isActive())
-	{
+	if (isActive()) {
 		// Already active, but we may still have lost focus,
 		// so ensure it comes back to us.
 		ensureFocus();
@@ -110,8 +95,7 @@ void TBWindow::activate()
 	ensureFocus();
 }
 
-bool TBWindow::ensureFocus()
-{
+bool TBWindow::ensureFocus() {
 	// If we already have focus, we're done.
 	if (focused_widget && isAncestorOf(focused_widget))
 		return true;
@@ -126,50 +110,38 @@ bool TBWindow::ensureFocus()
 	return success;
 }
 
-void TBWindow::deActivate()
-{
+void TBWindow::deActivate() {
 	if (!isActive())
 		return;
 	setWindowActiveState(false);
 }
 
-void TBWindow::setWindowActiveState(bool active)
-{
+void TBWindow::setWindowActiveState(bool active) {
 	setState(WIDGET_STATE_SELECTED, active);
 	m_mover.setState(WIDGET_STATE_SELECTED, active);
 }
 
-void TBWindow::setSettings(WINDOW_SETTINGS settings)
-{
+void TBWindow::setSettings(WINDOW_SETTINGS settings) {
 	if (settings == m_settings)
 		return;
 	m_settings = settings;
 
-	if (settings & WINDOW_SETTINGS_TITLEBAR)
-	{
+	if (settings & WINDOW_SETTINGS_TITLEBAR) {
 		if (!m_mover.getParent())
 			addChild(&m_mover);
-	}
-	else if (!(settings & WINDOW_SETTINGS_TITLEBAR))
-	{
+	} else if (!(settings & WINDOW_SETTINGS_TITLEBAR)) {
 		m_mover.removeFromParent();
 	}
-	if (settings & WINDOW_SETTINGS_RESIZABLE)
-	{
+	if (settings & WINDOW_SETTINGS_RESIZABLE) {
 		if (!m_resizer.getParent())
 			addChild(&m_resizer);
-	}
-	else if (!(settings & WINDOW_SETTINGS_RESIZABLE))
-	{
+	} else if (!(settings & WINDOW_SETTINGS_RESIZABLE)) {
 		m_resizer.removeFromParent();
 	}
-	if (settings & WINDOW_SETTINGS_CLOSE_BUTTON)
-	{
+	if (settings & WINDOW_SETTINGS_CLOSE_BUTTON) {
 		if (!m_close_button.getParent())
 			m_mover.addChild(&m_close_button);
-	}
-	else if (!(settings & WINDOW_SETTINGS_CLOSE_BUTTON))
-	{
+	} else if (!(settings & WINDOW_SETTINGS_CLOSE_BUTTON)) {
 		m_close_button.removeFromParent();
 	}
 
@@ -177,15 +149,13 @@ void TBWindow::setSettings(WINDOW_SETTINGS settings)
 	invalidate();
 }
 
-int TBWindow::getTitleHeight()
-{
+int TBWindow::getTitleHeight() {
 	if (m_settings & WINDOW_SETTINGS_TITLEBAR)
 		return m_mover.getPreferredSize().pref_h;
 	return 0;
 }
 
-TBRect TBWindow::getPaddingRect()
-{
+TBRect TBWindow::getPaddingRect() {
 	TBRect padding_rect = TBWidget::getPaddingRect();
 	int title_height = getTitleHeight();
 	padding_rect.y += title_height;
@@ -193,13 +163,11 @@ TBRect TBWindow::getPaddingRect()
 	return padding_rect;
 }
 
-PreferredSize TBWindow::onCalculatePreferredSize(const SizeConstraints &constraints)
-{
+PreferredSize TBWindow::onCalculatePreferredSize(const SizeConstraints &constraints) {
 	PreferredSize ps = onCalculatePreferredContentSize(constraints);
 
 	// Add window skin padding
-	if (TBSkinElement *e = getSkinBgElement())
-	{
+	if (TBSkinElement *e = getSkinBgElement()) {
 		ps.min_w += e->padding_left + e->padding_right;
 		ps.pref_w += e->padding_left + e->padding_right;
 		ps.min_h += e->padding_top + e->padding_bottom;
@@ -212,10 +180,8 @@ PreferredSize TBWindow::onCalculatePreferredSize(const SizeConstraints &constrai
 	return ps;
 }
 
-bool TBWindow::onEvent(const TBWidgetEvent &ev)
-{
-	if (ev.target == &m_close_button)
-	{
+bool TBWindow::onEvent(const TBWidgetEvent &ev) {
+	if (ev.target == &m_close_button) {
 		if (ev.type == EVENT_TYPE_CLICK)
 			close();
 		return true;
@@ -223,15 +189,13 @@ bool TBWindow::onEvent(const TBWidgetEvent &ev)
 	return false;
 }
 
-void TBWindow::onAdded()
-{
+void TBWindow::onAdded() {
 	// If we was added last, call Activate to update status etc.
 	if (getParent()->getLastChild() == this)
 		activate();
 }
 
-void TBWindow::onRemove()
-{
+void TBWindow::onRemove() {
 	deActivate();
 
 	// Active the top most other window
@@ -239,13 +203,11 @@ void TBWindow::onRemove()
 		active_window->activate();
 }
 
-void TBWindow::onChildAdded(TBWidget *child)
-{
+void TBWindow::onChildAdded(TBWidget *child) {
 	m_resizer.setZ(WIDGET_Z_TOP);
 }
 
-void TBWindow::onResized(int oldW, int oldH)
-{
+void TBWindow::onResized(int oldW, int oldH) {
 	// Apply gravity on children
 	TBWidget::onResized(oldW, oldH);
 	// Manually move our own decoration children
@@ -261,7 +223,8 @@ void TBWindow::onResized(int oldW, int oldH)
 	const int mover_padding_right = mover_rect.x + mover_rect.w - (mover_padding_rect.x + mover_padding_rect.w);
 	const int button_w = m_close_button.getPreferredSize().pref_w;
 	const int button_h = Max(m_close_button.getPreferredSize().pref_h, mover_padding_rect.h);
-	m_close_button.setRect(TBRect(mover_padding_rect.x + mover_padding_rect.w - button_w, mover_padding_rect.y, button_w, button_h));
+	m_close_button.setRect(
+		TBRect(mover_padding_rect.x + mover_padding_rect.w - button_w, mover_padding_rect.y, button_w, button_h));
 
 	TBRect title_rect = mover_padding_rect;
 	if (m_settings & WINDOW_SETTINGS_CLOSE_BUTTON)
