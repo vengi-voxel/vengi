@@ -75,6 +75,7 @@ set(TEST_SRCS
 	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
 	tests/PagedVolumeBufferedSamplerTest.cpp
+	tests/RawVolumeWrapperTest.cpp
 	tests/VolumeMergerTest.cpp
 	tests/VolumeRotatorTest.cpp
 	tests/VolumeCropperTest.cpp
