@@ -155,17 +155,19 @@ bool VoxEditWindow::init() {
 
 	_showAABB = getWidgetByType<tb::TBCheckBox>("optionshowaabb");
 	_showGrid = getWidgetByType<tb::TBCheckBox>("optionshowgrid");
+	_voxelSize = getWidgetByType<tb::TBInlineSelect>("optionvoxelsize");
 	_showAxis = getWidgetByType<tb::TBCheckBox>("optionshowaxis");
 	_showLockAxis = getWidgetByType<tb::TBCheckBox>("optionshowlockaxis");
 	_renderShadow = getWidgetByType<tb::TBCheckBox>("optionrendershadow");
 	if (_showAABB == nullptr || _showGrid == nullptr || _showLockAxis == nullptr
-	 || _showAxis == nullptr || _renderShadow == nullptr) {
+	 || _showAxis == nullptr || _renderShadow == nullptr || _voxelSize == nullptr) {
 		Log::error("Could not load all required widgets");
 		return false;
 	}
 
 	const render::GridRenderer& gridRenderer = vps().gridRenderer();
 	_showAABB->setValue(gridRenderer.renderAABB() ? 1 : 0);
+	_voxelSize->setValue(vps().gridResolution());
 	_showGrid->setValue(gridRenderer.renderGrid() ? 1 : 0);
 	_showAxis->setValue(vps().renderAxis() ? 1 : 0);
 	_showLockAxis->setValue(vps().renderLockAxis() ? 1 : 0);
@@ -445,6 +447,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 			viewport->camera().setRotationType(type);
 			return true;
 		}
+		return false;
 	} else if (id == TBIDC("cammode")) {
 		tb::TBWidget *parent = widget->getParent();
 		if (Viewport *viewport = parent->safeCastTo<Viewport>()) {
@@ -458,6 +461,10 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 			viewport->camera().setPolygonMode(mode);
 			return true;
 		}
+		return false;
+	} else if (id == TBIDC("optionvoxelsize")) {
+		vps().setGridResolution(widget->getValue());
+		return true;
 	} else if (id == TBIDC("toggleviewport")) {
 		const int value = widget->getValue();
 		setQuadViewport(value == 1);
@@ -513,7 +520,9 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		pos.z = val;
 		vps().setCursorPosition(pos, true);
 		return true;
-	} else if (ev.isAny(TBIDC("actionplace") && widget->getValue() == 1)) {
+	}
+
+	if (ev.isAny(TBIDC("actionplace") && widget->getValue() == 1)) {
 		vps().setModifierType(ModifierType::Place);
 		return true;
 	} else if (ev.isAny(TBIDC("actiondelete")) && widget->getValue() == 1) {
@@ -616,6 +625,7 @@ void VoxEditWindow::onProcess() {
 	if (_mirrorZ != nullptr) {
 		_mirrorZ->setValue(mirrorAxis == math::Axis::Z);
 	}
+	//_voxelSize->setValue(vps().gridResolution());
 }
 
 bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {

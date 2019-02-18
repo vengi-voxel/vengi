@@ -60,6 +60,7 @@ private:
 	tb::TBGenericStringItemSource _plantItems;
 	tb::TBGenericStringItemSource _buildingItems;
 
+	tb::TBInlineSelect *_voxelSize = nullptr;
 	tb::TBCheckBox *_showGrid = nullptr;
 	tb::TBCheckBox *_showAABB = nullptr;
 	tb::TBCheckBox *_showAxis = nullptr;

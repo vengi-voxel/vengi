@@ -173,6 +173,8 @@ TBLayout: distribution: gravity, axis: y
 								TBCheckBox: id: optionshowaabb
 							TBClickLabel: text: Shadow
 								TBCheckBox: id: optionrendershadow
+							TBClickLabel: text: Voxel size
+								TBInlineSelect: id: optionvoxelsize, min: 1, max: 64
 
 			TBLayout: distribution: gravity
 				TBContainer: skin: container, gravity: left right
