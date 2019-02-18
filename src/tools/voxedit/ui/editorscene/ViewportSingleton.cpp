@@ -608,6 +608,7 @@ bool ViewportSingleton::extractVolume() {
 	if (_extract) {
 		Log::debug("Extract the mesh");
 		_extract = false;
+		// TODO: only extract the first n entries per frame
 		for (const voxel::Region& region : _extractRegions) {
 			if (!_volumeRenderer.extract(ModelVolumeIndex, region)) {
 				Log::error("Failed to extract the model mesh");
