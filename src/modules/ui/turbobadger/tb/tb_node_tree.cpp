@@ -18,7 +18,7 @@ TBNode::~TBNode() {
 // static
 TBNode *TBNode::create(const char *name) {
 	TBNode *n = new TBNode;
-	if (!n || !(n->m_name = SDL_strdup(name))) {
+	if ((n == nullptr) || ((n->m_name = SDL_strdup(name)) == nullptr)) {
 		delete n;
 		return nullptr;
 	}
@@ -28,7 +28,7 @@ TBNode *TBNode::create(const char *name) {
 // static
 TBNode *TBNode::create(const char *name, int nameLen) {
 	TBNode *n = new TBNode;
-	if (!n || !(n->m_name = (char *)SDL_malloc(nameLen + 1))) {
+	if ((n == nullptr) || ((n->m_name = (char *)SDL_malloc(nameLen + 1)) == nullptr)) {
 		delete n;
 		return nullptr;
 	}
@@ -39,22 +39,24 @@ TBNode *TBNode::create(const char *name, int nameLen) {
 
 // static
 const char *TBNode::getNextNodeSeparator(const char *request) {
-	while (*request != 0 && *request != '>')
+	while (*request != 0 && *request != '>') {
 		request++;
+	}
 	return request;
 }
 
 TBNode *TBNode::getNode(const char *request, GET_MISS_POLICY mp) {
 	// Iterate one node deeper for each sub request (non recursive)
 	TBNode *n = this;
-	while (*request && n) {
+	while ((*request != 0) && (n != nullptr)) {
 		const char *nextend = getNextNodeSeparator(request);
 		int name_len = nextend - request;
 		TBNode *n_child = n->getNodeInternal(request, name_len);
-		if (!n_child && mp == GET_MISS_POLICY_CREATE) {
+		if ((n_child == nullptr) && mp == GET_MISS_POLICY_CREATE) {
 			n_child = n->create(request, name_len);
-			if (n_child)
+			if (n_child != nullptr) {
 				n->add(n_child);
+			}
 		}
 		n = n_child;
 		request = *nextend == 0 ? nextend : nextend + 1;
@@ -64,31 +66,35 @@ TBNode *TBNode::getNode(const char *request, GET_MISS_POLICY mp) {
 
 TBNode *TBNode::getNodeFollowRef(const char *request, GET_MISS_POLICY mp) {
 	TBNode *node = getNode(request, mp);
-	if (node)
+	if (node != nullptr) {
 		node = TBNodeRefTree::followNodeRef(node);
+	}
 	return node;
 }
 
 TBNode *TBNode::getNodeInternal(const char *name, int nameLen) const {
-	for (TBNode *n = getFirstChild(); n; n = n->getNext()) {
-		if (SDL_strncmp(n->m_name, name, nameLen) == 0 && n->m_name[nameLen] == 0)
+	for (TBNode *n = getFirstChild(); n != nullptr; n = n->getNext()) {
+		if (SDL_strncmp(n->m_name, name, nameLen) == 0 && n->m_name[nameLen] == 0) {
 			return n;
+		}
 	}
 	return nullptr;
 }
 
 bool TBNode::cloneChildren(TBNode *source, bool followRefs) {
 	TBNode *item = source->getFirstChild();
-	while (item) {
+	while (item != nullptr) {
 		TBNode *new_child = create(item->m_name);
-		if (!new_child)
+		if (new_child == nullptr) {
 			return false;
+		}
 
 		new_child->m_value.copy(followRefs ? item->getValueFollowRef() : item->m_value);
 		add(new_child);
 
-		if (!new_child->cloneChildren(item, followRefs))
+		if (!new_child->cloneChildren(item, followRefs)) {
 			return false;
+		}
 		item = item->getNext();
 	}
 	return true;
@@ -100,12 +106,12 @@ TBValue &TBNode::getValueFollowRef() {
 
 int TBNode::getValueInt(const char *request, int def) {
 	TBNode *n = getNodeFollowRef(request);
-	return n ? n->m_value.getInt() : def;
+	return n != nullptr ? n->m_value.getInt() : def;
 }
 
 float TBNode::getValueFloat(const char *request, float def) {
 	TBNode *n = getNodeFollowRef(request);
-	return n ? n->m_value.getFloat() : def;
+	return n != nullptr ? n->m_value.getFloat() : def;
 }
 
 const char *TBNode::getValueString(const char *request, const char *def) {
@@ -114,8 +120,9 @@ const char *TBNode::getValueString(const char *request, const char *def) {
 		// looked up in GetNode/ResolveNode.
 		if (node->getValue().isString()) {
 			const char *string = node->getValue().getString();
-			if (*string == '@' && *TBNode::getNextNodeSeparator(string) == 0)
+			if (*string == '@' && *TBNode::getNextNodeSeparator(string) == 0) {
 				string = g_tb_lng->getString(string + 1);
+			}
 			return string;
 		}
 		return node->getValue().getString();
@@ -125,7 +132,7 @@ const char *TBNode::getValueString(const char *request, const char *def) {
 
 const char *TBNode::getValueStringRaw(const char *request, const char *def) {
 	TBNode *n = getNodeFollowRef(request);
-	return n ? n->m_value.getString() : def;
+	return n != nullptr ? n->m_value.getString() : def;
 }
 
 class FileParser : public TBParserStream {
@@ -138,7 +145,7 @@ public:
 		TBParser p;
 		TBParser::STATUS status = p.read(this, target);
 		delete f;
-		return status == TBParser::STATUS_OK ? true : false;
+		return status == TBParser::STATUS_OK;
 	}
 	virtual int getMoreData(char *buf, int bufLen) {
 		return f->read(buf, 1, bufLen);
@@ -155,7 +162,7 @@ public:
 		m_data_len = dataLen;
 		TBParser p;
 		TBParser::STATUS status = p.read(this, target);
-		return status == TBParser::STATUS_OK ? true : false;
+		return status == TBParser::STATUS_OK;
 	}
 	virtual int getMoreData(char *buf, int bufLen) {
 		const int consume = Min(bufLen, m_data_len);
@@ -184,25 +191,28 @@ public:
 	virtual void onComment(int lineNr, const char *comment) {
 	}
 	virtual void onToken(int lineNr, const char *name, TBValue &value) {
-		if (!m_target_node)
+		if (m_target_node == nullptr) {
 			return;
-		if (SDL_strcmp(name, "@file") == 0)
+		}
+		if (SDL_strcmp(name, "@file") == 0) {
 			includeFile(lineNr, value.getString());
-		else if (SDL_strcmp(name, "@include") == 0)
+		} else if (SDL_strcmp(name, "@include") == 0) {
 			includeRef(lineNr, value.getString());
-		else if (TBNode *n = TBNode::create(name)) {
+		} else if (TBNode *n = TBNode::create(name)) {
 			n->m_value.takeOver(value);
 			m_target_node->add(n);
 		}
 	}
 	virtual void enter() {
-		if (m_target_node)
+		if (m_target_node != nullptr) {
 			m_target_node = m_target_node->getLastChild();
+		}
 	}
 	virtual void leave() {
 		core_assert(m_target_node != m_root_node);
-		if (m_target_node)
+		if (m_target_node != nullptr) {
 			m_target_node = m_target_node->m_parent;
+		}
 	}
 	void includeFile(int lineNr, const char *filename) {
 		// Read the included file into a new TBNode and then
@@ -237,15 +247,16 @@ public:
 
 			// Detect cycles
 			TBNode *cycle_detection = m_target_node;
-			while (cycle_detection && refnode) {
-				if (cycle_detection == refnode)
+			while ((cycle_detection != nullptr) && (refnode != nullptr)) {
+				if (cycle_detection == refnode) {
 					refnode = nullptr; // We have a cycle, so just fail the inclusion.
+				}
 				cycle_detection = cycle_detection->getParent();
 			}
 		}
-		if (refnode)
+		if (refnode != nullptr) {
 			m_target_node->cloneChildren(refnode);
-		else {
+		} else {
 			TBStr err;
 			err.setFormatted("Include \"%s\" was not found!", refstr);
 			onError(lineNr, err);
@@ -259,8 +270,9 @@ private:
 };
 
 bool TBNode::readFile(const char *filename, TB_NODE_READ_FLAGS flags) {
-	if (!(flags & TB_NODE_READ_FLAGS_APPEND))
+	if ((flags & TB_NODE_READ_FLAGS_APPEND) == 0U) {
 		clear();
+	}
 	FileParser p;
 	TBNodeTarget t(this, filename);
 	if (p.read(filename, &t)) {
@@ -275,8 +287,9 @@ bool TBNode::readData(const char *data, TB_NODE_READ_FLAGS flags) {
 }
 
 bool TBNode::readData(const char *data, int dataLen, TB_NODE_READ_FLAGS flags) {
-	if (!(flags & TB_NODE_READ_FLAGS_APPEND))
+	if ((flags & TB_NODE_READ_FLAGS_APPEND) == 0U) {
 		clear();
+	}
 	DataParser p;
 	TBNodeTarget t(this, "{data}");
 	if (!p.read(data, dataLen, &t)) {

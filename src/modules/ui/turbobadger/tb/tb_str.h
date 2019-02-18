@@ -37,7 +37,7 @@ public:
 		return strcmp(s, str);
 	}
 	inline bool equals(const char *str) const {
-		return !strcmp(s, str);
+		return strcmp(s, str) == 0;
 	}
 
 	inline char operator[](int n) const {
@@ -78,8 +78,8 @@ public:
 
 	void remove(int ofs, int len);
 	bool insert(int ofs, const char *ins, int ins_len = TB_ALL_TO_TERMINATION);
-	bool append(const char *ins, int ins_len = TB_ALL_TO_TERMINATION) {
-		return insert(strlen(s), ins, ins_len);
+	bool append(const char *ins, int insLen = TB_ALL_TO_TERMINATION) {
+		return insert(strlen(s), ins, insLen);
 	}
 
 	inline operator char *() const {

@@ -84,23 +84,26 @@ TBScrollContainer::~TBScrollContainer() {
 }
 
 void TBScrollContainer::setAdaptToContentSize(bool adapt) {
-	if (m_adapt_to_content_size == adapt)
+	if (m_adapt_to_content_size == adapt) {
 		return;
+	}
 	invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 	m_adapt_to_content_size = adapt;
 	invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 }
 
 void TBScrollContainer::setAdaptContentSize(bool adapt) {
-	if (m_adapt_content_size == adapt)
+	if (m_adapt_content_size == adapt) {
 		return;
+	}
 	m_adapt_content_size = adapt;
 	invalidateLayout(INVALIDATE_LAYOUT_TARGET_ONLY);
 }
 
 void TBScrollContainer::setScrollMode(SCROLL_MODE mode) {
-	if (mode == m_mode)
+	if (mode == m_mode) {
 		return;
+	}
 	m_mode = mode;
 	invalidateLayout(INVALIDATE_LAYOUT_TARGET_ONLY);
 }
@@ -110,8 +113,9 @@ void TBScrollContainer::scrollTo(int x, int y) {
 	int old_y = m_scrollbar_y.getValue();
 	m_scrollbar_x.setValue(x);
 	m_scrollbar_y.setValue(y);
-	if (old_x != m_scrollbar_x.getValue() || old_y != m_scrollbar_y.getValue())
+	if (old_x != m_scrollbar_x.getValue() || old_y != m_scrollbar_y.getValue()) {
 		invalidate();
+	}
 }
 
 TBWidget::ScrollInfo TBScrollContainer::getScrollInfo() {
@@ -128,17 +132,20 @@ TBWidget::ScrollInfo TBScrollContainer::getScrollInfo() {
 void TBScrollContainer::invalidateLayout(INVALIDATE_LAYOUT il) {
 	m_layout_is_invalid = true;
 	// No recursion up to parents here unless we adapt to content size.
-	if (m_adapt_to_content_size)
+	if (m_adapt_to_content_size) {
 		TBWidget::invalidateLayout(il);
+	}
 }
 
 TBRect TBScrollContainer::getPaddingRect() {
 	int visible_w = getRect().w;
 	int visible_h = getRect().h;
-	if (m_scrollbar_x.getOpacity())
+	if (m_scrollbar_x.getOpacity() != 0.0F) {
 		visible_h -= m_scrollbar_x.getPreferredSize().pref_h;
-	if (m_scrollbar_y.getOpacity())
+	}
+	if (m_scrollbar_y.getOpacity() != 0.0F) {
 		visible_w -= m_scrollbar_y.getPreferredSize().pref_w;
+	}
 	return TBRect(0, 0, visible_w, visible_h);
 }
 
@@ -169,31 +176,34 @@ bool TBScrollContainer::onEvent(const TBWidgetEvent &ev) {
 		invalidate();
 		onScroll(m_scrollbar_x.getValue(), m_scrollbar_y.getValue());
 		return true;
-	} else if (ev.type == EVENT_TYPE_WHEEL && ev.modifierkeys == TB_MODIFIER_NONE) {
+	}
+	if (ev.type == EVENT_TYPE_WHEEL && ev.modifierkeys == TB_MODIFIER_NONE) {
 		double old_val_y = m_scrollbar_y.getValueDouble();
 		m_scrollbar_y.setValueDouble(old_val_y + ev.delta_y * TBSystem::getPixelsPerLine());
 		double old_val_x = m_scrollbar_x.getValueDouble();
 		m_scrollbar_x.setValueDouble(old_val_x + ev.delta_x * TBSystem::getPixelsPerLine());
 		return (m_scrollbar_x.getValueDouble() != old_val_x || m_scrollbar_y.getValueDouble() != old_val_y);
-	} else if (ev.type == EVENT_TYPE_KEY_DOWN) {
-		if (ev.special_key == TB_KEY_LEFT && m_scrollbar_x.canScrollNegative())
+	}
+	if (ev.type == EVENT_TYPE_KEY_DOWN) {
+		if (ev.special_key == TB_KEY_LEFT && m_scrollbar_x.canScrollNegative()) {
 			scrollBySmooth(-TBSystem::getPixelsPerLine(), 0);
-		else if (ev.special_key == TB_KEY_RIGHT && m_scrollbar_x.canScrollPositive())
+		} else if (ev.special_key == TB_KEY_RIGHT && m_scrollbar_x.canScrollPositive()) {
 			scrollBySmooth(TBSystem::getPixelsPerLine(), 0);
-		else if (ev.special_key == TB_KEY_UP && m_scrollbar_y.canScrollNegative())
+		} else if (ev.special_key == TB_KEY_UP && m_scrollbar_y.canScrollNegative()) {
 			scrollBySmooth(0, -TBSystem::getPixelsPerLine());
-		else if (ev.special_key == TB_KEY_DOWN && m_scrollbar_y.canScrollPositive())
+		} else if (ev.special_key == TB_KEY_DOWN && m_scrollbar_y.canScrollPositive()) {
 			scrollBySmooth(0, TBSystem::getPixelsPerLine());
-		else if (ev.special_key == TB_KEY_PAGE_UP && m_scrollbar_y.canScrollNegative())
+		} else if (ev.special_key == TB_KEY_PAGE_UP && m_scrollbar_y.canScrollNegative()) {
 			scrollBySmooth(0, -getPaddingRect().h);
-		else if (ev.special_key == TB_KEY_PAGE_DOWN && m_scrollbar_y.canScrollPositive())
+		} else if (ev.special_key == TB_KEY_PAGE_DOWN && m_scrollbar_y.canScrollPositive()) {
 			scrollBySmooth(0, getPaddingRect().h);
-		else if (ev.special_key == TB_KEY_HOME)
+		} else if (ev.special_key == TB_KEY_HOME) {
 			scrollToSmooth(m_scrollbar_x.getValue(), 0);
-		else if (ev.special_key == TB_KEY_END)
+		} else if (ev.special_key == TB_KEY_END) {
 			scrollToSmooth(m_scrollbar_x.getValue(), (int)m_scrollbar_y.getMaxValue());
-		else
+		} else {
 			return false;
+		}
 		return true;
 	}
 	return false;
@@ -205,8 +215,9 @@ void TBScrollContainer::onProcess() {
 }
 
 void TBScrollContainer::validateLayout(const SizeConstraints &constraints) {
-	if (!m_layout_is_invalid)
+	if (!m_layout_is_invalid) {
 		return;
+	}
 	m_layout_is_invalid = false;
 
 	// Layout scrollbars (no matter if they are visible or not)
@@ -225,16 +236,18 @@ void TBScrollContainer::validateLayout(const SizeConstraints &constraints) {
 
 		TBScrollBarVisibility visibility = TBScrollBarVisibility::solve(m_mode, ps.pref_w, ps.pref_h, getRect().w,
 																		getRect().h, scrollbar_x_h, scrollbar_y_w);
-		m_scrollbar_x.setOpacity(visibility.x_on ? 1.f : 0.f);
-		m_scrollbar_y.setOpacity(visibility.y_on ? 1.f : 0.f);
+		m_scrollbar_x.setOpacity(visibility.x_on ? 1.F : 0.F);
+		m_scrollbar_y.setOpacity(visibility.y_on ? 1.F : 0.F);
 		m_root.setRect(TBRect(0, 0, visibility.visible_w, visibility.visible_h));
 
-		int content_w, content_h;
+		int content_w;
+		int content_h;
 		if (m_adapt_content_size) {
 			content_w = Max(ps.pref_w, m_root.getRect().w);
 			content_h = Max(ps.pref_h, m_root.getRect().h);
-			if (!visibility.x_on && m_root.getRect().w < ps.pref_w)
+			if (!visibility.x_on && m_root.getRect().w < ps.pref_w) {
 				content_w = Min(ps.pref_w, m_root.getRect().w);
+			}
 		} else {
 			content_w = ps.pref_w;
 			content_h = ps.pref_h;

@@ -21,8 +21,8 @@ class TBMessageWindowSettings {
 public:
 	TBMessageWindowSettings() : msg(TB_MSG_OK), dimmer(false), styling(false) {
 	}
-	TBMessageWindowSettings(TB_MSG msg, TBID icon_skin)
-		: msg(msg), icon_skin(icon_skin), dimmer(false), styling(false), align(TB_TEXT_ALIGN_LEFT) {
+	TBMessageWindowSettings(TB_MSG msg, const TBID &iconSkin)
+		: msg(msg), icon_skin(iconSkin), dimmer(false), styling(false), align(TB_TEXT_ALIGN_LEFT) {
 	}
 
 public:
@@ -47,7 +47,7 @@ public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBMessageWindow, TBWindow);
 
-	TBMessageWindow(TBWidget *target, TBID id);
+	TBMessageWindow(TBWidget *target, const TBID &id);
 	virtual ~TBMessageWindow();
 
 	bool show(const char *title, const char *message, TBMessageWindowSettings *settings = nullptr);
@@ -60,7 +60,7 @@ public:
 	virtual void onDie() override;
 
 private:
-	void addButton(TBID id, bool focused);
+	void addButton(const TBID &id, bool focused);
 	// TBWidgetListener
 	virtual void onWidgetDelete(TBWidget *widget) override;
 	virtual bool onWidgetDying(TBWidget *widget) override;

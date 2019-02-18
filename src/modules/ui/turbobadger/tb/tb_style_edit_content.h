@@ -49,7 +49,7 @@ public:
 /** A horizontal line for TBStyleEdit. */
 class TBTextFragmentContentHR : public TBTextFragmentContent {
 public:
-	TBTextFragmentContentHR(int32_t width_in_percent, int32_t height);
+	TBTextFragmentContentHR(int32_t widthInPercent, int32_t height);
 
 	virtual void paint(const TBPaintProps *props, TBTextFragment *fragment);
 	virtual int32_t getWidth(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment);

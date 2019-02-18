@@ -102,8 +102,8 @@ public:
 	}
 
 	/** Set if a fadeout should be painter where the layout overflows or not. */
-	void setPaintOverflowFadeout(bool paint_fadeout) {
-		m_packed.paint_overflow_fadeout = paint_fadeout;
+	void setPaintOverflowFadeout(bool paintFadeout) {
+		m_packed.paint_overflow_fadeout = paintFadeout;
 	}
 
 	/** Set the layout size mode. See LAYOUT_SIZE. */
@@ -133,7 +133,7 @@ public:
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
 	virtual void onPaintChildren(const PaintProps &paint_props) override;
 	virtual void onProcess() override;
-	virtual void onResized(int old_w, int old_h) override;
+	virtual void onResized(int oldW, int oldH) override;
 	virtual void onInflateChild(TBWidget *child) override;
 	virtual void getChildTranslation(int &x, int &y) const override;
 	virtual void scrollTo(int x, int y) override;

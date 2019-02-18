@@ -16,35 +16,40 @@ void TBWidgetValueConnection::connect(TBWidgetValue *value, TBWidget *widget) {
 }
 
 void TBWidgetValueConnection::unconnect() {
-	if (m_value)
+	if (m_value != nullptr) {
 		m_value->m_connections.remove(this);
+	}
 	m_value = nullptr;
 	m_widget = nullptr;
 }
 
 void TBWidgetValueConnection::syncFromWidget(TBWidget *sourceWidget) {
-	if (m_value)
+	if (m_value != nullptr) {
 		m_value->setFromWidget(sourceWidget);
+	}
 }
 
 TBWidgetValue::TBWidgetValue(const TBID &name, TBValue::TYPE type) : m_name(name), m_value(type), m_syncing(false) {
 }
 
 TBWidgetValue::~TBWidgetValue() {
-	while (m_connections.getFirst())
+	while (m_connections.getFirst() != nullptr) {
 		m_connections.getFirst()->unconnect();
+	}
 }
 
 void TBWidgetValue::setFromWidget(TBWidget *sourceWidget) {
-	if (m_syncing)
+	if (m_syncing) {
 		return; // We ended up here because syncing is in progress.
+	}
 
 	// Get the value in the format
 	TBStr text;
 	switch (m_value.getType()) {
 	case TBValue::TYPE_STRING:
-		if (!sourceWidget->getText(text))
+		if (!sourceWidget->getText(text)) {
 			return;
+		}
 		m_value.setString(text, TBValue::SET_NEW_COPY);
 		break;
 	case TBValue::TYPE_NULL:
@@ -69,15 +74,17 @@ bool TBWidgetValue::syncToWidgets(TBWidget *excludeWidget) {
 	bool fail = false;
 	TBLinkListOf<TBWidgetValueConnection>::Iterator iter = m_connections.iterateForward();
 	while (TBWidgetValueConnection *connection = iter.getAndStep()) {
-		if (connection->m_widget != excludeWidget)
+		if (connection->m_widget != excludeWidget) {
 			fail |= !syncToWidget(connection->m_widget);
+		}
 	}
 	return !fail;
 }
 
 bool TBWidgetValue::syncToWidget(TBWidget *dstWidget) {
-	if (m_syncing)
+	if (m_syncing) {
 		return true; // We ended up here because syncing is in progress.
+	}
 
 	m_syncing = true;
 	bool ret = true;
@@ -121,21 +128,23 @@ void TBWidgetValue::setDouble(double value) {
 /*extern*/ TBValueGroup g_value_group;
 
 TBWidgetValue *TBValueGroup::createValueIfNeeded(const TBID &name, TBValue::TYPE type) {
-	if (TBWidgetValue *val = getValue(name))
+	if (TBWidgetValue *val = getValue(name)) {
 		return val;
+	}
 	if (TBWidgetValue *val = new TBWidgetValue(name, type)) {
-		if (m_values.add(name, val))
+		if (m_values.add(name, val)) {
 			return val;
-		else
-			delete val;
+		}
+		{ delete val; }
 	}
 	return nullptr;
 }
 
 void TBValueGroup::invokeOnValueChanged(const TBWidgetValue *value) {
 	TBLinkListOf<TBValueGroupListener>::Iterator iter = m_listeners.iterateForward();
-	while (TBValueGroupListener *listener = iter.getAndStep())
+	while (TBValueGroupListener *listener = iter.getAndStep()) {
 		listener->onValueChanged(this, value);
+	}
 }
 
 } // namespace tb

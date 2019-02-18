@@ -24,14 +24,14 @@ public:
 	}
 
 	/** Align relative to the given position (coordinates relative to the root widget). */
-	TBPopupAlignment(const TBPoint &pos_in_root, TB_ALIGN align = TB_ALIGN_BOTTOM)
-		: pos_in_root(pos_in_root), align(align), expand_to_target_width(true) {
+	TBPopupAlignment(const TBPoint &posInRoot, TB_ALIGN align = TB_ALIGN_BOTTOM)
+		: pos_in_root(posInRoot), align(align), expand_to_target_width(true) {
 	}
 
 	/** Align relative to the given position (coordinates relative to the root widget).
 		Applies an additional offset. */
-	TBPopupAlignment(const TBPoint &pos_in_root, const TBPoint &pos_offset)
-		: pos_in_root(pos_in_root), pos_offset(pos_offset), align(TB_ALIGN_BOTTOM), expand_to_target_width(true) {
+	TBPopupAlignment(const TBPoint &posInRoot, const TBPoint &posOffset)
+		: pos_in_root(posInRoot), pos_offset(posOffset), align(TB_ALIGN_BOTTOM), expand_to_target_width(true) {
 	}
 
 	/** Calculate a good rect for the given popup window using its preferred size and

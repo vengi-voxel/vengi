@@ -5,6 +5,7 @@
 #pragma once
 
 #include "tb_image_manager.h"
+#include "tb_object.h"
 #include "tb_widgets.h"
 
 namespace tb {
@@ -30,7 +31,7 @@ public:
 	virtual PreferredSize onCalculatePreferredContentSize(const SizeConstraints &constraints) override;
 
 	virtual void onInflate(const INFLATE_INFO &info) override;
-	virtual void onPaint(const PaintProps &paint_props) override;
+	virtual void onPaint(const PaintProps &paintProps) override;
 
 private:
 	TBImage m_image;

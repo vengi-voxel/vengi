@@ -30,7 +30,7 @@ public:
 
 	/** Set what should toggle when the value changes. */
 	void setToggle(TOGGLE toggle);
-	TOGGLE GetToggle() const {
+	TOGGLE getToggle() const {
 		return m_toggle;
 	}
 
@@ -42,7 +42,7 @@ public:
 
 	/** Get the current value, after checking the invert mode. */
 	bool getIsOn() const {
-		return m_invert ? !m_value : !!m_value;
+		return m_invert ? m_value == 0 : !(m_value == 0);
 	}
 
 	/** Set the value of this widget. 1 will turn on the toggle, 0 will turn it off (or
@@ -104,8 +104,8 @@ public:
 	}
 
 	/** Set if the section should be scrolled into view after next layout. */
-	void setPendingScrollIntoView(bool pending_scroll) {
-		m_pending_scroll = pending_scroll;
+	void setPendingScrollIntoView(bool pendingScroll) {
+		m_pending_scroll = pendingScroll;
 	}
 
 	/** Set the text of the text field. */

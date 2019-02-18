@@ -12,7 +12,7 @@ namespace tb {
 
 // == TBMessageWindow =======================================================================================
 
-TBMessageWindow::TBMessageWindow(TBWidget *target, TBID id) : m_target(target) {
+TBMessageWindow::TBMessageWindow(TBWidget *target, const TBID &id) : m_target(target) {
 	TBWidgetListener::addGlobalListener(this);
 	setID(id);
 }
@@ -27,12 +27,14 @@ TBMessageWindow::~TBMessageWindow() {
 
 bool TBMessageWindow::show(const char *title, const char *message, TBMessageWindowSettings *settings) {
 	TBWidget *target = m_target.get();
-	if (!target)
+	if (target == nullptr) {
 		return false;
+	}
 
 	TBMessageWindowSettings default_settings;
-	if (!settings)
+	if (settings == nullptr) {
 		settings = &default_settings;
+	}
 
 	TBWidget *root = target->getParentRoot();
 
@@ -41,8 +43,9 @@ bool TBMessageWindow::show(const char *title, const char *message, TBMessageWind
 						 "		TBSkinImage: id: 2\n"
 						 "		TBEditField: multiline: 1, readonly: 1, id: 1\n"
 						 "	TBLayout: distribution-position: right bottom, id: 3\n";
-	if (!g_widgets_reader->loadData(getContentRoot(), source))
+	if (!g_widgets_reader->loadData(getContentRoot(), source)) {
 		return false;
+	}
 
 	setText(title);
 
@@ -93,16 +96,18 @@ bool TBMessageWindow::show(const char *title, const char *message, TBMessageWind
 	return true;
 }
 
-void TBMessageWindow::addButton(TBID id, bool focused) {
+void TBMessageWindow::addButton(const TBID &id, bool focused) {
 	TBLayout *layout = getWidgetByIDAndType<TBLayout>(3);
-	if (!layout)
+	if (layout == nullptr) {
 		return;
+	}
 	if (TBButton *btn = new TBButton) {
 		btn->setID(id);
 		btn->setText(g_tb_lng->getString(btn->getID()));
 		layout->addChild(btn);
-		if (focused)
+		if (focused) {
 			btn->setFocus(WIDGET_FOCUS_REASON_UNKNOWN);
+		}
 	}
 }
 
@@ -116,10 +121,12 @@ bool TBMessageWindow::onEvent(const TBWidgetEvent &ev) {
 		invokeEvent(target_ev);
 
 		// If target got deleted, close
-		if (this_widget.get())
+		if (this_widget.get() != nullptr) {
 			close();
+		}
 		return true;
-	} else if (ev.type == EVENT_TYPE_KEY_DOWN && ev.special_key == TB_KEY_ESC) {
+	}
+	if (ev.type == EVENT_TYPE_KEY_DOWN && ev.special_key == TB_KEY_ESC) {
 		TBWidgetEvent click_ev(EVENT_TYPE_CLICK);
 		m_close_button.invokeEvent(click_ev);
 		return true;
@@ -128,20 +135,23 @@ bool TBMessageWindow::onEvent(const TBWidgetEvent &ev) {
 }
 
 void TBMessageWindow::onDie() {
-	if (TBWidget *dimmer = m_dimmer.get())
+	if (TBWidget *dimmer = m_dimmer.get()) {
 		dimmer->die();
+	}
 }
 
 void TBMessageWindow::onWidgetDelete(TBWidget *widget) {
 	// If the target widget is deleted, close!
-	if (!m_target.get())
+	if (m_target.get() == nullptr) {
 		close();
+	}
 }
 
 bool TBMessageWindow::onWidgetDying(TBWidget *widget) {
 	// If the target widget or an ancestor of it is dying, close!
-	if (widget == m_target.get() || widget->isAncestorOf(m_target.get()))
+	if (widget == m_target.get() || widget->isAncestorOf(m_target.get())) {
 		close();
+	}
 	return false;
 }
 

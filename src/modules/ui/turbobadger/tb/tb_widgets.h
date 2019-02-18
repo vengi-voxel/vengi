@@ -151,9 +151,9 @@ public:
 		  special_key(TB_KEY_UNDEFINED), modifierkeys(TB_MODIFIER_NONE), button_type(TB_UNKNOWN) {
 	}
 
-	TBWidgetEvent(EVENT_TYPE type, int x, int y, BUTTON_TYPE button_type, MODIFIER_KEYS modifierkeys = TB_MODIFIER_NONE)
+	TBWidgetEvent(EVENT_TYPE type, int x, int y, BUTTON_TYPE buttonType, MODIFIER_KEYS modifierkeys = TB_MODIFIER_NONE)
 		: target(nullptr), type(type), target_x(x), target_y(y), delta_x(0), delta_y(0), count(1), key(0),
-		  special_key(TB_KEY_UNDEFINED), modifierkeys(modifierkeys), button_type(button_type) {
+		  special_key(TB_KEY_UNDEFINED), modifierkeys(modifierkeys), button_type(buttonType) {
 	}
 
 	/** The count value may be 1 to infinity. If you f.ex want to see which count it is for something
@@ -303,9 +303,9 @@ public:
 	}
 
 	/** Return new constraints reduced by the given padding. */
-	SizeConstraints constrainByPadding(int horizontal_padding, int vertical_padding) const {
-		return SizeConstraints(available_w == NO_RESTRICTION ? NO_RESTRICTION : available_w - horizontal_padding,
-							   available_h == NO_RESTRICTION ? NO_RESTRICTION : available_h - vertical_padding);
+	SizeConstraints constrainByPadding(int horizontalPadding, int verticalPadding) const {
+		return SizeConstraints(available_w == NO_RESTRICTION ? NO_RESTRICTION : available_w - horizontalPadding,
+							   available_h == NO_RESTRICTION ? NO_RESTRICTION : available_h - verticalPadding);
 	}
 
 	/** Return new constraints that are constrained by LayoutParams. */
@@ -319,14 +319,17 @@ public:
 	}
 
 private:
-	int constrainByLPMax(int constraint, int lp_min, int lp_max) const {
-		if (constraint == NO_RESTRICTION)
-			return lp_max != LayoutParams::UNSPECIFIED ? lp_max : NO_RESTRICTION;
+	int constrainByLPMax(int constraint, int lpMin, int lpMax) const {
+		if (constraint == NO_RESTRICTION) {
+			return lpMax != LayoutParams::UNSPECIFIED ? lpMax : NO_RESTRICTION;
+		}
 		int ret = constraint;
-		if (lp_min != LayoutParams::UNSPECIFIED)
-			ret = Max(ret, lp_min);
-		if (lp_max != LayoutParams::UNSPECIFIED)
-			ret = Min(ret, lp_max);
+		if (lpMin != LayoutParams::UNSPECIFIED) {
+			ret = Max(ret, lpMin);
+		}
+		if (lpMax != LayoutParams::UNSPECIFIED) {
+			ret = Min(ret, lpMax);
+		}
 		return ret;
 	}
 };
@@ -427,7 +430,7 @@ public:
 
 	/** Return true if this widget or any of its parents is dying. */
 	bool getIsDying() const {
-		return m_packed.is_dying || (m_parent && m_parent->getIsDying());
+		return m_packed.is_dying || ((m_parent != nullptr) && m_parent->getIsDying());
 	}
 
 	/** Set the id reference for this widgets. This id is 0 by default.
@@ -464,7 +467,7 @@ public:
 
 	/** Get status of the given state(s). Returns true if the given state combination is set. */
 	bool getState(WIDGET_STATE state) const {
-		return (m_state & state) ? true : false;
+		return (m_state & state) != 0U;
 	}
 
 	/** Set the widget state. Like SetState but setting the entire state as given, instead
@@ -523,8 +526,9 @@ public:
 
 	/** Remove this widget from parent if it has one. */
 	void removeFromParent() {
-		if (m_parent)
+		if (m_parent != nullptr) {
 			m_parent->removeChild(this);
+		}
 	}
 
 	/** Remove and delete all children in this widget.
@@ -578,8 +582,8 @@ public:
 
 	/** Set if this widget is a group root. Grouped widgets (such as TBRadioButton) will toggle all other
 		widgets with the same group_id under the nearest parent group root. TBWindow is a group root by default. */
-	void setIsGroupRoot(bool group_root) {
-		m_packed.is_group_root = group_root;
+	void setIsGroupRoot(bool groupRoot) {
+		m_packed.is_group_root = groupRoot;
 	}
 	bool getIsGroupRoot() const {
 		return m_packed.is_group_root;
@@ -594,8 +598,8 @@ public:
 	}
 
 	/** Set if this widget should emulate a click when it's focused and pressing enter or space. */
-	void setClickByKey(bool click_by_key) {
-		m_packed.click_by_key = click_by_key;
+	void setClickByKey(bool clickByKey) {
+		m_packed.click_by_key = clickByKey;
 	}
 	bool getClickByKey() const {
 		return m_packed.click_by_key;
@@ -603,16 +607,16 @@ public:
 
 	/** Set if this widget should generate long-click event (or context menu event if nothing
 		handles the long click event). The default is false. */
-	void setWantLongClick(bool want_long_click) {
-		m_packed.want_long_click = want_long_click;
+	void setWantLongClick(bool wantLongClick) {
+		m_packed.want_long_click = wantLongClick;
 	}
 	bool getWantLongClick() const {
 		return m_packed.want_long_click;
 	}
 
 	/** Set if this widget should ignore input, as if it didn't exist. */
-	void setIgnoreInput(bool ignore_input) {
-		m_packed.ignore_input = ignore_input;
+	void setIgnoreInput(bool ignoreInput) {
+		m_packed.ignore_input = ignoreInput;
 	}
 	bool getIgnoreInput() const {
 		return m_packed.ignore_input;
@@ -736,7 +740,7 @@ public:
 	/** Callback for painting this widget.
 		The skin is already painted and the opacity set to reflect this widgets.
 		This is only called for widgets with a opacity > 0 */
-	virtual void onPaint(const PaintProps &paint_props) {
+	virtual void onPaint(const PaintProps &paintProps) {
 	}
 
 	/** Callback for painting child widgets.
@@ -798,10 +802,10 @@ public:
 
 	/** Called when this widget has been resized.
 		The default implementation move and resize all children according to their gravity. */
-	virtual void onResized(int old_w, int old_h);
+	virtual void onResized(int oldW, int oldH);
 
 	/** Called when this widget has been scrolled. */
-	virtual void onScroll(int scroll_x, int scroll_y) {
+	virtual void onScroll(int scrollX, int scrollY) {
 	}
 
 	/** Called just after a child has been inflated into this widget.
@@ -1102,7 +1106,7 @@ public:
 	void invokeTouchMove(int x, int y, uint32_t id, MODIFIER_KEYS modifierkeys);
 	void invokeTouchCancel(uint32_t id);
 
-	bool invokeWheel(int x, int y, int delta_x, int delta_y, MODIFIER_KEYS modifierkeys);
+	bool invokeWheel(int x, int y, int deltaX, int deltaY, MODIFIER_KEYS modifierkeys);
 
 	/** Invoke the EVENT_TYPE_KEY_DOWN and EVENT_TYPE_KEY_UP events on the currently focused widget.
 		This will also do some generic key handling, such as cycling focus on tab etc. */
@@ -1224,10 +1228,10 @@ public:
 private:
 	/** Return this widget or the nearest parent that is scrollable
 		in the given axis, or nullptr if there is none. */
-	TBWidget *findScrollableWidget(bool scroll_x, bool scroll_y);
+	TBWidget *findScrollableWidget(bool scrollX, bool scrollY);
 	TBScroller *findStartedScroller();
-	TBScroller *getReadyScroller(bool scroll_x, bool scroll_y);
-	TBWidget *getWidgetByIDInternal(const TBID &id, const TB_TYPE_ID type_id = nullptr);
+	TBScroller *getReadyScroller(bool scrollX, bool scrollY);
+	TBWidget *getWidgetByIDInternal(const TBID &id, TB_TYPE_ID type_id = nullptr);
 	void invokeSkinUpdatesInternal(bool force_update);
 	void invokeProcessInternal();
 	static void setHoveredWidget(TBWidget *widget, bool touch);

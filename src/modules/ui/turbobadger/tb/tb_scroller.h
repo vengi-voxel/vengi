@@ -29,10 +29,10 @@ public:
 	float getSpeedFromDistance(float distance);
 
 	/** Calculate the distance reached at the given elapsed_time_ms with the given start_speed. */
-	float getDistanceAtTime(float start_speed, float elapsed_time_ms);
+	float getDistanceAtTime(float startSpeed, float elapsedTimeMs);
 
 	/** Same as GetDistanceAtTime but rounded to integer. */
-	int getDistanceAtTimeInt(float start_speed, float elapsed_time_ms);
+	int getDistanceAtTimeInt(float startSpeed, float elapsedTimeMs);
 
 private:
 	float m_decay;
@@ -52,7 +52,7 @@ public:
 
 		Note: The scroll positions are relative to the target widget (inner scrolled TBWidget).
 			  If there's nested scrollable widgets, only the inner scrolled widget applies snapping. */
-	virtual void onScrollSnap(TBWidget *target_widget, int &target_x, int &target_y) = 0;
+	virtual void onScrollSnap(TBWidget *targetWidget, int &targetX, int &targetY) = 0;
 };
 
 /** TBScroller handles panning while the pointer is down and measure the pan
@@ -109,8 +109,8 @@ private:
 	bool stopIfAlmostStill();
 	void stopOrSnapScroll();
 	void reset();
-	void adjustToSnappingAndScroll(float ppms_x, float ppms_y);
-	void scroll(float start_speed_ppms_x, float start_speed_ppms_y);
+	void adjustToSnappingAndScroll(float ppmsX, float ppmsY);
+	void scroll(float startSpeedPpmsX, float startSpeedPpmsY);
 	void getTargetChildTranslation(int &x, int &y) const;
 	void getTargetScrollXY(int &x, int &y) const;
 	TBWidget *m_target;

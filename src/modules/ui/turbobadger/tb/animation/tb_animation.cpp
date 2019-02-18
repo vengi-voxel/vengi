@@ -11,17 +11,18 @@ namespace tb {
 #define SMOOTHSTEP(x) ((x) * (x) * (3.0f - 2.0f * (x)))
 
 static float sc(float x) {
-	float s = x < 0 ? -1.f : 1.f;
+	float s = x < 0 ? -1.F : 1.F;
 	x = Abs(x);
-	if (x >= 1)
+	if (x >= 1) {
 		return s;
-	return s * (x < 0 ? x / 0.5f : (x / (1 + x * x)) / 0.5f);
+	}
+	return s * (x < 0 ? x / 0.5F : (x / (1 + x * x)) / 0.5F);
 }
 
 static float smoothCurve(float x, float a) {
 	float r = a * x / (2 * a * x - a - x + 1);
-	r = (r - 0.5f) * 2;
-	return sc(r) * 0.5f + 0.5f;
+	r = (r - 0.5F) * 2;
+	return sc(r) * 0.5F + 0.5F;
 }
 
 void TBAnimationObject::invokeOnAnimationStart() {

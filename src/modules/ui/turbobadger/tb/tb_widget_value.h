@@ -27,7 +27,7 @@ public:
 	}
 
 	/** Connect the value and widget. */
-	void connect(TBWidgetValue *value, TBWidget *m_widget);
+	void connect(TBWidgetValue *value, TBWidget *mWidget);
 
 	/** Unconnect the value and widget if it is connected. */
 	void unconnect();
@@ -120,8 +120,9 @@ private:
 class TBValueGroupListener : public TBLinkOf<TBValueGroupListener> {
 public:
 	virtual ~TBValueGroupListener() {
-		if (linklist)
+		if (linklist != nullptr) {
 			linklist->remove(this);
+		}
 	}
 
 	/** Called when a value has changed and all widgets connected to it has been updated. */
@@ -144,7 +145,7 @@ public:
 
 	/** Add listener to this group. It will be removed automatically when deleted,
 		but can also be removed by RemoveListener. */
-	void AddListener(TBValueGroupListener *listener) {
+	void addListener(TBValueGroupListener *listener) {
 		m_listeners.addLast(listener);
 	}
 

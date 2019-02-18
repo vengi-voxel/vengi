@@ -65,9 +65,9 @@ public:
 	TBTextOfs(TBBlock *block, int32_t ofs) : block(block), ofs(ofs) {
 	}
 
-	void set(TBBlock *new_block, int32_t new_ofs) {
-		block = new_block;
-		ofs = new_ofs;
+	void set(TBBlock *newBlock, int32_t newOfs) {
+		block = newBlock;
+		ofs = newOfs;
 	}
 	void set(const TBTextOfs &pos) {
 		block = pos.block;
@@ -88,10 +88,10 @@ class TBSelection {
 public:
 	TBSelection(TBStyleEdit *styledit);
 	void invalidate() const;
-	void select(const TBTextOfs &new_start, const TBTextOfs &new_stop);
+	void select(const TBTextOfs &newStart, const TBTextOfs &newStop);
 	void select(const TBPoint &from, const TBPoint &to);
-	void select(int glob_ofs_from, int glob_ofs_to);
-	void selectToCaret(TBBlock *old_caret_block, int32_t old_caret_ofs);
+	void select(int globOfsFrom, int globOfsTo);
+	void selectToCaret(TBBlock *oldCaretBlock, int32_t oldCaretOfs);
 	void selectAll();
 	void selectNothing();
 	void correctOrder();
@@ -117,17 +117,17 @@ public:
 	void updatePos();
 	bool move(bool forward, bool word);
 	bool place(const TBPoint &point);
-	bool place(TBBlock *block, int ofs, bool allow_snap = true, bool snap_forward = false);
-	void place(TB_CARET_POS place);
+	bool place(TBBlock *block, int ofs, bool allowSnap = true, bool snapForward = false);
+	void place(TB_CARET_POS pos);
 	void avoidLineBreak();
-	void paint(int32_t translate_x, int32_t translate_y);
+	void paint(int32_t translateX, int32_t translateY);
 	void resetBlink();
 	void updateWantedX();
 
 	int32_t getGlobalOfs() const {
 		return pos.getGlobalOfs(styledit);
 	}
-	void setGlobalOfs(int32_t gofs, bool allow_snap = true, bool snap_forward = false);
+	void setGlobalOfs(int32_t gofs, bool allowSnap = true, bool snapForward = false);
 
 	TBTextFragment *getFragment();
 
@@ -158,7 +158,7 @@ public:
 	TBTextProps() {
 	}
 
-	void reset(const TBFontDescription &font_desc, const TBColor &text_color);
+	void reset(const TBFontDescription &fontDesc, const TBColor &textColor);
 	Data *push();
 	void pop();
 
@@ -205,11 +205,11 @@ public:
 	/** Layout the block. To be called when the text has changed or the layout width has changed.
 		@param update_fragments Should be true if the text has been changed (will recreate elements).
 		@param propagate_height If true, all following blocks will be moved if the height changed. */
-	void layout(bool update_fragments, bool propagate_height);
+	void layout(bool updateFragments, bool propagateHeight);
 
 	/** Update the size of this block. If propagate_height is true, all following blocks will be
 		moved if the height changed. */
-	void setSize(int32_t old_w, int32_t new_w, int32_t new_h, bool propagate_height);
+	void setSize(int32_t oldW, int32_t newW, int32_t newH, bool propagateHeight);
 
 	TBTextFragment *findFragment(int32_t ofs, bool prefer_first = false) const;
 	TBTextFragment *findFragment(int32_t x, int32_t y) const;
@@ -220,9 +220,9 @@ public:
 	int32_t calculateBaseline(TBFontFace *font) const;
 
 	void invalidate() const;
-	void buildSelectionRegion(int32_t translate_x, int32_t translate_y, TBTextProps *props, TBRegion &bg_region,
-							  TBRegion &fg_region);
-	void paint(int32_t translate_x, int32_t translate_y, TBTextProps *props);
+	void buildSelectionRegion(int32_t translateX, int32_t translateY, TBTextProps *props, TBRegion &bgRegion,
+							  TBRegion &fgRegion);
+	void paint(int32_t translateX, int32_t translateY, TBTextProps *props);
 
 public:
 	TBStyleEdit *styledit;
@@ -261,7 +261,7 @@ public:
 
 	void undo(TBStyleEdit *styledit);
 	void redo(TBStyleEdit *styledit);
-	void clear(bool clear_undo, bool clear_redo);
+	void clear(bool clearUndo, bool clearRedo);
 
 	TBUndoEvent *commit(TBStyleEdit *styledit, int32_t gofs, int32_t len, const char *text, bool insert);
 
@@ -321,7 +321,7 @@ public:
 
 	void updateContentPos(const TBBlock *block);
 
-	void buildSelectionRegion(const TBPaintProps *props, TBRegion &bg_region, TBRegion &fg_region);
+	void buildSelectionRegion(const TBPaintProps *props, TBRegion &bgRegion, TBRegion &fgRegion);
 	void paint(const TBPaintProps *props);
 	void click(const TBBlock *block, int button, uint32_t modifierkeys);
 
@@ -329,16 +329,16 @@ public:
 		return !isEmbedded();
 	}
 	bool isEmbedded() const {
-		return content ? true : false;
+		return content != nullptr;
 	}
 	bool isBreak() const {
-		return m_packed.is_break ? true : false;
+		return m_packed.is_break != 0;
 	}
 	bool isSpace() const {
-		return m_packed.is_space ? true : false;
+		return m_packed.is_space != 0;
 	}
 	bool isTab() const {
-		return m_packed.is_tab ? true : false;
+		return m_packed.is_tab != 0;
 	}
 
 	int32_t getCharX(const TBBlock *block, TBFontFace *font, int32_t ofs);
@@ -390,7 +390,7 @@ public:
 
 	void setFont(const TBFontDescription &font_desc);
 
-	void paint(const TBRect &rect, const TBFontDescription &font_desc, const TBColor &text_color);
+	void paint(const TBRect &rect, const TBFontDescription &fontDesc, const TBColor &textColor);
 	bool keyDown(int key, SPECIAL_KEY special_key, MODIFIER_KEYS modifierkeys);
 	bool mouseDown(const TBPoint &point, int button, int clicks, MODIFIER_KEYS modifierkeys, bool touch);
 	bool mouseUp(const TBPoint &point, int button, MODIFIER_KEYS modifierkeys, bool touch);
@@ -421,16 +421,16 @@ public:
 	void undo();
 	void redo();
 	bool canUndo() const {
-		return undoredo.undos.getNumItems() ? true : false;
+		return undoredo.undos.getNumItems() != 0;
 	}
 	bool canRedo() const {
-		return undoredo.redos.getNumItems() ? true : false;
+		return undoredo.redos.getNumItems() != 0;
 	}
 
-	void insertText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool after_last = false,
-					bool clear_undo_redo = false);
-	void appendText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool clear_undo_redo = false) {
-		insertText(text, len, true, clear_undo_redo);
+	void insertText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool afterLast = false,
+					bool clearUndoRedo = false);
+	void appendText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool clearUndoRedo = false) {
+		insertText(text, len, true, clearUndoRedo);
 	}
 	void insertBreak();
 

@@ -35,8 +35,8 @@ public:
 	TBScrollBarVisibility() : x_on(false), y_on(false), visible_w(0), visible_h(0) {
 	}
 
-	static TBScrollBarVisibility solve(SCROLL_MODE mode, int content_w, int content_h, int available_w, int available_h,
-									   int scrollbar_x_h, int scrollbar_y_w);
+	static TBScrollBarVisibility solve(SCROLL_MODE mode, int contentW, int contentH, int availableW, int availableH,
+									   int scrollbarXH, int scrollbarYW);
 	static bool isAlwaysOnX(SCROLL_MODE mode) {
 		return mode == SCROLL_MODE_X_Y;
 	}
@@ -93,7 +93,7 @@ public:
 	virtual void onInflate(const INFLATE_INFO &info) override;
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
 	virtual void onProcess() override;
-	virtual void onResized(int old_w, int old_h) override;
+	virtual void onResized(int oldW, int oldH) override;
 
 	virtual TBWidget *getContentRoot() override {
 		return &m_root;

@@ -28,17 +28,20 @@ namespace tb {
 
 float TBScrollerFunction::getDurationFromSpeed(float startSpeed) {
 	float abs_start_speed = Abs(startSpeed);
-	if (abs_start_speed <= SF_GATE_THRESHOLD)
+	if (abs_start_speed <= SF_GATE_THRESHOLD) {
 		return 0;
+	}
 	return -logf(SF_GATE_THRESHOLD / abs_start_speed) * m_decay;
 }
 
 float TBScrollerFunction::getSpeedFromDistance(float distance) {
 	float speed = distance / m_decay;
-	if (distance > SF_GATE_THRESHOLD)
+	if (distance > SF_GATE_THRESHOLD) {
 		return speed + SF_GATE_THRESHOLD;
-	else if (distance < -SF_GATE_THRESHOLD)
+	}
+	if (distance < -SF_GATE_THRESHOLD) {
 		return speed - SF_GATE_THRESHOLD;
+	}
 	return speed;
 }
 
@@ -49,7 +52,7 @@ float TBScrollerFunction::getDistanceAtTime(float startSpeed, float elapsedTimeM
 
 int TBScrollerFunction::getDistanceAtTimeInt(float startSpeed, float elapsedTimeMs) {
 	float distance = getDistanceAtTime(startSpeed, elapsedTimeMs);
-	return (int)(distance < 0 ? distance - 0.5f : distance + 0.5f);
+	return (int)(distance < 0 ? distance - 0.5F : distance + 0.5F);
 }
 
 // == TBScroller ========================================================================
@@ -77,8 +80,9 @@ void TBScroller::reset() {
 }
 
 void TBScroller::onScrollBy(int dx, int dy, bool accumulative) {
-	if (!isStarted())
+	if (!isStarted()) {
 		start();
+	}
 
 	float ppms_x = m_func.getSpeedFromDistance((float)dx);
 	float ppms_y = m_func.getSpeedFromDistance((float)dy);
@@ -108,32 +112,37 @@ void TBScroller::onScrollBy(int dx, int dy, bool accumulative) {
 }
 
 bool TBScroller::onPan(int dx, int dy) {
-	if (!isStarted())
+	if (!isStarted()) {
 		start();
+	}
 
 	// Pan the target
-	const int in_dx = dx, in_dy = dy;
+	const int in_dx = dx;
+	const int in_dy = dy;
 	m_target->scrollByRecursive(dx, dy);
 
 	// Calculate the pan speed. Smooth it out with the
 	// previous pan speed to reduce fluctuation a little.
 	double now_ms = TBSystem::getTimeMS();
-	if (m_pan_time_ms) {
-		if (m_pan_delta_time_ms)
-			m_pan_delta_time_ms = (now_ms - m_pan_time_ms + m_pan_delta_time_ms) / 2.0f;
-		else
+	if (m_pan_time_ms != 0.0) {
+		if (m_pan_delta_time_ms != 0.0) {
+			m_pan_delta_time_ms = (now_ms - m_pan_time_ms + m_pan_delta_time_ms) / 2.0F;
+		} else {
 			m_pan_delta_time_ms = now_ms - m_pan_time_ms;
+		}
 	}
 
 	m_pan_time_ms = now_ms;
-	m_pan_dx = (m_pan_dx + in_dx) / 2.0f;
-	m_pan_dy = (m_pan_dy + in_dy) / 2.0f;
+	m_pan_dx = (m_pan_dx + in_dx) / 2.0F;
+	m_pan_dy = (m_pan_dy + in_dy) / 2.0F;
 
 	// If we change direction, reset the pan power multiplier in that axis.
-	if (m_pan_dx != 0 && (m_previous_pan_dx < 0) != (m_pan_dx < 0))
+	if (m_pan_dx != 0 && (m_previous_pan_dx < 0) != (m_pan_dx < 0)) {
 		m_pan_power_multiplier_x = 1;
-	if (m_pan_dy != 0 && (m_previous_pan_dy < 0) != (m_pan_dy < 0))
+	}
+	if (m_pan_dy != 0 && (m_previous_pan_dy < 0) != (m_pan_dy < 0)) {
 		m_pan_power_multiplier_y = 1;
+	}
 	m_previous_pan_dx = m_pan_dx;
 	m_previous_pan_dy = m_pan_dy;
 
@@ -144,7 +153,7 @@ void TBScroller::onPanReleased() {
 	if (TBSystem::getTimeMS() < m_pan_time_ms + PAN_START_THRESHOLD_MS) {
 		// Don't start scroll if we have too little speed.
 		// This will prevent us from scrolling accidently.
-		float pan_start_distance_threshold_px = 2 * TBSystem::getDPI() / 100.0f;
+		float pan_start_distance_threshold_px = 2 * TBSystem::getDPI() / 100.0F;
 		if (Abs(m_pan_dx) < pan_start_distance_threshold_px && Abs(m_pan_dy) < pan_start_distance_threshold_px) {
 			stopOrSnapScroll();
 			return;
@@ -161,13 +170,15 @@ void TBScroller::onPanReleased() {
 		ppms_y *= m_pan_power_multiplier_y;
 
 		adjustToSnappingAndScroll(ppms_x, ppms_y);
-	} else
+	} else {
 		stopOrSnapScroll();
+	}
 }
 
 void TBScroller::start() {
-	if (isStarted())
+	if (isStarted()) {
 		return;
+	}
 	m_is_started = true;
 	double now_ms = TBSystem::getTimeMS();
 	if (now_ms < m_scroll_start_ms + PAN_POWER_ACC_THRESHOLD_MS) {
@@ -195,12 +206,13 @@ bool TBScroller::stopIfAlmostStill() {
 
 void TBScroller::stopOrSnapScroll() {
 	adjustToSnappingAndScroll(0, 0);
-	if (!isScrolling())
+	if (!isScrolling()) {
 		stop();
+	}
 }
 
 void TBScroller::adjustToSnappingAndScroll(float ppmsX, float ppmsY) {
-	if (m_snap_listener) {
+	if (m_snap_listener != nullptr) {
 		// Calculate the distance
 		int distance_x = m_func.getDistanceAtTimeInt(ppmsX, m_func.getDurationFromSpeed(ppmsX));
 		int distance_y = m_func.getDistanceAtTimeInt(ppmsY, m_func.getDurationFromSpeed(ppmsY));
@@ -232,11 +244,12 @@ void TBScroller::scroll(float startSpeedPpmsX, float startSpeedPpmsY) {
 	m_scroll_duration_x_ms = m_func.getDurationFromSpeed(m_scroll_start_speed_ppms_x);
 	m_scroll_duration_y_ms = m_func.getDurationFromSpeed(m_scroll_start_speed_ppms_y);
 
-	if (stopIfAlmostStill())
+	if (stopIfAlmostStill()) {
 		return;
+	}
 
 	// Post the pan message if we don't already have one
-	if (!getMessageByID(TBIDC("scroll"))) {
+	if (getMessageByID(TBIDC("scroll")) == nullptr) {
 		// Update expected translation
 		getTargetChildTranslation(m_expected_scroll_x, m_expected_scroll_y);
 
@@ -245,12 +258,14 @@ void TBScroller::scroll(float startSpeedPpmsX, float startSpeedPpmsY) {
 }
 
 bool TBScroller::isScrolling() {
-	return getMessageByID(TBIDC("scroll")) ? true : false;
+	return getMessageByID(TBIDC("scroll")) != nullptr;
 }
 
 void TBScroller::getTargetChildTranslation(int &x, int &y) const {
-	int root_x = 0, root_y = 0;
-	int child_translation_x = 0, child_translation_y = 0;
+	int root_x = 0;
+	int root_y = 0;
+	int child_translation_x = 0;
+	int child_translation_y = 0;
 	TBWidget *scroll_root = m_target->getScrollRoot();
 	scroll_root->convertToRoot(root_x, root_y);
 	scroll_root->getChildTranslation(child_translation_x, child_translation_y);
@@ -262,7 +277,7 @@ void TBScroller::getTargetScrollXY(int &x, int &y) const {
 	x = 0;
 	y = 0;
 	TBWidget *tmp = m_target->getScrollRoot();
-	while (tmp) {
+	while (tmp != nullptr) {
 		TBWidget::ScrollInfo info = tmp->getScrollInfo();
 		x += info.x;
 		y += info.y;
@@ -272,7 +287,8 @@ void TBScroller::getTargetScrollXY(int &x, int &y) const {
 
 void TBScroller::onMessageReceived(TBMessage *msg) {
 	if (msg->message == TBIDC("scroll")) {
-		int actual_scroll_x = 0, actual_scroll_y = 0;
+		int actual_scroll_x = 0;
+		int actual_scroll_y = 0;
 		getTargetChildTranslation(actual_scroll_x, actual_scroll_y);
 		if (actual_scroll_x != m_expected_scroll_x || actual_scroll_y != m_expected_scroll_y) {
 			// Something else has affected the target child translation.
@@ -300,18 +316,21 @@ void TBScroller::onMessageReceived(TBMessage *msg) {
 		scroll_y += m_scroll_start_scroll_y;
 
 		// Get the scroll delta and invoke ScrollByRecursive.
-		int curr_scroll_x, curr_scroll_y;
+		int curr_scroll_x;
+		int curr_scroll_y;
 		getTargetScrollXY(curr_scroll_x, curr_scroll_y);
 		const int dx = scroll_x - curr_scroll_x;
 		const int dy = scroll_y - curr_scroll_y;
 
-		int idx = dx, idy = dy;
+		int idx = dx;
+		int idy = dy;
 		m_target->scrollByRecursive(idx, idy);
 
 		// Update expected translation
 		getTargetChildTranslation(m_expected_scroll_x, m_expected_scroll_y);
 
-		if ((dx && actual_scroll_x == m_expected_scroll_x) && (dy && actual_scroll_y == m_expected_scroll_y)) {
+		if (((dx != 0) && actual_scroll_x == m_expected_scroll_x) &&
+			((dy != 0) && actual_scroll_y == m_expected_scroll_y)) {
 			// We didn't get anywhere despite we tried,
 			// so we're done (reached the end).
 			stop();

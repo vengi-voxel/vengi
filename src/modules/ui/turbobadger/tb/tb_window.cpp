@@ -39,7 +39,7 @@ TBRect TBWindow::getResizeToFitContentRect(RESIZE_FIT fit) {
 		new_w = Clamp(getRect().w, ps.min_w, ps.max_w);
 		new_h = Clamp(getRect().h, ps.min_h, ps.max_h);
 	}
-	if (getParent()) {
+	if (getParent() != nullptr) {
 		new_w = Min(new_w, getParent()->getRect().w);
 		new_h = Min(new_h, getParent()->getRect().h);
 	}
@@ -61,12 +61,15 @@ bool TBWindow::isActive() const {
 TBWindow *TBWindow::getTopMostOtherWindow(bool onlyActivableWindows) {
 	TBWindow *other_window = nullptr;
 	TBWidget *sibling = getParent()->getLastChild();
-	while (sibling && !other_window) {
-		if (sibling != this)
+	while ((sibling != nullptr) && (other_window == nullptr)) {
+		if (sibling != this) {
 			other_window = TBSafeCast<TBWindow>(sibling);
+		}
 
-		if (onlyActivableWindows && other_window && !(other_window->m_settings & WINDOW_SETTINGS_CAN_ACTIVATE))
+		if (onlyActivableWindows && (other_window != nullptr) &&
+			((other_window->m_settings & WINDOW_SETTINGS_CAN_ACTIVATE) == 0U)) {
 			other_window = nullptr;
+		}
 
 		sibling = sibling->getPrev();
 	}
@@ -74,8 +77,9 @@ TBWindow *TBWindow::getTopMostOtherWindow(bool onlyActivableWindows) {
 }
 
 void TBWindow::activate() {
-	if (!getParent() || !(m_settings & WINDOW_SETTINGS_CAN_ACTIVATE))
+	if ((getParent() == nullptr) || ((m_settings & WINDOW_SETTINGS_CAN_ACTIVATE) == 0U)) {
 		return;
+	}
 	if (isActive()) {
 		// Already active, but we may still have lost focus,
 		// so ensure it comes back to us.
@@ -85,8 +89,9 @@ void TBWindow::activate() {
 
 	// Deactivate currently active window
 	TBWindow *active_window = getTopMostOtherWindow(true);
-	if (active_window)
+	if (active_window != nullptr) {
 		active_window->deActivate();
+	}
 
 	// Activate this window
 
@@ -97,22 +102,26 @@ void TBWindow::activate() {
 
 bool TBWindow::ensureFocus() {
 	// If we already have focus, we're done.
-	if (focused_widget && isAncestorOf(focused_widget))
+	if ((focused_widget != nullptr) && isAncestorOf(focused_widget)) {
 		return true;
+	}
 
 	// Focus last focused widget (if we have one)
 	bool success = false;
-	if (m_last_focus.get())
+	if (m_last_focus.get() != nullptr) {
 		success = m_last_focus.get()->setFocus(WIDGET_FOCUS_REASON_UNKNOWN);
+	}
 	// We didn't have one or failed, so try focus any child.
-	if (!success)
+	if (!success) {
 		success = setFocusRecursive(WIDGET_FOCUS_REASON_UNKNOWN);
+	}
 	return success;
 }
 
 void TBWindow::deActivate() {
-	if (!isActive())
+	if (!isActive()) {
 		return;
+	}
 	setWindowActiveState(false);
 }
 
@@ -122,26 +131,30 @@ void TBWindow::setWindowActiveState(bool active) {
 }
 
 void TBWindow::setSettings(WINDOW_SETTINGS settings) {
-	if (settings == m_settings)
+	if (settings == m_settings) {
 		return;
+	}
 	m_settings = settings;
 
-	if (settings & WINDOW_SETTINGS_TITLEBAR) {
-		if (!m_mover.getParent())
+	if ((settings & WINDOW_SETTINGS_TITLEBAR) != 0U) {
+		if (m_mover.getParent() == nullptr) {
 			addChild(&m_mover);
-	} else if (!(settings & WINDOW_SETTINGS_TITLEBAR)) {
+		}
+	} else if ((settings & WINDOW_SETTINGS_TITLEBAR) == 0U) {
 		m_mover.removeFromParent();
 	}
-	if (settings & WINDOW_SETTINGS_RESIZABLE) {
-		if (!m_resizer.getParent())
+	if ((settings & WINDOW_SETTINGS_RESIZABLE) != 0U) {
+		if (m_resizer.getParent() == nullptr) {
 			addChild(&m_resizer);
-	} else if (!(settings & WINDOW_SETTINGS_RESIZABLE)) {
+		}
+	} else if ((settings & WINDOW_SETTINGS_RESIZABLE) == 0U) {
 		m_resizer.removeFromParent();
 	}
-	if (settings & WINDOW_SETTINGS_CLOSE_BUTTON) {
-		if (!m_close_button.getParent())
+	if ((settings & WINDOW_SETTINGS_CLOSE_BUTTON) != 0U) {
+		if (m_close_button.getParent() == nullptr) {
 			m_mover.addChild(&m_close_button);
-	} else if (!(settings & WINDOW_SETTINGS_CLOSE_BUTTON)) {
+		}
+	} else if ((settings & WINDOW_SETTINGS_CLOSE_BUTTON) == 0U) {
 		m_close_button.removeFromParent();
 	}
 
@@ -150,8 +163,9 @@ void TBWindow::setSettings(WINDOW_SETTINGS settings) {
 }
 
 int TBWindow::getTitleHeight() {
-	if (m_settings & WINDOW_SETTINGS_TITLEBAR)
+	if ((m_settings & WINDOW_SETTINGS_TITLEBAR) != 0U) {
 		return m_mover.getPreferredSize().pref_h;
+	}
 	return 0;
 }
 
@@ -182,8 +196,9 @@ PreferredSize TBWindow::onCalculatePreferredSize(const SizeConstraints &constrai
 
 bool TBWindow::onEvent(const TBWidgetEvent &ev) {
 	if (ev.target == &m_close_button) {
-		if (ev.type == EVENT_TYPE_CLICK)
+		if (ev.type == EVENT_TYPE_CLICK) {
 			close();
+		}
 		return true;
 	}
 	return false;
@@ -191,16 +206,18 @@ bool TBWindow::onEvent(const TBWidgetEvent &ev) {
 
 void TBWindow::onAdded() {
 	// If we was added last, call Activate to update status etc.
-	if (getParent()->getLastChild() == this)
+	if (getParent()->getLastChild() == this) {
 		activate();
+	}
 }
 
 void TBWindow::onRemove() {
 	deActivate();
 
 	// Active the top most other window
-	if (TBWindow *active_window = getTopMostOtherWindow(true))
+	if (TBWindow *active_window = getTopMostOtherWindow(true)) {
 		active_window->activate();
+	}
 }
 
 void TBWindow::onChildAdded(TBWidget *child) {
@@ -227,8 +244,9 @@ void TBWindow::onResized(int oldW, int oldH) {
 		TBRect(mover_padding_rect.x + mover_padding_rect.w - button_w, mover_padding_rect.y, button_w, button_h));
 
 	TBRect title_rect = mover_padding_rect;
-	if (m_settings & WINDOW_SETTINGS_CLOSE_BUTTON)
+	if ((m_settings & WINDOW_SETTINGS_CLOSE_BUTTON) != 0U) {
 		title_rect.w -= mover_padding_right + button_w;
+	}
 	m_textfield.setRect(title_rect);
 }
 

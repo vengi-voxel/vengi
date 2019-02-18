@@ -134,7 +134,7 @@ public:
 	/** Set the edit type that is a hint for virtual keyboards about what the
 		content should be. */
 	void setEditType(EDIT_TYPE type);
-	EDIT_TYPE GetEditType() {
+	EDIT_TYPE getEditType() {
 		return m_edit_type;
 	}
 
@@ -172,8 +172,8 @@ public:
 	}
 	/** Set the text of the given length and also specify if the caret should be positioned
 		at the beginning or end of the text. */
-	bool setText(const char *text, int text_len, TB_CARET_POS pos = TB_CARET_POS_BEGINNING) {
-		return m_style_edit.setText(text, text_len, pos);
+	bool setText(const char *text, int textLen, TB_CARET_POS pos = TB_CARET_POS_BEGINNING) {
+		return m_style_edit.setText(text, textLen, pos);
 	}
 
 	/** Set the placeholder text. It will be visible only when the textfield is empty. */
@@ -197,7 +197,7 @@ public:
 	virtual void onAdded() override;
 	virtual void onFontChanged() override;
 	virtual void onFocusChanged(bool focused) override;
-	virtual void onResized(int old_w, int old_h) override;
+	virtual void onResized(int oldW, int oldH) override;
 	virtual TBWidget *getContentRoot() override {
 		return &m_root;
 	}

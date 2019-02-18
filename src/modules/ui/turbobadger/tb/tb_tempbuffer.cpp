@@ -24,8 +24,9 @@ void TBTempBuffer::setAppendPos(int appendPos) {
 bool TBTempBuffer::reserve(int size) {
 	if (size > m_data_size) {
 		char *new_data = (char *)SDL_realloc(m_data, size);
-		if (!new_data)
+		if (new_data == nullptr) {
 			return false;
+		}
 		m_data = new_data;
 		m_data_size = size;
 	}
@@ -39,16 +40,18 @@ int TBTempBuffer::getAppendReserveSize(int neededSize) const {
 }
 
 bool TBTempBuffer::append(const char *data, int size) {
-	if (m_append_pos + size > m_data_size && !reserve(getAppendReserveSize(m_append_pos + size)))
+	if (m_append_pos + size > m_data_size && !reserve(getAppendReserveSize(m_append_pos + size))) {
 		return false;
+	}
 	SDL_memcpy(m_data + m_append_pos, data, size);
 	m_append_pos += size;
 	return true;
 }
 
 bool TBTempBuffer::appendSpace(int size) {
-	if (m_append_pos + size > m_data_size && !reserve(getAppendReserveSize(m_append_pos + size)))
+	if (m_append_pos + size > m_data_size && !reserve(getAppendReserveSize(m_append_pos + size))) {
 		return false;
+	}
 	m_append_pos += size;
 	return true;
 }
@@ -67,8 +70,9 @@ bool TBTempBuffer::appendString(const char *str) {
 
 bool TBTempBuffer::appendPath(const char *fullPathAndFilename) {
 	const char *str_start = fullPathAndFilename;
-	while (const char *next = strpbrk(fullPathAndFilename, "\\/"))
+	while (const char *next = strpbrk(fullPathAndFilename, "\\/")) {
 		fullPathAndFilename = next + 1;
+	}
 
 	if (str_start == fullPathAndFilename) // Filename contained no path
 	{

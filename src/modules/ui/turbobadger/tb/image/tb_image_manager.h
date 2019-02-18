@@ -19,7 +19,7 @@ class TBImageRep {
 	friend class TBImageManager;
 	friend class TBImage;
 
-	TBImageRep(TBImageManager *image_manager, TBBitmapFragment *fragment, uint32_t hash_key);
+	TBImageRep(TBImageManager *imageManager, TBBitmapFragment *fragment, uint32_t hashKey);
 
 	void incRef();
 	void decRef();

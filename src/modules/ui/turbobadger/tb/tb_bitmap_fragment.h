@@ -29,7 +29,7 @@ public:
 		int x, width;
 	};
 
-	TBSpaceAllocator(int available_space) : m_available_space(available_space) {
+	TBSpaceAllocator(int availableSpace) : m_available_space(availableSpace) {
 	}
 
 	/** Return true if no allocations are currently live using this allocator. */
@@ -56,7 +56,7 @@ private:
 /** Allocates space for TBBitmapFragment in a row (used in TBBitmapFragmentMap). */
 class TBFragmentSpaceAllocator : public TBSpaceAllocator {
 public:
-	TBFragmentSpaceAllocator(int _y, int width, int _height) : TBSpaceAllocator(width), y(_y), height(_height) {
+	TBFragmentSpaceAllocator(int y, int width, int height) : TBSpaceAllocator(width), y(y), height(height) {
 	}
 
 	int y, height;
@@ -83,11 +83,11 @@ public:
 
 	/** Initialize the map with the given size. The size should be a power of two since
 		it will be used to create a TBBitmap (texture memory). */
-	bool init(int bitmap_w, int bitmap_h);
+	bool init(int bitmapW, int bitmapH);
 
 	/** Create a new fragment with the given size and data in this map.
 		Returns nullptr if there is not enough room in this map or on any other fail. */
-	TBBitmapFragment *createNewFragment(int frag_w, int frag_h, int data_stride, uint32_t *frag_data, bool add_border);
+	TBBitmapFragment *createNewFragment(int fragW, int fragH, int dataStride, uint32_t *fragData, bool addBorder);
 
 	/** Free up the space used by the given fragment, so that other fragments can take its place. */
 	void freeFragmentSpace(TBBitmapFragment *frag);
@@ -100,7 +100,7 @@ private:
 	friend class TBBitmapFragmentManager;
 	bool validateBitmap();
 	void deleteBitmap();
-	void copyData(TBBitmapFragment *frag, int data_stride, uint32_t *frag_data, int border);
+	void copyData(TBBitmapFragment *frag, int dataStride, uint32_t *fragData, int border);
 	TBListAutoDeleteOf<TBFragmentSpaceAllocator> m_rows;
 	int m_bitmap_w, m_bitmap_h;
 	uint32_t *m_bitmap_data;
@@ -126,8 +126,8 @@ public:
 
 	/** Return the bitmap for this fragment.
 		By default, the bitmap is validated if needed before returning (See TB_VALIDATE_TYPE) */
-	TBBitmap *getBitmap(TB_VALIDATE_TYPE validate_type = TB_VALIDATE_ALWAYS) {
-		return m_map->getBitmap(validate_type);
+	TBBitmap *getBitmap(TB_VALIDATE_TYPE validateType = TB_VALIDATE_ALWAYS) {
+		return m_map->getBitmap(validateType);
 	}
 
 	/** Return the height allocated to this fragment. This may be larger than Height() depending
@@ -162,8 +162,8 @@ public:
 
 	/** Set to true if a 1px border should be added to new fragments so stretched
 		drawing won't get filtering artifacts at the edges (default is disabled). */
-	void setAddBorder(bool add_border) {
-		m_add_border = add_border;
+	void setAddBorder(bool addBorder) {
+		m_add_border = addBorder;
 	}
 	bool getAddBorder() const {
 		return m_add_border;
@@ -184,7 +184,7 @@ public:
 		@param data_h the height of the data.
 		@param data_stride the number of pixels in a row of the input data.
 		@param data pointer to the data in BGRA32 format. */
-	TBBitmapFragment *createNewFragment(const TBID &id, bool dedicated_map, int data_w, int data_h, int data_stride,
+	TBBitmapFragment *createNewFragment(const TBID &id, bool dedicatedMap, int dataW, int dataH, int dataStride,
 										uint32_t *data);
 
 	/** Delete the given fragment and free the space it used in its map,

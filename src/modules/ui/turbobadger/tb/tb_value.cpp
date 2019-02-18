@@ -14,46 +14,55 @@ namespace tb {
 
 char *next_token(char *&str, const char *delim) {
 	str += strspn(str, delim);
-	if (!*str)
+	if (*str == 0) {
 		return nullptr;
+	}
 	char *token = str;
 	str += strcspn(str, delim);
-	if (*str)
+	if (*str != 0) {
 		*str++ = '\0';
+	}
 	return token;
 }
 
 bool is_start_of_number(const char *str) {
-	if (*str == '-')
+	if (*str == '-') {
 		str++;
-	if (*str == '.')
+	}
+	if (*str == '.') {
 		str++;
+	}
 	return *str >= '0' && *str <= '9';
 }
 
 bool contains_non_trailing_space(const char *str) {
 	if (const char *p = SDL_strstr(str, " ")) {
-		while (*p == ' ')
+		while (*p == ' ') {
 			p++;
+		}
 		return *p != '\0';
 	}
 	return false;
 }
 
 bool is_number_only(const char *s) {
-	if (!s || *s == 0 || *s == ' ')
-		return 0;
+	if ((s == nullptr) || *s == 0 || *s == ' ') {
+		return false;
+	}
 	char *p;
 	SDL_strtod(s, &p);
-	while (*p == ' ')
+	while (*p == ' ') {
 		p++;
+	}
 	return *p == '\0';
 }
 
 bool is_number_float(const char *str) {
-	while (*str)
-		if (*str++ == '.')
+	while (*str != 0) {
+		if (*str++ == '.') {
 			return true;
+		}
+	}
 	return false;
 }
 
@@ -65,25 +74,28 @@ TBValueArray::~TBValueArray() {
 
 TBValue *TBValueArray::addValue() {
 	TBValue *v;
-	if ((v = new TBValue()) && m_list.add(v))
+	if (((v = new TBValue()) != nullptr) && m_list.add(v)) {
 		return v;
+	}
 	delete v;
 	return nullptr;
 }
 
 TBValue *TBValueArray::getValue(int index) {
-	if (index >= 0 && index < m_list.getNumItems())
+	if (index >= 0 && index < m_list.getNumItems()) {
 		return m_list[index];
+	}
 	return nullptr;
 }
 
 TBValueArray *TBValueArray::clone(TBValueArray *source) {
 	TBValueArray *new_arr = new TBValueArray;
-	if (!new_arr)
+	if (new_arr == nullptr) {
 		return nullptr;
+	}
 	for (int i = 0; i < source->m_list.getNumItems(); i++) {
 		TBValue *new_val = new_arr->addValue();
-		if (!new_val) {
+		if (new_val == nullptr) {
 			delete new_arr;
 			return nullptr;
 		}
@@ -117,8 +129,9 @@ TBValue::TBValue(TYPE type) : m_packed_init(0) {
 		setObject(nullptr);
 		break;
 	case TYPE_ARRAY:
-		if (TBValueArray *arr = new TBValueArray())
+		if (TBValueArray *arr = new TBValueArray()) {
 			setArray(arr, SET_TAKE_OWNERSHIP);
+		}
 		break;
 	default:
 		core_assert(!"Not implemented!");
@@ -146,21 +159,22 @@ TBValue::~TBValue() {
 }
 
 void TBValue::takeOver(TBValue &sourceValue) {
-	if (sourceValue.m_packed.type == TYPE_STRING)
+	if (sourceValue.m_packed.type == TYPE_STRING) {
 		setString(sourceValue.val_str, sourceValue.m_packed.allocated ? SET_TAKE_OWNERSHIP : SET_NEW_COPY);
-	else if (sourceValue.m_packed.type == TYPE_ARRAY)
+	} else if (sourceValue.m_packed.type == TYPE_ARRAY) {
 		setArray(sourceValue.val_arr, sourceValue.m_packed.allocated ? SET_TAKE_OWNERSHIP : SET_NEW_COPY);
-	else
+	} else {
 		*this = sourceValue;
+	}
 	sourceValue.m_packed.type = TYPE_NULL;
 }
 
 void TBValue::copy(const TBValue &sourceValue) {
-	if (sourceValue.m_packed.type == TYPE_STRING)
+	if (sourceValue.m_packed.type == TYPE_STRING) {
 		setString(sourceValue.val_str, SET_NEW_COPY);
-	else if (sourceValue.m_packed.type == TYPE_ARRAY)
+	} else if (sourceValue.m_packed.type == TYPE_ARRAY) {
 		setArray(sourceValue.val_arr, SET_NEW_COPY);
-	else if (sourceValue.m_packed.type == TYPE_OBJECT) {
+	} else if (sourceValue.m_packed.type == TYPE_OBJECT) {
 		core_assert(!"We can't copy objects! The value will be nulled!");
 		setObject(nullptr);
 	} else {
@@ -172,12 +186,13 @@ void TBValue::copy(const TBValue &sourceValue) {
 
 void TBValue::setNull() {
 	if (m_packed.allocated) {
-		if (m_packed.type == TYPE_STRING)
+		if (m_packed.type == TYPE_STRING) {
 			SDL_free(val_str);
-		else if (m_packed.type == TYPE_OBJECT)
+		} else if (m_packed.type == TYPE_OBJECT) {
 			delete val_obj;
-		else if (m_packed.type == TYPE_ARRAY)
+		} else if (m_packed.type == TYPE_ARRAY) {
 			delete val_arr;
+		}
 	}
 	m_packed.type = TYPE_NULL;
 }
@@ -200,8 +215,9 @@ void TBValue::setString(const char *val, SET set) {
 	if (set != SET_NEW_COPY) {
 		val_str = const_cast<char *>(val);
 		m_packed.type = TYPE_STRING;
-	} else if ((val_str = SDL_strdup(val)))
+	} else if ((val_str = SDL_strdup(val)) != nullptr) {
 		m_packed.type = TYPE_STRING;
+	}
 }
 
 void TBValue::setObject(TBTypedObject *object) {
@@ -217,18 +233,20 @@ void TBValue::setArray(TBValueArray *arr, SET set) {
 	if (set != SET_NEW_COPY) {
 		val_arr = arr;
 		m_packed.type = TYPE_ARRAY;
-	} else if ((val_arr = TBValueArray::clone(arr)))
+	} else if ((val_arr = TBValueArray::clone(arr)) != nullptr) {
 		m_packed.type = TYPE_ARRAY;
+	}
 }
 
 void TBValue::setFromStringAuto(const char *str, SET set) {
-	if (!str)
+	if (str == nullptr) {
 		setNull();
-	else if (is_number_only(str)) {
-		if (is_number_float(str))
+	} else if (is_number_only(str)) {
+		if (is_number_float(str)) {
 			setFloat((float)atof(str));
-		else
+		} else {
 			setInt(atoi(str));
+		}
 	} else if (is_start_of_number(str) && contains_non_trailing_space(str)) {
 		// If the number has nontrailing space, we'll assume a list of numbers (example: "10 -4 3.5")
 		setNull();
@@ -237,8 +255,9 @@ void TBValue::setFromStringAuto(const char *str, SET set) {
 			if (tmpstr.set(str)) {
 				char *str_next = tmpstr.c_str();
 				while (char *token = next_token(str_next, ", ")) {
-					if (TBValue *new_val = arr->addValue())
+					if (TBValue *new_val = arr->addValue()) {
 						new_val->setFromStringAuto(token, SET_NEW_COPY);
+					}
 				}
 			}
 			setArray(arr, SET_TAKE_OWNERSHIP);
@@ -262,18 +281,22 @@ void TBValue::setFromStringAuto(const char *str, SET set) {
 }
 
 int TBValue::getInt() const {
-	if (m_packed.type == TYPE_STRING)
+	if (m_packed.type == TYPE_STRING) {
 		return atoi(val_str);
-	else if (m_packed.type == TYPE_FLOAT)
+	}
+	if (m_packed.type == TYPE_FLOAT) {
 		return (int)val_float;
+	}
 	return m_packed.type == TYPE_INT ? val_int : 0;
 }
 
 float TBValue::getFloat() const {
-	if (m_packed.type == TYPE_STRING)
+	if (m_packed.type == TYPE_STRING) {
 		return (float)atof(val_str);
-	else if (m_packed.type == TYPE_INT)
+	}
+	if (m_packed.type == TYPE_INT) {
 		return (float)val_int;
+	}
 	return m_packed.type == TYPE_FLOAT ? val_float : 0;
 }
 
@@ -286,8 +309,9 @@ const char *TBValue::getString() {
 		char tmp[32];
 		SDL_snprintf(tmp, sizeof(tmp), "%f", val_float);
 		setString(tmp, SET_NEW_COPY);
-	} else if (m_packed.type == TYPE_OBJECT)
-		return val_obj ? val_obj->getClassName() : "";
+	} else if (m_packed.type == TYPE_OBJECT) {
+		return val_obj != nullptr ? val_obj->getClassName() : "";
+	}
 	return m_packed.type == TYPE_STRING ? val_str : "";
 }
 

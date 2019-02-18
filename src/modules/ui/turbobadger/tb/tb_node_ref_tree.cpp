@@ -20,8 +20,9 @@ TBNodeRefTree::~TBNodeRefTree() {
 }
 
 TBValue &TBNodeRefTree::getValue(const char *request) {
-	if (TBNode *node = m_node.getNodeFollowRef(request))
+	if (TBNode *node = m_node.getNodeFollowRef(request)) {
 		return node->getValue();
+	}
 	Log::debug("TBNodeRefTree::getValue - Request not found: %s", request);
 	static TBValue nullval;
 	return nullval;
@@ -33,8 +34,9 @@ TBValue &TBNodeRefTree::getValueFromTree(const char *request) {
 	TBNode tmp;
 	tmp.getValue().setString(request, TBValue::SET_AS_STATIC);
 	TBNode *node = TBNodeRefTree::followNodeRef(&tmp);
-	if (node != &tmp)
+	if (node != &tmp) {
 		return node->getValue();
+	}
 	static TBValue nullval;
 	return nullval;
 }
@@ -49,15 +51,18 @@ void TBNodeRefTree::setValue(const char *request, const TBValue &value) {
 
 void TBNodeRefTree::invokeChangeListenersInternal(const char *request) {
 	TBLinkListOf<TBNodeRefTreeListener>::Iterator iter = m_listeners.iterateForward();
-	while (TBNodeRefTreeListener *listener = iter.getAndStep())
+	while (TBNodeRefTreeListener *listener = iter.getAndStep()) {
 		listener->onDataChanged(this, request);
+	}
 }
 
 // static
 TBNodeRefTree *TBNodeRefTree::getRefTree(const char *name, int nameLen) {
-	for (TBNodeRefTree *rt = s_ref_trees.getFirst(); rt; rt = rt->getNext())
-		if (strncmp(rt->getName(), name, nameLen) == 0)
+	for (TBNodeRefTree *rt = s_ref_trees.getFirst(); rt != nullptr; rt = rt->getNext()) {
+		if (strncmp(rt->getName(), name, nameLen) == 0) {
 			return rt;
+		}
+	}
 	return nullptr;
 }
 
@@ -76,22 +81,25 @@ TBNode *TBNodeRefTree::followNodeRef(TBNode *node) {
 	while (node->getValue().isString()) {
 		// If not a reference at all, we're done.
 		const char *node_str = node->getValue().getString();
-		if (*node_str != '@')
+		if (*node_str != '@') {
 			break;
+		}
 
 		// If there's no tree name and request, we're done. It's probably a language string.
 		const char *name_start = node_str + 1;
 		const char *name_end = TBNode::getNextNodeSeparator(name_start);
-		if (*name_end == 0)
+		if (*name_end == 0) {
 			break;
+		}
 
 		TBNode *next_node = nullptr;
 
 		// We have a "@>noderequest" string. Go ahead and do a local look up.
 		if (*name_start == '>') {
 			TBNode *local_root = node;
-			while (local_root->getParent())
+			while (local_root->getParent() != nullptr) {
 				local_root = local_root->getParent();
+			}
 			next_node = local_root->getNode(name_start + 1, TBNode::GET_MISS_POLICY_NULL);
 		}
 		// We have a "@treename>noderequest" string. Go ahead and look it up from the right node tree.
@@ -103,16 +111,16 @@ TBNode *TBNodeRefTree::followNodeRef(TBNode *node) {
 			break;
 		}
 
-		if (!next_node) {
+		if (next_node == nullptr) {
 			Log::debug("TBNodeRefTree::ResolveNode - Node not found on request \"%s\"", node_str);
 			break;
 		}
 		node = next_node;
 
 		// Detect circular reference loop.
-		if (node->m_cycle_id != cycle_id)
+		if (node->m_cycle_id != cycle_id) {
 			node->m_cycle_id = cycle_id;
-		else {
+		} else {
 			Log::debug("TBNodeRefTree::ResolveNode - Reference loop detected on request \"%s\" from node \"%s\"",
 					   node_str, node->getValue().getString());
 			return start_node;
@@ -125,18 +133,20 @@ TBNode *TBNodeRefTree::followNodeRef(TBNode *node) {
 void TBNodeRefTree::resolveConditions(TBNode *parentNode) {
 	bool condition_ret = false;
 	TBNode *node = parentNode->getFirstChild();
-	while (node) {
+	while (node != nullptr) {
 		bool delete_node = false;
 		bool move_children = false;
 		if (strcmp(node->getName(), "@if") == 0) {
-			condition_ret = node->getValueFollowRef().getInt() ? true : false;
-			if (condition_ret)
+			condition_ret = node->getValueFollowRef().getInt() != 0;
+			if (condition_ret) {
 				move_children = true;
+			}
 			delete_node = true;
 		} else if (strcmp(node->getName(), "@else") == 0) {
 			condition_ret = !condition_ret;
-			if (condition_ret)
+			if (condition_ret) {
 				move_children = true;
+			}
 			delete_node = true;
 		}
 
@@ -152,10 +162,11 @@ void TBNodeRefTree::resolveConditions(TBNode *parentNode) {
 			}
 		}
 
-		if (delete_node)
+		if (delete_node) {
 			parentNode->doDelete(node);
-		else
+		} else {
 			resolveConditions(node);
+		}
 		node = node_next;
 	}
 }

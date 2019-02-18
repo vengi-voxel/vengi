@@ -18,10 +18,11 @@ static uint32_t parse_hex(char *&src, int maxCount) {
 	uint32_t hex = 0;
 	for (int i = 0; i < maxCount; i++) {
 		char c = *src;
-		if (!is_hex(c))
+		if (!is_hex(c)) {
 			break;
+		}
 		hex <<= 4;
-		hex |= SDL_isdigit(c) ? c - '0' : SDL_tolower(c) - 'a' + 10;
+		hex |= SDL_isdigit(c) != 0 ? c - '0' : SDL_tolower(c) - 'a' + 10;
 		src++;
 	}
 	return hex;
@@ -29,11 +30,13 @@ static uint32_t parse_hex(char *&src, int maxCount) {
 
 void unescapeString(char *str) {
 	// fast forward to any escape sequence
-	while (*str && *str != '\\')
+	while ((*str != 0) && *str != '\\') {
 		str++;
+	}
 
-	char *dst = str, *src = str;
-	while (*src) {
+	char *dst = str;
+	char *src = str;
+	while (*src != 0) {
 		if (*src == '\\') {
 			bool code_found = true;
 			switch (src[1]) {
@@ -109,8 +112,9 @@ bool is_white_space(const char *str) {
 /** Return true if the given string starts with a color.
 	Ex: #ffdd00, #fd0 */
 bool is_start_of_color(const char *str) {
-	if (*str++ != '#')
+	if (*str++ != '#') {
 		return false;
+	}
 	int digit_count = 0;
 	while (is_hex(*str)) {
 		str++;
@@ -122,12 +126,14 @@ bool is_start_of_color(const char *str) {
 /** Return true if the given string may be a node reference, such
 	as language strings or TBNodeRefTree references. */
 bool is_start_of_reference(const char *str) {
-	if (*str++ != '@')
+	if (*str++ != '@') {
 		return false;
-	while (*str && *str != ' ') {
+	}
+	while ((*str != 0) && *str != ' ') {
 		// If the token ends with colon, it's not a value but a key.
-		if (*str == ':')
+		if (*str == ':') {
 			return false;
+		}
 		str++;
 	}
 	return true;
@@ -137,8 +143,9 @@ bool is_start_of_reference(const char *str) {
 	whitespace from line. */
 bool is_space_or_comment(char *&line) {
 	char *tmp = line;
-	while (is_white_space(tmp))
+	while (is_white_space(tmp)) {
 		tmp++;
+	}
 	if (*tmp == '#' || *tmp == 0) {
 		line = tmp;
 		return true;
@@ -147,18 +154,21 @@ bool is_space_or_comment(char *&line) {
 }
 
 bool is_pending_multiline(const char *str) {
-	while (is_white_space(str))
+	while (is_white_space(str)) {
 		str++;
+	}
 	return str[0] == '\\' && str[1] == 0;
 }
 
 bool isEndQuote(const char *bufStart, const char *buf, const char quoteType) {
-	if (*buf != quoteType)
+	if (*buf != quoteType) {
 		return false;
+	}
 	int num_backslashes = 0;
-	while (bufStart < buf && *(buf-- - 1) == '\\')
+	while (bufStart < buf && *(buf-- - 1) == '\\') {
 		num_backslashes++;
-	return !(num_backslashes & 1);
+	}
+	return (num_backslashes & 1) == 0;
 }
 
 TBParser::STATUS TBParser::read(TBParserStream *stream, TBParserTarget *target) {

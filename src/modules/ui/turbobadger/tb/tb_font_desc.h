@@ -43,7 +43,7 @@ public:
 	}
 
 	void setSize(uint32_t size) {
-		m_packed.size = Min(size, 0x8000u);
+		m_packed.size = Min(size, 0x8000U);
 	}
 	uint32_t getSize() const {
 		return m_packed.size;

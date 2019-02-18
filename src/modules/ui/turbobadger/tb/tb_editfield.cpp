@@ -21,10 +21,11 @@ const int SELECTION_SCROLL_DELAY = 1000 / 30;
 /** Get the delta that should be scrolled if dragging the pointer outside the range min-max */
 int getSelectionScrollSpeed(int pointerpos, int min, int max) {
 	int d = 0;
-	if (pointerpos < min)
+	if (pointerpos < min) {
 		d = pointerpos - min;
-	else if (pointerpos > max)
+	} else if (pointerpos > max) {
 		d = pointerpos - max;
+	}
 	d *= d;
 	d /= 40;
 	return (pointerpos < min) ? -d : d;
@@ -66,38 +67,44 @@ TBEditField::~TBEditField() {
 
 TBRect TBEditField::getVisibleRect() {
 	TBRect rect = getPaddingRect();
-	if (m_scrollbar_y.getOpacity())
+	if (m_scrollbar_y.getOpacity() != 0.0F) {
 		rect.w -= m_scrollbar_y.getRect().w;
-	if (m_scrollbar_x.getOpacity())
+	}
+	if (m_scrollbar_x.getOpacity() != 0.0F) {
 		rect.h -= m_scrollbar_x.getRect().h;
+	}
 	return rect;
 }
 
 void TBEditField::updateScrollbarVisibility(bool multiline) {
 	bool enable_vertical = multiline && !m_adapt_to_content_size;
-	m_scrollbar_y.setOpacity(enable_vertical ? 1.f : 0.f);
+	m_scrollbar_y.setOpacity(enable_vertical ? 1.F : 0.F);
 	m_root.setRect(getVisibleRect());
 }
 
 void TBEditField::setAdaptToContentSize(bool adapt) {
-	if (m_adapt_to_content_size == adapt)
+	if (m_adapt_to_content_size == adapt) {
 		return;
+	}
 	m_adapt_to_content_size = adapt;
 	updateScrollbarVisibility(getMultiline());
 }
 
 void TBEditField::setVirtualWidth(int virtualWidth) {
-	if (m_virtual_width == virtualWidth)
+	if (m_virtual_width == virtualWidth) {
 		return;
+	}
 	m_virtual_width = virtualWidth;
 
-	if (m_adapt_to_content_size && m_style_edit.packed.wrapping)
+	if (m_adapt_to_content_size && m_style_edit.packed.wrapping) {
 		invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+	}
 }
 
 void TBEditField::setMultiline(bool multiline) {
-	if (multiline == getMultiline())
+	if (multiline == getMultiline()) {
 		return;
+	}
 	updateScrollbarVisibility(multiline);
 	m_style_edit.setMultiline(multiline);
 	setWrapping(multiline);
@@ -110,27 +117,31 @@ void TBEditField::setStyling(bool styling) {
 }
 
 void TBEditField::setReadOnly(bool readonly) {
-	if (readonly == getReadOnly())
+	if (readonly == getReadOnly()) {
 		return;
+	}
 	m_style_edit.setReadOnly(readonly);
 	invalidateSkinStates();
 	TBWidget::invalidate();
 }
 
 void TBEditField::setWrapping(bool wrapping) {
-	if (wrapping == getWrapping())
+	if (wrapping == getWrapping()) {
 		return;
+	}
 
 	m_style_edit.setWrapping(wrapping);
 
 	// Invalidate the layout when the wrap mode change and we should adapt our size to it
-	if (m_adapt_to_content_size)
+	if (m_adapt_to_content_size) {
 		invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+	}
 }
 
 void TBEditField::setEditType(EDIT_TYPE type) {
-	if (m_edit_type == type)
+	if (m_edit_type == type) {
 		return;
+	}
 	m_edit_type = type;
 	m_style_edit.setPassword(type == EDIT_TYPE_PASSWORD);
 	invalidateSkinStates();
@@ -155,10 +166,13 @@ bool TBEditField::getCustomSkinCondition(const TBSkinCondition::CONDITION_INFO &
 		case EDIT_TYPE_NUMBER:
 			return info.value == TBIDC("number");
 		}
-	} else if (info.custom_prop == TBIDC("multiline"))
-		return !((uint32_t)info.value) == !getMultiline();
-	else if (info.custom_prop == TBIDC("readonly"))
-		return !((uint32_t)info.value) == !getReadOnly();
+	} else if (info.custom_prop == TBIDC("multiline")) {
+		const bool ml = ((uint32_t)info.value) == 0U;
+		return ml == !getMultiline();
+	} else if (info.custom_prop == TBIDC("readonly")) {
+		const bool ro = ((uint32_t)info.value) == 0U;
+		return ro == !getReadOnly();
+	}
 	return false;
 }
 
@@ -166,8 +180,9 @@ void TBEditField::scrollTo(int x, int y) {
 	int old_x = m_scrollbar_x.getValue();
 	int old_y = m_scrollbar_y.getValue();
 	m_style_edit.setScrollPos(x, y);
-	if (old_x != m_scrollbar_x.getValue() || old_y != m_scrollbar_y.getValue())
+	if (old_x != m_scrollbar_x.getValue() || old_y != m_scrollbar_y.getValue()) {
 		TBWidget::invalidate();
+	}
 }
 
 TBWidget::ScrollInfo TBEditField::getScrollInfo() {
@@ -186,15 +201,18 @@ bool TBEditField::onEvent(const TBWidgetEvent &ev) {
 		m_style_edit.setScrollPos(m_scrollbar_x.getValue(), m_style_edit.scroll_y);
 		onScroll(m_scrollbar_x.getValue(), m_style_edit.scroll_y);
 		return true;
-	} else if (ev.type == EVENT_TYPE_CHANGED && ev.target == &m_scrollbar_y) {
+	}
+	if (ev.type == EVENT_TYPE_CHANGED && ev.target == &m_scrollbar_y) {
 		m_style_edit.setScrollPos(m_style_edit.scroll_x, m_scrollbar_y.getValue());
 		onScroll(m_style_edit.scroll_x, m_scrollbar_y.getValue());
 		return true;
-	} else if (ev.type == EVENT_TYPE_WHEEL && ev.modifierkeys == TB_MODIFIER_NONE) {
+	}
+	if (ev.type == EVENT_TYPE_WHEEL && ev.modifierkeys == TB_MODIFIER_NONE) {
 		int old_val = m_scrollbar_y.getValue();
 		m_scrollbar_y.setValue(old_val + ev.delta_y * TBSystem::getPixelsPerLine());
 		return m_scrollbar_y.getValue() != old_val;
-	} else if (ev.type == EVENT_TYPE_POINTER_DOWN && ev.target == this) {
+	}
+	if (ev.type == EVENT_TYPE_POINTER_DOWN && ev.target == this) {
 		TBRect padding_rect = getPaddingRect();
 		if (m_style_edit.mouseDown(TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y), 1, ev.count,
 								   TB_MODIFIER_NONE, ev.button_type == TB_TOUCH)) {
@@ -215,22 +233,23 @@ bool TBEditField::onEvent(const TBWidgetEvent &ev) {
 		return true;
 	} else if ((ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("popupmenu")) ||
 			   (ev.type == EVENT_TYPE_SHORTCUT)) {
-		if (ev.ref_id == TBIDC("cut") && !m_style_edit.packed.read_only)
+		if (ev.ref_id == TBIDC("cut") && !m_style_edit.packed.read_only) {
 			m_style_edit.cut();
-		else if (ev.ref_id == TBIDC("copy"))
+		} else if (ev.ref_id == TBIDC("copy")) {
 			m_style_edit.copy();
-		else if (ev.ref_id == TBIDC("paste") && !m_style_edit.packed.read_only)
+		} else if (ev.ref_id == TBIDC("paste") && !m_style_edit.packed.read_only) {
 			m_style_edit.paste();
-		else if (ev.ref_id == TBIDC("delete") && !m_style_edit.packed.read_only)
+		} else if (ev.ref_id == TBIDC("delete") && !m_style_edit.packed.read_only) {
 			m_style_edit.del();
-		else if (ev.ref_id == TBIDC("undo") && !m_style_edit.packed.read_only)
+		} else if (ev.ref_id == TBIDC("undo") && !m_style_edit.packed.read_only) {
 			m_style_edit.undo();
-		else if (ev.ref_id == TBIDC("redo") && !m_style_edit.packed.read_only)
+		} else if (ev.ref_id == TBIDC("redo") && !m_style_edit.packed.read_only) {
 			m_style_edit.redo();
-		else if (ev.ref_id == TBIDC("selectall"))
+		} else if (ev.ref_id == TBIDC("selectall")) {
 			m_style_edit.selection.selectAll();
-		else
+		} else {
 			return false;
+		}
 		return true;
 	} else if (ev.type == EVENT_TYPE_CONTEXT_MENU && ev.target == this) {
 		TBPoint pos_in_root(ev.target_x, ev.target_y);
@@ -256,10 +275,12 @@ void TBEditField::onPaint(const PaintProps &paintProps) {
 
 	bool clip = m_scrollbar_x.canScroll() || m_scrollbar_y.canScroll();
 	TBRect old_clip;
-	if (clip)
+	if (clip) {
 		old_clip = g_renderer->setClipRect(visible_rect, true);
+	}
 
-	int trans_x = visible_rect.x, trans_y = visible_rect.y;
+	int trans_x = visible_rect.x;
+	int trans_y = visible_rect.y;
 	g_renderer->translate(trans_x, trans_y);
 
 	// Draw text content, caret etc.
@@ -276,8 +297,9 @@ void TBEditField::onPaint(const PaintProps &paintProps) {
 	}
 	g_renderer->translate(-trans_x, -trans_y);
 
-	if (clip)
+	if (clip) {
 		g_renderer->setClipRect(old_clip, false);
+	}
 }
 
 void TBEditField::onPaintChildren(const PaintProps &paintProps) {
@@ -331,8 +353,9 @@ PreferredSize TBEditField::onCalculatePreferredContentSize(const SizeConstraints
 			int layout_width = m_virtual_width;
 			if (constraints.available_w != SizeConstraints::NO_RESTRICTION) {
 				layout_width = constraints.available_w;
-				if (TBSkinElement *bg_skin = getSkinBgElement())
+				if (TBSkinElement *bg_skin = getSkinBgElement()) {
 					layout_width -= bg_skin->padding_left + bg_skin->padding_right;
+				}
 			}
 
 			m_style_edit.setLayoutSize(layout_width, old_layout_height, true);
@@ -340,8 +363,9 @@ PreferredSize TBEditField::onCalculatePreferredContentSize(const SizeConstraints
 		}
 		int width = m_style_edit.getContentWidth();
 		int height = m_style_edit.getContentHeight();
-		if (m_style_edit.packed.wrapping)
+		if (m_style_edit.packed.wrapping) {
 			m_style_edit.setLayoutSize(old_layout_width, old_layout_height, true);
+		}
 		height = Max(height, font_height);
 
 		ps.min_w = ps.pref_w /*= ps.max_w*/ = width; // should go with the hack above.
@@ -352,8 +376,9 @@ PreferredSize TBEditField::onCalculatePreferredContentSize(const SizeConstraints
 		if (m_style_edit.packed.multiline_on) {
 			ps.pref_w = font_height * 10;
 			ps.pref_h = font_height * 5;
-		} else
+		} else {
 			ps.max_h = ps.pref_h;
+		}
 	}
 	return ps;
 }
@@ -374,19 +399,22 @@ void TBEditField::onMessageReceived(TBMessage *msg) {
 		m_scrollbar_y.setValue(m_scrollbar_y.getValue() + dy);
 
 		// Handle mouse move at the new scroll position, so selection is updated
-		if (dx || dy)
+		if ((dx != 0) || (dy != 0)) {
 			m_style_edit.mouseMove(TBPoint(pointer_move_widget_x, pointer_move_widget_y));
+		}
 
 		// Post another setscroll message so we continue scrolling if we still should.
-		if (m_style_edit.select_state)
+		if (m_style_edit.select_state != 0) {
 			postMessageDelayed(TBIDC("selscroll"), nullptr, SELECTION_SCROLL_DELAY);
+		}
 	}
 }
 
 void TBEditField::onChange() {
 	// Invalidate the layout when the content change and we should adapt our size to it
-	if (m_adapt_to_content_size)
+	if (m_adapt_to_content_size) {
 		invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+	}
 
 	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
 	invokeEvent(ev);
@@ -424,8 +452,9 @@ void TBEditField::drawContentSelectionFg(const TBRect &rect) {
 }
 
 void TBEditField::drawCaret(const TBRect &rect) {
-	if (getIsFocused() && !m_style_edit.packed.read_only)
+	if (getIsFocused() && !m_style_edit.packed.read_only) {
 		drawTextSelectionBg(rect);
+	}
 }
 
 void TBEditField::scroll(int32_t dx, int32_t dy) {
@@ -443,22 +472,25 @@ void TBEditField::updateScrollbars() {
 
 void TBEditField::caretBlinkStart() {
 	// Post the delayed blink message if we don't already have one
-	if (!getMessageByID(TBIDC("blink")))
+	if (getMessageByID(TBIDC("blink")) == nullptr) {
 		postMessageDelayed(TBIDC("blink"), nullptr, CARET_BLINK_TIME);
+	}
 }
 
 void TBEditField::caretBlinkStop() {
 	// Remove the blink message if we have one
-	if (TBMessage *msg = getMessageByID(TBIDC("blink")))
+	if (TBMessage *msg = getMessageByID(TBIDC("blink"))) {
 		deleteMessage(msg);
+	}
 }
 
 // == TBEditFieldScrollRoot =======================================================================
 
 void TBEditFieldScrollRoot::onPaintChildren(const PaintProps &paintProps) {
 	// Avoid setting clipping (can be expensive) if we have no children to paint anyway.
-	if (!getFirstChild())
+	if (getFirstChild() == nullptr) {
 		return;
+	}
 	// Clip children
 	TBRect old_clip_rect = g_renderer->setClipRect(getPaddingRect(), true);
 	TBWidget::onPaintChildren(paintProps);
@@ -473,8 +505,9 @@ void TBEditFieldScrollRoot::getChildTranslation(int &x, int &y) const {
 
 WIDGET_HIT_STATUS TBEditFieldScrollRoot::getHitStatus(int x, int y) {
 	// Return no hit on this widget, but maybe on any of the children.
-	if (TBWidget::getHitStatus(x, y) && getWidgetAt(x, y, false))
+	if ((TBWidget::getHitStatus(x, y) != 0U) && (getWidgetAt(x, y, false) != nullptr)) {
 		return WIDGET_HIT_STATUS_HIT;
+	}
 	return WIDGET_HIT_STATUS_NO_HIT;
 }
 
@@ -508,11 +541,11 @@ void TBTextFragmentContentWidget::updatePos(const TBBlock *block, int x, int y) 
 }
 
 int32_t TBTextFragmentContentWidget::getWidth(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment) {
-	return m_widget->getRect().w ? m_widget->getRect().w : m_widget->getPreferredSize().pref_w;
+	return m_widget->getRect().w != 0 ? m_widget->getRect().w : m_widget->getPreferredSize().pref_w;
 }
 
 int32_t TBTextFragmentContentWidget::getHeight(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment) {
-	return m_widget->getRect().h ? m_widget->getRect().h : m_widget->getPreferredSize().pref_h;
+	return m_widget->getRect().h != 0 ? m_widget->getRect().h : m_widget->getPreferredSize().pref_h;
 }
 
 int32_t TBTextFragmentContentWidget::getBaseline(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment) {

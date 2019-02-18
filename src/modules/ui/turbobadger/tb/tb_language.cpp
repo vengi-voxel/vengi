@@ -15,15 +15,16 @@ TBLanguage::~TBLanguage() {
 bool TBLanguage::load(const char *filename) {
 	// Read the file into a node tree (even though it's only a flat list)
 	TBNode node;
-	if (!node.readFile(filename))
+	if (!node.readFile(filename)) {
 		return false;
+	}
 
 	// Go through all nodes and add to the strings hash table
 	TBNode *n = node.getFirstChild();
-	while (n) {
+	while (n != nullptr) {
 		const char *str = n->getValue().getString();
 		TBStr *new_str = new TBStr(str);
-		if (!new_str || !strings.add(TBID(n->getName()), new_str)) {
+		if ((new_str == nullptr) || !strings.add(TBID(n->getName()), new_str)) {
 			delete new_str;
 			return false;
 		}
@@ -37,8 +38,9 @@ void TBLanguage::clear() {
 }
 
 const char *TBLanguage::getString(const TBID &id) {
-	if (TBStr *str = strings.get(id))
+	if (TBStr *str = strings.get(id)) {
 		return *str;
+	}
 	return "<TRANSLATE!>";
 }
 

@@ -40,7 +40,7 @@ void tb_core_shutdown() {
 }
 
 bool tb_core_is_initialized() {
-	return g_widgets_reader ? true : false;
+	return g_widgets_reader != nullptr;
 }
 
 } // namespace tb

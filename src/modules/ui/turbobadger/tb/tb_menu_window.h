@@ -21,7 +21,7 @@ public:
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBMenuWindow, TBPopupWindow);
 
-	TBMenuWindow(TBWidget *target, TBID id);
+	TBMenuWindow(TBWidget *target, const TBID &id);
 	~TBMenuWindow();
 
 	bool show(TBSelectItemSource *source, const TBPopupAlignment &alignment, int initial_value = -1);

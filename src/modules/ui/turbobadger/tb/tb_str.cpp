@@ -9,20 +9,24 @@ namespace tb {
 
 static const char *empty = "";
 inline void safe_delete(char *&str) {
-	if (str != empty && str)
+	if (str != empty && (str != nullptr)) {
 		SDL_free(str);
+	}
 	str = const_cast<char *>(empty);
 }
 
 const char *stristr(const char *arg1, const char *arg2) {
-	const char *a, *b;
+	const char *a;
+	const char *b;
 
-	for (; *arg1; arg1++) {
+	for (; *arg1 != 0; arg1++) {
 		a = arg1;
 		b = arg2;
-		while (SDL_toupper(*a++) == SDL_toupper(*b++))
-			if (!*b)
+		while (SDL_toupper(*a++) == SDL_toupper(*b++)) {
+			if (*b == 0) {
 				return arg1;
+			}
+		}
 	}
 	return nullptr;
 }
@@ -33,13 +37,15 @@ TBStr::TBStr() : TBStrC(empty) {
 }
 
 TBStr::TBStr(const char *str) : TBStrC(str == empty ? empty : SDL_strdup(str)) {
-	if (!s)
+	if (s == nullptr) {
 		s = const_cast<char *>(empty);
+	}
 }
 
 TBStr::TBStr(const TBStr &str) : TBStrC(str.s == empty ? empty : SDL_strdup(str.s)) {
-	if (!s)
+	if (s == nullptr) {
 		s = const_cast<char *>(empty);
+	}
 }
 
 TBStr::TBStr(const char *str, int len) : TBStrC(empty) {
@@ -52,8 +58,9 @@ TBStr::~TBStr() {
 
 bool TBStr::set(const char *str, int len) {
 	safe_delete(s);
-	if (len == TB_ALL_TO_TERMINATION)
+	if (len == TB_ALL_TO_TERMINATION) {
 		len = SDL_strlen(str);
+	}
 	if (char *new_s = (char *)SDL_malloc(len + 1)) {
 		s = new_s;
 		SDL_memcpy(s, str, len);
@@ -65,8 +72,9 @@ bool TBStr::set(const char *str, int len) {
 
 bool TBStr::setFormatted(const char *format, ...) {
 	safe_delete(s);
-	if (!format)
+	if (format == nullptr) {
 		return true;
+	}
 	va_list ap;
 	int max_len = 64;
 	char *new_s = nullptr;
@@ -78,11 +86,11 @@ bool TBStr::setFormatted(const char *format, ...) {
 			int ret = SDL_vsnprintf(new_s, max_len, format, ap);
 			va_end(ap);
 
-			if (ret > max_len) // Needed size is known (+2 for termination and avoid ambiguity)
+			if (ret > max_len) { // Needed size is known (+2 for termination and avoid ambiguity)
 				max_len = ret + 2;
-			else if (ret == -1 || ret >= max_len - 1) // Handle some buggy vsnprintf implementations.
+			} else if (ret == -1 || ret >= max_len - 1) { // Handle some buggy vsnprintf implementations.
 				max_len *= 2;
-			else // Everything fit for sure
+			} else // Everything fit for sure
 			{
 				s = new_s;
 				return true;
@@ -102,19 +110,22 @@ void TBStr::clear() {
 
 void TBStr::remove(int ofs, int len) {
 	core_assert(ofs >= 0 && (ofs + len <= (int)SDL_strlen(s)));
-	if (!len)
+	if (len == 0) {
 		return;
+	}
 	char *dst = s + ofs;
 	char *src = s + ofs + len;
-	while (*src != 0)
+	while (*src != 0) {
 		*(dst++) = *(src++);
+	}
 	*dst = *src;
 }
 
 bool TBStr::insert(int ofs, const char *ins, int insLen) {
 	int len1 = SDL_strlen(s);
-	if (insLen == TB_ALL_TO_TERMINATION)
+	if (insLen == TB_ALL_TO_TERMINATION) {
 		insLen = SDL_strlen(ins);
+	}
 	int newlen = len1 + insLen;
 	if (char *news = (char *)SDL_malloc(newlen + 1)) {
 		SDL_memcpy(&news[0], s, ofs);

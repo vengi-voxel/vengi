@@ -183,16 +183,18 @@ public:
 
 	/** Delete the item at the given index. */
 	void deleteItem(int index) {
-		if (!m_items.getNumItems())
+		if (!m_items.getNumItems()) {
 			return;
+		}
 		m_items.doDelete(index);
 		invokeItemRemoved(index);
 	}
 
 	/** Delete all items. */
 	void deleteAllItems() {
-		if (!m_items.getNumItems())
+		if (!m_items.getNumItems()) {
 			return;
+		}
 		m_items.deleteAll();
 		invokeAllItemsRemoved();
 	}
@@ -212,7 +214,7 @@ public:
 	}
 	TBGenericStringItem(const char *str, TBID id) : str(str), id(id), sub_source(nullptr) {
 	}
-	TBGenericStringItem(const char *str, TBSelectItemSource *sub_source) : str(str), sub_source(sub_source) {
+	TBGenericStringItem(const char *str, TBSelectItemSource *subSource) : str(str), sub_source(subSource) {
 	}
 	const TBGenericStringItem &operator=(const TBGenericStringItem &other) {
 		str.set(other.str);

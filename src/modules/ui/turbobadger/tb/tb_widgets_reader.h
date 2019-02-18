@@ -16,8 +16,8 @@ class TBNode;
 
 /** INFLATE_INFO contains info passed to TBWidget::onInflate during resource loading. */
 struct INFLATE_INFO {
-	INFLATE_INFO(TBWidgetsReader *reader, TBWidget *target, TBNode *node, TBValue::TYPE sync_type)
-		: reader(reader), target(target), node(node), sync_type(sync_type) {
+	INFLATE_INFO(TBWidgetsReader *reader, TBWidget *target, TBNode *node, TBValue::TYPE syncType)
+		: reader(reader), target(target), node(node), sync_type(syncType) {
 	}
 	TBWidgetsReader *reader;
 

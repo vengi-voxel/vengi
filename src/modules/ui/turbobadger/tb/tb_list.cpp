@@ -9,8 +9,9 @@
 namespace tb {
 
 bool TBListBackend::add(void *data) {
-	if (!growIfNeeded())
+	if (!growIfNeeded()) {
 		return false;
+	}
 	m_data->list[m_data->num] = data;
 	m_data->num++;
 	return true;
@@ -18,10 +19,12 @@ bool TBListBackend::add(void *data) {
 
 bool TBListBackend::add(void *data, int index) {
 	core_assert(index >= 0 && index <= getNumItems());
-	if (!growIfNeeded())
+	if (!growIfNeeded()) {
 		return false;
-	if (index < m_data->num)
+	}
+	if (index < m_data->num) {
 		SDL_memmove(&m_data->list[index + 1], &m_data->list[index], (m_data->num - index) * sizeof(void *));
+	}
 	m_data->list[index] = data;
 	m_data->num++;
 	return true;
@@ -43,8 +46,9 @@ void *TBListBackend::removeFast(int index) {
 void *TBListBackend::remove(int index) {
 	core_assert(index >= 0 && index < getNumItems());
 	void *data = m_data->list[index];
-	if (index < m_data->num - 1)
+	if (index < m_data->num - 1) {
 		SDL_memmove(&m_data->list[index], &m_data->list[index + 1], (m_data->num - index - 1) * sizeof(void *));
+	}
 	m_data->num--;
 	return data;
 }
@@ -65,8 +69,9 @@ void TBListBackend::swap(int index1, int index2) {
 int TBListBackend::find(void *data) const {
 	int num = getNumItems();
 	for (int i = 0; i < num; i++) {
-		if (get(i) == data)
+		if (get(i) == data) {
 			return i;
+		}
 	}
 	return -1;
 }
@@ -94,8 +99,9 @@ bool TBListBackend::reserve(int newCapacity) {
 
 bool TBListBackend::growIfNeeded() {
 	int capacity = getCapacity();
-	if (getNumItems() == capacity)
+	if (getNumItems() == capacity) {
 		return reserve(capacity == 0 ? 4 : capacity * 2);
+	}
 	return true;
 }
 

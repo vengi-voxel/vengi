@@ -58,8 +58,7 @@ public:
 
 	/** Open the given font file with this renderer and return a new TBFontFace with it.
 		return nullptr if the file can't be opened by this renderer. */
-	virtual TBFontFace *create(TBFontManager *font_manager, const char *filename,
-							   const TBFontDescription &font_desc) = 0;
+	virtual TBFontFace *create(TBFontManager *fontManager, const char *filename, const TBFontDescription &fontDesc) = 0;
 
 	virtual bool renderGlyph(TBFontGlyphData *data, UCS4 cp) = 0;
 	virtual void getGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp) = 0;
@@ -143,11 +142,11 @@ private:
 /** TBFontFace represents a loaded font that can measure and render strings. */
 class TBFontFace {
 public:
-	TBFontFace(TBFontGlyphCache *glyph_cache, TBFontRenderer *renderer, const TBFontDescription &font_desc);
+	TBFontFace(TBFontGlyphCache *glyphCache, TBFontRenderer *renderer, const TBFontDescription &fontDesc);
 	~TBFontFace();
 
 	/** Render all glyphs needed to display the string. */
-	bool renderGlyphs(const char *glyph_str, int glyph_str_len = TB_ALL_TO_TERMINATION);
+	bool renderGlyphs(const char *glyphStr, int glyphStrLen = TB_ALL_TO_TERMINATION);
 
 	/** Get the vertical distance (positive) from the horizontal baseline to the highest character coordinate
 		in a font face. */
@@ -287,8 +286,8 @@ public:
 
 	/** Set the default font description. This is the font description that will be used by default
 		for widgets. By default, the default description is using the test dummy font. */
-	void setDefaultFontDescription(const TBFontDescription &font_desc) {
-		m_default_font_desc = font_desc;
+	void setDefaultFontDescription(const TBFontDescription &fontDesc) {
+		m_default_font_desc = fontDesc;
 	}
 	TBFontDescription getDefaultFontDescription() const {
 		return m_default_font_desc;

@@ -22,10 +22,11 @@ TBHashTable::~TBHashTable() {
 void TBHashTable::removeAll(bool delContent) {
 	for (uint32_t i = 0; i < m_num_buckets; i++) {
 		ITEM *item = m_buckets[i];
-		while (item) {
+		while (item != nullptr) {
 			ITEM *item_next = item->next;
-			if (delContent)
+			if (delContent) {
 				deleteContent(item->content);
+			}
 			delete item;
 			item = item_next;
 		}
@@ -36,14 +37,15 @@ void TBHashTable::removeAll(bool delContent) {
 }
 
 bool TBHashTable::rehash(uint32_t newNumBuckets) {
-	if (newNumBuckets == m_num_buckets)
+	if (newNumBuckets == m_num_buckets) {
 		return true;
+	}
 	if (ITEM **new_buckets = new ITEM *[newNumBuckets]) {
 		SDL_memset(new_buckets, 0, sizeof(ITEM *) * newNumBuckets);
 		// Rehash all items into the new buckets
 		for (uint32_t i = 0; i < m_num_buckets; i++) {
 			ITEM *item = m_buckets[i];
-			while (item) {
+			while (item != nullptr) {
 				ITEM *item_next = item->next;
 				// Add it to new_buckets
 				uint32_t bucket = item->key & (newNumBuckets - 1);
@@ -63,32 +65,36 @@ bool TBHashTable::rehash(uint32_t newNumBuckets) {
 
 bool TBHashTable::needRehash() const {
 	// Grow if more items than buckets
-	return !m_num_buckets || m_num_items >= m_num_buckets;
+	return (m_num_buckets == 0U) || m_num_items >= m_num_buckets;
 }
 
 uint32_t TBHashTable::getSuitableBucketsCount() const {
 	// As long as we use FNV for TBID (in TBGetHash), power of two hash sizes are the best.
-	if (!m_num_items)
+	if (m_num_items == 0U) {
 		return 16;
+	}
 	return m_num_items * 2;
 }
 
 void *TBHashTable::get(uint32_t key) const {
-	if (!m_num_buckets)
+	if (m_num_buckets == 0U) {
 		return nullptr;
+	}
 	uint32_t bucket = key & (m_num_buckets - 1);
 	ITEM *item = m_buckets[bucket];
-	while (item) {
-		if (item->key == key)
+	while (item != nullptr) {
+		if (item->key == key) {
 			return item->content;
+		}
 		item = item->next;
 	}
 	return nullptr;
 }
 
 bool TBHashTable::add(uint32_t key, void *content) {
-	if (needRehash() && !rehash(getSuitableBucketsCount()))
+	if (needRehash() && !rehash(getSuitableBucketsCount())) {
 		return false;
+	}
 	core_assert(!get(key));
 	if (ITEM *item = new ITEM) {
 		uint32_t bucket = key & (m_num_buckets - 1);
@@ -103,17 +109,19 @@ bool TBHashTable::add(uint32_t key, void *content) {
 }
 
 void *TBHashTable::remove(uint32_t key) {
-	if (!m_num_buckets)
+	if (m_num_buckets == 0U) {
 		return nullptr;
+	}
 	uint32_t bucket = key & (m_num_buckets - 1);
 	ITEM *item = m_buckets[bucket];
 	ITEM *prev_item = nullptr;
-	while (item) {
+	while (item != nullptr) {
 		if (item->key == key) {
-			if (prev_item)
+			if (prev_item != nullptr) {
 				prev_item->next = item->next;
-			else
+			} else {
 				m_buckets[bucket] = item->next;
+			}
 			m_num_items--;
 			void *content = item->content;
 			delete item;
@@ -138,7 +146,7 @@ void TBHashTable::debug() {
 	for (uint32_t i = 0; i < m_num_buckets; i++) {
 		int count = 0;
 		ITEM *item = m_buckets[i];
-		while (item) {
+		while (item != nullptr) {
 			count++;
 			item = item->next;
 		}
@@ -155,23 +163,27 @@ TBHashTableIterator::TBHashTableIterator(TBHashTable *hashTable)
 }
 
 void *TBHashTableIterator::getNextContent() {
-	if (m_current_bucket == m_hash_table->m_num_buckets)
+	if (m_current_bucket == m_hash_table->m_num_buckets) {
 		return nullptr;
-	if (m_current_item && m_current_item->next)
+	}
+	if ((m_current_item != nullptr) && (m_current_item->next != nullptr)) {
 		m_current_item = m_current_item->next;
-	else {
-		if (m_current_item)
+	} else {
+		if (m_current_item != nullptr) {
 			m_current_bucket++;
-		if (m_current_bucket == m_hash_table->m_num_buckets)
+		}
+		if (m_current_bucket == m_hash_table->m_num_buckets) {
 			return nullptr;
+		}
 		while (m_current_bucket < m_hash_table->m_num_buckets) {
 			m_current_item = m_hash_table->m_buckets[m_current_bucket];
-			if (m_current_item)
+			if (m_current_item != nullptr) {
 				break;
+			}
 			m_current_bucket++;
 		}
 	}
-	return m_current_item ? m_current_item->content : nullptr;
+	return m_current_item != nullptr ? m_current_item->content : nullptr;
 }
 
 } // namespace tb

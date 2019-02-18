@@ -28,8 +28,8 @@ public:
 	}
 
 	/** Returns true if the class or the base class matches the type id */
-	virtual bool isOfTypeId(const TB_TYPE_ID type_id) const {
-		return type_id == getTypeId<TBTypedObject>();
+	virtual bool isOfTypeId(const TB_TYPE_ID typeId) const {
+		return typeId == getTypeId<TBTypedObject>();
 	}
 
 	/** Returns this object as the given type or nullptr if it's not that type. */
@@ -39,7 +39,7 @@ public:
 
 	/** Return true if this object can safely be casted to the given type. */
 	template <class T> bool isOfType() const {
-		return safeCastTo<T>() ? true : false;
+		return static_cast<bool>(safeCastTo<T>());
 	}
 
 	/** Get the classname of the object. */

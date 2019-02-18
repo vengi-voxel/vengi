@@ -14,7 +14,7 @@ class TBColor {
 public:
 	constexpr TBColor() : b(0), g(0), r(0), a(255) {
 	}
-	constexpr TBColor(int _r, int _g, int _b, int _a = 255) : b(_b), g(_g), r(_r), a(_a) {
+	constexpr TBColor(int r, int g, int b, int a = 255) : b(b), g(g), r(r), a(a) {
 	}
 
 	uint8_t b, g, r, a;
@@ -48,7 +48,7 @@ public:
 	/** Unpremultiply alpha on the r, g, b components */
 	inline void unpremultiply() {
 		const uint32_t a32 = a;
-		if (a32) {
+		if (a32 != 0U) {
 			r = r * 255 / a32;
 			g = g * 255 / a32;
 			b = b * 255 / a32;

@@ -7,7 +7,7 @@
 
 namespace tb {
 
-TBMenuWindow::TBMenuWindow(TBWidget *target, TBID id) : TBPopupWindow(target) {
+TBMenuWindow::TBMenuWindow(TBWidget *target, const TBID &id) : TBPopupWindow(target) {
 	setID(id);
 	setSkinBg(TBIDC("TBMenuWindow"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 	m_select_list.getScrollContainer()->setAdaptToContentSize(true);
@@ -44,8 +44,9 @@ bool TBMenuWindow::onEvent(const TBWidgetEvent &ev) {
 		invokeEvent(target_ev);
 
 		// If target not deleted, close
-		if (this_widget.get())
+		if (this_widget.get() != nullptr) {
 			close();
+		}
 		return true;
 	}
 	return TBPopupWindow::onEvent(ev);

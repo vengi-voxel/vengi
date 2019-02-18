@@ -49,26 +49,30 @@ void TBSelectList::onSourceChanged() {
 }
 
 void TBSelectList::onItemChanged(int index) {
-	if (m_list_is_invalid) // We're updating all widgets soon.
+	if (m_list_is_invalid) { // We're updating all widgets soon.
 		return;
+	}
 
 	TBWidget *old_widget = getItemWidget(index);
-	if (!old_widget) // We don't have this widget so we have nothing to update.
+	if (old_widget == nullptr) { // We don't have this widget so we have nothing to update.
 		return;
+	}
 
 	// Replace the old widget representing the item, with a new one. Preserve its state.
 	WIDGET_STATE old_state = old_widget->getStateRaw();
 
-	if (TBWidget *widget = createAndAddItemAfter(index, old_widget))
+	if (TBWidget *widget = createAndAddItemAfter(index, old_widget)) {
 		widget->setStateRaw(old_state);
+	}
 
 	old_widget->removeFromParent();
 	delete old_widget;
 }
 
 void TBSelectList::onItemAdded(int index) {
-	if (m_list_is_invalid) // We're updating all widgets soon.
+	if (m_list_is_invalid) { // We're updating all widgets soon.
 		return;
+	}
 
 	// Sorting, filtering etc. makes it messy to handle dynamic addition of items.
 	// Resort to invalidate the entire list (may even be faster anyway)
@@ -76,8 +80,9 @@ void TBSelectList::onItemAdded(int index) {
 }
 
 void TBSelectList::onItemRemoved(int index) {
-	if (m_list_is_invalid) // We're updating all widgets soon.
+	if (m_list_is_invalid) { // We're updating all widgets soon.
 		return;
+	}
 
 	// Sorting, filtering etc. makes it messy to handle dynamic addition of items.
 	// Resort to invalidate the entire list (may even be faster anyway)
@@ -91,31 +96,36 @@ void TBSelectList::onAllItemsRemoved() {
 
 void TBSelectList::setFilter(const char *filter) {
 	TBStr new_filter;
-	if (filter && *filter)
+	if ((filter != nullptr) && (*filter != 0)) {
 		new_filter.set(filter);
-	if (m_filter.equals(new_filter))
+	}
+	if (m_filter.equals(new_filter)) {
 		return;
+	}
 	m_filter.set(new_filter);
 	invalidateList();
 }
 
 void TBSelectList::setHeaderString(const TBID &id) {
-	if (m_header_lng_string_id == id)
+	if (m_header_lng_string_id == id) {
 		return;
+	}
 	m_header_lng_string_id = id;
 	invalidateList();
 }
 
 void TBSelectList::invalidateList() {
-	if (m_list_is_invalid)
+	if (m_list_is_invalid) {
 		return;
+	}
 	m_list_is_invalid = true;
 	invalidate();
 }
 
 void TBSelectList::validateList() {
-	if (!m_list_is_invalid)
+	if (!m_list_is_invalid) {
 		return;
+	}
 	m_list_is_invalid = false;
 	// FIX: Could delete and create only the changed items (faster filter change)
 
@@ -124,24 +134,29 @@ void TBSelectList::validateList() {
 		child->removeFromParent();
 		delete child;
 	}
-	if (!m_source || !m_source->getNumItems())
+	if ((m_source == nullptr) || (m_source->getNumItems() == 0)) {
 		return;
+	}
 
 	// Create a sorted list of the items we should include using the current filter.
 	TBTempBuffer sort_buf;
-	if (!sort_buf.reserve(m_source->getNumItems() * sizeof(int)))
+	if (!sort_buf.reserve(m_source->getNumItems() * sizeof(int))) {
 		return; // Out of memory
+	}
 	int *sorted_index = (int *)sort_buf.getData();
 
 	// Populate the sorted index list
 	int num_sorted_items = 0;
-	for (int i = 0; i < m_source->getNumItems(); i++)
-		if (m_filter.isEmpty() || m_source->filter(i, m_filter))
+	for (int i = 0; i < m_source->getNumItems(); i++) {
+		if (m_filter.isEmpty() || m_source->filter(i, m_filter)) {
 			sorted_index[num_sorted_items++] = i;
+		}
+	}
 
 	// Sort
-	if (m_source->getSort() != TB_SORT_NONE)
+	if (m_source->getSort() != TB_SORT_NONE) {
 		insertion_sort<TBSelectItemSource *, int>(sorted_index, num_sorted_items, m_source, select_list_sort_cb);
+	}
 
 	// Show header if we only show a subset of all items.
 	if (!m_filter.isEmpty()) {
@@ -158,8 +173,9 @@ void TBSelectList::validateList() {
 	}
 
 	// Create new items
-	for (int i = 0; i < num_sorted_items; i++)
+	for (int i = 0; i < num_sorted_items; i++) {
 		createAndAddItemAfter(sorted_index[i], nullptr);
+	}
 
 	selectItem(m_value, true);
 
@@ -178,8 +194,9 @@ TBWidget *TBSelectList::createAndAddItemAfter(int index, TBWidget *reference) {
 }
 
 void TBSelectList::setValue(int value) {
-	if (value == m_value)
+	if (value == m_value) {
 		return;
+	}
 
 	selectItem(m_value, false);
 	m_value = value;
@@ -187,28 +204,34 @@ void TBSelectList::setValue(int value) {
 	scrollToSelectedItem();
 
 	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
-	if (TBWidget *widget = getItemWidget(m_value))
+	if (TBWidget *widget = getItemWidget(m_value)) {
 		ev.ref_id = widget->getID();
+	}
 	invokeEvent(ev);
 }
 
 TBID TBSelectList::getSelectedItemID() {
-	if (m_source && m_value >= 0 && m_value < m_source->getNumItems())
+	if ((m_source != nullptr) && m_value >= 0 && m_value < m_source->getNumItems()) {
 		return m_source->getItemID(m_value);
+	}
 	return TBID();
 }
 
 void TBSelectList::selectItem(int index, bool selected) {
-	if (TBWidget *widget = getItemWidget(index))
+	if (TBWidget *widget = getItemWidget(index)) {
 		widget->setState(WIDGET_STATE_SELECTED, selected);
+	}
 }
 
 TBWidget *TBSelectList::getItemWidget(int index) {
-	if (index == -1)
+	if (index == -1) {
 		return nullptr;
-	for (TBWidget *tmp = m_layout.getContentRoot()->getFirstChild(); tmp; tmp = tmp->getNext())
-		if (tmp->data.getInt() == index)
+	}
+	for (TBWidget *tmp = m_layout.getContentRoot()->getFirstChild(); tmp != nullptr; tmp = tmp->getNext()) {
+		if (tmp->data.getInt() == index) {
 			return tmp;
+		}
+	}
 	return nullptr;
 }
 
@@ -218,10 +241,11 @@ void TBSelectList::scrollToSelectedItem() {
 		return;
 	}
 	m_scroll_to_current = false;
-	if (TBWidget *widget = getItemWidget(m_value))
+	if (TBWidget *widget = getItemWidget(m_value)) {
 		m_container.scrollIntoView(widget->getRect());
-	else
+	} else {
 		m_container.scrollTo(0, 0);
+	}
 }
 
 void TBSelectList::onSkinChanged() {
@@ -233,8 +257,9 @@ void TBSelectList::onProcess() {
 }
 
 void TBSelectList::onProcessAfterChildren() {
-	if (m_scroll_to_current)
+	if (m_scroll_to_current) {
 		scrollToSelectedItem();
+	}
 }
 
 bool TBSelectList::onEvent(const TBWidgetEvent &ev) {
@@ -247,7 +272,7 @@ bool TBSelectList::onEvent(const TBWidgetEvent &ev) {
 		setValue(index);
 
 		// If we're still around, invoke the click event too.
-		if (this_widget.get()) {
+		if (this_widget.get() != nullptr) {
 			TBSelectList *target_list = this;
 			// If the parent window is a TBMenuWindow, we will iterate up the event destination
 			// chain to find the top TBMenuWindow and invoke the event there.
@@ -261,54 +286,62 @@ bool TBSelectList::onEvent(const TBWidgetEvent &ev) {
 
 			// Invoke the click event on the target list
 			TBWidgetEvent ev(EVENT_TYPE_CLICK);
-			if (TBWidget *widget = getItemWidget(m_value))
+			if (TBWidget *widget = getItemWidget(m_value)) {
 				ev.ref_id = widget->getID();
+			}
 			target_list->invokeEvent(ev);
 		}
 		return true;
-	} else if (ev.type == EVENT_TYPE_KEY_DOWN) {
-		if (changeValue(ev.special_key))
+	}
+	if (ev.type == EVENT_TYPE_KEY_DOWN) {
+		if (changeValue(ev.special_key)) {
 			return true;
+		}
 
 		// Give the scroll container a chance to handle the key so it may
 		// scroll. This matters if the list itself is focused instead of
 		// some child view of any select item (since that would have passed
 		// the container already)
-		if (getScrollContainer()->onEvent(ev))
+		if (getScrollContainer()->onEvent(ev)) {
 			return true;
+		}
 	}
 	return false;
 }
 
 bool TBSelectList::changeValue(SPECIAL_KEY key) {
-	if (!m_source || !m_layout.getContentRoot()->getFirstChild())
+	if ((m_source == nullptr) || (m_layout.getContentRoot()->getFirstChild() == nullptr)) {
 		return false;
+	}
 
 	bool forward;
-	if (key == TB_KEY_HOME || key == TB_KEY_DOWN)
+	if (key == TB_KEY_HOME || key == TB_KEY_DOWN) {
 		forward = true;
-	else if (key == TB_KEY_END || key == TB_KEY_UP)
+	} else if (key == TB_KEY_END || key == TB_KEY_UP) {
 		forward = false;
-	else
+	} else {
 		return false;
+	}
 
 	TBWidget *item_root = m_layout.getContentRoot();
 	TBWidget *current = getItemWidget(m_value);
 	TBWidget *origin = nullptr;
-	if (key == TB_KEY_HOME || (!current && key == TB_KEY_DOWN))
+	if (key == TB_KEY_HOME || ((current == nullptr) && key == TB_KEY_DOWN)) {
 		current = item_root->getFirstChild();
-	else if (key == TB_KEY_END || (!current && key == TB_KEY_UP))
+	} else if (key == TB_KEY_END || ((current == nullptr) && key == TB_KEY_UP)) {
 		current = item_root->getLastChild();
-	else
+	} else {
 		origin = current;
+	}
 
-	while (current) {
-		if (current != origin && !current->getDisabled())
+	while (current != nullptr) {
+		if (current != origin && !current->getDisabled()) {
 			break;
+		}
 		current = forward ? current->getNext() : current->getPrev();
 	}
 	// Select and focus what we found
-	if (current) {
+	if (current != nullptr) {
 		setValue(current->data.getInt());
 		return true;
 	}
@@ -332,36 +365,41 @@ TBSelectDropdown::~TBSelectDropdown() {
 
 void TBSelectDropdown::onSourceChanged() {
 	m_value = -1;
-	if (m_source && m_source->getNumItems())
+	if ((m_source != nullptr) && (m_source->getNumItems() != 0)) {
 		setValue(0);
+	}
 }
 
 void TBSelectDropdown::onItemChanged(int index) {
 }
 
 void TBSelectDropdown::setValue(int value) {
-	if (value == m_value || !m_source)
+	if (value == m_value || (m_source == nullptr)) {
 		return;
+	}
 	m_value = value;
 
-	if (m_value < 0)
+	if (m_value < 0) {
 		setText("");
-	else if (m_value < m_source->getNumItems())
+	} else if (m_value < m_source->getNumItems()) {
 		setText(m_source->getItemString(m_value));
+	}
 
 	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
 	invokeEvent(ev);
 }
 
 TBID TBSelectDropdown::getSelectedItemID() const {
-	if (m_source && m_value >= 0 && m_value < m_source->getNumItems())
+	if ((m_source != nullptr) && m_value >= 0 && m_value < m_source->getNumItems()) {
 		return m_source->getItemID(m_value);
+	}
 	return TBID();
 }
 
 void TBSelectDropdown::openWindow() {
-	if (!m_source || !m_source->getNumItems() || m_window_pointer.get())
+	if ((m_source == nullptr) || (m_source->getNumItems() == 0) || (m_window_pointer.get() != nullptr)) {
 		return;
+	}
 
 	if (TBMenuWindow *window = new TBMenuWindow(this, TBIDC("TBSelectDropdown.window"))) {
 		m_window_pointer.set(window);
@@ -371,8 +409,9 @@ void TBSelectDropdown::openWindow() {
 }
 
 void TBSelectDropdown::closeWindow() {
-	if (TBMenuWindow *window = getMenuIfOpen())
+	if (TBMenuWindow *window = getMenuIfOpen()) {
 		window->close();
+	}
 }
 
 TBMenuWindow *TBSelectDropdown::getMenuIfOpen() const {
@@ -387,17 +426,22 @@ bool TBSelectDropdown::onEvent(const TBWidgetEvent &ev) {
 			TBWidgetSafePointer tmp(this);
 			int value = menu_window->getList()->getValue();
 			menu_window->die();
-			if (tmp.get())
+			if (tmp.get() != nullptr) {
 				setValue(value);
-		} else
+			}
+		} else {
 			openWindow();
+		}
 		return true;
-	} else if (ev.target->getID() == TBIDC("TBSelectDropdown.window") && ev.type == EVENT_TYPE_CLICK) {
+	}
+	if (ev.target->getID() == TBIDC("TBSelectDropdown.window") && ev.type == EVENT_TYPE_CLICK) {
 		// Set the value of the clicked item
-		if (TBMenuWindow *menu_window = getMenuIfOpen())
+		if (TBMenuWindow *menu_window = getMenuIfOpen()) {
 			setValue(menu_window->getList()->getValue());
+		}
 		return true;
-	} else if (ev.target == this && m_source && ev.isKeyEvent()) {
+	}
+	if (ev.target == this && (m_source != nullptr) && ev.isKeyEvent()) {
 		if (TBMenuWindow *menu_window = getMenuIfOpen()) {
 			// Redirect the key strokes to the list
 			TBWidgetEvent redirected_ev(ev);

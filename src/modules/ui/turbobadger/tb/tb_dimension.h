@@ -30,7 +30,7 @@ public:
 	}
 
 	/** Set the source and destination DPI that will affect the conversion. */
-	void setDPI(int src_dpi, int dst_dpi);
+	void setDPI(int srcDpi, int dstDpi);
 
 	/** Get the source DPI. */
 	int getSrcDPI() const {

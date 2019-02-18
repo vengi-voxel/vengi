@@ -41,7 +41,7 @@ int TBSystem::getPixelsPerLine() {
 int TBSystem::getDPI() {
 #if SDL_VERSION_ATLEAST(2, 0, 4)
 	float ddpi;
-	if (SDL_GetDisplayDPI(0, &ddpi, NULL, NULL)) {
+	if (SDL_GetDisplayDPI(0, &ddpi, NULL, NULL) != 0) {
 		return 96;
 	}
 	return (int)ddpi;
@@ -55,7 +55,7 @@ void TBClipboard::empty() {
 }
 
 bool TBClipboard::hasText() {
-	return SDL_HasClipboardText();
+	return SDL_HasClipboardText() != 0U;
 }
 
 bool TBClipboard::setText(const char *text) {
@@ -63,8 +63,9 @@ bool TBClipboard::setText(const char *text) {
 }
 
 bool TBClipboard::getText(TBStr &text) {
-	if (const char *str = SDL_GetClipboardText())
+	if (const char *str = SDL_GetClipboardText()) {
 		return text.set(str);
+	}
 	return false;
 }
 

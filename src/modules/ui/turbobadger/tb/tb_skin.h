@@ -255,7 +255,7 @@ public:
 
 	/** Set the DPI that the bitmap was loaded in. This may modify properties
 		to compensate for the bitmap resolution. */
-	void setBitmapDPI(const TBDimensionConverter &dim_conv, int bitmap_dpi);
+	void setBitmapDPI(const TBDimensionConverter &dimConv, int bitmapDpi);
 
 	/** List of override elements (See TBSkin::PaintSkin) */
 	TBSkinElementStateList m_override_elements;
@@ -315,7 +315,7 @@ public:
 		clone elements in the same file!
 
 		Returns true on success, and all bitmaps referred to also loaded successfully. */
-	bool load(const char *skin_file, const char *override_skin_file = nullptr);
+	bool load(const char *skinFile, const char *overrideSkinFile = nullptr);
 
 	/** Unload all bitmaps used in this skin. */
 	void unloadBitmaps();
@@ -388,7 +388,7 @@ public:
 
 		Return the skin element used (after following override elements),
 		or nullptr if no skin element was found matching the skin_id. */
-	TBSkinElement *paintSkin(const TBRect &dst_rect, const TBID &skin_id, SKIN_STATE state,
+	TBSkinElement *paintSkin(const TBRect &dstRect, const TBID &skinId, SKIN_STATE state,
 							 TBSkinConditionContext &context);
 
 	/** Paint the skin at dst_rect. Just like the PaintSkin above, but takes a specific
@@ -438,7 +438,7 @@ private:
 	void paintElementImage(const TBRect &dst_rect, TBSkinElement *element);
 	void paintElementTile(const TBRect &dst_rect, TBSkinElement *element);
 	void paintElementStretchImage(const TBRect &dst_rect, TBSkinElement *element);
-	void paintElementStretchBox(const TBRect &dst_rect, TBSkinElement *element, bool fill_center);
+	void paintElementStretchBox(const TBRect &dstRect, TBSkinElement *element, bool fillCenter);
 	TBRect getFlippedRect(const TBRect &src_rect, TBSkinElement *element) const;
 	int getPxFromNode(TBNode *node, int def_value) const;
 };

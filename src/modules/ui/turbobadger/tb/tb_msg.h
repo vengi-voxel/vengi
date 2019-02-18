@@ -47,7 +47,7 @@ class TBMessageLink : public TBLinkOf<TBMessageLink> {};
 
 class TBMessage : public TBLinkOf<TBMessage>, public TBMessageLink {
 private:
-	TBMessage(TBID message, TBMessageData *data, double fire_time_ms, TBMessageHandler *mh);
+	TBMessage(const TBID &message, TBMessageData *data, double fire_time_ms, TBMessageHandler *mh);
 	~TBMessage();
 
 public:
@@ -79,22 +79,22 @@ public:
 	/** Posts a message to the target after a delay.
 		data may be nullptr if no extra data need to be sent. It will be deleted
 		automatically when the message is deleted. */
-	bool postMessageDelayed(TBID message, TBMessageData *data, uint32_t delay_in_ms);
+	bool postMessageDelayed(const TBID &message, TBMessageData *data, uint32_t delay_in_ms);
 
 	/** Posts a message to the target at the given time (relative to TBSystem::getTimeMS()).
 		data may be nullptr if no extra data need to be sent. It will be deleted
 		automatically when the message is deleted. */
-	bool postMessageOnTime(TBID message, TBMessageData *data, double fire_time);
+	bool postMessageOnTime(const TBID &message, TBMessageData *data, double fire_time);
 
 	/** Posts a message to the target.
 		data may be nullptr if no extra data need to be sent. It will be deleted
 		automatically when the message is deleted. */
-	bool postMessage(TBID message, TBMessageData *data);
+	bool postMessage(const TBID &message, TBMessageData *data);
 
 	/** Check if this messagehandler has a pending message with the given id.
 		Returns the message if found, or nullptr.
 		If you want to delete the message, call DeleteMessage. */
-	TBMessage *getMessageByID(TBID message);
+	TBMessage *getMessageByID(const TBID &message);
 
 	/** Delete the message from this message handler. */
 	void deleteMessage(TBMessage *msg);

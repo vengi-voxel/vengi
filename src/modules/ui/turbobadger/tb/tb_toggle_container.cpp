@@ -15,12 +15,12 @@ TBSectionHeader::TBSectionHeader() {
 }
 
 bool TBSectionHeader::onEvent(const TBWidgetEvent &ev) {
-	if (ev.target == this && ev.type == EVENT_TYPE_CHANGED && getParent()->getParent()) {
+	if (ev.target == this && ev.type == EVENT_TYPE_CHANGED && (getParent()->getParent() != nullptr)) {
 		if (TBSection *section = TBSafeCast<TBSection>(getParent()->getParent())) {
 			section->getContainer()->setValue(getValue());
 
 			// Try to scroll the container into view when expanded
-			section->setPendingScrollIntoView(getValue() ? true : false);
+			section->setPendingScrollIntoView(getValue() != 0);
 		}
 	}
 	return TBButton::onEvent(ev);
@@ -78,26 +78,30 @@ TBToggleContainer::TBToggleContainer() : m_toggle(TOGGLE_NOTHING), m_invert(fals
 }
 
 void TBToggleContainer::setToggle(TOGGLE toggle) {
-	if (toggle == m_toggle)
+	if (toggle == m_toggle) {
 		return;
+	}
 
-	if (m_toggle == TOGGLE_EXPANDED)
+	if (m_toggle == TOGGLE_EXPANDED) {
 		invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+	}
 
 	m_toggle = toggle;
 	updateInternal();
 }
 
 void TBToggleContainer::setInvert(bool invert) {
-	if (invert == m_invert)
+	if (invert == m_invert) {
 		return;
+	}
 	m_invert = invert;
 	updateInternal();
 }
 
 void TBToggleContainer::setValue(int value) {
-	if (value == m_value)
+	if (value == m_value) {
 		return;
+	}
 	m_value = value;
 	updateInternal();
 	invalidateSkinStates();
@@ -112,7 +116,7 @@ void TBToggleContainer::updateInternal() {
 		setState(WIDGET_STATE_DISABLED, !on);
 		break;
 	case TOGGLE_OPACITY:
-		setOpacity(on ? 1.f : 0);
+		setOpacity(on ? 1.F : 0);
 		break;
 	case TOGGLE_EXPANDED:
 		setVisibility(on ? WIDGET_VISIBILITY_VISIBLE : WIDGET_VISIBILITY_GONE);

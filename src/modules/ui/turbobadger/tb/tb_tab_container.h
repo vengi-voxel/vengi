@@ -43,7 +43,7 @@ public:
 	}
 
 	/** Set which page should be selected and visible. */
-	virtual void setValue(int value) override;
+	virtual void setValue(int index) override;
 	virtual int getValue() const override {
 		return m_current_page;
 	}

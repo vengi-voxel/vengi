@@ -15,7 +15,7 @@ TBWidgetString::TBWidgetString() : m_text_align(TB_TEXT_ALIGN_CENTER), m_width(0
 
 void TBWidgetString::validatCachedSize(TBWidget *widget) {
 	const TBFontDescription fd = widget->getCalculatedFontDescription();
-	if (!m_height || fd != m_fd) {
+	if ((m_height == 0) || fd != m_fd) {
 		m_fd = fd;
 		TBFontFace *font = g_font_manager->getFontFace(fd);
 		m_width = font->getStringWidth(m_text);
@@ -44,15 +44,16 @@ void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &
 	TBFontFace *font = widget->getFont();
 
 	int x = rect.x;
-	if (m_text_align == TB_TEXT_ALIGN_RIGHT)
+	if (m_text_align == TB_TEXT_ALIGN_RIGHT) {
 		x += rect.w - m_width;
-	else if (m_text_align == TB_TEXT_ALIGN_CENTER)
+	} else if (m_text_align == TB_TEXT_ALIGN_CENTER) {
 		x += Max(0, (rect.w - m_width) / 2);
+	}
 	int y = rect.y + (rect.h - m_height) / 2;
 
-	if (m_width <= rect.w)
+	if (m_width <= rect.w) {
 		font->drawString(x, y, color, m_text);
-	else {
+	} else {
 		// There's not enough room for the entire string
 		// so cut it off and end with ellipsis (...)
 
@@ -63,10 +64,11 @@ void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &
 		int endw = font->getStringWidth(end);
 		int startw = 0;
 		int startlen = 0;
-		while (m_text.c_str()[startlen]) {
+		while (m_text.c_str()[startlen] != 0) {
 			int new_startw = font->getStringWidth(m_text, startlen);
-			if (new_startw + endw > rect.w)
+			if (new_startw + endw > rect.w) {
 				break;
+			}
 			startw = new_startw;
 			startlen++;
 		}
@@ -84,8 +86,9 @@ TBTextField::TBTextField() : m_cached_text_width(UPDATE_TEXT_WIDTH_CACHE), m_squ
 }
 
 bool TBTextField::setText(const char *text) {
-	if (m_text.equals(text))
+	if (m_text.equals(text)) {
 		return true;
+	}
 	m_cached_text_width = UPDATE_TEXT_WIDTH_CACHE;
 	invalidate();
 	invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
@@ -93,8 +96,9 @@ bool TBTextField::setText(const char *text) {
 }
 
 void TBTextField::setSqueezable(bool squeezable) {
-	if (squeezable == m_squeezable)
+	if (squeezable == m_squeezable) {
 		return;
+	}
 	m_squeezable = squeezable;
 	invalidate();
 	invalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
@@ -102,16 +106,19 @@ void TBTextField::setSqueezable(bool squeezable) {
 
 PreferredSize TBTextField::onCalculatePreferredContentSize(const SizeConstraints &constraints) {
 	PreferredSize ps;
-	if (m_cached_text_width == UPDATE_TEXT_WIDTH_CACHE)
+	if (m_cached_text_width == UPDATE_TEXT_WIDTH_CACHE) {
 		m_cached_text_width = m_text.getWidth(this);
+	}
 	ps.pref_w = m_cached_text_width;
 	ps.pref_h = ps.min_h = m_text.getHeight(this);
 	// If gravity pull both up and down, use default max_h (grow as much as possible).
 	// Otherwise it makes sense to only accept one line height.
-	if (!((getGravity() & WIDGET_GRAVITY_TOP) && (getGravity() & WIDGET_GRAVITY_BOTTOM)))
+	if (!(((getGravity() & WIDGET_GRAVITY_TOP) != 0U) && ((getGravity() & WIDGET_GRAVITY_BOTTOM) != 0U))) {
 		ps.max_h = ps.pref_h;
-	if (!m_squeezable)
+	}
+	if (!m_squeezable) {
 		ps.min_w = ps.pref_w;
+	}
 	return ps;
 }
 
@@ -154,9 +161,10 @@ bool TBButton::setText(const char *text) {
 }
 
 void TBButton::setValue(int value) {
-	if (value == getValue())
+	if (value == getValue()) {
 		return;
-	setState(WIDGET_STATE_PRESSED, value ? true : false);
+	}
+	setState(WIDGET_STATE_PRESSED, value != 0);
 
 	if (canToggle()) {
 		// Invoke a changed event.
@@ -164,20 +172,22 @@ void TBButton::setValue(int value) {
 		invokeEvent(ev);
 	}
 
-	if (value && getGroupID())
+	if ((value != 0) && (getGroupID() != 0U)) {
 		TBRadioCheckBox::updateGroupWidgets(this);
+	}
 }
 
 int TBButton::getValue() const {
-	return getState(WIDGET_STATE_PRESSED);
+	return static_cast<int>(getState(WIDGET_STATE_PRESSED));
 }
 
 void TBButton::onCaptureChanged(bool captured) {
-	if (captured && m_auto_repeat_click)
+	if (captured && m_auto_repeat_click) {
 		postMessageDelayed(TBIDC("auto_click"), nullptr, auto_click_first_delay);
-	else if (!captured) {
-		if (TBMessage *msg = getMessageByID(TBIDC("auto_click")))
+	} else if (!captured) {
+		if (TBMessage *msg = getMessageByID(TBIDC("auto_click"))) {
 			deleteMessage(msg);
+		}
 	}
 }
 
@@ -190,11 +200,13 @@ bool TBButton::onEvent(const TBWidgetEvent &ev) {
 		TBWidgetSafePointer this_widget(this);
 
 		// Toggle the value, if it's not a grouped widget with value on.
-		if (!(getGroupID() && getValue()))
-			setValue(!getValue());
+		if (!((getGroupID() != 0U) && (getValue() != 0))) {
+			setValue(static_cast<int>(static_cast<int>(getValue()) == 0));
+		}
 
-		if (!this_widget.get())
+		if (this_widget.get() == nullptr) {
 			return true; // We got removed so we actually handled this event.
+		}
 
 		// Intentionally don't return true for this event. We want it to continue propagating.
 	}
@@ -204,18 +216,19 @@ bool TBButton::onEvent(const TBWidgetEvent &ev) {
 void TBButton::onMessageReceived(TBMessage *msg) {
 	if (msg->message == TBIDC("auto_click")) {
 		core_assert(captured_widget == this);
-		if (!cancel_click && getHitStatus(pointer_move_widget_x, pointer_move_widget_y)) {
+		if (!cancel_click && (getHitStatus(pointer_move_widget_x, pointer_move_widget_y) != 0U)) {
 			TBWidgetEvent ev(EVENT_TYPE_CLICK, pointer_move_widget_x, pointer_move_widget_y, TB_TOUCH);
 			captured_widget->invokeEvent(ev);
 		}
-		if (auto_click_repeat_delay)
+		if (auto_click_repeat_delay != 0) {
 			postMessageDelayed(TBIDC("auto_click"), nullptr, auto_click_repeat_delay);
+		}
 	}
 }
 
 WIDGET_HIT_STATUS TBButton::getHitStatus(int x, int y) {
 	// Never hit any of the children to the button. We always want to the button itself.
-	return TBWidget::getHitStatus(x, y) ? WIDGET_HIT_STATUS_HIT_NO_CHILDREN : WIDGET_HIT_STATUS_NO_HIT;
+	return TBWidget::getHitStatus(x, y) != 0U ? WIDGET_HIT_STATUS_HIT_NO_CHILDREN : WIDGET_HIT_STATUS_NO_HIT;
 }
 
 void TBButton::updateTextFieldVisibility() {
@@ -250,21 +263,24 @@ TBClickLabel::~TBClickLabel() {
 bool TBClickLabel::onEvent(const TBWidgetEvent &ev) {
 	// Get a widget from the layout that isn't the textfield, or just bail out
 	// if we only have the textfield.
-	if (m_layout.getFirstChild() == m_layout.getLastChild())
+	if (m_layout.getFirstChild() == m_layout.getLastChild()) {
 		return false;
+	}
 	TBWidget *click_target =
 		(m_layout.getFirstChild() == &m_textfield ? m_layout.getLastChild() : m_layout.getFirstChild());
 	// Invoke the event on it, as if it was invoked on the target itself.
-	if (click_target && ev.target != click_target) {
+	if ((click_target != nullptr) && ev.target != click_target) {
 		// Focus the target if we clicked the label.
-		if (ev.type == EVENT_TYPE_CLICK)
+		if (ev.type == EVENT_TYPE_CLICK) {
 			click_target->setFocus(WIDGET_FOCUS_REASON_POINTER);
+		}
 
 		// Sync our pressed state with the click target. Special case for when we're just about to
 		// lose it ourself (pointer is being released).
-		bool pressed_state = (ev.target->getAutoState() & WIDGET_STATE_PRESSED) ? true : false;
-		if (ev.type == EVENT_TYPE_POINTER_UP || ev.type == EVENT_TYPE_CLICK)
+		bool pressed_state = (ev.target->getAutoState() & WIDGET_STATE_PRESSED) != 0U;
+		if (ev.type == EVENT_TYPE_POINTER_UP || ev.type == EVENT_TYPE_CLICK) {
 			pressed_state = false;
+		}
 
 		click_target->setState(WIDGET_STATE_PRESSED, pressed_state);
 
@@ -298,28 +314,30 @@ TBProgressSpinner::TBProgressSpinner() : m_value(0), m_frame(0) {
 }
 
 void TBProgressSpinner::setValue(int value) {
-	if (value == m_value)
+	if (value == m_value) {
 		return;
+	}
 	invalidateSkinStates();
 	core_assert(value >= 0); // If this happens, you probably have unballanced Begin/End calls.
 	m_value = value;
 	if (value > 0) {
 		// Start animation
-		if (!getMessageByID(TBID(1))) {
+		if (getMessageByID(TBID(1)) == nullptr) {
 			m_frame = 0;
 			postMessageDelayed(TBID(1), nullptr, spin_speed);
 		}
 	} else {
 		// Stop animation
-		if (TBMessage *msg = getMessageByID(TBID(1)))
+		if (TBMessage *msg = getMessageByID(TBID(1))) {
 			deleteMessage(msg);
+		}
 	}
 }
 
 void TBProgressSpinner::onPaint(const PaintProps &paintProps) {
 	if (isRunning()) {
 		TBSkinElement *e = g_tb_skin->getSkinElement(m_skin_fg);
-		if (e && e->bitmap) {
+		if ((e != nullptr) && (e->bitmap != nullptr)) {
 			int size = e->bitmap->height();
 			int num_frames = e->bitmap->width() / e->bitmap->height();
 			int current_frame = m_frame % num_frames;
@@ -346,23 +364,28 @@ void TBRadioCheckBox::updateGroupWidgets(TBWidget *newLeader) {
 
 	// Find the group root widget.
 	TBWidget *group = newLeader;
-	while (group && !group->getIsGroupRoot() && group->getParent())
+	while ((group != nullptr) && !group->getIsGroupRoot() && (group->getParent() != nullptr)) {
 		group = group->getParent();
+	}
 
-	for (TBWidget *child = group; child; child = child->getNextDeep(group))
-		if (child != newLeader && child->getGroupID() == newLeader->getGroupID())
+	for (TBWidget *child = group; child != nullptr; child = child->getNextDeep(group)) {
+		if (child != newLeader && child->getGroupID() == newLeader->getGroupID()) {
 			child->setValue(0);
+		}
+	}
 }
 
 void TBRadioCheckBox::setValue(int value) {
-	if (m_value == value)
+	if (m_value == value) {
 		return;
+	}
 	m_value = value;
 
-	setState(WIDGET_STATE_SELECTED, value ? true : false);
+	setState(WIDGET_STATE_SELECTED, value != 0);
 
-	if (value && getGroupID())
+	if ((value != 0) && (getGroupID() != 0U)) {
 		updateGroupWidgets(this);
+	}
 
 	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
 	invokeEvent(ev);
@@ -378,8 +401,8 @@ PreferredSize TBRadioCheckBox::onCalculatePreferredSize(const SizeConstraints &c
 bool TBRadioCheckBox::onEvent(const TBWidgetEvent &ev) {
 	if (ev.target == this && ev.type == EVENT_TYPE_CLICK) {
 		// Toggle the value, if it's not a grouped widget with value on.
-		if (!(getGroupID() && getValue())) {
-			setValue(!getValue());
+		if (!((getGroupID() != 0U) && (getValue() != 0))) {
+			setValue(static_cast<int>(static_cast<int>(getValue()) == 0));
 		}
 	}
 	return false;
@@ -398,8 +421,9 @@ TBScrollBar::~TBScrollBar() {
 }
 
 void TBScrollBar::setAxis(AXIS axis) {
-	if (axis == m_axis)
+	if (axis == m_axis) {
 		return;
+	}
 	m_axis = axis;
 	if (axis == AXIS_X) {
 		setSkinBg(TBIDC("TBScrollBarBgX"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
@@ -414,8 +438,9 @@ void TBScrollBar::setAxis(AXIS axis) {
 void TBScrollBar::setLimits(double min, double max, double visible) {
 	max = Max(min, max);
 	visible = Max(visible, 0.0);
-	if (min == m_min && max == m_max && m_visible == visible)
+	if (min == m_min && max == m_max && m_visible == visible) {
 		return;
+	}
 	m_min = min;
 	m_max = max;
 	m_visible = visible;
@@ -424,19 +449,22 @@ void TBScrollBar::setLimits(double min, double max, double visible) {
 	// If we're currently dragging the scrollbar handle, convert the down point
 	// to root and then back after the applying the new limit.
 	// This prevents sudden jumps to unexpected positions when scrolling.
-	if (captured_widget == &m_handle)
+	if (captured_widget == &m_handle) {
 		m_handle.convertToRoot(pointer_down_widget_x, pointer_down_widget_y);
+	}
 
 	updateHandle();
 
-	if (captured_widget == &m_handle)
+	if (captured_widget == &m_handle) {
 		m_handle.convertFromRoot(pointer_down_widget_x, pointer_down_widget_y);
+	}
 }
 
 void TBScrollBar::setValueDouble(double value) {
 	value = Clamp(value, m_min, m_max);
-	if (value == m_value)
+	if (value == m_value) {
 		return;
+	}
 	m_value = value;
 
 	updateHandle();
@@ -453,14 +481,17 @@ bool TBScrollBar::onEvent(const TBWidgetEvent &ev) {
 			setValueDouble(m_value + delta_val);
 		}
 		return true;
-	} else if (ev.type == EVENT_TYPE_POINTER_MOVE && ev.target == this)
+	}
+	if (ev.type == EVENT_TYPE_POINTER_MOVE && ev.target == this) {
 		return true;
-	else if (ev.type == EVENT_TYPE_POINTER_DOWN && ev.target == this) {
+	}
+	if (ev.type == EVENT_TYPE_POINTER_DOWN && ev.target == this) {
 		bool after_handle =
 			(m_axis == AXIS_X ? ev.target_x > m_handle.getRect().x : ev.target_y > m_handle.getRect().y);
 		setValueDouble(m_value + (after_handle ? m_visible : -m_visible));
 		return true;
-	} else if (ev.type == EVENT_TYPE_WHEEL) {
+	}
+	if (ev.type == EVENT_TYPE_WHEEL) {
 		double old_val = m_value;
 		setValueDouble(m_value + ev.delta_y * TBSystem::getPixelsPerLine());
 		return m_value != old_val;
@@ -495,10 +526,11 @@ void TBScrollBar::updateHandle() {
 	int pixel_pos = (int)(m_value * m_to_pixel_factor);
 
 	TBRect rect;
-	if (horizontal)
+	if (horizontal) {
 		rect.set(pixel_pos, 0, visible_pixels, getRect().h);
-	else
+	} else {
 		rect.set(0, pixel_pos, getRect().w, visible_pixels);
+	}
 
 	m_handle.setRect(rect);
 }
@@ -521,8 +553,9 @@ TBSlider::~TBSlider() {
 }
 
 void TBSlider::setAxis(AXIS axis) {
-	if (axis == m_axis)
+	if (axis == m_axis) {
 		return;
+	}
 	m_axis = axis;
 	if (axis == AXIS_X) {
 		setSkinBg(TBIDC("TBSliderBgX"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
@@ -536,8 +569,9 @@ void TBSlider::setAxis(AXIS axis) {
 
 void TBSlider::setLimits(double min, double max) {
 	min = Min(min, max);
-	if (min == m_min && max == m_max)
+	if (min == m_min && max == m_max) {
 		return;
+	}
 	m_min = min;
 	m_max = max;
 	setValueDouble(m_value);
@@ -546,8 +580,9 @@ void TBSlider::setLimits(double min, double max) {
 
 void TBSlider::setValueDouble(double value) {
 	value = Clamp(value, m_min, m_max);
-	if (value == m_value)
+	if (value == m_value) {
 		return;
+	}
 	m_value = value;
 
 	updateHandle();
@@ -564,24 +599,29 @@ bool TBSlider::onEvent(const TBWidgetEvent &ev) {
 			setValueDouble(m_value + delta_val);
 		}
 		return true;
-	} else if (ev.type == EVENT_TYPE_WHEEL) {
+	}
+	if (ev.type == EVENT_TYPE_WHEEL) {
 		double old_val = m_value;
 		double step = (m_axis == AXIS_X ? getSmallStep() : -getSmallStep());
 		setValueDouble(m_value + step * ev.delta_y);
 		return m_value != old_val;
-	} else if (ev.type == EVENT_TYPE_KEY_DOWN) {
+	}
+	if (ev.type == EVENT_TYPE_KEY_DOWN) {
 		double step = (m_axis == AXIS_X ? getSmallStep() : -getSmallStep());
-		if (ev.special_key == TB_KEY_LEFT || ev.special_key == TB_KEY_UP)
+		if (ev.special_key == TB_KEY_LEFT || ev.special_key == TB_KEY_UP) {
 			setValueDouble(getValueDouble() - step);
-		else if (ev.special_key == TB_KEY_RIGHT || ev.special_key == TB_KEY_DOWN)
+		} else if (ev.special_key == TB_KEY_RIGHT || ev.special_key == TB_KEY_DOWN) {
 			setValueDouble(getValueDouble() + step);
-		else
+		} else {
 			return false;
+		}
 		return true;
-	} else if (ev.type == EVENT_TYPE_KEY_UP) {
+	}
+	if (ev.type == EVENT_TYPE_KEY_UP) {
 		if (ev.special_key == TB_KEY_LEFT || ev.special_key == TB_KEY_UP || ev.special_key == TB_KEY_RIGHT ||
-			ev.special_key == TB_KEY_DOWN)
+			ev.special_key == TB_KEY_DOWN) {
 			return true;
+		}
 	}
 	return false;
 }
@@ -599,12 +639,14 @@ void TBSlider::updateHandle() {
 
 		int pixel_pos = (int)((m_value - m_min) * m_to_pixel_factor);
 
-		if (horizontal)
+		if (horizontal) {
 			rect.set(pixel_pos, (getRect().h - ps.pref_h) / 2, ps.pref_w, ps.pref_h);
-		else
+		} else {
 			rect.set((getRect().w - ps.pref_w) / 2, getRect().h - handle_pixels - pixel_pos, ps.pref_w, ps.pref_h);
-	} else
+		}
+	} else {
 		m_to_pixel_factor = 0;
+	}
 
 	m_handle.setRect(rect);
 }
@@ -623,13 +665,14 @@ TBMover::TBMover() {
 
 bool TBMover::onEvent(const TBWidgetEvent &ev) {
 	TBWidget *target = getParent();
-	if (!target)
+	if (target == nullptr) {
 		return false;
+	}
 	if (ev.type == EVENT_TYPE_POINTER_MOVE && captured_widget == this) {
 		int dx = ev.target_x - pointer_down_widget_x;
 		int dy = ev.target_y - pointer_down_widget_y;
 		TBRect rect = target->getRect().offset(dx, dy);
-		if (target->getParent()) {
+		if (target->getParent() != nullptr) {
 			// Apply limit.
 			rect.x = Clamp(rect.x, -pointer_down_widget_x, target->getParent()->getRect().w - pointer_down_widget_x);
 			rect.y = Clamp(rect.y, -pointer_down_widget_y, target->getParent()->getRect().h - pointer_down_widget_y);
@@ -647,15 +690,17 @@ TBResizer::TBResizer() {
 WIDGET_HIT_STATUS TBResizer::getHitStatus(int x, int y) {
 	// Shave off some of the upper left diagonal half from the hit area.
 	const int extra_hit_area = 3;
-	if (x < getRect().w - y - extra_hit_area)
+	if (x < getRect().w - y - extra_hit_area) {
 		return WIDGET_HIT_STATUS_NO_HIT;
+	}
 	return TBWidget::getHitStatus(x, y);
 }
 
 bool TBResizer::onEvent(const TBWidgetEvent &ev) {
 	TBWidget *target = getParent();
-	if (!target)
+	if (target == nullptr) {
 		return false;
+	}
 	if (ev.type == EVENT_TYPE_POINTER_MOVE && captured_widget == this) {
 		int dx = ev.target_x - pointer_down_widget_x;
 		int dy = ev.target_y - pointer_down_widget_y;
@@ -667,8 +712,9 @@ bool TBResizer::onEvent(const TBWidgetEvent &ev) {
 		rect.w = Max(rect.w, 50);
 		rect.h = Max(rect.h, 50);
 		target->setRect(rect);
-	} else
+	} else {
 		return false;
+	}
 	return true;
 }
 

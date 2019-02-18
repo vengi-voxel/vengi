@@ -23,7 +23,7 @@ public:
 		message queue. fire_time is the new time is needs to be called.
 		It may be 0 which means that ProcessMessages should be called asap (but NOT from this call!)
 		It may also be TB_NOT_SOON which means that ProcessMessages doesn't need to be called. */
-	static void rescheduleTimer(double fire_time);
+	static void rescheduleTimer(double fireTime);
 
 	/** Get how many milliseconds it should take after a touch down event should generate a long click
 		event. */

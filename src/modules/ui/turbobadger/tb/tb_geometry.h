@@ -15,7 +15,7 @@ public:
 	int x, y;
 	TBPoint() : x(0), y(0) {
 	}
-	TBPoint(int _x, int _y) : x(_x), y(_y) {
+	TBPoint(int x, int y) : x(x), y(y) {
 	}
 };
 
@@ -26,7 +26,7 @@ public:
 	int x, y, w, h;
 	TBRect() : x(0), y(0), w(0), h(0) {
 	}
-	TBRect(int _x, int _y, int _w, int _h) : x(_x), y(_y), w(_w), h(_h) {
+	TBRect(int x, int y, int w, int h) : x(x), y(y), w(w), h(h) {
 	}
 
 	inline bool isEmpty() const {
@@ -46,11 +46,11 @@ public:
 	inline void reset() {
 		x = y = w = h = 0;
 	}
-	inline void set(int _x, int _y, int _w, int _h) {
-		this->x = _x;
-		this->y = _y;
-		this->w = _w;
-		this->h = _h;
+	inline void set(int x, int y, int w, int h) {
+		this->x = x;
+		this->y = y;
+		this->w = w;
+		this->h = h;
 	}
 
 	inline TBRect shrink(int left, int top, int right, int bottom) const {
@@ -111,7 +111,7 @@ public:
 	/** Include the rect in the region.
 		This will add only the parts that's not already in the region so the result doesn't
 		contain overlap parts. This assumes there's no overlap in the region already! */
-	bool includeRect(const TBRect &include_rect);
+	bool includeRect(const TBRect &includeRect);
 
 	/** Exclude the rect from the region. */
 	bool excludeRect(const TBRect &exclude_rect);

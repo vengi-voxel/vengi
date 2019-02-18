@@ -20,10 +20,11 @@ PreferredSize TBTabLayout::onCalculatePreferredContentSize(const SizeConstraints
 	// Make sure the number of tabs doesn't grow parents.
 	// It is only the content that should do that. The tabs
 	// will scroll anyway.
-	if (getAxis() == AXIS_X)
+	if (getAxis() == AXIS_X) {
 		ps.min_w = Min(ps.min_w, 1);
-	else
+	} else {
 		ps.min_h = Min(ps.min_h, 1);
+	}
 	return ps;
 }
 
@@ -59,15 +60,16 @@ void TBTabContainer::setAxis(AXIS axis) {
 }
 
 void TBTabContainer::setValue(int index) {
-	if (index == m_current_page)
+	if (index == m_current_page) {
 		return;
+	}
 	m_current_page = index;
 
 	// Update the pages visibility and tabs pressed value.
 	index = 0;
 	TBWidget *page = m_content_root.getFirstChild();
 	TBWidget *tab = m_tab_layout.getFirstChild();
-	for (; page && tab; page = page->getNext(), tab = tab->getNext(), index++) {
+	for (; (page != nullptr) && (tab != nullptr); page = page->getNext(), tab = tab->getNext(), index++) {
 		bool active = index == m_current_page;
 		page->setVisibility(active ? WIDGET_VISIBILITY_VISIBLE : WIDGET_VISIBILITY_INVISIBLE);
 		tab->setValue(active ? 1 : 0);
@@ -76,8 +78,9 @@ void TBTabContainer::setValue(int index) {
 
 int TBTabContainer::getNumPages() {
 	int count = 0;
-	for (TBWidget *tab = m_tab_layout.getFirstChild(); tab; tab = tab->getNext())
+	for (TBWidget *tab = m_tab_layout.getFirstChild(); tab != nullptr; tab = tab->getNext()) {
 		count++;
+	}
 	return count;
 }
 

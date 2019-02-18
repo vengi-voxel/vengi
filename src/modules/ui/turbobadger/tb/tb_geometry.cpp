@@ -8,11 +8,10 @@
 namespace tb {
 
 bool TBRect::intersects(const TBRect &rect) const {
-	if (isEmpty() || rect.isEmpty())
+	if (isEmpty() || rect.isEmpty()) {
 		return false;
-	if (x + w > rect.x && x < rect.x + rect.w && y + h > rect.y && y < rect.y + rect.h)
-		return true;
-	return false;
+	}
+	return x + w > rect.x && x < rect.x + rect.w && y + h > rect.y && y < rect.y + rect.h;
 }
 
 TBRect TBRect::moveIn(const TBRect &boundingRect) const {
@@ -28,10 +27,12 @@ TBRect TBRect::join(const TBRect &rect) const {
 	core_assert(!isInsideOut());
 	core_assert(!rect.isInsideOut());
 
-	if (isEmpty())
+	if (isEmpty()) {
 		return rect;
-	if (rect.isEmpty())
+	}
+	if (rect.isEmpty()) {
 		return *this;
+	}
 
 	int minx = Min(x, rect.x);
 	int miny = Min(y, rect.y);
@@ -43,8 +44,9 @@ TBRect TBRect::join(const TBRect &rect) const {
 TBRect TBRect::clip(const TBRect &clipRect) const {
 	core_assert(!clipRect.isInsideOut());
 	TBRect tmp;
-	if (!intersects(clipRect))
+	if (!intersects(clipRect)) {
 		return tmp;
+	}
 	tmp.x = Max(x, clipRect.x);
 	tmp.y = Max(y, clipRect.y);
 	tmp.w = Min(x + w, clipRect.x + clipRect.w) - tmp.x;
@@ -63,8 +65,9 @@ TBRegion::~TBRegion() {
 
 void TBRegion::removeRect(int index) {
 	core_assert(index >= 0 && index < m_num_rects);
-	for (int i = index; i < m_num_rects - 1; i++)
+	for (int i = index; i < m_num_rects - 1; i++) {
 		m_rects[i] = m_rects[i + 1];
+	}
 	m_num_rects--;
 }
 
@@ -91,10 +94,12 @@ bool TBRegion::growIfNeeded() {
 	if (m_num_rects == m_capacity) {
 		int new_m_capacity = Clamp(4, m_capacity * 2, 1024);
 		TBRect *new_rects = new TBRect[new_m_capacity];
-		if (!new_rects)
+		if (new_rects == nullptr) {
 			return false;
-		if (m_rects)
+		}
+		if (m_rects != nullptr) {
 			memmove(new_rects, m_rects, sizeof(TBRect) * m_capacity);
+		}
 		delete[] m_rects;
 		m_rects = new_rects;
 		m_capacity = new_m_capacity;
@@ -123,8 +128,9 @@ bool TBRegion::addRect(const TBRect &rect, bool coalesce) {
 		}
 	}
 
-	if (!growIfNeeded())
+	if (!growIfNeeded()) {
 		return false;
+	}
 	m_rects[m_num_rects++] = rect;
 	return true;
 }
@@ -135,11 +141,13 @@ bool TBRegion::includeRect(const TBRect &rect) {
 			// Make a region containing the non intersecting parts and then include
 			// those recursively (they might still intersect some other part of the region).
 			TBRegion inclusion_region;
-			if (!inclusion_region.addExcludingRects(rect, m_rects[i], false))
+			if (!inclusion_region.addExcludingRects(rect, m_rects[i], false)) {
 				return false;
+			}
 			for (int j = 0; j < inclusion_region.m_num_rects; j++) {
-				if (!includeRect(inclusion_region.m_rects[j]))
+				if (!includeRect(inclusion_region.m_rects[j])) {
 					return false;
+				}
 			}
 			return true;
 		}
@@ -162,8 +170,9 @@ bool TBRegion::excludeRect(const TBRect &excludeRect) {
 			num_rects_to_check--;
 			i--;
 
-			if (!addExcludingRects(rect, excludeRect, true))
+			if (!addExcludingRects(rect, excludeRect, true)) {
 				return false;
+			}
 		}
 	}
 	return true;
@@ -173,19 +182,27 @@ bool TBRegion::addExcludingRects(const TBRect &rect, const TBRect &excludeRect, 
 	core_assert(rect.intersects(excludeRect));
 	TBRect remove = excludeRect.clip(rect);
 
-	if (remove.y > rect.y)
-		if (!addRect(TBRect(rect.x, rect.y, rect.w, remove.y - rect.y), coalesce))
+	if (remove.y > rect.y) {
+		if (!addRect(TBRect(rect.x, rect.y, rect.w, remove.y - rect.y), coalesce)) {
 			return false;
-	if (remove.x > rect.x)
-		if (!addRect(TBRect(rect.x, remove.y, remove.x - rect.x, remove.h), coalesce))
+		}
+	}
+	if (remove.x > rect.x) {
+		if (!addRect(TBRect(rect.x, remove.y, remove.x - rect.x, remove.h), coalesce)) {
 			return false;
-	if (remove.x + remove.w < rect.x + rect.w)
+		}
+	}
+	if (remove.x + remove.w < rect.x + rect.w) {
 		if (!addRect(TBRect(remove.x + remove.w, remove.y, rect.x + rect.w - (remove.x + remove.w), remove.h),
-					 coalesce))
+					 coalesce)) {
 			return false;
-	if (remove.y + remove.h < rect.y + rect.h)
-		if (!addRect(TBRect(rect.x, remove.y + remove.h, rect.w, rect.y + rect.h - (remove.y + remove.h)), coalesce))
+		}
+	}
+	if (remove.y + remove.h < rect.y + rect.h) {
+		if (!addRect(TBRect(rect.x, remove.y + remove.h, rect.w, rect.y + rect.h - (remove.y + remove.h)), coalesce)) {
 			return false;
+		}
+	}
 	return true;
 }
 

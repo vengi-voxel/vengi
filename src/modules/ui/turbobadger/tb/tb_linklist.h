@@ -75,7 +75,7 @@ public:
 
 	/** Return true if the link is currently added to a list. */
 	bool isInList() const {
-		return linklist ? true : false;
+		return linklist != nullptr;
 	}
 
 public:
@@ -117,7 +117,7 @@ public:
 	}
 
 	bool hasLinks() const {
-		return first ? true : false;
+		return first != nullptr;
 	}
 
 	int countLinks() const;
@@ -150,8 +150,9 @@ public:
 
 	/** Delete all links in this linklist. */
 	void deleteAll() {
-		while (T *t = getFirst())
+		while (T *t = getFirst()) {
 			doDelete(t);
+		}
 	}
 
 	/** Add link first in this linklist. */

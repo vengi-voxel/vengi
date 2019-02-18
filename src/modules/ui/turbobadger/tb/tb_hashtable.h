@@ -97,7 +97,7 @@ private:
 /** TBHashTableIteratorOf is a TBHashTableIterator which auto cast to the class type. */
 template <class T> class TBHashTableIteratorOf : private TBHashTableIterator {
 public:
-	TBHashTableIteratorOf(TBHashTable *hash_table) : TBHashTableIterator(hash_table) {
+	TBHashTableIteratorOf(TBHashTable *hashTable) : TBHashTableIterator(hashTable) {
 	}
 	T *getNextContent() {
 		return (T *)TBHashTableIterator::getNextContent();

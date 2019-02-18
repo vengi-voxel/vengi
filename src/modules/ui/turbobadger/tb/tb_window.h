@@ -58,8 +58,8 @@ public:
 	/** Set the widget that should be focused when this window is activated next time.
 		This should not be used to change focus. Call TBWidget::setFocus to focus, which
 		will call this method if the window is inactive! */
-	void setLastFocus(TBWidget *last_focus) {
-		m_last_focus.set(last_focus);
+	void setLastFocus(TBWidget *lastFocus) {
+		m_last_focus.set(lastFocus);
 	}
 
 	/** Set settings for how this window should look and behave. */
@@ -103,7 +103,7 @@ public:
 	virtual void onAdded() override;
 	virtual void onRemove() override;
 	virtual void onChildAdded(TBWidget *child) override;
-	virtual void onResized(int old_w, int old_h) override;
+	virtual void onResized(int oldW, int oldH) override;
 
 protected:
 	TBMover m_mover;

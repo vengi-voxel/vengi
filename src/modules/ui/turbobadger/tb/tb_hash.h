@@ -22,7 +22,7 @@ constexpr uint32_t TBGetHash_one(char c, const char *remain, uint32_t value) {
 
 // compile-time hash
 constexpr uint32_t TBGetHash(const char *str) {
-	return (str && *str) ? TBGetHash_one(str[0], str + 1, basis) : 0;
+	return ((str != nullptr) && (*str != 0)) ? TBGetHash_one(str[0], str + 1, basis) : 0;
 }
 
 #define TBIDC(str) tb::TBGetHash(str)

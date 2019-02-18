@@ -84,15 +84,17 @@ public:
 		g_renderer->translate(getRect().w, 0);
 
 		// Draw skin bitmap fragments
-		if (TB_DEBUG_SETTING(RENDER_SKIN_BITMAP_FRAGMENTS))
+		if (TB_DEBUG_SETTING(RENDER_SKIN_BITMAP_FRAGMENTS)) {
 			g_tb_skin->debug();
+		}
 
 		// Draw font glyph fragments (the font of the hovered widget)
 		if (TB_DEBUG_SETTING(RENDER_FONT_BITMAP_FRAGMENTS)) {
-			TBWidget *widget = TBWidget::hovered_widget ? TBWidget::hovered_widget : TBWidget::focused_widget;
+			TBWidget *widget =
+				TBWidget::hovered_widget != nullptr ? TBWidget::hovered_widget : TBWidget::focused_widget;
 			g_font_manager
-				->getFontFace(widget ? widget->getCalculatedFontDescription()
-									 : g_font_manager->getDefaultFontDescription())
+				->getFontFace(widget != nullptr ? widget->getCalculatedFontDescription()
+												: g_font_manager->getDefaultFontDescription())
 				->debug();
 		}
 
@@ -108,13 +110,16 @@ public:
 	// TBWidgetListener
 	virtual bool onWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) {
 		// Skip these events for now
-		if (ev.isPointerEvent())
+		if (ev.isPointerEvent()) {
 			return false;
+		}
 
 		// Always ignore activity in this window (or we might get endless recursion)
-		if (TBWindow *window = widget->getParentWindow())
-			if (TBSafeCast<DebugSettingsWindow>(window))
+		if (TBWindow *window = widget->getParentWindow()) {
+			if (TBSafeCast<DebugSettingsWindow>(window) != nullptr) {
 				return false;
+			}
+		}
 
 		TBTempBuffer buf;
 		buf.appendString(getEventTypeStr(ev.type));
@@ -125,15 +130,17 @@ public:
 		buf.appendString(" id: ");
 		buf.appendString(getIdString(ev.target->getID()));
 
-		if (ev.ref_id) {
+		if (ev.ref_id != 0U) {
 			buf.appendString(", ref_id: ");
 			buf.appendString(getIdString(ev.ref_id));
 		}
 
 		if (ev.type == EVENT_TYPE_CHANGED) {
-			TBStr extra, text;
-			if (ev.target->getText(text) && text.length() > 24)
+			TBStr extra;
+			TBStr text;
+			if (ev.target->getText(text) && text.length() > 24) {
 				sprintf(text.c_str() + 20, "...");
+			}
 			extra.setFormatted(", value: %.2f (\"%s\")", ev.target->getValueDouble(), text.c_str());
 			buf.appendString(extra);
 		}

@@ -11,8 +11,9 @@ namespace tb {
 int TBTextFragmentContentFactory::getContent(const char *text) {
 	if (text[0] == '<') {
 		int i = 0;
-		while (text[i] != '>' && text[i] > 31)
+		while (text[i] != '>' && text[i] > 31) {
 			i++;
+		}
 		if (text[i] == '>') {
 			i++;
 			return i;
@@ -22,11 +23,11 @@ int TBTextFragmentContentFactory::getContent(const char *text) {
 }
 
 TBTextFragmentContent *TBTextFragmentContentFactory::createFragmentContent(const char *text, int textLen) {
-	if (strncmp(text, "<hr>", textLen) == 0)
+	if (strncmp(text, "<hr>", textLen) == 0) {
 		return new TBTextFragmentContentHR(100, 2);
-	else if (strncmp(text, "<u>", textLen) == 0)
+	} else if (strncmp(text, "<u>", textLen) == 0) {
 		return new TBTextFragmentContentUnderline();
-	else if (strncmp(text, "<color ", Min(textLen, 7)) == 0) {
+	} else if (strncmp(text, "<color ", Min(textLen, 7)) == 0) {
 		TBColor color;
 		color.setFromString(text + 7, textLen - 8);
 		return new TBTextFragmentContentTextColor(color);

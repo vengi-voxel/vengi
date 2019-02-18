@@ -6,7 +6,8 @@
 
 typedef unsigned int UCS4;
 
-namespace utf8 {
+namespace utf8
+{
 
 /** Decodes UTF-8 from a string input to a UCS4 character.
 	@param src buffer in UTF-8 that should be decoded. If the buffer represent

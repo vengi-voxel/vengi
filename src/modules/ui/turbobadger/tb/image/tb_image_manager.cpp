@@ -20,25 +20,29 @@ void TBImageRep::incRef() {
 void TBImageRep::decRef() {
 	ref_count--;
 	if (ref_count == 0) {
-		if (image_manager)
+		if (image_manager != nullptr) {
 			image_manager->removeImageRep(this);
+		}
 		delete this;
 	}
 }
 
 TBImage::TBImage(TBImageRep *rep) : m_image_rep(rep) {
-	if (m_image_rep)
+	if (m_image_rep != nullptr) {
 		m_image_rep->incRef();
+	}
 }
 
 TBImage::TBImage(const TBImage &image) : m_image_rep(image.m_image_rep) {
-	if (m_image_rep)
+	if (m_image_rep != nullptr) {
 		m_image_rep->incRef();
+	}
 }
 
 TBImage::~TBImage() {
-	if (m_image_rep)
+	if (m_image_rep != nullptr) {
 		m_image_rep->decRef();
+	}
 }
 
 bool TBImage::isEmpty() const {
@@ -62,16 +66,19 @@ TBBitmapFragment *TBImage::getBitmap() const {
 }
 
 void TBImage::setImageRep(TBImageRep *imageRep) {
-	if (m_image_rep == imageRep)
+	if (m_image_rep == imageRep) {
 		return;
+	}
 
-	if (m_image_rep)
+	if (m_image_rep != nullptr) {
 		m_image_rep->decRef();
+	}
 
 	m_image_rep = imageRep;
 
-	if (m_image_rep)
+	if (m_image_rep != nullptr) {
 		m_image_rep->incRef();
+	}
 }
 
 TBImageManager *g_image_manager = nullptr;
@@ -95,7 +102,7 @@ TBImageManager::~TBImageManager() {
 TBImage TBImageManager::getImage(const char *filename) {
 	uint32_t hash_key = TBGetHash(filename);
 	TBImageRep *image_rep = m_image_rep_hash.get(hash_key);
-	if (!image_rep) {
+	if (image_rep == nullptr) {
 		// Load a fragment. Load a destination DPI bitmap if available.
 		TBBitmapFragment *fragment = nullptr;
 		if (g_tb_skin->getDimensionConverter()->needConversion()) {
@@ -120,7 +127,7 @@ TBImage TBImageManager::getImage(const char *filename) {
 TBImage TBImageManager::getImage(const char *name, uint32_t *buffer, int width, int height) {
 	uint32_t hash_key = TBGetHash(name);
 	TBImageRep *image_rep = m_image_rep_hash.get(hash_key);
-	if (!image_rep) {
+	if (image_rep == nullptr) {
 		TBID id(name);
 		TBBitmapFragment *fragment = m_frag_manager.createNewFragment(id, false, width, height, width, buffer);
 

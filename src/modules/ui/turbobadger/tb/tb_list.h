@@ -17,7 +17,7 @@ public:
 	~TBListBackend() {
 		removeAll();
 	}
-	bool reserve(int num);
+	bool reserve(int newCapacity);
 	bool growIfNeeded();
 	bool add(void *data);
 	bool add(void *data, int index);
@@ -32,10 +32,10 @@ public:
 	void swap(int index1, int index2);
 	int find(void *data) const;
 	int getNumItems() const {
-		return m_data ? m_data->num : 0;
+		return m_data != nullptr ? m_data->num : 0;
 	}
 	int getCapacity() const {
-		return m_data ? m_data->capacity : 0;
+		return m_data != nullptr ? m_data->capacity : 0;
 	}
 
 private:
@@ -120,8 +120,9 @@ public:
 
 	/** Remove and delete all items from the list. */
 	void deleteAll() {
-		for (int i = 0; i < getNumItems(); i++)
+		for (int i = 0; i < getNumItems(); i++) {
 			delete (T *)get(i);
+		}
 		m_list.removeAll();
 	}
 

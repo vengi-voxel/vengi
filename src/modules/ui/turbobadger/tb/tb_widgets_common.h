@@ -134,8 +134,8 @@ public:
 	}
 
 	/** Set to true if the button should fire repeatedly while pressed. */
-	void setAutoRepeat(bool auto_repeat_click) {
-		m_auto_repeat_click = auto_repeat_click;
+	void setAutoRepeat(bool autoRepeatClick) {
+		m_auto_repeat_click = autoRepeatClick;
 	}
 	bool getAutoRepeat() {
 		return m_auto_repeat_click;
@@ -143,8 +143,8 @@ public:
 
 	/** Set to true if the button should toggle on and off, instead of just fire
 		click events. When it's on, it will have value 1 pressed state. */
-	void setToggleMode(bool toggle_mode_on) {
-		m_toggle_mode = toggle_mode_on;
+	void setToggleMode(bool toggleModeOn) {
+		m_toggle_mode = toggleModeOn;
 	}
 	bool getToggleMode() const {
 		return m_toggle_mode;
@@ -179,7 +179,7 @@ public:
 protected:
 	void updateTextFieldVisibility();
 	bool canToggle() {
-		return m_toggle_mode || getGroupID();
+		return m_toggle_mode || (getGroupID() != 0U);
 	}
 	class ButtonLayout : public TBLayout {
 		virtual void onChildAdded(TBWidget *child) override;
@@ -246,8 +246,8 @@ public:
 
 	TBSkinImage() {
 	}
-	TBSkinImage(const TBID &skin_bg) {
-		setSkinBg(skin_bg);
+	TBSkinImage(const TBID &skinBg) {
+		setSkinBg(skinBg);
 	}
 
 	virtual PreferredSize onCalculatePreferredSize(const SizeConstraints &constraints) override;
@@ -294,7 +294,7 @@ public:
 		return m_value;
 	}
 
-	virtual void onPaint(const PaintProps &paint_props) override;
+	virtual void onPaint(const PaintProps &paintProps) override;
 
 	// == TBMessageHandler ==============================================================
 	virtual void onMessageReceived(TBMessage *msg) override;
@@ -415,7 +415,7 @@ public:
 
 	virtual void onInflate(const INFLATE_INFO &info) override;
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
-	virtual void onResized(int old_w, int old_h) override;
+	virtual void onResized(int oldW, int oldH) override;
 
 protected:
 	TBWidget m_handle;
@@ -474,7 +474,7 @@ public:
 
 	virtual void onInflate(const INFLATE_INFO &info) override;
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
-	virtual void onResized(int old_w, int old_h) override;
+	virtual void onResized(int oldW, int oldH) override;
 
 protected:
 	TBWidget m_handle;
