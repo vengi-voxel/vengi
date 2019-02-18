@@ -7,7 +7,7 @@
 namespace voxedit {
 namespace tool {
 
-bool aabb(voxel::RawVolume& target, const glm::ivec3& mins, const glm::ivec3& maxs, const voxel::Voxel& voxel, ModifierType modifierType, voxel::Region* modifiedRegion) {
+bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::ivec3& maxs, const voxel::Voxel& voxel, ModifierType modifierType, voxel::Region* modifiedRegion) {
 	const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
 	const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 	const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
