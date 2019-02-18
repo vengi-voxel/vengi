@@ -162,6 +162,8 @@ public:
 	const voxelrender::RawVolumeRenderer& rawVolumeRenderer() const;
 
 	render::GridRenderer& gridRenderer();
+	int gridResolution() const;
+	bool setGridResolution(int resolution);
 
 	void spaceColonization();
 	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noisegen::NoiseType type);
@@ -232,6 +234,10 @@ inline voxelrender::RawVolumeRenderer& ViewportSingleton::volumeRenderer() {
 
 inline const voxelrender::RawVolumeRenderer& ViewportSingleton::rawVolumeRenderer() const {
 	return _volumeRenderer;
+}
+
+inline int ViewportSingleton::gridResolution() const {
+	return _gridRenderer.gridResolution();
 }
 
 inline render::GridRenderer& ViewportSingleton::gridRenderer() {

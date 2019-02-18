@@ -30,10 +30,15 @@ protected:
 	int32_t _gridMeshIndexYZNear = -1;
 	int32_t _gridMeshIndexYZFar = -1;
 
+	int _resolution = 1;
 	bool _renderAABB;
 	bool _renderGrid;
+	bool _dirty = false;
 public:
 	GridRenderer(bool renderAABB = true, bool renderGrid = true);
+
+	bool setGridResolution(int resolution);
+	int gridResolution() const;
 
 	/**
 	 * @param region The region to do the plane culling with

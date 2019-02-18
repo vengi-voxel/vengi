@@ -317,7 +317,11 @@ bool ViewportSingleton::aabbMode() const {
 }
 
 glm::ivec3 ViewportSingleton::aabbDim() const {
-	return glm::abs(cursorPosition() - _aabbFirstPos);
+	const int size = gridResolution();
+	const glm::ivec3& pos = cursorPosition();
+	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
+	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos);
+	return glm::abs(maxs + gridResolution() - mins);
 }
 
 bool ViewportSingleton::aabbStart() {
@@ -348,9 +352,10 @@ bool ViewportSingleton::aabbEnd() {
 	}
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	_aabbMode = false;
-	const glm::ivec3& pos = cursorPosition();
+	const int size = gridResolution();
+	const glm::ivec3 pos = cursorPosition();
 	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
-	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos);
+	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos) + (size - 1);
 	voxel::Region modifiedRegion;
 	glm::ivec3 minsMirror = mins;
 	glm::ivec3 maxsMirror = maxs;
@@ -460,6 +465,28 @@ const voxel::Voxel& ViewportSingleton::getVoxel(const glm::ivec3& pos) const {
 	return modelVolume()->voxel(pos);
 }
 
+bool ViewportSingleton::setGridResolution(int resolution) {
+	const bool ret = gridRenderer().setGridResolution(resolution);
+	if (!ret) {
+		return false;
+	}
+
+	const int res = gridResolution();
+	if (_aabbFirstPos.x % res != 0) {
+		_aabbFirstPos.x = (_aabbFirstPos.x / res) * res;
+	}
+	if (_aabbFirstPos.y % res != 0) {
+		_aabbFirstPos.y = (_aabbFirstPos.y / res) * res;
+	}
+	if (_aabbFirstPos.z % res != 0) {
+		_aabbFirstPos.z = (_aabbFirstPos.z / res) * res;
+	}
+
+	setCursorPosition(_cursorPos, true);
+
+	return true;
+}
+
 void ViewportSingleton::render(const video::Camera& camera) {
 	const bool depthTest = video::enable(video::State::DepthTest);
 	_empty = _volumeRenderer.empty(ModelVolumeIndex);
@@ -473,22 +500,27 @@ void ViewportSingleton::render(const video::Camera& camera) {
 		glm::ivec3 maxs = glm::max(_aabbFirstPos, cursor);
 		glm::ivec3 minsMirror = mins;
 		glm::ivec3 maxsMirror = maxs;
+		const float delta = 0.001f;
+		const float size = gridRenderer().gridResolution() + delta;
 		if (getMirrorAABB(minsMirror, maxsMirror)) {
 			const math::AABB<int> first(mins, maxs);
 			const math::AABB<int> second(minsMirror, maxsMirror);
 			if (math::intersects(first, second)) {
-				_shapeBuilder.cube(glm::vec3(mins) - 0.001f, glm::vec3(maxsMirror) + 1.001f);
+				_shapeBuilder.cube(glm::vec3(mins) - delta, glm::vec3(maxsMirror) + size);
 			} else {
-				_shapeBuilder.cube(glm::vec3(mins) - 0.001f, glm::vec3(maxs) + 1.001f);
-				_shapeBuilder.cube(glm::vec3(minsMirror) - 0.001f, glm::vec3(maxsMirror) + 1.001f);
+				_shapeBuilder.cube(glm::vec3(mins) - delta, glm::vec3(maxs) + size);
+				_shapeBuilder.cube(glm::vec3(minsMirror) - delta, glm::vec3(maxsMirror) + size);
 			}
 		} else {
-			_shapeBuilder.cube(glm::vec3(mins) - 0.001f, glm::vec3(maxs) + 1.001f);
+			_shapeBuilder.cube(glm::vec3(mins) - delta, glm::vec3(maxs) + size);
 		}
 		_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
-	_shapeRenderer.render(_voxelCursorMesh, camera, glm::translate(glm::vec3(cursorPosition())));
+
+	const glm::mat4& translate = glm::translate(glm::vec3(cursorPosition()));
+	const glm::mat4& scale = glm::scale(translate, glm::vec3(gridRenderer().gridResolution()));
+	_shapeRenderer.render(_voxelCursorMesh, camera, scale);
 	// TODO: render error if rendered last - but be before grid renderer to get transparency.
 	if (_renderLockAxis) {
 		for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
@@ -685,6 +717,16 @@ void ViewportSingleton::setReferencePosition(const glm::ivec3& pos) {
 }
 
 void ViewportSingleton::setCursorPosition(glm::ivec3 pos, bool force) {
+	const int res = gridRenderer().gridResolution();
+	if (pos.x % res != 0) {
+		pos.x = (pos.x / res) * res;
+	}
+	if (pos.y % res != 0) {
+		pos.y = (pos.y / res) * res;
+	}
+	if (pos.z % res != 0) {
+		pos.z = (pos.z / res) * res;
+	}
 	if (!force) {
 		if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
 			pos.x = _cursorPos.x;

@@ -166,7 +166,20 @@ core::AppState VoxEdit::onConstruct() {
 			_mainWindow->extend();
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
-	COMMAND_VIEWPORTSINGLETON(scaleHalf, "Scale your volume by 50%");
+	core::Command::registerCommand("scalehalf",
+			[] (const core::CmdArgs& args) {
+				::voxedit::ViewportSingleton::getInstance().scaleHalf();
+			}).setHelp("Scale your volume by 50%");
+	core::Command::registerCommand("setvoxelresolution",
+			[] (const core::CmdArgs& args) {
+				const int argc = args.size();
+				if (argc == 1) {
+					const int size = core::string::toInt(args[0]);
+					::voxedit::ViewportSingleton::getInstance().setGridResolution(size);
+				} else {
+					Log::warn("Expected to get a voxel resolution >= 1");
+				}
+			}).setHelp("");
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
 	COMMAND_MAINWINDOW(redo, "Redo your last step");
 	COMMAND_MAINWINDOW(toggleviewport, "Toggle quad view on/off");

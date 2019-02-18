@@ -22,6 +22,19 @@ bool GridRenderer::init() {
 	return true;
 }
 
+bool GridRenderer::setGridResolution(int resolution) {
+	if (resolution < 1) {
+		return false;
+	}
+	_resolution = resolution;
+	_dirty = true;
+	return true;
+}
+
+int GridRenderer::gridResolution() const {
+	return _resolution;
+}
+
 void GridRenderer::update(const voxel::Region& region) {
 	const math::AABB<int>& intaabb = region.aabb();
 	const math::AABB<float> aabb(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
@@ -30,36 +43,43 @@ void GridRenderer::update(const voxel::Region& region) {
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXY(aabb, false);
+	_shapeBuilder.aabbGridXY(aabb, false, (float)_resolution);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXYFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXZ(aabb, false);
+	_shapeBuilder.aabbGridXZ(aabb, false, (float)_resolution);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXZFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridYZ(aabb, false);
+	_shapeBuilder.aabbGridYZ(aabb, false, (float)_resolution);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexYZFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXY(aabb, true);
+	_shapeBuilder.aabbGridXY(aabb, true, (float)_resolution);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXYNear, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXZ(aabb, true);
+	_shapeBuilder.aabbGridXZ(aabb, true, (float)_resolution);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXZNear, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridYZ(aabb, true);
+	_shapeBuilder.aabbGridYZ(aabb, true, (float)_resolution);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexYZNear, _shapeBuilder);
+
+	_dirty = false;
 }
 
 void GridRenderer::clear() {
 	 _shapeBuilder.clear();
+	 _dirty = false;
 }
 
 void GridRenderer::render(const video::Camera& camera, const voxel::Region& region) {
 	core_trace_scoped(GridRendererRender);
+
+	if (_dirty) {
+		update(region);
+	}
 
 	if (_renderGrid) {
 		const glm::vec3& center = glm::vec3(region.getCentre());
