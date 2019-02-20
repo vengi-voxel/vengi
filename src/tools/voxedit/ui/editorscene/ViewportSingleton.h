@@ -75,7 +75,7 @@ private:
 	int _lastRaytraceY = -1;
 
 	int _initialized = 0;
-	int _size = 32;
+	int _size = 128;
 	int _mouseX = 0;
 	int _mouseY = 0;
 
