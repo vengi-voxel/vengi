@@ -156,7 +156,7 @@ core::AppState VoxEdit::onConstruct() {
 		if (argc == 1) {
 			const int size = core::string::toInt(args[0]);
 			_mainWindow->extend(glm::ivec3(size));
-		} else if (argc >= 2) {
+		} else if (argc == 3) {
 			glm::ivec3 size;
 			for (int i = 0; i < argc; ++i) {
 				size[i] = core::string::toInt(args[i]);
