@@ -43,6 +43,9 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 					for (int32_t childY = 0; childY < 2; ++childY) {
 						for (int32_t childX = 0; childX < 2; ++childX) {
 							srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
+							if (!srcSampler.currentPositionValid()) {
+								continue;
+							}
 							const Voxel& child = srcSampler.voxel();
 
 							if (isBlocked(child.getMaterial())) {
