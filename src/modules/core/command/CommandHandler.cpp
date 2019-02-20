@@ -36,14 +36,14 @@ int executeCommands(const std::string& _commandLine) {
 		}
 		const core::VarPtr& c = core::Var::get(cmd);
 		if (!c) {
-			Log::debug("unknown command: %s", cmd.c_str());
+			Log::info("unknown command: %s", cmd.c_str());
 			n = -1;
 		} else {
 			if (tokens.empty()) {
 				if (c->strVal().empty()) {
-					Log::debug("var: %s: no value set", cmd.c_str());
+					Log::info("%s: no value set", cmd.c_str());
 				} else {
-					Log::debug("var: %s: %s", cmd.c_str(), c->strVal().c_str());
+					Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
 				}
 			} else {
 				c->setVal(core::string::eraseAllSpaces(tokens[0]));
