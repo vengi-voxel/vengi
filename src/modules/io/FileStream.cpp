@@ -55,21 +55,25 @@ bool FileStream::addFormat(const char *fmt, ...) {
 		switch (typeID) {
 		case 'b':
 			if (!addByte((uint8_t) va_arg(ap, int))) {
+				va_end(ap);
 				return false;
 			}
 			break;
 		case 's':
 			if (!addShort((uint16_t) va_arg(ap, int))) {
+				va_end(ap);
 				return false;
 			}
 			break;
 		case 'i':
 			if (!addInt((uint32_t) va_arg(ap, int))) {
+				va_end(ap);
 				return false;
 			}
 			break;
 		case 'l':
 			if (!addLong((uint64_t) va_arg(ap, long))) {
+				va_end(ap);
 				return false;
 			}
 			break;
