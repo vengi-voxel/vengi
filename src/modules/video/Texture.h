@@ -46,7 +46,7 @@ public:
 	void upload(const uint8_t* data = nullptr, int index = 1);
 
 	/**
-	 * @note The returned buffer should get freed with SDL_free
+	 * @note The returned buffer should get freed with @c SDL_free()
 	 */
 	uint8_t* data();
 
