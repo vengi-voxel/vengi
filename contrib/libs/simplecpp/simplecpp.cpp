@@ -439,7 +439,6 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
             if (oldLastToken != cback()) {
                 oldLastToken = cback();
                 const std::string lastline(lastLine());
-
                 if (lastline == "# file %str%") {
                     loc.push(location);
                     location.fileIndex = fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U));
@@ -448,6 +447,10 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                     loc.push(location);
                     location.line = std::atol(cback()->str().c_str());
                 } else if (lastline == "# line %num% %str%") {
+                    loc.push(location);
+                    location.fileIndex = fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U));
+                    location.line = std::atol(cback()->previous->str().c_str());
+                } else if (lastline == "# %num% %str%") {
                     loc.push(location);
                     location.fileIndex = fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U));
                     location.line = std::atol(cback()->previous->str().c_str());
@@ -470,12 +473,15 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         TokenString currentToken;
 
         if (cback() && cback()->location.line == location.line && cback()->previous && cback()->previous->op == '#' && (lastLine() == "# error" || lastLine() == "# warning")) {
-            while (istr.good() && ch != '\r' && ch != '\n') {
+            char prev = ' ';
+            while (istr.good() && (prev == '\\' || (ch != '\r' && ch != '\n'))) {
                 currentToken += ch;
+                prev = ch;
                 ch = readChar(istr, bom);
             }
             istr.unget();
             push_back(new Token(currentToken, location));
+            location.adjust(currentToken);
             continue;
         }
 
@@ -1110,9 +1116,9 @@ unsigned int simplecpp::TokenList::fileIndex(const std::string &filename)
 namespace simplecpp {
     class Macro {
     public:
-        explicit Macro(std::vector<std::string> &f) : nameTokDef(NULL), variadic(false), valueToken(NULL), endToken(NULL), files(f), tokenListDefine(f) {}
+        explicit Macro(std::vector<std::string> &f) : nameTokDef(NULL), variadic(false), valueToken(NULL), endToken(NULL), files(f), tokenListDefine(f), valueDefinedInCode_(false) {}
 
-        Macro(const Token *tok, std::vector<std::string> &f) : nameTokDef(NULL), files(f), tokenListDefine(f) {
+        Macro(const Token *tok, std::vector<std::string> &f) : nameTokDef(NULL), files(f), tokenListDefine(f), valueDefinedInCode_(true) {
             if (sameline(tok->previous, tok))
                 throw std::runtime_error("bad macro syntax");
             if (tok->op != '#')
@@ -1128,20 +1134,21 @@ namespace simplecpp {
                 throw std::runtime_error("bad macro syntax");
         }
 
-        Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameTokDef(NULL), files(f), tokenListDefine(f) {
+        Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameTokDef(NULL), files(f), tokenListDefine(f), valueDefinedInCode_(false) {
             const std::string def(name + ' ' + value);
             std::istringstream istr(def);
             tokenListDefine.readfile(istr);
             if (!parseDefine(tokenListDefine.cfront()))
-                throw std::runtime_error("bad macro syntax");
+                throw std::runtime_error("bad macro syntax. macroname=" + name + " value=" + value);
         }
 
-        Macro(const Macro &macro) : nameTokDef(NULL), files(macro.files), tokenListDefine(macro.files) {
+        Macro(const Macro &macro) : nameTokDef(NULL), files(macro.files), tokenListDefine(macro.files), valueDefinedInCode_(macro.valueDefinedInCode_) {
             *this = macro;
         }
 
         void operator=(const Macro &macro) {
             if (this != &macro) {
+                valueDefinedInCode_ = macro.valueDefinedInCode_;
                 if (macro.tokenListDefine.empty())
                     parseDefine(macro.nameTokDef);
                 else {
@@ -1149,6 +1156,10 @@ namespace simplecpp {
                     parseDefine(tokenListDefine.cfront());
                 }
             }
+        }
+
+        bool valueDefinedInCode() const {
+            return valueDefinedInCode_;
         }
 
         /**
@@ -1497,7 +1508,7 @@ namespace simplecpp {
             for (const Token *tok = valueToken; tok != endToken;) {
                 if (tok->op != '#') {
                     // A##B => AB
-                    if (tok->next && tok->next->op == '#' && tok->next->next && tok->next->next->op == '#') {
+                    if (sameline(tok, tok->next) && tok->next && tok->next->op == '#' && tok->next->next && tok->next->next->op == '#') {
                         if (!sameline(tok, tok->next->next->next))
                             throw invalidHashHash(tok->location, name());
                         output->push_back(newMacroToken(expandArgStr(tok, parametertokens2), loc, isReplaced(expandedmacros)));
@@ -1821,10 +1832,74 @@ namespace simplecpp {
 
         /** usage of this macro */
         mutable std::list<Location> usageList;
+
+        /** was the value of this macro actually defined in the code? */
+        bool valueDefinedInCode_;
     };
 }
 
 #ifdef SIMPLECPP_WINDOWS
+
+class ScopedLock
+{
+public:
+    explicit ScopedLock(CRITICAL_SECTION& criticalSection)
+        : m_criticalSection(criticalSection)
+    {
+        EnterCriticalSection(&m_criticalSection);
+    }
+
+    ~ScopedLock()
+    {
+        LeaveCriticalSection(&m_criticalSection);
+    }
+
+private:
+    ScopedLock& operator=(const ScopedLock&);
+    ScopedLock(const ScopedLock&);
+
+    CRITICAL_SECTION& m_criticalSection;
+};
+
+class RealFileNameMap
+{
+public:
+    RealFileNameMap()
+    {
+        InitializeCriticalSection(&m_criticalSection);
+    }
+
+    ~RealFileNameMap()
+    {
+        DeleteCriticalSection(&m_criticalSection);
+    }
+
+    bool getRealPathFromCache(const std::string& path, std::string* returnPath)
+    {
+        ScopedLock lock(m_criticalSection);
+
+        std::map<std::string, std::string>::iterator it = m_fileMap.find(path);
+        if (it != m_fileMap.end())
+        {
+            *returnPath = it->second;
+            return true;
+        }
+        return false;
+    }
+
+    void addToCache(const std::string& path, const std::string& actualPath)
+    {
+        ScopedLock lock(m_criticalSection);
+        m_fileMap[path] = actualPath;
+    }
+    
+private:
+    std::map<std::string, std::string> m_fileMap;
+    CRITICAL_SECTION m_criticalSection;
+};
+
+static RealFileNameMap realFileNameMap;
+
 static bool realFileName(const std::string &f, std::string *result)
 {
     // are there alpha characters in last subpath?
@@ -1844,13 +1919,17 @@ static bool realFileName(const std::string &f, std::string *result)
         return false;
 
     // Lookup filename or foldername on file system
-    WIN32_FIND_DATAA FindFileData;
-    HANDLE hFind = FindFirstFileExA(f.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
+    if (!realFileNameMap.getRealPathFromCache(f, result))
+    {
+        WIN32_FIND_DATAA FindFileData;
+        HANDLE hFind = FindFirstFileExA(f.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
 
-    if (INVALID_HANDLE_VALUE == hFind)
-        return false;
-    *result = FindFileData.cFileName;
-    FindClose(hFind);
+        if (INVALID_HANDLE_VALUE == hFind)
+            return false;
+        *result = FindFileData.cFileName;
+        realFileNameMap.addToCache(f, *result);
+        FindClose(hFind);
+    }
     return true;
 }
 
@@ -2612,7 +2691,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             const Macro &macro = macroIt->second;
             const std::list<Location> &usage = macro.usage();
             for (std::list<Location>::const_iterator usageIt = usage.begin(); usageIt != usage.end(); ++usageIt) {
-                MacroUsage mu(usageIt->files);
+                MacroUsage mu(usageIt->files, macro.valueDefinedInCode());
                 mu.macroName = macro.name();
                 mu.macroLocation = macro.defineLocation();
                 mu.useLocation = *usageIt;
