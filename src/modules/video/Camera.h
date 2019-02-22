@@ -213,10 +213,17 @@ public:
 
 	/**
 	 * @brief Converts normalized mouse coordinates into a ray
+	 * project screen position [0.0-1.0] to [-1.0,1.0] and flip y axis
+	 * to bring them into homogeneous clip coordinates
 	 * @param[in] screenPos normalized screen position [0.0-1.0]
 	 * @return Ray instance with origin and direction
 	 */
 	Ray screenRay(const glm::vec2& screenPos) const;
+	/**
+	 * @param[in] screenPos screen pixel position
+	 * @note Basically just a wrapper for @c screenRay() but for mouse coordinates
+	 * @return Ray instance with origin and direction
+	 */
 	Ray mouseRay(const glm::ivec2& screenPos) const;
 
 	/**
