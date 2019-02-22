@@ -26,6 +26,7 @@ void Controller::resetCamera(const voxel::RawVolume* volume) {
 		_camera.setPosition(glm::vec3(center.x, center.y, -region.getDepthInCells() - center.z));
 	}
 	_camera.lookAt(center);
+	_camera.setFarPlane(5000.0f);
 }
 
 void Controller::update(long deltaFrame) {
