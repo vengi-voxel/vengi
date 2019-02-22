@@ -718,6 +718,11 @@ void ViewportSingleton::setReferencePosition(const glm::ivec3& pos) {
 }
 
 void ViewportSingleton::setCursorPosition(glm::ivec3 pos, bool force) {
+	const voxel::RawVolume* v = modelVolume();
+	if (v == nullptr) {
+		return;
+	}
+
 	const int res = gridRenderer().gridResolution();
 	if (pos.x % res != 0) {
 		pos.x = (pos.x / res) * res;
@@ -740,7 +745,7 @@ void ViewportSingleton::setCursorPosition(glm::ivec3 pos, bool force) {
 		}
 	}
 
-	const voxel::Region& region = modelVolume()->region();
+	const voxel::Region& region = v->region();
 	if (!region.containsPoint(pos)) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
