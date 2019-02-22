@@ -321,7 +321,7 @@ glm::ivec3 ViewportSingleton::aabbDim() const {
 	const glm::ivec3& pos = cursorPosition();
 	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
 	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos);
-	return glm::abs(maxs + gridResolution() - mins);
+	return glm::abs(maxs + size - mins);
 }
 
 bool ViewportSingleton::aabbStart() {
