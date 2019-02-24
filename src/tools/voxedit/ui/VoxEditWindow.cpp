@@ -319,8 +319,6 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		importMesh("");
 	} else if (ev.isAny(TBIDC("prefab"))) {
 		prefab("");
-	} else if (ev.isAny(TBIDC("spacecolonization"))) {
-		vps().spaceColonization();
 	} else if (ev.isAny(TBIDC("heightmap"))) {
 		importHeightmap("");
 	} else if (ev.isAny(TBIDC("save"))) {

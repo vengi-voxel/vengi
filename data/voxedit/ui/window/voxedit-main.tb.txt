@@ -44,8 +44,6 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-redo
 						TBLayout: gravity: left right
 							TBWidget
-						TBButton: gravity: left, @include: definitions>menubutton, text: Space Colonization, id: spacecolonization
-							TBSkinImage: skin: voxedit-structure
 						TBButton: gravity: left, @include: definitions>menubutton, text: Structure, id: menu_structure
 							TBSkinImage: skin: voxedit-structure
 						TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: dialog_noise
