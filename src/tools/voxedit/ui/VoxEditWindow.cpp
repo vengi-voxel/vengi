@@ -715,6 +715,7 @@ bool VoxEditWindow::save(const std::string& file) {
 	}
 	if (!vps().save(file)) {
 		Log::warn("Failed to save the model");
+		popup(tr("Error"), tr("Failed to save the model"));
 		return false;
 	}
 	Log::info("Saved the model to %s", file.c_str());
