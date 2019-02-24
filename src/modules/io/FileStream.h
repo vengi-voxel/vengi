@@ -41,7 +41,7 @@ public:
 	bool addInt(uint32_t dword);
 	bool addLong(uint64_t dword);
 	bool addFloat(float value);
-	bool addString(const std::string& string);
+	bool addString(const std::string& string, bool terminate = true);
 	bool addFormat(const char *fmt, ...);
 
 	int seek(int64_t position);

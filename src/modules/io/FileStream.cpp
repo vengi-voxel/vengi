@@ -210,12 +210,15 @@ bool FileStream::addByte(uint8_t byte) {
 	return write<uint8_t>(byte);
 }
 
-bool FileStream::addString(const std::string& string) {
+bool FileStream::addString(const std::string& string, bool terminate) {
 	const size_t length = string.length();
 	for (std::size_t i = 0; i < length; i++) {
 		if (!addByte(uint8_t(string[i]))) {
 			return false;
 		}
+	}
+	if (!terminate) {
+		return true;
 	}
 	return addByte(uint8_t('\0'));
 }
