@@ -172,10 +172,10 @@ bool RawVolumeRenderer::empty(int idx) const {
 	for (auto& i : _meshes) {
 		const Meshes& meshes = i.second;
 		if (meshes[idx] != nullptr && meshes[idx]->getNoOfIndices() > 0) {
-			return true;
+			return false;
 		}
 	}
-	return false;
+	return true;
 }
 
 bool RawVolumeRenderer::toMesh(int idx, voxel::Mesh* mesh) {
