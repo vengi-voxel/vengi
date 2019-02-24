@@ -753,6 +753,7 @@ bool VoxEditWindow::importMesh(const std::string& file) {
 
 bool VoxEditWindow::exportFile(const std::string& file) {
 	if (vps().empty()) {
+		popup(tr("Nothing to export"), tr("Nothing to export yet."));
 		return false;
 	}
 
