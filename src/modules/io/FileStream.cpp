@@ -189,7 +189,7 @@ int FileStream::readInt(uint32_t& val) {
 
 int FileStream::readBuf(uint8_t *buf, size_t bufSize) {
 	for (size_t i = 0; i < bufSize; ++i) {
-		if (readByte(buf[i]) == -1) {
+		if (readByte(buf[i]) != 0) {
 			return -1;
 		}
 	}
