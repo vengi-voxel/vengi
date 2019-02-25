@@ -607,14 +607,20 @@ void ViewportSingleton::shutdown() {
 bool ViewportSingleton::extractVolume() {
 	if (_extract) {
 		Log::debug("Extract the mesh");
-		_extract = false;
-		// TODO: only extract the first n entries per frame
-		for (const voxel::Region& region : _extractRegions) {
-			if (!_volumeRenderer.extract(ModelVolumeIndex, region)) {
-				Log::error("Failed to extract the model mesh");
+		const size_t n = _extractRegions.size();
+		if (n > 0) {
+			// extract n regions max per frame
+			const size_t MaxPerFrame = 4;
+			const size_t x = std::min(MaxPerFrame, n);
+			for (size_t i = 0; i < x; ++i) {
+				if (!_volumeRenderer.extract(ModelVolumeIndex, _extractRegions[i])) {
+					Log::error("Failed to extract the model mesh");
+				}
 			}
+			// delete the first n entries and compact the memory of the buffer
+			RegionQueue(_extractRegions.begin() + x, _extractRegions.end()).swap(_extractRegions);
 		}
-		_extractRegions.clear();
+		_extract = !_extractRegions.empty();
 		return true;
 	}
 	return false;

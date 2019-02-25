@@ -56,7 +56,8 @@ private:
 	math::Axis _lockedAxis = math::Axis::None;
 	math::Axis _mirrorAxis = math::Axis::None;
 
-	std::vector<voxel::Region> _extractRegions;
+	using RegionQueue = std::vector<voxel::Region>;
+	RegionQueue _extractRegions;
 
 	bool _empty = true;
 	bool _dirty = false;
