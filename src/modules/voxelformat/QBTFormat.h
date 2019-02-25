@@ -26,6 +26,8 @@ private:
 
 	bool loadColorMap(io::FileStream& stream);
 	bool loadFromStream(io::FileStream& stream, std::vector<RawVolume*>& volumes);
+	bool saveMatrix(io::FileStream& stream, const RawVolume* volume, bool colorMap) const;
+	bool saveColorMap(io::FileStream& stream, const RawVolume* volume) const;
 public:
 	std::vector<RawVolume*> loadGroups(const io::FilePtr& file) override;
 	bool save(const RawVolume* volume, const io::FilePtr& file) override;

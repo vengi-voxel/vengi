@@ -18,10 +18,6 @@ namespace voxel {
 	}
 
 bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
-	if (!(bool)file) {
-		return false;
-	}
-
 	io::FileStream stream(file.get());
 	stream.addInt(FourCC('V','O','X',' '));
 	stream.addInt(150);

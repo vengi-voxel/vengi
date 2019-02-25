@@ -32,14 +32,17 @@ glm::vec4 VoxFileFormat::findClosestMatch(const glm::vec4& color) const {
 
 uint8_t VoxFileFormat::findClosestIndex(const glm::vec4& color) const {
 	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
-	materialColors.erase(materialColors.begin());
+	//materialColors.erase(materialColors.begin());
 	return core::Color::getClosestMatch(color, materialColors);
 }
 
 RawVolume* VoxFileFormat::load(const io::FilePtr& file) {
+	std::vector<voxel::RawVolume*> volumes = loadGroups(file);
+	if (volumes.empty()) {
+		return nullptr;
+	}
 	glm::ivec3 mins(std::numeric_limits<int32_t>::max());
 	glm::ivec3 maxs(std::numeric_limits<int32_t>::min());
-	std::vector<voxel::RawVolume*> volumes = loadGroups(file);
 	for (const voxel::RawVolume* v : volumes) {
 		const voxel::Region& region = v->region();
 		mins = glm::min(mins, region.getLowerCorner());
