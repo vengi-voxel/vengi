@@ -206,8 +206,36 @@ int FileStream::readLong(uint64_t& val) {
 	return retVal;
 }
 
-bool FileStream::addByte(uint8_t byte) {
-	return write<uint8_t>(byte);
+bool FileStream::addByte(uint8_t val) {
+	SDL_RWseek(_rwops, _pos, RW_SEEK_SET);
+	if (SDL_RWwrite(_rwops, &val, 1, 1) != 1) {
+		return false;
+	}
+	if (_pos >= _size) {
+		++_size;
+	}
+	++_pos;
+	return true;
+}
+
+bool FileStream::append(const uint8_t *buf, size_t size) {
+	SDL_RWseek(_rwops, _pos, RW_SEEK_SET);
+	size_t completeBytesWritten = 0;
+	int32_t bytesWritten = 1;
+	const uint8_t* b = buf;
+	while (completeBytesWritten < size && bytesWritten > 0) {
+		bytesWritten = SDL_RWwrite(_rwops, b, 1, (size - completeBytesWritten));
+		b += bytesWritten;
+		completeBytesWritten += bytesWritten;
+	}
+	if (completeBytesWritten != size) {
+		return false;
+	}
+	if (_pos >= _size) {
+		_size += size;
+	}
+	_pos += size;
+	return true;
 }
 
 bool FileStream::addString(const std::string& string, bool terminate) {

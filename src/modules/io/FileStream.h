@@ -132,7 +132,7 @@ public:
 	int peekShort(uint16_t& val) const;
 	int peekByte(uint8_t& val) const;
 
-	void append(const uint8_t *buf, size_t size);
+	bool append(const uint8_t *buf, size_t size);
 
 	bool empty() const;
 
@@ -176,13 +176,6 @@ public:
 
 inline bool FileStream::empty() const {
 	return _size <= 0;
-}
-
-inline void FileStream::append(const uint8_t *buf, size_t size) {
-	// TODO: optimize
-	for (std::size_t i = 0; i < size; ++i) {
-		addByte(buf[i]);
-	}
 }
 
 inline bool FileStream::addBool(bool value) {
