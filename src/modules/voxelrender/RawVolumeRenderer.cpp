@@ -44,7 +44,7 @@ RawVolumeRenderer::RawVolumeRenderer() :
 }
 
 void RawVolumeRenderer::construct() {
-	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
+	core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
 }
 
 bool RawVolumeRenderer::init() {
