@@ -161,7 +161,6 @@ void Viewport::updateStatusBar() {
 
 void Viewport::update() {
 	updateStatusBar();
-	vps().update();
 	camera().setTarget(glm::vec3(vps().referencePosition()));
 }
 

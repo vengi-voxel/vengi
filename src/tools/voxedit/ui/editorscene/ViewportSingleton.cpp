@@ -562,6 +562,7 @@ bool ViewportSingleton::init() {
 
 void ViewportSingleton::update() {
 	const uint64_t ms = core::App::getInstance()->systemMillis();
+	// TODO: autosave
 	if (_spaceColonizationTree != nullptr && ms - _lastGrow > 1000L) {
 		const bool growing = _spaceColonizationTree->step();
 		_lastGrow = ms;

@@ -215,6 +215,7 @@ bool VoxEditWindow::init() {
 }
 
 void VoxEditWindow::update() {
+	ViewportSingleton::getInstance().update();
 	_scene->update();
 	_sceneTop->update();
 	_sceneLeft->update();
