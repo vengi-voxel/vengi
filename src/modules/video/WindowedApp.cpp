@@ -509,13 +509,17 @@ bool WindowedApp::isRelativeMouseMode() const {
 	return SDL_GetRelativeMouseMode();
 }
 
-void WindowedApp::toggleRelativeMouseMode() {
+bool WindowedApp::toggleRelativeMouseMode() {
 	const bool current = isRelativeMouseMode();
-	setRelativeMouseMode(current ? false : true);
+	return setRelativeMouseMode(current ? false : true);
 }
 
-void WindowedApp::setRelativeMouseMode(bool mode) {
+bool WindowedApp::setRelativeMouseMode(bool mode) {
+	if (mode && !_allowRelativeMouseMode) {
+		mode = false;
+	}
 	SDL_SetRelativeMouseMode(mode ? SDL_TRUE : SDL_FALSE);
+	return mode;
 }
 
 void WindowedApp::fileDialog(const std::function<void(const std::string&)>& callback, OpenFileMode mode, const std::string& filter) {

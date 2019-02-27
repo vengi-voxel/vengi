@@ -34,6 +34,7 @@ protected:
 	uint32_t _frameCounter = 0;
 	float _dpiFactor = 1.0f;
 	double _frameCounterResetTime = 0.0;
+	bool _allowRelativeMouseMode = true;
 
 	std::unordered_set<int32_t> _keys;
 	util::BindMap _bindings;
@@ -52,9 +53,9 @@ protected:
 
 	bool isRelativeMouseMode() const;
 
-	void toggleRelativeMouseMode();
+	bool toggleRelativeMouseMode();
 
-	void setRelativeMouseMode(bool mode);
+	bool setRelativeMouseMode(bool mode);
 
 public:
 	const glm::ivec2& dimension() const;

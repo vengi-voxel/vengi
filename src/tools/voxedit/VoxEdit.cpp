@@ -26,6 +26,7 @@
 VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		Super(metric, filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init(ORGANISATION, "voxedit");
+	_allowRelativeMouseMode = false;
 }
 
 bool VoxEdit::importheightmapFile(const std::string& file) {
