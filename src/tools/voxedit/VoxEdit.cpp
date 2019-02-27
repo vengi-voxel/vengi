@@ -69,7 +69,6 @@ core::AppState VoxEdit::onCleanup() {
 
 core::AppState VoxEdit::onConstruct() {
 	const core::AppState state = Super::onConstruct();
-	_lastDirectory = core::Var::get("ve_lastdirectory", core::App::getInstance()->filesystem()->homePath().c_str());
 
 	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
 		const std::string& dir = _lastDirectory->strVal().empty() ? "." : _lastDirectory->strVal();

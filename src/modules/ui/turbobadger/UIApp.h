@@ -23,6 +23,7 @@ protected:
 	tb::TBWidget* _root = nullptr;
 	Console _console;
 	core::VarPtr _renderUI;
+	core::VarPtr _lastDirectory;
 	int _lastShowTextY = -1;
 	std::string _applicationSkin;
 	bool _uiInitialized = false;

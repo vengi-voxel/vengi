@@ -250,7 +250,7 @@ void UIApp::fileDialog(const std::function<void(const std::string&)>& callback, 
 	if (isRelativeMouseMode()) {
 		toggleRelativeMouseMode();
 	}
-	FileDialogWindow* dialog = new FileDialogWindow(this, callback);
+	FileDialogWindow* dialog = new FileDialogWindow(this, callback, _lastDirectory);
 	dialog->setMode(mode);
 	if (!filter.empty()) {
 		std::vector<std::string> tokens;
@@ -263,7 +263,7 @@ void UIApp::fileDialog(const std::function<void(const std::string&)>& callback, 
 		filters[n] = nullptr;
 		dialog->setFilter((const char**)filters);
 	}
-	dialog->changeDir("");
+	dialog->changeDir(_lastDirectory->strVal());
 }
 
 void UIApp::onMouseWheel(int32_t x, int32_t y) {
@@ -386,6 +386,7 @@ core::AppState UIApp::onConstruct() {
 	}).setHelp("Show ui debug information - only available in debug builds");
 
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
+	_lastDirectory = core::Var::get("cl_ui_lastdirectory", core::App::getInstance()->filesystem()->homePath().c_str());
 
 	_console.construct();
 

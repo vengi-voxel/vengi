@@ -61,15 +61,15 @@ private:
 	tb::TBGenericStringItemSource _filterList;
 	std::function<void(const std::string&)> _callback;
 	io::FilesystemPtr _fs;
+	core::VarPtr _lastDirectory;
 public:
-	FileDialogWindow(UIApp* app, const std::function<void(const std::string&)>& callback);
+	FileDialogWindow(UIApp* app, const std::function<void(const std::string&)>& callback, const core::VarPtr& lastDirectory);
 	~FileDialogWindow();
 	void changeDir(const std::string& dir = "");
 
 	void setFilter(const char **filter);
 	void setMode(video::WindowedApp::OpenFileMode mode, const char *inputText = nullptr);
 
-	void onAdded() override;
 	bool onEvent(const tb::TBWidgetEvent &ev) override;
 };
 

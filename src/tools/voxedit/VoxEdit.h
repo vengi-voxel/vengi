@@ -35,7 +35,6 @@ static const struct Direction {
 class VoxEdit: public ui::turbobadger::UIApp {
 private:
 	using Super = ui::turbobadger::UIApp;
-	core::VarPtr _lastDirectory;
 	voxedit::VoxEditWindow* _mainWindow;
 	video::MeshPoolPtr _meshPool;
 	void update();

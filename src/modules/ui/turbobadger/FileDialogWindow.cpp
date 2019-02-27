@@ -85,8 +85,8 @@ tb::TBWidget *FileDialogItemSource::createItemWidget(int index, tb::TBSelectItem
 	return new FileDialogItemWidget(getItem(index));
 }
 
-FileDialogWindow::FileDialogWindow(UIApp* tool, const std::function<void(const std::string&)>& callback) :
-		Super(tool), _callback(callback) {
+FileDialogWindow::FileDialogWindow(UIApp* tool, const std::function<void(const std::string&)>& callback, const core::VarPtr& lastDirectory) :
+		Super(tool), _callback(callback), _lastDirectory(lastDirectory) {
 	_fs = tool->filesystem();
 	loadResourceFile("ui/window/filedialog.tb.txt");
 	if (tb::TBSelectList * select = getWidgetByType<tb::TBSelectList>(FILELIST)) {
@@ -243,15 +243,19 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	return Super::onEvent(ev);
 }
 
-void FileDialogWindow::onAdded() {
-	Log::info("Load entries");
-	Super::onAdded();
-}
-
 void FileDialogWindow::changeDir(const std::string& dir) {
 	if (!dir.empty()) {
-		_directory = _fs->absolutePath(_directory + "/" + dir);
+		if (io::Filesystem::isRelativePath(dir)) {
+			_directory = _fs->absolutePath(_directory + "/" + dir);
+		} else {
+			_directory = dir;
+		}
+		if (!io::Filesystem::isReadableDir(_directory)) {
+			_directory = _fs->absolutePath(".");
+		}
 	}
+	_lastDirectory->setVal(_directory);
+
 	_entityList.deleteAllItems();
 	_entityList.addItem(new FileDialogItem(io::Filesystem::DirEntry{"..", io::Filesystem::DirEntry::Type::dir}));
 

@@ -104,8 +104,9 @@ bool Filesystem::createDir(const std::string& dir, bool recursive) const {
 
 bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const {
 	uv_fs_t req;
-	const int amount = uv_fs_scandir(_loop, &req, directory.c_str(), 0, nullptr);
+	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount <= 0) {
+		uv_fs_req_cleanup(&req);
 		return false;
 	}
 	uv_dirent_t ent;
@@ -126,15 +127,23 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 				continue;
 			}
 		}
-		entities.push_back(DirEntry{ent.name, type});
+		uv_fs_t statsReq;
+		const std::string fullPath = directory + "/" + ent.name;
+		if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
+			Log::warn("Could not stat file %s", fullPath.c_str());
+		}
+		entities.push_back(DirEntry{ent.name, type, statsReq.statbuf.st_size});
+		uv_fs_req_cleanup(&statsReq);
 	}
+	uv_fs_req_cleanup(&req);
 	return true;
 }
 
 bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entities) const {
 	uv_fs_t req;
-	const int amount = uv_fs_scandir(_loop, &req, directory.c_str(), 0, nullptr);
+	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount <= 0) {
+		uv_fs_req_cleanup(&req);
 		return false;
 	}
 	uv_dirent_t ent;
@@ -150,8 +159,15 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 			Log::debug("Unknown directory entry found: %s", ent.name);
 			continue;
 		}
-		entities.push_back(DirEntry{ent.name, type});
+		uv_fs_t statsReq;
+		const std::string fullPath = directory + "/" + ent.name;
+		if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
+			Log::warn("Could not stat file %s", fullPath.c_str());
+		}
+		entities.push_back(DirEntry{ent.name, type, statsReq.statbuf.st_size});
+		uv_fs_req_cleanup(&statsReq);
 	}
+	uv_fs_req_cleanup(&req);
 	return true;
 }
 
@@ -183,10 +199,23 @@ std::string Filesystem::absolutePath(const std::string& path) const {
 	uv_fs_realpath(nullptr, &req, path.c_str(), nullptr);
 	std::string abspath = uv_fs_get_path(&req);
 	normalizePath(abspath);
+	uv_fs_req_cleanup(&req);
 	return abspath;
 }
 
-bool Filesystem::isRelativeFilename(const std::string& name) const {
+bool Filesystem::isReadableDir(const std::string& name) {
+	uv_fs_t req;
+	if (uv_fs_access(nullptr, &req, name.c_str(), F_OK, nullptr) != 0) {
+		uv_fs_req_cleanup(&req);
+		return false;
+	}
+	uv_fs_stat(nullptr, &req, name.c_str(), nullptr);
+	const bool dir = (uv_fs_get_statbuf(&req)->st_mode & S_IFDIR) != 0;
+	uv_fs_req_cleanup(&req);
+	return dir;
+}
+
+bool Filesystem::isRelativePath(const std::string& name) {
 	const size_t size = name.size();
 #ifdef __WINDOWS__
 	if (size < 3) {
@@ -275,7 +304,7 @@ bool Filesystem::pushDir(const std::string& directory) {
 }
 
 io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
-	if (mode == FileMode::Write && !isRelativeFilename(filename)) {
+	if (mode == FileMode::Write && !isRelativePath(filename)) {
 		return std::make_shared<make_shared_enabler>(filename, mode);
 	}
 	if (io::File(filename, FileMode::Read).exists()) {
