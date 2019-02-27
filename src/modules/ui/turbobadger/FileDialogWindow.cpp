@@ -118,6 +118,7 @@ void FileDialogWindow::setMode(video::WindowedApp::OpenFileMode mode, const char
 	if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
 		if (_mode == video::WindowedApp::OpenFileMode::Save) {
 			input->setVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
+			input->setFocus(WIDGET_FOCUS_REASON_UNKNOWN);
 			if (inputText != nullptr) {
 				input->setText(inputText);
 			}
