@@ -48,6 +48,8 @@ public:
 	tb::TBWidget *createItemWidget(int index, tb::TBSelectItemViewer *viewer) override;
 
 	inline void setMode(video::WindowedApp::OpenFileMode mode) { _mode = mode; }
+
+	static bool execFileItemFilter(const char* str, const char* filter);
 };
 
 class FileDialogWindow: public ui::turbobadger::Window {
@@ -65,7 +67,7 @@ public:
 	void changeDir(const std::string& dir = "");
 
 	void setFilter(const char **filter);
-	void setMode(video::WindowedApp::OpenFileMode mode);
+	void setMode(video::WindowedApp::OpenFileMode mode, const char *inputText = nullptr);
 
 	void onAdded() override;
 	bool onEvent(const tb::TBWidgetEvent &ev) override;

@@ -4,6 +4,7 @@
 
 #include "FileDialogWindow.h"
 #include "ui/turbobadger/UIApp.h"
+#include <string.h>
 
 namespace ui {
 namespace turbobadger {
@@ -11,6 +12,41 @@ namespace turbobadger {
 static const char *FILELIST = "files";
 static const char *FILTERLIST = "filter";
 static const char *INPUT = "input";
+
+bool FileDialogItemSource::execFileItemFilter(const char* str, const char* filter) {
+	// filters might be separated by a ,
+	char buf[4096];
+	strncpy(buf, filter, sizeof(buf) - 1);
+	buf[sizeof(buf) - 1] = '\0';
+
+	char *sep = strstr(buf, ",");
+	if (sep == nullptr) {
+		if (!strcmp(buf, "*") || !strncmp(buf, "*.", 2)) {
+			return core::string::matches(buf, str);
+		}
+		char patternBuf[32];
+		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", buf);
+		return core::string::matches(patternBuf, str);
+	}
+
+	char *f = buf;
+	while (*sep == ',') {
+		*sep = '\0';
+		char patternBuf[32];
+		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
+		if (core::string::matches(patternBuf, str)) {
+			return true;
+		}
+		f = ++sep;
+		sep = strchr(f, ',');
+		if (sep == nullptr) {
+			break;
+		}
+	}
+	char patternBuf[32];
+	SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
+	return core::string::matches(patternBuf, str);
+}
 
 FileDialogItemWidget::FileDialogItemWidget(FileDialogItem *item) : tb::TBLayout() {
 	setSkinBg(TBIDC("TBSelectItem"));
@@ -42,35 +78,7 @@ bool FileDialogItemSource::filter(int index, const char *filter) {
 		return true;
 	}
 
-	// filters might be separated by a ,
-	char buf[4096];
-	strncpy(buf, filter, sizeof(buf) - 1);
-	buf[sizeof(buf) - 1] = '\0';
-
-	char *sep = strchr(buf, ',');
-	if (sep == nullptr) {
-		char patternBuf[32];
-		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", buf);
-		return core::string::matches(patternBuf, item->str.c_str());
-	}
-
-	char *f = buf;
-	while (*sep == ',') {
-		*sep = '\0';
-		char patternBuf[32];
-		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
-		if (core::string::matches(patternBuf, item->str.c_str())) {
-			return true;
-		}
-		f = ++sep;
-		sep = strchr(f, ',');
-		if (sep == nullptr) {
-			break;
-		}
-	}
-	char patternBuf[32];
-	SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
-	return core::string::matches(patternBuf, item->str.c_str());
+	return execFileItemFilter(item->str, filter);
 }
 
 tb::TBWidget *FileDialogItemSource::createItemWidget(int index, tb::TBSelectItemViewer *viewer) {
@@ -103,12 +111,23 @@ FileDialogWindow::~FileDialogWindow() {
 	}
 }
 
-void FileDialogWindow::setMode(video::WindowedApp::OpenFileMode mode) {
+void FileDialogWindow::setMode(video::WindowedApp::OpenFileMode mode, const char *inputText) {
 	_mode = mode;
 	_entityList.setMode(mode);
 	const bool inputVisible = _mode == video::WindowedApp::OpenFileMode::Save;
 	if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
-		input->setVisibility(inputVisible ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE);
+		if (_mode == video::WindowedApp::OpenFileMode::Save) {
+			input->setVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
+			if (inputText != nullptr) {
+				input->setText(inputText);
+			}
+			input->setPlaceholderText(tr("Enter filename for saving"));
+			if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
+				ok->setState(WIDGET_STATE_DISABLED, input->getText().isEmpty());
+			}
+		} else {
+			input->setVisibility(tb::WIDGET_VISIBILITY_GONE);
+		}
 	}
 }
 
@@ -132,10 +151,37 @@ void FileDialogWindow::setFilter(const char **filter) {
 }
 
 bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
-	if (ev.type == tb::EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC(FILTERLIST)) {
-		if (tb::TBSelectList *select = getWidgetByType<tb::TBSelectList>(FILELIST)) {
-			select->setFilter(ev.target->getText());
-			return true;
+	if (ev.type == tb::EVENT_TYPE_CHANGED) {
+		if (ev.target->getID() == TBIDC(FILTERLIST)) {
+			if (tb::TBSelectList *select = getWidgetByType<tb::TBSelectList>(FILELIST)) {
+				select->setFilter(ev.target->getText());
+				return true;
+			}
+		} else if (ev.target->getID() == TBIDC(INPUT)) {
+			if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
+				const TBStr& str = ev.target->getText();
+				bool disabled;
+				if (str.isEmpty()) {
+					disabled = true;
+				} else {
+					disabled = true;
+					if (_filterList.getNumItems() == 1) {
+						disabled = false;
+					} else {
+						for (int i = 0; i < _filterList.getNumItems(); i++) {
+							const char *filter = _filterList.getItemString(i);
+							if (!strcmp(filter, "*")) {
+								continue;
+							}
+							if (FileDialogItemSource::execFileItemFilter(str.c_str(), filter)) {
+								disabled = false;
+								break;
+							}
+						}
+					}
+				}
+				ok->setState(WIDGET_STATE_DISABLED, disabled);
+			}
 		}
 	}
 	if (ev.type == tb::EVENT_TYPE_KEY_DOWN && ev.special_key == tb::TB_KEY_ESC) {

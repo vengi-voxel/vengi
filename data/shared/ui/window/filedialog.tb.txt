@@ -5,6 +5,7 @@ WindowInfo
 TBLayout: distribution: gravity, axis: y, size: available
 	TBEditField
 		id input
+		autofocus 1
 
 	TBSeparator: gravity: left right, skin: separator
 	TBSelectList
