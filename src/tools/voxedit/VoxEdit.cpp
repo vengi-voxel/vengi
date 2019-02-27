@@ -207,8 +207,6 @@ core::AppState VoxEdit::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	newFile(true);
-
 	video::clearColor(::core::Color::Black);
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);

@@ -211,11 +211,18 @@ bool VoxEditWindow::init() {
 	Log::info("Supported import filters: %s", _importFilter.c_str());
 	Log::info("Supported export filters: %s", _exportFilter.c_str());
 
+	_lastOpenedFile = core::Var::get("ve_lastfile", "");
+	if (vps().load(_lastOpenedFile->strVal())) {
+		resetcamera();
+	} else {
+		_scene->newModel(true);
+	}
+
 	return true;
 }
 
 void VoxEditWindow::update() {
-	ViewportSingleton::getInstance().update();
+	vps().update();
 	_scene->update();
 	_sceneTop->update();
 	_sceneLeft->update();
@@ -371,6 +378,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	if (id == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_scene->newModel(true);
+			_lastOpenedFile->setVal("");
 		}
 		return true;
 	} else if (id == TBIDC("unsaved_changes_quit")) {
@@ -381,6 +389,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (id == TBIDC("unsaved_changes_load")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			vps().load(_loadFile);
+			_lastOpenedFile->setVal(_loadFile);
 			resetcamera();
 		}
 		return true;
@@ -720,6 +729,7 @@ bool VoxEditWindow::save(const std::string& file) {
 		return false;
 	}
 	Log::info("Saved the model to %s", file.c_str());
+	_lastOpenedFile->setVal(file);
 	return true;
 }
 
@@ -799,6 +809,7 @@ bool VoxEditWindow::load(const std::string& file) {
 
 	if (!vps().dirty()) {
 		if (vps().load(file)) {
+			_lastOpenedFile->setVal(file);
 			resetcamera();
 			return true;
 		}
@@ -818,6 +829,7 @@ bool VoxEditWindow::createNew(bool force) {
 				"There are unsaved modifications.\nDo you wish to discard them and close?",
 				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_new");
 	} else if (_scene->newModel(force)) {
+		_lastOpenedFile->setVal("");
 		return true;
 	}
 	return false;

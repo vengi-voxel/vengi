@@ -198,9 +198,12 @@ bool ViewportSingleton::prefab(const std::string& file) {
 }
 
 bool ViewportSingleton::load(const std::string& file) {
+	if (file.empty()) {
+		return false;
+	}
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file);
 	if (!(bool)filePtr) {
-		Log::error("Failed to open model file %s", file.data());
+		Log::error("Failed to open model file '%s'", file.data());
 		return false;
 	}
 	voxel::RawVolume* newVolume;
