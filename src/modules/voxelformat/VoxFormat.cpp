@@ -194,7 +194,6 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 
 	const int64_t resetPos = stream.pos();
 
-	RawVolume *volume = nullptr;
 	uint32_t numModels = 1;
 
 	// 8. Default Palette : if chunk 'RGBA' is absent
@@ -229,6 +228,8 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 		const int index = core::Color::getClosestMatch(color, materialColors);
 		_palette[i] = index;
 	}
+
+	std::vector<Region> regions;
 
 	do {
 		uint32_t chunkId;
@@ -281,10 +282,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 			glm::ivec3 maxsregion((int32_t)x, (int32_t)y, (int32_t)z);
 			Log::debug("Found size chunk: (%u:%u:%u)", x, y, z);
 			Region region(glm::ivec3(0), maxsregion);
-			if (volume != nullptr) {
-				delete volume;
-			}
-			volume = new RawVolume(region);
+			regions.push_back(region);
 		}
 		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
 		wrap(stream.seek(nextChunkPos));
@@ -292,6 +290,8 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 
 	stream.seek(resetPos);
 
+	std::vector<RawVolume*> volumes;
+	int volumeIdx = 0;
 	do {
 		uint32_t chunkId;
 		wrap(stream.readInt(chunkId))
@@ -325,11 +325,13 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 			// -------------------------------------------------------------------------------
 			uint32_t numVoxels;
 			wrap(stream.readInt(numVoxels))
-			if (volume == nullptr) {
-				Log::error("Could not load vox file: Missed SIZE chunk");
+			Log::debug("Found voxel chunk with %u voxels", numVoxels);
+			RawVolume *volume = nullptr;
+			if (regions.empty() || volumeIdx >= regions.size()) {
+				Log::error("Invalid XYZI chunk without previous SIZE chunk");
 				return std::vector<RawVolume*>();
 			}
-			Log::debug("Found voxel chunk with %u voxels", numVoxels);
+			volume = new RawVolume(regions[volumeIdx++]);
 			for (uint32_t i = 0; i < numVoxels; ++i) {
 				// we have to flip the axis here
 				uint8_t x, y, z, colorIndex;
@@ -341,6 +343,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 				volume->setVoxel(x, y, z, voxel);
 			}
+			volumes.push_back(volume);
 		} else if (chunkId == FourCC('M','A','T','T')) {
 			Log::debug("Found material chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			// 9. Chunk id 'MATT' : material, if it is absent, it is diffuse material
@@ -392,6 +395,15 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 #endif
 		} else if (chunkId == FourCC('R','G','B','A') || chunkId == FourCC('S','I','Z','E')) {
 			// already loaded
+		} else if (chunkId == FourCC('L','A','Y','R')) {
+			Log::warn("LAYR chunk not yet supported");
+			// https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
+		} else if (chunkId == FourCC('n','T','R','N')) {
+			Log::warn("nTRN chunk not yet supported");
+		} else if (chunkId == FourCC('n','G','R','P')) {
+			Log::warn("nGRP chunk not yet supported");
+		} else if (chunkId == FourCC('n','S','H','P')) {
+			Log::warn("nSHP chunk not yet supported");
 		} else {
 			Log::warn("Unknown chunk in vox file: %u with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", chunkId, numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 		}
@@ -399,7 +411,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 		wrap(stream.seek(nextChunkPos));
 	} while (stream.remaining() > 0);
 
-	return std::vector<RawVolume*>{volume};
+	return volumes;
 }
 
 #undef wrap
