@@ -114,17 +114,24 @@ FileDialogWindow::~FileDialogWindow() {
 void FileDialogWindow::setMode(video::WindowedApp::OpenFileMode mode, const char *inputText) {
 	_mode = mode;
 	_entityList.setMode(mode);
-	const bool inputVisible = _mode == video::WindowedApp::OpenFileMode::Save;
 	if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
-		if (_mode == video::WindowedApp::OpenFileMode::Save) {
+		if (_mode == video::WindowedApp::OpenFileMode::Save
+				|| _mode == video::WindowedApp::OpenFileMode::Open) {
 			input->setVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
 			input->setFocus(WIDGET_FOCUS_REASON_UNKNOWN);
 			if (inputText != nullptr) {
 				input->setText(inputText);
 			}
-			input->setPlaceholderText(tr("Enter filename for saving"));
-			if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
-				ok->setState(WIDGET_STATE_DISABLED, input->getText().isEmpty());
+			if (_mode == video::WindowedApp::OpenFileMode::Save) {
+				input->setPlaceholderText(tr("Enter filename for saving"));
+				if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
+					ok->setState(WIDGET_STATE_DISABLED, input->getText().isEmpty());
+				}
+			} else {
+				input->setPlaceholderText(tr("Enter filename for loading"));
+				if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
+					ok->setState(WIDGET_STATE_DISABLED, false);
+				}
 			}
 		} else {
 			input->setVisibility(tb::WIDGET_VISIBILITY_GONE);
@@ -159,8 +166,8 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 				return true;
 			}
 		} else if (ev.target->getID() == TBIDC(INPUT)) {
+			const TBStr& str = ev.target->getText();
 			if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
-				const TBStr& str = ev.target->getText();
 				bool disabled;
 				if (str.isEmpty()) {
 					disabled = true;
@@ -182,6 +189,10 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 					}
 				}
 				ok->setState(WIDGET_STATE_DISABLED, disabled);
+			}
+			// if entered manually, we want to change the directory.
+			if (io::Filesystem::isReadableDir(str.c_str())) {
+				changeDir(str.c_str());
 			}
 		}
 	}
@@ -257,7 +268,7 @@ void FileDialogWindow::changeDir(const std::string& dir) {
 	_lastDirectory->setVal(_directory);
 
 	_entityList.deleteAllItems();
-	_entityList.addItem(new FileDialogItem(io::Filesystem::DirEntry{"..", io::Filesystem::DirEntry::Type::dir}));
+	_entityList.addItem(new FileDialogItem(io::Filesystem::DirEntry{"..", io::Filesystem::DirEntry::Type::dir, (uint64_t)0}));
 
 	std::vector<io::Filesystem::DirEntry> entities;
 	getApp()->filesystem()->list(_directory, entities);
