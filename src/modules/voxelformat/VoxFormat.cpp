@@ -3,10 +3,10 @@
  */
 
 #include "VoxFormat.h"
-#include "io/FileStream.h"
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Array.h"
+#include "core/Log.h"
 #include "voxel/MaterialColor.h"
 
 namespace voxel {
@@ -16,6 +16,23 @@ namespace voxel {
 		Log::error("Could not load vox file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
 		return std::vector<RawVolume*>(); \
 	}
+
+#define wrapAttributes(read) \
+	if (read == false) { \
+		Log::error("Could not load vox file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		return std::vector<RawVolume*>(); \
+	}
+
+#define wrapAttributesRead(read) \
+	if (read != 0) { \
+		Log::error("Could not load vox file attributes: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		return false; \
+	}
+
+struct VoxModel {
+	uint32_t modelId;
+	std::map<std::string, std::string> attributes;
+};
 
 bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	io::FileStream stream(file.get());
@@ -103,6 +120,47 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	}
 	stream.addInt(mainChildChunkSize);
 
+	return true;
+}
+
+bool VoxFormat::readAttributes(std::map<std::string, std::string>& attributes, io::FileStream& stream) const {
+	uint32_t cnt;
+	wrapAttributesRead(stream.readInt(cnt))
+	Log::debug("Reading %i keys in the dict", cnt);
+	for (uint32_t i = 0; i < cnt; ++i) {
+		char key[1024];
+		char value[1024];
+		uint32_t len;
+
+		// read key
+		wrapAttributesRead(stream.readInt(len));
+		Log::debug("String of length %i", (int)len);
+		if (len >= (uint32_t)sizeof(key)) {
+			Log::error("Max string length for key exceeded");
+			return false;
+		}
+		if (!stream.readString(len, key)) {
+			Log::error("Failed to read key for dict");
+			return false;
+		}
+		key[len] = '\0';
+
+		// read value
+		wrapAttributesRead(stream.readInt(len));
+		Log::debug("String of length %i", (int)len);
+		if (len >= (uint32_t)sizeof(value)) {
+			Log::error("Max string length for value exceeded");
+			return false;
+		}
+		if (!stream.readString(len, value)) {
+			Log::error("Failed to read value for dict");
+			return false;
+		}
+		value[len] = '\0';
+
+		Log::debug("dict entry %i: %s => %s", i, key, value);
+		attributes.insert(std::make_pair(key, value));
+	}
 	return true;
 }
 
@@ -290,6 +348,24 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 
 	stream.seek(resetPos);
 
+	// Scene Graph
+	//
+	// T : Transform Node
+	// G : Group Node
+	// S : Shape Node
+	//
+	//     T
+	//     |
+	//     G
+	//    / \
+	//   T   T
+	//   |   |
+	//   G   S
+	//  / \
+	// T   T
+	// |   |
+	// S   S
+
 	std::vector<RawVolume*> volumes;
 	int volumeIdx = 0;
 	do {
@@ -311,9 +387,6 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 			// 4        | int        | numModels : num of SIZE and XYZI chunks
 			// -------------------------------------------------------------------------------
 			wrap(stream.readInt(numModels))
-			if (numModels > 1) {
-				Log::warn("We are right now only loading the first model of a vox file");
-			}
 		} else if (chunkId == FourCC('X','Y','Z','I')) {
 			Log::debug("Found voxel chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			// 6. Chunk id 'XYZI' : model voxels
@@ -327,7 +400,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 			wrap(stream.readInt(numVoxels))
 			Log::debug("Found voxel chunk with %u voxels", numVoxels);
 			RawVolume *volume = nullptr;
-			if (regions.empty() || volumeIdx >= regions.size()) {
+			if (regions.empty() || volumeIdx >= (int)regions.size()) {
 				Log::error("Invalid XYZI chunk without previous SIZE chunk");
 				return std::vector<RawVolume*>();
 			}
@@ -398,14 +471,115 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 		} else if (chunkId == FourCC('L','A','Y','R')) {
 			Log::warn("LAYR chunk not yet supported");
 			// https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
+			uint32_t layerId;
+			wrap(stream.readInt(layerId))
+			std::map<std::string, std::string> attributes;
+			// (_name : string)
+			// (_hidden : 0/1)
+			wrapAttributes(readAttributes(attributes, stream))
+			stream.skip(sizeof(uint32_t));
+			// TODO
 		} else if (chunkId == FourCC('n','T','R','N')) {
 			Log::warn("nTRN chunk not yet supported");
+			Log::debug("Found nTRN chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
+			uint32_t nodeId;
+			wrap(stream.readInt(nodeId)) // 0 is root?
+			std::map<std::string, std::string> attributes;
+			// (_name : string)
+			// (_hidden : 0/1)
+			wrapAttributes(readAttributes(attributes, stream))
+			uint32_t childNodeId;
+			wrap(stream.readInt(childNodeId))
+			uint32_t reserved;
+			wrap(stream.readInt(reserved))
+			uint32_t layer;
+			wrap(stream.readInt(layer))
+			uint32_t numFrames;
+			wrap(stream.readInt(numFrames))
+			for (uint32_t i = 0; i < numFrames; ++i) {
+				std::map<std::string, std::string> frames;
+				// (_r : int8) ROTATION
+				// (_t : int32x3) translation
+				//
+				// ROTATION type
+				//
+				// store a row-major rotation in the bits of a byte
+				//
+				// for example :
+				// R =
+				//  0  1  0
+				//  0  0 -1
+				// -1  0  0
+				// ==>
+				// unsigned char _r = (1 << 0) | (2 << 2) | (0 << 4) | (1 << 5) | (1 << 6)
+				//
+				// bit | value
+				// 0-1 : 1 : index of the non-zero entry in the first row
+				// 2-3 : 2 : index of the non-zero entry in the second row
+				// 4   : 0 : the sign in the first row (0 : positive; 1 : negative)
+				// 5   : 1 : the sign in the second row (0 : positive; 1 : negative)
+				// 6   : 1 : the sign in the third row (0 : positive; 1 : negative)
+				//
+				wrapAttributes(readAttributes(frames, stream))
+			}
+			// TODO:
 		} else if (chunkId == FourCC('n','G','R','P')) {
 			Log::warn("nGRP chunk not yet supported");
+			uint32_t nodeId;
+			wrap(stream.readInt(nodeId)) // 0 is root?
+			std::map<std::string, std::string> attributes;
+			wrapAttributes(readAttributes(attributes, stream))
+			uint32_t numChildren;
+			wrap(stream.readInt(numChildren))
+			std::vector<uint32_t> children;
+			children.reserve(numChildren);
+			for (uint32_t i = 0; i < numChildren; ++i) {
+				uint32_t child;
+				wrap(stream.readInt(child))
+				children.push_back((child));
+			}
+			// TODO
 		} else if (chunkId == FourCC('n','S','H','P')) {
 			Log::warn("nSHP chunk not yet supported");
+			uint32_t nodeId;
+			wrap(stream.readInt(nodeId)) // 0 is root?
+			std::map<std::string, std::string> nodeAttributes;
+			wrapAttributes(readAttributes(nodeAttributes, stream))
+			uint32_t numModels;
+			wrap(stream.readInt(numModels))
+			std::vector<VoxModel> models;
+			models.reserve(numModels);
+			for (uint32_t i = 0; i < numModels; ++i) {
+				uint32_t modelId;
+				wrap(stream.readInt(modelId));
+				std::map<std::string, std::string> modelAttributes;
+				wrapAttributes(readAttributes(modelAttributes, stream))
+				models.push_back(VoxModel{modelId, modelAttributes});
+			}
+			// TODO
+		} else if (chunkId == FourCC('M','A','T','L')) {
+			uint32_t materialId;
+			wrap(stream.readInt(materialId))
+			std::map<std::string, std::string> materialAttributes;
+			// (_type : str) _diffuse, _metal, _glass, _emit
+			// (_weight : float) range 0 ~ 1
+			// (_rough : float)
+			// (_spec : float)
+			// (_ior : float)
+			// (_att : float)
+			// (_flux : float)
+			// (_plastic)
+			wrapAttributes(readAttributes(materialAttributes, stream))
+			// TODO
+		} else if (chunkId == FourCC('r','O','B','J')) {
+			Log::warn("rOBJ chunk not yet supported");
+			std::map<std::string, std::string> attributes;
+			wrapAttributes(readAttributes(attributes, stream))
 		} else {
-			Log::warn("Unknown chunk in vox file: %u with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", chunkId, numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
+			uint8_t out[4];
+			FourCCRev(out, chunkId);
+			Log::warn("Unknown chunk in vox (%c %c %c %c) file: %u with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)",
+					out[0], out[1], out[2], out[3], chunkId, numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 		}
 		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
 		wrap(stream.seek(nextChunkPos));
@@ -415,5 +589,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 }
 
 #undef wrap
+#undef wrapAttributes
+#undef wrapAttributesRead
 
 }

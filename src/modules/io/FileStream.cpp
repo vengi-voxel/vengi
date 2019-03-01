@@ -136,10 +136,12 @@ bool FileStream::readFormat(const char *fmt, ...) {
 bool FileStream::readString(int length, char *strbuff) {
 	for (int i = 0; i < length; ++i) {
 		if (_pos >= _size) {
+			Log::error("Max stream length exceeded while reading string of length: %i (read: %i)", length, i);
 			return false;
 		}
 		uint8_t chr;
 		if (readByte(chr) != 0) {
+			Log::error("Stream read error while reading string of length: %i (read: %i)", length, i);
 			return false;
 		}
 		strbuff[i] = chr;
