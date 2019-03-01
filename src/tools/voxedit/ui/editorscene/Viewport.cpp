@@ -59,7 +59,11 @@ bool Viewport::saveImage(const char* filename) {
 }
 
 void Viewport::resetCamera() {
-	_controller.resetCamera(vps().modelVolume());
+	const voxel::RawVolume* volume = vps().modelVolume();
+	if (volume == nullptr) {
+		return;
+	}
+	_controller.resetCamera(volume->region());
 }
 
 bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {

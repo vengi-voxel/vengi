@@ -30,7 +30,7 @@ public:
 	int _mouseY = 0;
 
 	void init(Controller::SceneCameraMode mode);
-	void resetCamera(const voxel::RawVolume* volume);
+	void resetCamera(const voxel::Region& region);
 
 	void onResize(const glm::ivec2& size);
 

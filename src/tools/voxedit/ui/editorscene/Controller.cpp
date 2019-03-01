@@ -7,13 +7,8 @@
 
 namespace voxedit {
 
-void Controller::resetCamera(const voxel::RawVolume* volume) {
+void Controller::resetCamera(const voxel::Region& region) {
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
-
-	if (volume == nullptr) {
-		return;
-	}
-	const voxel::Region& region = volume->region();
 	const glm::ivec3& center = region.getCentre();
 	_camera.setTarget(center);
 	if (_camMode == Controller::SceneCameraMode::Free) {
