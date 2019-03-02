@@ -94,6 +94,9 @@ private:
 	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color);
 	void modified(const voxel::Region& modifiedRegion, bool markUndo = true);
 	ViewportSingleton();
+
+	voxel::RawVolume* modelVolume();
+	void setNewVolume(voxel::RawVolume* volume);
 public:
 	~ViewportSingleton();
 
@@ -101,6 +104,8 @@ public:
 		static voxedit::ViewportSingleton singleton;
 		return singleton;
 	}
+
+	voxel::Region region() const;
 
 	const glm::ivec3& cursorPosition() const;
 	void setCursorPosition(glm::ivec3 pos, bool force = false);
@@ -146,16 +151,12 @@ public:
 	bool empty() const;
 	int size() const;
 
-	void setNewVolume(voxel::RawVolume* volume);
-
 	void rotate(int angleX, int angleY, int angleZ);
 	void move(int x, int y, int z);
 
 	void render(const video::Camera& camera);
 
 	void setCursorVoxel(const voxel::Voxel& voxel);
-
-	voxel::RawVolume* modelVolume();
 
 	voxelrender::RawVolumeRenderer& volumeRenderer();
 	const voxelrender::RawVolumeRenderer& rawVolumeRenderer() const;

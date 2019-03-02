@@ -62,6 +62,14 @@ bool ViewportSingleton::exportModel(const std::string& file) {
 	return voxel::exportMesh(&mesh, filePtr->name().c_str());
 }
 
+voxel::Region ViewportSingleton::region() const {
+	const voxel::RawVolume* volume = vps().modelVolume();
+	if (volume == nullptr) {
+		return voxel::Region();
+	}
+	return volume->region();
+}
+
 bool ViewportSingleton::voxelizeModel(const video::MeshPtr& meshPtr) {
 	const video::Mesh::Vertices& positions = meshPtr->vertices();
 	const video::Mesh::Indices& indices = meshPtr->indices();
