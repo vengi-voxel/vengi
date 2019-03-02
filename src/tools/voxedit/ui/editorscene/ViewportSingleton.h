@@ -141,7 +141,6 @@ public:
 
 	bool newVolume(bool force);
 
-	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
 	bool dirty() const;
 	bool needExtract() const;
 	bool empty() const;
@@ -157,7 +156,6 @@ public:
 	void setCursorVoxel(const voxel::Voxel& voxel);
 
 	voxel::RawVolume* modelVolume();
-	const voxel::RawVolume* modelVolume() const;
 
 	voxelrender::RawVolumeRenderer& volumeRenderer();
 	const voxelrender::RawVolumeRenderer& rawVolumeRenderer() const;
@@ -222,10 +220,6 @@ inline const MementoHandler& ViewportSingleton::undoHandler() const {
 }
 
 inline voxel::RawVolume* ViewportSingleton::modelVolume() {
-	return _volumeRenderer.volume(ModelVolumeIndex);
-}
-
-inline const voxel::RawVolume* ViewportSingleton::modelVolume() const {
 	return _volumeRenderer.volume(ModelVolumeIndex);
 }
 

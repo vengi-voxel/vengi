@@ -464,10 +464,6 @@ void ViewportSingleton::move(int x, int y, int z) {
 	modified(newVolume->region());
 }
 
-const voxel::Voxel& ViewportSingleton::getVoxel(const glm::ivec3& pos) const {
-	return modelVolume()->voxel(pos);
-}
-
 bool ViewportSingleton::setGridResolution(int resolution) {
 	const bool ret = gridRenderer().setGridResolution(resolution);
 	if (!ret) {
