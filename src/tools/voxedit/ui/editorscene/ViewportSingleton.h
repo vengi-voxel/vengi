@@ -83,9 +83,6 @@ private:
 	voxel::PickResult _result;
 	voxel::Voxel _cursorVoxel;
 
-	uint64_t _lastGrow = 0;
-	voxel::tree::Tree *_spaceColonizationTree = nullptr;
-
 	ModifierType _modifierType = ModifierType::Place;
 	bool modifierTypeRequiresExistingVoxel() const;
 
@@ -97,6 +94,8 @@ private:
 
 	voxel::RawVolume* modelVolume();
 	void setNewVolume(voxel::RawVolume* volume);
+	void resetLastTrace();
+	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 public:
 	~ViewportSingleton();
 
@@ -122,7 +121,6 @@ public:
 
 	bool aabbStart();
 	bool aabbEnd();
-	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 
 	void crop();
 	void extend(const glm::ivec3& size);
@@ -147,7 +145,6 @@ public:
 	bool newVolume(bool force);
 
 	bool dirty() const;
-	bool needExtract() const;
 	bool empty() const;
 	int size() const;
 
@@ -162,7 +159,6 @@ public:
 	int gridResolution() const;
 	bool setGridResolution(int resolution);
 
-	void spaceColonization();
 	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noisegen::NoiseType type);
 	void createTree(voxel::TreeContext ctx);
 	void createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx);
@@ -175,7 +171,6 @@ public:
 	void setMousePos(int x, int y);
 
 	bool trace(const video::Camera& camera, bool force = false);
-	void resetLastTrace();
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);
@@ -226,10 +221,6 @@ inline render::GridRenderer& ViewportSingleton::gridRenderer() {
 
 inline bool ViewportSingleton::dirty() const {
 	return _dirty;
-}
-
-inline bool ViewportSingleton::needExtract() const {
-	return _extract;
 }
 
 inline int ViewportSingleton::size() const {

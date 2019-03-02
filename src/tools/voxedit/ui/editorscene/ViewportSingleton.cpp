@@ -568,25 +568,7 @@ bool ViewportSingleton::init() {
 }
 
 void ViewportSingleton::update() {
-	const uint64_t ms = core::App::getInstance()->systemMillis();
 	// TODO: autosave
-	if (_spaceColonizationTree != nullptr && ms - _lastGrow > 1000L) {
-		const bool growing = _spaceColonizationTree->step();
-		_lastGrow = ms;
-		voxel::RawVolumeWrapper wrapper(modelVolume());
-		math::Random random;
-		const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, random);
-		_spaceColonizationTree->generate(wrapper, woodRandomVoxel);
-		modified(wrapper.dirtyRegion());
-		if (!growing) {
-			Log::info("done with growing the tree");
-			const voxel::RandomVoxel leavesRandomVoxel(voxel::VoxelType::Leaf, random);
-			_spaceColonizationTree->generateLeaves(wrapper, leavesRandomVoxel, glm::ivec3(leafSize));
-			delete _spaceColonizationTree;
-			_spaceColonizationTree = nullptr;
-		}
-	}
-
 	extractVolume();
 }
 
@@ -598,11 +580,6 @@ void ViewportSingleton::shutdown() {
 	std::vector<voxel::RawVolume*> old = _volumeRenderer.shutdown();
 	for (voxel::RawVolume* v : old) {
 		delete v;
-	}
-
-	if (_spaceColonizationTree != nullptr) {
-		delete _spaceColonizationTree;
-		_spaceColonizationTree = nullptr;
 	}
 
 	_axis.shutdown();
@@ -639,23 +616,6 @@ void ViewportSingleton::noise(int octaves, float lacunarity, float frequency, fl
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::noisegen::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
 	modified(wrapper.dirtyRegion());
-}
-
-void ViewportSingleton::spaceColonization() {
-	if (_spaceColonizationTree) {
-		return;
-	}
-	const voxel::Region& region = modelVolume()->region();
-	const math::AABB<int>& aabb = region.aabb();
-	const int trunkHeight = aabb.getWidthY() / 3;
-	_lastGrow = core::App::getInstance()->systemMillis();
-
-	const int branchLength = 6;
-	const float branchSize = 4.0f;
-	Log::info("Create spacecolonization tree with branch length %i, branch size %f, trunk height: %i, leaf size: %i",
-			branchLength, branchSize, trunkHeight, leafSize);
-	_spaceColonizationTree = new voxel::tree::Tree(referencePosition(), trunkHeight, branchLength,
-			aabb.getWidthX() - leafSize, aabb.getWidthY() - trunkHeight - leafSize, aabb.getWidthZ() - leafSize, branchSize, _lastGrow);
 }
 
 void ViewportSingleton::createCactus() {
