@@ -58,7 +58,7 @@ bool ViewportSingleton::exportModel(const std::string& file) {
 		return false;
 	}
 	voxel::Mesh mesh(128, 128, true);
-	volumeRenderer().toMesh(ModelVolumeIndex, &mesh);
+	_volumeRenderer.toMesh(ModelVolumeIndex, &mesh);
 	return voxel::exportMesh(&mesh, filePtr->name().c_str());
 }
 
@@ -233,7 +233,7 @@ bool ViewportSingleton::load(const std::string& file) {
 		return false;
 	}
 	Log::info("Load model file %s", file.c_str());
-	mementoHandler().clearStates();
+	_mementoHandler.clearStates();
 	setNewVolume(newVolume);
 	modified(newVolume->region());
 	_dirty = false;
@@ -250,7 +250,7 @@ void ViewportSingleton::modified(const voxel::Region& modifiedRegion, bool markU
 		return;
 	}
 	if (markUndo) {
-		mementoHandler().markUndo(modelVolume());
+		_mementoHandler.markUndo(modelVolume());
 	}
 	_extractRegions.push_back(modifiedRegion);
 	_dirty = true;
@@ -395,7 +395,7 @@ bool ViewportSingleton::aabbEnd() {
 }
 
 void ViewportSingleton::undo() {
-	voxel::RawVolume* v = mementoHandler().undo();
+	voxel::RawVolume* v = _mementoHandler.undo();
 	if (v == nullptr) {
 		return;
 	}
@@ -404,7 +404,7 @@ void ViewportSingleton::undo() {
 }
 
 void ViewportSingleton::redo() {
-	voxel::RawVolume* v = mementoHandler().redo();
+	voxel::RawVolume* v = _mementoHandler.redo();
 	if (v == nullptr) {
 		return;
 	}
@@ -449,7 +449,7 @@ bool ViewportSingleton::newVolume(bool force) {
 		return false;
 	}
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
-	mementoHandler().clearStates();
+	_mementoHandler.clearStates();
 	setNewVolume(new voxel::RawVolume(region));
 	modified(region);
 	_dirty = false;
@@ -609,7 +609,7 @@ void ViewportSingleton::shutdown() {
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
-	mementoHandler().clearStates();
+	_mementoHandler.clearStates();
 }
 
 bool ViewportSingleton::extractVolume() {

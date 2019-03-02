@@ -158,9 +158,6 @@ public:
 
 	void setCursorVoxel(const voxel::Voxel& voxel);
 
-	voxelrender::RawVolumeRenderer& volumeRenderer();
-	const voxelrender::RawVolumeRenderer& rawVolumeRenderer() const;
-
 	render::GridRenderer& gridRenderer();
 	int gridResolution() const;
 	bool setGridResolution(int resolution);
@@ -204,32 +201,19 @@ public:
 	void undo();
 	void redo();
 
-	MementoHandler& mementoHandler();
-	const MementoHandler& undoHandler() const;
+	const MementoHandler& mementoHandler() const;
 };
 
 inline math::Axis ViewportSingleton::lockedAxis() const {
 	return _lockedAxis;
 }
 
-inline MementoHandler& ViewportSingleton::mementoHandler() {
-	return _mementoHandler;
-}
-
-inline const MementoHandler& ViewportSingleton::undoHandler() const {
+inline const MementoHandler& ViewportSingleton::mementoHandler() const {
 	return _mementoHandler;
 }
 
 inline voxel::RawVolume* ViewportSingleton::modelVolume() {
 	return _volumeRenderer.volume(ModelVolumeIndex);
-}
-
-inline voxelrender::RawVolumeRenderer& ViewportSingleton::volumeRenderer() {
-	return _volumeRenderer;
-}
-
-inline const voxelrender::RawVolumeRenderer& ViewportSingleton::rawVolumeRenderer() const {
-	return _volumeRenderer;
 }
 
 inline int ViewportSingleton::gridResolution() const {
