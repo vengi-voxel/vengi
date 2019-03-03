@@ -21,7 +21,7 @@ class MaterialColor {
 private:
 	image::Image _image;
 	MaterialColorArray _materialColors;
-	std::unordered_map<VoxelType, MaterialColorIndices> _colorMapping;
+	std::unordered_map<VoxelType, MaterialColorIndices, EnumClassHash> _colorMapping;
 	bool _initialized = false;
 public:
 	MaterialColor() :
