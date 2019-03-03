@@ -7,6 +7,7 @@
 #include "core/Zip.h"
 #include "core/Color.h"
 #include "core/GLM.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxel {
 
