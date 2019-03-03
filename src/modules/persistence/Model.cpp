@@ -33,7 +33,7 @@ const Field& Model::getField(const char* name) const {
 		// might e.g. happen in table update steps
 		Log::debug("Failed to lookup field '%s' in table '%s'", name, _s->_tableName);
 	}
-	static const Field emptyField;
+	static const Field emptyField {};
 	return emptyField;
 }
 
