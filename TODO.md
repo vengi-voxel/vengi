@@ -12,6 +12,7 @@ is related to the bonetrans matrix. Not taking it into account fixes gl_FragCoor
 ERROR: (0) Failed to validate: shaders/world
 INFO: (0) Validation output: shaders/world
 active samplers with a different type refer to the same texture image unit
+```
 
 # Persistence
 ## Checks
@@ -45,24 +46,13 @@ Validate that each `$out` of the vertex shader has a `$in` in the fragment shade
 
 # VoxEdit
 
-Extract meshes in max 32x32x32 boundaries - `RawVolumeRenderer` maybe? This allows us to only re-extract the chunk that was modified, not always the whole volume. See `Model::modified`.
-Maybe introduce `PagedVolumeRenderer`.
-
-Voxelizer via assimp
-
-LSystem parameter window needs the voxel options and should show information about the used alphabet.
-
-Move space colonization tree generator into the tree submenu and take the `TreeWindow` parameters into account.
+* Improve voxelizer
+* Support multiple RawVolumes (layers) (e.g. MagicaVoxel VOX format and Qubicle support this)
+* Improve vox extension import
 
 ## Improve selections
 
-- implement invert-selection.
-- Improve deletion of selected voxels - x should trigger popup like in blender which shows amount of voxels and enter to perform the delete step (or esc to close the dialog without deleting anything).
-- Scale/move/rotate selections - not only the cursor or whole model.
-- Extrude selection or voxel under cursor.
-- Improve replacing of selection with something else - e.g. generators should maybe only operate on the selection?
-- Implement selection operations like replace-selection, add-to-selection, remove-from-selection, only-keep-intersection.
-- Same-Select mode should get a threshold with a threshold value. So e.g. select all gray voxels, but not the yellow ones.
+- Implement AABB based selection and copy, paste and cut
 
 # EventMgr
 
@@ -148,11 +138,6 @@ doing one query per chunk is most likely a little bit overkill.
 
 - set up kubernetes manifests
 
-# VoxEdit
+# Meshes
 
-* support multiple RawVolumes - and allow to move/scale/rotate complete volumes
-  * the importers support multiple volumes to preserve the groups (and of course also the export)
-
- # Meshes
-
- Don't use assimp at runtime - use it only in the asset-pipeline to generate a 'better' ready-to-render format.
+Don't use assimp at runtime - use it only in the asset-pipeline to generate a 'better' ready-to-render format.
