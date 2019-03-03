@@ -63,7 +63,7 @@ bool ViewportSingleton::exportModel(const std::string& file) {
 }
 
 voxel::Region ViewportSingleton::region() const {
-	const voxel::RawVolume* volume = vps().modelVolume();
+	const voxel::RawVolume* volume = _volumeRenderer.volume(ModelVolumeIndex);
 	if (volume == nullptr) {
 		return voxel::Region();
 	}
