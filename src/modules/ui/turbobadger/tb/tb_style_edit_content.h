@@ -5,10 +5,15 @@
 #pragma once
 
 #include "tb_core.h"
+#include "tb_color.h"
 
 namespace tb {
 
+
 class TBTextFragment;
+class TBBlock;
+class TBPaintProps;
+class TBFontFace;
 
 /** Content for a non-text TBTextFragment. */
 class TBTextFragmentContent {

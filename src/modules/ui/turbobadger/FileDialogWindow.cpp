@@ -118,19 +118,19 @@ void FileDialogWindow::setMode(video::WindowedApp::OpenFileMode mode, const char
 		if (_mode == video::WindowedApp::OpenFileMode::Save
 				|| _mode == video::WindowedApp::OpenFileMode::Open) {
 			input->setVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
-			input->setFocus(WIDGET_FOCUS_REASON_UNKNOWN);
+			input->setFocus(tb::WIDGET_FOCUS_REASON_UNKNOWN);
 			if (inputText != nullptr) {
 				input->setText(inputText);
 			}
 			if (_mode == video::WindowedApp::OpenFileMode::Save) {
 				input->setPlaceholderText(tr("Enter filename for saving"));
 				if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
-					ok->setState(WIDGET_STATE_DISABLED, input->getText().isEmpty());
+					ok->setState(tb::WIDGET_STATE_DISABLED, input->getText().isEmpty());
 				}
 			} else {
 				input->setPlaceholderText(tr("Enter filename for loading"));
 				if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
-					ok->setState(WIDGET_STATE_DISABLED, false);
+					ok->setState(tb::WIDGET_STATE_DISABLED, false);
 				}
 			}
 		} else {
@@ -166,7 +166,7 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 				return true;
 			}
 		} else if (ev.target->getID() == TBIDC(INPUT)) {
-			const TBStr& str = ev.target->getText();
+			const tb::TBStr& str = ev.target->getText();
 			if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
 				bool disabled;
 				if (str.isEmpty()) {
@@ -188,7 +188,7 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 						}
 					}
 				}
-				ok->setState(WIDGET_STATE_DISABLED, disabled);
+				ok->setState(tb::WIDGET_STATE_DISABLED, disabled);
 			}
 			// if entered manually, we want to change the directory.
 			if (io::Filesystem::isReadableDir(str.c_str())) {
