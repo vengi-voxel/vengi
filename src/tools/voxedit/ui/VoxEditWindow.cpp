@@ -530,7 +530,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 
-	if (ev.isAny(TBIDC("actionplace") && widget->getValue() == 1)) {
+	if (ev.isAny(TBIDC("actionplace")) && widget->getValue() == 1) {
 		vps().setModifierType(ModifierType::Place);
 		return true;
 	} else if (ev.isAny(TBIDC("actiondelete")) && widget->getValue() == 1) {
