@@ -15,7 +15,7 @@ PoiProvider::PoiProvider(const core::TimeProviderPtr& timeProvider) :
 }
 
 void PoiProvider::update(long /*dt*/) {
-	constexpr unsigned long seconds = 60L * 1000L;
+	constexpr uint64_t seconds = 60L * 1000L;
 	const uint64_t currentMillis = _timeProvider->tickMillis();
 	core::ScopedWriteLock scoped(_lock);
 	// even if this is timed out - if we only have one, keep it.

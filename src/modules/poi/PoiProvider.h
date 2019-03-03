@@ -34,7 +34,7 @@ private:
 	struct Poi {
 		glm::vec3 pos;
 		Type type;
-		unsigned long time;
+		uint64_t time;
 	};
 
 	typedef std::deque<Poi> PoiQueue;
