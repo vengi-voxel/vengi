@@ -73,7 +73,7 @@ protected:
 	Measures _traceMeasures;
 	Measures _traceMeasuresLastFrame;
 	using FramesMillis = std::array<uint64_t, _maxMeasureSize>;
-	FramesMillis _frameMillis {0ul};
+	FramesMillis _frameMillis {{0ul}};
 	std::string _writePathIni;
 	std::string _writePathLog;
 
