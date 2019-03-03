@@ -354,17 +354,17 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 	// G : Group Node
 	// S : Shape Node
 	//
-	//     T
-	//     |
-	//     G
-	//    / \
-	//   T   T
-	//   |   |
-	//   G   S
-	//  / \
-	// T   T
-	// |   |
-	// S   S
+	//     T    //
+	//     |    //
+	//     G    //
+	//    / \   //
+	//   T   T  //
+	//   |   |  //
+	//   G   S  //
+	//  / \     //
+	// T   T    //
+	// |   |    //
+	// S   S    //
 
 	std::vector<RawVolume*> volumes;
 	int volumeIdx = 0;
