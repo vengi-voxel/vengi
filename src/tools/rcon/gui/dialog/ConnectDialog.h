@@ -22,7 +22,7 @@ public:
 	virtual ~ConnectDialog();
 
 	virtual void onApply() override;
-	virtual void addMainWidgets(QBoxLayout& layout) override;
+	virtual void addMainWidgets(QBoxLayout& boxLayout) override;
 
 	inline const QString& getHostname() const {
 		return _hostname;

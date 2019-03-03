@@ -25,7 +25,7 @@ public:
 	virtual ~AddDialog();
 
 	virtual void onApply() override;
-	virtual void addMainWidgets(QBoxLayout& layout) override;
+	virtual void addMainWidgets(QBoxLayout& boxLayout) override;
 
 	inline const QString& getName() const {
 		return _name;

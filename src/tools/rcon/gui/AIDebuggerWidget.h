@@ -103,7 +103,7 @@ private slots:
 	void onDisconnect();
 	void onEntitiesUpdated();
 	void onSelected();
-	void showContextMenu(const QPoint& pos);
+	void showContextMenu(const QPoint& contextMenuPos);
 	void onDeleteNode(int nodeId);
 	void onAddNode(int parentNodeId, const QVariant& name, const QVariant& type, const QVariant& condition);
 
