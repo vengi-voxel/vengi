@@ -6,6 +6,7 @@ include(CheckCCompilerFlag)
 set(DEFAULT_LUA_EXECUTABLE lua lua5.2 lua5.3)
 set(DEFAULT_LUAC_EXECUTABLE luac luac5.2 luac5.3)
 set(DATA_DIR ${ROOT_DIR}/data CACHE STRING "" FORCE)
+set(NATIVE_BUILD_DIR ${ROOT_DIR}/build CACHE PATH "The directory where the initial native tool were built")
 
 check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
 if (COMPILER_SUPPORTS_CXX14)
@@ -90,22 +91,22 @@ if (HAVE_FLAG_SANITIZE_ADDRESS)
 endif()
 
 # If we are cross compiling, create a directory for native build.
-set(NATIVE_BUILD_DIR "${CMAKE_BINARY_DIR}/native" CACHE PATH "Path to the native build directory")
-set(NATIVE_BINARY_DIR "${NATIVE_BUILD_DIR}/bin" CACHE PATH "Path to the native binary directory")
-set(NATIVE_BUILD_TARGET "${NATIVE_BUILD_DIR}/CMakeCache.txt")
+#set(NATIVE_BUILD_DIR "${CMAKE_BINARY_DIR}/native" CACHE PATH "Path to the native build directory")
+#set(NATIVE_BINARY_DIR "${NATIVE_BUILD_DIR}/bin" CACHE PATH "Path to the native binary directory")
+#set(NATIVE_BUILD_TARGET "${NATIVE_BUILD_DIR}/CMakeCache.txt")
 
-if(CMAKE_CROSSCOMPILING AND NOT TARGET native-cmake-build)
-	file(MAKE_DIRECTORY ${NATIVE_BUILD_DIR})
-	add_custom_command(
-		OUTPUT ${NATIVE_BUILD_TARGET}
-		COMMAND ${CMAKE_COMMAND}
-			-G "${CMAKE_GENERATOR}"
-			"${CMAKE_SOURCE_DIR}"
-			"-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
-			"-DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${NATIVE_BINARY_DIR}"
-		WORKING_DIRECTORY ${NATIVE_BUILD_DIR}
-		VERBATIM USES_TERMINAL
-	)
-
-	add_custom_target(native-cmake-build DEPENDS ${NATIVE_BUILD_TARGET})
-endif()
+#if(CMAKE_CROSSCOMPILING AND NOT TARGET native-cmake-build)
+#	file(MAKE_DIRECTORY ${NATIVE_BUILD_DIR})
+#	add_custom_command(
+#		OUTPUT ${NATIVE_BUILD_TARGET}
+#		COMMAND ${CMAKE_COMMAND}
+#			-G "${CMAKE_GENERATOR}"
+#			"${CMAKE_SOURCE_DIR}"
+#			"-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+#			"-DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${NATIVE_BINARY_DIR}"
+#		WORKING_DIRECTORY ${NATIVE_BUILD_DIR}
+#		VERBATIM USES_TERMINAL
+#	)
+#
+#	add_custom_target(native-cmake-build DEPENDS ${NATIVE_BUILD_TARGET})
+#endif()

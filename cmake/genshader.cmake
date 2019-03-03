@@ -48,13 +48,26 @@ macro(generate_shaders TARGET)
 			set(_shaderheaderpath "${GEN_DIR}${_f}Shader.h")
 			set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
 			# TODO We have to add the shader/ dirs of all dependencies to the include path
-			add_custom_command(
-				OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in
-				IMPLICIT_DEPENDS C ${_shaders}
-				COMMENT "Validate ${_file}"
-				COMMAND shadertool --glslang $<TARGET_FILE:glslangValidator> -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
-				DEPENDS shadertool ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub}
-			)
+			if (CMAKE_CROSS_COMPILING)
+				message(STATUS "Looking for native tool in ${NATIVE_BUILD_DIR}")
+				find_program(SHADERTOOL_EXECUTABLE NAMES vengi-shadertool PATHS ${NATIVE_BUILD_DIR}/shadertool)
+				find_program(GLSLANGVALIDATOR_EXECUTABLE NAMES glslangValidator PATHS ${NATIVE_BUILD_DIR})
+				add_custom_command(
+					OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in
+					IMPLICIT_DEPENDS C ${_shaders}
+					COMMENT "Validate ${_file}"
+					COMMAND ${SHADERTOOL_EXECUTABLE} --glslang ${GLSLANGVALIDATOR_EXECUTABLE} -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+					DEPENDS ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub}
+				)
+			else()
+				add_custom_command(
+					OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in
+					IMPLICIT_DEPENDS C ${_shaders}
+					COMMENT "Validate ${_file}"
+					COMMAND shadertool --glslang $<TARGET_FILE:glslangValidator> -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+					DEPENDS shadertool ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub}
+				)
+			endif()
 			list(APPEND _headers ${_shaderheaderpath})
 			list(APPEND _sources ${_shadersourcepath})
 			add_custom_command(
