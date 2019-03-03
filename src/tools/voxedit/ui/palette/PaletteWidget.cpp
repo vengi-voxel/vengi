@@ -64,7 +64,7 @@ bool PaletteWidget::onEvent(const tb::TBWidgetEvent &ev) {
 		if (index >= max) {
 			return false;
 		}
-		Log::info("Index: %i, xAmount: %i, yAmount: %i, col: %i, row: %i", index, _amountX, _amountY, col, row);
+		Log::debug("Index: %i, xAmount: %i, yAmount: %i, col: %i, row: %i", index, _amountX, _amountY, col, row);
 		setValue(index);
 		_dirty = true;
 		return true;
