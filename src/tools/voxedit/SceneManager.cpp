@@ -910,7 +910,7 @@ bool SceneManager::renderShadow() const {
 
 void SceneManager::setRenderShadow(bool shadow) {
 	_renderShadow = shadow;
-	Log::info("render shadow: %i", shadow ? 1 : 0);
+	Log::debug("render shadow: %i", shadow ? 1 : 0);
 }
 
 bool SceneManager::addModifierType(ModifierType type) {
