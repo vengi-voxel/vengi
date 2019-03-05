@@ -41,29 +41,30 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 	)
 	find_package(PkgConfig QUIET)
 	if (PKG_CONFIG_FOUND)
-		pkg_check_modules(${PREFIX} "${LIB}${VERSION}")
+		pkg_check_modules(_${PREFIX} "${LIB}${VERSION}")
 	endif()
-	if (${PREFIX}_INCLUDEDIR AND NOT ${PREFIX}_INCLUDE_DIRS)
-		set(${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDEDIR})
-	endif()
-	if (NOT ${PREFIX}_INCLUDE_DIRS)
+	if (NOT ${PREFIX}_FOUND)
 		find_path(${PREFIX}_INCLUDE_DIRS
 			NAMES ${HEADER}
 			HINTS ENV ${PREFIX}DIR
 			PATH_SUFFIXES include include/${SUFFIX} ${SUFFIX}
 			PATHS
+				${_${PREFIX}_INCLUDE_DIRS}
 				${_SEARCH_PATHS}
 		)
-	endif()
-	if (NOT ${PREFIX}_LIBRARIES)
 		find_library(${PREFIX}_LIBRARIES
-			NAMES ${LIB} ${PREFIX}
+			NAMES ${LIB} ${PREFIX} ${_${PREFIX}_LIBRARIES}
 			HINTS ENV ${PREFIX}DIR
 			PATH_SUFFIXES lib64 lib lib/${_PROCESSOR_ARCH}
 			PATHS
-				${${PREFIX}_LIBRARY_DIRS}
+				${_${PREFIX}_LIBRARY_DIRS}
 				${_SEARCH_PATHS}
 		)
+	else()
+		set(${PREFIX}_INCLUDE_DIRS ${_${PREFIX}_INCLUDE_DIRS})
+		list(APPEND ${PREFIX}_INCLUDE_DIRS ${_${PREFIX}_INCLUDEDIR})
+		set(${PREFIX}_LIBRARIES ${_${PREFIX}_LIBRARIES})
+		list(APPEND ${PREFIX}_LIBRARIES ${_${PREFIX}_LIBRARY})
 	endif()
 	include(FindPackageHandleStandardArgs)
 	find_package_handle_standard_args(${LIB} FOUND_VAR ${PREFIX}_FOUND REQUIRED_VARS ${PREFIX}_INCLUDE_DIRS ${PREFIX}_LIBRARIES)
@@ -88,20 +89,16 @@ macro(engine_find_header_only LIB HEADER SUFFIX VERSION)
 	)
 	find_package(PkgConfig QUIET)
 	if (PKG_CONFIG_FOUND)
-		pkg_check_modules(${PREFIX} "${LIB}${VERSION}")
+		pkg_check_modules(_${PREFIX} "${LIB}${VERSION}")
 	endif()
-	if (${PREFIX}_INCLUDEDIR AND NOT ${PREFIX}_INCLUDE_DIRS)
-		set(${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDEDIR})
-	endif()
-	if (NOT ${PREFIX}_INCLUDE_DIRS)
-		find_path(${PREFIX}_INCLUDE_DIRS
-			NAMES ${HEADER}
-			HINTS ENV ${PREFIX}DIR
-			PATH_SUFFIXES include include/${SUFFIX} ${SUFFIX}
-			PATHS
-				${_SEARCH_PATHS}
-		)
-	endif()
+	find_path(${PREFIX}_INCLUDE_DIRS
+		NAMES ${HEADER}
+		HINTS ENV ${PREFIX}DIR
+		PATH_SUFFIXES include include/${SUFFIX} ${SUFFIX}
+		PATHS
+			${_${PREFIX}_INCLUDE_DIRS}
+			${_SEARCH_PATHS}
+	)
 	include(FindPackageHandleStandardArgs)
 	find_package_handle_standard_args(${LIB} FOUND_VAR ${PREFIX}_FOUND REQUIRED_VARS ${PREFIX}_INCLUDE_DIRS)
 	mark_as_advanced(${PREFIX}_INCLUDE_DIRS ${PREFIX}_FOUND)
@@ -154,7 +151,7 @@ macro(engine_add_library)
 	if (NOT ${PREFIX} STREQUAL ${PKG_PREFIX})
 		if (${PKG_PREFIX}_INCLUDE_DIRS)
 			set(${PREFIX}_INCLUDE_DIRS ${PKG_PREFIX}_INCLUDE_DIRS)
-		elseif (${PKG_PREFIX}_INCLUDE_DIR)
+		elseif(${PKG_PREFIX}_INCLUDE_DIR)
 			set(${PREFIX}_INCLUDE_DIRS ${PKG_PREFIX}_INCLUDE_DIR)
 		else()
 			set(${PREFIX}_INCLUDE_DIRS ${PKG_PREFIX}_INCLUDEDIR)
@@ -207,10 +204,6 @@ macro(engine_add_library)
 			add_library(${_ADDLIB_LIB} STATIC ${unity_srcs})
 		else()
 			add_library(${_ADDLIB_LIB} STATIC ${_ADDLIB_SRCS})
-		endif()
-		if (${PREFIX}_LIBRARIES)
-			target_link_libraries(${_ADDLIB_LIB} ${${PREFIX}_LIBRARIES})
-			message(STATUS "${_ADDLIB_LIB}: ${PREFIX}_LIBRARIES: ${${PREFIX}_LIBRARIES}")
 		endif()
 		target_include_directories(${_ADDLIB_LIB} ${_ADDLIB_PUBLICHEADER} ${LIBS_DIR}/${_ADDLIB_LIB})
 		set_target_properties(${_ADDLIB_LIB} PROPERTIES COMPILE_DEFINITIONS "${_ADDLIB_DEFINES}")
