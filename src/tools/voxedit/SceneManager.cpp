@@ -166,9 +166,13 @@ void SceneManager::autosave() {
 	}
 	std::string autoSaveFilename;
 	if (_lastFilename.empty()) {
-		autoSaveFilename = "autosave.vox";
+		autoSaveFilename = "autosave-noname.vox";
 	} else {
-		autoSaveFilename = "autosave-" + _lastFilename;
+		if (core::string::startsWith(_lastFilename.c_str(), "autosave-")) {
+			autoSaveFilename = _lastFilename;
+		} else {
+			autoSaveFilename = "autosave-" + _lastFilename;
+		}
 	}
 	if (save(autoSaveFilename, true)) {
 		Log::info("Autosave file %s", autoSaveFilename.c_str());
