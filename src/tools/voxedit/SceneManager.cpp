@@ -629,7 +629,7 @@ void SceneManager::construct() {
 		const int x = core::string::toInt(args[0]);
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
-		moveCursorPosition(x, y, z);
+		moveCursor(x, y, z);
 	}).setHelp("Move the cursor by the specified offsets");
 
 	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
@@ -838,7 +838,7 @@ void SceneManager::setReferencePosition(const glm::ivec3& pos) {
 	_referencePos = pos;
 }
 
-void SceneManager::moveCursorPosition(int x, int y, int z) {
+void SceneManager::moveCursor(int x, int y, int z) {
 	glm::ivec3 p = cursorPosition();
 	p.x += x;
 	p.y += y;

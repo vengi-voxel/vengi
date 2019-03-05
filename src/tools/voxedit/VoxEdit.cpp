@@ -158,7 +158,7 @@ void VoxEdit::update() {
 			continue;
 		}
 		const Direction& dir = DIRECTIONS[i];
-		_sceneMgr.moveCursorPosition(dir.x, dir.y, dir.z);
+		_sceneMgr.moveCursor(dir.x, dir.y, dir.z);
 		_lastMove[i] = _now;
 	}
 	_sceneMgr.update();

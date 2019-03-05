@@ -107,9 +107,18 @@ public:
 	voxel::Region region() const;
 
 	const glm::ivec3& cursorPosition() const;
+	/**
+	 * @brief Sets the cursor to the given position in the volume
+	 * @note The locked axes are taken into account here and the given position might not be
+	 * the final position of the cursor
+	 * @param[in] force If @c true it will ignore the locked axes and still set the position
+	 */
 	void setCursorPosition(glm::ivec3 pos, bool force = false);
 
-	void moveCursorPosition(int x, int y, int z);
+	/**
+	 * @brief Move the cursor relative by the given steps in each direction
+	 */
+	void moveCursor(int x, int y, int z);
 
 	const glm::ivec3& referencePosition() const;
 	void setReferencePosition(const glm::ivec3& pos);
