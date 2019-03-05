@@ -306,7 +306,6 @@ void SceneManager::modified(const voxel::Region& modifiedRegion, bool markUndo) 
 	_dirty = true;
 	_needAutoSave = true;
 	_extract = true;
-	resetLastTrace();
 }
 
 void SceneManager::crop() {
@@ -408,7 +407,7 @@ bool SceneManager::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 	return true;
 }
 
-bool SceneManager::aabbEnd() {
+bool SceneManager::aabbEnd(bool trace) {
 	if (!_aabbMode) {
 		return false;
 	}
@@ -441,6 +440,9 @@ bool SceneManager::aabbEnd() {
 		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
 			modified(modifiedRegionMirror);
 		}
+	}
+	if (trace) {
+		resetLastTrace();
 	}
 	return true;
 }
@@ -933,22 +935,26 @@ void SceneManager::setRenderShadow(bool shadow) {
 	Log::debug("render shadow: %i", shadow ? 1 : 0);
 }
 
-bool SceneManager::addModifierType(ModifierType type) {
+bool SceneManager::addModifierType(ModifierType type, bool trace) {
 	if ((_modifierType & type) == type) {
 		return false;
 	}
 	_modifierType &= type;
-	// the modifier type has an influence on which voxel is taken. So make
-	// sure the next trace is executed even if we don't move the mouse.
-	resetLastTrace();
+	if (trace) {
+		// the modifier type has an influence on which voxel is taken. So make
+		// sure the next trace is executed even if we don't move the mouse.
+		resetLastTrace();
+	}
 	return true;
 }
 
-void SceneManager::setModifierType(ModifierType type) {
+void SceneManager::setModifierType(ModifierType type, bool trace) {
 	_modifierType = type;
-	// the modifier type has an influence on which voxel is taken. So make
-	// sure the next trace is executed even if we don't move the mouse.
-	resetLastTrace();
+	if (trace) {
+		// the modifier type has an influence on which voxel is taken. So make
+		// sure the next trace is executed even if we don't move the mouse.
+		resetLastTrace();
+	}
 }
 
 ModifierType SceneManager::modifierType() const {

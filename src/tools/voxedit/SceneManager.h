@@ -153,7 +153,7 @@ public:
 	glm::ivec3 aabbDim() const;
 
 	bool aabbStart();
-	bool aabbEnd();
+	bool aabbEnd(bool trace = true);
 
 	void crop();
 	void extend(const glm::ivec3& size);
@@ -230,8 +230,8 @@ public:
 	void setRenderShadow(bool shadow);
 
 	ModifierType modifierType() const;
-	void setModifierType(ModifierType type);
-	bool addModifierType(ModifierType type);
+	void setModifierType(ModifierType type, bool trace = true);
+	bool addModifierType(ModifierType type, bool trace = true);
 
 	void undo();
 	void redo();
