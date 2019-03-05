@@ -7,6 +7,7 @@
 #include "restclient-cpp/helpers.h"
 
 #include <cstring>
+#include <curl/curl.h>
 
 #include "restclient-cpp/restclient.h"
 

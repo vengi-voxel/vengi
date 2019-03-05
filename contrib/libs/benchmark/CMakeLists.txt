@@ -34,9 +34,14 @@ set(SRCS
 	src/timers.h
 )
 
+set(LIB benchmark)
 engine_add_library(
-	LIB benchmark
+	LIB ${LIB}
 	SRCS ${SRCS}
 	DEFINES HAVE_STD_REGEX=1
 )
-target_include_directories(benchmark PUBLIC include)
+target_include_directories(${LIB} PUBLIC include)
+
+if (WIN32)
+	target_link_libraries(${LIB} shlwapi)
+endif()

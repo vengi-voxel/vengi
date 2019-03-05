@@ -17,7 +17,7 @@
 
 namespace {
 	// may not be smaller than 64
-	const int SIZE = 64;
+	const int REGION_SIZE = 64;
 	const int isolevel = 51;
 }
 
@@ -74,7 +74,7 @@ core::AppState TestGPUMC::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	voxel::Region region(0, 0, 0, SIZE - 1, SIZE - 1, SIZE - 1);
+	voxel::Region region(0, 0, 0, REGION_SIZE - 1, REGION_SIZE - 1, REGION_SIZE - 1);
 	_volume = std::make_shared<voxel::RawVolume>(region);
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(_volume.get());
@@ -88,14 +88,14 @@ core::AppState TestGPUMC::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	_computeShader.addDefine("SIZE", std::to_string(SIZE));
+	_computeShader.addDefine("SIZE", std::to_string(REGION_SIZE));
 	if (!_computeShader.setup()) {
 		Log::error("Failed to init compute shader for using 3d textures");
 		if (_writingTo3DTextures) {
 			return core::AppState::InitFailure;
 		}
 	}
-	_computeShaderBuffer.addDefine("SIZE", std::to_string(SIZE));
+	_computeShaderBuffer.addDefine("SIZE", std::to_string(REGION_SIZE));
 	if (!_computeShaderBuffer.setup()) {
 		Log::error("Failed to init compute shader for using buffer");
 		if (!_writingTo3DTextures) {
@@ -105,7 +105,7 @@ core::AppState TestGPUMC::onInit() {
 
 	if (_writingTo3DTextures) {
 		// Create images for the HistogramPyramid
-		int bufferSize = SIZE;
+		int bufferSize = REGION_SIZE;
 		compute::TextureConfig cfg;
 		cfg.dataformat(compute::TextureDataFormat::UNSIGNED_INT8).format(compute::TextureFormat::RGBA).type(compute::TextureType::Texture3D);
 
@@ -131,7 +131,7 @@ core::AppState TestGPUMC::onInit() {
 		bufferSize /= 2;
 
 		cfg.dataformat(compute::TextureDataFormat::UNSIGNED_INT32);
-		const int maxBuffers = log2((float) SIZE);
+		const int maxBuffers = log2((float) REGION_SIZE);
 		Log::info("Max buffers: %i", maxBuffers);
 		for (int i = 5; i < maxBuffers; i++) {
 			if (bufferSize == 1) {
@@ -150,7 +150,7 @@ core::AppState TestGPUMC::onInit() {
 			}
 		}
 	} else {
-		int bufferSize = SIZE * SIZE * SIZE;
+		int bufferSize = REGION_SIZE * REGION_SIZE * REGION_SIZE;
 		buffers.push_back(compute::createBuffer(compute::BufferFlag::ReadWrite, sizeof(char) * bufferSize));
 		bufferSize /= 8;
 		buffers.push_back(compute::createBuffer(compute::BufferFlag::ReadWrite, sizeof(char) * bufferSize));
@@ -161,12 +161,12 @@ core::AppState TestGPUMC::onInit() {
 		bufferSize /= 8;
 		buffers.push_back(compute::createBuffer(compute::BufferFlag::ReadWrite, sizeof(short) * bufferSize));
 		bufferSize /= 8;
-		for (int i = 5; i < log2((float) SIZE); i++) {
+		for (int i = 5; i < log2((float) REGION_SIZE); i++) {
 			buffers.push_back(compute::createBuffer(compute::BufferFlag::ReadWrite, sizeof(int) * bufferSize));
 			bufferSize /= 8;
 		}
 
-		cubeIndexesBuffer = compute::createBuffer(compute::BufferFlag::WriteOnly, sizeof(char) * SIZE * SIZE * SIZE);
+		cubeIndexesBuffer = compute::createBuffer(compute::BufferFlag::WriteOnly, sizeof(char) * REGION_SIZE * REGION_SIZE * REGION_SIZE);
 		if (cubeIndexesBuffer == compute::InvalidId) {
 			Log::error("Failed to create the cube indexes compute buffer");
 			return core::AppState::InitFailure;
@@ -175,7 +175,7 @@ core::AppState TestGPUMC::onInit() {
 		textureCfg.dataformat(compute::TextureDataFormat::UNSIGNED_INT8);
 		textureCfg.type(compute::TextureType::Texture3D);
 		textureCfg.format(compute::TextureFormat::R);
-		cubeIndexesImage = std::make_shared<compute::Texture>(textureCfg, glm::ivec3(SIZE)); // TODO: this is CL_MEM_READ_ONLY,
+		cubeIndexesImage = std::make_shared<compute::Texture>(textureCfg, glm::ivec3(REGION_SIZE)); // TODO: this is CL_MEM_READ_ONLY,
 		if (!cubeIndexesImage->upload(nullptr)) {
 			Log::error("Failed to upload the cube indexes data");
 			return core::AppState::InitFailure;
@@ -184,7 +184,7 @@ core::AppState TestGPUMC::onInit() {
 
 	compute::TextureConfig inputCfg;
 	inputCfg.dataformat(compute::TextureDataFormat::UNSIGNED_INT8).format(compute::TextureFormat::R).type(compute::TextureType::Texture3D);
-	_rawData = std::make_shared<compute::Texture>(inputCfg, glm::ivec3(SIZE));
+	_rawData = std::make_shared<compute::Texture>(inputCfg, glm::ivec3(REGION_SIZE));
 	if (!_rawData->upload(_volume->data())) {
 		Log::error("Failed to upload the volume data");
 		return core::AppState::InitFailure;
@@ -233,10 +233,10 @@ core::AppState TestGPUMC::onCleanup() {
 int TestGPUMC::calculateTotalSum() {
 	int sum[8] = {0};
 	if (_writingTo3DTextures) {
-		_computeShader.classifyCubes(*_images[0], *_rawData, isolevel, glm::ivec3(SIZE));
+		_computeShader.classifyCubes(*_images[0], *_rawData, isolevel, glm::ivec3(REGION_SIZE));
 		// Run base to first level
-		int previous = SIZE / 2;
-		const int maxBuffers = log2((float) SIZE) - 1;
+		int previous = REGION_SIZE / 2;
+		const int maxBuffers = log2((float) REGION_SIZE) - 1;
 		for (int i = 0; i < maxBuffers; i++) {
 			Log::info("Texture %i and %i (%i maxBuffers, %i images) construct histogram pyramid %i", i, i + 1, maxBuffers, (int)_images.size(), previous);
 			_computeShader.constructHPLevel(*_images[i], *_images[i + 1], glm::ivec3(previous));
@@ -247,22 +247,22 @@ int TestGPUMC::calculateTotalSum() {
 			return -1;
 		}
 	} else {
-		_computeShaderBuffer.classifyCubes(buffers[0], cubeIndexesBuffer, *_rawData, isolevel, glm::ivec3(SIZE));
+		_computeShaderBuffer.classifyCubes(buffers[0], cubeIndexesBuffer, *_rawData, isolevel, glm::ivec3(REGION_SIZE));
 		glm::ivec3 offset(0);
-		glm::ivec3 region(SIZE);
+		glm::ivec3 region(REGION_SIZE);
 		Log::info("Copy the buffer back into the image");
 		compute::copyBufferToImage(cubeIndexesBuffer, cubeIndexesImage->handle(), 0, offset, region);
 		// Run base to first level
 		Log::info("Construct the different histogram pyramids");
-		_computeShaderBuffer.constructHPLevelCharChar(buffers[0], buffers[1], glm::ivec3(SIZE / 2));
-		_computeShaderBuffer.constructHPLevelCharShort(buffers[1], buffers[2], glm::ivec3(SIZE / 4));
-		_computeShaderBuffer.constructHPLevelShortShort(buffers[2], buffers[3], glm::ivec3(SIZE / 8));
-		_computeShaderBuffer.constructHPLevelShortShort(buffers[3], buffers[4], glm::ivec3(SIZE / 16));
-		_computeShaderBuffer.constructHPLevelShortInt(buffers[4], buffers[5], glm::ivec3(SIZE / 32));
+		_computeShaderBuffer.constructHPLevelCharChar(buffers[0], buffers[1], glm::ivec3(REGION_SIZE / 2));
+		_computeShaderBuffer.constructHPLevelCharShort(buffers[1], buffers[2], glm::ivec3(REGION_SIZE / 4));
+		_computeShaderBuffer.constructHPLevelShortShort(buffers[2], buffers[3], glm::ivec3(REGION_SIZE / 8));
+		_computeShaderBuffer.constructHPLevelShortShort(buffers[3], buffers[4], glm::ivec3(REGION_SIZE / 16));
+		_computeShaderBuffer.constructHPLevelShortInt(buffers[4], buffers[5], glm::ivec3(REGION_SIZE / 32));
 
-		int previous = SIZE / 64;
+		int previous = REGION_SIZE / 64;
 		// Run level 2 to top level
-		for (int i = 5; i < log2(SIZE) - 1; i++) {
+		for (int i = 5; i < log2(REGION_SIZE) - 1; i++) {
 			previous /= 2; // TODO: correct? shouldn't this be after the kernel was executed.
 			_computeShaderBuffer.constructHPLevel(buffers[i], buffers[i + 1], glm::ivec3(previous));
 		}

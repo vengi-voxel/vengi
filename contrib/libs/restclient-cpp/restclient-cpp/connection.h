@@ -9,13 +9,14 @@
 #ifndef INCLUDE_RESTCLIENT_CPP_CONNECTION_H_
 #define INCLUDE_RESTCLIENT_CPP_CONNECTION_H_
 
-#include <curl/curl.h>
 #include <string>
 #include <map>
 #include <cstdlib>
 
 #include "restclient-cpp/restclient.h"
 #include "restclient-cpp/version.h"
+
+typedef void CURL;
 
 /**
  * @brief namespace for all RestClient definitions
