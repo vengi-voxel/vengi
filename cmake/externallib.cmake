@@ -52,13 +52,12 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 			HINTS ENV ${PREFIX}DIR
 			PATH_SUFFIXES include include/${SUFFIX} ${SUFFIX}
 			PATHS
-				${${PREFIX}_INCLUDE_DIRS}
 				${_SEARCH_PATHS}
 		)
 	endif()
 	if (NOT ${PREFIX}_LIBRARIES)
 		find_library(${PREFIX}_LIBRARIES
-			NAMES ${LIB} ${PREFIX} ${${PREFIX}_LIBRARIES}
+			NAMES ${LIB} ${PREFIX}
 			HINTS ENV ${PREFIX}DIR
 			PATH_SUFFIXES lib64 lib lib/${_PROCESSOR_ARCH}
 			PATHS
@@ -157,14 +156,17 @@ macro(engine_add_library)
 			set(${PREFIX}_INCLUDE_DIRS ${PKG_PREFIX}_INCLUDE_DIRS)
 		elseif (${PKG_PREFIX}_INCLUDE_DIR)
 			set(${PREFIX}_INCLUDE_DIRS ${PKG_PREFIX}_INCLUDE_DIR)
-		else ()
+		else()
 			set(${PREFIX}_INCLUDE_DIRS ${PKG_PREFIX}_INCLUDEDIR)
 		endif()
 		if (NOT ${PREFIX}_LIBRARIES AND ${PKG_PREFIX}_LIBRARIES)
 			set(${PREFIX}_LIBRARIES ${PKG_PREFIX}_LIBRARIES)
-		else()
+		elseif(NOT ${PREFIX}_LIBRARIES AND ${PKG_PREFIX}_LIBRARY)
 			set(${PREFIX}_LIBRARIES ${PKG_PREFIX}_LIBRARY)
+		else()
+			message(WARN "Could not find libs for ${PREFIX}")
 		endif()
+		message(STATUS "${PKG_PREFIX} => ${${PREFIX}_FOUND}")
 		set(${PREFIX}_FOUND ${PKG_PREFIX}_FOUND)
 	endif()
 	var_global(${PREFIX}_INCLUDE_DIRS ${PREFIX}_LIBRARIES ${PREFIX}_FOUND)
