@@ -650,6 +650,7 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 
 void VoxEditWindow::onDie() {
 	Super::onDie();
+	// TODO: we should get a chance here to ask - really sure? if we have unsaved data...
 	requestQuit();
 }
 
