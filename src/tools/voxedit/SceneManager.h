@@ -173,6 +173,10 @@ public:
 	bool exportModel(const std::string& file);
 	bool save(const std::string& file, bool autosave = false);
 	bool load(const std::string& file);
+	/**
+	 * @brief Import an existing model
+	 * @note Placed relative to the reference position in the current scene
+	 */
 	bool prefab(const std::string& file);
 
 	bool newVolume(bool force);
