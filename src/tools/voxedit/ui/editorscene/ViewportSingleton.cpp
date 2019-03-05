@@ -29,6 +29,7 @@
 #include "core/App.h"
 #include "core/Log.h"
 #include "io/Filesystem.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/tool/Crop.h"
 #include "voxedit-util/tool/Expand.h"
 #include "voxedit-util/tool/Fill.h"
@@ -146,31 +147,65 @@ bool ViewportSingleton::importHeightmap(const std::string& file) {
 	return true;
 }
 
-bool ViewportSingleton::save(const std::string& file) {
+void ViewportSingleton::autosave() {
+	if (!_needAutoSave) {
+		return;
+	}
+	const core::TimeProviderPtr& timeProvider = core::App::getInstance()->timeProvider();
+	const uint64_t delay = _autoSaveSecondsDelay->intVal();
+	if (_lastAutoSave + delay > timeProvider->tickSeconds()) {
+		return;
+	}
+	std::string autoSaveFilename;
+	if (_lastFilename.empty()) {
+		autoSaveFilename = "autosave.vox";
+	} else {
+		autoSaveFilename = "autosave-" + _lastFilename;
+	}
+	if (save(autoSaveFilename, true)) {
+		Log::info("Autosave file %s", autoSaveFilename.c_str());
+	} else {
+		Log::warn("Failed to autosave");
+	}
+	_lastAutoSave = timeProvider->tickSeconds();
+}
+
+bool ViewportSingleton::save(const std::string& file, bool autosave) {
 	if (modelVolume() == nullptr) {
 		return false;
 	}
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file), io::FileMode::Write);
-	if (filePtr->extension() == "qbt") {
-		voxel::QBTFormat f;
-		if (f.save(modelVolume(), filePtr)) {
-			_dirty = false;
-			return true;
-		}
-	} else if (filePtr->extension() == "vox") {
-		voxel::VoxFormat f;
-		if (f.save(modelVolume(), filePtr)) {
-			_dirty = false;
-			return true;
-		}
-	} else if (filePtr->extension() == "qb") {
-		voxel::QBFormat f;
-		if (f.save(modelVolume(), filePtr)) {
-			_dirty = false;
-			return true;
-		}
+	if (file.empty()) {
+		Log::warn("No filename given for saving");
+		return false;
 	}
-	return false;
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file, io::FileMode::Write);
+	bool saved = false;
+	std::string ext = filePtr->extension();
+	if (ext.empty()) {
+		Log::warn("No file extension given for saving, assuming vox");
+		ext = "vox";
+	}
+	if (ext == "qbt") {
+		voxel::QBTFormat f;
+		saved = f.save(modelVolume(), filePtr);
+	} else if (ext == "vox") {
+		voxel::VoxFormat f;
+		saved = f.save(modelVolume(), filePtr);
+	} else if (ext == "qb") {
+		voxel::QBFormat f;
+		saved = f.save(modelVolume(), filePtr);
+	} else {
+		Log::warn("Failed to save file with unknown type: %s", ext.c_str());
+	}
+	if (saved) {
+		if (!autosave) {
+			_dirty = false;
+			_lastFilename = file;
+		}
+		core::Var::get(cfg::VoxEditLastFile)->setVal(file);
+		_needAutoSave = false;
+	}
+	return saved;
 }
 
 bool ViewportSingleton::prefab(const std::string& file) {
@@ -216,17 +251,20 @@ bool ViewportSingleton::load(const std::string& file) {
 	}
 	voxel::RawVolume* newVolume;
 
-	if (filePtr->extension() == "qbt") {
+	const std::string& ext = filePtr->extension();
+	_lastFilename = filePtr->fileName() + "." + ext;
+	if (ext == "qbt") {
 		voxel::QBTFormat f;
 		newVolume = f.load(filePtr);
-	} else if (filePtr->extension() == "vox") {
+	} else if (ext == "vox") {
 		voxel::VoxFormat f;
 		newVolume = f.load(filePtr);
-	} else if (filePtr->extension() == "qb") {
+	} else if (ext == "qb") {
 		voxel::QBFormat f;
 		newVolume = f.load(filePtr);
 	} else {
-		newVolume = nullptr;
+		Log::error("Failed to load model file %s - unsupported file format", file.c_str());
+		return false;
 	}
 	if (newVolume == nullptr) {
 		Log::error("Failed to load model file %s", file.c_str());
@@ -254,6 +292,7 @@ void ViewportSingleton::modified(const voxel::Region& modifiedRegion, bool markU
 	}
 	_extractRegions.push_back(modifiedRegion);
 	_dirty = true;
+	_needAutoSave = true;
 	_extract = true;
 	resetLastTrace();
 }
@@ -556,6 +595,10 @@ bool ViewportSingleton::init() {
 	_shapeRenderer.init();
 	_gridRenderer.init();
 
+	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
+	const core::TimeProviderPtr& timeProvider = core::App::getInstance()->timeProvider();
+	_lastAutoSave = timeProvider->tickSeconds();
+
 	_mirrorMeshIndex = -1;
 	_aabbMeshIndex = -1;
 	for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
@@ -568,7 +611,7 @@ bool ViewportSingleton::init() {
 }
 
 void ViewportSingleton::update() {
-	// TODO: autosave
+	autosave();
 	extractVolume();
 }
 

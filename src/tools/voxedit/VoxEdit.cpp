@@ -240,10 +240,6 @@ core::AppState VoxEdit::onRunning() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
-	const bool current = isRelativeMouseMode();
-	if (current) {
-		centerMousePosition();
-	}
 	update();
 	return state;
 }

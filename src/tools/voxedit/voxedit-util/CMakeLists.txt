@@ -3,6 +3,7 @@ set(SRCS
 	MementoHandler.h MementoHandler.cpp
 
 	ModifierType.h
+	Config.h
 
 	tool/Fill.h tool/Fill.cpp
 	tool/Crop.h tool/Crop.cpp

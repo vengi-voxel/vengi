@@ -10,6 +10,7 @@
 #include "video/WindowedApp.h"
 #include "editorscene/ViewportSingleton.h"
 #include "editorscene/Viewport.h"
+#include "voxedit-util/Config.h"
 #include "../VoxEdit.h"
 #include <assimp/Exporter.hpp>
 #include <assimp/Importer.hpp>
@@ -211,7 +212,7 @@ bool VoxEditWindow::init() {
 	Log::info("Supported import filters: %s", _importFilter.c_str());
 	Log::info("Supported export filters: %s", _exportFilter.c_str());
 
-	_lastOpenedFile = core::Var::get("ve_lastfile", "");
+	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
 	if (vps().load(_lastOpenedFile->strVal())) {
 		resetcamera();
 	} else {

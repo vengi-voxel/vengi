@@ -44,12 +44,6 @@ Support enums?
 
 Validate that each `$out` of the vertex shader has a `$in` in the fragment shader and vice versa.
 
-# VoxEdit
-
-* Improve voxelizer
-* Support multiple RawVolumes (layers) (e.g. MagicaVoxel VOX format and Qubicle support this)
-* Improve vox extension import
-
 ## Improve selections
 
 - Implement AABB based selection and copy, paste and cut

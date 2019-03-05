@@ -52,6 +52,7 @@ private:
 
 	glm::ivec3 _aabbFirstPos;
 	bool _aabbMode = false;
+	core::VarPtr _autoSaveSecondsDelay;
 
 	math::Axis _lockedAxis = math::Axis::None;
 	math::Axis _mirrorAxis = math::Axis::None;
@@ -61,12 +62,15 @@ private:
 
 	bool _empty = true;
 	bool _dirty = false;
-
+	bool _needAutoSave = false;
 	bool _extract = false;
 
 	bool _renderShadow = true;
 	bool _renderAxis = true;
 	bool _renderLockAxis = true;
+
+	std::string _lastFilename;
+	uint64_t _lastAutoSave = 0u;
 
 	int32_t _planeMeshIndex[3] = {-1, -1, -1};
 	int32_t _mirrorMeshIndex = -1;
@@ -115,6 +119,7 @@ public:
 	bool init() override;
 	void update();
 	void shutdown() override;
+	void autosave();
 
 	bool aabbMode() const;
 	glm::ivec3 aabbDim() const;
@@ -138,7 +143,7 @@ public:
 	bool voxelizeModel(const video::MeshPtr& mesh);
 	bool importHeightmap(const std::string& file);
 	bool exportModel(const std::string& file);
-	bool save(const std::string& file);
+	bool save(const std::string& file, bool autosave = false);
 	bool load(const std::string& file);
 	bool prefab(const std::string& file);
 
