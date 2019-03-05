@@ -84,7 +84,7 @@ TBLayout: distribution: gravity, axis: y
 								text Colorize
 								TBSkinImage: skin: voxedit-color
 								TBRadioButton
-									id actionupdate
+									id actioncolorize
 									data 3
 									@include definitions>toolbutton
 

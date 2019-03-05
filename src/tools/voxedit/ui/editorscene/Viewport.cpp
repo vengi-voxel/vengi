@@ -146,7 +146,7 @@ void Viewport::updateStatusBar() {
 			} else if (deleteVoxels) {
 				status->setText(tr("Delete"));
 			} else if (update) {
-				status->setText(tr("Update"));
+				status->setText(tr("Colorize"));
 			} else {
 				status->setText(tr("Place"));
 			}

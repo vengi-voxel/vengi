@@ -149,6 +149,7 @@ bool VoxEditWindow::init() {
 	_placeModifier = getWidgetByType<tb::TBRadioButton>("actionplace");
 	_deleteModifier = getWidgetByType<tb::TBRadioButton>("actiondelete");
 	_overrideModifier = getWidgetByType<tb::TBRadioButton>("actionoverride");
+	_colorizeModifier = getWidgetByType<tb::TBRadioButton>("actioncolorize");
 
 	_showAABB = getWidgetByType<tb::TBCheckBox>("optionshowaabb");
 	_showGrid = getWidgetByType<tb::TBCheckBox>("optionshowgrid");
@@ -498,7 +499,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.isAny(TBIDC("actiondelete")) && widget->getValue() == 1) {
 		_voxedit->sceneMgr().setModifierType(ModifierType::Delete);
 		return true;
-	} else if (ev.isAny(TBIDC("actionupdate")) && widget->getValue() == 1) {
+	} else if (ev.isAny(TBIDC("actioncolorize")) && widget->getValue() == 1) {
 		_voxedit->sceneMgr().setModifierType(ModifierType::Update);
 		return true;
 	} else if (ev.isAny(TBIDC("actionoverride")) && widget->getValue() == 1) {
@@ -531,6 +532,10 @@ void VoxEditWindow::onProcess() {
 	} else if ((modifierType & ModifierType::Delete) == ModifierType::Delete) {
 		if (_deleteModifier) {
 			_deleteModifier->setValue(1);
+		}
+	} else if ((modifierType & ModifierType::Update) == ModifierType::Update) {
+		if (_colorizeModifier) {
+			_colorizeModifier->setValue(1);
 		}
 	}
 

@@ -50,6 +50,7 @@ private:
 	tb::TBRadioButton* _placeModifier = nullptr;
 	tb::TBRadioButton* _deleteModifier = nullptr;
 	tb::TBRadioButton* _overrideModifier = nullptr;
+	tb::TBRadioButton* _colorizeModifier = nullptr;
 
 	std::string _voxelizeFile;
 	std::string _loadFile;
