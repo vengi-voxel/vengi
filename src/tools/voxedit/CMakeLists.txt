@@ -3,9 +3,7 @@ add_subdirectory(voxedit-util)
 project(voxedit)
 set(SRCS
 	ui/editorscene/Viewport.h ui/editorscene/Viewport.cpp
-	ui/editorscene/ViewportSingleton.h ui/editorscene/ViewportSingleton.cpp
 	ui/editorscene/Controller.h ui/editorscene/Controller.cpp
-	ui/editorscene/voxelizer.h
 
 	ui/palette/PaletteWidget.h ui/palette/PaletteWidget.cpp
 
@@ -13,6 +11,7 @@ set(SRCS
 	ui/TreeWindow.h ui/TreeWindow.cpp
 	ui/NoiseWindow.h ui/NoiseWindow.cpp
 
+	SceneManager.h SceneManager.cpp
 	VoxEdit.h VoxEdit.cpp
 )
 

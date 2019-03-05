@@ -2,7 +2,8 @@
  * @file
  */
 
-#include "ViewportSingleton.h"
+#include "SceneManager.h"
+
 #include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/polyvox/VolumeCropper.h"
 #include "voxel/polyvox/VolumeRotator.h"
@@ -38,21 +39,21 @@
 #include <set>
 
 #define VOXELIZER_IMPLEMENTATION
-#include "voxelizer.h"
+#include "voxedit-util/voxelizer.h"
 
 namespace voxedit {
 
 const int leafSize = 8;
 
-ViewportSingleton::ViewportSingleton() :
+SceneManager::SceneManager() :
 		_gridRenderer(true, true) {
 }
 
-ViewportSingleton::~ViewportSingleton() {
+SceneManager::~SceneManager() {
 	shutdown();
 }
 
-bool ViewportSingleton::exportModel(const std::string& file) {
+bool SceneManager::exportModel(const std::string& file) {
 	core_trace_scoped(EditorSceneExportModel);
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file), io::FileMode::Write);
 	if (!(bool)filePtr) {
@@ -63,7 +64,7 @@ bool ViewportSingleton::exportModel(const std::string& file) {
 	return voxel::exportMesh(&mesh, filePtr->name().c_str());
 }
 
-voxel::Region ViewportSingleton::region() const {
+voxel::Region SceneManager::region() const {
 	const voxel::RawVolume* volume = _volumeRenderer.volume(ModelVolumeIndex);
 	if (volume == nullptr) {
 		return voxel::Region();
@@ -71,7 +72,7 @@ voxel::Region ViewportSingleton::region() const {
 	return volume->region();
 }
 
-bool ViewportSingleton::voxelizeModel(const video::MeshPtr& meshPtr) {
+bool SceneManager::voxelizeModel(const video::MeshPtr& meshPtr) {
 	const video::Mesh::Vertices& positions = meshPtr->vertices();
 	const video::Mesh::Indices& indices = meshPtr->indices();
 
@@ -132,7 +133,7 @@ bool ViewportSingleton::voxelizeModel(const video::MeshPtr& meshPtr) {
 	return true;
 }
 
-bool ViewportSingleton::importHeightmap(const std::string& file) {
+bool SceneManager::importHeightmap(const std::string& file) {
 	voxel::RawVolume* v = modelVolume();
 	if (v == nullptr) {
 		return false;
@@ -147,7 +148,7 @@ bool ViewportSingleton::importHeightmap(const std::string& file) {
 	return true;
 }
 
-void ViewportSingleton::autosave() {
+void SceneManager::autosave() {
 	if (!_needAutoSave) {
 		return;
 	}
@@ -170,7 +171,7 @@ void ViewportSingleton::autosave() {
 	_lastAutoSave = timeProvider->tickSeconds();
 }
 
-bool ViewportSingleton::save(const std::string& file, bool autosave) {
+bool SceneManager::save(const std::string& file, bool autosave) {
 	if (modelVolume() == nullptr) {
 		return false;
 	}
@@ -208,7 +209,7 @@ bool ViewportSingleton::save(const std::string& file, bool autosave) {
 	return saved;
 }
 
-bool ViewportSingleton::prefab(const std::string& file) {
+bool SceneManager::prefab(const std::string& file) {
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file);
 	if (!(bool)filePtr) {
 		Log::error("Failed to open model file %s", file.data());
@@ -240,7 +241,7 @@ bool ViewportSingleton::prefab(const std::string& file) {
 	return true;
 }
 
-bool ViewportSingleton::load(const std::string& file) {
+bool SceneManager::load(const std::string& file) {
 	if (file.empty()) {
 		return false;
 	}
@@ -278,12 +279,12 @@ bool ViewportSingleton::load(const std::string& file) {
 	return true;
 }
 
-void ViewportSingleton::setMousePos(int x, int y) {
+void SceneManager::setMousePos(int x, int y) {
 	_mouseX = x;
 	_mouseY = y;
 }
 
-void ViewportSingleton::modified(const voxel::Region& modifiedRegion, bool markUndo) {
+void SceneManager::modified(const voxel::Region& modifiedRegion, bool markUndo) {
 	if (!modifiedRegion.isValid()) {
 		return;
 	}
@@ -297,7 +298,7 @@ void ViewportSingleton::modified(const voxel::Region& modifiedRegion, bool markU
 	resetLastTrace();
 }
 
-void ViewportSingleton::crop() {
+void SceneManager::crop() {
 	if (_empty) {
 		Log::info("Empty volumes can't be cropped");
 		return;
@@ -310,7 +311,7 @@ void ViewportSingleton::crop() {
 	modified(newVolume->region());
 }
 
-void ViewportSingleton::extend(const glm::ivec3& size) {
+void SceneManager::extend(const glm::ivec3& size) {
 	voxel::RawVolume* newVolume = voxedit::tool::expand(modelVolume(), size);
 	if (newVolume == nullptr) {
 		return;
@@ -319,7 +320,7 @@ void ViewportSingleton::extend(const glm::ivec3& size) {
 	modified(newVolume->region());
 }
 
-void ViewportSingleton::scaleHalf() {
+void SceneManager::scaleHalf() {
 	// TODO: check that src region boundaries are even
 	const voxel::Region& srcRegion = modelVolume()->region();
 	const int w = srcRegion.getWidthInVoxels();
@@ -334,7 +335,7 @@ void ViewportSingleton::scaleHalf() {
 	modified(newVolume->region());
 }
 
-void ViewportSingleton::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount) {
+void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount) {
 	glm::ivec3 mins(std::numeric_limits<glm::ivec3::value_type>::max());
 	glm::ivec3 maxs(std::numeric_limits<glm::ivec3::value_type>::min());
 
@@ -362,11 +363,11 @@ void ViewportSingleton::pointCloud(const glm::vec3* vertices, const glm::vec3 *v
 	modified(modifiedRegion);
 }
 
-bool ViewportSingleton::aabbMode() const {
+bool SceneManager::aabbMode() const {
 	return _aabbMode;
 }
 
-glm::ivec3 ViewportSingleton::aabbDim() const {
+glm::ivec3 SceneManager::aabbDim() const {
 	const int size = gridResolution();
 	const glm::ivec3& pos = cursorPosition();
 	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
@@ -374,7 +375,7 @@ glm::ivec3 ViewportSingleton::aabbDim() const {
 	return glm::abs(maxs + size - mins);
 }
 
-bool ViewportSingleton::aabbStart() {
+bool SceneManager::aabbStart() {
 	if (_aabbMode) {
 		return false;
 	}
@@ -383,7 +384,7 @@ bool ViewportSingleton::aabbStart() {
 	return true;
 }
 
-bool ViewportSingleton::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
+bool SceneManager::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 	if (_mirrorAxis == math::Axis::None) {
 		return false;
 	}
@@ -396,7 +397,7 @@ bool ViewportSingleton::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const 
 	return true;
 }
 
-bool ViewportSingleton::aabbEnd() {
+bool SceneManager::aabbEnd() {
 	if (!_aabbMode) {
 		return false;
 	}
@@ -433,7 +434,7 @@ bool ViewportSingleton::aabbEnd() {
 	return true;
 }
 
-void ViewportSingleton::undo() {
+void SceneManager::undo() {
 	voxel::RawVolume* v = _mementoHandler.undo();
 	if (v == nullptr) {
 		return;
@@ -442,7 +443,7 @@ void ViewportSingleton::undo() {
 	modified(v->region(), false);
 }
 
-void ViewportSingleton::redo() {
+void SceneManager::redo() {
 	voxel::RawVolume* v = _mementoHandler.redo();
 	if (v == nullptr) {
 		return;
@@ -451,11 +452,11 @@ void ViewportSingleton::redo() {
 	modified(v->region(), false);
 }
 
-void ViewportSingleton::resetLastTrace() {
+void SceneManager::resetLastTrace() {
 	_lastRaytraceX = _lastRaytraceY = -1;
 }
 
-void ViewportSingleton::setNewVolume(voxel::RawVolume* volume) {
+void SceneManager::setNewVolume(voxel::RawVolume* volume) {
 	const voxel::Region& region = volume->region();
 
 	delete _volumeRenderer.setVolume(ModelVolumeIndex, volume);
@@ -483,7 +484,7 @@ void ViewportSingleton::setNewVolume(voxel::RawVolume* volume) {
 	resetLastTrace();
 }
 
-bool ViewportSingleton::newVolume(bool force) {
+bool SceneManager::newVolume(bool force) {
 	if (dirty() && !force) {
 		return false;
 	}
@@ -495,14 +496,14 @@ bool ViewportSingleton::newVolume(bool force) {
 	return true;
 }
 
-void ViewportSingleton::rotate(int angleX, int angleY, int angleZ) {
+void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 	const voxel::RawVolume* model = modelVolume();
 	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), false);
 	setNewVolume(newVolume);
 	modified(newVolume->region());
 }
 
-void ViewportSingleton::move(int x, int y, int z) {
+void SceneManager::move(int x, int y, int z) {
 	const voxel::RawVolume* model = modelVolume();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
@@ -511,7 +512,7 @@ void ViewportSingleton::move(int x, int y, int z) {
 	modified(newVolume->region());
 }
 
-bool ViewportSingleton::setGridResolution(int resolution) {
+bool SceneManager::setGridResolution(int resolution) {
 	const bool ret = gridRenderer().setGridResolution(resolution);
 	if (!ret) {
 		return false;
@@ -533,7 +534,7 @@ bool ViewportSingleton::setGridResolution(int resolution) {
 	return true;
 }
 
-void ViewportSingleton::render(const video::Camera& camera) {
+void SceneManager::render(const video::Camera& camera) {
 	const bool depthTest = video::enable(video::State::DepthTest);
 	_empty = _volumeRenderer.empty(ModelVolumeIndex);
 	_gridRenderer.render(camera, modelVolume()->region());
@@ -583,7 +584,7 @@ void ViewportSingleton::render(const video::Camera& camera) {
 	_shapeRenderer.render(_referencePointMesh, camera);
 }
 
-bool ViewportSingleton::init() {
+bool SceneManager::init() {
 	++_initialized;
 	if (_initialized > 1) {
 		return true;
@@ -610,12 +611,12 @@ bool ViewportSingleton::init() {
 	return true;
 }
 
-void ViewportSingleton::update() {
+void SceneManager::update() {
 	autosave();
 	extractVolume();
 }
 
-void ViewportSingleton::shutdown() {
+void SceneManager::shutdown() {
 	--_initialized;
 	if (_initialized != 0) {
 		return;
@@ -632,7 +633,7 @@ void ViewportSingleton::shutdown() {
 	_mementoHandler.clearStates();
 }
 
-bool ViewportSingleton::extractVolume() {
+bool SceneManager::extractVolume() {
 	if (_extract) {
 		Log::debug("Extract the mesh");
 		const size_t n = _extractRegions.size();
@@ -654,21 +655,21 @@ bool ViewportSingleton::extractVolume() {
 	return false;
 }
 
-void ViewportSingleton::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noisegen::NoiseType type) {
+void SceneManager::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noisegen::NoiseType type) {
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::noisegen::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
 	modified(wrapper.dirtyRegion());
 }
 
-void ViewportSingleton::createCactus() {
+void SceneManager::createCactus() {
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::cactus::createCactus(wrapper, _referencePos, 18, 2, random);
 	modified(wrapper.dirtyRegion());
 }
 
-void ViewportSingleton::createCloud() {
+void SceneManager::createCloud() {
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	struct HasClouds {
 		glm::vec2 pos;
@@ -684,7 +685,7 @@ void ViewportSingleton::createCloud() {
 	}
 }
 
-void ViewportSingleton::createPlant(voxel::PlantType type) {
+void SceneManager::createPlant(voxel::PlantType type) {
 	voxel::PlantGenerator g;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	if (type == voxel::PlantType::Flower) {
@@ -701,13 +702,13 @@ void ViewportSingleton::createPlant(voxel::PlantType type) {
 	modified(wrapper.dirtyRegion());
 }
 
-void ViewportSingleton::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
+void SceneManager::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::building::createBuilding(wrapper, _referencePos, type);
 	modified(wrapper.dirtyRegion());
 }
 
-void ViewportSingleton::createTree(voxel::TreeContext ctx) {
+void SceneManager::createTree(voxel::TreeContext ctx) {
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	ctx.pos = _referencePos;
@@ -715,7 +716,7 @@ void ViewportSingleton::createTree(voxel::TreeContext ctx) {
 	modified(wrapper.dirtyRegion());
 }
 
-void ViewportSingleton::setCursorVoxel(const voxel::Voxel& voxel) {
+void SceneManager::setCursorVoxel(const voxel::Voxel& voxel) {
 	_cursorVoxel = voxel;
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::alpha(voxel::getMaterialColor(voxel), 0.7f));
@@ -724,7 +725,7 @@ void ViewportSingleton::setCursorVoxel(const voxel::Voxel& voxel) {
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
-void ViewportSingleton::setReferencePosition(const glm::ivec3& pos) {
+void SceneManager::setReferencePosition(const glm::ivec3& pos) {
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
 	const glm::vec3 posalgined{pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f};
@@ -734,7 +735,7 @@ void ViewportSingleton::setReferencePosition(const glm::ivec3& pos) {
 	_referencePos = pos;
 }
 
-void ViewportSingleton::setCursorPosition(glm::ivec3 pos, bool force) {
+void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	const voxel::RawVolume* v = modelVolume();
 	if (v == nullptr) {
 		return;
@@ -776,32 +777,32 @@ void ViewportSingleton::setCursorPosition(glm::ivec3 pos, bool force) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-bool ViewportSingleton::renderAxis() const {
+bool SceneManager::renderAxis() const {
 	return _renderAxis;
 }
 
-void ViewportSingleton::setRenderAxis(bool renderAxis) {
+void SceneManager::setRenderAxis(bool renderAxis) {
 	_renderAxis = renderAxis;
 }
 
-bool ViewportSingleton::renderLockAxis() const {
+bool SceneManager::renderLockAxis() const {
 	return _renderLockAxis;
 }
 
-void ViewportSingleton::setRenderLockAxis(bool renderLockAxis) {
+void SceneManager::setRenderLockAxis(bool renderLockAxis) {
 	_renderLockAxis = renderLockAxis;
 }
 
-bool ViewportSingleton::renderShadow() const {
+bool SceneManager::renderShadow() const {
 	return _renderShadow;
 }
 
-void ViewportSingleton::setRenderShadow(bool shadow) {
+void SceneManager::setRenderShadow(bool shadow) {
 	_renderShadow = shadow;
 	Log::info("render shadow: %i", shadow ? 1 : 0);
 }
 
-bool ViewportSingleton::addModifierType(ModifierType type) {
+bool SceneManager::addModifierType(ModifierType type) {
 	if ((_modifierType & type) == type) {
 		return false;
 	}
@@ -812,22 +813,22 @@ bool ViewportSingleton::addModifierType(ModifierType type) {
 	return true;
 }
 
-void ViewportSingleton::setModifierType(ModifierType type) {
+void SceneManager::setModifierType(ModifierType type) {
 	_modifierType = type;
 	// the modifier type has an influence on which voxel is taken. So make
 	// sure the next trace is executed even if we don't move the mouse.
 	resetLastTrace();
 }
 
-ModifierType ViewportSingleton::modifierType() const {
+ModifierType SceneManager::modifierType() const {
 	return _modifierType;
 }
 
-bool ViewportSingleton::modifierTypeRequiresExistingVoxel() const {
+bool SceneManager::modifierTypeRequiresExistingVoxel() const {
 	return (_modifierType & ModifierType::Delete) == ModifierType::Delete || (_modifierType & ModifierType::Update) == ModifierType::Delete;
 }
 
-bool ViewportSingleton::trace(const video::Camera& camera, bool force) {
+bool SceneManager::trace(const video::Camera& camera, bool force) {
 	if (modelVolume() == nullptr) {
 		return false;
 	}
@@ -858,7 +859,7 @@ bool ViewportSingleton::trace(const video::Camera& camera, bool force) {
 	return true;
 }
 
-int ViewportSingleton::getIndexForAxis(math::Axis axis) const {
+int SceneManager::getIndexForAxis(math::Axis axis) const {
 	if (axis == math::Axis::X) {
 		return 0;
 	} else if (axis == math::Axis::Y) {
@@ -867,7 +868,7 @@ int ViewportSingleton::getIndexForAxis(math::Axis axis) const {
 	return 2;
 }
 
-int ViewportSingleton::getIndexForMirrorAxis(math::Axis axis) const {
+int SceneManager::getIndexForMirrorAxis(math::Axis axis) const {
 	if (axis == math::Axis::X) {
 		return 2;
 	} else if (axis == math::Axis::Y) {
@@ -876,7 +877,7 @@ int ViewportSingleton::getIndexForMirrorAxis(math::Axis axis) const {
 	return 0;
 }
 
-void ViewportSingleton::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color) {
+void SceneManager::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color) {
 	const voxel::Region& region = modelVolume()->region();
 	const int index = mirror ? getIndexForMirrorAxis(axis) : getIndexForAxis(axis);
 	glm::vec3 mins = region.getLowerCorner();
@@ -902,7 +903,7 @@ void ViewportSingleton::updateShapeBuilderForPlane(bool mirror, const glm::ivec3
 	_shapeBuilder.geom(vecs, indices);
 }
 
-void ViewportSingleton::updateLockedPlane(math::Axis axis) {
+void SceneManager::updateLockedPlane(math::Axis axis) {
 	if (axis == math::Axis::None) {
 		return;
 	}
@@ -925,11 +926,11 @@ void ViewportSingleton::updateLockedPlane(math::Axis axis) {
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 
-math::Axis ViewportSingleton::mirrorAxis() const {
+math::Axis SceneManager::mirrorAxis() const {
 	return _mirrorAxis;
 }
 
-void ViewportSingleton::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos) {
+void SceneManager::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos) {
 	if (_mirrorAxis == axis) {
 		if (_mirrorPos != mirrorPos) {
 			_mirrorPos = mirrorPos;
@@ -942,7 +943,7 @@ void ViewportSingleton::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorP
 	updateMirrorPlane();
 }
 
-void ViewportSingleton::updateMirrorPlane() {
+void SceneManager::updateMirrorPlane() {
 	if (_mirrorAxis == math::Axis::None) {
 		if (_mirrorMeshIndex != -1) {
 			_shapeRenderer.deleteMesh(_mirrorMeshIndex);
@@ -955,7 +956,7 @@ void ViewportSingleton::updateMirrorPlane() {
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 
-void ViewportSingleton::setLockedAxis(math::Axis axis, bool unlock) {
+void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	if (unlock) {
 		_lockedAxis &= ~axis;
 	} else {

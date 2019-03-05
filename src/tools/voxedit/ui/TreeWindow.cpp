@@ -4,7 +4,7 @@
 
 #include "TreeWindow.h"
 
-#include "editorscene/ViewportSingleton.h"
+#include "../SceneManager.h"
 
 namespace voxedit {
 
@@ -55,7 +55,7 @@ bool TreeWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			_ctx.leavesWidth = _leavesWidth->getValue();
 			_ctx.leavesHeight = _leavesHeight->getValue();
 			_ctx.leavesDepth = _leavesDepth->getValue();
-			ViewportSingleton::getInstance().createTree(_ctx);
+			SceneManager::getInstance().createTree(_ctx);
 			close();
 			return true;
 		} else if (ev.target->getID() == TBIDC("cancel")) {

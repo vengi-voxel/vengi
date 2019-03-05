@@ -8,15 +8,16 @@
 #include "voxelformat/MeshExporter.h"
 #include "ui/turbobadger/UIApp.h"
 #include "io/Filesystem.h"
-#include "ViewportSingleton.h"
 #include "Viewport.h"
+
+#include "../../SceneManager.h"
 #include "voxedit-util/ModifierType.h"
 #include "image/Image.h"
 
 using namespace voxedit;
 
-static inline ViewportSingleton& vps() {
-	return ViewportSingleton::getInstance();
+static inline SceneManager& vps() {
+	return SceneManager::getInstance();
 }
 
 Viewport::Viewport() :
@@ -73,7 +74,7 @@ bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
 		const bool middle = isMiddleMouseButtonPressed();
 		const bool alt = (ev.modifierkeys & tb::TB_ALT);
 		_controller.move(relative || middle || alt, ev.target_x, ev.target_y);
-		ViewportSingleton::getInstance().setMousePos(ev.target_x, ev.target_y);
+		SceneManager::getInstance().setMousePos(ev.target_x, ev.target_y);
 		return true;
 	}
 	return Super::onEvent(ev);

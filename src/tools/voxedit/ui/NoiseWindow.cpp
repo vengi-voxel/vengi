@@ -4,7 +4,7 @@
 
 #include "NoiseWindow.h"
 
-#include "editorscene/ViewportSingleton.h"
+#include "../SceneManager.h"
 
 namespace voxedit {
 
@@ -33,7 +33,7 @@ bool NoiseWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			const tb::TBStr& gainStr = _gain->getText();
 			const float lacunarity = core::string::toFloat(lacunarityStr.c_str());
 			const float gain = core::string::toFloat(gainStr.c_str());
-			ViewportSingleton::getInstance().noise(octaves, lacunarity, frequency, gain, voxel::noisegen::NoiseType::ridgedMF);
+			SceneManager::getInstance().noise(octaves, lacunarity, frequency, gain, voxel::noisegen::NoiseType::ridgedMF);
 			close();
 			return true;
 		} else if (ev.target->getID() == TBIDC("cancel")) {

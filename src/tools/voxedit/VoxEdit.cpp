@@ -6,12 +6,12 @@
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
 #include "core/command/Command.h"
-#include "ui/editorscene/ViewportSingleton.h"
+#include "SceneManager.h"
 #include "video/Renderer.h"
 #include "ui/VoxEditWindow.h"
 #include "io/Filesystem.h"
 
-#define COMMAND_VIEWPORTSINGLETON(command, help) core::Command::registerCommand(#command, [] (const core::CmdArgs& args) {::voxedit::ViewportSingleton::getInstance().command();}).setHelp(help)
+#define COMMAND_VIEWPORTSINGLETON(command, help) core::Command::registerCommand(#command, [] (const core::CmdArgs& args) {::voxedit::SceneManager::getInstance().command();}).setHelp(help)
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \
 	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
@@ -168,14 +168,14 @@ core::AppState VoxEdit::onConstruct() {
 	}).setHelp("Resize your volume about given x, y and z size");
 	core::Command::registerCommand("scalehalf",
 			[] (const core::CmdArgs& args) {
-				::voxedit::ViewportSingleton::getInstance().scaleHalf();
+				::voxedit::SceneManager::getInstance().scaleHalf();
 			}).setHelp("Scale your volume by 50%");
 	core::Command::registerCommand("setvoxelresolution",
 			[] (const core::CmdArgs& args) {
 				const int argc = args.size();
 				if (argc == 1) {
 					const int size = core::string::toInt(args[0]);
-					::voxedit::ViewportSingleton::getInstance().setGridResolution(size);
+					::voxedit::SceneManager::getInstance().setGridResolution(size);
 				} else {
 					Log::warn("Expected to get a voxel resolution >= 1");
 				}

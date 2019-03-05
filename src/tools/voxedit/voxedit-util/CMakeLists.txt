@@ -4,6 +4,7 @@ set(SRCS
 
 	ModifierType.h
 	Config.h
+	voxelizer.h
 
 	tool/Fill.h tool/Fill.cpp
 	tool/Crop.h tool/Crop.cpp

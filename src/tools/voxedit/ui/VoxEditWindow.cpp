@@ -8,7 +8,7 @@
 #include "palette/PaletteWidget.h"
 #include "io/Filesystem.h"
 #include "video/WindowedApp.h"
-#include "editorscene/ViewportSingleton.h"
+#include "../SceneManager.h"
 #include "editorscene/Viewport.h"
 #include "voxedit-util/Config.h"
 #include "../VoxEdit.h"
@@ -19,8 +19,8 @@
 
 namespace voxedit {
 
-static inline ViewportSingleton& vps() {
-	return ViewportSingleton::getInstance();
+static inline SceneManager& vps() {
+	return SceneManager::getInstance();
 }
 
 static const struct {

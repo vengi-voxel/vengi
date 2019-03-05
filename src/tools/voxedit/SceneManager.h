@@ -34,7 +34,7 @@ static constexpr int ModelVolumeIndex = 0;
 /**
  * @note The data is shared across all viewports
  */
-class ViewportSingleton : public core::IComponent {
+class SceneManager : public core::IComponent {
 private:
 	voxelrender::RawVolumeRenderer _volumeRenderer;
 	render::GridRenderer _gridRenderer;
@@ -94,17 +94,17 @@ private:
 	int getIndexForMirrorAxis(math::Axis axis) const;
 	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color);
 	void modified(const voxel::Region& modifiedRegion, bool markUndo = true);
-	ViewportSingleton();
+	SceneManager();
 
 	voxel::RawVolume* modelVolume();
 	void setNewVolume(voxel::RawVolume* volume);
 	void resetLastTrace();
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 public:
-	~ViewportSingleton();
+	~SceneManager();
 
-	static inline voxedit::ViewportSingleton& getInstance() {
-		static voxedit::ViewportSingleton singleton;
+	static inline voxedit::SceneManager& getInstance() {
+		static voxedit::SceneManager singleton;
 		return singleton;
 	}
 
@@ -204,43 +204,43 @@ public:
 	const MementoHandler& mementoHandler() const;
 };
 
-inline math::Axis ViewportSingleton::lockedAxis() const {
+inline math::Axis SceneManager::lockedAxis() const {
 	return _lockedAxis;
 }
 
-inline const MementoHandler& ViewportSingleton::mementoHandler() const {
+inline const MementoHandler& SceneManager::mementoHandler() const {
 	return _mementoHandler;
 }
 
-inline voxel::RawVolume* ViewportSingleton::modelVolume() {
+inline voxel::RawVolume* SceneManager::modelVolume() {
 	return _volumeRenderer.volume(ModelVolumeIndex);
 }
 
-inline int ViewportSingleton::gridResolution() const {
+inline int SceneManager::gridResolution() const {
 	return _gridRenderer.gridResolution();
 }
 
-inline render::GridRenderer& ViewportSingleton::gridRenderer() {
+inline render::GridRenderer& SceneManager::gridRenderer() {
 	return _gridRenderer;
 }
 
-inline bool ViewportSingleton::dirty() const {
+inline bool SceneManager::dirty() const {
 	return _dirty;
 }
 
-inline int ViewportSingleton::size() const {
+inline int SceneManager::size() const {
 	return _size;
 }
 
-inline bool ViewportSingleton::empty() const {
+inline bool SceneManager::empty() const {
 	return _empty;
 }
 
-inline const glm::ivec3& ViewportSingleton::cursorPosition() const {
+inline const glm::ivec3& SceneManager::cursorPosition() const {
 	return _cursorPos;
 }
 
-inline const glm::ivec3& ViewportSingleton::referencePosition() const {
+inline const glm::ivec3& SceneManager::referencePosition() const {
 	return _referencePos;
 }
 
