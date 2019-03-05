@@ -1,13 +1,16 @@
 # Purpose
 
-Voxel editor for large scenes
+Voxel editor for large scenes.
+
+This editor was written to have a linux voxel editor with animation support for
+my own engine and evolved into something that others might find useful, too.
 
 # Features
 
 * Large scene support
-* Supports loading vox, qbt, qb
-* Supports saving vox, qbt, qb
-* Supports exporting to everything assimp supports (dae, obj, fbx, gltf, ...)
+* Load vox, qbt, qb
+* Save to vox, qbt, qb
+* Exporting to a lot of formats (dae, obj, fbx, gltf, ...)
 * Auto-saving
 * Console to script your modeling (CTRL+TAB cmdlist)
 * Key bindings via cfg file
@@ -21,7 +24,7 @@ Voxel editor for large scenes
 * Custom color palettes
 * Reference positions to rotate around or create auto-generated structures at
 * Viewport screenshots
-* Voxelize dae, obj, fbx, ... models
+* Import and voxelize dae, obj, fbx and a lot more formats
 
 # Controls
 
@@ -39,3 +42,4 @@ Voxel editor for large scenes
 * Improve voxelizer
 * Support multiple RawVolumes (layers) (e.g. MagicaVoxel VOX format and Qubicle support this)
 * Improve vox extension import
+* Windows and MacOSX support
