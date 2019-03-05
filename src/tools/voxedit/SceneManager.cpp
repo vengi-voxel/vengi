@@ -859,9 +859,10 @@ void SceneManager::setReferencePosition(const glm::ivec3& pos) {
 
 void SceneManager::moveCursor(int x, int y, int z) {
 	glm::ivec3 p = cursorPosition();
-	p.x += x;
-	p.y += y;
-	p.z += z;
+	const int res = gridRenderer().gridResolution();
+	p.x += x * res;
+	p.y += y * res;
+	p.z += z * res;
 	setCursorPosition(p, true);
 }
 
