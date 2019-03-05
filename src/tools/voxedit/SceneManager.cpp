@@ -554,6 +554,7 @@ void SceneManager::render(const video::Camera& camera) {
 		glm::ivec3 maxs = glm::max(_aabbFirstPos, cursor);
 		glm::ivec3 minsMirror = mins;
 		glm::ivec3 maxsMirror = maxs;
+		// TODO: z-fighting if you zoom out far enough
 		const float delta = 0.001f;
 		const float size = gridRenderer().gridResolution() + delta;
 		if (getMirrorAABB(minsMirror, maxsMirror)) {
