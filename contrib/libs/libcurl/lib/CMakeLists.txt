@@ -177,4 +177,6 @@ if(WIN32)
   endif()
 endif()
 
-endif()
+else(NOT CURL_FOUND)
+  target_link_libraries(${LIB_NAME} INTERFACE ${CURL_LIBS})
+endif(NOT CURL_FOUND)
