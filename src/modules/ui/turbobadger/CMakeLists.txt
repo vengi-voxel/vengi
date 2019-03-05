@@ -125,6 +125,7 @@ set(FILES
 	shared/ui/font/font_14.png
 	shared/ui/font/font_28.png
 	shared/ui/font/font.tb.txt
+	shared/ui/font/DejaVuSansMono.ttf
 	shared/ui/skin/arrow_down.png
 	shared/ui/skin/arrow_left.png
 	shared/ui/skin/arrow_right.png

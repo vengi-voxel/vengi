@@ -15,7 +15,7 @@ bool Console::init() {
 	if (!Super::init()) {
 		return false;
 	}
-	_font = getFont(20);
+	_font = getMonoSpaceFont(14);
 	return true;
 }
 
