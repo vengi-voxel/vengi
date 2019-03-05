@@ -25,6 +25,7 @@ my own engine and evolved into something that others might find useful, too.
 * Reference positions to rotate around or create auto-generated structures at
 * Viewport screenshots
 * Import and voxelize dae, obj, fbx and a lot more formats
+* Modelling without the mouse - just via shortcuts and keyboard
 
 # Controls
 
@@ -38,8 +39,9 @@ my own engine and evolved into something that others might find useful, too.
 * Animation support
 * Copy/paste
 * Selections
-* Controlling the editor just by keyboard
 * Improve voxelizer
 * Support multiple RawVolumes (layers) (e.g. MagicaVoxel VOX format and Qubicle support this)
 * Improve vox extension import
 * Windows and MacOSX support
+* Color selection via keyboard only
+* Extend palette widget to show the used colors
