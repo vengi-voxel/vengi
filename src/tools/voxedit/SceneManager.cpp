@@ -3,6 +3,7 @@
  */
 
 #include "SceneManager.h"
+#include "VoxEdit.h"
 
 #include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/polyvox/VolumeCropper.h"
@@ -26,6 +27,7 @@
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedBlendMode.h"
 #include "math/Random.h"
+#include "core/command/Command.h"
 #include "core/Array.h"
 #include "core/App.h"
 #include "core/Log.h"
@@ -44,6 +46,11 @@
 namespace voxedit {
 
 const int leafSize = 8;
+
+SceneManager& sceneMgr() {
+	VoxEdit* voxedit = (VoxEdit*)video::WindowedApp::getInstance();
+	return voxedit->sceneMgr();
+}
 
 SceneManager::SceneManager() :
 		_gridRenderer(true, true) {
@@ -582,6 +589,27 @@ void SceneManager::render(const video::Camera& camera) {
 		video::disable(video::State::DepthTest);
 	}
 	_shapeRenderer.render(_referencePointMesh, camera);
+}
+
+void SceneManager::construct() {
+	core::Command::registerCommand("crop",
+			[&] (const core::CmdArgs& args) {crop();}).setHelp(
+			"Crop the volume");
+
+	core::Command::registerCommand("scalehalf",
+			[&] (const core::CmdArgs& args) {scaleHalf();}).setHelp(
+			"Scale your volume by 50%");
+
+	core::Command::registerCommand("setvoxelresolution",
+			[&] (const core::CmdArgs& args) {
+				const int argc = args.size();
+				if (argc == 1) {
+					const int size = core::string::toInt(args[0]);
+					setGridResolution(size);
+				} else {
+					Log::warn("Expected to get a voxel resolution >= 1");
+				}
+			}).setHelp("");
 }
 
 bool SceneManager::init() {

@@ -6,12 +6,10 @@
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
 #include "core/command/Command.h"
-#include "SceneManager.h"
 #include "video/Renderer.h"
 #include "ui/VoxEditWindow.h"
 #include "io/Filesystem.h"
 
-#define COMMAND_VIEWPORTSINGLETON(command, help) core::Command::registerCommand(#command, [] (const core::CmdArgs& args) {::voxedit::SceneManager::getInstance().command();}).setHelp(help)
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \
 	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
@@ -64,11 +62,14 @@ bool VoxEdit::exportFile(const std::string& file) {
 core::AppState VoxEdit::onCleanup() {
 	const core::AppState state = Super::onCleanup();
 	_meshPool->shutdown();
+	_sceneMgr.shutdown();
 	return state;
 }
 
 core::AppState VoxEdit::onConstruct() {
 	const core::AppState state = Super::onConstruct();
+
+	_sceneMgr.construct();
 
 	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
 		const std::string& dir = _lastDirectory->strVal().empty() ? "." : _lastDirectory->strVal();
@@ -150,7 +151,6 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
 	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");
 	COMMAND_MAINWINDOW(rotatez, "Rotate the volume around the z axis");
-	COMMAND_VIEWPORTSINGLETON(crop, "Crop your volume");
 	core::Command::registerCommand("resize", [this] (const core::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc == 1) {
@@ -166,20 +166,6 @@ core::AppState VoxEdit::onConstruct() {
 			_mainWindow->extend();
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
-	core::Command::registerCommand("scalehalf",
-			[] (const core::CmdArgs& args) {
-				::voxedit::SceneManager::getInstance().scaleHalf();
-			}).setHelp("Scale your volume by 50%");
-	core::Command::registerCommand("setvoxelresolution",
-			[] (const core::CmdArgs& args) {
-				const int argc = args.size();
-				if (argc == 1) {
-					const int size = core::string::toInt(args[0]);
-					::voxedit::SceneManager::getInstance().setGridResolution(size);
-				} else {
-					Log::warn("Expected to get a voxel resolution >= 1");
-				}
-			}).setHelp("");
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
 	COMMAND_MAINWINDOW(redo, "Redo your last step");
 	COMMAND_MAINWINDOW(toggleviewport, "Toggle quad view on/off");
@@ -199,7 +185,15 @@ core::AppState VoxEdit::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	_meshPool->init();
+	if (!_meshPool->init()) {
+		Log::error("Failed to initialize the mesh pool");
+		return core::AppState::InitFailure;
+	}
+
+	if (!_sceneMgr.init()) {
+		Log::error("Failed to initialize the scene manager");
+		return core::AppState::InitFailure;
+	}
 
 	_mainWindow = new voxedit::VoxEditWindow(this);
 	if (!_mainWindow->init()) {

@@ -16,25 +16,19 @@
 
 using namespace voxedit;
 
-static inline SceneManager& vps() {
-	return SceneManager::getInstance();
-}
-
 Viewport::Viewport() :
 		Super(),
 		_frameBufferTexture((tb::UIRendererGL*) tb::g_renderer) {
 	setIsFocusable(true);
-	vps().init();
 }
 
 Viewport::~Viewport() {
 	_frameBuffer.shutdown();
-	vps().shutdown();
 }
 
 bool Viewport::newModel(bool force) {
 	core_trace_scoped(EditorSceneNewModel);
-	if (!vps().newVolume(force)) {
+	if (!sceneMgr().newVolume(force)) {
 		return false;
 	}
 	resetCamera();
@@ -60,7 +54,7 @@ bool Viewport::saveImage(const char* filename) {
 }
 
 void Viewport::resetCamera() {
-	_controller.resetCamera(vps().region());
+	_controller.resetCamera(sceneMgr().region());
 }
 
 bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
@@ -74,7 +68,7 @@ bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
 		const bool middle = isMiddleMouseButtonPressed();
 		const bool alt = (ev.modifierkeys & tb::TB_ALT);
 		_controller.move(relative || middle || alt, ev.target_x, ev.target_y);
-		SceneManager::getInstance().setMousePos(ev.target_x, ev.target_y);
+		sceneMgr().setMousePos(ev.target_x, ev.target_y);
 		return true;
 	}
 	return Super::onEvent(ev);
@@ -137,13 +131,13 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 
 void Viewport::updateStatusBar() {
 	if (tb::TBTextField* status = getParentRoot()->getWidgetByIDAndType<tb::TBTextField>("status")) {
-		if (vps().aabbMode()) {
+		if (sceneMgr().aabbMode()) {
 			tb::TBStr str;
-			const glm::ivec3& dim = vps().aabbDim();
+			const glm::ivec3& dim = sceneMgr().aabbDim();
 			str.setFormatted("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
 			status->setText(str);
 		} else {
-			const ModifierType modifierType = vps().modifierType();
+			const ModifierType modifierType = sceneMgr().modifierType();
 			const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
 			const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 			const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
@@ -162,7 +156,7 @@ void Viewport::updateStatusBar() {
 
 void Viewport::update() {
 	updateStatusBar();
-	camera().setTarget(glm::vec3(vps().referencePosition()));
+	camera().setTarget(glm::vec3(sceneMgr().referencePosition()));
 }
 
 void Viewport::onProcess() {
@@ -176,13 +170,13 @@ void Viewport::onProcess() {
 	_controller.update(deltaFrame);
 
 	if (tb::TBWidget::hovered_widget == this) {
-		vps().trace(_controller.camera());
+		sceneMgr().trace(_controller.camera());
 	}
 
 	video::clearColor(core::Color::Clear);
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	_frameBuffer.bind(true);
-	vps().render(_controller.camera());
+	sceneMgr().render(_controller.camera());
 	_frameBuffer.unbind();
 }
 

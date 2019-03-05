@@ -55,7 +55,7 @@ bool TreeWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			_ctx.leavesWidth = _leavesWidth->getValue();
 			_ctx.leavesHeight = _leavesHeight->getValue();
 			_ctx.leavesDepth = _leavesDepth->getValue();
-			SceneManager::getInstance().createTree(_ctx);
+			sceneMgr().createTree(_ctx);
 			close();
 			return true;
 		} else if (ev.target->getID() == TBIDC("cancel")) {

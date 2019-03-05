@@ -9,6 +9,7 @@
 #include "ui/VoxEditWindow.h"
 #include "core/command/ActionButton.h"
 #include "core/Array.h"
+#include "SceneManager.h"
 
 /**
  * @brief Move directions for the cursor
@@ -37,6 +38,7 @@ private:
 	using Super = ui::turbobadger::UIApp;
 	voxedit::VoxEditWindow* _mainWindow;
 	video::MeshPoolPtr _meshPool;
+	SceneManager _sceneMgr;
 	void update();
 
 	core::ActionButton _move[lengthof(DIRECTIONS)];
@@ -54,6 +56,8 @@ public:
 	bool exportFile(const std::string& file);
 	bool newFile(bool force = false);
 
+	SceneManager& sceneMgr();
+
 	video::MeshPoolPtr meshPool() const;
 
 	core::AppState onConstruct() override;
@@ -62,6 +66,10 @@ public:
 	core::AppState onRunning() override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 };
+
+inline SceneManager& VoxEdit::sceneMgr() {
+	return _sceneMgr;
+}
 
 inline video::MeshPoolPtr VoxEdit::meshPool() const {
 	return _meshPool;

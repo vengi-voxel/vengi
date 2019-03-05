@@ -7,12 +7,6 @@
 #include "ui/turbobadger/Widget.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
-#include "voxel/polyvox/RawVolume.h"
-#include "voxel/generator/LSystemGenerator.h"
-#include "voxel/TreeContext.h"
-#include "voxel/generator/PlantType.h"
-#include "voxel/generator/BuildingGeneratorContext.h"
-#include "voxel/generator/NoiseGenerator.h"
 #include "Controller.h"
 
 /**

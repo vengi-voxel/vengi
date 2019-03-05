@@ -12,10 +12,11 @@
 #include "voxel/generator/NoiseGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "video/ShapeBuilder.h"
+#include "video/Mesh.h"
 #include "render/ShapeRenderer.h"
 #include "render/GridRenderer.h"
 #include "render/Axis.h"
-#include "video/MeshPool.h"
+#include "core/Var.h"
 #include "math/Axis.h"
 #include "voxedit-util/MementoHandler.h"
 #include "voxedit-util/ModifierType.h"
@@ -94,19 +95,14 @@ private:
 	int getIndexForMirrorAxis(math::Axis axis) const;
 	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color);
 	void modified(const voxel::Region& modifiedRegion, bool markUndo = true);
-	SceneManager();
 
 	voxel::RawVolume* modelVolume();
 	void setNewVolume(voxel::RawVolume* volume);
 	void resetLastTrace();
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 public:
+	SceneManager();
 	~SceneManager();
-
-	static inline voxedit::SceneManager& getInstance() {
-		static voxedit::SceneManager singleton;
-		return singleton;
-	}
 
 	voxel::Region region() const;
 
@@ -116,6 +112,7 @@ public:
 	const glm::ivec3& referencePosition() const;
 	void setReferencePosition(const glm::ivec3& pos);
 
+	void construct() override;
 	bool init() override;
 	void update();
 	void shutdown() override;
@@ -243,5 +240,7 @@ inline const glm::ivec3& SceneManager::cursorPosition() const {
 inline const glm::ivec3& SceneManager::referencePosition() const {
 	return _referencePos;
 }
+
+static SceneManager& sceneMgr();
 
 }
