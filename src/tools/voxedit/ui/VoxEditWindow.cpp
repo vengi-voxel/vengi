@@ -113,7 +113,7 @@ bool VoxEditWindow::init() {
 	}
 	const int8_t index = (uint8_t)_paletteWidget->getValue();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-	sceneMgr().setCursorVoxel(voxel);
+	_voxedit->sceneMgr().setCursorVoxel(voxel);
 	_paletteWidget->markAsClean();
 
 	_sceneTop = getWidgetByType<Viewport>("editorscenetop");
@@ -162,13 +162,13 @@ bool VoxEditWindow::init() {
 		return false;
 	}
 
-	const render::GridRenderer& gridRenderer = sceneMgr().gridRenderer();
+	const render::GridRenderer& gridRenderer = _voxedit->sceneMgr().gridRenderer();
 	_showAABB->setValue(gridRenderer.renderAABB() ? 1 : 0);
-	_voxelSize->setValue(sceneMgr().gridResolution());
+	_voxelSize->setValue(_voxedit->sceneMgr().gridResolution());
 	_showGrid->setValue(gridRenderer.renderGrid() ? 1 : 0);
-	_showAxis->setValue(sceneMgr().renderAxis() ? 1 : 0);
-	_showLockAxis->setValue(sceneMgr().renderLockAxis() ? 1 : 0);
-	_renderShadow->setValue(sceneMgr().renderShadow() ? 1 : 0);
+	_showAxis->setValue(_voxedit->sceneMgr().renderAxis() ? 1 : 0);
+	_showLockAxis->setValue(_voxedit->sceneMgr().renderLockAxis() ? 1 : 0);
+	_renderShadow->setValue(_voxedit->sceneMgr().renderShadow() ? 1 : 0);
 
 	Assimp::Exporter exporter;
 	const size_t exporterNum = exporter.GetExportFormatCount();
@@ -209,7 +209,7 @@ bool VoxEditWindow::init() {
 	Log::info("Supported export filters: %s", _exportFilter.c_str());
 
 	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
-	if (sceneMgr().load(_lastOpenedFile->strVal())) {
+	if (_voxedit->sceneMgr().load(_lastOpenedFile->strVal())) {
 		resetcamera();
 	} else {
 		_scene->newModel(true);
@@ -219,7 +219,6 @@ bool VoxEditWindow::init() {
 }
 
 void VoxEditWindow::update() {
-	sceneMgr().update();
 	_scene->update();
 	_sceneTop->update();
 	_sceneLeft->update();
@@ -240,28 +239,6 @@ bool VoxEditWindow::isHovered() const {
 			|| tb::TBWidget::hovered_widget == _sceneFront;
 }
 
-void VoxEditWindow::setCursorPosition(int x, int y, int z, bool relative) {
-	if (relative) {
-		glm::ivec3 p = sceneMgr().cursorPosition();
-		p.x += x;
-		p.y += y;
-		p.z += z;
-		sceneMgr().setCursorPosition(p, true);
-	} else {
-		sceneMgr().setCursorPosition(glm::ivec3(x, y, z), true);
-	}
-}
-
-void VoxEditWindow::rotate(int x, int y, int z) {
-	Log::debug("execute rotate by %i:%i:%i", x, y, z);
-	sceneMgr().rotate(x, y, z);
-}
-
-void VoxEditWindow::move(int x, int y, int z) {
-	Log::debug("execute move by %i:%i:%i", x, y, z);
-	sceneMgr().move(x, y, z);
-}
-
 void VoxEditWindow::toggleviewport() {
 	bool vis = false;
 	if (_sceneTop != nullptr) {
@@ -275,14 +252,6 @@ void VoxEditWindow::toggleviewport() {
 	}
 
 	setQuadViewport(!vis);
-}
-
-void VoxEditWindow::setReferencePosition(int x, int y, int z) {
-	sceneMgr().setReferencePosition(glm::ivec3(x, y, z));
-}
-
-void VoxEditWindow::setreferencepositiontocursor() {
-	sceneMgr().setReferencePosition(sceneMgr().cursorPosition());
 }
 
 void VoxEditWindow::setQuadViewport(bool active) {
@@ -311,9 +280,9 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.isAny(TBIDC("quit"))) {
 		quit();
 	} else if (ev.isAny(TBIDC("crop"))) {
-		sceneMgr().crop();
+		_voxedit->sceneMgr().crop();
 	} else if (ev.isAny(TBIDC("extend"))) {
-		extend();
+		_voxedit->sceneMgr().extend(glm::ivec3(1));
 	} else if (ev.isAny(TBIDC("new"))) {
 		createNew(false);
 	} else if (ev.isAny(TBIDC("load"))) {
@@ -329,16 +298,16 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.isAny(TBIDC("save"))) {
 		save("");
 	} else if (ev.isAny(TBIDC("redo"))) {
-		redo();
+		_voxedit->sceneMgr().redo();
 		return true;
 	} else if (ev.isAny(TBIDC("undo"))) {
-		undo();
+		_voxedit->sceneMgr().undo();
 	} else if (ev.isAny(TBIDC("rotatex"))) {
-		rotatex();
+		_voxedit->sceneMgr().rotate(90, 0, 0);
 	} else if (ev.isAny(TBIDC("rotatey"))) {
-		rotatey();
+		_voxedit->sceneMgr().rotate(0, 90, 0);
 	} else if (ev.isAny(TBIDC("rotatez"))) {
-		rotatez();
+		_voxedit->sceneMgr().rotate(0, 0, 90);
 	} else if (ev.isAny(TBIDC("menu_structure"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("structure_popup"))) {
 			menu->show(&_structureItems, tb::TBPopupAlignment());
@@ -354,15 +323,15 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.isAny(TBIDC("dialog_noise"))) {
 		new NoiseWindow(this);
 	} else if (ev.isAny(TBIDC("optionshowgrid"))) {
-		sceneMgr().gridRenderer().setRenderGrid(ev.target->getValue() == 1);
+		_voxedit->sceneMgr().gridRenderer().setRenderGrid(ev.target->getValue() == 1);
 	} else if (ev.isAny(TBIDC("optionshowaxis"))) {
-		sceneMgr().setRenderAxis(ev.target->getValue() == 1);
+		_voxedit->sceneMgr().setRenderAxis(ev.target->getValue() == 1);
 	} else if (ev.isAny(TBIDC("optionshowlockaxis"))) {
-		sceneMgr().setRenderLockAxis(ev.target->getValue() == 1);
+		_voxedit->sceneMgr().setRenderLockAxis(ev.target->getValue() == 1);
 	} else if (ev.isAny(TBIDC("optionshowaabb"))) {
-		sceneMgr().gridRenderer().setRenderAABB(ev.target->getValue() == 1);
+		_voxedit->sceneMgr().gridRenderer().setRenderAABB(ev.target->getValue() == 1);
 	} else if (ev.isAny(TBIDC("optionrendershadow"))) {
-		sceneMgr().setRenderShadow(ev.target->getValue() == 1);
+		_voxedit->sceneMgr().setRenderShadow(ev.target->getValue() == 1);
 	} else {
 		return false;
 	}
@@ -385,7 +354,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (id == TBIDC("unsaved_changes_load")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			sceneMgr().load(_loadFile);
+			_voxedit->sceneMgr().load(_loadFile);
 			_lastOpenedFile->setVal(_loadFile);
 			resetcamera();
 		}
@@ -393,7 +362,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (id == TBIDC("unsaved_changes_voxelize")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(_voxelizeFile, false);
-			sceneMgr().voxelizeModel(mesh);
+			_voxedit->sceneMgr().voxelizeModel(mesh);
 		}
 		return true;
 	}
@@ -414,29 +383,25 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			if (buildingTypes[i].type == voxel::BuildingType::Tower) {
 				ctx.floors = 3;
 			}
-			sceneMgr().createBuilding(buildingTypes[i].type, ctx);
+			_voxedit->sceneMgr().createBuilding(buildingTypes[i].type, ctx);
 			return true;
 		}
 	}
 	for (int i = 0; i < lengthof(plantTypes); ++i) {
 		if (ev.isAny(plantTypes[i].tbid)) {
-			sceneMgr().createPlant(plantTypes[i].type);
+			_voxedit->sceneMgr().createPlant(plantTypes[i].type);
 			return true;
 		}
 	}
 	if (ev.isAny(TBIDC("clouds"))) {
-		sceneMgr().createCloud();
+		_voxedit->sceneMgr().createCloud();
 		return true;
 	} else if (ev.isAny(TBIDC("cactus"))) {
-		sceneMgr().createCactus();
+		_voxedit->sceneMgr().createCactus();
 		return true;
 	}
 
 	return false;
-}
-
-void VoxEditWindow::extend(const glm::ivec3& size) {
-	sceneMgr().extend(size);
 }
 
 bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
@@ -468,32 +433,32 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		}
 		return false;
 	} else if (id == TBIDC("optionvoxelsize")) {
-		sceneMgr().setGridResolution(widget->getValue());
+		_voxedit->sceneMgr().setGridResolution(widget->getValue());
 		return true;
 	} else if (id == TBIDC("toggleviewport")) {
 		const int value = widget->getValue();
 		setQuadViewport(value == 1);
 		return true;
 	} else if (id == TBIDC("lockx")) {
-		sceneMgr().setLockedAxis(math::Axis::X, widget->getValue() != 1);
+		_voxedit->sceneMgr().setLockedAxis(math::Axis::X, widget->getValue() != 1);
 		return true;
 	} else if (id == TBIDC("locky")) {
-		sceneMgr().setLockedAxis(math::Axis::Y, widget->getValue() != 1);
+		_voxedit->sceneMgr().setLockedAxis(math::Axis::Y, widget->getValue() != 1);
 		return true;
 	} else if (id == TBIDC("lockz")) {
-		sceneMgr().setLockedAxis(math::Axis::Z, widget->getValue() != 1);
+		_voxedit->sceneMgr().setLockedAxis(math::Axis::Z, widget->getValue() != 1);
 		return true;
 	} else if (id == TBIDC("mirrorx")) {
-		sceneMgr().setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
+		_voxedit->sceneMgr().setMirrorAxis(math::Axis::X, _voxedit->sceneMgr().referencePosition());
 		return true;
 	} else if (id == TBIDC("mirrory")) {
-		sceneMgr().setMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
+		_voxedit->sceneMgr().setMirrorAxis(math::Axis::Y, _voxedit->sceneMgr().referencePosition());
 		return true;
 	} else if (id == TBIDC("mirrorz")) {
-		sceneMgr().setMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
+		_voxedit->sceneMgr().setMirrorAxis(math::Axis::Z, _voxedit->sceneMgr().referencePosition());
 		return true;
 	} else if (id == TBIDC("mirrornone")) {
-		sceneMgr().setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
+		_voxedit->sceneMgr().setMirrorAxis(math::Axis::None, _voxedit->sceneMgr().referencePosition());
 		return true;
 	} else if (id == TBIDC("cursorx")) {
 		const tb::TBStr& str = widget->getText();
@@ -501,9 +466,9 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 		const int val = core::string::toInt(str);
-		glm::ivec3 pos = sceneMgr().cursorPosition();
+		glm::ivec3 pos = _voxedit->sceneMgr().cursorPosition();
 		pos.x = val;
-		sceneMgr().setCursorPosition(pos, true);
+		_voxedit->sceneMgr().setCursorPosition(pos, true);
 		return true;
 	} else if (id == TBIDC("cursory")) {
 		const tb::TBStr& str = widget->getText();
@@ -511,9 +476,9 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 		const int val = core::string::toInt(str);
-		glm::ivec3 pos = sceneMgr().cursorPosition();
+		glm::ivec3 pos = _voxedit->sceneMgr().cursorPosition();
 		pos.y = val;
-		sceneMgr().setCursorPosition(pos, true);
+		_voxedit->sceneMgr().setCursorPosition(pos, true);
 		return true;
 	} else if (id == TBIDC("cursorz")) {
 		const tb::TBStr& str = widget->getText();
@@ -521,23 +486,23 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 		const int val = core::string::toInt(str);
-		glm::ivec3 pos = sceneMgr().cursorPosition();
+		glm::ivec3 pos = _voxedit->sceneMgr().cursorPosition();
 		pos.z = val;
-		sceneMgr().setCursorPosition(pos, true);
+		_voxedit->sceneMgr().setCursorPosition(pos, true);
 		return true;
 	}
 
 	if (ev.isAny(TBIDC("actionplace")) && widget->getValue() == 1) {
-		sceneMgr().setModifierType(ModifierType::Place);
+		_voxedit->sceneMgr().setModifierType(ModifierType::Place);
 		return true;
 	} else if (ev.isAny(TBIDC("actiondelete")) && widget->getValue() == 1) {
-		sceneMgr().setModifierType(ModifierType::Delete);
+		_voxedit->sceneMgr().setModifierType(ModifierType::Delete);
 		return true;
 	} else if (ev.isAny(TBIDC("actionupdate")) && widget->getValue() == 1) {
-		sceneMgr().setModifierType(ModifierType::Update);
+		_voxedit->sceneMgr().setModifierType(ModifierType::Update);
 		return true;
 	} else if (ev.isAny(TBIDC("actionoverride")) && widget->getValue() == 1) {
-		sceneMgr().setModifierType(ModifierType::Place | ModifierType::Delete);
+		_voxedit->sceneMgr().setModifierType(ModifierType::Place | ModifierType::Delete);
 		return true;
 	}
 
@@ -550,10 +515,10 @@ void VoxEditWindow::onProcess() {
 	if (_paletteWidget->isDirty()) {
 		const int8_t index = (uint8_t)_paletteWidget->getValue();
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-		sceneMgr().setCursorVoxel(voxel);
+		_voxedit->sceneMgr().setCursorVoxel(voxel);
 		_paletteWidget->markAsClean();
 	}
-	const ModifierType modifierType = sceneMgr().modifierType();
+	const ModifierType modifierType = _voxedit->sceneMgr().modifierType();
 	constexpr ModifierType overrideType = ModifierType::Delete | ModifierType::Place;
 	if ((modifierType & overrideType) == overrideType) {
 		if (_overrideModifier) {
@@ -569,7 +534,7 @@ void VoxEditWindow::onProcess() {
 		}
 	}
 
-	const bool empty = sceneMgr().empty();
+	const bool empty = _voxedit->sceneMgr().empty();
 	if (_exportButton != nullptr) {
 		_exportButton->setState(tb::WIDGET_STATE_DISABLED, empty);
 	}
@@ -577,12 +542,12 @@ void VoxEditWindow::onProcess() {
 		_saveButton->setState(tb::WIDGET_STATE_DISABLED, empty);
 	}
 	if (_undoButton != nullptr) {
-		_undoButton->setState(tb::WIDGET_STATE_DISABLED, !sceneMgr().mementoHandler().canUndo());
+		_undoButton->setState(tb::WIDGET_STATE_DISABLED, !_voxedit->sceneMgr().mementoHandler().canUndo());
 	}
 	if (_redoButton != nullptr) {
-		_redoButton->setState(tb::WIDGET_STATE_DISABLED, !sceneMgr().mementoHandler().canRedo());
+		_redoButton->setState(tb::WIDGET_STATE_DISABLED, !_voxedit->sceneMgr().mementoHandler().canRedo());
 	}
-	const glm::ivec3& pos = sceneMgr().cursorPosition();
+	const glm::ivec3& pos = _voxedit->sceneMgr().cursorPosition();
 	if (_lastCursorPos != pos) {
 		_lastCursorPos = pos;
 		char buf[64];
@@ -606,7 +571,7 @@ void VoxEditWindow::onProcess() {
 		}
 	}
 
-	const math::Axis lockedAxis = sceneMgr().lockedAxis();
+	const math::Axis lockedAxis = _voxedit->sceneMgr().lockedAxis();
 	if (_lockedX != nullptr) {
 		_lockedX->setValue((lockedAxis & math::Axis::X) != math::Axis::None);
 	}
@@ -617,7 +582,7 @@ void VoxEditWindow::onProcess() {
 		_lockedZ->setValue((lockedAxis & math::Axis::Z) != math::Axis::None);
 	}
 
-	const math::Axis mirrorAxis = sceneMgr().mirrorAxis();
+	const math::Axis mirrorAxis = _voxedit->sceneMgr().mirrorAxis();
 	if (_mirrorNone != nullptr) {
 		_mirrorNone->setValue(mirrorAxis == math::Axis::None);
 	}
@@ -642,20 +607,20 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
 			if (ev.button_type == tb::TB_LEFT || ev.button_type == tb::TB_RIGHT) {
 				if (ev.button_type == tb::TB_RIGHT) {
-					_modBeforeMouse = sceneMgr().modifierType();
-					sceneMgr().setModifierType(ModifierType::Delete);
-					sceneMgr().trace(viewport->camera(), true);
+					_modBeforeMouse = _voxedit->sceneMgr().modifierType();
+					_voxedit->sceneMgr().setModifierType(ModifierType::Delete);
+					_voxedit->sceneMgr().trace(viewport->camera(), true);
 				}
-				sceneMgr().aabbStart();
+				_voxedit->sceneMgr().aabbStart();
 				return true;
 			}
 		}
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
-			if (sceneMgr().aabbEnd()) {
+			if (_voxedit->sceneMgr().aabbEnd()) {
 				if (_modBeforeMouse != ModifierType::None) {
-					sceneMgr().setModifierType(_modBeforeMouse);
-					sceneMgr().trace(viewport->camera(), true);
+					_voxedit->sceneMgr().setModifierType(_modBeforeMouse);
+					_voxedit->sceneMgr().trace(viewport->camera(), true);
 					_modBeforeMouse = ModifierType::None;
 				}
 				return true;
@@ -672,10 +637,10 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 		}
 	} else if (ev.type == tb::EVENT_TYPE_SHORTCUT) {
 		if (ev.ref_id == TBIDC("undo")) {
-			undo();
+			_voxedit->sceneMgr().undo();
 			return true;
 		} else if (ev.ref_id == TBIDC("redo")) {
-			redo();
+			_voxedit->sceneMgr().redo();
 			return true;
 		}
 	}
@@ -688,16 +653,8 @@ void VoxEditWindow::onDie() {
 	requestQuit();
 }
 
-void VoxEditWindow::undo() {
-	sceneMgr().undo();
-}
-
-void VoxEditWindow::redo() {
-	sceneMgr().redo();
-}
-
 void VoxEditWindow::quit() {
-	if (sceneMgr().dirty()) {
+	if (_voxedit->sceneMgr().dirty()) {
 		popup("Unsaved Modifications",
 				"There are unsaved modifications.\nDo you wish to discard them and quit?",
 				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_quit");
@@ -712,7 +669,7 @@ bool VoxEditWindow::importHeightmap(const std::string& file) {
 		return true;
 	}
 
-	return sceneMgr().importHeightmap(file);
+	return _voxedit->sceneMgr().importHeightmap(file);
 }
 
 bool VoxEditWindow::save(const std::string& file) {
@@ -720,7 +677,7 @@ bool VoxEditWindow::save(const std::string& file) {
 		getApp()->saveDialog([this] (const std::string& file) {save(file); }, "vox,qbt,qb");
 		return true;
 	}
-	if (!sceneMgr().save(file)) {
+	if (!_voxedit->sceneMgr().save(file)) {
 		Log::warn("Failed to save the model");
 		popup(tr("Error"), tr("Failed to save the model"));
 		return false;
@@ -748,9 +705,9 @@ bool VoxEditWindow::importMesh(const std::string& file) {
 		getApp()->openDialog([this] (const std::string& file) {importMesh(file);}, _importFilter);
 		return true;
 	}
-	if (!sceneMgr().dirty()) {
+	if (!_voxedit->sceneMgr().dirty()) {
 		const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
-		return sceneMgr().voxelizeModel(mesh);
+		return _voxedit->sceneMgr().voxelizeModel(mesh);
 	}
 
 	_voxelizeFile = file;
@@ -761,7 +718,7 @@ bool VoxEditWindow::importMesh(const std::string& file) {
 }
 
 bool VoxEditWindow::exportFile(const std::string& file) {
-	if (sceneMgr().empty()) {
+	if (_voxedit->sceneMgr().empty()) {
 		popup(tr("Nothing to export"), tr("Nothing to export yet."));
 		return false;
 	}
@@ -773,7 +730,7 @@ bool VoxEditWindow::exportFile(const std::string& file) {
 		getApp()->saveDialog([this] (const std::string& file) { exportFile(file); }, _exportFilter);
 		return true;
 	}
-	return sceneMgr().exportModel(file);
+	return _voxedit->sceneMgr().exportModel(file);
 }
 
 void VoxEditWindow::resetcamera() {
@@ -795,7 +752,7 @@ bool VoxEditWindow::prefab(const std::string& file) {
 		return true;
 	}
 
-	return sceneMgr().prefab(file);
+	return _voxedit->sceneMgr().prefab(file);
 }
 
 bool VoxEditWindow::load(const std::string& file) {
@@ -804,8 +761,8 @@ bool VoxEditWindow::load(const std::string& file) {
 		return true;
 	}
 
-	if (!sceneMgr().dirty()) {
-		if (sceneMgr().load(file)) {
+	if (!_voxedit->sceneMgr().dirty()) {
+		if (_voxedit->sceneMgr().load(file)) {
 			_lastOpenedFile->setVal(file);
 			resetcamera();
 			return true;
@@ -821,7 +778,7 @@ bool VoxEditWindow::load(const std::string& file) {
 }
 
 bool VoxEditWindow::createNew(bool force) {
-	if (!force && sceneMgr().dirty()) {
+	if (!force && _voxedit->sceneMgr().dirty()) {
 		popup("Unsaved Modifications",
 				"There are unsaved modifications.\nDo you wish to discard them and close?",
 				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_new");

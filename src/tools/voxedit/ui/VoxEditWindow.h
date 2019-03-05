@@ -85,21 +85,7 @@ private:
 	void quit();
 
 	// commands
-	void undo();
-	void redo();
-	void rotatex();
-	void rotatey();
-	void rotatez();
-	void rotate(int x, int y, int z);
-	void movex();
-	void movey();
-	void movez();
-	void move(int x, int y, int z);
-	void extend(const glm::ivec3& size = glm::ivec3(1));
-	void setCursorPosition(int x, int y, int z, bool relative = false);
 	void toggleviewport();
-	void setReferencePosition(int x = 0, int y = 0, int z = 0);
-	void setreferencepositiontocursor();
 	bool importMesh(const std::string& file);
 	bool importHeightmap(const std::string& file);
 	bool save(const std::string& file);
@@ -126,30 +112,6 @@ public:
 
 inline bool VoxEditWindow::isActive() const {
 	return isFocused() || isHovered();
-}
-
-inline void VoxEditWindow::rotatex() {
-	rotate(90, 0, 0);
-}
-
-inline void VoxEditWindow::rotatey() {
-	rotate(0, 90, 0);
-}
-
-inline void VoxEditWindow::rotatez() {
-	rotate(0, 0, 90);
-}
-
-inline void VoxEditWindow::movex() {
-	move(1, 0, 0);
-}
-
-inline void VoxEditWindow::movey() {
-	move(0, 1, 0);
-}
-
-inline void VoxEditWindow::movez() {
-	move(0, 0, 1);
 }
 
 }

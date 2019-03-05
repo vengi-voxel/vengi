@@ -109,6 +109,8 @@ public:
 	const glm::ivec3& cursorPosition() const;
 	void setCursorPosition(glm::ivec3 pos, bool force = false);
 
+	void moveCursorPosition(int x, int y, int z);
+
 	const glm::ivec3& referencePosition() const;
 	void setReferencePosition(const glm::ivec3& pos);
 

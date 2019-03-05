@@ -610,6 +610,81 @@ void SceneManager::construct() {
 					Log::warn("Expected to get a voxel resolution >= 1");
 				}
 			}).setHelp("");
+	core::Command::registerCommand("setreferenceposition", [&] (const core::CmdArgs& args) {
+		if (args.size() != 3) {
+			Log::info("Expected to get x, y and z coordinates");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		setReferencePosition(glm::ivec3(x, y, z));
+	}).setHelp("Set the reference position to the specified position");
+
+	core::Command::registerCommand("movecursor", [this] (const core::CmdArgs& args) {
+		if (args.size() < 3) {
+			Log::info("Expected to get relative x, y and z coordinates");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		moveCursorPosition(x, y, z);
+	}).setHelp("Move the cursor by the specified offsets");
+
+	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
+		if (args.size() < 3) {
+			Log::info("Expected to get x, y and z coordinates");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		setCursorPosition(glm::ivec3(x, y, z), true);
+	}).setHelp("Set the cursor to the specified position");
+	core::Command::registerCommand("setreferencepositiontocursor",
+			[&] (const core::CmdArgs& args) {setReferencePosition(cursorPosition());}).setHelp(
+			"Set the reference position to the current cursor position");
+	core::Command::registerCommand("rotatex",
+			[&] (const core::CmdArgs& args) {rotate(90, 0, 0);}).setHelp(
+			"Rotate the volume around the x axis");
+	core::Command::registerCommand("rotatey",
+			[&] (const core::CmdArgs& args) {rotate(0, 90, 0);}).setHelp(
+			"Rotate the volume around the y axis");
+	core::Command::registerCommand("rotatez",
+			[&] (const core::CmdArgs& args) {rotate(0, 0, 90);}).setHelp(
+			"Rotate the volume around the z axis");
+	core::Command::registerCommand("resize", [this] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc == 1) {
+			const int size = core::string::toInt(args[0]);
+			extend(glm::ivec3(size));
+		} else if (argc == 3) {
+			glm::ivec3 size;
+			for (int i = 0; i < argc; ++i) {
+				size[i] = core::string::toInt(args[i]);
+			}
+			extend(size);
+		} else {
+			extend(glm::ivec3(1));
+		}
+	}).setHelp("Resize your volume about given x, y and z size");
+	core::Command::registerCommand("undo",
+			[&] (const core::CmdArgs& args) {undo();}).setHelp(
+			"Undo your last step");
+	core::Command::registerCommand("redo",
+			[&] (const core::CmdArgs& args) {undo();}).setHelp(
+			"Redo your last step");
+	core::Command::registerCommand("rotate", [&] (const core::CmdArgs& args) {
+		if (args.size() < 3) {
+			Log::info("Expected to get x, y and z angles in degrees");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		rotate(x, y, z);
+	}).setHelp("Rotate voxels by the given angles (in degree)");
 }
 
 bool SceneManager::init() {
@@ -761,6 +836,14 @@ void SceneManager::setReferencePosition(const glm::ivec3& pos) {
 	_shapeBuilder.sphere(8, 6, 0.5f);
 	_shapeRenderer.createOrUpdate(_referencePointMesh, _shapeBuilder);
 	_referencePos = pos;
+}
+
+void SceneManager::moveCursorPosition(int x, int y, int z) {
+	glm::ivec3 p = cursorPosition();
+	p.x += x;
+	p.y += y;
+	p.z += z;
+	setCursorPosition(p, true);
 }
 
 void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
