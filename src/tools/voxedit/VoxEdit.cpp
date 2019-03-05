@@ -10,17 +10,6 @@
 #include "ui/VoxEditWindow.h"
 #include "io/Filesystem.h"
 
-#define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
-#define COMMAND_FILE(command, help) \
-	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
-		const std::string file = args.empty() ? "" : args[0]; \
-		if (!command##File(file)) { \
-			Log::error("Failed to execute '" #command "' for file %s", file.c_str()); \
-		} \
-	}).setArgumentCompleter(fileCompleter).setHelp(help)
-#define COMMAND_CALL(command, call, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {call;}).setHelp(help)
-#define COMMAND_MAINWINDOW_EVENT(command, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);event.ref_id = TBIDC(command);_mainWindow->invokeEvent(event);}).setHelp(help)
-
 VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		Super(metric, filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init(ORGANISATION, "voxedit");
@@ -86,9 +75,13 @@ core::AppState VoxEdit::onConstruct() {
 		return i;
 	};
 
-	COMMAND_MAINWINDOW_EVENT("dialog_noise", "Opens the noise dialog");
-
-	COMMAND_CALL("new", newFile(), "Create a new scene");
+#define COMMAND_FILE(command, help) \
+	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
+		const std::string file = args.empty() ? "" : args[0]; \
+		if (!command##File(file)) { \
+			Log::error("Failed to execute '" #command "' for file %s", file.c_str()); \
+		} \
+	}).setArgumentCompleter(fileCompleter).setHelp(help)
 
 	COMMAND_FILE(screenshot, "Save the current viewport as screenshot");
 	COMMAND_FILE(save, "Save the current state to the given file");
@@ -97,9 +90,23 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(prefab, "Add a model to the existing scene from the given file");
 	COMMAND_FILE(importmesh, "Import a mesh from the given file and tries to voxelize it");
 	COMMAND_FILE(importheightmap, "Import a heightmap into the volume");
+#undef COMMAND_FILE
 
-	COMMAND_MAINWINDOW(toggleviewport, "Toggle quad view on/off");
-	COMMAND_MAINWINDOW(resetcamera, "Reset cameras");
+	core::Command::registerCommand("new",
+			[this] (const core::CmdArgs& args) {newFile();}).setHelp(
+			"Create a new scene");
+	core::Command::registerCommand("toggleviewport",
+			[this] (const core::CmdArgs& args) {_mainWindow->toggleviewport();}).setHelp(
+			"Toggle quad view on/off");
+	core::Command::registerCommand("resetcamera",
+			[this] (const core::CmdArgs& args) {_mainWindow->resetcamera();}).setHelp(
+			"Reset cameras");
+	core::Command::registerCommand("dialog_noise",
+			[this] (const core::CmdArgs& args) {
+				tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);
+				event.ref_id = tb::TBGetHash("dialog_noise");
+				_mainWindow->invokeEvent(event);
+			}).setHelp("Opens the noise dialog");
 
 	return state;
 }
