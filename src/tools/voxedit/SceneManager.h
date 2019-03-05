@@ -120,6 +120,8 @@ private:
 	void setNewVolume(voxel::RawVolume* volume);
 	void resetLastTrace();
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
+
+	void executeModifier();
 public:
 	SceneManager();
 	~SceneManager();

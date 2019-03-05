@@ -447,6 +447,11 @@ bool SceneManager::aabbEnd(bool trace) {
 	return true;
 }
 
+void SceneManager::executeModifier() {
+	aabbStart();
+	aabbEnd(false);
+}
+
 void SceneManager::undo() {
 	voxel::RawVolume* v = _mementoHandler.undo();
 	if (v == nullptr) {
@@ -608,6 +613,26 @@ void SceneManager::construct() {
 	core::Command::registerCommand("crop",
 			[&] (const core::CmdArgs& args) {crop();}).setHelp(
 			"Crop the volume");
+
+	core::Command::registerCommand("actiondelete",
+			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Delete, false);}).setHelp(
+			"Change the modifier type to 'delete'");
+
+	core::Command::registerCommand("actionplace",
+			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place, false);}).setHelp(
+			"Change the modifier type to 'place'");
+
+	core::Command::registerCommand("actioncolorize",
+			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Update, false);}).setHelp(
+			"Change the modifier type to 'colorize'");
+
+	core::Command::registerCommand("actionoverride",
+			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place | ModifierType::Delete, false);}).setHelp(
+			"Change the modifier type to 'override'");
+
+	core::Command::registerCommand("actionexecute",
+			[&] (const core::CmdArgs& args) {executeModifier();}).setHelp(
+			"Place a voxel to the current cursor position");
 
 	core::Command::registerCommand("scalehalf",
 			[&] (const core::CmdArgs& args) {scaleHalf();}).setHelp(
