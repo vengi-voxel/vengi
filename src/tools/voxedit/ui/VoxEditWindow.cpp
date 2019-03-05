@@ -690,7 +690,7 @@ bool VoxEditWindow::save(const std::string& file) {
 
 bool VoxEditWindow::saveScreenshot(const std::string& file) {
 	if (file.empty()) {
-		getApp()->saveDialog([this] (const std::string& file) {save(file); }, "png");
+		getApp()->saveDialog([this] (const std::string& file) {saveScreenshot(file); }, "png");
 		return true;
 	}
 	if (!_scene->saveImage(file.c_str())) {
