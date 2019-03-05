@@ -86,11 +86,6 @@ core::AppState VoxEdit::onConstruct() {
 		return i;
 	};
 
-	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
-		core::Command::registerActionButton(core::string::format("movecursor%s", DIRECTIONS[i].postfix), _move[i]);
-		_lastMove[i] = _now;
-	}
-
 	COMMAND_MAINWINDOW_EVENT("dialog_noise", "Opens the noise dialog");
 
 	COMMAND_CALL("new", newFile(), "Create a new scene");
@@ -149,40 +144,14 @@ core::AppState VoxEdit::onInit() {
 	return state;
 }
 
-void VoxEdit::update() {
-	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
-		if (!_move[i].pressed()) {
-			continue;
-		}
-		if (_now - _lastMove[i] < 125ul) {
-			continue;
-		}
-		const Direction& dir = DIRECTIONS[i];
-		_sceneMgr.moveCursor(dir.x, dir.y, dir.z);
-		_lastMove[i] = _now;
-	}
-	_sceneMgr.update();
-	_mainWindow->update();
-}
-
 core::AppState VoxEdit::onRunning() {
 	core::AppState state = Super::onRunning();
 	if (state != core::AppState::Running) {
 		return state;
 	}
-	update();
+	_sceneMgr.update(_now);
+	_mainWindow->update();
 	return state;
-}
-
-bool VoxEdit::onKeyPress(int32_t key, int16_t modifier) {
-	if (Super::onKeyPress(key, modifier)) {
-		return true;
-	}
-	if (key == SDLK_ESCAPE) {
-		toggleRelativeMouseMode();
-		return true;
-	}
-	return false;
 }
 
 int main(int argc, char *argv[]) {

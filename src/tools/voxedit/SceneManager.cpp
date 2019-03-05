@@ -592,6 +592,12 @@ void SceneManager::render(const video::Camera& camera) {
 }
 
 void SceneManager::construct() {
+	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
+		core::Command::registerActionButton(
+				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
+				_move[i]);
+	}
+
 	core::Command::registerCommand("crop",
 			[&] (const core::CmdArgs& args) {crop();}).setHelp(
 			"Crop the volume");
@@ -714,7 +720,18 @@ bool SceneManager::init() {
 	return true;
 }
 
-void SceneManager::update() {
+void SceneManager::update(uint64_t time) {
+	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
+		if (!_move[i].pressed()) {
+			continue;
+		}
+		if (time - _lastMove[i] < 125ul) {
+			continue;
+		}
+		const Direction& dir = DIRECTIONS[i];
+		moveCursor(dir.x, dir.y, dir.z);
+		_lastMove[i] = time;
+	}
 	autosave();
 	extractVolume();
 }

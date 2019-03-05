@@ -17,6 +17,7 @@
 #include "render/GridRenderer.h"
 #include "render/Axis.h"
 #include "core/Var.h"
+#include "core/command/ActionButton.h"
 #include "math/Axis.h"
 #include "voxedit-util/MementoHandler.h"
 #include "voxedit-util/ModifierType.h"
@@ -31,6 +32,22 @@ class Tree;
 namespace voxedit {
 
 static constexpr int ModelVolumeIndex = 0;
+/**
+ * @brief Move directions for the cursor
+ */
+static constexpr struct Direction {
+	const char *postfix;
+	int x;
+	int y;
+	int z;
+} DIRECTIONS[] = {
+	{"left",     -1,  0,  0},
+	{"right",     1,  0,  0},
+	{"up",        0,  1,  0},
+	{"down",      0, -1,  0},
+	{"forward",   0,  0,  1},
+	{"backward",  0,  0, -1}
+};
 
 /**
  * @note The data is shared across all viewports
@@ -85,6 +102,9 @@ private:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
+	core::ActionButton _move[lengthof(DIRECTIONS)];
+	uint64_t _lastMove[lengthof(DIRECTIONS)] { 0 };
+
 	voxel::PickResult _result;
 	voxel::Voxel _cursorVoxel;
 
@@ -125,7 +145,7 @@ public:
 
 	void construct() override;
 	bool init() override;
-	void update();
+	void update(uint64_t time);
 	void shutdown() override;
 	void autosave();
 
