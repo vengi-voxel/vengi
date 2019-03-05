@@ -755,8 +755,8 @@ void SceneManager::shutdown() {
 
 bool SceneManager::extractVolume() {
 	if (_extract) {
-		Log::debug("Extract the mesh");
 		const size_t n = _extractRegions.size();
+		Log::debug("Extract the meshes for %i regions", (int)n);
 		if (n > 0) {
 			// extract n regions max per frame
 			const size_t MaxPerFrame = 4;
@@ -809,13 +809,10 @@ void SceneManager::createPlant(voxel::PlantType type) {
 	voxel::PlantGenerator g;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	if (type == voxel::PlantType::Flower) {
-		Log::info("create flower");
 		g.createFlower(5, _referencePos, wrapper);
 	} else if (type == voxel::PlantType::Grass) {
-		Log::info("create grass");
 		g.createGrass(10, _referencePos, wrapper);
 	} else if (type == voxel::PlantType::Mushroom) {
-		Log::info("create mushroom");
 		g.createMushroom(7, _referencePos, wrapper);
 	}
 	g.shutdown();

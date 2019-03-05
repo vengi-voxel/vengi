@@ -184,6 +184,9 @@ public:
 	void rotate(int angleX, int angleY, int angleZ);
 	void move(int x, int y, int z);
 
+	/**
+	 * @brief Performs the rendering for each @c Viewport instance
+	 */
 	void render(const video::Camera& camera);
 
 	void setCursorVoxel(const voxel::Voxel& voxel);
