@@ -141,16 +141,18 @@ void Viewport::updateStatusBar() {
 			const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
 			const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 			const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
+			std::string statusText;
 			if (overwrite) {
-				// TODO: add key bindings as text
-				status->setText(tr("Override"));
+				statusText = tr("Override");
 			} else if (deleteVoxels) {
-				status->setText(tr("Delete"));
+				statusText = tr("Delete");
 			} else if (update) {
-				status->setText(tr("Colorize"));
+				statusText = tr("Colorize");
 			} else {
-				status->setText(tr("Place"));
+				statusText = tr("Place");
 			}
+			// TODO: add key bindings as text
+			status->setText(statusText.c_str());
 		}
 	}
 }
