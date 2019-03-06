@@ -86,6 +86,7 @@ public:
 	const voxel::RawVolume* volume(int idx = 0) const;
 
 	void setAmbientColor(const glm::vec3& color);
+	void setSunPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up);
 
 	void construct();
 

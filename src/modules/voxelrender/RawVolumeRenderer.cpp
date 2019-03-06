@@ -349,6 +349,10 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 	return old;
 }
 
+void RawVolumeRenderer::setSunPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up) {
+	_shadow.setPosition(eye, center, up);
+}
+
 std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_worldShader.shutdown();
 	_materialBlock.shutdown();
