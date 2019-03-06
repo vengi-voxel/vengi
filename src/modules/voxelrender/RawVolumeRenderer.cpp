@@ -191,7 +191,7 @@ bool RawVolumeRenderer::toMesh(int idx, voxel::Mesh* mesh) {
 	return true;
 }
 
-bool RawVolumeRenderer::extract(int idx, const voxel::Region& region) {
+bool RawVolumeRenderer::extract(int idx, const voxel::Region& region, bool updateBuffers) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
@@ -254,7 +254,7 @@ bool RawVolumeRenderer::extract(int idx, const voxel::Region& region) {
 			}
 		}
 	}
-	if (!update(idx)) {
+	if (updateBuffers && !update(idx)) {
 		Log::error("Failed to update the mesh at index %i", idx);
 	}
 	return true;

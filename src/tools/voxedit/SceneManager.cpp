@@ -794,7 +794,8 @@ bool SceneManager::extractVolume() {
 			const size_t MaxPerFrame = 4;
 			const size_t x = std::min(MaxPerFrame, n);
 			for (size_t i = 0; i < x; ++i) {
-				if (!_volumeRenderer.extract(ModelVolumeIndex, _extractRegions[i])) {
+				const bool updateBuffers = i == x - 1;
+				if (!_volumeRenderer.extract(ModelVolumeIndex, _extractRegions[i], updateBuffers)) {
 					Log::error("Failed to extract the model mesh");
 				}
 			}
