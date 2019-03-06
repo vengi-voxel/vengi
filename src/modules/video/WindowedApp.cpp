@@ -230,6 +230,66 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 	return true;
 }
 
+bool WindowedApp::resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key) const {
+	for (const auto& b : _bindings) {
+		const util::CommandModifierPair& pair = b.second;
+		if (strcmp(pair.command.c_str(), cmd)) {
+			continue;
+		}
+
+		if (modifier != nullptr) {
+			*modifier = pair.modifier;
+		}
+		if (key != nullptr) {
+			*key = b.first;
+		}
+		return true;
+	}
+	return false;
+}
+
+const struct ModifierMapping {
+	int16_t modifier;
+	const char *name;
+} MODIFIERMAPPING[] = {
+	{KMOD_LSHIFT, "LSHIFT"},
+	{KMOD_RSHIFT, "RSHIFT"},
+	{KMOD_LCTRL, "LCTRL"},
+	{KMOD_RCTRL, "RCTRL"},
+	{KMOD_LALT, "LALT"},
+	{KMOD_RALT, "RALT"},
+	{KMOD_ALT, "ALT"},
+	{KMOD_SHIFT, "SHIFT"},
+	{KMOD_CTRL, "CTRL"},
+	{KMOD_ALT | KMOD_SHIFT, "ALT+SHIFT"},
+	{KMOD_CTRL | KMOD_SHIFT, "CTRL+SHIFT"},
+	{KMOD_ALT | KMOD_CTRL, "ALT+CTRLs"},
+	{0, nullptr}
+};
+
+const char *WindowedApp::getModifierName(int16_t modifier) const {
+	for (int i = 0; i < lengthof(MODIFIERMAPPING); ++i) {
+		if (MODIFIERMAPPING[i].modifier == modifier) {
+			return MODIFIERMAPPING[i].name;
+		}
+	}
+	return nullptr;
+}
+
+std::string WindowedApp::getKeyBindingsString(const char *cmd) const {
+	int16_t modifier;
+	int32_t key;
+	if (!resolveKeyBindings(cmd, &modifier, &key)) {
+		return "";
+	}
+	const char *name = SDL_GetKeyName((SDL_Keycode)key);
+	if (modifier <= 0) {
+		return name;
+	}
+	const char *modifierName = getModifierName(modifier);
+	return core::string::format("%s+%s", modifierName, name);
+}
+
 bool WindowedApp::loadKeyBindings(const std::string& filename) {
 	const std::string& bindings = filesystem()->load(filename);
 	if (bindings.empty()) {

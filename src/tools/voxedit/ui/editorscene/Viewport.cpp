@@ -137,21 +137,30 @@ void Viewport::updateStatusBar() {
 			str.setFormatted("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
 			status->setText(str);
 		} else {
+			const video::WindowedApp* app = video::WindowedApp::getInstance();
 			const ModifierType modifierType = sceneMgr().modifierType();
 			const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
 			const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 			const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
 			std::string statusText;
+			std::string keybindingStr;
 			if (overwrite) {
 				statusText = tr("Override");
+				keybindingStr = app->getKeyBindingsString("actionoverride");
 			} else if (deleteVoxels) {
 				statusText = tr("Delete");
+				keybindingStr = app->getKeyBindingsString("actiondelete");
 			} else if (update) {
 				statusText = tr("Colorize");
+				keybindingStr = app->getKeyBindingsString("actioncolorize");
 			} else {
 				statusText = tr("Place");
+				keybindingStr = app->getKeyBindingsString("actionplace");
 			}
-			// TODO: add key bindings as text
+			if (!keybindingStr.empty()) {
+				statusText += " ";
+				statusText += keybindingStr;
+			}
 			status->setText(statusText.c_str());
 		}
 	}

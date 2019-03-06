@@ -62,6 +62,17 @@ public:
 	int width() const;
 	int height() const;
 	bool isPressed(int32_t key) const;
+	/**
+	 * @brief Reverse lookup of key bindings - by command name
+	 * @param[out] modifier The modifier mask that the command is bound to
+	 * @param[out] key The key that the command is bound to
+	 * @return @c false if no binding for the given command was found
+	 * @note Only use the values of the given input pointers, if the
+	 * method returned @c true
+	 */
+	bool resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key) const;
+	const char *getModifierName(int16_t modifier) const;
+	std::string getKeyBindingsString(const char *cmd) const;
 
 	enum class OpenFileMode {
 		Save, Open, Directory
