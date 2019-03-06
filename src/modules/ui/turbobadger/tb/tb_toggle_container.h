@@ -47,12 +47,12 @@ public:
 
 	/** Set the value of this widget. 1 will turn on the toggle, 0 will turn it off (or
 		the opposite if the invert mode is set). */
-	virtual void setValue(int value);
-	virtual int getValue() const {
+	virtual void setValue(int value) override;
+	virtual int getValue() const override {
 		return m_value;
 	}
 
-	virtual void onInflate(const INFLATE_INFO &info);
+	virtual void onInflate(const INFLATE_INFO &info) override;
 
 private:
 	void updateInternal();
@@ -109,23 +109,23 @@ public:
 	}
 
 	/** Set the text of the text field. */
-	virtual bool setText(const char *text) {
+	virtual bool setText(const char *text) override {
 		return m_header.setText(text);
 	}
-	virtual bool getText(TBStr &text) {
+	virtual bool getText(TBStr &text) override {
 		return m_header.getText(text);
 	}
 	using TBWidget::getText; ///< Make all versions in base class available.
 
-	virtual void setValue(int value);
-	virtual int getValue() const {
+	virtual void setValue(int value) override;
+	virtual int getValue() const override {
 		return m_toggle_container.getValue();
 	}
 
 	virtual TBWidget *getContentRoot() {
 		return m_toggle_container.getContentRoot();
 	}
-	virtual void onProcessAfterChildren();
+	virtual void onProcessAfterChildren() override;
 
 	virtual PreferredSize onCalculatePreferredSize(const SizeConstraints &constraints);
 

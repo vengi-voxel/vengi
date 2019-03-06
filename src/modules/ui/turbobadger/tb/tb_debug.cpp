@@ -69,7 +69,7 @@ public:
 		getWidgetByID(TBIDC("container"))->addChild(label);
 	}
 
-	virtual bool onEvent(const TBWidgetEvent &ev) {
+	virtual bool onEvent(const TBWidgetEvent &ev) override {
 		if (ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("check")) {
 			// Update setting and invalidate
 			g_tb_debug.settings[ev.target->data.getInt()] = ev.target->getValue();
@@ -79,7 +79,7 @@ public:
 		return TBWindow::onEvent(ev);
 	}
 
-	virtual void onPaint(const PaintProps &paintProps) {
+	virtual void onPaint(const PaintProps &paintProps) override {
 		// Draw stuff to the right of the debug window
 		g_renderer->translate(getRect().w, 0);
 
