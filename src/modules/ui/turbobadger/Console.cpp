@@ -5,17 +5,22 @@
 namespace ui {
 namespace turbobadger {
 
-static const tb::TBColor consoleBgColor(127, 127, 127, 150);
-
 Console::Console() :
 		Super() {
+}
+
+void Console::construct() {
+	Super::construct();
+	_consoleAlpha = core::Var::get("ui_consolealpha", "0.9");
+	_consoleBackground = core::Var::get("ui_consolebackground", "0.1");
+	_consoleFontSize = core::Var::get("ui_consolefontsize", "14");
 }
 
 bool Console::init() {
 	if (!Super::init()) {
 		return false;
 	}
-	_font = getMonoSpaceFont(14);
+	_font = getMonoSpaceFont(_consoleFontSize->intVal());
 	return true;
 }
 
@@ -34,7 +39,14 @@ void Console::drawString(int x, int y, const glm::ivec4& color, const char* str,
 }
 
 void Console::beforeRender(const math::Rect<int> &rect) {
+	if (_consoleFontSize->isDirty()) {
+		_font = getMonoSpaceFont(_consoleFontSize->intVal());
+		_consoleFontSize->markClean();
+	}
 	const tb::TBRect r(rect.getMinX(), rect.getMinZ(), rect.getMaxX(), rect.getMaxZ());
+	const int c = glm::clamp((int)(_consoleBackground->floatVal() * core::Color::magnitudef), 0, 255);
+	const int a = glm::clamp((int)(_consoleAlpha->floatVal() * core::Color::magnitudef), 0, 255);
+	const tb::TBColor consoleBgColor(c, c, c, a);
 	tb::g_tb_skin->paintRectFill(r, consoleBgColor);
 }
 

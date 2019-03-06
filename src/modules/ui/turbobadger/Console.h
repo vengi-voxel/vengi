@@ -5,6 +5,7 @@
 #pragma once
 
 #include "util/Console.h"
+#include "core/Var.h"
 
 namespace tb {
 class TBFontFace;
@@ -17,6 +18,9 @@ class Console : public util::Console {
 private:
 	using Super = util::Console;
 	tb::TBFontFace *_font = nullptr;
+	core::VarPtr _consoleAlpha;
+	core::VarPtr _consoleBackground;
+	core::VarPtr _consoleFontSize;
 
 	void drawString(int x, int y, const glm::ivec4& color, const char* str, int len) override;
 	int lineHeight() override;
@@ -25,6 +29,7 @@ private:
 
 public:
 	Console();
+	void construct() override;
 	bool init() override;
 	bool toggle() override;
 };

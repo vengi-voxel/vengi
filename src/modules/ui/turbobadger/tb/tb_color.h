@@ -10,6 +10,7 @@ namespace tb {
 
 /** TBColor contains a 32bit color. */
 
+// TODO: replace with glm::u8vec4
 class TBColor {
 public:
 	constexpr TBColor() : b(0), g(0), r(0), a(255) {
@@ -35,24 +36,6 @@ public:
 	}
 	inline bool operator!=(const TBColor &c) const {
 		return !(*this == c);
-	}
-
-	/** Premultiply alpha on the r, g, b components */
-	inline void premultiply() {
-		const uint32_t a32 = a;
-		r = (r * a32 + 1) >> 8;
-		g = (g * a32 + 1) >> 8;
-		b = (b * a32 + 1) >> 8;
-	}
-
-	/** Unpremultiply alpha on the r, g, b components */
-	inline void unpremultiply() {
-		const uint32_t a32 = a;
-		if (a32 != 0U) {
-			r = r * 255 / a32;
-			g = g * 255 / a32;
-			b = b * 255 / a32;
-		}
 	}
 };
 
