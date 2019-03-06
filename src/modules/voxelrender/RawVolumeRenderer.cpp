@@ -371,12 +371,7 @@ std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 		_vertexBuffer[idx].shutdown();
 		_vertexBufferIndex[idx] = -1;
 		_indexBufferIndex[idx] = -1;
-		for (auto i : _meshes) {
-			for (auto &mesh : i.second) {
-				delete mesh;
-				mesh = nullptr;
-			}
-		}
+		// hand over the ownership to the caller
 		old.push_back(_rawVolume[idx]);
 		_rawVolume[idx] = nullptr;
 	}
