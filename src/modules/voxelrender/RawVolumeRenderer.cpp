@@ -345,7 +345,11 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 
 	voxel::RawVolume* old = _rawVolume[idx];
 	_rawVolume[idx] = volume;
-
+	for (auto& i : _meshes) {
+		Meshes& meshes = i.second;
+		delete meshes[idx];
+		meshes[idx] = nullptr;
+	}
 	return old;
 }
 
