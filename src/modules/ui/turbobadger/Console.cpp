@@ -11,9 +11,9 @@ Console::Console() :
 
 void Console::construct() {
 	Super::construct();
-	_consoleAlpha = core::Var::get("ui_consolealpha", "0.9");
-	_consoleBackground = core::Var::get("ui_consolebackground", "0.1");
-	_consoleFontSize = core::Var::get("ui_consolefontsize", "14");
+	_consoleAlpha = core::Var::get("ui_consolealpha", "0.9", "Console background alpha value between 0.0 and 1.0");
+	_consoleBackground = core::Var::get("ui_consolebackground", "0.1", "Console background gray color value between 0.0 and 1.0");
+	_consoleFontSize = core::Var::get("ui_consolefontsize", "14", "Console font size");
 }
 
 bool Console::init() {

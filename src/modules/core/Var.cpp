@@ -41,7 +41,7 @@ bool Var::boolean(const std::string& name) {
 	return var->boolVal();
 }
 
-VarPtr Var::get(const std::string& name, const char* value, int32_t flags) {
+VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const char *help) {
 	VarMap::iterator i;
 	bool missing;
 	{
@@ -66,7 +66,7 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags) {
 			return VarPtr();
 		}
 
-		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flagsMask);
+		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flagsMask, help);
 		ScopedWriteLock lock(_lock);
 		_vars[name] = p;
 		return p;
@@ -90,8 +90,8 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags) {
 	return v;
 }
 
-Var::Var(const std::string& name, const std::string& value, unsigned int flags) :
-		_name(name), _flags(flags), _dirty(false) {
+Var::Var(const std::string& name, const std::string& value, unsigned int flags, const char *help) :
+		_name(name), _help(help), _flags(flags), _dirty(false) {
 	addValueToHistory(value);
 }
 

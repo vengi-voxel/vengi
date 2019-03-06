@@ -58,6 +58,7 @@ protected:
 	static ReadWriteLock _lock;
 
 	const std::string _name;
+	const char* _help = nullptr;
 	uint32_t _flags;
 	static constexpr int NEEDS_REPLICATE = 1 << 0;
 	static constexpr int NEEDS_BROADCAST = 1 << 1;
@@ -75,7 +76,7 @@ protected:
 	bool _dirty;
 
 	// invisible - use the static get method
-	Var(const std::string& name, const std::string& value = "", uint32_t flags = 0u);
+	Var(const std::string& name, const std::string& value = "", uint32_t flags = 0u, const char *help = nullptr);
 
 	void addValueToHistory(const std::string& value);
 public:
@@ -91,7 +92,11 @@ public:
 	 *
 	 * @note This is using a read/write lock to allow access from different threads.
 	 */
-	static VarPtr get(const std::string& name, const char* value = nullptr, int32_t flags = -1);
+	static VarPtr get(const std::string& name, const char* value = nullptr, int32_t flags = -1, const char *help = nullptr);
+
+	static inline VarPtr get(const std::string& name, const char* value, const char *help) {
+		return get(name, value, -1, help);
+	}
 
 	/**
 	 * @note Same as get(), but uses @c core_assert if no var could be found with the given name.
@@ -102,6 +107,13 @@ public:
 	 * @return @c empty string if var with given name wasn't found, otherwise the value of the var
 	 */
 	static std::string str(const std::string& name);
+
+	/**
+	 * The memory is now owned. Make sure it is available for the whole lifetime of this instance.
+	 */
+	void setHelp(const char *help);
+
+	const char *help() const;
 
 	/**
 	 * @return @c false if var with given name wasn't found, otherwise the bool value of the var
@@ -322,6 +334,14 @@ inline uint32_t Var::getFlags() const {
 
 inline unsigned int Var::uintVal() const {
 	return static_cast<unsigned int>(_history[_currentHistoryPos]._intValue);
+}
+
+inline void Var::setHelp(const char *help) {
+	_help = help;
+}
+
+inline const char *Var::help() const {
+	return _help;
 }
 
 /**

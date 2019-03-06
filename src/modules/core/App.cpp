@@ -432,6 +432,9 @@ void App::usage() const {
 			flagsStr[4]  = 'D';
 		}
 		Log::info("   %-*s %s %s", maxWidth, v->name().c_str(), flagsStr.c_str(), value);
+		if (v->help() != nullptr) {
+			Log::info("   -- %s", v->help());
+		}
 	});
 	Log::info("Flags:");
 	Log::info("   %-*s Readonly  can't get modified at runtime - only at startup", maxWidth, "R");

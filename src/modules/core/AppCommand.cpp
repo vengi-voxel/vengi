@@ -165,7 +165,12 @@ void init() {
 			}
 			const std::string& name = core::string::format("%-28s", var->name().c_str());
 			const std::string& valueStr = core::string::format(R"("%s")", value);
-			Log::info("* %s %s = %s (%u)", flagsStr.c_str(), name.c_str(), valueStr.c_str(), var->getHistorySize());
+			Log::info("* %s %s = %s (%u)", flagsStr.c_str(), name.c_str(), valueStr.c_str(),
+					var->getHistorySize());
+			const char *help = var->help();
+			if (help != nullptr) {
+				Log::info("        %s", help);
+			}
 		});
 	}).setHelp("Show the list of known variables (wildcards supported)");
 

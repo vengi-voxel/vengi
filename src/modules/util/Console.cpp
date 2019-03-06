@@ -74,7 +74,7 @@ Console::~Console() {
 }
 
 void Console::construct() {
-	_autoEnable = core::Var::get("ui_autoconsole", "false");
+	_autoEnable = core::Var::get("ui_autoconsole", "false", "Activate console on output");
 	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); }).setHelp("Toggle the in-game console");
 	core::Command::registerCommand("clear", [&] (const core::CmdArgs& args) { clear(); }).setHelp("Clear the text from the in-game console");
 }
