@@ -142,6 +142,7 @@ void Viewport::updateStatusBar() {
 			const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 			const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
 			if (overwrite) {
+				// TODO: add key bindings as text
 				status->setText(tr("Override"));
 			} else if (deleteVoxels) {
 				status->setText(tr("Delete"));
