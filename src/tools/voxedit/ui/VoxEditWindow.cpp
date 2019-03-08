@@ -544,7 +544,7 @@ void VoxEditWindow::onProcess() {
 
 	const bool empty = _voxedit->sceneMgr().empty();
 	if (_exportButton != nullptr) {
-		_exportButton->setState(tb::WIDGET_STATE_DISABLED, empty);
+		_exportButton->setState(tb::WIDGET_STATE_DISABLED, empty || _exportFilter.empty());
 	}
 	if (_saveButton != nullptr) {
 		_saveButton->setState(tb::WIDGET_STATE_DISABLED, empty);
@@ -664,8 +664,8 @@ void VoxEditWindow::onDie() {
 
 void VoxEditWindow::quit() {
 	if (_voxedit->sceneMgr().dirty()) {
-		popup("Unsaved Modifications",
-				"There are unsaved modifications.\nDo you wish to discard them and quit?",
+		popup(tr("Unsaved Modifications"),
+				tr("There are unsaved modifications.\nDo you wish to discard them and quit?"),
 				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_quit");
 		return;
 	}
@@ -780,16 +780,16 @@ bool VoxEditWindow::load(const std::string& file) {
 	}
 
 	_loadFile = file;
-	popup("Unsaved Modifications",
-			"There are unsaved modifications.\nDo you wish to discard them and load?",
+	popup(tr("Unsaved Modifications"),
+			tr("There are unsaved modifications.\nDo you wish to discard them and load?"),
 			ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_load");
 	return false;
 }
 
 bool VoxEditWindow::createNew(bool force) {
 	if (!force && _voxedit->sceneMgr().dirty()) {
-		popup("Unsaved Modifications",
-				"There are unsaved modifications.\nDo you wish to discard them and close?",
+		popup(tr("Unsaved Modifications"),
+				tr("There are unsaved modifications.\nDo you wish to discard them and close?"),
 				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_new");
 	} else if (_scene->newModel(force)) {
 		_lastOpenedFile->setVal("");
