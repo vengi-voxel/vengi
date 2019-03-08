@@ -263,7 +263,8 @@ const struct ModifierMapping {
 	{KMOD_CTRL, "CTRL"},
 	{KMOD_ALT | KMOD_SHIFT, "ALT+SHIFT"},
 	{KMOD_CTRL | KMOD_SHIFT, "CTRL+SHIFT"},
-	{KMOD_ALT | KMOD_CTRL, "ALT+CTRLs"},
+	{KMOD_ALT | KMOD_CTRL, "ALT+CTRL"},
+	{KMOD_ALT | KMOD_SHIFT | KMOD_SHIFT, "CTRL+ALT+SHIFT"},
 	{0, nullptr}
 };
 
