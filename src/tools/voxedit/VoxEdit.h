@@ -35,6 +35,7 @@ public:
 	bool newFile(bool force = false);
 
 	SceneManager& sceneMgr();
+	const SceneManager& sceneMgr() const;
 
 	video::MeshPoolPtr meshPool() const;
 
@@ -45,6 +46,10 @@ public:
 };
 
 inline SceneManager& VoxEdit::sceneMgr() {
+	return _sceneMgr;
+}
+
+inline const SceneManager& VoxEdit::sceneMgr() const {
 	return _sceneMgr;
 }
 
