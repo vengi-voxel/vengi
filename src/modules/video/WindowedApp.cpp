@@ -475,20 +475,9 @@ core::AppState WindowedApp::onConstruct() {
 		for (util::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 			const int32_t key = i->first;
 			const util::CommandModifierPair& pair = i->second;
-			const char* keyName = SDL_GetKeyName(key);
-			const int16_t modifier = pair.modifier;
-			std::string modifierKey;
-			if (modifier & KMOD_ALT) {
-				modifierKey += "ALT ";
-			}
-			if (modifier & KMOD_SHIFT) {
-				modifierKey += "SHIFT ";
-			}
-			if (modifier & KMOD_CTRL) {
-				modifierKey += "CTRL ";
-			}
 			const std::string& command = pair.command;
-			Log::info("%-15s %-10s %s", modifierKey.c_str(), keyName, command.c_str());
+			const std::string& keyBinding = getKeyBindingsString(command.c_str());
+			Log::info("%-25s %s", keyBinding.c_str(), command.c_str());
 		}
 	}).setHelp("Show all known key bindings");
 
