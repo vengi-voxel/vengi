@@ -95,7 +95,6 @@ private:
 	bool prefab(const std::string& file);
 	bool exportFile(const std::string& file);
 	bool createNew(bool force);
-	bool isViewPort(const tb::TBWidget* w) const;
 public:
 	VoxEditWindow(VoxEdit* tool);
 	~VoxEditWindow();
