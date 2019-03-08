@@ -269,12 +269,15 @@ const struct ModifierMapping {
 };
 
 const char *WindowedApp::getModifierName(int16_t modifier) const {
+	if (modifier == 0) {
+		return nullptr;
+	}
 	for (int i = 0; i < lengthof(MODIFIERMAPPING); ++i) {
 		if (MODIFIERMAPPING[i].modifier == modifier) {
 			return MODIFIERMAPPING[i].name;
 		}
 	}
-	return nullptr;
+	return "<unknown>";
 }
 
 std::string WindowedApp::getKeyBindingsString(const char *cmd) const {
