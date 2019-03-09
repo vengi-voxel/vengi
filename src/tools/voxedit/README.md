@@ -31,8 +31,10 @@ my own engine and evolved into something that others might find useful, too.
 
 * Placing voxels via left mouse button
 * Deleting voxels via right mouse button
-* Rotating viewport via middle mouse button
+* Rotating viewport via middle mouse button or holding alt and moving the mouse
 * Holding the left or right mouse buttons spans an AABB to perform the action in
+* Using the keybinding for `+actionexecute` (v) command allows you to also span an AABB with
+  the cursor keys (resp. the keys that are bound to the `+movecursor[direction]` commands).
 
 # Planned
 
