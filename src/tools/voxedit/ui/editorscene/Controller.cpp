@@ -11,14 +11,17 @@ void Controller::resetCamera(const voxel::Region& region) {
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	const glm::ivec3& center = region.getCentre();
 	_camera.setTarget(center);
+	const int height = region.getHeightInCells();
+	const int depth = region.getDepthInCells();
+	_camera.setTargetDistance(height * 2.0f);
 	if (_camMode == Controller::SceneCameraMode::Free) {
-		_camera.setPosition(glm::vec3(-center.x, region.getHeightInVoxels() + center.y, -center.z));
+		_camera.setPosition(glm::vec3(-center.x, height + center.y, -center.z));
 	} else if (_camMode == Controller::SceneCameraMode::Top) {
-		_camera.setPosition(glm::vec3(center.x, region.getHeightInCells() + center.y, center.z));
+		_camera.setPosition(glm::vec3(center.x, height + center.y, center.z));
 	} else if (_camMode == Controller::SceneCameraMode::Left) {
 		_camera.setPosition(glm::vec3(-center.x, center.y, center.z));
 	} else if (_camMode == Controller::SceneCameraMode::Front) {
-		_camera.setPosition(glm::vec3(center.x, center.y, -region.getDepthInCells() - center.z));
+		_camera.setPosition(glm::vec3(center.x, center.y, -depth - center.z));
 	}
 	_camera.lookAt(center);
 	_camera.setFarPlane(5000.0f);
