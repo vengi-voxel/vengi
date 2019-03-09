@@ -26,7 +26,7 @@ services:
       DB_HOST: db
       DB_NAME: vengi
       DB_USER: vengi
-      DB_PASSWORD: @DB_PW@
+      DB_PW: @DB_PW@
     depends_on:
       - db
 

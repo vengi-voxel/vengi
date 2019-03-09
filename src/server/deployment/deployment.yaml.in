@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: @PROJECT_NAME@-deployment
+  name: @PROJECT_NAME@
 spec:
   replicas: 1
   selector:
@@ -19,8 +19,13 @@ spec:
         - name: service-port
           containerPort: @SERVER_PORT@
         env:
+        - name: DB_PW
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: POSTGRES_PASSWORD
         - name: DB_HOST
-          value: postgres-@FQDN@
+          value: postgres
         livenessProbe:
           failureThreshold: 3
           exec:
