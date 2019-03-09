@@ -630,8 +630,11 @@ void SceneManager::construct() {
 			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place | ModifierType::Delete, false);}).setHelp(
 			"Change the modifier type to 'override'");
 
-	core::Command::registerCommand("actionexecute",
-			[&] (const core::CmdArgs& args) {executeModifier();}).setHelp(
+	core::Command::registerCommand("+actionexecute",
+			[&] (const core::CmdArgs& args) {aabbStart();}).setHelp(
+			"Place a voxel to the current cursor position");
+	core::Command::registerCommand("-actionexecute",
+			[&] (const core::CmdArgs& args) {aabbEnd(false);}).setHelp(
 			"Place a voxel to the current cursor position");
 
 	core::Command::registerCommand("scalehalf",
