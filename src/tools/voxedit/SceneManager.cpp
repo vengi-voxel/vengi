@@ -245,9 +245,9 @@ bool SceneManager::prefab(const std::string& file) {
 		return false;
 	}
 	Log::info("Import model file %s", file.c_str());
-	voxel::RawVolumeMoveWrapper wrapper(modelVolume());
+	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::moveVolume(&wrapper, newVolume, _referencePos);
-	modified(newVolume->region());
+	modified(wrapper.dirtyRegion());
 	delete newVolume;
 	return true;
 }
