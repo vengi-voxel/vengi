@@ -158,7 +158,7 @@ public:
 	bool aabbEnd(bool trace = true);
 
 	void crop();
-	void extend(const glm::ivec3& size);
+	void resize(const glm::ivec3& size);
 	void scaleHalf();
 
 	/**

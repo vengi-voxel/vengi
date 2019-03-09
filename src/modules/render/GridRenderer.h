@@ -35,7 +35,7 @@ protected:
 	bool _renderGrid;
 	bool _dirty = false;
 public:
-	GridRenderer(bool renderAABB = true, bool renderGrid = true);
+	GridRenderer(bool renderAABB = false, bool renderGrid = true);
 
 	bool setGridResolution(int resolution);
 	int gridResolution() const;

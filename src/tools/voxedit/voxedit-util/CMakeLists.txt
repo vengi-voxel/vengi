@@ -8,7 +8,7 @@ set(SRCS
 
 	tool/Fill.h tool/Fill.cpp
 	tool/Crop.h tool/Crop.cpp
-	tool/Expand.h tool/Expand.cpp
+	tool/Resize.h tool/Resize.cpp
 )
 set(LIB voxedit-util)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelrender voxelformat)

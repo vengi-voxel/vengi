@@ -159,7 +159,7 @@ TBLayout: distribution: gravity, axis: y
 
 					TBWidget: gravity: top bottom
 
-					TBSection: value: 0, text: "Options"
+					TBSection: value: 1, text: "Options"
 						TBLayout: position: left top, axis: y
 							TBClickLabel: text: Show grid
 								TBCheckBox: id: optionshowgrid, skin: grid-button

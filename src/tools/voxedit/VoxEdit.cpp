@@ -36,7 +36,7 @@ bool VoxEdit::prefabFile(const std::string& file) {
 	return _mainWindow->prefab(file);
 }
 
-bool VoxEdit::importmeshFile(const std::string& file) {
+bool VoxEdit::importFile(const std::string& file) {
 	return _mainWindow->importMesh(file);
 }
 
@@ -88,7 +88,7 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(export, "Export the current state to the given file");
 	COMMAND_FILE(load, "Load a scene from the given file");
 	COMMAND_FILE(prefab, "Add a model to the existing scene from the given file");
-	COMMAND_FILE(importmesh, "Import a mesh from the given file and tries to voxelize it");
+	COMMAND_FILE(import, "Import a mesh from the given file and tries to voxelize it");
 	COMMAND_FILE(importheightmap, "Import a heightmap into the volume");
 #undef COMMAND_FILE
 
@@ -99,7 +99,7 @@ core::AppState VoxEdit::onConstruct() {
 			[this] (const core::CmdArgs& args) {_mainWindow->toggleviewport();}).setHelp(
 			"Toggle quad view on/off");
 	core::Command::registerCommand("resetcamera",
-			[this] (const core::CmdArgs& args) {_mainWindow->resetcamera();}).setHelp(
+			[this] (const core::CmdArgs& args) {_mainWindow->resetCamera();}).setHelp(
 			"Reset cameras");
 	core::Command::registerCommand("dialog_noise",
 			[this] (const core::CmdArgs& args) {

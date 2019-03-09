@@ -34,7 +34,7 @@
 #include "io/Filesystem.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/tool/Crop.h"
-#include "voxedit-util/tool/Expand.h"
+#include "voxedit-util/tool/Resize.h"
 #include "voxedit-util/tool/Fill.h"
 #include "voxedit-util/ImportHeightmap.h"
 #include "core/GLM.h"
@@ -53,7 +53,7 @@ SceneManager& sceneMgr() {
 }
 
 SceneManager::SceneManager() :
-		_gridRenderer(true, true) {
+		_gridRenderer() {
 }
 
 SceneManager::~SceneManager() {
@@ -321,8 +321,8 @@ void SceneManager::crop() {
 	modified(newVolume->region());
 }
 
-void SceneManager::extend(const glm::ivec3& size) {
-	voxel::RawVolume* newVolume = voxedit::tool::expand(modelVolume(), size);
+void SceneManager::resize(const glm::ivec3& size) {
+	voxel::RawVolume* newVolume = voxedit::tool::resize(modelVolume(), size);
 	if (newVolume == nullptr) {
 		return;
 	}
@@ -699,15 +699,15 @@ void SceneManager::construct() {
 		const int argc = args.size();
 		if (argc == 1) {
 			const int size = core::string::toInt(args[0]);
-			extend(glm::ivec3(size));
+			resize(glm::ivec3(size));
 		} else if (argc == 3) {
 			glm::ivec3 size;
 			for (int i = 0; i < argc; ++i) {
 				size[i] = core::string::toInt(args[i]);
 			}
-			extend(size);
+			resize(size);
 		} else {
-			extend(glm::ivec3(1));
+			resize(glm::ivec3(1));
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
 	core::Command::registerCommand("undo",
@@ -725,7 +725,19 @@ void SceneManager::construct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		rotate(x, y, z);
-	}).setHelp("Rotate voxels by the given angles (in degree)");
+	}).setHelp("Rotate scene by the given angles (in degree)");
+	core::Command::registerCommand("rotatex", [&] (const core::CmdArgs& args) {
+		const int deg = args.size() == 1 ? core::string::toInt(args[0]) : 90;
+		rotate(deg, 0, 0);
+	}).setHelp("Rotate scene by the given angles (in degree)");
+	core::Command::registerCommand("rotatey", [&] (const core::CmdArgs& args) {
+		const int deg = args.size() == 1 ? core::string::toInt(args[0]) : 90;
+		rotate(0, deg, 0);
+	}).setHelp("Rotate scene by the given angles (in degree)");
+	core::Command::registerCommand("rotatez", [&] (const core::CmdArgs& args) {
+		const int deg = args.size() == 1 ? core::string::toInt(args[0]) : 90;
+		rotate(0, 0, deg);
+	}).setHelp("Rotate scene by the given angles (in degree)");
 }
 
 bool SceneManager::init() {

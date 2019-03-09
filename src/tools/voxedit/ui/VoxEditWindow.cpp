@@ -10,6 +10,7 @@
 #include "video/WindowedApp.h"
 #include "core/Var.h"
 #include "core/String.h"
+#include "core/command/Command.h"
 #include "editorscene/Viewport.h"
 #include "voxedit-util/Config.h"
 #include "../VoxEdit.h"
@@ -71,14 +72,14 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	for (int i = 0; i < lengthof(treeTypes); ++i) {
 		addStringItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
 	}
-	addStringItem(_fileItems, "New");
-	addStringItem(_fileItems, "Load");
-	addStringItem(_fileItems, "Save");
-	addStringItem(_fileItems, "Import");
-	addStringItem(_fileItems, "Prefab");
-	addStringItem(_fileItems, "Export");
-	addStringItem(_fileItems, "Heightmap");
-	addStringItem(_fileItems, "Quit");
+	addStringItem(_fileItems, "New", "new");
+	addStringItem(_fileItems, "Load", "load");
+	addStringItem(_fileItems, "Save", "save");
+	addStringItem(_fileItems, "Import", "import");
+	addStringItem(_fileItems, "Prefab", "prefab");
+	addStringItem(_fileItems, "Export", "export");
+	addStringItem(_fileItems, "Heightmap", "importheightmap");
+	addStringItem(_fileItems, "Quit", "quit");
 
 	addStringItem(_plantItems, "Cactus", "cactus");
 	for (int i = 0; i < lengthof(plantTypes); ++i) {
@@ -214,7 +215,7 @@ bool VoxEditWindow::init() {
 
 	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
 	if (_voxedit->sceneMgr().load(_lastOpenedFile->strVal())) {
-		resetcamera();
+		resetCamera();
 	} else {
 		_scene->newModel(true);
 	}
@@ -276,43 +277,22 @@ void VoxEditWindow::setQuadViewport(bool active) {
 }
 
 bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
-	if (ev.isAny(TBIDC("resetcamera"))) {
-		_scene->resetCamera();
-		_sceneFront->resetCamera();
-		_sceneLeft->resetCamera();
-		_sceneTop->resetCamera();
-	} else if (ev.isAny(TBIDC("quit"))) {
-		quit();
-	} else if (ev.isAny(TBIDC("crop"))) {
-		_voxedit->sceneMgr().crop();
-	} else if (ev.isAny(TBIDC("extend"))) {
-		_voxedit->sceneMgr().extend(glm::ivec3(1));
-	} else if (ev.isAny(TBIDC("new"))) {
-		createNew(false);
-	} else if (ev.isAny(TBIDC("load"))) {
-		load("");
-	} else if (ev.isAny(TBIDC("export"))) {
-		exportFile("");
-	} else if (ev.isAny(TBIDC("import"))) {
-		importMesh("");
-	} else if (ev.isAny(TBIDC("prefab"))) {
-		prefab("");
-	} else if (ev.isAny(TBIDC("heightmap"))) {
-		importHeightmap("");
-	} else if (ev.isAny(TBIDC("save"))) {
-		save("");
-	} else if (ev.isAny(TBIDC("redo"))) {
-		_voxedit->sceneMgr().redo();
-		return true;
-	} else if (ev.isAny(TBIDC("undo"))) {
-		_voxedit->sceneMgr().undo();
-	} else if (ev.isAny(TBIDC("rotatex"))) {
-		_voxedit->sceneMgr().rotate(90, 0, 0);
-	} else if (ev.isAny(TBIDC("rotatey"))) {
-		_voxedit->sceneMgr().rotate(0, 90, 0);
-	} else if (ev.isAny(TBIDC("rotatez"))) {
-		_voxedit->sceneMgr().rotate(0, 0, 90);
-	} else if (ev.isAny(TBIDC("menu_structure"))) {
+	// ui actions with direct command bindings
+	static const char *ACTIONS[] = {
+		"resetcamera", "new", "quit", "load",
+		"export", "import", "prefab", "redo",
+		"undo", "crop", "resize", "save",
+		"importheightmap", "rotatex", "rotatey",
+		"rotatez", nullptr
+	};
+
+	for (const char** action = ACTIONS; *action != nullptr; ++action) {
+		if (ev.isAny(TBIDC(*action))) {
+			core::Command::execute(*action);
+			return true;
+		}
+	}
+	if (ev.isAny(TBIDC("menu_structure"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("structure_popup"))) {
 			menu->show(&_structureItems, tb::TBPopupAlignment());
 		}
@@ -360,7 +340,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_voxedit->sceneMgr().load(_loadFile);
 			_lastOpenedFile->setVal(_loadFile);
-			resetcamera();
+			resetCamera();
 		}
 		return true;
 	} else if (id == TBIDC("unsaved_changes_voxelize")) {
@@ -742,7 +722,7 @@ bool VoxEditWindow::exportFile(const std::string& file) {
 	return _voxedit->sceneMgr().exportModel(file);
 }
 
-void VoxEditWindow::resetcamera() {
+void VoxEditWindow::resetCamera() {
 	_scene->resetCamera();
 	if (_sceneTop != nullptr) {
 		_sceneTop->resetCamera();
@@ -773,7 +753,7 @@ bool VoxEditWindow::load(const std::string& file) {
 	if (!_voxedit->sceneMgr().dirty()) {
 		if (_voxedit->sceneMgr().load(file)) {
 			_lastOpenedFile->setVal(file);
-			resetcamera();
+			resetCamera();
 			return true;
 		}
 		return false;

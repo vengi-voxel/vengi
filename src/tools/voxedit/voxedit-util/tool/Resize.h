@@ -9,7 +9,7 @@
 namespace voxedit {
 namespace tool {
 
-extern voxel::RawVolume* expand(const voxel::RawVolume* source, const glm::ivec3& size);
+extern voxel::RawVolume* resize(const voxel::RawVolume* source, const glm::ivec3& size);
 
 }
 }

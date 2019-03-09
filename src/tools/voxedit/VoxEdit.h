@@ -30,7 +30,7 @@ public:
 	bool loadFile(const std::string& file);
 	bool screenshotFile(const std::string& file);
 	bool prefabFile(const std::string& file);
-	bool importmeshFile(const std::string& file);
+	bool importFile(const std::string& file);
 	bool exportFile(const std::string& file);
 	bool newFile(bool force = false);
 
