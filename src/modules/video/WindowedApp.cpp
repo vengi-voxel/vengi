@@ -476,7 +476,6 @@ core::AppState WindowedApp::onConstruct() {
 
 	core::Command::registerCommand("bindlist", [this] (const core::CmdArgs& args) {
 		for (util::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
-			const int32_t key = i->first;
 			const util::CommandModifierPair& pair = i->second;
 			const std::string& command = pair.command;
 			const std::string& keyBinding = getKeyBindingsString(command.c_str());
