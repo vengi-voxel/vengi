@@ -5,6 +5,7 @@
 #include "tb_widgets_common.h"
 #include "core/Assert.h"
 #include "core/Var.h"
+#include "core/command/Command.h"
 #include "tb_font_renderer.h"
 #include "tb_system.h"
 #include "tb_widgets_listener.h"
@@ -173,7 +174,7 @@ void TBButton::setValue(int value) {
 		invokeEvent(ev);
 	}
 
-	if ((value != 0) && (getGroupID() != 0U)) {
+	if (value != 0 && getGroupID() != 0U) {
 		TBRadioCheckBox::updateGroupWidgets(this);
 	}
 }
@@ -192,24 +193,43 @@ void TBButton::onCaptureChanged(bool captured) {
 	}
 }
 
+void TBButton::onProcess() {
+	TBWidget::onProcess();
+	if (!_var || !_var->isDirty()) {
+		return;
+	}
+	setValue(_var->intVal());
+}
+
 void TBButton::onSkinChanged() {
 	m_layout.setRect(getPaddingRect());
 }
 
 bool TBButton::onEvent(const TBWidgetEvent &ev) {
-	if (canToggle() && ev.type == EVENT_TYPE_CLICK && ev.target == this) {
-		TBWidgetSafePointer this_widget(this);
+	if (ev.type == EVENT_TYPE_CLICK && ev.target == this) {
+		if (canToggle()) {
+			TBWidgetSafePointer this_widget(this);
 
-		// Toggle the value, if it's not a grouped widget with value on.
-		if (!((getGroupID() != 0U) && (getValue() != 0))) {
-			setValue(static_cast<int>(static_cast<int>(getValue()) == 0));
+			// Toggle the value, if it's not a grouped widget with value on.
+			if (!((getGroupID() != 0U) && (getValue() != 0))) {
+				setValue(static_cast<int>(static_cast<int>(getValue()) == 0));
+			}
+
+			if (this_widget.get() == nullptr) {
+				return true; // We got removed so we actually handled this event.
+			}
+
+			// Intentionally don't return true for this event. We want it to continue propagating.
 		}
-
-		if (this_widget.get() == nullptr) {
-			return true; // We got removed so we actually handled this event.
+		if (_var) {
+			Log::debug("Button pressed update var");
+			_var->setVal(getValue());
+			_var->markClean();
 		}
-
-		// Intentionally don't return true for this event. We want it to continue propagating.
+		if (!_command.isEmpty()) {
+			Log::debug("Button pressed, execute: '%s %i'", _command.c_str(), getValue());
+			core::Command::execute("%s %i", _command.c_str(), getValue());
+		}
 	}
 	return TBWidget::onEvent(ev);
 }
@@ -384,6 +404,9 @@ void TBRadioCheckBox::setValue(int value) {
 	if (_var) {
 		_var->setVal(value);
 		_var->markClean();
+	}
+	if (!_command.isEmpty()) {
+		core::Command::execute("%s %i", _command.c_str(), m_value);
 	}
 	setState(WIDGET_STATE_SELECTED, value != 0);
 
@@ -607,6 +630,9 @@ void TBSlider::setValueDouble(double value) {
 	if (_var) {
 		_var->setVal((float)value);
 		_var->markClean();
+	}
+	if (!_command.isEmpty()) {
+		core::Command::execute("%s %f", _command.c_str(), m_value);
 	}
 
 	updateHandle();

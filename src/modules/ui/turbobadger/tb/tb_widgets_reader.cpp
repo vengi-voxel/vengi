@@ -179,6 +179,13 @@ void TBButton::onInflate(const INFLATE_INFO &info) {
 	setAutoRepeat(info.node->getValueInt("auto-repeat", static_cast<int>(getAutoRepeat())) != 0);
 	setToggleMode(info.node->getValueInt("toggle-mode", static_cast<int>(getToggleMode())) != 0);
 	TBWidget::onInflate(info);
+	if (const char *command = info.node->getValueString("command", nullptr)) {
+		_command.set(command);
+	}
+	if (const char *varname = info.node->getValueString("varref", nullptr)) {
+		_var = core::Var::get(varname, 0);
+		setValue(_var->intVal());
+	}
 }
 
 TB_WIDGET_FACTORY(TBInlineSelect, TBValue::TYPE_INT, WIDGET_Z_TOP) {
@@ -188,6 +195,9 @@ void TBInlineSelect::onInflate(const INFLATE_INFO &info) {
 	int max = info.node->getValueInt("max", getMaxValue());
 	setLimits(min, max);
 	TBWidget::onInflate(info);
+	if (const char *command = info.node->getValueString("command", nullptr)) {
+		_command.set(command);
+	}
 	if (const char *varname = info.node->getValueString("varref", nullptr)) {
 		_var = core::Var::get(varname, m_value);
 		setValue(_var->intVal());
@@ -391,6 +401,9 @@ void TBSlider::onInflate(const INFLATE_INFO &info) {
 	double max = (double)info.node->getValueFloat("max", (float)getMaxValue());
 	setLimits(min, max);
 	TBWidget::onInflate(info);
+	if (const char *command = info.node->getValueString("command", nullptr)) {
+		_command.set(command);
+	}
 	if (const char *varname = info.node->getValueString("varref", nullptr)) {
 		_var = core::Var::get(varname, m_value);
 		setValueDouble(_var->floatVal());
@@ -439,6 +452,9 @@ void TBSelectDropdown::onInflate(const INFLATE_INFO &info) {
 
 void TBRadioCheckBox::onInflate(const INFLATE_INFO &info) {
 	TBWidget::onInflate(info);
+	if (const char *command = info.node->getValueString("command", nullptr)) {
+		_command.set(command);
+	}
 	if (const char *varname = info.node->getValueString("varref", nullptr)) {
 		_var = core::Var::get(varname, m_value);
 		setValue(_var->intVal());

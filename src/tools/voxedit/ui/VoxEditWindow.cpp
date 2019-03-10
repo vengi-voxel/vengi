@@ -129,8 +129,17 @@ bool VoxEditWindow::init() {
 	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
 	if (toggleViewPort != nullptr) {
 		toggleViewPort->setState(tb::WIDGET_STATE_DISABLED, !_fourViewAvailable);
-		const int value = toggleViewPort->getValue();
-		setQuadViewport(value == 1);
+		const bool visible = toggleViewPort->getValue() == 1;
+		const tb::WIDGET_VISIBILITY vis = visible ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
+		if (_sceneTop != nullptr) {
+			_sceneTop->setVisibility(vis);
+		}
+		if (_sceneLeft != nullptr) {
+			_sceneLeft->setVisibility(vis);
+		}
+		if (_sceneFront != nullptr) {
+			_sceneFront->setVisibility(vis);
+		}
 	}
 	_exportButton = getWidget("export");
 	_saveButton = getWidget("save");
@@ -225,9 +234,15 @@ bool VoxEditWindow::init() {
 
 void VoxEditWindow::update() {
 	_scene->update();
-	_sceneTop->update();
-	_sceneLeft->update();
-	_sceneFront->update();
+	if (_sceneTop != nullptr) {
+		_sceneTop->update();
+	}
+	if (_sceneLeft != nullptr) {
+		_sceneLeft->update();
+	}
+	if (_sceneFront != nullptr) {
+		_sceneFront->update();
+	}
 }
 
 bool VoxEditWindow::isFocused() const {
@@ -256,34 +271,22 @@ void VoxEditWindow::toggleviewport() {
 		vis = _sceneFront->getVisibilityCombined();
 	}
 
-	setQuadViewport(!vis);
-}
-
-void VoxEditWindow::setQuadViewport(bool active) {
-	const tb::WIDGET_VISIBILITY vis = active ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
+	const tb::WIDGET_VISIBILITY visibility = vis ? tb::WIDGET_VISIBILITY_GONE : tb::WIDGET_VISIBILITY_VISIBLE;
 	if (_sceneTop != nullptr) {
-		_sceneTop->setVisibility(vis);
+		_sceneTop->setVisibility(visibility);
 	}
 	if (_sceneLeft != nullptr) {
-		_sceneLeft->setVisibility(vis);
+		_sceneLeft->setVisibility(visibility);
 	}
 	if (_sceneFront != nullptr) {
-		_sceneFront->setVisibility(vis);
-	}
-	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
-	if (toggleViewPort != nullptr) {
-		toggleViewPort->setValue(active ? 1 : 0);
+		_sceneFront->setVisibility(visibility);
 	}
 }
 
 bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	// ui actions with direct command bindings
 	static const char *ACTIONS[] = {
-		"resetcamera", "new", "quit", "load",
-		"export", "import", "prefab", "redo",
-		"undo", "crop", "resize", "save",
-		"importheightmap", "rotatex", "rotatey",
-		"rotatez", nullptr
+		"new", "quit", "load", "export", "import", "prefab", "save", "importheightmap", nullptr
 	};
 
 	for (const char** action = ACTIONS; *action != nullptr; ++action) {
@@ -418,10 +421,6 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		return false;
 	} else if (id == TBIDC("optionvoxelsize")) {
 		_voxedit->sceneMgr().setGridResolution(widget->getValue());
-		return true;
-	} else if (id == TBIDC("toggleviewport")) {
-		const int value = widget->getValue();
-		setQuadViewport(value == 1);
 		return true;
 	} else if (id == TBIDC("lockx")) {
 		_voxedit->sceneMgr().setLockedAxis(math::Axis::X, widget->getValue() != 1);

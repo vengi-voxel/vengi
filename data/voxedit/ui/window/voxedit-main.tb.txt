@@ -38,9 +38,9 @@ TBLayout: distribution: gravity, axis: y
 					TBLayout: distribution: gravity
 						TBButton: gravity: left, @include: definitions>menubutton, text: File, id: menu_file
 							TBSkinImage: skin: voxedit-file
-						TBButton: gravity: left, @include: definitions>menubutton, text: Undo, id: undo
+						TBButton: gravity: left, @include: definitions>menubutton, text: Undo, id: undo, command: undo
 							TBSkinImage: skin: voxedit-undo
-						TBButton: gravity: left, @include: definitions>menubutton, text: Redo, id: redo
+						TBButton: gravity: left, @include: definitions>menubutton, text: Redo, id: redo, command: redo
 							TBSkinImage: skin: voxedit-redo
 						TBLayout: gravity: left right
 							TBWidget
@@ -114,9 +114,9 @@ TBLayout: distribution: gravity, axis: y
 
 					TBSection: value: 1, text: "Operations"
 						TBLayout: position: left top, axis: y
-							TBButton: @include: definitions>menubutton, text: Crop, id: crop
+							TBButton: @include: definitions>menubutton, text: Crop, id: crop, command: "crop;void"
 								TBSkinImage: skin: voxedit-crop
-							TBButton: @include: definitions>menubutton, text: Extend, id: extend
+							TBButton: @include: definitions>menubutton, text: Extend, id: extend, command: "resize;void"
 								TBSkinImage: skin: voxedit-extend
 
 					TBSection: value: 1, text: "Cursor"
@@ -139,11 +139,11 @@ TBLayout: distribution: gravity, axis: y
 
 					TBSection: value: 1, text: "Rotate on axis"
 						TBLayout: position: left top, axis: x
-							TBButton: id: rotatex, @include: definitions>menubutton
+							TBButton: id: rotatex, @include: definitions>menubutton, command: "rotatex;void"
 								TBSkinImage: skin: voxedit-axis-x
-							TBButton: id: rotatey, @include: definitions>menubutton
+							TBButton: id: rotatey, @include: definitions>menubutton, command: "rotatey;void"
 								TBSkinImage: skin: voxedit-axis-y
-							TBButton: id: rotatez, @include: definitions>menubutton
+							TBButton: id: rotatez, @include: definitions>menubutton, command: "rotatez;void"
 								TBSkinImage: skin: voxedit-axis-z
 
 					TBSection: value: 1, text: "Mirror axis"
@@ -181,8 +181,8 @@ TBLayout: distribution: gravity, axis: y
 							TBTextField: id: status, text: -
 						TBLayout: gravity: left right
 							TBWidget
-						TBButton: @include: definitions>menubutton, text: Reset View, id: resetcamera
+						TBButton: @include: definitions>menubutton, text: Reset View, id: resetcamera, command: resetcamera
 							TBSkinImage: skin: voxedit-reset-camera
 						TBClickLabel: text: Quad view
 							TBSkinImage: skin: voxedit-quadview
-							TBCheckBox: id: toggleviewport
+							TBCheckBox: id: toggleviewport, command: toggleviewport

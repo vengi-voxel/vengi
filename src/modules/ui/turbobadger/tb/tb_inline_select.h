@@ -60,6 +60,7 @@ protected:
 	int m_value;
 	int m_min, m_max;
 	core::VarPtr _var;
+	TBStr _command;
 	void setValueInternal(int value, bool update_text);
 };
 

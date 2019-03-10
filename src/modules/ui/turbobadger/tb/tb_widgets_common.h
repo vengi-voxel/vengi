@@ -163,6 +163,7 @@ public:
 
 	virtual void onInflate(const INFLATE_INFO &info) override;
 	virtual void onCaptureChanged(bool captured) override;
+	virtual void onProcess() override;
 	virtual void onSkinChanged() override;
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
 	virtual WIDGET_HIT_STATUS getHitStatus(int x, int y) override;
@@ -190,6 +191,8 @@ protected:
 	TBTextField m_textfield;
 	bool m_auto_repeat_click;
 	bool m_toggle_mode;
+	core::VarPtr _var;
+	TBStr _command;
 };
 
 /** TBClickLabel has a text field in its internal layout by default. Pointer input on the
@@ -330,6 +333,7 @@ public:
 protected:
 	int m_value;
 	core::VarPtr _var;
+	TBStr _command;
 };
 
 /** TBCheckBox is a box toggling a check mark on click.
@@ -488,6 +492,7 @@ protected:
 	double m_min, m_max;
 	double m_to_pixel_factor;
 	core::VarPtr _var;
+	TBStr _command;
 	void updateHandle();
 };
 

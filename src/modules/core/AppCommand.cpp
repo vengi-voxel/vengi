@@ -24,6 +24,17 @@ void init() {
 		}
 	}).setHelp("Clear the value history of a variable");
 
+	core::Command::registerCommand("void", [] (const core::CmdArgs& args) {
+	});
+
+	core::Command::registerCommand("echo", [] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			Log::info("");
+		}
+		const std::string& params = core::string::join(args.begin(), args.end(), " ");
+		Log::info("%s", params.c_str());
+	});
+
 	core::Command::registerCommand("toggle", [] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			Log::error("not enough arguments given. Expecting a variable name at least");

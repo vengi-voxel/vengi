@@ -78,8 +78,6 @@ private:
 
 	bool handleEvent(const tb::TBWidgetEvent &ev);
 
-	void setQuadViewport(bool active);
-
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
 	void resetCamera();
