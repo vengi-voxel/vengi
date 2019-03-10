@@ -51,12 +51,24 @@ void TBInlineSelect::setLimits(int min, int max) {
 	setValue(m_value);
 }
 
+void TBInlineSelect::onProcess() {
+	TBWidget::onProcess();
+	if (!_var || !_var->isDirty()) {
+		return;
+	}
+	setValue(_var->intVal());
+}
+
 void TBInlineSelect::setValueInternal(int value, bool updateText) {
 	value = Clamp(value, m_min, m_max);
 	if (value == m_value) {
 		return;
 	}
 	m_value = value;
+	if (_var) {
+		_var->setVal(value);
+		_var->markClean();
+	}
 
 	if (updateText) {
 		TBStr strval;

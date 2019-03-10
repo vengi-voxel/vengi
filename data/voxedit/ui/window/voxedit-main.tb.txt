@@ -162,17 +162,17 @@ TBLayout: distribution: gravity, axis: y
 					TBSection: value: 1, text: "Options"
 						TBLayout: position: left top, axis: y
 							TBClickLabel: text: Show grid
-								TBCheckBox: id: optionshowgrid, skin: grid-button
+								TBCheckBox: id: optionshowgrid, value: 1, skin: grid-button, varref: ve_showgrid
 							TBClickLabel: text: Show axis
-								TBCheckBox: id: optionshowaxis
+								TBCheckBox: id: optionshowaxis, value: 1, varref: ve_showaxis
 							TBClickLabel: text: Show locked axis
-								TBCheckBox: id: optionshowlockaxis
+								TBCheckBox: id: optionshowlockaxis, value: 1, varref: ve_showlockedaxis
 							TBClickLabel: text: Bounding box
-								TBCheckBox: id: optionshowaabb
+								TBCheckBox: id: optionshowaabb, value: 1, varref: ve_showaabb
 							TBClickLabel: text: Shadow
-								TBCheckBox: id: optionrendershadow
+								TBCheckBox: id: optionrendershadow, value: 1, varref: ve_rendershadow
 							TBClickLabel: text: Voxel size
-								TBInlineSelect: id: optionvoxelsize, min: 1, max: 64
+								TBInlineSelect: id: optionvoxelsize, min: 1, max: 64, value: 4, varref: ve_gridsize
 
 			TBLayout: distribution: gravity
 				TBContainer: skin: container, gravity: left right

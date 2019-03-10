@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Var.h"
 #include "tb_layout.h"
 #include "tb_msg.h"
 #include "tb_widgets.h"
@@ -320,12 +321,15 @@ public:
 
 	virtual PreferredSize onCalculatePreferredSize(const SizeConstraints &constraints) override;
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
+	virtual void onInflate(const INFLATE_INFO &info) override;
+	virtual void onProcess();
 
 	/** Make sure all widgets sharing the same group as new_leader are set to value 0. */
 	static void updateGroupWidgets(TBWidget *new_leader);
 
 protected:
 	int m_value;
+	core::VarPtr _var;
 };
 
 /** TBCheckBox is a box toggling a check mark on click.
@@ -472,6 +476,7 @@ public:
 		return (int)getValueDouble();
 	}
 
+	virtual void onProcess() override;
 	virtual void onInflate(const INFLATE_INFO &info) override;
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
 	virtual void onResized(int oldW, int oldH) override;
@@ -482,6 +487,7 @@ protected:
 	double m_value;
 	double m_min, m_max;
 	double m_to_pixel_factor;
+	core::VarPtr _var;
 	void updateHandle();
 };
 

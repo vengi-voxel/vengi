@@ -167,13 +167,13 @@ bool VoxEditWindow::init() {
 		return false;
 	}
 
-	const render::GridRenderer& gridRenderer = _voxedit->sceneMgr().gridRenderer();
-	_showAABB->setValue(gridRenderer.renderAABB() ? 1 : 0);
-	_voxelSize->setValue(_voxedit->sceneMgr().gridResolution());
-	_showGrid->setValue(gridRenderer.renderGrid() ? 1 : 0);
-	_showAxis->setValue(_voxedit->sceneMgr().renderAxis() ? 1 : 0);
-	_showLockAxis->setValue(_voxedit->sceneMgr().renderLockAxis() ? 1 : 0);
-	_renderShadow->setValue(_voxedit->sceneMgr().renderShadow() ? 1 : 0);
+	render::GridRenderer& gridRenderer = _voxedit->sceneMgr().gridRenderer();
+	gridRenderer.setRenderAABB(_showAABB->getValue() != 0);
+	gridRenderer.setRenderGrid(_showGrid->getValue() != 0);
+	_voxedit->sceneMgr().setGridResolution(_voxelSize->getValue());
+	_voxedit->sceneMgr().setRenderAxis(_showAxis->getValue() != 0);
+	_voxedit->sceneMgr().setRenderLockAxis(_showLockAxis->getValue() != 0);
+	_voxedit->sceneMgr().setRenderShadow(_renderShadow->getValue() != 0);
 
 	Assimp::Exporter exporter;
 	const size_t exporterNum = exporter.GetExportFormatCount();

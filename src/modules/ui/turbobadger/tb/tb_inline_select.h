@@ -48,6 +48,7 @@ public:
 		return m_value;
 	}
 
+	virtual void onProcess() override;
 	virtual void onInflate(const INFLATE_INFO &info) override;
 	virtual void onSkinChanged() override;
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
@@ -58,6 +59,7 @@ protected:
 	TBEditField m_editfield;
 	int m_value;
 	int m_min, m_max;
+	core::VarPtr _var;
 	void setValueInternal(int value, bool update_text);
 };
 

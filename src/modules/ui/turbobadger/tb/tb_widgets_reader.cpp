@@ -188,6 +188,10 @@ void TBInlineSelect::onInflate(const INFLATE_INFO &info) {
 	int max = info.node->getValueInt("max", getMaxValue());
 	setLimits(min, max);
 	TBWidget::onInflate(info);
+	if (const char *varname = info.node->getValueString("varref", nullptr)) {
+		_var = core::Var::get(varname, m_value);
+		setValue(_var->intVal());
+	}
 }
 
 TB_WIDGET_FACTORY(TBClickLabel, TBValue::TYPE_STRING, WIDGET_Z_BOTTOM) {
@@ -387,6 +391,10 @@ void TBSlider::onInflate(const INFLATE_INFO &info) {
 	double max = (double)info.node->getValueFloat("max", (float)getMaxValue());
 	setLimits(min, max);
 	TBWidget::onInflate(info);
+	if (const char *varname = info.node->getValueString("varref", nullptr)) {
+		_var = core::Var::get(varname, m_value);
+		setValueDouble(_var->floatVal());
+	}
 }
 
 void readItems(TBNode *node, TBGenericStringItemSource *targetSource) {
@@ -427,6 +435,14 @@ void TBSelectDropdown::onInflate(const INFLATE_INFO &info) {
 	// Read items (if there is any) into the default source
 	readItems(info.node, getDefaultSource());
 	TBWidget::onInflate(info);
+}
+
+void TBRadioCheckBox::onInflate(const INFLATE_INFO &info) {
+	TBWidget::onInflate(info);
+	if (const char *varname = info.node->getValueString("varref", nullptr)) {
+		_var = core::Var::get(varname, m_value);
+		setValue(_var->intVal());
+	}
 }
 
 TB_WIDGET_FACTORY(TBCheckBox, TBValue::TYPE_INT, WIDGET_Z_TOP) {

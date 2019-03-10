@@ -4,6 +4,7 @@
 
 #include "tb_widgets_common.h"
 #include "core/Assert.h"
+#include "core/Var.h"
 #include "tb_font_renderer.h"
 #include "tb_system.h"
 #include "tb_widgets_listener.h"
@@ -380,7 +381,10 @@ void TBRadioCheckBox::setValue(int value) {
 		return;
 	}
 	m_value = value;
-
+	if (_var) {
+		_var->setVal(value);
+		_var->markClean();
+	}
 	setState(WIDGET_STATE_SELECTED, value != 0);
 
 	if (value != 0 && getGroupID() != 0U) {
@@ -396,6 +400,14 @@ PreferredSize TBRadioCheckBox::onCalculatePreferredSize(const SizeConstraints &c
 	ps.min_w = ps.max_w = ps.pref_w;
 	ps.min_h = ps.max_h = ps.pref_h;
 	return ps;
+}
+
+void TBRadioCheckBox::onProcess() {
+	TBWidget::onProcess();
+	if (!_var || !_var->isDirty()) {
+		return;
+	}
+	setValue(_var->intVal());
 }
 
 bool TBRadioCheckBox::onEvent(const TBWidgetEvent &ev) {
@@ -578,12 +590,24 @@ void TBSlider::setLimits(double min, double max) {
 	updateHandle();
 }
 
+void TBSlider::onProcess() {
+	TBWidget::onProcess();
+	if (!_var || !_var->isDirty()) {
+		return;
+	}
+	setValue(_var->intVal());
+}
+
 void TBSlider::setValueDouble(double value) {
 	value = Clamp(value, m_min, m_max);
 	if (value == m_value) {
 		return;
 	}
 	m_value = value;
+	if (_var) {
+		_var->setVal((float)value);
+		_var->markClean();
+	}
 
 	updateHandle();
 	TBWidgetEvent ev(EVENT_TYPE_CHANGED);
