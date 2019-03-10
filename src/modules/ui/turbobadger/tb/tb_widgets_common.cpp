@@ -383,7 +383,7 @@ void TBRadioCheckBox::setValue(int value) {
 
 	setState(WIDGET_STATE_SELECTED, value != 0);
 
-	if ((value != 0) && (getGroupID() != 0U)) {
+	if (value != 0 && getGroupID() != 0U) {
 		updateGroupWidgets(this);
 	}
 
