@@ -35,6 +35,9 @@ const uint32_t CV_FROMFILE = 1 << 6;
 const uint32_t CV_FROMCOMMANDLINE = 1 << 7;
 const uint32_t CV_FROMENV = 1 << 8;
 
+extern const std::string VAR_TRUE;
+extern const std::string VAR_FALSE;
+
 class Var;
 typedef std::shared_ptr<Var> VarPtr;
 
@@ -249,17 +252,13 @@ public:
 		setVal(std::string(value));
 	}
 	inline void setVal(bool value) {
-		setVal(value ? "true" : "false");
+		setVal(value ? VAR_TRUE : VAR_FALSE);
 	}
 	inline void setVal(int value) {
-		char buf[32];
-		SDL_snprintf(buf, sizeof(buf), "%i", value);
-		setVal(buf);
+		setVal(core::string::format("%i", value));
 	}
 	inline void setVal(float value) {
-		char buf[32];
-		SDL_snprintf(buf, sizeof(buf), "%f", value);
-		setVal(buf);
+		setVal(core::string::format("%f", value));
 	}
 	/**
 	 * @return The string value of this var

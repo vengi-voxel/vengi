@@ -38,7 +38,7 @@ void init() {
 		const uint32_t size = var->getHistorySize();
 		if (size <= 1) {
 			if (var->typeIsBool()) {
-				var->setVal(var->boolVal() ? "false" : "true");
+				var->setVal(var->boolVal() ? core::VAR_FALSE : core::VAR_TRUE);
 			} else {
 				Log::error("Could not toggle %s", args[0].c_str());
 			}

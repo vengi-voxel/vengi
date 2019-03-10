@@ -9,6 +9,9 @@
 
 namespace core {
 
+const std::string VAR_TRUE("true");
+const std::string VAR_FALSE("false");
+
 Var::VarMap Var::_vars;
 ReadWriteLock Var::_lock("Var");
 
@@ -133,6 +136,9 @@ void Var::setVal(const std::string& value) {
 		}
 		if ((_flags & CV_BROADCAST) != 0u) {
 			_updateFlags |= NEEDS_BROADCAST;
+		}
+		if (_currentHistoryPos > 16) {
+			std::vector<Value>(_history.begin() + 8, _history.end()).swap(_history);
 		}
 	}
 }
