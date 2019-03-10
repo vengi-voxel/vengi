@@ -5,10 +5,10 @@
 #pragma once
 
 #include "image/Image.h"
-#include "voxel/polyvox/RawVolume.h"
+#include "voxel/polyvox/RawVolumeWrapper.h"
 
 namespace voxedit {
 
-void importHeightmap(voxel::RawVolume& volume, const image::ImagePtr& image);
+void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image);
 
 }

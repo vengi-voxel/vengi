@@ -9,7 +9,7 @@
 
 namespace voxedit {
 
-void importHeightmap(voxel::RawVolume& volume, const image::ImagePtr& image) {
+void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image) {
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
 	const voxel::Region& region = volume.region();
