@@ -121,8 +121,9 @@ public:
 	static bool boolean(const std::string& name);
 
 	static inline VarPtr get(const std::string& name, int value, int32_t flags = -1) {
-		const std::string& strVal = std::to_string(value);
-		return get(name, strVal.c_str(), flags);
+		char buf[64];
+		SDL_snprintf(buf, sizeof(buf), "%i", value);
+		return get(name, buf, flags);
 	}
 
 	static void shutdown();
