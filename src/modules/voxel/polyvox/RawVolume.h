@@ -34,7 +34,7 @@ public:
 		void setPosition(const glm::ivec3& pos);
 		bool setPosition(int32_t x, int32_t y, int32_t z);
 		bool setVoxel(const Voxel& voxel);
-		glm::ivec3 position() const;
+		const glm::ivec3& position() const;
 
 		void movePositiveX();
 		void movePositiveY();
@@ -233,8 +233,8 @@ inline const Voxel& RawVolume::voxel(const glm::ivec3& pos) const {
 #define CAN_GO_NEG_Z(val) (val > this->_volume->region().getLowerZ())
 #define CAN_GO_POS_Z(val) (val < this->_volume->region().getUpperZ())
 
-inline glm::ivec3 RawVolume::Sampler::position() const {
-	return glm::ivec3(_posInVolume.x, _posInVolume.y, _posInVolume.z);
+inline const glm::ivec3& RawVolume::Sampler::position() const {
+	return _posInVolume;
 }
 
 inline const Voxel& RawVolume::Sampler::voxel() const {
