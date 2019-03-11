@@ -83,11 +83,8 @@ public:
 		/** Other current position information */
 		Voxel* _currentVoxel = nullptr;
 
-		//Whether the current position is inside the volume
-		//FIXME - Replace these with flags
-		bool _currentPositionValidInX = false;
-		bool _currentPositionValidInY = false;
-		bool _currentPositionValidInZ = false;
+		/** Whether the current position is inside the volume */
+		uint8_t _currentPositionInvalid = 0u;
 	};
 
 	class BufferedSampler : public Sampler {
@@ -248,7 +245,7 @@ inline const Voxel& RawVolume::Sampler::voxel() const {
 }
 
 inline bool RawVolume::Sampler::currentPositionValid() const {
-	return _currentPositionValidInX && _currentPositionValidInY && _currentPositionValidInZ;
+	return !_currentPositionInvalid;
 }
 
 inline void RawVolume::Sampler::setPosition(const glm::ivec3& v3dNewPos) {

@@ -6,6 +6,10 @@
 
 namespace voxel {
 
+static const uint8_t SAMPLER_INVALIDX = 1 << 0;
+static const uint8_t SAMPLER_INVALIDY = 1 << 1;
+static const uint8_t SAMPLER_INVALIDZ = 1 << 2;
+
 RawVolume::RawVolume(const Region& regValid) :
 		_region(regValid), _mins(std::numeric_limits<int>::max()), _maxs(std::numeric_limits<int>::min()), _boundsValid(false) {
 	//Create a volume of the right size.
@@ -145,7 +149,7 @@ RawVolume::Sampler::~Sampler() {
 }
 
 bool RawVolume::Sampler::setVoxel(const Voxel& voxel) {
-	if (this->_currentPositionValidInX && this->_currentPositionValidInY && this->_currentPositionValidInZ) {
+	if (!_currentPositionInvalid) {
 		*_currentVoxel = voxel;
 		_volume->_mins = glm::min(_volume->_mins, _posInVolume);
 		_volume->_mins = glm::max(_volume->_maxs, _posInVolume);
@@ -161,9 +165,16 @@ bool RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	_posInVolume.z = zPos;
 
 	const voxel::Region& region = _volume->region();
-	_currentPositionValidInX = region.containsPointInX(xPos);
-	_currentPositionValidInY = region.containsPointInY(yPos);
-	_currentPositionValidInZ = region.containsPointInZ(zPos);
+	_currentPositionInvalid = 0u;
+	if (!region.containsPointInX(xPos)) {
+		_currentPositionInvalid |= SAMPLER_INVALIDX;
+	}
+	if (!region.containsPointInY(yPos)) {
+		_currentPositionInvalid |= SAMPLER_INVALIDY;
+	}
+	if (!region.containsPointInZ(zPos)) {
+		_currentPositionInvalid |= SAMPLER_INVALIDZ;
+	}
 
 	// Then we update the voxel pointer
 	if (currentPositionValid()) {
@@ -186,7 +197,11 @@ void RawVolume::Sampler::movePositiveX() {
 
 	_posInVolume.x++;
 
-	_currentPositionValidInX = _volume->region().containsPointInX(_posInVolume.x);
+	if (!_volume->region().containsPointInX(_posInVolume.x)) {
+		_currentPositionInvalid |= SAMPLER_INVALIDX;
+	} else {
+		_currentPositionInvalid &= ~SAMPLER_INVALIDX;
+	}
 
 	// Then we update the voxel pointer
 	if (currentPositionValid() && bIsOldPositionValid) {
@@ -202,7 +217,11 @@ void RawVolume::Sampler::movePositiveY() {
 
 	_posInVolume.y++;
 
-	_currentPositionValidInY = _volume->region().containsPointInY(_posInVolume.y);
+	if (!_volume->region().containsPointInY(_posInVolume.y)) {
+		_currentPositionInvalid |= SAMPLER_INVALIDY;
+	} else {
+		_currentPositionInvalid &= ~SAMPLER_INVALIDY;
+	}
 
 	// Then we update the voxel pointer
 	if (currentPositionValid() && bIsOldPositionValid) {
@@ -218,7 +237,11 @@ void RawVolume::Sampler::movePositiveZ() {
 
 	_posInVolume.z++;
 
-	_currentPositionValidInZ = _volume->region().containsPointInZ(_posInVolume.z);
+	if (!_volume->region().containsPointInZ(_posInVolume.z)) {
+		_currentPositionInvalid |= SAMPLER_INVALIDZ;
+	} else {
+		_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
+	}
 
 	// Then we update the voxel pointer
 	if (currentPositionValid() && bIsOldPositionValid) {
@@ -234,7 +257,11 @@ void RawVolume::Sampler::moveNegativeX() {
 
 	_posInVolume.x--;
 
-	_currentPositionValidInX = _volume->region().containsPointInX(_posInVolume.x);
+	if (!_volume->region().containsPointInX(_posInVolume.x)) {
+		_currentPositionInvalid |= SAMPLER_INVALIDX;
+	} else {
+		_currentPositionInvalid &= ~SAMPLER_INVALIDX;
+	}
 
 	// Then we update the voxel pointer
 	if (currentPositionValid() && bIsOldPositionValid) {
@@ -250,7 +277,11 @@ void RawVolume::Sampler::moveNegativeY() {
 
 	_posInVolume.y--;
 
-	_currentPositionValidInY = _volume->region().containsPointInY(_posInVolume.y);
+	if (!_volume->region().containsPointInY(_posInVolume.y)) {
+		_currentPositionInvalid |= SAMPLER_INVALIDY;
+	} else {
+		_currentPositionInvalid &= ~SAMPLER_INVALIDY;
+	}
 
 	// Then we update the voxel pointer
 	if (currentPositionValid() && bIsOldPositionValid) {
@@ -266,7 +297,11 @@ void RawVolume::Sampler::moveNegativeZ() {
 
 	_posInVolume.z--;
 
-	_currentPositionValidInZ = _volume->region().containsPointInZ(_posInVolume.z);
+	if (!_volume->region().containsPointInZ(_posInVolume.z)) {
+		_currentPositionInvalid |= SAMPLER_INVALIDZ;
+	} else {
+		_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
+	}
 
 	// Then we update the voxel pointer
 	if (currentPositionValid() && bIsOldPositionValid) {
