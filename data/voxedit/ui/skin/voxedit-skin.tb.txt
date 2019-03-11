@@ -41,8 +41,6 @@ elements
 		bitmap voxedit-axis-y.png
 	voxedit-axis-z
 		bitmap voxedit-axis-z.png
-	voxedit-quadview
-		bitmap voxedit-quadview.png
 	voxedit-tree
 		bitmap voxedit-tree.png
 	voxedit-structure
@@ -54,19 +52,34 @@ elements
 	voxedit-tree_pine
 		bitmap voxedit-tree_pine.png
 
-	grid-button
+	voxedit-quadview-button
+		bitmap voxedit-quadview.png
+		children
+			element voxedit-quadview-button.selected
+				state selected
+			element voxedit-quadview-button.pressed
+				state pressed
+	voxedit-quadview-button.selected
+		bitmap voxedit-quadview-selected.png
+		type Image
+	voxedit-quadview-button.pressed
+		bitmap voxedit-quadview-selected.png
+		type Image
+
+	voxedit-grid-button
 		bitmap voxedit-show-grid.png
 		children
-			element grid-button.selected
+			element voxedit-grid-button.selected
 				state selected
-			element grid-button.pressed
+			element voxedit-grid-button.pressed
 				state pressed
-	grid-button.selected
+	voxedit-grid-button.selected
 		bitmap voxedit-show-grid-selected.png
 		type Image
-	grid-button.pressed
+	voxedit-grid-button.pressed
 		bitmap voxedit-show-grid-selected.png
 		type Image
+
 	color-picker
 		type StretchBox
 		bitmap voxedit-color-picker.png

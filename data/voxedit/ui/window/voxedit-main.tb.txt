@@ -159,20 +159,16 @@ TBLayout: distribution: gravity, axis: y
 
 					TBWidget: gravity: top bottom
 
-					TBSection: value: 1, text: "Options"
+					TBSection: value: 0, text: "Options"
 						TBLayout: position: left top, axis: y
-							TBClickLabel: text: Show grid
-								TBCheckBox: id: optionshowgrid, value: 1, skin: grid-button, varref: ve_showgrid
 							TBClickLabel: text: Show axis
 								TBCheckBox: id: optionshowaxis, value: 1, varref: ve_showaxis
 							TBClickLabel: text: Show locked axis
 								TBCheckBox: id: optionshowlockaxis, value: 1, varref: ve_showlockedaxis
 							TBClickLabel: text: Bounding box
-								TBCheckBox: id: optionshowaabb, value: 1, varref: ve_showaabb
+								TBCheckBox: id: optionshowaabb, value: 0, varref: ve_showaabb
 							TBClickLabel: text: Shadow
 								TBCheckBox: id: optionrendershadow, value: 1, varref: ve_rendershadow
-							TBClickLabel: text: Voxel size
-								TBInlineSelect: id: optionvoxelsize, min: 1, max: 64, value: 4, varref: ve_gridsize
 
 			TBLayout: distribution: gravity
 				TBContainer: skin: container, gravity: left right
@@ -181,8 +177,11 @@ TBLayout: distribution: gravity, axis: y
 							TBTextField: id: status, text: -
 						TBLayout: gravity: left right
 							TBWidget
+						TBClickLabel: text: Grid
+							TBCheckBox: id: optionshowgrid, value: 1, skin: voxedit-grid-button, varref: ve_showgrid
+						TBClickLabel: text: Grid size
+							TBInlineSelect: id: optionvoxelsize, min: 1, max: 64, value: 4, varref: ve_gridsize
 						TBButton: @include: definitions>menubutton, text: Reset View, id: resetcamera, command: resetcamera
 							TBSkinImage: skin: voxedit-reset-camera
 						TBClickLabel: text: Quad view
-							TBSkinImage: skin: voxedit-quadview
-							TBCheckBox: id: toggleviewport, command: toggleviewport
+							TBCheckBox: id: toggleviewport, skin: voxedit-quadview-button, command: toggleviewport

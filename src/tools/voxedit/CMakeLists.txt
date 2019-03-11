@@ -32,6 +32,7 @@ set(FILES
 	voxedit/ui/skin/voxedit-options.png
 	voxedit/ui/skin/voxedit-override.png
 	voxedit/ui/skin/voxedit-quadview.png
+	voxedit/ui/skin/voxedit-quadview-selected.png
 	voxedit/ui/skin/voxedit-quit.png
 	voxedit/ui/skin/voxedit-redo.png
 	voxedit/ui/skin/voxedit-reset-camera.png
