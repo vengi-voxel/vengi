@@ -17,14 +17,14 @@ public:
 	virtual ~TBHashTable();
 
 	/** Remove all items without deleting the content. */
-	void removeAll() {
+	inline void removeAll() {
 		removeAll(false);
 	}
 
 	/** Remove all items and delete the content.
 		This requires TBHashTable to be subclassed and implementing DeleteContent.
 		You would typically do this by using TBHashTableOf or TBHashTableAutoDeleteOf. */
-	void deleteAll() {
+	inline void deleteAll() {
 		removeAll(true);
 	}
 
@@ -39,21 +39,26 @@ public:
 	void *remove(uint32_t key);
 
 	/** Delete the content with the given key. */
-	void deleteKey(uint32_t key);
+	inline void deleteKey(uint32_t key) {
+		deleteContent(remove(key));
+	}
 
 	/** Rehash the table so use the given number of buckets.
 		Returns false if out of memory. */
 	bool rehash(uint32_t num_buckets);
 
 	/** Return true if the hashtable itself think it's time to rehash. */
-	bool needRehash() const;
+	inline bool needRehash() const {
+		// Grow if more items than buckets
+		return (m_num_buckets == 0U) || m_num_items >= m_num_buckets;
+	}
 
 	/** Get the number of buckets the hashtable itself thinks is suitable for
 		the current number of items. */
 	uint32_t getSuitableBucketsCount() const;
 
 	/** Get the number of items in the hash table. */
-	uint32_t getNumItems() const {
+	inline uint32_t getNumItems() const {
 		return m_num_items;
 	}
 
@@ -63,7 +68,7 @@ public:
 #endif
 
 protected:
-	/** Delete the content of a item. This is called if calling DeleteAll, and must be
+	/** Delete the content of a item. This is called if calling deleteAll(), and must be
 		implemented in a subclass that knows about the content type. */
 	virtual void deleteContent(void *content) {
 		core_assert(!"You need to subclass and implement!");
@@ -99,7 +104,7 @@ template <class T> class TBHashTableIteratorOf : private TBHashTableIterator {
 public:
 	TBHashTableIteratorOf(TBHashTable *hashTable) : TBHashTableIterator(hashTable) {
 	}
-	T *getNextContent() {
+	inline T *getNextContent() {
 		return (T *)TBHashTableIterator::getNextContent();
 	}
 };
@@ -108,10 +113,10 @@ public:
 template <class T> class TBHashTableOf : public TBHashTable {
 	// FIX: Don't do public inheritance! Either inherit privately and forward, or use a private member backend!
 public:
-	T *get(uint32_t key) const {
+	inline T *get(uint32_t key) const {
 		return (T *)TBHashTable::get(key);
 	}
-	T *remove(uint32_t key) {
+	inline T *remove(uint32_t key) {
 		return (T *)TBHashTable::remove(key);
 	}
 
@@ -129,7 +134,7 @@ public:
 		deleteAll();
 	}
 
-	T *get(uint32_t key) const {
+	inline T *get(uint32_t key) const {
 		return (T *)TBHashTable::get(key);
 	}
 

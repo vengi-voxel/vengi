@@ -63,11 +63,6 @@ bool TBHashTable::rehash(uint32_t newNumBuckets) {
 	return false;
 }
 
-bool TBHashTable::needRehash() const {
-	// Grow if more items than buckets
-	return (m_num_buckets == 0U) || m_num_items >= m_num_buckets;
-}
-
 uint32_t TBHashTable::getSuitableBucketsCount() const {
 	// As long as we use FNV for TBID (in TBGetHash), power of two hash sizes are the best.
 	if (m_num_items == 0U) {
@@ -132,10 +127,6 @@ void *TBHashTable::remove(uint32_t key) {
 	}
 	core_assert(!"This hash table didn't contain the given key!");
 	return nullptr;
-}
-
-void TBHashTable::deleteKey(uint32_t key) {
-	deleteContent(remove(key));
 }
 
 #ifdef TB_RUNTIME_DEBUG_INFO
