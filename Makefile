@@ -1,14 +1,15 @@
 Q           ?= @
 UPDATEDIR   := /tmp
 BUILDDIR    ?= ./build
+BUILDTYPE   ?= Debug
 INSTALL_DIR ?= $(BUILDDIRPATH)$(shell uname)
 
 all:
-	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
+	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
 	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR) $@
 
 %:
-	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
+	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
 	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR) $@
 
 define UPDATE_GIT
