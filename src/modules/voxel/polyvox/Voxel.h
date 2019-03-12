@@ -65,19 +65,19 @@ extern VoxelType getVoxelType(const char *str);
 
 class Voxel {
 public:
-	constexpr Voxel() :
+	constexpr inline Voxel() :
 		_material(VoxelType::Air), _colorIndex(0) {
 	}
 
-	constexpr Voxel(VoxelType material, uint8_t colorIndex) :
+	constexpr inline Voxel(VoxelType material, uint8_t colorIndex) :
 		_material(material), _colorIndex(colorIndex) {
 	}
 
-	constexpr Voxel(const Voxel& voxel) :
+	constexpr inline Voxel(const Voxel& voxel) :
 		_material(voxel._material), _colorIndex(voxel._colorIndex) {
 	}
 
-	constexpr Voxel& operator=(const Voxel& voxel) {
+	constexpr inline Voxel& operator=(const Voxel& voxel) {
 		_material = voxel._material;
 		_colorIndex = voxel._colorIndex;
 		return *this;

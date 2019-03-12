@@ -37,46 +37,6 @@ RawVolume::~RawVolume() {
 }
 
 /**
- * The border value is returned whenever an attempt is made to read a voxel which
- * is outside the extents of the volume.
- * @return The value used for voxels outside of the volume
- */
-const Voxel& RawVolume::borderValue() const {
-	return _borderVoxel;
-}
-
-/**
- * @return A Region representing the extent of the volume.
- */
-const Region& RawVolume::region() const {
-	return _region;
-}
-
-/**
- * @return The width of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the width is 64.
- * @sa height(), getDepth()
- */
-int32_t RawVolume::width() const {
-	return _region.getWidthInVoxels();
-}
-
-/**
- * @return The height of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the height is 64.
- * @sa width(), getDepth()
- */
-int32_t RawVolume::height() const {
-	return _region.getHeightInVoxels();
-}
-
-/**
- * @return The depth of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the depth is 64.
- * @sa width(), height()
- */
-int32_t RawVolume::depth() const {
-	return _region.getDepthInVoxels();
-}
-
-/**
  * This version of the function is provided so that the wrap mode does not need
  * to be specified as a template parameter, as it may be confusing to some users.
  * @param uXPos The @c x position of the voxel
