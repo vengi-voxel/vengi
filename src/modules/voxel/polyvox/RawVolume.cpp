@@ -61,7 +61,7 @@ const Voxel& RawVolume::voxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const
 }
 
 /**
- * @param tBorder The value to use for voxels outside the volume.
+ * @param[in] voxel The value to use for voxels outside the volume.
  */
 void RawVolume::setBorderValue(const Voxel& voxel) {
 	_borderVoxel = voxel;
