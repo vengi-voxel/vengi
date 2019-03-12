@@ -29,7 +29,7 @@ void init() {
 
 	core::Command::registerCommand("echo", [] (const core::CmdArgs& args) {
 		if (args.empty()) {
-			Log::info("");
+			Log::info(" ");
 		}
 		const std::string& params = core::string::join(args.begin(), args.end(), " ");
 		Log::info("%s", params.c_str());

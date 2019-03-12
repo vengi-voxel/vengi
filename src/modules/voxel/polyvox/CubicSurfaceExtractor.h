@@ -65,7 +65,7 @@ struct VertexData {
 	uint8_t ambientOcclusion;
 };
 
-class Array : core::NonCopyable {
+class Array : public core::NonCopyable {
 private:
 	uint32_t _width;
 	uint32_t _height;

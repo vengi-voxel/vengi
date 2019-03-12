@@ -47,7 +47,6 @@ cl_mem_flags convertFlags(BufferFlag flags) {
 	return clValue;
 }
 
-#ifdef DEBUG
 #define CLCOMPUTEERR(x) case x: return #x
 #define CLCOMPUTEERRCTX(ctx, x) case x: return ctx ": " #x
 
@@ -180,7 +179,6 @@ static const char *convertCLError(cl_int err) {
 }
 #undef CLCOMPUTEERR
 #undef CLCOMPUTEERRCTX
-#endif
 
 bool checkError(cl_int clError, bool triggerAssert) {
 	if (triggerAssert) {
