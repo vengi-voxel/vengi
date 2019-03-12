@@ -337,7 +337,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 			wrap(stream.readInt(x))
 			wrap(stream.readInt(z))
 			wrap(stream.readInt(y))
-			glm::ivec3 maxsregion((int32_t)x, (int32_t)y, (int32_t)z);
+			glm::ivec3 maxsregion((int32_t)(x) - 1, (int32_t)(y) - 1, (int32_t)(z) - 1);
 			Log::debug("Found size chunk: (%u:%u:%u)", x, y, z);
 			Region region(glm::ivec3(0), maxsregion);
 			regions.push_back(region);
