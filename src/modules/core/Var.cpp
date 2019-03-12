@@ -137,8 +137,9 @@ void Var::setVal(const std::string& value) {
 		if ((_flags & CV_BROADCAST) != 0u) {
 			_updateFlags |= NEEDS_BROADCAST;
 		}
-		if (_currentHistoryPos > 16) {
+		if (_history.size() > 16) {
 			std::vector<Value>(_history.begin() + 8, _history.end()).swap(_history);
+			_currentHistoryPos = _history.size();
 		}
 	}
 }
