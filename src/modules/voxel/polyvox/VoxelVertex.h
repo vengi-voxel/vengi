@@ -15,7 +15,7 @@ namespace voxel {
  * @brief Represents a vertex in a mesh and includes position and ambient occlusion
  * as well as color and material information.
  */
-struct alignas(16) VoxelVertex {
+struct VoxelVertex {
 	glm::ivec3 position;
 	/** 0 is the darkest, 3 is no occlusion at all */
 	uint8_t ambientOcclusion;
