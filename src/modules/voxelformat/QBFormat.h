@@ -55,11 +55,11 @@ private:
 	void setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel);
 	voxel::Voxel getVoxel(io::FileStream& stream);
 	bool loadMatrix(io::FileStream& stream, voxel::RawVolume*& v);
-	bool loadFromStream(io::FileStream& stream, std::vector<RawVolume*>& volumes);
+	bool loadFromStream(io::FileStream& stream, VoxelVolumes& volumes);
 
 	bool saveMatrix(io::FileStream& stream, const RawVolume* volume) const;
 public:
-	std::vector<RawVolume*> loadGroups(const io::FilePtr& file) override;
+	VoxelVolumes loadGroups(const io::FilePtr& file) override;
 	bool save(const RawVolume* volume, const io::FilePtr& file) override;
 };
 

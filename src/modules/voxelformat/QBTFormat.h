@@ -25,9 +25,9 @@ private:
 	bool loadNode(io::FileStream& stream, VoxelVolumes& volumes);
 
 	bool loadColorMap(io::FileStream& stream);
-	bool loadFromStream(io::FileStream& stream, std::vector<RawVolume*>& volumes);
+	bool loadFromStream(io::FileStream& stream, VoxelVolumes& volumes);
 	bool saveMatrix(io::FileStream& stream, const RawVolume* volume, bool colorMap) const;
-	bool saveColorMap(io::FileStream& stream, const RawVolume* volume) const;
+	bool saveColorMap(io::FileStream& stream) const;
 public:
 	VoxelVolumes loadGroups(const io::FilePtr& file) override;
 	bool save(const RawVolume* volume, const io::FilePtr& file) override;

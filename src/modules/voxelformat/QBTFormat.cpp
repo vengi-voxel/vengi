@@ -123,7 +123,7 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const RawVolume* volume, bool
 	return true;
 }
 
-bool QBTFormat::saveColorMap(io::FileStream& stream, const RawVolume* volume) const {
+bool QBTFormat::saveColorMap(io::FileStream& stream) const {
 	wrapSave(stream.addString("COLORMAP", false));
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	wrapSave(stream.addInt((uint32_t)materialColors.size()));
@@ -144,7 +144,7 @@ bool QBTFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	wrapSave(stream.addFloat(1.0f));
 	bool colorMap = false;
 	if (colorMap) {
-		if (!saveColorMap(stream, volume)) {
+		if (!saveColorMap(stream)) {
 			return false;
 		}
 	}

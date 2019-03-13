@@ -258,7 +258,7 @@ bool QBFormat::loadMatrix(io::FileStream& stream, voxel::RawVolume*& volume) {
 	return true;
 }
 
-bool QBFormat::loadFromStream(io::FileStream& stream, std::vector<RawVolume*>& volumes) {
+bool QBFormat::loadFromStream(io::FileStream& stream, VoxelVolumes& volumes) {
 	wrap(stream.readInt(_version))
 	uint32_t colorFormat;
 	wrap(stream.readInt(colorFormat))
