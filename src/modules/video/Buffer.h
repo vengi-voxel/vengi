@@ -19,6 +19,7 @@ class Buffer {
 private:
 	static constexpr int MAX_HANDLES = 6;
 	size_t _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
+	uint32_t _hash[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
 	Id _handles[MAX_HANDLES] = {InvalidId, InvalidId, InvalidId, InvalidId, InvalidId, InvalidId};
 	BufferType _targets[MAX_HANDLES] = {BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max};
 	BufferMode _modes[MAX_HANDLES] = {BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static};

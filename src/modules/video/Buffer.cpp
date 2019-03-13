@@ -123,7 +123,17 @@ bool Buffer::update(int32_t idx, const void* data, size_t size) {
 
 	core_assert(video::boundVertexArray() == InvalidId);
 	const size_t oldSize = _size[idx];
-	_size[idx] = align(size, _targets[idx]);
+	const size_t newSize = align(size, _targets[idx]);
+	if (oldSize == newSize) {
+		uint32_t newHash = core::hash(data, size);
+		if (newHash == _hash[idx]) {
+			return true;
+		}
+		_hash[idx] = newHash;
+	} else {
+		_hash[idx] = core::hash(data, size);
+	}
+	_size[idx] = newSize;
 	core_assert_16byte_aligned(data);
 	core_assert_msg((_size[idx] & 15) == 0, "Size is not aligned properly");
 	const BufferType type = _targets[idx];
