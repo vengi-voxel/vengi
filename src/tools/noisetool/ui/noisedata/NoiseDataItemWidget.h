@@ -59,6 +59,3 @@ public:
 };
 
 UIWIDGET_FACTORY(NoiseDataList, tb::TBValue::TYPE_NULL, tb::WIDGET_Z_TOP)
-
-
-
