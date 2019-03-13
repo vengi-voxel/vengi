@@ -4,6 +4,7 @@
 
 #include "RawVolumeRenderer.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
+#include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
 #include "video/ScopedLineWidth.h"
 #include "ShaderAttribute.h"
@@ -175,6 +176,28 @@ bool RawVolumeRenderer::empty(int idx) const {
 			return false;
 		}
 	}
+	return true;
+}
+
+bool RawVolumeRenderer::toMesh(voxel::Mesh* mesh) {
+	std::vector<voxel::RawVolume*> volumes;
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		voxel::RawVolume* volume = _rawVolume[idx];
+		if (volume == nullptr) {
+			continue;
+		}
+		volumes.push_back(volume);
+	}
+	if (volumes.empty()) {
+		return false;
+	}
+
+	voxel::RawVolume* mergedVolume = merge(volumes);
+	if (mergedVolume == nullptr) {
+		return false;
+	}
+	extract(mergedVolume, mergedVolume->region(), mesh);
+	delete mergedVolume;
 	return true;
 }
 
@@ -351,6 +374,24 @@ bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model) {
 	_model[idx] = model;
 
 	return true;
+}
+
+voxel::Region RawVolumeRenderer::region() const {
+	voxel::Region region;
+	bool validVolume = false;
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		voxel::RawVolume* volume = _rawVolume[idx];
+		if (volume == nullptr) {
+			continue;
+		}
+		if (!validVolume) {
+			region = volume->region();
+		} else {
+			region.accumulate(volume->region());
+		}
+		validVolume = true;
+	}
+	return region;
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume) {

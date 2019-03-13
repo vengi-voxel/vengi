@@ -69,6 +69,7 @@ public:
 
 	bool extract(int idx, const voxel::Region& region, bool updateBuffers = true);
 
+	bool toMesh(voxel::Mesh* mesh);
 	bool toMesh(int idx, voxel::Mesh* mesh);
 
 	/**
@@ -86,6 +87,11 @@ public:
 	 */
 	voxel::RawVolume* volume(int idx = 0);
 	const voxel::RawVolume* volume(int idx = 0) const;
+	/**
+	 * @note If you need the region of a particular volume, ask the volume
+	 * @return The complete region of all managed volumes
+	 */
+	voxel::Region region() const;
 
 	void setAmbientColor(const glm::vec3& color);
 	void setSunPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up);
