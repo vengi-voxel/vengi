@@ -27,8 +27,8 @@ void PaletteWidget::onPaint(const PaintProps &paintProps) {
 	Super::onPaint(paintProps);
 	const tb::TBRect renderRect(0, 0, _width, _height);
 	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
-	const glm::vec4& borderColor = core::Color::Black;
-	const tb::TBColor tbBorderColor(borderColor.r, borderColor.g, borderColor.b);
+	constexpr tb::TBColor tbBorderColor;
+	const tb::TBColor& tbBorderColorSelected = tb::TBColor::fromVec4(core::Color::Red);
 	const int max = colors.size();
 	int i = 0;
 	for (int y = 0; y < _amountY; ++y) {
@@ -42,7 +42,11 @@ void PaletteWidget::onPaint(const PaintProps &paintProps) {
 			const tb::TBColor tbColor(color.r, color.g, color.b, color.a);
 			tb::g_renderer->translate(transX, transY);
 			tb::g_tb_skin->paintRectFill(renderRect, tbColor);
-			tb::g_tb_skin->paintRect(renderRect, tbBorderColor, 1);
+			if (i == _value) {
+				tb::g_tb_skin->paintRect(renderRect, tbBorderColorSelected, 3);
+			} else {
+				tb::g_tb_skin->paintRect(renderRect, tbBorderColor, 1);
+			}
 			tb::g_renderer->translate(-transX, -transY);
 			++i;
 		}
