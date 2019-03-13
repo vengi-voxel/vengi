@@ -66,6 +66,20 @@ elements
 		bitmap voxedit-quadview-selected.png
 		type Image
 
+	voxedit-visible-button
+		bitmap voxedit-visible.png
+		children
+			element voxedit-visible-button.selected
+				state selected
+			element voxedit-visible-button.pressed
+				state pressed
+	voxedit-visible-button.selected
+		bitmap voxedit-visible-selected.png
+		type Image
+	voxedit-visible-button.pressed
+		bitmap voxedit-visible-selected.png
+		type Image
+
 	voxedit-grid-button
 		bitmap voxedit-show-grid.png
 		children

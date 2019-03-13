@@ -22,7 +22,7 @@ private:
 	bool readAttributes(std::map<std::string, std::string>& attributes, io::FileStream& stream) const;
 public:
 	VoxelVolumes loadGroups(const io::FilePtr& file) override;
-	bool save(const RawVolume* volume, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 
 }

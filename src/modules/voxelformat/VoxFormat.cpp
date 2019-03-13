@@ -34,7 +34,7 @@ struct VoxModel {
 	std::map<std::string, std::string> attributes;
 };
 
-bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
+bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
 	io::FileStream stream(file.get());
 	stream.addInt(FourCC('V','O','X',' '));
 	stream.addInt(150);
@@ -47,48 +47,51 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	int64_t headerSize = stream.pos();
 	Log::debug("headersize is: %i", (int)headerSize);
 
-	// model size
-	Log::debug("add SIZE chunk at pos %i", (int)stream.pos());
-	stream.addInt(FourCC('S','I','Z','E'));
-	stream.addInt(3 * sizeof(uint32_t));
-	stream.addInt(0);
-	const voxel::Region& region = volume->region();
-	stream.addInt(region.getWidthInCells());
-	stream.addInt(region.getDepthInCells());
-	stream.addInt(region.getHeightInCells());
+	for (auto& v : volumes) {
+		// TODO: layers - with offset, name and visibility
+		// model size
+		Log::debug("add SIZE chunk at pos %i", (int)stream.pos());
+		stream.addInt(FourCC('S','I','Z','E'));
+		stream.addInt(3 * sizeof(uint32_t));
+		stream.addInt(0);
+		const voxel::Region& region = v.volume->region();
+		stream.addInt(region.getWidthInCells());
+		stream.addInt(region.getDepthInCells());
+		stream.addInt(region.getHeightInCells());
 
-	// voxel data
-	Log::debug("add XYZI chunk at pos %i", (int)stream.pos());
-	stream.addInt(FourCC('X','Y','Z','I'));
-	uint32_t numVoxels = 0;
-	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-				const voxel::Voxel& voxel = volume->voxel(x, y, z);
-				if (voxel::isAir(voxel.getMaterial())) {
-					continue;
+		// voxel data
+		Log::debug("add XYZI chunk at pos %i", (int)stream.pos());
+		stream.addInt(FourCC('X','Y','Z','I'));
+		uint32_t numVoxels = 0;
+		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					const voxel::Voxel& voxel = v.volume->voxel(x, y, z);
+					if (voxel::isAir(voxel.getMaterial())) {
+						continue;
+					}
+					++numVoxels;
 				}
-				++numVoxels;
 			}
 		}
-	}
 
-	stream.addInt(numVoxels * 4 + sizeof(uint32_t));
-	stream.addInt(0);
+		stream.addInt(numVoxels * 4 + sizeof(uint32_t));
+		stream.addInt(0);
 
-	stream.addInt(numVoxels);
-	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-				const voxel::Voxel& voxel = volume->voxel(x, y, z);
-				if (voxel::isAir(voxel.getMaterial())) {
-					continue;
+		stream.addInt(numVoxels);
+		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					const voxel::Voxel& voxel = v.volume->voxel(x, y, z);
+					if (voxel::isAir(voxel.getMaterial())) {
+						continue;
+					}
+					stream.addByte(x);
+					stream.addByte(z);
+					stream.addByte(y);
+					const uint8_t colorIndex = voxel.getColor();
+					stream.addByte(colorIndex + 1);
 				}
-				stream.addByte(x);
-				stream.addByte(z);
-				stream.addByte(y);
-				const uint8_t colorIndex = voxel.getColor();
-				stream.addByte(colorIndex + 1);
 			}
 		}
 	}
@@ -367,6 +370,7 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 	// S   S    //
 
 	VoxelVolumes volumes;
+	volumes.resize(regions.size());
 	int volumeIdx = 0;
 	do {
 		uint32_t chunkId;
@@ -399,12 +403,12 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 			uint32_t numVoxels;
 			wrap(stream.readInt(numVoxels))
 			Log::debug("Found voxel chunk with %u voxels", numVoxels);
-			RawVolume *volume = nullptr;
 			if (regions.empty() || volumeIdx >= (int)regions.size()) {
 				Log::error("Invalid XYZI chunk without previous SIZE chunk");
 				return VoxelVolumes();
 			}
-			volume = new RawVolume(regions[volumeIdx++]);
+			RawVolume *volume = new RawVolume(regions[volumeIdx]);
+			int volumeVoxelSet = 0;
 			for (uint32_t i = 0; i < numVoxels; ++i) {
 				// we have to flip the axis here
 				uint8_t x, y, z, colorIndex;
@@ -414,9 +418,13 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 				wrap(stream.readByte(colorIndex))
 				const uint8_t index = convertPaletteIndex(colorIndex);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-				volume->setVoxel(x, y, z, voxel);
+				if (volume->setVoxel(x, y, z, voxel)) {
+					++volumeVoxelSet;
+				}
 			}
-			volumes.push_back(volume);
+			Log::info("Loaded layer %i with %i voxels (%i)", volumeIdx, numVoxels, volumeVoxelSet);
+			volumes[volumeIdx].volume = volume;
+			++volumeIdx;
 		} else if (chunkId == FourCC('M','A','T','T')) {
 			Log::debug("Found material chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			// 9. Chunk id 'MATT' : material, if it is absent, it is diffuse material
@@ -475,7 +483,14 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 			std::map<std::string, std::string> attributes;
 			wrapAttributes(readAttributes(attributes, stream))
 			stream.skip(sizeof(uint32_t));
-			// TODO
+			if (layerId >= (uint32_t)volumes.size()) {
+				Log::error("Invalid layer id found: %i - exceeded limit of %i",
+						(int)layerId, (int)volumes.size());
+				return VoxelVolumes();
+			}
+			volumes[layerId].name = attributes["_name"];
+			const std::string& hidden = attributes["_hidden"];
+			volumes[layerId].visible = hidden.empty() || hidden == "0";
 		} else if (chunkId == FourCC('n','T','R','N')) {
 			Log::warn("nTRN chunk not yet supported");
 			Log::debug("Found nTRN chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);

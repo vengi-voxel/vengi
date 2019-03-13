@@ -11,9 +11,6 @@ PaletteWidget::PaletteWidget() :
 	setIsFocusable(true);
 }
 
-PaletteWidget::~PaletteWidget() {
-}
-
 void PaletteWidget::setValue(int value) {
 	if (value == _value) {
 		return;

@@ -16,6 +16,7 @@ my own engine and evolved into something that others might find useful, too.
 * Key bindings via cfg file
 * Four viewport mode
 * Grid resolution
+* Up to 16 layers
 * Mirror mode
 * Auto cropping volumes
 * Auto generate content like trees or noise volumes
@@ -42,7 +43,6 @@ my own engine and evolved into something that others might find useful, too.
 * Copy/paste
 * Selections
 * Improve voxelizer
-* Support multiple RawVolumes (layers) (e.g. MagicaVoxel VOX format and Qubicle support this)
 * Improve vox extension import
 * Windows and MacOSX support
 * Color selection via keyboard only

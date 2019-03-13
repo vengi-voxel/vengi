@@ -13,6 +13,7 @@
 class Viewport;
 class VoxEdit;
 class PaletteWidget;
+class LayerWidget;
 
 namespace voxedit {
 
@@ -29,6 +30,7 @@ private:
 	Viewport* _sceneFront = nullptr;
 	VoxEdit* _voxedit;
 	PaletteWidget* _paletteWidget;
+	LayerWidget* _layerWidget;
 	tb::TBWidget* _exportButton = nullptr;
 	tb::TBWidget* _saveButton = nullptr;
 	tb::TBWidget* _undoButton = nullptr;
@@ -82,6 +84,8 @@ private:
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
 	void resetCamera();
 	void quit();
+
+	void afterLoad(const std::string& file);
 
 	// commands
 	void toggleviewport();

@@ -47,10 +47,10 @@ const int NEXT_SLICE_FLAG = 6;
 
 #define setBit(val, index) val &= (1 << (index))
 
-bool QBFormat::saveMatrix(io::FileStream& stream, const RawVolume* volume) const {
+bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) const {
 	wrapSave(stream.addByte(0)); // no name
 
-	const voxel::Region& region = volume->region();
+	const voxel::Region& region = volume.volume->region();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
 	wrapSave(stream.addInt(size.x));
 	wrapSave(stream.addInt(size.y));
@@ -73,7 +73,7 @@ bool QBFormat::saveMatrix(io::FileStream& stream, const RawVolume* volume) const
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			for (int x = mins.x; x <= maxs.x; ++x) {
-				const Voxel& voxel = volume->voxel(x, y, z);
+				const Voxel& voxel = volume.volume->voxel(x, y, z);
 				glm::ivec4 newColor;
 				if (voxel == Empty) {
 					newColor = EmptyColor;
@@ -130,15 +130,20 @@ bool QBFormat::saveMatrix(io::FileStream& stream, const RawVolume* volume) const
 	return true;
 }
 
-bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
+bool QBFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
 	io::FileStream stream(file.get());
 	wrapSave(stream.addInt(257))
 	wrapSave(stream.addInt((uint32_t)ColorFormat::RGBA))
 	wrapSave(stream.addInt((uint32_t)ZAxisOrientation::Right))
 	wrapSave(stream.addInt((uint32_t)Compression::RLE))
 	wrapSave(stream.addInt((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
-	wrapSave(stream.addInt(1)) // only one matrix
-	return saveMatrix(stream, volume);
+	wrapSave(stream.addInt((int)volumes.size()))
+	for (const auto& v : volumes) {
+		if (!saveMatrix(stream, v)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel) {
@@ -176,7 +181,7 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	return voxel::createVoxel(voxel::VoxelType::Generic, index);
 }
 
-bool QBFormat::loadMatrix(io::FileStream& stream, voxel::RawVolume*& volume) {
+bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 	char buf[260] = "";
 	uint8_t nameLength;
 	wrap(stream.readByte(nameLength));
@@ -210,14 +215,15 @@ bool QBFormat::loadMatrix(io::FileStream& stream, voxel::RawVolume*& volume) {
 	if (!region.isValid()) {
 		return false;
 	}
-	volume = new voxel::RawVolume(region);
+	voxel::RawVolume* v = new voxel::RawVolume(region);
+	volumes.push_back(VoxelVolume(v));
 	if (_compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
 					const voxel::Voxel& voxel = getVoxel(stream);
-					setVoxel(volume, x, y, z, offset, voxel);
+					setVoxel(v, x, y, z, offset, voxel);
 				}
 			}
 		}
@@ -248,7 +254,7 @@ bool QBFormat::loadMatrix(io::FileStream& stream, voxel::RawVolume*& volume) {
 			for (uint32_t j = 0; j < count; ++j) {
 				const int x = (index + j) % size.x;
 				const int y = (index + j) / size.x;
-				setVoxel(volume, x, y, z, offset, voxel);
+				setVoxel(v, x, y, z, offset, voxel);
 			}
 			index += count;
 		}
@@ -286,11 +292,9 @@ bool QBFormat::loadFromStream(io::FileStream& stream, VoxelVolumes& volumes) {
 	volumes.reserve(numMatrices);
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
-		voxel::RawVolume* v = nullptr;
-		if (!loadMatrix(stream, v)) {
+		if (!loadMatrix(stream, volumes)) {
 			break;
 		}
-		volumes.push_back(v);
 	}
 	return true;
 }

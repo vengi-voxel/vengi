@@ -28,7 +28,7 @@ Viewport::~Viewport() {
 
 bool Viewport::newModel(bool force) {
 	core_trace_scoped(EditorSceneNewModel);
-	if (!sceneMgr().newVolume(force)) {
+	if (!sceneMgr().newScene(force)) {
 		return false;
 	}
 	resetCamera();

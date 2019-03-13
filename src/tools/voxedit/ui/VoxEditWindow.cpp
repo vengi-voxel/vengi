@@ -67,7 +67,7 @@ static const struct {
 static_assert(lengthof(buildingTypes) == (int)voxel::BuildingType::Max, "Missing support for building types in the ui");
 
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
-		Super(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
+		Super(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr), _layerWidget(nullptr) {
 	setSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 	for (int i = 0; i < lengthof(treeTypes); ++i) {
 		addStringItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
@@ -113,6 +113,11 @@ bool VoxEditWindow::init() {
 	_paletteWidget = getWidgetByType<PaletteWidget>("palettecontainer");
 	if (_paletteWidget == nullptr) {
 		Log::error("Failed to init the main window: Could not get the editor scene node with id 'palettecontainer'");
+		return false;
+	}
+	_layerWidget = getWidgetByType<LayerWidget>("layercontainer");
+	if (_layerWidget == nullptr) {
+		Log::error("Failed to init the main window: Could not get the layer node with id 'layercontainer'");
 		return false;
 	}
 	const int8_t index = (uint8_t)_paletteWidget->getValue();
@@ -224,7 +229,7 @@ bool VoxEditWindow::init() {
 
 	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
 	if (_voxedit->sceneMgr().load(_lastOpenedFile->strVal())) {
-		resetCamera();
+		afterLoad(_lastOpenedFile->strVal());
 	} else {
 		_scene->newModel(true);
 	}
@@ -342,8 +347,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (id == TBIDC("unsaved_changes_load")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_voxedit->sceneMgr().load(_loadFile);
-			_lastOpenedFile->setVal(_loadFile);
-			resetCamera();
+			afterLoad(_loadFile);
 		}
 		return true;
 	} else if (id == TBIDC("unsaved_changes_voxelize")) {
@@ -743,6 +747,14 @@ bool VoxEditWindow::prefab(const std::string& file) {
 	return _voxedit->sceneMgr().prefab(file);
 }
 
+void VoxEditWindow::afterLoad(const std::string& file) {
+	tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);
+	event.ref_id = TBIDC("volumeload");
+	_layerWidget->invokeEvent(event);
+	_lastOpenedFile->setVal(file);
+	resetCamera();
+}
+
 bool VoxEditWindow::load(const std::string& file) {
 	if (file.empty()) {
 		getApp()->openDialog([this] (const std::string& file) { load(file); }, SUPPORTED_VOXEL_FORMATS);
@@ -751,8 +763,7 @@ bool VoxEditWindow::load(const std::string& file) {
 
 	if (!_voxedit->sceneMgr().dirty()) {
 		if (_voxedit->sceneMgr().load(file)) {
-			_lastOpenedFile->setVal(file);
-			resetCamera();
+			afterLoad(file);
 			return true;
 		}
 		return false;

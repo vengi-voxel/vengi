@@ -23,7 +23,6 @@ public:
 	UIWIDGET_SUBCLASS(PaletteWidget, Super);
 
 	PaletteWidget();
-	~PaletteWidget();
 
 	voxel::VoxelType voxelType() const;
 	void markAsClean();

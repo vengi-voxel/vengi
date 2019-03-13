@@ -28,8 +28,9 @@ namespace voxelrender {
  * @sa voxel::RawVolume
  */
 class RawVolumeRenderer {
+public:
+	static constexpr int MAX_VOLUMES = 16;
 protected:
-	static constexpr int MAX_VOLUMES = 4;
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
 	glm::mat4 _model[MAX_VOLUMES] {};
 	std::array<bool, MAX_VOLUMES> _hidden {{ false }};

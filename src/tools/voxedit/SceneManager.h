@@ -11,6 +11,7 @@
 #include "voxel/generator/BuildingGeneratorContext.h"
 #include "voxel/generator/NoiseGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
+#include "voxelformat/VoxFileFormat.h"
 #include "video/ShapeBuilder.h"
 #include "video/Mesh.h"
 #include "render/ShapeRenderer.h"
@@ -31,7 +32,6 @@ class Tree;
 
 namespace voxedit {
 
-static constexpr int ModelVolumeIndex = 0;
 /**
  * @brief Move directions for the cursor
  */
@@ -48,6 +48,19 @@ static constexpr struct Direction {
 	{"forward",   0,  0,  1},
 	{"backward",  0,  0, -1}
 };
+
+struct Layer {
+	std::string name;
+	bool visible = true;
+	bool valid = false;
+
+	void reset() {
+		name.clear();
+		visible = true;
+		valid = false;
+	}
+};
+using Layers = std::array<Layer, voxelrender::RawVolumeRenderer::MAX_VOLUMES>;
 
 /**
  * @note The data is shared across all viewports
@@ -75,10 +88,13 @@ private:
 	math::Axis _lockedAxis = math::Axis::None;
 	math::Axis _mirrorAxis = math::Axis::None;
 
-	using RegionQueue = std::vector<voxel::Region>;
+	struct DirtyRegion {
+		voxel::Region region;
+		int layer;
+	};
+	using RegionQueue = std::vector<DirtyRegion>;
 	RegionQueue _extractRegions;
 
-	bool _empty = true;
 	bool _dirty = false;
 	bool _needAutoSave = false;
 	bool _extract = false;
@@ -102,11 +118,15 @@ private:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
+	int _activeLayer = 0;
+
 	core::ActionButton _move[lengthof(DIRECTIONS)];
 	uint64_t _lastMove[lengthof(DIRECTIONS)] { 0 };
 
 	voxel::PickResult _result;
 	voxel::Voxel _cursorVoxel;
+
+	Layers _layers;
 
 	ModifierType _modifierType = ModifierType::Place;
 	bool modifierTypeRequiresExistingVoxel() const;
@@ -117,7 +137,8 @@ private:
 	void modified(const voxel::Region& modifiedRegion, bool markUndo = true);
 
 	voxel::RawVolume* modelVolume();
-	void setNewVolume(voxel::RawVolume* volume);
+	bool setNewVolume(int idx, voxel::RawVolume* volume);
+	bool setNewVolumes(const voxel::VoxelVolumes& volumes);
 	void resetLastTrace();
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 
@@ -159,7 +180,6 @@ public:
 
 	void crop();
 	void resize(const glm::ivec3& size);
-	void scaleHalf();
 
 	/**
 	 * @brief Convert a given point cloud to voxels
@@ -181,7 +201,7 @@ public:
 	 */
 	bool prefab(const std::string& file);
 
-	bool newVolume(bool force);
+	bool newScene(bool force);
 
 	bool dirty() const;
 	bool empty() const;
@@ -238,6 +258,15 @@ public:
 	void undo();
 	void redo();
 
+	bool findNewActiveLayer();
+	int activeLayer() const;
+	bool setActiveLayer(int layerId);
+	const Layers& layers() const;
+	int validLayers() const;
+	void hideLayer(int layerId, bool hide);
+	bool deleteLayer(int layerId, bool force = false);
+	int addLayer(const char *name, bool visible = true, voxel::RawVolume* volume = nullptr);
+
 	const MementoHandler& mementoHandler() const;
 };
 
@@ -249,8 +278,12 @@ inline const MementoHandler& SceneManager::mementoHandler() const {
 	return _mementoHandler;
 }
 
-inline voxel::RawVolume* SceneManager::modelVolume() {
-	return _volumeRenderer.volume(ModelVolumeIndex);
+inline void SceneManager::hideLayer(int layerId, bool hide) {
+	_volumeRenderer.hide(layerId, hide);
+}
+
+inline int SceneManager::activeLayer() const {
+	return _activeLayer;
 }
 
 inline int SceneManager::gridResolution() const {
@@ -270,7 +303,7 @@ inline int SceneManager::size() const {
 }
 
 inline bool SceneManager::empty() const {
-	return _empty;
+	return _layers.empty();
 }
 
 inline const glm::ivec3& SceneManager::cursorPosition() const {
@@ -279,6 +312,10 @@ inline const glm::ivec3& SceneManager::cursorPosition() const {
 
 inline const glm::ivec3& SceneManager::referencePosition() const {
 	return _referencePos;
+}
+
+inline const Layers& SceneManager::layers() const {
+	return _layers;
 }
 
 static SceneManager& sceneMgr();

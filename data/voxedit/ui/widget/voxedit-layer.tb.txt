@@ -1,0 +1,19 @@
+TBLayout
+	lp: width: 200
+	axis y
+	distribution gravity
+	gravity all
+	TBLayout
+		distribution gravity
+		TBSelectList
+			id list
+			gravity all
+	TBLayout
+		distribution gravity
+		TBEditField
+			id add_layer
+			gravity left right
+			placeholder Name
+		TBButton
+			id add
+			text Add

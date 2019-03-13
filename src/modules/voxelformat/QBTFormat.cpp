@@ -39,8 +39,8 @@ static const bool MergeCompounds = true;
 		return false; \
 	}
 
-bool QBTFormat::saveMatrix(io::FileStream& stream, const RawVolume* volume, bool colorMap) const {
-	const voxel::Region& region = volume->region();
+bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bool colorMap) const {
+	const voxel::Region& region = volume.volume->region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
@@ -55,7 +55,7 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const RawVolume* volume, bool
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
 			for (int y = mins.y; y <= maxs.y; ++y) {
-				const Voxel& voxel = volume->voxel(x, y, z);
+				const Voxel& voxel = volume.volume->voxel(x, y, z);
 				if (isAir(voxel.getMaterial())) {
 					*zlibBuf++ = (uint8_t)0;
 					*zlibBuf++ = (uint8_t)0;
@@ -134,7 +134,7 @@ bool QBTFormat::saveColorMap(io::FileStream& stream) const {
 	return true;
 }
 
-bool QBTFormat::save(const RawVolume* volume, const io::FilePtr& file) {
+bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
 	io::FileStream stream(file.get());
 	wrapSave(stream.addInt(FourCC('Q','B',' ','2')))
 	wrapSave(stream.addByte(1));
@@ -148,7 +148,12 @@ bool QBTFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 			return false;
 		}
 	}
-	return saveMatrix(stream, volume, colorMap);
+	for (auto& v : volumes) {
+		if (!saveMatrix(stream, v, colorMap)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 bool QBTFormat::skipNode(io::FileStream& stream) {

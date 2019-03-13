@@ -67,12 +67,12 @@ bool SceneManager::exportModel(const std::string& file) {
 		return false;
 	}
 	voxel::Mesh mesh(128, 128, true);
-	_volumeRenderer.toMesh(ModelVolumeIndex, &mesh);
+	_volumeRenderer.toMesh(&mesh);
 	return voxel::exportMesh(&mesh, filePtr->name().c_str());
 }
 
 voxel::Region SceneManager::region() const {
-	const voxel::RawVolume* volume = _volumeRenderer.volume(ModelVolumeIndex);
+	const voxel::RawVolume* volume = _volumeRenderer.volume(activeLayer());
 	if (volume == nullptr) {
 		return voxel::Region();
 	}
@@ -183,7 +183,8 @@ void SceneManager::autosave() {
 }
 
 bool SceneManager::save(const std::string& file, bool autosave) {
-	if (modelVolume() == nullptr) {
+	const voxel::RawVolume* volume = modelVolume();
+	if (volume == nullptr) {
 		return false;
 	}
 	if (file.empty()) {
@@ -197,15 +198,28 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 		Log::warn("No file extension given for saving, assuming vox");
 		ext = "vox";
 	}
+	voxel::VoxelVolumes volumes;
+	const int layers = (int)_layers.size();
+	for (int idx = 0; idx < layers; ++idx) {
+		voxel::RawVolume* v = _volumeRenderer.volume(idx);
+		if (v == nullptr) {
+			continue;
+		}
+		if (_volumeRenderer.empty(idx)) {
+			continue;
+		}
+		volumes.push_back(voxel::VoxelVolume(v, _layers[idx].name, _layers[idx].visible));
+	}
+
 	if (ext == "qbt") {
 		voxel::QBTFormat f;
-		saved = f.save(modelVolume(), filePtr);
+		saved = f.saveGroups(volumes, filePtr);
 	} else if (ext == "vox") {
 		voxel::VoxFormat f;
-		saved = f.save(modelVolume(), filePtr);
+		saved = f.saveGroups(volumes, filePtr);
 	} else if (ext == "qb") {
 		voxel::QBFormat f;
-		saved = f.save(modelVolume(), filePtr);
+		saved = f.saveGroups(volumes, filePtr);
 	} else {
 		Log::warn("Failed to save file with unknown type: %s", ext.c_str());
 	}
@@ -261,31 +275,32 @@ bool SceneManager::load(const std::string& file) {
 		Log::error("Failed to open model file '%s'", file.data());
 		return false;
 	}
-	voxel::RawVolume* newVolume;
+	voxel::VoxelVolumes newVolumes;
 
 	const std::string& ext = filePtr->extension();
 	_lastFilename = filePtr->fileName() + "." + ext;
 	if (ext == "qbt") {
 		voxel::QBTFormat f;
-		newVolume = f.load(filePtr);
+		newVolumes = f.loadGroups(filePtr);
 	} else if (ext == "vox") {
 		voxel::VoxFormat f;
-		newVolume = f.load(filePtr);
+		newVolumes = f.loadGroups(filePtr);
 	} else if (ext == "qb") {
 		voxel::QBFormat f;
-		newVolume = f.load(filePtr);
+		newVolumes = f.loadGroups(filePtr);
 	} else {
 		Log::error("Failed to load model file %s - unsupported file format", file.c_str());
 		return false;
 	}
-	if (newVolume == nullptr) {
+	if (newVolumes.empty()) {
 		Log::error("Failed to load model file %s", file.c_str());
 		return false;
 	}
-	Log::info("Load model file %s", file.c_str());
-	_mementoHandler.clearStates();
-	setNewVolume(newVolume);
-	modified(newVolume->region());
+	Log::info("Load model file %s with %i layers", file.c_str(), (int)newVolumes.size());
+	if (!setNewVolumes(newVolumes)) {
+		return false;
+	}
+	modified(_volumeRenderer.region());
 	_dirty = false;
 	return true;
 }
@@ -299,17 +314,18 @@ void SceneManager::modified(const voxel::Region& modifiedRegion, bool markUndo) 
 	if (!modifiedRegion.isValid()) {
 		return;
 	}
+	const int layer = activeLayer();
 	if (markUndo) {
-		_mementoHandler.markUndo(modelVolume());
+		_mementoHandler.markUndo(layer, modelVolume());
 	}
-	_extractRegions.push_back(modifiedRegion);
+	_extractRegions.push_back({modifiedRegion, layer});
 	_dirty = true;
 	_needAutoSave = true;
 	_extract = true;
 }
 
 void SceneManager::crop() {
-	if (_empty) {
+	if (_volumeRenderer.empty(activeLayer())) {
 		Log::info("Empty volumes can't be cropped");
 		return;
 	}
@@ -317,7 +333,7 @@ void SceneManager::crop() {
 	if (newVolume == nullptr) {
 		return;
 	}
-	setNewVolume(newVolume);
+	setNewVolume(activeLayer(), newVolume);
 	modified(newVolume->region());
 }
 
@@ -326,22 +342,7 @@ void SceneManager::resize(const glm::ivec3& size) {
 	if (newVolume == nullptr) {
 		return;
 	}
-	setNewVolume(newVolume);
-	modified(newVolume->region());
-}
-
-void SceneManager::scaleHalf() {
-	// TODO: check that src region boundaries are even
-	const voxel::Region& srcRegion = modelVolume()->region();
-	const int w = srcRegion.getWidthInVoxels();
-	const int h = srcRegion.getHeightInVoxels();
-	const int d = srcRegion.getDepthInVoxels();
-	const glm::ivec3 maxs(w / 2, h / 2, d / 2);
-	voxel::Region region(glm::zero<glm::ivec3>(), maxs);
-	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
-	voxel::RawVolumeWrapper wrapper(newVolume);
-	voxel::rescaleVolume(*modelVolume(), *newVolume);
-	setNewVolume(newVolume);
+	setNewVolume(activeLayer(), newVolume);
 	modified(newVolume->region());
 }
 
@@ -447,26 +448,141 @@ bool SceneManager::aabbEnd(bool trace) {
 	return true;
 }
 
+bool SceneManager::findNewActiveLayer() {
+	_activeLayer = -1;
+	const int size = (int)_layers.size();
+	for (int i = 0; i < size; ++i) {
+		if (_layers[i].valid && _activeLayer == -1) {
+			if (setActiveLayer(i)) {
+				return true;
+			}
+		}
+	}
+	_activeLayer = 0;
+	return false;
+}
+
+int SceneManager::validLayers() const {
+	int validLayers = 0;
+	for (const auto& l : layers()) {
+		if (!l.valid) {
+			continue;
+		}
+		++validLayers;
+	}
+	return validLayers;
+}
+
+bool SceneManager::setActiveLayer(int layerId) {
+	if (layerId < 0 || layerId >= (int)_layers.size()) {
+		Log::debug("Given layer %i is out of bounds", layerId);
+		return false;
+	}
+	if (!_layers[layerId].valid) {
+		Log::debug("Given layer %i is not valid", layerId);
+		return false;
+	}
+	Log::debug("New active layer: %i", layerId);
+	_activeLayer = layerId;
+	const voxel::RawVolume* volume = _volumeRenderer.volume(_activeLayer);
+	core_assert_always(volume != nullptr);
+	const voxel::Region& region = volume->region();
+	_gridRenderer.update(region);
+	if (!region.containsPoint(referencePosition())) {
+		setReferencePosition(region.getCentre());
+	}
+	if (!region.containsPoint(cursorPosition())) {
+		setCursorPosition(modelVolume()->region().getCentre());
+	}
+	resetLastTrace();
+	return true;
+}
+
+bool SceneManager::deleteLayer(int layerId, bool force) {
+	if (layerId < 0 || layerId >= (int)_layers.size()) {
+		return false;
+	}
+	if (!_layers[layerId].valid) {
+		return true;
+	}
+	// don't delete the last layer
+	if (!force && validLayers() == 1) {
+		return false;
+	}
+	_layers[layerId].reset();
+	voxel::RawVolume* v = _volumeRenderer.setVolume(layerId, nullptr);
+	if (v != nullptr) {
+		_mementoHandler.markUndo(layerId, v);
+		_volumeRenderer.update(layerId);
+		delete v;
+	}
+	if (!force && layerId == activeLayer()) {
+		core_assert_always(findNewActiveLayer());
+	}
+	return true;
+}
+
+int SceneManager::addLayer(const char *name, bool visible, voxel::RawVolume* volume) {
+	if (volume == nullptr) {
+		const voxel::Region& region = _volumeRenderer.region();
+		if (!region.isValid()) {
+			return -1;
+		}
+		volume = new voxel::RawVolume(region);
+	}
+	const size_t maxLayers = _layers.size();
+	for (size_t layerId = 0; layerId < maxLayers; ++layerId) {
+		if (_layers[layerId].valid) {
+			continue;
+		}
+		if (name == nullptr || name[0] == '\0') {
+			_layers[layerId].name = core::string::format("%i", (int)layerId);
+		} else {
+			_layers[layerId].name = name;
+		}
+		_layers[layerId].visible = visible;
+		_layers[layerId].valid = true;
+		delete _volumeRenderer.setVolume(layerId, volume);
+		_volumeRenderer.hide(layerId, !visible);
+		if (volume != nullptr) {
+			_extractRegions.push_back({volume->region(), (int)layerId});
+		}
+		return (int)layerId;
+	}
+	return -1;
+}
+
+voxel::RawVolume* SceneManager::modelVolume() {
+	const int idx = activeLayer();
+	voxel::RawVolume* v = _volumeRenderer.volume(idx);
+	//core_assert_msg(v != nullptr, "Volume for index %i is null", idx);
+	return v;
+}
+
 void SceneManager::executeModifier() {
 	aabbStart();
 	aabbEnd(false);
 }
 
 void SceneManager::undo() {
-	voxel::RawVolume* v = _mementoHandler.undo();
+	std::pair<int, voxel::RawVolume*> s = _mementoHandler.undo();
+	voxel::RawVolume* v = s.second;
 	if (v == nullptr) {
 		return;
 	}
-	setNewVolume(v);
+	_activeLayer = s.first;
+	setNewVolume(activeLayer(), v);
 	modified(v->region(), false);
 }
 
 void SceneManager::redo() {
-	voxel::RawVolume* v = _mementoHandler.redo();
+	std::pair<int, voxel::RawVolume*> s = _mementoHandler.redo();
+	voxel::RawVolume* v = s.second;
 	if (v == nullptr) {
 		return;
 	}
-	setNewVolume(v);
+	_activeLayer = s.first;
+	setNewVolume(activeLayer(), v);
 	modified(v->region(), false);
 }
 
@@ -474,20 +590,46 @@ void SceneManager::resetLastTrace() {
 	_lastRaytraceX = _lastRaytraceY = -1;
 }
 
-void SceneManager::setNewVolume(voxel::RawVolume* volume) {
-	const voxel::Region& region = volume->region();
-
-	delete _volumeRenderer.setVolume(ModelVolumeIndex, volume);
-
-#if 0
-	if (_spaceColonizationTree != nullptr) {
-		delete _spaceColonizationTree;
-		_spaceColonizationTree = nullptr;
+bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
+	const int size = (int)volumes.size();
+	if (size == 0) {
+		return newScene(true);
 	}
-#endif
+	const int maxLayers = (int)_layers.size();
+	if (size > maxLayers) {
+		Log::error("Max supported layer size exceeded: %i (max supported: %i)",
+				size, maxLayers);
+		return false;
+	}
+	for (int idx = 0; idx < maxLayers; ++idx) {
+		deleteLayer(idx, true);
+	}
+	for (int idx = 0; idx < size; ++idx) {
+		const int layerId = addLayer(volumes[idx].name.c_str(), volumes[idx].visible, volumes[idx].volume);
+		if (layerId < 0) {
+			return newScene(true);
+		}
+	}
+	_mementoHandler.clearStates();
+	findNewActiveLayer();
+	_dirty = false;
+	_result = voxel::PickResult();
+	const glm::ivec3 pos = _cursorPos;
+	_cursorPos = pos * 10 + 10;
+	setCursorPosition(pos);
+	resetLastTrace();
+	return true;
+}
+
+bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume) {
+	if (idx < 0 || idx >= (int)_layers.size()) {
+		return false;
+	}
+	const voxel::Region& region = volume->region();
+	delete _volumeRenderer.setVolume(idx, volume);
+	_layers[idx].valid = volume != nullptr;
 
 	if (volume != nullptr) {
-		const voxel::Region& region = volume->region();
 		_gridRenderer.update(region);
 	} else {
 		_gridRenderer.clear();
@@ -495,29 +637,38 @@ void SceneManager::setNewVolume(voxel::RawVolume* volume) {
 
 	_dirty = false;
 	_result = voxel::PickResult();
+	_extractRegions.push_back({region, idx});
 	const glm::ivec3 pos = _cursorPos;
 	_cursorPos = pos * 10 + 10;
 	setCursorPosition(pos);
 	setReferencePosition(region.getCentre());
 	resetLastTrace();
+	return true;
 }
 
-bool SceneManager::newVolume(bool force) {
+bool SceneManager::newScene(bool force) {
 	if (dirty() && !force) {
 		return false;
 	}
+	const int layers = (int)_layers.size();
+	for (int idx = 0; idx < layers; ++idx) {
+		deleteLayer(idx, true);
+	}
+	core_assert_always(validLayers() == 0);
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
 	_mementoHandler.clearStates();
-	setNewVolume(new voxel::RawVolume(region));
+	_activeLayer = 0;
+	addLayer("", true, new voxel::RawVolume(region));
 	modified(region);
 	_dirty = false;
+	core_assert_always(validLayers() == 1);
 	return true;
 }
 
 void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 	const voxel::RawVolume* model = modelVolume();
 	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), false);
-	setNewVolume(newVolume);
+	setNewVolume(activeLayer(), newVolume);
 	modified(newVolume->region());
 }
 
@@ -526,7 +677,7 @@ void SceneManager::move(int x, int y, int z) {
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
 	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z));
-	setNewVolume(newVolume);
+	setNewVolume(activeLayer(), newVolume);
 	modified(newVolume->region());
 }
 
@@ -554,7 +705,6 @@ bool SceneManager::setGridResolution(int resolution) {
 
 void SceneManager::render(const video::Camera& camera) {
 	const bool depthTest = video::enable(video::State::DepthTest);
-	_empty = _volumeRenderer.empty(ModelVolumeIndex);
 	_gridRenderer.render(camera, modelVolume()->region());
 	_volumeRenderer.render(camera, _renderShadow);
 	if (_aabbMode) {
@@ -650,10 +800,6 @@ void SceneManager::construct() {
 	core::Command::registerCommand("-actionexecute",
 			[&] (const core::CmdArgs& args) {aabbEnd(false);}).setHelp(
 			"Place a voxel to the current cursor position");
-
-	core::Command::registerCommand("scalehalf",
-			[&] (const core::CmdArgs& args) {scaleHalf();}).setHelp(
-			"Scale your volume by 50%");
 
 	core::Command::registerCommand("setvoxelresolution",
 			[&] (const core::CmdArgs& args) {
@@ -752,6 +898,45 @@ void SceneManager::construct() {
 		const int deg = args.size() == 1 ? core::string::toInt(args[0]) : 90;
 		rotate(0, 0, deg);
 	}).setHelp("Rotate scene by the given angles (in degree)");
+	core::Command::registerCommand("layeradd", [&] (const core::CmdArgs& args) {
+		const int layerId = addLayer(args.size() > 0 ? args[0].c_str() : "");
+		if (layerId >= 0) {
+			setActiveLayer(layerId);
+		}
+	}).setHelp("Add a new layer (with a given name)");
+	core::Command::registerCommand("layerdelete", [&] (const core::CmdArgs& args) {
+		deleteLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer());
+	}).setHelp("Delete a particular layer by id - or the current active one");
+	core::Command::registerCommand("layeractive", [&] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			Log::info("Active layer: %i", activeLayer());
+		} else {
+			const int newActiveLayer = core::string::toInt(args[0]);
+			if (!setActiveLayer(newActiveLayer)) {
+				Log::warn("Failed to make %i the active layer", newActiveLayer);
+			}
+		}
+	}).setHelp("Set or print the current active layer");
+	core::Command::registerCommand("layerstate", [&] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			Log::info("Usage: layerstate <layerid> <true|false>");
+			return;
+		}
+		const int layerId = core::string::toInt(args[0]);
+		const bool newVisibleState = core::string::toBool(args[1]);
+		hideLayer(layerId, !newVisibleState);
+	}).setHelp("Change the visible state of a layer");
+	core::Command::registerCommand("layerhideall", [&] (const core::CmdArgs& args) {
+		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
+			hideLayer(idx, true);
+		}
+	}).setHelp("Hide all layers");
+	core::Command::registerCommand("layershowall", [&] (const core::CmdArgs& args) {
+		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
+			hideLayer(idx, false);
+		}
+	}).setHelp("Show all layers");
+	// TODO: layer commands are not yet arriving at the ui
 }
 
 bool SceneManager::init() {
@@ -822,11 +1007,13 @@ bool SceneManager::extractVolume() {
 			// extract n regions max per frame
 			const size_t MaxPerFrame = 4;
 			const size_t x = std::min(MaxPerFrame, n);
+			int lastLayer = activeLayer();
 			for (size_t i = 0; i < x; ++i) {
-				const bool updateBuffers = i == x - 1;
-				if (!_volumeRenderer.extract(ModelVolumeIndex, _extractRegions[i], updateBuffers)) {
+				const bool updateBuffers = i == x - 1 || lastLayer != _extractRegions[i].layer;
+				if (!_volumeRenderer.extract(_extractRegions[i].layer, _extractRegions[i].region, updateBuffers)) {
 					Log::error("Failed to extract the model mesh");
 				}
+				lastLayer = _extractRegions[i].layer;
 			}
 			// delete the first n entries and compact the memory of the buffer
 			RegionQueue(_extractRegions.begin() + x, _extractRegions.end()).swap(_extractRegions);
@@ -987,7 +1174,6 @@ bool SceneManager::renderShadow() const {
 
 void SceneManager::setRenderShadow(bool shadow) {
 	_renderShadow = shadow;
-	Log::debug("render shadow: %i", shadow ? 1 : 0);
 }
 
 bool SceneManager::addModifierType(ModifierType type, bool trace) {
@@ -1070,7 +1256,7 @@ int SceneManager::getIndexForMirrorAxis(math::Axis axis) const {
 }
 
 void SceneManager::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color) {
-	const voxel::Region& region = modelVolume()->region();
+	const voxel::Region& region = _volumeRenderer.region();
 	const int index = mirror ? getIndexForMirrorAxis(axis) : getIndexForAxis(axis);
 	glm::vec3 mins = region.getLowerCorner();
 	glm::vec3 maxs = region.getUpperCorner();
