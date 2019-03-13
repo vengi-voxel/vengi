@@ -469,13 +469,10 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 		} else if (chunkId == FourCC('R','G','B','A') || chunkId == FourCC('S','I','Z','E')) {
 			// already loaded
 		} else if (chunkId == FourCC('L','A','Y','R')) {
-			Log::warn("LAYR chunk not yet supported");
 			// https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
 			uint32_t layerId;
 			wrap(stream.readInt(layerId))
 			std::map<std::string, std::string> attributes;
-			// (_name : string)
-			// (_hidden : 0/1)
 			wrapAttributes(readAttributes(attributes, stream))
 			stream.skip(sizeof(uint32_t));
 			// TODO
