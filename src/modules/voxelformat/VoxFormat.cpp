@@ -14,13 +14,13 @@ namespace voxel {
 #define wrap(read) \
 	if (read != 0) { \
 		Log::error("Could not load vox file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
-		return std::vector<RawVolume*>(); \
+		return VoxelVolumes(); \
 	}
 
 #define wrapAttributes(read) \
 	if (read == false) { \
 		Log::error("Could not load vox file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
-		return std::vector<RawVolume*>(); \
+		return VoxelVolumes(); \
 	}
 
 #define wrapAttributesRead(read) \
@@ -164,10 +164,10 @@ bool VoxFormat::readAttributes(std::map<std::string, std::string>& attributes, i
 	return true;
 }
 
-std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
+VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 	if (!(bool)file || !file->exists()) {
 		Log::error("Could not load vox file: File doesn't exist");
-		return std::vector<RawVolume*>();
+		return VoxelVolumes();
 	}
 	io::FileStream stream(file.get());
 
@@ -211,7 +211,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 	constexpr uint32_t headerMagic = FourCC('V','O','X',' ');
 	if (header != headerMagic) {
 		Log::error("Could not load vox file: Invalid magic found (%u vs %u)", header, headerMagic);
-		return std::vector<RawVolume*>();
+		return VoxelVolumes();
 	}
 
 	uint32_t version;
@@ -237,7 +237,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 	// 3. Chunk id 'MAIN' : the root chunk and parent chunk of all the other chunks
 	if (mainChunk != FourCC('M','A','I','N')) {
 		Log::error("Could not load vox file: Invalid magic for main chunk found");
-		return std::vector<RawVolume*>();
+		return VoxelVolumes();
 	}
 
 	uint32_t numBytesMainChunk;
@@ -247,7 +247,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 
 	if (stream.remaining() < numBytesMainChildrenChunks) {
 		Log::error("Could not load vox file: Incomplete file");
-		return std::vector<RawVolume*>();
+		return VoxelVolumes();
 	}
 
 	const int64_t resetPos = stream.pos();
@@ -366,7 +366,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 	// |   |    //
 	// S   S    //
 
-	std::vector<RawVolume*> volumes;
+	VoxelVolumes volumes;
 	int volumeIdx = 0;
 	do {
 		uint32_t chunkId;
@@ -402,7 +402,7 @@ std::vector<RawVolume*> VoxFormat::loadGroups(const io::FilePtr& file) {
 			RawVolume *volume = nullptr;
 			if (regions.empty() || volumeIdx >= (int)regions.size()) {
 				Log::error("Invalid XYZI chunk without previous SIZE chunk");
-				return std::vector<RawVolume*>();
+				return VoxelVolumes();
 			}
 			volume = new RawVolume(regions[volumeIdx++]);
 			for (uint32_t i = 0; i < numVoxels; ++i) {

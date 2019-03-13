@@ -295,15 +295,15 @@ bool QBFormat::loadFromStream(io::FileStream& stream, std::vector<RawVolume*>& v
 	return true;
 }
 
-std::vector<voxel::RawVolume*> QBFormat::loadGroups(const io::FilePtr& file) {
+VoxelVolumes QBFormat::loadGroups(const io::FilePtr& file) {
 	if (!(bool)file || !file->exists()) {
 		Log::error("Could not load qb file: File doesn't exist");
-		return std::vector<voxel::RawVolume*>();
+		return VoxelVolumes();
 	}
 	io::FileStream stream(file.get());
-	std::vector<RawVolume*> volumes;
+	VoxelVolumes volumes;
 	if (!loadFromStream(stream, volumes)) {
-		return std::vector<RawVolume*>();
+		return VoxelVolumes();
 	}
 	return volumes;
 }

@@ -19,17 +19,17 @@ namespace voxel {
 class QBTFormat : public VoxFileFormat {
 private:
 	bool skipNode(io::FileStream& stream);
-	bool loadMatrix(io::FileStream& stream, std::vector<RawVolume*>& volumes);
-	bool loadCompound(io::FileStream& stream, std::vector<RawVolume*>& volumes);
-	bool loadModel(io::FileStream& stream, std::vector<RawVolume*>& volumes);
-	bool loadNode(io::FileStream& stream, std::vector<RawVolume*>& volumes);
+	bool loadMatrix(io::FileStream& stream, VoxelVolumes& volumes);
+	bool loadCompound(io::FileStream& stream, VoxelVolumes& volumes);
+	bool loadModel(io::FileStream& stream, VoxelVolumes& volumes);
+	bool loadNode(io::FileStream& stream, VoxelVolumes& volumes);
 
 	bool loadColorMap(io::FileStream& stream);
 	bool loadFromStream(io::FileStream& stream, std::vector<RawVolume*>& volumes);
 	bool saveMatrix(io::FileStream& stream, const RawVolume* volume, bool colorMap) const;
 	bool saveColorMap(io::FileStream& stream, const RawVolume* volume) const;
 public:
-	std::vector<RawVolume*> loadGroups(const io::FilePtr& file) override;
+	VoxelVolumes loadGroups(const io::FilePtr& file) override;
 	bool save(const RawVolume* volume, const io::FilePtr& file) override;
 };
 

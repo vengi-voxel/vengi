@@ -10,6 +10,8 @@
 
 namespace voxel {
 
+using VoxelVolumes = std::vector<RawVolume*>;
+
 class VoxFileFormat {
 protected:
 	std::vector<uint8_t> _palette;
@@ -22,7 +24,7 @@ protected:
 public:
 	virtual ~VoxFileFormat() = default;
 
-	virtual std::vector<RawVolume*> loadGroups(const io::FilePtr& file) = 0;
+	virtual VoxelVolumes loadGroups(const io::FilePtr& file) = 0;
 	RawVolume* load(const io::FilePtr& file);
 	virtual bool save(const RawVolume* volume, const io::FilePtr& file) = 0;
 };
