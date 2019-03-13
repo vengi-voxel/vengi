@@ -7,6 +7,7 @@
 #include "RawVolume.h"
 #include "core/Common.h"
 #include "core/Trace.h"
+#include <vector>
 
 namespace voxel {
 
@@ -59,5 +60,7 @@ inline int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume*
 	core_assert(source->region() == destination->region());
 	return mergeVolumes(destination, source, destination->region(), source->region());
 }
+
+extern RawVolume* merge(const std::vector<RawVolume*>& volumes);
 
 }

@@ -40,7 +40,7 @@ set(SRCS
 	polyvox/Utility.h
 	polyvox/VoxelVertex.h
 	polyvox/Voxel.h polyvox/Voxel.cpp
-	polyvox/VolumeMerger.h
+	polyvox/VolumeMerger.h polyvox/VolumeMerger.cpp
 	polyvox/VolumeMover.h
 	polyvox/VolumeRescaler.h
 	polyvox/VolumeRotator.h polyvox/VolumeRotator.cpp
