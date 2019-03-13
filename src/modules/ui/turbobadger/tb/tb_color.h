@@ -5,6 +5,7 @@
 #pragma once
 
 #include "tb_types.h"
+#include "core/GLM.h"
 
 namespace tb {
 
@@ -16,6 +17,14 @@ public:
 	constexpr TBColor() : b(0), g(0), r(0), a(255) {
 	}
 	constexpr TBColor(int r, int g, int b, int a = 255) : b(b), g(g), r(r), a(a) {
+	}
+
+	static inline constexpr TBColor fromVec4(const glm::vec4& c) {
+		return TBColor((int)(c.r * 255.0f), (int)(c.g * 255.0f), (int)(c.b * 255.0f), (int)(c.a * 255.0f));
+	}
+
+	static inline constexpr TBColor fromVec3(const glm::vec3& c) {
+		return TBColor((int)(c.r * 255.0f), (int)(c.g * 255.0f), (int)(c.b * 255.0f));
 	}
 
 	uint8_t b, g, r, a;
