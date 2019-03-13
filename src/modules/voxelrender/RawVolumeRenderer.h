@@ -32,6 +32,7 @@ protected:
 	static constexpr int MAX_VOLUMES = 4;
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
 	glm::mat4 _model[MAX_VOLUMES] {};
+	std::array<bool, MAX_VOLUMES> _hidden {{ false }};
 	typedef std::array<voxel::Mesh*, MAX_VOLUMES> Meshes;
 	typedef std::unordered_map<glm::ivec3, Meshes, std::hash<glm::ivec3> > MeshesMap;
 	MeshesMap _meshes;
@@ -56,6 +57,7 @@ public:
 	RawVolumeRenderer();
 
 	void render(const video::Camera& camera, bool shadow = true);
+	void hide(int idx, bool hide);
 
 	/**
 	 * @brief Updates the vertex buffers manually

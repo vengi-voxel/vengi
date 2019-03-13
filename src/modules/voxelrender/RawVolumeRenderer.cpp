@@ -266,11 +266,21 @@ void RawVolumeRenderer::extract(voxel::RawVolume* volume, const voxel::Region& r
 	voxel::extractCubicMesh(volume, reg, mesh, raw::CustomIsQuadNeeded());
 }
 
+void RawVolumeRenderer::hide(int idx, bool hide) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return;
+	}
+	_hidden[idx] = hide;
+}
+
 void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	uint32_t numIndices = 0u;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		if (_hidden[idx]) {
+			continue;
+		}
 		numIndices += _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
 		if (numIndices > 0) {
 			break;
@@ -289,6 +299,9 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	if (shadow) {
 		_shadow.render([this] (int i, shader::ShadowmapShader& shader) {
 			for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+				if (_hidden[idx]) {
+					continue;
+				}
 				const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
 				if (nIndices == 0) {
 					continue;
@@ -315,6 +328,9 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		video::ScopedPolygonMode polygonMode(camera.polygonMode());
 		_shadow.bind(video::TextureUnit::One);
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+			if (_hidden[idx]) {
+				continue;
+			}
 			const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
 			if (nIndices == 0) {
 				continue;
