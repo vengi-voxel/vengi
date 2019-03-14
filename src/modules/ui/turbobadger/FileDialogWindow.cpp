@@ -224,7 +224,12 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 						input->setText(dirEntry.name.c_str());
 					}
 				} else {
-					_callback(_directory + "/" + dirEntry.name);
+					const std::string& filename = dirEntry.name;
+					if (io::Filesystem::isRelativePath(filename)) {
+						_callback(_directory + "/" + filename);
+					} else {
+						_callback(filename);
+					}
 					tb::TBWidgetEvent click_ev(tb::EVENT_TYPE_CLICK);
 					m_close_button.invokeEvent(click_ev);
 				}
@@ -235,7 +240,13 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 		if (id == TBIDC("ok")) {
 			if (_mode == video::WindowedApp::OpenFileMode::Save) {
 				if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
-					_callback(_directory + "/" + std::string(input->getText().c_str()));
+					const tb::TBStr& filename = input->getText();
+					const std::string& sfilename = std::string(filename.c_str());
+					if (io::Filesystem::isRelativePath(sfilename)) {
+						_callback(_directory + "/" + sfilename);
+					} else {
+						_callback(sfilename);
+					}
 				} else {
 					Log::error("Failed to get input node");
 				}
@@ -244,7 +255,12 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 				if (index >= 0 && index < _entityList.getNumItems()) {
 					const FileDialogItem* item = _entityList.getItem(index);
 					const auto& dirEntry = item->entry();
-					_callback(_directory + "/" + dirEntry.name);
+					const std::string& filename = dirEntry.name;
+					if (io::Filesystem::isRelativePath(filename)) {
+						_callback(_directory + "/" + filename);
+					} else {
+						_callback(filename);
+					}
 				}
 			}
 			tb::TBWidgetEvent click_ev(tb::EVENT_TYPE_CLICK);
