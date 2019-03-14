@@ -296,7 +296,7 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 
 	for (const char** action = ACTIONS; *action != nullptr; ++action) {
 		if (ev.isAny(TBIDC(*action))) {
-			core::Command::execute(*action);
+			core::Command::execute("%s", *action);
 			return true;
 		}
 	}
