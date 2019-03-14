@@ -671,8 +671,9 @@ bool SceneManager::newScene(bool force) {
 	core_assert_always(validLayers() == 0);
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
 	_mementoHandler.clearStates();
-	_activeLayer = 0;
-	addLayer("", true, new voxel::RawVolume(region));
+	core_assert_always(addLayer("", true, new voxel::RawVolume(region)) != -1);
+	setActiveLayer(0);
+	core_assert_always(validLayers() == 1);
 	modified(region);
 	_dirty = false;
 	core_assert_always(validLayers() == 1);
