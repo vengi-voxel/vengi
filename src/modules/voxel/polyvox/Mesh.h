@@ -65,7 +65,7 @@ public:
 	void removeUnusedVertices();
 
 private:
-	alignas(4) std::vector<IndexType> _vecIndices;
+	alignas(16) std::vector<IndexType> _vecIndices;
 	alignas(16) std::vector<VoxelVertex> _vecVertices;
 	glm::ivec3 _offset = glm::zero<glm::ivec3>();
 	bool _mayGetResized;
