@@ -610,6 +610,20 @@ void SceneManager::construct() {
 				_move[i]);
 	}
 
+	core::Command::registerCommand("noise", [&] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc != 4) {
+			Log::info("Usage: noise <octaves> <lacunarity> <frequency> <gain>");
+			return;
+		}
+		int octaves = core::string::toInt(args[0]);
+		float lacunarity = core::string::toFloat(args[0]);
+		float frequency = core::string::toFloat(args[0]);
+		float gain = core::string::toFloat(args[0]);
+		voxel::noisegen::NoiseType type = voxel::noisegen::NoiseType::ridgedMF;
+		noise(octaves, lacunarity, frequency, gain, type);
+	}).setHelp("Fill the volume with noise");
+
 	core::Command::registerCommand("crop",
 			[&] (const core::CmdArgs& args) {crop();}).setHelp(
 			"Crop the volume");
