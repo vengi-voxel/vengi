@@ -325,7 +325,7 @@ public:
 	virtual PreferredSize onCalculatePreferredSize(const SizeConstraints &constraints) override;
 	virtual bool onEvent(const TBWidgetEvent &ev) override;
 	virtual void onInflate(const INFLATE_INFO &info) override;
-	virtual void onProcess();
+	virtual void onProcess() override;
 
 	/** Make sure all widgets sharing the same group as new_leader are set to value 0. */
 	static void updateGroupWidgets(TBWidget *new_leader);

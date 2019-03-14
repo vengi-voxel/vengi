@@ -108,7 +108,7 @@ public:
 	}
 
 	// TBWidgetListener
-	virtual bool onWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) {
+	virtual bool onWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) override {
 		// Skip these events for now
 		if (ev.isPointerEvent()) {
 			return false;

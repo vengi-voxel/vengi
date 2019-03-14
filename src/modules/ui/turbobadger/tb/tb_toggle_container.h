@@ -71,7 +71,7 @@ public:
 
 	TBSectionHeader();
 
-	virtual bool onEvent(const TBWidgetEvent &ev);
+	virtual bool onEvent(const TBWidgetEvent &ev) override;
 };
 
 /** TBSection is a widget with a header that when clicked toggles its children
@@ -122,12 +122,12 @@ public:
 		return m_toggle_container.getValue();
 	}
 
-	virtual TBWidget *getContentRoot() {
+	virtual TBWidget *getContentRoot() override {
 		return m_toggle_container.getContentRoot();
 	}
 	virtual void onProcessAfterChildren() override;
 
-	virtual PreferredSize onCalculatePreferredSize(const SizeConstraints &constraints);
+	virtual PreferredSize onCalculatePreferredSize(const SizeConstraints &constraints) override;
 
 private:
 	TBLayout m_layout;
