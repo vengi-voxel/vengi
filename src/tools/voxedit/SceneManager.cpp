@@ -462,6 +462,20 @@ bool SceneManager::findNewActiveLayer() {
 	return false;
 }
 
+int SceneManager::validLayerId(int index) const {
+	int validLayers = 0;
+	for (const auto& l : layers()) {
+		if (!l.valid) {
+			continue;
+		}
+		if (index == validLayers) {
+			return validLayers;
+		}
+		++validLayers;
+	}
+	return validLayers;
+}
+
 int SceneManager::validLayers() const {
 	int validLayers = 0;
 	for (const auto& l : layers()) {

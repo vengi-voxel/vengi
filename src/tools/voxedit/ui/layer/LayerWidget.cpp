@@ -32,11 +32,13 @@ public:
 			LayerItem *item = _source->getItem(_index);
 			item->setVisible(ev.target->getValue() ? true : false);
 			_source->invokeItemChanged(_index, _sourceViewer);
-			voxedit::sceneMgr().hideLayer(_index, !item->visible());
+			const int layerId = voxedit::sceneMgr().validLayerId(_index);
+			voxedit::sceneMgr().hideLayer(layerId, !item->visible());
 			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("delete")) {
-			if (voxedit::sceneMgr().deleteLayer(_index)) {
+			const int layerId = voxedit::sceneMgr().validLayerId(_index);
+			if (voxedit::sceneMgr().deleteLayer(layerId)) {
 				_source->deleteItem(_index);
 			}
 			return true;
