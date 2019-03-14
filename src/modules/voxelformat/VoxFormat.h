@@ -20,6 +20,7 @@ namespace voxel {
 class VoxFormat : public VoxFileFormat {
 private:
 	bool readAttributes(std::map<std::string, std::string>& attributes, io::FileStream& stream) const;
+	bool saveAttributes(const std::map<std::string, std::string>& attributes, io::FileStream& stream);
 public:
 	VoxelVolumes loadGroups(const io::FilePtr& file) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;

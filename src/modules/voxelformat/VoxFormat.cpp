@@ -34,6 +34,21 @@ struct VoxModel {
 	std::map<std::string, std::string> attributes;
 };
 
+bool VoxFormat::saveAttributes(const std::map<std::string, std::string>& attributes, io::FileStream& stream) {
+	Log::debug("Save %i attributes", (int)attributes.size());
+	stream.addInt((uint32_t)attributes.size());
+	for (const auto& e : attributes) {
+		const std::string& key = e.first;
+		const std::string& value = e.second;
+		Log::debug("Save attribute %s: %s", key.c_str(), value.c_str());
+		stream.addInt((uint32_t)key.size());
+		stream.addString(key, false);
+		stream.addInt((uint32_t)value.size());
+		stream.addString(value, false);
+	}
+	return true;
+}
+
 bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
 	io::FileStream stream(file.get());
 	stream.addInt(FourCC('V','O','X',' '));
@@ -47,6 +62,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	int64_t headerSize = stream.pos();
 	Log::debug("headersize is: %i", (int)headerSize);
 
+	int layerId = 0;
 	for (auto& v : volumes) {
 		// TODO: layers - with offset, name and visibility
 		// model size
@@ -58,6 +74,11 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		stream.addInt(region.getWidthInCells());
 		stream.addInt(region.getDepthInCells());
 		stream.addInt(region.getHeightInCells());
+
+		stream.addInt(FourCC('L','A','Y','R'));
+		stream.addInt(layerId);
+		saveAttributes({{"_name", v.name}, {"_visible", v.visible ? "1" : "0"}}, stream);
+		stream.addInt(0); //?
 
 		// voxel data
 		Log::debug("add XYZI chunk at pos %i", (int)stream.pos());
@@ -94,6 +115,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 				}
 			}
 		}
+		++layerId;
 	}
 
 	Log::debug("add RGBA chunk at pos %i", (int)stream.pos());
