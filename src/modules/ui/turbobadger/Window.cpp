@@ -401,10 +401,6 @@ bool Window::setVisible(const char *name, bool visible) {
 	return true;
 }
 
-tb::TBWidget* Window::getWidgetAt(int x, int y, bool includeChildren) {
-	return getWidgetAt(x, y, includeChildren);
-}
-
 void Window::requestQuit() {
 	core::App::getInstance()->requestQuit();
 }

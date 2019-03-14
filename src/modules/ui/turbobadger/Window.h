@@ -93,7 +93,6 @@ public:
 	T* getWidgetByType(const char *name);
 
 	tb::TBWidget* getWidget(const char *name);
-	tb::TBWidget* getWidgetAt(int x, int y, bool includeChildren = true);
 	bool setVisible(const char *name, bool visible);
 	bool setActive(const char *name, bool active);
 	void setStr(const char *nodeId, const std::string& text);
