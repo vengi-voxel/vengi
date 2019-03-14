@@ -673,7 +673,6 @@ bool SceneManager::newScene(bool force) {
 	_mementoHandler.clearStates();
 	core_assert_always(addLayer("", true, new voxel::RawVolume(region)) != -1);
 	setActiveLayer(0);
-	core_assert_always(validLayers() == 1);
 	modified(region);
 	_dirty = false;
 	core_assert_always(validLayers() == 1);
