@@ -34,7 +34,6 @@ RawVolume* merge(const std::vector<RawVolume*>& volumes) {
 				dr.getLowerX(), dr.getLowerY(), dr.getLowerZ(),
 				dr.getUpperX(), dr.getUpperY(), dr.getUpperZ());
 		voxel::mergeVolumes(merged, v, dr, sr);
-		delete v;
 	}
 	return merged;
 }
