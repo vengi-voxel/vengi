@@ -93,7 +93,9 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 	wrapSaveFree(stream.addInt(0)); // node type matrix
 	const int datasize = 14 * sizeof(uint32_t) + realBufSize;
 	wrapSaveFree(stream.addInt(datasize));
-	wrapSaveFree(stream.addInt(0)); // no name
+	const int nameLength = volume.name.size();
+	wrapSaveFree(stream.addByte(nameLength));
+	wrapSaveFree(stream.addString(volume.name, false));
 
 	wrapSaveFree(stream.addInt(mins.x));
 	wrapSaveFree(stream.addInt(mins.y));
@@ -225,15 +227,15 @@ bool QBTFormat::loadCompound(io::FileStream& stream, VoxelVolumes& volumes) {
  * is solid is may not be needed to be rendered because it is a core voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
 bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
-	char buf[1024];
+	char name[1024];
 	uint32_t nameLength;
 	wrap(stream.readInt(nameLength));
-	if ((size_t)nameLength >= sizeof(buf)) {
+	if ((size_t)nameLength >= sizeof(name)) {
 		return false;
 	}
-	wrapBool(stream.readString(nameLength, buf));
-	buf[nameLength] = '\0';
-	Log::debug("Matrix name: %s", buf);
+	wrapBool(stream.readString(nameLength, name));
+	name[nameLength] = '\0';
+	Log::debug("Matrix name: %s", name);
 	glm::ivec3 position;
 	glm::uvec3 localScale;
 	glm::vec3 pivot;
@@ -315,7 +317,7 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 	}
 	delete [] voxelData;
 	delete [] voxelDataDecompressed;
-	volumes.push_back(volume);
+	volumes.push_back(VoxelVolume(volume, name, true));
 	return true;
 }
 
