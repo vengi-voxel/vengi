@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/Array.h"
 #include "core/Log.h"
+#include "core/UTF8.h"
 #include "voxel/MaterialColor.h"
 
 namespace voxel {
@@ -41,9 +42,9 @@ bool VoxFormat::saveAttributes(const std::map<std::string, std::string>& attribu
 		const std::string& key = e.first;
 		const std::string& value = e.second;
 		Log::debug("Save attribute %s: %s", key.c_str(), value.c_str());
-		stream.addInt((uint32_t)key.size());
+		stream.addInt(core::utf8::length(key.c_str()));
 		stream.addString(key, false);
-		stream.addInt((uint32_t)value.size());
+		stream.addInt(core::utf8::length(value.c_str()));
 		stream.addString(value, false);
 	}
 	return true;
@@ -64,7 +65,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 
 	int layerId = 0;
 	for (auto& v : volumes) {
-		// TODO: layers - with offset, name and visibility
+		// TODO: layers - with offset
 		// model size
 		Log::debug("add SIZE chunk at pos %i", (int)stream.pos());
 		stream.addInt(FourCC('S','I','Z','E'));
@@ -75,10 +76,22 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		stream.addInt(region.getDepthInCells());
 		stream.addInt(region.getHeightInCells());
 
+		const std::string attributeName = "_name";
+		const std::string attributeVisible = "_visible";
 		stream.addInt(FourCC('L','A','Y','R'));
+		const int chunkSizeName = sizeof(uint32_t) + attributeName.size();
+		const int chunkSizeNameValue = sizeof(uint32_t) + core::utf8::length(v.name.c_str());
+		const int chunkSizeVisible = sizeof(uint32_t) + attributeVisible.size();
+		const int chunkSizeVisibleValue = 1 + sizeof(uint32_t);
+		const int chunkAttributeSize = sizeof(uint32_t) + chunkSizeName + chunkSizeNameValue
+				+ chunkSizeVisible + chunkSizeVisibleValue;
+		const int chunkSize = chunkAttributeSize + sizeof(uint32_t) + sizeof(uint32_t);
+		stream.addInt(chunkSize);
+		stream.addInt(0);
+
 		stream.addInt(layerId);
-		saveAttributes({{"_name", v.name}, {"_visible", v.visible ? "1" : "0"}}, stream);
-		stream.addInt(0); //?
+		saveAttributes({{attributeName, v.name}, {attributeVisible, v.visible ? "1" : "0"}}, stream);
+		stream.addInt((uint32_t)-1); // must always be -1
 
 		// voxel data
 		Log::debug("add XYZI chunk at pos %i", (int)stream.pos());
@@ -504,7 +517,12 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 			wrap(stream.readInt(layerId))
 			std::map<std::string, std::string> attributes;
 			wrapAttributes(readAttributes(attributes, stream))
-			stream.skip(sizeof(uint32_t));
+			uint32_t end;
+			wrap(stream.readInt(end));
+			if ((int)end != -1) {
+				Log::error("Unexpected end of LAYR chunk - expected -1, got %i", (int)end);
+				return VoxelVolumes();
+			}
 			if (layerId >= (uint32_t)volumes.size()) {
 				Log::error("Invalid layer id found: %i - exceeded limit of %i",
 						(int)layerId, (int)volumes.size());
