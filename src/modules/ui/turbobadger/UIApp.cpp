@@ -264,6 +264,7 @@ void UIApp::fileDialog(const std::function<void(const std::string&)>& callback, 
 		dialog->setFilter((const char**)filters);
 	}
 	dialog->changeDir(_lastDirectory->strVal());
+	dialog->init();
 }
 
 void UIApp::onMouseWheel(int32_t x, int32_t y) {

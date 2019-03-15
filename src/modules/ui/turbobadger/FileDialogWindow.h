@@ -66,6 +66,7 @@ public:
 	FileDialogWindow(UIApp* app, const std::function<void(const std::string&)>& callback, const core::VarPtr& lastDirectory);
 	~FileDialogWindow();
 	void changeDir(const std::string& dir = "");
+	void init();
 
 	void setFilter(const char **filter);
 	void setMode(video::WindowedApp::OpenFileMode mode, const char *inputText = nullptr);

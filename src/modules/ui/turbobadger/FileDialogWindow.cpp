@@ -99,9 +99,6 @@ FileDialogWindow::FileDialogWindow(UIApp* tool, const std::function<void(const s
 
 	_filterList.setSort(tb::TB_SORT_ASCENDING);
 	_directory = _fs->absolutePath(".");
-	if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
-		input->setText(_directory.c_str());
-	}
 	setMode(video::WindowedApp::OpenFileMode::Open);
 }
 
@@ -274,6 +271,12 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	}
 
 	return Super::onEvent(ev);
+}
+
+void FileDialogWindow::init() {
+	if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
+		input->setText(_directory.c_str());
+	}
 }
 
 void FileDialogWindow::changeDir(const std::string& dir) {
