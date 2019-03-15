@@ -40,7 +40,8 @@ RawVolume* VoxFileFormat::merge(const VoxelVolumes& volumes) const {
 	if (volumes.empty()) {
 		return nullptr;
 	}
-	std::vector<RawVolume*> rawVolumes(volumes.size());
+	std::vector<RawVolume*> rawVolumes;
+	rawVolumes.reserve(volumes.size());
 	for (const auto& v : volumes) {
 		rawVolumes.push_back(v.volume);
 	}
