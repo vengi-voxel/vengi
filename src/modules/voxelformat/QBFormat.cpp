@@ -48,7 +48,9 @@ const int NEXT_SLICE_FLAG = 6;
 #define setBit(val, index) val &= (1 << (index))
 
 bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) const {
-	wrapSave(stream.addByte(0)); // no name
+	const int nameLength = volume.name.size();
+	wrapSave(stream.addByte(nameLength));
+	wrapSave(stream.addString(volume.name, false));
 
 	const voxel::Region& region = volume.volume->region();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
@@ -182,13 +184,13 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 }
 
 bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
-	char buf[260] = "";
+	char name[260] = "";
 	uint8_t nameLength;
 	wrap(stream.readByte(nameLength));
 	Log::debug("Matrix name length: %u", (uint32_t)nameLength);
-	wrapBool(stream.readString(nameLength, buf));
-	buf[nameLength] = '\0';
-	Log::debug("Matrix name: %s", buf);
+	wrapBool(stream.readString(nameLength, name));
+	name[nameLength] = '\0';
+	Log::debug("Matrix name: %s", name);
 
 	glm::uvec3 size(0);
 	wrap(stream.readInt((uint32_t&)size.x));
@@ -216,7 +218,7 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 		return false;
 	}
 	voxel::RawVolume* v = new voxel::RawVolume(region);
-	volumes.push_back(VoxelVolume(v));
+	volumes.push_back(VoxelVolume(v, name, true));
 	if (_compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
