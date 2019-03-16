@@ -113,6 +113,10 @@ private:
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
 
+	int _animationSpeed = 0;
+	int _currentAnimationLayer = 0;
+	uint64_t _nextFrameSwitch = 0;
+
 	int _initialized = 0;
 	int _size = 128;
 	int _mouseX = 0;
@@ -143,6 +147,7 @@ private:
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 
 	void executeModifier();
+	void animate(uint64_t time);
 public:
 	SceneManager();
 	~SceneManager();

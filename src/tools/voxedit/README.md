@@ -27,6 +27,7 @@ my own engine and evolved into something that others might find useful, too.
 * Viewport screenshots
 * Import and voxelize dae, obj, fbx and a lot more formats
 * Modelling without the mouse - just via shortcuts and keyboard
+* Animation support
 
 # Controls
 
@@ -39,7 +40,7 @@ my own engine and evolved into something that others might find useful, too.
 
 # Planned
 
-* Animation support
+* Rigging support
 * Copy/paste
 * Selections
 * Improve voxelizer

@@ -951,6 +951,14 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Show all layers");
 	// TODO: layer commands are not yet arriving at the ui
+	core::Command::registerCommand("animate", [&] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			Log::info("Usage: animate <framedelay>");
+			Log::info("framedelay of 0 will stop the animation");
+			return;
+		}
+		_animationSpeed = core::string::toInt(args[0]);
+	}).setHelp("Animate all visible layers with the given delay in millis between the frames");
 }
 
 bool SceneManager::init() {
@@ -980,6 +988,26 @@ bool SceneManager::init() {
 	return true;
 }
 
+void SceneManager::animate(uint64_t time) {
+	if (_animationSpeed <= 0) {
+		return;
+	}
+	if (_nextFrameSwitch <= time) {
+		_nextFrameSwitch = time + _animationSpeed;
+		const int layers = (int)_layers.size();
+		const int roundTrip = layers + _currentAnimationLayer;
+		for (int idx = _currentAnimationLayer + 1; idx < roundTrip; ++idx) {
+			const Layer& layer = _layers[idx % layers];
+			if (layer.valid && layer.visible) {
+				hideLayer(_currentAnimationLayer, true);
+				_currentAnimationLayer = idx % layers;
+				hideLayer(_currentAnimationLayer, false);
+				return;
+			}
+		}
+	}
+}
+
 void SceneManager::update(uint64_t time) {
 	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
@@ -992,6 +1020,7 @@ void SceneManager::update(uint64_t time) {
 		moveCursor(dir.x, dir.y, dir.z);
 		_lastMove[i] = time;
 	}
+	animate(time);
 	autosave();
 	extractVolume();
 }
