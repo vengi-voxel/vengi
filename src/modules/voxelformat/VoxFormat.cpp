@@ -72,9 +72,9 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		stream.addInt(3 * sizeof(uint32_t));
 		stream.addInt(0);
 		const voxel::Region& region = v.volume->region();
-		stream.addInt(region.getWidthInCells());
-		stream.addInt(region.getDepthInCells());
-		stream.addInt(region.getHeightInCells());
+		stream.addInt(region.getWidthInVoxels());
+		stream.addInt(region.getDepthInVoxels());
+		stream.addInt(region.getHeightInVoxels());
 
 		const std::string attributeName = "_name";
 		const std::string attributeVisible = "_visible";

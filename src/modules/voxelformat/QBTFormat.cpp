@@ -94,7 +94,7 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 	const int datasize = 14 * sizeof(uint32_t) + realBufSize;
 	wrapSaveFree(stream.addInt(datasize));
 	const int nameLength = volume.name.size();
-	wrapSaveFree(stream.addByte(nameLength));
+	wrapSaveFree(stream.addInt(nameLength));
 	wrapSaveFree(stream.addString(volume.name, false));
 
 	wrapSaveFree(stream.addInt(mins.x));
