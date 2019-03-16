@@ -1275,6 +1275,10 @@ bool SceneManager::trace(const video::Camera& camera, bool force) {
 		} else if (_result.didHit) {
 			setCursorPosition(_result.hitVoxel);
 		}
+
+		if (_result.didHit) {
+			_hitCursorVoxel = modelVolume()->voxel(_result.hitVoxel);
+		}
 	}
 
 	return true;

@@ -19,6 +19,7 @@ protected:
 	bool _dirty = true;
 	// the palette index
 	int _value = 0;
+	uint8_t _voxelColorIndex = 0u;
 public:
 	UIWIDGET_SUBCLASS(PaletteWidget, Super);
 
@@ -28,6 +29,7 @@ public:
 	void markAsClean();
 	bool isDirty() const;
 
+	void setVoxelColor(uint8_t index);
 	void setValue(int value) override;
 	int getValue() const override;
 	tb::PreferredSize onCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
@@ -38,6 +40,10 @@ public:
 };
 
 UIWIDGET_FACTORY(PaletteWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)
+
+inline void PaletteWidget::setVoxelColor(uint8_t index) {
+	_voxelColorIndex = index;
+}
 
 inline int PaletteWidget::getValue() const {
 	return _value;

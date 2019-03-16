@@ -129,6 +129,8 @@ private:
 
 	voxel::PickResult _result;
 	voxel::Voxel _cursorVoxel;
+	// existing voxel under the cursor
+	voxel::Voxel _hitCursorVoxel;
 
 	Layers _layers;
 
@@ -153,6 +155,8 @@ public:
 	~SceneManager();
 
 	voxel::Region region() const;
+
+	const voxel::Voxel& hitCursorVoxel() const;
 
 	const glm::ivec3& cursorPosition() const;
 	/**
@@ -310,6 +314,10 @@ inline int SceneManager::size() const {
 
 inline bool SceneManager::empty() const {
 	return _layers.empty();
+}
+
+inline const voxel::Voxel& SceneManager::hitCursorVoxel() const {
+	return _hitCursorVoxel;
 }
 
 inline const glm::ivec3& SceneManager::cursorPosition() const {

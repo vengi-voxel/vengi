@@ -248,6 +248,9 @@ void VoxEditWindow::update() {
 	if (_sceneFront != nullptr) {
 		_sceneFront->update();
 	}
+	if (_paletteWidget != nullptr) {
+		_paletteWidget->setVoxelColor(sceneMgr().hitCursorVoxel().getColor());
+	}
 }
 
 bool VoxEditWindow::isFocused() const {
