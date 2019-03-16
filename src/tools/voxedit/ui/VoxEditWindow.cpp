@@ -790,7 +790,7 @@ bool VoxEditWindow::createNew(bool force) {
 				tr("There are unsaved modifications.\nDo you wish to discard them and close?"),
 				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_new");
 	} else if (_scene->newModel(force)) {
-		_lastOpenedFile->setVal("");
+		afterLoad("");
 		return true;
 	}
 	return false;

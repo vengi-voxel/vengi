@@ -77,7 +77,6 @@ bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("add")) {
 		const tb::TBStr& name = getTextByID(TBIDC("add_layer"));
 		const char *cname = name.c_str();
-		Log::info("Adding new layer with name '%s'", cname);
 		const int layerId = voxedit::sceneMgr().addLayer(cname, true);
 		if (layerId >= 0) {
 			const voxedit::Layers& layers = voxedit::sceneMgr().layers();
