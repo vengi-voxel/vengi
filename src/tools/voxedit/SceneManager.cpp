@@ -959,6 +959,11 @@ void SceneManager::construct() {
 		}
 		_animationSpeed = core::string::toInt(args[0]);
 	}).setHelp("Animate all visible layers with the given delay in millis between the frames");
+	core::Command::registerCommand("pickcolor", [&] (const core::CmdArgs& args) {
+		if (!voxel::isAir(_hitCursorVoxel.getMaterial())) {
+			setCursorVoxel(_hitCursorVoxel);
+		}
+	}).setHelp("Pick the current selected color");
 }
 
 bool SceneManager::init() {

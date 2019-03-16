@@ -225,6 +225,7 @@ public:
 	void render(const video::Camera& camera);
 
 	void setCursorVoxel(const voxel::Voxel& voxel);
+	const voxel::Voxel& cursorVoxel() const;
 
 	render::GridRenderer& gridRenderer();
 	int gridResolution() const;
@@ -330,6 +331,10 @@ inline const glm::ivec3& SceneManager::referencePosition() const {
 
 inline const Layers& SceneManager::layers() const {
 	return _layers;
+}
+
+inline const voxel::Voxel& SceneManager::cursorVoxel() const {
+	return _cursorVoxel;
 }
 
 static SceneManager& sceneMgr();

@@ -507,6 +507,11 @@ void VoxEditWindow::onProcess() {
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		_voxedit->sceneMgr().setCursorVoxel(voxel);
 		_paletteWidget->markAsClean();
+	} else {
+		const voxel::Voxel& voxel = _voxedit->sceneMgr().cursorVoxel();
+		if (!voxel::isAir(voxel.getMaterial())) {
+			_paletteWidget->setValue(voxel.getColor());
+		}
 	}
 	const ModifierType modifierType = _voxedit->sceneMgr().modifierType();
 	constexpr ModifierType overrideType = ModifierType::Delete | ModifierType::Place;
