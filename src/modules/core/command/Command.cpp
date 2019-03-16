@@ -70,12 +70,12 @@ int Command::update(uint64_t dt) {
 	}
 	// make a copy - it might get modified inside the execute call
 	std::vector<std::string> copy = _delayedTokens;
+	_delayedTokens.clear();
 	int executed = 0;
 	for (const std::string& fullCmd : copy) {
 		Log::debug("execute %s", fullCmd.c_str());
 		executed += execute(fullCmd);
 	}
-	_delayedTokens.clear();
 
 	return executed;
 }
