@@ -16,7 +16,7 @@ my own engine and evolved into something that others might find useful, too.
 * Key bindings via cfg file
 * Four viewport mode
 * Grid resolution
-* Up to 16 layers
+* Up to 32 layers
 * Mirror mode
 * Auto cropping volumes
 * Auto generate content like trees or noise volumes
