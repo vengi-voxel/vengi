@@ -93,7 +93,7 @@ int Command::execute(const char* msg, ...) {
 
 int Command::execute(const std::string& command) {
 	int executed = 0;
-	Tokenizer commandLineTokenizer(command, ";");
+	Tokenizer commandLineTokenizer(command, ";\n");
 	while (commandLineTokenizer.hasNext()) {
 		const std::string& fullCmd = commandLineTokenizer.next();
 		if (fullCmd.empty()) {

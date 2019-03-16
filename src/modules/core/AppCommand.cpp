@@ -5,6 +5,8 @@
 #include "AppCommand.h"
 #include <vector>
 #include "command/Command.h"
+#include "io/Filesystem.h"
+#include "App.h"
 #include "Log.h"
 #include "Var.h"
 
@@ -34,6 +36,34 @@ void init() {
 		const std::string& params = core::string::join(args.begin(), args.end(), " ");
 		Log::info("%s", params.c_str());
 	});
+
+
+	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
+		std::vector<io::Filesystem::DirEntry> entries;
+		const std::string filter = str + "*";
+		core::App::getInstance()->filesystem()->list(".", entries, filter);
+		int i = 0;
+		for (const io::Filesystem::DirEntry& entry : entries) {
+			if (entry.type == io::Filesystem::DirEntry::Type::file) {
+				matches.push_back(entry.name);
+				++i;
+			}
+		}
+		return i;
+	};
+
+	core::Command::registerCommand("exec", [] (const core::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::info("Usage: exec <file>");
+			return;
+		}
+		const std::string& cmds = core::App::getInstance()->filesystem()->load(args[0]);
+		if (cmds.empty()) {
+			Log::warn("Could not load script - or file was empty.");
+			return;
+		}
+		core::Command::execute(cmds);
+	}).setHelp("Execute a file with script commands").setArgumentCompleter(fileCompleter);
 
 	core::Command::registerCommand("toggle", [] (const core::CmdArgs& args) {
 		if (args.empty()) {
