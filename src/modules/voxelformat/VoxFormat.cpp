@@ -82,16 +82,21 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		const int chunkSizeName = sizeof(uint32_t) + attributeName.size();
 		const int chunkSizeNameValue = sizeof(uint32_t) + core::utf8::length(v.name.c_str());
 		const int chunkSizeVisible = sizeof(uint32_t) + attributeVisible.size();
-		const int chunkSizeVisibleValue = 1 + sizeof(uint32_t);
+		const int chunkSizeVisibleValue = sizeof(uint32_t) + 1;
 		const int chunkAttributeSize = sizeof(uint32_t) + chunkSizeName + chunkSizeNameValue
 				+ chunkSizeVisible + chunkSizeVisibleValue;
-		const int chunkSize = chunkAttributeSize + sizeof(uint32_t) + sizeof(uint32_t);
+		const int chunkSize = sizeof(uint32_t) + chunkAttributeSize + sizeof(uint32_t);
 		stream.addInt(chunkSize);
 		stream.addInt(0);
 
+		const uint64_t posBefore = stream.pos();
 		stream.addInt(layerId);
 		saveAttributes({{attributeName, v.name}, {attributeVisible, v.visible ? "1" : "0"}}, stream);
 		stream.addInt((uint32_t)-1); // must always be -1
+		const uint64_t posAfter = stream.pos();
+		Log::info("chunk size is: %i", (int)(posAfter - posBefore));
+		core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
+				(int)posAfter, (int)posBefore, (int)chunkSize);
 
 		// voxel data
 		Log::debug("add XYZI chunk at pos %i", (int)stream.pos());
