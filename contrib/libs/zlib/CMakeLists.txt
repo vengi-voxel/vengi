@@ -3,10 +3,6 @@ set(SRCS
 	compress.c
 	crc32.c
 	deflate.c
-	gzclose.c
-	gzlib.c
-	gzread.c
-	gzwrite.c
 	infback.c
 	inffast.c
 	inflate.c
@@ -21,3 +17,11 @@ engine_add_library(
 	SRCS ${SRCS}
 	UNITY
 )
+
+if (NOT ZLIB_FOUND)
+	if (MSVC)
+		add_definitions(-D_NO_FSEEKO)
+		add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+		add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+	endif()
+endif()
