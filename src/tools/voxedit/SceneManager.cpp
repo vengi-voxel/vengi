@@ -72,11 +72,7 @@ bool SceneManager::exportModel(const std::string& file) {
 }
 
 voxel::Region SceneManager::region() const {
-	const voxel::RawVolume* volume = _volumeRenderer.volume(activeLayer());
-	if (volume == nullptr) {
-		return voxel::Region();
-	}
-	return volume->region();
+	return _volumeRenderer.region();
 }
 
 bool SceneManager::voxelizeModel(const video::MeshPtr& meshPtr) {
