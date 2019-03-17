@@ -5,8 +5,12 @@
 #pragma once
 
 #include <SDL.h>
-#include <backward.h>
+#ifndef __WINDOWS__
+#define HAVE_BACKWARD
+#endif
 
+#ifdef HAVE_BACKWARD
+#include <backward.h>
 #define core_stacktrace \
 	backward::StackTrace st; \
 	st.load_here(32); \
@@ -16,6 +20,9 @@
 		const backward::ResolvedTrace& trace = tr.resolve(st[__stacktrace_i]); \
 		printf("#%i %s %s [%p]\n", int(__stacktrace_i), trace.object_filename.c_str(), trace.object_function.c_str(), trace.addr); \
 	}
+#else
+#define core_stacktrace
+#endif
 
 #ifndef core_assert
 #if SDL_ASSERT_LEVEL <= 0
