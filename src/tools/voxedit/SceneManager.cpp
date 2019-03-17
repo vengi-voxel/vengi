@@ -497,6 +497,7 @@ bool SceneManager::setActiveLayer(int layerId) {
 		return false;
 	}
 	Log::debug("New active layer: %i", layerId);
+	int old = _activeLayer;
 	_activeLayer = layerId;
 	const voxel::RawVolume* volume = _volumeRenderer.volume(_activeLayer);
 	core_assert_always(volume != nullptr);
@@ -509,6 +510,9 @@ bool SceneManager::setActiveLayer(int layerId) {
 		setCursorPosition(modelVolume()->region().getCentre());
 	}
 	resetLastTrace();
+	if (_listener != nullptr) {
+		_listener->onActiveLayerChanged(old, _activeLayer);
+	}
 	return true;
 }
 
@@ -532,6 +536,9 @@ bool SceneManager::deleteLayer(int layerId, bool force) {
 	}
 	if (!force && layerId == activeLayer()) {
 		core_assert_always(findNewActiveLayer());
+	}
+	if (_listener != nullptr) {
+		_listener->onLayerDeleted(layerId);
 	}
 	return true;
 }
@@ -561,6 +568,10 @@ int SceneManager::addLayer(const char *name, bool visible, voxel::RawVolume* vol
 		if (volume != nullptr) {
 			_extractRegions.push_back({volume->region(), (int)layerId});
 		}
+		if (_listener != nullptr) {
+			_listener->onLayerAdded((int)layerId, _layers[layerId]);
+		}
+		voxedit::sceneMgr().setActiveLayer(layerId);
 		return (int)layerId;
 	}
 	return -1;
@@ -598,6 +609,16 @@ void SceneManager::redo() {
 	_activeLayer = s.first;
 	setNewVolume(activeLayer(), v);
 	modified(v->region(), false);
+}
+
+void SceneManager::registerListener(SceneListener* listener) {
+	_listener = listener;
+}
+
+void SceneManager::unregisterListener(SceneListener* listener) {
+	// currently there is only one listener
+	core_assert_always(_listener == listener);
+	_listener = nullptr;
 }
 
 void SceneManager::resetLastTrace() {
@@ -950,7 +971,6 @@ void SceneManager::construct() {
 			hideLayer(idx, false);
 		}
 	}).setHelp("Show all layers");
-	// TODO: layer commands are not yet arriving at the ui
 	core::Command::registerCommand("animate", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info("Usage: animate <framedelay>");

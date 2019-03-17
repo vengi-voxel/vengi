@@ -38,9 +38,7 @@ public:
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("delete")) {
 			const int layerId = voxedit::sceneMgr().validLayerId(_index);
-			if (voxedit::sceneMgr().deleteLayer(layerId)) {
-				_source->deleteItem(_index);
-			}
+			voxedit::sceneMgr().deleteLayer(layerId);
 			return true;
 		}
 		return tb::TBLayout::onEvent(ev);
@@ -55,53 +53,66 @@ tb::TBWidget *LayerItemSource::createItemWidget(int index, tb::TBSelectItemViewe
 	return new LayerItemWidget(getItem(index), this, viewer, index);
 }
 
+int LayerItemSource::getItemForLayerId(int layerId) const {
+	const int n = getNumItems();
+	for (int i = 0; i < n; ++i) {
+		LayerItem* item = getItem(i);
+		if (item->layerId() == layerId) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 LayerWidget::LayerWidget() {
 	core_assert_always(tb::g_widgets_reader->loadFile(getContentRoot(), "ui/widget/voxedit-layer.tb.txt"));
-	if (tb::TBSelectList * select = getWidgetByIDAndType<tb::TBSelectList>("list")) {
-		select->setSource(&_source);
-		select->getScrollContainer()->setScrollMode(tb::SCROLL_MODE_Y_AUTO);
+	_list = getWidgetByIDAndType<tb::TBSelectList>("list");
+	if (_list != nullptr) {
+		_list->setSource(&_source);
+		_list->getScrollContainer()->setScrollMode(tb::SCROLL_MODE_Y_AUTO);
 	}
+	sceneMgr().registerListener(this);
 }
 
 LayerWidget::~LayerWidget() {
-	if (tb::TBSelectList *select = getWidgetByIDAndType<tb::TBSelectList>("list")) {
-		select->setSource(nullptr);
+	if (_list != nullptr) {
+		_list->setSource(nullptr);
+	}
+	sceneMgr().unregisterListener(this);
+}
+
+void LayerWidget::onActiveLayerChanged(int old, int active) {
+	const int index = _source.getItemForLayerId(active);
+	if (_list != nullptr) {
+		_list->setValue(index);
 	}
 }
 
-void LayerWidget::onProcess() {
-	Super::onProcess();
+void LayerWidget::onLayerAdded(int layerId, const Layer& layer) {
+	const voxedit::Layers& layers = voxedit::sceneMgr().layers();
+	const std::string& finalLayerName = layers[layerId].name;
+	const bool finalVisibleState = layers[layerId].visible;
+	_source.addItem(new LayerItem(layerId, finalLayerName.c_str(), finalVisibleState));
+}
+
+void LayerWidget::onLayerDeleted(int layerId) {
+	const int index = _source.getItemForLayerId(layerId);
+	if (index < 0) {
+		return;
+	}
+	_source.deleteItem(index);
 }
 
 bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("add")) {
 		const tb::TBStr& name = getTextByID(TBIDC("add_layer"));
 		const char *cname = name.c_str();
-		const int layerId = voxedit::sceneMgr().addLayer(cname, true);
-		if (layerId >= 0) {
-			const voxedit::Layers& layers = voxedit::sceneMgr().layers();
-			const std::string& finalLayerName = layers[layerId].name;
-			const bool finalVisibleState = layers[layerId].visible;
-			_source.addItem(new LayerItem(finalLayerName.c_str(), finalVisibleState));
-			voxedit::sceneMgr().setActiveLayer(layerId);
-		}
+		voxedit::sceneMgr().addLayer(cname, true);
 		return true;
 	}
-	if (ev.type == tb::EVENT_TYPE_CUSTOM && ev.isAny(TBIDC("volumeload"))) {
-		const voxedit::Layers& layers = voxedit::sceneMgr().layers();
-		int layerId = -1;
-		_source.deleteAllItems();
-		for (const auto& l : layers) {
-			++layerId;
-			if (!l.valid) {
-				continue;
-			}
-			_source.addItem(new LayerItem(l.name.c_str(), l.visible));
-		}
-		return true;
-	} else if (ev.type == tb::EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC("list")) {
-		if (tb::TBSelectList * select = getWidgetByIDAndType<tb::TBSelectList>("list")) {
-			voxedit::sceneMgr().setActiveLayer(select->getValue());
+	if (ev.type == tb::EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC("list")) {
+		if (_list != nullptr) {
+			voxedit::sceneMgr().setActiveLayer(_list->getValue());
 		}
 		return true;
 	}

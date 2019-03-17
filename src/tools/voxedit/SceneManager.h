@@ -62,6 +62,15 @@ struct Layer {
 };
 using Layers = std::array<Layer, voxelrender::RawVolumeRenderer::MAX_VOLUMES>;
 
+class SceneListener {
+public:
+	virtual ~SceneListener() {}
+
+	virtual void onActiveLayerChanged(int old, int active) {}
+	virtual void onLayerAdded(int layerId, const Layer& layer) {}
+	virtual void onLayerDeleted(int layerId) {}
+};
+
 /**
  * @note The data is shared across all viewports
  */
@@ -133,6 +142,7 @@ private:
 	voxel::Voxel _hitCursorVoxel;
 
 	Layers _layers;
+	SceneListener *_listener = nullptr;
 
 	ModifierType _modifierType = ModifierType::Place;
 	bool modifierTypeRequiresExistingVoxel() const;
@@ -267,6 +277,9 @@ public:
 
 	void undo();
 	void redo();
+
+	void registerListener(SceneListener* listener);
+	void unregisterListener(SceneListener* listener);
 
 	bool findNewActiveLayer();
 	int activeLayer() const;

@@ -756,9 +756,6 @@ bool VoxEditWindow::prefab(const std::string& file) {
 }
 
 void VoxEditWindow::afterLoad(const std::string& file) {
-	tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);
-	event.ref_id = TBIDC("volumeload");
-	_layerWidget->invokeEvent(event);
 	_lastOpenedFile->setVal(file);
 	resetCamera();
 }
