@@ -59,6 +59,7 @@ public:
 
 	void render(const video::Camera& camera, bool shadow = true);
 	void hide(int idx, bool hide);
+	bool hiddenState(int idx) const;
 
 	/**
 	 * @brief Updates the vertex buffers manually

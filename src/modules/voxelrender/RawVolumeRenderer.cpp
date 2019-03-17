@@ -289,6 +289,13 @@ void RawVolumeRenderer::extract(voxel::RawVolume* volume, const voxel::Region& r
 	voxel::extractCubicMesh(volume, reg, mesh, raw::CustomIsQuadNeeded());
 }
 
+bool RawVolumeRenderer::hiddenState(int idx) const {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return true;
+	}
+	return _hidden[idx];
+}
+
 void RawVolumeRenderer::hide(int idx, bool hide) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return;
