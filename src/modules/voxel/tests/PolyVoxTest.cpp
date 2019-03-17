@@ -210,17 +210,4 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 	}
 }
 
-TEST_F(PolyVoxTest, testRegion) {
-	const glm::ivec3 mins(0, 0, 0);
-	const glm::ivec3 maxs(15, 15, 15);
-	voxel::Region region(mins, maxs);
-	ASSERT_TRUE(region.containsPoint(mins));
-	ASSERT_TRUE(region.containsPoint(maxs));
-	ASSERT_FALSE(region.containsPoint(mins, 1));
-	ASSERT_FALSE(region.containsPoint(maxs, 1));
-	ASSERT_FALSE(region.containsPoint(maxs + 1));
-	ASSERT_TRUE(region.containsRegion(region));
-	ASSERT_FALSE(region.containsRegion(region, 1));
-}
-
 }

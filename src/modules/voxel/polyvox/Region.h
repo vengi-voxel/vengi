@@ -151,7 +151,7 @@ public:
 	/// Enlarges the Region so that it contains the specified Region.
 	void accumulate(const Region& reg);
 
-	/// Crops the extents of this Region accoring to another Region.
+	/// Crops the extents of this Region according to another Region.
 	void cropTo(const Region& other);
 
 	/// Grows this region by the amount specified.

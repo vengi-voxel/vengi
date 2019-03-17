@@ -72,6 +72,7 @@ set(TEST_SRCS
 	tests/LSystemGeneratorTest.cpp
 	tests/PolyVoxTest.cpp
 	tests/PickingTest.cpp
+	tests/RegionTest.cpp
 	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
 	tests/PagedVolumeBufferedSamplerTest.cpp
