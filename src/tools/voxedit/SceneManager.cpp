@@ -691,6 +691,7 @@ bool SceneManager::newScene(bool force) {
 	}
 	core_assert_always(validLayers() == 0);
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
+	setReferencePosition(region.getCentre());
 	_mementoHandler.clearStates();
 	core_assert_always(addLayer("", true, new voxel::RawVolume(region)) != -1);
 	setActiveLayer(0);
