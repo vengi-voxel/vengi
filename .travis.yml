@@ -1,87 +1,29 @@
-dist: trusty
-sudo: false
-
-os:
-  - linux
-  - osx
-
-osx_image: xcode9.1
-
-git:
-  depth: 3
-
-language: generic
-
-addons:
-  apt:
-    packages:
-    - zlib1g-dev
-    - g++-7
-    - gcc-7
-    - clang-3.8
-    - libdbus-1-dev
-    - make
-    - cmake
-    - cmake-data
-    - libasound2-dev
-    - libpulse-dev
-    - libaudio-dev
-    - libx11-dev
-    - libxext-dev
-    - libxrandr-dev
-    - libxcursor-dev
-    - libxi-dev
-    - libxinerama-dev
-    - libxxf86vm-dev
-    - libxss-dev
-    - libgl1-mesa-dev
-    - libesd0-dev
-    - libdbus-1-dev
-    - libgles1-mesa-dev
-    - libgles2-mesa-dev
-    - libegl1-mesa-dev
-    - libibus-1.0-dev
-    - postgresql-server-dev-all
-    - libpq-dev
-    - libenet-dev
-    - libgtk-3-dev
-    - qt5-default
-    - qtbase5-dev
-    - libmirclient-dev
-    - ocl-icd-libopencl1
-    - ocl-icd-opencl-dev
-    sources:
-    - ubuntu-toolchain-r-test
-    - george-edison55-precise-backports # cmake 3.x
-
-# currently not available
-#    - opencl-c-headers
-
-before_install:
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; fi
-
-script:
-  - g++ --version
-  - which g++
-  - cmake --version
-  - echo $PATH
-  - make -j 4 CMAKE_OPTIONS=-DRCON=OFF
-  - make tests
-
-install:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then mkdir -p latest-gcc-symlinks; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/g++-7 latest-gcc-symlinks/g++; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/gcc-7 latest-gcc-symlinks/gcc; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/g++-7 latest-gcc-symlinks/cpp; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ln -s /usr/bin/gcc-7 latest-gcc-symlinks/cc; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh; mkdir -p cmake-3.9.2; sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=cmake-3.9.2; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export PATH=$PWD/latest-gcc-symlinks:$PWD/cmake-3.9.2/bin:$PATH; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty xcpretty-travis-formatter; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install qt; brew link qt --force; brew linkapps qt; ls /usr/local/Cellar/qt/; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_QT5_VERSION=$(brew list --versions qt | rev | cut -d' ' -f1 | rev) sudo ln -s /usr/local/Cellar/qt/$HOMEBREW_QT5_VERSION/mkspecs /usr/local/mkspecs; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then HOMEBREW_QT5_VERSION=$(brew list --versions qt | rev | cut -d' ' -f1 | rev) sudo ln -s /usr/local/Cellar/qt/$HOMEBREW_QT5_VERSION/plugins /usr/local/plugins; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ls /usr/local; fi
-
-cache:
-  - apt
-  - ccache
+language: cpp
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - gcc-7
+      env:
+         - COMPILER="CC=gcc-7 && CXX=g++-7"
+      before_install: eval "${COMPILER}"
+      script:
+        - mkdir build && cd build
+        - cmake ..
+        - cmake --build .
+    - os: osx
+      osx_image: xcode10
+      script:
+        - mkdir build && cd build
+        - cmake ..
+        - cmake --build .
+    - os: windows
+      script:
+        - mkdir build && cd build
+        - cmake ..
+        - cmake --build .
