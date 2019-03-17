@@ -8,7 +8,11 @@ set(SRCS
 )
 
 set(LIB io)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES sdl2 glm backward libuv)
+set(LIBS sdl2 glm libuv)
+if (NOT MSVC)
+list(APPEND LIBS backward)
+endif()
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 
 gtest_suite_sources(tests
 	tests/FilesystemTest.cpp
