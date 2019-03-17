@@ -12,7 +12,11 @@ engine_add_library(
 # OPTIONS
 ###############################################################################
 
+if (MSVC)
+set(STACK_WALKING_UNWIND FALSE CACHE BOOL "Use compiler's unwind API")
+else()
 set(STACK_WALKING_UNWIND TRUE CACHE BOOL "Use compiler's unwind API")
+endif()
 set(STACK_WALKING_BACKTRACE FALSE CACHE BOOL "Use backtrace from (e)glibc for stack walking")
 set(STACK_DETAILS_AUTO_DETECT TRUE CACHE BOOL "Auto detect backward's stack details dependencies")
 set(STACK_DETAILS_BACKTRACE_SYMBOL FALSE CACHE BOOL "Use backtrace from (e)glibc for symbols resolution")
