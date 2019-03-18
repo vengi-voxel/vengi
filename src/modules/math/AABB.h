@@ -11,6 +11,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <array>
+#include <vector>
 #include <algorithm>
 #include <limits>
 #include <functional>

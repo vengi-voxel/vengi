@@ -5,6 +5,7 @@
 #include "LUA.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include <sstream>
 
 namespace lua {
 
