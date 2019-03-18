@@ -472,6 +472,17 @@ int SceneManager::validLayerId(int index) const {
 	return validLayers;
 }
 
+void SceneManager::hideLayer(int layerId, bool hide) {
+	_volumeRenderer.hide(layerId, hide);
+	if (_listener != nullptr) {
+		if (hide) {
+			_listener->onLayerHide(layerId);
+		} else {
+			_listener->onLayerShow(layerId);
+		}
+	}
+}
+
 int SceneManager::validLayers() const {
 	int validLayers = 0;
 	for (const auto& l : layers()) {

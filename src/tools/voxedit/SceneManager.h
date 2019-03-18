@@ -66,6 +66,8 @@ class SceneListener {
 public:
 	virtual ~SceneListener() {}
 
+	virtual void onLayerHide(int layerId) {}
+	virtual void onLayerShow(int layerId) {}
 	virtual void onActiveLayerChanged(int old, int active) {}
 	virtual void onLayerAdded(int layerId, const Layer& layer) {}
 	virtual void onLayerDeleted(int layerId) {}
@@ -300,10 +302,6 @@ inline math::Axis SceneManager::lockedAxis() const {
 
 inline const MementoHandler& SceneManager::mementoHandler() const {
 	return _mementoHandler;
-}
-
-inline void SceneManager::hideLayer(int layerId, bool hide) {
-	_volumeRenderer.hide(layerId, hide);
 }
 
 inline int SceneManager::activeLayer() const {

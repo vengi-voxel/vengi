@@ -28,7 +28,8 @@ private:
 class LayerItemSource: public tb::TBSelectItemSourceList<LayerItem> {
 public:
 	tb::TBWidget *createItemWidget(int index, tb::TBSelectItemViewer *viewer) override;
-	int getItemForLayerId(int layerId) const;
+	int getItemIdForLayerId(int layerId) const;
+	LayerItem* getItemForLayerId(int layerId) const;
 };
 
 class LayerWidget: public tb::TBWidget, public SceneListener {
@@ -41,6 +42,8 @@ public:
 	~LayerWidget();
 	bool onEvent(const tb::TBWidgetEvent &ev) override;
 
+	void onLayerHide(int layerId) override;
+	void onLayerShow(int layerId) override;
 	void onActiveLayerChanged(int old, int active) override;
 	void onLayerAdded(int layerId, const Layer& layer) override;
 	void onLayerDeleted(int layerId) override;

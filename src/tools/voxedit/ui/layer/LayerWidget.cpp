@@ -53,7 +53,18 @@ tb::TBWidget *LayerItemSource::createItemWidget(int index, tb::TBSelectItemViewe
 	return new LayerItemWidget(getItem(index), this, viewer, index);
 }
 
-int LayerItemSource::getItemForLayerId(int layerId) const {
+LayerItem* LayerItemSource::getItemForLayerId(int layerId) const {
+	const int n = getNumItems();
+	for (int i = 0; i < n; ++i) {
+		LayerItem* item = getItem(i);
+		if (item->layerId() == layerId) {
+			return item;
+		}
+	}
+	return nullptr;
+}
+
+int LayerItemSource::getItemIdForLayerId(int layerId) const {
 	const int n = getNumItems();
 	for (int i = 0; i < n; ++i) {
 		LayerItem* item = getItem(i);
@@ -81,8 +92,32 @@ LayerWidget::~LayerWidget() {
 	sceneMgr().unregisterListener(this);
 }
 
+void LayerWidget::onLayerHide(int layerId) {
+	const int index = _source.getItemIdForLayerId(layerId);
+	if (index == -1) {
+		return;
+	}
+	LayerItem* item = _source.getItem(index);
+	if (item != nullptr) {
+		item->setVisible(false);
+		_source.invokeItemChanged(index, nullptr);
+	}
+}
+
+void LayerWidget::onLayerShow(int layerId) {
+	const int index = _source.getItemIdForLayerId(layerId);
+	if (index == -1) {
+		return;
+	}
+	LayerItem* item = _source.getItem(index);
+	if (item != nullptr) {
+		item->setVisible(true);
+		_source.invokeItemChanged(index, nullptr);
+	}
+}
+
 void LayerWidget::onActiveLayerChanged(int old, int active) {
-	const int index = _source.getItemForLayerId(active);
+	const int index = _source.getItemIdForLayerId(active);
 	if (_list != nullptr) {
 		_list->setValue(index);
 	}
@@ -96,7 +131,7 @@ void LayerWidget::onLayerAdded(int layerId, const Layer& layer) {
 }
 
 void LayerWidget::onLayerDeleted(int layerId) {
-	const int index = _source.getItemForLayerId(layerId);
+	const int index = _source.getItemIdForLayerId(layerId);
 	if (index < 0) {
 		return;
 	}
