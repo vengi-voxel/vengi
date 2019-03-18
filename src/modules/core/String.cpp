@@ -3,6 +3,7 @@
  */
 
 #include "String.h"
+#include <cctype>
 
 namespace core {
 namespace string {
