@@ -482,7 +482,7 @@ bool App::hasArg(const std::string& arg) const {
 }
 
 std::string App::getArgVal(const std::string& arg, const std::string& defaultVal, int* argi) {
-	int start = argi == nullptr ? 1 : std::max(1, *argi);
+	int start = argi == nullptr ? 1 : (std::max)(1, *argi);
 	for (int i = start; i < _argc; ++i) {
 		if (arg != _argv[i]) {
 			continue;
