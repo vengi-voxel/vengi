@@ -26,6 +26,7 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		_basePath = "";
 	} else {
 		_basePath = path;
+		normalizePath(_basePath);
 		SDL_free(path);
 	}
 
@@ -34,6 +35,7 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		_homePath = "";
 	} else {
 		_homePath = prefPath;
+		normalizePath(_homePath);
 		SDL_free(prefPath);
 		createDir(_homePath);
 	}
