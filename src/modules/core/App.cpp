@@ -83,7 +83,7 @@ void App::traceEnd(const char *threadName) {
 	_traceData.pop();
 	const uint64_t dt = core::TimeProvider::systemNanos() - traceData.nanos;
 	const uint64_t dtMillis = dt / 1000000lu;
-	_metric->gauge(traceData.name, dtMillis, {{"thread", traceData.threadName}});
+	_metric->gauge(traceData.name, (uint32_t)dtMillis, {{"thread", traceData.threadName}});
 }
 
 void App::traceEndFrame(const char *threadName) {
@@ -158,7 +158,7 @@ void App::onFrame() {
 					if (delay > 0u) {
 						std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 					}
-					_nextFrameMillis += (1000.0 / _framesPerSecondsCap) + 0.00001;
+					_nextFrameMillis += uint64_t((1000.0 / _framesPerSecondsCap) + 0.00001);
 				}
 			}
 			break;

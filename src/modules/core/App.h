@@ -321,7 +321,7 @@ inline const std::vector<double>& App::ProfilerCPU::samples() const {
 }
 
 inline void App::ProfilerCPU::enter() {
-	_stamp = core::TimeProvider::systemNanos();
+	_stamp = (double)core::TimeProvider::systemNanos();
 }
 
 inline void App::ProfilerCPU::leave() {

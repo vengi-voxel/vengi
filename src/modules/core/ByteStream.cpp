@@ -79,16 +79,16 @@ void ByteStream::readFormat(const char *fmt, ...) {
 		const char typeID = *fmt++;
 		switch (typeID) {
 		case 'b':
-			*va_arg(ap, int *) = readByte();
+			*va_arg(ap, int *) = (int)readByte();
 			break;
 		case 's':
-			*va_arg(ap, int *) = readShort();
+			*va_arg(ap, int *) = (int)readShort();
 			break;
 		case 'i':
-			*va_arg(ap, int *) = readInt();
+			*va_arg(ap, int *) = (int)readInt();
 			break;
 		case 'l':
-			*va_arg(ap, long *) = readLong();
+			*va_arg(ap, long *) = (long)readLong();
 			break;
 		default:
 			core_assert(false);
