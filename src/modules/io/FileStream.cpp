@@ -133,7 +133,7 @@ bool FileStream::readFormat(const char *fmt, ...) {
 	return true;
 }
 
-bool FileStream::readString(int length, char *strbuff) {
+bool FileStream::readString(int length, char *strbuff, bool terminated) {
 	for (int i = 0; i < length; ++i) {
 		if (_pos >= _size) {
 			Log::error("Max stream length exceeded while reading string of length: %i (read: %i)", length, i);
@@ -145,6 +145,9 @@ bool FileStream::readString(int length, char *strbuff) {
 			return false;
 		}
 		strbuff[i] = chr;
+		if (terminated && chr == '\0') {
+			break;
+		}
 	}
 	return true;
 }

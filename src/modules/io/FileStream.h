@@ -124,8 +124,9 @@ public:
 	 * @param[in] length The fixed length of the string in the file and the min length
 	 * of the output buffer.
 	 * @param[out] strbuff The output buffer
+	 * @param[in] terminated If this is true, the read will stop on a 0 byte
 	 */
-	bool readString(int length, char *strbuff);
+	bool readString(int length, char *strbuff, bool terminated = false);
 	bool readFormat(const char *fmt, ...);
 
 	int peekInt(uint32_t& val) const;
