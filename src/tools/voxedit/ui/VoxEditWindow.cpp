@@ -21,7 +21,8 @@
 
 namespace voxedit {
 
-static const char *SUPPORTED_VOXEL_FORMATS = "vox,qbt,qb";
+static const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb";
+static const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb";
 
 static const struct {
 	const char *name;
@@ -674,7 +675,7 @@ bool VoxEditWindow::importHeightmap(const std::string& file) {
 
 bool VoxEditWindow::save(const std::string& file) {
 	if (file.empty()) {
-		getApp()->saveDialog([this] (const std::string& file) {save(file); }, SUPPORTED_VOXEL_FORMATS);
+		getApp()->saveDialog([this] (const std::string& file) {save(file); }, SUPPORTED_VOXEL_FORMATS_SAVE);
 		return true;
 	}
 	if (!_voxedit->sceneMgr().save(file)) {
@@ -748,7 +749,7 @@ void VoxEditWindow::resetCamera() {
 
 bool VoxEditWindow::prefab(const std::string& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string& file) { prefab(file); }, SUPPORTED_VOXEL_FORMATS);
+		getApp()->openDialog([this] (const std::string& file) { prefab(file); }, SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
 	}
 
@@ -762,7 +763,7 @@ void VoxEditWindow::afterLoad(const std::string& file) {
 
 bool VoxEditWindow::load(const std::string& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string& file) { load(file); }, SUPPORTED_VOXEL_FORMATS);
+		getApp()->openDialog([this] (const std::string& file) { load(file); }, SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
 	}
 
