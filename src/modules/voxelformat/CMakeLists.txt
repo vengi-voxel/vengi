@@ -4,6 +4,7 @@ set(SRCS
 	VoxFormat.h VoxFormat.cpp
 	QBTFormat.h QBTFormat.cpp
 	QBFormat.h QBFormat.cpp
+	VXMFormat.h VXMFormat.cpp
 	MeshExporter.h MeshExporter.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel assimp)
@@ -13,13 +14,16 @@ set(TEST_SRCS
 	tests/VoxFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
+	tests/VXMFormatTest.cpp
 	tests/MeshExporterTest.cpp
 )
 set(TEST_FILES
 	tests/qubicle.qb
 	tests/qubicle.qbt
 	tests/magicavoxel.vox
+	tests/test.vxm
 )
+
 gtest_suite_files(tests ${TEST_FILES})
 gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})

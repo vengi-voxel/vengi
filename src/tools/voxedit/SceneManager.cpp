@@ -23,6 +23,7 @@
 #include "voxelformat/VoxFormat.h"
 #include "voxelformat/QBTFormat.h"
 #include "voxelformat/QBFormat.h"
+#include "voxelformat/VXMFormat.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedBlendMode.h"
@@ -283,6 +284,9 @@ bool SceneManager::load(const std::string& file) {
 		newVolumes = f.loadGroups(filePtr);
 	} else if (ext == "qb") {
 		voxel::QBFormat f;
+		newVolumes = f.loadGroups(filePtr);
+	} else if (ext == "vxm") {
+		voxel::VXMFormat f;
 		newVolumes = f.loadGroups(filePtr);
 	} else {
 		Log::error("Failed to load model file %s - unsupported file format", file.c_str());
