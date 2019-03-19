@@ -85,7 +85,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		const int chunkSizeVisibleValue = sizeof(uint32_t) + 1;
 		const int chunkAttributeSize = sizeof(uint32_t) + chunkSizeName + chunkSizeNameValue
 				+ chunkSizeVisible + chunkSizeVisibleValue;
-		const int chunkSize = sizeof(uint32_t) + chunkAttributeSize + sizeof(uint32_t);
+		const uint32_t chunkSize = sizeof(uint32_t) + chunkAttributeSize + sizeof(uint32_t);
 		stream.addInt(chunkSize);
 		stream.addInt(0);
 
