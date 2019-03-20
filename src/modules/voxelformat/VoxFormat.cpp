@@ -391,24 +391,6 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 
 	stream.seek(resetPos);
 
-	// Scene Graph
-	//
-	// T : Transform Node
-	// G : Group Node
-	// S : Shape Node
-	//
-	//     T    //
-	//     |    //
-	//     G    //
-	//    / \   //
-	//   T   T  //
-	//   |   |  //
-	//   G   S  //
-	//  / \     //
-	// T   T    //
-	// |   |    //
-	// S   S    //
-
 	VoxelVolumes volumes;
 	volumes.resize(regions.size());
 	int volumeIdx = 0;
@@ -422,16 +404,7 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 		const int64_t currentChunkPos = stream.pos();
 		const int64_t nextChunkPos = currentChunkPos + numBytesChunk + numBytesChildrenChunks;
 
-		if (chunkId == FourCC('P','A','C','K')) {
-			Log::debug("Found pack chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
-			// 4. Chunk id 'PACK' : if it is absent, only one model in the file
-			// -------------------------------------------------------------------------------
-			// # Bytes  | Type       | Value
-			// -------------------------------------------------------------------------------
-			// 4        | int        | numModels : num of SIZE and XYZI chunks
-			// -------------------------------------------------------------------------------
-			wrap(stream.readInt(numModels))
-		} else if (chunkId == FourCC('X','Y','Z','I')) {
+		if (chunkId == FourCC('X','Y','Z','I')) {
 			Log::debug("Found voxel chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			// 6. Chunk id 'XYZI' : model voxels
 			// -------------------------------------------------------------------------------
@@ -465,6 +438,50 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 			Log::info("Loaded layer %i with %i voxels (%i)", volumeIdx, numVoxels, volumeVoxelSet);
 			volumes[volumeIdx].volume = volume;
 			++volumeIdx;
+		}
+		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
+		wrap(stream.seek(nextChunkPos));
+	} while (stream.remaining() > 0);
+
+	stream.seek(resetPos);
+
+	// Scene Graph
+	//
+	// T : Transform Node
+	// G : Group Node
+	// S : Shape Node
+	//
+	//     T    //
+	//     |    //
+	//     G    //
+	//    / \   //
+	//   T   T  //
+	//   |   |  //
+	//   G   S  //
+	//  / \     //
+	// T   T    //
+	// |   |    //
+	// S   S    //
+
+	do {
+		uint32_t chunkId;
+		wrap(stream.readInt(chunkId))
+		uint32_t numBytesChunk;
+		wrap(stream.readInt(numBytesChunk))
+		uint32_t numBytesChildrenChunks;
+		wrap(stream.readInt(numBytesChildrenChunks))
+		const int64_t currentChunkPos = stream.pos();
+		const int64_t nextChunkPos = currentChunkPos + numBytesChunk + numBytesChildrenChunks;
+
+		if (chunkId == FourCC('P','A','C','K')) {
+			Log::debug("Found pack chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
+			// 4. Chunk id 'PACK' : if it is absent, only one model in the file
+			// -------------------------------------------------------------------------------
+			// # Bytes  | Type       | Value
+			// -------------------------------------------------------------------------------
+			// 4        | int        | numModels : num of SIZE and XYZI chunks
+			// -------------------------------------------------------------------------------
+			wrap(stream.readInt(numModels))
 		} else if (chunkId == FourCC('M','A','T','T')) {
 			Log::debug("Found material chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			// 9. Chunk id 'MATT' : material, if it is absent, it is diffuse material
@@ -514,7 +531,7 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 				wrap(stream.readFloat(materialPropertyValue))
 			}
 #endif
-		} else if (chunkId == FourCC('R','G','B','A') || chunkId == FourCC('S','I','Z','E')) {
+		} else if (chunkId == FourCC('R','G','B','A') || chunkId == FourCC('S','I','Z','E') || chunkId == FourCC('X','Y','Z','I')) {
 			// already loaded
 		} else if (chunkId == FourCC('L','A','Y','R')) {
 			// https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
@@ -529,13 +546,13 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 				return VoxelVolumes();
 			}
 			if (layerId >= (uint32_t)volumes.size()) {
-				Log::error("Invalid layer id found: %i - exceeded limit of %i",
-						(int)layerId, (int)volumes.size());
-				return VoxelVolumes();
+				Log::warn("Invalid layer id found: %i - exceeded limit of %i. Skipping layer with name '%s'",
+						(int)layerId, (int)volumes.size(), attributes["_name"].c_str());
+			} else {
+				volumes[layerId].name = attributes["_name"];
+				const std::string& hidden = attributes["_hidden"];
+				volumes[layerId].visible = hidden.empty() || hidden == "0";
 			}
-			volumes[layerId].name = attributes["_name"];
-			const std::string& hidden = attributes["_hidden"];
-			volumes[layerId].visible = hidden.empty() || hidden == "0";
 		} else if (chunkId == FourCC('n','T','R','N')) {
 			Log::warn("nTRN chunk not yet supported");
 			Log::debug("Found nTRN chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
