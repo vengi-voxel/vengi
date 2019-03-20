@@ -87,4 +87,28 @@ TEST_F(RegionTest, testMoveIntoYBoundaryNoOriginZeroNoOverlap) {
 	ASSERT_EQ(pos, glm::ivec3(12, 12, 12));
 }
 
+TEST_F(RegionTest, testMoveIntoNegativeMins) {
+	const glm::ivec3 mins(-10, -10, -10);
+	const glm::ivec3 maxs(15, 15, 15);
+	voxel::Region region(mins, maxs);
+	const glm::ivec3& pos = region.moveInto(2, 2, 2);
+	ASSERT_EQ(pos, glm::ivec3(-8, -8, -8));
+}
+
+TEST_F(RegionTest, testMoveIntoNegativeSteps) {
+	const glm::ivec3 mins(-10, -10, -10);
+	const glm::ivec3 maxs(15, 15, 15);
+	voxel::Region region(mins, maxs);
+	const glm::ivec3& pos = region.moveInto(-2, -2, -2);
+	ASSERT_EQ(pos, glm::ivec3(13, 13, 13));
+}
+
+TEST_F(RegionTest, testMoveIntoBiggerThanSize) {
+	const glm::ivec3 mins(-10, -10, -10);
+	const glm::ivec3 maxs(10, 10, 10);
+	voxel::Region region(mins, maxs);
+	const glm::ivec3& pos = region.moveInto(41, 41, -41);
+	ASSERT_EQ(pos, glm::ivec3(10, 10, -10));
+}
+
 }
