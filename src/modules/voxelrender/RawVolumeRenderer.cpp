@@ -391,11 +391,11 @@ voxel::Region RawVolumeRenderer::region() const {
 		if (volume == nullptr) {
 			continue;
 		}
-		if (!validVolume) {
-			region = volume->region();
-		} else {
+		if (validVolume) {
 			region.accumulate(volume->region());
+			continue;
 		}
+		region = volume->region();
 		validVolume = true;
 	}
 	return region;
