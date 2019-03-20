@@ -86,4 +86,27 @@ TEST_F(MementoHandlerTest, testUndoRedo) {
 	ASSERT_EQ(nullptr, undoNotPossible.volume);
 }
 
+TEST_F(MementoHandlerTest, testUndoRedoDifferentLayers) {
+	voxel::RawVolume* first = create(1);
+	voxel::RawVolume* second = create(2);
+	voxel::RawVolume* third = create(3);
+	voxedit::MementoHandler undoHandler;
+	undoHandler.markUndo(0, first);
+	undoHandler.markUndo(1, second);
+	undoHandler.markUndo(2, third);
+	EXPECT_TRUE(undoHandler.canUndo());
+	voxedit::LayerState undoState = undoHandler.undo();
+	EXPECT_EQ(1, undoState.layer);
+	ASSERT_NE(nullptr, undoState.volume);
+	EXPECT_EQ(2, undoState.volume->region().getWidthInVoxels());
+	undoState = undoHandler.undo();
+	EXPECT_EQ(0, undoState.layer);
+	ASSERT_NE(nullptr, undoState.volume);
+	EXPECT_EQ(1, undoState.volume->region().getWidthInVoxels());
+	undoState = undoHandler.redo();
+	EXPECT_EQ(1, undoState.layer);
+	ASSERT_NE(nullptr, undoState.volume);
+	EXPECT_EQ(2, undoState.volume->region().getWidthInVoxels());
+}
+
 }
