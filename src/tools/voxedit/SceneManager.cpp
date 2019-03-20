@@ -562,6 +562,7 @@ bool SceneManager::deleteLayer(int layerId, bool force) {
 	return true;
 }
 
+// TODO: dialog that selects the mins/maxs of the volume
 int SceneManager::addLayer(const char *name, bool visible, voxel::RawVolume* volume) {
 	if (volume == nullptr) {
 		const voxel::Region& region = _volumeRenderer.region();
@@ -707,6 +708,7 @@ bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume) {
 	return true;
 }
 
+// TODO: dialog that selects the palette and mins/maxs of the volume
 bool SceneManager::newScene(bool force) {
 	if (dirty() && !force) {
 		return false;
@@ -1239,6 +1241,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	}
 
 	const int res = gridRenderer().gridResolution();
+	// TODO: if volume mins is negative or uneven - this is broken
 	if (pos.x % res != 0) {
 		pos.x = (pos.x / res) * res;
 	}
