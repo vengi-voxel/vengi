@@ -43,6 +43,10 @@ public:
 		}
 		return tb::TBLayout::onEvent(ev);
 	}
+
+	inline int index() const {
+		return _index;
+	}
 private:
 	LayerItemSource *_source;
 	tb::TBSelectItemViewer *_sourceViewer;
@@ -142,7 +146,8 @@ bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("add")) {
 		const tb::TBStr& name = getTextByID(TBIDC("add_layer"));
 		const char *cname = name.c_str();
-		voxedit::sceneMgr().addLayer(cname, true);
+		const int layerId = voxedit::sceneMgr().addLayer(cname, true);
+		voxedit::sceneMgr().setActiveLayer(layerId);
 		return true;
 	}
 	if (ev.type == tb::EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC("list")) {

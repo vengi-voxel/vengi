@@ -302,7 +302,8 @@ bool SceneManager::load(const std::string& file) {
 	if (!setNewVolumes(newVolumes)) {
 		return false;
 	}
-	modified(activeLayer(), _volumeRenderer.region());
+	_needAutoSave = false;
+	_extract = true;
 	_dirty = false;
 	return true;
 }
@@ -546,7 +547,9 @@ bool SceneManager::deleteLayer(int layerId, bool force) {
 	_layers[layerId].reset();
 	voxel::RawVolume* v = _volumeRenderer.setVolume(layerId, nullptr);
 	if (v != nullptr) {
-		_mementoHandler.markUndo(layerId, v);
+		if (!force) {
+			_mementoHandler.markUndo(layerId, v);
+		}
 		_volumeRenderer.update(layerId);
 		delete v;
 	}
@@ -587,7 +590,6 @@ int SceneManager::addLayer(const char *name, bool visible, voxel::RawVolume* vol
 		if (_listener != nullptr) {
 			_listener->onLayerAdded((int)layerId, _layers[layerId]);
 		}
-		voxedit::sceneMgr().setActiveLayer(layerId);
 		return (int)layerId;
 	}
 	return -1;
@@ -667,6 +669,10 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	}
 	_mementoHandler.clearStates();
 	findNewActiveLayer();
+	const int layerId = activeLayer();
+	// push the initial state of the current layer to the memento handler to
+	// be able to undo your next step
+	_mementoHandler.markUndo(layerId, _volumeRenderer.volume(layerId));
 	_dirty = false;
 	_result = voxel::PickResult();
 	const glm::ivec3 pos = _cursorPos;
