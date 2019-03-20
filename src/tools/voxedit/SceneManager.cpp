@@ -1318,7 +1318,40 @@ bool SceneManager::trace(const video::Camera& camera, bool force) {
 		const video::Ray& ray = camera.mouseRay(glm::ivec2(_mouseX, _mouseY));
 		const glm::vec3& dirWithLength = ray.direction * camera.farPlane();
 		static constexpr voxel::Voxel air;
-		_result = voxel::pickVoxel(modelVolume(), ray.origin, dirWithLength, air);
+
+		_result.didHit = false;
+		_result.validPreviousPosition = false;
+		raycastWithDirection(modelVolume(), ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
+			if (sampler.voxel() != air) {
+				_result.didHit = true;
+				_result.hitVoxel = sampler.position();
+				return false;
+			}
+
+			if (sampler.currentPositionValid()) {
+				if (_lockedAxis != math::Axis::None) {
+					if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
+						if (sampler.position()[0] == _cursorPos[0]) {
+							return false;
+						}
+					}
+					if ((_lockedAxis & math::Axis::Y) != math::Axis::None) {
+						if (sampler.position()[1] == _cursorPos[1]) {
+							return false;
+						}
+					}
+					if ((_lockedAxis & math::Axis::Z) != math::Axis::None) {
+						if (sampler.position()[2] == _cursorPos[2]) {
+							return false;
+						}
+					}
+				}
+
+				_result.validPreviousPosition = true;
+				_result.previousPosition = sampler.position();
+			}
+			return true;
+		});
 
 		if (modifierTypeRequiresExistingVoxel()) {
 			if (_result.didHit) {
