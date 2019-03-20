@@ -983,6 +983,25 @@ void SceneManager::construct() {
 			hideLayer(idx, false);
 		}
 	}).setHelp("Show all layers");
+	core::Command::registerCommand("layerdetails", [&] (const core::CmdArgs& args) {
+		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
+			const Layer& layer = _layers[idx];
+			if (!layer.valid) {
+				continue;
+			}
+			Log::info("Layer %i:", idx);
+			Log::info(" - name:    %s", layer.name.c_str());
+			Log::info(" - visible: %s", layer.visible ? "true" : "false");
+			const voxel::RawVolume* volume = _volumeRenderer.volume(idx);
+			core_assert_always(volume != nullptr);
+			const voxel::Region& region = volume->region();
+			Log::info(" - region:");
+			Log::info("   - mins:   %i:%i:%i", region.getLowerX(), region.getLowerY(), region.getLowerZ());
+			Log::info("   - maxs:   %i:%i:%i", region.getUpperX(), region.getUpperY(), region.getUpperZ());
+			Log::info("   - cells:  %i:%i:%i", region.getWidthInCells(), region.getHeightInCells(), region.getDepthInCells());
+			Log::info("   - voxels: %i:%i:%i", region.getWidthInVoxels(), region.getHeightInVoxels(), region.getDepthInVoxels());
+		}
+	}).setHelp("Show details to all layers");
 	core::Command::registerCommand("animate", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info("Usage: animate <framedelay>");
