@@ -16,43 +16,46 @@ ShapeBuilder::ShapeBuilder(int initialSize) :
 
 void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
+	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wz = near ? 0.0f : width.z;
 	for (float x = 0.0f; x <= width.x; x += stepWidth) {
-		addIndex(addVertex(glm::vec3(x, 0.0f, wz)));
-		addIndex(addVertex(glm::vec3(x, width.y, wz)));
+		addIndex(addVertex(glm::vec3(x, 0.0f, wz) + mins));
+		addIndex(addVertex(glm::vec3(x, width.y, wz) + mins));
 	}
 	for (float y = 0.0f; y <= width.y; y += stepWidth) {
-		addIndex(addVertex(glm::vec3(0.0f, y, wz)));
-		addIndex(addVertex(glm::vec3(width.x, y, wz)));
+		addIndex(addVertex(glm::vec3(0.0f, y, wz) + mins));
+		addIndex(addVertex(glm::vec3(width.x, y, wz) + mins));
 	}
 }
 
 void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
+	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wx = near ? 0.0f : width.x;
 	for (float y = 0.0f; y <= width.y; y += stepWidth) {
-		addIndex(addVertex(glm::vec3(wx, y, 0.0f)));
-		addIndex(addVertex(glm::vec3(wx, y, width.z)));
+		addIndex(addVertex(glm::vec3(wx, y, 0.0f) + mins));
+		addIndex(addVertex(glm::vec3(wx, y, width.z) + mins));
 	}
 	for (float z = 0.0f; z <= width.z; z += stepWidth) {
-		addIndex(addVertex(glm::vec3(wx, 0.0f, z)));
-		addIndex(addVertex(glm::vec3(wx, width.y, z)));
+		addIndex(addVertex(glm::vec3(wx, 0.0f, z) + mins));
+		addIndex(addVertex(glm::vec3(wx, width.y, z) + mins));
 	}
 }
 
 void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
+	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wy = near ? 0.0f : width.y;
 	for (float x = 0.0f; x <= width.x; x += stepWidth) {
-		addIndex(addVertex(glm::vec3(x, wy, 0.0f)));
-		addIndex(addVertex(glm::vec3(x, wy, width.z)));
+		addIndex(addVertex(glm::vec3(x, wy, 0.0f) + mins));
+		addIndex(addVertex(glm::vec3(x, wy, width.z) + mins));
 	}
 	for (float z = 0.0f; z <= width.z; z += stepWidth) {
-		addIndex(addVertex(glm::vec3(0.0f, wy, z)));
-		addIndex(addVertex(glm::vec3(width.x, wy, z)));
+		addIndex(addVertex(glm::vec3(0.0f, wy, z) + mins));
+		addIndex(addVertex(glm::vec3(width.x, wy, z) + mins));
 	}
 }
 
