@@ -921,7 +921,7 @@ void SceneManager::construct() {
 			[&] (const core::CmdArgs& args) {undo();}).setHelp(
 			"Undo your last step");
 	core::Command::registerCommand("redo",
-			[&] (const core::CmdArgs& args) {undo();}).setHelp(
+			[&] (const core::CmdArgs& args) {redo();}).setHelp(
 			"Redo your last step");
 	core::Command::registerCommand("rotate", [&] (const core::CmdArgs& args) {
 		if (args.size() < 3) {
