@@ -1241,15 +1241,17 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	}
 
 	const int res = gridRenderer().gridResolution();
-	// TODO: if volume mins is negative or uneven - this is broken
-	if (pos.x % res != 0) {
-		pos.x = (pos.x / res) * res;
+	const voxel::Region& region = v->region();
+	const glm::ivec3& mins = region.getLowerCorner();
+	const glm::ivec3 delta = pos - mins;
+	if (delta.x % res != 0) {
+		pos.x = mins.x + (delta.x / res) * res;
 	}
-	if (pos.y % res != 0) {
-		pos.y = (pos.y / res) * res;
+	if (delta.y % res != 0) {
+		pos.y = mins.y + (delta.y / res) * res;
 	}
-	if (pos.z % res != 0) {
-		pos.z = (pos.z / res) * res;
+	if (delta.z % res != 0) {
+		pos.z = mins.z + (delta.z / res) * res;
 	}
 	if (!force) {
 		if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
@@ -1263,7 +1265,6 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 		}
 	}
 
-	const voxel::Region& region = v->region();
 	if (!region.containsPoint(pos)) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
