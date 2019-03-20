@@ -138,7 +138,8 @@ bool SceneManager::voxelizeModel(const video::MeshPtr& meshPtr) {
 }
 
 bool SceneManager::importHeightmap(const std::string& file) {
-	voxel::RawVolume* v = modelVolume();
+	const int layerId = activeLayer();
+	voxel::RawVolume* v = volume(layerId);
 	if (v == nullptr) {
 		return false;
 	}
@@ -148,7 +149,7 @@ bool SceneManager::importHeightmap(const std::string& file) {
 	}
 	voxel::RawVolumeWrapper wrapper(v);
 	voxedit::importHeightmap(wrapper, img);
-	modified(wrapper.dirtyRegion());
+	modified(layerId, wrapper.dirtyRegion());
 	return true;
 }
 
@@ -180,10 +181,6 @@ void SceneManager::autosave() {
 }
 
 bool SceneManager::save(const std::string& file, bool autosave) {
-	const voxel::RawVolume* volume = modelVolume();
-	if (volume == nullptr) {
-		return false;
-	}
 	if (file.empty()) {
 		Log::warn("No filename given for saving");
 		return false;
@@ -206,6 +203,10 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 			continue;
 		}
 		volumes.push_back(voxel::VoxelVolume(v, _layers[idx].name, _layers[idx].visible));
+	}
+
+	if (volumes.empty()) {
+		return false;
 	}
 
 	if (ext == "qbt") {
@@ -256,9 +257,10 @@ bool SceneManager::prefab(const std::string& file) {
 		return false;
 	}
 	Log::info("Import model file %s", file.c_str());
-	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const int layerId = activeLayer();
+	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxel::moveVolume(&wrapper, newVolume, _referencePos);
-	modified(wrapper.dirtyRegion());
+	modified(layerId, wrapper.dirtyRegion());
 	delete newVolume;
 	return true;
 }
@@ -300,7 +302,7 @@ bool SceneManager::load(const std::string& file) {
 	if (!setNewVolumes(newVolumes)) {
 		return false;
 	}
-	modified(_volumeRenderer.region());
+	modified(activeLayer(), _volumeRenderer.region());
 	_dirty = false;
 	return true;
 }
@@ -310,40 +312,41 @@ void SceneManager::setMousePos(int x, int y) {
 	_mouseY = y;
 }
 
-void SceneManager::modified(const voxel::Region& modifiedRegion, bool markUndo) {
+void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo) {
 	if (!modifiedRegion.isValid()) {
 		return;
 	}
-	const int layer = activeLayer();
 	if (markUndo) {
-		_mementoHandler.markUndo(layer, modelVolume());
+		_mementoHandler.markUndo(layerId, _volumeRenderer.volume(layerId));
 	}
-	_extractRegions.push_back({modifiedRegion, layer});
+	_extractRegions.push_back({modifiedRegion, layerId});
 	_dirty = true;
 	_needAutoSave = true;
 	_extract = true;
 }
 
 void SceneManager::crop() {
-	if (_volumeRenderer.empty(activeLayer())) {
+	const int layerId = activeLayer();
+	if (_volumeRenderer.empty(layerId)) {
 		Log::info("Empty volumes can't be cropped");
 		return;
 	}
-	voxel::RawVolume* newVolume = voxedit::tool::crop(modelVolume());
+	voxel::RawVolume* newVolume = voxedit::tool::crop(volume(layerId));
 	if (newVolume == nullptr) {
 		return;
 	}
-	setNewVolume(activeLayer(), newVolume);
-	modified(newVolume->region());
+	setNewVolume(layerId, newVolume);
+	modified(layerId, newVolume->region());
 }
 
 void SceneManager::resize(const glm::ivec3& size) {
-	voxel::RawVolume* newVolume = voxedit::tool::resize(modelVolume(), size);
+	const int layerId = activeLayer();
+	voxel::RawVolume* newVolume = voxedit::tool::resize(volume(layerId), size);
 	if (newVolume == nullptr) {
 		return;
 	}
-	setNewVolume(activeLayer(), newVolume);
-	modified(newVolume->region());
+	setNewVolume(layerId, newVolume);
+	modified(layerId, newVolume->region());
 }
 
 void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount) {
@@ -352,7 +355,8 @@ void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertex
 
 	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
 	materialColors.erase(materialColors.begin());
-	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const int layerId = activeLayer();
+	voxel::RawVolumeWrapper wrapper(volume(layerId));
 
 	bool change = false;
 	for (size_t idx = 0u; idx < amount; ++idx) {
@@ -371,7 +375,7 @@ void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertex
 		return;
 	}
 	const voxel::Region modifiedRegion(mins, maxs);
-	modified(modifiedRegion);
+	modified(layerId, modifiedRegion);
 }
 
 bool SceneManager::aabbMode() const {
@@ -412,7 +416,8 @@ bool SceneManager::aabbEnd(bool trace) {
 	if (!_aabbMode) {
 		return false;
 	}
-	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const int layerId = activeLayer();
+	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	_aabbMode = false;
 	const int size = gridResolution();
 	const glm::ivec3 pos = cursorPosition();
@@ -423,7 +428,7 @@ bool SceneManager::aabbEnd(bool trace) {
 	glm::ivec3 maxsMirror = maxs;
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
 		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
-			modified(modifiedRegion);
+			modified(layerId, modifiedRegion);
 		}
 		return true;
 	}
@@ -432,14 +437,14 @@ bool SceneManager::aabbEnd(bool trace) {
 	voxel::Region modifiedRegionMirror;
 	if (math::intersects(first, second)) {
 		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
-			modified(modifiedRegionMirror);
+			modified(layerId, modifiedRegionMirror);
 		}
 	} else {
 		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
-			modified(modifiedRegion);
+			modified(layerId, modifiedRegion);
 		}
 		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
-			modified(modifiedRegionMirror);
+			modified(layerId, modifiedRegionMirror);
 		}
 	}
 	if (trace) {
@@ -518,7 +523,7 @@ bool SceneManager::setActiveLayer(int layerId) {
 		setReferencePosition(region.getCentre());
 	}
 	if (!region.containsPoint(cursorPosition())) {
-		setCursorPosition(modelVolume()->region().getCentre());
+		setCursorPosition(volume->region().getCentre());
 	}
 	resetLastTrace();
 	if (_listener != nullptr) {
@@ -588,11 +593,15 @@ int SceneManager::addLayer(const char *name, bool visible, voxel::RawVolume* vol
 	return -1;
 }
 
-voxel::RawVolume* SceneManager::modelVolume() {
-	const int idx = activeLayer();
+voxel::RawVolume* SceneManager::volume(int idx) {
 	voxel::RawVolume* v = _volumeRenderer.volume(idx);
 	//core_assert_msg(v != nullptr, "Volume for index %i is null", idx);
 	return v;
+}
+
+voxel::RawVolume* SceneManager::modelVolume() {
+	const int idx = activeLayer();
+	return volume(idx);
 }
 
 void SceneManager::executeModifier() {
@@ -601,25 +610,25 @@ void SceneManager::executeModifier() {
 }
 
 void SceneManager::undo() {
-	std::pair<int, voxel::RawVolume*> s = _mementoHandler.undo();
-	voxel::RawVolume* v = s.second;
+	const LayerState& s = _mementoHandler.undo();
+	voxel::RawVolume* v = s.volume;
 	if (v == nullptr) {
 		return;
 	}
-	_activeLayer = s.first;
-	setNewVolume(activeLayer(), v);
-	modified(v->region(), false);
+	setNewVolume(s.layer, v);
+	setActiveLayer(s.layer);
+	modified(s.layer, v->region(), false);
 }
 
 void SceneManager::redo() {
-	std::pair<int, voxel::RawVolume*> s = _mementoHandler.redo();
-	voxel::RawVolume* v = s.second;
+	const LayerState& s = _mementoHandler.redo();
+	voxel::RawVolume* v = s.volume;
 	if (v == nullptr) {
 		return;
 	}
-	_activeLayer = s.first;
-	setNewVolume(activeLayer(), v);
-	modified(v->region(), false);
+	setNewVolume(s.layer, v);
+	setActiveLayer(s.layer);
+	modified(s.layer, v->region(), false);
 }
 
 void SceneManager::registerListener(SceneListener* listener) {
@@ -706,26 +715,28 @@ bool SceneManager::newScene(bool force) {
 	_mementoHandler.clearStates();
 	core_assert_always(addLayer("", true, new voxel::RawVolume(region)) != -1);
 	setActiveLayer(0);
-	modified(region);
+	modified(activeLayer(), region);
 	_dirty = false;
 	core_assert_always(validLayers() == 1);
 	return true;
 }
 
 void SceneManager::rotate(int angleX, int angleY, int angleZ) {
-	const voxel::RawVolume* model = modelVolume();
+	const int layerId = activeLayer();
+	const voxel::RawVolume* model = volume(layerId);
 	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), false);
-	setNewVolume(activeLayer(), newVolume);
-	modified(newVolume->region());
+	setNewVolume(layerId, newVolume);
+	modified(layerId, newVolume->region());
 }
 
 void SceneManager::move(int x, int y, int z) {
-	const voxel::RawVolume* model = modelVolume();
+	const int layerId = activeLayer();
+	const voxel::RawVolume* model = volume(layerId);
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
 	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z));
-	setNewVolume(activeLayer(), newVolume);
-	modified(newVolume->region());
+	setNewVolume(layerId, newVolume);
+	modified(layerId, newVolume->region());
 }
 
 bool SceneManager::setGridResolution(int resolution) {
@@ -1125,20 +1136,23 @@ bool SceneManager::extractVolume() {
 
 void SceneManager::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noisegen::NoiseType type) {
 	math::Random random;
-	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const int layerId = activeLayer();
+	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxel::noisegen::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
-	modified(wrapper.dirtyRegion());
+	modified(layerId, wrapper.dirtyRegion());
 }
 
 void SceneManager::createCactus() {
 	math::Random random;
-	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const int layerId = activeLayer();
+	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxel::cactus::createCactus(wrapper, _referencePos, 18, 2, random);
-	modified(wrapper.dirtyRegion());
+	modified(layerId, wrapper.dirtyRegion());
 }
 
 void SceneManager::createCloud() {
-	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const int layerId = activeLayer();
+	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	struct HasClouds {
 		glm::vec2 pos;
 		void getCloudPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
@@ -1149,13 +1163,14 @@ void SceneManager::createCloud() {
 	hasClouds.pos = glm::vec2(_referencePos.x, _referencePos.z);
 	voxel::cloud::CloudContext cloudCtx;
 	if (voxel::cloud::createClouds(wrapper, wrapper.region(), hasClouds, cloudCtx)) {
-		modified(wrapper.dirtyRegion());
+		modified(layerId, wrapper.dirtyRegion());
 	}
 }
 
 void SceneManager::createPlant(voxel::PlantType type) {
 	voxel::PlantGenerator g;
-	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const int layerId = activeLayer();
+	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	if (type == voxel::PlantType::Flower) {
 		g.createFlower(5, _referencePos, wrapper);
 	} else if (type == voxel::PlantType::Grass) {
@@ -1164,21 +1179,23 @@ void SceneManager::createPlant(voxel::PlantType type) {
 		g.createMushroom(7, _referencePos, wrapper);
 	}
 	g.shutdown();
-	modified(wrapper.dirtyRegion());
+	modified(layerId, wrapper.dirtyRegion());
 }
 
 void SceneManager::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
-	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const int layerId = activeLayer();
+	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxel::building::createBuilding(wrapper, _referencePos, type);
-	modified(wrapper.dirtyRegion());
+	modified(layerId, wrapper.dirtyRegion());
 }
 
 void SceneManager::createTree(voxel::TreeContext ctx) {
 	math::Random random;
-	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const int layerId = activeLayer();
+	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	ctx.pos = _referencePos;
 	voxel::tree::createTree(wrapper, ctx, random);
-	modified(wrapper.dirtyRegion());
+	modified(layerId, wrapper.dirtyRegion());
 }
 
 void SceneManager::setCursorVoxel(const voxel::Voxel& voxel) {
@@ -1306,7 +1323,8 @@ bool SceneManager::modifierTypeRequiresExistingVoxel() const {
 }
 
 bool SceneManager::trace(const video::Camera& camera, bool force) {
-	if (modelVolume() == nullptr) {
+	const voxel::RawVolume* model = modelVolume();
+	if (model == nullptr) {
 		return false;
 	}
 
@@ -1321,7 +1339,7 @@ bool SceneManager::trace(const video::Camera& camera, bool force) {
 
 		_result.didHit = false;
 		_result.validPreviousPosition = false;
-		raycastWithDirection(modelVolume(), ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
+		raycastWithDirection(model, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
 			if (sampler.voxel() != air) {
 				_result.didHit = true;
 				_result.hitVoxel = sampler.position();
@@ -1366,7 +1384,7 @@ bool SceneManager::trace(const video::Camera& camera, bool force) {
 		}
 
 		if (_result.didHit) {
-			_hitCursorVoxel = modelVolume()->voxel(_result.hitVoxel);
+			_hitCursorVoxel = model->voxel(_result.hitVoxel);
 		}
 	}
 

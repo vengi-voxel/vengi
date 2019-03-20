@@ -152,8 +152,9 @@ private:
 	int getIndexForAxis(math::Axis axis) const;
 	int getIndexForMirrorAxis(math::Axis axis) const;
 	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color);
-	void modified(const voxel::Region& modifiedRegion, bool markUndo = true);
+	void modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo = true);
 
+	voxel::RawVolume* volume(int idx);
 	voxel::RawVolume* modelVolume();
 	bool setNewVolume(int idx, voxel::RawVolume* volume);
 	bool setNewVolumes(const voxel::VoxelVolumes& volumes);

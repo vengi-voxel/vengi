@@ -54,36 +54,36 @@ TEST_F(MementoHandlerTest, testUndoRedo) {
 	undoHandler.markUndo(0, second);
 	undoHandler.markUndo(0, third);
 
-	std::pair<int, voxel::RawVolume*> undoThird = undoHandler.undo();
-	ASSERT_NE(nullptr, undoThird.second);
-	EXPECT_EQ(2, undoThird.second->region().getWidthInVoxels());
+	const voxedit::LayerState& undoThird = undoHandler.undo();
+	ASSERT_NE(nullptr, undoThird.volume);
+	EXPECT_EQ(2, undoThird.volume->region().getWidthInVoxels());
 	EXPECT_TRUE(undoHandler.canRedo());
 	EXPECT_TRUE(undoHandler.canUndo());
 	EXPECT_EQ(1, (int)undoHandler.statePosition());
 
-	std::pair<int, voxel::RawVolume*> undoSecond = undoHandler.undo();
-	ASSERT_NE(nullptr, undoSecond.second);
-	EXPECT_EQ(1, undoSecond.second->region().getWidthInVoxels());
+	voxedit::LayerState undoSecond = undoHandler.undo();
+	ASSERT_NE(nullptr, undoSecond.volume);
+	EXPECT_EQ(1, undoSecond.volume->region().getWidthInVoxels());
 	EXPECT_TRUE(undoHandler.canRedo());
 	EXPECT_FALSE(undoHandler.canUndo());
 	EXPECT_EQ(0, (int)undoHandler.statePosition());
 
-	std::pair<int, voxel::RawVolume*> redoSecond = undoHandler.redo();
-	ASSERT_NE(nullptr, redoSecond.second);
-	EXPECT_EQ(2, redoSecond.second->region().getWidthInVoxels());
+	const voxedit::LayerState& redoSecond = undoHandler.redo();
+	ASSERT_NE(nullptr, redoSecond.volume);
+	EXPECT_EQ(2, redoSecond.volume->region().getWidthInVoxels());
 	EXPECT_TRUE(undoHandler.canRedo());
 	EXPECT_TRUE(undoHandler.canUndo());
 	EXPECT_EQ(1, (int)undoHandler.statePosition());
 
 	undoSecond = undoHandler.undo();
-	ASSERT_NE(nullptr, undoSecond.second);
-	EXPECT_EQ(1, undoSecond.second->region().getWidthInVoxels());
+	ASSERT_NE(nullptr, undoSecond.volume);
+	EXPECT_EQ(1, undoSecond.volume->region().getWidthInVoxels());
 	EXPECT_TRUE(undoHandler.canRedo());
 	EXPECT_FALSE(undoHandler.canUndo());
 	EXPECT_EQ(0, (int)undoHandler.statePosition());
 
-	std::pair<int, voxel::RawVolume*> undoNotPossible = undoHandler.undo();
-	ASSERT_EQ(nullptr, undoNotPossible.second);
+	const voxedit::LayerState& undoNotPossible = undoHandler.undo();
+	ASSERT_EQ(nullptr, undoNotPossible.volume);
 }
 
 }

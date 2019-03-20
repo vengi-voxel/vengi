@@ -14,11 +14,14 @@ class RawVolume;
 
 namespace voxedit {
 
-// TODO: move to layers, not just volumes
+struct LayerState {
+	voxel::RawVolume* volume;
+	int layer;
+};
+
 class MementoHandler {
 private:
-	std::vector<voxel::RawVolume*> _states;
-	std::vector<int> _layers;
+	std::vector<LayerState> _states;
 	uint8_t _statePosition = 0u;
 	static constexpr int _maxStates = 64;
 
@@ -29,19 +32,19 @@ public:
 	void clearStates();
 	void markUndo(int layer, const voxel::RawVolume* volume);
 
-	std::pair<int, voxel::RawVolume*> undo();
-	std::pair<int, voxel::RawVolume*> redo();
+	LayerState undo();
+	LayerState redo();
 	bool canUndo() const;
 	bool canRedo() const;
 
-	std::pair<int, voxel::RawVolume*> state() const;
+	const LayerState& state() const;
 
 	size_t stateSize() const;
 	uint8_t statePosition() const;
 };
 
-inline std::pair<int, voxel::RawVolume*> MementoHandler::state() const {
-	return std::make_pair(_layers[_statePosition], _states[_statePosition]);
+inline const LayerState& MementoHandler::state() const {
+	return _states[_statePosition];
 }
 
 inline uint8_t MementoHandler::statePosition() const {
