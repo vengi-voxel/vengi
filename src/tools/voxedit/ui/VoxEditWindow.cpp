@@ -763,7 +763,7 @@ void VoxEditWindow::afterLoad(const std::string& file) {
 
 bool VoxEditWindow::load(const std::string& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string& file) { load(file); }, SUPPORTED_VOXEL_FORMATS_LOAD);
+		getApp()->openDialog([this] (const std::string& file) { std::string copy(file); load(copy); }, SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
 	}
 
