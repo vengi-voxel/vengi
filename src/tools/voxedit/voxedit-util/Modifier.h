@@ -66,6 +66,11 @@ public:
 	bool modifierTypeRequiresExistingVoxel() const;
 
 	void setCursorPosition(const glm::ivec3& pos);
+	const glm::ivec3& cursorPosition() const;
+
+	/**
+	 * @note Mirrored REMOVE ME
+	 */
 	void setGridResolution(int resolution);
 
 	void render(const video::Camera& camera);
@@ -73,6 +78,10 @@ public:
 
 inline const voxel::Voxel& Modifier::cursorVoxel() const {
 	return _cursorVoxel;
+}
+
+inline const glm::ivec3& Modifier::cursorPosition() const {
+	return _cursorPosition;
 }
 
 }

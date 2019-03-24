@@ -919,26 +919,26 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (delta.z % res != 0) {
 		pos.z = mins.z + (delta.z / res) * res;
 	}
+	const glm::ivec3& oldCursorPos = cursorPosition();
 	if (!force) {
 		if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
-			pos.x = _cursorPos.x;
+			pos.x = oldCursorPos.x;
 		}
 		if ((_lockedAxis & math::Axis::Y) != math::Axis::None) {
-			pos.y = _cursorPos.y;
+			pos.y = oldCursorPos.y;
 		}
 		if ((_lockedAxis & math::Axis::Z) != math::Axis::None) {
-			pos.z = _cursorPos.z;
+			pos.z = oldCursorPos.z;
 		}
 	}
 
 	if (!region.containsPoint(pos)) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
-	if (_cursorPos == pos) {
+	if (oldCursorPos == pos) {
 		return;
 	}
-	_cursorPos = pos;
-	_modifier.setCursorPosition(_cursorPos);
+	_modifier.setCursorPosition(pos);
 
 	updateLockedPlane(math::Axis::X);
 	updateLockedPlane(math::Axis::Y);

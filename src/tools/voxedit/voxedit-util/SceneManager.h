@@ -64,7 +64,6 @@ private:
 
 	int32_t _referencePointMesh = -1;
 
-	glm::ivec3 _cursorPos;
 	glm::ivec3 _referencePos;
 
 	core::VarPtr _autoSaveSecondsDelay;
@@ -266,7 +265,7 @@ inline const voxel::Voxel& SceneManager::hitCursorVoxel() const {
 }
 
 inline const glm::ivec3& SceneManager::cursorPosition() const {
-	return _cursorPos;
+	return _modifier.cursorPosition();
 }
 
 inline const glm::ivec3& SceneManager::referencePosition() const {
