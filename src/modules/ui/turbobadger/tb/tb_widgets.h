@@ -72,6 +72,10 @@ enum EVENT_TYPE {
 		The ref_id will be set to one of the following:
 			"cut", "copy", "paste", "selectall", "undo", "redo", "new", "open", "save". */
 	EVENT_TYPE_SHORTCUT,
+	/**
+	 * Invoked when a command was executed
+	 */
+	EVENT_TYPE_COMMAND,
 
 	/** Invoked when a context menu should be opened at the event x and y coordinates.
 		It may be invoked automatically for a widget on long click, if nothing handles
@@ -143,6 +147,7 @@ public:
 	TBID ref_id;			 ///< Sometimes (when documented) events have a ref_id (The id that caused this event)
 	BUTTON_TYPE button_type; ///< Set for pointer events. True if the event is a touch event (finger or pen on screen)
 							 ///< False if mouse or other cursor input.
+	const char* string = nullptr;
 
 	TBOBJECT_SUBCLASS(TBWidgetEvent, TBTypedObject);
 

@@ -241,7 +241,31 @@ bool VoxEditWindow::init() {
 	return true;
 }
 
+void VoxEditWindow::updateStatusBar() {
+	if (tb::TBTextField* status = getWidgetByIDAndType<tb::TBTextField>("status")) {
+		const voxedit::Modifier& modifier = voxedit::sceneMgr().modifier();
+		if (modifier.aabbMode()) {
+			tb::TBStr str;
+			const glm::ivec3& dim = modifier.aabbDim();
+			str.setFormatted("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
+			status->setText(str);
+		} else if (!_lastExecutedCommand.empty()) {
+			const video::WindowedApp* app = video::WindowedApp::getInstance();
+			std::string statusText;
+			const std::string& keybindingStr = app->getKeyBindingsString(_lastExecutedCommand.c_str());
+			if (keybindingStr.empty()) {
+				statusText = core::string::format("%s: %s", tr("Command"), _lastExecutedCommand.c_str());
+			} else {
+				statusText = core::string::format("%s: %s (%s)", tr("Command"), _lastExecutedCommand.c_str(), keybindingStr.c_str());
+			}
+			status->setText(statusText.c_str());
+			_lastExecutedCommand.clear();
+		}
+	}
+}
+
 void VoxEditWindow::update() {
+	updateStatusBar();
 	_scene->update();
 	if (_sceneTop != nullptr) {
 		_sceneTop->update();
@@ -304,6 +328,7 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	for (const char** action = ACTIONS; *action != nullptr; ++action) {
 		if (ev.isAny(TBIDC(*action))) {
 			core::Command::execute("%s", *action);
+			_lastExecutedCommand = *action;
 			return true;
 		}
 	}
@@ -482,6 +507,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	for (const char** action = ACTIONS; *action != nullptr; ++action) {
 		if (ev.isAny(TBIDC(*action)) && widget->getValue() == 1) {
 			core::Command::execute("%s", *action);
+			_lastExecutedCommand = *action;
 			return true;
 		}
 	}
@@ -588,7 +614,6 @@ void VoxEditWindow::onProcess() {
 	if (_mirrorZ != nullptr) {
 		_mirrorZ->setValue(mirrorAxis == math::Axis::Z);
 	}
-	//_voxelSize->setValue(sceneMgr().gridResolution());
 }
 
 bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
@@ -596,6 +621,10 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 		if (handleEvent(ev)) {
 			return true;
 		}
+	} else if (ev.type == tb::EVENT_TYPE_COMMAND) {
+		Log::info("executed command %s", ev.string);
+		_lastExecutedCommand = ev.string;
+		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
 			if (ev.button_type == tb::TB_LEFT || ev.button_type == tb::TB_RIGHT) {
@@ -631,12 +660,16 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_SHORTCUT) {
-		if (ev.ref_id == TBIDC("undo")) {
-			sceneMgr().undo();
-			return true;
-		} else if (ev.ref_id == TBIDC("redo")) {
-			sceneMgr().redo();
-			return true;
+		static const char *ACTIONS[] = {
+			"undo", "redo", nullptr
+		};
+
+		for (const char** action = ACTIONS; *action != nullptr; ++action) {
+			if (ev.ref_id == TBIDC(*action)) {
+				core::Command::execute("%s", *action);
+				_lastExecutedCommand = *action;
+				return true;
+			}
 		}
 	}
 

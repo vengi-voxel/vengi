@@ -116,9 +116,9 @@ TBLayout: distribution: gravity, axis: y
 
 					TBSection: value: 1, text: "Operations"
 						TBLayout: position: left top, axis: y
-							TBButton: @include: definitions>menubutton, text: Crop, id: crop, command: "crop;void"
+							TBButton: @include: definitions>menubutton, text: Crop, id: crop, command: "crop"
 								TBSkinImage: skin: voxedit-crop
-							TBButton: @include: definitions>menubutton, text: Extend, id: extend, command: "resize;void"
+							TBButton: @include: definitions>menubutton, text: Extend, id: extend, command: "resize"
 								TBSkinImage: skin: voxedit-extend
 
 					TBSection: value: 1, text: "Cursor"
@@ -141,11 +141,11 @@ TBLayout: distribution: gravity, axis: y
 
 					TBSection: value: 1, text: "Rotate on axis"
 						TBLayout: position: left top, axis: x
-							TBButton: id: rotatex, @include: definitions>menubutton, command: "rotatex;void"
+							TBButton: id: rotatex, @include: definitions>menubutton, command: "rotatex"
 								TBSkinImage: skin: voxedit-axis-x
-							TBButton: id: rotatey, @include: definitions>menubutton, command: "rotatey;void"
+							TBButton: id: rotatey, @include: definitions>menubutton, command: "rotatey"
 								TBSkinImage: skin: voxedit-axis-y
-							TBButton: id: rotatez, @include: definitions>menubutton, command: "rotatez;void"
+							TBButton: id: rotatez, @include: definitions>menubutton, command: "rotatez"
 								TBSkinImage: skin: voxedit-axis-z
 
 					TBSection: value: 1, text: "Mirror axis"

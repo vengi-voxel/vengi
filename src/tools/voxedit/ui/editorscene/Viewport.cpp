@@ -127,50 +127,7 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 	_controller.init(mode);
 }
 
-void Viewport::updateStatusBar() {
-	if (tb::TBTextField* status = getParentRoot()->getWidgetByIDAndType<tb::TBTextField>("status")) {
-		const voxedit::Modifier& modifier = voxedit::sceneMgr().modifier();
-		if (modifier.aabbMode()) {
-			tb::TBStr str;
-			const glm::ivec3& dim = modifier.aabbDim();
-			str.setFormatted("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
-			status->setText(str);
-		} else {
-			const video::WindowedApp* app = video::WindowedApp::getInstance();
-			const ModifierType modifierType = modifier.modifierType();
-			const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
-			const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
-			const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
-			const bool extrude = (modifierType & ModifierType::Extrude) == ModifierType::Extrude;
-			std::string statusText;
-			std::string keybindingStr;
-			if (overwrite) {
-				statusText = tr("Override");
-				keybindingStr = app->getKeyBindingsString("actionoverride");
-			} else if (deleteVoxels) {
-				statusText = tr("Delete");
-				keybindingStr = app->getKeyBindingsString("actiondelete");
-			} else if (update) {
-				statusText = tr("Colorize");
-				keybindingStr = app->getKeyBindingsString("actioncolorize");
-			} else if (extrude) {
-				statusText = tr("Extrude");
-				keybindingStr = app->getKeyBindingsString("actionextrude");
-			} else {
-				statusText = tr("Place");
-				keybindingStr = app->getKeyBindingsString("actionplace");
-			}
-			if (!keybindingStr.empty()) {
-				statusText += " ";
-				statusText += keybindingStr;
-			}
-			status->setText(statusText.c_str());
-		}
-	}
-}
-
 void Viewport::update() {
-	updateStatusBar();
 	camera().setTarget(glm::vec3(voxedit::sceneMgr().referencePosition()));
 }
 

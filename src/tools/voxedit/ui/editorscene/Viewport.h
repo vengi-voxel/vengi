@@ -20,7 +20,6 @@ private:
 	voxedit::Controller _controller;
 	std::string _cameraMode;
 
-	void updateStatusBar();
 public:
 	UIWIDGET_SUBCLASS(Viewport, Super);
 

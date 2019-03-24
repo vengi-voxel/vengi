@@ -58,6 +58,8 @@ private:
 	std::string _voxelizeFile;
 	std::string _loadFile;
 
+	std::string _lastExecutedCommand;
+
 	tb::TBGenericStringItemSource _treeItems;
 	tb::TBGenericStringItemSource _fileItems;
 	tb::TBGenericStringItemSource _structureItems;
@@ -85,6 +87,8 @@ private:
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
 	void resetCamera();
 	void quit();
+
+	void updateStatusBar();
 
 	void afterLoad(const std::string& file);
 
