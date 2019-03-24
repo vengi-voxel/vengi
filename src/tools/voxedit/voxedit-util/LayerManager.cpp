@@ -55,6 +55,11 @@ bool LayerManager::init() {
 
 void LayerManager::shutdown() {
 	_listeners.clear();
+	_activeLayer = 0;
+	const int size = (int)_layers.size();
+	for (int i = 0; i < size; ++i) {
+		_layers[i].reset();
+	}
 }
 
 bool LayerManager::findNewActiveLayer() {
@@ -145,7 +150,6 @@ bool LayerManager::deleteLayer(int layerId, bool force) {
 	return true;
 }
 
-// TODO: dialog that selects the mins/maxs of the volume
 int LayerManager::addLayer(const char *name, bool visible, voxel::RawVolume* volume) {
 	const size_t maxLayers = _layers.size();
 	for (size_t layerId = 0; layerId < maxLayers; ++layerId) {

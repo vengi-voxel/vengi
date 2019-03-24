@@ -27,6 +27,7 @@ public:
 	}
 
 	// TODO: allow to change the name
+	// TODO: dialog that selects the mins/maxs of the volume
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
 		voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("visible")) {

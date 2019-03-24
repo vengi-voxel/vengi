@@ -2,12 +2,11 @@
  * @file
  */
 
-#include "../MementoHandler.h"
-
 #include "core/tests/AbstractTest.h"
+#include "../MementoHandler.h"
 #include "voxel/polyvox/RawVolume.h"
 
-namespace voxel {
+namespace voxedit {
 
 class MementoHandlerTest: public core::AbstractTest {
 protected:
