@@ -13,31 +13,8 @@
 
 namespace voxedit {
 
-bool Modifier::addModifierType(ModifierType type, bool trace) {
-	if ((_modifierType & type) == type) {
-		return false;
-	}
-	_modifierType &= type;
-	if (trace) {
-		// the modifier type has an influence on which voxel is taken. So make
-		// sure the next trace is executed even if we don't move the mouse.
-		sceneMgr().resetLastTrace();
-	}
-	return true;
-}
-
-void Modifier::setModifierType(ModifierType type, bool trace) {
+void Modifier::setModifierType(ModifierType type) {
 	_modifierType = type;
-	if (trace) {
-		// the modifier type has an influence on which voxel is taken. So make
-		// sure the next trace is executed even if we don't move the mouse.
-		sceneMgr().resetLastTrace();
-	}
-}
-
-void Modifier::executeModifier() {
-	aabbStart();
-	aabbEnd(false);
 }
 
 bool Modifier::aabbMode() const {
@@ -50,7 +27,7 @@ glm::ivec3 Modifier::aabbPosition() const {
 			// TODO: select the whole plane and limit the position to it
 		}
 	}
-	return sceneMgr().cursorPosition();
+	return _cursorPosition;
 }
 
 glm::ivec3 Modifier::aabbDim() const {
@@ -84,14 +61,14 @@ bool Modifier::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 	return true;
 }
 
-bool Modifier::aabbEnd(bool trace) {
+bool Modifier::aabbEnd(voxel::RawVolume* volume, std::function<void(const voxel::Region& region)> callback) {
 	if (!_aabbMode) {
 		return false;
 	}
-	SceneManager& scene = sceneMgr();
-	LayerManager& layerMgr = scene.layerMgr();
-	const int layerId = layerMgr.activeLayer();
-	voxel::RawVolumeWrapper wrapper(scene.volume(layerId));
+	if (volume == nullptr) {
+		return false;
+	}
+	voxel::RawVolumeWrapper wrapper(volume);
 	_aabbMode = false;
 	const int size = _gridResolution;
 	const glm::ivec3& pos = aabbPosition();
@@ -102,6 +79,9 @@ bool Modifier::aabbEnd(bool trace) {
 	glm::ivec3 maxsMirror = maxs;
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
 		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
+			SceneManager& scene = sceneMgr();
+			LayerManager& layerMgr = scene.layerMgr();
+			const int layerId = layerMgr.activeLayer();
 			scene.modified(layerId, modifiedRegion);
 		}
 		return true;
@@ -111,18 +91,15 @@ bool Modifier::aabbEnd(bool trace) {
 	voxel::Region modifiedRegionMirror;
 	if (math::intersects(first, second)) {
 		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
-			scene.modified(layerId, modifiedRegionMirror);
+			callback(modifiedRegionMirror);
 		}
 	} else {
 		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
-			scene.modified(layerId, modifiedRegion);
+			callback(modifiedRegion);
 		}
 		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
-			scene.modified(layerId, modifiedRegionMirror);
+			callback(modifiedRegionMirror);
 		}
-	}
-	if (trace) {
-		scene.resetLastTrace();
 	}
 	return true;
 }
@@ -159,7 +136,6 @@ void Modifier::render(const video::Camera& camera) {
 	const glm::mat4& scale = glm::scale(translate, glm::vec3(_gridResolution));
 	_shapeRenderer.render(_voxelCursorMesh, camera, scale);
 	_shapeRenderer.render(_mirrorMeshIndex, camera);
-
 }
 
 ModifierType Modifier::modifierType() const {
@@ -174,23 +150,23 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 
 void Modifier::construct() {
 	core::Command::registerCommand("actiondelete",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Delete, false);}).setHelp(
+			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Delete);}).setHelp(
 			"Change the modifier type to 'delete'");
 
 	core::Command::registerCommand("actionplace",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place, false);}).setHelp(
+			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place);}).setHelp(
 			"Change the modifier type to 'place'");
 
 	core::Command::registerCommand("actioncolorize",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Update, false);}).setHelp(
+			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Update);}).setHelp(
 			"Change the modifier type to 'colorize'");
 
 	core::Command::registerCommand("actionextrude",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Extrude, false);}).setHelp(
+			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Extrude);}).setHelp(
 			"Change the modifier type to 'extrude'");
 
 	core::Command::registerCommand("actionoverride",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place | ModifierType::Delete, false);}).setHelp(
+			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place | ModifierType::Delete);}).setHelp(
 			"Change the modifier type to 'override'");
 
 	core::Command::registerCommand("mirrorx",
@@ -209,9 +185,15 @@ void Modifier::construct() {
 	core::Command::registerCommand("+actionexecute",
 			[&] (const core::CmdArgs& args) {aabbStart();}).setHelp(
 			"Place a voxel to the current cursor position");
-	core::Command::registerCommand("-actionexecute",
-			[&] (const core::CmdArgs& args) {aabbEnd(false);}).setHelp(
-			"Place a voxel to the current cursor position");
+	core::Command::registerCommand("-actionexecute", [&] (const core::CmdArgs& args) {
+		LayerManager& layerMgr = sceneMgr().layerMgr();
+		const int layerId = layerMgr.activeLayer();
+		voxel::RawVolume* volume = sceneMgr().volume(layerId);
+		aabbEnd(volume, [&] (const voxel::Region& region) {
+			sceneMgr().modified(layerId, region);
+			sceneMgr().resetLastTrace();
+		});
+	}).setHelp("Place a voxel to the current cursor position");
 }
 
 bool Modifier::init() {
@@ -231,6 +213,10 @@ void Modifier::shutdown() {
 
 math::Axis Modifier::mirrorAxis() const {
 	return _mirrorAxis;
+}
+
+void Modifier::setCursorPosition(const glm::ivec3& pos) {
+	_cursorPosition = pos;
 }
 
 void Modifier::setGridResolution(int resolution) {
@@ -268,7 +254,8 @@ void Modifier::updateMirrorPlane() {
 		return;
 	}
 
-	updateShapeBuilderForPlane(_shapeBuilder, sceneMgr().region(), true, _mirrorPos, _mirrorAxis, core::Color::alpha(core::Color::LightGray, 0.3f));
+	updateShapeBuilderForPlane(_shapeBuilder, sceneMgr().region(), true, _mirrorPos, _mirrorAxis,
+			core::Color::alpha(core::Color::LightGray, 0.3f));
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 

@@ -446,9 +446,7 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	_mementoHandler.markUndo(layerId, _volumeRenderer.volume(layerId));
 	_dirty = false;
 	_result = voxel::PickResult();
-	const glm::ivec3 pos = _cursorPos;
-	_cursorPos = pos * 10 + 10;
-	setCursorPosition(pos);
+	setCursorPosition(cursorPosition(), true);
 	resetLastTrace();
 	return true;
 }
@@ -470,9 +468,7 @@ bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume) {
 	_dirty = false;
 	_result = voxel::PickResult();
 	_extractRegions.push_back({region, idx});
-	const glm::ivec3 pos = _cursorPos;
-	_cursorPos = pos * 10 + 10;
-	setCursorPosition(pos);
+	setCursorPosition(cursorPosition(), true);
 	setReferencePosition(region.getCentre());
 	resetLastTrace();
 	return true;
@@ -525,7 +521,7 @@ bool SceneManager::setGridResolution(int resolution) {
 
 	const int res = gridResolution();
 	_modifier.setGridResolution(res);
-	setCursorPosition(_cursorPos, true);
+	setCursorPosition(cursorPosition(), true);
 
 	return true;
 }
@@ -942,6 +938,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 		return;
 	}
 	_cursorPos = pos;
+	_modifier.setCursorPosition(_cursorPos);
 
 	updateLockedPlane(math::Axis::X);
 	updateLockedPlane(math::Axis::Y);
@@ -998,18 +995,19 @@ bool SceneManager::trace(const video::Camera& camera, bool force) {
 
 			if (sampler.currentPositionValid()) {
 				if (_lockedAxis != math::Axis::None) {
+					const glm::ivec3& cursorPos = cursorPosition();
 					if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
-						if (sampler.position()[0] == _cursorPos[0]) {
+						if (sampler.position()[0] == cursorPos[0]) {
 							return false;
 						}
 					}
 					if ((_lockedAxis & math::Axis::Y) != math::Axis::None) {
-						if (sampler.position()[1] == _cursorPos[1]) {
+						if (sampler.position()[1] == cursorPos[1]) {
 							return false;
 						}
 					}
 					if ((_lockedAxis & math::Axis::Z) != math::Axis::None) {
-						if (sampler.position()[2] == _cursorPos[2]) {
+						if (sampler.position()[2] == cursorPos[2]) {
 							return false;
 						}
 					}
@@ -1060,7 +1058,7 @@ void SceneManager::updateLockedPlane(math::Axis axis) {
 		core::Color::LightGreen,
 		core::Color::LightBlue
 	};
-	updateShapeBuilderForPlane(_shapeBuilder, _volumeRenderer.region(), false, _cursorPos, axis, core::Color::alpha(colors[index], 0.4f));
+	updateShapeBuilderForPlane(_shapeBuilder, _volumeRenderer.region(), false, cursorPosition(), axis, core::Color::alpha(colors[index], 0.4f));
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 

@@ -23,6 +23,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelrender voxelforma
 set(TEST_SRCS
 	tests/LayerManagerTest.cpp
 	tests/MementoHandlerTest.cpp
+	tests/ModifierTest.cpp
 )
 gtest_suite_sources(tests
 	${TEST_SRCS}

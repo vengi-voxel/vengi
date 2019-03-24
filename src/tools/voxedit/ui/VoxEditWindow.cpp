@@ -641,11 +641,19 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
 			Modifier& mgr = sceneMgr().modifier();
-			if (mgr.aabbEnd()) {
+			LayerManager& layerMgr = sceneMgr().layerMgr();
+			const int layerId = layerMgr.activeLayer();
+			voxel::RawVolume* volume = sceneMgr().volume(layerId);
+			if (mgr.aabbEnd(volume, [&] (const voxel::Region& region) {
+				const int layerId = layerMgr.activeLayer();
+				sceneMgr().modified(layerId, region);
+			})) {
 				if (_modBeforeMouse != ModifierType::None) {
 					mgr.setModifierType(_modBeforeMouse);
 					sceneMgr().trace(viewport->camera(), true);
 					_modBeforeMouse = ModifierType::None;
+				} else {
+					sceneMgr().resetLastTrace();
 				}
 				return true;
 			}

@@ -10,6 +10,7 @@
 #include "core/IComponent.h"
 #include "video/Camera.h"
 #include "voxel/polyvox/Voxel.h"
+#include "math/Axis.h"
 
 #include "ModifierType.h"
 
@@ -27,12 +28,13 @@ private:
 	int32_t _mirrorMeshIndex = -1;
 	math::Axis _mirrorAxis = math::Axis::None;
 	glm::ivec3 _mirrorPos;
+	glm::ivec3 _cursorPosition;
 	voxel::Voxel _cursorVoxel;
 	int32_t _voxelCursorMesh = -1;
 
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
-
-	void executeModifier();
+	glm::ivec3 aabbPosition() const;
+	void updateMirrorPlane();
 public:
 	void construct() override;
 	bool init() override;
@@ -40,25 +42,31 @@ public:
 
 	math::Axis mirrorAxis() const;
 	void setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
-	void updateMirrorPlane();
 
 	ModifierType modifierType() const;
-	void setModifierType(ModifierType type, bool trace = true);
-	bool addModifierType(ModifierType type, bool trace = true);
+	void setModifierType(ModifierType type);
 
-	void setCursorVoxel(const voxel::Voxel& voxel);
 	const voxel::Voxel& cursorVoxel() const;
+	void setCursorVoxel(const voxel::Voxel& voxel);
 
-	void setGridResolution(int resolution);
-
-	glm::ivec3 aabbPosition() const;
 	bool aabbMode() const;
 	glm::ivec3 aabbDim() const;
 
+	/**
+	 * @brief Pick the start position of the modifier execution bounding box
+	 */
 	bool aabbStart();
-	bool aabbEnd(bool trace = true);
+	/**
+	 * @brief End the current ModifierType execution and modify tha given volume according to the type.
+	 * @param[out,in] volume The volume to modify
+	 * @param callback Called for every region that was modified for the current active modifier.
+	 */
+	bool aabbEnd(voxel::RawVolume* volume, std::function<void(const voxel::Region& region)> callback);
 
 	bool modifierTypeRequiresExistingVoxel() const;
+
+	void setCursorPosition(const glm::ivec3& pos);
+	void setGridResolution(int resolution);
 
 	void render(const video::Camera& camera);
 };
