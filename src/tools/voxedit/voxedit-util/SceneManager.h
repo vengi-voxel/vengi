@@ -112,8 +112,39 @@ private:
 	voxel::RawVolume* modelVolume();
 	bool setNewVolume(int idx, voxel::RawVolume* volume);
 	bool setNewVolumes(const voxel::VoxelVolumes& volumes);
+	void autosave();
+	void setReferencePosition(const glm::ivec3& pos);
 
 	void animate(uint64_t time);
+	/**
+	 * @brief Move the cursor relative by the given steps in each direction
+	 */
+	void moveCursor(int x, int y, int z);
+
+	void crop();
+	void resize(const glm::ivec3& size);
+	int size() const;
+
+	void undo();
+	void redo();
+
+	/**
+	 * @brief Convert a given point cloud to voxels
+	 * @param[in] vertices 3 component vertex data.
+	 * @param[in] vertexColors 3 component color data
+	 * @param[in] amount The amount of vertices in the buffers
+	 * @note The given @c vertices coordinates must be aligned to the region of the volume already
+	 * @note The color is expected to be in the range [0.0f,1.0f]
+	 */
+	void pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount);
+
+	void rotate(int angleX, int angleY, int angleZ);
+	void move(int x, int y, int z);
+
+	bool renderAxis() const;
+
+	bool extractVolume();
+	void updateLockedPlane(math::Axis axis);
 public:
 	SceneManager();
 	~SceneManager();
@@ -132,35 +163,16 @@ public:
 	 */
 	void setCursorPosition(glm::ivec3 pos, bool force = false);
 
-	/**
-	 * @brief Move the cursor relative by the given steps in each direction
-	 */
-	void moveCursor(int x, int y, int z);
-
 	const glm::ivec3& referencePosition() const;
-	void setReferencePosition(const glm::ivec3& pos);
 
 	void construct() override;
 	bool init() override;
 	void update(uint64_t time);
 	void shutdown() override;
-	void autosave();
 
 	void modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo = true);
 	voxel::RawVolume* volume(int idx);
 
-	void crop();
-	void resize(const glm::ivec3& size);
-
-	/**
-	 * @brief Convert a given point cloud to voxels
-	 * @param[in] vertices 3 component vertex data.
-	 * @param[in] vertexColors 3 component color data
-	 * @param[in] amount The amount of vertices in the buffers
-	 * @note The given @c vertices coordinates must be aligned to the region of the volume already
-	 * @note The color is expected to be in the range [0.0f,1.0f]
-	 */
-	void pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount);
 	bool voxelizeModel(const video::MeshPtr& mesh);
 	bool importHeightmap(const std::string& file);
 	bool exportModel(const std::string& file);
@@ -176,10 +188,6 @@ public:
 
 	bool dirty() const;
 	bool empty() const;
-	int size() const;
-
-	void rotate(int angleX, int angleY, int angleZ);
-	void move(int x, int y, int z);
 
 	/**
 	 * @brief Performs the rendering for each @c Viewport instance
@@ -187,7 +195,6 @@ public:
 	void render(const video::Camera& camera);
 
 	render::GridRenderer& gridRenderer();
-	int gridResolution() const;
 	bool setGridResolution(int resolution);
 
 	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noisegen::NoiseType type);
@@ -197,27 +204,15 @@ public:
 	void createCloud();
 	void createCactus();
 
-	bool extractVolume();
-
 	void setMousePos(int x, int y);
 
 	bool trace(const video::Camera& camera, bool force = false);
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);
-	void updateLockedPlane(math::Axis axis);
-
-	bool renderAxis() const;
 	void setRenderAxis(bool renderAxis);
-
-	bool renderLockAxis() const;
 	void setRenderLockAxis(bool renderLockAxis);
-
-	bool renderShadow() const;
 	void setRenderShadow(bool shadow);
-
-	void undo();
-	void redo();
 
 	const LayerManager& layerMgr() const;
 	LayerManager& layerMgr();
@@ -238,10 +233,6 @@ inline math::Axis SceneManager::lockedAxis() const {
 
 inline const MementoHandler& SceneManager::mementoHandler() const {
 	return _mementoHandler;
-}
-
-inline int SceneManager::gridResolution() const {
-	return _gridRenderer.gridResolution();
 }
 
 inline render::GridRenderer& SceneManager::gridRenderer() {

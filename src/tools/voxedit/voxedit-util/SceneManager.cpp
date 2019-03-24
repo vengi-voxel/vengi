@@ -519,7 +519,7 @@ bool SceneManager::setGridResolution(int resolution) {
 		return false;
 	}
 
-	const int res = gridResolution();
+	const int res = gridRenderer().gridResolution();
 	_modifier.setGridResolution(res);
 	setCursorPosition(cursorPosition(), true);
 
@@ -644,6 +644,17 @@ void SceneManager::construct() {
 			resize(glm::ivec3(1));
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
+	core::Command::registerCommand("move", [&] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc != 3) {
+			Log::info("Expected to get x, y and z values");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		move(x, y, z);
+	}).setHelp("Move the volume by the given values");
 	core::Command::registerCommand("undo",
 			[&] (const core::CmdArgs& args) {undo();}).setHelp(
 			"Undo your last step");
@@ -953,16 +964,8 @@ void SceneManager::setRenderAxis(bool renderAxis) {
 	_renderAxis = renderAxis;
 }
 
-bool SceneManager::renderLockAxis() const {
-	return _renderLockAxis;
-}
-
 void SceneManager::setRenderLockAxis(bool renderLockAxis) {
 	_renderLockAxis = renderLockAxis;
-}
-
-bool SceneManager::renderShadow() const {
-	return _renderShadow;
 }
 
 void SceneManager::setRenderShadow(bool shadow) {
