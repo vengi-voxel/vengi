@@ -3,8 +3,7 @@
  */
 
 #include "TreeWindow.h"
-
-#include "../SceneManager.h"
+#include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 

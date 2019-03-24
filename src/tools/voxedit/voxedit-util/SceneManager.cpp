@@ -3,7 +3,6 @@
  */
 
 #include "SceneManager.h"
-#include "VoxEdit.h"
 
 #include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/polyvox/VolumeCropper.h"
@@ -32,26 +31,24 @@
 #include "core/Array.h"
 #include "core/App.h"
 #include "core/Log.h"
-#include "io/Filesystem.h"
-#include "voxedit-util/Config.h"
-#include "voxedit-util/tool/Crop.h"
-#include "voxedit-util/tool/Resize.h"
-#include "voxedit-util/tool/Fill.h"
-#include "voxedit-util/ImportHeightmap.h"
+#include "core/String.h"
 #include "core/GLM.h"
+#include "io/Filesystem.h"
+
+#include "Config.h"
+#include "tool/Crop.h"
+#include "tool/Resize.h"
+#include "tool/Fill.h"
+#include "ImportHeightmap.h"
+
 #include <set>
 
 #define VOXELIZER_IMPLEMENTATION
-#include "voxedit-util/voxelizer.h"
+#include "voxelizer.h"
 
 namespace voxedit {
 
 const int leafSize = 8;
-
-SceneManager& sceneMgr() {
-	VoxEdit* voxedit = (VoxEdit*)video::WindowedApp::getInstance();
-	return voxedit->sceneMgr();
-}
 
 SceneManager::SceneManager() :
 		_gridRenderer() {

@@ -5,7 +5,7 @@
 #include "LayerWidget.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
-#include "../../SceneManager.h"
+#include "voxedit-util/SceneManager.h"
 
 class LayerItemWidget: public tb::TBLayout {
 public:
@@ -86,14 +86,14 @@ LayerWidget::LayerWidget() {
 		_list->setSource(&_source);
 		_list->getScrollContainer()->setScrollMode(tb::SCROLL_MODE_Y_AUTO);
 	}
-	sceneMgr().registerListener(this);
+	voxedit::sceneMgr().registerListener(this);
 }
 
 LayerWidget::~LayerWidget() {
 	if (_list != nullptr) {
 		_list->setSource(nullptr);
 	}
-	sceneMgr().unregisterListener(this);
+	voxedit::sceneMgr().unregisterListener(this);
 }
 
 void LayerWidget::onLayerHide(int layerId) {
@@ -127,7 +127,7 @@ void LayerWidget::onActiveLayerChanged(int old, int active) {
 	}
 }
 
-void LayerWidget::onLayerAdded(int layerId, const Layer& layer) {
+void LayerWidget::onLayerAdded(int layerId, const voxedit::Layer& layer) {
 	const voxedit::Layers& layers = voxedit::sceneMgr().layers();
 	const std::string& finalLayerName = layers[layerId].name;
 	const bool finalVisibleState = layers[layerId].visible;

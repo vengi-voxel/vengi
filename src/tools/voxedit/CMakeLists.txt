@@ -12,7 +12,6 @@ set(SRCS
 	ui/TreeWindow.h ui/TreeWindow.cpp
 	ui/NoiseWindow.h ui/NoiseWindow.cpp
 
-	SceneManager.h SceneManager.cpp
 	VoxEdit.h VoxEdit.cpp
 )
 

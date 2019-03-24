@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui/turbobadger/Widget.h"
+#include "voxedit-util/SceneListener.h"
 
 class LayerItem: public tb::TBGenericStringItem {
 public:
@@ -32,7 +33,7 @@ public:
 	LayerItem* getItemForLayerId(int layerId) const;
 };
 
-class LayerWidget: public tb::TBWidget, public SceneListener {
+class LayerWidget: public tb::TBWidget, public voxedit::SceneListener {
 private:
 	using Super = tb::TBWidget;
 public:
@@ -45,7 +46,7 @@ public:
 	void onLayerHide(int layerId) override;
 	void onLayerShow(int layerId) override;
 	void onActiveLayerChanged(int old, int active) override;
-	void onLayerAdded(int layerId, const Layer& layer) override;
+	void onLayerAdded(int layerId, const voxedit::Layer& layer) override;
 	void onLayerDeleted(int layerId) override;
 private:
 	tb::TBSelectList *_list;

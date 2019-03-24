@@ -18,17 +18,14 @@
 #include "render/GridRenderer.h"
 #include "render/Axis.h"
 #include "core/Var.h"
+#include "core/Singleton.h"
 #include "core/command/ActionButton.h"
 #include "math/Axis.h"
-#include "voxedit-util/MementoHandler.h"
-#include "voxedit-util/ModifierType.h"
+#include "MementoHandler.h"
+#include "ModifierType.h"
+#include "Layer.h"
+#include "SceneListener.h"
 #include <vector>
-
-namespace voxel {
-namespace tree {
-class Tree;
-}
-}
 
 namespace voxedit {
 
@@ -47,30 +44,6 @@ static constexpr struct Direction {
 	{"down",      0, -1,  0},
 	{"forward",   0,  0,  1},
 	{"backward",  0,  0, -1}
-};
-
-struct Layer {
-	std::string name;
-	bool visible = true;
-	bool valid = false;
-
-	void reset() {
-		name.clear();
-		visible = true;
-		valid = false;
-	}
-};
-using Layers = std::array<Layer, voxelrender::RawVolumeRenderer::MAX_VOLUMES>;
-
-class SceneListener {
-public:
-	virtual ~SceneListener() {}
-
-	virtual void onLayerHide(int layerId) {}
-	virtual void onLayerShow(int layerId) {}
-	virtual void onActiveLayerChanged(int old, int active) {}
-	virtual void onLayerAdded(int layerId, const Layer& layer) {}
-	virtual void onLayerDeleted(int layerId) {}
 };
 
 /**
@@ -350,6 +323,8 @@ inline const voxel::Voxel& SceneManager::cursorVoxel() const {
 	return _cursorVoxel;
 }
 
-static SceneManager& sceneMgr();
+inline SceneManager& sceneMgr() {
+	return core::Singleton<SceneManager>::getInstance();
+}
 
 }

@@ -10,11 +10,9 @@
 #include "io/Filesystem.h"
 #include "Viewport.h"
 
-#include "../../SceneManager.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxedit-util/ModifierType.h"
 #include "image/Image.h"
-
-using namespace voxedit;
 
 Viewport::Viewport() :
 		Super(),
@@ -28,7 +26,7 @@ Viewport::~Viewport() {
 
 bool Viewport::newModel(bool force) {
 	core_trace_scoped(EditorSceneNewModel);
-	if (!sceneMgr().newScene(force)) {
+	if (!voxedit::sceneMgr().newScene(force)) {
 		return false;
 	}
 	resetCamera();
@@ -54,7 +52,7 @@ bool Viewport::saveImage(const char* filename) {
 }
 
 void Viewport::resetCamera() {
-	_controller.resetCamera(sceneMgr().region());
+	_controller.resetCamera(voxedit::sceneMgr().region());
 }
 
 bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
@@ -68,7 +66,7 @@ bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
 		const bool middle = isMiddleMouseButtonPressed();
 		const bool alt = (ev.modifierkeys & tb::TB_ALT);
 		_controller.move(relative || middle || alt, ev.target_x, ev.target_y);
-		sceneMgr().setMousePos(ev.target_x, ev.target_y);
+		voxedit::sceneMgr().setMousePos(ev.target_x, ev.target_y);
 		return true;
 	}
 	return Super::onEvent(ev);
@@ -116,14 +114,14 @@ void Viewport::onPaint(const PaintProps &paintProps) {
 void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 	Super::onInflate(info);
 
-	Controller::SceneCameraMode mode = Controller::SceneCameraMode::Free;
+	voxedit::Controller::SceneCameraMode mode = voxedit::Controller::SceneCameraMode::Free;
 	const char *cameraMode = info.node->getValueString("camera", "free");
 	if (!strcmp(cameraMode, "top")) {
-		mode = Controller::SceneCameraMode::Top;
+		mode = voxedit::Controller::SceneCameraMode::Top;
 	} else if (!strcmp(cameraMode, "front")) {
-		mode = Controller::SceneCameraMode::Front;
+		mode = voxedit::Controller::SceneCameraMode::Front;
 	} else if (!strcmp(cameraMode, "left")) {
-		mode = Controller::SceneCameraMode::Left;
+		mode = voxedit::Controller::SceneCameraMode::Left;
 	}
 	_cameraMode = cameraMode;
 	_controller.init(mode);
@@ -131,14 +129,14 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 
 void Viewport::updateStatusBar() {
 	if (tb::TBTextField* status = getParentRoot()->getWidgetByIDAndType<tb::TBTextField>("status")) {
-		if (sceneMgr().aabbMode()) {
+		if (voxedit::sceneMgr().aabbMode()) {
 			tb::TBStr str;
-			const glm::ivec3& dim = sceneMgr().aabbDim();
+			const glm::ivec3& dim = voxedit::sceneMgr().aabbDim();
 			str.setFormatted("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
 			status->setText(str);
 		} else {
 			const video::WindowedApp* app = video::WindowedApp::getInstance();
-			const ModifierType modifierType = sceneMgr().modifierType();
+			const ModifierType modifierType = voxedit::sceneMgr().modifierType();
 			const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
 			const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 			const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
@@ -172,7 +170,7 @@ void Viewport::updateStatusBar() {
 
 void Viewport::update() {
 	updateStatusBar();
-	camera().setTarget(glm::vec3(sceneMgr().referencePosition()));
+	camera().setTarget(glm::vec3(voxedit::sceneMgr().referencePosition()));
 }
 
 void Viewport::onProcess() {
@@ -186,13 +184,13 @@ void Viewport::onProcess() {
 	_controller.update(deltaFrame);
 
 	if (tb::TBWidget::hovered_widget == this) {
-		sceneMgr().trace(_controller.camera());
+		voxedit::sceneMgr().trace(_controller.camera());
 	}
 
 	video::clearColor(core::Color::Clear);
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	_frameBuffer.bind(true);
-	sceneMgr().render(_controller.camera());
+	voxedit::sceneMgr().render(_controller.camera());
 	_frameBuffer.unbind();
 }
 
