@@ -541,6 +541,7 @@ void SceneManager::render(const video::Camera& camera) {
 	if (renderAxis()) {
 		_axis.render(camera);
 	}
+	// TODO: render ground plane
 	if (!depthTest) {
 		video::disable(video::State::DepthTest);
 	}
