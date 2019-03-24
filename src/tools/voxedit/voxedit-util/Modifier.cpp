@@ -79,10 +79,7 @@ bool Modifier::aabbEnd(voxel::RawVolume* volume, std::function<void(const voxel:
 	glm::ivec3 maxsMirror = maxs;
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
 		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
-			SceneManager& scene = sceneMgr();
-			LayerManager& layerMgr = scene.layerMgr();
-			const int layerId = layerMgr.activeLayer();
-			scene.modified(layerId, modifiedRegion);
+			callback(modifiedRegion);
 		}
 		return true;
 	}
