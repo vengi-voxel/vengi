@@ -670,7 +670,7 @@ void VoxEditWindow::quit() {
 	if (sceneMgr().dirty()) {
 		popup(tr("Unsaved Modifications"),
 				tr("There are unsaved modifications.\nDo you wish to discard them and quit?"),
-				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_quit");
+				PopupType::YesNo, "unsaved_changes_quit");
 		return;
 	}
 	close();
@@ -726,7 +726,7 @@ bool VoxEditWindow::importMesh(const std::string& file) {
 	_voxelizeFile = file;
 	popup("Unsaved Modifications",
 			"There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?",
-			ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_voxelize");
+			PopupType::YesNo, "unsaved_changes_voxelize");
 	return true;
 }
 
@@ -790,7 +790,7 @@ bool VoxEditWindow::load(const std::string& file) {
 	_loadFile = file;
 	popup(tr("Unsaved Modifications"),
 			tr("There are unsaved modifications.\nDo you wish to discard them and load?"),
-			ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_load");
+			PopupType::YesNo, "unsaved_changes_load");
 	return false;
 }
 
@@ -798,7 +798,7 @@ bool VoxEditWindow::createNew(bool force) {
 	if (!force && sceneMgr().dirty()) {
 		popup(tr("Unsaved Modifications"),
 				tr("There are unsaved modifications.\nDo you wish to discard them and close?"),
-				ui::turbobadger::Window::PopupType::YesNo, "unsaved_changes_new");
+				PopupType::YesNo, "unsaved_changes_new");
 	} else if (_scene->newModel(force)) {
 		afterLoad("");
 		return true;
