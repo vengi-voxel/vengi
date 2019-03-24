@@ -884,8 +884,8 @@ void SceneManager::createTree(voxel::TreeContext ctx) {
 void SceneManager::setReferencePosition(const glm::ivec3& pos) {
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
-	const glm::vec3 posalgined{pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f};
-	_shapeBuilder.setPosition(posalgined);
+	const glm::vec3 posAligned{pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f};
+	_shapeBuilder.setPosition(posAligned);
 	_shapeBuilder.sphere(8, 6, 0.5f);
 	_shapeRenderer.createOrUpdate(_referencePointMesh, _shapeBuilder);
 	_referencePos = pos;
