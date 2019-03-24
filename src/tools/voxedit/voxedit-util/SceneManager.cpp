@@ -260,7 +260,7 @@ bool SceneManager::prefab(const std::string& file) {
 	Log::info("Import model file %s", file.c_str());
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	voxel::moveVolume(&wrapper, newVolume, _referencePos);
+	voxel::moveVolume(&wrapper, newVolume, referencePosition());
 	modified(layerId, wrapper.dirtyRegion());
 	delete newVolume;
 	return true;
@@ -829,7 +829,7 @@ void SceneManager::createCactus() {
 	math::Random random;
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	voxel::cactus::createCactus(wrapper, _referencePos, 18, 2, random);
+	voxel::cactus::createCactus(wrapper, referencePosition(), 18, 2, random);
 	modified(layerId, wrapper.dirtyRegion());
 }
 
@@ -855,11 +855,11 @@ void SceneManager::createPlant(voxel::PlantType type) {
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	if (type == voxel::PlantType::Flower) {
-		g.createFlower(5, _referencePos, wrapper);
+		g.createFlower(5, referencePosition(), wrapper);
 	} else if (type == voxel::PlantType::Grass) {
-		g.createGrass(10, _referencePos, wrapper);
+		g.createGrass(10, referencePosition(), wrapper);
 	} else if (type == voxel::PlantType::Mushroom) {
-		g.createMushroom(7, _referencePos, wrapper);
+		g.createMushroom(7, referencePosition(), wrapper);
 	}
 	g.shutdown();
 	modified(layerId, wrapper.dirtyRegion());
@@ -868,7 +868,7 @@ void SceneManager::createPlant(voxel::PlantType type) {
 void SceneManager::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	voxel::building::createBuilding(wrapper, _referencePos, type);
+	voxel::building::createBuilding(wrapper, referencePosition(), type);
 	modified(layerId, wrapper.dirtyRegion());
 }
 
@@ -876,7 +876,7 @@ void SceneManager::createTree(voxel::TreeContext ctx) {
 	math::Random random;
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	ctx.pos = _referencePos;
+	ctx.pos = referencePosition();
 	voxel::tree::createTree(wrapper, ctx, random);
 	modified(layerId, wrapper.dirtyRegion());
 }
