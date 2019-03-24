@@ -124,7 +124,7 @@ bool VoxEditWindow::init() {
 	}
 	const int8_t index = (uint8_t)_paletteWidget->getValue();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-	voxedit::sceneMgr().setCursorVoxel(voxel);
+	voxedit::sceneMgr().modifier().setCursorVoxel(voxel);
 	_paletteWidget->markAsClean();
 
 	_sceneTop = getWidgetByType<Viewport>("editorscenetop");
@@ -442,18 +442,6 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	} else if (id == TBIDC("lockz")) {
 		sceneMgr().setLockedAxis(math::Axis::Z, widget->getValue() != 1);
 		return true;
-	} else if (id == TBIDC("mirrorx")) {
-		sceneMgr().setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
-		return true;
-	} else if (id == TBIDC("mirrory")) {
-		sceneMgr().setMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
-		return true;
-	} else if (id == TBIDC("mirrorz")) {
-		sceneMgr().setMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
-		return true;
-	} else if (id == TBIDC("mirrornone")) {
-		sceneMgr().setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
-		return true;
 	} else if (id == TBIDC("cursorx")) {
 		const tb::TBStr& str = widget->getText();
 		if (str.isEmpty()) {
@@ -486,41 +474,36 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 
-	if (ev.isAny(TBIDC("actionplace")) && widget->getValue() == 1) {
-		sceneMgr().setModifierType(ModifierType::Place);
-		return true;
-	} else if (ev.isAny(TBIDC("actiondelete")) && widget->getValue() == 1) {
-		sceneMgr().setModifierType(ModifierType::Delete);
-		return true;
-	} else if (ev.isAny(TBIDC("actioncolorize")) && widget->getValue() == 1) {
-		sceneMgr().setModifierType(ModifierType::Update);
-		return true;
-	} else if (ev.isAny(TBIDC("actionextrude")) && widget->getValue() == 1) {
-		sceneMgr().setModifierType(ModifierType::Extrude);
-		return true;
-	} else if (ev.isAny(TBIDC("actionoverride")) && widget->getValue() == 1) {
-		sceneMgr().setModifierType(ModifierType::Place | ModifierType::Delete);
-		return true;
+	static const char *ACTIONS[] = {
+		"mirrorx", "mirrory", "mirrorz", "mirrornone",
+		"actionplace", "actiondelete", "actioncolorize", "actionextrude", "actionoverride",
+		nullptr
+	};
+	for (const char** action = ACTIONS; *action != nullptr; ++action) {
+		if (ev.isAny(TBIDC(*action)) && widget->getValue() == 1) {
+			core::Command::execute("%s", *action);
+			return true;
+		}
 	}
-
 	return false;
 }
 
 void VoxEditWindow::onProcess() {
 	Super::onProcess();
 
+	const Modifier& modifier = sceneMgr().modifier();
 	if (_paletteWidget->isDirty()) {
 		const int8_t index = (uint8_t)_paletteWidget->getValue();
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-		sceneMgr().setCursorVoxel(voxel);
+		sceneMgr().modifier().setCursorVoxel(voxel);
 		_paletteWidget->markAsClean();
 	} else {
-		const voxel::Voxel& voxel = sceneMgr().cursorVoxel();
+		const voxel::Voxel& voxel = modifier.cursorVoxel();
 		if (!voxel::isAir(voxel.getMaterial())) {
 			_paletteWidget->setValue(voxel.getColor());
 		}
 	}
-	const ModifierType modifierType = sceneMgr().modifierType();
+	const ModifierType modifierType = modifier.modifierType();
 	constexpr ModifierType overrideType = ModifierType::Delete | ModifierType::Place;
 	if ((modifierType & overrideType) == overrideType) {
 		if (_overrideModifier) {
@@ -592,7 +575,7 @@ void VoxEditWindow::onProcess() {
 		_lockedZ->setValue((lockedAxis & math::Axis::Z) != math::Axis::None);
 	}
 
-	const math::Axis mirrorAxis = sceneMgr().mirrorAxis();
+	const math::Axis mirrorAxis = modifier.mirrorAxis();
 	if (_mirrorNone != nullptr) {
 		_mirrorNone->setValue(mirrorAxis == math::Axis::None);
 	}
@@ -616,11 +599,11 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
 			if (ev.button_type == tb::TB_LEFT || ev.button_type == tb::TB_RIGHT) {
-				SceneManager& mgr = sceneMgr();
+				Modifier& mgr = sceneMgr().modifier();
 				if (ev.button_type == tb::TB_RIGHT) {
 					_modBeforeMouse = mgr.modifierType();
 					mgr.setModifierType(ModifierType::Delete);
-					mgr.trace(viewport->camera(), true);
+					sceneMgr().trace(viewport->camera(), true);
 				}
 				mgr.aabbStart();
 				return true;
@@ -628,11 +611,11 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 		}
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
-			SceneManager& mgr = sceneMgr();
+			Modifier& mgr = sceneMgr().modifier();
 			if (mgr.aabbEnd()) {
 				if (_modBeforeMouse != ModifierType::None) {
 					mgr.setModifierType(_modBeforeMouse);
-					mgr.trace(viewport->camera(), true);
+					sceneMgr().trace(viewport->camera(), true);
 					_modBeforeMouse = ModifierType::None;
 				}
 				return true;

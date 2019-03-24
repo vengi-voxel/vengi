@@ -26,6 +26,7 @@ public:
 		TBAnimationObject::animation_curve = animation_curve;
 		TBAnimationObject::animation_duration = animation_duration;
 	}
+	virtual ~TBAnimatedFloat() {}
 
 	float getValue() const {
 		return src_val + (dst_val - src_val) * current_progress;

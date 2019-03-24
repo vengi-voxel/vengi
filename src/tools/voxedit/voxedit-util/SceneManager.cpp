@@ -12,6 +12,7 @@
 #include "voxel/polyvox/VolumeVisitor.h"
 #include "voxel/polyvox//RawVolumeWrapper.h"
 #include "voxel/polyvox//RawVolumeMoveWrapper.h"
+#include "voxel/polyvox//Mesh.h"
 #include "voxel/generator/CloudGenerator.h"
 #include "voxel/generator/CactusGenerator.h"
 #include "voxel/generator/BuildingGenerator.h"
@@ -26,19 +27,21 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedBlendMode.h"
+#include "video/Ray.h"
 #include "math/Random.h"
 #include "core/command/Command.h"
 #include "core/Array.h"
 #include "core/App.h"
 #include "core/Log.h"
+#include "core/Color.h"
 #include "core/String.h"
 #include "core/GLM.h"
 #include "io/Filesystem.h"
 
+#include "AxisUtil.h"
 #include "Config.h"
 #include "tool/Crop.h"
 #include "tool/Resize.h"
-#include "tool/Fill.h"
 #include "ImportHeightmap.h"
 
 #include <set>
@@ -357,11 +360,12 @@ void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertex
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 
+	const glm::ivec3& cursorPos = cursorPosition();
 	bool change = false;
 	for (size_t idx = 0u; idx < amount; ++idx) {
 		const glm::vec3& vertex = vertices[idx];
 		const glm::vec3& color = vertexColors[idx];
-		const glm::ivec3 pos(_cursorPos.x + vertex.x, _cursorPos.y + vertex.y, _cursorPos.z + vertex.z);
+		const glm::ivec3 pos(cursorPos.x + vertex.x, cursorPos.y + vertex.y, cursorPos.z + vertex.z);
 		const glm::vec4 cvec(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, 255.0f);
 		const uint8_t index = core::Color::getClosestMatch(cvec, materialColors);
 		if (wrapper.setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, index))) {
@@ -377,90 +381,6 @@ void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertex
 	modified(layerId, modifiedRegion);
 }
 
-glm::ivec3 SceneManager::aabbPosition() const {
-	if (_aabbMode) {
-		if ((_modifierType & ModifierType::Extrude) == ModifierType::Extrude) {
-			// TODO: select the whole plane and limit the position to it
-		}
-	}
-	return cursorPosition();
-}
-
-bool SceneManager::aabbMode() const {
-	return _aabbMode;
-}
-
-glm::ivec3 SceneManager::aabbDim() const {
-	const int size = gridResolution();
-	const glm::ivec3& pos = cursorPosition();
-	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
-	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos);
-	return glm::abs(maxs + size - mins);
-}
-
-bool SceneManager::aabbStart() {
-	if (_aabbMode) {
-		return false;
-	}
-	_aabbFirstPos = aabbPosition();
-	_aabbMode = true;
-	return true;
-}
-
-bool SceneManager::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
-	if (_mirrorAxis == math::Axis::None) {
-		return false;
-	}
-	const int index = getIndexForMirrorAxis(_mirrorAxis);
-	int deltaMaxs = _mirrorPos[index] - maxs[index] - 1;
-	deltaMaxs *= 2;
-	deltaMaxs += (maxs[index] - mins[index] + 1);
-	mins[index] += deltaMaxs;
-	maxs[index] += deltaMaxs;
-	return true;
-}
-
-bool SceneManager::aabbEnd(bool trace) {
-	if (!_aabbMode) {
-		return false;
-	}
-	const int layerId = _layerMgr.activeLayer();
-	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	_aabbMode = false;
-	const int size = gridResolution();
-	const glm::ivec3& pos = aabbPosition();
-	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
-	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos) + (size - 1);
-	voxel::Region modifiedRegion;
-	glm::ivec3 minsMirror = mins;
-	glm::ivec3 maxsMirror = maxs;
-	if (!getMirrorAABB(minsMirror, maxsMirror)) {
-		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
-			modified(layerId, modifiedRegion);
-		}
-		return true;
-	}
-	const math::AABB<int> first(mins, maxs);
-	const math::AABB<int> second(minsMirror, maxsMirror);
-	voxel::Region modifiedRegionMirror;
-	if (math::intersects(first, second)) {
-		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
-			modified(layerId, modifiedRegionMirror);
-		}
-	} else {
-		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
-			modified(layerId, modifiedRegion);
-		}
-		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
-			modified(layerId, modifiedRegionMirror);
-		}
-	}
-	if (trace) {
-		resetLastTrace();
-	}
-	return true;
-}
-
 voxel::RawVolume* SceneManager::volume(int idx) {
 	voxel::RawVolume* v = _volumeRenderer.volume(idx);
 	//core_assert_msg(v != nullptr, "Volume for index %i is null", idx);
@@ -470,11 +390,6 @@ voxel::RawVolume* SceneManager::volume(int idx) {
 voxel::RawVolume* SceneManager::modelVolume() {
 	const int idx = _layerMgr.activeLayer();
 	return volume(idx);
-}
-
-void SceneManager::executeModifier() {
-	aabbStart();
-	aabbEnd(false);
 }
 
 void SceneManager::undo() {
@@ -609,16 +524,7 @@ bool SceneManager::setGridResolution(int resolution) {
 	}
 
 	const int res = gridResolution();
-	if (_aabbFirstPos.x % res != 0) {
-		_aabbFirstPos.x = (_aabbFirstPos.x / res) * res;
-	}
-	if (_aabbFirstPos.y % res != 0) {
-		_aabbFirstPos.y = (_aabbFirstPos.y / res) * res;
-	}
-	if (_aabbFirstPos.z % res != 0) {
-		_aabbFirstPos.z = (_aabbFirstPos.z / res) * res;
-	}
-
+	_modifier.setGridResolution(res);
 	setCursorPosition(_cursorPos, true);
 
 	return true;
@@ -628,43 +534,14 @@ void SceneManager::render(const video::Camera& camera) {
 	const bool depthTest = video::enable(video::State::DepthTest);
 	_gridRenderer.render(camera, modelVolume()->region());
 	_volumeRenderer.render(camera, _renderShadow);
-	if (_aabbMode) {
-		_shapeBuilder.clear();
-		_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.5f));
-		glm::ivec3 cursor = aabbPosition();
-		glm::ivec3 mins = glm::min(_aabbFirstPos, cursor);
-		glm::ivec3 maxs = glm::max(_aabbFirstPos, cursor);
-		glm::ivec3 minsMirror = mins;
-		glm::ivec3 maxsMirror = maxs;
-		// TODO: z-fighting if you zoom out far enough
-		const float delta = 0.001f;
-		const float size = gridRenderer().gridResolution() + delta;
-		if (getMirrorAABB(minsMirror, maxsMirror)) {
-			const math::AABB<int> first(mins, maxs);
-			const math::AABB<int> second(minsMirror, maxsMirror);
-			if (math::intersects(first, second)) {
-				_shapeBuilder.cube(glm::vec3(mins) - delta, glm::vec3(maxsMirror) + size);
-			} else {
-				_shapeBuilder.cube(glm::vec3(mins) - delta, glm::vec3(maxs) + size);
-				_shapeBuilder.cube(glm::vec3(minsMirror) - delta, glm::vec3(maxsMirror) + size);
-			}
-		} else {
-			_shapeBuilder.cube(glm::vec3(mins) - delta, glm::vec3(maxs) + size);
-		}
-		_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
-		_shapeRenderer.render(_aabbMeshIndex, camera);
-	}
+	_modifier.render(camera);
 
-	const glm::mat4& translate = glm::translate(glm::vec3(cursorPosition()));
-	const glm::mat4& scale = glm::scale(translate, glm::vec3(gridRenderer().gridResolution()));
-	_shapeRenderer.render(_voxelCursorMesh, camera, scale);
 	// TODO: render error if rendered last - but be before grid renderer to get transparency.
 	if (_renderLockAxis) {
 		for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
 			_shapeRenderer.render(_planeMeshIndex[i], camera);
 		}
 	}
-	_shapeRenderer.render(_mirrorMeshIndex, camera);
 	if (renderAxis()) {
 		_axis.render(camera);
 	}
@@ -675,6 +552,9 @@ void SceneManager::render(const video::Camera& camera) {
 }
 
 void SceneManager::construct() {
+	_layerMgr.construct();
+	_modifier.construct();
+
 	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
 		core::Command::registerActionButton(
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
@@ -698,33 +578,6 @@ void SceneManager::construct() {
 	core::Command::registerCommand("crop",
 			[&] (const core::CmdArgs& args) {crop();}).setHelp(
 			"Crop the volume");
-
-	core::Command::registerCommand("actiondelete",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Delete, false);}).setHelp(
-			"Change the modifier type to 'delete'");
-
-	core::Command::registerCommand("actionplace",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place, false);}).setHelp(
-			"Change the modifier type to 'place'");
-
-	core::Command::registerCommand("actioncolorize",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Update, false);}).setHelp(
-			"Change the modifier type to 'colorize'");
-
-	core::Command::registerCommand("actionextrude",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Extrude, false);}).setHelp(
-			"Change the modifier type to 'extrude'");
-
-	core::Command::registerCommand("actionoverride",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place | ModifierType::Delete, false);}).setHelp(
-			"Change the modifier type to 'override'");
-
-	core::Command::registerCommand("+actionexecute",
-			[&] (const core::CmdArgs& args) {aabbStart();}).setHelp(
-			"Place a voxel to the current cursor position");
-	core::Command::registerCommand("-actionexecute",
-			[&] (const core::CmdArgs& args) {aabbEnd(false);}).setHelp(
-			"Place a voxel to the current cursor position");
 
 	core::Command::registerCommand("setvoxelresolution",
 			[&] (const core::CmdArgs& args) {
@@ -824,7 +677,6 @@ void SceneManager::construct() {
 		rotate(0, 0, deg);
 	}).setHelp("Rotate scene by the given angles (in degree)");
 
-	_layerMgr.construct();
 	core::Command::registerCommand("layerdetails", [&] (const core::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
 			const Layer& layer = _layerMgr.layer(idx);
@@ -855,7 +707,7 @@ void SceneManager::construct() {
 	}).setHelp("Animate all visible layers with the given delay in millis between the frames");
 	core::Command::registerCommand("pickcolor", [&] (const core::CmdArgs& args) {
 		if (!voxel::isAir(_hitCursorVoxel.getMaterial())) {
-			setCursorVoxel(_hitCursorVoxel);
+			_modifier.setCursorVoxel(_hitCursorVoxel);
 		}
 	}).setHelp("Pick the current selected color");
 }
@@ -873,19 +725,17 @@ bool SceneManager::init() {
 	_gridRenderer.init();
 	_layerMgr.init();
 	_layerMgr.registerListener(this);
+	_modifier.init();
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
 	const core::TimeProviderPtr& timeProvider = core::App::getInstance()->timeProvider();
 	_lastAutoSave = timeProvider->tickSeconds();
 
-	_mirrorMeshIndex = -1;
-	_aabbMeshIndex = -1;
 	for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
 		_planeMeshIndex[i] = -1;
 	}
 
 	_lockedAxis = math::Axis::None;
-	_mirrorAxis = math::Axis::None;
 	return true;
 }
 
@@ -936,6 +786,7 @@ void SceneManager::shutdown() {
 		delete v;
 	}
 
+	_modifier.shutdown();
 	_layerMgr.unregisterListener(this);
 	_layerMgr.shutdown();
 	_axis.shutdown();
@@ -1034,15 +885,6 @@ void SceneManager::createTree(voxel::TreeContext ctx) {
 	modified(layerId, wrapper.dirtyRegion());
 }
 
-void SceneManager::setCursorVoxel(const voxel::Voxel& voxel) {
-	_cursorVoxel = voxel;
-	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(voxel::getMaterialColor(voxel), 0.7f));
-	_shapeBuilder.setPosition(glm::zero<glm::vec3>());
-	_shapeBuilder.cube(glm::vec3(-0.01f), glm::vec3(1.01f));
-	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
-}
-
 void SceneManager::setReferencePosition(const glm::ivec3& pos) {
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
@@ -1130,38 +972,6 @@ void SceneManager::setRenderShadow(bool shadow) {
 	_renderShadow = shadow;
 }
 
-bool SceneManager::addModifierType(ModifierType type, bool trace) {
-	if ((_modifierType & type) == type) {
-		return false;
-	}
-	_modifierType &= type;
-	if (trace) {
-		// the modifier type has an influence on which voxel is taken. So make
-		// sure the next trace is executed even if we don't move the mouse.
-		resetLastTrace();
-	}
-	return true;
-}
-
-void SceneManager::setModifierType(ModifierType type, bool trace) {
-	_modifierType = type;
-	if (trace) {
-		// the modifier type has an influence on which voxel is taken. So make
-		// sure the next trace is executed even if we don't move the mouse.
-		resetLastTrace();
-	}
-}
-
-ModifierType SceneManager::modifierType() const {
-	return _modifierType;
-}
-
-bool SceneManager::modifierTypeRequiresExistingVoxel() const {
-	return (_modifierType & ModifierType::Delete) == ModifierType::Delete
-			|| (_modifierType & ModifierType::Update) == ModifierType::Update
-			|| (_modifierType & ModifierType::Extrude) == ModifierType::Extrude;
-}
-
 bool SceneManager::trace(const video::Camera& camera, bool force) {
 	const voxel::RawVolume* model = modelVolume();
 	if (model == nullptr) {
@@ -1211,7 +1021,7 @@ bool SceneManager::trace(const video::Camera& camera, bool force) {
 			return true;
 		});
 
-		if (modifierTypeRequiresExistingVoxel()) {
+		if (_modifier.modifierTypeRequiresExistingVoxel()) {
 			if (_result.didHit) {
 				setCursorPosition(_result.hitVoxel);
 			} else if (_result.validPreviousPosition) {
@@ -1229,50 +1039,6 @@ bool SceneManager::trace(const video::Camera& camera, bool force) {
 	}
 
 	return true;
-}
-
-int SceneManager::getIndexForAxis(math::Axis axis) const {
-	if (axis == math::Axis::X) {
-		return 0;
-	} else if (axis == math::Axis::Y) {
-		return 1;
-	}
-	return 2;
-}
-
-int SceneManager::getIndexForMirrorAxis(math::Axis axis) const {
-	if (axis == math::Axis::X) {
-		return 2;
-	} else if (axis == math::Axis::Y) {
-		return 1;
-	}
-	return 0;
-}
-
-void SceneManager::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color) {
-	const voxel::Region& region = _volumeRenderer.region();
-	const int index = mirror ? getIndexForMirrorAxis(axis) : getIndexForAxis(axis);
-	glm::vec3 mins = region.getLowerCorner();
-	glm::vec3 maxs = region.getUpperCorner();
-	mins[index] = maxs[index] = pos[index];
-	const glm::vec3& ll = mins;
-	const glm::vec3& ur = maxs;
-	glm::vec3 ul;
-	glm::vec3 lr;
-	if (axis == math::Axis::Y) {
-		ul = glm::vec3(mins.x, mins.y, maxs.z);
-		lr = glm::vec3(maxs.x, maxs.y, mins.z);
-	} else {
-		ul = glm::vec3(mins.x, maxs.y, mins.z);
-		lr = glm::vec3(maxs.x, mins.y, maxs.z);
-	}
-	std::vector<glm::vec3> vecs({ll, ul, ur, lr});
-	// lower left (0), upper left (1), upper right (2)
-	// lower left (0), upper right (2), lower right (3)
-	const std::vector<uint32_t> indices { 0, 1, 2, 0, 2, 3, 2, 1, 0, 3, 2, 0 };
-	_shapeBuilder.clear();
-	_shapeBuilder.setColor(color);
-	_shapeBuilder.geom(vecs, indices);
 }
 
 void SceneManager::updateLockedPlane(math::Axis axis) {
@@ -1294,38 +1060,8 @@ void SceneManager::updateLockedPlane(math::Axis axis) {
 		core::Color::LightGreen,
 		core::Color::LightBlue
 	};
-	updateShapeBuilderForPlane(false, _cursorPos, axis, core::Color::alpha(colors[index], 0.4f));
+	updateShapeBuilderForPlane(_shapeBuilder, _volumeRenderer.region(), false, _cursorPos, axis, core::Color::alpha(colors[index], 0.4f));
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
-}
-
-math::Axis SceneManager::mirrorAxis() const {
-	return _mirrorAxis;
-}
-
-void SceneManager::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos) {
-	if (_mirrorAxis == axis) {
-		if (_mirrorPos != mirrorPos) {
-			_mirrorPos = mirrorPos;
-			updateMirrorPlane();
-		}
-		return;
-	}
-	_mirrorPos = mirrorPos;
-	_mirrorAxis = axis;
-	updateMirrorPlane();
-}
-
-void SceneManager::updateMirrorPlane() {
-	if (_mirrorAxis == math::Axis::None) {
-		if (_mirrorMeshIndex != -1) {
-			_shapeRenderer.deleteMesh(_mirrorMeshIndex);
-			_mirrorMeshIndex = -1;
-		}
-		return;
-	}
-
-	updateShapeBuilderForPlane(true, _mirrorPos, _mirrorAxis, core::Color::alpha(core::Color::LightGray, 0.3f));
-	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 
 void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {

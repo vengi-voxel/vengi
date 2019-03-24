@@ -25,6 +25,7 @@
 #include "ModifierType.h"
 #include "LayerListener.h"
 #include "Layer.h"
+#include "Modifier.h"
 #include "LayerManager.h"
 #include <vector>
 
@@ -58,21 +59,17 @@ private:
 	render::ShapeRenderer _shapeRenderer;
 	MementoHandler _mementoHandler;
 	LayerManager _layerMgr;
+	Modifier _modifier;
 	render::Axis _axis;
 
 	int32_t _referencePointMesh = -1;
-	int32_t _voxelCursorMesh = -1;
 
 	glm::ivec3 _cursorPos;
 	glm::ivec3 _referencePos;
-	glm::ivec3 _mirrorPos;
 
-	glm::ivec3 _aabbFirstPos;
-	bool _aabbMode = false;
 	core::VarPtr _autoSaveSecondsDelay;
 
 	math::Axis _lockedAxis = math::Axis::None;
-	math::Axis _mirrorAxis = math::Axis::None;
 
 	struct DirtyRegion {
 		voxel::Region region;
@@ -93,8 +90,6 @@ private:
 	uint64_t _lastAutoSave = 0u;
 
 	int32_t _planeMeshIndex[3] = {-1, -1, -1};
-	int32_t _mirrorMeshIndex = -1;
-	int32_t _aabbMeshIndex = -1;
 
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
@@ -112,31 +107,19 @@ private:
 	uint64_t _lastMove[lengthof(DIRECTIONS)] { 0 };
 
 	voxel::PickResult _result;
-	voxel::Voxel _cursorVoxel;
 	// existing voxel under the cursor
 	voxel::Voxel _hitCursorVoxel;
 
-	ModifierType _modifierType = ModifierType::Place;
-	bool modifierTypeRequiresExistingVoxel() const;
-
-	int getIndexForAxis(math::Axis axis) const;
-	int getIndexForMirrorAxis(math::Axis axis) const;
-	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color);
-	void modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo = true);
-
-	voxel::RawVolume* volume(int idx);
 	voxel::RawVolume* modelVolume();
 	bool setNewVolume(int idx, voxel::RawVolume* volume);
 	bool setNewVolumes(const voxel::VoxelVolumes& volumes);
-	void resetLastTrace();
-	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 
-	void executeModifier();
 	void animate(uint64_t time);
 public:
 	SceneManager();
 	~SceneManager();
 
+	void resetLastTrace();
 	voxel::Region region() const;
 
 	const voxel::Voxel& hitCursorVoxel() const;
@@ -164,12 +147,8 @@ public:
 	void shutdown() override;
 	void autosave();
 
-	glm::ivec3 aabbPosition() const;
-	bool aabbMode() const;
-	glm::ivec3 aabbDim() const;
-
-	bool aabbStart();
-	bool aabbEnd(bool trace = true);
+	void modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo = true);
+	voxel::RawVolume* volume(int idx);
 
 	void crop();
 	void resize(const glm::ivec3& size);
@@ -208,9 +187,6 @@ public:
 	 */
 	void render(const video::Camera& camera);
 
-	void setCursorVoxel(const voxel::Voxel& voxel);
-	const voxel::Voxel& cursorVoxel() const;
-
 	render::GridRenderer& gridRenderer();
 	int gridResolution() const;
 	bool setGridResolution(int resolution);
@@ -232,10 +208,6 @@ public:
 	void setLockedAxis(math::Axis axis, bool unlock);
 	void updateLockedPlane(math::Axis axis);
 
-	math::Axis mirrorAxis() const;
-	void setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
-	void updateMirrorPlane();
-
 	bool renderAxis() const;
 	void setRenderAxis(bool renderAxis);
 
@@ -245,15 +217,13 @@ public:
 	bool renderShadow() const;
 	void setRenderShadow(bool shadow);
 
-	ModifierType modifierType() const;
-	void setModifierType(ModifierType type, bool trace = true);
-	bool addModifierType(ModifierType type, bool trace = true);
-
 	void undo();
 	void redo();
 
 	const LayerManager& layerMgr() const;
 	LayerManager& layerMgr();
+	const Modifier& modifier() const;
+	Modifier& modifier();
 	const MementoHandler& mementoHandler() const;
 
 	void onLayerHide(int layerId) override;
@@ -311,8 +281,12 @@ inline LayerManager& SceneManager::layerMgr() {
 	return _layerMgr;
 }
 
-inline const voxel::Voxel& SceneManager::cursorVoxel() const {
-	return _cursorVoxel;
+inline const Modifier& SceneManager::modifier() const {
+	return _modifier;
+}
+
+inline Modifier& SceneManager::modifier() {
+	return _modifier;
 }
 
 inline SceneManager& sceneMgr() {

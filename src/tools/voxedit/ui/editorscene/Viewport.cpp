@@ -129,14 +129,15 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 
 void Viewport::updateStatusBar() {
 	if (tb::TBTextField* status = getParentRoot()->getWidgetByIDAndType<tb::TBTextField>("status")) {
-		if (voxedit::sceneMgr().aabbMode()) {
+		const voxedit::Modifier& modifier = voxedit::sceneMgr().modifier();
+		if (modifier.aabbMode()) {
 			tb::TBStr str;
-			const glm::ivec3& dim = voxedit::sceneMgr().aabbDim();
+			const glm::ivec3& dim = modifier.aabbDim();
 			str.setFormatted("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
 			status->setText(str);
 		} else {
 			const video::WindowedApp* app = video::WindowedApp::getInstance();
-			const ModifierType modifierType = voxedit::sceneMgr().modifierType();
+			const ModifierType modifierType = modifier.modifierType();
 			const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
 			const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 			const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
