@@ -8,7 +8,7 @@ set(SRCS
 	LayerListener.h
 	Layer.h
 
-	AxisUtil.h
+	AxisUtil.h AxisUtil.cpp
 	ModifierType.h
 	Config.h
 	voxelizer.h
