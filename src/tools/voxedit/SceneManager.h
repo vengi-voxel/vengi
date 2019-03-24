@@ -194,6 +194,7 @@ public:
 	void shutdown() override;
 	void autosave();
 
+	glm::ivec3 aabbPosition() const;
 	bool aabbMode() const;
 	glm::ivec3 aabbDim() const;
 

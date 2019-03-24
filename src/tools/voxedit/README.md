@@ -28,6 +28,7 @@ my own engine and evolved into something that others might find useful, too.
 * Import and voxelize dae, obj, fbx and a lot more formats
 * Modelling without the mouse - just via shortcuts and keyboard
 * Animation support
+* Extrude
 
 # Controls
 
@@ -48,3 +49,9 @@ my own engine and evolved into something that others might find useful, too.
 * Windows and MacOSX support
 * Color selection via keyboard only
 * Extend palette widget to show the used colors
+
+# Needed improvements
+
+* Resizing the volume doesn't have to remesh everything
+* New scene dialog and new layer dialog that lets you select the mins/maxs
+* Allow to merge and duplicate layers

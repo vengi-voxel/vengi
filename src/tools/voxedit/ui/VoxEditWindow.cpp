@@ -169,6 +169,7 @@ bool VoxEditWindow::init() {
 	_deleteModifier = getWidgetByType<tb::TBRadioButton>("actiondelete");
 	_overrideModifier = getWidgetByType<tb::TBRadioButton>("actionoverride");
 	_colorizeModifier = getWidgetByType<tb::TBRadioButton>("actioncolorize");
+	_extrudeModifier = getWidgetByType<tb::TBRadioButton>("actionextrude");
 
 	_showAABB = getWidgetByType<tb::TBCheckBox>("optionshowaabb");
 	_showGrid = getWidgetByType<tb::TBCheckBox>("optionshowgrid");
@@ -492,6 +493,9 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.isAny(TBIDC("actioncolorize")) && widget->getValue() == 1) {
 		_voxedit->sceneMgr().setModifierType(ModifierType::Update);
 		return true;
+	} else if (ev.isAny(TBIDC("actionextrude")) && widget->getValue() == 1) {
+		_voxedit->sceneMgr().setModifierType(ModifierType::Extrude);
+		return true;
 	} else if (ev.isAny(TBIDC("actionoverride")) && widget->getValue() == 1) {
 		_voxedit->sceneMgr().setModifierType(ModifierType::Place | ModifierType::Delete);
 		return true;
@@ -531,6 +535,10 @@ void VoxEditWindow::onProcess() {
 	} else if ((modifierType & ModifierType::Update) == ModifierType::Update) {
 		if (_colorizeModifier) {
 			_colorizeModifier->setValue(1);
+		}
+	} else if ((modifierType & ModifierType::Extrude) == ModifierType::Extrude) {
+		if (_extrudeModifier) {
+			_extrudeModifier->setValue(1);
 		}
 	}
 
@@ -606,21 +614,23 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
 			if (ev.button_type == tb::TB_LEFT || ev.button_type == tb::TB_RIGHT) {
+				SceneManager& sceneMgr = _voxedit->sceneMgr();
 				if (ev.button_type == tb::TB_RIGHT) {
-					_modBeforeMouse = _voxedit->sceneMgr().modifierType();
-					_voxedit->sceneMgr().setModifierType(ModifierType::Delete);
-					_voxedit->sceneMgr().trace(viewport->camera(), true);
+					_modBeforeMouse = sceneMgr.modifierType();
+					sceneMgr.setModifierType(ModifierType::Delete);
+					sceneMgr.trace(viewport->camera(), true);
 				}
-				_voxedit->sceneMgr().aabbStart();
+				sceneMgr.aabbStart();
 				return true;
 			}
 		}
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
-			if (_voxedit->sceneMgr().aabbEnd()) {
+			SceneManager& sceneMgr = _voxedit->sceneMgr();
+			if (sceneMgr.aabbEnd()) {
 				if (_modBeforeMouse != ModifierType::None) {
-					_voxedit->sceneMgr().setModifierType(_modBeforeMouse);
-					_voxedit->sceneMgr().trace(viewport->camera(), true);
+					sceneMgr.setModifierType(_modBeforeMouse);
+					sceneMgr.trace(viewport->camera(), true);
 					_modBeforeMouse = ModifierType::None;
 				}
 				return true;

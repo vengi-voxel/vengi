@@ -64,28 +64,30 @@ TBLayout: distribution: gravity, axis: y
 								TBRadioButton
 									id actionplace
 									value 1
-									data 1
 									@include definitions>toolbutton
 							TBClickLabel
 								text Delete
 								TBSkinImage: skin: voxedit-delete
 								TBRadioButton
 									id actiondelete
-									data 2
 									@include definitions>toolbutton
 							TBClickLabel
 								text Override
 								TBSkinImage: skin: voxedit-override
 								TBRadioButton
 									id actionoverride
-									data 3
 									@include definitions>toolbutton
 							TBClickLabel
 								text Colorize
 								TBSkinImage: skin: voxedit-color
 								TBRadioButton
 									id actioncolorize
-									data 3
+									@include definitions>toolbutton
+							TBClickLabel
+								text Extrude
+								TBSkinImage: skin: voxedit-extrude
+								TBRadioButton
+									id actionextrude
 									@include definitions>toolbutton
 
 					TBSeparator: gravity: left right, skin: separator

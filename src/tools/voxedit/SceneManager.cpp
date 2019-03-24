@@ -379,6 +379,15 @@ void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertex
 	modified(layerId, modifiedRegion);
 }
 
+glm::ivec3 SceneManager::aabbPosition() const {
+	if (_aabbMode) {
+		if ((_modifierType & ModifierType::Extrude) == ModifierType::Extrude) {
+			// TODO: select the whole plane and limit the position to it
+		}
+	}
+	return cursorPosition();
+}
+
 bool SceneManager::aabbMode() const {
 	return _aabbMode;
 }
@@ -395,7 +404,7 @@ bool SceneManager::aabbStart() {
 	if (_aabbMode) {
 		return false;
 	}
-	_aabbFirstPos = cursorPosition();
+	_aabbFirstPos = aabbPosition();
 	_aabbMode = true;
 	return true;
 }
@@ -421,7 +430,7 @@ bool SceneManager::aabbEnd(bool trace) {
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	_aabbMode = false;
 	const int size = gridResolution();
-	const glm::ivec3 pos = cursorPosition();
+	const glm::ivec3& pos = aabbPosition();
 	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
 	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos) + (size - 1);
 	voxel::Region modifiedRegion;
@@ -776,7 +785,7 @@ void SceneManager::render(const video::Camera& camera) {
 	if (_aabbMode) {
 		_shapeBuilder.clear();
 		_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.5f));
-		glm::ivec3 cursor = cursorPosition();
+		glm::ivec3 cursor = aabbPosition();
 		glm::ivec3 mins = glm::min(_aabbFirstPos, cursor);
 		glm::ivec3 maxs = glm::max(_aabbFirstPos, cursor);
 		glm::ivec3 minsMirror = mins;
@@ -855,6 +864,10 @@ void SceneManager::construct() {
 	core::Command::registerCommand("actioncolorize",
 			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Update, false);}).setHelp(
 			"Change the modifier type to 'colorize'");
+
+	core::Command::registerCommand("actionextrude",
+			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Extrude, false);}).setHelp(
+			"Change the modifier type to 'extrude'");
 
 	core::Command::registerCommand("actionoverride",
 			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place | ModifierType::Delete, false);}).setHelp(
@@ -1329,7 +1342,9 @@ ModifierType SceneManager::modifierType() const {
 }
 
 bool SceneManager::modifierTypeRequiresExistingVoxel() const {
-	return (_modifierType & ModifierType::Delete) == ModifierType::Delete || (_modifierType & ModifierType::Update) == ModifierType::Delete;
+	return (_modifierType & ModifierType::Delete) == ModifierType::Delete
+			|| (_modifierType & ModifierType::Update) == ModifierType::Update
+			|| (_modifierType & ModifierType::Extrude) == ModifierType::Extrude;
 }
 
 bool SceneManager::trace(const video::Camera& camera, bool force) {

@@ -142,6 +142,7 @@ void Viewport::updateStatusBar() {
 			const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
 			const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 			const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
+			const bool extrude = (modifierType & ModifierType::Extrude) == ModifierType::Extrude;
 			std::string statusText;
 			std::string keybindingStr;
 			if (overwrite) {
@@ -153,6 +154,9 @@ void Viewport::updateStatusBar() {
 			} else if (update) {
 				statusText = tr("Colorize");
 				keybindingStr = app->getKeyBindingsString("actioncolorize");
+			} else if (extrude) {
+				statusText = tr("Extrude");
+				keybindingStr = app->getKeyBindingsString("actionextrude");
 			} else {
 				statusText = tr("Place");
 				keybindingStr = app->getKeyBindingsString("actionplace");
