@@ -188,10 +188,27 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, siz
 	return true;
 }
 
+void ShapeRenderer::hide(int32_t meshIndex, bool hide) {
+	if (meshIndex < 0 || meshIndex >= MAX_MESHES) {
+		return;
+	}
+	_hidden[meshIndex] = hide;
+}
+
+bool ShapeRenderer::hiddenState(int32_t meshIndex) const {
+	if (meshIndex < 0 || meshIndex >= MAX_MESHES) {
+		return true;
+	}
+	return _hidden[meshIndex];
+}
+
 int ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model, video::Shader* shader) const {
 	int cnt = 0;
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
+			continue;
+		}
+		if (_hidden[meshIndex]) {
 			continue;
 		}
 		if (render(meshIndex, camera, model, shader)) {

@@ -28,6 +28,7 @@ public:
 private:
 	video::Buffer _vbo[MAX_MESHES];
 	int32_t _vertexIndex[MAX_MESHES];
+	bool _hidden[MAX_MESHES] { false };
 	int32_t _indexIndex[MAX_MESHES];
 	int32_t _colorIndex[MAX_MESHES];
 	// for instancing
@@ -53,6 +54,9 @@ public:
 	void createOrUpdate(int32_t& meshIndex, const video::ShapeBuilder& shapeBuilder);
 
 	int32_t create(const video::ShapeBuilder& shapeBuilder);
+
+	void hide(int32_t meshIndex, bool hide);
+	bool hiddenState(int32_t meshIndex) const;
 
 	void shutdown() override;
 
