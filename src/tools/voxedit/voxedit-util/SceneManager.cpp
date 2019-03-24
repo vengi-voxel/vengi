@@ -135,7 +135,7 @@ bool SceneManager::voxelizeModel(const video::MeshPtr& meshPtr) {
 }
 
 bool SceneManager::importHeightmap(const std::string& file) {
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolume* v = volume(layerId);
 	if (v == nullptr) {
 		return false;
@@ -190,7 +190,7 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 		ext = "vox";
 	}
 	voxel::VoxelVolumes volumes;
-	const int layers = (int)_layers.size();
+	const int layers = (int)_layerMgr.layers().size();
 	for (int idx = 0; idx < layers; ++idx) {
 		voxel::RawVolume* v = _volumeRenderer.volume(idx);
 		if (v == nullptr) {
@@ -199,7 +199,8 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 		if (_volumeRenderer.empty(idx)) {
 			continue;
 		}
-		volumes.push_back(voxel::VoxelVolume(v, _layers[idx].name, _layers[idx].visible));
+		const Layer& layer = _layerMgr.layer(idx);
+		volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
 	}
 
 	if (volumes.empty()) {
@@ -254,7 +255,7 @@ bool SceneManager::prefab(const std::string& file) {
 		return false;
 	}
 	Log::info("Import model file %s", file.c_str());
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxel::moveVolume(&wrapper, newVolume, _referencePos);
 	modified(layerId, wrapper.dirtyRegion());
@@ -324,7 +325,7 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 }
 
 void SceneManager::crop() {
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	if (_volumeRenderer.empty(layerId)) {
 		Log::info("Empty volumes can't be cropped");
 		return;
@@ -338,7 +339,7 @@ void SceneManager::crop() {
 }
 
 void SceneManager::resize(const glm::ivec3& size) {
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolume* newVolume = voxedit::tool::resize(volume(layerId), size);
 	if (newVolume == nullptr) {
 		return;
@@ -353,7 +354,7 @@ void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertex
 
 	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
 	materialColors.erase(materialColors.begin());
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 
 	bool change = false;
@@ -423,7 +424,7 @@ bool SceneManager::aabbEnd(bool trace) {
 	if (!_aabbMode) {
 		return false;
 	}
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	_aabbMode = false;
 	const int size = gridResolution();
@@ -460,148 +461,6 @@ bool SceneManager::aabbEnd(bool trace) {
 	return true;
 }
 
-bool SceneManager::findNewActiveLayer() {
-	_activeLayer = -1;
-	const int size = (int)_layers.size();
-	for (int i = 0; i < size; ++i) {
-		if (_layers[i].valid && _activeLayer == -1) {
-			if (setActiveLayer(i)) {
-				return true;
-			}
-		}
-	}
-	_activeLayer = 0;
-	return false;
-}
-
-int SceneManager::validLayerId(int index) const {
-	int validLayers = 0;
-	for (const auto& l : layers()) {
-		if (!l.valid) {
-			continue;
-		}
-		if (index == validLayers) {
-			return validLayers;
-		}
-		++validLayers;
-	}
-	return validLayers;
-}
-
-void SceneManager::hideLayer(int layerId, bool hide) {
-	_volumeRenderer.hide(layerId, hide);
-	if (_listener != nullptr) {
-		if (hide) {
-			_listener->onLayerHide(layerId);
-		} else {
-			_listener->onLayerShow(layerId);
-		}
-	}
-}
-
-int SceneManager::validLayers() const {
-	int validLayers = 0;
-	for (const auto& l : layers()) {
-		if (!l.valid) {
-			continue;
-		}
-		++validLayers;
-	}
-	return validLayers;
-}
-
-bool SceneManager::setActiveLayer(int layerId) {
-	if (layerId < 0 || layerId >= (int)_layers.size()) {
-		Log::debug("Given layer %i is out of bounds", layerId);
-		return false;
-	}
-	if (!_layers[layerId].valid) {
-		Log::debug("Given layer %i is not valid", layerId);
-		return false;
-	}
-	Log::debug("New active layer: %i", layerId);
-	int old = _activeLayer;
-	_activeLayer = layerId;
-	const voxel::RawVolume* volume = _volumeRenderer.volume(_activeLayer);
-	core_assert_always(volume != nullptr);
-	const voxel::Region& region = volume->region();
-	_gridRenderer.update(region);
-	if (!region.containsPoint(referencePosition())) {
-		setReferencePosition(region.getCentre());
-	}
-	if (!region.containsPoint(cursorPosition())) {
-		setCursorPosition(volume->region().getCentre());
-	}
-	resetLastTrace();
-	if (_listener != nullptr) {
-		_listener->onActiveLayerChanged(old, _activeLayer);
-	}
-	return true;
-}
-
-bool SceneManager::deleteLayer(int layerId, bool force) {
-	if (layerId < 0 || layerId >= (int)_layers.size()) {
-		return false;
-	}
-	if (!_layers[layerId].valid) {
-		return true;
-	}
-	// don't delete the last layer
-	if (!force && validLayers() == 1) {
-		return false;
-	}
-	_layers[layerId].reset();
-	voxel::RawVolume* v = _volumeRenderer.setVolume(layerId, nullptr);
-	if (v != nullptr) {
-		if (!force) {
-			_mementoHandler.markUndo(layerId, v);
-		}
-		_volumeRenderer.update(layerId);
-		delete v;
-	}
-	if (!force && layerId == activeLayer()) {
-		core_assert_always(findNewActiveLayer());
-	}
-	if (_listener != nullptr) {
-		_listener->onLayerDeleted(layerId);
-	}
-	return true;
-}
-
-// TODO: dialog that selects the mins/maxs of the volume
-int SceneManager::addLayer(const char *name, bool visible, voxel::RawVolume* volume) {
-	if (volume == nullptr) {
-		const voxel::Region& region = _volumeRenderer.region();
-		if (!region.isValid()) {
-			return -1;
-		}
-		volume = new voxel::RawVolume(region);
-	}
-	const size_t maxLayers = _layers.size();
-	for (size_t layerId = 0; layerId < maxLayers; ++layerId) {
-		if (_layers[layerId].valid) {
-			continue;
-		}
-		if (name == nullptr || name[0] == '\0') {
-			_layers[layerId].name = core::string::format("%i", (int)layerId);
-		} else {
-			_layers[layerId].name = name;
-		}
-		_layers[layerId].visible = visible;
-		_layers[layerId].valid = true;
-		delete _volumeRenderer.setVolume(layerId, volume);
-		_volumeRenderer.hide(layerId, !visible);
-		if (volume != nullptr) {
-			_extractRegions.push_back({volume->region(), (int)layerId});
-		}
-		if (_listener != nullptr) {
-			_listener->onLayerAdded((int)layerId, _layers[layerId]);
-		}
-		return (int)layerId;
-	}
-	return -1;
-}
-
 voxel::RawVolume* SceneManager::volume(int idx) {
 	voxel::RawVolume* v = _volumeRenderer.volume(idx);
 	//core_assert_msg(v != nullptr, "Volume for index %i is null", idx);
@@ -609,7 +468,7 @@ voxel::RawVolume* SceneManager::volume(int idx) {
 }
 
 voxel::RawVolume* SceneManager::modelVolume() {
-	const int idx = activeLayer();
+	const int idx = _layerMgr.activeLayer();
 	return volume(idx);
 }
 
@@ -625,7 +484,7 @@ void SceneManager::undo() {
 		return;
 	}
 	setNewVolume(s.layer, v);
-	setActiveLayer(s.layer);
+	_layerMgr.setActiveLayer(s.layer);
 	modified(s.layer, v->region(), false);
 }
 
@@ -636,18 +495,8 @@ void SceneManager::redo() {
 		return;
 	}
 	setNewVolume(s.layer, v);
-	setActiveLayer(s.layer);
+	_layerMgr.setActiveLayer(s.layer);
 	modified(s.layer, v->region(), false);
-}
-
-void SceneManager::registerListener(SceneListener* listener) {
-	_listener = listener;
-}
-
-void SceneManager::unregisterListener(SceneListener* listener) {
-	// currently there is only one listener
-	core_assert_always(_listener == listener);
-	_listener = nullptr;
 }
 
 void SceneManager::resetLastTrace() {
@@ -659,24 +508,24 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	if (size == 0) {
 		return newScene(true);
 	}
-	const int maxLayers = (int)_layers.size();
+	const int maxLayers = _layerMgr.maxLayers();
 	if (size > maxLayers) {
 		Log::error("Max supported layer size exceeded: %i (max supported: %i)",
 				size, maxLayers);
 		return false;
 	}
 	for (int idx = 0; idx < maxLayers; ++idx) {
-		deleteLayer(idx, true);
+		_layerMgr.deleteLayer(idx, true);
 	}
 	for (int idx = 0; idx < size; ++idx) {
-		const int layerId = addLayer(volumes[idx].name.c_str(), volumes[idx].visible, volumes[idx].volume);
+		const int layerId = _layerMgr.addLayer(volumes[idx].name.c_str(), volumes[idx].visible, volumes[idx].volume);
 		if (layerId < 0) {
 			return newScene(true);
 		}
 	}
 	_mementoHandler.clearStates();
-	findNewActiveLayer();
-	const int layerId = activeLayer();
+	_layerMgr.findNewActiveLayer();
+	const int layerId = _layerMgr.activeLayer();
 	// push the initial state of the current layer to the memento handler to
 	// be able to undo your next step
 	_mementoHandler.markUndo(layerId, _volumeRenderer.volume(layerId));
@@ -690,12 +539,12 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 }
 
 bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume) {
-	if (idx < 0 || idx >= (int)_layers.size()) {
+	if (idx < 0 || idx >= _layerMgr.maxLayers()) {
 		return false;
 	}
 	const voxel::Region& region = volume->region();
 	delete _volumeRenderer.setVolume(idx, volume);
-	_layers[idx].valid = volume != nullptr;
+	_layerMgr.layer(idx).valid = volume != nullptr;
 
 	if (volume != nullptr) {
 		_gridRenderer.update(region);
@@ -719,24 +568,24 @@ bool SceneManager::newScene(bool force) {
 	if (dirty() && !force) {
 		return false;
 	}
-	const int layers = (int)_layers.size();
+	const int layers = _layerMgr.maxLayers();
 	for (int idx = 0; idx < layers; ++idx) {
-		deleteLayer(idx, true);
+		_layerMgr.deleteLayer(idx, true);
 	}
-	core_assert_always(validLayers() == 0);
+	core_assert_always(_layerMgr.validLayers() == 0);
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
 	setReferencePosition(region.getCentre());
 	_mementoHandler.clearStates();
-	core_assert_always(addLayer("", true, new voxel::RawVolume(region)) != -1);
-	setActiveLayer(0);
-	modified(activeLayer(), region);
+	core_assert_always(_layerMgr.addLayer("", true, new voxel::RawVolume(region)) != -1);
+	_layerMgr.setActiveLayer(0);
+	modified(_layerMgr.activeLayer(), region);
 	_dirty = false;
-	core_assert_always(validLayers() == 1);
+	core_assert_always(_layerMgr.validLayers() == 1);
 	return true;
 }
 
 void SceneManager::rotate(int angleX, int angleY, int angleZ) {
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	const voxel::RawVolume* model = volume(layerId);
 	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), false);
 	setNewVolume(layerId, newVolume);
@@ -744,7 +593,7 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 }
 
 void SceneManager::move(int x, int y, int z) {
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	const voxel::RawVolume* model = volume(layerId);
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
@@ -974,47 +823,11 @@ void SceneManager::construct() {
 		const int deg = args.size() == 1 ? core::string::toInt(args[0]) : 90;
 		rotate(0, 0, deg);
 	}).setHelp("Rotate scene by the given angles (in degree)");
-	core::Command::registerCommand("layeradd", [&] (const core::CmdArgs& args) {
-		const int layerId = addLayer(args.size() > 0 ? args[0].c_str() : "");
-		if (layerId >= 0) {
-			setActiveLayer(layerId);
-		}
-	}).setHelp("Add a new layer (with a given name)");
-	core::Command::registerCommand("layerdelete", [&] (const core::CmdArgs& args) {
-		deleteLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer());
-	}).setHelp("Delete a particular layer by id - or the current active one");
-	core::Command::registerCommand("layeractive", [&] (const core::CmdArgs& args) {
-		if (args.empty()) {
-			Log::info("Active layer: %i", activeLayer());
-		} else {
-			const int newActiveLayer = core::string::toInt(args[0]);
-			if (!setActiveLayer(newActiveLayer)) {
-				Log::warn("Failed to make %i the active layer", newActiveLayer);
-			}
-		}
-	}).setHelp("Set or print the current active layer");
-	core::Command::registerCommand("layerstate", [&] (const core::CmdArgs& args) {
-		if (args.empty()) {
-			Log::info("Usage: layerstate <layerid> <true|false>");
-			return;
-		}
-		const int layerId = core::string::toInt(args[0]);
-		const bool newVisibleState = core::string::toBool(args[1]);
-		hideLayer(layerId, !newVisibleState);
-	}).setHelp("Change the visible state of a layer");
-	core::Command::registerCommand("layerhideall", [&] (const core::CmdArgs& args) {
-		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
-			hideLayer(idx, true);
-		}
-	}).setHelp("Hide all layers");
-	core::Command::registerCommand("layershowall", [&] (const core::CmdArgs& args) {
-		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
-			hideLayer(idx, false);
-		}
-	}).setHelp("Show all layers");
+
+	_layerMgr.construct();
 	core::Command::registerCommand("layerdetails", [&] (const core::CmdArgs& args) {
-		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
-			const Layer& layer = _layers[idx];
+		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
+			const Layer& layer = _layerMgr.layer(idx);
 			if (!layer.valid) {
 				continue;
 			}
@@ -1031,6 +844,7 @@ void SceneManager::construct() {
 			Log::info("   - voxels: %i:%i:%i", region.getWidthInVoxels(), region.getHeightInVoxels(), region.getDepthInVoxels());
 		}
 	}).setHelp("Show details to all layers");
+
 	core::Command::registerCommand("animate", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info("Usage: animate <framedelay>");
@@ -1057,6 +871,8 @@ bool SceneManager::init() {
 	_volumeRenderer.init();
 	_shapeRenderer.init();
 	_gridRenderer.init();
+	_layerMgr.init();
+	_layerMgr.registerListener(this);
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
 	const core::TimeProviderPtr& timeProvider = core::App::getInstance()->timeProvider();
@@ -1079,14 +895,14 @@ void SceneManager::animate(uint64_t time) {
 	}
 	if (_nextFrameSwitch <= time) {
 		_nextFrameSwitch = time + _animationSpeed;
-		const int layers = (int)_layers.size();
+		const int layers = (int)_layerMgr.layers().size();
 		const int roundTrip = layers + _currentAnimationLayer;
 		for (int idx = _currentAnimationLayer + 1; idx < roundTrip; ++idx) {
-			const Layer& layer = _layers[idx % layers];
+			const Layer& layer = _layerMgr.layer(idx % layers);
 			if (layer.valid && layer.visible) {
-				hideLayer(_currentAnimationLayer, true);
+				 _layerMgr.hideLayer(_currentAnimationLayer, true);
 				_currentAnimationLayer = idx % layers;
-				hideLayer(_currentAnimationLayer, false);
+				_layerMgr.hideLayer(_currentAnimationLayer, false);
 				return;
 			}
 		}
@@ -1120,6 +936,8 @@ void SceneManager::shutdown() {
 		delete v;
 	}
 
+	_layerMgr.unregisterListener(this);
+	_layerMgr.shutdown();
 	_axis.shutdown();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
@@ -1135,7 +953,7 @@ bool SceneManager::extractVolume() {
 			// extract n regions max per frame
 			const size_t MaxPerFrame = 4;
 			const size_t x = std::min(MaxPerFrame, n);
-			int lastLayer = activeLayer();
+			int lastLayer = _layerMgr.activeLayer();
 			for (size_t i = 0; i < x; ++i) {
 				const bool updateBuffers = i == x - 1 || lastLayer != _extractRegions[i].layer;
 				if (!_volumeRenderer.extract(_extractRegions[i].layer, _extractRegions[i].region, updateBuffers)) {
@@ -1154,7 +972,7 @@ bool SceneManager::extractVolume() {
 
 void SceneManager::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noisegen::NoiseType type) {
 	math::Random random;
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxel::noisegen::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
 	modified(layerId, wrapper.dirtyRegion());
@@ -1162,14 +980,14 @@ void SceneManager::noise(int octaves, float lacunarity, float frequency, float g
 
 void SceneManager::createCactus() {
 	math::Random random;
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxel::cactus::createCactus(wrapper, _referencePos, 18, 2, random);
 	modified(layerId, wrapper.dirtyRegion());
 }
 
 void SceneManager::createCloud() {
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	struct HasClouds {
 		glm::vec2 pos;
@@ -1187,7 +1005,7 @@ void SceneManager::createCloud() {
 
 void SceneManager::createPlant(voxel::PlantType type) {
 	voxel::PlantGenerator g;
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	if (type == voxel::PlantType::Flower) {
 		g.createFlower(5, _referencePos, wrapper);
@@ -1201,7 +1019,7 @@ void SceneManager::createPlant(voxel::PlantType type) {
 }
 
 void SceneManager::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxel::building::createBuilding(wrapper, _referencePos, type);
 	modified(layerId, wrapper.dirtyRegion());
@@ -1209,7 +1027,7 @@ void SceneManager::createBuilding(voxel::BuildingType type, const voxel::Buildin
 
 void SceneManager::createTree(voxel::TreeContext ctx) {
 	math::Random random;
-	const int layerId = activeLayer();
+	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	ctx.pos = _referencePos;
 	voxel::tree::createTree(wrapper, ctx, random);
@@ -1519,6 +1337,47 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	updateLockedPlane(math::Axis::X);
 	updateLockedPlane(math::Axis::Y);
 	updateLockedPlane(math::Axis::Z);
+}
+
+void SceneManager::onLayerHide(int layerId) {
+	_volumeRenderer.hide(layerId, true);
+}
+
+void SceneManager::onLayerShow(int layerId) {
+	_volumeRenderer.hide(layerId, false);
+}
+
+void SceneManager::onActiveLayerChanged(int old, int active) {
+	const voxel::RawVolume* volume = _volumeRenderer.volume(active);
+	core_assert_always(volume != nullptr);
+	const voxel::Region& region = volume->region();
+	_gridRenderer.update(region);
+	if (!region.containsPoint(referencePosition())) {
+		setReferencePosition(region.getCentre());
+	}
+	if (!region.containsPoint(cursorPosition())) {
+		setCursorPosition(volume->region().getCentre());
+	}
+	resetLastTrace();
+}
+
+void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume) {
+	if (volume == nullptr) {
+		const voxel::Region& region = _volumeRenderer.region();
+		volume = new voxel::RawVolume(region);
+	}
+	delete _volumeRenderer.setVolume(layerId, volume);
+	_volumeRenderer.hide(layerId, !layer.visible);
+	_extractRegions.push_back({volume->region(), (int)layerId});
+}
+
+void SceneManager::onLayerDeleted(int layerId) {
+	voxel::RawVolume* v = _volumeRenderer.setVolume(layerId, nullptr);
+	if (v != nullptr) {
+		_mementoHandler.markUndo(layerId, v);
+		_volumeRenderer.update(layerId);
+		delete v;
+	}
 }
 
 }

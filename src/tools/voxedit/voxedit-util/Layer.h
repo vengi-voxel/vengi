@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "voxelrender/RawVolumeRenderer.h"
 #include <string>
 #include <array>

@@ -28,17 +28,18 @@ public:
 
 	// TODO: allow to change the name
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
+		voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("visible")) {
 			LayerItem *item = _source->getItem(_index);
 			item->setVisible(ev.target->getValue() ? true : false);
 			_source->invokeItemChanged(_index, _sourceViewer);
-			const int layerId = voxedit::sceneMgr().validLayerId(_index);
-			voxedit::sceneMgr().hideLayer(layerId, !item->visible());
+			const int layerId = layerMgr.validLayerId(_index);
+			layerMgr.hideLayer(layerId, !item->visible());
 			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("delete")) {
-			const int layerId = voxedit::sceneMgr().validLayerId(_index);
-			voxedit::sceneMgr().deleteLayer(layerId);
+			const int layerId = layerMgr.validLayerId(_index);
+			layerMgr.deleteLayer(layerId);
 			return true;
 		}
 		return tb::TBLayout::onEvent(ev);
@@ -86,14 +87,14 @@ LayerWidget::LayerWidget() {
 		_list->setSource(&_source);
 		_list->getScrollContainer()->setScrollMode(tb::SCROLL_MODE_Y_AUTO);
 	}
-	voxedit::sceneMgr().registerListener(this);
+	voxedit::sceneMgr().layerMgr().registerListener(this);
 }
 
 LayerWidget::~LayerWidget() {
 	if (_list != nullptr) {
 		_list->setSource(nullptr);
 	}
-	voxedit::sceneMgr().unregisterListener(this);
+	voxedit::sceneMgr().layerMgr().unregisterListener(this);
 }
 
 void LayerWidget::onLayerHide(int layerId) {
@@ -127,8 +128,9 @@ void LayerWidget::onActiveLayerChanged(int old, int active) {
 	}
 }
 
-void LayerWidget::onLayerAdded(int layerId, const voxedit::Layer& layer) {
-	const voxedit::Layers& layers = voxedit::sceneMgr().layers();
+void LayerWidget::onLayerAdded(int layerId, const voxedit::Layer& layer, voxel::RawVolume*) {
+	voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+	const voxedit::Layers& layers = layerMgr.layers();
 	const std::string& finalLayerName = layers[layerId].name;
 	const bool finalVisibleState = layers[layerId].visible;
 	_source.addItem(new LayerItem(layerId, finalLayerName.c_str(), finalVisibleState));
@@ -146,13 +148,15 @@ bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("add")) {
 		const tb::TBStr& name = getTextByID(TBIDC("add_layer"));
 		const char *cname = name.c_str();
-		const int layerId = voxedit::sceneMgr().addLayer(cname, true);
-		voxedit::sceneMgr().setActiveLayer(layerId);
+		voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+		const int layerId = layerMgr.addLayer(cname, true);
+		layerMgr.setActiveLayer(layerId);
 		return true;
 	}
 	if (ev.type == tb::EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC("list")) {
 		if (_list != nullptr) {
-			voxedit::sceneMgr().setActiveLayer(_list->getValue());
+			voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+			layerMgr.setActiveLayer(_list->getValue());
 		}
 		return true;
 	}

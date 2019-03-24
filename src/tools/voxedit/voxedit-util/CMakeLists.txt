@@ -2,7 +2,9 @@ set(SRCS
 	ImportHeightmap.h ImportHeightmap.cpp
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
-	SceneListener.h
+
+	LayerManager.h LayerManager.cpp
+	LayerListener.h
 	Layer.h
 
 	ModifierType.h

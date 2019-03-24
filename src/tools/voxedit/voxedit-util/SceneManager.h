@@ -23,8 +23,9 @@
 #include "math/Axis.h"
 #include "MementoHandler.h"
 #include "ModifierType.h"
+#include "LayerListener.h"
 #include "Layer.h"
-#include "SceneListener.h"
+#include "LayerManager.h"
 #include <vector>
 
 namespace voxedit {
@@ -49,13 +50,14 @@ static constexpr struct Direction {
 /**
  * @note The data is shared across all viewports
  */
-class SceneManager : public core::IComponent {
+class SceneManager : public core::IComponent, public LayerListener {
 private:
 	voxelrender::RawVolumeRenderer _volumeRenderer;
 	render::GridRenderer _gridRenderer;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	MementoHandler _mementoHandler;
+	LayerManager _layerMgr;
 	render::Axis _axis;
 
 	int32_t _referencePointMesh = -1;
@@ -106,8 +108,6 @@ private:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
-	int _activeLayer = 0;
-
 	core::ActionButton _move[lengthof(DIRECTIONS)];
 	uint64_t _lastMove[lengthof(DIRECTIONS)] { 0 };
 
@@ -115,9 +115,6 @@ private:
 	voxel::Voxel _cursorVoxel;
 	// existing voxel under the cursor
 	voxel::Voxel _hitCursorVoxel;
-
-	Layers _layers;
-	SceneListener *_listener = nullptr;
 
 	ModifierType _modifierType = ModifierType::Place;
 	bool modifierTypeRequiresExistingVoxel() const;
@@ -255,20 +252,15 @@ public:
 	void undo();
 	void redo();
 
-	void registerListener(SceneListener* listener);
-	void unregisterListener(SceneListener* listener);
-
-	bool findNewActiveLayer();
-	int activeLayer() const;
-	bool setActiveLayer(int layerId);
-	const Layers& layers() const;
-	int validLayers() const;
-	int validLayerId(int index) const;
-	void hideLayer(int layerId, bool hide);
-	bool deleteLayer(int layerId, bool force = false);
-	int addLayer(const char *name, bool visible = true, voxel::RawVolume* volume = nullptr);
-
+	const LayerManager& layerMgr() const;
+	LayerManager& layerMgr();
 	const MementoHandler& mementoHandler() const;
+
+	void onLayerHide(int layerId) override;
+	void onLayerShow(int layerId) override;
+	void onActiveLayerChanged(int old, int active) override;
+	void onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume) override;
+	void onLayerDeleted(int layerId) override;
 };
 
 inline math::Axis SceneManager::lockedAxis() const {
@@ -277,10 +269,6 @@ inline math::Axis SceneManager::lockedAxis() const {
 
 inline const MementoHandler& SceneManager::mementoHandler() const {
 	return _mementoHandler;
-}
-
-inline int SceneManager::activeLayer() const {
-	return _activeLayer;
 }
 
 inline int SceneManager::gridResolution() const {
@@ -300,7 +288,7 @@ inline int SceneManager::size() const {
 }
 
 inline bool SceneManager::empty() const {
-	return _layers.empty();
+	return _layerMgr.layers().empty();
 }
 
 inline const voxel::Voxel& SceneManager::hitCursorVoxel() const {
@@ -315,8 +303,12 @@ inline const glm::ivec3& SceneManager::referencePosition() const {
 	return _referencePos;
 }
 
-inline const Layers& SceneManager::layers() const {
-	return _layers;
+inline const LayerManager& SceneManager::layerMgr() const {
+	return _layerMgr;
+}
+
+inline LayerManager& SceneManager::layerMgr() {
+	return _layerMgr;
 }
 
 inline const voxel::Voxel& SceneManager::cursorVoxel() const {
