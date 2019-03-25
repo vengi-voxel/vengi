@@ -18,6 +18,9 @@ void PaletteWidget::setValue(int value) {
 	_value = value;
 	tb::TBWidgetEvent ev(tb::EVENT_TYPE_CHANGED);
 	invokeEvent(ev);
+	tb::TBWidgetEvent evCmd(tb::EVENT_TYPE_COMMAND);
+	evCmd.string = "pickcolor";
+	invokeEvent(evCmd);
 }
 
 void PaletteWidget::onPaint(const PaintProps &paintProps) {
