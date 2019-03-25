@@ -56,6 +56,17 @@ public:
 	void onConnect(ConnectState status);
 
 	/**
+	 * @brief A high score table is published every 10 seconds at the scores topic.
+	 * @code
+	 * {
+	 *   "ingameNick1[id1]": 238,
+	 *   "ingameNick2[id2]": 235
+	 * }
+	 * @endcode
+	 */
+	void parseScores(const std::string& json);
+
+	/**
 	 * @brief The player topic is published every 5 seconds.
 	 * @code
 	 * [

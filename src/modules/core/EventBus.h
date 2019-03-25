@@ -212,6 +212,8 @@ public:
 	 */
 	int update(int limit = -1);
 
+	int size() const;
+
 	/**
 	 * @brief Execute in the main thread in the next tick
 	 */

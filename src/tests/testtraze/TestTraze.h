@@ -23,6 +23,7 @@ class TestTraze : public TestApp,
 	public core::IEventBusHandler<traze::TickerEvent>,
 	public core::IEventBusHandler<traze::SpawnEvent>,
 	public core::IEventBusHandler<traze::BikeEvent>,
+	public core::IEventBusHandler<traze::ScoreEvent>,
 	public core::IEventBusHandler<traze::NewGamesEvent> {
 private:
 	using Super = TestApp;
@@ -61,6 +62,7 @@ public:
 	void onEvent(const traze::SpawnEvent& event) override;
 	void onEvent(const traze::NewGridEvent& event) override;
 	void onEvent(const traze::PlayerListEvent& event) override;
+	void onEvent(const traze::ScoreEvent& event) override;
 
 	virtual void onRenderUI() override;
 	virtual core::AppState onConstruct() override;

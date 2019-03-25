@@ -17,5 +17,6 @@ EVENTBUSPAYLOADEVENT(PlayerListEvent, std::vector<Player>);
 EVENTBUSPAYLOADEVENT(TickerEvent, Ticker);
 EVENTBUSPAYLOADEVENT(SpawnEvent, Spawn);
 EVENTBUSPAYLOADEVENT(BikeEvent, Bike);
+EVENTBUSPAYLOADEVENT(ScoreEvent, Score);
 
 }

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <vector>
 #include <string>
 #include <stdint.h>
 #include <glm/vec2.hpp>
@@ -22,6 +23,8 @@ enum class BikeDirection {
 };
 
 using PlayerId = uint32_t;
+
+using Score = std::vector<std::string>;
 
 struct Spawn {
 	glm::ivec2 position;

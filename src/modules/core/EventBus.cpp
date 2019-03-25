@@ -61,6 +61,10 @@ int EventBus::update(int limit) {
 	return _queue.size();
 }
 
+int EventBus::size() const {
+	return  _queue.size();
+}
+
 void EventBus::enqueue(const IEventBusEventPtr& e) {
 	_queue.push(e);
 }

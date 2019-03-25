@@ -81,7 +81,7 @@ void Protocol::shutdown() {
 
 bool Protocol::unsubscribe() {
 	bool unsubscribed = true;
-	for (const char* topic : {"traze/+/grid", "traze/+/players", "traze/+/ticker"}) {
+	for (const char* topic : {"traze/+/grid", "traze/+/players", "traze/+/ticker", "traze/+/scores"}) {
 		const int rc = mosquitto_unsubscribe(_mosquitto, nullptr, topic);
 		if (rc != MOSQ_ERR_SUCCESS) {
 			Log::warn("Failed to unsubscribe from topic %s with error %s", topic, mosquitto_strerror(rc));
@@ -101,7 +101,7 @@ bool Protocol::subscribe(const GameInfo& game) {
 	}
 	bool subscribed = true;
 	const std::string& privateChannel = core::string::format("player/%s", _clientToken.c_str());
-	for (const char* topic : {"grid", "players", "ticker", privateChannel.c_str()}) {
+	for (const char* topic : {"grid", "players", "ticker", "scores", privateChannel.c_str()}) {
 		char topicBuf[128];
 		SDL_snprintf(topicBuf, sizeof(topicBuf), "traze/%s/%s", game.name.c_str(), topic);
 		const int rc = mosquitto_subscribe(_mosquitto, nullptr, topicBuf, 0);
@@ -255,6 +255,26 @@ void Protocol::parseGames(const std::string& json) const {
 	_eventBus->enqueue(std::make_shared<NewGamesEvent>(games));
 }
 
+void Protocol::parseScores(const std::string& json) {
+	const core::json j = core::json::parse(json);
+	using _S = std::pair<int, std::string>;
+	std::vector<_S> entries;
+	for (const auto &score : j.items()) {
+		const int rank = score.value().get<int>();
+		entries.emplace_back(_S{rank, score.key()});
+	}
+	if (entries.empty()) {
+		return;
+	}
+	std::sort(entries.begin(), entries.end(), [] (const _S& s1, const _S& s2) { return s1.first < s2.first; });
+	Score scores;
+	scores.reserve(entries.size());
+	for (const auto& e : entries) {
+		scores.push_back(e.second);
+	}
+	_eventBus->enqueue(std::make_shared<ScoreEvent>(scores));
+}
+
 void Protocol::fillGroundAndWall(voxel::RawVolume* v) {
 	const voxel::Region& region = v->region();
 	const voxel::Voxel voxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
@@ -363,6 +383,8 @@ void Protocol::onMessage(const struct mosquitto_message *msg) {
 		parsePlayers(p);
 	} else if (!strcmp(subTopic, "ticker")) {
 		parseTicker(p);
+	} else if (!strcmp(subTopic, "scores")) {
+		parseScores(p);
 	} else if (!strcmp(subTopic, _clientToken.c_str())) {
 		parseOwnPlayer(p);
 	} else {

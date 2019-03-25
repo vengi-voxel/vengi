@@ -22,6 +22,7 @@ TestTraze::TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& f
 	_eventBus->subscribe<traze::TickerEvent>(*this);
 	_eventBus->subscribe<traze::SpawnEvent>(*this);
 	_eventBus->subscribe<traze::BikeEvent>(*this);
+	_eventBus->subscribe<traze::ScoreEvent>(*this);
 }
 
 const std::string& TestTraze::playerName(traze::PlayerId playerId) const {
@@ -140,6 +141,11 @@ void TestTraze::onEvent(const traze::TickerEvent& event) {
 	default:
 		break;
 	}
+}
+
+void TestTraze::onEvent(const traze::ScoreEvent& event) {
+	const traze::Score& score = event.get();
+	Log::debug("Received score event with %i entries", (int)score.size());
 }
 
 void TestTraze::onEvent(const traze::SpawnEvent& event) {
