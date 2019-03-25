@@ -556,6 +556,9 @@ void deleteShader(Id& id) {
 }
 
 Id genShader(ShaderType type) {
+	if (glCreateShader == nullptr) {
+		return InvalidId;
+	}
 	const GLenum glType = _priv::ShaderTypes[std::enum_value(type)];
 	const Id id = glCreateShader(glType);
 	checkError();
@@ -1178,6 +1181,9 @@ void enableDebug(DebugSeverity severity) {
 }
 
 bool compileShader(Id id, ShaderType shaderType, const std::string& source, const std::string& name) {
+	if (id == InvalidId) {
+		return false;
+	}
 	const char *src = source.c_str();
 	video::checkError();
 	glShaderSource(id, 1, (const GLchar**) &src, nullptr);

@@ -104,6 +104,9 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 	Id id = getShader(shaderType);
 	if (id == InvalidId) {
 		id = video::genShader(shaderType);
+		if (id == InvalidId) {
+			return false;
+		}
 		_shader.insert(std::make_pair(shaderType, id));
 	}
 	if (!video::compileShader(id, shaderType, source, _name)) {
