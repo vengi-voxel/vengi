@@ -11,7 +11,7 @@
 #include "video/Camera.h"
 #include "voxel/polyvox/Voxel.h"
 #include "math/Axis.h"
-
+#include "voxel/polyvox/Face.h"
 #include "ModifierType.h"
 
 namespace voxedit {
@@ -29,6 +29,7 @@ private:
 	math::Axis _mirrorAxis = math::Axis::None;
 	glm::ivec3 _mirrorPos {0};
 	glm::ivec3 _cursorPosition {0};
+	voxel::FaceNames _face = voxel::FaceNames::NoOfFaces;
 	voxel::Voxel _cursorVoxel;
 	int32_t _voxelCursorMesh = -1;
 
@@ -65,7 +66,7 @@ public:
 
 	bool modifierTypeRequiresExistingVoxel() const;
 
-	void setCursorPosition(const glm::ivec3& pos);
+	void setCursorPosition(const glm::ivec3& pos, voxel::FaceNames face);
 	const glm::ivec3& cursorPosition() const;
 
 	/**

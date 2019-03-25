@@ -10,9 +10,10 @@
 #include "voxel/polyvox/VolumeMover.h"
 #include "voxel/polyvox/VolumeRescaler.h"
 #include "voxel/polyvox/VolumeVisitor.h"
-#include "voxel/polyvox//RawVolumeWrapper.h"
-#include "voxel/polyvox//RawVolumeMoveWrapper.h"
-#include "voxel/polyvox//Mesh.h"
+#include "voxel/polyvox/RawVolumeWrapper.h"
+#include "voxel/polyvox/RawVolumeMoveWrapper.h"
+#include "voxel/polyvox/Mesh.h"
+#include "voxel/polyvox/Face.h"
 #include "voxel/generator/CloudGenerator.h"
 #include "voxel/generator/CactusGenerator.h"
 #include "voxel/generator/BuildingGenerator.h"
@@ -952,7 +953,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (oldCursorPos == pos) {
 		return;
 	}
-	_modifier.setCursorPosition(pos);
+	_modifier.setCursorPosition(pos, _result.hitFace);
 
 	updateLockedPlane(math::Axis::X);
 	updateLockedPlane(math::Axis::Y);
@@ -993,13 +994,29 @@ bool SceneManager::trace(const video::Camera& camera, bool force) {
 		_result.didHit = false;
 		_result.validPreviousPosition = false;
 		_result.direction = ray.direction;
+		_result.hitFace = voxel::FaceNames::NoOfFaces;
 		raycastWithDirection(model, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
 			if (sampler.voxel() != air) {
 				_result.didHit = true;
 				_result.hitVoxel = sampler.position();
+				if (_result.validPreviousPosition) {
+					const glm::ivec3& dir = _result.previousPosition - _result.hitVoxel;
+					if (dir.x < 0) {
+						_result.hitFace = voxel::FaceNames::NegativeX;
+					} else if (dir.x > 0) {
+						_result.hitFace = voxel::FaceNames::PositiveX;
+					} else if (dir.y < 0) {
+						_result.hitFace = voxel::FaceNames::NegativeY;
+					} else if (dir.y > 0) {
+						_result.hitFace = voxel::FaceNames::PositiveY;
+					} else if (dir.z < 0) {
+						_result.hitFace = voxel::FaceNames::NegativeZ;
+					} else if (dir.z > 0) {
+						_result.hitFace = voxel::FaceNames::PositiveZ;
+					}
+				}
 				return false;
 			}
-
 			if (sampler.currentPositionValid()) {
 				if (_lockedAxis != math::Axis::None) {
 					const glm::ivec3& cursorPos = cursorPosition();

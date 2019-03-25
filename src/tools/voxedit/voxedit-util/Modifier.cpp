@@ -212,8 +212,9 @@ math::Axis Modifier::mirrorAxis() const {
 	return _mirrorAxis;
 }
 
-void Modifier::setCursorPosition(const glm::ivec3& pos) {
+void Modifier::setCursorPosition(const glm::ivec3& pos, voxel::FaceNames face) {
 	_cursorPosition = pos;
+	_face = face;
 }
 
 void Modifier::setGridResolution(int resolution) {

@@ -25,7 +25,7 @@ set(SRCS
 	polyvox/AStarPathfinder.h
 	polyvox/AStarPathfinderImpl.h
 	polyvox/CubicSurfaceExtractor.h polyvox/CubicSurfaceExtractor.cpp
-	polyvox/Face.h
+	polyvox/Face.h polyvox/Face.cpp
 	polyvox/Mesh.h polyvox/Mesh.cpp
 	polyvox/Morton.h
 	polyvox/PagedVolume.h polyvox/PagedVolume.cpp
@@ -68,6 +68,7 @@ endif()
 
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
+	tests/FaceTest.cpp
 	tests/WorldMgrTest.cpp
 	tests/WorldPersisterTest.cpp
 	tests/LSystemGeneratorTest.cpp
