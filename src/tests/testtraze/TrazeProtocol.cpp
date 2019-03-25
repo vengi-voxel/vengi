@@ -205,6 +205,7 @@ void Protocol::parsePlayers(const std::string& json) {
 		p.color = materialColors[index];
 		p.id = player["id"].get<int>();
 		p.frags = player["frags"].get<int>();
+		p.owned = player["owned"].get<int>();
 		players.push_back(p);
 		Log::debug("Player %s with id %i", p.name.c_str(), p.id);
 	}

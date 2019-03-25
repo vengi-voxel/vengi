@@ -38,6 +38,7 @@ struct Player {
 	std::string name;
 	PlayerId id = 0u;
 	uint32_t frags = 0u;
+	uint32_t owned = 0u;
 	uint8_t colorIndex = 0u;
 	glm::vec4 color {0.0f};
 };

@@ -264,7 +264,7 @@ void TestTraze::doRender() {
 		yOffset += _voxelFontRender.lineHeight();
 		for (const traze::Player& p : _players) {
 			_voxelFontRender.text(glm::ivec3(0, yOffset, 0), p.color, "* %s", p.name.c_str());
-			_voxelFontRender.text(glm::ivec3(_maxLength, yOffset, 0), p.color, "%i", p.frags);
+			_voxelFontRender.text(glm::ivec3(_maxLength, yOffset, 0), p.color, "%i/%i", p.frags, p.owned);
 			yOffset += _voxelFontRender.lineHeight();
 		}
 	}
