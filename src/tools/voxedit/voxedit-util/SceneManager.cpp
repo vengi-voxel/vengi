@@ -419,23 +419,25 @@ void SceneManager::resetLastTrace() {
 }
 
 bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
-	const int size = (int)volumes.size();
-	if (size == 0) {
-		return newScene(true);
+	const int volumeCnt = (int)volumes.size();
+	if (volumeCnt == 0) {
+		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
+		return newScene(true, "", region);
 	}
 	const int maxLayers = _layerMgr.maxLayers();
-	if (size > maxLayers) {
+	if (volumeCnt > maxLayers) {
 		Log::error("Max supported layer size exceeded: %i (max supported: %i)",
-				size, maxLayers);
+				volumeCnt, maxLayers);
 		return false;
 	}
 	for (int idx = 0; idx < maxLayers; ++idx) {
 		_layerMgr.deleteLayer(idx, true);
 	}
-	for (int idx = 0; idx < size; ++idx) {
+	for (int idx = 0; idx < volumeCnt; ++idx) {
 		const int layerId = _layerMgr.addLayer(volumes[idx].name.c_str(), volumes[idx].visible, volumes[idx].volume);
 		if (layerId < 0) {
-			return newScene(true);
+			const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
+			return newScene(true, "", region);
 		}
 	}
 	_mementoHandler.clearStates();
@@ -474,8 +476,7 @@ bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume) {
 	return true;
 }
 
-// TODO: dialog that selects the palette and mins/maxs of the volume
-bool SceneManager::newScene(bool force) {
+bool SceneManager::newScene(bool force, const std::string& name, const voxel::Region& region) {
 	if (dirty() && !force) {
 		return false;
 	}
@@ -484,10 +485,9 @@ bool SceneManager::newScene(bool force) {
 		_layerMgr.deleteLayer(idx, true);
 	}
 	core_assert_always(_layerMgr.validLayers() == 0);
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
 	setReferencePosition(region.getCentre());
 	_mementoHandler.clearStates();
-	core_assert_always(_layerMgr.addLayer("", true, new voxel::RawVolume(region)) != -1);
+	core_assert_always(_layerMgr.addLayer(name.c_str(), true, new voxel::RawVolume(region)) != -1);
 	_layerMgr.setActiveLayer(0);
 	modified(_layerMgr.activeLayer(), region);
 	_dirty = false;

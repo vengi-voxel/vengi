@@ -302,6 +302,16 @@ void TBEditField::onPaint(const PaintProps &paintProps) {
 	}
 }
 
+void TBEditField::setTextFormatted(const char *format, ...) {
+	va_list args;
+	va_start(args, format);
+	char buf[1024];
+	SDL_vsnprintf(buf, sizeof(buf), format, args);
+	buf[sizeof(buf) - 1] = '\0';
+	setText(buf);
+	va_end(args);
+}
+
 void TBEditField::onPaintChildren(const PaintProps &paintProps) {
 	TBWidget::onPaintChildren(paintProps);
 

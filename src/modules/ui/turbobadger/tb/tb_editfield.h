@@ -7,6 +7,7 @@
 #include "tb_msg.h"
 #include "tb_style_edit.h"
 #include "tb_widgets_common.h"
+#include "core/Log.h"
 
 namespace tb {
 
@@ -154,6 +155,8 @@ public:
 	TB_TEXT_ALIGN getTextAlign() {
 		return m_style_edit.align;
 	}
+
+	void setTextFormatted(CORE_FORMAT_STRING const char *format, ...) __attribute__((format(printf, 2, 3)));
 
 	virtual bool setText(const char *text) override {
 		return m_style_edit.setText(text, TB_CARET_POS_BEGINNING);

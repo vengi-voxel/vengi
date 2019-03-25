@@ -29,7 +29,6 @@ public:
 	video::Camera& camera();
 	void update();
 	void resetCamera();
-	bool newModel(bool force);
 	bool saveImage(const char* filename);
 
 	virtual void onInflate(const tb::INFLATE_INFO &info) override;

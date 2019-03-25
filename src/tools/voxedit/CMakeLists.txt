@@ -6,7 +6,9 @@ set(SRCS
 	ui/editorscene/Controller.h ui/editorscene/Controller.cpp
 
 	ui/palette/PaletteWidget.h ui/palette/PaletteWidget.cpp
+
 	ui/layer/LayerWidget.h ui/layer/LayerWidget.cpp
+	ui/layer/LayerWindow.h ui/layer/LayerWindow.cpp
 
 	ui/VoxEditWindow.h ui/VoxEditWindow.cpp
 	ui/TreeWindow.h ui/TreeWindow.cpp
@@ -50,6 +52,7 @@ set(FILES
 	voxedit/ui/skin/voxedit-voxel.png
 	voxedit/ui/widget/voxedit-layer-item.tb.txt
 	voxedit/ui/widget/voxedit-layer.tb.txt
+	voxedit/ui/window/voxedit-layer.tb.txt
 	voxedit/ui/window/voxedit-main.tb.txt
 	voxedit/ui/window/voxedit-noise.tb.txt
 	voxedit/ui/window/voxedit-tree.tb.txt

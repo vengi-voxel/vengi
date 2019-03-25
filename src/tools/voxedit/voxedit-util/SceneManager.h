@@ -184,7 +184,7 @@ public:
 	 */
 	bool prefab(const std::string& file);
 
-	bool newScene(bool force);
+	bool newScene(bool force, const std::string& name, const voxel::Region& region);
 
 	bool dirty() const;
 	bool empty() const;

@@ -5,8 +5,9 @@
 #pragma once
 
 #include "ui/turbobadger/Window.h"
-#include "core/Common.h"
+#include "layer/LayerWindow.h"
 #include "voxedit-util/ModifierType.h"
+#include "core/Common.h"
 #include "core/String.h"
 #include "math/Axis.h"
 
@@ -80,6 +81,8 @@ private:
 	core::VarPtr _lastOpenedFile;
 
 	glm::ivec3 _lastCursorPos;
+
+	LayerSettings _layerSettings;
 
 	bool handleEvent(const tb::TBWidgetEvent &ev);
 

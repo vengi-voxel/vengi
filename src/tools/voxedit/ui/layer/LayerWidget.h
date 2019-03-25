@@ -6,6 +6,7 @@
 
 #include "voxedit-util/LayerListener.h"
 #include "ui/turbobadger/Widget.h"
+#include "LayerWindow.h"
 
 class LayerItem: public tb::TBGenericStringItem {
 public:
@@ -51,6 +52,7 @@ public:
 private:
 	tb::TBSelectList *_list;
 	LayerItemSource _source;
+	voxedit::LayerSettings _layerSettings;
 };
 
 UIWIDGET_FACTORY(LayerWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)

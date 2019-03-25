@@ -26,9 +26,12 @@ my own engine and evolved into something that others might find useful, too.
 * Reference positions to rotate around or create auto-generated structures at
 * Viewport screenshots
 * Import and voxelize dae, obj, fbx and a lot more formats
+* Modelling with the left and right mouse buttons
 * Modelling without the mouse - just via shortcuts and keyboard
 * Animation support
 * Extrude
+* Custom key bindings
+* Show commands of actions (to configure your own key bindings)
 
 # Controls
 
@@ -53,5 +56,4 @@ my own engine and evolved into something that others might find useful, too.
 # Needed improvements
 
 * Resizing the volume doesn't have to remesh everything
-* New scene dialog and new layer dialog that lets you select the mins/maxs
 * Allow to merge and duplicate layers

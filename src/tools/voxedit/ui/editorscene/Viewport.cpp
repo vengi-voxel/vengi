@@ -24,15 +24,6 @@ Viewport::~Viewport() {
 	_frameBuffer.shutdown();
 }
 
-bool Viewport::newModel(bool force) {
-	core_trace_scoped(EditorSceneNewModel);
-	if (!voxedit::sceneMgr().newScene(force)) {
-		return false;
-	}
-	resetCamera();
-	return true;
-}
-
 bool Viewport::saveImage(const char* filename) {
 	const video::TextureConfig& cfg = _frameBufferTexture._textureConfig;
 	core_assert(cfg.format() == video::TextureFormat::RGBA);

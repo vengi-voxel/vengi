@@ -27,7 +27,6 @@ public:
 	}
 
 	// TODO: allow to change the name
-	// TODO: dialog that selects the mins/maxs of the volume
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
 		voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("visible")) {
@@ -82,6 +81,7 @@ int LayerItemSource::getItemIdForLayerId(int layerId) const {
 }
 
 LayerWidget::LayerWidget() {
+	_layerSettings.reset();
 	core_assert_always(tb::g_widgets_reader->loadFile(getContentRoot(), "ui/widget/voxedit-layer.tb.txt"));
 	_list = getWidgetByIDAndType<tb::TBSelectList>("list");
 	if (_list != nullptr) {
@@ -149,11 +149,29 @@ bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("add")) {
 		const tb::TBStr& name = getTextByID(TBIDC("add_layer"));
 		const char *cname = name.c_str();
-		voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
-		const int layerId = layerMgr.addLayer(cname, true);
-		layerMgr.setActiveLayer(layerId);
+		_layerSettings.name = cname;
+		voxedit::LayerWindow* win = new voxedit::LayerWindow(this, TBIDC("scene_new_layer"), _layerSettings);
+		if (!win->show()) {
+			delete win;
+		}
 		return true;
 	}
+
+
+	if (ev.target->getID() == TBIDC("scene_new_layer")) {
+		if (ev.ref_id == TBIDC("ok")) {
+			const voxel::Region& region = _layerSettings.region();
+			if (region.isValid()) {
+				voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, new voxel::RawVolume(_layerSettings.region()));
+				layerMgr.setActiveLayer(layerId);
+			} else {
+				_layerSettings.reset();
+			}
+			return true;
+		}
+	}
+
 	if (ev.type == tb::EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC("list")) {
 		if (_list != nullptr) {
 			voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();

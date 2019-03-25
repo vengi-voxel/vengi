@@ -102,6 +102,7 @@ VoxEditWindow::~VoxEditWindow() {
 }
 
 bool VoxEditWindow::init() {
+	_layerSettings.reset();
 	if (!loadResourceFile("ui/window/voxedit-main.tb.txt")) {
 		Log::error("Failed to init the main window: Could not load the ui definition");
 		return false;
@@ -235,7 +236,15 @@ bool VoxEditWindow::init() {
 	if (mgr.load(_lastOpenedFile->strVal())) {
 		afterLoad(_lastOpenedFile->strVal());
 	} else {
-		_scene->newModel(true);
+		voxel::Region region = _layerSettings.region();
+		if (region.isValid()) {
+			_layerSettings.reset();
+			region = _layerSettings.region();
+		}
+		if (!voxedit::sceneMgr().newScene(true, _layerSettings.name, region)) {
+			return false;
+		}
+		afterLoad("");
 	}
 
 	return true;
@@ -365,10 +374,29 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	tb::TBWidget *widget = ev.target;
 	const tb::TBID &id = widget->getID();
+
+	if (id == TBIDC("new_scene")) {
+		if (ev.ref_id == TBIDC("ok")) {
+			const voxel::Region& region = _layerSettings.region();
+			if (region.isValid()) {
+				if (!voxedit::sceneMgr().newScene(true, _layerSettings.name, region)) {
+					return false;
+				}
+				afterLoad("");
+			} else {
+				popup(tr("Invalid dimensions"), tr("The layer dimensions are not valid?"), PopupType::Ok);
+				_layerSettings.reset();
+			}
+			return true;
+		}
+	}
+
 	if (id == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			_scene->newModel(true);
-			_lastOpenedFile->setVal("");
+			LayerWindow* win = new LayerWindow(this, TBIDC("new_scene"), _layerSettings);
+			if (!win->show()) {
+				delete win;
+			}
 		}
 		return true;
 	} else if (id == TBIDC("unsaved_changes_quit")) {
@@ -823,9 +851,11 @@ bool VoxEditWindow::createNew(bool force) {
 		popup(tr("Unsaved Modifications"),
 				tr("There are unsaved modifications.\nDo you wish to discard them and close?"),
 				PopupType::YesNo, "unsaved_changes_new");
-	} else if (_scene->newModel(force)) {
-		afterLoad("");
-		return true;
+	} else {
+		LayerWindow* win = new LayerWindow(this, TBIDC("new_scene"), _layerSettings);
+		if (!win->show()) {
+			delete win;
+		}
 	}
 	return false;
 }

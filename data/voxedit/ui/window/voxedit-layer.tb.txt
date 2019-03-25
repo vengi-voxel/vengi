@@ -1,0 +1,23 @@
+TBLayout: axis: y, distribution: available
+	TBLayout: distribution: available, id: 3, size: available, axis: y
+		TBClickLabel: text: Position
+			TBLayout: axis: x
+				TBEditField: type: number, id: pos.x
+					lp: width: 60
+				TBEditField: type: number, id: pos.y
+					lp: width: 60
+				TBEditField: type: number, id: pos.z
+					lp: width: 60
+		TBClickLabel: text: Size
+			TBLayout: axis: x
+				TBEditField: type: number, id: size.x
+					lp: width: 60
+				TBEditField: type: number, id: size.y
+					lp: width: 60
+				TBEditField: type: number, id: size.z
+					lp: width: 60
+		TBSeparator
+		TBClickLabel: text: Name
+			TBEditField: id: name
+				lp: width: 100
+	TBLayout: distribution-position: right bottom, id: 4
