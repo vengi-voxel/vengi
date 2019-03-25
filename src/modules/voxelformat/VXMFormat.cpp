@@ -85,7 +85,7 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 			struct TexColor {
 				glm::u8vec3 rgb;
 			};
-			static_assert(sizeof(TexColor) == 3);
+			static_assert(sizeof(TexColor) == 3, "Unexpected TexColor size");
 			stream.skip(sizeof(TexColor));
 			px += rleStride;
 			if (px > textureDim.x * textureDim.y * sizeof(TexColor)) {
@@ -105,7 +105,7 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 			glm::vec3 pos;
 			glm::ivec2 uv;
 		};
-		static_assert(sizeof(QuadVertex) == 20);
+		static_assert(sizeof(QuadVertex) == 20, "Unexpected QuadVertex size");
 		stream.skip(quadAmount * 4 * sizeof(QuadVertex));
 	}
 
