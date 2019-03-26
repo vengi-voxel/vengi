@@ -156,8 +156,7 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 
 			if (di == 1) {
 				sampler.movePositiveX();
-			}
-			if (di == -1) {
+			} else if (di == -1) {
 				sampler.moveNegativeX();
 			}
 		} else if (ty <= tz) {
@@ -169,8 +168,7 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 
 			if (dj == 1) {
 				sampler.movePositiveY();
-			}
-			if (dj == -1) {
+			} else if (dj == -1) {
 				sampler.moveNegativeY();
 			}
 		} else {
@@ -182,8 +180,7 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 
 			if (dk == 1) {
 				sampler.movePositiveZ();
-			}
-			if (dk == -1) {
+			} else if (dk == -1) {
 				sampler.moveNegativeZ();
 			}
 		}
