@@ -27,8 +27,8 @@ private:
 	int _gridResolution = 1;
 	int32_t _mirrorMeshIndex = -1;
 	math::Axis _mirrorAxis = math::Axis::None;
-	glm::ivec3 _mirrorPos;
-	glm::ivec3 _cursorPosition;
+	glm::ivec3 _mirrorPos {0};
+	glm::ivec3 _cursorPosition {0};
 	voxel::Voxel _cursorVoxel;
 	int32_t _voxelCursorMesh = -1;
 
