@@ -25,6 +25,7 @@ set(SRCS
 	polyvox/AStarPathfinder.h
 	polyvox/AStarPathfinderImpl.h
 	polyvox/CubicSurfaceExtractor.h polyvox/CubicSurfaceExtractor.cpp
+	polyvox/Face.h
 	polyvox/Mesh.h polyvox/Mesh.cpp
 	polyvox/Morton.h
 	polyvox/PagedVolume.h polyvox/PagedVolume.cpp

@@ -15,6 +15,7 @@
 #include <glm/vec3.hpp>
 #include <list>
 #include "core/Trace.h"
+#include "Face.h"
 
 #define BUFFERED_SAMPLER 1
 
@@ -36,17 +37,6 @@ const uint32_t MaxVerticesPerPosition = 8;
 /**
  * @section Data structures
  */
-enum FaceNames {
-	PositiveX, PositiveY, PositiveZ, NegativeX, NegativeY, NegativeZ, NoOfFaces
-};
-
-inline bool isHorizontalFace(FaceNames face) {
-	return face == PositiveX || face == PositiveZ || face == NegativeX || face == NegativeZ;
-}
-
-inline bool isVerticalFace(FaceNames face) {
-	 return face == PositiveY || face == NegativeY;
-}
 
 struct Quad {
 	Quad(IndexType v0, IndexType v1, IndexType v2, IndexType v3) {
