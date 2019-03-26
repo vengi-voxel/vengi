@@ -757,3 +757,5 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 }
 
 }
+
+#undef BUFFERED_SAMPLER
