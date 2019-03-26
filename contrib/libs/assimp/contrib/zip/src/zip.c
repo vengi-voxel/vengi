@@ -48,7 +48,7 @@
         }                      \
     } while (0)
 
-static char *basename(const char *name) {
+static char *_basename(const char *name) {
     char const *p;
     char const *base = name += FILESYSTEM_PREFIX_LEN(name);
     int all_slashes = 1;
@@ -548,7 +548,7 @@ int zip_create(const char *zipname, const char *filenames[], size_t len) {
             break;
         }
 
-        if (!mz_zip_writer_add_file(&zip_archive, basename(name), name, "", 0,
+        if (!mz_zip_writer_add_file(&zip_archive, _basename(name), name, "", 0,
                                     ZIP_DEFAULT_COMPRESSION_LEVEL)) {
             // Cannot add file to zip_archive
             status = -1;
