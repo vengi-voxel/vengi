@@ -5,6 +5,7 @@
 #include "Voxel.h"
 #include "Picking.h"
 #include "Raycast.h"
+#include "Face.h"
 
 namespace voxel {
 
@@ -27,6 +28,8 @@ struct PickResult {
 	glm::ivec3 previousPosition;
 
 	glm::vec3 direction;
+
+	FaceNames hitFace = FaceNames::NoOfFaces;
 };
 
 namespace {

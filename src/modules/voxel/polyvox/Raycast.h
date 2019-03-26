@@ -144,6 +144,7 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 
 	for (;;) {
 		if (!callback(sampler)) {
+			// TODO: calculate the face that was hit
 			return RaycastResults::Interupted;
 		}
 
