@@ -990,6 +990,7 @@ bool SceneManager::trace(const video::Camera& camera, bool force) {
 
 		_result.didHit = false;
 		_result.validPreviousPosition = false;
+		_result.direction = ray.direction;
 		raycastWithDirection(model, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
 			if (sampler.voxel() != air) {
 				_result.didHit = true;

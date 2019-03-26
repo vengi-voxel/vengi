@@ -25,6 +25,8 @@ struct PickResult {
 
 	/** The location of the step before we end the trace - see @a validPreviousLocation */
 	glm::ivec3 previousPosition;
+
+	glm::vec3 direction;
 };
 
 namespace {
