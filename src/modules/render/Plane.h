@@ -10,6 +10,7 @@
 #include "video/ShapeBuilder.h"
 #include "render/ShapeRenderer.h"
 #include "core/IComponent.h"
+#include <vector>
 
 namespace render {
 
@@ -23,13 +24,15 @@ class Plane : public core::IComponent {
 private:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
-	int32_t _planeMesh = -1;
+	std::vector<int32_t> _planeMeshes;
 public:
 	void render(const video::Camera& camera, video::Shader* shader = nullptr);
 
 	void render(const video::Camera& camera, const glm::mat4& model, video::Shader* shader = nullptr);
 
 	void shutdown() override;
+
+	void clear();
 
 	/**
 	 * @param[in] position The offset that should be applied to the center of the plane
