@@ -725,7 +725,9 @@ bool SceneManager::init() {
 	if (_initialized > 1) {
 		return true;
 	}
-	_axis.init();
+	if (!_axis.init()) {
+		return false;
+	}
 	_volumeRenderer.construct();
 	//_volumeRenderer.setAmbientColor(glm::vec3(core::Color::White));
 	_volumeRenderer.init();
