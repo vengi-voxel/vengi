@@ -6,9 +6,11 @@
 #include "core/command/Command.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/polyvox/Region.h"
+#include "voxel/polyvox/RawVolumeWrapper.h"
 
 namespace {
 const int PlayFieldVolume = 0;
+const int FloorVolume = 1;
 const int FontSize = 48;
 }
 
@@ -16,6 +18,7 @@ TestTraze::TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& f
 		Super(metric, filesystem, eventBus, timeProvider), _protocol(eventBus), _voxelFontRender(FontSize, 4, voxel::VoxelFont::OriginUpperLeft) {
 	init(ORGANISATION, "testtraze");
 	setRenderAxis(false);
+	setFramesPerSecondsCap(60);
 	_eventBus->subscribe<traze::NewGridEvent>(*this);
 	_eventBus->subscribe<traze::NewGamesEvent>(*this);
 	_eventBus->subscribe<traze::PlayerListEvent>(*this);
@@ -55,6 +58,7 @@ core::AppState TestTraze::onConstruct() {
 			Log::info("%s", p.name.c_str());
 		}
 	});
+	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	_rawVolumeRenderer.construct();
 	_messageQueue.construct();
 	return state;
@@ -164,12 +168,65 @@ void TestTraze::onEvent(const traze::NewGridEvent& event) {
 		v->setVoxel(glm::ivec3(_spawnPosition.y, 0, _spawnPosition.x), voxel);
 		v->setVoxel(glm::ivec3(_spawnPosition.y, 1, _spawnPosition.x), voxel);
 	}
-	delete _rawVolumeRenderer.setVolume(PlayFieldVolume, v);
-	const glm::mat4& translate = glm::translate(-v->region().getCentre());
+	voxel::RawVolume* volume = _rawVolumeRenderer.volume(PlayFieldVolume);
+	voxel::Region dirtyRegion;
+	if (volume == nullptr || volume->region() != v->region()) {
+		delete _rawVolumeRenderer.setVolume(PlayFieldVolume, v);
+		dirtyRegion = v->region();
+		volume = v;
+
+		voxel::RawVolume* floor = new voxel::RawVolume(dirtyRegion);
+		const voxel::Region& region = floor->region();
+		const voxel::Voxel voxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+		// ground
+		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+				floor->setVoxel(x, region.getLowerY(), z, voxel);
+			}
+		}
+		// walls
+		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			floor->setVoxel(region.getLowerX(), region.getLowerY() + 1, z, voxel);
+			floor->setVoxel(region.getUpperX(), region.getLowerY() + 1, z, voxel);
+			floor->setVoxel(region.getLowerX(), region.getLowerY() + 2, z, voxel);
+			floor->setVoxel(region.getUpperX(), region.getLowerY() + 2, z, voxel);
+		}
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+			floor->setVoxel(x, region.getLowerY() + 1, region.getLowerZ(), voxel);
+			floor->setVoxel(x, region.getLowerY() + 1, region.getUpperZ(), voxel);
+			floor->setVoxel(x, region.getLowerY() + 2, region.getLowerZ(), voxel);
+			floor->setVoxel(x, region.getLowerY() + 2, region.getUpperZ(), voxel);
+		}
+		delete _rawVolumeRenderer.setVolume(FloorVolume, floor);
+		if (!_rawVolumeRenderer.extract(FloorVolume, region)) {
+			Log::error("Failed to extract the volume");
+		}
+	} else {
+		voxel::RawVolumeWrapper wrapper(volume);
+		const voxel::Region& region = volume->region();
+		const glm::ivec3& mins = region.getLowerCorner();
+		const glm::ivec3& maxs = region.getUpperCorner();
+		glm::ivec3 p;
+		for (int x = mins.x; x <= maxs.x; ++x) {
+			p.x = x;
+			for (int y = mins.y; y <= maxs.y; ++y) {
+				p.y = y;
+				for (int z = mins.z; z <= maxs.z; ++z) {
+					p.z = z;
+					wrapper.setVoxel(p, v->voxel(p));
+				}
+			}
+		}
+		delete v;
+		dirtyRegion = wrapper.dirtyRegion();
+	}
+	const glm::mat4& translate = glm::translate(-volume->region().getCentre());
 	const glm::mat4& rotateY = glm::rotate(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	const glm::mat4& rotateX = glm::rotate(glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	_rawVolumeRenderer.setModelMatrix(PlayFieldVolume, rotateX * rotateY * translate);
-	if (!_rawVolumeRenderer.extract(PlayFieldVolume, v->region())) {
+	const glm::mat4 model = rotateX * rotateY * translate;
+	_rawVolumeRenderer.setModelMatrix(PlayFieldVolume, model);
+	_rawVolumeRenderer.setModelMatrix(FloorVolume, model);
+	if (!_rawVolumeRenderer.extract(PlayFieldVolume, dirtyRegion)) {
 		Log::error("Failed to extract the volume");
 	}
 }

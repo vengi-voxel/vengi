@@ -275,30 +275,6 @@ void Protocol::parseScores(const std::string& json) {
 	_eventBus->enqueue(std::make_shared<ScoreEvent>(scores));
 }
 
-void Protocol::fillGroundAndWall(voxel::RawVolume* v) {
-	const voxel::Region& region = v->region();
-	const voxel::Voxel voxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
-	// ground
-	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-			v->setVoxel(x, region.getLowerY(), z, voxel);
-		}
-	}
-	// walls
-	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-		v->setVoxel(region.getLowerX(), region.getLowerY() + 1, z, voxel);
-		v->setVoxel(region.getUpperX(), region.getLowerY() + 1, z, voxel);
-		v->setVoxel(region.getLowerX(), region.getLowerY() + 2, z, voxel);
-		v->setVoxel(region.getUpperX(), region.getLowerY() + 2, z, voxel);
-	}
-	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-		v->setVoxel(x, region.getLowerY() + 1, region.getLowerZ(), voxel);
-		v->setVoxel(x, region.getLowerY() + 1, region.getUpperZ(), voxel);
-		v->setVoxel(x, region.getLowerY() + 2, region.getLowerZ(), voxel);
-		v->setVoxel(x, region.getLowerY() + 2, region.getUpperZ(), voxel);
-	}
-}
-
 void Protocol::parseGridAndUpdateVolume(const std::string& json) {
 	const core::json j = core::json::parse(json);
 	const int height = j["height"].get<int>();
@@ -306,7 +282,6 @@ void Protocol::parseGridAndUpdateVolume(const std::string& json) {
 	// x and z and swapped here
 	const voxel::Region region(glm::ivec3(-1), glm::ivec3(height + 1, 1, width + 1));
 	voxel::RawVolume* v = new voxel::RawVolume(region);
-	fillGroundAndWall(v);
 	const auto& grid = j["tiles"];
 	int x = 0;
 	for (const auto& line : grid) {
@@ -324,7 +299,7 @@ void Protocol::parseGridAndUpdateVolume(const std::string& json) {
 			if (data != 0) {
 				const auto& iter = _players.find(data);
 				if (iter == _players.end()) {
-					Log::error("Can't find grid player id %i in player list", data);
+					Log::debug("Can't find grid player id %i in player list", data);
 					continue;
 				}
 				v->setVoxel(glm::ivec3(z, 1, x), voxel::createColorVoxel(voxel::VoxelType::Generic, iter->second.colorIndex));

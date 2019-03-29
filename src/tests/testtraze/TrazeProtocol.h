@@ -36,7 +36,6 @@ private:
 		Unknown = 255
 	};
 	void onMessage(const struct mosquitto_message *msg);
-	void fillGroundAndWall(voxel::RawVolume* v);
 	bool send(const std::string& topic, const std::string& json) const;
 
 public:
