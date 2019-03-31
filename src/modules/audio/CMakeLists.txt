@@ -2,4 +2,4 @@ set(SRCS
 	SoundManager.h SoundManager.cpp
 )
 set(LIB audio)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core sdl2_mixer)
