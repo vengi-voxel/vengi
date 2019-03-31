@@ -10,7 +10,6 @@ to move you bike, you are joined.
 
 # TODO
 
-* mosquitto is eating the whole cpu - find out why
 * add scoreboard menu
 * player explosions
 * sounds
