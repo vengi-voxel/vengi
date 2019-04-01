@@ -15,7 +15,7 @@ const int FontSize = 48;
 }
 
 TestTraze::TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider), _protocol(eventBus), _voxelFontRender(FontSize, 4, voxel::VoxelFont::OriginUpperLeft) {
+		Super(metric, filesystem, eventBus, timeProvider), _protocol(eventBus), _voxelFontRender(FontSize, 4, voxel::VoxelFont::OriginUpperLeft), _soundMgr(filesystem) {
 	init(ORGANISATION, "testtraze");
 	setRenderAxis(false);
 	setFramesPerSecondsCap(60);
@@ -61,7 +61,15 @@ core::AppState TestTraze::onConstruct() {
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	_rawVolumeRenderer.construct();
 	_messageQueue.construct();
+	_soundMgr.construct();
 	return state;
+}
+
+void TestTraze::sound(const char *soundId) {
+	const std::string& file = core::string::format("sound/%s.ogg", soundId);
+	if (_soundMgr.play(file, glm::ivec2(0), false)) {
+		Log::warn("Failed to play sound %s", file.c_str());
+	}
 }
 
 core::AppState TestTraze::onInit() {
@@ -87,6 +95,10 @@ core::AppState TestTraze::onInit() {
 	}
 	if (!_voxelFontRender.init()) {
 		Log::error("Failed to init voxel font");
+		return core::AppState::InitFailure;
+	}
+	if (!_soundMgr.init()) {
+		Log::error("Failed to init sound manager");
 		return core::AppState::InitFailure;
 	}
 
@@ -134,12 +146,15 @@ void TestTraze::onEvent(const traze::TickerEvent& event) {
 	const std::string& name = playerName(ticker.fragger);
 	switch (ticker.type) {
 	case traze::TickerType::Frag:
+		sound("frag");
 		_messageQueue.message("%s fragged another player", name.c_str());
 		break;
 	case traze::TickerType::Suicide:
+		sound("suicide");
 		_messageQueue.message("%s committed suicide", name.c_str());
 		break;
 	case traze::TickerType::Collision:
+		sound("collision");
 		_messageQueue.message("%s - collision with another player", name.c_str());
 		break;
 	default:
@@ -256,12 +271,14 @@ core::AppState TestTraze::onRunning() {
 		_protocol.subscribe(_games[_currentGameIndex]);
 	}
 	_messageQueue.update(_deltaFrameMillis);
+	_soundMgr.update(_deltaFrameMillis);
 	return state;
 }
 
 core::AppState TestTraze::onCleanup() {
 	core::AppState state = Super::onCleanup();
 	_voxelFontRender.shutdown();
+	_soundMgr.shutdown();
 	const std::vector<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
 	for (voxel::RawVolume* v : old) {
 		delete v;

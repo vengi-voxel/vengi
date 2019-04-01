@@ -13,7 +13,7 @@ if (MOSQUITTO_FOUND)
 		testtraze/testtraze-keybindings.cfg
 	)
 	engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED NOINSTALL)
-	engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES testcore voxelrender voxelfont util ${MOSQUITTO_LIBRARIES})
+	engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES testcore voxelrender voxelfont util audio ${MOSQUITTO_LIBRARIES})
 
 	gtest_suite_begin(tests-${PROJECT_NAME} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 	gtest_suite_sources(tests-${PROJECT_NAME}

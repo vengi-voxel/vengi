@@ -28,6 +28,9 @@ constexpr const char *ClientWindowWidth = "cl_width";
 constexpr const char *ClientWindowDisplay = "cl_display";
 constexpr const char *ClientWindowHeight = "cl_height";
 
+constexpr const char *AudioSoundVolume = "snd_volume";
+constexpr const char *AudioMusicVolume = "snd_musicvolume";
+
 constexpr const char *ClientGamma = "cl_gamma";
 constexpr const char *ClientShadowMap = "cl_shadowmap";
 constexpr const char *ClientFog = "cl_fog";

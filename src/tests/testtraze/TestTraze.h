@@ -8,6 +8,7 @@
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/VoxelFontRenderer.h"
 #include "core/EventBus.h"
+#include "audio/SoundManager.h"
 
 #include "TrazeEvents.h"
 #include "TrazeProtocol.h"
@@ -34,6 +35,7 @@ private:
 	voxelrender::RawVolumeRenderer _rawVolumeRenderer;
 	voxelrender::VoxelFontRenderer _voxelFontRender;
 	MessageQueue _messageQueue;
+	audio::SoundManager _soundMgr;
 
 	bool _renderBoard = true;
 	bool _renderPlayerNames = true;
@@ -50,6 +52,8 @@ private:
 	uint64_t _nextConnectTime = 0;
 
 	void doRender() override;
+
+	void sound(const char *soundId);
 
 	const std::string& playerName(traze::PlayerId playerId) const;
 	const traze::Player& player(traze::PlayerId playerId) const;
