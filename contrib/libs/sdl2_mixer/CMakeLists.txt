@@ -40,7 +40,7 @@ engine_add_library(
 	LIB ${LIB}
 	SRCS ${SRCS}
 	GCCCFLAGS "-Wno-discarded-qualifiers -Wno-misleading-indentation -Wno-implicit-fallthrough -Wno-cast-qual -Wno-shadow -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-sign-compare -Wno-unused-variable -Wno-missing-field-initializers -Wno-unused-label -Wno-format-zero-length"
-	DEFINES OGG_MUSIC WAV_MUSIC)
+	DEFINES MUSIC_OGG MUSIC_WAV)
 
 if (NOT SDL2_MIXER_FOUND)
 	target_include_directories(${LIB} PRIVATE "libogg-1.3.1/include")
