@@ -11,6 +11,12 @@ if (MOSQUITTO_FOUND)
 	set(FILES
 		shared/font.ttf
 		testtraze/testtraze-keybindings.cfg
+		testtraze/sound/frag.ogg
+		testtraze/sound/suicide.ogg
+		testtraze/sound/collision.ogg
+		testtraze/sound/join.ogg
+		testtraze/sound/you_lose.ogg
+		testtraze/sound/you_win.ogg
 	)
 	engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED NOINSTALL)
 	engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES testcore voxelrender voxelfont util audio ${MOSQUITTO_LIBRARIES})

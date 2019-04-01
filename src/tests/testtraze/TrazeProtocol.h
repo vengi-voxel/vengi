@@ -20,7 +20,7 @@ private:
 	std::string _instanceName;
 	std::string _playerToken;
 	std::string _clientToken;
-	uint32_t _playerId = 0u;
+	PlayerId _playerId = 0u;
 	struct mosquitto *_mosquitto = nullptr;
 	bool _connected = false;
 	bool _subscribed = false;
@@ -45,6 +45,8 @@ public:
 	void shutdown();
 
 	bool connect();
+
+	PlayerId playerId() const;
 
 	bool joined() const;
 	bool connected() const;
@@ -207,6 +209,10 @@ public:
 	 */
 	bool bail();
 };
+
+inline PlayerId Protocol::playerId() const {
+	return _playerId;
+}
 
 inline bool Protocol::joined() const {
 	return _playerId != 0u;

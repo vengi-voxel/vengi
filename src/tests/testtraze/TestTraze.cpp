@@ -18,7 +18,9 @@ TestTraze::TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& f
 		Super(metric, filesystem, eventBus, timeProvider), _protocol(eventBus), _voxelFontRender(FontSize, 4, voxel::VoxelFont::OriginUpperLeft), _soundMgr(filesystem) {
 	init(ORGANISATION, "testtraze");
 	setRenderAxis(false);
+	setRelativeMouseMode(false);
 	setFramesPerSecondsCap(60);
+	_allowRelativeMouseMode = false;
 	_eventBus->subscribe<traze::NewGridEvent>(*this);
 	_eventBus->subscribe<traze::NewGamesEvent>(*this);
 	_eventBus->subscribe<traze::PlayerListEvent>(*this);
@@ -142,19 +144,37 @@ void TestTraze::onEvent(const traze::BikeEvent& event) {
 
 void TestTraze::onEvent(const traze::TickerEvent& event) {
 	const traze::Ticker& ticker = event.get();
-	const std::string& name = playerName(ticker.fragger);
+	const std::string& fraggerName = playerName(ticker.fragger);
+	const std::string& casualtyName = playerName(ticker.casualty);
 	switch (ticker.type) {
 	case traze::TickerType::Frag:
-		sound("frag");
-		_messageQueue.message("%s fragged another player", name.c_str());
+		if (ticker.fragger == _protocol.playerId()) {
+			sound("you_win");
+			_messageQueue.message("You fragged %s", casualtyName.c_str());
+		} else if (ticker.casualty == _protocol.playerId()) {
+			sound("you_lose");
+			_messageQueue.message("You were fragged by %s", fraggerName.c_str());
+		} else {
+			_messageQueue.message("%s fragged %s", fraggerName.c_str(), casualtyName.c_str());
+		}
 		break;
 	case traze::TickerType::Suicide:
-		sound("suicide");
-		_messageQueue.message("%s committed suicide", name.c_str());
+		if (ticker.casualty == (int)_protocol.playerId()) {
+			sound("you_lose");
+		} else {
+			sound("suicide");
+		}
+		_messageQueue.message("%s committed suicide", fraggerName.c_str());
 		break;
 	case traze::TickerType::Collision:
-		sound("collision");
-		_messageQueue.message("%s - collision with another player", name.c_str());
+		if (ticker.casualty == (int)_protocol.playerId()) {
+			sound("you_lose");
+		} else if (ticker.fragger == _protocol.playerId()) {
+			sound("you_win");
+		} else {
+			sound("collision");
+		}
+		_messageQueue.message("%s - collision with another player", fraggerName.c_str());
 		break;
 	default:
 		break;
@@ -172,6 +192,7 @@ void TestTraze::onEvent(const traze::SpawnEvent& event) {
 	if (spawn.own) {
 		_spawnPosition = spawn.position;
 		_spawnTime = _now;
+		sound("join");
 	}
 }
 

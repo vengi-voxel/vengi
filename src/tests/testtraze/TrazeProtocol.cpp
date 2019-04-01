@@ -283,7 +283,7 @@ void Protocol::parseGridAndUpdateVolume(const std::string& json) {
 	const int height = j["height"].get<int>();
 	const int width = j["width"].get<int>();
 	// x and z and swapped here
-	const voxel::Region region(glm::ivec3(-1), glm::ivec3(height + 1, 1, width + 1));
+	const voxel::Region region(glm::ivec3(-1), glm::ivec3(height, 1, width));
 	voxel::RawVolume* v = new voxel::RawVolume(region);
 	const auto& grid = j["tiles"];
 	int x = 0;
