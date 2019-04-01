@@ -66,9 +66,8 @@ core::AppState TestTraze::onConstruct() {
 }
 
 void TestTraze::sound(const char *soundId) {
-	const std::string& file = core::string::format("sound/%s.ogg", soundId);
-	if (_soundMgr.play(file, glm::ivec2(0), false)) {
-		Log::warn("Failed to play sound %s", file.c_str());
+	if (!_soundMgr.play(soundId, glm::ivec2(0), false)) {
+		Log::warn("Failed to play sound %s", soundId);
 	}
 }
 

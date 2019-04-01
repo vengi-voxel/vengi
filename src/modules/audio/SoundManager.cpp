@@ -7,6 +7,7 @@
 #include "core/Var.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/String.h"
 #include "core/GLM.h"
 #include "core/GameConfig.h"
 #include <SDL.h>
@@ -46,8 +47,8 @@ bool SoundManager::init() {
 	}
 
 	const int result = Mix_Init(MIX_INIT_OGG);
-	if (!(result & ~MIX_INIT_OGG)) {
-		Log::error(logid, "Failed to initialize sdl mixer with ogg support");
+	if (!(result & MIX_INIT_OGG)) {
+		Log::error(logid, "Failed to initialize sdl mixer with ogg support: %s", Mix_GetError());
 	}
 
 	Log::info(logid, "audio driver: %s", SDL_GetCurrentAudioDriver());
@@ -129,13 +130,15 @@ int SoundManager::playMusic(const std::string& music, bool loop) {
 	Mix_FreeMusic(_music);
 	_music = nullptr;
 
-	io::FilePtr file = _filesystem->open(music);
+	const std::string& fullPath = core::string::format("music/%s.ogg", music.c_str());
+	const io::FilePtr& file = _filesystem->open(fullPath);
 	if (!file->exists()) {
-		Log::error(logid, "unable to load music file: %s", music.c_str());
+		Log::error(logid, "unable to open music file: %s", fullPath.c_str());
 		return -1;
 	}
 	SDL_RWops* rwops = file->createRWops(io::FileMode::Read);
 	if (rwops == nullptr) {
+		Log::error(logid, "unable to load music file: %s", fullPath.c_str());
 		return -1;
 	}
 	_music = Mix_LoadMUS_RW(rwops, 1);
@@ -205,13 +208,15 @@ Mix_Chunk* SoundManager::getChunk(const std::string& filename) {
 		return i->second;
 	}
 
-	io::FilePtr file = _filesystem->open(filename);
+	const std::string& fullPath = core::string::format("sound/%s.ogg", filename.c_str());
+	io::FilePtr file = _filesystem->open(fullPath);
 	if (!file->exists()) {
-		Log::error(logid, "unable to load sound file: %s", filename.c_str());
+		Log::error(logid, "unable to open sound file: %s", fullPath.c_str());
 		return nullptr;
 	}
 	SDL_RWops* rwops = file->createRWops(io::FileMode::Read);
 	if (rwops == nullptr) {
+		Log::error(logid, "unable to load sound file: %s", fullPath.c_str());
 		return nullptr;
 	}
 	Mix_Chunk *sound = Mix_LoadWAV_RW(rwops, 1);
