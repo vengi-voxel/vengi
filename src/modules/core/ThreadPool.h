@@ -65,8 +65,6 @@ private:
 	std::mutex _queueMutex;
 	std::condition_variable _queueCondition;
 	std::mutex _shutdownMutex;
-	std::condition_variable _shutdownCondition;
-	std::atomic_int _shutdownCount { 0 };
 	std::atomic_bool _stop { false };
 	std::atomic_bool _force { false };
 };

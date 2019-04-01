@@ -17,9 +17,8 @@ ThreadPool::ThreadPool(size_t threads, const char *name) :
 }
 
 void ThreadPool::init() {
-	_shutdownCount = 0;
-	_stop = false;
 	_force = false;
+	_stop = false;
 	_workers.reserve(_threads);
 	for (size_t i = 0; i < _threads; ++i) {
 		_workers.emplace_back([this, i] {
@@ -54,8 +53,6 @@ void ThreadPool::init() {
 				task();
 				core_trace_end_frame();
 			}
-			++_shutdownCount;
-			_shutdownCondition.notify_all();
 		});
 	}
 }
@@ -69,13 +66,8 @@ void ThreadPool::shutdown(bool wait) {
 		return;
 	}
 	_force = !wait;
-	const int expectedShutdownCount = _workers.size() + _shutdownCount;
 	_stop = true;
 	_queueCondition.notify_all();
-	{
-		std::unique_lock<std::mutex> lock(_shutdownMutex);
-		_shutdownCondition.wait(lock, [&] { return _shutdownCount == expectedShutdownCount; });
-	}
 	for (std::thread &worker : _workers) {
 		worker.join();
 	}
