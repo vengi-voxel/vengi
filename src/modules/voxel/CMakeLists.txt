@@ -8,6 +8,7 @@ set(SRCS
 	Constants.h
 	MaterialColor.h MaterialColor.cpp
 	RandomVoxel.h
+	Selector.h Selector.cpp
 	WorldMgr.cpp WorldMgr.h
 	WorldPersister.h WorldPersister.cpp
 	WorldPager.h WorldPager.cpp
@@ -79,6 +80,7 @@ set(TEST_SRCS
 	tests/AmbientOcclusionTest.cpp
 	tests/PagedVolumeBufferedSamplerTest.cpp
 	tests/RawVolumeWrapperTest.cpp
+	tests/SelectorTest.cpp
 	tests/VolumeMergerTest.cpp
 	tests/VolumeRotatorTest.cpp
 	tests/VolumeCropperTest.cpp
