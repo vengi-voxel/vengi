@@ -45,6 +45,8 @@ my own engine and evolved into something that others might find useful, too.
 # Planned
 
 * Rigging support
+* Physics
+* Particle emitter
 * Copy/paste
 * Selections
 * Improve voxelizer
