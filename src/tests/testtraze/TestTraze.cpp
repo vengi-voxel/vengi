@@ -151,7 +151,7 @@ void TestTraze::onEvent(const traze::TickerEvent& event) {
 		if (ticker.fragger == _protocol.playerId()) {
 			sound("you_win");
 			_messageQueue.message("You fragged %s", casualtyName.c_str());
-		} else if (ticker.casualty == _protocol.playerId()) {
+		} else if (ticker.casualty == (int)_protocol.playerId()) {
 			sound("you_lose");
 			_messageQueue.message("You were fragged by %s", fraggerName.c_str());
 		} else {
