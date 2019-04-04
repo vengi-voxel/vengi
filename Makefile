@@ -1,12 +1,18 @@
-Q           ?= @
-UPDATEDIR   := /tmp
-BUILDDIR    ?= ./build
-BUILDTYPE   ?= Debug
-INSTALL_DIR ?= $(BUILDDIRPATH)$(shell uname)
+Q              ?= @
+UPDATEDIR      := /tmp
+BUILDDIR       ?= ./build
+BUILDDIR_NINJA ?= ./build-ninja
+BUILDTYPE      ?= Debug
+INSTALL_DIR    ?= $(BUILDDIRPATH)$(shell uname)
+NINJA          := ninja
 
 all:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
 	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR) $@
+
+ninja:
+	$(Q)if [ ! -f $(BUILDDIR_NINJA)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR_NINJA) -DRCON=OFF -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -GNinja; fi
+	$(Q)$(NINJA) -C $(BUILDDIR_NINJA)
 
 %:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
