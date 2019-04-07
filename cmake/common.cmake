@@ -95,6 +95,8 @@ endif()
 #set(NATIVE_BINARY_DIR "${NATIVE_BUILD_DIR}/bin" CACHE PATH "Path to the native binary directory")
 #set(NATIVE_BUILD_TARGET "${NATIVE_BUILD_DIR}/CMakeCache.txt")
 
+# TODO: check CROSSCOMPILING_EMULATOR
+
 #if(CMAKE_CROSSCOMPILING AND NOT TARGET native-cmake-build)
 #	file(MAKE_DIRECTORY ${NATIVE_BUILD_DIR})
 #	add_custom_command(
