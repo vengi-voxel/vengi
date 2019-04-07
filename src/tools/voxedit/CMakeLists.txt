@@ -17,7 +17,15 @@ set(SRCS
 	VoxEdit.h VoxEdit.cpp
 )
 
+set(UI_WINDOWS
+	voxedit/ui/window/voxedit-layer.tb.txt
+	voxedit/ui/window/voxedit-main.tb.txt
+	voxedit/ui/window/voxedit-noise.tb.txt
+	voxedit/ui/window/voxedit-tree.tb.txt
+)
+
 set(FILES
+	${UI_WINDOWS}
 	voxedit/ui/skin/voxedit-axis-x.png
 	voxedit/ui/skin/voxedit-axis-y.png
 	voxedit/ui/skin/voxedit-axis-z.png
@@ -52,10 +60,6 @@ set(FILES
 	voxedit/ui/skin/voxedit-voxel.png
 	voxedit/ui/widget/voxedit-layer-item.tb.txt
 	voxedit/ui/widget/voxedit-layer.tb.txt
-	voxedit/ui/window/voxedit-layer.tb.txt
-	voxedit/ui/window/voxedit-main.tb.txt
-	voxedit/ui/window/voxedit-noise.tb.txt
-	voxedit/ui/window/voxedit-tree.tb.txt
 	voxedit/ui/lang/en.tb.txt
 	voxedit/models/armchair.vox
 	voxedit/models/bowl_bone.vox
@@ -99,4 +103,4 @@ set(FILES
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger voxedit-util)
 include_directories(.)
-check_ui_turbobadger(${PROJECT_NAME})
+check_ui_turbobadger(${PROJECT_NAME} ${UI_WINDOWS})

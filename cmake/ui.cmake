@@ -1,21 +1,17 @@
 macro(check_ui_turbobadger TARGET)
 	if (NOT CMAKE_CROSS_COMPILING)
+		set(_files ${ARGN})
 		set(_workingdir "${DATA_DIR}/${TARGET}")
-		set(_dir "${_workingdir}/ui/window")
-		file(GLOB UI_FILES ${_dir}/*.tb.txt)
-		foreach(_file ${UI_FILES})
+		foreach(_file ${_files})
 			get_filename_component(_filename ${_file} NAME)
 			add_custom_target(
-				${_filename}
-				COMMAND uitool ui/window/${_filename}
-				COMMENT "Validate ui file: ${_filename}"
-				DEPENDS uitool
+				${TARGET}-${_filename}
+				COMMAND uitool ../${_file}
+				DEPENDS uitool ${DATA_DIR}/${_file}
 				WORKING_DIRECTORY ${_workingdir}
+				SOURCES ${DATA_DIR}/${_file}
 			)
-			add_dependencies(${TARGET} ${_filename})
+			add_dependencies(${TARGET} ${TARGET}-${_filename})
 		endforeach()
-		if (UI_FILES)
-			#add_dependencies(${TARGET} uitool)
-		endif()
 	endif()
 endmacro()

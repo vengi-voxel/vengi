@@ -16,7 +16,18 @@ set(SRCS
 	ui/DisconnectWindow.h
 	ui/LostPasswordWindow.h
 )
+
+set(UI_WINDOWS
+	client/ui/window/client-authfailed.tb.txt
+	client/ui/window/client-disconnect.tb.txt
+	client/ui/window/client-hud.tb.txt
+	client/ui/window/client-login.tb.txt
+	client/ui/window/client-lostpassword.tb.txt
+	client/ui/window/client-signup.tb.txt
+)
+
 set(FILES
+	${UI_WINDOWS}
 	client/mesh/animal_chicken.dae
 	client/mesh/animal_chicken.png
 	client/mesh/animal_rabbit.dae
@@ -27,12 +38,6 @@ set(FILES
 	client/mesh/chr_knight.png
 	client/mesh/chr_knight.lua
 	client/ui/lang/en.tb.txt
-	client/ui/window/client-authfailed.tb.txt
-	client/ui/window/client-disconnect.tb.txt
-	client/ui/window/client-hud.tb.txt
-	client/ui/window/client-login.tb.txt
-	client/ui/window/client-lostpassword.tb.txt
-	client/ui/window/client-signup.tb.txt
 	client/client-keybindings.cfg
 
 	shared/font.ttf
@@ -41,4 +46,4 @@ set(FILES
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger voxelfont voxelrender util)
-check_ui_turbobadger(${PROJECT_NAME})
+check_ui_turbobadger(${PROJECT_NAME} ${UI_WINDOWS})
