@@ -31,7 +31,6 @@ public:
 	const Layer& layer(int layerId) const;
 	Layer& layer(int layerId);
 	int validLayers() const;
-	int validLayerId(int index) const;
 	void hideLayer(int layerId, bool hide);
 	bool deleteLayer(int layerId, bool force = false);
 	int addLayer(const char *name, bool visible = true, voxel::RawVolume* volume = nullptr);

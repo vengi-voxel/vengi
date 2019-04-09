@@ -33,13 +33,12 @@ public:
 			LayerItem *item = _source->getItem(_index);
 			item->setVisible(ev.target->getValue() ? true : false);
 			_source->invokeItemChanged(_index, _sourceViewer);
-			const int layerId = layerMgr.validLayerId(_index);
-			layerMgr.hideLayer(layerId, !item->visible());
+			layerMgr.hideLayer(item->layerId(), !item->visible());
 			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("delete")) {
-			const int layerId = layerMgr.validLayerId(_index);
-			layerMgr.deleteLayer(layerId);
+			LayerItem *item = _source->getItem(_index);
+			layerMgr.deleteLayer(item->layerId());
 			return true;
 		}
 		return tb::TBLayout::onEvent(ev);

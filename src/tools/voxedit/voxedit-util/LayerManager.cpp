@@ -76,20 +76,6 @@ bool LayerManager::findNewActiveLayer() {
 	return false;
 }
 
-int LayerManager::validLayerId(int index) const {
-	int validLayers = 0;
-	for (const auto& l : layers()) {
-		if (!l.valid) {
-			continue;
-		}
-		if (index == validLayers) {
-			return validLayers;
-		}
-		++validLayers;
-	}
-	return validLayers;
-}
-
 void LayerManager::hideLayer(int layerId, bool hide) {
 	for (auto& listener : _listeners) {
 		if (hide) {
@@ -131,13 +117,16 @@ bool LayerManager::setActiveLayer(int layerId) {
 
 bool LayerManager::deleteLayer(int layerId, bool force) {
 	if (layerId < 0 || layerId >= (int)_layers.size()) {
+		Log::debug("Invalid layer id given: %i", layerId);
 		return false;
 	}
 	if (!_layers[layerId].valid) {
+		Log::debug("Deleting an invalid layer is a nop: %i", layerId);
 		return true;
 	}
 	// don't delete the last layer
 	if (!force && validLayers() == 1) {
+		Log::debug("Can't delete last remaining layer: %i", layerId);
 		return false;
 	}
 	_layers[layerId].reset();
@@ -147,6 +136,7 @@ bool LayerManager::deleteLayer(int layerId, bool force) {
 	for (auto& listener : _listeners) {
 		listener->onLayerDeleted(layerId);
 	}
+	Log::debug("Layer %i was deleted", layerId);
 	return true;
 }
 
