@@ -75,11 +75,27 @@ int LayerItemSource::getItemIdForLayerId(int layerId) const {
 	return -1;
 }
 
+static int sortByLayerId(tb::TBSelectItemSource *source, const int *a, const int *b) {
+	LayerItemSource* src = (LayerItemSource*)source;
+	const int layerIdA = src->getItem(*a)->layerId();
+	const int layerIdB = src->getItem(*b)->layerId();
+	int value;
+	if (layerIdA < layerIdB) {
+		value = -1;
+	} else {
+		core_assert(layerIdA != layerIdB);
+		value = 1;
+	}
+	return source->getSort() == tb::TB_SORT_DESCENDING ? -value : value;
+}
+
 LayerWidget::LayerWidget() {
 	_layerSettings.reset();
 	core_assert_always(tb::g_widgets_reader->loadFile(getContentRoot(), "ui/widget/voxedit-layer.tb.txt"));
 	_list = getWidgetByIDAndType<tb::TBSelectList>("list");
 	if (_list != nullptr) {
+		_source.setSort(tb::TB_SORT_ASCENDING);
+		_list->setSortCallback(sortByLayerId);
 		_list->setSource(&_source);
 		_list->getScrollContainer()->setScrollMode(tb::SCROLL_MODE_Y_AUTO);
 	}
