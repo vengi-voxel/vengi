@@ -25,19 +25,19 @@ TEST_F(MementoHandlerTest, testMarkUndo) {
 	EXPECT_FALSE(undoHandler.canRedo());
 	EXPECT_FALSE(undoHandler.canUndo());
 
-	undoHandler.markUndo(0, first);
+	undoHandler.markUndo(0, "", first);
 	EXPECT_FALSE(undoHandler.canRedo()) << "Without a second entry and without undoing something before, you can't redo anything";
 	EXPECT_FALSE(undoHandler.canUndo()) << "Without a second entry, you can't undo anything, because it is your initial state";
 	EXPECT_EQ(1, (int)undoHandler.stateSize());
 	EXPECT_EQ(0, (int)undoHandler.statePosition());
 
-	undoHandler.markUndo(0, second);
+	undoHandler.markUndo(0, "", second);
 	EXPECT_FALSE(undoHandler.canRedo());
 	EXPECT_TRUE(undoHandler.canUndo());
 	EXPECT_EQ(2, (int)undoHandler.stateSize());
 	EXPECT_EQ(1, (int)undoHandler.statePosition());
 
-	undoHandler.markUndo(0, third);
+	undoHandler.markUndo(0, "", third);
 	EXPECT_FALSE(undoHandler.canRedo());
 	EXPECT_TRUE(undoHandler.canUndo());
 	EXPECT_EQ(3, (int)undoHandler.stateSize());
@@ -49,9 +49,9 @@ TEST_F(MementoHandlerTest, testUndoRedo) {
 	voxel::RawVolume* second = create(2);
 	voxel::RawVolume* third = create(3);
 	voxedit::MementoHandler undoHandler;
-	undoHandler.markUndo(0, first);
-	undoHandler.markUndo(0, second);
-	undoHandler.markUndo(0, third);
+	undoHandler.markUndo(0, "", first);
+	undoHandler.markUndo(0, "", second);
+	undoHandler.markUndo(0, "", third);
 
 	const voxedit::LayerState& undoThird = undoHandler.undo();
 	ASSERT_NE(nullptr, undoThird.volume);
@@ -90,9 +90,9 @@ TEST_F(MementoHandlerTest, testUndoRedoDifferentLayers) {
 	voxel::RawVolume* second = create(2);
 	voxel::RawVolume* third = create(3);
 	voxedit::MementoHandler undoHandler;
-	undoHandler.markUndo(0, first);
-	undoHandler.markUndo(1, second);
-	undoHandler.markUndo(2, third);
+	undoHandler.markUndo(0, "", first);
+	undoHandler.markUndo(1, "", second);
+	undoHandler.markUndo(2, "", third);
 	EXPECT_TRUE(undoHandler.canUndo());
 	voxedit::LayerState undoState = undoHandler.undo();
 	EXPECT_EQ(1, undoState.layer);

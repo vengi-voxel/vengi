@@ -320,7 +320,7 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 		return;
 	}
 	if (markUndo) {
-		_mementoHandler.markUndo(layerId, _volumeRenderer.volume(layerId));
+		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
 	}
 	_extractRegions.push_back({modifiedRegion, layerId});
 	_dirty = true;
@@ -400,6 +400,7 @@ void SceneManager::undo() {
 		return;
 	}
 	setNewVolume(s.layer, v);
+	_layerMgr.layer(s.layer).name = s.name;
 	_layerMgr.setActiveLayer(s.layer);
 	modified(s.layer, v->region(), false);
 }
@@ -411,6 +412,7 @@ void SceneManager::redo() {
 		return;
 	}
 	setNewVolume(s.layer, v);
+	_layerMgr.layer(s.layer).name = s.name;
 	_layerMgr.setActiveLayer(s.layer);
 	modified(s.layer, v->region(), false);
 }
@@ -446,7 +448,7 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	const int layerId = _layerMgr.activeLayer();
 	// push the initial state of the current layer to the memento handler to
 	// be able to undo your next step
-	_mementoHandler.markUndo(layerId, _volumeRenderer.volume(layerId));
+	_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
 	_dirty = false;
 	_result = voxel::PickResult();
 	setCursorPosition(cursorPosition(), true);
@@ -1129,10 +1131,10 @@ void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolum
 	_extractRegions.push_back({volume->region(), (int)layerId});
 }
 
-void SceneManager::onLayerDeleted(int layerId) {
+void SceneManager::onLayerDeleted(int layerId, const Layer& layer) {
 	voxel::RawVolume* v = _volumeRenderer.setVolume(layerId, nullptr);
 	if (v != nullptr) {
-		_mementoHandler.markUndo(layerId, v);
+		_mementoHandler.markUndo(layerId, layer.name, v);
 		_volumeRenderer.update(layerId);
 		delete v;
 	}

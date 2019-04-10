@@ -9,7 +9,7 @@
 
 namespace voxedit {
 
-static const LayerState InvalidLayerState{nullptr, -1};
+static const LayerState InvalidLayerState{nullptr, -1, ""};
 
 // TODO: undo layer create/delete...
 MementoHandler::MementoHandler() {
@@ -35,7 +35,7 @@ LayerState MementoHandler::undo() {
 	core_assert(_statePosition >= 1);
 	--_statePosition;
 	const LayerState& s = state();
-	return LayerState{new voxel::RawVolume(s.volume), s.layer};
+	return LayerState{new voxel::RawVolume(s.volume), s.layer, s.name};
 }
 
 LayerState MementoHandler::redo() {
@@ -44,10 +44,10 @@ LayerState MementoHandler::redo() {
 	}
 	++_statePosition;
 	const LayerState& s = state();
-	return LayerState{new voxel::RawVolume(s.volume), s.layer};
+	return LayerState{new voxel::RawVolume(s.volume), s.layer, s.name};
 }
 
-void MementoHandler::markUndo(int layer, const voxel::RawVolume* volume) {
+void MementoHandler::markUndo(int layer, const std::string& name, const voxel::RawVolume* volume) {
 	if (!_states.empty()) {
 		auto iStates = _states.begin();
 		std::advance(iStates, _statePosition + 1);
@@ -56,7 +56,7 @@ void MementoHandler::markUndo(int layer, const voxel::RawVolume* volume) {
 		}
 		_states.erase(iStates, _states.end());
 	}
-	_states.push_back(LayerState{new voxel::RawVolume(volume), layer});
+	_states.push_back(LayerState{new voxel::RawVolume(volume), layer, name});
 	while (_states.size() > _maxStates) {
 		delete _states.begin()->volume;
 		_states.erase(_states.begin());

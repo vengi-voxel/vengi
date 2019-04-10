@@ -17,6 +17,7 @@ namespace voxedit {
 struct LayerState {
 	voxel::RawVolume* volume;
 	int layer;
+	std::string name;
 };
 
 class MementoHandler {
@@ -30,7 +31,7 @@ public:
 	~MementoHandler();
 
 	void clearStates();
-	void markUndo(int layer, const voxel::RawVolume* volume);
+	void markUndo(int layer, const std::string& name, const voxel::RawVolume* volume);
 
 	LayerState undo();
 	LayerState redo();

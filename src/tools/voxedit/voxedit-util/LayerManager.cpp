@@ -129,12 +129,13 @@ bool LayerManager::deleteLayer(int layerId, bool force) {
 		Log::debug("Can't delete last remaining layer: %i", layerId);
 		return false;
 	}
+	const Layer oldLayer = _layers[layerId];
 	_layers[layerId].reset();
 	if (!force && layerId == activeLayer()) {
 		core_assert_always(findNewActiveLayer());
 	}
 	for (auto& listener : _listeners) {
-		listener->onLayerDeleted(layerId);
+		listener->onLayerDeleted(layerId, oldLayer);
 	}
 	Log::debug("Layer %i was deleted", layerId);
 	return true;

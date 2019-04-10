@@ -48,7 +48,7 @@ public:
 	void onLayerShow(int layerId) override;
 	void onActiveLayerChanged(int old, int active) override;
 	void onLayerAdded(int layerId, const voxedit::Layer& layer, voxel::RawVolume* volume) override;
-	void onLayerDeleted(int layerId) override;
+	void onLayerDeleted(int layerId, const voxedit::Layer& layer) override;
 private:
 	tb::TBSelectList *_list;
 	LayerItemSource _source;

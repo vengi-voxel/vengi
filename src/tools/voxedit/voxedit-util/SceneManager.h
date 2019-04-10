@@ -224,7 +224,7 @@ public:
 	void onLayerShow(int layerId) override;
 	void onActiveLayerChanged(int old, int active) override;
 	void onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume) override;
-	void onLayerDeleted(int layerId) override;
+	void onLayerDeleted(int layerId, const Layer& layer) override;
 };
 
 inline math::Axis SceneManager::lockedAxis() const {

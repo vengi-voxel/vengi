@@ -136,7 +136,7 @@ void LayerWidget::onLayerAdded(int layerId, const voxedit::Layer& layer, voxel::
 	_source.addItem(new LayerItem(layerId, finalLayerName.c_str(), finalVisibleState));
 }
 
-void LayerWidget::onLayerDeleted(int layerId) {
+void LayerWidget::onLayerDeleted(int layerId, const voxedit::Layer&) {
 	const int index = _source.getItemIdForLayerId(layerId);
 	if (index < 0) {
 		return;
