@@ -144,6 +144,20 @@ elements
 		img-position-x 0
 		img-ofs-x 4
 
+	Header
+		bitmap window_mover_bg_tile.png
+		type Tile
+		expand -1
+		padding 3 16
+		overlays
+			element Header.overlay
+				state all
+	Header.overlay
+		bitmap window_mover_overlay.png
+		type StretchBorder
+		cut 16
+		expand 3
+
 	# == TBTabContainer skins - Create strong overrides for the tab buttons four alignments ============
 	TBTabContainer.rootlayout
 		spacing -1px

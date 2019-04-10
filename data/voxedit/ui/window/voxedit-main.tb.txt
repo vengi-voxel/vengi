@@ -159,12 +159,8 @@ TBLayout: distribution: gravity, axis: y
 							TBClickLabel: text: z
 								TBRadioButton: group-id: mirrorgroup, id: mirrorz
 
-					TBSection: value: 1, text: "Layers"
-						TBLayout
-							distribution gravity
-							LayerWidget: id: layercontainer
-
-					TBWidget: gravity: top bottom
+					TBTextField: gravity: left right, skin: Header, text: Layers
+					LayerWidget: id: layercontainer, gravity: top bottom
 
 					TBSection: value: 0, text: "Options"
 						TBLayout: position: left top, axis: y
