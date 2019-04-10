@@ -43,10 +43,6 @@ public:
 		}
 		return tb::TBLayout::onEvent(ev);
 	}
-
-	inline int index() const {
-		return _index;
-	}
 private:
 	LayerItemSource *_source;
 	tb::TBSelectItemViewer *_sourceViewer;
