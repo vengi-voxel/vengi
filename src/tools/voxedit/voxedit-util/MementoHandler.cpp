@@ -5,19 +5,39 @@
 #include "MementoHandler.h"
 
 #include "voxel/polyvox/RawVolume.h"
+#include "core/command/Command.h"
 #include "core/Assert.h"
+#include "core/Log.h"
 
 namespace voxedit {
 
 static const LayerState InvalidLayerState{nullptr, -1, ""};
 
-// TODO: undo layer create/delete...
 MementoHandler::MementoHandler() {
-	_states.reserve(_maxStates);
 }
 
 MementoHandler::~MementoHandler() {
+	shutdown();
+}
+
+bool MementoHandler::init() {
+	_states.reserve(_maxStates);
+	return true;
+}
+
+void MementoHandler::shutdown() {
 	clearStates();
+}
+
+void MementoHandler::construct() {
+	core::Command::registerCommand("ve_mementoinfo", [&] (const core::CmdArgs& args) {
+		Log::info("Current memento state index: %i", _statePosition);
+		Log::info("Maximum memento states: %i", _maxStates);
+		int i = 0;
+		for (LayerState& state : _states) {
+			Log::info("%4i: %i - %s", i++, state.layer, state.name.c_str());
+		}
+	});
 }
 
 void MementoHandler::clearStates() {
@@ -34,6 +54,7 @@ LayerState MementoHandler::undo() {
 	}
 	core_assert(_statePosition >= 1);
 	--_statePosition;
+	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
 	const LayerState& s = state();
 	return LayerState{new voxel::RawVolume(s.volume), s.layer, s.name};
 }
@@ -43,6 +64,7 @@ LayerState MementoHandler::redo() {
 		return InvalidLayerState;
 	}
 	++_statePosition;
+	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
 	const LayerState& s = state();
 	return LayerState{new voxel::RawVolume(s.volume), s.layer, s.name};
 }
@@ -56,6 +78,7 @@ void MementoHandler::markUndo(int layer, const std::string& name, const voxel::R
 		}
 		_states.erase(iStates, _states.end());
 	}
+	Log::debug("New undo state for layer %i with name %s (memento state index: %i)", layer, name.c_str(), (int)_states.size());
 	_states.push_back(LayerState{new voxel::RawVolume(volume), layer, name});
 	while (_states.size() > _maxStates) {
 		delete _states.begin()->volume;

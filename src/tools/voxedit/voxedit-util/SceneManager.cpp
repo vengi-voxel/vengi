@@ -397,6 +397,7 @@ void SceneManager::undo() {
 	const LayerState& s = _mementoHandler.undo();
 	voxel::RawVolume* v = s.volume;
 	if (v == nullptr) {
+		Log::debug("No volume found in state for layer: %i", s.layer);
 		return;
 	}
 	setNewVolume(s.layer, v);
@@ -409,6 +410,7 @@ void SceneManager::redo() {
 	const LayerState& s = _mementoHandler.redo();
 	voxel::RawVolume* v = s.volume;
 	if (v == nullptr) {
+		Log::debug("No volume found in state for layer: %i", s.layer);
 		return;
 	}
 	setNewVolume(s.layer, v);
@@ -554,6 +556,7 @@ void SceneManager::render(const video::Camera& camera) {
 void SceneManager::construct() {
 	_layerMgr.construct();
 	_modifier.construct();
+	_mementoHandler.construct();
 
 	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
 		core::Command::registerActionButton(
@@ -731,6 +734,9 @@ bool SceneManager::init() {
 	if (!_axis.init()) {
 		return false;
 	}
+	if (!_mementoHandler.init()) {
+		return false;
+	}
 	_volumeRenderer.construct();
 	//_volumeRenderer.setAmbientColor(glm::vec3(core::Color::White));
 	_volumeRenderer.init();
@@ -799,6 +805,7 @@ void SceneManager::shutdown() {
 		delete v;
 	}
 
+	_mementoHandler.shutdown();
 	_modifier.shutdown();
 	_layerMgr.unregisterListener(this);
 	_layerMgr.shutdown();
@@ -1126,6 +1133,7 @@ void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolum
 		const voxel::Region& region = _volumeRenderer.region();
 		volume = new voxel::RawVolume(region);
 	}
+	Log::debug("Adding layer %i with name %s", layerId, layer.name.c_str());
 	delete _volumeRenderer.setVolume(layerId, volume);
 	_volumeRenderer.hide(layerId, !layer.visible);
 	_extractRegions.push_back({volume->region(), (int)layerId});

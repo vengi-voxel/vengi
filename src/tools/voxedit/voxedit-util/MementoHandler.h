@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/IComponent.h"
 #include <vector>
 #include <stdint.h>
 #include <stddef.h>
@@ -20,7 +21,7 @@ struct LayerState {
 	std::string name;
 };
 
-class MementoHandler {
+class MementoHandler : public core::IComponent {
 private:
 	std::vector<LayerState> _states;
 	uint8_t _statePosition = 0u;
@@ -29,6 +30,10 @@ private:
 public:
 	MementoHandler();
 	~MementoHandler();
+
+	void construct();
+	bool init();
+	void shutdown();
 
 	void clearStates();
 	void markUndo(int layer, const std::string& name, const voxel::RawVolume* volume);
