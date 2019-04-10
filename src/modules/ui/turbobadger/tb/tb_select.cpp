@@ -21,6 +21,7 @@ int select_list_sort_cb(TBSelectItemSource *source, const int *a, const int *b) 
 TBSelectList::TBSelectList()
 	: m_value(-1), m_list_is_invalid(false), m_scroll_to_current(false),
 	  m_header_lng_string_id(TBIDC("TBList.header")) {
+	_sortCallback = select_list_sort_cb;
 	setSource(&m_default_source);
 	setIsFocusable(true);
 	setSkinBg(TBIDC("TBSelectList"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
@@ -155,7 +156,7 @@ void TBSelectList::validateList() {
 
 	// Sort
 	if (m_source->getSort() != TB_SORT_NONE) {
-		insertion_sort<TBSelectItemSource *, int>(sorted_index, num_sorted_items, m_source, select_list_sort_cb);
+		insertion_sort<TBSelectItemSource *, int>(sorted_index, num_sorted_items, m_source, _sortCallback);
 	}
 
 	// Show header if we only show a subset of all items.

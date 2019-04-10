@@ -98,6 +98,10 @@ public:
 	virtual void onItemRemoved(int index) override;
 	virtual void onAllItemsRemoved() override;
 
+	inline void setSortCallback(int (*func)(TBSelectItemSource *source, const int *a, const int *b)) {
+		_sortCallback = func;
+	}
+
 protected:
 	TBScrollContainer m_container;
 	TBLayout m_layout;
@@ -107,6 +111,8 @@ protected:
 	bool m_list_is_invalid;
 	bool m_scroll_to_current;
 	TBID m_header_lng_string_id;
+
+	int (*_sortCallback)(TBSelectItemSource *source, const int *a, const int *b);
 
 private:
 	TBWidget *createAndAddItemAfter(int index, TBWidget *reference);
