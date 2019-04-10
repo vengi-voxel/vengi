@@ -400,10 +400,8 @@ void SceneManager::undo() {
 		Log::debug("No volume found in state for layer: %i", s.layer);
 		return;
 	}
-	setNewVolume(s.layer, v);
-	_layerMgr.layer(s.layer).name = s.name;
-	_layerMgr.setActiveLayer(s.layer);
-	modified(s.layer, v->region(), false);
+	Log::debug("Volume found in state for layer: %i with name %s", s.layer, s.name.c_str());
+	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v);
 }
 
 void SceneManager::redo() {
@@ -413,10 +411,8 @@ void SceneManager::redo() {
 		Log::debug("No volume found in state for layer: %i", s.layer);
 		return;
 	}
-	setNewVolume(s.layer, v);
-	_layerMgr.layer(s.layer).name = s.name;
-	_layerMgr.setActiveLayer(s.layer);
-	modified(s.layer, v->region(), false);
+	Log::debug("Volume found in state for layer: %i with name %s", s.layer, s.name.c_str());
+	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v);
 }
 
 void SceneManager::resetLastTrace() {
@@ -464,7 +460,6 @@ bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume) {
 	}
 	const voxel::Region& region = volume->region();
 	delete _volumeRenderer.setVolume(idx, volume);
-	_layerMgr.layer(idx).valid = volume != nullptr;
 
 	if (volume != nullptr) {
 		_gridRenderer.update(region);
@@ -474,7 +469,6 @@ bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume) {
 
 	_dirty = false;
 	_result = voxel::PickResult();
-	_extractRegions.push_back({region, idx});
 	setCursorPosition(cursorPosition(), true);
 	setReferencePosition(region.getCentre());
 	resetLastTrace();
