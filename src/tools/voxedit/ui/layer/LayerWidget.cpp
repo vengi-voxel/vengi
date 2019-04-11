@@ -10,8 +10,8 @@
 class LayerItemWidget: public tb::TBLayout {
 public:
 	LayerItemWidget(LayerItem *item, LayerItemSource *source,
-			tb::TBSelectItemViewer *sourceViewer, int index) :
-			_source(source), _sourceViewer(sourceViewer), _index(index) {
+			tb::TBSelectItemViewer *sourceViewer) :
+			_source(source), _sourceViewer(sourceViewer), _layerId(item->layerId()) {
 		setSkinBg(TBIDC("TBSelectItem"));
 		setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
 		setLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
@@ -30,15 +30,15 @@ public:
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
 		voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("visible")) {
-			LayerItem *item = _source->getItem(_index);
+			const int itemId = _source->getItemIdForLayerId(_layerId);
+			LayerItem *item = _source->getItem(itemId);
 			item->setVisible(ev.target->getValue() ? true : false);
-			_source->invokeItemChanged(_index, _sourceViewer);
-			layerMgr.hideLayer(item->layerId(), !item->visible());
+			_source->invokeItemChanged(itemId, _sourceViewer);
+			layerMgr.hideLayer(_layerId, !item->visible());
 			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("delete")) {
-			LayerItem *item = _source->getItem(_index);
-			layerMgr.deleteLayer(item->layerId());
+			layerMgr.deleteLayer(_layerId);
 			return true;
 		}
 		return tb::TBLayout::onEvent(ev);
@@ -46,11 +46,11 @@ public:
 private:
 	LayerItemSource *_source;
 	tb::TBSelectItemViewer *_sourceViewer;
-	int _index;
+	const int _layerId;
 };
 
 tb::TBWidget *LayerItemSource::createItemWidget(int index, tb::TBSelectItemViewer *viewer) {
-	return new LayerItemWidget(getItem(index), this, viewer, index);
+	return new LayerItemWidget(getItem(index), this, viewer);
 }
 
 LayerItem* LayerItemSource::getItemForLayerId(int layerId) const {
@@ -135,7 +135,8 @@ void LayerWidget::onLayerShow(int layerId) {
 
 void LayerWidget::onActiveLayerChanged(int old, int active) {
 	const int index = _source.getItemIdForLayerId(active);
-	if (_list != nullptr) {
+	if (_list != nullptr && index >= 0) {
+		Log::debug("Item index for active layer %i is %i", active, index);
 		_list->setValue(index);
 	}
 }
@@ -187,7 +188,12 @@ bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CHANGED && ev.target->getID() == TBIDC("list")) {
 		if (_list != nullptr) {
 			voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
-			layerMgr.setActiveLayer(_list->getValue());
+			const int selectedItemIndex = _list->getValue();
+			const LayerItem* item = _source.getItem(selectedItemIndex);
+			if (item != nullptr) {
+				const int layerId = item->layerId();
+				layerMgr.setActiveLayer(layerId);
+			}
 		}
 		return true;
 	}
