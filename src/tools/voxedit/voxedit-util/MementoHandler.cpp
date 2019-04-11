@@ -35,7 +35,7 @@ void MementoHandler::construct() {
 		Log::info("Maximum memento states: %i", _maxStates);
 		int i = 0;
 		for (LayerState& state : _states) {
-			Log::info("%4i: %i - %s", i++, state.layer, state.name.c_str());
+			Log::info("%4i: %i - %s (%s)", i++, state.layer, state.name.c_str(), state.volume == nullptr ? "empty" : "volume");
 		}
 	});
 }
