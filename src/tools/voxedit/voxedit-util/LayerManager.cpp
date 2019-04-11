@@ -155,11 +155,6 @@ int LayerManager::addLayer(const char *name, bool visible, voxel::RawVolume* vol
 
 bool LayerManager::activateLayer(int layerId, const char *name, bool visible, voxel::RawVolume* volume) {
 	core_assert_always(layerId >= 0 && layerId < (int)_layers.size());
-	if (_layers[layerId].valid) {
-		// don't overwrite
-		Log::debug("There is already a layer with the id: %i", layerId);
-		return false;
-	}
 	if (name == nullptr || name[0] == '\0') {
 		_layers[layerId].name = core::string::format("%i", (int)layerId);
 	} else {
