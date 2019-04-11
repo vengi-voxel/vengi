@@ -30,6 +30,14 @@ void MementoHandler::shutdown() {
 	clearStates();
 }
 
+void MementoHandler::lock() {
+	++_locked;
+}
+
+void MementoHandler::unlock() {
+	--_locked;
+}
+
 void MementoHandler::construct() {
 	core::Command::registerCommand("ve_mementoinfo", [&] (const core::CmdArgs& args) {
 		Log::info("Current memento state index: %i", _statePosition);

@@ -25,6 +25,7 @@ class MementoHandler : public core::IComponent {
 private:
 	std::vector<LayerState> _states;
 	uint8_t _statePosition = 0u;
+	int _locked = 0;
 public:
 	static const int MaxStates;
 
@@ -34,6 +35,9 @@ public:
 	void construct();
 	bool init();
 	void shutdown();
+
+	void lock();
+	void unlock();
 
 	void clearStates();
 	void markUndo(int layer, const std::string& name, const voxel::RawVolume* volume);
@@ -62,6 +66,9 @@ inline size_t MementoHandler::stateSize() const {
 }
 
 inline bool MementoHandler::canUndo() const {
+	if (_locked > 0) {
+		return false;
+	}
 	if (stateSize() <= 1) {
 		return false;
 	}
@@ -69,6 +76,9 @@ inline bool MementoHandler::canUndo() const {
 }
 
 inline bool MementoHandler::canRedo() const {
+	if (_locked > 0) {
+		return false;
+	}
 	if (_states.empty()) {
 		return false;
 	}
