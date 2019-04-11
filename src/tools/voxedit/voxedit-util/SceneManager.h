@@ -81,7 +81,6 @@ private:
 	// this is basically the same as the dirty state, but we stop
 	// auto-saving once we saved a dirty state
 	bool _needAutoSave = false;
-	bool _extract = false;
 
 	bool _renderShadow = true;
 	bool _renderAxis = true;

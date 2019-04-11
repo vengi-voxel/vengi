@@ -28,6 +28,7 @@ struct LayerState {
 	std::string name;
 };
 
+// TODO: support partial volumes (dirty regions - see SceneManager - will reduce memory a lot)
 class MementoHandler : public core::IComponent {
 private:
 	std::vector<LayerState> _states;

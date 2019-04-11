@@ -305,7 +305,6 @@ bool SceneManager::load(const std::string& file) {
 		return false;
 	}
 	_needAutoSave = false;
-	_extract = true;
 	_dirty = false;
 	return true;
 }
@@ -326,7 +325,6 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 	_extractRegions.push_back({modifiedRegion, layerId});
 	_dirty = true;
 	_needAutoSave = true;
-	_extract = true;
 }
 
 void SceneManager::crop() {
@@ -821,25 +819,22 @@ void SceneManager::shutdown() {
 }
 
 bool SceneManager::extractVolume() {
-	if (_extract) {
-		const size_t n = _extractRegions.size();
+	const size_t n = _extractRegions.size();
+	if (n > 0) {
 		Log::debug("Extract the meshes for %i regions", (int)n);
-		if (n > 0) {
-			// extract n regions max per frame
-			const size_t MaxPerFrame = 4;
-			const size_t x = std::min(MaxPerFrame, n);
-			int lastLayer = _layerMgr.activeLayer();
-			for (size_t i = 0; i < x; ++i) {
-				const bool updateBuffers = i == x - 1 || lastLayer != _extractRegions[i].layer;
-				if (!_volumeRenderer.extract(_extractRegions[i].layer, _extractRegions[i].region, updateBuffers)) {
-					Log::error("Failed to extract the model mesh");
-				}
-				lastLayer = _extractRegions[i].layer;
+		// extract n regions max per frame
+		const size_t MaxPerFrame = 4;
+		const size_t x = std::min(MaxPerFrame, n);
+		int lastLayer = _layerMgr.activeLayer();
+		for (size_t i = 0; i < x; ++i) {
+			const bool updateBuffers = i == x - 1 || lastLayer != _extractRegions[i].layer;
+			if (!_volumeRenderer.extract(_extractRegions[i].layer, _extractRegions[i].region, updateBuffers)) {
+				Log::error("Failed to extract the model mesh");
 			}
-			// delete the first n entries and compact the memory of the buffer
-			RegionQueue(_extractRegions.begin() + x, _extractRegions.end()).swap(_extractRegions);
+			lastLayer = _extractRegions[i].layer;
 		}
-		_extract = !_extractRegions.empty();
+		// delete the first n entries and compact the memory of the buffer
+		RegionQueue(_extractRegions.begin() + x, _extractRegions.end()).swap(_extractRegions);
 		return true;
 	}
 	return false;
