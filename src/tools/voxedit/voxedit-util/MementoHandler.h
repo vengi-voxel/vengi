@@ -25,9 +25,9 @@ class MementoHandler : public core::IComponent {
 private:
 	std::vector<LayerState> _states;
 	uint8_t _statePosition = 0u;
-	static constexpr int _maxStates = 64;
-
 public:
+	static const int MaxStates;
+
 	MementoHandler();
 	~MementoHandler();
 
