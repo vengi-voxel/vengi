@@ -145,7 +145,9 @@ void LayerWidget::onLayerAdded(int layerId, const voxedit::Layer& layer, voxel::
 	const voxedit::Layers& layers = layerMgr.layers();
 	const std::string& finalLayerName = layers[layerId].name;
 	const bool finalVisibleState = layers[layerId].visible;
-	_source.addItem(new LayerItem(layerId, finalLayerName.c_str(), finalVisibleState));
+	if (_source.getItemForLayerId(layerId) == nullptr) {
+		_source.addItem(new LayerItem(layerId, finalLayerName.c_str(), finalVisibleState));
+	}
 }
 
 void LayerWidget::onLayerDeleted(int layerId, const voxedit::Layer&) {
