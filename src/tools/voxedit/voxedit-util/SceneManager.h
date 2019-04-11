@@ -78,6 +78,8 @@ private:
 	RegionQueue _extractRegions;
 
 	bool _dirty = false;
+	// this is basically the same as the dirty state, but we stop
+	// auto-saving once we saved a dirty state
 	bool _needAutoSave = false;
 	bool _extract = false;
 
