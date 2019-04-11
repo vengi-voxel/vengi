@@ -15,7 +15,14 @@ class RawVolume;
 
 namespace voxedit {
 
+enum class MementoType {
+	Modification,
+	LayerAdded,
+	LayerDeleted
+};
+
 struct LayerState {
+	MementoType type;
 	voxel::RawVolume* volume;
 	int layer;
 	std::string name;
@@ -40,7 +47,7 @@ public:
 	void unlock();
 
 	void clearStates();
-	void markUndo(int layer, const std::string& name, const voxel::RawVolume* volume);
+	void markUndo(int layer, const std::string& name, const voxel::RawVolume* volume, MementoType type = MementoType::Modification);
 	void markLayerDeleted(int layer, const std::string& name, const voxel::RawVolume* volume);
 	void markLayerAdded(int layer, const std::string& name, const voxel::RawVolume* volume);
 

@@ -11,7 +11,7 @@
 
 namespace voxedit {
 
-static const LayerState InvalidLayerState{nullptr, -1, ""};
+static const LayerState InvalidLayerState{MementoType::Modification, nullptr, -1, ""};
 const int MementoHandler::MaxStates = 64;
 
 MementoHandler::MementoHandler() {
@@ -63,38 +63,49 @@ LayerState MementoHandler::undo() {
 	}
 	core_assert(_statePosition >= 1);
 	--_statePosition;
+	if (_states[_statePosition].volume != nullptr
+			&& _states[_statePosition].type == MementoType::LayerAdded
+			&& _states[_statePosition + 1].type != MementoType::Modification) {
+		--_statePosition;
+	}
 	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
 	const LayerState& s = state();
-	return LayerState{new voxel::RawVolume(s.volume), s.layer, s.name};
+	return LayerState{s.type, s.volume == nullptr ? nullptr : new voxel::RawVolume(s.volume), s.layer, s.name};
 }
 
 LayerState MementoHandler::redo() {
 	if (!canRedo()) {
 		return InvalidLayerState;
 	}
-	++_statePosition;
 	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
+	++_statePosition;
+	if (_states[_statePosition].volume == nullptr && _states[_statePosition].type == MementoType::LayerAdded) {
+		++_statePosition;
+	}
+	if (_states[_statePosition].volume != nullptr && _states[_statePosition].type == MementoType::LayerDeleted) {
+		++_statePosition;
+	}
 	const LayerState& s = state();
-	return LayerState{new voxel::RawVolume(s.volume), s.layer, s.name};
+	return LayerState{s.type, s.volume == nullptr ? nullptr : new voxel::RawVolume(s.volume), s.layer, s.name};
 }
 
 void MementoHandler::markLayerDeleted(int layer, const std::string& name, const voxel::RawVolume* volume) {
 	Log::debug("Mark layer %i as deleted (%s)", layer, name.c_str());
 	// previous state is that we have a volume at the given layer
-	markUndo(layer, name, volume);
+	markUndo(layer, name, volume, MementoType::LayerDeleted);
 	// current state is that there is no volume at the given layer
-	markUndo(layer, name, nullptr);
+	markUndo(layer, name, nullptr, MementoType::LayerDeleted);
 }
 
 void MementoHandler::markLayerAdded(int layer, const std::string& name, const voxel::RawVolume* volume) {
 	Log::debug("Mark layer %i as added (%s)", layer, name.c_str());
 	// previous state is that there is no volume at the given layer
-	markUndo(layer, name, nullptr);
+	markUndo(layer, name, nullptr, MementoType::LayerAdded);
 	// current state is that we have a volume at the given layer
-	markUndo(layer, name, volume);
+	markUndo(layer, name, volume, MementoType::LayerAdded);
 }
 
-void MementoHandler::markUndo(int layer, const std::string& name, const voxel::RawVolume* volume) {
+void MementoHandler::markUndo(int layer, const std::string& name, const voxel::RawVolume* volume, MementoType type) {
 	if (_locked > 0) {
 		return;
 	}
@@ -110,7 +121,7 @@ void MementoHandler::markUndo(int layer, const std::string& name, const voxel::R
 		_states.erase(iStates, _states.end());
 	}
 	Log::debug("New undo state for layer %i with name %s (memento state index: %i)", layer, name.c_str(), (int)_states.size());
-	_states.push_back(LayerState{new voxel::RawVolume(volume), layer, name});
+	_states.push_back(LayerState{type, volume == nullptr ? nullptr : new voxel::RawVolume(volume), layer, name});
 	while (_states.size() > MaxStates) {
 		delete _states.begin()->volume;
 		_states.erase(_states.begin());

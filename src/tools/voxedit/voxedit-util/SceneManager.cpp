@@ -319,6 +319,7 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 	if (!modifiedRegion.isValid()) {
 		return;
 	}
+	Log::debug("Modified layer %i", layerId);
 	if (markUndo) {
 		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
 	}
@@ -397,22 +398,30 @@ void SceneManager::undo() {
 	const LayerState& s = _mementoHandler.undo();
 	voxel::RawVolume* v = s.volume;
 	if (v == nullptr) {
-		Log::debug("No volume found in state for layer: %i", s.layer);
+		_mementoHandler.lock();
+		_layerMgr.deleteLayer(s.layer, false);
+		_mementoHandler.unlock();
 		return;
 	}
-	Log::debug("Volume found in state for layer: %i with name %s", s.layer, s.name.c_str());
+	Log::debug("Volume found in undo state for layer: %i with name %s", s.layer, s.name.c_str());
+	_mementoHandler.lock();
 	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v);
+	_mementoHandler.unlock();
 }
 
 void SceneManager::redo() {
 	const LayerState& s = _mementoHandler.redo();
 	voxel::RawVolume* v = s.volume;
 	if (v == nullptr) {
-		Log::debug("No volume found in state for layer: %i", s.layer);
+		_mementoHandler.lock();
+		_layerMgr.deleteLayer(s.layer, false);
+		_mementoHandler.unlock();
 		return;
 	}
-	Log::debug("Volume found in state for layer: %i with name %s", s.layer, s.name.c_str());
+	Log::debug("Volume found in redo state for layer: %i with name %s", s.layer, s.name.c_str());
+	_mementoHandler.lock();
 	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v);
+	_mementoHandler.unlock();
 }
 
 void SceneManager::resetLastTrace() {
@@ -446,6 +455,7 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	const int layerId = _layerMgr.activeLayer();
 	// push the initial state of the current layer to the memento handler to
 	// be able to undo your next step
+	Log::debug("New volume for layer %i", layerId);
 	_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
 	_dirty = false;
 	_result = voxel::PickResult();
@@ -1128,16 +1138,26 @@ void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolum
 		volume = new voxel::RawVolume(region);
 	}
 	Log::debug("Adding layer %i with name %s", layerId, layer.name.c_str());
+	// Add two states here - one with the empty layer and one with the filled layer.
+	// To always be able to return to the empty layer
+	_mementoHandler.markLayerAdded(layerId, layer.name, volume);
 	delete _volumeRenderer.setVolume(layerId, volume);
 	_volumeRenderer.hide(layerId, !layer.visible);
 	_extractRegions.push_back({volume->region(), (int)layerId});
+	_needAutoSave = true;
+	_dirty = true;
 }
 
 void SceneManager::onLayerDeleted(int layerId, const Layer& layer) {
 	voxel::RawVolume* v = _volumeRenderer.setVolume(layerId, nullptr);
 	if (v != nullptr) {
-		_mementoHandler.markUndo(layerId, layer.name, v);
+		Log::debug("Deleted layer %i with name %s", layerId, layer.name.c_str());
+		// Add two states here - one with the filled layer and one with the empty layer.
+		// To always be able to return to the filled layer
+		_mementoHandler.markLayerDeleted(layerId, layer.name, v);
 		_volumeRenderer.update(layerId);
+		_needAutoSave = true;
+		_dirty = true;
 		delete v;
 	}
 }

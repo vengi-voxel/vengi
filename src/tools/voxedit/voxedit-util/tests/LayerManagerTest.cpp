@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "../LayerManager.h"
+#include "voxel/polyvox/RawVolume.h"
 
 namespace voxedit {
 
@@ -31,8 +32,10 @@ TEST_F(LayerManagerTest, testValidLayersEmpty) {
 
 TEST_F(LayerManagerTest, testValidLayersAfterAdd) {
 	ASSERT_EQ(0, _mgr.validLayers());
-	ASSERT_EQ(0, _mgr.addLayer("Foobar", true, nullptr)) << "Failed to add new layer";
+	voxel::RawVolume * v = new voxel::RawVolume(voxel::Region(0, 0));
+	ASSERT_EQ(0, _mgr.addLayer("Foobar", true, v)) << "Failed to add new layer";
 	ASSERT_EQ(1, _mgr.validLayers());
+	delete v;
 }
 
 }
