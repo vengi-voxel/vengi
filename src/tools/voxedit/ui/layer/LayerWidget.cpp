@@ -168,7 +168,6 @@ bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 
-
 	if (ev.target->getID() == TBIDC("scene_new_layer")) {
 		if (ev.ref_id == TBIDC("ok")) {
 			const voxel::Region& region = _layerSettings.region();
