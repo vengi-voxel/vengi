@@ -41,6 +41,8 @@ public:
 
 	void clearStates();
 	void markUndo(int layer, const std::string& name, const voxel::RawVolume* volume);
+	void markLayerDeleted(int layer, const std::string& name, const voxel::RawVolume* volume);
+	void markLayerAdded(int layer, const std::string& name, const voxel::RawVolume* volume);
 
 	LayerState undo();
 	LayerState redo();

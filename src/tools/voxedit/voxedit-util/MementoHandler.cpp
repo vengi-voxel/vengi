@@ -78,8 +78,30 @@ LayerState MementoHandler::redo() {
 	return LayerState{new voxel::RawVolume(s.volume), s.layer, s.name};
 }
 
+void MementoHandler::markLayerDeleted(int layer, const std::string& name, const voxel::RawVolume* volume) {
+	Log::debug("Mark layer %i as deleted (%s)", layer, name.c_str());
+	// previous state is that we have a volume at the given layer
+	markUndo(layer, name, volume);
+	// current state is that there is no volume at the given layer
+	markUndo(layer, name, nullptr);
+}
+
+void MementoHandler::markLayerAdded(int layer, const std::string& name, const voxel::RawVolume* volume) {
+	Log::debug("Mark layer %i as added (%s)", layer, name.c_str());
+	// previous state is that there is no volume at the given layer
+	markUndo(layer, name, nullptr);
+	// current state is that we have a volume at the given layer
+	markUndo(layer, name, volume);
+}
+
 void MementoHandler::markUndo(int layer, const std::string& name, const voxel::RawVolume* volume) {
+	if (_locked > 0) {
+		return;
+	}
 	if (!_states.empty()) {
+		// if we mark something as new undo state, we can throw away
+		// every other state that follows the new one (everything after
+		// the current state position)
 		auto iStates = _states.begin();
 		std::advance(iStates, _statePosition + 1);
 		for (auto iter = iStates; iter < _states.end(); ++iter) {
