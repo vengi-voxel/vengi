@@ -194,7 +194,11 @@ void Modifier::construct() {
 }
 
 bool Modifier::init() {
-	return _shapeRenderer.init();
+	if (!_shapeRenderer.init()) {
+		return false;
+	}
+
+	return true;
 }
 
 void Modifier::shutdown() {

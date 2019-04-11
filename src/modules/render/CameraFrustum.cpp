@@ -10,10 +10,15 @@ namespace render {
 
 bool CameraFrustum::init(const video::Camera& frustumCamera, const glm::vec4& color, int splitFrustum) {
 	_splitFrustum = splitFrustum;
-	_shapeRenderer.init();
+	if (!_shapeRenderer.init()) {
+		return false;
+	}
 	_shapeBuilder.setColor(color);
 	_shapeBuilder.frustum(frustumCamera, _splitFrustum);
 	_frustumMesh = _shapeRenderer.create(_shapeBuilder);
+	if (_frustumMesh == -1) {
+		return false;
+	}
 	return true;
 }
 

@@ -105,12 +105,13 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 	if (id == InvalidId) {
 		id = video::genShader(shaderType);
 		if (id == InvalidId) {
+			Log::error("Failed to generate shader handle for %s\n", name.c_str());
 			return false;
 		}
 		_shader.insert(std::make_pair(shaderType, id));
 	}
 	if (!video::compileShader(id, shaderType, source, _name)) {
-		Log::error("compile failure in %s\n", name.c_str());
+		Log::error("Failed to compile shader for %s\n", name.c_str());
 		return false;
 	}
 	return true;

@@ -28,9 +28,11 @@ ShapeRenderer::~ShapeRenderer() {
 bool ShapeRenderer::init() {
 	core_assert_msg(_currentMeshIndex == 0, "ShapeRenderer was already in use");
 	if (!_colorShader.setup()) {
+		Log::error("Failed to setup color shader");
 		return false;
 	}
 	if (!_colorInstancedShader.setup()) {
+		Log::error("Failed to setup color instance shader");
 		return false;
 	}
 	return true;

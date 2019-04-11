@@ -2,30 +2,38 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "video/tests/AbstractGLTest.h"
 #include "../Modifier.h"
 
 namespace voxedit {
 
-class ModifierTest: public core::AbstractTest {
+class ModifierTest: public video::AbstractGLTest {
 private:
-	using Super = core::AbstractTest;
+	using Super = video::AbstractGLTest;
 protected:
 	Modifier _modifier;
 
 public:
 	void SetUp() override {
 		Super::SetUp();
-		ASSERT_TRUE(_modifier.init()) << "Initialization failed";
+		if (_supported) {
+			ASSERT_TRUE(_modifier.init()) << "Initialization failed";
+		}
 	}
 
 	void TearDown() override {
-		_modifier.shutdown();
+		if (_supported) {
+			_modifier.shutdown();
+		}
 		Super::TearDown();
 	}
 };
 
-TEST_F(ModifierTest, testFoo) {
+TEST_F(ModifierTest, testModifier) {
+	if (!_supported) {
+		return;
+	}
+	// TODO: implement test
 }
 
 }
