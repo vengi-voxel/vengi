@@ -98,6 +98,8 @@ set(FILES
 	voxedit/models/chr_knight.qbt
 
 	voxedit/voxedit-keybindings.cfg
+
+	voxedit/scripts/layers.cfg
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)

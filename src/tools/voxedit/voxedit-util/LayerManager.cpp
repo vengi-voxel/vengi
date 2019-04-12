@@ -10,11 +10,24 @@ namespace voxedit {
 
 void LayerManager::construct() {
 	core::Command::registerCommand("layeradd", [&] (const core::CmdArgs& args) {
-		const int layerId = addLayer(args.size() > 0 ? args[0].c_str() : "");
+		const char *name = args.size() > 0 ? args[0].c_str() : "";
+		const char *width = args.size() > 1 ? args[1].c_str() : "64";
+		const char *height = args.size() > 2 ? args[2].c_str() : width;
+		const char *depth = args.size() > 3 ? args[3].c_str() : height;
+		const int iw = core::string::toInt(width) - 1;
+		const int ih = core::string::toInt(height) - 1;
+		const int id = core::string::toInt(depth) - 1;
+		const voxel::Region region(glm::zero<glm::ivec3>(), glm::ivec3(iw, ih, id));
+		if (!region.isValid()) {
+			Log::warn("Invalid size provided (%i:%i:%i - %s:%s:%s)", iw, ih, id, width, height, depth);
+			return;
+		}
+		voxel::RawVolume* v = new voxel::RawVolume(region);
+		const int layerId = addLayer(name, true, v);
 		if (layerId >= 0) {
 			setActiveLayer(layerId);
 		}
-	}).setHelp("Add a new layer (with a given name)");
+	}).setHelp("Add a new layer (with a given name and width, height, depth - all optional)");
 	core::Command::registerCommand("layerdelete", [&] (const core::CmdArgs& args) {
 		deleteLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer());
 	}).setHelp("Delete a particular layer by id - or the current active one");

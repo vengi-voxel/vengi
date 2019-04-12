@@ -566,6 +566,24 @@ void SceneManager::construct() {
 				_move[i]);
 	}
 
+	core::Command::registerCommand("newscene", [&] (const core::CmdArgs& args) {
+		const char *name = args.size() > 0 ? args[0].c_str() : "";
+		const char *width = args.size() > 1 ? args[1].c_str() : "64";
+		const char *height = args.size() > 2 ? args[2].c_str() : width;
+		const char *depth = args.size() > 3 ? args[3].c_str() : height;
+		const int iw = core::string::toInt(width) - 1;
+		const int ih = core::string::toInt(height) - 1;
+		const int id = core::string::toInt(depth) - 1;
+		const voxel::Region region(glm::zero<glm::ivec3>(), glm::ivec3(iw, ih, id));
+		if (!region.isValid()) {
+			Log::warn("Invalid size provided (%i:%i:%i)", iw, ih, id);
+			return;
+		}
+		if (!newScene(true, name, region)) {
+			Log::warn("Could not create new scene");
+		}
+	}).setHelp("Create a new scene (with a given name and width, height, depth - all optional)");
+
 	core::Command::registerCommand("noise", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc != 4) {
@@ -721,11 +739,34 @@ void SceneManager::construct() {
 		}
 		_animationSpeed = core::string::toInt(args[0]);
 	}).setHelp("Animate all visible layers with the given delay in millis between the frames");
+	core::Command::registerCommand("setcolor", [&] (const core::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::info("Usage: setcolor <index>");
+			return;
+		}
+		const int index = core::string::toInt(args[0]);
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+		_modifier.setCursorVoxel(voxel);
+	}).setHelp("Set the current selected color");
+	core::Command::registerCommand("setcolorrgb", [&] (const core::CmdArgs& args) {
+		if (args.size() != 3) {
+			Log::info("Usage: setcolorrgb <red> <green> <blue> (color range 0-255)");
+			return;
+		}
+		const int red = core::string::toInt(args[0]);
+		const int green = core::string::toInt(args[1]);
+		const int blue = core::string::toInt(args[2]);
+		glm::vec4 color(red / 255.0f, green / 255.0, blue / 255.0, 1.0f);
+		voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
+		const int index = core::Color::getClosestMatch(color, materialColors);
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+		_modifier.setCursorVoxel(voxel);
+	}).setHelp("Set the current selected color");
 	core::Command::registerCommand("pickcolor", [&] (const core::CmdArgs& args) {
 		if (!voxel::isAir(_hitCursorVoxel.getMaterial())) {
 			_modifier.setCursorVoxel(_hitCursorVoxel);
 		}
-	}).setHelp("Pick the current selected color");
+	}).setHelp("Pick the current selected color from current cursor voxel");
 }
 
 bool SceneManager::init() {
