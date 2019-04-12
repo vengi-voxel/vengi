@@ -103,10 +103,10 @@ protected:
 	TBScrollBar m_scrollbar_x;
 	TBScrollBar m_scrollbar_y;
 	TBScrollContainerRoot m_root;
-	bool m_adapt_to_content_size;
-	bool m_adapt_content_size;
-	bool m_layout_is_invalid;
-	SCROLL_MODE m_mode;
+	bool m_adapt_to_content_size = false;
+	bool m_adapt_content_size = false;
+	bool m_layout_is_invalid = false;
+	SCROLL_MODE m_mode = SCROLL_MODE_X_Y;
 	void validateLayout(const SizeConstraints &constraints);
 };
 

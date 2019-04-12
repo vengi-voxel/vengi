@@ -69,8 +69,7 @@ void TBScrollContainerRoot::getChildTranslation(int &x, int &y) const {
 	y = (int)-sc->m_scrollbar_y.getValue();
 }
 
-TBScrollContainer::TBScrollContainer()
-	: m_adapt_to_content_size(false), m_adapt_content_size(false), m_layout_is_invalid(false), m_mode(SCROLL_MODE_X_Y) {
+TBScrollContainer::TBScrollContainer() {
 	addChild(&m_scrollbar_x);
 	addChild(&m_scrollbar_y);
 	addChild(&m_root);

@@ -685,7 +685,7 @@ bool TBSlider::onEvent(const TBWidgetEvent &ev) {
 			return true;
 		}
 	}
-	return false;
+	return TBWidget::onEvent(ev);
 }
 
 void TBSlider::updateHandle() {

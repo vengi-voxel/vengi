@@ -19,8 +19,9 @@ uint32_t dbg_frame_triangle_count = 0;
 #define VER_COL_OPACITY(a) (0x00ffffff + (((uint32_t)a) << 24))
 
 void TBRendererBatcher::Batch::flush(TBRendererBatcher *batchRenderer) {
-	if (!vertex_count || is_flushing)
+	if (!vertex_count || is_flushing) {
 		return;
+	}
 
 	// Prevent re-entrancy. Calling fragment->getBitmap may end up calling TBBitmap::setData
 	// which will end up flushing any existing batch with that bitmap.
@@ -56,7 +57,7 @@ void TBRendererBatcher::Batch::flush(TBRendererBatcher *batchRenderer) {
 
 	vertex_count = 0;
 
-	batch_id++; // Will overflow eventually, but that doesn't really matter.
+	++batch_id; // Will overflow eventually, but that doesn't really matter.
 
 	is_flushing = false;
 }
@@ -73,7 +74,7 @@ TBRendererBatcher::Vertex *TBRendererBatcher::Batch::reserve(TBRendererBatcher *
 // == TBRendererBatcher ===================================================================
 
 TBRendererBatcher::TBRendererBatcher()
-	: m_opacity(255), m_translation_x(0), m_translation_y(0), m_u(0), m_v(0), m_uu(0), m_vv(0) {
+	: m_opacity(255), m_translation_x(0), m_translation_y(0) {
 }
 
 TBRendererBatcher::~TBRendererBatcher() {
@@ -183,12 +184,12 @@ void TBRendererBatcher::addQuadInternal(const TBRect &dstRect, const TBRect &src
 
 	const int bitmap_w = bitmap->width();
 	const int bitmap_h = bitmap->height();
-	m_u = (float)srcRect.x / bitmap_w;
-	m_v = (float)srcRect.y / bitmap_h;
+	const float m_u = (float)srcRect.x / bitmap_w;
+	const float m_v = (float)srcRect.y / bitmap_h;
 	const float xw = (float)(srcRect.x + srcRect.w);
 	const float yh = (float)(srcRect.y + srcRect.h);
-	m_uu = xw / bitmap_w;
-	m_vv = yh / bitmap_h;
+	const float m_uu = xw / bitmap_w;
+	const float m_vv = yh / bitmap_h;
 
 	Vertex *ver = batch.reserve(this, 6);
 	ver[0].x = (float)dstRect.x;

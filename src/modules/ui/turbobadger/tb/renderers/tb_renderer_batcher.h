@@ -85,7 +85,6 @@ protected:
 	int m_translation_x;
 	int m_translation_y;
 
-	float m_u, m_v, m_uu, m_vv; ///< Some temp variables
 	Batch batch;				///< The one and only batch. this should be improved.
 
 	void addQuadInternal(const TBRect &dst_rect, const TBRect &src_rect, uint32_t color, TBBitmap *bitmap,
