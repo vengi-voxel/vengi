@@ -33,7 +33,7 @@ TEST_F(FaceTest, testPositiveX) {
 		<< ", Face: " << (int) name;
 }
 
-TEST_F(FaceTest, testNegativeY) {
+TEST_F(FaceTest, DISABLED_testNegativeY) {
 	glm::vec3 rayOrigin { 12, 0, 14 };
 	glm::ivec3 hitPos { 15 };
 	glm::vec3 rayDirection = glm::normalize(glm::vec3(hitPos) - rayOrigin);
@@ -44,7 +44,7 @@ TEST_F(FaceTest, testNegativeY) {
 		<< ", Face: " << (int) name;
 }
 
-TEST_F(FaceTest, testPositiveY) {
+TEST_F(FaceTest, DISABLED_testPositiveY) {
 	glm::vec3 rayOrigin { 12, 31, 14 };
 	glm::ivec3 hitPos { 15 };
 	glm::vec3 rayDirection = glm::normalize(glm::vec3(hitPos) - rayOrigin);
@@ -55,7 +55,7 @@ TEST_F(FaceTest, testPositiveY) {
 		<< ", Face: " << (int) name;
 }
 
-TEST_F(FaceTest, testNegativeZ) {
+TEST_F(FaceTest, DISABLED_testNegativeZ) {
 	glm::vec3 rayOrigin { 12, 14, 0 };
 	glm::ivec3 hitPos { 15 };
 	glm::vec3 rayDirection = glm::normalize(glm::vec3(hitPos) - rayOrigin);
@@ -66,7 +66,7 @@ TEST_F(FaceTest, testNegativeZ) {
 		<< ", Face: " << (int) name;
 }
 
-TEST_F(FaceTest, testPositiveZ) {
+TEST_F(FaceTest, DISABLED_testPositiveZ) {
 	glm::vec3 rayOrigin { 12, 14, 31 };
 	glm::ivec3 hitPos { 15 };
 	glm::vec3 rayDirection = glm::normalize(glm::vec3(hitPos) - rayOrigin);
