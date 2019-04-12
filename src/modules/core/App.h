@@ -176,12 +176,14 @@ public:
 	 * @return @c AppState::Init as next phase
 	 */
 	virtual AppState onConstruct();
+	virtual void onBeforeInit();
 	/**
 	 * @brief Evaluates the command line parameters that the application was started with.
 	 * @note Make sure your commands are already registered (@see onConstruct())
 	 * @return @c AppState::Running if initialization succeeds, @c AppState::InitFailure if it failed.
 	 */
 	virtual AppState onInit();
+	virtual void onAfterInit();
 	virtual void onBeforeRunning();
 	/**
 	 * @brief called every frame after the initialization was done

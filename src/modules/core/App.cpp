@@ -126,7 +126,9 @@ void App::onFrame() {
 		}
 		case AppState::Init: {
 			core_trace_scoped(AppOnInit);
+			onBeforeInit();
 			_nextState = onInit();
+			onAfterInit();
 			_nextFrameMillis = systemMillis();
 			break;
 		}
@@ -276,9 +278,11 @@ bool App::toggleTrace() {
 	return true;
 }
 
-AppState App::onInit() {
+void App::onBeforeInit() {
 	_initMillis = _now;
+}
 
+AppState App::onInit() {
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_EVENTS);
 	_threadPool.init();
 
@@ -319,6 +323,26 @@ AppState App::onInit() {
 	}
 
 	Log::init();
+	_logLevelVar = core::Var::getSafe(cfg::CoreLogLevel);
+	_syslogVar = core::Var::getSafe(cfg::CoreSysLog);
+
+	core::Var::visit([&] (const core::VarPtr& var) {
+		var->markClean();
+	});
+
+	for (int i = 0; i < _argc; ++i) {
+		if (!strcmp(_argv[i], "--help") || !strcmp(_argv[i], "-h")) {
+			usage();
+			return AppState::Destroy;
+		}
+	}
+
+	core_trace_init();
+
+	return AppState::Running;
+}
+
+void App::onAfterInit() {
 	Log::debug("handle %i command line arguments", _argc);
 	for (int i = 0; i < _argc; ++i) {
 		// every command is started with a '-'
@@ -347,9 +371,6 @@ AppState App::onInit() {
 		Log::debug("Execute %s with %i arguments", command.c_str(), (int)args.size());
 		core::executeCommands(command + " " + args);
 	}
-	core::Var::visit([&] (const core::VarPtr& var) {
-		var->markClean();
-	});
 	const std::string& autoexecCommands = filesystem()->load("autoexec.cfg");
 	if (!autoexecCommands.empty()) {
 		Log::debug("execute autoexec.cfg");
@@ -363,21 +384,13 @@ AppState App::onInit() {
 		Log::debug("execute %s-autoexec.cfg", _appname.c_str());
 		Command::execute(autoexecAppCommands);
 	}
+
 	// we might have changed the loglevel from the commandline
-	Log::init();
-	_logLevelVar = core::Var::getSafe(cfg::CoreLogLevel);
-	_syslogVar = core::Var::getSafe(cfg::CoreSysLog);
-
-	core_trace_init();
-
-	for (int i = 0; i < _argc; ++i) {
-		if (!strcmp(_argv[i], "--help") || !strcmp(_argv[i], "-h")) {
-			usage();
-			return AppState::Destroy;
-		}
+	if (_logLevelVar->isDirty() || _syslogVar->isDirty()) {
+		Log::init();
+		_logLevelVar->markClean();
+		_syslogVar->markClean();
 	}
-
-	return AppState::Running;
 }
 
 void App::usage() const {
