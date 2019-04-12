@@ -40,14 +40,32 @@ public:
 	MementoHandler();
 	~MementoHandler();
 
-	void construct();
-	bool init();
-	void shutdown();
+	void construct() override;
+	bool init() override;
+	void shutdown() override;
 
+	/**
+	 * @brief Locks the handler for accepting new states or perform undo() or redo() steps
+	 * @sa @c unlock()
+	 */
 	void lock();
+	/**
+	 * @brief Unlocks the handler for accepting new states or perform undo() or redo() steps again
+	 * @sa @c lock()
+	 */
 	void unlock();
 
 	void clearStates();
+	/**
+	 * @brief Add a new state entry to the memento handler that you can return to.
+	 * @note This is adding the current active state to the handler - you can then undo to the previous state.
+	 * That is the reason why you always have to add the initial (maybe empty) state, too
+	 * @note Keep in mind, that there is a maximum of states that can get handled here.
+	 * @param[in] layer The layer id that was modified
+	 * @param[in] name The name of the layer
+	 * @param[in] volume The state of the volume
+	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
+	 */
 	void markUndo(int layer, const std::string& name, const voxel::RawVolume* volume, MementoType type = MementoType::Modification);
 	void markLayerDeleted(int layer, const std::string& name, const voxel::RawVolume* volume);
 	void markLayerAdded(int layer, const std::string& name, const voxel::RawVolume* volume);
