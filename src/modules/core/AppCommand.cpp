@@ -27,7 +27,7 @@ void init() {
 	}).setHelp("Clear the value history of a variable");
 
 	core::Command::registerCommand("void", [] (const core::CmdArgs& args) {
-	});
+	}).setHelp("Just a no-operation command");
 
 	core::Command::registerCommand("echo", [] (const core::CmdArgs& args) {
 		if (args.empty()) {
@@ -35,19 +35,32 @@ void init() {
 		}
 		const std::string& params = core::string::join(args.begin(), args.end(), " ");
 		Log::info("%s", params.c_str());
-	});
-
+	}).setHelp("Print the given arguments to the console (info log level)");
 
 	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
 		std::vector<io::Filesystem::DirEntry> entries;
-		const std::string filter = str + "*";
-		core::App::getInstance()->filesystem()->list(".", entries, filter);
+		const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+		const io::FilePtr& file = filesystem->open(str);
+		std::string filter;
+		std::string dir = file->path();
+		if (dir.empty()) {
+			filter = str + "*";
+			dir = ".";
+		} else {
+			filter = file->fileName() + "*";
+		}
+		filesystem->list(dir, entries, filter);
 		int i = 0;
 		for (const io::Filesystem::DirEntry& entry : entries) {
-			if (entry.type == io::Filesystem::DirEntry::Type::file) {
-				matches.push_back(entry.name);
-				++i;
+			if (entry.type == io::Filesystem::DirEntry::Type::unknown) {
+				continue;
 			}
+			if (dir.empty()) {
+				matches.push_back(entry.name);
+			} else {
+				matches.push_back(dir + "/" + entry.name);
+			}
+			++i;
 		}
 		return i;
 	};
