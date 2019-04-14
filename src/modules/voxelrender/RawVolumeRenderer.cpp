@@ -55,6 +55,7 @@ bool RawVolumeRenderer::init() {
 	}
 
 	_fogVar = core::Var::getSafe(cfg::ClientFog);
+	_shadowVar = core::Var::getSafe(cfg::ClientShadowMap);
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		_model[idx] = glm::mat4(1.0f);
@@ -326,30 +327,31 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::ScopedState scopedCullFace(video::State::CullFace);
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
-
-	_shadow.update(camera, true);
-	if (shadow) {
-		_shadow.render([this] (int i, shader::ShadowmapShader& shader) {
-			for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-				if (_hidden[idx]) {
-					continue;
+	if (_shadowVar->boolVal()) {
+		_shadow.update(camera, true);
+		if (shadow) {
+			_shadow.render([this] (int i, shader::ShadowmapShader& shader) {
+				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+					if (_hidden[idx]) {
+						continue;
+					}
+					const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
+					if (nIndices == 0) {
+						continue;
+					}
+					video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
+					shader.setModel(_model[idx]);
+					static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+					video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 				}
-				const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
-				if (nIndices == 0) {
-					continue;
-				}
-				video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
-				shader.setModel(_model[idx]);
-				static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
-			}
-			return true;
-		}, [] (int, shader::ShadowmapInstancedShader&) { return true; });
-	} else {
-		_shadow.render([] (int i, shader::ShadowmapShader& shader) {
-			video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
-			return true;
-		}, [] (int, shader::ShadowmapInstancedShader&) { return true; });
+				return true;
+			}, [] (int, shader::ShadowmapInstancedShader&) { return true; });
+		} else {
+			_shadow.render([] (int i, shader::ShadowmapShader& shader) {
+				video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
+				return true;
+			}, [] (int, shader::ShadowmapInstancedShader&) { return true; });
+		}
 	}
 
 	{
@@ -359,13 +361,15 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		if (_fogVar->boolVal()) {
 			_worldShader.setViewdistance(camera.farPlane());
 		}
-		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
-		_worldShader.setCascades(_shadow.cascades());
-		_worldShader.setDistances(_shadow.distances());
-		_worldShader.setLightdir(_shadow.sunDirection());
+		if (_shadowVar->boolVal()) {
+			_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
+			_worldShader.setCascades(_shadow.cascades());
+			_worldShader.setDistances(_shadow.distances());
+			_worldShader.setLightdir(_shadow.sunDirection());
+			_shadow.bind(video::TextureUnit::One);
+		}
 
 		video::ScopedPolygonMode polygonMode(camera.polygonMode());
-		_shadow.bind(video::TextureUnit::One);
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			if (_hidden[idx]) {
 				continue;

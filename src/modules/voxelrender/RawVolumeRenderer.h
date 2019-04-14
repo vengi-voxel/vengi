@@ -44,6 +44,7 @@ protected:
 	render::Shadow _shadow;
 	core::VarPtr _meshSize;
 	core::VarPtr _fogVar;
+	core::VarPtr _shadowVar;
 
 	video::TexturePtr _whiteTexture;
 
