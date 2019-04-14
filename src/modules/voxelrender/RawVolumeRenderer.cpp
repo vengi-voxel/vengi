@@ -325,7 +325,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	video::ScopedState scopedCullFace(video::State::CullFace);
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
 
-	_shadow.update(camera, shadow);
+	_shadow.update(camera, true);
 	if (shadow) {
 		_shadow.render([this] (int i, shader::ShadowmapShader& shader) {
 			for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
@@ -342,7 +342,12 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 			}
 			return true;
-		}, [] (int, shader::ShadowmapInstancedShader&) {return true;});
+		}, [] (int, shader::ShadowmapInstancedShader&) { return true; });
+	} else {
+		_shadow.render([] (int i, shader::ShadowmapShader& shader) {
+			video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
+			return true;
+		}, [] (int, shader::ShadowmapInstancedShader&) { return true; });
 	}
 
 	{
