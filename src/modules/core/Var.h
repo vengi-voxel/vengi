@@ -7,6 +7,7 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
+#include "GLM.h"
 #include "String.h"
 #include "ReadWriteLock.h"
 #include "GameConfig.h"
@@ -250,6 +251,7 @@ public:
 	 * @return the value of the variable as @c bool. @c true if the string value is either @c 1 or @c true, @c false otherwise
 	 */
 	bool boolVal() const;
+	glm::vec3 vec3Val() const;
 	void setVal(const std::string& value);
 	inline void setVal(const char* value) {
 		setVal(std::string(value));
