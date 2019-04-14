@@ -289,7 +289,8 @@ glm::vec4 Camera::splitFrustumSphereBoundingBox(float near, float far) const {
 	const float znearp = glm::project(projection, glm::vec3(0.0f, 0.0f, -near)).z;
 	const float zfarp = glm::project(projection, glm::vec3(0.0f, 0.0f, -far)).z;
 
-	std::vector<glm::vec3> points(8);
+	std::vector<glm::vec3> points;
+	points.reserve(8);
 
 	for (int x = 0; x < 2; ++x) {
 		for (int y = 0; y < 2; ++y) {
