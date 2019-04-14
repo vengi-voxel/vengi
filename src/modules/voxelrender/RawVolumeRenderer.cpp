@@ -54,6 +54,8 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
+	_fogVar = core::Var::getSafe(cfg::ClientFog);
+
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		_model[idx] = glm::mat4(1.0f);
 		_vertexBufferIndex[idx] = _vertexBuffer[idx].create();
@@ -354,7 +356,9 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setViewprojection(camera.viewProjectionMatrix());
-		_worldShader.setViewdistance(camera.farPlane());
+		if (_fogVar->boolVal()) {
+			_worldShader.setViewdistance(camera.farPlane());
+		}
 		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_worldShader.setCascades(_shadow.cascades());
 		_worldShader.setDistances(_shadow.distances());

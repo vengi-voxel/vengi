@@ -43,6 +43,7 @@ protected:
 	shader::WorldShader& _worldShader;
 	render::Shadow _shadow;
 	core::VarPtr _meshSize;
+	core::VarPtr _fogVar;
 
 	video::TexturePtr _whiteTexture;
 
