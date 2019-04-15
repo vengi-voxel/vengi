@@ -67,6 +67,8 @@ private:
 	glm::ivec3 _referencePos;
 
 	core::VarPtr _autoSaveSecondsDelay;
+	core::VarPtr _ambientColor;
+	core::VarPtr _diffuseColor;
 
 	math::Axis _lockedAxis = math::Axis::None;
 

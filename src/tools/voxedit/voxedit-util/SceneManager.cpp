@@ -790,6 +790,8 @@ bool SceneManager::init() {
 	_modifier.init();
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
+	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "0.2 0.2 0.2");
+	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "1.0 1.0 1.0");
 	const core::TimeProviderPtr& timeProvider = core::App::getInstance()->timeProvider();
 	_lastAutoSave = timeProvider->tickSeconds();
 
@@ -832,6 +834,14 @@ void SceneManager::update(uint64_t time) {
 		const Direction& dir = DIRECTIONS[i];
 		moveCursor(dir.x, dir.y, dir.z);
 		_lastMove[i] = time;
+	}
+	if (_ambientColor->isDirty()) {
+		_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
+		_ambientColor->markClean();
+	}
+	if (_diffuseColor->isDirty()) {
+		_volumeRenderer.setDiffuseColor(_diffuseColor->vec3Val());
+		_diffuseColor->markClean();
 	}
 	animate(time);
 	autosave();
