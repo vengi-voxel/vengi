@@ -246,6 +246,7 @@ bool VoxEditWindow::init() {
 		}
 		afterLoad("");
 	}
+	_scene->setFocus(tb::WIDGET_FOCUS_REASON_UNKNOWN);
 
 	return true;
 }
