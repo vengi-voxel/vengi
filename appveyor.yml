@@ -11,30 +11,40 @@ branches:
   only:
   - master
 
-clone_depth: 10
+shallow_clone: true
 
 # vcpkg enet, imgui are already available, but no on appveyor yet
 # assimp, qt5 don't build
 #  lua glm glslang gtest curl libuv zlib
 before_build:
   - vcpkg install sdl2 libpq
-  - ps: Start-FileDownload "http://registrationcenter-download.intel.com/akdlm/irc_nas/8386/intel_sdk_for_opencl_2015_r3_x64_setup.msi"
-  - start /wait msiexec /i intel_sdk_for_opencl_2015_r3_x64_setup.msi /qn  /l*v msiexec.log
-  - cmake -DTOOLS=OFF -G "Visual Studio 15 2017"
+  # Install OpenCL headers and libraries
+  - set NUGETDIR=C:\NUGET
+  - nuget install opencl-nug -Version 0.777.77 -OutputDirectory %NUGETDIR%
+  - dir %NUGETDIR%\opencl-nug.0.777.77\build\native\
+  - set OCL_ROOT=%NUGETDIR%\opencl-nug.0.777.77\build\native
+  # Install OpenCL Runtime
+  - choco install opencl-intel-cpu-runtime
+  # Check if it's working
+  - ps: appveyor DownloadFile "https://ci.appveyor.com/api/projects/oblomov/clinfo/artifacts/clinfo.exe?job=platform:+x64" -FileName clinfo.exe
+  - .\clinfo.exe
 
-build:
-  parallel: true
-  project: tests-core.sln
+build_script:
+  - md build
+  - cd build
+  - cmake .. -DDISABLE_UNITY=On
+  - cmake --build .
+  - dir
 
 artifacts:
   - name: Tests
-    path: vengi-tests-core.exe
+    path: build/vengi-tests-core.exe
 
 services:
   - postgresql          # start PostgreSQL 9.5 service
 
 test_script:
-  - cmd: vengi-tests-core.exe --gtest_output=xml:tests.xml
+  - cmd: build/vengi-tests-core.exe --gtest_output=xml:tests.xml
 
 on_finish:
   - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\tests.xml))
