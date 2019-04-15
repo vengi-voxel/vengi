@@ -30,6 +30,7 @@ my own engine and evolved into something that others might find useful, too.
 * Modelling without the mouse - just via shortcuts and keyboard
 * Animation support
 * Extrude
+* Layer support
 * Custom key bindings
 * Show commands of actions (to configure your own key bindings)
 
@@ -41,6 +42,8 @@ my own engine and evolved into something that others might find useful, too.
 * Holding the left or right mouse buttons spans an AABB to perform the action in
 * Using the keybinding for `+actionexecute` (v) command allows you to also span an AABB with
   the cursor keys (resp. the keys that are bound to the `+movecursor[direction]` commands).
+* Enter places the reference position at the current cursor position
+* Shift+Tab opens the console (type cmdlist and cvarlist)
 
 # Planned
 
@@ -54,6 +57,7 @@ my own engine and evolved into something that others might find useful, too.
 * Windows and MacOSX support
 * Color selection via keyboard only
 * Extend palette widget to show the used colors
+* Add color dialog for ambient and diffuse color
 
 # Needed improvements
 
