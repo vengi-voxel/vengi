@@ -80,19 +80,6 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	shader::Materialblock::Data materialBlock;
-	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-	_materialBlock.create(materialBlock);
-	video::ScopedShader scoped(_worldShader);
-	_worldShader.setMaterialblock(_materialBlock);
-	_worldShader.setModel(glm::mat4(1.0f));
-	_worldShader.setTexture(video::TextureUnit::Zero);
-	_worldShader.setShadowmap(video::TextureUnit::One);
-	_worldShader.setFogrange(250.0f);
-	_worldShader.setDiffuseColor(_diffuseColor);
-	_worldShader.setAmbientColor(_ambientColor);
-	_worldShader.setFogcolor(core::Color::LightBlue);
-
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		video::Attribute attributePos = getPositionVertexAttribute(
 				_vertexBufferIndex[idx], _worldShader.getLocationPos(),
@@ -167,6 +154,18 @@ bool RawVolumeRenderer::update(int idx, const std::vector<voxel::VoxelVertex>& v
 		return false;
 	}
 	return true;
+}
+
+void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {
+	_ambientColor = color;
+	// force updating the cached uniform values
+	_worldShader.markDirty();
+}
+
+void RawVolumeRenderer::setDiffuseColor(const glm::vec3& color) {
+	_diffuseColor = color;
+	// force updating the cached uniform values
+	_worldShader.markDirty();
 }
 
 bool RawVolumeRenderer::empty(int idx) const {
@@ -357,6 +356,26 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	{
 		video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
 		video::ScopedShader scoped(_worldShader);
+		if (_worldShader.isDirty()) {
+			shader::Materialblock::Data materialBlock;
+			memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+			_materialBlock.create(materialBlock);
+			video::ScopedShader scoped(_worldShader);
+			_worldShader.setMaterialblock(_materialBlock);
+			_worldShader.setModel(glm::mat4(1.0f));
+			_worldShader.setTexture(video::TextureUnit::Zero);
+			if (_shadowVar->boolVal()) {
+				_worldShader.setShadowmap(video::TextureUnit::One);
+			}
+			_worldShader.setDiffuseColor(_diffuseColor);
+			_worldShader.setAmbientColor(_ambientColor);
+			if (_fogVar->boolVal()) {
+				_worldShader.setFogrange(250.0f);
+				_worldShader.setFogcolor(core::Color::LightBlue);
+			}
+			_worldShader.markClean();
+		}
+
 		_worldShader.setViewprojection(camera.viewProjectionMatrix());
 		if (_fogVar->boolVal()) {
 			_worldShader.setViewdistance(camera.farPlane());

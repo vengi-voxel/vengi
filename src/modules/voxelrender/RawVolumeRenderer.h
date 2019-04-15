@@ -98,6 +98,7 @@ public:
 	voxel::Region region() const;
 
 	void setAmbientColor(const glm::vec3& color);
+	void setDiffuseColor(const glm::vec3& color);
 	void setSunPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up);
 
 	void construct();
@@ -115,10 +116,6 @@ public:
 	 */
 	std::vector<voxel::RawVolume*> shutdown();
 };
-
-inline void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {
-	_ambientColor = color;
-}
 
 inline voxel::RawVolume* RawVolumeRenderer::volume(int idx) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
