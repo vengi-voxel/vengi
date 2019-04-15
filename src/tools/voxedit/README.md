@@ -29,7 +29,6 @@ my own engine and evolved into something that others might find useful, too.
 * Modelling with the left and right mouse buttons
 * Modelling without the mouse - just via shortcuts and keyboard
 * Animation support
-* Extrude
 * Layer support
 * Custom key bindings
 * Show commands of actions (to configure your own key bindings)
@@ -52,6 +51,7 @@ my own engine and evolved into something that others might find useful, too.
 * Particle emitter
 * Copy/paste
 * Selections
+* Extrude
 * Improve voxelizer
 * Improve vox extension import
 * Windows and MacOSX support
@@ -62,4 +62,5 @@ my own engine and evolved into something that others might find useful, too.
 # Needed improvements
 
 * Resizing the volume doesn't have to remesh everything
-* Allow to merge and duplicate layers
+* Allow to merge, reorganize and duplicate layers
+* Fix z-fighting for layers
