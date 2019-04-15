@@ -91,6 +91,7 @@ void Shader::shutdown() {
 	video::deleteProgram(_program);
 	_initialized = false;
 	_active = false;
+	_dirty = true;
 	_time = 0;
 }
 
@@ -155,6 +156,7 @@ bool Shader::reload() {
 }
 
 bool Shader::init() {
+	_dirty = true;
 	createProgramFromShaders();
 	const bool success = _program != InvalidId;
 	_initialized = success;

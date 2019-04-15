@@ -56,6 +56,7 @@ protected:
 	Id _program = InvalidId;
 	bool _initialized = false;
 	mutable bool _active = false;
+	bool _dirty = true;
 
 	typedef std::map<std::string, std::string> ShaderDefines;
 	ShaderDefines _defines;
@@ -117,6 +118,22 @@ public:
 	bool init();
 
 	bool isInitialized() const;
+
+	/**
+	 * @brief The dirty state can be used to determine whether you have to set some
+	 * uniforms again because the shader was reinitialized. This must be used manually
+	 * if you set e.g. uniforms only once after init
+	 * @sa isDirty()
+	 */
+	void markClean();
+	/**
+	 * @sa markClean()
+	 */
+	void markDirty();
+	/**
+	 * @sa markClean()
+	 */
+	bool isDirty() const;
 
 	/**
 	 * @brief Make sure to configure feedback transform varying before you link the shader
@@ -319,6 +336,18 @@ public:
 	void enableVertexAttributeArray(int location) const;
 	bool setDivisor(int location, uint32_t divisor) const;
 };
+
+inline void Shader::markClean() {
+	_dirty = true;
+}
+
+inline void Shader::markDirty() {
+	_dirty = false;
+}
+
+inline bool Shader::isDirty() const {
+	return _dirty;
+}
 
 inline bool Shader::isInitialized() const {
 	return _initialized;
