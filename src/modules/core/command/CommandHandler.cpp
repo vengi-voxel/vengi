@@ -46,7 +46,7 @@ int executeCommands(const std::string& _commandLine) {
 					Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
 				}
 			} else {
-				c->setVal(core::string::eraseAllSpaces(tokens[0]));
+				c->setVal(core::string::join(tokens.begin(), tokens.end(), " "));
 			}
 		}
 		if (n != -1) {
