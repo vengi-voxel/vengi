@@ -71,15 +71,14 @@ vec3 shadow(in mat4 viewprojection, vec3 color, in vec3 diffuse, in vec3 ambient
 	return vec3(shadow);
 #else // cl_debug_shadow
 	vec3 lightvalue = ambient + (diffuse * shadow);
-	return color * lightvalue;
+	return clamp(color * lightvalue, 0.0f, 1.0f);
 #endif // cl_debug_shadow
 }
 
 #else // cl_shadowmap == 1
 
-vec3 shadow(in mat4 viewprojection, vec3 color, in vec3 diffuse, in vec3 ambient) {
-	vec3 lightvalue = ambient + diffuse;
-	return color * lightvalue;
+vec3 shadow(in mat4 viewprojection, in vec3 color, in vec3 diffuse, in vec3 ambient) {
+	return clamp(color * (ambient + diffuse), 0.0f, 1.0f);
 }
 
 #endif // cl_shadowmap == 1
