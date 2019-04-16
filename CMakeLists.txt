@@ -291,5 +291,4 @@ engine_update_git_lib(LIB simplecpp URL "https://github.com/danmar/simplecpp.git
 engine_update_git_lib(LIB nuklear URL "https://github.com/danmar/simplecpp.git" COPY simplecpp.cpp simplecpp.h TARGETDIR ${ROOT_DIR}/src/modules/ui/nuklear/private)
 # TODO cp $(UPDATEDIR)/nuklear.sync/demo/overview.c src/tests/testnuklear
 engine_update_git_lib(LIB json URL "https://github.com/nlohmann/json.git" COPY src/json.hpp TARGETDIR ${ROOT_DIR}/src/modules/core)
-engine_update_git_lib(LIB stringview URL "https://github.com/satoren/string_view.git" COPY string_view.hpp TARGETDIR ${ROOT_DIR}/contrib/libs/string_view)
 engine_update_git_lib(LIB voxelizer URL "https://github.com/karimnaaji/voxelizer.git" COPY voxelizer.h TARGETDIR ${ROOT_DIR}/src/tools/voxedit/ui/editorscene/)

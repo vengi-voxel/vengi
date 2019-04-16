@@ -14,26 +14,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <SDL.h>
-
-#ifdef __APPLE__
 #include <string_view>
-#else
-#ifdef _MSC_VER
-#include "../string_view/string_view.hpp"
-namespace std {
-using string_view = std_backport::string_view;
-}
-#else
-#if __cplusplus <= 201411
-#include <experimental/string_view>
-namespace std {
-using string_view = std::experimental::string_view;
-}
-#else
-#include <string_view>
-#endif
-#endif
-#endif
 
 namespace core {
 namespace string {

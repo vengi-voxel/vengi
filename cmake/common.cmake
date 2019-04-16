@@ -8,15 +8,11 @@ set(DEFAULT_LUAC_EXECUTABLE luac luac5.2 luac5.3)
 set(DATA_DIR ${ROOT_DIR}/data CACHE STRING "" FORCE)
 set(NATIVE_BUILD_DIR ${ROOT_DIR}/build CACHE PATH "The directory where the initial native tool were built")
 
-check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
-if (COMPILER_SUPPORTS_CXX14)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-elseif (NOT MSVC)
-	# Don't error out, it might still work
-	message(SEND_ERROR "It looks like your compiler doesn't understand -std=c++14")
-endif()
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
+set(CMAKE_CXX_EXTENSIONS off)
+
+if (NOT MSVC)
 
 find_program(DESKTOP_FILE_VALIDATE_EXECUTABLE desktop-file-validate)
 
@@ -112,3 +108,5 @@ endif()
 #
 #	add_custom_target(native-cmake-build DEPENDS ${NATIVE_BUILD_TARGET})
 #endif()
+
+endif(NOT MSVC)
