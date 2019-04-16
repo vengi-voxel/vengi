@@ -1846,7 +1846,8 @@ engine_add_library(
 	SRCS ${SOURCE_FILES} ${SDLMAIN_SOURCES} ${PLATFORM_SRCS}
 	GCCCFLAGS "${SDL_CFLAGS} ${EXTRA_CFLAGS} -Wno-sign-compare"
 	DEFINES ${DEFINES}
-	LINKERFLAGS ${ANDROID_LDFLAGS} ${EXTRA_LDFLAGS})
+	LINKERFLAGS ${ANDROID_LDFLAGS} ${EXTRA_LDFLAGS}
+	ADDITIONAL_LIBS SDL2main)
 if (NOT SDL2_FOUND)
 	if (CMAKE_DL_LIBS)
 		list(APPEND EXTRA_LIBS ${CMAKE_DL_LIBS})
@@ -1866,5 +1867,9 @@ if (NOT SDL2_FOUND)
 		set_target_properties(sdl2 PROPERTIES COMPILE_FLAGS "-Wno-implicit-fallthrough -Wno-sign-compare -Wno-cast-function-type")
 	else ()
 		set_target_properties(sdl2 PROPERTIES COMPILE_FLAGS "-Wno-implicit-fallthrough -Wno-sign-compare -Wno-cast-function-type")
+	endif()
+else()
+	if (WINDOWS)
+		target_link_libraries(sdl2 INTERFACE SDL2main)
 	endif()
 endif()
