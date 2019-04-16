@@ -11,6 +11,7 @@
 #include "Renderer.h"
 #include "gl/GLVersion.h"
 #include "Shader.h"
+#include "core/Array.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
 #include "core/Singleton.h"
