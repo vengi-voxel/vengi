@@ -26,7 +26,7 @@ private:
 		std::string msg;
 	};
 
-	struct MessageEventComparator: public std::binary_function<MessageEvent, MessageEvent, bool> {
+	struct MessageEventComparator {
 		inline bool operator()(const MessageEvent& x, const MessageEvent& y) const {
 			return x.ttl > y.ttl;
 		}
