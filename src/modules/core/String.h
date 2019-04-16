@@ -38,25 +38,6 @@ using string_view = std::experimental::string_view;
 namespace core {
 namespace string {
 
-template<typename T, int Bits = sizeof(T) * CHAR_BIT>
-inline std::string bits(T in, int newlineAfter = -1) {
-	const int newlineChars = newlineAfter <= 0 ? 0 : (Bits - 1) / newlineAfter;
-	char bitstr[Bits + newlineChars + 1];
-	const T one = 1;
-	int c = 0;
-	int n = 0;
-	for (int i = Bits - 1; i >= 0; --i) {
-		if (newlineAfter > 0 && c == newlineAfter) {
-			bitstr[n++] = '\n';
-			c = 0;
-		}
-		bitstr[n++] = (in & (one << i)) != 0 ? '1' : '0';
-		++c;
-	}
-	bitstr[Bits + newlineChars] = '\0';
-	return std::string(bitstr);
-}
-
 extern std::string format(SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(1);
 
 inline int toInt(const char*str) {

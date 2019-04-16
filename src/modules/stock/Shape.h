@@ -55,7 +55,7 @@ public:
 
 	void clear();
 
-	explicit operator ItemShapeType() const;
+	operator ItemShapeType() const;
 };
 
 inline void ItemShape::clear() {

@@ -20,7 +20,10 @@ static int fillUniforms(Id program, ShaderUniforms& uniformMap, const std::strin
 	glGetProgramiv(program, activeEnum, &numUniforms);
 	int uniformNameSize = 0;
 	glGetProgramiv(program, activeMaxLengthEnum, &uniformNameSize);
-	char name[uniformNameSize + 1];
+	char name[4096];
+	if (uniformNameSize + 1 >= sizeof(name)) {
+		return 0;
+	}
 
 	const char *shaderNameC = shaderName.c_str();
 	for (int i = 0; i < numUniforms; i++) {
