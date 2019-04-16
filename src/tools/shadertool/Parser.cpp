@@ -3,6 +3,7 @@
  */
 
 #include "Parser.h"
+#include "TokenIterator.h"
 #include "core/Array.h"
 #include "core/Common.h"
 #include "core/String.h"
@@ -37,7 +38,7 @@ static video::Primitive layoutPrimitiveType(const std::string& token) {
 	return video::Primitive::Max;
 }
 
-bool parseLayout(TokenIterator& tok, Layout& layout) {
+static bool parseLayout(TokenIterator& tok, Layout& layout) {
 	if (!tok.hasNext()) {
 		return false;
 	}

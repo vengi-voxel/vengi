@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Types.h"
-#include "TokenIterator.h"
 #include <string>
 
 namespace shadertool {
