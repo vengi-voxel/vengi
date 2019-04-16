@@ -151,8 +151,10 @@ static int luaItemDataShapeGC(lua_State * l) {
 }
 
 static int luaItemDataShapeToString(lua_State * l) {
-	const ItemShape *itemShape = luaGetItemDataShape(l, 1);
-	lua_pushfstring(l, "item shape:\n%s", core::string::bits((ItemShapeType)*itemShape, ItemMaxWidth).c_str());
+	const ItemShape& itemShape = *luaGetItemDataShape(l, 1);
+	const ItemShapeType itemShapeType = itemShape;
+	const std::string& bitsStr = core::string::bits(itemShapeType, ItemMaxWidth);
+	lua_pushfstring(l, "item shape:\n%s", bitsStr.c_str());
 	return 1;
 }
 
