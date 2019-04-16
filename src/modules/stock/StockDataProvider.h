@@ -8,6 +8,7 @@
 #include "Item.h"
 #include <array>
 #include <memory>
+#include <unordered_map>
 
 namespace stock {
 
