@@ -43,6 +43,9 @@ engine_add_library(
 	DEFINES MUSIC_OGG MUSIC_WAV)
 
 if (NOT SDL2_MIXER_FOUND)
+	if (MSVC)
+		target_compile_options(${LIB} PRIVATE /wd4244)
+	endif()
 	target_include_directories(${LIB} PRIVATE "libogg-1.3.1/include")
 	target_include_directories(${LIB} PRIVATE "libvorbis-1.3.3/include")
 	target_include_directories(${LIB} PRIVATE "libvorbis-1.3.3/lib")
