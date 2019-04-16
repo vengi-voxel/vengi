@@ -4,6 +4,7 @@
 
 #include "video/Renderer.h"
 #include "flextGL.h"
+#include <algorithm>
 
 namespace video {
 
