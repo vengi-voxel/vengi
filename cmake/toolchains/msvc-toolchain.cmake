@@ -7,7 +7,12 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP /TC /errorReport:queue /DWIN32 /DNOMINMA
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Zi /Od /Oy- /MTd /D_DEBUG /DDEBUG=1")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Ox /MT /DNDEBUG")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /TP /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS /wd4244")
+# 4456: declaration of 'q' hides previous local declaration
+# 4244: possible loss of data (e.g. float/double)
+# 4201: nonstandard extension used
+# 4245: signed/unsigned mismatch
+# 4100: unreferenced formal parameter
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /TP /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS /wd4244 /wd4245 /wd4201 /wd4100 /wd4456")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Od /Oy- /MTd /D_DEBUG /DDEBUG=1")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Ox /MT /DNDEBUG")
 
