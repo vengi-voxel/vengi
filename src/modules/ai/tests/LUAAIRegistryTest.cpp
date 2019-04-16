@@ -2,7 +2,6 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
-#include <unistd.h>
 
 class LUAAIRegistryTest: public TestSuite {
 protected:
