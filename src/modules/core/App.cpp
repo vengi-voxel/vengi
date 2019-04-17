@@ -603,7 +603,8 @@ AppState App::onCleanup() {
 		_metric->shutdown();
 	}
 
-#if defined(HAVE_SYS_RESOURCE_H) and defined(HAVE_SYS_TIME_H)
+#if defined(HAVE_SYS_RESOURCE_H)
+#if defined(HAVE_SYS_TIME_H)
 	struct rusage usage;
 	if (0 == getrusage(RUSAGE_SELF, &usage)) {
 		Log::info("Max resident set size used: %li kb", usage.ru_maxrss);
@@ -614,6 +615,7 @@ AppState App::onCleanup() {
 		Log::info("System cpu time: %li ms", usage.ru_stime.tv_sec * 1000L + usage.ru_stime.tv_usec / 1000L);
 		Log::info("User cpu time: %li ms", usage.ru_utime.tv_sec * 1000L + usage.ru_utime.tv_usec / 1000L);
 	}
+#endif
 #endif
 	SDL_Quit();
 

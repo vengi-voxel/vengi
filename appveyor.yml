@@ -17,7 +17,7 @@ shallow_clone: true
 # assimp, qt5 don't build
 #  lua glm glslang gtest curl libuv zlib
 before_build:
-  - vcpkg install sdl2 libpq
+  - vcpkg install libpq
   # Install OpenCL headers and libraries
   - set NUGETDIR=C:\NUGET
   - nuget install opencl-nug -Version 0.777.77 -OutputDirectory %NUGETDIR%
