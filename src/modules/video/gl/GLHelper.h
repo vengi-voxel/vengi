@@ -16,12 +16,12 @@ namespace _priv {
 template<typename GetName, typename GetLocation>
 static int fillUniforms(Id program, ShaderUniforms& uniformMap, const std::string& shaderName, GLenum activeEnum,
 		GLenum activeMaxLengthEnum, GetName getName, GetLocation getLocation, bool block) {
-	int numUniforms = 0;
+	GLint numUniforms = 0;
 	glGetProgramiv(program, activeEnum, &numUniforms);
-	int uniformNameSize = 0;
+	GLint uniformNameSize = 0;
 	glGetProgramiv(program, activeMaxLengthEnum, &uniformNameSize);
 	char name[4096];
-	if (uniformNameSize + 1 >= sizeof(name)) {
+	if (uniformNameSize + 1 >= (int)sizeof(name)) {
 		return 0;
 	}
 
