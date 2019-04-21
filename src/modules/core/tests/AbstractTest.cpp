@@ -33,6 +33,7 @@ void AbstractTest::TearDown() {
 AbstractTest::TestApp::TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
 		Super(metric, filesystem, eventBus, timeProvider), _test(test) {
 	init(ORGANISATION, "test");
+	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 	_argc = ::_argc;
 	_argv = ::_argv;
 	while (_curState < AppState::Running) {
