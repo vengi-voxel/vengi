@@ -82,7 +82,7 @@ public:
 	 *
 	 * @sa volume()
 	 */
-	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume);
+	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
 	bool setModelMatrix(int idx, const glm::mat4& model);
 
 	bool empty(int idx = 0) const;

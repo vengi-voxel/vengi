@@ -113,7 +113,7 @@ private:
 	voxel::Voxel _hitCursorVoxel;
 
 	voxel::RawVolume* modelVolume();
-	bool setNewVolume(int idx, voxel::RawVolume* volume);
+	bool setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
 	bool setNewVolumes(const voxel::VoxelVolumes& volumes);
 	void autosave();
 	void setReferencePosition(const glm::ivec3& pos);

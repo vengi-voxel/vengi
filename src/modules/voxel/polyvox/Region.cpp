@@ -4,10 +4,13 @@
 
 #include "Region.h"
 #include "core/Common.h"
+#include <stdint.h>
+#include <limits>
 
 namespace voxel {
 
 const Region Region::MaxRegion = Region(std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::max());
+const Region Region::InvalidRegion = Region(0, -1);
 
 glm::ivec3 Region::moveInto(int32_t x, int32_t y, int32_t z) const {
 	const glm::ivec3& size = getDimensionsInVoxels();

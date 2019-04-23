@@ -74,7 +74,7 @@ bool Modifier::aabbEnd(voxel::RawVolume* volume, std::function<void(const voxel:
 	const glm::ivec3& pos = aabbPosition();
 	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
 	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos) + (size - 1);
-	voxel::Region modifiedRegion;
+	voxel::Region modifiedRegion = voxel::Region::InvalidRegion;
 	glm::ivec3 minsMirror = mins;
 	glm::ivec3 maxsMirror = maxs;
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {

@@ -45,6 +45,7 @@ public:
 
 	/// A Region with the lower corner set as low as possible and the upper corner set as high as possible.
 	static const Region MaxRegion;
+	static const Region InvalidRegion;
 
 	/// Equality Operator.
 	bool operator==(const Region& rhs) const;

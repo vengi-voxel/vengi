@@ -315,14 +315,13 @@ void SceneManager::setMousePos(int x, int y) {
 }
 
 void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo) {
-	if (!modifiedRegion.isValid()) {
-		return;
-	}
 	Log::debug("Modified layer %i", layerId);
 	if (markUndo) {
 		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
 	}
-	_extractRegions.push_back({modifiedRegion, layerId});
+	if (modifiedRegion.isValid()) {
+		_extractRegions.push_back({modifiedRegion, layerId});
+	}
 	_dirty = true;
 	_needAutoSave = true;
 }
@@ -337,8 +336,8 @@ void SceneManager::crop() {
 	if (newVolume == nullptr) {
 		return;
 	}
-	setNewVolume(layerId, newVolume);
-	modified(layerId, newVolume->region());
+	setNewVolume(layerId, newVolume, true);
+	modified(layerId, voxel::Region::InvalidRegion);
 }
 
 void SceneManager::resize(const glm::ivec3& size) {
@@ -347,8 +346,13 @@ void SceneManager::resize(const glm::ivec3& size) {
 	if (newVolume == nullptr) {
 		return;
 	}
-	setNewVolume(layerId, newVolume);
-	modified(layerId, newVolume->region());
+	setNewVolume(layerId, newVolume, false);
+	if (glm::all(glm::greaterThanEqual(size, glm::zero<glm::ivec3>()))) {
+		// we don't have to reextract a mesh if only new empty voxels were added.
+		modified(layerId, voxel::Region::InvalidRegion);
+	} else {
+		modified(layerId, newVolume->region());
+	}
 }
 
 void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount) {
@@ -462,12 +466,12 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	return true;
 }
 
-bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume) {
+bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh) {
 	if (idx < 0 || idx >= _layerMgr.maxLayers()) {
 		return false;
 	}
 	const voxel::Region& region = volume->region();
-	delete _volumeRenderer.setVolume(idx, volume);
+	delete _volumeRenderer.setVolume(idx, volume, deleteMesh);
 
 	if (volume != nullptr) {
 		_gridRenderer.update(region);

@@ -61,5 +61,4 @@ my own engine and evolved into something that others might find useful, too.
 
 # Needed improvements
 
-* Resizing the volume doesn't have to remesh everything
 * Allow to merge, reorganize and duplicate layers

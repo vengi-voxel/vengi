@@ -434,7 +434,7 @@ voxel::Region RawVolumeRenderer::region() const {
 	return region;
 }
 
-voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume) {
+voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
@@ -442,10 +442,12 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 
 	voxel::RawVolume* old = _rawVolume[idx];
 	_rawVolume[idx] = volume;
-	for (auto& i : _meshes) {
-		Meshes& meshes = i.second;
-		delete meshes[idx];
-		meshes[idx] = nullptr;
+	if (deleteMesh) {
+		for (auto& i : _meshes) {
+			Meshes& meshes = i.second;
+			delete meshes[idx];
+			meshes[idx] = nullptr;
+		}
 	}
 	return old;
 }
