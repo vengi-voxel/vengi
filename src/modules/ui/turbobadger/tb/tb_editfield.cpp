@@ -228,23 +228,50 @@ bool TBEditField::onEvent(const TBWidgetEvent &ev) {
 		return m_style_edit.mouseUp(TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y), 1,
 									TB_MODIFIER_NONE, ev.button_type == TB_TOUCH);
 	} else if (ev.type == EVENT_TYPE_KEY_DOWN) {
-		return m_style_edit.keyDown(ev.key, ev.special_key, ev.modifierkeys);
+		if (m_style_edit.keyDown(ev.key, ev.special_key, ev.modifierkeys)) {
+			if (_var) {
+				_var->setVal(getText().c_str());
+				_var->markClean();
+			}
+			return true;
+		}
+		return false;
 	} else if (ev.type == EVENT_TYPE_KEY_UP) {
 		return true;
 	} else if ((ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("popupmenu")) ||
 			   (ev.type == EVENT_TYPE_SHORTCUT)) {
 		if (ev.ref_id == TBIDC("cut") && !m_style_edit.packed.read_only) {
 			m_style_edit.cut();
+			if (_var) {
+				_var->setVal(getText().c_str());
+				_var->markClean();
+			}
 		} else if (ev.ref_id == TBIDC("copy")) {
 			m_style_edit.copy();
 		} else if (ev.ref_id == TBIDC("paste") && !m_style_edit.packed.read_only) {
 			m_style_edit.paste();
+			if (_var) {
+				_var->setVal(getText().c_str());
+				_var->markClean();
+			}
 		} else if (ev.ref_id == TBIDC("delete") && !m_style_edit.packed.read_only) {
 			m_style_edit.del();
+			if (_var) {
+				_var->setVal(getText().c_str());
+				_var->markClean();
+			}
 		} else if (ev.ref_id == TBIDC("undo") && !m_style_edit.packed.read_only) {
 			m_style_edit.undo();
+			if (_var) {
+				_var->setVal(getText().c_str());
+				_var->markClean();
+			}
 		} else if (ev.ref_id == TBIDC("redo") && !m_style_edit.packed.read_only) {
 			m_style_edit.redo();
+			if (_var) {
+				_var->setVal(getText().c_str());
+				_var->markClean();
+			}
 		} else if (ev.ref_id == TBIDC("selectall")) {
 			m_style_edit.selection.selectAll();
 		} else {

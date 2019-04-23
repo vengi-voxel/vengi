@@ -6,6 +6,7 @@
 #include "core/Assert.h"
 #include "core/Var.h"
 #include "core/command/Command.h"
+#include "core/command/CommandHandler.h"
 #include "tb_font_renderer.h"
 #include "tb_system.h"
 #include "tb_widgets_listener.h"
@@ -229,7 +230,7 @@ bool TBButton::onEvent(const TBWidgetEvent &ev) {
 		if (!_command.isEmpty()) {
 			const std::string& cmd = canToggle() ? core::string::format("%s %i", _command.c_str(), getValue()) : _command.c_str();
 			Log::debug("Button pressed, execute: '%s'", cmd.c_str());
-			core::Command::execute(cmd);
+			core::executeCommands(cmd);
 			TBWidgetEvent ev(EVENT_TYPE_COMMAND);
 			ev.string = cmd.c_str();
 			invokeEvent(ev);
@@ -411,7 +412,7 @@ void TBRadioCheckBox::setValue(int value) {
 	}
 	if (!_command.isEmpty()) {
 		const std::string& cmd = core::string::format("%s %i", _command.c_str(), m_value);
-		core::Command::execute(cmd);
+		core::executeCommands(cmd);
 		TBWidgetEvent ev(EVENT_TYPE_COMMAND);
 		ev.string = cmd.c_str();
 		invokeEvent(ev);
@@ -641,7 +642,7 @@ void TBSlider::setValueDouble(double value) {
 	}
 	if (!_command.isEmpty()) {
 		const std::string& cmd = core::string::format("%s %f", _command.c_str(), m_value);
-		core::Command::execute(cmd);
+		core::executeCommands(cmd);
 		TBWidgetEvent ev(EVENT_TYPE_COMMAND);
 		ev.string = cmd.c_str();
 		invokeEvent(ev);

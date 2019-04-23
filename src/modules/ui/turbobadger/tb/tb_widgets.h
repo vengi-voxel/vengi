@@ -565,7 +565,7 @@ public:
 		return m_gravity;
 	}
 
-	/** Set the skin background for this widget and call OnSkinChanged if it changed.
+	/** Set the skin background for this widget and call onSkinChanged if it changed.
 
 		The skin background is used for calculating padding, preferred size
 		etc. if the widget doesn't have any preferences itself.

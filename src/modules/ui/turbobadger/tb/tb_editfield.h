@@ -159,11 +159,20 @@ public:
 	void setTextFormatted(CORE_FORMAT_STRING const char *format, ...) __attribute__((format(printf, 2, 3)));
 
 	virtual bool setText(const char *text) override {
-		return m_style_edit.setText(text, TB_CARET_POS_BEGINNING);
+		return setText(text, TB_CARET_POS_BEGINNING);
 	}
 	virtual bool getText(TBStr &text) override {
 		return m_style_edit.getText(text);
 	}
+
+	void onProcess() override {
+		TBWidget::onProcess();
+		if (!_var || !_var->isDirty()) {
+			return;
+		}
+		setText(_var->strVal().c_str());
+	}
+
 	using TBWidget::getText; ///< Make all versions in base class available.
 
 	using TBWidget::invalidate; ///< Make Invalidate in base class available.
@@ -171,6 +180,10 @@ public:
 	/** Set the text and also specify if the caret should be positioned at the beginning
 		or end of the text. */
 	bool setText(const char *text, TB_CARET_POS pos) {
+		if (_var) {
+			_var->setVal(text);
+			_var->markClean();
+		}
 		return m_style_edit.setText(text, pos);
 	}
 	/** Set the text of the given length and also specify if the caret should be positioned
@@ -217,6 +230,7 @@ private:
 	TBEditFieldScrollRoot m_root;
 	TBEditFieldContentFactory m_content_factory;
 	TBStyleEdit m_style_edit;
+	core::VarPtr _var;
 	bool m_adapt_to_content_size;
 	int m_virtual_width;
 	void updateScrollbarVisibility(bool multiline);

@@ -251,6 +251,10 @@ void TBEditField::onInflate(const INFLATE_INFO &info) {
 		}
 	}
 	TBWidget::onInflate(info);
+	if (const char *varname = info.node->getValueString("varref", nullptr)) {
+		_var = core::Var::get(varname, getText().c_str());
+		setText(_var->strVal().c_str());
+	}
 }
 
 TB_WIDGET_FACTORY(TBLayout, TBValue::TYPE_NULL, WIDGET_Z_TOP) {
