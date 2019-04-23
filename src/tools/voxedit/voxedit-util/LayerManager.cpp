@@ -166,7 +166,7 @@ int LayerManager::addLayer(const char *name, bool visible, voxel::RawVolume* vol
 	return -1;
 }
 
-bool LayerManager::activateLayer(int layerId, const char *name, bool visible, voxel::RawVolume* volume) {
+bool LayerManager::activateLayer(int layerId, const char *name, bool visible, voxel::RawVolume* volume, const voxel::Region& region) {
 	core_assert_always(layerId >= 0 && layerId < (int)_layers.size());
 	if (name == nullptr || name[0] == '\0') {
 		_layers[layerId].name = core::string::format("%i", (int)layerId);
@@ -176,7 +176,7 @@ bool LayerManager::activateLayer(int layerId, const char *name, bool visible, vo
 	_layers[layerId].visible = visible;
 	_layers[layerId].valid = volume != nullptr;
 	for (auto& listener : _listeners) {
-		listener->onLayerAdded((int)layerId, _layers[layerId], volume);
+		listener->onLayerAdded((int)layerId, _layers[layerId], volume, region);
 	}
 	return true;
 }

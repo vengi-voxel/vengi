@@ -26,6 +26,7 @@ struct LayerState {
 	voxel::RawVolume* volume;
 	int layer;
 	std::string name;
+	voxel::Region region = voxel::Region::InvalidRegion;
 };
 
 // TODO: support partial volumes (dirty regions - see SceneManager - will reduce memory a lot)
@@ -66,7 +67,7 @@ public:
 	 * @param[in] volume The state of the volume
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
-	void markUndo(int layer, const std::string& name, const voxel::RawVolume* volume, MementoType type = MementoType::Modification);
+	void markUndo(int layer, const std::string& name, const voxel::RawVolume* volume, MementoType type = MementoType::Modification, const voxel::Region& region = voxel::Region::InvalidRegion);
 	void markLayerDeleted(int layer, const std::string& name, const voxel::RawVolume* volume);
 	void markLayerAdded(int layer, const std::string& name, const voxel::RawVolume* volume);
 

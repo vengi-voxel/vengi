@@ -317,7 +317,7 @@ void SceneManager::setMousePos(int x, int y) {
 void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo) {
 	Log::debug("Modified layer %i", layerId);
 	if (markUndo) {
-		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
+		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId), MementoType::Modification, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
 		_extractRegions.push_back({modifiedRegion, layerId});
@@ -407,7 +407,7 @@ void SceneManager::undo() {
 	}
 	Log::debug("Volume found in undo state for layer: %i with name %s", s.layer, s.name.c_str());
 	_mementoHandler.lock();
-	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v);
+	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region);
 	_mementoHandler.unlock();
 }
 
@@ -422,7 +422,7 @@ void SceneManager::redo() {
 	}
 	Log::debug("Volume found in redo state for layer: %i with name %s", s.layer, s.name.c_str());
 	_mementoHandler.lock();
-	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v);
+	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region);
 	_mementoHandler.unlock();
 }
 
@@ -1182,18 +1182,23 @@ void SceneManager::onActiveLayerChanged(int old, int active) {
 	resetLastTrace();
 }
 
-void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume) {
+void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume, const voxel::Region& region) {
 	if (volume == nullptr) {
-		const voxel::Region& region = _volumeRenderer.region();
-		volume = new voxel::RawVolume(region);
+		const voxel::Region& newVolumeRegion = _volumeRenderer.region();
+		volume = new voxel::RawVolume(newVolumeRegion);
 	}
 	Log::debug("Adding layer %i with name %s", layerId, layer.name.c_str());
 	// Add two states here - one with the empty layer and one with the filled layer.
 	// To always be able to return to the empty layer
 	_mementoHandler.markLayerAdded(layerId, layer.name, volume);
-	delete _volumeRenderer.setVolume(layerId, volume);
+	if (region.isValid()) {
+		delete _volumeRenderer.setVolume(layerId, volume, false);
+		_extractRegions.push_back({region, (int)layerId});
+	} else {
+		delete _volumeRenderer.setVolume(layerId, volume, true);
+		_extractRegions.push_back({volume->region(), (int)layerId});
+	}
 	_volumeRenderer.hide(layerId, !layer.visible);
-	_extractRegions.push_back({volume->region(), (int)layerId});
 	_needAutoSave = true;
 	_dirty = true;
 }

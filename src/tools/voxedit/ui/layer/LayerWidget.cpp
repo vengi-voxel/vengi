@@ -141,7 +141,7 @@ void LayerWidget::onActiveLayerChanged(int old, int active) {
 	}
 }
 
-void LayerWidget::onLayerAdded(int layerId, const voxedit::Layer& layer, voxel::RawVolume*) {
+void LayerWidget::onLayerAdded(int layerId, const voxedit::Layer& layer, voxel::RawVolume*, const voxel::Region&) {
 	voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 	const voxedit::Layers& layers = layerMgr.layers();
 	const std::string& finalLayerName = layers[layerId].name;
