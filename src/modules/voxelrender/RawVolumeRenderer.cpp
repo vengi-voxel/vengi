@@ -388,7 +388,6 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 			_shadow.bind(video::TextureUnit::One);
 		}
 
-		video::ScopedPolygonMode polygonMode(camera.polygonMode());
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			if (_hidden[idx]) {
 				continue;
@@ -397,9 +396,10 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 			if (nIndices == 0) {
 				continue;
 			}
+			const glm::vec2 offset(-0.25f * idx, -0.5f * idx);
+			video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
 			video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 			_worldShader.setModel(_model[idx]);
-			// TODO: prevent z-fighting
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 		}

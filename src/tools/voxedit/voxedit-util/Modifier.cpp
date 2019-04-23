@@ -121,23 +121,23 @@ void Modifier::renderAABBMode(const video::Camera& camera) {
 		glm::ivec3 maxs = glm::max(_aabbFirstPos, cursor);
 		glm::ivec3 minsMirror = mins;
 		glm::ivec3 maxsMirror = maxs;
-		// TODO: z-fighting if you zoom out far enough
-		const float delta = 0.001f;
-		const float size = _gridResolution + delta;
+		const float size = _gridResolution;
 		if (getMirrorAABB(minsMirror, maxsMirror)) {
 			const math::AABB<int> first(mins, maxs);
 			const math::AABB<int> second(minsMirror, maxsMirror);
 			if (math::intersects(first, second)) {
-				_shapeBuilder.cube(glm::vec3(mins) - delta, glm::vec3(maxsMirror) + size);
+				_shapeBuilder.cube(glm::vec3(mins), glm::vec3(maxsMirror) + size);
 			} else {
-				_shapeBuilder.cube(glm::vec3(mins) - delta, glm::vec3(maxs) + size);
-				_shapeBuilder.cube(glm::vec3(minsMirror) - delta, glm::vec3(maxsMirror) + size);
+				_shapeBuilder.cube(glm::vec3(mins), glm::vec3(maxs) + size);
+				_shapeBuilder.cube(glm::vec3(minsMirror), glm::vec3(maxsMirror) + size);
 			}
 		} else {
-			_shapeBuilder.cube(glm::vec3(mins) - delta, glm::vec3(maxs) + size);
+			_shapeBuilder.cube(glm::vec3(mins), glm::vec3(maxs) + size);
 		}
 		_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 	}
+	static const glm::vec2 offset(-0.25f, -0.5f);
+	video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
 	_shapeRenderer.render(_aabbMeshIndex, camera);
 }
 
