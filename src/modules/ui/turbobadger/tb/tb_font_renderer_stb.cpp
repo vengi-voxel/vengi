@@ -42,7 +42,7 @@ STBFontRenderer::STBFontRenderer() {
 }
 
 STBFontRenderer::~STBFontRenderer() {
-	delete[] render_data;
+	STBTT_free(render_data, 0);
 }
 
 TBFontMetrics STBFontRenderer::getMetrics() {
@@ -58,7 +58,7 @@ TBFontMetrics STBFontRenderer::getMetrics() {
 }
 
 bool STBFontRenderer::renderGlyph(TBFontGlyphData *data, UCS4 cp) {
-	delete[] render_data;
+	STBTT_free(render_data, 0);
 	render_data = stbtt_GetCodepointBitmap(&font, 0, scale, cp, &data->w, &data->h, 0, 0);
 	data->data8 = render_data;
 	data->stride = data->w;
