@@ -8,6 +8,10 @@ namespace voxedit {
 
 struct Layer;
 
+/**
+ * @brief A listener interface for the LayerManager
+ * @sa LayerManager
+ */
 class LayerListener {
 public:
 	virtual ~LayerListener() {}

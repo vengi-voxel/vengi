@@ -21,6 +21,9 @@ public:
 	bool init() override;
 	void shutdown() override;
 
+	/**
+	 * @note Does not take over ownership
+	 */
 	void registerListener(LayerListener* listener);
 	void unregisterListener(LayerListener* listener);
 
