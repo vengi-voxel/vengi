@@ -9,12 +9,13 @@
 #include "App.h"
 #include "Log.h"
 #include "Var.h"
+#include <inttypes.h>
 
 namespace core {
 
 namespace AppCommand {
 
-void init() {
+void init(const core::TimeProviderPtr& timeProvider) {
 	core::Command::registerCommand("varclearhistory", [] (const core::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::error("not enough arguments given. Expecting a variable name");
@@ -121,6 +122,16 @@ void init() {
 			Log::info("not found");
 		}
 	}).setHelp("Show the value of a variable");
+
+	core::Command::registerCommand("timenanos", [&] (const core::CmdArgs& args) {
+		const uint64_t nanos = timeProvider->systemNanos();
+		Log::info("%" PRId64, nanos);
+	}).setHelp("Print current nanoseconds to console");
+
+	core::Command::registerCommand("timemillis", [&] (const core::CmdArgs& args) {
+		const uint64_t millis = timeProvider->systemMillis();
+		Log::info("%" PRId64, millis);
+	}).setHelp("Print current milliseconds to console");
 
 	core::Command::registerCommand("logerror", [] (const core::CmdArgs& args) {
 		if (args.empty()) {

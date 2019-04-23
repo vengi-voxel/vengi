@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include "TimeProvider.h"
+
 namespace core {
 namespace AppCommand {
-extern void init();
+extern void init(const core::TimeProviderPtr& timeProvider);
 }
 }

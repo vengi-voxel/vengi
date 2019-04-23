@@ -215,7 +215,7 @@ AppState App::onConstruct() {
 		}
 	}).setHelp("Toggle application tracing via statsd");
 
-	AppCommand::init();
+	AppCommand::init(_timeProvider);
 
 	for (int i = 0; i < _argc; ++i) {
 		if (_argv[i][0] != '-' || (_argv[i][0] != '\0' && _argv[i][1] == '-')) {
