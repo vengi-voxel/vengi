@@ -254,15 +254,27 @@ public:
 	glm::vec3 vec3Val() const;
 	void setVal(const std::string& value);
 	inline void setVal(const char* value) {
+		if (!strcmp(_history[_currentHistoryPos]._value.c_str(), value)) {
+			return;
+		}
 		setVal(std::string(value));
 	}
 	inline void setVal(bool value) {
+		if (boolVal() == value) {
+			return;
+		}
 		setVal(value ? VAR_TRUE : VAR_FALSE);
 	}
 	inline void setVal(int value) {
+		if (intVal() == value) {
+			return;
+		}
 		setVal(core::string::format("%i", value));
 	}
 	inline void setVal(float value) {
+		if (glm::epsilonEqual(floatVal(), value, glm::epsilon<float>())) {
+			return;
+		}
 		setVal(core::string::format("%f", value));
 	}
 	/**
