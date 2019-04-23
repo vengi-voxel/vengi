@@ -154,19 +154,19 @@ bool LayerManager::deleteLayer(int layerId, bool force) {
 	return true;
 }
 
-int LayerManager::addLayer(const char *name, bool visible, voxel::RawVolume* volume) {
+int LayerManager::addLayer(const char *name, bool visible, voxel::RawVolume* volume, const glm::ivec3& pivot) {
 	const size_t maxLayers = _layers.size();
 	for (size_t layerId = 0; layerId < maxLayers; ++layerId) {
 		if (_layers[layerId].valid) {
 			continue;
 		}
-		activateLayer(layerId, name, visible, volume);
+		activateLayer(layerId, name, visible, volume, voxel::Region::InvalidRegion, pivot);
 		return (int)layerId;
 	}
 	return -1;
 }
 
-bool LayerManager::activateLayer(int layerId, const char *name, bool visible, voxel::RawVolume* volume, const voxel::Region& region) {
+bool LayerManager::activateLayer(int layerId, const char *name, bool visible, voxel::RawVolume* volume, const voxel::Region& region, const glm::ivec3& pivot) {
 	core_assert_always(layerId >= 0 && layerId < (int)_layers.size());
 	if (name == nullptr || name[0] == '\0') {
 		_layers[layerId].name = core::string::format("%i", (int)layerId);
@@ -175,6 +175,7 @@ bool LayerManager::activateLayer(int layerId, const char *name, bool visible, vo
 	}
 	_layers[layerId].visible = visible;
 	_layers[layerId].valid = volume != nullptr;
+	_layers[layerId].pivot = pivot;
 	for (auto& listener : _listeners) {
 		listener->onLayerAdded((int)layerId, _layers[layerId], volume, region);
 	}

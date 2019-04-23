@@ -446,7 +446,7 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 		_layerMgr.deleteLayer(idx, true);
 	}
 	for (int idx = 0; idx < volumeCnt; ++idx) {
-		const int layerId = _layerMgr.addLayer(volumes[idx].name.c_str(), volumes[idx].visible, volumes[idx].volume);
+		const int layerId = _layerMgr.addLayer(volumes[idx].name.c_str(), volumes[idx].visible, volumes[idx].volume, volumes[idx].pivot);
 		if (layerId < 0) {
 			const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
 			return newScene(true, "", region);
@@ -496,11 +496,11 @@ bool SceneManager::newScene(bool force, const std::string& name, const voxel::Re
 		_layerMgr.deleteLayer(idx, true);
 	}
 	core_assert_always(_layerMgr.validLayers() == 0);
-	setReferencePosition(region.getCentre());
 	_mementoHandler.clearStates();
 	core_assert_always(_layerMgr.addLayer(name.c_str(), true, new voxel::RawVolume(region)) != -1);
+	setReferencePosition(region.getCentre());
 	_layerMgr.setActiveLayer(0);
-	modified(_layerMgr.activeLayer(), region);
+	modified(_layerMgr.activeLayer(), voxel::Region::InvalidRegion);
 	_dirty = false;
 	core_assert_always(_layerMgr.validLayers() == 1);
 	return true;
@@ -1198,6 +1198,7 @@ void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolum
 		delete _volumeRenderer.setVolume(layerId, volume, true);
 		_extractRegions.push_back({volume->region(), (int)layerId});
 	}
+	setReferencePosition(layer.pivot);
 	_volumeRenderer.hide(layerId, !layer.visible);
 	_needAutoSave = true;
 	_dirty = true;

@@ -12,6 +12,7 @@ namespace voxedit {
 
 struct Layer {
 	std::string name;
+	glm::ivec3 pivot { 0 };
 	bool visible = true;
 	bool valid = false;
 
@@ -19,6 +20,7 @@ struct Layer {
 		name.clear();
 		visible = true;
 		valid = false;
+		pivot = glm::zero<glm::ivec3>();
 	}
 };
 using Layers = std::array<Layer, voxelrender::RawVolumeRenderer::MAX_VOLUMES>;

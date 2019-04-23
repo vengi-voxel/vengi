@@ -437,6 +437,7 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 			}
 			Log::info("Loaded layer %i with %i voxels (%i)", volumeIdx, numVoxels, volumeVoxelSet);
 			volumes[volumeIdx].volume = volume;
+			volumes[volumeIdx].pivot = volume->region().getCentre();
 			++volumeIdx;
 		}
 		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());

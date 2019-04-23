@@ -317,7 +317,7 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 	}
 	delete [] voxelData;
 	delete [] voxelDataDecompressed;
-	volumes.push_back(VoxelVolume(volume, name, true));
+	volumes.push_back(VoxelVolume(volume, name, true, glm::ivec3(pivot)));
 	return true;
 }
 

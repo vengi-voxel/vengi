@@ -44,6 +44,8 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 		return VoxelVolumes();
 	}
 
+	bool foundPivot = false;
+	glm::ivec3 ipivot { 0 };
 	if (header == headerMagic4) {
 		Log::debug("Found vxm4");
 	} else if (header == headerMagic5) {
@@ -52,6 +54,10 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 		wrap(stream.readFloat(pivot.x));
 		wrap(stream.readFloat(pivot.y));
 		wrap(stream.readFloat(pivot.z));
+		ipivot.x = pivot.x;
+		ipivot.y = pivot.y;
+		ipivot.z = pivot.z;
+		foundPivot = true;
 	}
 
 	glm::uvec2 textureDim;
@@ -148,6 +154,10 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 	const Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 	RawVolume* volume = new RawVolume(region);
 
+	if (!foundPivot) {
+		ipivot = region.getCentre();
+	}
+
 	int idx = 0;
 	for (;;) {
 		uint8_t length;
@@ -180,7 +190,7 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 	}
 	delete[] palette;
 	VoxelVolumes volumes;
-	volumes.push_back(VoxelVolume{volume, "", true});
+	volumes.push_back(VoxelVolume(volume, "", true, ipivot));
 	return volumes;
 }
 
