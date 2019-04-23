@@ -36,6 +36,7 @@ private:
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 	glm::ivec3 aabbPosition() const;
 	void updateMirrorPlane();
+	void renderAABBMode(const video::Camera& camera);
 public:
 	void construct() override;
 	bool init() override;

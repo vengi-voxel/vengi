@@ -52,7 +52,7 @@ void Selector::executeWalk(voxel::RawVolume::Sampler& sampler, SelectorCallback&
 
 void Selector::walk(voxel::RawVolume::Sampler& sampler, SelectorCallback& callback) const {
 	Visited set;
-	executeWalk(sampler, callback, set);
+	return executeWalk(sampler, callback, set);
 }
 
 }

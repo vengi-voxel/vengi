@@ -101,11 +101,22 @@ bool Modifier::aabbEnd(voxel::RawVolume* volume, std::function<void(const voxel:
 	return true;
 }
 
-void Modifier::render(const video::Camera& camera) {
-	if (_aabbMode) {
+void Modifier::renderAABBMode(const video::Camera& camera) {
+	if (!_aabbMode) {
+		return;
+	}
+	static glm::ivec3 lastCursor = aabbPosition();
+	static math::Axis lastMirrorAxis = _mirrorAxis;
+
+	const glm::ivec3& cursor = aabbPosition();
+	const bool needsUpdate = lastCursor != cursor || lastMirrorAxis != _mirrorAxis;
+
+	if (needsUpdate) {
+		lastMirrorAxis = _mirrorAxis;
+		lastCursor = cursor;
+
 		_shapeBuilder.clear();
 		_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.5f));
-		glm::ivec3 cursor = aabbPosition();
 		glm::ivec3 mins = glm::min(_aabbFirstPos, cursor);
 		glm::ivec3 maxs = glm::max(_aabbFirstPos, cursor);
 		glm::ivec3 minsMirror = mins;
@@ -126,9 +137,12 @@ void Modifier::render(const video::Camera& camera) {
 			_shapeBuilder.cube(glm::vec3(mins) - delta, glm::vec3(maxs) + size);
 		}
 		_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
-		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
+	_shapeRenderer.render(_aabbMeshIndex, camera);
+}
 
+void Modifier::render(const video::Camera& camera) {
+	renderAABBMode(camera);
 	const glm::mat4& translate = glm::translate(glm::vec3(aabbPosition()));
 	const glm::mat4& scale = glm::scale(translate, glm::vec3(_gridResolution));
 	_shapeRenderer.render(_voxelCursorMesh, camera, scale);
