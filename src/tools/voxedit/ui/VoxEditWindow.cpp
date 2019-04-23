@@ -395,7 +395,9 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	if (id == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			LayerWindow* win = new LayerWindow(this, TBIDC("new_scene"), _layerSettings);
-			if (!win->show()) {
+			LayerWindowSettings s;
+			s.type = LayerWindowType::NewScene;
+			if (!win->show(&s)) {
 				delete win;
 			}
 		}
@@ -854,7 +856,9 @@ bool VoxEditWindow::createNew(bool force) {
 				PopupType::YesNo, "unsaved_changes_new");
 	} else {
 		LayerWindow* win = new LayerWindow(this, TBIDC("new_scene"), _layerSettings);
-		if (!win->show()) {
+		LayerWindowSettings s;
+		s.type = LayerWindowType::NewScene;
+		if (!win->show(&s)) {
 			delete win;
 		}
 	}

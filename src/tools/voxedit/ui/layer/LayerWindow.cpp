@@ -68,7 +68,9 @@ bool LayerWindow::show(LayerWindowSettings* settings) {
 		settings = &defaultSettings;
 	}
 
-	if (settings->type == LayerWindowType::Create) {
+	if (settings->type == LayerWindowType::NewScene) {
+		setText(tr("New Scene"));
+	} else if (settings->type == LayerWindowType::Create) {
 		setText(tr("New Layer"));
 	} else if (settings->type == LayerWindowType::Edit) {
 		setText(tr("Edit Layer"));

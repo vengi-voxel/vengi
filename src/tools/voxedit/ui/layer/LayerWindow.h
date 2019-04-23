@@ -10,6 +10,7 @@
 namespace voxedit {
 
 enum class LayerWindowType {
+	NewScene,
 	Create,
 	Edit
 };
