@@ -262,6 +262,7 @@ void UIApp::fileDialog(const std::function<void(const std::string&)>& callback, 
 		}
 		filters[n] = nullptr;
 		dialog->setFilter((const char**)filters);
+		delete[] filters;
 	}
 	dialog->changeDir(_lastDirectory->strVal());
 	dialog->init();
