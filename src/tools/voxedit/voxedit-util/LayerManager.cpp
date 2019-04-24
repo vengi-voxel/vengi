@@ -5,6 +5,7 @@
 #include "LayerManager.h"
 #include "core/String.h"
 #include "core/command/Command.h"
+#include "voxel/polyvox/VolumeMerger.h"
 
 namespace voxedit {
 
@@ -111,12 +112,7 @@ int LayerManager::validLayers() const {
 }
 
 bool LayerManager::setActiveLayer(int layerId) {
-	if (layerId < 0 || layerId >= (int)_layers.size()) {
-		Log::debug("Given layer %i is out of bounds", layerId);
-		return false;
-	}
-	if (!_layers[layerId].valid) {
-		Log::debug("Given layer %i is not valid", layerId);
+	if (!isValidLayerId(layerId)) {
 		return false;
 	}
 	Log::debug("New active layer: %i", layerId);
@@ -178,6 +174,18 @@ bool LayerManager::activateLayer(int layerId, const char *name, bool visible, vo
 	_layers[layerId].pivot = pivot;
 	for (auto& listener : _listeners) {
 		listener->onLayerAdded((int)layerId, _layers[layerId], volume, region);
+	}
+	return true;
+}
+
+bool LayerManager::isValidLayerId(int layerId) const {
+	if (layerId < 0 || layerId >= (int)_layers.size()) {
+		Log::debug("Given layer %i is out of bounds", layerId);
+		return false;
+	}
+	if (!_layers[layerId].valid) {
+		Log::debug("Given layer %i is not valid", layerId);
+		return false;
 	}
 	return true;
 }

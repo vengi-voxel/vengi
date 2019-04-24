@@ -16,6 +16,8 @@ private:
 	int _activeLayer = 0;
 	Layers _layers;
 	std::set<LayerListener*> _listeners;
+
+	bool isValidLayerId(int layerId) const;
 public:
 	void construct() override;
 	bool init() override;
