@@ -408,7 +408,7 @@ void SceneManager::undo() {
 	}
 	Log::debug("Volume found in undo state for layer: %i with name %s", s.layer, s.name.c_str());
 	_mementoHandler.lock();
-	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region);
+	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region, referencePosition());
 	_mementoHandler.unlock();
 }
 
@@ -423,7 +423,7 @@ void SceneManager::redo() {
 	}
 	Log::debug("Volume found in redo state for layer: %i with name %s", s.layer, s.name.c_str());
 	_mementoHandler.lock();
-	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region);
+	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region, referencePosition());
 	_mementoHandler.unlock();
 }
 
@@ -879,21 +879,26 @@ bool SceneManager::extractVolume() {
 	if (n > 0) {
 		Log::debug("Extract the meshes for %i regions", (int)n);
 		// extract n regions max per frame
-		// TODO: limit by the region size
 		const size_t MaxPerFrame = 4;
 		const size_t x = std::min(MaxPerFrame, n);
 		int lastLayer = _layerMgr.activeLayer();
-		for (size_t i = 0; i < x; ++i) {
+		size_t i;
+		for (i = 0; i < x; ++i) {
 			const voxel::Region& region = _extractRegions[i].region;
-			const bool updateBuffers = i == x - 1 || lastLayer != _extractRegions[i].layer;
+			const bool bigRegion = glm::all(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(64)));
+			const bool updateBuffers = bigRegion || i == x - 1 || lastLayer != _extractRegions[i].layer;
 			if (!_volumeRenderer.extract(_extractRegions[i].layer, region, updateBuffers)) {
 				Log::error("Failed to extract the model mesh");
 			}
 			voxel::logRegion("Extraction", region);
+			if (bigRegion) {
+				++i;
+				break;
+			}
 			lastLayer = _extractRegions[i].layer;
 		}
 		// delete the first n entries and compact the memory of the buffer
-		RegionQueue(_extractRegions.begin() + x, _extractRegions.end()).swap(_extractRegions);
+		RegionQueue(_extractRegions.begin() + i, _extractRegions.end()).swap(_extractRegions);
 		return true;
 	}
 	return false;
