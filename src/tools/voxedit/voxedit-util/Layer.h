@@ -10,6 +10,7 @@
 
 namespace voxedit {
 
+// TODO: maybe add a layer id here - the array index should maybe not be the layer order
 struct Layer {
 	std::string name;
 	glm::ivec3 pivot { 0 };

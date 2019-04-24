@@ -128,6 +128,11 @@ private:
 	void resize(const glm::ivec3& size);
 	int size() const;
 
+	/**
+	 * @brief Merge two layers and extend the smaller one
+	 */
+	bool merge(int layerId1, int layerId2);
+
 	void undo();
 	void redo();
 

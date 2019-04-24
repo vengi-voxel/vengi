@@ -431,6 +431,28 @@ void SceneManager::resetLastTrace() {
 	_lastRaytraceX = _lastRaytraceY = -1;
 }
 
+bool SceneManager::merge(int layerId1, int layerId2) {
+	std::vector<const voxel::RawVolume*> volumes;
+	volumes.resize(2);
+	volumes[0] = _volumeRenderer.volume(layerId1);
+	if (volumes[0] == nullptr) {
+		return false;
+	}
+	volumes[1] = _volumeRenderer.volume(layerId2);
+	if (volumes[1] == nullptr) {
+		return false;
+	}
+	voxel::RawVolume* volume = voxel::merge(volumes);
+	if (!setNewVolume(layerId1, volume, true)) {
+		delete volume;
+		return false;
+	}
+	// TODO: the memento states are not yet perfect
+	modified(layerId1, volume->region(), true);
+	_layerMgr.deleteLayer(layerId2);
+	return true;
+}
+
 bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	const int volumeCnt = (int)volumes.size();
 	if (volumeCnt == 0) {
@@ -715,6 +737,14 @@ void SceneManager::construct() {
 		const int deg = args.size() == 1 ? core::string::toInt(args[0]) : 90;
 		rotate(0, 0, deg);
 	}).setHelp("Rotate scene by the given angles (in degree)");
+
+	core::Command::registerCommand("layermerge", [&] (const core::CmdArgs& args) {
+		if (args.size() != 2) {
+			Log::info("Expected to get two valid layer ids");
+			return;
+		}
+		merge(core::string::toInt(args[0]), core::string::toInt(args[1]));
+	}).setHelp("Merged two given layers");
 
 	core::Command::registerCommand("layerdetails", [&] (const core::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
