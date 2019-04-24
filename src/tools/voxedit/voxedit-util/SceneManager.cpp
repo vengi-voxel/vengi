@@ -316,6 +316,7 @@ void SceneManager::setMousePos(int x, int y) {
 
 void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo) {
 	Log::debug("Modified layer %i", layerId);
+	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
 		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId), MementoType::Modification, modifiedRegion);
 	}
@@ -878,14 +879,17 @@ bool SceneManager::extractVolume() {
 	if (n > 0) {
 		Log::debug("Extract the meshes for %i regions", (int)n);
 		// extract n regions max per frame
+		// TODO: limit by the region size
 		const size_t MaxPerFrame = 4;
 		const size_t x = std::min(MaxPerFrame, n);
 		int lastLayer = _layerMgr.activeLayer();
 		for (size_t i = 0; i < x; ++i) {
+			const voxel::Region& region = _extractRegions[i].region;
 			const bool updateBuffers = i == x - 1 || lastLayer != _extractRegions[i].layer;
-			if (!_volumeRenderer.extract(_extractRegions[i].layer, _extractRegions[i].region, updateBuffers)) {
+			if (!_volumeRenderer.extract(_extractRegions[i].layer, region, updateBuffers)) {
 				Log::error("Failed to extract the model mesh");
 			}
+			voxel::logRegion("Extraction", region);
 			lastLayer = _extractRegions[i].layer;
 		}
 		// delete the first n entries and compact the memory of the buffer

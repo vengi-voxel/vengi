@@ -26,7 +26,7 @@ struct LayerState {
 	voxel::RawVolume* volume;
 	int layer;
 	std::string name;
-	voxel::Region region = voxel::Region::InvalidRegion;
+	voxel::Region region;
 };
 
 // TODO: support partial volumes (dirty regions - see SceneManager - will reduce memory a lot)

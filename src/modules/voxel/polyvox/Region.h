@@ -842,4 +842,6 @@ inline bool intersects(const Region& a, const Region& b) {
 	return true;
 }
 
+extern void logRegion(const char *ctx, const voxel::Region& region);
+
 }

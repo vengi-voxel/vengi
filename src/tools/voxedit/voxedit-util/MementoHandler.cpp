@@ -5,13 +5,14 @@
 #include "MementoHandler.h"
 
 #include "voxel/polyvox/RawVolume.h"
+#include "voxel/polyvox/Region.h"
 #include "core/command/Command.h"
 #include "core/Assert.h"
 #include "core/Log.h"
 
 namespace voxedit {
 
-static const LayerState InvalidLayerState{MementoType::Modification, nullptr, -1, ""};
+static const LayerState InvalidLayerState{MementoType::Modification, nullptr, -1, "", voxel::Region::InvalidRegion};
 const int MementoHandler::MaxStates = 64;
 
 MementoHandler::MementoHandler() {
@@ -44,7 +45,11 @@ void MementoHandler::construct() {
 		Log::info("Maximum memento states: %i", MaxStates);
 		int i = 0;
 		for (LayerState& state : _states) {
-			Log::info("%4i: %i - %s (%s)", i++, state.layer, state.name.c_str(), state.volume == nullptr ? "empty" : "volume");
+			const glm::ivec3& mins = state.region.getLowerCorner();
+			const glm::ivec3& maxs = state.region.getUpperCorner();
+			Log::info("%4i: %i - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)]",
+					i++, state.layer, state.name.c_str(), state.volume == nullptr ? "empty" : "volume",
+							mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		}
 	});
 }
@@ -70,7 +75,9 @@ LayerState MementoHandler::undo() {
 	}
 	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
 	const LayerState& s = state();
-	return LayerState{s.type, s.volume == nullptr ? nullptr : new voxel::RawVolume(s.volume), s.layer, s.name, s.region};
+	const voxel::Region region = _states[_statePosition + 1].region;
+	voxel::logRegion("Undo", region);
+	return LayerState{s.type, s.volume == nullptr ? nullptr : new voxel::RawVolume(s.volume), s.layer, s.name, region};
 }
 
 LayerState MementoHandler::redo() {
@@ -86,6 +93,7 @@ LayerState MementoHandler::redo() {
 		++_statePosition;
 	}
 	const LayerState& s = state();
+	voxel::logRegion("Redo", s.region);
 	return LayerState{s.type, s.volume == nullptr ? nullptr : new voxel::RawVolume(s.volume), s.layer, s.name, s.region};
 }
 
@@ -121,6 +129,7 @@ void MementoHandler::markUndo(int layer, const std::string& name, const voxel::R
 		_states.erase(iStates, _states.end());
 	}
 	Log::debug("New undo state for layer %i with name %s (memento state index: %i)", layer, name.c_str(), (int)_states.size());
+	voxel::logRegion("MarkUndo", region);
 	_states.push_back(LayerState{type, volume == nullptr ? nullptr : new voxel::RawVolume(volume), layer, name, region});
 	while (_states.size() > MaxStates) {
 		delete _states.begin()->volume;
