@@ -61,6 +61,6 @@ inline int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume*
 	return mergeVolumes(destination, source, destination->region(), source->region());
 }
 
-extern RawVolume* merge(const std::vector<RawVolume*>& volumes);
+extern RawVolume* merge(const std::vector<const RawVolume*>& volumes);
 
 }

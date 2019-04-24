@@ -182,9 +182,9 @@ bool RawVolumeRenderer::empty(int idx) const {
 }
 
 bool RawVolumeRenderer::toMesh(voxel::Mesh* mesh) {
-	std::vector<voxel::RawVolume*> volumes;
+	std::vector<const voxel::RawVolume*> volumes;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		voxel::RawVolume* volume = _rawVolume[idx];
+		const voxel::RawVolume* volume = _rawVolume[idx];
 		if (volume == nullptr) {
 			continue;
 		}

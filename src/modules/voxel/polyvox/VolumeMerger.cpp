@@ -9,7 +9,7 @@
 
 namespace voxel {
 
-RawVolume* merge(const std::vector<RawVolume*>& volumes) {
+RawVolume* merge(const std::vector<const RawVolume*>& volumes) {
 	glm::ivec3 mins(std::numeric_limits<int32_t>::max());
 	glm::ivec3 maxs(std::numeric_limits<int32_t>::min());
 	for (const voxel::RawVolume* v : volumes) {
@@ -24,7 +24,7 @@ RawVolume* merge(const std::vector<RawVolume*>& volumes) {
 			mergedRegion.getUpperX(), mergedRegion.getUpperY(), mergedRegion.getUpperZ());
 	Log::debug("Mins: %i:%i:%i Maxs %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
-	for (voxel::RawVolume* v : volumes) {
+	for (const voxel::RawVolume* v : volumes) {
 		const voxel::Region& sr = v->region();
 		const glm::ivec3& destMins = sr.getLowerCorner() - mins;
 		const voxel::Region dr(destMins, destMins + sr.getDimensionsInCells());
