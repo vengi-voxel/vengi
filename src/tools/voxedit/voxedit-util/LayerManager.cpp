@@ -56,6 +56,15 @@ void LayerManager::construct() {
 			hideLayer(idx, true);
 		}
 	}).setHelp("Hide all layers");
+	core::Command::registerCommand("layerhideothers", [&] (const core::CmdArgs& args) {
+		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
+			if (idx == activeLayer()) {
+				hideLayer(idx, false);
+				continue;
+			}
+			hideLayer(idx, true);
+		}
+	}).setHelp("Hide all layers");
 	core::Command::registerCommand("layershowall", [&] (const core::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
 			hideLayer(idx, false);
