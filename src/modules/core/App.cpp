@@ -68,10 +68,6 @@ void App::remBlocker(AppState blockedState) {
 	_blockers.erase(blockedState);
 }
 
-void App::setFramesPerSecondsCap(float framesPerSecondsCap) {
-	_framesPerSecondsCap->setVal(framesPerSecondsCap);
-}
-
 void App::traceBeginFrame(const char *threadName) {
 }
 

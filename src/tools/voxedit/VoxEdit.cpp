@@ -58,7 +58,7 @@ core::AppState VoxEdit::onCleanup() {
 core::AppState VoxEdit::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 
-	setFramesPerSecondsCap(60.0);
+	_framesPerSecondsCap->setVal(60.0f);
 
 	_sceneMgr.construct();
 

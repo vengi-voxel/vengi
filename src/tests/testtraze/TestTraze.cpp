@@ -45,7 +45,7 @@ const traze::Player& TestTraze::player(traze::PlayerId playerId) const {
 
 core::AppState TestTraze::onConstruct() {
 	core::AppState state = Super::onConstruct();
-	setFramesPerSecondsCap(60.0);
+	_framesPerSecondsCap->setVal(60.0f);
 	core::Var::get("mosquitto_host", "traze.iteratec.de");
 	core::Var::get("mosquitto_port", "1883");
 	_name = core::Var::get("name", "noname_testtraze");

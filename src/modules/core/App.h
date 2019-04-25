@@ -118,6 +118,10 @@ protected:
 	 * @note Only handled if the max frames cap is set
 	 */
 	uint64_t _nextFrameMillis = 0ul;
+	/**
+	 * @brief There is no fps limit per default, but you set one on a per-app basis
+	 * @param[in] framesPerSecondsCap The frames to cap the application loop at
+	 */
 	core::VarPtr _framesPerSecondsCap;
 
 	/**
@@ -146,12 +150,6 @@ protected:
 	static thread_local std::stack<TraceData> _traceData;
 
 	bool toggleTrace();
-
-	/**
-	 * @brief There is no fps limit per default, but you set one on a per-app basis
-	 * @param[in] framesPerSecondsCap The frames to cap the application loop at
-	 */
-	void setFramesPerSecondsCap(float framesPerSecondsCap);
 
 	virtual void traceBeginFrame(const char *threadName) override;
 	virtual void traceBegin(const char *threadName, const char* name) override;
