@@ -917,7 +917,7 @@ bool SceneManager::extractVolume() {
 		// extract n regions max per frame
 		const size_t MaxPerFrame = 4;
 		const size_t x = std::min(MaxPerFrame, n);
-		int lastLayer = _layerMgr.activeLayer();
+		int lastLayer = -1;
 		size_t i;
 		for (i = 0; i < x; ++i) {
 			const voxel::Region& region = _extractRegions[i].region;
@@ -926,6 +926,7 @@ bool SceneManager::extractVolume() {
 			if (!_volumeRenderer.extract(_extractRegions[i].layer, region, updateBuffers)) {
 				Log::error("Failed to extract the model mesh");
 			}
+			Log::debug("Extract layer %i with update buffers set to %i", _extractRegions[i].layer, (int)updateBuffers);
 			voxel::logRegion("Extraction", region);
 			if (bigRegion) {
 				++i;
