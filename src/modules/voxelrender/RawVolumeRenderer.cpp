@@ -97,6 +97,10 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
+	shader::Materialblock::Data materialBlock;
+	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	_materialBlock.create(materialBlock);
+
 	_whiteTexture = video::createWhiteTexture("**whitetexture**");
 
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
@@ -357,9 +361,6 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
 		video::ScopedShader scoped(_worldShader);
 		if (_worldShader.isDirty()) {
-			shader::Materialblock::Data materialBlock;
-			memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-			_materialBlock.create(materialBlock);
 			video::ScopedShader scoped(_worldShader);
 			_worldShader.setMaterialblock(_materialBlock);
 			_worldShader.setModel(glm::mat4(1.0f));
