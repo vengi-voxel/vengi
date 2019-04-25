@@ -81,6 +81,7 @@ void GridRenderer::render(const video::Camera& camera, const voxel::Region& regi
 		update(region);
 	}
 
+	_shapeRenderer.hide(_aabbMeshIndex, _renderGrid);
 	if (_renderGrid) {
 		const glm::vec3& center = glm::vec3(region.getCentre());
 		const glm::vec3& halfWidth = glm::vec3(region.getDimensionsInCells()) / 2.0f;
@@ -91,29 +92,21 @@ void GridRenderer::render(const video::Camera& camera, const voxel::Region& regi
 		const math::Plane planeNear  (glm::forward,  center + glm::vec3(0.0f, 0.0f, -halfWidth.z));
 		const math::Plane planeFar   (glm::backward, center + glm::vec3(0.0f, 0.0f,  halfWidth.z));
 
-		if (planeFar.isBackSide(camera.position())) {
-			_shapeRenderer.render(_gridMeshIndexXYFar, camera);
-		}
-		if (planeNear.isBackSide(camera.position())) {
-			_shapeRenderer.render(_gridMeshIndexXYNear, camera);
-		}
-
-		if (planeBottom.isBackSide(camera.position())) {
-			_shapeRenderer.render(_gridMeshIndexXZNear, camera);
-		}
-		if (planeTop.isBackSide(camera.position())) {
-			_shapeRenderer.render(_gridMeshIndexXZFar, camera);
-		}
-
-		if (planeLeft.isBackSide(camera.position())) {
-			_shapeRenderer.render(_gridMeshIndexYZNear, camera);
-		}
-		if (planeRight.isBackSide(camera.position())) {
-			_shapeRenderer.render(_gridMeshIndexYZFar, camera);
-		}
+		_shapeRenderer.hide(_gridMeshIndexXYFar,  !planeFar.isBackSide(camera.position()));
+		_shapeRenderer.hide(_gridMeshIndexXYNear, !planeNear.isBackSide(camera.position()));
+		_shapeRenderer.hide(_gridMeshIndexXZNear, !planeBottom.isBackSide(camera.position()));
+		_shapeRenderer.hide(_gridMeshIndexXZFar,  !planeTop.isBackSide(camera.position()));
+		_shapeRenderer.hide(_gridMeshIndexYZNear, !planeLeft.isBackSide(camera.position()));
+		_shapeRenderer.hide(_gridMeshIndexYZFar,  !planeRight.isBackSide(camera.position()));
 	} else if (_renderAABB) {
-		_shapeRenderer.render(_aabbMeshIndex, camera);
+		_shapeRenderer.hide(_gridMeshIndexXYNear, true);
+		_shapeRenderer.hide(_gridMeshIndexXYFar,  true);
+		_shapeRenderer.hide(_gridMeshIndexXZNear, true);
+		_shapeRenderer.hide(_gridMeshIndexXZFar,  true);
+		_shapeRenderer.hide(_gridMeshIndexYZNear, true);
+		_shapeRenderer.hide(_gridMeshIndexYZFar,  true);
 	}
+	_shapeRenderer.renderAll(camera);
 }
 
 void GridRenderer::shutdown() {
