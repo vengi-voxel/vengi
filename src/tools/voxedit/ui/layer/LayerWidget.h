@@ -28,7 +28,10 @@ private:
 };
 
 class LayerItemSource: public tb::TBSelectItemSourceList<LayerItem> {
+private:
+	std::string _layerItemDefinition;
 public:
+	LayerItemSource();
 	tb::TBWidget *createItemWidget(int index, tb::TBSelectItemViewer *viewer) override;
 	int getItemIdForLayerId(int layerId) const;
 	LayerItem* getItemForLayerId(int layerId) const;

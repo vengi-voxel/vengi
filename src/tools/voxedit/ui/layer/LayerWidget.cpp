@@ -9,7 +9,7 @@
 
 class LayerItemWidget: public tb::TBLayout {
 public:
-	LayerItemWidget(LayerItem *item, LayerItemSource *source,
+	LayerItemWidget(const std::string& def, LayerItem *item, LayerItemSource *source,
 			tb::TBSelectItemViewer *sourceViewer) :
 			_source(source), _sourceViewer(sourceViewer), _layerId(item->layerId()) {
 		setSkinBg(TBIDC("TBSelectItem"));
@@ -17,7 +17,7 @@ public:
 		setLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
 		setPaintOverflowFadeout(false);
 
-		core_assert_always(tb::g_widgets_reader->loadFile(getContentRoot(), "ui/widget/voxedit-layer-item.tb.txt"));
+		core_assert_always(tb::g_widgets_reader->loadData(getContentRoot(), def.c_str()));
 		if (tb::TBCheckBox *checkbox = getWidgetByIDAndType<tb::TBCheckBox>(TBIDC("visible"))) {
 			checkbox->setValue(item->visible() ? 1 : 0);
 		}
@@ -49,8 +49,13 @@ private:
 	const int _layerId;
 };
 
+LayerItemSource::LayerItemSource() : TBSelectItemSourceList() {
+	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+	_layerItemDefinition = fs->load("ui/widget/voxedit-layer-item.tb.txt");
+}
+
 tb::TBWidget *LayerItemSource::createItemWidget(int index, tb::TBSelectItemViewer *viewer) {
-	return new LayerItemWidget(getItem(index), this, viewer);
+	return new LayerItemWidget(_layerItemDefinition, getItem(index), this, viewer);
 }
 
 LayerItem* LayerItemSource::getItemForLayerId(int layerId) const {
