@@ -66,6 +66,20 @@ elements
 		bitmap voxedit-quadview-selected.png
 		type Image
 
+	voxedit-anim-button
+		bitmap voxedit-anim-play.png
+		children
+			element voxedit-anim-button.selected
+				state selected
+			element voxedit-anim-button.pressed
+				state pressed
+	voxedit-anim-button.selected
+		bitmap voxedit-anim-play-selected.png
+		type Image
+	voxedit-anim-button.pressed
+		bitmap voxedit-anim-play-selected.png
+		type Image
+
 	voxedit-visible-button
 		bitmap voxedit-visible.png
 		children

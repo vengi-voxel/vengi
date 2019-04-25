@@ -10,6 +10,10 @@ TBLayout
 			gravity all
 	TBLayout
 		distribution gravity
+		TBCheckBox
+			id anim
+			skin voxedit-anim-button
+			command animate <cvar:ve_animspeed>
 		TBEditField
 			id add_layer
 			gravity left right

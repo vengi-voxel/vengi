@@ -26,6 +26,8 @@ set(UI_WINDOWS
 
 set(FILES
 	${UI_WINDOWS}
+	voxedit/ui/skin/voxedit-anim-play.png
+	voxedit/ui/skin/voxedit-anim-play-selected.png
 	voxedit/ui/skin/voxedit-axis-x.png
 	voxedit/ui/skin/voxedit-axis-y.png
 	voxedit/ui/skin/voxedit-axis-z.png

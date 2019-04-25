@@ -768,9 +768,15 @@ void SceneManager::construct() {
 
 	core::Command::registerCommand("animate", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
-			Log::info("Usage: animate <framedelay>");
-			Log::info("framedelay of 0 will stop the animation");
+			Log::info("Usage: animate <framedelay> <0|1>");
+			Log::info("framedelay of 0 will stop the animation, too");
 			return;
+		}
+		if (args.size() == 2) {
+			if (!core::string::toBool(args[1])) {
+				_animationSpeed = 0;
+				return;
+			}
 		}
 		_animationSpeed = core::string::toInt(args[0]);
 	}).setHelp("Animate all visible layers with the given delay in millis between the frames");
