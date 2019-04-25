@@ -17,7 +17,7 @@
 #include <stack>
 #include <atomic>
 
-#define ORGANISATION "engine"
+#define ORGANISATION "vengi"
 
 namespace io {
 class Filesystem;
