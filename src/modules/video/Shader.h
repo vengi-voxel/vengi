@@ -338,11 +338,11 @@ public:
 };
 
 inline void Shader::markClean() {
-	_dirty = true;
+	_dirty = false;
 }
 
 inline void Shader::markDirty() {
-	_dirty = false;
+	_dirty = true;
 }
 
 inline bool Shader::isDirty() const {
