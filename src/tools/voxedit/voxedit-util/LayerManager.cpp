@@ -173,7 +173,7 @@ bool LayerManager::activateLayer(int layerId, const char *name, bool visible, vo
 	_layers[layerId].valid = volume != nullptr;
 	_layers[layerId].pivot = pivot;
 	for (auto& listener : _listeners) {
-		listener->onLayerAdded((int)layerId, _layers[layerId], volume, region);
+		listener->onLayerAdded(layerId, _layers[layerId], volume, region);
 	}
 	return true;
 }

@@ -1237,11 +1237,13 @@ void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolum
 	// To always be able to return to the empty layer
 	_mementoHandler.markLayerAdded(layerId, layer.name, volume);
 	if (region.isValid()) {
+		// the volume is maybe an old state and only needs to get updated in the modified region.
 		delete _volumeRenderer.setVolume(layerId, volume, false);
-		_extractRegions.push_back({region, (int)layerId});
+		_extractRegions.push_back({region, layerId});
 	} else {
+		// update the whole volume
 		delete _volumeRenderer.setVolume(layerId, volume, true);
-		_extractRegions.push_back({volume->region(), (int)layerId});
+		_extractRegions.push_back({volume->region(), layerId});
 	}
 	setReferencePosition(layer.pivot);
 	_volumeRenderer.hide(layerId, !layer.visible);
