@@ -10,6 +10,13 @@ namespace core {
 class CommandHandlerTest: public AbstractTest {
 };
 
+TEST_F(CommandHandlerTest, testReplacePlaceholders) {
+	core::Var::get("somename", "somevalue");
+	char buf[512];
+	ASSERT_TRUE(core::replacePlaceholders("foobar <cvar:somename>", buf, sizeof(buf)));
+	ASSERT_STREQ("foobar somevalue", buf);
+}
+
 TEST_F(CommandHandlerTest, testExecuteCommandline) {
 	EXPECT_EQ(-1, core::executeCommands("test"));
 	EXPECT_EQ(-1, core::executeCommands("test/*foo*/"));
