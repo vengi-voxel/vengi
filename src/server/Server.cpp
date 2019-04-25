@@ -34,8 +34,6 @@ Server::Server(const metric::MetricPtr& metric, const backend::ServerLoopPtr& se
 		_serverLoop(serverLoop) {
 	_syslog = true;
 	_coredump = true;
-	// this ensures that we are sleeping 1 millisecond if there is enough room for it
-	setFramesPerSecondsCap(1000.0);
 	init(ORGANISATION, "server");
 }
 

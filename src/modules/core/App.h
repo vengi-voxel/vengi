@@ -118,7 +118,7 @@ protected:
 	 * @note Only handled if the max frames cap is set
 	 */
 	uint64_t _nextFrameMillis = 0ul;
-	double _framesPerSecondsCap = 0.0;
+	core::VarPtr _framesPerSecondsCap;
 
 	/**
 	 * @brief If the application failed to init or must be closed due to a failure, you
@@ -151,9 +151,7 @@ protected:
 	 * @brief There is no fps limit per default, but you set one on a per-app basis
 	 * @param[in] framesPerSecondsCap The frames to cap the application loop at
 	 */
-	void setFramesPerSecondsCap(double framesPerSecondsCap) {
-		_framesPerSecondsCap = framesPerSecondsCap;
-	}
+	void setFramesPerSecondsCap(float framesPerSecondsCap);
 
 	virtual void traceBeginFrame(const char *threadName) override;
 	virtual void traceBegin(const char *threadName, const char* name) override;

@@ -19,7 +19,6 @@ TestTraze::TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& f
 	init(ORGANISATION, "testtraze");
 	setRenderAxis(false);
 	setRelativeMouseMode(false);
-	setFramesPerSecondsCap(60);
 	_allowRelativeMouseMode = false;
 	_eventBus->subscribe<traze::NewGridEvent>(*this);
 	_eventBus->subscribe<traze::NewGamesEvent>(*this);
@@ -46,6 +45,7 @@ const traze::Player& TestTraze::player(traze::PlayerId playerId) const {
 
 core::AppState TestTraze::onConstruct() {
 	core::AppState state = Super::onConstruct();
+	setFramesPerSecondsCap(60.0);
 	core::Var::get("mosquitto_host", "traze.iteratec.de");
 	core::Var::get("mosquitto_port", "1883");
 	_name = core::Var::get("name", "noname_testtraze");

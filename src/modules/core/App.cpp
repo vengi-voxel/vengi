@@ -68,6 +68,10 @@ void App::remBlocker(AppState blockedState) {
 	_blockers.erase(blockedState);
 }
 
+void App::setFramesPerSecondsCap(float framesPerSecondsCap) {
+	_framesPerSecondsCap->setVal(framesPerSecondsCap);
+}
+
 void App::traceBeginFrame(const char *threadName) {
 }
 
@@ -144,7 +148,8 @@ void App::onFrame() {
 		case AppState::Running: {
 			{
 				core_trace_scoped(AppOnRunning);
-				if (_framesPerSecondsCap < 1.0 || _nextFrameMillis > now) {
+				const double framesPerSecondsCap = _framesPerSecondsCap->floatVal();
+				if (framesPerSecondsCap < 1.0 || _nextFrameMillis > now) {
 					{
 						core_trace_scoped(AppOnBeforeRunning);
 						onBeforeRunning();
@@ -158,12 +163,12 @@ void App::onFrame() {
 						onAfterRunning();
 					}
 				}
-				if (_framesPerSecondsCap > 1.0) {
+				if (framesPerSecondsCap > 1.0) {
 					const uint64_t delay = _nextFrameMillis - now;
 					if (delay > 0u) {
 						std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 					}
-					_nextFrameMillis += uint64_t((1000.0 / _framesPerSecondsCap) + 0.00001);
+					_nextFrameMillis += uint64_t((1000.0 / framesPerSecondsCap) + 0.00001);
 				}
 			}
 			break;
@@ -189,6 +194,8 @@ void App::onFrame() {
 
 AppState App::onConstruct() {
 	VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
+	// this ensures that we are sleeping 1 millisecond if there is enough room for it
+	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
 	registerArg("--loglevel").setShort("-l").setDescription("Change log level from 1 (trace) to 6 (only critical)");
 	const std::string& logLevelVal = getArgVal("--loglevel");
 	if (!logLevelVal.empty()) {

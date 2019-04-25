@@ -53,6 +53,7 @@ constexpr const char *ServerPort = "sv_port";
 constexpr const char *ServerMaxClients = "sv_maxclients";
 constexpr const char *ServerPostgresLib = "sv_postgreslib";
 
+constexpr const char *CoreMaxFPS = "core_maxfps";
 constexpr const char *CoreLogLevel = "core_loglevel";
 constexpr const char *CoreSysLog = "core_syslog";
 
