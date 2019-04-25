@@ -63,3 +63,4 @@ my own engine and evolved into something that others might find useful, too.
 
 * Allow to merge, reorganize and duplicate layers from the ui
 * Layer name change
+* First layer is not extracted automatically if a vox file has more than one layer
