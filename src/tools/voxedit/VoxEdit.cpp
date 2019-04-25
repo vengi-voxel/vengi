@@ -14,6 +14,7 @@ VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& files
 		Super(metric, filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool), _sceneMgr(voxedit::sceneMgr()) {
 	init(ORGANISATION, "voxedit");
 	_allowRelativeMouseMode = false;
+	setFramesPerSecondsCap(60.0);
 }
 
 bool VoxEdit::importheightmapFile(const std::string& file) {

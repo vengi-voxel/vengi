@@ -181,7 +181,8 @@ bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 			const voxel::Region& region = _layerSettings.region();
 			if (region.isValid()) {
 				voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
-				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, new voxel::RawVolume(_layerSettings.region()));
+				voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
+				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v);
 				layerMgr.setActiveLayer(layerId);
 			} else {
 				_layerSettings.reset();

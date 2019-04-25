@@ -391,7 +391,6 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
-
 	if (id == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			LayerWindow* win = new LayerWindow(this, TBIDC("new_scene"), _layerSettings);
@@ -402,18 +401,21 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			}
 		}
 		return true;
-	} else if (id == TBIDC("unsaved_changes_quit")) {
+	}
+	if (id == TBIDC("unsaved_changes_quit")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			close();
 		}
 		return true;
-	} else if (id == TBIDC("unsaved_changes_load")) {
+	}
+	if (id == TBIDC("unsaved_changes_load")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			sceneMgr().load(_loadFile);
 			afterLoad(_loadFile);
 		}
 		return true;
-	} else if (id == TBIDC("unsaved_changes_voxelize")) {
+	}
+	if (id == TBIDC("unsaved_changes_voxelize")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(_voxelizeFile, false);
 			sceneMgr().voxelizeModel(mesh);
