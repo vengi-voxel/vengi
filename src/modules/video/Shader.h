@@ -337,14 +337,6 @@ public:
 	bool setDivisor(int location, uint32_t divisor) const;
 };
 
-inline void Shader::markClean() {
-	_dirty = false;
-}
-
-inline void Shader::markDirty() {
-	_dirty = true;
-}
-
 inline bool Shader::isDirty() const {
 	return _dirty;
 }

@@ -91,8 +91,18 @@ void Shader::shutdown() {
 	video::deleteProgram(_program);
 	_initialized = false;
 	_active = false;
-	_dirty = true;
+	markDirty();
 	_time = 0;
+}
+
+void Shader::markDirty() {
+	Log::debug("Mark shader %s as dirty", _name.c_str());
+	_dirty = true;
+}
+
+void Shader::markClean() {
+	Log::debug("Mark shader %s as clean", _name.c_str());
+	_dirty = false;
 }
 
 bool Shader::load(const std::string& name, const std::string& buffer, ShaderType shaderType) {
@@ -156,7 +166,6 @@ bool Shader::reload() {
 }
 
 bool Shader::init() {
-	_dirty = true;
 	createProgramFromShaders();
 	const bool success = _program != InvalidId;
 	_initialized = success;
