@@ -632,7 +632,8 @@ private:
 public:
 	ScopedShader(const Shader& shader) :
 			_shader(shader), _oldShader(getProgram()) {
-		_alreadyActive = _shader.activate();
+		_alreadyActive = _shader.isActive();
+		_shader.activate();
 	}
 
 	~ScopedShader() {
