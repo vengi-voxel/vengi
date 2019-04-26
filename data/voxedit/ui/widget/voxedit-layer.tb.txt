@@ -14,10 +14,7 @@ TBLayout
 			id anim
 			skin voxedit-anim-button
 			command animate <cvar:ve_animspeed>
-		TBEditField
-			id add_layer
-			gravity left right
-			placeholder Name
 		TBButton
 			id add
+			gravity left right
 			text Add

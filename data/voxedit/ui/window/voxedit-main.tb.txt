@@ -172,7 +172,8 @@ TBLayout: distribution: gravity, axis: y
 								TBCheckBox: id: optionshowaabb, value: 0, varref: ve_showaabb
 							TBClickLabel: text: Shadow
 								TBCheckBox: id: optionrendershadow, value: 1, varref: ve_rendershadow
-							TBClickLabel: text: Animation speed
+							TBLayout: axis: y
+								TBTextField: text: Animation speed
 								TBEditField: varref: ve_animspeed
 
 			TBLayout: distribution: gravity

@@ -41,6 +41,28 @@ public:
 			layerMgr.deleteLayer(_layerId);
 			return true;
 		}
+		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("layerpopupmenu")) {
+			// TODO: implement context menu actions
+			if (ev.ref_id == TBIDC("layer_delete")) {
+				layerMgr.deleteLayer(_layerId);
+			}
+			return true;
+		}
+		if (ev.type == tb::EVENT_TYPE_CONTEXT_MENU && ev.target == this) {
+			layerMgr.setActiveLayer(_layerId);
+			tb::TBPoint posInRoot(ev.target_x, ev.target_y);
+			convertToRoot(posInRoot.x, posInRoot.y);
+
+			if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(this, TBIDC("layerpopupmenu"))) {
+				tb::TBGenericStringItemSource *source = menu->getList()->getDefaultSource();
+				source->addItem(new tb::TBGenericStringItem(tr("Delete"), TBIDC("layer_delete")));
+				source->addItem(new tb::TBGenericStringItem(tr("Hide others"), TBIDC("layer_hideothers")));
+				source->addItem(new tb::TBGenericStringItem(tr("Duplicate"), TBIDC("layer_duplicate")));
+
+				menu->show(source, tb::TBPopupAlignment(posInRoot), -1);
+			}
+			return true;
+		}
 		return tb::TBLayout::onEvent(ev);
 	}
 private:
@@ -166,9 +188,6 @@ void LayerWidget::onLayerDeleted(int layerId, const voxedit::Layer&) {
 
 bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("add")) {
-		const tb::TBStr& name = getTextByID(TBIDC("add_layer"));
-		const char *cname = name.c_str();
-		_layerSettings.name = cname;
 		voxedit::LayerWindow* win = new voxedit::LayerWindow(this, TBIDC("scene_new_layer"), _layerSettings);
 		if (!win->show()) {
 			delete win;
