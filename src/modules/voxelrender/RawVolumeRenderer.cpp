@@ -361,7 +361,6 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
 		video::ScopedShader scoped(_worldShader);
 		if (_worldShader.isDirty()) {
-			video::ScopedShader scoped(_worldShader);
 			_worldShader.setMaterialblock(_materialBlock);
 			_worldShader.setModel(glm::mat4(1.0f));
 			_worldShader.setTexture(video::TextureUnit::Zero);
