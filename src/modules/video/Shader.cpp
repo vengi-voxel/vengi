@@ -190,6 +190,11 @@ void Shader::update(uint32_t deltaTime) {
 	_time += deltaTime;
 }
 
+bool Shader::isActive() const {
+	core_assert(!_active || video::getProgram() == _program);
+	return _active;
+}
+
 bool Shader::activate() const {
 	video::useProgram(_program);
 	_active = true;

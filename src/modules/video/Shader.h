@@ -624,10 +624,6 @@ inline bool Shader::isUniformBlock(const std::string& name) const {
 	return i->second.block;
 }
 
-inline bool Shader::isActive() const {
-	return _active;
-}
-
 class ScopedShader {
 private:
 	const Shader& _shader;
