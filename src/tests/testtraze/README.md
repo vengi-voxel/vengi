@@ -12,4 +12,4 @@ to move your bike, you are joined.
 
 * add scoreboard menu
 * player explosions
-* sounds
+* fix voxelfont performance issues
