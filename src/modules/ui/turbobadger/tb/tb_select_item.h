@@ -162,6 +162,23 @@ public:
 		return nullptr;
 	}
 
+	inline int getItemIndex(const T *item) const {
+		return m_items.find(item);
+	}
+
+	inline bool isFirst(const T *item) const {
+		const int idx = getItemIndex(item);
+		return idx == 0;
+	}
+
+	inline bool isLast(const T *item) const {
+		const int idx = getItemIndex(item);
+		if (idx == -1) {
+			return false;
+		}
+		return idx == getNumItems() - 1;
+	}
+
 	/** Add a new item at the given index. */
 	bool addItem(T *item, int index) {
 		if (m_items.add(item, index)) {

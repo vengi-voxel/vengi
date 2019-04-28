@@ -30,7 +30,7 @@ public:
 	void *remove(int index);
 	void removeAll();
 	void swap(int index1, int index2);
-	int find(void *data) const;
+	int find(const void *data) const;
 	int getNumItems() const {
 		return m_data != nullptr ? m_data->num : 0;
 	}
@@ -132,7 +132,7 @@ public:
 	}
 
 	/** Search for the item with the given data and return the found index, or -1 if not found. */
-	int find(T *data) const {
+	int find(const T *data) const {
 		return m_list.find(data);
 	}
 

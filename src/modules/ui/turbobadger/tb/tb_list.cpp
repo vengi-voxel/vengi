@@ -66,7 +66,7 @@ void TBListBackend::swap(int index1, int index2) {
 	m_data->list[index2] = tmp;
 }
 
-int TBListBackend::find(void *data) const {
+int TBListBackend::find(const void *data) const {
 	int num = getNumItems();
 	for (int i = 0; i < num; i++) {
 		if (get(i) == data) {
