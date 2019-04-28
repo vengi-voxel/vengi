@@ -26,6 +26,7 @@ set(UI_WINDOWS
 
 set(FILES
 	${UI_WINDOWS}
+	voxedit/ui/skin/voxedit-add.png
 	voxedit/ui/skin/voxedit-anim-play.png
 	voxedit/ui/skin/voxedit-anim-play-selected.png
 	voxedit/ui/skin/voxedit-axis-x.png
@@ -46,17 +47,16 @@ set(FILES
 	voxedit/ui/skin/voxedit-quadview.png
 	voxedit/ui/skin/voxedit-quadview-selected.png
 	voxedit/ui/skin/voxedit-quit.png
-	voxedit/ui/skin/voxedit-redo.png
+	voxedit/ui/skin/voxedit-undo-redo.png
 	voxedit/ui/skin/voxedit-reset-camera.png
-	voxedit/ui/skin/voxedit-rotate-left.png
-	voxedit/ui/skin/voxedit-rotate-right.png
+	voxedit/ui/skin/voxedit-rotate.png
 	voxedit/ui/skin/voxedit-save.png
 	voxedit/ui/skin/voxedit-show-grid.png
 	voxedit/ui/skin/voxedit-show-grid-selected.png
 	voxedit/ui/skin/voxedit-skin.tb.txt
 	voxedit/ui/skin/voxedit-tree_pine.png
 	voxedit/ui/skin/voxedit-tree.png
-	voxedit/ui/skin/voxedit-undo.png
+	voxedit/ui/skin/voxedit-up.png
 	voxedit/ui/skin/voxedit-visible.png
 	voxedit/ui/skin/voxedit-visible-selected.png
 	voxedit/ui/skin/voxedit-voxel.png

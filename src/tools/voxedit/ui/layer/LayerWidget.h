@@ -22,6 +22,9 @@ public:
 	inline int layerId() const {
 		return _layerId;
 	}
+	inline void setLayerId(int layerId) {
+		_layerId = layerId;
+	}
 private:
 	int _layerId;
 	bool _visible;

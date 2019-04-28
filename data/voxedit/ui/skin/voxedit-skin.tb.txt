@@ -9,6 +9,13 @@ elements
 		bitmap voxedit-flip-vertical.png
 	voxedit-load
 		bitmap voxedit-load.png
+	voxedit-down
+		bitmap voxedit-up.png
+		flip-y 1
+	voxedit-add
+		bitmap voxedit-add.png
+	voxedit-up
+		bitmap voxedit-up.png
 	voxedit-new
 		bitmap voxedit-new.png
 	voxedit-options
@@ -16,17 +23,19 @@ elements
 	voxedit-quit
 		bitmap voxedit-quit.png
 	voxedit-redo
-		bitmap voxedit-redo.png
+		bitmap voxedit-undo-redo.png
 	voxedit-rotate-left
-		bitmap voxedit-rotate-left.png
+		bitmap voxedit-rotate.png
 	voxedit-rotate-right
-		bitmap voxedit-rotate-right.png
+		bitmap voxedit-rotate.png
+		flip-x 1
 	voxedit-save
 		bitmap voxedit-save.png
 	voxedit-show-grid
 		bitmap voxedit-show-grid.png
 	voxedit-undo
-		bitmap voxedit-undo.png
+		bitmap voxedit-undo-redo.png
+		flip-x 1
 	voxedit-voxel
 		bitmap voxedit-voxel.png
 	voxedit-reset-camera

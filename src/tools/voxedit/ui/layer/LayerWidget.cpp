@@ -12,7 +12,7 @@ class LayerItemWidget: public tb::TBLayout {
 public:
 	LayerItemWidget(const std::string& def, LayerItem *item, LayerItemSource *source,
 			tb::TBSelectItemViewer *sourceViewer) :
-			_source(source), _sourceViewer(sourceViewer), _layerId(item->layerId()), _item(item) {
+			_source(source), _sourceViewer(sourceViewer), _layerId(item->layerId()) {
 		setSkinBg(TBIDC("TBSelectItem"));
 		setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
 		setLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
@@ -66,10 +66,15 @@ public:
 				source->addItem(new tb::TBGenericStringItem(tr("Duplicate"), TBIDC("layerduplicate")));
 				if (n > 1) {
 					source->addItem(new tb::TBGenericStringItem(tr("Delete"), TBIDC("layerdelete")));
-					if (!_source->isLast(_item)) {
+					LayerItem* item = _source->getItemForLayerId(_layerId);
+					core_assert_always(item != nullptr);
+					const int n = _source->getItemIndex(item);
+					Log::debug("Layer items in list: %i", n);
+					core_assert(n != -1);
+					if (!_source->isLast(item)) {
 						source->addItem(new tb::TBGenericStringItem(tr("Move down"), TBIDC("layermovedown")));
 					}
-					if (!_source->isFirst(_item)) {
+					if (!_source->isFirst(item)) {
 						source->addItem(new tb::TBGenericStringItem(tr("Move up"), TBIDC("layermoveup")));
 					}
 					source->addItem(new tb::TBGenericStringItem("-"));
@@ -87,7 +92,6 @@ private:
 	LayerItemSource *_source;
 	tb::TBSelectItemViewer *_sourceViewer;
 	const int _layerId;
-	const LayerItem *_item;
 };
 
 LayerItemSource::LayerItemSource() : TBSelectItemSourceList() {
@@ -96,6 +100,7 @@ LayerItemSource::LayerItemSource() : TBSelectItemSourceList() {
 }
 
 tb::TBWidget *LayerItemSource::createItemWidget(int index, tb::TBSelectItemViewer *viewer) {
+	Log::debug("create LayerItemWidget at %i", index);
 	return new LayerItemWidget(_layerItemDefinition, getItem(index), this, viewer);
 }
 
@@ -181,7 +186,9 @@ void LayerWidget::onLayerSwapped(int layerId1, int layerId2) {
 		Log::error("Could not get item id for layer2 %i", layerId2);
 		return;
 	}
-	_source.swap(index1, index2);
+	Log::debug("swap item %i and item %i", index1, index2);
+	_source.getItem(index1)->setLayerId(layerId2);
+	_source.getItem(index2)->setLayerId(layerId1);
 	_list->invalidateList();
 }
 
@@ -236,7 +243,7 @@ void LayerWidget::onLayerDeleted(int layerId, const voxedit::Layer&) {
 }
 
 bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
-	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("add")) {
+	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("layeradd")) {
 		voxedit::LayerWindow* win = new voxedit::LayerWindow(this, TBIDC("scene_new_layer"), _layerSettings);
 		if (!win->show()) {
 			delete win;

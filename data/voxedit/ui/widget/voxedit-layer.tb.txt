@@ -15,6 +15,13 @@ TBLayout
 			skin voxedit-anim-button
 			command animate <cvar:ve_animspeed>
 		TBButton
-			id add
+			command layermovedown
+			skin voxedit-down
+		TBButton
+			command layermoveup
+			skin voxedit-up
+		TBWidget
 			gravity left right
-			text Add
+		TBButton
+			id layeradd
+			skin voxedit-add

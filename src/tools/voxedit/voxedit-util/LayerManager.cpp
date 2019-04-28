@@ -126,29 +126,49 @@ void LayerManager::duplicate(int layerId) {
 	}
 }
 
+bool LayerManager::hasValidLayerAfter(int layerId) const {
+	for (int i = layerId + 1; i < (int)_layers.size(); ++i) {
+		if (_layers[i].valid) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool LayerManager::hasValidLayerBefore(int layerId) const {
+	for (int i = layerId - 1; i >= 0; --i) {
+		if (_layers[i].valid) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool LayerManager::moveUp(int layerId) {
-	if (layerId <= 0 || layerId >= (int)_layers.size()) {
+	if (!hasValidLayerBefore(layerId) || layerId >= (int)_layers.size()) {
 		Log::error("Failed to move layer %i up", layerId);
 		return false;
 	}
-	Log::error("move layer %i up", layerId);
+	Log::debug("move layer %i up", layerId);
 	std::swap(_layers[layerId], _layers[layerId - 1]);
 	for (auto& listener : _listeners) {
 		listener->onLayerSwapped(layerId, layerId - 1);
 	}
+	setActiveLayer(layerId - 1);
 	return true;
 }
 
 bool LayerManager::moveDown(int layerId) {
-	if (layerId < 0 || layerId >= (int)_layers.size() - 1) {
+	if (layerId < 0 || !hasValidLayerAfter(layerId)) {
 		Log::error("Failed to move layer %i down", layerId);
 		return false;
 	}
-	Log::error("move layer %i down", layerId);
+	Log::debug("move layer %i down", layerId);
 	std::swap(_layers[layerId], _layers[layerId + 1]);
 	for (auto& listener : _listeners) {
 		listener->onLayerSwapped(layerId, layerId + 1);
 	}
+	setActiveLayer(layerId + 1);
 	return true;
 }
 
