@@ -117,7 +117,7 @@ public:
 		return m_sort;
 	}
 
-	/** Invoke OnItemChanged on all open viewers for this source. */
+	/** Invoke onItemChanged on all open viewers for this source. */
 	void invokeItemChanged(int index, TBSelectItemViewer *exclude_viewer = nullptr);
 	void invokeItemAdded(int index);
 	void invokeItemRemoved(int index);
@@ -191,6 +191,12 @@ public:
 	/** Add a new item last. */
 	bool addItem(T *item) {
 		return addItem(item, m_items.getNumItems());
+	}
+
+	void swap(int idx1, int idx2, TBSelectItemViewer *exclude_viewer = nullptr) {
+		m_items.swap(idx1, idx2);
+		invokeItemChanged(idx1, exclude_viewer);
+		invokeItemChanged(idx2, exclude_viewer);
 	}
 
 	/** Get the item at the given index. */
