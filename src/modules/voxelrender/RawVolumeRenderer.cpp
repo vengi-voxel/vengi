@@ -172,6 +172,29 @@ void RawVolumeRenderer::setDiffuseColor(const glm::vec3& color) {
 	_worldShader.markDirty();
 }
 
+bool RawVolumeRenderer::swap(int idx1, int idx2) {
+	if (idx1 < 0 || idx1 >= MAX_VOLUMES) {
+		return false;
+	}
+	if (idx2 < 0 || idx2 >= MAX_VOLUMES) {
+		return false;
+	}
+	if (idx1 == idx2) {
+		return true;
+	}
+	for (auto& i : _meshes) {
+		Meshes& meshes = i.second;
+		std::swap(meshes[idx1], meshes[idx2]);
+	}
+	std::swap(_hidden[idx1], _hidden[idx2]);
+	std::swap(_model[idx1], _model[idx2]);
+	std::swap(_rawVolume[idx1], _rawVolume[idx2]);
+	update(idx1);
+	update(idx2);
+
+	return true;
+}
+
 bool RawVolumeRenderer::empty(int idx) const {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return true;

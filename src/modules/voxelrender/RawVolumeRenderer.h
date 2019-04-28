@@ -86,6 +86,7 @@ public:
 	bool setModelMatrix(int idx, const glm::mat4& model);
 
 	bool empty(int idx = 0) const;
+	bool swap(int idx1, int idx2);
 	/**
 	 * @sa setVolume()
 	 */
