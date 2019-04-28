@@ -1352,7 +1352,7 @@ bool TBWidget::invokePointerUp(int x, int y, MODIFIER_KEYS modifierkeys, BUTTON_
 			captured_widget->releaseCapture();
 		}
 
-		// Return true when captured instead of InvokeEvent result. If a widget is
+		// Return true when captured instead of invokeEvent result. If a widget is
 		// hit is more interesting for callers than if the event was handled or not.
 		return true;
 	}

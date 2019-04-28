@@ -1215,9 +1215,9 @@ public:
 									  ///< any) or hovered widget.
 	static bool cancel_click;		  ///< true if the pointer up event should not generate a click event.
 	static bool
-		update_widget_states; ///< true if something has called InvalidateStates() and it still hasn't been updated.
+		update_widget_states; ///< true if something has called invalidateStates() and it still hasn't been updated.
 	static bool
-		update_skin_states; ///< true if something has called InvalidateStates() and skin still hasn't been updated.
+		update_skin_states; ///< true if something has called invalidateStates() and skin still hasn't been updated.
 	static bool show_focus_state; ///< true if the focused state should be painted automatically.
 	struct TOUCH_INFO {
 		TBWidget *hovered_widget;  ///< The currently hovered widget, or nullptr.
