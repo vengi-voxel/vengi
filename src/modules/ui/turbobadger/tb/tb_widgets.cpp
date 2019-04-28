@@ -682,7 +682,13 @@ WIDGET_HIT_STATUS TBWidget::getHitStatus(int x, int y) {
 	if (!getIsInteractable()) {
 		return WIDGET_HIT_STATUS_NO_HIT;
 	}
-	return x >= 0 && y >= 0 && x < m_rect.w && y < m_rect.h ? WIDGET_HIT_STATUS_HIT : WIDGET_HIT_STATUS_NO_HIT;
+	if (x < 0 || y < 0) {
+		return WIDGET_HIT_STATUS_NO_HIT;
+	}
+	if (x >= m_rect.w || y >= m_rect.h) {
+		return WIDGET_HIT_STATUS_NO_HIT;
+	}
+	return WIDGET_HIT_STATUS_HIT;
 }
 
 TBWidget *TBWidget::getWidgetAt(int x, int y, bool includeChildren) const {
@@ -1343,13 +1349,17 @@ bool TBWidget::invokePointerUp(int x, int y, MODIFIER_KEYS modifierkeys, BUTTON_
 	if (captured_widget != nullptr) {
 		captured_widget->convertFromRoot(x, y);
 		TBWidgetEvent ev_up(EVENT_TYPE_POINTER_UP, x, y, type, modifierkeys);
-		TBWidgetEvent ev_click(EVENT_TYPE_CLICK, x, y, type, modifierkeys);
 		captured_widget->invokeEvent(ev_up);
-		if (!cancel_click && (captured_widget != nullptr) && (captured_widget->getHitStatus(x, y) != 0U)) {
-			captured_widget->invokeEvent(ev_click);
-		}
-		if (captured_widget != nullptr) { // && button == captured_button
-			captured_widget->releaseCapture();
+		if (captured_widget != nullptr) {
+			if (!cancel_click) {
+				if (captured_widget->getHitStatus(x, y) != WIDGET_HIT_STATUS_NO_HIT) {
+					TBWidgetEvent ev_click(EVENT_TYPE_CLICK, x, y, type, modifierkeys);
+					captured_widget->invokeEvent(ev_click);
+				}
+			}
+			if (captured_widget != nullptr) { // && button == captured_button
+				captured_widget->releaseCapture();
+			}
 		}
 
 		// Return true when captured instead of invokeEvent result. If a widget is
