@@ -4,6 +4,7 @@
 
 #include "LayerWidget.h"
 #include "core/App.h"
+#include "core/command/CommandHandler.h"
 #include "io/Filesystem.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -11,7 +12,7 @@ class LayerItemWidget: public tb::TBLayout {
 public:
 	LayerItemWidget(const std::string& def, LayerItem *item, LayerItemSource *source,
 			tb::TBSelectItemViewer *sourceViewer) :
-			_source(source), _sourceViewer(sourceViewer), _layerId(item->layerId()) {
+			_source(source), _sourceViewer(sourceViewer), _layerId(item->layerId()), _item(item) {
 		setSkinBg(TBIDC("TBSelectItem"));
 		setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
 		setLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
@@ -42,9 +43,15 @@ public:
 			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("layerpopupmenu")) {
-			// TODO: implement context menu actions
-			if (ev.ref_id == TBIDC("layer_delete")) {
-				layerMgr.deleteLayer(_layerId);
+			static const char *ACTIONS[] = {
+				"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall",
+				nullptr
+			};
+			for (const char** action = ACTIONS; *action != nullptr; ++action) {
+				if (ev.ref_id == TBIDC(*action)) {
+					core::executeCommands(*action);
+					break;
+				}
 			}
 			return true;
 		}
@@ -54,11 +61,22 @@ public:
 			convertToRoot(posInRoot.x, posInRoot.y);
 
 			if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(this, TBIDC("layerpopupmenu"))) {
+				const int n = _source->getNumItems();
 				tb::TBGenericStringItemSource *source = menu->getList()->getDefaultSource();
-				source->addItem(new tb::TBGenericStringItem(tr("Delete"), TBIDC("layer_delete")));
-				source->addItem(new tb::TBGenericStringItem(tr("Hide others"), TBIDC("layer_hideothers")));
-				source->addItem(new tb::TBGenericStringItem(tr("Duplicate"), TBIDC("layer_duplicate")));
-
+				source->addItem(new tb::TBGenericStringItem(tr("Duplicate"), TBIDC("layerduplicate")));
+				if (n > 1) {
+					source->addItem(new tb::TBGenericStringItem(tr("Delete"), TBIDC("layerdelete")));
+					if (!_source->isLast(_item)) {
+						source->addItem(new tb::TBGenericStringItem(tr("Move down"), TBIDC("layermovedown")));
+					}
+					if (!_source->isFirst(_item)) {
+						source->addItem(new tb::TBGenericStringItem(tr("Move up"), TBIDC("layermoveup")));
+					}
+					source->addItem(new tb::TBGenericStringItem("-"));
+					source->addItem(new tb::TBGenericStringItem(tr("Hide others"), TBIDC("layerhideothers")));
+				}
+				source->addItem(new tb::TBGenericStringItem(tr("Show all layers"), TBIDC("layershowall")));
+				source->addItem(new tb::TBGenericStringItem(tr("Hide all layers"), TBIDC("layerhideall")));
 				menu->show(source, tb::TBPopupAlignment(posInRoot), -1);
 			}
 			return true;
@@ -69,6 +87,7 @@ private:
 	LayerItemSource *_source;
 	tb::TBSelectItemViewer *_sourceViewer;
 	const int _layerId;
+	const LayerItem *_item;
 };
 
 LayerItemSource::LayerItemSource() : TBSelectItemSourceList() {
