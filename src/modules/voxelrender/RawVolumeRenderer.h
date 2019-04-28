@@ -48,8 +48,8 @@ protected:
 
 	video::TexturePtr _whiteTexture;
 
-	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1, -1, -1, -1};
-	int32_t _indexBufferIndex[MAX_VOLUMES] = {-1, -1, -1, -1};
+	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1};
+	int32_t _indexBufferIndex[MAX_VOLUMES] = {-1};
 
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
