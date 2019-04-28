@@ -655,7 +655,6 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_COMMAND) {
-		Log::info("executed command %s", ev.string);
 		_lastExecutedCommand = ev.string;
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
