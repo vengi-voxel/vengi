@@ -44,7 +44,7 @@ public:
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("layerpopupmenu")) {
 			static const char *ACTIONS[] = {
-				"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall",
+				"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall", "layermoveup", "layermovedown",
 				nullptr
 			};
 			for (const char** action = ACTIONS; *action != nullptr; ++action) {
@@ -153,6 +153,21 @@ LayerWidget::~LayerWidget() {
 		_list->setSource(nullptr);
 	}
 	voxedit::sceneMgr().layerMgr().unregisterListener(this);
+}
+
+void LayerWidget::onLayerSwapped(int layerId1, int layerId2) {
+	const int index1 = _source.getItemIdForLayerId(layerId1);
+	if (index1 == -1) {
+		Log::error("Could not get item id for layer1 %i", layerId1);
+		return;
+	}
+	const int index2 = _source.getItemIdForLayerId(layerId2);
+	if (index2 == -1) {
+		Log::error("Could not get item id for layer2 %i", layerId2);
+		return;
+	}
+	_source.swap(index1, index2);
+	_list->invalidateList();
 }
 
 void LayerWidget::onLayerHide(int layerId) {

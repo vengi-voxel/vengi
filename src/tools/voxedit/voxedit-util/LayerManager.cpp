@@ -70,6 +70,21 @@ void LayerManager::construct() {
 			hideLayer(idx, false);
 		}
 	}).setHelp("Show all layers");
+
+	core::Command::registerCommand("layerduplicate", [&] (const core::CmdArgs& args) {
+		const int layerId = args.size() > 0 ? core::string::toInt(args[0]) : activeLayer();
+		duplicate(layerId);
+	}).setHelp("Duplicates the current layer or the given layer id");
+
+	core::Command::registerCommand("layermoveup", [&] (const core::CmdArgs& args) {
+		const int layerId = args.size() > 0 ? core::string::toInt(args[0]) : activeLayer();
+		moveUp(layerId);
+	}).setHelp("Move the current layer or the given layer id up");
+
+	core::Command::registerCommand("layermovedown", [&] (const core::CmdArgs& args) {
+		const int layerId = args.size() > 0 ? core::string::toInt(args[0]) : activeLayer();
+		moveDown(layerId);
+	}).setHelp("Move the current layer or the given layer id down");
 }
 
 bool LayerManager::init() {
@@ -83,6 +98,38 @@ void LayerManager::shutdown() {
 	for (int i = 0; i < size; ++i) {
 		_layers[i].reset();
 	}
+}
+
+void LayerManager::duplicate(int layerId) {
+	for (auto& listener : _listeners) {
+		listener->onLayerDuplicate(layerId);
+	}
+}
+
+bool LayerManager::moveUp(int layerId) {
+	if (layerId <= 0 || layerId >= (int)_layers.size()) {
+		Log::error("Failed to move layer %i up", layerId);
+		return false;
+	}
+	Log::error("move layer %i up", layerId);
+	std::swap(_layers[layerId], _layers[layerId - 1]);
+	for (auto& listener : _listeners) {
+		listener->onLayerSwapped(layerId, layerId - 1);
+	}
+	return true;
+}
+
+bool LayerManager::moveDown(int layerId) {
+	if (layerId < 0 || layerId >= (int)_layers.size() - 1) {
+		Log::error("Failed to move layer %i down", layerId);
+		return false;
+	}
+	Log::error("move layer %i down", layerId);
+	std::swap(_layers[layerId], _layers[layerId + 1]);
+	for (auto& listener : _listeners) {
+		listener->onLayerSwapped(layerId, layerId + 1);
+	}
+	return true;
 }
 
 bool LayerManager::findNewActiveLayer() {

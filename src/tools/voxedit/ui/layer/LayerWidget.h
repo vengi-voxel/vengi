@@ -47,6 +47,7 @@ public:
 	~LayerWidget();
 	bool onEvent(const tb::TBWidgetEvent &ev) override;
 
+	void onLayerSwapped(int layerId1, int layerId2) override;
 	void onLayerHide(int layerId) override;
 	void onLayerShow(int layerId) override;
 	void onActiveLayerChanged(int old, int active) override;

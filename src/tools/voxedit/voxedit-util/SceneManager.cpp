@@ -1206,6 +1206,19 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	updateLockedPlane(math::Axis::Z);
 }
 
+void SceneManager::onLayerDuplicate(int layerId) {
+	const Layer& layer = _layerMgr.layer(layerId);
+	const voxel::RawVolume* volume = _volumeRenderer.volume(layerId);
+	_layerMgr.addLayer(layer.name.c_str(), true, new voxel::RawVolume(volume));
+}
+
+void SceneManager::onLayerSwapped(int layerId1, int layerId2) {
+	// TODO: mementohandler
+	if (!_volumeRenderer.swap(layerId1, layerId2)) {
+		Log::error("Failed to swap volumes for layer %i and layer %i", layerId1, layerId2);
+	}
+}
+
 void SceneManager::onLayerHide(int layerId) {
 	_volumeRenderer.hide(layerId, true);
 }

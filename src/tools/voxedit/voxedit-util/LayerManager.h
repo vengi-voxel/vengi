@@ -29,6 +29,10 @@ public:
 	void registerListener(LayerListener* listener);
 	void unregisterListener(LayerListener* listener);
 
+	void duplicate(int layerId);
+	bool moveUp(int layerId);
+	bool moveDown(int layerId);
+
 	bool findNewActiveLayer();
 	int activeLayer() const;
 	bool setActiveLayer(int layerId);
