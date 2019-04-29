@@ -62,5 +62,5 @@ my own engine and evolved into something that others might find useful, too.
 
 # Needed improvements
 
-* Allow to merge and rename layers from the ui
-* Fix memento states for merge and move of layers
+* Allow to rename layers from the ui
+* Fix memento states for merge, rename and move of layers

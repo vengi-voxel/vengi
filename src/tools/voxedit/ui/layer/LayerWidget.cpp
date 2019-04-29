@@ -43,7 +43,8 @@ public:
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("layerpopupmenu")) {
 			static const char *ACTIONS[] = {
-				"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall", "layermoveup", "layermovedown",
+				"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall",
+				"layermoveup", "layermovedown", "layermerge",
 				nullptr
 			};
 			for (const char** action = ACTIONS; *action != nullptr; ++action) {
@@ -71,6 +72,7 @@ public:
 					Log::debug("Layer items in list: %i", n);
 					core_assert(n != -1);
 					if (!_source->isLast(item)) {
+						source->addItem(new tb::TBGenericStringItem(tr("Merge"), TBIDC("layermerge")));
 						source->addItem(new tb::TBGenericStringItem(tr("Move down"), TBIDC("layermovedown")));
 					}
 					if (!_source->isFirst(item)) {

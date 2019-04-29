@@ -739,12 +739,17 @@ void SceneManager::construct() {
 	}).setHelp("Rotate scene by the given angles (in degree)");
 
 	core::Command::registerCommand("layermerge", [&] (const core::CmdArgs& args) {
-		if (args.size() != 2) {
-			Log::info("Expected to get two valid layer ids");
-			return;
+		int layer1;
+		int layer2;
+		if (args.size() == 2) {
+			layer1 = core::string::toInt(args[0]);
+			layer2 = core::string::toInt(args[1]);
+		} else {
+			layer1 = _layerMgr.activeLayer();
+			layer2 = layer1 + 1;
 		}
-		merge(core::string::toInt(args[0]), core::string::toInt(args[1]));
-	}).setHelp("Merged two given layers");
+		merge(layer1, layer2);
+	}).setHelp("Merged two given layers or active layer with the one below");
 
 	core::Command::registerCommand("layerdetails", [&] (const core::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
