@@ -59,6 +59,7 @@ my own engine and evolved into something that others might find useful, too.
 * Extend palette widget to show the used colors
 * Add color dialog for ambient and diffuse color
 * Export layers as single meshes
+* Rotate around reference position
 
 # Needed improvements
 
