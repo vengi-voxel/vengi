@@ -43,7 +43,7 @@ void LayerManager::construct() {
 		}
 	}).setHelp("Set or print the current active layer");
 	core::Command::registerCommand("layerstate", [&] (const core::CmdArgs& args) {
-		if (args.empty()) {
+		if (args.size() != 2) {
 			Log::info("Usage: layerstate <layerid> <true|false>");
 			return;
 		}
