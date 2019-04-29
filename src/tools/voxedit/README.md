@@ -62,6 +62,5 @@ my own engine and evolved into something that others might find useful, too.
 
 # Needed improvements
 
-* Allow to merge, reorganize and duplicate layers from the ui
+* Allow to merge and rename layers from the ui
 * Fix memento states for merge and move of layers
-* Layer name change
