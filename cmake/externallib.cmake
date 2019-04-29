@@ -113,14 +113,12 @@ endmacro()
 # parameters:
 # PUBLICHEADER: optional
 # LIB: the name of the lib. Must match the FindXXX.cmake module and the pkg-config name of the lib
-# GCCCFLAGS: optional
-# GCCLINKERFLAGS: optional
 # SRCS: the list of source files for the bundled lib
 # DEFINES: a list of defines (without -D or /D)
 #
 macro(engine_add_library)
 	set(_OPTIONS_ARGS UNITY)
-	set(_ONE_VALUE_ARGS LIB PACKAGE GCCCFLAGS LINKERFLAGS PUBLICHEADER)
+	set(_ONE_VALUE_ARGS LIB PACKAGE PUBLICHEADER)
 	set(_MULTI_VALUE_ARGS SRCS DEFINES)
 
 	cmake_parse_arguments(_ADDLIB "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
@@ -176,7 +174,7 @@ macro(engine_add_library)
 		endif()
 		if (${PREFIX}_LIBRARIES)
 			target_link_libraries(${_ADDLIB_LIB} INTERFACE ${${PREFIX}_LIBRARIES})
-			message(STATUS "${_ADDLIB_LIB}: ${PREFIX}_LIBRARIES: ${${PREFIX}_LIBRARIES} ${_ADDLIB_ADDITIONAL_LIBS}")
+			message(STATUS "${_ADDLIB_LIB}: ${PREFIX}_LIBRARIES: ${${PREFIX}_LIBRARIES}")
 		endif()
 	else()
 		message(STATUS "Use the bundled lib ${_ADDLIB_LIB}")
@@ -207,18 +205,6 @@ macro(engine_add_library)
 		endif()
 		target_include_directories(${_ADDLIB_LIB} ${_ADDLIB_PUBLICHEADER} ${LIBS_DIR}/${_ADDLIB_LIB})
 		set_target_properties(${_ADDLIB_LIB} PROPERTIES COMPILE_DEFINITIONS "${_ADDLIB_DEFINES}")
-
-		if (USE_GCC OR USE_CLANG)
-			if (_ADDLIB_GCCCFLAGS)
-				message(STATUS "additional lib cflags: ${_ADDLIB_GCCCFLAGS}")
-			endif()
-			if(UNIX)
-				set_target_properties(${_ADDLIB_LIB} PROPERTIES COMPILE_FLAGS "${_ADDLIB_GCCCFLAGS} -fPIC")
-			else()
-				set_target_properties(${_ADDLIB_LIB} PROPERTIES COMPILE_FLAGS "${_ADDLIB_GCCCFLAGS}")
-			endif()
-			set_target_properties(${_ADDLIB_LIB} PROPERTIES LINK_FLAGS "${_ADDLIB_GCCLINKERFLAGS}")
-		endif()
 		set_target_properties(${_ADDLIB_LIB} PROPERTIES FOLDER ${_ADDLIB_LIB})
 	endif()
 endmacro()

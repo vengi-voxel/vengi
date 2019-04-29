@@ -1844,10 +1844,7 @@ endif(FALSE)
 engine_add_library(
 	LIB sdl2
 	SRCS ${SOURCE_FILES} ${SDLMAIN_SOURCES} ${PLATFORM_SRCS}
-	GCCCFLAGS "${SDL_CFLAGS} ${EXTRA_CFLAGS} -Wno-sign-compare"
-	DEFINES ${DEFINES}
-	LINKERFLAGS ${ANDROID_LDFLAGS} ${EXTRA_LDFLAGS}
-	ADDITIONAL_LIBS SDL2main)
+	DEFINES ${DEFINES})
 if (NOT SDL2_FOUND)
 	if (CMAKE_DL_LIBS)
 		list(APPEND EXTRA_LIBS ${CMAKE_DL_LIBS})
@@ -1856,16 +1853,16 @@ if (NOT SDL2_FOUND)
 	target_include_directories(sdl2 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
 	set_target_properties(sdl2 PROPERTIES POSITION_INDEPENDENT_CODE ${SDL_STATIC_PIC})
 	set_target_properties(sdl2 PROPERTIES LINK_FLAGS_RELEASE "${EXTRA_LDFLAGS}")
-	set_target_properties(sdl2 PROPERTIES COMPILE_FLAGS "${CFLAGS} ${EXTRA_CFLAGS}")
+	set_target_properties(sdl2 PROPERTIES COMPILE_FLAGS "${SDL_CFLAGS} ${EXTRA_CFLAGS}")
 	if (MSVC)
 		if (NOT LIBC)
 			set_target_properties(sdl2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
 			set_target_properties(sdl2 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
 			set_target_properties(sdl2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
 		endif()
-	elseif (CMAKE_COMPILER_IS_GNUCC)
+	elseif (USE_CLANG)
 		set_target_properties(sdl2 PROPERTIES COMPILE_FLAGS "-Wno-implicit-fallthrough -Wno-sign-compare -Wno-cast-function-type")
-	else ()
+	else (USE_GCC)
 		set_target_properties(sdl2 PROPERTIES COMPILE_FLAGS "-Wno-implicit-fallthrough -Wno-sign-compare -Wno-cast-function-type")
 	endif()
 else()
