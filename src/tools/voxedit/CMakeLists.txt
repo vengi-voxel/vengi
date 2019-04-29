@@ -102,6 +102,7 @@ set(FILES
 	voxedit/voxedit-keybindings.cfg
 
 	voxedit/scripts/test-layers.cfg
+	voxedit/scripts/test-animate.cfg
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
