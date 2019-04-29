@@ -16,6 +16,7 @@ class LayerListener {
 public:
 	virtual ~LayerListener() {}
 
+	virtual void onLayerChanged(int layerId) {}
 	virtual void onLayerDuplicate(int layerId) {}
 	virtual void onLayerSwapped(int layerId1, int layerId2) {}
 	virtual void onLayerHide(int layerId) {}

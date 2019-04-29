@@ -65,6 +65,19 @@ void LayerManager::construct() {
 			hideLayer(idx, true);
 		}
 	}).setHelp("Hide all layers");
+
+	core::Command::registerCommand("layerrename", [&] (const core::CmdArgs& args) {
+		if (args.size() == 1) {
+			const int layerId = activeLayer();
+			rename(layerId, args[0]);
+		} else if (args.size() == 2) {
+			const int layerId = core::string::toInt(args[0]);
+			rename(layerId, args[1]);
+		} else {
+			Log::info("Usage: layerrename [<layerid>] newname");
+		}
+	}).setHelp("Rename the current layer or the given layer id");
+
 	core::Command::registerCommand("layershowall", [&] (const core::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
 			hideLayer(idx, false);
@@ -97,6 +110,13 @@ void LayerManager::shutdown() {
 	const int size = (int)_layers.size();
 	for (int i = 0; i < size; ++i) {
 		_layers[i].reset();
+	}
+}
+
+void LayerManager::rename(int layerId, const std::string& name) {
+	layer(layerId).name = name;
+	for (auto& listener : _listeners) {
+		listener->onLayerChanged(layerId);
 	}
 }
 

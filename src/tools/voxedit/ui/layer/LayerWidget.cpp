@@ -155,6 +155,21 @@ LayerWidget::~LayerWidget() {
 	voxedit::sceneMgr().layerMgr().unregisterListener(this);
 }
 
+void LayerWidget::onLayerChanged(int layerId) {
+	const int index = _source.getItemIdForLayerId(layerId);
+	if (index == -1) {
+		Log::error("Could not get item id for layer %i", layerId);
+		return;
+	}
+	voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+	const voxedit::Layers& layers = layerMgr.layers();
+	const std::string& finalLayerName = layers[layerId].name;
+	Log::debug("Rename layer %i to %s", layerId, finalLayerName.c_str());
+	_source.getItem(index)->str.set(finalLayerName.c_str());
+	_source.invokeItemChanged(index, _list);
+	_list->invalidateList();
+}
+
 void LayerWidget::onLayerSwapped(int layerId1, int layerId2) {
 	const int index1 = _source.getItemIdForLayerId(layerId1);
 	if (index1 == -1) {
