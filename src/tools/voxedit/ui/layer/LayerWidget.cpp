@@ -245,6 +245,16 @@ void LayerWidget::onLayerDeleted(int layerId, const voxedit::Layer&) {
 
 bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("layeradd")) {
+		voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
+		voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();
+		const int layerId = layerMgr.activeLayer();
+		const voxel::RawVolume* v = sceneMgr.volume(layerId);
+		const voxel::Region& region = v->region();
+		_layerSettings.position = region.getLowerCorner();
+		_layerSettings.size = region.getDimensionsInCells();
+		if (_layerSettings.name.empty()) {
+			_layerSettings.name = layerMgr.layer(layerId).name;
+		}
 		voxedit::LayerWindow* win = new voxedit::LayerWindow(this, TBIDC("scene_new_layer"), _layerSettings);
 		if (!win->show()) {
 			delete win;
@@ -258,7 +268,7 @@ bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 			if (region.isValid()) {
 				voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 				voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
-				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v);
+				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v, v->region().getCentre());
 				layerMgr.setActiveLayer(layerId);
 			} else {
 				_layerSettings.reset();
