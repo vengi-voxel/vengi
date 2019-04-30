@@ -60,6 +60,7 @@ my own engine and evolved into something that others might find useful, too.
 * Add color dialog for ambient and diffuse color
 * Export layers as single meshes
 * Rotate around reference position
+* Layer groups to e.g. rotate and move a whole group
 
 # Needed improvements
 

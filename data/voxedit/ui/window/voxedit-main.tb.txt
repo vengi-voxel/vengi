@@ -141,11 +141,11 @@ TBLayout: distribution: gravity, axis: y
 
 					TBSection: value: 1, text: "Rotate on axis"
 						TBLayout: position: left top, axis: x
-							TBButton: id: rotatex, @include: definitions>menubutton, command: "rotatex"
+							TBButton: id: rotatex, @include: definitions>menubutton, command: "rotate 90 0 0"
 								TBSkinImage: skin: voxedit-axis-x
-							TBButton: id: rotatey, @include: definitions>menubutton, command: "rotatey"
+							TBButton: id: rotatey, @include: definitions>menubutton, command: "rotate 0 90 0"
 								TBSkinImage: skin: voxedit-axis-y
-							TBButton: id: rotatez, @include: definitions>menubutton, command: "rotatez"
+							TBButton: id: rotatez, @include: definitions>menubutton, command: "rotate 0 0 90"
 								TBSkinImage: skin: voxedit-axis-z
 
 					TBSection: value: 1, text: "Mirror axis"

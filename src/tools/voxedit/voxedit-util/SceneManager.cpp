@@ -529,10 +529,10 @@ bool SceneManager::newScene(bool force, const std::string& name, const voxel::Re
 	return true;
 }
 
-void SceneManager::rotate(int angleX, int angleY, int angleZ) {
+void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize) {
 	const int layerId = _layerMgr.activeLayer();
 	const voxel::RawVolume* model = volume(layerId);
-	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), false);
+	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), increaseSize);
 	setNewVolume(layerId, newVolume);
 	modified(layerId, newVolume->region());
 }
@@ -724,18 +724,6 @@ void SceneManager::construct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		rotate(x, y, z);
-	}).setHelp("Rotate scene by the given angles (in degree)");
-	core::Command::registerCommand("rotatex", [&] (const core::CmdArgs& args) {
-		const int deg = args.size() == 1 ? core::string::toInt(args[0]) : 90;
-		rotate(deg, 0, 0);
-	}).setHelp("Rotate scene by the given angles (in degree)");
-	core::Command::registerCommand("rotatey", [&] (const core::CmdArgs& args) {
-		const int deg = args.size() == 1 ? core::string::toInt(args[0]) : 90;
-		rotate(0, deg, 0);
-	}).setHelp("Rotate scene by the given angles (in degree)");
-	core::Command::registerCommand("rotatez", [&] (const core::CmdArgs& args) {
-		const int deg = args.size() == 1 ? core::string::toInt(args[0]) : 90;
-		rotate(0, 0, deg);
 	}).setHelp("Rotate scene by the given angles (in degree)");
 
 	core::Command::registerCommand("layermerge", [&] (const core::CmdArgs& args) {
