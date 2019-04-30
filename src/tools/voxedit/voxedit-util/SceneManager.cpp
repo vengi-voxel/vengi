@@ -723,7 +723,7 @@ void SceneManager::construct() {
 		const int x = core::string::toInt(args[0]);
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
-		rotate(x, y, z);
+		rotate(x, y, z, true);
 	}).setHelp("Rotate scene by the given angles (in degree)");
 
 	core::Command::registerCommand("layermerge", [&] (const core::CmdArgs& args) {
