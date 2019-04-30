@@ -61,6 +61,12 @@ public:
 	int32_t getCentreY() const;
 	/// Gets the 'z' position of the centre.
 	int32_t getCentreZ() const;
+	/// Gets the 'x' position of the centre.
+	float getCentreXf() const;
+	/// Gets the 'y' position of the centre.
+	float getCentreYf() const;
+	/// Gets the 'z' position of the centre.
+	float getCentreZf() const;
 	/// Gets the 'x' position of the lower corner.
 	int32_t getLowerX() const;
 	/// Gets the 'y' position of the lower corner.
@@ -76,6 +82,7 @@ public:
 
 	/// Gets the centre of the region
 	glm::ivec3 getCentre() const;
+	glm::vec3 getCentref() const;
 	/// Gets the position of the lower corner.
 	glm::ivec3 getLowerCorner() const;
 	/// Gets the position of the upper corner.
@@ -237,6 +244,18 @@ inline int32_t Region::getCentreZ() const {
 	return (m_iLowerZ + m_iUpperZ) / 2;
 }
 
+inline float Region::getCentreXf() const {
+	return float(m_iLowerX + m_iUpperX) / 2.0f;
+}
+
+inline float Region::getCentreYf() const {
+	return float(m_iLowerY + m_iUpperY) / 2.0f;
+}
+
+inline float Region::getCentreZf() const {
+	return float(m_iLowerZ + m_iUpperZ) / 2.0f;
+}
+
 /**
  * @return The 'x' position of the lower corner.
  */
@@ -284,6 +303,10 @@ inline int32_t Region::getUpperZ() const {
  */
 inline glm::ivec3 Region::getCentre() const {
 	return glm::ivec3(getCentreX(), getCentreY(), getCentreZ());
+}
+
+inline glm::vec3 Region::getCentref() const {
+	return glm::vec3(getCentreXf(), getCentreYf(), getCentreZf());
 }
 
 /**
