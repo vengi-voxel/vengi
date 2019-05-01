@@ -65,6 +65,7 @@ public:
 	void mouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY);
 	void mouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks);
 	void mouseButtonRelease(int32_t x, int32_t y, uint8_t button);
+	void dropFile(const std::string& file);
 	void textInput(const std::string& text);
 	void keyRelease(int32_t key, int16_t modifier = 0);
 	void keyPress(int32_t key, int16_t modifier = 0);

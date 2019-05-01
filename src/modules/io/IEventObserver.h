@@ -76,6 +76,9 @@ public:
 	virtual void onControllerButtonRelease(const std::string& button, uint32_t id) {
 	}
 
+	virtual void onDropFile(const std::string& file) {
+	}
+
 	virtual bool onTextInput(const std::string& text) {
 		return false;
 	}

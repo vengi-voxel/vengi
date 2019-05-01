@@ -36,6 +36,8 @@ public:
 
 	video::MeshPoolPtr meshPool() const;
 
+	void onDropFile(const std::string& file) override;
+
 	core::AppState onConstruct() override;
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;

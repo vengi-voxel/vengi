@@ -55,6 +55,10 @@ core::AppState VoxEdit::onCleanup() {
 	return state;
 }
 
+void VoxEdit::onDropFile(const std::string& file) {
+	_sceneMgr.load(file);
+}
+
 core::AppState VoxEdit::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 

@@ -40,6 +40,9 @@ inline std::string EventHandler::getControllerButtonName(uint8_t button) const {
 
 bool EventHandler::handleEvent(SDL_Event &event) {
 	switch (event.type) {
+	case SDL_DROPFILE:
+		dropFile(event.drop.file);
+		break;
 	case SDL_TEXTINPUT:
 		textInput(std::string(event.text.text));
 		break;
@@ -276,6 +279,12 @@ void EventHandler::mouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_
 void EventHandler::mouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 	for (IEventObserver* observer : _observers) {
 		observer->onMouseButtonRelease(x, y, button);
+	}
+}
+
+void EventHandler::dropFile(const std::string& file) {
+	for (IEventObserver* observer : _observers) {
+		observer->onDropFile(file);
 	}
 }
 
