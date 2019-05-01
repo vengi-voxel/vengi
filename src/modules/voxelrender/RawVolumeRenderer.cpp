@@ -275,34 +275,32 @@ bool RawVolumeRenderer::extract(int idx, const voxel::Region& region, bool updat
 	std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > extracted;
 
 	for (int cx = lowerX; cx <= upperX; ++cx) {
-		if (!completeRegion.containsPointInX(cx)) {
-			continue;
-		}
 		const int x = glm::floor(cx / size.x);
 		for (int cy = lowerY; cy <= upperY; ++cy) {
-			if (!completeRegion.containsPointInY(cy)) {
-				continue;
-			}
 			const int y = glm::floor(cy / size.y);
 			for (int cz = lowerZ; cz <= upperZ; ++cz) {
-				if (!completeRegion.containsPointInZ(cz)) {
-					continue;
-				}
 				const int z = glm::floor(cz / size.z);
 				const glm::ivec3 mins(x * meshSize.x, y * meshSize.y, z * meshSize.z);
+				const glm::ivec3 maxs = mins + meshSize - 1;
+				const voxel::Region region(mins, maxs);
+				if (!voxel::intersects(completeRegion, region)) {
+					for (auto& i : _meshes[mins]) {
+						delete i;
+					}
+					_meshes.erase(mins);
+					continue;
+				}
 
 				auto i = extracted.insert(mins);
 				if (!i.second) {
 					continue;
 				}
 
-				const glm::ivec3 maxs = mins + meshSize - 1;
-
 				Meshes& meshes = _meshes[mins];
 				if (meshes[idx] == nullptr) {
 					meshes[idx] = new voxel::Mesh(128, 128, true);
 				}
-				extract(volume, voxel::Region{mins, maxs}, meshes[idx]);
+				extract(volume, region, meshes[idx]);
 			}
 		}
 	}
