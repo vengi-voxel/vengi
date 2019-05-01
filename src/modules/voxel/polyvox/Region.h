@@ -88,6 +88,9 @@ public:
 	/// Gets the position of the upper corner.
 	glm::ivec3 getUpperCorner() const;
 
+	glm::vec3 getLowerCornerf() const;
+	glm::vec3 getUpperCornerf() const;
+
 	glm::ivec3 getRandomPosition(math::Random& random) const;
 
 	/// Gets the width of the region measured in voxels.
@@ -321,6 +324,14 @@ inline glm::ivec3 Region::getLowerCorner() const {
  */
 inline glm::ivec3 Region::getUpperCorner() const {
 	return glm::ivec3(m_iUpperX, m_iUpperY, m_iUpperZ);
+}
+
+inline glm::vec3 Region::getLowerCornerf() const {
+	return glm::vec3(m_iLowerX, m_iLowerY, m_iLowerZ);
+}
+
+inline glm::vec3 Region::getUpperCornerf() const {
+	return glm::vec3(m_iUpperX, m_iUpperY, m_iUpperZ);
 }
 
 inline glm::ivec3 Region::getRandomPosition(math::Random& random) const {
