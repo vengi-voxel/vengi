@@ -533,8 +533,10 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize)
 	const int layerId = _layerMgr.activeLayer();
 	const voxel::RawVolume* model = volume(layerId);
 	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), increaseSize);
+	voxel::Region r = newVolume->region();
+	r.accumulate(model->region());
 	setNewVolume(layerId, newVolume);
-	modified(layerId, newVolume->region());
+	modified(layerId, r);
 }
 
 void SceneManager::move(int x, int y, int z) {
