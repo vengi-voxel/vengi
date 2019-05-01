@@ -42,44 +42,46 @@ public:
 			layerMgr.hideLayer(_layerId, !item->visible());
 			return true;
 		}
-		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("delete")) {
-			layerMgr.deleteLayer(_layerId);
-			return true;
-		}
-		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("layer_move_window") && ev.ref_id == TBIDC("ok")) {
-			core::Command::execute("move %i %i %i", _moveSettings.move.x, _moveSettings.move.y, _moveSettings.move.z);
-			return true;
-		}
-		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("layer_rename_window") && ev.ref_id == TBIDC("ok")) {
-			core::Command::execute("layerrename %i \"%s\"", _layerId, _renameSettings.name.c_str());
-			return true;
-		}
-		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("layerpopupmenu")) {
-			if (ev.ref_id == TBIDC("layermove")) {
-				voxedit::LayerMoveWindow* win = new voxedit::LayerMoveWindow(this, _moveSettings);
-				if (!win->show()) {
-					delete win;
-				}
+		if (ev.type == tb::EVENT_TYPE_CLICK ) {
+			if (ev.target->getID() == TBIDC("delete")) {
+				layerMgr.deleteLayer(_layerId);
 				return true;
-			} else if (ev.ref_id == TBIDC("layerrename")) {
-				voxedit::LayerRenameWindow* win = new voxedit::LayerRenameWindow(this, _renameSettings);
-				if (!win->show()) {
-					delete win;
+			}
+			if (ev.target->getID() == TBIDC("layer_move_window") && ev.ref_id == TBIDC("ok")) {
+				core::Command::execute("move %i %i %i", _moveSettings.move.x, _moveSettings.move.y, _moveSettings.move.z);
+				return true;
+			}
+			if (ev.target->getID() == TBIDC("layer_rename_window") && ev.ref_id == TBIDC("ok")) {
+				core::Command::execute("layerrename %i \"%s\"", _layerId, _renameSettings.name.c_str());
+				return true;
+			}
+			if (ev.target->getID() == TBIDC("layerpopupmenu")) {
+				if (ev.ref_id == TBIDC("layermove")) {
+					voxedit::LayerMoveWindow* win = new voxedit::LayerMoveWindow(this, _moveSettings);
+					if (!win->show()) {
+						delete win;
+					}
+					return true;
+				} else if (ev.ref_id == TBIDC("layerrename")) {
+					voxedit::LayerRenameWindow* win = new voxedit::LayerRenameWindow(this, _renameSettings);
+					if (!win->show()) {
+						delete win;
+					}
+					return true;
+				}
+				static const char *ACTIONS[] = {
+					"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall",
+					"layermoveup", "layermovedown", "layermerge",
+					nullptr
+				};
+				for (const char** action = ACTIONS; *action != nullptr; ++action) {
+					if (ev.ref_id == TBIDC(*action)) {
+						core::executeCommands(*action);
+						break;
+					}
 				}
 				return true;
 			}
-			static const char *ACTIONS[] = {
-				"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall",
-				"layermoveup", "layermovedown", "layermerge",
-				nullptr
-			};
-			for (const char** action = ACTIONS; *action != nullptr; ++action) {
-				if (ev.ref_id == TBIDC(*action)) {
-					core::executeCommands(*action);
-					break;
-				}
-			}
-			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CONTEXT_MENU && ev.target == this) {
 			layerMgr.setActiveLayer(_layerId);
