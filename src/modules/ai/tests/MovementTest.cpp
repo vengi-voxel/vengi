@@ -41,13 +41,13 @@ TEST_F(MovementTest, testFlee) {
 	entity->setPosition(glm::vec3(0, 0, 1));
 	const ai::MoveVector& mvPosZ = flee.execute(ai, _speed);
 	EXPECT_EQ(glm::vec3(0.0f, 0.0f, _speed), mvPosZ.getVector()) << ::testing::PrintToString(mvPosZ.getVector());
-	EXPECT_FLOAT_EQ(glm::two_pi<float>(), mvPosZ.getOrientation(1.0f));
+	EXPECT_FLOAT_EQ(glm::half_pi<float>(), mvPosZ.getOrientation(1.0f));
 
 	// flee into negative z
 	entity->setPosition(glm::vec3(0, 0, -1));
 	const ai::MoveVector& mvNegZ = flee.execute(ai, _speed);
 	EXPECT_EQ(glm::vec3(0.0f, 0.0f, -_speed), mvNegZ.getVector()) << ::testing::PrintToString(mvNegZ.getVector());
-	EXPECT_FLOAT_EQ(glm::two_pi<float>() + glm::pi<float>(), mvNegZ.getOrientation(1.0f));
+	EXPECT_FLOAT_EQ(glm::half_pi<float>() + glm::pi<float>(), mvNegZ.getOrientation(1.0f));
 }
 
 TEST_F(MovementTest, testWanderWithoutOrientationChange) {
