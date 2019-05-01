@@ -34,15 +34,15 @@ public:
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
 		voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
-		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("visible")) {
-			const int itemId = _source->getItemIdForLayerId(_layerId);
-			LayerItem *item = _source->getItem(itemId);
-			item->setVisible(ev.target->getValue() ? true : false);
-			_source->invokeItemChanged(itemId, _sourceViewer);
-			layerMgr.hideLayer(_layerId, !item->visible());
-			return true;
-		}
 		if (ev.type == tb::EVENT_TYPE_CLICK ) {
+			if (ev.target->getID() == TBIDC("visible")) {
+				const int itemId = _source->getItemIdForLayerId(_layerId);
+				LayerItem *item = _source->getItem(itemId);
+				item->setVisible(ev.target->getValue() ? true : false);
+				_source->invokeItemChanged(itemId, _sourceViewer);
+				layerMgr.hideLayer(_layerId, !item->visible());
+				return true;
+			}
 			if (ev.target->getID() == TBIDC("delete")) {
 				layerMgr.deleteLayer(_layerId);
 				return true;
