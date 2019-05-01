@@ -65,4 +65,5 @@ my own engine and evolved into something that others might find useful, too.
 # Needed improvements
 
 * Allow to rename layers from the ui
+* Allow to shift/move layer from the ui
 * Fix memento states for merge, rename and move of layers
