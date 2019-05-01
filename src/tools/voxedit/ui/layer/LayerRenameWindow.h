@@ -21,6 +21,7 @@ protected:
 		if (tb::TBEditField* f = getWidgetByIDAndType<tb::TBEditField>("name")) {
 			f->setText(_settings.name.c_str());
 		}
+		Super::onShow();
 	}
 public:
 	LayerRenameWindow(tb::TBWidget *target, LayerRenameSettings& settings) :
