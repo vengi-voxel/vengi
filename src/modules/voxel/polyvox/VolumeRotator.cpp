@@ -48,12 +48,9 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 	voxel::RawVolume::Sampler destSampler(destination);
 	voxel::RawVolume::Sampler srcSampler(source);
 
-	const int32_t depth = srcRegion.getDepthInVoxels();
-	const int32_t height = srcRegion.getHeightInVoxels();
-	const int32_t width = srcRegion.getWidthInVoxels();
-	for (int32_t z = 0; z < depth; z++) {
-		for (int32_t y = 0; y < height; y++) {
-			for (int32_t x = 0; x < width; x++) {
+	for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
+		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
+			for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
 				srcSampler.setPosition(x, y, z);
 				const Voxel& v = srcSampler.voxel();
 				if (v == empty) {
