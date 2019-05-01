@@ -32,18 +32,15 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 	const glm::mat4& rot = glm::mat4_cast(quat);
 #endif
 	const voxel::Region& srcRegion = source->region();
-	const glm::ivec3& srcCenter = srcRegion.getCentre();
+	const glm::vec3 rotateAround(srcRegion.getCentref());
 	voxel::Region destRegion;
 
 	if (increaseSize) {
-		const glm::vec4 mins(glm::vec3(srcRegion.getLowerCorner()) + 0.5f, 1.0f);
-		const glm::vec4 maxs(glm::vec3(srcRegion.getUpperCorner()) + 0.5f, 1.0f);
-		const glm::vec4& newMins = rot * mins;
-		const glm::vec4& newMaxs = rot * maxs;
-		const glm::ivec3 vertices[] = { glm::vec3(newMins), glm::vec3(newMaxs) };
-		math::AABB<int> aabb = math::AABB<int>::construct(vertices, SDL_arraysize(vertices));
-		aabb.shift(-aabb.getLowerCorner());
-		destRegion = voxel::Region(aabb.getLowerCorner(), aabb.getUpperCorner());
+		const glm::vec3 rotated1 = glm::rotate(rot, srcRegion.getLowerCornerf() - rotateAround);
+		const glm::vec3 rotated2 = glm::rotate(rot, srcRegion.getUpperCornerf() - rotateAround);
+		const glm::vec3 minsf = glm::min(rotated1, rotated2) + rotateAround;
+		const glm::vec3 maxsf = glm::max(rotated1, rotated2) + rotateAround;
+		destRegion = voxel::Region(glm::ivec3(minsf), glm::ivec3(maxsf));
 	} else {
 		destRegion = srcRegion;
 	}
@@ -62,9 +59,10 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 				if (v == empty) {
 					continue;
 				}
-				const glm::vec4 pos(x - srcCenter.x + 0.5f, y - srcCenter.y + 0.5f, z - srcCenter.z + 0.5f, 1.0f);
-				const glm::vec4 newPos = rot * pos;
-				const glm::ivec3 volumePos(glm::ivec3(newPos) + srcCenter);
+				const glm::vec3 pos(x - rotateAround.x, y - rotateAround.y, z - rotateAround.z);
+				const glm::vec3 rotatedPos = glm::rotate(rot, pos);
+				const glm::vec3 newPos = rotatedPos + rotateAround;
+				const glm::ivec3 volumePos(newPos);
 				if (!destRegion.containsPoint(volumePos)) {
 					continue;
 				}
