@@ -9,6 +9,9 @@
 #include "LayerWindow.h"
 
 class LayerItem: public tb::TBGenericStringItem {
+private:
+	int _layerId;
+	bool _visible;
 public:
 	LayerItem(int layerId, const char *name, bool visible = true) :
 		tb::TBGenericStringItem(name, TBIDC(name)), _layerId(layerId), _visible(visible) {
@@ -25,9 +28,6 @@ public:
 	inline void setLayerId(int layerId) {
 		_layerId = layerId;
 	}
-private:
-	int _layerId;
-	bool _visible;
 };
 
 class LayerItemSource: public tb::TBSelectItemSourceList<LayerItem> {
@@ -43,6 +43,9 @@ public:
 class LayerWidget: public tb::TBWidget, public voxedit::LayerListener {
 private:
 	using Super = tb::TBWidget;
+	tb::TBSelectList *_list;
+	LayerItemSource _source;
+	voxedit::LayerSettings _layerSettings;
 public:
 	TBOBJECT_SUBCLASS(LayerWidget, tb::TBWidget);
 
@@ -57,10 +60,6 @@ public:
 	void onActiveLayerChanged(int old, int active) override;
 	void onLayerAdded(int layerId, const voxedit::Layer& layer, voxel::RawVolume* volume, const voxel::Region& region) override;
 	void onLayerDeleted(int layerId, const voxedit::Layer& layer) override;
-private:
-	tb::TBSelectList *_list;
-	LayerItemSource _source;
-	voxedit::LayerSettings _layerSettings;
 };
 
 UIWIDGET_FACTORY(LayerWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)

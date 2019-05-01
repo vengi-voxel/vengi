@@ -56,17 +56,15 @@ public:
 class LayerWindow : public AbstractLayerPopupWindow {
 private:
 	using Super = AbstractLayerPopupWindow;
+	LayerSettings& _layerSettings;
+	LayerWindowSettings _layerWindowSettings;
+protected:
+	void onShow() override;
 public:
 	LayerWindow(tb::TBWidget *target, const tb::TBID &id, LayerSettings& layerSettings, LayerWindowSettings* settings = nullptr);
 	virtual ~LayerWindow() {}
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override;
-protected:
-	void onCreate() override;
-
-private:
-	LayerSettings& _layerSettings;
-	LayerWindowSettings _layerWindowSettings;
 };
 
 }

@@ -16,6 +16,12 @@ class LayerRenameWindow : public AbstractLayerPopupWindow {
 private:
 	using Super = AbstractLayerPopupWindow;
 	LayerRenameSettings& _settings;
+protected:
+	void onShow() override {
+		if (tb::TBEditField* f = getWidgetByIDAndType<tb::TBEditField>("name")) {
+			f->setText(_settings.name.c_str());
+		}
+	}
 public:
 	LayerRenameWindow(tb::TBWidget *target, LayerRenameSettings& settings) :
 		Super(target, TBIDC("layer_rename_window"), "ui/window/voxedit-layer-rename.tb.txt"), _settings(settings) {
@@ -29,12 +35,6 @@ public:
 			return true;
 		}
 		return Super::onEvent(ev);
-	}
-protected:
-	void onCreate() {
-		if (tb::TBEditField* f = getWidgetByIDAndType<tb::TBEditField>("name")) {
-			f->setText(_settings.name.c_str());
-		}
 	}
 };
 

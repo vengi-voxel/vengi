@@ -28,10 +28,6 @@ AbstractLayerPopupWindow::~AbstractLayerPopupWindow() {
 }
 
 bool AbstractLayerPopupWindow::show() {
-	return create(_file);
-}
-
-bool AbstractLayerPopupWindow::create(const std::string& file) {
 	tb::TBWidget *target = _target.get();
 	if (target == nullptr) {
 		return false;
@@ -39,12 +35,12 @@ bool AbstractLayerPopupWindow::create(const std::string& file) {
 
 	tb::TBWidget *root = target->getParentRoot();
 
-	const std::string& source = core::App::getInstance()->filesystem()->load(file);
+	const std::string& source = core::App::getInstance()->filesystem()->load(_file);
 	if (!tb::g_widgets_reader->loadData(getContentRoot(), source.c_str())) {
 		return false;
 	}
 
-	onCreate();
+	onShow();
 
 	addButton("ok", true);
 	addButton("cancel", false);

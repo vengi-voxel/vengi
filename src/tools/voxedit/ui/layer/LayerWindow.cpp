@@ -20,7 +20,7 @@ LayerWindow::LayerWindow(tb::TBWidget *target, const tb::TBID &id, LayerSettings
 	}
 }
 
-void LayerWindow::onCreate() {
+void LayerWindow::onShow() {
 	if (tb::TBEditField* f = getWidgetByIDAndType<tb::TBEditField>("pos.x")) {
 		f->setTextFormatted("%i", _layerSettings.position.x);
 	}
