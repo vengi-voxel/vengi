@@ -7,7 +7,10 @@ set(SRCS
 
 	ui/palette/PaletteWidget.h ui/palette/PaletteWidget.cpp
 
+	ui/layer/AbstractLayerPopupWindow.h ui/layer/AbstractLayerPopupWindow.cpp
 	ui/layer/LayerWidget.h ui/layer/LayerWidget.cpp
+	ui/layer/LayerMoveWindow.h ui/layer/LayerMoveWindow.cpp
+	ui/layer/LayerRenameWindow.h ui/layer/LayerRenameWindow.cpp
 	ui/layer/LayerWindow.h ui/layer/LayerWindow.cpp
 
 	ui/VoxEditWindow.h ui/VoxEditWindow.cpp
@@ -18,6 +21,8 @@ set(SRCS
 )
 
 set(UI_WINDOWS
+	voxedit/ui/window/voxedit-layer-rename.tb.txt
+	voxedit/ui/window/voxedit-layer-move.tb.txt
 	voxedit/ui/window/voxedit-layer.tb.txt
 	voxedit/ui/window/voxedit-main.tb.txt
 	voxedit/ui/window/voxedit-noise.tb.txt

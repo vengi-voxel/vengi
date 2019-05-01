@@ -393,10 +393,10 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	}
 	if (id == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			LayerWindow* win = new LayerWindow(this, TBIDC("new_scene"), _layerSettings);
 			LayerWindowSettings s;
 			s.type = LayerWindowType::NewScene;
-			if (!win->show(&s)) {
+			LayerWindow* win = new LayerWindow(this, TBIDC("new_scene"), _layerSettings, &s);
+			if (!win->show()) {
 				delete win;
 			}
 		}
@@ -856,10 +856,10 @@ bool VoxEditWindow::createNew(bool force) {
 				tr("There are unsaved modifications.\nDo you wish to discard them and close?"),
 				PopupType::YesNo, "unsaved_changes_new");
 	} else {
-		LayerWindow* win = new LayerWindow(this, TBIDC("new_scene"), _layerSettings);
 		LayerWindowSettings s;
 		s.type = LayerWindowType::NewScene;
-		if (!win->show(&s)) {
+		LayerWindow* win = new LayerWindow(this, TBIDC("new_scene"), _layerSettings, &s);
+		if (!win->show()) {
 			delete win;
 		}
 	}

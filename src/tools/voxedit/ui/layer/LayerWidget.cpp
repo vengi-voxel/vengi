@@ -7,6 +7,8 @@
 #include "core/command/CommandHandler.h"
 #include "io/Filesystem.h"
 #include "voxedit-util/SceneManager.h"
+#include "LayerRenameWindow.h"
+#include "LayerMoveWindow.h"
 
 class LayerItemWidget: public tb::TBLayout {
 public:
@@ -42,6 +44,19 @@ public:
 			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("layerpopupmenu")) {
+			if (ev.ref_id == TBIDC("layermove")) {
+				voxedit::LayerMoveWindow* win = new voxedit::LayerMoveWindow(this);
+				if (!win->show()) {
+					delete win;
+				}
+				return true;
+			} else if (ev.ref_id == TBIDC("layerrename")) {
+				voxedit::LayerRenameWindow* win = new voxedit::LayerRenameWindow(this);
+				if (!win->show()) {
+					delete win;
+				}
+				return true;
+			}
 			static const char *ACTIONS[] = {
 				"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall",
 				"layermoveup", "layermovedown", "layermerge",
@@ -64,6 +79,8 @@ public:
 				const int n = _source->getNumItems();
 				tb::TBGenericStringItemSource *source = menu->getList()->getDefaultSource();
 				source->addItem(new tb::TBGenericStringItem(tr("Duplicate"), TBIDC("layerduplicate")));
+				source->addItem(new tb::TBGenericStringItem(tr("Move"), TBIDC("layermove")));
+				source->addItem(new tb::TBGenericStringItem(tr("Rename"), TBIDC("layerrename")));
 				if (n > 1) {
 					source->addItem(new tb::TBGenericStringItem(tr("Delete"), TBIDC("layerdelete")));
 					LayerItem* item = _source->getItemForLayerId(_layerId);

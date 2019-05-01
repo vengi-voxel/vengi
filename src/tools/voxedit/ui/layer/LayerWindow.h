@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ui/turbobadger/Window.h"
+#include "AbstractLayerPopupWindow.h"
 #include "voxel/polyvox/Region.h"
 
 namespace voxedit {
@@ -53,34 +53,20 @@ public:
 	tb::TBID iconSkin;
 };
 
-class LayerWindow : public tb::TBWindow, private tb::TBWidgetListener {
+class LayerWindow : public AbstractLayerPopupWindow {
 private:
-	using Super = tb::TBWindow;
+	using Super = AbstractLayerPopupWindow;
 public:
-	TBOBJECT_SUBCLASS(LayerWindow, tb::TBWindow);
-
-	LayerWindow(TBWidget *target, const tb::TBID &id, LayerSettings& layerSettings);
-	virtual ~LayerWindow();
-
-	bool show(LayerWindowSettings* settings = nullptr);
-
-	TBWidget *getEventDestination() override {
-		return _target.get();
-	}
+	LayerWindow(tb::TBWidget *target, const tb::TBID &id, LayerSettings& layerSettings, LayerWindowSettings* settings = nullptr);
+	virtual ~LayerWindow() {}
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override;
-	void onDie() override;
+protected:
+	void onCreate() override;
 
 private:
-	void addButton(const tb::TBID &id, bool focused);
-
-	void onWidgetDelete(TBWidget *widget) override;
-	bool onWidgetDying(TBWidget *widget) override;
-
-	tb::TBWidgetSafePointer _dimmer;
-	tb::TBWidgetSafePointer _target;
-
 	LayerSettings& _layerSettings;
+	LayerWindowSettings _layerWindowSettings;
 };
 
 }
