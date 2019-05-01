@@ -51,9 +51,6 @@ void LayerWindow::onCreate() {
 	} else if (_layerWindowSettings.type == LayerWindowType::Edit) {
 		setText(tr("Edit Layer"));
 	}
-
-	addButton("ok", true);
-	addButton("cancel", false);
 }
 
 bool LayerWindow::onEvent(const tb::TBWidgetEvent &ev) {

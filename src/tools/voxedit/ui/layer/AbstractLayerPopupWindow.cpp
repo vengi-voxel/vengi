@@ -46,6 +46,9 @@ bool AbstractLayerPopupWindow::create(const std::string& file) {
 
 	onCreate();
 
+	addButton("ok", true);
+	addButton("cancel", false);
+
 	resizeToFitContent();
 
 	if (tb::TBDimmer *dimmer = new tb::TBDimmer()) {
@@ -61,11 +64,11 @@ bool AbstractLayerPopupWindow::create(const std::string& file) {
 }
 
 void AbstractLayerPopupWindow::addButton(const tb::TBID &id, bool focused) {
-	tb::TBLayout *layout = getWidgetByIDAndType<tb::TBLayout>(4);
+	tb::TBLayout *layout = getWidgetByIDAndType<tb::TBLayout>(TBIDC("buttons"));
 	if (layout == nullptr) {
 		return;
 	}
-	if (tb::TBButton *btn = new tb::TBButton) {
+	if (tb::TBButton *btn = new tb::TBButton()) {
 		btn->setID(id);
 		btn->setText(tb::g_tb_lng->getString(btn->getID()));
 		layout->addChild(btn);

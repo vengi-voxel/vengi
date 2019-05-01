@@ -25,7 +25,7 @@ public:
 	void onDie() override;
 
 protected:
-	virtual void onCreate() = 0;
+	virtual void onCreate() {}
 	bool create(const std::string& file);
 	void addButton(const tb::TBID &id, bool focused);
 

@@ -9,9 +9,9 @@ set(SRCS
 
 	ui/layer/AbstractLayerPopupWindow.h ui/layer/AbstractLayerPopupWindow.cpp
 	ui/layer/LayerWidget.h ui/layer/LayerWidget.cpp
-	ui/layer/LayerMoveWindow.h ui/layer/LayerMoveWindow.cpp
-	ui/layer/LayerRenameWindow.h ui/layer/LayerRenameWindow.cpp
 	ui/layer/LayerWindow.h ui/layer/LayerWindow.cpp
+	ui/layer/LayerMoveWindow.h
+	ui/layer/LayerRenameWindow.h
 
 	ui/VoxEditWindow.h ui/VoxEditWindow.cpp
 	ui/TreeWindow.h ui/TreeWindow.cpp

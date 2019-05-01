@@ -1,0 +1,10 @@
+TBLayout: distribution: available, size: available, axis: y
+	TBClickLabel: text: Move
+		TBLayout: axis: x
+			TBEditField: type: number, id: move.x
+				lp: width: 60
+			TBEditField: type: number, id: move.y
+				lp: width: 60
+			TBEditField: type: number, id: move.z
+				lp: width: 60
+	TBLayout: distribution-position: right bottom, id: buttons
