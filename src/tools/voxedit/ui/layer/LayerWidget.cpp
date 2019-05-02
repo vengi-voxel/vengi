@@ -27,6 +27,9 @@ public:
 		if (tb::TBCheckBox *checkbox = getWidgetByIDAndType<tb::TBCheckBox>(TBIDC("visible"))) {
 			checkbox->setValue(item->visible() ? 1 : 0);
 		}
+		if (tb::TBCheckBox *checkbox = getWidgetByIDAndType<tb::TBCheckBox>(TBIDC("locked"))) {
+			checkbox->setValue(item->locked() ? 1 : 0);
+		}
 		if (tb::TBTextField *name = getWidgetByIDAndType<tb::TBTextField>(TBIDC("name"))) {
 			name->setText(item->str);
 		}
@@ -34,15 +37,15 @@ public:
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
 		voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
-		if (ev.type == tb::EVENT_TYPE_CLICK ) {
+		if (ev.type == tb::EVENT_TYPE_CLICK) {
 			tb::TBWidget* target = ev.target;
 			const tb::TBID& id = target->getID();
 			if (id == TBIDC("visible")) {
-				const int itemId = _source->getItemIdForLayerId(_layerId);
-				LayerItem *item = _source->getItem(itemId);
-				item->setVisible(ev.target->getValue() ? true : false);
-				_source->invokeItemChanged(itemId, _sourceViewer);
-				layerMgr.hideLayer(_layerId, !item->visible());
+				layerMgr.hideLayer(_layerId, ev.target->getValue() ? false : true);
+				return true;
+			}
+			if (id == TBIDC("locked")) {
+				layerMgr.lockLayer(_layerId, ev.target->getValue() ? true : false);
 				return true;
 			}
 			if (id == TBIDC("delete")) {
@@ -226,6 +229,30 @@ void LayerWidget::onLayerSwapped(int layerId1, int layerId2) {
 	_source.getItem(index1)->setLayerId(layerId2);
 	_source.getItem(index2)->setLayerId(layerId1);
 	_list->invalidateList();
+}
+
+void LayerWidget::onLayerUnlocked(int layerId) {
+	const int index = _source.getItemIdForLayerId(layerId);
+	if (index == -1) {
+		return;
+	}
+	LayerItem* item = _source.getItem(index);
+	if (item != nullptr) {
+		item->setLocked(false);
+		_source.invokeItemChanged(index, nullptr);
+	}
+}
+
+void LayerWidget::onLayerLocked(int layerId) {
+	const int index = _source.getItemIdForLayerId(layerId);
+	if (index == -1) {
+		return;
+	}
+	LayerItem* item = _source.getItem(index);
+	if (item != nullptr) {
+		item->setLocked(true);
+		_source.invokeItemChanged(index, nullptr);
+	}
 }
 
 void LayerWidget::onLayerHide(int layerId) {

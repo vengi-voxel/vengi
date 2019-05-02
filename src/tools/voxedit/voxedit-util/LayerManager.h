@@ -43,7 +43,9 @@ public:
 	const Layer& layer(int layerId) const;
 	Layer& layer(int layerId);
 	int validLayers() const;
+	int nextLockedLayer(int last = -1) const;
 	void hideLayer(int layerId, bool hide);
+	void lockLayer(int layerId, bool lock);
 	bool deleteLayer(int layerId, bool force = false);
 	int addLayer(const char *name, bool visible, voxel::RawVolume* volume, const glm::ivec3& pivot = glm::zero<glm::ivec3>());
 	bool activateLayer(int layerId, const char *name, bool visible, voxel::RawVolume* volume, const voxel::Region& region, const glm::ivec3& pivot = glm::zero<glm::ivec3>());

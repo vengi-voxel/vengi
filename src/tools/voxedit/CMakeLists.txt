@@ -46,6 +46,8 @@ set(FILES
 	voxedit/ui/skin/voxedit-flip-horizontal.png
 	voxedit/ui/skin/voxedit-flip-vertical.png
 	voxedit/ui/skin/voxedit-load.png
+	voxedit/ui/skin/voxedit-lock-layer.png
+	voxedit/ui/skin/voxedit-lock-layer-selected.png
 	voxedit/ui/skin/voxedit-new.png
 	voxedit/ui/skin/voxedit-options.png
 	voxedit/ui/skin/voxedit-override.png

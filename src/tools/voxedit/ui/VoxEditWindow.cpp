@@ -677,7 +677,6 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			const int layerId = layerMgr.activeLayer();
 			voxel::RawVolume* volume = sceneMgr().volume(layerId);
 			if (mgr.aabbEnd(volume, [&] (const voxel::Region& region) {
-				const int layerId = layerMgr.activeLayer();
 				sceneMgr().modified(layerId, region);
 			})) {
 				if (_modBeforeMouse != ModifierType::None) {

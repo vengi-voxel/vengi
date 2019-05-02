@@ -16,11 +16,13 @@ struct Layer {
 	glm::ivec3 pivot { 0 };
 	bool visible = true;
 	bool valid = false;
+	bool locked = false;
 
 	void reset() {
 		name.clear();
 		visible = true;
 		valid = false;
+		locked = false;
 		pivot = glm::zero<glm::ivec3>();
 	}
 };

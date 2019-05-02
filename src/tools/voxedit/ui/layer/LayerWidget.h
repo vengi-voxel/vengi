@@ -12,15 +12,22 @@ class LayerItem: public tb::TBGenericStringItem {
 private:
 	int _layerId;
 	bool _visible;
+	bool _locked;
 public:
-	LayerItem(int layerId, const char *name, bool visible = true) :
-		tb::TBGenericStringItem(name, TBIDC(name)), _layerId(layerId), _visible(visible) {
+	LayerItem(int layerId, const char *name, bool visible = true, bool locked = false) :
+		tb::TBGenericStringItem(name, TBIDC(name)), _layerId(layerId), _visible(visible), _locked(locked) {
 	}
 	inline void setVisible(bool visible) {
 		_visible = visible;
 	}
 	inline bool visible() const {
 		return _visible;
+	}
+	inline void setLocked(bool locked) {
+		_locked = locked;
+	}
+	inline bool locked() const {
+		return _locked;
 	}
 	inline int layerId() const {
 		return _layerId;
@@ -53,6 +60,8 @@ public:
 	~LayerWidget();
 	bool onEvent(const tb::TBWidgetEvent &ev) override;
 
+	void onLayerUnlocked(int layerId) override;
+	void onLayerLocked(int layerId) override;
 	void onLayerChanged(int layerId) override;
 	void onLayerSwapped(int layerId1, int layerId2) override;
 	void onLayerHide(int layerId) override;

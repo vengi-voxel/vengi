@@ -542,13 +542,27 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize)
 }
 
 void SceneManager::move(int x, int y, int z) {
-	const int layerId = _layerMgr.activeLayer();
-	const voxel::RawVolume* model = volume(layerId);
-	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
-	voxel::RawVolumeMoveWrapper wrapper(newVolume);
-	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z));
-	setNewVolume(layerId, newVolume);
-	modified(layerId, newVolume->region());
+	int layerId = _layerMgr.activeLayer();
+	const glm::ivec3 move(x, y, z);
+	if (_layerMgr.layer(layerId).locked) {
+		layerId = _layerMgr.nextLockedLayer(-1);
+		while (layerId != -1) {
+			const voxel::RawVolume* model = volume(layerId);
+			voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
+			voxel::RawVolumeMoveWrapper wrapper(newVolume);
+			voxel::moveVolume(&wrapper, model, move);
+			setNewVolume(layerId, newVolume);
+			modified(layerId, newVolume->region());
+			layerId = _layerMgr.nextLockedLayer(layerId);
+		}
+	} else {
+		const voxel::RawVolume* model = volume(layerId);
+		voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
+		voxel::RawVolumeMoveWrapper wrapper(newVolume);
+		voxel::moveVolume(&wrapper, model, move);
+		setNewVolume(layerId, newVolume);
+		modified(layerId, newVolume->region());
+	}
 }
 
 bool SceneManager::setGridResolution(int resolution) {

@@ -29,9 +29,19 @@ void LayerManager::construct() {
 			setActiveLayer(layerId);
 		}
 	}).setHelp("Add a new layer (with a given name and width, height, depth - all optional)");
+
 	core::Command::registerCommand("layerdelete", [&] (const core::CmdArgs& args) {
 		deleteLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer());
 	}).setHelp("Delete a particular layer by id - or the current active one");
+
+	core::Command::registerCommand("layerlock", [&] (const core::CmdArgs& args) {
+		lockLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer(), true);
+	}).setHelp("Lock a particular layer by id - or the current active one");
+
+	core::Command::registerCommand("layerunlock", [&] (const core::CmdArgs& args) {
+		lockLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer(), false);
+	}).setHelp("Unlock a particular layer by id - or the current active one");
+
 	core::Command::registerCommand("layeractive", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info("Active layer: %i", activeLayer());
@@ -42,6 +52,7 @@ void LayerManager::construct() {
 			}
 		}
 	}).setHelp("Set or print the current active layer");
+
 	core::Command::registerCommand("layerstate", [&] (const core::CmdArgs& args) {
 		if (args.size() != 2) {
 			Log::info("Usage: layerstate <layerid> <true|false>");
@@ -51,11 +62,13 @@ void LayerManager::construct() {
 		const bool newVisibleState = core::string::toBool(args[1]);
 		hideLayer(layerId, !newVisibleState);
 	}).setHelp("Change the visible state of a layer");
+
 	core::Command::registerCommand("layerhideall", [&] (const core::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
 			hideLayer(idx, true);
 		}
 	}).setHelp("Hide all layers");
+
 	core::Command::registerCommand("layerhideothers", [&] (const core::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
 			if (idx == activeLayer()) {
@@ -194,6 +207,39 @@ void LayerManager::hideLayer(int layerId, bool hide) {
 			listener->onLayerShow(layerId);
 		}
 	}
+}
+
+void LayerManager::lockLayer(int layerId, bool lock) {
+	if (layerId < 0 || layerId >= (int)_layers.size()) {
+		Log::debug("Invalid layer id given: %i - can't perform lock", layerId);
+		return;
+	}
+	if (!_layers[layerId].valid) {
+		Log::debug("Attempt to lock an invalid layer id: %i", layerId);
+		return;
+	}
+	_layers[layerId].locked = lock;
+	for (auto& listener : _listeners) {
+		if (lock) {
+			listener->onLayerLocked(layerId);
+		} else {
+			listener->onLayerUnlocked(layerId);
+		}
+	}
+}
+
+int LayerManager::nextLockedLayer(int last) const {
+	++last;
+	if (last < 0) {
+		return -1;
+	}
+	const int n = _layers.size();
+	for (int i = last; i < n; ++i) {
+		if (_layers[i].locked) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 int LayerManager::validLayers() const {
