@@ -82,6 +82,18 @@ public:
 	uint8_t statePosition() const;
 };
 
+class ScopedMementoHandlerLock {
+private:
+	MementoHandler& _handler;
+public:
+	ScopedMementoHandlerLock(MementoHandler& handler) : _handler(handler) {
+		_handler.lock();
+	}
+	~ScopedMementoHandlerLock() {
+		_handler.unlock();
+	}
+};
+
 inline const LayerState& MementoHandler::state() const {
 	return _states[_statePosition];
 }
