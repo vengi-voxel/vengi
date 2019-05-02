@@ -72,7 +72,13 @@ public:
 	void markLayerDeleted(int layer, const std::string& name, const voxel::RawVolume* volume);
 	void markLayerAdded(int layer, const std::string& name, const voxel::RawVolume* volume);
 
+	/**
+	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for
+	 */
 	LayerState undo();
+	/**
+	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for
+	 */
 	LayerState redo();
 	bool canUndo() const;
 	bool canRedo() const;
