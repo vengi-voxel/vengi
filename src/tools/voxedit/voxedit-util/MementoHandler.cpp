@@ -77,7 +77,7 @@ LayerState MementoHandler::undo() {
 	const LayerState& s = state();
 	const voxel::Region region = _states[_statePosition + 1].region;
 	voxel::logRegion("Undo", region);
-	return LayerState{s.type, s.volume == nullptr ? nullptr : new voxel::RawVolume(s.volume), s.layer, s.name, region};
+	return LayerState{_states[_statePosition + 1].type, s.volume == nullptr ? nullptr : new voxel::RawVolume(s.volume), s.layer, s.name, region};
 }
 
 LayerState MementoHandler::redo() {

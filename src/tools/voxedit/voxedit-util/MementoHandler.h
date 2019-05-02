@@ -18,7 +18,8 @@ namespace voxedit {
 enum class MementoType {
 	Modification,
 	LayerAdded,
-	LayerDeleted
+	LayerDeleted,
+	LayerRenamed
 };
 
 struct LayerState {

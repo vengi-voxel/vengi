@@ -64,4 +64,4 @@ my own engine and evolved into something that others might find useful, too.
 
 # Needed improvements
 
-* Fix memento states for merge, rename and move of layers
+* Fix memento states for merge and rename of layers

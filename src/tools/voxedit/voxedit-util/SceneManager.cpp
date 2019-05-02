@@ -400,6 +400,10 @@ voxel::RawVolume* SceneManager::modelVolume() {
 void SceneManager::undo() {
 	const LayerState& s = _mementoHandler.undo();
 	ScopedMementoHandlerLock lock(_mementoHandler);
+	if (s.type == MementoType::LayerRenamed) {
+		_layerMgr.rename(s.layer, s.name);
+		return;
+	}
 	voxel::RawVolume* v = s.volume;
 	if (v == nullptr) {
 		_layerMgr.deleteLayer(s.layer, false);
@@ -412,6 +416,10 @@ void SceneManager::undo() {
 void SceneManager::redo() {
 	const LayerState& s = _mementoHandler.redo();
 	ScopedMementoHandlerLock lock(_mementoHandler);
+	if (s.type == MementoType::LayerRenamed) {
+		_layerMgr.rename(s.layer, s.name);
+		return;
+	}
 	voxel::RawVolume* v = s.volume;
 	if (v == nullptr) {
 		_layerMgr.deleteLayer(s.layer, false);
@@ -1196,6 +1204,7 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 }
 
 void SceneManager::onLayerChanged(int layerId) {
+	_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, nullptr, MementoType::LayerRenamed);
 }
 
 void SceneManager::onLayerDuplicate(int layerId) {
