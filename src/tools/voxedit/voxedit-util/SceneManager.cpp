@@ -1201,6 +1201,9 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	updateLockedPlane(math::Axis::Z);
 }
 
+void SceneManager::onLayerChanged(int layerId) {
+}
+
 void SceneManager::onLayerDuplicate(int layerId) {
 	const Layer& layer = _layerMgr.layer(layerId);
 	const voxel::RawVolume* volume = _volumeRenderer.volume(layerId);

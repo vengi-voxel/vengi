@@ -228,6 +228,7 @@ public:
 	Modifier& modifier();
 	const MementoHandler& mementoHandler() const;
 
+	void onLayerChanged(int layerId) override;
 	void onLayerDuplicate(int layerId) override;
 	void onLayerSwapped(int layerId1, int layerId2) override;
 	void onLayerHide(int layerId) override;
