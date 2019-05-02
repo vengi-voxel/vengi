@@ -399,32 +399,26 @@ voxel::RawVolume* SceneManager::modelVolume() {
 
 void SceneManager::undo() {
 	const LayerState& s = _mementoHandler.undo();
+	ScopedMementoHandlerLock lock(_mementoHandler);
 	voxel::RawVolume* v = s.volume;
 	if (v == nullptr) {
-		_mementoHandler.lock();
 		_layerMgr.deleteLayer(s.layer, false);
-		_mementoHandler.unlock();
 		return;
 	}
 	Log::debug("Volume found in undo state for layer: %i with name %s", s.layer, s.name.c_str());
-	_mementoHandler.lock();
 	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region, referencePosition());
-	_mementoHandler.unlock();
 }
 
 void SceneManager::redo() {
 	const LayerState& s = _mementoHandler.redo();
+	ScopedMementoHandlerLock lock(_mementoHandler);
 	voxel::RawVolume* v = s.volume;
 	if (v == nullptr) {
-		_mementoHandler.lock();
 		_layerMgr.deleteLayer(s.layer, false);
-		_mementoHandler.unlock();
 		return;
 	}
 	Log::debug("Volume found in redo state for layer: %i with name %s", s.layer, s.name.c_str());
-	_mementoHandler.lock();
 	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region, referencePosition());
-	_mementoHandler.unlock();
 }
 
 void SceneManager::resetLastTrace() {
