@@ -44,6 +44,9 @@ public:
 	Layer& layer(int layerId);
 	int validLayers() const;
 	int nextLockedLayer(int last = -1) const;
+
+	void foreachGroupLayer(std::function<void(int)> func);
+
 	void hideLayer(int layerId, bool hide);
 	void lockLayer(int layerId, bool lock);
 	bool deleteLayer(int layerId, bool force = false);

@@ -136,8 +136,6 @@ private:
 	void undo();
 	void redo();
 
-	void foreachGroupLayer(std::function<void(int)> func);
-
 	/**
 	 * @brief Convert a given point cloud to voxels
 	 * @param[in] vertices 3 component vertex data.

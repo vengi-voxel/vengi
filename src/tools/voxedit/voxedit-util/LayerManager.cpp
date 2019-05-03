@@ -228,6 +228,20 @@ void LayerManager::lockLayer(int layerId, bool lock) {
 	}
 }
 
+void LayerManager::foreachGroupLayer(std::function<void(int)> f) {
+	int layerId = activeLayer();
+	if (layer(layerId).locked) {
+		layerId = nextLockedLayer(-1);
+		core_assert(layerId != -1);
+		while (layerId != -1) {
+			f(layerId);
+			layerId = nextLockedLayer(layerId);
+		}
+	} else {
+		f(layerId);
+	}
+}
+
 int LayerManager::nextLockedLayer(int last) const {
 	++last;
 	if (last < 0) {

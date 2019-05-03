@@ -202,7 +202,6 @@ void Modifier::construct() {
 		voxel::RawVolume* volume = sceneMgr().volume(layerId);
 		aabbEnd(volume, [&] (const voxel::Region& region) {
 			sceneMgr().modified(layerId, region);
-			sceneMgr().resetLastTrace();
 		});
 	}).setHelp("Place a voxel to the current cursor position");
 }

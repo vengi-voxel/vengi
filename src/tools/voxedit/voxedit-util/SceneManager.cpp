@@ -325,6 +325,7 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 	}
 	_dirty = true;
 	_needAutoSave = true;
+	resetLastTrace();
 }
 
 void SceneManager::crop() {
@@ -531,20 +532,6 @@ bool SceneManager::newScene(bool force, const std::string& name, const voxel::Re
 	return true;
 }
 
-void SceneManager::foreachGroupLayer(std::function<void(int)> f) {
-	int layerId = _layerMgr.activeLayer();
-	if (_layerMgr.layer(layerId).locked) {
-		layerId = _layerMgr.nextLockedLayer(-1);
-		core_assert(layerId != -1);
-		while (layerId != -1) {
-			f(layerId);
-			layerId = _layerMgr.nextLockedLayer(layerId);
-		}
-	} else {
-		f(layerId);
-	}
-}
-
 void SceneManager::rotate(int layerId, const glm::vec3& angle, bool increaseSize) {
 	const voxel::RawVolume* model = volume(layerId);
 	voxel::RawVolume* newVolume = voxel::rotateVolume(model, angle, voxel::Voxel(), increaseSize);
@@ -556,7 +543,7 @@ void SceneManager::rotate(int layerId, const glm::vec3& angle, bool increaseSize
 
 void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize) {
 	const glm::vec3 angle(angleX, angleY, angleZ);
-	foreachGroupLayer([&] (int layerId) {
+	_layerMgr.foreachGroupLayer([&] (int layerId) {
 		rotate(layerId, angle, increaseSize);
 	});
 }
@@ -572,7 +559,7 @@ void SceneManager::move(int layerId, const glm::ivec3& m) {
 
 void SceneManager::move(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
-	foreachGroupLayer([&] (int layerId) {
+	_layerMgr.foreachGroupLayer([&] (int layerId) {
 		move(layerId, v);
 	});
 }
