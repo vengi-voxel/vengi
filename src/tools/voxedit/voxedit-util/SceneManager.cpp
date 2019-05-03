@@ -688,18 +688,11 @@ void SceneManager::construct() {
 		const int z = core::string::toInt(args[2]);
 		setCursorPosition(glm::ivec3(x, y, z), true);
 	}).setHelp("Set the cursor to the specified position");
+
 	core::Command::registerCommand("setreferencepositiontocursor",
 			[&] (const core::CmdArgs& args) {setReferencePosition(cursorPosition());}).setHelp(
 			"Set the reference position to the current cursor position");
-	core::Command::registerCommand("rotatex",
-			[&] (const core::CmdArgs& args) {rotate(90, 0, 0);}).setHelp(
-			"Rotate the volume around the x axis");
-	core::Command::registerCommand("rotatey",
-			[&] (const core::CmdArgs& args) {rotate(0, 90, 0);}).setHelp(
-			"Rotate the volume around the y axis");
-	core::Command::registerCommand("rotatez",
-			[&] (const core::CmdArgs& args) {rotate(0, 0, 90);}).setHelp(
-			"Rotate the volume around the z axis");
+
 	core::Command::registerCommand("resize", [this] (const core::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc == 1) {
@@ -715,6 +708,7 @@ void SceneManager::construct() {
 			resize(glm::ivec3(1));
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
+
 	core::Command::registerCommand("move", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc != 3) {
@@ -726,12 +720,15 @@ void SceneManager::construct() {
 		const int z = core::string::toInt(args[2]);
 		move(x, y, z);
 	}).setHelp("Move the volume by the given values");
+
 	core::Command::registerCommand("undo",
 			[&] (const core::CmdArgs& args) {undo();}).setHelp(
 			"Undo your last step");
+
 	core::Command::registerCommand("redo",
 			[&] (const core::CmdArgs& args) {redo();}).setHelp(
 			"Redo your last step");
+
 	core::Command::registerCommand("rotate", [&] (const core::CmdArgs& args) {
 		if (args.size() < 3) {
 			Log::info("Expected to get x, y and z angles in degrees");
@@ -790,6 +787,7 @@ void SceneManager::construct() {
 		}
 		_animationSpeed = core::string::toInt(args[0]);
 	}).setHelp("Animate all visible layers with the given delay in millis between the frames");
+
 	core::Command::registerCommand("setcolor", [&] (const core::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Usage: setcolor <index>");
@@ -799,6 +797,7 @@ void SceneManager::construct() {
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		_modifier.setCursorVoxel(voxel);
 	}).setHelp("Set the current selected color");
+
 	core::Command::registerCommand("setcolorrgb", [&] (const core::CmdArgs& args) {
 		if (args.size() != 3) {
 			Log::info("Usage: setcolorrgb <red> <green> <blue> (color range 0-255)");
@@ -813,6 +812,7 @@ void SceneManager::construct() {
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		_modifier.setCursorVoxel(voxel);
 	}).setHelp("Set the current selected color");
+
 	core::Command::registerCommand("pickcolor", [&] (const core::CmdArgs& args) {
 		if (!voxel::isAir(_hitCursorVoxel.getMaterial())) {
 			_modifier.setCursorVoxel(_hitCursorVoxel);

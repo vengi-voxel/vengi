@@ -171,7 +171,6 @@ bool VoxEditWindow::init() {
 	_deleteModifier = getWidgetByType<tb::TBRadioButton>("actiondelete");
 	_overrideModifier = getWidgetByType<tb::TBRadioButton>("actionoverride");
 	_colorizeModifier = getWidgetByType<tb::TBRadioButton>("actioncolorize");
-	_extrudeModifier = getWidgetByType<tb::TBRadioButton>("actionextrude");
 
 	_showAABB = getWidgetByType<tb::TBCheckBox>("optionshowaabb");
 	_showGrid = getWidgetByType<tb::TBCheckBox>("optionshowgrid");
@@ -534,7 +533,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 
 	static const char *ACTIONS[] = {
 		"mirrorx", "mirrory", "mirrorz", "mirrornone",
-		"actionplace", "actiondelete", "actioncolorize", "actionextrude", "actionoverride",
+		"actionplace", "actiondelete", "actioncolorize", "actionoverride",
 		nullptr
 	};
 	for (const char** action = ACTIONS; *action != nullptr; ++action) {
@@ -579,10 +578,6 @@ void VoxEditWindow::onProcess() {
 	} else if ((modifierType & ModifierType::Update) == ModifierType::Update) {
 		if (_colorizeModifier) {
 			_colorizeModifier->setValue(1);
-		}
-	} else if ((modifierType & ModifierType::Extrude) == ModifierType::Extrude) {
-		if (_extrudeModifier) {
-			_extrudeModifier->setValue(1);
 		}
 	}
 

@@ -83,12 +83,6 @@ TBLayout: distribution: gravity, axis: y
 								TBRadioButton
 									id actioncolorize
 									@include definitions>toolbutton
-							TBClickLabel
-								text Extrude
-								TBSkinImage: skin: voxedit-extrude
-								TBRadioButton
-									id actionextrude
-									@include definitions>toolbutton
 
 					TBSeparator: gravity: left right, skin: separator
 

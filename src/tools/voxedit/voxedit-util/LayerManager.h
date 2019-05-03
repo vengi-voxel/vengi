@@ -45,6 +45,9 @@ public:
 	int validLayers() const;
 	int nextLockedLayer(int last = -1) const;
 
+	/**
+	 * @brief Loops over the group of the current active layer
+	 */
 	void foreachGroupLayer(std::function<void(int)> func);
 
 	void hideLayer(int layerId, bool hide);

@@ -22,19 +22,14 @@ bool Modifier::aabbMode() const {
 }
 
 glm::ivec3 Modifier::aabbPosition() const {
-	if (_aabbMode) {
-		if ((_modifierType & ModifierType::Extrude) == ModifierType::Extrude) {
-			// TODO: select the whole plane and limit the position to it
-		}
-	}
 	return _cursorPosition;
 }
 
 glm::ivec3 Modifier::aabbDim() const {
 	const int size = _gridResolution;
 	const glm::ivec3& pos = aabbPosition();
-	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
-	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos);
+	const glm::ivec3& mins = glm::min(_aabbFirstPos, pos);
+	const glm::ivec3& maxs = glm::max(_aabbFirstPos, pos);
 	return glm::abs(maxs + size - mins);
 }
 
@@ -120,8 +115,8 @@ void Modifier::renderAABBMode(const video::Camera& camera) {
 
 		_shapeBuilder.clear();
 		_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.5f));
-		glm::ivec3 mins = glm::min(_aabbFirstPos, cursor);
-		glm::ivec3 maxs = glm::max(_aabbFirstPos, cursor);
+		const glm::ivec3& mins = glm::min(_aabbFirstPos, cursor);
+		const glm::ivec3& maxs = glm::max(_aabbFirstPos, cursor);
 		glm::ivec3 minsMirror = mins;
 		glm::ivec3 maxsMirror = maxs;
 		const float size = _gridResolution;
@@ -158,47 +153,46 @@ ModifierType Modifier::modifierType() const {
 
 bool Modifier::modifierTypeRequiresExistingVoxel() const {
 	return (_modifierType & ModifierType::Delete) == ModifierType::Delete
-			|| (_modifierType & ModifierType::Update) == ModifierType::Update
-			|| (_modifierType & ModifierType::Extrude) == ModifierType::Extrude;
+			|| (_modifierType & ModifierType::Update) == ModifierType::Update;
 }
 
 void Modifier::construct() {
-	core::Command::registerCommand("actiondelete",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Delete);}).setHelp(
-			"Change the modifier type to 'delete'");
+	core::Command::registerCommand("actiondelete", [&] (const core::CmdArgs& args) {
+		setModifierType(ModifierType::Delete);
+	}).setHelp("Change the modifier type to 'delete'");
 
-	core::Command::registerCommand("actionplace",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place);}).setHelp(
-			"Change the modifier type to 'place'");
+	core::Command::registerCommand("actionplace", [&] (const core::CmdArgs& args) {
+		setModifierType(ModifierType::Place);
+	}).setHelp("Change the modifier type to 'place'");
 
-	core::Command::registerCommand("actioncolorize",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Update);}).setHelp(
-			"Change the modifier type to 'colorize'");
+	core::Command::registerCommand("actioncolorize", [&] (const core::CmdArgs& args) {
+		setModifierType(ModifierType::Update);
+	}).setHelp("Change the modifier type to 'colorize'");
 
-	core::Command::registerCommand("actionextrude",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Extrude);}).setHelp(
-			"Change the modifier type to 'extrude'");
+	core::Command::registerCommand("actionoverride", [&] (const core::CmdArgs& args) {
+		setModifierType(ModifierType::Place | ModifierType::Delete);
+	}).setHelp("Change the modifier type to 'override'");
 
-	core::Command::registerCommand("actionoverride",
-			[&] (const core::CmdArgs& args) {setModifierType(ModifierType::Place | ModifierType::Delete);}).setHelp(
-			"Change the modifier type to 'override'");
+	core::Command::registerCommand("mirrorx", [&] (const core::CmdArgs& args) {
+		setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
+	}).setHelp("Mirror around the x axis");
 
-	core::Command::registerCommand("mirrorx",
-			[&] (const core::CmdArgs& args) {setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());}).setHelp(
-			"Mirror around the x axis");
-	core::Command::registerCommand("mirrory",
-			[&] (const core::CmdArgs& args) {setMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());}).setHelp(
-			"Mirror around the y axis");
-	core::Command::registerCommand("mirrorz",
-			[&] (const core::CmdArgs& args) {setMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());}).setHelp(
-			"Mirror around the z axis");
-	core::Command::registerCommand("mirrornone",
-			[&] (const core::CmdArgs& args) {setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());}).setHelp(
-			"Disable mirror axis");
+	core::Command::registerCommand("mirrory", [&] (const core::CmdArgs& args) {
+		setMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
+	}).setHelp("Mirror around the y axis");
 
-	core::Command::registerCommand("+actionexecute",
-			[&] (const core::CmdArgs& args) {aabbStart();}).setHelp(
-			"Place a voxel to the current cursor position");
+	core::Command::registerCommand("mirrorz", [&] (const core::CmdArgs& args) {
+		setMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
+	}).setHelp("Mirror around the z axis");
+
+	core::Command::registerCommand("mirrornone", [&] (const core::CmdArgs& args) {
+		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
+	}).setHelp("Disable mirror axis");
+
+	core::Command::registerCommand("+actionexecute", [&] (const core::CmdArgs& args) {
+		aabbStart();
+	}).setHelp("Place a voxel to the current cursor position - end with -actionexecute");
+
 	core::Command::registerCommand("-actionexecute", [&] (const core::CmdArgs& args) {
 		LayerManager& layerMgr = sceneMgr().layerMgr();
 		layerMgr.foreachGroupLayer([&] (int layerId) {
@@ -208,7 +202,7 @@ void Modifier::construct() {
 			});
 		});
 		aabbStop();
-	}).setHelp("Place a voxel to the current cursor position");
+	}).setHelp("Place a voxel to the current cursor position - start with +actionexecute");
 }
 
 bool Modifier::init() {
