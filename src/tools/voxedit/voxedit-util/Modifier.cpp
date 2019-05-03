@@ -61,15 +61,14 @@ bool Modifier::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 	return true;
 }
 
-bool Modifier::aabbEnd(voxel::RawVolume* volume, std::function<void(const voxel::Region& region)> callback) {
+bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region)> callback) {
 	if (!_aabbMode) {
 		return false;
 	}
 	if (volume == nullptr) {
-		return false;
+		return true;
 	}
 	voxel::RawVolumeWrapper wrapper(volume);
-	_aabbMode = false;
 	const int size = _gridResolution;
 	const glm::ivec3& pos = aabbPosition();
 	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
@@ -99,6 +98,10 @@ bool Modifier::aabbEnd(voxel::RawVolume* volume, std::function<void(const voxel:
 		}
 	}
 	return true;
+}
+
+void Modifier::aabbStop() {
+	_aabbMode = false;
 }
 
 void Modifier::renderAABBMode(const video::Camera& camera) {
@@ -198,11 +201,13 @@ void Modifier::construct() {
 			"Place a voxel to the current cursor position");
 	core::Command::registerCommand("-actionexecute", [&] (const core::CmdArgs& args) {
 		LayerManager& layerMgr = sceneMgr().layerMgr();
-		const int layerId = layerMgr.activeLayer();
-		voxel::RawVolume* volume = sceneMgr().volume(layerId);
-		aabbEnd(volume, [&] (const voxel::Region& region) {
-			sceneMgr().modified(layerId, region);
+		layerMgr.foreachGroupLayer([&] (int layerId) {
+			voxel::RawVolume* volume = sceneMgr().volume(layerId);
+			aabbAction(volume, [&] (const voxel::Region& region) {
+				sceneMgr().modified(layerId, region);
+			});
 		});
+		aabbStop();
 	}).setHelp("Place a voxel to the current cursor position");
 }
 

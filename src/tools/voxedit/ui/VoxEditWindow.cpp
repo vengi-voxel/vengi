@@ -674,19 +674,19 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
 			Modifier& mgr = sceneMgr().modifier();
 			LayerManager& layerMgr = sceneMgr().layerMgr();
-			const int layerId = layerMgr.activeLayer();
-			voxel::RawVolume* volume = sceneMgr().volume(layerId);
-			if (mgr.aabbEnd(volume, [&] (const voxel::Region& region) {
-				sceneMgr().modified(layerId, region);
-			})) {
-				if (_modBeforeMouse != ModifierType::None) {
-					mgr.setModifierType(_modBeforeMouse);
-					sceneMgr().trace(viewport->camera(), true);
-					_modBeforeMouse = ModifierType::None;
-				}
-				return true;
+			layerMgr.foreachGroupLayer([&] (int layerId) {
+				voxel::RawVolume* volume = sceneMgr().volume(layerId);
+				mgr.aabbAction(volume, [&] (const voxel::Region& region) {
+					sceneMgr().modified(layerId, region);
+				});
+			});
+			if (_modBeforeMouse != ModifierType::None) {
+				mgr.setModifierType(_modBeforeMouse);
+				sceneMgr().trace(viewport->camera(), true);
+				_modBeforeMouse = ModifierType::None;
 			}
-			return false;
+			mgr.aabbStop();
+			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (handleClickEvent(ev)) {
