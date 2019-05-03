@@ -531,38 +531,50 @@ bool SceneManager::newScene(bool force, const std::string& name, const voxel::Re
 	return true;
 }
 
-void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize) {
-	const int layerId = _layerMgr.activeLayer();
+void SceneManager::foreachGroupLayer(std::function<void(int)> f) {
+	int layerId = _layerMgr.activeLayer();
+	if (_layerMgr.layer(layerId).locked) {
+		layerId = _layerMgr.nextLockedLayer(-1);
+		core_assert(layerId != -1);
+		while (layerId != -1) {
+			f(layerId);
+			layerId = _layerMgr.nextLockedLayer(layerId);
+		}
+	} else {
+		f(layerId);
+	}
+}
+
+void SceneManager::rotate(int layerId, const glm::vec3& angle, bool increaseSize) {
 	const voxel::RawVolume* model = volume(layerId);
-	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), increaseSize);
+	voxel::RawVolume* newVolume = voxel::rotateVolume(model, angle, voxel::Voxel(), increaseSize);
 	voxel::Region r = newVolume->region();
 	r.accumulate(model->region());
 	setNewVolume(layerId, newVolume);
 	modified(layerId, r);
 }
 
+void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize) {
+	const glm::vec3 angle(angleX, angleY, angleZ);
+	foreachGroupLayer([&] (int layerId) {
+		rotate(layerId, angle, increaseSize);
+	});
+}
+
+void SceneManager::move(int layerId, const glm::ivec3& m) {
+	const voxel::RawVolume* model = volume(layerId);
+	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
+	voxel::RawVolumeMoveWrapper wrapper(newVolume);
+	voxel::moveVolume(&wrapper, model, m);
+	setNewVolume(layerId, newVolume);
+	modified(layerId, newVolume->region());
+}
+
 void SceneManager::move(int x, int y, int z) {
-	int layerId = _layerMgr.activeLayer();
-	const glm::ivec3 move(x, y, z);
-	if (_layerMgr.layer(layerId).locked) {
-		layerId = _layerMgr.nextLockedLayer(-1);
-		while (layerId != -1) {
-			const voxel::RawVolume* model = volume(layerId);
-			voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
-			voxel::RawVolumeMoveWrapper wrapper(newVolume);
-			voxel::moveVolume(&wrapper, model, move);
-			setNewVolume(layerId, newVolume);
-			modified(layerId, newVolume->region());
-			layerId = _layerMgr.nextLockedLayer(layerId);
-		}
-	} else {
-		const voxel::RawVolume* model = volume(layerId);
-		voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
-		voxel::RawVolumeMoveWrapper wrapper(newVolume);
-		voxel::moveVolume(&wrapper, model, move);
-		setNewVolume(layerId, newVolume);
-		modified(layerId, newVolume->region());
-	}
+	const glm::ivec3 v(x, y, z);
+	foreachGroupLayer([&] (int layerId) {
+		move(layerId, v);
+	});
 }
 
 bool SceneManager::setGridResolution(int resolution) {
