@@ -7,6 +7,8 @@ set(SRCS
 
 	ui/palette/PaletteWidget.h ui/palette/PaletteWidget.cpp
 
+	ui/settings/SceneSettingsWindow.h ui/settings/SceneSettingsWindow.cpp
+
 	ui/layer/AbstractLayerPopupWindow.h ui/layer/AbstractLayerPopupWindow.cpp
 	ui/layer/LayerWidget.h ui/layer/LayerWidget.cpp
 	ui/layer/LayerWindow.h ui/layer/LayerWindow.cpp
@@ -26,6 +28,7 @@ set(UI_WINDOWS
 	voxedit/ui/window/voxedit-layer.tb.txt
 	voxedit/ui/window/voxedit-main.tb.txt
 	voxedit/ui/window/voxedit-noise.tb.txt
+	voxedit/ui/window/voxedit-scene-settings.tb.txt
 	voxedit/ui/window/voxedit-tree.tb.txt
 )
 

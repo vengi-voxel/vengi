@@ -1,0 +1,69 @@
+lighting_settings
+	TBContainer
+		TBLayout: axis: y
+			TBTextField: text: Sun position
+			TBLayout: axis: x
+				TBSkinImage: skin: voxedit-axis-x
+				TBInlineSelect: id: position.x
+					lp: width: 120
+			TBLayout: axis: x
+				TBSkinImage: skin: voxedit-axis-y
+				TBInlineSelect: id: position.y
+					lp: width: 120
+			TBLayout: axis: x
+				TBSkinImage: skin: voxedit-axis-z
+				TBInlineSelect: id: position.z
+					lp: width: 120
+	TBContainer
+		TBLayout: axis: y
+			TBTextField: text: Sun angle
+			TBLayout: axis: x
+				TBSkinImage: skin: voxedit-axis-x
+				TBInlineSelect: id: angle.x
+					lp: width: 120
+			TBLayout: axis: x
+				TBSkinImage: skin: voxedit-axis-y
+				TBInlineSelect: id: angle.y
+					lp: width: 120
+			TBLayout: axis: x
+				TBSkinImage: skin: voxedit-axis-z
+				TBInlineSelect: id: angle.z
+					lp: width: 120
+	TBContainer
+		TBLayout: axis: y
+			TBTextField: text: Ambient color
+
+background_settings
+	TBContainer
+		TBLayout: axis: y
+			TBTextField: text: Images
+			TBLayout: axis: x
+				TBSkinImage: skin: voxedit-axis-x
+				TBEditField: id: bitmap.x, skin: voxedit-file
+				TBButton: id: button-bitmap-x, text: ...
+			TBLayout: axis: x
+				TBSkinImage: skin: voxedit-axis-y
+				TBEditField: id: bitmap.y, skin: voxedit-file
+				TBButton: id: button-bitmap-y, text: ...
+			TBLayout: axis: x
+				TBSkinImage: skin: voxedit-axis-z
+				TBEditField: id: bitmap.z, skin: voxedit-file
+				TBButton: id: button-bitmap-z, text: ...
+
+TBLayout: axis: y
+	TBTabContainer
+		gravity all
+		id tabcontainer
+		tabs
+			TBButton: text: "Lighting"
+			TBButton: text: "Backgrounds"
+		TBLayout
+			@include lighting_settings
+			axis y
+			distribution-position top
+		TBLayout
+			@include background_settings
+			axis y
+			distribution-position top
+
+	TBLayout: distribution-position: right bottom, id: buttons

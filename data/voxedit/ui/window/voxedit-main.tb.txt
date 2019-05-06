@@ -37,13 +37,17 @@ TBLayout: distribution: gravity, axis: y
 				TBContainer: skin: container, gravity: left right
 					TBLayout: distribution: gravity
 						TBButton: gravity: left, @include: definitions>menubutton, text: File, id: menu_file
-							TBSkinImage: skin: voxedit-file
+							TBSkinImage: skin: voxedit-load
 						TBButton: gravity: left, @include: definitions>menubutton, text: Undo, id: undo, command: undo
 							TBSkinImage: skin: voxedit-undo
 						TBButton: gravity: left, @include: definitions>menubutton, text: Redo, id: redo, command: redo
 							TBSkinImage: skin: voxedit-redo
+						TBButton: gravity: left, @include: definitions>menubutton, text: Settings, id: scene_settings
+							TBSkinImage: skin: voxedit-options
+
 						TBLayout: gravity: left right
 							TBWidget
+
 						TBButton: gravity: left, @include: definitions>menubutton, text: Structure, id: menu_structure
 							TBSkinImage: skin: voxedit-structure
 						TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: dialog_noise

@@ -134,3 +134,18 @@ elements
 	color-picker
 		type StretchBox
 		bitmap voxedit-color-picker.png
+
+	voxedit-file
+		bitmap editfield.png
+		cut 12
+		expand 4
+		padding 4 4 4 24
+		min-width 50
+		children
+			element voxedit-file.icon
+
+	voxedit-file.icon
+		bitmap voxedit-load.png
+		type Image
+		img-position-x 0
+		img-ofs-x 5

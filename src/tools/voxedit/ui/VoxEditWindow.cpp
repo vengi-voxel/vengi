@@ -12,6 +12,7 @@
 #include "core/String.h"
 #include "core/command/Command.h"
 #include "editorscene/Viewport.h"
+#include "settings/SceneSettingsWindow.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "../VoxEdit.h"
@@ -389,6 +390,27 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			}
 			return true;
 		}
+	}
+	if (id == TBIDC("scene_settings")) {
+		if (ev.ref_id == 0) {
+			_settings.ambientColor = core::Var::getSafe(cfg::VoxEditAmbientColor)->vec3Val();
+			_settings.diffuseColor = core::Var::getSafe(cfg::VoxEditDiffuseColor)->vec3Val();
+			SceneSettingsWindow* settings = new SceneSettingsWindow(this, &_settings);
+			if (!settings->show()) {
+				delete settings;
+			}
+		} else if (ev.ref_id == TBIDC("ok")) {
+			// TODO: apply ambient and diffuse color
+			for (size_t i = 0; i < _settings.backgrounds.size(); ++i) {
+				const std::string& name = _settings.backgrounds[i];
+				if (name.empty()) {
+					// TODO: delete old plane?
+					continue;
+				}
+				// TODO: apply bitmap plane
+			}
+		}
+		return true;
 	}
 	if (id == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
