@@ -17,7 +17,7 @@ namespace util {
 namespace {
 static const char* historyFilename = "history";
 static const std::string consolePrompt = "> ";
-static const std::string consoleCursor = "_";
+static const std::string consoleCursor = ".";
 static const int consoleMarginLeft = 5;
 static const int consoleMarginLeftBehindPrompt = 13;
 static const char colorMark = '^';
@@ -597,7 +597,7 @@ void Console::render(const math::Rect<int> &rect, long deltaFrame) {
 	}
 	const int maxY = _messages.size() * lineH;
 	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), _commandLine.length());
-	const int startY = std::min(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y, maxY);
+	const int startY = std::min(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y - 4, maxY);
 	MessagesIter i = _messages.rbegin();
 	std::advance(i, _scrollPos);
 	for (int y = startY; i != _messages.rend(); ++i) {
