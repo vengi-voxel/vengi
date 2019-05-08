@@ -215,15 +215,15 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 	setColor(core::Color::Green);
 	for (uint32_t i = 0; i < SDL_arraysize(corners); ++i) {
 		const glm::vec4& v = result * corners[i];
-		addVertex(glm::vec3(v), glm::zero<glm::vec2>(), planeNormal);
+		addVertex(glm::vec3(v), planeNormal);
 	}
 
 	if (normals) {
 		const float normalVecScale = 10.0f;
 		const glm::vec3& pvn = planeNormal * normalVecScale;
 		setColor(core::Color::Red);
-		addVertex(glm::zero<glm::vec3>(), glm::zero<glm::vec2>(), planeNormal);
-		addVertex(pvn, glm::zero<glm::vec2>(), planeNormal);
+		addVertex(glm::zero<glm::vec3>(), planeNormal);
+		addVertex(pvn, planeNormal);
 	}
 
 	addIndex(startIndex + 0);

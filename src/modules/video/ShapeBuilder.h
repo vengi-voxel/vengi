@@ -71,11 +71,20 @@ public:
 		return _primitive;
 	}
 
-	inline uint32_t addVertex(const glm::vec3& vertex, const glm::vec2& uv = glm::zero<glm::vec2>(), const glm::vec3& normal = glm::zero<glm::vec3>()) {
+	inline uint32_t addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal = glm::zero<glm::vec3>()) {
 		_colors.push_back(_color);
 		_vertices.push_back(_position + vertex);
 		_normals.push_back(normal);
 		_texcoords.push_back(uv);
+		core_assert(_texcoords.size() == _vertices.size());
+		return (uint32_t)_vertices.size() - 1;
+	}
+
+	inline uint32_t addVertex(const glm::vec3& vertex, const glm::vec3& normal = glm::zero<glm::vec3>()) {
+		_colors.push_back(_color);
+		_vertices.push_back(_position + vertex);
+		_normals.push_back(normal);
+		core_assert(_texcoords.empty());
 		return (uint32_t)_vertices.size() - 1;
 	}
 

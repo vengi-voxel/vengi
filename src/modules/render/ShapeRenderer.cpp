@@ -11,6 +11,8 @@ namespace render {
 struct Vertex {
 	glm::vec4 pos;
 	glm::vec4 color;
+	glm::vec2 uv;
+	glm::vec3 normal;
 };
 
 ShapeRenderer::ShapeRenderer() :
@@ -86,7 +88,7 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 	std::vector<Vertex> vertices;
 	vertices.reserve(shapeBuilder.getVertices().size());
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
-		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color});
+		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
 	});
 	_vertexIndex[meshIndex] = _vbo[meshIndex].create(vertices);
 	if (_vertexIndex[meshIndex] == -1) {
@@ -136,7 +138,7 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	std::vector<Vertex> vertices;
 	vertices.reserve(shapeBuilder.getVertices().size());
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
-		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color});
+		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
 	});
 	video::Buffer& vbo = _vbo[meshIndex];
 	core_assert_always(vbo.update(_vertexIndex[meshIndex], vertices));
