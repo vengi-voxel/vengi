@@ -140,6 +140,7 @@ public:
 	const Vertices& getVertices() const;
 	const Vertices& getNormals() const;
 	void convertVertices(std::vector<glm::vec4>& out) const;
+	size_t iterate(std::function<void(const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal)> func) const;
 	const Indices& getIndices() const;
 	const Colors& getColors() const;
 	const Texcoords& getTexcoords() const;

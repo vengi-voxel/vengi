@@ -30,7 +30,6 @@ private:
 	int32_t _vertexIndex[MAX_MESHES];
 	bool _hidden[MAX_MESHES] { false };
 	int32_t _indexIndex[MAX_MESHES];
-	int32_t _colorIndex[MAX_MESHES];
 	// for instancing
 	int32_t _offsetIndex[MAX_MESHES];
 	int32_t _amounts[MAX_MESHES];

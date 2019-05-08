@@ -8,13 +8,17 @@
 
 namespace render {
 
+struct Vertex {
+	glm::vec4 pos;
+	glm::vec4 color;
+};
+
 ShapeRenderer::ShapeRenderer() :
 		_colorShader(shader::ColorShader::getInstance()),
 		_colorInstancedShader(shader::ColorInstancedShader::getInstance()) {
 	for (int i = 0; i < MAX_MESHES; ++i) {
 		_vertexIndex[i] = -1;
 		_indexIndex[i] = -1;
-		_colorIndex[i] = -1;
 		_offsetIndex[i] = -1;
 		_amounts[i] = -1;
 		_primitives[i] = video::Primitive::Triangles;
@@ -48,7 +52,6 @@ bool ShapeRenderer::deleteMesh(int32_t meshIndex) {
 	_vbo[meshIndex].shutdown();
 	_vertexIndex[meshIndex] = -1;
 	_indexIndex[meshIndex] = -1;
-	_colorIndex[meshIndex] = -1;
 	_offsetIndex[meshIndex] = -1;
 	_amounts[meshIndex] = -1;
 	_primitives[meshIndex] = video::Primitive::Triangles;
@@ -80,8 +83,11 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 		return -1;
 	}
 
-	std::vector<glm::vec4> vertices;
-	shapeBuilder.convertVertices(vertices);
+	std::vector<Vertex> vertices;
+	vertices.reserve(shapeBuilder.getVertices().size());
+	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
+		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color});
+	});
 	_vertexIndex[meshIndex] = _vbo[meshIndex].create(vertices);
 	if (_vertexIndex[meshIndex] == -1) {
 		Log::error("Could not create vbo for vertices");
@@ -97,33 +103,16 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 		return -1;
 	}
 
-	const video::ShapeBuilder::Colors& colors = shapeBuilder.getColors();
-	if (_colorShader.getComponentsColor() == 4) {
-		_colorIndex[meshIndex] = _vbo[meshIndex].create(colors);
-	} else {
-		core_assert(_colorShader.getComponentsColor() == 3);
-		std::vector<glm::vec3> colors3;
-		colors3.reserve(colors.size());
-		for (const auto c : colors) {
-			colors3.push_back(glm::vec3(c));
-		}
-		_colorIndex[meshIndex] = _vbo[meshIndex].create(colors3);
-	}
-	if (_colorIndex[meshIndex] == -1) {
-		_vertexIndex[meshIndex] = -1;
-		_indexIndex[meshIndex] = -1;
-		_vbo[meshIndex].shutdown();
-		Log::error("Could not create vbo for color");
-		return -1;
-	}
-
 	// configure shader attributes
-	video::Attribute attributePos = _colorShader.getPosAttribute(_vertexIndex[meshIndex], &glm::vec4::r);
+
+	video::Attribute attributePos = _colorShader.getPosAttribute(_vertexIndex[meshIndex], &Vertex::pos);
+	// both shaders must have these at the same location
 	core_assert(attributePos.location == _colorInstancedShader.getLocationPos());
 	core_assert(attributePos.size == _colorInstancedShader.getComponentsPos());
 	core_assert_always(_vbo[meshIndex].addAttribute(attributePos));
 
-	video::Attribute attributeColor = _colorShader.getColorAttribute(_colorIndex[meshIndex], &glm::vec4::r);
+	video::Attribute attributeColor = _colorShader.getColorAttribute(_vertexIndex[meshIndex], &Vertex::color);
+	// both shaders must have these at the same location
 	core_assert(attributeColor.location == _colorInstancedShader.getLocationColor());
 	core_assert(attributeColor.size == _colorInstancedShader.getComponentsColor());
 	core_assert_always(_vbo[meshIndex].addAttribute(attributeColor));
@@ -144,24 +133,15 @@ void ShapeRenderer::shutdown() {
 }
 
 void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder) {
-	std::vector<glm::vec4> vertices;
-	shapeBuilder.convertVertices(vertices);
+	std::vector<Vertex> vertices;
+	vertices.reserve(shapeBuilder.getVertices().size());
+	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
+		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color});
+	});
 	video::Buffer& vbo = _vbo[meshIndex];
 	core_assert_always(vbo.update(_vertexIndex[meshIndex], vertices));
 	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
 	vbo.update(_indexIndex[meshIndex], indices);
-	const video::ShapeBuilder::Colors& colors = shapeBuilder.getColors();
-	if (_colorShader.getComponentsColor() == 4) {
-		vbo.update(_colorIndex[meshIndex], colors);
-	} else {
-		core_assert(_colorShader.getComponentsColor() == 3);
-		std::vector<glm::vec3> colors3;
-		colors3.reserve(colors.size());
-		for (const auto c : colors) {
-			colors3.push_back(glm::vec3(c));
-		}
-		vbo.update(_colorIndex[meshIndex], colors3);
-	}
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 

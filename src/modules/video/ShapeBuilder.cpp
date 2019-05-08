@@ -218,11 +218,13 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 		addVertex(glm::vec3(v), glm::zero<glm::vec2>(), planeNormal);
 	}
 
-	const float normalVecScale = 10.0f;
-	const glm::vec3& pvn = planeNormal * normalVecScale;
-	setColor(core::Color::Red);
-	addVertex(glm::zero<glm::vec3>(), glm::zero<glm::vec2>(), planeNormal);
-	addVertex(pvn, glm::zero<glm::vec2>(), planeNormal);
+	if (normals) {
+		const float normalVecScale = 10.0f;
+		const glm::vec3& pvn = planeNormal * normalVecScale;
+		setColor(core::Color::Red);
+		addVertex(glm::zero<glm::vec3>(), glm::zero<glm::vec2>(), planeNormal);
+		addVertex(pvn, glm::zero<glm::vec2>(), planeNormal);
+	}
 
 	addIndex(startIndex + 0);
 	addIndex(startIndex + 1);
@@ -245,8 +247,10 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 	addIndex(startIndex + 2);
 	addIndex(startIndex + 3);
 
-	addIndex(startIndex + 4);
-	addIndex(startIndex + 5);
+	if (normals) {
+		addIndex(startIndex + 4);
+		addIndex(startIndex + 5);
+	}
 }
 
 void ShapeBuilder::pyramid(const glm::vec3& size) {
@@ -449,6 +453,18 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 		addIndex(rowB + slice + 1);
 		addIndex(rowA + slice + 1);
 	}
+}
+
+size_t ShapeBuilder::iterate(std::function<void(const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal)> func) const {
+	const size_t size = _vertices.size();
+	for (size_t i = 0; i < size; ++i) {
+		const glm::vec3& pos = _vertices[i];
+		const glm::vec2& uv = _texcoords.empty() ? glm::zero<glm::vec2>() : _texcoords[i];
+		const glm::vec4& color = _colors[i];
+		const glm::vec3& normal = _normals[i];
+		func(pos, uv, color, normal);
+	}
+	return size;
 }
 
 void ShapeBuilder::shutdown() {
