@@ -329,7 +329,8 @@ core::AppState NuklearApp::onRunning() {
 	const int renderTargetH = _camera.height();
 
 	video::ScopedShader scopedShader(_shader);
-	_shader.setProjection(_camera.projectionMatrix());
+	_shader.setViewprojection(_camera.projectionMatrix());
+	_shader.setModel(glm::mat4(1.0f));
 	_shader.setTexture(video::TextureUnit::Zero);
 
 	video::ScopedViewPort scopedViewPort(0, 0, renderTargetW, renderTargetH);

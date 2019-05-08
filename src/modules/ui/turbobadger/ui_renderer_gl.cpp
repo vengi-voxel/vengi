@@ -87,7 +87,7 @@ void UIRendererGL::onWindowResize(const glm::ivec2& dimensions) {
 	_camera.init(glm::ivec2(0), dimensions);
 	_camera.update(0L);
 	video::ScopedShader scoped(_shader);
-	_shader.setProjection(_camera.projectionMatrix());
+	_shader.setViewprojection(_camera.projectionMatrix());
 }
 
 bool UIRendererGL::init(const glm::ivec2& dimensions) {
@@ -128,7 +128,8 @@ void UIRendererGL::beginPaint(int, int) {
 	TBRendererBatcher::beginPaint(renderTargetW, renderTargetH);
 
 	_shader.activate();
-	_shader.setProjection(_camera.projectionMatrix());
+	_shader.setViewprojection(_camera.projectionMatrix());
+	_shader.setModel(glm::mat4(1.0f));
 	_shader.setTexture(video::TextureUnit::Zero);
 
 	video::viewport(0, 0, renderTargetW, renderTargetH);

@@ -108,7 +108,8 @@ void IMGUIApp::onWindowResize() {
 	_camera.init(glm::ivec2(0), dimension());
 	_camera.update(0L);
 	video::ScopedShader scoped(_shader);
-	_shader.setProjection(_camera.projectionMatrix());
+	_shader.setViewprojection(_camera.projectionMatrix());
+	_shader.setModel(glm::mat4(1.0f));
 }
 
 core::AppState IMGUIApp::onConstruct() {
@@ -292,7 +293,8 @@ core::AppState IMGUIApp::onRunning() {
 
 	core_trace_scoped(IMGUIAppUpdateUI);
 	video::ScopedShader scopedShader(_shader);
-	_shader.setProjection(_camera.projectionMatrix());
+	_shader.setViewprojection(_camera.projectionMatrix());
+	_shader.setModel(glm::mat4(1.0f));
 	_shader.setTexture(video::TextureUnit::Zero);
 
 	video::ScopedViewPort scopedViewPort(0, 0, renderTargetW, renderTargetH);

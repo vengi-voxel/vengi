@@ -21,7 +21,8 @@ bool TextureRenderer::init(const glm::vec2& size) {
 
 void TextureRenderer::render(const glm::mat4& projection) {
 	video::ScopedShader scoped(_textureShader);
-	_textureShader.setProjection(projection);
+	_textureShader.setViewprojection(projection);
+	_textureShader.setModel(glm::mat4(1.0f));
 	_textureShader.setTexture(video::TextureUnit::Zero);
 	video::ScopedBuffer scopedBuf(_texturedFullscreenQuad);
 	const int elements = _texturedFullscreenQuad.elements(0, _textureShader.getComponentsPos());
