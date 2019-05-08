@@ -42,7 +42,7 @@ struct GLState {
 	BlendMode blendDest = BlendMode::Zero;
 	BlendEquation blendEquation = BlendEquation::Max;
 	TextureUnit textureUnit = TextureUnit::Zero;
-	Id textureHandle = InvalidId;
+	Id textureHandle[std::enum_value(TextureUnit::Max)] { InvalidId };
 	Id imageHandle = InvalidId;
 	AccessMode imageAccessMode = AccessMode::Max;
 	ImageFormat imageFormat = ImageFormat::Max;

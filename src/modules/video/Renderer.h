@@ -251,7 +251,8 @@ extern bool blendFunc(BlendMode src, BlendMode dest);
 extern bool blendEquation(BlendEquation func);
 extern PolygonMode polygonMode(Face face, PolygonMode mode);
 extern bool polygonOffset(const glm::vec2& offset);
-extern bool activeTextureUnit(TextureUnit unit);
+extern bool activateTextureUnit(TextureUnit unit);
+extern Id currentTexture(TextureUnit unit);
 extern bool bindTexture(TextureUnit unit, TextureType type, Id handle);
 /**
  * @note The returned buffer should get freed with SDL_free

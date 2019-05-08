@@ -385,10 +385,11 @@ bool polygonOffset(const glm::vec2& offset) {
 	return true;
 }
 
-bool activeTextureUnit(TextureUnit unit) {
+bool activateTextureUnit(TextureUnit unit) {
 	if (_priv::s.textureUnit == unit) {
 		return false;
 	}
+	core_assert(TextureUnit::Max != unit);
 	const GLenum glUnit = _priv::TextureUnits[std::enum_value(unit)];
 	glActiveTexture(glUnit);
 	checkError();
@@ -396,10 +397,17 @@ bool activeTextureUnit(TextureUnit unit) {
 	return true;
 }
 
+Id currentTexture(TextureUnit unit) {
+	core_assert(TextureUnit::Max != unit);
+	return _priv::s.textureHandle[std::enum_value(unit)];
+}
+
 bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
-	const bool changeUnit = activeTextureUnit(unit);
-	if (changeUnit || _priv::s.textureHandle != handle) {
-		_priv::s.textureHandle = handle;
+	core_assert(TextureUnit::Max != unit);
+	core_assert(TextureType::Max != type);
+	const bool changeUnit = activateTextureUnit(unit);
+	if (changeUnit || _priv::s.textureHandle[std::enum_value(unit)] != handle) {
+		_priv::s.textureHandle[std::enum_value(unit)] = handle;
 		glBindTexture(_priv::TextureTypes[std::enum_value(type)], handle);
 		checkError();
 		return true;

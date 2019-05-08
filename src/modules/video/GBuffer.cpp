@@ -59,7 +59,7 @@ void GBuffer::bindForReading(bool gbuffer) {
 	for (int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
 		video::bindTexture(texUnits[i], video::TextureType::Texture2D, _textures[i]);
 	}
-	video::activeTextureUnit(video::TextureUnit::Zero);
+	video::activateTextureUnit(video::TextureUnit::Zero);
 }
 
 void GBuffer::unbind() {
