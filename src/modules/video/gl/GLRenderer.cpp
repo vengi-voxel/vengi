@@ -398,7 +398,9 @@ bool activateTextureUnit(TextureUnit unit) {
 }
 
 Id currentTexture(TextureUnit unit) {
-	core_assert(TextureUnit::Max != unit);
+	if (TextureUnit::Max == unit) {
+		return InvalidId;
+	}
 	return _priv::s.textureHandle[std::enum_value(unit)];
 }
 
