@@ -111,7 +111,7 @@ public:
 	/**
 	 * @param[in] tesselation The amount of splits on the plane that should be made
 	 */
-	void plane(uint32_t tesselation = 10, float scale = 1.0f);
+	void plane(uint32_t tesselation = 10);
 	void frustum(const Camera& camera, int splitFrustum = 0);
 	void geom(const std::vector<glm::vec3>& vert, const std::vector<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
 	void plane(const math::Plane& plane, bool normal);

@@ -62,7 +62,7 @@ core::AppState TestApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_plane.init() || !_plane.plane(glm::zero<glm::vec3>(), 0, 100.0f, _planeColor)) {
+	if (!_plane.init() || !_plane.plane(glm::zero<glm::vec3>(), 0, _planeColor)) {
 		return core::AppState::InitFailure;
 	}
 
@@ -103,7 +103,7 @@ void TestApp::beforeUI() {
 	_camera.update(_deltaFrameMillis);
 
 	if (_renderPlane) {
-		_plane.render(_camera);
+		_plane.render(_camera, glm::scale(glm::vec3(100.0f)));
 	}
 	{
 		core_trace_scoped(TestAppDoRender);

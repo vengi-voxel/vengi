@@ -42,7 +42,7 @@ public:
 	 */
 	bool init() override;
 
-	bool plane(const glm::vec3& position, int tesselation = 0, float scale = 100.0f, const glm::vec4& color = core::Color::White);
+	bool plane(const glm::vec3& position, int tesselation = 0, const glm::vec4& color = core::Color::White);
 
 	bool plane(const glm::vec3& position, const math::Plane& plane, const glm::vec4& color = core::Color::White);
 };

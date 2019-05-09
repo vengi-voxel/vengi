@@ -263,7 +263,7 @@ void TestMeshApp::doRender() {
 }
 
 void TestMeshApp::renderPlane(video::Shader* shader) {
-	_plane.render(_camera, _model, shader);
+	_plane.render(_camera, glm::scale(_model, glm::vec3(100.0f)), shader);
 }
 
 core::AppState TestMeshApp::onCleanup() {

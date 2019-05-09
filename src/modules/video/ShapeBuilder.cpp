@@ -361,7 +361,7 @@ void ShapeBuilder::axis(const glm::vec3& scale) {
 	}
 }
 
-void ShapeBuilder::plane(uint32_t tesselation, float scale) {
+void ShapeBuilder::plane(uint32_t tesselation) {
 	setPrimitive(Primitive::Triangles);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	static const glm::vec2 uv0(0.0f, 1.0f);
@@ -383,7 +383,7 @@ void ShapeBuilder::plane(uint32_t tesselation, float scale) {
 		for (float x = 0.0f; x < strucWidth; ++x) {
 			const glm::vec2 uv((x * segmentWidth * uvBounds.x) + uvPos.x, uvBounds.y - (y * segmentWidth * uvBounds.y) + uvPos.y);
 			const glm::vec3 v(x * scaleX - anchorOffset.x, 0.0f, y * scaleY - anchorOffset.y);
-			addVertex(v * scale, uv, glm::zero<glm::vec3>());
+			addVertex(v, uv, glm::zero<glm::vec3>());
 		}
 	}
 

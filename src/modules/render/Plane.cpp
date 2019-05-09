@@ -7,7 +7,7 @@
 namespace render {
 
 void Plane::render(const video::Camera& camera, video::Shader* shader) {
-	render(camera, glm::mat4(1.f), shader);
+	render(camera, glm::mat4(1.0f), shader);
 }
 
 void Plane::render(const video::Camera& camera, const glm::mat4& model, video::Shader* shader) {
@@ -37,10 +37,10 @@ void Plane::clear() {
 	_planeMeshes.clear();
 }
 
-bool Plane::plane(const glm::vec3& position, int tesselation, float scale, const glm::vec4& color) {
+bool Plane::plane(const glm::vec3& position, int tesselation, const glm::vec4& color) {
 	_shapeBuilder.setColor(color);
 	_shapeBuilder.setPosition(position);
-	_shapeBuilder.plane(tesselation, scale);
+	_shapeBuilder.plane(tesselation);
 	const int32_t id = _shapeRenderer.create(_shapeBuilder);
 	_planeMeshes.push_back(id);
 	return id >= 0;
