@@ -30,6 +30,7 @@
 #include "video/ScopedBlendMode.h"
 #include "video/Ray.h"
 #include "math/Random.h"
+#include "math/Axis.h"
 #include "core/command/Command.h"
 #include "core/Array.h"
 #include "core/App.h"
