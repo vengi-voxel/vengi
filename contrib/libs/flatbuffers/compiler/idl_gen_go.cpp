@@ -153,7 +153,7 @@ class GoGenerator : public BaseGenerator {
   }
 
   // A single enum member.
-  void EnumMember(const EnumDef &enum_def, const EnumVal ev,
+  void EnumMember(const EnumDef &enum_def, const EnumVal &ev,
                   std::string *code_ptr) {
     std::string &code = *code_ptr;
     code += "\t";
@@ -162,7 +162,7 @@ class GoGenerator : public BaseGenerator {
     code += " ";
     code += GetEnumTypeName(enum_def);
     code += " = ";
-    code += NumToString(ev.value) + "\n";
+    code += enum_def.ToString(ev) + "\n";
   }
 
   // End enum code.
@@ -620,6 +620,27 @@ class GoGenerator : public BaseGenerator {
     code += "}\n\n";
   }
 
+  // Mutate an element of a vector of scalars.
+  void MutateElementOfVectorOfNonStruct(const StructDef &struct_def,
+                                        const FieldDef &field,
+                                        std::string *code_ptr) {
+    std::string &code = *code_ptr;
+    auto vectortype = field.value.type.VectorType();
+    std::string type = MakeCamel(GenTypeBasic(vectortype));
+    std::string setter = "rcv._tab.Mutate" + type;
+    GenReceiver(struct_def, code_ptr);
+    code += " Mutate" + MakeCamel(field.name);
+    code += "(j int, n " + TypeName(field) + ") bool ";
+    code += OffsetPrefix(field);
+    code += "\t\ta := rcv._tab.Vector(o)\n";
+    code += "\t\treturn " + setter + "(";
+    code += "a+flatbuffers.UOffsetT(j*";
+    code += NumToString(InlineSize(vectortype)) + "), n)\n";
+    code += "\t}\n";
+    code += "\treturn false\n";
+    code += "}\n\n";
+  }
+
   // Generate a struct field setter, conditioned on its child type(s).
   void GenStructMutator(const StructDef &struct_def, const FieldDef &field,
                         std::string *code_ptr) {
@@ -629,6 +650,10 @@ class GoGenerator : public BaseGenerator {
         MutateScalarFieldOfStruct(struct_def, field, code_ptr);
       } else {
         MutateScalarFieldOfTable(struct_def, field, code_ptr);
+      }
+    } else if (field.value.type.base_type == BASE_TYPE_VECTOR) {
+      if (IsScalar(field.value.type.element)) {
+        MutateElementOfVectorOfNonStruct(struct_def, field, code_ptr);
       }
     }
   }
@@ -700,8 +725,7 @@ class GoGenerator : public BaseGenerator {
     GenComment(enum_def.doc_comment, code_ptr, nullptr);
     GenEnumType(enum_def, code_ptr);
     BeginEnum(code_ptr);
-    for (auto it = enum_def.vals.vec.begin(); it != enum_def.vals.vec.end();
-         ++it) {
+    for (auto it = enum_def.Vals().begin(); it != enum_def.Vals().end(); ++it) {
       auto &ev = **it;
       GenComment(ev.doc_comment, code_ptr, nullptr, "\t");
       EnumMember(enum_def, ev, code_ptr);
@@ -709,8 +733,7 @@ class GoGenerator : public BaseGenerator {
     EndEnum(code_ptr);
 
     BeginEnumNames(enum_def, code_ptr);
-    for (auto it = enum_def.vals.vec.begin(); it != enum_def.vals.vec.end();
-         ++it) {
+    for (auto it = enum_def.Vals().begin(); it != enum_def.Vals().end(); ++it) {
       auto &ev = **it;
       EnumNameMember(enum_def, ev, code_ptr);
     }

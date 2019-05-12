@@ -79,7 +79,7 @@ class JsTsGenerator : public BaseGenerator {
   JsTsGenerator(const Parser &parser, const std::string &path,
                 const std::string &file_name)
       : BaseGenerator(parser, path, file_name, "", "."),
-        lang_(GetJsLangParams(parser_.opts.lang)){};
+        lang_(GetJsLangParams(parser_.opts.lang)) {}
   // Iterate through all definitions we haven't generate code for (enums,
   // structs, and tables) and output them to a single file.
   bool generate() {
@@ -127,8 +127,8 @@ class JsTsGenerator : public BaseGenerator {
       const auto &file = *it;
       const auto basename =
           flatbuffers::StripPath(flatbuffers::StripExtension(file));
-      if (basename != file_name_) { 
-        code += GenPrefixedImport(file, basename); 
+      if (basename != file_name_) {
+        code += GenPrefixedImport(file, basename);
       }
     }
   }
@@ -168,7 +168,8 @@ class JsTsGenerator : public BaseGenerator {
     for (auto it = parser_.enums_.vec.begin(); it != parser_.enums_.vec.end();
          ++it) {
       auto &enum_def = **it;
-      GenEnum(enum_def, enum_code_ptr, exports_code_ptr, reexports);
+      GenEnum(enum_def, enum_code_ptr, exports_code_ptr, reexports, false);
+      GenEnum(enum_def, enum_code_ptr, exports_code_ptr, reexports, true);
     }
   }
 
@@ -310,8 +311,8 @@ class JsTsGenerator : public BaseGenerator {
       }
       default: { result += " {" + type_name + "}"; }
     }
-    if (!arg_name.empty()) { 
-      result += " " + arg_name; 
+    if (!arg_name.empty()) {
+      result += " " + arg_name;
     }
     if (include_newline) {
       result += "\n";
@@ -322,12 +323,16 @@ class JsTsGenerator : public BaseGenerator {
 
   // Generate an enum declaration and an enum string lookup table.
   void GenEnum(EnumDef &enum_def, std::string *code_ptr,
-               std::string *exports_ptr, reexport_map &reexports) {
+               std::string *exports_ptr, reexport_map &reexports,
+               bool reverse) {
     if (enum_def.generated) return;
+    if (reverse && lang_.language == IDLOptions::kTs) return;  // FIXME.
     std::string &code = *code_ptr;
     std::string &exports = *exports_ptr;
-    GenDocComment(enum_def.doc_comment, code_ptr, "@enum");
+    GenDocComment(enum_def.doc_comment, code_ptr,
+                  reverse ? "@enum {string}" : "@enum {number}");
     std::string ns = GetNameSpace(enum_def);
+    std::string enum_def_name = enum_def.name + (reverse ? "Name" : "");
     if (lang_.language == IDLOptions::kTs) {
       if (!ns.empty()) { code += "export namespace " + ns + "{\n"; }
       code += "export enum " + enum_def.name + "{\n";
@@ -335,40 +340,35 @@ class JsTsGenerator : public BaseGenerator {
       if (enum_def.defined_namespace->components.empty()) {
         code += "var ";
         if (parser_.opts.use_goog_js_export_format) {
-          exports += "goog.exportSymbol('" + enum_def.name + "', " +
+          exports += "goog.exportSymbol('" + enum_def_name + "', " +
                      enum_def.name + ");\n";
         } else if (parser_.opts.use_ES6_js_export_format) {
-          exports += "export {" + enum_def.name + "};\n";
+          exports += "export {" + enum_def_name + "};\n";
         } else {
-          exports += "this." + enum_def.name + " = " + enum_def.name + ";\n";
+          exports += "this." + enum_def_name + " = " + enum_def_name + ";\n";
         }
       }
-      code += WrapInNameSpace(enum_def) + " = {\n";
+      code += WrapInNameSpace(enum_def) + (reverse ? "Name" : "") + " = {\n";
     }
-    for (auto it = enum_def.vals.vec.begin(); it != enum_def.vals.vec.end();
-         ++it) {
+    for (auto it = enum_def.Vals().begin(); it != enum_def.Vals().end(); ++it) {
       auto &ev = **it;
       if (!ev.doc_comment.empty()) {
-        if (it != enum_def.vals.vec.begin()) { code += '\n'; }
+        if (it != enum_def.Vals().begin()) { code += '\n'; }
         GenDocComment(ev.doc_comment, code_ptr, "", "  ");
       }
 
       // Generate mapping between EnumName: EnumValue(int)
-      code += "  " + ev.name;
-      code += lang_.language == IDLOptions::kTs ? "= " : ": ";
-      code += NumToString(ev.value);
-
-      if (lang_.language == IDLOptions::kJs) {
-        // In pure Javascript, generate mapping between EnumValue(int):
-        // 'EnumName' so enums can be looked up by their ID.
-        code += ", ";
-
-        code += NumToString(ev.value);
+      if (reverse) {
+        code += "  " + enum_def.ToString(ev);
         code += lang_.language == IDLOptions::kTs ? "= " : ": ";
         code += "'" + ev.name + "'";
+      } else {
+        code += "  " + ev.name;
+        code += lang_.language == IDLOptions::kTs ? "= " : ": ";
+        code += enum_def.ToString(ev);
       }
 
-      code += (it + 1) != enum_def.vals.vec.end() ? ",\n" : "\n";
+      code += (it + 1) != enum_def.Vals().end() ? ",\n" : "\n";
 
       if (ev.union_type.struct_def) {
         ReexportDescription desc = { ev.name,
@@ -431,8 +431,7 @@ class JsTsGenerator : public BaseGenerator {
 
   std::string GenDefaultValue(const Value &value, const std::string &context) {
     if (value.type.enum_def) {
-      if (auto val = value.type.enum_def->ReverseLookup(
-              StringToInt(value.constant.c_str()), false)) {
+      if (auto val = value.type.enum_def->FindByValue(value.constant)) {
         if (lang_.language == IDLOptions::kTs) {
           return GenPrefixedTypeName(WrapInNameSpace(*value.type.enum_def),
                                      value.type.enum_def->file) +
@@ -1271,7 +1270,7 @@ class JsTsGenerator : public BaseGenerator {
         for (auto it = struct_def.fields.vec.begin();
              it != struct_def.fields.vec.end(); ++it) {
           const auto &field = **it;
-          if (field.deprecated) 
+          if (field.deprecated)
             continue;
           paramDoc +=
               GenTypeAnnotation(kParam, GetArgType(field), GetArgName(field));
@@ -1292,7 +1291,7 @@ class JsTsGenerator : public BaseGenerator {
       for (auto it = struct_def.fields.vec.begin();
            it != struct_def.fields.vec.end(); ++it) {
         const auto &field = **it;
-        if (field.deprecated) 
+        if (field.deprecated)
           continue;
 
         if (lang_.language == IDLOptions::kTs) {
@@ -1317,7 +1316,7 @@ class JsTsGenerator : public BaseGenerator {
       for (auto it = struct_def.fields.vec.begin();
            it != struct_def.fields.vec.end(); ++it) {
         const auto &field = **it;
-        if (field.deprecated) 
+        if (field.deprecated)
           continue;
 
         code += "  " + methodPrefix + ".add" + MakeCamel(field.name) + "(";
@@ -1332,8 +1331,8 @@ class JsTsGenerator : public BaseGenerator {
     }
 
     if (lang_.language == IDLOptions::kTs) {
-      if (!object_namespace.empty()) { 
-        code += "}\n"; 
+      if (!object_namespace.empty()) {
+        code += "}\n";
       }
       code += "}\n";
     }

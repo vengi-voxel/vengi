@@ -51,10 +51,10 @@ bool Print(T val, Type type, int /*indent*/, Type * /*union_type*/,
            const IDLOptions &opts, std::string *_text) {
   std::string &text = *_text;
   if (type.enum_def && opts.output_enum_identifiers) {
-    auto enum_val = type.enum_def->ReverseLookup(static_cast<int64_t>(val));
-    if (enum_val) {
+    auto ev = type.enum_def->ReverseLookup(static_cast<int64_t>(val));
+    if (ev) {
       text += "\"";
-      text += enum_val->name;
+      text += ev->name;
       text += "\"";
       return true;
     }
@@ -251,7 +251,7 @@ static bool GenStruct(const StructDef &struct_def, const Table *table,
       }
       if (fd.value.type.base_type == BASE_TYPE_UTYPE) {
         auto enum_val = fd.value.type.enum_def->ReverseLookup(
-            table->GetField<uint8_t>(fd.value.offset, 0));
+            table->GetField<uint8_t>(fd.value.offset, 0), true);
         union_type = enum_val ? &enum_val->union_type : nullptr;
       }
     }
@@ -259,6 +259,23 @@ static bool GenStruct(const StructDef &struct_def, const Table *table,
   text += NewLine(opts);
   text.append(indent, ' ');
   text += "}";
+  return true;
+}
+
+// Generate a text representation of a flatbuffer in JSON format.
+bool GenerateTextFromTable(const Parser &parser, const void *table,
+                           const std::string &table_name, std::string *_text) {
+  auto struct_def = parser.LookupStruct(table_name);
+  if (struct_def == nullptr) {
+    return false;
+  }
+  auto text = *_text;
+  text.reserve(1024);  // Reduce amount of inevitable reallocs.
+  auto root = static_cast<const Table *>(table);
+  if (!GenStruct(*struct_def, root, 0, parser.opts, _text)) {
+    return false;
+  }
+  text += NewLine(parser.opts);
   return true;
 }
 
