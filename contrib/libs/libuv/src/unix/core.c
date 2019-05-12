@@ -41,6 +41,7 @@
 #include <sys/resource.h> /* getrusage */
 #include <pwd.h>
 #include <sys/utsname.h>
+#include <sys/time.h>
 
 #ifdef __sun
 # include <sys/filio.h>
@@ -161,7 +162,9 @@ void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
 
   case UV_FS_POLL:
     uv__fs_poll_close((uv_fs_poll_t*)handle);
-    break;
+    /* Poll handles use file system requests, and one of them may still be
+     * running. The poll code will call uv__make_close_pending() for us. */
+    return;
 
   case UV_SIGNAL:
     uv__signal_close((uv_signal_t*) handle);
@@ -1404,4 +1407,40 @@ error:
   buffer->version[0] = '\0';
   buffer->machine[0] = '\0';
   return r;
+}
+
+int uv__getsockpeername(const uv_handle_t* handle,
+                        uv__peersockfunc func,
+                        struct sockaddr* name,
+                        int* namelen) {
+  socklen_t socklen;
+  uv_os_fd_t fd;
+  int r;
+
+  r = uv_fileno(handle, &fd);
+  if (r < 0)
+    return r;
+
+  /* sizeof(socklen_t) != sizeof(int) on some systems. */
+  socklen = (socklen_t) *namelen;
+
+  if (func(fd, name, &socklen))
+    return UV__ERR(errno);
+
+  *namelen = (int) socklen;
+  return 0;
+}
+
+int uv_gettimeofday(uv_timeval64_t* tv) {
+  struct timeval time;
+
+  if (tv == NULL)
+    return UV_EINVAL;
+
+  if (gettimeofday(&time, NULL) != 0)
+    return UV__ERR(errno);
+
+  tv->tv_sec = (int64_t) time.tv_sec;
+  tv->tv_usec = (int32_t) time.tv_usec;
+  return 0;
 }

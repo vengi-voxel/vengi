@@ -85,10 +85,14 @@ static unsigned long read_cpufreq(unsigned int cpunum);
 int uv__platform_loop_init(uv_loop_t* loop) {
   int fd;
 
-  fd = epoll_create1(EPOLL_CLOEXEC);
+  /* It was reported that EPOLL_CLOEXEC is not defined on Android API < 21,
+   * a.k.a. Lollipop. Since EPOLL_CLOEXEC is an alias for O_CLOEXEC on all
+   * architectures, we just use that instead.
+   */
+  fd = epoll_create1(O_CLOEXEC);
 
   /* epoll_create1() can fail either because it's not implemented (old kernel)
-   * or because it doesn't understand the EPOLL_CLOEXEC flag.
+   * or because it doesn't understand the O_CLOEXEC flag.
    */
   if (fd == -1 && (errno == ENOSYS || errno == EINVAL)) {
     fd = epoll_create(256);
@@ -860,7 +864,8 @@ int uv_interface_addresses(uv_interface_address_t** addresses, int* count) {
     return 0;
   }
 
-  *addresses = uv__malloc(*count * sizeof(**addresses));
+  /* Make sure the memory is initiallized to zero using calloc() */
+  *addresses = uv__calloc(*count, sizeof(**addresses));
   if (!(*addresses)) {
     freeifaddrs(addrs);
     return UV_ENOMEM;
@@ -899,11 +904,12 @@ int uv_interface_addresses(uv_interface_address_t** addresses, int* count) {
     address = *addresses;
 
     for (i = 0; i < (*count); i++) {
-      if (strcmp(address->name, ent->ifa_name) == 0) {
+      size_t namelen = strlen(ent->ifa_name);
+      /* Alias interface share the same physical address */
+      if (strncmp(address->name, ent->ifa_name, namelen) == 0 &&
+          (address->name[namelen] == 0 || address->name[namelen] == ':')) {
         sll = (struct sockaddr_ll*)ent->ifa_addr;
         memcpy(address->phys_addr, sll->sll_addr, sizeof(address->phys_addr));
-      } else {
-        memset(address->phys_addr, 0, sizeof(address->phys_addr));
       }
       address++;
     }
@@ -932,4 +938,76 @@ void uv__set_process_title(const char* title) {
 #if defined(PR_SET_NAME)
   prctl(PR_SET_NAME, title);  /* Only copies first 16 characters. */
 #endif
+}
+
+
+static uint64_t uv__read_proc_meminfo(const char* what) {
+  unsigned long rc;
+  ssize_t n;
+  char* p;
+  int fd;
+  char buf[4096];  /* Large enough to hold all of /proc/meminfo. */
+
+  rc = 0;
+  fd = uv__open_cloexec("/proc/meminfo", O_RDONLY);
+
+  if (fd == -1)
+    return 0;
+
+  n = read(fd, buf, sizeof(buf) - 1);
+
+  if (n <= 0)
+    goto out;
+
+  buf[n] = '\0';
+  p = strstr(buf, what);
+
+  if (p == NULL)
+    goto out;
+
+  p += strlen(what);
+
+  if (1 != sscanf(p, "%lu kB", &rc))
+    goto out;
+
+  rc *= 1024;
+
+out:
+
+  if (uv__close_nocheckstdio(fd))
+    abort();
+
+  return rc;
+}
+
+
+uint64_t uv_get_free_memory(void) {
+  struct sysinfo info;
+  uint64_t rc;
+
+  rc = uv__read_proc_meminfo("MemFree:");
+
+  if (rc != 0)
+    return rc;
+
+  if (0 == sysinfo(&info))
+    return (uint64_t) info.freeram * info.mem_unit;
+
+  return 0;
+}
+
+
+uint64_t uv_get_total_memory(void) {
+  struct sysinfo info;
+  uint64_t rc;
+
+  rc = uv__read_proc_meminfo("MemTotal:");
+
+  if (rc != 0)
+    return rc;
+
+  if (0 == sysinfo(&info))
+    return (uint64_t) info.totalram * info.mem_unit;
+
+  return 0;
 }

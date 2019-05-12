@@ -219,8 +219,10 @@ int uv_thread_create_ex(uv_thread_t* tid,
     pagesize = (size_t)getpagesize();
     /* Round up to the nearest page boundary. */
     stack_size = (stack_size + pagesize - 1) &~ (pagesize - 1);
+#ifdef PTHREAD_STACK_MIN
     if (stack_size < PTHREAD_STACK_MIN)
       stack_size = PTHREAD_STACK_MIN;
+#endif
   }
 
   if (stack_size > 0) {
@@ -801,7 +803,9 @@ int uv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout) {
     return UV_ETIMEDOUT;
 
   abort();
+#ifndef __SUNPRO_C
   return UV_EINVAL;  /* Satisfy the compiler. */
+#endif
 }
 
 
