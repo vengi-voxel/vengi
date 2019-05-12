@@ -38,6 +38,11 @@ void LayerManager::construct() {
 		lockLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer(), true);
 	}).setHelp("Lock a particular layer by id - or the current active one");
 
+	core::Command::registerCommand("togglelayerlock", [&] (const core::CmdArgs& args) {
+		const int layerId = args.size() > 0 ? core::string::toInt(args[0]) : activeLayer();
+		lockLayer(layerId, !isLocked(layerId));
+	}).setHelp("Toggle the lock state of a particular layer by id - or the current active one");
+
 	core::Command::registerCommand("layerunlock", [&] (const core::CmdArgs& args) {
 		lockLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer(), false);
 	}).setHelp("Unlock a particular layer by id - or the current active one");
@@ -62,6 +67,11 @@ void LayerManager::construct() {
 		const bool newVisibleState = core::string::toBool(args[1]);
 		hideLayer(layerId, !newVisibleState);
 	}).setHelp("Change the visible state of a layer");
+
+	core::Command::registerCommand("togglelayerstate", [&] (const core::CmdArgs& args) {
+		const int layerId = args.size() > 0 ? core::string::toInt(args[0]) : activeLayer();
+		hideLayer(layerId, isVisible(layerId));
+	}).setHelp("Toggle the visible state of a layer");
 
 	core::Command::registerCommand("layerhideall", [&] (const core::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
@@ -199,7 +209,40 @@ bool LayerManager::findNewActiveLayer() {
 	return false;
 }
 
+bool LayerManager::isVisible(int layerId) const {
+	if (layerId < 0 || layerId >= (int)_layers.size()) {
+		Log::debug("Invalid layer id given: %i - can't answer visible-state request", layerId);
+		return false;
+	}
+	if (!_layers[layerId].valid) {
+		Log::debug("Attempt to request the visible-state for an invalid layer id: %i", layerId);
+		return false;
+	}
+	return _layers[layerId].visible;
+}
+
+bool LayerManager::isLocked(int layerId) const {
+	if (layerId < 0 || layerId >= (int)_layers.size()) {
+		Log::debug("Invalid layer id given: %i - can't answer lock-state request", layerId);
+		return false;
+	}
+	if (!_layers[layerId].valid) {
+		Log::debug("Attempt to request the lock-state for an invalid layer id: %i", layerId);
+		return false;
+	}
+	return _layers[layerId].locked;
+}
+
 void LayerManager::hideLayer(int layerId, bool hide) {
+	if (layerId < 0 || layerId >= (int)_layers.size()) {
+		Log::debug("Invalid layer id given: %i - can't perform visible-state-change", layerId);
+		return;
+	}
+	if (!_layers[layerId].valid) {
+		Log::debug("Attempt to change the visible-state for an invalid layer id: %i", layerId);
+		return;
+	}
+	_layers[layerId].visible = !hide;
 	for (auto& listener : _listeners) {
 		if (hide) {
 			listener->onLayerHide(layerId);

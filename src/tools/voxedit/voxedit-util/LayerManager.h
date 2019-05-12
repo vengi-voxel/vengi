@@ -50,6 +50,8 @@ public:
 	 */
 	void foreachGroupLayer(std::function<void(int)> func);
 
+	bool isLocked(int layerId) const;
+	bool isVisible(int layerId) const;
 	void hideLayer(int layerId, bool hide);
 	void lockLayer(int layerId, bool lock);
 	bool deleteLayer(int layerId, bool force = false);
