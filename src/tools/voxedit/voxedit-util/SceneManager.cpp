@@ -533,19 +533,23 @@ bool SceneManager::newScene(bool force, const std::string& name, const voxel::Re
 	return true;
 }
 
-void SceneManager::rotate(int layerId, const glm::vec3& angle, bool increaseSize) {
+void SceneManager::rotate(int layerId, const glm::vec3& angle, bool increaseSize, bool rotateAroundReferencePosition) {
 	const voxel::RawVolume* model = volume(layerId);
-	voxel::RawVolume* newVolume = voxel::rotateVolume(model, angle, voxel::Voxel(), increaseSize);
+	if (model == nullptr) {
+		return;
+	}
+	const glm::vec3 pivot = rotateAroundReferencePosition ? glm::vec3(referencePosition()) : model->region().getCentref();
+	voxel::RawVolume* newVolume = voxel::rotateVolume(model, angle, voxel::Voxel(), pivot, increaseSize);
 	voxel::Region r = newVolume->region();
 	r.accumulate(model->region());
 	setNewVolume(layerId, newVolume);
 	modified(layerId, r);
 }
 
-void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize) {
+void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize, bool rotateAroundReferencePosition) {
 	const glm::vec3 angle(angleX, angleY, angleZ);
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
-		rotate(layerId, angle, increaseSize);
+		rotate(layerId, angle, increaseSize, rotateAroundReferencePosition);
 	});
 }
 
@@ -738,7 +742,11 @@ void SceneManager::construct() {
 		const int x = core::string::toInt(args[0]);
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
-		rotate(x, y, z, true);
+		bool rotateAroundReferencePosition = false;
+		if (args.size() >= 4) {
+			rotateAroundReferencePosition = core::string::toBool(args[3]);
+		}
+		rotate(x, y, z, true, rotateAroundReferencePosition);
 	}).setHelp("Rotate scene by the given angles (in degree)");
 
 	core::Command::registerCommand("layermerge", [&] (const core::CmdArgs& args) {

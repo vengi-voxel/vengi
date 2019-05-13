@@ -18,7 +18,7 @@ namespace voxel {
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const Voxel& empty, bool increaseSize) {
+RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const Voxel& empty, const glm::vec3& pivot, bool increaseSize) {
 	const float pitch = glm::radians(angles.x);
 	const float yaw = glm::radians(angles.y);
 	const float roll = glm::radians(angles.z);
@@ -32,15 +32,14 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 	const glm::mat4& rot = glm::mat4_cast(quat);
 #endif
 	const voxel::Region& srcRegion = source->region();
-	const glm::vec3 rotateAround(srcRegion.getCentref());
 	voxel::Region destRegion;
 
 	if (increaseSize) {
-		const glm::vec3 rotated1 = glm::rotate(rot, srcRegion.getLowerCornerf() - rotateAround);
-		const glm::vec3 rotated2 = glm::rotate(rot, srcRegion.getUpperCornerf() - rotateAround);
+		const glm::vec3 rotated1 = glm::rotate(rot, srcRegion.getLowerCornerf() - pivot);
+		const glm::vec3 rotated2 = glm::rotate(rot, srcRegion.getUpperCornerf() - pivot);
 		const float epsilon = 0.00001f;
-		const glm::vec3 minsf = glm::min(rotated1, rotated2) + rotateAround + epsilon;
-		const glm::vec3 maxsf = glm::max(rotated1, rotated2) + rotateAround + epsilon;
+		const glm::vec3 minsf = glm::min(rotated1, rotated2) + pivot + epsilon;
+		const glm::vec3 maxsf = glm::max(rotated1, rotated2) + pivot + epsilon;
 		destRegion = voxel::Region(glm::ivec3(minsf), glm::ivec3(maxsf));
 	} else {
 		destRegion = srcRegion;
@@ -57,9 +56,9 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 				if (v == empty) {
 					continue;
 				}
-				const glm::vec3 pos(x - rotateAround.x, y - rotateAround.y, z - rotateAround.z);
+				const glm::vec3 pos(x - pivot.x, y - pivot.y, z - pivot.z);
 				const glm::vec3 rotatedPos = glm::rotate(rot, pos);
-				const glm::vec3 newPos = rotatedPos + rotateAround;
+				const glm::vec3 newPos = rotatedPos + pivot;
 				const glm::ivec3 volumePos(newPos);
 				if (!destRegion.containsPoint(volumePos)) {
 					continue;

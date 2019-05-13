@@ -31,6 +31,7 @@ my own engine and evolved into something that others might find useful, too.
 * Animation support
 * Custom key bindings
 * Show commands of actions (to configure your own key bindings)
+* Rotate around reference position or center of volume
 
 # Controls
 
@@ -55,7 +56,6 @@ my own engine and evolved into something that others might find useful, too.
   - Delete, move, rotate, modify only in active selection
 * Copy/paste
   - Paste into selection of a different size? Accept with enter after moving?
-* Rotate around reference position
 * Color selection via keyboard only
   - Shortcut for enter-color-in-the-next second and index of the colormap?
   - Relative movement from current color
