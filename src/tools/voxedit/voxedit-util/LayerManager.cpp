@@ -79,6 +79,18 @@ void LayerManager::construct() {
 		}
 	}).setHelp("Hide all layers");
 
+	core::Command::registerCommand("layerlockall", [&] (const core::CmdArgs& args) {
+		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
+			lockLayer(idx, true);
+		}
+	}).setHelp("Lock all layers");
+
+	core::Command::registerCommand("layerunlockall", [&] (const core::CmdArgs& args) {
+		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
+			lockLayer(idx, false);
+		}
+	}).setHelp("Unlock all layers");
+
 	core::Command::registerCommand("layerhideothers", [&] (const core::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
 			if (idx == activeLayer()) {

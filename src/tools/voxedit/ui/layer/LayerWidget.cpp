@@ -77,7 +77,7 @@ public:
 				}
 				static const char *ACTIONS[] = {
 					"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall",
-					"layermoveup", "layermovedown", "layermerge",
+					"layermoveup", "layermovedown", "layermerge", "layerlockall", "layerunlockall",
 					nullptr
 				};
 				for (const char** action = ACTIONS; *action != nullptr; ++action) {
@@ -119,6 +119,8 @@ public:
 				}
 				source->addItem(new tb::TBGenericStringItem(tr("Show all layers"), TBIDC("layershowall")));
 				source->addItem(new tb::TBGenericStringItem(tr("Hide all layers"), TBIDC("layerhideall")));
+				source->addItem(new tb::TBGenericStringItem(tr("Lock all layers"), TBIDC("layerlockall")));
+				source->addItem(new tb::TBGenericStringItem(tr("Unlock all layers"), TBIDC("layerunlockall")));
 				menu->show(source, tb::TBPopupAlignment(posInRoot), -1);
 			}
 			return true;
