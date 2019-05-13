@@ -2207,12 +2207,25 @@ SDL_MaximizeWindow(SDL_Window * window)
     }
 }
 
+static SDL_bool
+CanMinimizeWindow(SDL_Window * window)
+{
+    if (!_this->MinimizeWindow) {
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
+}
+
 void
 SDL_MinimizeWindow(SDL_Window * window)
 {
     CHECK_WINDOW_MAGIC(window,);
 
     if (window->flags & SDL_WINDOW_MINIMIZED) {
+        return;
+    }
+
+    if (!CanMinimizeWindow(window)) {
         return;
     }
 

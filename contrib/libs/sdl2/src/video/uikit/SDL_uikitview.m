@@ -41,8 +41,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     SDL_TouchID directTouchId;
     SDL_TouchID indirectTouchId;
-
-    UITouch * __weak firstFingerDown;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -81,6 +79,27 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     return self;
 }
+
+- (void)layoutSubviews
+{
+	// Fix for touch ios.
+#if TARGET_OS_IOS
+	// on ios, a metal view gets added to our parent, and covers this for touch events.
+	// So set ourselves to user interact, and siblings false. johna
+	NSArray<UIView*>* subviews = [self.superview subviews];
+	for (int i=0; i<[subviews count]; i++)
+	{
+		UIView *view = [subviews objectAtIndex:i];
+		if (view == self) {
+			[view setUserInteractionEnabled:YES];  // set our user interaction to true.
+		} else {
+			[view setUserInteractionEnabled:NO];  // siblings to false.
+		}
+	}
+#endif
+    [super layoutSubviews];
+}
+
 
 - (void)setSDLWindow:(SDL_Window *)window
 {
@@ -197,18 +216,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             continue;
         }
 
-        if (!firstFingerDown) {
-            CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
-            int clicks = (int) touch.tapCount;
-
-            /* send mouse moved event */
-            SDL_SendMouseMotion(sdlwindow, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
-
-            /* send mouse down event */
-            SDL_SendMouseButtonClicks(sdlwindow, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT, clicks);
-
-            firstFingerDown = touch;
-        }
+        /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
         SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch),
@@ -227,12 +235,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             continue;
         }
 
-        if (touch == firstFingerDown) {
-            /* send mouse up */
-            int clicks = (int) touch.tapCount;
-            SDL_SendMouseButtonClicks(sdlwindow, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT, clicks);
-            firstFingerDown = nil;
-        }
+        /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
         SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch),
@@ -254,13 +257,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
         if (SDL_AddTouch(touchId, touchType, "") < 0) {
             continue;
-        }
-
-        if (touch == firstFingerDown) {
-            CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
-
-            /* send moved event */
-            SDL_SendMouseMotion(sdlwindow, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
         }
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];

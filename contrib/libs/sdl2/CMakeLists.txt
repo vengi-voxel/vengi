@@ -212,6 +212,12 @@ endif()
 set(SDL_LIBS "-lSDL2")
 set(SDL_CFLAGS "")
 
+# When building shared lib for Windows with MinGW,
+# avoid the DLL having a "lib" prefix
+if(WINDOWS)
+  set(CMAKE_SHARED_LIBRARY_PREFIX "")
+endif()
+
 # Emscripten toolchain has a nonempty default value for this, and the checks
 # in this file need to change that, so remember the original value, and
 # restore back to that afterwards. For check_function_exists() to work in
@@ -234,7 +240,7 @@ endif()
 
 add_definitions(-DUSING_GENERATED_CONFIG_H)
 # General includes
-include_directories(${CMAKE_BINARY_DIR}/include include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/include ${SDL2_SOURCE_DIR}/include)
 if(USE_GCC OR USE_CLANG)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -idirafter ${SDL2_SOURCE_DIR}/src/video/khronos")
 else()
@@ -334,6 +340,8 @@ set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
 dep_option(VIDEO_VULKAN        "Enable Vulkan support" ON "ANDROID OR APPLE OR LINUX OR WINDOWS" OFF)
 set_option(VIDEO_KMSDRM        "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "VIDEO_KMSDRM" OFF)
+option_string(BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" "OFF")
+option_string(FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" "OFF")
 
 # TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
 # The options below are for compatibility to configure's default behaviour.
@@ -341,6 +349,7 @@ set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared versi
 set(SDL_STATIC ON CACHE BOOL "Build a static version of the library")
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" OFF "SDL_STATIC" OFF)
+set_option(SDL_TEST            "Build the test directory" OFF)
 
 
 
@@ -358,6 +367,14 @@ else()
   message_error("unknown assertion level")
 endif()
 set(HAVE_ASSERTIONS ${ASSERTIONS})
+
+if(NOT BACKGROUNDING_SIGNAL STREQUAL "OFF")
+  add_definitions("-DSDL_BACKGROUNDING_SIGNAL=${BACKGROUNDING_SIGNAL}")
+endif()
+
+if(NOT FOREGROUNDING_SIGNAL STREQUAL "OFF")
+  add_definitions("-DSDL_FOREGROUNDING_SIGNAL=${FOREGROUNDING_SIGNAL}")
+endif()
 
 # Compiler option evaluation
 if(USE_GCC OR USE_CLANG)
@@ -664,7 +681,7 @@ if(LIBC)
             _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
             vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp
-            nanosleep sysconf sysctlbyname getauxval poll
+            nanosleep sysconf sysctlbyname getauxval poll _Exit
             )
       string(TOUPPER ${_FN} _UPPER)
       set(_HAVEVAR "HAVE_${_UPPER}")
@@ -736,7 +753,7 @@ if(SDL_POWER)
   file(GLOB POWER_SOURCES ${SDL2_SOURCE_DIR}/src/power/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${POWER_SOURCES})
 endif()
-# TODO: in configure.in, the test for LOADSO and SDL_DLOPEN is a bit weird:
+# TODO: in configure.ac, the test for LOADSO and SDL_DLOPEN is a bit weird:
 # if LOADSO is not wanted, SDL_LOADSO_DISABLED is set
 # If however on Unix or APPLE dlopen() is detected via CheckDLOPEN(),
 # SDL_LOADSO_DISABLED will not be set, regardless of the LOADSO settings
@@ -1266,7 +1283,7 @@ elseif(WINDOWS)
   # Libraries for Win32 native and MinGW
   list(APPEND EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 shell32)
 
-  # TODO: in configure.in the check for timers is set on
+  # TODO: in configure.ac the check for timers is set on
   # cygwin | mingw32* - does this include mingw32CE?
   if(SDL_TIMERS)
     set(SDL_TIMER_WINDOWS 1)
@@ -1375,6 +1392,8 @@ elseif(APPLE)
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_COREAUDIO 1)
     file(GLOB AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/coreaudio/*.m)
+    # !!! FIXME: modern CMake doesn't need "LANGUAGE C" for Objective-C.
+    set_source_files_properties(${AUDIO_SOURCES} PROPERTIES LANGUAGE C)
     set(SOURCE_FILES ${SOURCE_FILES} ${AUDIO_SOURCES})
     set(HAVE_SDL_AUDIO TRUE)
     set(SDL_FRAMEWORK_COREAUDIO 1)
@@ -1532,7 +1551,7 @@ if(VIDEO_VULKAN)
 endif()
 
 # Dummies
-# configure.in does it differently:
+# configure.ac does it differently:
 # if not have X
 #   if enable_X {  SDL_X_DISABLED = 1 }
 #   [add dummy sources]
@@ -1591,11 +1610,8 @@ endif()
 #   endif()
 # endif()
 
-configure_file("include/SDL_config.h.cmake" "${CMAKE_BINARY_DIR}/SDL_config.h")
-
-if (IOS)
-  list(APPEND EXTRA_CFLAGS "-fobjc-arc")
-endif()
+configure_file("${SDL2_SOURCE_DIR}/include/SDL_config.h.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/include/SDL_config.h")
 
 # Prepare the flags and remove duplicates
 if(EXTRA_LDFLAGS)
@@ -1711,7 +1727,6 @@ if(UNIX)
 endif()
 
 endif(NOT SDL2_FOUND)
-
 if (FALSE) # to keep changes as small as possible in our own copy
 # Ensure that the extra cflags are used at compile time
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")

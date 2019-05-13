@@ -699,9 +699,12 @@ SDL_JoystickQuit(void)
     int i;
 
     /* Make sure we're not getting called in the middle of updating joysticks */
-    SDL_assert(!SDL_updating_joystick);
-
     SDL_LockJoysticks();
+    while (SDL_updating_joystick) {
+        SDL_UnlockJoysticks();
+        SDL_Delay(1);
+        SDL_LockJoysticks();
+    }
 
     /* Stop the event polling */
     while (SDL_joysticks) {
@@ -724,8 +727,9 @@ SDL_JoystickQuit(void)
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
     if (SDL_joystick_lock) {
-        SDL_DestroyMutex(SDL_joystick_lock);
+        SDL_mutex *mutex = SDL_joystick_lock;
         SDL_joystick_lock = NULL;
+        SDL_DestroyMutex(mutex);
     }
 
     SDL_GameControllerQuitMappings();
@@ -1033,6 +1037,11 @@ SDL_JoystickUpdate(void)
     /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
     SDL_UnlockJoysticks();
 
+    /* Special function for HIDAPI devices, as a single device can provide multiple SDL_Joysticks */
+#ifdef SDL_JOYSTICK_HIDAPI
+    SDL_HIDAPI_UpdateDevices();
+#endif /* SDL_JOYSTICK_HIDAPI */
+
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
             joystick->driver->Update(joystick);
@@ -1185,6 +1194,12 @@ SDL_bool
 SDL_IsJoystickXboxOne(Uint16 vendor, Uint16 product)
 {
     return (GuessControllerType(vendor, product) == k_eControllerType_XBoxOneController);
+}
+
+SDL_bool
+SDL_IsJoystickGameCube(Uint16 vendor, Uint16 product)
+{
+    return (GuessControllerType(vendor, product) == k_eControllerType_GameCube);
 }
 
 SDL_bool

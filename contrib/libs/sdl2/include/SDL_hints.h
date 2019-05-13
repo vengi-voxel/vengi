@@ -316,6 +316,16 @@ extern "C" {
 #define SDL_HINT_TOUCH_MOUSE_EVENTS    "SDL_TOUCH_MOUSE_EVENTS"
 
 /**
+ *  \brief  A variable controlling whether mouse events should generate synthetic touch events
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Mouse events will not generate touch events (default for desktop platforms)
+ *    "1"       - Mouse events will generate touch events (default for mobile platforms, such as Android and iOS)
+ */
+
+#define SDL_HINT_MOUSE_TOUCH_EVENTS    "SDL_MOUSE_TOUCH_EVENTS"
+
+/**
  *  \brief Minimize your SDL_Window if it loses key focus when in fullscreen mode. Defaults to true.
  *
  */
@@ -554,6 +564,17 @@ extern "C" {
  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX   "SDL_JOYSTICK_HIDAPI_XBOX"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for Nintendo GameCube controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE "SDL_JOYSTICK_HIDAPI_GAMECUBE"
 
 /**
  *  \brief  A variable that controls whether Steam Controllers should be exposed using the SDL joystick and game controller APIs
@@ -846,19 +867,7 @@ extern "C" {
  */
 #define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
 
- /**
- * \brief A variable to control whether mouse and touch events are to be treated together or separately
- *
- * The variable can be set to the following values:
- *   "0"       - Mouse events will be handled as touch events, and touch will raise fake mouse
- *               events. This is the behaviour of SDL <= 2.0.3. (default)
- *   "1"       - Mouse events will be handled separately from pure touch events.
- *
- * The value of this hint is used at runtime, so it can be changed at any time.
- */
-#define SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH "SDL_ANDROID_SEPARATE_MOUSE_AND_TOUCH"
-
- /**
+/**
  * \brief A variable to control whether we trap the Android back button to handle it manually.
  *        This is necessary for the right mouse button to work on some Android devices, or
  *        to be able to trap the back button for use in your code reliably.  If set to true,
@@ -874,6 +883,17 @@ extern "C" {
  * The value of this hint is used at runtime, so it can be changed at any time.
  */
 #define SDL_HINT_ANDROID_TRAP_BACK_BUTTON "SDL_ANDROID_TRAP_BACK_BUTTON"
+
+/**
+ * \brief A variable to control whether the event loop will block itself when the app is paused.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Non blocking.
+ *   "1"       - Blocking. (default)
+ *
+ * The value should be set before SDL is initialized.
+ */
+#define SDL_HINT_ANDROID_BLOCK_ON_PAUSE "SDL_ANDROID_BLOCK_ON_PAUSE"
 
  /**
  * \brief A variable to control whether the return key on the soft keyboard
@@ -1076,6 +1096,29 @@ extern "C" {
  *  will result in undefined behavior.
  */
 #define SDL_HINT_RENDER_BATCHING  "SDL_RENDER_BATCHING"
+
+
+/**
+ *  \brief  A variable controlling whether SDL logs all events pushed onto its internal queue.
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "0"     - Don't log any events (default)
+ *    "1"     - Log all events except mouse and finger motion, which are pretty spammy.
+ *    "2"     - Log all events.
+ *
+ *  This is generally meant to be used to debug SDL itself, but can be useful
+ *  for application developers that need better visibility into what is going
+ *  on in the event queue. Logged events are sent through SDL_Log(), which
+ *  means by default they appear on stdout on most platforms or maybe
+ *  OutputDebugString() on Windows, and can be funneled by the app with
+ *  SDL_LogSetOutputFunction(), etc.
+ *
+ *  This hint can be toggled on and off at runtime, if you only need to log
+ *  events for a small subset of program execution.
+ */
+#define SDL_HINT_EVENT_LOGGING   "SDL_EVENT_LOGGING"
+
 
 
 /**
