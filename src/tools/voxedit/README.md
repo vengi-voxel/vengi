@@ -47,7 +47,7 @@ my own engine and evolved into something that others might find useful, too.
 
 * SceneSettings dialog
   - Set bitmap backgrounds for each axis on a plane at a given position
-  - Change sun color, position and angles
+  - Change sun angles
 * Import bitmaps as plane
 * Import bitmap palettes (quantize to 256 colors before)
 * Selections
