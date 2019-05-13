@@ -865,7 +865,7 @@ void SceneManager::animate(uint64_t time) {
 		const int roundTrip = layers + _currentAnimationLayer;
 		for (int idx = _currentAnimationLayer + 1; idx < roundTrip; ++idx) {
 			const Layer& layer = _layerMgr.layer(idx % layers);
-			if (layer.valid && layer.visible) {
+			if (layer.valid) {
 				 _layerMgr.hideLayer(_currentAnimationLayer, true);
 				_currentAnimationLayer = idx % layers;
 				_layerMgr.hideLayer(_currentAnimationLayer, false);
