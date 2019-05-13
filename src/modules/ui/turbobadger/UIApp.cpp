@@ -475,10 +475,6 @@ tb::TBWidget* UIApp::getWidgetAt(int x, int y, bool includeChildren) {
 	return _root->getWidgetAt(x, y, includeChildren);
 }
 
-void UIApp::doLayout() {
-	_root->invalidateLayout(tb::TBWidget::INVALIDATE_LAYOUT_RECURSIVE);
-}
-
 core::AppState UIApp::onRunning() {
 	core::AppState state = Super::onRunning();
 	_console.update(_deltaFrameMillis);
