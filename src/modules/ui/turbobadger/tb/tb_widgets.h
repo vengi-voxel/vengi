@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Common.h"
 #include "tb_core.h"
 #include "tb_font_desc.h"
 #include "tb_geometry.h"
@@ -406,6 +407,8 @@ public:
 	void setSize(int width, int height) {
 		setRect(TBRect(m_rect.x, m_rect.y, width, height));
 	}
+
+	void execute(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));
 
 	/** Invalidate should be called if the widget need to be repainted,
 		to make sure the renderer repaints it and its children next frame. */

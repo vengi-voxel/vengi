@@ -4,6 +4,7 @@
 
 #include "tb_widgets.h"
 #include "core/Assert.h"
+#include "core/command/CommandHandler.h"
 #include "tb_font_renderer.h"
 #include "tb_renderer.h"
 #include "tb_scroller.h"
@@ -1269,6 +1270,21 @@ bool TBWidget::invokeEvent(TBWidgetEvent &ev) {
 		tmp = tmp->getEventDestination();
 	}
 	return handled;
+}
+
+void TBWidget::execute(const char* msg, ...) {
+	va_list args;
+	va_start(args, msg);
+	char buf[4096];
+	SDL_vsnprintf(buf, sizeof(buf), msg, args);
+	buf[sizeof(buf) - 1] = '\0';
+
+	tb::TBWidgetEvent ev(tb::EVENT_TYPE_COMMAND);
+	ev.string = buf;
+	invokeEvent(ev);
+
+	core::executeCommands(std::string(buf));
+	va_end(args);
 }
 
 void TBWidget::startLongClickTimer(BUTTON_TYPE type) {
