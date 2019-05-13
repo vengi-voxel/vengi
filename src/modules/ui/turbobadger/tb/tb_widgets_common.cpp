@@ -228,12 +228,11 @@ bool TBButton::onEvent(const TBWidgetEvent &ev) {
 			_var->markClean();
 		}
 		if (!_command.isEmpty()) {
-			const std::string& cmd = canToggle() ? core::string::format("%s %i", _command.c_str(), getValue()) : _command.c_str();
-			Log::debug("Button pressed, execute: '%s'", cmd.c_str());
-			core::executeCommands(cmd);
-			TBWidgetEvent ev(EVENT_TYPE_COMMAND);
-			ev.string = cmd.c_str();
-			invokeEvent(ev);
+			if (canToggle()) {
+				execute("%s %i", _command.c_str(), getValue());
+			} else {
+				execute("%s", _command.c_str());
+			}
 		}
 	}
 	return TBWidget::onEvent(ev);
@@ -411,11 +410,7 @@ void TBRadioCheckBox::setValue(int value) {
 		_var->markClean();
 	}
 	if (!_command.isEmpty()) {
-		const std::string& cmd = core::string::format("%s %i", _command.c_str(), m_value);
-		core::executeCommands(cmd);
-		TBWidgetEvent ev(EVENT_TYPE_COMMAND);
-		ev.string = cmd.c_str();
-		invokeEvent(ev);
+		execute("%s %i", _command.c_str(), m_value);
 	}
 	setState(WIDGET_STATE_SELECTED, value != 0);
 
@@ -641,11 +636,7 @@ void TBSlider::setValueDouble(double value) {
 		_var->markClean();
 	}
 	if (!_command.isEmpty()) {
-		const std::string& cmd = core::string::format("%s %f", _command.c_str(), m_value);
-		core::executeCommands(cmd);
-		TBWidgetEvent ev(EVENT_TYPE_COMMAND);
-		ev.string = cmd.c_str();
-		invokeEvent(ev);
+		execute("%s %f", _command.c_str(), m_value);
 	}
 
 	updateHandle();
