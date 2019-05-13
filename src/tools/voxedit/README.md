@@ -73,3 +73,4 @@ my own engine and evolved into something that others might find useful, too.
 # Needed improvements
 
 * Fix memento states for merge of layers
+* Fix memento states for layer group modifications

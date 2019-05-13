@@ -198,4 +198,10 @@ void Shadow::setLightViewMatrix(const glm::mat4& lightView) {
 	_sunDirection = glm::vec3(glm::column(glm::inverse(_lightView), 2));
 }
 
+glm::vec3 Shadow::sunPosition() const {
+	const glm::mat3 rotMat(_lightView);
+	const glm::vec3 d(_lightView[3]);
+	return -d * rotMat;
+}
+
 }

@@ -180,6 +180,9 @@ public:
 	void update(uint64_t time);
 	void shutdown() override;
 
+	voxelrender::RawVolumeRenderer& renderer();
+	const voxelrender::RawVolumeRenderer& renderer() const;
+
 	void modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo = true);
 	voxel::RawVolume* volume(int idx);
 
@@ -239,6 +242,14 @@ public:
 	void onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume, const voxel::Region& region) override;
 	void onLayerDeleted(int layerId, const Layer& layer) override;
 };
+
+inline voxelrender::RawVolumeRenderer& SceneManager::renderer() {
+	return _volumeRenderer;
+}
+
+inline const voxelrender::RawVolumeRenderer& SceneManager::renderer() const {
+	return _volumeRenderer;
+}
 
 inline math::Axis SceneManager::lockedAxis() const {
 	return _lockedAxis;

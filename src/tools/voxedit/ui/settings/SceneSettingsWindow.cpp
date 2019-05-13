@@ -40,7 +40,45 @@ bool SceneSettingsWindow::show() {
 		return false;
 	}
 
-	onShow();
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("position.x")) {
+		widget->setValueDouble(_settings->sunPosition.x);
+	}
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("position.y")) {
+		widget->setValueDouble(_settings->sunPosition.y);
+	}
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("position.z")) {
+		widget->setValueDouble(_settings->sunPosition.z);
+	}
+
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("direction.x")) {
+		widget->setValueDouble(_settings->sunDirection.x);
+	}
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("direction.y")) {
+		widget->setValueDouble(_settings->sunDirection.y);
+	}
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("direction.z")) {
+		widget->setValueDouble(_settings->sunDirection.z);
+	}
+
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("ambient.r")) {
+		widget->setValue(_settings->ambientColor.r * 255.0f);
+	}
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("ambient.g")) {
+		widget->setValue(_settings->ambientColor.g * 255.0f);
+	}
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("ambient.b")) {
+		widget->setValue(_settings->ambientColor.b * 255.0f);
+	}
+
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("diffuse.r")) {
+		widget->setValue(_settings->diffuseColor.r * 255.0f);
+	}
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("diffuse.g")) {
+		widget->setValue(_settings->diffuseColor.g * 255.0f);
+	}
+	if (tb::TBInlineSelect* widget = getWidgetByIDAndType<tb::TBInlineSelect>("diffuse.b")) {
+		widget->setValue(_settings->diffuseColor.b * 255.0f);
+	}
 
 	addButton("ok", true);
 	addButton("cancel", false);
@@ -75,12 +113,14 @@ void SceneSettingsWindow::addButton(const tb::TBID &id, bool focused) {
 }
 
 bool SceneSettingsWindow::onEvent(const tb::TBWidgetEvent &ev) {
-	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->isOfType<tb::TBButton>()) {
+	tb::TBWidget *widget = ev.target;
+	const tb::TBID &id = widget->getID();
+	if (ev.type == tb::EVENT_TYPE_CLICK && widget->isOfType<tb::TBButton>()) {
 		tb::TBWidgetSafePointer this_widget(this);
 
 		// Invoke the click on the target
 		tb::TBWidgetEvent targetEvent(tb::EVENT_TYPE_CLICK);
-		targetEvent.ref_id = ev.target->getID();
+		targetEvent.ref_id = widget->getID();
 		invokeEvent(targetEvent);
 
 		// If target got deleted, close
@@ -94,6 +134,47 @@ bool SceneSettingsWindow::onEvent(const tb::TBWidgetEvent &ev) {
 		m_close_button.invokeEvent(clickEvent);
 		return true;
 	}
+
+	if (ev.type == tb::EVENT_TYPE_CHANGED) {
+		if (id == TBIDC("position.x")) {
+			_settings->sunPosition.x = widget->getValueDouble();
+			_settings->sunPositionDirty = true;
+		} else if (id == TBIDC("position.y")) {
+			_settings->sunPosition.y = widget->getValueDouble();
+			_settings->sunPositionDirty = true;
+		} else if (id == TBIDC("position.z")) {
+			_settings->sunPosition.z = widget->getValueDouble();
+			_settings->sunPositionDirty = true;
+		} else if (id == TBIDC("direction.x")) {
+			_settings->sunDirection.x = widget->getValueDouble();
+			_settings->sunDirectionDirty = true;
+		} else if (id == TBIDC("direction.y")) {
+			_settings->sunDirection.y = widget->getValueDouble();
+			_settings->sunDirectionDirty = true;
+		} else if (id == TBIDC("direction.z")) {
+			_settings->sunDirection.z = widget->getValueDouble();
+			_settings->sunDirectionDirty = true;
+		} else if (id == TBIDC("ambient.r")) {
+			_settings->ambientColor.r = widget->getValue() / 255.0f;
+			_settings->ambientDirty = true;
+		} else if (id == TBIDC("ambient.g")) {
+			_settings->ambientColor.g = widget->getValue() / 255.0f;
+			_settings->ambientDirty = true;
+		} else if (id == TBIDC("ambient.b")) {
+			_settings->ambientColor.b = widget->getValue() / 255.0f;
+			_settings->ambientDirty = true;
+		} else if (id == TBIDC("diffuse.r")) {
+			_settings->diffuseColor.r = widget->getValue() / 255.0f;
+			_settings->diffuseDirty = true;
+		} else if (id == TBIDC("diffuse.g")) {
+			_settings->diffuseColor.g = widget->getValue() / 255.0f;
+			_settings->diffuseDirty = true;
+		} else if (id == TBIDC("diffuse.b")) {
+			_settings->diffuseColor.b = widget->getValue() / 255.0f;
+			_settings->diffuseDirty = true;
+		}
+	}
+
 	return Super::onEvent(ev);
 }
 

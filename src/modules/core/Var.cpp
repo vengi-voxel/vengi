@@ -48,10 +48,13 @@ glm::vec3 Var::vec3Val() const {
 	float x, y, z;
 #ifdef _MSC_VER
 	if (::sscanf_s(strVal().c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
+		if (::sscanf_s(strVal().c_str(), "%f %f %f", &x, &y, &z) != 3) {
 #else
 	if (::sscanf(strVal().c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
+		if (::sscanf(strVal().c_str(), "%f %f %f", &x, &y, &z) != 3) {
 #endif
-		return glm::zero<glm::vec3>();
+			return glm::zero<glm::vec3>();
+		}
 	}
 	return glm::vec3(x, y, z);
 }

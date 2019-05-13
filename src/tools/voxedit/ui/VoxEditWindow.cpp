@@ -391,24 +391,41 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
-	if (id == TBIDC("scene_settings")) {
-		if (ev.ref_id == 0) {
-			_settings.ambientColor = core::Var::getSafe(cfg::VoxEditAmbientColor)->vec3Val();
-			_settings.diffuseColor = core::Var::getSafe(cfg::VoxEditDiffuseColor)->vec3Val();
-			SceneSettingsWindow* settings = new SceneSettingsWindow(this, &_settings);
-			if (!settings->show()) {
-				delete settings;
+	if (id == TBIDC("scene_settings_open")) {
+		auto &renderer = sceneMgr().renderer();
+		auto &shadow = renderer.shadow();
+		_settings = SceneSettings();
+		_settings.ambientColor = core::Var::getSafe(cfg::VoxEditAmbientColor)->vec3Val();
+		_settings.diffuseColor = core::Var::getSafe(cfg::VoxEditDiffuseColor)->vec3Val();
+		_settings.sunPosition = shadow.sunPosition();
+		_settings.sunDirection = shadow.sunDirection();
+		SceneSettingsWindow* settings = new SceneSettingsWindow(this, &_settings);
+		if (!settings->show()) {
+			delete settings;
+		}
+	} else if (id == TBIDC("scene_settings") && ev.ref_id == TBIDC("ok")) {
+		auto &renderer = sceneMgr().renderer();
+		if (_settings.ambientDirty) {
+			const std::string& c = core::string::format("%f %f %f", _settings.ambientColor.x, _settings.ambientColor.y, _settings.ambientColor.z);
+			core::Var::getSafe(cfg::VoxEditAmbientColor)->setVal(c);
+		}
+		if (_settings.diffuseDirty) {
+			const std::string& c = core::string::format("%f %f %f", _settings.diffuseColor.x, _settings.diffuseColor.y, _settings.diffuseColor.z);
+			core::Var::getSafe(cfg::VoxEditDiffuseColor)->setVal(c);
+		}
+		if (_settings.sunPositionDirty) {
+			renderer.setSunPosition(_settings.sunPosition, glm::zero<glm::vec3>(), glm::up);
+		}
+		if (_settings.sunDirectionDirty) {
+			// TODO: sun direction
+		}
+		for (size_t i = 0; i < _settings.backgrounds.size(); ++i) {
+			const std::string& name = _settings.backgrounds[i];
+			if (name.empty()) {
+				// TODO: delete old plane?
+				continue;
 			}
-		} else if (ev.ref_id == TBIDC("ok")) {
-			// TODO: apply ambient and diffuse color
-			for (size_t i = 0; i < _settings.backgrounds.size(); ++i) {
-				const std::string& name = _settings.backgrounds[i];
-				if (name.empty()) {
-					// TODO: delete old plane?
-					continue;
-				}
-				// TODO: apply bitmap plane
-			}
+			// TODO: apply bitmap plane
 		}
 		return true;
 	}

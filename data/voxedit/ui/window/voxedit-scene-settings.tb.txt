@@ -19,19 +19,52 @@ lighting_settings
 			TBTextField: text: Sun angle
 			TBLayout: axis: x
 				TBSkinImage: skin: voxedit-axis-x
-				TBInlineSelect: id: angle.x
+				TBInlineSelect: id: direction.x
 					lp: width: 120
 			TBLayout: axis: x
 				TBSkinImage: skin: voxedit-axis-y
-				TBInlineSelect: id: angle.y
+				TBInlineSelect: id: direction.y
 					lp: width: 120
 			TBLayout: axis: x
 				TBSkinImage: skin: voxedit-axis-z
-				TBInlineSelect: id: angle.z
+				TBInlineSelect: id: direction.z
 					lp: width: 120
 	TBContainer
 		TBLayout: axis: y
 			TBTextField: text: Ambient color
+			TBLayout: axis: x
+				TBInlineSelect: id: ambient.r
+					min: 0
+					max: 255
+					lp: width: 120
+			TBLayout: axis: x
+				TBInlineSelect: id: ambient.g
+					min: 0
+					max: 255
+					lp: width: 120
+			TBLayout: axis: x
+				TBInlineSelect: id: ambient.b
+					min: 0
+					max: 255
+					lp: width: 120
+	TBContainer
+		TBLayout: axis: y
+			TBTextField: text: Diffuse color
+			TBLayout: axis: x
+				TBInlineSelect: id: diffuse.r
+					min: 0
+					max: 255
+					lp: width: 120
+			TBLayout: axis: x
+				TBInlineSelect: id: diffuse.g
+					min: 0
+					max: 255
+					lp: width: 120
+			TBLayout: axis: x
+				TBInlineSelect: id: diffuse.b
+					min: 0
+					max: 255
+					lp: width: 120
 
 background_settings
 	TBContainer

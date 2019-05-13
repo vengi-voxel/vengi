@@ -63,6 +63,9 @@ public:
 	void hide(int idx, bool hide);
 	bool hiddenState(int idx) const;
 
+	render::Shadow& shadow();
+	const render::Shadow& shadow() const;
+
 	/**
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
@@ -117,6 +120,14 @@ public:
 	 */
 	std::vector<voxel::RawVolume*> shutdown();
 };
+
+inline render::Shadow& RawVolumeRenderer::shadow() {
+	return _shadow;
+}
+
+inline const render::Shadow& RawVolumeRenderer::shadow() const {
+	return _shadow;
+}
 
 inline voxel::RawVolume* RawVolumeRenderer::volume(int idx) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {

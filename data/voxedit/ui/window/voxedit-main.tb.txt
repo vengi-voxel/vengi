@@ -42,7 +42,7 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-undo
 						TBButton: gravity: left, @include: definitions>menubutton, text: Redo, id: redo, command: redo
 							TBSkinImage: skin: voxedit-redo
-						TBButton: gravity: left, @include: definitions>menubutton, text: Settings, id: scene_settings
+						TBButton: gravity: left, @include: definitions>menubutton, text: Settings, id: scene_settings_open
 							TBSkinImage: skin: voxedit-options
 
 						TBLayout: gravity: left right

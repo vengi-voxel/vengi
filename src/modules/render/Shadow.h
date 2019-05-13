@@ -72,6 +72,7 @@ public:
 	const std::vector<float>& distances() const;
 	const glm::vec3& sunDirection() const;
 	const glm::ivec2& dimension() const;
+	glm::vec3 sunPosition() const;
 };
 
 inline const std::vector<glm::mat4>& Shadow::cascades() const {
