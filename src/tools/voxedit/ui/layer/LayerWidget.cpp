@@ -41,23 +41,23 @@ public:
 			tb::TBWidget* target = ev.target;
 			const tb::TBID& id = target->getID();
 			if (id == TBIDC("visible")) {
-				layerMgr.hideLayer(_layerId, ev.target->getValue() ? false : true);
+				target->execute("togglelayerstate %i", _layerId);
 				return true;
 			}
 			if (id == TBIDC("locked")) {
-				layerMgr.lockLayer(_layerId, ev.target->getValue() ? true : false);
+				target->execute("togglelayerlock %i", _layerId);
 				return true;
 			}
 			if (id == TBIDC("delete")) {
-				layerMgr.deleteLayer(_layerId);
+				target->execute("layerdelete %i", _layerId);
 				return true;
 			}
 			if (id == TBIDC("layer_move_window") && ev.ref_id == TBIDC("ok")) {
-				core::Command::execute("move %i %i %i", _moveSettings.move.x, _moveSettings.move.y, _moveSettings.move.z);
+				target->execute("move %i %i %i", _moveSettings.move.x, _moveSettings.move.y, _moveSettings.move.z);
 				return true;
 			}
 			if (id == TBIDC("layer_rename_window") && ev.ref_id == TBIDC("ok")) {
-				core::Command::execute("layerrename %i \"%s\"", _layerId, _renameSettings.name.c_str());
+				target->execute("layerrename %i \"%s\"", _layerId, _renameSettings.name.c_str());
 				return true;
 			}
 			if (id == TBIDC("layerpopupmenu")) {
@@ -82,7 +82,7 @@ public:
 				};
 				for (const char** action = ACTIONS; *action != nullptr; ++action) {
 					if (ev.ref_id == TBIDC(*action)) {
-						core::executeCommands(*action);
+						target->execute("%s", *action);
 						break;
 					}
 				}
