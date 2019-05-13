@@ -232,19 +232,19 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 bool WindowedApp::resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key) const {
+	const char *match = strchr(cmd, ' ');
+	const size_t size = match != nullptr ? (size_t)(intptr_t)(match - cmd) : strlen(cmd);
 	for (const auto& b : _bindings) {
 		const util::CommandModifierPair& pair = b.second;
-		if (strcmp(pair.command.c_str(), cmd)) {
-			continue;
+		if (!strcmp(pair.command.c_str(), cmd) || !strncmp(pair.command.c_str(), cmd, size)) {
+			if (modifier != nullptr) {
+				*modifier = pair.modifier;
+			}
+			if (key != nullptr) {
+				*key = b.first;
+			}
+			return true;
 		}
-
-		if (modifier != nullptr) {
-			*modifier = pair.modifier;
-		}
-		if (key != nullptr) {
-			*key = b.first;
-		}
-		return true;
 	}
 	return false;
 }
