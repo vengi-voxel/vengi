@@ -608,6 +608,7 @@ void SceneManager::construct() {
 	_layerMgr.construct();
 	_modifier.construct();
 	_mementoHandler.construct();
+	_volumeRenderer.construct();
 
 	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
 		core::Command::registerActionButton(
@@ -832,22 +833,39 @@ void SceneManager::construct() {
 bool SceneManager::init() {
 	++_initialized;
 	if (_initialized > 1) {
+		Log::debug("Already initialized");
 		return true;
 	}
 	if (!_axis.init()) {
+		Log::error("Failed to initialize the axis renderer");
 		return false;
 	}
 	if (!_mementoHandler.init()) {
+		Log::error("Failed to initialize the memento handler");
 		return false;
 	}
-	_volumeRenderer.construct();
-	//_volumeRenderer.setAmbientColor(glm::vec3(core::Color::White));
-	_volumeRenderer.init();
-	_shapeRenderer.init();
-	_gridRenderer.init();
-	_layerMgr.init();
+	if (!_volumeRenderer.init()) {
+		Log::error("Failed to initialize the volume renderer");
+		return false;
+	}
+	if (!_shapeRenderer.init()) {
+		Log::error("Failed to initialize the shape renderer");
+		return false;
+	}
+	if (!_gridRenderer.init()) {
+		Log::error("Failed to initialize the grid renderer");
+		return false;
+	}
+	if (!_layerMgr.init()) {
+		Log::error("Failed to initialize the layer manager");
+		return false;
+	}
+	if (!_modifier.init()) {
+		Log::error("Failed to initialize the modifier");
+		return false;
+	}
+
 	_layerMgr.registerListener(this);
-	_modifier.init();
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
 	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "0.2 0.2 0.2");

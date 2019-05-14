@@ -207,6 +207,7 @@ void Modifier::construct() {
 
 bool Modifier::init() {
 	if (!_shapeRenderer.init()) {
+		Log::error("Failed to initialize the shape renderer");
 		return false;
 	}
 
