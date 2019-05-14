@@ -73,6 +73,7 @@ set(FILES
 	voxedit/ui/widget/voxedit-layer-item.tb.txt
 	voxedit/ui/widget/voxedit-layer.tb.txt
 	voxedit/ui/lang/en.tb.txt
+
 	voxedit/models/armchair.vox
 	voxedit/models/bowl_bone.vox
 	voxedit/models/brick_wall.vox
@@ -109,8 +110,17 @@ set(FILES
 	voxedit/models/chr_knight.qb
 	voxedit/models/chr_knight.qbt
 
+	voxedit/images/01.png
+	voxedit/images/02.png
+	voxedit/images/03.png
+	voxedit/images/04.png
+	voxedit/images/05.png
+	voxedit/images/06.png
+	voxedit/images/07.png
+
 	voxedit/voxedit-keybindings.cfg
 
+	voxedit/scripts/test-import-plane.cfg
 	voxedit/scripts/test-layers.cfg
 	voxedit/scripts/test-animate.cfg
 )

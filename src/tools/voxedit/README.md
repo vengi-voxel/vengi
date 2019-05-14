@@ -32,6 +32,7 @@ my own engine and evolved into something that others might find useful, too.
 * Custom key bindings
 * Show commands of actions (to configure your own key bindings)
 * Rotate around reference position or center of volume
+* Import bitmaps as plane
 
 # Controls
 
@@ -49,7 +50,7 @@ my own engine and evolved into something that others might find useful, too.
 * SceneSettings dialog
   - Set bitmap backgrounds for each axis on a plane at a given position
   - Change sun angles
-* Import bitmaps as plane
+* Voxel to transparency with a HSV threshold
 * Import bitmap palettes (quantize to 256 colors before)
 * Selections
   - Multiple AABBs should be possible

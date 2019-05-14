@@ -82,6 +82,7 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addStringItem(_fileItems, "Prefab", "prefab");
 	addStringItem(_fileItems, "Export", "export");
 	addStringItem(_fileItems, "Heightmap", "importheightmap");
+	addStringItem(_fileItems, "Image as Plane", "importplane");
 	addStringItem(_fileItems, "Quit", "quit");
 
 	addStringItem(_plantItems, "Cactus", "cactus");
@@ -332,7 +333,8 @@ void VoxEditWindow::toggleviewport() {
 bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	// ui actions with direct command bindings
 	static const char *ACTIONS[] = {
-		"new", "quit", "load", "export", "import", "prefab", "save", "importheightmap", nullptr
+		"new", "quit", "load", "export", "import",
+		"prefab", "save", "importheightmap", "importplane", nullptr
 	};
 
 	for (const char** action = ACTIONS; *action != nullptr; ++action) {
@@ -761,6 +763,15 @@ void VoxEditWindow::quit() {
 		return;
 	}
 	close();
+}
+
+bool VoxEditWindow::importAsPlane(const std::string& file) {
+	if (file.empty()) {
+		getApp()->openDialog([this] (const std::string& file) { importAsPlane(file); }, "png");
+		return true;
+	}
+
+	return sceneMgr().importAsPlane(file);
 }
 
 bool VoxEditWindow::importHeightmap(const std::string& file) {

@@ -32,6 +32,8 @@ public:
 	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);
 	bool writePng() const;
 
+	const uint8_t* at(int x, int y) const;
+
 	inline const std::string& name() const {
 		return _name;
 	}

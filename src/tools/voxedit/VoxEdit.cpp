@@ -20,6 +20,10 @@ bool VoxEdit::importheightmapFile(const std::string& file) {
 	return _mainWindow->importHeightmap(file);
 }
 
+bool VoxEdit::importplaneFile(const std::string& file) {
+	return _mainWindow->importAsPlane(file);
+}
+
 bool VoxEdit::saveFile(const std::string& file) {
 	return _mainWindow->save(file);
 }
@@ -96,6 +100,7 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(prefab, "Add a model to the existing scene from the given file");
 	COMMAND_FILE(import, "Import a mesh from the given file and tries to voxelize it");
 	COMMAND_FILE(importheightmap, "Import a heightmap into the volume");
+	COMMAND_FILE(importplane, "Import an image as a plane");
 #undef COMMAND_FILE
 
 	core::Command::registerCommand("new",

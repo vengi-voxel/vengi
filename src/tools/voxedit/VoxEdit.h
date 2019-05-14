@@ -26,6 +26,7 @@ public:
 	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool);
 
 	bool importheightmapFile(const std::string& file);
+	bool importplaneFile(const std::string& file);
 	bool saveFile(const std::string& file);
 	bool loadFile(const std::string& file);
 	bool screenshotFile(const std::string& file);

@@ -1,5 +1,4 @@
 set(SRCS
-	ImportHeightmap.h ImportHeightmap.cpp
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
 	Modifier.h Modifier.cpp
@@ -13,6 +12,7 @@ set(SRCS
 	Config.h
 	voxelizer.h
 
+	tool/ImageUtils.h tool/ImageUtils.cpp
 	tool/Fill.h tool/Fill.cpp
 	tool/Crop.h tool/Crop.cpp
 	tool/Resize.h tool/Resize.cpp

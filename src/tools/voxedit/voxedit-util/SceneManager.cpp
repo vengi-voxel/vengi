@@ -44,7 +44,7 @@
 #include "Config.h"
 #include "tool/Crop.h"
 #include "tool/Resize.h"
-#include "ImportHeightmap.h"
+#include "tool/ImageUtils.h"
 
 #include <set>
 
@@ -136,6 +136,23 @@ bool SceneManager::voxelizeModel(const video::MeshPtr& meshPtr) {
 	vx_point_cloud_free(result);
 	vx_mesh_free(mesh);
 
+	return true;
+}
+
+bool SceneManager::importAsPlane(const std::string& file) {
+	const image::ImagePtr& img = image::loadImage(file, false);
+	if (!img->isLoaded()) {
+		return false;
+	}
+	voxel::RawVolume* v = voxedit::importAsPlane(img);
+	if (v == nullptr) {
+		return false;
+	}
+	const std::string_view filename = core::string::extractFilename(img->name().c_str());
+	if (!_layerMgr.addLayer(filename.data(), true, v, glm::zero<glm::ivec3>())) {
+		delete v;
+		return false;
+	}
 	return true;
 }
 

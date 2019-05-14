@@ -188,6 +188,7 @@ public:
 
 	bool voxelizeModel(const video::MeshPtr& mesh);
 	bool importHeightmap(const std::string& file);
+	bool importAsPlane(const std::string& file);
 	bool exportModel(const std::string& file);
 	bool save(const std::string& file, bool autosave = false);
 	bool load(const std::string& file);

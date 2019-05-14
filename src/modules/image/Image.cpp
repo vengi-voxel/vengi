@@ -106,6 +106,12 @@ void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 	}
 }
 
+const uint8_t* Image::at(int x, int y) const {
+	const int colSpan = _width * _depth;
+	const intptr_t offset = x * _depth + y * colSpan;
+	return _data + offset;
+}
+
 bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {
 	return stbi_write_png(name, width, height, depth, (const void*)buffer, width * depth) != 0;
 }

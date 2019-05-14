@@ -2,10 +2,15 @@
  * @file
  */
 
-#include "ImportHeightmap.h"
+#include "ImageUtils.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/polyvox/Region.h"
+#include "voxel/polyvox/Voxel.h"
+#include "voxel/polyvox/RawVolume.h"
 #include "core/Assert.h"
+#include "core/Color.h"
+#include "core/Log.h"
+#include "core/GLM.h"
 
 namespace voxedit {
 
@@ -47,6 +52,36 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 			}
 		}
 	}
+}
+
+voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness) {
+	if (thickness <= 0) {
+		return nullptr;
+	}
+	if (!image || !image->isLoaded()) {
+		return nullptr;
+	}
+	const int imageWidth = image->width();
+	const int imageHeight = image->height();
+	Log::info("Import image as plane: w(%i), h(%i), d(%i)", imageWidth, imageHeight, thickness);
+	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, thickness - 1);
+	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
+	voxel::RawVolume* volume = new voxel::RawVolume(region);
+	for (int x = 0; x < imageWidth; ++x) {
+		for (int y = 0; y < imageHeight; ++y) {
+			const uint8_t* data = image->at(x, y);
+			const glm::vec4& color = core::Color::fromRGBA(data[0], data[1], data[2], data[3]);
+			if (data[3] == 0) {
+				continue;
+			}
+			const uint8_t index = core::Color::getClosestMatch(color, materialColors);
+			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+			for (int z = 0; z < thickness; ++z) {
+				volume->setVoxel((imageWidth - 1) - x, (imageHeight - 1) - y, z, voxel);
+			}
+		}
+	}
+	return volume;
 }
 
 }
