@@ -18,8 +18,8 @@ private:
 	std::set<LayerListener*> _listeners;
 
 	bool isValidLayerId(int layerId) const;
-	bool hasValidLayerAfter(int layerId) const;
-	bool hasValidLayerBefore(int layerId) const;
+	bool hasValidLayerAfter(int layerId, int& id) const;
+	bool hasValidLayerBefore(int layerId, int& id) const;
 public:
 	void construct() override;
 	bool init() override;

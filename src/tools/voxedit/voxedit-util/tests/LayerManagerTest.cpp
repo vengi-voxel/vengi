@@ -58,4 +58,28 @@ TEST_F(LayerManagerTest, testDeleteLastRemainingLayer) {
 	delete v;
 }
 
+TEST_F(LayerManagerTest, testMoveAfterDelete) {
+	voxel::RawVolume * v1 = new voxel::RawVolume(voxel::Region(0, 0));
+	EXPECT_EQ(0, _mgr.addLayer("Foobar", true, v1)) << "Failed to add new layer";
+	voxel::RawVolume * v2 = new voxel::RawVolume(voxel::Region(0, 0));
+	EXPECT_EQ(1, _mgr.addLayer("Foobar2", true, v2)) << "Failed to add new layer";
+	voxel::RawVolume * v3 = new voxel::RawVolume(voxel::Region(0, 0));
+	EXPECT_EQ(2, _mgr.addLayer("Foobar3", true, v3)) << "Failed to add new layer";
+	voxel::RawVolume * v4 = new voxel::RawVolume(voxel::Region(0, 0));
+	EXPECT_EQ(3, _mgr.addLayer("Foobar4", true, v4)) << "Failed to add new layer";
+
+	EXPECT_EQ(4, _mgr.validLayers());
+	EXPECT_TRUE(_mgr.deleteLayer(1)) << "Deleting the second layer should work";
+	EXPECT_TRUE(_mgr.moveDown(0));
+	EXPECT_TRUE(_mgr.layer(0).valid);
+	EXPECT_FALSE(_mgr.layer(1).valid);
+	EXPECT_TRUE(_mgr.layer(2).valid);
+	EXPECT_TRUE(_mgr.layer(3).valid);
+	EXPECT_EQ(3, _mgr.validLayers());
+	delete v1;
+	delete v2;
+	delete v3;
+	delete v4;
+}
+
 }
