@@ -83,6 +83,14 @@ TEST_F(LayerManagerTest, testMoveAfterDelete) {
 	EXPECT_EQ(3, _mgr.validLayers()) << "Unexpected amount of valid layers";
 }
 
+TEST_F(LayerManagerTest, testHide) {
+	EXPECT_EQ(2, addLayers(2));
+
+	_mgr.hideLayer(0, true);
+	EXPECT_FALSE(_mgr.isVisible(0)) << "First layer should be hidden";
+	EXPECT_TRUE(_mgr.isVisible(1)) << "Second layer should not be hidden";
+}
+
 TEST_F(LayerManagerTest, testLock) {
 	EXPECT_EQ(2, addLayers(2));
 

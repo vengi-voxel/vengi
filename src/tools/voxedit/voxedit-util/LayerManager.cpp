@@ -148,17 +148,28 @@ void LayerManager::shutdown() {
 	}
 }
 
-void LayerManager::rename(int layerId, const std::string& name) {
+bool LayerManager::rename(int layerId, const std::string& name) {
+	if (!isValidLayerId(layerId)) {
+		return false;
+	}
 	layer(layerId).name = name;
 	for (auto& listener : _listeners) {
 		listener->onLayerChanged(layerId);
 	}
+	return true;
 }
 
-void LayerManager::duplicate(int layerId) {
+bool LayerManager::duplicate(int layerId) {
+	if (!isValidLayerId(layerId)) {
+		return false;
+	}
+	// the only thing that we can do here is to inform the listeners about the wish to duplicate
+	// we don't manage the volumes here
+	const int n = validLayers();
 	for (auto& listener : _listeners) {
 		listener->onLayerDuplicate(layerId);
 	}
+	return validLayers() == n + 1;
 }
 
 bool LayerManager::hasValidLayerAfter(int layerId, int& id) const {
