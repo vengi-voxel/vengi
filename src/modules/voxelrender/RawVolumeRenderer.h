@@ -29,7 +29,7 @@ namespace voxelrender {
  */
 class RawVolumeRenderer {
 public:
-	static constexpr int MAX_VOLUMES = 32;
+	static constexpr int MAX_VOLUMES = 64;
 protected:
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
 	glm::mat4 _model[MAX_VOLUMES] {};
