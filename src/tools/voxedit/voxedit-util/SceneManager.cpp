@@ -139,6 +139,22 @@ bool SceneManager::voxelizeModel(const video::MeshPtr& meshPtr) {
 	return true;
 }
 
+bool SceneManager::importPalette(const std::string& file) {
+	const image::ImagePtr& img = image::loadImage(file, false);
+	if (!img->isLoaded()) {
+		return false;
+	}
+	uint32_t buf[256];
+	if (!voxel::createPalette(img, buf, 256)) {
+		return false;
+	}
+	if (!voxel::overrideMaterialColors((const uint8_t*)buf, sizeof(buf), "")) {
+		Log::warn("Failed to import palette for image %s", file.c_str());
+		return false;
+	}
+	return true;
+}
+
 bool SceneManager::importAsPlane(const std::string& file) {
 	const image::ImagePtr& img = image::loadImage(file, false);
 	if (!img->isLoaded()) {
@@ -700,6 +716,14 @@ void SceneManager::construct() {
 		const int z = core::string::toInt(args[2]);
 		moveCursor(x, y, z);
 	}).setHelp("Move the cursor by the specified offsets");
+
+	core::Command::registerCommand("createpalette", [this] (const core::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::info("Expected to get an image file name as parameter");
+			return;
+		}
+		importPalette(args[0]);
+	});
 
 	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
 		if (args.size() < 3) {

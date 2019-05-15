@@ -3,7 +3,6 @@
  */
 
 #include "MaterialColor.h"
-#include "image/Image.h"
 #include "core/Singleton.h"
 #include "core/App.h"
 #include "math/Random.h"
@@ -19,40 +18,28 @@ namespace voxel {
 
 class MaterialColor {
 private:
-	image::Image _image;
 	MaterialColorArray _materialColors;
 	std::unordered_map<VoxelType, MaterialColorIndices, EnumClassHash> _colorMapping;
 	bool _initialized = false;
+	bool _dirty = false;
 public:
-	MaterialColor() :
-			_image("**palette**") {
+	MaterialColor() {
 	}
 
-	bool init(const io::FilePtr& paletteFile, const io::FilePtr& luaFile) {
+	bool init(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaString) {
 		if (_initialized) {
 			Log::debug("MaterialColors are already initialized");
 			return true;
 		}
 		_initialized = true;
-		if (!_image.load(paletteFile)) {
-			Log::error("MaterialColors: failed to load image");
-			return false;
-		}
-		if (!_image.isLoaded()) {
-			Log::error("MaterialColors: image not fully loaded");
-			return false;
-		}
-		const int colors = _image.width() * _image.height();
+		_dirty = true;
+		const int colors = paletteBufferSize / 4;
 		if (colors != 256) {
-			Log::error("Palette image has invalid dimensions: %i:%i", _image.width(), _image.height());
-			return false;
-		}
-		if (_image.depth() != 4) {
-			Log::error("Palette image has invalid depth: %i", _image.depth());
+			Log::error("Palette image has invalid dimensions - we need 256x1(depth: 4)");
 			return false;
 		}
 		_materialColors.reserve(colors);
-		const uint32_t* paletteData = (const uint32_t*)_image.data();
+		const uint32_t* paletteData = (const uint32_t*)paletteBuffer;
 		for (int i = 0; i < colors; ++i) {
 			_materialColors.emplace_back(core::Color::fromRGBA(*paletteData));
 			++paletteData;
@@ -67,6 +54,11 @@ public:
 		generic.resize(colors - 1);
 		// 0 is VoxelType::Air - don't add it
 		std::iota(std::begin(generic), std::end(generic), 1);
+
+		if (luaString.empty()) {
+			Log::warn("No materials defined in lua script");
+			return true;
+		}
 
 		std::vector<luaL_Reg> funcs;
 		static_assert((int)voxel::VoxelType::Air == 0, "Air must be 0");
@@ -110,19 +102,14 @@ public:
 		funcs.push_back({ nullptr, nullptr });
 		lua.newGlobalData<MaterialColor>("MaterialColor", this);
 		lua.reg("MAT", &funcs.front());
-		const std::string& luaString = luaFile->load();
-		if (luaString.empty()) {
-			Log::error("Could not load lua script file: %s", luaFile->fileName().c_str());
-			return false;
-		}
 		if (!lua.load(luaString)) {
-			Log::error("Could not load lua script: %s. Failed with error: %s",
-					luaFile->fileName().c_str(), lua.error().c_str());
+			Log::error("Could not load lua script. Failed with error: %s",
+					lua.error().c_str());
 			return false;
 		}
 		if (!lua.execute("init")) {
-			Log::error("Could not execute lua script file: %s. Failed with error: %s",
-					luaFile->fileName().c_str(), lua.error().c_str());
+			Log::error("Could not execute lua script. Failed with error: %s",
+					lua.error().c_str());
 			return false;
 		}
 
@@ -135,6 +122,21 @@ public:
 		}
 
 		return true;
+	}
+
+	void shutdown() {
+		_materialColors.clear();
+		_colorMapping.clear();
+		_initialized = false;
+		_dirty = false;
+	}
+
+	inline void markClean() {
+		_dirty = false;
+	}
+
+	inline bool isDirty() const {
+		return _dirty;
 	}
 
 	inline const MaterialColorArray& getColors() const {
@@ -200,16 +202,45 @@ static MaterialColor& getInstance() {
 	return color;
 }
 
+bool initMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaBuffer) {
+	return getInstance().init(paletteBuffer, paletteBufferSize, luaBuffer);
+}
+
+bool overrideMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaBuffer) {
+	shutdownMaterialColors();
+	if (!initMaterialColors(paletteBuffer, paletteBufferSize, luaBuffer)) {
+		return initDefaultMaterialColors();
+	}
+	return true;
+}
+
+bool materialColorChanged() {
+	return getInstance().isDirty();
+}
+
+void materialColorMarkClean() {
+	getInstance().markClean();
+}
+
+void shutdownMaterialColors() {
+	return getInstance().shutdown();
+}
+
 bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile) {
 	if (!paletteFile->exists()) {
-		Log::error("Failed to load %s", paletteFile->name().c_str());
+		Log::error("%s doesn't exist", paletteFile->name().c_str());
 		return false;
 	}
 	if (!luaFile->exists()) {
 		Log::error("Failed to load %s", luaFile->name().c_str());
 		return false;
 	}
-	return getInstance().init(paletteFile, luaFile);
+	const image::ImagePtr& img = image::loadImage(paletteFile, false);
+	if (!img->isLoaded()) {
+		Log::error("Failed to load image %s", paletteFile->name().c_str());
+		return false;
+	}
+	return initMaterialColors(img->data(), img->width() * img->height() * img->depth(), luaFile->load());
 }
 
 bool initDefaultMaterialColors() {
@@ -242,6 +273,43 @@ Voxel createColorVoxel(VoxelType type, uint32_t colorIndex) {
 
 Voxel createRandomColorVoxel(VoxelType type, math::Random& random) {
 	return getInstance().createRandomColorVoxel(type, random);
+}
+
+bool createPalette(const image::ImagePtr& image, uint32_t *colorsBuffer, int colors) {
+	if (!image || !image->isLoaded()) {
+		return false;
+	}
+	const int imageWidth = image->width();
+	const int imageHeight = image->height();
+	Log::info("Create palette for image: %s", image->name().c_str());
+	uint16_t paletteIndex = 0;
+	std::unordered_set<uint32_t> colorset;
+	for (int x = 0; x < imageWidth; ++x) {
+		for (int y = 0; y < imageHeight; ++y) {
+			const uint8_t* data = image->at(x, y);
+			uint32_t rgba = *(uint32_t*)data;
+			if (colorset.insert(rgba).second) {
+				if (paletteIndex >= colors) {
+					Log::info("palette indices exceeded");
+					return false;
+				}
+				colorsBuffer[paletteIndex++] = rgba;
+			}
+		}
+	}
+	return true;
+}
+
+bool createPaletteFile(const image::ImagePtr& image, const char *paletteFile) {
+	if (!image || !image->isLoaded() || paletteFile == nullptr) {
+		return false;
+	}
+	uint32_t buf[256];
+	if (!createPalette(image, buf, lengthof(buf))) {
+		return false;
+	}
+	const image::ImagePtr& paletteImg = image::createEmptyImage("**palette**");
+	return paletteImg->writePng(paletteFile, (const uint8_t*)buf, 256, 1, 4);
 }
 
 }

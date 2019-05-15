@@ -6,6 +6,7 @@
 
 #include "voxel/polyvox/Voxel.h"
 #include "io/File.h"
+#include "image/Image.h"
 
 #include <glm/fwd.hpp>
 #include <glm/vec4.hpp>
@@ -23,8 +24,17 @@ typedef std::vector<uint8_t> MaterialColorIndices;
 
 extern bool initDefaultMaterialColors();
 extern bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile);
+extern bool initMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaBuffer);
+extern bool overrideMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaBuffer);
+extern void shutdownMaterialColors();
+extern void materialColorMarkClean();
+extern bool materialColorChanged();
 extern const MaterialColorArray& getMaterialColors();
 extern const glm::vec4& getMaterialColor(const Voxel& voxel);
+
+extern bool createPalette(const image::ImagePtr& image, uint32_t *colorsBuffer, int colors);
+extern bool createPaletteFile(const image::ImagePtr& image, const char *paletteFile);
+
 /**
  * @brief Get all known material color indices for the given VoxelType
  * @param type The VoxelType to get the indices for

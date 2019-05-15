@@ -69,7 +69,7 @@ ImagePtr loadImage(const std::string& filename, bool async) {
 	return loadImage(file, async);
 }
 
-bool Image::load(uint8_t* buffer, int length) {
+bool Image::load(const uint8_t* buffer, int length) {
 	if (!buffer || length <= 0) {
 		_state = io::IOSTATE_FAILED;
 		Log::debug("Failed to load image %s: buffer empty", _name.c_str());

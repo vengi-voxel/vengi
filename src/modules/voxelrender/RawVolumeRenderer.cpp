@@ -116,6 +116,14 @@ bool RawVolumeRenderer::update(int idx) {
 	std::vector<voxel::VoxelVertex> vertices;
 	std::vector<voxel::IndexType> indices;
 
+	if (voxel::materialColorChanged()) {
+		shader::Materialblock::Data materialBlock;
+		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+		_materialBlock.update(materialBlock);
+		// TODO: updating the global state is crap - what about others - use an event
+		voxel::materialColorMarkClean();
+	}
+
 	voxel::IndexType offset = (voxel::IndexType)0;
 	for (auto& i : _meshes) {
 		const Meshes& meshes = i.second;

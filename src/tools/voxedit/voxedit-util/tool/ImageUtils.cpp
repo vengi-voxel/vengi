@@ -11,6 +11,7 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/GLM.h"
+#include <unordered_set>
 
 namespace voxedit {
 
