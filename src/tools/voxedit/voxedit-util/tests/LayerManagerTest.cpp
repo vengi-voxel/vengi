@@ -13,6 +13,7 @@ private:
 	using Super = core::AbstractTest;
 protected:
 	LayerManager _mgr;
+	std::vector<voxel::RawVolume*> _volumes;
 
 public:
 	void SetUp() override {
@@ -23,63 +24,57 @@ public:
 	void TearDown() override {
 		_mgr.shutdown();
 		Super::TearDown();
+		for (auto v : _volumes) {
+			delete v;
+		}
+		_volumes.clear();
+	}
+
+	int addLayer(const char *name, bool visible = true, const voxel::Region& region = voxel::Region(0, 0)) {
+		voxel::RawVolume * v = new voxel::RawVolume(region);
+		_volumes.push_back(v);
+		return _mgr.addLayer(name, visible, v, region.getCentre());
 	}
 };
 
 TEST_F(LayerManagerTest, testValidLayersEmpty) {
-	ASSERT_EQ(0, _mgr.validLayers());
+	ASSERT_EQ(0, _mgr.validLayers()) << "Unexpected amount of valid layers";
 }
 
 TEST_F(LayerManagerTest, testValidLayersAfterAdd) {
-	EXPECT_EQ(0, _mgr.validLayers());
-	voxel::RawVolume * v = new voxel::RawVolume(voxel::Region(0, 0));
-	EXPECT_EQ(0, _mgr.addLayer("Foobar", true, v)) << "Failed to add new layer";
-	EXPECT_EQ(1, _mgr.validLayers());
-	delete v;
+	EXPECT_EQ(0, _mgr.validLayers()) << "Unexpected amount of valid layers";
+	EXPECT_EQ(0, addLayer("Foobar")) << "Failed to add new layer";
+	EXPECT_EQ(1, _mgr.validLayers()) << "Unexpected amount of valid layers";
 }
 
 TEST_F(LayerManagerTest, testDeleteLayer) {
-	voxel::RawVolume * v = new voxel::RawVolume(voxel::Region(0, 0));
-	EXPECT_EQ(0, _mgr.addLayer("Foobar", true, v)) << "Failed to add new layer";
-	voxel::RawVolume * v2 = new voxel::RawVolume(voxel::Region(0, 0));
-	EXPECT_EQ(1, _mgr.addLayer("Foobar2", true, v2)) << "Failed to add new layer";
-	EXPECT_EQ(2, _mgr.validLayers());
+	EXPECT_EQ(0, addLayer("Foobar")) << "Failed to add new layer";
+	EXPECT_EQ(1, addLayer("Foobar2")) << "Failed to add new layer";
+	EXPECT_EQ(2, _mgr.validLayers()) << "Unexpected amount of valid layers";
 	EXPECT_TRUE(_mgr.deleteLayer(0)) << "Deleting the first layer should work";
-	EXPECT_EQ(1, _mgr.validLayers());
-	delete v;
-	delete v2;
+	EXPECT_EQ(1, _mgr.validLayers()) << "Unexpected amount of valid layers";
 }
 
 TEST_F(LayerManagerTest, testDeleteLastRemainingLayer) {
-	voxel::RawVolume * v = new voxel::RawVolume(voxel::Region(0, 0));
-	EXPECT_EQ(0, _mgr.addLayer("Foobar", true, v)) << "Failed to add new layer";
+	EXPECT_EQ(0, addLayer("Foobar")) << "Failed to add new layer";
 	EXPECT_FALSE(_mgr.deleteLayer(0)) << "Deleting the last valid layer should not be supported";
-	EXPECT_EQ(1, _mgr.validLayers());
-	delete v;
+	EXPECT_EQ(1, _mgr.validLayers()) << "Unexpected amount of valid layers";
 }
 
 TEST_F(LayerManagerTest, testMoveAfterDelete) {
-	voxel::RawVolume * v1 = new voxel::RawVolume(voxel::Region(0, 0));
-	EXPECT_EQ(0, _mgr.addLayer("Foobar", true, v1)) << "Failed to add new layer";
-	voxel::RawVolume * v2 = new voxel::RawVolume(voxel::Region(0, 0));
-	EXPECT_EQ(1, _mgr.addLayer("Foobar2", true, v2)) << "Failed to add new layer";
-	voxel::RawVolume * v3 = new voxel::RawVolume(voxel::Region(0, 0));
-	EXPECT_EQ(2, _mgr.addLayer("Foobar3", true, v3)) << "Failed to add new layer";
-	voxel::RawVolume * v4 = new voxel::RawVolume(voxel::Region(0, 0));
-	EXPECT_EQ(3, _mgr.addLayer("Foobar4", true, v4)) << "Failed to add new layer";
+	EXPECT_EQ(0, addLayer("Foobar")) << "Failed to add new layer";
+	EXPECT_EQ(1, addLayer("Foobar2")) << "Failed to add new layer";
+	EXPECT_EQ(2, addLayer("Foobar3")) << "Failed to add new layer";
+	EXPECT_EQ(3, addLayer("Foobar4")) << "Failed to add new layer";
 
-	EXPECT_EQ(4, _mgr.validLayers());
+	EXPECT_EQ(4, _mgr.validLayers()) << "Unexpected amount of valid layers";
 	EXPECT_TRUE(_mgr.deleteLayer(1)) << "Deleting the second layer should work";
-	EXPECT_TRUE(_mgr.moveDown(0));
-	EXPECT_TRUE(_mgr.layer(0).valid);
-	EXPECT_FALSE(_mgr.layer(1).valid);
-	EXPECT_TRUE(_mgr.layer(2).valid);
-	EXPECT_TRUE(_mgr.layer(3).valid);
-	EXPECT_EQ(3, _mgr.validLayers());
-	delete v1;
-	delete v2;
-	delete v3;
-	delete v4;
+	EXPECT_TRUE(_mgr.moveDown(0)) << "Moving down the first layer should work";
+	EXPECT_TRUE(_mgr.layer(0).valid) << "The first (new) layer should still be valid";
+	EXPECT_FALSE(_mgr.layer(1).valid) << "The second layer should still be invalid after the move";
+	EXPECT_TRUE(_mgr.layer(2).valid) << "The third (new) layer should still be valid";
+	EXPECT_TRUE(_mgr.layer(3).valid) << "The last (untouched) layer should still be valid";
+	EXPECT_EQ(3, _mgr.validLayers()) << "Unexpected amount of valid layers";
 }
 
 }
