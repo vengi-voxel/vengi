@@ -145,6 +145,10 @@ public:
 		return (const uint8_t*)_data;
 	}
 
+	void translate(const glm::ivec3& t) {
+		_region.shift(t.x, t.y, t.z);
+	}
+
 private:
 	void initialise(const Region& region);
 

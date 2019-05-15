@@ -555,8 +555,8 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 				volumes[layerId].visible = hidden.empty() || hidden == "0";
 			}
 		} else if (chunkId == FourCC('n','T','R','N')) {
-			Log::warn("nTRN chunk not yet supported");
-			Log::debug("Found nTRN chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)", numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
+			Log::debug("Found nTRN chunk with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)",
+					numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			uint32_t nodeId;
 			wrap(stream.readInt(nodeId)) // 0 is root?
 			std::map<std::string, std::string> attributes;
@@ -567,12 +567,13 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 			wrap(stream.readInt(childNodeId))
 			uint32_t reserved;
 			wrap(stream.readInt(reserved))
-			uint32_t layer;
-			wrap(stream.readInt(layer))
+			uint32_t layerId;
+			wrap(stream.readInt(layerId))
 			uint32_t numFrames;
 			wrap(stream.readInt(numFrames))
+			Log::debug("nTRN chunk: childNodeId: %u, layerId: %u, numFrames: %u", childNodeId, layerId, numFrames);
 			for (uint32_t i = 0; i < numFrames; ++i) {
-				std::map<std::string, std::string> frames;
+				std::map<std::string, std::string> transformNodeAttributes;
 				// (_r : int8) ROTATION
 				// (_t : int32x3) translation
 				//
@@ -595,7 +596,21 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 				// 5   : 1 : the sign in the second row (0 : positive; 1 : negative)
 				// 6   : 1 : the sign in the third row (0 : positive; 1 : negative)
 				//
-				wrapAttributes(readAttributes(frames, stream))
+				wrapAttributes(readAttributes(transformNodeAttributes, stream))
+				auto rot = transformNodeAttributes.find("_r");
+				if (rot != transformNodeAttributes.end()) {
+					Log::warn("nTRN chunk not yet completely supported: _r not yet parsed");
+				}
+				auto trans = transformNodeAttributes.find("_t");
+				if (trans != transformNodeAttributes.end()) {
+					const std::string& translations = trans->second;
+					int x, y, z;
+					if (sscanf(translations.c_str(), "%d %d %d", &x, &y, &z) == 3) {
+						Log::debug("nTRN chunk not yet completely supported: translation %i:%i:%i", x, y, z);
+					} else {
+						Log::error("Failed to parse translation %s", translations.c_str());
+					}
+				}
 			}
 			// TODO:
 		} else if (chunkId == FourCC('n','G','R','P')) {
