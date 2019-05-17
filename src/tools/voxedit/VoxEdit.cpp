@@ -128,6 +128,7 @@ core::AppState VoxEdit::onInit() {
 		return state;
 	}
 
+	// TODO: allow to restore a custom palette
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
 		return core::AppState::InitFailure;
