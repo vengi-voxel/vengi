@@ -377,18 +377,19 @@ void SceneManager::crop() {
 }
 
 void SceneManager::resize(const glm::ivec3& size) {
-	const int layerId = _layerMgr.activeLayer();
-	voxel::RawVolume* newVolume = voxedit::tool::resize(volume(layerId), size);
-	if (newVolume == nullptr) {
-		return;
-	}
-	setNewVolume(layerId, newVolume, false);
-	if (glm::all(glm::greaterThanEqual(size, glm::zero<glm::ivec3>()))) {
-		// we don't have to reextract a mesh if only new empty voxels were added.
-		modified(layerId, voxel::Region::InvalidRegion);
-	} else {
-		modified(layerId, newVolume->region());
-	}
+	_layerMgr.foreachGroupLayer([&] (int layerId) {
+		voxel::RawVolume* newVolume = voxedit::tool::resize(volume(layerId), size);
+		if (newVolume == nullptr) {
+			return;
+		}
+		setNewVolume(layerId, newVolume, false);
+		if (glm::all(glm::greaterThanEqual(size, glm::zero<glm::ivec3>()))) {
+			// we don't have to reextract a mesh if only new empty voxels were added.
+			modified(layerId, voxel::Region::InvalidRegion);
+		} else {
+			modified(layerId, newVolume->region());
+		}
+	});
 }
 
 void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount) {
@@ -799,6 +800,7 @@ void SceneManager::construct() {
 			layer2 = core::string::toInt(args[1]);
 		} else {
 			layer1 = _layerMgr.activeLayer();
+			// FIXME: this layer id might be an empty slot
 			layer2 = layer1 + 1;
 		}
 		merge(layer1, layer2);

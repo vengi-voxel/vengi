@@ -117,6 +117,13 @@ set(FILES
 	voxedit/images/05.png
 	voxedit/images/06.png
 	voxedit/images/07.png
+	voxedit/images/r01.png
+	voxedit/images/r02.png
+	voxedit/images/r03.png
+	voxedit/images/r04.png
+	voxedit/images/r05.png
+	voxedit/images/r06.png
+	voxedit/images/r07.png
 	voxedit/images/avatar.png
 
 	voxedit/voxedit-keybindings.cfg

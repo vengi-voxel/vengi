@@ -99,6 +99,12 @@ int Command::execute(const std::string& command) {
 		if (fullCmd.empty()) {
 			continue;
 		}
+		if (fullCmd[0] == '#') {
+			continue;
+		}
+		if (fullCmd.length() >= 2 && fullCmd[0] == '/' && fullCmd[1] == '/') {
+			continue;
+		}
 		if (_delayMillis > 0) {
 			Log::debug("add command %s to delayed buffer", fullCmd.c_str());
 			_delayedTokens.push_back(fullCmd);
