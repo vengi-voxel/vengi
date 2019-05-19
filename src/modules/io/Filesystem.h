@@ -130,6 +130,9 @@ public:
 	bool createDir(const std::string& dir, bool recursive = true) const;
 
 	bool removeDir(const std::string& dir, bool recursive = false) const;
+private:
+	bool _list(const std::string& directory, std::vector<DirEntry>& entities) const;
+	bool _list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const;
 };
 
 inline bool Filesystem::exists(const std::string& filename) const {

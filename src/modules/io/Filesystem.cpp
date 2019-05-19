@@ -104,13 +104,19 @@ bool Filesystem::createDir(const std::string& dir, bool recursive) const {
 	return true;
 }
 
-bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const {
+bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount <= 0) {
 		uv_fs_req_cleanup(&req);
 		return false;
 	}
+	std::string dirFilter = filter;
+	auto iter = dirFilter.rfind(".");
+	if (iter != std::string::npos) {
+		dirFilter.erase(iter);
+	}
+	Log::debug("Filter %s by %s (dir filter: '%s')", directory.c_str(), filter.c_str(), dirFilter.c_str());
 	uv_dirent_t ent;
 	while (uv_fs_scandir_next(&req, &ent) != UV_EOF) {
 		DirEntry::Type type = DirEntry::Type::unknown;
@@ -141,7 +147,7 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 	return true;
 }
 
-bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entities) const {
+bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& entities) const {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount <= 0) {
@@ -170,6 +176,28 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 		uv_fs_req_cleanup(&statsReq);
 	}
 	uv_fs_req_cleanup(&req);
+	return true;
+}
+
+bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const {
+	if (isRelativePath(directory)) {
+		for (const std::string& p : _paths) {
+			_list(p + directory, entities, filter);
+		}
+	} else {
+		_list(directory, entities, filter);
+	}
+	return true;
+}
+
+bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entities) const {
+	if (isRelativePath(directory)) {
+		for (const std::string& p : _paths) {
+			_list(p + directory, entities);
+		}
+	} else {
+		_list(directory, entities);
+	}
 	return true;
 }
 
