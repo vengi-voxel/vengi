@@ -59,6 +59,7 @@ set(TEST_SRCS
 	tests/ByteStreamTest.cpp
 	tests/ColorTest.cpp
 	tests/CommandTest.cpp
+	tests/CommandCompleterTest.cpp
 	tests/CommandHandlerTest.cpp
 	tests/CoreTest.cpp
 	tests/EventBusTest.cpp

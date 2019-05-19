@@ -10,31 +10,17 @@
 
 namespace core {
 
-extern int complete(const std::string& dir, const std::string& str, std::vector<std::string>& matches);
+extern int complete(std::string dir, const std::string& str, std::vector<std::string>& matches, const char* pattern);
 
-inline auto fileCompleter(const std::string& lastDirectory) {
+inline auto fileCompleter(const std::string& lastDirectory, const char* pattern = "*") {
 	return [=] (const std::string& str, std::vector<std::string>& matches) -> int {
-		std::string dir = lastDirectory;
-		if (dir.empty()) {
-			dir = core::string::extractPath(str.c_str());
-		}
-		if (dir.empty()) {
-			dir = ".";
-		}
-		return complete(dir, str, matches);
+		return complete(lastDirectory, str, matches, pattern);
 	};
 }
 
-inline auto fileCompleter(const core::VarPtr& lastDirectory) {
+inline auto fileCompleter(const core::VarPtr& lastDirectory, const char* pattern = "*") {
 	return [=] (const std::string& str, std::vector<std::string>& matches) -> int {
-		std::string dir = lastDirectory->strVal();
-		if (dir.empty()) {
-			dir = core::string::extractPath(str.c_str());
-		}
-		if (dir.empty()) {
-			dir = ".";
-		}
-		return complete(dir, str, matches);
+		return complete(lastDirectory->strVal(), str, matches, pattern);
 	};
 }
 
