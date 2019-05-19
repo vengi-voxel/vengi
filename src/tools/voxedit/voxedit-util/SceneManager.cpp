@@ -148,9 +148,18 @@ bool SceneManager::importPalette(const std::string& file) {
 	if (!voxel::createPalette(img, buf, 256)) {
 		return false;
 	}
-	if (!voxel::overrideMaterialColors((const uint8_t*)buf, sizeof(buf), "")) {
+	const std::string luaString = "";
+	if (!voxel::overrideMaterialColors((const uint8_t*)buf, sizeof(buf), luaString)) {
 		Log::warn("Failed to import palette for image %s", file.c_str());
 		return false;
+	}
+	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+	const io::FilePtr& pngFile = fs->open("palette-custom.png", io::FileMode::Write);
+	if (image::Image::writePng(pngFile->name().c_str(), (const uint8_t*)buf, 256, 1, 4)) {
+		fs->write("palette-custom.lua", luaString);
+		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal("custom");
+	} else {
+		Log::warn("Failed to write image");
 	}
 	return true;
 }
