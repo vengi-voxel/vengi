@@ -32,6 +32,7 @@
 #include "math/Random.h"
 #include "math/Axis.h"
 #include "core/command/Command.h"
+#include "core/command/CommandCompleter.h"
 #include "core/Array.h"
 #include "core/App.h"
 #include "core/Log.h"
@@ -145,7 +146,7 @@ bool SceneManager::importPalette(const std::string& file) {
 		return false;
 	}
 	uint32_t buf[256];
-	if (!voxel::createPalette(img, buf, 256)) {
+	if (!voxel::createPalette(img, buf, lengthof(buf))) {
 		return false;
 	}
 	const std::string luaString = "";
@@ -154,8 +155,9 @@ bool SceneManager::importPalette(const std::string& file) {
 		return false;
 	}
 	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
-	const io::FilePtr& pngFile = fs->open("palette-custom.png", io::FileMode::Write);
-	if (image::Image::writePng(pngFile->name().c_str(), (const uint8_t*)buf, 256, 1, 4)) {
+	const char *paletteFilename = "palette-custom.png";
+	const io::FilePtr& pngFile = fs->open(paletteFilename, io::FileMode::Write);
+	if (image::Image::writePng(pngFile->name().c_str(), (const uint8_t*)buf, lengthof(buf), 1, 4)) {
 		fs->write("palette-custom.lua", luaString);
 		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal("custom");
 	} else {
@@ -705,6 +707,7 @@ void SceneManager::construct() {
 					Log::warn("Expected to get a voxel resolution >= 1");
 				}
 			}).setHelp("");
+
 	core::Command::registerCommand("setreferenceposition", [&] (const core::CmdArgs& args) {
 		if (args.size() != 3) {
 			Log::info("Expected to get x, y and z coordinates");
@@ -733,7 +736,7 @@ void SceneManager::construct() {
 			return;
 		}
 		importPalette(args[0]);
-	});
+	}).setArgumentCompleter(core::fileCompleter(""));
 
 	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
 		if (args.size() < 3) {

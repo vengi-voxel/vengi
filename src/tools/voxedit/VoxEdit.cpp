@@ -6,6 +6,7 @@
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
 #include "core/command/Command.h"
+#include "core/command/CommandCompleter.h"
 #include "video/Renderer.h"
 #include "ui/VoxEditWindow.h"
 #include "io/Filesystem.h"
@@ -70,28 +71,13 @@ core::AppState VoxEdit::onConstruct() {
 
 	_sceneMgr.construct();
 
-	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
-		const std::string& dir = _lastDirectory->strVal().empty() ? "." : _lastDirectory->strVal();
-		std::vector<io::Filesystem::DirEntry> entries;
-		const std::string filter = str + "*";
-		core::App::getInstance()->filesystem()->list(dir, entries, filter);
-		int i = 0;
-		for (const io::Filesystem::DirEntry& entry : entries) {
-			if (entry.type == io::Filesystem::DirEntry::Type::file) {
-				matches.push_back(entry.name);
-				++i;
-			}
-		}
-		return i;
-	};
-
 #define COMMAND_FILE(command, help) \
 	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
 		const std::string file = args.empty() ? "" : args[0]; \
 		if (!command##File(file)) { \
 			Log::error("Failed to execute '" #command "' for file %s", file.c_str()); \
 		} \
-	}).setArgumentCompleter(fileCompleter).setHelp(help)
+	}).setArgumentCompleter(core::fileCompleter(_lastDirectory)).setHelp(help)
 
 	COMMAND_FILE(screenshot, "Save the current viewport as screenshot");
 	COMMAND_FILE(save, "Save the current state to the given file");
