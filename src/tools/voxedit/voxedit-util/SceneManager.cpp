@@ -693,9 +693,9 @@ void SceneManager::construct() {
 		noise(octaves, lacunarity, frequency, gain, type);
 	}).setHelp("Fill the volume with noise");
 
-	core::Command::registerCommand("crop",
-			[&] (const core::CmdArgs& args) {crop();}).setHelp(
-			"Crop the volume");
+	core::Command::registerCommand("crop", [&] (const core::CmdArgs& args) {
+		crop();
+	}).setHelp("Crop the volume");
 
 	core::Command::registerCommand("setvoxelresolution",
 			[&] (const core::CmdArgs& args) {
@@ -736,7 +736,7 @@ void SceneManager::construct() {
 			return;
 		}
 		importPalette(args[0]);
-	}).setArgumentCompleter(core::fileCompleter("", "*.png"));
+	}).setArgumentCompleter(core::fileCompleter("", "*.png")).setHelp("Import a palette from the given image");
 
 	core::Command::registerCommand("loadpalette", [this] (const core::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -747,7 +747,7 @@ void SceneManager::construct() {
 		const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", args[0].c_str()));
 		const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", args[0].c_str()));
 		voxel::overrideMaterialColors(paletteFile, luaFile);
-	});
+	}).setHelp("Load an existing palette by name. E.g. 'nippon'");
 
 	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
 		if (args.size() < 3) {
@@ -760,9 +760,9 @@ void SceneManager::construct() {
 		setCursorPosition(glm::ivec3(x, y, z), true);
 	}).setHelp("Set the cursor to the specified position");
 
-	core::Command::registerCommand("setreferencepositiontocursor",
-			[&] (const core::CmdArgs& args) {setReferencePosition(cursorPosition());}).setHelp(
-			"Set the reference position to the current cursor position");
+	core::Command::registerCommand("setreferencepositiontocursor", [&] (const core::CmdArgs& args) {
+		setReferencePosition(cursorPosition());
+	}).setHelp("Set the reference position to the current cursor position");
 
 	core::Command::registerCommand("resize", [this] (const core::CmdArgs& args) {
 		const int argc = args.size();
@@ -792,13 +792,13 @@ void SceneManager::construct() {
 		move(x, y, z);
 	}).setHelp("Move the volume by the given values");
 
-	core::Command::registerCommand("undo",
-			[&] (const core::CmdArgs& args) {undo();}).setHelp(
-			"Undo your last step");
+	core::Command::registerCommand("undo", [&] (const core::CmdArgs& args) {
+		undo();
+	}).setHelp("Undo your last step");
 
-	core::Command::registerCommand("redo",
-			[&] (const core::CmdArgs& args) {redo();}).setHelp(
-			"Redo your last step");
+	core::Command::registerCommand("redo", [&] (const core::CmdArgs& args) {
+		redo();
+	}).setHelp("Redo your last step");
 
 	core::Command::registerCommand("rotate", [&] (const core::CmdArgs& args) {
 		if (args.size() < 3) {
