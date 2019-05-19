@@ -243,6 +243,23 @@ bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFi
 	return initMaterialColors(img->data(), img->width() * img->height() * img->depth(), luaFile->load());
 }
 
+bool overrideMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile) {
+	if (!paletteFile->exists()) {
+		Log::error("%s doesn't exist", paletteFile->name().c_str());
+		return false;
+	}
+	if (!luaFile->exists()) {
+		Log::error("Failed to load %s", luaFile->name().c_str());
+		return false;
+	}
+	const image::ImagePtr& img = image::loadImage(paletteFile, false);
+	if (!img->isLoaded()) {
+		Log::error("Failed to load image %s", paletteFile->name().c_str());
+		return false;
+	}
+	return overrideMaterialColors(img->data(), img->width() * img->height() * img->depth(), luaFile->load());
+}
+
 bool initDefaultMaterialColors() {
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
 	const io::FilePtr& paletteFile = filesystem->open("palette-nippon.png");

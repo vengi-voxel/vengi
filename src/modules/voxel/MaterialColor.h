@@ -25,6 +25,7 @@ typedef std::vector<uint8_t> MaterialColorIndices;
 extern bool initDefaultMaterialColors();
 extern bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile);
 extern bool initMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaBuffer);
+extern bool overrideMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile);
 extern bool overrideMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaBuffer);
 extern void shutdownMaterialColors();
 extern void materialColorMarkClean();
