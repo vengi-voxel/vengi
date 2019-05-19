@@ -14,14 +14,26 @@ extern int complete(const std::string& dir, const std::string& str, std::vector<
 
 inline auto fileCompleter(const std::string& lastDirectory) {
 	return [=] (const std::string& str, std::vector<std::string>& matches) -> int {
-		const std::string& dir = lastDirectory.empty() ? "." : lastDirectory;
+		std::string dir = lastDirectory;
+		if (dir.empty()) {
+			dir = core::string::extractPath(str.c_str());
+		}
+		if (dir.empty()) {
+			dir = ".";
+		}
 		return complete(dir, str, matches);
 	};
 }
 
 inline auto fileCompleter(const core::VarPtr& lastDirectory) {
 	return [=] (const std::string& str, std::vector<std::string>& matches) -> int {
-		const std::string& dir = lastDirectory->strVal().empty() ? "." : lastDirectory->strVal();
+		std::string dir = lastDirectory->strVal();
+		if (dir.empty()) {
+			dir = core::string::extractPath(str.c_str());
+		}
+		if (dir.empty()) {
+			dir = ".";
+		}
 		return complete(dir, str, matches);
 	};
 }
