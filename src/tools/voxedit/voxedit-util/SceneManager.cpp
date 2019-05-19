@@ -736,7 +736,18 @@ void SceneManager::construct() {
 			return;
 		}
 		importPalette(args[0]);
-	}).setArgumentCompleter(core::fileCompleter(""));
+	}).setArgumentCompleter(core::fileCompleter("", "*.png"));
+
+	core::Command::registerCommand("loadpalette", [this] (const core::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::info("Expected to get the palette NAME as part of palette-NAME.[png|lua]");
+			return;
+		}
+		const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+		const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", args[0].c_str()));
+		const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", args[0].c_str()));
+		voxel::overrideMaterialColors(paletteFile, luaFile);
+	});
 
 	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
 		if (args.size() < 3) {
