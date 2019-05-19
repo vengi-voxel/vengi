@@ -151,6 +151,14 @@ inline std::string_view extractFilename(std::string_view str) {
 	return str;
 }
 
+inline std::string_view extractFilenameWithExtension(std::string_view str) {
+	const size_t pathPos = str.rfind('/');
+	if (pathPos != std::string::npos) {
+		str = str.substr(pathPos + 1);
+	}
+	return str;
+}
+
 inline std::string eraseAllSpaces(const std::string& str) {
 	std::string tmp = str;
 	tmp.erase(std::remove(tmp.begin(), tmp.end(), ' '), tmp.end());
