@@ -442,12 +442,25 @@ void Console::autoComplete() {
 			}
 			++pos;
 		}
-		_commandLine = matches.front().substr(0, pos);
+		if (pos > 0) {
+			replaceLastParameter(matches.front().substr(0, pos));
+		}
 		for (const std::string& match : matches) {
 			Log::info("%s", match.c_str());
 		}
 	}
 	_cursorPos = _commandLine.size();
+}
+
+void Console::replaceLastParameter(const std::string& param) {
+	auto iter = _commandLine.rfind(' ');
+	if (iter == std::string::npos) {
+		_commandLine = param;
+		return;
+	}
+
+	_commandLine.erase(iter + 1);
+	_commandLine.append(param.c_str());
 }
 
 void Console::cursorDelete(bool moveCursor) {

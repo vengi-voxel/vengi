@@ -95,6 +95,8 @@ protected:
 	void cursorWordLeft();
 	void cursorWordRight();
 
+	void replaceLastParameter(const std::string& param);
+
 	// history 'scroll' methods
 	void cursorUp();
 	void cursorDown();
