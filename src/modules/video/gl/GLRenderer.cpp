@@ -33,6 +33,7 @@ static RenderState s;
 #endif
 
 #define SANITY_CHECKS_GL 0
+#define DIRECT_STATE_ACCESS 0
 
 bool checkError(bool triggerAssert) {
 #ifdef DEBUG
@@ -927,16 +928,16 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 		glNamedBufferData(handle, (GLsizeiptr)size, data, usage);
 		checkError();
 	} else {
-#if 1
+#if DIRECT_STATE_ACCESS
+		void *target = mapBuffer(handle, type, AccessMode::Write);
+		memcpy(target, data, size);
+		unmapBuffer(handle, type);
+#else
 		const GLenum glType = _priv::BufferTypes[std::enum_value(type)];
 		bindBuffer(type, handle);
 		glBufferData(glType, (GLsizeiptr)size, data, usage);
 		checkError();
 		unbindBuffer(type);
-#else
-		void *target = mapBuffer(handle, type, AccessMode::Write);
-		memcpy(target, data, size);
-		unmapBuffer(type);
 #endif
 	}
 	if (_priv::s.vendor[std::enum_value(Vendor::Nouveau)]) {

@@ -143,13 +143,7 @@ bool Buffer::update(int32_t idx, const void* data, size_t size) {
 	if (oldSize >= size && _modes[idx] != BufferMode::Static) {
 		video::bufferSubData(id, type, 0, data, _size[idx]);
 	} else {
-#if 1
 		video::bufferData(id, type, _modes[idx], data, _size[idx]);
-#else
-		void* target = video::mapBuffer(type, video::AccessMode::Write);
-		memcpy(target, data, _size[idx]);
-		video::unmapBuffer(type);
-#endif
 	}
 
 	return true;
