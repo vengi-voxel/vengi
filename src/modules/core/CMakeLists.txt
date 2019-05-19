@@ -56,22 +56,22 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES collect
 
 set(TEST_SRCS
 	tests/AbstractTest.cpp
-	tests/CoreTest.cpp
 	tests/ByteStreamTest.cpp
-	tests/ThreadPoolTest.cpp
-	tests/EventBusTest.cpp
-	tests/VarTest.cpp
-	tests/CommandTest.cpp
 	tests/ColorTest.cpp
+	tests/CommandTest.cpp
 	tests/CommandHandlerTest.cpp
-	tests/MD5Test.cpp
+	tests/CoreTest.cpp
+	tests/EventBusTest.cpp
 	tests/JSONTest.cpp
 	tests/LogTest.cpp
-	tests/TokenizerTest.cpp
+	tests/MD5Test.cpp
 	tests/PoolAllocatorTest.cpp
-	tests/StringTest.cpp
 	tests/ReadWriteLockTest.cpp
+	tests/StringTest.cpp
+	tests/ThreadPoolTest.cpp
+	tests/TokenizerTest.cpp
 	tests/UUIDTest.cpp
+	tests/VarTest.cpp
 	tests/ZipTest.cpp
 )
 
