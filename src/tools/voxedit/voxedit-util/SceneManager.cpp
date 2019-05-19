@@ -872,7 +872,7 @@ void SceneManager::construct() {
 		const int index = core::string::toInt(args[0]);
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		_modifier.setCursorVoxel(voxel);
-	}).setHelp("Set the current selected color");
+	}).setHelp("Use the given index to select the color from the current palette");
 
 	core::Command::registerCommand("setcolorrgb", [&] (const core::CmdArgs& args) {
 		if (args.size() != 3) {
@@ -887,7 +887,7 @@ void SceneManager::construct() {
 		const int index = core::Color::getClosestMatch(color, materialColors);
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		_modifier.setCursorVoxel(voxel);
-	}).setHelp("Set the current selected color");
+	}).setHelp("Set the current selected color by finding the closest rgb match in the palette");
 
 	core::Command::registerCommand("pickcolor", [&] (const core::CmdArgs& args) {
 		if (!voxel::isAir(_hitCursorVoxel.getMaterial())) {
