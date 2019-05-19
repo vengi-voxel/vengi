@@ -50,6 +50,8 @@ TEST_F(FilesystemTest, testListFilter) {
 	std::vector<io::Filesystem::DirEntry> entities;
 	fs.list("listdirtestfilter/", entities, "*xyz");
 	EXPECT_EQ(2u, entities.size()) << entities;
+	EXPECT_EQ(io::Filesystem::DirEntry::Type::dir, entities[0].type);
+	EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[1].type);
 	fs.shutdown();
 }
 
