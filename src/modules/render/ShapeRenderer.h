@@ -42,6 +42,10 @@ private:
 	shader::ColorInstancedShader& _colorInstancedShader;
 	shader::TextureShader& _textureShader;
 
+	int renderAllInstanced(const video::Camera& camera, const glm::mat4& model) const;
+	int renderAllTextured(const video::Camera& camera, const glm::mat4& model) const;
+	int renderAllColored(const video::Camera& camera, const glm::mat4& model) const;
+
 public:
 	ShapeRenderer();
 	~ShapeRenderer();
@@ -85,9 +89,9 @@ public:
 	 */
 	bool updatePositions(uint32_t meshIndex, const float* posBuf, size_t posBufLength);
 
-	bool render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f), video::Shader* shader = nullptr) const;
+	bool render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f)) const;
 
-	int renderAll(const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f), video::Shader* shader = nullptr) const;
+	int renderAll(const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f)) const;
 };
 
 }

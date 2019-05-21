@@ -192,7 +192,7 @@ void TestMeshApp::doRender() {
 				shader.setModel(_model);
 			}
 			if (_renderPlane) {
-				renderPlane(&shader);
+				renderPlane();
 			}
 			if (_renderMesh) {
 				// TODO: why does only the plane appear in the depth map?
@@ -262,8 +262,8 @@ void TestMeshApp::doRender() {
 	}
 }
 
-void TestMeshApp::renderPlane(video::Shader* shader) {
-	_plane.render(_camera, glm::scale(_model, glm::vec3(100.0f)), shader);
+void TestMeshApp::renderPlane() {
+	_plane.render(_camera, glm::scale(_model, glm::vec3(100.0f)));
 }
 
 core::AppState TestMeshApp::onCleanup() {

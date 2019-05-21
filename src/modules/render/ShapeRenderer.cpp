@@ -222,7 +222,15 @@ bool ShapeRenderer::hiddenState(int32_t meshIndex) const {
 	return _hidden[meshIndex];
 }
 
-int ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model, video::Shader* shader) const {
+int ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model) const {
+	int cnt = 0;
+	cnt += renderAllInstanced(camera, model);
+	cnt += renderAllTextured(camera, model);
+	cnt += renderAllColored(camera, model);
+	return cnt;
+}
+
+int ShapeRenderer::renderAllInstanced(const video::Camera& camera, const glm::mat4& model) const {
 	int cnt = 0;
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
@@ -231,75 +239,93 @@ int ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model
 		if (_hidden[meshIndex]) {
 			continue;
 		}
-		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
-		if (_amounts[meshIndex] > 0) {
-			core_assert(_offsetIndex[meshIndex] != -1);
-			if (shader == nullptr) {
-				if (!_colorInstancedShader.isActive()) {
-					if (_colorShader.isActive()) {
-						_colorShader.deactivate();
-					}
-					if (_textureShader.isActive()) {
-						_textureShader.deactivate();
-					}
-					// TODO: instanced texture shader?
-					_colorInstancedShader.activate();
-					core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
-					core_assert_always(_colorInstancedShader.setModel(model));
-				}
-			}
-			core_assert_always(_vbo[meshIndex].bind());
-			video::drawElementsInstanced<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices, _amounts[meshIndex]);
-		} else {
-			if (shader == nullptr) {
-				if (_texcoords[meshIndex] && video::currentTexture(_texunits[meshIndex]) != video::InvalidId) {
-					_textureShader.setTexture(_texunits[meshIndex]);
-					if (!_textureShader.isActive()) {
-						if (_colorShader.isActive()) {
-							_colorShader.deactivate();
-						}
-						if (_colorInstancedShader.isActive()) {
-							_colorInstancedShader.deactivate();
-						}
-						_textureShader.activate();
-						core_assert_always(_textureShader.setViewprojection(camera.viewProjectionMatrix()));
-						core_assert_always(_textureShader.setModel(model));
-					}
-				} else {
-					if (!_colorShader.isActive()) {
-						if (_colorInstancedShader.isActive()) {
-							_colorInstancedShader.deactivate();
-						}
-						if (_textureShader.isActive()) {
-							_textureShader.deactivate();
-						}
-						_colorShader.activate();
-						core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
-						core_assert_always(_colorShader.setModel(model));
-					}
-				}
-			}
-			core_assert_always(_vbo[meshIndex].bind());
-			video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
+		if (_amounts[meshIndex] <= 0) {
+			continue;
 		}
-		_vbo[meshIndex].unbind();
+		core_assert(_offsetIndex[meshIndex] != -1);
+		if (!_colorInstancedShader.isActive()) {
+			// TODO: instanced texture shader?
+			_colorInstancedShader.activate();
+			core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
+			core_assert_always(_colorInstancedShader.setModel(model));
+		}
+		core_assert_always(_vbo[meshIndex].bind());
+		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
+		video::drawElementsInstanced<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices, _amounts[meshIndex]);
 		++cnt;
 	}
-	if (shader == nullptr) {
-		if (_colorInstancedShader.isActive()) {
-			_colorInstancedShader.deactivate();
-		}
-		if (_colorShader.isActive()) {
-			_colorShader.deactivate();
-		}
-		if (_textureShader.isActive()) {
-			_textureShader.deactivate();
-		}
+	if (_colorInstancedShader.isActive()) {
+		_colorInstancedShader.deactivate();
 	}
 	return cnt;
 }
 
-bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model, video::Shader* shader) const {
+int ShapeRenderer::renderAllColored(const video::Camera& camera, const glm::mat4& model) const {
+	int cnt = 0;
+	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
+		if (_vertexIndex[meshIndex] == -1) {
+			continue;
+		}
+		if (_hidden[meshIndex]) {
+			continue;
+		}
+		if (_amounts[meshIndex] > 0) {
+			continue;
+		}
+		if (_texcoords[meshIndex] && video::currentTexture(_texunits[meshIndex]) != video::InvalidId) {
+			continue;
+		}
+		if (!_colorShader.isActive()) {
+			_colorShader.activate();
+			core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
+			core_assert_always(_colorShader.setModel(model));
+		}
+		core_assert_always(_vbo[meshIndex].bind());
+		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
+		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
+		_vbo[meshIndex].unbind();
+		++cnt;
+	}
+	if (_colorShader.isActive()) {
+		_colorShader.deactivate();
+	}
+	return cnt;
+}
+
+int ShapeRenderer::renderAllTextured(const video::Camera& camera, const glm::mat4& model) const {
+	int cnt = 0;
+	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
+		if (_vertexIndex[meshIndex] == -1) {
+			continue;
+		}
+		if (_hidden[meshIndex]) {
+			continue;
+		}
+		if (_amounts[meshIndex] > 0) {
+			continue;
+		}
+		if (!_texcoords[meshIndex] || video::currentTexture(_texunits[meshIndex]) == video::InvalidId) {
+			continue;
+		}
+		if (!_textureShader.isActive()) {
+			_textureShader.activate();
+			core_assert_always(_textureShader.setViewprojection(camera.viewProjectionMatrix()));
+			core_assert_always(_textureShader.setModel(model));
+		}
+		_textureShader.setTexture(_texunits[meshIndex]);
+		core_assert_always(_vbo[meshIndex].bind());
+		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
+		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
+		_vbo[meshIndex].unbind();
+		++cnt;
+	}
+	if (_textureShader.isActive()) {
+		_textureShader.deactivate();
+	}
+	return cnt;
+}
+
+bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model) const {
 	if (meshIndex == (uint32_t)-1) {
 		return false;
 	}
@@ -318,38 +344,30 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 
 	if (_amounts[meshIndex] > 0) {
 		core_assert(_offsetIndex[meshIndex] != -1);
-		if (shader == nullptr) {
-			_colorInstancedShader.activate();
-			core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
-			core_assert_always(_colorInstancedShader.setModel(model));
-		}
+		_colorInstancedShader.activate();
+		core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
+		core_assert_always(_colorInstancedShader.setModel(model));
 		core_assert_always(_vbo[meshIndex].bind());
 		video::drawElementsInstanced<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices, _amounts[meshIndex]);
-		if (shader == nullptr) {
-			_colorInstancedShader.deactivate();
-		}
+		_colorInstancedShader.deactivate();
 	} else {
 		const bool useTexture = _texcoords[meshIndex] && video::currentTexture(_texunits[meshIndex]) != video::InvalidId;
-		if (shader == nullptr) {
-			if (useTexture) {
-				_textureShader.activate();
-				_textureShader.setTexture(_texunits[meshIndex]);
-				core_assert_always(_textureShader.setViewprojection(camera.viewProjectionMatrix()));
-				core_assert_always(_textureShader.setModel(model));
-			} else {
-				_colorShader.activate();
-				core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
-				core_assert_always(_colorShader.setModel(model));
-			}
+		if (useTexture) {
+			_textureShader.activate();
+			_textureShader.setTexture(_texunits[meshIndex]);
+			core_assert_always(_textureShader.setViewprojection(camera.viewProjectionMatrix()));
+			core_assert_always(_textureShader.setModel(model));
+		} else {
+			_colorShader.activate();
+			core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
+			core_assert_always(_colorShader.setModel(model));
 		}
 		core_assert_always(_vbo[meshIndex].bind());
 		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
-		if (shader == nullptr) {
-			if (useTexture) {
-				_textureShader.deactivate();
-			} else {
-				_colorShader.deactivate();
-			}
+		if (useTexture) {
+			_textureShader.deactivate();
+		} else {
+			_colorShader.deactivate();
 		}
 	}
 	_vbo[meshIndex].unbind();

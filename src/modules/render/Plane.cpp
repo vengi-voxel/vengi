@@ -6,13 +6,9 @@
 
 namespace render {
 
-void Plane::render(const video::Camera& camera, video::Shader* shader) {
-	render(camera, glm::mat4(1.0f), shader);
-}
-
-void Plane::render(const video::Camera& camera, const glm::mat4& model, video::Shader* shader) {
+void Plane::render(const video::Camera& camera, const glm::mat4& model) {
 	const bool disabled = video::disable(video::State::CullFace);
-	_shapeRenderer.renderAll(camera, model, shader);
+	_shapeRenderer.renderAll(camera, model);
 	if (disabled) {
 		video::enable(video::State::CullFace);
 	}
