@@ -197,6 +197,15 @@ void setupLimitsAndSpecs() {
 	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBufferAlignment);
 	renderState().specs[std::enum_value(Spec::UniformBufferAlignment)] = uniformBufferAlignment;
 	checkError();
+	GLint maxUniformBufferBindings;
+	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformBufferBindings);
+	renderState().specs[std::enum_value(Spec::MaxUniformBufferBindings)] = maxUniformBufferBindings;
+#ifdef GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT
+	GLint shaderStorageBufferOffsetAlignment;
+	glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &shaderStorageBufferOffsetAlignment);
+	renderState().specs[std::enum_value(Spec::ShaderStorageBufferOffsetAlignment)] = shaderStorageBufferOffsetAlignment;
+#endif
+
 	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[std::enum_value(Limit::MaxElementVertices)]);
 	Log::info("GL_MAX_ELEMENTS_INDICES: %i", renderState().limits[std::enum_value(Limit::MaxElementIndices)]);
 }

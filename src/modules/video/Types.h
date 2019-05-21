@@ -324,6 +324,8 @@ enum class TextureFormat {
 
 enum class Spec {
 	UniformBufferAlignment,
+	MaxUniformBufferBindings,
+	ShaderStorageBufferOffsetAlignment,
 
 	Max
 };

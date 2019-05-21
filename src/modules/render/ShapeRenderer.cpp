@@ -142,24 +142,6 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 	return meshIndex;
 }
 
-void ShapeRenderer::shutdown() {
-	_textureShader.shutdown();
-	_colorShader.shutdown();
-	_colorInstancedShader.shutdown();
-	for (uint32_t i = 0u; i < _currentMeshIndex; ++i) {
-		deleteMesh(i);
-	}
-	_currentMeshIndex = 0u;
-}
-
-void ShapeRenderer::setTextureUnit(uint32_t meshIndex, video::TextureUnit unit) {
-	if (meshIndex >= MAX_MESHES) {
-		Log::warn("Invalid mesh index given: %u", meshIndex);
-		return;
-	}
-	_texunits[meshIndex] = unit;
-}
-
 void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder) {
 	if (meshIndex >= MAX_MESHES) {
 		Log::warn("Invalid mesh index given: %u", meshIndex);
@@ -206,6 +188,24 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, siz
 	}
 	_amounts[meshIndex] = posBufLength / (_colorInstancedShader.getComponentsOffset() * sizeof(float));
 	return true;
+}
+
+void ShapeRenderer::shutdown() {
+	_textureShader.shutdown();
+	_colorShader.shutdown();
+	_colorInstancedShader.shutdown();
+	for (uint32_t i = 0u; i < _currentMeshIndex; ++i) {
+		deleteMesh(i);
+	}
+	_currentMeshIndex = 0u;
+}
+
+void ShapeRenderer::setTextureUnit(uint32_t meshIndex, video::TextureUnit unit) {
+	if (meshIndex >= MAX_MESHES) {
+		Log::warn("Invalid mesh index given: %u", meshIndex);
+		return;
+	}
+	_texunits[meshIndex] = unit;
 }
 
 void ShapeRenderer::hide(int32_t meshIndex, bool hide) {
