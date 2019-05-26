@@ -45,7 +45,7 @@ public:
 	/**
 	 * @return The FileMode the file was opened with
 	 */
-	FileMode mode();
+	FileMode mode() const;
 
 	bool exists() const;
 	/**
@@ -79,7 +79,7 @@ public:
 	std::string load();
 };
 
-inline FileMode File::mode() {
+inline FileMode File::mode() const {
 	return _mode;
 }
 
