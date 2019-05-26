@@ -1,11 +1,13 @@
-# Purpose
+# Voxedit
+
+## Purpose
 
 Voxel editor for large scenes.
 
 This editor was written to have a linux voxel editor with animation support for
 my own engine and evolved into something that others might find useful, too.
 
-# Features
+## Features
 
 * Large scene support
 * Load vox, qbt, qb, vxm
@@ -34,7 +36,7 @@ my own engine and evolved into something that others might find useful, too.
 * Rotate around reference position or center of volume
 * Import bitmaps as plane
 
-# Controls
+## Controls
 
 * Placing voxels via left mouse button
 * Deleting voxels via right mouse button
@@ -45,7 +47,7 @@ my own engine and evolved into something that others might find useful, too.
 * Enter places the reference position at the current cursor position
 * Shift+Tab opens the console (type cmdlist and cvarlist)
 
-# Planned
+## Planned
 
 * SceneSettings dialog
   - Set bitmap backgrounds for each axis on a plane at a given position
@@ -71,7 +73,7 @@ my own engine and evolved into something that others might find useful, too.
 * Physics
 * Particle emitter
 
-# Needed improvements
+## Needed improvements
 
 * Fix memento states for merge of layers
 * Fix memento states for layer group modifications

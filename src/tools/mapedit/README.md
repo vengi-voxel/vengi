@@ -1,4 +1,4 @@
-# General
+# MapEdit
 
 The `mapedit` tool is the tool to build maps. Not by placing voxel per voxel, but just
 by putting entities into the void with parameters to procedurally generate the surface.

@@ -1,4 +1,6 @@
-# Table descriptions for the databasetool.
+# Databasetool
+
+## Table descriptions for the databasetool.
 
 The databasetool binary will generate model files for the
 table definitions given in `*.tbl` files. You can specify the fields,

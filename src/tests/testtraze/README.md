@@ -1,4 +1,6 @@
-# About
+# Traze
+
+## About
 
 This is a voxel based representation of the traze game available at [traze.iteratec.de](https://traze.iteratec.de).
 
@@ -8,7 +10,7 @@ This application can be used to spectate games and to play games. You can select
 select one and decide at any time to join the game by hitting the button in the debug menu. Once you press the first WASD-key
 to move your bike, you are joined.
 
-# TODO
+## TODO
 
 * add scoreboard menu
 * player explosions

@@ -1,4 +1,4 @@
-# Purpose
+# CompuseShaderTool
 
 This tool parses OpenCL shader files (`*.cl`) and generates C++ source files for them.
 

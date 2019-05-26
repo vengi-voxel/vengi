@@ -1,8 +1,10 @@
-# General
+# Server
+
+## General
 
 TODO: document server architecture
 
-# Docker
+## Docker
 
 The docker image is using apt-cacher-ng (https://github.com/sameersbn/docker-apt-cacher-ng)
 
