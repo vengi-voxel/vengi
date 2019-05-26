@@ -104,7 +104,7 @@ bool Filesystem::createDir(const std::string& dir, bool recursive) const {
 	return true;
 }
 
-bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const {
+bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount <= 0) {
@@ -147,7 +147,7 @@ bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& enti
 	return true;
 }
 
-bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& entities) const {
+bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& entities) {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount <= 0) {
@@ -224,7 +224,7 @@ void Filesystem::shutdown() {
 	_watches.clear();
 }
 
-std::string Filesystem::absolutePath(const std::string& path) const {
+std::string Filesystem::absolutePath(const std::string& path) {
 	uv_fs_t req;
 	uv_fs_realpath(nullptr, &req, path.c_str(), nullptr);
 	std::string abspath = (const char *)uv_fs_get_ptr(&req);
@@ -384,13 +384,13 @@ bool Filesystem::write(const std::string& filename, const std::string& string) {
 	return write(filename, buf, string.size());
 }
 
-bool Filesystem::syswrite(const std::string& filename, const uint8_t* content, size_t length) {
+bool Filesystem::syswrite(const std::string& filename, const uint8_t* content, size_t length) const {
 	io::File f(filename, FileMode::Write);
 	createDir(f.path());
 	return f.write(content, length) == static_cast<long>(length);
 }
 
-bool Filesystem::syswrite(const std::string& filename, const std::string& string) {
+bool Filesystem::syswrite(const std::string& filename, const std::string& string) const {
 	const uint8_t* buf = reinterpret_cast<const uint8_t*>(string.c_str());
 	return syswrite(filename, buf, string.size());
 }

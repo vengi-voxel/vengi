@@ -16,7 +16,7 @@
 
 namespace math {
 
-extern math::AABB<int> computeAABB(const Frustum& area, const glm::vec3& minSize);
+extern math::AABB<int> computeAABB(const Frustum& area, const glm::vec3& gridSize);
 
 /**
  * @note Given NODE type must implement @c aabb() and return math::AABB<TYPE>

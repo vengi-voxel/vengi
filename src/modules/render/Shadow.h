@@ -87,8 +87,8 @@ inline const glm::vec3& Shadow::sunDirection() const {
 	return _sunDirection;
 }
 
-inline void Shadow::setShadowBias(float bias) {
-	_shadowBias = bias;
+inline void Shadow::setShadowBias(float biasSlope) {
+	_shadowBias = biasSlope;
 }
 
 inline void Shadow::setShadowBiasSlope(float biasSlope) {

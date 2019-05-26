@@ -50,7 +50,8 @@ std::string File::load() {
 	if (includeBuffer == nullptr || includeLen <= 0) {
 		return "";
 	}
-	return std::string(includeBuffer, includeLen);
+	const std::string f(includeBuffer, includeLen);
+	return f;
 }
 
 SDL_RWops* File::createRWops(FileMode mode) const {

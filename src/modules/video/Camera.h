@@ -439,8 +439,8 @@ inline const math::Frustum& Camera::frustum() const {
 	return _frustum;
 }
 
-inline bool Camera::isVisible(const glm::vec3& pos) const {
-	return frustum().isVisible(pos);
+inline bool Camera::isVisible(const glm::vec3& position) const {
+	return frustum().isVisible(position);
 }
 
 inline bool Camera::isVisible(const math::AABB<float>& aabb) const {

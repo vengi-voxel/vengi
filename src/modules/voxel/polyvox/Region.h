@@ -181,11 +181,11 @@ public:
 	/// Moves the Region by the amount specified.
 	void shift(const glm::ivec3& v3dAmount);
 	/// Moves the lower corner of the Region by the amount specified.
-	void shiftLowerCorner(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
+	void shiftLowerCorner(int32_t x, int32_t y, int32_t z);
 	/// Moves the lower corner of the Region by the amount specified.
 	void shiftLowerCorner(const glm::ivec3& v3dAmount);
 	/// Moves the upper corner of the Region by the amount specified.
-	void shiftUpperCorner(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
+	void shiftUpperCorner(int32_t x, int32_t y, int32_t z);
 	/// Moves the upper corner of the Region by the amount specified.
 	void shiftUpperCorner(const glm::ivec3& v3dAmount);
 
@@ -784,14 +784,14 @@ inline void Region::shift(const glm::ivec3& v3dAmount) {
 }
 
 /**
- * @param iAmountX The amount to move the lower corner by in 'x'.
- * @param iAmountY The amount to move the lower corner by in 'y'.
- * @param iAmountZ The amount to move the lower corner by in 'z'.
+ * @param x The amount to move the lower corner by in 'x'.
+ * @param y The amount to move the lower corner by in 'y'.
+ * @param z The amount to move the lower corner by in 'z'.
  */
-inline void Region::shiftLowerCorner(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
-	m_iLowerX += iAmountX;
-	m_iLowerY += iAmountY;
-	m_iLowerZ += iAmountZ;
+inline void Region::shiftLowerCorner(int32_t x, int32_t y, int32_t z) {
+	m_iLowerX += x;
+	m_iLowerY += y;
+	m_iLowerZ += z;
 }
 
 /**

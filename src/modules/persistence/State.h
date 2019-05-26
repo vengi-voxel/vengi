@@ -51,7 +51,7 @@ public:
 	 * @param[in] colIndex The column index of the current row. Starting at index 0 for the first column
 	 */
 	bool asBool(int colIndex) const;
-	bool isBool(const char *value) const;
+	static bool isBool(const char *value);
 
 	ResultType* res = nullptr;
 

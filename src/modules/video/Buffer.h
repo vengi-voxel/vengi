@@ -33,7 +33,7 @@ private:
 	mutable Id _vao = InvalidId;
 	mutable bool _dirtyAttributes = true;
 
-	size_t align(size_t x, BufferType type) const;
+	static size_t align(size_t x, BufferType type);
 public:
 	/**
 	 * @brief Ctor that also creates buffer handle.
@@ -144,7 +144,7 @@ public:
 	Id handle() const;
 };
 
-inline size_t Buffer::align(size_t x, BufferType type) const {
+inline size_t Buffer::align(size_t x, BufferType type) {
 	size_t a = 32;
 	switch (type) {
 	case BufferType::IndexBuffer:

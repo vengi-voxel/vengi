@@ -32,7 +32,7 @@ private:
 	};
 	std::vector<Event> _events;
 
-	std::string getControllerButtonName(uint8_t button) const;
+	static std::string getControllerButtonName(uint8_t button);
 
 public:
 	EventHandler();

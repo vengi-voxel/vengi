@@ -26,7 +26,7 @@ private:
 	render::ShapeRenderer _shapeRenderer;
 	std::vector<int32_t> _planeMeshes;
 public:
-	void render(const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f));
+	void render(const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f)) const;
 
 	void shutdown() override;
 

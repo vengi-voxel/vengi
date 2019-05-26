@@ -36,7 +36,7 @@ public:
 	}
 
 	bool addBool(bool value);
-	bool addByte(uint8_t byte);
+	bool addByte(uint8_t val);
 	bool addShort(uint16_t word);
 	bool addInt(uint32_t dword);
 	bool addLong(uint64_t dword);

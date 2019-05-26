@@ -82,7 +82,7 @@ int State::asInt(int colIndex) const {
 	return core::string::toInt(value);
 }
 
-bool State::isBool(const char *value) const {
+bool State::isBool(const char *value) {
 	return *value == '1' || *value == 't' || *value == 'y' || *value == 'o' || *value == 'T';
 }
 

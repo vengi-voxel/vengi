@@ -86,14 +86,14 @@ public:
 	static bool isReadableDir(const std::string& name);
 	static bool isRelativePath(const std::string& name);
 
-	std::string absolutePath(const std::string& path) const;
+	static std::string absolutePath(const std::string& path);
 
 	/**
 	 * @brief Changes the current working directory
 	 * @see popDir()
 	 * @see pushDir()
 	 */
-	bool chdir(const std::string& directory);
+	static bool chdir(const std::string& directory);
 
 	/**
 	 * @brief changes the current working dir to the last pushed one
@@ -119,20 +119,20 @@ public:
 	 * @note The difference to the usual write() methods is that the given path is not put into the
 	 * known file system structure of the application. It just uses the given name.
 	 */
-	bool syswrite(const std::string& filename, const uint8_t* content, size_t length);
+	bool syswrite(const std::string& filename, const uint8_t* content, size_t length) const;
 
 	/**
 	 * @note The difference to the usual write() methods is that the given path is not put into the
 	 * known file system structure of the application. It just uses the given name.
 	 */
-	bool syswrite(const std::string& filename, const std::string& string);
+	bool syswrite(const std::string& filename, const std::string& string) const;
 
 	bool createDir(const std::string& dir, bool recursive = true) const;
 
 	bool removeDir(const std::string& dir, bool recursive = false) const;
 private:
-	bool _list(const std::string& directory, std::vector<DirEntry>& entities) const;
-	bool _list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const;
+	static bool _list(const std::string& directory, std::vector<DirEntry>& entities);
+	static bool _list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter);
 };
 
 inline bool Filesystem::exists(const std::string& filename) const {

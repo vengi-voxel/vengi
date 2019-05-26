@@ -370,8 +370,8 @@ inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIn
 	drawElementsBaseVertex(mode, numIndices, mapType<IndexType>(), sizeof(IndexType), baseIndex, baseVertex);
 }
 
-inline bool hasFeature(Feature f) {
-	return renderState().supports(f);
+inline bool hasFeature(Feature feature) {
+	return renderState().supports(feature);
 }
 
 inline int limit(Limit l) {

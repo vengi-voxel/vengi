@@ -30,7 +30,7 @@ void EventHandler::removeObserver(IEventObserver* observer) {
 	_events.emplace_back(observer, true);
 }
 
-inline std::string EventHandler::getControllerButtonName(uint8_t button) const {
+std::string EventHandler::getControllerButtonName(uint8_t button) {
 	const char *name = SDL_GameControllerGetStringForButton(static_cast<SDL_GameControllerButton>(button));
 	if (name == nullptr) {
 		return "unknown";

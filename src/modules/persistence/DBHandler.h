@@ -38,7 +38,7 @@ private:
 	static constexpr auto logid = Log::logid("DBHandler");
 	State execInternal(const std::string& query) const;
 	State execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const;
-	State execInternalWithCondition(const std::string& query, BindParam& param, int conditionOffset, const DBCondition& condition) const;
+	State execInternalWithCondition(const std::string& query, BindParam& params, int conditionOffset, const DBCondition& condition) const;
 	State execInternalWithParameters(const std::string& query, const BindParam& param) const;
 
 	Connection* connection() const;
