@@ -95,6 +95,7 @@ bool FileStream::readFormat(const char *fmt, ...) {
 		case 'b': {
 			uint8_t val;
 			if (readByte(val) != 0) {
+				va_end(ap);
 				return false;
 			}
 			*va_arg(ap, int *) = val;
@@ -103,6 +104,7 @@ bool FileStream::readFormat(const char *fmt, ...) {
 		case 's': {
 			uint16_t val;
 			if (readShort(val) != 0) {
+				va_end(ap);
 				return false;
 			}
 			*va_arg(ap, int *) = val;
@@ -111,6 +113,7 @@ bool FileStream::readFormat(const char *fmt, ...) {
 		case 'i': {
 			uint32_t val;
 			if (readInt(val) != 0) {
+				va_end(ap);
 				return false;
 			}
 			*va_arg(ap, int *) = val;
@@ -119,6 +122,7 @@ bool FileStream::readFormat(const char *fmt, ...) {
 		case 'l': {
 			uint64_t val;
 			if (readLong(val) != 0) {
+				va_end(ap);
 				return false;
 			}
 			*va_arg(ap, int64_t *) = val;
