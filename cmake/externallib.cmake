@@ -35,6 +35,7 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 		/opt/local # DarwinPorts
 		/opt/csw # Blastwave
 		/opt
+		/usr/local/opt
 		$ENV{VCPKG_ROOT}/installed/${_PROCESSOR_ARCH}-windows
 		C:/Tools/vcpkg/installed/${_PROCESSOR_ARCH}-windows
 		C:/vcpkg/installed/${_PROCESSOR_ARCH}-windows
