@@ -36,6 +36,7 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 		/opt/csw # Blastwave
 		/opt
 		/usr/local/opt
+		/usr/local/opt/${LIB}
 		$ENV{VCPKG_ROOT}/installed/${_PROCESSOR_ARCH}-windows
 		C:/Tools/vcpkg/installed/${_PROCESSOR_ARCH}-windows
 		C:/vcpkg/installed/${_PROCESSOR_ARCH}-windows
@@ -82,6 +83,8 @@ macro(engine_find_header_only LIB HEADER SUFFIX VERSION)
 		~/Library/Frameworks
 		/Library/Frameworks
 		/usr/local
+		/usr/local/opt
+		/usr/local/opt/${LIB}
 		/usr
 		/sw # Fink
 		/opt/local # DarwinPorts

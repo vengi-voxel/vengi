@@ -49,7 +49,7 @@ set(FILES
 if (WINDOWS)
 	set(UUID_LIBRARIES rpcrt4)
 elseif (APPLE)
-	set(UUID_LIBRARIES CoreFoundation)
+	set(UUID_LIBRARIES "-framework CoreFoundation")
 else()
 	find_package(UUID)
 endif()

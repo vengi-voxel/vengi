@@ -15,7 +15,6 @@ set(SRCS
 engine_add_library(
 	LIB zlib
 	SRCS ${SRCS}
-	UNITY
 )
 
 if (NOT ZLIB_FOUND)
