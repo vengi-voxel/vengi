@@ -13,9 +13,8 @@
 
 class LayerItemWidget: public tb::TBLayout {
 public:
-	LayerItemWidget(const std::string& def, LayerItem *item, LayerItemSource *source,
-			tb::TBSelectItemViewer *sourceViewer) :
-			_source(source), _sourceViewer(sourceViewer), _layerId(item->layerId()) {
+	LayerItemWidget(const std::string& def, LayerItem *item, LayerItemSource *source) :
+			_source(source), _layerId(item->layerId()) {
 		setSkinBg(TBIDC("TBSelectItem"));
 		setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
 		setLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
@@ -129,7 +128,6 @@ public:
 	}
 private:
 	LayerItemSource *_source;
-	tb::TBSelectItemViewer *_sourceViewer;
 	const int _layerId;
 	voxedit::LayerMoveSettings _moveSettings;
 	voxedit::LayerRenameSettings _renameSettings;
@@ -140,9 +138,9 @@ LayerItemSource::LayerItemSource() : TBSelectItemSourceList() {
 	_layerItemDefinition = fs->load("ui/widget/voxedit-layer-item.tb.txt");
 }
 
-tb::TBWidget *LayerItemSource::createItemWidget(int index, tb::TBSelectItemViewer *viewer) {
+tb::TBWidget *LayerItemSource::createItemWidget(int index, tb::TBSelectItemViewer *) {
 	Log::debug("create LayerItemWidget at %i", index);
-	return new LayerItemWidget(_layerItemDefinition, getItem(index), this, viewer);
+	return new LayerItemWidget(_layerItemDefinition, getItem(index), this);
 }
 
 LayerItem* LayerItemSource::getItemForLayerId(int layerId) const {

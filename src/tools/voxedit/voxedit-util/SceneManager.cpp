@@ -738,7 +738,7 @@ void SceneManager::construct() {
 		importPalette(args[0]);
 	}).setArgumentCompleter(core::fileCompleter("", "*.png")).setHelp("Import a palette from the given image");
 
-	core::Command::registerCommand("loadpalette", [this] (const core::CmdArgs& args) {
+	core::Command::registerCommand("loadpalette", [] (const core::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Expected to get the palette NAME as part of palette-NAME.[png|lua]");
 			return;
