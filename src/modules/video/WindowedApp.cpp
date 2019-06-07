@@ -93,7 +93,8 @@ core::AppState WindowedApp::onRunning() {
 
 void WindowedApp::onWindowResize() {
 	int _width, _height;
-	SDL_GetWindowSize(_window, &_width, &_height);
+	//SDL_GetWindowSize(_window, &_width, &_height);
+	SDL_GL_GetDrawableSize(_window, &_width, &_height);
 	_aspect = _width / static_cast<float>(_height);
 	_dimension = glm::ivec2(_width, _height);
 	video::viewport(0, 0, _width, _height);
