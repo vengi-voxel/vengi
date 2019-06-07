@@ -9,6 +9,15 @@
 
 namespace video {
 
+bool Shader::setAttributeLocation(const std::string& name, int location) {
+	if (_program == InvalidId) {
+		return false;
+	}
+	glBindAttribLocation(_program, location, name.c_str());
+	checkError();
+	return true;
+}
+
 bool Shader::setUniformBuffer(const std::string& name, const UniformBuffer& buffer) {
 	const Uniform* uniform = getUniform(name);
 	if (uniform == nullptr) {

@@ -218,6 +218,7 @@ public:
 
 	int checkAttributeLocation(const std::string& name) const;
 	int getAttributeLocation(const std::string& name) const;
+	bool setAttributeLocation(const std::string& name, int location);
 
 	int getUniformLocation(const std::string& name) const;
 
