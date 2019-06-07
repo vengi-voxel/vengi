@@ -1385,7 +1385,7 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 		return false;
 	}
 
-#ifdef DEBUG
+#if 0
 	glValidateProgram(program);
 	GLint success, logLength;
 	glGetProgramiv(program, GL_VALIDATE_STATUS, &success);
