@@ -30,6 +30,7 @@ public:
 	};
 
 	PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::ChunkPtr chunk, const Region& region);
+	virtual ~PagedVolumeWrapper() {}
 
 	operator PagedVolume& () const;
 	operator const PagedVolume& () const;

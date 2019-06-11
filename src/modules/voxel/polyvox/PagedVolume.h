@@ -87,6 +87,7 @@ public:
 	typedef std::shared_ptr<Chunk> ChunkPtr;
 
 	struct IChunkListener {
+		virtual ~IChunkListener() {}
 		virtual void onCreate(const ChunkPtr& ptr) {};
 
 		virtual void onRemove(const ChunkPtr& ptr) {};
@@ -123,7 +124,7 @@ public:
 	public:
 		Sampler(const PagedVolume* volume);
 		Sampler(const PagedVolume& volume);
-		~Sampler();
+		virtual ~Sampler();
 
 		const Voxel& voxel() const;
 
