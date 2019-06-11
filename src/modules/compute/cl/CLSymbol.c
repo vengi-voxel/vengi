@@ -390,8 +390,9 @@ int computeCLInit() {
 	clpfCreateFromGLTexture2D = (PFNCLCreateFromGLTexture2D_PROC*)SDL_LoadFunction(obj, "clCreateFromGLTexture2D");
 	// deprecated
 	clpfCreateFromGLTexture3D = (PFNCLCreateFromGLTexture3D_PROC*)SDL_LoadFunction(obj, "clCreateFromGLTexture3D");
+#if cl_khr_gl_sharing
 	clpfGetGLContextInfoKHR = (PFNCLGetGLContextInfoKHR_PROC*)SDL_LoadFunction(obj, "clGetGLContextInfoKHR");
-
+#endif
 	if (clGetPlatformIDs == NULL) {
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Given OpenCL library doesn't contain needed symbols");
 		return -1;
@@ -498,7 +499,9 @@ PFNCLEnqueueAcquireGLObjects_PROC* clpfEnqueueAcquireGLObjects = NULL;
 PFNCLEnqueueReleaseGLObjects_PROC* clpfEnqueueReleaseGLObjects = NULL;
 PFNCLCreateFromGLTexture2D_PROC* clpfCreateFromGLTexture2D = NULL;
 PFNCLCreateFromGLTexture3D_PROC* clpfCreateFromGLTexture3D = NULL;
+#if cl_khr_gl_sharing
 PFNCLGetGLContextInfoKHR_PROC* clpfGetGLContextInfoKHR = NULL;
+#endif
 
 #ifdef __cplusplus
 }

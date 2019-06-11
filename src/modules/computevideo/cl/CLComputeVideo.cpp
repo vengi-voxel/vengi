@@ -29,7 +29,7 @@ bool init() {
 	bool valid = false;
 #ifdef __APPLE__
 #if SDL_VIDEO_OPENGL_CGL
-	compute::_priv::_ctx.externalProperties.push_back(CL_CGL_SHAREGROUP_KHR);
+	compute::_priv::_ctx.externalProperties.push_back(CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE);
 	compute::_priv::_ctx.externalProperties.push_back((cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()));
 	valid = true;
 #else

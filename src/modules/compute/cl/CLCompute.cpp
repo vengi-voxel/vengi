@@ -125,7 +125,7 @@ static const char *convertCLError(cl_int err) {
 	CLCOMPUTEERR(CL_INVALID_DEVICE_QUEUE);
 	#endif
 
-	#if defined(__OPENCL_CL_GL_H) && defined(cl_khr_gl_sharing)
+	#if defined(CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR)
 	CLCOMPUTEERR(CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR);
 	#endif
 
@@ -918,7 +918,7 @@ bool init() {
 	contextProperties.push_back(CL_CONTEXT_PLATFORM);
 	contextProperties.push_back((cl_context_properties)_priv::_ctx.platformIds[platformIndex]);
 	contextProperties.push_back(0);
-
+#ifdef cl_khr_gl_sharing
 	if (_priv::_ctx.useGL && clGetGLContextInfoKHR) {
 		cl_device_id interopDevice = nullptr;
 		error = clGetGLContextInfoKHR(contextProperties.data(), CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &interopDevice, nullptr);
@@ -928,6 +928,7 @@ bool init() {
 			_priv::_ctx.deviceId = interopDevice;
 		}
 	}
+#endif
 
 	const std::string& device = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_NAME);
 	const std::string& vendor = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_VENDOR);

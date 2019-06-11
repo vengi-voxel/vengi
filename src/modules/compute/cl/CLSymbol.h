@@ -31,6 +31,12 @@ extern "C" {
 #define CL_PLATFORM_NOT_FOUND_KHR -1001
 #endif
 
+#ifdef __APPLE__
+#if !cl_khr_gl_sharing
+#define cl_khr_gl_sharing 1
+#endif
+#endif
+
 extern int computeCLInit();
 extern void computeCLShutdown();
 
