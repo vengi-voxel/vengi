@@ -9,7 +9,7 @@ macro(engine_add_debuggger TARGET)
 		)
 	elseif (${DEBUGGER} STREQUAL "lldb")
 		add_custom_command(TARGET ${TARGET}-debug
-			COMMAND ${LLDB_EXECUTABLE} -b -o run $<TARGET_FILE:${TARGET}>
+			COMMAND CG_CONTEXT_SHOW_BACKTRACE=1 ${LLDB_EXECUTABLE} -b -o run $<TARGET_FILE:${TARGET}>
 			COMMENT "Starting debugger session for ${TARGET}"
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
