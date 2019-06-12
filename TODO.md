@@ -139,3 +139,4 @@ Don't use assimp at runtime - use it only in the asset-pipeline to generate a 'b
 # Core
 
 Add alias command to group commands
+Expose bash-completion for commands
