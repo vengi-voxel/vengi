@@ -372,7 +372,7 @@ core::AppState WindowedApp::onInit() {
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
-	SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
+	SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
 #ifdef SDL_HINT_MOUSE_DOUBLE_CLICK_TIME
 	SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "500");
 #endif
@@ -382,7 +382,7 @@ core::AppState WindowedApp::onInit() {
 
 	const bool fullscreen = core::Var::getSafe(cfg::ClientFullscreen)->boolVal();
 
-	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
+	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
 	}
