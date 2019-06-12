@@ -1,12 +1,12 @@
 uniform mat4 u_viewprojection;
 uniform mat4 u_model;
 
-$in vec4 a_pos;
-$in vec4 a_color;
+layout(location = 1) $in vec4 a_pos;
+layout(location = 2) $in vec4 a_color;
 
 #ifdef INSTANCED
 // instanced rendering
-$in vec3 a_offset;
+layout(location = 3) $in vec3 a_offset;
 #endif // INSTANCED
 
 $out vec4 v_color;
