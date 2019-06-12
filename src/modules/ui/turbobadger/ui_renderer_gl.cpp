@@ -174,7 +174,7 @@ void UIRendererGL::renderBatch(Batch *batch) {
 	core_assert_always(_vbo.update(_bufferIndex, batch->vertex, sizeof(Vertex) * batch->vertex_count));
 
 	core_assert_always(_vbo.bind());
-	video::drawArrays(video::Primitive::Triangles, _vbo.elements(_bufferIndex, _shader.getComponentsPos()));
+	video::drawArrays(video::Primitive::Triangles, _vbo.elements(_bufferIndex, 1, sizeof(Vertex)));
 	_vbo.unbind();
 }
 
