@@ -459,6 +459,11 @@ core::AppState WindowedApp::onInit() {
 	_aspect = _width / static_cast<float>(_height);
 	SDL_GetWindowSize(_window, &_width, &_height);
 	_screenDimension = glm::ivec2(_width, _height);
+	Log::info("resolution (%i:%i) (pixel)", _pixelDimension.x, _pixelDimension.y);
+	Log::info("resolution (%i:%i) (screen)", _screenDimension.x, _screenDimension.y);
+	Log::info("dpi factor: %f", _dpiFactor);
+	Log::info("dpi factor h: %f", _dpiHorizontalFactor);
+	Log::info("dpi factor v: %f", _dpiVerticalFactor);
 
 	video::init();
 	video::viewport(0, 0, _pixelDimension.x, _pixelDimension.y);
