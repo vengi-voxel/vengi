@@ -121,79 +121,90 @@ set(SRCS
 	ui_renderer_gl.cpp ui_renderer_gl.h
 	ui_widgets.cpp ui_widgets.h
 )
+
+set(IMAGES
+	shared/ui/skin/arrow_down
+	shared/ui/skin/arrow_left
+	shared/ui/skin/arrow_right
+	shared/ui/skin/arrow_up
+	shared/ui/skin/button_flat_outline
+	shared/ui/skin/button_flat_pressed
+	shared/ui/skin/button_grouped_x_first_down
+	shared/ui/skin/button_grouped_x_first_up
+	shared/ui/skin/button_grouped_x_last_down
+	shared/ui/skin/button_grouped_x_last_up
+	shared/ui/skin/button_grouped_x_middle_down
+	shared/ui/skin/button_grouped_x_middle_up
+	shared/ui/skin/button
+	shared/ui/skin/button_pressed
+	shared/ui/skin/checkbox_mark
+	shared/ui/skin/checkbox
+	shared/ui/skin/checkbox_pressed
+	shared/ui/skin/container
+	shared/ui/skin/editfield
+	shared/ui/skin/fadeout_x
+	shared/ui/skin/fadeout_y
+	shared/ui/skin/filedialog-dir
+	shared/ui/skin/filedialog-file
+	shared/ui/skin/focus_r4
+	shared/ui/skin/focus_tabbutton_left
+	shared/ui/skin/focus_tabbutton_top
+	shared/ui/skin/item_hover
+	shared/ui/skin/item_selected
+	shared/ui/skin/item_separator_x
+	shared/ui/skin/item_separator_y
+	shared/ui/skin/progress_spinner_strip
+	shared/ui/skin/radio_mark
+	shared/ui/skin/radio
+	shared/ui/skin/radio_pressed
+	shared/ui/skin/remove
+	shared/ui/skin/resizer
+	shared/ui/skin/scroll_bg_x
+	shared/ui/skin/scroll_bg_y
+	shared/ui/skin/scroll_fg_x
+	shared/ui/skin/scroll_fg_y
+	shared/ui/skin/search
+	shared/ui/skin/section_container
+	shared/ui/skin/selection
+	shared/ui/skin/slider_bg_x
+	shared/ui/skin/slider_bg_y
+	shared/ui/skin/slider_handle
+	shared/ui/skin/tab_button_bottom_active
+	shared/ui/skin/tab_button_bottom_inactive
+	shared/ui/skin/tab_button_left_active
+	shared/ui/skin/tab_button_left_inactive
+	shared/ui/skin/tab_button_right_active
+	shared/ui/skin/tab_button_right_inactive
+	shared/ui/skin/tab_button_top_active
+	shared/ui/skin/tab_button_top_inactive
+	shared/ui/skin/toggle_section_icon_down
+	shared/ui/skin/toggle_section_icon_middle
+	shared/ui/skin/toggle_section_icon_up
+	shared/ui/skin/window_active
+	shared/ui/skin/window_close
+	shared/ui/skin/window_close_pressed
+	shared/ui/skin/window_mover_bg_tile
+	shared/ui/skin/window_mover_overlay
+	shared/ui/skin/window
+)
+
 set(FILES
+	shared/ui/skin/skin.tb.txt
 	shared/ui/font/font_14.png
 	shared/ui/font/font_28.png
 	shared/ui/font/font.tb.txt
 	shared/ui/font/DejaVuSansMono.ttf
-	shared/ui/skin/arrow_down.png
-	shared/ui/skin/arrow_left.png
-	shared/ui/skin/arrow_right.png
-	shared/ui/skin/arrow_up.png
-	shared/ui/skin/button_flat_outline.png
-	shared/ui/skin/button_flat_pressed.png
-	shared/ui/skin/button_grouped_x_first_down.png
-	shared/ui/skin/button_grouped_x_first_up.png
-	shared/ui/skin/button_grouped_x_last_down.png
-	shared/ui/skin/button_grouped_x_last_up.png
-	shared/ui/skin/button_grouped_x_middle_down.png
-	shared/ui/skin/button_grouped_x_middle_up.png
-	shared/ui/skin/button.png
-	shared/ui/skin/button_pressed.png
-	shared/ui/skin/checkbox_mark.png
-	shared/ui/skin/checkbox.png
-	shared/ui/skin/checkbox_pressed.png
-	shared/ui/skin/container.png
-	shared/ui/skin/editfield.png
-	shared/ui/skin/fadeout_x.png
-	shared/ui/skin/fadeout_y.png
-	shared/ui/skin/filedialog-dir.png
-	shared/ui/skin/filedialog-file.png
-	shared/ui/skin/focus_r4.png
-	shared/ui/skin/focus_tabbutton_left.png
-	shared/ui/skin/focus_tabbutton_top.png
-	shared/ui/skin/item_hover.png
-	shared/ui/skin/item_selected.png
-	shared/ui/skin/item_separator_x.png
-	shared/ui/skin/item_separator_y.png
-	shared/ui/skin/progress_spinner_strip.png
-	shared/ui/skin/radio_mark.png
-	shared/ui/skin/radio.png
-	shared/ui/skin/radio_pressed.png
-	shared/ui/skin/remove.png
-	shared/ui/skin/resizer.png
-	shared/ui/skin/scroll_bg_x.png
-	shared/ui/skin/scroll_bg_y.png
-	shared/ui/skin/scroll_fg_x.png
-	shared/ui/skin/scroll_fg_y.png
-	shared/ui/skin/search.png
-	shared/ui/skin/section_container.png
-	shared/ui/skin/selection.png
-	shared/ui/skin/skin.tb.txt
-	shared/ui/skin/slider_bg_x.png
-	shared/ui/skin/slider_bg_y.png
-	shared/ui/skin/slider_handle.png
-	shared/ui/skin/tab_button_bottom_active.png
-	shared/ui/skin/tab_button_bottom_inactive.png
-	shared/ui/skin/tab_button_left_active.png
-	shared/ui/skin/tab_button_left_inactive.png
-	shared/ui/skin/tab_button_right_active.png
-	shared/ui/skin/tab_button_right_inactive.png
-	shared/ui/skin/tab_button_top_active.png
-	shared/ui/skin/tab_button_top_inactive.png
-	shared/ui/skin/toggle_section_icon_down.png
-	shared/ui/skin/toggle_section_icon_middle.png
-	shared/ui/skin/toggle_section_icon_up.png
-	shared/ui/skin/window_active.png
-	shared/ui/skin/window_close.png
-	shared/ui/skin/window_close_pressed.png
-	shared/ui/skin/window_mover_bg_tile.png
-	shared/ui/skin/window_mover_overlay.png
-	shared/ui/skin/window.png
 	shared/ui/window/filedialog_dir.tb.txt
 	shared/ui/window/filedialog_file.tb.txt
 	shared/ui/window/filedialog.tb.txt
 )
+
+set(DPIS "" "@288")
+foreach(DPI ${DPIS})
+	foreach(IMAGE ${IMAGES})
+		list(APPEND FILES ${IMAGE}${DPI}.png)
+	endforeach()
+endforeach()
 
 if (WINDOWS)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)

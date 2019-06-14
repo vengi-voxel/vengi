@@ -8,7 +8,7 @@ description
 	# Dimensions in dp (the default unit for padding and such) and bitmaps are specified for this DPI.
 	base-dpi 96
 	# The skin also has graphics available in these DPI modes
-	supported-dpi 96
+	supported-dpi 96 288
 defaults
 	spacing 5
 	text-color #fefefe

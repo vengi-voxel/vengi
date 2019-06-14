@@ -32,44 +32,47 @@ set(UI_WINDOWS
 	voxedit/ui/window/voxedit-tree.tb.txt
 )
 
+set(IMAGES
+	voxedit/ui/skin/voxedit-add
+	voxedit/ui/skin/voxedit-anim-play
+	voxedit/ui/skin/voxedit-anim-play-selected
+	voxedit/ui/skin/voxedit-axis-x
+	voxedit/ui/skin/voxedit-axis-y
+	voxedit/ui/skin/voxedit-axis-z
+	voxedit/ui/skin/voxedit-color-picker
+	voxedit/ui/skin/voxedit-color
+	voxedit/ui/skin/voxedit-crop
+	voxedit/ui/skin/voxedit-delete
+	voxedit/ui/skin/voxedit-export
+	voxedit/ui/skin/voxedit-extend
+	voxedit/ui/skin/voxedit-flip-horizontal
+	voxedit/ui/skin/voxedit-flip-vertical
+	voxedit/ui/skin/voxedit-load
+	voxedit/ui/skin/voxedit-lock-layer
+	voxedit/ui/skin/voxedit-lock-layer-selected
+	voxedit/ui/skin/voxedit-new
+	voxedit/ui/skin/voxedit-options
+	voxedit/ui/skin/voxedit-override
+	voxedit/ui/skin/voxedit-quadview
+	voxedit/ui/skin/voxedit-quadview-selected
+	voxedit/ui/skin/voxedit-quit
+	voxedit/ui/skin/voxedit-undo-redo
+	voxedit/ui/skin/voxedit-reset-camera
+	voxedit/ui/skin/voxedit-rotate
+	voxedit/ui/skin/voxedit-save
+	voxedit/ui/skin/voxedit-show-grid
+	voxedit/ui/skin/voxedit-show-grid-selected
+	voxedit/ui/skin/voxedit-tree_pine
+	voxedit/ui/skin/voxedit-tree
+	voxedit/ui/skin/voxedit-up
+	voxedit/ui/skin/voxedit-visible
+	voxedit/ui/skin/voxedit-visible-selected
+	voxedit/ui/skin/voxedit-voxel
+)
+
 set(FILES
 	${UI_WINDOWS}
-	voxedit/ui/skin/voxedit-add.png
-	voxedit/ui/skin/voxedit-anim-play.png
-	voxedit/ui/skin/voxedit-anim-play-selected.png
-	voxedit/ui/skin/voxedit-axis-x.png
-	voxedit/ui/skin/voxedit-axis-y.png
-	voxedit/ui/skin/voxedit-axis-z.png
-	voxedit/ui/skin/voxedit-color-picker.png
-	voxedit/ui/skin/voxedit-color.png
-	voxedit/ui/skin/voxedit-crop.png
-	voxedit/ui/skin/voxedit-delete.png
-	voxedit/ui/skin/voxedit-export.png
-	voxedit/ui/skin/voxedit-extend.png
-	voxedit/ui/skin/voxedit-flip-horizontal.png
-	voxedit/ui/skin/voxedit-flip-vertical.png
-	voxedit/ui/skin/voxedit-load.png
-	voxedit/ui/skin/voxedit-lock-layer.png
-	voxedit/ui/skin/voxedit-lock-layer-selected.png
-	voxedit/ui/skin/voxedit-new.png
-	voxedit/ui/skin/voxedit-options.png
-	voxedit/ui/skin/voxedit-override.png
-	voxedit/ui/skin/voxedit-quadview.png
-	voxedit/ui/skin/voxedit-quadview-selected.png
-	voxedit/ui/skin/voxedit-quit.png
-	voxedit/ui/skin/voxedit-undo-redo.png
-	voxedit/ui/skin/voxedit-reset-camera.png
-	voxedit/ui/skin/voxedit-rotate.png
-	voxedit/ui/skin/voxedit-save.png
-	voxedit/ui/skin/voxedit-show-grid.png
-	voxedit/ui/skin/voxedit-show-grid-selected.png
 	voxedit/ui/skin/voxedit-skin.tb.txt
-	voxedit/ui/skin/voxedit-tree_pine.png
-	voxedit/ui/skin/voxedit-tree.png
-	voxedit/ui/skin/voxedit-up.png
-	voxedit/ui/skin/voxedit-visible.png
-	voxedit/ui/skin/voxedit-visible-selected.png
-	voxedit/ui/skin/voxedit-voxel.png
 	voxedit/ui/widget/voxedit-layer-item.tb.txt
 	voxedit/ui/widget/voxedit-layer.tb.txt
 	voxedit/ui/lang/en.tb.txt
@@ -132,6 +135,13 @@ set(FILES
 	voxedit/scripts/test-layers.cfg
 	voxedit/scripts/test-animate.cfg
 )
+
+set(DPIS "" "@288")
+foreach(DPI ${DPIS})
+	foreach(IMAGE ${IMAGES})
+		list(APPEND FILES ${IMAGE}${DPI}.png)
+	endforeach()
+endforeach()
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger voxedit-util)
