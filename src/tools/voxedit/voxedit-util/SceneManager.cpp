@@ -304,12 +304,7 @@ bool SceneManager::prefab(const std::string& file) {
 		return false;
 	}
 	Log::info("Import model file %s", file.c_str());
-	const int layerId = _layerMgr.activeLayer();
-	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	voxel::moveVolume(&wrapper, newVolume, referencePosition());
-	modified(layerId, wrapper.dirtyRegion());
-	delete newVolume;
-	return true;
+	return _layerMgr.addLayer(file.c_str(), true, newVolume) != -1;
 }
 
 bool SceneManager::load(const std::string& file) {
