@@ -40,7 +40,7 @@ core::AppState TestCamera::onInit() {
 		bool targetCamera = i == 0;
 		bool ortho = i == 2;
 
-		_renderCamera[i].init(glm::ivec2(0), ortho ? glm::ivec2(100, 50) : dimension());
+		_renderCamera[i].init(glm::ivec2(0), ortho ? glm::ivec2(100, 50) : pixelDimension(), ortho ? glm::ivec2(100, 50) : screenDimension());
 		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 
 		_renderCamera[i].setPosition(glm::zero<glm::vec3>());

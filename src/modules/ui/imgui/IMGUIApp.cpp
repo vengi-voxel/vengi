@@ -103,9 +103,10 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 void IMGUIApp::onWindowResize() {
 	Super::onWindowResize();
 	ImGuiIO& io = ImGui::GetIO();
-	io.DisplaySize = ImVec2((float)_dimension.x, (float)_dimension.y);
+	io.DisplaySize = ImVec2((float)_pixelDimension.x, (float)_pixelDimension.y);
+	io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
 
-	_camera.init(glm::ivec2(0), dimension());
+	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
 	_camera.update(0L);
 	video::ScopedShader scoped(_shader);
 	_shader.setViewprojection(_camera.projectionMatrix());
@@ -173,7 +174,7 @@ core::AppState IMGUIApp::onInit() {
 
 	_camera.setNearPlane(-1.0f);
 	_camera.setFarPlane(1.0f);
-	_camera.init(glm::ivec2(0), _dimension);
+	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
 	_camera.update(0L);
 
 	_vbo.addAttribute(_shader.getColorAttribute(_bufferIndex, &ImDrawVert::r, true));
@@ -188,7 +189,8 @@ core::AppState IMGUIApp::onInit() {
 	const std::string logFile = _appname + "-imgui.log";
 	_writePathLog = _filesystem->writePath(logFile.c_str());
 	io.LogFilename = _writePathLog.c_str();
-	io.DisplaySize = ImVec2((float)_dimension.x, (float)_dimension.y);
+	io.DisplaySize = ImVec2((float)_pixelDimension.x, (float)_pixelDimension.y);
+	io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
 	ImFontConfig fontCfg;
 	fontCfg.SizePixels = 13.0f * _dpiFactor;
 	io.Fonts->AddFontDefault(&fontCfg);
@@ -267,14 +269,6 @@ core::AppState IMGUIApp::onRunning() {
 
 	const bool renderUI = _renderUI->boolVal();
 
-	const int renderTargetW = (int) (io.DisplaySize.x * io.DisplayFramebufferScale.x);
-	const int renderTargetH = (int) (io.DisplaySize.y * io.DisplayFramebufferScale.y);
-	// Avoid rendering when minimized, scale coordinates for
-	// retina displays (screen coordinates != framebuffer coordinates)
-	if (renderTargetW == 0 || renderTargetH == 0) {
-		return core::AppState::Running;
-	}
-
 	io.DeltaTime = float(_deltaFrameMillis) / 1000.0f;
 	const uint32_t mouseMask = SDL_GetMouseState(nullptr, nullptr);
 	// If a mouse press event came, always pass it as "mouse held this frame",
@@ -297,8 +291,8 @@ core::AppState IMGUIApp::onRunning() {
 	_shader.setModel(glm::mat4(1.0f));
 	_shader.setTexture(video::TextureUnit::Zero);
 
-	video::ScopedViewPort scopedViewPort(0, 0, renderTargetW, renderTargetH);
-	video::scissor(0, 0, renderTargetW, renderTargetH);
+	video::ScopedViewPort scopedViewPort(0, 0, _pixelDimension.x, _pixelDimension.y);
+	video::scissor(0, 0, _pixelDimension.x, _pixelDimension.y);
 
 	video::enable(video::State::Blend);
 	video::disable(video::State::DepthTest);
@@ -322,7 +316,7 @@ core::AppState IMGUIApp::onRunning() {
 		renderTracing();
 	}
 
-	const math::Rect<int> rect(0, 0, _dimension.x, _dimension.y);
+	const math::Rect<int> rect(0, 0, _pixelDimension.x, _pixelDimension.y);
 	_console.render(rect, _deltaFrameMillis);
 	ImGui::EndFrame();
 	ImGui::Render();
@@ -352,7 +346,7 @@ core::AppState IMGUIApp::onRunning() {
 		}
 	}
 
-	video::scissor(0, 0, renderTargetW, renderTargetH);
+	video::scissor(0, 0, _pixelDimension.x, _pixelDimension.y);
 	return core::AppState::Running;
 }
 

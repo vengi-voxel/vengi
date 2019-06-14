@@ -69,7 +69,9 @@ void Viewport::onResized(int oldw, int oldh) {
 	Super::onResized(oldw, oldh);
 	const tb::TBRect& rect = getRect();
 	const glm::ivec2 dim(rect.w, rect.h);
-	_controller.onResize(dim);
+	const float dpiFactor = video::WindowedApp::getInstance()->dpiFactor();
+	const glm::ivec2 screen(int(dim.x * dpiFactor + 0.5f), int(dim.y * dpiFactor + 0.5f));
+	_controller.onResize(dim, screen);
 	_frameBuffer.shutdown();
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);

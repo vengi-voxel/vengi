@@ -14,13 +14,14 @@ Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _pos(glm::vec3(0.0f)), _omega(0.0f) {
 }
 
-void Camera::init(const glm::ivec2& position, const glm::ivec2& dimension) {
-	if (_position == position && _dimension == dimension) {
+void Camera::init(const glm::ivec2& position, const glm::ivec2& pixelDimension, const glm::ivec2& screenDimension) {
+	if (_position == position && _pixelDimension == pixelDimension && _screenDimension == screenDimension) {
 		return;
 	}
 	_position = position;
-	_dimension = dimension;
-	_aspectRatio = _dimension.x / static_cast<float>(_dimension.y);
+	_pixelDimension = pixelDimension;
+	_screenDimension = screenDimension;
+	_aspectRatio = _pixelDimension.x / static_cast<float>(_pixelDimension.y);
 	_dirty = DIRTY_ALL;
 }
 
@@ -170,8 +171,8 @@ void Camera::updateViewMatrix() {
 	_invViewMatrix = glm::inverse(_viewMatrix);
 }
 
-Ray Camera::mouseRay(const glm::ivec2& screenPos) const {
-	return screenRay(glm::vec2(screenPos.x / (float)width(), screenPos.y / (float)height()));
+Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
+	return screenRay(glm::vec2(pixelPos.x / (float)pixelWidth(), pixelPos.y / (float)pixelHeight()));
 	/*const glm::vec2 newPos = glm::vec2(screenPos - _position) / glm::vec2(dimension());
 	return screenRay(newPos);*/
 }
@@ -241,7 +242,7 @@ void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::F
 	glm::mat4 proj;
 	switch(_mode) {
 	case CameraMode::Orthogonal:
-		proj = glm::ortho(0.0f, (float)width(), (float)height(), 0.0f, nearPlane, farPlane);
+		proj = glm::ortho(0.0f, (float)_screenDimension.x, (float)_screenDimension.y, 0.0f, nearPlane, farPlane);
 		break;
 	case CameraMode::Perspective:
 	default:
@@ -346,8 +347,8 @@ glm::vec4 Camera::sphereBoundingBox() const {
 glm::mat4 Camera::orthogonalMatrix() const {
 	const float left = x();
 	const float bottom = y();
-	const float right = left + width();
-	const float top = bottom + height();
+	const float right = left + _screenDimension.x;
+	const float top = bottom + _screenDimension.y;
 	core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
 	core_assert_msg(top > bottom, "Invalid dimension given: top must be greater than bottom but is %f", top);
 	return glm::ortho(left, right, top, bottom, nearPlane(), farPlane());

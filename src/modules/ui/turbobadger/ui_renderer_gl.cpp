@@ -83,14 +83,14 @@ void UIRendererGL::shutdown() {
 	_vbo.shutdown();
 }
 
-void UIRendererGL::onWindowResize(const glm::ivec2& dimensions) {
-	_camera.init(glm::ivec2(0), dimensions);
+void UIRendererGL::onWindowResize(const glm::ivec2& pixelDimensions, const glm::ivec2& screenDimensions) {
+	_camera.init(glm::ivec2(0), pixelDimensions, screenDimensions);
 	_camera.update(0L);
 	video::ScopedShader scoped(_shader);
 	_shader.setViewprojection(_camera.projectionMatrix());
 }
 
-bool UIRendererGL::init(const glm::ivec2& dimensions) {
+bool UIRendererGL::init(const glm::ivec2& pixelDimensions, const glm::ivec2& screenDimensions) {
 	if (!_shader.setup()) {
 		Log::error("Could not load the ui shader");
 		return false;
@@ -104,7 +104,7 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 
 	_camera.setNearPlane(-1.0f);
 	_camera.setFarPlane(1.0f);
-	_camera.init(glm::ivec2(0), dimensions);
+	_camera.init(glm::ivec2(0), pixelDimensions, screenDimensions);
 	_camera.update(0L);
 
 	_vbo.addAttribute(_shader.getColorAttribute(_bufferIndex, &Vertex::r, true));
@@ -117,23 +117,20 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 	return true;
 }
 
-void UIRendererGL::beginPaint(int, int) {
+void UIRendererGL::beginPaint(int pixelWidth, int pixelHeight) {
 #ifdef TB_RUNTIME_DEBUG_INFO
 	tb_dbg_bitmap_validations = 0;
 #endif
 
-	const int renderTargetW = _camera.width();
-	const int renderTargetH = _camera.height();
-
-	TBRendererBatcher::beginPaint(renderTargetW, renderTargetH);
+	TBRendererBatcher::beginPaint(pixelWidth, pixelHeight);
 
 	_shader.activate();
 	_shader.setViewprojection(_camera.projectionMatrix());
 	_shader.setModel(glm::mat4(1.0f));
 	_shader.setTexture(video::TextureUnit::Zero);
 
-	video::viewport(0, 0, renderTargetW, renderTargetH);
-	video::scissor(0, 0, renderTargetW, renderTargetH);
+	video::viewport(0, 0, pixelWidth, pixelHeight);
+	video::scissor(0, 0, pixelWidth, pixelHeight);
 
 	video::enable(video::State::Blend);
 	video::disable(video::State::DepthTest);

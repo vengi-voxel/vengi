@@ -36,7 +36,7 @@ core::AppState TestComputeTexture3D::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_renderer.init(dimension())) {
+	if (!_renderer.init(pixelDimension())) {
 		Log::error("Failed to setup the renderer");
 		return core::AppState::InitFailure;
 	}
@@ -152,7 +152,7 @@ void TestComputeTexture3D::doRender() {
 	_texture2D->upload(_output.data());
 
 	video::ScopedTexture texture(_texture2D, video::TextureUnit::Zero);
-	video::ScopedViewPort viewPort(0, 0, dimension().x, dimension().y);
+	video::ScopedViewPort viewPort(0, 0, pixelDimension().x, pixelDimension().y);
 	_renderer.render(_camera.projectionMatrix());
 }
 

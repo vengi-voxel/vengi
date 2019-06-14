@@ -25,14 +25,18 @@ namespace video {
 class WindowedApp: public core::App, public io::IEventObserver {
 private:
 	using Super = core::App;
+	glm::ivec2 _screenDimension;
 protected:
 	SDL_Window* _window = nullptr;
 	RendererContext _rendererContext = nullptr;
-	glm::ivec2 _dimension;
+	// viewport
+	glm::ivec2 _pixelDimension;
 	float _aspect = 1.0f;
 	int _fps = 0;
 	uint32_t _frameCounter = 0;
 	float _dpiFactor = 1.0f;
+	float _dpiHorizontalFactor = 1.0f;
+	float _dpiVerticalFactor = 1.0f;
 	double _frameCounterResetTime = 0.0;
 	bool _allowRelativeMouseMode = true;
 
@@ -58,10 +62,24 @@ protected:
 	bool setRelativeMouseMode(bool mode);
 
 public:
-	const glm::ivec2& dimension() const;
+	/**
+	 * @brief This may differ from screenDimension() if we're rendering to a high-DPI
+	 * drawable, i.e. the window was created with high-DPI support (Apple calls this
+	 * "Retina").
+	 */
+	const glm::ivec2& pixelDimension() const;
+	/**
+	 * @brief This is the window size
+	 *
+	 * The window size in screen coordinates may differ from the size in pixels, if
+	 * the window was created with high-dpi support (e.g. iOS or OS X). Use
+	 * pixelDimension() to get the real client area size in pixels.
+	 */
+	const glm::ivec2& screenDimension() const;
 	int width() const;
 	int height() const;
 	bool isPressed(int32_t key) const;
+	float dpiFactor() const;
 	/**
 	 * @brief Reverse lookup of key bindings - by command name
 	 * @param[out] modifier The modifier mask that the command is bound to
@@ -112,16 +130,20 @@ public:
 	static WindowedApp* getInstance();
 };
 
-inline const glm::ivec2& WindowedApp::dimension() const {
-	return _dimension;
+inline const glm::ivec2& WindowedApp::pixelDimension() const {
+	return _pixelDimension;
+}
+
+inline const glm::ivec2& WindowedApp::screenDimension() const {
+	return _screenDimension;
 }
 
 inline int WindowedApp::width() const {
-	return _dimension.x;
+	return _pixelDimension.x;
 }
 
 inline int WindowedApp::height() const {
-	return _dimension.y;
+	return _pixelDimension.y;
 }
 
 inline void WindowedApp::saveDialog(const std::function<void(const std::string&)>& callback, const std::string& filter) {
@@ -138,6 +160,10 @@ inline void WindowedApp::directoryDialog(const std::function<void(const std::str
 
 inline bool WindowedApp::isPressed(int32_t key) const {
 	return _keys.find(key) != _keys.end();
+}
+
+inline float WindowedApp::dpiFactor() const {
+	return _dpiFactor;
 }
 
 }

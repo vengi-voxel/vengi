@@ -59,11 +59,11 @@ private:
 public:
 	UIRendererGL();
 
-	bool init(const glm::ivec2& dimensions);
+	bool init(const glm::ivec2& pixelDimensions, const glm::ivec2& screenDimensions);
 	void shutdown();
-	void onWindowResize(const glm::ivec2& dimensions);
+	void onWindowResize(const glm::ivec2& pixelDimensions, const glm::ivec2& screenDimensions);
 
-	virtual void beginPaint(int renderTargetW, int renderTargetH) override;
+	virtual void beginPaint(int pixelWidth, int pixelHeight) override;
 	virtual void endPaint() override;
 
 	virtual TBBitmap *createBitmap(int width, int height, uint32_t *data) override;

@@ -32,7 +32,7 @@ public:
 	void init(Controller::SceneCameraMode mode);
 	void resetCamera(const voxel::Region& region);
 
-	void onResize(const glm::ivec2& size);
+	void onResize(const glm::ivec2& pixelDimensions, const glm::ivec2& screenDimensions);
 
 	void update(long deltaFrame);
 

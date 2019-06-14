@@ -34,7 +34,7 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 }
 
 WindowedApp::WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider), _dimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
+		Super(metric, filesystem, eventBus, timeProvider), _pixelDimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
 }
 
 WindowedApp::~WindowedApp() {
@@ -93,11 +93,12 @@ core::AppState WindowedApp::onRunning() {
 
 void WindowedApp::onWindowResize() {
 	int _width, _height;
-	//SDL_GetWindowSize(_window, &_width, &_height);
 	SDL_GL_GetDrawableSize(_window, &_width, &_height);
 	_aspect = _width / static_cast<float>(_height);
-	_dimension = glm::ivec2(_width, _height);
-	video::viewport(0, 0, _width, _height);
+	_pixelDimension = glm::ivec2(_width, _height);
+	SDL_GetWindowSize(_window, &_width, &_height);
+	_screenDimension = glm::ivec2(_width, _height);
+	video::viewport(0, 0, _pixelDimension.x, _pixelDimension.y);
 }
 
 bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
@@ -360,7 +361,9 @@ core::AppState WindowedApp::onInit() {
 		float hdpi = -1.0f;
 		float vdpi = -1.0f;
 		if (SDL_GetDisplayDPI(i, &ddpi, &hdpi, &vdpi) == 0) {
-			_dpiFactor = ddpi / 96.0;
+			_dpiFactor = ddpi / 96.0f;
+			_dpiHorizontalFactor = hdpi / 96.0f;
+			_dpiVerticalFactor = vdpi / 96.0f;
 		}
 		Log::info("Display %i: %i:%i x %i:%i (dpi: %f, h: %f, v: %f)", i, dr.x, dr.y, dr.w, dr.h, ddpi, hdpi, vdpi);
 	}
@@ -372,7 +375,7 @@ core::AppState WindowedApp::onInit() {
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
-	SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
+	//SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
 #ifdef SDL_HINT_MOUSE_DOUBLE_CLICK_TIME
 	SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "500");
 #endif
@@ -388,6 +391,8 @@ core::AppState WindowedApp::onInit() {
 		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 	} else {
 		_dpiFactor = 1.0f;
+		_dpiHorizontalFactor = 1.0f;
+		_dpiVerticalFactor = 1.0f;
 	}
 	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
@@ -449,12 +454,14 @@ core::AppState WindowedApp::onInit() {
 	// some platforms may override or hardcode the resolution - so
 	// we have to query it here to get the actual resolution
 	int _width, _height;
-	SDL_GetWindowSize(_window, &_width, &_height);
-	_dimension = glm::ivec2(_width, _height);
+	SDL_GL_GetDrawableSize(_window, &_width, &_height);
+	_pixelDimension = glm::ivec2(_width, _height);
 	_aspect = _width / static_cast<float>(_height);
+	SDL_GetWindowSize(_window, &_width, &_height);
+	_screenDimension = glm::ivec2(_width, _height);
 
 	video::init();
-	video::viewport(0, 0, _width, _height);
+	video::viewport(0, 0, _pixelDimension.x, _pixelDimension.y);
 
 	core_trace_gl_init();
 

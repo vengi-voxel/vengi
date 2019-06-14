@@ -60,7 +60,10 @@ protected:
 	PolygonMode _polygonMode = PolygonMode::Solid;
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
-	glm::ivec2 _dimension {0};
+	// viewport
+	glm::ivec2 _pixelDimension {0};
+	// ortho
+	glm::ivec2 _screenDimension {0};
 	// the position that is used for ortho projection matrices
 	glm::ivec2 _position {0};
 	// the position of the camera in the world
@@ -97,10 +100,11 @@ protected:
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
-	void init(const glm::ivec2& position, const glm::ivec2& dimension);
-	const glm::ivec2& dimension() const;
-	int width() const;
-	int height() const;
+	void init(const glm::ivec2& position, const glm::ivec2& pixelDimension, const glm::ivec2& screenDimension);
+	const glm::ivec2& pixelDimension() const;
+	const glm::ivec2& screenDimension() const;
+	int pixelWidth() const;
+	int pixelHeight() const;
 
 	/**
 	 * @note Not the world position of the camera - but for controlling the viewport
@@ -220,11 +224,11 @@ public:
 	 */
 	Ray screenRay(const glm::vec2& screenPos) const;
 	/**
-	 * @param[in] screenPos screen pixel position
+	 * @param[in] pixelPos screen pixel position
 	 * @note Basically just a wrapper for @c screenRay() but for mouse coordinates
 	 * @return Ray instance with origin and direction
 	 */
-	Ray mouseRay(const glm::ivec2& screenPos) const;
+	Ray mouseRay(const glm::ivec2& pixelPos) const;
 
 	/**
 	 * @brief Converts normalized screen coordinates [0.0-1.0] into world coordinates.
@@ -254,16 +258,22 @@ public:
 	glm::vec4 splitFrustumSphereBoundingBox(float near, float far) const;
 };
 
-inline const glm::ivec2& Camera::dimension() const {
-	return _dimension;
+inline const glm::ivec2& Camera::pixelDimension() const {
+	return _pixelDimension;
 }
 
-inline int Camera::width() const {
-	return _dimension.x;
+inline const glm::ivec2& Camera::screenDimension() const {
+	return _screenDimension;
 }
 
-inline int Camera::height() const {
-	return _dimension.y;
+// viewport
+inline int Camera::pixelWidth() const {
+	return _pixelDimension.x;
+}
+
+// viewport
+inline int Camera::pixelHeight() const {
+	return _pixelDimension.y;
 }
 
 inline int Camera::x() const {

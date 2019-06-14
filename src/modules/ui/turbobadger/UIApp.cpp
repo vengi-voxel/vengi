@@ -375,8 +375,8 @@ bool UIApp::onKeyRelease(int32_t key, int16_t modifier) {
 
 void UIApp::onWindowResize() {
 	Super::onWindowResize();
-	_renderer.onWindowResize(dimension());
-	_root->setRect(tb::TBRect(0, 0, dimension().x, dimension().y));
+	_renderer.onWindowResize(pixelDimension(), screenDimension());
+	_root->setRect(tb::TBRect(0, 0, _pixelDimension.x, _pixelDimension.y));
 }
 
 core::AppState UIApp::onConstruct() {
@@ -404,7 +404,7 @@ void UIApp::onWidgetFocusChanged(tb::TBWidget *widget, bool focused) {
 }
 
 void UIApp::afterRootWidget() {
-	const math::Rect<int> rect(0, 0, _dimension.x, _dimension.y);
+	const math::Rect<int> rect(0, 0, _pixelDimension.x, _pixelDimension.y);
 	_console.render(rect, _deltaFrameMillis);
 }
 
@@ -441,7 +441,7 @@ core::AppState UIApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_renderer.init(dimension())) {
+	if (!_renderer.init(pixelDimension(), screenDimension())) {
 		Log::error(_logId, "could not init ui renderer");
 		return core::AppState::InitFailure;
 	}
@@ -454,7 +454,7 @@ core::AppState UIApp::onInit() {
 	}
 
 	_root = new tb::TBWidget();
-	_root->setRect(tb::TBRect(0, 0, _dimension.x, _dimension.y));
+	_root->setRect(tb::TBRect(0, 0, _pixelDimension.x, _pixelDimension.y));
 	_root->setSkinBg(TBIDC("background"));
 	_root->setGravity(tb::WIDGET_GRAVITY_ALL);
 
@@ -499,7 +499,7 @@ core::AppState UIApp::onRunning() {
 			_root->invokeProcessStates();
 			_root->invokeProcess();
 
-			_renderer.beginPaint(_dimension.x, _dimension.y);
+			_renderer.beginPaint(_pixelDimension.x, _pixelDimension.y);
 			_root->invokePaint(tb::TBWidget::PaintProps());
 
 			enqueueShowStr(5, core::Color::White, "FPS: %d", _fps);

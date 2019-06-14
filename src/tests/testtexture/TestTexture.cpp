@@ -21,7 +21,7 @@ core::AppState TestTexture::onInit() {
 	_camera.setNearPlane(-1.0f);
 	_camera.setFarPlane(1.0f);
 
-	if (!_renderer.init(dimension())) {
+	if (!_renderer.init(pixelDimension())) {
 		Log::error("Failed to init the texture renderer");
 		return core::AppState::InitFailure;
 	}
@@ -38,7 +38,7 @@ core::AppState TestTexture::onInit() {
 }
 
 void TestTexture::doRender() {
-	video::ScopedViewPort viewPort(0, 0, dimension().x, dimension().y);
+	video::ScopedViewPort viewPort(0, 0, pixelDimension().x, pixelDimension().y);
 	video::ScopedTexture texture(_texture, video::TextureUnit::Zero);
 	_renderer.render(_camera.projectionMatrix());
 }

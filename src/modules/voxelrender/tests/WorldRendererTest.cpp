@@ -42,7 +42,7 @@ TEST_F(WorldRendererTest, testCreate) {
 	_world->setPersist(false);
 	ASSERT_NE(nullptr, _renderer);
 	video::Camera camera;
-	camera.init(glm::ivec2(0), glm::ivec2(1024, 1024));
+	camera.init(glm::ivec2(0), glm::ivec2(1024, 1024), glm::ivec2(1024, 1024));
 	camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 	camera.setPosition(glm::zero<glm::vec3>());
 	camera.lookAt(glm::vec3(10.0f, 70.0f, 10.0f));
