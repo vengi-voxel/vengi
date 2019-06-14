@@ -383,6 +383,12 @@ core::AppState WindowedApp::onInit() {
 	const bool fullscreen = core::Var::getSafe(cfg::ClientFullscreen)->boolVal();
 
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHghDPI);
+	if (highDPI->boolVal()) {
+		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+	} else {
+		_dpiFactor = 1.0f;
+	}
 	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
 	}
@@ -460,6 +466,7 @@ core::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientMultiSampleBuffers, "0");
 	core::Var::get(cfg::ClientMultiSampleSamples, "0");
 	core::Var::get(cfg::ClientFullscreen, "true");
+	core::Var::get(cfg::ClientWindowHghDPI, "true", core::CV_READONLY);
 	core::Var::get(cfg::ClientFog, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
