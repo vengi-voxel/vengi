@@ -90,8 +90,9 @@ tb::PreferredSize PaletteWidget::onCalculatePreferredContentSize(const tb::SizeC
 }
 
 void PaletteWidget::onInflate(const tb::INFLATE_INFO &info) {
-	_width = info.node->getValueInt("width", 20);
-	_height = info.node->getValueInt("height", 20);
+	const tb::TBDimensionConverter *dc = tb::g_tb_skin->getDimensionConverter();
+	_width = dc->dpToPx(info.node->getValueInt("width", 20));
+	_height = dc->dpToPx(info.node->getValueInt("height", 20));
 	_amountX = info.node->getValueInt("amount-x", 8);
 	Super::onInflate(info);
 }
