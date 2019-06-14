@@ -199,7 +199,10 @@ set(FILES
 	shared/ui/window/filedialog.tb.txt
 )
 
-set(DPIS "" "@288")
+foreach(IMAGE ${IMAGES})
+	list(APPEND FILES ${IMAGE}.png)
+endforeach()
+set(DPIS "@288")
 foreach(DPI ${DPIS})
 	foreach(IMAGE ${IMAGES})
 		list(APPEND FILES ${IMAGE}${DPI}.png)
