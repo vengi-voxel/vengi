@@ -48,7 +48,7 @@ set(FILES
 	testturbobadger/demo01/skin/special_button_pressed.png
 	testturbobadger/demo01/skin/special_button.png
 	testturbobadger/demo01/skin/icon16.png
-	testturbobadger/demo01/skin/skin.tb.txt
+	testturbobadger/demo01/skin/testturbobadger-skin.tb.txt
 	testturbobadger/demo01/skin/star_gold@288.png
 	testturbobadger/demo01/skin/image_frame.png
 	testturbobadger/demo01/skin/bg_tile.png
