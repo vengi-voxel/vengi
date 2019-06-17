@@ -5,7 +5,6 @@
 #include "io/Filesystem.h"
 #include "core/Color.h"
 #include "video/Camera.h"
-#include "video/ScopedViewPort.h"
 
 TestGLSLGeom::TestGLSLGeom(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
