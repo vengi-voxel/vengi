@@ -9,7 +9,9 @@
 namespace video {
 
 bool ProfilerGPU::init() {
-	glGenQueries(1, &_id);
+	GLuint lid;
+	glGenQueries(1, &lid);
+	_id = (Id)lid;
 	return _id != InvalidId;
 }
 
@@ -17,7 +19,8 @@ void ProfilerGPU::shutdown() {
 	if (_id == InvalidId) {
 		return;
 	}
-	glDeleteQueries(1, &_id);
+	const GLuint lid = (GLuint)_id;
+	glDeleteQueries(1, &lid);
 	_id = InvalidId;
 }
 
@@ -28,7 +31,8 @@ void ProfilerGPU::enter() {
 	core_assert(_state == 0 || _state == 2);
 
 	if (_state == 0) {
-		glBeginQuery(GL_TIME_ELAPSED, _id);
+		const GLuint lid = (GLuint)_id;
+		glBeginQuery(GL_TIME_ELAPSED, lid);
 		_state = 1;
 	}
 }
@@ -44,7 +48,8 @@ void ProfilerGPU::leave() {
 		_state = 2;
 	} else if (_state == 2) {
 		GLint availableResults = 0;
-		glGetQueryObjectiv(_id, GL_QUERY_RESULT_AVAILABLE, &availableResults);
+		const GLuint lid = (GLuint)_id;
+		glGetQueryObjectiv(lid, GL_QUERY_RESULT_AVAILABLE, &availableResults);
 		if (availableResults > 0) {
 			_state = 0;
 			GLuint64 time = 0;

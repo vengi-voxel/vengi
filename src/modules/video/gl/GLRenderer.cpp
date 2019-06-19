@@ -93,12 +93,13 @@ bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texC
 	for (std::size_t i = 0; i < texCount; ++i) {
 		bindTexture(TextureUnit::Upload, cfg.type(), textures[i]);
 		setupTexture(cfg);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, textures[i], 0);
+		static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, (GLuint)textures[i], 0);
 	}
 
 	bindTexture(TextureUnit::Upload, TextureType::Texture2D, depthTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, (GLuint)depthTexture, 0);
 
 	core_assert(texCount == GBUFFER_NUM_TEXTURES);
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
@@ -532,6 +533,7 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 }
 
 void genBuffers(uint8_t amount, Id* ids) {
+	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (FLEXT_ARB_direct_state_access) {
 		glCreateBuffers((GLsizei)amount, (GLuint*)ids);
 		checkError();
@@ -545,7 +547,8 @@ void deleteBuffers(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;
 	}
-	glDeleteBuffers((GLsizei)amount, ids);
+	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
+	glDeleteBuffers((GLsizei)amount, (GLuint*)ids);
 	checkError();
 	for (uint8_t i = 0u; i < amount; ++i) {
 		ids[i] = InvalidId;
@@ -553,6 +556,7 @@ void deleteBuffers(uint8_t amount, Id* ids) {
 }
 
 void genVertexArrays(uint8_t amount, Id* ids) {
+	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	glGenVertexArrays((GLsizei)amount, (GLuint*)ids);
 	checkError();
 }
@@ -561,7 +565,7 @@ void deleteShader(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	glDeleteShader(id);
+	glDeleteShader((GLuint)id);
 	checkError();
 	id = InvalidId;
 }
@@ -571,7 +575,7 @@ Id genShader(ShaderType type) {
 		return InvalidId;
 	}
 	const GLenum glType = _priv::ShaderTypes[std::enum_value(type)];
-	const Id id = glCreateShader(glType);
+	const Id id = (Id)glCreateShader(glType);
 	checkError();
 	return id;
 }
@@ -580,14 +584,14 @@ void deleteProgram(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	glDeleteProgram(id);
+	glDeleteProgram((GLuint)id);
 	checkError();
 	id = InvalidId;
 }
 
 Id genProgram() {
 	checkError();
-	Id id = glCreateProgram();
+	Id id = (Id)glCreateProgram();
 	checkError();
 	return id;
 }
@@ -602,7 +606,8 @@ void deleteVertexArrays(uint8_t amount, Id* ids) {
 			break;
 		}
 	}
-	glDeleteVertexArrays((GLsizei)amount, ids);
+	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
+	glDeleteVertexArrays((GLsizei)amount, (GLuint*)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
@@ -621,6 +626,7 @@ void deleteVertexArray(Id& id) {
 }
 
 void genTextures(uint8_t amount, Id* ids) {
+	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	glGenTextures((GLsizei)amount, (GLuint*)ids);
 	checkError();
 }
@@ -629,7 +635,8 @@ void deleteTextures(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;
 	}
-	glDeleteTextures((GLsizei)amount, ids);
+	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
+	glDeleteTextures((GLsizei)amount, (GLuint*)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
@@ -655,6 +662,7 @@ bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t**
 }
 
 void genFramebuffers(uint8_t amount, Id* ids) {
+	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	glGenFramebuffers((GLsizei)amount, (GLuint*)ids);
 	checkError();
 }
@@ -663,7 +671,8 @@ void deleteFramebuffers(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;
 	}
-	glDeleteFramebuffers((GLsizei)amount, ids);
+	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
+	glDeleteFramebuffers((GLsizei)amount, (GLuint*)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
@@ -671,6 +680,7 @@ void deleteFramebuffers(uint8_t amount, Id* ids) {
 }
 
 void genRenderbuffers(uint8_t amount, Id* ids) {
+	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	glGenRenderbuffers((GLsizei)amount, (GLuint*)ids);
 	checkError();
 }
@@ -679,7 +689,8 @@ void deleteRenderbuffers(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;
 	}
-	glDeleteRenderbuffers((GLsizei)amount, ids);
+	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
+	glDeleteRenderbuffers((GLsizei)amount, (GLuint*)ids);
 	checkError();
 	for (uint8_t i = 0u; i < amount; ++i) {
 		ids[i] = InvalidId;
@@ -705,27 +716,28 @@ void configureAttribute(const Attribute& a) {
 }
 
 Id genOcclusionQuery() {
-	Id id;
+	GLuint id;
 	glGenQueries(1, &id);
 	checkError();
-	return id;
+	return (Id)id;
 }
 
 Id genTransformFeedback() {
 	if (!FLEXT_ARB_transform_feedback2) {
 		return InvalidId;
 	}
-	Id id;
+	GLuint id;
 	glGenTransformFeedbacks(1, &id);
 	checkError();
-	return id;
+	return (Id)id;
 }
 
 void deleteTransformFeedback(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	glDeleteTransformFeedbacks(1, &id);
+	const GLuint lid = (GLuint)id;
+	glDeleteTransformFeedbacks(1, &lid);
 	id = InvalidId;
 	checkError();
 }
@@ -791,11 +803,12 @@ void deleteOcclusionQuery(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
+	const GLuint lid = (GLuint)id;
 #if SANITY_CHECKS_GL
-	const GLboolean state = glIsQuery(id);
+	const GLboolean state = glIsQuery(lid);
 	core_assert_always(state == GL_TRUE);
 #endif
-	glDeleteQueries(1, &id);
+	glDeleteQueries(1, &lid);
 	id = InvalidId;
 	checkError();
 }
@@ -804,7 +817,8 @@ bool isOcclusionQuery(Id id) {
 	if (id == InvalidId) {
 		return false;
 	}
-	const GLboolean state = glIsQuery(id);
+	const GLuint lid = (GLuint)id;
+	const GLboolean state = glIsQuery(lid);
 	checkError();
 	return (bool)state;
 }
@@ -814,11 +828,12 @@ bool beginOcclusionQuery(Id id) {
 		return false;
 	}
 	_priv::s.occlusionQuery = id;
+	const GLuint lid = (GLuint)id;
 #if SANITY_CHECKS_GL
-	const GLboolean state = glIsQuery(id);
+	const GLboolean state = glIsQuery(lid);
 	core_assert_always(state == GL_TRUE);
 #endif
-	glBeginQuery(GL_SAMPLES_PASSED, id);
+	glBeginQuery(GL_SAMPLES_PASSED, lid);
 	checkError();
 	return true;
 }
@@ -848,12 +863,13 @@ bool isOcclusionQueryAvailable(Id id) {
 	if (id == InvalidId) {
 		return false;
 	}
+	const GLuint lid = (GLuint)id;
 #if SANITY_CHECKS_GL
-	const GLboolean state = glIsQuery(id);
+	const GLboolean state = glIsQuery(lid);
 	core_assert_always(state == GL_TRUE);
 #endif
 	GLint available;
-	glGetQueryObjectiv(id, GL_QUERY_RESULT_AVAILABLE, &available);
+	glGetQueryObjectiv(lid, GL_QUERY_RESULT_AVAILABLE, &available);
 	checkError();
 	return available != 0;
 }
@@ -862,11 +878,12 @@ int getOcclusionQueryResult(Id id, bool wait) {
 	if (id == InvalidId) {
 		return -1;
 	}
+	const GLuint lid = (GLuint)id;
 	if (wait) {
 		while (!isOcclusionQueryAvailable(id)) {
 		}
 		GLint samples;
-		glGetQueryObjectiv(id, GL_QUERY_RESULT, &samples);
+		glGetQueryObjectiv(lid, GL_QUERY_RESULT, &samples);
 		checkError();
 		return (int)samples;
 	}
@@ -874,7 +891,7 @@ int getOcclusionQueryResult(Id id, bool wait) {
 		return -1;
 	}
 	GLint samples;
-	glGetQueryObjectiv(id, GL_QUERY_RESULT, &samples);
+	glGetQueryObjectiv(lid, GL_QUERY_RESULT, &samples);
 	checkError();
 	return (int)samples;
 }
@@ -912,9 +929,10 @@ Id bindRenderbuffer(Id handle) {
 	if (_priv::s.renderBufferHandle == handle) {
 		return handle;
 	}
-	Id prev = _priv::s.renderBufferHandle;
+	const Id prev = _priv::s.renderBufferHandle;
+	const GLuint lid = (GLuint)handle;
 	_priv::s.renderBufferHandle = handle;
-	glBindRenderbuffer(GL_RENDERBUFFER, handle);
+	glBindRenderbuffer(GL_RENDERBUFFER, lid);
 	checkError();
 	return prev;
 }
@@ -923,9 +941,10 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 	if (size <= 0) {
 		return;
 	}
+	const GLuint lid = (GLuint)handle;
 	const GLenum usage = _priv::BufferModes[std::enum_value(mode)];
 	if (FLEXT_ARB_direct_state_access) {
-		glNamedBufferData(handle, (GLsizeiptr)size, data, usage);
+		glNamedBufferData(lid, (GLsizeiptr)size, data, usage);
 		checkError();
 	} else {
 #if DIRECT_STATE_ACCESS
@@ -964,7 +983,8 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 	core_assert(_priv::s.bufferHandle[typeIndex] != InvalidId);
 #endif
 	if (FLEXT_ARB_direct_state_access) {
-		glNamedBufferSubData(handle, (GLintptr)offset, (GLsizeiptr)size, data);
+		const GLuint lid = (GLuint)handle;
+		glNamedBufferSubData(lid, (GLintptr)offset, (GLsizeiptr)size, data);
 		checkError();
 	} else {
 #if 1
@@ -1044,7 +1064,7 @@ bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTe
 
 bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
 	const GLenum glAttachment = _priv::FrameBufferAttachments[std::enum_value(attachment)];
-	glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachment, texture, 0, layerIndex);
+	glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachment, (GLuint)texture, 0, layerIndex);
 	checkError();
 	if (shouldClear) {
 		if (attachment == FrameBufferAttachment::Depth) {
@@ -1197,21 +1217,22 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 	}
 	const char *src = source.c_str();
 	video::checkError();
-	glShaderSource(id, 1, (const GLchar**) &src, nullptr);
+	const GLuint lid = (GLuint)id;
+	glShaderSource(lid, 1, (const GLchar**) &src, nullptr);
 	video::checkError();
-	glCompileShader(id);
+	glCompileShader(lid);
 	video::checkError();
 
 	GLint status;
-	glGetShaderiv(id, GL_COMPILE_STATUS, &status);
+	glGetShaderiv(lid, GL_COMPILE_STATUS, &status);
 	video::checkError();
 	GLint infoLogLength = 0;
-	glGetShaderiv(id, GL_INFO_LOG_LENGTH, &infoLogLength);
+	glGetShaderiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
 	video::checkError();
 
 	if (infoLogLength > 0) {
 		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
-		glGetShaderInfoLog(id, infoLogLength, nullptr, strInfoLog.get());
+		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog.get());
 		video::checkError();
 		const std::string compileLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 
@@ -1268,17 +1289,18 @@ bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode
 }
 
 bool linkComputeShader(Id program, Id comp, const std::string& name) {
-	glAttachShader(program, comp);
-	glLinkProgram(program);
+	const GLuint lid = (GLuint)program;
+	glAttachShader(lid, comp);
+	glLinkProgram(lid);
 	GLint status;
-	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	glGetProgramiv(lid, GL_LINK_STATUS, &status);
 	checkError();
 	GLint infoLogLength;
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
 
 	if (infoLogLength > 0) {
 		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
-		glGetShaderInfoLog(program, infoLogLength, nullptr, strInfoLog.get());
+		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog.get());
 		video::checkError();
 		const std::string linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 		if (status != GL_TRUE) {
@@ -1287,7 +1309,7 @@ bool linkComputeShader(Id program, Id comp, const std::string& name) {
 			Log::info("%s: %s", name.c_str(), linkLog.c_str());
 		}
 	}
-	glDetachShader(program, comp);
+	glDetachShader(lid, comp);
 	checkError();
 	if (status != GL_TRUE) {
 		deleteProgram(program);
@@ -1295,17 +1317,17 @@ bool linkComputeShader(Id program, Id comp, const std::string& name) {
 	}
 
 #ifdef DEBUG
-	glValidateProgram(program);
+	glValidateProgram(lid);
 	GLint success, logLength;
-	glGetProgramiv(program, GL_VALIDATE_STATUS, &success);
+	glGetProgramiv(lid, GL_VALIDATE_STATUS, &success);
 	if (success == GL_FALSE) {
 		Log::error("Failed to validate: %s", name.c_str());
 	}
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &logLength);
 	if (logLength > 0) {
 		std::string message(logLength, '\n');
 		if (message.size() > 1) {
-			glGetProgramInfoLog(program, message.size(), nullptr, &message[0]);
+			glGetProgramInfoLog(lid, message.size(), nullptr, &message[0]);
 		}
 		message.resize(std::max(logLength, 1) - 1);
 		Log::info("Validation output: %s\n%s", name.c_str(), message.c_str());
@@ -1350,22 +1372,23 @@ bool runShader(Id program, const glm::uvec3& workGroups, bool wait) {
 }
 
 bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) {
-	glAttachShader(program, vert);
-	glAttachShader(program, frag);
+	const GLuint lid = (GLuint)program;
+	glAttachShader(lid, (GLuint)vert);
+	glAttachShader(lid, (GLuint)frag);
 	if (geom != InvalidId) {
-		glAttachShader(program, geom);
+		glAttachShader(lid, (GLuint)geom);
 	}
 
-	glLinkProgram(program);
+	glLinkProgram(lid);
 	GLint status;
-	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	glGetProgramiv(lid, GL_LINK_STATUS, &status);
 	checkError();
 	GLint infoLogLength;
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
 
 	if (infoLogLength > 0) {
 		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
-		glGetShaderInfoLog(program, infoLogLength, nullptr, strInfoLog.get());
+		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog.get());
 		video::checkError();
 		const std::string linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 		if (status != GL_TRUE) {
@@ -1374,10 +1397,10 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 			Log::info("%s: %s", name.c_str(), linkLog.c_str());
 		}
 	}
-	glDetachShader(program, vert);
-	glDetachShader(program, frag);
+	glDetachShader(lid, (GLuint)vert);
+	glDetachShader(lid, (GLuint)frag);
 	if (geom != InvalidId) {
-		glDetachShader(program, geom);
+		glDetachShader(lid, (GLuint)geom);
 	}
 	checkError();
 	if (status != GL_TRUE) {
@@ -1386,17 +1409,17 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 	}
 
 #if 0
-	glValidateProgram(program);
+	glValidateProgram(lid);
 	GLint success, logLength;
-	glGetProgramiv(program, GL_VALIDATE_STATUS, &success);
+	glGetProgramiv(lid, GL_VALIDATE_STATUS, &success);
 	if (success == GL_FALSE) {
 		Log::error("Failed to validate: %s", name.c_str());
 	}
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &logLength);
 	if (logLength > 0) {
 		std::string message(logLength, '\n');
 		if (message.size() > 1) {
-			glGetProgramInfoLog(program, message.size(), nullptr, &message[0]);
+			glGetProgramInfoLog(lid, message.size(), nullptr, &message[0]);
 		}
 		message.resize(std::max(logLength, 1) - 1);
 		Log::info("Validation output: %s\n%s", name.c_str(), message.c_str());
@@ -1414,15 +1437,16 @@ int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name)
 int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string& name) {
 	char varName[MAX_SHADER_VAR_NAME];
 	int numAttributes = 0;
-	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &numAttributes);
+	const GLuint lid = (GLuint)program;
+	glGetProgramiv(lid, GL_ACTIVE_ATTRIBUTES, &numAttributes);
 	checkError();
 
 	for (int i = 0; i < numAttributes; ++i) {
 		GLsizei length;
 		GLint size;
 		GLenum type;
-		glGetActiveAttrib(program, i, MAX_SHADER_VAR_NAME - 1, &length, &size, &type, varName);
-		const int location = glGetAttribLocation(program, varName);
+		glGetActiveAttrib(lid, i, MAX_SHADER_VAR_NAME - 1, &length, &size, &type, varName);
+		const int location = glGetAttribLocation(lid, varName);
 		attributes[varName] = location;
 		Log::debug("attribute location for %s is %i (shader %s)", varName, location, name.c_str());
 	}
