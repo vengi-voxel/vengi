@@ -25,12 +25,12 @@ namespace video {
 class WindowedApp: public core::App, public io::IEventObserver {
 private:
 	using Super = core::App;
-	glm::ivec2 _screenDimension;
 protected:
 	SDL_Window* _window = nullptr;
 	RendererContext _rendererContext = nullptr;
 	// viewport
 	glm::ivec2 _pixelDimension;
+	glm::ivec2 _screenDimension;
 	float _aspect = 1.0f;
 	int _fps = 0;
 	uint32_t _frameCounter = 0;
