@@ -322,10 +322,7 @@ core::AppState NuklearApp::onRunning() {
 		return state;
 	}
 
-	const int pixelWidth = _camera.pixelWidth();
-	const int pixelHeight = _camera.pixelHeight();
-
-	const math::Rect<int> rect(0, 0, pixelWidth, pixelHeight);
+	const math::Rect<int> rect(0, 0, _pixelDimension.x, _pixelDimension.y);
 	_console.render(rect, _deltaFrameMillis);
 
 	video::ScopedShader scopedShader(_shader);
@@ -333,7 +330,7 @@ core::AppState NuklearApp::onRunning() {
 	_shader.setModel(glm::mat4(1.0f));
 	_shader.setTexture(video::TextureUnit::Zero);
 
-	video::ScopedViewPort scopedViewPort(0, 0, pixelWidth, pixelHeight);
+	video::ScopedViewPort scopedViewPort(0, 0, _pixelDimension.x, _pixelDimension.y);
 	video::enable(video::State::Blend);
 	video::blendEquation(video::BlendEquation::Add);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
