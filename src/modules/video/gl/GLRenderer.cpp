@@ -555,6 +555,37 @@ void deleteBuffers(uint8_t amount, Id* ids) {
 	}
 }
 
+IdPtr genSync() {
+	return (IdPtr)glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+}
+
+void deleteSync(IdPtr& id) {
+	if (id == InvalidIdPtr) {
+		return;
+	}
+	static_assert(sizeof(IdPtr) >= sizeof(GLsync), "Unexpected sizes");
+	glDeleteSync((GLsync)id);
+	id = InvalidId;
+}
+
+bool waitForSync(IdPtr id, uint64_t timeout) {
+	if (id == InvalidIdPtr) {
+		return false;
+	}
+	if (timeout == 0) {
+		return false;
+	}
+	static_assert(sizeof(IdPtr) >= sizeof(GLsync), "Unexpected sizes");
+#if SANITY_CHECKS_GL
+	if (!glIsSync((GLsync)id)) {
+		return false;
+	}
+#endif
+	glClientWaitSync((GLsync)id, GL_SYNC_FLUSH_COMMANDS_BIT, (GLuint64)timeout);
+	checkError();
+	return true;
+}
+
 void genVertexArrays(uint8_t amount, Id* ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	glGenVertexArrays((GLsizei)amount, (GLuint*)ids);
