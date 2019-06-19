@@ -581,9 +581,16 @@ bool waitForSync(IdPtr id, uint64_t timeout) {
 		return false;
 	}
 #endif
-	glClientWaitSync((GLsync)id, GL_SYNC_FLUSH_COMMANDS_BIT, (GLuint64)timeout);
+	// nano seconds
+	const GLenum val = glClientWaitSync((GLsync)id, GL_SYNC_FLUSH_COMMANDS_BIT, (GLuint64)timeout);
 	checkError();
-	return true;
+	if (val == GL_ALREADY_SIGNALED || val == GL_CONDITION_SATISFIED) {
+		return true;
+	}
+	if (val == GL_TIMEOUT_EXPIRED) {
+		return false;
+	}
+	return false;
 }
 
 void genVertexArrays(uint8_t amount, Id* ids) {
