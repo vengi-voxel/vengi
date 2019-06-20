@@ -382,6 +382,7 @@ core::AppState WindowedApp::onInit() {
 #ifdef SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS
 	SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS, "32");
 #endif
+	SDL_SetHint(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, "1");
 
 	const bool fullscreen = core::Var::getSafe(cfg::ClientFullscreen)->boolVal();
 
