@@ -176,7 +176,7 @@ void Camera::updateViewMatrix() {
 }
 
 Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
-	return screenRay(glm::vec2(pixelPos.x / (float)frameBufferWidth(), pixelPos.y / (float)frameBufferHeight()));
+	return screenRay(glm::vec2(pixelPos.x / (float)_frameBufferSize.x, pixelPos.y / (float)_frameBufferSize.y));
 	/*const glm::vec2 newPos = glm::vec2(screenPos - _position) / glm::vec2(dimension());
 	return screenRay(newPos);*/
 }

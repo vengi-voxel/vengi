@@ -101,8 +101,6 @@ public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
 	void init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
-	const glm::ivec2& frameBufferSize() const;
-	const glm::ivec2& windowSize() const;
 	int frameBufferWidth() const;
 	int frameBufferHeight() const;
 
@@ -258,20 +256,10 @@ public:
 	glm::vec4 splitFrustumSphereBoundingBox(float near, float far) const;
 };
 
-inline const glm::ivec2& Camera::frameBufferSize() const {
-	return _frameBufferSize;
-}
-
-inline const glm::ivec2& Camera::windowSize() const {
-	return _windowSize;
-}
-
-// viewport
 inline int Camera::frameBufferWidth() const {
 	return _frameBufferSize.x;
 }
 
-// viewport
 inline int Camera::frameBufferHeight() const {
 	return _frameBufferSize.y;
 }

@@ -152,8 +152,8 @@ void Shadow::render(funcRender renderCallback, funcRenderInstance renderInstance
 
 void Shadow::renderShadowMap(const video::Camera& camera) {
 	core_trace_scoped(TestMeshAppDoShowShadowMap);
-	const int pixelWidth = camera.frameBufferWidth();
-	const int pixelHeight = camera.frameBufferHeight();
+	const int frameBufferWidth = camera.frameBufferWidth();
+	const int frameBufferHeight = camera.frameBufferHeight();
 
 	// activate shader
 	video::ScopedShader scopedShader(_shadowMapRenderShader);
@@ -173,8 +173,8 @@ void Shadow::renderShadowMap(const video::Camera& camera) {
 
 	// render shadow maps
 	for (int i = 0; i < _maxDepthBuffers; ++i) {
-		const int halfWidth = (int) (pixelWidth / 4.0f);
-		const int halfHeight = (int) (pixelHeight / 4.0f);
+		const int halfWidth = (int) (frameBufferWidth / 4.0f);
+		const int halfHeight = (int) (frameBufferHeight / 4.0f);
 		video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
 		_shadowMapRenderShader.setCascade(i);
 		video::drawArrays(video::Primitive::Triangles, _shadowMapDebugBuffer.elements(0));
