@@ -152,8 +152,8 @@ void Shadow::render(funcRender renderCallback, funcRenderInstance renderInstance
 
 void Shadow::renderShadowMap(const video::Camera& camera) {
 	core_trace_scoped(TestMeshAppDoShowShadowMap);
-	const int pixelWidth = camera.pixelWidth();
-	const int pixelHeight = camera.pixelHeight();
+	const int pixelWidth = camera.frameBufferWidth();
+	const int pixelHeight = camera.frameBufferHeight();
 
 	// activate shader
 	video::ScopedShader scopedShader(_shadowMapRenderShader);

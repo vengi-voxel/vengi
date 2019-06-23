@@ -14,14 +14,14 @@ Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _pos(glm::vec3(0.0f)), _omega(0.0f) {
 }
 
-void Camera::init(const glm::ivec2& position, const glm::ivec2& pixelDimension, const glm::ivec2& screenDimension) {
-	if (_position == position && _pixelDimension == pixelDimension && _screenDimension == screenDimension) {
+void Camera::init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
+	if (_position == position && _frameBufferSize == frameBufferSize && _windowSize == windowSize) {
 		return;
 	}
 	_position = position;
-	_pixelDimension = pixelDimension;
-	_screenDimension = screenDimension;
-	_aspectRatio = _pixelDimension.x / static_cast<float>(_pixelDimension.y);
+	_frameBufferSize = frameBufferSize;
+	_windowSize = windowSize;
+	_frameBufferAspectRatio = _frameBufferSize.x / static_cast<float>(_frameBufferSize.y);
 	_dirty = DIRTY_ALL;
 }
 
@@ -104,8 +104,12 @@ bool Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 
 void Camera::billboard(glm::vec3 *right, glm::vec3 *up) const {
 	const glm::mat4& view = viewMatrix();
-	*right = glm::vec3(glm::row(view, 0));
-	*up = glm::vec3(glm::row(view, 1));
+	if (right != nullptr) {
+		*right = glm::vec3(glm::row(view, 0));
+	}
+	if (up != nullptr) {
+		*up = glm::vec3(glm::row(view, 1));
+	}
 }
 
 void Camera::updateTarget() {
@@ -172,7 +176,7 @@ void Camera::updateViewMatrix() {
 }
 
 Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
-	return screenRay(glm::vec2(pixelPos.x / (float)pixelWidth(), pixelPos.y / (float)pixelHeight()));
+	return screenRay(glm::vec2(pixelPos.x / (float)frameBufferWidth(), pixelPos.y / (float)frameBufferHeight()));
 	/*const glm::vec2 newPos = glm::vec2(screenPos - _position) / glm::vec2(dimension());
 	return screenRay(newPos);*/
 }
@@ -242,11 +246,11 @@ void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::F
 	glm::mat4 proj;
 	switch(_mode) {
 	case CameraMode::Orthogonal:
-		proj = glm::ortho(0.0f, (float)_screenDimension.x, (float)_screenDimension.y, 0.0f, nearPlane, farPlane);
+		proj = glm::ortho(0.0f, (float)_windowSize.x, (float)_windowSize.y, 0.0f, nearPlane, farPlane);
 		break;
 	case CameraMode::Perspective:
 	default:
-		proj = glm::perspective(glm::radians(_fieldOfView), _aspectRatio, nearPlane, farPlane);
+		proj = glm::perspective(glm::radians(_fieldOfView), _frameBufferAspectRatio, nearPlane, farPlane);
 		break;
 	}
 
@@ -347,15 +351,15 @@ glm::vec4 Camera::sphereBoundingBox() const {
 glm::mat4 Camera::orthogonalMatrix() const {
 	const float left = x();
 	const float bottom = y();
-	const float right = left + _screenDimension.x;
-	const float top = bottom + _screenDimension.y;
+	const float right = left + _windowSize.x;
+	const float top = bottom + _windowSize.y;
 	core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
 	core_assert_msg(top > bottom, "Invalid dimension given: top must be greater than bottom but is %f", top);
 	return glm::ortho(left, right, top, bottom, nearPlane(), farPlane());
 }
 
 glm::mat4 Camera::perspectiveMatrix() const {
-	return glm::perspective(glm::radians(_fieldOfView), _aspectRatio, nearPlane(), farPlane());
+	return glm::perspective(glm::radians(_fieldOfView), _frameBufferAspectRatio, nearPlane(), farPlane());
 }
 
 void Camera::setNearPlane(float nearPlane) {

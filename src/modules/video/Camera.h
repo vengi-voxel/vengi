@@ -61,9 +61,9 @@ protected:
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
 	// viewport
-	glm::ivec2 _pixelDimension {0};
+	glm::ivec2 _frameBufferSize {0};
 	// ortho
-	glm::ivec2 _screenDimension {0};
+	glm::ivec2 _windowSize {0};
 	// the position that is used for ortho projection matrices
 	glm::ivec2 _position {0};
 	// the position of the camera in the world
@@ -83,7 +83,7 @@ protected:
 
 	float _nearPlane = 0.1f;
 	float _farPlane = 500.0f;
-	float _aspectRatio = 1.0f;
+	float _frameBufferAspectRatio = 1.0f;
 	float _fieldOfView = 45.0f;
 
 	glm::vec3 _target {0.0f};
@@ -100,11 +100,11 @@ protected:
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
-	void init(const glm::ivec2& position, const glm::ivec2& pixelDimension, const glm::ivec2& screenDimension);
-	const glm::ivec2& pixelDimension() const;
-	const glm::ivec2& screenDimension() const;
-	int pixelWidth() const;
-	int pixelHeight() const;
+	void init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
+	const glm::ivec2& frameBufferSize() const;
+	const glm::ivec2& windowSize() const;
+	int frameBufferWidth() const;
+	int frameBufferHeight() const;
 
 	/**
 	 * @note Not the world position of the camera - but for controlling the viewport
@@ -258,22 +258,22 @@ public:
 	glm::vec4 splitFrustumSphereBoundingBox(float near, float far) const;
 };
 
-inline const glm::ivec2& Camera::pixelDimension() const {
-	return _pixelDimension;
+inline const glm::ivec2& Camera::frameBufferSize() const {
+	return _frameBufferSize;
 }
 
-inline const glm::ivec2& Camera::screenDimension() const {
-	return _screenDimension;
-}
-
-// viewport
-inline int Camera::pixelWidth() const {
-	return _pixelDimension.x;
+inline const glm::ivec2& Camera::windowSize() const {
+	return _windowSize;
 }
 
 // viewport
-inline int Camera::pixelHeight() const {
-	return _pixelDimension.y;
+inline int Camera::frameBufferWidth() const {
+	return _frameBufferSize.x;
+}
+
+// viewport
+inline int Camera::frameBufferHeight() const {
+	return _frameBufferSize.y;
 }
 
 inline int Camera::x() const {
@@ -475,12 +475,12 @@ inline void Camera::setFieldOfView(float angles) {
 }
 
 inline float Camera::aspectRatio() const {
-	return _aspectRatio;
+	return _frameBufferAspectRatio;
 }
 
 inline void Camera::setAspectRatio(float aspect) {
 	_dirty |= DIRTY_PERSPECTIVE;
-	_aspectRatio = aspect;
+	_frameBufferAspectRatio = aspect;
 }
 
 inline glm::vec3 Camera::direction() const {
