@@ -141,7 +141,9 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		case SDL_WINDOWEVENT_RESIZED:
 		case SDL_WINDOWEVENT_SIZE_CHANGED:
 			for (IEventObserver* observer : _observers) {
-				observer->onWindowResize();
+				const int w = event.window.data1;
+				const int h = event.window.data2;
+				observer->onWindowResize(w, h);
 			}
 			break;
 		case SDL_WINDOWEVENT_CLOSE:

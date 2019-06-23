@@ -76,7 +76,7 @@ public:
 	void afterRootWidget() override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onMouseWheel(int32_t x, int32_t y) override;
-	void onWindowResize() override;
+	void onWindowResize(int windowWidth, int windowHeight) override;
 
 	/**
 	 * @brief We send the user connect message to the server and we get the seed and a user spawn message back.

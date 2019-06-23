@@ -27,7 +27,7 @@ core::AppState TestGLSLComp::onInit() {
 	_camera.setNearPlane(-1.0f);
 	_camera.setFarPlane(1.0f);
 
-	if (!_renderer.init(pixelDimension())) {
+	if (!_renderer.init(frameBufferDimension())) {
 		Log::error("Failed to init the texture renderer");
 		return core::AppState::InitFailure;
 	}
@@ -62,7 +62,7 @@ void TestGLSLComp::doRender() {
 	_testShader.run(glm::uvec3(_texture->width(), _texture->height(), 1), true);
 
 	video::ScopedTexture texture(_texture, video::TextureUnit::Zero);
-	video::ScopedViewPort viewPort(0, 0, pixelDimension().x, pixelDimension().y);
+	video::ScopedViewPort viewPort(0, 0, frameBufferDimension().x, frameBufferDimension().y);
 	_renderer.render(_camera.projectionMatrix());
 }
 

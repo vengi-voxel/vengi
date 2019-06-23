@@ -360,7 +360,7 @@ bool Window::loadResource(tb::TBNode &node) {
 	return true;
 }
 
-void Window::onWindowResize() {
+void Window::onWindowResize(int, int) {
 	const tb::TBRect parentRect(0, 0, getParent()->getRect().w, getParent()->getRect().h);
 	tb::TBRect windowRect = getRect();
 	windowRect = windowRect.moveIn(parentRect).clip(parentRect);

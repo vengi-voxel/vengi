@@ -16,9 +16,9 @@ TestApp::TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& files
 TestApp::~TestApp() {
 }
 
-void TestApp::onWindowResize() {
-	Super::onWindowResize();
-	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+void TestApp::onWindowResize(int windowWidth, int windowHeight) {
+	Super::onWindowResize(windowWidth, windowHeight);
+	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 }
 
 core::AppState TestApp::onConstruct() {
@@ -70,8 +70,8 @@ core::AppState TestApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	Log::info("Set window dimensions: %ix%i (aspect: %f)", _pixelDimension.x, _pixelDimension.y, _aspect);
-	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+	Log::info("Set window dimensions: %ix%i (aspect: %f)", _frameBufferDimension.x, _frameBufferDimension.y, _aspect);
+	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	_camera.lookAt(glm::vec3(0.0f));
 

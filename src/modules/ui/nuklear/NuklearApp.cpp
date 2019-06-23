@@ -256,7 +256,7 @@ core::AppState NuklearApp::onInit() {
 
 	_camera.setNearPlane(-1.0f);
 	_camera.setFarPlane(1.0f);
-	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.update(0L);
 
 	_vbo.addAttribute(_shader.getColorAttribute(_vertexBufferIndex, &Vertex::r, true));
@@ -295,9 +295,9 @@ core::AppState NuklearApp::onInit() {
 	return state;
 }
 
-void NuklearApp::onWindowResize() {
-	Super::onWindowResize();
-	_camera.init(glm::zero<glm::ivec2>(), pixelDimension(), screenDimension());
+void NuklearApp::onWindowResize(int windowWidth, int windowHeight) {
+	Super::onWindowResize(windowWidth, windowHeight);
+	_camera.init(glm::zero<glm::ivec2>(), frameBufferDimension(), windowDimension());
 }
 
 core::AppState NuklearApp::onConstruct() {
@@ -322,7 +322,7 @@ core::AppState NuklearApp::onRunning() {
 		return state;
 	}
 
-	const math::Rect<int> rect(0, 0, _pixelDimension.x, _pixelDimension.y);
+	const math::Rect<int> rect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	_console.render(rect, _deltaFrameMillis);
 
 	video::ScopedShader scopedShader(_shader);
@@ -330,7 +330,7 @@ core::AppState NuklearApp::onRunning() {
 	_shader.setModel(glm::mat4(1.0f));
 	_shader.setTexture(video::TextureUnit::Zero);
 
-	video::ScopedViewPort scopedViewPort(0, 0, _pixelDimension.x, _pixelDimension.y);
+	video::ScopedViewPort scopedViewPort(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	video::enable(video::State::Blend);
 	video::blendEquation(video::BlendEquation::Add);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);

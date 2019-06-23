@@ -47,7 +47,7 @@ protected:
 
 	void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
-	void onWindowResize() override;
+	void onWindowResize(int windowWidth, int windowHeight) override;
 	void beforeUI() override;
 
 public:

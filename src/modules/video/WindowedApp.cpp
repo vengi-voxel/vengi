@@ -34,7 +34,7 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 }
 
 WindowedApp::WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider), _pixelDimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
+		Super(metric, filesystem, eventBus, timeProvider), _frameBufferDimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
 }
 
 WindowedApp::~WindowedApp() {
@@ -59,6 +59,19 @@ core::AppState WindowedApp::onRunning() {
 			// continue to handle any other following event
 			quit = true;
 			break;
+		case SDL_WINDOWEVENT:
+			// we must be the first to handle this - but others should get their chance, too
+			if (event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+				const int w = event.window.data1;
+				const int h = event.window.data2;
+				int frameBufferWidth, frameBufferHeight;
+				SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
+				_aspect = frameBufferWidth / static_cast<float>(frameBufferHeight);
+				_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
+				_windowDimension = glm::ivec2(w, h);
+				video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+			}
+			// fallthrough
 		default: {
 			core_trace_scoped(WindowedAppEventHandler);
 			const bool running = core::Singleton<io::EventHandler>::getInstance().handleEvent(event);
@@ -89,16 +102,6 @@ core::AppState WindowedApp::onRunning() {
 	}
 
 	return core::AppState::Running;
-}
-
-void WindowedApp::onWindowResize() {
-	int _width, _height;
-	SDL_GL_GetDrawableSize(_window, &_width, &_height);
-	_aspect = _width / static_cast<float>(_height);
-	_pixelDimension = glm::ivec2(_width, _height);
-	SDL_GetWindowSize(_window, &_width, &_height);
-	_screenDimension = glm::ivec2(_width, _height);
-	video::viewport(0, 0, _pixelDimension.x, _pixelDimension.y);
 }
 
 bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
@@ -456,18 +459,18 @@ core::AppState WindowedApp::onInit() {
 	// we have to query it here to get the actual resolution
 	int _width, _height;
 	SDL_GL_GetDrawableSize(_window, &_width, &_height);
-	_pixelDimension = glm::ivec2(_width, _height);
+	_frameBufferDimension = glm::ivec2(_width, _height);
 	_aspect = _width / static_cast<float>(_height);
 	SDL_GetWindowSize(_window, &_width, &_height);
-	_screenDimension = glm::ivec2(_width, _height);
-	Log::info("resolution (%i:%i) (pixel)", _pixelDimension.x, _pixelDimension.y);
-	Log::info("resolution (%i:%i) (screen)", _screenDimension.x, _screenDimension.y);
+	_windowDimension = glm::ivec2(_width, _height);
+	Log::info("resolution (%i:%i) (pixel)", _frameBufferDimension.x, _frameBufferDimension.y);
+	Log::info("resolution (%i:%i) (screen)", _windowDimension.x, _windowDimension.y);
 	Log::info("dpi factor: %f", _dpiFactor);
 	Log::info("dpi factor h: %f", _dpiHorizontalFactor);
 	Log::info("dpi factor v: %f", _dpiVerticalFactor);
 
 	video::init();
-	video::viewport(0, 0, _pixelDimension.x, _pixelDimension.y);
+	video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 
 	core_trace_gl_init();
 

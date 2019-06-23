@@ -28,9 +28,8 @@ private:
 protected:
 	SDL_Window* _window = nullptr;
 	RendererContext _rendererContext = nullptr;
-	// viewport
-	glm::ivec2 _pixelDimension;
-	glm::ivec2 _screenDimension;
+	glm::ivec2 _frameBufferDimension;
+	glm::ivec2 _windowDimension;
 	float _aspect = 1.0f;
 	int _fps = 0;
 	uint32_t _frameCounter = 0;
@@ -67,7 +66,7 @@ public:
 	 * drawable, i.e. the window was created with high-DPI support (Apple calls this
 	 * "Retina").
 	 */
-	const glm::ivec2& pixelDimension() const;
+	const glm::ivec2& frameBufferDimension() const;
 	/**
 	 * @brief This is the window size
 	 *
@@ -75,7 +74,7 @@ public:
 	 * the window was created with high-dpi support (e.g. iOS or OS X). Use
 	 * pixelDimension() to get the real client area size in pixels.
 	 */
-	const glm::ivec2& screenDimension() const;
+	const glm::ivec2& windowDimension() const;
 	int width() const;
 	int height() const;
 	bool isPressed(int32_t key) const;
@@ -125,25 +124,24 @@ public:
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;
 	virtual core::AppState onCleanup() override;
-	virtual void onWindowResize() override;
 
 	static WindowedApp* getInstance();
 };
 
-inline const glm::ivec2& WindowedApp::pixelDimension() const {
-	return _pixelDimension;
+inline const glm::ivec2& WindowedApp::frameBufferDimension() const {
+	return _frameBufferDimension;
 }
 
-inline const glm::ivec2& WindowedApp::screenDimension() const {
-	return _screenDimension;
+inline const glm::ivec2& WindowedApp::windowDimension() const {
+	return _windowDimension;
 }
 
 inline int WindowedApp::width() const {
-	return _pixelDimension.x;
+	return _frameBufferDimension.x;
 }
 
 inline int WindowedApp::height() const {
-	return _pixelDimension.y;
+	return _frameBufferDimension.y;
 }
 
 inline void WindowedApp::saveDialog(const std::function<void(const std::string&)>& callback, const std::string& filter) {

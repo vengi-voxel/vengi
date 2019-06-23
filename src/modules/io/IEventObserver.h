@@ -104,7 +104,7 @@ public:
 	virtual void onFingerMotion(int64_t finger, float x, float y, float dx, float dy) {
 	}
 
-	virtual void onWindowResize() {
+	virtual void onWindowResize(int windowWidth, int windowHeight) {
 	}
 
 	virtual void onWindowRestore() {

@@ -60,7 +60,7 @@ public:
 	virtual void onRenderUI() override;
 	virtual core::AppState onCleanup() override;
 	virtual void onMouseWheel(int32_t x, int32_t y) override;
-	virtual void onWindowResize() override;
+	virtual void onWindowResize(int windowWidth, int windowHeight) override;
 };
 
 inline video::Camera& TestApp::camera() {

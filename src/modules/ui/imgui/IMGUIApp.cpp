@@ -100,13 +100,13 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	return Super::onKeyRelease(key, modifier);
 }
 
-void IMGUIApp::onWindowResize() {
-	Super::onWindowResize();
+void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
+	Super::onWindowResize(windowWidth, windowHeight);
 	ImGuiIO& io = ImGui::GetIO();
-	io.DisplaySize = ImVec2((float)_pixelDimension.x, (float)_pixelDimension.y);
+	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
 	io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
 
-	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.update(0L);
 	video::ScopedShader scoped(_shader);
 	_shader.setViewprojection(_camera.projectionMatrix());
@@ -174,7 +174,7 @@ core::AppState IMGUIApp::onInit() {
 
 	_camera.setNearPlane(-1.0f);
 	_camera.setFarPlane(1.0f);
-	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.update(0L);
 
 	_vbo.addAttribute(_shader.getColorAttribute(_bufferIndex, &ImDrawVert::r, true));
@@ -189,7 +189,7 @@ core::AppState IMGUIApp::onInit() {
 	const std::string logFile = _appname + "-imgui.log";
 	_writePathLog = _filesystem->writePath(logFile.c_str());
 	io.LogFilename = _writePathLog.c_str();
-	io.DisplaySize = ImVec2((float)_pixelDimension.x, (float)_pixelDimension.y);
+	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
 	io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
 	ImFontConfig fontCfg;
 	fontCfg.SizePixels = 13.0f * _dpiFactor;
@@ -291,8 +291,8 @@ core::AppState IMGUIApp::onRunning() {
 	_shader.setModel(glm::mat4(1.0f));
 	_shader.setTexture(video::TextureUnit::Zero);
 
-	video::ScopedViewPort scopedViewPort(0, 0, _pixelDimension.x, _pixelDimension.y);
-	video::scissor(0, 0, _pixelDimension.x, _pixelDimension.y);
+	video::ScopedViewPort scopedViewPort(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 
 	video::enable(video::State::Blend);
 	video::disable(video::State::DepthTest);
@@ -316,7 +316,7 @@ core::AppState IMGUIApp::onRunning() {
 		renderTracing();
 	}
 
-	const math::Rect<int> rect(0, 0, _pixelDimension.x, _pixelDimension.y);
+	const math::Rect<int> rect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	_console.render(rect, _deltaFrameMillis);
 	ImGui::EndFrame();
 	ImGui::Render();
@@ -346,7 +346,7 @@ core::AppState IMGUIApp::onRunning() {
 		}
 	}
 
-	video::scissor(0, 0, _pixelDimension.x, _pixelDimension.y);
+	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	return core::AppState::Running;
 }
 

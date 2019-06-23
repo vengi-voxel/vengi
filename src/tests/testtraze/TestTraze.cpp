@@ -110,7 +110,7 @@ core::AppState TestTraze::onInit() {
 	_textCamera.setMode(video::CameraMode::Orthogonal);
 	_textCamera.setNearPlane(-10.0f);
 	_textCamera.setFarPlane(10.0f);
-	_textCamera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+	_textCamera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_textCamera.update(0L);
 
 	_voxelFontRender.setViewProjectionMatrix(_textCamera.viewProjectionMatrix());
@@ -339,7 +339,7 @@ void TestTraze::doRender() {
 		_rawVolumeRenderer.render(_camera);
 	}
 
-	const glm::ivec2& dim = pixelDimension();
+	const glm::ivec2& dim = frameBufferDimension();
 	_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(dim.x / 3, 0.0f, 0.0f)));
 	int messageOffset = 0;
 	_messageQueue.visitMessages([&] (int64_t /*remainingMillis*/, const std::string& msg) {

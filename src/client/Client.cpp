@@ -83,7 +83,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 
 void Client::onEvent(const voxel::WorldCreatedEvent& event) {
 	Log::info("world created");
-	new frontend::HudWindow(this, pixelDimension());
+	new frontend::HudWindow(this, frameBufferDimension());
 }
 
 core::AppState Client::onConstruct() {
@@ -137,7 +137,7 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setTargetDistance(_maxTargetDistance->floatVal());
 	_waiting.init();
@@ -153,7 +153,7 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_worldRenderer.init(glm::ivec2(0), pixelDimension())) {
+	if (!_worldRenderer.init(glm::ivec2(0), frameBufferDimension())) {
 		return core::AppState::InitFailure;
 	}
 
@@ -191,7 +191,7 @@ void Client::beforeUI() {
 			_camera.setTarget(pos);
 		}
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
-		_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+		_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 		_camera.update(_deltaFrameMillis);
 
 		_drawCallsWorld = _worldRenderer.renderWorld(_camera);
@@ -287,9 +287,9 @@ core::AppState Client::onRunning() {
 	return state;
 }
 
-void Client::onWindowResize() {
-	Super::onWindowResize();
-	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+void Client::onWindowResize(int windowWidth, int windowHeight) {
+	Super::onWindowResize(windowWidth, windowHeight);
+	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 }
 
 void Client::signup(const std::string& email, const std::string& password) {

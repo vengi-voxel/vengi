@@ -79,10 +79,10 @@ core::AppState MapEdit::onInit() {
 	}
 
 	_worldMgr->setSeed(1);
-	if (!_worldRenderer.init(glm::ivec2(0), _pixelDimension)) {
+	if (!_worldRenderer.init(glm::ivec2(0), _frameBufferDimension)) {
 		return core::AppState::InitFailure;
 	}
-	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.setFieldOfView(45.0f);
 	_camera.setPosition(glm::vec3(50.0f, 100.0f, 50.0f));
 	_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -209,9 +209,9 @@ core::AppState MapEdit::onCleanup() {
 	return state;
 }
 
-void MapEdit::onWindowResize() {
-	Super::onWindowResize();
-	_camera.init(glm::ivec2(0), pixelDimension(), screenDimension());
+void MapEdit::onWindowResize(int windowWidth, int windowHeight) {
+	Super::onWindowResize(windowWidth, windowHeight);
+	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 }
 
 bool MapEdit::onKeyPress(int32_t key, int16_t modifier) {

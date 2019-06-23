@@ -63,7 +63,7 @@ public:
 
 	virtual bool onRenderUI() = 0;
 
-	virtual void onWindowResize() override;
+	virtual void onWindowResize(int windowWidth, int windowHeight) override;
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;
 	virtual core::AppState onRunning() override;

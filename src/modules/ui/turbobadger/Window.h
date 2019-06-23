@@ -100,7 +100,7 @@ public:
 	virtual void onDie() override;
 	virtual bool onEvent(const tb::TBWidgetEvent &ev) override;
 
-	virtual void onWindowResize() override;
+	virtual void onWindowResize(int windowWidth, int windowHeight) override;
 };
 
 template<class T>
