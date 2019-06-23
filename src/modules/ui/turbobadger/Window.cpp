@@ -304,14 +304,14 @@ bool Window::loadResource(tb::TBNode &node) {
 		const char *sizeW = dimensions->getValue(0)->getString();
 		if (sizeW[strlen(sizeW) - 1] == '%') {
 			_percentWidth = atof(sizeW);
-			windowRect.w = _app->width() * _percentWidth / 100.0f;
+			windowRect.w = _app->frameBufferWidth() * _percentWidth / 100.0f;
 		} else {
 			windowRect.w = dc->getPxFromString(sizeW, windowRect.w);
 		}
 		const char *sizeH = dimensions->getValue(1)->getString();
 		if (sizeH[strlen(sizeH) - 1] == '%') {
 			_percentHeight = atof(sizeW);
-			windowRect.h = _app->height() * _percentHeight / 100.0f;
+			windowRect.h = _app->frameBufferHeight() * _percentHeight / 100.0f;
 		} else {
 			windowRect.h = dc->getPxFromString(sizeH, windowRect.h);
 		}
@@ -335,8 +335,8 @@ bool Window::loadResource(tb::TBNode &node) {
 			windowRect.x = 0;
 			windowRect.y = 0;
 			if (_app != nullptr) {
-				windowRect.w = _app->width();
-				windowRect.h = _app->height();
+				windowRect.w = _app->frameBufferWidth();
+				windowRect.h = _app->frameBufferHeight();
 			} else {
 				TBWidget *parent = getParent();
 				if (parent != nullptr) {
@@ -365,10 +365,10 @@ void Window::onWindowResize(int, int) {
 	tb::TBRect windowRect = getRect();
 	windowRect = windowRect.moveIn(parentRect).clip(parentRect);
 	if (_percentHeight > 0.0f) {
-		windowRect.w = _app->width() * _percentWidth;
+		windowRect.w = _app->frameBufferWidth() * _percentWidth;
 	}
 	if (_percentHeight > 0.0f) {
-		windowRect.h = _app->height() * _percentHeight;
+		windowRect.h = _app->frameBufferHeight() * _percentHeight;
 	}
 	setRect(windowRect);
 }

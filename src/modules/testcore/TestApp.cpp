@@ -93,7 +93,7 @@ void TestApp::beforeUI() {
 		const bool current = SDL_GetRelativeMouseMode();
 		if (current) {
 			_camera.rotate(glm::vec3(_mouseRelativePos.y,_mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
-			SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
+			SDL_WarpMouseInWindow(_window, frameBufferWidth() / 2, frameBufferHeight() / 2);
 		}
 	}
 

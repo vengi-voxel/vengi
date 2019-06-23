@@ -579,7 +579,7 @@ void WindowedApp::showCursor(bool show) {
 }
 
 void WindowedApp::centerMousePosition() {
-	SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
+	SDL_WarpMouseInWindow(_window, frameBufferWidth() / 2, frameBufferHeight() / 2);
 }
 
 bool WindowedApp::isRelativeMouseMode() const {

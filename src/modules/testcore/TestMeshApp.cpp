@@ -91,7 +91,7 @@ void TestMeshApp::onRenderUI() {
 	const int windowPadding = 20;
 
 	const int meshDetailsWidth = 360;
-	ImGui::SetNextWindowPos(ImVec2(width() - meshDetailsWidth - windowPadding, windowPadding), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(frameBufferWidth() - meshDetailsWidth - windowPadding, windowPadding), ImGuiCond_FirstUseEver);
 	if (_showMeshDetails && ImGui::Begin("Mesh details", &_showMeshDetails, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Mesh %s", _mesh->filename().c_str());
 		ImGui::Text("%i vertices", (int)_mesh->vertices().size());

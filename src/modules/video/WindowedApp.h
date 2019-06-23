@@ -75,8 +75,8 @@ public:
 	 * pixelDimension() to get the real client area size in pixels.
 	 */
 	const glm::ivec2& windowDimension() const;
-	int width() const;
-	int height() const;
+	int frameBufferWidth() const;
+	int frameBufferHeight() const;
 	bool isPressed(int32_t key) const;
 	float dpiFactor() const;
 	/**
@@ -136,11 +136,11 @@ inline const glm::ivec2& WindowedApp::windowDimension() const {
 	return _windowDimension;
 }
 
-inline int WindowedApp::width() const {
+inline int WindowedApp::frameBufferWidth() const {
 	return _frameBufferDimension.x;
 }
 
-inline int WindowedApp::height() const {
+inline int WindowedApp::frameBufferHeight() const {
 	return _frameBufferDimension.y;
 }
 
