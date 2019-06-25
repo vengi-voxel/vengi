@@ -176,7 +176,7 @@ void UIRendererGL::renderBatch(Batch *batch) {
 }
 
 void UIRendererGL::setClipRect(const TBRect &rect) {
-	video::scissor(m_clip_rect.x, m_clip_rect.y, m_clip_rect.w, m_clip_rect.h);
+	video::scissor(rect.x, rect.y, rect.w, rect.h);
 }
 
 }
