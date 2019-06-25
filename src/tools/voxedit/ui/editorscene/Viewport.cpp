@@ -89,6 +89,8 @@ void Viewport::onPaint(const PaintProps &paintProps) {
 	ui::turbobadger::UIRect rect = getRect();
 	rect.x = 0;
 	rect.y = 0;
+
+	// use the uv coords here to take a potential fb flip into account
 	const glm::vec4& uv = _frameBuffer.uv();
 	const glm::vec2 uva(uv.x, uv.y);
 	const glm::vec2 uvc(uv.z, uv.w);
