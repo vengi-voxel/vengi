@@ -30,7 +30,7 @@ public:
 		_window = SDL_CreateWindow("test", 0, 0, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
 		if (_window != nullptr) {
 			_ctx = video::createContext(_window);
-			_supported = video::init();
+			_supported = video::init(640, 480);
 		} else {
 			_supported = false;
 		}

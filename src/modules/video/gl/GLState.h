@@ -52,6 +52,8 @@ struct GLState {
 	int viewportY = 0;
 	int viewportW = 0;
 	int viewportH = 0;
+	int windowWidth = 0;
+	int windowHeight = 0;
 	int scissorX = 0;
 	int scissorY = 0;
 	int scissorW = 0;

@@ -1548,10 +1548,17 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 }
 
-bool init() {
+void resize(int windowWidth, int windowHeight) {
+	_priv::s.windowWidth = windowWidth;
+	_priv::s.windowHeight = windowHeight;
+}
+
+bool init(int windowWidth, int windowHeight) {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &_priv::s.glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);
 	Log::info("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
+
+	resize(windowWidth, windowHeight);
 
 	if (flextInit() == -1) {
 		Log::error("Could not initialize opengl: %s", SDL_GetError());
