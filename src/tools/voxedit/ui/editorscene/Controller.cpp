@@ -51,8 +51,8 @@ void Controller::init(Controller::SceneCameraMode mode) {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 }
 
-void Controller::onResize(const glm::ivec2& pixelDimensions, const glm::ivec2& screenDimensions) {
-	_camera.init(glm::ivec2(0), pixelDimensions, screenDimensions);
+void Controller::onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
+	_camera.init(glm::ivec2(0), frameBufferSize, windowSize);
 }
 
 void Controller::zoom(float level) {
