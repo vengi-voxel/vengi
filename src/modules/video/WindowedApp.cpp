@@ -457,12 +457,15 @@ core::AppState WindowedApp::onInit() {
 
 	// some platforms may override or hardcode the resolution - so
 	// we have to query it here to get the actual resolution
-	int _width, _height;
-	SDL_GL_GetDrawableSize(_window, &_width, &_height);
-	_frameBufferDimension = glm::ivec2(_width, _height);
-	_aspect = _width / static_cast<float>(_height);
-	SDL_GetWindowSize(_window, &_width, &_height);
-	_windowDimension = glm::ivec2(_width, _height);
+	int frameBufferWidth, frameBufferHeight;
+	SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
+	_aspect = frameBufferWidth / static_cast<float>(frameBufferHeight);
+	_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
+
+	int windowWidth, windowHeight;
+	SDL_GetWindowSize(_window, &windowWidth, &windowHeight);
+	_windowDimension = glm::ivec2(windowWidth, windowHeight);
+
 	Log::info("resolution (%i:%i) (pixel)", _frameBufferDimension.x, _frameBufferDimension.y);
 	Log::info("resolution (%i:%i) (screen)", _windowDimension.x, _windowDimension.y);
 	Log::info("dpi factor: %f", _dpiFactor);
