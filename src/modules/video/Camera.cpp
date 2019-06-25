@@ -359,7 +359,7 @@ glm::mat4 Camera::orthogonalMatrix() const {
 }
 
 glm::mat4 Camera::perspectiveMatrix() const {
-	return glm::perspective(glm::radians(_fieldOfView), _frameBufferAspectRatio, nearPlane(), farPlane());
+	return glm::perspectiveFovRH_NO(glm::radians(_fieldOfView), (float)_windowSize.x, (float)_windowSize.y, nearPlane(), farPlane());
 }
 
 void Camera::setNearPlane(float nearPlane) {
