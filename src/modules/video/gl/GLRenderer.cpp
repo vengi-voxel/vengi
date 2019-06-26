@@ -286,11 +286,11 @@ bool scissor(int x, int y, int w, int h) {
 	 *  it is as though the scissor box includes the entire window.
 	 */
 	if (_priv::s.clipOriginLowerLeft) {
-		const int _y = _priv::s.windowHeight * _priv::s.scaleFactor - (y + h) / _priv::s.scaleFactor;
-		glScissor((GLint)(x / (float)_priv::s.scaleFactor), (GLint)_y, (GLsizei)(w / (float)_priv::s.scaleFactor), (GLsizei)(h / (float)_priv::s.scaleFactor));
+		const int _y = _priv::s.windowHeight * _priv::s.scaleFactor - (y + h);
+		glScissor((GLint)x, (GLint)_y, (GLsizei)w, (GLsizei)h);
 	} else {
 		// GL 4.5's glClipControl(GL_UPPER_LEFT)
-		glScissor((GLint)(x / (float)_priv::s.scaleFactor), (GLint)(y / (float)_priv::s.scaleFactor), (GLsizei)(w / (float)_priv::s.scaleFactor), (GLsizei)(h / (float)_priv::s.scaleFactor));
+		glScissor((GLint)x, (GLint)y, (GLsizei)w, (GLsizei)h);
 	}
 	checkError();
 	return true;

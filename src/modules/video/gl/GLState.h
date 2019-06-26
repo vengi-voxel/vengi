@@ -54,6 +54,17 @@ struct GLState {
 	int viewportH = 0;
 	int windowWidth = 0;
 	int windowHeight = 0;
+	/**
+	 * These functions use pixel dimensions:
+	 * * glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
+	 * * glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
+	 * * glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, ...)
+	 * * glLineWidth(GLfloat width)
+	 * * glRenderbufferStorage(..., GLsizei width, GLsizei height)
+	 * * glTexImage2D(..., GLsizei width, GLsizei height, ...)
+	 * * glBlitFramebuffer
+	 * * glPointSize
+	 */
 	float scaleFactor = 1.0f;
 	int scissorX = 0;
 	int scissorY = 0;
