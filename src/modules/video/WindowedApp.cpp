@@ -69,7 +69,8 @@ core::AppState WindowedApp::onRunning() {
 				_aspect = frameBufferWidth / static_cast<float>(frameBufferHeight);
 				_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
 				_windowDimension = glm::ivec2(w, h);
-				video::resize(w, h);
+				const float scaleFactor = _frameBufferDimension.x / (float)_windowDimension.x;
+				video::resize(w, h, scaleFactor);
 				video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 			}
 			// fallthrough
@@ -471,7 +472,6 @@ core::AppState WindowedApp::onInit() {
 	int windowWidth, windowHeight;
 	SDL_GetWindowSize(_window, &windowWidth, &windowHeight);
 	_windowDimension = glm::ivec2(windowWidth, windowHeight);
-	video::resize(windowWidth, windowHeight);
 
 	Log::info("resolution (%i:%i) (pixel)", _frameBufferDimension.x, _frameBufferDimension.y);
 	Log::info("resolution (%i:%i) (screen)", _windowDimension.x, _windowDimension.y);
@@ -479,7 +479,8 @@ core::AppState WindowedApp::onInit() {
 	Log::info("dpi factor h: %f", _dpiHorizontalFactor);
 	Log::info("dpi factor v: %f", _dpiVerticalFactor);
 
-	video::init(_windowDimension.x, _windowDimension.y, _dpiFactor);
+	const float scaleFactor = _frameBufferDimension.x / (float)_windowDimension.x;
+	video::init(_windowDimension.x, _windowDimension.y, scaleFactor);
 	video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 
 	core_trace_gl_init();

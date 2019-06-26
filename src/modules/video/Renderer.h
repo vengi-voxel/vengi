@@ -198,8 +198,10 @@ extern void setup();
 /**
  * @note setup() must be called before init()
  */
-extern bool init(int windowWidth, int windowHeight, float dpiFactor);
-extern void resize(int windowWidth, int windowHeight);
+extern bool init(int windowWidth, int windowHeight, float scaleFactor);
+extern void resize(int windowWidth, int windowHeight, float scaleFactor);
+extern float getScaleFactor();
+extern glm::ivec2 getWindowSize();
 extern void destroyContext(RendererContext& context);
 extern RendererContext createContext(SDL_Window* window);
 extern void startFrame(SDL_Window* window, RendererContext& context);

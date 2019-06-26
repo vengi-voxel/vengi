@@ -78,7 +78,6 @@ public:
 	int frameBufferWidth() const;
 	int frameBufferHeight() const;
 	bool isPressed(int32_t key) const;
-	float dpiFactor() const;
 	/**
 	 * @brief Reverse lookup of key bindings - by command name
 	 * @param[out] modifier The modifier mask that the command is bound to
@@ -158,10 +157,6 @@ inline void WindowedApp::directoryDialog(const std::function<void(const std::str
 
 inline bool WindowedApp::isPressed(int32_t key) const {
 	return _keys.find(key) != _keys.end();
-}
-
-inline float WindowedApp::dpiFactor() const {
-	return _dpiFactor;
 }
 
 }

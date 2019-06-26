@@ -68,18 +68,18 @@ void Viewport::onResized(int oldw, int oldh) {
 	core_trace_scoped(EditorSceneOnResized);
 	Super::onResized(oldw, oldh);
 	const tb::TBRect& rect = getRect();
-	const glm::ivec2 dim(rect.w, rect.h);
-	const float dpiFactor = video::WindowedApp::getInstance()->dpiFactor();
-	const glm::ivec2 screen(int(dim.x / dpiFactor + 0.5f), int(dim.y / dpiFactor + 0.5f));
-	_controller.onResize(dim, screen);
+	const glm::ivec2 frameBufferSize(rect.w, rect.h);
+	const float scaleFactor = video::getScaleFactor();
+	const glm::ivec2 windowSize(int(frameBufferSize.x / scaleFactor + 0.5f), int(frameBufferSize.y / scaleFactor + 0.5f));
+	_controller.onResize(frameBufferSize, windowSize);
 	_frameBuffer.shutdown();
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
 	video::FrameBufferConfig cfg;
-	cfg.dimension(dim).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addTextureAttachment(textureCfg);
+	cfg.dimension(frameBufferSize).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addTextureAttachment(textureCfg);
 	_frameBuffer.init(cfg);
 	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
-	_frameBufferTexture.init(dim.x, dim.y, fboTexture->handle());
+	_frameBufferTexture.init(frameBufferSize.x, frameBufferSize.y, fboTexture->handle());
 }
 
 void Viewport::onPaint(const PaintProps &paintProps) {

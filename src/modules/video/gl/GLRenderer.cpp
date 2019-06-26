@@ -234,11 +234,11 @@ bool scissor(int x, int y, int w, int h) {
 	_priv::s.scissorH = h;
 
 	if (_priv::s.clipOriginLowerLeft) {
-		const int _y = _priv::s.windowHeight - (y + h) / _priv::s.dpiFactor;
-		glScissor((GLint)(x / _priv::s.dpiFactor), (GLint)_y, (GLsizei)(w / _priv::s.dpiFactor), (GLsizei)(h / _priv::s.dpiFactor));
+		const int _y = _priv::s.windowHeight * _priv::s.scaleFactor - (y + h) / _priv::s.scaleFactor;
+		glScissor((GLint)(x / (float)_priv::s.scaleFactor), (GLint)_y, (GLsizei)(w / (float)_priv::s.scaleFactor), (GLsizei)(h / (float)_priv::s.scaleFactor));
 	} else {
 		// GL 4.5's glClipControl(GL_UPPER_LEFT)
-		glScissor((GLint)(x / _priv::s.dpiFactor), (GLint)(y / _priv::s.dpiFactor), (GLsizei)(w / _priv::s.dpiFactor), (GLsizei)(h / _priv::s.dpiFactor));
+		glScissor((GLint)(x / (float)_priv::s.scaleFactor), (GLint)(y / (float)_priv::s.scaleFactor), (GLsizei)(w / (float)_priv::s.scaleFactor), (GLsizei)(h / (float)_priv::s.scaleFactor));
 	}
 	checkError();
 	return true;
@@ -1548,18 +1548,26 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 }
 
-void resize(int windowWidth, int windowHeight) {
+void resize(int windowWidth, int windowHeight, float scaleFactor) {
 	_priv::s.windowWidth = windowWidth;
 	_priv::s.windowHeight = windowHeight;
+	_priv::s.scaleFactor = scaleFactor;
 }
 
-bool init(int windowWidth, int windowHeight, float dpiFactor) {
+glm::ivec2 getWindowSize() {
+	return glm::ivec2(_priv::s.windowWidth, _priv::s.windowHeight);
+}
+
+float getScaleFactor() {
+	return _priv::s.scaleFactor;
+}
+
+bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &_priv::s.glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);
 	Log::info("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
 
-	_priv::s.dpiFactor = dpiFactor;
-	resize(windowWidth, windowHeight);
+	resize(windowWidth, windowHeight, scaleFactor);
 
 	if (flextInit() == -1) {
 		Log::error("Could not initialize opengl: %s", SDL_GetError());
