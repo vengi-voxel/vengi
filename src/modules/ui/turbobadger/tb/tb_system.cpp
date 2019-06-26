@@ -13,6 +13,12 @@
 
 namespace tb {
 
+#ifdef _APPLE_
+const int TB_defaultDpi = 96;
+#else
+const int TB_defaultDpi = 72;
+#endif
+
 double TBSystem::getTimeMS() {
 	Uint64 freq = SDL_GetPerformanceFrequency();
 	Uint64 now = SDL_GetPerformanceCounter();
@@ -31,22 +37,22 @@ int TBSystem::getLongClickDelayMS() {
 }
 
 int TBSystem::getPanThreshold() {
-	return 5 * getDPI() / 96;
+	return 5 * getDPI() / TB_defaultDpi;
 }
 
 int TBSystem::getPixelsPerLine() {
-	return 40 * getDPI() / 96;
+	return 40 * getDPI() / TB_defaultDpi;
 }
 
 int TBSystem::getDPI() {
 #if SDL_VERSION_ATLEAST(2, 0, 4)
 	float ddpi;
 	if (SDL_GetDisplayDPI(0, &ddpi, NULL, NULL) != 0) {
-		return 96;
+		return TB_defaultDpi;
 	}
 	return (int)ddpi;
 #else
-	return 96;
+	return TB_defaultDpi;
 #endif
 }
 

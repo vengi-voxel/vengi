@@ -365,9 +365,14 @@ core::AppState WindowedApp::onInit() {
 		float hdpi = -1.0f;
 		float vdpi = -1.0f;
 		if (SDL_GetDisplayDPI(i, &ddpi, &hdpi, &vdpi) == 0) {
-			_dpiFactor = ddpi / 96.0f;
-			_dpiHorizontalFactor = hdpi / 96.0f;
-			_dpiVerticalFactor = vdpi / 96.0f;
+#ifdef _APPLE_
+			const float baseDpi = 72.0f;
+#else
+			const float baseDpi = 96.0f;
+#endif
+			_dpiFactor = ddpi / baseDpi;
+			_dpiHorizontalFactor = hdpi / baseDpi;
+			_dpiVerticalFactor = vdpi / baseDpi;
 		}
 		Log::info("Display %i: %i:%i x %i:%i (dpi: %f, h: %f, v: %f)", i, dr.x, dr.y, dr.w, dr.h, ddpi, hdpi, vdpi);
 	}
