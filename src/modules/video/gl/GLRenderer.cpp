@@ -234,11 +234,11 @@ bool scissor(int x, int y, int w, int h) {
 	_priv::s.scissorH = h;
 
 	if (_priv::s.clipOriginLowerLeft) {
-		const int _y = _priv::s.viewportH - (y + h);
-		glScissor((GLint)x, (GLint)_y, (GLsizei)w, (GLsizei)h);
+		const int _y = _priv::s.windowHeight - (y + h) / _priv::s.dpiFactor;
+		glScissor((GLint)(x / _priv::s.dpiFactor), (GLint)_y, (GLsizei)(w / _priv::s.dpiFactor), (GLsizei)(h / _priv::s.dpiFactor));
 	} else {
 		// GL 4.5's glClipControl(GL_UPPER_LEFT)
-		glScissor((GLint)x, (GLint)y, (GLsizei)w, (GLsizei)h);
+		glScissor((GLint)(x / _priv::s.dpiFactor), (GLint)(y / _priv::s.dpiFactor), (GLsizei)(w / _priv::s.dpiFactor), (GLsizei)(h / _priv::s.dpiFactor));
 	}
 	checkError();
 	return true;
@@ -1553,11 +1553,12 @@ void resize(int windowWidth, int windowHeight) {
 	_priv::s.windowHeight = windowHeight;
 }
 
-bool init(int windowWidth, int windowHeight) {
+bool init(int windowWidth, int windowHeight, float dpiFactor) {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &_priv::s.glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);
 	Log::info("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
 
+	_priv::s.dpiFactor = dpiFactor;
 	resize(windowWidth, windowHeight);
 
 	if (flextInit() == -1) {

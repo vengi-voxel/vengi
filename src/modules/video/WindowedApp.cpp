@@ -474,7 +474,7 @@ core::AppState WindowedApp::onInit() {
 	Log::info("dpi factor h: %f", _dpiHorizontalFactor);
 	Log::info("dpi factor v: %f", _dpiVerticalFactor);
 
-	video::init(_windowDimension.x, _windowDimension.y);
+	video::init(_windowDimension.x, _windowDimension.y, _dpiFactor);
 	video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 
 	core_trace_gl_init();
