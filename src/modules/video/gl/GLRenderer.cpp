@@ -205,6 +205,25 @@ bool viewport(int x, int y, int w, int h) {
 	_priv::s.viewportY = y;
 	_priv::s.viewportW = w;
 	_priv::s.viewportH = h;
+	/**
+	 * Parameters
+	 * x, y
+	 *  Specify the lower left corner of the viewport rectangle,
+	 *  in pixels. The initial value is (0,0).
+	 * width, height
+	 *  Specify the width and height of the viewport.
+	 *  When a GL context is first attached to a window,
+	 *  width and height are set to the dimensions of that window.
+	 *
+	 * Description
+	 *  glViewport specifies the affine transformation of x
+	 *  and y from normalized device coordinates to window coordinates.
+	 *
+	 *  Viewport width and height are silently clamped
+	 *  to a range that depends on the implementation.
+	 *  To query this range, call glGet with argument
+	 *  GL_MAX_VIEWPORT_DIMS.
+	 */
 	glViewport((GLint)x, (GLint)y, (GLsizei)w, (GLsizei)h);
 	checkError();
 	return true;
@@ -233,6 +252,39 @@ bool scissor(int x, int y, int w, int h) {
 	_priv::s.scissorW = w;
 	_priv::s.scissorH = h;
 
+	/**
+	 * Parameters
+	 * x, y
+	 *  Specify the lower left corner of the scissor box.
+	 *  Initially (0, 0).
+	 * width, height
+	 *  Specify the width and height of the scissor box.
+	 *  When a GL context is first attached to a window,
+	 *  width and height are set to the dimensions of that
+	 *  window.
+	 *
+	 * Description
+	 *  glScissor defines a rectangle, called the scissor box,
+	 *  in window coordinates.
+	 *  The first two arguments,
+	 *  x and y,
+	 *  specify the lower left corner of the box.
+	 *  width and height specify the width and height of the box.
+	 *
+	 *  To enable and disable the scissor test, call
+	 *  glEnable and glDisable with argument
+	 *  GL_SCISSOR_TEST. The test is initially disabled.
+	 *  While the test is enabled, only pixels that lie within the scissor box
+	 *  can be modified by drawing commands.
+	 *  Window coordinates have integer values at the shared corners of
+	 *  frame buffer pixels.
+	 *  glScissor(0,0,1,1) allows modification of only the lower left
+	 *  pixel in the window, and glScissor(0,0,0,0) doesn't allow
+	 *  modification of any pixels in the window.
+	 *
+	 *  When the scissor test is disabled,
+	 *  it is as though the scissor box includes the entire window.
+	 */
 	if (_priv::s.clipOriginLowerLeft) {
 		const int _y = _priv::s.windowHeight * _priv::s.scaleFactor - (y + h) / _priv::s.scaleFactor;
 		glScissor((GLint)(x / (float)_priv::s.scaleFactor), (GLint)_y, (GLsizei)(w / (float)_priv::s.scaleFactor), (GLsizei)(h / (float)_priv::s.scaleFactor));
