@@ -140,3 +140,8 @@ Don't use assimp at runtime - use it only in the asset-pipeline to generate a 'b
 
 Add alias command to group commands
 Expose bash-completion for commands
+
+# Bugs
+
+Alpha rendering with opacity <1.0 doesn't work on osx (visible in Voxedit undo/redo not visible in a new scene)
+HighDPI rendering doesn't work
