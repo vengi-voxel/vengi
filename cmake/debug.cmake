@@ -6,6 +6,7 @@ elseif (LLDB_EXECUTABLE)
 	set(DEBUGGER ${LLDB_EXECUTABLE} CACHE STRING "Which debugger should be used")
 else()
 	set(DEBUGGER "unknown" CACHE STRING "Which debugger should be used")
+	message(STATUS "No debugger (gdb or lldb) was found")
 endif()
 set_property(CACHE DEBUGGER PROPERTY STRINGS gdb lldb)
 
@@ -26,7 +27,5 @@ macro(engine_add_debuggger TARGET)
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
 		)
-	else()
-		message(WARN "Unknown DEBUGGER value - set to gdb or lldb")
 	endif()
 endmacro()
