@@ -11,7 +11,7 @@ endif()
 set_property(CACHE DEBUGGER PROPERTY STRINGS gdb lldb)
 
 macro(engine_add_debuggger TARGET)
-	if (${DEBUGGER} STREQUAL "gdb")
+	if (${DEBUGGER} MATCHES "gdb")
 		add_custom_target(${TARGET}-debug)
 		add_custom_command(TARGET ${TARGET}-debug
 			COMMAND ${GDB_EXECUTABLE} -ex run --args $<TARGET_FILE:${TARGET}>
@@ -19,7 +19,7 @@ macro(engine_add_debuggger TARGET)
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
 		)
-	elseif (${DEBUGGER} STREQUAL "lldb")
+	elseif (${DEBUGGER} MATCHES "lldb")
 		add_custom_target(${TARGET}-debug)
 		add_custom_command(TARGET ${TARGET}-debug
 			COMMAND CG_CONTEXT_SHOW_BACKTRACE=1 ${LLDB_EXECUTABLE} -b -o run $<TARGET_FILE:${TARGET}>
