@@ -542,6 +542,7 @@ void unmapBuffer(Id handle, BufferType type) {
 	if (FLEXT_ARB_direct_state_access) {
 		glUnmapNamedBuffer(handle);
 	} else {
+		bindBuffer(type, handle);
 		glUnmapBuffer(glType);
 	}
 	checkError();
