@@ -6,6 +6,7 @@
 #include "NoiseWindow.h"
 #include "TreeWindow.h"
 #include "palette/PaletteWidget.h"
+#include "palette/PaletteSelector.h"
 #include "io/Filesystem.h"
 #include "video/WindowedApp.h"
 #include "core/Var.h"
@@ -405,6 +406,8 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		if (!settings->show()) {
 			delete settings;
 		}
+	} else if (id == TBIDC("loadpalette")) {
+		new PaletteSelector(this);
 	} else if (id == TBIDC("scene_settings") && ev.ref_id == TBIDC("ok")) {
 		auto &renderer = sceneMgr().renderer();
 		if (_settings.ambientDirty) {
@@ -767,16 +770,25 @@ void VoxEditWindow::quit() {
 
 bool VoxEditWindow::importAsPlane(const std::string& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string& file) { importAsPlane(file); }, "png");
+		getApp()->openDialog([this] (const std::string file) { importAsPlane(file); }, "png");
 		return true;
 	}
 
 	return sceneMgr().importAsPlane(file);
 }
 
+bool VoxEditWindow::importPalette(const std::string& file) {
+	if (file.empty()) {
+		getApp()->openDialog([this] (const std::string file) { importPalette(file); }, "png");
+		return true;
+	}
+
+	return sceneMgr().importPalette(file);
+}
+
 bool VoxEditWindow::importHeightmap(const std::string& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string& file) { importHeightmap(file); }, "png");
+		getApp()->openDialog([this] (const std::string file) { importHeightmap(file); }, "png");
 		return true;
 	}
 
@@ -785,7 +797,7 @@ bool VoxEditWindow::importHeightmap(const std::string& file) {
 
 bool VoxEditWindow::save(const std::string& file) {
 	if (file.empty()) {
-		getApp()->saveDialog([this] (const std::string& file) {save(file); }, SUPPORTED_VOXEL_FORMATS_SAVE);
+		getApp()->saveDialog([this] (const std::string file) {save(file); }, SUPPORTED_VOXEL_FORMATS_SAVE);
 		return true;
 	}
 	if (!sceneMgr().save(file)) {
@@ -800,7 +812,7 @@ bool VoxEditWindow::save(const std::string& file) {
 
 bool VoxEditWindow::saveScreenshot(const std::string& file) {
 	if (file.empty()) {
-		getApp()->saveDialog([this] (const std::string& file) {saveScreenshot(file); }, "png");
+		getApp()->saveDialog([this] (const std::string file) {saveScreenshot(file); }, "png");
 		return true;
 	}
 	if (!_scene->saveImage(file.c_str())) {
@@ -813,7 +825,7 @@ bool VoxEditWindow::saveScreenshot(const std::string& file) {
 
 bool VoxEditWindow::importMesh(const std::string& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string& file) {importMesh(file);}, _importFilter);
+		getApp()->openDialog([this] (const std::string file) {importMesh(file);}, _importFilter);
 		return true;
 	}
 	if (!sceneMgr().dirty()) {
@@ -838,7 +850,7 @@ bool VoxEditWindow::exportFile(const std::string& file) {
 		if (_exportFilter.empty()) {
 			return false;
 		}
-		getApp()->saveDialog([this] (const std::string& file) { exportFile(file); }, _exportFilter);
+		getApp()->saveDialog([this] (const std::string file) { exportFile(file); }, _exportFilter);
 		return true;
 	}
 	return sceneMgr().exportModel(file);
@@ -859,7 +871,7 @@ void VoxEditWindow::resetCamera() {
 
 bool VoxEditWindow::prefab(const std::string& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string& file) { prefab(file); }, SUPPORTED_VOXEL_FORMATS_LOAD);
+		getApp()->openDialog([this] (const std::string file) { prefab(file); }, SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
 	}
 
@@ -873,7 +885,7 @@ void VoxEditWindow::afterLoad(const std::string& file) {
 
 bool VoxEditWindow::load(const std::string& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string& file) { std::string copy(file); load(copy); }, SUPPORTED_VOXEL_FORMATS_LOAD);
+		getApp()->openDialog([this] (const std::string file) { std::string copy(file); load(copy); }, SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
 	}
 

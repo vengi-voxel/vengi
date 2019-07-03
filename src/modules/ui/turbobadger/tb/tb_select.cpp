@@ -211,7 +211,7 @@ void TBSelectList::setValue(int value) {
 	invokeEvent(ev);
 }
 
-TBID TBSelectList::getSelectedItemID() {
+TBID TBSelectList::getSelectedItemID() const {
 	if ((m_source != nullptr) && m_value >= 0 && m_value < m_source->getNumItems()) {
 		return m_source->getItemID(m_value);
 	}

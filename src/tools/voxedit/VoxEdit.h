@@ -27,6 +27,7 @@ public:
 
 	bool importheightmapFile(const std::string& file);
 	bool importplaneFile(const std::string& file);
+	bool importpaletteFile(const std::string& file);
 	bool saveFile(const std::string& file);
 	bool loadFile(const std::string& file);
 	bool screenshotFile(const std::string& file);

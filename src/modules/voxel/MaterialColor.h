@@ -22,6 +22,9 @@ namespace voxel {
 typedef std::vector<glm::vec4> MaterialColorArray;
 typedef std::vector<uint8_t> MaterialColorIndices;
 
+extern const char* getDefaultPaletteName();
+extern std::string extractPaletteName(const std::string& file);
+
 extern bool initDefaultMaterialColors();
 extern bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile);
 extern bool initMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaBuffer);

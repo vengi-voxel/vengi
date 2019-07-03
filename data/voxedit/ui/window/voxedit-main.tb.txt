@@ -58,6 +58,12 @@ TBLayout: distribution: gravity, axis: y
 						TBLayout: position: left top, axis: y
 							lp: padding: 0
 							PaletteWidget: id: palettecontainer, width: 20, height: 20, amount-x: 9, connection: current-voxel-color
+							TBLayout: position: right top, axis: x
+								lp: padding: 0
+								TBButton: @include: definitions>menubutton, text: Import, command: "importpalette"
+									TBSkinImage: skin: voxedit-import-palette
+								TBButton: @include: definitions>menubutton, text: Load, id: loadpalette
+									TBSkinImage: skin: voxedit-load
 
 					TBSection: value: 1, text: "Tools", is-group-root: 1
 						TBLayout: position: left top, axis: y

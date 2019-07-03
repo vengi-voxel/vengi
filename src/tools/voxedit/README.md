@@ -77,4 +77,3 @@ my own engine and evolved into something that others might find useful, too.
 
 * Fix memento states for merge of layers
 * Fix memento states for layer group modifications
-* Add createpalette and loadpalette ui options to palette panel

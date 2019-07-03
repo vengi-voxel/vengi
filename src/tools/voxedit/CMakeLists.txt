@@ -6,6 +6,7 @@ set(SRCS
 	ui/editorscene/Controller.h ui/editorscene/Controller.cpp
 
 	ui/palette/PaletteWidget.h ui/palette/PaletteWidget.cpp
+	ui/palette/PaletteSelector.h ui/palette/PaletteSelector.cpp
 
 	ui/settings/SceneSettingsWindow.h ui/settings/SceneSettingsWindow.cpp
 
@@ -28,6 +29,7 @@ set(UI_WINDOWS
 	voxedit/ui/window/voxedit-layer.tb.txt
 	voxedit/ui/window/voxedit-main.tb.txt
 	voxedit/ui/window/voxedit-noise.tb.txt
+	voxedit/ui/window/voxedit-palette-selector.tb.txt
 	voxedit/ui/window/voxedit-scene-settings.tb.txt
 	voxedit/ui/window/voxedit-tree.tb.txt
 )
@@ -47,6 +49,7 @@ set(IMAGES
 	voxedit/ui/skin/voxedit-extend
 	voxedit/ui/skin/voxedit-flip-horizontal
 	voxedit/ui/skin/voxedit-flip-vertical
+	voxedit/ui/skin/voxedit-import-palette
 	voxedit/ui/skin/voxedit-load
 	voxedit/ui/skin/voxedit-lock-layer
 	voxedit/ui/skin/voxedit-lock-layer-selected

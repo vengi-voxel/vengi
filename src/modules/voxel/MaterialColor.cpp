@@ -260,10 +260,26 @@ bool overrideMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& l
 	return overrideMaterialColors(img->data(), img->width() * img->height() * img->depth(), luaFile->load());
 }
 
+const char* getDefaultPaletteName() {
+	return "nippon";
+}
+
+std::string extractPaletteName(const std::string& file) {
+	if (!core::string::startsWith(file, "palette-")) {
+		return "";
+	}
+	const std::string& nameWithExtension = file.substr(8);
+	const size_t extPos = nameWithExtension.rfind('.');
+	if (extPos != std::string::npos) {
+		return nameWithExtension.substr(0, extPos);
+	}
+	return nameWithExtension;
+}
+
 bool initDefaultMaterialColors() {
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
-	const io::FilePtr& paletteFile = filesystem->open("palette-nippon.png");
-	const io::FilePtr& luaFile = filesystem->open("palette-nippon.lua");
+	const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", getDefaultPaletteName()));
+	const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", getDefaultPaletteName()));
 	return initMaterialColors(paletteFile, luaFile);
 }
 

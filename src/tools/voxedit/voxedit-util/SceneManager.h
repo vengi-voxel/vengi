@@ -190,6 +190,7 @@ public:
 	bool importHeightmap(const std::string& file);
 	bool importAsPlane(const std::string& file);
 	bool importPalette(const std::string& file);
+	bool loadPalette(const std::string& paletteName);
 	bool exportModel(const std::string& file);
 	bool save(const std::string& file, bool autosave = false);
 	bool load(const std::string& file);

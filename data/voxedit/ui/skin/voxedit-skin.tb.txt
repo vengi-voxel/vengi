@@ -9,6 +9,8 @@ elements
 		bitmap voxedit-flip-vertical.png
 	voxedit-load
 		bitmap voxedit-load.png
+	voxedit-import-palette
+		bitmap voxedit-import-palette.png
 	voxedit-down
 		bitmap voxedit-up.png
 		flip-y 1

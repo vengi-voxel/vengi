@@ -255,7 +255,7 @@ bool Filesystem::isRelativePath(const std::string& name) {
 	return name[1] != ':';
 #else
 	if (size == 0) {
-		return false;
+		return true;
 	}
 	return name[0] != '/';
 #endif

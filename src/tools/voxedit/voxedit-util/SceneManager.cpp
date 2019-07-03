@@ -140,6 +140,13 @@ bool SceneManager::voxelizeModel(const video::MeshPtr& meshPtr) {
 	return true;
 }
 
+bool SceneManager::loadPalette(const std::string& paletteName) {
+	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName.c_str()));
+	const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", paletteName.c_str()));
+	return voxel::overrideMaterialColors(paletteFile, luaFile);
+}
+
 bool SceneManager::importPalette(const std::string& file) {
 	const image::ImagePtr& img = image::loadImage(file, false);
 	if (!img->isLoaded()) {
@@ -725,23 +732,12 @@ void SceneManager::construct() {
 		moveCursor(x, y, z);
 	}).setHelp("Move the cursor by the specified offsets");
 
-	core::Command::registerCommand("createpalette", [this] (const core::CmdArgs& args) {
-		if (args.size() != 1) {
-			Log::info("Expected to get an image file name as parameter");
-			return;
-		}
-		importPalette(args[0]);
-	}).setArgumentCompleter(core::fileCompleter("", "*.png")).setHelp("Import a palette from the given image");
-
-	core::Command::registerCommand("loadpalette", [] (const core::CmdArgs& args) {
+	core::Command::registerCommand("loadpalette", [this] (const core::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Expected to get the palette NAME as part of palette-NAME.[png|lua]");
 			return;
 		}
-		const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
-		const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", args[0].c_str()));
-		const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", args[0].c_str()));
-		voxel::overrideMaterialColors(paletteFile, luaFile);
+		loadPalette(args[0]);
 	}).setHelp("Load an existing palette by name. E.g. 'nippon'");
 
 	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {

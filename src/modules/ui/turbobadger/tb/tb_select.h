@@ -60,7 +60,7 @@ public:
 	}
 
 	/** Get the ID of the selected item, or 0 if there is no item selected. */
-	TBID getSelectedItemID();
+	TBID getSelectedItemID() const;
 
 	/** Change the value to a non disabled item that is visible with the current
 		filter. Returns true if it successfully found another item.

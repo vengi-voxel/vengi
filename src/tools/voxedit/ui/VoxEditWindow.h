@@ -102,6 +102,7 @@ private:
 	bool importMesh(const std::string& file);
 	bool importHeightmap(const std::string& file);
 	bool importAsPlane(const std::string& file);
+	bool importPalette(const std::string& file);
 	bool save(const std::string& file);
 	bool load(const std::string& file);
 	bool saveScreenshot(const std::string& file);
