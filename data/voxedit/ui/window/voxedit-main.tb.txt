@@ -53,7 +53,7 @@ TBLayout: distribution: gravity, axis: y
 						TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: dialog_noise
 							TBSkinImage: skin: voxedit-noise
 			TBLayout: distribution: gravity, position: top
-				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
+				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: no-padding-container
 					TBSection: value: 1, text: "Palette"
 						TBLayout: position: left top, axis: y
 							TBScrollContainer: scroll-mode: y
@@ -96,21 +96,21 @@ TBLayout: distribution: gravity, axis: y
 					TBLayout: distribution: gravity, id: editorcontainer
 						TBLayout: distribution: gravity, axis: y
 							TBLayout: distribution: gravity, axis: x
-								Viewport: id: editorscene, gravity: left right top bottom, skin: container, camera: free
+								Viewport: id: editorscene, gravity: left right top bottom, skin: no-padding-container, camera: free
 									@include cameramode
 									@include camerarottype
-								Viewport: id: editorscenetop, gravity: left right top bottom, skin: container, camera: top
+								Viewport: id: editorscenetop, gravity: left right top bottom, skin: no-padding-container, camera: top
 									@include cameramode
 									@include camerarottype
 							TBLayout: distribution: gravity, axis: x
-								Viewport: id: editorsceneleft, gravity: left right top bottom, skin: container, camera: left
+								Viewport: id: editorsceneleft, gravity: left right top bottom, skin: no-padding-container, camera: left
 									@include cameramode
 									@include camerarottype
-								Viewport: id: editorscenefront, gravity: left right top bottom, skin: container, camera: front
+								Viewport: id: editorscenefront, gravity: left right top bottom, skin: no-padding-container, camera: front
 									@include cameramode
 									@include camerarottype
 
-				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
+				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: no-padding-container
 
 					TBSection: value: 1, text: "Operations"
 						TBLayout: position: left top, axis: y

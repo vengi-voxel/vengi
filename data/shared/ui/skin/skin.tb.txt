@@ -10,7 +10,7 @@ description
 	# The skin also has graphics available in these DPI modes
 	supported-dpi 96 288
 defaults
-	spacing 5
+	spacing 0
 	text-color #fefefe
 	placeholder
 		opacity 0.2
@@ -292,7 +292,7 @@ elements
 		bitmap window.png
 		cut 16
 		expand 12
-		padding 2
+		padding 0
 		overrides
 			element TBWindow.selected
 				state selected
@@ -338,7 +338,7 @@ elements
 		type StretchBorder
 		cut 12
 		expand 6
-		padding 10
+		padding 0
 	TBCheckBox
 		bitmap checkbox.png
 		cut 19
@@ -487,6 +487,13 @@ elements
 
 	accent_color
 		text-color #001111
+
+	no-padding-container
+		type StretchBox
+		bitmap window.png
+		cut 16
+		expand 12
+		padding 0
 
 	container
 		type StretchBox
