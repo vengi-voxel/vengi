@@ -56,9 +56,8 @@ TBLayout: distribution: gravity, axis: y
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: no-padding-container
 					TBSection: value: 1, text: "Palette"
 						TBLayout: position: left top, axis: y
-							TBScrollContainer: scroll-mode: y
-								lp: height: 640, width: 200
-								PaletteWidget: id: palettecontainer, width: 23, height: 20, amount-x: 8, connection: current-voxel-color
+							lp: padding: 0
+							PaletteWidget: id: palettecontainer, width: 20, height: 20, amount-x: 9, connection: current-voxel-color
 
 					TBSection: value: 1, text: "Tools", is-group-root: 1
 						TBLayout: position: left top, axis: y

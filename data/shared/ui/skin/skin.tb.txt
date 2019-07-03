@@ -500,7 +500,7 @@ elements
 		bitmap window.png
 		cut 16
 		expand 12
-		padding 10
+		padding 6
 
 	separator
 		bitmap item_separator_x.png
