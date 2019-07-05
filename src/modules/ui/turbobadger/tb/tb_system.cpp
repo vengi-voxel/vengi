@@ -14,9 +14,9 @@
 namespace tb {
 
 #ifdef _APPLE_
-const int TB_defaultDpi = 96;
-#else
 const int TB_defaultDpi = 72;
+#else
+const int TB_defaultDpi = 96;
 #endif
 
 double TBSystem::getTimeMS() {
