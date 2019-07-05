@@ -65,6 +65,7 @@ public:
 
 	virtual void beginPaint(int pixelWidth, int pixelHeight) override;
 	virtual void endPaint() override;
+	virtual void translate(int dx, int dy) override;
 
 	virtual TBBitmap *createBitmap(int width, int height, uint32_t *data) override;
 

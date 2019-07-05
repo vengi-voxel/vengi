@@ -148,6 +148,11 @@ void UIRendererGL::endPaint() {
 	}
 #endif
 }
+void UIRendererGL::translate(int dx, int dy) {
+	const float scaleFactor = video::getScaleFactor();
+	m_translation_x += (int)glm::round(dx / scaleFactor);
+	m_translation_y += (int)glm::round(dy / scaleFactor);
+}
 
 void UIRendererGL::bindBitmap(TBBitmap *bitmap) {
 	if (bitmap == nullptr) {
