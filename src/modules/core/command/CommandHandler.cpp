@@ -8,6 +8,8 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/String.h"
+#include <algorithm>
+#include <vector>
 
 namespace core {
 
@@ -46,6 +48,52 @@ bool replacePlaceholders(std::string_view str, char *buf, size_t bufSize) {
 	return true;
 }
 
+// https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#C++
+size_t levensteinDistance(const std::string &source, const std::string &target) {
+	if (source.size() > target.size()) {
+		return levensteinDistance(target, source);
+	}
+
+	const size_t minSize = source.size(), maxSize = target.size();
+	std::vector<size_t> levDist(minSize + 1);
+
+	for (size_t i = 0; i <= minSize; ++i) {
+		levDist[i] = i;
+	}
+
+	for (size_t j = 1; j <= maxSize; ++j) {
+		size_t previousDiagonal = levDist[0], previousDiagonalSave;
+		++levDist[0];
+
+		for (size_t i = 1; i <= minSize; ++i) {
+			previousDiagonalSave = levDist[i];
+			if (source[i - 1] == target[j - 1]) {
+				levDist[i] = previousDiagonal;
+			} else {
+				levDist[i] = std::min(std::min(levDist[i - 1], levDist[i]),
+						previousDiagonal) + 1;
+			}
+			previousDiagonal = previousDiagonalSave;
+		}
+	}
+
+	return levDist[minSize];
+}
+
+static const char* findPotentialMatch(const std::string& arg) {
+	const char *match = nullptr;
+	size_t leastCost = 1000000u;
+	core::Command::visit([&] (const core::Command& c) {
+		const size_t cost = levensteinDistance(arg, c.name());
+		if (cost < leastCost) {
+			leastCost = cost;
+			match = c.name();
+		}
+	});
+
+	return match;
+}
+
 int executeCommands(const std::string& _commandLine) {
 	if (_commandLine.empty()) {
 		return 0;
@@ -78,6 +126,10 @@ int executeCommands(const std::string& _commandLine) {
 		const core::VarPtr& c = core::Var::get(cmd);
 		if (!c) {
 			Log::info("unknown command: %s", cmd.c_str());
+			const char *potentialMatch = findPotentialMatch(cmd);
+			if (potentialMatch != nullptr) {
+				Log::info("did you mean: %s", potentialMatch);
+			}
 			n = -1;
 		} else {
 			if (tokens.empty()) {
