@@ -400,10 +400,12 @@ core::AppState WindowedApp::onInit() {
 	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHghDPI);
 	if (highDPI->boolVal()) {
 		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+		Log::info("Enable high dpi support");
 	} else {
 		_dpiFactor = 1.0f;
 		_dpiHorizontalFactor = 1.0f;
 		_dpiVerticalFactor = 1.0f;
+		Log::info("Disable high dpi support");
 	}
 	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
