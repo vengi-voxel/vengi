@@ -768,6 +768,10 @@ void genFramebuffers(uint8_t amount, Id* ids) {
 	checkError();
 }
 
+Id currentFramebuffer() {
+	return _priv::s.framebufferHandle;
+}
+
 void deleteFramebuffers(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;

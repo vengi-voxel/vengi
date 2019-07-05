@@ -290,6 +290,7 @@ extern void genTextures(uint8_t amount, Id* ids);
 extern Id genTexture();
 extern void deleteTextures(uint8_t amount, Id* ids);
 extern void deleteTexture(Id& id);
+extern Id currentFramebuffer();
 extern void genFramebuffers(uint8_t amount, Id* ids);
 extern Id genFramebuffer();
 extern void deleteFramebuffers(uint8_t amount, Id* ids);
