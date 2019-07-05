@@ -87,8 +87,11 @@ void Viewport::onPaint(const PaintProps &paintProps) {
 	Super::onPaint(paintProps);
 	const glm::ivec2& dimension = _frameBuffer.dimension();
 	ui::turbobadger::UIRect rect = getRect();
+	const float scaleFactor = video::getScaleFactor();
 	rect.x = 0;
 	rect.y = 0;
+	rect.w = (int)glm::round(rect.w / scaleFactor);
+	rect.h = (int)glm::round(rect.h / scaleFactor);
 
 	// use the uv coords here to take a potential fb flip into account
 	const glm::vec4& uv = _frameBuffer.uv();
