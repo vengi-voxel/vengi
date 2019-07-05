@@ -68,6 +68,7 @@ protected:
 	glm::ivec2 _position {0};
 	// the position of the camera in the world
 	glm::vec3 _pos {0.0f};
+	glm::vec3 _eyePosition { 0.0f };
 	glm::quat _quat = glm::quat(1, 0, 0, 0);
 	uint32_t _dirty = DIRTY_ALL;
 
@@ -112,6 +113,8 @@ public:
 	 * @note Not the world position of the camera - but for controlling the viewport
 	 */
 	int y() const;
+
+	const glm::vec3 eye() const;
 
 	CameraType type() const;
 	void setType(CameraType type);
@@ -255,6 +258,10 @@ public:
 	glm::vec4 sphereBoundingBox() const;
 	glm::vec4 splitFrustumSphereBoundingBox(float near, float far) const;
 };
+
+inline const glm::vec3 Camera::eye() const {
+	return _eyePosition;
+}
 
 inline int Camera::frameBufferWidth() const {
 	return _frameBufferSize.x;

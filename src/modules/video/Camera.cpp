@@ -173,6 +173,7 @@ void Camera::updateViewMatrix() {
 	}
 	_viewMatrix = glm::translate(orientation(), -_pos);
 	_invViewMatrix = glm::inverse(_viewMatrix);
+	_eyePosition =_invViewMatrix[3];
 }
 
 Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
