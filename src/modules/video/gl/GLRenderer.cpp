@@ -244,6 +244,13 @@ void getScissor(int& x, int& y, int& w, int& h) {
 }
 
 bool scissor(int x, int y, int w, int h) {
+	if (w < 0) {
+		w = 0;
+	}
+	if (h < 0) {
+		h = 0;
+	}
+
 	if (_priv::s.scissorX == x && _priv::s.scissorY == y && _priv::s.scissorW == w && _priv::s.scissorH == h) {
 		return false;
 	}
@@ -251,7 +258,6 @@ bool scissor(int x, int y, int w, int h) {
 	_priv::s.scissorY = y;
 	_priv::s.scissorW = w;
 	_priv::s.scissorH = h;
-
 	/**
 	 * Parameters
 	 * x, y
@@ -285,13 +291,17 @@ bool scissor(int x, int y, int w, int h) {
 	 *  When the scissor test is disabled,
 	 *  it is as though the scissor box includes the entire window.
 	 */
+	GLint bottom;
 	if (_priv::s.clipOriginLowerLeft) {
-		const int _y = _priv::s.windowHeight * _priv::s.scaleFactor - (y + h);
-		glScissor((GLint)x, (GLint)_y, (GLsizei)w, (GLsizei)h);
+		bottom = _priv::s.windowHeight - (_priv::s.scissorY + _priv::s.scissorH);
 	} else {
-		// GL 4.5's glClipControl(GL_UPPER_LEFT)
-		glScissor((GLint)x, (GLint)y, (GLsizei)w, (GLsizei)h);
+		bottom = _priv::s.scissorY;
 	}
+	bottom = (GLint)glm::round(bottom * _priv::s.scaleFactor);
+	const GLint left = (GLint)glm::round(_priv::s.scissorX * _priv::s.scaleFactor);
+	const GLsizei width = (GLsizei)glm::round(_priv::s.scissorW * _priv::s.scaleFactor);
+	const GLsizei height = (GLsizei)glm::round(_priv::s.scissorH * _priv::s.scaleFactor);
+	glScissor(left, bottom, width, height);
 	checkError();
 	return true;
 }
