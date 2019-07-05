@@ -9,6 +9,7 @@ set(SRCS
 	Buffer.cpp Buffer.h
 	Camera.cpp Camera.h
 	Cubemap.cpp Cubemap.h
+	DriverHints.cpp
 	FrameBuffer.cpp FrameBuffer.h
 	FrameBufferConfig.cpp FrameBufferConfig.h
 	GBuffer.cpp GBuffer.h
