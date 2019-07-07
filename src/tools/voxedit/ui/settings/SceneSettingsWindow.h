@@ -15,8 +15,6 @@ public:
 	glm::vec3 sunPosition;
 	glm::vec3 sunDirection;
 
-	std::array<std::string, 4> backgrounds;
-
 	bool diffuseDirty = false;
 	bool ambientDirty = false;
 	bool sunPositionDirty = false;

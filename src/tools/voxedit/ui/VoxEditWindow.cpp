@@ -424,14 +424,6 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		if (_settings.sunDirectionDirty) {
 			// TODO: sun direction
 		}
-		for (size_t i = 0; i < _settings.backgrounds.size(); ++i) {
-			const std::string& name = _settings.backgrounds[i];
-			if (name.empty()) {
-				// TODO: delete old plane?
-				continue;
-			}
-			// TODO: apply bitmap plane
-		}
 		return true;
 	}
 	if (id == TBIDC("unsaved_changes_new")) {

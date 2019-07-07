@@ -50,10 +50,8 @@ my own engine and evolved into something that others might find useful, too.
 ## Planned
 
 * SceneSettings dialog
-  - Set bitmap backgrounds for each axis on a plane at a given position
   - Change sun angles
 * Voxel to transparency with a HSV threshold
-* Import bitmap palettes (quantize to 256 colors before)
 * Selections
   - Multiple AABBs should be possible
   - Delete, move, rotate, modify only in active selection
