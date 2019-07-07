@@ -83,6 +83,7 @@ const MemorySemanticsMask MemorySemanticsAllMemory =
 struct IdImmediate {
     bool isId;      // true if word is an Id, false if word is an immediate
     unsigned word;
+    IdImmediate(bool i, unsigned w) : isId(i), word(w) {}
 };
 
 //
@@ -435,6 +436,6 @@ __inline void Block::addInstruction(std::unique_ptr<Instruction> inst)
         parent.getParent().mapInstruction(raw_instruction);
 }
 
-};  // end spv namespace
+}  // end spv namespace
 
 #endif // spvIR_H

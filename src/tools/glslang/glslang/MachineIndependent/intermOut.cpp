@@ -43,6 +43,7 @@
 #else
 #include <cmath>
 #endif
+#include <cstdint>
 
 namespace {
 
@@ -236,6 +237,7 @@ bool TOutputTraverser::visitUnary(TVisit /* visit */, TIntermUnary* node)
     case EOpPostDecrement:  out.debug << "Post-Decrement";       break;
     case EOpPreIncrement:   out.debug << "Pre-Increment";        break;
     case EOpPreDecrement:   out.debug << "Pre-Decrement";        break;
+    case EOpCopyObject:     out.debug << "copy object";          break;
 
     // * -> bool
     case EOpConvInt8ToBool:    out.debug << "Convert int8_t to bool";  break;
@@ -817,6 +819,7 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpConstructStruct:  out.debug << "Construct structure";  break;
     case EOpConstructTextureSampler: out.debug << "Construct combined texture-sampler"; break;
     case EOpConstructReference:  out.debug << "Construct reference";  break;
+    case EOpConstructCooperativeMatrix:  out.debug << "Construct cooperative matrix";  break;
 
     case EOpLessThan:         out.debug << "Compare Less Than";             break;
     case EOpGreaterThan:      out.debug << "Compare Greater Than";          break;
@@ -1054,6 +1057,31 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpSubgroupQuadSwapVertical:        out.debug << "subgroupQuadSwapVertical"; break;
     case EOpSubgroupQuadSwapDiagonal:        out.debug << "subgroupQuadSwapDiagonal"; break;
 
+#ifdef NV_EXTENSIONS
+    case EOpSubgroupPartition:                          out.debug << "subgroupPartitionNV";                          break;
+    case EOpSubgroupPartitionedAdd:                     out.debug << "subgroupPartitionedAddNV";                     break;
+    case EOpSubgroupPartitionedMul:                     out.debug << "subgroupPartitionedMulNV";                     break;
+    case EOpSubgroupPartitionedMin:                     out.debug << "subgroupPartitionedMinNV";                     break;
+    case EOpSubgroupPartitionedMax:                     out.debug << "subgroupPartitionedMaxNV";                     break;
+    case EOpSubgroupPartitionedAnd:                     out.debug << "subgroupPartitionedAndNV";                     break;
+    case EOpSubgroupPartitionedOr:                      out.debug << "subgroupPartitionedOrNV";                      break;
+    case EOpSubgroupPartitionedXor:                     out.debug << "subgroupPartitionedXorNV";                     break;
+    case EOpSubgroupPartitionedInclusiveAdd:            out.debug << "subgroupPartitionedInclusiveAddNV";            break;
+    case EOpSubgroupPartitionedInclusiveMul:            out.debug << "subgroupPartitionedInclusiveMulNV";            break;
+    case EOpSubgroupPartitionedInclusiveMin:            out.debug << "subgroupPartitionedInclusiveMinNV";            break;
+    case EOpSubgroupPartitionedInclusiveMax:            out.debug << "subgroupPartitionedInclusiveMaxNV";            break;
+    case EOpSubgroupPartitionedInclusiveAnd:            out.debug << "subgroupPartitionedInclusiveAndNV";            break;
+    case EOpSubgroupPartitionedInclusiveOr:             out.debug << "subgroupPartitionedInclusiveOrNV";             break;
+    case EOpSubgroupPartitionedInclusiveXor:            out.debug << "subgroupPartitionedInclusiveXorNV";            break;
+    case EOpSubgroupPartitionedExclusiveAdd:            out.debug << "subgroupPartitionedExclusiveAddNV";            break;
+    case EOpSubgroupPartitionedExclusiveMul:            out.debug << "subgroupPartitionedExclusiveMulNV";            break;
+    case EOpSubgroupPartitionedExclusiveMin:            out.debug << "subgroupPartitionedExclusiveMinNV";            break;
+    case EOpSubgroupPartitionedExclusiveMax:            out.debug << "subgroupPartitionedExclusiveMaxNV";            break;
+    case EOpSubgroupPartitionedExclusiveAnd:            out.debug << "subgroupPartitionedExclusiveAndNV";            break;
+    case EOpSubgroupPartitionedExclusiveOr:             out.debug << "subgroupPartitionedExclusiveOrNV";             break;
+    case EOpSubgroupPartitionedExclusiveXor:            out.debug << "subgroupPartitionedExclusiveXorNV";            break;
+#endif
+
     case EOpSubpassLoad:   out.debug << "subpassLoad";   break;
     case EOpSubpassLoadMS: out.debug << "subpassLoadMS"; break;
 
@@ -1065,6 +1093,12 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpExecuteCallableNV:                out.debug << "executeCallableNV"; break;
     case EOpWritePackedPrimitiveIndices4x8NV: out.debug << "writePackedPrimitiveIndices4x8NV"; break;
 #endif
+
+    case EOpCooperativeMatrixLoad:  out.debug << "Load cooperative matrix";  break;
+    case EOpCooperativeMatrixStore:  out.debug << "Store cooperative matrix";  break;
+    case EOpCooperativeMatrixMulAdd: out.debug << "MulAdd cooperative matrices"; break;
+
+    case EOpIsHelperInvocation: out.debug << "IsHelperInvocation"; break;
 
     default: out.debug.message(EPrefixError, "Bad aggregation op");
     }
@@ -1157,8 +1191,11 @@ static void OutputDouble(TInfoSink& out, double value, TOutputTraverser::EExtraO
         switch (extra) {
         case TOutputTraverser::BinaryDoubleOutput:
         {
+            uint64_t b;
+            static_assert(sizeof(b) == sizeof(value), "sizeof(uint64_t) != sizeof(double)");
+            memcpy(&b, &value, sizeof(b));
+
             out.debug << " : ";
-            long long b = *reinterpret_cast<long long*>(&value);
             for (size_t i = 0; i < 8 * sizeof(value); ++i, ++b) {
                 out.debug << ((b & 0x8000000000000000) != 0 ? "1" : "0");
                 b <<= 1;
@@ -1357,6 +1394,7 @@ bool TOutputTraverser::visitBranch(TVisit /* visit*/, TIntermBranch* node)
     case EOpContinue:  out.debug << "Branch: Continue";       break;
     case EOpReturn:    out.debug << "Branch: Return";         break;
     case EOpCase:      out.debug << "case: ";                 break;
+    case EOpDemote:    out.debug << "Demote";                 break;
     case EOpDefault:   out.debug << "default: ";              break;
     default:               out.debug << "Branch: Unknown Branch"; break;
     }
@@ -1467,6 +1505,8 @@ void TIntermediate::output(TInfoSink& infoSink, bool tree)
             }
             infoSink.debug << "\n";
         }
+        if (interlockOrdering != EioNone)
+            infoSink.debug << "interlock ordering = " << TQualifier::getInterlockOrderingString(interlockOrdering) << "\n";
         break;
 
 #ifdef NV_EXTENSIONS

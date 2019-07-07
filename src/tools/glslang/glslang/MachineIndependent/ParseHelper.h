@@ -85,6 +85,7 @@ public:
             statementNestingLevel(0), loopNestingLevel(0), structNestingLevel(0), controlFlowNestingLevel(0),
             postEntryPointReturn(false),
             contextPragma(true, false),
+            beginInvocationInterlockCount(0), endInvocationInterlockCount(0),
             parsingBuiltins(parsingBuiltins), scanContext(nullptr), ppContext(nullptr),
             limits(resources.limits),
             globalUniformBlock(nullptr),
@@ -182,6 +183,8 @@ public:
     // the statementNestingLevel the current switch statement is at, which must match the level of its case statements
     TList<int> switchLevel;
     struct TPragma contextPragma;
+    int beginInvocationInterlockCount;
+    int endInvocationInterlockCount;
 
 protected:
     TParseContextBase(TParseContextBase&);
@@ -337,7 +340,7 @@ public:
     void globalCheck(const TSourceLoc&, const char* token);
     bool constructorError(const TSourceLoc&, TIntermNode*, TFunction&, TOperator, TType&);
     bool constructorTextureSamplerError(const TSourceLoc&, const TFunction&);
-    void arraySizeCheck(const TSourceLoc&, TIntermTyped* expr, TArraySize&);
+    void arraySizeCheck(const TSourceLoc&, TIntermTyped* expr, TArraySize&, const char *sizeType);
     bool arrayQualifierError(const TSourceLoc&, const TQualifier&);
     bool arrayError(const TSourceLoc&, const TType&);
     void arraySizeRequiredCheck(const TSourceLoc&, const TArraySizes&);
@@ -370,6 +373,7 @@ public:
     void nestedStructCheck(const TSourceLoc&);
     void arrayObjectCheck(const TSourceLoc&, const TType&, const char* op);
     void opaqueCheck(const TSourceLoc&, const TType&, const char* op);
+    void referenceCheck(const TSourceLoc&, const TType&, const char* op);
     void storage16BitAssignmentCheck(const TSourceLoc&, const TType&, const char* op);
     void specializationCheck(const TSourceLoc&, const TType&, const char* op);
     void structTypeCheck(const TSourceLoc&, TPublicType&);

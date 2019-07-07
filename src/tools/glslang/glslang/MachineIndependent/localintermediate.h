@@ -240,7 +240,7 @@ public:
         invocations(TQualifier::layoutNotSet), vertices(TQualifier::layoutNotSet),
         inputPrimitive(ElgNone), outputPrimitive(ElgNone),
         pixelCenterInteger(false), originUpperLeft(false),
-        vertexSpacing(EvsNone), vertexOrder(EvoNone), pointMode(false), earlyFragmentTests(false),
+        vertexSpacing(EvsNone), vertexOrder(EvoNone), interlockOrdering(EioNone), pointMode(false), earlyFragmentTests(false),
         postDepthCoverage(false), depthLayout(EldNone), depthReplacing(false),
         hlslFunctionality1(false),
         blendEquations(0), xfbMode(false), multiStream(false),
@@ -261,11 +261,13 @@ public:
         useStorageBuffer(false),
         useVulkanMemoryModel(false),
         hlslIoMapping(false),
+        useVariablePointers(false),
         textureSamplerTransformMode(EShTexSampTransKeep),
         needToLegalize(false),
         binaryDoubleOutput(false),
         usePhysicalStorageBuffer(false),
-        uniformLocationBase(0)
+        uniformLocationBase(0),
+        nanMinMaxClamp(false)
     {
         localSize[0] = 1;
         localSize[1] = 1;
@@ -405,6 +407,12 @@ public:
         usePhysicalStorageBuffer = true;
     }
     bool usingPhysicalStorageBuffer() const { return usePhysicalStorageBuffer; }
+    void setUseVariablePointers()
+    {
+        useVariablePointers = true;
+        processes.addProcess("use-variable-pointers");
+    }
+    bool usingVariablePointers() const { return useVariablePointers; }
 
     template<class T> T addCounterBufferName(const T& name) const { return name + implicitCounterName; }
     bool hasCounterBufferName(const TString& name) const {
@@ -488,9 +496,10 @@ public:
     TIntermSymbol* addSymbol(const TVariable&, const TSourceLoc&);
     TIntermSymbol* addSymbol(const TType&, const TSourceLoc&);
     TIntermSymbol* addSymbol(const TIntermSymbol&);
-    TIntermTyped* addConversion(TOperator, const TType&, TIntermTyped*) const;
-    std::tuple<TIntermTyped*, TIntermTyped*> addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* node1) const;
+    TIntermTyped* addConversion(TOperator, const TType&, TIntermTyped*);
+    std::tuple<TIntermTyped*, TIntermTyped*> addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* node1);
     TIntermTyped* addUniShapeConversion(TOperator, const TType&, TIntermTyped*);
+    TIntermTyped* addConversion(TBasicType convertTo, TIntermTyped* node) const;
     void addBiShapeConversion(TOperator, TIntermTyped*& lhsNode, TIntermTyped*& rhsNode);
     TIntermTyped* addShapeConversion(const TType&, TIntermTyped*);
     TIntermTyped* addBinaryMath(TOperator, TIntermTyped* left, TIntermTyped* right, TSourceLoc);
@@ -600,6 +609,15 @@ public:
     void setPointMode() { pointMode = true; }
     bool getPointMode() const { return pointMode; }
 
+    bool setInterlockOrdering(TInterlockOrdering o)
+    {
+        if (interlockOrdering != EioNone)
+            return interlockOrdering == o;
+        interlockOrdering = o;
+        return true;
+    }
+    TInterlockOrdering getInterlockOrdering() const { return interlockOrdering; }
+
     bool setLocalSize(int dim, int size)
     {
         if (localSize[dim] > 1)
@@ -688,6 +706,10 @@ public:
     static int getScalarAlignment(const TType&, int& size, int& stride, bool rowMajor);
     static int getMemberAlignment(const TType&, int& size, int& stride, TLayoutPacking layoutPacking, bool rowMajor);
     static bool improperStraddle(const TType& type, int size, int offset);
+    static void updateOffset(const TType& parentType, const TType& memberType, int& offset, int& memberSize);
+    static int getOffset(const TType& type, int index);
+    static int getBlockSize(const TType& blockType);
+    static int computeBufferReferenceTypeSize(const TType&);
     bool promote(TIntermOperator*);
 
 #ifdef NV_EXTENSIONS
@@ -745,6 +767,9 @@ public:
 
     void setUniformLocationBase(int base) { uniformLocationBase = base; }
     int getUniformLocationBase() const { return uniformLocationBase; }
+
+    void setNanMinMaxClamp(bool setting) { nanMinMaxClamp = setting; }
+    bool getNanMinMaxClamp() const { return nanMinMaxClamp; }
 
     void setNeedsLegalization() { needToLegalize = true; }
     bool needsLegalization() const { return needToLegalize; }
@@ -814,6 +839,7 @@ protected:
     bool originUpperLeft;
     TVertexSpacing vertexSpacing;
     TVertexOrder vertexOrder;
+    TInterlockOrdering interlockOrdering;
     bool pointMode;
     int localSize[3];
     int localSizeSpecId[3];
@@ -852,6 +878,7 @@ protected:
     bool useStorageBuffer;
     bool useVulkanMemoryModel;
     bool hlslIoMapping;
+    bool useVariablePointers;
 
     std::set<TString> ioAccessed;           // set of names of statically read/written I/O that might need extra checking
     std::vector<TIoRange> usedIo[4];        // sets of used locations, one for each of in, out, uniform, and buffers
@@ -877,6 +904,7 @@ protected:
 
     std::unordered_map<std::string, int> uniformLocationOverrides;
     int uniformLocationBase;
+    bool nanMinMaxClamp;            // true if desiring min/max/clamp to favor non-NaN over NaN
 
 private:
     void operator=(TIntermediate&); // prevent assignments

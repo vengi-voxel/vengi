@@ -68,7 +68,7 @@
 // This should always increase, as some paths to do not consume
 // a more major number.
 // It should increment by one when new functionality is added.
-#define GLSLANG_MINOR_VERSION 11
+#define GLSLANG_MINOR_VERSION 12
 
 //
 // Call before doing any other compiler/linker operations.
@@ -234,6 +234,7 @@ enum EShMessages {
     EShMsgHlslEnable16BitTypes  = (1 << 11), // enable use of 16-bit types in SPIR-V for HLSL
     EShMsgHlslLegalization  = (1 << 12), // enable HLSL Legalization messages
     EShMsgHlslDX9Compatible = (1 << 13), // enable HLSL DX9 compatible mode (right now only for samplers)
+    EShMsgBuiltinSymbolTable = (1 << 14), // print the builtin symbol table
 };
 
 //
@@ -434,6 +435,7 @@ public:
     void setHlslIoMapping(bool hlslIoMap);
     void setFlattenUniformArrays(bool flatten);
     void setNoStorageFormat(bool useUnknownFormat);
+    void setNanMinMaxClamp(bool nanMinMaxClamp);
     void setTextureSamplerTransformMode(EShTextureSamplerTransformMode mode);
 
     // For setting up the environment (cleared to nothingness in the constructor).
@@ -735,7 +737,7 @@ public:
     // Reflection Interface
 
     // call first, to do liveness analysis, index mapping, etc.; returns false on failure
-    bool buildReflection(int opts = EShReflectionDefault);    
+    bool buildReflection(int opts = EShReflectionDefault);
 
     unsigned getLocalSize(int dim) const;                  // return dim'th local size
     int getReflectionIndex(const char *name) const;

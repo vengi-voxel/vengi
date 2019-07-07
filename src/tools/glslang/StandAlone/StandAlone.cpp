@@ -104,6 +104,7 @@ enum TOptions {
 bool targetHlslFunctionality1 = false;
 bool SpvToolsDisassembler = false;
 bool SpvToolsValidate = false;
+bool NaNClamp = false;
 
 //
 // Return codes from main/exit().
@@ -162,6 +163,7 @@ const char* shaderStageName = nullptr;
 const char* variableName = nullptr;
 bool HlslEnable16BitTypes = false;
 bool HlslDX9compatible = false;
+bool DumpBuiltinSymbols = false;
 std::vector<std::string> IncludeDirectoryList;
 
 // Source environment
@@ -494,6 +496,8 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                                 Error("--client expects vulkan100 or opengl100");
                         }
                         bumpArg();
+                    } else if (lowerword == "dump-builtin-symbols") {
+                        DumpBuiltinSymbols = true;
                     } else if (lowerword == "entry-point") {
                         entryPointName = argv[1];
                         if (argc <= 1)
@@ -519,6 +523,8 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                     } else if (lowerword == "keep-uncalled" || // synonyms
                                lowerword == "ku") {
                         Options |= EOptionKeepUncalled;
+                    } else if (lowerword == "nan-clamp") {
+                        NaNClamp = true;
                     } else if (lowerword == "no-storage-format" || // synonyms
                                lowerword == "nsf") {
                         Options |= EOptionNoStorageFormat;
@@ -766,8 +772,17 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
         Error("must provide -S when --stdin is given");
 
     // Make sure that -E is not specified alongside linking (which includes SPV generation)
-    if ((Options & EOptionOutputPreprocessed) && (Options & EOptionLinkProgram))
-        Error("can't use -E when linking is selected");
+    // Or things that require linking
+    if (Options & EOptionOutputPreprocessed) {
+        if (Options & EOptionLinkProgram)
+            Error("can't use -E when linking is selected");
+        if (Options & EOptionDumpReflection)
+            Error("reflection requires linking, which can't be used when -E when is selected");
+    }
+
+    // reflection requires linking
+    if ((Options & EOptionDumpReflection) && !(Options & EOptionLinkProgram))
+        Error("reflection requires -l for linking");
 
     // -o or -x makes no sense if there is no target binary
     if (binaryFileName && (Options & EOptionSpv) == 0)
@@ -833,6 +848,8 @@ void SetMessageOptions(EShMessages& messages)
         messages = (EShMessages)(messages | EShMsgHlslLegalization);
     if (HlslDX9compatible)
         messages = (EShMessages)(messages | EShMsgHlslDX9Compatible);
+    if (DumpBuiltinSymbols)
+        messages = (EShMessages)(messages | EShMsgBuiltinSymbolTable);
 }
 
 //
@@ -976,6 +993,7 @@ void CompileAndLinkShaderUnits(std::vector<ShaderCompUnit> compUnits)
 
         shader->setFlattenUniformArrays((Options & EOptionFlattenUniformArrays) != 0);
         shader->setNoStorageFormat((Options & EOptionNoStorageFormat) != 0);
+        shader->setNanMinMaxClamp(NaNClamp);
         shader->setResourceSetBinding(baseResourceSetBinding[compUnit.stage]);
 
         if (Options & EOptionHlslIoMapping)
@@ -1503,7 +1521,7 @@ void usage()
            "  -l          link all input files together to form a single module\n"
            "  -m          memory leak mode\n"
            "  -o <file>   save binary to <file>, requires a binary option (e.g., -V)\n"
-           "  -q          dump reflection query database\n"
+           "  -q          dump reflection query database; requires -l for linking\n"
            "  -r | --relaxed-errors"
            "              relaxed GLSL semantic error-checking mode\n"
            "  -s          silence syntax and semantic error reporting\n"
@@ -1520,6 +1538,7 @@ void usage()
            "  --auto-map-locations | --aml      automatically locate input/output lacking\n"
            "                                    'location' (fragile, not cross stage)\n"
            "  --client {vulkan<ver>|opengl<ver>} see -V and -G\n"
+           "  --dump-builtin-symbols            prints builtin symbol table prior each compile\n"
            "  -dumpfullversion | -dumpversion   print bare major.minor.patchlevel\n"
            "  --flatten-uniform-arrays | --fua  flatten uniform texture/sampler arrays to\n"
            "                                    scalars\n"
@@ -1527,9 +1546,11 @@ void usage()
            "                                    works independently of source language\n"
            "  --hlsl-iomap                      perform IO mapping in HLSL register space\n"
            "  --hlsl-enable-16bit-types         allow 16-bit types in SPIR-V for HLSL\n"
-           "  --hlsl-dx9-compatible             interprets sampler declarations as a texture/sampler combo like DirectX9 would."
+           "  --hlsl-dx9-compatible             interprets sampler declarations as a\n"
+           "                                    texture/sampler combo like DirectX9 would.\n"
            "  --invert-y | --iy                 invert position.Y output in vertex shader\n"
            "  --keep-uncalled | --ku            don't eliminate uncalled functions\n"
+           "  --nan-clamp                       favor non-NaN operand in min, max, and clamp\n"
            "  --no-storage-format | --nsf       use Unknown image format\n"
            "  --reflect-strict-array-suffix     use strict array suffix rules when\n"
            "                                    reflecting\n"

@@ -388,6 +388,33 @@ Id Builder::makeMatrixType(Id component, int cols, int rows)
     return type->getResultId();
 }
 
+Id Builder::makeCooperativeMatrixType(Id component, Id scope, Id rows, Id cols)
+{
+    // try to find it
+    Instruction* type;
+    for (int t = 0; t < (int)groupedTypes[OpTypeCooperativeMatrixNV].size(); ++t) {
+        type = groupedTypes[OpTypeCooperativeMatrixNV][t];
+        if (type->getIdOperand(0) == component &&
+            type->getIdOperand(1) == scope &&
+            type->getIdOperand(2) == rows &&
+            type->getIdOperand(3) == cols)
+            return type->getResultId();
+    }
+
+    // not found, make it
+    type = new Instruction(getUniqueId(), NoType, OpTypeCooperativeMatrixNV);
+    type->addIdOperand(component);
+    type->addIdOperand(scope);
+    type->addIdOperand(rows);
+    type->addIdOperand(cols);
+    groupedTypes[OpTypeCooperativeMatrixNV].push_back(type);
+    constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(type));
+    module.mapInstruction(type);
+
+    return type->getResultId();
+}
+
+
 // TODO: performance: track arrays per stride
 // If a stride is supplied (non-zero) make an array.
 // If no stride (0), reuse previous array types.
@@ -623,6 +650,9 @@ int Builder::getNumTypeConstituents(Id typeId) const
     }
     case OpTypeStruct:
         return instr->getNumOperands();
+    case OpTypeCooperativeMatrixNV:
+        // has only one constituent when used with OpCompositeConstruct.
+        return 1;
     default:
         assert(0);
         return 1;
@@ -669,6 +699,7 @@ Id Builder::getContainedTypeId(Id typeId, int member) const
     case OpTypeMatrix:
     case OpTypeArray:
     case OpTypeRuntimeArray:
+    case OpTypeCooperativeMatrixNV:
         return instr->getIdOperand(0);
     case OpTypePointer:
         return instr->getIdOperand(1);
@@ -981,15 +1012,14 @@ Id Builder::makeFpConstant(Id type, double d, bool specConstant)
         return NoResult;
 }
 
-Id Builder::findCompositeConstant(Op typeClass, const std::vector<Id>& comps)
+Id Builder::findCompositeConstant(Op typeClass, Id typeId, const std::vector<Id>& comps)
 {
     Instruction* constant = 0;
     bool found = false;
     for (int i = 0; i < (int)groupedConstants[typeClass].size(); ++i) {
         constant = groupedConstants[typeClass][i];
 
-        // same shape?
-        if (constant->getNumOperands() != (int)comps.size())
+        if (constant->getTypeId() != typeId)
             continue;
 
         // same contents?
@@ -1044,8 +1074,9 @@ Id Builder::makeCompositeConstant(Id typeId, const std::vector<Id>& members, boo
     case OpTypeVector:
     case OpTypeArray:
     case OpTypeMatrix:
+    case OpTypeCooperativeMatrixNV:
         if (! specConstant) {
-            Id existing = findCompositeConstant(typeClass, members);
+            Id existing = findCompositeConstant(typeClass, typeId, members);
             if (existing)
                 return existing;
         }
@@ -1275,11 +1306,13 @@ void Builder::makeDiscard()
 }
 
 // Comments in header
-Id Builder::createVariable(StorageClass storageClass, Id type, const char* name)
+Id Builder::createVariable(StorageClass storageClass, Id type, const char* name, Id initializer)
 {
     Id pointerType = makePointer(storageClass, type);
     Instruction* inst = new Instruction(getUniqueId(), pointerType, OpVariable);
     inst->addImmediateOperand(storageClass);
+    if (initializer != NoResult)
+        inst->addIdOperand(initializer);
 
     switch (storageClass) {
     case StorageClassFunction:
@@ -1403,6 +1436,23 @@ Id Builder::createArrayLength(Id base, unsigned int member)
     Instruction* length = new Instruction(getUniqueId(), intType, OpArrayLength);
     length->addIdOperand(base);
     length->addImmediateOperand(member);
+    buildPoint->addInstruction(std::unique_ptr<Instruction>(length));
+
+    return length->getResultId();
+}
+
+Id Builder::createCooperativeMatrixLength(Id type)
+{
+    spv::Id intType = makeUintType(32);
+
+    // Generate code for spec constants if in spec constant operation
+    // generation mode.
+    if (generatingOpCodeForSpecConst) {
+        return createSpecConstantOp(OpCooperativeMatrixLengthNV, intType, std::vector<Id>(1, type), std::vector<Id>());
+    }
+
+    Instruction* length = new Instruction(getUniqueId(), intType, OpCooperativeMatrixLengthNV);
+    length->addIdOperand(type);
     buildPoint->addInstruction(std::unique_ptr<Instruction>(length));
 
     return length->getResultId();
@@ -1758,7 +1808,7 @@ Id Builder::createBuiltinCall(Id resultType, Id builtins, int entryPoint, const 
 // Accept all parameters needed to create a texture instruction.
 // Create the correct instruction based on the inputs, and make the call.
 Id Builder::createTextureCall(Decoration precision, Id resultType, bool sparse, bool fetch, bool proj, bool gather,
-    bool noImplicitLod, const TextureParameters& parameters)
+    bool noImplicitLod, const TextureParameters& parameters, ImageOperandsMask signExtensionMask)
 {
     static const int maxTextureArgs = 10;
     Id texArgs[maxTextureArgs] = {};
@@ -1785,8 +1835,8 @@ Id Builder::createTextureCall(Decoration precision, Id resultType, bool sparse, 
     //
     // Set up the optional arguments
     //
-    int optArgNum = numArgs;                        // track which operand, if it exists, is the mask of optional arguments
-    ++numArgs;                                      // speculatively make room for the mask operand
+    int optArgNum = numArgs;    // track which operand, if it exists, is the mask of optional arguments
+    ++numArgs;                  // speculatively make room for the mask operand
     ImageOperandsMask mask = ImageOperandsMaskNone; // the mask operand
     if (parameters.bias) {
         mask = (ImageOperandsMask)(mask | ImageOperandsBiasMask);
@@ -1839,6 +1889,7 @@ Id Builder::createTextureCall(Decoration precision, Id resultType, bool sparse, 
     if (parameters.volatil) {
         mask = mask | ImageOperandsVolatileTexelKHRMask;
     }
+    mask = mask | signExtensionMask;
     if (mask == ImageOperandsMaskNone)
         --numArgs;  // undo speculative reservation for the mask argument
     else
@@ -2598,15 +2649,22 @@ Id Builder::accessChainLoad(Decoration precision, Decoration nonUniform, Id resu
                 }
             }
 
-            if (constant)
+            if (constant) {
                 id = createCompositeExtract(accessChain.base, swizzleBase, indexes);
-            else {
-                // make a new function variable for this r-value
-                Id lValue = createVariable(StorageClassFunction, getTypeId(accessChain.base), "indexable");
-
-                // store into it
-                createStore(accessChain.base, lValue);
-
+            } else {
+                Id lValue = NoResult;
+                if (spvVersion >= Spv_1_4) {
+                    // make a new function variable for this r-value, using an initializer,
+                    // and mark it as NonWritable so that downstream it can be detected as a lookup
+                    // table
+                    lValue = createVariable(StorageClassFunction, getTypeId(accessChain.base), "indexable",
+                        accessChain.base);
+                    addDecoration(lValue, DecorationNonWritable);
+                } else {
+                    lValue = createVariable(StorageClassFunction, getTypeId(accessChain.base), "indexable");
+                    // store into it
+                    createStore(accessChain.base, lValue);
+                }
                 // move base to the new variable
                 accessChain.base = lValue;
                 accessChain.isRValue = false;
@@ -2908,14 +2966,14 @@ void Builder::createSelectionMerge(Block* mergeBlock, unsigned int control)
 }
 
 void Builder::createLoopMerge(Block* mergeBlock, Block* continueBlock, unsigned int control,
-                              unsigned int dependencyLength)
+                              const std::vector<unsigned int>& operands)
 {
     Instruction* merge = new Instruction(OpLoopMerge);
     merge->addIdOperand(mergeBlock->getId());
     merge->addIdOperand(continueBlock->getId());
     merge->addImmediateOperand(control);
-    if ((control & LoopControlDependencyLengthMask) != 0)
-        merge->addImmediateOperand(dependencyLength);
+    for (int op = 0; op < (int)operands.size(); ++op)
+        merge->addImmediateOperand(operands[op]);
     buildPoint->addInstruction(std::unique_ptr<Instruction>(merge));
 }
 

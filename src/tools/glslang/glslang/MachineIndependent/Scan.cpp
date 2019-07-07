@@ -356,6 +356,7 @@ void TScanContext::fillInKeywordMap()
     (*KeywordMap)["default"] =                 DEFAULT;
     (*KeywordMap)["if"] =                      IF;
     (*KeywordMap)["else"] =                    ELSE;
+    (*KeywordMap)["demote"] =                  DEMOTE;
     (*KeywordMap)["discard"] =                 DISCARD;
     (*KeywordMap)["return"] =                  RETURN;
     (*KeywordMap)["void"] =                    VOID;
@@ -713,6 +714,8 @@ void TScanContext::fillInKeywordMap()
     (*KeywordMap)["perviewNV"] =               PERVIEWNV;
     (*KeywordMap)["taskNV"] =                  PERTASKNV;
 #endif
+
+    (*KeywordMap)["fcoopmatNV"] =              FCOOPMATNV;
 
     ReservedSet = new std::unordered_set<const char*, str_hash, str_eq>;
 
@@ -1611,6 +1614,19 @@ int TScanContext::tokenizeIdentifier()
             return keyword;
         return identifierOrType();
 #endif
+
+    case FCOOPMATNV:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_NV_cooperative_matrix))
+            return keyword;
+        return identifierOrType();
+
+    case DEMOTE:
+        if (parseContext.extensionTurnedOn(E_GL_EXT_demote_to_helper_invocation))
+            return keyword;
+        else
+            return identifierOrType();
 
     default:
         parseContext.infoSink.info.message(EPrefixInternalError, "Unknown glslang keyword", loc);
