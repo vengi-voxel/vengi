@@ -383,11 +383,13 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         mouse->has_position = SDL_TRUE;
     }
 
+#ifndef __MACOSX__  /* all your trackpad input would lack relative motion when not dragging in this case. */
     /* Ignore relative motion positioning the first touch */
     if (mouseID == SDL_TOUCH_MOUSEID && !mouse->buttonstate) {
         xrel = 0;
         yrel = 0;
     }
+#endif
 
     /* Update internal mouse coordinates */
     if (!mouse->relative_mode) {
@@ -765,9 +767,9 @@ SDL_WarpMouseGlobal(int x, int y)
 static SDL_bool
 ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
 {
-    if (!mouse->SetRelativeMouseMode) {
-        SDL_assert(mouse->WarpMouse);   /* Need this functionality for relative mode warp implementation */
-        return SDL_TRUE;
+    if (!mouse->WarpMouse) {
+        /* Need this functionality for relative mode warp implementation */
+        return SDL_FALSE;
     }
 
     return SDL_GetHintBoolean(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, SDL_FALSE);
@@ -783,20 +785,12 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
         return 0;
     }
 
-    if (enabled && focusWindow) {
-        /* Center it in the focused window to prevent clicks from going through
-         * to background windows.
-         */
-        SDL_SetMouseFocus(focusWindow);
-        SDL_WarpMouseInWindow(focusWindow, focusWindow->w/2, focusWindow->h/2);
-    }
-
     /* Set the relative mode */
     if (!enabled && mouse->relative_mode_warp) {
         mouse->relative_mode_warp = SDL_FALSE;
     } else if (enabled && ShouldUseRelativeModeWarp(mouse)) {
         mouse->relative_mode_warp = SDL_TRUE;
-    } else if (mouse->SetRelativeMouseMode(enabled) < 0) {
+    } else if (!mouse->SetRelativeMouseMode || mouse->SetRelativeMouseMode(enabled) < 0) {
         if (enabled) {
             /* Fall back to warp mode if native relative mode failed */
             if (!mouse->WarpMouse) {
@@ -808,6 +802,14 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
     mouse->relative_mode = enabled;
     mouse->scale_accum_x = 0.0f;
     mouse->scale_accum_y = 0.0f;
+
+    if (enabled && focusWindow) {
+        /* Center it in the focused window to prevent clicks from going through
+         * to background windows.
+         */
+        SDL_SetMouseFocus(focusWindow);
+        SDL_WarpMouseInWindow(focusWindow, focusWindow->w/2, focusWindow->h/2);
+    }
 
     if (mouse->focus) {
         SDL_UpdateWindowGrab(mouse->focus);

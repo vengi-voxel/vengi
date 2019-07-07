@@ -714,3 +714,13 @@
 #define SDL_RenderCopyExF SDL_RenderCopyExF_REAL
 #define SDL_GetTouchDeviceType SDL_GetTouchDeviceType_REAL
 #define SDL_UIKitRunApp SDL_UIKitRunApp_REAL
+#define SDL_SIMDGetAlignment SDL_SIMDGetAlignment_REAL
+#define SDL_SIMDAlloc SDL_SIMDAlloc_REAL
+#define SDL_SIMDFree SDL_SIMDFree_REAL
+#define SDL_RWsize SDL_RWsize_REAL
+#define SDL_RWseek SDL_RWseek_REAL
+#define SDL_RWtell SDL_RWtell_REAL
+#define SDL_RWread SDL_RWread_REAL
+#define SDL_RWwrite SDL_RWwrite_REAL
+#define SDL_RWclose SDL_RWclose_REAL
+#define SDL_LoadFile SDL_LoadFile_REAL

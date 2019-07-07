@@ -24,6 +24,7 @@
 #include "SDL_hints.h"
 #include "SDL_log.h"
 #include "SDL_main.h"
+#include "SDL_timer.h"
 
 #ifdef __ANDROID__
 
@@ -42,6 +43,7 @@
 #include "../../haptic/android/SDL_syshaptic_c.h"
 
 #include <android/log.h>
+#include <sys/system_properties.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -96,6 +98,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyDown)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyUp)(
         JNIEnv *env, jclass jcls,
         jint keycode);
+
+JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(onNativeSoftReturnKey)(
+        JNIEnv *env, jclass jcls);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost)(
         JNIEnv *env, jclass jcls);
@@ -236,6 +241,8 @@ static jmethodID midSetSurfaceViewFormat;
 static jmethodID midSetActivityTitle;
 static jmethodID midSetWindowStyle;
 static jmethodID midSetOrientation;
+static jmethodID midMinimizeWindow;
+static jmethodID midShouldMinimizeOnFocusLoss;
 static jmethodID midGetContext;
 static jmethodID midIsTablet;
 static jmethodID midIsAndroidTV;
@@ -486,6 +493,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
                                 "setWindowStyle","(Z)V");
     midSetOrientation = (*env)->GetStaticMethodID(env, mActivityClass,
                                 "setOrientation","(IIZLjava/lang/String;)V");
+    midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass,
+                                "minimizeWindow","()V");
+    midShouldMinimizeOnFocusLoss = (*env)->GetStaticMethodID(env, mActivityClass,
+                                "shouldMinimizeOnFocusLoss","()Z");
     midGetContext = (*env)->GetStaticMethodID(env, mActivityClass,
                                 "getContext","()Landroid/content/Context;");
     midIsTablet = (*env)->GetStaticMethodID(env, mActivityClass,
@@ -528,7 +539,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
 
 
     if (!midGetNativeSurface || !midSetSurfaceViewFormat ||
-       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInitTouch ||
+       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midMinimizeWindow || !midShouldMinimizeOnFocusLoss || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInitTouch ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
        !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
@@ -699,6 +710,34 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
     SDL_SendDropFile(NULL, path);
     (*env)->ReleaseStringUTFChars(env, filename, path);
     SDL_SendDropComplete(NULL);
+}
+
+/* Lock / Unlock Mutex */
+void Android_ActivityMutex_Lock() {
+    SDL_LockMutex(Android_ActivityMutex);
+}
+
+void Android_ActivityMutex_Unlock() {
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+/* Lock the Mutex when the Activity is in its 'Running' state */
+void Android_ActivityMutex_Lock_Running() {
+    int pauseSignaled = 0;
+    int resumeSignaled = 0;
+
+retry:
+
+    SDL_LockMutex(Android_ActivityMutex);
+
+    pauseSignaled = SDL_SemValue(Android_PauseSem);
+    resumeSignaled = SDL_SemValue(Android_ResumeSem);
+
+    if (pauseSignaled > resumeSignaled) {
+        SDL_UnlockMutex(Android_ActivityMutex);
+        SDL_Delay(50);
+        goto retry;
+    }
 }
 
 /* Set screen resolution */
@@ -920,6 +959,17 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyUp)(
     Android_OnKeyUp(keycode);
 }
 
+/* Virtual keyboard return key might stop text input */
+JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(onNativeSoftReturnKey)(
+                                    JNIEnv *env, jclass jcls)
+{
+    if (SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
+        SDL_StopTextInput();
+        return JNI_TRUE;
+    }
+    return JNI_FALSE;
+}
+
 /* Keyboard Focus Lost */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost)(
                                     JNIEnv *env, jclass jcls)
@@ -1127,7 +1177,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
     }
 }
 
-
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
                                     JNIEnv *env, jclass cls,
                                     jstring text, jint newCursorPosition)
@@ -1212,11 +1261,6 @@ static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder)
     }
 }
 
-static SDL_bool LocalReferenceHolder_IsActive(void)
-{
-    return (SDL_AtomicGet(&s_active) > 0);
-}
-
 ANativeWindow* Android_JNI_GetNativeWindow(void)
 {
     ANativeWindow *anw = NULL;
@@ -1274,6 +1318,18 @@ void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint)
     jstring jhint = (jstring)((*env)->NewStringUTF(env, (hint ? hint : "")));
     (*env)->CallStaticVoidMethod(env, mActivityClass, midSetOrientation, w, h, (resizable? 1 : 0), jhint);
     (*env)->DeleteLocalRef(env, jhint);
+}
+
+void Android_JNI_MinizeWindow()
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midMinimizeWindow);
+}
+
+SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss()
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midShouldMinimizeOnFocusLoss);
 }
 
 SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
@@ -1620,7 +1676,7 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
     jthrowable exception;
 
     /* Detect mismatch LocalReferenceHolder_Init/Cleanup */
-    SDL_assert(LocalReferenceHolder_IsActive());
+    SDL_assert(SDL_AtomicGet(&s_active) > 0);
 
     exception = (*env)->ExceptionOccurred(env);
     if (exception != NULL) {
@@ -2391,6 +2447,18 @@ void *SDL_AndroidGetActivity(void)
 
     /* return SDLActivity.getContext(); */
     return (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+}
+
+int SDL_GetAndroidSDKVersion(void)
+{
+    static int sdk_version;
+    if (!sdk_version) {
+        char sdk[PROP_VALUE_MAX] = {0};
+        if (__system_property_get("ro.build.version.sdk", sdk) != 0) {
+            sdk_version = SDL_atoi(sdk);
+        }
+    }
+    return sdk_version;
 }
 
 SDL_bool SDL_IsAndroidTablet(void)

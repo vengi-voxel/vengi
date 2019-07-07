@@ -221,6 +221,27 @@ UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
     return frame;
 }
 
+void
+UIKit_ForceUpdateHomeIndicator()
+{
+#if !TARGET_OS_TV
+    /* Force the main SDL window to re-evaluate home indicator state */
+    SDL_Window *focus = SDL_GetFocusWindow();
+    if (focus) {
+        SDL_WindowData *data = (__bridge SDL_WindowData *) focus->driverdata;
+        if (data != nil) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+            if ([data.viewcontroller respondsToSelector:@selector(setNeedsUpdateOfHomeIndicatorAutoHidden)]) {
+                [data.viewcontroller performSelectorOnMainThread:@selector(setNeedsUpdateOfHomeIndicatorAutoHidden) withObject:nil waitUntilDone:NO];
+                [data.viewcontroller performSelectorOnMainThread:@selector(setNeedsUpdateOfScreenEdgesDeferringSystemGestures) withObject:nil waitUntilDone:NO];
+            }
+#pragma clang diagnostic pop
+        }
+    }
+#endif /* !TARGET_OS_TV */
+}
+
 /*
  * iOS log support.
  *

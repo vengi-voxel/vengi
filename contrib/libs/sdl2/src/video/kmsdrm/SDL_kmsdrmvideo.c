@@ -101,7 +101,8 @@ static int get_dricount(void)
     folder = opendir(KMSDRM_DRI_PATH);
     if (folder) {
         while ((res = readdir(folder))) {
-            if (res->d_type == DT_CHR) {
+            int len = SDL_strlen(res->d_name);
+            if (len > 4 && SDL_strncmp(res->d_name, "card", 4) == 0) {
                 devcount++;
             }
         }

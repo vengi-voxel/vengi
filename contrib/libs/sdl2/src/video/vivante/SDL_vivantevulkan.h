@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,34 +20,34 @@
 */
 
 /*
- * @author Mark Callow, www.edgewise-consulting.com. Based on Jacob Lifshay's
- * SDL_x11vulkan.h.
+ * @author Wladimir J. van der Laan. Based on Jacob Lifshay's
+ * SDL_x11vulkan.h and Mark Callow's SDL_vivantevulkan.h
  */
 
 #include "../../SDL_internal.h"
 
-#ifndef SDL_waylandvulkan_h_
-#define SDL_waylandvulkan_h_
+#ifndef SDL_vivantevulkan_h_
+#define SDL_vivantevulkan_h_
 
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
 
-#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_WAYLAND
+#if SDL_VIDEO_VULKAN &&  SDL_VIDEO_DRIVER_VIVANTE
 
-int Wayland_Vulkan_LoadLibrary(_THIS, const char *path);
-void Wayland_Vulkan_UnloadLibrary(_THIS);
-SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
+int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path);
+void VIVANTE_Vulkan_UnloadLibrary(_THIS);
+SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names);
-void Wayland_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
-SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
+SDL_bool VIVANTE_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface);
 
 #endif
 
-#endif /* SDL_waylandvulkan_h_ */
+#endif /* SDL_vivantevulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
+

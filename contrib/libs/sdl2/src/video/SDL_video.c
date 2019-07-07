@@ -1654,6 +1654,12 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         } else {
             SDL_GL_UnloadLibrary();
         }
+    } else if (window->flags & SDL_WINDOW_OPENGL) {
+        SDL_GL_UnloadLibrary();
+        if (SDL_GL_LoadLibrary(NULL) < 0) {
+            return -1;
+        }
+        loaded_opengl = SDL_TRUE;
     }
 
     if ((window->flags & SDL_WINDOW_VULKAN) != (flags & SDL_WINDOW_VULKAN)) {
@@ -1895,7 +1901,6 @@ SDL_SetWindowPosition(SDL_Window * window, int x, int y)
         if (_this->SetWindowPosition) {
             _this->SetWindowPosition(_this, window);
         }
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, x, y);
     }
 }
 
@@ -2654,6 +2659,15 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
 #ifdef __MACOSX__
     if (SDL_strcmp(_this->name, "cocoa") == 0) {  /* don't do this for X11, etc */
         if (Cocoa_IsWindowInFullscreenSpace(window)) {
+            return SDL_FALSE;
+        }
+    }
+#endif
+
+#ifdef __ANDROID__
+    {
+        extern SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
+        if (! Android_JNI_ShouldMinimizeOnFocusLoss()) {
             return SDL_FALSE;
         }
     }

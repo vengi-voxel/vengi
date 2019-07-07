@@ -54,6 +54,9 @@
 
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)
 
+#ifndef MAC_OS_X_VERSION_10_12
+#define NSEventModifierFlagCapsLock NSAlphaShiftKeyMask
+#endif
 
 @interface SDLWindow : NSWindow <NSDraggingDestination>
 /* These are needed for borderless/fullscreen windows */
@@ -228,6 +231,12 @@ ScheduleContextUpdates(SDL_WindowData *data)
         return;
     }
 
+    /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
+    #ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #endif
+
     NSOpenGLContext *currentContext = [NSOpenGLContext currentContext];
     NSMutableArray *contexts = data->nscontexts;
     @synchronized (contexts) {
@@ -239,6 +248,10 @@ ScheduleContextUpdates(SDL_WindowData *data)
             }
         }
     }
+
+    #ifdef __clang__
+    #pragma clang diagnostic pop
+    #endif
 }
 
 /* !!! FIXME: this should use a hint callback. */
@@ -622,7 +635,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         y = (int)(window->h - point.y);
 
         if (x >= 0 && x < window->w && y >= 0 && y < window->h) {
-            SDL_SendMouseMotion(window, 0, 0, x, y);
+            SDL_SendMouseMotion(window, mouse->mouseID, 0, x, y);
         }
     }
 
@@ -839,14 +852,21 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     }
 }
 
-
-/* We'll respond to key events by doing nothing so we don't beep.
+/* We'll respond to key events by mostly doing nothing so we don't beep.
  * We could handle key messages here, but we lose some in the NSApp dispatch,
  * where they get converted to action messages, etc.
  */
 - (void)flagsChanged:(NSEvent *)theEvent
 {
     /*Cocoa_HandleKeyEvent(SDL_GetVideoDevice(), theEvent);*/
+
+    /* Catch capslock in here as a special case:
+       https://developer.apple.com/library/archive/qa/qa1519/_index.html
+       Note that technote's check of keyCode doesn't work. At least on the
+       10.15 beta, capslock comes through here as keycode 255, but it's safe
+       to send duplicate key events; SDL filters them out quickly in
+       SDL_SendKeyboardKey(). */
+    SDL_SendKeyboardKey(([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_PRESSED : SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
 }
 - (void)keyDown:(NSEvent *)theEvent
 {
@@ -893,8 +913,24 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
+    const SDL_Mouse *mouse = SDL_GetMouse();
+    if (!mouse) {
+        return;
+    }
+
+    SDL_MouseID mouseID = mouse->mouseID;
     int button;
     int clicks;
+
+    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
+    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
+        if (mouse->touch_mouse_events) {
+            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
+        } else {
+            return;  /* no hint set, drop this one. */
+        }
+    }
+    #endif
 
     /* Ignore events that aren't inside the client area (i.e. title bar.) */
     if ([theEvent window]) {
@@ -932,7 +968,8 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     }
 
     clicks = (int) [theEvent clickCount];
-    SDL_SendMouseButtonClicks(_data->window, 0, SDL_PRESSED, button, clicks);
+
+    SDL_SendMouseButtonClicks(_data->window, mouseID, SDL_PRESSED, button, clicks);
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
@@ -947,8 +984,24 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
+    const SDL_Mouse *mouse = SDL_GetMouse();
+    if (!mouse) {
+        return;
+    }
+
+    SDL_MouseID mouseID = mouse->mouseID;
     int button;
     int clicks;
+
+    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
+    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
+        if (mouse->touch_mouse_events) {
+            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
+        } else {
+            return;  /* no hint set, drop this one. */
+        }
+    }
+    #endif
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -976,7 +1029,8 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     }
 
     clicks = (int) [theEvent clickCount];
-    SDL_SendMouseButtonClicks(_data->window, 0, SDL_RELEASED, button, clicks);
+
+    SDL_SendMouseButtonClicks(_data->window, mouseID, SDL_RELEASED, button, clicks);
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
@@ -992,9 +1046,24 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 - (void)mouseMoved:(NSEvent *)theEvent
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+    if (!mouse) {
+        return;
+    }
+
+    SDL_MouseID mouseID = mouse->mouseID;
     SDL_Window *window = _data->window;
     NSPoint point;
     int x, y;
+
+    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
+    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
+        if (mouse->touch_mouse_events) {
+            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
+        } else {
+            return;  /* no hint set, drop this one. */
+        }
+    }
+    #endif
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -1039,7 +1108,8 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 #endif
         }
     }
-    SDL_SendMouseMotion(window, 0, 0, x, y);
+
+    SDL_SendMouseMotion(window, mouseID, 0, x, y);
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
@@ -1073,7 +1143,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         }
     }
     if (existingTouchCount == 0) {
-        SDL_TouchID touchID = (SDL_TouchID)(intptr_t)[[touches anyObject] device];
+        const SDL_TouchID touchID = (SDL_TouchID)(intptr_t)[[touches anyObject] device];
         int numFingers = SDL_GetNumTouchFingers(touchID);
         DLog("Reset Lost Fingers: %d", numFingers);
         for (--numFingers; numFingers >= 0; --numFingers) {
@@ -1378,11 +1448,19 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     SDLView *contentView = [[SDLView alloc] initWithFrame:rect];
     [contentView setSDLWindow:window];
 
+    /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
+    #ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #endif
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         if ([contentView respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
             [contentView setWantsBestResolutionOpenGLSurface:YES];
         }
     }
+    #ifdef __clang__
+    #pragma clang diagnostic pop
+    #endif
 
 #if SDL_VIDEO_OPENGL_ES2
 #if SDL_VIDEO_OPENGL_EGL
@@ -1816,6 +1894,8 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
         [data->listener close];
         [data->listener release];
         if (data->created) {
+            /* Release the content view to avoid further updateLayer callbacks */
+            [data->nswindow setContentView:nil];
             [data->nswindow close];
         }
 

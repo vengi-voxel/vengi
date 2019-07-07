@@ -609,17 +609,18 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
         for (i = ABS_HAT0X; i <= ABS_HAT3Y; i += 2) {
             if (test_bit(i, absbit) || test_bit(i + 1, absbit)) {
                 struct input_absinfo absinfo;
+                int hat_index = (i - ABS_HAT0X) / 2;
 
                 if (ioctl(fd, EVIOCGABS(i), &absinfo) < 0) {
                     continue;
                 }
 #ifdef DEBUG_INPUT_EVENTS
-                printf("Joystick has hat %d\n", (i - ABS_HAT0X) / 2);
+                printf("Joystick has hat %d\n", hat_index);
                 printf("Values = { %d, %d, %d, %d, %d }\n",
                        absinfo.value, absinfo.minimum, absinfo.maximum,
                        absinfo.fuzz, absinfo.flat);
 #endif /* DEBUG_INPUT_EVENTS */
-                ++joystick->nhats;
+                joystick->hwdata->hats_indices[joystick->nhats++] = hat_index;
             }
         }
         if (test_bit(REL_X, relbit) || test_bit(REL_Y, relbit)) {
@@ -773,8 +774,7 @@ HandleHat(SDL_Joystick * stick, Uint8 hat, int axis, int value)
     if (value != the_hat->axis[axis]) {
         the_hat->axis[axis] = value;
         SDL_PrivateJoystickHat(stick, hat,
-                               position_map[the_hat->
-                                            axis[1]][the_hat->axis[0]]);
+                               position_map[the_hat->axis[1]][the_hat->axis[0]]);
     }
 }
 
@@ -818,36 +818,26 @@ static SDL_INLINE void
 PollAllValues(SDL_Joystick * joystick)
 {
     struct input_absinfo absinfo;
-    int a, b = 0;
+    int i;
 
     /* Poll all axis */
-    for (a = ABS_X; b < ABS_MAX; a++) {
-        switch (a) {
-        case ABS_HAT0X:
-        case ABS_HAT0Y:
-        case ABS_HAT1X:
-        case ABS_HAT1Y:
-        case ABS_HAT2X:
-        case ABS_HAT2Y:
-        case ABS_HAT3X:
-        case ABS_HAT3Y:
-            /* ingore hats */
-            break;
-        default:
-            if (joystick->hwdata->abs_correct[b].used) {
-                if (ioctl(joystick->hwdata->fd, EVIOCGABS(a), &absinfo) >= 0) {
-                    absinfo.value = AxisCorrect(joystick, b, absinfo.value);
+    for (i = ABS_X; i < ABS_MAX; i++) {
+        if (i == ABS_HAT0X) {
+            i = ABS_HAT3Y;
+            continue;
+        }
+        if (joystick->hwdata->abs_correct[i].used) {
+            if (ioctl(joystick->hwdata->fd, EVIOCGABS(i), &absinfo) >= 0) {
+                absinfo.value = AxisCorrect(joystick, i, absinfo.value);
 
 #ifdef DEBUG_INPUT_EVENTS
-                    printf("Joystick : Re-read Axis %d (%d) val= %d\n",
-                        joystick->hwdata->abs_map[b], a, absinfo.value);
+                printf("Joystick : Re-read Axis %d (%d) val= %d\n",
+                    joystick->hwdata->abs_map[i], i, absinfo.value);
 #endif
-                    SDL_PrivateJoystickAxis(joystick,
-                            joystick->hwdata->abs_map[b],
-                            absinfo.value);
-                }
+                SDL_PrivateJoystickAxis(joystick,
+                        joystick->hwdata->abs_map[i],
+                        absinfo.value);
             }
-            b++;
         }
     }
 }
@@ -885,7 +875,7 @@ HandleInputEvents(SDL_Joystick * joystick)
                 case ABS_HAT3X:
                 case ABS_HAT3Y:
                     code -= ABS_HAT0X;
-                    HandleHat(joystick, code / 2, code % 2, events[i].value);
+                    HandleHat(joystick, joystick->hwdata->hats_indices[code / 2], code % 2, events[i].value);
                     break;
                 default:
                     if (joystick->hwdata->abs_map[code] != 0xFF) {

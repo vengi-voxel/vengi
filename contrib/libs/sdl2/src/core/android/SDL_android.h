@@ -39,6 +39,8 @@ extern "C" {
 extern void Android_JNI_SetActivityTitle(const char *title);
 extern void Android_JNI_SetWindowStyle(SDL_bool fullscreen);
 extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint);
+extern void Android_JNI_MinizeWindow(void);
+extern SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
 extern SDL_bool Android_JNI_GetAccelerometerValues(float values[3]);
 extern void Android_JNI_ShowTextInput(SDL_Rect *inputRect);
@@ -122,10 +124,16 @@ SDL_bool Android_JNI_SupportsRelativeMouse(void);
 SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled);
 
 
+int SDL_GetAndroidSDKVersion(void);
+
 SDL_bool SDL_IsAndroidTablet(void);
 SDL_bool SDL_IsAndroidTV(void);
 SDL_bool SDL_IsChromebook(void);
 SDL_bool SDL_IsDeXMode(void);
+
+void Android_ActivityMutex_Lock(void);
+void Android_ActivityMutex_Unlock(void);
+void Android_ActivityMutex_Lock_Running(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

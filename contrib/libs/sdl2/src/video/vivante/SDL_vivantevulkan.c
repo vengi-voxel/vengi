@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,28 +20,29 @@
 */
 
 /*
- * @author Mark Callow, www.edgewise-consulting.com. Based on Jacob Lifshay's
- * SDL_x11vulkan.c.
+ * @author Wladimir J. van der Laan. Based on Jacob Lifshay's
+ * SDL_x11vulkan.c, Mark Callow's SDL_androidvulkan.c, and
+ * the FSL demo framework.
  */
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_WAYLAND
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_VIVANTE
 
-#include "SDL_waylandvideo.h"
-#include "SDL_waylandwindow.h"
+#include "SDL_vivantevideo.h"
 #include "SDL_assert.h"
 
 #include "SDL_loadso.h"
-#include "SDL_waylandvulkan.h"
+#include "SDL_vivantevulkan.h"
 #include "SDL_syswm.h"
+#include "SDL_log.h"
 
-int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
+int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
     SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasWaylandSurfaceExtension = SDL_FALSE;
+    SDL_bool hasDisplayExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     if(_this->vulkan_config.loader_handle)
         return SDL_SetError("Vulkan already loaded");
@@ -50,12 +51,24 @@ int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
     if(!path)
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     if(!path)
-        path = "libvulkan.so.1";
-    _this->vulkan_config.loader_handle = SDL_LoadObject(path);
+    {
+        /* If no path set, try Vivante fb vulkan driver explicitly */
+        path = "libvulkan-fb.so";
+        _this->vulkan_config.loader_handle = SDL_LoadObject(path);
+        if(!_this->vulkan_config.loader_handle)
+        {
+            /* If that couldn't be loaded, fall back to default name */
+            path = "libvulkan.so";
+            _this->vulkan_config.loader_handle = SDL_LoadObject(path);
+        }
+    } else {
+        _this->vulkan_config.loader_handle = SDL_LoadObject(path);
+    }
     if(!_this->vulkan_config.loader_handle)
         return -1;
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
                 SDL_arraysize(_this->vulkan_config.loader_path));
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vivante: Loaded vulkan driver %s", path);
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
         _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
     if(!vkGetInstanceProcAddr)
@@ -76,8 +89,8 @@ int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
     {
         if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
             hasSurfaceExtension = SDL_TRUE;
-        else if(SDL_strcmp(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
-            hasWaylandSurfaceExtension = SDL_TRUE;
+        else if(SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0)
+            hasDisplayExtension = SDL_TRUE;
     }
     SDL_free(extensions);
     if(!hasSurfaceExtension)
@@ -86,10 +99,10 @@ int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     }
-    else if(!hasWaylandSurfaceExtension)
+    else if(!hasDisplayExtension)
     {
         SDL_SetError("Installed Vulkan doesn't implement the "
-                     VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME "extension");
+                     VK_KHR_DISPLAY_EXTENSION_NAME "extension");
         goto fail;
     }
     return 0;
@@ -100,7 +113,7 @@ fail:
     return -1;
 }
 
-void Wayland_Vulkan_UnloadLibrary(_THIS)
+void VIVANTE_Vulkan_UnloadLibrary(_THIS)
 {
     if(_this->vulkan_config.loader_handle)
     {
@@ -109,13 +122,13 @@ void Wayland_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
+SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
 {
-    static const char *const extensionsForWayland[] = {
-        VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
+    static const char *const extensionsForVivante[] = {
+        VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
     };
     if(!_this->vulkan_config.loader_handle)
     {
@@ -123,70 +136,24 @@ SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
         return SDL_FALSE;
     }
     return SDL_Vulkan_GetInstanceExtensions_Helper(
-            count, names, SDL_arraysize(extensionsForWayland),
-            extensionsForWayland);
+            count, names, SDL_arraysize(extensionsForVivante),
+            extensionsForVivante);
 }
 
-void Wayland_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    SDL_WindowData *data;
-    if (window->driverdata) {
-        data = (SDL_WindowData *) window->driverdata;
-
-        if (w) {
-            *w = window->w * data->scale_factor;
-        }
-
-        if (h) {
-            *h = window->h * data->scale_factor;
-        }
-    }
-}
-
-SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
+SDL_bool VIVANTE_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)
 {
-    SDL_WindowData *windowData = (SDL_WindowData *)window->driverdata;
-    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
-        (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
-    PFN_vkCreateWaylandSurfaceKHR vkCreateWaylandSurfaceKHR =
-        (PFN_vkCreateWaylandSurfaceKHR)vkGetInstanceProcAddr(
-                                            (VkInstance)instance,
-                                            "vkCreateWaylandSurfaceKHR");
-    VkWaylandSurfaceCreateInfoKHR createInfo;
-    VkResult result;
-
     if(!_this->vulkan_config.loader_handle)
     {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
-
-    if(!vkCreateWaylandSurfaceKHR)
-    {
-        SDL_SetError(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
-                     " extension is not enabled in the Vulkan instance.");
-        return SDL_FALSE;
-    }
-    SDL_zero(createInfo);
-    createInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-    createInfo.pNext = NULL;
-    createInfo.flags = 0;
-    createInfo.display = windowData->waylandData->display;
-    createInfo.surface =  windowData->surface;
-    result = vkCreateWaylandSurfaceKHR(instance, &createInfo,
-                                       NULL, surface);
-    if(result != VK_SUCCESS)
-    {
-        SDL_SetError("vkCreateWaylandSurfaceKHR failed: %s",
-                     SDL_Vulkan_GetResultString(result));
-        return SDL_FALSE;
-    }
-    return SDL_TRUE;
+    return SDL_Vulkan_Display_CreateSurface(_this->vulkan_config.vkGetInstanceProcAddr, instance, surface);
 }
 
 #endif
 
-/* vim: set ts=4 sw=4 expandtab: */
+/* vi: set ts=4 sw=4 expandtab: */
+

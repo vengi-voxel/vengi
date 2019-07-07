@@ -38,6 +38,8 @@
 #define DLog(...) do { } while (0)
 #endif
 
+#define TRACKPAD_REPORTS_TOUCH_MOUSEID 0
+
 @implementation NSCursor (InvisibleCursor)
 + (NSCursor *)invisibleCursor
 {
@@ -327,13 +329,16 @@ Cocoa_GetGlobalMouseState(int *x, int *y)
     return retval;
 }
 
-void
+int
 Cocoa_InitMouse(_THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_MouseData *driverdata = (SDL_MouseData*) SDL_calloc(1, sizeof(SDL_MouseData));
+    if (driverdata == NULL) {
+        return SDL_OutOfMemory();
+    }
 
-    mouse->driverdata = SDL_calloc(1, sizeof(SDL_MouseData));
-
+    mouse->driverdata = driverdata;
     mouse->CreateCursor = Cocoa_CreateCursor;
     mouse->CreateSystemCursor = Cocoa_CreateSystemCursor;
     mouse->ShowCursor = Cocoa_ShowCursor;
@@ -346,12 +351,12 @@ Cocoa_InitMouse(_THIS)
 
     SDL_SetDefaultCursor(Cocoa_CreateDefaultCursor());
 
-    Cocoa_InitMouseEventTap(mouse->driverdata);
+    Cocoa_InitMouseEventTap(driverdata);
 
-    SDL_MouseData *driverdata = (SDL_MouseData*)mouse->driverdata;
     const NSPoint location =  [NSEvent mouseLocation];
     driverdata->lastMoveX = location.x;
     driverdata->lastMoveY = location.y;
+    return 0;
 }
 
 void
@@ -374,6 +379,17 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
     if (!driverdata) {
         return;  /* can happen when returning from fullscreen Space on shutdown */
     }
+
+    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
+    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
+    if ([event subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
+        if (mouse->touch_mouse_events) {
+            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
+        } else {
+            return;  /* no hint set, drop this one. */
+        }
+    }
+    #endif
 
     const SDL_bool seenWarp = driverdata->seenWarp;
     driverdata->seenWarp = NO;
@@ -408,13 +424,27 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
 
-    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, (int)deltaX, (int)deltaY);
+    SDL_SendMouseMotion(mouse->focus, mouseID, 1, (int)deltaX, (int)deltaY);
 }
 
 void
 Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+    if (!mouse) {
+        return;
+    }
+
+    SDL_MouseID mouseID = mouse->mouseID;
+    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
+    if ([event subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
+        if (mouse->touch_mouse_events) {
+            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
+        } else {
+            return;  /* no hint set, drop this one. */
+        }
+    }
+    #endif
 
     CGFloat x = -[event deltaX];
     CGFloat y = [event deltaY];
@@ -436,7 +466,8 @@ Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
     } else if (y < 0) {
         y = SDL_floor(y);
     }
-    SDL_SendMouseWheel(window, mouse->mouseID, x, y, direction);
+
+    SDL_SendMouseWheel(window, mouseID, x, y, direction);
 }
 
 void
@@ -460,9 +491,10 @@ Cocoa_QuitMouse(_THIS)
     if (mouse) {
         if (mouse->driverdata) {
             Cocoa_QuitMouseEventTap(((SDL_MouseData*)mouse->driverdata));
-        }
 
-        SDL_free(mouse->driverdata);
+            SDL_free(mouse->driverdata);
+            mouse->driverdata = NULL;
+        }
     }
 }
 

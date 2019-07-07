@@ -86,7 +86,9 @@ static SDL_Scancode
 VKeytoScancode(WPARAM vkey)
 {
     switch (vkey) {
+/* Windows generates this virtual keycode for Keypad 5 when NumLock is off.
     case VK_CLEAR: return SDL_SCANCODE_CLEAR;
+*/
     case VK_MODECHANGE: return SDL_SCANCODE_MODE;
     case VK_SELECT: return SDL_SCANCODE_SELECT;
     case VK_EXECUTE: return SDL_SCANCODE_EXECUTE;
@@ -426,13 +428,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             POINT cursorPos;
             BOOL minimized;
 
-            /* Don't mark the window as shown if it's activated before being shown */
-            if (!IsWindowVisible(hwnd)) {
-                break;
-            }
-
             minimized = HIWORD(wParam);
             if (!minimized && (LOWORD(wParam) != WA_INACTIVE)) {
+                /* Don't mark the window as shown if it's activated before being shown */
+                if (!IsWindowVisible(hwnd)) {
+                    break;
+                }
                 if (LOWORD(wParam) == WA_CLICKACTIVE) {
                     if (GetAsyncKeyState(VK_LBUTTON)) {
                         data->focus_click_pending |= SDL_BUTTON_LMASK;
