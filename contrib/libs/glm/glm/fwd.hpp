@@ -15,9 +15,9 @@ namespace glm
 	typedef std::uint32_t			uint32;
 	typedef std::uint64_t			uint64;
 #else
-	typedef char					int8;
-	typedef short					int16;
-	typedef int						int32;
+	typedef signed char				int8;
+	typedef signed short			int16;
+	typedef signed int				int32;
 	typedef detail::int64			int64;
 
 	typedef unsigned char			uint8;

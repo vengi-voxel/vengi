@@ -26,9 +26,9 @@ namespace detail
 		typedef std::int16_t		int16;
 		typedef std::int32_t		int32;
 #	else
-		typedef char				int8;
-		typedef short				int16;
-		typedef int					int32;
+		typedef signed char			int8;
+		typedef signed short		int16;
+		typedef signed int			int32;
 #endif//
 
 	template<>

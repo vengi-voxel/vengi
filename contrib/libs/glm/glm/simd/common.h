@@ -103,7 +103,7 @@ GLM_FUNC_QUALIFIER glm_vec4 glm_vec4_sign(glm_vec4 x)
 	glm_vec4 const cmp1 = _mm_cmpgt_ps(x, zro0);
 	glm_vec4 const and0 = _mm_and_ps(cmp0, _mm_set1_ps(-1.0f));
 	glm_vec4 const and1 = _mm_and_ps(cmp1, _mm_set1_ps(1.0f));
-	glm_vec4 const or0 = _mm_or_ps(and0, and1);;
+	glm_vec4 const or0 = _mm_or_ps(and0, and1);
 	return or0;
 }
 

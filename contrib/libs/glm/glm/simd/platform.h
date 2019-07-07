@@ -60,6 +60,9 @@
 #define GLM_COMPILER_VC15_5			0x01000005
 #define GLM_COMPILER_VC15_6			0x01000006
 #define GLM_COMPILER_VC15_7			0x01000007
+#define GLM_COMPILER_VC15_8			0x01000008
+#define GLM_COMPILER_VC15_9			0x01000009
+#define GLM_COMPILER_VC16			0x0100000A
 
 // GCC defines
 #define GLM_COMPILER_GCC			0x02000000
@@ -77,6 +80,9 @@
 #define GLM_COMPILER_CUDA70			0x100000A0
 #define GLM_COMPILER_CUDA75			0x100000B0
 #define GLM_COMPILER_CUDA80			0x100000C0
+
+// SYCL
+#define GLM_COMPILER_SYCL			0x00300000
 
 // Clang
 #define GLM_COMPILER_CLANG			0x20000000
@@ -99,16 +105,16 @@
 #	define GLM_COMPILER GLM_COMPILER_UNKNOWN
 
 #elif defined(__INTEL_COMPILER)
-#	if (__INTEL_COMPILER < 1400)
-#		error "GLM requires ICC 2013 SP1 or newer"
-#	elif __INTEL_COMPILER == 1400
-#		define GLM_COMPILER GLM_COMPILER_INTEL14
-#	elif __INTEL_COMPILER == 1500
-#		define GLM_COMPILER GLM_COMPILER_INTEL15
-#	elif __INTEL_COMPILER == 1600
-#		define GLM_COMPILER GLM_COMPILER_INTEL16
-#	elif __INTEL_COMPILER >= 1700
+#	if __INTEL_COMPILER >= 1700
 #		define GLM_COMPILER GLM_COMPILER_INTEL17
+#	elif __INTEL_COMPILER >= 1600
+#		define GLM_COMPILER GLM_COMPILER_INTEL16
+#	elif __INTEL_COMPILER >= 1500
+#		define GLM_COMPILER GLM_COMPILER_INTEL15
+#	elif __INTEL_COMPILER >= 1400
+#		define GLM_COMPILER GLM_COMPILER_INTEL14
+#	elif __INTEL_COMPILER < 1400
+#		error "GLM requires ICC 2013 SP1 or newer"
 #	endif
 
 // CUDA
@@ -116,15 +122,19 @@
 #	if !defined(CUDA_VERSION) && !defined(GLM_FORCE_CUDA)
 #		include <cuda.h>  // make sure version is defined since nvcc does not define it itself!
 #	endif
-#	if CUDA_VERSION < 7000
-#		error "GLM requires CUDA 7.0 or higher"
-#	elif (CUDA_VERSION >= 7000 && CUDA_VERSION < 7500)
-#		define GLM_COMPILER GLM_COMPILER_CUDA70
-#	elif (CUDA_VERSION >= 7500 && CUDA_VERSION < 8000)
-#		define GLM_COMPILER GLM_COMPILER_CUDA75
-#	elif (CUDA_VERSION >= 8000)
+#	if CUDA_VERSION >= 8000
 #		define GLM_COMPILER GLM_COMPILER_CUDA80
+#	elif CUDA_VERSION >= 7500
+#		define GLM_COMPILER GLM_COMPILER_CUDA75
+#	elif CUDA_VERSION >= 7000
+#		define GLM_COMPILER GLM_COMPILER_CUDA70
+#	elif CUDA_VERSION < 7000
+#		error "GLM requires CUDA 7.0 or higher"
 #	endif
+
+// SYCL
+#elif defined(__SYCL_DEVICE_ONLY__)
+#	define GLM_COMPILER GLM_COMPILER_SYCL
 
 // Clang
 #elif defined(__clang__)
@@ -166,44 +176,50 @@
 
 // Visual C++
 #elif defined(_MSC_VER)
-#	if _MSC_VER < 1800
-#		error "GLM requires Visual C++ 12 - 2013 or higher"
-#	elif _MSC_VER == 1800
-#		define GLM_COMPILER GLM_COMPILER_VC12
-#	elif _MSC_VER == 1900
-#		define GLM_COMPILER GLM_COMPILER_VC14
-#	elif _MSC_VER == 1910
-#		define GLM_COMPILER GLM_COMPILER_VC15
-#	elif _MSC_VER == 1911
-#		define GLM_COMPILER GLM_COMPILER_VC15_3
-#	elif _MSC_VER == 1912
-#		define GLM_COMPILER GLM_COMPILER_VC15_5
-#	elif _MSC_VER == 1913
-#		define GLM_COMPILER GLM_COMPILER_VC15_6
+#	if _MSC_VER >= 1920
+#		define GLM_COMPILER GLM_COMPILER_VC16
+#	elif _MSC_VER >= 1916
+#		define GLM_COMPILER GLM_COMPILER_VC15_9
+#	elif _MSC_VER >= 1915
+#		define GLM_COMPILER GLM_COMPILER_VC15_8
 #	elif _MSC_VER >= 1914
 #		define GLM_COMPILER GLM_COMPILER_VC15_7
+#	elif _MSC_VER >= 1913
+#		define GLM_COMPILER GLM_COMPILER_VC15_6
+#	elif _MSC_VER >= 1912
+#		define GLM_COMPILER GLM_COMPILER_VC15_5
+#	elif _MSC_VER >= 1911
+#		define GLM_COMPILER GLM_COMPILER_VC15_3
+#	elif _MSC_VER >= 1910
+#		define GLM_COMPILER GLM_COMPILER_VC15
+#	elif _MSC_VER >= 1900
+#		define GLM_COMPILER GLM_COMPILER_VC14
+#	elif _MSC_VER >= 1800
+#		define GLM_COMPILER GLM_COMPILER_VC12
+#	elif _MSC_VER < 1800
+#		error "GLM requires Visual C++ 12 - 2013 or higher"
 #	endif//_MSC_VER
 
 // G++
 #elif defined(__GNUC__) || defined(__MINGW32__)
-#	if ((__GNUC__ == 4) && (__GNUC_MINOR__ < 6)) || (__GNUC__ < 4)
-#		error "GLM requires GCC 4.7 or higher"
-#	elif (__GNUC__ == 4) && (__GNUC_MINOR__ == 6)
-#		define GLM_COMPILER (GLM_COMPILER_GCC46)
-#	elif (__GNUC__ == 4) && (__GNUC_MINOR__ == 7)
-#		define GLM_COMPILER (GLM_COMPILER_GCC47)
-#	elif (__GNUC__ == 4) && (__GNUC_MINOR__ == 8)
-#		define GLM_COMPILER (GLM_COMPILER_GCC48)
-#	elif (__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)
-#		define GLM_COMPILER (GLM_COMPILER_GCC49)
-#	elif (__GNUC__ == 5)
-#		define GLM_COMPILER (GLM_COMPILER_GCC5)
-#	elif (__GNUC__ == 6)
-#		define GLM_COMPILER (GLM_COMPILER_GCC6)
-#	elif (__GNUC__ == 7)
-#		define GLM_COMPILER (GLM_COMPILER_GCC7)
-#	elif (__GNUC__ >= 8)
-#		define GLM_COMPILER (GLM_COMPILER_GCC8)
+#	if __GNUC__ >= 8
+#		define GLM_COMPILER GLM_COMPILER_GCC8
+#	elif __GNUC__ >= 7
+#		define GLM_COMPILER GLM_COMPILER_GCC7
+#	elif __GNUC__ >= 6
+#		define GLM_COMPILER GLM_COMPILER_GCC6
+#	elif __GNUC__ >= 5
+#		define GLM_COMPILER GLM_COMPILER_GCC5
+#	elif __GNUC__ == 4 && __GNUC_MINOR__ >= 9
+#		define GLM_COMPILER GLM_COMPILER_GCC49
+#	elif __GNUC__ == 4 && __GNUC_MINOR__ >= 8
+#		define GLM_COMPILER GLM_COMPILER_GCC48
+#	elif __GNUC__ == 4 && __GNUC_MINOR__ >= 7
+#		define GLM_COMPILER GLM_COMPILER_GCC47
+#	elif __GNUC__ == 4 && __GNUC_MINOR__ >= 6
+#		define GLM_COMPILER GLM_COMPILER_GCC46
+#	elif ((__GNUC__ == 4) && (__GNUC_MINOR__ < 6)) || (__GNUC__ < 4)
+#		error "GLM requires GCC 4.6 or higher"
 #	endif
 
 #else
@@ -217,7 +233,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 // Instruction sets
 
-// User defines: GLM_FORCE_PURE GLM_FORCE_SSE2 GLM_FORCE_SSE3 GLM_FORCE_AVX GLM_FORCE_AVX2 GLM_FORCE_AVX2
+// User defines: GLM_FORCE_PURE GLM_FORCE_INTRINSICS GLM_FORCE_SSE2 GLM_FORCE_SSE3 GLM_FORCE_AVX GLM_FORCE_AVX2 GLM_FORCE_AVX2
 
 #define GLM_ARCH_MIPS_BIT	(0x10000000)
 #define GLM_ARCH_PPC_BIT	(0x20000000)
@@ -251,39 +267,36 @@
 #define GLM_ARCH_MIPS		(GLM_ARCH_MIPS_BIT)
 #define GLM_ARCH_PPC		(GLM_ARCH_PPC_BIT)
 
-#ifdef GLM_FORCE_ARCH_UNKNOWN
+#if defined(GLM_FORCE_ARCH_UNKNOWN) || defined(GLM_FORCE_PURE)
 #	define GLM_ARCH GLM_ARCH_UNKNOWN
-#elif defined(GLM_FORCE_PURE) || defined(GLM_FORCE_XYZW_ONLY)
-#	if defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86) || defined(__i386__)
-#		define GLM_ARCH (GLM_ARCH_X86)
-#	elif defined(__arm__ ) || defined(_M_ARM)
-#		define GLM_ARCH (GLM_ARCH_ARM)
-#	elif defined(__powerpc__ ) || defined(_M_PPC)
-#		define GLM_ARCH (GLM_ARCH_PPC)
-#	elif defined(__mips__ )
-#		define GLM_ARCH (GLM_ARCH_MIPS)
-#	else
-#		define GLM_ARCH (GLM_ARCH_UNKNOWN)
-#	endif
 #elif defined(GLM_FORCE_NEON)
 #	define GLM_ARCH (GLM_ARCH_NEON)
+#	define GLM_FORCE_INTRINSICS
 #elif defined(GLM_FORCE_AVX2)
 #	define GLM_ARCH (GLM_ARCH_AVX2)
+#	define GLM_FORCE_INTRINSICS
 #elif defined(GLM_FORCE_AVX)
 #	define GLM_ARCH (GLM_ARCH_AVX)
+#	define GLM_FORCE_INTRINSICS
 #elif defined(GLM_FORCE_SSE42)
 #	define GLM_ARCH (GLM_ARCH_SSE42)
+#	define GLM_FORCE_INTRINSICS
 #elif defined(GLM_FORCE_SSE41)
 #	define GLM_ARCH (GLM_ARCH_SSE41)
+#	define GLM_FORCE_INTRINSICS
 #elif defined(GLM_FORCE_SSSE3)
 #	define GLM_ARCH (GLM_ARCH_SSSE3)
+#	define GLM_FORCE_INTRINSICS
 #elif defined(GLM_FORCE_SSE3)
 #	define GLM_ARCH (GLM_ARCH_SSE3)
+#	define GLM_FORCE_INTRINSICS
 #elif defined(GLM_FORCE_SSE2)
 #	define GLM_ARCH (GLM_ARCH_SSE2)
+#	define GLM_FORCE_INTRINSICS
 #elif defined(GLM_FORCE_SSE)
 #	define GLM_ARCH (GLM_ARCH_SSE)
-#else
+#	define GLM_FORCE_INTRINSICS
+#elif defined(GLM_FORCE_INTRINSICS) && !defined(GLM_FORCE_XYZW_ONLY)
 #	if defined(__AVX2__)
 #		define GLM_ARCH (GLM_ARCH_AVX2)
 #	elif defined(__AVX__)
@@ -308,6 +321,18 @@
 #		define GLM_ARCH (GLM_ARCH_MIPS)
 #	elif defined(__powerpc__ ) || defined(_M_PPC)
 #		define GLM_ARCH (GLM_ARCH_PPC)
+#	else
+#		define GLM_ARCH (GLM_ARCH_UNKNOWN)
+#	endif
+#else
+#	if defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86) || defined(__i386__)
+#		define GLM_ARCH (GLM_ARCH_X86)
+#	elif defined(__arm__) || defined(_M_ARM)
+#		define GLM_ARCH (GLM_ARCH_ARM)
+#	elif defined(__powerpc__) || defined(_M_PPC)
+#		define GLM_ARCH (GLM_ARCH_PPC)
+#	elif defined(__mips__)
+#		define GLM_ARCH (GLM_ARCH_MIPS)
 #	else
 #		define GLM_ARCH (GLM_ARCH_UNKNOWN)
 #	endif

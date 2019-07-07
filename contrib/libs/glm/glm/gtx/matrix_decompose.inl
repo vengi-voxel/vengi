@@ -153,7 +153,7 @@ namespace detail
 		// }
 
 		int i, j, k = 0;
-		float root, trace = Row[0].x + Row[1].y + Row[2].z;
+		T root, trace = Row[0].x + Row[1].y + Row[2].z;
 		if(trace > static_cast<T>(0))
 		{
 			root = sqrt(trace + static_cast<T>(1.0));

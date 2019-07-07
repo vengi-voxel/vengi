@@ -7,8 +7,8 @@
 #define GLM_VERSION_MINOR			9
 #define GLM_VERSION_PATCH			9
 #define GLM_VERSION_REVISION		4
-#define GLM_VERSION					994
-#define GLM_VERSION_MESSAGE			"GLM: version 0.9.9.4"
+#define GLM_VERSION					996
+#define GLM_VERSION_MESSAGE			"GLM: version 0.9.9.6"
 
 #define GLM_SETUP_INCLUDED			GLM_VERSION
 
@@ -143,7 +143,8 @@
 #if GLM_PLATFORM == GLM_PLATFORM_ANDROID && !defined(GLM_LANG_STL11_FORCED)
 #	define GLM_HAS_CXX11_STL 0
 #elif GLM_COMPILER & GLM_COMPILER_CLANG
-#	if (defined(_LIBCPP_VERSION) && GLM_LANG & GLM_LANG_CXX11_FLAG) || defined(GLM_LANG_STL11_FORCED)
+#	if ((defined(_LIBCPP_VERSION) || defined(_MSC_VER)) && GLM_LANG & GLM_LANG_CXX11_FLAG) || \
+		defined(GLM_LANG_STL11_FORCED)
 #		define GLM_HAS_CXX11_STL 1
 #	else
 #		define GLM_HAS_CXX11_STL 0
@@ -283,7 +284,6 @@
 #else
 #	define GLM_HAS_CONSTEXPR ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && GLM_HAS_INITIALIZER_LISTS && (\
 		((GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_COMPILER >= GLM_COMPILER_INTEL17)) || \
-		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC6)) || \
 		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC15))))
 #endif
 
@@ -291,6 +291,27 @@
 #	define GLM_CONSTEXPR constexpr
 #else
 #	define GLM_CONSTEXPR
+#endif
+
+//
+#if GLM_HAS_CONSTEXPR
+# if (GLM_COMPILER & GLM_COMPILER_CLANG)
+#	define GLM_HAS_IF_CONSTEXPR __has_feature(cxx_if_constexpr)
+# elif (GLM_COMPILER & GLM_COMPILER_GCC) 
+#	define GLM_HAS_IF_CONSTEXPR GLM_COMPILER >= GLM_COMPILER_GCC7
+# elif (GLM_LANG & GLM_LANG_CXX17_FLAG)
+# 	define GLM_HAS_IF_CONSTEXPR 1
+# else
+# 	define GLM_HAS_IF_CONSTEXPR 0
+# endif
+#else
+#	define GLM_HAS_IF_CONSTEXPR 0
+#endif
+
+#if GLM_HAS_IF_CONSTEXPR
+# 	define GLM_IF_CONSTEXPR if constexpr
+#else
+#	define GLM_IF_CONSTEXPR if
 #endif
 
 //
@@ -315,12 +336,12 @@
 #endif
 
 //
-#if defined(GLM_FORCE_PURE)
-#	define GLM_HAS_BITSCAN_WINDOWS 0
-#else
+#if defined(GLM_FORCE_INTRINSICS)
 #	define GLM_HAS_BITSCAN_WINDOWS ((GLM_PLATFORM & GLM_PLATFORM_WINDOWS) && (\
 		((GLM_COMPILER & GLM_COMPILER_INTEL)) || \
 		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC14) && (GLM_ARCH & GLM_ARCH_X86_BIT))))
+#else
+#	define GLM_HAS_BITSCAN_WINDOWS 0
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -507,6 +528,48 @@
 #else
 #	define GLM_EXPLICIT
 #endif
+
+///////////////////////////////////////////////////////////////////////////////////
+// SYCL
+
+#if GLM_COMPILER==GLM_COMPILER_SYCL
+
+#include <CL/sycl.hpp>
+#include <limits>
+
+namespace glm {
+namespace std {
+	// Import SYCL's functions into the namespace glm::std to force their usages.
+	// It's important to use the math built-in function (sin, exp, ...)
+	// of SYCL instead the std ones.
+	using namespace cl::sycl;
+
+	///////////////////////////////////////////////////////////////////////////////
+	// Import some "harmless" std's stuffs used by glm into
+	// the new glm::std namespace.
+	template<typename T>
+	using numeric_limits = ::std::numeric_limits<T>;
+
+	using ::std::size_t;
+
+	using ::std::uint8_t;
+	using ::std::uint16_t;
+	using ::std::uint32_t;
+	using ::std::uint64_t;
+
+	using ::std::int8_t;
+	using ::std::int16_t;
+	using ::std::int32_t;
+	using ::std::int64_t;
+
+	using ::std::make_unsigned;
+	///////////////////////////////////////////////////////////////////////////////
+} //namespace std
+} //namespace glm
+
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Length type: all length functions returns a length_t type.
