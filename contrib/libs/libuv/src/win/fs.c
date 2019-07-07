@@ -137,10 +137,6 @@ const WCHAR UNC_PATH_PREFIX_LEN = 8;
 
 static int uv__file_symlink_usermode_flag = SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
 
-void uv_fs_init(void) {
-  _fmode = _O_BINARY;
-}
-
 
 INLINE static int fs__capture_path(uv_fs_t* req, const char* path,
     const char* new_path, const int copy_path) {
@@ -1409,47 +1405,57 @@ INLINE static void fs__stat_prepare_path(WCHAR* pathw) {
 }
 
 
-INLINE static void fs__stat_impl(uv_fs_t* req, int do_lstat) {
+INLINE static DWORD fs__stat_impl_from_path(WCHAR* path,
+                                            int do_lstat,
+                                            uv_stat_t* statbuf) {
   HANDLE handle;
   DWORD flags;
+  DWORD ret;
 
   flags = FILE_FLAG_BACKUP_SEMANTICS;
-  if (do_lstat) {
+  if (do_lstat)
     flags |= FILE_FLAG_OPEN_REPARSE_POINT;
-  }
 
-  handle = CreateFileW(req->file.pathw,
+  handle = CreateFileW(path,
                        FILE_READ_ATTRIBUTES,
                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                        NULL,
                        OPEN_EXISTING,
                        flags,
                        NULL);
-  if (handle == INVALID_HANDLE_VALUE) {
-    SET_REQ_WIN32_ERROR(req, GetLastError());
-    return;
-  }
 
-  if (fs__stat_handle(handle, &req->statbuf, do_lstat) != 0) {
-    DWORD error = GetLastError();
+  if (handle == INVALID_HANDLE_VALUE)
+    ret = GetLastError();
+  else if (fs__stat_handle(handle, statbuf, do_lstat) != 0)
+    ret = GetLastError();
+  else
+    ret = 0;
+
+  CloseHandle(handle);
+  return ret;
+}
+
+
+INLINE static void fs__stat_impl(uv_fs_t* req, int do_lstat) {
+  DWORD error;
+
+  error = fs__stat_impl_from_path(req->file.pathw, do_lstat, &req->statbuf);
+  if (error != 0) {
     if (do_lstat &&
         (error == ERROR_SYMLINK_NOT_SUPPORTED ||
          error == ERROR_NOT_A_REPARSE_POINT)) {
       /* We opened a reparse point but it was not a symlink. Try again. */
       fs__stat_impl(req, 0);
-
     } else {
       /* Stat failed. */
-      SET_REQ_WIN32_ERROR(req, GetLastError());
+      SET_REQ_WIN32_ERROR(req, error);
     }
 
-    CloseHandle(handle);
     return;
   }
 
   req->ptr = &req->statbuf;
   req->result = 0;
-  CloseHandle(handle);
 }
 
 
@@ -1553,6 +1559,9 @@ static void fs__ftruncate(uv_fs_t* req) {
 static void fs__copyfile(uv_fs_t* req) {
   int flags;
   int overwrite;
+  DWORD error;
+  uv_stat_t statbuf;
+  uv_stat_t new_statbuf;
 
   flags = req->fs.info.file_flags;
 
@@ -1563,12 +1572,25 @@ static void fs__copyfile(uv_fs_t* req) {
 
   overwrite = flags & UV_FS_COPYFILE_EXCL;
 
-  if (CopyFileW(req->file.pathw, req->fs.info.new_pathw, overwrite) == 0) {
-    SET_REQ_WIN32_ERROR(req, GetLastError());
+  if (CopyFileW(req->file.pathw, req->fs.info.new_pathw, overwrite) != 0) {
+    SET_REQ_RESULT(req, 0);
     return;
   }
 
-  SET_REQ_RESULT(req, 0);
+  SET_REQ_WIN32_ERROR(req, GetLastError());
+  if (req->result != UV_EBUSY)
+    return;
+
+  /* if error UV_EBUSY check if src and dst file are the same */
+  if (fs__stat_impl_from_path(req->file.pathw, 0, &statbuf) != 0 ||
+      fs__stat_impl_from_path(req->fs.info.new_pathw, 0, &new_statbuf) != 0) {
+    return;
+  }
+
+  if (statbuf.st_dev == new_statbuf.st_dev &&
+      statbuf.st_ino == new_statbuf.st_ino) {
+    SET_REQ_RESULT(req, 0);
+  }
 }
 
 

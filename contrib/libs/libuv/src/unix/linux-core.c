@@ -26,6 +26,7 @@
 #include "uv.h"
 #include "internal.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,7 +80,7 @@ static int read_times(FILE* statfile_fp,
                       unsigned int numcpus,
                       uv_cpu_info_t* ci);
 static void read_speeds(unsigned int numcpus, uv_cpu_info_t* ci);
-static unsigned long read_cpufreq(unsigned int cpunum);
+static uint64_t read_cpufreq(unsigned int cpunum);
 
 
 int uv__platform_loop_init(uv_loop_t* loop) {
@@ -719,20 +720,20 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
 static int read_times(FILE* statfile_fp,
                       unsigned int numcpus,
                       uv_cpu_info_t* ci) {
-  unsigned long clock_ticks;
   struct uv_cpu_times_s ts;
-  unsigned long user;
-  unsigned long nice;
-  unsigned long sys;
-  unsigned long idle;
-  unsigned long dummy;
-  unsigned long irq;
-  unsigned int num;
-  unsigned int len;
+  uint64_t clock_ticks;
+  uint64_t user;
+  uint64_t nice;
+  uint64_t sys;
+  uint64_t idle;
+  uint64_t dummy;
+  uint64_t irq;
+  uint64_t num;
+  uint64_t len;
   char buf[1024];
 
   clock_ticks = sysconf(_SC_CLK_TCK);
-  assert(clock_ticks != (unsigned long) -1);
+  assert(clock_ticks != (uint64_t) -1);
   assert(clock_ticks != 0);
 
   rewind(statfile_fp);
@@ -765,7 +766,8 @@ static int read_times(FILE* statfile_fp,
      * fields, they're not allowed in C89 mode.
      */
     if (6 != sscanf(buf + len,
-                    "%lu %lu %lu %lu %lu %lu",
+                    "%" PRIu64 " %" PRIu64 " %" PRIu64
+                    "%" PRIu64 " %" PRIu64 " %" PRIu64,
                     &user,
                     &nice,
                     &sys,
@@ -787,8 +789,8 @@ static int read_times(FILE* statfile_fp,
 }
 
 
-static unsigned long read_cpufreq(unsigned int cpunum) {
-  unsigned long val;
+static uint64_t read_cpufreq(unsigned int cpunum) {
+  uint64_t val;
   char buf[1024];
   FILE* fp;
 
@@ -801,7 +803,7 @@ static unsigned long read_cpufreq(unsigned int cpunum) {
   if (fp == NULL)
     return 0;
 
-  if (fscanf(fp, "%lu", &val) != 1)
+  if (fscanf(fp, "%" PRIu64, &val) != 1)
     val = 0;
 
   fclose(fp);
@@ -942,7 +944,7 @@ void uv__set_process_title(const char* title) {
 
 
 static uint64_t uv__read_proc_meminfo(const char* what) {
-  unsigned long rc;
+  uint64_t rc;
   ssize_t n;
   char* p;
   int fd;
@@ -967,7 +969,7 @@ static uint64_t uv__read_proc_meminfo(const char* what) {
 
   p += strlen(what);
 
-  if (1 != sscanf(p, "%lu kB", &rc))
+  if (1 != sscanf(p, "%" PRIu64 " kB", &rc))
     goto out;
 
   rc *= 1024;
@@ -1010,4 +1012,43 @@ uint64_t uv_get_total_memory(void) {
     return (uint64_t) info.totalram * info.mem_unit;
 
   return 0;
+}
+
+
+static uint64_t uv__read_cgroups_uint64(const char* cgroup, const char* param) {
+  char filename[256];
+  uint64_t rc;
+  int fd;
+  ssize_t n;
+  char buf[32];  /* Large enough to hold an encoded uint64_t. */
+
+  snprintf(filename, 256, "/sys/fs/cgroup/%s/%s", cgroup, param);
+
+  rc = 0;
+  fd = uv__open_cloexec(filename, O_RDONLY);
+
+  if (fd < 0)
+    return 0;
+
+  n = read(fd, buf, sizeof(buf) - 1);
+
+  if (n > 0) {
+    buf[n] = '\0';
+    sscanf(buf, "%" PRIu64, &rc);
+  }
+
+  if (uv__close_nocheckstdio(fd))
+    abort();
+
+  return rc;
+}
+
+
+uint64_t uv_get_constrained_memory(void) {
+  /*
+   * This might return 0 if there was a problem getting the memory limit from
+   * cgroups. This is OK because a return value of 0 signifies that the memory
+   * limit is unknown.
+   */
+  return uv__read_cgroups_uint64("memory", "memory.limit_in_bytes");
 }
