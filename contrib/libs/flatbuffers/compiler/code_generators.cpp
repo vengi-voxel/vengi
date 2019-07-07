@@ -72,13 +72,13 @@ const char *BaseGenerator::FlatBuffersGeneratedWarning() {
 std::string BaseGenerator::NamespaceDir(const Parser &parser,
                                         const std::string &path,
                                         const Namespace &ns) {
-  EnsureDirExists(path.c_str());
+  EnsureDirExists(path);
   if (parser.opts.one_file) return path;
   std::string namespace_dir = path;  // Either empty or ends in separator.
   auto &namespaces = ns.components;
   for (auto it = namespaces.begin(); it != namespaces.end(); ++it) {
     namespace_dir += *it + kPathSeparator;
-    EnsureDirExists(namespace_dir.c_str());
+    EnsureDirExists(namespace_dir);
   }
   return namespace_dir;
 }
@@ -105,11 +105,9 @@ std::string BaseGenerator::LastNamespacePart(const Namespace &ns) {
     return std::string("");
 }
 
-// Ensure that a type is prefixed with its namespace whenever it is used
-// outside of its namespace.
+// Ensure that a type is prefixed with its namespace.
 std::string BaseGenerator::WrapInNameSpace(const Namespace *ns,
                                            const std::string &name) const {
-  if (CurrentNameSpace() == ns) return name;
   std::string qualified_name = qualifying_start_;
   for (auto it = ns->components.begin(); it != ns->components.end(); ++it)
     qualified_name += *it + qualifying_separator_;

@@ -65,7 +65,8 @@ namespace flatbuffers {
   TD(VECTOR, "",       Offset<void>, int, int, VectorOffset, int, unused) \
   TD(STRUCT, "",       Offset<void>, int, int, int,          int, unused) \
   TD(UNION,  "",       Offset<void>, int, int, int,          int, unused)
-
+#define FLATBUFFERS_GEN_TYPE_ARRAY(TD) \
+  TD(ARRAY,  "",       int,          int, int, int,          int, unused)
 // The fields are:
 // - enum
 // - FlatBuffers schema type.
@@ -91,7 +92,8 @@ switch (type) {
 
 #define FLATBUFFERS_GEN_TYPES(TD) \
         FLATBUFFERS_GEN_TYPES_SCALAR(TD) \
-        FLATBUFFERS_GEN_TYPES_POINTER(TD)
+        FLATBUFFERS_GEN_TYPES_POINTER(TD) \
+        FLATBUFFERS_GEN_TYPE_ARRAY(TD)
 
 // Create an enum for all the types above.
 #ifdef __GNUC__
@@ -145,18 +147,21 @@ class Parser;
 // and additional information for vectors/structs_.
 struct Type {
   explicit Type(BaseType _base_type = BASE_TYPE_NONE, StructDef *_sd = nullptr,
-                EnumDef *_ed = nullptr)
+                EnumDef *_ed = nullptr, uint16_t _fixed_length = 0)
       : base_type(_base_type),
         element(BASE_TYPE_NONE),
         struct_def(_sd),
-        enum_def(_ed) {}
+        enum_def(_ed),
+        fixed_length(_fixed_length) {}
 
   bool operator==(const Type &o) {
     return base_type == o.base_type && element == o.element &&
            struct_def == o.struct_def && enum_def == o.enum_def;
   }
 
-  Type VectorType() const { return Type(element, struct_def, enum_def); }
+  Type VectorType() const {
+    return Type(element, struct_def, enum_def, fixed_length);
+  }
 
   Offset<reflection::Type> Serialize(FlatBufferBuilder *builder) const;
 
@@ -167,6 +172,7 @@ struct Type {
   StructDef *struct_def;  // only set if t or element == BASE_TYPE_STRUCT
   EnumDef *enum_def;      // set if t == BASE_TYPE_UNION / BASE_TYPE_UTYPE,
                           // or for an integral type derived from an enum.
+  uint16_t fixed_length;  // only set if t == BASE_TYPE_ARRAY
 };
 
 // Represents a parsed scalar value, it's type, and field offset.
@@ -230,6 +236,15 @@ struct Namespace {
   std::vector<std::string> components;
   size_t from_table;  // Part of the namespace corresponds to a message/table.
 };
+
+inline bool operator<(const Namespace &a, const Namespace &b) {
+  size_t min_size = std::min(a.components.size(), b.components.size());
+  for (size_t i = 0; i < min_size; ++i) {
+    if (a.components[i] != b.components[i])
+      return a.components[i] < b.components[i];
+  }
+  return a.components.size() < b.components.size();
+}
 
 // Base class for all definition types (fields, structs_, enums_).
 struct Definition {
@@ -326,12 +341,34 @@ inline bool IsStruct(const Type &type) {
   return type.base_type == BASE_TYPE_STRUCT && type.struct_def->fixed;
 }
 
+inline bool IsVector(const Type &type) {
+  return type.base_type == BASE_TYPE_VECTOR;
+}
+
+inline bool IsArray(const Type &type) {
+  return type.base_type == BASE_TYPE_ARRAY;
+}
+
+inline bool IsSeries(const Type &type) {
+  return IsVector(type) || IsArray(type);
+}
+
+inline bool IsEnum(const Type &type) {
+  return type.enum_def != nullptr && IsInteger(type.base_type);
+}
+
 inline size_t InlineSize(const Type &type) {
-  return IsStruct(type) ? type.struct_def->bytesize : SizeOf(type.base_type);
+  return IsStruct(type)
+             ? type.struct_def->bytesize
+             : (IsArray(type)
+                    ? InlineSize(type.VectorType()) * type.fixed_length
+                    : SizeOf(type.base_type));
 }
 
 inline size_t InlineAlignment(const Type &type) {
-  return IsStruct(type) ? type.struct_def->minalign : SizeOf(type.base_type);
+  return IsStruct(type)
+             ? type.struct_def->minalign
+             : (SizeOf(IsArray(type) ? type.element : type.base_type));
 }
 
 struct EnumDef;
@@ -490,6 +527,7 @@ struct IDLOptions {
   bool size_prefixed;
   std::string root_type;
   bool force_defaults;
+  std::vector<std::string> cpp_includes;
 
   // Possible options for the more general generator below.
   enum Language {
@@ -752,7 +790,7 @@ class Parser : public ParserState {
 
   StructDef *LookupStruct(const std::string &id) const;
 
-  std::string UnqualifiedName(std::string fullQualifiedName);
+  std::string UnqualifiedName(const std::string &fullQualifiedName);
 
   FLATBUFFERS_CHECKED_ERROR Error(const std::string &msg);
 
@@ -789,10 +827,13 @@ class Parser : public ParserState {
   FLATBUFFERS_CHECKED_ERROR ParseTable(const StructDef &struct_def,
                                        std::string *value, uoffset_t *ovalue);
   void SerializeStruct(const StructDef &struct_def, const Value &val);
+  void SerializeStruct(FlatBufferBuilder &builder, const StructDef &struct_def,
+                       const Value &val);
   template<typename F>
   FLATBUFFERS_CHECKED_ERROR ParseVectorDelimiters(uoffset_t &count, F body);
   FLATBUFFERS_CHECKED_ERROR ParseVector(const Type &type, uoffset_t *ovalue,
                                         FieldDef *field, size_t fieldn);
+  FLATBUFFERS_CHECKED_ERROR ParseArray(Value &array);
   FLATBUFFERS_CHECKED_ERROR ParseNestedFlatbuffer(Value &val, FieldDef *field,
                                                   size_t fieldn,
                                                   const StructDef *parent_struct_def);
@@ -839,6 +880,7 @@ class Parser : public ParserState {
                                        BaseType baseType);
 
   bool SupportsAdvancedUnionFeatures() const;
+  bool SupportsAdvancedArrayFeatures() const;
   Namespace *UniqueNamespace(Namespace *ns);
 
   FLATBUFFERS_CHECKED_ERROR RecurseError();

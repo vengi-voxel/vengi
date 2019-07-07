@@ -23,7 +23,9 @@
 #  ifndef NOMINMAX
 #    define NOMINMAX
 #  endif
-#  include <crtdbg.h>
+#  ifdef _MSC_VER
+#    include <crtdbg.h>
+#  endif
 #  include <windows.h>  // Must be included before <direct.h>
 #  include <direct.h>
 #  include <winbase.h>
@@ -125,12 +127,12 @@ static const char kPathSeparatorWindows = '\\';
 static const char *PathSeparatorSet = "\\/";  // Intentionally no ':'
 
 std::string StripExtension(const std::string &filepath) {
-  size_t i = filepath.find_last_of(".");
+  size_t i = filepath.find_last_of('.');
   return i != std::string::npos ? filepath.substr(0, i) : filepath;
 }
 
 std::string GetExtension(const std::string &filepath) {
-  size_t i = filepath.find_last_of(".");
+  size_t i = filepath.find_last_of('.');
   return i != std::string::npos ? filepath.substr(i + 1) : "";
 }
 
