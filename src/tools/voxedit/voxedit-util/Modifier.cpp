@@ -56,7 +56,7 @@ bool Modifier::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 	return true;
 }
 
-bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region)> callback) {
+bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
 	if (!_aabbMode) {
 		return false;
 	}
@@ -73,7 +73,7 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const vox
 	glm::ivec3 maxsMirror = maxs;
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
 		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
-			callback(modifiedRegion);
+			callback(modifiedRegion, _modifierType);
 		}
 		return true;
 	}
@@ -82,14 +82,14 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const vox
 	voxel::Region modifiedRegionMirror;
 	if (math::intersects(first, second)) {
 		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
-			callback(modifiedRegionMirror);
+			callback(modifiedRegionMirror, _modifierType);
 		}
 	} else {
 		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
-			callback(modifiedRegion);
+			callback(modifiedRegion, _modifierType);
 		}
 		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
-			callback(modifiedRegionMirror);
+			callback(modifiedRegionMirror, _modifierType);
 		}
 	}
 	return true;
@@ -197,7 +197,7 @@ void Modifier::construct() {
 		LayerManager& layerMgr = sceneMgr().layerMgr();
 		layerMgr.foreachGroupLayer([&] (int layerId) {
 			voxel::RawVolume* volume = sceneMgr().volume(layerId);
-			aabbAction(volume, [&] (const voxel::Region& region) {
+			aabbAction(volume, [&] (const voxel::Region& region, ModifierType type) {
 				sceneMgr().modified(layerId, region);
 			});
 		});

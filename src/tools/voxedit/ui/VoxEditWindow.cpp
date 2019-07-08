@@ -707,7 +707,7 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			LayerManager& layerMgr = sceneMgr().layerMgr();
 			layerMgr.foreachGroupLayer([&] (int layerId) {
 				voxel::RawVolume* volume = sceneMgr().volume(layerId);
-				mgr.aabbAction(volume, [&] (const voxel::Region& region) {
+				mgr.aabbAction(volume, [&] (const voxel::Region& region, ModifierType type) {
 					sceneMgr().modified(layerId, region);
 				});
 			});

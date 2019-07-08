@@ -63,7 +63,7 @@ public:
 	 * @param[out,in] volume The volume to modify
 	 * @param callback Called for every region that was modified for the current active modifier.
 	 */
-	bool aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region)> callback);
+	bool aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback);
 	void aabbStop();
 
 	bool modifierTypeRequiresExistingVoxel() const;
