@@ -15,6 +15,10 @@ engine_add_library(
 	SRCS ${SRCS}
 )
 
+if (APPLE)
+	target_link_libraries(${LIB_NAME} PRIVATE "-framework Carbon")
+endif()
+
 set(ADDITIONAL_COMPILE_FLAGS)
 check_c_compiler_flag("-Wimplicit-fallthrough=0" HAS_IMPLICIT_FALLTHROUGH)
 if (HAS_IMPLICIT_FALLTHROUGH)
