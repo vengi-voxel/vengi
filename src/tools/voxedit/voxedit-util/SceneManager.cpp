@@ -144,7 +144,11 @@ bool SceneManager::loadPalette(const std::string& paletteName) {
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
 	const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName.c_str()));
 	const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", paletteName.c_str()));
-	return voxel::overrideMaterialColors(paletteFile, luaFile);
+	if (voxel::overrideMaterialColors(paletteFile, luaFile)) {
+		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
+		return true;
+	}
+	return false;
 }
 
 bool SceneManager::importPalette(const std::string& file) {
@@ -162,11 +166,12 @@ bool SceneManager::importPalette(const std::string& file) {
 		return false;
 	}
 	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
-	const char *paletteFilename = "palette-custom.png";
+	const std::string paletteName(core::string::extractFilename(file.c_str()));
+	const std::string& paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
 	const io::FilePtr& pngFile = fs->open(paletteFilename, io::FileMode::Write);
 	if (image::Image::writePng(pngFile->name().c_str(), (const uint8_t*)buf, lengthof(buf), 1, 4)) {
-		fs->write("palette-custom.lua", luaString);
-		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal("custom");
+		fs->write(core::string::format("palette-%s.lua", paletteName.c_str()), luaString);
+		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
 	} else {
 		Log::warn("Failed to write image");
 	}
