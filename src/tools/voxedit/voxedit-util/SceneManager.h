@@ -235,6 +235,7 @@ public:
 	const Modifier& modifier() const;
 	Modifier& modifier();
 	const MementoHandler& mementoHandler() const;
+	MementoHandler& mementoHandler();
 
 	void onLayerChanged(int layerId) override;
 	void onLayerDuplicate(int layerId) override;
@@ -259,6 +260,10 @@ inline math::Axis SceneManager::lockedAxis() const {
 }
 
 inline const MementoHandler& SceneManager::mementoHandler() const {
+	return _mementoHandler;
+}
+
+inline MementoHandler& SceneManager::mementoHandler() {
 	return _mementoHandler;
 }
 
