@@ -330,6 +330,9 @@ bool createPalette(const image::ImagePtr& image, uint32_t *colorsBuffer, int col
 			}
 		}
 	}
+	for (int i = paletteIndex; i < colors; ++i) {
+		colorsBuffer[i] = 0xFFFFFFFF;
+	}
 	return true;
 }
 
