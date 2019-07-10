@@ -43,6 +43,7 @@ struct LayerState {
 };
 
 // TODO: support partial volumes (dirty regions - see SceneManager - will reduce memory a lot)
+// TODO: rle or zlib compression for the stored data to reduce memory
 class MementoHandler : public core::IComponent {
 private:
 	std::vector<LayerState> _states;
