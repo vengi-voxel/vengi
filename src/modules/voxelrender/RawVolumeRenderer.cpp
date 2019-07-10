@@ -116,14 +116,6 @@ bool RawVolumeRenderer::update(int idx) {
 	std::vector<voxel::VoxelVertex> vertices;
 	std::vector<voxel::IndexType> indices;
 
-	if (voxel::materialColorChanged()) {
-		shader::Materialblock::Data materialBlock;
-		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-		_materialBlock.update(materialBlock);
-		// TODO: updating the global state is crap - what about others - use an event
-		voxel::materialColorMarkClean();
-	}
-
 	voxel::IndexType offset = (voxel::IndexType)0;
 	for (auto& i : _meshes) {
 		const Meshes& meshes = i.second;
@@ -340,6 +332,14 @@ void RawVolumeRenderer::hide(int idx, bool hide) {
 
 void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
+
+	if (voxel::materialColorChanged()) {
+		shader::Materialblock::Data materialBlock;
+		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+		_materialBlock.update(materialBlock);
+		// TODO: updating the global state is crap - what about others - use an event
+		voxel::materialColorMarkClean();
+	}
 
 	uint32_t numIndices = 0u;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
