@@ -96,11 +96,22 @@ public:
 		}
 	};
 
+	RawVolume(const Voxel* data, const voxel::Region& region);
+	RawVolume(Voxel* data, const voxel::Region& region);
+
 public:
 	/// Constructor for creating a fixed size volume.
 	RawVolume(const Region& region);
 	RawVolume(const RawVolume* copy);
 	RawVolume(RawVolume&& move);
+
+	static RawVolume* createRaw(const Voxel* data, const voxel::Region& region) {
+		return new RawVolume(data, region);
+	}
+
+	static RawVolume* createRaw(Voxel* data, const voxel::Region& region) {
+		return new RawVolume(data, region);
+	}
 
 	/// Destructor
 	~RawVolume();

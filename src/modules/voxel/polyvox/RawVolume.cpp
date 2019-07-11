@@ -35,6 +35,20 @@ RawVolume::RawVolume(RawVolume&& move) {
 	_boundsValid = move._boundsValid;
 }
 
+RawVolume::RawVolume(const Voxel* data, const voxel::Region& region) {
+	initialise(region);
+	std::copy(data, data + (width() * height() * depth()), _data);
+}
+
+RawVolume::RawVolume(Voxel* data, const voxel::Region& region) :
+		_region(region), _data(data) {
+	_boundsValid = false;
+	_mins = _maxs = glm::ivec3();
+	core_assert_msg(width() > 0, "Volume width must be greater than zero.");
+	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
+	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
+}
+
 RawVolume::~RawVolume() {
 	delete[] _data;
 	_data = nullptr;
