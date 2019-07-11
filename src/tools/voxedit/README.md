@@ -49,18 +49,20 @@ my own engine and evolved into something that others might find useful, too.
 
 ## Planned
 
+* Reduce memory consumption by compressing the memento states
 * SceneSettings dialog
   - Change sun angles
 * Voxel to transparency with a HSV threshold
 * Selections
   - Multiple AABBs should be possible
+  - Deselect of single voxels
   - Delete, move, rotate, modify only in active selection
 * Copy/paste
   - Paste into selection of a different size? Accept with enter after moving?
 * Color selection via keyboard only
   - Shortcut for enter-color-in-the-next second and index of the colormap?
   - Relative movement from current color
-* Windows and MacOSX support
+* Add Windows and improve MacOSX support
 * Extend palette widget to show the used colors
 * Add color dialog for ambient and diffuse color
 * Export layers as single meshes
@@ -68,6 +70,10 @@ my own engine and evolved into something that others might find useful, too.
 * Improve voxelizer
 * Improve vox extension import
 * Rigging support
+  - Gizmo for rotate, scale and move
+  - Scene graph
+  - File format (maybe vox with extension?)
+  - UI for key frames (timeline)
 * Physics
 * Particle emitter
 
