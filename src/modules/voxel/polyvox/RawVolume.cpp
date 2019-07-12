@@ -40,6 +40,12 @@ RawVolume::~RawVolume() {
 	_data = nullptr;
 }
 
+Voxel* RawVolume::copyVoxels() const {
+	Voxel* rawCopy = new Voxel[width() * height() * depth()];
+	std::copy(_data, _data + (width() * height() * depth()), rawCopy);
+	return rawCopy;
+}
+
 /**
  * This version of the function is provided so that the wrap mode does not need
  * to be specified as a template parameter, as it may be confusing to some users.

@@ -105,6 +105,8 @@ public:
 	/// Destructor
 	~RawVolume();
 
+	Voxel* copyVoxels() const;
+
 	/// Gets the value used for voxels which are outside the volume
 	const Voxel& borderValue() const;
 	/// Gets a Region representing the extents of the Volume.
