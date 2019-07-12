@@ -458,7 +458,7 @@ void SceneManager::undo() {
 		_layerMgr.rename(s.layer, s.name);
 		return;
 	}
-	voxel::RawVolume* v = s.volume;
+	voxel::RawVolume* v = LayerVolumeData::toVolume(s.volume);
 	if (v == nullptr) {
 		_layerMgr.deleteLayer(s.layer, false);
 		return;
@@ -474,7 +474,7 @@ void SceneManager::redo() {
 		_layerMgr.rename(s.layer, s.name);
 		return;
 	}
-	voxel::RawVolume* v = s.volume;
+	voxel::RawVolume* v = LayerVolumeData::toVolume(s.volume);
 	if (v == nullptr) {
 		_layerMgr.deleteLayer(s.layer, false);
 		return;

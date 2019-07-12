@@ -15,6 +15,25 @@ namespace voxedit {
 static const LayerState InvalidLayerState{MementoType::Modification, nullptr, -1, "", voxel::Region::InvalidRegion};
 const int MementoHandler::MaxStates = 64;
 
+LayerVolumeData* LayerVolumeData::fromVolume(const voxel::RawVolume* volume) {
+	if (volume == nullptr) {
+		return nullptr;
+	}
+	LayerVolumeData* data = new LayerVolumeData();
+	// TODO: compress
+	data->data = volume->copyVoxels();
+	data->region = volume->region();
+	return data;
+}
+
+voxel::RawVolume* LayerVolumeData::toVolume(const LayerVolumeData* data) {
+	if (data == nullptr) {
+		return nullptr;
+	}
+	// TODO: extract
+	return voxel::RawVolume::createRaw(data->data, data->region);
+}
+
 MementoHandler::MementoHandler() {
 }
 
@@ -77,7 +96,7 @@ LayerState MementoHandler::undo() {
 	const LayerState& s = state();
 	const voxel::Region region = _states[_statePosition + 1].region;
 	voxel::logRegion("Undo", region);
-	return LayerState{_states[_statePosition + 1].type, s.volume == nullptr ? nullptr : new voxel::RawVolume(s.volume), s.layer, s.name, region};
+	return LayerState{_states[_statePosition + 1].type, s.volume, s.layer, s.name, region};
 }
 
 LayerState MementoHandler::redo() {
@@ -94,7 +113,7 @@ LayerState MementoHandler::redo() {
 	}
 	const LayerState& s = state();
 	voxel::logRegion("Redo", s.region);
-	return LayerState{s.type, s.volume == nullptr ? nullptr : new voxel::RawVolume(s.volume), s.layer, s.name, s.region};
+	return LayerState{s.type, s.volume, s.layer, s.name, s.region};
 }
 
 void MementoHandler::markLayerDeleted(int layer, const std::string& name, const voxel::RawVolume* volume) {
@@ -130,7 +149,8 @@ void MementoHandler::markUndo(int layer, const std::string& name, const voxel::R
 	}
 	Log::debug("New undo state for layer %i with name %s (memento state index: %i)", layer, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
-	_states.push_back(LayerState{type, volume == nullptr ? nullptr : new voxel::RawVolume(volume), layer, name, region});
+	LayerVolumeData *data = LayerVolumeData::fromVolume(volume);
+	_states.push_back(LayerState{type, data, layer, name, region});
 	while (_states.size() > MaxStates) {
 		delete _states.begin()->volume;
 		_states.erase(_states.begin());

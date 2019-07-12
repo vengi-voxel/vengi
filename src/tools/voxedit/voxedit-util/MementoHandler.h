@@ -6,6 +6,7 @@
 
 #include "core/IComponent.h"
 #include "voxel/polyvox/Region.h"
+#include "voxel/polyvox/Voxel.h"
 #include <vector>
 #include <string>
 #include <stdint.h>
@@ -24,9 +25,17 @@ enum class MementoType {
 	LayerRenamed
 };
 
+struct LayerVolumeData {
+	voxel::Voxel* data;
+	voxel::Region region;
+
+	static voxel::RawVolume* toVolume(const LayerVolumeData* data);
+	static LayerVolumeData* fromVolume(const voxel::RawVolume* volume);
+};
+
 struct LayerState {
 	MementoType type;
-	voxel::RawVolume* volume;
+	LayerVolumeData* volume;
 	int layer;
 	std::string name;
 	voxel::Region region;
