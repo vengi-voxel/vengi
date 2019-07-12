@@ -176,6 +176,11 @@ public:
 	/// as great as the corresponding components of the lower corner.
 	bool isValid() const;
 
+	/**
+	 * @return The amount of possible voxels in this region.
+	 */
+	int voxels() const;
+
 	/// Moves the Region by the amount specified.
 	void shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
 	/// Moves the Region by the amount specified.

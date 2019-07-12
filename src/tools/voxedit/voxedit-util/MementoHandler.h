@@ -26,7 +26,8 @@ enum class MementoType {
 };
 
 struct LayerVolumeData {
-	voxel::Voxel* data;
+	size_t compressedBufferSize;
+	uint8_t* data;
 	voxel::Region region;
 
 	static voxel::RawVolume* toVolume(const LayerVolumeData* data);

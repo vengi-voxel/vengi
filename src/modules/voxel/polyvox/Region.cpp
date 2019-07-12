@@ -32,4 +32,8 @@ void logRegion(const char *ctx, const voxel::Region& region) {
 	Log::debug("%s: mins(%i:%i:%i)/maxs(%i:%i:%i)", ctx, mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 }
 
+int Region::voxels() const {
+	return getWidthInVoxels() * getHeightInVoxels() * getDepthInVoxels();
+}
+
 }

@@ -9,6 +9,7 @@
 #include "core/command/Command.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/Zip.h"
 
 namespace voxedit {
 
@@ -20,9 +21,22 @@ LayerVolumeData* LayerVolumeData::fromVolume(const voxel::RawVolume* volume) {
 		return nullptr;
 	}
 	LayerVolumeData* data = new LayerVolumeData();
-	// TODO: compress
-	data->data = volume->copyVoxels();
 	data->region = volume->region();
+	const size_t uncompressedBufferSize = data->region.voxels() * sizeof(voxel::Voxel);
+	const uint32_t compressedBufferSize = core::zip::compressBound(uncompressedBufferSize);
+	uint8_t *compressedBuf = new uint8_t[compressedBufferSize];
+	data->compressedBufferSize = 0;
+	if (!core::zip::compress(volume->data(), uncompressedBufferSize, compressedBuf, compressedBufferSize, &data->compressedBufferSize)) {
+		delete[] compressedBuf;
+		return nullptr;
+	}
+
+	data->data = new uint8_t[data->compressedBufferSize];
+	memcpy(data->data, compressedBuf, data->compressedBufferSize);
+	delete[] compressedBuf;
+
+	Log::debug("Memento state. Volume: %i, compressed: %i",
+			(int)uncompressedBufferSize, (int)data->compressedBufferSize);
 	return data;
 }
 
@@ -30,8 +44,10 @@ voxel::RawVolume* LayerVolumeData::toVolume(const LayerVolumeData* data) {
 	if (data == nullptr) {
 		return nullptr;
 	}
-	// TODO: extract
-	return voxel::RawVolume::createRaw(data->data, data->region);
+	const size_t uncompressedBufferSize = data->region.voxels() * sizeof(voxel::Voxel);
+	uint8_t *uncompressedBuf = new uint8_t[uncompressedBufferSize];
+	core::zip::uncompress(data->data, data->compressedBufferSize, uncompressedBuf, uncompressedBufferSize);
+	return voxel::RawVolume::createRaw((voxel::Voxel*)uncompressedBuf, data->region);
 }
 
 MementoHandler::MementoHandler() {
