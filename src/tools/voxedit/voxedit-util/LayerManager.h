@@ -11,6 +11,10 @@
 
 namespace voxedit {
 
+/**
+ * @brief Manages the layers in a scene and notifies the registered listeners
+ * according to the changes
+ */
 class LayerManager : public core::IComponent {
 private:
 	int _activeLayer = 0;

@@ -102,6 +102,11 @@ public:
 	uint8_t statePosition() const;
 };
 
+/**
+ * @brief Locks the memento handler to accept further state changes for undo/redo.
+ * @note This is useful in situations where an undo or redo would result in actions that by
+ * itself would generate new memento states, too.
+ */
 class ScopedMementoHandlerLock {
 private:
 	MementoHandler& _handler;
