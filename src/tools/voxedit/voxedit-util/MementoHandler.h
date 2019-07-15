@@ -71,7 +71,10 @@ struct MementoState {
 	MementoData data;
 	int layer;
 	std::string name;
-	/** @todo duplicated data in MementoData */
+	/**
+	 * @note This region might be different from the region given in the @c MementoData. In case of an @c MementoHandler::undo()
+	 * call, we have to make sure that the region of the previous state is re-extracted.
+	 */
 	voxel::Region region;
 };
 
