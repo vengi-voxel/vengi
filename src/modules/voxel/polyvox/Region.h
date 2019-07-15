@@ -35,12 +35,12 @@ namespace voxel {
 class Region {
 public:
 	/// Constructor
-	Region();
+	constexpr Region();
 	/// Constructor
-	Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner);
+	constexpr Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner);
 	/// Constructor
-	Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ);
-	Region(int mins, int maxs);
+	constexpr Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ);
+	constexpr Region(int mins, int maxs);
 	Region(const Region& region);
 
 	/// A Region with the lower corner set as low as possible and the upper corner set as high as possible.
@@ -518,14 +518,14 @@ inline Region::Region(const Region& region) :
 				region.m_iUpperY), m_iUpperZ(region.m_iUpperZ) {
 }
 
-inline Region::Region(int mins, int maxs) :
+inline constexpr Region::Region(int mins, int maxs) :
 		Region(mins, mins, mins, maxs, maxs, maxs) {
 }
 
 /**
  * Constructs a Region and clears all extents to zero.
  */
-inline Region::Region() :
+inline constexpr Region::Region() :
 		Region(0, 0, 0, 0, 0, 0) {
 }
 
@@ -534,7 +534,7 @@ inline Region::Region() :
  * @param v3dLowerCorner The desired lower corner of the Region.
  * @param v3dUpperCorner The desired upper corner of the Region.
  */
-inline Region::Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner) :
+inline constexpr Region::Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner) :
 		Region(v3dLowerCorner.x, v3dLowerCorner.y, v3dLowerCorner.z, v3dUpperCorner.x, v3dUpperCorner.y, v3dUpperCorner.z) {
 }
 
@@ -547,7 +547,7 @@ inline Region::Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpp
  * @param iUpperY The desired upper 'y' extent of the Region.
  * @param iUpperZ The desired upper 'z' extent of the Region.
  */
-inline Region::Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ) :
+inline constexpr Region::Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ) :
 		m_iLowerX(iLowerX), m_iLowerY(iLowerY), m_iLowerZ(iLowerZ), m_iUpperX(iUpperX), m_iUpperY(iUpperY), m_iUpperZ(iUpperZ) {
 }
 
