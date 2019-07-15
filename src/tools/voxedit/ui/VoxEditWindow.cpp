@@ -715,6 +715,10 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 				mgr.setModifierType(_modBeforeMouse);
 				sceneMgr().trace(viewport->camera(), true);
 				_modBeforeMouse = ModifierType::None;
+			} else {
+				tb::TBWidgetEvent evCmd(tb::EVENT_TYPE_COMMAND);
+				evCmd.string = "+actionexecute";
+				invokeEvent(evCmd);
 			}
 			mgr.aabbStop();
 			return true;
