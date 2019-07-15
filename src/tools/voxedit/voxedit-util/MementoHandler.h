@@ -25,28 +25,62 @@ enum class MementoType {
 	LayerRenamed
 };
 
-struct LayerVolumeData {
-	size_t compressedBufferSize;
-	uint8_t* data;
-	voxel::Region region;
+/**
+ * @brief Holds the data of a memento state
+ *
+ * The given buffer is owned by this class and represents a compressed volume
+ */
+struct MementoData {
+	/**
+	 * @brief How big is the buffer with the compressed volume data
+	 */
+	size_t compressedSize = 0;
+	/**
+	 * @brief The compressed volume data
+	 */
+	uint8_t* buffer = nullptr;
+	/**
+	 * The region the given volume data is for
+	 */
+	voxel::Region region {};
 
-	static voxel::RawVolume* toVolume(const LayerVolumeData* data);
-	static LayerVolumeData* fromVolume(const voxel::RawVolume* volume);
+	constexpr MementoData() {}
+	MementoData(const uint8_t* buf, size_t bufSize, const voxel::Region& _region);
+	MementoData(MementoData&& o);
+	MementoData(const MementoData& o);
+	~MementoData();
+
+	MementoData& operator=(MementoData &&o);
+
+	/**
+	 * @brief Converts the given @c mementoData into a volume
+	 * @note Keep in mind that you own the returned memory
+	 * @return The volume from the given memento data or @c null if the memento data
+	 * did not contain a valid volume buffer
+	 */
+	static voxel::RawVolume* toVolume(const MementoData& mementoData);
+	/**
+	 * @brief Converts the given volume into a @c MementoData structure (and perform the compression)
+	 * @param[in] volume The volume to create the memento state for. This might be @c null.
+	 */
+	static MementoData fromVolume(const voxel::RawVolume* volume);
 };
 
-struct LayerState {
+struct MementoState {
 	MementoType type;
-	LayerVolumeData* volume;
+	MementoData data;
 	int layer;
 	std::string name;
+	/** @todo duplicated data in MementoData */
 	voxel::Region region;
 };
 
-// TODO: support partial volumes (dirty regions - see SceneManager - will reduce memory a lot)
-// TODO: rle or zlib compression for the stored data to reduce memory
+/**
+ * @brief Class that manages the undo and redo steps for the scene
+ */
 class MementoHandler : public core::IComponent {
 private:
-	std::vector<LayerState> _states;
+	std::vector<MementoState> _states;
 	uint8_t _statePosition = 0u;
 	int _locked = 0;
 public:
@@ -88,15 +122,15 @@ public:
 	/**
 	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for
 	 */
-	LayerState undo();
+	MementoState undo();
 	/**
 	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for
 	 */
-	LayerState redo();
+	MementoState redo();
 	bool canUndo() const;
 	bool canRedo() const;
 
-	const LayerState& state() const;
+	const MementoState& state() const;
 
 	size_t stateSize() const;
 	uint8_t statePosition() const;
@@ -119,7 +153,7 @@ public:
 	}
 };
 
-inline const LayerState& MementoHandler::state() const {
+inline const MementoState& MementoHandler::state() const {
 	return _states[_statePosition];
 }
 

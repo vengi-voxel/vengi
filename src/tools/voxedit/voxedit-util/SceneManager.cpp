@@ -452,13 +452,13 @@ voxel::RawVolume* SceneManager::modelVolume() {
 }
 
 void SceneManager::undo() {
-	const LayerState& s = _mementoHandler.undo();
+	const MementoState& s = _mementoHandler.undo();
 	ScopedMementoHandlerLock lock(_mementoHandler);
 	if (s.type == MementoType::LayerRenamed) {
 		_layerMgr.rename(s.layer, s.name);
 		return;
 	}
-	voxel::RawVolume* v = LayerVolumeData::toVolume(s.volume);
+	voxel::RawVolume* v = MementoData::toVolume(s.data);
 	if (v == nullptr) {
 		_layerMgr.deleteLayer(s.layer, false);
 		return;
@@ -468,13 +468,13 @@ void SceneManager::undo() {
 }
 
 void SceneManager::redo() {
-	const LayerState& s = _mementoHandler.redo();
+	const MementoState& s = _mementoHandler.redo();
 	ScopedMementoHandlerLock lock(_mementoHandler);
 	if (s.type == MementoType::LayerRenamed) {
 		_layerMgr.rename(s.layer, s.name);
 		return;
 	}
-	voxel::RawVolume* v = LayerVolumeData::toVolume(s.volume);
+	voxel::RawVolume* v = MementoData::toVolume(s.data);
 	if (v == nullptr) {
 		_layerMgr.deleteLayer(s.layer, false);
 		return;
