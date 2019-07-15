@@ -31,7 +31,7 @@ enum class MementoType {
  * The given buffer is owned by this class and represents a compressed volume
  */
 class MementoData {
-	friend class MementoState;
+	friend struct MementoState;
 	friend class MementoHandler;
 private:
 	/**
