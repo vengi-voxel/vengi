@@ -30,22 +30,26 @@ enum class MementoType {
  *
  * The given buffer is owned by this class and represents a compressed volume
  */
-struct MementoData {
+class MementoData {
+	friend class MementoState;
+	friend class MementoHandler;
+private:
 	/**
 	 * @brief How big is the buffer with the compressed volume data
 	 */
-	size_t compressedSize = 0;
+	size_t _compressedSize = 0;
 	/**
 	 * @brief The compressed volume data
 	 */
-	uint8_t* buffer = nullptr;
+	uint8_t* _buffer = nullptr;
 	/**
 	 * The region the given volume data is for
 	 */
-	voxel::Region region {};
+	voxel::Region _region {};
 
-	constexpr MementoData() {}
 	MementoData(const uint8_t* buf, size_t bufSize, const voxel::Region& _region);
+public:
+	constexpr MementoData() {}
 	MementoData(MementoData&& o);
 	MementoData(const MementoData& o);
 	~MementoData();
@@ -76,6 +80,17 @@ struct MementoState {
 	 * call, we have to make sure that the region of the previous state is re-extracted.
 	 */
 	voxel::Region region;
+
+	/**
+	 * Some types (@c MementoType) don't have a volume attached.
+	 */
+	inline bool hasVolumeData() const {
+		return data._buffer != nullptr;
+	}
+
+	inline const voxel::Region& dataRegion() const {
+		return data._region;
+	}
 };
 
 /**

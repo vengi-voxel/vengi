@@ -18,46 +18,46 @@ const int MementoHandler::MaxStates = 64;
 
 MementoData::MementoData(const uint8_t* buf, size_t bufSize,
 		const voxel::Region& _region) :
-		compressedSize(bufSize), region(_region) {
+		_compressedSize(bufSize), _region(_region) {
 	if (buf != nullptr) {
-		core_assert(compressedSize > 0);
-		buffer = new uint8_t[compressedSize];
-		memcpy(buffer, buf, compressedSize);
+		core_assert(_compressedSize > 0);
+		_buffer = new uint8_t[_compressedSize];
+		memcpy(_buffer, buf, _compressedSize);
 	} else {
-		core_assert(compressedSize == 0);
+		core_assert(_compressedSize == 0);
 	}
 }
 
 MementoData::MementoData(MementoData&& o) :
-		compressedSize(std::exchange(o.compressedSize, 0)),
-		buffer(std::exchange(o.buffer, nullptr)),
-		region(o.region) {
+		_compressedSize(std::exchange(o._compressedSize, 0)),
+		_buffer(std::exchange(o._buffer, nullptr)),
+		_region(o._region) {
 }
 
 MementoData::~MementoData() {
-	if (buffer != nullptr) {
-		delete[] buffer;
-		buffer = nullptr;
+	if (_buffer != nullptr) {
+		delete[] _buffer;
+		_buffer = nullptr;
 	}
 }
 
 MementoData::MementoData(const MementoData& o) :
-		compressedSize(o.compressedSize),
-		region(o.region) {
-	if (o.buffer != nullptr) {
-		core_assert(compressedSize > 0);
-		buffer = new uint8_t[compressedSize];
-		memcpy(buffer, o.buffer, compressedSize);
+		_compressedSize(o._compressedSize),
+		_region(o._region) {
+	if (o._buffer != nullptr) {
+		core_assert(_compressedSize > 0);
+		_buffer = new uint8_t[_compressedSize];
+		memcpy(_buffer, o._buffer, _compressedSize);
 	} else {
-		core_assert(compressedSize == 0);
+		core_assert(_compressedSize == 0);
 	}
 }
 
 MementoData& MementoData::operator=(MementoData &&o) {
 	if (this != &o) {
-		compressedSize = std::exchange(o.compressedSize, 0);
-		buffer = std::exchange(o.buffer, nullptr);
-		region = o.region;
+		_compressedSize = std::exchange(o._compressedSize, 0);
+		_buffer = std::exchange(o._buffer, nullptr);
+		_region = o._region;
 	}
 	return *this;
 }
@@ -78,18 +78,18 @@ MementoData MementoData::fromVolume(const voxel::RawVolume* volume) {
 	delete[] compressedBuf;
 
 	Log::debug("Memento state. Volume: %i, compressed: %i",
-			(int)uncompressedBufferSize, (int)data.compressedSize);
+			(int)uncompressedBufferSize, (int)data._compressedSize);
 	return data;
 }
 
 voxel::RawVolume* MementoData::toVolume(const MementoData& mementoData) {
-	if (mementoData.buffer == nullptr) {
+	if (mementoData._buffer == nullptr) {
 		return nullptr;
 	}
-	const size_t uncompressedBufferSize = mementoData.region.voxels() * sizeof(voxel::Voxel);
+	const size_t uncompressedBufferSize = mementoData._region.voxels() * sizeof(voxel::Voxel);
 	uint8_t *uncompressedBuf = new uint8_t[uncompressedBufferSize];
-	core::zip::uncompress(mementoData.buffer, mementoData.compressedSize, uncompressedBuf, uncompressedBufferSize);
-	return voxel::RawVolume::createRaw((voxel::Voxel*)uncompressedBuf, mementoData.region);
+	core::zip::uncompress(mementoData._buffer, mementoData._compressedSize, uncompressedBuf, uncompressedBufferSize);
+	return voxel::RawVolume::createRaw((voxel::Voxel*)uncompressedBuf, mementoData._region);
 }
 
 MementoHandler::MementoHandler() {
@@ -125,7 +125,7 @@ void MementoHandler::construct() {
 			const glm::ivec3& mins = state.region.getLowerCorner();
 			const glm::ivec3& maxs = state.region.getUpperCorner();
 			Log::info("%4i: %i - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)]",
-					i++, state.layer, state.name.c_str(), state.data.buffer == nullptr ? "empty" : "volume",
+					i++, state.layer, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
 							mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		}
 	});
@@ -142,7 +142,7 @@ MementoState MementoHandler::undo() {
 	}
 	core_assert(_statePosition >= 1);
 	--_statePosition;
-	if (_states[_statePosition].data.buffer != nullptr
+	if (_states[_statePosition].data._buffer != nullptr
 			&& _states[_statePosition].type == MementoType::LayerAdded
 			&& _states[_statePosition + 1].type != MementoType::Modification) {
 		--_statePosition;
@@ -160,10 +160,10 @@ MementoState MementoHandler::redo() {
 	}
 	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
 	++_statePosition;
-	if (_states[_statePosition].data.buffer == nullptr && _states[_statePosition].type == MementoType::LayerAdded) {
+	if (_states[_statePosition].data._buffer == nullptr && _states[_statePosition].type == MementoType::LayerAdded) {
 		++_statePosition;
 	}
-	if (_states[_statePosition].data.buffer != nullptr && _states[_statePosition].type == MementoType::LayerDeleted) {
+	if (_states[_statePosition].data._buffer != nullptr && _states[_statePosition].type == MementoType::LayerDeleted) {
 		++_statePosition;
 	}
 	const MementoState& s = state();
