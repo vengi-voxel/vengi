@@ -13,7 +13,7 @@
 
 namespace voxedit {
 
-static const MementoState InvalidLayerState{MementoType::Modification, MementoData(), -1, "", voxel::Region::InvalidRegion};
+static const MementoState InvalidMementoState{MementoType::Modification, MementoData(), -1, "", voxel::Region::InvalidRegion};
 const int MementoHandler::MaxStates = 64;
 
 MementoData::MementoData(const uint8_t* buf, size_t bufSize,
@@ -138,7 +138,7 @@ void MementoHandler::clearStates() {
 
 MementoState MementoHandler::undo() {
 	if (!canUndo()) {
-		return InvalidLayerState;
+		return InvalidMementoState;
 	}
 	core_assert(_statePosition >= 1);
 	--_statePosition;
@@ -156,7 +156,7 @@ MementoState MementoHandler::undo() {
 
 MementoState MementoHandler::redo() {
 	if (!canRedo()) {
-		return InvalidLayerState;
+		return InvalidMementoState;
 	}
 	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
 	++_statePosition;
