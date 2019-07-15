@@ -4,6 +4,11 @@
 
 #pragma once
 
+namespace voxel {
+class RawVolume;
+class Region;
+}
+
 namespace voxedit {
 
 struct Layer;
