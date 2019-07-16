@@ -777,9 +777,12 @@ void deleteFramebuffers(uint8_t amount, Id* ids) {
 		return;
 	}
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
-	glDeleteFramebuffers((GLsizei)amount, (GLuint*)ids);
+	glDeleteFramebuffers((GLsizei)amount, (const GLuint*)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
+		if (ids[i] == _priv::s.framebufferHandle) {
+			_priv::s.framebufferHandle = InvalidId;
+		}
 		ids[i] = InvalidId;
 	}
 }
@@ -840,6 +843,9 @@ Id genTransformFeedback() {
 void deleteTransformFeedback(Id& id) {
 	if (id == InvalidId) {
 		return;
+	}
+	if (_priv::s.transformFeedback == id) {
+		_priv::s.transformFeedback = InvalidId;
 	}
 	const GLuint lid = (GLuint)id;
 	glDeleteTransformFeedbacks(1, &lid);
@@ -908,6 +914,9 @@ void deleteOcclusionQuery(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
+	if (_priv::s.occlusionQuery == id) {
+		_priv::s.occlusionQuery = InvalidId;
+	}
 	const GLuint lid = (GLuint)id;
 #if SANITY_CHECKS_GL
 	const GLboolean state = glIsQuery(lid);
@@ -943,16 +952,6 @@ bool beginOcclusionQuery(Id id) {
 	return true;
 }
 
-void flush() {
-	glFlush();
-	checkError();
-}
-
-void finish() {
-	glFinish();
-	checkError();
-}
-
 bool endOcclusionQuery(Id id) {
 	if (_priv::s.occlusionQuery != id || id == InvalidId) {
 		return false;
@@ -961,6 +960,16 @@ bool endOcclusionQuery(Id id) {
 	_priv::s.occlusionQuery = video::InvalidId;
 	checkError();
 	return true;
+}
+
+void flush() {
+	glFlush();
+	checkError();
+}
+
+void finish() {
+	glFinish();
+	checkError();
 }
 
 // TODO: cache this per id per frame - or just the last queried id?
