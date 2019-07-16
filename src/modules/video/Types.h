@@ -369,6 +369,7 @@ enum class Feature {
 	BufferStorage,
 	MultiDrawIndirect,
 	ComputeShaders,
+	TransformFeedback,
 
 	Max
 };

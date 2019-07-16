@@ -828,7 +828,7 @@ Id genOcclusionQuery() {
 }
 
 Id genTransformFeedback() {
-	if (!FLEXT_ARB_transform_feedback2) {
+	if (!hasFeature(Feature::TransformFeedback)) {
 		return InvalidId;
 	}
 	GLuint id;
@@ -860,7 +860,7 @@ bool bindTransformFeedback(Id id) {
 }
 
 bool bindTransforFeebackBuffer(int index, Id bufferId) {
-	if (!FLEXT_ARB_transform_feedback2) {
+	if (!hasFeature(Feature::TransformFeedback)) {
 		return false;
 	}
 	// the buffer must be of type GL_TRANSFORM_FEEDBACK_BUFFER
@@ -872,7 +872,7 @@ bool bindTransforFeebackBuffer(int index, Id bufferId) {
 }
 
 bool beginTransformFeedback(Primitive primitive) {
-	if (!FLEXT_ARB_transform_feedback2) {
+	if (!hasFeature(Feature::TransformFeedback)) {
 		return false;
 	}
 	const GLenum glMode = _priv::Primitives[std::enum_value(primitive)];
@@ -884,21 +884,21 @@ bool beginTransformFeedback(Primitive primitive) {
 }
 
 void pauseTransformFeedback() {
-	if (!FLEXT_ARB_transform_feedback2) {
+	if (!hasFeature(Feature::TransformFeedback)) {
 		return;
 	}
 	glPauseTransformFeedback();
 }
 
 void resumeTransformFeedback() {
-	if (!FLEXT_ARB_transform_feedback2) {
+	if (!hasFeature(Feature::TransformFeedback)) {
 		return;
 	}
 	glResumeTransformFeedback();
 }
 
 void endTransformFeedback() {
-	if (!FLEXT_ARB_transform_feedback2) {
+	if (!hasFeature(Feature::TransformFeedback)) {
 		return;
 	}
 	glEndTransformFeedback();
@@ -1386,7 +1386,7 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 }
 
 bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode, const std::vector<std::string>& varyings) {
-	if (!FLEXT_ARB_transform_feedback2) {
+	if (!hasFeature(Feature::TransformFeedback)) {
 		return false;
 	}
 	if (varyings.empty() || mode == TransformFeedbackCaptureMode::Max) {
