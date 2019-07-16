@@ -532,7 +532,7 @@ Id boundBuffer(BufferType type) {
 void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	const int modeIndex = std::enum_value(mode);
 	const GLenum glMode = _priv::AccessModes[modeIndex];
-	if (FLEXT_ARB_direct_state_access) {
+	if (hasFeature(Feature::DirectStateAccess)) {
 		void* data = glMapNamedBuffer(handle, glMode);
 		checkError();
 		return data;
@@ -549,7 +549,7 @@ void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
 void unmapBuffer(Id handle, BufferType type) {
 	const int typeIndex = std::enum_value(type);
 	const GLenum glType = _priv::BufferTypes[typeIndex];
-	if (FLEXT_ARB_direct_state_access) {
+	if (hasFeature(Feature::DirectStateAccess)) {
 		glUnmapNamedBuffer(handle);
 	} else {
 		bindBuffer(type, handle);
@@ -597,7 +597,7 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 
 void genBuffers(uint8_t amount, Id* ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
-	if (FLEXT_ARB_direct_state_access) {
+	if (hasFeature(Feature::DirectStateAccess)) {
 		glCreateBuffers((GLsizei)amount, (GLuint*)ids);
 		checkError();
 	} else {
@@ -1048,7 +1048,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 	}
 	const GLuint lid = (GLuint)handle;
 	const GLenum usage = _priv::BufferModes[std::enum_value(mode)];
-	if (FLEXT_ARB_direct_state_access) {
+	if (hasFeature(Feature::DirectStateAccess)) {
 		glNamedBufferData(lid, (GLsizeiptr)size, data, usage);
 		checkError();
 	} else {
@@ -1091,7 +1091,7 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 		return;
 	}
 	const int typeIndex = std::enum_value(type);
-	if (FLEXT_ARB_direct_state_access) {
+	if (hasFeature(Feature::DirectStateAccess)) {
 		const GLuint lid = (GLuint)handle;
 		glNamedBufferSubData(lid, (GLintptr)offset, (GLsizeiptr)size, data);
 		checkError();
@@ -1693,7 +1693,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		Log::info("Activated vsync");
 	}
 
-	if (FLEXT_ARB_direct_state_access) {
+	if (hasFeature(Feature::DirectStateAccess)) {
 		Log::info("Use direct state access");
 	}
 
