@@ -1091,9 +1091,6 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 		return;
 	}
 	const int typeIndex = std::enum_value(type);
-#if SANITY_CHECKS_GL
-	core_assert(_priv::s.bufferHandle[typeIndex] != InvalidId);
-#endif
 	if (FLEXT_ARB_direct_state_access) {
 		const GLuint lid = (GLuint)handle;
 		glNamedBufferSubData(lid, (GLintptr)offset, (GLsizeiptr)size, data);
