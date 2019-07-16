@@ -66,36 +66,14 @@ lighting_settings
 					max: 255
 					lp: width: 120
 
-background_settings
-	TBContainer
-		TBLayout: axis: y
-			TBTextField: text: Images
-			TBLayout: axis: x
-				TBSkinImage: skin: voxedit-axis-x
-				TBEditField: id: bitmap.x, skin: voxedit-file
-				TBButton: id: button-bitmap-x, text: ...
-			TBLayout: axis: x
-				TBSkinImage: skin: voxedit-axis-y
-				TBEditField: id: bitmap.y, skin: voxedit-file
-				TBButton: id: button-bitmap-y, text: ...
-			TBLayout: axis: x
-				TBSkinImage: skin: voxedit-axis-z
-				TBEditField: id: bitmap.z, skin: voxedit-file
-				TBButton: id: button-bitmap-z, text: ...
-
 TBLayout: axis: y
 	TBTabContainer
 		gravity all
 		id tabcontainer
 		tabs
 			TBButton: text: "Lighting"
-			TBButton: text: "Backgrounds"
 		TBLayout
 			@include lighting_settings
-			axis y
-			distribution-position top
-		TBLayout
-			@include background_settings
 			axis y
 			distribution-position top
 
