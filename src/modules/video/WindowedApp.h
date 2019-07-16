@@ -124,6 +124,9 @@ public:
 	virtual core::AppState onInit() override;
 	virtual core::AppState onCleanup() override;
 
+	static int fps() {
+		return getInstance()->_fps;
+	}
 	static WindowedApp* getInstance();
 };
 

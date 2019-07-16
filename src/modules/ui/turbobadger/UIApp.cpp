@@ -501,8 +501,6 @@ core::AppState UIApp::onRunning() {
 
 			_renderer.beginPaint(_frameBufferDimension.x, _frameBufferDimension.y);
 			_root->invokePaint(tb::TBWidget::PaintProps());
-
-			enqueueShowStr(5, core::Color::White, "FPS: %d", _fps);
 		}
 		{
 			core_trace_scoped(UIAppAfterUI);
