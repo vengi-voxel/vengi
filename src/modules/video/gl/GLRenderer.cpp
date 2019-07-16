@@ -1058,10 +1058,17 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 		unmapBuffer(handle, type);
 #else
 		const GLenum glType = _priv::BufferTypes[std::enum_value(type)];
-		bindBuffer(type, handle);
+		const Id oldBuffer = boundBuffer(type);
+		const bool changed = bindBuffer(type, handle);
 		glBufferData(glType, (GLsizeiptr)size, data, usage);
 		checkError();
-		unbindBuffer(type);
+		if (changed) {
+			if (oldBuffer == InvalidId) {
+				unbindBuffer(type);
+			} else {
+				bindBuffer(type, oldBuffer);
+			}
+		}
 #endif
 	}
 	if (_priv::s.vendor[std::enum_value(Vendor::Nouveau)]) {
@@ -1094,10 +1101,17 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 	} else {
 #if 1
 		const GLenum glType = _priv::BufferTypes[typeIndex];
-		bindBuffer(type, handle);
+		const Id oldBuffer = boundBuffer(type);
+		const bool changed = bindBuffer(type, handle);
 		glBufferSubData(glType, (GLintptr)offset, (GLsizeiptr)size, data);
 		checkError();
-		unbindBuffer(type);
+		if (changed) {
+			if (oldBuffer == InvalidId) {
+				unbindBuffer(type);
+			} else {
+				bindBuffer(type, oldBuffer);
+			}
+		}
 #else
 		void *target = mapBufferRange(...);
 		memcpy(target, data, size);
