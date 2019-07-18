@@ -150,7 +150,6 @@ bool Buffer::update(int32_t idx, const void* data, size_t size) {
 }
 
 int32_t Buffer::create(const void* data, size_t size, BufferType target) {
-	// we already have a buffer
 	if (_handleIdx >= MAX_HANDLES) {
 		return -1;
 	}
