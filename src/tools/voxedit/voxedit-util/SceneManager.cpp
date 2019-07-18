@@ -798,7 +798,8 @@ void SceneManager::construct() {
 
 	core::Command::registerCommand("rotate", [&] (const core::CmdArgs& args) {
 		if (args.size() < 3) {
-			Log::info("Expected to get x, y and z angles in degrees");
+			Log::info("Expected to get x, y and z angles in degrees"
+					" and optionally a boolean to rotate around the reference position");
 			return;
 		}
 		const int x = core::string::toInt(args[0]);
