@@ -16,12 +16,14 @@
 
 Viewport::Viewport() :
 		Super(),
+		_edgeShader(shader::EdgeShader::getInstance()),
 		_frameBufferTexture((tb::UIRendererGL*) tb::g_renderer) {
 	setIsFocusable(true);
 }
 
 Viewport::~Viewport() {
 	_frameBuffer.shutdown();
+	_edgeShader.shutdown();
 }
 
 bool Viewport::saveImage(const char* filename) {
@@ -104,8 +106,14 @@ void Viewport::onPaint(const PaintProps &paintProps) {
 	const float w = (uvc.x - uva.x) * dimension.x;
 	const float h = (uvc.y - uva.y) * dimension.y;
 
-	const tb::TBRect srcRect(x, y, w, h);
-	tb::g_renderer->drawBitmap(rect, srcRect, &_frameBufferTexture);
+	{
+		tb::g_renderer->flush();
+		video::ScopedShader scoped(_edgeShader);
+		_edgeShader.setViewprojection(tb::g_renderer->camera().projectionMatrix());
+		const tb::TBRect srcRect(x, y, w, h);
+		tb::g_renderer->drawBitmap(rect, srcRect, &_frameBufferTexture);
+		tb::g_renderer->flush();
+	}
 	tb::TBFontFace* font = getFont();
 	font->drawString(0, 0, tb::TBColor(255.0f, 255.0f, 255.0f, 255.0f), _cameraMode.c_str());
 }
@@ -124,6 +132,11 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 	}
 	_cameraMode = cameraMode;
 	_controller.init(mode);
+	_edgeShader.setup();
+
+	video::ScopedShader scoped(_edgeShader);
+	_edgeShader.setModel(glm::mat4(1.0f));
+	_edgeShader.setTexture(video::TextureUnit::Zero);
 }
 
 void Viewport::update() {

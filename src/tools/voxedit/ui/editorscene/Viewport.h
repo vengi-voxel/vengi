@@ -8,6 +8,7 @@
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "Controller.h"
+#include "RenderShaders.h"
 
 /**
  * @brief Scene management like input, ui and rendering.
@@ -15,6 +16,7 @@
 class Viewport: public ui::turbobadger::Widget {
 private:
 	using Super = ui::turbobadger::Widget;
+	shader::EdgeShader& _edgeShader;
 	video::FrameBuffer _frameBuffer;
 	tb::UIBitmapGL _frameBufferTexture;
 	voxedit::Controller _controller;
