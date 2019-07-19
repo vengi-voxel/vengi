@@ -114,7 +114,7 @@ public:
 	 */
 	int y() const;
 
-	const glm::vec3 eye() const;
+	const glm::vec3& eye() const;
 
 	CameraType type() const;
 	void setType(CameraType type);
@@ -259,7 +259,7 @@ public:
 	glm::vec4 splitFrustumSphereBoundingBox(float near, float far) const;
 };
 
-inline const glm::vec3 Camera::eye() const {
+inline const glm::vec3& Camera::eye() const {
 	return _eyePosition;
 }
 
