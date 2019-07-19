@@ -19,7 +19,7 @@ set(SRCS_SHADERS
 )
 set(LIB render)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES video noise)
-generate_shaders(${LIB} mesh shadowmap shadowmap_instanced shadowmap_render color color_instanced texture)
+generate_shaders(${LIB} mesh shadowmap shadowmap_instanced shadowmap_render color color_instanced texture edge)
 
 gtest_suite_sources(tests
 	tests/RenderShaderTest.cpp
