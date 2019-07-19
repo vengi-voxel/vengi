@@ -15,8 +15,9 @@ void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
 	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
-	float ndotl = dot(normal, u_lightdir);
-	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
+	float ndotl1 = dot(normal, u_lightdir);
+	float ndotl2 = dot(normal, -u_lightdir);
+	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
 	vec3 shadowColor = shadow(u_viewprojection, v_color.rgb, diffuse, u_ambient_color);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
 	o_color = fog(linearColor, v_color.a);
