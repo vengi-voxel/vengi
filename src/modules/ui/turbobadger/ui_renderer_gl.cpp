@@ -74,7 +74,7 @@ void UIBitmapGL::setData(uint32_t *data) {
 }
 
 UIRendererGL::UIRendererGL() :
-		_white(this), _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {
+		_white(this) {
 }
 
 void UIRendererGL::shutdown() {
@@ -164,6 +164,10 @@ TBBitmap *UIRendererGL::createBitmap(int width, int height, uint32_t *data) {
 		return nullptr;
 	}
 	return bitmap;
+}
+
+void UIRendererGL::flush() {
+	batch.flush(this);
 }
 
 void UIRendererGL::renderBatch(Batch *batch) {

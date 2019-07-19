@@ -8,6 +8,7 @@
 #include "tb_core.h"
 #include "tb_geometry.h"
 #include "tb_linklist.h"
+#include "video/Camera.h"
 
 namespace tb {
 
@@ -50,7 +51,11 @@ public:
 /** TBRenderer is a minimal interface for painting strings and bitmaps. */
 
 class TBRenderer {
+protected:
+	video::Camera _camera;
 public:
+	TBRenderer() : _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {}
+
 	virtual ~TBRenderer() {
 	}
 
@@ -134,6 +139,10 @@ public:
 		BATCH_HINT_DRAW_BITMAP_FRAGMENT
 	};
 
+	const video::Camera& camera() const {
+		return _camera;
+	}
+
 	/** A hint to batching renderers that the following set of draw calls are of the
 		same type so batching might be optimized.
 		The hint defines what operations are allowed between BeginBatchHint
@@ -144,6 +153,9 @@ public:
 
 	/** End the hint scope started with BeginBatchHint. */
 	virtual void endBatchHint() {
+	}
+
+	virtual void flush() {
 	}
 
 private:

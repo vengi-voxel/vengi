@@ -50,7 +50,6 @@ class UIRendererGL: public TBRendererBatcher {
 private:
 	UIBitmapGL _white;
 	shader::TextureShader _shader;
-	video::Camera _camera;
 	video::Buffer _vbo;
 	int32_t _bufferIndex = -1;
 
@@ -68,6 +67,7 @@ public:
 
 	virtual TBBitmap *createBitmap(int width, int height, uint32_t *data) override;
 
+	virtual void flush() override;
 	virtual void renderBatch(Batch *batch) override;
 	virtual void setClipRect(const TBRect &rect) override;
 };
