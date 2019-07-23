@@ -65,7 +65,7 @@
  * @brief Provide your own assert - this is also executed in non DEBUG mode
  */
 #ifndef ai_assert_always
-	#if (__clang_analyzer__)
+	#ifdef __clang_analyzer__
 		#define ai_assert_always(condition, ...) assert(condition)
 	#else
 		#define ai_assert_always(condition, ...) \
