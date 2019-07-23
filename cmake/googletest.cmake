@@ -103,6 +103,7 @@ macro(gtest_suite_end name)
 			)
 		endforeach()
 
+		target_compile_options(${name} PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-undef>)
 		get_property(models GLOBAL PROPERTY ${name}_Models)
 		foreach(entry ${models})
 			string(REPLACE ":" ";" inout ${entry})

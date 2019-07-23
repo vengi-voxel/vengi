@@ -18,6 +18,9 @@ ninja:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
 	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR) $@
 
+cppcheck:
+	$(Q)$(MAKE) BUILDDIR=$(BUILDDIR)/$@
+
 define UPDATE_GIT
 	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
 		git clone --depth=1 $(2) $(UPDATEDIR)/$(1).sync; \
