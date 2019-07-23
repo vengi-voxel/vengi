@@ -43,7 +43,7 @@ static int fillUniforms(Id program, ShaderUniforms& uniformMap, const std::strin
 	return numUniforms;
 }
 
-#if WIN32
+#ifdef __WIN32__
 extern void __stdcall
 #else
 extern void

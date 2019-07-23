@@ -3,9 +3,10 @@
  * @brief Driver hints for using the high performance card in e.g. optimus setups
  */
 
+#include <SDL_platform.h>
 #include <stdint.h>
 
-#if _WIN32
+#ifdef __WIN32__
 #define EXPORT_SYMBOL __declspec(dllexport)
 #else
 #define EXPORT_SYMBOL

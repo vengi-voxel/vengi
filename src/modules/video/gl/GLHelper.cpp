@@ -15,7 +15,7 @@ namespace _priv {
 
 static int _recompileErrors = 0;
 
-#if WIN32
+#ifdef __WIN32__
 void __stdcall
 #else
 void
@@ -266,13 +266,13 @@ void setupFeatures() {
 	}
 #endif
 
-#if SDL_VIDEO_OPENGL_ES2
+#ifdef SDL_VIDEO_OPENGL_ES2
 	renderState().features[std::enum_value(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("GL_ARB_texture_half_float");
 #else
 	renderState().features[std::enum_value(Feature::TextureHalfFloat)] = renderState().features[std::enum_value(Feature::TextureFloat)];
 #endif
 
-#if SDL_VIDEO_OPENGL_ES3
+#ifdef SDL_VIDEO_OPENGL_ES3
 	renderState().features[std::enum_value(Feature::InstancedArrays)] = true;
 	renderState().features[std::enum_value(Feature::TextureCompressionETC2)] = true;
 #endif
