@@ -286,8 +286,6 @@ std::string convertName(const std::string& in, bool firstUpper) {
 }
 
 
-#define USE_ALIGN_AS 1
-
 /**
  * The size of each element in the array will be the size of the element type, rounded up to a multiple of the
  * size of a vec4. This is also the array’s alignment. The array’s size will be this rounded-up element’s size
