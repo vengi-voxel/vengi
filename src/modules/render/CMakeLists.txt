@@ -1,5 +1,5 @@
 set(SRCS
-	Axis.h
+	Axis.cpp Axis.h
 	CameraFrustum.cpp CameraFrustum.h
 	GridRenderer.cpp GridRenderer.h
 	Plane.h Plane.cpp

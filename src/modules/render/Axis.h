@@ -24,25 +24,16 @@ private:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	float _lineWidth = 4.0f;
+	glm::vec3 _pos = glm::zero<glm::vec3>();
 public:
-	void render(const video::Camera& camera) {
-		video::ScopedState disableDepthTest(video::State::DepthTest, false);
-		video::ScopedLineWidth width(_lineWidth);
-		_shapeRenderer.renderAll(camera);
-	}
+	Axis();
 
-	void shutdown() override {
-		_shapeRenderer.shutdown();
-		_shapeBuilder.shutdown();
-	}
+	void setPosition(const glm::vec3& pos);
 
-	bool init() override {
-		if (!_shapeRenderer.init()) {
-			return false;
-		}
-		_shapeBuilder.axis(20.0f);
-		return _shapeRenderer.create(_shapeBuilder) >= 0;
-	};
+	void render(const video::Camera& camera);
+
+	bool init() override;
+	void shutdown() override;
 };
 
 }
