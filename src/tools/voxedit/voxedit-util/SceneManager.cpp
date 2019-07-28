@@ -656,6 +656,7 @@ void SceneManager::render(const video::Camera& camera) {
 		}
 	}
 	if (_renderAxis) {
+		_axis.update(camera, glm::vec2(_mouseX, _mouseY));
 		_axis.render(camera);
 	}
 	// TODO: render ground plane
