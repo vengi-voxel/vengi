@@ -74,4 +74,60 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 	return destination;
 }
 
+// TODO: handle pivot
+voxel::RawVolume* rotateAxis(const voxel::RawVolume* source, math::Axis axis, const Voxel& empty, const glm::vec3& pivot, bool increaseSize) {
+	const voxel::Region& srcRegion = source->region();
+	voxel::Region destRegion = srcRegion;
+	if (increaseSize) {
+		if (axis == math::Axis::Y) {
+			destRegion.setLowerX(srcRegion.getLowerZ());
+			destRegion.setLowerZ(srcRegion.getLowerX());
+			destRegion.setUpperX(srcRegion.getUpperZ());
+			destRegion.setUpperZ(srcRegion.getUpperX());
+		} else if (axis == math::Axis::X) {
+			destRegion.setLowerY(srcRegion.getLowerZ());
+			destRegion.setLowerZ(srcRegion.getLowerX());
+			destRegion.setUpperY(srcRegion.getUpperZ());
+			destRegion.setUpperZ(srcRegion.getUpperY());
+		} else {
+			destRegion.setLowerY(srcRegion.getLowerX());
+			destRegion.setLowerX(srcRegion.getLowerY());
+			destRegion.setUpperY(srcRegion.getUpperX());
+			destRegion.setUpperX(srcRegion.getUpperY());
+		}
+		core_assert(destRegion.isValid());
+	}
+	voxel::RawVolume* destination = new RawVolume(destRegion);
+	voxel::RawVolume::Sampler destSampler(destination);
+	voxel::RawVolume::Sampler srcSampler(source);
+
+	for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
+		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
+			for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
+				srcSampler.setPosition(x, y, z);
+				const Voxel& v = srcSampler.voxel();
+				if (v == empty) {
+					continue;
+				}
+				glm::ivec3 pos(x, y, z);
+				if (axis == math::Axis::X) {
+					pos.y = srcRegion.getDepthInCells() - z;
+					pos.z = y;
+				} else if (axis == math::Axis::Y) {
+					pos.x = z;
+					pos.z = srcRegion.getWidthInCells() - x;
+				} else {
+					pos.x = srcRegion.getHeightInCells() - y;
+					pos.y = x;
+				}
+				destSampler.setPosition(pos);
+				if (destSampler.voxel() == empty) {
+					destSampler.setVoxel(v);
+				}
+			}
+		}
+	}
+	return destination;
+}
+
 }

@@ -146,7 +146,7 @@ private:
 	 */
 	void pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount);
 
-	void rotate(int layerId, const glm::vec3& angle, bool increaseSize = false, bool rotateAroundReferencePosition = false);
+	void rotate(int layerId, const glm::ivec3& angle, bool increaseSize = false, bool rotateAroundReferencePosition = false);
 	void rotate(int angleX, int angleY, int angleZ, bool increaseSize = false, bool rotateAroundReferencePosition = false);
 	void move(int layerId, const glm::ivec3& m);
 	void move(int x, int y, int z);

@@ -585,13 +585,22 @@ bool SceneManager::newScene(bool force, const std::string& name, const voxel::Re
 	return true;
 }
 
-void SceneManager::rotate(int layerId, const glm::vec3& angle, bool increaseSize, bool rotateAroundReferencePosition) {
+void SceneManager::rotate(int layerId, const glm::ivec3& angle, bool increaseSize, bool rotateAroundReferencePosition) {
 	const voxel::RawVolume* model = volume(layerId);
 	if (model == nullptr) {
 		return;
 	}
 	const glm::vec3 pivot = rotateAroundReferencePosition ? glm::vec3(referencePosition()) : model->region().getCentref();
-	voxel::RawVolume* newVolume = voxel::rotateVolume(model, angle, voxel::Voxel(), pivot, increaseSize);
+	voxel::RawVolume* newVolume;
+	if (angle == glm::ivec3(90, 0, 0)) {
+		newVolume = voxel::rotateAxis(model, math::Axis::X, voxel::Voxel(), pivot, increaseSize);
+	} else if (angle == glm::ivec3(0, 90, 0)) {
+		newVolume = voxel::rotateAxis(model, math::Axis::Y, voxel::Voxel(), pivot, increaseSize);
+	} else if (angle == glm::ivec3(0, 0, 90)) {
+		newVolume = voxel::rotateAxis(model, math::Axis::Z, voxel::Voxel(), pivot, increaseSize);
+	} else {
+		newVolume = voxel::rotateVolume(model, angle, voxel::Voxel(), pivot, increaseSize);
+	}
 	voxel::Region r = newVolume->region();
 	r.accumulate(model->region());
 	setNewVolume(layerId, newVolume);
@@ -599,7 +608,7 @@ void SceneManager::rotate(int layerId, const glm::vec3& angle, bool increaseSize
 }
 
 void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize, bool rotateAroundReferencePosition) {
-	const glm::vec3 angle(angleX, angleY, angleZ);
+	const glm::ivec3 angle(angleX, angleY, angleZ);
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
 		rotate(layerId, angle, increaseSize, rotateAroundReferencePosition);
 	});
