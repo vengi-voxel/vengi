@@ -13,6 +13,15 @@ namespace voxel {
 const Region Region::MaxRegion = Region(std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::max());
 const Region Region::InvalidRegion = Region(0, -1);
 
+std::string Region::toString() const {
+	const std::string& regionStr = "region["
+		"center(" + glm::to_string(getCentre()) + "), "
+		"mins(" + glm::to_string(getLowerCorner()) + "), "
+		"maxs(" + glm::to_string(getUpperCorner()) + ")"
+	"]";
+	return regionStr;
+}
+
 glm::ivec3 Region::moveInto(int32_t x, int32_t y, int32_t z) const {
 	const glm::ivec3& size = getDimensionsInVoxels();
 	const glm::ivec3& mins = getLowerCorner();
@@ -27,9 +36,7 @@ glm::ivec3 Region::moveInto(int32_t x, int32_t y, int32_t z) const {
 }
 
 void logRegion(const char *ctx, const voxel::Region& region) {
-	const glm::ivec3& mins = region.getLowerCorner();
-	const glm::ivec3& maxs = region.getUpperCorner();
-	Log::debug("%s: mins(%i:%i:%i)/maxs(%i:%i:%i)", ctx, mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+	Log::debug("%s: %s", ctx, region.toString().c_str());
 }
 
 int Region::voxels() const {

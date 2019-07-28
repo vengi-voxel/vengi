@@ -10,6 +10,7 @@
 #include "math/Random.h"
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
+#include <string>
 
 namespace voxel {
 
@@ -205,6 +206,8 @@ public:
 	/// Returns a rect of the x and z area this region covers
 	math::Rect<int> rect(int border = 0) const;
 	math::Rect<float> rectf(int border = 0) const;
+
+	std::string toString() const;
 
 private:
 	int32_t m_iLowerX;
