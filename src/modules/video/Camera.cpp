@@ -190,7 +190,8 @@ Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	const glm::vec4 rayClipSpace(x, y, -1.0f, 1.0f);
 
 	glm::vec4 rayEyeSpace = inverseProjectionMatrix() * rayClipSpace;
-	rayEyeSpace = glm::vec4(glm::vec2(rayEyeSpace), -1.0f, 0.0f);
+	rayEyeSpace.z = -1.0f;
+	rayEyeSpace.w = 0.0f;
 
 	const glm::vec3& rayDirection = glm::normalize(glm::vec3(inverseViewMatrix() * rayEyeSpace));
 	return Ray(position(), rayDirection);
