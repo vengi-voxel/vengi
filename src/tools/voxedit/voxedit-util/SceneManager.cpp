@@ -655,7 +655,7 @@ void SceneManager::render(const video::Camera& camera) {
 			_shapeRenderer.render(_planeMeshIndex[i], camera);
 		}
 	}
-	if (renderAxis()) {
+	if (_renderAxis) {
 		_axis.render(camera);
 	}
 	// TODO: render ground plane
@@ -1176,10 +1176,6 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	updateLockedPlane(math::Axis::X);
 	updateLockedPlane(math::Axis::Y);
 	updateLockedPlane(math::Axis::Z);
-}
-
-bool SceneManager::renderAxis() const {
-	return _renderAxis;
 }
 
 void SceneManager::setRenderAxis(bool renderAxis) {

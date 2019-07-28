@@ -151,8 +151,6 @@ private:
 	void move(int layerId, const glm::ivec3& m);
 	void move(int x, int y, int z);
 
-	bool renderAxis() const;
-
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 public:
