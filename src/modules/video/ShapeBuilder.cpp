@@ -503,37 +503,27 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 		setColor(core::Color::Green);
 		addVertex(camera.position());
 		addVertex(camera.target());
+		// TODO: index looks wrong
 		addIndex(startIndex + math::FRUSTUM_VERTICES_MAX + 0);
 		addIndex(startIndex + math::FRUSTUM_VERTICES_MAX + 1);
 	}
 }
 
 void ShapeBuilder::axis(const glm::vec3& scale) {
-	setPrimitive(Primitive::Lines);
-	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	const glm::vec3 verticesAxis[] = {
-			 glm::vec3(_position.x,           _position.y,           _position.z),
-			 glm::vec3(_position.x + scale.x, _position.y,           _position.z),
-			 glm::vec3(_position.x,           _position.y,           _position.z),
-			 glm::vec3(_position.x,           _position.y + scale.y, _position.z),
-			 glm::vec3(_position.x,           _position.y,           _position.z),
-			 glm::vec3(_position.x,           _position.y,           _position.z + scale.z)};
-
-	reserve(SDL_arraysize(verticesAxis));
+		glm::vec3(scale.x, 0.0f, 0.0f),
+		glm::vec3(0.0f, scale.y, 0.0f),
+		glm::vec3(0.0f, 0.0f, scale.z)
+	};
 
 	setColor(core::Color::Red);
-	addVertex(verticesAxis[0]);
-	addVertex(verticesAxis[1]);
-	setColor(core::Color::Green);
-	addVertex(verticesAxis[2]);
-	addVertex(verticesAxis[3]);
-	setColor(core::Color::Blue);
-	addVertex(verticesAxis[4]);
-	addVertex(verticesAxis[5]);
+	line(glm::zero<glm::vec3>(), verticesAxis[0]);
 
-	for (size_t i = 0; i < SDL_arraysize(verticesAxis); ++i) {
-		addIndex(startIndex + i);
-	}
+	setColor(core::Color::Green);
+	line(glm::zero<glm::vec3>(), verticesAxis[1]);
+
+	setColor(core::Color::Blue);
+	line(glm::zero<glm::vec3>(), verticesAxis[2]);
 }
 
 void ShapeBuilder::plane(uint32_t tesselation) {
