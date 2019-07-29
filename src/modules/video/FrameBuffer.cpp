@@ -94,6 +94,7 @@ void FrameBuffer::shutdown() {
 TexturePtr FrameBuffer::texture(FrameBufferAttachment attachment) const {
 	auto i = _colorAttachments.find(attachment);
 	if (i == _colorAttachments.end()) {
+		core_assert_msg(false, "Could not find framebuffer texture for %i", (int)attachment);
 		return TexturePtr();
 	}
 	return i->second;
