@@ -278,21 +278,29 @@ void ShapeBuilder::pyramid(const glm::vec3& size) {
 	const glm::vec3& vlfr = glm::vec3(_position.x + size.x, _position.y, _position.z + size.z);
 	const glm::vec3& vlbl = glm::vec3(_position.x - size.x, _position.y, _position.z - size.z);
 	const glm::vec3& vlbr = glm::vec3(_position.x + size.x, _position.y, _position.z - size.z);
-	addIndex(addVertex(tip));
-	addIndex(addVertex(vlfl));
-	addIndex(addVertex(vlfr));
+	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t) _vertices.size();
 
-	addIndex(addVertex(tip));
-	addIndex(addVertex(vlbl));
-	addIndex(addVertex(vlbr));
+	addVertex(tip);
+	addVertex(vlfl);
+	addVertex(vlfr);
+	addVertex(vlbl);
+	addVertex(vlbr);
 
-	addIndex(addVertex(tip));
-	addIndex(addVertex(vlbl));
-	addIndex(addVertex(vlfl));
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 1);
+	addIndex(startIndex + 2);
 
-	addIndex(addVertex(tip));
-	addIndex(addVertex(vlbr));
-	addIndex(addVertex(vlfr));
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 4);
+
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 1);
+
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 4);
+	addIndex(startIndex + 2);
 }
 
 void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
