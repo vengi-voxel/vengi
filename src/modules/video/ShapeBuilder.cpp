@@ -320,6 +320,141 @@ uint32_t ShapeBuilder::addVertex(const glm::vec3& vertex, const glm::vec3& norma
 	return (uint32_t)_vertices.size() - 1;
 }
 
+// https://gist.github.com/gszauer/5718609
+void ShapeBuilder::cone(float topRadius, float bottomRadius, float length, int openingAngle, bool inside, bool outside) {
+	if (topRadius <= 0.0f && bottomRadius <= 0.0f) {
+		return;
+	}
+	if (length <= 0.0f) {
+		return;
+	}
+	if (!inside && !outside) {
+		return;
+	}
+
+	setPrimitive(Primitive::Triangles);
+
+	if (openingAngle > 0 && openingAngle < 180) {
+		topRadius = 0.0f;
+		bottomRadius = glm::radians(length * glm::tan(float(openingAngle) * 0.5f));
+	}
+
+	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
+
+	const int numVerts = 20;
+	const int offset = (outside && inside) ? 2 * numVerts : 0;
+	reserve(numVerts, offset * 3);
+
+	const float invNumVerts = 1.0f / float(numVerts);
+	if (topRadius <= 0.0f) {
+		for (int j = 0; j < numVerts; j++) {
+			addVertex(glm::zero<glm::vec3>());
+		}
+	} else {
+		for (int j = 0; j < numVerts; j++) {
+			const float angle = glm::two_pi<float>() * j * invNumVerts;
+			const float angleSin = glm::sin(angle);
+			const float angleCos = glm::cos(angle);
+			addVertex(glm::vec3(topRadius * angleCos, topRadius * angleSin, 0.0f));
+		}
+	}
+
+	if (bottomRadius <= 0.0f) {
+		const glm::vec3 v(0.0f, 0.0f, length);
+		for (int j = 0; j < numVerts; j++) {
+			addVertex(v);
+		}
+	} else {
+		for (int j = 0; j < numVerts; j++) {
+			const float angle = glm::two_pi<float>() * j * invNumVerts;
+			const float angleSin = glm::sin(angle);
+			const float angleCos = glm::cos(angle);
+			addVertex(glm::vec3(bottomRadius * angleCos, bottomRadius * angleSin, length));
+		}
+	}
+
+	if (topRadius == 0.0f) {
+		if (outside) {
+			for (int i = 0; i < numVerts; ++i) {
+				if (i == numVerts - 1) {
+					addIndex(startIndex + numVerts);
+				} else {
+					addIndex(startIndex + i + 1 + numVerts);
+				}
+				addIndex(startIndex + i);
+				addIndex(startIndex + i + numVerts);
+			}
+		}
+		if (inside) {
+			for (int i = offset; i < numVerts + offset; ++i) {
+				if (i == numVerts - 1 + offset) {
+					addIndex(startIndex + numVerts + offset);
+				} else {
+					addIndex(startIndex + i + 1 + numVerts);
+				}
+				addIndex(startIndex + i);
+				addIndex(startIndex + i + numVerts);
+			}
+		}
+	} else if (bottomRadius == 0.0f) {
+		if (outside) {
+			for (int i = 0; i < numVerts; ++i) {
+				addIndex(startIndex + i + numVerts);
+				if (i == numVerts - 1) {
+					addIndex(startIndex + 0);
+				} else {
+					addIndex(startIndex + i + 1);
+				}
+				addIndex(startIndex + i);
+			}
+		}
+		if (inside) {
+			for (int i = 0; i < numVerts + offset; ++i) {
+				addIndex(startIndex + i + numVerts);
+				addIndex(startIndex + i);
+				if (i == numVerts - 1 + offset) {
+					addIndex(startIndex + offset);
+				} else {
+					addIndex(startIndex + i + 1);
+				}
+			}
+		}
+	} else {
+		if (outside) {
+			for (int i = 0; i < numVerts; ++i) {
+				int ip1 = i + 1;
+				if (ip1 == numVerts) {
+					ip1 = 0;
+				}
+
+				addIndex(startIndex + i + numVerts);
+				addIndex(startIndex + ip1);
+				addIndex(startIndex + i);
+
+				addIndex(startIndex + ip1);
+				addIndex(startIndex + i + numVerts);
+				addIndex(startIndex + ip1 + numVerts);
+			}
+		}
+		if (inside) {
+			for (int i = 0; i < numVerts + offset; ++i) {
+				int ip1 = i + 1;
+				if (ip1 == numVerts + offset) {
+					ip1 = offset;
+				}
+
+				addIndex(i + numVerts);
+				addIndex(i);
+				addIndex(ip1);
+
+				addIndex(ip1);
+				addIndex(ip1 + numVerts);
+				addIndex(i + numVerts);
+			}
+		}
+	}
+}
+
 void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	setPrimitive(Primitive::Lines);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
