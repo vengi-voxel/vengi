@@ -203,10 +203,14 @@ public:
 	bool dirty() const;
 	bool empty() const;
 
+	static const uint8_t RenderScene = 1u << 0u;
+	static const uint8_t RenderUI    = 1u << 1u;
+	static const uint8_t RenderAll   = RenderScene | RenderUI;
+
 	/**
 	 * @brief Performs the rendering for each @c Viewport instance
 	 */
-	void render(const video::Camera& camera);
+	void render(const video::Camera& camera, uint8_t renderMask = RenderAll);
 
 	render::GridRenderer& gridRenderer();
 	bool setGridResolution(int resolution);

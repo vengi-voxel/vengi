@@ -523,6 +523,18 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 		return false;
+	} else if (id == TBIDC("shader")) {
+		tb::TBWidget *parent = widget->getParent();
+		if (Viewport *viewport = parent->safeCastTo<Viewport>()) {
+			const int value = widget->getValue();
+			voxedit::Controller::ShaderType type = voxedit::Controller::ShaderType::None;
+			if (value == 1) {
+				type = voxedit::Controller::ShaderType::Edge;
+			}
+			viewport->controller().setShaderType(type);
+			return true;
+		}
+		return false;
 	} else if (id == TBIDC("optionvoxelsize")) {
 		sceneMgr().setGridResolution(widget->getValue());
 		return true;

@@ -17,12 +17,20 @@ public:
 		Free, Top, Left, Front
 	};
 
+	enum class ShaderType {
+		None,
+		Edge,
+
+		Max
+	};
+
 private:
 	float _angle = 0.0f;
 	float _cameraSpeed = 0.1f;
 	SceneCameraMode _camMode = SceneCameraMode::Free;
 	core::VarPtr _rotationSpeed;
 	video::Camera _camera;
+	ShaderType _shaderType = ShaderType::None;
 
 public:
 	bool _mouseDown = false;
@@ -31,6 +39,9 @@ public:
 
 	void init(Controller::SceneCameraMode mode);
 	void resetCamera(const voxel::Region& region);
+
+	void setShaderType(ShaderType type);
+	ShaderType shaderType() const;
 
 	void onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
 
@@ -66,6 +77,14 @@ inline float Controller::angle() const {
 
 inline void Controller::setAngle(float angle) {
 	_angle = angle;
+}
+
+inline Controller::ShaderType Controller::shaderType() const {
+	return _shaderType;
+}
+
+inline void Controller::setShaderType(ShaderType type) {
+	_shaderType = type;
 }
 
 }

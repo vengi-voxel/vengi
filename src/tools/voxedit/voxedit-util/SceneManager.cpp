@@ -643,27 +643,35 @@ bool SceneManager::setGridResolution(int resolution) {
 	return true;
 }
 
-void SceneManager::render(const video::Camera& camera) {
+void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 	const bool depthTest = video::enable(video::State::DepthTest);
-	_gridRenderer.render(camera, modelVolume()->region());
-	_volumeRenderer.render(camera, _renderShadow);
-	_modifier.render(camera);
+	const bool renderUI = (renderMask & RenderUI) != 0u;
+	const bool renderScene = (renderMask & RenderScene) != 0u;
+	if (renderUI) {
+		_gridRenderer.render(camera, modelVolume()->region());
+	}
+	if (renderScene) {
+		_volumeRenderer.render(camera, _renderShadow);
+	}
+	if (renderUI) {
+		_modifier.render(camera);
 
-	// TODO: render error if rendered last - but be before grid renderer to get transparency.
-	if (_renderLockAxis) {
-		for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
-			_shapeRenderer.render(_planeMeshIndex[i], camera);
+		// TODO: render error if rendered last - but be before grid renderer to get transparency.
+		if (_renderLockAxis) {
+			for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
+				_shapeRenderer.render(_planeMeshIndex[i], camera);
+			}
 		}
+		if (_renderAxis) {
+			_axis.update(camera, glm::vec2(_mouseX, _mouseY));
+			_axis.render(camera);
+		}
+		// TODO: render ground plane
+		if (!depthTest) {
+			video::disable(video::State::DepthTest);
+		}
+		_shapeRenderer.render(_referencePointMesh, camera);
 	}
-	if (_renderAxis) {
-		_axis.update(camera, glm::vec2(_mouseX, _mouseY));
-		_axis.render(camera);
-	}
-	// TODO: render ground plane
-	if (!depthTest) {
-		video::disable(video::State::DepthTest);
-	}
-	_shapeRenderer.render(_referencePointMesh, camera);
 }
 
 void SceneManager::construct() {

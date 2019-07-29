@@ -17,6 +17,12 @@ definitions
 	selectbutton
 		group-id selectgroup
 
+shaderselection
+	TBSelectDropdown: gravity: right top, @include: definitions>menubutton, id: shader
+		items
+			item: text: "Normal", id: 0
+			item: text: "Edge", id: 1
+
 cameramode
 	TBSelectDropdown: gravity: right bottom, @include: definitions>menubutton, id: cammode
 		items
@@ -104,16 +110,20 @@ TBLayout: distribution: gravity, axis: y
 								Viewport: id: editorscene, gravity: left right top bottom, skin: no-padding-container, camera: free
 									@include cameramode
 									@include camerarottype
+									@include shaderselection
 								Viewport: id: editorscenetop, gravity: left right top bottom, skin: no-padding-container, camera: top
 									@include cameramode
 									@include camerarottype
+									@include shaderselection
 							TBLayout: distribution: gravity, axis: x
 								Viewport: id: editorsceneleft, gravity: left right top bottom, skin: no-padding-container, camera: left
 									@include cameramode
 									@include camerarottype
+									@include shaderselection
 								Viewport: id: editorscenefront, gravity: left right top bottom, skin: no-padding-container, camera: front
 									@include cameramode
 									@include camerarottype
+									@include shaderselection
 
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: no-padding-container
 

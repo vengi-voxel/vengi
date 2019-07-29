@@ -22,6 +22,8 @@ private:
 	voxedit::Controller _controller;
 	std::string _cameraMode;
 
+	void renderFramebuffer();
+
 public:
 	UIWIDGET_SUBCLASS(Viewport, Super);
 
@@ -33,12 +35,18 @@ public:
 	void resetCamera();
 	bool saveImage(const char* filename);
 
+	voxedit::Controller& controller();
+
 	virtual void onInflate(const tb::INFLATE_INFO &info) override;
 	virtual void onProcess() override;
 	virtual bool onEvent(const tb::TBWidgetEvent &ev) override;
 	virtual void onPaint(const PaintProps &paintProps) override;
 	virtual void onResized(int oldw, int oldh) override;
 };
+
+inline voxedit::Controller& Viewport::controller() {
+	return _controller;
+}
 
 inline video::Camera& Viewport::camera() {
 	return _controller.camera();

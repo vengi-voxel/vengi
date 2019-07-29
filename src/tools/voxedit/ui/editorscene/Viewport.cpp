@@ -84,9 +84,11 @@ void Viewport::onResized(int oldw, int oldh) {
 	_frameBufferTexture.init(frameBufferSize.x, frameBufferSize.y, fboTexture->handle());
 }
 
-void Viewport::onPaint(const PaintProps &paintProps) {
-	core_trace_scoped(EditorSceneOnPaint);
-	Super::onPaint(paintProps);
+void Viewport::renderFramebuffer() {
+	// use the uv coords here to take a potential fb flip into account
+	const glm::vec4& uv = _frameBuffer.uv();
+	const glm::vec2 uva(uv.x, uv.y);
+	const glm::vec2 uvc(uv.z, uv.w);
 	const glm::ivec2& dimension = _frameBuffer.dimension();
 	ui::turbobadger::UIRect rect = getRect();
 	const float scaleFactor = video::getScaleFactor();
@@ -94,26 +96,48 @@ void Viewport::onPaint(const PaintProps &paintProps) {
 	rect.y = 0;
 	rect.w = (int)glm::round(rect.w / scaleFactor);
 	rect.h = (int)glm::round(rect.h / scaleFactor);
-
-	// use the uv coords here to take a potential fb flip into account
-	const glm::vec4& uv = _frameBuffer.uv();
-	const glm::vec2 uva(uv.x, uv.y);
-	const glm::vec2 uvc(uv.z, uv.w);
-
 	const float x = uva.x * dimension.x;
 	const float y = uva.y * dimension.y;
-
 	const float w = (uvc.x - uva.x) * dimension.x;
 	const float h = (uvc.y - uva.y) * dimension.y;
+	const tb::TBRect srcRect(x, y, w, h);
 
-	{
-		tb::g_renderer->flush();
-		video::ScopedShader scoped(_edgeShader);
-		_edgeShader.setViewprojection(tb::g_renderer->camera().projectionMatrix());
-		const tb::TBRect srcRect(x, y, w, h);
-		tb::g_renderer->drawBitmap(rect, srcRect, &_frameBufferTexture);
-		tb::g_renderer->flush();
+	tb::g_renderer->flush();
+	video::Shader* shader;
+	video::Id prevShader = video::InvalidId;
+	switch (_controller.shaderType()) {
+	case voxedit::Controller::ShaderType::Edge:
+		shader = &_edgeShader;
+		break;
+	case voxedit::Controller::ShaderType::Max:
+	case voxedit::Controller::ShaderType::None:
+		shader = nullptr;
+		break;
 	}
+	if (shader != nullptr) {
+		prevShader = video::getProgram();
+		shader->activate();
+		const video::Camera& camera = tb::g_renderer->camera();
+		const glm::mat4& projectionMatrix = camera.projectionMatrix();
+		const int loc = shader->getUniformLocation("u_viewprojection");
+		if (loc >= 0) {
+			shader->setUniformMatrix(loc, projectionMatrix);
+		}
+	}
+	tb::g_renderer->drawBitmap(rect, srcRect, &_frameBufferTexture);
+	tb::g_renderer->flush();
+	if (shader != nullptr) {
+		shader->deactivate();
+		video::useProgram(prevShader);
+	}
+}
+
+void Viewport::onPaint(const PaintProps &paintProps) {
+	core_trace_scoped(EditorSceneOnPaint);
+	Super::onPaint(paintProps);
+
+	renderFramebuffer();
+
 	tb::TBFontFace* font = getFont();
 	font->drawString(0, 0, tb::TBColor(255.0f, 255.0f, 255.0f, 255.0f), _cameraMode.c_str());
 }
