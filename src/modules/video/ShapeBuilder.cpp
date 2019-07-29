@@ -582,7 +582,11 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 			const float cosSlice = glm::cos(sliceAngle);
 			const glm::vec3 norm(sinSlice * sinStack, cosSlice * sinStack, cosStack);
 			const glm::vec3 pos(norm * radius);
-			addVertex(pos, glm::vec2(du * slice, dv * stack), norm);
+			if (_vertices.size() == _texcoords.size()) {
+				addVertex(pos, glm::vec2(du * slice, dv * stack), norm);
+			} else {
+				addVertex(pos, norm);
+			}
 		}
 	}
 
