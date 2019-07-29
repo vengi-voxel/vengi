@@ -1189,8 +1189,16 @@ bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTe
 
 bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
 	const GLenum glAttachment = _priv::FrameBufferAttachments[std::enum_value(attachment)];
-	glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachment, (GLuint)texture, 0, layerIndex);
-	checkError();
+
+	if (attachment == FrameBufferAttachment::Depth
+	 || attachment == FrameBufferAttachment::Stencil
+	 || attachment == FrameBufferAttachment::DepthStencil) {
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachment, (GLuint)texture, 0, layerIndex);
+		checkError();
+	} else {
+		glDrawBuffers((GLsizei) 1, &glAttachment);
+		checkError();
+	}
 	if (shouldClear) {
 		if (attachment == FrameBufferAttachment::Depth) {
 			clear(ClearFlag::Depth);
@@ -1198,6 +1206,8 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 			clear(ClearFlag::Stencil);
 		} else if (attachment == FrameBufferAttachment::DepthStencil) {
 			clear(ClearFlag::Depth | ClearFlag::Stencil);
+		} else {
+			clear(ClearFlag::Color);
 		}
 	}
 	if (!_priv::checkFramebufferStatus()) {

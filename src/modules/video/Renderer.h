@@ -215,7 +215,6 @@ extern void endFrame(SDL_Window* window);
 extern bool checkError(bool triggerAssert = true);
 extern bool setupCubemap(Id handle, const image::ImagePtr images[6]);
 extern void readBuffer(GBufferTextureType textureType);
-extern bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear);
 extern bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, int texCount, Id depthTexture);
 /**
  * @brief Change the renderer line width
@@ -332,6 +331,7 @@ extern void bufferSubData(Id handle, BufferType type, intptr_t offset, const voi
 extern size_t bufferSize(BufferType type);
 extern void setupDepthCompareTexture(video::TextureType type, CompareFunc func, TextureCompareMode mode);
 extern const glm::vec4& framebufferUV();
+extern bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear);
 extern bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTextures, const std::map<FrameBufferAttachment, RenderBufferPtr>& bufferAttachments);
 extern void setupTexture(const TextureConfig& config);
 extern void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t* data, int index);
