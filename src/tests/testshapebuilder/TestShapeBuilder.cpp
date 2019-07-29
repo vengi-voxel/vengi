@@ -135,6 +135,18 @@ void TestShapeBuilder::onRenderUI() {
 			buildMesh = true;
 		}
 	}
+	if (ImGui::CollapsingHeader("Cylinder", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		if (ImGui::Button("Add Cylinder")) {
+			_shapeBuilder.cylinder(scale.x, scale.y);
+			buildMesh = true;
+		}
+	}
+	if (ImGui::CollapsingHeader("Cone", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		if (ImGui::Button("Add Cone")) {
+			_shapeBuilder.cone(10.0f, 10.0f, 20.0f, -1, true, true);
+			buildMesh = true;
+		}
+	}
 
 	if (ImGui::CollapsingHeader("Axis", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
 		if (ImGui::Button("Add Axis")) {
