@@ -671,6 +671,8 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 			video::disable(video::State::DepthTest);
 		}
 		_shapeRenderer.render(_referencePointMesh, camera);
+	} else if (!depthTest) {
+		video::disable(video::State::DepthTest);
 	}
 }
 

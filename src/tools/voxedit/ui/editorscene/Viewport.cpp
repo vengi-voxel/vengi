@@ -77,8 +77,10 @@ void Viewport::onResized(int oldw, int oldh) {
 	_frameBuffer.shutdown();
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
+	textureCfg.format(video::TextureFormat::RGBA);
 	video::FrameBufferConfig cfg;
-	cfg.dimension(frameBufferSize).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24).addTextureAttachment(textureCfg);
+	cfg.dimension(frameBufferSize).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
+	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	_frameBuffer.init(cfg);
 	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	_frameBufferTexture.init(frameBufferSize.x, frameBufferSize.y, fboTexture->handle());
