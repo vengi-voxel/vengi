@@ -59,11 +59,26 @@ void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float st
 	}
 }
 
-void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end) {
-	setPrimitive(Primitive::Lines);
-	reserve(2);
-	addIndex(addVertex(start));
-	addIndex(addVertex(end));
+void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end, float thickness) {
+	if (thickness <= 1.0f) {
+		setPrimitive(Primitive::Lines);
+		reserve(2);
+		addIndex(addVertex(start));
+		addIndex(addVertex(end));
+	} else {
+		glm::vec3 d = end - start;
+		const float d2 = glm::dot(d, d);
+		if (d2 > glm::epsilon<float>()) {
+			const float invLen = glm::inversesqrt(d2);
+			d *= invLen;
+		}
+		d *= (thickness * 0.5f);
+
+		const float dp = glm::max(glm::max(d.x, d.y), d.z);
+		const glm::vec3 mins(start.x + dp, start.y - dp, start.z - dp);
+		const glm::vec3 maxs(  end.x - dp,   end.y + dp,   end.z + dp);
+		cube(mins, maxs);
+	}
 }
 
 void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs) {

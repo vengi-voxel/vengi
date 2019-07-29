@@ -104,7 +104,7 @@ public:
 
 	void cube(const glm::vec3& mins, const glm::vec3& maxs);
 
-	void line(const glm::vec3& start, const glm::vec3& end);
+	void line(const glm::vec3& start, const glm::vec3& end, float thickness = 1.0f);
 
 	void aabb(const math::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
 	void aabb(const math::AABB<int>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
