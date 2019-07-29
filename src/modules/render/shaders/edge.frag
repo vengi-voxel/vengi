@@ -29,5 +29,9 @@ void main() {
 	col += $texture2D(u_texture, tc8);
 
 	vec4 sum = 8.0 * textureColor - col;
-	o_color = vec4(sum.rgb, 1.0) * v_color;
+	float alpha = 1.0;
+	if (sum.rgb == vec3(0.0,0.0,0.0)) {
+		alpha = 0.0;
+	}
+	o_color = vec4(sum.rgb, alpha) * v_color;
 }
