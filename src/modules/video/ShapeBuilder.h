@@ -37,6 +37,7 @@ private:
 	Vertices _vertices;
 	Vertices _normals;
 	Colors _colors;
+	glm::mat3 _rotation = glm::mat3(1.0f);
 	Primitive _primitive = Primitive::Triangles;
 	int _initialSize;
 	glm::vec4 _color = core::Color::White;
@@ -71,22 +72,8 @@ public:
 		return _primitive;
 	}
 
-	inline uint32_t addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal = glm::zero<glm::vec3>()) {
-		_colors.push_back(_color);
-		_vertices.push_back(_position + vertex);
-		_normals.push_back(normal);
-		_texcoords.push_back(uv);
-		core_assert(_texcoords.size() == _vertices.size());
-		return (uint32_t)_vertices.size() - 1;
-	}
-
-	inline uint32_t addVertex(const glm::vec3& vertex, const glm::vec3& normal = glm::zero<glm::vec3>()) {
-		_colors.push_back(_color);
-		_vertices.push_back(_position + vertex);
-		_normals.push_back(normal);
-		core_assert(_texcoords.empty());
-		return (uint32_t)_vertices.size() - 1;
-	}
+	uint32_t addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal = glm::zero<glm::vec3>());
+	uint32_t addVertex(const glm::vec3& vertex, const glm::vec3& normal = glm::zero<glm::vec3>());
 
 	inline void clear() {
 		_colors.clear();
@@ -156,6 +143,7 @@ public:
 
 	void setColor(const glm::vec4& color);
 	void setPosition(const glm::vec3& position);
+	void setRotation(const glm::mat3& rotation);
 };
 
 inline void ShapeBuilder::aabb(const math::AABB<int>& aabb, bool renderGrid, float stepWidth) {
@@ -169,6 +157,10 @@ inline void ShapeBuilder::setColor(const glm::vec4& color) {
 
 inline void ShapeBuilder::setPosition(const glm::vec3& position) {
 	_position = position;
+}
+
+inline void ShapeBuilder::setRotation(const glm::mat3& rotation) {
+	_rotation = rotation;
 }
 
 inline const ShapeBuilder::Vertices& ShapeBuilder::getVertices() const {

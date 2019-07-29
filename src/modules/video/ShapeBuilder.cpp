@@ -303,6 +303,23 @@ void ShapeBuilder::pyramid(const glm::vec3& size) {
 	addIndex(startIndex + 2);
 }
 
+uint32_t ShapeBuilder::addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal) {
+	_colors.push_back(_color);
+	_vertices.push_back(_position + _rotation * vertex);
+	_normals.push_back(normal);
+	_texcoords.push_back(uv);
+	core_assert(_texcoords.size() == _vertices.size());
+	return (uint32_t)_vertices.size() - 1;
+}
+
+uint32_t ShapeBuilder::addVertex(const glm::vec3& vertex, const glm::vec3& normal) {
+	_colors.push_back(_color);
+	_vertices.push_back(_position + _rotation * vertex);
+	_normals.push_back(normal);
+	core_assert(_texcoords.empty());
+	return (uint32_t)_vertices.size() - 1;
+}
+
 void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	setPrimitive(Primitive::Lines);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
