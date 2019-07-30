@@ -160,8 +160,11 @@ public:
 	void accumulate(int32_t iX, int32_t iY, int32_t iZ);
 	/// Enlarges the Region so that it contains the specified position.
 	void accumulate(const glm::ivec3& v3dPos);
+	Region accumulateCopy(const glm::ivec3& v3dPos) const;
+
 	/// Enlarges the Region so that it contains the specified Region.
 	void accumulate(const Region& reg);
+	Region accumulateCopy(const Region& reg) const;
 
 	/// Crops the extents of this Region according to another Region.
 	void cropTo(const Region& other);
@@ -492,6 +495,28 @@ inline void Region::accumulate(int32_t iX, int32_t iY, int32_t iZ) {
  */
 inline void Region::accumulate(const glm::ivec3& v3dPos) {
 	accumulate(v3dPos.x, v3dPos.y, v3dPos.z);
+}
+
+inline Region Region::accumulateCopy(const glm::ivec3& v3dPos) const {
+	Region r(*this);
+	r.accumulate(v3dPos.x, v3dPos.y, v3dPos.z);
+	return r;
+}
+
+inline Region Region::accumulateCopy(const Region& reg) const {
+	if (!reg.isValid()) {
+		// The result of accumulating an invalid region is not defined.
+		core_assert_msg(false, "You cannot accumulate an invalid region.");
+	}
+
+	Region r(*this);
+	r.m_iLowerX = glm::min(r.m_iLowerX, reg.getLowerX());
+	r.m_iLowerY = glm::min(r.m_iLowerY, reg.getLowerY());
+	r.m_iLowerZ = glm::min(r.m_iLowerZ, reg.getLowerZ());
+	r.m_iUpperX = glm::max(r.m_iUpperX, reg.getUpperX());
+	r.m_iUpperY = glm::max(r.m_iUpperY, reg.getUpperY());
+	r.m_iUpperZ = glm::max(r.m_iUpperZ, reg.getUpperZ());
+	return r;
 }
 
 /**
