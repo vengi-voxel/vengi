@@ -62,7 +62,7 @@ void Axis::update(const video::Camera& camera, const glm::vec2& pixelPos) {
 	const float distanceY = intersectY ? glm::distance2(paY, pbY) : FLT_MAX;
 	const float distanceZ = intersectZ ? glm::distance2(paZ, pbZ) : FLT_MAX;
 
-	const float distanceToLine = 1.0f;
+	const float distanceToLine = 0.2f;
 	if (distanceX < distanceY && distanceX < distanceZ && distanceX < distanceToLine) {
 		_mode = Mode::TranslateX;
 		_shapeBuilder.clear();

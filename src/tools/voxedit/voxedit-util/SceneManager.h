@@ -105,6 +105,8 @@ private:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
+	core::ActionButton _shift;
+	uint64_t _lastShift = 0;
 	core::ActionButton _move[lengthof(DIRECTIONS)];
 	uint64_t _lastMove[lengthof(DIRECTIONS)] { 0 };
 
@@ -148,8 +150,13 @@ private:
 
 	void rotate(int layerId, const glm::ivec3& angle, bool increaseSize = false, bool rotateAroundReferencePosition = false);
 	void rotate(int angleX, int angleY, int angleZ, bool increaseSize = false, bool rotateAroundReferencePosition = false);
+
 	void move(int layerId, const glm::ivec3& m);
 	void move(int x, int y, int z);
+
+	void shift(int layerId, const glm::ivec3& m);
+	void shift(int x, int y, int z);
+	void shiftAlongAxis();
 
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);

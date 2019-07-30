@@ -630,6 +630,35 @@ void SceneManager::move(int x, int y, int z) {
 	});
 }
 
+void SceneManager::shift(int layerId, const glm::ivec3& m) {
+	voxel::RawVolume* model = volume(layerId);
+	Log::info("Shift region by %s on layer %i", glm::to_string(m).c_str(), layerId);
+	const voxel::Region oldRegion = model->region();
+	model->translate(m);
+	_gridRenderer.update(model->region());
+	// shaperenderer?
+	const voxel::Region newRegion = model->region().accumulateCopy(oldRegion);
+	modified(layerId, newRegion);
+}
+
+void SceneManager::shift(int x, int y, int z) {
+	const glm::ivec3 v(x, y, z);
+	_layerMgr.foreachGroupLayer([&] (int layerId) {
+		shift(layerId, v);
+	});
+}
+
+void SceneManager::shiftAlongAxis() {
+	const render::Axis::Mode mode = _axis.mode();
+	if (mode == render::Axis::Mode::TranslateX) {
+		shift(1, 0, 0);
+	} else if (mode == render::Axis::Mode::TranslateY) {
+		shift(0, 1, 0);
+	} else if (mode == render::Axis::Mode::TranslateZ) {
+		shift(0, 0, 1);
+	}
+}
+
 bool SceneManager::setGridResolution(int resolution) {
 	const bool ret = gridRenderer().setGridResolution(resolution);
 	if (!ret) {
@@ -795,6 +824,19 @@ void SceneManager::construct() {
 			resize(glm::ivec3(1));
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
+
+	core::Command::registerActionButton("shift", _shift);
+	core::Command::registerCommand("shift", [&] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc != 3) {
+			Log::info("Expected to get x, y and z values");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		shift(x, y, z);
+	}).setHelp("Shift the volume by the given values");
 
 	core::Command::registerCommand("move", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();
@@ -995,6 +1037,12 @@ void SceneManager::update(uint64_t time) {
 		const Direction& dir = DIRECTIONS[i];
 		moveCursor(dir.x, dir.y, dir.z);
 		_lastMove[i] = time;
+	}
+	if (_shift.pressed()) {
+		if (time - _lastShift >= 125ul) {
+			shiftAlongAxis();
+			_lastShift = time;
+		}
 	}
 	if (_ambientColor->isDirty()) {
 		_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
