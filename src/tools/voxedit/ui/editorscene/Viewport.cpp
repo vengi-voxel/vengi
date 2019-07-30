@@ -32,6 +32,12 @@ bool Viewport::saveImage(const char* filename) {
 	if (cfg.format() != video::TextureFormat::RGBA) {
 		return false;
 	}
+
+	core_trace_scoped(EditorSceneRenderFramebuffer);
+	_frameBuffer.bind(true);
+	voxedit::sceneMgr().render(_controller.camera(), voxedit::SceneManager::RenderScene);
+	_frameBuffer.unbind();
+
 	uint8_t *pixels;
 	if (!video::readTexture(video::TextureUnit::Upload,
 			cfg.type(), cfg.format(), _frameBufferTexture._texture,
