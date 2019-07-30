@@ -65,7 +65,7 @@ bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
 		const bool middle = isMiddleMouseButtonPressed();
 		const bool alt = (ev.modifierkeys & tb::TB_ALT);
 		_controller.move(relative || middle || alt, ev.target_x, ev.target_y);
-		voxedit::sceneMgr().setMousePos(ev.target_x, ev.target_y);
+		voxedit::sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
 		setFocus(tb::WIDGET_FOCUS_REASON_UNKNOWN);
 		return true;
 	}
