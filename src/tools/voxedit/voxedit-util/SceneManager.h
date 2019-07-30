@@ -104,8 +104,23 @@ private:
 	int _size = 128;
 	glm::ivec2 _mouseCursor { 0 };
 
-	core::ActionButton _shift;
-	uint64_t _lastShift = 0;
+	class ShiftButton : public core::ActionButton {
+	private:
+		using Super = core::ActionButton;
+		uint64_t lastAction = 0;
+		render::Axis::Mode axisMode = render::Axis::Mode::None;
+		glm::ivec2 lastPosition { 0 };
+
+		bool handleDown(int32_t key, uint64_t pressedMillis) override;
+
+		bool handleUp(int32_t key, uint64_t releasedMillis) override;
+
+		bool shouldExecute(uint64_t time);
+
+	public:
+		void execute(uint64_t time);
+	};
+	ShiftButton _shift;
 	core::ActionButton _move[lengthof(DIRECTIONS)];
 	uint64_t _lastMove[lengthof(DIRECTIONS)] { 0 };
 
@@ -155,7 +170,7 @@ private:
 
 	void shift(int layerId, const glm::ivec3& m);
 	void shift(int x, int y, int z);
-	void shiftAlongAxis();
+	void executeGizmoAction(const glm::ivec3& delta, render::Axis::Mode mode);
 
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);

@@ -56,6 +56,43 @@ namespace voxedit {
 
 const int leafSize = 8;
 
+bool SceneManager::ShiftButton::handleDown(int32_t key, uint64_t pressedMillis) {
+	const bool ret = Super::handleDown(key, pressedMillis);
+	axisMode = sceneMgr()._axis.mode();
+	return ret;
+}
+
+bool SceneManager::ShiftButton::handleUp(int32_t key, uint64_t releasedMillis) {
+	const bool ret = Super::handleUp(key, pressedMillis);
+	axisMode = render::Axis::Mode::None;
+	return ret;
+}
+
+bool SceneManager::ShiftButton::shouldExecute(uint64_t time) {
+	if (axisMode == render::Axis::Mode::None) {
+		return false;
+	}
+	if (time - lastAction >= 125ul) {
+		lastAction = time;
+		return true;
+	}
+	return false;
+}
+
+void SceneManager::ShiftButton::execute(uint64_t time) {
+	if (!pressed()) {
+		lastPosition = sceneMgr()._mouseCursor;
+		return;
+	}
+	if (!shouldExecute(time)) {
+		return;
+	}
+	// TODO: using the 2d mouse position is crap of course - but atm I don't have access to the viewport camera here
+	const glm::ivec2 delta = sceneMgr()._mouseCursor - lastPosition;
+	lastPosition = sceneMgr()._mouseCursor;
+	sceneMgr().executeGizmoAction(glm::ivec3(delta, delta.x != 0 ? delta.x : delta.y), axisMode);
+}
+
 SceneManager::SceneManager() :
 		_gridRenderer() {
 }
@@ -648,14 +685,19 @@ void SceneManager::shift(int x, int y, int z) {
 	});
 }
 
-void SceneManager::shiftAlongAxis() {
-	const render::Axis::Mode mode = _axis.mode();
+void SceneManager::executeGizmoAction(const glm::ivec3& delta, render::Axis::Mode mode) {
 	if (mode == render::Axis::Mode::TranslateX) {
-		shift(1, 0, 0);
+		if (delta.x != 0) {
+			shift(delta.x, 0, 0);
+		}
 	} else if (mode == render::Axis::Mode::TranslateY) {
-		shift(0, 1, 0);
+		if (delta.y != 0) {
+			shift(0, delta.y, 0);
+		}
 	} else if (mode == render::Axis::Mode::TranslateZ) {
-		shift(0, 0, 1);
+		if (delta.z != 0) {
+			shift(0, 0, delta.z);
+		}
 	}
 }
 
@@ -692,7 +734,10 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 			}
 		}
 		if (_renderAxis) {
-			_axis.update(camera, glm::vec2(_mouseCursor));
+			// TODO: this doesn't belong here, but into the update method. Problem is, that we don't have the camera there.
+			if (!_shift.pressed()) {
+				_axis.update(camera, glm::vec2(_mouseCursor));
+			}
 			_axis.render(camera);
 		}
 		// TODO: render ground plane
@@ -1038,12 +1083,7 @@ void SceneManager::update(uint64_t time) {
 		moveCursor(dir.x, dir.y, dir.z);
 		_lastMove[i] = time;
 	}
-	if (_shift.pressed()) {
-		if (time - _lastShift >= 125ul) {
-			shiftAlongAxis();
-			_lastShift = time;
-		}
-	}
+	_shift.execute(time);
 	if (_ambientColor->isDirty()) {
 		_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
 		_ambientColor->markClean();
