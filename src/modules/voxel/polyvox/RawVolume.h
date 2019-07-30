@@ -158,8 +158,13 @@ public:
 		return (const uint8_t*)_data;
 	}
 
+	/**
+	 * @brief Shift the region of the volume by the given coordinates
+	 */
 	void translate(const glm::ivec3& t) {
 		_region.shift(t.x, t.y, t.z);
+		_mins += t;
+		_maxs += t;
 	}
 
 private:
