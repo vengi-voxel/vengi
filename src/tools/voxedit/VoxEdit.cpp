@@ -84,19 +84,19 @@ core::AppState VoxEdit::onConstruct() {
 	}).setArgumentCompleter(core::fileCompleter(_lastDirectory)).setHelp(help)
 
 	COMMAND_FILE(screenshot, "Save the current viewport as screenshot");
-	COMMAND_FILE(save, "Save the current state to the given file");
-	COMMAND_FILE(export, "Export the current state to the given file");
-	COMMAND_FILE(load, "Load a scene from the given file");
-	COMMAND_FILE(prefab, "Add a model to the existing scene from the given file");
+	COMMAND_FILE(save, "Save the current scene as a volume to the given file");
+	COMMAND_FILE(export, "Export the current scene as a mesh to the given file");
+	COMMAND_FILE(load, "Load a scene from the given volume file");
+	COMMAND_FILE(prefab, "Add a volume to the existing scene from the given file");
 	COMMAND_FILE(import, "Import a mesh from the given file and tries to voxelize it");
-	COMMAND_FILE(importheightmap, "Import a heightmap into the volume");
-	COMMAND_FILE(importplane, "Import an image as a plane");
+	COMMAND_FILE(importheightmap, "Import a 2d heightmap image into the current active volume layer");
+	COMMAND_FILE(importplane, "Import an image as a plane into a new layer");
 	COMMAND_FILE(importpalette, "Import an image as a palette");
 #undef COMMAND_FILE
 
 	core::Command::registerCommand("new",
 			[this] (const core::CmdArgs& args) {newFile();}).setHelp(
-			"Create a new scene");
+			"Create a new scene with ui interaction");
 	core::Command::registerCommand("toggleviewport",
 			[this] (const core::CmdArgs& args) {_mainWindow->toggleviewport();}).setHelp(
 			"Toggle quad view on/off");
