@@ -43,6 +43,55 @@ extern const glm::vec3 left;
 extern const glm::vec3 up;
 extern const glm::vec3 down;
 
+/**
+ * Calculate the line segment PaPb that is the shortest route between
+ * two lines P1P2 and P3P4. Calculate also the values of @c mua and @c mub where
+ *  Pa = P1 + mua (P2 - P1)
+ *  Pb = P3 + mub (P4 - P3)
+ * @return @c false if no solution exists.
+ */
+GLM_FUNC_QUALIFIER float intersectLines(const glm::vec3& p1,
+		const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& p4,
+		glm::vec3& pa, glm::vec3& pb, float *pmua = nullptr,
+		float *pmub = nullptr) {
+	const glm::vec3 p13 = p1 - p3;
+	const glm::vec3 p43 = p4 - p3;
+	const vec3 eps(glm::epsilon<float>());
+	if (glm::all(glm::lessThan(glm::abs(p43), eps))) {
+		return false;
+	}
+	const glm::vec3 p21 = p2 - p1;
+	if (glm::all(glm::lessThan(glm::abs(p21), eps))) {
+		return false;
+	}
+
+	const float d1343 = glm::dot(p13, p43);
+	const float d4321 = glm::dot(p43, p21);
+	const float d1321 = glm::dot(p13, p21);
+	const float d4343 = glm::dot(p43, p43);
+	const float d2121 = glm::dot(p21, p21);
+
+	const float denom = d2121 * d4343 - d4321 * d4321;
+	if (glm::abs(denom) < glm::epsilon<float>()) {
+		return false;
+	}
+	const float numer = d1343 * d4321 - d1321 * d4343;
+	const float mua = numer / denom;
+	const float mub = (d1343 + d4321 * mua) / d4343;
+
+	pa = p1 + mua * p21;
+	pb = p3 + mub * p43;
+
+	if (pmua != nullptr) {
+		*pmua = mua;
+	}
+	if (pmub != nullptr) {
+		*pmub = mub;
+	}
+
+	return true;
+}
+
 GLM_FUNC_QUALIFIER vec3 transform(const mat4& mat, const vec3& v) {
 	const mat4::col_type& c1 = column(mat, 0);
 	const mat4::col_type& c2 = column(mat, 1);
