@@ -362,8 +362,8 @@ bool SceneManager::load(const std::string& file) {
 }
 
 void SceneManager::setMousePos(int x, int y) {
-	_mouseX = x;
-	_mouseY = y;
+	_mouseCursor.x = x;
+	_mouseCursor.y = y;
 }
 
 void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo) {
@@ -692,7 +692,7 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 			}
 		}
 		if (_renderAxis) {
-			_axis.update(camera, glm::vec2(_mouseX, _mouseY));
+			_axis.update(camera, glm::vec2(_mouseCursor));
 			_axis.render(camera);
 		}
 		// TODO: render ground plane
@@ -1255,12 +1255,12 @@ bool SceneManager::trace(const video::Camera& camera, bool force) {
 		return false;
 	}
 
-	if (_lastRaytraceX != _mouseX || _lastRaytraceY != _mouseY || force) {
+	if (_lastRaytraceX != _mouseCursor.x || _lastRaytraceY != _mouseCursor.y || force) {
 		core_trace_scoped(EditorSceneOnProcessUpdateRay);
-		_lastRaytraceX = _mouseX;
-		_lastRaytraceY = _mouseY;
+		_lastRaytraceX = _mouseCursor.x;
+		_lastRaytraceY = _mouseCursor.y;
 
-		const video::Ray& ray = camera.mouseRay(glm::ivec2(_mouseX, _mouseY));
+		const video::Ray& ray = camera.mouseRay(_mouseCursor);
 		const glm::vec3& dirWithLength = ray.direction * camera.farPlane();
 		static constexpr voxel::Voxel air;
 

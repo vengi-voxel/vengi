@@ -102,8 +102,7 @@ private:
 
 	int _initialized = 0;
 	int _size = 128;
-	int _mouseX = 0;
-	int _mouseY = 0;
+	glm::ivec2 _mouseCursor { 0 };
 
 	core::ActionButton _shift;
 	uint64_t _lastShift = 0;
