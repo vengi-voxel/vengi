@@ -34,6 +34,7 @@ struct ActionButton {
 	uint32_t durationMillis = 0;
 
 	ActionButton();
+	virtual ~ActionButton() {}
 
 	/**
 	 * @return @c true if any of the bound keys is still active
@@ -43,12 +44,12 @@ struct ActionButton {
 	/**
 	 * @return @c true if the action button was initially triggered
 	 */
-	bool handleDown(int32_t key, uint64_t pressedMillis);
+	virtual bool handleDown(int32_t key, uint64_t pressedMillis);
 	/**
 	 * @param[in] key If @c -1 is given here, everything is released
 	 * @return @c true if the action button was completly released
 	 */
-	bool handleUp(int32_t key, uint64_t releasedMillis);
+	virtual bool handleUp(int32_t key, uint64_t releasedMillis);
 };
 
 inline bool ActionButton::pressed() const {
