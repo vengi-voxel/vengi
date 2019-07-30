@@ -125,9 +125,9 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 					if (voxel::isAir(voxel.getMaterial())) {
 						continue;
 					}
-					stream.addByte(x);
-					stream.addByte(z);
-					stream.addByte(y);
+					stream.addByte(x - region.getLowerX());
+					stream.addByte(z - region.getLowerZ());
+					stream.addByte(y - region.getLowerY());
 					const uint8_t colorIndex = voxel.getColor();
 					stream.addByte(colorIndex + 1);
 				}
