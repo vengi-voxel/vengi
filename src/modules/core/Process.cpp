@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <string.h>
 
-#if __WINDOWS__
+#if defined(__WINDOWS__)
 #include <SDL.h>
 #define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX
@@ -22,7 +22,7 @@
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
-#elif __LINUX__ or __MACOSX__
+#elif defined(__LINUX__) or defined(__MACOSX__)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -40,7 +40,7 @@
 namespace core {
 
 int Process::exec(const std::string& command, const std::vector<std::string>& arguments, const char* workingDirectory, size_t bufSize, char *output) {
-#if __LINUX__ || __MACOSX__
+#if defined(__LINUX__) || defined(__MACOSX__)
 	int link[2];
 	if (::pipe(link) < 0) {
 		Log::error("pipe failed: %s", strerror(errno));

@@ -8,7 +8,7 @@
 #include "core/Common.h"
 #include "core/command/Command.h"
 
-#if USE_EMTRACE
+#ifdef USE_EMTRACE
 #include <emscripten/trace.h>
 #endif
 
@@ -22,14 +22,14 @@ static thread_local const char* _threadName = "Unknown";
 }
 
 Trace::Trace() {
-#if USE_EMTRACE
+#ifdef USE_EMTRACE
 	emscripten_trace_configure("http://localhost:17000/", "Engine");
 #endif
 	traceThread("MainThread");
 }
 
 Trace::~Trace() {
-#if USE_EMTRACE
+#ifdef USE_EMTRACE
 	emscripten_trace_close();
 #endif
 }
@@ -59,7 +59,7 @@ TraceCallback* traceSet(TraceCallback* callback) {
 }
 
 void traceInit() {
-#if USE_EMTRACE
+#ifdef USE_EMTRACE
 	Log::info("emtrace active");
 #endif
 }
@@ -74,7 +74,7 @@ void traceGLShutdown() {
 }
 
 void traceBeginFrame() {
-#if USE_EMTRACE
+#ifdef USE_EMTRACE
 	emscripten_trace_record_frame_start();
 #else
 	if (_callback != nullptr) {
@@ -86,7 +86,7 @@ void traceBeginFrame() {
 }
 
 void traceEndFrame() {
-#if USE_EMTRACE
+#ifdef USE_EMTRACE
 	emscripten_trace_record_frame_end();
 #else
 	if (_callback != nullptr) {
@@ -98,7 +98,7 @@ void traceEndFrame() {
 }
 
 void traceBegin(const char* name) {
-#if USE_EMTRACE
+#ifdef USE_EMTRACE
 	emscripten_trace_enter_context(name);
 #else
 	if (_callback != nullptr) {
@@ -108,7 +108,7 @@ void traceBegin(const char* name) {
 }
 
 void traceEnd() {
-#if USE_EMTRACE
+#ifdef USE_EMTRACE
 	emscripten_trace_exit_context();
 #else
 	if (_callback != nullptr) {
