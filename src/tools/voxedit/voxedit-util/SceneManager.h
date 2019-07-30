@@ -184,13 +184,50 @@ public:
 	void modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo = true);
 	voxel::RawVolume* volume(int idx);
 
+	/**
+	 * @brief Voxelizes the given mesh
+	 * @param[in] mesh The video::Mesh to voxelize
+	 * @return @c true on success, @c false on failure
+	 */
 	bool voxelizeModel(const video::MeshPtr& mesh);
+	/**
+	 * @brief Import a heightmap in the current layer of the scene
+	 * @param[in] file The image file to import as heightmap.
+	 * @note The first component is used as height value. In most cases the R channel.
+	 */
 	bool importHeightmap(const std::string& file);
+	/**
+	 * @brief Import an image as a plane in a new layer of the scene.
+	 * @note There is a total max dimension of the texture that is supported.
+	 * @param[in] file The image file path to load
+	 */
 	bool importAsPlane(const std::string& file);
+	/**
+	 * @brief Import a new palette from the given image file
+	 * @note The amount of colors in the image may not exceed 256
+	 * @param[in] file The image file path
+	 */
 	bool importPalette(const std::string& file);
+	/**
+	 * @param[in] paletteName The name of the palette
+	 * @note The name is extended to a filename like this @c palette-<paletteName>.[lua.png]
+	 */
 	bool loadPalette(const std::string& paletteName);
+	/**
+	 * @brief Exports the volume data to a supported mesh format identified by the file extension
+	 */
 	bool exportModel(const std::string& file);
+	/**
+	 * @brief Save the volume data to the given file
+	 * @param[in] file The file to store the volume data in. The file extension defines the volume format.
+	 * @param[in] autosave @c true if this is an auto save action, @c false otherwise. This has e.g. an
+	 * influence on the dirty state handling of the scene.
+	 */
 	bool save(const std::string& file, bool autosave = false);
+	/**
+	 * @brief Loads a volume from the given file
+	 * @param[in] file The file to load. The volume format is determined by the file extension.
+	 */
 	bool load(const std::string& file);
 	/**
 	 * @brief Import an existing model

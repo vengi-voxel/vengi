@@ -30,12 +30,8 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
 		float imageX = 0.0f;
 		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
-			const intptr_t offset = ((int)imageY * imageWidth + (int)imageX) * image->depth();
-			const uint8_t* heightmapPixel = image->data() + offset;
+			const uint8_t* heightmapPixel = image->at((int)imageX, (int)imageY);
 			const uint8_t pixelValue = (uint8_t)((float)(*heightmapPixel) * scaleHeight);
-			core_assert_msg(offset < imageWidth * imageHeight * image->depth(),
-					"Offset %i exceeds valid image data boundaries (w: %i, h: %i, bpp: %i)",
-					(int)offset,imageWidth, imageHeight, image->depth());
 
 			for (int y = 0; y < volumeHeight; ++y) {
 				const glm::ivec3 pos(x, y, z);
