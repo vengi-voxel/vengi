@@ -806,7 +806,7 @@ void SceneManager::construct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		move(x, y, z);
-	}).setHelp("Move the volume by the given values");
+	}).setHelp("Move the voxels inside the volume by the given values");
 
 	core::Command::registerCommand("undo", [&] (const core::CmdArgs& args) {
 		undo();
