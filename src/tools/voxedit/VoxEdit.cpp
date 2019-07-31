@@ -120,7 +120,7 @@ core::AppState VoxEdit::onConstruct() {
 	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
 		const std::string file = args.empty() ? "" : args[0]; \
 		if (!command##File(file)) { \
-			Log::error("Failed to execute '" #command "' for file %s", file.c_str()); \
+			Log::error("Failed to execute '" #command "' for file '%s'", file.c_str()); \
 		} \
 	}).setArgumentCompleter(core::fileCompleter(_lastDirectory)).setHelp(help)
 
