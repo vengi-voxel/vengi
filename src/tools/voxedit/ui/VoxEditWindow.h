@@ -114,7 +114,7 @@ public:
 	~VoxEditWindow();
 	bool init();
 
-	void update();
+	void update(uint64_t time);
 	bool isFocused() const;
 	bool isHovered() const;
 	bool isActive() const;

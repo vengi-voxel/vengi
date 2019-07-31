@@ -167,8 +167,7 @@ core::AppState VoxEdit::onRunning() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
-	_sceneMgr.update(_now);
-	_mainWindow->update();
+	_mainWindow->update(_now);
 	return state;
 }
 

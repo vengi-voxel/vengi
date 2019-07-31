@@ -276,7 +276,7 @@ void VoxEditWindow::updateStatusBar() {
 	}
 }
 
-void VoxEditWindow::update() {
+void VoxEditWindow::update(uint64_t time) {
 	updateStatusBar();
 	_scene->update();
 	if (_sceneTop != nullptr) {
@@ -291,6 +291,16 @@ void VoxEditWindow::update() {
 	if (_paletteWidget != nullptr) {
 		_paletteWidget->setVoxelColor(sceneMgr().hitCursorVoxel().getColor());
 	}
+
+	const video::Camera* camera = &_scene->camera();
+	if (_sceneTop->getIsFocused()) {
+		camera = &_sceneTop->camera();
+	} else if (_sceneLeft->getIsFocused()) {
+		camera = &_sceneLeft->camera();
+	} else if (_sceneFront->getIsFocused()) {
+		camera = &_sceneFront->camera();
+	}
+	sceneMgr().update(*camera, time);
 }
 
 bool VoxEditWindow::isFocused() const {

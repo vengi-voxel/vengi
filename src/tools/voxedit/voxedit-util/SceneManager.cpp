@@ -56,43 +56,6 @@ namespace voxedit {
 
 const int leafSize = 8;
 
-bool SceneManager::ShiftButton::handleDown(int32_t key, uint64_t pressedMillis) {
-	const bool ret = Super::handleDown(key, pressedMillis);
-	axisMode = sceneMgr()._axis.mode();
-	return ret;
-}
-
-bool SceneManager::ShiftButton::handleUp(int32_t key, uint64_t releasedMillis) {
-	const bool ret = Super::handleUp(key, pressedMillis);
-	axisMode = render::Axis::Mode::None;
-	return ret;
-}
-
-bool SceneManager::ShiftButton::shouldExecute(uint64_t time) {
-	if (axisMode == render::Axis::Mode::None) {
-		return false;
-	}
-	if (time - lastAction >= 125ul) {
-		lastAction = time;
-		return true;
-	}
-	return false;
-}
-
-void SceneManager::ShiftButton::execute(uint64_t time) {
-	if (!pressed()) {
-		lastPosition = sceneMgr()._mouseCursor;
-		return;
-	}
-	if (!shouldExecute(time)) {
-		return;
-	}
-	// TODO: using the 2d mouse position is crap of course - but atm I don't have access to the viewport camera here
-	const glm::ivec2 delta = sceneMgr()._mouseCursor - lastPosition;
-	lastPosition = sceneMgr()._mouseCursor;
-	sceneMgr().executeGizmoAction(glm::ivec3(delta, delta.x != 0 ? delta.x : delta.y), axisMode);
-}
-
 SceneManager::SceneManager() :
 		_gridRenderer() {
 }
@@ -685,16 +648,16 @@ void SceneManager::shift(int x, int y, int z) {
 	});
 }
 
-void SceneManager::executeGizmoAction(const glm::ivec3& delta, render::Axis::Mode mode) {
-	if (mode == render::Axis::Mode::TranslateX) {
+void SceneManager::executeGizmoAction(const glm::ivec3& delta, render::Gizmo::Mode mode) {
+	if (mode == render::Gizmo::Mode::TranslateX) {
 		if (delta.x != 0) {
 			shift(delta.x, 0, 0);
 		}
-	} else if (mode == render::Axis::Mode::TranslateY) {
+	} else if (mode == render::Gizmo::Mode::TranslateY) {
 		if (delta.y != 0) {
 			shift(0, delta.y, 0);
 		}
-	} else if (mode == render::Axis::Mode::TranslateZ) {
+	} else if (mode == render::Gizmo::Mode::TranslateZ) {
 		if (delta.z != 0) {
 			shift(0, 0, delta.z);
 		}
@@ -734,11 +697,7 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 			}
 		}
 		if (_renderAxis) {
-			// TODO: this doesn't belong here, but into the update method. Problem is, that we don't have the camera there.
-			if (!_shift.pressed()) {
-				_axis.update(camera, glm::vec2(_mouseCursor));
-			}
-			_axis.render(camera);
+			_gizmo.render(camera);
 		}
 		// TODO: render ground plane
 		if (!depthTest) {
@@ -870,7 +829,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
 
-	core::Command::registerActionButton("shift", _shift);
+	core::Command::registerActionButton("shift", _gizmo);
 	core::Command::registerCommand("shift", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc != 3) {
@@ -1006,7 +965,7 @@ bool SceneManager::init() {
 		Log::debug("Already initialized");
 		return true;
 	}
-	if (!_axis.init()) {
+	if (!_gizmo.init()) {
 		Log::error("Failed to initialize the axis renderer");
 		return false;
 	}
@@ -1071,7 +1030,7 @@ void SceneManager::animate(uint64_t time) {
 	}
 }
 
-void SceneManager::update(uint64_t time) {
+void SceneManager::update(const video::Camera& camera, uint64_t time) {
 	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
 			continue;
@@ -1083,7 +1042,15 @@ void SceneManager::update(uint64_t time) {
 		moveCursor(dir.x, dir.y, dir.z);
 		_lastMove[i] = time;
 	}
-	_shift.execute(time);
+
+	_gizmo.update(camera, _mouseCursor);
+	_gizmo.execute(time, [&] (const glm::ivec3& lastPos, render::Gizmo::Mode mode) {
+		// TODO: using the 2d mouse position is crap of course - but atm I don't have access to the viewport camera here
+		const glm::ivec3 mp(_mouseCursor.x, _mouseCursor.y, _mouseCursor.y);
+		const glm::ivec3 deltaMovement = mp - lastPos;
+		executeGizmoAction(deltaMovement, mode);
+		return mp;
+	});
 	if (_ambientColor->isDirty()) {
 		_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
 		_ambientColor->markClean();
@@ -1111,7 +1078,7 @@ void SceneManager::shutdown() {
 	_modifier.shutdown();
 	_layerMgr.unregisterListener(this);
 	_layerMgr.shutdown();
-	_axis.shutdown();
+	_gizmo.shutdown();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
