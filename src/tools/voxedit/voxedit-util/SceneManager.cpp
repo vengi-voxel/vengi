@@ -1047,6 +1047,7 @@ void SceneManager::update(const video::Camera& camera, uint64_t time) {
 		// TODO: using the 2d mouse position is crap of course - but atm I don't have access to the viewport camera here
 		const glm::ivec3 mp(_mouseCursor.x, _mouseCursor.y, _mouseCursor.y);
 		const glm::ivec3 deltaMovement = mp - lastPos;
+		// TODO: memento state at pressing and releasing
 		executeGizmoAction(deltaMovement, mode);
 		return mp;
 	});
