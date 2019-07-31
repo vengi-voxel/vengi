@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/Array.h"
 #include "core/Log.h"
+#include "core/String.h"
 #include "core/UTF8.h"
 #include "voxel/MaterialColor.h"
 
@@ -31,8 +32,10 @@ namespace voxel {
 	}
 
 struct VoxModel {
+	uint32_t nodeId;
 	uint32_t modelId;
 	std::map<std::string, std::string> attributes;
+	std::map<std::string, std::string> nodeAttributes;
 };
 
 bool VoxFormat::saveAttributes(const std::map<std::string, std::string>& attributes, io::FileStream& stream) {
@@ -65,7 +68,6 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 
 	int layerId = 0;
 	for (auto& v : volumes) {
-		// TODO: layers - with offset
 		// model size
 		Log::debug("add SIZE chunk at pos %i", (int)stream.pos());
 		stream.addInt(FourCC('S','I','Z','E'));
@@ -76,27 +78,55 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		stream.addInt(region.getDepthInVoxels());
 		stream.addInt(region.getHeightInVoxels());
 
-		const std::string attributeName = "_name";
-		const std::string attributeVisible = "_visible";
-		stream.addInt(FourCC('L','A','Y','R'));
-		const int chunkSizeName = sizeof(uint32_t) + attributeName.size();
-		const int chunkSizeNameValue = sizeof(uint32_t) + core::utf8::length(v.name.c_str());
-		const int chunkSizeVisible = sizeof(uint32_t) + attributeVisible.size();
-		const int chunkSizeVisibleValue = sizeof(uint32_t) + 1;
-		const int chunkAttributeSize = sizeof(uint32_t) + chunkSizeName + chunkSizeNameValue
-				+ chunkSizeVisible + chunkSizeVisibleValue;
-		const uint32_t chunkSize = sizeof(uint32_t) + chunkAttributeSize + sizeof(uint32_t);
-		stream.addInt(chunkSize);
-		stream.addInt(0);
+		{
+			const std::string attributeName = "_name";
+			const std::string attributeVisible = "_visible";
+			stream.addInt(FourCC('L','A','Y','R'));
+			const int chunkSizeName = sizeof(uint32_t) + attributeName.size();
+			const int chunkSizeNameValue = sizeof(uint32_t) + core::utf8::length(v.name.c_str());
+			const int chunkSizeVisible = sizeof(uint32_t) + attributeVisible.size();
+			const int chunkSizeVisibleValue = sizeof(uint32_t) + 1;
+			const int chunkAttributeSize = sizeof(uint32_t) + chunkSizeName + chunkSizeNameValue
+					+ chunkSizeVisible + chunkSizeVisibleValue;
+			const uint32_t chunkSize = sizeof(uint32_t) + chunkAttributeSize + sizeof(uint32_t);
+			stream.addInt(chunkSize);
+			stream.addInt(0);
+			const uint64_t posBefore = stream.pos();
+			stream.addInt(layerId);
+			saveAttributes({{attributeName, v.name}, {attributeVisible, v.visible ? "1" : "0"}}, stream);
+			stream.addInt((uint32_t)-1); // must always be -1
+			const uint64_t posAfter = stream.pos();
+			Log::info("chunk size is: %i", (int)(posAfter - posBefore));
+			core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
+					(int)posAfter, (int)posBefore, (int)chunkSize);
+		}
 
-		const uint64_t posBefore = stream.pos();
-		stream.addInt(layerId);
-		saveAttributes({{attributeName, v.name}, {attributeVisible, v.visible ? "1" : "0"}}, stream);
-		stream.addInt((uint32_t)-1); // must always be -1
-		const uint64_t posAfter = stream.pos();
-		Log::info("chunk size is: %i", (int)(posAfter - posBefore));
-		core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
-				(int)posAfter, (int)posBefore, (int)chunkSize);
+		{
+			const std::string attributeName = "_t";
+			const glm::ivec3& mins = region.getLowerCorner();
+			const std::string& translationStr = core::string::format("%i %i %i", mins.x, mins.y, mins.z);
+			stream.addInt(FourCC('n','T','R','N'));
+			const int chunkFrameTranslationName = sizeof(uint32_t) + attributeName.size();
+			const int chunkFrameTranslationValue = sizeof(uint32_t) + translationStr.size();
+			const int chunkNodeAttributeSize = sizeof(uint32_t);
+			const int chunkFrameAttributeSize = sizeof(uint32_t) + chunkFrameTranslationName + chunkFrameTranslationValue;
+			const uint32_t chunkSize = 5 * sizeof(uint32_t) + chunkNodeAttributeSize + chunkFrameAttributeSize;
+			stream.addInt(chunkSize);
+			stream.addInt(0);
+			const uint64_t posBefore = stream.pos();
+
+			stream.addInt(0); // 0 is root?
+			saveAttributes({}, stream);
+			stream.addInt(0); // child node id
+			stream.addInt(-1); // reserved - must be -1
+			stream.addInt(layerId);
+			stream.addInt(1); // num frames
+			saveAttributes({{"_t", translationStr}}, stream);
+			const uint64_t posAfter = stream.pos();
+			Log::info("chunk size is: %i", (int)(posAfter - posBefore));
+			core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
+					(int)posAfter, (int)posBefore, (int)chunkSize);
+		}
 
 		// voxel data
 		Log::debug("add XYZI chunk at pos %i", (int)stream.pos());
@@ -392,6 +422,8 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 	stream.seek(resetPos);
 
 	VoxelVolumes volumes;
+	std::vector<VoxModel> models;
+	models.resize(regions.size());
 	volumes.resize(regions.size());
 	int volumeIdx = 0;
 	do {
@@ -439,6 +471,30 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 			volumes[volumeIdx].volume = volume;
 			volumes[volumeIdx].pivot = volume->region().getCentre();
 			++volumeIdx;
+		} else if (chunkId == FourCC('n','S','H','P')) {
+			// Shape Node Chunk
+			Log::warn("nSHP chunk not yet supported");
+			uint32_t nodeId;
+			wrap(stream.readInt(nodeId)) // 0 is root?
+			std::map<std::string, std::string> nodeAttributes;
+			wrapAttributes(readAttributes(nodeAttributes, stream))
+			uint32_t numModels;
+			wrap(stream.readInt(numModels)) // must be 1
+			if (numModels != 1) {
+				Log::error("Shape node chunk contained a numModels value != 1: %i", numModels);
+				return VoxelVolumes();
+			}
+			// there can be multiple SIZE and XYZI chunks for multiple models; model id is their index in the stored order
+			uint32_t modelId;
+			wrap(stream.readInt(modelId));
+			if (modelId >= models.size()) {
+				Log::error("ModelId %i exceeds boundaries [%i,%i]", modelId, 0, (int)models.size());
+				return VoxelVolumes();
+			}
+			wrapAttributes(readAttributes(models[modelId].attributes, stream))
+			models[modelId].modelId = modelId;
+			models[modelId].nodeId = nodeId;
+			models[modelId].nodeAttributes = std::move(nodeAttributes);
 		}
 		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
 		wrap(stream.seek(nextChunkPos));
@@ -606,6 +662,12 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 					const std::string& translations = trans->second;
 					int x, y, z;
 					if (sscanf(translations.c_str(), "%d %d %d", &x, &y, &z) == 3) {
+						for (auto& m : models) {
+							if (m.nodeId == nodeId) {
+								volumes[m.modelId].volume->translate(glm::ivec3(x, y, z));
+								break;
+							}
+						}
 						Log::debug("nTRN chunk not yet completely supported: translation %i:%i:%i", x, y, z);
 					} else {
 						Log::error("Failed to parse translation %s", translations.c_str());
@@ -627,24 +689,6 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 				uint32_t child;
 				wrap(stream.readInt(child))
 				children.push_back((child));
-			}
-			// TODO
-		} else if (chunkId == FourCC('n','S','H','P')) {
-			Log::warn("nSHP chunk not yet supported");
-			uint32_t nodeId;
-			wrap(stream.readInt(nodeId)) // 0 is root?
-			std::map<std::string, std::string> nodeAttributes;
-			wrapAttributes(readAttributes(nodeAttributes, stream))
-			uint32_t numModels;
-			wrap(stream.readInt(numModels))
-			std::vector<VoxModel> models;
-			models.reserve(numModels);
-			for (uint32_t i = 0; i < numModels; ++i) {
-				uint32_t modelId;
-				wrap(stream.readInt(modelId));
-				std::map<std::string, std::string> modelAttributes;
-				wrapAttributes(readAttributes(modelAttributes, stream))
-				models.push_back(VoxModel{modelId, modelAttributes});
 			}
 			// TODO
 		} else if (chunkId == FourCC('M','A','T','L')) {
