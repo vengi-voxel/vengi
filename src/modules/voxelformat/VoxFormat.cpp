@@ -473,15 +473,14 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 			++volumeIdx;
 		} else if (chunkId == FourCC('n','S','H','P')) {
 			// Shape Node Chunk
-			Log::warn("nSHP chunk not yet supported");
 			uint32_t nodeId;
 			wrap(stream.readInt(nodeId)) // 0 is root?
 			std::map<std::string, std::string> nodeAttributes;
 			wrapAttributes(readAttributes(nodeAttributes, stream))
-			uint32_t numModels;
-			wrap(stream.readInt(numModels)) // must be 1
-			if (numModels != 1) {
-				Log::error("Shape node chunk contained a numModels value != 1: %i", numModels);
+			uint32_t shapeNodeNumModels;
+			wrap(stream.readInt(shapeNodeNumModels)) // must be 1
+			if (shapeNodeNumModels != 1) {
+				Log::error("Shape node chunk contained a numModels value != 1: %i", shapeNodeNumModels);
 				return VoxelVolumes();
 			}
 			// there can be multiple SIZE and XYZI chunks for multiple models; model id is their index in the stored order
