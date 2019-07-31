@@ -13,6 +13,9 @@
 
 namespace render {
 
+/**
+ * @brief Generates a seamless random colored texture
+ */
 class RandomColorTexture : public core::IComponent {
 private:
 	video::TexturePtr _colorTexture;
