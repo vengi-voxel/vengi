@@ -114,6 +114,8 @@ public:
 	~VoxEditWindow();
 	bool init();
 
+	bool isLayerWidgetDropTarget() const;
+
 	void update(uint64_t time);
 	bool isFocused() const;
 	bool isHovered() const;

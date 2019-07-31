@@ -303,6 +303,10 @@ void VoxEditWindow::update(uint64_t time) {
 	sceneMgr().update(*camera, time);
 }
 
+bool VoxEditWindow::isLayerWidgetDropTarget() const {
+	return tb::TBWidget::hovered_widget == _layerWidget;
+}
+
 bool VoxEditWindow::isFocused() const {
 	return tb::TBWidget::focused_widget == _scene
 			|| tb::TBWidget::focused_widget == _sceneTop

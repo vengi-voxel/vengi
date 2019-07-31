@@ -95,6 +95,10 @@ core::AppState VoxEdit::onCleanup() {
 }
 
 void VoxEdit::onDropFile(const std::string& file) {
+	if (_mainWindow != nullptr && _mainWindow->isLayerWidgetDropTarget()) {
+		_sceneMgr.prefab(file);
+		return;
+	}
 	_sceneMgr.load(file);
 }
 
