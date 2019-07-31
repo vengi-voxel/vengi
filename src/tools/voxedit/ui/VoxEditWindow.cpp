@@ -307,6 +307,10 @@ bool VoxEditWindow::isLayerWidgetDropTarget() const {
 	return tb::TBWidget::hovered_widget == _layerWidget;
 }
 
+bool VoxEditWindow::isPaletteWidgetDropTarget() const {
+	return tb::TBWidget::hovered_widget == _paletteWidget;
+}
+
 bool VoxEditWindow::isFocused() const {
 	return tb::TBWidget::focused_widget == _scene
 			|| tb::TBWidget::focused_widget == _sceneTop

@@ -115,6 +115,7 @@ public:
 	bool init();
 
 	bool isLayerWidgetDropTarget() const;
+	bool isPaletteWidgetDropTarget() const;
 
 	void update(uint64_t time);
 	bool isFocused() const;

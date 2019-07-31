@@ -95,11 +95,18 @@ core::AppState VoxEdit::onCleanup() {
 }
 
 void VoxEdit::onDropFile(const std::string& file) {
-	if (_mainWindow != nullptr && _mainWindow->isLayerWidgetDropTarget()) {
-		_sceneMgr.prefab(file);
+	if (_mainWindow == nullptr) {
 		return;
 	}
-	_sceneMgr.load(file);
+	if (_mainWindow->isPaletteWidgetDropTarget()) {
+		if (_sceneMgr.importPalette(file)) {
+			return;
+		}
+	}
+	if (_sceneMgr.prefab(file)) {
+		return;
+	}
+	Log::warn("Failed to handle %s as drop file event", file.c_str());
 }
 
 core::AppState VoxEdit::onConstruct() {
