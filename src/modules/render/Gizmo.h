@@ -10,6 +10,12 @@
 
 namespace render {
 
+/**
+ * @brief A set of manipulator handles in the shape of a 3 axis coordinate system icon
+ * used for manipulating objects in 3D space
+ *
+ * @note This also implements a core::ActionButton
+ */
 class Gizmo : public core::IComponent, public core::ActionButton {
 public:
 	enum class Mode {
@@ -30,6 +36,10 @@ private:
 	bool handleUp(int32_t key, uint64_t releasedMillis) override;
 
 public:
+	/**
+	 * @return The current selected Gizmo::Mode value
+	 * @note update() must have been called before
+	 */
 	Mode mode() const;
 
 	/**
@@ -41,18 +51,30 @@ public:
 	 */
 	void update(const video::Camera& camera, const glm::ivec2& pixelPos);
 
+	/**
+	 * @brief Updates the origin of the gizmo
+	 */
 	void setPosition(const glm::vec3& pos);
 
+	/**
+	 * @brief Renders the handles of the gizmo
+	 */
 	void render(const video::Camera& camera);
 
+	/**
+	 * @return @c true on success, @c false on failure
+	 * @sa shutdown()
+	 */
 	bool init() override;
+	/**
+	 * @sa init()
+	 */
 	void shutdown() override;
-public:
+
 	/**
 	 * @brief Tries to execute the action button
 	 */
 	bool execute(uint64_t time, std::function<glm::ivec3(const glm::ivec3, render::Gizmo::Mode)> function);
-
 };
 
 }
