@@ -299,14 +299,18 @@ bool SceneManager::prefab(const std::string& file) {
 	}
 	voxel::RawVolume* newVolume;
 
-	if (filePtr->extension() == "qbt") {
+	const std::string& ext = filePtr->extension();
+	if (ext == "qbt") {
 		voxel::QBTFormat f;
 		newVolume = f.load(filePtr);
-	} else if (filePtr->extension() == "vox") {
+	} else if (ext == "vox") {
 		voxel::VoxFormat f;
 		newVolume = f.load(filePtr);
-	} else if (filePtr->extension() == "qb") {
+	} else if (ext == "qb") {
 		voxel::QBFormat f;
+		newVolume = f.load(filePtr);
+	} else if (ext == "vxm") {
+		voxel::VXMFormat f;
 		newVolume = f.load(filePtr);
 	} else {
 		newVolume = nullptr;
