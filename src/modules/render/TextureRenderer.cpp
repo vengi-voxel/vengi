@@ -19,11 +19,11 @@ bool TextureRenderer::init(const glm::vec2& size) {
 	return true;
 }
 
-void TextureRenderer::render(const glm::mat4& projection) {
+void TextureRenderer::render(const glm::mat4& projection, const glm::mat4& model, video::TextureUnit texUnit) {
 	video::ScopedShader scoped(_textureShader);
 	_textureShader.setViewprojection(projection);
-	_textureShader.setModel(glm::mat4(1.0f));
-	_textureShader.setTexture(video::TextureUnit::Zero);
+	_textureShader.setModel(model);
+	_textureShader.setTexture(texUnit);
 	video::ScopedBuffer scopedBuf(_texturedFullscreenQuad);
 	const int elements = _texturedFullscreenQuad.elements(0, _textureShader.getComponentsPos());
 	video::drawArrays(video::Primitive::Triangles, elements);
