@@ -18,42 +18,72 @@ VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& files
 }
 
 bool VoxEdit::importheightmapFile(const std::string& file) {
+	if (_mainWindow == nullptr) {
+		return false;
+	}
 	return _mainWindow->importHeightmap(file);
 }
 
 bool VoxEdit::importplaneFile(const std::string& file) {
+	if (_mainWindow == nullptr) {
+		return false;
+	}
 	return _mainWindow->importAsPlane(file);
 }
 
 bool VoxEdit::importpaletteFile(const std::string& file) {
+	if (_mainWindow == nullptr) {
+		return false;
+	}
 	return _mainWindow->importPalette(file);
 }
 
 bool VoxEdit::saveFile(const std::string& file) {
+	if (_mainWindow == nullptr) {
+		return false;
+	}
 	return _mainWindow->save(file);
 }
 
 bool VoxEdit::screenshotFile(const std::string& file) {
+	if (_mainWindow == nullptr) {
+		return false;
+	}
 	return _mainWindow->saveScreenshot(file);
 }
 
 bool VoxEdit::loadFile(const std::string& file) {
+	if (_mainWindow == nullptr) {
+		return false;
+	}
 	return _mainWindow->load(file);
 }
 
 bool VoxEdit::prefabFile(const std::string& file) {
+	if (_mainWindow == nullptr) {
+		return false;
+	}
 	return _mainWindow->prefab(file);
 }
 
 bool VoxEdit::importFile(const std::string& file) {
+	if (_mainWindow == nullptr) {
+		return false;
+	}
 	return _mainWindow->importMesh(file);
 }
 
 bool VoxEdit::newFile(bool force) {
+	if (_mainWindow == nullptr) {
+		return false;
+	}
 	return _mainWindow->createNew(force);
 }
 
 bool VoxEdit::exportFile(const std::string& file) {
+	if (_mainWindow == nullptr) {
+		return false;
+	}
 	return _mainWindow->exportFile(file);
 }
 
@@ -94,21 +124,32 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(importpalette, "Import an image as a palette");
 #undef COMMAND_FILE
 
-	core::Command::registerCommand("new",
-			[this] (const core::CmdArgs& args) {newFile();}).setHelp(
-			"Create a new scene with ui interaction");
-	core::Command::registerCommand("toggleviewport",
-			[this] (const core::CmdArgs& args) {_mainWindow->toggleviewport();}).setHelp(
-			"Toggle quad view on/off");
-	core::Command::registerCommand("resetcamera",
-			[this] (const core::CmdArgs& args) {_mainWindow->resetCamera();}).setHelp(
-			"Reset cameras");
-	core::Command::registerCommand("dialog_noise",
-			[this] (const core::CmdArgs& args) {
-				tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);
-				event.ref_id = tb::TBGetHash("dialog_noise");
-				_mainWindow->invokeEvent(event);
-			}).setHelp("Opens the noise dialog");
+	core::Command::registerCommand("new", [this] (const core::CmdArgs& args) {
+		newFile();
+	}).setHelp("Create a new scene with ui interaction");
+
+	core::Command::registerCommand("toggleviewport", [this] (const core::CmdArgs& args) {
+		if (_mainWindow == nullptr) {
+			return;
+		}
+		_mainWindow->toggleviewport();
+	}).setHelp("Toggle quad view on/off");
+
+	core::Command::registerCommand("resetcamera", [this] (const core::CmdArgs& args) {
+		if (_mainWindow == nullptr) {
+			return;
+		}
+		_mainWindow->resetCamera();
+	}).setHelp("Reset cameras");
+
+	core::Command::registerCommand("dialog_noise", [this] (const core::CmdArgs& args) {
+		if (_mainWindow == nullptr) {
+			return;
+		}
+		tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);
+		event.ref_id = tb::TBGetHash("dialog_noise");
+		_mainWindow->invokeEvent(event);
+	}).setHelp("Opens the noise dialog");
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
 
