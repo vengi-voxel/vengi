@@ -42,6 +42,8 @@ public:
 	bool init() override;
 	void shutdown() override;
 
+	void shift(const glm::ivec3& v);
+
 	math::Axis mirrorAxis() const;
 	void setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
 

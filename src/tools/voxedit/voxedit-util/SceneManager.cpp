@@ -632,11 +632,12 @@ void SceneManager::move(int x, int y, int z) {
 
 void SceneManager::shift(int layerId, const glm::ivec3& m) {
 	voxel::RawVolume* model = volume(layerId);
-	Log::info("Shift region by %s on layer %i", glm::to_string(m).c_str(), layerId);
+	Log::debug("Shift region by %s on layer %i", glm::to_string(m).c_str(), layerId);
 	const voxel::Region oldRegion = model->region();
 	model->translate(m);
+	_referencePos += m;
+	_modifier.shift(m);
 	_gridRenderer.update(model->region());
-	// shaperenderer?
 	const voxel::Region newRegion = model->region().accumulateCopy(oldRegion);
 	modified(layerId, newRegion);
 }

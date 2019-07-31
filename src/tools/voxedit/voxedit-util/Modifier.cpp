@@ -283,4 +283,12 @@ void Modifier::setCursorVoxel(const voxel::Voxel& voxel) {
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
+void Modifier::shift(const glm::ivec3& v) {
+	_cursorPosition += v;
+	_mirrorPos += v;
+	if (_aabbMode) {
+		_aabbFirstPos += v;
+	}
+}
+
 }
