@@ -291,36 +291,49 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 	return saved;
 }
 
-bool SceneManager::prefab(const std::string& file) {
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file);
-	if (!(bool)filePtr) {
-		Log::error("Failed to open model file %s", file.data());
-		return false;
-	}
-	voxel::RawVolume* newVolume;
-
+bool SceneManager::loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) const {
 	const std::string& ext = filePtr->extension();
 	if (ext == "qbt") {
 		voxel::QBTFormat f;
-		newVolume = f.load(filePtr);
+		newVolumes = f.loadGroups(filePtr);
 	} else if (ext == "vox") {
 		voxel::VoxFormat f;
-		newVolume = f.load(filePtr);
+		newVolumes = f.loadGroups(filePtr);
 	} else if (ext == "qb") {
 		voxel::QBFormat f;
-		newVolume = f.load(filePtr);
+		newVolumes = f.loadGroups(filePtr);
 	} else if (ext == "vxm") {
 		voxel::VXMFormat f;
-		newVolume = f.load(filePtr);
+		newVolumes = f.loadGroups(filePtr);
 	} else {
-		newVolume = nullptr;
-	}
-	if (newVolume == nullptr) {
-		Log::error("Failed to load model file %s", file.c_str());
+		Log::error("Failed to load model file %s - unsupported file format", filePtr->name().c_str());
 		return false;
 	}
-	Log::info("Import model file %s", file.c_str());
-	return _layerMgr.addLayer(file.c_str(), true, newVolume) != -1;
+	if (newVolumes.empty()) {
+		Log::error("Failed to load model file %s", filePtr->name().c_str());
+		return false;
+	}
+	Log::info("Load model file %s with %i layers", filePtr->name().c_str(), (int)newVolumes.size());
+	return true;
+}
+
+bool SceneManager::prefab(const std::string& file) {
+	if (file.empty()) {
+		return false;
+	}
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file);
+	if (!(bool)filePtr) {
+		Log::error("Failed to open model file %s", file.c_str());
+		return false;
+	}
+	voxel::VoxelVolumes newVolumes;
+	if (!loadVolumeFormat(filePtr, newVolumes)) {
+		return false;
+	}
+	for (const auto& v : newVolumes) {
+		_layerMgr.addLayer(v.name.c_str(), v.visible, v.volume, v.pivot);
+	}
+	return true;
 }
 
 bool SceneManager::load(const std::string& file) {
@@ -333,30 +346,11 @@ bool SceneManager::load(const std::string& file) {
 		return false;
 	}
 	voxel::VoxelVolumes newVolumes;
-
+	if (!loadVolumeFormat(filePtr, newVolumes)) {
+		return false;
+	}
 	const std::string& ext = filePtr->extension();
 	_lastFilename = filePtr->fileName() + "." + ext;
-	if (ext == "qbt") {
-		voxel::QBTFormat f;
-		newVolumes = f.loadGroups(filePtr);
-	} else if (ext == "vox") {
-		voxel::VoxFormat f;
-		newVolumes = f.loadGroups(filePtr);
-	} else if (ext == "qb") {
-		voxel::QBFormat f;
-		newVolumes = f.loadGroups(filePtr);
-	} else if (ext == "vxm") {
-		voxel::VXMFormat f;
-		newVolumes = f.loadGroups(filePtr);
-	} else {
-		Log::error("Failed to load model file %s - unsupported file format", file.c_str());
-		return false;
-	}
-	if (newVolumes.empty()) {
-		Log::error("Failed to load model file %s", file.c_str());
-		return false;
-	}
-	Log::info("Load model file %s with %i layers", file.c_str(), (int)newVolumes.size());
 	if (!setNewVolumes(newVolumes)) {
 		return false;
 	}

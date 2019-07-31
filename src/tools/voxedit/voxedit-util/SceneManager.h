@@ -112,6 +112,7 @@ private:
 	voxel::Voxel _hitCursorVoxel;
 
 	voxel::RawVolume* modelVolume();
+	bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) const;
 	bool setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
 	bool setNewVolumes(const voxel::VoxelVolumes& volumes);
 	void autosave();
