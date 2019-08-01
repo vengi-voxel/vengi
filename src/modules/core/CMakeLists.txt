@@ -6,6 +6,7 @@ set(SRCS
 	Assert.h
 	App.cpp App.h
 	AppCommand.cpp AppCommand.h
+	BindingContext.cpp BindingContext.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
 	Common.h

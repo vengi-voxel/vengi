@@ -193,7 +193,7 @@ void Viewport::onProcess() {
 	_controller.update(deltaFrame);
 
 	if (tb::TBWidget::hovered_widget == this) {
-		voxedit::sceneMgr().trace(_controller.camera());
+		voxedit::sceneMgr().trace();
 	}
 
 	video::clearColor(core::Color::Clear);

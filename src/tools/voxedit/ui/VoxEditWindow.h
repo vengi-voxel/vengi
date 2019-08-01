@@ -118,8 +118,8 @@ public:
 	bool isPaletteWidgetDropTarget() const;
 
 	void update();
-	bool isFocused() const;
-	bool isHovered() const;
+	bool isSceneFocused() const;
+	bool isSceneHovered() const;
 	bool isActive() const;
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override;
@@ -128,7 +128,7 @@ public:
 };
 
 inline bool VoxEditWindow::isActive() const {
-	return isFocused() || isHovered();
+	return isSceneFocused() || isSceneHovered();
 }
 
 }

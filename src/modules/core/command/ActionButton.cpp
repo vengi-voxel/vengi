@@ -13,6 +13,9 @@ ActionButton::ActionButton() {
 }
 
 bool ActionButton::handleDown(int32_t key, uint64_t millis) {
+	if (this->bindingContext != BindingContext::All && this->bindingContext != core::bindingContext()) {
+		return false;
+	}
 	for (int i = 0; i < ACTION_BUTTON_KEY_AMOUNT; ++i) {
 		if (key == pressedKeys[i]) {
 			return false;

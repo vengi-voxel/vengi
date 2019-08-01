@@ -79,12 +79,12 @@ void Gizmo::update(const video::Camera& camera, const glm::ivec2& pixelPos) {
 }
 
 bool Gizmo::handleDown(int32_t key, uint64_t pressedMillis) {
-	const bool ret = core::ActionButton::handleDown(key, pressedMillis);
-	if (_buttonMode == GizmoMode::None) {
+	const bool initialDown = core::ActionButton::handleDown(key, pressedMillis);
+	if (initialDown) {
 		_buttonMode = _mode;
 		_buttonLastAction = 0;
 	}
-	return ret;
+	return initialDown;
 }
 
 bool Gizmo::handleUp(int32_t key, uint64_t releasedMillis) {

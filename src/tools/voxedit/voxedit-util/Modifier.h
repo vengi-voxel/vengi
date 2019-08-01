@@ -13,6 +13,7 @@
 #include "math/Axis.h"
 #include "voxel/polyvox/Face.h"
 #include "ModifierType.h"
+#include "ModifierButton.h"
 
 namespace voxedit {
 
@@ -32,12 +33,16 @@ private:
 	voxel::FaceNames _face = voxel::FaceNames::NoOfFaces;
 	voxel::Voxel _cursorVoxel;
 	int32_t _voxelCursorMesh = -1;
+	ModifierButton _actionExecuteButton;
+	ModifierButton _deleteExecuteButton;
 
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 	glm::ivec3 aabbPosition() const;
 	void updateMirrorPlane();
 	void renderAABBMode(const video::Camera& camera);
 public:
+	Modifier();
+
 	void construct() override;
 	bool init() override;
 	void shutdown() override;

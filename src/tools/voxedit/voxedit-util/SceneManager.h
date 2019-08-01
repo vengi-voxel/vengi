@@ -108,6 +108,8 @@ private:
 	int _size = 128;
 	glm::ivec2 _mouseCursor { 0 };
 
+	bool _traceViaMouse = true;
+
 	core::ActionButton _move[lengthof(DIRECTIONS)];
 	uint64_t _lastMove[lengthof(DIRECTIONS)] { 0 };
 
@@ -272,7 +274,7 @@ public:
 
 	void setMousePos(int x, int y);
 
-	bool trace(const video::Camera& camera, bool force = false);
+	bool trace(bool force = false);
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);
@@ -299,6 +301,7 @@ public:
 
 inline void SceneManager::setActiveCamera(video::Camera* camera) {
 	_camera = camera;
+	resetLastTrace();
 }
 
 inline voxelrender::RawVolumeRenderer& SceneManager::renderer() {

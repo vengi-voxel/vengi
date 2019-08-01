@@ -10,10 +10,11 @@
 #include "Assert.h"
 #include "Var.h"
 #include "metric/Metric.h"
-#include "core/Trace.h"
+#include "Trace.h"
 #include "EventBus.h"
 #include "TimeProvider.h"
-#include "core/ThreadPool.h"
+#include "ThreadPool.h"
+#include "BindingContext.h"
 #include <stack>
 #include <atomic>
 
@@ -85,6 +86,8 @@ protected:
 
 	std::string _organisation;
 	std::string _appname;
+
+	BindingContext _bindingContext = BindingContext::All;
 
 	AppState _curState = AppState::Construct;
 	AppState _nextState = AppState::InvalidAppState;
@@ -299,6 +302,20 @@ public:
 
 	const std::string& currentWorkingDir() const;
 
+	/**
+	 * @brief Allows to change the binding context. This can be used to e.g. ignore some commands while hovering
+	 * the ui and they should only be active if the scene has the focus.
+	 * @return the old context
+	 * @sa bindingContext()
+	 */
+	BindingContext setBindingContext(BindingContext newInputContext);
+
+	/**
+	 * @brief Get the current binding context
+	 * @sa setBindingContext() for more details.
+	 */
+	BindingContext bindingContext() const;
+
 	static App* getInstance() {
 		core_assert(_staticInstance != nullptr);
 		return _staticInstance;
@@ -381,6 +398,10 @@ inline core::EventBusPtr App::eventBus() const {
 
 inline const std::string& App::appname() const {
 	return _appname;
+}
+
+inline BindingContext App::bindingContext() const {
+	return _bindingContext;
 }
 
 }

@@ -1,7 +1,12 @@
 set(SRCS
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
+
+	CustomBindingContext.h
+
 	Modifier.h Modifier.cpp
+	ModifierType.h
+	ModifierButton.h ModifierButton.cpp
 
 	LayerManager.h LayerManager.cpp
 	LayerListener.h

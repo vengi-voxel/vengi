@@ -301,14 +301,14 @@ bool VoxEditWindow::isPaletteWidgetDropTarget() const {
 	return tb::TBWidget::hovered_widget == _paletteWidget;
 }
 
-bool VoxEditWindow::isFocused() const {
+bool VoxEditWindow::isSceneFocused() const {
 	return tb::TBWidget::focused_widget == _scene
 			|| tb::TBWidget::focused_widget == _sceneTop
 			|| tb::TBWidget::focused_widget == _sceneLeft
 			|| tb::TBWidget::focused_widget == _sceneFront;
 }
 
-bool VoxEditWindow::isHovered() const {
+bool VoxEditWindow::isSceneHovered() const {
 	return tb::TBWidget::hovered_widget == _scene
 			|| tb::TBWidget::hovered_widget == _sceneTop
 			|| tb::TBWidget::hovered_widget == _sceneLeft
@@ -708,42 +708,6 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.type == tb::EVENT_TYPE_COMMAND) {
 		_lastExecutedCommand = ev.string;
 		return true;
-	} else if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
-		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
-			if (ev.button_type == tb::TB_LEFT || ev.button_type == tb::TB_RIGHT) {
-				Modifier& mgr = sceneMgr().modifier();
-				if (ev.button_type == tb::TB_RIGHT) {
-					_modBeforeMouse = mgr.modifierType();
-					mgr.setModifierType(ModifierType::Delete);
-					sceneMgr().trace(viewport->camera(), true);
-				}
-				mgr.aabbStart();
-				return true;
-			}
-		}
-	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
-		// TODO: move into command to be able to bind this
-		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
-			Modifier& mgr = sceneMgr().modifier();
-			LayerManager& layerMgr = sceneMgr().layerMgr();
-			layerMgr.foreachGroupLayer([&] (int layerId) {
-				voxel::RawVolume* volume = sceneMgr().volume(layerId);
-				mgr.aabbAction(volume, [&] (const voxel::Region& region, ModifierType type) {
-					sceneMgr().modified(layerId, region);
-				});
-			});
-			if (_modBeforeMouse != ModifierType::None) {
-				mgr.setModifierType(_modBeforeMouse);
-				sceneMgr().trace(viewport->camera(), true);
-				_modBeforeMouse = ModifierType::None;
-			} else {
-				tb::TBWidgetEvent evCmd(tb::EVENT_TYPE_COMMAND);
-				evCmd.string = "+actionexecute";
-				invokeEvent(evCmd);
-			}
-			mgr.aabbStop();
-			return true;
-		}
 	} else if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (handleClickEvent(ev)) {
 			return true;
@@ -851,8 +815,8 @@ bool VoxEditWindow::importMesh(const std::string& file) {
 	}
 
 	_voxelizeFile = file;
-	popup("Unsaved Modifications",
-			"There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?",
+	popup(tr("Unsaved Modifications"),
+			tr("There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?"),
 			PopupType::YesNo, "unsaved_changes_voxelize");
 	return true;
 }

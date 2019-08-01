@@ -13,6 +13,10 @@
 
 namespace voxedit {
 
+Modifier::Modifier() :
+		_deleteExecuteButton(ModifierType::Delete) {
+}
+
 void Modifier::setModifierType(ModifierType type) {
 	_modifierType = type;
 }
@@ -157,6 +161,8 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 }
 
 void Modifier::construct() {
+	core::Command::registerActionButton("actionexecute", _actionExecuteButton);
+	core::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton);
 	core::Command::registerCommand("actiondelete", [&] (const core::CmdArgs& args) {
 		setModifierType(ModifierType::Delete);
 	}).setHelp("Change the modifier type to 'delete'");
@@ -188,21 +194,6 @@ void Modifier::construct() {
 	core::Command::registerCommand("mirrornone", [&] (const core::CmdArgs& args) {
 		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
 	}).setHelp("Disable mirror axis");
-
-	core::Command::registerCommand("+actionexecute", [&] (const core::CmdArgs& args) {
-		aabbStart();
-	}).setHelp("Place a voxel to the current cursor position - end with -actionexecute");
-
-	core::Command::registerCommand("-actionexecute", [&] (const core::CmdArgs& args) {
-		LayerManager& layerMgr = sceneMgr().layerMgr();
-		layerMgr.foreachGroupLayer([&] (int layerId) {
-			voxel::RawVolume* volume = sceneMgr().volume(layerId);
-			aabbAction(volume, [&] (const voxel::Region& region, ModifierType type) {
-				sceneMgr().modified(layerId, region);
-			});
-		});
-		aabbStop();
-	}).setHelp("Place a voxel to the current cursor position - start with +actionexecute");
 }
 
 bool Modifier::init() {

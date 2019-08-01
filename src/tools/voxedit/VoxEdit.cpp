@@ -10,6 +10,7 @@
 #include "video/Renderer.h"
 #include "ui/VoxEditWindow.h"
 #include "io/Filesystem.h"
+#include "voxedit-util/CustomBindingContext.h"
 
 VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		Super(metric, filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool), _sceneMgr(voxedit::sceneMgr()) {
@@ -211,6 +212,8 @@ core::AppState VoxEdit::onInit() {
 
 	setRelativeMouseMode(false);
 
+	core::setBindingContext(voxedit::BindingContext::UI);
+
 	return state;
 }
 
@@ -221,6 +224,12 @@ core::AppState VoxEdit::onRunning() {
 	}
 	voxedit::sceneMgr().update(_now);
 	_mainWindow->update();
+	const bool isSceneHovered = _mainWindow->isSceneHovered();
+	if (isSceneHovered) {
+		core::setBindingContext(voxedit::BindingContext::Scene);
+	} else {
+		core::setBindingContext(voxedit::BindingContext::UI);
+	}
 	return state;
 }
 

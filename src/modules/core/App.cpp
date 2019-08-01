@@ -651,4 +651,13 @@ const std::string& App::currentWorkingDir() const {
 	return _filesystem->basePath();
 }
 
+BindingContext App::setBindingContext(BindingContext newContext) {
+	if (_bindingContext == newContext) {
+		return newContext;
+	}
+	std::swap(_bindingContext, newContext);
+	Log::debug("Set the input context to %i (from %i)", (int)_bindingContext, (int)newContext);
+	return newContext;
+}
+
 }

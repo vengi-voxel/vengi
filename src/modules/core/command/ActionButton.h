@@ -5,10 +5,11 @@
 #pragma once
 
 #include <stdint.h>
+#include "core/BindingContext.h"
 
 namespace core {
 
-static constexpr int ACTION_BUTTON_KEY_AMOUNT = 2;
+static constexpr int ACTION_BUTTON_KEY_AMOUNT = 10;
 static constexpr int ACTION_BUTTON_NO_KEY = 0;
 static constexpr int ACTION_BUTTON_ALL_KEYS = -1;
 
@@ -33,6 +34,8 @@ struct ActionButton {
 	 */
 	uint32_t durationMillis = 0;
 
+	BindingContext bindingContext = BindingContext::All;
+
 	ActionButton();
 	virtual ~ActionButton() {}
 
@@ -47,7 +50,7 @@ struct ActionButton {
 	virtual bool handleDown(int32_t key, uint64_t pressedMillis);
 	/**
 	 * @param[in] key If @c -1 is given here, everything is released
-	 * @return @c true if the action button was completly released
+	 * @return @c true if the action button was completely released
 	 */
 	virtual bool handleUp(int32_t key, uint64_t releasedMillis);
 };

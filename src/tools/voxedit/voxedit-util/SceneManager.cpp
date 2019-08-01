@@ -43,6 +43,7 @@
 #include "io/Filesystem.h"
 
 #include "AxisUtil.h"
+#include "CustomBindingContext.h"
 #include "Config.h"
 #include "tool/Crop.h"
 #include "tool/Resize.h"
@@ -362,8 +363,12 @@ bool SceneManager::load(const std::string& file) {
 }
 
 void SceneManager::setMousePos(int x, int y) {
+	if (_mouseCursor.x == x && _mouseCursor.y == y) {
+		return;
+	}
 	_mouseCursor.x = x;
 	_mouseCursor.y = y;
+	_traceViaMouse = true;
 }
 
 void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo) {
@@ -484,6 +489,9 @@ void SceneManager::redo() {
 }
 
 void SceneManager::resetLastTrace() {
+	if (!_traceViaMouse) {
+		return;
+	}
 	_lastRaytraceX = _lastRaytraceY = -1;
 }
 
@@ -718,6 +726,7 @@ void SceneManager::construct() {
 	_volumeRenderer.construct();
 
 	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
+		_move[i].bindingContext = (core::BindingContext)voxedit::BindingContext::Scene;
 		core::Command::registerActionButton(
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
 				_move[i]);
@@ -955,8 +964,12 @@ void SceneManager::construct() {
 	}).setHelp("Set the current selected color by finding the closest rgb match in the palette");
 
 	core::Command::registerCommand("pickcolor", [&] (const core::CmdArgs& args) {
-		if (!voxel::isAir(_hitCursorVoxel.getMaterial())) {
-			_modifier.setCursorVoxel(_hitCursorVoxel);
+		// resolve the voxel via cursor position. This allows to use also get the proper
+		// result if we moved the cursor via keys (and thus might have skipped tracing)
+		const glm::ivec3& cursorPos = _modifier.cursorPosition();
+		const voxel::Voxel& voxel = modelVolume()->voxel(cursorPos);
+		if (!voxel::isAir(voxel.getMaterial())) {
+			_modifier.setCursorVoxel(voxel);
 		}
 	}).setHelp("Pick the current selected color from current cursor voxel");
 }
@@ -1204,6 +1217,8 @@ void SceneManager::moveCursor(int x, int y, int z) {
 	p.y += y * res;
 	p.z += z * res;
 	setCursorPosition(p, true);
+	_hitCursorVoxel = modelVolume()->voxel(cursorPosition());
+	_traceViaMouse = false;
 }
 
 void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
@@ -1263,88 +1278,98 @@ void SceneManager::setRenderShadow(bool shadow) {
 	_renderShadow = shadow;
 }
 
-bool SceneManager::trace(const video::Camera& camera, bool force) {
+bool SceneManager::trace(bool force) {
+	if (!_traceViaMouse) {
+		return false;
+	}
+	if (_lastRaytraceX == _mouseCursor.x && _lastRaytraceY == _mouseCursor.y && !force) {
+		return true;
+	}
+	if (_camera == nullptr) {
+		return false;
+	}
 	const voxel::RawVolume* model = modelVolume();
 	if (model == nullptr) {
 		return false;
 	}
 
-	if (_lastRaytraceX != _mouseCursor.x || _lastRaytraceY != _mouseCursor.y || force) {
-		core_trace_scoped(EditorSceneOnProcessUpdateRay);
-		_lastRaytraceX = _mouseCursor.x;
-		_lastRaytraceY = _mouseCursor.y;
+	Log::debug("Execute new trace for %i:%i (%i:%i)",
+			_mouseCursor.x, _mouseCursor.y, _lastRaytraceX, _lastRaytraceY);
 
-		const video::Ray& ray = camera.mouseRay(_mouseCursor);
-		const glm::vec3& dirWithLength = ray.direction * camera.farPlane();
-		static constexpr voxel::Voxel air;
+	core_trace_scoped(EditorSceneOnProcessUpdateRay);
+	_lastRaytraceX = _mouseCursor.x;
+	_lastRaytraceY = _mouseCursor.y;
 
-		_result.didHit = false;
-		_result.validPreviousPosition = false;
-		_result.direction = ray.direction;
-		_result.hitFace = voxel::FaceNames::NoOfFaces;
-		raycastWithDirection(model, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
-			if (sampler.voxel() != air) {
-				_result.didHit = true;
-				_result.hitVoxel = sampler.position();
-				if (_result.validPreviousPosition) {
-					const glm::ivec3& dir = _result.previousPosition - _result.hitVoxel;
-					if (dir.x < 0) {
-						_result.hitFace = voxel::FaceNames::NegativeX;
-					} else if (dir.x > 0) {
-						_result.hitFace = voxel::FaceNames::PositiveX;
-					} else if (dir.y < 0) {
-						_result.hitFace = voxel::FaceNames::NegativeY;
-					} else if (dir.y > 0) {
-						_result.hitFace = voxel::FaceNames::PositiveY;
-					} else if (dir.z < 0) {
-						_result.hitFace = voxel::FaceNames::NegativeZ;
-					} else if (dir.z > 0) {
-						_result.hitFace = voxel::FaceNames::PositiveZ;
+	const video::Ray& ray = _camera->mouseRay(_mouseCursor);
+	const glm::vec3& dirWithLength = ray.direction * _camera->farPlane();
+	static constexpr voxel::Voxel air;
+
+	_result.didHit = false;
+	_result.validPreviousPosition = false;
+	_result.direction = ray.direction;
+	_result.hitFace = voxel::FaceNames::NoOfFaces;
+	raycastWithDirection(model, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
+		if (sampler.voxel() != air) {
+			_result.didHit = true;
+			_result.hitVoxel = sampler.position();
+			if (_result.validPreviousPosition) {
+				const glm::ivec3& dir = _result.previousPosition - _result.hitVoxel;
+				if (dir.x < 0) {
+					_result.hitFace = voxel::FaceNames::NegativeX;
+				} else if (dir.x > 0) {
+					_result.hitFace = voxel::FaceNames::PositiveX;
+				} else if (dir.y < 0) {
+					_result.hitFace = voxel::FaceNames::NegativeY;
+				} else if (dir.y > 0) {
+					_result.hitFace = voxel::FaceNames::PositiveY;
+				} else if (dir.z < 0) {
+					_result.hitFace = voxel::FaceNames::NegativeZ;
+				} else if (dir.z > 0) {
+					_result.hitFace = voxel::FaceNames::PositiveZ;
+				}
+			}
+			return false;
+		}
+		if (sampler.currentPositionValid()) {
+			if (_lockedAxis != math::Axis::None) {
+				const glm::ivec3& cursorPos = cursorPosition();
+				if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
+					if (sampler.position()[0] == cursorPos[0]) {
+						return false;
 					}
 				}
-				return false;
-			}
-			if (sampler.currentPositionValid()) {
-				if (_lockedAxis != math::Axis::None) {
-					const glm::ivec3& cursorPos = cursorPosition();
-					if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
-						if (sampler.position()[0] == cursorPos[0]) {
-							return false;
-						}
-					}
-					if ((_lockedAxis & math::Axis::Y) != math::Axis::None) {
-						if (sampler.position()[1] == cursorPos[1]) {
-							return false;
-						}
-					}
-					if ((_lockedAxis & math::Axis::Z) != math::Axis::None) {
-						if (sampler.position()[2] == cursorPos[2]) {
-							return false;
-						}
+				if ((_lockedAxis & math::Axis::Y) != math::Axis::None) {
+					if (sampler.position()[1] == cursorPos[1]) {
+						return false;
 					}
 				}
-
-				_result.validPreviousPosition = true;
-				_result.previousPosition = sampler.position();
+				if ((_lockedAxis & math::Axis::Z) != math::Axis::None) {
+					if (sampler.position()[2] == cursorPos[2]) {
+						return false;
+					}
+				}
 			}
-			return true;
-		});
 
-		if (_modifier.modifierTypeRequiresExistingVoxel()) {
-			if (_result.didHit) {
-				setCursorPosition(_result.hitVoxel);
-			} else if (_result.validPreviousPosition) {
-				setCursorPosition(_result.previousPosition);
-			}
+			_result.validPreviousPosition = true;
+			_result.previousPosition = sampler.position();
+		}
+		return true;
+	});
+
+	if (_modifier.modifierTypeRequiresExistingVoxel()) {
+		if (_result.didHit) {
+			setCursorPosition(_result.hitVoxel);
 		} else if (_result.validPreviousPosition) {
 			setCursorPosition(_result.previousPosition);
-		} else if (_result.didHit) {
-			setCursorPosition(_result.hitVoxel);
 		}
+	} else if (_result.validPreviousPosition) {
+		setCursorPosition(_result.previousPosition);
+	} else if (_result.didHit) {
+		setCursorPosition(_result.hitVoxel);
+	}
 
-		if (_result.didHit) {
-			_hitCursorVoxel = model->voxel(_result.hitVoxel);
-		}
+	if (_result.didHit) {
+		_hitCursorVoxel = model->voxel(_result.hitVoxel);
 	}
 
 	return true;
