@@ -482,7 +482,11 @@ core::AppState UIApp::onRunning() {
 	_lastShowTextY = 5;
 
 	if (!_console.isActive()) {
-		_root->invokePointerMove(_mousePos.x, _mousePos.y, getModifierKeys(), tb::TB_UNKNOWN);
+		static glm::ivec2 lastMousePos = _mousePos;
+		if (lastMousePos != _mousePos) {
+			_root->invokePointerMove(_mousePos.x, _mousePos.y, getModifierKeys(), tb::TB_UNKNOWN);
+			lastMousePos = _mousePos;
+		}
 	}
 
 	const bool running = state == core::AppState::Running;
