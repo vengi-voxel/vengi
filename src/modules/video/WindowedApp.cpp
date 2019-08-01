@@ -17,6 +17,7 @@
 #include "core/Singleton.h"
 #include "ShaderManager.h"
 #include "util/KeybindingHandler.h"
+#include "util/KeybindingParser.h"
 
 namespace video {
 
@@ -107,6 +108,10 @@ core::AppState WindowedApp::onRunning() {
 }
 
 bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
+	return handleKeyRelease(key, modifier);
+}
+
+bool WindowedApp::handleKeyRelease(int32_t key, int16_t modifier) {
 	bool handled = false;
 	int16_t code = 0;
 	switch (key) {
@@ -163,19 +168,7 @@ bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
 	return handled;
 }
 
-bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
-	if (modifier & KMOD_LALT) {
-		if (key == SDLK_RETURN) {
-			const int flags = SDL_GetWindowFlags(_window);
-			if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
-				SDL_SetWindowFullscreen(_window, 0);
-			} else {
-				SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-			}
-			return true;
-		}
-	}
-
+bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier) {
 	_keys.insert(key);
 
 	int16_t code = 0;
@@ -235,6 +228,33 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 	if (!util::executeCommandsForBinding(_bindings, key, modifier, _now)) {
 		return util::executeCommandsForBinding(_bindings, key, 0, _now);
 	}
+	return true;
+}
+
+void WindowedApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+	if (clicks > 1) {
+		return;
+	}
+	handleKeyPress(CUSTOM_SDL_KEYCODE(button), SDL_GetModState());
+}
+
+void WindowedApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
+	handleKeyRelease(CUSTOM_SDL_KEYCODE(button), SDL_GetModState());
+}
+
+bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
+	if (modifier & KMOD_LALT) {
+		if (key == SDLK_RETURN) {
+			const int flags = SDL_GetWindowFlags(_window);
+			if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+				SDL_SetWindowFullscreen(_window, 0);
+			} else {
+				SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+			}
+			return true;
+		}
+	}
+	handleKeyPress(key, modifier);
 	return true;
 }
 

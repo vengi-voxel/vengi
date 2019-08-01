@@ -47,6 +47,8 @@ protected:
 	WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	bool loadKeyBindings(const std::string& filename = "keybindings.cfg");
+	bool handleKeyPress(int32_t key, int16_t modifier);
+	bool handleKeyRelease(int32_t key, int16_t modifier);
 
 	virtual ~WindowedApp();
 
@@ -118,6 +120,8 @@ public:
 
 	virtual core::AppState onRunning() override;
 	virtual void onAfterRunning() override;
+	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
+	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual core::AppState onConstruct() override;

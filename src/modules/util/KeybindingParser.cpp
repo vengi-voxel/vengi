@@ -39,8 +39,17 @@ void KeybindingParser::parseKeyAndCommand(std::string key, const std::string& co
 		}
 	}
 
+	SDL_Keycode keyCode;
 	key = core::string::replaceAll(key, "_", " ");
-	const SDL_Keycode keyCode = SDL_GetKeyFromName(key.c_str());
+	if (key == "lmb") {
+		keyCode = CUSTOM_SDLK_MOUSE_LEFT;
+	} else if (key == "rmb") {
+		keyCode = CUSTOM_SDLK_MOUSE_RIGHT;
+	} else if (key == "mmb") {
+		keyCode = CUSTOM_SDLK_MOUSE_MIDDLE;
+	} else {
+		keyCode = SDL_GetKeyFromName(key.c_str());
+	}
 	if (keyCode == SDLK_UNKNOWN) {
 		Log::warn("could not get a valid key code for %s (skip binding for %s)", key.c_str(), command.c_str());
 		++_invalidBindings;

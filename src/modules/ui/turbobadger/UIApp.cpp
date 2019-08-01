@@ -293,6 +293,7 @@ void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t cli
 	}
 
 	_root->invokePointerDown(x, y, clicks, modKeys, type);
+	Super::onMouseButtonPress(x, y, button, clicks);
 }
 
 tb::MODIFIER_KEYS UIApp::getModifierKeys() const {
@@ -327,6 +328,7 @@ void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 	} else {
 		_root->invokePointerUp(x, y, modKeys, type);
 	}
+	Super::onMouseButtonRelease(x, y, button);
 }
 
 bool UIApp::onTextInput(const std::string& text) {
