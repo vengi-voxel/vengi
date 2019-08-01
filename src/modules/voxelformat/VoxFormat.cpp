@@ -587,7 +587,7 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 				wrap(stream.readFloat(materialPropertyValue))
 			}
 #endif
-		} else if (chunkId == FourCC('R','G','B','A') || chunkId == FourCC('S','I','Z','E') || chunkId == FourCC('X','Y','Z','I')) {
+		} else if (chunkId == FourCC('R','G','B','A') || chunkId == FourCC('S','I','Z','E') || chunkId == FourCC('X','Y','Z','I') || chunkId == FourCC('n','S','H','P')) {
 			// already loaded
 		} else if (chunkId == FourCC('L','A','Y','R')) {
 			// https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
