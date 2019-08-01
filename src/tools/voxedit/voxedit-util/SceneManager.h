@@ -154,7 +154,7 @@ private:
 
 	void shift(int layerId, const glm::ivec3& m);
 	void shift(int x, int y, int z);
-	void executeGizmoAction(const glm::ivec3& delta, render::Gizmo::Mode mode);
+	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
 
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);

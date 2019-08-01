@@ -25,7 +25,7 @@ void Gizmo::render(const video::Camera& camera) {
 	_axis.render(camera);
 }
 
-Gizmo::Mode Gizmo::mode() const {
+GizmoMode Gizmo::mode() const {
 	return _mode;
 }
 
@@ -64,44 +64,48 @@ void Gizmo::update(const video::Camera& camera, const glm::ivec2& pixelPos) {
 
 	const float distanceToLine = 0.2f;
 	if (distanceX < distanceY && distanceX < distanceZ && distanceX < distanceToLine) {
-		_mode = Mode::TranslateX;
+		_mode = GizmoMode::TranslateX;
 		_axis.setSize(40.0f, 20.0f, 20.0f);
 	} else if (distanceY < distanceX && distanceY < distanceZ && distanceY < distanceToLine) {
-		_mode = Mode::TranslateY;
+		_mode = GizmoMode::TranslateY;
 		_axis.setSize(20.0f, 40.0f, 20.0f);
 	} else if (distanceZ < distanceX && distanceZ < distanceY && distanceZ < distanceToLine) {
-		_mode = Mode::TranslateZ;
+		_mode = GizmoMode::TranslateZ;
 		_axis.setSize(20.0f, 20.0f, 40.0f);
 	} else {
-		_mode = Mode::None;
+		_mode = GizmoMode::None;
 		_axis.setSize(20.0f, 20.0f, 20.0f);
 	}
 }
 
 bool Gizmo::handleDown(int32_t key, uint64_t pressedMillis) {
 	const bool ret = core::ActionButton::handleDown(key, pressedMillis);
-	_buttonMode = _mode;
+	if (_buttonMode == GizmoMode::None) {
+		_buttonMode = _mode;
+		_buttonLastAction = 0;
+	}
 	return ret;
 }
 
 bool Gizmo::handleUp(int32_t key, uint64_t releasedMillis) {
-	const bool ret = core::ActionButton::handleUp(key, pressedMillis);
-	_buttonMode = render::Gizmo::Mode::None;
+	const bool ret = core::ActionButton::handleUp(key, releasedMillis);
+	_buttonMode = GizmoMode::None;
+	_buttonLastPosition = glm::zero<glm::ivec3>();
 	return ret;
 }
 
-bool Gizmo::execute(uint64_t time, std::function<glm::ivec3(const glm::ivec3, render::Gizmo::Mode)> function) {
+bool Gizmo::execute(uint64_t time, std::function<glm::ivec3(const glm::ivec3, GizmoMode)> callback) {
 	if (!pressed()) {
 		return false;
 	}
-	if (_buttonMode == render::Gizmo::Mode::None) {
+	if (_buttonMode == GizmoMode::None) {
 		return false;
 	}
-	if (time - _buttonLastAction < 125ul) {
+	if (time - _buttonLastAction < 500ul) {
 		return false;
 	}
 	_buttonLastAction = time;
-	_buttonLastPosition = function(_buttonLastPosition, _buttonMode);
+	_buttonLastPosition = callback(_buttonLastPosition, _buttonMode);
 	return true;
 }
 

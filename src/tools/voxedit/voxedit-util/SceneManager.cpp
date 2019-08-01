@@ -13,6 +13,7 @@
 #include "voxel/polyvox/RawVolumeWrapper.h"
 #include "voxel/polyvox/RawVolumeMoveWrapper.h"
 #include "voxel/polyvox/Mesh.h"
+#include "voxel/polyvox/Picking.h"
 #include "voxel/polyvox/Face.h"
 #include "voxel/generator/CloudGenerator.h"
 #include "voxel/generator/CactusGenerator.h"
@@ -48,6 +49,7 @@
 #include "tool/ImageUtils.h"
 
 #include <set>
+#include <limits>
 
 #define VOXELIZER_IMPLEMENTATION
 #include "voxelizer.h"
@@ -647,16 +649,17 @@ void SceneManager::shift(int x, int y, int z) {
 	});
 }
 
-void SceneManager::executeGizmoAction(const glm::ivec3& delta, render::Gizmo::Mode mode) {
-	if (mode == render::Gizmo::Mode::TranslateX) {
+void SceneManager::executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode) {
+	// TODO: memento state at pressing and releasing
+	if (mode == render::GizmoMode::TranslateX) {
 		if (delta.x != 0) {
 			shift(delta.x, 0, 0);
 		}
-	} else if (mode == render::Gizmo::Mode::TranslateY) {
+	} else if (mode == render::GizmoMode::TranslateY) {
 		if (delta.y != 0) {
 			shift(0, delta.y, 0);
 		}
-	} else if (mode == render::Gizmo::Mode::TranslateZ) {
+	} else if (mode == render::GizmoMode::TranslateZ) {
 		if (delta.z != 0) {
 			shift(0, 0, delta.z);
 		}
@@ -1043,13 +1046,15 @@ void SceneManager::update(const video::Camera& camera, uint64_t time) {
 	}
 
 	_gizmo.update(camera, _mouseCursor);
-	_gizmo.execute(time, [&] (const glm::ivec3& lastPos, render::Gizmo::Mode mode) {
-		// TODO: using the 2d mouse position is crap of course - but atm I don't have access to the viewport camera here
-		const glm::ivec3 mp(_mouseCursor.x, _mouseCursor.y, _mouseCursor.y);
-		const glm::ivec3 deltaMovement = mp - lastPos;
-		// TODO: memento state at pressing and releasing
+	_gizmo.execute(time, [&] (const glm::ivec3& lastPos, render::GizmoMode mode) {
+		const video::Ray& ray = camera.screenRay(_mouseCursor);
+		const glm::ivec3 rayPosFarPlane(ray.origin + ray.direction * 100.0f);
+		if (lastPos == glm::zero<glm::ivec3>()) {
+			return rayPosFarPlane;
+		}
+		const glm::ivec3 deltaMovement = rayPosFarPlane - lastPos;
 		executeGizmoAction(deltaMovement, mode);
-		return mp;
+		return glm::zero<glm::ivec3>();
 	});
 	if (_ambientColor->isDirty()) {
 		_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
