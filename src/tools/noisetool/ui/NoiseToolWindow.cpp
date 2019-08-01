@@ -285,7 +285,7 @@ void NoiseToolWindow::update() {
 
 	const int n = _select->getSource()->getNumItems();
 	_select->setValue(n - 1);
-	Log::info("Generating noise for %s took %lums", getNoiseTypeName(data.noiseType), data.endmillis - data.millis);
+	Log::info("Generating noise for %s took %" SDL_PRIu64 "ms", getNoiseTypeName(data.noiseType), data.endmillis - data.millis);
 	delete [] qd.noiseBuffer;
 	delete [] qd.graphBuffer;
 }

@@ -31,9 +31,9 @@ bool EntityStorage::removeUser(EntityId userId) {
 	}
 	_users.erase(i);
 	i->second->shutdown();
-	const long count = i->second.use_count();
+	const uint64_t count = i->second.use_count();
 	if (count != 1) {
-		Log::warn("Someone is still holding a reference to the user object: %" PRId64, count);
+		Log::warn("Someone is still holding a reference to the user object: %" SDL_PRIu64, count);
 	}
 	return true;
 }
@@ -76,10 +76,10 @@ bool EntityStorage::removeNpc(EntityId id) {
 		return false;
 	}
 	_npcs.erase(i);
-	const long count = i->second.use_count();
+	const uint64_t count = i->second.use_count();
 	i->second->shutdown();
 	if (count != 1) {
-		Log::warn("Someone is still holding a reference to the npc object: %" PRId64, count);
+		Log::warn("Someone is still holding a reference to the npc object: %" SDL_PRIu64, count);
 	}
 	return true;
 }
