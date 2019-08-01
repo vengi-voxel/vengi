@@ -42,6 +42,7 @@ public:
 	virtual bool onEvent(const tb::TBWidgetEvent &ev) override;
 	virtual void onPaint(const PaintProps &paintProps) override;
 	virtual void onResized(int oldw, int oldh) override;
+	virtual void onFocusChanged(bool focused) override;
 };
 
 inline voxedit::Controller& Viewport::controller() {

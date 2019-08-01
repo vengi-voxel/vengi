@@ -117,7 +117,7 @@ public:
 	bool isLayerWidgetDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
 
-	void update(uint64_t time);
+	void update();
 	bool isFocused() const;
 	bool isHovered() const;
 	bool isActive() const;

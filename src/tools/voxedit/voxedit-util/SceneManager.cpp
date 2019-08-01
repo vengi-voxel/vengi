@@ -1032,7 +1032,7 @@ void SceneManager::animate(uint64_t time) {
 	}
 }
 
-void SceneManager::update(const video::Camera& camera, uint64_t time) {
+void SceneManager::update(uint64_t time) {
 	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
 			continue;
@@ -1045,17 +1045,19 @@ void SceneManager::update(const video::Camera& camera, uint64_t time) {
 		_lastMove[i] = time;
 	}
 
-	_gizmo.update(camera, _mouseCursor);
-	_gizmo.execute(time, [&] (const glm::ivec3& lastPos, render::GizmoMode mode) {
-		const video::Ray& ray = camera.screenRay(_mouseCursor);
-		const glm::ivec3 rayPosFarPlane(ray.origin + ray.direction * 100.0f);
-		if (lastPos == glm::zero<glm::ivec3>()) {
-			return rayPosFarPlane;
-		}
-		const glm::ivec3 deltaMovement = rayPosFarPlane - lastPos;
-		executeGizmoAction(deltaMovement, mode);
-		return glm::zero<glm::ivec3>();
-	});
+	if (_camera != nullptr) {
+		_gizmo.update(*_camera, _mouseCursor);
+		_gizmo.execute(time, [&] (const glm::ivec3& lastPos, render::GizmoMode mode) {
+			const video::Ray& ray = _camera->screenRay(_mouseCursor);
+			const glm::ivec3 rayPosFarPlane(ray.origin + ray.direction * 100.0f);
+			if (lastPos == glm::zero<glm::ivec3>()) {
+				return rayPosFarPlane;
+			}
+			const glm::ivec3 deltaMovement = rayPosFarPlane - lastPos;
+			executeGizmoAction(deltaMovement, mode);
+			return glm::zero<glm::ivec3>();
+		});
+	}
 	if (_ambientColor->isDirty()) {
 		_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
 		_ambientColor->markClean();

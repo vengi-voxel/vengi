@@ -72,6 +72,13 @@ bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
 	return Super::onEvent(ev);
 }
 
+void Viewport::onFocusChanged(bool focused) {
+	if (!focused) {
+		return;
+	}
+	voxedit::sceneMgr().setActiveCamera(&_controller.camera());
+}
+
 void Viewport::onResized(int oldw, int oldh) {
 	core_trace_scoped(EditorSceneOnResized);
 	Super::onResized(oldw, oldh);

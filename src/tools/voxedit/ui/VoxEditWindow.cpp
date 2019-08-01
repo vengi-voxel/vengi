@@ -276,7 +276,7 @@ void VoxEditWindow::updateStatusBar() {
 	}
 }
 
-void VoxEditWindow::update(uint64_t time) {
+void VoxEditWindow::update() {
 	updateStatusBar();
 	_scene->update();
 	if (_sceneTop != nullptr) {
@@ -291,16 +291,6 @@ void VoxEditWindow::update(uint64_t time) {
 	if (_paletteWidget != nullptr) {
 		_paletteWidget->setVoxelColor(sceneMgr().hitCursorVoxel().getColor());
 	}
-
-	const video::Camera* camera = &_scene->camera();
-	if (_sceneTop->getIsFocused()) {
-		camera = &_sceneTop->camera();
-	} else if (_sceneLeft->getIsFocused()) {
-		camera = &_sceneLeft->camera();
-	} else if (_sceneFront->getIsFocused()) {
-		camera = &_sceneFront->camera();
-	}
-	sceneMgr().update(*camera, time);
 }
 
 bool VoxEditWindow::isLayerWidgetDropTarget() const {
@@ -732,6 +722,7 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			}
 		}
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
+		// TODO: move into command to be able to bind this
 		if (Viewport* viewport = ev.target->safeCastTo<Viewport>()) {
 			Modifier& mgr = sceneMgr().modifier();
 			LayerManager& layerMgr = sceneMgr().layerMgr();

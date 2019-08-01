@@ -61,6 +61,10 @@ private:
 	LayerManager _layerMgr;
 	Modifier _modifier;
 	render::Gizmo _gizmo;
+	/**
+	 * The @c video::Camera instance of the currently active @c Viewport
+	 */
+	video::Camera* _camera = nullptr;
 
 	int32_t _referencePointMesh = -1;
 
@@ -165,6 +169,8 @@ public:
 	void resetLastTrace();
 	voxel::Region region() const;
 
+	void setActiveCamera(video::Camera* camera);
+
 	const voxel::Voxel& hitCursorVoxel() const;
 
 	const glm::ivec3& cursorPosition() const;
@@ -180,7 +186,7 @@ public:
 
 	void construct() override;
 	bool init() override;
-	void update(const video::Camera& camera, uint64_t time);
+	void update(uint64_t time);
 	void shutdown() override;
 
 	voxelrender::RawVolumeRenderer& renderer();
@@ -290,6 +296,10 @@ public:
 	void onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume, const voxel::Region& region) override;
 	void onLayerDeleted(int layerId, const Layer& layer) override;
 };
+
+inline void SceneManager::setActiveCamera(video::Camera* camera) {
+	_camera = camera;
+}
 
 inline voxelrender::RawVolumeRenderer& SceneManager::renderer() {
 	return _volumeRenderer;
