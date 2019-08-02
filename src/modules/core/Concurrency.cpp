@@ -15,6 +15,9 @@
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#elif defined(__WINDOWS__)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #endif
 
 namespace core {
@@ -26,6 +29,21 @@ void setThreadName(const char *name) {
 	ppthread_setname_np = (int(*)(pthread_t, const char*)) fn;
 	if (ppthread_setname_np != nullptr) {
 		ppthread_setname_np(pthread_self(), name);
+	}
+#elif defined(__WINDOWS__)
+	typedef HRESULT (WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
+	static pfnSetThreadDescription pSetThreadDescription = nullptr;
+	static HMODULE kernel32 = nullptr;
+
+	if (kernel32 == nullptr) {
+		kernel32 = LoadLibraryW(L"kernel32.dll");
+		if (kernel32 != nullptr) {
+			pSetThreadDescription = (pfnSetThreadDescription)GetProcAddress(kernel32, "SetThreadDescription");
+		}
+	}
+
+	if (pSetThreadDescription != nullptr) {
+		pSetThreadDescription(GetCurrentThread(), name);
 	}
 #endif
 }
@@ -41,6 +59,17 @@ void setThreadPriority(ThreadPriority prio) {
 		value = 0;
 	}
 	setpriority(PRIO_PROCESS, syscall(SYS_gettid), value);
+#elif defined(__WINDOWS__)
+	int value;
+
+	if (prio == ThreadPriority::Low) {
+		value = THREAD_PRIORITY_LOWEST;
+	} else if (prio == ThreadPriority::High) {
+		value = THREAD_PRIORITY_TIME_CRITICAL;
+	} else {
+		value = THREAD_PRIORITY_NORMAL;
+	}
+	SetThreadPriority(GetCurrentThread(), value);
 #endif
 }
 
