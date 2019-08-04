@@ -359,14 +359,32 @@ ShouldGenerateWindowCloseOnAltF4(void)
     return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
 }
 
+static SDL_bool isVistaOrNewer = SDL_FALSE;
 /* Win10 "Fall Creators Update" introduced the bug that SetCursorPos() (as used by SDL_WarpMouseInWindow())
    doesn't reliably generate WM_MOUSEMOVE events anymore (see #3931) which breaks relative mouse mode via warping.
    This is used to implement a workaround.. */
 static SDL_bool isWin10FCUorNewer = SDL_FALSE;
 
+/* Checks a mouse or raw packet for touch indication.
+   returns: 0 for not touch input, 1 for touch input.
+*/
+static LPARAM
+GetMessageExtraInfoAndCheckMousePacketTouch(int *checkTouch) {
+    LPARAM extrainfo = GetMessageExtraInfo();
+    /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
+    /* Versions below Vista will set the low 7 bits to the Mouse ID and don't use bit 7:
+       Check bits 8-32 for the signature (which will indicate a Tablet PC Pen or Touch Device).
+       Only check bit 7 when Vista and up(Cleared=Pen, Set=Touch(which we need to filter out)),
+       when the signature is set. The Mouse ID will be zero for an actual mouse. */
+    *checkTouch = (!(((extrainfo & 0x7F) && (isVistaOrNewer ? (extrainfo & 0x80) : 1)) || ((extrainfo & 0xFFFFFF00) == 0xFF515700)));
+    return extrainfo;
+}
+
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    int checkTouch = -1; /* Default to -1 for not yet loaded */
+    LPARAM extrainfo;    /* The extra info when checkTouch >= 0. */
     SDL_WindowData *data;
     LRESULT returnCode = -1;
 
@@ -494,9 +512,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEMOVE:
         {
             SDL_Mouse *mouse = SDL_GetMouse();
+            extrainfo = GetMessageExtraInfoAndCheckMousePacketTouch(&checkTouch); /* load */
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 /* Only generate mouse events for real mouse */
-                if ((GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) != MOUSEEVENTF_FROMTOUCH) {
+                if (((extrainfo & MOUSEEVENTF_FROMTOUCH) != MOUSEEVENTF_FROMTOUCH) && checkTouch) {
                     SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
                     if (isWin10FCUorNewer && mouse->relative_mode_warp) {
                         /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
@@ -527,8 +546,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_XBUTTONDBLCLK:
         {
             SDL_Mouse *mouse = SDL_GetMouse();
+            if (checkTouch < 0) {
+                extrainfo = GetMessageExtraInfoAndCheckMousePacketTouch(&checkTouch);
+            }
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
-                if ((GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) != MOUSEEVENTF_FROMTOUCH) {
+                if (((extrainfo & MOUSEEVENTF_FROMTOUCH) != MOUSEEVENTF_FROMTOUCH) && checkTouch) {
                     WIN_CheckWParamMouseButtons(wParam, data, 0);
                 }
             }
@@ -552,8 +574,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             GetRawInputData(hRawInput, RID_INPUT, &inp, &size, sizeof(RAWINPUTHEADER));
 
-            /* Mouse data */
+            /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
             if (inp.header.dwType == RIM_TYPEMOUSE) {
+                extrainfo = GetMessageExtraInfoAndCheckMousePacketTouch(&checkTouch);
+                if (!checkTouch)
+                    break;
                 if (isRelative) {
                     RAWMOUSE* rawmouse = &inp.data.mouse;
 
@@ -616,10 +641,21 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_MOUSELEAVE:
         if (SDL_GetMouseFocus() == data->window && !SDL_GetMouse()->relative_mode && !(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
             if (!IsIconic(hwnd)) {
+                SDL_Mouse *mouse;
                 POINT cursorPos;
                 GetCursorPos(&cursorPos);
                 ScreenToClient(hwnd, &cursorPos);
-                SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
+                mouse = SDL_GetMouse();
+                if (!mouse->was_touch_mouse_events) { /* we're not a touch handler causing a mouse leave? */
+                    SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
+                } else { /* touch handling? */
+                    mouse->was_touch_mouse_events = SDL_FALSE; /* not anymore */
+                    if (mouse->touch_mouse_events) { /* convert touch to mouse events */
+                        SDL_SendMouseMotion(data->window, SDL_TOUCH_MOUSEID, 0, cursorPos.x, cursorPos.y);
+                    } else { /* normal handling */
+                        SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
+                    }
+               }
             }
             SDL_SetMouseFocus(NULL);
         }
@@ -949,13 +985,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     y = (float)(input->y - rect.top)/(rect.bottom - rect.top);
 
                     if (input->dwFlags & TOUCHEVENTF_DOWN) {
-                        SDL_SendTouch(touchId, input->dwID, SDL_TRUE, x, y, 1.0f);
+                        SDL_SendTouch(touchId, input->dwID, data->window, SDL_TRUE, x, y, 1.0f);
                     }
                     if (input->dwFlags & TOUCHEVENTF_MOVE) {
-                        SDL_SendTouchMotion(touchId, input->dwID, x, y, 1.0f);
+                        SDL_SendTouchMotion(touchId, input->dwID, data->window, x, y, 1.0f);
                     }
                     if (input->dwFlags & TOUCHEVENTF_UP) {
-                        SDL_SendTouch(touchId, input->dwID, SDL_FALSE, x, y, 1.0f);
+                        SDL_SendTouch(touchId, input->dwID, data->window, SDL_FALSE, x, y, 1.0f);
                     }
                 }
             }
@@ -1212,6 +1248,7 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
         return SDL_SetError("Couldn't register application class");
     }
 
+    isVistaOrNewer = WIN_IsWindowsVistaOrGreater();
     isWin10FCUorNewer = IsWin10FCUorNewer();
 
     app_registered = 1;

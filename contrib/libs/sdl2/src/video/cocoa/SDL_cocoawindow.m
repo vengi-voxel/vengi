@@ -866,7 +866,17 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
        10.15 beta, capslock comes through here as keycode 255, but it's safe
        to send duplicate key events; SDL filters them out quickly in
        SDL_SendKeyboardKey(). */
-    SDL_SendKeyboardKey(([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_PRESSED : SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+
+    /* Also note that SDL_SendKeyboardKey expects all capslock events to be
+       keypresses; it won't toggle the mod state if you send a keyrelease.  */
+    const SDL_bool osenabled = ([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE;
+    const SDL_bool sdlenabled = (SDL_GetModState() & KMOD_CAPS) ? SDL_TRUE : SDL_FALSE;
+    if (!osenabled && sdlenabled) {
+        SDL_ToggleModState(KMOD_CAPS, SDL_FALSE);
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+    } else if (osenabled && !sdlenabled) {
+        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+    }
 }
 - (void)keyDown:(NSEvent *)theEvent
 {
@@ -918,19 +928,9 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         return;
     }
 
-    SDL_MouseID mouseID = mouse->mouseID;
+    const SDL_MouseID mouseID = mouse->mouseID;
     int button;
     int clicks;
-
-    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
-    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
-        if (mouse->touch_mouse_events) {
-            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
-        } else {
-            return;  /* no hint set, drop this one. */
-        }
-    }
-    #endif
 
     /* Ignore events that aren't inside the client area (i.e. title bar.) */
     if ([theEvent window]) {
@@ -989,19 +989,9 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         return;
     }
 
-    SDL_MouseID mouseID = mouse->mouseID;
+    const SDL_MouseID mouseID = mouse->mouseID;
     int button;
     int clicks;
-
-    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
-    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
-        if (mouse->touch_mouse_events) {
-            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
-        } else {
-            return;  /* no hint set, drop this one. */
-        }
-    }
-    #endif
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -1050,20 +1040,10 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         return;
     }
 
-    SDL_MouseID mouseID = mouse->mouseID;
+    const SDL_MouseID mouseID = mouse->mouseID;
     SDL_Window *window = _data->window;
     NSPoint point;
     int x, y;
-
-    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
-    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
-        if (mouse->touch_mouse_events) {
-            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
-        } else {
-            return;  /* no hint set, drop this one. */
-        }
-    }
-    #endif
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -1134,7 +1114,12 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (void)touchesBeganWithEvent:(NSEvent *) theEvent
 {
+    /* probably a MacBook trackpad; make this look like a synthesized event.
+       This is backwards from reality, but better matches user expectations. */
+    const BOOL istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+
     NSSet *touches = [theEvent touchesMatchingPhase:NSTouchPhaseAny inView:nil];
+    const SDL_TouchID touchID = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[[touches anyObject] device];
     int existingTouchCount = 0;
 
     for (NSTouch* touch in touches) {
@@ -1143,12 +1128,17 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         }
     }
     if (existingTouchCount == 0) {
-        const SDL_TouchID touchID = (SDL_TouchID)(intptr_t)[[touches anyObject] device];
         int numFingers = SDL_GetNumTouchFingers(touchID);
         DLog("Reset Lost Fingers: %d", numFingers);
         for (--numFingers; numFingers >= 0; --numFingers) {
             SDL_Finger* finger = SDL_GetTouchFinger(touchID, numFingers);
-            SDL_SendTouch(touchID, finger->id, SDL_FALSE, 0, 0, 0);
+            /* trackpad touches have no window. If we really wanted one we could
+             * use the window that has mouse or keyboard focus.
+             * Sending a null window currently also prevents synthetic mouse
+             * events from being generated from touch events.
+             */
+            SDL_Window *window = NULL;
+            SDL_SendTouch(touchID, finger->id, window, SDL_FALSE, 0, 0, 0);
         }
     }
 
@@ -1175,14 +1165,32 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     NSSet *touches = [theEvent touchesMatchingPhase:phase inView:nil];
 
+    /* probably a MacBook trackpad; make this look like a synthesized event.
+       This is backwards from reality, but better matches user expectations. */
+    const BOOL istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+
     for (NSTouch *touch in touches) {
-        const SDL_TouchID touchId = (SDL_TouchID)(intptr_t)[touch device];
+        const SDL_TouchID touchId = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[touch device];
         SDL_TouchDeviceType devtype = SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE;
+
+        /* trackpad touches have no window. If we really wanted one we could
+         * use the window that has mouse or keyboard focus.
+         * Sending a null window currently also prevents synthetic mouse events
+         * from being generated from touch events.
+         */
+        SDL_Window *window = NULL;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101202 /* Added in the 10.12.2 SDK. */
         if ([touch respondsToSelector:@selector(type)]) {
+            /* TODO: Before implementing direct touch support here, we need to
+             * figure out whether the OS generates mouse events from them on its
+             * own. If it does, we should prevent SendTouch from generating
+             * synthetic mouse events for these touches itself (while also
+             * sending a window.) It will also need to use normalized window-
+             * relative coordinates via [touch locationInView:].
+             */
             if ([touch type] == NSTouchTypeDirect) {
-                devtype = SDL_TOUCH_DEVICE_DIRECT;
+                return;
             }
         }
 #endif
@@ -1199,14 +1207,14 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
         switch (phase) {
         case NSTouchPhaseBegan:
-            SDL_SendTouch(touchId, fingerId, SDL_TRUE, x, y, 1.0f);
+            SDL_SendTouch(touchId, fingerId, window, SDL_TRUE, x, y, 1.0f);
             break;
         case NSTouchPhaseEnded:
         case NSTouchPhaseCancelled:
-            SDL_SendTouch(touchId, fingerId, SDL_FALSE, x, y, 1.0f);
+            SDL_SendTouch(touchId, fingerId, window, SDL_FALSE, x, y, 1.0f);
             break;
         case NSTouchPhaseMoved:
-            SDL_SendTouchMotion(touchId, fingerId, x, y, 1.0f);
+            SDL_SendTouchMotion(touchId, fingerId, window, x, y, 1.0f);
             break;
         default:
             break;
@@ -1318,6 +1326,11 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created
     data->created = created;
     data->videodata = videodata;
     data->nscontexts = [[NSMutableArray alloc] init];
+
+    /* Only store this for windows created by us since the content view might
+     * get replaced from under us otherwise, and we only need it when the
+     * window is guaranteed to be created by us (OpenGL contexts). */
+    data->sdlContentView = created ? [nswindow contentView] : nil;
 
     /* Create an event listener for the window */
     data->listener = [[Cocoa_WindowListener alloc] init];

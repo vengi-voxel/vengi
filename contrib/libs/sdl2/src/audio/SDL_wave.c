@@ -112,7 +112,7 @@ WaveDebugLogFormat(WaveFile *file)
     Uint32 wavebps = format->byterate;
     char channelstr[64];
 
-    SDL_zero(channelstr);
+    SDL_zeroa(channelstr);
 
     switch (format->encoding) {
     case PCM_CODE:
@@ -647,7 +647,7 @@ MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     MS_ADPCM_ChannelState cstate[2];
 
     SDL_zero(state);
-    SDL_zero(cstate);
+    SDL_zeroa(cstate);
 
     if (chunk->size != chunk->length) {
         /* Could not read everything. Recalculate number of sample frames. */
@@ -691,7 +691,7 @@ MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
         return SDL_OutOfMemory();
     }
 
-    state.cstate = &cstate;
+    state.cstate = cstate;
 
     /* Decode block by block. A truncated block will stop the decoding. */
     bytesleft = state.input.size - state.input.pos;
