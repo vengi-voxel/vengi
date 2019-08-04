@@ -32,6 +32,7 @@ set(COMPILER_SRCS
 	compiler/idl_gen_grpc.cpp
 	compiler/idl_gen_js_ts.cpp
 	compiler/idl_gen_json_schema.cpp
+	compiler/idl_gen_kotlin.cpp
 	compiler/idl_gen_lobster.cpp
 	compiler/idl_gen_lua.cpp
 	compiler/idl_gen_php.cpp

@@ -25,16 +25,21 @@
 
 namespace flatbuffers {
 // Generic 'operator==' with conditional specialisations.
+// T e - new value of a scalar field.
+// T def - default of scalar (is known at compile-time).
 template<typename T> inline bool IsTheSameAs(T e, T def) { return e == def; }
 
 #if defined(FLATBUFFERS_NAN_DEFAULTS) && \
-    (!defined(_MSC_VER) || _MSC_VER >= 1800)
+    defined(FLATBUFFERS_HAS_NEW_STRTOD) && (FLATBUFFERS_HAS_NEW_STRTOD > 0)
 // Like `operator==(e, def)` with weak NaN if T=(float|double).
+template<typename T> inline bool IsFloatTheSameAs(T e, T def) {
+  return (e == def) || ((def != def) && (e != e));
+}
 template<> inline bool IsTheSameAs<float>(float e, float def) {
-  return (e == def) || (std::isnan(def) && std::isnan(e));
+  return IsFloatTheSameAs(e, def);
 }
 template<> inline bool IsTheSameAs<double>(double e, double def) {
-  return (e == def) || (std::isnan(def) && std::isnan(e));
+  return IsFloatTheSameAs(e, def);
 }
 #endif
 
@@ -1648,9 +1653,8 @@ class FlatBufferBuilder {
   Offset<Vector<const T *>> CreateVectorOfNativeStructs(const S *v,
                                                         size_t len) {
     extern T Pack(const S &);
-    typedef T (*Pack_t)(const S &);
     std::vector<T> vv(len);
-    std::transform(v, v + len, vv.begin(), static_cast<Pack_t&>(Pack));
+    std::transform(v, v + len, vv.begin(), Pack);
     return CreateVectorOfStructs<T>(vv.data(), vv.size());
   }
 

@@ -51,11 +51,22 @@ bool Print(T val, Type type, int /*indent*/, Type * /*union_type*/,
            const IDLOptions &opts, std::string *_text) {
   std::string &text = *_text;
   if (type.enum_def && opts.output_enum_identifiers) {
-    auto ev = type.enum_def->ReverseLookup(static_cast<int64_t>(val));
-    if (ev) {
-      text += "\"";
-      text += ev->name;
-      text += "\"";
+    std::vector<EnumVal const *> enum_values;
+    if (auto ev = type.enum_def->ReverseLookup(static_cast<int64_t>(val))) {
+      enum_values.push_back(ev);
+    } else if (val && type.enum_def->attributes.Lookup("bit_flags")) {
+      for (auto it = type.enum_def->Vals().begin(),
+                e = type.enum_def->Vals().end();
+           it != e; ++it) {
+        if ((*it)->GetAsUInt64() & static_cast<uint64_t>(val))
+          enum_values.push_back(*it);
+      }
+    }
+    if (!enum_values.empty()) {
+      text += '\"';
+      for (auto it = enum_values.begin(), e = enum_values.end(); it != e; ++it)
+        text += (*it)->name + ' ';
+      text[text.length() - 1] = '\"';
       return true;
     }
   }
@@ -146,7 +157,7 @@ bool Print<const void *>(const void *val, Type type, int indent,
       // clang-format off
       switch (vec_type.base_type) {
         #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
-          CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE) \
+          CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE, KTYPE) \
           case BASE_TYPE_ ## ENUM: \
             if (!PrintVector<CTYPE>( \
                   *reinterpret_cast<const Vector<CTYPE> *>(val), \
@@ -166,7 +177,7 @@ bool Print<const void *>(const void *val, Type type, int indent,
       // clang-format off
       switch (vec_type.base_type) {
         #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
-        CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE) \
+        CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE, KTYPE) \
         case BASE_TYPE_ ## ENUM: \
           if (!PrintArray<CTYPE>( \
               *reinterpret_cast<const Array<CTYPE, 0xFFFF> *>(val), \
@@ -266,7 +277,7 @@ static bool GenStruct(const StructDef &struct_def, const Table *table,
       switch (fd.value.type.base_type) {
           // clang-format off
           #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
-            CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE) \
+            CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE, KTYPE) \
             case BASE_TYPE_ ## ENUM: \
               if (!GenField<CTYPE>(fd, table, struct_def.fixed, \
                                    opts, indent + Indent(opts), _text)) { \
@@ -277,7 +288,7 @@ static bool GenStruct(const StructDef &struct_def, const Table *table,
         #undef FLATBUFFERS_TD
         // Generate drop-thru case statements for all pointer types:
         #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
-          CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE) \
+          CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE, KTYPE) \
           case BASE_TYPE_ ## ENUM:
           FLATBUFFERS_GEN_TYPES_POINTER(FLATBUFFERS_TD)
           FLATBUFFERS_GEN_TYPE_ARRAY(FLATBUFFERS_TD)

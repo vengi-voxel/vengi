@@ -206,7 +206,7 @@ class CppGenerator : public BaseGenerator {
 
   void GenExtraIncludes() {
     for(std::size_t i = 0; i < parser_.opts.cpp_includes.size(); ++i) {
-      code_ += "#include <" + parser_.opts.cpp_includes[i] + ">";
+      code_ += "#include \"" + parser_.opts.cpp_includes[i] + "\"";
     }
     if (!parser_.opts.cpp_includes.empty()) {
       code_ += "";
@@ -538,7 +538,7 @@ class CppGenerator : public BaseGenerator {
     // clang-format off
     static const char *const ctypename[] = {
     #define FLATBUFFERS_TD(ENUM, IDLTYPE, CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, \
-                           RTYPE) \
+                           RTYPE, KTYPE) \
             #CTYPE,
         FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
     #undef FLATBUFFERS_TD
