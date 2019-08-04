@@ -5,6 +5,8 @@
 
 set(GOOGLETESTDIR ${CMAKE_CURRENT_LIST_DIR})
 
+find_package(GTest)
+
 #-------------------------------------------------------------------------------
 #   gtest_suite_begin(name)
 #   Begin defining a unit test suite.
@@ -37,7 +39,6 @@ macro(gtest_suite_begin name)
 		endif()
 
 		# add googletest lib dependency
-		find_package(GTest)
 		if (GTEST_FOUND)
 			target_include_directories(${name} PRIVATE ${GTEST_INCLUDE_DIRS})
 			target_link_libraries(${name} ${GTEST_LIBRARIES})
