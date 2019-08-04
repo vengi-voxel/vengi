@@ -40,6 +40,7 @@ protected:
 	bool _allowRelativeMouseMode = true;
 
 	std::unordered_set<int32_t> _keys;
+	uint32_t _pressedModifierMask = 0u;
 	util::BindMap _bindings;
 	glm::ivec2 _mousePos;
 	glm::ivec2 _mouseRelativePos;

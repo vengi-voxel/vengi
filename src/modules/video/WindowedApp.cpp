@@ -151,8 +151,10 @@ bool WindowedApp::handleKeyRelease(int32_t key, int16_t modifier) {
 			core::Command::execute("-%s %i %" PRId64, &(pair.command.c_str()[1]), commandKey, _now);
 			// first try to execute commands with all the modifiers that are currently pressed
 			if (!util::executeCommandsForBinding(_bindings, commandKey, SDL_GetModState(), _now)) {
-				// if no binding was found, execute without modifier
-				util::executeCommandsForBinding(_bindings, commandKey, 0, _now);
+				if (!util::executeCommandsForBinding(_bindings, commandKey, (int16_t)((uint32_t)SDL_GetModState() ^ _pressedModifierMask), _now)) {
+					// if no binding was found, execute without modifier
+					util::executeCommandsForBinding(_bindings, commandKey, 0, _now);
+				}
 			}
 		}
 	}
@@ -165,6 +167,8 @@ bool WindowedApp::handleKeyRelease(int32_t key, int16_t modifier) {
 		}
 	}
 	_keys.erase(key);
+	_pressedModifierMask &= ~(uint32_t)code;
+
 	return handled;
 }
 
@@ -193,6 +197,8 @@ bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier) {
 		break;
 	}
 	if (code != 0) {
+		// this is the case where a binding that needs a modifier and a key was
+		// pressed in the order key and then modifier.
 		std::unordered_set<int32_t> recheck;
 		for (auto& b : _bindings) {
 			const util::CommandModifierPair& pair = b.second;
@@ -213,6 +219,8 @@ bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier) {
 			core::Command::execute("%s %i %" PRId64, pair.command.c_str(), commandKey, _now);
 			recheck.insert(commandKey);
 		}
+		// for those keys where activates because the modifier was pressed, we have to disable the old action button
+		// that was just bound to the key without the modifier.
 		for (int32_t checkKey : recheck) {
 			auto range = _bindings.equal_range(checkKey);
 			for (auto i = range.first; i != range.second; ++i) {
@@ -225,9 +233,18 @@ bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier) {
 		}
 	}
 
+	// still try to execute the usual bound command. First to find an exact match for the modifiers. Then
+	// try the same key without any modifier.
 	if (!util::executeCommandsForBinding(_bindings, key, modifier, _now)) {
-		return util::executeCommandsForBinding(_bindings, key, 0, _now);
+		if (!util::executeCommandsForBinding(_bindings, key, (int16_t)((uint32_t)modifier ^ _pressedModifierMask), _now)) {
+			if (!util::executeCommandsForBinding(_bindings, key, 0, _now)) {
+				return false;
+			}
+		}
 	}
+
+	_pressedModifierMask |= (uint32_t)code;
+
 	return true;
 }
 
