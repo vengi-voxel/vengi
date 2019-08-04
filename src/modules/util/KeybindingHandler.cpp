@@ -17,7 +17,7 @@ static inline bool checkModifierBitMask(int16_t mask, int16_t pressedModMask, in
 		return false;
 	}
 	if (command == mask) {
-		// command is found to left or right modifier key
+		// command is bound to left or right modifier key
 		if (!(pressed & mask)) {
 			// but the modifiers aren't pressed
 			return false;
@@ -32,7 +32,7 @@ static inline bool checkModifierBitMask(int16_t mask, int16_t pressedModMask, in
 
 bool isValidForBinding(int16_t pressedModMask, const std::string& command, int16_t commandModMask) {
 	if (commandModMask == KMOD_NONE && pressedModMask != KMOD_NONE) {
-		Log::debug("There is a modifier pressed - but %s is not bound to a modifier", command.c_str());
+		Log::trace("There is a modifier pressed - but %s is not bound to a modifier", command.c_str());
 		return false;
 	}
 	if (commandModMask != KMOD_NONE) {
