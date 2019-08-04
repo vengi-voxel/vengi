@@ -73,5 +73,22 @@ bool executeCommandsForBinding(const util::BindMap& bindings, int32_t key, int16
 	return false;
 }
 
+bool executeCommandsForBinding(const util::BindMap& bindings, int32_t key, int16_t modifier, int16_t skipModifier, uint64_t now) {
+	// first try to find an exact match of key and current held modifiers
+	if (executeCommandsForBinding(bindings, key, modifier, now)) {
+		return true;
+	}
+	// if no such exact match was found, try to remove those modifiers that should be ignored because they e.g. have their own bound command
+	// this might happen if you bound a command to e.g. shift. Having shift pressed while pressing another key combination like ctrl+w would
+	// not match if that special bound key shift wouldn't get removed from the mask to check.
+	if (skipModifier != 0 && executeCommandsForBinding(bindings, key, (int16_t)((uint32_t)modifier ^ (uint32_t)skipModifier), now)) {
+		return true;
+	}
+	// at last try to find a key that was bound without any modifier.
+	if (!executeCommandsForBinding(bindings, key, 0, now)) {
+		return true;
+	}
+	return false;
+}
 
 }

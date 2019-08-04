@@ -150,12 +150,7 @@ bool WindowedApp::handleKeyRelease(int32_t key, int16_t modifier) {
 			}
 			core::Command::execute("-%s %i %" PRId64, &(pair.command.c_str()[1]), commandKey, _now);
 			// first try to execute commands with all the modifiers that are currently pressed
-			if (!util::executeCommandsForBinding(_bindings, commandKey, SDL_GetModState(), _now)) {
-				if (!util::executeCommandsForBinding(_bindings, commandKey, (int16_t)((uint32_t)SDL_GetModState() ^ _pressedModifierMask), _now)) {
-					// if no binding was found, execute without modifier
-					util::executeCommandsForBinding(_bindings, commandKey, 0, _now);
-				}
-			}
+			util::executeCommandsForBinding(_bindings, commandKey, SDL_GetModState(), _pressedModifierMask, _now);
 		}
 	}
 	auto range = _bindings.equal_range(key);
@@ -235,12 +230,8 @@ bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier) {
 
 	// still try to execute the usual bound command. First to find an exact match for the modifiers. Then
 	// try the same key without any modifier.
-	if (!util::executeCommandsForBinding(_bindings, key, modifier, _now)) {
-		if (!util::executeCommandsForBinding(_bindings, key, (int16_t)((uint32_t)modifier ^ _pressedModifierMask), _now)) {
-			if (!util::executeCommandsForBinding(_bindings, key, 0, _now)) {
-				return false;
-			}
-		}
+	if (!util::executeCommandsForBinding(_bindings, key, modifier, _pressedModifierMask, _now)) {
+		return false;
 	}
 
 	_pressedModifierMask |= (uint32_t)code;
