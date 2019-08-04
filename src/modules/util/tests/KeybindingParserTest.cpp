@@ -17,6 +17,7 @@ CTRL+w +bar
 SHIFT+w +xyz
 SHIFT+ctrl+ALT+w allmodscommand
 ctrl+SHIFT+w ctrlshiftmodcommand
+left_alt altmodcommand
 )";
 }
 
@@ -25,7 +26,7 @@ TEST(KeybindingParserTest, testParsing) {
 	const BindMap& m = p.getBindings();
 	ASSERT_FALSE(m.empty());
 	ASSERT_EQ(0, p.invalidBindings());
-	const std::size_t expected = 8;
+	const std::size_t expected = 9;
 	EXPECT_EQ(expected, m.size());
 
 	int key = 'w';
@@ -38,25 +39,32 @@ TEST(KeybindingParserTest, testParsing) {
 	bool somecommand = false;
 	bool foo = false;
 	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.command;
-		const int16_t mod = i->second.modifier;
+		const CommandModifierPair& pair = i->second;
+		const std::string& command = pair.command;
+		const int16_t mod = pair.modifier;
 		if ((mod & KMOD_SHIFT) && (mod & KMOD_ALT) && (mod & KMOD_CTRL)) {
 			EXPECT_EQ("allmodscommand", command);
+			EXPECT_FALSE(allmodscommand);
 			allmodscommand = true;
 		} else if ((mod & KMOD_SHIFT) && (mod & KMOD_CTRL)) {
 			EXPECT_EQ("ctrlshiftmodcommand", command);
+			EXPECT_FALSE(ctrlshiftmodcommand);
 			ctrlshiftmodcommand = true;
 		} else if (mod & KMOD_SHIFT) {
 			EXPECT_EQ("+xyz", command);
+			EXPECT_FALSE(xyz);
 			xyz = true;
 		} else if (mod & KMOD_CTRL) {
 			EXPECT_EQ("+bar", command);
+			EXPECT_FALSE(bar);
 			bar = true;
 		} else if (mod & KMOD_ALT) {
 			EXPECT_EQ("somecommand +", command);
+			EXPECT_FALSE(somecommand);
 			somecommand = true;
 		} else {
 			EXPECT_EQ("+foo", command);
+			EXPECT_FALSE(foo);
 			foo = true;
 		}
 		++count;
@@ -76,14 +84,29 @@ TEST(KeybindingParserTest, testParsing) {
 	count = 0;
 	range = m.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.command;
-		const int16_t mod = i->second.modifier;
+		const CommandModifierPair& pair = i->second;
+		const std::string& command = pair.command;
+		const int16_t mod = pair.modifier;
 		EXPECT_EQ("someothercommand +", command);
 		EXPECT_TRUE(mod & KMOD_LALT) << "command " << command << " modifier wasn't parsed properly";
 		EXPECT_TRUE(!(mod & KMOD_RALT)) << "command " << command << " modifier wasn't parsed properly";
 		++count;
 	}
 	EXPECT_EQ(1, count);
+
+	key = SDLK_LALT;
+	count = 0;
+	range = m.equal_range(key);
+	for (auto i = range.first; i != range.second; ++i) {
+		const CommandModifierPair& pair = i->second;
+		const std::string& command = pair.command;
+		const int16_t mod = pair.modifier;
+		EXPECT_EQ("altmodcommand", command);
+		EXPECT_EQ(0, mod);
+		++count;
+	}
+	EXPECT_EQ(1, count);
+
 }
 
 }

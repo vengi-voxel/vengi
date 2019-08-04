@@ -18,6 +18,7 @@ CTRL+w +bar
 SHIFT+w +xyz
 SHIFT+ctrl+ALT+w allmodscommand
 ctrl+SHIFT+w ctrlshiftmodcommand
+left_alt altmodcommand
 )";
 }
 
@@ -27,6 +28,8 @@ protected:
 	bool _allmodscommand = false;
 	bool _ctrlshiftmodcommand = false;
 	bool _somecommand = false;
+	bool _altmodcommand = false;
+
 	bool _xyz = false;
 
 	KeybindingHandlerTest() :
@@ -41,12 +44,13 @@ protected:
 			Log::error("Not all bindings could get parsed");
 			return false;
 		}
-		_xyz = _ctrlshiftmodcommand = _somecommand = _allmodscommand = false;
+		_xyz = _ctrlshiftmodcommand = _somecommand = _altmodcommand = _allmodscommand = false;
 		core::Command::shutdown();
 		core::Command::registerCommand("+bar", [] (const core::CmdArgs& args) {});
 		core::Command::registerCommand("+foo", [] (const core::CmdArgs& args) {});
 		core::Command::registerCommand("+xyz", [this] (const core::CmdArgs& args) {this->_xyz = true;});
 		core::Command::registerCommand("somecommand", [this] (const core::CmdArgs& args) {this->_somecommand = true;});
+		core::Command::registerCommand("altmodcommand", [this] (const core::CmdArgs& args) {this->_altmodcommand = true;});
 		core::Command::registerCommand("allmodscommand", [this] (const core::CmdArgs& args) {this->_allmodscommand = true;});
 		core::Command::registerCommand("ctrlshiftmodcommand", [this] (const core::CmdArgs& args) {this->_ctrlshiftmodcommand = true;});
 		return true;
@@ -157,6 +161,11 @@ TEST_F(KeybindingHandlerTest, testLeftAltModifier) {
 
 TEST_F(KeybindingHandlerTest, testRightAltModifier) {
 	notExecute(SDLK_w, KMOD_RALT);
+}
+
+TEST_F(KeybindingHandlerTest, testAltKey) {
+	execute(SDLK_LALT, KMOD_NONE);
+	EXPECT_TRUE(_altmodcommand) << "expected command wasn't executed";
 }
 
 TEST_F(KeybindingHandlerTest, testLeftShiftModifier) {
