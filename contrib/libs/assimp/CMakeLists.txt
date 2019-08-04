@@ -1,190 +1,202 @@
 set(SRCS
-	code/FixNormalsStep.cpp
-	code/Importer/IFC/IFCLoader.cpp
+	code/3DS/3DSConverter.cpp
+	code/3DS/3DSExporter.cpp
+	code/3DS/3DSLoader.cpp
+	code/3MF/D3MFExporter.cpp
+	code/3MF/D3MFImporter.cpp
+	code/3MF/D3MFOpcPackage.cpp
+	code/AC/ACLoader.cpp
+	code/ASE/ASELoader.cpp
+	code/ASE/ASEParser.cpp
+	code/Assbin/AssbinLoader.cpp
+	code/Assbin/AssbinExporter.cpp
+	code/Assjson/cencode.c
+	code/Assjson/json_exporter.cpp
+	code/Assjson/mesh_splitter.cpp
+	code/Assxml/AssxmlExporter.cpp
+	code/B3D/B3DImporter.cpp
+	code/Blender/BlenderBMesh.cpp
+	code/Blender/BlenderDNA.cpp
+	code/Blender/BlenderLoader.cpp
+	code/Blender/BlenderModifier.cpp
+	code/Blender/BlenderScene.cpp
+	code/Blender/BlenderTessellator.cpp
+	code/BVH/BVHLoader.cpp
+	code/CApi/AssimpCExport.cpp
+	code/CApi/CInterfaceIOWrapper.cpp
+	code/COB/COBLoader.cpp
+	code/Collada/ColladaExporter.cpp
+	code/Collada/ColladaLoader.cpp
+	code/Collada/ColladaParser.cpp
+	code/Common/Assimp.cpp
+	code/Common/BaseImporter.cpp
+	code/Common/BaseProcess.cpp
+	code/Common/Bitmap.cpp
+	code/Common/CreateAnimMesh.cpp
+	code/Common/DefaultIOStream.cpp
+	code/Common/DefaultIOSystem.cpp
+	code/Common/DefaultLogger.cpp
+	code/Common/Exporter.cpp
+	code/Common/Importer.cpp
+	code/Common/ImporterRegistry.cpp
+	code/Common/PostStepRegistry.cpp
+	code/Common/RemoveComments.cpp
+	code/Common/SceneCombiner.cpp
+	code/Common/scene.cpp
+	code/Common/ScenePreprocessor.cpp
+	code/Common/SGSpatialSort.cpp
+	code/Common/SkeletonMeshBuilder.cpp
+	code/Common/SpatialSort.cpp
+	code/Common/SplitByBoneCountProcess.cpp
+	code/Common/StandardShapes.cpp
+	code/Common/Subdivision.cpp
+	code/Common/TargetAnimation.cpp
+	code/Common/Version.cpp
+	code/Common/VertexTriangleAdjacency.cpp
+	code/CSM/CSMLoader.cpp
+	code/DXF/DXFLoader.cpp
+	code/FBX/FBXConverter.cpp
+	code/FBX/FBXAnimation.cpp
+	code/FBX/FBXBinaryTokenizer.cpp
+	code/FBX/FBXDeformer.cpp
+	code/FBX/FBXDocument.cpp
+	code/FBX/FBXDocumentUtil.cpp
+	code/FBX/FBXExporter.cpp
+	code/FBX/FBXExportNode.cpp
+	code/FBX/FBXExportProperty.cpp
+	code/FBX/FBXImporter.cpp
+	code/FBX/FBXMaterial.cpp
+	code/FBX/FBXMeshGeometry.cpp
+	code/FBX/FBXModel.cpp
+	code/FBX/FBXNodeAttribute.cpp
+	code/FBX/FBXParser.cpp
+	code/FBX/FBXProperties.cpp
+	code/FBX/FBXTokenizer.cpp
+	code/FBX/FBXUtil.cpp
+	code/glTF2/glTF2Importer.cpp
+	code/glTF2/glTF2Exporter.cpp
+	code/glTF/glTFExporter.cpp
+	code/glTF/glTFImporter.cpp
+	code/HMP/HMPLoader.cpp
+	code/Importer/IFC/IFCBoolean.cpp
 	code/Importer/IFC/IFCCurve.cpp
+	code/Importer/IFC/IFCGeometry.cpp
+	code/Importer/IFC/IFCLoader.cpp
+	code/Importer/IFC/IFCMaterial.cpp
+	code/Importer/IFC/IFCOpenings.cpp
+	code/Importer/IFC/IFCProfile.cpp
 	code/Importer/IFC/IFCReaderGen1_2x3.cpp
 	code/Importer/IFC/IFCReaderGen2_2x3.cpp
 	code/Importer/IFC/IFCReaderGen_4.cpp
-	code/Importer/IFC/IFCBoolean.cpp
 	code/Importer/IFC/IFCUtil.cpp
-	code/Importer/IFC/IFCProfile.cpp
-	code/Importer/IFC/IFCOpenings.cpp
-	code/Importer/IFC/IFCMaterial.cpp
-	code/Importer/IFC/IFCGeometry.cpp
-	code/Importer/IFC/STEPFileReader.cpp
-	code/Importer/IFC/STEPFileEncoding.cpp
-	code/Importer.cpp
-	code/RemoveRedundantMaterials.cpp
-	code/UnrealLoader.cpp
-	code/FBXNodeAttribute.cpp
-	code/Subdivision.cpp
-	code/OptimizeMeshes.cpp
-	code/D3MFExporter.cpp
-	code/EmbedTexturesProcess.cpp
-	code/FBXProperties.cpp
-	code/BlenderScene.cpp
-	code/CInterfaceIOWrapper.cpp
-	code/StepExporter.cpp
-	code/OgreStructs.cpp
-	code/Version.cpp
-	code/BaseImporter.cpp
-	code/CSMLoader.cpp
-	code/SMDLoader.cpp
-	code/FindInvalidDataProcess.cpp
-	code/ScenePreprocessor.cpp
-	code/BVHLoader.cpp
-	code/ColladaParser.cpp
-	code/RemoveVCProcess.cpp
-	code/LWOAnimation.cpp
-	code/ColladaExporter.cpp
-	code/LWOBLoader.cpp
-	code/FBXDeformer.cpp
-	code/SkeletonMeshBuilder.cpp
-	code/RawLoader.cpp
-	code/FBXMeshGeometry.cpp
-	code/ImporterRegistry.cpp
-	code/ValidateDataStructure.cpp
-	code/Q3BSPZipArchive.cpp
-	code/ObjFileImporter.cpp
-	code/RemoveComments.cpp
-	code/ConvertToLHProcess.cpp
-	code/MS3DLoader.cpp
-	code/SplitByBoneCountProcess.cpp
-	code/SGSpatialSort.cpp
-	code/OpenGEXExporter.cpp
-	code/MDLMaterialLoader.cpp
-	code/IRRMeshLoader.cpp
-	code/FBXDocumentUtil.cpp
-	code/D3MFOpcPackage.cpp
-	code/ObjFileParser.cpp
-	code/OgreBinarySerializer.cpp
-	code/DXFLoader.cpp
-	code/PlyParser.cpp
-	code/COBLoader.cpp
-	code/LWSLoader.cpp
-	code/PlyLoader.cpp
-	code/XFileExporter.cpp
-	code/FBXAnimation.cpp
-	code/TriangulateProcess.cpp
-	code/ObjExporter.cpp
-	code/ColladaLoader.cpp
-	code/TargetAnimation.cpp
-	code/FindDegenerates.cpp
-	code/PretransformVertices.cpp
-	code/BlenderLoader.cpp
-	code/MaterialSystem.cpp
-	code/glTFImporter.cpp
-	code/glTF2Importer.cpp
-	code/AssbinLoader.cpp
-	code/ComputeUVMappingProcess.cpp
-	code/glTFExporter.cpp
-	code/Q3BSPFileParser.cpp
-	code/B3DImporter.cpp
-	code/MD5Parser.cpp
-	code/MD5Loader.cpp
-	code/GenFaceNormalsProcess.cpp
-	code/AssxmlExporter.cpp
-	code/MDCLoader.cpp
-	code/FBXMaterial.cpp
-	code/ASELoader.cpp
-	code/MDLLoader.cpp
-	code/CalcTangentsProcess.cpp
-	code/PlyExporter.cpp
-	code/IRRShared.cpp
-	code/NDOLoader.cpp
-	code/ACLoader.cpp
-	code/LimitBoneWeightsProcess.cpp
-	code/SIBImporter.cpp
-	code/TextureTransform.cpp
-	code/OFFLoader.cpp
-	code/OgreXmlSerializer.cpp
-	code/OgreImporter.cpp
-	code/SceneCombiner.cpp
-	code/FBXDocument.cpp
-	code/FBXConverter.cpp
-	code/DeboneProcess.cpp
-	code/LWOLoader.cpp
-	code/FBXTokenizer.cpp
-	code/Q3BSPFileImporter.cpp
-	code/HMPLoader.cpp
-	code/BlenderDNA.cpp
-	code/DefaultLogger.cpp
-	code/DefaultIOStream.cpp
-	code/IRRLoader.cpp
-	code/TerragenLoader.cpp
-	code/AssbinExporter.cpp
-	code/XGLLoader.cpp
-	code/OpenGEXImporter.cpp
-	code/SpatialSort.cpp
-	code/3DSConverter.cpp
-	code/Exporter.cpp
-	code/BaseProcess.cpp
-	code/SortByPTypeProcess.cpp
-	code/FBXImporter.cpp
-	code/FindInstancesProcess.cpp
-	code/ASEParser.cpp
-	code/BlenderBMesh.cpp
-	code/SplitLargeMeshes.cpp
-	code/D3MFImporter.cpp
-	code/XFileImporter.cpp
-	code/3DSExporter.cpp
-	code/BlenderModifier.cpp
-	code/ProcessHelper.cpp
-	code/BlenderTessellator.cpp
-	code/OptimizeGraph.cpp
-	code/DefaultIOSystem.cpp
-	code/GenVertexNormalsProcess.cpp
-	code/3DSLoader.cpp
-	code/AssimpCExport.cpp
-	code/STLLoader.cpp
-	code/VertexTriangleAdjacency.cpp
-	code/MD2Loader.cpp
-	code/FBXModel.cpp
-	code/JoinVerticesProcess.cpp
-	code/LWOMaterial.cpp
-	code/FBXBinaryTokenizer.cpp
-	code/FBXUtil.cpp
-	code/PostStepRegistry.cpp
-	code/ObjFileMtlImporter.cpp
-	code/Bitmap.cpp
-	code/XFileParser.cpp
-	code/Assimp.cpp
-	code/StandardShapes.cpp
-	code/Q3DLoader.cpp
-	code/FBXParser.cpp
-	code/ImproveCacheLocality.cpp
-	code/STLExporter.cpp
-	code/MD3Loader.cpp
-	code/OgreMaterial.cpp
-	code/MakeVerboseFormat.cpp
-	code/ScaleProcess.cpp
-	code/NFFLoader.cpp
-	code/X3DExporter.cpp
-	code/X3DImporter.cpp
-	code/X3DImporter_Geometry2D.cpp
-	code/X3DImporter_Geometry3D.cpp
-	code/X3DImporter_Group.cpp
-	code/X3DImporter_Light.cpp
-	code/X3DImporter_Metadata.cpp
-	code/X3DImporter_Networking.cpp
-	code/X3DImporter_Postprocess.cpp
-	code/X3DImporter_Rendering.cpp
-	code/X3DImporter_Shape.cpp
-	code/X3DImporter_Texturing.cpp
-	code/CreateAnimMesh.cpp
-	code/scene.cpp
+	code/Importer/STEPParser/STEPFileEncoding.cpp
+	code/Importer/STEPParser/STEPFileReader.cpp
+	code/Importer/StepFile/StepFileImporter.cpp
+	code/Importer/StepFile/StepFileGen1.cpp
+	code/Importer/StepFile/StepFileGen2.cpp
+	code/Importer/StepFile/StepFileGen3.cpp
+	code/Irr/IRRLoader.cpp
+	code/Irr/IRRMeshLoader.cpp
+	code/Irr/IRRShared.cpp
+	code/LWO/LWOAnimation.cpp
+	code/LWO/LWOBLoader.cpp
+	code/LWO/LWOLoader.cpp
+	code/LWO/LWOMaterial.cpp
+	code/LWS/LWSLoader.cpp
+	code/Material/MaterialSystem.cpp
+	code/MD2/MD2Loader.cpp
+	code/MD3/MD3Loader.cpp
+	code/MD5/MD5Loader.cpp
+	code/MD5/MD5Parser.cpp
+	code/MDC/MDCLoader.cpp
+	code/MDL/MDLLoader.cpp
+	code/MDL/MDLMaterialLoader.cpp
+	code/MS3D/MS3DLoader.cpp
+	code/NDO/NDOLoader.cpp
+	code/NFF/NFFLoader.cpp
+	code/Obj/ObjExporter.cpp
+	code/Obj/ObjFileImporter.cpp
+	code/Obj/ObjFileMtlImporter.cpp
+	code/Obj/ObjFileParser.cpp
+	code/OFF/OFFLoader.cpp
+	code/Ogre/OgreBinarySerializer.cpp
+	code/Ogre/OgreImporter.cpp
+	code/Ogre/OgreMaterial.cpp
+	code/Ogre/OgreStructs.cpp
+	code/Ogre/OgreXmlSerializer.cpp
+	code/OpenGEX/OpenGEXExporter.cpp
+	code/OpenGEX/OpenGEXImporter.cpp
+	code/Ply/PlyExporter.cpp
+	code/Ply/PlyLoader.cpp
+	code/Ply/PlyParser.cpp
+	code/PostProcessing/CalcTangentsProcess.cpp
+	code/PostProcessing/ComputeUVMappingProcess.cpp
+	code/PostProcessing/ConvertToLHProcess.cpp
+	code/PostProcessing/DeboneProcess.cpp
+	code/PostProcessing/DropFaceNormalsProcess.cpp
+	code/PostProcessing/EmbedTexturesProcess.cpp
+	code/PostProcessing/FindDegenerates.cpp
+	code/PostProcessing/FindInstancesProcess.cpp
+	code/PostProcessing/FindInvalidDataProcess.cpp
+	code/PostProcessing/FixNormalsStep.cpp
+	code/PostProcessing/GenBoundingBoxesProcess.cpp
+	code/PostProcessing/GenFaceNormalsProcess.cpp
+	code/PostProcessing/GenVertexNormalsProcess.cpp
+	code/PostProcessing/ImproveCacheLocality.cpp
+	code/PostProcessing/JoinVerticesProcess.cpp
+	code/PostProcessing/LimitBoneWeightsProcess.cpp
+	code/PostProcessing/MakeVerboseFormat.cpp
+	code/PostProcessing/OptimizeGraph.cpp
+	code/PostProcessing/OptimizeMeshes.cpp
+	code/PostProcessing/PretransformVertices.cpp
+	code/PostProcessing/ProcessHelper.cpp
+	code/PostProcessing/RemoveRedundantMaterials.cpp
+	code/PostProcessing/RemoveVCProcess.cpp
+	code/PostProcessing/ScaleProcess.cpp
+	code/PostProcessing/SortByPTypeProcess.cpp
+	code/PostProcessing/SplitLargeMeshes.cpp
+	code/PostProcessing/TextureTransform.cpp
+	code/PostProcessing/TriangulateProcess.cpp
+	code/PostProcessing/ValidateDataStructure.cpp
+	code/Q3BSP/Q3BSPFileImporter.cpp
+	code/Q3BSP/Q3BSPFileParser.cpp
+	code/Q3BSP/Q3BSPZipArchive.cpp
+	code/Q3D/Q3DLoader.cpp
+	code/Raw/RawLoader.cpp
+	code/SIB/SIBImporter.cpp
+	code/SMD/SMDLoader.cpp
+	code/Step/StepExporter.cpp
+	code/STL/STLExporter.cpp
+	code/STL/STLLoader.cpp
+	code/Terragen/TerragenLoader.cpp
+	code/Unreal/UnrealLoader.cpp
+	code/X3D/X3DExporter.cpp
+	code/X3D/X3DImporter.cpp
+	code/X3D/X3DImporter_Geometry2D.cpp
+	code/X3D/X3DImporter_Geometry3D.cpp
+	code/X3D/X3DImporter_Group.cpp
+	code/X3D/X3DImporter_Light.cpp
+	code/X3D/X3DImporter_Metadata.cpp
+	code/X3D/X3DImporter_Networking.cpp
+	code/X3D/X3DImporter_Postprocess.cpp
+	code/X3D/X3DImporter_Rendering.cpp
+	code/X3D/X3DImporter_Shape.cpp
+	code/X3D/X3DImporter_Texturing.cpp
+	code/XGL/XGLLoader.cpp
+	code/X/XFileExporter.cpp
+	code/X/XFileImporter.cpp
+	code/X/XFileParser.cpp
+	contrib/clipper/clipper.cpp
+	contrib/irrXML/irrXML.cpp
 	contrib/openddlparser/code/DDLNode.cpp
-	contrib/openddlparser/code/Value.cpp
+	contrib/openddlparser/code/OpenDDLCommon.cpp
 	contrib/openddlparser/code/OpenDDLExport.cpp
 	contrib/openddlparser/code/OpenDDLParser.cpp
-	contrib/openddlparser/code/OpenDDLCommon.cpp
-	contrib/clipper/clipper.cpp
-	contrib/unzip/unzip.c
-	contrib/zip/src/zip.c
+	contrib/openddlparser/code/Value.cpp
 	contrib/unzip/ioapi.c
-	contrib/irrXML/irrXML.cpp
-)
-#	code/C4DImporter.cpp
+	contrib/unzip/unzip.c
+	contrib/zip/src/zip.c)
+#	code/C4D/C4DImporter.cpp
 
 engine_add_library(
 	LIB assimp
@@ -243,13 +255,14 @@ if (NOT ASSIMP_FOUND)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_XGL_IMPORTER)
 	#target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_FBX_IMPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_ASSBIN_IMPORTER)
-	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_GLTF_IMPORTER)
+	#target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_GLTF_IMPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_C4D_IMPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_3MF_IMPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_AMF_IMPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_X3D_IMPORTER)
 
-	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_FBX_EXPORTER)
+	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_ASSJSON_EXPORTER)
+	#target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_FBX_EXPORTER)
 	#target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_COLLADA_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_XFILE_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_STEP_EXPORTER)
@@ -257,7 +270,7 @@ if (NOT ASSIMP_FOUND)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_STL_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_PLY_EXPORTER)
 	#target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_3DS_EXPORTER)
-	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_GLTF_EXPORTER)
+	#target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_GLTF_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_ASSBIN_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_ASSXML_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_X3D_EXPORTER)
@@ -271,8 +284,8 @@ if (NOT ASSIMP_FOUND)
 	if(MSVC)
 		set_target_properties(assimp PROPERTIES COMPILE_FLAGS "/wd4267 /wd4152 /wd4204 /wd4242 /wd4244 /wd4668 /wd4996")
 	elseif (CMAKE_COMPILER_IS_GNUCC)
-		set_target_properties(assimp PROPERTIES COMPILE_FLAGS "-Wno-sign-compare -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-variable -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-but-set-variable -fexceptions -frtti")
+		set_target_properties(assimp PROPERTIES COMPILE_FLAGS "-Wno-tautological-compare -Wno-char-subscripts -Wno-class-memaccess -Wno-misleading-indentation -Wno-sign-compare -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-variable -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-but-set-variable -fexceptions -frtti")
 	else()
-		set_target_properties(assimp PROPERTIES COMPILE_FLAGS "-Wno-sign-compare -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-variable -Wno-reorder -Wno-ignored-qualifiers -Wno-address-of-packed-member -Wno-undefined-var-template -Wno-switch -Wno-char-subscripts -Wno-incompatible-pointer-types -fexceptions -frtti")
+		set_target_properties(assimp PROPERTIES COMPILE_FLAGS "-Wno-tautological-compare -Wno-char-subscripts -Wno-class-memaccess -Wno-misleading-indentation -Wno-sign-compare -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-variable -Wno-reorder -Wno-ignored-qualifiers -Wno-address-of-packed-member -Wno-undefined-var-template -Wno-switch -Wno-char-subscripts -Wno-incompatible-pointer-types -fexceptions -frtti")
 	endif()
 endif()
