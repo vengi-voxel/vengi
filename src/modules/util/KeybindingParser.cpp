@@ -16,21 +16,21 @@ void KeybindingParser::parseKeyAndCommand(std::string key, const std::string& co
 				const std::string& lower = core::string::toLower(token);
 				if (lower == "shift") {
 					modifier |= KMOD_SHIFT;
-				} else if (lower == "lshift") {
+				} else if (lower == "left_shift") {
 					modifier |= KMOD_LSHIFT;
-				} else if (lower == "rshift") {
+				} else if (lower == "right_shift") {
 					modifier |= KMOD_RSHIFT;
 				} else if (lower == "alt") {
 					modifier |= KMOD_ALT;
-				} else if (lower == "lalt") {
+				} else if (lower == "left_alt") {
 					modifier |= KMOD_LALT;
-				} else if (lower == "ralt") {
+				} else if (lower == "right_alt") {
 					modifier |= KMOD_RALT;
 				} else if (lower == "ctrl") {
 					modifier |= KMOD_CTRL;
-				} else if (lower == "lctrl") {
+				} else if (lower == "left_ctrl") {
 					modifier |= KMOD_LCTRL;
-				} else if (lower == "rctrl") {
+				} else if (lower == "right_ctrl") {
 					modifier |= KMOD_RCTRL;
 				} else {
 					key = token;

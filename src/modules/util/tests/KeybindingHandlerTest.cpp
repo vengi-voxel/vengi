@@ -12,8 +12,8 @@ namespace util {
 namespace keybindingtest {
 static const std::string CFG = R"(
 w +foo
-lalt+w "somecommand +"
-RCTRL+a +bar
+left_alt+w "somecommand +"
+RIGHT_CTRL+a +bar
 CTRL+w +bar
 SHIFT+w +xyz
 SHIFT+ctrl+ALT+w allmodscommand

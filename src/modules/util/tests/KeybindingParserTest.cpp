@@ -11,7 +11,7 @@ namespace keybindingparser {
 static const std::string CFG = R"(
 w +foo
 alt+w "somecommand +"
-lalt+l "someothercommand +"
+left_alt+l "someothercommand +"
 CTRL+a +bar
 CTRL+w +bar
 SHIFT+w +xyz
