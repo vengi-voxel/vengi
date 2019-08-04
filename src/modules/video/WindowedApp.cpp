@@ -112,131 +112,11 @@ bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
 }
 
 bool WindowedApp::handleKeyRelease(int32_t key, int16_t modifier) {
-	bool handled = false;
-	int16_t code = 0;
-	switch (key) {
-	case SDLK_LCTRL:
-		code = KMOD_LCTRL;
-		break;
-	case SDLK_RCTRL:
-		code = KMOD_RCTRL;
-		break;
-	case SDLK_LSHIFT:
-		code = KMOD_LSHIFT;
-		break;
-	case SDLK_RSHIFT:
-		code = KMOD_RSHIFT;
-		break;
-	case SDLK_LALT:
-		code = KMOD_LALT;
-		break;
-	case SDLK_RALT:
-		code = KMOD_RALT;
-		break;
-	}
-	if (code != 0) {
-		for (auto& b : _bindings) {
-			const util::CommandModifierPair& pair = b.second;
-			const int32_t commandKey = b.first;
-			if (pair.command[0] != '+') {
-				// no action button command
-				continue;
-			}
-			if (!util::isValidForBinding(code, pair.command, pair.modifier)) {
-				continue;
-			}
-			if (!isPressed(commandKey)) {
-				continue;
-			}
-			core::Command::execute("-%s %i %" PRId64, &(pair.command.c_str()[1]), commandKey, _now);
-			// first try to execute commands with all the modifiers that are currently pressed
-			util::executeCommandsForBinding(_bindings, commandKey, SDL_GetModState(), _pressedModifierMask, _now);
-		}
-	}
-	auto range = _bindings.equal_range(key);
-	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.command;
-		if (command[0] == '+') {
-			core::Command::execute("-%s %i %" PRId64, &(command.c_str()[1]), key, _now);
-			handled = true;
-		}
-	}
-	_keys.erase(key);
-	_pressedModifierMask &= ~(uint32_t)code;
-
-	return handled;
+	return _keybindingHandler.execute(key, SDL_GetModState(), false, _now);
 }
 
 bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier) {
-	_keys.insert(key);
-
-	int16_t code = 0;
-	switch (key) {
-	case SDLK_LCTRL:
-		code = KMOD_LCTRL;
-		break;
-	case SDLK_RCTRL:
-		code = KMOD_RCTRL;
-		break;
-	case SDLK_LSHIFT:
-		code = KMOD_LSHIFT;
-		break;
-	case SDLK_RSHIFT:
-		code = KMOD_RSHIFT;
-		break;
-	case SDLK_LALT:
-		code = KMOD_LALT;
-		break;
-	case SDLK_RALT:
-		code = KMOD_RALT;
-		break;
-	}
-	if (code != 0) {
-		// this is the case where a binding that needs a modifier and a key was
-		// pressed in the order key and then modifier.
-		std::unordered_set<int32_t> recheck;
-		for (auto& b : _bindings) {
-			const util::CommandModifierPair& pair = b.second;
-			const int32_t commandKey = b.first;
-			if (pair.command[0] != '+') {
-				// no action button command
-				continue;
-			}
-			if (pair.modifier == 0) {
-				continue;
-			}
-			if (!isPressed(commandKey)) {
-				continue;
-			}
-			if (!util::isValidForBinding(modifier, pair.command, pair.modifier)) {
-				continue;
-			}
-			core::Command::execute("%s %i %" PRId64, pair.command.c_str(), commandKey, _now);
-			recheck.insert(commandKey);
-		}
-		// for those keys where activates because the modifier was pressed, we have to disable the old action button
-		// that was just bound to the key without the modifier.
-		for (int32_t checkKey : recheck) {
-			auto range = _bindings.equal_range(checkKey);
-			for (auto i = range.first; i != range.second; ++i) {
-				const util::CommandModifierPair& pair = i->second;
-				if (pair.modifier != 0) {
-					continue;
-				}
-				core::Command::execute("-%s %i %" PRId64, &(pair.command.c_str()[1]), checkKey, _now);
-			}
-		}
-	}
-
-	// still try to execute the usual bound command. First to find an exact match for the modifiers. Then
-	// try the same key without any modifier.
-	if (!util::executeCommandsForBinding(_bindings, key, modifier, _pressedModifierMask, _now)) {
-		return false;
-	}
-
-	_pressedModifierMask |= (uint32_t)code;
-
-	return true;
+	return _keybindingHandler.execute(key, modifier, true, _now);
 }
 
 void WindowedApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
@@ -266,79 +146,8 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 	return true;
 }
 
-bool WindowedApp::resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key) const {
-	const char *match = strchr(cmd, ' ');
-	const size_t size = match != nullptr ? (size_t)(intptr_t)(match - cmd) : strlen(cmd);
-	for (const auto& b : _bindings) {
-		const util::CommandModifierPair& pair = b.second;
-		if (!strcmp(pair.command.c_str(), cmd) || !strncmp(pair.command.c_str(), cmd, size)) {
-			if (modifier != nullptr) {
-				*modifier = pair.modifier;
-			}
-			if (key != nullptr) {
-				*key = b.first;
-			}
-			return true;
-		}
-	}
-	return false;
-}
-
-const struct ModifierMapping {
-	int16_t modifier;
-	const char *name;
-} MODIFIERMAPPING[] = {
-	{KMOD_LSHIFT, "LSHIFT"},
-	{KMOD_RSHIFT, "RSHIFT"},
-	{KMOD_LCTRL, "LCTRL"},
-	{KMOD_RCTRL, "RCTRL"},
-	{KMOD_LALT, "LALT"},
-	{KMOD_RALT, "RALT"},
-	{KMOD_ALT, "ALT"},
-	{KMOD_SHIFT, "SHIFT"},
-	{KMOD_CTRL, "CTRL"},
-	{KMOD_ALT | KMOD_SHIFT, "ALT+SHIFT"},
-	{KMOD_CTRL | KMOD_SHIFT, "CTRL+SHIFT"},
-	{KMOD_ALT | KMOD_CTRL, "ALT+CTRL"},
-	{KMOD_ALT | KMOD_SHIFT | KMOD_SHIFT, "CTRL+ALT+SHIFT"},
-	{0, nullptr}
-};
-
-const char *WindowedApp::getModifierName(int16_t modifier) const {
-	if (modifier == 0) {
-		return nullptr;
-	}
-	for (int i = 0; i < lengthof(MODIFIERMAPPING); ++i) {
-		if (MODIFIERMAPPING[i].modifier == modifier) {
-			return MODIFIERMAPPING[i].name;
-		}
-	}
-	return "<unknown>";
-}
-
 std::string WindowedApp::getKeyBindingsString(const char *cmd) const {
-	int16_t modifier;
-	int32_t key;
-	if (!resolveKeyBindings(cmd, &modifier, &key)) {
-		return "";
-	}
-	const char *name = SDL_GetKeyName((SDL_Keycode)key);
-	if (modifier <= 0) {
-		return name;
-	}
-	const char *modifierName = getModifierName(modifier);
-	return core::string::format("%s+%s", modifierName, name);
-}
-
-bool WindowedApp::loadKeyBindings(const std::string& filename) {
-	const std::string& bindings = filesystem()->load(filename);
-	if (bindings.empty()) {
-		return false;
-	}
-	Log::info("Load key bindings from %s", filename.c_str());
-	const util::KeybindingParser p(bindings);
-	_bindings.insert(p.getBindings().begin(), p.getBindings().end());
-	return true;
+	return _keybindingHandler.getKeyBindingsString(cmd);
 }
 
 core::AppState WindowedApp::onInit() {
@@ -355,10 +164,14 @@ core::AppState WindowedApp::onInit() {
 	SDL_EventState(SDL_MOUSEMOTION, SDL_DISABLE);
 	SDL_StopTextInput();
 
-	if (!loadKeyBindings()) {
+	if (!_keybindingHandler.init()) {
+		Log::error("Failed to initialize the key binding hendler");
+		return core::AppState::InitFailure;
+	}
+	if (!_keybindingHandler.load("keybindings.cfg")) {
 		Log::error("failed to init the global keybindings");
 	}
-	loadKeyBindings(_appname + "-keybindings.cfg");
+	_keybindingHandler.load(_appname + "-keybindings.cfg");
 
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 
@@ -540,42 +353,7 @@ core::AppState WindowedApp::onConstruct() {
 #endif
 	core::Var::get(cfg::ClientVSync, defaultSyncValue);
 
-	core::Command::registerCommand("bindlist", [this] (const core::CmdArgs& args) {
-		for (util::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
-			const util::CommandModifierPair& pair = i->second;
-			const std::string& command = pair.command;
-			const std::string& keyBinding = getKeyBindingsString(command.c_str());
-			Log::info("%-25s %s", keyBinding.c_str(), command.c_str());
-		}
-	}).setHelp("Show all known key bindings");
-
-	core::Command::registerCommand("bind", [this] (const core::CmdArgs& args) {
-		if (args.size() != 2) {
-			Log::error("Expected parameters: key+modifier command - got %i parameters", (int)args.size());
-			return;
-		}
-
-		util::KeybindingParser p(args[0], args[1]);
-		const util::BindMap& bindings = p.getBindings();
-		for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
-			const uint32_t key = i->first;
-			const util::CommandModifierPair& pair = i->second;
-			auto range = _bindings.equal_range(key);
-			bool found = false;
-			for (auto it = range.first; it != range.second; ++it) {
-				if (it->second.modifier == pair.modifier) {
-					it->second.command = pair.command;
-					found = true;
-					Log::info("Updated binding for key %s", args[0].c_str());
-					break;
-				}
-			}
-			if (!found) {
-				_bindings.insert(std::make_pair(key, pair));
-				Log::info("Added binding for key %s", args[0].c_str());
-			}
-		}
-	}).setHelp("Bind a command to a key");
+	_keybindingHandler.construct();
 
 	return state;
 }
@@ -589,28 +367,7 @@ core::AppState WindowedApp::onCleanup() {
 	SDL_Quit();
 	core_trace_gl_shutdown();
 
-	std::string keybindings;
-
-	for (util::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
-		const int32_t key = i->first;
-		const util::CommandModifierPair& pair = i->second;
-		const std::string keyName = core::string::toLower(SDL_GetKeyName(key));
-		const int16_t modifier = pair.modifier;
-		std::string modifierKey;
-		if (modifier & KMOD_ALT) {
-			modifierKey += "alt+";
-		}
-		if (modifier & KMOD_SHIFT) {
-			modifierKey += "shift+";
-		}
-		if (modifier & KMOD_CTRL) {
-			modifierKey += "ctrl+";
-		}
-		const std::string& command = pair.command;
-		keybindings += modifierKey + keyName + " " + command + '\n';
-	}
-	Log::trace("%s", keybindings.c_str());
-	filesystem()->write("keybindings.cfg", keybindings);
+	_keybindingHandler.shutdown();
 
 	return Super::onCleanup();
 }
