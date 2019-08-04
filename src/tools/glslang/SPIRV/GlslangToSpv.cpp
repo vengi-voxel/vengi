@@ -210,6 +210,7 @@ protected:
     }
     std::pair<spv::Id, spv::Id> getForcedType(spv::BuiltIn, const glslang::TType&);
     spv::Id translateForcedType(spv::Id object);
+    spv::Id createCompositeConstruct(spv::Id typeId, std::vector<spv::Id> constituents);
 
     glslang::SpvOptions& options;
     spv::Function* shaderEntry;
@@ -2172,6 +2173,39 @@ bool TGlslangToSpvTraverser::visitUnary(glslang::TVisit /* visit */, glslang::TI
     }
 }
 
+// Construct a composite object, recursively copying members if their types don't match
+spv::Id TGlslangToSpvTraverser::createCompositeConstruct(spv::Id resultTypeId, std::vector<spv::Id> constituents)
+{
+    for (int c = 0; c < (int)constituents.size(); ++c) {
+        spv::Id& constituent = constituents[c];
+        spv::Id lType = builder.getContainedTypeId(resultTypeId, c);
+        spv::Id rType = builder.getTypeId(constituent);
+        if (lType != rType) {
+            if (glslangIntermediate->getSpv().spv >= glslang::EShTargetSpv_1_4) {
+                constituent = builder.createUnaryOp(spv::OpCopyLogical, lType, constituent);
+            } else if (builder.isStructType(rType)) {
+                std::vector<spv::Id> rTypeConstituents;
+                int numrTypeConstituents = builder.getNumTypeConstituents(rType);
+                for (int i = 0; i < numrTypeConstituents; ++i) {
+                    rTypeConstituents.push_back(builder.createCompositeExtract(constituent, builder.getContainedTypeId(rType, i), i));
+                }
+                constituents[c] = createCompositeConstruct(lType, rTypeConstituents);
+            } else {
+                assert(builder.isArrayType(rType));
+                std::vector<spv::Id> rTypeConstituents;
+                int numrTypeConstituents = builder.getNumTypeConstituents(rType);
+
+                spv::Id elementRType = builder.getContainedTypeId(rType);
+                for (int i = 0; i < numrTypeConstituents; ++i) {
+                    rTypeConstituents.push_back(builder.createCompositeExtract(constituent, elementRType, i));
+                }
+                constituents[c] = createCompositeConstruct(lType, rTypeConstituents);
+            }
+        }
+    }
+    return builder.createCompositeConstruct(resultTypeId, constituents);
+}
+
 bool TGlslangToSpvTraverser::visitAggregate(glslang::TVisit visit, glslang::TIntermAggregate* node)
 {
     SpecConstantOpModeGuard spec_constant_op_mode_setter(&builder);
@@ -2413,7 +2447,7 @@ bool TGlslangToSpvTraverser::visitAggregate(glslang::TVisit visit, glslang::TInt
             std::vector<spv::Id> constituents;
             for (int c = 0; c < (int)arguments.size(); ++c)
                 constituents.push_back(arguments[c]);
-            constructed = builder.createCompositeConstruct(resultType(), constituents);
+            constructed = createCompositeConstruct(resultType(), constituents);
         } else if (isMatrix)
             constructed = builder.createMatrixConstructor(precision, arguments, resultType());
         else
@@ -3503,9 +3537,12 @@ spv::Id TGlslangToSpvTraverser::convertGlslangStructToSpvType(const glslang::TTy
                 memberRemapper[glslangMembers][i] = -1;
         } else {
             if (type.getBasicType() == glslang::EbtBlock) {
-                memberRemapper[glslangMembers][i] = i - memberDelta;
-                if (filterMember(glslangMember))
+                if (filterMember(glslangMember)) {
+                    memberDelta++;
+                    memberRemapper[glslangMembers][i] = -1;
                     continue;
+                }
+                memberRemapper[glslangMembers][i] = i - memberDelta;
             }
             // modify just this child's view of the qualifier
             glslang::TQualifier memberQualifier = glslangMember.getQualifier();
@@ -7619,8 +7656,25 @@ spv::Id TGlslangToSpvTraverser::createNoArgOperation(glslang::TOperator op, spv:
     case glslang::EOpIsHelperInvocation:
     {
         std::vector<spv::Id> args; // Dummy arguments
-        spv::Id id = builder.createOp(spv::OpIsHelperInvocationEXT, typeId, args);
-        return id;
+        builder.addExtension(spv::E_SPV_EXT_demote_to_helper_invocation);
+        builder.addCapability(spv::CapabilityDemoteToHelperInvocationEXT);
+        return builder.createOp(spv::OpIsHelperInvocationEXT, typeId, args);
+    }
+
+    case glslang::EOpReadClockSubgroupKHR: {
+        std::vector<spv::Id> args;
+        args.push_back(builder.makeUintConstant(spv::ScopeSubgroup));
+        builder.addExtension(spv::E_SPV_KHR_shader_clock);
+        builder.addCapability(spv::CapabilityShaderClockKHR);
+        return builder.createOp(spv::OpReadClockKHR, typeId, args);
+    }
+
+    case glslang::EOpReadClockDeviceKHR: {
+        std::vector<spv::Id> args;
+        args.push_back(builder.makeUintConstant(spv::ScopeDevice));
+        builder.addExtension(spv::E_SPV_KHR_shader_clock);
+        builder.addCapability(spv::CapabilityShaderClockKHR);
+        return builder.createOp(spv::OpReadClockKHR, typeId, args);
     }
 
     default:
@@ -7722,6 +7776,7 @@ spv::Id TGlslangToSpvTraverser::getSymbolId(const glslang::TIntermSymbol* symbol
               decoration = (spv::Decoration)spv::DecorationMax;
         builder.addDecoration(id, decoration);
         if (decoration != spv::DecorationMax) {
+            builder.addCapability(spv::CapabilitySampleMaskOverrideCoverageNV);
             builder.addExtension(spv::E_SPV_NV_sample_mask_override_coverage);
         }
     }
