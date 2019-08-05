@@ -223,7 +223,7 @@ bool MapEdit::onKeyPress(int32_t key, int16_t modifier) {
 
 void MapEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	Super::onMouseButtonPress(x, y, button, clicks);
-	const video::Ray& ray = _camera.mouseRay(glm::ivec2(_mousePos.x, _mousePos.y));
+	const video::Ray& ray = _camera.mouseRay(_mousePos);
 	const glm::vec3& dirWithLength = ray.direction * _camera.farPlane();
 	// TODO: select relevant procgen entity by querying the (not yet existant) octree.
 	const voxel::PickResult& result = _worldMgr->pickVoxel(ray.origin, dirWithLength);
