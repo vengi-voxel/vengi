@@ -4,6 +4,7 @@
 
 #include "core/command/Command.h"
 #include "KeybindingHandler.h"
+#include "CustomButtonNames.h"
 #include "core/Array.h"
 #include "core/String.h"
 #include <SDL.h>
@@ -222,15 +223,15 @@ static constexpr struct ModifierMapping {
 
 const char* KeyBindingHandler::getKeyName(uint32_t key) {
 	if (key == CUSTOM_SDLK_MOUSE_LEFT) {
-		return "lmb";
+		return button::LEFT_MOUSE_BUTTON;
 	} else if (key == CUSTOM_SDLK_MOUSE_RIGHT) {
-		return "rmb";
+		return button::RIGHT_MOUSE_BUTTON;
 	} else if (key == CUSTOM_SDLK_MOUSE_MIDDLE) {
-		return "mmb";
+		return button::MIDDLE_MOUSE_BUTTON;
 	} else if (key == CUSTOM_SDLK_MOUSE_WHEEL_UP) {
-		return "wheelup";
+		return button::MOUSE_WHEEL_UP;
 	} else if (key == CUSTOM_SDLK_MOUSE_WHEEL_DOWN) {
-		return "wheeldown";
+		return button::MOUSE_WHEEL_DOWN;
 	}
 	return SDL_GetKeyName((SDL_Keycode)key);
 }

@@ -3,6 +3,7 @@
  */
 
 #include "KeybindingParser.h"
+#include "CustomButtonNames.h"
 
 namespace util {
 
@@ -41,15 +42,15 @@ void KeybindingParser::parseKeyAndCommand(std::string key, const std::string& co
 
 	SDL_Keycode keyCode;
 	key = core::string::replaceAll(key, "_", " ");
-	if (key == "lmb") {
+	if (key == button::LEFT_MOUSE_BUTTON) {
 		keyCode = CUSTOM_SDLK_MOUSE_LEFT;
-	} else if (key == "rmb") {
+	} else if (key == button::RIGHT_MOUSE_BUTTON) {
 		keyCode = CUSTOM_SDLK_MOUSE_RIGHT;
-	} else if (key == "mmb") {
+	} else if (key == button::MIDDLE_MOUSE_BUTTON) {
 		keyCode = CUSTOM_SDLK_MOUSE_MIDDLE;
-	} else if (key == "wheelup") {
+	} else if (key == button::MOUSE_WHEEL_UP) {
 		keyCode = CUSTOM_SDLK_MOUSE_WHEEL_UP;
-	} else if (key == "wheeldown") {
+	} else if (key == button::MOUSE_WHEEL_DOWN) {
 		keyCode = CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
 	} else {
 		keyCode = SDL_GetKeyFromName(key.c_str());
