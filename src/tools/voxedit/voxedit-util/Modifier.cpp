@@ -268,8 +268,7 @@ void Modifier::updateMirrorPlane() {
 void Modifier::setCursorVoxel(const voxel::Voxel& voxel) {
 	_cursorVoxel = voxel;
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(voxel::getMaterialColor(voxel), 0.7f));
-	_shapeBuilder.setPosition(glm::zero<glm::vec3>());
+	_shapeBuilder.setColor(core::Color::alpha(core::Color::darker(voxel::getMaterialColor(voxel)), 0.6f));
 	_shapeBuilder.cube(glm::vec3(-0.01f), glm::vec3(1.01f));
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
