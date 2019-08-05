@@ -27,16 +27,16 @@ IMGUIApp::IMGUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& fil
 IMGUIApp::~IMGUIApp() {
 }
 
-void IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
+bool IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
 	if (_console.onMouseWheel(x, y)) {
-		return;
+		return true;
 	}
 	if (y > 0) {
 		_mouseWheel = 1;
 	} else if (y < 0) {
 		_mouseWheel = -1;
 	}
-	Super::onMouseWheel(x, y);
+	return Super::onMouseWheel(x, y);
 }
 
 void IMGUIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {

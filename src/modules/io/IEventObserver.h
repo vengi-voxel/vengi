@@ -44,7 +44,8 @@ public:
 	virtual void onForeground() {
 	}
 
-	virtual void onMouseWheel(int32_t x, int32_t y) {
+	virtual bool onMouseWheel(int32_t x, int32_t y) {
+		return false;
 	}
 
 	virtual void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {

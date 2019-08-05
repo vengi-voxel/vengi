@@ -268,13 +268,14 @@ void UIApp::fileDialog(const std::function<void(const std::string&)>& callback, 
 	dialog->init();
 }
 
-void UIApp::onMouseWheel(int32_t x, int32_t y) {
+bool UIApp::onMouseWheel(int32_t x, int32_t y) {
 	if (_console.onMouseWheel(x, y)) {
-		return;
+		return true;
 	}
-	int posX, posY;
-	SDL_GetMouseState(&posX, &posY);
-	_root->invokeWheel(posX, posY, x, -y, getModifierKeys());
+	if (Super::onMouseWheel(x, y)) {
+		return true;
+	}
+	return _root->invokeWheel(_mousePos.x, _mousePos.y, x, -y, getModifierKeys());
 }
 
 void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {

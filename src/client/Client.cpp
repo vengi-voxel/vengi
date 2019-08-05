@@ -245,10 +245,11 @@ core::AppState Client::onCleanup() {
 	return state;
 }
 
-void Client::onMouseWheel(int32_t x, int32_t y) {
-	Super::onMouseWheel(x, y);
+bool Client::onMouseWheel(int32_t x, int32_t y) {
+	const bool retVal = Super::onMouseWheel(x, y);
 	const float targetDistance = glm::clamp(_camera.targetDistance() - y, 0.0f, _maxTargetDistance->floatVal());
 	_camera.setTargetDistance(targetDistance);
+	return retVal;
 }
 
 bool Client::onKeyPress(int32_t key, int16_t modifier) {

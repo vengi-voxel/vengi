@@ -142,7 +142,7 @@ core::AppState TestCamera::onCleanup() {
 	return state;
 }
 
-void TestCamera::onMouseWheel(int32_t x, int32_t y) {
+bool TestCamera::onMouseWheel(int32_t x, int32_t y) {
 	const SDL_Keymod mods = SDL_GetModState();
 	if (mods & KMOD_SHIFT) {
 		video::Camera& c = _renderCamera[_targetCamera];
@@ -151,10 +151,10 @@ void TestCamera::onMouseWheel(int32_t x, int32_t y) {
 		} else {
 			c.setFarPlane(c.farPlane() + y);
 		}
-		return;
+		return true;
 	}
 
-	Super::onMouseWheel(x, y);
+	return Super::onMouseWheel(x, y);
 }
 
 bool TestCamera::onKeyPress(int32_t key, int16_t modifier) {

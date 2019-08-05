@@ -28,11 +28,15 @@ NuklearApp::NuklearApp(const metric::MetricPtr& metric, const io::FilesystemPtr&
 NuklearApp::~NuklearApp() {
 }
 
-void NuklearApp::onMouseWheel(int32_t x, int32_t y) {
+bool NuklearApp::onMouseWheel(int32_t x, int32_t y) {
 	if (_console.onMouseWheel(x, y)) {
-		return;
+		return true;
+	}
+	if (Super::onMouseWheel(x, y)) {
+		return true;
 	}
 	nk_input_scroll(&_ctx, nk_vec2((float) x, (float) y));
+	return true;
 }
 
 void NuklearApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {

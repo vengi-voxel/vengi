@@ -59,7 +59,7 @@ public:
 	virtual void beforeUI() override;
 	virtual void onRenderUI() override;
 	virtual core::AppState onCleanup() override;
-	virtual void onMouseWheel(int32_t x, int32_t y) override;
+	virtual bool onMouseWheel(int32_t x, int32_t y) override;
 	virtual void onWindowResize(int windowWidth, int windowHeight) override;
 };
 
