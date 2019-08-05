@@ -19,13 +19,13 @@ namespace util {
  */
 extern bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t modifier, uint64_t now = 0ul);
 
-extern bool isValidForBinding(int16_t pressedModMask, const std::string& command, int16_t commandModMask);
+extern bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask);
 
 class KeyBindingHandler : public core::IComponent {
 private:
 	uint32_t _pressedModifierMask = 0u;
 	std::unordered_set<int32_t> _keys;
-	util::BindMap _bindings;
+	BindMap _bindings;
 
 	/**
 	 * @brief Reverse lookup of key bindings - by command name

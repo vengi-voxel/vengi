@@ -32,9 +32,8 @@ static inline bool checkModifierBitMask(int16_t mask, int16_t pressedModMask, in
 	return true;
 }
 
-bool isValidForBinding(int16_t pressedModMask, const std::string& command, int16_t commandModMask) {
+bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask) {
 	if (commandModMask == KMOD_NONE && pressedModMask != KMOD_NONE) {
-		Log::trace("There is a modifier pressed - but %s is not bound to a modifier", command.c_str());
 		return false;
 	}
 	if (commandModMask != KMOD_NONE) {
@@ -57,7 +56,7 @@ bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t mod
 	for (auto i = range.first; i != range.second; ++i) {
 		const std::string& command = i->second.command;
 		const int16_t mod = i->second.modifier;
-		if (!isValidForBinding(modifier, command, mod)) {
+		if (!isValidForBinding(modifier, mod)) {
 			continue;
 		}
 		Log::trace("Execute the command %s for key %i", command.c_str(), key);
@@ -279,7 +278,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, uin
 				if (!isPressed(commandKey)) {
 					continue;
 				}
-				if (!isValidForBinding(modifier, pair.command, pair.modifier)) {
+				if (!isValidForBinding(modifier, pair.modifier)) {
 					continue;
 				}
 				core::Command::execute("%s %i %" PRId64, pair.command.c_str(), commandKey, now);
@@ -313,7 +312,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, uin
 				// no action button command
 				continue;
 			}
-			if (!isValidForBinding(code, pair.command, pair.modifier)) {
+			if (!isValidForBinding(code, pair.modifier)) {
 				continue;
 			}
 			if (!isPressed(commandKey)) {

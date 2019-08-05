@@ -145,35 +145,35 @@ TEST_F(KeybindingHandlerTest, testCtrlModifier) {
 }
 
 TEST_F(KeybindingHandlerTest, testModifierMasksAltSimple) {
-	EXPECT_TRUE(isValidForBinding(KMOD_LALT, "lalt pressed - alt bound", KMOD_ALT));
-	EXPECT_TRUE(isValidForBinding(KMOD_RALT, "ralt pressed - alt bound", KMOD_ALT));
+	EXPECT_TRUE(isValidForBinding(KMOD_LALT, KMOD_ALT)) << "lalt pressed - alt bound";
+	EXPECT_TRUE(isValidForBinding(KMOD_RALT, KMOD_ALT)) << "ralt pressed - alt bound";
 
-	EXPECT_TRUE(isValidForBinding(KMOD_LALT, "lalt pressed - lalt bound", KMOD_LALT));
-	EXPECT_FALSE(isValidForBinding(KMOD_RALT, "ralt pressed - lalt bound", KMOD_LALT));
+	EXPECT_TRUE(isValidForBinding(KMOD_LALT, KMOD_LALT)) << "lalt pressed - lalt bound";
+	EXPECT_FALSE(isValidForBinding(KMOD_RALT, KMOD_LALT)) << "ralt pressed - lalt bound";
 }
 
 TEST_F(KeybindingHandlerTest, testModifierMasksShiftSimple) {
-	EXPECT_TRUE(isValidForBinding(KMOD_LSHIFT, "lshift pressed - shift bound", KMOD_SHIFT));
-	EXPECT_TRUE(isValidForBinding(KMOD_RSHIFT, "rshift pressed - shift bound", KMOD_SHIFT));
+	EXPECT_TRUE(isValidForBinding(KMOD_LSHIFT, KMOD_SHIFT)) << "lshift pressed - shift bound";
+	EXPECT_TRUE(isValidForBinding(KMOD_RSHIFT, KMOD_SHIFT)) << "rshift pressed - shift bound";
 
-	EXPECT_TRUE(isValidForBinding(KMOD_LSHIFT, "lshift pressed - lshift bound", KMOD_LSHIFT));
-	EXPECT_FALSE(isValidForBinding(KMOD_RSHIFT, "rshift pressed - lshift bound", KMOD_LSHIFT));
+	EXPECT_TRUE(isValidForBinding(KMOD_LSHIFT, KMOD_LSHIFT)) << "lshift pressed - lshift bound";
+	EXPECT_FALSE(isValidForBinding(KMOD_RSHIFT, KMOD_LSHIFT)) << "rshift pressed - lshift bound";
 }
 
 TEST_F(KeybindingHandlerTest, testModifierMasksCtrlSimple) {
-	EXPECT_TRUE(isValidForBinding(KMOD_LCTRL, "lctrl pressed - ctrl bound", KMOD_CTRL));
-	EXPECT_TRUE(isValidForBinding(KMOD_RCTRL, "rctrl pressed - ctrl bound", KMOD_CTRL));
+	EXPECT_TRUE(isValidForBinding(KMOD_LCTRL, KMOD_CTRL)) << "lctrl pressed - ctrl bound";
+	EXPECT_TRUE(isValidForBinding(KMOD_RCTRL, KMOD_CTRL)) << "rctrl pressed - ctrl bound";
 
-	EXPECT_TRUE(isValidForBinding(KMOD_LCTRL, "lctrl pressed - lctrl bound", KMOD_LCTRL));
-	EXPECT_FALSE(isValidForBinding(KMOD_RCTRL, "rctrl pressed - lctrl bound", KMOD_LCTRL));
+	EXPECT_TRUE(isValidForBinding(KMOD_LCTRL, KMOD_LCTRL)) << "lctrl pressed - lctrl bound";
+	EXPECT_FALSE(isValidForBinding(KMOD_RCTRL, KMOD_LCTRL)) << "rctrl pressed - lctrl bound";
 }
 
 TEST_F(KeybindingHandlerTest, testModifierMasksInvalidModifiers) {
-	EXPECT_TRUE(isValidForBinding(KMOD_LALT | KMOD_NUM, "lalt pressed - alt bound", KMOD_ALT));
-	EXPECT_TRUE(isValidForBinding(KMOD_RALT | KMOD_NUM, "ralt pressed - alt bound", KMOD_ALT));
+	EXPECT_TRUE(isValidForBinding(KMOD_LALT | KMOD_NUM, KMOD_ALT)) << "lalt pressed - alt bound";
+	EXPECT_TRUE(isValidForBinding(KMOD_RALT | KMOD_NUM, KMOD_ALT)) << "ralt pressed - alt bound";
 
-	EXPECT_TRUE(isValidForBinding(KMOD_LALT | KMOD_NUM, "lalt pressed - lalt bound", KMOD_LALT));
-	EXPECT_FALSE(isValidForBinding(KMOD_RALT | KMOD_NUM, "ralt pressed - lalt bound", KMOD_LALT));
+	EXPECT_TRUE(isValidForBinding(KMOD_LALT | KMOD_NUM, KMOD_LALT)) << "lalt pressed - lalt bound";
+	EXPECT_FALSE(isValidForBinding(KMOD_RALT | KMOD_NUM, KMOD_LALT)) << "ralt pressed - lalt bound";
 }
 
 }
