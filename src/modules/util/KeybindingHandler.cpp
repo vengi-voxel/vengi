@@ -138,7 +138,7 @@ void KeyBindingHandler::shutdown() {
 	for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 		const int32_t key = i->first;
 		const CommandModifierPair& pair = i->second;
-		const std::string keyName = core::string::toLower(SDL_GetKeyName(key));
+		const std::string& keyName = core::string::toLower(getKeyName(key));
 		const int16_t modifier = pair.modifier;
 		const char *modifierMaskString = getModifierName(modifier);
 		std::string modifierKey;
@@ -200,27 +200,6 @@ bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, i
 	return false;
 }
 
-// note: doesn't contain all combinations
-static constexpr struct ModifierMapping {
-	int16_t modifier;
-	const char *name;
-} MODIFIERMAPPING[] = {
-	{KMOD_LSHIFT, "LEFT_SHIFT"},
-	{KMOD_RSHIFT, "RIGHT_SHIFT"},
-	{KMOD_LCTRL, "LEFT_CTRL"},
-	{KMOD_RCTRL, "RIGHT_CTRL"},
-	{KMOD_LALT, "LEFT_ALT"},
-	{KMOD_RALT, "RIGHT_ALT"},
-	{KMOD_ALT, "ALT"},
-	{KMOD_SHIFT, "SHIFT"},
-	{KMOD_CTRL, "CTRL"},
-	{KMOD_ALT | KMOD_SHIFT, "ALT+SHIFT"},
-	{KMOD_CTRL | KMOD_SHIFT, "CTRL+SHIFT"},
-	{KMOD_ALT | KMOD_CTRL, "ALT+CTRL"},
-	{KMOD_ALT | KMOD_SHIFT | KMOD_SHIFT, "CTRL+ALT+SHIFT"},
-	{0, nullptr}
-};
-
 const char* KeyBindingHandler::getKeyName(uint32_t key) {
 	if (key == CUSTOM_SDLK_MOUSE_LEFT) {
 		return button::LEFT_MOUSE_BUTTON;
@@ -240,9 +219,9 @@ const char* KeyBindingHandler::getModifierName(int16_t modifier) {
 	if (modifier == 0) {
 		return nullptr;
 	}
-	for (int i = 0; i < lengthof(MODIFIERMAPPING); ++i) {
-		if (MODIFIERMAPPING[i].modifier == modifier) {
-			return MODIFIERMAPPING[i].name;
+	for (int i = 0; i < lengthof(button::MODIFIERMAPPING); ++i) {
+		if (button::MODIFIERMAPPING[i].modifier == modifier) {
+			return button::MODIFIERMAPPING[i].name;
 		}
 	}
 	return "<unknown>";
