@@ -117,6 +117,8 @@ public:
 	bool isLayerWidgetDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
 
+	Viewport* getActiveScene();
+
 	void update();
 	bool isSceneFocused() const;
 	bool isSceneHovered() const;
