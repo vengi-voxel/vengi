@@ -964,6 +964,13 @@ void SceneManager::construct() {
 	}).setHelp("Set the current selected color by finding the closest rgb match in the palette");
 
 	core::Command::registerCommand("pickcolor", [&] (const core::CmdArgs& args) {
+		// during mouse movement, the current cursor position might be at an air voxel (this
+		// depends on the mode you are editing in), thus we should use the cursor voxel in
+		// that case
+		if (_traceViaMouse && !voxel::isAir(_hitCursorVoxel.getMaterial())) {
+			_modifier.setCursorVoxel(_hitCursorVoxel);
+			return;
+		}
 		// resolve the voxel via cursor position. This allows to use also get the proper
 		// result if we moved the cursor via keys (and thus might have skipped tracing)
 		const glm::ivec3& cursorPos = _modifier.cursorPosition();
