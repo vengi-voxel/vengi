@@ -152,7 +152,7 @@ core::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		_mainWindow->resetCamera();
-	}).setHelp("Reset cameras");
+	}).setHelp("Reset cameras in all viewports");
 
 	core::Command::registerCommand("dialog_noise", [this] (const core::CmdArgs& args) {
 		if (_mainWindow == nullptr) {
