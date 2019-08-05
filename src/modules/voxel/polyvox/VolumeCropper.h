@@ -20,7 +20,7 @@ struct CropSkipEmpty {
 template<class CropSkipCondition = CropSkipEmpty>
 RawVolume* cropVolume(const RawVolume* volume, const glm::ivec3& mins, const glm::ivec3& maxs, CropSkipCondition condition = CropSkipCondition()) {
 	core_trace_scoped(CropRawVolume);
-	const voxel::Region newRegion(glm::ivec3(0), maxs - mins);
+	const voxel::Region newRegion(mins, maxs);
 	if (!newRegion.isValid()) {
 		return nullptr;
 	}
