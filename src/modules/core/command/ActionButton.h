@@ -5,6 +5,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <functional>
 #include "core/BindingContext.h"
 
 namespace core {
@@ -34,6 +35,8 @@ struct ActionButton {
 	 */
 	uint32_t durationMillis = 0;
 
+	uint64_t lastPressed = 0ul;
+
 	BindingContext bindingContext = BindingContext::All;
 
 	ActionButton();
@@ -43,6 +46,8 @@ struct ActionButton {
 	 * @return @c true if any of the bound keys is still active
 	 */
 	bool pressed() const;
+
+	bool execute(uint64_t now, uint64_t delayBetweenExecutions, std::function<void()> executionCallback);
 
 	/**
 	 * @return @c true if the action button was initially triggered

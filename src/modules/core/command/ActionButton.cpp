@@ -12,6 +12,15 @@ ActionButton::ActionButton() {
 	}
 }
 
+bool ActionButton::execute(uint64_t now, uint64_t delayBetweenExecutions, std::function<void()> executionCallback) {
+	if (now - lastPressed < delayBetweenExecutions) {
+		return false;
+	}
+	executionCallback();
+	lastPressed = now;
+	return true;
+}
+
 bool ActionButton::handleDown(int32_t key, uint64_t millis) {
 	if (this->bindingContext != BindingContext::All && this->bindingContext != core::bindingContext()) {
 		return false;
