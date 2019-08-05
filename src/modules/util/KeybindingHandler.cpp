@@ -224,7 +224,7 @@ static constexpr struct ModifierMapping {
 	{0, nullptr}
 };
 
-const char *KeyBindingHandler::getModifierName(int16_t modifier) const {
+const char *KeyBindingHandler::getModifierName(int16_t modifier) {
 	if (modifier == 0) {
 		return nullptr;
 	}

@@ -19,6 +19,8 @@ namespace util {
  */
 extern bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t modifier, uint64_t now = 0ul);
 
+extern bool isValidForBinding(int16_t pressedModMask, const std::string& command, int16_t commandModMask);
+
 class KeyBindingHandler : public core::IComponent {
 private:
 	uint32_t _pressedModifierMask = 0u;
@@ -34,7 +36,6 @@ private:
 	 * method returned @c true
 	 */
 	bool resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key) const;
-	const char *getModifierName(int16_t modifier) const;
 
 	inline bool isPressed(int32_t key) const {
 		return _keys.find(key) != _keys.end();
@@ -50,12 +51,11 @@ public:
 	void shutdown() override;
 	bool init() override;
 
+	static const char *getModifierName(int16_t modifier);
 	bool load(const std::string& name);
 
 	bool execute(int32_t key, int16_t modifier, bool pressed, uint64_t now);
 	std::string getKeyBindingsString(const char *cmd) const;
 };
-
-extern bool isValidForBinding(int16_t pressedModMask, const std::string& command, int16_t commandModMask);
 
 }

@@ -56,85 +56,14 @@ protected:
 		return true;
 	}
 
-	static inline std::string toModString(int16_t mod) {
-		if (mod == 0) {
-			return "[none]";
-		}
-		std::string buf;
-		buf.reserve(1024);
-		buf.append("[");
-		int m = 0;
-		if ((mod & KMOD_ALT) == KMOD_ALT) {
-			if (m > 0) {
-				buf.append(" ");
-			}
-			buf.append("alt");
-			++m;
-		} else if ((mod & KMOD_LALT) != 0) {
-			if (m > 0) {
-				buf.append(" ");
-			}
-			buf.append("left_alt");
-			++m;
-		} else if ((mod & KMOD_RALT) != 0) {
-			if (m > 0) {
-				buf.append(" ");
-			}
-			buf.append("right_alt");
-			++m;
-		}
-
-		if ((mod & KMOD_SHIFT) == KMOD_SHIFT) {
-			if (m > 0) {
-				buf.append(" ");
-			}
-			buf.append("shift");
-			++m;
-		} else if ((mod & KMOD_LSHIFT) != 0) {
-			if (m > 0) {
-				buf.append(" ");
-			}
-			buf.append("left_shift");
-			++m;
-		} else if ((mod & KMOD_RSHIFT) != 0) {
-			if (m > 0) {
-				buf.append(" ");
-			}
-			buf.append("right_shift");
-			++m;
-		}
-
-		if ((mod & KMOD_CTRL) == KMOD_CTRL) {
-			if (m > 0) {
-				buf.append(" ");
-			}
-			buf.append("ctrl");
-			++m;
-		} else if ((mod & KMOD_LCTRL) != 0) {
-			if (m > 0) {
-				buf.append(" ");
-			}
-			buf.append("left_ctrl");
-			++m;
-		} else if ((mod & KMOD_RCTRL) != 0) {
-			if (m > 0) {
-				buf.append(" ");
-			}
-			buf.append("right_ctrl");
-			++m;
-		}
-		buf.append("]");
-		return buf;
-	}
-
 	void execute(int32_t key, int16_t modifier = KMOD_NONE) {
 		EXPECT_TRUE(util::executeCommandsForBinding(_parser.getBindings(), key, modifier))
-				<< "Command for key '" << SDL_GetKeyName(key) << "' with pressed modifiers " << toModString(modifier) << " should be executed";
+				<< "Command for key '" << SDL_GetKeyName(key) << "' with pressed modifiers " << KeyBindingHandler::getModifierName(modifier) << " should be executed";
 	}
 
 	void notExecute(int32_t key, int16_t modifier = KMOD_NONE) {
 		EXPECT_FALSE(util::executeCommandsForBinding(_parser.getBindings(), key, modifier))
-				<< "Command for key '" << SDL_GetKeyName(key) << "' with pressed modifiers " << toModString(modifier) << " should not be executed";
+				<< "Command for key '" << SDL_GetKeyName(key) << "' with pressed modifiers " << KeyBindingHandler::getModifierName(modifier) << " should not be executed";
 	}
 
 	/**
