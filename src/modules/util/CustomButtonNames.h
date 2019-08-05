@@ -34,6 +34,8 @@ static constexpr struct ModifierMapping {
 static const std::string LEFT_MOUSE_BUTTON = "left_mouse";
 static const std::string RIGHT_MOUSE_BUTTON = "right_mouse";
 static const std::string MIDDLE_MOUSE_BUTTON = "middle_mouse";
+static const std::string X1_MOUSE_BUTTON = "x1_mouse";
+static const std::string X2_MOUSE_BUTTON = "x2_mouse";
 static const std::string MOUSE_WHEEL_UP = "wheelup";
 static const std::string MOUSE_WHEEL_DOWN = "wheeldown";
 

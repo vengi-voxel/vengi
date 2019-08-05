@@ -21,7 +21,6 @@ static const uint32_t CUSTOM_SDLK_MOUSE_X2           = CUSTOM_SDL_KEYCODE(SDL_BU
 static const uint32_t CUSTOM_SDLK_MOUSE_WHEEL_UP     = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 0);
 static const uint32_t CUSTOM_SDLK_MOUSE_WHEEL_DOWN   = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 1);
 
-
 struct CommandModifierPair {
 	inline CommandModifierPair(const std::string& _command, int16_t _modifier) :
 			command(_command), modifier(_modifier) {
