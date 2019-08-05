@@ -26,7 +26,6 @@ public:
 
 private:
 	float _angle = 0.0f;
-	float _cameraSpeed = 0.1f;
 	SceneCameraMode _camMode = SceneCameraMode::Free;
 	core::VarPtr _rotationSpeed;
 	video::Camera _camera;
@@ -48,7 +47,6 @@ public:
 	void update(long deltaFrame);
 
 	bool move(bool rotate, int x, int y);
-	void zoom(float level);
 
 	video::Camera& camera();
 

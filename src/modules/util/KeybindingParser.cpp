@@ -47,6 +47,10 @@ void KeybindingParser::parseKeyAndCommand(std::string key, const std::string& co
 		keyCode = CUSTOM_SDLK_MOUSE_RIGHT;
 	} else if (key == "mmb") {
 		keyCode = CUSTOM_SDLK_MOUSE_MIDDLE;
+	} else if (key == "wheelup") {
+		keyCode = CUSTOM_SDLK_MOUSE_WHEEL_UP;
+	} else if (key == "wheeldown") {
+		keyCode = CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
 	} else {
 		keyCode = SDL_GetKeyFromName(key.c_str());
 	}

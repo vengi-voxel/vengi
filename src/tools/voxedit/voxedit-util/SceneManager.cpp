@@ -732,6 +732,25 @@ void SceneManager::construct() {
 				_move[i]);
 	}
 
+	core::Command::registerActionButton("zoom_in", _zoomIn);
+	core::Command::registerActionButton("zoom_out", _zoomOut);
+	_zoomIn.bindingContext = (core::BindingContext)voxedit::BindingContext::Scene;
+	_zoomOut.bindingContext = (core::BindingContext)voxedit::BindingContext::Scene;
+
+	core::Command::registerCommand("zoom", [&] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc != 1) {
+			Log::info("Usage: zoom [-]amount");
+			return;
+		}
+		float value = core::string::toFloat(args[0]);
+		if (_camera != nullptr) {
+			zoom(*_camera, value);
+		} else {
+			Log::warn("Could not execute zoom - there is no active viewport");
+		}
+	}).setHelp("Zoom the active viewport by the given amount");
+
 	core::Command::registerCommand("newscene", [&] (const core::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
 		const char *width = args.size() > 1 ? args[1].c_str() : "64";
@@ -1021,6 +1040,7 @@ bool SceneManager::init() {
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
 	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "0.2 0.2 0.2");
 	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "1.0 1.0 1.0");
+	_cameraZoomSpeed = core::Var::get(cfg::VoxEditCameraZoomSpeed, "10.0");
 	const core::TimeProviderPtr& timeProvider = core::App::getInstance()->timeProvider();
 	_lastAutoSave = timeProvider->tickSeconds();
 
@@ -1052,17 +1072,39 @@ void SceneManager::animate(uint64_t time) {
 	}
 }
 
+void SceneManager::zoom(video::Camera& camera, float level) const {
+	const float cameraSpeed = _cameraZoomSpeed->floatVal();
+	const float value = cameraSpeed * level;
+	const float targetDistance = glm::clamp(camera.targetDistance() + value, 0.0f, 1000.0f);
+	if (targetDistance > 1.0f) {
+		const glm::vec3& moveDelta = glm::backward * value;
+		camera.move(moveDelta);
+		camera.setTargetDistance(targetDistance);
+	}
+}
+
 void SceneManager::update(uint64_t time) {
 	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
 			continue;
 		}
-		if (time - _lastMove[i] < 125ul) {
-			continue;
-		}
-		const Direction& dir = DIRECTIONS[i];
-		moveCursor(dir.x, dir.y, dir.z);
-		_lastMove[i] = time;
+		_move[i].execute(time, 125ul, [&] () {
+			const Direction& dir = DIRECTIONS[i];
+			moveCursor(dir.x, dir.y, dir.z);
+		});
+	}
+	if (_zoomIn.pressed()) {
+		_zoomIn.execute(time, 20ul, [&] () {
+			if (_camera != nullptr) {
+				zoom(*_camera, 1.0f);
+			}
+		});
+	} else if (_zoomOut.pressed()) {
+		_zoomOut.execute(time, 20ul, [&] () {
+			if (_camera != nullptr) {
+				zoom(*_camera, -1.0f);
+			}
+		});
 	}
 
 	if (_camera != nullptr) {

@@ -119,6 +119,16 @@ bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier) {
 	return _keybindingHandler.execute(key, modifier, true, _now);
 }
 
+bool WindowedApp::onMouseWheel(int32_t x, int32_t y) {
+	const int32_t key = y < 0 ? util::CUSTOM_SDLK_MOUSE_WHEEL_UP : util::CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
+	const int16_t mod = SDL_GetModState();
+	if (handleKeyPress(key, mod)) {
+		handleKeyRelease(key, mod);
+		return true;
+	}
+	return false;
+}
+
 void WindowedApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	if (clicks > 1) {
 		return;

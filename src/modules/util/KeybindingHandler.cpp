@@ -227,6 +227,10 @@ const char* KeyBindingHandler::getKeyName(uint32_t key) {
 		return "rmb";
 	} else if (key == CUSTOM_SDLK_MOUSE_MIDDLE) {
 		return "mmb";
+	} else if (key == CUSTOM_SDLK_MOUSE_WHEEL_UP) {
+		return "wheelup";
+	} else if (key == CUSTOM_SDLK_MOUSE_WHEEL_DOWN) {
+		return "wheeldown";
 	}
 	return SDL_GetKeyName((SDL_Keycode)key);
 }

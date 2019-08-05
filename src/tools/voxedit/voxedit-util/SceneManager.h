@@ -73,6 +73,7 @@ private:
 	core::VarPtr _autoSaveSecondsDelay;
 	core::VarPtr _ambientColor;
 	core::VarPtr _diffuseColor;
+	core::VarPtr _cameraZoomSpeed;
 
 	math::Axis _lockedAxis = math::Axis::None;
 
@@ -112,6 +113,9 @@ private:
 
 	core::ActionButton _move[lengthof(DIRECTIONS)];
 	uint64_t _lastMove[lengthof(DIRECTIONS)] { 0 };
+
+	core::ActionButton _zoomIn;
+	core::ActionButton _zoomOut;
 
 	voxel::PickResult _result;
 	// existing voxel under the cursor
@@ -161,6 +165,8 @@ private:
 	void shift(int layerId, const glm::ivec3& m);
 	void shift(int x, int y, int z);
 	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
+
+	void zoom(video::Camera& camera, float level) const;
 
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);

@@ -55,16 +55,6 @@ void Controller::onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& w
 	_camera.init(glm::ivec2(0), frameBufferSize, windowSize);
 }
 
-void Controller::zoom(float level) {
-	const float value = _cameraSpeed * level;
-	const float targetDistance = glm::clamp(_camera.targetDistance() + value, 0.0f, 1000.0f);
-	if (targetDistance > 1.0f) {
-		const glm::vec3& moveDelta = glm::backward * value;
-		_camera.move(moveDelta);
-		_camera.setTargetDistance(targetDistance);
-	}
-}
-
 bool Controller::move(bool rotate, int x, int y) {
 	if (rotate) {
 		const float yaw = x - _mouseX;

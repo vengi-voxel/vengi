@@ -115,6 +115,7 @@ public:
 
 	virtual core::AppState onRunning() override;
 	virtual void onAfterRunning() override;
+	virtual bool onMouseWheel(int32_t x, int32_t y) override;
 	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;

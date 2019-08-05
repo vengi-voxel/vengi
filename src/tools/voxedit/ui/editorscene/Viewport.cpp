@@ -56,10 +56,6 @@ void Viewport::resetCamera() {
 
 bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
 	core_trace_scoped(EditorSceneOnEvent);
-	if (ev.type == tb::EVENT_TYPE_WHEEL && ev.delta_y != 0) {
-		_controller.zoom((float)(ev.delta_y * 100));
-		return true;
-	}
 	if (ev.type == tb::EVENT_TYPE_POINTER_MOVE) {
 		const bool relative = isRelativeMouseMode();
 		const bool middle = isMiddleMouseButtonPressed();
