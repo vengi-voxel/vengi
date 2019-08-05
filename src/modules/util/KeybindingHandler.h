@@ -51,7 +51,8 @@ public:
 	void shutdown() override;
 	bool init() override;
 
-	static const char *getModifierName(int16_t modifier);
+	static const char* getModifierName(int16_t modifier);
+	static const char* getKeyName(uint32_t key);
 	bool load(const std::string& name);
 
 	bool execute(int32_t key, int16_t modifier, bool pressed, uint64_t now);

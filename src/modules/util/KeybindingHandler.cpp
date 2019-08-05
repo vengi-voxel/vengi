@@ -173,7 +173,7 @@ std::string KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
 	if (!resolveKeyBindings(cmd, &modifier, &key)) {
 		return "";
 	}
-	const char *name = SDL_GetKeyName((SDL_Keycode)key);
+	const char *name = getKeyName(key);
 	if (modifier <= 0) {
 		return name;
 	}
@@ -199,6 +199,7 @@ bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, i
 	return false;
 }
 
+// note: doesn't contain all combinations
 static constexpr struct ModifierMapping {
 	int16_t modifier;
 	const char *name;
@@ -219,7 +220,18 @@ static constexpr struct ModifierMapping {
 	{0, nullptr}
 };
 
-const char *KeyBindingHandler::getModifierName(int16_t modifier) {
+const char* KeyBindingHandler::getKeyName(uint32_t key) {
+	if (key == CUSTOM_SDLK_MOUSE_LEFT) {
+		return "lmb";
+	} else if (key == CUSTOM_SDLK_MOUSE_RIGHT) {
+		return "rmb";
+	} else if (key == CUSTOM_SDLK_MOUSE_MIDDLE) {
+		return "mmb";
+	}
+	return SDL_GetKeyName((SDL_Keycode)key);
+}
+
+const char* KeyBindingHandler::getModifierName(int16_t modifier) {
 	if (modifier == 0) {
 		return nullptr;
 	}
