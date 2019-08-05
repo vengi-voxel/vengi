@@ -54,18 +54,7 @@ public:
 
 	float angle() const;
 	void setAngle(float angle);
-
-	float cameraSpeed() const;
-	void setCameraSpeed(float cameraSpeed);
 };
-
-inline float Controller::cameraSpeed() const {
-	return _cameraSpeed;
-}
-
-inline void Controller::setCameraSpeed(float cameraSpeed) {
-	_cameraSpeed = cameraSpeed;
-}
 
 inline video::Camera& Controller::camera() {
 	return _camera;
