@@ -139,18 +139,14 @@ void KeyBindingHandler::shutdown() {
 		const CommandModifierPair& pair = i->second;
 		const std::string keyName = core::string::toLower(SDL_GetKeyName(key));
 		const int16_t modifier = pair.modifier;
+		const char *modifierMaskString = getModifierName(modifier);
 		std::string modifierKey;
-		if (modifier & KMOD_ALT) {
-			modifierKey += "alt+";
-		}
-		if (modifier & KMOD_SHIFT) {
-			modifierKey += "shift+";
-		}
-		if (modifier & KMOD_CTRL) {
-			modifierKey += "ctrl+";
+		if (modifierMaskString != nullptr) {
+			modifierKey.append(modifierMaskString);
+			modifierKey.append("+");
 		}
 		const std::string& command = pair.command;
-		keybindings += modifierKey + keyName + " " + command + '\n';
+		keybindings += core::string::toLower(modifierKey) + keyName + " " + command + '\n';
 	}
 	Log::trace("%s", keybindings.c_str());
 	core::App::getInstance()->filesystem()->write("keybindings.cfg", keybindings);
