@@ -46,13 +46,14 @@ private:
 	 */
 	bool executeCommands(int32_t key, int16_t modifier, uint64_t now);
 
+	static std::string getKeyName(int32_t key);
+	static const char* getModifierName(int16_t modifier);
 public:
 	void construct() override;
 	void shutdown() override;
 	bool init() override;
 
-	static const char* getModifierName(int16_t modifier);
-	static const char* getKeyName(uint32_t key);
+	static std::string toString(int32_t key, int16_t modifier);
 	bool load(const std::string& name);
 
 	bool execute(int32_t key, int16_t modifier, bool pressed, uint64_t now);

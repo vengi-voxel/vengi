@@ -134,20 +134,12 @@ void KeyBindingHandler::construct() {
 
 void KeyBindingHandler::shutdown() {
 	std::string keybindings;
-
 	for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 		const int32_t key = i->first;
 		const CommandModifierPair& pair = i->second;
-		const std::string& keyName = core::string::toLower(getKeyName(key));
 		const int16_t modifier = pair.modifier;
-		const char *modifierMaskString = getModifierName(modifier);
-		std::string modifierKey;
-		if (modifierMaskString != nullptr) {
-			modifierKey.append(modifierMaskString);
-			modifierKey.append("+");
-		}
 		const std::string& command = pair.command;
-		keybindings += core::string::toLower(modifierKey) + keyName + " " + command + '\n';
+		keybindings += toString(key, modifier) + " " + command + '\n';
 	}
 	Log::trace("%s", keybindings.c_str());
 	core::App::getInstance()->filesystem()->write("keybindings.cfg", keybindings);
@@ -168,18 +160,23 @@ bool KeyBindingHandler::load(const std::string& filename) {
 	return true;
 }
 
+std::string KeyBindingHandler::toString(int32_t key, int16_t modifier) {
+	const std::string& name = getKeyName(key);
+	if (modifier <= 0) {
+		return name;
+	}
+	const char *modifierName = getModifierName(modifier);
+	core_assert(modifierName != nullptr);
+	return core::string::format("%s+%s", modifierName, name.c_str());
+}
+
 std::string KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
 	int16_t modifier;
 	int32_t key;
 	if (!resolveKeyBindings(cmd, &modifier, &key)) {
 		return "";
 	}
-	const char *name = getKeyName(key);
-	if (modifier <= 0) {
-		return name;
-	}
-	const char *modifierName = getModifierName(modifier);
-	return core::string::format("%s+%s", modifierName, name);
+	return toString(key, modifier);
 }
 
 bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key) const {
@@ -200,7 +197,7 @@ bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, i
 	return false;
 }
 
-const char* KeyBindingHandler::getKeyName(uint32_t key) {
+std::string KeyBindingHandler::getKeyName(int32_t key) {
 	if (key == CUSTOM_SDLK_MOUSE_LEFT) {
 		return button::LEFT_MOUSE_BUTTON;
 	} else if (key == CUSTOM_SDLK_MOUSE_RIGHT) {
@@ -212,7 +209,7 @@ const char* KeyBindingHandler::getKeyName(uint32_t key) {
 	} else if (key == CUSTOM_SDLK_MOUSE_WHEEL_DOWN) {
 		return button::MOUSE_WHEEL_DOWN;
 	}
-	return SDL_GetKeyName((SDL_Keycode)key);
+	return core::string::toLower(SDL_GetKeyName((SDL_Keycode)key));
 }
 
 const char* KeyBindingHandler::getModifierName(int16_t modifier) {

@@ -18,6 +18,10 @@ SHIFT+w +xyz
 SHIFT+ctrl+ALT+w allmodscommand
 ctrl+SHIFT+w ctrlshiftmodcommand
 left_alt altmodcommand
+left_mouse void
+right_mouse void
+wheelup void
+wheeldown void
 )";
 }
 
@@ -26,7 +30,7 @@ TEST(KeybindingParserTest, testParsing) {
 	const BindMap& m = p.getBindings();
 	ASSERT_FALSE(m.empty());
 	ASSERT_EQ(0, p.invalidBindings());
-	const std::size_t expected = 9;
+	const std::size_t expected = 13;
 	EXPECT_EQ(expected, m.size());
 
 	int key = 'w';

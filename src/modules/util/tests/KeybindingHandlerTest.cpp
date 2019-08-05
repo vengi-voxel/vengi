@@ -58,12 +58,12 @@ protected:
 
 	void execute(int32_t key, int16_t modifier = KMOD_NONE) {
 		EXPECT_TRUE(util::executeCommandsForBinding(_parser.getBindings(), key, modifier))
-				<< "Command for key '" << SDL_GetKeyName(key) << "' with pressed modifiers " << KeyBindingHandler::getModifierName(modifier) << " should be executed";
+				<< "Command for key '" << KeyBindingHandler::toString(key, modifier) << "' should be executed";
 	}
 
 	void notExecute(int32_t key, int16_t modifier = KMOD_NONE) {
 		EXPECT_FALSE(util::executeCommandsForBinding(_parser.getBindings(), key, modifier))
-				<< "Command for key '" << SDL_GetKeyName(key) << "' with pressed modifiers " << KeyBindingHandler::getModifierName(modifier) << " should not be executed";
+				<< "Command for key '" << KeyBindingHandler::toString(key, modifier) << "' should not be executed";
 	}
 
 	/**

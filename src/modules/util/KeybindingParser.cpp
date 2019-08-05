@@ -41,7 +41,6 @@ void KeybindingParser::parseKeyAndCommand(std::string key, const std::string& co
 	}
 
 	SDL_Keycode keyCode;
-	key = core::string::replaceAll(key, "_", " ");
 	if (key == button::LEFT_MOUSE_BUTTON) {
 		keyCode = CUSTOM_SDLK_MOUSE_LEFT;
 	} else if (key == button::RIGHT_MOUSE_BUTTON) {
@@ -53,6 +52,7 @@ void KeybindingParser::parseKeyAndCommand(std::string key, const std::string& co
 	} else if (key == button::MOUSE_WHEEL_DOWN) {
 		keyCode = CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
 	} else {
+		key = core::string::replaceAll(key, "_", " ");
 		keyCode = SDL_GetKeyFromName(key.c_str());
 	}
 	if (keyCode == SDLK_UNKNOWN) {
