@@ -18,6 +18,7 @@
 #include "ShaderManager.h"
 #include "util/KeybindingHandler.h"
 #include "util/KeybindingParser.h"
+#include "util/CustomButtonNames.h"
 
 namespace video {
 
@@ -111,7 +112,9 @@ bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
 	return handleKeyRelease(key, modifier);
 }
 
-bool WindowedApp::handleKeyRelease(int32_t key, int16_t modifier) {
+bool WindowedApp::handleKeyRelease(int32_t key, int16_t /*modifier*/) {
+	// don't use modifier here - this is the modifier that was released. But
+	// we need the currently pressed modifier mask
 	return _keybindingHandler.execute(key, SDL_GetModState(), false, _now);
 }
 
@@ -120,7 +123,7 @@ bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier) {
 }
 
 bool WindowedApp::onMouseWheel(int32_t x, int32_t y) {
-	const int32_t key = y < 0 ? util::CUSTOM_SDLK_MOUSE_WHEEL_UP : util::CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
+	const int32_t key = y < 0 ? util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP : util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
 	const int16_t mod = SDL_GetModState();
 	if (handleKeyPress(key, mod)) {
 		handleKeyRelease(key, mod);

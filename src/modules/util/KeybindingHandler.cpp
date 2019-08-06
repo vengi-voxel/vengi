@@ -211,20 +211,10 @@ bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, i
 }
 
 std::string KeyBindingHandler::getKeyName(int32_t key) {
-	if (key == CUSTOM_SDLK_MOUSE_LEFT) {
-		return button::LEFT_MOUSE_BUTTON;
-	} else if (key == CUSTOM_SDLK_MOUSE_RIGHT) {
-		return button::RIGHT_MOUSE_BUTTON;
-	} else if (key == CUSTOM_SDLK_MOUSE_MIDDLE) {
-		return button::MIDDLE_MOUSE_BUTTON;
-	} else if (key == CUSTOM_SDLK_MOUSE_X1) {
-		return button::X1_MOUSE_BUTTON;
-	} else if (key == CUSTOM_SDLK_MOUSE_X2) {
-		return button::X2_MOUSE_BUTTON;
-	} else if (key == CUSTOM_SDLK_MOUSE_WHEEL_UP) {
-		return button::MOUSE_WHEEL_UP;
-	} else if (key == CUSTOM_SDLK_MOUSE_WHEEL_DOWN) {
-		return button::MOUSE_WHEEL_DOWN;
+	for (int i = 0; i < lengthof(button::CUSTOMBUTTONMAPPING); ++i) {
+		if (button::CUSTOMBUTTONMAPPING[i].key == key) {
+			return button::CUSTOMBUTTONMAPPING[i].name;
+		}
 	}
 	return core::string::toLower(SDL_GetKeyName((SDL_Keycode)key));
 }

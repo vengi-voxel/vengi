@@ -7,8 +7,34 @@
 #include <SDL.h>
 #include <string>
 
+#define CUSTOM_SDL_KEYCODE(X) SDL_SCANCODE_TO_KEYCODE((util::button::CUSTOM_SCANCODES + (X)))
+
 namespace util {
 namespace button {
+
+#define CUSTOM_SDL_BUTTON_OFFSET (SDL_BUTTON_X2 + 10)
+static const int32_t CUSTOM_SCANCODES               = SDL_NUM_SCANCODES + 1;
+static const int32_t CUSTOM_SDLK_MOUSE_LEFT         = CUSTOM_SDL_KEYCODE(SDL_BUTTON_LEFT);
+static const int32_t CUSTOM_SDLK_MOUSE_MIDDLE       = CUSTOM_SDL_KEYCODE(SDL_BUTTON_MIDDLE);
+static const int32_t CUSTOM_SDLK_MOUSE_RIGHT        = CUSTOM_SDL_KEYCODE(SDL_BUTTON_RIGHT);
+static const int32_t CUSTOM_SDLK_MOUSE_X1           = CUSTOM_SDL_KEYCODE(SDL_BUTTON_X1);
+static const int32_t CUSTOM_SDLK_MOUSE_X2           = CUSTOM_SDL_KEYCODE(SDL_BUTTON_X2);
+static const int32_t CUSTOM_SDLK_MOUSE_WHEEL_UP     = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 0);
+static const int32_t CUSTOM_SDLK_MOUSE_WHEEL_DOWN   = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 1);
+#undef CUSTOM_SDL_BUTTON_OFFSET
+
+static const struct CustomButtonMapping {
+	int32_t key;
+	std::string name;
+} CUSTOMBUTTONMAPPING[] = {
+	{CUSTOM_SDLK_MOUSE_LEFT, "left_mouse"},
+	{CUSTOM_SDLK_MOUSE_MIDDLE, "middle_mouse"},
+	{CUSTOM_SDLK_MOUSE_RIGHT, "right_mouse"},
+	{CUSTOM_SDLK_MOUSE_X1, "x1_mouse"},
+	{CUSTOM_SDLK_MOUSE_X2, "x2_mouse"},
+	{CUSTOM_SDLK_MOUSE_WHEEL_UP, "wheelup"},
+	{CUSTOM_SDLK_MOUSE_WHEEL_DOWN, "wheeldown"},
+};
 
 // note: doesn't contain all combinations
 static constexpr struct ModifierMapping {
@@ -30,14 +56,6 @@ static constexpr struct ModifierMapping {
 	{KMOD_ALT | KMOD_SHIFT | KMOD_SHIFT, "ctrl+alt+shift"},
 	{0, nullptr}
 };
-
-static const std::string LEFT_MOUSE_BUTTON = "left_mouse";
-static const std::string RIGHT_MOUSE_BUTTON = "right_mouse";
-static const std::string MIDDLE_MOUSE_BUTTON = "middle_mouse";
-static const std::string X1_MOUSE_BUTTON = "x1_mouse";
-static const std::string X2_MOUSE_BUTTON = "x2_mouse";
-static const std::string MOUSE_WHEEL_UP = "wheelup";
-static const std::string MOUSE_WHEEL_DOWN = "wheeldown";
 
 }
 }

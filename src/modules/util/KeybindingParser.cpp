@@ -4,6 +4,7 @@
 
 #include "KeybindingParser.h"
 #include "CustomButtonNames.h"
+#include "core/Array.h"
 
 namespace util {
 
@@ -40,22 +41,14 @@ void KeybindingParser::parseKeyAndCommand(std::string key, const std::string& co
 		}
 	}
 
-	SDL_Keycode keyCode;
-	if (key == button::LEFT_MOUSE_BUTTON) {
-		keyCode = CUSTOM_SDLK_MOUSE_LEFT;
-	} else if (key == button::RIGHT_MOUSE_BUTTON) {
-		keyCode = CUSTOM_SDLK_MOUSE_RIGHT;
-	} else if (key == button::MIDDLE_MOUSE_BUTTON) {
-		keyCode = CUSTOM_SDLK_MOUSE_MIDDLE;
-	} else if (key == button::X1_MOUSE_BUTTON) {
-		keyCode = CUSTOM_SDLK_MOUSE_X1;
-	} else if (key == button::X2_MOUSE_BUTTON) {
-		keyCode = CUSTOM_SDLK_MOUSE_X2;
-	} else if (key == button::MOUSE_WHEEL_UP) {
-		keyCode = CUSTOM_SDLK_MOUSE_WHEEL_UP;
-	} else if (key == button::MOUSE_WHEEL_DOWN) {
-		keyCode = CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
-	} else {
+	SDL_Keycode keyCode = SDLK_UNKNOWN;
+	for (int i = 0; i < lengthof(button::CUSTOMBUTTONMAPPING); ++i) {
+		if (button::CUSTOMBUTTONMAPPING[i].name == key) {
+			keyCode = button::CUSTOMBUTTONMAPPING[i].key;
+			break;
+		}
+	}
+	if (keyCode == SDLK_UNKNOWN) {
 		key = core::string::replaceAll(key, "_", " ");
 		keyCode = SDL_GetKeyFromName(key.c_str());
 	}
