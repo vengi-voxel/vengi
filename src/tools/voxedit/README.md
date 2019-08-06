@@ -38,18 +38,17 @@ my own engine and evolved into something that others might find useful, too.
 
 ## Controls
 
-* Placing voxels via left mouse button
+* Placing voxels via left mouse button or SHIFT+[CTRL+]Cursors
 * Deleting voxels via right mouse button
 * Rotating viewport via middle mouse button or holding alt and moving the mouse
 * Holding the left or right mouse buttons spans an AABB to perform the action in
 * Using the keybinding for `+actionexecute` (v) command allows you to also span an AABB with
   the cursor keys (resp. the keys that are bound to the `+movecursor[direction]` commands).
 * Enter places the reference position at the current cursor position
-* Shift+Tab opens the console (type cmdlist and cvarlist)
+* SHIFT+Tab opens the console (type cmdlist and cvarlist)
 
 ## Planned
 
-* Reduce memory consumption by compressing the memento states
 * SceneSettings dialog
   - Change sun angles
 * Voxel to transparency with a HSV threshold
@@ -81,3 +80,4 @@ my own engine and evolved into something that others might find useful, too.
 
 * Fix memento states for merge of layers
 * Fix memento states for layer group modifications
+* Fix memento states for translating a volume
