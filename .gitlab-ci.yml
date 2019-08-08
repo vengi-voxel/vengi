@@ -21,7 +21,7 @@ build:
     paths:
     - build/compile_commands.json
 
-test:
+.test:
   variables:
     POSTGRES_DB: enginetest
     POSTGRES_USER: engine
@@ -49,7 +49,7 @@ test:
     paths:
     - cppcheck.xml
 
-analyse:valgrind:
+.analyse:valgrind:
   stage: analyse
   dependencies:
     - build
@@ -59,7 +59,7 @@ analyse:valgrind:
     paths:
     - build/memcheck*.xml
 
-pages:
+.pages:
   script:
     - make doc
     - mv build/html/ public/
