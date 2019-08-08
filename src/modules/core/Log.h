@@ -7,7 +7,6 @@
 #include "Hash.h"
 #include <string.h>
 #include <stdio.h>
-#include <memory>
 #include <inttypes.h>
 #include <string>
 #include <SDL.h>

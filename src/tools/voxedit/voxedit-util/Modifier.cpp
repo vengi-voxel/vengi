@@ -10,6 +10,7 @@
 #include "core/String.h"
 #include "voxel/polyvox/Region.h"
 #include "core/command/Command.h"
+#include "SceneManager.h"
 
 namespace voxedit {
 

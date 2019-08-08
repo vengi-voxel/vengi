@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include <memory>
 #include <vector>
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>

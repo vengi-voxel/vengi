@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/IComponent.h"
 #include "KeybindingParser.h"
 #include <unordered_set>
 #include <stdint.h>

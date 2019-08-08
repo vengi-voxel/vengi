@@ -12,6 +12,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include "math/Axis.h"
 #include "voxel/polyvox/Face.h"
+#include "voxel/polyvox/RawVolume.h"
 #include "ModifierType.h"
 #include "ModifierButton.h"
 

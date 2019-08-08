@@ -5,6 +5,8 @@
 #include "Region.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 #include <stdint.h>
 #include <limits>
 

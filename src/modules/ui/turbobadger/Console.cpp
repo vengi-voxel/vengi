@@ -1,6 +1,12 @@
+/**
+ * @file
+ */
+
 #include "Console.h"
 #include "TurboBadger.h"
 #include "FontUtil.h"
+#include "core/Color.h"
+#include "UIApp.h"
 
 namespace ui {
 namespace turbobadger {

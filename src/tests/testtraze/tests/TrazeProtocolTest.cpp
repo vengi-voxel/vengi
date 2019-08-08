@@ -2,8 +2,6 @@
  * @file
  */
 
-#pragma once
-
 #include "core/tests/AbstractTest.h"
 #include "../TrazeProtocol.h"
 #include "../TrazeEvents.h"
