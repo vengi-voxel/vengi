@@ -12,7 +12,7 @@
 #include <SDL.h>
 
 /**
- * @brief Class that implements messages with lifetime. The messages are removed once the got old enough.
+ * @brief Class that implements messages with lifetime. The messages are removed once they got old enough.
  *
  * This can e.g. be used to display hud messages
  */
