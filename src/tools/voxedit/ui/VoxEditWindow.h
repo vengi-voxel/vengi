@@ -7,6 +7,7 @@
 #include "ui/turbobadger/Window.h"
 #include "layer/LayerWindow.h"
 #include "voxedit-util/ModifierType.h"
+#include "settings/SceneSettingsWindow.h"
 #include "core/Common.h"
 #include "core/String.h"
 #include "math/Axis.h"

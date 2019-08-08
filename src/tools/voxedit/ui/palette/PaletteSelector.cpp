@@ -4,6 +4,8 @@
 
 #include "PaletteSelector.h"
 #include "voxedit-util/SceneManager.h"
+#include "core/App.h"
+#include "io/Filesystem.h"
 
 namespace voxedit {
 

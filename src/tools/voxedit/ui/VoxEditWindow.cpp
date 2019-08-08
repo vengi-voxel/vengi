@@ -14,6 +14,7 @@
 #include "core/command/Command.h"
 #include "editorscene/Viewport.h"
 #include "settings/SceneSettingsWindow.h"
+#include "layer/LayerWidget.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "../VoxEdit.h"
