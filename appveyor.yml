@@ -7,27 +7,32 @@ image: Visual Studio 2017
 
 configuration: Release
 
+platform:
+- x64
+
 branches:
   only:
   - master
 
 shallow_clone: true
 
+cache:
+  - C:\Tools\vcpkg\installed\
+
 # vcpkg enet, imgui are already available, but no on appveyor yet
 # assimp, qt5 don't build
 #  lua glm glslang gtest curl libuv zlib
-before_build:
-  - vcpkg install curl libpq
-  # Install OpenCL headers and libraries
-  - set NUGETDIR=C:\NUGET
-  - nuget install opencl-nug -Version 0.777.77 -OutputDirectory %NUGETDIR%
-  - dir %NUGETDIR%\opencl-nug.0.777.77\build\native\
-  - set OCL_ROOT=%NUGETDIR%\opencl-nug.0.777.77\build\native
+install:
+  - cmd: set VCPKG_DEFAULT_TRIPLET=x64-windows
+  - cmd: vcpkg integrate install
+  - cmd: vcpkg install curl[winssl] libpq opencl
   # Install OpenCL Runtime
-  - choco install opencl-intel-cpu-runtime
+  - cmd: choco install opencl-intel-cpu-runtime
+  - cmd: appveyor DownloadFile "http://registrationcenter-download.intel.com/akdlm/irc_nas/12512/opencl_runtime_16.1.2_x64_setup.msi"
+  - cmd: start /wait msiexec /i opencl_runtime_16.1.2_x64_setup.msi /qn  /l*v opencl_runtime.log
   # Check if it's working
-  - ps: appveyor DownloadFile "https://ci.appveyor.com/api/projects/oblomov/clinfo/artifacts/clinfo.exe?job=platform:+x64" -FileName clinfo.exe
-  - .\clinfo.exe
+  - cmd: appveyor DownloadFile "https://ci.appveyor.com/api/projects/oblomov/clinfo/artifacts/clinfo.exe?job=platform:+x64" -FileName clinfo.exe
+  - clinfo.exe
 
 build_script:
   - md build
