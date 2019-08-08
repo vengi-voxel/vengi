@@ -8,15 +8,27 @@ stages:
 variables:
   CCACHE_BASEDIR: ${CI_PROJECT_DIR}
   CCACHE_DIR: ${CI_PROJECT_DIR}/ccache
+  BUILD_DIR: ${CI_PROJECT_DIR}/build
 
 cache:
   paths:
     - ccache/
+    - build/
 
-build:
+build-unity:
   stage: build
   script:
-    - make -j 4 all
+    - cmake -H. -B${BUILD_DIR}/default
+    - make -j 4 all -C ${BUILD_DIR}/default
+  artifacts:
+    paths:
+    - build/compile_commands.json
+
+build-non-unity:
+  stage: build
+  script:
+    - cmake -H. -B${BUILD_DIR}/non-unity -DDISABLE_UNITY=On
+    - make -j 4 all -C ${BUILD_DIR}/non-unity
   artifacts:
     paths:
     - build/compile_commands.json
