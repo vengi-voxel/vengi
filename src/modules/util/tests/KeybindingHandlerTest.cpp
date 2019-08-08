@@ -25,11 +25,12 @@ left_alt altmodcommand
 class KeybindingHandlerTest : public core::AbstractTest {
 protected:
 	KeybindingParser _parser;
+	KeyBindingHandler _handler;
 	bool _allmodscommand = false;
 	bool _ctrlshiftmodcommand = false;
 	bool _somecommand = false;
 	bool _altmodcommand = false;
-
+	bool _foo = false;
 	bool _xyz = false;
 
 	KeybindingHandlerTest() :
@@ -44,10 +45,16 @@ protected:
 			Log::error("Not all bindings could get parsed");
 			return false;
 		}
-		_xyz = _ctrlshiftmodcommand = _somecommand = _altmodcommand = _allmodscommand = false;
+		_handler.construct();
+		if (!_handler.init()) {
+			Log::error("Failed to initialize the key binding handler");
+			return false;
+		}
+		_handler.setBindings(_parser.getBindings());
+		_xyz = _ctrlshiftmodcommand = _somecommand = _altmodcommand = _allmodscommand = _foo = false;
 		core::Command::shutdown();
 		core::Command::registerCommand("+bar", [] (const core::CmdArgs& args) {});
-		core::Command::registerCommand("+foo", [] (const core::CmdArgs& args) {});
+		core::Command::registerCommand("+foo", [this] (const core::CmdArgs& args) {this->_foo = true;});
 		core::Command::registerCommand("+xyz", [this] (const core::CmdArgs& args) {this->_xyz = true;});
 		core::Command::registerCommand("somecommand", [this] (const core::CmdArgs& args) {this->_somecommand = true;});
 		core::Command::registerCommand("altmodcommand", [this] (const core::CmdArgs& args) {this->_altmodcommand = true;});
@@ -56,26 +63,35 @@ protected:
 		return true;
 	}
 
-	void execute(int32_t key, int16_t modifier = KMOD_NONE) {
-		EXPECT_TRUE(util::executeCommandsForBinding(_parser.getBindings(), key, modifier))
+	void onCleanupApp() override {
+		core::AbstractTest::onCleanupApp();
+		_handler.shutdown();
+	}
+
+	void execute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true) {
+		EXPECT_TRUE(_handler.execute(key, modifier, pressed, 0ul))
 				<< "Command for key '" << KeyBindingHandler::toString(key, modifier) << "' should be executed";
 	}
 
-	void notExecute(int32_t key, int16_t modifier = KMOD_NONE) {
-		EXPECT_FALSE(util::executeCommandsForBinding(_parser.getBindings(), key, modifier))
+	void notExecute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true) {
+		EXPECT_FALSE(_handler.execute(key, modifier, pressed, 0ul))
 				<< "Command for key '" << KeyBindingHandler::toString(key, modifier) << "' should not be executed";
 	}
 
 	/**
 	 * for +commandname bindings
 	 */
-	void executeActionButtonCommand(int32_t key, int16_t modifier = KMOD_NONE) {
-		execute(key, modifier);
+	void executeActionButtonCommand(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true) {
+		execute(key, modifier, pressed);
 	}
 };
 
 TEST_F(KeybindingHandlerTest, testValidCommandNoModifiers) {
-	executeActionButtonCommand(SDLK_w);
+	executeActionButtonCommand(SDLK_w, KMOD_NONE, true);
+	EXPECT_TRUE(_foo) << "expected command wasn't executed";
+	EXPECT_TRUE(_handler.isPressed(SDLK_w));
+	executeActionButtonCommand(SDLK_w, KMOD_NONE, false);
+	EXPECT_FALSE(_handler.isPressed(SDLK_w));
 }
 
 TEST_F(KeybindingHandlerTest, testNotBoundKey) {
@@ -89,7 +105,9 @@ TEST_F(KeybindingHandlerTest, testLeftAltModifier) {
 }
 
 TEST_F(KeybindingHandlerTest, testRightAltModifier) {
-	notExecute(SDLK_w, KMOD_RALT);
+	execute(SDLK_w, KMOD_RALT);
+	EXPECT_TRUE(_foo) << "expected command wasn't executed - there is no right_alt+w bound, just w";
+	EXPECT_FALSE(_somecommand) << "unexpected command was executed";
 }
 
 TEST_F(KeybindingHandlerTest, testAltKey) {

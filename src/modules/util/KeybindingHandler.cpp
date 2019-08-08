@@ -51,7 +51,14 @@ bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask) {
 	return true;
 }
 
-bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t modMask, uint64_t now) {
+/**
+ * @param bindings Map of bindings
+ * @param key The key that was pressed
+ * @param modifier The modifier mask
+ * @return @c true if the key+modifier combination lead to a command execution via
+ * key bindings, @c false otherwise
+ */
+static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t modMask, uint64_t now) {
 	auto range = bindings.equal_range(key);
 	const int16_t modifier = modMask & (KMOD_SHIFT | KMOD_CTRL | KMOD_ALT);
 	for (auto i = range.first; i != range.second; ++i) {
@@ -158,6 +165,10 @@ bool KeyBindingHandler::load(const std::string& filename) {
 	const KeybindingParser p(bindings);
 	_bindings.insert(p.getBindings().begin(), p.getBindings().end());
 	return true;
+}
+
+void KeyBindingHandler::setBindings(const BindMap& bindings) {
+	_bindings = bindings;
 }
 
 std::string KeyBindingHandler::toString(int32_t key, int16_t modifier) {

@@ -10,17 +10,11 @@
 
 namespace util {
 
-/**
- * @param bindings Map of bindings
- * @param key The key that was pressed
- * @param modifier The modifier mask
- * @return @c true if the key+modifier combination lead to a command execution via
- * key bindings, @c false otherwise
- */
-extern bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t modifier, uint64_t now = 0ul);
-
 extern bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask);
 
+/**
+ * @brief Component that executes commands for key/modifier combinations.
+ */
 class KeyBindingHandler : public core::IComponent {
 private:
 	uint32_t _pressedModifierMask = 0u;
@@ -37,10 +31,6 @@ private:
 	 */
 	bool resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key) const;
 
-	inline bool isPressed(int32_t key) const {
-		return _keys.find(key) != _keys.end();
-	}
-
 	/**
 	 * @brief Tries to identify commands with several modifier masks.
 	 */
@@ -53,11 +43,33 @@ public:
 	void shutdown() override;
 	bool init() override;
 
+	/**
+	 * @brief Print the binding line for a key/modifier combination
+	 */
 	static std::string toString(int32_t key, int16_t modifier);
-	bool load(const std::string& name);
-
-	bool execute(int32_t key, int16_t modifier, bool pressed, uint64_t now);
+	/**
+	 * @brief Resolve the bindings for a given command string
+	 * @return Empty string if the given command doesn't have a binding, or the value
+	 * of @c toString(key, modifier) if a binding was found.
+	 */
 	std::string getKeyBindingsString(const char *cmd) const;
+
+	/**
+	 * @brief Loads a keybindings file
+	 */
+	bool load(const std::string& name);
+	void setBindings(const BindMap& bindings);
+
+	bool isPressed(int32_t key) const;
+
+	/**
+	 * @brief Executes a key up/down commands for a given key/modifier combination
+	 */
+	bool execute(int32_t key, int16_t modifier, bool pressed, uint64_t now);
 };
+
+inline bool KeyBindingHandler::isPressed(int32_t key) const {
+	return _keys.find(key) != _keys.end();
+}
 
 }
