@@ -22,14 +22,16 @@ private:
 	noise::Noise _noise;
 
 	struct NoiseGenerationTask {
+		NoiseGenerationTask() : buffer(nullptr), width(0), height(0), depth(0) {
+		};
 		NoiseGenerationTask(uint8_t *_buffer, int _width, int _height, int _depth) :
 				buffer(_buffer), width(_width), height(_height), depth(_depth) {
 		}
 		/** @brief pointer to preallocated buffer that was hand into the noise task */
 		uint8_t *buffer;
-		const int width;
-		const int height;
-		const int depth;
+		int width;
+		int height;
+		int depth;
 	};
 
 	typedef std::future<NoiseGenerationTask> NoiseFuture;
