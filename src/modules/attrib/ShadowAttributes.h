@@ -6,6 +6,10 @@
 
 #include "Container.h"
 
+#ifdef _WIN32
+#undef max
+#endif
+
 namespace attrib {
 
 /**
