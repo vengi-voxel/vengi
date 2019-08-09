@@ -13,6 +13,7 @@
 #include "commonlua/LUAFunctions.h"
 #include <unordered_map>
 #include <algorithm>
+#include <numeric>
 
 namespace voxel {
 
