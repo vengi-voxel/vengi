@@ -49,6 +49,8 @@ set(FILES
 
 if (WINDOWS)
 	set(UUID_LIBRARIES rpcrt4)
+	# All this windows.h insanities ... giving up on this module
+	set_property(GLOBAL PROPERTY ${LIB}_NOUNITY TRUE)
 elseif (APPLE)
 	set(UUID_LIBRARIES "-framework CoreFoundation")
 else()
