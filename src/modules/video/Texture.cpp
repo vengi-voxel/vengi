@@ -58,7 +58,7 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	video::bindTexture(TextureUnit::Upload, type(), _handle);
 	video::setupTexture(_config);
 	video::uploadTexture(type(), format(), _width, _height, data, index);
-	_layerCount = std::max(_layerCount, index);
+	_layerCount = (std::max)(_layerCount, index);
 	_state = io::IOSTATE_LOADED;
 }
 

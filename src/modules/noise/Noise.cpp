@@ -163,7 +163,8 @@ void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persiste
 		_shader.seamlessNoise(buffer, size * size * components, size, components, octaves, persistence, amplitude, workSize);
 		return;
 	}
-	uint8_t bufferChannel[size * size];
+	std::vector<uint8_t> bufferChannel;
+	bufferChannel.reserve(size * size);
 	const float pi2 = glm::two_pi<float>();
 	const float d = 1.0f / size;
 	for (int channel = 0; channel < components; ++channel) {

@@ -5,6 +5,9 @@
 #include "ShapeBuilder.h"
 #include "math/Frustum.h"
 
+#undef near
+#undef far
+
 namespace video {
 
 ShapeBuilder::ShapeBuilder(int initialSize) :
@@ -74,7 +77,7 @@ void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end, float thic
 		}
 		d *= (thickness * 0.5f);
 
-		const float dp = glm::max(glm::max(d.x, d.y), d.z);
+		const float dp = (glm::max)((glm::max)(d.x, d.y), d.z);
 		const glm::vec3 mins(start.x + dp, start.y - dp, start.z - dp);
 		const glm::vec3 maxs(  end.x - dp,   end.y + dp,   end.z + dp);
 		cube(mins, maxs);

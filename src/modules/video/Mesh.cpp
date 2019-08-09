@@ -143,8 +143,8 @@ bool Mesh::loadMesh(const std::string& filename) {
 	_indices.reserve(numIndices);
 	_boneInfo.clear();
 
-	_aabbMins = glm::vec3(std::numeric_limits<float>::max());
-	_aabbMaxs = glm::vec3(std::numeric_limits<float>::min());
+	_aabbMins = glm::vec3((std::numeric_limits<float>::max)());
+	_aabbMaxs = glm::vec3((std::numeric_limits<float>::min)());
 
 	for (uint32_t i = 0u; i < _meshData.size(); ++i) {
 		const aiMesh* mesh = _scene->mMeshes[i];
