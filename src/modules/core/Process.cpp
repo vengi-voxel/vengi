@@ -125,12 +125,33 @@ int Process::exec(const std::string& command, const std::vector<std::string>& ar
 		cmd.append(" ");
 	}
 
-	STARTUPINFO startupInfo;
-	PROCESS_INFORMATION processInfo;
+	STARTUPINFO startupInfo = {0};
+	SECURITY_ATTRIBUTES secattr = {0};
+	PROCESS_INFORMATION processInfo = {0};
+
+	startupInfo.cb = sizeof(startupInfo);
+	startupInfo.hStdInput = ::GetStdHandle(STD_INPUT_HANDLE);
+	startupInfo.hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
+	startupInfo.hStdError = ::GetStdHandle(STD_ERROR_HANDLE);
+	startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+	secattr.nLength = sizeof(secattr);
+	secattr.bInheritHandle = TRUE;
+	secattr.lpSecurityDescriptor = NULL;
 
 	char* commandPtr = SDL_strdup(cmd.c_str());
-	if (!CreateProcess(nullptr, (LPSTR) commandPtr, nullptr, nullptr, FALSE, CREATE_NO_WINDOW, NULL, nullptr,
+	if (!CreateProcess(nullptr, (LPSTR)commandPtr, &secattr, &secattr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr,
 			&startupInfo, &processInfo)) {
+		DWORD errnum = ::GetLastError();
+		LPTSTR errmsg = nullptr;
+		::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+						nullptr, errnum, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&errmsg, 0, nullptr);
+		if (errmsg == nullptr) {
+			Log::error("%d - Unknown error", errnum);
+		} else {
+			Log::error("%d - %s", errnum, errmsg);
+			::LocalFree(errmsg);
+		}
 		SDL_free(commandPtr);
 		return -1;
 	}
