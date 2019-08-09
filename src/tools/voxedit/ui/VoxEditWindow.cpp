@@ -431,7 +431,10 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			delete settings;
 		}
 	} else if (id == TBIDC("loadpalette")) {
-		new PaletteSelector(this);
+		tb::TBPoint rootPos(ev.target_x, ev.target_y);
+		ev.target->convertToRoot(rootPos.x, rootPos.y);
+		PaletteSelector* selector = new PaletteSelector(this);
+		selector->setPosition(rootPos);
 	} else if (id == TBIDC("scene_settings") && ev.ref_id == TBIDC("ok")) {
 		auto &renderer = sceneMgr().renderer();
 		if (_settings.ambientDirty) {
