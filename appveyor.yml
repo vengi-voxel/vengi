@@ -25,7 +25,7 @@ cache:
 install:
   - cmd: set VCPKG_DEFAULT_TRIPLET=x64-windows
   - cmd: vcpkg integrate install
-  - cmd: vcpkg install curl[winssl] libpq opencl sdl2 lua libuv
+  - cmd: vcpkg install curl[winssl] libpq opencl sdl2 lua libuv qt5-base
   # Install OpenCL Runtime
   - cmd: choco install opencl-intel-cpu-runtime
   #- cmd: appveyor DownloadFile "http://registrationcenter-download.intel.com/akdlm/irc_nas/12512/opencl_runtime_16.1.2_x64_setup.msi"
