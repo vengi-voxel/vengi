@@ -12,6 +12,9 @@ set(SRCS
 	ShaderTool.h ShaderTool.cpp
 	${SHARED_SRCS}
 )
+if (MSVC)
+	set_property(GLOBAL PROPERTY ${PROJECT_NAME}_NOUNITY TRUE)
+endif()
 engine_add_build_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} NOINSTALL)
 if(NOT CMAKE_CROSSCOMPILING)
 add_dependencies(${PROJECT_NAME} glslangValidator)
