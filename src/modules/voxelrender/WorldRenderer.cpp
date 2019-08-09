@@ -125,8 +125,8 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 }
 
 void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
-	glm::ivec3 mins(std::numeric_limits<int>::max());
-	glm::ivec3 maxs(std::numeric_limits<int>::min());
+	glm::ivec3 mins((std::numeric_limits<int>::max)());
+	glm::ivec3 maxs((std::numeric_limits<int>::min)());
 
 	const voxel::ChunkMeshes& meshes = chunkBuffer.meshes;
 	for (auto& v : meshes.opaqueMesh.getVertexVector()) {
