@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Rest.h"
 #include "Var.h"
 #include "GameConfig.h"

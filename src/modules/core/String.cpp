@@ -3,7 +3,7 @@
  */
 
 #include "String.h"
-#include <cctype>
+#include <ctype.h>
 
 namespace core {
 namespace string {

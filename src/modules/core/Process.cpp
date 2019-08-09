@@ -117,8 +117,9 @@ int Process::exec(const std::string& command, const std::vector<std::string>& ar
 	return 0;
 #elif __WINDOWS__
 	std::string cmd = command;
-	if (!arguments.empty())
+	if (!arguments.empty()) {
 		cmd.append(" ");
+	}
 	for (const std::string& argument : arguments) {
 		cmd.append(argument);
 		cmd.append(" ");
