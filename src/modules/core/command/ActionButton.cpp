@@ -57,7 +57,7 @@ bool ActionButton::handleUp(int32_t key, uint64_t releasedMillis) {
 		}
 		pressedKeys[i] = ACTION_BUTTON_NO_KEY;
 		if (!pressed()) {
-			durationMillis = releasedMillis - pressedMillis;
+			durationMillis = (uint32_t)(releasedMillis - pressedMillis);
 			return true;
 		}
 		break;
