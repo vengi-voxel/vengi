@@ -16,10 +16,10 @@ namespace $namespace$ {
 
 namespace priv$name$ {
 
-static const char* VertexShaderBuffer = R"($vertexshaderbuffer$)";
-static const char* ComputeShaderBuffer = R"($computeshaderbuffer$)";
-static const char* FragmentShaderBuffer = R"($fragmentshaderbuffer$)";
-static const char* GeometryShaderBuffer = R"($geometryshaderbuffer$)";
+static const char* VertexShaderBuffer = $vertexshaderbuffer$;
+static const char* ComputeShaderBuffer = $computeshaderbuffer$;
+static const char* FragmentShaderBuffer = $fragmentshaderbuffer$;
+static const char* GeometryShaderBuffer = $geometryshaderbuffer$;
 
 }
 

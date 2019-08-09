@@ -31,6 +31,20 @@ static const char *convertToTexUnit(int unit) {
 	}
 }
 
+/**
+ * @brief MSVC doesn't like strings that exceeds a certain length. So we have to split them up here.
+ * @sa https://docs.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/compiler-error-c2026?view=vs-2019
+ */
+static std::string maxStringLength(const std::string& input) {
+#ifdef _MSC_VER
+	if (input.length() > 10000) {
+		Log::debug("Need to split the shader source string");
+		return "R\"(" + core::string::replaceAll(input, "\n", "\"\n\"") + ")\"";
+	}
+#endif
+	return "R\"(" + input + ")\"";
+}
+
 bool generateSrc(const std::string& templateHeader, const std::string& templateSource, const std::string& templateUniformBuffer, const ShaderStruct& shaderStruct,
 		const io::FilesystemPtr& filesystem, const std::string& namespaceSrc, const std::string& sourceDirectory, const std::string& shaderDirectory, const std::string& postfix,
 		const std::string& vertexBuffer, const std::string& geometryBuffer, const std::string& fragmentBuffer, const std::string& computeBuffer) {
@@ -397,10 +411,10 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 	srcSource = core::string::replaceAll(srcSource, "$prototypes$", prototypes.str());
 	srcSource = core::string::replaceAll(srcSource, "$includes$", includes.str());
 
-	srcSource = core::string::replaceAll(srcSource, "$vertexshaderbuffer$", vertexBuffer);
-	srcSource = core::string::replaceAll(srcSource, "$computeshaderbuffer$", computeBuffer);
-	srcSource = core::string::replaceAll(srcSource, "$fragmentshaderbuffer$", fragmentBuffer);
-	srcSource = core::string::replaceAll(srcSource, "$geometryshaderbuffer$", geometryBuffer);
+	srcSource = core::string::replaceAll(srcSource, "$vertexshaderbuffer$", maxStringLength(vertexBuffer));
+	srcSource = core::string::replaceAll(srcSource, "$computeshaderbuffer$", maxStringLength(computeBuffer));
+	srcSource = core::string::replaceAll(srcSource, "$fragmentshaderbuffer$", maxStringLength(fragmentBuffer));
+	srcSource = core::string::replaceAll(srcSource, "$geometryshaderbuffer$", maxStringLength(geometryBuffer));
 
 	Log::debug("Generate shader bindings for %s", shaderStruct.name.c_str());
 	const std::string targetHeaderFile = sourceDirectory + filename + ".h" + postfix;
