@@ -181,7 +181,7 @@ int32_t Buffer::createFullscreenQuad() {
 	// -------------
 	// -1/-1    1/-1
 	//
-	static const glm::vec3 vecs[] = {
+	alignas(16) static const glm::vec3 vecs[] = {
 		// left bottom, right bottom, right top
 		glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3( 1.0f,  1.0f, 0.0f),
 		// left bottom, right top, left top
@@ -201,7 +201,7 @@ int32_t Buffer::createFullscreenTextureBuffer() {
 	// ----------
 	// 0/1    1/1
 	//
-	static const glm::vec2 vecs[] = {
+	alignas(16) static const glm::vec2 vecs[] = {
 		// left bottom, right bottom, right top
 		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 1.0f), glm::vec2(1.0f, 0.0f),
 		// left bottom, right top, left top
@@ -221,7 +221,7 @@ int32_t Buffer::createFullscreenTextureBufferYFlipped() {
 	// ----------
 	// 0/0    1/0
 	//
-	static const glm::vec2 vecs[] = {
+	alignas(16) static const glm::vec2 vecs[] = {
 		// left bottom, right bottom, right top
 		glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f),
 		// left bottom, right top, left top
@@ -231,7 +231,7 @@ int32_t Buffer::createFullscreenTextureBufferYFlipped() {
 }
 
 int32_t Buffer::createWhiteColorForQuad() {
-	static const glm::vec4 color[] = {
+	alignas(16) static const glm::vec4 color[] = {
 		glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f)
 	};
 	return create(color, sizeof(color));
@@ -250,7 +250,7 @@ glm::ivec2 Buffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& di
 	// -------------
 	// -1/-1    1/-1
 	//
-	const glm::vec2 vecs[] = {
+	alignas(16) const glm::vec2 vecs[] = {
 		// left bottom, right bottom, right top
 		glm::vec2(xy.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y),
 		// left bottom, right top, left top
