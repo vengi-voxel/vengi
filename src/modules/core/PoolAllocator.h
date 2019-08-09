@@ -7,6 +7,9 @@
 #include "Assert.h"
 #include "Log.h"
 #include <stdint.h>
+#ifdef _WIN32
+#undef max
+#endif
 
 namespace core {
 
