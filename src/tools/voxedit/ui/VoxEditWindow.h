@@ -77,7 +77,6 @@ private:
 	std::string _exportFilter;
 	std::string _importFilter;
 	bool _fourViewAvailable = false;
-	ModifierType _modBeforeMouse = ModifierType::None;
 	core::VarPtr _lastOpenedFile;
 
 	glm::ivec3 _lastCursorPos;
