@@ -34,10 +34,10 @@ glm::ivec3 WorldMgr::randomPos() const {
 	int highestX = 100;
 	int highestZ = 100;
 	for (const glm::ivec3& gridPos : _positionsExtracted) {
-		lowestX = std::min(lowestX, gridPos.x);
-		lowestZ = std::min(lowestZ, gridPos.z);
-		highestX = std::min(highestX, gridPos.x);
-		highestZ = std::min(highestZ, gridPos.z);
+		lowestX = core_min(lowestX, gridPos.x);
+		lowestZ = core_min(lowestZ, gridPos.z);
+		highestX = core_min(highestX, gridPos.x);
+		highestZ = core_min(highestZ, gridPos.z);
 	}
 	const int x = _random.random(lowestX, highestX);
 	const int z = _random.random(lowestZ, highestZ);

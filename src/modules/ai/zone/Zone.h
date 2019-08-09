@@ -78,7 +78,7 @@ protected:
 	bool doDestroyAI(const CharacterId& id);
 
 public:
-	Zone(const std::string& name, int threadCount = std::min(1u, std::thread::hardware_concurrency())) :
+	Zone(const std::string& name, int threadCount = core_min(1u, std::thread::hardware_concurrency())) :
 			_name(name), _debug(false), _threadPool(threadCount) {
 		_threadPool.init();
 	}

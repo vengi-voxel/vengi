@@ -57,11 +57,11 @@ int32_t Noise::intValueNoise(const glm::ivec3& pos, int32_t seed) const {
 	constexpr int32_t fixedseed = 1013;
 	int32_t n = (xgen * pos.x + ygen * pos.y + zgen * pos.z + fixedseed * seed) & std::numeric_limits<int32_t>::max();
 	n = (n >> 13) ^ n;
-	return (n * (n * n * 60493 + 19990303) + 1376312589) & std::numeric_limits<int32_t>::max();
+	return (n * (n * n * 60493 + 19990303) + 1376312589) & (std::numeric_limits<int32_t>::max)();
 }
 
 double Noise::doubleValueNoise(const glm::ivec3& pos, int32_t seed) const {
-	constexpr double div = static_cast<double>(std::numeric_limits<int32_t>::max() / 2 + 1);
+	constexpr double div = static_cast<double>((std::numeric_limits<int32_t>::max)() / 2 + 1);
 	const int ni = intValueNoise(pos, seed);
 	const double n = static_cast<double>(ni / div);
 	return 1.0 - glm::abs(n);
@@ -74,7 +74,7 @@ double Noise::voronoi(const glm::dvec3& pos, bool enableDistance, double frequen
 			(p.y > 0.0 ? (int)(p.y) : (int)(p.y) - 1),
 			(p.z > 0.0 ? (int)(p.z) : (int)(p.z) - 1));
 
-	double minDist = static_cast<double>(std::numeric_limits<int32_t>::max());
+	double minDist = static_cast<double>((std::numeric_limits<int32_t>::max)());
 	glm::dvec3 vp(0.0);
 
 	const int d = 2;

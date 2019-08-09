@@ -57,8 +57,8 @@ void ProfilerGPU::leave() {
 			const double timed = double(time);
 			_samples[_sampleCount & (_maxSampleCount - 1)] = timed;
 			++_sampleCount;
-			_max = std::max(_max, timed);
-			_min = std::min(_min, timed);
+			_max = core_max(_max, timed);
+			_min = core_min(_min, timed);
 			_avg = _avg * 0.5 + timed / 1e9 * 0.5;
 		}
 	}

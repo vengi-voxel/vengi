@@ -37,8 +37,8 @@ RawVolume* cropVolume(const RawVolume* volume, CropSkipCondition condition = Cro
 	core_trace_scoped(CropRawVolume);
 	const glm::ivec3& mins = volume->mins();
 	const glm::ivec3& maxs = volume->maxs();
-	glm::ivec3 newMins(std::numeric_limits<int>::max());
-	glm::ivec3 newMaxs(std::numeric_limits<int>::min());
+	glm::ivec3 newMins((std::numeric_limits<int>::max)());
+	glm::ivec3 newMaxs((std::numeric_limits<int>::min)());
 	voxel::RawVolume::Sampler volumeSampler(volume);
 	for (int32_t z = mins.z; z <= maxs.z; ++z) {
 		for (int32_t y = mins.y; y <= maxs.y; ++y) {
@@ -48,17 +48,17 @@ RawVolume* cropVolume(const RawVolume* volume, CropSkipCondition condition = Cro
 				if (condition(voxel)) {
 					continue;
 				}
-				newMins.x = glm::min(newMins.x, x);
-				newMins.y = glm::min(newMins.y, y);
-				newMins.z = glm::min(newMins.z, z);
+				newMins.x = core_min(newMins.x, x);
+				newMins.y = core_min(newMins.y, y);
+				newMins.z = core_min(newMins.z, z);
 
-				newMaxs.x = glm::max(newMaxs.x, x);
-				newMaxs.y = glm::max(newMaxs.y, y);
-				newMaxs.z = glm::max(newMaxs.z, z);
+				newMaxs.x = core_max(newMaxs.x, x);
+				newMaxs.y = core_max(newMaxs.y, y);
+				newMaxs.z = core_max(newMaxs.z, z);
 			}
 		}
 	}
-	if (newMaxs.z == std::numeric_limits<int>::min()) {
+	if (newMaxs.z == (std::numeric_limits<int>::min)()) {
 		return nullptr;
 	}
 	return cropVolume(volume, newMins, newMaxs, condition);

@@ -117,7 +117,7 @@ void App::onFrame() {
 		_deltaFrameMillis = 1;
 	} else {
 		const uint64_t now = systemMillis();
-		_deltaFrameMillis = (std::max)(int64_t(1), int64_t(now) - int64_t(_now));
+		_deltaFrameMillis = core_max(int64_t(1), int64_t(now) - int64_t(_now));
 		_timeProvider->update(now);
 		_now = now;
 
@@ -405,8 +405,8 @@ void App::usage() const {
 	int maxWidthLong = 0;
 	int maxWidthShort = 0;
 	for (const Argument& a : _arguments) {
-		maxWidthLong = (std::max)(maxWidthLong, (int)a.longArg().size());
-		maxWidthShort = (std::max)(maxWidthShort, (int)a.shortArg().size());
+		maxWidthLong = core_max(maxWidthLong, (int)a.longArg().size());
+		maxWidthShort = core_max(maxWidthShort, (int)a.shortArg().size());
 	};
 	int maxWidthOnlyLong = maxWidthLong + maxWidthShort + 3;
 	for (const Argument& a : _arguments) {
@@ -422,10 +422,10 @@ void App::usage() const {
 
 	int maxWidth = 0;
 	core::Var::visitSorted([&] (const core::VarPtr& v) {
-		maxWidth = (std::max)(maxWidth, (int)v->name().size());
+		maxWidth = core_max(maxWidth, (int)v->name().size());
 	});
 	core::Command::visitSorted([&] (const core::Command& c) {
-		maxWidth = (std::max)(maxWidth, (int)strlen(c.name()));
+		maxWidth = core_max(maxWidth, (int)strlen(c.name()));
 	});
 
 	Log::info("---");
@@ -501,7 +501,7 @@ bool App::hasArg(const std::string& arg) const {
 }
 
 std::string App::getArgVal(const std::string& arg, const std::string& defaultVal, int* argi) {
-	int start = argi == nullptr ? 1 : (std::max)(1, *argi);
+	int start = argi == nullptr ? 1 : core_max(1, *argi);
 	for (int i = start; i < _argc; ++i) {
 		if (arg != _argv[i]) {
 			continue;

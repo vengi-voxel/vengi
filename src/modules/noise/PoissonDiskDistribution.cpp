@@ -66,7 +66,7 @@ public:
 		const glm::ivec2 max = glm::clamp(ip + radiusVec, _bounds.mins(), bmaxs);
 
 		const glm::ivec2 minCell((min.x - _offset.x) >> _k, (min.y - _offset.y) >> _k);
-		const glm::ivec2 maxCell = glm::min(1 + glm::ivec2((max.x - _offset.x) >> _k, (max.y - _offset.y) >> _k), _numCells);
+		const glm::ivec2 maxCell = (glm::min)(1 + glm::ivec2((max.x - _offset.x) >> _k, (max.y - _offset.y) >> _k), _numCells);
 		for (int y = minCell.y; y < maxCell.y; ++y) {
 			for (int x = minCell.x; x < maxCell.x; ++x) {
 				for (const glm::vec2& cell : _grid[x + _numCells.x * y]) {
@@ -143,7 +143,7 @@ public:
 		const glm::ivec3 max = glm::clamp(ip + radiusVec, _aabb.mins(), bmaxs);
 
 		const glm::ivec3 minCell((min.x - _offset.x) >> _k, (min.y - _offset.y) >> _k, (min.z - _offset.z) >> _k);
-		const glm::ivec3 maxCell = glm::min(1 + glm::ivec3((max.x - _offset.x) >> _k, (max.y - _offset.y) >> _k, (max.z - _offset.z) >> _k), _numCells);
+		const glm::ivec3 maxCell = (glm::min)(1 + glm::ivec3((max.x - _offset.x) >> _k, (max.y - _offset.y) >> _k, (max.z - _offset.z) >> _k), _numCells);
 		for (int z = minCell.z; z < maxCell.z; ++z) {
 			for (int y = minCell.y; y < maxCell.y; ++y) {
 				for (int x = minCell.x; x < maxCell.x; ++x) {

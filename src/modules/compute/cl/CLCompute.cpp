@@ -984,7 +984,7 @@ bool init() {
 	if (error != CL_SUCCESS) {
 		_priv::_ctx.alignment = 4096;
 	} else {
-		_priv::_ctx.alignment = glm::max(sizeof(void*), size_t(_priv::_ctx.alignment));
+		_priv::_ctx.alignment = core_max(sizeof(void*), size_t(_priv::_ctx.alignment));
 	}
 	Log::debug("Device memory alignment: %u", _priv::_ctx.alignment);
 

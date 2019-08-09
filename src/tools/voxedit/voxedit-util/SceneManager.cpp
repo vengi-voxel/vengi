@@ -125,7 +125,7 @@ bool SceneManager::voxelizeModel(const video::MeshPtr& meshPtr) {
 	const glm::vec3 factor = regionDimension / meshDimension;
 	Log::debug("%f:%f:%f", factor.x, factor.y, factor.z);
 
-	const float voxelSize = glm::min(glm::min(factor.x, factor.y), factor.z);
+	const float voxelSize = core_min(core_min(factor.x, factor.y), factor.z);
 	const float precision = voxelSize / 10.0f;
 	vx_point_cloud_t* result = vx_voxelize_pc(mesh, voxelSize, voxelSize, voxelSize, precision);
 	Log::debug("Number of vertices: %i", (int)result->nvertices);
@@ -416,8 +416,8 @@ void SceneManager::resize(const glm::ivec3& size) {
 }
 
 void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount) {
-	glm::ivec3 mins(std::numeric_limits<glm::ivec3::value_type>::max());
-	glm::ivec3 maxs(std::numeric_limits<glm::ivec3::value_type>::min());
+	glm::ivec3 mins((std::numeric_limits<glm::ivec3::value_type>::max)());
+	glm::ivec3 maxs((std::numeric_limits<glm::ivec3::value_type>::min)());
 
 	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
 	materialColors.erase(materialColors.begin());
@@ -433,8 +433,8 @@ void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertex
 		const glm::vec4 cvec(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, 255.0f);
 		const uint8_t index = core::Color::getClosestMatch(cvec, materialColors);
 		if (wrapper.setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, index))) {
-			mins = glm::min(mins, pos);
-			maxs = glm::max(maxs, pos);
+			mins = (glm::min)(mins, pos);
+			maxs = (glm::max)(maxs, pos);
 			change = true;
 		}
 	}
@@ -1175,7 +1175,7 @@ bool SceneManager::extractVolume() {
 		Log::debug("Extract the meshes for %i regions", (int)n);
 		// extract n regions max per frame
 		const size_t MaxPerFrame = 4;
-		const size_t x = std::min(MaxPerFrame, n);
+		const size_t x = core_min(MaxPerFrame, n);
 		int lastLayer = -1;
 		size_t i;
 		for (i = 0; i < x; ++i) {

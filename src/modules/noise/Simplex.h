@@ -1347,7 +1347,7 @@ float worleyNoise(const glm::vec2 &v) {
 			const glm::vec2 b(i, j);
 			const glm::vec2& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
 			const float d = glm::dot(r, r);
-			res = glm::min(res, d);
+			res = (glm::min)(res, d);
 		}
 	}
 	return sqrt(res) * 2.0f - 1.0f;
@@ -1364,7 +1364,7 @@ float worleyNoise(const glm::vec3 &v) {
 				const glm::vec3 b(i, j, k);
 				const glm::vec3& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
 				const float d = glm::dot(r, r);
-				res = glm::min(res, d);
+				res = (glm::min)(res, d);
 			}
 		}
 	}

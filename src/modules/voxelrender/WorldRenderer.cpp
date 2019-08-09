@@ -130,12 +130,12 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 
 	const voxel::ChunkMeshes& meshes = chunkBuffer.meshes;
 	for (auto& v : meshes.opaqueMesh.getVertexVector()) {
-		mins = glm::min(mins, v.position);
-		maxs = glm::max(maxs, v.position);
+		mins = (glm::min)(mins, v.position);
+		maxs = (glm::max)(maxs, v.position);
 	}
 	for (auto& v : meshes.waterMesh.getVertexVector()) {
-		mins = glm::min(mins, v.position);
-		maxs = glm::max(maxs, v.position);
+		mins = (glm::min)(mins, v.position);
+		maxs = (glm::max)(maxs, v.position);
 	}
 
 	chunkBuffer._aabb = math::AABB<int>(mins * _worldScale, maxs * _worldScale);
@@ -757,7 +757,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	}
 
 	const glm::vec3 cullingThreshold(_world->meshSize() * _worldScale);
-	const int maxCullingThreshold = glm::max(cullingThreshold.x, cullingThreshold.z) * 10;
+	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 10;
 	_maxAllowedDistance = glm::pow(_viewDistance + maxCullingThreshold, 2);
 
 	return true;

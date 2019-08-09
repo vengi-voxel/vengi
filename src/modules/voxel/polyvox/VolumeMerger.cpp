@@ -10,12 +10,12 @@
 namespace voxel {
 
 RawVolume* merge(const std::vector<const RawVolume*>& volumes) {
-	glm::ivec3 mins(std::numeric_limits<int32_t>::max());
-	glm::ivec3 maxs(std::numeric_limits<int32_t>::min());
+	glm::ivec3 mins((std::numeric_limits<int32_t>::max)());
+	glm::ivec3 maxs((std::numeric_limits<int32_t>::min)());
 	for (const voxel::RawVolume* v : volumes) {
 		const voxel::Region& region = v->region();
-		mins = glm::min(mins, region.getLowerCorner());
-		maxs = glm::max(maxs, region.getUpperCorner());
+		mins = (glm::min)(mins, region.getLowerCorner());
+		maxs = (glm::max)(maxs, region.getUpperCorner());
 	}
 
 	const voxel::Region mergedRegion(glm::ivec3(0), maxs - mins);

@@ -149,7 +149,7 @@ public:
 			}
 			const glm::ivec3& start = b->_position;
 			const glm::ivec3& end = b->_parent->_position;
-			voxel::shape::createLine(volume, start, end, voxel, std::max(1, (int)(b->_size + 0.5f)));
+			voxel::shape::createLine(volume, start, end, voxel, core_max(1, (int)(b->_size + 0.5f)));
 		}
 	}
 };

@@ -15,8 +15,8 @@ bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::iv
 	if (!overwrite && deleteVoxels) {
 		placeVoxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
 	}
-	glm::ivec3 modifiedMins(std::numeric_limits<int>::max());
-	glm::ivec3 modifiedMaxs(std::numeric_limits<int>::min());
+	glm::ivec3 modifiedMins((std::numeric_limits<int>::max)());
+	glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)());
 	int cnt = 0;
 	for (int32_t z = mins.z; z <= maxs.z; ++z) {
 		for (int32_t y = mins.y; y <= maxs.y; ++y) {
@@ -37,13 +37,13 @@ bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::iv
 					continue;
 				}
 				++cnt;
-				modifiedMins.x = glm::min(modifiedMins.x, x);
-				modifiedMins.y = glm::min(modifiedMins.y, y);
-				modifiedMins.z = glm::min(modifiedMins.z, z);
+				modifiedMins.x = core_min(modifiedMins.x, x);
+				modifiedMins.y = core_min(modifiedMins.y, y);
+				modifiedMins.z = core_min(modifiedMins.z, z);
 
-				modifiedMaxs.x = glm::max(modifiedMaxs.x, x);
-				modifiedMaxs.y = glm::max(modifiedMaxs.y, y);
-				modifiedMaxs.z = glm::max(modifiedMaxs.z, z);
+				modifiedMaxs.x = core_max(modifiedMaxs.x, x);
+				modifiedMaxs.y = core_max(modifiedMaxs.y, y);
+				modifiedMaxs.z = core_max(modifiedMaxs.z, z);
 			}
 		}
 	}

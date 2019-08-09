@@ -70,7 +70,7 @@ size_t levensteinDistance(const std::string &source, const std::string &target) 
 			if (source[i - 1] == target[j - 1]) {
 				levDist[i] = previousDiagonal;
 			} else {
-				levDist[i] = std::min(std::min(levDist[i - 1], levDist[i]),
+				levDist[i] = core_min(core_min(levDist[i - 1], levDist[i]),
 						previousDiagonal) + 1;
 			}
 			previousDiagonal = previousDiagonalSave;

@@ -23,7 +23,7 @@ bool createClouds(Volume& volume, const voxel::Region& region, const BiomeManage
 	math::Random random(region.getCentreX() + region.getCentreY() + region.getCentreZ());
 
 	std::vector<glm::vec2> positions;
-	biomManager.getCloudPositions(region, positions, random, std::max(ctx.width, ctx.depth));
+	biomManager.getCloudPositions(region, positions, random, core_max(ctx.width, ctx.depth));
 
 	const Voxel& voxel = createRandomColorVoxel(VoxelType::Cloud, random);
 	SpaceColonization::RandomSize rndSize(random);

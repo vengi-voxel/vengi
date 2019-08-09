@@ -270,7 +270,7 @@ void TestTraze::onEvent(const traze::PlayerListEvent& event) {
 	_players = event.get();
 	_maxLength = 200;
 	for (const traze::Player& p : _players) {
-		_maxLength = glm::max(_maxLength, _voxelFontRender.stringWidth(p.name.c_str()) + 60);
+		_maxLength = core_max(_maxLength, _voxelFontRender.stringWidth(p.name.c_str()) + 60);
 	}
 }
 

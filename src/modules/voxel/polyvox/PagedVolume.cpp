@@ -42,7 +42,7 @@ PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint
 		Log::warn("Requested memory usage limit of %uMb is too low and cannot be adhered to. Chunk limit is at %i, Chunk size: %uKb",
 				uTargetMemoryUsageInBytes / (1024 * 1024), _chunkCountLimit, uChunkSizeInBytes / 1024);
 	}
-	_chunkCountLimit = std::max(_chunkCountLimit, uMinPracticalNoOfChunks);
+	_chunkCountLimit = core_max(_chunkCountLimit, uMinPracticalNoOfChunks);
 
 	// Inform the user about the chosen memory configuration.
 	Log::debug("Memory usage limit for volume now set to %uMb (%u chunks of %uKb each).",
@@ -143,7 +143,7 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx,
 				const uint16_t yOffset = static_cast<uint16_t>(y & _chunkMask);
 
 				ChunkPtr chunkPtr = chunk(chunkX, chunkY, chunkZ);
-				const int32_t n = std::min(left, int32_t(chunkPtr->_sideLength));
+				const int32_t n = core_min(left, int32_t(chunkPtr->_sideLength));
 
 				chunkPtr->setVoxels(xOffset, yOffset, zOffset, array, n);
 				left -= n;
@@ -197,7 +197,7 @@ void PagedVolume::deleteOldestChunkIfNeeded() const {
 	}
 	glm::ivec3 oldestChunkPos;
 	bool foundOldestChunk = false;
-	uint32_t oldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
+	uint32_t oldestChunkTimestamp = (std::numeric_limits<uint32_t>::max)();
 	for (ChunkMap::iterator i = _chunks.begin(); i != _chunks.end(); ++i) {
 		const glm::ivec3& pos = i->first;
 		const ChunkPtr& chunk = i->second;

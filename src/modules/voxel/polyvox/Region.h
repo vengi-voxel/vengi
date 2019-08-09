@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Assert.h"
+#include "core/Common.h"
 #include "math/AABB.h"
 #include "math/Rect.h"
 #include "math/Random.h"
@@ -482,12 +483,12 @@ inline void Region::setUpperCorner(const glm::ivec3& v3dUpperCorner) {
  * @param iZ The 'z' component of the position to accumulate.
  */
 inline void Region::accumulate(int32_t iX, int32_t iY, int32_t iZ) {
-	m_iLowerX = glm::min(m_iLowerX, iX);
-	m_iLowerY = glm::min(m_iLowerY, iY);
-	m_iLowerZ = glm::min(m_iLowerZ, iZ);
-	m_iUpperX = glm::max(m_iUpperX, iX);
-	m_iUpperY = glm::max(m_iUpperY, iY);
-	m_iUpperZ = glm::max(m_iUpperZ, iZ);
+	m_iLowerX = core_min(m_iLowerX, iX);
+	m_iLowerY = core_min(m_iLowerY, iY);
+	m_iLowerZ = core_min(m_iLowerZ, iZ);
+	m_iUpperX = core_max(m_iUpperX, iX);
+	m_iUpperY = core_max(m_iUpperY, iY);
+	m_iUpperZ = core_max(m_iUpperZ, iZ);
 }
 
 /**
@@ -510,12 +511,12 @@ inline Region Region::accumulateCopy(const Region& reg) const {
 	}
 
 	Region r(*this);
-	r.m_iLowerX = glm::min(r.m_iLowerX, reg.getLowerX());
-	r.m_iLowerY = glm::min(r.m_iLowerY, reg.getLowerY());
-	r.m_iLowerZ = glm::min(r.m_iLowerZ, reg.getLowerZ());
-	r.m_iUpperX = glm::max(r.m_iUpperX, reg.getUpperX());
-	r.m_iUpperY = glm::max(r.m_iUpperY, reg.getUpperY());
-	r.m_iUpperZ = glm::max(r.m_iUpperZ, reg.getUpperZ());
+	r.m_iLowerX = core_min(r.m_iLowerX, reg.getLowerX());
+	r.m_iLowerY = core_min(r.m_iLowerY, reg.getLowerY());
+	r.m_iLowerZ = core_min(r.m_iLowerZ, reg.getLowerZ());
+	r.m_iUpperX = core_max(r.m_iUpperX, reg.getUpperX());
+	r.m_iUpperY = core_max(r.m_iUpperY, reg.getUpperY());
+	r.m_iUpperZ = core_max(r.m_iUpperZ, reg.getUpperZ());
 	return r;
 }
 
@@ -532,12 +533,12 @@ inline void Region::accumulate(const Region& reg) {
 		core_assert_msg(false, "You cannot accumulate an invalid region.");
 	}
 
-	m_iLowerX = glm::min(m_iLowerX, reg.getLowerX());
-	m_iLowerY = glm::min(m_iLowerY, reg.getLowerY());
-	m_iLowerZ = glm::min(m_iLowerZ, reg.getLowerZ());
-	m_iUpperX = glm::max(m_iUpperX, reg.getUpperX());
-	m_iUpperY = glm::max(m_iUpperY, reg.getUpperY());
-	m_iUpperZ = glm::max(m_iUpperZ, reg.getUpperZ());
+	m_iLowerX = core_min(m_iLowerX, reg.getLowerX());
+	m_iLowerY = core_min(m_iLowerY, reg.getLowerY());
+	m_iLowerZ = core_min(m_iLowerZ, reg.getLowerZ());
+	m_iUpperX = core_max(m_iUpperX, reg.getUpperX());
+	m_iUpperY = core_max(m_iUpperY, reg.getUpperY());
+	m_iUpperZ = core_max(m_iUpperZ, reg.getUpperZ());
 }
 
 inline Region::Region(const Region& region) :
@@ -745,12 +746,12 @@ inline bool Region::containsRegion(const Region& reg, uint8_t boundary) const {
  * @param other The Region to crop to.
  */
 inline void Region::cropTo(const Region& other) {
-	m_iLowerX = glm::max(m_iLowerX, other.m_iLowerX);
-	m_iLowerY = glm::max(m_iLowerY, other.m_iLowerY);
-	m_iLowerZ = glm::max(m_iLowerZ, other.m_iLowerZ);
-	m_iUpperX = glm::min(m_iUpperX, other.m_iUpperX);
-	m_iUpperY = glm::min(m_iUpperY, other.m_iUpperY);
-	m_iUpperZ = glm::min(m_iUpperZ, other.m_iUpperZ);
+	m_iLowerX = core_max(m_iLowerX, other.m_iLowerX);
+	m_iLowerY = core_max(m_iLowerY, other.m_iLowerY);
+	m_iLowerZ = core_max(m_iLowerZ, other.m_iLowerZ);
+	m_iUpperX = core_min(m_iUpperX, other.m_iUpperX);
+	m_iUpperY = core_min(m_iUpperY, other.m_iUpperY);
+	m_iUpperZ = core_min(m_iUpperZ, other.m_iUpperZ);
 }
 
 /**

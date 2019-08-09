@@ -27,7 +27,7 @@ NodeTreeItem::NodeTreeItem (QGraphicsItem* parentGraphicsItem, const AIStateNode
 	_condition = QString::fromStdString(_node.getCondition());
 	_name = QString::fromStdString(staticNodeData.getName());
 	_type = QString::fromStdString(staticNodeData.getType());
-	_width = std::max(130, std::max(fontMetrics.width(_name), fontMetrics.width(_condition)));
+	_width = core_max(130, core_max(fontMetrics.width(_name), fontMetrics.width(_condition)));
 	_lineHeight = fontMetrics.lineSpacing();
 }
 
@@ -151,7 +151,7 @@ void NodeTreeItem::paint (QPainter *painter, const QStyleOptionGraphicsItem *opt
 	} else {
 		seconds = lastRun / 1000;
 	}
-	QColor activityColor(std::max(0, 255 - seconds), 0, 0, 255);
+	QColor activityColor(core_max(0, 255 - seconds), 0, 0, 255);
 	painter->setBrush(activityColor);
 	painter->drawEllipse(center, radius, radius);
 	painter->restore();

@@ -33,8 +33,8 @@ glm::ivec3 Modifier::aabbPosition() const {
 glm::ivec3 Modifier::aabbDim() const {
 	const int size = _gridResolution;
 	const glm::ivec3& pos = aabbPosition();
-	const glm::ivec3& mins = glm::min(_aabbFirstPos, pos);
-	const glm::ivec3& maxs = glm::max(_aabbFirstPos, pos);
+	const glm::ivec3& mins = (glm::min)(_aabbFirstPos, pos);
+	const glm::ivec3& maxs = (glm::max)(_aabbFirstPos, pos);
 	return glm::abs(maxs + size - mins);
 }
 
@@ -71,8 +71,8 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const vox
 	voxel::RawVolumeWrapper wrapper(volume);
 	const int size = _gridResolution;
 	const glm::ivec3& pos = aabbPosition();
-	const glm::ivec3 mins = glm::min(_aabbFirstPos, pos);
-	const glm::ivec3 maxs = glm::max(_aabbFirstPos, pos) + (size - 1);
+	const glm::ivec3 mins = (glm::min)(_aabbFirstPos, pos);
+	const glm::ivec3 maxs = (glm::max)(_aabbFirstPos, pos) + (size - 1);
 	voxel::Region modifiedRegion = voxel::Region::InvalidRegion;
 	glm::ivec3 minsMirror = mins;
 	glm::ivec3 maxsMirror = maxs;
@@ -120,8 +120,8 @@ void Modifier::renderAABBMode(const video::Camera& camera) {
 
 		_shapeBuilder.clear();
 		_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.5f));
-		const glm::ivec3& mins = glm::min(_aabbFirstPos, cursor);
-		const glm::ivec3& maxs = glm::max(_aabbFirstPos, cursor);
+		const glm::ivec3& mins = (glm::min)(_aabbFirstPos, cursor);
+		const glm::ivec3& maxs = (glm::max)(_aabbFirstPos, cursor);
 		glm::ivec3 minsMirror = mins;
 		glm::ivec3 maxsMirror = maxs;
 		const float size = _gridResolution;

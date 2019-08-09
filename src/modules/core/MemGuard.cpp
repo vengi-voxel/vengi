@@ -80,7 +80,7 @@ void* MemGuard::realloc(void* ptr, size_t size) {
 	}
 
 	void* newPtr = alloc(size, false);
-	SDL_memcpy(newPtr, ptr, std::min(chunk->_size, size));
+	SDL_memcpy(newPtr, ptr, core_min(chunk->_size, size));
 	if (chunk->_size < size) {
 		const size_t delta = size - chunk->_size;
 		SDL_memset((uint8_t*) newPtr + chunk->_size, 0, delta);

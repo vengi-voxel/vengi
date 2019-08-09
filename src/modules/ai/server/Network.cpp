@@ -136,7 +136,7 @@ bool Network::sendMessage(Client& client) {
 
 	std::array<uint8_t, 16384> buf;
 	while (!client.out.empty()) {
-		const size_t len = std::min(buf.size(), client.out.size());
+		const size_t len = core_min(buf.size(), client.out.size());
 		std::copy_n(client.out.begin(), len, buf.begin());
 		const SOCKET clientSocket = client.socket;
 		const network_return sent = send(clientSocket, (const char*)&buf[0], len, 0);

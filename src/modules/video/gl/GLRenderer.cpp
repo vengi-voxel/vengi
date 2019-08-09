@@ -1464,7 +1464,7 @@ bool linkComputeShader(Id program, Id comp, const std::string& name) {
 		if (message.size() > 1) {
 			glGetProgramInfoLog(lid, message.size(), nullptr, &message[0]);
 		}
-		message.resize(std::max(logLength, 1) - 1);
+		message.resize(core_max(logLength, 1) - 1);
 		Log::info("Validation output: %s\n%s", name.c_str(), message.c_str());
 	}
 #endif
@@ -1556,7 +1556,7 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 		if (message.size() > 1) {
 			glGetProgramInfoLog(lid, message.size(), nullptr, &message[0]);
 		}
-		message.resize(std::max(logLength, 1) - 1);
+		message.resize(core_max(logLength, 1) - 1);
 		Log::info("Validation output: %s\n%s", name.c_str(), message.c_str());
 	}
 #endif

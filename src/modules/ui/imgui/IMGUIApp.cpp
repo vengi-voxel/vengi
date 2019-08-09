@@ -465,7 +465,7 @@ void IMGUIApp::addSubTrees(const TraceData* data, bool expandAll, int &depth) co
 	if (ImGui::TreeNodeEx(data->name, flags, "%s (%" PRIu64 "ns)", data->name, data->delta)) {
 		const ImU32 colBase = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
 		ImVec2 pos = ImGui::GetCursorScreenPos();
-		const ImVec2 posEnd = {pos.x + std::max(1.0f, (float)(data->delta / 10000UL)), pos.y + 8};
+		const ImVec2 posEnd = {pos.x + core_max(1.0f, (float)(data->delta / 10000UL)), pos.y + 8};
 		const ImRect size(pos, posEnd);
 		ImGui::ItemSize(size, 0.0f);
 		ImGui::ItemAdd(size, 0, nullptr);
@@ -493,8 +493,8 @@ void IMGUIApp::renderTracing() {
 	for (int i = 0; i < _maxMeasureSize; ++i) {
 		const int index = (_currentFrameCounter + i) % _maxMeasureSize;
 		frameMillis[i] = (float)_frameMillis[index] / 1000.0f;
-		min = glm::min(min, frameMillis[i]);
-		max = glm::max(max, frameMillis[i]);
+		min = core_min(min, frameMillis[i]);
+		max = core_max(max, frameMillis[i]);
 		avg += frameMillis[i];
 	}
 	std::array<float, _maxMeasureSize> frameMillisQuantile = frameMillis;

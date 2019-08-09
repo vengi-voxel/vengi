@@ -47,7 +47,7 @@ SpaceColonization::~SpaceColonization() {
 }
 
 void SpaceColonization::fillAttractionPoints() {
-	const float radius = std::max({_attractionPointHeight, _attractionPointDepth, _attractionPointWidth}) / 2.0f;
+	const float radius = (std::max)({_attractionPointHeight, _attractionPointDepth, _attractionPointWidth}) / 2.0f;
 	const glm::ivec3 mins(_position.x - (_attractionPointWidth / 2), _position.y, _position.z - (_attractionPointDepth / 2));
 	const glm::ivec3 maxs(mins.x + _attractionPointWidth, mins.y + _attractionPointHeight, mins.z + _attractionPointDepth);
 	const float radiusSquare = radius * radius;

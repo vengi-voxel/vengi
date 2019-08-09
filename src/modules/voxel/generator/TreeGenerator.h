@@ -83,9 +83,9 @@ void createTreeBranchEllipsis(Volume& volume, const TreeContext& ctx, math::Rand
 	random.shuffle(branches.begin(), branches.end());
 	const int n = random.random(1, 4);
 	for (int i = 0; i < n; ++i) {
-		const int thickness = std::max(2, ctx.trunkWidth / 2);
+		const int thickness = core_max(2, ctx.trunkWidth / 2);
 		const int branchHeight = ctx.trunkHeight / 2;
-		const int branchSize = random.random(thickness * 2, std::max(thickness * 2, ctx.trunkWidth));
+		const int branchSize = random.random(thickness * 2, core_max(thickness * 2, ctx.trunkWidth));
 
 		glm::ivec3 branch = ctx.pos;
 		branch.y = random.random(ctx.pos.y + 2, top - 2);
@@ -125,7 +125,7 @@ static void createTrunk(Volume& volume, const TreeContext& ctx, const Voxel& vox
 	const int top = ctx.treeTop();
 	int trunkWidthBottomOffset = 2;
 	for (int y = ctx.treeBottom(); y < top; ++y) {
-		const int trunkWidth = std::max(0, trunkWidthBottomOffset);
+		const int trunkWidth = core_max(0, trunkWidthBottomOffset);
 		--trunkWidthBottomOffset;
 		const int startX = ctx.pos.x - ctx.trunkWidth / 2 - trunkWidth;
 		const int endX = startX + ctx.trunkWidth + trunkWidth * 2;
@@ -164,7 +164,7 @@ static glm::ivec3 createBezierTrunk(Volume& volume, const TreeContext& ctx, cons
 	const glm::ivec3 control(ctx.pos.x, ctx.pos.y + 10, ctx.pos.z);
 	shape::createBezierFunc(volume, ctx.pos, end, control, voxel,
 		[&] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const Voxel& voxel) {
-			shape::createLine(volume, pos, last, voxel, std::max(1, (int)glm::ceil(trunkSize)));
+			shape::createLine(volume, pos, last, voxel, core_max(1, (int)glm::ceil(trunkSize)));
 			trunkSize *= trunkFactor;
 		},
 	ctx.trunkHeight);
@@ -189,7 +189,7 @@ void createTreePalm(Volume& volume, const TreeContext& ctx, math::Random& random
 		shape::createBezierFunc(volume, start, end, control, leavesVoxel,
 			[&] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const Voxel& voxel) {
 				// TODO: this should be some kind of polygon - not a line - we want a flat leaf
-				shape::createLine(volume, pos, last, voxel, std::max(1, (int)glm::ceil(branchSize)));
+				shape::createLine(volume, pos, last, voxel, core_max(1, (int)glm::ceil(branchSize)));
 				branchSize *= branchFactor;
 			},
 		ctx.leavesHeight / 4);
@@ -264,7 +264,7 @@ void createTreePine(Volume& volume, const TreeContext& ctx, math::Random& random
 	const int singleLeaveHeight = 2;
 	const int singleStepDelta = 1;
 	const int singleStepHeight = singleLeaveHeight + singleStepDelta;
-	const int steps = std::max(1, ctx.leavesHeight / singleStepHeight);
+	const int steps = core_max(1, ctx.leavesHeight / singleStepHeight);
 	const int stepWidth = ctx.leavesWidth / steps;
 	const int stepDepth = ctx.leavesDepth / steps;
 	int currentWidth = 2;

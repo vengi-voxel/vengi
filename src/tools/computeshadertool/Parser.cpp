@@ -269,7 +269,7 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 			}
 			const int dimension = (int)(tok->str()[0] - '0') + 1;
 			Log::debug("found dimension %i", dimension);
-			kernelDimensions = std::max(kernelDimensions, dimension);
+			kernelDimensions = core_max(kernelDimensions, dimension);
 			tok = tok->next;
 			if (!tok) {
 				Log::error("Expected )");

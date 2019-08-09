@@ -3,6 +3,7 @@
  */
 
 #include "Attributes.h"
+#include "core/Common.h"
 #include "collection/Set.h"
 #include <unordered_set>
 
@@ -49,7 +50,7 @@ bool Attributes::update(long dt) {
 		if (mi == _max.end()) {
 			continue;
 		}
-		i->second = std::min(mi->second, i->second);
+		i->second = core_min(mi->second, i->second);
 	}
 	return true;
 }
@@ -156,7 +157,7 @@ double Attributes::setCurrent(Type type, double value) {
 		}
 		return value;
 	}
-	const double max = std::min(i->second, value);
+	const double max = core_min(i->second, value);
 	_current[type] = max;
 	for (const auto& listener : _listeners) {
 		listener(DirtyValue{type, true, max});

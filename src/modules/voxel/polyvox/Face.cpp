@@ -91,7 +91,7 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 	const float y = rayOrigin.y + rayDirection.y * rayLength;
 	const float z = rayOrigin.z + rayDirection.z * rayLength;
 
-	float delta = std::numeric_limits<float>::max();
+	float delta = (std::numeric_limits<float>::max)();
 	FaceNames face = FaceNames::NoOfFaces;
 
 	float current = fabs(x - mins.x);

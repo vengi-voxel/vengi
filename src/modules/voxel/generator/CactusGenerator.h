@@ -19,9 +19,9 @@ void createCactus(Volume& volume, const glm::ivec3& pos, int trunkHeight, int tr
 	const int n = random.random(2, 4);
 	shape::createCubeNoCenter(volume, pos, trunkWidth, trunkHeight, trunkWidth, leavesVoxel);
 	for (int i = 0; i < n; ++i) {
-		const int thickness = std::max(2, trunkWidth / 2);
+		const int thickness = core_max(2, trunkWidth / 2);
 		const int branchHeight = trunkHeight / 2;
-		const int branchSize = random.random(thickness * 2, std::max(thickness * 2, trunkWidth));
+		const int branchSize = random.random(thickness * 2, core_max(thickness * 2, trunkWidth));
 
 		glm::ivec3 branch = pos;
 		branch.y = random.random(pos.y + 2, top - 2);

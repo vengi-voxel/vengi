@@ -52,7 +52,7 @@ public:
 	bool init(const char* font, int fontSize, int thickness, uint8_t optionMask, const char* glyphs);
 	void shutdown();
 
-	int stringWidth(const char *str, int length = std::numeric_limits<int>::max()) const;
+	int stringWidth(const char *str, int length = (std::numeric_limits<int>::max)()) const;
 
 	inline int lineHeight() const {
 		return _size;

@@ -254,7 +254,7 @@ void SoundManager::update(uint32_t deltaTime) {
 		const double yDiff = (_listenerPosition.y - channel.pos.y) * scale;
 		const int dist = std::sqrt(xDiff * xDiff + yDiff * yDiff);
 		const double angleInDegrees = getAngleBetweenPoints(_listenerPosition, channel.pos);
-		Mix_SetPosition(channel.channel, static_cast<int16_t>(angleInDegrees), std::min(dist, 255));
+		Mix_SetPosition(channel.channel, static_cast<int16_t>(angleInDegrees), core_min(dist, 255));
 	}
 }
 

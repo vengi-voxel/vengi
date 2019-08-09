@@ -55,7 +55,7 @@ void Npc::init(const glm::ivec3* pos) {
 double Npc::applyDamage(Entity* attacker, double damage) {
 	double health = current(attrib::Type::HEALTH);
 	if (health > 0.0) {
-		health = std::max(0.0, health - damage);
+		health = core_max(0.0, health - damage);
 		if (attacker != nullptr) {
 			_ai->getAggroMgr().addAggro(attacker->id(), damage);
 		}

@@ -34,7 +34,7 @@ inline void Union::filter (const AIPtr& entity) {
 	for (auto& f : _filters) {
 		f->filter(entity);
 		filteredArray[n++] = filtered;
-		max = std::max(filtered.size(), max);
+		max = core_max(filtered.size(), max);
 		// safe and clear
 		filtered.clear();
 	}

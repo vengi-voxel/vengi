@@ -84,7 +84,7 @@ bool VoxelFont::init(const char* filename, int size, int thickness, uint8_t opti
 	_size = size;
 	_scale = stbtt_ScaleForPixelHeight(_font, (float)_size);
 
-	_thickness = glm::max(1, thickness);
+	_thickness = core_max(1, thickness);
 	stbtt_GetFontVMetrics(_font, &_ascent, &_descent, &_lineGap);
 	_ascent = (int) (_ascent * _scale + 0.5f);
 	_descent = (int) ((-_descent) * _scale + 0.5f);

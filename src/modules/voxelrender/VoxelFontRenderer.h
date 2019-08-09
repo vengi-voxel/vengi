@@ -66,7 +66,7 @@ public:
 	 */
 	void render();
 
-	inline int stringWidth(const char *str, int length = std::numeric_limits<int>::max()) const {
+	inline int stringWidth(const char *str, int length = (std::numeric_limits<int>::max)()) const {
 		return _voxelFont.stringWidth(str, length);
 	}
 

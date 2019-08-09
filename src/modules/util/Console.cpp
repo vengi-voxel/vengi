@@ -293,7 +293,7 @@ void Console::cursorRight() {
 }
 
 void Console::cursorWordLeft() {
-	auto prevWordEnd = _commandLine.find_last_of(" ", (std::max)(0, _cursorPos - 1));
+	auto prevWordEnd = _commandLine.find_last_of(" ", core_max(0, _cursorPos - 1));
 	if (std::string::npos == prevWordEnd) {
 		_cursorPos = 0;
 		return;
@@ -309,7 +309,7 @@ void Console::cursorWordRight() {
 		_cursorPos = _commandLine.size();
 		return;
 	}
-	_cursorPos = (std::min)(_commandLine.size(), _cursorPos + nextWordEnd + spaceOffset);
+	_cursorPos = core_min(_commandLine.size(), _cursorPos + nextWordEnd + spaceOffset);
 }
 
 void Console::cursorUp() {
@@ -341,7 +341,7 @@ void Console::scrollUp(const int lines) {
 		return;
 	}
 	if (_scrollPos <= scrollableLines) {
-		_scrollPos += (std::min)(lines, scrollableLines - _scrollPos + 1);
+		_scrollPos += core_min(lines, scrollableLines - _scrollPos + 1);
 	}
 }
 
@@ -349,7 +349,7 @@ void Console::scrollDown(const int lines) {
 	if (_scrollPos <= 0) {
 		return;
 	}
-	_scrollPos = (std::max)(_scrollPos - lines, 0);
+	_scrollPos = core_max(_scrollPos - lines, 0);
 }
 
 void Console::scrollPageUp() {
@@ -610,7 +610,7 @@ void Console::render(const math::Rect<int> &rect, long deltaFrame) {
 	}
 	const int maxY = _messages.size() * lineH;
 	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), _commandLine.length());
-	const int startY = (std::min)(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y - 4, maxY);
+	const int startY = core_min(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y - 4, maxY);
 	MessagesIter i = _messages.rbegin();
 	std::advance(i, _scrollPos);
 	for (int y = startY; i != _messages.rend(); ++i) {

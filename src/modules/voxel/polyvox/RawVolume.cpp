@@ -11,7 +11,7 @@ static const uint8_t SAMPLER_INVALIDY = 1 << 1;
 static const uint8_t SAMPLER_INVALIDZ = 1 << 2;
 
 RawVolume::RawVolume(const Region& regValid) :
-		_region(regValid), _mins(std::numeric_limits<int>::max()), _maxs(std::numeric_limits<int>::min()), _boundsValid(false) {
+		_region(regValid), _mins((std::numeric_limits<int>::max)()), _maxs((std::numeric_limits<int>::min)()), _boundsValid(false) {
 	//Create a volume of the right size.
 	initialise(regValid);
 }
@@ -119,8 +119,8 @@ bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 	if (_data[index].isSame(voxel)) {
 		return false;
 	}
-	_mins = glm::min(_mins, pos);
-	_maxs = glm::max(_maxs, pos);
+	_mins = (glm::min)(_mins, pos);
+	_maxs = (glm::max)(_maxs, pos);
 	_boundsValid = true;
 	_data[index] = voxel;
 	return true;
@@ -145,8 +145,8 @@ void RawVolume::initialise(const Region& regValidRegion) {
 
 void RawVolume::clear() {
 	std::fill(_data, _data + width() * height() * depth(), Voxel());
-	_mins = glm::ivec3(std::numeric_limits<int>::max());
-	_maxs = glm::ivec3(std::numeric_limits<int>::min());
+	_mins = glm::ivec3((std::numeric_limits<int>::max)());
+	_maxs = glm::ivec3((std::numeric_limits<int>::min)());
 	_boundsValid = false;
 }
 
@@ -173,8 +173,8 @@ bool RawVolume::Sampler::setVoxel(const Voxel& voxel) {
 		return false;
 	}
 	*_currentVoxel = voxel;
-	_volume->_mins = glm::min(_volume->_mins, _posInVolume);
-	_volume->_mins = glm::max(_volume->_maxs, _posInVolume);
+	_volume->_mins = (glm::min)(_volume->_mins, _posInVolume);
+	_volume->_mins = (glm::max)(_volume->_maxs, _posInVolume);
 	_volume->_boundsValid = true;
 	return true;
 }

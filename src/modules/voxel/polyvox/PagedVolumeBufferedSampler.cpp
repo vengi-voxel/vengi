@@ -31,7 +31,7 @@ PagedVolume::BufferedSampler::BufferedSampler(const PagedVolume* volume, const R
 	std::unordered_map<glm::ivec3, ChunkPtr> chunks;
 
 	core::RecursiveScopedReadLock readLock(volume->_rwLock);
-	glm::ivec3 chunkPos(std::numeric_limits<int>::min()), newChunkPos;
+	glm::ivec3 chunkPos((std::numeric_limits<int>::min)()), newChunkPos;
 	for (int32_t z = offset.z; z <= upper.z; ++z) {
 		const uint32_t regZ = z - offset.z;
 		const uint16_t zOffset = static_cast<uint16_t>(z & chunkMask);

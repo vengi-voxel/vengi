@@ -284,7 +284,7 @@ math::AABB<float> Camera::aabb() const {
 static inline float getBoundingSphereRadius(const glm::vec3& center, const std::vector<glm::vec3>& points) {
 	float radius = 0.0f;
 	for (const glm::vec3& p : points) {
-		radius = glm::max(radius, glm::distance(center, p));
+		radius = core_max(radius, glm::distance(center, p));
 	}
 	return radius;
 }
@@ -342,7 +342,7 @@ glm::vec4 Camera::sphereBoundingBox() const {
 			mins.x + (maxs.x - mins.x) / 2.0f,
 			mins.y + (maxs.x - mins.y) / 2.0f,
 			mins.z + (maxs.z - mins.z) / 2.0f);
-	const float sphereRadius = std::max({
+	const float sphereRadius = (std::max)({
 			(maxs.x - mins.x) / 2.0f,
 			(maxs.y - mins.y) / 2.0f,
 			(maxs.z - mins.z) / 2.0f});
@@ -373,7 +373,7 @@ void Camera::setNearPlane(float nearPlane) {
 	if (_mode == CameraMode::Orthogonal) {
 		_nearPlane = nearPlane;
 	} else {
-		_nearPlane = std::max(0.1f, nearPlane);
+		_nearPlane = core_max(0.1f, nearPlane);
 	}
 }
 

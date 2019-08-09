@@ -137,7 +137,7 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	}
 
 	const Biome *biomeBestMatch = _defaultBiome;
-	float distMin = std::numeric_limits<float>::max();
+	float distMin = (std::numeric_limits<float>::max)();
 
 	core_trace_scoped(BiomeGetBiomeLoop);
 	for (const Biome* biome : _bioms) {

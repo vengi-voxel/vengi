@@ -190,7 +190,7 @@ int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCt
 			voxels[i] = water;
 		}
 	}
-	return std::max(ni - lowerY, MAX_WATER_HEIGHT - lowerY);
+	return core_max(ni - lowerY, MAX_WATER_HEIGHT - lowerY);
 }
 
 void WorldPager::create(PagedVolume::PagerContext& ctx) {

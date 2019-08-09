@@ -5,6 +5,7 @@
 
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/Common.h"
 
 #define ai_assert core_assert_msg
 #define ai_log(...) Log::info(__VA_ARGS__)

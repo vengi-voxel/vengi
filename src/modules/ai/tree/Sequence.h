@@ -25,7 +25,7 @@ public:
 			return CANNOTEXECUTE;
 
 		TreeNodeStatus result = FINISHED;
-		const int progress = std::max(0, getSelectorState(entity));
+		const int progress = core_max(0, getSelectorState(entity));
 
 		const std::size_t size = _children.size();
 		for (std::size_t i = static_cast<std::size_t>(progress); i < size; ++i) {

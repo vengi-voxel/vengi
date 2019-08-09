@@ -27,7 +27,7 @@ template<class Volume, class Voxel>
 void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel, const glm::bvec3& axis = glm::bvec3(false, true, false)) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
-	const double minRadius = std::min(xRadius, zRadius);
+	const double minRadius = core_min(xRadius, zRadius);
 	const double ratioX = xRadius / minRadius;
 	const double ratioZ = zRadius / minRadius;
 
@@ -152,7 +152,7 @@ template<class Volume, class Voxel>
 void createEllipse(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
-	const double minDimension = std::min(width, depth);
+	const double minDimension = core_min(width, depth);
 	const double adjustedMinRadius = minDimension / 2.0;
 	const double heightFactor = heightLow / adjustedMinRadius;
 	const int start = heightLow - 1;
@@ -178,7 +178,7 @@ template<class Volume, class Voxel>
 void createCone(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
-	const double minDimension = std::min(width, depth);
+	const double minDimension = core_min(width, depth);
 	const double minRadius = minDimension / 2.0;
 	const double dHeight = (double)height;
 	const int start = heightLow - 1;
@@ -203,7 +203,7 @@ template<class Volume, class Voxel>
 void createDome(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
-	const double minDimension = std::min(width, depth);
+	const double minDimension = core_min(width, depth);
 	const double minRadius = glm::pow(minDimension / 2.0, 2.0);
 	const double heightFactor = height / (minDimension / 2.0);
 	const int start = heightLow - 1;

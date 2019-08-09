@@ -85,7 +85,7 @@ bool PagedVolumeWrapper::setVoxels(int x, int y, int z, int nx, int nz, const Vo
 			if (_validRegion.containsPoint(fx, y, fz)) {
 				// first part goes into the chunk
 				const int h = _validRegion.getHeightInVoxels();
-				_chunk->setVoxels(fx - _validRegion.getLowerX(), y - _validRegion.getLowerY(), fz - _validRegion.getLowerZ(), voxels, std::min(h, left));
+				_chunk->setVoxels(fx - _validRegion.getLowerX(), y - _validRegion.getLowerY(), fz - _validRegion.getLowerZ(), voxels, core_min(h, left));
 				left -= h;
 				if (left > 0) {
 					// everything else goes into the volume

@@ -132,7 +132,7 @@ int Command::execute(const std::string& command) {
 bool Command::execute(const std::string& command, const CmdArgs& args) {
 	if (command == "wait") {
 		if (args.size() == 1) {
-			_delayMillis += std::max(1, core::string::toInt(args[0]));
+			_delayMillis += core_max(1, core::string::toInt(args[0]));
 		} else {
 			++_delayMillis;
 		}

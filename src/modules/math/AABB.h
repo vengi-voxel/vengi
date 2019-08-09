@@ -29,8 +29,8 @@ public:
 	AABB(TYPE minsX, TYPE minsY, TYPE minsZ, TYPE maxsX, TYPE maxsY, TYPE maxsZ);
 
 	static AABB<TYPE> construct(const glm::tvec3<TYPE>* vertices, size_t size) {
-		static constexpr TYPE max = std::numeric_limits<TYPE>::max();
-		static constexpr TYPE min = std::numeric_limits<TYPE>::min();
+		static constexpr TYPE max = (std::numeric_limits<TYPE>::max)();
+		static constexpr TYPE min = (std::numeric_limits<TYPE>::min)();
 
 		glm::tvec3<TYPE> mins(max);
 		glm::tvec3<TYPE> maxs(min);
@@ -443,12 +443,12 @@ inline void AABB<TYPE>::setUpperCorner(const glm::tvec3<TYPE>& v3dUpperCorner) {
  */
 template<typename TYPE>
 inline void AABB<TYPE>::accumulate(TYPE iX, TYPE iY, TYPE iZ) {
-	_mins.x = std::min(_mins.x, iX);
-	_mins.y = std::min(_mins.y, iY);
-	_mins.z = std::min(_mins.z, iZ);
-	_maxs.x = std::max(_maxs.x, iX);
-	_maxs.y = std::max(_maxs.y, iY);
-	_maxs.z = std::max(_maxs.z, iZ);
+	_mins.x = core_min(_mins.x, iX);
+	_mins.y = core_min(_mins.y, iY);
+	_mins.z = core_min(_mins.z, iZ);
+	_maxs.x = core_max(_maxs.x, iX);
+	_maxs.y = core_max(_maxs.y, iY);
+	_maxs.z = core_max(_maxs.z, iZ);
 }
 
 /**
@@ -473,12 +473,12 @@ inline void AABB<TYPE>::accumulate(const AABB& reg) {
 		core_assert_msg(false, "You cannot accumulate an invalid AABB.");
 	}
 
-	_mins.x = std::min(_mins.x, reg.getLowerX());
-	_mins.y = std::min(_mins.y, reg.getLowerY());
-	_mins.z = std::min(_mins.z, reg.getLowerZ());
-	_maxs.x = std::max(_maxs.x, reg.getUpperX());
-	_maxs.y = std::max(_maxs.y, reg.getUpperY());
-	_maxs.z = std::max(_maxs.z, reg.getUpperZ());
+	_mins.x = core_min(_mins.x, reg.getLowerX());
+	_mins.y = core_min(_mins.y, reg.getLowerY());
+	_mins.z = core_min(_mins.z, reg.getLowerZ());
+	_maxs.x = core_max(_maxs.x, reg.getUpperX());
+	_maxs.y = core_max(_maxs.y, reg.getUpperY());
+	_maxs.z = core_max(_maxs.z, reg.getUpperZ());
 }
 
 /**
@@ -498,7 +498,7 @@ inline AABB<TYPE>::AABB(TYPE minsX, TYPE minsY, TYPE minsZ, TYPE maxsX, TYPE max
 
 template<typename TYPE>
 inline AABB<TYPE>::AABB() :
-		_mins(std::numeric_limits<TYPE>::min()), _maxs(std::numeric_limits<TYPE>::max()) {
+		_mins((std::numeric_limits<TYPE>::min)()), _maxs((std::numeric_limits<TYPE>::max)()) {
 }
 
 /**
@@ -607,12 +607,12 @@ inline bool AABB<TYPE>::containsAABB(const AABB<TYPE>& reg, TYPE boundary) const
  */
 template<typename TYPE>
 inline void AABB<TYPE>::cropTo(const AABB<TYPE>& other) {
-	_mins.x = std::max(_mins.x, other._mins.x);
-	_mins.y = std::max(_mins.y, other._mins.y);
-	_mins.z = std::max(_mins.z, other._mins.z);
-	_maxs.x = std::min(_maxs.x, other._maxs.x);
-	_maxs.y = std::min(_maxs.y, other._maxs.y);
-	_maxs.z = std::min(_maxs.z, other._maxs.z);
+	_mins.x = core_max(_mins.x, other._mins.x);
+	_mins.y = core_max(_mins.y, other._mins.y);
+	_mins.z = core_max(_mins.z, other._mins.z);
+	_maxs.x = core_min(_maxs.x, other._maxs.x);
+	_maxs.y = core_min(_maxs.y, other._maxs.y);
+	_maxs.z = core_min(_maxs.z, other._maxs.z);
 }
 
 /**

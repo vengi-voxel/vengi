@@ -3,6 +3,7 @@
  */
 
 #include "Color.h"
+#include "core/Common.h"
 #include "core/GLM.h"
 
 #include <SDL.h>
@@ -215,7 +216,7 @@ unsigned int Color::getBGRA(const glm::vec4& color) {
 
 void Color::getHSB(const glm::vec4& color, float& chue, float& csaturation, float& cbrightness) {
 	cbrightness = brightness(color);
-	const float minBrightness = std::min(color.r, std::min(color.g, color.b));
+	const float minBrightness = core_min(color.r, core_min(color.g, color.b));
 	if (std::fabs(cbrightness - minBrightness) < std::numeric_limits<float>::epsilon()) {
 		chue = 0.f;
 		csaturation = 0.f;
@@ -243,7 +244,7 @@ glm::vec4 Color::alpha(const glm::vec4& c, float alpha) {
 }
 
 float Color::brightness(const glm::vec4& color) {
-	return std::max(color.r, std::max(color.g, color.b));
+	return core_max(color.r, core_max(color.g, color.b));
 }
 
 float Color::intensity(const glm::vec4& color) {

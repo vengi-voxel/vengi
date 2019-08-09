@@ -144,7 +144,7 @@ inline void Mesh::addTriangle(IndexType index0, IndexType index1, IndexType inde
 
 inline IndexType Mesh::addVertex(const VoxelVertex& vertex) {
 	// We should not add more vertices than our chosen index type will let us index.
-	core_assert_msg(_vecVertices.size() < std::numeric_limits<IndexType>::max(), "Mesh has more vertices that the chosen index type allows.");
+	core_assert_msg(_vecVertices.size() < (std::numeric_limits<IndexType>::max)(), "Mesh has more vertices that the chosen index type allows.");
 	if (!_mayGetResized) {
 		core_assert_msg(_vecVertices.size() + 1 < _vecVertices.capacity(), "addVertex() call exceeds the capacity of the vertices vector and will trigger a realloc (%i vs %i)", (int)_vecVertices.size(), (int)_vecVertices.capacity());
 	}
