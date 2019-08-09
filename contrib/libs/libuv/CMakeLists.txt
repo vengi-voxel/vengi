@@ -175,8 +175,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
   list(APPEND uv_sources src/unix/no-proctitle.c src/unix/sunos.c)
 endif()
 
-
-engine_add_library(LIB ${LIB} SRCS ${uv_sources} UNITY)
+engine_add_library(LIB ${LIB} SRCS ${uv_sources})
 if (NOT LIBUV_FOUND)
   target_compile_definitions(${LIB} PRIVATE ${uv_defines} BUILDING_UV_SHARED=1)
   target_compile_options(${LIB} PRIVATE ${uv_cflags})
