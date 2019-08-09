@@ -308,8 +308,11 @@ void vx_mesh_free(vx_mesh_t* mesh)
     mesh->nvertices = 0;
     VX_FREE(mesh->indices);
     mesh->indices = NULL;
+    VX_FREE(mesh->normalindices);
+    mesh->normalindices = NULL;
     mesh->nindices = 0;
     VX_FREE(mesh->normals);
+    mesh->normals = NULL;
     VX_FREE(mesh->colors);
     mesh->colors = NULL;
     VX_FREE(mesh);
