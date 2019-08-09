@@ -18,6 +18,20 @@ enum class BodyType {
 	Native
 };
 
+/**
+ * @brief MSVC doesn't like strings that exceeds a certain length. So we have to split them up here.
+ * @sa https://docs.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/compiler-error-c2026?view=vs-2019
+ */
+static std::string maxStringLength(const std::string& input) {
+#ifdef _MSC_VER
+	if (input.length() > 10000) {
+		Log::debug("Need to split the shader source string");
+		return "R\"(" + core::string::replaceAll(input, "\n", "\"\n\"") + ")\"";
+	}
+#endif
+	return "R\"(" + input + ")\"";
+}
+
 static bool isBuffer(const std::string& str) {
 	return core::string::contains(str, "*");
 }
@@ -400,7 +414,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	src = core::string::replaceAll(src, "$shutdown$", shutdown.str());
 	src = core::string::replaceAll(src, "$structs$", structs.str());
 	src = core::string::replaceAll(src, "$createkernels$", createKernels.str());
-	src = core::string::replaceAll(src, "$shaderbuffer$", shaderBuffer);
+	src = core::string::replaceAll(src, "$shaderbuffer$", maxStringLength(shaderBuffer));
 	const std::string targetFile = sourceDirectory + filename + ".h" + postfix;
 	Log::info("Generate shader bindings for %s at %s", _name.c_str(), targetFile.c_str());
 	if (!filesystem->syswrite(targetFile, src)) {

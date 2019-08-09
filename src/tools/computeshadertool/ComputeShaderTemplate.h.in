@@ -19,7 +19,7 @@
 namespace $namespace$ {
 
 namespace priv$name$ {
-static const char* ShaderBuffer = R"($shaderbuffer$)";
+static const char* ShaderBuffer = $shaderbuffer$;
 }
 
 /**
