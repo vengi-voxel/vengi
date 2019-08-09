@@ -205,6 +205,16 @@ engine_add_library(
 
 if (NOT ASSIMP_FOUND)
 	target_link_libraries(assimp zlib)
+	if (MSVC)
+		set_source_files_properties(
+			code/Importer/IFC/IFCReaderGen1_2x3.cpp
+			code/Importer/IFC/IFCReaderGen2_2x3.cpp
+			code/Importer/StepFile/StepFileGen1.cpp
+			code/Importer/StepFile/StepFileGen2.cpp
+			code/Importer/StepFile/StepFileGen3.cpp
+		PROPERTIES COMPILE_FLAGS "/bigobj")
+	endif()
+
 	target_include_directories(assimp PUBLIC include/)
 	target_include_directories(assimp PRIVATE include/assimp/)
 	target_include_directories(assimp PRIVATE ./../)
