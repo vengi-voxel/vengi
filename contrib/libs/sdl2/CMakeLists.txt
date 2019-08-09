@@ -10,7 +10,6 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/dynapi/*.c
   ${SDL2_SOURCE_DIR}/src/events/*.c
   ${SDL2_SOURCE_DIR}/src/file/*.c
-  ${SDL2_SOURCE_DIR}/src/hidapi/*.c
   ${SDL2_SOURCE_DIR}/src/libm/*.c
   ${SDL2_SOURCE_DIR}/src/render/*.c
   ${SDL2_SOURCE_DIR}/src/render/*/*.c
