@@ -7,6 +7,7 @@
 #include "tool/Fill.h"
 #include "math/Axis.h"
 #include "core/Color.h"
+#include "CustomBindingContext.h"
 #include "core/String.h"
 #include "voxel/polyvox/Region.h"
 #include "core/command/Command.h"
