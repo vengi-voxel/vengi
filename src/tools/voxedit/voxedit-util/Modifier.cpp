@@ -162,8 +162,8 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 }
 
 void Modifier::construct() {
-	core::Command::registerActionButton("actionexecute", _actionExecuteButton);
-	core::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton);
+	core::Command::registerActionButton("actionexecute", _actionExecuteButton).setBindingContext(BindingContext::Scene);
+	core::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton).setBindingContext(BindingContext::Scene);
 	core::Command::registerCommand("actiondelete", [&] (const core::CmdArgs& args) {
 		setModifierType(ModifierType::Delete);
 	}).setHelp("Change the modifier type to 'delete'");

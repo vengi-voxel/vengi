@@ -37,8 +37,6 @@ struct ActionButton {
 
 	uint64_t lastPressed = 0ul;
 
-	BindingContext bindingContext = BindingContext::All;
-
 	ActionButton();
 	virtual ~ActionButton() {}
 

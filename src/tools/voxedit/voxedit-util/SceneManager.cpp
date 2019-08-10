@@ -728,16 +728,13 @@ void SceneManager::construct() {
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
 
 	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
-		_move[i].bindingContext = (core::BindingContext)voxedit::BindingContext::Scene;
 		core::Command::registerActionButton(
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
-				_move[i]);
+				_move[i]).setBindingContext(voxedit::BindingContext::Scene);
 	}
 
-	core::Command::registerActionButton("zoom_in", _zoomIn);
-	core::Command::registerActionButton("zoom_out", _zoomOut);
-	_zoomIn.bindingContext = (core::BindingContext)voxedit::BindingContext::Scene;
-	_zoomOut.bindingContext = (core::BindingContext)voxedit::BindingContext::Scene;
+	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Scene);
+	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Scene);
 
 	core::Command::registerCommand("zoom", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();
@@ -751,7 +748,7 @@ void SceneManager::construct() {
 		} else {
 			Log::warn("Could not execute zoom - there is no active viewport");
 		}
-	}).setHelp("Zoom the active viewport by the given amount");
+	}).setHelp("Zoom the active viewport by the given amount").setBindingContext(BindingContext::Scene);
 
 	core::Command::registerCommand("newscene", [&] (const core::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";

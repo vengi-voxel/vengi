@@ -11,8 +11,6 @@ namespace voxedit {
 
 ModifierButton::ModifierButton(ModifierType newType) :
 		_newType(newType) {
-	// only execute this action button if the scene is active
-	bindingContext = (core::BindingContext)voxedit::BindingContext::Scene;
 }
 
 bool ModifierButton::handleDown(int32_t key, uint64_t pressedMillis) {

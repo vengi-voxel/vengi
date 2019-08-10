@@ -13,6 +13,18 @@ ReadWriteLock Command::_lock("Command");
 std::vector<std::string> Command::_delayedTokens;
 uint64_t Command::_delayMillis = 0;
 
+ActionButtonCommands& ActionButtonCommands::setBindingContext(int context) {
+	Command::getCommand(first)->setBindingContext(context);
+	Command::getCommand(second)->setBindingContext(context);
+	return *this;
+}
+
+ActionButtonCommands& ActionButtonCommands::setHelp(const char* help) {
+	Command::getCommand(first)->setHelp(help);
+	Command::getCommand(second)->setHelp(help);
+	return *this;
+}
+
 Command& Command::registerCommand(const char* name, FunctionType&& func) {
 	ScopedWriteLock lock(_lock);
 	const Command c(name, std::forward<FunctionType>(func));
@@ -25,7 +37,7 @@ bool Command::unregisterCommand(const char* name) {
 	return _cmds.erase(name) > 0;
 }
 
-void Command::registerActionButton(const std::string& name, ActionButton& button) {
+ActionButtonCommands Command::registerActionButton(const std::string& name, ActionButton& button) {
 	ScopedWriteLock lock(_lock);
 	const Command cPressed("+" + name, [&] (const core::CmdArgs& args) {
 		const int32_t key = core::string::toInt(args[0]);
@@ -39,6 +51,7 @@ void Command::registerActionButton(const std::string& name, ActionButton& button
 		button.handleUp(key, millis);
 	});
 	_cmds.insert(std::make_pair(cReleased.name(), cReleased));
+	return ActionButtonCommands("+" + name, "-" + name);
 }
 
 bool Command::unregisterActionButton(const std::string& name) {
@@ -129,6 +142,13 @@ int Command::execute(const std::string& command) {
 	return executed;
 }
 
+bool Command::isSuitableBindingContext(BindingContext context) {
+	if (context == core::BindingContext::All) {
+		return true;
+	}
+	return context == core::bindingContext();
+}
+
 bool Command::execute(const std::string& command, const CmdArgs& args) {
 	if (command == "wait") {
 		if (args.size() == 1) {
@@ -148,6 +168,11 @@ bool Command::execute(const std::string& command, const CmdArgs& args) {
 		auto i = _cmds.find(command);
 		if (i == _cmds.end()) {
 			Log::debug("could not find command callback for %s", command.c_str());
+			return false;
+		}
+		if (!isSuitableBindingContext(i->second._bindingContext)) {
+			Log::info("command '%s' has binding context  %i - but we are in %i", command.c_str(), (int) i->second._bindingContext,
+					(int) core::bindingContext());
 			return false;
 		}
 		if (_delayMillis > 0) {

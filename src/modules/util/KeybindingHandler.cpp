@@ -63,6 +63,7 @@ bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask) {
 static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t modMask, uint64_t now) {
 	auto range = bindings.equal_range(key);
 	const int16_t modifier = modMask & (KMOD_SHIFT | KMOD_CTRL | KMOD_ALT);
+	bool handled = false;
 	for (auto i = range.first; i != range.second; ++i) {
 		const std::string& command = i->second.command;
 		const int16_t mod = i->second.modifier;
@@ -73,15 +74,14 @@ static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int1
 		if (command[0] == '+') {
 			if (core::Command::execute("%s %i %" PRId64, command.c_str(), key, now) == 1) {
 				Log::trace("The tracking command was executed");
-			} else {
-				Log::trace("Failed to execute the tracking command %s", command.c_str());
+				return true;
 			}
-		} else {
-			core::Command::execute(command);
+			Log::trace("Failed to execute the tracking command %s", command.c_str());
+			return false;
 		}
-		return true;
+		handled |= core::Command::execute(command) > 0;
 	}
-	return false;
+	return handled;
 }
 
 bool KeyBindingHandler::executeCommands(int32_t key, int16_t modifier, uint64_t now) {

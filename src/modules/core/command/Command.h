@@ -18,6 +18,18 @@ namespace core {
 
 typedef std::vector<std::string> CmdArgs;
 
+struct ActionButtonCommands {
+	const std::string first;
+	const std::string second;
+
+	inline ActionButtonCommands(std::string&& _first, std::string&& _second) :
+			first(_first), second(_second) {
+	}
+
+	ActionButtonCommands& setBindingContext(int context);
+	ActionButtonCommands& setHelp(const char* help);
+};
+
 /**
  * @brief A command is a string bound c++ function/method/lambda. You can bind
  * this to keys or execute on the console.
@@ -36,6 +48,7 @@ private:
 	std::string _name;
 	const char* _help;
 	FunctionType _func;
+	BindingContext _bindingContext = BindingContext::All;
 	typedef std::function<int(const std::string&, std::vector<std::string>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
@@ -63,7 +76,7 @@ public:
 	 * @note This class is not taking ownership of the button instance. You have to ensure
 	 * that the instance given here is alive as long as the commands are bound.
 	 */
-	static void registerActionButton(const std::string& name, ActionButton& button);
+	static ActionButtonCommands registerActionButton(const std::string& name, ActionButton& button);
 	static bool unregisterActionButton(const std::string& name);
 
 	static void shutdown();
@@ -78,6 +91,7 @@ public:
 	static int execute(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));
 
 	static bool execute(const std::string& command, const CmdArgs& args);
+	static bool isSuitableBindingContext(BindingContext context);
 
 	static Command* getCommand(const std::string& name) {
 		auto i = _cmds.find(name);
@@ -135,11 +149,18 @@ public:
 	Command& setHelp(const char* help);
 	const char* help() const;
 
+	Command& setBindingContext(int bindingContext);
+
 	bool operator==(const Command& rhs) const;
 };
 
 inline bool Command::operator==(const Command& rhs) const {
 	return rhs._name == _name;
+}
+
+inline Command& Command::setBindingContext(int bindingContext) {
+	_bindingContext = (BindingContext)bindingContext;
+	return *this;
 }
 
 inline const char* Command::name() const {
