@@ -112,7 +112,6 @@ private:
 	bool _traceViaMouse = true;
 
 	core::ActionButton _move[lengthof(DIRECTIONS)];
-	uint64_t _lastMove[lengthof(DIRECTIONS)] { 0 };
 
 	core::ActionButton _zoomIn;
 	core::ActionButton _zoomOut;
