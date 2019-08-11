@@ -171,7 +171,7 @@ bool Command::execute(const std::string& command, const CmdArgs& args) {
 			return false;
 		}
 		if (!isSuitableBindingContext(i->second._bindingContext)) {
-			Log::info("command '%s' has binding context  %i - but we are in %i", command.c_str(), (int) i->second._bindingContext,
+			Log::trace("command '%s' has binding context  %i - but we are in %i", command.c_str(), (int) i->second._bindingContext,
 					(int) core::bindingContext());
 			return false;
 		}
