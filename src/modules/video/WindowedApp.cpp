@@ -306,7 +306,7 @@ core::AppState WindowedApp::onInit() {
 
 	const bool grabMouse = false;
 	if (grabMouse && (!fullscreen || numDisplays > 1)) {
-		SDL_SetWindowGrab(_window, SDL_TRUE);
+		//SDL_SetWindowGrab(_window, SDL_TRUE);
 	}
 
 	int screen = 0;

@@ -65,6 +65,9 @@ protected:
 
 	bool toggleRelativeMouseMode();
 
+	/**
+	 * @brief (Un-)Grabs the mouse
+	 */
 	bool setRelativeMouseMode(bool mode);
 
 public:

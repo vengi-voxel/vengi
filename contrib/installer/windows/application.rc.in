@@ -1,0 +1,47 @@
+#include "winresrc.h"
+
+#ifdef HAVE_CONFIG_H
+#include "engine-config.h"
+#endif
+
+1 RT_MANIFEST DISCARDABLE "application.manifest"
+
+#define HAS_ICON @HAS_ICON@
+#define IDI_ICON 1001
+#if HAS_ICON > 0
+IDI_ICON ICON DISCARDABLE "@ICON@"
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION @CMAKE_PROJECT_VERSION_MAJOR@,@CMAKE_PROJECT_VERSION_MINOR@,@CMAKE_PROJECT_VERSION_PATCH@,@CMAKE_PROJECT_VERSION_TWEAK@
+ FILEFLAGSMASK 0x17L // VS_FFI_FILEFLAGMASK
+#ifdef DEBUG
+ FILEFLAGS 0x3L // VS_FF_DEBUG
+#else
+ FILEFLAGS 0x2L
+#endif
+ FILEOS 0x4L // VOS_NT_WINDOWS32
+ FILETYPE 0x1L // VFT_APP
+ FILESUBTYPE 0x0L // VFT2_UNKNONW
+BEGIN
+ BLOCK "StringFileInfo"
+ BEGIN
+  BLOCK "040004b0" // US English, Unicode
+  BEGIN
+   VALUE "Comments", "http://github.com/mgerhardy/engine\0"
+   VALUE "CompanyName", "Martin Gerhardy\0"
+   VALUE "FileDescription", "@DESCRIPTION@\0"
+   VALUE "FileVersion", "@CMAKE_PROJECT_VERSION@\0"
+   VALUE "InternalName", "@NAME@\0"
+   VALUE "LegalCopyright", "Copyright (C) 2015-2019\0"
+   VALUE "OriginalFilename", "@COMMANDLINE@\0"
+   VALUE "ProductName", "@NAME@\0"
+   VALUE "ProductVersion", "@CMAKE_PROJECT_VERSION@\0"
+   VALUE "SpecialBuild", "@CMAKE_BUILD_TYPE@\0"
+  END
+ END
+ BLOCK "VarFileInfo"
+ BEGIN
+  VALUE "Translation", 0x409, 1200 // US English, Unicode
+ END
+END
