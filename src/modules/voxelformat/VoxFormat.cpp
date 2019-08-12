@@ -38,7 +38,132 @@ struct VoxModel {
 	std::map<std::string, std::string> nodeAttributes;
 };
 
-bool VoxFormat::saveAttributes(const std::map<std::string, std::string>& attributes, io::FileStream& stream) {
+bool VoxFormat::saveChunk_LAYR(io::FileStream& stream, int layerId, const std::string& name, bool visible) const {
+	const std::string attributeName = "_name";
+	const std::string attributeVisible = "_visible";
+	stream.addInt(FourCC('L','A','Y','R'));
+	const int chunkSizeName = sizeof(uint32_t) + attributeName.size();
+	const int chunkSizeNameValue = sizeof(uint32_t) + core::utf8::length(name.c_str());
+	const int chunkSizeVisible = sizeof(uint32_t) + attributeVisible.size();
+	const int chunkSizeVisibleValue = sizeof(uint32_t) + 1;
+	const int chunkAttributeSize = sizeof(uint32_t) + chunkSizeName + chunkSizeNameValue
+			+ chunkSizeVisible + chunkSizeVisibleValue;
+	const uint32_t chunkSize = sizeof(uint32_t) + chunkAttributeSize + sizeof(uint32_t);
+	stream.addInt(chunkSize);
+	stream.addInt(0);
+	const uint64_t posBefore = stream.pos();
+	stream.addInt(layerId);
+	saveAttributes({{attributeName, name}, {attributeVisible, visible ? "1" : "0"}}, stream);
+	stream.addInt((uint32_t)-1); // must always be -1
+	const uint64_t posAfter = stream.pos();
+	Log::debug("chunk size is: %i", (int)(posAfter - posBefore));
+	core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
+			(int)posAfter, (int)posBefore, (int)chunkSize);
+	return true;
+}
+
+bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, int layerId, const voxel::Region& region) const {
+	const std::string attributeName = "_t";
+	const glm::ivec3& mins = region.getLowerCorner();
+	const std::string& translationStr = core::string::format("%i %i %i", mins.x, mins.y, mins.z);
+	stream.addInt(FourCC('n','T','R','N'));
+	const int chunkFrameTranslationName = sizeof(uint32_t) + attributeName.size();
+	const int chunkFrameTranslationValue = sizeof(uint32_t) + translationStr.size();
+	const int chunkNodeAttributeSize = sizeof(uint32_t);
+	const int chunkFrameAttributeSize = sizeof(uint32_t) + chunkFrameTranslationName + chunkFrameTranslationValue;
+	const uint32_t chunkSize = 5 * sizeof(uint32_t) + chunkNodeAttributeSize + chunkFrameAttributeSize;
+	stream.addInt(chunkSize);
+	stream.addInt(0);
+	const uint64_t posBefore = stream.pos();
+
+	stream.addInt(0); // 0 is root?
+	saveAttributes({}, stream);
+	stream.addInt(0); // child node id
+	stream.addInt(-1); // reserved - must be -1
+	stream.addInt(layerId);
+	stream.addInt(1); // num frames
+	saveAttributes({{"_t", translationStr}}, stream);
+	const uint64_t posAfter = stream.pos();
+	Log::debug("chunk size is: %i", (int)(posAfter - posBefore));
+	core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
+			(int)posAfter, (int)posBefore, (int)chunkSize);
+	return true;
+}
+
+bool VoxFormat::saveChunk_SIZE(io::FileStream& stream, const voxel::Region& region) const {
+	// model size
+	Log::debug("add SIZE chunk at pos %i", (int)stream.pos());
+	stream.addInt(FourCC('S','I','Z','E'));
+	stream.addInt(3 * sizeof(uint32_t));
+	stream.addInt(0);
+	stream.addInt(region.getWidthInVoxels());
+	stream.addInt(region.getDepthInVoxels());
+	stream.addInt(region.getHeightInVoxels());
+	return true;
+}
+
+bool VoxFormat::saveChunk_RGBA(io::FileStream& stream) const {
+	Log::debug("add RGBA chunk at pos %i", (int)stream.pos());
+	stream.addInt(FourCC('R','G','B','A'));
+	const MaterialColorArray& materialColors = getMaterialColors();
+	const int numColors = materialColors.size();
+	if (numColors > 256) {
+		Log::error("More colors than supported");
+		return false;
+	}
+	stream.addInt(256 * sizeof(uint32_t));
+	stream.addInt(0);
+
+	for (int i = 0; i < numColors; ++i) {
+		const uint32_t rgba = core::Color::getRGBA(materialColors[i]);
+		stream.addInt(rgba);
+	}
+	for (int i = numColors; i < 256; ++i) {
+		stream.addInt(0);
+	}
+	return true;
+}
+
+bool VoxFormat::saveChunk_XYZI(io::FileStream& stream, const voxel::RawVolume* volume, const voxel::Region& region) const {
+	// voxel data
+	Log::debug("add XYZI chunk at pos %i", (int)stream.pos());
+	stream.addInt(FourCC('X','Y','Z','I'));
+	uint32_t numVoxels = 0;
+	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+				const voxel::Voxel& voxel = volume->voxel(x, y, z);
+				if (voxel::isAir(voxel.getMaterial())) {
+					continue;
+				}
+				++numVoxels;
+			}
+		}
+	}
+
+	stream.addInt(numVoxels * 4 + sizeof(uint32_t));
+	stream.addInt(0);
+
+	stream.addInt(numVoxels);
+	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+				const voxel::Voxel& voxel = volume->voxel(x, y, z);
+				if (voxel::isAir(voxel.getMaterial())) {
+					continue;
+				}
+				stream.addByte(x - region.getLowerX());
+				stream.addByte(z - region.getLowerZ());
+				stream.addByte(y - region.getLowerY());
+				const uint8_t colorIndex = voxel.getColor();
+				stream.addByte(colorIndex + 1);
+			}
+		}
+	}
+	return true;
+}
+
+bool VoxFormat::saveAttributes(const std::map<std::string, std::string>& attributes, io::FileStream& stream) const {
 	Log::debug("Save %i attributes", (int)attributes.size());
 	stream.addInt((uint32_t)attributes.size());
 	for (const auto& e : attributes) {
@@ -68,121 +193,34 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 
 	int layerId = 0;
 	for (auto& v : volumes) {
-		// model size
-		Log::debug("add SIZE chunk at pos %i", (int)stream.pos());
-		stream.addInt(FourCC('S','I','Z','E'));
-		stream.addInt(3 * sizeof(uint32_t));
-		stream.addInt(0);
 		const voxel::Region& region = v.volume->region();
-		stream.addInt(region.getWidthInVoxels());
-		stream.addInt(region.getDepthInVoxels());
-		stream.addInt(region.getHeightInVoxels());
-
-		{
-			const std::string attributeName = "_name";
-			const std::string attributeVisible = "_visible";
-			stream.addInt(FourCC('L','A','Y','R'));
-			const int chunkSizeName = sizeof(uint32_t) + attributeName.size();
-			const int chunkSizeNameValue = sizeof(uint32_t) + core::utf8::length(v.name.c_str());
-			const int chunkSizeVisible = sizeof(uint32_t) + attributeVisible.size();
-			const int chunkSizeVisibleValue = sizeof(uint32_t) + 1;
-			const int chunkAttributeSize = sizeof(uint32_t) + chunkSizeName + chunkSizeNameValue
-					+ chunkSizeVisible + chunkSizeVisibleValue;
-			const uint32_t chunkSize = sizeof(uint32_t) + chunkAttributeSize + sizeof(uint32_t);
-			stream.addInt(chunkSize);
-			stream.addInt(0);
-			const uint64_t posBefore = stream.pos();
-			stream.addInt(layerId);
-			saveAttributes({{attributeName, v.name}, {attributeVisible, v.visible ? "1" : "0"}}, stream);
-			stream.addInt((uint32_t)-1); // must always be -1
-			const uint64_t posAfter = stream.pos();
-			Log::debug("chunk size is: %i", (int)(posAfter - posBefore));
-			core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
-					(int)posAfter, (int)posBefore, (int)chunkSize);
+		if (region.getDepthInVoxels() >= 256 || region.getHeightInVoxels() >= 256
+			|| region.getWidthInVoxels() >= 256) {
+			Log::warn("a region exceeds the max allowed vox file boundaries - layer %i is not saved", layerId);
+			continue;
+		}
+		if (!saveChunk_SIZE(stream, region)) {
+			return false;
+		}
+		if (!saveChunk_LAYR(stream, layerId, v.name, v.visible)) {
+			return false;
+		}
+		if (!saveChunk_nTRN(stream, layerId, region)) {
+			return false;
+		}
+		if (!saveChunk_XYZI(stream, v.volume, region)) {
+			return false;
 		}
 
-		{
-			const std::string attributeName = "_t";
-			const glm::ivec3& mins = region.getLowerCorner();
-			const std::string& translationStr = core::string::format("%i %i %i", mins.x, mins.y, mins.z);
-			stream.addInt(FourCC('n','T','R','N'));
-			const int chunkFrameTranslationName = sizeof(uint32_t) + attributeName.size();
-			const int chunkFrameTranslationValue = sizeof(uint32_t) + translationStr.size();
-			const int chunkNodeAttributeSize = sizeof(uint32_t);
-			const int chunkFrameAttributeSize = sizeof(uint32_t) + chunkFrameTranslationName + chunkFrameTranslationValue;
-			const uint32_t chunkSize = 5 * sizeof(uint32_t) + chunkNodeAttributeSize + chunkFrameAttributeSize;
-			stream.addInt(chunkSize);
-			stream.addInt(0);
-			const uint64_t posBefore = stream.pos();
-
-			stream.addInt(0); // 0 is root?
-			saveAttributes({}, stream);
-			stream.addInt(0); // child node id
-			stream.addInt(-1); // reserved - must be -1
-			stream.addInt(layerId);
-			stream.addInt(1); // num frames
-			saveAttributes({{"_t", translationStr}}, stream);
-			const uint64_t posAfter = stream.pos();
-			Log::debug("chunk size is: %i", (int)(posAfter - posBefore));
-			core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
-					(int)posAfter, (int)posBefore, (int)chunkSize);
-		}
-
-		// voxel data
-		Log::debug("add XYZI chunk at pos %i", (int)stream.pos());
-		stream.addInt(FourCC('X','Y','Z','I'));
-		uint32_t numVoxels = 0;
-		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-					const voxel::Voxel& voxel = v.volume->voxel(x, y, z);
-					if (voxel::isAir(voxel.getMaterial())) {
-						continue;
-					}
-					++numVoxels;
-				}
-			}
-		}
-
-		stream.addInt(numVoxels * 4 + sizeof(uint32_t));
-		stream.addInt(0);
-
-		stream.addInt(numVoxels);
-		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-					const voxel::Voxel& voxel = v.volume->voxel(x, y, z);
-					if (voxel::isAir(voxel.getMaterial())) {
-						continue;
-					}
-					stream.addByte(x - region.getLowerX());
-					stream.addByte(z - region.getLowerZ());
-					stream.addByte(y - region.getLowerY());
-					const uint8_t colorIndex = voxel.getColor();
-					stream.addByte(colorIndex + 1);
-				}
-			}
-		}
 		++layerId;
 	}
 
-	Log::debug("add RGBA chunk at pos %i", (int)stream.pos());
-	stream.addInt(FourCC('R','G','B','A'));
-	const MaterialColorArray& materialColors = getMaterialColors();
-	const int numColors = materialColors.size();
-	if (numColors > 256) {
-		Log::error("More colors than supported");
+	if (layerId == 0) {
 		return false;
 	}
-	stream.addInt(256 * sizeof(uint32_t));
-	stream.addInt(0);
 
-	for (int i = 0; i < numColors; ++i) {
-		const uint32_t rgba = core::Color::getRGBA(materialColors[i]);
-		stream.addInt(rgba);
-	}
-	for (int i = numColors; i < 256; ++i) {
-		stream.addInt(0);
+	if (!saveChunk_RGBA(stream)) {
+		return false;
 	}
 
 	// magic, version, main chunk, main chunk size, main chunk child size
