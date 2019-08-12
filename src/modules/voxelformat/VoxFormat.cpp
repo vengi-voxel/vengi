@@ -96,7 +96,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 			saveAttributes({{attributeName, v.name}, {attributeVisible, v.visible ? "1" : "0"}}, stream);
 			stream.addInt((uint32_t)-1); // must always be -1
 			const uint64_t posAfter = stream.pos();
-			Log::info("chunk size is: %i", (int)(posAfter - posBefore));
+			Log::debug("chunk size is: %i", (int)(posAfter - posBefore));
 			core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
 					(int)posAfter, (int)posBefore, (int)chunkSize);
 		}
@@ -123,7 +123,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 			stream.addInt(1); // num frames
 			saveAttributes({{"_t", translationStr}}, stream);
 			const uint64_t posAfter = stream.pos();
-			Log::info("chunk size is: %i", (int)(posAfter - posBefore));
+			Log::debug("chunk size is: %i", (int)(posAfter - posBefore));
 			core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
 					(int)posAfter, (int)posBefore, (int)chunkSize);
 		}
