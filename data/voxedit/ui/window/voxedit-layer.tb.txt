@@ -19,4 +19,5 @@ TBLayout: axis: y, distribution: available, size: available
 	TBClickLabel: text: Name
 		TBEditField: id: name
 			lp: width: 100
+	TBEditField: id: note, size: available, readonly: 1, multiline: 1, multiline: 1, wrapping: 1
 	TBLayout: distribution-position: right bottom, id: buttons

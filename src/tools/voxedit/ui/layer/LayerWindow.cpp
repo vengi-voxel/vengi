@@ -53,6 +53,16 @@ void LayerWindow::onShow() {
 	}
 }
 
+void LayerWindow::checkSize() {
+	if (tb::TBWidget* f = getWidgetByID("note")) {
+		if (_layerSettings.size.x < 256 && _layerSettings.size.y < 256 && _layerSettings.size.z < 256) {
+			f->setText("");
+			return;
+		}
+		f->setText(tr("Volume size can't get saved to e.g. vox file format. Max value is 255 for the size."));
+	}
+}
+
 bool LayerWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CHANGED) {
 		if (ev.target->getID() == TBIDC("pos.x")) {
@@ -66,12 +76,15 @@ bool LayerWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		} else if (ev.target->getID() == TBIDC("size.x")) {
 			_layerSettings.size.x = atoi(ev.target->getText().c_str());
+			checkSize();
 			return true;
 		} else if (ev.target->getID() == TBIDC("size.y")) {
 			_layerSettings.size.y = atoi(ev.target->getText().c_str());
+			checkSize();
 			return true;
 		} else if (ev.target->getID() == TBIDC("size.z")) {
 			_layerSettings.size.z = atoi(ev.target->getText().c_str());
+			checkSize();
 			return true;
 		} else if (ev.target->getID() == TBIDC("name")) {
 			_layerSettings.name = ev.target->getText().c_str();

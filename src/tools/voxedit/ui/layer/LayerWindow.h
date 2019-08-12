@@ -58,6 +58,8 @@ private:
 	using Super = AbstractLayerPopupWindow;
 	LayerSettings& _layerSettings;
 	LayerWindowSettings _layerWindowSettings;
+
+	void checkSize();
 protected:
 	void onShow() override;
 public:
