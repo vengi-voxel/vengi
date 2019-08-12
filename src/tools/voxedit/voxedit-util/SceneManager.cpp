@@ -840,7 +840,7 @@ void SceneManager::construct() {
 
 	core::Command::registerCommand("setreferencepositiontocursor", [&] (const core::CmdArgs& args) {
 		setReferencePosition(cursorPosition());
-	}).setHelp("Set the reference position to the current cursor position");
+	}).setHelp("Set the reference position to the current cursor position").setBindingContext(BindingContext::Scene);
 
 	core::Command::registerCommand("resize", [this] (const core::CmdArgs& args) {
 		const int argc = args.size();
