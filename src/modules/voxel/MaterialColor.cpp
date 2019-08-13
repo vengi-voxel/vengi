@@ -316,12 +316,15 @@ bool createPalette(const image::ImagePtr& image, uint32_t *colorsBuffer, int col
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
 	Log::debug("Create palette for image: %s", image->name().c_str());
-	uint16_t paletteIndex = 0;
 	std::unordered_set<uint32_t> colorset;
+	uint16_t paletteIndex = 0;
+	uint32_t empty = core::Color::getRGBA(core::Color::White);
+	colorset.insert(empty);
+	colorsBuffer[paletteIndex++] = empty;
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const uint8_t* data = image->at(x, y);
-			uint32_t rgba = *(uint32_t*)data;
+			const uint32_t rgba = core::Color::getRGBA(core::Color::alpha(core::Color::fromRGBA(*(uint32_t*)data), 1.0f));
 			if (colorset.insert(rgba).second) {
 				if (paletteIndex >= colors) {
 					Log::warn("palette indices exceeded");
