@@ -468,7 +468,11 @@ void App::usage() const {
 		Log::info("   %-*s %s", maxWidth, c.name(), c.help());
 	});
 	Log::info("---");
-	Log::info("Config variables can either be set via autoexec.cfg, $appname.vars, environment or commandline parameter");
+	Log::info("Config variables can either be set via autoexec.cfg, %s.vars, environment or commandline parameter.", _appname.c_str());
+	Log::info("Environment variables must be exported in upper case.");
+	Log::info("Examples:");
+	Log::info("export the variable CORE_LOGLEVEL with the value 0 to override previous values.");
+	Log::info("%s -set core_loglevel 0.", _appname.c_str());
 }
 
 void App::onAfterRunning() {
