@@ -31,6 +31,7 @@ const uint32_t CV_REPLICATE = 1 << 3;
 const uint32_t CV_BROADCAST = 1 << 4;
 /** @brief don't show the value to users, but just ***secure*** it out */
 const uint32_t CV_SECRET = 1 << 5;
+const uint32_t CV_PRESERVE = (CV_READONLY | CV_NOPERSIST | CV_SHADER | CV_REPLICATE | CV_BROADCAST | CV_SECRET);
 
 const uint32_t CV_FROMFILE = 1 << 6;
 const uint32_t CV_FROMCOMMANDLINE = 1 << 7;

@@ -68,16 +68,21 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const
 		missing = i == _vars.end();
 	}
 
-	const uint32_t flagsMask = flags < 0 ? 0u : static_cast<uint32_t>(flags);
+	uint32_t flagsMask = flags < 0 ? 0u : static_cast<uint32_t>(flags);
 	if (missing) {
-		// environment variables have higher priority than config file values
-		const char* envValue = SDL_getenv(name.c_str());
-		if (envValue == nullptr) {
-			const std::string& upper = string::toUpper(name);
-			envValue = SDL_getenv(upper.c_str());
-		}
-		if (envValue != nullptr) {
-			value = envValue;
+		// environment variables have higher priority than config file values - but command line
+		// arguments have the highest priority
+		if ((flagsMask & CV_FROMCOMMANDLINE) == 0) {
+			const char* envValue = SDL_getenv(name.c_str());
+			if (envValue == nullptr) {
+				const std::string& upper = string::toUpper(name);
+				envValue = SDL_getenv(upper.c_str());
+			}
+			if (envValue != nullptr) {
+				value = envValue;
+				flagsMask |= CV_FROMENV;
+				flagsMask &= ~CV_FROMFILE;
+			}
 		}
 
 		if (value == nullptr) {
@@ -91,7 +96,8 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const
 	}
 	const VarPtr& v = i->second;
 	if (flags >= 0) {
-		if ((flagsMask & CV_FROMFILE) == CV_FROMFILE && (flagsMask & CV_FROMCOMMANDLINE) == 0u) {
+		if ((flagsMask & CV_FROMFILE) == CV_FROMFILE && (v->_flags & (CV_FROMCOMMANDLINE | CV_FROMENV)) == 0u) {
+			Log::debug("Look for env var to resolve value of %s", name.c_str());
 			// environment variables have higher priority than config file values
 			const char* envValue = SDL_getenv(name.c_str());
 			if (envValue == nullptr) {
@@ -102,8 +108,22 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const
 				value = envValue;
 			}
 			v->setVal(value);
+		} else if ((flagsMask & CV_FROMCOMMANDLINE) == CV_FROMCOMMANDLINE) {
+			// in case it was already created, make sure that the command line value is set again
+			// this might happen in cases, where multiple -set parameters were specified
+			v->setVal(value);
 		}
-		v->_flags = flagsMask;
+
+		// ensure that the commandline and env options are kept
+		if ((v->_flags & CV_FROMCOMMANDLINE) == CV_FROMCOMMANDLINE) {
+			flagsMask |= CV_FROMCOMMANDLINE;
+		} else if ((v->_flags & CV_FROMENV) == CV_FROMENV) {
+			flagsMask |= CV_FROMENV;
+		}
+
+		// some flags should not get removed
+		const uint32_t preserve = v->_flags & CV_PRESERVE;
+		v->_flags = flagsMask | preserve;
 	}
 	return v;
 }

@@ -233,8 +233,8 @@ AppState App::onConstruct() {
 			std::string var = _argv[i + 1];
 			const char *value = _argv[i + 2];
 			i += 2;
+			core::Var::get(var, value, CV_FROMCOMMANDLINE);
 			Log::debug("Set %s to %s", var.c_str(), value);
-			core::Var::get(var, value, (int32_t)CV_FROMCOMMANDLINE);
 		}
 	}
 
@@ -304,8 +304,7 @@ AppState App::onInit() {
 			break;
 		}
 		const std::string& flags = t.next();
-		int32_t flagsMask = -1;
-		uint32_t flagsMaskFromFile = 0u;
+		uint32_t flagsMaskFromFile = CV_FROMFILE;
 		for (char c : flags) {
 			if (c == 'R') {
 				flagsMaskFromFile |= CV_READONLY;
@@ -319,11 +318,14 @@ AppState App::onInit() {
 			}
 		}
 		const VarPtr& old = core::Var::get(name);
+		int32_t flagsMask;
 		if (old) {
-			flagsMask = (int32_t)(flagsMaskFromFile | old->getFlags() | CV_FROMFILE);
-		} else if (flagsMaskFromFile != 0u) {
-			flagsMask = (int32_t)(flagsMaskFromFile | CV_FROMFILE);
+			flagsMask = (int32_t)(flagsMaskFromFile | old->getFlags());
+		} else {
+			flagsMask = (int32_t)(flagsMaskFromFile);
 		}
+
+		flagsMask &= ~(CV_FROMCOMMANDLINE | CV_FROMENV);
 
 		core::Var::get(name, value.c_str(), flagsMask);
 	}
