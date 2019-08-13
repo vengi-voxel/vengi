@@ -61,10 +61,9 @@ my own engine and evolved into something that others might find useful, too.
 * Color selection via keyboard only
   - Shortcut for enter-color-in-the-next second and index of the colormap?
   - Relative movement from current color
-* Add Windows and improve MacOSX support
+* Improve Windows and MacOSX support
 * Extend palette widget to show the used colors
 * Add color dialog for ambient and diffuse color
-* Export layers as single meshes
 * Extrude
 * Improve voxelizer
 * Improve vox extension import

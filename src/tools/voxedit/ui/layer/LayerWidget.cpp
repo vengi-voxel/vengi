@@ -10,6 +10,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "LayerRenameWindow.h"
 #include "LayerMoveWindow.h"
+#include "video/WindowedApp.h"
 
 class LayerItemWidget: public tb::TBLayout {
 public:
@@ -74,6 +75,13 @@ public:
 					}
 					return true;
 				}
+				if (ev.ref_id == TBIDC("layerexport")) {
+					video::WindowedApp::getInstance()->saveDialog([this](const std::string& file) {
+						execute("layerexport %i %s", _layerId, file.c_str());
+					}, "");
+					// TODO: use _exportFilter from VoxEditWindow class
+					return true;
+				}
 				static const char *ACTIONS[] = {
 					"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall",
 					"layermoveup", "layermovedown", "layermerge", "layerlockall", "layerunlockall",
@@ -99,6 +107,7 @@ public:
 				source->addItem(new tb::TBGenericStringItem(tr("Duplicate"), TBIDC("layerduplicate")));
 				source->addItem(new tb::TBGenericStringItem(tr("Move"), TBIDC("layermove")));
 				source->addItem(new tb::TBGenericStringItem(tr("Rename"), TBIDC("layerrename")));
+				source->addItem(new tb::TBGenericStringItem(tr("Export"), TBIDC("layerexport")));
 				if (n > 1) {
 					source->addItem(new tb::TBGenericStringItem(tr("Delete"), TBIDC("layerdelete")));
 					LayerItem* item = _source->getItemForLayerId(_layerId);

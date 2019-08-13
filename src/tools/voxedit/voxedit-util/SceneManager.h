@@ -235,6 +235,7 @@ public:
 	 * @brief Exports the volume data to a supported mesh format identified by the file extension
 	 */
 	bool exportModel(const std::string& file);
+	bool exportLayerModel(int layerId, const std::string& file);
 	/**
 	 * @brief Save the volume data to the given file
 	 * @param[in] file The file to store the volume data in. The file extension defines the volume format.

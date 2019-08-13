@@ -74,7 +74,24 @@ bool SceneManager::exportModel(const std::string& file) {
 		return false;
 	}
 	voxel::Mesh mesh(128, 128, true);
-	_volumeRenderer.toMesh(&mesh);
+	if (!_volumeRenderer.toMesh(&mesh)) {
+		Log::debug("Failed to export the scene to a mesh");
+		return false;
+	}
+	return voxel::exportMesh(&mesh, filePtr->name().c_str());
+}
+
+bool SceneManager::exportLayerModel(int layerId, const std::string& file) {
+	core_trace_scoped(EditorSceneExportLayerModel);
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file), io::FileMode::Write);
+	if (!(bool)filePtr) {
+		return false;
+	}
+	voxel::Mesh mesh(128, 128, true);
+	if (!_volumeRenderer.toMesh(layerId, &mesh)) {
+		Log::debug("Failed to export layer %i to a mesh", layerId);
+		return false;
+	}
 	return voxel::exportMesh(&mesh, filePtr->name().c_str());
 }
 
@@ -735,6 +752,16 @@ void SceneManager::construct() {
 
 	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Scene);
 	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Scene);
+
+	core::Command::registerCommand("layerexport", [&] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc != 1) {
+			Log::info("Usage: layerexport <layerId> <mesh-filename>");
+			return;
+		}
+		const int layerId = core::string::toInt(args[0]);
+		exportLayerModel(layerId, args[1]);
+	});
 
 	core::Command::registerCommand("zoom", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();

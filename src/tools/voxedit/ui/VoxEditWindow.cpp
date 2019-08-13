@@ -244,7 +244,7 @@ bool VoxEditWindow::init() {
 			_layerSettings.reset();
 			region = _layerSettings.region();
 		}
-		if (!voxedit::sceneMgr().newScene(true, _layerSettings.name, region)) {
+		if (!mgr.newScene(true, _layerSettings.name, region)) {
 			return false;
 		}
 		afterLoad("");
