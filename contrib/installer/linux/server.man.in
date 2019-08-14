@@ -1,0 +1,39 @@
+.\" This man page was written by Martin Gerhardy in August 2019. It is provided
+.\" under the GNU General Public License 3 or (at your option) any later version.
+.TH @COMMANDLINE@ 14 "August 2019" "@COMMANDLINE@" "games"
+.SH NAME
+@COMMANDLINE@ \- server application for vengi
+
+.SH SYNOPSIS
+.PP
+\fB@NAME@\fR [\fIoption\fR]
+.SH DESCRIPTION
+\fB@COMMANDLINE@\fP is the server application that controls the AI and world
+for the voxel based game engine vengi.
+.SH OPTIONS
+.TP
+\fB\--trace|--debug\fR
+Enable debug logging
+
+.TP
+\fB\--help\fR
+Print usage information
+
+.TP
+\fB\-set <varname> <value>\fR
+Change the value of a config variable.
+
+.SH CONSOLE COMMANDS
+.TP
+\fBcmdlist\fR
+Get a list of all commands including a small description
+
+.TP
+\fBcvarlist\fR
+Get a list of all cvars with details printed
+
+.SH HOMEPAGE
+https://github.com/mgerhardy/engine
+
+.SH COPYRIGHT
+Copyright \[co] 2015\-2019 by Martin Gerhardy.
