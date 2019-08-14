@@ -70,25 +70,25 @@ void splitString(const std::string& string, std::vector<std::string_view>& token
 
 std::string toLower(const std::string& string) {
 	std::string convert = string;
-	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) std::tolower);
+	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_tolower);
 	return convert;
 }
 
 std::string toLower(const char* string) {
 	std::string convert(string);
-	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) std::tolower);
+	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_tolower);
 	return convert;
 }
 
 std::string toUpper(const std::string& string) {
 	std::string convert = string;
-	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) std::toupper);
+	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_toupper);
 	return convert;
 }
 
 std::string toUpper(const char* string) {
 	std::string convert(string);
-	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) std::toupper);
+	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_toupper);
 	return convert;
 }
 
