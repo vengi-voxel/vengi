@@ -49,9 +49,7 @@ void SpawnMgr::spawnEntity(network::EntityType start, network::EntityType end, i
 	ai::Zone& zone = *_map->zone();
 	const int offset = (int)start + 1;
 	const int size = (int)end - offset;
-	std::vector<int> count;
-	count.reserve(size);
-	memset(count, 0, sizeof(count));
+	std::vector<int> count(size, 0);
 	zone.execute([&] (const ai::AIPtr& ai) {
 		const AICharacter& chr = ai::character_cast<AICharacter>(ai->getCharacter());
 		const Npc& npc = chr.getNpc();
