@@ -15,17 +15,24 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "ModifierType.h"
 #include "ModifierButton.h"
+#include "math/AABB.h"
+#include <list>
 
 namespace voxedit {
 
+using Selection = math::AABB<int>;
+using Selections = std::list<Selection>;
+
 class Modifier : public core::IComponent {
 private:
+	Selections _selection;
 	glm::ivec3 _aabbFirstPos;
 	bool _aabbMode = false;
 	ModifierType _modifierType = ModifierType::Place;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	int32_t _aabbMeshIndex = -1;
+	int32_t _selectionIndex = -1;
 	int _gridResolution = 1;
 	int32_t _mirrorMeshIndex = -1;
 	math::Axis _mirrorAxis = math::Axis::None;
@@ -41,6 +48,15 @@ private:
 	glm::ivec3 aabbPosition() const;
 	void updateMirrorPlane();
 	void renderAABBMode(const video::Camera& camera);
+	/**
+	 * @brief Removes selections that are fully enclosed by the new selection, or intersects them it.
+	 *
+	 * @return A list of those selections, that intersects with the new selection
+	 */
+	Selections removeIntersecting(const Selection& newSelection);
+	Selections rebuildIntersecting(const Selections& intersectingSelections, const Selection& newSelection);
+	void updateSelectionBuffers();
+	bool select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback);
 public:
 	Modifier();
 

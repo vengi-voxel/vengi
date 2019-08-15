@@ -81,6 +81,12 @@ TBLayout: distribution: gravity, axis: y
 									value 1
 									@include definitions>toolbutton
 							TBClickLabel
+								text Select
+								TBSkinImage: skin: voxedit-voxel
+								TBRadioButton
+									id actionselect
+									@include definitions>toolbutton
+							TBClickLabel
 								text Delete
 								TBSkinImage: skin: voxedit-delete
 								TBRadioButton

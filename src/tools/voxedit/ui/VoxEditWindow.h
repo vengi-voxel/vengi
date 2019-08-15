@@ -51,6 +51,7 @@ private:
 	tb::TBRadioButton* _mirrorY = nullptr;
 	tb::TBRadioButton* _mirrorZ = nullptr;
 
+	tb::TBRadioButton* _selectModifier = nullptr;
 	tb::TBRadioButton* _placeModifier = nullptr;
 	tb::TBRadioButton* _deleteModifier = nullptr;
 	tb::TBRadioButton* _overrideModifier = nullptr;

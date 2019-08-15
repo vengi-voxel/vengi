@@ -35,7 +35,9 @@ bool ModifierButton::handleUp(int32_t key, uint64_t releasedMillis) {
 		layerMgr.foreachGroupLayer([&] (int layerId) {
 			voxel::RawVolume* volume = sceneMgr().volume(layerId);
 			mgr.aabbAction(volume, [&] (const voxel::Region& region, ModifierType type) {
-				sceneMgr().modified(layerId, region);
+				if (type != ModifierType::Select) {
+					sceneMgr().modified(layerId, region);
+				}
 			});
 		});
 		if (_oldType != ModifierType::None) {

@@ -62,23 +62,99 @@ bool Modifier::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 	return true;
 }
 
+Selections Modifier::removeIntersecting(const Selection& newSelection) {
+	Selections removed;
+	for (Selections::iterator i = _selection.begin(); i != _selection.end();) {
+		if (newSelection.containsAABB(*i)) {
+			i = _selection.erase(i);
+			continue;
+		}
+		if (math::intersects(newSelection, *i)) {
+			removed.push_back(*i);
+		}
+		++i;
+	}
+	return removed;
+}
+
+/**
+ * @brief
+ */
+Selections Modifier::rebuildIntersecting(const Selections& intersectingSelections, const Selection& newSelection) {
+	Selections selections;
+	for (const Selection& selection : intersectingSelections) {
+		// should not be here - filtered out in a previous step
+		core_assert(!newSelection.containsAABB(selection));
+		// cut selection into smaller pieces and add those smallers
+		// pieces back into the selection
+		// TODO: implement cutting
+		selections.push_back(selection);
+	}
+	selections.push_back(newSelection);
+	return selections;
+}
+
+void Modifier::updateSelectionBuffers() {
+	_shapeBuilder.clear();
+	_shapeBuilder.setColor(core::Color::Yellow);
+	Log::info("selections: %i", (int)_selection.size());
+	for (const Selection& selection : _selection) {
+		_shapeBuilder.aabb(selection);
+	}
+	_shapeRenderer.createOrUpdate(_selectionIndex, _shapeBuilder);
+}
+
+bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
+	const Selection aabb(mins, maxs);
+	const bool select = (_modifierType & ModifierType::Delete) == ModifierType::None;
+	if (select) {
+		for (const Selection& selection : _selection) {
+			if (selection.containsAABB(aabb)) {
+				Log::debug("already selected");
+				return true;
+			}
+		}
+	}
+	const Selections& intersection = removeIntersecting(aabb);
+	Log::debug("intersections: %i", (int)intersection.size());
+	const Selections& newAABBs = rebuildIntersecting(intersection, aabb);
+	Log::debug("newAABBs: %i", (int)newAABBs.size());
+	if (select) {
+		Log::debug("select (%i:%i:%i)/(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+		for (const Selection& aabb : newAABBs) {
+			_selection.push_back(aabb);
+		}
+	} else {
+		Log::debug("unselect (%i:%i:%i)/(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+	}
+	updateSelectionBuffers();
+	return true;
+}
+
 bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
 	if (!_aabbMode) {
 		return false;
 	}
-	if (volume == nullptr) {
-		return true;
-	}
-	voxel::RawVolumeWrapper wrapper(volume);
+
 	const int size = _gridResolution;
 	const glm::ivec3& pos = aabbPosition();
 	const glm::ivec3 mins = (glm::min)(_aabbFirstPos, pos);
 	const glm::ivec3 maxs = (glm::max)(_aabbFirstPos, pos) + (size - 1);
+
+	if ((_modifierType & ModifierType::Select) == ModifierType::Select) {
+		return select(mins, maxs, volume, callback);
+	}
+
+	if (volume == nullptr) {
+		return true;
+	}
+
+	voxel::RawVolumeWrapper wrapper(volume);
 	voxel::Region modifiedRegion = voxel::Region::InvalidRegion;
 	glm::ivec3 minsMirror = mins;
 	glm::ivec3 maxsMirror = maxs;
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
-		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
+		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, _selection, &modifiedRegion)) {
 			callback(modifiedRegion, _modifierType);
 		}
 		return true;
@@ -87,14 +163,14 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const vox
 	const math::AABB<int> second(minsMirror, maxsMirror);
 	voxel::Region modifiedRegionMirror;
 	if (math::intersects(first, second)) {
-		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
+		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, _cursorVoxel, _modifierType, _selection, &modifiedRegionMirror)) {
 			callback(modifiedRegionMirror, _modifierType);
 		}
 	} else {
-		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, &modifiedRegion)) {
+		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, _selection, &modifiedRegion)) {
 			callback(modifiedRegion, _modifierType);
 		}
-		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, _cursorVoxel, _modifierType, &modifiedRegionMirror)) {
+		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, _cursorVoxel, _modifierType, _selection, &modifiedRegionMirror)) {
 			callback(modifiedRegionMirror, _modifierType);
 		}
 	}
@@ -151,6 +227,7 @@ void Modifier::render(const video::Camera& camera) {
 	const glm::mat4& scale = glm::scale(translate, glm::vec3(_gridResolution));
 	_shapeRenderer.render(_voxelCursorMesh, camera, scale);
 	_shapeRenderer.render(_mirrorMeshIndex, camera);
+	_shapeRenderer.render(_selectionIndex, camera);
 }
 
 ModifierType Modifier::modifierType() const {
@@ -165,6 +242,11 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 void Modifier::construct() {
 	core::Command::registerActionButton("actionexecute", _actionExecuteButton).setBindingContext(BindingContext::Scene);
 	core::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton).setBindingContext(BindingContext::Scene);
+
+	core::Command::registerCommand("actionselect", [&] (const core::CmdArgs& args) {
+		setModifierType(ModifierType::Select);
+	}).setHelp("Change the modifier type to 'select'");
+
 	core::Command::registerCommand("actiondelete", [&] (const core::CmdArgs& args) {
 		setModifierType(ModifierType::Delete);
 	}).setHelp("Change the modifier type to 'delete'");
@@ -210,6 +292,7 @@ bool Modifier::init() {
 void Modifier::shutdown() {
 	_mirrorMeshIndex = -1;
 	_aabbMeshIndex = -1;
+	_selectionIndex = -1;
 	_voxelCursorMesh = -1;
 	_mirrorAxis = math::Axis::None;
 	_aabbMode = false;
