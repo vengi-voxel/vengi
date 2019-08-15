@@ -7,6 +7,7 @@
 #include "voxel/polyvox/RawVolumeWrapper.h"
 #include "math/Axis.h"
 #include "../ModifierType.h"
+#include "../Selection.h"
 
 namespace voxedit {
 namespace tool {

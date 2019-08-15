@@ -16,12 +16,9 @@
 #include "ModifierType.h"
 #include "ModifierButton.h"
 #include "math/AABB.h"
-#include <list>
+#include "Selection.h"
 
 namespace voxedit {
-
-using Selection = math::AABB<int>;
-using Selections = std::list<Selection>;
 
 class Modifier : public core::IComponent {
 private:
