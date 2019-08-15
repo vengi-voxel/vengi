@@ -153,6 +153,11 @@ if(UNIX OR MINGW OR MSYS)
   set(OPT_DEF_LIBC ON)
 endif()
 
+# https://stackoverflow.com/questions/39252385/c-linker-error-lnk2005-already-defined-in-sdl
+if(MSVC AND NOT ARCH_64)
+  set(OPT_DEF_LIBC ON)
+endif()
+
 # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
 #  so we'll just use libusb when it's available. libusb does not support iOS,
 #  so we default to yes on iOS.
