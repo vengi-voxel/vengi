@@ -7,6 +7,7 @@
 #include "tb_object.h"
 #include "tb_str.h"
 #include <SDL.h>
+#include <stdlib.h>
 
 namespace tb {
 
