@@ -209,7 +209,7 @@ public:
 	/// Enlarges the AABB so that it contains the specified AABB.
 	void accumulate(const AABB& reg);
 
-	/// Crops the extents of this AABB accoring to another AABB.
+	/// Crops the extents of this AABB according to another AABB.
 	void cropTo(const AABB& other);
 
 	/// Grows this AABB by the amount specified.
@@ -222,6 +222,7 @@ public:
 	/// Tests whether all components of the upper corner are at least
 	/// as great as the corresponding components of the lower corner.
 	bool isValid() const;
+	bool isEmpty() const;
 
 	/// Moves the AABB by the amount specified.
 	AABB<TYPE>& shift(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
@@ -662,6 +663,11 @@ inline void AABB<TYPE>::grow(const glm::tvec3<TYPE>& v3dAmount) {
 template<typename TYPE>
 inline bool AABB<TYPE>::isValid() const {
 	return _maxs.x >= _mins.x && _maxs.y >= _mins.y && _maxs.z >= _mins.z;
+}
+
+template<typename TYPE>
+inline bool AABB<TYPE>::isEmpty() const {
+	return _maxs.x <= _mins.x || _maxs.y <= _mins.y || _maxs.z <= _mins.z;
 }
 
 /**
