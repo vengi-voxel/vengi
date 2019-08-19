@@ -7,12 +7,7 @@
 namespace voxedit {
 namespace tool {
 
-bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::ivec3& maxs, const voxel::Voxel& voxel, ModifierType modifierType, const Selections& selection, voxel::Region* modifiedRegion) {
-	if (!selection.empty()) {
-		// only operate on selection areas
-		// TODO: implement me
-		return false;
-	}
+bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::ivec3& maxs, const voxel::Voxel& voxel, ModifierType modifierType, const Selection& selection, voxel::Region* modifiedRegion) {
 	const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
 	const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 	const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
@@ -22,10 +17,16 @@ bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::iv
 	}
 	glm::ivec3 modifiedMins((std::numeric_limits<int>::max)());
 	glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)());
+	glm::ivec3 operateMins = mins;
+	glm::ivec3 operateMaxs = maxs;
+	if (!selection.isEmpty()) {
+		operateMins = glm::max(mins, selection.mins());
+		operateMaxs = glm::min(maxs, selection.maxs());
+	}
 	int cnt = 0;
-	for (int32_t z = mins.z; z <= maxs.z; ++z) {
-		for (int32_t y = mins.y; y <= maxs.y; ++y) {
-			for (int32_t x = mins.x; x <= maxs.x; ++x) {
+	for (int32_t z = operateMins.z; z <= operateMaxs.z; ++z) {
+		for (int32_t y = operateMins.y; y <= operateMaxs.y; ++y) {
+			for (int32_t x = operateMins.x; x <= operateMaxs.x; ++x) {
 				bool place = overwrite || deleteVoxels;
 				if (!place) {
 					const bool empty = isAir(target.voxel(x, y, z).getMaterial());

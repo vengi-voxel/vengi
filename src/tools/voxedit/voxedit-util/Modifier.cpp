@@ -62,70 +62,25 @@ bool Modifier::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 	return true;
 }
 
-Selections Modifier::removeIntersecting(const Selection& newSelection) {
-	Selections removed;
-	for (Selections::iterator i = _selection.begin(); i != _selection.end();) {
-		if (newSelection.containsAABB(*i)) {
-			i = _selection.erase(i);
-			continue;
-		}
-		if (math::intersects(newSelection, *i)) {
-			removed.push_back(*i);
-		}
-		++i;
-	}
-	return removed;
-}
-
-/**
- * @brief
- */
-Selections Modifier::rebuildIntersecting(const Selections& intersectingSelections, const Selection& newSelection) {
-	Selections selections;
-	for (const Selection& selection : intersectingSelections) {
-		// should not be here - filtered out in a previous step
-		core_assert(!newSelection.containsAABB(selection));
-		// cut selection into smaller pieces and add those smallers
-		// pieces back into the selection
-		// TODO: implement cutting
-		selections.push_back(selection);
-	}
-	selections.push_back(newSelection);
-	return selections;
-}
-
 void Modifier::updateSelectionBuffers() {
+	_selectionValid = !_selection.isEmpty();
+	if (!_selectionValid) {
+		return;
+	}
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::Yellow);
-	Log::info("selections: %i", (int)_selection.size());
-	for (const Selection& selection : _selection) {
-		_shapeBuilder.aabb(selection);
-	}
+	_shapeBuilder.aabb(_selection);
 	_shapeRenderer.createOrUpdate(_selectionIndex, _shapeBuilder);
 }
 
 bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
-	const Selection aabb(mins, maxs);
 	const bool select = (_modifierType & ModifierType::Delete) == ModifierType::None;
 	if (select) {
-		for (const Selection& selection : _selection) {
-			if (selection.containsAABB(aabb)) {
-				Log::debug("already selected");
-				return true;
-			}
-		}
-	}
-	const Selections& intersection = removeIntersecting(aabb);
-	Log::debug("intersections: %i", (int)intersection.size());
-	const Selections& newAABBs = rebuildIntersecting(intersection, aabb);
-	Log::debug("newAABBs: %i", (int)newAABBs.size());
-	if (select) {
-		Log::debug("select (%i:%i:%i)/(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
-		for (const Selection& aabb : newAABBs) {
-			_selection.push_back(aabb);
-		}
+		const Selection aabb(mins, maxs);
+		_selection = aabb;
 	} else {
-		Log::debug("unselect (%i:%i:%i)/(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+		static const Selection empty(glm::ivec3(0), glm::ivec3(0));
+		_selection = empty;
 	}
 	updateSelectionBuffers();
 	return true;
@@ -227,7 +182,9 @@ void Modifier::render(const video::Camera& camera) {
 	const glm::mat4& scale = glm::scale(translate, glm::vec3(_gridResolution));
 	_shapeRenderer.render(_voxelCursorMesh, camera, scale);
 	_shapeRenderer.render(_mirrorMeshIndex, camera);
-	_shapeRenderer.render(_selectionIndex, camera);
+	if (_selectionValid) {
+		_shapeRenderer.render(_selectionIndex, camera);
+	}
 }
 
 ModifierType Modifier::modifierType() const {
@@ -262,6 +219,12 @@ void Modifier::construct() {
 	core::Command::registerCommand("actionoverride", [&] (const core::CmdArgs& args) {
 		setModifierType(ModifierType::Place | ModifierType::Delete);
 	}).setHelp("Change the modifier type to 'override'");
+
+	core::Command::registerCommand("unselect", [&] (const core::CmdArgs& args) {
+		static const Selection empty(glm::ivec3(0), glm::ivec3(0));
+		_selection = empty;
+		updateSelectionBuffers();
+	}).setHelp("Unselect all");
 
 	core::Command::registerCommand("mirrorx", [&] (const core::CmdArgs& args) {
 		setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());

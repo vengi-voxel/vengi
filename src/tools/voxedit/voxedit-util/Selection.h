@@ -10,6 +10,5 @@
 namespace voxedit {
 
 using Selection = math::AABB<int>;
-using Selections = std::list<Selection>;
 
 }

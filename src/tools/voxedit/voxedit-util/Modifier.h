@@ -22,7 +22,8 @@ namespace voxedit {
 
 class Modifier : public core::IComponent {
 private:
-	Selections _selection;
+	Selection _selection;
+	bool _selectionValid = false;
 	glm::ivec3 _aabbFirstPos;
 	bool _aabbMode = false;
 	ModifierType _modifierType = ModifierType::Place;
@@ -45,13 +46,6 @@ private:
 	glm::ivec3 aabbPosition() const;
 	void updateMirrorPlane();
 	void renderAABBMode(const video::Camera& camera);
-	/**
-	 * @brief Removes selections that are fully enclosed by the new selection, or intersects them it.
-	 *
-	 * @return A list of those selections, that intersects with the new selection
-	 */
-	Selections removeIntersecting(const Selection& newSelection);
-	Selections rebuildIntersecting(const Selections& intersectingSelections, const Selection& newSelection);
 	void updateSelectionBuffers();
 	bool select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback);
 public:
