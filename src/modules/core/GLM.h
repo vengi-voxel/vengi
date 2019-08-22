@@ -43,6 +43,8 @@ extern const glm::vec3 left;
 extern const glm::vec3 up;
 extern const glm::vec3 down;
 
+bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsize, const glm::vec3& triv0, const glm::vec3& triv1, const glm::vec3& triv2);
+
 /**
  * Calculate the line segment PaPb that is the shortest route between
  * two lines P1P2 and P3P4. Calculate also the values of @c mua and @c mub where
