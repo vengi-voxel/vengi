@@ -93,22 +93,20 @@ bool Mesh::loadMesh(const std::string& filename) {
 		Log::error("Failed to load mesh: No filename given");
 		return false;
 	}
-#if 0
-	// TODO: implement custom io handler to support meshes that are split over several files (like obj)
-	class MeshIOSystem : public Assimp::IOSystem {
-	};
-	MeshIOSystem iosystem;
-	_importer->SetIOHandler(&iosystem);
-#endif
-	_filename = filename;
-	_scene = _importer->ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_FindDegenerates);
+	const io::FilePtr& f = core::App::getInstance()->filesystem()->open(filename, io::FileMode::Read);
+	if (!f->exists()) {
+		Log::error("Could not open mesh %s", filename.c_str());
+		return false;
+	}
+	_filename = f->name();
+	_scene = _importer->ReadFile(_filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_FindDegenerates);
 	if (_scene == nullptr) {
 		_state = io::IOSTATE_FAILED;
-		Log::error("Error parsing '%s': '%s'", filename.c_str(), _importer->GetErrorString());
+		Log::error("Error parsing '%s': '%s'", _filename.c_str(), _importer->GetErrorString());
 		return false;
 	}
 	if (_scene->mRootNode == nullptr) {
-		Log::error("Scene doesn't have a root node'%s': '%s'", filename.c_str(), _importer->GetErrorString());
+		Log::error("Scene doesn't have a root node'%s': '%s'", _filename.c_str(), _importer->GetErrorString());
 		return false;
 	}
 	Log::info("Animations found %i", (int)_scene->mNumAnimations);

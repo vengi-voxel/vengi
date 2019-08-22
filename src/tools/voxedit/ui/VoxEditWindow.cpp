@@ -835,6 +835,9 @@ bool VoxEditWindow::importMesh(const std::string& file) {
 	}
 	if (!sceneMgr().dirty()) {
 		const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
+		if (mesh->isFailed()) {
+			return false;
+		}
 		return sceneMgr().voxelizeModel(mesh);
 	}
 
