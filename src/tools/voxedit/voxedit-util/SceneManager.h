@@ -60,6 +60,7 @@ private:
 	MementoHandler _mementoHandler;
 	LayerManager _layerMgr;
 	Modifier _modifier;
+	voxel::RawVolume* _copy = nullptr;
 	render::Gizmo _gizmo;
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
@@ -144,6 +145,10 @@ private:
 
 	void undo();
 	void redo();
+
+	void copy();
+	void paste(const glm::ivec3& pos);
+	void cut();
 
 	/**
 	 * @brief Convert a given point cloud to voxels

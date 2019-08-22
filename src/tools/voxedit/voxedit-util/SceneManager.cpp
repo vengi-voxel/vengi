@@ -29,6 +29,7 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedBlendMode.h"
+#include "tool/Fill.h"
 #include "video/Ray.h"
 #include "math/Random.h"
 #include "math/Axis.h"
@@ -489,6 +490,55 @@ void SceneManager::undo() {
 	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region, referencePosition());
 }
 
+void SceneManager::copy() {
+	const Selection& selection = _modifier.selection();
+	if (selection.isEmpty()) {
+		return;
+	}
+	const int idx = _layerMgr.activeLayer();
+	voxel::RawVolume* model = volume(idx);
+	if (_copy != nullptr) {
+		delete _copy;
+	}
+	_copy = voxedit::tool::copy(model, selection);
+}
+
+void SceneManager::paste(const glm::ivec3& pos) {
+	if (_copy == nullptr) {
+		Log::debug("Nothing copied yet - failed to paste");
+		return;
+	}
+	const int idx = _layerMgr.activeLayer();
+	voxel::RawVolume* model = volume(idx);
+	voxel::Region modifiedRegion;
+	voxedit::tool::paste(model, _copy, pos, modifiedRegion);
+	if (!modifiedRegion.isValid()) {
+		Log::debug("Failed to paste");
+		return;
+	}
+	modified(idx, modifiedRegion);
+}
+
+void SceneManager::cut() {
+	const Selection& selection = _modifier.selection();
+	if (selection.isEmpty()) {
+		Log::debug("Nothing selected - failed to cut");
+		return;
+	}
+	const int idx = _layerMgr.activeLayer();
+	voxel::RawVolume* model = volume(idx);
+	if (_copy != nullptr) {
+		delete _copy;
+	}
+	voxel::Region modifiedRegion;
+	_copy = voxedit::tool::cut(model, selection, modifiedRegion);
+	if (_copy == nullptr) {
+		Log::debug("Failed to cut");
+		return;
+	}
+	modified(idx, modifiedRegion);
+}
+
 void SceneManager::redo() {
 	const MementoState& s = _mementoHandler.redo();
 	ScopedMementoHandlerLock lock(_mementoHandler);
@@ -910,6 +960,22 @@ void SceneManager::construct() {
 		move(x, y, z);
 	}).setHelp("Move the voxels inside the volume by the given values");
 
+	core::Command::registerCommand("copy", [&] (const core::CmdArgs& args) {
+		copy();
+	}).setHelp("Copy selection");
+
+	core::Command::registerCommand("paste", [&] (const core::CmdArgs& args) {
+		paste(_referencePos);
+	}).setHelp("Paste clipboard to current reference position");
+
+	core::Command::registerCommand("pastecursor", [&] (const core::CmdArgs& args) {
+		paste(_modifier.cursorPosition());
+	}).setHelp("Paste clipboard to current cursor position");
+
+	core::Command::registerCommand("cut", [&] (const core::CmdArgs& args) {
+		cut();
+	}).setHelp("Cut selection");
+
 	core::Command::registerCommand("undo", [&] (const core::CmdArgs& args) {
 		undo();
 	}).setHelp("Undo your last step");
@@ -1177,6 +1243,12 @@ void SceneManager::shutdown() {
 	if (_initialized != 0) {
 		return;
 	}
+
+	if (_copy) {
+		delete _copy;
+		_copy = nullptr;
+	}
+
 	std::vector<voxel::RawVolume*> old = _volumeRenderer.shutdown();
 	for (voxel::RawVolume* v : old) {
 		delete v;

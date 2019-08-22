@@ -57,6 +57,8 @@ public:
 
 	void shift(const glm::ivec3& v);
 
+	const Selection& selection() const;
+
 	math::Axis mirrorAxis() const;
 	void setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
 
@@ -100,6 +102,10 @@ inline const voxel::Voxel& Modifier::cursorVoxel() const {
 
 inline const glm::ivec3& Modifier::cursorPosition() const {
 	return _cursorPosition;
+}
+
+inline const Selection& Modifier::selection() const {
+	return _selection;
 }
 
 }
