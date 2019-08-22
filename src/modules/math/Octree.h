@@ -155,8 +155,16 @@ public:
 			return true;
 		}
 
+		inline bool isLeaf() const {
+			return _nodes.empty();
+		}
+
+		inline bool hasContent() const {
+			return !_contents.empty();
+		}
+
 		inline bool isEmpty() const {
-			return _nodes.empty() && _contents.empty();
+			return isLeaf() && _contents.empty();
 		}
 
 		void query(const AABB<TYPE>& queryArea, Contents& results) const {
@@ -296,7 +304,7 @@ public:
 	 * is just called with the center of the potential node
 	 * @param area The frustum area to visit visible AABBs for
 	 * @param visitor The visitor to execute if an AABB is visible in the given frustum
-	 * @param minSize The mimimum size of the AABBs when the recursion is stopped.
+	 * @param minSize The minimum size of the AABBs when the recursion is stopped.
 	 */
 	template<class VISITOR>
 	inline void visit(const Frustum& area, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) {
