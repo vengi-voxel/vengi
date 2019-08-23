@@ -24,3 +24,5 @@ The tests need a postgres database named `engine` and a user named `engine` with
 
 # More information
 For more information, please check out the [wiki](https://gitlab.com/mgerhardy/engine/wikis/home) or the [doxygen](https://mgerhardy.gitlab.io/engine/) documentation.
+
+You can find some old and most likely outdated videos in my [youtube channel](https://www.youtube.com/channel/UCbnJUW0d4tYvdmsJ-R6iUpA).
