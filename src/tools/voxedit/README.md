@@ -35,6 +35,8 @@ my own engine and evolved into something that others might find useful, too.
 * Show commands of actions (to configure your own key bindings)
 * Rotate around reference position or center of volume
 * Import bitmaps as plane
+* Copy/Cut/Paste - paste to cursor or reference position
+* Exporting single layers into meshes
 
 ## Controls
 
