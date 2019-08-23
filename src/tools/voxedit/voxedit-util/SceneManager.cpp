@@ -1605,6 +1605,7 @@ void SceneManager::onActiveLayerChanged(int old, int active) {
 	if (!region.containsPoint(cursorPosition())) {
 		setCursorPosition(volume->region().getCentre());
 	}
+	_gizmo.setPosition(glm::vec3(region.getLowerCorner()));
 	resetLastTrace();
 }
 
