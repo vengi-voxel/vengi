@@ -31,6 +31,7 @@ GizmoMode Gizmo::mode() const {
 
 void Gizmo::setPosition(const glm::vec3& pos) {
 	_pos = pos;
+	_axis.setPosition(pos);
 }
 
 void Gizmo::update(const video::Camera& camera, const glm::ivec2& pixelPos) {
@@ -55,9 +56,9 @@ void Gizmo::update(const video::Camera& camera, const glm::ivec2& pixelPos) {
 	glm::vec3 paZ;
 	glm::vec3 pbZ;
 
-	const bool intersectX = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), glm::vec3(20.0f,  0.0f,  0.0f), paX, pbX);
-	const bool intersectY = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), glm::vec3( 0.0f, 20.0f,  0.0f), paY, pbY);
-	const bool intersectZ = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), glm::vec3( 0.0f,  0.0f, 20.0f), paZ, pbZ);
+	const bool intersectX = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), _pos + glm::vec3(20.0f,  0.0f,  0.0f), paX, pbX);
+	const bool intersectY = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), _pos + glm::vec3( 0.0f, 20.0f,  0.0f), paY, pbY);
+	const bool intersectZ = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), _pos + glm::vec3( 0.0f,  0.0f, 20.0f), paZ, pbZ);
 	const float distanceX = intersectX ? glm::distance2(paX, pbX) : FLT_MAX;
 	const float distanceY = intersectY ? glm::distance2(paY, pbY) : FLT_MAX;
 	const float distanceZ = intersectZ ? glm::distance2(paZ, pbZ) : FLT_MAX;
