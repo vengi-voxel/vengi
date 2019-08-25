@@ -7,6 +7,7 @@
 #include "core/GLM.h"
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
+#include <vector>
 
 namespace voxelrender {
 
@@ -24,7 +25,8 @@ protected:
 TEST_F(MaterialTest, testMaterial) {
 	const int w = 256;
 	const int h = 1024;
-	uint8_t buffer[w * h * components];
+	std::vector<uint8_t> buffer;
+	buffer.reserve(w * h * components);
 
 	ASSERT_TRUE(voxel::initDefaultMaterialColors());
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
@@ -46,7 +48,7 @@ TEST_F(MaterialTest, testMaterial) {
 			}
 		}
 	}
-	ASSERT_TRUE(WriteImage("material.png", buffer, w, h));
+	ASSERT_TRUE(WriteImage("material.png", &buffer[0], w, h));
 }
 
 }

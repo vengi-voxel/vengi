@@ -36,6 +36,7 @@
 #  else
 #    define SIMPLECPP_LIB
 #  endif
+#undef ERROR
 #else
 #  define SIMPLECPP_LIB
 #endif
