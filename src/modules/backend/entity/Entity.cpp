@@ -93,7 +93,7 @@ void Entity::init() {
 			attrib::Type::ATTACKRANGE,
 			attrib::Type::STRENGTH };
 
-	for (size_t i = 0; i < lengthof(types); ++i) {
+	for (int i = 0; i < lengthof(types); ++i) {
 		const attrib::Type type = static_cast<attrib::Type>(types[i]);
 		const double max = _attribs.max(type);
 		Log::debug("Set current for %s to %f", network::EnumNameAttribType(type), max);

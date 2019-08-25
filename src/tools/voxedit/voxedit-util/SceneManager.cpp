@@ -794,7 +794,7 @@ void SceneManager::construct() {
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
 
-	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
+	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		core::Command::registerActionButton(
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
 				_move[i]).setBindingContext(voxedit::BindingContext::Scene);
@@ -1189,7 +1189,7 @@ void SceneManager::zoom(video::Camera& camera, float level) const {
 }
 
 void SceneManager::update(uint64_t time) {
-	for (size_t i = 0; i < lengthof(DIRECTIONS); ++i) {
+	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
 			continue;
 		}

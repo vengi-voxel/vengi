@@ -110,7 +110,7 @@ static const ImageFormatType cImageFormat[] = {
 	IMAGEFORMATENTRY(R8UI)
 };
 #undef IMAGEFORMATENTRY
-static_assert((size_t)video::ImageFormat::Max == lengthof(cImageFormat), "mismatch in image formats");
+static_assert((int)video::ImageFormat::Max == lengthof(cImageFormat), "mismatch in image formats");
 
 video::ImageFormat getImageFormat(const std::string& glslType, int line) {
 	const int max = std::enum_value(video::ImageFormat::Max);
@@ -154,7 +154,7 @@ static const PrimitiveType cPrimitiveType[] = {
 	PRIMITVEENTRY(TriangleStrip)
 };
 #undef PRIMITVEENTRY
-static_assert((size_t)video::Primitive::Max == lengthof(cPrimitiveType), "mismatch in primitive types");
+static_assert((int)video::Primitive::Max == lengthof(cPrimitiveType), "mismatch in primitive types");
 
 const char* getPrimitiveTypeString(video::Primitive primitive) {
 	const int max = std::enum_value(video::Primitive::Max);
