@@ -68,6 +68,7 @@ private:
 	video::Camera* _camera = nullptr;
 
 	int32_t _referencePointMesh = -1;
+	glm::mat4 _referencePointModelMatrix { 1.0f };
 
 	glm::ivec3 _referencePos;
 

@@ -780,7 +780,7 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 		if (!depthTest) {
 			video::disable(video::State::DepthTest);
 		}
-		_shapeRenderer.render(_referencePointMesh, camera);
+		_shapeRenderer.render(_referencePointMesh, camera, _referencePointModelMatrix);
 	} else if (!depthTest) {
 		video::disable(video::State::DepthTest);
 	}
@@ -1153,6 +1153,11 @@ bool SceneManager::init() {
 		_planeMeshIndex[i] = -1;
 	}
 
+	_shapeBuilder.clear();
+	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
+	_shapeBuilder.sphere(8, 6, 0.5f);
+	_referencePointMesh = _shapeRenderer.create(_shapeBuilder);
+
 	_lockedAxis = math::Axis::None;
 	return true;
 }
@@ -1361,13 +1366,9 @@ void SceneManager::createTree(voxel::TreeContext ctx) {
 }
 
 void SceneManager::setReferencePosition(const glm::ivec3& pos) {
-	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
-	const glm::vec3 posAligned{pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f};
-	_shapeBuilder.setPosition(posAligned);
-	_shapeBuilder.sphere(8, 6, 0.5f);
-	_shapeRenderer.createOrUpdate(_referencePointMesh, _shapeBuilder);
 	_referencePos = pos;
+	const glm::vec3 posAligned(_referencePos.x + 0.5f, _referencePos.y + 0.5f, _referencePos.z + 0.5f);
+	_referencePointModelMatrix = glm::translate(posAligned);
 }
 
 void SceneManager::moveCursor(int x, int y, int z) {

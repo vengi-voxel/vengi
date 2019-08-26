@@ -27,6 +27,7 @@
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/transform.hpp>
 
 template<int N, typename T>
 struct VecLessThan {
