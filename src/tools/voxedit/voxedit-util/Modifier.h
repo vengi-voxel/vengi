@@ -87,6 +87,7 @@ public:
 
 	void setCursorPosition(const glm::ivec3& pos, voxel::FaceNames face);
 	const glm::ivec3& cursorPosition() const;
+	voxel::FaceNames cursorFace() const;
 
 	/**
 	 * @note Mirrored REMOVE ME
@@ -95,6 +96,10 @@ public:
 
 	void render(const video::Camera& camera);
 };
+
+inline voxel::FaceNames Modifier::cursorFace() const {
+	return _face;
+}
 
 inline const voxel::Voxel& Modifier::cursorVoxel() const {
 	return _cursorVoxel;

@@ -1473,21 +1473,19 @@ bool SceneManager::trace(bool force) {
 		if (sampler.voxel() != air) {
 			_result.didHit = true;
 			_result.hitVoxel = sampler.position();
-			if (_result.validPreviousPosition) {
-				const glm::ivec3& dir = _result.previousPosition - _result.hitVoxel;
-				if (dir.x < 0) {
-					_result.hitFace = voxel::FaceNames::NegativeX;
-				} else if (dir.x > 0) {
-					_result.hitFace = voxel::FaceNames::PositiveX;
-				} else if (dir.y < 0) {
-					_result.hitFace = voxel::FaceNames::NegativeY;
-				} else if (dir.y > 0) {
-					_result.hitFace = voxel::FaceNames::PositiveY;
-				} else if (dir.z < 0) {
-					_result.hitFace = voxel::FaceNames::NegativeZ;
-				} else if (dir.z > 0) {
-					_result.hitFace = voxel::FaceNames::PositiveZ;
-				}
+			const glm::ivec3& dir = glm::ivec3(ray.origin) - _result.hitVoxel;
+			if (dir.x < 0) {
+				_result.hitFace = voxel::FaceNames::NegativeX;
+			} else if (dir.x > 0) {
+				_result.hitFace = voxel::FaceNames::PositiveX;
+			} else if (dir.y < 0) {
+				_result.hitFace = voxel::FaceNames::NegativeY;
+			} else if (dir.y > 0) {
+				_result.hitFace = voxel::FaceNames::PositiveY;
+			} else if (dir.z < 0) {
+				_result.hitFace = voxel::FaceNames::NegativeZ;
+			} else if (dir.z > 0) {
+				_result.hitFace = voxel::FaceNames::PositiveZ;
 			}
 			return false;
 		}
