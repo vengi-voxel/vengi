@@ -417,16 +417,16 @@ void createTree(Volume& volume, const TreeContext& ctx, math::Random& random) {
  * @brief Fill a world with trees based on the configured bioms
  */
 template<class Volume>
-void createTrees(Volume& volume, const Region& region, const BiomeManager& biomManager) {
+void createTrees(Volume& volume, const Region& region, const BiomeManager& biomeManager) {
 	std::vector<TreeType> treeTypes;
-	biomManager.getTreeTypes(region, treeTypes);
+	biomeManager.getTreeTypes(region, treeTypes);
 	if (treeTypes.empty()) {
 		return;
 	}
 	math::Random random(region.getCentreX() + region.getCentreY() + region.getCentreZ());
 	const int maxSize = 18;
 	std::vector<glm::vec2> positions;
-	biomManager.getTreePositions(region, positions, random, maxSize);
+	biomeManager.getTreePositions(region, positions, random, maxSize);
 	TreeContext ctx;
 	for (const glm::vec2& position : positions) {
 		const int y = findFloor(volume, position.x, position.y);

@@ -7,6 +7,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include "core/Common.h"
 #include "math/Bezier.h"
+#include "math/Axis.h"
 #include "voxel/polyvox/Raycast.h"
 #include "core/GLM.h"
 
@@ -24,7 +25,7 @@ namespace shape {
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class Voxel>
-void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel, const glm::bvec3& axis = glm::bvec3(false, true, false)) {
+void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel, math::Axis axis = math::Axis::Y) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
 	const double minRadius = core_min(xRadius, zRadius);
@@ -39,9 +40,9 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int 
 				continue;
 			}
 			glm::ivec3 pos;
-			if (axis[0]) {
+			if (axis == math::Axis::X) {
 				pos = glm::ivec3(center.x, center.y + x, center.z + z);
-			} else if (axis[1]) {
+			} else if (axis == math::Axis::Y) {
 				pos = glm::ivec3(center.x + x, center.y, center.z + z);
 			} else {
 				pos = glm::ivec3(center.x, center.y, center.z + z);
@@ -236,13 +237,13 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 	const float y2 = end.y + offset;
 	const float z2 = end.z + offset;
 
-	int i = (int) floorf(x1);
-	int j = (int) floorf(y1);
-	int k = (int) floorf(z1);
+	int i = (int) glm::floor(x1);
+	int j = (int) glm::floor(y1);
+	int k = (int) glm::floor(z1);
 
-	const int iend = (int) floorf(x2);
-	const int jend = (int) floorf(y2);
-	const int kend = (int) floorf(z2);
+	const int iend = (int) glm::floor(x2);
+	const int jend = (int) glm::floor(y2);
+	const int kend = (int) glm::floor(z2);
 
 	const int di = ((x1 < x2) ? 1 : ((x1 > x2) ? -1 : 0));
 	const int dj = ((y1 < y2) ? 1 : ((y1 > y2) ? -1 : 0));
@@ -252,11 +253,11 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 	const float deltaty = 1.0f / std::abs(y2 - y1);
 	const float deltatz = 1.0f / std::abs(z2 - z1);
 
-	const float minx = floorf(x1), maxx = minx + 1.0f;
+	const float minx = glm::floor(x1), maxx = minx + 1.0f;
 	float tx = ((x1 > x2) ? (x1 - minx) : (maxx - x1)) * deltatx;
-	const float miny = floorf(y1), maxy = miny + 1.0f;
+	const float miny = glm::floor(y1), maxy = miny + 1.0f;
 	float ty = ((y1 > y2) ? (y1 - miny) : (maxy - y1)) * deltaty;
-	const float minz = floorf(z1), maxz = minz + 1.0f;
+	const float minz = glm::floor(z1), maxz = minz + 1.0f;
 	float tz = ((z1 > z2) ? (z1 - minz) : (maxz - z1)) * deltatz;
 
 	glm::ivec3 pos(i, j, k);
@@ -368,14 +369,14 @@ void createTorus(Volume& volume, const glm::ivec3& position, int innerRadius, in
 }
 
 template<class Volume, class Voxel>
-void createCylinder(Volume& volume, const glm::vec3& position, const glm::bvec3& axis, int radius, int height, const Voxel& voxel) {
+void createCylinder(Volume& volume, const glm::vec3& position, const math::Axis axis, int radius, int height, const Voxel& voxel) {
 	for (int i = 0; i < height; ++i) {
 		glm::ivec3 center;
-		if (axis[1]) {
+		if (axis == math::Axis::Y) {
 			center = glm::ivec3(position.x, position.y + i, position.z);
-		} else if (axis[0]) {
+		} else if (axis == math::Axis::X) {
 			center = glm::ivec3(position.x + i, position.y, position.z);
-		} else if (axis[2]) {
+		} else if (axis == math::Axis::Z) {
 			center = glm::ivec3(position.x, position.y, position.z + i);
 		}
 		createCirclePlane(volume, center, radius * 2, radius * 2, radius, voxel, axis);
