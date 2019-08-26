@@ -155,19 +155,13 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	return biomeBestMatch;
 }
 
-void BiomeManager::distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const {
+void BiomeManager::distributePointsInRegion(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const {
 	std::vector<glm::vec2> initialSet;
 	voxel::Region shrinked = region;
 	shrinked.shrink(border);
 	const glm::ivec3& randomPos = shrinked.getRandomPosition(random);
 	initialSet.push_back(glm::vec2(randomPos.x, randomPos.z));
 	positions = noise::poissonDiskDistribution(distribution, shrinked.rect(), initialSet);
-	Log::debug("%i %s positions in region (%i,%i,%i)/(%i,%i,%i) with border: %i", (int)positions.size(), type,
-			region.getLowerX(), region.getLowerY(), region.getLowerZ(),
-			region.getUpperX(), region.getUpperY(), region.getUpperZ(), border);
-	for (const glm::vec2& pos : positions) {
-		Log::debug("[+] %s pos: (%i:%i)", type, (int)pos.x, (int)pos.y);
-	}
 }
 
 void BiomeManager::getTreeTypes(const Region& region, std::vector<TreeType>& treeTypes) const {
@@ -183,7 +177,7 @@ void BiomeManager::getTreePositions(const Region& region, std::vector<glm::vec2>
 		return;
 	}
 	const Biome* biome = getBiome(pos);
-	distributePointsInRegion("tree", region, positions, random, border, biome->treeDistribution);
+	distributePointsInRegion(region, positions, random, border, biome->treeDistribution);
 }
 
 void BiomeManager::getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
@@ -193,7 +187,7 @@ void BiomeManager::getPlantPositions(const Region& region, std::vector<glm::vec2
 		return;
 	}
 	const Biome* biome = getBiome(pos);
-	distributePointsInRegion("plant", region, positions, random, border, biome->plantDistribution);
+	distributePointsInRegion(region, positions, random, border, biome->plantDistribution);
 }
 
 void BiomeManager::getCloudPositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
@@ -205,7 +199,7 @@ void BiomeManager::getCloudPositions(const Region& region, std::vector<glm::vec2
 	}
 
 	const Biome* biome = getBiome(pos);
-	distributePointsInRegion("cloud", region, positions, random, border, biome->cloudDistribution);
+	distributePointsInRegion(region, positions, random, border, biome->cloudDistribution);
 }
 
 bool BiomeManager::hasCactus(const glm::ivec3& pos) const {
