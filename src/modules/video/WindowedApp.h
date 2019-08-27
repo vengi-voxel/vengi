@@ -39,6 +39,7 @@ protected:
 	float _dpiVerticalFactor = 1.0f;
 	double _frameCounterResetTime = 0.0;
 	bool _allowRelativeMouseMode = true;
+	bool _showWindow = true;
 
 	util::KeyBindingHandler _keybindingHandler;
 	/**

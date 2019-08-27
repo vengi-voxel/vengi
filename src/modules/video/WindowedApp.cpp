@@ -250,7 +250,12 @@ core::AppState WindowedApp::onInit() {
 
 	const bool fullscreen = core::Var::getSafe(cfg::ClientFullscreen)->boolVal();
 
-	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+	int flags = SDL_WINDOW_OPENGL;
+	if (_showWindow) {
+		flags |= SDL_WINDOW_SHOWN;
+	} else {
+		flags |= SDL_WINDOW_HIDDEN;
+	}
 	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHghDPI);
 	if (highDPI->boolVal()) {
 		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
