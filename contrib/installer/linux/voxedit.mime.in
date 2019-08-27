@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
-  <mime-type type="text/x-vengi-voxedit">
+  <mime-type type="application/x-@CMAKE_PROJECT_NAME@">
     <comment>Voxel model</comment>
     <glob pattern="*.vox"/>
     <glob pattern="*.qb"/>
