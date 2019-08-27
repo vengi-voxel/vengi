@@ -28,6 +28,11 @@ private:
 	std::string _organisation;
 	std::string _appname;
 
+	/**
+	 * This is the directory where the application was run from, which is probably
+	 * the installation directory or the current working directory. In case the
+	 * binary is a symlink, it it resolved.
+	 */
 	std::string _basePath;
 	std::string _homePath;
 	std::vector<std::string> _paths;

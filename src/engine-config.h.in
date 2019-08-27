@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #define PROJECT_VERSION "@PROJECT_VERSION@"
@@ -24,3 +28,5 @@
 #cmakedefine DB_PW "@DB_PW@"
 
 #cmakedefine POSTGRESQL_LIBS "@POSTGRESQL_LIBS@"
+
+#cmakedefine PKGDATADIR "@PKGDATADIR@"
