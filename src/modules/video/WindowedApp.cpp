@@ -182,7 +182,7 @@ core::AppState WindowedApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 	if (!_keybindingHandler.load("keybindings.cfg")) {
-		Log::error("failed to init the global keybindings");
+		Log::warn("failed to init the global keybindings");
 	}
 	_keybindingHandler.load(_appname + "-keybindings.cfg");
 
