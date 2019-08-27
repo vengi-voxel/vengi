@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="text/x-vengi-voxedit">
+    <comment>Voxel model</comment>
+    <glob pattern="*.vox"/>
+    <glob pattern="*.qb"/>
+    <glob pattern="*.qbt"/>
+    <glob pattern="*.vxm"/>
+  </mime-type>
+</mime-info>
