@@ -6,6 +6,7 @@ set(SRCS
 	QBFormat.h QBFormat.cpp
 	VXMFormat.h VXMFormat.cpp
 	MeshExporter.h MeshExporter.cpp
+	Loader.h Loader.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel assimp)
 
