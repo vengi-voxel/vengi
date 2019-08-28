@@ -27,6 +27,10 @@ public:
 	MaterialColor() {
 	}
 
+	bool initialized() const {
+		return _initialized;
+	}
+
 	bool init(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaString) {
 		if (_initialized) {
 			Log::debug("MaterialColors are already initialized");
