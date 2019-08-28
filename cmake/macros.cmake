@@ -122,7 +122,11 @@ macro(engine_add_executable)
 		target_sources(${_EXE_TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/application.rc)
 	elseif(UNIX)
 		if (_EXE_WINDOWED)
-			configure_file(${ROOT_DIR}/contrib/installer/linux/desktop.in ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop)
+			if (EXISTS ${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.desktop.in)
+				configure_file(${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.desktop.in ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop)
+			else()
+				configure_file(${ROOT_DIR}/contrib/installer/linux/desktop.in ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop)
+			endif()
 			if (DESKTOP_FILE_VALIDATE_EXECUTABLE)
 				add_custom_command(TARGET ${_EXE_TARGET} POST_BUILD
 					COMMAND ${DESKTOP_FILE_VALIDATE_EXECUTABLE} ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.desktop

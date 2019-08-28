@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Name=@NAME@ @CMAKE_PROJECT_VERSION@
+GenericName=@NAME@
+Comment=@DESCRIPTION@
+Exec=@COMMANDLINE@
+Icon=@APPICON@
+Terminal=false
+Type=Application
+Categories=@CATEGORIES@
+StartupNotify=true
+MimeType=application/x-@CMAKE_PROJECT_NAME@
