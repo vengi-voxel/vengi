@@ -105,13 +105,15 @@ void Log::init() {
 	const bool syslog = core::Var::getSafe(cfg::CoreSysLog)->boolVal();
 	if (syslog) {
 #ifdef HAVE_SYSLOG_H
-		if (_sdlCallback == nullptr) {
-			SDL_LogGetOutputFunction(&_sdlCallback, &_sdlCallbackUserData);
+		if (!_syslog) {
+			if (_sdlCallback == nullptr) {
+				SDL_LogGetOutputFunction(&_sdlCallback, &_sdlCallbackUserData);
+			}
+			core_assert(_sdlCallback != sysLogOutputFunction);
+			openlog(nullptr, LOG_PID, LOG_USER);
+			SDL_LogSetOutputFunction(sysLogOutputFunction, nullptr);
+			_syslog = true;
 		}
-		core_assert(_sdlCallback != sysLogOutputFunction);
-		openlog(nullptr, LOG_PID, LOG_USER);
-		SDL_LogSetOutputFunction(sysLogOutputFunction, nullptr);
-		_syslog = true;
 #else
 		Log::warn("Syslog support is not compiled into the binary");
 		_syslog = false;
