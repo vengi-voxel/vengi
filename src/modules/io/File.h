@@ -74,6 +74,11 @@ public:
 
 	SDL_RWops* createRWops(FileMode mode) const;
 	long write(const unsigned char *buf, size_t len) const;
+	/**
+	 * @brief Reads the content of the file into a buffer. The buffer is allocated inside this function.
+	 * The returned memory is owned by the caller.
+	 * @return The amount of read bytes. A value < 0 indicates an error. 0 means empty file.
+	 */
 	int read(void **buffer);
 	int read(void *buffer, int n);
 	std::string load();

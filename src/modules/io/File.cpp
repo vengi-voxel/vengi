@@ -134,17 +134,17 @@ int File::read(void **buffer) {
 	if (len <= 0) {
 		return len;
 	}
-	*buffer = new char[len];
+	*buffer = new uint8_t[len];
 	return read(*buffer, len);
 }
 
 int File::read(void *buffer, int n) {
 	const size_t blockSize = 0x10000;
-	unsigned char *buf;
+	uint8_t *buf;
 	size_t remaining, len;
 
 	len = remaining = n;
-	buf = (unsigned char *) buffer;
+	buf = (uint8_t *) buffer;
 
 	seek(0, RW_SEEK_SET);
 
