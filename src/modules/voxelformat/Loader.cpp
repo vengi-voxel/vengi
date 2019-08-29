@@ -8,6 +8,7 @@
 #include "QBTFormat.h"
 #include "QBFormat.h"
 #include "VXMFormat.h"
+#include "BinVoxFormat.h"
 
 namespace voxelformat {
 
@@ -25,8 +26,12 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 	} else if (ext == "vxm") {
 		voxel::VXMFormat f;
 		newVolumes = f.loadGroups(filePtr);
+	} else if (ext == "binvox") {
+		voxel::BinVoxFormat f;
+		newVolumes = f.loadGroups(filePtr);
 	} else {
-		Log::error("Failed to load model file %s - unsupported file format", filePtr->name().c_str());
+		Log::error("Failed to load model file %s - unsupported file format for extension '%s'",
+				filePtr->name().c_str(), ext.c_str());
 		return false;
 	}
 	if (newVolumes.empty()) {

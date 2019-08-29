@@ -1,5 +1,6 @@
 set(LIB voxelformat)
 set(SRCS
+	BinVoxFormat.h BinVoxFormat.cpp
 	VoxFileFormat.h VoxFileFormat.cpp
 	VoxFormat.h VoxFormat.cpp
 	QBTFormat.h QBTFormat.cpp
@@ -12,6 +13,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel assimp)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
+	tests/BinVoxFormatTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
@@ -21,6 +23,7 @@ set(TEST_SRCS
 set(TEST_FILES
 	tests/qubicle.qb
 	tests/qubicle.qbt
+	tests/test.binvox
 	tests/magicavoxel.vox
 	tests/test.vxm
 )

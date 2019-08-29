@@ -25,7 +25,7 @@
 
 namespace voxedit {
 
-static const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm";
+static const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox";
 static const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb";
 
 static const struct {

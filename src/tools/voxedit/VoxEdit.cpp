@@ -200,7 +200,7 @@ core::AppState VoxEdit::onInit() {
 
 	core::setBindingContext(voxedit::BindingContext::UI);
 
-	if (_argc >= 1) {
+	if (_argc >= 2) {
 		const char *file = _argv[_argc - 1];
 		const io::FilePtr& filePtr = filesystem()->open(file);
 		if (filePtr->exists()) {
