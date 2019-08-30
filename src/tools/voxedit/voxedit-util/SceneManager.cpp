@@ -569,19 +569,22 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	}
 	const int maxLayers = _layerMgr.maxLayers();
 	if (volumeCnt > maxLayers) {
-		Log::error("Max supported layer size exceeded: %i (max supported: %i)",
+		Log::warn("Max supported layer size exceeded: %i (max supported: %i)",
 				volumeCnt, maxLayers);
-		return false;
 	}
 	for (int idx = 0; idx < maxLayers; ++idx) {
 		_layerMgr.deleteLayer(idx, true);
 	}
+	int valid = 0;
 	for (int idx = 0; idx < volumeCnt; ++idx) {
 		const int layerId = _layerMgr.addLayer(volumes[idx].name.c_str(), volumes[idx].visible, volumes[idx].volume, volumes[idx].pivot);
-		if (layerId < 0) {
-			const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
-			return newScene(true, "", region);
+		if (layerId >= 0) {
+			++valid;
 		}
+	}
+	if (valid == 0) {
+		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
+		return newScene(true, "", region);
 	}
 	_mementoHandler.clearStates();
 	_layerMgr.findNewActiveLayer();

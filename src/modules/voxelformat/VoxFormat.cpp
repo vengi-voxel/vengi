@@ -637,7 +637,7 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 			wrap(stream.readInt(end));
 			if ((int)end != -1) {
 				Log::error("Unexpected end of LAYR chunk - expected -1, got %i", (int)end);
-				return VoxelVolumes();
+				return volumes;
 			}
 			if (layerId >= (uint32_t)volumes.size()) {
 				Log::warn("Invalid layer id found: %i - exceeded limit of %i. Skipping layer with name '%s'",
