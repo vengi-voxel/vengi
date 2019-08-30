@@ -10,7 +10,7 @@ my own engine and evolved into something that others might find useful, too.
 ## Features
 
 * Large scene support
-* Load vox, qbt, qb, vxm
+* Load vox, qbt, qb, vxm, binvox
 * Save to vox, qbt, qb
 * Exporting to a lot of formats (dae, obj, fbx, gltf, ...)
 * Auto-saving
