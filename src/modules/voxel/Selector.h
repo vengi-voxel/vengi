@@ -10,6 +10,17 @@
 
 namespace voxel {
 
+/**
+ * @brief Callback for walking the given volume.
+ *
+ * The sampler can be used to get the current position or the voxel, the face name indicates
+ * the direction of the step.
+ *
+ * If this callback returns @c true, the step is continued into the given direction that
+ * the face name indicates. Returning @c false indicates a stop.
+ *
+ * A coordinate in the given volume is not visited twice
+ */
 using SelectorCallback = std::function<bool(const voxel::RawVolume::Sampler&, voxel::FaceNames)>;
 
 class Selector {
