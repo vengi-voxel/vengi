@@ -422,7 +422,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setModel(model);
 		_worldShader.setMaterialblock(_materialBlock);
-		_worldShader.setViewdistance(_viewDistance);
+		_worldShader.setFocuspos(camera.target());
 		_worldShader.setLightdir(_shadow.sunDirection());
 		_worldShader.setFogcolor(_clearColor);
 		_worldShader.setTexture(video::TextureUnit::Zero);
@@ -444,7 +444,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		core_trace_scoped(WorldRendererRenderPlants);
 		video::ScopedShader scoped(_worldInstancedShader);
 		_worldInstancedShader.setModel(glm::scale(glm::vec3(0.4f)));
-		_worldInstancedShader.setViewdistance(_viewDistance);
+		_worldInstancedShader.setFocuspos(camera.target());
 		_worldInstancedShader.setLightdir(_shadow.sunDirection());
 		_worldInstancedShader.setMaterialblock(_materialBlock);
 		_worldInstancedShader.setFogcolor(_clearColor);
@@ -465,7 +465,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		core_trace_scoped(WorldRendererRenderWater);
 		video::ScopedShader scoped(_waterShader);
 		_waterShader.setModel(model);
-		_waterShader.setViewdistance(_viewDistance);
+		_waterShader.setFocuspos(camera.target());
 		_waterShader.setLightdir(_shadow.sunDirection());
 		_waterShader.setMaterialblock(_materialBlock);
 		_waterShader.setFogcolor(_clearColor);
@@ -514,7 +514,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	video::enable(video::State::DepthMask);
 	video::ScopedShader scoped(_meshShader);
 	_meshShader.setFogrange(_fogRange);
-	_meshShader.setViewdistance(_viewDistance);
+	_meshShader.setFocuspos(camera.target());
 	_meshShader.setTexture(video::TextureUnit::Zero);
 	_meshShader.setDiffuseColor(_diffuseColor);
 	_meshShader.setAmbientColor(_ambientColor);

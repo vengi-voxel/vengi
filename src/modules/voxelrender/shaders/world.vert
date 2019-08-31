@@ -54,9 +54,5 @@ void main(void) {
 	v_viewz = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif // cl_shadowmap
 
-#if cl_fog == 1
-	v_fogdivisor = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
-#endif // cl_fog
-
 	gl_Position = u_viewprojection * v_pos;
 }

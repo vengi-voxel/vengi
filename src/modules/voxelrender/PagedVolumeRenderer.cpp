@@ -180,7 +180,7 @@ void PagedVolumeRenderer::render(const video::Camera& camera) {
 	video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
 	video::ScopedShader scoped(_worldShader);
 	_worldShader.setViewprojection(camera.viewProjectionMatrix());
-	_worldShader.setViewdistance(camera.farPlane());
+	_worldShader.setFocuspos(camera.target());
 	_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
 	_worldShader.setCascades(_shadow.cascades());
 	_worldShader.setDistances(_shadow.distances());

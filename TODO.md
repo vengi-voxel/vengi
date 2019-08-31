@@ -1,11 +1,5 @@
 # Shader
 
-## mesh.frag
-
-there is an error in the fog computation - right now everything is in u_fogcolor because fogval == 1
-this is due to the fact that fogdistance is a very very high value because gl_FragCoord.w is 0. And this
-is related to the bonetrans matrix. Not taking it into account fixes gl_FragCoord.
-
 ## world.frag
 
 ```

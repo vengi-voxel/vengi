@@ -20,5 +20,5 @@ void main(void) {
 	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
 	vec3 shadowColor = shadow(u_viewprojection, v_color.rgb, diffuse, u_ambient_color);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
-	o_color = fog(linearColor, v_color.a);
+	o_color = fog(v_pos.xyz, linearColor, v_color.a);
 }

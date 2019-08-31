@@ -217,7 +217,7 @@ void TestMeshApp::doRender() {
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
 			_meshShader.setFogrange(_fogRange);
-			_meshShader.setViewdistance(_camera.farPlane());
+			_meshShader.setFocuspos(_camera.target());
 			_meshShader.setModel(_model);
 			_meshShader.setTexture(video::TextureUnit::Zero);
 			_meshShader.setDiffuseColor(_diffuseColor);

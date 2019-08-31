@@ -29,7 +29,7 @@ MapEdit::~MapEdit() {
 core::AppState MapEdit::onConstruct() {
 	core::AppState state = Super::onConstruct();
 
-	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
+	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.8");
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
 	_movement.construct();

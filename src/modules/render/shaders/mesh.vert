@@ -18,6 +18,7 @@ uniform int u_boneinfluence;
 $out vec3 v_norm;
 $out vec2 v_texcoords;
 $out vec4 v_color;
+$out vec3 v_pos;
 
 void main(void) {
 	vec4 mpos;
@@ -41,15 +42,12 @@ void main(void) {
 	v_viewz         = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif // cl_shadowmap == 1
 
-#if cl_fog == 1
-	v_fogdivisor   = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
-#endif // cl_fog
-
 	v_texcoords    = a_texcoords;
 	if (u_boneinfluence >= 0 && u_boneinfluence < 4) {
 		v_color    = vec4(1.0 - a_boneweights[u_boneinfluence], a_boneweights[u_boneinfluence], 0, 1);
 	} else {
 		v_color    = a_color;
 	}
+	v_pos = mpos.xyz;
 	gl_Position    = u_viewprojection * mpos;
 }

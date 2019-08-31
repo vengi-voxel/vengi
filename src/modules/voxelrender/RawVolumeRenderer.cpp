@@ -404,11 +404,8 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 			}
 			_worldShader.markClean();
 		}
-
 		_worldShader.setViewprojection(camera.viewProjectionMatrix());
-		if (_fogVar->boolVal()) {
-			_worldShader.setViewdistance(camera.farPlane());
-		}
+		_worldShader.setFocuspos(camera.target());
 		if (_shadowVar->boolVal()) {
 			_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
 			_worldShader.setCascades(_shadow.cascades());
