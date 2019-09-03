@@ -25,6 +25,7 @@ typedef uint32_t IndexType;
 class Mesh {
 public:
 	Mesh(int vertices, int indices, bool mayGetResized = false);
+	Mesh() : Mesh(128, 128, true) {}
 
 	/**
 	 * @brief Calculate the memory amount this mesh is using
