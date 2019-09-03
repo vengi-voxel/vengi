@@ -32,7 +32,7 @@ protected:
 	voxel::Mesh* _mesh = nullptr;
 
 	video::Buffer _vertexBuffer;
-	shader::Materialblock _materialBlock;
+	shader::WorldData _materialBlock;
 	shader::WorldShader& _worldShader;
 	render::Shadow _shadow;
 

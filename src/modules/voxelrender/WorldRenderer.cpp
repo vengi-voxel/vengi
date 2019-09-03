@@ -731,7 +731,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		_visiblePlant.push_back(&_meshPlantList[i]);
 	}
 
-	const int shaderMaterialColorsArraySize = lengthof(shader::Materialblock::Data::materialcolor);
+	const int shaderMaterialColorsArraySize = lengthof(shader::WorldData::MaterialblockData::materialcolor);
 	const int materialColorsArraySize = voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
@@ -739,7 +739,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		return false;
 	}
 
-	shader::Materialblock::Data materialBlock;
+	shader::WorldData::MaterialblockData materialBlock;
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 

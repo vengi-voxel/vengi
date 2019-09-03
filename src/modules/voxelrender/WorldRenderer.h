@@ -139,7 +139,8 @@ protected:
 	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapShow;
 
-	shader::Materialblock _materialBlock;
+	// this ub is currently shared between the world, world instanced and water shader
+	shader::WorldData _materialBlock;
 	shader::WorldShader _worldShader;
 	shader::WorldInstancedShader _worldInstancedShader;
 	shader::WaterShader _waterShader;

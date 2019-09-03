@@ -303,10 +303,12 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 	std::stringstream ub;
 	std::stringstream shutdown;
 	std::stringstream includes;
+	const size_t uniformBlockAmount = shaderStruct.uniformBlocks.size();
+	const std::string uniformBufferClassName = util::convertName(shaderStruct.name + "Data", true);
 	for (auto & ubuf : shaderStruct.uniformBlocks) {
 		const std::string& uniformBufferStructName = util::convertName(ubuf.name, true);
 		const std::string& uniformBufferName = util::convertName(ubuf.name, false);
-		ub << "\n\t/**\n\t * @brief Uniform buffer for " << uniformBufferStructName << "::Data\n\t */\n";
+		ub << "\n\t/**\n\t * @brief Uniform buffer for " << uniformBufferStructName << "Data\n\t */\n";
 		ub << "\tvideo::UniformBuffer _" << uniformBufferName << ";\n";
 		shutdown << "\t\t_" << uniformBufferName << ".shutdown();\n";
 		ub << "\t/**\n\t * @brief layout(";
@@ -323,7 +325,7 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 			break;
 		}
 		ub << ") aligned uniform block structure\n\t */\n";
-		ub << "\t#pragma pack(push, 1)\n\tstruct Data {\n";
+		ub << "\t#pragma pack(push, 1)\n\tstruct " << uniformBufferStructName << "Data {\n";
 		size_t structSize = 0u;
 		int paddingCnt = 0;
 		for (auto& v : ubuf.members) {
@@ -340,15 +342,20 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 		}
 		ub << "\t};\n\t#pragma pack(pop)\n";
 #if USE_ALIGN_AS > 0
-		ub << "\tstatic_assert(sizeof(Data) == " << structSize << ", \"Unexpected structure size for Data\");\n";
+		ub << "\tstatic_assert(sizeof(" << uniformBufferStructName << "Data) == " << structSize << ", \"Unexpected structure size for " << uniformBufferStructName << "Data\");\n";
 #endif
-		ub << "\n\tinline bool update(const Data& var) {\n";
+		ub << "\n\tinline bool update(const " << uniformBufferStructName << "Data& var) {\n";
 		ub << "\t\treturn _" << uniformBufferName << ".update((const void*)&var, sizeof(var));\n";
 		ub << "\t}\n\n";
-		ub << "\n\tinline bool create(const Data& var) {\n";
+		ub << "\n\tinline bool create(const " << uniformBufferStructName << "Data& var) {\n";
 		ub << "\t\treturn _" << uniformBufferName << ".create((const void*)&var, sizeof(var));\n";
 		ub << "\t}\n\n";
-		ub << "\n\tinline operator const video::UniformBuffer&() const {\n";
+		if (uniformBlockAmount == 1) {
+			ub << "\n\tinline operator const video::UniformBuffer&() const {\n";
+			ub << "\t\treturn _" << uniformBufferName << ";\n";
+			ub << "\t}\n\n";
+		}
+		ub << "\n\tinline const video::UniformBuffer& get" << uniformBufferStructName << "UniformBuffer() const {\n";
 		ub << "\t\treturn _" << uniformBufferName << ";\n";
 		ub << "\t}\n";
 		prototypes << "\n\t/**\n";
@@ -358,15 +365,15 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 		prototypes << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", buf);\n";
 		prototypes << "\t}\n";
 
-		std::string generatedUb = core::string::replaceAll(templateUniformBuffer, "$name$", uniformBufferStructName);
+		std::string generatedUb = core::string::replaceAll(templateUniformBuffer, "$name$", uniformBufferClassName);
 		generatedUb = core::string::replaceAll(generatedUb, "$namespace$", namespaceSrc);
 		generatedUb = core::string::replaceAll(generatedUb, "$uniformbuffers$", ub.str());
 		generatedUb = core::string::replaceAll(generatedUb, "$methods$", "");
 		generatedUb = core::string::replaceAll(generatedUb, "$shutdown$", shutdown.str());
 
-		const std::string targetFileUb = sourceDirectory + uniformBufferStructName + ".h";
+		const std::string targetFileUb = sourceDirectory + uniformBufferClassName + ".h";
 
-		includes << "#include \"" << uniformBufferStructName + ".h\"\n";
+		includes << "#include \"" << uniformBufferClassName + ".h\"\n";
 
 		Log::debug("Generate ubo bindings for %s at %s", uniformBufferStructName.c_str(), targetFileUb.c_str());
 		if (!filesystem->syswrite(targetFileUb, generatedUb)) {

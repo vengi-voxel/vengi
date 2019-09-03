@@ -72,7 +72,7 @@ bool RawVolumeRenderer::init() {
 		}
 	}
 
-	const int shaderMaterialColorsArraySize = lengthof(shader::Materialblock::Data::materialcolor);
+	const int shaderMaterialColorsArraySize = lengthof(shader::WorldData::MaterialblockData::materialcolor);
 	const int materialColorsArraySize = voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
@@ -97,7 +97,7 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	shader::Materialblock::Data materialBlock;
+	shader::WorldData::MaterialblockData materialBlock;
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 
@@ -334,7 +334,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	if (voxel::materialColorChanged()) {
-		shader::Materialblock::Data materialBlock;
+		shader::WorldData::MaterialblockData materialBlock;
 		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 		_materialBlock.update(materialBlock);
 		// TODO: updating the global state is crap - what about others - use an event

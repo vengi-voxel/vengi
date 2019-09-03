@@ -8,7 +8,6 @@
 #include "voxel/polyvox/Region.h"
 #include "video/Buffer.h"
 #include "VoxelrenderShaders.h"
-#include "RenderShaders.h"
 #include "voxel/polyvox/Mesh.h"
 #include "render/Shadow.h"
 #include "video/UniformBuffer.h"
@@ -39,7 +38,7 @@ protected:
 	MeshesMap _meshes;
 
 	video::Buffer _vertexBuffer[MAX_VOLUMES];
-	shader::Materialblock _materialBlock;
+	shader::WorldData _materialBlock;
 	shader::WorldShader& _worldShader;
 	render::Shadow _shadow;
 	core::VarPtr _meshSize;
