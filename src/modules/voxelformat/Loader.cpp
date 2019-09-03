@@ -13,6 +13,10 @@
 namespace voxelformat {
 
 bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) {
+	if (!filePtr->exists()) {
+		Log::error("Failed to load model file %s", filePtr->name().c_str());
+		return false;
+	}
 	const std::string& ext = filePtr->extension();
 	if (ext == "qbt") {
 		voxel::QBTFormat f;
