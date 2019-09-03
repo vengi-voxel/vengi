@@ -8,6 +8,15 @@
 namespace core {
 namespace string {
 
+bool formatBuf(char *buf, size_t bufSize, const char *msg, ...) {
+	va_list ap;
+	va_start(ap, msg);
+	const bool fit = SDL_vsnprintf(buf, bufSize, msg, ap) < (int)bufSize;
+	buf[bufSize - 1] = '\0';
+	va_end(ap);
+	return fit;
+}
+
 std::string format(const char *msg, ...) {
 	va_list ap;
 	constexpr std::size_t bufSize = 1024;

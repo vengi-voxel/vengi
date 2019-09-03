@@ -20,6 +20,7 @@ namespace core {
 namespace string {
 
 extern std::string format(SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(1);
+extern bool formatBuf(char *buf, size_t bufSize, SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(3);
 
 inline int toInt(const char*str) {
 	return SDL_atoi(str);
