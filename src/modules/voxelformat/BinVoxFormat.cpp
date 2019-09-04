@@ -100,9 +100,9 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 
 	const voxel::Voxel &voxel = voxel::createRandomColorVoxel(voxel::VoxelType::Generic);
 	int idx = 0;
-	for (int x = 0; x < _d; ++x) {
-		for (int y = 0; y < _w; ++y) {
-			for (int z = 0; z < _h; ++z) {
+	for (uint32_t x = 0u; x < _d; ++x) {
+		for (uint32_t y = 0u; y < _w; ++y) {
+			for (uint32_t z = 0u; z < _h; ++z) {
 				if (voxelBuf[idx] == 1) {
 					volume->setVoxel(z, y, x, voxel);
 				}
