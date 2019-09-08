@@ -64,6 +64,16 @@ FileDialogItemWidget::FileDialogItemWidget(FileDialogItem *item) : tb::TBLayout(
 	}
 }
 
+bool FileDialogItemSource::filterHidden(const io::Filesystem::DirEntry& entry) const {
+	if (_showHidden) {
+		return false;
+	}
+	if (entry.name == "..") {
+		return false;
+	}
+	return entry.name[0] == '.';
+}
+
 bool FileDialogItemSource::filter(int index, const char *filter) {
 	const FileDialogItem* item = getItem(index);
 	if (item == nullptr) {
@@ -71,6 +81,10 @@ bool FileDialogItemSource::filter(int index, const char *filter) {
 	}
 
 	const io::Filesystem::DirEntry& entry = item->entry();
+
+	if (filterHidden(entry)) {
+		return false;
+	}
 
 	// never filter directories if we want to see directories - because we
 	// always want to be able to switch to those directories

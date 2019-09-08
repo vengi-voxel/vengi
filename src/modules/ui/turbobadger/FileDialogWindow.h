@@ -43,11 +43,14 @@ public:
 class FileDialogItemSource: public tb::TBSelectItemSourceList<FileDialogItem> {
 private:
 	video::WindowedApp::OpenFileMode _mode;
+	bool _showHidden = false;
+	bool filterHidden(const io::Filesystem::DirEntry& entry) const;
 public:
 	bool filter(int index, const char *filter) override;
 	tb::TBWidget *createItemWidget(int index, tb::TBSelectItemViewer *viewer) override;
 
 	inline void setMode(video::WindowedApp::OpenFileMode mode) { _mode = mode; }
+	inline void setShowHidden(bool showHidden) { _showHidden = showHidden; }
 
 	static bool execFileItemFilter(const char* str, const char* filter);
 };
