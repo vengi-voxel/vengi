@@ -62,10 +62,12 @@ core::AppState MapEdit::onInit() {
 	video::enableDebug(video::DebugSeverity::High);
 
 	if (!_axis.init()) {
+		Log::error("Failed to init axis");
 		return core::AppState::InitFailure;
 	}
 
 	if (!_movement.init()) {
+		Log::error("Failed to init movement");
 		return core::AppState::InitFailure;
 	}
 
@@ -75,11 +77,13 @@ core::AppState MapEdit::onInit() {
 	}
 
 	if (!_worldMgr->init(filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
+		Log::error("Failed to init world mgr");
 		return core::AppState::InitFailure;
 	}
 
 	_worldMgr->setSeed(1);
 	if (!_worldRenderer.init(glm::ivec2(0), _frameBufferDimension)) {
+		Log::error("Failed to init world rnederer");
 		return core::AppState::InitFailure;
 	}
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
