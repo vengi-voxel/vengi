@@ -144,27 +144,25 @@ void App::onFrame() {
 		case AppState::Running: {
 			{
 				core_trace_scoped(AppOnRunning);
-				const double framesPerSecondsCap = _framesPerSecondsCap->floatVal();
-				if (framesPerSecondsCap < 1.0 || _nextFrameMillis > now) {
-					{
-						core_trace_scoped(AppOnBeforeRunning);
-						onBeforeRunning();
-					}
-					const AppState state = onRunning();
-					if (_nextState != AppState::Cleanup && _nextState != AppState::Destroy) {
-						_nextState = state;
-					}
-					if (AppState::Running == _nextState) {
-						core_trace_scoped(AppOnAfterRunning);
-						onAfterRunning();
-					}
+				{
+					core_trace_scoped(AppOnBeforeRunning);
+					onBeforeRunning();
 				}
-				if (framesPerSecondsCap > 1.0) {
+				const AppState state = onRunning();
+				if (_nextState != AppState::Cleanup && _nextState != AppState::Destroy) {
+					_nextState = state;
+				}
+				if (AppState::Running == _nextState) {
+					core_trace_scoped(AppOnAfterRunning);
+					onAfterRunning();
+				}
+				const double framesPerSecondsCap = _framesPerSecondsCap->floatVal();
+				if (framesPerSecondsCap >= 1.0) {
 					const uint64_t delay = _nextFrameMillis - now;
+					_nextFrameMillis = now + uint64_t((1000.0 / framesPerSecondsCap) + 0.00001);
 					if (delay > 0u) {
 						std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 					}
-					_nextFrameMillis += uint64_t((1000.0 / framesPerSecondsCap) + 0.00001);
 				}
 			}
 			break;
