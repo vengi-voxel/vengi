@@ -16,7 +16,6 @@ Voxel engine and tools.
 * [Database tool](src/tools/databasetool/README.md)
 * [Shader tool](src/tools/shadertool/README.md)
 * [Compute Shader tool](src/tools/computeshadertool/README.md)
-* [Database tool](src/tools/databasetool/README.md)
 * [Traze client](src/tests/testtraze/README.md)
 
 # General
