@@ -4,6 +4,10 @@
 # About
 Voxel engine and tools.
 
+# Contact
+
+- [Discord Server](https://discord.gg/AgjCPXy)
+
 # Tools
 * [The voxel editor](src/tools/voxedit/README.md)
 * [World viewer](src/tools/mapedit/README.md)
