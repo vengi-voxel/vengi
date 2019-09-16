@@ -75,6 +75,8 @@ public:
 
 	bool extract(int idx, const voxel::Region& region, bool updateBuffers = true);
 
+	bool translate(int idx, const glm::ivec3& m);
+
 	bool toMesh(voxel::Mesh* mesh);
 	bool toMesh(int idx, voxel::Mesh* mesh);
 

@@ -689,11 +689,12 @@ void SceneManager::shift(int layerId, const glm::ivec3& m) {
 	voxel::RawVolume* model = volume(layerId);
 	Log::debug("Shift region by %s on layer %i", glm::to_string(m).c_str(), layerId);
 	const voxel::Region oldRegion = model->region();
-	model->translate(m);
 	_referencePos += m;
-	_modifier.shift(m);
+	_modifier.translate(m);
+	_volumeRenderer.translate(layerId, m);
 	_gridRenderer.update(model->region());
-	const voxel::Region newRegion = model->region().accumulateCopy(oldRegion);
+	const voxel::Region& newRegion = model->region();
+	modified(layerId, oldRegion);
 	modified(layerId, newRegion);
 }
 
@@ -927,6 +928,33 @@ void SceneManager::construct() {
 		const int z = core::string::toInt(args[2]);
 		shift(x, y, z);
 	}).setHelp("Shift the volume by the given values");
+
+	core::Command::registerCommand("center_referenceposition", [&] (const core::CmdArgs& args) {
+		const glm::ivec3& refPos = referencePosition();
+		_layerMgr.foreachGroupLayer([&] (int layerId) {
+			const auto* v = _volumeRenderer.volume(layerId);
+			if (v == nullptr) {
+				return;
+			}
+			const voxel::Region& region = v->region();
+			const glm::ivec3& center = region.getCentre();
+			const glm::ivec3& delta = refPos - center;
+			shift(layerId, delta);
+		});
+	}).setHelp("Center the current active layers at the reference position");
+
+	core::Command::registerCommand("center_origin", [&] (const core::CmdArgs& args) {
+		_layerMgr.foreachGroupLayer([&] (int layerId) {
+			const auto* v = _volumeRenderer.volume(layerId);
+			if (v == nullptr) {
+				return;
+			}
+			const voxel::Region& region = v->region();
+			const glm::ivec3& delta = -region.getCentre();
+			shift(layerId, delta);
+		});
+		setReferencePosition(glm::zero<glm::ivec3>());
+	}).setHelp("Center the current active layers at the origin");
 
 	core::Command::registerCommand("move", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();

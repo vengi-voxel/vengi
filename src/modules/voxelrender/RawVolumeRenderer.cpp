@@ -243,6 +243,26 @@ bool RawVolumeRenderer::toMesh(int idx, voxel::Mesh* mesh) {
 	return true;
 }
 
+bool RawVolumeRenderer::translate(int idx, const glm::ivec3& m) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return false;
+	}
+	voxel::RawVolume* volume = _rawVolume[idx];
+	if (volume == nullptr) {
+		return false;
+	}
+	volume->translate(m);
+	for (auto& i : _meshes) {
+		Meshes& meshes = i.second;
+		if (meshes[idx] == nullptr) {
+			continue;
+		}
+		delete meshes[idx];
+		meshes[idx] = nullptr;
+	}
+	return true;
+}
+
 bool RawVolumeRenderer::extract(int idx, const voxel::Region& region, bool updateBuffers) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;

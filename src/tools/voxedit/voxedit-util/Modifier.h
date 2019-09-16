@@ -55,7 +55,7 @@ public:
 	bool init() override;
 	void shutdown() override;
 
-	void shift(const glm::ivec3& v);
+	void translate(const glm::ivec3& v);
 
 	const Selection& selection() const;
 
