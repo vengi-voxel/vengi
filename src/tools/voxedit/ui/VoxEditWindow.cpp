@@ -256,6 +256,16 @@ bool VoxEditWindow::init() {
 }
 
 void VoxEditWindow::updateStatusBar() {
+	if (tb::TBTextField* dimension = getWidgetByIDAndType<tb::TBTextField>("dimension")) {
+		const int layerIdx = voxedit::sceneMgr().layerMgr().activeLayer();
+		const voxel::RawVolume* v = voxedit::sceneMgr().volume(layerIdx);
+		const voxel::Region& region = v->region();
+		tb::TBStr str;
+		const glm::ivec3& mins = region.getLowerCorner();
+		const glm::ivec3& maxs = region.getUpperCorner();
+		str.setFormatted("%i:%i:%i / %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+		dimension->setText(str);
+	}
 	if (tb::TBTextField* status = getWidgetByIDAndType<tb::TBTextField>("status")) {
 		const voxedit::Modifier& modifier = voxedit::sceneMgr().modifier();
 		if (modifier.aabbMode()) {

@@ -200,6 +200,9 @@ TBLayout: distribution: gravity, axis: y
 					TBLayout: distribution: gravity
 						TBLayout: gravity: left
 							TBTextField: id: status, text: -
+							TBWidget
+								lp: width: 40
+							TBTextField: id: dimension, text: -
 						TBLayout: gravity: left right
 							TBWidget
 						TBClickLabel: text: Grid
