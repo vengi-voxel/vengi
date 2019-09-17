@@ -304,10 +304,12 @@ bool RawVolumeRenderer::extract(int idx, const voxel::Region& region, bool updat
 				const glm::ivec3 maxs = mins + meshSize - 1;
 				const voxel::Region region(mins, maxs);
 				if (!voxel::intersects(completeRegion, region)) {
-					for (auto& i : _meshes[mins]) {
-						delete i;
+					auto i = _meshes.find(mins);
+					if (i != _meshes.end()) {
+						Meshes& meshes = i->second;
+						delete meshes[idx];
+						meshes[idx] = nullptr;
 					}
-					_meshes.erase(mins);
 					continue;
 				}
 
