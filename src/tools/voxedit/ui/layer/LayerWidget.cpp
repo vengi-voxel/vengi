@@ -14,12 +14,20 @@
 
 class LayerItemWidget: public tb::TBLayout {
 public:
+	tb::TBGenericStringItemSource _actionItems;
+
 	LayerItemWidget(const std::string& def, LayerItem *item, LayerItemSource *source) :
 			_source(source), _layerId(item->layerId()) {
 		setSkinBg(TBIDC("TBSelectItem"));
 		setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
 		setLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
 		setPaintOverflowFadeout(false);
+
+		_actionItems.addItem(new tb::TBGenericStringItem(tr("Move"), TBIDC("layermove")));
+		_actionItems.addItem(new tb::TBGenericStringItem(tr("Rename"), TBIDC("layerrename")));
+		_actionItems.addItem(new tb::TBGenericStringItem(tr("Export"), TBIDC("layerexport")));
+		_actionItems.addItem(new tb::TBGenericStringItem(tr("Align at origin"), TBIDC("center_origin")));
+		_actionItems.addItem(new tb::TBGenericStringItem(tr("Align at reference position"), TBIDC("center_referenceposition")));
 
 		_renameSettings.name = item->str;
 
@@ -85,7 +93,7 @@ public:
 				static const char *ACTIONS[] = {
 					"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall",
 					"layermoveup", "layermovedown", "layermerge", "layerlockall", "layerunlockall",
-					nullptr
+					"center_origin", "center_referenceposition", nullptr
 				};
 				for (const char** action = ACTIONS; *action != nullptr; ++action) {
 					if (ev.ref_id == TBIDC(*action)) {
@@ -105,9 +113,9 @@ public:
 				const int n = _source->getNumItems();
 				tb::TBGenericStringItemSource *source = menu->getList()->getDefaultSource();
 				source->addItem(new tb::TBGenericStringItem(tr("Duplicate"), TBIDC("layerduplicate")));
-				source->addItem(new tb::TBGenericStringItem(tr("Move"), TBIDC("layermove")));
-				source->addItem(new tb::TBGenericStringItem(tr("Rename"), TBIDC("layerrename")));
-				source->addItem(new tb::TBGenericStringItem(tr("Export"), TBIDC("layerexport")));
+				tb::TBGenericStringItem* actions = new tb::TBGenericStringItem(tr("Actions"));
+				actions->sub_source = &_actionItems;
+				source->addItem(actions);
 				if (n > 1) {
 					source->addItem(new tb::TBGenericStringItem(tr("Delete"), TBIDC("layerdelete")));
 					LayerItem* item = _source->getItemForLayerId(_layerId);
