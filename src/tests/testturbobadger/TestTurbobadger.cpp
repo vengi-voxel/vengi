@@ -38,11 +38,13 @@ TestTurbobadger::TestTurbobadger(const metric::MetricPtr& metric, const io::File
 }
 
 core::AppState TestTurbobadger::onInit() {
-	_applicationSkin = "demo01/skin/skin.tb.txt";
+	_applicationSkin = "ui/skin/skin.tb.txt";
 	core::AppState state = Super::onInit();
 
 	// Load language file
-	//g_tb_lng->Load("demo01/language/lng_en.tb.txt");
+	if (!tb::g_tb_lng->load("demo01/language/lng_en.tb.txt")) {
+		Log::warn("Could not load translation lng_en.tb.txt");
+	}
 
 	// Block new animations during Init.
 	tb::TBAnimationBlocker anim_blocker;
