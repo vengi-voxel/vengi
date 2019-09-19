@@ -1278,7 +1278,7 @@ void SceneManager::update(uint64_t time) {
 			if (lastPos == glm::zero<glm::ivec3>()) {
 				return rayPosFarPlane;
 			}
-			const glm::ivec3 deltaMovement = rayPosFarPlane - lastPos;
+			const glm::ivec3 deltaMovement = lastPos - rayPosFarPlane;
 			executeGizmoAction(deltaMovement, mode);
 			return glm::zero<glm::ivec3>();
 		});
