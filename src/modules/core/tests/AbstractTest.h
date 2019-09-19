@@ -97,6 +97,8 @@ private:
 protected:
 	TestApp *_testApp = nullptr;
 
+	std::string toString(const std::string& filename) const;
+
 	template<class T>
 	std::string toString(const std::vector<T>& v) const {
 		std::string str;

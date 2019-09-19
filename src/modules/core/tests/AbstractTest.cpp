@@ -13,6 +13,16 @@ extern int _argc;
 
 namespace core {
 
+std::string AbstractTest::toString(const std::string& filename) const {
+	const io::FilesystemPtr& fs = _testApp->filesystem();
+	const io::FilePtr& file = fs->open(filename);
+	if (!file->exists()) {
+		Log::error("Failed to load file '%s'", filename.c_str());
+		return "";
+	}
+	return file->load();
+}
+
 void AbstractTest::SetUp() {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
