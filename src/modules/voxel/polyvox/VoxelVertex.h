@@ -22,7 +22,7 @@ struct VoxelVertex {
 	uint8_t colorIndex;
 	/* currently we only need to know whether it's water, or not. */
 	VoxelType material;
-	uint8_t padding[1];
+	uint8_t padding;
 };
 static_assert(sizeof(VoxelVertex) == 16, "Unexpected size of the vertex struct");
 
