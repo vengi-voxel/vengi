@@ -1285,6 +1285,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset
 	if (numIndices <= 0) {
 		return;
 	}
+	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
 	glDrawElements(glMode, (GLsizei)numIndices, glType, offset);
@@ -1300,6 +1301,7 @@ void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, siz
 	}
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
+	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	glDrawElementsInstanced(glMode, (GLsizei)numIndices, glType, nullptr, (GLsizei)amount);
 	checkError();
 }
@@ -1310,6 +1312,7 @@ void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, si
 	}
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
+	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	glDrawElementsBaseVertex(glMode, (GLsizei)numIndices, glType, GL_OFFSET_CAST(indexSize * baseIndex), (GLint)baseVertex);
 	checkError();
 }
