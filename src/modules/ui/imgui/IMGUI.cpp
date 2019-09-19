@@ -51,7 +51,7 @@ bool CheckboxVar(const char* label, const char* varName) {
 	return CheckboxVar(label, var);
 }
 
-bool Combo(const char* label, int* current_item, const std::vector<std::string>& items, int items_count, int height_in_items) {
+bool Combo(const char* label, int* current_item, const std::vector<std::string>& items, int height_in_items) {
 	return Combo(label, current_item,
 		[](void* data, int idx, const char** out_text) {
 			const std::vector<std::string>* vec = (const std::vector<std::string>*)data;
@@ -61,7 +61,7 @@ bool Combo(const char* label, int* current_item, const std::vector<std::string>&
 			*out_text = (*vec)[idx].c_str();
 			return true;
 		},
-		(void*) &items, items_count, height_in_items);
+		(void*) &items, (int)items.size(), height_in_items);
 }
 
 void TooltipText(const char* text) {
