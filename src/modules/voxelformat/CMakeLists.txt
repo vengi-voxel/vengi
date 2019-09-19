@@ -6,6 +6,7 @@ set(SRCS
 	QBTFormat.h QBTFormat.cpp
 	QBFormat.h QBFormat.cpp
 	VXMFormat.h VXMFormat.cpp
+	MeshCache.h MeshCache.cpp
 	MeshExporter.h MeshExporter.cpp
 	Loader.h Loader.cpp
 )
