@@ -395,7 +395,19 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId), MementoType::Modification, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
-		_extractRegions.push_back({modifiedRegion, layerId});
+		bool addNew = true;
+		for (const auto& r : _extractRegions) {
+			if (r.layer != layerId) {
+				continue;
+			}
+			if (r.region.containsRegion(modifiedRegion)) {
+				addNew = false;
+				break;
+			}
+		}
+		if (addNew) {
+			_extractRegions.push_back({modifiedRegion, layerId});
+		}
 	}
 	_dirty = true;
 	_needAutoSave = true;
