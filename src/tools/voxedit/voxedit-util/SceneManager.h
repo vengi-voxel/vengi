@@ -76,6 +76,7 @@ private:
 	core::VarPtr _ambientColor;
 	core::VarPtr _diffuseColor;
 	core::VarPtr _cameraZoomSpeed;
+	core::VarPtr _modelSpace;
 
 	math::Axis _lockedAxis = math::Axis::None;
 
@@ -287,6 +288,8 @@ public:
 	void setMousePos(int x, int y);
 
 	bool trace(bool force = false);
+
+	void setGizmoPosition();
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);

@@ -185,6 +185,8 @@ TBLayout: distribution: gravity, axis: y
 						TBLayout: position: left top, axis: y
 							TBClickLabel: text: Show axis
 								TBCheckBox: id: optionshowaxis, value: 1, varref: ve_showaxis
+							TBClickLabel: text: Model space
+								TBCheckBox: id: optionaxismodelspace, value: 1, varref: ve_modelspace
 							TBClickLabel: text: Show locked axis
 								TBCheckBox: id: optionshowlockaxis, value: 1, varref: ve_showlockedaxis
 							TBClickLabel: text: Bounding box

@@ -36,6 +36,7 @@ private:
 	render::Axis _axis;
 	GizmoMode _mode = GizmoMode::None;
 	glm::vec3 _pos = glm::zero<glm::vec3>();
+	bool _modelSpace = true;
 
 public:
 	/**
@@ -43,6 +44,11 @@ public:
 	 * @note update() must have been called before
 	 */
 	GizmoMode mode() const;
+
+	bool isModelSpace() const;
+	bool isWorldSpace() const;
+	void setModelSpace();
+	void setWorldSpace();
 
 	/**
 	 * @brief Test whether the given position hits and of the axes of the rendered geometry and set
@@ -78,5 +84,21 @@ public:
 	 */
 	bool execute(uint64_t time, std::function<glm::ivec3(const glm::ivec3, GizmoMode)> function);
 };
+
+inline bool Gizmo::isModelSpace() const {
+	return _modelSpace;
+}
+
+inline bool Gizmo::isWorldSpace() const {
+	return !isModelSpace();
+}
+
+inline void Gizmo::setModelSpace() {
+	_modelSpace = true;
+}
+
+inline void Gizmo::setWorldSpace() {
+	_modelSpace = false;
+}
 
 }

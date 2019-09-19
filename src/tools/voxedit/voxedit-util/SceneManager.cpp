@@ -796,6 +796,7 @@ void SceneManager::construct() {
 	_volumeRenderer.construct();
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
+	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "1");
 
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		core::Command::registerActionButton(
@@ -1258,6 +1259,18 @@ void SceneManager::update(uint64_t time) {
 	}
 
 	if (_camera != nullptr) {
+		if (_modelSpace->boolVal() != _gizmo.isModelSpace()) {
+			const bool newModelSpaceState = _modelSpace->boolVal();
+			if (newModelSpaceState) {
+				Log::info("switch to model space");
+				_gizmo.setModelSpace();
+			} else {
+				Log::info("switch to world space");
+				_gizmo.setWorldSpace();
+			}
+			setGizmoPosition();
+		}
+
 		_gizmo.update(*_camera, _mouseCursor);
 		_gizmo.execute(time, [&] (const glm::ivec3& lastPos, render::GizmoMode mode) {
 			const video::Ray& ray = _camera->screenRay(_mouseCursor);
@@ -1644,8 +1657,19 @@ void SceneManager::onActiveLayerChanged(int old, int active) {
 	if (!region.containsPoint(cursorPosition())) {
 		setCursorPosition(volume->region().getCentre());
 	}
-	_gizmo.setPosition(glm::vec3(region.getLowerCorner()));
+	setGizmoPosition();
 	resetLastTrace();
+}
+
+void SceneManager::setGizmoPosition() {
+	if (_gizmo.isModelSpace()) {
+		const int layerIdx = _layerMgr.activeLayer();
+		const voxel::RawVolume* volume = _volumeRenderer.volume(layerIdx);
+		const voxel::Region& region = volume->region();
+		_gizmo.setPosition(region.getLowerCorner());
+	} else {
+		_gizmo.setPosition(glm::zero<glm::vec3>());
+	}
 }
 
 void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume, const voxel::Region& region) {
