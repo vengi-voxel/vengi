@@ -82,7 +82,7 @@ bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, int layerId, const voxel:
 	stream.addInt(-1); // reserved - must be -1
 	stream.addInt(layerId);
 	stream.addInt(1); // num frames
-	saveAttributes({{"_t", translationStr}}, stream);
+	saveAttributes({{attributeName, translationStr}}, stream);
 	const uint64_t posAfter = stream.pos();
 	Log::debug("chunk size is: %i", (int)(posAfter - posBefore));
 	core_assert_msg(posAfter - posBefore == chunkSize, "posAfter: %i, posBefore: %i, chunkSize: %i",
