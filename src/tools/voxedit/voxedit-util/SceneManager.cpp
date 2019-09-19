@@ -260,6 +260,28 @@ void SceneManager::autosave() {
 	_lastAutoSave = timeProvider->tickSeconds();
 }
 
+bool SceneManager::saveLayers(const std::string& dir) {
+	const int layers = (int)_layerMgr.layers().size();
+	for (int idx = 0; idx < layers; ++idx) {
+		voxel::RawVolume* v = _volumeRenderer.volume(idx);
+		if (v == nullptr) {
+			continue;
+		}
+		const Layer& layer = _layerMgr.layer(idx);
+		voxel::VoxelVolumes volumes;
+		volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
+		voxel::VoxFormat f;
+		const std::string file = dir + "/" + layer.name + ".vox";
+		const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file, io::FileMode::Write);
+		if (f.saveGroups(volumes, filePtr)) {
+			Log::info("Saved layer %i to %s", idx, file.c_str());
+		} else {
+			Log::warn("Failed to save layer %i", idx);
+		}
+	}
+	return true;
+}
+
 bool SceneManager::save(const std::string& file, bool autosave) {
 	if (file.empty()) {
 		Log::warn("No filename given for saving");
@@ -784,6 +806,16 @@ void SceneManager::construct() {
 	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Scene);
 	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Scene);
 
+	core::Command::registerCommand("layerssave", [&] (const core::CmdArgs& args) {
+		std::string dir = ".";
+		if (!args.empty()) {
+			dir = args[0];
+		}
+		if (!saveLayers(dir)) {
+			Log::error("Failed to save character to dir: %s", dir.c_str());
+		}
+	}).setHelp("Save all layers into filenames represented by their layer names");
+
 	core::Command::registerCommand("layerexport", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc != 1) {
@@ -792,7 +824,7 @@ void SceneManager::construct() {
 		}
 		const int layerId = core::string::toInt(args[0]);
 		exportLayerModel(layerId, args[1]);
-	});
+	}).setHelp("Exports a single layer into a mesh");
 
 	core::Command::registerCommand("zoom", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();
