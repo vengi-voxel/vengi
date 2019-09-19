@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "AggroTest.h"
 
 class AggroTest: public TestSuite {
