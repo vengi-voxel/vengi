@@ -283,6 +283,10 @@ bool Filesystem::unwatch(const std::string& path) {
 	return true;
 }
 
+bool Filesystem::unwatch(const io::FilePtr& file) {
+	return unwatch(file->name());
+}
+
 bool Filesystem::watch(const std::string& path, FileWatcher watcher) {
 	uv_fs_event_t* fsEvent = new uv_fs_event_t;
 	if (uv_fs_event_init(_loop, fsEvent) != 0) {
@@ -311,6 +315,10 @@ bool Filesystem::watch(const std::string& path, FileWatcher watcher) {
 		return false;
 	}
 	return true;
+}
+
+bool Filesystem::watch(const io::FilePtr& file, FileWatcher watcher) {
+	return watch(file->name(), watcher);
 }
 
 bool Filesystem::popDir() {

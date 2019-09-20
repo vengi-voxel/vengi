@@ -52,7 +52,9 @@ public:
 	bool registerPath(const std::string& path);
 
 	bool unwatch(const std::string& path);
+	bool unwatch(const io::FilePtr& file);
 	bool watch(const std::string& path, FileWatcher watcher);
+	bool watch(const io::FilePtr& file, FileWatcher watcher);
 
 	/**
 	 * @brief Get the path where the application resides.
