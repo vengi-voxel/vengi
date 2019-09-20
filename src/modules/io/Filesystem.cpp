@@ -287,6 +287,26 @@ bool Filesystem::unwatch(const io::FilePtr& file) {
 	return unwatch(file->name());
 }
 
+static void changeCallback (uv_fs_event_t *handle, const char *filename, int events, int status) {
+	if ((events & UV_CHANGE) == 0) {
+		return;
+	}
+	if (filename == nullptr) {
+		return;
+	}
+	char path[1024];
+	size_t size = sizeof(path) - 1;
+	uv_fs_event_getpath(handle, path, &size);
+	path[size] = '\0';
+
+	FileWatcher watcherCallback = (FileWatcher)handle->data;
+	watcherCallback(filename);
+
+	// restart watching
+	uv_fs_event_stop(handle);
+	uv_fs_event_start(handle, changeCallback, path, 0);
+}
+
 bool Filesystem::watch(const std::string& path, FileWatcher watcher) {
 	uv_fs_event_t* fsEvent = new uv_fs_event_t;
 	if (uv_fs_event_init(_loop, fsEvent) != 0) {
@@ -299,16 +319,7 @@ bool Filesystem::watch(const std::string& path, FileWatcher watcher) {
 		delete fsEvent;
 		return false;
 	}
-	const int ret = uv_fs_event_start(fsEvent, [] (uv_fs_event_t *handle, const char *filename, int events, int status) {
-		if ((events & UV_CHANGE) == 0) {
-			return;
-		}
-		if (filename == nullptr) {
-			return;
-		}
-		FileWatcher watcherCallback = (FileWatcher)handle->data;
-		watcherCallback(filename);
-	}, path.c_str(), 0);
+	const int ret = uv_fs_event_start(fsEvent, changeCallback, path.c_str(), 0);
 	if (ret != 0) {
 		_watches.erase(_watches.find(path));
 		delete fsEvent;
