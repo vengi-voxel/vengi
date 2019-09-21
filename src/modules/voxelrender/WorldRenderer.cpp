@@ -673,6 +673,10 @@ bool WorldRenderer::initWaterBuffer() {
 	_waterBuffer.setMode(_waterIbo, video::BufferMode::Stream);
 
 	const int locationPos = _waterShader.getLocationPos();
+	if (locationPos == -1) {
+		Log::error("Failed to get pos location in water shader");
+		return false;
+	}
 	_waterShader.enableVertexAttributeArray(locationPos);
 	const video::Attribute& posAttrib = getPositionVertexAttribute(_waterVbo, locationPos, _waterShader.getAttributeComponents(locationPos));
 	if (!_waterBuffer.addAttribute(posAttrib)) {
@@ -681,6 +685,10 @@ bool WorldRenderer::initWaterBuffer() {
 	}
 
 	const int locationInfo = _waterShader.getLocationInfo();
+	if (locationInfo == -1) {
+		Log::error("Failed to get info location in water shader");
+		return false;
+	}
 	_waterShader.enableVertexAttributeArray(locationInfo);
 	const video::Attribute& infoAttrib = getInfoVertexAttribute(_waterVbo, locationInfo, _waterShader.getAttributeComponents(locationInfo));
 	if (!_waterBuffer.addAttribute(infoAttrib)) {
