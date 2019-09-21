@@ -672,6 +672,7 @@ bool WorldRenderer::initWaterBuffer() {
 	}
 	_waterBuffer.setMode(_waterIbo, video::BufferMode::Stream);
 
+	video::ScopedBuffer scoped(_waterBuffer);
 	const int locationPos = _waterShader.getLocationPos();
 	if (locationPos == -1) {
 		Log::error("Failed to get pos location in water shader");
