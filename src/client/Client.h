@@ -9,7 +9,6 @@
 #include "frontend/Movement.h"
 #include "voxelrender/WorldRenderer.h"
 #include "voxelfont/VoxelFont.h"
-#include "util/PosLerp.h"
 #include "core/Var.h"
 #include "core/Common.h"
 #include "voxel/WorldEvents.h"
