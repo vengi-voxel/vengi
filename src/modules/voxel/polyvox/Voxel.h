@@ -137,6 +137,10 @@ inline bool isBlocked(VoxelType material) {
 	return material != VoxelType::Air;
 }
 
+inline bool isEnterable(VoxelType material) {
+	return material == VoxelType::Air || material == VoxelType::Water;
+}
+
 inline bool isWater(VoxelType material) {
 	return material == VoxelType::Water;
 }
