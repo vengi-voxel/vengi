@@ -31,6 +31,12 @@ bool PhysicMgr::init() {
 	return true;
 }
 
+void PhysicMgr::update(uint64_t dt) {
+	if (_dynamicsWorld) {
+		_dynamicsWorld->stepSimulation(float(dt) / 1000.0f);
+	}
+}
+
 void PhysicMgr::shutdown() {
 	delete _dynamicsWorld;
 	_dynamicsWorld = nullptr;

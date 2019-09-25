@@ -29,6 +29,7 @@ public:
 	void construct() override;
 	bool init() override;
 	void shutdown() override;
+	void update(uint64_t dt);
 
 	template<class Volume>
 	int addVoxelTree(const Volume* volume) {
