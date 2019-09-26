@@ -679,15 +679,16 @@ void SceneManager::rotate(int layerId, const glm::ivec3& angle, bool increaseSiz
 	if (model == nullptr) {
 		return;
 	}
-	const glm::vec3 pivot = rotateAroundReferencePosition ? glm::vec3(referencePosition()) : model->region().getCentref();
 	voxel::RawVolume* newVolume;
-	if (angle == glm::ivec3(90, 0, 0)) {
-		newVolume = voxel::rotateAxis(model, math::Axis::X, voxel::Voxel(), pivot, increaseSize);
-	} else if (angle == glm::ivec3(0, 90, 0)) {
-		newVolume = voxel::rotateAxis(model, math::Axis::Y, voxel::Voxel(), pivot, increaseSize);
-	} else if (angle == glm::ivec3(0, 0, 90)) {
-		newVolume = voxel::rotateAxis(model, math::Axis::Z, voxel::Voxel(), pivot, increaseSize);
+	const bool axisRotation = !rotateAroundReferencePosition && !increaseSize;
+	if (axisRotation && angle == glm::ivec3(90, 0, 0)) {
+		newVolume = voxel::rotateAxis(model, math::Axis::X);
+	} else if (axisRotation && angle == glm::ivec3(0, 90, 0)) {
+		newVolume = voxel::rotateAxis(model, math::Axis::Y);
+	} else if (axisRotation && angle == glm::ivec3(0, 0, 90)) {
+		newVolume = voxel::rotateAxis(model, math::Axis::Z);
 	} else {
+		const glm::vec3 pivot = rotateAroundReferencePosition ? glm::vec3(referencePosition()) : model->region().getCentref();
 		newVolume = voxel::rotateVolume(model, angle, voxel::Voxel(), pivot, increaseSize);
 	}
 	voxel::Region r = newVolume->region();
