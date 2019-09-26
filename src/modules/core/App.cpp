@@ -115,9 +115,11 @@ void App::onFrame() {
 	if (AppState::Blocked == _curState) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		_deltaFrameMillis = 1;
+		_deltaFrameSeconds = _deltaFrameMillis / 1000.0f;
 	} else {
 		const uint64_t now = systemMillis();
 		_deltaFrameMillis = core_max(int64_t(1), int64_t(now) - int64_t(_now));
+		_deltaFrameSeconds = _deltaFrameMillis / 1000.0f;
 		_timeProvider->update(now);
 		_now = now;
 
