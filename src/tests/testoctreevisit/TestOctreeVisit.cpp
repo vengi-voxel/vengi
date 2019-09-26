@@ -16,7 +16,6 @@ TestOctreeVisit::TestOctreeVisit(const metric::MetricPtr& metric, const io::File
 	setCameraMotion(true);
 	//setRenderPlane(true);
 	setRenderAxis(true);
-	setCameraSpeed(0.5f);
 }
 
 core::AppState TestOctreeVisit::onInit() {

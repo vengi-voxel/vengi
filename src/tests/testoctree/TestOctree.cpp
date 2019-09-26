@@ -12,7 +12,6 @@ TestOctree::TestOctree(const metric::MetricPtr& metric, const io::FilesystemPtr&
 		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "testoctree");
 	setRenderAxis(true);
-	setCameraSpeed(0.5f);
 }
 
 bool TestOctree::onKeyPress(int32_t key, int16_t modifier) {

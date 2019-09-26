@@ -15,7 +15,6 @@ TestShapeBuilder::TestShapeBuilder(const metric::MetricPtr& metric, const io::Fi
 	setCameraMotion(false);
 	setRenderPlane(true, glm::vec4(1.0f, 1.0f, 1.0f, 0.8f));
 	setRenderAxis(true);
-	setCameraSpeed(0.5f);
 }
 
 core::AppState TestShapeBuilder::onInit() {
