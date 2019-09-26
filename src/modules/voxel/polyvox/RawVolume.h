@@ -31,7 +31,7 @@ public:
 
 		bool currentPositionValid() const;
 
-		void setPosition(const glm::ivec3& pos);
+		bool setPosition(const glm::ivec3& pos);
 		bool setPosition(int32_t x, int32_t y, int32_t z);
 		bool setVoxel(const Voxel& voxel);
 		const glm::ivec3& position() const;
@@ -270,8 +270,8 @@ inline bool RawVolume::Sampler::currentPositionValid() const {
 	return !_currentPositionInvalid;
 }
 
-inline void RawVolume::Sampler::setPosition(const glm::ivec3& v3dNewPos) {
-	setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
+inline bool RawVolume::Sampler::setPosition(const glm::ivec3& v3dNewPos) {
+	return setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
 }
 
 inline const Voxel& RawVolume::Sampler::peekVoxel1nx1ny1nz() const {
