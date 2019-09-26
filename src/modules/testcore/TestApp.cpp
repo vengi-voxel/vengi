@@ -98,7 +98,7 @@ void TestApp::beforeUI() {
 	}
 
 	_movement.update(_deltaFrameMillis);
-	const glm::vec3& moveDelta = _movement.moveDelta(_cameraSpeed);
+	const glm::vec3& moveDelta = _movement.moveDelta(_cameraSpeed, 0.0f);
 	_camera.move(moveDelta);
 	_camera.update(_deltaFrameMillis);
 

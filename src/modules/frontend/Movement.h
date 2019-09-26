@@ -23,8 +23,9 @@ private:
 	core::ActionButton _moveRight;
 	core::ActionButton _moveBackward;
 	core::ActionButton _moveForward;
+	core::ActionButton _jump;
 
-	uint64_t _millis = 0ul;
+	uint64_t _deltaMillis = 0ul;
 
 public:
 	void construct() override;
@@ -37,11 +38,23 @@ public:
 	bool forward() const;
 	bool backward() const;
 
+	bool jump() const;
+
+	bool moving() const;
+
 	/**
 	 * @note update() must have been called with proper delta milliseconds.
 	 */
-	glm::vec3 moveDelta(float speed);
+	glm::vec3 moveDelta(float speed, float orientation = 0.0f);
 };
+
+inline bool Movement::moving() const {
+	return left() || right() || forward() || backward();
+}
+
+inline bool Movement::jump() const {
+	return _jump.pressed();
+}
 
 inline bool Movement::left() const {
 	return _moveLeft.pressed();
