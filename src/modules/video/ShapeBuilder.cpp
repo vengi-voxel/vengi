@@ -515,9 +515,9 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 void ShapeBuilder::axis(const glm::vec3& scale) {
 	const glm::vec3 verticesAxis[] = {
-		glm::vec3(scale.x, 0.0f, 0.0f),
-		glm::vec3(0.0f, scale.y, 0.0f),
-		glm::vec3(0.0f, 0.0f, scale.z)
+		glm::right * scale,
+		glm::up * scale,
+		glm::backward * scale
 	};
 
 	setColor(core::Color::Red);
