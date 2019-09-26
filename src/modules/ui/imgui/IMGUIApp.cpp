@@ -269,7 +269,7 @@ core::AppState IMGUIApp::onRunning() {
 
 	const bool renderUI = _renderUI->boolVal();
 
-	io.DeltaTime = float(_deltaFrameMillis) / 1000.0f;
+	io.DeltaTime = _deltaFrameSeconds;
 	const uint32_t mouseMask = SDL_GetMouseState(nullptr, nullptr);
 	// If a mouse press event came, always pass it as "mouse held this frame",
 	// so we don't miss click-release events that are shorter than 1 frame.
