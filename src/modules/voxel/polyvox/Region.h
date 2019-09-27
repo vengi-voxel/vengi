@@ -43,7 +43,6 @@ public:
 	/// Constructor
 	constexpr Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ);
 	constexpr Region(int mins, int maxs);
-	Region(const Region& region);
 
 	/// A Region with the lower corner set as low as possible and the upper corner set as high as possible.
 	static const Region MaxRegion;
@@ -539,12 +538,6 @@ inline void Region::accumulate(const Region& reg) {
 	m_iUpperX = core_max(m_iUpperX, reg.getUpperX());
 	m_iUpperY = core_max(m_iUpperY, reg.getUpperY());
 	m_iUpperZ = core_max(m_iUpperZ, reg.getUpperZ());
-}
-
-inline Region::Region(const Region& region) :
-		m_iLowerX(region.m_iLowerX), m_iLowerY(region.m_iLowerY), m_iLowerZ(
-				region.m_iLowerZ), m_iUpperX(region.m_iUpperX), m_iUpperY(
-				region.m_iUpperY), m_iUpperZ(region.m_iUpperZ) {
 }
 
 inline constexpr Region::Region(int mins, int maxs) :
