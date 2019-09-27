@@ -3,7 +3,6 @@
  */
 
 #include "Mesh.h"
-#include "MeshLUAFunctions.h"
 #include "Renderer.h"
 #include "core/Common.h"
 #include "core/Array.h"
@@ -13,7 +12,6 @@
 #include "core/GLM.h"
 #include "video/ScopedLineWidth.h"
 #include "video/Types.h"
-#include "commonlua/LUAFunctions.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -198,9 +196,6 @@ bool Mesh::loadMesh(const std::string& filename) {
 	}
 
 	loadTextureImages(_scene, dir, basename);
-	if (!loadConfig(basename)) {
-		return false;
-	}
 	_readyToInit = true;
 	Log::info("Loaded mesh %s with %i vertices and %i indices", filename.c_str(), (int)_vertices.size(), (int)_indices.size());
 	return true;
@@ -564,25 +559,6 @@ const aiNodeAnim* Mesh::findNodeAnim(const aiAnimation* animation, const std::st
 
 	Log::trace("Could not find animation node for %s", nodeName.c_str());
 	return nullptr;
-}
-
-bool Mesh::loadConfig(const std::string& basename) {
-	const std::string& luaString = core::App::getInstance()->filesystem()->load(basename + ".lua");
-	if (luaString.empty()) {
-		return true;
-	}
-	lua::LUA lua;
-	meshlua_register(lua, this);
-	if (!lua.load(luaString)) {
-		Log::error("Failed to load model config: '%s'", lua.error().c_str());
-		return false;
-	}
-	Log::info("Loading model config...");
-	if (!lua.execute("init")) {
-		Log::error("%s", lua.error().c_str());
-		return false;
-	}
-	return true;
 }
 
 void Mesh::loadTextureImages(const aiScene* scene, const std::string& dir, const std::string& basename) {

@@ -60,7 +60,6 @@ private:
 	};
 
 	void loadTextureImages(const aiScene* scene, const std::string& dir, const std::string& basename);
-	bool loadConfig(const std::string& basename);
 	glm::vec3 calcInterpolatedScaling(float animationTime, const aiNodeAnim* nodeAnim);
 	glm::mat4 calcInterpolatedRotation(float animationTime, const aiNodeAnim* nodeAnim);
 	glm::vec3 calcInterpolatedPosition(float animationTime, const aiNodeAnim* nodeAnim);

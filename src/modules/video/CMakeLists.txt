@@ -14,7 +14,6 @@ set(SRCS
 	FrameBufferConfig.cpp FrameBufferConfig.h
 	GBuffer.cpp GBuffer.h
 	Mesh.cpp Mesh.h
-	MeshLUAFunctions.cpp MeshLUAFunctions.h
 	MeshPool.cpp MeshPool.h
 	Renderer.cpp Renderer.h
 	RenderBuffer.cpp RenderBuffer.h
@@ -54,7 +53,7 @@ set(FILES
 set(LIB video)
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES image util assimp commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES image util assimp)
 if (APPLE)
 	target_link_libraries(${LIB} "-framework OpenGL")
 endif()
