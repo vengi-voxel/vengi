@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "MapEdit.h"
+#include "MapView.h"
 
 #include "video/Shader.h"
 #include "video/Renderer.h"
@@ -17,16 +17,16 @@
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 
-MapEdit::MapEdit(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world) :
+MapView::MapView(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _worldMgr(world) {
-	init(ORGANISATION, "mapedit");
+	init(ORGANISATION, "mapview");
 	_worldMgr->setClientData(true);
 }
 
-MapEdit::~MapEdit() {
+MapView::~MapView() {
 }
 
-core::AppState MapEdit::onConstruct() {
+core::AppState MapView::onConstruct() {
 	core::AppState state = Super::onConstruct();
 
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.8");
@@ -53,7 +53,7 @@ core::AppState MapEdit::onConstruct() {
 	return state;
 }
 
-core::AppState MapEdit::onInit() {
+core::AppState MapView::onInit() {
 	core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
@@ -117,7 +117,7 @@ core::AppState MapEdit::onInit() {
 	return state;
 }
 
-void MapEdit::beforeUI() {
+void MapView::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
@@ -145,7 +145,7 @@ void MapEdit::beforeUI() {
 	}
 }
 
-void MapEdit::onRenderUI() {
+void MapView::onRenderUI() {
 	const glm::vec3& pos = _camera.position();
 	voxelrender::WorldRenderer::Stats stats;
 	_worldRenderer.stats(stats);
@@ -182,8 +182,8 @@ void MapEdit::onRenderUI() {
 	ImGui::Text("l: line mode rendering");
 }
 
-core::AppState MapEdit::onRunning() {
-	core_trace_scoped(MapEditOnRunning);
+core::AppState MapView::onRunning() {
+	core_trace_scoped(MapViewOnRunning);
 	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
 	const core::AppState state = Super::onRunning();
 
@@ -201,7 +201,7 @@ core::AppState MapEdit::onRunning() {
 	return state;
 }
 
-core::AppState MapEdit::onCleanup() {
+core::AppState MapView::onCleanup() {
 	_meshPool->shutdown();
 	_worldRenderer.shutdown();
 	_worldTimer.shutdown();
@@ -213,19 +213,19 @@ core::AppState MapEdit::onCleanup() {
 	return state;
 }
 
-void MapEdit::onWindowResize(int windowWidth, int windowHeight) {
+void MapView::onWindowResize(int windowWidth, int windowHeight) {
 	Super::onWindowResize(windowWidth, windowHeight);
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 }
 
-bool MapEdit::onKeyPress(int32_t key, int16_t modifier) {
+bool MapView::onKeyPress(int32_t key, int16_t modifier) {
 	if (key == SDLK_ESCAPE) {
 		toggleRelativeMouseMode();
 	}
 	return Super::onKeyPress(key, modifier);
 }
 
-void MapEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+void MapView::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	Super::onMouseButtonPress(x, y, button, clicks);
 	const video::Ray& ray = _camera.mouseRay(_mousePos);
 	const glm::vec3& dirWithLength = ray.direction * _camera.farPlane();
@@ -247,6 +247,6 @@ int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	MapEdit app(metric, meshPool, filesystem, eventBus, timeProvider, world);
+	MapView app(metric, meshPool, filesystem, eventBus, timeProvider, world);
 	return app.startMainLoop(argc, argv);
 }

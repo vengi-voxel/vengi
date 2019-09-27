@@ -1,11 +1,11 @@
-project(mapedit)
+project(mapview)
 set(SRCS
-	MapEdit.h MapEdit.cpp
+	MapView.h MapView.cpp
 )
 set(FILES
 	shared/worldparams.lua
 	shared/biomes.lua
-	mapedit/mapedit-keybindings.cfg
+	mapview/mapview-keybindings.cfg
 	testmesh/chr_skelett.fbx
 	testmesh/chr_skelett2.png
 )

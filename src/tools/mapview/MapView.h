@@ -16,13 +16,11 @@
 #include "voxel/WorldMgr.h"
 
 /**
- * @brief This is the map editor to place entities with procgen settings to form a map in the world
- *
- * @note Can also be used to 'just' render a map.
+ * @brief This is the map viewer
  *
  * @ingroup Tools
  */
-class MapEdit: public ui::imgui::IMGUIApp {
+class MapView: public ui::imgui::IMGUIApp {
 protected:
 	using Super = ui::imgui::IMGUIApp;
 	video::Camera _camera;
@@ -51,8 +49,8 @@ protected:
 	void beforeUI() override;
 
 public:
-	MapEdit(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world);
-	~MapEdit();
+	MapView(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world);
+	~MapView();
 
 	core::AppState onConstruct() override;
 	core::AppState onInit() override;

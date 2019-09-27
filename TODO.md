@@ -82,9 +82,9 @@ Configure entity types and amounts via lua map script
 
 The attack manager should get updated in the map tick and should maintain a list of attackers and victims.
 
-## Map editor
+## Map viewer
 
-Finish implementation of the `mapedit` tool.
+Finish implementation of the `mapview` tool.
 
 # Statsd support
 

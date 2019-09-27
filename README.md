@@ -11,7 +11,7 @@ Voxel engine and tools.
 
 # Tools
 * [The voxel editor](src/tools/voxedit/README.md)
-* [World viewer](src/tools/mapedit/README.md)
+* [World viewer](src/tools/mapview/README.md)
 * [Remote AI Debugger](src/tools/rcon/README.md)
 * [Database tool](src/tools/databasetool/README.md)
 * [Shader tool](src/tools/shadertool/README.md)
