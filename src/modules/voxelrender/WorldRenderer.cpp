@@ -21,7 +21,6 @@ namespace voxelrender {
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxel::WorldMgrPtr& world) :
 		_octree(math::AABB<int>(), 30), _world(world) {
-	core_assert(_worldScale.x == _worldScale.z);
 }
 
 WorldRenderer::~WorldRenderer() {
@@ -114,12 +113,8 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 			delta = 0;
 		}
 	}
-	const glm::vec3 worldScalef(_worldScale);
 	for (PlantBuffer& vbo : _meshPlantList) {
-		std::vector<glm::vec3>& positions = vbo.instancedPositions;
-		for(glm::vec3& p : positions) {
-			p *= worldScalef;
-		}
+		const std::vector<glm::vec3>& positions = vbo.instancedPositions;
 		vbo.vb.update(vbo.offsetBuffer, positions);
 	}
 }
@@ -138,7 +133,7 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 		maxs = (glm::max)(maxs, v.position);
 	}
 
-	chunkBuffer._aabb = math::AABB<int>(mins * _worldScale, maxs * _worldScale);
+	chunkBuffer._aabb = math::AABB<int>(mins, maxs);
 }
 
 void WorldRenderer::handleMeshQueue() {
@@ -171,7 +166,7 @@ void WorldRenderer::handleMeshQueue() {
 
 	freeChunkBuffer->meshes = std::move(meshes);
 	updateAABB(*freeChunkBuffer);
-	distributePlants(_world, freeChunkBuffer->translation() * _worldScale, freeChunkBuffer->instancedPositions);
+	distributePlants(_world, freeChunkBuffer->translation(), freeChunkBuffer->instancedPositions);
 	fillPlantPositionsFromMeshes();
 	if (!_octree.insert(freeChunkBuffer)) {
 		Log::warn("Failed to insert into octree");
@@ -394,10 +389,9 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
 		core_trace_scoped(WorldRendererRenderShadow);
-		const glm::mat4& model = glm::scale(glm::vec3(_worldScale));
 		const glm::mat4& plantModel = glm::scale(glm::vec3(0.4f));
 		_shadow.render([&] (int i, shader::ShadowmapShader& shader) {
-			shader.setModel(model);
+			shader.setModel(glm::mat4(1.0f));
 			renderOpaqueBuffers();
 			++drawCallsWorld;
 			return true;
@@ -416,11 +410,10 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_shadow.bind(video::TextureUnit::One);
 	}
 
-	const glm::mat4& model = glm::scale(glm::vec3(_worldScale));
 	{
 		core_trace_scoped(WorldRendererRenderOpaque);
 		video::ScopedShader scoped(_worldShader);
-		_worldShader.setModel(model);
+		_worldShader.setModel(glm::mat4(1.0f));
 		_worldShader.setMaterialblock(_materialBlock);
 		_worldShader.setFocuspos(camera.target());
 		_worldShader.setLightdir(_shadow.sunDirection());
@@ -464,7 +457,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	{
 		core_trace_scoped(WorldRendererRenderWater);
 		video::ScopedShader scoped(_waterShader);
-		_waterShader.setModel(model);
+		_waterShader.setModel(glm::mat4(1.0f));
 		_waterShader.setFocuspos(camera.target());
 		_waterShader.setLightdir(_shadow.sunDirection());
 		_waterShader.setMaterialblock(_materialBlock);
@@ -530,7 +523,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		_meshShader.setShadowmap(video::TextureUnit::One);
 		_shadow.bind(video::TextureUnit::One);
 	}
-	const glm::vec3 worldScalef(_worldScale);
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_deltaFrame);
@@ -542,7 +534,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 			continue;
 		}
 		const glm::mat4& rotate = glm::rotate(glm::mat4(1.0f), ent->orientation(), glm::up);
-		const glm::mat4& translate = glm::translate(rotate, ent->position() * worldScalef);
+		const glm::mat4& translate = glm::translate(rotate, ent->position());
 		const glm::mat4& scale = glm::scale(translate, glm::vec3(ent->scale()));
 		const glm::mat4& model = scale;
 		_meshShader.setModel(model);
@@ -604,8 +596,8 @@ bool WorldRenderer::createInstancedBuffer(const voxel::Mesh &mesh, int amount, P
 void WorldRenderer::extractMeshes(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererExtractMeshes);
 	_octree.visit(camera.frustum(), [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
-		return !_world->scheduleMeshExtraction(mins / this->_worldScale);
-	}, glm::vec3(_world->meshSize() * _worldScale));
+		return !_world->scheduleMeshExtraction(mins);
+	}, glm::vec3(_world->meshSize()));
 }
 
 void WorldRenderer::stats(Stats& stats) const {
@@ -765,7 +757,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		return false;
 	}
 
-	const glm::vec3 cullingThreshold(_world->meshSize() * _worldScale);
+	const glm::vec3 cullingThreshold(_world->meshSize());
 	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 10;
 	_maxAllowedDistance = glm::pow(_viewDistance + maxCullingThreshold, 2);
 
@@ -773,11 +765,11 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 }
 
 glm::vec3 WorldRenderer::groundPosition(const glm::vec3& position, int hovering) const {
-	const glm::vec3& worldPosition = position / glm::vec3(_worldScale);
+	const glm::vec3& worldPosition = position;
 	const int y = _world->findFloor(worldPosition.x, worldPosition.z, [] (voxel::VoxelType type) {
 		return voxel::isFloor(type);
 	});
-	return glm::vec3(position.x, y * _worldScale.y + hovering * _worldScale.y, position.z);
+	return glm::vec3(position.x, y + hovering, position.z);
 }
 
 void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
@@ -790,7 +782,7 @@ void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
 	const bool shadowMap = _shadowMap->boolVal();
 	_shadow.update(camera, shadowMap);
 
-	const glm::ivec3 cameraPos(camera.position() / glm::vec3(_worldScale));
+	const glm::ivec3 cameraPos(camera.position());
 
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {
