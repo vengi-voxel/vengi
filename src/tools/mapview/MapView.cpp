@@ -225,21 +225,6 @@ bool MapView::onKeyPress(int32_t key, int16_t modifier) {
 	return Super::onKeyPress(key, modifier);
 }
 
-void MapView::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
-	Super::onMouseButtonPress(x, y, button, clicks);
-	const video::Ray& ray = _camera.mouseRay(_mousePos);
-	const glm::vec3& dirWithLength = ray.direction * _camera.farPlane();
-	// TODO: select relevant procgen entity by querying the (not yet existant) octree.
-	const voxel::PickResult& result = _worldMgr->pickVoxel(ray.origin, dirWithLength);
-	if (result.didHit && button == SDL_BUTTON_RIGHT) {
-		// TODO: show popup on existing procgen entity to change its properties or delete it
-		_worldMgr->setVoxel(result.hitVoxel, voxel::createVoxel(voxel::VoxelType::Air, 0));
-	} else if (result.validPreviousPosition && button == SDL_BUTTON_LEFT) {
-		// TODO: place a new procgen entity
-		_worldMgr->setVoxel(result.previousPosition, voxel::createRandomColorVoxel(voxel::VoxelType::Grass));
-	}
-}
-
 int main(int argc, char *argv[]) {
 	const video::MeshPoolPtr& meshPool = std::make_shared<video::MeshPool>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();

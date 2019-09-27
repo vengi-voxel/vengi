@@ -119,8 +119,6 @@ public:
 	BiomeManager& biomeManager();
 	const BiomeManager& biomeManager() const;
 
-	[[deprecated]] void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
-
 	PickResult pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength);
 
 	/**

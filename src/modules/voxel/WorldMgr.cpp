@@ -76,12 +76,6 @@ PickResult WorldMgr::pickVoxel(const glm::vec3& origin, const glm::vec3& directi
 	return voxel::pickVoxel(_volumeData, origin, directionWithLength, air);
 }
 
-void WorldMgr::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
-	_volumeData->setVoxel(pos, voxel);
-	allowReExtraction(pos);
-	scheduleMeshExtraction(pos);
-}
-
 void WorldMgr::updateExtractionOrder(const glm::ivec3& sortPos, const math::Frustum& frustum) {
 	// TODO: sort closest to camera and in frustum first
 }
