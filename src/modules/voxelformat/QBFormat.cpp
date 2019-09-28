@@ -180,7 +180,11 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	color.g = green / 255.0f;
 	color.a = alpha / 255.0f;
 	const uint8_t index = findClosestIndex(color);
-	return voxel::createVoxel(voxel::VoxelType::Generic, index);
+	voxel::VoxelType voxelType = voxel::VoxelType::Generic;
+	if (index == 0) {
+		voxelType = voxel::VoxelType::Air;
+	}
+	return voxel::createVoxel(voxelType, index);
 }
 
 bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {

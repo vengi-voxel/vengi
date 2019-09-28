@@ -304,12 +304,20 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 					continue;
 				}
 				if (_paletteSize > 0) {
-					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, red);
+					voxel::VoxelType voxelType = voxel::VoxelType::Generic;
+					if (red == 0) {
+						voxelType = voxel::VoxelType::Air;
+					}
+					const voxel::Voxel& voxel = voxel::createVoxel(voxelType, red);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				} else {
 					const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
 					const uint8_t index = findClosestIndex(color);
-					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+					voxel::VoxelType voxelType = voxel::VoxelType::Generic;
+					if (index == 0) {
+						voxelType = voxel::VoxelType::Air;
+					}
+					const voxel::Voxel& voxel = voxel::createVoxel(voxelType, index);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				}
 			}

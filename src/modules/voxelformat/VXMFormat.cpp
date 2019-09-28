@@ -183,7 +183,12 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 			const int xx = i / (size.y * size.z);
 			const int yy = (i / size.z) % size.y;
 			const int zz = i % size.z;
-			const Voxel voxel = createColorVoxel(VoxelType::Generic, palette[matIdx]);
+			const uint8_t index = palette[matIdx];
+			voxel::VoxelType voxelType = voxel::VoxelType::Generic;
+			if (index == 0) {
+				voxelType = voxel::VoxelType::Air;
+			}
+			const Voxel voxel = createColorVoxel(voxelType, index);
 			volume->setVoxel(size.x - 1 - xx, yy, zz, voxel);
 		}
 		idx += length;
