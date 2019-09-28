@@ -26,6 +26,9 @@ struct ActionButtonCommands {
 			first(_first), second(_second) {
 	}
 
+	/**
+	 * @sa core::setBindingContext()
+	 */
 	ActionButtonCommands& setBindingContext(int context);
 	ActionButtonCommands& setHelp(const char* help);
 };
