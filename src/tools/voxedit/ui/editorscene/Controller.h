@@ -11,6 +11,11 @@
 
 namespace voxedit {
 
+/**
+ * @brief This is the viewport controller
+ *
+ * @sa Viewport
+ */
 class Controller {
 public:
 	enum class SceneCameraMode : uint8_t {
