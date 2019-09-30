@@ -196,6 +196,8 @@ public:
 	void resetLastTrace();
 	voxel::Region region() const;
 
+	const render::Gizmo& gizmo() const;
+
 	void setActiveCamera(video::Camera* camera);
 
 	const voxel::Voxel& hitCursorVoxel() const;
@@ -330,6 +332,10 @@ public:
 inline void SceneManager::setActiveCamera(video::Camera* camera) {
 	_camera = camera;
 	resetLastTrace();
+}
+
+inline const render::Gizmo& SceneManager::gizmo() const {
+	return _gizmo;
 }
 
 inline voxelrender::RawVolumeRenderer& SceneManager::renderer() {

@@ -44,6 +44,7 @@
 #include "core/GLM.h"
 #include "io/Filesystem.h"
 
+#include "render/Gizmo.h"
 #include "AxisUtil.h"
 #include "CustomBindingContext.h"
 #include "Config.h"
@@ -1291,6 +1292,7 @@ void SceneManager::update(uint64_t time) {
 			if (lastPos == glm::zero<glm::ivec3>()) {
 				return rayPosFarPlane;
 			}
+			// TODO: the delta calculation sucks
 			const glm::ivec3 deltaMovement = lastPos - rayPosFarPlane;
 			executeGizmoAction(deltaMovement, mode);
 			return glm::zero<glm::ivec3>();
