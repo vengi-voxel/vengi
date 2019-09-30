@@ -7,6 +7,7 @@
 #include "core/Trace.h"
 #include "core/GameConfig.h"
 #include "video/ScopedPolygonMode.h"
+#include "video/ScopedState.h"
 #include "io/Filesystem.h"
 
 TestMeshApp::TestMeshApp(const char *appName, const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

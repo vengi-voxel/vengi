@@ -3,6 +3,8 @@
  */
 
 #include "Axis.h"
+#include "video/ScopedLineWidth.h"
+#include "video/ScopedState.h"
 
 namespace render {
 

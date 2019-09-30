@@ -7,8 +7,6 @@
 #include "video/Camera.h"
 #include "video/ShapeBuilder.h"
 #include "render/ShapeRenderer.h"
-#include "video/ScopedLineWidth.h"
-#include "video/ScopedState.h"
 #include "core/IComponent.h"
 #include "math/Axis.h"
 
