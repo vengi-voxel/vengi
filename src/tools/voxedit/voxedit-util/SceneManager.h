@@ -164,11 +164,24 @@ private:
 	void rotate(int layerId, const glm::ivec3& angle, bool increaseSize = false, bool rotateAroundReferencePosition = false);
 	void rotate(int angleX, int angleY, int angleZ, bool increaseSize = false, bool rotateAroundReferencePosition = false);
 
+	/**
+	 * @brief Move the voxels inside the volume regions
+	 */
 	void move(int layerId, const glm::ivec3& m);
+	/**
+	 * @brief Move the voxels inside the volume regions
+	 */
 	void move(int x, int y, int z);
 
+	/**
+	 * @brief Shift the whole volume by the given voxel amount
+	 */
 	void shift(int layerId, const glm::ivec3& m);
+	/**
+	 * @brief Shift the whole volume by the given voxel amount
+	 */
 	void shift(int x, int y, int z);
+
 	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
 
 	void zoom(video::Camera& camera, float level) const;
