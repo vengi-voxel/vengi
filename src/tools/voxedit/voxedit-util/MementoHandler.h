@@ -81,6 +81,18 @@ struct MementoState {
 	 */
 	voxel::Region region;
 
+	MementoState() :
+			type(MementoType::Modification), layer(0) {
+	}
+
+	MementoState(MementoType _type, const MementoData& _data, int _layer, const std::string& _name, const voxel::Region& _region) :
+			type(_type), data(_data), layer(_layer), name(_name), region(_region) {
+	}
+
+	MementoState(MementoType _type, MementoData&& _data, int _layer, std::string&& _name, voxel::Region&& _region) :
+			type(_type), data(_data), layer(_layer), name(_name), region(_region) {
+	}
+
 	/**
 	 * Some types (@c MementoType) don't have a volume attached.
 	 */

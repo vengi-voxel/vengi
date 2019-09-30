@@ -202,7 +202,7 @@ void MementoHandler::markUndo(int layer, const std::string& name, const voxel::R
 	Log::debug("New undo state for layer %i with name %s (memento state index: %i)", layer, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData& data = MementoData::fromVolume(volume);
-	_states.push_back(MementoState{type, data, layer, name, region});
+	_states.emplace_back(type, data, layer, name, region);
 	while (_states.size() > MaxStates) {
 		_states.erase(_states.begin());
 	}
