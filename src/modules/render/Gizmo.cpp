@@ -9,6 +9,9 @@
 
 namespace render {
 
+static constexpr float GizmoSize = 20.0f;
+static constexpr glm::vec3 GizmoSizeVec(GizmoSize);
+
 bool Gizmo::init() {
 	if (!_axis.init()) {
 		return false;
@@ -56,26 +59,34 @@ void Gizmo::update(const video::Camera& camera, const glm::ivec2& pixelPos) {
 	glm::vec3 paZ;
 	glm::vec3 pbZ;
 
-	const bool intersectX = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), _pos + glm::vec3(20.0f,  0.0f,  0.0f), paX, pbX);
-	const bool intersectY = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), _pos + glm::vec3( 0.0f, 20.0f,  0.0f), paY, pbY);
-	const bool intersectZ = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), _pos + glm::vec3( 0.0f,  0.0f, 20.0f), paZ, pbZ);
+	const bool intersectX = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), _pos + glm::vec3(GizmoSize,  0.0f,  0.0f), paX, pbX);
+	const bool intersectY = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), _pos + glm::vec3( 0.0f, GizmoSize,  0.0f), paY, pbY);
+	const bool intersectZ = glm::intersectLines(p1, p2, glm::zero<glm::vec3>(), _pos + glm::vec3( 0.0f,  0.0f, GizmoSize), paZ, pbZ);
 	const float distanceX = intersectX ? glm::distance2(paX, pbX) : FLT_MAX;
 	const float distanceY = intersectY ? glm::distance2(paY, pbY) : FLT_MAX;
 	const float distanceZ = intersectZ ? glm::distance2(paZ, pbZ) : FLT_MAX;
 
+	if (glm::any(glm::lessThan(paX, glm::zero<glm::vec3>())) || glm::any(glm::greaterThan(paX, GizmoSizeVec))
+	 || glm::any(glm::lessThan(paY, glm::zero<glm::vec3>())) || glm::any(glm::greaterThan(paY, GizmoSizeVec))
+	 || glm::any(glm::lessThan(paZ, glm::zero<glm::vec3>())) || glm::any(glm::greaterThan(paZ, GizmoSizeVec))) {
+		_mode = GizmoMode::None;
+		_axis.setSize(GizmoSize, GizmoSize, GizmoSize);
+		return;
+	}
+
 	const float distanceToLine = 0.2f;
 	if (distanceX < distanceY && distanceX < distanceZ && distanceX < distanceToLine) {
 		_mode = GizmoMode::TranslateX;
-		_axis.setSize(40.0f, 20.0f, 20.0f);
+		_axis.setSize(2.0f * GizmoSize, GizmoSize, GizmoSize);
 	} else if (distanceY < distanceX && distanceY < distanceZ && distanceY < distanceToLine) {
 		_mode = GizmoMode::TranslateY;
-		_axis.setSize(20.0f, 40.0f, 20.0f);
+		_axis.setSize(GizmoSize, 2.0f * GizmoSize, GizmoSize);
 	} else if (distanceZ < distanceX && distanceZ < distanceY && distanceZ < distanceToLine) {
 		_mode = GizmoMode::TranslateZ;
-		_axis.setSize(20.0f, 20.0f, 40.0f);
+		_axis.setSize(GizmoSize, GizmoSize, 2.0f * GizmoSize);
 	} else {
 		_mode = GizmoMode::None;
-		_axis.setSize(20.0f, 20.0f, 20.0f);
+		_axis.setSize(GizmoSize, GizmoSize, GizmoSize);
 	}
 }
 
