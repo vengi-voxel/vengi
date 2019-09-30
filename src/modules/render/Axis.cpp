@@ -15,7 +15,7 @@ Axis::Axis() {
 void Axis::render(const video::Camera& camera) {
 	video::ScopedState disableDepthTest(video::State::DepthTest, false);
 	video::ScopedLineWidth width(_lineWidth);
-	const glm::mat4& model = glm::translate(_pos);
+	const glm::mat4& model = glm::translate(glm::scale(_size), _pos);
 	_shapeRenderer.renderAll(camera, model);
 }
 
@@ -26,16 +26,14 @@ void Axis::shutdown() {
 }
 
 void Axis::setSize(float x, float y, float z) {
-	_shapeBuilder.clear();
-	_shapeBuilder.axis(glm::vec3(x, y, z));
-	_shapeRenderer.createOrUpdate(_meshIndex, _shapeBuilder);
+	_size = glm::vec3(x, y, z);
 }
 
 bool Axis::init() {
 	if (!_shapeRenderer.init()) {
 		return false;
 	}
-	_shapeBuilder.axis(20.0f);
+	_shapeBuilder.axis(1.0f);
 	_meshIndex = _shapeRenderer.create(_shapeBuilder);
 	return _meshIndex >= 0;
 }

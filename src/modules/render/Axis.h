@@ -25,6 +25,7 @@ private:
 	int32_t _meshIndex = -1;
 	float _lineWidth = 4.0f;
 	glm::vec3 _pos = glm::zero<glm::vec3>();
+	glm::vec3 _size = glm::one<glm::vec3>();
 
 public:
 	Axis();
