@@ -28,15 +28,6 @@ set(UI_WINDOWS
 
 set(FILES
 	${UI_WINDOWS}
-	client/mesh/animal_chicken.dae
-	client/mesh/animal_chicken.png
-	client/mesh/animal_rabbit.dae
-	client/mesh/animal_rabbit.png
-	client/mesh/animal_wolf.dae
-	client/mesh/animal_wolf.png
-	client/mesh/chr_knight.fbx
-	client/mesh/chr_knight.png
-	client/mesh/chr_knight.lua
 	client/ui/lang/en.tb.txt
 	client/client-keybindings.cfg
 

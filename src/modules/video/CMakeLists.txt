@@ -43,10 +43,6 @@ set(SRCS_SHADERS
 )
 set(FILES
 	shared/keybindings.cfg
-
-	client/mesh/chr_knight.fbx
-	client/mesh/chr_knight.png
-	client/mesh/chr_knight.lua
 )
 
 #set_source_files_properties(${SRCS_SHADERS} PROPERTIES LANGUAGE C)
