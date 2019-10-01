@@ -129,6 +129,7 @@ doing one query per chunk is most likely a little bit overkill.
 # Meshes
 
 Don't use assimp at runtime - use it only in the asset-pipeline to generate a 'better' ready-to-render format.
+Or even use only volume based models and remove assimp and video/Mesh completely...
 
 # Core
 
