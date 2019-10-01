@@ -21,7 +21,6 @@ inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_
 	attrib.stride = sizeof(voxel::VoxelVertex);
 	attrib.size = components;
 	attrib.type = video::mapType<decltype(voxel::VoxelVertex::position)::value_type>();
-	attrib.typeIsInt = false;
 	attrib.offset = offsetof(voxel::VoxelVertex, position);
 	return attrib;
 }
