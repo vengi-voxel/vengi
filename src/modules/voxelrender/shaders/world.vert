@@ -1,5 +1,5 @@
 // attributes from the VAOs
-$in ivec3 a_pos;
+$in vec3 a_pos;
 $in uvec3 a_info;
 
 #ifdef INSTANCED

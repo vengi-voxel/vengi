@@ -2,7 +2,7 @@
  * @brief Shader to fill the bound shadowmap with the depth values
  */
 
-$in ivec3 a_pos;
+$in vec3 a_pos;
 #ifdef INSTANCED
 // instanced rendering
 $in vec3 a_offset;
