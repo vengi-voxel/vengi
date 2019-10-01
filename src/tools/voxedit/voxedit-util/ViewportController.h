@@ -41,7 +41,7 @@ public:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
-	void init(ViewportController::SceneCameraMode mode);
+	void init(SceneCameraMode mode);
 	void resetCamera(const voxel::Region& region);
 
 	void setShaderType(ShaderType type);

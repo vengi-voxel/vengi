@@ -14,15 +14,15 @@ void ViewportController::resetCamera(const voxel::Region& region) {
 	const glm::vec3 dim(region.getDimensionsInVoxels());
 	const float distance = glm::length(dim);
 	_camera.setTargetDistance(distance * 2.0f);
-	if (_camMode == ViewportController::SceneCameraMode::Free) {
+	if (_camMode == SceneCameraMode::Free) {
 		const int height = region.getHeightInCells();
 		_camera.setPosition(glm::vec3(-distance, height + distance, -distance));
-	} else if (_camMode == ViewportController::SceneCameraMode::Top) {
+	} else if (_camMode == SceneCameraMode::Top) {
 		const int height = region.getHeightInCells();
 		_camera.setPosition(glm::vec3(center.x, height + center.y, center.z));
-	} else if (_camMode == ViewportController::SceneCameraMode::Left) {
+	} else if (_camMode == SceneCameraMode::Left) {
 		_camera.setPosition(glm::vec3(-center.x, center.y, center.z));
-	} else if (_camMode == ViewportController::SceneCameraMode::Front) {
+	} else if (_camMode == SceneCameraMode::Front) {
 		const int depth = region.getDepthInCells();
 		_camera.setPosition(glm::vec3(center.x, center.y, -depth - center.z));
 	}
@@ -60,7 +60,7 @@ bool ViewportController::move(bool rotate, int x, int y) {
 		const float yaw = x - _mouseX;
 		const float pitch = y - _mouseY;
 		const float s = _rotationSpeed->floatVal();
-		if (_camMode == ViewportController::SceneCameraMode::Free) {
+		if (_camMode == SceneCameraMode::Free) {
 			_camera.turn(yaw * s);
 			_camera.pitch(pitch * s);
 		}
