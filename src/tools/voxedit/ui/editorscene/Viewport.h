@@ -7,7 +7,7 @@
 #include "ui/turbobadger/Widget.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
-#include "Controller.h"
+#include "ViewportController.h"
 #include "RenderShaders.h"
 
 /**
@@ -19,7 +19,7 @@ private:
 	shader::EdgeShader& _edgeShader;
 	video::FrameBuffer _frameBuffer;
 	tb::UIBitmapGL _frameBufferTexture;
-	voxedit::Controller _controller;
+	voxedit::ViewportController _controller;
 	std::string _cameraMode;
 
 	void renderFramebuffer();
@@ -35,7 +35,7 @@ public:
 	void resetCamera();
 	bool saveImage(const char* filename);
 
-	voxedit::Controller& controller();
+	voxedit::ViewportController& controller();
 
 	virtual void onInflate(const tb::INFLATE_INFO &info) override;
 	virtual void onProcess() override;
@@ -45,7 +45,7 @@ public:
 	virtual void onFocusChanged(bool focused) override;
 };
 
-inline voxedit::Controller& Viewport::controller() {
+inline voxedit::ViewportController& Viewport::controller() {
 	return _controller;
 }
 

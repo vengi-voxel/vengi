@@ -117,11 +117,11 @@ void Viewport::renderFramebuffer() {
 	video::Shader* shader;
 	video::Id prevShader = video::InvalidId;
 	switch (_controller.shaderType()) {
-	case voxedit::Controller::ShaderType::Edge:
+	case voxedit::ViewportController::ShaderType::Edge:
 		shader = &_edgeShader;
 		break;
-	case voxedit::Controller::ShaderType::Max:
-	case voxedit::Controller::ShaderType::None:
+	case voxedit::ViewportController::ShaderType::Max:
+	case voxedit::ViewportController::ShaderType::None:
 		shader = nullptr;
 		break;
 	}
@@ -156,14 +156,14 @@ void Viewport::onPaint(const PaintProps &paintProps) {
 void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 	Super::onInflate(info);
 
-	voxedit::Controller::SceneCameraMode mode = voxedit::Controller::SceneCameraMode::Free;
+	voxedit::ViewportController::SceneCameraMode mode = voxedit::ViewportController::SceneCameraMode::Free;
 	const char *cameraMode = info.node->getValueString("camera", "free");
 	if (!strcmp(cameraMode, "top")) {
-		mode = voxedit::Controller::SceneCameraMode::Top;
+		mode = voxedit::ViewportController::SceneCameraMode::Top;
 	} else if (!strcmp(cameraMode, "front")) {
-		mode = voxedit::Controller::SceneCameraMode::Front;
+		mode = voxedit::ViewportController::SceneCameraMode::Front;
 	} else if (!strcmp(cameraMode, "left")) {
-		mode = voxedit::Controller::SceneCameraMode::Left;
+		mode = voxedit::ViewportController::SceneCameraMode::Left;
 	}
 	_cameraMode = cameraMode;
 	_controller.init(mode);

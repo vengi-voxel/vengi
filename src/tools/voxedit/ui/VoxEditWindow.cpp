@@ -565,9 +565,9 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		tb::TBWidget *parent = widget->getParent();
 		if (Viewport *viewport = parent->safeCastTo<Viewport>()) {
 			const int value = widget->getValue();
-			voxedit::Controller::ShaderType type = voxedit::Controller::ShaderType::None;
+			voxedit::ViewportController::ShaderType type = voxedit::ViewportController::ShaderType::None;
 			if (value == 1) {
-				type = voxedit::Controller::ShaderType::Edge;
+				type = voxedit::ViewportController::ShaderType::Edge;
 			}
 			viewport->controller().setShaderType(type);
 			return true;

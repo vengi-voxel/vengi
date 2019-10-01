@@ -16,7 +16,7 @@ namespace voxedit {
  *
  * @sa Viewport
  */
-class Controller {
+class ViewportController {
 public:
 	enum class SceneCameraMode : uint8_t {
 		Free, Top, Left, Front
@@ -41,7 +41,7 @@ public:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
-	void init(Controller::SceneCameraMode mode);
+	void init(ViewportController::SceneCameraMode mode);
 	void resetCamera(const voxel::Region& region);
 
 	void setShaderType(ShaderType type);
@@ -59,23 +59,23 @@ public:
 	void setAngle(float angle);
 };
 
-inline video::Camera& Controller::camera() {
+inline video::Camera& ViewportController::camera() {
 	return _camera;
 }
 
-inline float Controller::angle() const {
+inline float ViewportController::angle() const {
 	return _angle;
 }
 
-inline void Controller::setAngle(float angle) {
+inline void ViewportController::setAngle(float angle) {
 	_angle = angle;
 }
 
-inline Controller::ShaderType Controller::shaderType() const {
+inline ViewportController::ShaderType ViewportController::shaderType() const {
 	return _shaderType;
 }
 
-inline void Controller::setShaderType(ShaderType type) {
+inline void ViewportController::setShaderType(ShaderType type) {
 	_shaderType = type;
 }
 
