@@ -38,10 +38,6 @@ Support enums?
 
 Validate that each `$out` of the vertex shader has a `$in` in the fragment shader and vice versa.
 
-## Improve selections
-
-- Implement AABB based selection and copy, paste and cut
-
 # EventMgr
 
 ## Proper event-end-while-application-is-not-running handling
