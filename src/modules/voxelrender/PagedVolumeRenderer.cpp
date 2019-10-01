@@ -81,12 +81,12 @@ bool PagedVolumeRenderer::init() {
 	_worldShader.setAmbientColor(_ambientColor);
 	_worldShader.setFogcolor(core::Color::LightBlue);
 
-	video::Attribute attributePos = getPositionVertexAttribute(
+	const video::Attribute& attributePos = getPositionVertexAttribute(
 			_vertexBufferIndex, _worldShader.getLocationPos(),
 			_worldShader.getComponentsPos());
 	_vertexBuffer.addAttribute(attributePos);
 
-	video::Attribute attributeInfo = getInfoVertexAttribute(
+	const video::Attribute& attributeInfo = getInfoVertexAttribute(
 			_vertexBufferIndex, _worldShader.getLocationInfo(),
 			_worldShader.getComponentsInfo());
 	_vertexBuffer.addAttribute(attributeInfo);

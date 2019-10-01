@@ -81,12 +81,12 @@ bool RawVolumeRenderer::init() {
 	}
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		video::Attribute attributePos = getPositionVertexAttribute(
+		const video::Attribute& attributePos = getPositionVertexAttribute(
 				_vertexBufferIndex[idx], _worldShader.getLocationPos(),
 				_worldShader.getComponentsPos());
 		_vertexBuffer[idx].addAttribute(attributePos);
 
-		video::Attribute attributeInfo = getInfoVertexAttribute(
+		const video::Attribute& attributeInfo = getInfoVertexAttribute(
 				_vertexBufferIndex[idx], _worldShader.getLocationInfo(),
 				_worldShader.getComponentsInfo());
 		_vertexBuffer[idx].addAttribute(attributeInfo);
