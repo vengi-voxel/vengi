@@ -1,6 +1,7 @@
 set(SRCS
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
+	ViewportController.h ViewportController.cpp
 
 	CustomBindingContext.h
 
