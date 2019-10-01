@@ -30,7 +30,6 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedBlendMode.h"
-#include "tool/Fill.h"
 #include "video/Ray.h"
 #include "math/Random.h"
 #include "math/Axis.h"
@@ -43,11 +42,12 @@
 #include "core/String.h"
 #include "core/GLM.h"
 #include "io/Filesystem.h"
-
 #include "render/Gizmo.h"
+
 #include "AxisUtil.h"
 #include "CustomBindingContext.h"
 #include "Config.h"
+#include "tool/Fill.h"
 #include "tool/Crop.h"
 #include "tool/Resize.h"
 #include "tool/ImageUtils.h"
