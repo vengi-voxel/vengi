@@ -27,9 +27,13 @@
 #include "voxel/MaterialColor.h"
 #include "core/Rest.h"
 
-Client::Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world, const network::ClientMessageSenderPtr& messageSender,
-		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem) :
-		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
+Client::Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool,
+		const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world,
+		const network::ClientMessageSenderPtr& messageSender,
+		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
+		const io::FilesystemPtr& filesystem) :
+		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool),
+		_network(network), _world(world), _messageSender(messageSender),
 		_worldRenderer(world), _waiting(this) {
 	_world->setClientData(true);
 	init(ORGANISATION, "client");
