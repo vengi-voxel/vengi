@@ -26,6 +26,7 @@ void Movement::shutdown() {
 	core::Command::unregisterActionButton("move_backward");
 	core::Command::unregisterActionButton("move_left");
 	core::Command::unregisterActionButton("move_right");
+	core::Command::unregisterActionButton("jump");
 	_jump.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
 	_moveLeft.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
 	_moveRight.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
