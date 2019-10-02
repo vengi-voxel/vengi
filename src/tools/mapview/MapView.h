@@ -11,7 +11,7 @@
 #include "render/Axis.h"
 #include "frontend/Movement.h"
 #include "video/Camera.h"
-#include "video/MeshPool.h"
+#include "mesh/MeshPool.h"
 #include "video/Buffer.h"
 #include "voxel/WorldMgr.h"
 

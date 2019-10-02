@@ -7,7 +7,7 @@
 #include "io/IOResource.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
-#include "Buffer.h"
+#include "video/Buffer.h"
 #include "core/Vertex.h"
 #include "core/Color.h"
 #include <vector>

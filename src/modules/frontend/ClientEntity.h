@@ -9,7 +9,7 @@
 #include "ClientEntityId.h"
 #include "util/PosLerp.h"
 #include "attrib/ShadowAttributes.h"
-#include "video/Mesh.h"
+#include "mesh/Mesh.h"
 #include <functional>
 #include <vector>
 #include <memory>

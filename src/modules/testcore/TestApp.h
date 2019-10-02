@@ -7,7 +7,7 @@
 #include "TestAppMain.h"
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUI.h"
-#include "video/Mesh.h"
+#include "mesh/Mesh.h"
 #include "video/Camera.h"
 #include "render/Axis.h"
 #include "render/Plane.h"

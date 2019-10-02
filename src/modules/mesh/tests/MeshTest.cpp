@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "video/Mesh.h"
+#include "mesh/Mesh.h"
 
 namespace video {
 

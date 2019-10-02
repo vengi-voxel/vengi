@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ui/turbobadger/UIApp.h"
-#include "video/MeshPool.h"
+#include "mesh/MeshPool.h"
 #include "ui/VoxEditWindow.h"
 #include "voxedit-util/SceneManager.h"
 #include "core/Array.h"

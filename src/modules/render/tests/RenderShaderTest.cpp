@@ -10,15 +10,6 @@ namespace render {
 class RenderShaderTest : public video::AbstractGLTest {
 };
 
-TEST_F(RenderShaderTest, testMeshShader) {
-	if (!_supported) {
-		return;
-	}
-	shader::MeshShader shader;
-	ASSERT_TRUE(shader.setup());
-	shader.shutdown();
-}
-
 TEST_F(RenderShaderTest, testTextureShader) {
 	if (!_supported) {
 		return;

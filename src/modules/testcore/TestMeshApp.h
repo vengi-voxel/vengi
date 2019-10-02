@@ -5,10 +5,11 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "video/MeshPool.h"
+#include "mesh/MeshPool.h"
 #include "video/Buffer.h"
 #include "render/Shadow.h"
 #include "RenderShaders.h"
+#include "MeshShaders.h"
 
 /**
  * @brief Application that is able to render meshes

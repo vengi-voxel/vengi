@@ -13,7 +13,7 @@
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "video/ShapeBuilder.h"
-#include "video/Mesh.h"
+#include "mesh/Mesh.h"
 #include "render/ShapeRenderer.h"
 #include "render/GridRenderer.h"
 #include "render/Gizmo.h"

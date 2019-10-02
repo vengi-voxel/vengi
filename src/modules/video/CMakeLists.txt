@@ -13,8 +13,6 @@ set(SRCS
 	FrameBuffer.cpp FrameBuffer.h
 	FrameBufferConfig.cpp FrameBufferConfig.h
 	GBuffer.cpp GBuffer.h
-	Mesh.cpp Mesh.h
-	MeshPool.cpp MeshPool.h
 	Renderer.cpp Renderer.h
 	RenderBuffer.cpp RenderBuffer.h
 	Shader.cpp Shader.h
@@ -68,7 +66,6 @@ set(TEST_SRCS
 	tests/AbstractGLTest.h
 	tests/ShaderTest.cpp
 	tests/CameraTest.cpp
-	tests/MeshTest.cpp
 	tests/RendererTest.cpp
 )
 

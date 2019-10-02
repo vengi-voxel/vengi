@@ -17,7 +17,7 @@
 #include "network/NetworkEvents.h"
 #include "ui/turbobadger/UIApp.h"
 #include "ui/turbobadger/WaitingMessage.h"
-#include "video/MeshPool.h"
+#include "mesh/MeshPool.h"
 #include "video/Camera.h"
 
 #include <stdlib.h>

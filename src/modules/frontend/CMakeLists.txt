@@ -5,4 +5,4 @@ set(SRCS
 )
 
 set(LIB frontend)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES attrib)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES mesh attrib)
