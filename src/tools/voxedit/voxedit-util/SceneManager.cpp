@@ -261,24 +261,29 @@ void SceneManager::autosave() {
 	_lastAutoSave = timeProvider->tickSeconds();
 }
 
+bool SceneManager::saveLayer(int layerId, const std::string& dir) {
+	voxel::RawVolume* v = _volumeRenderer.volume(layerId);
+	if (v == nullptr) {
+		return true;
+	}
+	const Layer& layer = _layerMgr.layer(layerId);
+	voxel::VoxelVolumes volumes;
+	volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
+	voxel::VoxFormat f;
+	const std::string file = dir + "/" + layer.name + ".vox";
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file, io::FileMode::Write);
+	if (f.saveGroups(volumes, filePtr)) {
+		Log::info("Saved layer %i to %s", layerId, file.c_str());
+		return true;
+	}
+	Log::warn("Failed to save layer %i", layerId);
+	return false;
+}
+
 bool SceneManager::saveLayers(const std::string& dir) {
 	const int layers = (int)_layerMgr.layers().size();
 	for (int idx = 0; idx < layers; ++idx) {
-		voxel::RawVolume* v = _volumeRenderer.volume(idx);
-		if (v == nullptr) {
-			continue;
-		}
-		const Layer& layer = _layerMgr.layer(idx);
-		voxel::VoxelVolumes volumes;
-		volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
-		voxel::VoxFormat f;
-		const std::string file = dir + "/" + layer.name + ".vox";
-		const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file, io::FileMode::Write);
-		if (f.saveGroups(volumes, filePtr)) {
-			Log::info("Saved layer %i to %s", idx, file.c_str());
-		} else {
-			Log::warn("Failed to save layer %i", idx);
-		}
+		saveLayer(idx, dir);
 	}
 	return true;
 }
@@ -827,9 +832,25 @@ void SceneManager::construct() {
 			dir = args[0];
 		}
 		if (!saveLayers(dir)) {
-			Log::error("Failed to save character to dir: %s", dir.c_str());
+			Log::error("Failed to save layers to dir: %s", dir.c_str());
 		}
 	}).setHelp("Save all layers into filenames represented by their layer names");
+
+	core::Command::registerCommand("layersave", [&] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc < 1) {
+			Log::info("Usage: layersave <layerId> [<dir>]");
+			return;
+		}
+		const int layerId = core::string::toInt(args[0]);
+		std::string dir = ".";
+		if (args.size() == 2) {
+			dir = args[1];
+		}
+		if (!saveLayer(layerId, dir)) {
+			Log::error("Failed to save layer %i to dir: %s", layerId, dir.c_str());
+		}
+	}).setHelp("Save a single layer to the given path with their layer names");
 
 	core::Command::registerCommand("layerexport", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();

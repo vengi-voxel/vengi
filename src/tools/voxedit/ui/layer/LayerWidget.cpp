@@ -26,6 +26,8 @@ public:
 		_actionItems.addItem(new tb::TBGenericStringItem(tr("Move"), TBIDC("layermove")));
 		_actionItems.addItem(new tb::TBGenericStringItem(tr("Rename"), TBIDC("layerrename")));
 		_actionItems.addItem(new tb::TBGenericStringItem(tr("Export"), TBIDC("layerexport")));
+		_actionItems.addItem(new tb::TBGenericStringItem(tr("Save"), TBIDC("layersave")));
+		_actionItems.addItem(new tb::TBGenericStringItem(tr("Save group"), TBIDC("layerssave")));
 		_actionItems.addItem(new tb::TBGenericStringItem(tr("Align at origin"), TBIDC("center_origin")));
 		_actionItems.addItem(new tb::TBGenericStringItem(tr("Align at reference position"), TBIDC("center_referenceposition")));
 
@@ -54,6 +56,10 @@ public:
 			}
 			if (id == TBIDC("locked")) {
 				target->execute("togglelayerlock %i", _layerId);
+				return true;
+			}
+			if (id == TBIDC("layersave")) {
+				target->execute("layersave %i", _layerId);
 				return true;
 			}
 			if (id == TBIDC("delete")) {
@@ -93,7 +99,7 @@ public:
 				static const char *ACTIONS[] = {
 					"layerdelete", "layerhideothers", "layerduplicate", "layershowall", "layerhideall",
 					"layermoveup", "layermovedown", "layermerge", "layerlockall", "layerunlockall",
-					"center_origin", "center_referenceposition", nullptr
+					"center_origin", "center_referenceposition", "layerssave", nullptr
 				};
 				for (const char** action = ACTIONS; *action != nullptr; ++action) {
 					if (ev.ref_id == TBIDC(*action)) {
