@@ -3,7 +3,6 @@
  */
 
 #include "UDPMetricSender.h"
-#include "core/Var.h"
 #include "core/Log.h"
 #include "core/Assert.h"
 #include <string.h>
