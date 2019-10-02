@@ -1,6 +1,5 @@
 set(SRCS
 	IProgressMonitor.h
-	PosLerp.h
 	EMailValidator.h
 	Console.h Console.cpp
 	KeybindingParser.h KeybindingParser.cpp

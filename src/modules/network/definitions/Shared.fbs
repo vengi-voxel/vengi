@@ -36,6 +36,8 @@ enum EntityType: int {
 
 	BEGIN_CHARACTERS,
 	BLACKSMITH,
+	KNIGHT,
+	WORKER,
 	MAX_CHARACTERS,
 }
 

@@ -9,11 +9,13 @@
 #include "voxelrender/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "render/Axis.h"
-#include "frontend/Movement.h"
+#include "PlayerMovement.h"
 #include "video/Camera.h"
-#include "mesh/MeshPool.h"
+#include "animation/CharacterCache.h"
 #include "video/Buffer.h"
 #include "voxel/WorldMgr.h"
+#include "stock/Stock.h"
+#include "stock/StockDataProvider.h"
 
 /**
  * @brief This is the map viewer
@@ -24,17 +26,17 @@ class MapView: public ui::imgui::IMGUIApp {
 protected:
 	using Super = ui::imgui::IMGUIApp;
 	video::Camera _camera;
-	mesh::MeshPoolPtr _meshPool;
+	animation::CharacterCachePtr _characterCache;
 	voxelrender::WorldRenderer _worldRenderer;
 	voxel::WorldMgrPtr _worldMgr;
 	render::Axis _axis;
-	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;
 	video::ProfilerGPU _worldTimer = {"World"};
 	ProfilerCPU _frameTimer = {"Frame"};
 	ProfilerCPU _beforeUiTimer = {"BeforeUI"};
-	frontend::Movement _movement;
+	frontend::PlayerMovement _movement;
+	stock::StockDataProviderPtr _stockDataProvider;
 
 	bool _lineModeRendering = false;
 	bool _freelook = false;
@@ -48,7 +50,10 @@ protected:
 	void beforeUI() override;
 
 public:
-	MapView(const metric::MetricPtr& metric, const mesh::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world);
+	MapView(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
+			const stock::StockDataProviderPtr& stockDataProvider,
+			const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
+			const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world);
 	~MapView();
 
 	core::AppState onConstruct() override;

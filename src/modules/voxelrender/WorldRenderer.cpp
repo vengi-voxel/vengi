@@ -21,6 +21,7 @@ namespace voxelrender {
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxel::WorldMgrPtr& world) :
 		_octree(math::AABB<int>(), 30), _world(world) {
+	setViewDistance(240.0f);
 }
 
 WorldRenderer::~WorldRenderer() {
@@ -41,7 +42,7 @@ void WorldRenderer::shutdown() {
 	_worldShader.shutdown();
 	_worldInstancedShader.shutdown();
 	_waterShader.shutdown();
-	_meshShader.shutdown();
+	_chrShader.shutdown();
 	_materialBlock.shutdown();
 	reset();
 	_colorTexture.shutdown();
@@ -505,22 +506,21 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 
 	video::enable(video::State::DepthTest);
 	video::enable(video::State::DepthMask);
-	video::ScopedShader scoped(_meshShader);
-	_meshShader.setFogrange(_fogRange);
-	_meshShader.setFocuspos(camera.target());
-	_meshShader.setTexture(video::TextureUnit::Zero);
-	_meshShader.setDiffuseColor(_diffuseColor);
-	_meshShader.setAmbientColor(_ambientColor);
-	_meshShader.setFogcolor(_clearColor);
-	_meshShader.setCascades(_shadow.cascades());
-	_meshShader.setDistances(_shadow.distances());
-	_meshShader.setLightdir(_shadow.sunDirection());
+	video::ScopedShader scoped(_chrShader);
+	_chrShader.setFogrange(_fogRange);
+	_chrShader.setFocuspos(camera.target());
+	_chrShader.setDiffuseColor(_diffuseColor);
+	_chrShader.setAmbientColor(_ambientColor);
+	_chrShader.setFogcolor(_clearColor);
+	_chrShader.setCascades(_shadow.cascades());
+	_chrShader.setDistances(_shadow.distances());
+	_chrShader.setLightdir(_shadow.sunDirection());
 
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
-		_meshShader.setDepthsize(glm::vec2(_shadow.dimension()));
-		_meshShader.setViewprojection(camera.viewProjectionMatrix());
-		_meshShader.setShadowmap(video::TextureUnit::One);
+		_chrShader.setDepthsize(glm::vec2(_shadow.dimension()));
+		_chrShader.setViewprojection(camera.viewProjectionMatrix());
+		_chrShader.setShadowmap(video::TextureUnit::One);
 		_shadow.bind(video::TextureUnit::One);
 	}
 	for (const auto& e : _entities) {
@@ -529,16 +529,17 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		if (!camera.isVisible(ent->position())) {
 			continue;
 		}
-		const mesh::MeshPtr& mesh = ent->mesh();
-		if (!mesh->initMesh(_meshShader)) {
-			continue;
-		}
-		const glm::mat4& rotate = glm::rotate(glm::mat4(1.0f), ent->orientation(), glm::up);
-		const glm::mat4& translate = glm::translate(rotate, ent->position());
-		const glm::mat4& scale = glm::scale(translate, glm::vec3(ent->scale()));
-		const glm::mat4& model = scale;
-		_meshShader.setModel(model);
-		drawCallsEntities += mesh->render();
+		const glm::mat4& translate = glm::translate(ent->position());
+		// as our models are looking along the positive z-axis, we have to rotate by 180 degree here
+		const glm::mat4& model = glm::rotate(translate, glm::pi<float>() + ent->orientation(), glm::up);
+		_chrShader.setModel(model);
+		glm::mat4 bones[16];
+		ent->character().skeleton().update(bones);
+		core_assert_always(_chrShader.setBones(bones));
+		const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
+		++drawCallsEntities;
+		video::drawElements<animation::IndexType>(video::Primitive::Triangles, numIndices);
+		ent->unbindVertexBuffers();
 	}
 	return drawCallsEntities;
 }
@@ -721,7 +722,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	if (!_waterShader.setup()) {
 		return false;
 	}
-	if (!_meshShader.setup()) {
+	if (!_chrShader.setup()) {
 		return false;
 	}
 
@@ -758,18 +759,10 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	}
 
 	const glm::vec3 cullingThreshold(_world->meshSize());
-	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 10;
+	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 40;
 	_maxAllowedDistance = glm::pow(_viewDistance + maxCullingThreshold, 2);
 
 	return true;
-}
-
-glm::vec3 WorldRenderer::groundPosition(const glm::vec3& position, int hovering) const {
-	const glm::vec3& worldPosition = position;
-	const int y = _world->findFloor(worldPosition.x, worldPosition.z, [] (voxel::VoxelType type) {
-		return voxel::isFloor(type);
-	});
-	return glm::vec3(position.x, y + hovering, position.z);
 }
 
 void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {

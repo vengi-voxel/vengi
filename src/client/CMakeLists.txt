@@ -36,5 +36,5 @@ set(FILES
 	shared/worldparams.lua
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger voxelfont voxelrender util)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger animation voxelfont voxelrender util stock)
 check_ui_turbobadger(${PROJECT_NAME} ${UI_WINDOWS})

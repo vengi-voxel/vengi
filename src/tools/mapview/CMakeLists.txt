@@ -1,6 +1,7 @@
 project(mapview)
 set(SRCS
 	MapView.h MapView.cpp
+	PlayerMovement.h PlayerMovement.cpp
 )
 set(FILES
 	shared/worldparams.lua

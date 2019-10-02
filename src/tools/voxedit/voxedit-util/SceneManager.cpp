@@ -842,6 +842,20 @@ void SceneManager::construct() {
 	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Scene);
 	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Scene);
 
+	core::Command::registerCommand("character_load", [&] (const core::CmdArgs& args) {
+		animation::CharacterSettings settings;
+		if (!args.empty()) {
+			if (!animation::loadCharacterSettings(args[0], settings)) {
+				Log::warn("Failed to load character settings from %s", args[0].c_str());
+				return;
+			}
+		}
+		Log::info("No character script filename given - use default character settings");
+		if (!loadCharacter(settings)) {
+			Log::error("Failed to load character");
+		}
+	}).setHelp("Load the character volumes");
+
 	core::Command::registerCommand("layerssave", [&] (const core::CmdArgs& args) {
 		std::string dir = ".";
 		if (!args.empty()) {
@@ -1310,6 +1324,10 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the modifier");
 		return false;
 	}
+	if (!_characterCache.init()) {
+		Log::error("Failed to initialize the animation mesh cache");
+		return false;
+	}
 
 	_layerMgr.registerListener(this);
 
@@ -1445,6 +1463,7 @@ void SceneManager::shutdown() {
 		delete v;
 	}
 
+	_characterCache.shutdown();
 	_mementoHandler.shutdown();
 	_modifier.shutdown();
 	_layerMgr.unregisterListener(this);
@@ -1454,6 +1473,20 @@ void SceneManager::shutdown() {
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
 	_mementoHandler.clearStates();
+}
+
+bool SceneManager::loadCharacter(const animation::CharacterSettings& settings) {
+	// TODO: load lua file to get offsets
+	voxel::VoxelVolumes volumes;
+	if (!_characterCache.getCharacterVolumes(settings, volumes)) {
+		return false;
+	}
+
+	for (const auto& v : volumes) {
+		_layerMgr.addLayer(v.name.c_str(), v.visible, v.volume, v.pivot);
+	}
+
+	return true;
 }
 
 bool SceneManager::extractVolume() {

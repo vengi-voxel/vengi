@@ -1,5 +1,6 @@
 add_subdirectory(testdepthbuffer)
 add_subdirectory(testmesh)
+add_subdirectory(testanimation)
 add_subdirectory(testtexture)
 add_subdirectory(testplane)
 add_subdirectory(testglslcomp)

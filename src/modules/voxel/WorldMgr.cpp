@@ -193,6 +193,31 @@ bool WorldMgr::raycast(const glm::vec3& start, const glm::vec3& direction, float
 	return result;
 }
 
+int WorldMgr::findWalkableFloor(const glm::vec3& position, float maxDistanceY) const {
+	const voxel::VoxelType type = material(position.x, position.y, position.z);
+	int y = NO_FLOOR_FOUND;
+	if (voxel::isEnterable(type)) {
+		raycast(position, glm::down, glm::min(maxDistanceY, position.y), [&] (const PagedVolume::Sampler& sampler) {
+			voxel::VoxelType mat = sampler.voxel().getMaterial();
+			if (!voxel::isEnterable(mat)) {
+				y = sampler.position().y + 1;
+				return false;
+			}
+			return true;
+		});
+	} else {
+		raycast(position, glm::up, glm::min(maxDistanceY, (float)MAX_HEIGHT - position.y), [&] (const PagedVolume::Sampler& sampler) {
+			voxel::VoxelType mat = sampler.voxel().getMaterial();
+			if (voxel::isEnterable(mat)) {
+				y = sampler.position().y;
+				return false;
+			}
+			return true;
+		});
+	}
+	return y;
+}
+
 int WorldMgr::chunkSize() const {
 	return _volumeData->chunkSideLength();
 }

@@ -17,8 +17,9 @@
 #include "network/NetworkEvents.h"
 #include "ui/turbobadger/UIApp.h"
 #include "ui/turbobadger/WaitingMessage.h"
-#include "mesh/MeshPool.h"
+#include "animation/CharacterCache.h"
 #include "video/Camera.h"
+#include "stock/StockDataProvider.h"
 
 #include <stdlib.h>
 #include <SDL.h>
@@ -31,7 +32,7 @@ class Client: public ui::turbobadger::UIApp, public core::IEventBusHandler<netwo
 protected:
 	using Super = ui::turbobadger::UIApp;
 	video::Camera _camera;
-	mesh::MeshPoolPtr _meshPool;
+	animation::CharacterCachePtr _characterCache;
 	network::ClientNetworkPtr _network;
 	voxel::WorldMgrPtr _world;
 	network::ClientMessageSenderPtr _messageSender;
@@ -44,6 +45,7 @@ protected:
 	frontend::ClientEntityPtr _player;
 	voxel::VoxelFont _voxelFont;
 	ui::turbobadger::WaitingMessage _waiting;
+	stock::StockDataProviderPtr _stockDataProvider;
 
 	uint64_t _lastMovement = 0l;
 
@@ -62,7 +64,9 @@ protected:
 	void handleLogin();
 	int renderMap(video::Shader& shader, const voxel::WorldMgrPtr& world, const glm::mat4& view, float aspect);
 public:
-	Client(const metric::MetricPtr& metric, const mesh::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world,
+	Client(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
+			const stock::StockDataProviderPtr& stockDataProvider,
+			const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world,
 			const network::ClientMessageSenderPtr& messageSender, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 			const io::FilesystemPtr& filesystem);
 	~Client();

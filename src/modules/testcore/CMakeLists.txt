@@ -6,4 +6,4 @@ set(SRCS
 set(FILES
 	testcore/keybindings.cfg
 )
-engine_add_module(TARGET testcore FILES ${FILES} SRCS ${SRCS} DEPENDENCIES frontend imgui)
+engine_add_module(TARGET testcore FILES ${FILES} SRCS ${SRCS} DEPENDENCIES frontend imgui mesh)

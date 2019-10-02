@@ -1,0 +1,11 @@
+function init()
+  chr.setRace("human")
+  chr.setGender("male")
+  chr.setHead("heads/worker")
+  chr.setBelt("belts/worker")
+  chr.setChest("chests/worker")
+  chr.setPants("pants/worker")
+  chr.setHand("hands/worker")
+  chr.setFoot("feets/worker")
+  chr.setShoulder("")
+end

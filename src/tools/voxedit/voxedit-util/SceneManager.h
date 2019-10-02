@@ -14,6 +14,8 @@
 #include "voxelformat/VoxFileFormat.h"
 #include "video/ShapeBuilder.h"
 #include "mesh/Mesh.h"
+#include "animation/CharacterCache.h"
+#include "animation/CharacterSettings.h"
 #include "render/ShapeRenderer.h"
 #include "render/GridRenderer.h"
 #include "render/Gizmo.h"
@@ -54,6 +56,7 @@ static constexpr struct Direction {
 class SceneManager : public core::IComponent, public LayerListener {
 private:
 	voxelrender::RawVolumeRenderer _volumeRenderer;
+	animation::CharacterCache _characterCache;
 	render::GridRenderer _gridRenderer;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
@@ -180,6 +183,7 @@ private:
 
 	bool saveLayers(const std::string& dir);
 	bool saveLayer(int layerId, const std::string& dir);
+	bool loadCharacter(const animation::CharacterSettings& settings);
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void replaceColor(uint8_t oldIndex, int newIndex);

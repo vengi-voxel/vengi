@@ -8,7 +8,6 @@
 #include "mesh/MeshPool.h"
 #include "video/Buffer.h"
 #include "render/Shadow.h"
-#include "RenderShaders.h"
 #include "MeshShaders.h"
 
 /**

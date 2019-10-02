@@ -18,27 +18,26 @@ namespace frontend {
  * @see core::ActionButton
  */
 class Movement : public core::IComponent {
-private:
+protected:
 	core::ActionButton _moveLeft;
 	core::ActionButton _moveRight;
 	core::ActionButton _moveBackward;
 	core::ActionButton _moveForward;
-	core::ActionButton _jump;
 
 	uint64_t _deltaMillis = 0ul;
+
+	virtual glm::vec3 calculateDelta(const glm::quat& rot, float speed);
 
 public:
 	void construct() override;
 	bool init() override;
-	void update(uint64_t deltaMillis);
+	virtual void update(uint64_t deltaMillis);
 	void shutdown() override;
 
 	bool left() const;
 	bool right() const;
 	bool forward() const;
 	bool backward() const;
-
-	bool jump() const;
 
 	bool moving() const;
 
@@ -50,10 +49,6 @@ public:
 
 inline bool Movement::moving() const {
 	return left() || right() || forward() || backward();
-}
-
-inline bool Movement::jump() const {
-	return _jump.pressed();
 }
 
 inline bool Movement::left() const {

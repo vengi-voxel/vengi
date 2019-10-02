@@ -13,7 +13,8 @@
 #include "video/UniformBuffer.h"
 #include "video/GBuffer.h"
 #include "VoxelrenderShaders.h"
-#include "MeshShaders.h"
+#include "RenderShaders.h"
+#include "AnimationShaders.h"
 #include "core/GLM.h"
 #include "math/Octree.h"
 #include "core/Var.h"
@@ -125,9 +126,8 @@ protected:
 	render::ShapeRenderer _shapeRendererOcclusionQuery;
 	int32_t _aabbMeshesOcclusionQuery = -1;
 
-	float _fogRange = 300.0f;
-	// TODO: get the view distance from the server - entity attributes
-	float _viewDistance = 1000.0f;
+	float _fogRange;
+	float _viewDistance;
 	uint64_t _now = 0ul;
 	uint64_t _deltaFrame = 0ul;
 
@@ -143,7 +143,7 @@ protected:
 	shader::WorldShader _worldShader;
 	shader::WorldInstancedShader _worldInstancedShader;
 	shader::WaterShader _waterShader;
-	shader::MeshShader _meshShader;
+	shader::CharacterShader _chrShader;
 
 	/**
 	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.
@@ -207,8 +207,6 @@ public:
 
 	int renderWorld(const video::Camera& camera, int* vertices = nullptr);
 	int renderEntities(const video::Camera& camera);
-
-	glm::vec3 groundPosition(const glm::vec3& position, int hovering = 10) const;
 };
 
 inline float WorldRenderer::getViewDistance() const {
@@ -217,6 +215,7 @@ inline float WorldRenderer::getViewDistance() const {
 
 inline void WorldRenderer::setViewDistance(float viewDistance) {
 	_viewDistance = viewDistance;
+	_fogRange = _viewDistance * 0.66f;
 }
 
 }

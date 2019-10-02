@@ -27,14 +27,15 @@
 #include "voxel/MaterialColor.h"
 #include "core/Rest.h"
 
-Client::Client(const metric::MetricPtr& metric, const mesh::MeshPoolPtr& meshPool,
+Client::Client(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
+		const stock::StockDataProviderPtr& stockDataProvider,
 		const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world,
 		const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 		const io::FilesystemPtr& filesystem) :
-		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool),
+		Super(metric, filesystem, eventBus, timeProvider), _camera(), _characterCache(characterCache),
 		_network(network), _world(world), _messageSender(messageSender),
-		_worldRenderer(world), _waiting(this) {
+		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider) {
 	_world->setClientData(true);
 	init(ORGANISATION, "client");
 }
@@ -141,12 +142,20 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
+	if (!_stockDataProvider->init(filesystem()->load("stock.lua"))) {
+		Log::error("Failed to init stock data provider: %s", _stockDataProvider->error().c_str());
+		return core::AppState::InitFailure;
+	}
+
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setTargetDistance(_maxTargetDistance->floatVal());
 	_waiting.init();
 
-	_meshPool->init();
+	if (!_characterCache->init()) {
+		Log::error("Failed to initialize character cache");
+		return core::AppState::InitFailure;
+	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
@@ -234,8 +243,9 @@ core::AppState Client::onCleanup() {
 
 	Log::info("shutting down the client");
 	disconnect();
+	_stockDataProvider->shutdown();
 	_voxelFont.shutdown();
-	_meshPool->shutdown();
+	_characterCache->shutdown();
 	_worldRenderer.shutdown();
 	core::AppState state = Super::onCleanup();
 	_world->shutdown();
@@ -335,14 +345,13 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 		Log::warn("Could not get entity with id %li", id);
 		return;
 	}
-	entity->lerpPosition(pos, orientation);
+	entity->setPosition(pos);
+	entity->setOrientation(orientation);
 }
 
 void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos) {
 	Log::info("Entity %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
-	const std::string_view& meshName = "chr_knight"; // TODO: core::string::toLower(network::EnumNameEntityType(type));
-	const mesh::MeshPtr& mesh = _meshPool->getMesh(meshName);
-	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, mesh));
+	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, id, type, pos, orientation));
 }
 
 void Client::entityRemove(frontend::ClientEntityId id) {
@@ -353,9 +362,8 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	removeState(CLIENT_CONNECTING);
 	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);
 	_camera.setTarget(pos);
-	const mesh::MeshPtr& mesh = _meshPool->getMesh("chr_knight");
 	const network::EntityType type = network::EntityType::PLAYER;
-	_player = std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, mesh);
+	_player = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, id, type, pos, orientation);
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.extractMeshes(_camera);
 
@@ -380,7 +388,7 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 }
 
 int main(int argc, char *argv[]) {
-	const mesh::MeshPoolPtr& meshPool = std::make_shared<mesh::MeshPool>();
+	const animation::CharacterCachePtr& characterCache = std::make_shared<animation::CharacterCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxel::WorldMgrPtr& world = std::make_shared<voxel::WorldMgr>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
@@ -389,6 +397,7 @@ int main(int argc, char *argv[]) {
 	const network::ClientNetworkPtr& network = std::make_shared<network::ClientNetwork>(protocolHandlerRegistry, eventBus);
 	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	Client app(metric, meshPool, network, world, messageSender, eventBus, timeProvider, filesystem);
+	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
+	Client app(metric, characterCache, stockDataProvider, network, world, messageSender, eventBus, timeProvider, filesystem);
 	return app.startMainLoop(argc, argv);
 }

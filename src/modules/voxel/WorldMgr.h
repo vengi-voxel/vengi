@@ -76,11 +76,10 @@ public:
 
 	template<typename VoxelTypeChecker>
 	int findFloor(int x, int z, VoxelTypeChecker&& check) const {
-		const glm::vec3 start = glm::vec3(x, MAX_HEIGHT, z);
-		const glm::vec3& direction = glm::down;
+		const glm::vec3 start(x, MAX_HEIGHT, z);
 		const float distance = (float)MAX_HEIGHT;
 		int y = NO_FLOOR_FOUND;
-		raycast(start, direction, distance, [&] (const PagedVolume::Sampler& sampler) {
+		raycast(start, glm::down, distance, [&] (const PagedVolume::Sampler& sampler) {
 			if (check(sampler.voxel().getMaterial())) {
 				y = sampler.position().y;
 				return false;
@@ -89,6 +88,11 @@ public:
 		});
 		return y;
 	}
+
+	/**
+	 * @return The y component for the given x and z coordinates that is walkable - or @c NO_FLOOR_FOUND.
+	 */
+	int findWalkableFloor(const glm::vec3& position, float maxDistanceY = (float)MAX_HEIGHT) const;
 
 	/**
 	 * @return true if the ray hit something - false if not.

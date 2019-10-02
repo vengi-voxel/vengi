@@ -4,6 +4,7 @@
 
 #include "MapView.h"
 
+#include "../../modules/stock/ContainerData.h"
 #include "video/Shader.h"
 #include "video/Renderer.h"
 #include "core/GLM.h"
@@ -17,8 +18,12 @@
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 
-MapView::MapView(const metric::MetricPtr& metric, const mesh::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world) :
-		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _worldMgr(world) {
+MapView::MapView(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
+		const stock::StockDataProviderPtr& stockDataProvider,
+		const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
+		const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world) :
+		Super(metric, filesystem, eventBus, timeProvider), _camera(),
+		_characterCache(characterCache), _worldRenderer(world), _worldMgr(world), _stockDataProvider(stockDataProvider) {
 	init(ORGANISATION, "mapview");
 	_worldMgr->setClientData(true);
 }
@@ -29,7 +34,6 @@ MapView::~MapView() {
 core::AppState MapView::onConstruct() {
 	core::AppState state = Super::onConstruct();
 
-	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.8");
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
 	_movement.construct();
@@ -42,10 +46,6 @@ core::AppState MapView::onConstruct() {
 	}).setHelp("Toggle line rendering mode");
 
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-
-	core::Command::registerCommand("freelook", [this] (const core::CmdArgs& args) {
-		this->_freelook ^= true;
-	}).setHelp("Toggle free look");
 
 	_worldRenderer.construct();
 	_worldMgr->setPersist(false);
@@ -71,8 +71,18 @@ core::AppState MapView::onInit() {
 		return core::AppState::InitFailure;
 	}
 
+	if (!_stockDataProvider->init(filesystem()->load("stock.lua"))) {
+		Log::error("Failed to init stock data provider: %s", _stockDataProvider->error().c_str());
+		return core::AppState::InitFailure;
+	}
+
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
+		return core::AppState::InitFailure;
+	}
+
+	if (!_characterCache->init()) {
+		Log::error("Failed to init mesh cache");
 		return core::AppState::InitFailure;
 	}
 
@@ -88,29 +98,40 @@ core::AppState MapView::onInit() {
 	}
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.setFieldOfView(45.0f);
-	_camera.setPosition(glm::vec3(50.0f, 100.0f, 50.0f));
-	_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+	_camera.setFarPlane(10.0f);
+	_camera.setRotationType(video::CameraRotationType::Target);
+	_camera.setTargetDistance(20.0f);
+	_camera.setTarget(glm::zero<glm::vec3>());
+	_camera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
+	_camera.update(0l);
 
-	_worldRenderer.extractMeshes(_camera);
+	const int groundPosY = _worldMgr->findWalkableFloor(glm::zero<glm::vec3>());
+	const glm::vec3 pos(0.0f, (float)groundPosY, 0.0f);
+	Log::info("Spawn entity at %s", glm::to_string(pos).c_str());
 
-	_meshPool->init();
-
-	const char *meshName = "chr_skelett";
-	const mesh::MeshPtr& mesh = _meshPool->getMesh(meshName);
-	if (!mesh) {
-		Log::error("Failed to load the mesh '%s'", meshName);
-		return core::AppState::InitFailure;
-	}
-	_entity = std::make_shared<frontend::ClientEntity>(1, network::EntityType::NONE, _camera.position(), 0.0f, mesh);
+	_entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, 1, network::EntityType::WORKER, pos, 0.0f);
+	_entity->attrib().setCurrent(attrib::Type::SPEED, 20.0);
 	if (!_worldRenderer.addEntity(_entity)) {
 		Log::error("Failed to create entity");
 		return core::AppState::InitFailure;
 	}
-
-	glm::vec3 targetPos = _camera.position();
-	targetPos.x += 1000.0f;
-	targetPos.z += 1000.0f;
-	_entity->lerpPosition(targetPos, _entity->orientation());
+	stock::Stock& stock = _entity->stock();
+	stock::Inventory& inv = stock.inventory();
+	const stock::ContainerData* containerData = _stockDataProvider->containerData("weapon");
+	if (containerData == nullptr) {
+		Log::error("Failed to get container with name 'weapon'");
+		return core::AppState::InitFailure;
+	}
+	const stock::ItemData* itemData = _stockDataProvider->itemData(1);
+	if (itemData == nullptr) {
+		Log::error("Failed to get item with id 1");
+		return core::AppState::InitFailure;
+	}
+	const stock::ItemPtr& item = _stockDataProvider->createItem(itemData->id());
+	if (!inv.add(containerData->id, item, 0, 0)) {
+		Log::error("Failed to add item to inventory");
+		return core::AppState::InitFailure;
+	}
 
 	_worldTimer.init();
 
@@ -120,15 +141,22 @@ core::AppState MapView::onInit() {
 void MapView::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
-
-	const glm::vec3& moveDelta = _movement.moveDelta(_speed->floatVal());
-	_camera.move(moveDelta);
-	if (!_freelook) {
-		const glm::vec3& groundPosition = _worldRenderer.groundPosition(_camera.position());
-		_camera.setPosition(groundPosition);
-	}
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
+
+	_movement.updatePos(_camera, _deltaFrameSeconds, _entity, [&] (const glm::vec3& pos) {
+		const float maxWalkHeight = 3.0f;
+		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
+	});
 	_camera.update(_deltaFrameMillis);
+
+	// TODO: implement collision in the camera interface
+	const int groundPosY = _movement.groundHeight();
+	glm::vec3 camPos = _camera.position();
+	if (camPos.y < groundPosY + 2) {
+		camPos.y = groundPosY + 1.0f;
+		_camera.rotate(glm::vec3(10.0f, 0.0f, 0.0f) * _rotationSpeed->floatVal());
+		_camera.update(0l);
+	}
 
 	if (_updateWorld) {
 		_worldRenderer.extractMeshes(_camera);
@@ -160,7 +188,6 @@ void MapView::onRenderUI() {
 	const bool current = isRelativeMouseMode();
 	ImGui::Text("world mouse mode: %s", (current ? "true" : "false"));
 
-	ImGui::InputVarFloat("speed", _speed);
 	ImGui::InputVarFloat("rotationSpeed", _rotationSpeed);
 	ImGui::CheckboxVar("Occlusion Query", cfg::OcclusionQuery);
 	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);
@@ -170,7 +197,6 @@ void MapView::onRenderUI() {
 	ImGui::CheckboxVar("Shadowmap debug", cfg::ClientDebugShadow);
 
 	ImGui::Checkbox("Line mode rendering", &_lineModeRendering);
-	ImGui::Checkbox("Freelook", &_freelook);
 	ImGui::Checkbox("Update World", &_updateWorld);
 
 	bool temp = _renderTracing;
@@ -178,7 +204,6 @@ void MapView::onRenderUI() {
 		_renderTracing = toggleTrace();
 	}
 
-	ImGui::Text("+/-: change move speed");
 	ImGui::Text("l: line mode rendering");
 }
 
@@ -195,14 +220,13 @@ core::AppState MapView::onRunning() {
 	}
 
 	_axis.render(_camera);
-	//glm::vec3 entPos = _entity->position();
-	//entPos.y = _world->findFloor(entPos.x, entPos.z, voxel::isFloor);
 	_entity->update(_deltaFrameMillis);
 	return state;
 }
 
 core::AppState MapView::onCleanup() {
-	_meshPool->shutdown();
+	_stockDataProvider->shutdown();
+	_characterCache->shutdown();
 	_worldRenderer.shutdown();
 	_worldTimer.shutdown();
 	_axis.shutdown();
@@ -226,12 +250,13 @@ bool MapView::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 int main(int argc, char *argv[]) {
-	const mesh::MeshPoolPtr& meshPool = std::make_shared<mesh::MeshPool>();
+	const animation::CharacterCachePtr& characterCache = std::make_shared<animation::CharacterCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxel::WorldMgrPtr& world = std::make_shared<voxel::WorldMgr>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	MapView app(metric, meshPool, filesystem, eventBus, timeProvider, world);
+	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
+	MapView app(metric, characterCache, stockDataProvider, filesystem, eventBus, timeProvider, world);
 	return app.startMainLoop(argc, argv);
 }

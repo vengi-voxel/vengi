@@ -12,6 +12,10 @@ Run these test applications with
 make __directoryname__-run
 ```
 
+# testanimation
+
+Test the voxel animation module with a default character and items of the stock module
+
 # testimgui
 
 Test the dearimgui integration
