@@ -8,6 +8,7 @@ set(SRCS
 	VXMFormat.h VXMFormat.cpp
 	MeshCache.h MeshCache.cpp
 	MeshExporter.h MeshExporter.cpp
+	CubFormat.h CubFormat.cpp
 	Loader.h Loader.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel assimp)
@@ -18,6 +19,7 @@ set(TEST_SRCS
 	tests/VoxFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
+	tests/CubFormatTest.cpp
 	tests/VXMFormatTest.cpp
 	tests/MeshExporterTest.cpp
 )
@@ -27,6 +29,7 @@ set(TEST_FILES
 	tests/test.binvox
 	tests/magicavoxel.vox
 	tests/test.vxm
+	tests/cw.cub
 )
 
 gtest_suite_files(tests ${TEST_FILES})

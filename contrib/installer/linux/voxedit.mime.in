@@ -7,5 +7,6 @@
     <glob pattern="*.qbt"/>
     <glob pattern="*.vxm"/>
     <glob pattern="*.binvox"/>
+    <glob pattern="*.cub"/>
   </mime-type>
 </mime-info>

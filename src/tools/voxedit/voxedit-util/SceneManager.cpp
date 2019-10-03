@@ -25,6 +25,7 @@
 #include "voxelformat/Loader.h"
 #include "voxelformat/VoxFormat.h"
 #include "voxelformat/QBTFormat.h"
+#include "voxelformat/CubFormat.h"
 #include "voxelformat/QBFormat.h"
 #include "voxelformat/VXMFormat.h"
 #include "video/ScopedPolygonMode.h"
@@ -326,6 +327,9 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 		saved = f.saveGroups(volumes, filePtr);
 	} else if (ext == "qb") {
 		voxel::QBFormat f;
+		saved = f.saveGroups(volumes, filePtr);
+	} else if (ext == "cub") {
+		voxel::CubFormat f;
 		saved = f.saveGroups(volumes, filePtr);
 	} else {
 		Log::warn("Failed to save file with unknown type: %s - saving as vox instead", ext.c_str());

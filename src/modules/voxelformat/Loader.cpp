@@ -8,6 +8,7 @@
 #include "QBTFormat.h"
 #include "QBFormat.h"
 #include "VXMFormat.h"
+#include "CubFormat.h"
 #include "BinVoxFormat.h"
 
 namespace voxelformat {
@@ -26,6 +27,9 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		newVolumes = f.loadGroups(filePtr);
 	} else if (ext == "qb") {
 		voxel::QBFormat f;
+		newVolumes = f.loadGroups(filePtr);
+	} else if (ext == "cub") {
+		voxel::CubFormat f;
 		newVolumes = f.loadGroups(filePtr);
 	} else if (ext == "vxm") {
 		voxel::VXMFormat f;

@@ -204,7 +204,7 @@ unsigned int Color::getRGBA(const glm::vec4& color) {
 }
 
 glm::u8vec4 Color::getRGBAVec(const glm::vec4& color) {
-	return glm::u8vec4(static_cast<int>(color.a * magnitude), static_cast<int>(color.b * magnitude), static_cast<int>(color.g * magnitude), static_cast<int>(color.r * magnitude));
+	return glm::u8vec4(static_cast<int>(color.r * magnitude), static_cast<int>(color.g * magnitude), static_cast<int>(color.b * magnitude), static_cast<int>(color.a * magnitude));
 }
 
 unsigned int Color::getBGRA(const glm::vec4& color) {
