@@ -61,8 +61,6 @@
 
 namespace voxedit {
 
-const int leafSize = 8;
-
 SceneManager::SceneManager() :
 		_gridRenderer() {
 }
