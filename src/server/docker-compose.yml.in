@@ -13,23 +13,37 @@ services:
     ports:
       - 5432:5432
 
-  app:
-    build:
-      context: @ROOT_DIR@
-      dockerfile: @DOCKERFILE_TARGET@
-      args:
-        buildno: 1
+  influxdb:
+    image: influxdb:1.7-alpine
     restart: always
+    volumes:
+      - influxdb:/var/lib/influxdb
     ports:
-      - 11337:11337
-    environment:
-      DB_HOST: db
-      DB_NAME: vengi
-      DB_USER: vengi
-      DB_PW: @DB_PW@
-    depends_on:
-      - db
+      - 8083:8083
+      - 8086:8086
+      - 8090:8090
+
+  telegraf:
+    image: telegraf:latest
+    container_name: telegraf
+    ports:
+      - "8092:8092/udp"
+    links:
+      - influxdb
+    volumes:
+      - @CMAKE_CURRENT_SOURCE_DIR@/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+  grafana:
+    image: grafana/grafana:6.4.1
+    restart: always
+    volumes:
+      - grafana:/var/lib/grafana
+    ports:
+      - 3000:3000
+    links:
+      - influxdb
 
 volumes:
   db:
-
+  influxdb:
+  grafana:
