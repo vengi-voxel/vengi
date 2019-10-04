@@ -9,6 +9,8 @@
 #include <type_traits>
 #include <vector>
 #include <memory>
+#include "core/Log.h"
+#include "core/Common.h"
 #include "core/ReadWriteLock.h"
 #include "collection/ConcurrentQueue.h"
 
@@ -103,6 +105,7 @@ class name: public ::core::IEventBusEvent { \
 public: \
 	EVENTBUSTYPEID(name) \
 	name(const ::core::IEventBusTopic* const topic = nullptr) : ::core::IEventBusEvent(topic) { \
+		Log::debug(CORE_STRINGIFY(name)); \
 	} \
 }
 
@@ -115,6 +118,7 @@ private: \
 public: \
 	EVENTBUSTYPEID(name) \
 	name(payload p, const ::core::IEventBusTopic* const topic = nullptr) : ::core::IEventBusEvent(topic), _p(p) { \
+		Log::debug(CORE_STRINGIFY(name)); \
 	} \
 	inline payload get() const { \
 		return _p; \

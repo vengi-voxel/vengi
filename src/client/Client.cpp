@@ -274,7 +274,7 @@ bool Client::onKeyPress(int32_t key, int16_t modifier) {
 
 core::AppState Client::onRunning() {
 	_waiting.update(_deltaFrameMillis);
-	core::AppState state = Super::onRunning();
+	const core::AppState state = Super::onRunning();
 	core::Var::visitBroadcast([] (const core::VarPtr& var) {
 		Log::info("TODO: %s needs broadcast", var->name().c_str());
 	});
