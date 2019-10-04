@@ -18,8 +18,10 @@ EntityStorage::EntityStorage(const core::EventBusPtr& eventBus) :
 bool EntityStorage::addUser(const UserPtr& user) {
 	auto i = _users.insert(std::make_pair(user->id(), user));
 	if (!i.second) {
+		Log::debug("User with id " PRIEntId " is already connected", user->id());
 		return false;
 	}
+	Log::info("User with id " PRIEntId " is connected", user->id());
 	_eventBus->publish(EntityAddEvent(user));
 	return true;
 }
@@ -27,8 +29,10 @@ bool EntityStorage::addUser(const UserPtr& user) {
 bool EntityStorage::removeUser(EntityId userId) {
 	auto i = _users.find(userId);
 	if (i == _users.end()) {
+		Log::warn("User with id " PRIEntId " can't get removed. Reason: NotFound", userId);
 		return false;
 	}
+	Log::warn("User with id " PRIEntId " is going to be removed", userId);
 	_users.erase(i);
 	i->second->shutdown();
 	const uint64_t count = i->second.use_count();
@@ -50,8 +54,10 @@ UserPtr EntityStorage::user(EntityId id) {
 bool EntityStorage::addNpc(const NpcPtr& npc) {
 	auto i = _npcs.insert(std::make_pair(npc->id(), npc));
 	if (!i.second) {
+		Log::warn("Could not add npc with id " PRIEntId ". Reason: AlreadyExists", npc->id());
 		return false;
 	}
+	Log::debug("Add npc with id " PRIEntId, npc->id());
 	_eventBus->publish(EntityAddEvent(npc));
 	return true;
 }
@@ -60,19 +66,16 @@ void EntityStorage::onEvent(const EntityDeleteEvent& event) {
 	const EntityId id = event.entityId();
 	const network::EntityType type = event.entityType();
 	if (type == network::EntityType::PLAYER) {
-		if (!removeUser(id)) {
-			Log::warn("Could not delete user with id " PRIEntId, id);
-		}
+		removeUser(id);
 	} else {
-		if (!removeNpc(id)) {
-			Log::warn("Could not delete npc with id " PRIEntId, id);
-		}
+		removeNpc(id);
 	}
 }
 
 bool EntityStorage::removeNpc(EntityId id) {
 	NpcsIter i = _npcs.find(id);
 	if (i == _npcs.end()) {
+		Log::warn("Could not delete npc with id " PRIEntId, id);
 		return false;
 	}
 	_npcs.erase(i);

@@ -296,6 +296,8 @@ public:
 	 */
 	core::TimeProviderPtr timeProvider() const;
 
+	metric::MetricPtr metric() const;
+
 	/**
 	 * @brief Access to the global EventBus
 	 */
@@ -387,6 +389,10 @@ inline io::FilesystemPtr App::filesystem() const {
 
 inline core::TimeProviderPtr App::timeProvider() const {
 	return _timeProvider;
+}
+
+inline metric::MetricPtr App::metric() const {
+	return _metric;
 }
 
 inline core::ThreadPool& App::threadPool() {

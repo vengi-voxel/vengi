@@ -25,6 +25,7 @@ MetricMgr::MetricMgr(
 }
 
 bool MetricMgr::init() {
+	// metric is initialized already in the app
 	return true;
 }
 
