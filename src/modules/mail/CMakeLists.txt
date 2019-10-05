@@ -3,6 +3,7 @@ set(SRCS
 )
 set(LIB mail)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core libcurl)
+target_compile_definitions(${LIB} PUBLIC "-DCURL_STATICLIB")
 
 set(TEST_SRCS
 	tests/MailSenderTest.cpp
