@@ -13,7 +13,7 @@ jobs:
             mkdir build
             cd build
             cmake ..
-            make
+            make -j 2
     linux:
         runs-on: ubuntu-latest
         steps:
@@ -25,15 +25,17 @@ jobs:
             mkdir build
             cd build
             cmake ..
-            make
+            make -j 2
     windows:
         runs-on: windows-latest
         steps:
         - uses: actions/checkout@v1
         - name: Windows
           run: |
-            vcpkg install sdl2:x64-windows curl:x64-windows libuv:x64-windows zlib:x64-windows libpq:x64-windows lua:x64-windows glm:x64-windows glslang:x64-windows gtest:x64-windows
+            set VCPKG_DEFAULT_TRIPLET=x64-windows
+            set VCPKG_BUILD_TYPE=release
+            vcpkg install curl[winssl] libpq
             mkdir build
             cd build
-            cmake ..
-            make
+            cmake .. -DRCON=OFF
+            cmake --build .
