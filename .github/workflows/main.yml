@@ -32,7 +32,7 @@ jobs:
         - uses: actions/checkout@v1
         - name: Windows
           run: |
-            vcpkg install sdl2 curl libuv zlib libpq lua glm glslang gtest qt5
+            vcpkg install sdl2:x64-windows curl:x64-windows libuv:x64-windows zlib:x64-windows libpq:x64-windows lua:x64-windows glm:x64-windows glslang:x64-windows gtest:x64-windows
             mkdir build
             cd build
             cmake ..
