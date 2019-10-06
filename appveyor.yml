@@ -45,11 +45,13 @@ artifacts:
   - name: Tests
     path: build/vengi-tests-core.exe
 
-services:
-  - postgresql          # start PostgreSQL 9.5 service
+#services:
+#  - postgresql          # start PostgreSQL 9.5 service
 
 test_script:
-  - cmd: build/vengi-tests-core.exe --gtest_output=xml:tests.xml
+  - cd build/tests-core
+  - dir
+  - vengi-tests-core.exe --gtest_output=xml:tests-core.xml
 
 on_finish:
-  - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\tests.xml))
+  - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path build/tests-core/tests-core.xml))
