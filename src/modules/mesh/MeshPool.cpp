@@ -10,7 +10,7 @@
 #include <assimp/importerdesc.h>
 #include <array>
 
-namespace video {
+namespace mesh {
 
 static const char* supportedFormats[] = { "ogex", "obj", "dae", "fbx", "DAE", "FBX", "md5mesh", nullptr };
 

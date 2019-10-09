@@ -28,7 +28,7 @@ core::AppState TestMeshApp::onConstruct() {
 		}
 		const std::string& mesh = args[0];
 		Log::info("Trying to load mesh %s", mesh.c_str());
-		const video::MeshPtr& meshPtr = _meshPool.getMesh(mesh);
+		const mesh::MeshPtr& meshPtr = _meshPool.getMesh(mesh);
 		if (meshPtr->isLoading()) {
 			_mesh->shutdown();
 			_mesh = meshPtr;
@@ -142,7 +142,7 @@ void TestMeshApp::onRenderUI() {
 		}
 		ImGui::InputVarString("Mesh", _meshName);
 		if (_meshName->isDirty()) {
-			const video::MeshPtr& meshPtr = _meshPool.getMesh(_meshName->strVal());
+			const mesh::MeshPtr& meshPtr = _meshPool.getMesh(_meshName->strVal());
 			if (meshPtr->isLoading()) {
 				_mesh->shutdown();
 				_mesh = meshPtr;

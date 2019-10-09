@@ -230,7 +230,7 @@ public:
 	 * @param[in] mesh The video::Mesh to voxelize
 	 * @return @c true on success, @c false on failure
 	 */
-	bool voxelizeModel(const video::MeshPtr& mesh);
+	bool voxelizeModel(const mesh::MeshPtr& mesh);
 	/**
 	 * @brief Import a heightmap in the current layer of the scene
 	 * @param[in] file The image file to import as heightmap.

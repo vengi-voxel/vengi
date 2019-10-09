@@ -18,8 +18,8 @@ class TestMeshApp: public TestApp {
 private:
 	using Super = TestApp;
 protected:
-	video::MeshPtr _mesh;
-	video::MeshPool _meshPool;
+	mesh::MeshPtr _mesh;
+	mesh::MeshPool _meshPool;
 	render::Shadow _shadow;
 	shader::MeshShader _meshShader;
 	shader::ColorShader& _colorShader;

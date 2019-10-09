@@ -24,7 +24,7 @@ namespace Assimp {
 class Importer;
 }
 
-namespace video {
+namespace mesh {
 
 /**
  * @ingroup Video
@@ -78,11 +78,11 @@ private:
 
 	std::vector<RenderMeshData> _meshData;
 	std::vector<image::ImagePtr> _images;
-	std::vector<TexturePtr> _textures;
+	std::vector<video::TexturePtr> _textures;
 	Vertices _vertices;
 	Indices _indices;
-	Buffer _vertexBuffer;
-	Buffer _vertexBufferLines;
+	video::Buffer _vertexBuffer;
+	video::Buffer _vertexBufferLines;
 	int32_t _vertexBufferLinesIndex = -1;
 	int32_t _vertexBufferIndex = -1;
 
@@ -101,8 +101,8 @@ private:
 	void* _lastShader = nullptr;
 	std::string _filename;
 
-	void setupLineBufferAttributes(Shader& shader);
-	void setupBufferAttributes(Shader& shader);
+	void setupLineBufferAttributes(video::Shader& shader);
+	void setupBufferAttributes(video::Shader& shader);
 	void boneTransform(glm::mat4* transforms, size_t size);
 	/**
 	 * @brief We render the bone data as joint lines with a start position and the end position
@@ -129,7 +129,7 @@ public:
 	uint8_t currentAnimation() const;
 	void shutdown();
 	bool loadMesh(const std::string& filename);
-	bool initMesh(Shader& shader, float timeInSeconds = 0.0f, uint8_t animationIndex = 0u);
+	bool initMesh(video::Shader& shader, float timeInSeconds = 0.0f, uint8_t animationIndex = 0u);
 	int render();
 	int renderNormals(video::Shader& shader);
 	int renderBones(video::Shader& shader);

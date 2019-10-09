@@ -101,9 +101,9 @@ voxel::Region SceneManager::region() const {
 	return _volumeRenderer.region();
 }
 
-bool SceneManager::voxelizeModel(const video::MeshPtr& meshPtr) {
-	const video::Mesh::Vertices& positions = meshPtr->vertices();
-	const video::Mesh::Indices& indices = meshPtr->indices();
+bool SceneManager::voxelizeModel(const mesh::MeshPtr& meshPtr) {
+	const mesh::Mesh::Vertices& positions = meshPtr->vertices();
+	const mesh::Mesh::Indices& indices = meshPtr->indices();
 
 	if (indices.size() < 8) {
 		Log::error("Not enough indices found: %i", (int)indices.size());
@@ -122,7 +122,7 @@ bool SceneManager::voxelizeModel(const video::MeshPtr& meshPtr) {
 	}
 
 	for (size_t v = 0u; v < mesh->nvertices; ++v) {
-		const video::Mesh::Vertices::value_type& vertex = positions[v];
+		const mesh::Mesh::Vertices::value_type& vertex = positions[v];
 		mesh->vertices[v].x = vertex._pos.x;
 		mesh->vertices[v].y = vertex._pos.y;
 		mesh->vertices[v].z = vertex._pos.z;

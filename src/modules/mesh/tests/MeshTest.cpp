@@ -5,7 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "mesh/Mesh.h"
 
-namespace video {
+namespace mesh {
 
 class MeshTest : public core::AbstractTest {
 };

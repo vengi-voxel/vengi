@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <memory>
 
-namespace video {
+namespace mesh {
 
 /**
  * @ingroup Video

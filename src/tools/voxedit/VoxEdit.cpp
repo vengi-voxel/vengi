@@ -12,7 +12,7 @@
 #include "core/io/Filesystem.h"
 #include "voxedit-util/CustomBindingContext.h"
 
-VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
+VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const mesh::MeshPoolPtr& meshPool) :
 		Super(metric, filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool), _sceneMgr(voxedit::sceneMgr()) {
 	init(ORGANISATION, "voxedit");
 	_allowRelativeMouseMode = false;
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
-	const video::MeshPoolPtr& meshPool = std::make_shared<video::MeshPool>();
+	const mesh::MeshPoolPtr& meshPool = std::make_shared<mesh::MeshPool>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	VoxEdit app(metric, filesystem, eventBus, timeProvider, meshPool);
 	return app.startMainLoop(argc, argv);

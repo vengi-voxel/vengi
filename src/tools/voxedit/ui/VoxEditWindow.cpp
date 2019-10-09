@@ -490,7 +490,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	}
 	if (id == TBIDC("unsaved_changes_voxelize")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(_voxelizeFile, false);
+			const mesh::MeshPtr& mesh = _voxedit->meshPool()->getMesh(_voxelizeFile, false);
 			sceneMgr().voxelizeModel(mesh);
 		}
 		return true;
@@ -844,7 +844,7 @@ bool VoxEditWindow::importMesh(const std::string& file) {
 		return true;
 	}
 	if (!sceneMgr().dirty()) {
-		const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
+		const mesh::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
 		if (mesh->isFailed()) {
 			return false;
 		}

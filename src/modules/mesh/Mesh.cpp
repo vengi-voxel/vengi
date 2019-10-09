@@ -16,7 +16,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-namespace video {
+namespace mesh {
 
 namespace {
 const aiVector3D VECZERO(0.0f, 0.0f, 0.0f);
@@ -201,7 +201,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 	return true;
 }
 
-void Mesh::setupBufferAttributes(Shader& shader) {
+void Mesh::setupBufferAttributes(video::Shader& shader) {
 	_vertexBuffer.clearAttributes();
 
 	const int posLocation = shader.checkAttributeLocation("a_pos");
@@ -278,7 +278,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	}
 }
 
-void Mesh::setupLineBufferAttributes(Shader& shader) {
+void Mesh::setupLineBufferAttributes(video::Shader& shader) {
 	if (_vertexBufferLines.attributes() == 2) {
 		return;
 	}
@@ -303,7 +303,7 @@ void Mesh::setupLineBufferAttributes(Shader& shader) {
 	_vertexBufferLines.addAttribute(attribColor);
 }
 
-bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex) {
+bool Mesh::initMesh(video::Shader& shader, float timeInSeconds, uint8_t animationIndex) {
 	if (_state != io::IOSTATE_LOADED) {
 		if (!_readyToInit) {
 			return false;
@@ -320,23 +320,23 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 		int materialIndex = 0;
 		for (const image::ImagePtr& i : _images) {
 			if (i && i->isLoaded()) {
-				_textures[materialIndex++] = createTextureFromImage(i);
+				_textures[materialIndex++] = video::createTextureFromImage(i);
 			} else {
 				++materialIndex;
 			}
 		}
 		if (materialIndex == 0) {
-			_textures.push_back(createWhiteTexture("***empty***"));
+			_textures.push_back(video::createWhiteTexture("***empty***"));
 		}
 		_images.clear();
 
 		_state = io::IOSTATE_LOADED;
 
 		_vertexBufferLinesIndex = _vertexBufferLines.create();
-		_vertexBufferLines.setMode(_vertexBufferLinesIndex, BufferMode::Dynamic);
+		_vertexBufferLines.setMode(_vertexBufferLinesIndex, video::BufferMode::Dynamic);
 
 		_vertexBufferIndex = _vertexBuffer.create(_vertices);
-		_vertexBuffer.create(_indices, BufferType::IndexBuffer);
+		_vertexBuffer.create(_indices, video::BufferType::IndexBuffer);
 	}
 
 	_timeInSeconds = timeInSeconds;
@@ -648,7 +648,7 @@ int Mesh::renderBones(video::Shader& shader) {
 	traverseBones(boneData, _scene->mRootNode, glm::mat4(1.0f), glm::vec3(0), false);
 	_vertexBufferLines.update(_vertexBufferLinesIndex, boneData.data);
 	video::ScopedBuffer scopedBuf(_vertexBufferLines);
-	ScopedLineWidth lineWidth(2.0f);
+	video::ScopedLineWidth lineWidth(2.0f);
 	const int elements = _vertexBufferLines.elements(_vertexBufferLinesIndex, 2);
 	video::drawArrays(video::Primitive::Lines, elements);
 
@@ -690,7 +690,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 
 	_vertexBufferLines.update(_vertexBufferLinesIndex, normalData.data);
 	video::ScopedBuffer scopedBuf(_vertexBufferLines);
-	ScopedLineWidth lineWidth(2.0f);
+	video::ScopedLineWidth lineWidth(2.0f);
 	const int elements = _vertexBufferLines.elements(_vertexBufferLinesIndex, 2);
 	video::drawArrays(video::Primitive::Lines, elements);
 

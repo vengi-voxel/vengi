@@ -19,11 +19,11 @@ class VoxEdit: public ui::turbobadger::UIApp {
 private:
 	using Super = ui::turbobadger::UIApp;
 	voxedit::VoxEditWindow* _mainWindow;
-	video::MeshPoolPtr _meshPool;
+	mesh::MeshPoolPtr _meshPool;
 	voxedit::SceneManager& _sceneMgr;
 
 public:
-	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool);
+	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const mesh::MeshPoolPtr& meshPool);
 
 	bool importheightmapFile(const std::string& file);
 	bool importplaneFile(const std::string& file);
@@ -36,7 +36,7 @@ public:
 	bool exportFile(const std::string& file);
 	bool newFile(bool force = false);
 
-	video::MeshPoolPtr meshPool() const;
+	mesh::MeshPoolPtr meshPool() const;
 
 	void onDropFile(const std::string& file) override;
 
@@ -46,6 +46,6 @@ public:
 	core::AppState onRunning() override;
 };
 
-inline video::MeshPoolPtr VoxEdit::meshPool() const {
+inline mesh::MeshPoolPtr VoxEdit::meshPool() const {
 	return _meshPool;
 }
