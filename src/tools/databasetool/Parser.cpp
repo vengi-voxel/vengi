@@ -263,7 +263,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 				table.constraints.insert(std::make_pair(name, persistence::Constraint{fieldNamesVec, typeMapping}));
 			}
 		}
-		if (typeMapping == std::enum_value(persistence::ConstraintType::UNIQUE)) {
+		if (typeMapping == (uint32_t)std::enum_value(persistence::ConstraintType::UNIQUE)) {
 			table.uniqueKeys.emplace_back(std::move(fieldNames));
 		}
 	}
