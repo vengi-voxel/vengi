@@ -227,7 +227,7 @@ public:
 
 	/**
 	 * @brief Voxelizes the given mesh
-	 * @param[in] mesh The video::Mesh to voxelize
+	 * @param[in] mesh The mesh::Mesh to voxelize
 	 * @return @c true on success, @c false on failure
 	 */
 	bool voxelizeModel(const mesh::MeshPtr& mesh);

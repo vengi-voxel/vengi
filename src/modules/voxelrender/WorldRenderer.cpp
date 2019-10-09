@@ -529,7 +529,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		if (!camera.isVisible(ent->position())) {
 			continue;
 		}
-		const video::MeshPtr& mesh = ent->mesh();
+		const mesh::MeshPtr& mesh = ent->mesh();
 		if (!mesh->initMesh(_meshShader)) {
 			continue;
 		}

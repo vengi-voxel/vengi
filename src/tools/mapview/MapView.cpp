@@ -17,7 +17,7 @@
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 
-MapView::MapView(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world) :
+MapView::MapView(const metric::MetricPtr& metric, const mesh::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _worldMgr(world) {
 	init(ORGANISATION, "mapview");
 	_worldMgr->setClientData(true);
@@ -96,7 +96,7 @@ core::AppState MapView::onInit() {
 	_meshPool->init();
 
 	const char *meshName = "chr_skelett";
-	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
+	const mesh::MeshPtr& mesh = _meshPool->getMesh(meshName);
 	if (!mesh) {
 		Log::error("Failed to load the mesh '%s'", meshName);
 		return core::AppState::InitFailure;
@@ -226,7 +226,7 @@ bool MapView::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 int main(int argc, char *argv[]) {
-	const video::MeshPoolPtr& meshPool = std::make_shared<video::MeshPool>();
+	const mesh::MeshPoolPtr& meshPool = std::make_shared<mesh::MeshPool>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxel::WorldMgrPtr& world = std::make_shared<voxel::WorldMgr>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();

@@ -11,7 +11,7 @@ namespace mesh {
 
 #define NUM_BONES_PER_VERTEX 4
 
-// TODO: this is a mesh vertex and doesn't belong here - but next to the video::Mesh class
+// TODO: this is a mesh vertex and doesn't belong here - but next to the mesh::Mesh class
 struct Vertex {
 	glm::vec3 _pos;
 	glm::vec3 _norm;

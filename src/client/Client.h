@@ -31,7 +31,7 @@ class Client: public ui::turbobadger::UIApp, public core::IEventBusHandler<netwo
 protected:
 	using Super = ui::turbobadger::UIApp;
 	video::Camera _camera;
-	video::MeshPoolPtr _meshPool;
+	mesh::MeshPoolPtr _meshPool;
 	network::ClientNetworkPtr _network;
 	voxel::WorldMgrPtr _world;
 	network::ClientMessageSenderPtr _messageSender;
@@ -62,7 +62,7 @@ protected:
 	void handleLogin();
 	int renderMap(video::Shader& shader, const voxel::WorldMgrPtr& world, const glm::mat4& view, float aspect);
 public:
-	Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world,
+	Client(const metric::MetricPtr& metric, const mesh::MeshPoolPtr& meshPool, const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world,
 			const network::ClientMessageSenderPtr& messageSender, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 			const io::FilesystemPtr& filesystem);
 	~Client();

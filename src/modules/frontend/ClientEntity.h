@@ -25,10 +25,10 @@ private:
 	ClientEntityId _id;
 	network::EntityType _type;
 	float _orientation;
-	video::MeshPtr _mesh;
+	mesh::MeshPtr _mesh;
 	attrib::ShadowAttributes _attrib;
 public:
-	ClientEntity(ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
+	ClientEntity(ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation, const mesh::MeshPtr& mesh);
 	~ClientEntity();
 
 	void update(uint64_t dt);
@@ -45,7 +45,7 @@ public:
 
 	// components
 	attrib::ShadowAttributes& attrib();
-	const video::MeshPtr& mesh() const;
+	const mesh::MeshPtr& mesh() const;
 };
 
 inline attrib::ShadowAttributes& ClientEntity::attrib() {
@@ -72,7 +72,7 @@ inline float ClientEntity::scale() const {
 	return 1.0f;
 }
 
-inline const video::MeshPtr& ClientEntity::mesh() const {
+inline const mesh::MeshPtr& ClientEntity::mesh() const {
 	return _mesh;
 }
 

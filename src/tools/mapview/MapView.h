@@ -24,7 +24,7 @@ class MapView: public ui::imgui::IMGUIApp {
 protected:
 	using Super = ui::imgui::IMGUIApp;
 	video::Camera _camera;
-	video::MeshPoolPtr _meshPool;
+	mesh::MeshPoolPtr _meshPool;
 	voxelrender::WorldRenderer _worldRenderer;
 	voxel::WorldMgrPtr _worldMgr;
 	render::Axis _axis;
@@ -48,7 +48,7 @@ protected:
 	void beforeUI() override;
 
 public:
-	MapView(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world);
+	MapView(const metric::MetricPtr& metric, const mesh::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world);
 	~MapView();
 
 	core::AppState onConstruct() override;

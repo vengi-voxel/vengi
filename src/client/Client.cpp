@@ -27,7 +27,7 @@
 #include "voxel/MaterialColor.h"
 #include "core/Rest.h"
 
-Client::Client(const metric::MetricPtr& metric, const video::MeshPoolPtr& meshPool,
+Client::Client(const metric::MetricPtr& metric, const mesh::MeshPoolPtr& meshPool,
 		const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world,
 		const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
@@ -341,7 +341,7 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos) {
 	Log::info("Entity %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
 	const std::string_view& meshName = "chr_knight"; // TODO: core::string::toLower(network::EnumNameEntityType(type));
-	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
+	const mesh::MeshPtr& mesh = _meshPool->getMesh(meshName);
 	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, mesh));
 }
 
@@ -353,7 +353,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	removeState(CLIENT_CONNECTING);
 	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);
 	_camera.setTarget(pos);
-	const video::MeshPtr& mesh = _meshPool->getMesh("chr_knight");
+	const mesh::MeshPtr& mesh = _meshPool->getMesh("chr_knight");
 	const network::EntityType type = network::EntityType::PLAYER;
 	_player = std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, mesh);
 	_worldRenderer.addEntity(_player);
@@ -380,7 +380,7 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 }
 
 int main(int argc, char *argv[]) {
-	const video::MeshPoolPtr& meshPool = std::make_shared<video::MeshPool>();
+	const mesh::MeshPoolPtr& meshPool = std::make_shared<mesh::MeshPool>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxel::WorldMgrPtr& world = std::make_shared<voxel::WorldMgr>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
