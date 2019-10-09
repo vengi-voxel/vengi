@@ -7,9 +7,11 @@ set(SRCS
 	Stock.h Stock.cpp
 	StockDataProvider.h StockDataProvider.cpp
 )
-
+set(LUA_SRCS
+	stock.lua
+)
 set(LIB stock)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES attrib cooldown)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} LUA_SRCS ${LUA_SRCS} DEPENDENCIES attrib cooldown)
 
 gtest_suite_sources(tests
 	tests/StockTest.cpp

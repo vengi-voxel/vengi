@@ -23,7 +23,7 @@ TEST_F(StockDataProviderTest, testResetAndDuplicate) {
 TEST_F(StockDataProviderTest, testInit) {
 	const char* lua = ""
 		"function init()\n"
-		"  local i = stock.createItem(1, 'WEAPON')\n"
+		"  local i = stock.createItem(1, 'WEAPON', 'some-id')\n"
 		//"  print(i)\n"
 		"  local s = i:shape()\n"
 		"  s:addRect(0, 0, 1, 1)\n"

@@ -11,7 +11,6 @@ set(LUA_SRCS
 	attributes.lua
 	event/generic.lua
 	events.lua
-	stock.lua
 	map/map001.lua
 )
 set(FILES

@@ -4,6 +4,7 @@
 
 #include "StockDataProvider.h"
 #include "LUAFunctions.h"
+#include "core/Log.h"
 
 namespace stock {
 
@@ -46,7 +47,9 @@ bool StockDataProvider::init(const std::string& luaScript) {
 
 	lua::LUAType item = lua.registerType("Item");
 	item.addFunction("name", luaItemDataGetName);
+	item.addFunction("setName", luaItemDataSetName);
 	item.addFunction("shape", luaItemDataGetShape);
+	item.addFunction("setSize", luaItemDataSetSize);
 	item.addFunction("id", luaItemDataGetId);
 	item.addFunction("__gc", luaItemDataGC);
 	item.addFunction("__tostring", luaItemDataToString);
@@ -121,9 +124,27 @@ const ItemData* StockDataProvider::itemData(ItemId itemId) const {
 	return data;
 }
 
+const ItemData* StockDataProvider::itemData(const std::string& name) const {
+	for (const auto& i : _itemData) {
+		if (i->name() == name) {
+			return i;
+		}
+	}
+	return nullptr;
+}
+
 bool StockDataProvider::addContainerData(ContainerData* data) {
 	if (containerData(data->name) != nullptr) {
 		Log::error("Invalid container id %s - an entry with that name already exists", data->name.c_str());
+		return false;
+	}
+	auto it = std::find_if(_containerDataMap.begin(), _containerDataMap.end(),
+		[data](const std::pair<std::string, ContainerData*> &t) -> bool {
+			return t.second->id == data->id;
+		}
+	);
+	if (it != _containerDataMap.end()) {
+		Log::error("Invalid container id for %s - an entry with that id already exists", data->name.c_str());
 		return false;
 	}
 	_containerDataMap[data->name] = data;

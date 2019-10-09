@@ -24,6 +24,8 @@ public:
 
 	ItemId id() const;
 
+	const char* name() const;
+
 	const ItemType& type() const;
 
 	const ItemShape& shape() const;
@@ -66,6 +68,10 @@ inline const ItemShape& Item::shape() const {
 
 inline ItemId Item::id() const {
 	return data().id();
+}
+
+inline const char* Item::name() const {
+	return data().name();
 }
 
 inline const ItemData& Item::data() const {

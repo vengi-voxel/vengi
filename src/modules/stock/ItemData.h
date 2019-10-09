@@ -39,6 +39,7 @@ using ItemId = uint32_t;
  */
 class ItemData {
 protected:
+	std::string _name;
 	ItemId _id;
 	ItemShape _shape;
 	ItemType _type;
@@ -47,6 +48,8 @@ protected:
 	cooldown::Type _regenerate = cooldown::Type::NONE;
 public:
 	ItemData(ItemId id, ItemType type);
+
+	void setName(const char *name);
 
 	void setSize(uint8_t width, uint8_t height);
 

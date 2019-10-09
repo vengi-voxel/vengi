@@ -45,7 +45,17 @@ public:
 	 */
 	bool addItemData(ItemData* itemData);
 
+	/**
+	 * O(1)
+	 */
 	const ItemData* itemData(ItemId itemId) const;
+
+	/**
+	 * O(n)
+	 */
+	const ItemData* itemData(const std::string& name) const;
+
+	const ItemDataContainer& items() const;
 
 	/**
 	 * @note Takes ownership of the @c ContainerData instance and will delete it on @c reset()
@@ -54,6 +64,8 @@ public:
 	bool addContainerData(ContainerData* containerData);
 
 	const ContainerData* containerData(const std::string& name) const;
+
+	const ContainerDataMap& containers() const;
 
 	/**
 	 * @brief Creates a new item.
@@ -70,6 +82,14 @@ private:
 	ContainerDataMap _containerDataMap;
 	std::string _error;
 };
+
+inline const StockDataProvider::ItemDataContainer& StockDataProvider::items() const {
+	return _itemData;
+}
+
+inline const StockDataProvider::ContainerDataMap& StockDataProvider::containers() const {
+	return _containerDataMap;
+}
 
 inline const std::string& StockDataProvider::error() const {
 	return _error;

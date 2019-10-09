@@ -17,12 +17,14 @@ static StockDataProvider* luaGetStockDataProvider(lua_State * l) {
 
 static int luaCreateContainer(lua_State * l) {
 	StockDataProvider *stockDataProvider = luaGetStockDataProvider(l);
-	const char* containerName = luaL_checkstring(l, 1);
+	const uint8_t containerId = (uint8_t)luaL_checkinteger(l, 1);
+	const char* containerName = luaL_checkstring(l, 2);
 	ContainerData* udata = lua::LUA::newUserdata(l, "Container", new ContainerData());
 	udata->name = containerName;
+	udata->id = containerId;
 	if (!stockDataProvider->addContainerData(udata)) {
 		const std::string& error = core::string::format("Could not add container with name: %s", containerName);
-		lua::LUA::returnError(l, error);
+		return lua::LUA::returnError(l, error);
 	}
 	return 1;
 }
@@ -88,13 +90,17 @@ static int luaCreateItemData(lua_State * l) {
 	StockDataProvider *stockDataProvider = luaGetStockDataProvider(l);
 	const ItemId itemId = luaL_checkinteger(l, 1);
 	const char *type = luaL_checkstring(l, 2);
+	const char *name = luaL_optstring(l, 3, nullptr);
 	const ItemType itemType = getItemType(type);
 	if (itemType == ItemType::NONE) {
 		const std::string& error = core::string::format("Unknown type given: %s", type);
-		lua::LUA::returnError(l, error);
+		return lua::LUA::returnError(l, error);
 	}
 
 	ItemData* udata = lua::LUA::newUserdata(l, "Item", new ItemData(itemId, itemType));
+	if (name != nullptr) {
+		udata->setName(name);
+	}
 	stockDataProvider->addItemData(udata);
 	return 1;
 }
@@ -124,6 +130,20 @@ static int luaItemDataGetName(lua_State * l) {
 	const ItemData *ctx = luaGetItemData(l, 1);
 	lua_pushstring(l, ctx->name());
 	return 1;
+}
+
+static int luaItemDataSetName(lua_State * l) {
+	ItemData *ctx = luaGetItemData(l, 1);
+	ctx->setName(luaL_checkstring(l, 2));
+	return 0;
+}
+
+static int luaItemDataSetSize(lua_State * l) {
+	ItemData *ctx = luaGetItemData(l, 1);
+	const int w = luaL_checkinteger(l, 2);
+	const int h = luaL_checkinteger(l, 3);
+	ctx->setSize(w, h);
+	return 0;
 }
 
 static int luaItemDataGetId(lua_State * l) {
