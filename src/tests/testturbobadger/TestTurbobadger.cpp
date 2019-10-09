@@ -4,7 +4,7 @@
 
 #include "TestTurbobadger.h"
 #include "testcore/TestAppMain.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "ui/turbobadger/TurboBadger.h"
 #include "Demo.h"
 #include "ListWindow.h"

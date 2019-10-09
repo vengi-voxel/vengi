@@ -8,7 +8,7 @@
 #include <gmock/gmock.h>
 #include "core/ConsoleApp.h"
 #include "core/EventBus.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>

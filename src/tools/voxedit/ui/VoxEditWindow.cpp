@@ -7,7 +7,7 @@
 #include "TreeWindow.h"
 #include "palette/PaletteWidget.h"
 #include "palette/PaletteSelector.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "video/WindowedApp.h"
 #include "core/Var.h"
 #include "core/String.h"

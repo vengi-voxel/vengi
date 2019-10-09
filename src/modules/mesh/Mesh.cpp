@@ -7,7 +7,7 @@
 #include "core/Common.h"
 #include "core/Array.h"
 #include "core/App.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "video/ScopedLineWidth.h"

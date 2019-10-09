@@ -4,7 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "video/Shader.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 
 namespace video {
 

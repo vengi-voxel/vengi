@@ -5,7 +5,7 @@
 #include "Camera.h"
 #include "core/Common.h"
 #include "core/Singleton.h"
-#include "io/EventHandler.h"
+#include "core/io/EventHandler.h"
 #include "core/GLM.h"
 
 namespace video {

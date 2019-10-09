@@ -7,7 +7,7 @@
 #include "core/Log.h"
 #include "core/Common.h"
 #include "core/Trace.h"
-#include "io/File.h"
+#include "core/io/File.h"
 #include "math/Random.h"
 #include "core/Concurrency.h"
 #include "voxel/polyvox/AStarPathfinder.h"

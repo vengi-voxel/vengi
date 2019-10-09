@@ -8,7 +8,7 @@
 #include "core/App.h"
 #include "core/String.h"
 #include "core/Assert.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>

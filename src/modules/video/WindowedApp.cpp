@@ -5,7 +5,7 @@
 #include "WindowedApp.h"
 #include "core/Assert.h"
 #include "core/Common.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/Singleton.h"
 #include "core/Var.h"
 #include "Renderer.h"

@@ -6,7 +6,7 @@
 
 #include "video/Renderer.h"
 #include "video/Types.h"
-#include "io/IOResource.h"
+#include "core/io/IOResource.h"
 #include "image/Image.h"
 
 #include <memory>

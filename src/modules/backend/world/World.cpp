@@ -9,7 +9,7 @@
 #include "backend/world/MapProvider.h"
 #include "backend/world/Map.h"
 #include "backend/entity/ai/AIRegistry.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/Common.h"

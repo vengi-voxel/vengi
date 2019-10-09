@@ -2,7 +2,6 @@
 # If you don't include the module with files before its dependent modules, then the
 # files will not get copied
 
-add_subdirectory(metric)
 add_subdirectory(collection)
 add_subdirectory(core)
 add_subdirectory(mail)

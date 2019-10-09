@@ -5,7 +5,7 @@
 #include "SpawnMgr.h"
 #include "core/Common.h"
 #include "core/Singleton.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AICharacter.h"
 #include "backend/entity/ai/AILoader.h"

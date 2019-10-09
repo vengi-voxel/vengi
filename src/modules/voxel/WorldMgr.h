@@ -21,7 +21,7 @@
 #include <list>
 
 #include "WorldPager.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "BiomeManager.h"
 #include "collection/ConcurrentQueue.h"
 #include "core/ThreadPool.h"

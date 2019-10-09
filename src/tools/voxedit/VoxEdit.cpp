@@ -9,7 +9,7 @@
 #include "core/command/CommandCompleter.h"
 #include "video/Renderer.h"
 #include "ui/VoxEditWindow.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "voxedit-util/CustomBindingContext.h"
 
 VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :

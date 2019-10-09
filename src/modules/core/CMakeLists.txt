@@ -3,6 +3,19 @@ set(SRCS
 	command/CommandHandler.h command/CommandHandler.cpp
 	command/CommandCompleter.h command/CommandCompleter.cpp
 	command/Command.h command/Command.cpp
+
+	metric/Metric.h metric/Metric.cpp
+	metric/UDPMetricSender.h metric/UDPMetricSender.cpp
+	metric/IMetricSender.h
+	metric/MetricEvent.h
+
+	io/EventHandler.cpp io/EventHandler.h
+	io/File.cpp io/File.h
+	io/FileStream.cpp io/FileStream.h
+	io/Filesystem.cpp io/Filesystem.h
+	io/IEventObserver.h
+	io/IOResource.h
+
 	Assert.h
 	App.cpp App.h
 	AppCommand.cpp AppCommand.h
@@ -44,8 +57,6 @@ set(SRCS
 	Zip.cpp Zip.h
 )
 set(LIB core)
-set(FILES
-)
 
 if (WINDOWS)
 	set(UUID_LIBRARIES rpcrt4)
@@ -57,7 +68,11 @@ else()
 	find_package(UUID)
 endif()
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES collection io metric restclient-cpp zlib ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
+set(LIBS collection restclient-cpp zlib sdl2 glm libuv ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
+if (NOT MSVC)
+list(APPEND LIBS backward)
+endif()
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 
 set(TEST_SRCS
 	tests/AbstractTest.cpp
@@ -68,9 +83,13 @@ set(TEST_SRCS
 	tests/CommandHandlerTest.cpp
 	tests/CoreTest.cpp
 	tests/EventBusTest.cpp
+	tests/FilesystemTest.cpp
+	tests/FileStreamTest.cpp
+	tests/FileTest.cpp
 	tests/JSONTest.cpp
 	tests/LogTest.cpp
 	tests/MD5Test.cpp
+	tests/MetricTest.cpp
 	tests/PoolAllocatorTest.cpp
 	tests/ReadWriteLockTest.cpp
 	tests/StringTest.cpp

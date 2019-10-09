@@ -7,7 +7,7 @@
 #include "core/String.h"
 #include "voxelformat/Loader.h"
 #include "voxelformat/VoxFileFormat.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/App.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 

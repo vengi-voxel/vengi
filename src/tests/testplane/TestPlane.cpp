@@ -2,7 +2,7 @@
  * @file
  */
 #include "TestPlane.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 
 TestPlane::TestPlane(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

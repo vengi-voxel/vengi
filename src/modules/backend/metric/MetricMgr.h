@@ -7,9 +7,9 @@
 #include "core/EventBus.h"
 #include "core/IComponent.h"
 #include "backend/eventbus/Event.h"
-#include "metric/Metric.h"
-#include "metric/MetricEvent.h"
-#include "metric/IMetricSender.h"
+#include "core/metric/Metric.h"
+#include "core/metric/MetricEvent.h"
+#include "core/metric/IMetricSender.h"
 #include "network/NetworkEvents.h"
 #include <memory>
 

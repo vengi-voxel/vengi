@@ -5,7 +5,7 @@
 #include "Image.h"
 #include "core/Log.h"
 #include "core/App.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 
 #define STBI_ASSERT core_assert
 #define STBI_MALLOC core_malloc

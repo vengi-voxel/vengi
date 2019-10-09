@@ -2,7 +2,7 @@
  * @file
  */
 #include "TestLUAUI.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "video/TexturePool.h"
 #include "core/TimeProvider.h"
 #include "core/EventBus.h"

@@ -5,8 +5,8 @@
 #pragma once
 
 #include "core/App.h"
-#include "io/IEventObserver.h"
-#include "io/EventHandler.h"
+#include "core/io/IEventObserver.h"
+#include "core/io/EventHandler.h"
 #include "core/GLM.h"
 #include "util/KeybindingParser.h"
 #include "util/KeybindingHandler.h"

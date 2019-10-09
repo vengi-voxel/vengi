@@ -4,7 +4,7 @@
 
 #include "MapProvider.h"
 #include "Map.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/Log.h"
 #include "core/Assert.h"
 #include "backend/entity/ai/AILoader.h"

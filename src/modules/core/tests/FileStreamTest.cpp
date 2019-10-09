@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "io/FileStream.h"
+#include "core/io/FileStream.h"
 
 namespace io {
 

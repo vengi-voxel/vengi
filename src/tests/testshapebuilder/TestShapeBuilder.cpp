@@ -2,7 +2,7 @@
  * @file
  */
 #include "TestShapeBuilder.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/Color.h"
 #include "core/Array.h"
 #include "math/AABB.h"

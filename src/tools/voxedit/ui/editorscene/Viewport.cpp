@@ -7,7 +7,7 @@
 #include "core/Color.h"
 #include "voxelformat/MeshExporter.h"
 #include "ui/turbobadger/UIApp.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "Viewport.h"
 
 #include "voxedit-util/SceneManager.h"

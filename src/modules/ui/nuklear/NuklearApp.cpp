@@ -6,7 +6,7 @@
 #include "video/Renderer.h"
 #include "video/ScopedViewPort.h"
 #include "core/UTF8.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/Assert.h"
 
 #define NK_IMPLEMENTATION

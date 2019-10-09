@@ -3,7 +3,7 @@
  */
 
 #include "MeshPool.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/App.h"
 #include "core/Log.h"
 #include <assimp/scene.h>

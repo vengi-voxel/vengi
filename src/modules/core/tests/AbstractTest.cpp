@@ -6,7 +6,7 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/command/Command.h"
-#include "metric/Metric.h"
+#include "core/metric/Metric.h"
 
 extern char **_argv;
 extern int _argc;

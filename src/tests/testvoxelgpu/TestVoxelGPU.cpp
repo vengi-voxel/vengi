@@ -2,7 +2,7 @@
  * @file
  */
 #include "TestVoxelGPU.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "compute/Compute.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/polyvox/Region.h"

@@ -8,7 +8,7 @@
 #include "math/Random.h"
 #include "core/Color.h"
 #include "core/GLM.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
 #include <unordered_map>

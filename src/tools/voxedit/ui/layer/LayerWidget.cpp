@@ -6,7 +6,7 @@
 #include "core/App.h"
 #include "core/command/Command.h"
 #include "core/command/CommandHandler.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "voxedit-util/SceneManager.h"
 #include "LayerRenameWindow.h"
 #include "LayerMoveWindow.h"

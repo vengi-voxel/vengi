@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "io/IOResource.h"
+#include "core/io/IOResource.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/Buffer.h"

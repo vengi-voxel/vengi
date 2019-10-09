@@ -2,7 +2,7 @@
  * @file
  */
 #include "TestTraze.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/command/Command.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/polyvox/Region.h"

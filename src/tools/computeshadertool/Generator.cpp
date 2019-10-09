@@ -5,7 +5,7 @@
 #include "Generator.h"
 #include "core/String.h"
 #include "core/Assert.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "Util.h"
 #include "Types.h"
 

@@ -3,7 +3,7 @@
  */
 
 #include "Thumbnailer.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
 #include "video/Renderer.h"

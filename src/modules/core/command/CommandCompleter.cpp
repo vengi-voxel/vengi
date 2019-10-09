@@ -5,7 +5,7 @@
 #include "CommandCompleter.h"
 #include "core/App.h"
 #include "core/String.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 
 namespace core {
 

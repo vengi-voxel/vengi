@@ -4,7 +4,7 @@
 
 #include "LUAUIApp.h"
 #include "LUAFunctions.h"
-#include "io/Filesystem.h"
+#include "core/io/Filesystem.h"
 #include "core/Log.h"
 #include "core/command/Command.h"
 #include "core/Trace.h"

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "VoxFileFormat.h"
-#include "io/FileStream.h"
+#include "core/io/FileStream.h"
 #include <string>
 #include <map>
 

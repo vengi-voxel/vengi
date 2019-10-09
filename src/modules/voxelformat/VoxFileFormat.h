@@ -5,7 +5,7 @@
 #pragma once
 
 #include "voxel/polyvox/RawVolume.h"
-#include "io/File.h"
+#include "core/io/File.h"
 #include <vector>
 
 namespace voxel {
