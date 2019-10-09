@@ -8,8 +8,8 @@
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/Buffer.h"
-#include "core/Vertex.h"
 #include "core/Color.h"
+#include "Vertex.h"
 #include <vector>
 #include <memory>
 #include <unordered_map>
@@ -31,7 +31,7 @@ namespace video {
  */
 class Mesh : public io::IOResource {
 public:
-	typedef std::vector<core::Vertex> Vertices;
+	typedef std::vector<mesh::Vertex> Vertices;
 	typedef std::vector<uint32_t> Indices;
 
 private:

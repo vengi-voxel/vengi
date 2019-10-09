@@ -7,7 +7,7 @@
 #include "core/Common.h"
 #include "core/Array.h"
 
-namespace core {
+namespace mesh {
 
 #define NUM_BONES_PER_VERTEX 4
 

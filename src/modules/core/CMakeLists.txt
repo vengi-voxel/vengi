@@ -53,7 +53,6 @@ set(SRCS
 	UUID.cpp UUID.h
 	Var.cpp Var.h
 	Vector.h
-	Vertex.h
 	Zip.cpp Zip.h
 )
 set(LIB core)

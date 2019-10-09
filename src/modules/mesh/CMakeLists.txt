@@ -1,6 +1,7 @@
 set(SRCS
 	Mesh.cpp Mesh.h
 	MeshPool.cpp MeshPool.h
+	Vertex.h
 )
 set(SRCS_SHADERS
 	shaders/mesh.vert shaders/mesh.frag

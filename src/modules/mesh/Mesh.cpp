@@ -51,8 +51,8 @@ static inline glm::mat4 convert(const aiMatrix4x4& m) {
 	return mat;
 }
 
-static inline core::Vertex convertVertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) {
-	return core::Vertex(convert(p), convert(n), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a));
+static inline mesh::Vertex convertVertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) {
+	return mesh::Vertex(convert(p), convert(n), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a));
 }
 
 }
@@ -666,7 +666,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 	MeshLines normalData;
 	normalData.reserve(_vertices.size() * 2);
 	size_t j = 0;
-	for (const core::Vertex& v : _vertices) {
+	for (const mesh::Vertex& v : _vertices) {
 		glm::vec4& outVertex = normalData.data[j + 0].vertex;
 		glm::vec4& outNormal = normalData.data[j + 1].vertex;
 		j += 2;
