@@ -203,6 +203,12 @@ function(engine_add_executable)
 	endif()
 endfunction()
 
+#
+# Use this function to add binaries that are needed to build the project. E.g.
+# generating code. This is handled a little bit different than the usual engine_add_module
+# in a way that it takes care of cross compiling. In a cross compiling environment
+# you still get the native running code generator.
+#
 function(engine_add_build_executable)
 	set(_OPTIONS_ARGS WINDOWED NOINSTALL)
 	set(_ONE_VALUE_ARGS TARGET)
@@ -230,6 +236,12 @@ function(engine_add_build_executable)
 	endif()
 endfunction()
 
+#
+# Adds a new entity (src/modules) to the list of known modules. Each module can
+# provide files and lua scripts to their dependent modules. This is done in a way
+# that the resulting final executable will get all the files and lua scripts from
+# its dependencies.
+#
 function(engine_add_module)
 	set(_OPTIONS_ARGS)
 	set(_ONE_VALUE_ARGS TARGET)
@@ -255,6 +267,14 @@ function(engine_add_module)
 	set_property(GLOBAL PROPERTY ${_LIB_TARGET}_DEPENDENCIES ${_LIB_DEPENDENCIES})
 endfunction()
 
+#
+# This function will install all the target files and lua scripts. The target
+# must not have the global target property <TARGET>_INSTALL disabled of course.
+# E.g. the tests don't install anything, they just configure files and scripts
+# into their build directory to be able to run them. But it's not needed to
+# set up the whole install chain for those targets, as they are not planned to
+# be delivered as an executable to any user except the developer.
+#
 function(engine_install_deps TARGET)
 	get_property(INSTALL_DATA GLOBAL PROPERTY ${TARGET}_INSTALL)
 	set(INSTALL_FILES)
@@ -303,6 +323,10 @@ macro(engine_resolve_deps_recursive TARGET)
 	endforeach()
 endmacro()
 
+#
+# Perform the linking configuration. In case the given target is an executable
+# we also handle the file and script installation here.
+#
 function(engine_target_link_libraries)
 	set(_OPTIONS_ARGS)
 	set(_ONE_VALUE_ARGS TARGET)
