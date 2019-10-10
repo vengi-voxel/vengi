@@ -32,6 +32,8 @@ public:
 
 	const ItemData& data() const;
 
+	const char *label(const char *key) const;
+
 	ItemAmount changeAmount(ItemAmount delta);
 
 	ItemAmount amount() const;
@@ -43,6 +45,10 @@ public:
 
 inline ItemAmount Item::amount() const {
 	return _amount;
+}
+
+inline const char *Item::label(const char *key) const {
+	return _data.label(key);
 }
 
 inline ItemAmount Item::changeAmount(ItemAmount delta) {

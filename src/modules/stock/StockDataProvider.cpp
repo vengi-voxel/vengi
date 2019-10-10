@@ -50,6 +50,7 @@ bool StockDataProvider::init(const std::string& luaScript) {
 	item.addFunction("setName", luaItemDataSetName);
 	item.addFunction("shape", luaItemDataGetShape);
 	item.addFunction("setSize", luaItemDataSetSize);
+	item.addFunction("addLabel", luaItemDataAddLabel);
 	item.addFunction("id", luaItemDataGetId);
 	item.addFunction("__gc", luaItemDataGC);
 	item.addFunction("__tostring", luaItemDataToString);

@@ -7,6 +7,7 @@
 #include "Shared_generated.h"
 #include "Shape.h"
 #include "cooldown/CooldownType.h"
+#include <unordered_map>
 
 namespace stock {
 
@@ -43,6 +44,7 @@ protected:
 	ItemId _id;
 	ItemShape _shape;
 	ItemType _type;
+	std::unordered_map<std::string, std::string> _labels;
 	cooldown::Type _construction = cooldown::Type::NONE;
 	cooldown::Type _usage = cooldown::Type::NONE;
 	cooldown::Type _regenerate = cooldown::Type::NONE;
@@ -50,6 +52,13 @@ public:
 	ItemData(ItemId id, ItemType type);
 
 	void setName(const char *name);
+
+	void addLabel(const char *key, const char *value);
+
+	/**
+	 * @return nullptr if no such key is found
+	 */
+	const char *label(const char *key) const;
 
 	void setSize(uint8_t width, uint8_t height);
 

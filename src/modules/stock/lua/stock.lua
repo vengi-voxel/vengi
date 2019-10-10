@@ -1,7 +1,7 @@
 function init()
-  stock.createItem(0, 'WEAPON', 'axe-1'):setSize(1, 1)
-  stock.createItem(1, 'WEAPON', 'hammer-1'):setSize(1, 1)
-  stock.createItem(2, 'WEAPON', 'sword-1'):setSize(1, 1)
+  stock.createItem(0, 'WEAPON', 'axe-1'):setSize(1, 1):addLabel('anim', 'stroke')
+  stock.createItem(1, 'WEAPON', 'hammer-1'):setSize(1, 1):addLabel('anim', 'stroke')
+  stock.createItem(2, 'WEAPON', 'sword-1'):setSize(1, 1):addLabel('anim', 'swing')
 
   local invMain = stock.createContainer(1, "main")
   local invMainShape = invMain:shape()

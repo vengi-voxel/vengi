@@ -120,6 +120,11 @@ static int luaItemDataGC(lua_State * l) {
 	return 0;
 }
 
+static int luaPushItem(lua_State * l, ItemData* item) {
+	lua::LUA::newUserdata(l, "Item", item);
+	return 1;
+}
+
 static int luaItemDataToString(lua_State * l) {
 	const ItemData *itemData = luaGetItemData(l, 1);
 	lua_pushfstring(l, "item: %d (%s)", (int)itemData->id(), itemData->name());
@@ -135,7 +140,15 @@ static int luaItemDataGetName(lua_State * l) {
 static int luaItemDataSetName(lua_State * l) {
 	ItemData *ctx = luaGetItemData(l, 1);
 	ctx->setName(luaL_checkstring(l, 2));
-	return 0;
+	return luaPushItem(l, ctx);
+}
+
+static int luaItemDataAddLabel(lua_State * l) {
+	ItemData *ctx = luaGetItemData(l, 1);
+	const char *key = luaL_checkstring(l, 2);
+	const char *value = luaL_checkstring(l, 3);
+	ctx->addLabel(key, value);
+	return luaPushItem(l, ctx);
 }
 
 static int luaItemDataSetSize(lua_State * l) {
@@ -143,7 +156,7 @@ static int luaItemDataSetSize(lua_State * l) {
 	const int w = luaL_checkinteger(l, 2);
 	const int h = luaL_checkinteger(l, 3);
 	ctx->setSize(w, h);
-	return 0;
+	return luaPushItem(l, ctx);
 }
 
 static int luaItemDataGetId(lua_State * l) {
