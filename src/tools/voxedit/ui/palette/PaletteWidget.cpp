@@ -28,8 +28,8 @@ void PaletteWidget::onPaint(const PaintProps &paintProps) {
 	const tb::TBRect renderRect(0, 0, _width, _height);
 	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
 	constexpr tb::TBColor tbBorderColor;
-	const tb::TBColor& tbBorderColorSelected = tb::TBColor::fromVec4(core::Color::Red);
-	const tb::TBColor& tbBorderColorCurrent = tb::TBColor::fromVec4(core::Color::Yellow);
+	static const tb::TBColor tbBorderColorSelected = tb::TBColor::fromVec4(core::Color::Red);
+	static const tb::TBColor tbBorderColorCurrent = tb::TBColor::fromVec4(core::Color::Yellow);
 	const int max = colors.size();
 	int i = 0;
 	for (int y = 0; y < _amountY; ++y) {
