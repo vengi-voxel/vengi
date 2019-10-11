@@ -501,9 +501,6 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 				wrap(stream.readByte(colorIndex))
 				const uint8_t index = convertPaletteIndex(colorIndex);
 				voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-				if (index == 0) {
-					voxelType = voxel::VoxelType::Air;
-				}
 				const voxel::Voxel& voxel = voxel::createVoxel(voxelType, index);
 				if (volume->setVoxel(x, y, z, voxel)) {
 					++volumeVoxelSet;

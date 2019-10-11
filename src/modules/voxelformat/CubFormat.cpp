@@ -51,9 +51,6 @@ VoxelVolumes CubFormat::loadGroups(const io::FilePtr& file) {
 				const glm::vec4& color = core::Color::fromRGBA(r, g, b, 255);
 				int index = core::Color::getClosestMatch(color, materialColors);
 				voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-				if (index == 0) {
-					voxelType = voxel::VoxelType::Air;
-				}
 				const voxel::Voxel& voxel = voxel::createVoxel(voxelType, index);
 				// we have to flip depth with height for our own coordinate system
 				volume->setVoxel(w, h, d, voxel);
