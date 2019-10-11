@@ -164,6 +164,9 @@ public:
 	virtual bool getText(TBStr &text) override {
 		return m_style_edit.getText(text);
 	}
+	virtual void setValue(int value) override {
+		setTextFormatted("%i", value);
+	}
 
 	void onProcess() override {
 		TBWidget::onProcess();
