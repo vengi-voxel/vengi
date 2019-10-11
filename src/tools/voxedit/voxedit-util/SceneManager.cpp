@@ -1132,7 +1132,7 @@ void SceneManager::construct() {
 			Log::info("Usage: setcolor <index>");
 			return;
 		}
-		const int index = core::string::toInt(args[0]);
+		const uint8_t index = core::string::toInt(args[0]);
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		_modifier.setCursorVoxel(voxel);
 	}).setHelp("Use the given index to select the color from the current palette");
