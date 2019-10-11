@@ -127,7 +127,7 @@ bool VoxEditWindow::init() {
 		Log::error("Failed to init the main window: Could not get the layer node with id 'layercontainer'");
 		return false;
 	}
-	const int8_t index = (uint8_t)_paletteWidget->getValue();
+	const int index = _paletteWidget->getValue();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 	voxedit::sceneMgr().modifier().setCursorVoxel(voxel);
 	_paletteWidget->markAsClean();
@@ -637,7 +637,7 @@ void VoxEditWindow::onProcess() {
 
 	const Modifier& modifier = sceneMgr().modifier();
 	if (_paletteWidget->isDirty()) {
-		const int8_t index = (uint8_t)_paletteWidget->getValue();
+		const int index = _paletteWidget->getValue();
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		sceneMgr().modifier().setCursorVoxel(voxel);
 		_paletteWidget->markAsClean();
