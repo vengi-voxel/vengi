@@ -1168,6 +1168,56 @@ void SceneManager::construct() {
 			_modifier.setCursorVoxel(voxel);
 		}
 	}).setHelp("Pick the current selected color from current cursor voxel");
+
+	core::Command::registerCommand("replacecolor", [&] (const core::CmdArgs& args) {
+		if (args.size() != 2) {
+			Log::info("Usage: replacecolor <index> <index>");
+			return;
+		}
+		const uint8_t oldIndex = core::string::toInt(args[0]);
+		const uint8_t newIndex = core::string::toInt(args[1]);
+		replaceColor(oldIndex, newIndex);
+	}).setHelp("Replace a particular palette index with another index");
+}
+
+void SceneManager::replaceColor(uint8_t oldIndex, uint8_t newIndex) {
+	struct OnlyParticularIndex {
+		const uint8_t _index;
+		OnlyParticularIndex(uint8_t index) :
+				_index(index) {
+		}
+		inline bool operator() (const voxel::Voxel& voxel) const {
+			return voxel.getColor() == _index;
+		}
+	};
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, newIndex);
+	const OnlyParticularIndex condition(oldIndex);
+
+	_layerMgr.foreachGroupLayer([&] (int layerId) {
+		auto* v = _volumeRenderer.volume(layerId);
+		if (v == nullptr) {
+			return;
+		}
+		glm::ivec3 modifiedMins((std::numeric_limits<int>::max)());
+		glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)());
+		const int cnt = voxel::visitVolume(*v, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel&) {
+			if (!v->setVoxel(x, y, z, voxel)) {
+				return;
+			}
+
+			modifiedMins.x = core_min(modifiedMins.x, x);
+			modifiedMins.y = core_min(modifiedMins.y, y);
+			modifiedMins.z = core_min(modifiedMins.z, z);
+
+			modifiedMaxs.x = core_max(modifiedMaxs.x, x);
+			modifiedMaxs.y = core_max(modifiedMaxs.y, y);
+			modifiedMaxs.z = core_max(modifiedMaxs.z, z);
+		}, condition);
+		if (cnt > 0) {
+			modified(layerId, voxel::Region{modifiedMins, modifiedMaxs});
+			Log::info("Modified %i voxels", cnt);
+		}
+	});
 }
 
 bool SceneManager::init() {

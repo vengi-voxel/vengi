@@ -190,6 +190,7 @@ private:
 	bool saveLayer(int layerId, const std::string& dir);
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
+	void replaceColor(uint8_t oldIndex, uint8_t newIndex);
 public:
 	SceneManager();
 	~SceneManager();
