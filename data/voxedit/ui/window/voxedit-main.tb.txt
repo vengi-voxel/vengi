@@ -70,6 +70,8 @@ TBLayout: distribution: gravity, axis: y
 									TBSkinImage: skin: voxedit-import-palette
 								TBButton: @include: definitions>menubutton, text: Load, id: loadpalette
 									TBSkinImage: skin: voxedit-load
+							TBEditField: id: paletteindex, placeholder: index, gravity: left: right, text-align: left, readonly: 1
+								lp: height: 28
 
 					TBSection: value: 1, text: "Tools", is-group-root: 1
 						TBLayout: position: left top, axis: y

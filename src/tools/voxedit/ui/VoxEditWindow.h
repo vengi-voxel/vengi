@@ -42,6 +42,8 @@ private:
 	tb::TBEditField* _cursorY = nullptr;
 	tb::TBEditField* _cursorZ = nullptr;
 
+	tb::TBEditField* _paletteIndex = nullptr;
+
 	tb::TBCheckBox* _lockedX = nullptr;
 	tb::TBCheckBox* _lockedY = nullptr;
 	tb::TBCheckBox* _lockedZ = nullptr;

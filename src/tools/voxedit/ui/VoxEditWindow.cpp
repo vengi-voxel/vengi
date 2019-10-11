@@ -162,6 +162,8 @@ bool VoxEditWindow::init() {
 	_cursorY = getWidgetByType<tb::TBEditField>("cursory");
 	_cursorZ = getWidgetByType<tb::TBEditField>("cursorz");
 
+	_paletteIndex = getWidgetByType<tb::TBEditField>("paletteindex");
+
 	_lockedX = getWidgetByType<tb::TBCheckBox>("lockx");
 	_lockedY = getWidgetByType<tb::TBCheckBox>("locky");
 	_lockedZ = getWidgetByType<tb::TBCheckBox>("lockz");
@@ -668,6 +670,16 @@ void VoxEditWindow::onProcess() {
 	} else if ((modifierType & ModifierType::Update) == ModifierType::Update) {
 		if (_colorizeModifier) {
 			_colorizeModifier->setValue(1);
+		}
+	}
+
+	if (_paletteIndex != nullptr) {
+		static int index = -1;
+		voxel::Voxel voxel = sceneMgr().modifier().cursorVoxel();
+		const int newIndex = voxel.getColor();
+		if (index != newIndex) {
+			index = newIndex;
+			_paletteIndex->setTextFormatted("Color index: %u", voxel.getColor());
 		}
 	}
 
