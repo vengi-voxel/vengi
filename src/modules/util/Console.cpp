@@ -102,6 +102,7 @@ void Console::shutdown() {
 	} else {
 		Log::debug("Wrote the history");
 	}
+	clear();
 }
 
 bool Console::onKeyPress(int32_t key, int16_t modifier) {
