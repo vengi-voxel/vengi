@@ -228,7 +228,12 @@ void Filesystem::shutdown() {
 std::string Filesystem::absolutePath(const std::string& path) {
 	uv_fs_t req;
 	uv_fs_realpath(nullptr, &req, path.c_str(), nullptr);
-	std::string abspath = (const char *)uv_fs_get_ptr(&req);
+	const char *c = (const char *)uv_fs_get_ptr(&req);
+	if (c == nullptr) {
+		uv_fs_req_cleanup(&req);
+		return "";
+	}
+	std::string abspath = c;
 	normalizePath(abspath);
 	uv_fs_req_cleanup(&req);
 	return abspath;
