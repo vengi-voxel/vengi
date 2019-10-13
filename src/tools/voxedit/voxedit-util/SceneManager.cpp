@@ -1184,12 +1184,12 @@ void SceneManager::construct() {
 			return;
 		}
 		const uint8_t oldIndex = core::string::toInt(args[0]);
-		const uint8_t newIndex = core::string::toInt(args[1]);
+		const int newIndex = core::string::toInt(args[1]);
 		replaceColor(oldIndex, newIndex);
-	}).setHelp("Replace a particular palette index with another index");
+	}).setHelp("Replace a particular palette index with another index - if target is -1 is will be removed");
 }
 
-void SceneManager::replaceColor(uint8_t oldIndex, uint8_t newIndex) {
+void SceneManager::replaceColor(uint8_t oldIndex, int newIndex) {
 	struct OnlyParticularIndex {
 		const uint8_t _index;
 		OnlyParticularIndex(uint8_t index) :
@@ -1199,7 +1199,7 @@ void SceneManager::replaceColor(uint8_t oldIndex, uint8_t newIndex) {
 			return voxel.getColor() == _index;
 		}
 	};
-	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, newIndex);
+	const voxel::Voxel voxel = newIndex < 0 ? voxel::Voxel() : voxel::createVoxel(voxel::VoxelType::Generic, newIndex);
 	const OnlyParticularIndex condition(oldIndex);
 
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
