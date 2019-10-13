@@ -824,7 +824,7 @@ bool VoxEditWindow::importHeightmap(const std::string& file) {
 
 bool VoxEditWindow::save(const std::string& file) {
 	if (file.empty()) {
-		getApp()->saveDialog([this] (const std::string file) {save(file); }, SUPPORTED_VOXEL_FORMATS_SAVE);
+		getApp()->saveDialog([this] (const std::string uifile) {save(uifile); }, SUPPORTED_VOXEL_FORMATS_SAVE);
 		return true;
 	}
 	if (!sceneMgr().save(file)) {
