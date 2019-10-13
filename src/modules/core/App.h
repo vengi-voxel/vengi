@@ -412,3 +412,11 @@ inline BindingContext App::bindingContext() const {
 }
 
 }
+
+namespace io {
+
+inline io::FilesystemPtr filesystem() {
+	return core::App::getInstance()->filesystem();
+}
+
+}
