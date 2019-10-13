@@ -71,7 +71,7 @@ SceneManager::~SceneManager() {
 
 bool SceneManager::exportModel(const std::string& file) {
 	core_trace_scoped(EditorSceneExportModel);
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file), io::FileMode::Write);
+	const io::FilePtr& filePtr = io::filesystem()->open(std::string(file), io::FileMode::Write);
 	if (!(bool)filePtr) {
 		return false;
 	}
@@ -85,7 +85,7 @@ bool SceneManager::exportModel(const std::string& file) {
 
 bool SceneManager::exportLayerModel(int layerId, const std::string& file) {
 	core_trace_scoped(EditorSceneExportLayerModel);
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file), io::FileMode::Write);
+	const io::FilePtr& filePtr = io::filesystem()->open(std::string(file), io::FileMode::Write);
 	if (!(bool)filePtr) {
 		return false;
 	}
@@ -163,7 +163,7 @@ bool SceneManager::voxelizeModel(const mesh::MeshPtr& meshPtr) {
 }
 
 bool SceneManager::loadPalette(const std::string& paletteName) {
-	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& filesystem = io::filesystem();
 	const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName.c_str()));
 	const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", paletteName.c_str()));
 	if (voxel::overrideMaterialColors(paletteFile, luaFile)) {
@@ -187,7 +187,7 @@ bool SceneManager::importPalette(const std::string& file) {
 		Log::warn("Failed to import palette for image %s", file.c_str());
 		return false;
 	}
-	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& fs = io::filesystem();
 	const std::string paletteName(core::string::extractFilename(file.c_str()));
 	const std::string& paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
 	const io::FilePtr& pngFile = fs->open(paletteFilename, io::FileMode::Write);
@@ -249,7 +249,12 @@ void SceneManager::autosave() {
 		if (core::string::startsWith(_lastFilename.c_str(), "autosave-")) {
 			autoSaveFilename = _lastFilename;
 		} else {
-			autoSaveFilename = "autosave-" + _lastFilename;
+			const io::FilePtr file = io::filesystem()->open(_lastFilename);
+			const std::string& p = file->path();
+			const std::string& f = file->fileName();
+			const std::string& e = file->extension();
+			autoSaveFilename = core::string::format("%s/autosave-%s.%s",
+					p.c_str(), f.c_str(), e.c_str());
 		}
 	}
 	if (save(autoSaveFilename, true)) {
@@ -270,7 +275,7 @@ bool SceneManager::saveLayer(int layerId, const std::string& dir) {
 	volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
 	voxel::VoxFormat f;
 	const std::string file = dir + "/" + layer.name + ".vox";
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file, io::FileMode::Write);
+	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
 	if (f.saveGroups(volumes, filePtr)) {
 		Log::info("Saved layer %i to %s", layerId, file.c_str());
 		return true;
@@ -292,7 +297,11 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 		Log::warn("No filename given for saving");
 		return false;
 	}
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file, io::FileMode::Write);
+	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
+	if (!filePtr->exists()) {
+		Log::warn("Failed to perform autosaving");
+		return false;
+	}
 	bool saved = false;
 	std::string ext = filePtr->extension();
 	if (ext.empty()) {
@@ -349,7 +358,7 @@ bool SceneManager::prefab(const std::string& file) {
 	if (file.empty()) {
 		return false;
 	}
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file);
+	const io::FilePtr& filePtr = io::filesystem()->open(file);
 	if (!(bool)filePtr) {
 		Log::error("Failed to open model file %s", file.c_str());
 		return false;
@@ -368,7 +377,7 @@ bool SceneManager::load(const std::string& file) {
 	if (file.empty()) {
 		return false;
 	}
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file);
+	const io::FilePtr& filePtr = io::filesystem()->open(file);
 	if (!(bool)filePtr) {
 		Log::error("Failed to open model file '%s'", file.data());
 		return false;
@@ -1228,7 +1237,7 @@ bool SceneManager::init() {
 	}
 
 	const char *paletteName = core::Var::getSafe(cfg::VoxEditLastPalette)->strVal().c_str();
-	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& filesystem = io::filesystem();
 	const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName));
 	const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", paletteName));
 	if (!voxel::initMaterialColors(paletteFile, luaFile)) {
