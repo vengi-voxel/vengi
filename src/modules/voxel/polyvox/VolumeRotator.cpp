@@ -74,7 +74,7 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 	return destination;
 }
 
-voxel::RawVolume* rotateAxis(const voxel::RawVolume* source, math::Axis axis) {
+RawVolume* rotateAxis(const RawVolume* source, math::Axis axis) {
 	const voxel::Region& srcRegion = source->region();
 	voxel::Region destRegion = srcRegion;
 	if (axis == math::Axis::Y) {
@@ -94,9 +94,9 @@ voxel::RawVolume* rotateAxis(const voxel::RawVolume* source, math::Axis axis) {
 		destRegion.setUpperX(srcRegion.getUpperY());
 	}
 	core_assert(destRegion.isValid());
-	voxel::RawVolume* destination = new RawVolume(destRegion);
-	voxel::RawVolume::Sampler destSampler(destination);
-	voxel::RawVolume::Sampler srcSampler(source);
+	RawVolume* destination = new RawVolume(destRegion);
+	RawVolume::Sampler destSampler(destination);
+	RawVolume::Sampler srcSampler(source);
 
 	for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
 		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
@@ -119,6 +119,55 @@ voxel::RawVolume* rotateAxis(const voxel::RawVolume* source, math::Axis axis) {
 				}
 				core_assert_always(destSampler.setPosition(pos));
 				core_assert_always(destSampler.setVoxel(v));
+			}
+		}
+	}
+	return destination;
+}
+
+RawVolume* mirrorAxis(const RawVolume* source, math::Axis axis) {
+	const voxel::Region& srcRegion = source->region();
+	RawVolume* destination = new RawVolume(source);
+	RawVolume::Sampler destSampler(destination);
+	RawVolume::Sampler srcSampler(source);
+
+	const glm::ivec3& mins = srcRegion.getLowerCorner();
+	const glm::ivec3& maxs = srcRegion.getUpperCorner();
+
+	if (axis == math::Axis::X) {
+		for (int32_t z = mins.z; z <= maxs.z; ++z) {
+			for (int32_t y = mins.y; y <= maxs.y; ++y) {
+				srcSampler.setPosition(mins.x, y, z);
+				destSampler.setPosition(maxs.x, y, z);
+				for (int32_t x = mins.x; x <= maxs.x; ++x) {
+					destSampler.setVoxel(srcSampler.voxel());
+					srcSampler.movePositiveX();
+					destSampler.moveNegativeX();
+				}
+			}
+		}
+	} else if (axis == math::Axis::Y) {
+		for (int32_t z = mins.z; z <= maxs.z; ++z) {
+			for (int32_t x = mins.x; x <= maxs.x; ++x) {
+				srcSampler.setPosition(x, mins.y, z);
+				destSampler.setPosition(x, maxs.y, z);
+				for (int32_t y = mins.y; y <= maxs.y; ++y) {
+					destSampler.setVoxel(srcSampler.voxel());
+					srcSampler.movePositiveY();
+					destSampler.moveNegativeY();
+				}
+			}
+		}
+	} else if (axis == math::Axis::Z) {
+		for (int32_t y = mins.y; y <= maxs.y; ++y) {
+			for (int32_t x = mins.x; x <= maxs.x; ++x) {
+				srcSampler.setPosition(x, y, mins.z);
+				destSampler.setPosition(x, y, maxs.z);
+				for (int32_t z = mins.z; z <= maxs.z; ++z) {
+					destSampler.setVoxel(srcSampler.voxel());
+					srcSampler.movePositiveZ();
+					destSampler.moveNegativeZ();
+				}
 			}
 		}
 	}

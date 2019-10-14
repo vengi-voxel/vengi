@@ -191,6 +191,7 @@ private:
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void replaceColor(uint8_t oldIndex, int newIndex);
+	void mirror(math::Axis axis);
 public:
 	SceneManager();
 	~SceneManager();

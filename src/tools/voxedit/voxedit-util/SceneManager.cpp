@@ -1187,6 +1187,35 @@ void SceneManager::construct() {
 		const int newIndex = core::string::toInt(args[1]);
 		replaceColor(oldIndex, newIndex);
 	}).setHelp("Replace a particular palette index with another index - if target is -1 is will be removed");
+
+	core::Command::registerCommand("mirror", [&] (const core::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::info("Usage: mirror <axis:x,y,z>");
+			return;
+		}
+		const char axisChar = args[0][0];
+		math::Axis axis = math::Axis::X;
+		if (axisChar == 'y') {
+			axis = math::Axis::Y;
+		} else if (axisChar == 'z') {
+			axis = math::Axis::Z;
+		}
+		mirror(axis);
+	}).setHelp("Mirror the whole model around the given axis");
+}
+
+void SceneManager::mirror(math::Axis axis) {
+	_layerMgr.foreachGroupLayer([&] (int layerId) {
+		auto* model = _volumeRenderer.volume(layerId);
+		if (model == nullptr) {
+			return;
+		}
+		voxel::RawVolume* newVolume = voxel::mirrorAxis(model, axis);
+		voxel::Region r = newVolume->region();
+		r.accumulate(model->region());
+		setNewVolume(layerId, newVolume);
+		modified(layerId, r);
+	});
 }
 
 void SceneManager::replaceColor(uint8_t oldIndex, int newIndex) {
