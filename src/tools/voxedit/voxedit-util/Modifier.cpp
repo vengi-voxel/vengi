@@ -226,15 +226,15 @@ void Modifier::construct() {
 		updateSelectionBuffers();
 	}).setHelp("Unselect all");
 
-	core::Command::registerCommand("mirrorx", [&] (const core::CmdArgs& args) {
+	core::Command::registerCommand("mirroraxisx", [&] (const core::CmdArgs& args) {
 		setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the x axis");
 
-	core::Command::registerCommand("mirrory", [&] (const core::CmdArgs& args) {
+	core::Command::registerCommand("mirroraxisy", [&] (const core::CmdArgs& args) {
 		setMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the y axis");
 
-	core::Command::registerCommand("mirrorz", [&] (const core::CmdArgs& args) {
+	core::Command::registerCommand("mirroraxisz", [&] (const core::CmdArgs& args) {
 		setMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the z axis");
 

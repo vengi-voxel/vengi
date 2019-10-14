@@ -168,10 +168,10 @@ bool VoxEditWindow::init() {
 	_lockedY = getWidgetByType<tb::TBCheckBox>("locky");
 	_lockedZ = getWidgetByType<tb::TBCheckBox>("lockz");
 
-	_mirrorNone = getWidgetByType<tb::TBRadioButton>("mirrornone");
-	_mirrorX = getWidgetByType<tb::TBRadioButton>("mirrorx");
-	_mirrorY = getWidgetByType<tb::TBRadioButton>("mirrory");
-	_mirrorZ = getWidgetByType<tb::TBRadioButton>("mirrorz");
+	_mirrorAxisNone = getWidgetByType<tb::TBRadioButton>("mirroraxisnone");
+	_mirrorAxisX = getWidgetByType<tb::TBRadioButton>("mirroraxisx");
+	_mirrorAxisY = getWidgetByType<tb::TBRadioButton>("mirroraxisy");
+	_mirrorAxisZ = getWidgetByType<tb::TBRadioButton>("mirroraxisz");
 
 	_placeModifier = getWidgetByType<tb::TBRadioButton>("actionplace");
 	_deleteModifier = getWidgetByType<tb::TBRadioButton>("actiondelete");
@@ -620,7 +620,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	}
 
 	static const char *ACTIONS[] = {
-		"mirrorx", "mirrory", "mirrorz", "mirrornone", "actionselect",
+		"mirroraxisx", "mirroraxisy", "mirroraxisz", "mirroraxisnone", "actionselect",
 		"actionplace", "actiondelete", "actioncolorize", "actionoverride",
 		nullptr
 	};
@@ -732,17 +732,17 @@ void VoxEditWindow::onProcess() {
 	}
 
 	const math::Axis mirrorAxis = modifier.mirrorAxis();
-	if (_mirrorNone != nullptr) {
-		_mirrorNone->setValue(mirrorAxis == math::Axis::None);
+	if (_mirrorAxisNone != nullptr) {
+		_mirrorAxisNone->setValue(mirrorAxis == math::Axis::None);
 	}
-	if (_mirrorX != nullptr) {
-		_mirrorX->setValue(mirrorAxis == math::Axis::X);
+	if (_mirrorAxisX != nullptr) {
+		_mirrorAxisX->setValue(mirrorAxis == math::Axis::X);
 	}
-	if (_mirrorY != nullptr) {
-		_mirrorY->setValue(mirrorAxis == math::Axis::Y);
+	if (_mirrorAxisY != nullptr) {
+		_mirrorAxisY->setValue(mirrorAxis == math::Axis::Y);
 	}
-	if (_mirrorZ != nullptr) {
-		_mirrorZ->setValue(mirrorAxis == math::Axis::Z);
+	if (_mirrorAxisZ != nullptr) {
+		_mirrorAxisZ->setValue(mirrorAxis == math::Axis::Z);
 	}
 }
 

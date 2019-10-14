@@ -172,13 +172,13 @@ TBLayout: distribution: gravity, axis: y
 					TBSection: value: 1, text: "Mirror axis"
 						TBLayout: position: left top, axis: x
 							TBClickLabel: text: none
-								TBRadioButton: group-id: mirrorgroup, id: mirrornone
+								TBRadioButton: group-id: mirrorgroup, id: mirroraxisnone
 							TBClickLabel: text: x
-								TBRadioButton: group-id: mirrorgroup, id: mirrorx
+								TBRadioButton: group-id: mirrorgroup, id: mirroraxisx
 							TBClickLabel: text: y
-								TBRadioButton: group-id: mirrorgroup, id: mirrory
+								TBRadioButton: group-id: mirrorgroup, id: mirroraxisy
 							TBClickLabel: text: z
-								TBRadioButton: group-id: mirrorgroup, id: mirrorz
+								TBRadioButton: group-id: mirrorgroup, id: mirroraxisz
 
 					TBTextField: gravity: left right, skin: Header, text: Layers
 					LayerWidget: id: layercontainer, gravity: top bottom

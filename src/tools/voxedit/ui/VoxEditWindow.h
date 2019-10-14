@@ -48,10 +48,10 @@ private:
 	tb::TBCheckBox* _lockedY = nullptr;
 	tb::TBCheckBox* _lockedZ = nullptr;
 
-	tb::TBRadioButton* _mirrorNone = nullptr;
-	tb::TBRadioButton* _mirrorX = nullptr;
-	tb::TBRadioButton* _mirrorY = nullptr;
-	tb::TBRadioButton* _mirrorZ = nullptr;
+	tb::TBRadioButton* _mirrorAxisNone = nullptr;
+	tb::TBRadioButton* _mirrorAxisX = nullptr;
+	tb::TBRadioButton* _mirrorAxisY = nullptr;
+	tb::TBRadioButton* _mirrorAxisZ = nullptr;
 
 	tb::TBRadioButton* _selectModifier = nullptr;
 	tb::TBRadioButton* _placeModifier = nullptr;
