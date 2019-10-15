@@ -298,7 +298,7 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 	}
 	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
 	if (!filePtr->exists()) {
-		Log::warn("Failed to perform autosaving");
+		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
 	}
 	bool saved = false;
@@ -309,12 +309,15 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 	}
 	voxel::VoxelVolumes volumes;
 	const int layers = (int)_layerMgr.layers().size();
+	Log::debug("Trying to save %i layers", layers);
 	for (int idx = 0; idx < layers; ++idx) {
 		voxel::RawVolume* v = _volumeRenderer.volume(idx);
 		if (v == nullptr) {
+			Log::debug("No volume for layer %i", idx);
 			continue;
 		}
 		if (_volumeRenderer.empty(idx)) {
+			Log::debug("Layer %i is empty", idx);
 			continue;
 		}
 		const Layer& layer = _layerMgr.layer(idx);
@@ -322,6 +325,7 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 	}
 
 	if (volumes.empty()) {
+		Log::warn("No volumes for saving found");
 		return false;
 	}
 
@@ -349,6 +353,8 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 		}
 		core::Var::get(cfg::VoxEditLastFile)->setVal(file);
 		_needAutoSave = false;
+	} else {
+		Log::warn("Failed to sav to desired format");
 	}
 	return saved;
 }
