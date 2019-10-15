@@ -1201,7 +1201,7 @@ void SceneManager::construct() {
 			axis = math::Axis::Z;
 		}
 		mirror(axis);
-	}).setHelp("Mirror the whole model around the given axis");
+	}).setHelp("Mirror the selected layers around the given axis");
 }
 
 void SceneManager::mirror(math::Axis axis) {
