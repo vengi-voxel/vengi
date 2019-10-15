@@ -129,7 +129,7 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 }
 
 bool Shader::loadFromFile(const std::string& filename, ShaderType shaderType) {
-	const std::string& buffer = core::App::getInstance()->filesystem()->load(filename);
+	const std::string& buffer = io::filesystem()->load(filename);
 	if (buffer.empty()) {
 		if (shaderType == ShaderType::Vertex || shaderType == ShaderType::Fragment) {
 			Log::error("could not load shader %s", filename.c_str());

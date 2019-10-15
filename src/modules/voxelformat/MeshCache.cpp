@@ -26,7 +26,7 @@ voxel::Mesh& MeshCache::cacheEntry(const char *path) {
 
 bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 	Log::info("Loading volume from %s", fullPath);
-	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& fs = io::filesystem();
 	const io::FilePtr& file = fs->open(fullPath);
 	voxel::VoxelVolumes volumes;
 	if (!voxelformat::loadVolumeFormat(file, volumes)) {

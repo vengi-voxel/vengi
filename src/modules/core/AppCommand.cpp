@@ -40,7 +40,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 
 	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
 		std::vector<io::Filesystem::DirEntry> entries;
-		const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+		const io::FilesystemPtr& filesystem = io::filesystem();
 		const io::FilePtr& file = filesystem->open(str);
 		std::string filter;
 		std::string dir = file->path();
@@ -71,7 +71,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::info("Usage: exec <file>");
 			return;
 		}
-		const std::string& cmds = core::App::getInstance()->filesystem()->load(args[0]);
+		const std::string& cmds = io::filesystem()->load(args[0]);
 		if (cmds.empty()) {
 			Log::warn("Could not load script - or file was empty.");
 			return;

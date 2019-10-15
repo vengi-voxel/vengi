@@ -17,7 +17,7 @@ public:
 
 	bool onInitApp() override {
 		voxel::initDefaultMaterialColors();
-		const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+		const io::FilesystemPtr& filesystem = io::filesystem();
 		const std::string& luaBiomes = filesystem->load("biomes.lua");
 		Log::info("%s", luaBiomes.c_str());
 		_biomeManager.init(luaBiomes);
@@ -32,7 +32,7 @@ BENCHMARK_DEFINE_F(PagedVolumeBenchmark, pageIn) (benchmark::State& state) {
 	pager.setSeed(0l);
 	pager.setPersist(false);
 	voxel::PagedVolume *volumeData = new voxel::PagedVolume(&pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
-	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& filesystem = io::filesystem();
 	const std::string& luaParameters = filesystem->load("worldparams.lua");
 	pager.init(volumeData, &_biomeManager, luaParameters);
 	const glm::ivec3 meshSize(16, 128, 16);

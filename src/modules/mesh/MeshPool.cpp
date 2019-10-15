@@ -39,7 +39,7 @@ void MeshPool::shutdown() {
 }
 
 std::string MeshPool::getName(std::string_view id) const {
-	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& filesystem = io::filesystem();
 	const std::array<std::string, 2> directories {".", "mesh"};
 	for (const auto& dir : directories) {
 		for (const char **format = supportedFormats; *format != nullptr; format++) {

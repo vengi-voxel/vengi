@@ -25,7 +25,7 @@ int complete(std::string dir, const std::string& match, std::vector<std::string>
 	const std::string_view& filterName = core::string::extractFilenameWithExtension(filter.c_str());
 	const std::string_view& filterPath = core::string::extractPath(filter.c_str());
 	const std::string filterPathStr(filterPath);
-	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& fs = io::filesystem();
 	fs->list(dir, entries, currentMatch + "*");
 	int i = 0;
 	for (const io::Filesystem::DirEntry& entry : entries) {

@@ -120,7 +120,7 @@ bool Shader::loadProgram(const std::string& filename) {
 }
 
 bool Shader::loadFromFile(const std::string& filename) {
-	const std::string& buffer = core::App::getInstance()->filesystem()->load(filename);
+	const std::string& buffer = io::filesystem()->load(filename);
 	if (buffer.empty()) {
 		return false;
 	}

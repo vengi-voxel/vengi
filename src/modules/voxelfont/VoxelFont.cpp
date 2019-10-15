@@ -67,7 +67,7 @@ bool VoxelFont::init(const char* filename, int size, int thickness, uint8_t opti
 	_optionMask = optionMask;
 	core_assert_msg(size < 255, "size %i exceeds max vertices position due to limited data type in Vertex class", size);
 	core_assert_msg(size > 0, "size must be > 0, but is %i", size);
-	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(filename);
+	const io::FilePtr& file = io::filesystem()->open(filename);
 	if (!file->exists()) {
 		Log::info("Failed to initialize voxel font, %s doesn't exist", filename);
 		return false;

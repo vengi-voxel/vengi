@@ -151,7 +151,7 @@ void KeyBindingHandler::shutdown() {
 		keybindings += toString(key, modifier) + " " + command + '\n';
 	}
 	Log::trace("%s", keybindings.c_str());
-	core::App::getInstance()->filesystem()->write("keybindings.cfg", keybindings);
+	io::filesystem()->write("keybindings.cfg", keybindings);
 }
 
 bool KeyBindingHandler::init() {
@@ -159,7 +159,7 @@ bool KeyBindingHandler::init() {
 }
 
 bool KeyBindingHandler::load(const std::string& filename) {
-	const std::string& bindings = core::App::getInstance()->filesystem()->load(filename);
+	const std::string& bindings = io::filesystem()->load(filename);
 	if (bindings.empty()) {
 		return false;
 	}

@@ -157,7 +157,7 @@ private:
 };
 
 LayerItemSource::LayerItemSource() : TBSelectItemSourceList() {
-	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& fs = io::filesystem();
 	_layerItemDefinition = fs->load("ui/widget/voxedit-layer-item.tb.txt");
 }
 

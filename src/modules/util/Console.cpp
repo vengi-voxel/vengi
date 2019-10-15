@@ -80,7 +80,7 @@ void Console::construct() {
 }
 
 bool Console::init() {
-	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& fs = io::filesystem();
 	const std::string& content = fs->load("%s", historyFilename);
 	core::string::splitString(content, _history, "\n");
 	_historyPos = _history.size();
@@ -96,7 +96,7 @@ void Console::shutdown() {
 		content += '\n';
 	}
 
-	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& fs = io::filesystem();
 	if (!fs->write(historyFilename, content)) {
 		Log::warn("Failed to write the history");
 	} else {

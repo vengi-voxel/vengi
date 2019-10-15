@@ -33,7 +33,7 @@ std::pair<std::string, bool> handleIncludes(const std::string& buffer, const std
 
 			++index;
 			++i;
-			const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+			const io::FilesystemPtr& fs = io::filesystem();
 			for (; i != buffer.end(); ++i, ++index) {
 				const char *cEnd = &buffer[index];
 				if (*cEnd != '"' && *cEnd != '>') {

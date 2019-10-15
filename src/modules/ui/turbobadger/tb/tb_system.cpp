@@ -96,7 +96,7 @@ TBFile *TBFile::open(const char *filename, TBFileMode mode) {
 	io::FilePtr f;
 	switch (mode) {
 	case MODE_READ:
-		f = core::App::getInstance()->filesystem()->open(filename, io::FileMode::Read);
+		f = io::filesystem()->open(filename, io::FileMode::Read);
 		break;
 	default:
 		break;

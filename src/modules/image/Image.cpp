@@ -65,7 +65,7 @@ ImagePtr loadImage(const io::FilePtr& file, bool async) {
 }
 
 ImagePtr loadImage(const std::string& filename, bool async) {
-	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(filename);
+	const io::FilePtr& file = io::filesystem()->open(filename);
 	return loadImage(file, async);
 }
 

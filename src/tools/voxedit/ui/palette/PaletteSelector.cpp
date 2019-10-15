@@ -18,7 +18,7 @@ PaletteSelector::PaletteSelector(ui::turbobadger::Window* window) :
 	_currentSelectedPalette = voxel::getDefaultPaletteName();
 
 	std::vector<io::Filesystem::DirEntry> entities;
-	core::App::getInstance()->filesystem()->list("", entities, "palette-*.png");
+	io::filesystem()->list("", entities, "palette-*.png");
 	if (entities.empty()) {
 		Log::error("Could not find any palettes");
 	}

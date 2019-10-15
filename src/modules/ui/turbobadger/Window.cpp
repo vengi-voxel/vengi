@@ -204,7 +204,7 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 bool Window::loadResourceFile(const char *filename) {
 	_filename = filename;
 	tb::TBNode node;
-	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& filesystem = io::filesystem();
 	const io::FilePtr& file = filesystem->open(filename);
 	if (!file->exists()) {
 		Log::error("%s doesn't exists", filename);

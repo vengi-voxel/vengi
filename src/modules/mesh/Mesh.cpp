@@ -91,7 +91,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 		Log::error("Failed to load mesh: No filename given");
 		return false;
 	}
-	const io::FilePtr& f = core::App::getInstance()->filesystem()->open(filename, io::FileMode::Read);
+	const io::FilePtr& f = io::filesystem()->open(filename, io::FileMode::Read);
 	if (!f->exists()) {
 		Log::error("Could not open mesh %s", filename.c_str());
 		return false;

@@ -10,7 +10,7 @@ namespace core {
 class CommandCompleterTest: public AbstractTest {
 public:
 	bool onInitApp() override{
-		const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+		const io::FilesystemPtr& fs = io::filesystem();
 		fs->createDir("commandcompletertest/dir1");
 		fs->syswrite("commandcompletertest/dir1/ignored", "ignore");
 		fs->syswrite("commandcompletertest/dir1/ignoredtoo", "ignore");

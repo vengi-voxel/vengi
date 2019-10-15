@@ -282,7 +282,7 @@ std::string extractPaletteName(const std::string& file) {
 }
 
 bool initDefaultMaterialColors() {
-	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	const io::FilesystemPtr& filesystem = io::filesystem();
 	const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", getDefaultPaletteName()));
 	const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", getDefaultPaletteName()));
 	return initMaterialColors(paletteFile, luaFile);
