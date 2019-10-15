@@ -20,7 +20,6 @@ set(SRCS
 
 	tool/ImageUtils.h tool/ImageUtils.cpp
 	tool/Fill.h tool/Fill.cpp
-	tool/Crop.h tool/Crop.cpp
 	tool/Resize.h tool/Resize.cpp
 )
 set(LIB voxedit-util)

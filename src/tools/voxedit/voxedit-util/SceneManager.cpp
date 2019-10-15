@@ -49,7 +49,6 @@
 #include "CustomBindingContext.h"
 #include "Config.h"
 #include "tool/Fill.h"
-#include "tool/Crop.h"
 #include "tool/Resize.h"
 #include "tool/ImageUtils.h"
 
@@ -437,12 +436,12 @@ void SceneManager::crop() {
 		Log::info("Empty volumes can't be cropped");
 		return;
 	}
-	voxel::RawVolume* newVolume = voxedit::tool::crop(volume(layerId));
+	voxel::RawVolume* newVolume = voxel::cropVolume(volume(layerId));
 	if (newVolume == nullptr) {
 		return;
 	}
 	setNewVolume(layerId, newVolume, true);
-	modified(layerId, voxel::Region::InvalidRegion);
+	modified(layerId, newVolume->region());
 }
 
 void SceneManager::resize(const glm::ivec3& size) {
