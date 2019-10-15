@@ -11,3 +11,4 @@ luac.out
 *.patch
 /CMakeLists.local
 .DS_Store
+autosave-*
