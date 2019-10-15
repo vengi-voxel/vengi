@@ -25,6 +25,15 @@ TEST_F(TokenizerTest, testTokenizerOnlyFirstMatch) {
 	EXPECT_EQ(1u, t.size()) << toString(t.tokens());
 }
 
+TEST_F(TokenizerTest, testTokenizerInvalidFile) {
+	const io::FilePtr& file = io::filesystem()->open("tokenizer.string");
+	uint8_t *buf;
+	const int n = file->read((void**)&buf);
+	ASSERT_TRUE(buf != nullptr);
+	core::Tokenizer t((const char *)buf, n, "\n");
+	EXPECT_EQ(0u, t.size()) << toString(t.tokens());
+}
+
 TEST_F(TokenizerTest, testTokenizerSecondMatchButEmptyString) {
 	core::Tokenizer t("abc;def", 4, ";");
 	ASSERT_EQ(2u, t.size()) << toString(t.tokens());

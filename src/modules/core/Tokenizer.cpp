@@ -1,5 +1,10 @@
+/**
+ * @file
+ */
+
 #include "Tokenizer.h"
 #include "UTF8.h"
+#include <string.h>
 
 namespace core {
 
@@ -21,12 +26,18 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char
 quote:
 		if (c == '"') {
 			size_t cl = core::utf8::lengthChar(c);
+			if (cl == 0u) {
+				return;
+			}
 			_len -= cl;
 			s += cl;
 			for (;;) {
 				// don't skip comments or whitespaces here, an inner string should be preserved
 				c = *s;
 				cl = core::utf8::lengthChar(c);
+				if (cl == 0u) {
+					return;
+				}
 				_len -= cl;
 				s += cl;
 				if (c == '"') {
@@ -59,9 +70,8 @@ quote:
 				_tokens.push_back(token);
 				if (_len <= 0) {
 					break;
-				} else {
-					continue;
 				}
+				continue;
 			}
 		}
 
@@ -69,6 +79,9 @@ quote:
 		if (lastCharIsSep) {
 			_tokens.push_back(token);
 			const size_t cl = core::utf8::lengthChar(c);
+			if (cl == 0u) {
+				return;
+			}
 			_len -= cl;
 			s += cl;
 			continue;
@@ -77,12 +90,18 @@ quote:
 		if (isSeparator(c, split)) {
 			_tokens.push_back(token);
 			const size_t cl = core::utf8::lengthChar(c);
+			if (cl == 0u) {
+				return;
+			}
 			_len -= cl;
 			s += cl;
 			continue;
 		}
 		for (;;) {
 			size_t cl = core::utf8::lengthChar(c);
+			if (cl == 0u) {
+				return;
+			}
 			_len -= cl;
 			s += cl;
 			if (skipComments(&s, false)) {
@@ -98,6 +117,9 @@ quote:
 			lastCharIsSep = isSeparator(c, sep);
 			if (lastCharIsSep) {
 				cl = core::utf8::lengthChar(c);
+				if (cl == 0u) {
+					return;
+				}
 				_len -= cl;
 				s += cl;
 				break;
@@ -177,6 +199,9 @@ char Tokenizer::skip(const char **s, bool skipWhitespace) {
 				return '\0';
 			}
 			const size_t cl = core::utf8::lengthChar(c);
+			if (cl == 0u) {
+				return '\0';
+			}
 			_len -= cl;
 			if (_len < 0) {
 				return '\0';
@@ -186,6 +211,10 @@ char Tokenizer::skip(const char **s, bool skipWhitespace) {
 	}
 
 	if (!skipComments(s, skipWhitespace)) {
+		const size_t cl = core::utf8::lengthChar(c);
+		if (cl == 0u) {
+			return '\0';
+		}
 		return c;
 	}
 	return **s;
