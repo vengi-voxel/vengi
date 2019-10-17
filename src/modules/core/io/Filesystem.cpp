@@ -362,13 +362,15 @@ io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
 	if (mode == FileMode::Write && !isRelativePath(filename)) {
 		return std::make_shared<make_shared_enabler>(filename, mode);
 	}
-	if (io::File(filename, FileMode::Read).exists()) {
+	const io::File f(filename, FileMode::Read);
+	if (f.exists()) {
 		Log::debug("loading file %s from current working dir", filename.c_str());
 		return std::make_shared<make_shared_enabler>(filename, mode);
 	}
 	for (const std::string& p : _paths) {
 		const std::string fullpath = p + filename;
-		if (io::File(fullpath, FileMode::Read).exists()) {
+		const io::File fullFile(fullpath, FileMode::Read);
+		if (fullFile.exists()) {
 			Log::debug("loading file %s from %s", filename.c_str(), p.c_str());
 			return std::make_shared<make_shared_enabler>(fullpath, mode);
 		}

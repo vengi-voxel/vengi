@@ -41,7 +41,8 @@ TEST_F(FileStreamTest, testFileStreamRead) {
 }
 
 TEST_F(FileStreamTest, testFileStreamWrite) {
-	const FilePtr& file = _testApp->filesystem()->open("filestream-writetest", io::FileMode::Write);
+	const io::FilesystemPtr& fs = io::filesystem();
+	const FilePtr& file = fs->open(fs->homePath() + "/filestream-writetest", io::FileMode::Write);
 	File* fileRaw = file.get();
 	FileStream stream(fileRaw);
 	EXPECT_TRUE(stream.addInt(1));
