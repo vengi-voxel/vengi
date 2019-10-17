@@ -190,6 +190,15 @@ void File::close() {
 	}
 }
 
+bool File::open(FileMode mode) {
+	if (_file != nullptr) {
+		return -1;
+	}
+	_mode = mode;
+	_file = createRWops(mode);
+	return _file != nullptr;
+}
+
 long File::tell() const {
 	if (_file != nullptr) {
 		return SDL_RWtell(_file);

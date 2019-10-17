@@ -47,11 +47,12 @@ TEST_F(FileStreamTest, testFileStreamWrite) {
 	FileStream stream(fileRaw);
 	EXPECT_TRUE(stream.addInt(1));
 	EXPECT_EQ(4l, stream.size());
-	EXPECT_EQ(4l, file->length());
 	EXPECT_TRUE(stream.addInt(1));
 	EXPECT_EQ(8l, stream.size());
-	EXPECT_EQ(8l, file->length());
+	file->close();
+	file->open(io::FileMode::Read);
 	EXPECT_TRUE(file->exists());
+	EXPECT_EQ(8l, file->length());
 }
 
 }

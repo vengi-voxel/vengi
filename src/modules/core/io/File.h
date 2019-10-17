@@ -37,6 +37,13 @@ protected:
 public:
 	virtual ~File();
 
+	/**
+	 * @brief Only needed after you have called close(). Otherwise the file is
+	 * automatically opened in the given @c FileMode
+	 * @return @c false if the file could not get opened, or it is still opened,
+	 * @c true otherwise
+	 */
+	bool open(FileMode mode);
 	void close();
 	int read(void *buf, size_t size, size_t maxnum);
 	long tell() const;
