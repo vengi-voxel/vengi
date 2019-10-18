@@ -21,9 +21,9 @@ bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::iv
 	glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)());
 	glm::ivec3 operateMins = mins;
 	glm::ivec3 operateMaxs = maxs;
-	if (!selection.isEmpty()) {
-		operateMins = (glm::max)(mins, selection.mins());
-		operateMaxs = (glm::min)(maxs, selection.maxs());
+	if (!selection.isValid()) {
+		operateMins = (glm::max)(mins, selection.getLowerCorner());
+		operateMaxs = (glm::min)(maxs, selection.getUpperCorner());
 	}
 	int cnt = 0;
 	for (int32_t z = operateMins.z; z <= operateMaxs.z; ++z) {
@@ -65,9 +65,14 @@ bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::iv
 }
 
 voxel::RawVolume* copy(const voxel::RawVolume *volume, const Selection &selection) {
+	if (!selection.isValid()) {
+		Log::debug("Copy failed: Source region is invalid: %s", selection.toString().c_str());
+		return nullptr;
+	}
+
 	const voxel::Region& volumeRegion = volume->region();
 
-	voxel::Region srcRegion(selection.mins(), selection.maxs());
+	voxel::Region srcRegion(selection);
 	srcRegion.cropTo(volumeRegion);
 
 	voxel::RawVolume* v = new voxel::RawVolume(srcRegion);
@@ -75,32 +80,35 @@ voxel::RawVolume* copy(const voxel::RawVolume *volume, const Selection &selectio
 	const glm::ivec3& maxs = srcRegion.getUpperCorner();
 	voxel::RawVolume::Sampler sampler(volume);
 	for (int32_t x = mins.x; x <= maxs.x; ++x) {
-		sampler.setPosition(x, mins.y, mins.z);
 		for (int32_t y = mins.y; y <= maxs.y; ++y) {
+			if (!sampler.setPosition(x, y, mins.z)) {
+				continue;
+			}
 			for (int32_t z = mins.z; z <= maxs.z; ++z) {
 				v->setVoxel(x, y, z, sampler.voxel());
 				sampler.movePositiveZ();
+				if (!sampler.currentPositionValid()) {
+					break;
+				}
 			}
-			sampler.movePositiveY();
 		}
 	}
-	voxel::RawVolume* cropped = voxel::cropVolume(v);
-	delete v;
-	if (cropped == nullptr) {
-		return nullptr;
-	}
-	cropped->translate(-cropped->region().getLowerCorner());
-	return cropped;
+	return v;
 }
 
 voxel::RawVolume* cut(voxel::RawVolume *volume, const Selection &selection, voxel::Region& modifiedRegion) {
+	if (!selection.isValid()) {
+		Log::debug("Cut failed: Source region is invalid: %s", selection.toString().c_str());
+		return nullptr;
+	}
+
 	voxel::RawVolume* v = copy(volume, selection);
 	if (v == nullptr) {
 		return nullptr;
 	}
 
-	const glm::ivec3& mins = selection.mins();
-	const glm::ivec3& maxs = selection.maxs();
+	const glm::ivec3& mins = selection.getLowerCorner();
+	const glm::ivec3& maxs = selection.getUpperCorner();
 	glm::ivec3 modifiedMins((std::numeric_limits<int>::max)());
 	glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)());
 	static constexpr voxel::Voxel AIR;
@@ -108,34 +116,22 @@ voxel::RawVolume* cut(voxel::RawVolume *volume, const Selection &selection, voxe
 	for (int32_t x = mins.x; x <= maxs.x; ++x) {
 		for (int32_t y = mins.y; y <= maxs.y; ++y) {
 			for (int32_t z = mins.z; z <= maxs.z; ++z) {
-				if (!wrapper.setVoxel(x, y, z, AIR)) {
-					continue;
-				}
-				modifiedMins.x = core_min(modifiedMins.x, x);
-				modifiedMins.y = core_min(modifiedMins.y, y);
-				modifiedMins.z = core_min(modifiedMins.z, z);
-
-				modifiedMaxs.x = core_max(modifiedMaxs.x, x);
-				modifiedMaxs.y = core_max(modifiedMaxs.y, y);
-				modifiedMaxs.z = core_max(modifiedMaxs.z, z);
+				wrapper.setVoxel(x, y, z, AIR);
 			}
 		}
 	}
-	modifiedRegion = voxel::Region(modifiedMins, modifiedMaxs);
+	modifiedRegion = wrapper.dirtyRegion();
 
 	return v;
 }
 
 void paste(voxel::RawVolume* out, const voxel::RawVolume* in, const glm::ivec3& referencePosition, voxel::Region& modifiedRegion) {
 	voxel::Region destReg = out->region();
-	destReg.shift(-destReg.getLowerCorner());
-	voxel::Region sourceReg = in->region();
-	sourceReg.shift(-sourceReg.getLowerCorner());
-	destReg.cropTo(sourceReg);
-
 	destReg.shift(referencePosition);
+	voxel::Region sourceReg = in->region();
+
 	if (!destReg.isValid()) {
-		Log::info("dest region is invalid: %s", destReg.toString().c_str());
+		Log::debug("Paste failed: Destination region is invalid: %s", destReg.toString().c_str());
 		return;
 	}
 
@@ -149,12 +145,12 @@ void paste(voxel::RawVolume* out, const voxel::RawVolume* in, const glm::ivec3& 
 	glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)());
 
 	for (int32_t x = srcMins.x, destX = destMins.x; x <= srcMaxs.x; ++x, ++destX) {
-		srcSampler.setPosition(x, srcMins.y, srcMins.z);
-		if (!destSampler.setPosition(destX, destMins.y, destMins.z)) {
-			continue;
-		}
-		for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
-			for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
+		for (int32_t y = sourceReg.getLowerY(), destY = destMins.y; y <= sourceReg.getUpperY(); ++y, ++destY) {
+			srcSampler.setPosition(x, y, srcMins.z);
+			if (!destSampler.setPosition(destX, destY, destMins.z)) {
+				continue;
+			}
+			for (int32_t z = srcMins.z; z <= srcMaxs.z; ++z) {
 				const voxel::Voxel& voxel = srcSampler.voxel();
 				if (destSampler.setVoxel(voxel)) {
 					modifiedMins = (glm::min)(modifiedMins, destSampler.position());
@@ -163,20 +159,14 @@ void paste(voxel::RawVolume* out, const voxel::RawVolume* in, const glm::ivec3& 
 				srcSampler.movePositiveZ();
 				destSampler.movePositiveZ();
 				if (!destSampler.currentPositionValid()) {
-					destSampler.setPosition(destX, destMins.y, 0);
 					break;
 				}
-			}
-			srcSampler.movePositiveY();
-			destSampler.movePositiveY();
-			if (!destSampler.currentPositionValid()) {
-				break;
 			}
 		}
 	}
 
 	modifiedRegion = voxel::Region(modifiedMins, modifiedMaxs);
-	Log::info("Modified %s", modifiedRegion.toString().c_str());
+	Log::debug("Pasted %s", modifiedRegion.toString().c_str());
 }
 
 }

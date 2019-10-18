@@ -525,7 +525,7 @@ void SceneManager::undo() {
 
 void SceneManager::copy() {
 	const Selection& selection = _modifier.selection();
-	if (selection.isEmpty()) {
+	if (!selection.isValid()) {
 		return;
 	}
 	const int idx = _layerMgr.activeLayer();
@@ -554,7 +554,7 @@ void SceneManager::paste(const glm::ivec3& pos) {
 
 void SceneManager::cut() {
 	const Selection& selection = _modifier.selection();
-	if (selection.isEmpty()) {
+	if (!selection.isValid()) {
 		Log::debug("Nothing selected - failed to cut");
 		return;
 	}

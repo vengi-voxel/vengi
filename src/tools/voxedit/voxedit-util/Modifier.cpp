@@ -63,24 +63,22 @@ bool Modifier::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 }
 
 void Modifier::updateSelectionBuffers() {
-	_selectionValid = !_selection.isEmpty();
+	_selectionValid = _selection.isValid();
 	if (!_selectionValid) {
 		return;
 	}
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::Yellow);
-	_shapeBuilder.aabb(_selection);
+	_shapeBuilder.aabb(_selection.getLowerCorner(), _selection.getUpperCorner() + glm::one<glm::ivec3>());
 	_shapeRenderer.createOrUpdate(_selectionIndex, _shapeBuilder);
 }
 
 bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
 	const bool select = (_modifierType & ModifierType::Delete) == ModifierType::None;
 	if (select) {
-		const Selection aabb(mins, maxs);
-		_selection = aabb;
+		_selection = voxel::Region{mins, maxs};
 	} else {
-		static const Selection empty(glm::ivec3(0), glm::ivec3(0));
-		_selection = empty;
+		_selection = voxel::Region::InvalidRegion;
 	}
 	updateSelectionBuffers();
 	return true;
@@ -221,8 +219,7 @@ void Modifier::construct() {
 	}).setHelp("Change the modifier type to 'override'");
 
 	core::Command::registerCommand("unselect", [&] (const core::CmdArgs& args) {
-		static const Selection empty(glm::ivec3(0), glm::ivec3(0));
-		_selection = empty;
+		_selection = voxel::Region::InvalidRegion;
 		updateSelectionBuffers();
 	}).setHelp("Unselect all");
 

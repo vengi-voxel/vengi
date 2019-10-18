@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include "math/AABB.h"
-#include <list>
+#include "voxel/polyvox/Region.h"
 
 namespace voxedit {
 
-using Selection = math::AABB<int>;
+using Selection = voxel::Region;
 
 }
