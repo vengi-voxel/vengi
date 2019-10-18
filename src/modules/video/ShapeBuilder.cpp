@@ -191,6 +191,63 @@ void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float st
 	}
 }
 
+void ShapeBuilder::aabb(const glm::vec3& mins, const glm::vec3& maxs) {
+	setPrimitive(Primitive::Lines);
+	const uint32_t startIndex = (uint32_t)_vertices.size();
+	static const glm::vec3 vecs[8] = {
+		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
+		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
+		glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f, -1.0f, -1.0f),
+		glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3( 1.0f, -1.0f, -1.0f)
+	};
+	reserve(SDL_arraysize(vecs));
+	const glm::vec3& width = maxs - mins;
+	const glm::vec3& halfWidth = width / 2.0f;
+	const glm::vec3& center = maxs - halfWidth;
+	for (size_t i = 0; i < SDL_arraysize(vecs); ++i) {
+		addVertex(vecs[i] * halfWidth + center);
+	}
+
+	// front
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 1);
+
+	addIndex(startIndex + 1);
+	addIndex(startIndex + 3);
+
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 2);
+
+	addIndex(startIndex + 2);
+	addIndex(startIndex + 0);
+
+	// back
+	addIndex(startIndex + 4);
+	addIndex(startIndex + 5);
+
+	addIndex(startIndex + 5);
+	addIndex(startIndex + 7);
+
+	addIndex(startIndex + 7);
+	addIndex(startIndex + 6);
+
+	addIndex(startIndex + 6);
+	addIndex(startIndex + 4);
+
+	// connections
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 4);
+
+	addIndex(startIndex + 2);
+	addIndex(startIndex + 6);
+
+	addIndex(startIndex + 1);
+	addIndex(startIndex + 5);
+
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 7);
+}
+
 void ShapeBuilder::geom(const std::vector<glm::vec3>& vert, const std::vector<uint32_t>& indices, Primitive primitive) {
 	setPrimitive(primitive);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
