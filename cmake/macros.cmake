@@ -80,13 +80,6 @@ function(engine_add_executable)
 		message(STATUS "Build native ${_EXE_TARGET}")
 	endif()
 
-	if (SANITIZER_THREADS AND NOT ${_EXE_NATIVE})
-		set_target_properties(${_EXE_TARGET} PROPERTIES
-				COMPILE_FLAGS "${SANITIZE_THREAD_FLAG}"
-				LINK_FLAGS "${SANITIZE_THREAD_FLAG}"
-		)
-	endif()
-
 	if (_EXE_NOINSTALL)
 		set(INSTALL_DATA False)
 	else()
