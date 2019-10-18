@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 include(CMakeLists.local OPTIONAL)
 set(ROOT_PROJECT_VERSION 0.0.1.0)
 set(ROOT_PROJECT_NAME vengi)
@@ -183,12 +183,16 @@ if (USE_CLANG_TIDY)
 endif()
 
 if (USE_CPPCHECK)
-	find_host_program(CPPCHECK_EXECUTABLE NAMES cppcheck)
-	if (CPPCHECK_EXECUTABLE)
-		set(CPPCHECK_OPTS ${CPPCHECK_EXECUTABLE} "--enable=all")
-		set(CMAKE_C_CPPCHECK "${CLANG_TIDY_OPTS}")
-		set(CMAKE_CXX_CPPCHECK "${CLANG_TIDY_OPTS}")
-	endif()
+find_host_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
+list(APPEND CMAKE_CXX_CPPCHECK
+	"--enable=all"
+	"--inconclusive"
+	"--force"
+	"--inline-suppr"
+	"--suppressions-list=${SCRIPTS_CMAKE_DIR}/CppCheckSuppressions.txt"
+)
+else()
+set(CMAKE_CXX_CPPCHECK "")
 endif()
 
 find_host_program(GDB_EXECUTABLE NAMES ${GDB_BINARY} gdb)
