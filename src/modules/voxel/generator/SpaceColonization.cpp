@@ -163,6 +163,8 @@ bool SpaceColonization::step() {
 		if (i == _branches.end()) {
 			_branches.insert(std::make_pair(branch->_position, branch));
 			branchAdded = true;
+		} else {
+			delete branch;
 		}
 	}
 
