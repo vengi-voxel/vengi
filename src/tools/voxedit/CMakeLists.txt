@@ -52,6 +52,7 @@ set(IMAGES
 	voxedit/ui/skin/voxedit-load
 	voxedit/ui/skin/voxedit-lock-layer
 	voxedit/ui/skin/voxedit-lock-layer-selected
+	voxedit/ui/skin/voxedit-move
 	voxedit/ui/skin/voxedit-new
 	voxedit/ui/skin/voxedit-options
 	voxedit/ui/skin/voxedit-override
@@ -62,6 +63,7 @@ set(IMAGES
 	voxedit/ui/skin/voxedit-reset-camera
 	voxedit/ui/skin/voxedit-rotate
 	voxedit/ui/skin/voxedit-save
+	voxedit/ui/skin/voxedit-shift
 	voxedit/ui/skin/voxedit-show-grid
 	voxedit/ui/skin/voxedit-show-grid-selected
 	voxedit/ui/skin/voxedit-tree_pine

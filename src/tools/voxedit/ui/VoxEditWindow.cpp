@@ -168,6 +168,10 @@ bool VoxEditWindow::init() {
 	_lockedY = getWidgetByType<tb::TBCheckBox>("locky");
 	_lockedZ = getWidgetByType<tb::TBCheckBox>("lockz");
 
+	_translateX = getWidgetByType<tb::TBInlineSelect>("translatex");
+	_translateY = getWidgetByType<tb::TBInlineSelect>("translatey");
+	_translateZ = getWidgetByType<tb::TBInlineSelect>("translatez");
+
 	_mirrorAxisNone = getWidgetByType<tb::TBRadioButton>("mirroraxisnone");
 	_mirrorAxisX = getWidgetByType<tb::TBRadioButton>("mirroraxisx");
 	_mirrorAxisY = getWidgetByType<tb::TBRadioButton>("mirroraxisy");
@@ -398,6 +402,16 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		new NoiseWindow(this);
 	} else if (ev.isAny(TBIDC("optionshowgrid"))) {
 		sceneMgr().gridRenderer().setRenderGrid(ev.target->getValue() == 1);
+	} else if (ev.isAny(TBIDC("shiftvolumes"))) {
+		const int x = _translateX != nullptr ? _translateX->getValue() : 1;
+		const int y = _translateY != nullptr ? _translateY->getValue() : 1;
+		const int z = _translateZ != nullptr ? _translateZ->getValue() : 1;
+		sceneMgr().shift(x, y, z);
+	} else if (ev.isAny(TBIDC("movevoxels"))) {
+		const int x = _translateX != nullptr ? _translateX->getValue() : 1;
+		const int y = _translateY != nullptr ? _translateY->getValue() : 1;
+		const int z = _translateZ != nullptr ? _translateZ->getValue() : 1;
+		sceneMgr().move(x, y, z);
 	} else if (ev.isAny(TBIDC("optionshowaxis"))) {
 		sceneMgr().setRenderAxis(ev.target->getValue() == 1);
 	} else if (ev.isAny(TBIDC("optionshowlockaxis"))) {

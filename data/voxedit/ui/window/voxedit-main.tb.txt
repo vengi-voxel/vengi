@@ -142,6 +142,17 @@ TBLayout: distribution: gravity, axis: y
 							TBButton: @include: definitions>menubutton, text: Extend, id: extend, command: "resize"
 								TBSkinImage: skin: voxedit-extend
 
+					TBSection: value: 1, text: "Translate"
+						TBLayout: position: left top, axis: y, distribution: gravity
+							TBInlineSelect: id: translatex, min: -128, max: 128, value: 0, gravity: left right
+							TBInlineSelect: id: translatey, min: -128, max: 128, value: 0, gravity: left right
+							TBInlineSelect: id: translatez, min: -128, max: 128, value: 0, gravity: left right
+							TBLayout: position: left top, axis: x
+								TBButton: @include: definitions>menubutton, text: Volumes, id: shiftvolumes
+									TBSkinImage: skin: voxedit-shift
+								TBButton: @include: definitions>menubutton, text: Voxels, id: movevoxels
+									TBSkinImage: skin: voxedit-move
+
 					TBSection: value: 1, text: "Cursor"
 						TBLayout: position: left top, axis: y, distribution: gravity
 							TBLayout: axis: x

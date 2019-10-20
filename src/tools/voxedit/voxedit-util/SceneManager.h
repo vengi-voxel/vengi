@@ -168,19 +168,11 @@ private:
 	 * @brief Move the voxels inside the volume regions
 	 */
 	void move(int layerId, const glm::ivec3& m);
-	/**
-	 * @brief Move the voxels inside the volume regions
-	 */
-	void move(int x, int y, int z);
 
 	/**
 	 * @brief Shift the whole volume by the given voxel amount
 	 */
 	void shift(int layerId, const glm::ivec3& m);
-	/**
-	 * @brief Shift the whole volume by the given voxel amount
-	 */
-	void shift(int x, int y, int z);
 
 	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
 
@@ -302,6 +294,15 @@ public:
 	void createPlant(voxel::PlantType type);
 	void createCloud();
 	void createCactus();
+
+	/**
+	 * @brief Shift the whole volume by the given voxel amount
+	 */
+	void shift(int x, int y, int z);
+	/**
+	 * @brief Move the voxels inside the volume regions
+	 */
+	void move(int x, int y, int z);
 
 	void setMousePos(int x, int y);
 

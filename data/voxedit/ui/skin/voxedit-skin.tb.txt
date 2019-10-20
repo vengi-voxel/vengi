@@ -24,6 +24,10 @@ elements
 		bitmap voxedit-options.png
 	voxedit-quit
 		bitmap voxedit-quit.png
+	voxedit-move
+		bitmap voxedit-move.png
+	voxedit-shift
+		bitmap voxedit-shift.png
 	voxedit-redo
 		bitmap voxedit-undo-redo.png
 	voxedit-rotate-left
