@@ -36,8 +36,6 @@
 #include "handle-inl.h"
 #include "fs-fd-hash-inl.h"
 
-#include <wincrypt.h>
-
 
 #define UV_FS_FREE_PATHS         0x0002
 #define UV_FS_FREE_PTR           0x0008
@@ -786,10 +784,13 @@ void fs__read_filemap(uv_fs_t* req, struct uv__fd_info_s* fd_info) {
     int err = 0;
     size_t this_read_size = MIN(req->fs.info.bufs[index].len,
                                 read_size - done_read);
+#ifdef _MSC_VER
     __try {
+#endif
       memcpy(req->fs.info.bufs[index].base,
              (char*)view + view_offset + done_read,
              this_read_size);
+#ifdef _MSC_VER
     }
     __except (fs__filemap_ex_filter(GetExceptionCode(),
                                     GetExceptionInformation(), &err)) {
@@ -797,6 +798,7 @@ void fs__read_filemap(uv_fs_t* req, struct uv__fd_info_s* fd_info) {
       UnmapViewOfFile(view);
       return;
     }
+#endif
     done_read += this_read_size;
   }
   assert(done_read == read_size);
@@ -978,10 +980,13 @@ void fs__write_filemap(uv_fs_t* req, HANDLE file,
   done_write = 0;
   for (index = 0; index < req->fs.info.nbufs; ++index) {
     int err = 0;
+#ifdef _MSC_VER
     __try {
+#endif
       memcpy((char*)view + view_offset + done_write,
              req->fs.info.bufs[index].base,
              req->fs.info.bufs[index].len);
+#ifdef _MSC_VER
     }
     __except (fs__filemap_ex_filter(GetExceptionCode(),
                                     GetExceptionInformation(), &err)) {
@@ -989,6 +994,7 @@ void fs__write_filemap(uv_fs_t* req, HANDLE file,
       UnmapViewOfFile(view);
       return;
     }
+#endif
     done_write += req->fs.info.bufs[index].len;
   }
   assert(done_write == write_size);
@@ -1199,9 +1205,7 @@ void fs__mkdtemp(uv_fs_t* req) {
   WCHAR *cp, *ep;
   unsigned int tries, i;
   size_t len;
-  HCRYPTPROV h_crypt_prov;
   uint64_t v;
-  BOOL released;
 
   len = wcslen(req->file.pathw);
   ep = req->file.pathw + len;
@@ -1210,16 +1214,10 @@ void fs__mkdtemp(uv_fs_t* req) {
     return;
   }
 
-  if (!CryptAcquireContext(&h_crypt_prov, NULL, NULL, PROV_RSA_FULL,
-                           CRYPT_VERIFYCONTEXT)) {
-    SET_REQ_WIN32_ERROR(req, GetLastError());
-    return;
-  }
-
   tries = TMP_MAX;
   do {
-    if (!CryptGenRandom(h_crypt_prov, sizeof(v), (BYTE*) &v)) {
-      SET_REQ_WIN32_ERROR(req, GetLastError());
+    if (uv__random_rtlgenrandom((void *)&v, sizeof(v)) < 0) {
+      SET_REQ_UV_ERROR(req, UV_EIO, ERROR_IO_DEVICE);
       break;
     }
 
@@ -1240,8 +1238,6 @@ void fs__mkdtemp(uv_fs_t* req) {
     }
   } while (--tries);
 
-  released = CryptReleaseContext(h_crypt_prov, 0);
-  assert(released);
   if (tries == 0) {
     SET_REQ_RESULT(req, -1);
   }
@@ -2579,6 +2575,7 @@ static void fs__statfs(uv_fs_t* req) {
   stat_fs->f_files = 0;
   stat_fs->f_ffree = 0;
   req->ptr = stat_fs;
+  req->flags |= UV_FS_FREE_PTR;
   SET_REQ_RESULT(req, 0);
 }
 

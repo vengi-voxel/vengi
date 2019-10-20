@@ -12,6 +12,7 @@ set(uv_sources
     src/fs-poll.c
     src/idna.c
     src/inet.c
+    src/random.c
     src/strscpy.c
     src/threadpool.c
     src/timer.c
@@ -74,6 +75,7 @@ else()
        src/unix/pipe.c
        src/unix/poll.c
        src/unix/process.c
+       src/unix/random-devurandom.c
        src/unix/signal.c
        src/unix/stream.c
        src/unix/tcp.c
@@ -101,8 +103,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
        src/unix/linux-syscalls.c
        src/unix/procfs-exepath.c
        src/unix/pthread-fixes.c
-       src/unix/sysinfo-loadavg.c
-       src/unix/sysinfo-memory.c)
+       src/unix/sysinfo-loadavg.c)
 endif()
 
 if(APPLE OR CMAKE_SYSTEM_NAME MATCHES "Android|Linux|OS/390")
@@ -122,6 +123,14 @@ if(APPLE OR CMAKE_SYSTEM_NAME MATCHES "DragonFly|FreeBSD|NetBSD|OpenBSD")
   list(APPEND uv_sources src/unix/bsd-ifaddrs.c src/unix/kqueue.c)
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+  list(APPEND uv_sources src/unix/random-getrandom.c)
+endif()
+
+if(APPLE OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+  list(APPEND uv_sources src/unix/random-getentropy.c)
+endif()
+
 if(APPLE)
   list(APPEND uv_defines _DARWIN_UNLIMITED_SELECT=1 _DARWIN_USE_64_BIT_INODE=1)
   list(APPEND uv_sources
@@ -138,6 +147,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
        src/unix/linux-inotify.c
        src/unix/linux-syscalls.c
        src/unix/procfs-exepath.c
+       src/unix/random-getrandom.c
+       src/unix/random-sysctl.c
        src/unix/sysinfo-loadavg.c)
 endif()
 
@@ -157,6 +168,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "OS/390")
   list(APPEND uv_defines _OPEN_MSGQ_EXT)
   list(APPEND uv_defines _OPEN_SYS_FILE_EXT)
   list(APPEND uv_defines _OPEN_SYS_IF_EXT)
+  list(APPEND uv_defines _OPEN_SYS_SOCK_EXT3)
   list(APPEND uv_defines _OPEN_SYS_SOCK_IPV6)
   list(APPEND uv_defines _UNIX03_SOURCE)
   list(APPEND uv_defines _UNIX03_THREADS)
