@@ -32,11 +32,11 @@ public:
 	typedef std::vector<glm::vec4> Colors;
 	typedef Colors::const_iterator ColorsIter;
 private:
-	Indices _indices;
-	Texcoords _texcoords;
-	Vertices _vertices;
-	Vertices _normals;
-	Colors _colors;
+	alignas(32) Indices _indices;
+	alignas(32) Texcoords _texcoords;
+	alignas(32) Vertices _vertices;
+	alignas(32) Vertices _normals;
+	alignas(32) Colors _colors;
 	glm::mat3 _rotation = glm::mat3(1.0f);
 	Primitive _primitive = Primitive::Triangles;
 	int _initialSize;

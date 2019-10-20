@@ -28,7 +28,7 @@ core::AppState TestGLSLGeom::onInit() {
 		glm::vec4 pos{0, 0, 0, 1};
 		glm::vec3 color{1, 1, 1};
 	};
-	Buf buf;
+	alignas(32) Buf buf;
 	const int32_t bufIndex = _buffer.create(&buf, sizeof(buf));
 	_buffer.setMode(bufIndex, video::BufferMode::Static);
 

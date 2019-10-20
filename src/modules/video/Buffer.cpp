@@ -123,9 +123,8 @@ bool Buffer::update(int32_t idx, const void* data, size_t size) {
 
 	core_assert(video::boundVertexArray() == InvalidId);
 	const size_t oldSize = _size[idx];
-	const size_t newSize = align(size, _targets[idx]);
 #if VIDEO_BUFFER_HASH_COMPARE
-	if (oldSize == newSize) {
+	if (oldSize == size) {
 		uint32_t newHash = core::hash(data, size);
 		if (newHash == _hash[idx]) {
 			return true;
@@ -135,15 +134,15 @@ bool Buffer::update(int32_t idx, const void* data, size_t size) {
 		_hash[idx] = core::hash(data, size);
 	}
 #endif
-	_size[idx] = newSize;
+	_size[idx] = size;
 	core_assert_16byte_aligned(data);
-	core_assert_msg((_size[idx] & 15) == 0, "Size is not aligned properly");
+	//core_assert_msg((_size[idx] & 15) == 0, "Size is not aligned properly: %i", (int)_size[idx]);
 	const BufferType type = _targets[idx];
 	const Id id = _handles[idx];
 	if (oldSize >= size && _modes[idx] != BufferMode::Static) {
-		video::bufferSubData(id, type, 0, data, _size[idx]);
+		video::bufferSubData(id, type, 0, data, size);
 	} else {
-		video::bufferData(id, type, _modes[idx], data, _size[idx]);
+		video::bufferData(id, type, _modes[idx], data, size);
 	}
 
 	return true;
@@ -160,9 +159,9 @@ int32_t Buffer::create(const void* data, size_t size, BufferType target) {
 		Log::error("Failed to create buffer (size: %i)", (int)size);
 		return -1;
 	}
-	_size[idx] = align(size, target);
+	_size[idx] = size;
 	if (data != nullptr) {
-		update(idx, data, _size[idx]);
+		update(idx, data, size);
 	}
 	++_handleIdx;
 	return idx;

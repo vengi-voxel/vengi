@@ -90,7 +90,7 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 		return -1;
 	}
 
-	std::vector<Vertex> vertices;
+	alignas(32) std::vector<Vertex> vertices;
 	vertices.reserve(shapeBuilder.getVertices().size());
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
 		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
@@ -147,7 +147,7 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 		Log::warn("Invalid mesh index given: %u", meshIndex);
 		return;
 	}
-	std::vector<Vertex> vertices;
+	alignas(32) std::vector<Vertex> vertices;
 	vertices.reserve(shapeBuilder.getVertices().size());
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
 		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});

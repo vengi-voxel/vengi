@@ -79,8 +79,8 @@ private:
 	std::vector<RenderMeshData> _meshData;
 	std::vector<image::ImagePtr> _images;
 	std::vector<video::TexturePtr> _textures;
-	Vertices _vertices;
-	Indices _indices;
+	alignas(32) Vertices _vertices;
+	alignas(16) Indices _indices;
 	video::Buffer _vertexBuffer;
 	video::Buffer _vertexBufferLines;
 	int32_t _vertexBufferLinesIndex = -1;

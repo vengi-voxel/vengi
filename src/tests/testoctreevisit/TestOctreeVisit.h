@@ -35,7 +35,7 @@ private:
 	int32_t _itemMesh = -1;
 	int32_t _frustumMesh = -1;
 	int32_t _aabbMesh = -1;
-	std::vector<glm::vec3> _positions;
+	alignas(32) std::vector<glm::vec3> _positions;
 	glm::vec3 _pos;
 	glm::vec3 _lookAt{10.0f, 70.0f, 10.0f};
 	glm::vec3 _omega{0.0f, 0.1f, 0.0f};
