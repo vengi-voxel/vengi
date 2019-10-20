@@ -53,7 +53,6 @@ ServerLoop::ServerLoop(const core::TimeProviderPtr& timeProvider, const MapProvi
 
 bool ServerLoop::addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMillis, uint64_t initialDelayMillis) {
 	timer->data = this;
-	uv_timer_init(_loop, timer);
 	return uv_timer_start(timer, cb, initialDelayMillis, repeatMillis) == 0;
 }
 
@@ -118,8 +117,17 @@ bool ServerLoop::init() {
 	_loop = new uv_loop_t;
 	if (uv_loop_init(_loop) != 0) {
 		Log::error("Failed to init event loop");
+		uv_loop_close(_loop);
+		delete _loop;
+		_loop = nullptr;
 		return false;
 	}
+	uv_signal_init(_loop, &_signal);
+	uv_timer_init(_loop, &_worldTimer);
+	uv_timer_init(_loop, &_persistenceMgrTimer);
+	uv_idle_init(_loop, &_idleTimer);
+	uv_signal_init(_loop, &_signal);
+
 	if (!_metricMgr->init()) {
 		Log::warn("Failed to init metric sender");
 	}
@@ -213,7 +221,6 @@ bool ServerLoop::init() {
 	}
 	uv_idle_start(&_idleTimer, onIdle);
 
-	uv_signal_init(_loop, &_signal);
 	_signal.data = this;
 	uv_signal_start(&_signal, signalCallback, SIGHUP);
 	uv_signal_start(&_signal, signalCallback, SIGINT);
@@ -241,18 +248,18 @@ bool ServerLoop::init() {
 }
 
 void ServerLoop::shutdown() {
-	uv_signal_stop(&_signal);
 	_persistenceMgr->shutdown();
 	_world->shutdown();
 	_dbHandler->shutdown();
 	_metricMgr->shutdown();
 	_input.shutdown();
 	_network->shutdown();
-	uv_timer_stop(&_worldTimer);
-	uv_timer_stop(&_persistenceMgrTimer);
-	uv_idle_stop(&_idleTimer);
-	uv_tty_reset_mode();
 	if (_loop != nullptr) {
+		uv_signal_stop(&_signal);
+		uv_timer_stop(&_worldTimer);
+		uv_timer_stop(&_persistenceMgrTimer);
+		uv_idle_stop(&_idleTimer);
+		uv_tty_reset_mode();
 		uv_loop_close(_loop);
 		delete _loop;
 		_loop = nullptr;
