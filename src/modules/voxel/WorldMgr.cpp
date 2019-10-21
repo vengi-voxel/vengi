@@ -77,7 +77,14 @@ PickResult WorldMgr::pickVoxel(const glm::vec3& origin, const glm::vec3& directi
 }
 
 void WorldMgr::updateExtractionOrder(const glm::ivec3& sortPos, const math::Frustum& frustum) {
-	// TODO: sort closest to camera and in frustum first
+	static glm::ivec3 lastSortPos = glm::ivec3((std::numeric_limits<int>::max)());
+	const glm::ivec3 d = lastSortPos - sortPos;
+	const glm::ivec3::value_type allowedDelta = 10;
+	if (d.x > allowedDelta || d.z > allowedDelta) {
+		_pendingExtraction.sort([&] (const glm::ivec3& lhs, const glm::ivec3& rhs) {
+			return glm::length2(glm::vec3(lhs - sortPos)) > glm::length2(glm::vec3(rhs - sortPos));
+		});
+	}
 }
 
 bool WorldMgr::allowReExtraction(const glm::ivec3& pos) {
