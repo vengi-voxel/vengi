@@ -160,13 +160,22 @@ bool SpaceColonization::step() {
 		// Check if branch already exists. These cases seem to
 		// happen when attraction point is in specific areas
 		auto i = _branches.find(branch->_position);
-		if (i == _branches.end()) {
-			_branches.insert(std::make_pair(branch->_position, branch));
-			branchAdded = true;
-		} else {
+		if (i != _branches.end()) {
+			auto& c = branch->_parent->_children;
+			for (std::vector<Branch*>::iterator i = c.begin(); i != c.end(); ++i) {
+				if (*i == branch) {
+					c.erase(i);
+					break;
+				}
+			}
+
 			delete branch;
+			continue;
 		}
+		_branches.insert(std::make_pair(branch->_position, branch));
+		branchAdded = true;
 	}
+	newBranches.clear();
 
 	// if no branches were added - we are done
 	// this handles issues where attraction points equal out each other,
