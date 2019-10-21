@@ -2,14 +2,14 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include <gtest/gtest.h>
 #include "collection/Set.h"
-#include "math/Random.h"
 #include <numeric>
+#include <random>
 
-namespace core {
+namespace collection {
 
-class SetTest: public AbstractTest {
+class SetTest: public testing::Test {
 };
 
 TEST_F(SetTest, testDiff) {
@@ -71,7 +71,7 @@ TEST_F(SetTest, testVisibleActions) {
 	EXPECT_EQ(inBoth.size() + addToSet2.size(), setVisible2.size());
 }
 
-class SetMassTest: public AbstractTest {
+class SetMassTest: public testing::Test {
 public:
 	static const int offset = 1000;
 	static const int n = 5000000;
@@ -93,9 +93,9 @@ public:
 		std::iota(std::begin(v3), std::end(v3), 0);
 		std::iota(std::begin(v4), std::end(v4), offset);
 
-		math::Random rnd;
-		rnd.shuffle(v3.begin(), v3.end());
-		rnd.shuffle(v4.begin(), v4.end());
+		std::default_random_engine engine;
+		std::shuffle(v3.begin(), v3.end(), engine);
+		std::shuffle(v4.begin(), v4.end(), engine);
 
 		for (int i = 0; i < n; ++i) {
 			set1.insert(i);

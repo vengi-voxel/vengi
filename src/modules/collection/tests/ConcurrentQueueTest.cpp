@@ -2,13 +2,13 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include <gtest/gtest.h>
 #include "collection/ConcurrentQueue.h"
 #include <thread>
 
-namespace core {
+namespace collection {
 
-class ConcurrentQueueTest : public core::AbstractTest {
+class ConcurrentQueueTest : public testing::Test {
 };
 
 TEST_F(ConcurrentQueueTest, testPushPop) {
@@ -81,6 +81,23 @@ TEST_F(ConcurrentQueueTest, testAbortWait) {
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	queue.abortWait();
 	threadWait.join();
+}
+
+TEST_F(ConcurrentQueueTest, testSort) {
+	core::ConcurrentQueue<int> queue;
+	queue.push(1);
+	queue.push(3);
+	queue.push(2);
+	int val;
+	ASSERT_TRUE(queue.pop(val));
+	EXPECT_EQ(3, val);
+	queue.sort([] (const int lhs, const int rhs) {
+		return lhs > rhs;
+	});
+	ASSERT_TRUE(queue.pop(val));
+	EXPECT_EQ(1, val);
+	ASSERT_TRUE(queue.pop(val));
+	EXPECT_EQ(2, val);
 }
 
 }

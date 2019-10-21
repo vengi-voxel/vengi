@@ -6,6 +6,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <atomic>
+#include <functional>
 
 namespace core {
 
@@ -36,6 +37,11 @@ public:
 	void clear() {
 		std::unique_lock<std::mutex> lock(_mutex);
 		_data = Collection();
+	}
+
+	void sort(std::function<bool(const Data& lhs, const Data& rhs)> sorter) {
+		std::unique_lock<std::mutex> lock(_mutex);
+		std::make_heap(const_cast<Data*>(&_data.top()), const_cast<Data*>(&_data.top()) + _data.size(), sorter);
 	}
 
 	void push(Data const& data) {
