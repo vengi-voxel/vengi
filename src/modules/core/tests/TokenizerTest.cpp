@@ -27,6 +27,7 @@ TEST_F(TokenizerTest, testTokenizerOnlyFirstMatch) {
 
 TEST_F(TokenizerTest, testTokenizerInvalidFile) {
 	const io::FilePtr& file = io::filesystem()->open("tokenizer.string");
+	ASSERT_TRUE(file->exists()) << "file doesn't exist";
 	uint8_t *buf;
 	const int n = file->read((void**)&buf);
 	ASSERT_TRUE(buf != nullptr);
