@@ -18,6 +18,31 @@ static inline void head(float animTime, CharacterSkeleton& skeleton, const Skele
 }
 
 static void swing(float animTime, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
+	const float betweenOneAndTwoFast = 1.0f - glm::cos(animTime * 14.0f);
+	Bone &righthand = skeleton.handBone(BoneId::RightHand, skeletonAttr);
+	righthand.translation = glm::vec3(skeletonAttr.handRight + betweenOneAndTwoFast, 0.0f, skeletonAttr.handForward + 2.0f + betweenOneAndTwoFast * 2.0f);
+	righthand.orientation = rotateXYZ(betweenOneAndTwoFast * 0.8f, betweenOneAndTwoFast * 0.8f, betweenOneAndTwoFast * 0.4f * glm::radians(45.0f));
+
+	Bone &lefthand = skeleton.handBone(BoneId::LeftHand, skeletonAttr);
+	lefthand.translation = glm::vec3(-skeletonAttr.handRight, 0.0f, skeletonAttr.handForward - betweenOneAndTwoFast);
+	lefthand.scale.x = -righthand.scale.x;
+	lefthand.orientation = glm::quat_identity<float, glm::defaultp>();
+
+	Bone &rightfoot = skeleton.footBone(BoneId::RightFoot, skeletonAttr);
+	rightfoot.translation = glm::vec3(skeletonAttr.footRight, skeletonAttr.hipOffset, betweenOneAndTwoFast * 0.5f);
+	rightfoot.orientation = glm::quat_identity<float, glm::defaultp>();
+
+	Bone &leftfoot = skeleton.bone(BoneId::LeftFoot);
+	leftfoot = mirrorX(rightfoot);
+	leftfoot.translation = glm::vec3(-skeletonAttr.footRight, skeletonAttr.hipOffset, -1.0f);
+
+	const float movement = glm::sin(animTime * 12.0f);
+	const float torsoRotationX = movement * 0.1f;
+	const float torsoRotationY = movement * 0.01f;
+	const float torsoRotationZ = movement * 0.01f;
+	Bone &torso = skeleton.torsoBone(skeletonAttr);
+	torso.translation = glm::zero<glm::vec3>();
+	torso.orientation = rotateXYZ(torsoRotationX, torsoRotationY, torsoRotationZ);
 }
 
 static void tense(float animTime, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
@@ -45,10 +70,6 @@ static void stroke(float animTime, CharacterSkeleton &skeleton, const SkeletonAt
 	leftfoot = mirrorX(rightfoot);
 	leftfoot.translation = glm::vec3(-skeletonAttr.footRight, skeletonAttr.hipOffset, -1.0f);
 
-	Bone &rightshoulder = skeleton.shoulderBone(BoneId::RightShoulder, skeletonAttr);
-
-	skeleton.bone(BoneId::LeftShoulder) = mirrorX(rightshoulder);
-
 	const float movement = glm::sin(animTime * 12.0f);
 	const float torsoRotationX = movement * 0.1f;
 	const float torsoRotationY = movement * 0.01f;
@@ -66,6 +87,9 @@ void update(float animTime, ToolAnimationType animation, CharacterSkeleton &skel
 	skeleton.bone(BoneId::Chest) = translate(0.0f, skeletonAttr.chestY, 0.0f);
 	skeleton.bone(BoneId::Belt) = translate(0.0f, skeletonAttr.beltY, 0.0f);
 	skeleton.bone(BoneId::Pants) = translate(0.0f, skeletonAttr.pantsY, 0.0f);
+
+	Bone &rightshoulder = skeleton.shoulderBone(BoneId::RightShoulder, skeletonAttr);
+	skeleton.bone(BoneId::LeftShoulder) = mirrorX(rightshoulder);
 
 	switch (animation) {
 	case ToolAnimationType::Stroke:
