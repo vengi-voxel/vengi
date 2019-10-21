@@ -109,8 +109,6 @@ voxel::RawVolume* cut(voxel::RawVolume *volume, const Selection &selection, voxe
 
 	const glm::ivec3& mins = selection.getLowerCorner();
 	const glm::ivec3& maxs = selection.getUpperCorner();
-	glm::ivec3 modifiedMins((std::numeric_limits<int>::max)());
-	glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)());
 	static constexpr voxel::Voxel AIR;
 	voxel::RawVolumeWrapper wrapper(volume);
 	for (int32_t x = mins.x; x <= maxs.x; ++x) {
