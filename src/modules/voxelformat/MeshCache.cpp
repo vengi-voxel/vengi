@@ -31,10 +31,16 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 	voxel::VoxelVolumes volumes;
 	if (!voxelformat::loadVolumeFormat(file, volumes)) {
 		Log::error("Failed to load %s", file->name().c_str());
+		for (auto& v : volumes) {
+			delete v.volume;
+		}
 		return false;
 	}
 	if ((int)volumes.size() != 1) {
 		Log::error("More than one volume/layer found in %s", file->name().c_str());
+		for (auto& v : volumes) {
+			delete v.volume;
+		}
 		return false;
 	}
 
@@ -44,6 +50,7 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 	voxel::extractCubicMesh(volume, region, &mesh, [] (const voxel::VoxelType& back, const voxel::VoxelType& front, voxel::FaceNames face) {
 		return isBlocked(back) && !isBlocked(front);
 	});
+	delete volume;
 
 	return true;
 }

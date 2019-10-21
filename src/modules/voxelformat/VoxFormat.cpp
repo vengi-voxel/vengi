@@ -507,6 +507,9 @@ VoxelVolumes VoxFormat::loadGroups(const io::FilePtr& file) {
 				}
 			}
 			Log::info("Loaded layer %i with %i voxels (%i)", volumeIdx, numVoxels, volumeVoxelSet);
+			if (volumes[volumeIdx].volume != nullptr) {
+				delete volumes[volumeIdx].volume;
+			}
 			volumes[volumeIdx].volume = volume;
 			volumes[volumeIdx].pivot = volume->region().getCentre();
 			++volumeIdx;
