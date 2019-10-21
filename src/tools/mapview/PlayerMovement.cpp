@@ -36,18 +36,24 @@ void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, C
 	if (_groundHeight < voxel::MIN_HEIGHT) {
 		newPos = currentPos;
 	}
+	_delay -= deltaFrameSeconds;
 	if (jump()) {
-		if (_velocityY <= 0.0f) {
-			if (_flying) {
+		if (_flying) {
+			if (_delay <= 0.0f) {
 				_flying = false;
 				_jumping = true;
-			} else if (_jumping) {
+				_delay = 0.5f;
+			}
+		} else if (_jumping) {
+			if (_delay <= 0.0f) {
 				_jumping = false;
 				_flying = true;
-			} else {
-				_velocityY = 10.0f;
-				_jumping = true;
+				_delay = 0.5f;
 			}
+		} else {
+			_velocityY = 10.0f;
+			_jumping = true;
+			_delay = 0.5f;
 		}
 	}
 	const float gravity = _flying ? 0.1f : 20.0f;
@@ -58,6 +64,7 @@ void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, C
 		_velocityY = 0.0f;
 		_jumping = false;
 		_flying = false;
+		_delay = 0.0f;
 	}
 	if (_jumping) {
 		entity->setAnimation(animation::Animation::Jump);
@@ -74,9 +81,25 @@ void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, C
 }
 
 glm::vec3 PlayerMovement::calculateDelta(const glm::quat& rot, float speed) {
-	glm::vec3 delta = Super::calculateDelta(rot, speed);
-	if (jump()) {
-		delta += glm::up;
+	glm::vec3 delta(0.0f);
+	if (_flying || _jumping) {
+		if (forward()) {
+			delta += rot * (glm::forward * speed);
+		} else if (backward()) {
+			// you can only reduce speed - but not walk backward
+			delta += rot * (glm::forward * speed / 10.0f);
+		}
+	} else {
+		if (left()) {
+			delta += rot * (glm::left * speed);
+		} else if (right()) {
+			delta += rot * (glm::right * speed);
+		}
+		if (forward()) {
+			delta += rot * (glm::forward * speed);
+		} else if (backward()) {
+			delta += rot * (glm::backward * speed);
+		}
 	}
 	return delta;
 };

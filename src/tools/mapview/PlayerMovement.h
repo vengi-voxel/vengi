@@ -20,6 +20,7 @@ private:
 	bool _flying = false;
 	float _velocityY = 0.0f;
 	int _groundHeight = 0;
+	float _delay = 0.0f;
 
 	glm::vec3 calculateDelta(const glm::quat& rot, float speed) override;
 public:
