@@ -53,9 +53,10 @@ int Stock::remove(const ItemPtr& item) {
 	const ItemAmount amount = i->second->changeAmount(-item->amount());
 	if (amount <= 0) {
 		_items.erase(i);
+		_inventory.notifyRemove(item);
+		return 0;
 	}
-	_inventory.notifyRemove(item);
-	return i->second->amount();
+	return amount;
 }
 
 int Stock::count(const ItemType& itemType) const {

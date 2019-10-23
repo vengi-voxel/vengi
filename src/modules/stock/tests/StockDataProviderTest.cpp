@@ -14,10 +14,12 @@ TEST_F(StockDataProviderTest, testResetAndDuplicate) {
 	StockDataProvider provider;
 	ASSERT_TRUE(provider.addItemData(new ItemData(1, ItemType::WEAPON)));
 	ASSERT_TRUE(provider.addItemData(new ItemData(2, ItemType::WEAPON)));
-	ASSERT_FALSE(provider.addItemData(new ItemData(1, ItemType::WEAPON)));
+	ItemData* itemDataDuplicate = new ItemData(1, ItemType::WEAPON);
+	ASSERT_FALSE(provider.addItemData(itemDataDuplicate));
 	provider.reset();
 	ASSERT_TRUE(provider.addItemData(new ItemData(1, ItemType::WEAPON)));
 	provider.shutdown();
+	delete itemDataDuplicate;
 }
 
 TEST_F(StockDataProviderTest, testInit) {
