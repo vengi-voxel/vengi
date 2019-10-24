@@ -37,7 +37,7 @@ void TestIMGUI::onRenderUI() {
 	}
 
 	if (_showTestWindow) {
-		ImGui::SetNextWindowPosCenter(ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(650, 20), ImGuiCond_FirstUseEver);
 		ImGui::ShowDemoWindow(&_showTestWindow);
 	}
