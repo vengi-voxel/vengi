@@ -7,6 +7,7 @@ function init()
   chr.setPants("pants/default")
   chr.setHand("hands/default")
   chr.setFoot("feets/default")
+  chr.setShoulder("")
 
   chr.setHeadHeight(14.0)
   chr.setChestHeight(1.0)

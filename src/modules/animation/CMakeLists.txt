@@ -47,7 +47,6 @@ set(FILES
 	characters/models/characters/human/male/chests/knight.vox
 
 	characters/models/characters/undead/male/heads/default.vox
-	characters/models/characters/undead/male/shoulders/default.vox
 	characters/models/characters/undead/male/feets/default.vox
 	characters/models/characters/undead/male/hands/default.vox
 	characters/models/characters/undead/male/pants/default.vox
