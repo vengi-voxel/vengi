@@ -12,7 +12,6 @@
 #include "RenderShaders.h"
 #include "video/FrameBuffer.h"
 #include "video/Buffer.h"
-#include "video/ScopedPolygonMode.h"
 
 namespace video {
 class Camera;

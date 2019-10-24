@@ -9,6 +9,7 @@
 #include "core/GLM.h"
 #include "core/Trace.h"
 #include "video/ScopedViewPort.h"
+#include "video/ScopedPolygonMode.h"
 #include "video/Buffer.h"
 #include "video/Renderer.h"
 

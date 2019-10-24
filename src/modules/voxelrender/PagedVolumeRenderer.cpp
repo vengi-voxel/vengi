@@ -7,6 +7,7 @@
 #include "voxel/MaterialColor.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedState.h"
+#include "video/ScopedPolygonMode.h"
 #include "ShaderAttribute.h"
 #include "video/Camera.h"
 #include "video/Types.h"
