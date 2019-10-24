@@ -17,7 +17,7 @@ namespace detail
 	{
 		static GLM_FUNC_QUALIFIER T call(qua<T, Q> const& a, qua<T, Q> const& b)
 		{
-			vec<4, T, Q> tmp(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+			vec<4, T, Q> tmp(a.w * b.w, a.x * b.x, a.y * b.y, a.z * b.z);
 			return (tmp.x + tmp.y) + (tmp.z + tmp.w);
 		}
 	};
