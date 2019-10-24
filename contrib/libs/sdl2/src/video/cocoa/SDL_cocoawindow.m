@@ -262,6 +262,22 @@ GetHintCtrlClickEmulateRightClick()
 }
 
 static NSUInteger
+GetWindowWindowedStyle(SDL_Window * window)
+{
+    NSUInteger style = 0;
+
+    if (window->flags & SDL_WINDOW_BORDERLESS) {
+        style = NSWindowStyleMaskBorderless;
+    } else {
+        style = (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable);
+    }
+    if (window->flags & SDL_WINDOW_RESIZABLE) {
+        style |= NSWindowStyleMaskResizable;
+    }
+    return style;
+}
+
+static NSUInteger
 GetWindowStyle(SDL_Window * window)
 {
     NSUInteger style = 0;
@@ -269,14 +285,7 @@ GetWindowStyle(SDL_Window * window)
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style = NSWindowStyleMaskBorderless;
     } else {
-        if (window->flags & SDL_WINDOW_BORDERLESS) {
-            style = NSWindowStyleMaskBorderless;
-        } else {
-            style = (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable);
-        }
-        if (window->flags & SDL_WINDOW_RESIZABLE) {
-            style |= NSWindowStyleMaskResizable;
-        }
+        style = GetWindowWindowedStyle(window);
     }
     return style;
 }
@@ -754,10 +763,15 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     isFullscreenSpace = NO;
     inFullscreenTransition = YES;
 
-    /* As of OS X 10.11, the window seems to need to be resizable when exiting
+    /* As of macOS 10.11, the window seems to need to be resizable when exiting
        a Space, in order for it to resize back to its windowed-mode size.
+       As of macOS 10.15, the window decorations can go missing sometimes after
+       certain fullscreen-desktop->exlusive-fullscreen->windowed mode flows
+       sometimes. Making sure the style mask always uses the windowed mode style
+       when returning to windowed mode from a space (instead of using a pending
+       fullscreen mode style mask) seems to work around that issue.
      */
-    SetWindowStyle(window, GetWindowStyle(window) | NSWindowStyleMaskResizable);
+    SetWindowStyle(window, GetWindowWindowedStyle(window) | NSWindowStyleMaskResizable);
 }
 
 - (void)windowDidFailToExitFullScreen:(NSNotification *)aNotification
@@ -783,9 +797,19 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
     inFullscreenTransition = NO;
 
-    SetWindowStyle(window, GetWindowStyle(window));
+    /* As of macOS 10.15, the window decorations can go missing sometimes after
+       certain fullscreen-desktop->exlusive-fullscreen->windowed mode flows
+       sometimes. Making sure the style mask always uses the windowed mode style
+       when returning to windowed mode from a space (instead of using a pending
+       fullscreen mode style mask) seems to work around that issue.
+     */
+    SetWindowStyle(window, GetWindowWindowedStyle(window));
 
-    [nswindow setLevel:kCGNormalWindowLevel];
+    if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+        [nswindow setLevel:NSFloatingWindowLevel];
+    } else {
+        [nswindow setLevel:kCGNormalWindowLevel];
+    }
 
     if (pendingWindowOperation == PENDING_OPERATION_ENTER_FULLSCREEN) {
         pendingWindowOperation = PENDING_OPERATION_NONE;
@@ -1246,23 +1270,32 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     _sdlWindow = window;
 }
 
-/* this is used on older macOS revisions. 10.8 and later use updateLayer. */
+/* this is used on older macOS revisions, and newer ones which emulate old
+   NSOpenGLContext behaviour while still using a layer under the hood. 10.8 and
+   later use updateLayer, up until 10.14.2 or so, which uses drawRect without
+   a GraphicsContext and with a layer active instead (for OpenGL contexts). */
 - (void)drawRect:(NSRect)dirtyRect
 {
     /* Force the graphics context to clear to black so we don't get a flash of
        white until the app is ready to draw. In practice on modern macOS, this
        only gets called for window creation and other extraordinary events. */
-    [[NSColor blackColor] setFill];
-    NSRectFill(dirtyRect);
+    if ([NSGraphicsContext currentContext]) {
+        [[NSColor blackColor] setFill];
+        NSRectFill(dirtyRect);
+    } else if (self.layer) {
+        self.layer.backgroundColor = CGColorGetConstantColor(kCGColorBlack);
+    }
+
     SDL_SendWindowEvent(_sdlWindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
 }
 
--(BOOL) wantsUpdateLayer
+- (BOOL)wantsUpdateLayer
 {
     return YES;
 }
 
--(void) updateLayer
+/* This is also called when a Metal layer is active. */
+- (void)updateLayer
 {
     /* Force the graphics context to clear to black so we don't get a flash of
        white until the app is ready to draw. In practice on modern macOS, this
@@ -1456,6 +1489,10 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
         }
     }
 
+    if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+        [nswindow setLevel:NSFloatingWindowLevel];
+    }
+
     /* Create a default view for this window */
     rect = [nswindow contentRectForFrameRect:[nswindow frame]];
     SDLView *contentView = [[SDLView alloc] initWithFrame:rect];
@@ -1466,10 +1503,11 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     #endif
-    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-        if ([contentView respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
-            [contentView setWantsBestResolutionOpenGLSurface:YES];
-        }
+    /* Note: as of the macOS 10.15 SDK, this defaults to YES instead of NO when
+     * the NSHighResolutionCapable boolean is set in Info.plist. */
+    if ([contentView respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
+        BOOL highdpi = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+        [contentView setWantsBestResolutionOpenGLSurface:highdpi];
     }
     #ifdef __clang__
     #pragma clang diagnostic pop
@@ -1769,7 +1807,13 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         rect.size.height = window->windowed.h;
         ConvertNSRect([nswindow screen], fullscreen, &rect);
 
-        [nswindow setStyleMask:GetWindowStyle(window)];
+        /* The window is not meant to be fullscreen, but its flags might have a
+         * fullscreen bit set if it's scheduled to go fullscreen immediately
+         * after. Always using the windowed mode style here works around bugs in
+         * macOS 10.15 where the window doesn't properly restore the windowed
+         * mode decorations after exiting fullscreen-desktop, when the window
+         * was created as fullscreen-desktop. */
+        [nswindow setStyleMask:GetWindowWindowedStyle(window)];
 
         /* Hack to restore window decorations on Mac OS X 10.10 */
         NSRect frameRect = [nswindow frame];
@@ -1795,6 +1839,8 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     if (SDL_ShouldAllowTopmost() && fullscreen) {
         /* OpenGL is rendering to the window, so make it visible! */
         [nswindow setLevel:CGShieldingWindowLevel()];
+    } else if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+        [nswindow setLevel:NSFloatingWindowLevel];
     } else {
         [nswindow setLevel:kCGNormalWindowLevel];
     }
@@ -1888,6 +1934,8 @@ Cocoa_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
             /* OpenGL is rendering to the window, so make it visible! */
             /* Doing this in 10.11 while in a Space breaks things (bug #3152) */
             [data->nswindow setLevel:CGShieldingWindowLevel()];
+        } else if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+            [data->nswindow setLevel:NSFloatingWindowLevel];
         } else {
             [data->nswindow setLevel:kCGNormalWindowLevel];
         }

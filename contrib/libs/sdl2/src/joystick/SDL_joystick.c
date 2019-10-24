@@ -1018,7 +1018,7 @@ void
 SDL_JoystickUpdate(void)
 {
     int i;
-    SDL_Joystick *joystick;
+    SDL_Joystick *joystick, *next;
 
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
         return;
@@ -1074,7 +1074,8 @@ SDL_JoystickUpdate(void)
     SDL_updating_joystick = SDL_FALSE;
 
     /* If any joysticks were closed while updating, free them here */
-    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+    for (joystick = SDL_joysticks; joystick; joystick = next) {
+        next = joystick->next;
         if (joystick->ref_count <= 0) {
             SDL_JoystickClose(joystick);
         }
@@ -1169,6 +1170,13 @@ SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
     EControllerType eType = GuessControllerType(vendor, product);
     return (eType == k_eControllerType_SwitchProController ||
             eType == k_eControllerType_SwitchInputOnlyController);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor, Uint16 product)
+{
+    EControllerType eType = GuessControllerType(vendor, product);
+    return (eType == k_eControllerType_SwitchInputOnlyController);
 }
 
 SDL_bool

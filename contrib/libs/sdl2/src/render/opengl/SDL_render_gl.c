@@ -1166,9 +1166,9 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     data->drawstate.clear_color = color;
                 }
 
-                if (data->drawstate.cliprect_enabled) {
+                if (data->drawstate.cliprect_enabled || data->drawstate.cliprect_enabled_dirty) {
                     data->glDisable(GL_SCISSOR_TEST);
-                    data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
+                    data->drawstate.cliprect_enabled_dirty = data->drawstate.cliprect_enabled;
                 }
 
                 data->glClear(GL_COLOR_BUFFER_BIT);
@@ -1210,6 +1210,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                         data->glVertex2f(verts[0], verts[1]);
                     }
                     data->glEnd();
+                    verts -= 2 * count;
 
                     /* The line is half open, so we need one more point to complete it.
                      * http://www.opengl.org/documentation/specs/version1.1/glspec1.1/node47.html

@@ -602,7 +602,7 @@ SDL_GetCPUCacheLineSize(void)
     if (SDL_strcmp(cpuType, "GenuineIntel") == 0) {
         cpuid(0x00000001, a, b, c, d);
         return (((b >> 8) & 0xff) * 8);
-    } else if (SDL_strcmp(cpuType, "AuthenticAMD") == 0) {
+    } else if (SDL_strcmp(cpuType, "AuthenticAMD") == 0 || SDL_strcmp(cpuType, "HygonGenuine") == 0) {
         cpuid(0x80000005, a, b, c, d);
         return (c & 0xff);
     } else {
@@ -620,7 +620,7 @@ SDL_GetCPUFeatures(void)
     if (SDL_CPUFeatures == 0xFFFFFFFF) {
         CPU_calcCPUIDFeatures();
         SDL_CPUFeatures = 0;
-        SDL_SIMDAlignment = 4;  /* a good safe base value */
+        SDL_SIMDAlignment = sizeof(void *);  /* a good safe base value */
         if (CPU_haveRDTSC()) {
             SDL_CPUFeatures |= CPU_HAS_RDTSC;
         }

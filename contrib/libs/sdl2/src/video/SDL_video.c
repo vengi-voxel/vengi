@@ -37,9 +37,9 @@
 #include "SDL_opengl.h"
 #endif /* SDL_VIDEO_OPENGL */
 
-#if SDL_VIDEO_OPENGL_ES
+#if SDL_VIDEO_OPENGL_ES && !SDL_VIDEO_OPENGL
 #include "SDL_opengles.h"
-#endif /* SDL_VIDEO_OPENGL_ES */
+#endif /* SDL_VIDEO_OPENGL_ES && !SDL_VIDEO_OPENGL */
 
 /* GL and GLES2 headers conflict on Linux 32 bits */
 #if SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL
@@ -108,6 +108,9 @@ static VideoBootStrap *bootstrap[] = {
 #endif
 #if SDL_VIDEO_DRIVER_QNX
     &QNX_bootstrap,
+#endif
+#if SDL_VIDEO_DRIVER_OFFSCREEN
+    &OFFSCREEN_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,

@@ -169,7 +169,7 @@ SDLTest_GenerateExecKey(const char *runSeed, char *suiteName, char *testName, in
 * \return Timer id or -1 on failure.
 */
 static SDL_TimerID
-SDLTest_SetTestTimeout(int timeout, void (*callback)())
+SDLTest_SetTestTimeout(int timeout, void (*callback)(void))
 {
     Uint32 timeoutInMilliseconds;
     SDL_TimerID timerID;
@@ -210,7 +210,7 @@ SDLTest_SetTestTimeout(int timeout, void (*callback)())
 #pragma aux SDLTest_BailOut aborts;
 #endif
 static SDL_NORETURN void
-SDLTest_BailOut()
+SDLTest_BailOut(void)
 {
     SDLTest_LogError("TestCaseTimeout timer expired. Aborting test run.");
     exit(TEST_ABORTED); /* bail out from the test */
