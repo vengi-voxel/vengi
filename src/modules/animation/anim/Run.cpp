@@ -14,13 +14,13 @@ void update(float animTime, float velocity, CharacterSkeleton &skeleton, const S
 	const float cosine = glm::cos(animTime * timeFactor);
 	const float cosineDouble = glm::cos(animTime * timeFactor * 2.0f);
 	const float movement = sine * 0.35f;
-	const glm::vec2 headLook(sine * 0.1f, glm::cos(animTime) * 0.05f + 0.25f);
+	const glm::vec2 headLook(glm::cos(animTime) * 0.05f + glm::radians(10.0f), sine * 0.1f);
 
 	velocity = glm::clamp(velocity / 10.0f, 0.1f, 2.5f);
 
 	Bone &head = skeleton.headBone(skeletonAttr);
 	head.translation = glm::vec3(0.0f, skeletonAttr.neckHeight + skeletonAttr.headY + cosine * 1.3f, -1.0f + skeletonAttr.neckForward);
-	head.orientation = rotateXY(headLook.y, headLook.x);
+	head.orientation = rotateXY(headLook.x, headLook.y);
 
 	const float bodyMoveY = cosine * 1.1f;
 	Bone &chest = skeleton.chestBone(skeletonAttr);
