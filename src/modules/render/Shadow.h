@@ -20,6 +20,10 @@ class Camera;
 
 namespace render {
 
+/**
+ * @brief Paramerters to set up the @c Shadow instance
+ * @sa Shadow
+ */
 struct ShadowParameters {
 	/**
 	 * @brief This value defines the amount of shadow cascades that are used
@@ -27,13 +31,17 @@ struct ShadowParameters {
 	 */
 	int maxDepthBuffers = -1;
 
+	/** set the scale used to calculate depth values */
 	float shadowBiasSlope = 2.0f;
+	/** influences the units used to calculate depth values */
 	float shadowBias = 0.09f;
+	/** Used to slice the camera frustum */
 	float sliceWeight = 0.05f;
 };
 
 /**
  * @brief Helper class for calculating the cascaded shadow map data
+ * @sa ShadowParameters
  */
 class Shadow {
 private:
