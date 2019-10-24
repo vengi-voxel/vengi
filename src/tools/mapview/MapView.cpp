@@ -175,21 +175,23 @@ void MapView::beforeUI() {
 }
 
 void MapView::onRenderUI() {
-	const glm::vec3& pos = _camera.position();
-	voxelrender::WorldRenderer::Stats stats;
-	_worldRenderer.stats(stats);
-	ImGui::Text("%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
-	ImGui::Text("%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
-	ImGui::Text("%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
-	ImGui::Text("drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
-	ImGui::Text("drawcalls entities: %i", _drawCallsEntities);
-	ImGui::Text("pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
-	ImGui::Text("pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
-			stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive, stats.occluded);
+	if (ImGui::CollapsingHeader("Stats")) {
+		const glm::vec3& pos = _camera.position();
+		voxelrender::WorldRenderer::Stats stats;
+		_worldRenderer.stats(stats);
+		ImGui::Text("%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
+		ImGui::Text("%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
+		ImGui::Text("%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
+		ImGui::Text("Drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
+		ImGui::Text("Drawcalls entities: %i", _drawCallsEntities);
+		ImGui::Text("Pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
+		ImGui::Text("Pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
+				stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive, stats.occluded);
+	}
 	const bool current = isRelativeMouseMode();
-	ImGui::Text("world mouse mode: %s", (current ? "true" : "false"));
+	ImGui::Text("World mouse mode: %s", (current ? "true" : "false"));
 
-	ImGui::InputVarFloat("rotationSpeed", _rotationSpeed);
+	ImGui::InputVarFloat("Rotation Speed", _rotationSpeed);
 	ImGui::CheckboxVar("Occlusion Query", cfg::OcclusionQuery);
 	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);
 	ImGui::CheckboxVar("Render AABB", cfg::RenderAABB);
@@ -213,8 +215,6 @@ void MapView::onRenderUI() {
 	if (ImGui::Checkbox("Toggle profiler", &temp)) {
 		_renderTracing = toggleTrace();
 	}
-
-	ImGui::Text("l: line mode rendering");
 }
 
 core::AppState MapView::onRunning() {
