@@ -100,7 +100,11 @@ void Character::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
 		glide::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
 		break;
 	case Animation::Tool:
-		tool::update(globalTimeSeconds, _toolAnim, _skeleton, _settings.skeletonAttr);
+		if (_toolAnim == ToolAnimationType::None || _toolAnim == ToolAnimationType::Max) {
+			idle::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
+		} else {
+			tool::update(globalTimeSeconds, _toolAnim, _skeleton, _settings.skeletonAttr);
+		}
 		break;
 	default:
 		break;
