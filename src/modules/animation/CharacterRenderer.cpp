@@ -18,8 +18,9 @@ bool CharacterRenderer::init() {
 		Log::error("Failed to setup character shader");
 		return false;
 	}
-	const int maxDepthBuffers = _shader.getUniformArraySize(shader::CharacterShader::getMaxDepthBufferUniformName());
-	if (!_shadow.init(maxDepthBuffers)) {
+	render::ShadowParameters shadowParams;
+	shadowParams.maxDepthBuffers = _shader.getUniformArraySize(shader::CharacterShader::getMaxDepthBufferUniformName());
+	if (!_shadow.init(shadowParams)) {
 		Log::error("Failed to init shadow object");
 		return false;
 	}

@@ -69,8 +69,9 @@ core::AppState TestMeshApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	const int maxDepthBuffers = _meshShader.getUniformArraySize(shader::MeshShader::getMaxDepthBufferUniformName());
-	if (!_shadow.init(maxDepthBuffers)) {
+	render::ShadowParameters shadowParams;
+	shadowParams.maxDepthBuffers = _meshShader.getUniformArraySize(shader::MeshShader::getMaxDepthBufferUniformName());
+	if (!_shadow.init(shadowParams)) {
 		Log::error("Failed to init shadow object");
 		return core::AppState::InitFailure;
 	}
@@ -124,14 +125,11 @@ void TestMeshApp::onRenderUI() {
 		if (ImGui::InputFloat3("Camera omega", glm::value_ptr(_omega))) {
 			_camera.setOmega(_omega);
 		}
-		float bias = _shadow.shadowBias();
-		if (ImGui::InputFloat("Shadow bias", &bias, 0.001f, 0.01f)) {
-			_shadow.setShadowBias(bias);
-		}
-		float biasSlope = _shadow.shadowBiasSlope();
-		if (ImGui::InputFloat("Shadow bias slope", &biasSlope, 0.01f, 0.1f)) {
-			_shadow.setShadowBiasSlope(bias);
-		}
+		render::ShadowParameters& sp = _shadow.parameters();
+		ImGui::InputFloat("Shadow bias", &sp.shadowBias);
+		ImGui::InputFloat("Shadow bias slope", &sp.shadowBiasSlope);
+		ImGui::InputFloat("Shadow slice weight", &sp.sliceWeight);
+		ImGui::InputFloat("Shadow range", &sp.shadowRangeZ);
 		float farPlane = _camera.farPlane();
 		if (ImGui::InputFloat("Far plane", &farPlane, 0.01f, 0.1f)) {
 			_camera.setFarPlane(farPlane);

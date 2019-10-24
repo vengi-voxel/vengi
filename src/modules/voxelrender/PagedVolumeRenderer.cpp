@@ -91,8 +91,9 @@ bool PagedVolumeRenderer::init() {
 			_worldShader.getComponentsInfo());
 	_vertexBuffer.addAttribute(attributeInfo);
 
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
-	if (!_shadow.init(maxDepthBuffers)) {
+	render::ShadowParameters shadowParams;
+	shadowParams.maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
+	if (!_shadow.init(shadowParams)) {
 		return false;
 	}
 

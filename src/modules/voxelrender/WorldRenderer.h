@@ -110,6 +110,7 @@ protected:
 	typedef std::unordered_map<frontend::ClientEntityId, frontend::ClientEntityPtr> Entities;
 	Entities _entities;
 
+	render::ShadowParameters _shadowParams;
 	render::Shadow _shadow;
 	render::RandomColorTexture _colorTexture;
 	voxel::PlantGenerator _plantGenerator;
@@ -183,6 +184,8 @@ public:
 	void onRunning(const video::Camera& camera, uint64_t dt);
 	void shutdown();
 
+	render::Shadow& shadow();
+
 	void extractMeshes(const video::Camera& camera);
 
 	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
@@ -216,6 +219,10 @@ inline float WorldRenderer::getViewDistance() const {
 inline void WorldRenderer::setViewDistance(float viewDistance) {
 	_viewDistance = viewDistance;
 	_fogRange = _viewDistance * 0.66f;
+}
+
+inline render::Shadow& WorldRenderer::shadow() {
+	return _shadow;
 }
 
 }

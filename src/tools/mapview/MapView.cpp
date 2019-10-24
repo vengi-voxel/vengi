@@ -96,6 +96,7 @@ core::AppState MapView::onInit() {
 		Log::error("Failed to init world rnederer");
 		return core::AppState::InitFailure;
 	}
+
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.setFieldOfView(45.0f);
 	_camera.setFarPlane(10.0f);
@@ -192,9 +193,18 @@ void MapView::onRenderUI() {
 	ImGui::CheckboxVar("Occlusion Query", cfg::OcclusionQuery);
 	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);
 	ImGui::CheckboxVar("Render AABB", cfg::RenderAABB);
-	ImGui::CheckboxVar("Shadowmap render", cfg::ClientShadowMapShow);
-	ImGui::CheckboxVar("Shadowmap cascades", cfg::ClientDebugShadowMapCascade);
-	ImGui::CheckboxVar("Shadowmap debug", cfg::ClientDebugShadow);
+
+	if (ImGui::CollapsingHeader("Shadow")) {
+		ImGui::CheckboxVar("Shadowmap render", cfg::ClientShadowMapShow);
+		ImGui::CheckboxVar("Shadowmap cascades", cfg::ClientDebugShadowMapCascade);
+		ImGui::CheckboxVar("Shadowmap debug", cfg::ClientDebugShadow);
+
+		render::ShadowParameters& sp = _worldRenderer.shadow().parameters();
+		ImGui::InputFloat("Shadow bias", &sp.shadowBias);
+		ImGui::InputFloat("Shadow bias slope", &sp.shadowBiasSlope);
+		ImGui::InputFloat("Shadow slice weight", &sp.sliceWeight);
+		ImGui::InputFloat("Shadow range", &sp.shadowRangeZ);
+	}
 
 	ImGui::Checkbox("Line mode rendering", &_lineModeRendering);
 	ImGui::Checkbox("Update World", &_updateWorld);

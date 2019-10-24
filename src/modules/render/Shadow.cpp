@@ -21,12 +21,12 @@ Shadow::Shadow() :
 }
 
 Shadow::~Shadow() {
-	core_assert_msg(_maxDepthBuffers == -1, "Shadow::shutdown() wasn't called");
+	core_assert_msg(_parameters.maxDepthBuffers == -1, "Shadow::shutdown() wasn't called");
 }
 
-bool Shadow::init(int maxDepthBuffers) {
-	_maxDepthBuffers = maxDepthBuffers;
-	core_assert(_maxDepthBuffers >= 1);
+bool Shadow::init(const ShadowParameters& parameters) {
+	_parameters = parameters;
+	core_assert(_parameters.maxDepthBuffers >= 1);
 	const float length = 50.0f;
 	const glm::vec3 sunPos(length, length, -length);
 	setPosition(sunPos);
@@ -44,7 +44,7 @@ bool Shadow::init(int maxDepthBuffers) {
 	}
 
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
-	const video::FrameBufferConfig& cfg = video::defaultDepthBufferConfig(smSize, maxDepthBuffers);
+	const video::FrameBufferConfig& cfg = video::defaultDepthBufferConfig(smSize, _parameters.maxDepthBuffers);
 	if (!_depthBuffer.init(cfg)) {
 		Log::error("Failed to init the depthbuffer");
 		return false;
@@ -63,29 +63,29 @@ void Shadow::shutdown() {
 	_depthBuffer.shutdown();
 	_shadowMapShader.shutdown();
 	_shadowMapInstancedShader.shutdown();
-	_maxDepthBuffers = -1;
+	_parameters = ShadowParameters();
 }
 
-void Shadow::update(const video::Camera& camera, bool active, float sliceWeight) {
+void Shadow::update(const video::Camera& camera, bool active) {
 	core_trace_scoped(ShadowCalculate);
-	_shadowRangeZ = camera.farPlane() * 3.0f;
-	_cascades.resize(_maxDepthBuffers);
-	_distances.resize(_maxDepthBuffers);
+	_parameters.shadowRangeZ = camera.farPlane() * 3.0f;
+	_cascades.resize(_parameters.maxDepthBuffers);
+	_distances.resize(_parameters.maxDepthBuffers);
 	const glm::ivec2& dim = dimension();
 
 	if (!active) {
-		for (int i = 0; i < _maxDepthBuffers; ++i) {
+		for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
 			_cascades[i] = glm::mat4(1.0f);
 			_distances[i] = camera.farPlane();
 		}
 		return;
 	}
 
-	std::vector<float> planes(_maxDepthBuffers * 2);
-	camera.sliceFrustum(&planes.front(), planes.size(), _maxDepthBuffers, sliceWeight);
+	std::vector<float> planes(_parameters.maxDepthBuffers * 2);
+	camera.sliceFrustum(&planes.front(), planes.size(), _parameters.maxDepthBuffers, _parameters.sliceWeight);
 	const glm::mat4& inverseView = camera.inverseViewMatrix();
 
-	for (int i = 0; i < _maxDepthBuffers; ++i) {
+	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
 		const float near = planes[i * 2 + 0];
 		const float far = planes[i * 2 + 1];
 		const glm::vec4& sphere = camera.splitFrustumSphereBoundingBox(near, far);
@@ -103,7 +103,7 @@ void Shadow::update(const video::Camera& camera, bool active, float sliceWeight)
 				 lightCenterRounded.x + lightRadius,
 				 lightCenterRounded.y - lightRadius,
 				 lightCenterRounded.y + lightRadius,
-				-lightCenterRounded.z - (_shadowRangeZ - lightRadius),
+				-lightCenterRounded.z - (_parameters.shadowRangeZ - lightRadius),
 				-lightCenterRounded.z + lightRadius);
 		_cascades[i] = lightProjection * _lightView;
 		_distances[i] = far;
@@ -120,11 +120,11 @@ void Shadow::render(funcRender renderCallback, funcRenderInstance renderInstance
 	const bool oldBlend = video::disable(video::State::Blend);
 	// put shadow acne into the dark
 	const bool cullFaceChanged = video::cullFace(video::Face::Front);
-	const glm::vec2 offset(_shadowBiasSlope, (_shadowBias / _shadowRangeZ) * (1 << 24));
+	const glm::vec2 offset(_parameters.shadowBiasSlope, (_parameters.shadowBias / _parameters.shadowRangeZ) * (1 << 24));
 	const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
 
 	_depthBuffer.bind(false);
-	for (int i = 0; i < _maxDepthBuffers; ++i) {
+	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
 		_depthBuffer.bindTextureAttachment(video::FrameBufferAttachment::Depth, i, true);
 		{
 			video::ScopedShader scoped(_shadowMapShader);
@@ -172,7 +172,7 @@ void Shadow::renderShadowMap(const video::Camera& camera) {
 	video::setupDepthCompareTexture(depthTex->type(), video::CompareFunc::Less, video::TextureCompareMode::None);
 
 	// render shadow maps
-	for (int i = 0; i < _maxDepthBuffers; ++i) {
+	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
 		const int halfWidth = (int) (frameBufferWidth / 4.0f);
 		const int halfHeight = (int) (frameBufferHeight / 4.0f);
 		video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);

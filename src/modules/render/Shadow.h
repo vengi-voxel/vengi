@@ -20,6 +20,19 @@ class Camera;
 
 namespace render {
 
+struct ShadowParameters {
+	/**
+	 * @brief This value defines the amount of shadow cascades that are used
+	 * @note This value must not be modified after the shadow instance was initialized with it.
+	 */
+	int maxDepthBuffers = -1;
+
+	float shadowBiasSlope = 2.0f;
+	float shadowBias = 0.09f;
+	float shadowRangeZ = 0.0f;
+	float sliceWeight = 0.05f;
+};
+
 /**
  * @brief Helper class for calculating the cascaded shadow map data
  */
@@ -34,10 +47,7 @@ private:
 	shader::ShadowmapShader& _shadowMapShader;
 	shader::ShadowmapRenderShader& _shadowMapRenderShader;
 	shader::ShadowmapInstancedShader& _shadowMapInstancedShader;
-	float _shadowBiasSlope = 2.0f;
-	float _shadowBias = 0.09f;
-	float _shadowRangeZ = 0.0f;
-	int _maxDepthBuffers = -1;
+	ShadowParameters _parameters;
 
 public:
 	Shadow();
@@ -45,13 +55,13 @@ public:
 	/**
 	 * @param[in] maxDepthBuffers the amount of cascades
 	 */
-	bool init(int maxDepthBuffers);
+	bool init(const ShadowParameters& parameters);
 	void shutdown();
 
 	typedef std::function<bool(int, shader::ShadowmapShader&)> funcRender;
 	typedef std::function<bool(int, shader::ShadowmapInstancedShader&)> funcRenderInstance;
 
-	void update(const video::Camera& camera, bool active, float sliceWeight = 0.05f);
+	void update(const video::Camera& camera, bool active);
 
 	bool bind(video::TextureUnit unit);
 
@@ -61,12 +71,8 @@ public:
 
 	void setPosition(const glm::vec3& eye, const glm::vec3& center = glm::zero<glm::vec3>(), const glm::vec3& up = glm::up);
 	void setLightViewMatrix(const glm::mat4& lightView);
-	void setShadowBiasSlope(float biasSlope);
-	void setShadowBias(float biasSlope);
 
-	float shadowRangeZ() const;
-	float shadowBiasSlope() const;
-	float shadowBias() const;
+	ShadowParameters& parameters();
 
 	const std::vector<glm::mat4>& cascades() const;
 	const std::vector<float>& distances() const;
@@ -87,24 +93,7 @@ inline const glm::vec3& Shadow::sunDirection() const {
 	return _sunDirection;
 }
 
-inline void Shadow::setShadowBias(float biasSlope) {
-	_shadowBias = biasSlope;
+inline ShadowParameters& Shadow::parameters() {
+	return _parameters;
 }
-
-inline void Shadow::setShadowBiasSlope(float biasSlope) {
-	_shadowBiasSlope = biasSlope;
-}
-
-inline float Shadow::shadowRangeZ() const {
-	return _shadowRangeZ;
-}
-
-inline float Shadow::shadowBiasSlope() const {
-	return _shadowBiasSlope;
-}
-
-inline float Shadow::shadowBias() const {
-	return _shadowBias;
-}
-
 }

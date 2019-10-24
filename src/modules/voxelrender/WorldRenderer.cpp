@@ -753,8 +753,10 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		return false;
 	}
 
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
-	if (!_shadow.init(maxDepthBuffers)) {
+	_shadowParams.shadowBias = 0.09f;
+	_shadowParams.shadowBiasSlope = 0.1f;
+	_shadowParams.maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
+	if (!_shadow.init(_shadowParams)) {
 		return false;
 	}
 
