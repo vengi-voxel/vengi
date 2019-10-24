@@ -53,6 +53,14 @@ set(FILES
 	characters/models/characters/undead/male/belts/default.vox
 	characters/models/characters/undead/male/chests/default.vox
 
+	characters/models/characters/undead/male/shoulders/skeleton.vox
+	characters/models/characters/undead/male/heads/skeleton.vox
+	characters/models/characters/undead/male/feets/skeleton.vox
+	characters/models/characters/undead/male/hands/skeleton.vox
+	characters/models/characters/undead/male/pants/skeleton.vox
+	characters/models/characters/undead/male/belts/skeleton.vox
+	characters/models/characters/undead/male/chests/skeleton.vox
+
 	characters/models/glider.vox
 	characters/models/items/axe-1.vox
 	characters/models/items/hammer-1.vox
@@ -61,6 +69,7 @@ set(FILES
 )
 set(LUA_SRCS
 	chr/undead-male-default.lua
+	chr/undead-male-skeleton.lua
 
 	chr/human-male-worker.lua
 	chr/human-male-blacksmith.lua

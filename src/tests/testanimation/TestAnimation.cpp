@@ -12,10 +12,11 @@
 static bool reloadCharacter = false;
 
 static const char* validCharacters[] = {
+	"undead-male-skeleton",
+	"undead-male-default",
 	"human-male-worker",
 	"human-male-blacksmith",
-	"human-male-knight",
-	"undead-male-default"
+	"human-male-knight"
 };
 
 static std::string luaFilename(const char *character) {
