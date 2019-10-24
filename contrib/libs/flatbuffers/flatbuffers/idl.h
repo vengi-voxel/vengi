@@ -367,9 +367,14 @@ inline size_t InlineSize(const Type &type) {
 }
 
 inline size_t InlineAlignment(const Type &type) {
-  return IsStruct(type)
-             ? type.struct_def->minalign
-             : (SizeOf(IsArray(type) ? type.element : type.base_type));
+  if (IsStruct(type)) {
+    return type.struct_def->minalign;
+  } else if (IsArray(type)) {
+    return IsStruct(type.VectorType()) ? type.struct_def->minalign
+                                       : SizeOf(type.element);
+  } else {
+    return SizeOf(type.base_type);
+  }
 }
 
 struct EnumDef;
@@ -486,6 +491,8 @@ struct ServiceDef : public Definition {
 
 // Container of options that may apply to any of the source/text generators.
 struct IDLOptions {
+  // Use flexbuffers instead for binary and text generation
+  bool use_flexbuffers;
   bool strict_json;
   bool skip_js_exports;
   bool use_goog_js_export_format;
@@ -509,6 +516,7 @@ struct IDLOptions {
   std::string cpp_object_api_string_type;
   bool cpp_object_api_string_flexible_constructor;
   bool gen_nullable;
+  bool java_checkerframework;
   bool gen_generated;
   std::string object_prefix;
   std::string object_suffix;
@@ -528,6 +536,7 @@ struct IDLOptions {
   bool size_prefixed;
   std::string root_type;
   bool force_defaults;
+  bool java_primitive_has_method;
   std::vector<std::string> cpp_includes;
 
   // Possible options for the more general generator below.
@@ -566,7 +575,8 @@ struct IDLOptions {
   bool set_empty_to_null;
 
   IDLOptions()
-      : strict_json(false),
+      : use_flexbuffers(false),
+        strict_json(false),
         skip_js_exports(false),
         use_goog_js_export_format(false),
         use_ES6_js_export_format(false),
@@ -588,6 +598,7 @@ struct IDLOptions {
         cpp_object_api_pointer_type("std::unique_ptr"),
         cpp_object_api_string_flexible_constructor(false),
         gen_nullable(false),
+        java_checkerframework(false),
         gen_generated(false),
         object_suffix("T"),
         union_value_namespacing(true),
@@ -602,6 +613,7 @@ struct IDLOptions {
         protobuf_ascii_alike(false),
         size_prefixed(false),
         force_defaults(false),
+        java_primitive_has_method(false),
         lang(IDLOptions::kJava),
         mini_reflect(IDLOptions::kNone),
         lang_to_generate(0),
@@ -698,6 +710,7 @@ class Parser : public ParserState {
   explicit Parser(const IDLOptions &options = IDLOptions())
       : current_namespace_(nullptr),
         empty_namespace_(nullptr),
+        flex_builder_(256, flexbuffers::BUILDER_FLAG_SHARE_ALL),
         root_struct_def_(nullptr),
         opts(options),
         uses_flexbuffers_(false),
@@ -899,6 +912,8 @@ class Parser : public ParserState {
   std::string error_;         // User readable error_ if Parse() == false
 
   FlatBufferBuilder builder_;  // any data contained in the file
+  flexbuffers::Builder flex_builder_;
+  flexbuffers::Reference flex_root_;
   StructDef *root_struct_def_;
   std::string file_identifier_;
   std::string file_extension_;
@@ -926,6 +941,8 @@ class Parser : public ParserState {
 // Utility functions for multiple generators:
 
 extern std::string MakeCamel(const std::string &in, bool first = true);
+
+extern std::string MakeScreamingCamel(const std::string &in);
 
 // Generate text (JSON) from a given FlatBuffer, and a given Parser
 // object that has been populated with the corresponding schema.

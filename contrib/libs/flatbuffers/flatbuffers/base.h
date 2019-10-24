@@ -199,7 +199,7 @@ namespace flatbuffers {
   // to detect a header that provides an implementation
   #if defined(__has_include)
     // Check for std::string_view (in c++17)
-    #if __has_include(<string_view>) && (__cplusplus >= 201606 || _HAS_CXX17)
+    #if __has_include(<string_view>) && (__cplusplus >= 201606 || (defined(_HAS_CXX17) && _HAS_CXX17))
       #include <string_view>
       namespace flatbuffers {
         typedef std::string_view string_view;
@@ -330,22 +330,20 @@ template<typename T> T EndianSwap(T t) {
   if (sizeof(T) == 1) {   // Compile-time if-then's.
     return t;
   } else if (sizeof(T) == 2) {
-    union { T t; uint16_t i; } u;
-    u.t = t;
+    union { T t; uint16_t i; } u = { t };
     u.i = FLATBUFFERS_BYTESWAP16(u.i);
     return u.t;
   } else if (sizeof(T) == 4) {
-    union { T t; uint32_t i; } u;
-    u.t = t;
+    union { T t; uint32_t i; } u = { t };
     u.i = FLATBUFFERS_BYTESWAP32(u.i);
     return u.t;
   } else if (sizeof(T) == 8) {
-    union { T t; uint64_t i; } u;
-    u.t = t;
+    union { T t; uint64_t i; } u = { t };
     u.i = FLATBUFFERS_BYTESWAP64(u.i);
     return u.t;
   } else {
     FLATBUFFERS_ASSERT(0);
+    return t;
   }
 }
 
