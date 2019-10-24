@@ -34,7 +34,7 @@ void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, C
 	glm::vec3 newPos = currentPos + md;
 	_groundHeight = heightResolver(newPos);
 	if (_groundHeight < voxel::MIN_HEIGHT) {
-		newPos = currentPos;
+		_groundHeight = voxel::MIN_HEIGHT;
 	}
 	_delay -= deltaFrameSeconds;
 	if (jump()) {
