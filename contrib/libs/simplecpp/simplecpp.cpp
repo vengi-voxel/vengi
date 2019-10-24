@@ -756,10 +756,14 @@ void simplecpp::TokenList::combineOperators()
         }
 
         if (tok->op == '.') {
-            if (tok->previous && tok->previous->op == '.')
+            // ellipsis ...
+            if (tok->next && tok->next->op == '.' && tok->next->location.col == (tok->location.col + 1) &&
+                tok->next->next && tok->next->next->op == '.' && tok->next->next->location.col == (tok->location.col + 2)) {
+                tok->setstr("...");
+                deleteToken(tok->next);
+                deleteToken(tok->next);
                 continue;
-            if (tok->next && tok->next->op == '.')
-                continue;
+            }
             // float literals..
             if (tok->previous && tok->previous->number) {
                 tok->setstr(tok->previous->str() + '.');
@@ -776,7 +780,10 @@ void simplecpp::TokenList::combineOperators()
         }
         // match: [0-9.]+E [+-] [0-9]+
         const char lastChar = tok->str()[tok->str().size() - 1];
-        if (tok->number && !isHex(tok->str()) && !isOct(tok->str()) && (lastChar == 'E' || lastChar == 'e') && tok->next && tok->next->isOneOf("+-") && tok->next->next && tok->next->next->number) {
+        if (tok->number && !isOct(tok->str()) &&
+            ((!isHex(tok->str()) && (lastChar == 'E' || lastChar == 'e')) ||
+             (isHex(tok->str()) && (lastChar == 'P' || lastChar == 'p'))) &&
+            tok->next && tok->next->isOneOf("+-") && tok->next->next && tok->next->next->number) {
             tok->setstr(tok->str() + tok->next->op + tok->next->next->str());
             deleteToken(tok->next);
             deleteToken(tok->next);
@@ -837,7 +844,7 @@ void simplecpp::TokenList::combineOperators()
         } else if ((tok->op == '<' || tok->op == '>') && tok->op == tok->next->op) {
             tok->setstr(tok->str() + tok->next->str());
             deleteToken(tok->next);
-            if (tok->next && tok->next->op == '=') {
+            if (tok->next && tok->next->op == '=' && tok->next->next && tok->next->next->op != '=') {
                 tok->setstr(tok->str() + tok->next->str());
                 deleteToken(tok->next);
             }
@@ -1129,12 +1136,20 @@ std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &
         backslash = false;
         ret += ch;
         if (ch == '\\') {
-            const char next = readChar(istr, bom);
-            if (next == '\r' || next == '\n') {
-                ret.erase(ret.size()-1U);
-                backslash = (next == '\r');
-            }
-            ret += next;
+            bool update_ch = false;
+            char next = 0;
+            do {
+                next = readChar(istr, bom);
+                if (next == '\r' || next == '\n') {
+                    ret.erase(ret.size()-1U);
+                    backslash = (next == '\r');
+                    update_ch = false;
+                } else if (next == '\\')
+                    update_ch = !update_ch;
+                ret += next;
+            } while (next == '\\');
+            if (update_ch)
+                ch = next;
         }
     }
 
@@ -1387,14 +1402,12 @@ namespace simplecpp {
                 args.clear();
                 const Token *argtok = nameTokDef->next->next;
                 while (sameline(nametoken, argtok) && argtok->op != ')') {
-                    if (argtok->op == '.' &&
-                        argtok->next && argtok->next->op == '.' &&
-                        argtok->next->next && argtok->next->next->op == '.' &&
-                        argtok->next->next->next && argtok->next->next->next->op == ')') {
+                    if (argtok->str() == "..." &&
+                        argtok->next && argtok->next->op == ')') {
                         variadic = true;
                         if (!argtok->previous->name)
                             args.push_back("__VA_ARGS__");
-                        argtok = argtok->next->next->next; // goto ')'
+                        argtok = argtok->next; // goto ')'
                         break;
                     }
                     if (argtok->op != ',')
