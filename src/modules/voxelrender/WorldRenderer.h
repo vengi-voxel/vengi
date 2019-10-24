@@ -110,7 +110,6 @@ protected:
 	typedef std::unordered_map<frontend::ClientEntityId, frontend::ClientEntityPtr> Entities;
 	Entities _entities;
 
-	render::ShadowParameters _shadowParams;
 	render::Shadow _shadow;
 	render::RandomColorTexture _colorTexture;
 	voxel::PlantGenerator _plantGenerator;
