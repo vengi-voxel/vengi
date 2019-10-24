@@ -276,13 +276,13 @@ bool CharacterCache::getItemModel(const char *itemName, Vertices& vertices, Indi
 	for (const voxel::VoxelVertex& v : mesh.getVertexVector()) {
 		vertices.emplace_back(Vertex{v.position, v.colorIndex, boneId, v.ambientOcclusion});
 	}
-	vertices.resize(mesh.getNoOfVertices());
+	//vertices.resize(mesh.getNoOfVertices());
 
 	indices.reserve(mesh.getNoOfIndices());
 	for (voxel::IndexType idx : mesh.getIndexVector()) {
 		indices.push_back((IndexType)idx);
 	}
-	indices.resize(mesh.getNoOfIndices());
+	//indices.resize(mesh.getNoOfIndices());
 
 	return true;
 }
