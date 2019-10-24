@@ -29,7 +29,6 @@ struct ShadowParameters {
 
 	float shadowBiasSlope = 2.0f;
 	float shadowBias = 0.09f;
-	float shadowRangeZ = 0.0f;
 	float sliceWeight = 0.05f;
 };
 
@@ -48,6 +47,7 @@ private:
 	shader::ShadowmapRenderShader& _shadowMapRenderShader;
 	shader::ShadowmapInstancedShader& _shadowMapInstancedShader;
 	ShadowParameters _parameters;
+	float _shadowRangeZ = 0.0f;
 
 public:
 	Shadow();

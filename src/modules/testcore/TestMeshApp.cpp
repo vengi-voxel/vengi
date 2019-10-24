@@ -129,7 +129,6 @@ void TestMeshApp::onRenderUI() {
 		ImGui::InputFloat("Shadow bias", &sp.shadowBias);
 		ImGui::InputFloat("Shadow bias slope", &sp.shadowBiasSlope);
 		ImGui::InputFloat("Shadow slice weight", &sp.sliceWeight);
-		ImGui::InputFloat("Shadow range", &sp.shadowRangeZ);
 		float farPlane = _camera.farPlane();
 		if (ImGui::InputFloat("Far plane", &farPlane, 0.01f, 0.1f)) {
 			_camera.setFarPlane(farPlane);

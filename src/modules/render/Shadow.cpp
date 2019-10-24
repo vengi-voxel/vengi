@@ -68,7 +68,7 @@ void Shadow::shutdown() {
 
 void Shadow::update(const video::Camera& camera, bool active) {
 	core_trace_scoped(ShadowCalculate);
-	_parameters.shadowRangeZ = camera.farPlane() * 3.0f;
+	_shadowRangeZ = camera.farPlane() * 3.0f;
 	_cascades.resize(_parameters.maxDepthBuffers);
 	_distances.resize(_parameters.maxDepthBuffers);
 	const glm::ivec2& dim = dimension();
@@ -103,7 +103,7 @@ void Shadow::update(const video::Camera& camera, bool active) {
 				 lightCenterRounded.x + lightRadius,
 				 lightCenterRounded.y - lightRadius,
 				 lightCenterRounded.y + lightRadius,
-				-lightCenterRounded.z - (_parameters.shadowRangeZ - lightRadius),
+				-lightCenterRounded.z - (_shadowRangeZ - lightRadius),
 				-lightCenterRounded.z + lightRadius);
 		_cascades[i] = lightProjection * _lightView;
 		_distances[i] = far;
@@ -120,7 +120,7 @@ void Shadow::render(funcRender renderCallback, funcRenderInstance renderInstance
 	const bool oldBlend = video::disable(video::State::Blend);
 	// put shadow acne into the dark
 	const bool cullFaceChanged = video::cullFace(video::Face::Front);
-	const glm::vec2 offset(_parameters.shadowBiasSlope, (_parameters.shadowBias / _parameters.shadowRangeZ) * (1 << 24));
+	const glm::vec2 offset(_parameters.shadowBiasSlope, (_parameters.shadowBias / _shadowRangeZ) * (1 << 24));
 	const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
 
 	_depthBuffer.bind(false);

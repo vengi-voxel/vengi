@@ -205,7 +205,6 @@ void MapView::onRenderUI() {
 		ImGui::InputFloat("Shadow bias", &sp.shadowBias);
 		ImGui::InputFloat("Shadow bias slope", &sp.shadowBiasSlope);
 		ImGui::InputFloat("Shadow slice weight", &sp.sliceWeight);
-		ImGui::InputFloat("Shadow range", &sp.shadowRangeZ);
 	}
 
 	ImGui::Checkbox("Line mode rendering", &_lineModeRendering);
