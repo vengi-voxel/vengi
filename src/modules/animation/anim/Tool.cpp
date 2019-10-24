@@ -33,12 +33,12 @@ static void stroke(float animTime, CharacterSkeleton &skeleton, const SkeletonAt
 	righthand.orientation = rotateXY(betweenOneAndTwoFast * 0.8f, betweenOneAndTwoFast * 0.4f);
 
 	Bone &lefthand = skeleton.handBone(BoneId::LeftHand, skeletonAttr);
-	lefthand.translation = glm::vec3(-skeletonAttr.handRight, 0.0f, skeletonAttr.handForward);
+	lefthand.translation = glm::vec3(-skeletonAttr.handRight, 0.0f, skeletonAttr.handForward - betweenOneAndTwoFast);
 	lefthand.scale.x = -righthand.scale.x;
 	lefthand.orientation = glm::quat_identity<float, glm::defaultp>();
 
 	Bone &rightfoot = skeleton.footBone(BoneId::RightFoot, skeletonAttr);
-	rightfoot.translation = glm::vec3(skeletonAttr.footRight, skeletonAttr.hipOffset, betweenOneAndTwoFast);
+	rightfoot.translation = glm::vec3(skeletonAttr.footRight, skeletonAttr.hipOffset, betweenOneAndTwoFast * 0.5f);
 	rightfoot.orientation = glm::quat_identity<float, glm::defaultp>();
 
 	Bone &leftfoot = skeleton.bone(BoneId::LeftFoot);
