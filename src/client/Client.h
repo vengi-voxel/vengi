@@ -49,9 +49,6 @@ protected:
 
 	uint64_t _lastMovement = 0l;
 
-	int _drawCallsWorld = 0;
-	int _drawCallsEntities = 0;
-
 	uint32_t _state = 0u;
 
 	void setState(uint32_t flag);

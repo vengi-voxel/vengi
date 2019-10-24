@@ -10,11 +10,15 @@
 #include "voxel/Constants.h"
 #include "core/App.h"
 #include "core/Var.h"
+#include "core/GLM.h"
+#include "core/Array.h"
 #include "voxel/MaterialColor.h"
 #include "PlantDistributor.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
 #include "ShaderAttribute.h"
+#include "video/Renderer.h"
+#include "video/Types.h"
 
 namespace voxelrender {
 
@@ -455,6 +459,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		}
 		drawCallsWorld += renderPlants(_visiblePlant, vertices);
 	}
+	drawCallsWorld += renderEntities(camera);
 	{
 		core_trace_scoped(WorldRendererRenderWater);
 		video::ScopedShader scoped(_waterShader);

@@ -207,12 +207,8 @@ void Client::beforeUI() {
 		_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 		_camera.update(_deltaFrameMillis);
 
-		_drawCallsWorld = _worldRenderer.renderWorld(_camera);
-		_drawCallsEntities = _worldRenderer.renderEntities(_camera);
+		_worldRenderer.renderWorld(_camera);
 		_worldRenderer.extractMeshes(_camera);
-	} else {
-		_drawCallsWorld = 0;
-		_drawCallsEntities = 0;
 	}
 }
 

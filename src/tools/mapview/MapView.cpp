@@ -168,7 +168,6 @@ void MapView::beforeUI() {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
 	}
 	_drawCallsWorld = _worldRenderer.renderWorld(_camera, &_vertices);
-	_drawCallsEntities = _worldRenderer.renderEntities(_camera);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
 	}
@@ -182,8 +181,7 @@ void MapView::onRenderUI() {
 		ImGui::Text("%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
 		ImGui::Text("%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
 		ImGui::Text("%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
-		ImGui::Text("Drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
-		ImGui::Text("Drawcalls entities: %i", _drawCallsEntities);
+		ImGui::Text("Drawcalls: %i (verts: %i)", _drawCallsWorld, _vertices);
 		ImGui::Text("Pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
 		ImGui::Text("Pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
 				stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive, stats.occluded);

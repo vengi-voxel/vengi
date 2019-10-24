@@ -43,7 +43,6 @@ protected:
 	bool _updateWorld = true;
 	int _drawCallsWorld = 0;
 	int _vertices = 0;
-	int _drawCallsEntities = 0;
 
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize(int windowWidth, int windowHeight) override;
