@@ -8,11 +8,18 @@
 
 namespace animation {
 namespace tool {
-void update(float animTime, ToolAnimationType animation, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
+
+static void swing(float animTime, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
+}
+
+static void tense(float animTime, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
+}
+
+static void twiddle(float animTime, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
+}
+
+static void stroke(float animTime, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
 	const float movement = glm::sin(animTime * 12.0f);
-
-	// TODO: handle ToolAnimationType properly
-
 	const float headMovement = movement * 0.1f;
 	Bone &head = skeleton.headBone(skeletonAttr);
 	head.translation = glm::vec3(skeletonAttr.neckRight, skeletonAttr.neckHeight + skeletonAttr.headY, skeletonAttr.neckForward);
@@ -54,6 +61,28 @@ void update(float animTime, ToolAnimationType animation, CharacterSkeleton &skel
 	Bone &torso = skeleton.torsoBone(skeletonAttr);
 	torso.translation = glm::zero<glm::vec3>();
 	torso.orientation = rotateXYZ(torsoRotationX, torsoRotationY, torsoRotationZ);
+}
+
+void update(float animTime, ToolAnimationType animation, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
+	core_assert(animation != ToolAnimationType::None && animation != ToolAnimationType::Max);
+
+	switch (animation) {
+	case ToolAnimationType::Stroke:
+		stroke(animTime, skeleton, skeletonAttr);
+		break;
+	case ToolAnimationType::Swing:
+		swing(animTime, skeleton, skeletonAttr);
+		break;
+	case ToolAnimationType::Tense:
+		tense(animTime, skeleton, skeletonAttr);
+		break;
+	case ToolAnimationType::Twiddle:
+		twiddle(animTime, skeleton, skeletonAttr);
+		break;
+	case ToolAnimationType::None:
+	case ToolAnimationType::Max:
+		break;
+	}
 
 	skeleton.bone(BoneId::Glider) = zero();
 }
