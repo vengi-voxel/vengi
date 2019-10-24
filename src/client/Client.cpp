@@ -215,20 +215,9 @@ void Client::beforeUI() {
 void Client::afterRootWidget() {
 	const glm::vec3& pos = _camera.position();
 	const glm::vec3& target = _camera.target();
-	voxelrender::WorldRenderer::Stats stats;
-	_worldRenderer.stats(stats);
-	const int x = 5;
-	enqueueShowStr(x, core::Color::White, "drawcalls world: %i", _drawCallsWorld);
-	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
-	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
-	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
-			stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive, stats.occluded);
-	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f (target: %.2f:%.2f:%.2f)", pos.x, pos.y, pos.z, target.x, target.y, target.z);
-
 	if (hasState(CLIENT_CONNECTING)) {
 		_waiting.render();
 	}
-
 	Super::afterRootWidget();
 }
 
