@@ -155,8 +155,7 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 			return true;
 		}
 	}
-	handleKeyPress(key, modifier);
-	return true;
+	return handleKeyPress(key, modifier);
 }
 
 std::string WindowedApp::getKeyBindingsString(const char *cmd) const {
