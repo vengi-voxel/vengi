@@ -35,18 +35,23 @@ bool ServerNetwork::packetReceived(ENetEvent& event) {
 
 bool ServerNetwork::bind(uint16_t port, const std::string& hostname, int maxPeers, int maxChannels) {
 	if (_server) {
+		Log::error("There is already a server socket opened");
 		return false;
 	}
 	if (maxPeers <= 0) {
+		Log::error("maxpeers must be greater than 0");
 		return false;
 	}
 	if (maxChannels <= 0) {
+		Log::error("maxchannels must be greater than 0");
 		return false;
 	}
 	ENetAddress address;
 	if (hostname.empty()) {
+		Log::info("Bind to any host interface");
 		address.host = ENET_HOST_ANY;
 	} else {
+		Log::info("Bind to host interface: %s", hostname.c_str());
 		enet_address_set_host(&address, hostname.c_str());
 	}
 	address.port = port;
@@ -58,6 +63,7 @@ bool ServerNetwork::bind(uint16_t port, const std::string& hostname, int maxPeer
 			0 /* assume any amount of outgoing bandwidth */
 			);
 	if (_server == nullptr) {
+		Log::error("Failed to create host");
 		return false;
 	}
 	enet_host_compress_with_range_coder(_server);
