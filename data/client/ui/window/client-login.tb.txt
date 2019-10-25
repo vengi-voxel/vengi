@@ -63,3 +63,12 @@ TBLayout
 			skin TBButton.flat
 			text @lostpassword
 			id lostpassword
+
+	TBSection: value: 1, text: @loginsettings
+		TBLayout: axis: y, spacing: 0, size: available
+			TBLayout: axis: x
+				TBTextField: text: @serverhost
+				TBEditField: varref: cl_host
+			TBLayout: axis: x
+				TBTextField: text: @serverport
+				TBEditField: varref: cl_port

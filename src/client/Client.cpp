@@ -213,8 +213,6 @@ void Client::beforeUI() {
 }
 
 void Client::afterRootWidget() {
-	const glm::vec3& pos = _camera.position();
-	const glm::vec3& target = _camera.target();
 	if (hasState(CLIENT_CONNECTING)) {
 		_waiting.render();
 	}

@@ -26,3 +26,6 @@ signup New account
 stateconnecting Connecting
 passwordsdonotmatch Passwords don't match
 emailinvalid Invalid email
+loginsettings Settings
+serverport Port
+serverhost Server

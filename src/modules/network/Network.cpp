@@ -51,10 +51,12 @@ void Network::updateHost(ENetHost* host) {
 	while (enet_host_service(host, &event, 0) > 0) {
 		switch (event.type) {
 		case ENET_EVENT_TYPE_CONNECT: {
+			Log::info("New connection event received");
 			_eventBus->publish(NewConnectionEvent(event.peer));
 			break;
 		}
 		case ENET_EVENT_TYPE_RECEIVE: {
+			Log::trace("Package received");
 			if (!packetReceived(event)) {
 				Log::error("Failure while receiving a package - disconnecting now...");
 				disconnectPeer(event.peer, DisconnectReason::ProtocolError);
@@ -63,6 +65,7 @@ void Network::updateHost(ENetHost* host) {
 			break;
 		}
 		case ENET_EVENT_TYPE_DISCONNECT: {
+			Log::info("New disconnect event received");
 			_eventBus->publish(DisconnectEvent(event.peer, (DisconnectReason)event.data));
 			break;
 		}

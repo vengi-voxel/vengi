@@ -71,6 +71,7 @@ bool ServerNetwork::broadcast(ENetPacket* packet, int channel) {
 	if (packet == nullptr) {
 		return false;
 	}
+	Log::debug("Broadcasting a message on channel %i", channel);
 	enet_host_broadcast(_server, channel, packet);
 	return true;
 }

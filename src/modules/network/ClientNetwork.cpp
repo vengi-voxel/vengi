@@ -49,6 +49,7 @@ ENetPeer* ClientNetwork::connect(uint16_t port, const std::string& hostname, int
 			14400 / 8 /* 56K modem with 14 Kbps upstream bandwidth */
 			);
 	if (_client == nullptr) {
+		Log::error("Failed to create host");
 		return nullptr;
 	}
 	enet_host_compress_with_range_coder(_client);
@@ -59,6 +60,7 @@ ENetPeer* ClientNetwork::connect(uint16_t port, const std::string& hostname, int
 
 	_peer = enet_host_connect(_client, &address, maxChannels, 0);
 	if (_peer == nullptr) {
+		Log::error("Failed to connect to peer");
 		return nullptr;
 	}
 
