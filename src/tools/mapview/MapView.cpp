@@ -101,7 +101,7 @@ core::AppState MapView::onInit() {
 	_camera.setFieldOfView(45.0f);
 	_camera.setFarPlane(10.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);
-	_camera.setTargetDistance(20.0f);
+	_camera.setTargetDistance(40.0f);
 	_camera.setTarget(glm::zero<glm::vec3>());
 	_camera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
 	_camera.update(0l);
