@@ -11,6 +11,7 @@
 #include "core/String.h"
 #include "voxel/polyvox/Region.h"
 #include "core/command/Command.h"
+#include "video/ScopedPolygonMode.h"
 #include "SceneManager.h"
 
 namespace voxedit {
