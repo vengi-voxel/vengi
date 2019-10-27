@@ -28,7 +28,7 @@ void ThreadPool::init() {
 			for (;;) {
 				std::function<void()> task;
 				{
-					std::unique_lock<decltype(_queueMutex)> lock(this->_queueMutex);
+					std::unique_lock lock(this->_queueMutex);
 					if (!this->_stop) {
 						this->_queueCondition.wait(lock, [this] {
 							// predicate must return false if the waiting should continue
