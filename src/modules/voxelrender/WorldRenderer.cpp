@@ -3,21 +3,23 @@
  */
 
 #include "WorldRenderer.h"
+#include "PlantDistributor.h"
+#include "ShaderAttribute.h"
+
 #include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/Array.h"
-#include "video/Renderer.h"
-#include "voxel/Constants.h"
 #include "core/App.h"
 #include "core/Var.h"
 #include "core/GLM.h"
 #include "core/Array.h"
+
+#include "voxel/Constants.h"
 #include "voxel/MaterialColor.h"
-#include "PlantDistributor.h"
+
+#include "video/Renderer.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
-#include "ShaderAttribute.h"
-#include "video/Renderer.h"
 #include "video/Types.h"
 
 namespace voxelrender {
