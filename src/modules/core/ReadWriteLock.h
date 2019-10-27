@@ -7,6 +7,7 @@
 #include <string>
 #include <thread>
 #include <mutex>
+#include "Trace.h"
 #define CORE_SHARED_MUTEX 0
 #define CORE_RECURSIVE_MUTEX 0
 
@@ -32,7 +33,7 @@ namespace core {
 class ReadWriteLock {
 private:
 	const std::string _name;
-	mutable Mutex _mutex;
+	mutable core_trace_mutex(Mutex, _mutex);
 public:
 	ReadWriteLock(const std::string& name) :
 			_name(name) {

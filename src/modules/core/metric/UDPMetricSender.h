@@ -8,6 +8,7 @@
 #include <string>
 #include <mutex>
 #include <stdint.h>
+#include "core/Trace.h"
 
 #ifdef WIN32
 #ifndef NOMINMAX
@@ -30,7 +31,7 @@ private:
 	mutable SOCKET _socket;
 	const uint16_t _port;
 	mutable struct sockaddr_in* _statsd;
-	mutable std::mutex _connectionMutex;
+	mutable core_trace_mutex(std::mutex, _connectionMutex);
 
 	bool connect() const;
 public:

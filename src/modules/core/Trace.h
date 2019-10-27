@@ -57,6 +57,7 @@ extern void traceThread(const char* name);
 #define core_trace_gl_shutdown() core::traceGLShutdown()
 #define core_trace_msg(message) core::traceMessage(message)
 #define core_trace_thread(name) core::traceThread(name)
+#define core_trace_mutex(type, name) type name
 
 #define core_trace_begin_frame() core::traceBeginFrame()
 #define core_trace_end_frame() core::traceEndFrame()

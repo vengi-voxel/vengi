@@ -36,6 +36,7 @@
 #include <atomic>
 #include <future>
 #include <functional>
+#include "Trace.h"
 
 namespace core {
 
@@ -62,9 +63,8 @@ private:
 	std::queue<std::function<void()> > _tasks;
 
 	// synchronization
-	std::mutex _queueMutex;
-	std::condition_variable _queueCondition;
-	std::mutex _shutdownMutex;
+	core_trace_mutex(std::mutex, _queueMutex);
+	std::condition_variable_any _queueCondition;
 	std::atomic_bool _stop { false };
 	std::atomic_bool _force { false };
 };
@@ -82,7 +82,7 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 
 	std::future<return_type> res = task->get_future();
 	{
-		std::unique_lock<std::mutex> lock(_queueMutex);
+		std::unique_lock<decltype(_queueMutex)> lock(_queueMutex);
 		if (_stop) {
 			return std::future<return_type>();
 		}
