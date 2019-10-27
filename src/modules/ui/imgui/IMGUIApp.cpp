@@ -353,7 +353,7 @@ void IMGUIApp::onAfterFrame() {
 		delete entry.second;
 	}
 	++_currentFrameCounter;
-	std::lock_guard<std::mutex> lock(_traceMutex);
+	std::lock_guard lock(_traceMutex);
 	_traceMeasuresLastFrame = _traceMeasures;
 	_traceMeasures.clear();
 }
