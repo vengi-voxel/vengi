@@ -4,7 +4,7 @@
 
 #include "Attributes.h"
 #include "core/Common.h"
-#include "collection/Set.h"
+#include "core/collection/Set.h"
 #include <unordered_set>
 
 namespace attrib {

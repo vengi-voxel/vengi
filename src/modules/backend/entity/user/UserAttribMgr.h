@@ -9,7 +9,7 @@
 #include "attrib/Attributes.h"
 #include "core/IComponent.h"
 #include "persistence/ISavable.h"
-#include "collection/ConcurrentSet.h"
+#include "core/collection/ConcurrentSet.h"
 #include "AttribModel.h"
 #include <vector>
 

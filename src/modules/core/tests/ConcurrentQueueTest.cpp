@@ -3,7 +3,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "collection/ConcurrentQueue.h"
+#include "core/collection/ConcurrentQueue.h"
 #include <thread>
 
 namespace collection {

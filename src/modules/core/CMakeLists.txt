@@ -16,13 +16,17 @@ set(SRCS
 	io/IEventObserver.h
 	io/IOResource.h
 
+	collection/ConcurrentQueue.h
+	collection/ConcurrentSet.h
+	collection/Set.h
+
 	Assert.h
 	App.cpp App.h
 	AppCommand.cpp AppCommand.h
 	BindingContext.cpp BindingContext.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
-	Common.h
+	Common.h Common.cpp
 	Concurrency.h Concurrency.cpp
 	ConsoleApp.h ConsoleApp.cpp
 	EventBus.cpp EventBus.h
@@ -67,7 +71,7 @@ else()
 	find_package(UUID)
 endif()
 
-set(LIBS collection restclient-cpp zlib sdl2 glm libuv ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
+set(LIBS restclient-cpp zlib sdl2 glm libuv ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
 if (NOT MSVC)
 list(APPEND LIBS backward)
 endif()
@@ -80,6 +84,7 @@ set(TEST_SRCS
 	tests/CommandTest.cpp
 	tests/CommandCompleterTest.cpp
 	tests/CommandHandlerTest.cpp
+	tests/ConcurrentQueueTest.cpp
 	tests/CoreTest.cpp
 	tests/EventBusTest.cpp
 	tests/FilesystemTest.cpp
@@ -91,6 +96,7 @@ set(TEST_SRCS
 	tests/MetricTest.cpp
 	tests/PoolAllocatorTest.cpp
 	tests/ReadWriteLockTest.cpp
+	tests/SetTest.cpp
 	tests/StringTest.cpp
 	tests/ThreadPoolTest.cpp
 	tests/TokenizerTest.cpp

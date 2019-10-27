@@ -11,7 +11,7 @@
 #include "core/Var.h"
 #include "core/IComponent.h"
 #include "math/Rect.h"
-#include "collection/ConcurrentQueue.h"
+#include "core/collection/ConcurrentQueue.h"
 
 namespace util {
 

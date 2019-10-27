@@ -3,7 +3,7 @@
  */
 
 #include "Entity.h"
-#include "collection/Set.h"
+#include "core/collection/Set.h"
 #include "core/Array.h"
 #include "core/Assert.h"
 #include "math/Rect.h"

@@ -23,7 +23,7 @@
 #include "WorldPager.h"
 #include "core/io/Filesystem.h"
 #include "BiomeManager.h"
-#include "collection/ConcurrentQueue.h"
+#include "core/collection/ConcurrentQueue.h"
 #include "core/ThreadPool.h"
 #include "core/Var.h"
 #include "math/Random.h"

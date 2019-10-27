@@ -7,6 +7,7 @@
 #include <mutex>
 #include <atomic>
 #include <functional>
+#include "core/Trace.h"
 
 namespace core {
 
@@ -15,8 +16,8 @@ class ConcurrentQueue {
 private:
 	using Collection = std::priority_queue<Data, std::vector<Data>, Compare>;
 	Collection _data;
-	mutable std::mutex _mutex;
-	std::condition_variable _conditionVariable;
+	mutable core_trace_mutex(std::mutex, _mutex);
+	std::condition_variable_any _conditionVariable;
 	std::atomic_bool _abort { false };
 public:
 	using Key = Data;
@@ -40,13 +41,13 @@ public:
 	}
 
 	void sort(std::function<bool(const Data& lhs, const Data& rhs)> sorter) {
-		std::unique_lock<std::mutex> lock(_mutex);
+		std::unique_lock<decltype(_mutex)> lock(_mutex);
 		std::make_heap(const_cast<Data*>(&_data.top()), const_cast<Data*>(&_data.top()) + _data.size(), sorter);
 	}
 
 	void push(Data const& data) {
 		{
-			std::unique_lock<std::mutex> lock(_mutex);
+			std::unique_lock<decltype(_mutex)> lock(_mutex);
 			_data.push(data);
 		}
 		_conditionVariable.notify_one();
@@ -54,7 +55,7 @@ public:
 
 	void push(Data&& data) {
 		{
-			std::unique_lock<std::mutex> lock(_mutex);
+			std::unique_lock<decltype(_mutex)> lock(_mutex);
 			_data.push(data);
 		}
 		_conditionVariable.notify_one();
@@ -63,24 +64,24 @@ public:
 	template<typename ... _Args>
 	void emplace(_Args&&... __args) {
 		{
-			std::unique_lock<std::mutex> lock(_mutex);
+			std::unique_lock<decltype(_mutex)> lock(_mutex);
 			_data.emplace(std::forward<_Args>(__args)...);
 		}
 		_conditionVariable.notify_one();
 	}
 
 	inline bool empty() const {
-		std::unique_lock<std::mutex> lock(_mutex);
+		std::unique_lock<decltype(_mutex)> lock(_mutex);
 		return _data.empty();
 	}
 
 	inline uint32_t size() const {
-		std::unique_lock<std::mutex> lock(_mutex);
+		std::unique_lock<decltype(_mutex)> lock(_mutex);
 		return _data.size();
 	}
 
 	bool pop(Data& poppedValue) {
-		std::unique_lock<std::mutex> lock(_mutex);
+		std::unique_lock<decltype(_mutex)> lock(_mutex);
 		if (_data.empty()) {
 			return false;
 		}
@@ -91,7 +92,7 @@ public:
 	}
 
 	bool waitAndPop(Data& poppedValue) {
-		std::unique_lock<std::mutex> lock(_mutex);
+		std::unique_lock<decltype(_mutex)> lock(_mutex);
 		_conditionVariable.wait(lock, [this] {
 			return _abort || !_data.empty();
 		});

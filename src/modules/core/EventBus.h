@@ -12,7 +12,7 @@
 #include "core/Log.h"
 #include "core/Common.h"
 #include "core/ReadWriteLock.h"
-#include "collection/ConcurrentQueue.h"
+#include "core/collection/ConcurrentQueue.h"
 
 namespace core {
 
