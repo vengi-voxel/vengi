@@ -295,7 +295,6 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	const bool renderAABB = _renderAABBs->boolVal();
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::Green);
-	core_trace_scoped(WorldRendererPrepareBuffers);
 	for (ChunkBuffer* chunkBuffer : contents) {
 		if (occlusionQuery && occluded(chunkBuffer)) {
 			 ++_occludedChunks;
