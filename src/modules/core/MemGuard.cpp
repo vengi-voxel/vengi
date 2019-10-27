@@ -53,7 +53,7 @@ void* MemGuard::alloc(size_t size, bool zeroFill) {
 
 	Chunk* mem = static_cast<Chunk*>(core_malloc(size));
 	if (zeroFill) {
-		SDL_memset(mem, 0, size);
+		core_memset(mem, 0, size);
 	}
 
 	mem->_headGuard = _headGuard;
@@ -80,10 +80,10 @@ void* MemGuard::realloc(void* ptr, size_t size) {
 	}
 
 	void* newPtr = alloc(size, false);
-	SDL_memcpy(newPtr, ptr, core_min(chunk->_size, size));
+	core_memcpy(newPtr, ptr, core_min(chunk->_size, size));
 	if (chunk->_size < size) {
 		const size_t delta = size - chunk->_size;
-		SDL_memset((uint8_t*) newPtr + chunk->_size, 0, delta);
+		core_memset((uint8_t*) newPtr + chunk->_size, 0, delta);
 	}
 
 	free(ptr);
