@@ -16,6 +16,7 @@
 #include "video/StencilConfig.h"
 #include "image/Image.h"
 #include "core/Common.h"
+#include "core/Trace.h"
 #include "core/Log.h"
 #include "core/ArrayLength.h"
 #include "core/Var.h"
@@ -29,6 +30,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <SDL.h>
 #include <algorithm>
+
+#ifdef TRACY_ENABLE
+#include "core/tracy/TracyOpenGL.hpp"
+#endif
 
 namespace video {
 
@@ -1003,6 +1008,9 @@ void flush() {
 
 void finish() {
 	glFinish();
+#ifdef TRACY_ENABLE
+	TracyGpuCollect;
+#endif
 	checkError();
 }
 
@@ -1647,7 +1655,8 @@ void destroyContext(RendererContext& context) {
 
 RendererContext createContext(SDL_Window* window) {
 	core_assert(window != nullptr);
-	return SDL_GL_CreateContext(window);
+	RendererContext ctx = SDL_GL_CreateContext(window);
+	return ctx;
 }
 
 void startFrame(SDL_Window* window, RendererContext& context) {
@@ -1797,6 +1806,11 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	if (multisampling) {
 		video::enable(video::State::MultiSample);
 	}
+
+#ifdef TRACY_ENABLE
+	TracyGpuContext;
+#endif
+
 	return true;
 }
 

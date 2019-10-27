@@ -67,6 +67,14 @@ set(SRCS
 	Vector.h
 	Zip.cpp Zip.h miniz.h miniz.c
 )
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/TracyClient.cpp)
+	list(APPEND SRCS tracy/TracyClient.cpp)
+	message(STATUS "Building with tracy enabled")
+else()
+	message(STATUS "Building with tracy disabled")
+endif()
+
 set(LIB core)
 
 if (WINDOWS)
@@ -79,6 +87,9 @@ if (NOT MSVC)
 list(APPEND LIBS backward)
 endif()
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/TracyClient.cpp)
+	target_compile_definitions(${LIB} PUBLIC TRACY_ENABLE TRACY_ON_DEMAND)
+endif()
 
 set(TEST_SRCS
 	tests/AbstractTest.cpp

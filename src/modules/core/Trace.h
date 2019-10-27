@@ -6,6 +6,10 @@
 
 #include <stdint.h>
 
+#ifdef TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+#endif
+
 namespace core {
 
 // a singleton - available via core::App
@@ -50,6 +54,27 @@ extern void traceGLEnd();
 extern void traceMessage(const char* name);
 extern void traceThread(const char* name);
 
+#ifdef TRACY_ENABLE
+#define core_trace_set(x) core::traceSet(x)
+#define core_trace_init() core::traceInit()
+#define core_trace_gl_init() core::traceGLInit()
+#define core_trace_shutdown() core::traceShutdown()
+#define core_trace_gl_shutdown() core::traceGLShutdown()
+#define core_trace_msg(message) TracyMessageL(message)
+#define core_trace_thread(name) tracy::SetThreadName(name)
+#define core_trace_mutex(type, name) TracyLockable(type, name)
+
+#define core_trace_begin_frame() FrameMarkNamed("Main")
+#define core_trace_end_frame() FrameMark
+#define core_trace_begin(name)
+#define core_trace_end()
+#define core_trace_gl_begin(name)
+#define core_trace_gl_begin_dynamic(name)
+#define core_trace_gl_end()
+#define core_trace_gl_scoped(name)
+// TODO: TracyGpuZone(#name)
+#define core_trace_scoped(name) ZoneNamedN(__tracy_scoped_##name, #name, true)
+#else
 #define core_trace_set(x) core::traceSet(x)
 #define core_trace_init() core::traceInit()
 #define core_trace_gl_init() core::traceGLInit()
@@ -68,5 +93,6 @@ extern void traceThread(const char* name);
 #define core_trace_gl_end() core::traceGLEnd()
 #define core_trace_gl_scoped(name) core::TraceGLScoped __trace__##name(#name)
 #define core_trace_scoped(name) core::TraceScoped __trace__##name(#name)
+#endif
 
 }
