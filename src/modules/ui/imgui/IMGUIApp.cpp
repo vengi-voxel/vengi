@@ -285,7 +285,6 @@ core::AppState IMGUIApp::onRunning() {
 
 	showCursor(io.MouseDrawCursor ? false : true);
 
-	core_trace_scoped(IMGUIAppUpdateUI);
 	video::ScopedShader scopedShader(_shader);
 	_shader.setViewprojection(_camera.projectionMatrix());
 	_shader.setModel(glm::mat4(1.0f));
@@ -305,8 +304,6 @@ core::AppState IMGUIApp::onRunning() {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
 	}
-
-	core_trace_scoped(IMGUIAppDoRenderUI);
 
 	const int index = _currentFrameCounter % _maxMeasureSize;
 	_frameMillis[index] = _deltaFrameMillis;
