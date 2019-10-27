@@ -83,6 +83,29 @@ static inline size_t transform(size_t indexOffset, const voxel::Mesh& mesh, voxe
 	return vertices.size();
 }
 
+void WorldChunkMgr::update(const video::Camera &camera, const glm::vec3& focusPos) {
+	handleMeshQueue();
+	cull(camera);
+
+	_meshExtractor.updateExtractionOrder(focusPos);
+	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
+		if (!chunkBuffer.inuse) {
+			continue;
+		}
+		const int distance = getDistanceSquare(chunkBuffer.translation(), focusPos);
+		if (distance < _maxAllowedDistance) {
+			continue;
+		}
+		core_assert_always(_meshExtractor.allowReExtraction(chunkBuffer.translation()));
+		chunkBuffer.inuse = false;
+		--_activeChunkBuffers;
+		_octree.remove(&chunkBuffer);
+		Log::trace("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
+	}
+}
+
+// TODO: put into background task with two states - computing and
+// next - then the indices and vertices are just swapped
 void WorldChunkMgr::cull(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererCull);
 	_indices.clear();
@@ -104,25 +127,6 @@ int WorldChunkMgr::getDistanceSquare(const glm::ivec3& pos, const glm::ivec3& po
 	const glm::ivec3 dist = pos - pos2;
 	const int distance = dist.x * dist.x + dist.z * dist.z;
 	return distance;
-}
-
-void WorldChunkMgr::update(const glm::vec3& focusPos) {
-	_meshExtractor.updateExtractionOrder(focusPos);
-
-	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
-		if (!chunkBuffer.inuse) {
-			continue;
-		}
-		const int distance = getDistanceSquare(chunkBuffer.translation(), focusPos);
-		if (distance < _maxAllowedDistance) {
-			continue;
-		}
-		core_assert_always(_meshExtractor.allowReExtraction(chunkBuffer.translation()));
-		chunkBuffer.inuse = false;
-		--_activeChunkBuffers;
-		_octree.remove(&chunkBuffer);
-		Log::trace("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
-	}
 }
 
 void WorldChunkMgr::extractMeshes(const video::Camera& camera) {

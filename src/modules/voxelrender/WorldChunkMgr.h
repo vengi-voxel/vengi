@@ -46,23 +46,35 @@ protected:
 
 	int getDistanceSquare(const glm::ivec3 &pos, const glm::ivec3 &pos2) const;
 
-public:
-	WorldChunkMgr();
-
 	voxel::VertexArray _vertices;
 	voxel::IndexArray _indices;
-
-	void extractMesh(const glm::ivec3 &pos);
-	void extractMeshes(const video::Camera &camera);
 
 	void cull(const video::Camera &camera);
 	void handleMeshQueue();
 
+public:
+	WorldChunkMgr();
+
+	const voxel::VertexArray& vertices() const;
+	const voxel::IndexArray& indices() const;
+
+	void extractMesh(const glm::ivec3 &pos);
+	void extractMeshes(const video::Camera &camera);
+
+	void update(const video::Camera &camera, const glm::vec3& focusPos);
+
 	void updateViewDistance(float viewDistance);
 	bool init(voxel::PagedVolume* volume);
 	void shutdown();
-	void update(const glm::vec3& focusPos);
 	void reset();
 };
+
+inline const voxel::VertexArray& WorldChunkMgr::vertices() const {
+	return _vertices;
+}
+
+inline const voxel::IndexArray& WorldChunkMgr::indices() const {
+	return _indices;
+}
 
 }

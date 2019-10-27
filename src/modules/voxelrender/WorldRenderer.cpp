@@ -66,8 +66,6 @@ void WorldRenderer::shutdown() {
 
 int WorldRenderer::renderWorld(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererRenderWorld);
-	_worldChunkMgr.handleMeshQueue();
-	_worldChunkMgr.cull(camera);
 	int drawCallsWorld = 0;
 	drawCallsWorld += renderToFrameBuffer(camera);
 	drawCallsWorld += renderPostProcessEffects(camera);
@@ -171,7 +169,7 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererRenderToFrameBuffer);
 	// update the vertex buffers
-	_worldBuffers.update(_worldChunkMgr._vertices, _worldChunkMgr._indices);
+	_worldBuffers.update(_worldChunkMgr.vertices(), _worldChunkMgr.indices());
 
 	// ensure we are in the expected states
 	video::enable(video::State::DepthTest);
@@ -472,7 +470,7 @@ void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
 	_shadow.update(camera, _shadowMap->boolVal());
 	_entityRenderer.update(_focusPos, _seconds);
 
-	_worldChunkMgr.update(_focusPos);
+	_worldChunkMgr.update(camera, _focusPos);
 	_entityMgr.update(dt);
 	_entityMgr.updateVisibleEntities(dt, camera);
 }
