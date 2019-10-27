@@ -7,7 +7,7 @@
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "core/GLM.h"
-#include "core/Trace.h"
+#include "video/Trace.h"
 #include "core/Var.h"
 #include "video/ScopedViewPort.h"
 #include "video/ScopedPolygonMode.h"
@@ -154,7 +154,7 @@ bool Shadow::bind(video::TextureUnit unit) {
 }
 
 void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
-	core_trace_gl_scoped(ShadowRender);
+	video_trace_scoped(ShadowRender);
 	const bool oldBlend = video::disable(video::State::Blend);
 	// put shadow acne into the dark
 	video::enable(video::State::CullFace);

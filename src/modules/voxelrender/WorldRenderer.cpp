@@ -10,7 +10,7 @@
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
 #include "core/Var.h"
-#include "core/Trace.h"
+#include "video/Trace.h"
 #include "core/GLM.h"
 #include "voxel/Constants.h"
 #include "voxel/MaterialColor.h"
@@ -75,7 +75,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera) {
 }
 
 int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
-	core_trace_gl_scoped(WorldRendererRenderPostProcess);
+	video_trace_scoped(WorldRendererRenderPostProcess);
 	video::ScopedState depthTest(video::State::DepthTest, false);
 	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	video::ScopedShader scoped(_postProcessShader);
@@ -208,7 +208,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 
 int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane) {
 	int drawCallsWorld = 0;
-	core_trace_gl_scoped(WorldRendererRenderOpaque);
+	video_trace_scoped(WorldRendererRenderOpaque);
 	video::ScopedShader scoped(_worldShader);
 	_worldShader.setFocuspos(_focusPos);
 	_worldShader.setLightdir(_shadow.sunDirection());
@@ -230,7 +230,7 @@ int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const gl
 
 int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& clipPlane) {
 	int drawCallsWorld = 0;
-	core_trace_gl_scoped(WorldRendererRenderWater);
+	video_trace_scoped(WorldRendererRenderWater);
 	video::ScopedShader scoped(_waterShader);
 	_waterShader.setFocuspos(_focusPos);
 	_waterShader.setCamerapos(camera.position());

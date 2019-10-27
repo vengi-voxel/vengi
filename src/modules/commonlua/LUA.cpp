@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "LUAFunctions.h"
+#include "Trace.h"
 
 namespace lua {
 
@@ -90,6 +91,8 @@ void LUA::openState() {
 
 	// Register debug callback function
 	lua_sethook(_state, debugHook, mask, 0);
+
+	clua_registertrace(_state);
 }
 
 void LUA::closeState() {

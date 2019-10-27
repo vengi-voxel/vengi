@@ -30,7 +30,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <SDL.h>
 #include <algorithm>
-
+#include "video/Trace.h"
 #ifdef TRACY_ENABLE
 #include "core/tracy/TracyOpenGL.hpp"
 #endif
@@ -1008,9 +1008,6 @@ void flush() {
 
 void finish() {
 	glFinish();
-#ifdef TRACY_ENABLE
-	TracyGpuCollect;
-#endif
 	checkError();
 }
 
@@ -1806,10 +1803,6 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	if (multisampling) {
 		video::enable(video::State::MultiSample);
 	}
-
-#ifdef TRACY_ENABLE
-	TracyGpuContext;
-#endif
 
 	return true;
 }

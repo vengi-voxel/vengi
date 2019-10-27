@@ -108,6 +108,8 @@ core::AppState WindowedApp::onRunning() {
 	const double frameDelta = (end - _timeProvider->highResTickTime()) / (double)core::TimeProvider::highResTimeResolution() * 1000.0;
 	_fps = 1.0 / frameDelta;
 
+	video_trace_frame_end();
+
 	return core::AppState::Running;
 }
 
@@ -361,7 +363,7 @@ core::AppState WindowedApp::onInit() {
 	video::init(_windowDimension.x, _windowDimension.y, scaleFactor);
 	video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 
-	core_trace_gl_init();
+	video_trace_init();
 
 	return state;
 }
@@ -401,7 +403,7 @@ core::AppState WindowedApp::onCleanup() {
 		SDL_DestroyWindow(_window);
 	}
 	SDL_Quit();
-	core_trace_gl_shutdown();
+	video_trace_shutdown();
 
 	_keybindingHandler.shutdown();
 

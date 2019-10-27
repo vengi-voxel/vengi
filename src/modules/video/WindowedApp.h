@@ -11,6 +11,7 @@
 #include "util/KeybindingParser.h"
 #include "util/KeybindingHandler.h"
 #include "video/Types.h"
+#include "video/Trace.h"
 #include "video/Version.h"
 #include <functional>
 #include <glm/vec2.hpp>

@@ -6,7 +6,7 @@
 #include "video/Renderer.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/Colors.h"
-#include "core/Trace.h"
+#include "video/Trace.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/collection/List.h"
@@ -116,7 +116,7 @@ int ClientEntityRenderer::renderEntityDetails(const core::List<ClientEntity*>& e
 	if (entities.empty()) {
 		return 0;
 	}
-	core_trace_gl_scoped(RenderEntityDetails);
+	video_trace_scoped(RenderEntityDetails);
 	alignas(16) static const struct {
 		glm::vec3 start;
 		glm::vec3 end;
@@ -142,7 +142,7 @@ void ClientEntityRenderer::bindEntitiesDepthBuffer(video::TextureUnit texunit) {
 }
 
 int ClientEntityRenderer::renderEntitiesToDepthMap(const core::List<ClientEntity*>& entities, const glm::mat4& viewProjectionMatrix) {
-	core_trace_gl_scoped(RenderEntitiesToDepthMap);
+	video_trace_scoped(RenderEntitiesToDepthMap);
 	_entitiesDepthBuffer.bind(true);
 	video::colorMask(false, false, false, false);
 
@@ -166,7 +166,7 @@ int ClientEntityRenderer::renderEntities(const core::List<ClientEntity*>& entiti
 	if (entities.empty()) {
 		return 0;
 	}
-	core_trace_gl_scoped(ClientEntityRendererEntities);
+	video_trace_scoped(ClientEntityRendererEntities);
 
 	int drawCallsEntities = 0;
 

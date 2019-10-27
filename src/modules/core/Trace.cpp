@@ -78,15 +78,6 @@ TraceScoped::~TraceScoped() {
 	traceEnd();
 }
 
-TraceGLScoped::TraceGLScoped(const char* name, const char *msg) {
-	traceGLBegin(name);
-	traceMessage(msg);
-}
-
-TraceGLScoped::~TraceGLScoped() {
-	traceGLEnd();
-}
-
 TraceCallback* traceSet(TraceCallback* callback) {
 	TraceCallback* old = _callback;
 	_callback = callback;
@@ -99,13 +90,7 @@ void traceInit() {
 #endif
 }
 
-void traceGLInit() {
-}
-
 void traceShutdown() {
-}
-
-void traceGLShutdown() {
 }
 
 void traceBeginFrame() {
@@ -150,14 +135,6 @@ void traceEnd() {
 		_callback->traceEnd(_threadName);
 	}
 #endif
-}
-
-void traceGLBegin(const char* name) {
-	traceBegin(name);
-}
-
-void traceGLEnd() {
-	traceEnd();
 }
 
 void traceMessage(const char* message) {

@@ -8,14 +8,14 @@
 #include "video/Types.h"
 #include "voxel/VoxelVertex.h"
 #include "core/Log.h"
-#include "core/Trace.h"
+#include "video/Trace.h"
 #include "video/Renderer.h"
 #include "ShaderAttribute.h"
 
 namespace voxelrender {
 
 bool WorldBuffers::renderTerrain() {
-	core_trace_gl_scoped(WorldBuffersRenderTerrain);
+	video_trace_scoped(WorldBuffersRenderTerrain);
 	const uint32_t numIndices = _buffer.elements(_ibo, 1, sizeof(voxel::IndexType));
 	if (numIndices == 0u) {
 		return false;
@@ -26,7 +26,7 @@ bool WorldBuffers::renderTerrain() {
 }
 
 bool WorldBuffers::renderWater() {
-	core_trace_gl_scoped(WorldBuffersRenderWater);
+	video_trace_scoped(WorldBuffersRenderWater);
 	video::ScopedBuffer scopedBuf(_waterBuffer);
 	const int elements = _waterBuffer.elements(_waterVbo, 2);
 	video::drawArrays(video::Primitive::Triangles, elements);
@@ -100,7 +100,7 @@ bool WorldBuffers::init(shader::WorldShader& worldShader, shader::WaterShader& w
 }
 
 void WorldBuffers::update(const voxel::VertexArray& vertices, const voxel::IndexArray& indices) {
-	core_trace_gl_scoped(WorldBuffersUpdate);
+	video_trace_scoped(WorldBuffersUpdate);
 	_buffer.update(_vbo, vertices);
 	_buffer.update(_ibo, indices);
 }
