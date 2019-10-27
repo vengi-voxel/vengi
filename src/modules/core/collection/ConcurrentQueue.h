@@ -27,7 +27,7 @@ class ConcurrentQueue {
 private:
 	using Collection = std::vector<Data>;
 	Collection _data;
-	mutable core_trace_mutex(core::Lock, _mutex);
+	mutable core::Lock _mutex;
 	core::ConditionVariable _conditionVariable;
 	core::AtomicBool _abort { false };
 	Comparator _comparator;

@@ -54,7 +54,7 @@ void UDPMetricSender::shutdown() {
 }
 
 bool UDPMetricSender::connect() const {
-	std::unique_lock lock(_connectionMutex);
+	core::ScopedLock lock(_connectionMutex);
 	if (_socket != INVALID_SOCKET) {
 		return true;
 	}
