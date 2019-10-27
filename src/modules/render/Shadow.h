@@ -55,6 +55,8 @@ private:
 	ShadowParameters _parameters;
 	float _shadowRangeZ = 0.0f;
 
+	glm::vec4 splitFrustumSphereBoundingBox(const video::Camera& camera, float near, float far) const;
+
 public:
 	~Shadow();
 

@@ -421,58 +421,6 @@ math::AABB<float> Camera::aabb() const {
 	return frustum().aabb();
 }
 
-static inline float getBoundingSphereRadius(const glm::vec3& center, const std::vector<glm::vec3>& points) {
-	float radius = 0.0f;
-	for (const glm::vec3& p : points) {
-		radius = core_max(radius, glm::distance(center, p));
-	}
-	return radius;
-}
-
-glm::vec4 Camera::splitFrustumSphereBoundingBox(float near, float far) const {
-	const glm::mat4& projection = projectionMatrix();
-	const glm::mat4& inverseProjection = inverseProjectionMatrix();
-
-	const float znearp = glm::project(projection, glm::vec3(0.0f, 0.0f, -near)).z;
-	const float zfarp = glm::project(projection, glm::vec3(0.0f, 0.0f, -far)).z;
-
-	std::vector<glm::vec3> points;
-	points.reserve(8);
-
-	for (int x = 0; x < 2; ++x) {
-		for (int y = 0; y < 2; ++y) {
-			for (int z = 0; z < 2; ++z) {
-				const glm::vec3 v(x ? 1 : -1, y ? 1 : -1, z ? zfarp : znearp);
-				const glm::vec3& p = glm::project(inverseProjection, v);
-				points.emplace_back(p);
-			}
-		}
-	}
-
-	const glm::vec3& begin = glm::project(inverseProjection, glm::vec3(0.0f, 0.0f, znearp));
-	const glm::vec3& end = glm::project(inverseProjection, glm::vec3(0.0f, 0.0f, zfarp));
-	float radiusBegin = getBoundingSphereRadius(begin, points);
-	float radiusEnd = getBoundingSphereRadius(end, points);
-
-	float rangeBegin = 0.0f;
-	float rangeEnd = 1.0f;
-
-	while (rangeEnd - rangeBegin > 1e-3) {
-		const float rangeMiddle = (rangeBegin + rangeEnd) / 2.0f;
-		const float radiusMiddle = getBoundingSphereRadius(glm::mix(begin, end, rangeMiddle), points);
-
-		if (radiusBegin < radiusEnd) {
-			radiusEnd = radiusMiddle;
-			rangeEnd = rangeMiddle;
-		} else {
-			radiusBegin = radiusMiddle;
-			rangeBegin = rangeMiddle;
-		}
-	}
-
-	return glm::vec4(glm::mix(begin, end, rangeBegin), radiusBegin);
-}
-
 glm::vec4 Camera::sphereBoundingBox() const {
 	const math::AABB<float> boundingBox = aabb();
 	const glm::vec3& mins = boundingBox.getLowerCorner();

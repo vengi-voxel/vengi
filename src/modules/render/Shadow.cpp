@@ -17,6 +17,8 @@
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
 
 namespace render {
 
@@ -50,10 +52,61 @@ void Shadow::shutdown() {
 	_parameters = ShadowParameters();
 }
 
+static inline float getBoundingSphereRadius(const glm::vec3& center, const std::vector<glm::vec3>& points) {
+	float radius = 0.0f;
+	for (const glm::vec3& p : points) {
+		radius = core_max(radius, glm::distance2(center, p));
+	}
+	return glm::sqrt(radius);
+}
+
+glm::vec4 Shadow::splitFrustumSphereBoundingBox(const video::Camera& camera, float near, float far) const {
+	const glm::mat4& projection = camera.projectionMatrix();
+	const glm::mat4& inverseProjection = camera.inverseProjectionMatrix();
+
+	const float znearp = glm::project(projection, glm::vec3(0.0f, 0.0f, -near)).z;
+	const float zfarp = glm::project(projection, glm::vec3(0.0f, 0.0f, -far)).z;
+
+	std::vector<glm::vec3> points;
+	points.reserve(8);
+
+	for (int x = 0; x < 2; ++x) {
+		for (int y = 0; y < 2; ++y) {
+			for (int z = 0; z < 2; ++z) {
+				const glm::vec3 v(x ? 1 : -1, y ? 1 : -1, z ? zfarp : znearp);
+				const glm::vec3& p = glm::project(inverseProjection, v);
+				points.emplace_back(p);
+			}
+		}
+	}
+
+	const glm::vec3& begin = glm::project(inverseProjection, glm::vec3(0.0f, 0.0f, znearp));
+	const glm::vec3& end = glm::project(inverseProjection, glm::vec3(0.0f, 0.0f, zfarp));
+	float radiusBegin = getBoundingSphereRadius(begin, points);
+	float radiusEnd = getBoundingSphereRadius(end, points);
+
+	float rangeBegin = 0.0f;
+	float rangeEnd = 1.0f;
+
+	while (rangeEnd - rangeBegin > 1e-3) {
+		const float rangeMiddle = (rangeBegin + rangeEnd) / 2.0f;
+		const float radiusMiddle = getBoundingSphereRadius(glm::mix(begin, end, rangeMiddle), points);
+
+		if (radiusBegin < radiusEnd) {
+			radiusEnd = radiusMiddle;
+			rangeEnd = rangeMiddle;
+		} else {
+			radiusBegin = radiusMiddle;
+			rangeBegin = rangeMiddle;
+		}
+	}
+
+	return glm::vec4(glm::mix(begin, end, rangeBegin), radiusBegin);
+}
+
 void Shadow::update(const video::Camera& camera, bool active) {
 	core_trace_scoped(ShadowCalculate);
 	_shadowRangeZ = camera.farPlane() * 3.0f;
-	const glm::ivec2& dim = dimension();
 
 	if (!active) {
 		for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
@@ -63,15 +116,17 @@ void Shadow::update(const video::Camera& camera, bool active) {
 		return;
 	}
 
+	const glm::ivec2& dim = dimension();
 	float planes[shader::ConstantsShaderConstants::getMaxDepthBuffers() * 2];
 	camera.sliceFrustum(planes, _parameters.maxDepthBuffers * 2, _parameters.maxDepthBuffers, _parameters.sliceWeight);
 	const glm::mat4& inverseView = camera.inverseViewMatrix();
+	const glm::mat4& inverseLightView = _lightView * inverseView;
 
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
 		const float near = planes[i * 2 + 0];
 		const float far = planes[i * 2 + 1];
-		const glm::vec4& sphere = camera.splitFrustumSphereBoundingBox(near, far);
-		const glm::vec3 lightCenter(_lightView * inverseView * glm::vec4(sphere.x, sphere.y, sphere.z, 1.0f));
+		const glm::vec4& sphere = splitFrustumSphereBoundingBox(camera, near, far);
+		const glm::vec3 lightCenter(inverseLightView * glm::vec4(sphere.x, sphere.y, sphere.z, 1.0f));
 		const float lightRadius = sphere.w;
 
 		// round to prevent movement
