@@ -56,6 +56,7 @@ void WorldMgr::shutdown() {
 }
 
 int WorldMgr::findWalkableFloor(const glm::ivec3& position, int maxDistanceY) const {
+	core_trace_scoped(FindWalkableFloor);
 	voxel::PagedVolume::Sampler sampler(_volumeData);
 	sampler.setPosition(position);
 	if (!sampler.currentPositionValid()) {

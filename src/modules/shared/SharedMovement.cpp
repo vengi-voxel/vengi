@@ -4,6 +4,7 @@
 
 #include "SharedMovement.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 #include "voxel/Constants.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
@@ -52,6 +53,7 @@ float SharedMovement::gravity() const {
 }
 
 glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, const WalkableFloorResolver& heightResolver) {
+	core_trace_scoped(UpdateSharedMovement);
 	glm::vec3 newPos = currentPos;
 	if (deltaFrameSeconds > glm::epsilon<float>()) {
 		const glm::quat& rot = glm::angleAxis(orientation, glm::up);

@@ -4,6 +4,7 @@
 
 #include "PagedVolume.h"
 #include "Morton.h"
+#include "core/Trace.h"
 
 namespace voxel {
 
@@ -35,6 +36,7 @@ PagedVolume::Sampler::~Sampler() {
 }
 
 void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
+	core_trace_scoped(SetSamplerPosition);
 	_xPosInVolume = xPos;
 	_yPosInVolume = yPos;
 	_zPosInVolume = zPos;

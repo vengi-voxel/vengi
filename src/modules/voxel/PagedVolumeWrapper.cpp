@@ -5,6 +5,7 @@
 #include "PagedVolumeWrapper.h"
 #include "core/Common.h"
 #include "core/Assert.h"
+#include "core/Trace.h"
 #include "Morton.h"
 
 namespace voxel {
@@ -65,6 +66,7 @@ const Voxel& PagedVolumeWrapper::voxel(int x, int y, int z) const {
 }
 
 bool PagedVolumeWrapper::setVoxel(int x, int y, int z, const Voxel& voxel) {
+	core_trace_scoped(SetVoxel);
 	if (_validRegion.containsPoint(x, y, z)) {
 		core_assert(_chunk != nullptr);
 		const int relX = x - _validRegion.getLowerX();
@@ -79,6 +81,7 @@ bool PagedVolumeWrapper::setVoxel(int x, int y, int z, const Voxel& voxel) {
 }
 
 bool PagedVolumeWrapper::setVoxels(int x, int y, int z, int nx, int nz, const Voxel* voxels, int amount) {
+	core_trace_scoped(WrapperSetVoxels);
 	for (int j = 0; j < nx; ++j) {
 		for (int k = 0; k < nz; ++k) {
 			const int fx = x + j;

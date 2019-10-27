@@ -7,6 +7,7 @@
 #include "Utility.h"
 #include "core/Log.h"
 #include "core/Common.h"
+#include "core/Trace.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/round.hpp>
 
@@ -134,6 +135,7 @@ glm::ivec3 PagedVolume::chunkPos(int x, int y, int z) const {
 }
 
 void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx, int nz, const Voxel* tArray, int amount) {
+	core_trace_scoped(VolumeSetVoxels);
 	if (!_region.isValid()) {
 		_region = Region(uXPos, uYPos, uZPos, uXPos + nx, uYPos, uZPos + nz);
 	} else {
@@ -180,6 +182,7 @@ void PagedVolume::flushAll() {
  * the data in is probably more expensive.
  */
 void PagedVolume::deleteOldestChunkIfNeeded() const {
+	core_trace_scoped(DeleteOldestChunk);
 	ChunkMap::iterator oldestChunk = _chunks.end();
 	uint32_t oldestChunkTimestamp = _timestamper;
 	for (ChunkMap::iterator i = _chunks.begin(); i != _chunks.end(); ++i) {
@@ -196,6 +199,7 @@ void PagedVolume::deleteOldestChunkIfNeeded() const {
 }
 
 PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
+	core_trace_scoped(CreateNewChunk);
 	// The chunk was not found so we will create a new one.
 	glm::ivec3 pos(chunkX, chunkY, chunkZ);
 	Log::debug("create new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
@@ -219,6 +223,7 @@ PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY
 }
 
 PagedVolume::ChunkPtr PagedVolume::chunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
+	core_trace_scoped(PagedVolumeChunk);
 	core::ScopedWriteLock chunkWriteLock(_volumeLock);
 	const glm::ivec3 pos(chunkX, chunkY, chunkZ);
 	auto i = _chunks.find(pos);

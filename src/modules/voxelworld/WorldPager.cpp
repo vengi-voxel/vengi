@@ -108,6 +108,7 @@ void WorldPager::createWorld(voxel::PagedVolumeWrapper& volume) const {
 }
 
 float WorldPager::getNoiseValue(float x, float z) const {
+	core_trace_scoped(NoiseValue);
 	const glm::vec2 noisePos2d(_noiseSeedOffset.x + x, _noiseSeedOffset.y + z);
 	// TODO: move the noise settings into the biome
 	const float landscapeNoise = noise::fBm(noisePos2d * _worldCtx.landscapeNoiseFrequency, _worldCtx.landscapeNoiseOctaves,
@@ -122,6 +123,7 @@ float WorldPager::getNoiseValue(float x, float z) const {
 }
 
 float WorldPager::getDensity(float x, float y, float z, float n) const {
+	core_trace_scoped(DensityValue);
 	const glm::vec3 noisePos3d(_noiseSeedOffset.x + x, y, _noiseSeedOffset.y + z);
 	// TODO: move the noise settings into the biome
 	const float noiseVal = noise::norm(
@@ -136,6 +138,7 @@ int WorldPager::terrainHeight(int x, int y, int z) const {
 }
 
 int WorldPager::terrainHeight(int x, int minsY, int z, float n) const {
+	core_trace_scoped(TerrainHeight);
 	const int maxHeight = voxel::MAX_TERRAIN_HEIGHT - 1;
 	int centerHeight;
 	// the center of a city should make the terrain more even
@@ -158,6 +161,7 @@ int WorldPager::terrainHeight(int x, int minsY, int z, float n) const {
 }
 
 int WorldPager::fillVoxels(int x, int minsY, int z, voxel::Voxel* voxels) const {
+	core_trace_scoped(FillVoxels);
 	const float n = getNoiseValue(x, z);
 	const int ni = terrainHeight(x, minsY, z, n);
 	if (ni < minsY) {
@@ -171,6 +175,7 @@ int WorldPager::fillVoxels(int x, int minsY, int z, voxel::Voxel* voxels) const 
 	voxels[0] = dirt;
 	glm::ivec3 pos(x, 0, z);
 	for (int y = ni - 1; y >= minsY + 1; --y) {
+		// TODO: this looks like the same calculation as in terrainHeight
 		const float density = getDensity(x, y, z, n);
 		if (density > _worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;
