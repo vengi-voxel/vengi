@@ -237,6 +237,8 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 	typename VolumeType::Sampler volumeSampler(volData);
 #endif
 
+	{
+	core_trace_scoped(QuadGeneration);
 	for (int32_t z = offset.z; z <= upper.z; ++z) {
 		const uint32_t regZ = z - offset.z;
 
@@ -443,6 +445,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 
 		previousSliceVertices.swap(currentSliceVertices);
 		currentSliceVertices.clear();
+	}
 	}
 
 	{

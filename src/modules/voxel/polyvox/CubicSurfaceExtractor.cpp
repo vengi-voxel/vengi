@@ -12,6 +12,7 @@ SDL_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2)
 }
 
 static bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
+	core_trace_scoped(MergeQuads);
 	const std::vector<VoxelVertex>& vv = meshCurrent->getVertexVector();
 	const VoxelVertex& v11 = vv[q1.vertices[0]];
 	const VoxelVertex& v21 = vv[q2.vertices[0]];
@@ -59,6 +60,7 @@ static bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 }
 
 static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
+	core_trace_scoped(PerformQuadMerging);
 	bool didMerge = false;
 	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
 		QuadList::iterator innerIter = outerIter;
@@ -93,6 +95,7 @@ SDL_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool cor
 }
 
 void meshify(Mesh* result, bool mergeQuads, QuadListVector& vecListQuads) {
+	core_trace_scoped(GenerateMeshify);
 	for (QuadList& listQuads : vecListQuads) {
 		if (mergeQuads) {
 			core_trace_scoped(MergeQuads);
@@ -125,6 +128,7 @@ void meshify(Mesh* result, bool mergeQuads, QuadListVector& vecListQuads) {
 
 IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset) {
+	core_trace_scoped(AddVertex);
 	const uint8_t ambientOcclusion = vertexAmbientOcclusion(
 		!isAir(face1) && !isWater(face1),
 		!isAir(face2) && !isWater(face2),
