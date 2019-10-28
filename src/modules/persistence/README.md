@@ -1,6 +1,6 @@
 # Purpose
 
-This module manages the persistence layer and provides (potentially more than the one that exists) drivers to talk to the database.
+This module manages the persistence layer and provides drivers to talk to the database. Currently the only driver implemented is for postgresql.
 
 The main class for doing database interaction is the `DBHandler`.
 

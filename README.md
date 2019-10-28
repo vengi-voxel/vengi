@@ -25,6 +25,7 @@ Voxel engine and tools.
 
 # Running the tests
 The tests need a postgres database named `engine` and a user named `engine` with the password.... `engine` (you can modify them via cvars). If no OpenGL or OpenCL context is available, the related tests are skipped.
+You can use the docker-compose files to set up your environment.
 
 # More information
 For more information, please check out the [wiki](https://gitlab.com/mgerhardy/engine/wikis/home) or the [doxygen](https://mgerhardy.gitlab.io/engine/) documentation.

@@ -4,15 +4,8 @@
 
 The databasetool binary will generate model files for the
 table definitions given in `*.tbl` files. You can specify the fields,
-the constraints and set an operator for dealing with conflict states.
-
-The operator is taken into account when you execute an insert or
-update statement and hit a unique key violation. This cna e.g. be used
-to increase points for particular keys. The first time you normally
-perform an insert - and the following times (you are still running the
-same code on it) you will hit a key violation and thus perform the
-insert or update with the operator specified. The default operator is
-`set`. See a full list of valid operators below.
+the constraints and set an operator for dealing with conflict states (more
+about that later).
 
 To add a new `*.tbl` file to a module and automatically generate code
 for that table definition, you have to add the following after your
@@ -24,6 +17,8 @@ generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl ExampleModels.h
 
 `ExampleModels.h` specifies a single header where all generated table models
 are put into.
+
+The generated models can be used with the `DBHandler` from the `persistence` module.
 
 ## Example
 
@@ -69,6 +64,17 @@ table <TABLENAME> {
 * boolean
 * short
 * byte
+
+## Operator
+
+The operator is taken into account when you execute an insert or
+update statement and hit a unique key violation.
+
+This can e.g. be used to increase or decrease points for particular keys.
+The first time you normally perform an insert - and the following times
+you will hit a key violation and thus perform the insert or update with
+the operator specified. The default operator is `set`. See a full list
+of valid operators below.
 
 ## Valid operators
 * set
