@@ -44,6 +44,7 @@ public:
 
 		template<class FUNC>
 		inline void visit(FUNC&& func) const {
+			core_trace_scoped(OctreeNodeVisit);
 			func(*this);
 			for (const OctreeNode& node : _nodes) {
 				node.visit(func);
@@ -51,6 +52,7 @@ public:
 		}
 
 		void createNodes() {
+			core_trace_scoped(OctreeNodeCreateNodes);
 			if (_depth >= _maxDepth) {
 				return;
 			}
@@ -86,6 +88,7 @@ public:
 		}
 
 		inline int count() const {
+			core_trace_scoped(OctreeNodeCount);
 			int count = 0;
 			for (const typename Octree<NODE, TYPE>::OctreeNode& node : _nodes) {
 				count += node.count();
@@ -103,6 +106,7 @@ public:
 		}
 
 		void getAllContents(Contents& results) const {
+			core_trace_scoped(OctreeNodeGetAllContents);
 			for (const typename Octree<NODE, TYPE>::OctreeNode& node : _nodes) {
 				if (node.isEmpty()) {
 					continue;
@@ -115,6 +119,7 @@ public:
 		}
 
 		bool remove(const NODE& item) {
+			core_trace_scoped(OctreeNodeRemove);
 			const AABB<TYPE>& area = aabb(item);
 			if (!aabb().containsAABB(area)) {
 				return false;
@@ -135,6 +140,7 @@ public:
 		}
 
 		bool insert(const NODE& item) {
+			core_trace_scoped(OctreeNodeInsert);
 			const AABB<TYPE>& area = aabb(item);
 			if (!aabb().containsAABB(area)) {
 				return false;
@@ -168,6 +174,7 @@ public:
 		}
 
 		void query(const AABB<TYPE>& queryArea, Contents& results) const {
+			core_trace_scoped(OctreeNodeQueryAABB);
 			for (const NODE& item : _contents) {
 				if (intersects(queryArea, aabb(item))) {
 					results.push_back(item);
@@ -199,6 +206,7 @@ public:
 		}
 
 		void query(const Frustum& queryArea, const AABB<TYPE>& queryAreaAABB, Contents& results) const {
+			core_trace_scoped(OctreeNodeQueryFrustum);
 			for (const NODE& item : _contents) {
 				const auto& itemAABB = aabb(item);
 				if (queryArea.isVisible(itemAABB.mins(), itemAABB.maxs())) {
@@ -237,6 +245,7 @@ private:
 
 	template<class VISITOR>
 	void visit(const Frustum& queryArea, const AABB<TYPE>& queryAABB, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) const {
+		core_trace_scoped(OctreeVisitFrustum);
 		const glm::tvec3<TYPE>& mins = queryAABB.mins();
 		const glm::tvec3<TYPE>& width = queryAABB.getWidth();
 		const TYPE maxX = mins.x + width.x;
@@ -264,10 +273,12 @@ public:
 	}
 
 	inline int count() const {
+		core_trace_scoped(OctreeCount);
 		return _root.count();
 	}
 
 	inline bool insert(const NODE& item) {
+		core_trace_scoped(OctreeInsert);
 		if (_root.insert(item)) {
 			_dirty = true;
 			return true;
@@ -276,6 +287,7 @@ public:
 	}
 
 	inline bool remove(const NODE& item) {
+		core_trace_scoped(OctreeRemove);
 		if (_root.remove(item)) {
 			_dirty = true;
 			return true;
@@ -284,6 +296,7 @@ public:
 	}
 
 	inline const AABB<TYPE>& aabb() const {
+		core_trace_scoped(OctreeAABB);
 		return _root.aabb();
 	}
 
@@ -308,6 +321,7 @@ public:
 	 */
 	template<class VISITOR>
 	inline void visit(const Frustum& area, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) {
+		core_trace_scoped(OctreeVisit);
 		const glm::vec3 fminsize(minSize);
 		const math::AABB<int>& aabb = computeAABB(area, fminsize);
 		visit(area, aabb, visitor, minSize);

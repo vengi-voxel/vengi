@@ -97,6 +97,7 @@ bool WorldRenderer::removeEntity(frontend::ClientEntityId id) {
 }
 
 void WorldRenderer::fillPlantPositionsFromMeshes() {
+	core_trace_scoped(FillPlantPositions);
 	const int plantMeshAmount = lengthof(_meshPlantList);
 	for (PlantBuffer& vbo : _meshPlantList) {
 		vbo.instancedPositions.clear();
@@ -127,6 +128,7 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 }
 
 void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
+	core_trace_scoped(UpdateAABB);
 	glm::ivec3 mins((std::numeric_limits<int>::max)());
 	glm::ivec3 maxs((std::numeric_limits<int>::min)());
 
@@ -296,6 +298,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::Green);
 	for (ChunkBuffer* chunkBuffer : contents) {
+		core_trace_scoped(WorldRendererCullChunk);
 		if (occlusionQuery && occluded(chunkBuffer)) {
 			 ++_occludedChunks;
 			 if (!renderOccluded) {

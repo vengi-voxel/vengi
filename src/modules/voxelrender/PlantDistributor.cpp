@@ -8,7 +8,7 @@
 namespace voxelrender {
 
 void distributePlants(const voxel::WorldMgrPtr& world, const glm::ivec3& pos, std::vector<glm::vec3>& translations) {
-	core_trace_scoped(WorldRendererDistributePlants);
+	core_trace_scoped(DistributePlants);
 	const glm::ivec3& size = world->meshSize();
 	math::Random random(pos.x);
 	const voxel::BiomeManager& biomeMgr = world->biomeManager();

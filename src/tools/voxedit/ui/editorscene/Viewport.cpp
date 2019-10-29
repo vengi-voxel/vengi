@@ -193,10 +193,12 @@ void Viewport::onProcess() {
 	}
 
 	video::clearColor(core::Color::Clear);
-	core_trace_scoped(EditorSceneRenderFramebuffer);
-	_frameBuffer.bind(true);
-	voxedit::sceneMgr().render(_controller.camera());
-	_frameBuffer.unbind();
+	{
+		core_trace_scoped(EditorSceneRenderFramebuffer);
+		_frameBuffer.bind(true);
+		voxedit::sceneMgr().render(_controller.camera());
+		_frameBuffer.unbind();
+	}
 }
 
 namespace tb {
