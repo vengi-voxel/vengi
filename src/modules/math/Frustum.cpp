@@ -111,7 +111,7 @@ void Frustum::updateVertices(const glm::mat4& view, const glm::mat4& projection)
 	const glm::mat4& transform = glm::inverse(projection * view);
 	for (uint8_t i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
 		const glm::vec4& v = transform * cornerVecs[i];
-		_frustumVertices[i] = glm::vec3(v) / v.w;
+		_frustumVertices[i] = v / v.w;
 		core_assert(!glm::any(glm::isnan(_frustumVertices[i])));
 		core_assert(!glm::any(glm::isinf(_frustumVertices[i])));
 	}
@@ -119,7 +119,7 @@ void Frustum::updateVertices(const glm::mat4& view, const glm::mat4& projection)
 
 FrustumResult Frustum::test(const glm::vec3& position) const {
 	FrustumResult result = FrustumResult::Inside;
-	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; i++) {
+	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
 		const Plane& p = _planes[i];
 		if (p.isBackSide(position)) {
 			return FrustumResult::Outside;
