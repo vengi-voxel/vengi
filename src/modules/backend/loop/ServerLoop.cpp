@@ -71,6 +71,7 @@ void ServerLoop::signalCallback(uv_signal_t* handle, int signum) {
 }
 
 void ServerLoop::onIdle(uv_idle_t* handle) {
+	core_trace_scoped(IdleTimer);
 	ServerLoop* loop = (ServerLoop*)handle->data;
 	const metric::MetricPtr& metric = loop->_metricMgr->metric();
 
@@ -201,11 +202,13 @@ bool ServerLoop::init() {
 	}
 
 	addTimer(&_worldTimer, [] (uv_timer_t* handle) {
+		core_trace_scoped(WorldTimer);
 		const ServerLoop* loop = (const ServerLoop*)handle->data;
 		loop->_world->update(handle->repeat);
 	}, 1000);
 
 	addTimer(&_persistenceMgrTimer, [] (uv_timer_t* handle) {
+		core_trace_scoped(PersistenceTimer);
 		const ServerLoop* loop = (const ServerLoop*)handle->data;
 		const long dt = handle->repeat;
 		const persistence::PersistenceMgrPtr& persistenceMgr = loop->_persistenceMgr;
