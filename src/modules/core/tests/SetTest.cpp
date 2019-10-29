@@ -86,6 +86,8 @@ public:
 		v2.resize(n);
 		v3.resize(n);
 		v4.resize(n);
+		set1.reserve(n);
+		set2.reserve(n);
 
 		std::iota(std::begin(v1), std::end(v1), 0);
 		std::iota(std::begin(v2), std::end(v2), offset);

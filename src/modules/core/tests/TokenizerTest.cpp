@@ -33,6 +33,7 @@ TEST_F(TokenizerTest, testTokenizerInvalidFile) {
 	ASSERT_TRUE(buf != nullptr);
 	core::Tokenizer t((const char *)buf, n, "\n");
 	EXPECT_EQ(0u, t.size()) << toString(t.tokens());
+	delete[] buf;
 }
 
 TEST_F(TokenizerTest, testTokenizerSecondMatchButEmptyString) {
