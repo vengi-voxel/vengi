@@ -38,7 +38,13 @@ core::AppState MapView::onConstruct() {
 
 	_movement.construct();
 
-	core::Command::registerCommand("+linemode", [&] (const core::CmdArgs& args) { \
+	core::Command::registerCommand("bird", [&] (const core::CmdArgs& args) {
+		glm::vec3 pos = _entity->position();
+		pos.y += 100.0f;
+		_entity->setPosition(pos);
+	});
+
+	core::Command::registerCommand("+linemode", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
