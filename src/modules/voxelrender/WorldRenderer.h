@@ -217,7 +217,7 @@ inline float WorldRenderer::getViewDistance() const {
 
 inline void WorldRenderer::setViewDistance(float viewDistance) {
 	_viewDistance = viewDistance;
-	_fogRange = _viewDistance * 0.66f;
+	_fogRange = _viewDistance * 0.80f;
 }
 
 inline render::Shadow& WorldRenderer::shadow() {
