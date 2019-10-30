@@ -770,7 +770,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	render::ShadowParameters sp;
 	sp.shadowBias = -0.1f;
 	sp.shadowBiasSlope = 0.1f;
-	sp.sliceWeight = -2.0;
+	sp.sliceWeight = -4.0;
 	sp.maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
 	if (!_shadow.init(sp)) {
 		return false;
