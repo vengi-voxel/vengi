@@ -75,7 +75,7 @@ PickResult WorldMgr::pickVoxel(const glm::vec3& origin, const glm::vec3& directi
 	return voxel::pickVoxel(_volumeData, origin, directionWithLength, air);
 }
 
-void WorldMgr::updateExtractionOrder(const glm::ivec3& sortPos, const math::Frustum& frustum) {
+void WorldMgr::updateExtractionOrder(const glm::ivec3& sortPos) {
 	static glm::ivec3 lastSortPos = glm::ivec3((std::numeric_limits<int>::max)());
 	const glm::ivec3 d = lastSortPos - sortPos;
 	const glm::ivec3::value_type allowedDelta = 10;

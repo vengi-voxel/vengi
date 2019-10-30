@@ -88,6 +88,7 @@ protected:
 	typedef std::unordered_map<frontend::ClientEntityId, frontend::ClientEntityPtr> Entities;
 	Entities _entities;
 
+	glm::vec3 _focusPos = glm::zero<glm::vec3>();
 	render::Shadow _shadow;
 	render::RandomColorTexture _colorTexture;
 

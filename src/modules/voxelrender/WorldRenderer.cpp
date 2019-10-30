@@ -360,7 +360,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setModel(glm::mat4(1.0f));
 		_worldShader.setMaterialblock(_materialBlock);
-		_worldShader.setFocuspos(camera.target());
+		_worldShader.setFocuspos(_focusPos);
 		_worldShader.setLightdir(_shadow.sunDirection());
 		_worldShader.setFogcolor(_clearColor);
 		_worldShader.setTexture(video::TextureUnit::Zero);
@@ -383,7 +383,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		core_trace_scoped(WorldRendererRenderWater);
 		video::ScopedShader scoped(_waterShader);
 		_waterShader.setModel(glm::mat4(1.0f));
-		_waterShader.setFocuspos(camera.target());
+		_waterShader.setFocuspos(_focusPos);
 		_waterShader.setLightdir(_shadow.sunDirection());
 		_waterShader.setMaterialblock(_materialBlock);
 		_waterShader.setFogcolor(_clearColor);
@@ -432,7 +432,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	video::enable(video::State::DepthMask);
 	video::ScopedShader scoped(_chrShader);
 	_chrShader.setFogrange(_fogRange);
-	_chrShader.setFocuspos(camera.target());
+	_chrShader.setFocuspos(_focusPos);
 	_chrShader.setDiffuseColor(_diffuseColor);
 	_chrShader.setAmbientColor(_ambientColor);
 	_chrShader.setFogcolor(_clearColor);
@@ -470,7 +470,21 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 
 void WorldRenderer::extractMeshes(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererExtractMeshes);
-	_octree.visit(camera.frustum(), [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
+
+	const float farplane = camera.farPlane();
+
+	glm::vec3 mins = camera.position();
+	mins.x -= farplane;
+	mins.y = 0;
+	mins.z -= farplane;
+
+	glm::vec3 maxs = camera.position();
+	maxs.x += farplane;
+	maxs.y = voxel::MAX_HEIGHT;
+	maxs.z += farplane;
+
+	camera.farPlane();
+	_octree.visit(mins, maxs, [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
 		return !_world->scheduleMeshExtraction(mins);
 	}, glm::vec3(_world->meshSize()));
 }
@@ -640,7 +654,10 @@ void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
 	_now += dt;
 	_deltaFrame = dt;
 
-	_world->updateExtractionOrder(camera.position(), camera.frustum());
+	_focusPos = camera.target();
+	_focusPos.y = _world->findFloor(_focusPos.x, _focusPos.z, voxel::isFloor);
+
+	_world->updateExtractionOrder(_focusPos);
 
 	const bool shadowMap = _shadowMap->boolVal();
 	_shadow.update(camera, shadowMap);
@@ -651,7 +668,7 @@ void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
 		if (!chunkBuffer.inuse) {
 			continue;
 		}
-		const int distance = getDistanceSquare(chunkBuffer.translation(), cameraPos);
+		const int distance = getDistanceSquare(chunkBuffer.translation(), _focusPos);
 		if (distance < _maxAllowedDistance) {
 			continue;
 		}

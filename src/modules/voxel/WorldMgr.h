@@ -153,7 +153,7 @@ public:
 	/**
 	 * @brief Reorder the scheduled extraction commands that the closest chunks to the given position are handled first
 	 */
-	void updateExtractionOrder(const glm::ivec3& sortPos, const math::Frustum& frustum);
+	void updateExtractionOrder(const glm::ivec3& sortPos);
 
 	/**
 	 * @brief Performs async mesh extraction. You need to call @c pop in order to see if some extraction is ready.

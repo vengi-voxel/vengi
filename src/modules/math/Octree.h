@@ -327,6 +327,24 @@ public:
 		visit(area, aabb, visitor, minSize);
 	}
 
+	template<class VISITOR>
+	inline void visit(const glm::vec<3, TYPE>& mins, const glm::vec<3, TYPE>& maxs, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) {
+		core_trace_scoped(OctreeVisit);
+		const glm::vec3 fminsize(minSize);
+		const math::AABB<TYPE> aabb(mins, maxs);
+		glm::tvec3<TYPE> qmins;
+		for (qmins.x = mins.x; qmins.x < maxs.x; qmins.x += minSize.x) {
+			for (qmins.y = mins.y; qmins.y < maxs.y; qmins.y += minSize.y) {
+				for (qmins.z = mins.z; qmins.z < maxs.z; qmins.z += minSize.z) {
+					const glm::tvec3<TYPE> qmaxs(qmins + minSize);
+					if (!visitor(qmins, qmaxs)) {
+						break;
+					}
+				}
+			}
+		}
+	}
+
 	void setListener(const IOctreeListener* func) {
 		_listener = func;
 	}
