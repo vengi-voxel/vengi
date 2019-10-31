@@ -42,11 +42,8 @@ build_script:
   - dir
 
 artifacts:
-  - name: Tests
-    path: build/vengi-tests-core.exe
-
-#services:
-#  - postgresql          # start PostgreSQL 9.5 service
+  - name: TestResults
+    path: build/tests-*.xml
 
 test_script:
   - ctest -C Debug -R tests-computeshadertool
@@ -59,5 +56,9 @@ test_script:
   - ctest -C Debug -R tests-testtraze
   - ctest -C Debug -R tests-voxelworld
 
-on_finish:
-  - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path tests-*.xml))
+after_test:
+  - ps: |
+      $wc = New-Object 'System.Net.WebClient'
+      foreach ($file in Get-ChildItem -Path "$($env:APPVEYOR_BUILD_FOLDER)\build\" -Filter tests-*.xml) {
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", $file.FullName)
+      }
