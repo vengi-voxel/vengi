@@ -5,9 +5,9 @@
 #include "BiomeLUAFunctions.h"
 #include "commonlua/LUAFunctions.h"
 
-template<> struct clua_meta<voxel::Biome> { static char const *name() {return "__meta_biome";} };
+template<> struct clua_meta<voxelworld::Biome> { static char const *name() {return "__meta_biome";} };
 
-namespace voxel {
+namespace voxelworld {
 
 int biomelua_setdefault(lua_State* l) {
 	BiomeManager* biomeMgr = lua::LUA::globalData<BiomeManager>(l, "MGR");
@@ -28,8 +28,8 @@ int biomelua_addbiome(lua_State* l) {
 	const float temperature = luaL_checknumber(l, 4);
 	const char* voxelType = luaL_checkstring(l, 5);
 	const bool underGround = clua_optboolean(l, 6, false);
-	const VoxelType type = getVoxelType(voxelType);
-	if (type == VoxelType::Max) {
+	const voxel::VoxelType type = voxel::getVoxelType(voxelType);
+	if (type == voxel::VoxelType::Max) {
 		return luaL_error(l, "Failed to resolve voxel type: '%s'", voxelType);
 	}
 	Biome* biome = biomeMgr->addBiome(lower, upper, humidity, temperature, type, underGround);
@@ -62,7 +62,7 @@ int biomelua_addcity(lua_State* s) {
 	BiomeManager* biomeMgr = lua::LUA::globalData<BiomeManager>(s, "MGR");
 	const glm::ivec2* position = clua_get<glm::ivec2>(s, 1);
 	const float radius = luaL_checknumber(s, 2);
-	biomeMgr->addZone(glm::ivec3(position->x, 0.0f, position->y), radius, voxel::ZoneType::City);
+	biomeMgr->addZone(glm::ivec3(position->x, 0.0f, position->y), radius, ZoneType::City);
 	lua_pushboolean(s, 1);
 	return 1;
 }

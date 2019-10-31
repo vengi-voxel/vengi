@@ -5,9 +5,9 @@
 #pragma once
 
 #include "math/Random.h"
-#include "voxel/BiomeManager.h"
+#include "voxelworld/BiomeManager.h"
 #include "voxel/RandomVoxel.h"
-#include "voxel/TreeContext.h"
+#include "voxelworld/TreeContext.h"
 #include "voxel/Constants.h"
 #include "Spiral.h"
 #include "ShapeGenerator.h"
@@ -68,7 +68,7 @@ static int findFloor(const Volume& volume, int x, int z) {
  * @sa createTreeEllipsis()
  */
 template<class Volume>
-void createTreeBranchEllipsis(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
+void createTreeBranchEllipsis(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
 	const int top = ctx.treeTop();
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	shape::createCubeNoCenter(volume, ctx.pos - glm::ivec3(1), ctx.trunkWidth + 2, 1, ctx.trunkWidth + 2, trunkVoxel);
@@ -119,7 +119,7 @@ void createTreeBranchEllipsis(Volume& volume, const voxel::TreeContext& ctx, mat
  * @brief Creates the trunk for a tree - the full height of the tree is taken
  */
 template<class Volume>
-static void createTrunk(Volume& volume, const voxel::TreeContext& ctx, const voxel::Voxel& voxel) {
+static void createTrunk(Volume& volume, const voxelworld::TreeContext& ctx, const voxel::Voxel& voxel) {
 	const int top = ctx.treeTop();
 	int trunkWidthBottomOffset = 2;
 	for (int y = ctx.treeBottom(); y < top; ++y) {
@@ -152,7 +152,7 @@ static void createTrunk(Volume& volume, const voxel::TreeContext& ctx, const vox
  * @return The end of the trunk to start the leaves from
  */
 template<class Volume>
-static glm::ivec3 createBezierTrunk(Volume& volume, const voxel::TreeContext& ctx, const voxel::Voxel& voxel, float trunkSize = 4.0f, float trunkFactor = 0.95f) {
+static glm::ivec3 createBezierTrunk(Volume& volume, const voxelworld::TreeContext& ctx, const voxel::Voxel& voxel, float trunkSize = 4.0f, float trunkFactor = 0.95f) {
 	const glm::ivec3& trunkTop = ctx.trunkTopV();
 	const int shiftX = ctx.trunkWidth;
 	const int shiftZ = ctx.trunkWidth;
@@ -171,7 +171,7 @@ static glm::ivec3 createBezierTrunk(Volume& volume, const voxel::TreeContext& ct
 }
 
 template<class Volume>
-void createTreePalm(Volume& volume, const voxel::TreeContext& ctx, math::Random& random, float branchSize = 5.0f, float branchFactor = 0.95f, int branches = 6) {
+void createTreePalm(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random, float branchSize = 5.0f, float branchFactor = 0.95f, int branches = 6) {
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	const glm::ivec3& start = createBezierTrunk(volume, ctx, trunkVoxel);
 	const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, random);
@@ -196,7 +196,7 @@ void createTreePalm(Volume& volume, const voxel::TreeContext& ctx, math::Random&
 }
 
 template<class Volume>
-void createTreeEllipsis(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
+void createTreeEllipsis(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	createTrunk(volume, ctx, trunkVoxel);
 	const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, random);
@@ -204,7 +204,7 @@ void createTreeEllipsis(Volume& volume, const voxel::TreeContext& ctx, math::Ran
 }
 
 template<class Volume>
-void createTreeCone(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
+void createTreeCone(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	createTrunk(volume, ctx, trunkVoxel);
 	const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::LeafFir, random);
@@ -215,7 +215,7 @@ void createTreeCone(Volume& volume, const voxel::TreeContext& ctx, math::Random&
  * @brief Creates a fir with several branches based on lines falling down from the top of the tree
  */
 template<class Volume>
-void createTreeFir(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
+void createTreeFir(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
 	const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::LeafFir, random);
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	createTrunk(volume, ctx, trunkVoxel);
@@ -256,7 +256,7 @@ void createTreeFir(Volume& volume, const voxel::TreeContext& ctx, math::Random& 
 }
 
 template<class Volume>
-void createTreePine(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
+void createTreePine(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	createTrunk(volume, ctx, trunkVoxel);
 	const int singleLeaveHeight = 2;
@@ -284,7 +284,7 @@ void createTreePine(Volume& volume, const voxel::TreeContext& ctx, math::Random&
  * @sa createTreeDomeHangingLeaves()
  */
 template<class Volume>
-void createTreeDome(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
+void createTreeDome(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	createTrunk(volume, ctx, trunkVoxel);
 	const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, random);
@@ -296,7 +296,7 @@ void createTreeDome(Volume& volume, const voxel::TreeContext& ctx, math::Random&
  * @sa createTreeDome()
  */
 template<class Volume>
-void createTreeDomeHangingLeaves(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
+void createTreeDomeHangingLeaves(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	createTrunk(volume, ctx, trunkVoxel);
 	const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, random);
@@ -323,7 +323,7 @@ void createTreeDomeHangingLeaves(Volume& volume, const voxel::TreeContext& ctx, 
  * @sa createTreeCubeSideCubes()
  */
 template<class Volume>
-void createTreeCube(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
+void createTreeCube(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
 	const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, random);
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	createTrunk(volume, ctx, trunkVoxel);
@@ -341,7 +341,7 @@ void createTreeCube(Volume& volume, const voxel::TreeContext& ctx, math::Random&
  * @sa createTreeCube()
  */
 template<class Volume>
-void createTreeCubeSideCubes(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
+void createTreeCubeSideCubes(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
 	const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, random);
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	createTrunk(volume, ctx, trunkVoxel);
@@ -368,7 +368,7 @@ void createTreeCubeSideCubes(Volume& volume, const voxel::TreeContext& ctx, math
 }
 
 template<class Volume>
-void createSpaceColonizationTree(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
+void createSpaceColonizationTree(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
 	const int seed = ctx.pos.x;
 	Tree tree(ctx.pos, ctx.trunkHeight, ctx.trunkHeight, ctx.leavesWidth, ctx.leavesHeight,
 			ctx.leavesDepth, ctx.trunkWidth, seed);
@@ -385,28 +385,28 @@ void createSpaceColonizationTree(Volume& volume, const voxel::TreeContext& ctx, 
  * @brief Delegates to the corresponding create method for the given TreeType in the TreeContext
  */
 template<class Volume>
-void createTree(Volume& volume, const voxel::TreeContext& ctx, math::Random& random) {
-	if (ctx.type == voxel::TreeType::BranchesEllipsis) {
+void createTree(Volume& volume, const voxelworld::TreeContext& ctx, math::Random& random) {
+	if (ctx.type == voxelworld::TreeType::BranchesEllipsis) {
 		createTreeBranchEllipsis(volume, ctx, random);
-	} else if (ctx.type == voxel::TreeType::Ellipsis) {
+	} else if (ctx.type == voxelworld::TreeType::Ellipsis) {
 		createTreeEllipsis(volume, ctx, random);
-	} else if (ctx.type == voxel::TreeType::Palm) {
+	} else if (ctx.type == voxelworld::TreeType::Palm) {
 		createTreePalm(volume, ctx, random);
-	} else if (ctx.type == voxel::TreeType::Cone) {
+	} else if (ctx.type == voxelworld::TreeType::Cone) {
 		createTreeCone(volume, ctx, random);
-	} else if (ctx.type == voxel::TreeType::Fir) {
+	} else if (ctx.type == voxelworld::TreeType::Fir) {
 		createTreeFir(volume, ctx, random);
-	} else if (ctx.type == voxel::TreeType::Pine) {
+	} else if (ctx.type == voxelworld::TreeType::Pine) {
 		createTreePine(volume, ctx, random);
-	} else if (ctx.type == voxel::TreeType::Dome) {
+	} else if (ctx.type == voxelworld::TreeType::Dome) {
 		createTreeDome(volume, ctx, random);
-	} else if (ctx.type == voxel::TreeType::DomeHangingLeaves) {
+	} else if (ctx.type == voxelworld::TreeType::DomeHangingLeaves) {
 		createTreeDomeHangingLeaves(volume, ctx, random);
-	} else if (ctx.type == voxel::TreeType::Cube) {
+	} else if (ctx.type == voxelworld::TreeType::Cube) {
 		createTreeCube(volume, ctx, random);
-	} else if (ctx.type == voxel::TreeType::CubeSideCubes) {
+	} else if (ctx.type == voxelworld::TreeType::CubeSideCubes) {
 		createTreeCubeSideCubes(volume, ctx, random);
-	} else if (ctx.type == voxel::TreeType::SpaceColonization) {
+	} else if (ctx.type == voxelworld::TreeType::SpaceColonization) {
 		createSpaceColonizationTree(volume, ctx, random);
 	}
 }
@@ -415,8 +415,8 @@ void createTree(Volume& volume, const voxel::TreeContext& ctx, math::Random& ran
  * @brief Fill a world with trees based on the configured bioms
  */
 template<class Volume>
-void createTrees(Volume& volume, const voxel::Region& region, const voxel::BiomeManager& biomeManager) {
-	std::vector<voxel::TreeType> treeTypes;
+void createTrees(Volume& volume, const voxel::Region& region, const voxelworld::BiomeManager& biomeManager) {
+	std::vector<voxelworld::TreeType> treeTypes;
 	biomeManager.getTreeTypes(region, treeTypes);
 	if (treeTypes.empty()) {
 		return;
@@ -425,7 +425,7 @@ void createTrees(Volume& volume, const voxel::Region& region, const voxel::Biome
 	const int maxSize = 18;
 	std::vector<glm::vec2> positions;
 	biomeManager.getTreePositions(region, positions, random, maxSize);
-	voxel::TreeContext ctx;
+	voxelworld::TreeContext ctx;
 	for (const glm::vec2& position : positions) {
 		const int y = findFloor(volume, position.x, position.y);
 		if (y == voxel::NO_FLOOR_FOUND) {
@@ -438,24 +438,24 @@ void createTrees(Volume& volume, const voxel::Region& region, const voxel::Biome
 		ctx.leavesDepth = size;
 		ctx.type = *random.randomElement(treeTypes.begin(), treeTypes.end());
 		switch (ctx.type) {
-		case voxel::TreeType::Fir:
+		case voxelworld::TreeType::Fir:
 			ctx.leavesHeight = random.random(20, 28);
 			ctx.trunkHeight = ctx.leavesHeight * 2;
 			break;
-		case voxel::TreeType::SpaceColonization:
+		case voxelworld::TreeType::SpaceColonization:
 			ctx.leavesHeight = random.random(28, 34);
 			ctx.trunkHeight = ctx.leavesHeight / 2;
 			ctx.leavesWidth = ctx.leavesDepth = maxSize;
 			ctx.trunkWidth = 4;
 			break;
-		case voxel::TreeType::Pine:
-		case voxel::TreeType::Cone:
-		case voxel::TreeType::Dome:
-		case voxel::TreeType::DomeHangingLeaves:
+		case voxelworld::TreeType::Pine:
+		case voxelworld::TreeType::Cone:
+		case voxelworld::TreeType::Dome:
+		case voxelworld::TreeType::DomeHangingLeaves:
 			ctx.leavesHeight = random.random(20, 28);
 			ctx.trunkHeight = ctx.leavesHeight + random.random(5, 9);
 			break;
-		case voxel::TreeType::BranchesEllipsis:
+		case voxelworld::TreeType::BranchesEllipsis:
 			ctx.leavesHeight = random.random(10, 14);
 			ctx.trunkHeight = ctx.leavesHeight + random.random(6, 10);
 			ctx.trunkWidth = 3;

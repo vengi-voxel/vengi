@@ -3,22 +3,25 @@
  */
 #pragma once
 
-#include "voxel/polyvox/PagedVolume.h"
-#include "voxel/WorldPersister.h"
+#include "voxel/PagedVolume.h"
+#include "voxelworld/WorldPersister.h"
 #include "voxel/Constants.h"
 #include "core/Trace.h"
 #include "core/Log.h"
 #include "noise/Noise.h"
 
 namespace voxel {
+class PagedVolumeWrapper;
+}
+
+namespace voxelworld {
 
 class BiomeManager;
-class PagedVolumeWrapper;
 
 /**
  * @brief Pager implementation for PagedVolume.
  */
-class WorldPager: public PagedVolume::Pager {
+class WorldPager: public voxel::PagedVolume::Pager {
 private:
 	struct WorldContext {
 		WorldContext();
@@ -45,18 +48,18 @@ private:
 	long _seed = 0l;
 	glm::vec2 _noiseSeedOffset;
 
-	PagedVolume *_volumeData = nullptr;
+	voxel::PagedVolume *_volumeData = nullptr;
 	BiomeManager* _biomeManager = nullptr;
 	WorldContext _ctx;
 	noise::Noise _noise;
 
 	// don't access the volume in anything that is called here
-	void create(PagedVolume::PagerContext& ctx);
+	void create(voxel::PagedVolume::PagerContext& ctx);
 
 	// use a 2d noise to switch between different noises - to generate steep mountains
-	void createWorld(const WorldContext& worldCtx, PagedVolumeWrapper& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const;
+	void createWorld(const WorldContext& worldCtx, voxel::PagedVolumeWrapper& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const;
 
-	int fillVoxels(int x, int y, int z, const WorldContext& worldCtx, Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const;
+	int fillVoxels(int x, int y, int z, const WorldContext& worldCtx, voxel::Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const;
 	float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const;
 
 public:
@@ -67,7 +70,7 @@ public:
 	 * @return @c true if initialization was successful, @c false otherwise
 	 * @sa shutdown()
 	 */
-	bool init(PagedVolume *volumeData, BiomeManager* biomeManager, const std::string& worldParamsLua);
+	bool init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager, const std::string& worldParamsLua);
 	/**
 	 * @brief Free resources and persist (if activated) the world data
 	 * @sa init()
@@ -86,12 +89,12 @@ public:
 
 	void setNoiseOffset(const glm::vec2& noiseOffset);
 
-	void erase(const Region& region);
+	void erase(const voxel::Region& region);
 	/**
 	 * @return @c true if the chunk was modified (created), @c false if it was just loaded
 	 */
-	bool pageIn(PagedVolume::PagerContext& ctx) override;
-	void pageOut(PagedVolume::Chunk* chunk) override;
+	bool pageIn(voxel::PagedVolume::PagerContext& ctx) override;
+	void pageOut(voxel::PagedVolume::Chunk* chunk) override;
 };
 
 }

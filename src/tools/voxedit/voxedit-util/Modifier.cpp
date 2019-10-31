@@ -9,7 +9,7 @@
 #include "core/Color.h"
 #include "CustomBindingContext.h"
 #include "core/String.h"
-#include "voxel/polyvox/Region.h"
+#include "voxel/Region.h"
 #include "core/command/Command.h"
 #include "video/ScopedPolygonMode.h"
 #include "SceneManager.h"

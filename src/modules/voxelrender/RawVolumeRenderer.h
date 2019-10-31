@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "voxel/polyvox/RawVolume.h"
-#include "voxel/polyvox/Region.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "video/Buffer.h"
 #include "VoxelrenderShaders.h"
-#include "voxel/polyvox/Mesh.h"
+#include "voxel/Mesh.h"
 #include "render/Shadow.h"
 #include "video/UniformBuffer.h"
 #include "video/Texture.h"

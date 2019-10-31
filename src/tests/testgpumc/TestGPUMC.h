@@ -7,7 +7,7 @@
 #include "testcore/TestApp.h"
 #include "compute/Compute.h"
 #include "compute/Texture.h"
-#include "voxel/polyvox/RawVolume.h"
+#include "voxel/RawVolume.h"
 #include "video/Buffer.h"
 #include "TestgpumcShaders.h"
 

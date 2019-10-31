@@ -3,9 +3,9 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/WorldPersister.h"
+#include "voxelworld/WorldPersister.h"
 
-namespace voxel {
+namespace voxelworld {
 
 class WorldPersisterTest: public AbstractVoxelTest {
 };
@@ -21,7 +21,7 @@ TEST_F(WorldPersisterTest, testSaveLoad) {
 	ASSERT_TRUE(filesystem->open(filename)->exists()) << "Nothing was written into " << filename;
 	_volData.flushAll();
 	ASSERT_TRUE(persister.load(_ctx.chunk().get(), _seed)) << "Could not load volume chunk";
-	ASSERT_EQ(VoxelType::Grass, _volData.voxel(32, 32, 32).getMaterial());
+	ASSERT_EQ(voxel::VoxelType::Grass, _volData.voxel(32, 32, 32).getMaterial());
 }
 
 }

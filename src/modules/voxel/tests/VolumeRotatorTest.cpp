@@ -4,10 +4,10 @@
 
 #include "core/tests/AbstractTest.h"
 #include "AbstractVoxelTest.h"
-#include "voxel/polyvox/VolumeRotator.h"
-#include "voxel/polyvox/Region.h"
-#include "voxel/polyvox/RawVolume.h"
-#include "voxel/polyvox/Voxel.h"
+#include "voxel/VolumeRotator.h"
+#include "voxel/Region.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "math/Axis.h"
 
 namespace voxel {

@@ -3,15 +3,15 @@
  */
 #pragma once
 
-#include "MaterialColor.h"
+#include "voxel/MaterialColor.h"
 #include "TreeContext.h"
-#include "polyvox/Voxel.h"
+#include "voxel/Voxel.h"
 #include "math/Random.h"
 #include "core/Assert.h"
 #include <glm/common.hpp>
 #include <vector>
 
-namespace voxel {
+namespace voxelworld {
 
 class Biome {
 private:
@@ -24,15 +24,15 @@ private:
 	std::vector<TreeType> _treeTypes;
 
 public:
-	Biome(VoxelType type, const MaterialColorIndices& indices, int16_t yMin, int16_t yMax, float humidity, float temperature, bool underground);
+	Biome(voxel::VoxelType type, const voxel::MaterialColorIndices& indices, int16_t yMin, int16_t yMax, float humidity, float temperature, bool underground);
 
-	const MaterialColorIndices indices;
+	const voxel::MaterialColorIndices indices;
 	const int16_t yMin;
 	const int16_t yMax;
 	const float humidity;
 	const float temperature;
 	const bool underground;
-	const VoxelType type;
+	const voxel::VoxelType type;
 	const int treeDistribution;
 	const int cloudDistribution;
 	const int plantDistribution;
@@ -44,9 +44,9 @@ public:
 	const std::vector<TreeType>& treeTypes() const;
 	void addTreeType(TreeType treeType);
 
-	Voxel voxel(math::Random& random) const;
-	Voxel voxel(uint8_t colorIndex) const;
-	Voxel voxel() const;
+	voxel::Voxel voxel(math::Random& random) const;
+	voxel::Voxel voxel(uint8_t colorIndex) const;
+	voxel::Voxel voxel() const;
 };
 
 inline bool Biome::hasCactus() const {
@@ -61,19 +61,19 @@ inline bool Biome::hasClouds() const {
 	 return humidity >= 0.5f;
 }
 
-inline Voxel Biome::voxel(math::Random& random) const {
+inline voxel::Voxel Biome::voxel(math::Random& random) const {
 	core_assert(!indices.empty());
-	return Voxel(type, *random.randomElement(indices.begin(), indices.end()));
+	return voxel::Voxel(type, *random.randomElement(indices.begin(), indices.end()));
 }
 
-inline Voxel Biome::voxel(uint8_t colorIndex) const {
+inline voxel::Voxel Biome::voxel(uint8_t colorIndex) const {
 	core_assert(!indices.empty());
 	const uint8_t max = indices.size() - 1u;
 	const uint8_t min = 0u;
-	return Voxel(type, glm::clamp(colorIndex, min, max));
+	return voxel::Voxel(type, glm::clamp(colorIndex, min, max));
 }
 
-inline Voxel Biome::voxel() const {
+inline voxel::Voxel Biome::voxel() const {
 	thread_local math::Random random;
 	return voxel(random);
 }

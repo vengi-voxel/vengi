@@ -11,7 +11,7 @@
 #include "voxelfont/VoxelFont.h"
 #include "core/Var.h"
 #include "core/Common.h"
-#include "voxel/WorldEvents.h"
+#include "voxelworld/WorldEvents.h"
 #include "network/ClientNetwork.h"
 #include "network/ClientMessageSender.h"
 #include "network/NetworkEvents.h"
@@ -28,13 +28,13 @@
 constexpr uint32_t CLIENT_CONNECTING = 1 << 0;
 
 class Client: public ui::turbobadger::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
-		network::DisconnectEvent>, public core::IEventBusHandler<voxel::WorldCreatedEvent> {
+		network::DisconnectEvent>, public core::IEventBusHandler<voxelworld::WorldCreatedEvent> {
 protected:
 	using Super = ui::turbobadger::UIApp;
 	video::Camera _camera;
 	animation::CharacterCachePtr _characterCache;
 	network::ClientNetworkPtr _network;
-	voxel::WorldMgrPtr _world;
+	voxelworld::WorldMgrPtr _world;
 	network::ClientMessageSenderPtr _messageSender;
 	voxelrender::WorldRenderer _worldRenderer;
 	flatbuffers::FlatBufferBuilder _moveFbb;
@@ -59,11 +59,11 @@ protected:
 
 	void sendMovement();
 	void handleLogin();
-	int renderMap(video::Shader& shader, const voxel::WorldMgrPtr& world, const glm::mat4& view, float aspect);
+	int renderMap(video::Shader& shader, const voxelworld::WorldMgrPtr& world, const glm::mat4& view, float aspect);
 public:
 	Client(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
 			const stock::StockDataProviderPtr& stockDataProvider,
-			const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world,
+			const network::ClientNetworkPtr& network, const voxelworld::WorldMgrPtr& world,
 			const network::ClientMessageSenderPtr& messageSender, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 			const io::FilesystemPtr& filesystem);
 	~Client();
@@ -84,7 +84,7 @@ public:
 	 * @note If auth failed, we get an auth failed message
 	 */
 	void onEvent(const network::NewConnectionEvent& event) override;
-	void onEvent(const voxel::WorldCreatedEvent& event) override;
+	void onEvent(const voxelworld::WorldCreatedEvent& event) override;
 	void onEvent(const network::DisconnectEvent& event) override;
 
 	bool connect(uint16_t port, const std::string& hostname);

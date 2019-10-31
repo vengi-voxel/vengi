@@ -14,7 +14,7 @@ set(SRCS_SHADERS
 )
 set(FILES
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend render voxelfont)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend render voxelfont voxelworld)
 generate_shaders(${LIB} world water world_instanced)
 
 gtest_suite_sources(tests

@@ -29,7 +29,7 @@
 
 Client::Client(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
-		const network::ClientNetworkPtr& network, const voxel::WorldMgrPtr& world,
+		const network::ClientNetworkPtr& network, const voxelworld::WorldMgrPtr& world,
 		const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 		const io::FilesystemPtr& filesystem) :
@@ -85,7 +85,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(core::pwhash(password))).Union());
 }
 
-void Client::onEvent(const voxel::WorldCreatedEvent& event) {
+void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
 	Log::info("world created");
 	new frontend::HudWindow(this, frameBufferDimension());
 }
@@ -115,7 +115,7 @@ core::AppState Client::onConstruct() {
 core::AppState Client::onInit() {
 	eventBus()->subscribe<network::NewConnectionEvent>(*this);
 	eventBus()->subscribe<network::DisconnectEvent>(*this);
-	eventBus()->subscribe<voxel::WorldCreatedEvent>(*this);
+	eventBus()->subscribe<voxelworld::WorldCreatedEvent>(*this);
 
 	const network::ProtocolHandlerRegistryPtr& r = _network->registry();
 	regHandler(network::ServerMsgType::AttribUpdate, AttribUpdateHandler);
@@ -221,7 +221,7 @@ void Client::afterRootWidget() {
 core::AppState Client::onCleanup() {
 	eventBus()->unsubscribe<network::NewConnectionEvent>(*this);
 	eventBus()->unsubscribe<network::DisconnectEvent>(*this);
-	eventBus()->unsubscribe<voxel::WorldCreatedEvent>(*this);
+	eventBus()->unsubscribe<voxelworld::WorldCreatedEvent>(*this);
 
 	Log::info("shutting down the client");
 	disconnect();
@@ -372,7 +372,7 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 int main(int argc, char *argv[]) {
 	const animation::CharacterCachePtr& characterCache = std::make_shared<animation::CharacterCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
-	const voxel::WorldMgrPtr& world = std::make_shared<voxel::WorldMgr>();
+	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();

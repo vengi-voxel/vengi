@@ -3,9 +3,9 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/WorldMgr.h"
+#include "voxelworld/WorldMgr.h"
 
-namespace voxel {
+namespace voxelworld {
 
 class BiomeManagerTest: public AbstractVoxelTest {
 };
@@ -13,33 +13,33 @@ class BiomeManagerTest: public AbstractVoxelTest {
 TEST_F(BiomeManagerTest, testInvalid) {
 	BiomeManager mgr;
 	mgr.init("");
-	EXPECT_EQ(nullptr, mgr.addBiome(1, 0, 1.0f, 1.0f, VoxelType::Wood)) << "invalid lower/height combination is accepted, but shouldn't";
+	EXPECT_EQ(nullptr, mgr.addBiome(1, 0, 1.0f, 1.0f, voxel::VoxelType::Wood)) << "invalid lower/height combination is accepted, but shouldn't";
 }
 
 TEST_F(BiomeManagerTest, testBasic) {
 	BiomeManager mgr;
 	mgr.init("");
-	EXPECT_NE(nullptr, mgr.addBiome(0, 0, 1.0f, 1.0f, VoxelType::Wood));
-	EXPECT_NE(nullptr, mgr.addBiome(1, 1, 1.0f, 1.0f, VoxelType::Sand));
-	EXPECT_NE(nullptr, mgr.addBiome(2, 2, 1.0f, 1.0f, VoxelType::Grass));
-	EXPECT_NE(nullptr, mgr.addBiome(3, 3, 1.0f, 1.0f, VoxelType::Rock));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 0, 1.0f, 1.0f, voxel::VoxelType::Wood));
+	EXPECT_NE(nullptr, mgr.addBiome(1, 1, 1.0f, 1.0f, voxel::VoxelType::Sand));
+	EXPECT_NE(nullptr, mgr.addBiome(2, 2, 1.0f, 1.0f, voxel::VoxelType::Grass));
+	EXPECT_NE(nullptr, mgr.addBiome(3, 3, 1.0f, 1.0f, voxel::VoxelType::Rock));
 
-	const VoxelType sand1 = mgr.getBiome(glm::ivec3(0, 5, 0))->type;
-	const VoxelType sand2 = mgr.getBiome(glm::ivec3(0, 6, 0))->type;
-	EXPECT_FALSE(isSand(sand1)) << "Got " << voxel::VoxelTypeStr[(int)sand1] << " but expected to get " << voxel::VoxelTypeStr[(int)VoxelType::Sand];
-	EXPECT_FALSE(isSand(sand2)) << "Got " << voxel::VoxelTypeStr[(int)sand2] << " but expected to get " << voxel::VoxelTypeStr[(int)VoxelType::Sand];
+	const voxel::VoxelType sand1 = mgr.getBiome(glm::ivec3(0, 5, 0))->type;
+	const voxel::VoxelType sand2 = mgr.getBiome(glm::ivec3(0, 6, 0))->type;
+	EXPECT_FALSE(voxel::isSand(sand1)) << "Got " << voxel::VoxelTypeStr[(int)sand1] << " but expected to get " << voxel::VoxelTypeStr[(int)voxel::VoxelType::Sand];
+	EXPECT_FALSE(voxel::isSand(sand2)) << "Got " << voxel::VoxelTypeStr[(int)sand2] << " but expected to get " << voxel::VoxelTypeStr[(int)voxel::VoxelType::Sand];
 
 	const Biome* biome1 = mgr.getBiome(glm::ivec3(0, 0, 0));
-	EXPECT_TRUE(isWood(biome1->type)) << "y:0 - biome position doesn't lead to wood but: " << biome1->voxel();
+	EXPECT_TRUE(voxel::isWood(biome1->type)) << "y:0 - biome position doesn't lead to wood but: " << voxel::VoxelTypeStr[(int)biome1->voxel().getMaterial()];
 
 	const Biome* biome2 = mgr.getBiome(glm::ivec3(0, 1, 0));
-	EXPECT_TRUE(isSand(biome2->type)) << "y:1 - biome position doesn't lead to sand but: " << biome2->voxel();
+	EXPECT_TRUE(voxel::isSand(biome2->type)) << "y:1 - biome position doesn't lead to sand but: " << voxel::VoxelTypeStr[(int)biome2->voxel().getMaterial()];
 
 	const Biome* biome3 = mgr.getBiome(glm::ivec3(0, 2, 0));
-	EXPECT_TRUE(isGrass(biome3->type)) << "y:2 - biome position doesn't lead to grass but: " << biome3->voxel();
+	EXPECT_TRUE(voxel::isGrass(biome3->type)) << "y:2 - biome position doesn't lead to grass but: " << voxel::VoxelTypeStr[(int)biome3->voxel().getMaterial()];
 
 	const Biome* biome4 = mgr.getBiome(glm::ivec3(0, 3, 0));
-	EXPECT_TRUE(isRock(biome4->type)) << "y:3 - biome position doesn't lead to rock but: " << biome4->voxel();
+	EXPECT_TRUE(voxel::	isRock(biome4->type)) << "y:3 - biome position doesn't lead to rock but: " << voxel::VoxelTypeStr[(int)biome4->voxel().getMaterial()];
 }
 
 TEST_F(BiomeManagerTest, testHumidityTemperature) {
@@ -57,13 +57,13 @@ TEST_F(BiomeManagerTest, testHumidityTemperature) {
 	const float h3 = mgr.getHumidity(p3.x, p3.z);
 	const float t3 = mgr.getTemperature(p3.x, p3.z);
 
-	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h1, t1, VoxelType::Grass));
-	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h2, t2, VoxelType::Rock));
-	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h3, t3, VoxelType::Sand));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h1, t1, voxel::VoxelType::Grass));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h2, t2, voxel::VoxelType::Rock));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h3, t3, voxel::VoxelType::Sand));
 
-	EXPECT_EQ(VoxelType::Grass, mgr.getBiome(p1)->type);
-	EXPECT_EQ(VoxelType::Rock, mgr.getBiome(p2)->type);
-	EXPECT_EQ(VoxelType::Sand, mgr.getBiome(p3)->type);
+	EXPECT_EQ(voxel::VoxelType::Grass, mgr.getBiome(p1)->type);
+	EXPECT_EQ(voxel::VoxelType::Rock, mgr.getBiome(p2)->type);
+	EXPECT_EQ(voxel::VoxelType::Sand, mgr.getBiome(p3)->type);
 }
 
 TEST_F(BiomeManagerTest, testLoadLUA) {

@@ -7,10 +7,10 @@
 #include "compute/Compute.h"
 #include "voxel/MaterialColor.h"
 #include "computevideo/ComputeVideo.h"
-#include "voxel/polyvox/Region.h"
-#include "voxel/polyvox/Voxel.h"
-#include "voxel/polyvox/RawVolumeWrapper.h"
-#include "voxel/polyvox/VolumeVisitor.h"
+#include "voxel/Region.h"
+#include "voxel/Voxel.h"
+#include "voxel/RawVolumeWrapper.h"
+#include "voxel/VolumeVisitor.h"
 #include "voxelgenerator/NoiseGenerator.h"
 
 #define GL_INTEROP 0

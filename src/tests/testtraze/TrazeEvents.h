@@ -6,7 +6,7 @@
 
 #include "core/EventBus.h"
 #include "TrazeTypes.h"
-#include "voxel/polyvox/RawVolume.h"
+#include "voxel/RawVolume.h"
 #include <vector>
 
 namespace traze {

@@ -9,12 +9,12 @@
 
 #include "core/GLM.h"
 #include "core/Common.h"
-#include "voxel/polyvox/Mesh.h"
-#include "voxel/polyvox/PagedVolume.h"
-#include "voxel/polyvox/Raycast.h"
+#include "voxel/Mesh.h"
+#include "voxel/PagedVolume.h"
+#include "voxel/Raycast.h"
 #include "math/Frustum.h"
 #include "voxel/Constants.h"
-#include "voxel/polyvox/Picking.h"
+#include "voxel/Picking.h"
 #include <memory>
 #include <vector>
 #include <atomic>
@@ -30,7 +30,7 @@
 #include "core/Log.h"
 #include <unordered_set>
 
-namespace voxel {
+namespace voxelworld {
 
 struct ChunkMeshes {
 	static constexpr bool MAY_GET_RESIZED = true;
@@ -42,8 +42,8 @@ struct ChunkMeshes {
 		return opaqueMesh.getOffset();
 	}
 
-	Mesh opaqueMesh;
-	Mesh waterMesh;
+	voxel::Mesh opaqueMesh;
+	voxel::Mesh waterMesh;
 
 	inline bool operator<(const ChunkMeshes& rhs) const {
 		return glm::all(glm::lessThan(translation(), rhs.translation()));
@@ -71,10 +71,10 @@ public:
 
 	template<typename VoxelTypeChecker>
 	int findFloor(int x, int z, VoxelTypeChecker&& check) const {
-		const glm::vec3 start(x, MAX_HEIGHT, z);
-		const float distance = (float)MAX_HEIGHT;
-		int y = NO_FLOOR_FOUND;
-		raycast(start, glm::down, distance, [&] (const PagedVolume::Sampler& sampler) {
+		const glm::vec3 start(x, voxel::MAX_HEIGHT, z);
+		const float distance = (float)voxel::MAX_HEIGHT;
+		int y = voxel::NO_FLOOR_FOUND;
+		raycast(start, glm::down, distance, [&] (const voxel::PagedVolume::Sampler& sampler) {
 			if (check(sampler.voxel().getMaterial())) {
 				y = sampler.position().y;
 				return false;
@@ -87,7 +87,7 @@ public:
 	/**
 	 * @return The y component for the given x and z coordinates that is walkable - or @c NO_FLOOR_FOUND.
 	 */
-	int findWalkableFloor(const glm::vec3& position, float maxDistanceY = (float)MAX_HEIGHT) const;
+	int findWalkableFloor(const glm::vec3& position, float maxDistanceY = (float)voxel::MAX_HEIGHT) const;
 
 	/**
 	 * @return true if the ray hit something - false if not.
@@ -96,8 +96,8 @@ public:
 	 */
 	template<typename Callback>
 	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) const {
-		const RaycastResults::RaycastResult result = raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
-		return result == RaycastResults::Interupted;
+		const voxel::RaycastResults::RaycastResult result = voxel::raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
+		return result == voxel::RaycastResults::Interupted;
 	}
 
 	/**
@@ -106,19 +106,19 @@ public:
 	 * @param[out] hit If the ray hits a voxel, this is the position of the hit
 	 * @param[out] voxel The voxel that was hit
 	 */
-	bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) const;
+	bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, voxel::Voxel& voxel) const;
 
 	bool init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes = 512, uint16_t chunkSideLength = 256);
 	void shutdown();
 	void reset();
 	bool isReset() const;
 
-	VoxelType material(int x, int y, int z) const;
+	voxel::VoxelType material(int x, int y, int z) const;
 
 	BiomeManager& biomeManager();
 	const BiomeManager& biomeManager() const;
 
-	PickResult pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength);
+	voxel::PickResult pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength);
 
 	/**
 	 * @brief Returns a random position inside the boundaries of the world (on the surface)
@@ -179,7 +179,7 @@ private:
 	void extractScheduledMesh();
 
 	WorldPager _pager;
-	PagedVolume *_volumeData = nullptr;
+	voxel::PagedVolume *_volumeData = nullptr;
 	BiomeManager _biomeManager;
 	mutable std::mt19937 _engine;
 	long _seed = 0l;

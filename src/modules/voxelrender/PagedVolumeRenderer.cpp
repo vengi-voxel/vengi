@@ -3,7 +3,7 @@
  */
 
 #include "PagedVolumeRenderer.h"
-#include "voxel/polyvox/CubicSurfaceExtractor.h"
+#include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedState.h"

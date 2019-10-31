@@ -4,7 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "voxelrender/WorldRenderer.h"
-#include "voxel/WorldMgr.h"
+#include "voxelworld/WorldMgr.h"
 
 namespace voxelrender {
 
@@ -13,14 +13,14 @@ public:
 	class T_WorldRenderer: public WorldRenderer {
 		FRIEND_TEST(WorldRendererTest, testDistanceCulling);
 	};
-	voxel::WorldMgrPtr _world;
+	voxelworld::WorldMgrPtr _world;
 	T_WorldRenderer* _renderer;
 	WorldRenderer *_worldRenderer;
 
 	virtual void SetUp() override {
 		core::AbstractTest::SetUp();
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-		_world = std::make_shared<voxel::WorldMgr>();
+		_world = std::make_shared<voxelworld::WorldMgr>();
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 		const std::string& world = _testApp->filesystem()->load("worldparams.lua");
 		ASSERT_NE("", world);
@@ -51,7 +51,7 @@ TEST_F(WorldRendererTest, testCreate) {
 	camera.update(0l);
 
 	_renderer->extractMeshes(camera);
-	voxel::ChunkMeshes mesh(0, 0, 0, 0);
+	voxelworld::ChunkMeshes mesh(0, 0, 0, 0);
 	int amount = 0;
 	while (!_world->pop(mesh)) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));

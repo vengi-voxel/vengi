@@ -5,10 +5,10 @@
 #pragma once
 
 #include "core/tests/AbstractTest.h"
-#include "voxel/polyvox/PagedVolumeWrapper.h"
-#include "voxel/polyvox/PagedVolume.h"
-#include "voxel/polyvox/RawVolume.h"
-#include "voxel/polyvox/Voxel.h"
+#include "voxel/PagedVolumeWrapper.h"
+#include "voxel/PagedVolume.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Constants.h"
 #include "math/Random.h"

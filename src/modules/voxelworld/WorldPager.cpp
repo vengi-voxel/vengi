@@ -3,11 +3,11 @@
  */
 #include "WorldPager.h"
 #include "math/Random.h"
-#include "voxel/BiomeManager.h"
-#include "voxel/polyvox/PagedVolumeWrapper.h"
+#include "voxelworld/BiomeManager.h"
+#include "voxel/PagedVolumeWrapper.h"
 #include "commonlua/LUA.h"
 
-namespace voxel {
+namespace voxelworld {
 
 #define CTX_LUA_FLOAT(name) name = lua.floatValue(#name, name)
 #define CTX_LUA_INT(name) name = lua.intValue(#name, name)
@@ -45,11 +45,11 @@ bool WorldPager::WorldContext::load(const std::string& luaString) {
 	return true;
 }
 
-void WorldPager::erase(const Region& region) {
+void WorldPager::erase(const voxel::Region& region) {
 	_worldPersister.erase(region, _seed);
 }
 
-bool WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
+bool WorldPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 	core_assert(_volumeData != nullptr && _biomeManager != nullptr);
 	if (pctx.region.getLowerY() < 0) {
 		return false;
@@ -61,7 +61,7 @@ bool WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
 	return true;
 }
 
-void WorldPager::pageOut(PagedVolume::Chunk* chunk) {
+void WorldPager::pageOut(voxel::PagedVolume::Chunk* chunk) {
 	core_assert(chunk != nullptr);
 	_worldPersister.save(chunk, _seed);
 }
@@ -78,7 +78,7 @@ void WorldPager::setNoiseOffset(const glm::vec2& noiseOffset) {
 	_noiseSeedOffset = noiseOffset;
 }
 
-bool WorldPager::init(PagedVolume *volumeData, BiomeManager* biomeManager, const std::string& worldParamsLua) {
+bool WorldPager::init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager, const std::string& worldParamsLua) {
 	if (!_ctx.load(worldParamsLua)) {
 		return false;
 	}
@@ -101,9 +101,9 @@ void WorldPager::shutdown() {
 }
 
 // use a 2d noise to switch between different noises - to generate steep mountains
-void WorldPager::createWorld(const WorldContext& worldCtx, PagedVolumeWrapper& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const {
+void WorldPager::createWorld(const WorldContext& worldCtx, voxel::PagedVolumeWrapper& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const {
 	core_trace_scoped(WorldGeneration);
-	const Region& region = volume.region();
+	const voxel::Region& region = volume.region();
 	Log::debug("Create new chunk at %i:%i:%i", region.getLowerX(), region.getLowerY(), region.getLowerZ());
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
@@ -111,7 +111,7 @@ void WorldPager::createWorld(const WorldContext& worldCtx, PagedVolumeWrapper& v
 	const int lowerY = region.getLowerY();
 	const int lowerZ = region.getLowerZ();
 	core_assert(region.getLowerY() >= 0);
-	Voxel voxels[MAX_TERRAIN_HEIGHT];
+	voxel::Voxel voxels[voxel::MAX_TERRAIN_HEIGHT];
 
 	// TODO: store voxel data in local buffer and transfer in one step into the volume to reduce locking
 	const int size = 2;
@@ -119,7 +119,7 @@ void WorldPager::createWorld(const WorldContext& worldCtx, PagedVolumeWrapper& v
 	core_assert(width % size == 0);
 	for (int z = lowerZ; z < lowerZ + depth; z += size) {
 		for (int x = lowerX; x < lowerX + width; x += size) {
-			const int ni = fillVoxels(x, lowerY, z, worldCtx, voxels, noiseSeedOffsetX, noiseSeedOffsetZ, MAX_TERRAIN_HEIGHT - 1);
+			const int ni = fillVoxels(x, lowerY, z, worldCtx, voxels, noiseSeedOffsetX, noiseSeedOffsetZ, voxel::MAX_TERRAIN_HEIGHT - 1);
 			volume.setVoxels(x, lowerY, z, size, size, voxels, ni);
 		}
 	}
@@ -138,7 +138,7 @@ float WorldPager::getHeight(const glm::vec2& noisePos2d, const WorldContext& wor
 	return n;
 }
 
-int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const {
+int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, voxel::Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const {
 	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 	const float n = getHeight(noisePos2d, worldCtx);
 	const glm::ivec3 noisePos3d(x, lowerY, z);
@@ -153,9 +153,9 @@ int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCt
 		return 0;
 	}
 
-	const Voxel& water = createColorVoxel(VoxelType::Water, _seed);
-	const Voxel& dirt = createColorVoxel(VoxelType::Dirt, _seed);
-	static constexpr Voxel air;
+	const voxel::Voxel& water = createColorVoxel(voxel::VoxelType::Water, _seed);
+	const voxel::Voxel& dirt = createColorVoxel(voxel::VoxelType::Dirt, _seed);
+	static constexpr voxel::Voxel air;
 
 	voxels[0] = dirt;
 	glm::ivec3 pos(x, 0, z);
@@ -168,26 +168,26 @@ int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCt
 		if (finalDensity > worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;
 			pos.y = y;
-			const Voxel& voxel = _biomeManager->getVoxel(pos, cave);
+			const voxel::Voxel& voxel = _biomeManager->getVoxel(pos, cave);
 			voxels[y] = voxel;
 		} else {
-			if (y < MAX_WATER_HEIGHT) {
+			if (y < voxel::MAX_WATER_HEIGHT) {
 				voxels[y] = water;
 			} else {
 				voxels[y] = air;
 			}
 		}
 	}
-	for (int i = lowerY; i < MAX_WATER_HEIGHT; ++i) {
+	for (int i = lowerY; i < voxel::MAX_WATER_HEIGHT; ++i) {
 		if (voxels[i] == air) {
 			voxels[i] = water;
 		}
 	}
-	return core_max(ni - lowerY, MAX_WATER_HEIGHT - lowerY);
+	return core_max(ni - lowerY, voxel::MAX_WATER_HEIGHT - lowerY);
 }
 
-void WorldPager::create(PagedVolume::PagerContext& ctx) {
-	PagedVolumeWrapper wrapper(_volumeData, ctx.chunk, ctx.region);
+void WorldPager::create(voxel::PagedVolume::PagerContext& ctx) {
+	voxel::PagedVolumeWrapper wrapper(_volumeData, ctx.chunk, ctx.region);
 	core_trace_scoped(CreateWorld);
 	math::Random random(_seed);
 	createWorld(_ctx, wrapper, _noiseSeedOffset.x, _noiseSeedOffset.y);

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxel/WorldMgr.h"
+#include "voxelworld/WorldMgr.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/Camera.h"
@@ -41,7 +41,7 @@ protected:
 		}
 		bool inuse = false;
 		math::AABB<int> _aabb = {glm::zero<glm::ivec3>(), glm::zero<glm::ivec3>()};
-		voxel::ChunkMeshes meshes {0, 0, 0, 0};
+		voxelworld::ChunkMeshes meshes {0, 0, 0, 0};
 		std::vector<glm::vec3> instancedPositions;
 		video::Id occlusionQueryId = video::InvalidId;
 		bool occludedLastFrame = false;
@@ -112,7 +112,7 @@ protected:
 	glm::vec4 _clearColor = core::Color::LightBlue;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
-	voxel::WorldMgrPtr _world;
+	voxelworld::WorldMgrPtr _world;
 	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapShow;
 
@@ -138,7 +138,7 @@ protected:
 	bool initWaterBuffer();
 
 public:
-	WorldRenderer(const voxel::WorldMgrPtr& world);
+	WorldRenderer(const voxelworld::WorldMgrPtr& world);
 	~WorldRenderer();
 
 	void reset();

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxel/polyvox/Voxel.h"
+#include "voxel/Voxel.h"
 #include "core/io/File.h"
 #include "image/Image.h"
 

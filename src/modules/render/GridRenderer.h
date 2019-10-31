@@ -7,7 +7,7 @@
 #include "video/Camera.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
-#include "voxel/polyvox/Region.h"
+#include "voxel/Region.h"
 #include "core/IComponent.h"
 
 namespace render {

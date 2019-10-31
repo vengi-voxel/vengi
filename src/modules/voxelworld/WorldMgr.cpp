@@ -10,14 +10,14 @@
 #include "core/io/File.h"
 #include "math/Random.h"
 #include "core/Concurrency.h"
-#include "voxel/polyvox/AStarPathfinder.h"
-#include "voxel/polyvox/CubicSurfaceExtractor.h"
-#include "voxel/polyvox/PagedVolumeWrapper.h"
-#include "voxel/polyvox/Voxel.h"
+#include "voxel/AStarPathfinder.h"
+#include "voxel/CubicSurfaceExtractor.h"
+#include "voxel/PagedVolumeWrapper.h"
+#include "voxel/Voxel.h"
 #include "voxel/Constants.h"
 #include "voxel/IsQuadNeeded.h"
 
-namespace voxel {
+namespace voxelworld {
 
 WorldMgr::WorldMgr() :
 		_threadPool(core::halfcpus(), "WorldMgr"), _random(_seed) {
@@ -40,7 +40,7 @@ glm::ivec3 WorldMgr::randomPos() const {
 	}
 	const int x = _random.random(lowestX, highestX);
 	const int z = _random.random(lowestZ, highestZ);
-	const int y = findFloor(x, z, isFloor);
+	const int y = findFloor(x, z, voxel::isFloor);
 	return glm::ivec3(x, y, z);
 }
 
@@ -70,7 +70,7 @@ void WorldMgr::setSeed(long seed) {
 	_pager.setNoiseOffset(glm::vec2(_random.randomf(-10000.0f, 10000.0f), _random.randomf(-10000.0f, 10000.0f)));
 }
 
-PickResult WorldMgr::pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength) {
+voxel::PickResult WorldMgr::pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength) {
 	static constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air, 0);
 	return voxel::pickVoxel(_volumeData, origin, directionWithLength, air);
 }
@@ -99,9 +99,9 @@ bool WorldMgr::findPath(const glm::ivec3& start, const glm::ivec3& end,
 		return isBlocked(voxel.getMaterial());
 	};
 
-	const AStarPathfinderParams<voxel::PagedVolume> params(_volumeData, start, end, &listResult, 1.0f, 10000,
-			TwentySixConnected, std::bind(f, std::placeholders::_1, std::placeholders::_2));
-	AStarPathfinder<voxel::PagedVolume> pf(params);
+	const voxel::AStarPathfinderParams<voxel::PagedVolume> params(_volumeData, start, end, &listResult, 1.0f, 10000,
+			voxel::TwentySixConnected, std::bind(f, std::placeholders::_1, std::placeholders::_2));
+	voxel::AStarPathfinder<voxel::PagedVolume> pf(params);
 	// TODO: move into threadpool
 	pf.execute();
 	return true;
@@ -114,7 +114,7 @@ bool WorldMgr::init(const std::string& luaParameters, const std::string& luaBiom
 		return false;
 	}
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
-	_volumeData = new PagedVolume(&_pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
+	_volumeData = new voxel::PagedVolume(&_pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 
 	_pager.init(_volumeData, &_biomeManager, luaParameters);
 
@@ -135,17 +135,17 @@ void WorldMgr::extractScheduledMesh() {
 		const glm::ivec3& size = meshSize();
 		const glm::ivec3 mins(pos);
 		const glm::ivec3 maxs(glm::ivec3(pos) + size - 1);
-		const Region region(mins, maxs);
+		const voxel::Region region(mins, maxs);
 		// these numbers are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
 		// they also heavily depend on the size of the mesh region we extract
 		const int opaqueFactor = 16;
 		const int opaqueVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
 		const int waterVertices = region.getWidthInVoxels() * region.getDepthInVoxels();
 		ChunkMeshes data(opaqueVertices, opaqueVertices, waterVertices, waterVertices);
-		extractAllCubicMesh(_volumeData, region,
+		voxel::extractAllCubicMesh(_volumeData, region,
 				&data.opaqueMesh, &data.waterMesh,
-				IsQuadNeeded(), IsWaterQuadNeeded(),
-				MAX_WATER_HEIGHT);
+				voxel::IsQuadNeeded(), voxel::IsWaterQuadNeeded(),
+				voxel::MAX_WATER_HEIGHT);
 		if (!data.waterMesh.isEmpty() || !data.opaqueMesh.isEmpty()) {
 			_extracted.push(std::move(data));
 		}
@@ -181,10 +181,10 @@ void WorldMgr::stats(int& meshes, int& extracted, int& pending) const {
 	meshes = _extracted.size();
 }
 
-bool WorldMgr::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) const {
-	const bool result = raycast(start, direction, maxDistance, [&] (const PagedVolume::Sampler& sampler) {
+bool WorldMgr::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, voxel::Voxel& voxel) const {
+	const bool result = raycast(start, direction, maxDistance, [&] (const voxel::PagedVolume::Sampler& sampler) {
 		voxel = sampler.voxel();
-		if (isBlocked(voxel.getMaterial())) {
+		if (voxel::isBlocked(voxel.getMaterial())) {
 			// store position and abort raycast
 			hit = sampler.position();
 			return false;
@@ -196,9 +196,9 @@ bool WorldMgr::raycast(const glm::vec3& start, const glm::vec3& direction, float
 
 int WorldMgr::findWalkableFloor(const glm::vec3& position, float maxDistanceY) const {
 	const voxel::VoxelType type = material(position.x, position.y, position.z);
-	int y = NO_FLOOR_FOUND;
+	int y = voxel::NO_FLOOR_FOUND;
 	if (voxel::isEnterable(type)) {
-		raycast(position, glm::down, glm::min(maxDistanceY, position.y), [&] (const PagedVolume::Sampler& sampler) {
+		raycast(position, glm::down, glm::min(maxDistanceY, position.y), [&] (const voxel::PagedVolume::Sampler& sampler) {
 			voxel::VoxelType mat = sampler.voxel().getMaterial();
 			if (!voxel::isEnterable(mat)) {
 				y = sampler.position().y + 1;
@@ -207,7 +207,7 @@ int WorldMgr::findWalkableFloor(const glm::vec3& position, float maxDistanceY) c
 			return true;
 		});
 	} else {
-		raycast(position, glm::up, glm::min(maxDistanceY, (float)MAX_HEIGHT - position.y), [&] (const PagedVolume::Sampler& sampler) {
+		raycast(position, glm::up, glm::min(maxDistanceY, (float)voxel::MAX_HEIGHT - position.y), [&] (const voxel::PagedVolume::Sampler& sampler) {
 			voxel::VoxelType mat = sampler.voxel().getMaterial();
 			if (voxel::isEnterable(mat)) {
 				y = sampler.position().y;
@@ -225,11 +225,11 @@ int WorldMgr::chunkSize() const {
 
 glm::ivec3 WorldMgr::meshSize() const {
 	const int s = _meshSize->intVal();
-	return glm::ivec3(s, MAX_MESH_CHUNK_HEIGHT, s);
+	return glm::ivec3(s, voxel::MAX_MESH_CHUNK_HEIGHT, s);
 }
 
-VoxelType WorldMgr::material(int x, int y, int z) const {
-	const Voxel& voxel = _volumeData->voxel(x, y, z);
+voxel::VoxelType WorldMgr::material(int x, int y, int z) const {
+	const voxel::Voxel& voxel = _volumeData->voxel(x, y, z);
 	return voxel.getMaterial();
 }
 

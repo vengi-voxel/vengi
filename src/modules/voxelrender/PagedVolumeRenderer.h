@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "voxel/polyvox/PagedVolume.h"
+#include "voxel/PagedVolume.h"
 #include "video/Buffer.h"
 #include "VoxelrenderShaders.h"
 #include "RenderShaders.h"
-#include "voxel/polyvox/Mesh.h"
+#include "voxel/Mesh.h"
 #include "render/Shadow.h"
 #include "video/UniformBuffer.h"
 #include "video/Texture.h"

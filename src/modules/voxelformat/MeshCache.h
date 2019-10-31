@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxel/polyvox/Mesh.h"
+#include "voxel/Mesh.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "core/IComponent.h"
 #include "core/String.h"

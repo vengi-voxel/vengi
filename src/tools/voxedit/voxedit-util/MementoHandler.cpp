@@ -4,8 +4,8 @@
 
 #include "MementoHandler.h"
 
-#include "voxel/polyvox/RawVolume.h"
-#include "voxel/polyvox/Region.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "core/command/Command.h"
 #include "core/Assert.h"
 #include "core/Log.h"

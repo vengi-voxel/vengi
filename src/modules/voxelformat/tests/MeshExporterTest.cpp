@@ -3,9 +3,9 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxel/polyvox/Region.h"
-#include "voxel/polyvox/PagedVolume.h"
-#include "voxel/polyvox/CubicSurfaceExtractor.h"
+#include "voxel/Region.h"
+#include "voxel/PagedVolume.h"
+#include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxelformat/MeshExporter.h"
 

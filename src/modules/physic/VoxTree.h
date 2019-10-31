@@ -6,7 +6,7 @@
 
 #include "core/GLM.h"
 #include "VoxTreeNode.h"
-#include "voxel/polyvox/Voxel.h"
+#include "voxel/Voxel.h"
 #include "core/NonCopyable.h"
 
 namespace physic {

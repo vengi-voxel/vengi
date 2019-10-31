@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/EventBus.h"
-#include "voxel/polyvox/RawVolume.h"
+#include "voxel/RawVolume.h"
 #include <mosquitto.h>
 #include <string>
 #include "TrazeTypes.h"

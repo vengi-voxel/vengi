@@ -7,7 +7,7 @@
 #include "testcore/TestApp.h"
 #include "compute/Texture.h"
 #include "video/Texture.h"
-#include "voxel/polyvox/RawVolume.h"
+#include "voxel/RawVolume.h"
 #include "Testcomputetexture3dComputeShaders.h"
 #include "render/TextureRenderer.h"
 #include <memory>

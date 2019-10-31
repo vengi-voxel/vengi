@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/polyvox/PagedVolume.h"
+#include "voxel/PagedVolume.h"
 
 namespace voxel {
 

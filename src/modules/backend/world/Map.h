@@ -29,7 +29,7 @@ private:
 	static constexpr uint32_t FOURCC = FourCC('M', 'A', 'P', '\0');
 	MapId _mapId;
 	std::string _mapIdStr;
-	voxel::WorldMgr* _voxelWorldMgr = nullptr;
+	voxelworld::WorldMgr* _voxelWorldMgr = nullptr;
 
 	core::EventBusPtr _eventBus;
 	SpawnMgrPtr _spawnMgr;

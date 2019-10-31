@@ -6,7 +6,7 @@
 
 #include "core/IComponent.h"
 #include "VoxTree.h"
-#include "voxel/polyvox/Region.h"
+#include "voxel/Region.h"
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
 

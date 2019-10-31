@@ -1,45 +1,33 @@
 set(LIB voxel)
 set(SRCS
-	BiomeLUAFunctions.h BiomeLUAFunctions.cpp
-	Biome.h Biome.cpp
-	BiomeManager.h BiomeManager.cpp
-	TreeContext.h TreeContext.cpp
 	Constants.h
-	MaterialColor.h MaterialColor.cpp
 	RandomVoxel.h
-	WorldMgr.cpp WorldMgr.h
-	WorldPersister.h WorldPersister.cpp
-	WorldPager.h WorldPager.cpp
-	WorldEvents.h
-	polyvox/AStarPathfinder.h
-	polyvox/AStarPathfinderImpl.h
-	polyvox/CubicSurfaceExtractor.h polyvox/CubicSurfaceExtractor.cpp
-	polyvox/Face.h polyvox/Face.cpp
-	polyvox/Mesh.h polyvox/Mesh.cpp
-	polyvox/Morton.h
-	polyvox/PagedVolume.h polyvox/PagedVolume.cpp
-	polyvox/PagedVolumeSampler.cpp polyvox/PagedVolumeChunk.cpp
-	polyvox/PagedVolumeBufferedSampler.cpp
-	polyvox/PagedVolumeWrapper.h polyvox/PagedVolumeWrapper.cpp
-	polyvox/RawVolume.h polyvox/RawVolume.cpp
-	polyvox/RawVolumeWrapper.h
-	polyvox/RawVolumeMoveWrapper.h
-	polyvox/Raycast.h
-	polyvox/Picking.h
-	polyvox/Region.h polyvox/Region.cpp
-	polyvox/Utility.h
-	polyvox/VoxelVertex.h
-	polyvox/Voxel.h polyvox/Voxel.cpp
-	polyvox/VolumeMerger.h polyvox/VolumeMerger.cpp
-	polyvox/VolumeMover.h
-	polyvox/VolumeRescaler.h
-	polyvox/VolumeRotator.h polyvox/VolumeRotator.cpp
-	polyvox/VolumeCropper.h
-	polyvox/VolumeVisitor.h
-)
-set(FILES
-	shared/palette-nippon.lua
-	shared/palette-nippon.png
+	AStarPathfinder.h
+	AStarPathfinderImpl.h
+	CubicSurfaceExtractor.h CubicSurfaceExtractor.cpp
+	Face.h Face.cpp
+	MaterialColor.h MaterialColor.cpp
+	Mesh.h Mesh.cpp
+	Morton.h
+	PagedVolume.h PagedVolume.cpp
+	PagedVolumeSampler.cpp PagedVolumeChunk.cpp
+	PagedVolumeBufferedSampler.cpp
+	PagedVolumeWrapper.h PagedVolumeWrapper.cpp
+	RawVolume.h RawVolume.cpp
+	RawVolumeWrapper.h
+	RawVolumeMoveWrapper.h
+	Raycast.h
+	Picking.h
+	Region.h Region.cpp
+	Utility.h
+	VoxelVertex.h
+	Voxel.h Voxel.cpp
+	VolumeMerger.h VolumeMerger.cpp
+	VolumeMover.h
+	VolumeRescaler.h
+	VolumeRotator.h VolumeRotator.cpp
+	VolumeCropper.h
+	VolumeVisitor.h
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES noise image commonlua)
 set(MARCH native)
@@ -59,12 +47,9 @@ endif()
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
 	tests/FaceTest.cpp
-	tests/WorldMgrTest.cpp
-	tests/WorldPersisterTest.cpp
 	tests/PolyVoxTest.cpp
 	tests/PickingTest.cpp
 	tests/RegionTest.cpp
-	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
 	tests/PagedVolumeBufferedSamplerTest.cpp
 	tests/RawVolumeWrapperTest.cpp
@@ -75,17 +60,8 @@ set(TEST_SRCS
 
 gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
-gtest_suite_files(tests shared/worldparams.lua shared/biomes.lua)
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
-gtest_suite_files(tests-${LIB} shared/worldparams.lua shared/biomes.lua)
 gtest_suite_deps(tests-${LIB} ${LIB})
 gtest_suite_end(tests-${LIB})
-
-set(BENCHMARK_SRCS
-	../core/benchmark/AbstractBenchmark.cpp
-	benchmarks/VoxelBenchmark.cpp
-)
-engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} FILES ${FILES} shared/worldparams.lua shared/biomes.lua NOINSTALL)
-engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark ${LIB})

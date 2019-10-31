@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "voxel/polyvox/Voxel.h"
+#include "voxel/Voxel.h"
 #include "core/Common.h"
 #include "math/Bezier.h"
 #include "math/Axis.h"
-#include "voxel/polyvox/Raycast.h"
+#include "voxel/Raycast.h"
 #include "core/GLM.h"
 
 namespace voxelgenerator {

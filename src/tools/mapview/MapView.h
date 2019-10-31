@@ -13,7 +13,7 @@
 #include "video/Camera.h"
 #include "animation/CharacterCache.h"
 #include "video/Buffer.h"
-#include "voxel/WorldMgr.h"
+#include "voxelworld/WorldMgr.h"
 #include "stock/Stock.h"
 #include "stock/StockDataProvider.h"
 
@@ -28,7 +28,7 @@ protected:
 	video::Camera _camera;
 	animation::CharacterCachePtr _characterCache;
 	voxelrender::WorldRenderer _worldRenderer;
-	voxel::WorldMgrPtr _worldMgr;
+	voxelworld::WorldMgrPtr _worldMgr;
 	render::Axis _axis;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;
@@ -52,7 +52,7 @@ public:
 	MapView(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
 			const stock::StockDataProviderPtr& stockDataProvider,
 			const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
-			const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world);
+			const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world);
 	~MapView();
 
 	core::AppState onConstruct() override;

@@ -3,7 +3,7 @@
 #include <memory>
 #include "entity/EntityId.h"
 
-namespace voxel {
+namespace voxelworld {
 
 class WorldMgr;
 typedef std::shared_ptr<WorldMgr> WorldMgrPtr;

@@ -5,7 +5,7 @@
 #include "LayerManager.h"
 #include "core/String.h"
 #include "core/command/Command.h"
-#include "voxel/polyvox/VolumeMerger.h"
+#include "voxel/VolumeMerger.h"
 
 namespace voxedit {
 

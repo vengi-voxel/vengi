@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxel/polyvox/RawVolumeWrapper.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "math/Axis.h"
 #include "../ModifierType.h"
 #include "../Selection.h"

@@ -4,9 +4,9 @@
 
 #include "ImageUtils.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/polyvox/Region.h"
-#include "voxel/polyvox/Voxel.h"
-#include "voxel/polyvox/RawVolume.h"
+#include "voxel/Region.h"
+#include "voxel/Voxel.h"
+#include "voxel/RawVolume.h"
 #include "core/Assert.h"
 #include "core/Color.h"
 #include "core/Log.h"

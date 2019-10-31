@@ -5,7 +5,7 @@
 
 struct lua_State;
 
-namespace voxel {
+namespace voxelworld {
 
 class Biome;
 

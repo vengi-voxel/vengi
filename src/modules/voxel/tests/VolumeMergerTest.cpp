@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/polyvox/VolumeMerger.h"
+#include "voxel/VolumeMerger.h"
 
 namespace voxel {
 

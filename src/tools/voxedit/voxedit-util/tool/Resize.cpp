@@ -3,8 +3,8 @@
  */
 
 #include "Resize.h"
-#include "voxel/polyvox/VolumeMerger.h"
-#include "voxel/polyvox/RawVolumeWrapper.h"
+#include "voxel/VolumeMerger.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace voxedit {
 namespace tool {

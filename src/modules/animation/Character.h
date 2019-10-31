@@ -10,7 +10,7 @@
 #include "CharacterCache.h"
 #include "attrib/ShadowAttributes.h"
 #include "stock/Inventory.h"
-#include "voxel/polyvox/Mesh.h"
+#include "voxel/Mesh.h"
 #include "Vertex.h"
 #include <stdint.h>
 

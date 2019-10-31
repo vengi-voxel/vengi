@@ -11,8 +11,8 @@
 #include "core/GameConfig.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
-#include "voxel/polyvox/Voxel.h"
-#include "voxel/polyvox/Picking.h"
+#include "voxel/Voxel.h"
+#include "voxel/Picking.h"
 #include "core/io/Filesystem.h"
 #include "ui/imgui/IMGUI.h"
 #include "frontend/Movement.h"
@@ -21,7 +21,7 @@
 MapView::MapView(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
-		const core::TimeProviderPtr& timeProvider, const voxel::WorldMgrPtr& world) :
+		const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(),
 		_characterCache(characterCache), _worldRenderer(world), _worldMgr(world), _stockDataProvider(stockDataProvider) {
 	init(ORGANISATION, "mapview");
@@ -264,7 +264,7 @@ bool MapView::onKeyPress(int32_t key, int16_t modifier) {
 int main(int argc, char *argv[]) {
 	const animation::CharacterCachePtr& characterCache = std::make_shared<animation::CharacterCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
-	const voxel::WorldMgrPtr& world = std::make_shared<voxel::WorldMgr>();
+	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();

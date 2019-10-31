@@ -3,8 +3,8 @@
  */
 
 #include "RawVolumeRenderer.h"
-#include "voxel/polyvox/CubicSurfaceExtractor.h"
-#include "voxel/polyvox/VolumeMerger.h"
+#include "voxel/CubicSurfaceExtractor.h"
+#include "voxel/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"

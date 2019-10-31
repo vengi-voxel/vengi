@@ -7,7 +7,7 @@
 #include "network/Network.h"
 #include "core/EventBus.h"
 
-namespace voxel {
+namespace voxelworld {
 class WorldMgr;
 typedef std::shared_ptr<WorldMgr> WorldMgrPtr;
 }
@@ -17,10 +17,10 @@ typedef std::shared_ptr<WorldMgr> WorldMgrPtr;
  */
 class SeedHandler: public network::IProtocolHandler {
 private:
-	voxel::WorldMgrPtr _world;
+	voxelworld::WorldMgrPtr _world;
 	core::EventBusPtr _eventBus;
 public:
-	SeedHandler(const voxel::WorldMgrPtr& world, const core::EventBusPtr& eventBus) :
+	SeedHandler(const voxelworld::WorldMgrPtr& world, const core::EventBusPtr& eventBus) :
 			_world(world), _eventBus(eventBus) {
 	}
 

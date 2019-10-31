@@ -7,7 +7,7 @@
 
 namespace voxelrender {
 
-MapRenderer::MapRenderer(const voxel::WorldMgrPtr& world) :
+MapRenderer::MapRenderer(const voxelworld::WorldMgrPtr& world) :
 		_world(world) {
 }
 

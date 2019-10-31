@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "voxel/polyvox/Region.h"
+#include "voxel/Region.h"
 
 namespace voxel {
 

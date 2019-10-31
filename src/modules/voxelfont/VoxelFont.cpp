@@ -21,8 +21,8 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STBTT_STATIC
 #include "stb_truetype.h"
-#include "voxel/polyvox/RawVolume.h"
-#include "voxel/polyvox/CubicSurfaceExtractor.h"
+#include "voxel/RawVolume.h"
+#include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
 

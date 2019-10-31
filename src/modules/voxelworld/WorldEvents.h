@@ -5,9 +5,9 @@
 #pragma once
 
 #include "core/EventBus.h"
-#include "voxel/WorldMgr.h"
+#include "voxelworld/WorldMgr.h"
 
-namespace voxel {
+namespace voxelworld {
 
 EVENTBUSPAYLOADEVENT(WorldCreatedEvent, WorldMgrPtr);
 }

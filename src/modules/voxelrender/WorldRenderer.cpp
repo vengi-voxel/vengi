@@ -24,7 +24,7 @@
 namespace voxelrender {
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
-WorldRenderer::WorldRenderer(const voxel::WorldMgrPtr& world) :
+WorldRenderer::WorldRenderer(const voxelworld::WorldMgrPtr& world) :
 		_octree(math::AABB<int>(), 30), _world(world) {
 	setViewDistance(240.0f);
 }
@@ -95,7 +95,7 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 	glm::ivec3 mins((std::numeric_limits<int>::max)());
 	glm::ivec3 maxs((std::numeric_limits<int>::min)());
 
-	const voxel::ChunkMeshes& meshes = chunkBuffer.meshes;
+	const voxelworld::ChunkMeshes& meshes = chunkBuffer.meshes;
 	for (auto& v : meshes.opaqueMesh.getVertexVector()) {
 		mins = (glm::min)(mins, v.position);
 		maxs = (glm::max)(maxs, v.position);
@@ -109,7 +109,7 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 }
 
 void WorldRenderer::handleMeshQueue() {
-	voxel::ChunkMeshes meshes(0, 0, 0, 0);
+	voxelworld::ChunkMeshes meshes(0, 0, 0, 0);
 	if (!_world->pop(meshes)) {
 		return;
 	}
@@ -279,7 +279,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 		if (renderAABB) {
 			_shapeBuilder.aabb(chunkBuffer->aabb());
 		}
-		const voxel::ChunkMeshes& meshes = chunkBuffer->meshes;
+		const voxelworld::ChunkMeshes& meshes = chunkBuffer->meshes;
 		opaqueIndexOffset += transform(opaqueIndexOffset, meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
 		waterIndexOffset += transform(waterIndexOffset, meshes.waterMesh, _waterVertices, _waterIndices);
 	}

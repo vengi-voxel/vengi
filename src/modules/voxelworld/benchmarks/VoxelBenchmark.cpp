@@ -1,14 +1,14 @@
 #include "core/benchmark/AbstractBenchmark.h"
-#include "voxel/WorldPager.h"
-#include "voxel/polyvox/PagedVolume.h"
-#include "voxel/polyvox/CubicSurfaceExtractor.h"
-#include "voxel/BiomeManager.h"
+#include "voxelworld/WorldPager.h"
+#include "voxel/PagedVolume.h"
+#include "voxel/CubicSurfaceExtractor.h"
+#include "voxelworld/BiomeManager.h"
 #include "voxel/Constants.h"
 #include "voxel/IsQuadNeeded.h"
 
 class PagedVolumeBenchmark: public core::AbstractBenchmark {
 protected:
-	voxel::BiomeManager _biomeManager;
+	voxelworld::BiomeManager _biomeManager;
 
 public:
 	void onCleanupApp() override {
@@ -28,7 +28,7 @@ public:
 BENCHMARK_DEFINE_F(PagedVolumeBenchmark, pageIn) (benchmark::State& state) {
 	const uint16_t chunkSideLength = state.range(0);
 	const uint32_t volumeMemoryMegaBytes = chunkSideLength * 2;
-	voxel::WorldPager pager;
+	voxelworld::WorldPager pager;
 	pager.setSeed(0l);
 	pager.setPersist(false);
 	voxel::PagedVolume *volumeData = new voxel::PagedVolume(&pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);

@@ -3,7 +3,7 @@
  */
 
 #include "WorldPersister.h"
-#include "voxel/polyvox/PagedVolumeWrapper.h"
+#include "voxel/PagedVolumeWrapper.h"
 #include "voxel/Constants.h"
 #include "core/App.h"
 #include "core/io/Filesystem.h"
@@ -12,37 +12,37 @@
 #include "core/ByteStream.h"
 #include <zlib.h>
 
-namespace voxel {
+namespace voxelworld {
 
 #define WORLD_FILE_VERSION 1
 
-std::string WorldPersister::getWorldName(const Region& region, long seed) const {
+std::string WorldPersister::getWorldName(const voxel::Region& region, long seed) const {
 	return core::string::format("world_%li_%i_%i_%i.wld", seed, region.getLowerX(), region.getLowerY(), region.getLowerZ());
 }
 
-void WorldPersister::erase(const Region& region, long seed) {
+void WorldPersister::erase(const voxel::Region& region, long seed) {
 	if (!_persist) {
 		return;
 	}
 	core_trace_scoped(WorldPersisterErase);
 #if 0
-	PagedVolume::ChunkPtr chunk = ctx.getChunk();
+	voxel::PagedVolume::ChunkPtr chunk = ctx.getChunk();
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
-	const Region& region = ctx.region;
+	const voxel::Region& region = ctx.region;
 	const std::string& filename = getWorldName(region, seed);
 	// TODO: filesystem->remove(filename);
 #endif
 }
 
-bool WorldPersister::load(PagedVolume::Chunk* chunk, long seed) {
+bool WorldPersister::load(voxel::PagedVolume::Chunk* chunk, long seed) {
 	if (!_persist) {
 		return false;
 	}
 	core_trace_scoped(WorldPersisterLoad);
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
-	const Region& region = chunk->region();
+	const voxel::Region& region = chunk->region();
 	const std::string& filename = getWorldName(region, seed);
 	const io::FilePtr& f = filesystem->open(filename);
 	if (!f->exists()) {
@@ -95,10 +95,10 @@ bool WorldPersister::load(PagedVolume::Chunk* chunk, long seed) {
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
 				core_assert_msg(voxelBuf.getSize() >= 1, "Failed to load %s (x: %i, y: %i, z: %i)", f->name().c_str(), x, y, z);
-				static_assert(sizeof(VoxelType) == sizeof(uint8_t), "Voxel type size changed");
-				const VoxelType material = (VoxelType)voxelBuf.readByte();
+				static_assert(sizeof(voxel::VoxelType) == sizeof(uint8_t), "Voxel type size changed");
+				const voxel::VoxelType material = (voxel::VoxelType)voxelBuf.readByte();
 				const uint8_t colorIndex = voxelBuf.readByte();
-				const Voxel& voxel = createVoxel(material, colorIndex);
+				const voxel::Voxel& voxel = createVoxel(material, colorIndex);
 				chunk->setVoxel(x, y, z, voxel);
 			}
 		}
@@ -106,13 +106,13 @@ bool WorldPersister::load(PagedVolume::Chunk* chunk, long seed) {
 	return true;
 }
 
-bool WorldPersister::save(PagedVolume::Chunk* chunk, long seed) {
+bool WorldPersister::save(voxel::PagedVolume::Chunk* chunk, long seed) {
 	if (!_persist) {
 		return false;
 	}
 	core_trace_scoped(WorldPersisterLoad);
 	core::ByteStream voxelStream;
-	const Region& region = chunk->region();
+	const voxel::Region& region = chunk->region();
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
@@ -120,8 +120,8 @@ bool WorldPersister::save(PagedVolume::Chunk* chunk, long seed) {
 	for (int z = 0; z < depth; ++z) {
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
-				const Voxel& voxel = chunk->voxel(x, y, z);
-				static_assert(sizeof(VoxelType) == sizeof(uint8_t), "Voxel type size changed");
+				const voxel::Voxel& voxel = chunk->voxel(x, y, z);
+				static_assert(sizeof(voxel::VoxelType) == sizeof(uint8_t), "Voxel type size changed");
 				voxelStream.addByte(std::enum_value(voxel.getMaterial()));
 				voxelStream.addByte(voxel.getColor());
 			}

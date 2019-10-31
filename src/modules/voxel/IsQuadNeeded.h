@@ -1,6 +1,6 @@
 #pragma once
 
-#include "polyvox/Voxel.h"
+#include "Voxel.h"
 
 namespace voxel {
 

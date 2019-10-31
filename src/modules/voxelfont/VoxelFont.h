@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Color.h"
-#include "voxel/polyvox/Mesh.h"
+#include "voxel/Mesh.h"
 #include <unordered_map>
 #include "core/UTF8.h"
 #include "core/String.h"

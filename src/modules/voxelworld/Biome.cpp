@@ -2,16 +2,16 @@
  * @file
  */
 #include "Biome.h"
-#include "MaterialColor.h"
-#include "Constants.h"
+#include "voxel/MaterialColor.h"
+#include "voxel/Constants.h"
 
-namespace voxel {
+namespace voxelworld {
 
 Biome::Biome() :
-		Biome(VoxelType::Grass, getMaterialIndices(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
+		Biome(voxel::VoxelType::Grass, getMaterialIndices(voxel::VoxelType::Grass), 0, voxel::MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
 }
 
-Biome::Biome(VoxelType _type, const MaterialColorIndices& _indices, int16_t _yMin, int16_t _yMax, float _humidity, float _temperature, bool _underground) :
+Biome::Biome(voxel::VoxelType _type, const voxel::MaterialColorIndices& _indices, int16_t _yMin, int16_t _yMax, float _humidity, float _temperature, bool _underground) :
 		indices(_indices), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(_temperature),
 		underground(_underground), type(_type), treeDistribution(calcTreeDistribution()),
 		cloudDistribution(calcCloudDistribution()), plantDistribution(calcPlantDistribution()) {

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxel/polyvox/AStarPathfinder.h"
+#include "voxel/AStarPathfinder.h"
 #include "Npc.h"
 #include "ai/AICharacter.h"
 #include "ai/AI.h"

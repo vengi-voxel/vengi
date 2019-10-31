@@ -3,8 +3,8 @@
  */
 
 #include "Fill.h"
-#include "voxel/polyvox/VolumeMerger.h"
-#include "voxel/polyvox/VolumeCropper.h"
+#include "voxel/VolumeMerger.h"
+#include "voxel/VolumeCropper.h"
 
 namespace voxedit {
 namespace tool {

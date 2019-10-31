@@ -5,8 +5,8 @@
 #include "core/io/Filesystem.h"
 #include "core/command/Command.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/polyvox/Region.h"
-#include "voxel/polyvox/RawVolumeWrapper.h"
+#include "voxel/Region.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace {
 const int PlayFieldVolume = 0;

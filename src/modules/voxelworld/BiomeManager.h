@@ -15,8 +15,10 @@ class Random;
 }
 
 namespace voxel {
-
 class Region;
+}
+
+namespace voxelworld {
 
 enum class ZoneType {
 	City,
@@ -56,7 +58,7 @@ private:
 	std::vector<Biome*> _bioms;
 	std::vector<Zone*> _zones[int(ZoneType::Max)];
 	const Biome* _defaultBiome = nullptr;
-	void distributePointsInRegion(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const;
+	void distributePointsInRegion(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const;
 	noise::Noise _noise;
 
 public:
@@ -68,17 +70,17 @@ public:
 	void shutdown();
 	bool init(const std::string& luaString);
 
-	Biome* addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround = false);
+	Biome* addBiome(int lower, int upper, float humidity, float temperature, voxel::VoxelType type, bool underGround = false);
 
 	// this lookup must be really really fast - it is executed once per generated voxel
 	// iterating in y direction is fastest, because the last biome is cached on a per-thread-basis
-	inline Voxel getVoxel(const glm::ivec3& pos, bool underground = false) const {
+	inline voxel::Voxel getVoxel(const glm::ivec3& pos, bool underground = false) const {
 		core_trace_scoped(BiomeGetVoxel);
 		const Biome* biome = getBiome(pos, underground);
 		return biome->voxel();
 	}
 
-	inline Voxel getVoxel(int x, int y, int z, bool underground = false) const {
+	inline voxel::Voxel getVoxel(int x, int y, int z, bool underground = false) const {
 		return getVoxel(glm::ivec3(x, y, z), underground);
 	}
 
@@ -93,10 +95,10 @@ public:
 	const Zone* getZone(const glm::ivec2& pos, ZoneType type) const;
 	int getCityDensity(const glm::ivec2& pos) const;
 	float getCityMultiplier(const glm::ivec2& pos, int* targetHeight = nullptr) const;
-	void getTreeTypes(const Region& region, std::vector<TreeType>& treeTypes) const;
-	void getTreePositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const;
-	void getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const;
-	void getCloudPositions(const Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const;
+	void getTreeTypes(const voxel::Region& region, std::vector<TreeType>& treeTypes) const;
+	void getTreePositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const;
+	void getPlantPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const;
+	void getCloudPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const;
 
 	/**
 	 * @return Humidity noise in the range [0-1]

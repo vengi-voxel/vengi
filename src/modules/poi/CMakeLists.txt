@@ -3,7 +3,7 @@ set(SRCS
 	Type.h
 )
 set(LIB poi)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel network)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelworld network)
 
 gtest_suite_sources(tests
 	tests/PoiProviderTest.cpp

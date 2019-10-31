@@ -4,7 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "../MementoHandler.h"
-#include "voxel/polyvox/RawVolume.h"
+#include "voxel/RawVolume.h"
 
 namespace voxedit {
 

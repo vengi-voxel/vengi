@@ -3,8 +3,8 @@
 #include "core/Common.h"
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/polyvox/Voxel.h"
-#include "voxel/polyvox/Region.h"
+#include "voxel/Voxel.h"
+#include "voxel/Region.h"
 
 namespace voxel {
 

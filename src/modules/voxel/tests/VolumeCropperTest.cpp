@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/polyvox/VolumeCropper.h"
+#include "voxel/VolumeCropper.h"
 
 namespace voxel {
 

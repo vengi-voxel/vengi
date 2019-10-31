@@ -4,19 +4,19 @@
 
 #include "SceneManager.h"
 
-#include "voxel/polyvox/VolumeMerger.h"
-#include "voxel/polyvox/VolumeCropper.h"
-#include "voxel/polyvox/VolumeRotator.h"
-#include "voxel/polyvox/VolumeMover.h"
-#include "voxel/polyvox/VolumeRescaler.h"
-#include "voxel/polyvox/VolumeVisitor.h"
-#include "voxel/polyvox/RawVolumeWrapper.h"
-#include "voxel/polyvox/RawVolumeMoveWrapper.h"
-#include "voxel/polyvox/Mesh.h"
-#include "voxel/polyvox/Picking.h"
-#include "voxel/polyvox/Face.h"
+#include "voxel/VolumeMerger.h"
+#include "voxel/VolumeCropper.h"
+#include "voxel/VolumeRotator.h"
+#include "voxel/VolumeMover.h"
+#include "voxel/VolumeRescaler.h"
+#include "voxel/VolumeVisitor.h"
+#include "voxel/RawVolumeWrapper.h"
+#include "voxel/RawVolumeMoveWrapper.h"
+#include "voxel/Mesh.h"
+#include "voxel/Picking.h"
+#include "voxel/Face.h"
 #include "voxelgenerator/TreeGenerator.h"
-#include "voxel/BiomeManager.h"
+#include "voxelworld/BiomeManager.h"
 #include "voxelformat/MeshExporter.h"
 #include "voxelformat/Loader.h"
 #include "voxelformat/VoxFormat.h"
@@ -1524,7 +1524,7 @@ void SceneManager::noise(int octaves, float lacunarity, float frequency, float g
 	modified(layerId, wrapper.dirtyRegion());
 }
 
-void SceneManager::createTree(voxel::TreeContext ctx) {
+void SceneManager::createTree(voxelworld::TreeContext ctx) {
 	math::Random random;
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));

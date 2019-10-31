@@ -5,7 +5,7 @@
 #pragma once
 
 #include "AbstractLayerPopupWindow.h"
-#include "voxel/polyvox/Region.h"
+#include "voxel/Region.h"
 
 namespace voxedit {
 

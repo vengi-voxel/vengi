@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/polyvox/CubicSurfaceExtractor.h"
+#include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 
 namespace voxel {

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "image/Image.h"
-#include "voxel/polyvox/RawVolumeWrapper.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace voxedit {
 

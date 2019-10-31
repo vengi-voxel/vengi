@@ -8,7 +8,7 @@
 #include "Vertex.h"
 #include "CharacterSettings.h"
 #include "CharacterMeshType.h"
-#include "voxel/polyvox/Mesh.h"
+#include "voxel/Mesh.h"
 #include <memory>
 
 namespace animation {

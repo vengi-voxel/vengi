@@ -32,21 +32,21 @@ static const struct {
 	const char *name;
 	const char *id;
 	tb::TBID tbid;
-	voxel::TreeType type;
+	voxelworld::TreeType type;
 } treeTypes[] = {
-	{"Pine",				"tree_pine",				TBIDC("tree_pine"),					voxel::TreeType::Pine},
-	{"Dome",				"tree_dome",				TBIDC("tree_dome"),					voxel::TreeType::Dome},
-	{"Dome Hanging",		"tree_dome2",				TBIDC("tree_dome2"),				voxel::TreeType::DomeHangingLeaves},
-	{"Cone",				"tree_cone",				TBIDC("tree_cone"),					voxel::TreeType::Cone},
-	{"Fir",					"tree_fir",					TBIDC("tree_fir"),					voxel::TreeType::Fir},
-	{"Ellipsis2",			"tree_ellipsis2",			TBIDC("tree_ellipsis2"),			voxel::TreeType::BranchesEllipsis},
-	{"Ellipsis",			"tree_ellipsis",			TBIDC("tree_ellipsis"),				voxel::TreeType::Ellipsis},
-	{"Cube",				"tree_cube",				TBIDC("tree_cube"),					voxel::TreeType::Cube},
-	{"Cube Sides",			"tree_cube2",				TBIDC("tree_cube2"),				voxel::TreeType::CubeSideCubes},
-	{"Palm",				"tree_palm",				TBIDC("tree_palm"),					voxel::TreeType::Palm},
-	{"SpaceColonization",	"tree_spacecolonization",	TBIDC("tree_spacecolonization"),	voxel::TreeType::SpaceColonization}
+	{"Pine",				"tree_pine",				TBIDC("tree_pine"),					voxelworld::TreeType::Pine},
+	{"Dome",				"tree_dome",				TBIDC("tree_dome"),					voxelworld::TreeType::Dome},
+	{"Dome Hanging",		"tree_dome2",				TBIDC("tree_dome2"),				voxelworld::TreeType::DomeHangingLeaves},
+	{"Cone",				"tree_cone",				TBIDC("tree_cone"),					voxelworld::TreeType::Cone},
+	{"Fir",					"tree_fir",					TBIDC("tree_fir"),					voxelworld::TreeType::Fir},
+	{"Ellipsis2",			"tree_ellipsis2",			TBIDC("tree_ellipsis2"),			voxelworld::TreeType::BranchesEllipsis},
+	{"Ellipsis",			"tree_ellipsis",			TBIDC("tree_ellipsis"),				voxelworld::TreeType::Ellipsis},
+	{"Cube",				"tree_cube",				TBIDC("tree_cube"),					voxelworld::TreeType::Cube},
+	{"Cube Sides",			"tree_cube2",				TBIDC("tree_cube2"),				voxelworld::TreeType::CubeSideCubes},
+	{"Palm",				"tree_palm",				TBIDC("tree_palm"),					voxelworld::TreeType::Palm},
+	{"SpaceColonization",	"tree_spacecolonization",	TBIDC("tree_spacecolonization"),	voxelworld::TreeType::SpaceColonization}
 };
-static_assert(lengthof(treeTypes) == (int)voxel::TreeType::Max, "Missing support for tree types in the ui");
+static_assert(lengthof(treeTypes) == (int)voxelworld::TreeType::Max, "Missing support for tree types in the ui");
 
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		Super(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr), _layerWidget(nullptr) {

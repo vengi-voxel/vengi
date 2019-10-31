@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "voxel/polyvox/RawVolumeWrapper.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace voxel {
 

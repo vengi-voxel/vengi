@@ -3,8 +3,8 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "voxel/polyvox/RawVolume.h"
-#include "voxel/polyvox/Picking.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Picking.h"
 #include "core/GLM.h"
 
 namespace voxel {

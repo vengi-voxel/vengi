@@ -5,8 +5,8 @@
 #pragma once
 
 #include "core/IComponent.h"
-#include "voxel/polyvox/Region.h"
-#include "voxel/polyvox/Voxel.h"
+#include "voxel/Region.h"
+#include "voxel/Voxel.h"
 #include <vector>
 #include <string>
 #include <stdint.h>

@@ -8,7 +8,7 @@
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
-namespace voxel {
+namespace voxelworld {
 
 enum class TreeType : int32_t {
 	Dome,

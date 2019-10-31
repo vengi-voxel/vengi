@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxel/polyvox/RawVolume.h"
+#include "voxel/RawVolume.h"
 
 namespace voxedit {
 namespace tool {

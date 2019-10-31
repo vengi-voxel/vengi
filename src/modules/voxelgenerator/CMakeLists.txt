@@ -6,4 +6,4 @@ set(SRCS
 	TreeGenerator.h TreeGenerator.cpp
 	NoiseGenerator.h
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxel)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxelworld)

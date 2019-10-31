@@ -3,12 +3,12 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/WorldMgr.h"
+#include "voxelworld/WorldMgr.h"
 #include "engine-config.h"
 #include <chrono>
 #include <string>
 
-namespace voxel {
+namespace voxelworld {
 
 class WorldMgrTest: public AbstractVoxelTest {
 private:

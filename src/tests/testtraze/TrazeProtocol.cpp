@@ -12,10 +12,10 @@
 #include "TrazeTypes.h"
 #include "TrazeEvents.h"
 #include "TrazeProtocol.h"
-#include "voxel/polyvox/Region.h"
+#include "voxel/Region.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/polyvox/RawVolume.h"
-#include "voxel/polyvox/Voxel.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>

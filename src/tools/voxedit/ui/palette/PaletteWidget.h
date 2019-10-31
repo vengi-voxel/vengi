@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ui/turbobadger/Widget.h"
-#include "voxel/polyvox/Voxel.h"
+#include "voxel/Voxel.h"
 
 class PaletteWidget: public ui::turbobadger::Widget {
 private:
