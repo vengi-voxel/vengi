@@ -11,8 +11,7 @@
 #include "voxel/polyvox/Raycast.h"
 #include "core/GLM.h"
 
-namespace voxel {
-
+namespace voxelgenerator {
 namespace shape {
 
 /**
@@ -24,8 +23,8 @@ namespace shape {
  * @param[in] radius The radius that defines the circle
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume, class Voxel>
-void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel, math::Axis axis = math::Axis::Y) {
+template<class Volume>
+void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const voxel::Voxel& voxel, math::Axis axis = math::Axis::Y) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
 	const double minRadius = core_min(xRadius, zRadius);
@@ -62,8 +61,8 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int 
  * @param[in] voxel The Voxel to build the object with
  * @sa createCubeNoCenter()
  */
-template<class Volume, class Voxel>
-void createCube(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
+template<class Volume>
+void createCube(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const voxel::Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int widthLow = width / 2;
 	const int depthLow = depth / 2;
@@ -84,8 +83,8 @@ void createCube(Volume& volume, const glm::ivec3& center, int width, int height,
  * @param[in] voxel The Voxel to build the object with
  * @sa createCube()
  */
-template<class Volume, class Voxel>
-void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+template<class Volume>
+void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const voxel::Voxel& voxel) {
 	std::vector<voxel::Voxel> voxels;
 	voxels.assign(height, voxel);
 	volume.setVoxels(pos.x, pos.y, pos.z, width, depth, &voxels.front(), height);
@@ -99,13 +98,13 @@ void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int he
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume, class Voxel>
-void createPlane(Volume& volume, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
+template<class Volume>
+void createPlane(Volume& volume, const glm::ivec3& center, int width, int depth, const voxel::Voxel& voxel) {
 	createCube(volume, center, width, 1, depth, voxel);
 }
 
-template<class Volume, class Voxel>
-void createPlaneNoCenter(Volume& volume, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
+template<class Volume>
+void createPlaneNoCenter(Volume& volume, const glm::ivec3& center, int width, int depth, const voxel::Voxel& voxel) {
 	createCubeNoCenter(volume, center, width, 1, depth, voxel);
 }
 
@@ -118,8 +117,8 @@ void createPlaneNoCenter(Volume& volume, const glm::ivec3& center, int width, in
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume, class Voxel>
-glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, int height, int thickness, const Voxel& voxel) {
+template<class Volume>
+glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, int height, int thickness, const voxel::Voxel& voxel) {
 	glm::ivec3 p = pos;
 	if (width != 0) {
 		createCubeNoCenter(volume, p, width, thickness, thickness, voxel);
@@ -149,8 +148,8 @@ glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, 
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume, class Voxel>
-void createEllipse(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
+template<class Volume>
+void createEllipse(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const voxel::Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = core_min(width, depth);
@@ -175,8 +174,8 @@ void createEllipse(Volume& volume, const glm::ivec3& center, int width, int heig
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume, class Voxel>
-void createCone(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
+template<class Volume>
+void createCone(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const voxel::Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = core_min(width, depth);
@@ -200,8 +199,8 @@ void createCone(Volume& volume, const glm::ivec3& center, int width, int height,
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume, class Voxel>
-void createDome(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
+template<class Volume>
+void createDome(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const voxel::Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = core_min(width, depth);
@@ -216,8 +215,8 @@ void createDome(Volume& volume, const glm::ivec3& center, int width, int height,
 	}
 }
 
-template<class Volume, class Voxel>
-void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel, int thickness = 1) {
+template<class Volume>
+void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const voxel::Voxel& voxel, int thickness = 1) {
 	if (thickness <= 0) {
 		return;
 	}
@@ -317,8 +316,8 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
  * @param[in] steps The amount of steps to do to get from @c start to @c end
  * @sa createBezierFunc()
  */
-template<class Volume, class Voxel>
-void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const Voxel& voxel, int steps = 8) {
+template<class Volume>
+void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const voxel::Voxel& voxel, int steps = 8) {
 	const math::Bezier<int> b(start, end, control);
 	const float s = 1.0f / (float) steps;
 	for (int i = 0; i < steps; ++i) {
@@ -338,8 +337,8 @@ void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end
  * @param[in] func The functor that accepts the given volume, last position, position and the voxel
  * @sa createBezier()
  */
-template<class Volume, class Voxel, class F>
-void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const Voxel& voxel, F&& func, int steps = 8) {
+template<class Volume, class F>
+void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const voxel::Voxel& voxel, F&& func, int steps = 8) {
 	const math::Bezier<int> b(start, end, control);
 	const float s = 1.0f / (float) steps;
 	glm::ivec3 lastPos = b.getPoint(0.0f);
@@ -351,8 +350,8 @@ void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3&
 	}
 }
 
-template<class Volume, class Voxel>
-void createTorus(Volume& volume, const glm::ivec3& position, int innerRadius, int outerRadius, const Voxel& voxel) {
+template<class Volume>
+void createTorus(Volume& volume, const glm::ivec3& position, int innerRadius, int outerRadius, const voxel::Voxel& voxel) {
 	const int radius = outerRadius + 1;
 	const int outerRadiusSquare = outerRadius * outerRadius;
 	for (int x = -radius; x < radius; ++x) {
@@ -368,8 +367,8 @@ void createTorus(Volume& volume, const glm::ivec3& position, int innerRadius, in
 	}
 }
 
-template<class Volume, class Voxel>
-void createCylinder(Volume& volume, const glm::vec3& position, const math::Axis axis, int radius, int height, const Voxel& voxel) {
+template<class Volume>
+void createCylinder(Volume& volume, const glm::vec3& position, const math::Axis axis, int radius, int height, const voxel::Voxel& voxel) {
 	for (int i = 0; i < height; ++i) {
 		glm::ivec3 center;
 		if (axis == math::Axis::Y) {

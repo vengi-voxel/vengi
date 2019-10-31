@@ -8,8 +8,8 @@
 #include "noise/Noise.h"
 #include "voxel/MaterialColor.h"
 
-namespace voxel {
-namespace noisegen {
+namespace voxelgenerator {
+namespace noise {
 
 enum class NoiseType {
 	ridgedMF,
@@ -21,7 +21,7 @@ static inline float getNoise(const glm::ivec2& pos, int octaves, float lacunarit
 	const glm::vec2 fpos(pos.x * frequency, pos.y * frequency);
 	switch (type) {
 	case NoiseType::ridgedMF:
-		return noise::ridgedMF(fpos, octaves, lacunarity, gain);
+		return ::noise::ridgedMF(fpos, octaves, lacunarity, gain);
 	default:
 		return 0.0f;
 	}
@@ -30,7 +30,7 @@ static inline float getNoise(const glm::ivec2& pos, int octaves, float lacunarit
 template<class Volume>
 int generate(Volume& volume, int octaves, float lacunarity, float frequency, float gain, NoiseType type, math::Random& random) {
 	int amount = 0;
-	const Region& region = volume.region();
+	const voxel::Region& region = volume.region();
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
 	const int height = region.getHeightInVoxels();
@@ -41,14 +41,14 @@ int generate(Volume& volume, int octaves, float lacunarity, float frequency, flo
 	const int noiseSeedOffsetX = random.random(0, 1000);
 	const int noiseSeedOffsetZ = random.random(0, 1000);
 
-	const Voxel& grass = createRandomColorVoxel(VoxelType::Grass, random);
-	const Voxel& dirt = createRandomColorVoxel(VoxelType::Dirt, random);
+	const voxel::Voxel& grass = voxel::createRandomColorVoxel(voxel::VoxelType::Grass, random);
+	const voxel::Voxel& dirt = voxel::createRandomColorVoxel(voxel::VoxelType::Dirt, random);
 
 	for (int x = lowerX; x < lowerX + width; ++x) {
 		for (int z = lowerZ; z < lowerZ + depth; ++z) {
 			glm::vec2 p(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 			const float n = getNoise(p, octaves, lacunarity, frequency, gain, type);
-			const int ni = noise::norm(n) * (height - 1);
+			const int ni = ::noise::norm(n) * (height - 1);
 			glm::ivec3 vp(x, lowerY, z);
 			for (int y = 0; y < ni - 1; ++y) {
 				vp.y = lowerY + y;

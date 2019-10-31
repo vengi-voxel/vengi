@@ -33,7 +33,7 @@ bool NoiseWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			const tb::TBStr& gainStr = _gain->getText();
 			const float lacunarity = core::string::toFloat(lacunarityStr.c_str());
 			const float gain = core::string::toFloat(gainStr.c_str());
-			sceneMgr().noise(octaves, lacunarity, frequency, gain, voxel::noisegen::NoiseType::ridgedMF);
+			sceneMgr().noise(octaves, lacunarity, frequency, gain, voxelgenerator::noise::NoiseType::ridgedMF);
 			close();
 			return true;
 		} else if (ev.target->getID() == TBIDC("cancel")) {

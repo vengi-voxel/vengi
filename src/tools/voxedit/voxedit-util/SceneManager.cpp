@@ -930,7 +930,7 @@ void SceneManager::construct() {
 		float lacunarity = core::string::toFloat(args[0]);
 		float frequency = core::string::toFloat(args[0]);
 		float gain = core::string::toFloat(args[0]);
-		voxel::noisegen::NoiseType type = voxel::noisegen::NoiseType::ridgedMF;
+		voxelgenerator::noise::NoiseType type = voxelgenerator::noise::NoiseType::ridgedMF;
 		noise(octaves, lacunarity, frequency, gain, type);
 	}).setHelp("Fill the volume with noise");
 
@@ -1516,11 +1516,11 @@ bool SceneManager::extractVolume() {
 	return false;
 }
 
-void SceneManager::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noisegen::NoiseType type) {
+void SceneManager::noise(int octaves, float lacunarity, float frequency, float gain, voxelgenerator::noise::NoiseType type) {
 	math::Random random;
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	voxel::noisegen::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
+	voxelgenerator::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
 	modified(layerId, wrapper.dirtyRegion());
 }
 
@@ -1529,7 +1529,7 @@ void SceneManager::createTree(voxel::TreeContext ctx) {
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	ctx.pos = referencePosition();
-	voxel::tree::createTree(wrapper, ctx, random);
+	voxelgenerator::tree::createTree(wrapper, ctx, random);
 	modified(layerId, wrapper.dirtyRegion());
 }
 

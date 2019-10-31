@@ -11,7 +11,8 @@
 
 #include <unordered_map>
 
-namespace voxel {
+namespace voxelgenerator {
+namespace tree {
 
 struct Branch;
 
@@ -72,7 +73,7 @@ protected:
 	void generateLeaves_r(Volume& volume, const Voxel& voxel, Branch* branch, const Size& size) const {
 		if (branch->_children.empty()) {
 			const glm::ivec3& s = size;
-			voxel::shape::createEllipse(volume, branch->_position, s.x, s.y, s.z, voxel);
+			shape::createEllipse(volume, branch->_position, s.x, s.y, s.z, voxel);
 			return;
 		}
 		for (Branch* b : branch->_children) {
@@ -90,10 +91,10 @@ public:
 
 	void grow();
 
-	template<class Volume, class Voxel>
-	void generateAttractionPoints(Volume& volume, const Voxel& voxel) const {
+	template<class Volume>
+	void generateAttractionPoints(Volume& volume, const voxel::Voxel& voxel) const {
 		if (_root) {
-			const Voxel& root = createVoxel(VoxelType::Flower, 0);
+			const voxel::Voxel& root = voxel::createVoxel(voxel::VoxelType::Flower, 0);
 			volume.setVoxel(_root->_position, root);
 		}
 		for (const AttractionPoint& p : _attractionPoints) {
@@ -131,16 +132,16 @@ public:
 		}
 	};
 
-	template<class Volume, class Voxel, class Size>
-	void generateLeaves(Volume& volume, const Voxel& voxel, const Size& size) const {
+	template<class Volume, class Size>
+	void generateLeaves(Volume& volume, const voxel::Voxel& voxel, const Size& size) const {
 		if (_root == nullptr) {
 			return;
 		}
 		generateLeaves_r(volume, voxel, _root, size);
 	}
 
-	template<class Volume, class Voxel>
-	void generate(Volume& volume, const Voxel& voxel) const {
+	template<class Volume>
+	void generate(Volume& volume, const voxel::Voxel& voxel) const {
 		Log::debug("Generate for %i attraction points and %i branches", (int)_attractionPoints.size(), (int)_branches.size());
 		for (const auto& e : _branches) {
 			Branch* b = e.second;
@@ -149,9 +150,10 @@ public:
 			}
 			const glm::ivec3& start = b->_position;
 			const glm::ivec3& end = b->_parent->_position;
-			voxel::shape::createLine(volume, start, end, voxel, core_max(1, (int)(b->_size + 0.5f)));
+			shape::createLine(volume, start, end, voxel, core_max(1, (int)(b->_size + 0.5f)));
 		}
 	}
 };
 
+}
 }

@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace voxel {
+namespace voxelgenerator {
 
 /**
  * @brief Two dimensional spiral

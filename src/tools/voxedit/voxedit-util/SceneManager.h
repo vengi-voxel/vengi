@@ -290,7 +290,7 @@ public:
 	render::GridRenderer& gridRenderer();
 	bool setGridResolution(int resolution);
 
-	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noisegen::NoiseType type);
+	void noise(int octaves, float persistence, float lacunarity, float gain, voxelgenerator::noise::NoiseType type);
 	void createTree(voxel::TreeContext ctx);
 
 	/**

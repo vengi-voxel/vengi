@@ -6,7 +6,8 @@
 
 #include <functional>
 
-namespace voxel {
+namespace voxelgenerator {
+namespace tree {
 
 AttractionPoint::AttractionPoint(const glm::vec3& position) :
 		_position(position) {
@@ -188,4 +189,5 @@ bool SpaceColonization::step() {
 	return true;
 }
 
+}
 }

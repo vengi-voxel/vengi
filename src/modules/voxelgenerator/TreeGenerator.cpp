@@ -4,7 +4,7 @@
 
 #include "TreeGenerator.h"
 
-namespace voxel {
+namespace voxelgenerator {
 namespace tree {
 
 Tree::Tree(const glm::ivec3& position, int trunkHeight, int branchLength,
