@@ -29,6 +29,10 @@ set(SRCS
 	VolumeCropper.h
 	VolumeVisitor.h
 )
+set(FILES
+	shared/palette-nippon.lua
+	shared/palette-nippon.png
+)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES noise image commonlua)
 set(MARCH native)
 #set(MARCH generic)
@@ -60,8 +64,10 @@ set(TEST_SRCS
 
 gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
+gtest_suite_files(tests ${FILES})
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
 gtest_suite_deps(tests-${LIB} ${LIB})
+gtest_suite_files(tests-${LIB} ${FILES})
 gtest_suite_end(tests-${LIB})

@@ -9,11 +9,7 @@ set(SRCS
 	WorldPager.h WorldPager.cpp
 	WorldEvents.h
 )
-set(FILES
-	shared/palette-nippon.lua
-	shared/palette-nippon.png
-)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxel)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel)
 
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
