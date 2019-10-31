@@ -6,9 +6,7 @@
 
 #include "voxel/polyvox/Picking.h"
 #include "voxel/polyvox/RawVolume.h"
-#include "voxel/generator/PlantType.h"
 #include "voxel/TreeContext.h"
-#include "voxel/generator/BuildingGeneratorContext.h"
 #include "voxel/generator/NoiseGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelformat/VoxFileFormat.h"
@@ -294,10 +292,6 @@ public:
 
 	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noisegen::NoiseType type);
 	void createTree(voxel::TreeContext ctx);
-	void createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx);
-	void createPlant(voxel::PlantType type);
-	void createCloud();
-	void createCactus();
 
 	/**
 	 * @brief Shift the whole volume by the given voxel amount

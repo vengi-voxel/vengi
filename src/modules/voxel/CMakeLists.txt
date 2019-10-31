@@ -12,16 +12,10 @@ set(SRCS
 	WorldPersister.h WorldPersister.cpp
 	WorldPager.h WorldPager.cpp
 	WorldEvents.h
-	generator/CloudGenerator.h
 	generator/ShapeGenerator.h
 	generator/SpaceColonization.h generator/SpaceColonization.cpp
 	generator/TreeGenerator.h generator/TreeGenerator.cpp
-	generator/BuildingGenerator.h
-	generator/LSystemGenerator.h
 	generator/NoiseGenerator.h
-	generator/CactusGenerator.h
-	generator/PlantGenerator.h generator/PlantGenerator.cpp
-	generator/PlanetGenerator.h
 	polyvox/AStarPathfinder.h
 	polyvox/AStarPathfinderImpl.h
 	polyvox/CubicSurfaceExtractor.h polyvox/CubicSurfaceExtractor.cpp
@@ -72,7 +66,6 @@ set(TEST_SRCS
 	tests/FaceTest.cpp
 	tests/WorldMgrTest.cpp
 	tests/WorldPersisterTest.cpp
-	tests/LSystemGeneratorTest.cpp
 	tests/PolyVoxTest.cpp
 	tests/PickingTest.cpp
 	tests/RegionTest.cpp

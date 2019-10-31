@@ -48,29 +48,6 @@ static const struct {
 };
 static_assert(lengthof(treeTypes) == (int)voxel::TreeType::Max, "Missing support for tree types in the ui");
 
-static const struct {
-	const char *name;
-	const char *id;
-	tb::TBID tbid;
-	voxel::PlantType type;
-} plantTypes[] = {
-	{"Flower",		"plant_flower",		TBIDC("plant_flower"),		voxel::PlantType::Flower},
-	{"Grass",		"plant_grass",		TBIDC("plant_grass"),		voxel::PlantType::Grass},
-	{"Mushroom",	"plant_mushroom",	TBIDC("plant_mushroom"),	voxel::PlantType::Mushroom}
-};
-static_assert(lengthof(plantTypes) == (int)voxel::PlantType::MaxPlantTypes, "Missing support for plant types in the ui");
-
-static const struct {
-	const char *name;
-	const char *id;
-	tb::TBID tbid;
-	voxel::BuildingType type;
-} buildingTypes[] = {
-	{"Tower",		"building_tower",	TBIDC("building_tower"),	voxel::BuildingType::Tower},
-	{"House",		"building_house",	TBIDC("building_house"),	voxel::BuildingType::House}
-};
-static_assert(lengthof(buildingTypes) == (int)voxel::BuildingType::Max, "Missing support for building types in the ui");
-
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		Super(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr), _layerWidget(nullptr) {
 	setSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
@@ -87,19 +64,7 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addStringItem(_fileItems, "Image as Plane", "importplane");
 	addStringItem(_fileItems, "Quit", "quit");
 
-	addStringItem(_plantItems, "Cactus", "cactus");
-	for (int i = 0; i < lengthof(plantTypes); ++i) {
-		addStringItem(_plantItems, plantTypes[i].name, plantTypes[i].id);
-	}
-
-	for (int i = 0; i < lengthof(buildingTypes); ++i) {
-		addStringItem(_buildingItems, buildingTypes[i].name, buildingTypes[i].id);
-	}
-
 	addStringItem(_structureItems, "Trees")->sub_source = &_treeItems;
-	addStringItem(_structureItems, "Plants", "plants")->sub_source = &_plantItems;
-	addStringItem(_structureItems, "Clouds", "clouds");
-	addStringItem(_structureItems, "Buildings", "buildings")->sub_source = &_buildingItems;
 }
 
 VoxEditWindow::~VoxEditWindow() {
@@ -521,29 +486,6 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			new TreeWindow(this, treeTypes[i].type);
 			return true;
 		}
-	}
-	for (int i = 0; i < lengthof(buildingTypes); ++i) {
-		if (ev.isAny(buildingTypes[i].tbid)) {
-			voxel::BuildingContext ctx;
-			if (buildingTypes[i].type == voxel::BuildingType::Tower) {
-				ctx.floors = 3;
-			}
-			sceneMgr().createBuilding(buildingTypes[i].type, ctx);
-			return true;
-		}
-	}
-	for (int i = 0; i < lengthof(plantTypes); ++i) {
-		if (ev.isAny(plantTypes[i].tbid)) {
-			sceneMgr().createPlant(plantTypes[i].type);
-			return true;
-		}
-	}
-	if (ev.isAny(TBIDC("clouds"))) {
-		sceneMgr().createCloud();
-		return true;
-	} else if (ev.isAny(TBIDC("cactus"))) {
-		sceneMgr().createCactus();
-		return true;
 	}
 
 	return false;

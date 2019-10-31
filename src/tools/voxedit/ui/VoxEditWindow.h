@@ -71,8 +71,6 @@ private:
 	tb::TBGenericStringItemSource _treeItems;
 	tb::TBGenericStringItemSource _fileItems;
 	tb::TBGenericStringItemSource _structureItems;
-	tb::TBGenericStringItemSource _plantItems;
-	tb::TBGenericStringItemSource _buildingItems;
 
 	tb::TBInlineSelect *_voxelSize = nullptr;
 	tb::TBCheckBox *_showGrid = nullptr;

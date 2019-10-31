@@ -5,8 +5,6 @@
 #include "math/Random.h"
 #include "voxel/BiomeManager.h"
 #include "voxel/polyvox/PagedVolumeWrapper.h"
-#include "voxel/generator/CloudGenerator.h"
-#include "voxel/generator/BuildingGenerator.h"
 #include "voxel/generator/TreeGenerator.h"
 #include "commonlua/LUA.h"
 
@@ -201,36 +199,10 @@ void WorldPager::create(PagedVolume::PagerContext& ctx) {
 		core_trace_scoped(World);
 		createWorld(_ctx, wrapper, _noiseSeedOffset.x, _noiseSeedOffset.y);
 	}
-	if ((_createFlags & WORLDGEN_CLOUDS) != 0) {
-		core_trace_scoped(Clouds);
-		voxel::cloud::CloudContext cloudCtx;
-		const voxel::Region& region = wrapper.region();
-		voxel::cloud::createClouds(wrapper, region, *_biomeManager, cloudCtx);
-	}
 	if ((_createFlags & WORLDGEN_TREES) != 0) {
 		core_trace_scoped(Trees);
 		const voxel::Region& region = wrapper.region();
 		voxel::tree::createTrees(wrapper, region, *_biomeManager);
-	}
-	{
-		core_trace_scoped(Buildings);
-		const voxel::Region& region = wrapper.region();
-		glm::ivec3 buildingPos = region.getCentre();
-		if (_biomeManager->hasCity(buildingPos)) {
-			for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; --i) {
-				const VoxelType material = wrapper.voxel(buildingPos.x, i, buildingPos.z).getMaterial();
-				if (!isFloor(material)) {
-					continue;
-				}
-				buildingPos.y = i;
-				if (random.fithyFifthy()) {
-					voxel::building::createBuilding(wrapper, buildingPos, voxel::BuildingType::House);
-				} else {
-					voxel::building::createBuilding(wrapper, buildingPos, voxel::BuildingType::Tower);
-				}
-				break;
-			}
-		}
 	}
 }
 

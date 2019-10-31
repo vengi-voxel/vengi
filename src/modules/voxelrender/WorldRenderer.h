@@ -5,7 +5,6 @@
 #pragma once
 
 #include "voxel/WorldMgr.h"
-#include "voxel/generator/PlantGenerator.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/Camera.h"
@@ -36,25 +35,6 @@ namespace voxelrender {
 class WorldRenderer {
 	friend class MapView;
 protected:
-	struct PlantBuffer {
-		~PlantBuffer() {
-			shutdown();
-		}
-		void shutdown() {
-			vb.shutdown();
-			offsetBuffer = -1;
-			indexBuffer = -1;
-			vertexBuffer = -1;
-			instancedPositions.clear();
-		}
-		int32_t offsetBuffer = -1;
-		int32_t indexBuffer = -1;
-		int32_t vertexBuffer = -1;
-		uint32_t amount = 1u;
-		video::Buffer vb;
-		std::vector<glm::vec3> instancedPositions;
-	};
-
 	struct ChunkBuffer {
 		~ChunkBuffer() {
 			core_assert(occlusionQueryId == video::InvalidId);
@@ -92,9 +72,7 @@ protected:
 	int _visibleChunks = 0;
 	int _occludedChunks = 0;
 	int _queryResults = 0;
-	PlantBuffer _meshPlantList[(int)voxel::PlantType::MaxPlantTypes];
 
-	std::list<PlantBuffer*> _visiblePlant;
 	std::vector<voxel::VoxelVertex> _opaqueVertices;
 	std::vector<voxel::IndexType> _opaqueIndices;
 	video::Buffer _opaqueBuffer;
@@ -112,7 +90,6 @@ protected:
 
 	render::Shadow _shadow;
 	render::RandomColorTexture _colorTexture;
-	voxel::PlantGenerator _plantGenerator;
 
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
@@ -145,26 +122,13 @@ protected:
 	shader::WaterShader _waterShader;
 	shader::CharacterShader _chrShader;
 
-	/**
-	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.
-	 */
-	bool createBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, PlantBuffer& vbo);
-	bool createInstancedBuffer(const voxel::Mesh &mesh, int amount, PlantBuffer& vbo);
 	void handleMeshQueue();
 	void updateAABB(ChunkBuffer& chunkBuffer) const;
-	/**
-	 * @brief Redistribute the plants on the meshes that are already extracted
-	 */
-	void fillPlantPositionsFromMeshes();
 
 	int getDistanceSquare(const glm::ivec3& pos, const glm::ivec3& pos2) const;
 
 	void cull(const video::Camera& camera);
 	bool occluded(ChunkBuffer * chunkBuffer) const;
-	/**
-	 * @return The amount of drawcalls
-	 */
-	int renderPlants(const std::list<PlantBuffer*>& vbos, int* vertices);
 	bool renderOpaqueBuffers();
 	bool renderWaterBuffers();
 	ChunkBuffer* findFreeChunkBuffer();

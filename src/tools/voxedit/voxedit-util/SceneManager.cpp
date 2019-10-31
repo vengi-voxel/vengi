@@ -15,10 +15,6 @@
 #include "voxel/polyvox/Mesh.h"
 #include "voxel/polyvox/Picking.h"
 #include "voxel/polyvox/Face.h"
-#include "voxel/generator/CloudGenerator.h"
-#include "voxel/generator/CactusGenerator.h"
-#include "voxel/generator/BuildingGenerator.h"
-#include "voxel/generator/PlantGenerator.h"
 #include "voxel/generator/TreeGenerator.h"
 #include "voxel/BiomeManager.h"
 #include "voxelformat/MeshExporter.h"
@@ -1525,53 +1521,6 @@ void SceneManager::noise(int octaves, float lacunarity, float frequency, float g
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxel::noisegen::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
-	modified(layerId, wrapper.dirtyRegion());
-}
-
-void SceneManager::createCactus() {
-	math::Random random;
-	const int layerId = _layerMgr.activeLayer();
-	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	voxel::cactus::createCactus(wrapper, referencePosition(), 18, 2, random);
-	modified(layerId, wrapper.dirtyRegion());
-}
-
-void SceneManager::createCloud() {
-	const int layerId = _layerMgr.activeLayer();
-	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	struct HasClouds {
-		glm::vec2 pos;
-		void getCloudPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
-			positions.push_back(pos);
-		}
-	};
-	HasClouds hasClouds;
-	hasClouds.pos = glm::vec2(_referencePos.x, _referencePos.z);
-	voxel::cloud::CloudContext cloudCtx;
-	if (voxel::cloud::createClouds(wrapper, wrapper.region(), hasClouds, cloudCtx)) {
-		modified(layerId, wrapper.dirtyRegion());
-	}
-}
-
-void SceneManager::createPlant(voxel::PlantType type) {
-	voxel::PlantGenerator g;
-	const int layerId = _layerMgr.activeLayer();
-	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	if (type == voxel::PlantType::Flower) {
-		g.createFlower(5, referencePosition(), wrapper);
-	} else if (type == voxel::PlantType::Grass) {
-		g.createGrass(10, referencePosition(), wrapper);
-	} else if (type == voxel::PlantType::Mushroom) {
-		g.createMushroom(7, referencePosition(), wrapper);
-	}
-	g.shutdown();
-	modified(layerId, wrapper.dirtyRegion());
-}
-
-void SceneManager::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
-	const int layerId = _layerMgr.activeLayer();
-	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	voxel::building::createBuilding(wrapper, referencePosition(), type);
 	modified(layerId, wrapper.dirtyRegion());
 }
 

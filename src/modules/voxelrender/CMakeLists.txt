@@ -1,7 +1,6 @@
 set(LIB voxelrender)
 set(SRCS
 	MapRenderer.cpp MapRenderer.h
-	PlantDistributor.cpp PlantDistributor.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	PagedVolumeRenderer.cpp PagedVolumeRenderer.h
 	ShaderAttribute.h

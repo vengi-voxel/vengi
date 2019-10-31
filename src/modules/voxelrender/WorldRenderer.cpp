@@ -3,7 +3,6 @@
  */
 
 #include "WorldRenderer.h"
-#include "PlantDistributor.h"
 #include "ShaderAttribute.h"
 
 #include "core/Color.h"
@@ -63,11 +62,6 @@ void WorldRenderer::shutdown() {
 		ChunkBuffer& buf = _chunkBuffers[i];
 		video::deleteOcclusionQuery(buf.occlusionQueryId);
 	}
-
-	for (PlantBuffer& vbo : _meshPlantList) {
-		vbo.shutdown();
-	}
-	_plantGenerator.shutdown();
 }
 
 frontend::ClientEntityPtr WorldRenderer::getEntity(frontend::ClientEntityId id) const {
@@ -94,37 +88,6 @@ bool WorldRenderer::removeEntity(frontend::ClientEntityId id) {
 	}
 	_entities.erase(i);
 	return true;
-}
-
-void WorldRenderer::fillPlantPositionsFromMeshes() {
-	core_trace_scoped(FillPlantPositions);
-	const int plantMeshAmount = lengthof(_meshPlantList);
-	for (PlantBuffer& vbo : _meshPlantList) {
-		vbo.instancedPositions.clear();
-	}
-	for (const ChunkBuffer& chunkBuffer : _chunkBuffers) {
-		if (!chunkBuffer.inuse) {
-			continue;
-		}
-		if (chunkBuffer.instancedPositions.empty()) {
-			continue;
-		}
-		std::vector<glm::vec3> p = chunkBuffer.instancedPositions;
-		math::Random rnd(_world->seed() + chunkBuffer.translation().x + chunkBuffer.translation().y + chunkBuffer.translation().z);
-		rnd.shuffle(p.begin(), p.end());
-		const int plantMeshes = p.size() / plantMeshAmount;
-		int delta = p.size() - plantMeshes * plantMeshAmount;
-		for (PlantBuffer& vbo : _meshPlantList) {
-			auto it = std::next(p.begin(), plantMeshes + delta);
-			std::move(p.begin(), it, std::back_inserter(vbo.instancedPositions));
-			p.erase(p.begin(), it);
-			delta = 0;
-		}
-	}
-	for (PlantBuffer& vbo : _meshPlantList) {
-		const std::vector<glm::vec3>& positions = vbo.instancedPositions;
-		vbo.vb.update(vbo.offsetBuffer, positions);
-	}
 }
 
 void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
@@ -175,8 +138,6 @@ void WorldRenderer::handleMeshQueue() {
 
 	freeChunkBuffer->meshes = std::move(meshes);
 	updateAABB(*freeChunkBuffer);
-	distributePlants(_world, freeChunkBuffer->translation(), freeChunkBuffer->instancedPositions);
-	fillPlantPositionsFromMeshes();
 	if (!_octree.insert(freeChunkBuffer)) {
 		Log::warn("Failed to insert into octree");
 	}
@@ -346,33 +307,6 @@ bool WorldRenderer::renderWaterBuffers() {
 	return true;
 }
 
-int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertices) {
-	int drawCalls = 0;
-	for (PlantBuffer* vbo : vbos) {
-		if (vbo->indexBuffer == -1) {
-			continue;
-		}
-		const uint32_t numIndices = vbo->vb.elements(vbo->indexBuffer, 1, sizeof(voxel::IndexType));
-		if (numIndices == 0u) {
-			continue;
-		}
-
-		video::ScopedBuffer scopedBuf(vbo->vb);
-		if (vbo->amount == 1) {
-			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
-		} else {
-			const std::vector<glm::vec3>& positions = vbo->instancedPositions;
-			video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, numIndices, positions.size());
-		}
-		++drawCalls;
-		if (vertices != nullptr) {
-			*vertices += vbo->vb.elements(vbo->vertexBuffer, 1, sizeof(voxel::VoxelVertex));
-		}
-	}
-
-	return drawCalls;
-}
-
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	core_trace_scoped(WorldRendererRenderWorld);
 	handleMeshQueue();
@@ -403,15 +337,12 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
 		core_trace_scoped(WorldRendererRenderShadow);
-		const glm::mat4& plantModel = glm::scale(glm::vec3(0.4f));
 		_shadow.render([&] (int i, shader::ShadowmapShader& shader) {
 			shader.setModel(glm::mat4(1.0f));
 			renderOpaqueBuffers();
 			++drawCallsWorld;
 			return true;
 		}, [&] (int i, shader::ShadowmapInstancedShader& shader) {
-			shader.setModel(plantModel);
-			drawCallsWorld += renderPlants(_visiblePlant, nullptr);
 			return true;
 		});
 	}
@@ -446,27 +377,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		if (renderOpaqueBuffers()) {
 			++drawCallsWorld;
 		}
-	}
-	{
-		core_trace_scoped(WorldRendererRenderPlants);
-		video::ScopedShader scoped(_worldInstancedShader);
-		_worldInstancedShader.setModel(glm::scale(glm::vec3(0.4f)));
-		_worldInstancedShader.setFocuspos(camera.target());
-		_worldInstancedShader.setLightdir(_shadow.sunDirection());
-		_worldInstancedShader.setMaterialblock(_materialBlock);
-		_worldInstancedShader.setFogcolor(_clearColor);
-		_worldInstancedShader.setTexture(video::TextureUnit::Zero);
-		_worldInstancedShader.setDiffuseColor(_diffuseColor);
-		_worldInstancedShader.setAmbientColor(_ambientColor);
-		_worldInstancedShader.setFogrange(_fogRange);
-		if (shadowMap) {
-			_worldInstancedShader.setViewprojection(camera.viewProjectionMatrix());
-			_worldInstancedShader.setShadowmap(video::TextureUnit::One);
-			_worldInstancedShader.setDepthsize(glm::vec2(_shadow.dimension()));
-			_worldInstancedShader.setCascades(_shadow.cascades());
-			_worldInstancedShader.setDistances(_shadow.distances());
-		}
-		drawCallsWorld += renderPlants(_visiblePlant, vertices);
 	}
 	drawCallsWorld += renderEntities(camera);
 	{
@@ -556,56 +466,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		ent->unbindVertexBuffers();
 	}
 	return drawCallsEntities;
-}
-
-bool WorldRenderer::createInstancedBuffer(const voxel::Mesh &mesh, int amount, PlantBuffer& vbo) {
-	if (mesh.getNoOfIndices() == 0) {
-		return false;
-	}
-
-	core_trace_gl_scoped(WorldRendererCreateMesh);
-	vbo.vb.clearAttributes();
-	vbo.vertexBuffer = vbo.vb.create(mesh.getVertexVector());
-	if (vbo.vertexBuffer == -1) {
-		Log::error("Failed to create vertex buffer");
-		return false;
-	}
-	vbo.indexBuffer = vbo.vb.create(mesh.getIndexVector(), video::BufferType::IndexBuffer);
-	if (vbo.indexBuffer == -1) {
-		Log::error("Failed to create index buffer");
-		return false;
-	}
-	vbo.offsetBuffer = vbo.vb.create();
-	if (vbo.offsetBuffer == -1) {
-		Log::error("Failed to create offset buffer");
-		return false;
-	}
-	vbo.vb.setMode(vbo.offsetBuffer, video::BufferMode::Stream);
-
-	const int locationPos = _worldInstancedShader.getLocationPos();
-	const video::Attribute& posAttrib = getPositionVertexAttribute(vbo.vertexBuffer, locationPos, _worldInstancedShader.getAttributeComponents(locationPos));
-	if (!vbo.vb.addAttribute(posAttrib)) {
-		Log::error("Failed to add position attribute");
-		return false;
-	}
-
-	const int locationInfo = _worldInstancedShader.getLocationInfo();
-	const video::Attribute& infoAttrib = getInfoVertexAttribute(vbo.vertexBuffer, locationInfo, _worldInstancedShader.getAttributeComponents(locationInfo));
-	if (!vbo.vb.addAttribute(infoAttrib)) {
-		Log::error("Failed to add info attribute");
-		return false;
-	}
-
-	const int locationOffset = _worldInstancedShader.getLocationOffset();
-	const video::Attribute& offsetAttrib = getOffsetVertexAttribute(vbo.offsetBuffer, locationOffset, _worldInstancedShader.getAttributeComponents(locationOffset));
-	if (!vbo.vb.addAttribute(offsetAttrib)) {
-		Log::error("Failed to add offset attribute");
-		return false;
-	}
-
-	vbo.amount = amount;
-
-	return true;
 }
 
 void WorldRenderer::extractMeshes(const video::Camera& camera) {
@@ -710,7 +570,6 @@ bool WorldRenderer::initWaterBuffer() {
 bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	_colorTexture.init();
-	_plantGenerator.generateAll();
 
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to init the shape renderer");
@@ -738,13 +597,6 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	}
 	if (!_chrShader.setup()) {
 		return false;
-	}
-
-	_visiblePlant.clear();
-	for (int i = 0; i < (int)voxel::PlantType::MaxPlantTypes; ++i) {
-		const voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
-		createInstancedBuffer(*mesh, 40, _meshPlantList[i]);
-		_visiblePlant.push_back(&_meshPlantList[i]);
 	}
 
 	const int shaderMaterialColorsArraySize = lengthof(shader::WorldData::MaterialblockData::materialcolor);

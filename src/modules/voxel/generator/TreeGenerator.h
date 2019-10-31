@@ -12,8 +12,6 @@
 #include "voxel/Spiral.h"
 #include "ShapeGenerator.h"
 #include "SpaceColonization.h"
-#include "CactusGenerator.h"
-#include "LSystemGenerator.h"
 #include "math/AABB.h"
 #include "core/Log.h"
 
