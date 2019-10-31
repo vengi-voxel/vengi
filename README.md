@@ -1,6 +1,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/556vyuwwg476jn7t?svg=true)](https://ci.appveyor.com/project/mgerhardy/engine)
 [![Build Status](https://travis-ci.org/mgerhardy/engine.svg?branch=master)](https://travis-ci.org/mgerhardy/engine)
 [![Actions Status](https://github.com/mgerhardy/engine/workflows/build/badge.svg)](https://github.com/mgerhardy/engine/actions)
+ [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # About
 Voxel engine and tools.
