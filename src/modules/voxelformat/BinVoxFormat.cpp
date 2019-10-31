@@ -20,7 +20,7 @@ bool BinVoxFormat::readHeader(const std::string& header) {
 
 	while (std::string::npos != pos || std::string::npos != lastPos) {
 		// Found a token, add it to the vector.
-		const std::string_view line = header.substr(lastPos, pos - lastPos);
+		const std::string& line = header.substr(lastPos, pos - lastPos);
 
 		if (line == "data") {
 			return true;
