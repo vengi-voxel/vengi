@@ -7,7 +7,7 @@
 #include "voxel/polyvox/Picking.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/TreeContext.h"
-#include "voxel/generator/NoiseGenerator.h"
+#include "voxelgenerator/NoiseGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "video/ShapeBuilder.h"

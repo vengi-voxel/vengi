@@ -11,7 +11,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/polyvox/RawVolumeWrapper.h"
 #include "voxel/polyvox/VolumeVisitor.h"
-#include "voxel/generator/NoiseGenerator.h"
+#include "voxelgenerator/NoiseGenerator.h"
 
 #define GL_INTEROP 0
 

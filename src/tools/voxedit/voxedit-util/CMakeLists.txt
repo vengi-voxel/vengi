@@ -23,7 +23,7 @@ set(SRCS
 	tool/Resize.h tool/Resize.cpp
 )
 set(LIB voxedit-util)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES mesh voxelrender voxelformat animation)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES mesh voxelrender voxelformat voxelgenerator animation)
 
 set(TEST_SRCS
 	tests/LayerManagerTest.cpp

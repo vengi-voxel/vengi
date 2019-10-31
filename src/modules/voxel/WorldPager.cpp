@@ -5,7 +5,6 @@
 #include "math/Random.h"
 #include "voxel/BiomeManager.h"
 #include "voxel/polyvox/PagedVolumeWrapper.h"
-#include "voxel/generator/TreeGenerator.h"
 #include "commonlua/LUA.h"
 
 namespace voxel {
@@ -73,10 +72,6 @@ void WorldPager::setPersist(bool persist) {
 
 void WorldPager::setSeed(long seed) {
 	_seed = seed;
-}
-
-void WorldPager::setCreateFlags(int flags) {
-	_createFlags = flags;
 }
 
 void WorldPager::setNoiseOffset(const glm::vec2& noiseOffset) {
@@ -195,15 +190,7 @@ void WorldPager::create(PagedVolume::PagerContext& ctx) {
 	PagedVolumeWrapper wrapper(_volumeData, ctx.chunk, ctx.region);
 	core_trace_scoped(CreateWorld);
 	math::Random random(_seed);
-	{
-		core_trace_scoped(World);
-		createWorld(_ctx, wrapper, _noiseSeedOffset.x, _noiseSeedOffset.y);
-	}
-	if ((_createFlags & WORLDGEN_TREES) != 0) {
-		core_trace_scoped(Trees);
-		const voxel::Region& region = wrapper.region();
-		voxel::tree::createTrees(wrapper, region, *_biomeManager);
-	}
+	createWorld(_ctx, wrapper, _noiseSeedOffset.x, _noiseSeedOffset.y);
 }
 
 }

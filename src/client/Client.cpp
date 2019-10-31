@@ -36,7 +36,6 @@ Client::Client(const metric::MetricPtr& metric, const animation::CharacterCacheP
 		Super(metric, filesystem, eventBus, timeProvider), _camera(), _characterCache(characterCache),
 		_network(network), _world(world), _messageSender(messageSender),
 		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider) {
-	_world->setClientData(true);
 	init(ORGANISATION, "client");
 }
 

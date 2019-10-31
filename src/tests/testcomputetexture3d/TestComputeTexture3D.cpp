@@ -8,7 +8,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/polyvox/RawVolumeWrapper.h"
 #include "voxel/polyvox/VolumeVisitor.h"
-#include "voxel/generator/NoiseGenerator.h"
+#include "voxelgenerator/NoiseGenerator.h"
 #include "video/ScopedViewPort.h"
 
 TestComputeTexture3D::TestComputeTexture3D(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

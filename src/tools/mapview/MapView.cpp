@@ -25,7 +25,6 @@ MapView::MapView(const metric::MetricPtr& metric, const animation::CharacterCach
 		Super(metric, filesystem, eventBus, timeProvider), _camera(),
 		_characterCache(characterCache), _worldRenderer(world), _worldMgr(world), _stockDataProvider(stockDataProvider) {
 	init(ORGANISATION, "mapview");
-	_worldMgr->setClientData(true);
 }
 
 MapView::~MapView() {

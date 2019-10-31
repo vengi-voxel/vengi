@@ -16,7 +16,6 @@
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/Constants.h"
 #include "voxel/IsQuadNeeded.h"
-#include "voxel/Spiral.h"
 
 namespace voxel {
 
@@ -118,11 +117,6 @@ bool WorldMgr::init(const std::string& luaParameters, const std::string& luaBiom
 	_volumeData = new PagedVolume(&_pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 
 	_pager.init(_volumeData, &_biomeManager, luaParameters);
-	if (_clientData) {
-		_pager.setCreateFlags(voxel::WORLDGEN_CLIENT);
-	} else {
-		_pager.setCreateFlags(voxel::WORLDGEN_SERVER);
-	}
 
 	for (size_t i = 0u; i < _threadPool.size(); ++i) {
 		_threadPool.enqueue([this] () {extractScheduledMesh();});

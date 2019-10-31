@@ -3,7 +3,6 @@ set(SRCS
 	BiomeLUAFunctions.h BiomeLUAFunctions.cpp
 	Biome.h Biome.cpp
 	BiomeManager.h BiomeManager.cpp
-	Spiral.h
 	TreeContext.h TreeContext.cpp
 	Constants.h
 	MaterialColor.h MaterialColor.cpp
@@ -12,10 +11,6 @@ set(SRCS
 	WorldPersister.h WorldPersister.cpp
 	WorldPager.h WorldPager.cpp
 	WorldEvents.h
-	generator/ShapeGenerator.h
-	generator/SpaceColonization.h generator/SpaceColonization.cpp
-	generator/TreeGenerator.h generator/TreeGenerator.cpp
-	generator/NoiseGenerator.h
 	polyvox/AStarPathfinder.h
 	polyvox/AStarPathfinderImpl.h
 	polyvox/CubicSurfaceExtractor.h polyvox/CubicSurfaceExtractor.cpp

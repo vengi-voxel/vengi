@@ -8,7 +8,7 @@
 #include "voxel/polyvox/Region.h"
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/polyvox/RawVolumeWrapper.h"
-#include "voxel/generator/NoiseGenerator.h"
+#include "voxelgenerator/NoiseGenerator.h"
 
 TestVoxelGPU::TestVoxelGPU(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider), _mesher(compute::MesherShader::getInstance()) {

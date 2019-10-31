@@ -15,7 +15,7 @@
 #include "voxel/polyvox/Mesh.h"
 #include "voxel/polyvox/Picking.h"
 #include "voxel/polyvox/Face.h"
-#include "voxel/generator/TreeGenerator.h"
+#include "voxelgenerator/TreeGenerator.h"
 #include "voxel/BiomeManager.h"
 #include "voxelformat/MeshExporter.h"
 #include "voxelformat/Loader.h"

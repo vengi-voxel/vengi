@@ -15,11 +15,6 @@ namespace voxel {
 class BiomeManager;
 class PagedVolumeWrapper;
 
-constexpr int WORLDGEN_TREES = 1 << 0;
-
-constexpr int WORLDGEN_CLIENT = WORLDGEN_TREES;
-constexpr int WORLDGEN_SERVER = WORLDGEN_TREES;
-
 /**
  * @brief Pager implementation for PagedVolume.
  */
@@ -48,7 +43,6 @@ private:
 
 	WorldPersister _worldPersister;
 	long _seed = 0l;
-	int _createFlags = 0;
 	glm::vec2 _noiseSeedOffset;
 
 	PagedVolume *_volumeData = nullptr;
@@ -89,12 +83,6 @@ public:
 	 * @brief The ssed that is going to be used for creating the world
 	 */
 	void setSeed(long seed);
-	/**
-	 * @li voxel::world::WORLDGEN_TREES
-	 * @li voxel::world::WORLDGEN_CLOUDS
-	 * @param flags Bitmask of world generator flags
-	 */
-	void setCreateFlags(int flags);
 
 	void setNoiseOffset(const glm::vec2& noiseOffset);
 

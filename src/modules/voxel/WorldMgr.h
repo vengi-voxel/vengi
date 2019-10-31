@@ -67,11 +67,6 @@ public:
 	WorldMgr();
 	~WorldMgr();
 
-	/**
-	 * @param[in] clientData if true, additional data that is only useful for rendering is generated
-	 */
-	void setClientData(bool clientData);
-
 	bool findPath(const glm::ivec3& start, const glm::ivec3& end, std::list<glm::ivec3>& listResult);
 
 	template<typename VoxelTypeChecker>
@@ -188,7 +183,6 @@ private:
 	BiomeManager _biomeManager;
 	mutable std::mt19937 _engine;
 	long _seed = 0l;
-	bool _clientData = false;
 
 	core::ThreadPool _threadPool;
 	core::ConcurrentQueue<ChunkMeshes> _extracted;
@@ -199,10 +193,6 @@ private:
 	math::Random _random;
 	std::atomic_bool _cancelThreads { false };
 };
-
-inline void WorldMgr::setClientData(bool clientData) {
-	_clientData = clientData;
-}
 
 inline glm::ivec3 WorldMgr::meshPos(const glm::ivec3& pos) const {
 	const glm::vec3& size = meshSize();
