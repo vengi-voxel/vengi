@@ -13,3 +13,4 @@ luac.out
 .DS_Store
 autosave-*
 /.vscode
+compile_commands.json
