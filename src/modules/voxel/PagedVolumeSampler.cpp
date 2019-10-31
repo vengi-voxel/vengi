@@ -148,4 +148,18 @@ void PagedVolume::Sampler::moveNegativeZ() {
 	}
 }
 
+#undef CAN_GO_NEG_X
+#undef CAN_GO_POS_X
+#undef CAN_GO_NEG_Y
+#undef CAN_GO_POS_Y
+#undef CAN_GO_NEG_Z
+#undef CAN_GO_POS_Z
+
+#undef NEG_X_DELTA
+#undef POS_X_DELTA
+#undef NEG_Y_DELTA
+#undef POS_Y_DELTA
+#undef NEG_Z_DELTA
+#undef POS_Z_DELTA
+
 }
