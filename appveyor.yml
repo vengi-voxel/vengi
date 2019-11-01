@@ -46,15 +46,15 @@ artifacts:
     path: build/tests-*.xml
 
 test_script:
-  - ctest -C Debug -R tests-computeshadertool
-  - ctest -C Debug -R tests-core
-  - ctest -C Debug -R tests-mail
-  - ctest -C Debug -R tests-math
-  - ctest -C Debug -R tests-util
-  - ctest -C Debug -R tests-stock
-  - ctest -C Debug -R tests-shadertool
-  - ctest -C Debug -R tests-testtraze
-  - ctest -C Debug -R tests-voxelworld
+  - ctest -V -C Debug -R tests-computeshadertool
+  - ctest -V -C Debug -R tests-core
+  - ctest -V -C Debug -R tests-mail
+  - ctest -V -C Debug -R tests-math
+  - ctest -V -C Debug -R tests-util
+  - ctest -V -C Debug -R tests-stock
+  - ctest -V -C Debug -R tests-shadertool
+  - ctest -V -C Debug -R tests-testtraze
+  - ctest -V -C Debug -R tests-voxelworld
 
 after_test:
   - ps: |
