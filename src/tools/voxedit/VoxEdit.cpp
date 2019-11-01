@@ -12,8 +12,8 @@
 #include "core/io/Filesystem.h"
 #include "voxedit-util/CustomBindingContext.h"
 
-VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const mesh::MeshPoolPtr& meshPool) :
-		Super(metric, filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool), _sceneMgr(voxedit::sceneMgr()) {
+VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, eventBus, timeProvider), _mainWindow(nullptr), _sceneMgr(voxedit::sceneMgr()) {
 	init(ORGANISATION, "voxedit");
 	_allowRelativeMouseMode = false;
 }
@@ -67,13 +67,6 @@ bool VoxEdit::prefabFile(const std::string& file) {
 	return _mainWindow->prefab(file);
 }
 
-bool VoxEdit::importFile(const std::string& file) {
-	if (_mainWindow == nullptr) {
-		return false;
-	}
-	return _mainWindow->importMesh(file);
-}
-
 bool VoxEdit::newFile(bool force) {
 	if (_mainWindow == nullptr) {
 		return false;
@@ -81,16 +74,8 @@ bool VoxEdit::newFile(bool force) {
 	return _mainWindow->createNew(force);
 }
 
-bool VoxEdit::exportFile(const std::string& file) {
-	if (_mainWindow == nullptr) {
-		return false;
-	}
-	return _mainWindow->exportFile(file);
-}
-
 core::AppState VoxEdit::onCleanup() {
 	const core::AppState state = Super::onCleanup();
-	_meshPool->shutdown();
 	_sceneMgr.shutdown();
 	return state;
 }
@@ -127,10 +112,8 @@ core::AppState VoxEdit::onConstruct() {
 
 	COMMAND_FILE(screenshot, "Save the current viewport as screenshot");
 	COMMAND_FILE(save, "Save the current scene as a volume to the given file");
-	COMMAND_FILE(export, "Export the current scene as a mesh to the given file");
 	COMMAND_FILE(load, "Load a scene from the given volume file");
 	COMMAND_FILE(prefab, "Add a volume to the existing scene from the given file");
-	COMMAND_FILE(import, "Import a mesh from the given file and tries to voxelize it");
 	COMMAND_FILE(importheightmap, "Import a 2d heightmap image into the current active volume layer");
 	COMMAND_FILE(importplane, "Import an image as a plane into a new layer");
 	COMMAND_FILE(importpalette, "Import an image as a palette");
@@ -170,11 +153,6 @@ core::AppState VoxEdit::onInit() {
 	const core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
-	}
-
-	if (!_meshPool->init()) {
-		Log::error("Failed to initialize the mesh pool");
-		return core::AppState::InitFailure;
 	}
 
 	if (!_sceneMgr.init()) {
@@ -231,8 +209,7 @@ int main(int argc, char *argv[]) {
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
-	const mesh::MeshPoolPtr& meshPool = std::make_shared<mesh::MeshPool>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	VoxEdit app(metric, filesystem, eventBus, timeProvider, meshPool);
+	VoxEdit app(metric, filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

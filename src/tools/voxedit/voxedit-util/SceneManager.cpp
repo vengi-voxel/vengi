@@ -12,12 +12,10 @@
 #include "voxel/VolumeVisitor.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/RawVolumeMoveWrapper.h"
-#include "voxel/Mesh.h"
 #include "voxel/Picking.h"
 #include "voxel/Face.h"
 #include "voxelgenerator/TreeGenerator.h"
 #include "voxelworld/BiomeManager.h"
-#include "voxelformat/MeshExporter.h"
 #include "voxelformat/Loader.h"
 #include "voxelformat/VoxFormat.h"
 #include "voxelformat/QBTFormat.h"
@@ -51,9 +49,6 @@
 #include <set>
 #include <limits>
 
-#define VOXELIZER_IMPLEMENTATION
-#include "voxelizer.h"
-
 namespace voxedit {
 
 SceneManager::SceneManager() :
@@ -64,97 +59,8 @@ SceneManager::~SceneManager() {
 	shutdown();
 }
 
-bool SceneManager::exportModel(const std::string& file) {
-	core_trace_scoped(EditorSceneExportModel);
-	const io::FilePtr& filePtr = io::filesystem()->open(std::string(file), io::FileMode::Write);
-	if (!(bool)filePtr) {
-		return false;
-	}
-	voxel::Mesh mesh(128, 128, true);
-	if (!_volumeRenderer.toMesh(&mesh)) {
-		Log::debug("Failed to export the scene to a mesh");
-		return false;
-	}
-	return voxel::exportMesh(&mesh, filePtr->name().c_str());
-}
-
-bool SceneManager::exportLayerModel(int layerId, const std::string& file) {
-	core_trace_scoped(EditorSceneExportLayerModel);
-	const io::FilePtr& filePtr = io::filesystem()->open(std::string(file), io::FileMode::Write);
-	if (!(bool)filePtr) {
-		return false;
-	}
-	voxel::Mesh mesh(128, 128, true);
-	if (!_volumeRenderer.toMesh(layerId, &mesh)) {
-		Log::debug("Failed to export layer %i to a mesh", layerId);
-		return false;
-	}
-	return voxel::exportMesh(&mesh, filePtr->name().c_str());
-}
-
 voxel::Region SceneManager::region() const {
 	return _volumeRenderer.region();
-}
-
-bool SceneManager::voxelizeModel(const mesh::MeshPtr& meshPtr) {
-	const mesh::Mesh::Vertices& positions = meshPtr->vertices();
-	const mesh::Mesh::Indices& indices = meshPtr->indices();
-
-	if (indices.size() < 8) {
-		Log::error("Not enough indices found: %i", (int)indices.size());
-		return false;
-	}
-
-	vx_mesh_t* mesh = vx_color_mesh_alloc(positions.size(), indices.size());
-	if (mesh == nullptr) {
-		Log::error("Failed to allocate voxelize mesh");
-		return false;
-	}
-
-	for (size_t f = 0; f < mesh->nindices; f++) {
-		mesh->indices[f] = indices[f];
-		mesh->normalindices[f] = indices[f];
-	}
-
-	for (size_t v = 0u; v < mesh->nvertices; ++v) {
-		const mesh::Mesh::Vertices::value_type& vertex = positions[v];
-		mesh->vertices[v].x = vertex._pos.x;
-		mesh->vertices[v].y = vertex._pos.y;
-		mesh->vertices[v].z = vertex._pos.z;
-		mesh->normals[v].x = vertex._norm.x;
-		mesh->normals[v].y = vertex._norm.y;
-		mesh->normals[v].z = vertex._norm.z;
-		mesh->colors[v].x = vertex._color.x;
-		mesh->colors[v].y = vertex._color.y;
-		mesh->colors[v].z = vertex._color.z;
-	}
-
-	const glm::vec3& meshMins = meshPtr->mins();
-	const glm::vec3& meshMaxs = meshPtr->maxs();
-	const glm::vec3& meshDimension = meshMaxs - meshMins;
-
-	const voxel::RawVolume* model = modelVolume();
-	const voxel::Region& region = model->region();
-	const glm::vec3 regionDimension(region.getDimensionsInCells());
-	const glm::vec3 factor = regionDimension / meshDimension;
-	Log::debug("%f:%f:%f", factor.x, factor.y, factor.z);
-
-	const float voxelSize = core_min(core_min(factor.x, factor.y), factor.z);
-	const float precision = voxelSize / 10.0f;
-	vx_point_cloud_t* result = vx_voxelize_pc(mesh, voxelSize, voxelSize, voxelSize, precision);
-	Log::debug("Number of vertices: %i", (int)result->nvertices);
-
-	for (size_t i = 0u; i < result->nvertices; ++i) {
-		result->vertices[i].x -= meshMins.x;
-		result->vertices[i].y -= meshMins.y;
-		result->vertices[i].z -= meshMins.z;
-	}
-	pointCloud((const glm::vec3*)result->vertices, (const glm::vec3*)result->colors, result->nvertices);
-
-	vx_point_cloud_free(result);
-	vx_mesh_free(mesh);
-
-	return true;
 }
 
 bool SceneManager::loadPalette(const std::string& paletteName) {
@@ -460,36 +366,6 @@ void SceneManager::resize(const glm::ivec3& size) {
 			modified(layerId, newVolume->region());
 		}
 	});
-}
-
-void SceneManager::pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount) {
-	glm::ivec3 mins((std::numeric_limits<glm::ivec3::value_type>::max)());
-	glm::ivec3 maxs((std::numeric_limits<glm::ivec3::value_type>::min)());
-
-	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
-	materialColors.erase(materialColors.begin());
-	const int layerId = _layerMgr.activeLayer();
-	voxel::RawVolumeWrapper wrapper(volume(layerId));
-
-	const glm::ivec3& cursorPos = cursorPosition();
-	bool change = false;
-	for (size_t idx = 0u; idx < amount; ++idx) {
-		const glm::vec3& vertex = vertices[idx];
-		const glm::vec3& color = vertexColors[idx];
-		const glm::ivec3 pos(cursorPos.x + vertex.x, cursorPos.y + vertex.y, cursorPos.z + vertex.z);
-		const glm::vec4 cvec(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, 255.0f);
-		const uint8_t index = core::Color::getClosestMatch(cvec, materialColors);
-		if (wrapper.setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, index))) {
-			mins = (glm::min)(mins, pos);
-			maxs = (glm::max)(maxs, pos);
-			change = true;
-		}
-	}
-	if (!change) {
-		return;
-	}
-	const voxel::Region modifiedRegion(mins, maxs);
-	modified(layerId, modifiedRegion);
 }
 
 voxel::RawVolume* SceneManager::volume(int idx) {
@@ -877,16 +753,6 @@ void SceneManager::construct() {
 			Log::error("Failed to save layer %i to dir: %s", layerId, dir.c_str());
 		}
 	}).setHelp("Save a single layer to the given path with their layer names");
-
-	core::Command::registerCommand("layerexport", [&] (const core::CmdArgs& args) {
-		const int argc = args.size();
-		if (argc != 1) {
-			Log::info("Usage: layerexport <layerId> <mesh-filename>");
-			return;
-		}
-		const int layerId = core::string::toInt(args[0]);
-		exportLayerModel(layerId, args[1]);
-	}).setHelp("Exports a single layer into a mesh");
 
 	core::Command::registerCommand("zoom", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();

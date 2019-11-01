@@ -152,7 +152,7 @@ void Shadow::render(funcRender renderCallback, funcRenderInstance renderInstance
 }
 
 void Shadow::renderShadowMap(const video::Camera& camera) {
-	core_trace_scoped(TestMeshAppDoShowShadowMap);
+	core_trace_scoped(RenderShadowMap);
 	const int frameBufferWidth = camera.frameBufferWidth();
 	const int frameBufferHeight = camera.frameBufferHeight();
 

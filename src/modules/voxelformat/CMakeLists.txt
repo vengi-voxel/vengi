@@ -7,11 +7,10 @@ set(SRCS
 	QBFormat.h QBFormat.cpp
 	VXMFormat.h VXMFormat.cpp
 	MeshCache.h MeshCache.cpp
-	MeshExporter.h MeshExporter.cpp
 	CubFormat.h CubFormat.cpp
 	Loader.h Loader.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel assimp)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
@@ -21,7 +20,6 @@ set(TEST_SRCS
 	tests/QBFormatTest.cpp
 	tests/CubFormatTest.cpp
 	tests/VXMFormatTest.cpp
-	tests/MeshExporterTest.cpp
 )
 set(TEST_FILES
 	tests/qubicle.qb

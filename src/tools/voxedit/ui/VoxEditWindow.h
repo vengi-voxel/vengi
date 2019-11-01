@@ -30,10 +30,8 @@ private:
 	Viewport* _sceneTop = nullptr;
 	Viewport* _sceneLeft = nullptr;
 	Viewport* _sceneFront = nullptr;
-	VoxEdit* _voxedit;
 	PaletteWidget* _paletteWidget;
 	LayerWidget* _layerWidget;
-	tb::TBWidget* _exportButton = nullptr;
 	tb::TBWidget* _saveButton = nullptr;
 	tb::TBWidget* _undoButton = nullptr;
 	tb::TBWidget* _redoButton = nullptr;
@@ -79,8 +77,6 @@ private:
 	tb::TBCheckBox *_showLockAxis = nullptr;
 	tb::TBCheckBox *_renderShadow = nullptr;
 
-	std::string _exportFilter;
-	std::string _importFilter;
 	bool _fourViewAvailable = false;
 	core::VarPtr _lastOpenedFile;
 
@@ -104,7 +100,6 @@ private:
 
 	// commands
 	void toggleviewport();
-	bool importMesh(const std::string& file);
 	bool importHeightmap(const std::string& file);
 	bool importAsPlane(const std::string& file);
 	bool importPalette(const std::string& file);
@@ -112,7 +107,6 @@ private:
 	bool load(const std::string& file);
 	bool saveScreenshot(const std::string& file);
 	bool prefab(const std::string& file);
-	bool exportFile(const std::string& file);
 	bool createNew(bool force);
 public:
 	VoxEditWindow(VoxEdit* tool);

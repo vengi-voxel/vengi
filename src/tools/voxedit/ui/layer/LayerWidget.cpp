@@ -25,7 +25,6 @@ public:
 
 		_actionItems.addItem(new tb::TBGenericStringItem(tr("Move"), TBIDC("layermove")));
 		_actionItems.addItem(new tb::TBGenericStringItem(tr("Rename"), TBIDC("layerrename")));
-		_actionItems.addItem(new tb::TBGenericStringItem(tr("Export"), TBIDC("layerexport")));
 		_actionItems.addItem(new tb::TBGenericStringItem(tr("Save"), TBIDC("layersave")));
 		_actionItems.addItem(new tb::TBGenericStringItem(tr("Save group"), TBIDC("layerssave")));
 		_actionItems.addItem(new tb::TBGenericStringItem(tr("Align at origin"), TBIDC("center_origin")));
@@ -87,13 +86,6 @@ public:
 					if (!win->show()) {
 						delete win;
 					}
-					return true;
-				}
-				if (ev.ref_id == TBIDC("layerexport")) {
-					video::WindowedApp::getInstance()->saveDialog([this](const std::string& file) {
-						execute("layerexport %i %s", _layerId, file.c_str());
-					}, "");
-					// TODO: use _exportFilter from VoxEditWindow class
 					return true;
 				}
 				static const char *ACTIONS[] = {

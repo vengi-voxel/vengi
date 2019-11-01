@@ -18,9 +18,6 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "../VoxEdit.h"
-#include <assimp/Exporter.hpp>
-#include <assimp/Importer.hpp>
-#include <assimp/importerdesc.h>
 #include <set>
 
 namespace voxedit {
@@ -49,7 +46,7 @@ static const struct {
 static_assert(lengthof(treeTypes) == (int)voxelworld::TreeType::Max, "Missing support for tree types in the ui");
 
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
-		Super(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr), _layerWidget(nullptr) {
+		Super(tool), _scene(nullptr), _paletteWidget(nullptr), _layerWidget(nullptr) {
 	setSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 	for (int i = 0; i < lengthof(treeTypes); ++i) {
 		addStringItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
@@ -57,9 +54,7 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addStringItem(_fileItems, "New", "new");
 	addStringItem(_fileItems, "Load", "load");
 	addStringItem(_fileItems, "Save", "save");
-	addStringItem(_fileItems, "Import", "import");
 	addStringItem(_fileItems, "Prefab", "prefab");
-	addStringItem(_fileItems, "Export", "export");
 	addStringItem(_fileItems, "Heightmap", "importheightmap");
 	addStringItem(_fileItems, "Image as Plane", "importplane");
 	addStringItem(_fileItems, "Quit", "quit");
@@ -118,7 +113,6 @@ bool VoxEditWindow::init() {
 			_sceneFront->setVisibility(vis);
 		}
 	}
-	_exportButton = getWidget("export");
 	_saveButton = getWidget("save");
 	_undoButton = getWidget("undo");
 	_redoButton = getWidget("redo");
@@ -168,44 +162,6 @@ bool VoxEditWindow::init() {
 	mgr.setRenderAxis(_showAxis->getValue() != 0);
 	mgr.setRenderLockAxis(_showLockAxis->getValue() != 0);
 	mgr.setRenderShadow(_renderShadow->getValue() != 0);
-
-	Assimp::Exporter exporter;
-	const size_t exporterNum = exporter.GetExportFormatCount();
-	for (size_t i = 0; i < exporterNum; ++i) {
-		const aiExportFormatDesc* desc = exporter.GetExportFormatDescription(i);
-		_exportFilter.append(desc->fileExtension);
-		if (i < exporterNum - 1) {
-			_exportFilter.append(";");
-		}
-	}
-
-	Assimp::Importer importer;
-	const size_t importerNum = importer.GetImporterCount();
-	std::set<std::string> importExtensions;
-	for (size_t i = 0; i < importerNum; ++i) {
-		const aiImporterDesc* desc = importer.GetImporterInfo(i);
-		const char* ext = desc->mFileExtensions;
-		const char* last = ext;
-		do {
-			if (ext[0] == '\0' || ext[0] == ' ') {
-				importExtensions.insert(std::string(last, ext - last));
-				last = ext;
-				while (*last == ' ') {
-					++last;
-				}
-			}
-		} while (*ext++);
-	}
-	const int importerExtensionCount = importExtensions.size();
-	int n = 0;
-	for (auto i = importExtensions.begin(); i != importExtensions.end(); ++i, ++n) {
-		_importFilter.append(*i);
-		if (n < importerExtensionCount - 1) {
-			_importFilter.append(";");
-		}
-	}
-	Log::info("Supported import filters: %s", _importFilter.c_str());
-	Log::info("Supported export filters: %s", _exportFilter.c_str());
 
 	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
 	if (mgr.load(_lastOpenedFile->strVal())) {
@@ -340,7 +296,7 @@ void VoxEditWindow::toggleviewport() {
 bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	// ui actions with direct command bindings
 	static const char *ACTIONS[] = {
-		"new", "quit", "load", "export", "import",
+		"new", "quit", "load",
 		"prefab", "save", "importheightmap", "importplane", nullptr
 	};
 
@@ -466,13 +422,6 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			sceneMgr().load(_loadFile);
 			afterLoad(_loadFile);
-		}
-		return true;
-	}
-	if (id == TBIDC("unsaved_changes_voxelize")) {
-		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			const mesh::MeshPtr& mesh = _voxedit->meshPool()->getMesh(_voxelizeFile, false);
-			sceneMgr().voxelizeModel(mesh);
 		}
 		return true;
 	}
@@ -639,12 +588,8 @@ void VoxEditWindow::onProcess() {
 		}
 	}
 
-	const bool empty = sceneMgr().empty();
-	if (_exportButton != nullptr) {
-		_exportButton->setState(tb::WIDGET_STATE_DISABLED, empty || _exportFilter.empty());
-	}
 	if (_saveButton != nullptr) {
-		_saveButton->setState(tb::WIDGET_STATE_DISABLED, empty);
+		_saveButton->setState(tb::WIDGET_STATE_DISABLED, sceneMgr().empty());
 	}
 	if (_undoButton != nullptr) {
 		_undoButton->setState(tb::WIDGET_STATE_DISABLED, !sceneMgr().mementoHandler().canUndo());
@@ -804,42 +749,6 @@ bool VoxEditWindow::saveScreenshot(const std::string& file) {
 	}
 	Log::info("Screenshot created at '%s'", file.c_str());
 	return true;
-}
-
-bool VoxEditWindow::importMesh(const std::string& file) {
-	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string file) {importMesh(file);}, _importFilter);
-		return true;
-	}
-	if (!sceneMgr().dirty()) {
-		const mesh::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
-		if (mesh->isFailed()) {
-			return false;
-		}
-		return sceneMgr().voxelizeModel(mesh);
-	}
-
-	_voxelizeFile = file;
-	popup(tr("Unsaved Modifications"),
-			tr("There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?"),
-			PopupType::YesNo, "unsaved_changes_voxelize");
-	return true;
-}
-
-bool VoxEditWindow::exportFile(const std::string& file) {
-	if (sceneMgr().empty()) {
-		popup(tr("Nothing to export"), tr("Nothing to export yet."));
-		return false;
-	}
-
-	if (file.empty()) {
-		if (_exportFilter.empty()) {
-			return false;
-		}
-		getApp()->saveDialog([this] (const std::string file) { exportFile(file); }, _exportFilter);
-		return true;
-	}
-	return sceneMgr().exportModel(file);
 }
 
 void VoxEditWindow::resetCamera() {

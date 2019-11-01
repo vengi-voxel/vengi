@@ -16,14 +16,13 @@ set(SRCS
 	AxisUtil.h AxisUtil.cpp
 	ModifierType.h
 	Config.h
-	voxelizer.h
 
 	tool/ImageUtils.h tool/ImageUtils.cpp
 	tool/Fill.h tool/Fill.cpp
 	tool/Resize.h tool/Resize.cpp
 )
 set(LIB voxedit-util)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES mesh voxelrender voxelformat voxelgenerator animation)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelrender voxelformat voxelgenerator animation)
 
 set(TEST_SRCS
 	tests/LayerManagerTest.cpp

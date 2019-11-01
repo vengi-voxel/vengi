@@ -47,7 +47,7 @@ set(FILES
 set(LIB video)
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES image util assimp)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES image util)
 if (APPLE)
 	target_link_libraries(${LIB} "-framework OpenGL")
 endif()

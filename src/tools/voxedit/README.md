@@ -27,7 +27,6 @@ my own engine and evolved into something that others might find useful, too.
 * Custom color palettes
 * Reference positions to rotate around or create auto-generated structures at
 * Viewport screenshots
-* Import and voxelize dae, obj, fbx and a lot more formats
 * Modelling with the left and right mouse buttons
 * Modelling without the mouse - just via shortcuts and keyboard
 * Animation support
@@ -67,7 +66,6 @@ my own engine and evolved into something that others might find useful, too.
 * Extend palette widget to show the used colors
 * Add color dialog for ambient and diffuse color
 * Extrude
-* Improve voxelizer
 * Improve vox extension import
 * Rigging support
   - Gizmo for rotate, scale and move

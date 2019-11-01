@@ -11,7 +11,6 @@
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "video/ShapeBuilder.h"
-#include "mesh/Mesh.h"
 #include "animation/CharacterCache.h"
 #include "animation/CharacterSettings.h"
 #include "render/ShapeRenderer.h"
@@ -152,16 +151,6 @@ private:
 	void paste(const glm::ivec3& pos);
 	void cut();
 
-	/**
-	 * @brief Convert a given point cloud to voxels
-	 * @param[in] vertices 3 component vertex data.
-	 * @param[in] vertexColors 3 component color data
-	 * @param[in] amount The amount of vertices in the buffers
-	 * @note The given @c vertices coordinates must be aligned to the region of the volume already
-	 * @note The color is expected to be in the range [0.0f,1.0f]
-	 */
-	void pointCloud(const glm::vec3* vertices, const glm::vec3 *vertexColors, size_t amount);
-
 	void rotate(int layerId, const glm::ivec3& angle, bool increaseSize = false, bool rotateAroundReferencePosition = false);
 	void rotate(int angleX, int angleY, int angleZ, bool increaseSize = false, bool rotateAroundReferencePosition = false);
 
@@ -222,12 +211,6 @@ public:
 	voxel::RawVolume* volume(int idx);
 
 	/**
-	 * @brief Voxelizes the given mesh
-	 * @param[in] mesh The mesh::Mesh to voxelize
-	 * @return @c true on success, @c false on failure
-	 */
-	bool voxelizeModel(const mesh::MeshPtr& mesh);
-	/**
 	 * @brief Import a heightmap in the current layer of the scene
 	 * @param[in] file The image file to import as heightmap.
 	 * @note The first component is used as height value. In most cases the R channel.
@@ -250,11 +233,6 @@ public:
 	 * @note The name is extended to a filename like this @c palette-<paletteName>.[lua.png]
 	 */
 	bool loadPalette(const std::string& paletteName);
-	/**
-	 * @brief Exports the volume data to a supported mesh format identified by the file extension
-	 */
-	bool exportModel(const std::string& file);
-	bool exportLayerModel(int layerId, const std::string& file);
 	/**
 	 * @brief Save the volume data to the given file
 	 * @param[in] file The file to store the volume data in. The file extension defines the volume format.

@@ -112,20 +112,9 @@ the first few entries should get lesser chunk in the multi query than the ones t
 far away from the camera - it's more likely that the far away chunks are occluded.
 doing one query per chunk is most likely a little bit overkill.
 
-# testmesh
-
-- testmesh (`TestMeshApp.cpp`) should render the sunlight and allow to change the position to test lighting
-- normal rendering must be fixed
-- bones rotation is broken on rendering. Use real bones and maybe even allow to change them.
-
 # Deployment
 
 - set up kubernetes manifests
-
-# Meshes
-
-Don't use assimp at runtime - use it only in the asset-pipeline to generate a 'better' ready-to-render format.
-Or even use only volume based models and remove assimp and video/Mesh completely...
 
 # Core
 

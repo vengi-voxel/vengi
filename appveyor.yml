@@ -20,7 +20,7 @@ cache:
   - C:\Tools\vcpkg\installed\
 
 # vcpkg enet, imgui are already available, but no on appveyor yet
-# assimp, qt5 don't build
+# qt5 don't build
 #  lua glm glslang gtest curl libuv zlib
 install:
   - cmd: set VCPKG_DEFAULT_TRIPLET=x64-windows

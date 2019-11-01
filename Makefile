@@ -94,13 +94,6 @@ update-dearimgui:
 	mv contrib/libs/dearimgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
 	sed -i 's/"imgui.h"/"ui\/imgui\/IMGUI.h"/g' src/tests/testimgui/Demo.cpp
 
-update-assimp:
-	$(call UPDATE_GIT,assimp,https://github.com/assimp/assimp.git)
-	rm -rf contrib/libs/assimp/code/* contrib/libs/assimp/include/*
-	cp -r $(UPDATEDIR)/assimp.sync/code/* contrib/libs/assimp/code
-	cp -r $(UPDATEDIR)/assimp.sync/include/* contrib/libs/assimp/include
-	git checkout contrib/libs/assimp/include/assimp/revision.h
-
 update-flatbuffers:
 	$(call UPDATE_GIT,flatbuffers,https://github.com/google/flatbuffers.git)
 	rm -rf contrib/libs/flatbuffers/flatbuffers/* contrib/libs/flatbuffers/compiler/*
@@ -165,7 +158,7 @@ update-curl:
 # TODO native file dialog support
 # TODO simpleai support
 # TODO lua support
-updatelibs: update-nuklear update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-assimp update-enet update-glm update-sdl2 update-curl update-glslang
+updatelibs: update-nuklear update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-curl update-glslang
 	$(MAKE) -C $(BUILDDIR) update-libs
 
 windows:
