@@ -33,7 +33,7 @@ function init()
   chr.setFootHeight(106.0)
   chr.setOrigin(108.0)
   chr.setHipOffset(109.0)
-  chr.setFootRight(-3.2f)
+  chr.setFootRight(-3.2)
 end
 )";
 
