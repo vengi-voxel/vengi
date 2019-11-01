@@ -5,40 +5,41 @@
 #include "core/tests/AbstractTest.h"
 #include "../MementoHandler.h"
 #include "voxel/RawVolume.h"
+#include <memory>
 
 namespace voxedit {
 
 class MementoHandlerTest: public core::AbstractTest {
 protected:
-	voxel::RawVolume* create(int size) const {
+	std::shared_ptr<voxel::RawVolume> create(int size) const {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(size - 1));
 		EXPECT_EQ(size, region.getWidthInVoxels());
-		return new voxel::RawVolume(region);
+		return std::make_shared<voxel::RawVolume>(region);
 	}
 };
 
 TEST_F(MementoHandlerTest, testMarkUndo) {
-	voxel::RawVolume* first = create(1);
-	voxel::RawVolume* second = create(2);
-	voxel::RawVolume* third = create(3);
+	std::shared_ptr<voxel::RawVolume> first = create(1);
+	std::shared_ptr<voxel::RawVolume> second = create(2);
+	std::shared_ptr<voxel::RawVolume> third = create(3);
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
 	EXPECT_FALSE(mementoHandler.canRedo());
 	EXPECT_FALSE(mementoHandler.canUndo());
 
-	mementoHandler.markUndo(0, "", first);
+	mementoHandler.markUndo(0, "", first.get());
 	EXPECT_FALSE(mementoHandler.canRedo()) << "Without a second entry and without undoing something before, you can't redo anything";
 	EXPECT_FALSE(mementoHandler.canUndo()) << "Without a second entry, you can't undo anything, because it is your initial state";
 	EXPECT_EQ(1, (int)mementoHandler.stateSize());
 	EXPECT_EQ(0, (int)mementoHandler.statePosition());
 
-	mementoHandler.markUndo(0, "", second);
+	mementoHandler.markUndo(0, "", second.get());
 	EXPECT_FALSE(mementoHandler.canRedo());
 	EXPECT_TRUE(mementoHandler.canUndo());
 	EXPECT_EQ(2, (int)mementoHandler.stateSize());
 	EXPECT_EQ(1, (int)mementoHandler.statePosition());
 
-	mementoHandler.markUndo(0, "", third);
+	mementoHandler.markUndo(0, "", third.get());
 	EXPECT_FALSE(mementoHandler.canRedo());
 	EXPECT_TRUE(mementoHandler.canUndo());
 	EXPECT_EQ(3, (int)mementoHandler.stateSize());
@@ -46,14 +47,14 @@ TEST_F(MementoHandlerTest, testMarkUndo) {
 }
 
 TEST_F(MementoHandlerTest, testUndoRedo) {
-	voxel::RawVolume* first = create(1);
-	voxel::RawVolume* second = create(2);
-	voxel::RawVolume* third = create(3);
+	std::shared_ptr<voxel::RawVolume> first = create(1);
+	std::shared_ptr<voxel::RawVolume> second = create(2);
+	std::shared_ptr<voxel::RawVolume> third = create(3);
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
-	mementoHandler.markUndo(0, "", first);
-	mementoHandler.markUndo(0, "", second);
-	mementoHandler.markUndo(0, "", third);
+	mementoHandler.markUndo(0, "", first.get());
+	mementoHandler.markUndo(0, "", second.get());
+	mementoHandler.markUndo(0, "", third.get());
 
 	const voxedit::MementoState& undoThird = mementoHandler.undo();
 	ASSERT_TRUE(undoThird.hasVolumeData());
@@ -88,14 +89,14 @@ TEST_F(MementoHandlerTest, testUndoRedo) {
 }
 
 TEST_F(MementoHandlerTest, testUndoRedoDifferentLayers) {
-	voxel::RawVolume* first = create(1);
-	voxel::RawVolume* second = create(2);
-	voxel::RawVolume* third = create(3);
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
-	mementoHandler.markUndo(0, "", first);
-	mementoHandler.markUndo(1, "", second);
-	mementoHandler.markUndo(2, "", third);
+	std::shared_ptr<voxel::RawVolume> first = create(1);
+	std::shared_ptr<voxel::RawVolume> second = create(2);
+	std::shared_ptr<voxel::RawVolume> third = create(3);
+	mementoHandler.markUndo(0, "", first.get());
+	mementoHandler.markUndo(1, "", second.get());
+	mementoHandler.markUndo(2, "", third.get());
 	EXPECT_TRUE(mementoHandler.canUndo());
 	voxedit::MementoState undoState = mementoHandler.undo();
 	EXPECT_EQ(1, undoState.layer);
@@ -115,7 +116,8 @@ TEST_F(MementoHandlerTest, testMaxUndoStates) {
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
 	for (int i = 0; i < MementoHandler::MaxStates * 2; ++i) {
-		mementoHandler.markUndo(i, "", create(1));
+		auto v = create(1);
+		mementoHandler.markUndo(i, "", v.get());
 	}
 	ASSERT_EQ(MementoHandler::MaxStates, (int)mementoHandler.stateSize());
 }
@@ -123,9 +125,12 @@ TEST_F(MementoHandlerTest, testMaxUndoStates) {
 TEST_F(MementoHandlerTest, testAddNewLayer) {
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
-	mementoHandler.markUndo(0, "Layer 1", create(1));
-	mementoHandler.markUndo(0, "Layer 1 Modified", create(2));
-	mementoHandler.markLayerAdded(1, "Layer 2", create(3));
+	std::shared_ptr<voxel::RawVolume> first = create(1);
+	std::shared_ptr<voxel::RawVolume> second = create(2);
+	std::shared_ptr<voxel::RawVolume> third = create(3);
+	mementoHandler.markUndo(0, "Layer 1", first.get());
+	mementoHandler.markUndo(0, "Layer 1 Modified", second.get());
+	mementoHandler.markLayerAdded(1, "Layer 2", third.get());
 	MementoState state;
 
 	state = mementoHandler.undo();
@@ -141,8 +146,10 @@ TEST_F(MementoHandlerTest, testAddNewLayer) {
 TEST_F(MementoHandlerTest, testAddNewLayerSimple) {
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
-	mementoHandler.markUndo(0, "Layer 1", create(1));
-	mementoHandler.markLayerAdded(1, "Layer 2", create(2));
+	std::shared_ptr<voxel::RawVolume> first = create(1);
+	std::shared_ptr<voxel::RawVolume> second = create(2);
+	mementoHandler.markUndo(0, "Layer 1", first.get());
+	mementoHandler.markLayerAdded(1, "Layer 2", second.get());
 	MementoState state;
 
 	// states:
@@ -181,10 +188,11 @@ TEST_F(MementoHandlerTest, testAddNewLayerSimple) {
 TEST_F(MementoHandlerTest, testDeleteLayer) {
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
-	mementoHandler.markUndo(0, "Layer 1", create(1));
-	voxel::RawVolume* v2 = create(2);
-	mementoHandler.markLayerAdded(1, "Layer 2 Added", v2);
-	mementoHandler.markLayerDeleted(1, "Layer 2 Deleted", v2);
+	std::shared_ptr<voxel::RawVolume> first = create(1);
+	mementoHandler.markUndo(0, "Layer 1", first.get());
+	std::shared_ptr<voxel::RawVolume> v2 = create(2);
+	mementoHandler.markLayerAdded(1, "Layer 2 Added", v2.get());
+	mementoHandler.markLayerDeleted(1, "Layer 2 Deleted", v2.get());
 
 	// states:
 	// ------------------
@@ -227,9 +235,12 @@ TEST_F(MementoHandlerTest, testDeleteLayer) {
 TEST_F(MementoHandlerTest, testAddNewLayerExt) {
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
-	mementoHandler.markUndo(0, "Layer 1", create(1));
-	mementoHandler.markUndo(0, "Layer 1 Modified", create(2));
-	mementoHandler.markLayerAdded(1, "Layer 2 Added", create(3));
+	std::shared_ptr<voxel::RawVolume> first = create(1);
+	std::shared_ptr<voxel::RawVolume> second = create(2);
+	std::shared_ptr<voxel::RawVolume> third = create(3);
+	mementoHandler.markUndo(0, "Layer 1", first.get());
+	mementoHandler.markUndo(0, "Layer 1 Modified", second.get());
+	mementoHandler.markLayerAdded(1, "Layer 2 Added", third.get());
 
 	// states:
 	// ------------------
@@ -283,11 +294,13 @@ TEST_F(MementoHandlerTest, testAddNewLayerExt) {
 TEST_F(MementoHandlerTest, testDeleteLayerExt) {
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
-	mementoHandler.markUndo(0, "Layer 1", create(1));
-	mementoHandler.markUndo(0, "Layer 1 Modified", create(2));
-	voxel::RawVolume* v3 = create(3);
-	mementoHandler.markLayerAdded(1, "Layer 2 Added", v3);
-	mementoHandler.markLayerDeleted(1, "Layer 2 Deleted", v3);
+	std::shared_ptr<voxel::RawVolume> first = create(1);
+	std::shared_ptr<voxel::RawVolume> second = create(2);
+	std::shared_ptr<voxel::RawVolume> v3 = create(3);
+	mementoHandler.markUndo(0, "Layer 1", first.get());
+	mementoHandler.markUndo(0, "Layer 1 Modified", second.get());
+	mementoHandler.markLayerAdded(1, "Layer 2 Added", v3.get());
+	mementoHandler.markLayerDeleted(1, "Layer 2 Deleted", v3.get());
 
 	// states:
 	// ------------------
@@ -478,9 +491,12 @@ TEST_F(MementoHandlerTest, testDeleteLayerExt) {
 TEST_F(MementoHandlerTest, testAddNewLayerMultiple) {
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
-	mementoHandler.markUndo(0, "Layer 1", create(1));
-	mementoHandler.markLayerAdded(1, "Layer 2 Added", create(2));
-	mementoHandler.markLayerAdded(2, "Layer 3 Added", create(3));
+	std::shared_ptr<voxel::RawVolume> first = create(1);
+	std::shared_ptr<voxel::RawVolume> second = create(2);
+	std::shared_ptr<voxel::RawVolume> third = create(3);
+	mementoHandler.markUndo(0, "Layer 1", first.get());
+	mementoHandler.markLayerAdded(1, "Layer 2 Added", second.get());
+	mementoHandler.markLayerAdded(2, "Layer 3 Added", third.get());
 
 	// states:
 	// ------------------
@@ -571,9 +587,12 @@ TEST_F(MementoHandlerTest, testAddNewLayerMultiple) {
 TEST_F(MementoHandlerTest, testAddNewLayerEdit) {
 	voxedit::MementoHandler mementoHandler;
 	ASSERT_TRUE(mementoHandler.init());
-	mementoHandler.markUndo(0, "Layer 1", create(1));
-	mementoHandler.markLayerAdded(1, "Layer 2 Added", create(2));
-	mementoHandler.markUndo(1, "Layer 2 Modified", create(3));
+	std::shared_ptr<voxel::RawVolume> first = create(1);
+	std::shared_ptr<voxel::RawVolume> second = create(2);
+	std::shared_ptr<voxel::RawVolume> third = create(3);
+	mementoHandler.markUndo(0, "Layer 1", first.get());
+	mementoHandler.markLayerAdded(1, "Layer 2 Added", second.get());
+	mementoHandler.markLayerAdded(2, "Layer 3 Modified", third.get());
 
 	// states:
 	// ------------------
