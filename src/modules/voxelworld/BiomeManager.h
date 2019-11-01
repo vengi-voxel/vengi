@@ -7,7 +7,7 @@
 #include "core/Trace.h"
 #include "Biome.h"
 #include "noise/Noise.h"
-#include "TreeContext.h"
+#include "TreeType.h"
 #include <glm/glm.hpp>
 
 namespace math {

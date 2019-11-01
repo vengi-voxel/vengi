@@ -5,14 +5,14 @@
 #pragma once
 
 #include "ui/turbobadger/Window.h"
-#include "voxelworld/TreeContext.h"
+#include "voxelgenerator/TreeContext.h"
 
 namespace voxedit {
 
 class TreeWindow : public ui::turbobadger::Window {
 private:
 	using Super = ui::turbobadger::Window;
-	voxelworld::TreeContext _ctx;
+	voxelgenerator::TreeContext _ctx;
 
 	tb::TBInlineSelect* _trunkHeight;
 	tb::TBInlineSelect* _trunkWidth;

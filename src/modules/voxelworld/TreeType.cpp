@@ -2,7 +2,8 @@
  * @file
  */
 
-#include "TreeContext.h"
+#include "TreeType.h"
+#include "core/Array.h"
 #include <string.h>
 
 namespace voxelworld {

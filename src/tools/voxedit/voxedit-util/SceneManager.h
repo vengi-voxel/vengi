@@ -6,7 +6,7 @@
 
 #include "voxel/Picking.h"
 #include "voxel/RawVolume.h"
-#include "voxelworld/TreeContext.h"
+#include "voxelgenerator/TreeContext.h"
 #include "voxelgenerator/NoiseGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelformat/VoxFileFormat.h"
@@ -291,7 +291,7 @@ public:
 	bool setGridResolution(int resolution);
 
 	void noise(int octaves, float persistence, float lacunarity, float gain, voxelgenerator::noise::NoiseType type);
-	void createTree(voxelworld::TreeContext ctx);
+	void createTree(voxelgenerator::TreeContext ctx);
 
 	/**
 	 * @brief Shift the whole volume by the given voxel amount

@@ -1524,7 +1524,7 @@ void SceneManager::noise(int octaves, float lacunarity, float frequency, float g
 	modified(layerId, wrapper.dirtyRegion());
 }
 
-void SceneManager::createTree(voxelworld::TreeContext ctx) {
+void SceneManager::createTree(voxelgenerator::TreeContext ctx) {
 	math::Random random;
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "voxel/MaterialColor.h"
-#include "TreeContext.h"
+#include "TreeType.h"
 #include "voxel/Voxel.h"
 #include "math/Random.h"
 #include "core/Assert.h"

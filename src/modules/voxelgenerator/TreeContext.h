@@ -4,34 +4,17 @@
 
 #pragma once
 
-#include "core/Array.h"
+#include "voxelworld/TreeType.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
-namespace voxelworld {
-
-enum class TreeType : int32_t {
-	Dome,
-	DomeHangingLeaves,
-	Cone,
-	Ellipsis,
-	BranchesEllipsis,
-	Cube,
-	CubeSideCubes,
-	Pine,
-	Fir,
-	Palm,
-	SpaceColonization,
-	Max
-};
-
-extern TreeType getTreeType(const char *str);
+namespace voxelgenerator {
 
 /**
  * @brief Context to create a tree.
  */
 struct TreeContext {
-	TreeType type = TreeType::Dome;
+	voxelworld::TreeType type = voxelworld::TreeType::Dome;
 	int trunkHeight = 24;	/**< The height of the trunk - it's basically also the height of the tree */
 	int trunkWidth = 2;
 	int leavesWidth = 8;	/**< the leave shape width */
