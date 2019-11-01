@@ -49,11 +49,11 @@ artifacts:
 #  - postgresql          # start PostgreSQL 9.5 service
 
 test_script:
-  - ctest -R tests-core
-  - ctest -R tests-util
-  - ctest -R tests-stock
-  - ctest -R tests-shadertool
-  - ctest -R tests-testtraze
+  - ctest -C Debug -R tests-core
+  - ctest -C Debug -R tests-util
+  - ctest -C Debug -R tests-stock
+  - ctest -C Debug -R tests-shadertool
+  - ctest -C Debug -R tests-testtraze
 
 on_finish:
   - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path tests-*.xml))
