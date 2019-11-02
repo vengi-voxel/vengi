@@ -24,6 +24,7 @@ bool DBHandler::init() {
 		return true;
 	}
 	if (!postgresInit()) {
+		Log::error("Database driver initialization failed.");
 		return false;
 	}
 	if (!core::Singleton<ConnectionPool>::getInstance().init()) {

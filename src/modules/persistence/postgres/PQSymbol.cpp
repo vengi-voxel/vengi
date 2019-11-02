@@ -131,7 +131,7 @@ bool postgresInit() {
 	}
 	return true;
 #else
-	Log::error("No postgres support");
+	Log::error("No postgres support compiled into the binary.");
 	return false;
 #endif
 }
