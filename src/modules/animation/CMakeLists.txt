@@ -23,49 +23,49 @@ set(SRCS_SHADERS
 	shaders/character.vert shaders/character.frag
 )
 set(FILES
-	characters/models/characters/human/male/heads/worker.vox
-	characters/models/characters/human/male/feets/worker.vox
-	characters/models/characters/human/male/hands/worker.vox
-	characters/models/characters/human/male/pants/worker.vox
-	characters/models/characters/human/male/belts/worker.vox
-	characters/models/characters/human/male/chests/worker.vox
+	voxel/models/characters/human/male/heads/worker.vox
+	voxel/models/characters/human/male/feets/worker.vox
+	voxel/models/characters/human/male/hands/worker.vox
+	voxel/models/characters/human/male/pants/worker.vox
+	voxel/models/characters/human/male/belts/worker.vox
+	voxel/models/characters/human/male/chests/worker.vox
 
-	characters/models/characters/human/male/heads/blacksmith.vox
-	characters/models/characters/human/male/shoulders/blacksmith.vox
-	characters/models/characters/human/male/feets/blacksmith.vox
-	characters/models/characters/human/male/hands/blacksmith.vox
-	characters/models/characters/human/male/pants/blacksmith.vox
-	characters/models/characters/human/male/belts/blacksmith.vox
-	characters/models/characters/human/male/chests/blacksmith.vox
+	voxel/models/characters/human/male/heads/blacksmith.vox
+	voxel/models/characters/human/male/shoulders/blacksmith.vox
+	voxel/models/characters/human/male/feets/blacksmith.vox
+	voxel/models/characters/human/male/hands/blacksmith.vox
+	voxel/models/characters/human/male/pants/blacksmith.vox
+	voxel/models/characters/human/male/belts/blacksmith.vox
+	voxel/models/characters/human/male/chests/blacksmith.vox
 
-	characters/models/characters/human/male/heads/knight.vox
-	characters/models/characters/human/male/shoulders/knight.vox
-	characters/models/characters/human/male/feets/knight.vox
-	characters/models/characters/human/male/hands/knight.vox
-	characters/models/characters/human/male/pants/knight.vox
-	characters/models/characters/human/male/belts/knight.vox
-	characters/models/characters/human/male/chests/knight.vox
+	voxel/models/characters/human/male/heads/knight.vox
+	voxel/models/characters/human/male/shoulders/knight.vox
+	voxel/models/characters/human/male/feets/knight.vox
+	voxel/models/characters/human/male/hands/knight.vox
+	voxel/models/characters/human/male/pants/knight.vox
+	voxel/models/characters/human/male/belts/knight.vox
+	voxel/models/characters/human/male/chests/knight.vox
 
-	characters/models/characters/undead/male/heads/default.vox
-	characters/models/characters/undead/male/feets/default.vox
-	characters/models/characters/undead/male/hands/default.vox
-	characters/models/characters/undead/male/pants/default.vox
-	characters/models/characters/undead/male/belts/default.vox
-	characters/models/characters/undead/male/chests/default.vox
+	voxel/models/characters/undead/male/heads/default.vox
+	voxel/models/characters/undead/male/feets/default.vox
+	voxel/models/characters/undead/male/hands/default.vox
+	voxel/models/characters/undead/male/pants/default.vox
+	voxel/models/characters/undead/male/belts/default.vox
+	voxel/models/characters/undead/male/chests/default.vox
 
-	characters/models/characters/undead/male/shoulders/skeleton.vox
-	characters/models/characters/undead/male/heads/skeleton.vox
-	characters/models/characters/undead/male/feets/skeleton.vox
-	characters/models/characters/undead/male/hands/skeleton.vox
-	characters/models/characters/undead/male/pants/skeleton.vox
-	characters/models/characters/undead/male/belts/skeleton.vox
-	characters/models/characters/undead/male/chests/skeleton.vox
+	voxel/models/characters/undead/male/shoulders/skeleton.vox
+	voxel/models/characters/undead/male/heads/skeleton.vox
+	voxel/models/characters/undead/male/feets/skeleton.vox
+	voxel/models/characters/undead/male/hands/skeleton.vox
+	voxel/models/characters/undead/male/pants/skeleton.vox
+	voxel/models/characters/undead/male/belts/skeleton.vox
+	voxel/models/characters/undead/male/chests/skeleton.vox
 
-	characters/models/glider.vox
-	characters/models/items/axe-1.vox
-	characters/models/items/hammer-1.vox
-	characters/models/items/sword-1.vox
-	characters/models/items/sword-2.vox
+	voxel/models/glider.vox
+	voxel/models/items/axe-1.vox
+	voxel/models/items/hammer-1.vox
+	voxel/models/items/sword-1.vox
+	voxel/models/items/sword-2.vox
 )
 set(LUA_SRCS
 	chr/undead-male-default.lua
