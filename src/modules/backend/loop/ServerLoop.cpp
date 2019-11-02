@@ -28,6 +28,7 @@
 #include "backend/world/World.h"
 #include "core/command/CommandHandler.h"
 #include "voxel/MaterialColor.h"
+#include "voxelformat/VolumeCache.h"
 #include "eventmgr/EventMgr.h"
 #include "stock/StockDataProvider.h"
 
@@ -41,13 +42,14 @@ ServerLoop::ServerLoop(const core::TimeProviderPtr& timeProvider, const MapProvi
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr,
 		const stock::StockDataProviderPtr& stockDataProvider, const MetricMgrPtr& metricMgr,
-		const persistence::PersistenceMgrPtr& persistenceMgr) :
+		const persistence::PersistenceMgrPtr& persistenceMgr,
+		const voxelformat::VolumeCachePtr& volumeCache) :
 		_network(network), _timeProvider(timeProvider), _mapProvider(mapProvider), _messageSender(messageSender),
 		_world(world),
 		_entityStorage(entityStorage), _eventBus(eventBus), _attribContainerProvider(containerProvider),
 		_cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler),
 		_stockDataProvider(stockDataProvider), _metricMgr(metricMgr), _filesystem(filesystem),
-		_persistenceMgr(persistenceMgr) {
+		_persistenceMgr(persistenceMgr), _volumeCache(volumeCache) {
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
 }
 
@@ -109,6 +111,7 @@ void ServerLoop::construct() {
 	}).setHelp("Kill npc with given entity id");
 
 	_world->construct();
+	_volumeCache->construct();
 }
 
 #define regHandler(type, handler, ...) \
@@ -150,6 +153,10 @@ bool ServerLoop::init() {
 	}
 	if (!_dbHandler->createTable(db::CooldownModel())) {
 		Log::error("Failed to create cooldown table");
+		return false;
+	}
+	if (!_volumeCache->init()) {
+		Log::error("Failed to init volume cache");
 		return false;
 	}
 
@@ -255,6 +262,7 @@ void ServerLoop::shutdown() {
 	_world->shutdown();
 	_dbHandler->shutdown();
 	_metricMgr->shutdown();
+	_volumeCache->shutdown();
 	_input.shutdown();
 	_network->shutdown();
 	if (_loop != nullptr) {

@@ -23,6 +23,7 @@
 #include "persistence/DBHandler.h"
 #include "persistence/PersistenceMgr.h"
 #include "stock/StockDataProvider.h"
+#include "voxelformat/VolumeCache.h"
 #include "compute/Compute.h"
 #include <stdlib.h>
 #include "engine-config.h"
@@ -108,8 +109,9 @@ int main(int argc, char *argv[]) {
 	const persistence::DBHandlerPtr& dbHandler = std::make_shared<persistence::DBHandler>();
 	const persistence::PersistenceMgrPtr& persistenceMgr = std::make_shared<persistence::PersistenceMgr>(dbHandler);
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(eventBus);
+	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus, timeProvider,
-			entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr);
+			entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache);
 
 	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
@@ -119,7 +121,7 @@ int main(int argc, char *argv[]) {
 	const backend::MetricMgrPtr& metricMgr = std::make_shared<backend::MetricMgr>(metric, eventBus);
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(timeProvider, mapProvider,
 			messageSender, world, dbHandler, network, filesystem, entityStorage, eventBus, containerProvider,
-			cooldownProvider, eventMgr, stockDataProvider, metricMgr, persistenceMgr);
+			cooldownProvider, eventMgr, stockDataProvider, metricMgr, persistenceMgr, volumeCache);
 
 	Server app(metric, serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);

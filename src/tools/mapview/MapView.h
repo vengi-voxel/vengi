@@ -37,6 +37,7 @@ protected:
 	ProfilerCPU _beforeUiTimer = {"BeforeUI"};
 	frontend::PlayerMovement _movement;
 	stock::StockDataProviderPtr _stockDataProvider;
+	voxelformat::VolumeCachePtr _volumeCache;
 
 	bool _lineModeRendering = false;
 	bool _freelook = false;
@@ -52,7 +53,8 @@ public:
 	MapView(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
 			const stock::StockDataProviderPtr& stockDataProvider,
 			const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
-			const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world);
+			const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world,
+			const voxelformat::VolumeCachePtr& volumeCache);
 	~MapView();
 
 	core::AppState onConstruct() override;

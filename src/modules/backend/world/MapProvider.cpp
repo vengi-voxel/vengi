@@ -20,11 +20,12 @@ MapProvider::MapProvider(
 		const AILoaderPtr& loader,
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
-		const persistence::PersistenceMgrPtr& persistenceMgr) :
+		const persistence::PersistenceMgrPtr& persistenceMgr,
+		const voxelformat::VolumeCachePtr& volumeCache) :
 		_filesystem(filesystem), _eventBus(eventBus), _timeProvider(timeProvider),
 		_entityStorage(entityStorage), _messageSender(messageSender), _loader(loader),
 		_containerProvider(containerProvider), _cooldownProvider(cooldownProvider),
-		_persistenceMgr(persistenceMgr) {
+		_persistenceMgr(persistenceMgr), _volumeCache(volumeCache) {
 }
 
 MapProvider::~MapProvider() {
@@ -59,7 +60,7 @@ bool MapProvider::init() {
 	}
 
 	const MapPtr& map = std::make_shared<Map>(1, _eventBus, _timeProvider,
-			_filesystem, _entityStorage, _messageSender,
+			_filesystem, _entityStorage, _messageSender, _volumeCache,
 			_loader, _containerProvider, _cooldownProvider, _persistenceMgr);
 	if (!map->init()) {
 		Log::warn("Failed to init map %i", map->id());

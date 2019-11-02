@@ -10,6 +10,13 @@ typedef std::shared_ptr<WorldMgr> WorldMgrPtr;
 
 }
 
+namespace voxelformat {
+
+class VolumeCache;
+typedef std::shared_ptr<VolumeCache> VolumeCachePtr;
+
+}
+
 namespace ai {
 
 class Zone;

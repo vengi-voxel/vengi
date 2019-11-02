@@ -20,7 +20,8 @@ public:
 	virtual void SetUp() override {
 		core::AbstractTest::SetUp();
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-		_world = std::make_shared<voxelworld::WorldMgr>();
+		const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
+		_world = std::make_shared<voxelworld::WorldMgr>(volumeCache);
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 		const std::string& world = _testApp->filesystem()->load("worldparams.lua");
 		ASSERT_NE("", world);

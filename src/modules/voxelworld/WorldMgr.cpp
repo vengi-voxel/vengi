@@ -19,8 +19,8 @@
 
 namespace voxelworld {
 
-WorldMgr::WorldMgr() :
-		_threadPool(core::halfcpus(), "WorldMgr"), _random(_seed) {
+WorldMgr::WorldMgr(const voxelformat::VolumeCachePtr& volumeCache) :
+		_volumeCache(volumeCache), _threadPool(core::halfcpus(), "WorldMgr"), _random(_seed) {
 }
 
 WorldMgr::~WorldMgr() {
@@ -116,7 +116,7 @@ bool WorldMgr::init(const std::string& luaParameters, const std::string& luaBiom
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
 	_volumeData = new voxel::PagedVolume(&_pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 
-	_pager.init(_volumeData, &_biomeManager, luaParameters);
+	_pager.init(_volumeData, &_biomeManager, _volumeCache.get(), luaParameters);
 
 	for (size_t i = 0u; i < _threadPool.size(); ++i) {
 		_threadPool.enqueue([this] () {extractScheduledMesh();});

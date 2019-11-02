@@ -81,7 +81,7 @@ void WorldPager::setNoiseOffset(const glm::vec2& noiseOffset) {
 	_noiseSeedOffset = noiseOffset;
 }
 
-bool WorldPager::init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager, const std::string& worldParamsLua) {
+bool WorldPager::init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager, voxelformat::VolumeCache* volumeCache, const std::string& worldParamsLua) {
 	if (!_ctx.load(worldParamsLua)) {
 		return false;
 	}
@@ -90,6 +90,7 @@ bool WorldPager::init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager
 	}
 	_volumeData = volumeData;
 	_biomeManager = biomeManager;
+	_volumeCache = volumeCache;
 	return _volumeData != nullptr && _biomeManager != nullptr;
 }
 
@@ -99,6 +100,7 @@ void WorldPager::shutdown() {
 	}
 	_noise.shutdown();
 	_volumeData = nullptr;
+	_volumeCache = nullptr;
 	_biomeManager = nullptr;
 	_ctx = WorldContext();
 }
@@ -288,7 +290,7 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
 				Log::error("Failed to assemble tree path");
 				continue;
 			}
-			const voxel::RawVolume* v = nullptr; // TODO
+			const voxel::RawVolume* v = _volumeCache->loadVolume(filename);
 			if (v == nullptr) {
 				continue;
 			}

@@ -11,6 +11,24 @@ set(SRCS
 )
 
 set(FILES
+	voxel/models/trees/palm/1.vox
+	voxel/models/trees/palm/2.vox
+	voxel/models/trees/palm/3.vox
+	voxel/models/trees/palm/4.vox
+	voxel/models/trees/palm/5.vox
+	voxel/models/trees/palm/6.vox
+	voxel/models/trees/palm/7.vox
+	voxel/models/trees/palm/8.vox
+	voxel/models/trees/palm/9.vox
+	voxel/models/trees/palm/10.vox
+	voxel/models/trees/pine/1.vox
+	voxel/models/trees/pine/2.vox
+	voxel/models/trees/pine/3.vox
+	voxel/models/trees/pine/4.vox
+	voxel/models/trees/pine/5.vox
+	voxel/models/trees/pine/6.vox
+	voxel/models/trees/pine/7.vox
+	voxel/models/trees/pine/8.vox
 )
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxelformat)

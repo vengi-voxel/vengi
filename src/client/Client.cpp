@@ -372,7 +372,8 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 int main(int argc, char *argv[]) {
 	const animation::CharacterCachePtr& characterCache = std::make_shared<animation::CharacterCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
-	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>();
+	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
+	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(volumeCache);
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();

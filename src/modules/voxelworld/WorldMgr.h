@@ -12,6 +12,7 @@
 #include "voxel/Mesh.h"
 #include "voxel/PagedVolume.h"
 #include "voxel/Raycast.h"
+#include "voxelformat/VolumeCache.h"
 #include "math/Frustum.h"
 #include "voxel/Constants.h"
 #include "voxel/Picking.h"
@@ -64,7 +65,7 @@ public:
 		FAILED
 	};
 
-	WorldMgr();
+	WorldMgr(const voxelformat::VolumeCachePtr& volumeCache);
 	~WorldMgr();
 
 	bool findPath(const glm::ivec3& start, const glm::ivec3& end, std::list<glm::ivec3>& listResult);
@@ -181,6 +182,7 @@ private:
 	WorldPager _pager;
 	voxel::PagedVolume *_volumeData = nullptr;
 	BiomeManager _biomeManager;
+	voxelformat::VolumeCachePtr _volumeCache;
 	mutable std::mt19937 _engine;
 	long _seed = 0l;
 

@@ -28,6 +28,8 @@ private:
 	attrib::ContainerProviderPtr _containerProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	persistence::PersistenceMgrPtr _persistenceMgr;
+	voxelformat::VolumeCachePtr _volumeCache;
+
 	std::unordered_map<MapId, MapPtr> _maps;
 public:
 	MapProvider(
@@ -39,7 +41,8 @@ public:
 			const AILoaderPtr& loader,
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider,
-			const persistence::PersistenceMgrPtr& persistenceMgr);
+			const persistence::PersistenceMgrPtr& persistenceMgr,
+			const voxelformat::VolumeCachePtr& volumeCache);
 	~MapProvider();
 
 	/**

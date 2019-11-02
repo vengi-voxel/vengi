@@ -15,7 +15,8 @@ private:
 	int _chunkMeshPositionTest = 0;
 protected:
 	void extract(int expected) {
-		WorldMgr world;
+		const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
+		WorldMgr world(volumeCache);
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		const io::FilesystemPtr& filesystem = _testApp->filesystem();
 		ASSERT_TRUE(world.init(filesystem->load("worldparams.lua"), filesystem->load("biomes.lua")));

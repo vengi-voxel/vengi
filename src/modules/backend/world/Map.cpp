@@ -34,12 +34,14 @@ Map::Map(MapId mapId,
 		const io::FilesystemPtr& filesystem,
 		const EntityStoragePtr& entityStorage,
 		const network::ServerMessageSenderPtr& messageSender,
+		const voxelformat::VolumeCachePtr& volumeCache,
 		const AILoaderPtr& loader,
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
 		const persistence::PersistenceMgrPtr& persistenceMgr) :
 		_mapId(mapId), _mapIdStr(std::to_string(mapId)),
-		_eventBus(eventBus), _filesystem(filesystem), _persistenceMgr(persistenceMgr), _attackMgr(this),
+		_eventBus(eventBus), _filesystem(filesystem), _persistenceMgr(persistenceMgr),
+		_volumeCache(volumeCache), _attackMgr(this),
 		_quadTree(math::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
 	_poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
 	_spawnMgr = std::make_shared<backend::SpawnMgr>(this, filesystem, entityStorage, messageSender,
@@ -110,7 +112,7 @@ bool Map::init() {
 		Log::error("Failed to init attack mgr");
 		return false;
 	}
-	_voxelWorldMgr = new voxelworld::WorldMgr();
+	_voxelWorldMgr = new voxelworld::WorldMgr(_volumeCache);
 	const std::string& worldParamData = _filesystem->load("worldparams.lua");
 	const std::string& biomesData = _filesystem->load("biomes.lua");
 	if (!_voxelWorldMgr->init(worldParamData, biomesData)) {

@@ -44,6 +44,7 @@ private:
 	MetricMgrPtr _metricMgr;
 	io::FilesystemPtr _filesystem;
 	persistence::PersistenceMgrPtr _persistenceMgr;
+	voxelformat::VolumeCachePtr _volumeCache;
 
 	uv_loop_t *_loop = nullptr;
 	uv_timer_t _worldTimer;
@@ -67,7 +68,8 @@ public:
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider,
 			const eventmgr::EventMgrPtr& eventMgr, const stock::StockDataProviderPtr& stockDataProvider,
-			const MetricMgrPtr& metricMgr, const persistence::PersistenceMgrPtr& persistenceMgr);
+			const MetricMgrPtr& metricMgr, const persistence::PersistenceMgrPtr& persistenceMgr,
+			const voxelformat::VolumeCachePtr& volumeCache);
 
 	void construct() override;
 	bool init() override;

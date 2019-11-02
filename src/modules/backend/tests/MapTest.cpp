@@ -13,6 +13,7 @@
 #include "backend/entity/ai/AILoader.h"
 #include "backend/entity/EntityStorage.h"
 #include "voxel/MaterialColor.h"
+#include "voxelformat/VolumeCache.h"
 #include "persistence/tests/Mocks.h"
 
 namespace backend {
@@ -26,6 +27,7 @@ public:
 	AILoaderPtr _loader;
 	attrib::ContainerProviderPtr _containerProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
+	voxelformat::VolumeCachePtr _volumeCache;
 	std::shared_ptr<persistence::PersistenceMgrMock> _persistenceMgr;
 
 	void SetUp() override {
@@ -42,6 +44,7 @@ public:
 		_loader = std::make_shared<AILoader>(registry);
 		_containerProvider = std::make_shared<attrib::ContainerProvider>();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
+		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
@@ -51,7 +54,7 @@ public:
 
 #define create(name, id) \
 	Map name(id, _testApp->eventBus(), _testApp->timeProvider(), _testApp->filesystem(), _entityStorage, \
-			_messageSender, _loader, _containerProvider, _cooldownProvider, _persistenceMgr);
+			_messageSender, _volumeCache, _loader, _containerProvider, _cooldownProvider, _persistenceMgr);
 
 TEST_F(MapTest, testInitShutdown) {
 	create(map, 1);

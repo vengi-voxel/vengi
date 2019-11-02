@@ -21,9 +21,10 @@
 MapView::MapView(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
-		const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world) :
+		const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world,
+		const voxelformat::VolumeCachePtr& volumeCache) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(),
-		_characterCache(characterCache), _worldRenderer(world), _worldMgr(world), _stockDataProvider(stockDataProvider) {
+		_characterCache(characterCache), _worldRenderer(world), _worldMgr(world), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache) {
 	init(ORGANISATION, "mapview");
 }
 
@@ -52,6 +53,7 @@ core::AppState MapView::onConstruct() {
 
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 
+	_volumeCache->construct();
 	_worldRenderer.construct();
 	_worldMgr->setPersist(false);
 
@@ -68,6 +70,11 @@ core::AppState MapView::onInit() {
 
 	if (!_axis.init()) {
 		Log::error("Failed to init axis");
+		return core::AppState::InitFailure;
+	}
+
+	if (!_volumeCache->init()) {
+		Log::error("Failed to init volumeCache");
 		return core::AppState::InitFailure;
 	}
 
@@ -239,6 +246,7 @@ core::AppState MapView::onRunning() {
 core::AppState MapView::onCleanup() {
 	_stockDataProvider->shutdown();
 	_characterCache->shutdown();
+	_volumeCache->shutdown();
 	_worldRenderer.shutdown();
 	_worldTimer.shutdown();
 	_axis.shutdown();
@@ -264,11 +272,12 @@ bool MapView::onKeyPress(int32_t key, int16_t modifier) {
 int main(int argc, char *argv[]) {
 	const animation::CharacterCachePtr& characterCache = std::make_shared<animation::CharacterCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
-	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>();
+	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
+	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(volumeCache);
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	MapView app(metric, characterCache, stockDataProvider, filesystem, eventBus, timeProvider, world);
+	MapView app(metric, characterCache, stockDataProvider, filesystem, eventBus, timeProvider, world, volumeCache);
 	return app.startMainLoop(argc, argv);
 }

@@ -36,6 +36,7 @@ private:
 	poi::PoiProviderPtr _poiProvider;
 	io::FilesystemPtr _filesystem;
 	persistence::PersistenceMgrPtr _persistenceMgr;
+	voxelformat::VolumeCachePtr _volumeCache;
 
 	ai::Zone* _zone = nullptr;
 
@@ -73,6 +74,7 @@ public:
 			const io::FilesystemPtr& filesystem,
 			const EntityStoragePtr& entityStorage,
 			const network::ServerMessageSenderPtr& messageSender,
+			const voxelformat:: VolumeCachePtr& volumeCache,
 			const AILoaderPtr& loader,
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider,

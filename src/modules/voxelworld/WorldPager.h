@@ -5,6 +5,7 @@
 
 #include "voxel/PagedVolume.h"
 #include "voxelworld/WorldPersister.h"
+#include "voxelformat/VolumeCache.h"
 #include "voxel/Constants.h"
 #include "core/Trace.h"
 #include "core/Log.h"
@@ -59,6 +60,7 @@ private:
 	BiomeManager* _biomeManager = nullptr;
 	WorldContext _ctx;
 	noise::Noise _noise;
+	voxelformat::VolumeCache* _volumeCache;
 
 	// don't access the volume in anything that is called here
 	void create(voxel::PagedVolume::PagerContext& ctx);
@@ -79,12 +81,13 @@ public:
 	 * @return @c true if initialization was successful, @c false otherwise
 	 * @sa shutdown()
 	 */
-	bool init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager, const std::string& worldParamsLua);
+	bool init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager, voxelformat::VolumeCache* volumeCache, const std::string& worldParamsLua);
 	/**
 	 * @brief Free resources and persist (if activated) the world data
 	 * @sa init()
 	 */
 	void shutdown();
+	void construct();
 
 	/**
 	 * @brief Allow to switch whether you would like to persist the world data.

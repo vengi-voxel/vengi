@@ -17,6 +17,7 @@
 #include "backend/entity/ai/AILoader.h"
 #include "backend/entity/EntityStorage.h"
 #include "voxel/MaterialColor.h"
+#include "voxelformat/VolumeCache.h"
 #include "persistence/tests/Mocks.h"
 
 #pragma once
@@ -85,13 +86,14 @@ protected:
 		cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		filesystem = _testApp->filesystem();
 		eventBus = _testApp->eventBus();
+		voxelformat::VolumeCachePtr volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		timeProvider = _testApp->timeProvider();
 		persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 		EXPECT_CALL(*persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		EXPECT_CALL(*persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(persistenceMgr.get());
 		mapProvider = std::make_shared<MapProvider>(filesystem, eventBus, timeProvider,
-				entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr);
+				entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache);
 		ASSERT_TRUE(mapProvider->init()) << "Failed to initialize the map provider";
 		map = mapProvider->map(1);
 	}

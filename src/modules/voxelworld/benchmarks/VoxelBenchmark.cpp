@@ -5,14 +5,17 @@
 #include "voxelworld/BiomeManager.h"
 #include "voxel/Constants.h"
 #include "voxel/IsQuadNeeded.h"
+#include "voxelformat/VolumeCache.h"
 
 class PagedVolumeBenchmark: public core::AbstractBenchmark {
 protected:
 	voxelworld::BiomeManager _biomeManager;
+	voxelformat::VolumeCache _volumeCache;
 
 public:
 	void onCleanupApp() override {
 		_biomeManager.shutdown();
+		_volumeCache.shutdown();
 	}
 
 	bool onInitApp() override {
@@ -21,6 +24,7 @@ public:
 		const std::string& luaBiomes = filesystem->load("biomes.lua");
 		Log::info("%s", luaBiomes.c_str());
 		_biomeManager.init(luaBiomes);
+		_volumeCache.init();
 		return true;
 	}
 };
@@ -34,7 +38,7 @@ BENCHMARK_DEFINE_F(PagedVolumeBenchmark, pageIn) (benchmark::State& state) {
 	voxel::PagedVolume *volumeData = new voxel::PagedVolume(&pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 	const io::FilesystemPtr& filesystem = io::filesystem();
 	const std::string& luaParameters = filesystem->load("worldparams.lua");
-	pager.init(volumeData, &_biomeManager, luaParameters);
+	pager.init(volumeData, &_biomeManager, &_volumeCache, luaParameters);
 	const glm::ivec3 meshSize(16, 128, 16);
 	int x = 0;
 	while (state.KeepRunning()) {
