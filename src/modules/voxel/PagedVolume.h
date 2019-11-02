@@ -314,6 +314,7 @@ public:
 	/// Calculates approximately how many bytes of memory the volume is currently using.
 	uint32_t calculateSizeInBytes();
 	ChunkPtr chunk(const glm::ivec3& pos) const;
+	bool hasChunk(const glm::ivec3& pos) const;
 
 	inline uint16_t chunkSideLength() const {
 		return _chunkSideLength;
