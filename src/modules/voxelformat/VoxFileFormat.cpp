@@ -4,7 +4,6 @@
 
 #include "VoxFileFormat.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/VolumeMerger.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Color.h"
@@ -37,24 +36,7 @@ uint8_t VoxFileFormat::findClosestIndex(const glm::vec4& color) const {
 }
 
 RawVolume* VoxFileFormat::merge(const VoxelVolumes& volumes) const {
-	if (volumes.empty()) {
-		return nullptr;
-	}
-	if (volumes.size() == 1) {
-		return new RawVolume(volumes[0].volume);
-	}
-	std::vector<const RawVolume*> rawVolumes;
-	rawVolumes.reserve(volumes.size());
-	for (const auto& v : volumes) {
-		if (v.volume == nullptr) {
-			continue;
-		}
-		rawVolumes.push_back(v.volume);
-	}
-	if (rawVolumes.empty()) {
-		return nullptr;
-	}
-	return ::voxel::merge(rawVolumes);
+	return volumes.merge();
 }
 
 RawVolume* VoxFileFormat::load(const io::FilePtr& file) {
@@ -70,7 +52,8 @@ RawVolume* VoxFileFormat::load(const io::FilePtr& file) {
 }
 
 bool VoxFileFormat::save(const RawVolume* volume, const io::FilePtr& file) {
-	VoxelVolumes volumes{VoxelVolume(const_cast<RawVolume*>(volume))};
+	VoxelVolumes volumes;
+	volumes.volumes = {VoxelVolume(const_cast<RawVolume*>(volume))};
 	return saveGroups(volumes, file);
 }
 

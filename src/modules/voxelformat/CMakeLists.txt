@@ -8,6 +8,7 @@ set(SRCS
 	VXMFormat.h VXMFormat.cpp
 	MeshCache.h MeshCache.cpp
 	CubFormat.h CubFormat.cpp
+	VoxelVolumes.h VoxelVolumes.cpp
 	Loader.h Loader.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel)

@@ -6,32 +6,11 @@
 
 #include "voxel/RawVolume.h"
 #include "core/io/File.h"
+#include "VoxelVolumes.h"
 #include <vector>
+#include <utility>
 
 namespace voxel {
-
-struct VoxelVolume {
-	VoxelVolume(RawVolume* _volume = nullptr, const std::string& _name = "",
-			bool _visible = true) :
-			volume(_volume), name(_name), visible(_visible) {
-		if (volume != nullptr) {
-			pivot = volume->region().getCentre();
-		} else {
-			pivot = glm::zero<glm::ivec3>();
-		}
-	}
-	VoxelVolume(RawVolume* _volume, const std::string& _name,
-			bool _visible,
-			const glm::ivec3& _pivot) :
-			volume(_volume), name(_name), visible(_visible), pivot(_pivot) {
-	}
-	RawVolume* volume;
-	std::string name;
-	bool visible;
-	glm::ivec3 pivot;
-};
-
-using VoxelVolumes = std::vector<VoxelVolume>;
 
 class VoxFileFormat {
 protected:
