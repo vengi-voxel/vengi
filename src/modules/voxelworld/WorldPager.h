@@ -20,9 +20,15 @@ class BiomeManager;
 
 /**
  * @brief Pager implementation for PagedVolume.
+ *
+ * This class is responsible for generating the voxel world.
+ * The pager is the streaming interface for the voxel::PagedVolume.
  */
 class WorldPager: public voxel::PagedVolume::Pager {
 private:
+	/**
+	 * @brief Defines how the world is generated
+	 */
 	struct WorldContext {
 		WorldContext();
 		bool load(const std::string& lua);
