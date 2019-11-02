@@ -12,6 +12,7 @@
 
 namespace voxel {
 class PagedVolumeWrapper;
+class RawVolume;
 }
 
 namespace voxelworld {
@@ -64,6 +65,8 @@ private:
 
 	// use a 2d noise to switch between different noises - to generate steep mountains
 	void createWorld(const WorldContext& worldCtx, voxel::PagedVolumeWrapper& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const;
+	void placeTrees(voxel::PagedVolume::PagerContext& ctx);
+	void addVolumeToPosition(voxel::PagedVolumeWrapper& target, const voxel::RawVolume* source, const glm::ivec3& pos);
 
 	int fillVoxels(int x, int y, int z, const WorldContext& worldCtx, voxel::Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const;
 	float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const;

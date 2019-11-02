@@ -18,8 +18,15 @@ Biome::Biome(voxel::VoxelType _type, const voxel::MaterialColorIndices& _indices
 	core_assert(!indices.empty());
 }
 
-void Biome::addTreeType(TreeType treeType) {
-	_treeTypes.push_back(treeType);
+Biome::~Biome() {
+	for (const char *t : _treeTypes) {
+		SDL_free(const_cast<char*>(t));
+	}
+	_treeTypes.clear();
+}
+
+void Biome::addTreeType(const char *treeType) {
+	_treeTypes.push_back(SDL_strdup(treeType));
 }
 
 int Biome::calcTreeDistribution() const {

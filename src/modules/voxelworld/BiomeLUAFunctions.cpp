@@ -49,11 +49,7 @@ static int biomelua_biometostring(lua_State* s) {
 static int biomelua_addtree(lua_State* s) {
 	Biome** a = clua_get<Biome*>(s, 1);
 	const char* treeType = luaL_checkstring(s, 2);
-	const TreeType type = getTreeType(treeType);
-	if (type == TreeType::Max) {
-		return luaL_error(s, "Failed to resolve tree type: '%s'", treeType);
-	}
-	(*a)->addTreeType(type);
+	(*a)->addTreeType(treeType);
 	lua_pushboolean(s, 1);
 	return 1;
 }

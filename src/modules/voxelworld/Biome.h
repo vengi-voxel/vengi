@@ -21,10 +21,11 @@ private:
 	int calcTreeDistribution() const;
 	int calcCloudDistribution() const;
 	int calcPlantDistribution() const;
-	std::vector<TreeType> _treeTypes;
+	std::vector<const char*> _treeTypes;
 
 public:
 	Biome(voxel::VoxelType type, const voxel::MaterialColorIndices& indices, int16_t yMin, int16_t yMax, float humidity, float temperature, bool underground);
+	~Biome();
 
 	const voxel::MaterialColorIndices indices;
 	const int16_t yMin;
@@ -41,8 +42,8 @@ public:
 	bool hasTrees() const;
 	bool hasClouds() const;
 
-	const std::vector<TreeType>& treeTypes() const;
-	void addTreeType(TreeType treeType);
+	const std::vector<const char*>& treeTypes() const;
+	void addTreeType(const char* treeType);
 
 	voxel::Voxel voxel(math::Random& random) const;
 	voxel::Voxel voxel(uint8_t colorIndex) const;
@@ -78,7 +79,7 @@ inline voxel::Voxel Biome::voxel() const {
 	return voxel(random);
 }
 
-inline const std::vector<TreeType>& Biome::treeTypes() const {
+inline const std::vector<const char*>& Biome::treeTypes() const {
 	return _treeTypes;
 }
 

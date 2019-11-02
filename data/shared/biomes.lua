@@ -18,9 +18,8 @@ end
 
 ---
 -- @biome The biome to add the tree type to
--- @tree Valid values:
--- Dome, DomeHangingLeaves, Cone, Ellipsis, BranchesEllipsis, Cube,
--- CubeSideCubes, Pine, Fir, Palm, SpaceColonization
+-- @tree Valid values are defined by the assets available in the data dir. The type defines the directory
+-- to load the tree volumes from
 --
 function addTree(biome, tree)
 	biome:addTree(tree)
@@ -28,22 +27,13 @@ end
 
 function addSand(lower, upper, humidity, temperature, underGround)
 	local sand = addBiome(lower, upper, humidity, temperature, "Sand", underGround)
-	addTree(sand, "Palm")
+	addTree(sand, "palm")
 	return sand
 end
 
 function addGrass(lower, upper, humidity, temperature, underGround)
 	local grass = addBiome(lower, upper, humidity, temperature, "Grass", underGround)
-	addTree(grass, "SpaceColonization")
-	addTree(grass, "Dome")
-	addTree(grass, "DomeHangingLeaves")
-	addTree(grass, "Cone")
-	addTree(grass, "Ellipsis")
-	addTree(grass, "BranchesEllipsis")
-	addTree(grass, "Cube")
-	addTree(grass, "CubeSideCubes")
-	addTree(grass, "Pine")
-	addTree(grass, "Fir")
+	addTree(grass, "pine")
 	return grass
 end
 

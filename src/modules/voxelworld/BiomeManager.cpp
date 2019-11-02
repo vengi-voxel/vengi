@@ -166,10 +166,10 @@ void BiomeManager::distributePointsInRegion(const voxel::Region& region, std::ve
 	positions = noise::poissonDiskDistribution(distribution, shrinked.rect(), initialSet);
 }
 
-void BiomeManager::getTreeTypes(const voxel::Region& region, std::vector<TreeType>& treeTypes) const {
+const std::vector<const char*>& BiomeManager::getTreeTypes(const voxel::Region& region) const {
 	const glm::ivec3& pos = region.getCentre();
 	const Biome* biome = getBiome(pos);
-	treeTypes = biome->treeTypes();
+	return biome->treeTypes();
 }
 
 void BiomeManager::getTreePositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {

@@ -5,7 +5,10 @@
 #include "math/Random.h"
 #include "voxelworld/BiomeManager.h"
 #include "voxel/PagedVolumeWrapper.h"
+#include "voxel/Raycast.h"
 #include "commonlua/LUA.h"
+#include "core/String.h"
+#include <array>
 
 namespace voxelworld {
 
@@ -186,11 +189,125 @@ int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCt
 	return core_max(ni - lowerY, voxel::MAX_WATER_HEIGHT - lowerY);
 }
 
+/**
+ * @brief Looks for a suitable height level for placing a tree
+ * @return @c -1 if no suitable floor for placing a tree was found
+ */
+static int findFloor(const voxel::PagedVolume* volume, int x, int z) {
+	glm::ivec3 start(x, voxel::MAX_TERRAIN_HEIGHT - 1, z);
+	glm::ivec3 end(x, voxel::MAX_WATER_HEIGHT, z);
+	int y = voxel::NO_FLOOR_FOUND;
+	voxel::raycastWithEndpoints(volume, start, end, [&y] (const typename voxel::PagedVolume::Sampler& sampler) {
+		const voxel::Voxel& voxel = sampler.voxel();
+		const voxel::VoxelType material = voxel.getMaterial();
+		if (isLeaves(material)) {
+			return false;
+		}
+		if (!isRock(material) && (isFloor(material) || isWood(material))) {
+			y = sampler.position().y + 1;
+			return false;
+		}
+		return true;
+	});
+	return y;
+}
+
 void WorldPager::create(voxel::PagedVolume::PagerContext& ctx) {
 	voxel::PagedVolumeWrapper wrapper(_volumeData, ctx.chunk, ctx.region);
 	core_trace_scoped(CreateWorld);
 	math::Random random(_seed);
 	createWorld(_ctx, wrapper, _noiseSeedOffset.x, _noiseSeedOffset.y);
+	placeTrees(ctx);
+}
+
+void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
+	// expand region to all surrounding regions by half of the region size.
+	// we do this to be able to limit the generation on the current chunk. Otherwise
+	// we would endlessly generate new chunks just because the trees overlap to
+	// another chunk.
+	const glm::ivec3& mins = ctx.region.getLowerCorner();
+	const glm::ivec3& maxs = ctx.region.getUpperCorner();
+	const glm::ivec3& dim = ctx.region.getDimensionsInVoxels();
+	const std::array<voxel::Region, 9> regions = {
+		// left neightbors
+		voxel::Region(mins.x - dim.x, mins.y, mins.z - dim.z, maxs.x - dim.x, maxs.y, maxs.z - dim.z),
+		voxel::Region(mins.x - dim.x, mins.y, mins.z,         maxs.x - dim.x, maxs.y, maxs.z        ),
+		voxel::Region(mins.x - dim.x, mins.y, mins.z + dim.z, maxs.x - dim.x, maxs.y, maxs.z + dim.z),
+
+		// right neightbors
+		voxel::Region(mins.x + dim.x, mins.y, mins.z - dim.z, maxs.x + dim.x, maxs.y, maxs.z - dim.z),
+		voxel::Region(mins.x + dim.x, mins.y, mins.z,         maxs.x + dim.x, maxs.y, maxs.z        ),
+		voxel::Region(mins.x + dim.x, mins.y, mins.z + dim.z, maxs.x + dim.x, maxs.y, maxs.z + dim.z),
+
+		// front and back neightbors
+		voxel::Region(mins.x, mins.y, mins.z - dim.z, maxs.x, maxs.y, maxs.z - dim.z),
+		voxel::Region(mins.x, mins.y, mins.z + dim.z, maxs.x, maxs.y, maxs.z + dim.z),
+
+		// own chunk region
+		voxel::Region(mins, maxs)
+	};
+	// the assumption here is that we get a full heigt paging request, otherwise we
+	// would have to loop over more regions.
+	core_assert(ctx.region.getLowerY() == 0);
+	core_assert(ctx.region.getUpperY() == voxel::MAX_HEIGHT);
+	voxel::PagedVolumeWrapper wrapper(_volumeData, ctx.chunk, ctx.region);
+	std::vector<const char*> treeTypes;
+
+	for (const voxel::Region& region : regions) {
+		treeTypes = _biomeManager->getTreeTypes(region);
+		if (treeTypes.empty()) {
+			Log::debug("No tree types given for region %s", region.toString().c_str());
+			return;
+		}
+		const int border = 2;
+		math::Random random(_seed + region.getCentreX() + region.getCentreZ());
+
+		random.shuffle(treeTypes.begin(), treeTypes.end());
+
+		std::vector<glm::vec2> positions;
+		_biomeManager->getTreePositions(region, positions, random, border);
+		Log::debug("Found %i possible positions", (int)positions.size());
+
+		int treeTypeIndex = 0;
+		const int treeTypeSize = (int)treeTypes.size();
+		for (const glm::vec2& position : positions) {
+			glm::ivec3 treePos(position.x, 0, position.y);
+			if (!_volumeData->hasChunk(treePos)) {
+				continue;
+			}
+			treePos.y = findFloor(_volumeData, position.x, position.y);
+			if (treePos.y <= voxel::MAX_WATER_HEIGHT) {
+				continue;
+			}
+			const char *treeType = treeTypes[treeTypeIndex++];
+			treeTypeIndex %= treeTypeSize;
+			// TODO: this hardcoded 10... no way
+			const int treeIndex = random.random(0, 10);
+			char filename[64];
+			if (!core::string::formatBuf(filename, sizeof(filename), "models/trees/%s/%i.vox", treeType, treeIndex)) {
+				Log::error("Failed to assemble tree path");
+				continue;
+			}
+			const voxel::RawVolume* v = nullptr; // TODO
+			if (v == nullptr) {
+				continue;
+			}
+			addVolumeToPosition(wrapper, v, treePos);
+		}
+	}
+}
+
+void WorldPager::addVolumeToPosition(voxel::PagedVolumeWrapper& target, const voxel::RawVolume* source, const glm::ivec3& pos) {
+	const voxel::Region& region = source->region();
+	const glm::ivec3& mins = region.getLowerCorner();
+	const glm::ivec3& maxs = region.getUpperCorner();
+	for (int x = mins.x; x <= maxs.x; ++x) {
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			for (int z = mins.z; z <= maxs.z; ++z) {
+				target.setVoxel(x + pos.x, y + pos.y, z + pos.z, source->voxel(x, y, z));
+			}
+		}
+	}
 }
 
 }

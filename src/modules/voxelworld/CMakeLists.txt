@@ -9,7 +9,11 @@ set(SRCS
 	WorldPager.h WorldPager.cpp
 	WorldEvents.h
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel)
+
+set(FILES
+)
+
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxelformat)
 
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
