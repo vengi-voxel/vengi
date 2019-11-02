@@ -134,7 +134,7 @@ void WorldMgr::extractScheduledMesh() {
 		core_trace_scoped(MeshExtraction);
 		const glm::ivec3& size = meshSize();
 		const glm::ivec3 mins(pos);
-		const glm::ivec3 maxs(glm::ivec3(pos) + size - 1);
+		const glm::ivec3 maxs(pos.x + size.x - 1, pos.y + size.y - 2, pos.z + size.z - 1);
 		const voxel::Region region(mins, maxs);
 		// these numbers are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
 		// they also heavily depend on the size of the mesh region we extract
