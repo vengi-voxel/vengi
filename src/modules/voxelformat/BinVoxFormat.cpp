@@ -114,23 +114,22 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 	return true;
 }
 
-VoxelVolumes BinVoxFormat::loadGroups(const io::FilePtr& file) {
+bool BinVoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	std::string str = file->load();
 	const size_t dataOffset = str.find("data");
 	if (dataOffset == std::string::npos) {
 		Log::error("Could not find end of header in %s", file->name().c_str());
-		return VoxelVolumes();
+		return false;
 	}
 	const std::string& header = str.substr(0, dataOffset);
 	if (!readHeader(header)) {
 		Log::error("Could not read header of %s", file->name().c_str());
-		return VoxelVolumes();
+		return false;
 	}
-	VoxelVolumes v;
-	if (!readData(file, dataOffset + 5, v)) {
+	if (!readData(file, dataOffset + 5, volumes)) {
 		Log::warn("Could not load the whole data from %s", file->name().c_str());
 	}
-	return v;
+	return true;
 }
 
 bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {

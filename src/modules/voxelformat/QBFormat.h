@@ -59,7 +59,7 @@ private:
 
 	bool saveMatrix(io::FileStream& stream, const VoxelVolume& volume) const;
 public:
-	VoxelVolumes loadGroups(const io::FilePtr& file) override;
+	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

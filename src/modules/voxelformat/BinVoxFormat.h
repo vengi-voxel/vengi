@@ -31,7 +31,7 @@ private:
 	bool readData(const io::FilePtr& file, const size_t offset, VoxelVolumes& volumes);
 	bool readHeader(const std::string& header);
 public:
-	VoxelVolumes loadGroups(const io::FilePtr& file) override;
+	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

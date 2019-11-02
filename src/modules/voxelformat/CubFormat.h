@@ -19,7 +19,7 @@ namespace voxel {
  */
 class CubFormat : public VoxFileFormat {
 public:
-	VoxelVolumes loadGroups(const io::FilePtr& file) override;
+	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

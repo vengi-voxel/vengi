@@ -13,13 +13,13 @@ namespace voxel {
 #define wrap(read) \
 	if (read != 0) { \
 		Log::error("Could not load cub file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
-		return VoxelVolumes(); \
+		return false; \
 	}
 
-VoxelVolumes CubFormat::loadGroups(const io::FilePtr& file) {
+bool CubFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	if (!(bool)file || !file->exists()) {
 		Log::error("Could not load cub file: File doesn't exist");
-		return VoxelVolumes();
+		return false;
 	}
 	io::FileStream stream(file.get());
 
@@ -27,8 +27,6 @@ VoxelVolumes CubFormat::loadGroups(const io::FilePtr& file) {
 	wrap(stream.readInt(width))
 	wrap(stream.readInt(depth))
 	wrap(stream.readInt(height))
-
-	VoxelVolumes volumes;
 
 	RawVolume *volume = new RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
 	volumes.push_back(VoxelVolume{volume, file->fileName(), true});
@@ -58,7 +56,7 @@ VoxelVolumes CubFormat::loadGroups(const io::FilePtr& file) {
 		}
 	}
 
-	return volumes;
+	return true;
 }
 
 #undef wrap

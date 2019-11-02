@@ -27,7 +27,7 @@ private:
 	bool saveChunk_SIZE(io::FileStream& stream, const voxel::Region& region) const;
 	bool saveChunk_RGBA(io::FileStream& stream) const;
 public:
-	VoxelVolumes loadGroups(const io::FilePtr& file) override;
+	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

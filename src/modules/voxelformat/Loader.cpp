@@ -21,22 +21,22 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 	const std::string& ext = filePtr->extension();
 	if (ext == "qbt") {
 		voxel::QBTFormat f;
-		newVolumes = f.loadGroups(filePtr);
+		f.loadGroups(filePtr, newVolumes);
 	} else if (ext == "vox") {
 		voxel::VoxFormat f;
-		newVolumes = f.loadGroups(filePtr);
+		f.loadGroups(filePtr, newVolumes);
 	} else if (ext == "qb") {
 		voxel::QBFormat f;
-		newVolumes = f.loadGroups(filePtr);
+		f.loadGroups(filePtr, newVolumes);
 	} else if (ext == "cub") {
 		voxel::CubFormat f;
-		newVolumes = f.loadGroups(filePtr);
+		f.loadGroups(filePtr, newVolumes);
 	} else if (ext == "vxm") {
 		voxel::VXMFormat f;
-		newVolumes = f.loadGroups(filePtr);
+		f.loadGroups(filePtr, newVolumes);
 	} else if (ext == "binvox") {
 		voxel::BinVoxFormat f;
-		newVolumes = f.loadGroups(filePtr);
+		f.loadGroups(filePtr, newVolumes);
 	} else {
 		Log::error("Failed to load model file %s - unsupported file format for extension '%s'",
 				filePtr->name().c_str(), ext.c_str());

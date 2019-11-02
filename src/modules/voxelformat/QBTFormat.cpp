@@ -496,17 +496,16 @@ bool QBTFormat::loadFromStream(io::FileStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-VoxelVolumes QBTFormat::loadGroups(const io::FilePtr& file) {
+bool QBTFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	if (!(bool)file || !file->exists()) {
 		Log::error("Could not load qbt file: File doesn't exist");
-		return VoxelVolumes();
+		return false;
 	}
 	io::FileStream stream(file.get());
-	VoxelVolumes volumes;
 	if (!loadFromStream(stream, volumes)) {
-		return VoxelVolumes();
+		return false;
 	}
-	return volumes;
+	return true;
 }
 
 #undef wrapSave

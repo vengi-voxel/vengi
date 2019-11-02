@@ -13,23 +13,23 @@ namespace voxel {
 #define wrap(read) \
 	if (read != 0) { \
 		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
-		return VoxelVolumes(); \
+		return false; \
 	}
 
 #define wrapBool(read) \
 	if (read != true) { \
 		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
-		return VoxelVolumes(); \
+		return false; \
 	}
 
 bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
 	return false;
 }
 
-VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
+bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	if (!(bool)file || !file->exists()) {
 		Log::error("Could not load vmx file: File doesn't exist");
-		return VoxelVolumes();
+		return false;
 	}
 	io::FileStream stream(file.get());
 
@@ -41,7 +41,7 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 		uint8_t buf[4];
 		FourCCRev(buf, header);
 		Log::error("Could not load vxm file: Invalid magic found (%s)", (const char *)buf);
-		return VoxelVolumes();
+		return false;
 	}
 
 	bool foundPivot = false;
@@ -65,14 +65,14 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 	wrap(stream.readInt(textureDim.y));
 	if (glm::any(glm::greaterThan(textureDim, glm::uvec2(2048)))) {
 		Log::warn("Size of texture exceeds the max allowed value");
-		return VoxelVolumes();
+		return false;
 	}
 
 	uint32_t texAmount;
 	wrap(stream.readInt(texAmount));
 	if (texAmount > 0xFFFF) {
 		Log::warn("Size of textures exceeds the max allowed value: %i", texAmount);
-		return VoxelVolumes();
+		return false;
 	}
 
 	Log::debug("texAmount: %i", (int)texAmount);
@@ -105,7 +105,7 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 		wrap(stream.readInt(quadAmount));
 		if (quadAmount > 0x40000U) {
 			Log::warn("Size of quads exceeds the max allowed value");
-			return VoxelVolumes();
+			return false;
 		}
 		struct QuadVertex {
 			glm::vec3 pos;
@@ -122,11 +122,11 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 
 	if (glm::any(glm::greaterThan(size, glm::uvec3(2048)))) {
 		Log::warn("Size of volume exceeds the max allowed value");
-		return VoxelVolumes();
+		return false;
 	}
 	if (glm::any(glm::lessThan(size, glm::uvec3(1)))) {
 		Log::warn("Size of volume results in empty space");
-		return VoxelVolumes();
+		return false;
 	}
 
 	Log::debug("Volume of size %u:%u:%u", size.x, size.y, size.z);
@@ -194,9 +194,8 @@ VoxelVolumes VXMFormat::loadGroups(const io::FilePtr& file) {
 		idx += length;
 	}
 	delete[] palette;
-	VoxelVolumes volumes;
 	volumes.push_back(VoxelVolume(volume, "", true, ipivot));
-	return volumes;
+	return true;
 }
 
 #undef wrap
