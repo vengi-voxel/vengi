@@ -8,6 +8,7 @@ set(SRCS
 	VXMFormat.h VXMFormat.cpp
 	MeshCache.h MeshCache.cpp
 	CubFormat.h CubFormat.cpp
+	VolumeCache.h VolumeCache.cpp
 	VoxelVolumes.h VoxelVolumes.cpp
 	Loader.h Loader.cpp
 )
