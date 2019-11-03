@@ -30,11 +30,11 @@ void Biome::addTreeType(const char *treeType) {
 }
 
 int Biome::calcTreeDistribution() const {
-	int distribution = 100;
+	int distribution = 40;
 	if (temperature > 0.7f || humidity < 0.2f) {
-		distribution = 150;
+		distribution = 65;
 	} else if (temperature > 0.9f || humidity < 0.1f) {
-		distribution = 200;
+		distribution = 90;
 	}
 	return distribution;
 }

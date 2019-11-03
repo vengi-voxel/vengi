@@ -284,7 +284,7 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
 			const char *treeType = treeTypes[treeTypeIndex++];
 			treeTypeIndex %= treeTypeSize;
 			// TODO: this hardcoded 10... no way
-			const int treeIndex = random.random(0, 10);
+			const int treeIndex = 1 ; //random.random(1, 10);
 			char filename[64];
 			if (!core::string::formatBuf(filename, sizeof(filename), "models/trees/%s/%i.vox", treeType, treeIndex)) {
 				Log::error("Failed to assemble tree path");
@@ -303,10 +303,18 @@ void WorldPager::addVolumeToPosition(voxel::PagedVolumeWrapper& target, const vo
 	const voxel::Region& region = source->region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
+	voxel::PagedVolumeWrapper::Sampler sampler(target);
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int y = mins.y; y <= maxs.y; ++y) {
+			sampler.setPosition(pos.x + x, pos.y + y, pos.z + mins.z);
 			for (int z = mins.z; z <= maxs.z; ++z) {
-				target.setVoxel(x + pos.x, y + pos.y, z + pos.z, source->voxel(x, y, z));
+				const voxel::Voxel& voxel = source->voxel(x, y, z);
+				if (voxel::isAir(voxel.getMaterial())) {
+					sampler.movePositiveZ();
+					continue;
+				}
+				sampler.setVoxel(voxel);
+				sampler.movePositiveZ();
 			}
 		}
 	}
