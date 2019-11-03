@@ -315,6 +315,7 @@ public:
 	uint32_t calculateSizeInBytes();
 	ChunkPtr chunk(const glm::ivec3& pos) const;
 	bool hasChunk(const glm::ivec3& pos) const;
+	bool hasChunk(int32_t x, int32_t y, int32_t z) const;
 
 	inline uint16_t chunkSideLength() const {
 		return _chunkSideLength;
