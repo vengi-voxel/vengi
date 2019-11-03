@@ -303,13 +303,14 @@ void WorldPager::addVolumeToPosition(voxel::PagedVolumeWrapper& target, const vo
 	const voxel::Region& region = source->region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
+	const voxel::Region& targetRegion = target.region();
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		const int nx = pos.x + x;
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			const int ny = pos.y + y;
 			for (int z = mins.z; z <= maxs.z; ++z) {
 				const int nz = pos.z + z;
-				if (!target.volume()->hasChunk(nx, ny, nz)) {
+				if (!targetRegion.containsPoint(nx, ny, nz)) {
 					continue;
 				}
 				const voxel::Voxel& voxel = source->voxel(x, y, z);
