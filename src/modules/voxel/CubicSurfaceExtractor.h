@@ -17,7 +17,7 @@
 #include "core/Trace.h"
 #include "Face.h"
 
-#define BUFFERED_SAMPLER 1
+#define BUFFERED_SAMPLER 0
 
 namespace voxel {
 
