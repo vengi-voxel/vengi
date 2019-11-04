@@ -4,7 +4,8 @@
 #pragma once
 
 #include "voxel/PagedVolume.h"
-#include "voxelworld/WorldPersister.h"
+#include "WorldPersister.h"
+#include "WorldContext.h"
 #include "voxelformat/VolumeCache.h"
 #include "voxel/Constants.h"
 #include "core/Trace.h"
@@ -28,30 +29,6 @@ class BiomeManager;
  */
 class WorldPager: public voxel::PagedVolume::Pager {
 private:
-	/**
-	 * @brief Defines how the world is generated
-	 */
-	struct WorldContext {
-		WorldContext();
-		bool load(const std::string& lua);
-
-		int landscapeNoiseOctaves;
-		float landscapeNoiseLacunarity;
-		float landscapeNoiseFrequency;
-		float landscapeNoiseGain;
-
-		int caveNoiseOctaves;
-		float caveNoiseLacunarity;
-		float caveNoiseFrequency;
-		float caveNoiseGain;
-		float caveDensityThreshold;
-
-		int mountainNoiseOctaves;
-		float mountainNoiseLacunarity;
-		float mountainNoiseFrequency;
-		float mountainNoiseGain;
-	};
-
 	WorldPersister _worldPersister;
 	long _seed = 0l;
 	glm::vec2 _noiseSeedOffset;

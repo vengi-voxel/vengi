@@ -7,6 +7,7 @@ set(SRCS
 	WorldPersister.h WorldPersister.cpp
 	WorldPager.h WorldPager.cpp
 	WorldEvents.h
+	WorldContext.h WorldContext.cpp
 )
 
 set(FILES

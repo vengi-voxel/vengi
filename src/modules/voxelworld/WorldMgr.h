@@ -145,7 +145,7 @@ public:
 
 	/**
 	 * @brief If you don't need an extracted mesh anymore, make sure to allow the reextraction at a later time.
-	 * @param[in] pos A WorldMgr vector that is automatically converted into a mesh tile vector
+	 * @param[in] pos A world position vector that is automatically converted into a mesh tile vector
 	 * @return @c true if the given position was already extracted, @c false if not.
 	 */
 	bool allowReExtraction(const glm::ivec3& pos);
