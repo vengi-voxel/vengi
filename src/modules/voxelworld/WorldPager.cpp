@@ -82,7 +82,7 @@ void WorldPager::setNoiseOffset(const glm::vec2& noiseOffset) {
 }
 
 bool WorldPager::init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager, voxelformat::VolumeCache* volumeCache, const std::string& worldParamsLua) {
-	if (!_ctx.load(worldParamsLua)) {
+	if (!_worldCtx.load(worldParamsLua)) {
 		return false;
 	}
 	if (!_noise.init()) {
@@ -102,7 +102,7 @@ void WorldPager::shutdown() {
 	_volumeData = nullptr;
 	_volumeCache = nullptr;
 	_biomeManager = nullptr;
-	_ctx = WorldContext();
+	_worldCtx = WorldContext();
 }
 
 // use a 2d noise to switch between different noises - to generate steep mountains
@@ -214,22 +214,22 @@ static int findFloor(const voxel::PagedVolume* volume, int x, int z) {
 	return y;
 }
 
-void WorldPager::create(voxel::PagedVolume::PagerContext& ctx) {
-	voxel::PagedVolumeWrapper wrapper(_volumeData, ctx.chunk, ctx.region);
+void WorldPager::create(voxel::PagedVolume::PagerContext& pagerCtx) {
+	voxel::PagedVolumeWrapper wrapper(_volumeData, pagerCtx.chunk, pagerCtx.region);
 	core_trace_scoped(CreateWorld);
 	math::Random random(_seed);
-	createWorld(_ctx, wrapper, _noiseSeedOffset.x, _noiseSeedOffset.y);
-	placeTrees(ctx);
+	createWorld(_worldCtx, wrapper, _noiseSeedOffset.x, _noiseSeedOffset.y);
+	placeTrees(pagerCtx);
 }
 
-void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
+void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 	// expand region to all surrounding regions by half of the region size.
 	// we do this to be able to limit the generation on the current chunk. Otherwise
 	// we would endlessly generate new chunks just because the trees overlap to
 	// another chunk.
-	const glm::ivec3& mins = ctx.region.getLowerCorner();
-	const glm::ivec3& maxs = ctx.region.getUpperCorner();
-	const glm::ivec3& dim = ctx.region.getDimensionsInVoxels();
+	const glm::ivec3& mins = pagerCtx.region.getLowerCorner();
+	const glm::ivec3& maxs = pagerCtx.region.getUpperCorner();
+	const glm::ivec3& dim = pagerCtx.region.getDimensionsInVoxels();
 	const std::array<voxel::Region, 9> regions = {
 		// left neighbors
 		voxel::Region(mins.x - dim.x, mins.y, mins.z - dim.z, maxs.x - dim.x, maxs.y, maxs.z - dim.z),
@@ -250,9 +250,9 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
 	};
 	// the assumption here is that we get a full heigt paging request, otherwise we
 	// would have to loop over more regions.
-	core_assert(ctx.region.getLowerY() == 0);
-	core_assert(ctx.region.getUpperY() == voxel::MAX_HEIGHT);
-	voxel::PagedVolumeWrapper wrapper(_volumeData, ctx.chunk, ctx.region);
+	core_assert(pagerCtx.region.getLowerY() == 0);
+	core_assert(pagerCtx.region.getUpperY() == voxel::MAX_HEIGHT);
+	voxel::PagedVolumeWrapper wrapper(_volumeData, pagerCtx.chunk, pagerCtx.region);
 	std::vector<const char*> treeTypes;
 
 	for (size_t i = 0; i < regions.size(); ++i) {
@@ -272,7 +272,7 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
 		int treeTypeIndex = 0;
 		const int treeTypeSize = (int)treeTypes.size();
 		for (const glm::vec2& position : positions) {
-			glm::ivec3 treePos(position.x, ctx.region.getCentreY(), position.y);
+			glm::ivec3 treePos(position.x, pagerCtx.region.getCentreY(), position.y);
 			if (!_volumeData->hasChunk(treePos)) {
 				continue;
 			}

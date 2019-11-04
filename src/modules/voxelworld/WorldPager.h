@@ -58,16 +58,16 @@ private:
 
 	voxel::PagedVolume *_volumeData = nullptr;
 	BiomeManager* _biomeManager = nullptr;
-	WorldContext _ctx;
+	WorldContext _worldCtx;
 	noise::Noise _noise;
 	voxelformat::VolumeCache* _volumeCache;
 
 	// don't access the volume in anything that is called here
-	void create(voxel::PagedVolume::PagerContext& ctx);
+	void create(voxel::PagedVolume::PagerContext& pagerCtx);
 
 	// use a 2d noise to switch between different noises - to generate steep mountains
 	void createWorld(const WorldContext& worldCtx, voxel::PagedVolumeWrapper& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const;
-	void placeTrees(voxel::PagedVolume::PagerContext& ctx);
+	void placeTrees(voxel::PagedVolume::PagerContext& pagerCtx);
 	void addVolumeToPosition(voxel::PagedVolumeWrapper& target, const voxel::RawVolume* source, const glm::ivec3& pos);
 
 	int fillVoxels(int x, int y, int z, const WorldContext& worldCtx, voxel::Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const;
