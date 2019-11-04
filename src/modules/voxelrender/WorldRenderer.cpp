@@ -666,7 +666,8 @@ void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
 
 	const bool shadowMap = _shadowMap->boolVal();
 	video::Camera shadowCamera = camera;
-	shadowCamera.setPosition(_focusPos);
+	shadowCamera.setTargetDistance(1.0f);
+	shadowCamera.setTarget(_focusPos);
 	shadowCamera.update(dt);
 	_shadow.update(shadowCamera, shadowMap);
 

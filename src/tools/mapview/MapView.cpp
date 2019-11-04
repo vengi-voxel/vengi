@@ -111,12 +111,12 @@ core::AppState MapView::onInit() {
 	}
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
-	_camera.setFieldOfView(45.0f);
 	_camera.setFarPlane(10.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);
-	_camera.setTargetDistance(40.0f);
+	_camera.setFieldOfView(_fieldOfView);
+	_camera.setTargetDistance(_targetDistance);
+	_camera.setPosition(_cameraPosition);
 	_camera.setTarget(glm::zero<glm::vec3>());
-	_camera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
 	_camera.update(0l);
 
 	const int groundPosY = _worldMgr->findWalkableFloor(glm::zero<glm::vec3>());
@@ -237,6 +237,18 @@ void MapView::onRenderUI() {
 				_worldRenderer.extractMesh(meshPos);
 				o.next();
 			}
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Camera")) {
+		if (ImGui::InputFloat("FOV", &_fieldOfView)) {
+			_camera.setFieldOfView(glm::clamp(_fieldOfView, 1.0f, 360.0f));
+		}
+		if (ImGui::InputFloat("Distance", &_targetDistance)) {
+			_camera.setTargetDistance(glm::clamp(_targetDistance, 1.0f, 200.0f));
+		}
+		if (ImGui::InputFloat3("Relative position", glm::value_ptr(_cameraPosition))) {
+			_camera.setPosition(_camera.target() + _cameraPosition);
 		}
 	}
 

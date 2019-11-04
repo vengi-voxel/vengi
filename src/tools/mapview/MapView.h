@@ -39,6 +39,10 @@ protected:
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
 
+	float _fieldOfView = 60.0f;
+	float _targetDistance = 28.0f;
+	glm::vec3 _cameraPosition {1.0f, 0.4f, 1.0f};
+
 	bool _lineModeRendering = false;
 	bool _freelook = false;
 	bool _updateWorld = true;
