@@ -45,25 +45,13 @@ bool VoxelFontRenderer::init() {
 		return false;
 	}
 
-	video::Attribute attribPos;
-	attribPos.bufferIndex = _vertexBufferId;
-	attribPos.location = _colorShader.enableVertexAttributeArray("a_pos");
-	attribPos.stride = sizeof(VertexData::AttributeData);
-	attribPos.size = _colorShader.getAttributeComponents(attribPos.location);
-	attribPos.type = video::mapType<decltype(VertexData::AttributeData::vertex)::value_type>();
-	attribPos.offset = offsetof(VertexData::AttributeData, vertex);
+	const video::Attribute& attribPos = _colorShader.getPosAttribute(_vertexBufferId, &VertexData::AttributeData::vertex);
 	if (!_vertexBuffer.addAttribute(attribPos)) {
 		Log::error("Failed to add position attribute");
 		return false;
 	}
 
-	video::Attribute attribColor;
-	attribColor.bufferIndex = _vertexBufferId;
-	attribColor.location = _colorShader.enableVertexAttributeArray("a_color");
-	attribColor.stride = sizeof(VertexData::AttributeData);
-	attribColor.size = _colorShader.getAttributeComponents(attribColor.location);
-	attribColor.type = video::mapType<decltype(VertexData::AttributeData::color)::value_type>();
-	attribColor.offset = offsetof(VertexData::AttributeData, color);
+	const video::Attribute& attribColor = _colorShader.getColorAttribute(_vertexBufferId, &VertexData::AttributeData::color);
 	if (!_vertexBuffer.addAttribute(attribColor)) {
 		Log::error("Failed to add color attribute");
 		return false;
