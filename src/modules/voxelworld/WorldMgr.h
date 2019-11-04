@@ -112,7 +112,6 @@ public:
 	bool init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes = 512, uint16_t chunkSideLength = 256);
 	void shutdown();
 	void reset();
-	bool isReset() const;
 
 	voxel::VoxelType material(int x, int y, int z) const;
 

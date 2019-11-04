@@ -17,6 +17,7 @@
 #include "ui/imgui/IMGUI.h"
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
+#include "voxelgenerator/Spiral.h"
 
 MapView::MapView(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
@@ -51,7 +52,7 @@ core::AppState MapView::onConstruct() {
 		_lineModeRendering = args[0] == "true";
 	}).setHelp("Toggle line rendering mode");
 
-	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
+	_meshSize = core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 
 	_volumeCache->construct();
 	_worldRenderer.construct();
@@ -172,7 +173,9 @@ void MapView::beforeUI() {
 	}
 
 	if (_updateWorld) {
-		_worldRenderer.extractMeshes(_camera);
+		if (!_singlePosExtraction) {
+			_worldRenderer.extractMeshes(_camera);
+		}
 		_worldRenderer.onRunning(_camera, _deltaFrameMillis);
 	}
 	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
@@ -187,14 +190,14 @@ void MapView::beforeUI() {
 
 void MapView::onRenderUI() {
 	if (ImGui::CollapsingHeader("Stats")) {
-		const glm::vec3& pos = _camera.position();
+		const glm::vec3& pos = _camera.target();
 		voxelrender::WorldRenderer::Stats stats;
 		_worldRenderer.stats(stats);
 		ImGui::Text("%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
 		ImGui::Text("%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
 		ImGui::Text("%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
 		ImGui::Text("Drawcalls: %i (verts: %i)", _drawCallsWorld, _vertices);
-		ImGui::Text("Pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
+		ImGui::Text("Target pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
 		ImGui::Text("Pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
 				stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive, stats.occluded);
 	}
@@ -205,6 +208,32 @@ void MapView::onRenderUI() {
 	ImGui::CheckboxVar("Occlusion Query", cfg::OcclusionQuery);
 	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);
 	ImGui::CheckboxVar("Render AABB", cfg::RenderAABB);
+
+	if (ImGui::CollapsingHeader("Debug")) {
+		ImGui::Checkbox("Single position", &_singlePosExtraction);
+		ImGui::InputInt3("Extract position", glm::value_ptr(_singleExtractionPoint), 0);
+		if (ImGui::Button("Reset")) {
+			_worldRenderer.reset();
+			_worldRenderer.addEntity(_entity);
+		}
+		if (ImGui::Button("Extract")) {
+			const glm::vec3 entPos(_singleExtractionPoint.x, voxel::MAX_TERRAIN_HEIGHT, _singleExtractionPoint.z);
+			_entity->setPosition(entPos);
+			_worldRenderer.extractMesh(_singleExtractionPoint);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Extract around position")) {
+			voxelgenerator::Spiral o;
+			const glm::ivec3 ms(_meshSize->intVal());
+			for (int i = 0; i < 9; ++i) {
+				glm::ivec3 meshPos = _singleExtractionPoint;
+				meshPos.x += o.x() * ms.x;
+				meshPos.z += o.z() * ms.z;
+				_worldRenderer.extractMesh(meshPos);
+				o.next();
+			}
+		}
+	}
 
 	if (ImGui::CollapsingHeader("Shadow")) {
 		ImGui::CheckboxVar("Shadowmap render", cfg::ClientShadowMapShow);

@@ -231,17 +231,17 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
 	const glm::ivec3& maxs = ctx.region.getUpperCorner();
 	const glm::ivec3& dim = ctx.region.getDimensionsInVoxels();
 	const std::array<voxel::Region, 9> regions = {
-		// left neightbors
+		// left neighbors
 		voxel::Region(mins.x - dim.x, mins.y, mins.z - dim.z, maxs.x - dim.x, maxs.y, maxs.z - dim.z),
 		voxel::Region(mins.x - dim.x, mins.y, mins.z,         maxs.x - dim.x, maxs.y, maxs.z        ),
 		voxel::Region(mins.x - dim.x, mins.y, mins.z + dim.z, maxs.x - dim.x, maxs.y, maxs.z + dim.z),
 
-		// right neightbors
+		// right neighbors
 		voxel::Region(mins.x + dim.x, mins.y, mins.z - dim.z, maxs.x + dim.x, maxs.y, maxs.z - dim.z),
 		voxel::Region(mins.x + dim.x, mins.y, mins.z,         maxs.x + dim.x, maxs.y, maxs.z        ),
 		voxel::Region(mins.x + dim.x, mins.y, mins.z + dim.z, maxs.x + dim.x, maxs.y, maxs.z + dim.z),
 
-		// front and back neightbors
+		// front and back neighbors
 		voxel::Region(mins.x, mins.y, mins.z - dim.z, maxs.x, maxs.y, maxs.z - dim.z),
 		voxel::Region(mins.x, mins.y, mins.z + dim.z, maxs.x, maxs.y, maxs.z + dim.z),
 
@@ -255,7 +255,8 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
 	voxel::PagedVolumeWrapper wrapper(_volumeData, ctx.chunk, ctx.region);
 	std::vector<const char*> treeTypes;
 
-	for (const voxel::Region& region : regions) {
+	for (size_t i = 0; i < regions.size(); ++i) {
+		const voxel::Region& region = regions[i];
 		treeTypes = _biomeManager->getTreeTypes(region);
 		if (treeTypes.empty()) {
 			Log::debug("No tree types given for region %s", region.toString().c_str());
@@ -268,12 +269,10 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
 
 		std::vector<glm::vec2> positions;
 		_biomeManager->getTreePositions(region, positions, random, border);
-		Log::debug("Found %i possible positions", (int)positions.size());
-
 		int treeTypeIndex = 0;
 		const int treeTypeSize = (int)treeTypes.size();
 		for (const glm::vec2& position : positions) {
-			glm::ivec3 treePos(position.x, 0, position.y);
+			glm::ivec3 treePos(position.x, ctx.region.getCentreY(), position.y);
 			if (!_volumeData->hasChunk(treePos)) {
 				continue;
 			}
@@ -283,6 +282,9 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
 			}
 			const char *treeType = treeTypes[treeTypeIndex++];
 			treeTypeIndex %= treeTypeSize;
+			// TODO: if a tree is placed at the volume chunk sizes, and also overlaps the mesh extraction
+			// chunk size, there are parts of the tree that are missing.
+			// notice mapview with single position activated at -1, 0, 277 and 0, 0, 277
 			// TODO: this hardcoded 10... no way
 			const int treeIndex = 1 ; //random.random(1, 10);
 			char filename[64];
@@ -294,6 +296,7 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& ctx) {
 			if (v == nullptr) {
 				continue;
 			}
+			Log::info("region %i: final treepos: %s", (int)i, glm::to_string(treePos).c_str());
 			addVolumeToPosition(wrapper, v, treePos);
 		}
 	}

@@ -45,6 +45,14 @@ protected:
 	int _drawCallsWorld = 0;
 	int _vertices = 0;
 
+	core::VarPtr _meshSize;
+
+	glm::ivec3 _singleExtractionPoint = glm::zero<glm::ivec3>();
+	/**
+	 * @brief Used for debugging a single position mesh extraction in the world
+	 */
+	bool _singlePosExtraction = false;
+
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize(int windowWidth, int windowHeight) override;
 	void beforeUI() override;

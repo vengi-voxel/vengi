@@ -36,6 +36,7 @@ void WorldRenderer::reset() {
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		chunkBuffer.inuse = false;
 	}
+	_world->reset();
 	_octree.clear();
 	_activeChunkBuffers = 0;
 	_entities.clear();
@@ -466,6 +467,10 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		ent->unbindVertexBuffers();
 	}
 	return drawCallsEntities;
+}
+
+void WorldRenderer::extractMesh(const glm::ivec3& pos) {
+	_world->scheduleMeshExtraction(pos);
 }
 
 void WorldRenderer::extractMeshes(const video::Camera& camera) {

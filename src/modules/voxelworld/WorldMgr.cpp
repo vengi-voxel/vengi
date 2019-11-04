@@ -44,6 +44,12 @@ glm::ivec3 WorldMgr::randomPos() const {
 	return glm::ivec3(x, y, z);
 }
 
+void WorldMgr::reset() {
+	_extracted.clear();
+	_positionsExtracted.clear();
+	_pendingExtraction.clear();
+}
+
 // Extract the surface for the specified region of the volume.
 // The surface extractor outputs the mesh in an efficient compressed format which
 // is not directly suitable for rendering.
@@ -165,14 +171,6 @@ void WorldMgr::shutdown() {
 	_biomeManager.shutdown();
 	delete _volumeData;
 	_volumeData = nullptr;
-}
-
-void WorldMgr::reset() {
-	_cancelThreads = true;
-}
-
-bool WorldMgr::isReset() const {
-	return _cancelThreads;
 }
 
 void WorldMgr::stats(int& meshes, int& extracted, int& pending) const {

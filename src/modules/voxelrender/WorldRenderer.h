@@ -150,6 +150,7 @@ public:
 
 	render::Shadow& shadow();
 
+	void extractMesh(const glm::ivec3& pos);
 	void extractMeshes(const video::Camera& camera);
 
 	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
