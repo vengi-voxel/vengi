@@ -64,5 +64,5 @@ function initBiomes()
 end
 
 function initCities()
-  Mgr.addCity(ivec2.new(0, 0), 500.0)
+  biomeMgr.addCity(ivec2.new(0, 0), 500.0)
 end
