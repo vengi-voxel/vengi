@@ -38,10 +38,10 @@ BiomeManager::~BiomeManager() {
 void BiomeManager::shutdown() {
 	_noise.shutdown();
 	_defaultBiome = nullptr;
-	for (const Biome* biome : _bioms) {
+	for (const Biome* biome : _biomes) {
 		delete biome;
 	}
-	_bioms.clear();
+	_biomes.clear();
 	for (int i = 0; i < std::enum_value(ZoneType::Max); ++i) {
 		for (const Zone* zone : _zones[i]) {
 			delete zone;
@@ -79,7 +79,7 @@ bool BiomeManager::init(const std::string& luaString) {
 		return false;
 	}
 
-	return !_bioms.empty();
+	return !_biomes.empty();
 }
 
 Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temperature, voxel::VoxelType type, bool underGround, int treeDistribution) {
@@ -89,7 +89,7 @@ Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temper
 	}
 	const voxel::MaterialColorIndices& indices = voxel::getMaterialIndices(type);
 	Biome* biome = new Biome(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround, treeDistribution);
-	_bioms.push_back(biome);
+	_biomes.push_back(biome);
 	return biome;
 }
 
@@ -141,7 +141,7 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 
 	{
 	core_trace_scoped(BiomeGetBiomeLoop);
-	for (const Biome* biome : _bioms) {
+	for (const Biome* biome : _biomes) {
 		if (pos.y > biome->yMax || pos.y < biome->yMin || biome->underground != underground) {
 			continue;
 		}

@@ -55,7 +55,7 @@ inline float Zone::radius() const {
 
 class BiomeManager {
 private:
-	std::vector<Biome*> _bioms;
+	std::vector<Biome*> _biomes;
 	std::vector<Zone*> _zones[int(ZoneType::Max)];
 	const Biome* _defaultBiome = nullptr;
 	void distributePointsInRegion(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const;
