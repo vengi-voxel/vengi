@@ -8,12 +8,12 @@
 namespace voxelworld {
 
 Biome::Biome() :
-		Biome(voxel::VoxelType::Grass, getMaterialIndices(voxel::VoxelType::Grass), 0, voxel::MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
+		Biome(voxel::VoxelType::Grass, getMaterialIndices(voxel::VoxelType::Grass), 0, voxel::MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false, 90) {
 }
 
-Biome::Biome(voxel::VoxelType _type, const voxel::MaterialColorIndices& _indices, int16_t _yMin, int16_t _yMax, float _humidity, float _temperature, bool _underground) :
+Biome::Biome(voxel::VoxelType _type, const voxel::MaterialColorIndices& _indices, int16_t _yMin, int16_t _yMax, float _humidity, float _temperature, bool _underground, int _treeDistance) :
 		indices(_indices), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(_temperature),
-		underground(_underground), type(_type), treeDistribution(calcTreeDistribution()),
+		underground(_underground), type(_type), treeDistance(_treeDistance),
 		cloudDistribution(calcCloudDistribution()), plantDistribution(calcPlantDistribution()) {
 	core_assert(!indices.empty());
 }
@@ -27,16 +27,6 @@ Biome::~Biome() {
 
 void Biome::addTreeType(const char *treeType) {
 	_treeTypes.push_back(SDL_strdup(treeType));
-}
-
-int Biome::calcTreeDistribution() const {
-	int distribution = 40;
-	if (temperature > 0.7f || humidity < 0.2f) {
-		distribution = 65;
-	} else if (temperature > 0.9f || humidity < 0.1f) {
-		distribution = 90;
-	}
-	return distribution;
 }
 
 int Biome::calcCloudDistribution() const {

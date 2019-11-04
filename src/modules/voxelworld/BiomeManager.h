@@ -70,7 +70,7 @@ public:
 	void shutdown();
 	bool init(const std::string& luaString);
 
-	Biome* addBiome(int lower, int upper, float humidity, float temperature, voxel::VoxelType type, bool underGround = false);
+	Biome* addBiome(int lower, int upper, float humidity, float temperature, voxel::VoxelType type, bool underGround, int treeDistribution);
 
 	// this lookup must be really really fast - it is executed once per generated voxel
 	// iterating in y direction is fastest, because the last biome is cached on a per-thread-basis

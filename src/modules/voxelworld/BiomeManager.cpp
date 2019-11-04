@@ -18,7 +18,7 @@
 namespace voxelworld {
 
 static const Biome& getDefaultBiome() {
-	static const Biome biome(voxel::VoxelType::Grass, getMaterialIndices(voxel::VoxelType::Grass), 0, voxel::MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false);
+	static const Biome biome(voxel::VoxelType::Grass, getMaterialIndices(voxel::VoxelType::Grass), 1, voxel::MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false, 90);
 	return biome;
 }
 
@@ -82,13 +82,13 @@ bool BiomeManager::init(const std::string& luaString) {
 	return !_bioms.empty();
 }
 
-Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temperature, voxel::VoxelType type, bool underGround) {
+Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temperature, voxel::VoxelType type, bool underGround, int treeDistribution) {
 	core_assert_msg(_defaultBiome != nullptr, "BiomeManager is not yet initialized");
 	if (lower > upper) {
 		return nullptr;
 	}
 	const voxel::MaterialColorIndices& indices = voxel::getMaterialIndices(type);
-	Biome* biome = new Biome(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround);
+	Biome* biome = new Biome(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround, treeDistribution);
 	_bioms.push_back(biome);
 	return biome;
 }
@@ -179,7 +179,7 @@ void BiomeManager::getTreePositions(const voxel::Region& region, std::vector<glm
 		return;
 	}
 	const Biome* biome = getBiome(pos);
-	distributePointsInRegion(region, positions, random, border, biome->treeDistribution);
+	distributePointsInRegion(region, positions, random, border, biome->treeDistance);
 }
 
 void BiomeManager::getPlantPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {

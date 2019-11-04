@@ -18,13 +18,12 @@ private:
 	friend class BiomeManager;
 	Biome();
 
-	int calcTreeDistribution() const;
 	int calcCloudDistribution() const;
 	int calcPlantDistribution() const;
 	std::vector<const char*> _treeTypes;
 
 public:
-	Biome(voxel::VoxelType type, const voxel::MaterialColorIndices& indices, int16_t yMin, int16_t yMax, float humidity, float temperature, bool underground);
+	Biome(voxel::VoxelType type, const voxel::MaterialColorIndices& indices, int16_t yMin, int16_t yMax, float humidity, float temperature, bool underground, int treeDistance);
 	~Biome();
 
 	const voxel::MaterialColorIndices indices;
@@ -34,7 +33,7 @@ public:
 	const float temperature;
 	const bool underground;
 	const voxel::VoxelType type;
-	const int treeDistribution;
+	const int treeDistance;
 	const int cloudDistribution;
 	const int plantDistribution;
 

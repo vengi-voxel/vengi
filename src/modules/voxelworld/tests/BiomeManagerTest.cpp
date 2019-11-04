@@ -57,9 +57,9 @@ TEST_F(BiomeManagerTest, testHumidityTemperature) {
 	const float h3 = mgr.getHumidity(p3.x, p3.z);
 	const float t3 = mgr.getTemperature(p3.x, p3.z);
 
-	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h1, t1, voxel::VoxelType::Grass));
-	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h2, t2, voxel::VoxelType::Rock));
-	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h3, t3, voxel::VoxelType::Sand));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h1, t1, voxel::VoxelType::Grass, false, 50));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h2, t2, voxel::VoxelType::Rock, false, 150));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h3, t3, voxel::VoxelType::Sand, false, 500));
 
 	EXPECT_EQ(voxel::VoxelType::Grass, mgr.getBiome(p1)->type);
 	EXPECT_EQ(voxel::VoxelType::Rock, mgr.getBiome(p2)->type);
@@ -74,7 +74,7 @@ TEST_F(BiomeManagerTest, testLoadLUA) {
 
 TEST_F(BiomeManagerTest, testCityGradient) {
 	const char *str = R"(function initBiomes()
-		local biome = biomeMgr.addBiome(0, 512, 0.5, 0.5, "Grass", underGround)
+		local biome = biomeMgr.addBiome(0, 512, 0.5, 0.5, "Grass", underGround, 90)
 		biomeMgr.setDefault(biome)
 	end
 
