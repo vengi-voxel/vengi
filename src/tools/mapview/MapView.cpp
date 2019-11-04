@@ -211,6 +211,11 @@ void MapView::onRenderUI() {
 
 	if (ImGui::CollapsingHeader("Debug")) {
 		ImGui::Checkbox("Single position", &_singlePosExtraction);
+		if (ImGui::Button("Use current position")) {
+			_singleExtractionPoint = _camera.target();
+		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.2f);
 		ImGui::InputInt3("Extract position", glm::value_ptr(_singleExtractionPoint), 0);
 		if (ImGui::Button("Reset")) {
 			_worldRenderer.reset();
