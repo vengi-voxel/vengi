@@ -48,6 +48,7 @@ void WorldMgr::reset() {
 	_extracted.clear();
 	_positionsExtracted.clear();
 	_pendingExtraction.clear();
+	_volumeData->flushAll();
 }
 
 // Extract the surface for the specified region of the volume.
