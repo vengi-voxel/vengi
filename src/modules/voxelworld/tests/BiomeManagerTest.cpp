@@ -13,16 +13,16 @@ class BiomeManagerTest: public AbstractVoxelTest {
 TEST_F(BiomeManagerTest, testInvalid) {
 	BiomeManager mgr;
 	mgr.init("");
-	EXPECT_EQ(nullptr, mgr.addBiome(1, 0, 1.0f, 1.0f, voxel::VoxelType::Wood, false, 90)) << "invalid lower/height combination is accepted, but shouldn't";
+	EXPECT_EQ(nullptr, mgr.addBiome(1, 0, 1.0f, 1.0f, voxel::VoxelType::Wood, 90, 90, 90)) << "invalid lower/height combination is accepted, but shouldn't";
 }
 
 TEST_F(BiomeManagerTest, testBasic) {
 	BiomeManager mgr;
 	mgr.init("");
-	EXPECT_NE(nullptr, mgr.addBiome(0, 0, 1.0f, 1.0f, voxel::VoxelType::Wood, false, 90));
-	EXPECT_NE(nullptr, mgr.addBiome(1, 1, 1.0f, 1.0f, voxel::VoxelType::Sand, false, 90));
-	EXPECT_NE(nullptr, mgr.addBiome(2, 2, 1.0f, 1.0f, voxel::VoxelType::Grass, false, 90));
-	EXPECT_NE(nullptr, mgr.addBiome(3, 3, 1.0f, 1.0f, voxel::VoxelType::Rock, false, 90));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 0, 1.0f, 1.0f, voxel::VoxelType::Wood, 90, 90, 90));
+	EXPECT_NE(nullptr, mgr.addBiome(1, 1, 1.0f, 1.0f, voxel::VoxelType::Sand, 90, 90, 90));
+	EXPECT_NE(nullptr, mgr.addBiome(2, 2, 1.0f, 1.0f, voxel::VoxelType::Grass, 90, 90, 90));
+	EXPECT_NE(nullptr, mgr.addBiome(3, 3, 1.0f, 1.0f, voxel::VoxelType::Rock, 90, 90, 90));
 
 	const voxel::VoxelType sand1 = mgr.getBiome(glm::ivec3(0, 5, 0))->type;
 	const voxel::VoxelType sand2 = mgr.getBiome(glm::ivec3(0, 6, 0))->type;
@@ -57,9 +57,9 @@ TEST_F(BiomeManagerTest, testHumidityTemperature) {
 	const float h3 = mgr.getHumidity(p3.x, p3.z);
 	const float t3 = mgr.getTemperature(p3.x, p3.z);
 
-	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h1, t1, voxel::VoxelType::Grass, false, 50));
-	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h2, t2, voxel::VoxelType::Rock, false, 150));
-	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h3, t3, voxel::VoxelType::Sand, false, 500));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h1, t1, voxel::VoxelType::Grass, 50, 50, 50));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h2, t2, voxel::VoxelType::Rock, 150, 150, 150));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h3, t3, voxel::VoxelType::Sand, 500, 500, 500));
 
 	EXPECT_EQ(voxel::VoxelType::Grass, mgr.getBiome(p1)->type);
 	EXPECT_EQ(voxel::VoxelType::Rock, mgr.getBiome(p2)->type);
@@ -74,8 +74,9 @@ TEST_F(BiomeManagerTest, testLoadLUA) {
 
 TEST_F(BiomeManagerTest, testCityGradient) {
 	const char *str = R"(function initBiomes()
-		local biome = biomeMgr.addBiome(0, 512, 0.5, 0.5, "Grass", underGround, 90)
+		local biome = biomeMgr.addBiome(0, 512, 0.5, 0.5, "Grass", 90, 90, 90)
 		biomeMgr.setDefault(biome)
+		biomeMgr.addBiome(0, 512, 0.5, 0.5, "Grass", 90, 90, 90, true)
 	end
 
 	function initCities()

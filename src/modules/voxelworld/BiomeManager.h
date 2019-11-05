@@ -58,7 +58,8 @@ private:
 	std::vector<Biome*> _biomes;
 	std::vector<Zone*> _zones[int(ZoneType::Max)];
 	const Biome* _defaultBiome = nullptr;
-	void distributePointsInRegion(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const;
+	void distributePointsInRegion(const voxel::Region& region, std::vector<glm::vec2>& positions,
+			math::Random& random, int border, float distribution) const;
 	noise::Noise _noise;
 
 public:
@@ -70,7 +71,8 @@ public:
 	void shutdown();
 	bool init(const std::string& luaString);
 
-	Biome* addBiome(int lower, int upper, float humidity, float temperature, voxel::VoxelType type, bool underGround, int treeDistribution);
+	Biome* addBiome(int lower, int upper, float humidity, float temperature, voxel::VoxelType type,
+			int treeDistribution, int cloudDistribution, int plantDistribution, bool underGround = false);
 
 	// this lookup must be really really fast - it is executed once per generated voxel
 	// iterating in y direction is fastest, because the last biome is cached on a per-thread-basis

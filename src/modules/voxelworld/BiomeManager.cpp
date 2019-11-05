@@ -8,6 +8,7 @@
 #include "math/Random.h"
 #include "core/Common.h"
 #include "core/GLM.h"
+#include "core/Log.h"
 #include "voxel/Constants.h"
 #include "voxel/Region.h"
 #include "voxel/MaterialColor.h"
@@ -51,6 +52,8 @@ bool BiomeManager::init(const std::string& luaString) {
 	}
 	setDefaultBiome(nullptr);
 
+	Log::debug("Minimum city height: %f", MinCityHeight);
+
 	lua::LUA lua;
 	lua.newGlobalData<BiomeManager>("MGR", this);
 	const std::vector<luaL_Reg> funcs({
@@ -78,13 +81,16 @@ bool BiomeManager::init(const std::string& luaString) {
 }
 
 Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temperature,
-		voxel::VoxelType type, bool underGround, int treeDistribution) {
+		voxel::VoxelType type, int treeDistribution,
+		int cloudDistribution, int plantDistribution, bool underGround) {
 	core_assert_msg(_defaultBiome != nullptr, "BiomeManager is not yet initialized");
 	if (lower > upper) {
+		Log::warn("Failed to create biome, lower value is bigger than upper value");
 		return nullptr;
 	}
 	Biome* biome = new Biome(type, int16_t(lower), int16_t(upper),
-			humidity, temperature, underGround, treeDistribution);
+			humidity, temperature, underGround, treeDistribution, cloudDistribution,
+			plantDistribution);
 	_biomes.push_back(biome);
 	return biome;
 }
@@ -153,7 +159,8 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	return biomeBestMatch;
 }
 
-void BiomeManager::distributePointsInRegion(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const {
+void BiomeManager::distributePointsInRegion(const voxel::Region& region,
+		std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const {
 	std::vector<glm::vec2> initialSet;
 	voxel::Region shrinked = region;
 	shrinked.shrink(border);
@@ -168,7 +175,8 @@ const std::vector<const char*>& BiomeManager::getTreeTypes(const voxel::Region& 
 	return biome->treeTypes();
 }
 
-void BiomeManager::getTreePositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
+void BiomeManager::getTreePositions(const voxel::Region& region,
+		std::vector<glm::vec2>& positions, math::Random& random, int border) const {
 	core_trace_scoped(BiomeGetTreePositions);
 	const glm::ivec3& pos = region.getCentre();
 	if (!hasTrees(pos)) {
@@ -178,7 +186,8 @@ void BiomeManager::getTreePositions(const voxel::Region& region, std::vector<glm
 	distributePointsInRegion(region, positions, random, border, biome->treeDistance);
 }
 
-void BiomeManager::getPlantPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
+void BiomeManager::getPlantPositions(const voxel::Region& region,
+		std::vector<glm::vec2>& positions, math::Random& random, int border) const {
 	core_trace_scoped(BiomeGetPlantPositions);
 	const glm::ivec3& pos = region.getCentre();
 	if (!hasPlants(pos)) {
