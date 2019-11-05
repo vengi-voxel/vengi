@@ -88,6 +88,10 @@ Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temper
 		Log::warn("Failed to create biome, lower value is bigger than upper value");
 		return nullptr;
 	}
+	if (getMaterialIndices(type).empty()) {
+		Log::warn("Failed to create biome, could not find any material indices for type: %i", (int)type);
+		return nullptr;
+	}
 	Biome* biome = new Biome(type, int16_t(lower), int16_t(upper),
 			humidity, temperature, underGround, treeDistribution, cloudDistribution,
 			plantDistribution);
