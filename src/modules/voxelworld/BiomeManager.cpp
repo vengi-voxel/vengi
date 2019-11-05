@@ -17,11 +17,6 @@
 
 namespace voxelworld {
 
-static const Biome& getDefaultBiome() {
-	static const Biome biome(voxel::VoxelType::Grass, getMaterialIndices(voxel::VoxelType::Grass), 1, voxel::MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false, 90);
-	return biome;
-}
-
 Zone::Zone(const glm::ivec3& pos, float radius, ZoneType type) :
 		_pos(pos), _radius(radius), _type(type) {
 }
@@ -54,7 +49,7 @@ bool BiomeManager::init(const std::string& luaString) {
 	if (!_noise.init()) {
 		return false;
 	}
-	_defaultBiome = &getDefaultBiome();
+	setDefaultBiome(nullptr);
 
 	lua::LUA lua;
 	lua.newGlobalData<BiomeManager>("MGR", this);
@@ -82,13 +77,14 @@ bool BiomeManager::init(const std::string& luaString) {
 	return !_biomes.empty();
 }
 
-Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temperature, voxel::VoxelType type, bool underGround, int treeDistribution) {
+Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temperature,
+		voxel::VoxelType type, bool underGround, int treeDistribution) {
 	core_assert_msg(_defaultBiome != nullptr, "BiomeManager is not yet initialized");
 	if (lower > upper) {
 		return nullptr;
 	}
-	const voxel::MaterialColorIndices& indices = voxel::getMaterialIndices(type);
-	Biome* biome = new Biome(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround, treeDistribution);
+	Biome* biome = new Biome(type, int16_t(lower), int16_t(upper),
+			humidity, temperature, underGround, treeDistribution);
 	_biomes.push_back(biome);
 	return biome;
 }
@@ -308,7 +304,8 @@ bool BiomeManager::hasCity(const glm::ivec3& pos) const {
 
 void BiomeManager::setDefaultBiome(const Biome* biome) {
 	if (biome == nullptr) {
-		biome = &getDefaultBiome();
+		static const Biome defaultBiome;
+		biome = &defaultBiome;
 	}
 	_defaultBiome = biome;
 }

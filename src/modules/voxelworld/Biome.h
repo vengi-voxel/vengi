@@ -23,7 +23,7 @@ private:
 	std::vector<const char*> _treeTypes;
 
 public:
-	Biome(voxel::VoxelType type, const voxel::MaterialColorIndices& indices, int16_t yMin, int16_t yMax, float humidity, float temperature, bool underground, int treeDistance);
+	Biome(voxel::VoxelType type, int16_t yMin, int16_t yMax, float humidity, float temperature, bool underground, int treeDistance);
 	~Biome();
 
 	const voxel::MaterialColorIndices indices;
