@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxelworld/TreeType.h"
+#include "TreeType.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
@@ -14,7 +14,7 @@ namespace voxelgenerator {
  * @brief Context to create a tree.
  */
 struct TreeContext {
-	voxelworld::TreeType type = voxelworld::TreeType::Dome;
+	TreeType type = TreeType::Dome;
 	int trunkHeight = 24;	/**< The height of the trunk - it's basically also the height of the tree */
 	int trunkWidth = 2;
 	int leavesWidth = 8;	/**< the leave shape width */

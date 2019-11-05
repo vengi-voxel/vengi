@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-namespace voxelworld {
+namespace voxelgenerator {
 
 enum class TreeType : int32_t {
 	Dome,
@@ -22,7 +22,5 @@ enum class TreeType : int32_t {
 	SpaceColonization,
 	Max
 };
-
-extern TreeType getTreeType(const char *str);
 
 }

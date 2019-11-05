@@ -20,7 +20,7 @@ private:
 	tb::TBInlineSelect* _leavesHeight;
 	tb::TBInlineSelect* _leavesDepth;
 public:
-	TreeWindow(ui::turbobadger::Window* window, voxelworld::TreeType type);
+	TreeWindow(ui::turbobadger::Window* window, voxelgenerator::TreeType type);
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override;
 };

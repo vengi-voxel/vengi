@@ -3,7 +3,6 @@ set(SRCS
 	BiomeLUAFunctions.h BiomeLUAFunctions.cpp
 	Biome.h Biome.cpp
 	BiomeManager.h BiomeManager.cpp
-	TreeType.h TreeType.cpp
 	WorldMgr.cpp WorldMgr.h
 	WorldPersister.h WorldPersister.cpp
 	WorldPager.h WorldPager.cpp

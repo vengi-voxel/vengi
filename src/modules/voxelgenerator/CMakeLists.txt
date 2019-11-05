@@ -3,6 +3,7 @@ set(SRCS
 	Spiral.h
 	ShapeGenerator.h
 	SpaceColonization.h SpaceColonization.cpp
+	TreeType.h
 	TreeGenerator.h TreeGenerator.cpp
 	TreeContext.h
 	NoiseGenerator.h

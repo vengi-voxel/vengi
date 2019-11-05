@@ -386,27 +386,27 @@ void createSpaceColonizationTree(Volume& volume, const voxelgenerator::TreeConte
  */
 template<class Volume>
 void createTree(Volume& volume, const voxelgenerator::TreeContext& ctx, math::Random& random) {
-	if (ctx.type == voxelworld::TreeType::BranchesEllipsis) {
+	if (ctx.type == TreeType::BranchesEllipsis) {
 		createTreeBranchEllipsis(volume, ctx, random);
-	} else if (ctx.type == voxelworld::TreeType::Ellipsis) {
+	} else if (ctx.type == TreeType::Ellipsis) {
 		createTreeEllipsis(volume, ctx, random);
-	} else if (ctx.type == voxelworld::TreeType::Palm) {
+	} else if (ctx.type == TreeType::Palm) {
 		createTreePalm(volume, ctx, random);
-	} else if (ctx.type == voxelworld::TreeType::Cone) {
+	} else if (ctx.type == TreeType::Cone) {
 		createTreeCone(volume, ctx, random);
-	} else if (ctx.type == voxelworld::TreeType::Fir) {
+	} else if (ctx.type == TreeType::Fir) {
 		createTreeFir(volume, ctx, random);
-	} else if (ctx.type == voxelworld::TreeType::Pine) {
+	} else if (ctx.type == TreeType::Pine) {
 		createTreePine(volume, ctx, random);
-	} else if (ctx.type == voxelworld::TreeType::Dome) {
+	} else if (ctx.type == TreeType::Dome) {
 		createTreeDome(volume, ctx, random);
-	} else if (ctx.type == voxelworld::TreeType::DomeHangingLeaves) {
+	} else if (ctx.type == TreeType::DomeHangingLeaves) {
 		createTreeDomeHangingLeaves(volume, ctx, random);
-	} else if (ctx.type == voxelworld::TreeType::Cube) {
+	} else if (ctx.type == TreeType::Cube) {
 		createTreeCube(volume, ctx, random);
-	} else if (ctx.type == voxelworld::TreeType::CubeSideCubes) {
+	} else if (ctx.type == TreeType::CubeSideCubes) {
 		createTreeCubeSideCubes(volume, ctx, random);
-	} else if (ctx.type == voxelworld::TreeType::SpaceColonization) {
+	} else if (ctx.type == TreeType::SpaceColonization) {
 		createSpaceColonizationTree(volume, ctx, random);
 	}
 }
