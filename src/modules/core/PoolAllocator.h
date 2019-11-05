@@ -7,6 +7,8 @@
 #include "Assert.h"
 #include "Log.h"
 #include <stdint.h>
+#include <type_traits>
+#include <SDL.h>
 #ifdef _WIN32
 #undef max
 #endif
@@ -30,6 +32,22 @@ private:
 	PointerType _nextFreeSlot = nullptr;
 	SizeType _maxPoolSize = (SizeType)0;
 	SizeType _currentAllocatedItems = (SizeType)0;
+
+	template<class ... Args>
+	void callConstructor(std::false_type, T *ptr, Args&& ...) {
+	}
+
+	template<class ... Args>
+	void callConstructor(std::true_type, T *ptr, Args&& ...args) {
+		new (ptr)Type(std::forward<Args>(args) ... );
+	}
+
+	void callDestructor(std::false_type, T *ptr) {
+	}
+
+	void callDestructor(std::true_type, T *ptr) {
+		ptr->~T();
+	}
 
 	inline bool outOfRange(PointerType ptr) const {
 		return ptr < &_poolBuf[0] || ptr > &_poolBuf[_maxPoolSize - 1];
@@ -55,7 +73,7 @@ public:
 			return false;
 		}
 
-		_poolBuf = new T[poolSize];
+		_poolBuf = (PointerType)SDL_malloc(sizeof(T) * poolSize);
 		for (SizeType i = (SizeType)0; i < poolSize - 1; ++i) {
 			// init the next free slot address (for fast lookup)
 			*(PointerType*) &_poolBuf[i] = &_poolBuf[i + 1];
@@ -72,7 +90,8 @@ public:
 	}
 
 	void shutdown() {
-		delete[] _poolBuf;
+		core_assert_msg(_currentAllocatedItems == 0, "There are still %i items left", _currentAllocatedItems);
+		SDL_free(_poolBuf);
 		_poolBuf = nullptr;
 		_nextFreeSlot = nullptr;
 		_maxPoolSize = (SizeType)0;
@@ -93,6 +112,22 @@ public:
 			core_assert(_currentAllocatedItems < _maxPoolSize);
 			core_assert(!outOfRange(_nextFreeSlot));
 			ptr = _nextFreeSlot;
+			callConstructor(std::is_class<T> {}, ptr);
+			_nextFreeSlot = *(PointerType*) ptr;
+			++_currentAllocatedItems;
+		}
+
+		return ptr;
+	}
+
+	template<class ... Args>
+	inline T* alloc(Args&&... args) {
+		PointerType ptr = nullptr;
+		if (_nextFreeSlot != POOLBUFFER_END_MARKER) {
+			core_assert(_currentAllocatedItems < _maxPoolSize);
+			core_assert(!outOfRange(_nextFreeSlot));
+			ptr = _nextFreeSlot;
+			callConstructor(std::is_class<T> {}, ptr, std::forward<Args>(args) ...);
 			_nextFreeSlot = *(PointerType*) ptr;
 			++_currentAllocatedItems;
 		}
@@ -110,6 +145,7 @@ public:
 		}
 
 		core_assert(_currentAllocatedItems > 0);
+		callDestructor(std::is_class<T> {}, ptr);
 		*(PointerType*) ptr = _nextFreeSlot;
 		_nextFreeSlot = ptr;
 		--_currentAllocatedItems;
