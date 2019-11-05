@@ -296,7 +296,7 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 			if (v == nullptr) {
 				continue;
 			}
-			Log::info("region %i: final treepos: %s", (int)i, glm::to_string(treePos).c_str());
+			Log::info("region %i: final treepos: %3i:%3i:%3i", (int)i, treePos.x, treePos.y, treePos.z);
 			addVolumeToPosition(wrapper, v, treePos);
 		}
 	}
