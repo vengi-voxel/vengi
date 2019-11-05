@@ -13,16 +13,16 @@ class BiomeManagerTest: public AbstractVoxelTest {
 TEST_F(BiomeManagerTest, testInvalid) {
 	BiomeManager mgr;
 	mgr.init("");
-	EXPECT_EQ(nullptr, mgr.addBiome(1, 0, 1.0f, 1.0f, voxel::VoxelType::Wood)) << "invalid lower/height combination is accepted, but shouldn't";
+	EXPECT_EQ(nullptr, mgr.addBiome(1, 0, 1.0f, 1.0f, voxel::VoxelType::Wood, false, 90)) << "invalid lower/height combination is accepted, but shouldn't";
 }
 
 TEST_F(BiomeManagerTest, testBasic) {
 	BiomeManager mgr;
 	mgr.init("");
-	EXPECT_NE(nullptr, mgr.addBiome(0, 0, 1.0f, 1.0f, voxel::VoxelType::Wood));
-	EXPECT_NE(nullptr, mgr.addBiome(1, 1, 1.0f, 1.0f, voxel::VoxelType::Sand));
-	EXPECT_NE(nullptr, mgr.addBiome(2, 2, 1.0f, 1.0f, voxel::VoxelType::Grass));
-	EXPECT_NE(nullptr, mgr.addBiome(3, 3, 1.0f, 1.0f, voxel::VoxelType::Rock));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 0, 1.0f, 1.0f, voxel::VoxelType::Wood, false, 90));
+	EXPECT_NE(nullptr, mgr.addBiome(1, 1, 1.0f, 1.0f, voxel::VoxelType::Sand, false, 90));
+	EXPECT_NE(nullptr, mgr.addBiome(2, 2, 1.0f, 1.0f, voxel::VoxelType::Grass, false, 90));
+	EXPECT_NE(nullptr, mgr.addBiome(3, 3, 1.0f, 1.0f, voxel::VoxelType::Rock, false, 90));
 
 	const voxel::VoxelType sand1 = mgr.getBiome(glm::ivec3(0, 5, 0))->type;
 	const voxel::VoxelType sand2 = mgr.getBiome(glm::ivec3(0, 6, 0))->type;
