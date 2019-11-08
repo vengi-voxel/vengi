@@ -3,39 +3,6 @@ local MAX_MOUNTAIN_HEIGHT = MAX_TERRAIN_HEIGHT + 60
 local MAX_WATER_HEIGHT = 10
 
 ---
--- The lower the value the higher the amount of trees in that biome.
---
-function treeDistance(humidity, temperature)
-  local dist = 40
-  if temperature > 0.7 or humidity < 0.2 then
-    dist = 65
-  elseif temperature > 0.9 or humidity < 0.1 then
-    dist = 90
-  end
-  return dist
-end
-
-function cloudDistance(humidity, temperature)
-  local dist = 150
-  if temperature > 0.7 or humidity < 0.2 then
-    dist = 200
-  elseif temperature > 0.9 or humidity < 0.1 then
-    dist = 250
-  end
-  return dist
-end
-
-function plantDistance(humidity, temperature)
-  local dist = 30
-  if temperature > 0.7 or humidity < 0.2 then
-    dist = 50
-  elseif temperature > 0.9 or humidity < 0.1 then
-    dist = 100
-  end
-  return dist
-end
-
----
 -- @lower lower y (height) level for this biome
 -- @upper upper y (height) level for this biome
 -- @humidity [0.0,1.0]
@@ -43,14 +10,23 @@ end
 -- @voxelType Valid values:
 -- Air, Water, Generic,Grass, Wood, Leaf, LeafFir, LeafPine,
 -- Flower, Bloom, Mushroom, Rock, Sand, Cloud, Dirt, Roof, Wall
--- @underGround Only used when not a surface. This gets interesting in case of caves or cliffs.
+-- @underGround Only used when not a surface
 --
-function addBiome(lower, upper, humidity, temperature, voxelType, underGround)
-  return biomeMgr.addBiome(lower, upper, humidity, temperature, voxelType,
-    treeDistance(humidity, temperature),
-    cloudDistance(humidity, temperature),
-    plantDistance(humidity, temperature),
-    underGround)
+function addBiome(lower, upper, humidity, temperature, voxelType, underGround, treeDistribution)
+  return biomeMgr.addBiome(lower, upper, humidity, temperature, voxelType, underGround, treeDistribution)
+end
+
+---
+-- The lower the value the higher the amount of trees in that biome.
+--
+function treeDistance(humidity, temperature)
+  local dist = 40
+  if temperature > 0.7 or humidity < 0.2 then
+    dist = 65
+  elseif temperature > 0.9 or humidity < 0.1 then
+    dist = 90;
+  end
+  return dist;
 end
 
 ---
@@ -63,13 +39,13 @@ function addTree(biome, tree)
 end
 
 function addSand(lower, upper, humidity, temperature, underGround)
-  local sand = addBiome(lower, upper, humidity, temperature, "Sand", underGround)
+  local sand = addBiome(lower, upper, humidity, temperature, "Sand", underGround, treeDistance(humidity, temperature))
   addTree(sand, "palm")
   return sand
 end
 
 function addGrass(lower, upper, humidity, temperature, underGround)
-  local grass = addBiome(lower, upper, humidity, temperature, "Grass", underGround)
+  local grass = addBiome(lower, upper, humidity, temperature, "Grass", underGround, treeDistance(humidity, temperature))
   addTree(grass, "pine")
   return grass
 end
