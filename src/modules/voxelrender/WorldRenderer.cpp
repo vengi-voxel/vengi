@@ -665,9 +665,10 @@ void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
 	_world->updateExtractionOrder(_focusPos);
 
 	const bool shadowMap = _shadowMap->boolVal();
-	_shadow.update(camera, shadowMap);
-
-	const glm::ivec3 cameraPos(camera.position());
+	video::Camera shadowCamera = camera;
+	shadowCamera.setPosition(_focusPos);
+	shadowCamera.update(dt);
+	_shadow.update(shadowCamera, shadowMap);
 
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {
