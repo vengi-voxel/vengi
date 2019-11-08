@@ -12,6 +12,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 #include <limits>
+#include "Simplex.h"
 
 #define GLM_NOISE 0
 #define CINDER_NOISE 1

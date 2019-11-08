@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "noise/Noise.h"
+#include "noise/Simplex.h"
 #include "image/Image.h"
 #include "core/GLM.h"
 

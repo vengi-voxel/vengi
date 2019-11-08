@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/IComponent.h"
-#include "Simplex.h"
 #include <glm/glm.hpp>
 #include <stdint.h>
 

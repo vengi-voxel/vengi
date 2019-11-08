@@ -6,6 +6,7 @@
 #include "voxelworld/BiomeManager.h"
 #include "voxel/PagedVolumeWrapper.h"
 #include "voxel/Raycast.h"
+#include "noise/Simplex.h"
 #include "core/String.h"
 #include <array>
 

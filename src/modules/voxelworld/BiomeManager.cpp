@@ -9,6 +9,7 @@
 #include "core/Common.h"
 #include "core/GLM.h"
 #include "core/Log.h"
+#include "noise/Simplex.h"
 #include "voxel/Constants.h"
 #include "voxel/Region.h"
 #include "voxel/MaterialColor.h"

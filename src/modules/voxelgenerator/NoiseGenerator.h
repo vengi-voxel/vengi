@@ -6,6 +6,7 @@
 
 #include "math/Random.h"
 #include "noise/Noise.h"
+#include "noise/Simplex.h"
 #include "voxel/MaterialColor.h"
 
 namespace voxelgenerator {

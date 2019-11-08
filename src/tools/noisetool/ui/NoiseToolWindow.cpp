@@ -11,6 +11,7 @@
 #include "math/Rect.h"
 #include "NoiseDataNodeWindow.h"
 #include "noise/PoissonDiskDistribution.h"
+#include "noise/Simplex.h"
 
 #define IMAGE_PREFIX "2d"
 #define GRAPH_PREFIX "graph"
