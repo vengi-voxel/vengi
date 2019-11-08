@@ -126,7 +126,6 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 
 	current = fabs(z - maxs.z);
 	if (delta > current) {
-		delta = current;
 		face = FaceNames::PositiveZ;
 	}
 
