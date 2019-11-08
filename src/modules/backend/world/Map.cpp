@@ -223,13 +223,7 @@ NpcPtr Map::npc(EntityId id) {
 }
 
 int Map::findFloor(const glm::vec3& pos) const {
-	// the voxel above us shouldn't be solid
-	if (!voxel::isFloor(_voxelWorldMgr->material(pos.x, pos.y + 1, pos.z))) {
-		if (voxel::isFloor(_voxelWorldMgr->material(pos.x, pos.y, pos.z))) {
-			return pos.y;
-		}
-	}
-	return _voxelWorldMgr->findFloor(pos.x, pos.z, voxel::isFloor);
+	return _voxelWorldMgr->findWalkableFloor(pos);
 }
 
 glm::ivec3 Map::randomPos() const {

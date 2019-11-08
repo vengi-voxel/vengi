@@ -77,11 +77,6 @@ void WorldMgr::setSeed(long seed) {
 	_pager.setNoiseOffset(glm::vec2(_random.randomf(-10000.0f, 10000.0f), _random.randomf(-10000.0f, 10000.0f)));
 }
 
-voxel::PickResult WorldMgr::pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength) {
-	static constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air, 0);
-	return voxel::pickVoxel(_volumeData, origin, directionWithLength, air);
-}
-
 void WorldMgr::updateExtractionOrder(const glm::ivec3& sortPos) {
 	static glm::ivec3 lastSortPos = glm::ivec3((std::numeric_limits<int>::max)());
 	const glm::ivec3 d = lastSortPos - sortPos;
@@ -96,22 +91,6 @@ void WorldMgr::updateExtractionOrder(const glm::ivec3& sortPos) {
 bool WorldMgr::allowReExtraction(const glm::ivec3& pos) {
 	const glm::ivec3& gridPos = meshPos(pos);
 	return _positionsExtracted.erase(gridPos) != 0;
-}
-
-bool WorldMgr::findPath(const glm::ivec3& start, const glm::ivec3& end,
-		std::list<glm::ivec3>& listResult) {
-	core_trace_scoped(FindPath);
-	static auto f = [] (const voxel::PagedVolume* volData, const glm::ivec3& v3dPos) {
-		const voxel::Voxel& voxel = volData->voxel(v3dPos);
-		return isBlocked(voxel.getMaterial());
-	};
-
-	const voxel::AStarPathfinderParams<voxel::PagedVolume> params(_volumeData, start, end, &listResult, 1.0f, 10000,
-			voxel::TwentySixConnected, std::bind(f, std::placeholders::_1, std::placeholders::_2));
-	voxel::AStarPathfinder<voxel::PagedVolume> pf(params);
-	// TODO: move into threadpool
-	pf.execute();
-	return true;
 }
 
 bool WorldMgr::init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes, uint16_t chunkSideLength) {
@@ -178,19 +157,6 @@ void WorldMgr::stats(int& meshes, int& extracted, int& pending) const {
 	extracted = _positionsExtracted.size();
 	pending = _pendingExtraction.size();
 	meshes = _extracted.size();
-}
-
-bool WorldMgr::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, voxel::Voxel& voxel) const {
-	const bool result = raycast(start, direction, maxDistance, [&] (const voxel::PagedVolume::Sampler& sampler) {
-		voxel = sampler.voxel();
-		if (voxel::isBlocked(voxel.getMaterial())) {
-			// store position and abort raycast
-			hit = sampler.position();
-			return false;
-		}
-		return true;
-	});
-	return result;
 }
 
 int WorldMgr::findWalkableFloor(const glm::vec3& position, float maxDistanceY) const {

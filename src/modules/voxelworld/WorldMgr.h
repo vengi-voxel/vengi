@@ -59,16 +59,8 @@ typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
  */
 class WorldMgr {
 public:
-	enum Result {
-		COMPLETED, ///< If the ray passed through the volume without being interrupted
-		INTERUPTED, ///< If the ray was interrupted while traveling
-		FAILED
-	};
-
 	WorldMgr(const voxelformat::VolumeCachePtr& volumeCache);
 	~WorldMgr();
-
-	bool findPath(const glm::ivec3& start, const glm::ivec3& end, std::list<glm::ivec3>& listResult);
 
 	template<typename VoxelTypeChecker>
 	int findFloor(int x, int z, VoxelTypeChecker&& check) const {
@@ -90,50 +82,16 @@ public:
 	 */
 	int findWalkableFloor(const glm::vec3& position, float maxDistanceY = (float)voxel::MAX_HEIGHT) const;
 
-	/**
-	 * @return true if the ray hit something - false if not.
-	 * @note The callback has a parameter of @c const PagedVolume::Sampler& and returns a boolean. If the callback returns false,
-	 * the ray is interrupted. Only if the callback returned false at some point in time, this function will return @c true.
-	 */
-	template<typename Callback>
-	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) const {
-		const voxel::RaycastResults::RaycastResult result = voxel::raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
-		return result == voxel::RaycastResults::Interupted;
-	}
-
-	/**
-	 * @return true if the ray hit something - false if not. If true is returned, the position is set to @c hit and
-	 * the @c Voxel that was hit is stored in @c voxel
-	 * @param[out] hit If the ray hits a voxel, this is the position of the hit
-	 * @param[out] voxel The voxel that was hit
-	 */
-	bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, voxel::Voxel& voxel) const;
-
 	bool init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes = 512, uint16_t chunkSideLength = 256);
 	void shutdown();
 	void reset();
 
 	voxel::VoxelType material(int x, int y, int z) const;
 
-	BiomeManager& biomeManager();
-	const BiomeManager& biomeManager() const;
-
-	voxel::PickResult pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength);
-
 	/**
 	 * @brief Returns a random position inside the boundaries of the world (on the surface)
 	 */
 	glm::ivec3 randomPos() const;
-
-	/**
-	 * @brief Cuts the given world coordinate down to mesh tile vectors
-	 */
-	glm::ivec3 meshPos(const glm::ivec3& pos) const;
-
-	/**
-	 * @brief Cuts the given world coordinate down to chunk tile vectors
-	 */
-	glm::ivec3 chunkPos(const glm::ivec3& pos) const;
 
 	/**
 	 * @brief We need to pop the mesh extractor queue to find out if there are new and ready to use meshes for us
@@ -171,12 +129,36 @@ public:
 
 	void setPersist(bool persist);
 
-	int chunkSize() const;
-
 	glm::ivec3 meshSize() const;
 
 private:
+	friend class WorldMgrTest;
 	void extractScheduledMesh();
+	BiomeManager& biomeManager();
+	const BiomeManager& biomeManager() const;
+
+	/**
+	 * @return true if the ray hit something - false if not.
+	 * @note The callback has a parameter of @c const PagedVolume::Sampler& and returns a boolean. If the callback returns false,
+	 * the ray is interrupted. Only if the callback returned false at some point in time, this function will return @c true.
+	 */
+	template<typename Callback>
+	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) const {
+		const voxel::RaycastResults::RaycastResult result = voxel::raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
+		return result == voxel::RaycastResults::Interupted;
+	}
+
+	int chunkSize() const;
+
+	/**
+	 * @brief Cuts the given world coordinate down to mesh tile vectors
+	 */
+	glm::ivec3 meshPos(const glm::ivec3& pos) const;
+
+	/**
+	 * @brief Cuts the given world coordinate down to chunk tile vectors
+	 */
+	glm::ivec3 chunkPos(const glm::ivec3& pos) const;
 
 	WorldPager _pager;
 	voxel::PagedVolume *_volumeData = nullptr;
