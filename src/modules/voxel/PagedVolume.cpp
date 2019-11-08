@@ -250,14 +250,10 @@ PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY
 		deleteOldestChunkIfNeeded();
 	}
 
-
 	// Pass the chunk to the Pager to give it a chance to initialise it with any data
 	// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
-	const glm::ivec3 mins = chunk->_chunkSpacePosition * static_cast<int32_t>(chunk->_sideLength);
-	const glm::ivec3 maxs = mins + glm::ivec3(chunk->_sideLength - 1, chunk->_sideLength - 1, chunk->_sideLength - 1);
-
 	PagerContext pctx;
-	pctx.region = Region(mins, maxs);
+	pctx.region = chunk->region();
 	pctx.chunk = chunk;
 
 	// Page the data in
