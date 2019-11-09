@@ -11,6 +11,8 @@
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "video/ShapeBuilder.h"
+#include "animation/Character.h"
+#include "animation/CharacterRenderer.h"
 #include "anim/VolumeCache.h"
 #include "render/ShapeRenderer.h"
 #include "render/GridRenderer.h"
@@ -61,6 +63,11 @@ private:
 	Modifier _modifier;
 	voxel::RawVolume* _copy = nullptr;
 	render::Gizmo _gizmo;
+
+	animation::Character _character;
+	animation::CharacterRenderer _characterRenderer;
+	animation::CharacterCachePtr _characterCache;
+
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
 	 */

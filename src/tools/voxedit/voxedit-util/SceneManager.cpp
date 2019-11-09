@@ -46,6 +46,8 @@
 #include "tool/Resize.h"
 #include "tool/ImageUtils.h"
 
+#include "attrib/ShadowAttributes.h"
+
 #include <set>
 #include <limits>
 
@@ -665,6 +667,10 @@ bool SceneManager::setGridResolution(int resolution) {
 }
 
 void SceneManager::renderAnimation(const video::Camera& camera) {
+	attrib::ShadowAttributes attrib;
+	const long deltaFrame = core::App::getInstance()->deltaFrame();
+	_character.update(deltaFrame, attrib);
+	_characterRenderer.render(_character, camera);
 }
 
 void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
@@ -1187,7 +1193,16 @@ bool SceneManager::init() {
 		return false;
 	}
 	if (!_volumeCache.init()) {
-		Log::error("Failed to initialize the animation mesh cache");
+		Log::error("Failed to initialize the volume cache");
+		return false;
+	}
+	if (!_characterRenderer.init()) {
+		Log::error("Failed to initialize the character renderer");
+		return false;
+	}
+	_characterCache = std::make_shared<animation::CharacterCache>();
+	if (!_characterCache->init()) {
+		Log::error("Failed to initialize the character mesh cache");
 		return false;
 	}
 
@@ -1335,6 +1350,9 @@ void SceneManager::shutdown() {
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
 	_mementoHandler.clearStates();
+	_characterRenderer.shutdown();
+	_characterCache->shutdown();
+	_character.shutdown();
 }
 
 bool SceneManager::loadCharacter(const std::string& luaFile) {
@@ -1363,6 +1381,10 @@ bool SceneManager::loadCharacter(const std::string& luaFile) {
 	if (layersAdded > 0) {
 		_layerMgr.deleteLayer(0, true);
 		_layerMgr.findNewActiveLayer();
+	}
+
+	if (!_character.init(_characterCache, lua)) {
+		Log::warn("Failed to initialize the character");
 	}
 
 	return true;
