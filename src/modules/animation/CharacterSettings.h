@@ -5,6 +5,7 @@
 #pragma once
 
 #include "SkeletonAttribute.h"
+#include "CharacterMeshType.h"
 #include <string>
 #include <stdint.h>
 
@@ -16,15 +17,20 @@ namespace animation {
  */
 struct CharacterSettings {
 	SkeletonAttribute skeletonAttr;
-	std::string race = "human";
-	std::string gender = "male";
-	std::string chest = "chests/blacksmith";
-	std::string belt = "belts/blacksmith";
-	std::string pants = "pants/blacksmith";
-	std::string hand = "hands/blacksmith";
-	std::string foot = "feets/blacksmith";
-	std::string head = "heads/blacksmith";
-	std::string shoulder = "shoulders/blacksmith";
+	std::string race;
+	std::string gender;
+	std::string chest;
+	std::string belt;
+	std::string pants;
+	std::string hand;
+	std::string foot;
+	std::string head;
+	std::string shoulder;
+
+	std::array<const std::string*, std::enum_value(CharacterMeshType::Max)> paths {};
+	char basePath[64] {};
+
+	CharacterSettings() {}
 
 	void setRace(const char *str) {
 		race = str;
@@ -61,8 +67,11 @@ struct CharacterSettings {
 	void setShoulder(const char *str) {
 		shoulder = str;
 	}
+
+	bool update();
 };
 
+extern std::string luaFilename(const char *character);
 extern bool loadCharacterSettings(const std::string& luaString, CharacterSettings& settings);
 
 }

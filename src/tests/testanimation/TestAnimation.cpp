@@ -19,10 +19,6 @@ static const char* validCharacters[] = {
 	"human-male-knight"
 };
 
-static std::string luaFilename(const char *character) {
-	return core::string::format("chr/%s.lua", character);
-}
-
 TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
@@ -76,7 +72,7 @@ core::AppState TestAnimation::onConstruct() {
 bool TestAnimation::loadCharacter() {
 	const char *chr = currentCharacter();
 	Log::info("Load character settings for %s", chr);
-	const io::FilePtr& file = filesystem()->open(luaFilename(chr));
+	const io::FilePtr& file = filesystem()->open(animation::luaFilename(chr));
 	const std::string& lua = file->load();
 	if (lua.empty()) {
 		Log::error("Failed to load character settings for %s", chr);

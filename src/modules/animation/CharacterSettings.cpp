@@ -9,9 +9,13 @@
 
 namespace animation {
 
+std::string luaFilename(const char *character) {
+	return core::string::format("chr/%s.lua", character);
+}
+
 bool loadCharacterSettings(const std::string& luaString, CharacterSettings& settings) {
 	if (luaString.empty()) {
-		return true;
+		return false;
 	}
 	static const luaL_Reg funcs[] = {
 		{ "setRace", luaMain_SetRace },
@@ -65,7 +69,31 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 		return false;
 	}
 
-	settings.skeletonAttr.update();
+	settings.update();
+
+	return true;
+}
+
+bool CharacterSettings::update() {
+	if (!skeletonAttr.update()) {
+		return false;
+	}
+	const char* racePath = race.c_str();
+	const char* genderPath = gender.c_str();
+
+	if (!core::string::formatBuf(basePath, sizeof(basePath), "models/characters/%s/%s", racePath, genderPath)) {
+		Log::error("Failed to initialize the character path buffer. Can't load models.");
+		return false;
+	}
+
+	paths[std::enum_value(CharacterMeshType::Head)]     = &head;
+	paths[std::enum_value(CharacterMeshType::Chest)]    = &chest;
+	paths[std::enum_value(CharacterMeshType::Belt)]     = &belt;
+	paths[std::enum_value(CharacterMeshType::Pants)]    = &pants;
+	paths[std::enum_value(CharacterMeshType::Hand)]     = &hand;
+	paths[std::enum_value(CharacterMeshType::Foot)]     = &foot;
+	paths[std::enum_value(CharacterMeshType::Shoulder)] = &shoulder;
+	paths[std::enum_value(CharacterMeshType::Glider)]   = nullptr;
 
 	return true;
 }

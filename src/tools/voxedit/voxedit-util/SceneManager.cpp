@@ -715,18 +715,15 @@ void SceneManager::construct() {
 	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Scene);
 
 	core::Command::registerCommand("character_load", [&] (const core::CmdArgs& args) {
-		animation::CharacterSettings settings;
-		if (!args.empty()) {
-			if (!animation::loadCharacterSettings(args[0], settings)) {
-				Log::warn("Failed to load character settings from %s", args[0].c_str());
-				return;
-			}
+		if (args.empty()) {
+			Log::info("Usage: character_load <luafile>");
+			Log::info("Example: character_load chr/human-male-blacksmith.lua");
+			return;
 		}
-		Log::info("No character script filename given - use default character settings");
-		if (!loadCharacter(settings)) {
+		if (!loadCharacter(args[0])) {
 			Log::error("Failed to load character");
 		}
-	}).setHelp("Load the character volumes");
+	}).setHelp("Load the character volumes").setArgumentCompleter(core::fileCompleter("", "*.lua"));
 
 	core::Command::registerCommand("layerssave", [&] (const core::CmdArgs& args) {
 		std::string dir = ".";
@@ -1186,7 +1183,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the modifier");
 		return false;
 	}
-	if (!_characterCache.init()) {
+	if (!_volumeCache.init()) {
 		Log::error("Failed to initialize the animation mesh cache");
 		return false;
 	}
@@ -1325,7 +1322,7 @@ void SceneManager::shutdown() {
 		delete v;
 	}
 
-	_characterCache.shutdown();
+	_volumeCache.shutdown();
 	_mementoHandler.shutdown();
 	_modifier.shutdown();
 	_layerMgr.unregisterListener(this);
@@ -1337,15 +1334,32 @@ void SceneManager::shutdown() {
 	_mementoHandler.clearStates();
 }
 
-bool SceneManager::loadCharacter(const animation::CharacterSettings& settings) {
-	// TODO: load lua file to get offsets
-	voxel::VoxelVolumes volumes;
-	if (!_characterCache.getCharacterVolumes(settings, volumes)) {
+bool SceneManager::loadCharacter(const std::string& luaFile) {
+	animation::CharacterSettings settings;
+	const std::string& lua = io::filesystem()->load(luaFile);
+	if (!animation::loadCharacterSettings(lua, settings)) {
+		Log::warn("Failed to load character settings from %s", luaFile.c_str());
 		return false;
 	}
 
+	voxel::VoxelVolumes volumes;
+	if (!_volumeCache.getCharacterVolumes(settings, volumes)) {
+		return false;
+	}
+
+	newScene(true, "character", voxel::Region());
+	int layersAdded = 0;
 	for (const auto& v : volumes) {
-		_layerMgr.addLayer(v.name.c_str(), v.visible, v.volume, v.pivot);
+		if (v.volume == nullptr) {
+			continue;
+		}
+		if (_layerMgr.addLayer(v.name.c_str(), v.visible, v.volume, v.pivot) != -1) {
+			++layersAdded;
+		}
+	}
+	if (layersAdded > 0) {
+		_layerMgr.deleteLayer(0, true);
+		_layerMgr.findNewActiveLayer();
 	}
 
 	return true;

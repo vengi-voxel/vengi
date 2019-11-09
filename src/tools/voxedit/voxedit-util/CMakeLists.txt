@@ -1,4 +1,6 @@
 set(SRCS
+	anim/VolumeCache.h anim/VolumeCache.cpp
+
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
 	ViewportController.h ViewportController.cpp

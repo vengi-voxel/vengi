@@ -88,42 +88,14 @@ bool CharacterCache::loadGlider(const voxel::Mesh* (&meshes)[std::enum_value(Cha
 }
 
 bool CharacterCache::getCharacterMeshes(const CharacterSettings& settings, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]) {
-	const char* racePath = settings.race.c_str();
-	const char* genderPath = settings.gender.c_str();
-
-	char basePath[64];
-	if (!core::string::formatBuf(basePath, sizeof(basePath), "models/characters/%s/%s", racePath, genderPath)) {
-		Log::error("Failed to initialize the character path buffer. Can't load models.");
-		return false;
-	}
-
-	if (!load(basePath, settings.head.c_str(), CharacterMeshType::Head, meshes)) {
-		Log::error("Failed to load head");
-		return false;
-	}
-	if (!load(basePath, settings.chest.c_str(), CharacterMeshType::Chest, meshes)) {
-		Log::error("Failed to load chest");
-		return false;
-	}
-	if (!load(basePath, settings.belt.c_str(), CharacterMeshType::Belt, meshes)) {
-		Log::error("Failed to load belt");
-		return false;
-	}
-	if (!load(basePath, settings.pants.c_str(), CharacterMeshType::Pants, meshes)) {
-		Log::error("Failed to load pants");
-		return false;
-	}
-	if (!load(basePath, settings.hand.c_str(), CharacterMeshType::Hand, meshes)) {
-		Log::error("Failed to load hand");
-		return false;
-	}
-	if (!load(basePath, settings.foot.c_str(), CharacterMeshType::Foot, meshes)) {
-		Log::error("Failed to load foot");
-		return false;
-	}
-	if (!load(basePath, settings.shoulder.c_str(), CharacterMeshType::Shoulder, meshes)) {
-		Log::error("Failed to load shoulder");
-		return false;
+	for (size_t i = 0; i < settings.paths.size(); ++i) {
+		if (settings.paths[i] == nullptr) {
+			continue;
+		}
+		if (!load(settings.basePath, settings.paths[i]->c_str(), (CharacterMeshType)i, meshes)) {
+			Log::error("Failed to load %s", settings.paths[i]->c_str());
+			return false;
+		}
 	}
 	if (!loadGlider(meshes)) {
 		Log::error("Failed to load glider");
@@ -183,55 +155,6 @@ bool CharacterCache::getCharacterModel(const CharacterSettings& settings, Vertic
 	return true;
 }
 
-bool CharacterCache::getCharacterVolumes(const CharacterSettings& settings, voxel::VoxelVolumes& volumes) {
-	const char* racePath = settings.race.c_str();
-	const char* genderPath = settings.gender.c_str();
-
-	char basePath[64];
-	if (!core::string::formatBuf(basePath, sizeof(basePath), "models/characters/%s/%s", racePath, genderPath)) {
-		Log::error("Failed to initialize the character path buffer. Can't load models.");
-		return false;
-	}
-
-	volumes.resize(std::enum_value(CharacterMeshType::Max));
-
-	if (!load(basePath, settings.head.c_str(), CharacterMeshType::Head, volumes)) {
-		Log::error("Failed to load head");
-		return false;
-	}
-	if (!load(basePath, settings.chest.c_str(), CharacterMeshType::Chest, volumes)) {
-		Log::error("Failed to load chest");
-		return false;
-	}
-	if (!load(basePath, settings.belt.c_str(), CharacterMeshType::Belt, volumes)) {
-		Log::error("Failed to load belt");
-		return false;
-	}
-	if (!load(basePath, settings.pants.c_str(), CharacterMeshType::Pants, volumes)) {
-		Log::error("Failed to load pants");
-		return false;
-	}
-	if (!load(basePath, settings.hand.c_str(), CharacterMeshType::Hand, volumes)) {
-		Log::error("Failed to load hand");
-		return false;
-	}
-	if (!load(basePath, settings.foot.c_str(), CharacterMeshType::Foot, volumes)) {
-		Log::error("Failed to load foot");
-		return false;
-	}
-	if (!load(basePath, settings.shoulder.c_str(), CharacterMeshType::Shoulder, volumes)) {
-		Log::error("Failed to load shoulder");
-		return false;
-	}
-	for (int i = 0; i < std::enum_value(CharacterMeshType::Max); ++i) {
-		if (volumes[i].volume == nullptr) {
-			continue;
-		}
-		volumes[i].name = toString((CharacterMeshType)i);
-	}
-	return true;
-}
-
 bool CharacterCache::load(const char *basePath, const char *filename, CharacterMeshType meshType, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]) {
 	if (filename == nullptr || filename[0] == '\0') {
 		meshes[std::enum_value(meshType)] = nullptr;
@@ -284,32 +207,6 @@ bool CharacterCache::getItemModel(const char *itemName, Vertices& vertices, Indi
 	}
 	//indices.resize(mesh.getNoOfIndices());
 
-	return true;
-}
-
-bool CharacterCache::load(const char *basePath, const char *filename, CharacterMeshType meshType, voxel::VoxelVolumes& volumes) {
-	if (filename == nullptr || filename[0] == '\0') {
-		Log::error("No filename given - can't load character mesh");
-		return false;
-	}
-	char fullPath[128];
-	if (!core::string::formatBuf(fullPath, sizeof(fullPath), "%s/%s.vox", basePath, filename)) {
-		Log::error("Failed to initialize the character path buffer. Can't load %s.", fullPath);
-		return false;
-	}
-	Log::info("Loading volume from %s", fullPath);
-	const io::FilesystemPtr& fs = io::filesystem();
-	const io::FilePtr& file = fs->open(fullPath);
-	voxel::VoxelVolumes localVolumes;
-	if (!voxelformat::loadVolumeFormat(file, localVolumes)) {
-		Log::error("Failed to load %s", file->name().c_str());
-		return false;
-	}
-	if ((int)localVolumes.size() != 1) {
-		Log::error("More than one volume/layer found in %s", file->name().c_str());
-		return false;
-	}
-	volumes[std::enum_value(meshType)] = localVolumes[0];
 	return true;
 }
 

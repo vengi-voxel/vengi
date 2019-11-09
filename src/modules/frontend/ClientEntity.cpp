@@ -9,14 +9,10 @@
 
 namespace frontend {
 
-static std::string luaFilename(const char *character) {
-	return core::string::format("chr/%s.lua", character);
-}
-
 ClientEntity::ClientEntity(const stock::StockDataProviderPtr& provider, const animation::CharacterCachePtr& characterCache, ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation) :
 		_id(id), _type(type), _position(pos), _orientation(orientation), _stock(provider), _characterCache(characterCache) {
 	const std::string& entityTypeStr = core::string::toLower(network::EnumNameEntityType(type));
-	const io::FilePtr& file = io::filesystem()->open(luaFilename(entityTypeStr.c_str()));
+	const io::FilePtr& file = io::filesystem()->open(animation::luaFilename(entityTypeStr.c_str()));
 	const std::string& lua = file->load();
 	_character.init(_characterCache, lua);
 	_stock.init();
