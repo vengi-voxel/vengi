@@ -664,6 +664,9 @@ bool SceneManager::setGridResolution(int resolution) {
 	return true;
 }
 
+void SceneManager::renderAnimation(const video::Camera& camera) {
+}
+
 void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 	const bool depthTest = video::enable(video::State::DepthTest);
 	const bool renderUI = (renderMask & RenderUI) != 0u;

@@ -263,6 +263,7 @@ public:
 	 * @brief Performs the rendering for each @c Viewport instance
 	 */
 	void render(const video::Camera& camera, uint8_t renderMask = RenderAll);
+	void renderAnimation(const video::Camera& camera);
 
 	render::GridRenderer& gridRenderer();
 	bool setGridResolution(int resolution);

@@ -29,13 +29,20 @@ public:
 		Max
 	};
 
+	enum class RenderMode {
+		Editor,
+		Animation,
+
+		Max
+	};
+
 private:
 	float _angle = 0.0f;
 	SceneCameraMode _camMode = SceneCameraMode::Free;
 	core::VarPtr _rotationSpeed;
 	video::Camera _camera;
 	ShaderType _shaderType = ShaderType::None;
-
+	RenderMode _renderMode = RenderMode::Editor;
 public:
 	bool _mouseDown = false;
 	int _mouseX = 0;
@@ -44,6 +51,8 @@ public:
 	void init(SceneCameraMode mode);
 	void resetCamera(const voxel::Region& region);
 
+	RenderMode renderMode() const;
+	RenderMode setRenderMode(RenderMode mode);
 	void setShaderType(ShaderType type);
 	ShaderType shaderType() const;
 
@@ -58,6 +67,16 @@ public:
 	float angle() const;
 	void setAngle(float angle);
 };
+
+inline ViewportController::RenderMode ViewportController::renderMode() const {
+	return _renderMode;
+}
+
+inline ViewportController::RenderMode ViewportController::setRenderMode(RenderMode renderMode) {
+	const RenderMode old = _renderMode;
+	_renderMode = renderMode;
+	return old;
+}
 
 inline video::Camera& ViewportController::camera() {
 	return _camera;

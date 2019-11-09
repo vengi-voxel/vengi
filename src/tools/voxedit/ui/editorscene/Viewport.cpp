@@ -196,7 +196,11 @@ void Viewport::onProcess() {
 	{
 		core_trace_scoped(EditorSceneRenderFramebuffer);
 		_frameBuffer.bind(true);
-		voxedit::sceneMgr().render(_controller.camera());
+		if (_controller.renderMode() == voxedit::ViewportController::RenderMode::Animation) {
+			voxedit::sceneMgr().renderAnimation(_controller.camera());
+		} else {
+			voxedit::sceneMgr().render(_controller.camera());
+		}
 		_frameBuffer.unbind();
 	}
 }
