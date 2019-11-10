@@ -55,12 +55,14 @@ void Viewport::resetCamera() {
 
 bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
 	core_trace_scoped(EditorSceneOnEvent);
-	if (ev.type == tb::EVENT_TYPE_POINTER_MOVE) {
+	if (ev.type == tb::EVENT_TYPE_POINTER_MOVE && ev.target == this) {
 		const bool relative = isRelativeMouseMode();
 		const bool middle = isMiddleMouseButtonPressed();
 		const bool alt = (ev.modifierkeys & tb::TB_ALT);
 		_controller.move(relative || middle || alt, ev.target_x, ev.target_y);
-		voxedit::sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
+		voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
+		sceneMgr.setMousePos(_controller._mouseX, _controller._mouseY);
+		sceneMgr.setActiveCamera(&_controller.camera());
 		return true;
 	}
 	return Super::onEvent(ev);
