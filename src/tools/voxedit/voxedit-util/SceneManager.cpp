@@ -771,6 +771,20 @@ void SceneManager::construct() {
 	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Scene);
 	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Scene);
 
+	core::Command::registerCommand("cycle_animation", [this] (const core::CmdArgs& argv) {
+		int offset = 1;
+		if (argv.size() > 0) {
+			offset = core::string::toInt(argv[0]);
+		}
+		_animationIdx += offset;
+		while (_animationIdx < 0) {
+			_animationIdx += std::enum_value(animation::Animation::Max);
+		}
+		_animationIdx %= std::enum_value(animation::Animation::Max);
+		Log::info("current animation idx: %i", _animationIdx);
+		_character.setAnimation((animation::Animation)_animationIdx);
+	});
+
 	core::Command::registerCommand("character_save", [&] (const core::CmdArgs& args) {
 		saveCharacter();
 	});

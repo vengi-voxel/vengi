@@ -75,6 +75,7 @@ private:
 	// that we have to perform the update for - or -1 if all layers were
 	// touched
 	int _animationLayerDirtyState = -1;
+	int _animationIdx = 0;
 	bool _animationUpdate = false;
 
 	/**
