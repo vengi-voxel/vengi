@@ -29,10 +29,14 @@ struct CharacterSettings : public core::NonCopyable {
 	std::string head;
 	std::string shoulder;
 
-	std::array<const std::string*, std::enum_value(CharacterMeshType::Max)> paths {};
+	std::array<const std::string*, std::enum_value(CharacterMeshType::Max)> paths;
 	char basePath[64] {};
 
-	CharacterSettings() {}
+	CharacterSettings() {
+		for (size_t i = 0; i < paths.size(); ++i) {
+			paths[i] = nullptr;
+		}
+	}
 
 	inline std::string fullPath(CharacterMeshType type) const {
 		return core::string::format("%s/%s.vox", basePath, path(type));
@@ -56,7 +60,9 @@ struct CharacterSettings : public core::NonCopyable {
 		foot = other.foot;
 		head = other.head;
 		shoulder = other.shoulder;
-		paths = {};
+		for (size_t i = 0; i < paths.size(); ++i) {
+			paths[i] = nullptr;
+		}
 		memcpy(basePath, other.basePath, sizeof(basePath));
 		update();
 	}
