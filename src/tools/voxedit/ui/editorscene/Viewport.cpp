@@ -183,7 +183,9 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 }
 
 void Viewport::update() {
-	camera().setTarget(glm::vec3(voxedit::sceneMgr().referencePosition()));
+	if (_controller.renderMode() == voxedit::ViewportController::RenderMode::Editor) {
+		camera().setTarget(glm::vec3(voxedit::sceneMgr().referencePosition()));
+	}
 }
 
 void Viewport::onProcess() {
