@@ -65,16 +65,19 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 
 long File::write(const unsigned char *buf, size_t len) const {
 	if (!_file) {
+		Log::error("Invalid file handle");
 		return -1;
 	}
 	if (_mode != FileMode::Write) {
+		Log::error("Invalid file mode given");
 		return -1L;
 	}
 
 	int remaining = len;
-	while (remaining != 0) {
+	while (remaining > 0) {
 		const size_t written = SDL_RWwrite(_file, buf, 1, remaining);
 		if (written == 0) {
+			Log::error("Error writing file");
 			return -1L;
 		}
 

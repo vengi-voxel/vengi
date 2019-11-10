@@ -54,6 +54,14 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 	uv_loop_init(_loop);
 }
 
+bool Filesystem::removeFile(const std::string& file) const {
+	if (file.empty()) {
+		return false;
+	}
+	uv_fs_t req;
+	return uv_fs_unlink(_loop, &req, file.c_str(), nullptr) == 0;
+}
+
 bool Filesystem::removeDir(const std::string& dir, bool recursive) const {
 	if (dir.empty()) {
 		return false;

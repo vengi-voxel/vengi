@@ -137,6 +137,7 @@ public:
 	bool createDir(const std::string& dir, bool recursive = true) const;
 
 	bool removeDir(const std::string& dir, bool recursive = false) const;
+	bool removeFile(const std::string& file) const;
 private:
 	static bool _list(const std::string& directory, std::vector<DirEntry>& entities);
 	static bool _list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter);

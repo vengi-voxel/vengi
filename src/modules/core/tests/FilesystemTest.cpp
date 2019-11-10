@@ -66,4 +66,22 @@ TEST_F(FilesystemTest, testMkdir) {
 	fs.shutdown();
 }
 
+TEST_F(FilesystemTest, testWrite) {
+	io::Filesystem fs;
+	fs.init("test", "test");
+	ASSERT_TRUE(fs.write("testfile", "123"));
+	ASSERT_EQ("123", fs.load("testfile"));
+	fs.shutdown();
+}
+
+TEST_F(FilesystemTest, testWriteNewDir) {
+	io::Filesystem fs;
+	fs.init("test", "test");
+	ASSERT_TRUE(fs.write("dir123/testfile", "123"));
+	ASSERT_EQ("123", fs.load("dir123/testfile"));
+	fs.removeFile("dir123/testfile");
+	fs.removeDir("dir123");
+	fs.shutdown();
+}
+
 }
