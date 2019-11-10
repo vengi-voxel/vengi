@@ -44,6 +44,11 @@ public:
 	 */
 	bool init(const CharacterCachePtr& cache, const std::string& luaString = "");
 	void shutdown();
+	bool initMesh(const CharacterCachePtr& cache);
+	/**
+	 * @note Updating the settings without updating the mesh afterwards is pointless.
+	 */
+	bool initSettings(const std::string& luaSt);
 	/**
 	 * @brief Update the bone states and the tool vertices from the given inventory
 	 * @param[in] dt The delta time since the last call

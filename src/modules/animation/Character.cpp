@@ -22,10 +22,22 @@
 namespace animation {
 
 bool Character::init(const CharacterCachePtr& cache, const std::string& luaString) {
-	_settings = CharacterSettings();
-	if (!loadCharacterSettings(luaString, _settings)) {
+	if (!initSettings(luaString)) {
 		return false;
 	}
+	return initMesh(cache);
+}
+
+bool Character::initSettings(const std::string& luaString) {
+	CharacterSettings settings;
+	if (loadCharacterSettings(luaString, settings)) {
+		_settings.copyFrom(settings);
+		return true;
+	}
+	return false;
+}
+
+bool Character::initMesh(const CharacterCachePtr& cache) {
 	if (!cache->getCharacterModel(_settings, _vertices, _indices)) {
 		return false;
 	}
