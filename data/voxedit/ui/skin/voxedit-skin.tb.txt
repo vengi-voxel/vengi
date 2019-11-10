@@ -67,6 +67,14 @@ elements
 	voxedit-tree_pine
 		bitmap voxedit-tree_pine.png
 
+	voxedit-animation-button
+		bitmap voxedit-animation.png
+		children
+			element voxedit-animation-button.selected
+				state selected
+			element voxedit-animation-button.pressed
+				state pressed
+
 	voxedit-quadview-button
 		bitmap voxedit-quadview.png
 		children

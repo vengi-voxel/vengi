@@ -30,6 +30,7 @@ private:
 	Viewport* _sceneTop = nullptr;
 	Viewport* _sceneLeft = nullptr;
 	Viewport* _sceneFront = nullptr;
+	Viewport* _sceneAnimation = nullptr;
 	PaletteWidget* _paletteWidget;
 	LayerWidget* _layerWidget;
 	tb::TBWidget* _saveButton = nullptr;
@@ -78,6 +79,7 @@ private:
 	tb::TBCheckBox *_renderShadow = nullptr;
 
 	bool _fourViewAvailable = false;
+	bool _animationViewAvailable = false;
 	core::VarPtr _lastOpenedFile;
 
 	glm::ivec3 _lastCursorPos;
@@ -99,7 +101,8 @@ private:
 	void afterLoad(const std::string& file);
 
 	// commands
-	void toggleviewport();
+	void toggleViewport();
+	void toggleAnimation();
 	bool importHeightmap(const std::string& file);
 	bool importAsPlane(const std::string& file);
 	bool importPalette(const std::string& file);

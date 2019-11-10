@@ -127,8 +127,15 @@ core::AppState VoxEdit::onConstruct() {
 		if (_mainWindow == nullptr) {
 			return;
 		}
-		_mainWindow->toggleviewport();
+		_mainWindow->toggleViewport();
 	}).setHelp("Toggle quad view on/off");
+
+	core::Command::registerCommand("toggleanimation", [this] (const core::CmdArgs& args) {
+		if (_mainWindow == nullptr) {
+			return;
+		}
+		_mainWindow->toggleAnimation();
+	}).setHelp("Toggle animation view on/off");
 
 	core::Command::registerCommand("resetcamera", [this] (const core::CmdArgs& args) {
 		if (_mainWindow == nullptr) {

@@ -95,23 +95,18 @@ bool VoxEditWindow::init() {
 	_sceneTop = getWidgetByType<Viewport>("editorscenetop");
 	_sceneLeft = getWidgetByType<Viewport>("editorsceneleft");
 	_sceneFront = getWidgetByType<Viewport>("editorscenefront");
+	_sceneAnimation = getWidgetByType<Viewport>("animationscene");
 
 	_fourViewAvailable = _sceneTop != nullptr && _sceneLeft != nullptr && _sceneFront != nullptr;
+	_animationViewAvailable = _sceneAnimation != nullptr;
 
 	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
 	if (toggleViewPort != nullptr) {
 		toggleViewPort->setState(tb::WIDGET_STATE_DISABLED, !_fourViewAvailable);
-		const bool visible = toggleViewPort->getValue() == 1;
-		const tb::WIDGET_VISIBILITY vis = visible ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
-		if (_sceneTop != nullptr) {
-			_sceneTop->setVisibility(vis);
-		}
-		if (_sceneLeft != nullptr) {
-			_sceneLeft->setVisibility(vis);
-		}
-		if (_sceneFront != nullptr) {
-			_sceneFront->setVisibility(vis);
-		}
+	}
+	tb::TBWidget* toggleAnimation = getWidget("toggleanimation");
+	if (toggleAnimation != nullptr) {
+		toggleAnimation->setState(tb::WIDGET_STATE_DISABLED, !_animationViewAvailable);
 	}
 	_saveButton = getWidget("save");
 	_undoButton = getWidget("undo");
@@ -227,6 +222,9 @@ void VoxEditWindow::update() {
 	if (_sceneFront != nullptr) {
 		_sceneFront->update();
 	}
+	if (_sceneAnimation != nullptr) {
+		_sceneAnimation->update();
+	}
 	if (_paletteWidget != nullptr) {
 		_paletteWidget->setVoxelColor(sceneMgr().hitCursorVoxel().getColor());
 	}
@@ -251,6 +249,9 @@ Viewport* VoxEditWindow::getActiveScene() {
 		if (tb::TBWidget::focused_widget == _sceneFront) {
 			return _sceneFront;
 		}
+		if (tb::TBWidget::focused_widget == _sceneAnimation) {
+			return _sceneAnimation;
+		}
 	}
 	return _scene;
 }
@@ -259,17 +260,19 @@ bool VoxEditWindow::isSceneFocused() const {
 	return tb::TBWidget::focused_widget == _scene
 			|| tb::TBWidget::focused_widget == _sceneTop
 			|| tb::TBWidget::focused_widget == _sceneLeft
-			|| tb::TBWidget::focused_widget == _sceneFront;
+			|| tb::TBWidget::focused_widget == _sceneFront
+			|| tb::TBWidget::focused_widget == _sceneAnimation;
 }
 
 bool VoxEditWindow::isSceneHovered() const {
 	return tb::TBWidget::hovered_widget == _scene
 			|| tb::TBWidget::hovered_widget == _sceneTop
 			|| tb::TBWidget::hovered_widget == _sceneLeft
-			|| tb::TBWidget::hovered_widget == _sceneFront;
+			|| tb::TBWidget::hovered_widget == _sceneFront
+			|| tb::TBWidget::hovered_widget == _sceneAnimation;
 }
 
-void VoxEditWindow::toggleviewport() {
+void VoxEditWindow::toggleViewport() {
 	bool vis = false;
 	if (_sceneTop != nullptr) {
 		vis = _sceneTop->getVisibilityCombined();
@@ -290,6 +293,13 @@ void VoxEditWindow::toggleviewport() {
 	}
 	if (_sceneFront != nullptr) {
 		_sceneFront->setVisibility(visibility);
+	}
+}
+
+void VoxEditWindow::toggleAnimation() {
+	if (_sceneAnimation != nullptr) {
+		const bool vis = _sceneAnimation->getVisibilityCombined();
+		_sceneAnimation->setVisibility(vis ? tb::WIDGET_VISIBILITY_GONE : tb::WIDGET_VISIBILITY_VISIBLE);
 	}
 }
 
@@ -761,6 +771,9 @@ void VoxEditWindow::resetCamera() {
 	}
 	if (_sceneFront != nullptr) {
 		_sceneFront->resetCamera();
+	}
+	if (_sceneAnimation != nullptr) {
+		_sceneAnimation->resetCamera();
 	}
 }
 

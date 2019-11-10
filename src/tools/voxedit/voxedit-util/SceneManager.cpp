@@ -337,6 +337,14 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 	}
 	_dirty = true;
 	_needAutoSave = true;
+	if (!_animationUpdate && _animationLayerDirtyState == -1) {
+		// the first layer
+		_animationLayerDirtyState = layerId;
+	} else if (_animationUpdate) {
+		// a second layer was modified (maybe a group action)
+		_animationLayerDirtyState = -1;
+	}
+	_animationUpdate = true;
 	resetLastTrace();
 }
 
@@ -669,6 +677,38 @@ bool SceneManager::setGridResolution(int resolution) {
 void SceneManager::renderAnimation(const video::Camera& camera) {
 	attrib::ShadowAttributes attrib;
 	const long deltaFrame = core::App::getInstance()->deltaFrame();
+	if (_animationUpdate) {
+		const voxedit::Layers& layers = _layerMgr.layers();
+		const size_t layerAmount = layers.size();
+		for (size_t i = 0; i < layerAmount; ++i) {
+			if (_animationLayerDirtyState >= 0 && _animationLayerDirtyState != (int)i) {
+				Log::debug("Don't update layer %i", (int)i);
+				continue;
+			}
+			const voxedit::Layer& l = layers[i];
+			const std::string& value = l.metadataById("type");
+			if (value.empty()) {
+				Log::debug("No type metadata found on layer %i", (int)i);
+				continue;
+			}
+			const int characterMeshTypeId = core::string::toInt(value);
+			const std::string* path = _characterSettings.paths[characterMeshTypeId];
+			if (path == nullptr) {
+				Log::debug("No path found for layer %i", (int)i);
+				continue;
+			}
+			voxel::Mesh mesh;
+			_volumeRenderer.toMesh(i, &mesh);
+			const std::string& fullPath = core::string::format("%s/%s.vox", _characterSettings.basePath, path->c_str());
+			_characterCache->putMesh(fullPath.c_str(), mesh);
+			Log::debug("Updated mesh on layer %i for path %s", (int)i, fullPath.c_str());
+		}
+		if (!_character.initMesh(_characterCache)) {
+			Log::warn("Failed to update the mesh");
+		}
+		_animationUpdate = false;
+		_animationLayerDirtyState = -1;
+	}
 	_character.update(deltaFrame, attrib);
 	_characterRenderer.render(_character, camera);
 }
@@ -1362,20 +1402,26 @@ bool SceneManager::loadCharacter(const std::string& luaFile) {
 		Log::warn("Failed to load character settings from %s", luaFile.c_str());
 		return false;
 	}
+	_characterSettings.copyFrom(settings);
 
 	voxel::VoxelVolumes volumes;
-	if (!_volumeCache.getCharacterVolumes(settings, volumes)) {
+	if (!_volumeCache.getCharacterVolumes(_characterSettings, volumes)) {
 		return false;
 	}
 
+	// create a new scene and in case of successfully loading all the anim related
+	// stuff, we will then delete the first layer again.
 	newScene(true, "character", voxel::Region());
 	int layersAdded = 0;
-	for (const auto& v : volumes) {
+	for (size_t i = 0u; i < volumes.size(); ++i) {
+		const auto& v = volumes[i];
 		if (v.volume == nullptr) {
 			continue;
 		}
-		if (_layerMgr.addLayer(v.name.c_str(), v.visible, v.volume, v.pivot) != -1) {
+		const int layerId = _layerMgr.addLayer(v.name.c_str(), v.visible, v.volume, v.pivot);
+		if (layerId != -1) {
 			++layersAdded;
+			_layerMgr.addMetadata(layerId, {{"type", core::string::format("%i", (int)i)}});
 		}
 	}
 	if (layersAdded > 0) {
@@ -1383,9 +1429,11 @@ bool SceneManager::loadCharacter(const std::string& luaFile) {
 		_layerMgr.findNewActiveLayer();
 	}
 
-	if (!_character.init(_characterCache, lua)) {
-		Log::warn("Failed to initialize the character");
+	if (!_character.initSettings(lua)) {
+		Log::warn("Failed to initialize the character settings");
 	}
+	_animationUpdate = true;
+	_animationLayerDirtyState = -1;
 
 	return true;
 }

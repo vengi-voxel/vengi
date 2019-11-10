@@ -65,6 +65,9 @@ private:
 	render::Gizmo _gizmo;
 
 	animation::Character _character;
+	// the settings that are modified by the editor and then
+	// later transfered to the character for rendering
+	animation::CharacterSettings _characterSettings;
 	animation::CharacterRenderer _characterRenderer;
 	animation::CharacterCachePtr _characterCache;
 
@@ -101,6 +104,13 @@ private:
 	bool _renderShadow = true;
 	bool _renderAxis = true;
 	bool _renderLockAxis = true;
+
+	// if we are in animation mode and we modified the meshes, we have to
+	// update the cache with the current volume. this is the layer id
+	// that we have to perform the update for - or -1 if all layers were
+	// touched
+	int _animationLayerDirtyState = -1;
+	bool _animationUpdate = false;
 
 	std::string _lastFilename;
 	uint64_t _lastAutoSave = 0u;

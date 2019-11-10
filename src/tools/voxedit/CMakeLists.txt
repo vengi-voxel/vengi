@@ -37,6 +37,8 @@ set(IMAGES
 	voxedit/ui/skin/voxedit-add
 	voxedit/ui/skin/voxedit-anim-play
 	voxedit/ui/skin/voxedit-anim-play-selected
+	voxedit/ui/skin/voxedit-animation
+	voxedit/ui/skin/voxedit-animation-selected
 	voxedit/ui/skin/voxedit-axis-x
 	voxedit/ui/skin/voxedit-axis-y
 	voxedit/ui/skin/voxedit-axis-z

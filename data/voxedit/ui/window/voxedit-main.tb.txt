@@ -119,16 +119,20 @@ TBLayout: distribution: gravity, axis: y
 									@include cameramode
 									@include camerarottype
 									@include shaderselection
-								Viewport: id: editorscenetop, gravity: left right top bottom, skin: no-padding-container, camera: top
+								Viewport: id: editorscenetop, gravity: left right top bottom, skin: no-padding-container, camera: top, visibility: gone
+									@include cameramode
+									@include camerarottype
+									@include shaderselection
+								Viewport: id: animationscene, gravity: left right top bottom, skin: no-padding-container, camera: free, mode: animation, visibility: gone
 									@include cameramode
 									@include camerarottype
 									@include shaderselection
 							TBLayout: distribution: gravity, axis: x
-								Viewport: id: editorsceneleft, gravity: left right top bottom, skin: no-padding-container, camera: left
+								Viewport: id: editorsceneleft, gravity: left right top bottom, skin: no-padding-container, camera: left, visibility: gone
 									@include cameramode
 									@include camerarottype
 									@include shaderselection
-								Viewport: id: editorscenefront, gravity: left right top bottom, skin: no-padding-container, camera: front
+								Viewport: id: editorscenefront, gravity: left right top bottom, skin: no-padding-container, camera: front, visibility: gone
 									@include cameramode
 									@include camerarottype
 									@include shaderselection
@@ -237,3 +241,5 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-reset-camera
 						TBClickLabel: text: Quad view
 							TBCheckBox: id: toggleviewport, skin: voxedit-quadview-button, command: toggleviewport
+						TBClickLabel: text: Animation view
+							TBCheckBox: id: toggleanimation, skin: voxedit-animation-button, command: toggleanimation
