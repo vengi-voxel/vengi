@@ -90,6 +90,7 @@ bool CharacterCache::loadGlider(const voxel::Mesh* (&meshes)[std::enum_value(Cha
 bool CharacterCache::getCharacterMeshes(const CharacterSettings& settings, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]) {
 	for (size_t i = 0; i < settings.paths.size(); ++i) {
 		if (settings.paths[i] == nullptr) {
+			meshes[i] = nullptr;
 			continue;
 		}
 		if (!load(settings.basePath, settings.paths[i]->c_str(), (CharacterMeshType)i, meshes)) {
@@ -105,7 +106,7 @@ bool CharacterCache::getCharacterMeshes(const CharacterSettings& settings, const
 }
 
 bool CharacterCache::getCharacterModel(const CharacterSettings& settings, Vertices& vertices, Indices& indices) {
-	const voxel::Mesh* meshes[std::enum_value(CharacterMeshType::Max)];
+	const voxel::Mesh* meshes[std::enum_value(CharacterMeshType::Max)] {};
 	if (!getCharacterMeshes(settings, meshes)) {
 		return false;
 	}
