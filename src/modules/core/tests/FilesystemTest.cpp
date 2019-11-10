@@ -84,4 +84,15 @@ TEST_F(FilesystemTest, testWriteNewDir) {
 	fs.shutdown();
 }
 
+TEST_F(FilesystemTest, testCreateDirRecursive) {
+	io::Filesystem fs;
+	fs.init("test", "test");
+	ASSERT_TRUE(fs.createDir("dir1/dir2/dir3/dir4", true));
+	ASSERT_TRUE(fs.removeDir("dir1/dir2/dir3/dir4"));
+	ASSERT_TRUE(fs.removeDir("dir1/dir2/dir3"));
+	ASSERT_TRUE(fs.removeDir("dir1/dir2"));
+	ASSERT_TRUE(fs.removeDir("dir1"));
+	fs.shutdown();
+}
+
 }

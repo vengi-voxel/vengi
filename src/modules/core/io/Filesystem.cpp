@@ -83,7 +83,7 @@ bool Filesystem::createDir(const std::string& dir, bool recursive) const {
 	if (!recursive) {
 		uv_fs_t req;
 		// rwx+o, r+g
-		const int retVal = uv_fs_mkdir(_loop, &req, dir.c_str(), 0740, nullptr);
+		const int retVal = uv_fs_mkdir(nullptr, &req, dir.c_str(), 0740, nullptr);
 		if (retVal != 0 && req.result != UV_EEXIST) {
 			return false;
 		}
@@ -105,7 +105,7 @@ bool Filesystem::createDir(const std::string& dir, bool recursive) const {
 		}
 		const char *dirc = dirpart.c_str();
 		uv_fs_t req;
-		const int retVal = uv_fs_mkdir(_loop, &req, dirc, 0700, nullptr);
+		const int retVal = uv_fs_mkdir(nullptr, &req, dirc, 0700, nullptr);
 		if (retVal != 0 && req.result != UV_EEXIST) {
 			return false;
 		}
@@ -409,9 +409,13 @@ const std::string Filesystem::writePath(const char* name) const {
 }
 
 bool Filesystem::write(const std::string& filename, const uint8_t* content, size_t length) {
-	io::File f(_homePath + filename, FileMode::Write);
-	createDir(f.path());
-	return f.write(content, length) == static_cast<long>(length);
+	const io::File f(_homePath + filename, FileMode::Write);
+	const std::string& path = f.path();
+	if (!path.empty() && !createDir(path)) {
+		return false;
+	}
+	const io::File fileInSubdir(f.name(), FileMode::Write);
+	return fileInSubdir.write(content, length) == static_cast<long>(length);
 }
 
 bool Filesystem::write(const std::string& filename, const std::string& string) {
