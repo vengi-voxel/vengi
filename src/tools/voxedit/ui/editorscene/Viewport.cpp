@@ -167,6 +167,14 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 	}
 	_cameraMode = cameraMode;
 	_controller.init(mode);
+
+	voxedit::ViewportController::RenderMode renderMode = voxedit::ViewportController::RenderMode::Editor;
+	const char *renderModeStr = info.node->getValueString("mode", "editor");
+	if (!strcmp(renderModeStr, "animation")) {
+		renderMode = voxedit::ViewportController::RenderMode::Animation;
+	}
+	_controller.setRenderMode(renderMode);
+
 	_edgeShader.setup();
 
 	video::ScopedShader scoped(_edgeShader);
