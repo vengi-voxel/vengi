@@ -168,7 +168,7 @@ void SceneManager::autosave() {
 	_lastAutoSave = timeProvider->tickSeconds();
 }
 
-bool SceneManager::saveLayer(int layerId, const std::string& dir) {
+bool SceneManager::saveLayer(int layerId, const std::string& file) {
 	voxel::RawVolume* v = _volumeRenderer.volume(layerId);
 	if (v == nullptr) {
 		return true;
@@ -177,7 +177,6 @@ bool SceneManager::saveLayer(int layerId, const std::string& dir) {
 	voxel::VoxelVolumes volumes;
 	volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
 	voxel::VoxFormat f;
-	const std::string file = dir + "/" + layer.name + ".vox";
 	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
 	if (f.saveGroups(volumes, filePtr)) {
 		Log::info("Saved layer %i to %s", layerId, file.c_str());
@@ -190,7 +189,12 @@ bool SceneManager::saveLayer(int layerId, const std::string& dir) {
 bool SceneManager::saveLayers(const std::string& dir) {
 	const int layers = (int)_layerMgr.layers().size();
 	for (int idx = 0; idx < layers; ++idx) {
-		saveLayer(idx, dir);
+		voxel::RawVolume* v = _volumeRenderer.volume(idx);
+		if (v == nullptr) {
+			return true;
+		}
+		const Layer& layer = _layerMgr.layer(idx);
+		saveLayer(idx, dir + "/" + layer.name + ".vox");
 	}
 	return true;
 }
@@ -680,7 +684,11 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 	if (_animationUpdate) {
 		const voxedit::Layers& layers = _layerMgr.layers();
 		const size_t layerAmount = layers.size();
-		for (size_t i = 0; i < layerAmount; ++i) {
+		for (size_t i = 0u; i < layerAmount; ++i) {
+			const voxel::RawVolume* v = volume(i);
+			if (v == nullptr) {
+				continue;
+			}
 			if (_animationLayerDirtyState >= 0 && _animationLayerDirtyState != (int)i) {
 				Log::debug("Don't update layer %i", (int)i);
 				continue;
@@ -780,16 +788,16 @@ void SceneManager::construct() {
 	core::Command::registerCommand("layersave", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc < 1) {
-			Log::info("Usage: layersave <layerId> [<dir>]");
+			Log::info("Usage: layersave <layerId> [<file>]");
 			return;
 		}
 		const int layerId = core::string::toInt(args[0]);
-		std::string dir = ".";
+		std::string file = core::string::format("layer%i.vox", layerId);
 		if (args.size() == 2) {
-			dir = args[1];
+			file = args[1];
 		}
-		if (!saveLayer(layerId, dir)) {
-			Log::error("Failed to save layer %i to dir: %s", layerId, dir.c_str());
+		if (!saveLayer(layerId, file)) {
+			Log::error("Failed to save layer %i to file: %s", layerId, file.c_str());
 		}
 	}).setHelp("Save a single layer to the given path with their layer names");
 
@@ -1388,9 +1396,70 @@ void SceneManager::shutdown() {
 	_character.shutdown();
 }
 
+static const char *formatStr = R"(function init()
+  chr.setRace("%s")
+  chr.setGender("%s")
+  chr.setHead("%s")
+  chr.setBelt("%s")
+  chr.setChest("%s")
+  chr.setPants("%s")
+  chr.setHand("%s")
+  chr.setFoot("%s")
+  chr.setShoulder("%s")
+end
+)";
+
 bool SceneManager::saveCharacter() {
-	Log::error("Not yet implemented");
-	return false;
+	_dirty = false;
+
+	char buf[4096] = "";
+	core::string::formatBuf(buf, sizeof(buf), formatStr,
+		_characterSettings.race.c_str(),
+		_characterSettings.gender.c_str(),
+		_characterSettings.path(animation::CharacterMeshType::Head),
+		_characterSettings.path(animation::CharacterMeshType::Belt),
+		_characterSettings.path(animation::CharacterMeshType::Chest),
+		_characterSettings.path(animation::CharacterMeshType::Pants),
+		_characterSettings.path(animation::CharacterMeshType::Hand),
+		_characterSettings.path(animation::CharacterMeshType::Foot),
+		_characterSettings.path(animation::CharacterMeshType::Shoulder));
+	// TODO: save missing lua SkeletonAttribute values
+	// TODO: somehow fix the lua filename
+	const std::string& luaFilename = core::string::format("%s_%s_character.lua",
+			_characterSettings.race.c_str(),
+			_characterSettings.gender.c_str());
+	if (!io::filesystem()->write(luaFilename, (const uint8_t* )buf, strlen(buf))) {
+		Log::warn("Failed to write lua script to %s", luaFilename.c_str());
+		_dirty = true;
+	}
+
+	const voxedit::Layers& layers = _layerMgr.layers();
+	const size_t layerAmount = layers.size();
+	for (size_t i = 0; i < layerAmount; ++i) {
+		const voxel::RawVolume* v = volume(i);
+		if (v == nullptr) {
+			continue;
+		}
+		const voxedit::Layer& l = layers[i];
+		const std::string& value = l.metadataById("type");
+		if (value.empty()) {
+			Log::debug("No type metadata found on layer %i", (int)i);
+			continue;
+		}
+		const int characterMeshTypeId = core::string::toInt(value);
+		const std::string* file = _characterSettings.paths[characterMeshTypeId];
+		if (file == nullptr) {
+			continue;
+		}
+		if (saveLayer(i, *file)) {
+			Log::info("Saved type %i to %s", characterMeshTypeId, file->c_str());
+		} else {
+			Log::warn("Failed to save type %i to %s", characterMeshTypeId, file->c_str());
+			_dirty = true;
+		}
+	}
+
+	return true;
 }
 
 bool SceneManager::loadCharacter(const std::string& luaFile) {

@@ -33,6 +33,13 @@ struct CharacterSettings : public core::NonCopyable {
 
 	CharacterSettings() {}
 
+	const char* path(CharacterMeshType type) const {
+		if (paths[std::enum_value(type)] == nullptr) {
+			return "";
+		}
+		return paths[std::enum_value(type)]->c_str();
+	}
+
 	void copyFrom(const CharacterSettings& other) {
 		skeletonAttr = other.skeletonAttr;
 		race = other.race;

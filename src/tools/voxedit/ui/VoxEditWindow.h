@@ -120,20 +120,12 @@ public:
 	bool isLayerWidgetDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
 
-	Viewport* getActiveScene();
-
 	void update();
-	bool isSceneFocused() const;
 	bool isSceneHovered() const;
-	bool isActive() const;
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override;
 	void onProcess() override;
 	void onDie() override;
 };
-
-inline bool VoxEditWindow::isActive() const {
-	return isSceneFocused() || isSceneHovered();
-}
 
 }

@@ -240,32 +240,6 @@ bool VoxEditWindow::isPaletteWidgetDropTarget() const {
 	return tb::TBWidget::hovered_widget == _paletteWidget;
 }
 
-Viewport* VoxEditWindow::getActiveScene() {
-	if (_sceneTop->getVisibility() == tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_VISIBLE) {
-		if (tb::TBWidget::focused_widget == _sceneTop) {
-			return _sceneTop;
-		}
-		if (tb::TBWidget::focused_widget == _sceneLeft) {
-			return _sceneLeft;
-		}
-		if (tb::TBWidget::focused_widget == _sceneFront) {
-			return _sceneFront;
-		}
-		if (tb::TBWidget::focused_widget == _sceneAnimation) {
-			return _sceneAnimation;
-		}
-	}
-	return _scene;
-}
-
-bool VoxEditWindow::isSceneFocused() const {
-	return tb::TBWidget::focused_widget == _scene
-			|| tb::TBWidget::focused_widget == _sceneTop
-			|| tb::TBWidget::focused_widget == _sceneLeft
-			|| tb::TBWidget::focused_widget == _sceneFront
-			|| tb::TBWidget::focused_widget == _sceneAnimation;
-}
-
 bool VoxEditWindow::isSceneHovered() const {
 	return tb::TBWidget::hovered_widget == _scene
 			|| tb::TBWidget::hovered_widget == _sceneTop

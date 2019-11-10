@@ -185,7 +185,7 @@ private:
 	void zoom(video::Camera& camera, float level) const;
 
 	bool saveLayers(const std::string& dir);
-	bool saveLayer(int layerId, const std::string& dir);
+	bool saveLayer(int layerId, const std::string& file);
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void replaceColor(uint8_t oldIndex, int newIndex);
