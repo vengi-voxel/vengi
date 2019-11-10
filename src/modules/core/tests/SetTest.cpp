@@ -142,7 +142,6 @@ TEST_F(SetMassTest, testMassVisibleActions) {
 
 	const auto& inBoth = core::setIntersection(setMass1, setMass2);
 	EXPECT_EQ(overlap, inBoth.size());
-	EXPECT_EQ(int(n1 - overlap), *inBoth.begin());
 	const std::unordered_set<int>& removeFromSet2 = core::setDifference(inBoth, setMass2);
 	EXPECT_EQ(n2 - overlap, removeFromSet2.size());
 	const std::unordered_set<int>& addToSet2 = core::setDifference(setMass1, inBoth);
