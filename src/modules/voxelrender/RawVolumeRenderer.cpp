@@ -411,6 +411,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	}
 
 	{
+		// TODO: get rid of the white texture stuff here - it modifies the colors for e.g. voxedit
 		video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
 		video::ScopedShader scoped(_worldShader);
 		if (_worldShader.isDirty()) {
