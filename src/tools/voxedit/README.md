@@ -29,7 +29,8 @@ my own engine and evolved into something that others might find useful, too.
 * Viewport screenshots
 * Modelling with the left and right mouse buttons
 * Modelling without the mouse - just via shortcuts and keyboard
-* Animation support
+* Layer animation support
+* Skeletal character animation support
 * Custom key bindings
 * Show commands of actions (to configure your own key bindings)
 * Rotate around reference position or center of volume
