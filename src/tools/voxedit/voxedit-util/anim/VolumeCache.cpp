@@ -18,10 +18,11 @@ bool VolumeCache::getCharacterVolumes(const animation::CharacterSettings& settin
 	volumes.resize(std::enum_value(animation::CharacterMeshType::Max));
 
 	for (size_t i = 0; i < settings.paths.size(); ++i) {
-		if (settings.paths[i] == nullptr) {
+		if (settings.paths[i] == nullptr || settings.paths[i]->empty()) {
 			continue;
 		}
-		if (!load(settings.basePath, settings.paths[i]->c_str(), (animation::CharacterMeshType)i, volumes)) {
+		const std::string& fullPath = settings.fullPath((animation::CharacterMeshType)i);
+		if (!load(fullPath, (animation::CharacterMeshType)i, volumes)) {
 			Log::error("Failed to load %s", settings.paths[i]->c_str());
 			return false;
 		}
@@ -35,17 +36,8 @@ bool VolumeCache::getCharacterVolumes(const animation::CharacterSettings& settin
 	return true;
 }
 
-bool VolumeCache::load(const char *basePath, const char *filename, animation::CharacterMeshType meshType, voxel::VoxelVolumes& volumes) {
-	if (filename == nullptr || filename[0] == '\0') {
-		Log::error("No filename given - can't load character mesh");
-		return false;
-	}
-	char fullPath[128];
-	if (!core::string::formatBuf(fullPath, sizeof(fullPath), "%s/%s.vox", basePath, filename)) {
-		Log::error("Failed to initialize the character path buffer. Can't load %s.", fullPath);
-		return false;
-	}
-	Log::info("Loading volume from %s", fullPath);
+bool VolumeCache::load(const std::string& fullPath, animation::CharacterMeshType meshType, voxel::VoxelVolumes& volumes) {
+	Log::info("Loading volume from %s", fullPath.c_str());
 	const io::FilesystemPtr& fs = io::filesystem();
 	const io::FilePtr& file = fs->open(fullPath);
 	voxel::VoxelVolumes localVolumes;

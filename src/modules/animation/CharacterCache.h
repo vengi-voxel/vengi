@@ -18,7 +18,7 @@ namespace animation {
  */
 class CharacterCache : public voxelformat::MeshCache {
 private:
-	bool load(const char *basePath, const char *filename, CharacterMeshType meshType, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]);
+	bool load(const std::string& filename, CharacterMeshType meshType, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]);
 	bool loadGlider(const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]);
 public:
 	bool getCharacterMeshes(const CharacterSettings& settings, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]);

@@ -7,6 +7,7 @@
 #include "SkeletonAttribute.h"
 #include "CharacterMeshType.h"
 #include "core/NonCopyable.h"
+#include "core/String.h"
 #include <string>
 #include <stdint.h>
 
@@ -32,6 +33,10 @@ struct CharacterSettings : public core::NonCopyable {
 	char basePath[64] {};
 
 	CharacterSettings() {}
+
+	inline std::string fullPath(CharacterMeshType type) const {
+		return core::string::format("%s/%s.vox", basePath, path(type));
+	}
 
 	const char* path(CharacterMeshType type) const {
 		if (paths[std::enum_value(type)] == nullptr) {

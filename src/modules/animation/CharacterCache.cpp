@@ -89,11 +89,12 @@ bool CharacterCache::loadGlider(const voxel::Mesh* (&meshes)[std::enum_value(Cha
 
 bool CharacterCache::getCharacterMeshes(const CharacterSettings& settings, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]) {
 	for (size_t i = 0; i < settings.paths.size(); ++i) {
-		if (settings.paths[i] == nullptr) {
+		if (settings.paths[i] == nullptr || settings.paths[i]->empty()) {
 			meshes[i] = nullptr;
 			continue;
 		}
-		if (!load(settings.basePath, settings.paths[i]->c_str(), (CharacterMeshType)i, meshes)) {
+		const std::string& fullPath = settings.fullPath((CharacterMeshType)i);
+		if (!load(fullPath, (CharacterMeshType)i, meshes)) {
 			Log::error("Failed to load %s", settings.paths[i]->c_str());
 			return false;
 		}
@@ -156,22 +157,13 @@ bool CharacterCache::getCharacterModel(const CharacterSettings& settings, Vertic
 	return true;
 }
 
-bool CharacterCache::load(const char *basePath, const char *filename, CharacterMeshType meshType, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]) {
-	if (filename == nullptr || filename[0] == '\0') {
-		meshes[std::enum_value(meshType)] = nullptr;
-		return true;
-	}
-	char fullPath[128];
-	if (!core::string::formatBuf(fullPath, sizeof(fullPath), "%s/%s.vox", basePath, filename)) {
-		Log::error("Failed to initialize the character path buffer. Can't load %s.", fullPath);
-		return false;
-	}
-	voxel::Mesh& mesh = cacheEntry(fullPath);
+bool CharacterCache::load(const std::string& filename, CharacterMeshType meshType, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]) {
+	voxel::Mesh& mesh = cacheEntry(filename.c_str());
 	if (mesh.getNoOfVertices() > 0) {
 		meshes[std::enum_value(meshType)] = &mesh;
 		return true;
 	}
-	if (loadMesh(fullPath, mesh)) {
+	if (loadMesh(filename.c_str(), mesh)) {
 		meshes[std::enum_value(meshType)] = &mesh;
 		return true;
 	}

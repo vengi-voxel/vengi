@@ -707,7 +707,7 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 			}
 			voxel::Mesh mesh;
 			_volumeRenderer.toMesh(i, &mesh);
-			const std::string& fullPath = core::string::format("%s/%s.vox", _characterSettings.basePath, path->c_str());
+			const std::string& fullPath = _characterSettings.fullPath((animation::CharacterMeshType)characterMeshTypeId);
 			_characterCache->putMesh(fullPath.c_str(), mesh);
 			Log::debug("Updated mesh on layer %i for path %s", (int)i, fullPath.c_str());
 		}

@@ -18,7 +18,7 @@ namespace anim {
  */
 class VolumeCache : public voxelformat::VolumeCache {
 private:
-	bool load(const char *basePath, const char *filename, animation::CharacterMeshType meshType, voxel::VoxelVolumes& volumes);
+	bool load(const std::string& fullPath, animation::CharacterMeshType meshType, voxel::VoxelVolumes& volumes);
 public:
 	bool getCharacterVolumes(const animation::CharacterSettings& settings, voxel::VoxelVolumes& volumes);
 };
