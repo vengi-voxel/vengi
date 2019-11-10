@@ -25,6 +25,7 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedBlendMode.h"
+#include "animation/CharacterMeshType.h"
 #include "video/Ray.h"
 #include "math/Random.h"
 #include "math/Axis.h"
@@ -178,11 +179,15 @@ bool SceneManager::saveLayer(int layerId, const std::string& file) {
 	volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
 	voxel::VoxFormat f;
 	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
+	if (!filePtr->exists()) {
+		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
+		return false;
+	}
 	if (f.saveGroups(volumes, filePtr)) {
-		Log::info("Saved layer %i to %s", layerId, file.c_str());
+		Log::info("Saved layer %i to %s", layerId, filePtr->name().c_str());
 		return true;
 	}
-	Log::warn("Failed to save layer %i", layerId);
+	Log::warn("Failed to save layer %i to %s", layerId, filePtr->name().c_str());
 	return false;
 }
 
@@ -1428,7 +1433,7 @@ bool SceneManager::saveCharacter() {
 	_dirty = false;
 
 	char buf[4096] = "";
-	core::string::formatBuf(buf, sizeof(buf), formatStr,
+	const bool fit = core::string::formatBuf(buf, sizeof(buf), formatStr,
 		_characterSettings.race.c_str(),
 		_characterSettings.gender.c_str(),
 		_characterSettings.path(animation::CharacterMeshType::Head),
@@ -1438,14 +1443,20 @@ bool SceneManager::saveCharacter() {
 		_characterSettings.path(animation::CharacterMeshType::Hand),
 		_characterSettings.path(animation::CharacterMeshType::Foot),
 		_characterSettings.path(animation::CharacterMeshType::Shoulder));
+	if (!fit) {
+		Log::warn("Lua file buffer is not big enough");
+	}
 	// TODO: save missing lua SkeletonAttribute values
 	// TODO: somehow fix the lua filename
-	const std::string& luaFilename = core::string::format("%s_%s_character.lua",
+	const std::string& luaFilename = core::string::format("chr/%s_%s_character.lua",
 			_characterSettings.race.c_str(),
 			_characterSettings.gender.c_str());
+	Log::info("Write lua script: %s", buf);
 	if (!io::filesystem()->write(luaFilename, (const uint8_t* )buf, strlen(buf))) {
 		Log::warn("Failed to write lua script to %s", luaFilename.c_str());
 		_dirty = true;
+	} else {
+		Log::info("Wrote lua script to %s", luaFilename.c_str());
 	}
 
 	const voxedit::Layers& layers = _layerMgr.layers();
@@ -1463,13 +1474,13 @@ bool SceneManager::saveCharacter() {
 		}
 		const int characterMeshTypeId = core::string::toInt(value);
 		const std::string* file = _characterSettings.paths[characterMeshTypeId];
-		if (file == nullptr) {
+		if (file == nullptr || file->empty()) {
 			continue;
 		}
-		if (saveLayer(i, *file)) {
-			Log::info("Saved type %i to %s", characterMeshTypeId, file->c_str());
-		} else {
-			Log::warn("Failed to save type %i to %s", characterMeshTypeId, file->c_str());
+		const animation::CharacterMeshType meshType = (animation::CharacterMeshType)characterMeshTypeId;
+		const std::string& fullPath = _characterSettings.fullPath(meshType);
+		if (!saveLayer(i, fullPath)) {
+			Log::warn("Failed to save type %i to %s", characterMeshTypeId, fullPath.c_str());
 			_dirty = true;
 		}
 	}
