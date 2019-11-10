@@ -24,6 +24,16 @@ voxel::Mesh& MeshCache::cacheEntry(const char *path) {
 	return *i->second;
 }
 
+bool MeshCache::putMesh(const char* fullPath, const voxel::Mesh& mesh) {
+	auto i = _meshes.find(fullPath);
+	if (i != _meshes.end()) {
+		delete i->second;
+		_meshes.erase(i);
+	}
+	_meshes.insert(std::make_pair(fullPath, new voxel::Mesh(mesh)));
+	return true;
+}
+
 bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 	Log::info("Loading volume from %s", fullPath);
 	const io::FilesystemPtr& fs = io::filesystem();

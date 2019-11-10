@@ -20,6 +20,7 @@ protected:
 	voxel::Mesh& cacheEntry(const char *path);
 public:
 	bool loadMesh(const char* fullPath, voxel::Mesh& mesh);
+	bool putMesh(const char* fullPath, const voxel::Mesh& mesh);
 	bool init() override;
 	void shutdown() override;
 };
