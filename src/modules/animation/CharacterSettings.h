@@ -8,7 +8,9 @@
 #include "CharacterMeshType.h"
 #include "core/NonCopyable.h"
 #include "core/String.h"
+#include "core/Common.h"
 #include <string>
+#include <array>
 #include <stdint.h>
 
 namespace animation {
