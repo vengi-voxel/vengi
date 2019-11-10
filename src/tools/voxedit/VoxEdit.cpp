@@ -119,6 +119,14 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(importpalette, "Import an image as a palette");
 #undef COMMAND_FILE
 
+	core::Command::registerCommand("character_load", [&] (const core::CmdArgs& args) {
+		if (_mainWindow == nullptr) {
+			return;
+		}
+		const std::string file = args.empty() ? "" : args[0];
+		_mainWindow->loadCharacter(file);
+	}).setHelp("Load the character volumes").setArgumentCompleter(core::fileCompleter("", "*.lua"));
+
 	core::Command::registerCommand("new", [this] (const core::CmdArgs& args) {
 		newFile();
 	}).setHelp("Create a new scene with ui interaction");

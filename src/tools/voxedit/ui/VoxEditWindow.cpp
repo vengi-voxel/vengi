@@ -54,6 +54,8 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addStringItem(_fileItems, "New", "new");
 	addStringItem(_fileItems, "Load", "load");
 	addStringItem(_fileItems, "Save", "save");
+	addStringItem(_fileItems, "Load Character", "character_load");
+	addStringItem(_fileItems, "Save Character", "character_save");
 	addStringItem(_fileItems, "Prefab", "prefab");
 	addStringItem(_fileItems, "Heightmap", "importheightmap");
 	addStringItem(_fileItems, "Image as Plane", "importplane");
@@ -306,7 +308,7 @@ void VoxEditWindow::toggleAnimation() {
 bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	// ui actions with direct command bindings
 	static const char *ACTIONS[] = {
-		"new", "quit", "load",
+		"new", "quit", "load", "character_load", "character_save",
 		"prefab", "save", "importheightmap", "importplane", nullptr
 	};
 
@@ -789,6 +791,22 @@ bool VoxEditWindow::prefab(const std::string& file) {
 void VoxEditWindow::afterLoad(const std::string& file) {
 	_lastOpenedFile->setVal(file);
 	resetCamera();
+}
+
+bool VoxEditWindow::loadCharacter(const std::string& file) {
+	if (file.empty()) {
+		getApp()->openDialog([this] (const std::string file) { std::string copy(file); loadCharacter(copy); }, "lua");
+		return true;
+	}
+	if (!sceneMgr().loadCharacter(file)) {
+		Log::error("Failed to load character");
+		return false;
+	}
+	resetCamera();
+	if (_sceneAnimation) {
+		_sceneAnimation->setValue(1);
+	}
+	return true;
 }
 
 bool VoxEditWindow::load(const std::string& file) {

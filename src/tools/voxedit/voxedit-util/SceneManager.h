@@ -186,7 +186,6 @@ private:
 
 	bool saveLayers(const std::string& dir);
 	bool saveLayer(int layerId, const std::string& dir);
-	bool loadCharacter(const std::string& luaFile);
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void replaceColor(uint8_t oldIndex, int newIndex);
@@ -261,6 +260,9 @@ public:
 	 * @param[in] file The file to load. The volume format is determined by the file extension.
 	 */
 	bool load(const std::string& file);
+	bool loadCharacter(const std::string& luaFile);
+	bool saveCharacter();
+
 	/**
 	 * @brief Import an existing model
 	 * @note Placed relative to the reference position in the current scene

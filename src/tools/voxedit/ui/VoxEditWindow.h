@@ -108,6 +108,7 @@ private:
 	bool importPalette(const std::string& file);
 	bool save(const std::string& file);
 	bool load(const std::string& file);
+	bool loadCharacter(const std::string& file);
 	bool saveScreenshot(const std::string& file);
 	bool prefab(const std::string& file);
 	bool createNew(bool force);

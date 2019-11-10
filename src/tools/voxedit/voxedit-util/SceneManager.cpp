@@ -763,16 +763,9 @@ void SceneManager::construct() {
 	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Scene);
 	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Scene);
 
-	core::Command::registerCommand("character_load", [&] (const core::CmdArgs& args) {
-		if (args.empty()) {
-			Log::info("Usage: character_load <luafile>");
-			Log::info("Example: character_load chr/human-male-blacksmith.lua");
-			return;
-		}
-		if (!loadCharacter(args[0])) {
-			Log::error("Failed to load character");
-		}
-	}).setHelp("Load the character volumes").setArgumentCompleter(core::fileCompleter("", "*.lua"));
+	core::Command::registerCommand("character_save", [&] (const core::CmdArgs& args) {
+		saveCharacter();
+	});
 
 	core::Command::registerCommand("layerssave", [&] (const core::CmdArgs& args) {
 		std::string dir = ".";
@@ -1395,6 +1388,11 @@ void SceneManager::shutdown() {
 	_character.shutdown();
 }
 
+bool SceneManager::saveCharacter() {
+	Log::error("Not yet implemented");
+	return false;
+}
+
 bool SceneManager::loadCharacter(const std::string& luaFile) {
 	animation::CharacterSettings settings;
 	const std::string& lua = io::filesystem()->load(luaFile);
@@ -1418,7 +1416,8 @@ bool SceneManager::loadCharacter(const std::string& luaFile) {
 		if (v.volume == nullptr) {
 			continue;
 		}
-		const int layerId = _layerMgr.addLayer(v.name.c_str(), v.visible, v.volume, v.pivot);
+		const bool visible = layersAdded == 0;
+		const int layerId = _layerMgr.addLayer(v.name.c_str(), visible, v.volume, v.pivot);
 		if (layerId != -1) {
 			++layersAdded;
 			_layerMgr.addMetadata(layerId, {{"type", core::string::format("%i", (int)i)}});
