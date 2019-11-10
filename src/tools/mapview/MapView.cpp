@@ -106,7 +106,7 @@ core::AppState MapView::onInit() {
 
 	_worldMgr->setSeed(1);
 	if (!_worldRenderer.init(glm::ivec2(0), _frameBufferDimension)) {
-		Log::error("Failed to init world rnederer");
+		Log::error("Failed to init world renderer");
 		return core::AppState::InitFailure;
 	}
 
