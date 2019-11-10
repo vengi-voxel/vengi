@@ -22,7 +22,7 @@ struct LayerSettings {
 
 	inline void reset() {
 		position = glm::ivec3(0);
-		size = glm::ivec3(127);
+		size = glm::ivec3(31);
 	}
 
 	inline voxel::Region region() {
