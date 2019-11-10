@@ -1241,6 +1241,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the character renderer");
 		return false;
 	}
+	_characterRenderer.setClearColor(core::Color::Clear);
 	_characterCache = std::make_shared<animation::CharacterCache>();
 	if (!_characterCache->init()) {
 		Log::error("Failed to initialize the character mesh cache");
