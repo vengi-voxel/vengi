@@ -378,6 +378,18 @@ bool LayerManager::deleteLayer(int layerId, bool force) {
 	return true;
 }
 
+void LayerManager::addMetadata(int layerId, const LayerMetadata& metadata) {
+	core_assert_always(layerId >= 0 && layerId < (int)_layers.size());
+	for (const auto& m : metadata) {
+		_layers[layerId].metadata.insert(m);
+	}
+}
+
+const LayerMetadata& LayerManager::metadata(int layerId) const {
+	core_assert_always(layerId >= 0 && layerId < (int)_layers.size());
+	return _layers[layerId].metadata;
+}
+
 int LayerManager::addLayer(const char *name, bool visible, voxel::RawVolume* volume, const glm::ivec3& pivot) {
 	const size_t maxLayers = _layers.size();
 	for (size_t layerId = 0; layerId < maxLayers; ++layerId) {

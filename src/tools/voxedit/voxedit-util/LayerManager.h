@@ -8,6 +8,7 @@
 #include "core/IComponent.h"
 #include "LayerListener.h"
 #include <set>
+#include <unordered_map>
 
 namespace voxedit {
 
@@ -61,6 +62,8 @@ public:
 	bool deleteLayer(int layerId, bool force = false);
 	int addLayer(const char *name, bool visible, voxel::RawVolume* volume, const glm::ivec3& pivot = glm::zero<glm::ivec3>());
 	bool activateLayer(int layerId, const char *name, bool visible, voxel::RawVolume* volume, const voxel::Region& region, const glm::ivec3& pivot = glm::zero<glm::ivec3>());
+	void addMetadata(int layerId, const LayerMetadata& metadata);
+	const LayerMetadata& metadata(int layerId) const;
 	int maxLayers() const;
 };
 
