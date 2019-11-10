@@ -6,6 +6,7 @@
 
 #include "SkeletonAttribute.h"
 #include "CharacterMeshType.h"
+#include "core/NonCopyable.h"
 #include <string>
 #include <stdint.h>
 
@@ -15,7 +16,7 @@ namespace animation {
  * @brief Attributes for the character meshes
  * @sa SkeletonAttribute
  */
-struct CharacterSettings {
+struct CharacterSettings : public core::NonCopyable {
 	SkeletonAttribute skeletonAttr;
 	std::string race;
 	std::string gender;
@@ -31,6 +32,22 @@ struct CharacterSettings {
 	char basePath[64] {};
 
 	CharacterSettings() {}
+
+	void copyFrom(const CharacterSettings& other) {
+		skeletonAttr = other.skeletonAttr;
+		race = other.race;
+		gender = other.gender;
+		chest = other.chest;
+		belt = other.belt;
+		pants = other.pants;
+		hand = other.hand;
+		foot = other.foot;
+		head = other.head;
+		shoulder = other.shoulder;
+		paths = {};
+		memcpy(basePath, other.basePath, sizeof(basePath));
+		update();
+	}
 
 	void setRace(const char *str) {
 		race = str;
