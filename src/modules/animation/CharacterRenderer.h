@@ -35,6 +35,10 @@ public:
 	bool init() override;
 	void shutdown() override;
 
+	void setClearColor(const glm::vec4& c) { _clearColor = c; }
+	void setDiffuseColor(const glm::vec3& c) { _diffuseColor = c; }
+	void setAmbientColor(const glm::vec3& c) { _ambientColor = c; }
+
 	/**
 	 * @brief Render the given character instance
 	 * @note Make sure to update the character before calling this method in order
