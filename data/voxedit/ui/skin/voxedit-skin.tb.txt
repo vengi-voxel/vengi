@@ -74,6 +74,12 @@ elements
 				state selected
 			element voxedit-animation-button.pressed
 				state pressed
+	voxedit-animation-button.selected
+		bitmap voxedit-animation-selected.png
+		type Image
+	voxedit-animation-button.pressed
+		bitmap voxedit-animation-selected.png
+		type Image
 
 	voxedit-quadview-button
 		bitmap voxedit-quadview.png

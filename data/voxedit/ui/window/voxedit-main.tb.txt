@@ -241,5 +241,5 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-reset-camera
 						TBClickLabel: text: Quad view
 							TBCheckBox: id: toggleviewport, skin: voxedit-quadview-button, command: toggleviewport
-						TBClickLabel: text: Animation view
+						TBClickLabel: text: Animation view, id: toggleanimationlabel
 							TBCheckBox: id: toggleanimation, skin: voxedit-animation-button, command: toggleanimation

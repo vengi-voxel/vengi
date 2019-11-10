@@ -14,6 +14,7 @@ void ViewportController::resetCamera(const voxel::Region& region) {
 	if (_renderMode == RenderMode::Animation) {
 		_camera.setTarget(glm::zero<glm::vec3>());
 		_camera.setPosition(glm::vec3(10.0f, 5.0f, 10.0f));
+		_camera.setTargetDistance(10.0f);
 		return;
 	}
 	_camera.setTarget(center);
