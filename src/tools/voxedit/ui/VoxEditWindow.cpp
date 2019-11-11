@@ -121,6 +121,7 @@ bool VoxEditWindow::init() {
 			const float *saVal = (const float*)(((const char*)&cs) + meta.offset);
 			// TODO: provide update mechanism
 			value->setValueDouble(*saVal);
+			value->setID(TBIDC(meta.name));
 			value->setLimits(-100.0, 100.0);
 			innerLayout->addChild(name);
 			innerLayout->addChild(value);
