@@ -91,6 +91,7 @@ bool CharacterSettings::update() {
 		return false;
 	}
 
+	// TODO: integrate a static_assert here
 	paths[std::enum_value(CharacterMeshType::Head)]     = &head;
 	paths[std::enum_value(CharacterMeshType::Chest)]    = &chest;
 	paths[std::enum_value(CharacterMeshType::Belt)]     = &belt;
