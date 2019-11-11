@@ -11,11 +11,12 @@ set(SRCS_SHADERS
 	shaders/water.vert shaders/water.frag
 	shaders/world_instanced.vert shaders/world_instanced.frag
 	shaders/world.vert shaders/world.frag
+	shaders/voxel.vert shaders/voxel.frag
 )
 set(FILES
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend render voxelfont voxelworld)
-generate_shaders(${LIB} world water world_instanced)
+generate_shaders(${LIB} world water world_instanced voxel)
 
 gtest_suite_sources(tests
 	tests/VoxelFrontendShaderTest.cpp

@@ -42,7 +42,7 @@ struct CustomIsQuadNeeded {
 }
 
 RawVolumeRenderer::RawVolumeRenderer() :
-		_worldShader(shader::WorldShader::getInstance()) {
+		_voxelShader(shader::VoxelShader::getInstance()) {
 }
 
 void RawVolumeRenderer::construct() {
@@ -50,12 +50,11 @@ void RawVolumeRenderer::construct() {
 }
 
 bool RawVolumeRenderer::init() {
-	if (!_worldShader.setup()) {
+	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the world shader");
 		return false;
 	}
 
-	_fogVar = core::Var::getSafe(cfg::ClientFog);
 	_shadowVar = core::Var::getSafe(cfg::ClientShadowMap);
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
@@ -73,7 +72,7 @@ bool RawVolumeRenderer::init() {
 		}
 	}
 
-	const int shaderMaterialColorsArraySize = lengthof(shader::WorldData::MaterialblockData::materialcolor);
+	const int shaderMaterialColorsArraySize = lengthof(shader::VoxelData::MaterialblockData::materialcolor);
 	const int materialColorsArraySize = voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
@@ -83,27 +82,25 @@ bool RawVolumeRenderer::init() {
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		const video::Attribute& attributePos = getPositionVertexAttribute(
-				_vertexBufferIndex[idx], _worldShader.getLocationPos(),
-				_worldShader.getComponentsPos());
+				_vertexBufferIndex[idx], _voxelShader.getLocationPos(),
+				_voxelShader.getComponentsPos());
 		_vertexBuffer[idx].addAttribute(attributePos);
 
 		const video::Attribute& attributeInfo = getInfoVertexAttribute(
-				_vertexBufferIndex[idx], _worldShader.getLocationInfo(),
-				_worldShader.getComponentsInfo());
+				_vertexBufferIndex[idx], _voxelShader.getLocationInfo(),
+				_voxelShader.getComponentsInfo());
 		_vertexBuffer[idx].addAttribute(attributeInfo);
 	}
 
 	render::ShadowParameters shadowParams;
-	shadowParams.maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShader::getMaxDepthBufferUniformName());
+	shadowParams.maxDepthBuffers = _voxelShader.getUniformArraySize(shader::VoxelShader::getMaxDepthBufferUniformName());
 	if (!_shadow.init(shadowParams)) {
 		return false;
 	}
 
-	shader::WorldData::MaterialblockData materialBlock;
+	shader::VoxelData::MaterialblockData materialBlock;
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
-
-	_whiteTexture = video::createWhiteTexture("**whitetexture**");
 
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
 
@@ -165,13 +162,13 @@ bool RawVolumeRenderer::update(int idx, const std::vector<voxel::VoxelVertex>& v
 void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {
 	_ambientColor = color;
 	// force updating the cached uniform values
-	_worldShader.markDirty();
+	_voxelShader.markDirty();
 }
 
 void RawVolumeRenderer::setDiffuseColor(const glm::vec3& color) {
 	_diffuseColor = color;
 	// force updating the cached uniform values
-	_worldShader.markDirty();
+	_voxelShader.markDirty();
 }
 
 bool RawVolumeRenderer::swap(int idx1, int idx2) {
@@ -358,7 +355,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	if (voxel::materialColorChanged()) {
-		shader::WorldData::MaterialblockData materialBlock;
+		shader::VoxelData::MaterialblockData materialBlock;
 		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 		_materialBlock.update(materialBlock);
 		// TODO: updating the global state is crap - what about others - use an event
@@ -411,31 +408,23 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	}
 
 	{
-		// TODO: get rid of the white texture stuff here - it modifies the colors for e.g. voxedit
-		video::ScopedTexture scopedTex(_whiteTexture, video::TextureUnit::Zero);
-		video::ScopedShader scoped(_worldShader);
-		if (_worldShader.isDirty()) {
-			_worldShader.setMaterialblock(_materialBlock);
-			_worldShader.setModel(glm::mat4(1.0f));
-			_worldShader.setTexture(video::TextureUnit::Zero);
+		video::ScopedShader scoped(_voxelShader);
+		if (_voxelShader.isDirty()) {
+			_voxelShader.setMaterialblock(_materialBlock);
+			_voxelShader.setModel(glm::mat4(1.0f));
 			if (_shadowVar->boolVal()) {
-				_worldShader.setShadowmap(video::TextureUnit::One);
+				_voxelShader.setShadowmap(video::TextureUnit::One);
 			}
-			_worldShader.setDiffuseColor(_diffuseColor);
-			_worldShader.setAmbientColor(_ambientColor);
-			if (_fogVar->boolVal()) {
-				_worldShader.setFogrange(250.0f);
-				_worldShader.setFogcolor(core::Color::LightBlue);
-			}
-			_worldShader.markClean();
+			_voxelShader.setDiffuseColor(_diffuseColor);
+			_voxelShader.setAmbientColor(_ambientColor);
+			_voxelShader.markClean();
 		}
-		_worldShader.setViewprojection(camera.viewProjectionMatrix());
-		_worldShader.setFocuspos(camera.target());
+		_voxelShader.setViewprojection(camera.viewProjectionMatrix());
 		if (_shadowVar->boolVal()) {
-			_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
-			_worldShader.setCascades(_shadow.cascades());
-			_worldShader.setDistances(_shadow.distances());
-			_worldShader.setLightdir(_shadow.sunDirection());
+			_voxelShader.setDepthsize(glm::vec2(_shadow.dimension()));
+			_voxelShader.setCascades(_shadow.cascades());
+			_voxelShader.setDistances(_shadow.distances());
+			_voxelShader.setLightdir(_shadow.sunDirection());
 			_shadow.bind(video::TextureUnit::One);
 		}
 
@@ -450,7 +439,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 			const glm::vec2 offset(-0.25f * idx, -0.5f * idx);
 			video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
 			video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
-			_worldShader.setModel(_model[idx]);
+			_voxelShader.setModel(_model[idx]);
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 		}
@@ -508,7 +497,7 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3& eye, const glm::vec3& ce
 }
 
 std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
-	_worldShader.shutdown();
+	_voxelShader.shutdown();
 	_materialBlock.shutdown();
 	for (auto& iter : _meshes) {
 		for (auto& mesh : iter.second) {
@@ -524,10 +513,6 @@ std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 		// hand over the ownership to the caller
 		old.push_back(_rawVolume[idx]);
 		_rawVolume[idx] = nullptr;
-	}
-	if (_whiteTexture) {
-		_whiteTexture->shutdown();
-		_whiteTexture = video::TexturePtr();
 	}
 	_shadow.shutdown();
 	return old;

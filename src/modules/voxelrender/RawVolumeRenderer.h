@@ -38,14 +38,11 @@ protected:
 	MeshesMap _meshes;
 
 	video::Buffer _vertexBuffer[MAX_VOLUMES];
-	shader::WorldData _materialBlock;
-	shader::WorldShader& _worldShader;
+	shader::VoxelData _materialBlock;
+	shader::VoxelShader& _voxelShader;
 	render::Shadow _shadow;
 	core::VarPtr _meshSize;
-	core::VarPtr _fogVar;
 	core::VarPtr _shadowVar;
-
-	video::TexturePtr _whiteTexture;
 
 	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1};
 	int32_t _indexBufferIndex[MAX_VOLUMES] = {-1};
