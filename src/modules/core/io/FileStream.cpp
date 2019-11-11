@@ -45,6 +45,27 @@ int FileStream::peekByte(uint8_t& val) const {
 	return retVal;
 }
 
+bool FileStream::addStringFormat(bool terminate, const char *fmt, ...) {
+	va_list ap;
+	constexpr std::size_t bufSize = 4096;
+	char text[bufSize];
+
+	va_start(ap, fmt);
+	SDL_vsnprintf(text, bufSize, fmt, ap);
+	text[sizeof(text) - 1] = '\0';
+	va_end(ap);
+	const size_t length = strlen(text);
+	for (std::size_t i = 0; i < length; i++) {
+		if (!addByte(uint8_t(text[i]))) {
+			return false;
+		}
+	}
+	if (!terminate) {
+		return true;
+	}
+	return addByte(uint8_t('\0'));
+}
+
 bool FileStream::addFormat(const char *fmt, ...) {
 	va_list ap;
 

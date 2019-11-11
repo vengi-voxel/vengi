@@ -190,6 +190,7 @@ private:
 	void updateLockedPlane(math::Axis axis);
 	void replaceColor(uint8_t oldIndex, int newIndex);
 	void mirror(math::Axis axis);
+	void saveCharacterLua(const io::FilePtr& file);
 public:
 	SceneManager();
 	~SceneManager();

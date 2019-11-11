@@ -1416,24 +1416,18 @@ void SceneManager::shutdown() {
 	_character.shutdown();
 }
 
-static const char *formatStr = R"(function init()
-  chr.setRace("%s")
-  chr.setGender("%s")
-  chr.setHead("%s")
-  chr.setBelt("%s")
-  chr.setChest("%s")
-  chr.setPants("%s")
-  chr.setHand("%s")
-  chr.setFoot("%s")
-  chr.setShoulder("%s")
-end
-)";
-
-bool SceneManager::saveCharacter() {
-	_dirty = false;
-
-	char buf[4096] = "";
-	const bool fit = core::string::formatBuf(buf, sizeof(buf), formatStr,
+void SceneManager::saveCharacterLua(const io::FilePtr& file) {
+	io::FileStream stream(file);
+	stream.addStringFormat(false, "function init()\n"
+		"  chr.setRace(\"%s\")\n"
+		"  chr.setGender(\"%s\")\n"
+		"  chr.setHead(\"%s\")\n"
+		"  chr.setBelt(\"%s\")\n"
+		"  chr.setChest(\"%s\")\n"
+		"  chr.setPants(\"%s\")\n"
+		"  chr.setHand(\"%s\")\n"
+		"  chr.setFoot(\"%s\")\n"
+		"  chr.setShoulder(\"%s\")\n",
 		_characterSettings.race.c_str(),
 		_characterSettings.gender.c_str(),
 		_characterSettings.path(animation::CharacterMeshType::Head),
@@ -1443,20 +1437,47 @@ bool SceneManager::saveCharacter() {
 		_characterSettings.path(animation::CharacterMeshType::Hand),
 		_characterSettings.path(animation::CharacterMeshType::Foot),
 		_characterSettings.path(animation::CharacterMeshType::Shoulder));
-	if (!fit) {
-		Log::warn("Lua file buffer is not big enough");
-	}
-	// TODO: save missing lua SkeletonAttribute values
+
+	const SkeletonAttribute& sa = _characterSettings.skeletonAttr;
+	stream.addStringFormat(false, "  chr.setScaler(%f)\n",sa.scaler);
+	stream.addStringFormat(false, "  chr.setHeadScale(%f)\n", sa.headScale);
+	stream.addStringFormat(false, "  chr.setNeckHeight(%f)\n", sa.neckHeight);
+	stream.addStringFormat(false, "  chr.setNeckForward(%f)\n", sa.neckForward);
+	stream.addStringFormat(false, "  chr.setNeckRight(%f)\n", sa.neckRight);
+	stream.addStringFormat(false, "  chr.setHandForward(%f)\n", sa.handForward);
+	stream.addStringFormat(false, "  chr.setHandRight(%f)\n", sa.handRight);
+	stream.addStringFormat(false, "  chr.setShoulderForward(%f)\n", sa.shoulderForward);
+	stream.addStringFormat(false, "  chr.setShoulderRight(%f)\n", sa.shoulderRight);
+	stream.addStringFormat(false, "  chr.setToolForward(%f)\n", sa.toolForward);
+	stream.addStringFormat(false, "  chr.setToolRight(%f)\n", sa.toolRight);
+	stream.addStringFormat(false, "  chr.setToolScale(%f)\n", sa.toolScale);
+	stream.addStringFormat(false, "  chr.setShoulderScale(%f)\n", sa.shoulderScale);
+	stream.addStringFormat(false, "  chr.setHeadHeight(%f)\n", sa.headHeight);
+	stream.addStringFormat(false, "  chr.setFootRight(%f)\n", sa.footRight);
+	stream.addStringFormat(false, "  chr.setChestHeight(%f)\n", sa.chestHeight);
+	stream.addStringFormat(false, "  chr.setBeltHeight(%f)\n", sa.beltHeight);
+	stream.addStringFormat(false, "  chr.setPantsHeight(%f)\n", sa.pantsHeight);
+	stream.addStringFormat(false, "  chr.setInvisibleLegHeight(%f)\n", sa.invisibleLegHeight);
+	stream.addStringFormat(false, "  chr.setFootHeight(%f)\n", sa.footHeight);
+	stream.addStringFormat(false, "  chr.setOrigin(%f)\n", sa.origin);
+	stream.addStringFormat(false, "  chr.setHipOffset(%f)\n", sa.hipOffset);
+	stream.addStringFormat(false, "  chr.setJumpTimeFactor(%f)\n", sa.jumpTimeFactor);
+	stream.addStringFormat(false, "  chr.setRunTimeFactor(%f)\n", sa.runTimeFactor);
+	stream.addStringFormat(false, "  chr.setIdleTimeFactor(%f)\n", sa.idleTimeFactor);
+	stream.addString("end\n", false);
+	Log::info("Wrote lua script: %s", file->name().c_str());
+}
+
+bool SceneManager::saveCharacter() {
+	_dirty = false;
 	// TODO: somehow fix the lua filename
 	const std::string& luaFilename = core::string::format("chr/%s_%s_character.lua",
 			_characterSettings.race.c_str(),
 			_characterSettings.gender.c_str());
-	Log::info("Write lua script: %s", buf);
-	if (!io::filesystem()->write(luaFilename, (const uint8_t* )buf, strlen(buf))) {
-		Log::warn("Failed to write lua script to %s", luaFilename.c_str());
-		_dirty = true;
-	} else {
-		Log::info("Wrote lua script to %s", luaFilename.c_str());
+	io::filesystem()->createDir("chr/");
+	const io::FilePtr& luaFile = io::filesystem()->open(luaFilename, io::FileMode::Write);
+	if (luaFile->exists()) {
+		saveCharacterLua(luaFile);
 	}
 
 	const voxedit::Layers& layers = _layerMgr.layers();

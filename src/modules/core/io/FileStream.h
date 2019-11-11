@@ -12,10 +12,12 @@
 #include <SDL_endian.h>
 #include "core/Common.h"
 #include <limits.h>
+#include <memory>
 
 namespace io {
 
 class File;
+typedef std::shared_ptr<File> FilePtr;
 
 /**
  * @brief Little endian file stream
@@ -28,6 +30,7 @@ private:
 
 public:
 	FileStream(File* file);
+	FileStream(const FilePtr& file) : FileStream(file.get()) {}
 	FileStream(SDL_RWops* rwops);
 	virtual ~FileStream();
 
@@ -41,6 +44,7 @@ public:
 	bool addInt(uint32_t dword);
 	bool addLong(uint64_t dword);
 	bool addFloat(float value);
+	bool addStringFormat(bool terminate, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(3);
 	bool addString(const std::string& string, bool terminate = true);
 	bool addFormat(const char *fmt, ...);
 
