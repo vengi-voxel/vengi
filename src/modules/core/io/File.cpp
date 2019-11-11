@@ -3,6 +3,7 @@
  */
 
 #include "File.h"
+#include "core/Log.h"
 #include <SDL.h>
 
 namespace io {
