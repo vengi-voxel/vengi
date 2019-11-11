@@ -188,6 +188,13 @@ void TBButton::onInflate(const INFLATE_INFO &info) {
 	}
 }
 
+void TBInlineSelectBase::onInflate(const INFLATE_INFO &info) {
+	Super::onInflate(info);
+	if (const char *command = info.node->getValueString("command", nullptr)) {
+		_command.set(command);
+	}
+}
+
 TB_WIDGET_FACTORY(TBInlineSelect, TBValue::TYPE_INT, WIDGET_Z_TOP) {
 }
 void TBInlineSelect::onInflate(const INFLATE_INFO &info) {
@@ -195,11 +202,23 @@ void TBInlineSelect::onInflate(const INFLATE_INFO &info) {
 	int min = info.node->getValueInt("min", getMinValue());
 	int max = info.node->getValueInt("max", getMaxValue());
 	setLimits(min, max);
-	if (const char *command = info.node->getValueString("command", nullptr)) {
-		_command.set(command);
-	}
 	if (const char *varname = info.node->getValueString("varref", nullptr)) {
 		_var = core::Var::get(varname, m_value);
+		setValue(_var->intVal());
+	}
+}
+
+TB_WIDGET_FACTORY(TBInlineSelectDouble, TBValue::TYPE_FLOAT, WIDGET_Z_TOP) {
+}
+void TBInlineSelectDouble::onInflate(const INFLATE_INFO &info) {
+	Super::onInflate(info);
+	double min = info.node->getValueFloat("min", getMinValue());
+	double max = info.node->getValueFloat("max", getMaxValue());
+	setLimits(min, max);
+	if (const char *varname = info.node->getValueString("varref", nullptr)) {
+		char buf[32];
+		core::string::formatBuf(buf, sizeof(buf), "%f", (float)m_value);
+		_var = core::Var::get(varname, buf);
 		setValue(_var->intVal());
 	}
 }
