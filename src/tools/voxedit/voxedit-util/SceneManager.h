@@ -219,6 +219,10 @@ public:
 	void update(uint64_t time);
 	void shutdown() override;
 
+	animation::CharacterSettings& characterSettings() {
+		return _characterSettings;
+	}
+
 	voxelrender::RawVolumeRenderer& renderer();
 	const voxelrender::RawVolumeRenderer& renderer() const;
 
