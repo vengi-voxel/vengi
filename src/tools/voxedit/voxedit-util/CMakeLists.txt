@@ -1,5 +1,6 @@
 set(SRCS
 	anim/VolumeCache.h anim/VolumeCache.cpp
+	anim/AnimationLuaSaver.h
 
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp

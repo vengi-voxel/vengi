@@ -18,6 +18,7 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 	if (luaString.empty()) {
 		return false;
 	}
+	// also change the voxel editor lua script saving
 	static const luaL_Reg funcs[] = {
 		{ "setRace", luaMain_SetRace },
 		{ "setGender", luaMain_SetGender },
