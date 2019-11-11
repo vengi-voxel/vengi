@@ -778,9 +778,11 @@ bool VoxEditWindow::loadCharacter(const std::string& file) {
 	}
 	resetCamera();
 	if (tb::TBClickLabel* toggleAnimation = getWidgetByIDAndType<tb::TBClickLabel>("toggleanimationlabel")) {
-		tb::TBWidgetEvent target_ev(tb::EVENT_TYPE_CLICK);
-		target_ev.ref_id = toggleAnimation->getID();
-		toggleAnimation->invokeEvent(target_ev);
+		if (!toggleAnimation->getState(tb::WIDGET_STATE_PRESSED)) {
+			tb::TBWidgetEvent target_ev(tb::EVENT_TYPE_CLICK);
+			target_ev.ref_id = toggleAnimation->getID();
+			toggleAnimation->invokeEvent(target_ev);
+		}
 	}
 	return true;
 }
