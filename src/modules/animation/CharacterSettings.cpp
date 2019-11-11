@@ -5,6 +5,7 @@
 #include "CharacterSettings.h"
 #include "core/Log.h"
 #include "core/Common.h"
+#include "core/Array.h"
 #include "commonlua/LUA.h"
 #include "LUAFunctions.h"
 
