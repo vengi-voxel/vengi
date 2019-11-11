@@ -4,6 +4,7 @@
 
 #include "AnimationLuaSaver.h"
 #include "core/io/FileStream.h"
+#include "core/GLM.h"
 
 namespace voxedit {
 
