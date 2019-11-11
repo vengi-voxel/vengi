@@ -91,6 +91,7 @@ bool WorldRenderer::removeEntity(frontend::ClientEntityId id) {
 	return true;
 }
 
+// TODO: move into mesh extraction thread
 void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 	core_trace_scoped(UpdateAABB);
 	glm::ivec3 mins((std::numeric_limits<int>::max)());
