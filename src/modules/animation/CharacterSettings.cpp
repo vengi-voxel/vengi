@@ -29,6 +29,7 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 		{ "setFoot", luaMain_SetFoot },
 		{ "setHead", luaMain_SetHead },
 		{ "setShoulder", luaMain_SetShoulder },
+
 		{ "setScaler", luaMain_SetScaler },
 		{ "setHeadScale", luaMain_SetHeadScale },
 		{ "setNeckHeight", luaMain_SetNeckHeight },
@@ -56,6 +57,7 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 		{ "setIdleTimeFactor", luaMain_SetIdleTimeFactor },
 		{ nullptr, nullptr }
 	};
+	static_assert(lengthof(funcs) - 9 == lengthof(SkeletonAttributeMetaArray), "Array sizes should match");
 
 	lua::LUA lua;
 	lua.reg("chr", funcs);

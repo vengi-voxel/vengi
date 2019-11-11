@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <stddef.h>
+
 /**
  * @brief The skeleton attributes reflect the model values that are needed to
  * assemble the final mesh. This is mostly about offsets and positioning.
@@ -62,4 +64,38 @@ struct SkeletonAttribute {
 		gliderY = headY + headHeight;
 		return true;
 	}
+};
+
+struct SkeletonAttributeMeta {
+	const char *name;
+	size_t offset;
+};
+
+static const SkeletonAttributeMeta SkeletonAttributeMetaArray[] = {
+	{ "Scaler",             offsetof(struct SkeletonAttribute, scaler) },
+	{ "ToolRight",          offsetof(struct SkeletonAttribute, toolRight) },
+	{ "ToolForward",        offsetof(struct SkeletonAttribute, toolForward) },
+	{ "ToolScale",          offsetof(struct SkeletonAttribute, toolScale) },
+	{ "NeckRight",          offsetof(struct SkeletonAttribute, neckRight) },
+	{ "NeckForward",        offsetof(struct SkeletonAttribute, neckForward) },
+	{ "NeckHeight",         offsetof(struct SkeletonAttribute, neckHeight) },
+	{ "HeadScale",          offsetof(struct SkeletonAttribute, headScale) },
+	{ "HandRight",          offsetof(struct SkeletonAttribute, handRight) },
+	{ "HandForward",        offsetof(struct SkeletonAttribute, handForward) },
+	{ "ShoulderRight",      offsetof(struct SkeletonAttribute, shoulderRight) },
+	{ "ShoulderForward",    offsetof(struct SkeletonAttribute, shoulderForward) },
+	{ "RunTimeFactor",      offsetof(struct SkeletonAttribute, runTimeFactor) },
+	{ "JumpTimeFactor",     offsetof(struct SkeletonAttribute, jumpTimeFactor) },
+	{ "IdleTimeFactor",     offsetof(struct SkeletonAttribute, idleTimeFactor) },
+	{ "ShoulderScale",      offsetof(struct SkeletonAttribute, shoulderScale) },
+	{ "HipOffset",          offsetof(struct SkeletonAttribute, hipOffset) },
+	{ "Origin",             offsetof(struct SkeletonAttribute, origin) },
+	{ "FootHeight",         offsetof(struct SkeletonAttribute, footHeight) },
+	{ "InvisibleLegHeight", offsetof(struct SkeletonAttribute, invisibleLegHeight) },
+	{ "PantsHeight",        offsetof(struct SkeletonAttribute, pantsHeight) },
+	{ "BeltHeight",         offsetof(struct SkeletonAttribute, beltHeight) },
+	{ "ChestHeight",        offsetof(struct SkeletonAttribute, chestHeight) },
+	{ "HeadHeight",         offsetof(struct SkeletonAttribute, headHeight) },
+	{ "FootRight",          offsetof(struct SkeletonAttribute, footRight) },
+	{ nullptr, 0u }
 };

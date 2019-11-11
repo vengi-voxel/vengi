@@ -1,6 +1,6 @@
 set(SRCS
 	anim/VolumeCache.h anim/VolumeCache.cpp
-	anim/AnimationLuaSaver.h
+	anim/AnimationLuaSaver.h anim/AnimationLuaSaver.cpp
 
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
@@ -28,6 +28,7 @@ set(LIB voxedit-util)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelrender voxelformat voxelgenerator animation)
 
 set(TEST_SRCS
+	tests/AnimationLuaSaverTest.cpp
 	tests/LayerManagerTest.cpp
 	tests/MementoHandlerTest.cpp
 	tests/ModifierTest.cpp
