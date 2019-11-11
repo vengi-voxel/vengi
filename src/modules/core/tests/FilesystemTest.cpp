@@ -69,8 +69,9 @@ TEST_F(FilesystemTest, testMkdir) {
 TEST_F(FilesystemTest, testWrite) {
 	io::Filesystem fs;
 	fs.init("test", "test");
-	ASSERT_TRUE(fs.write("testfile", "123"));
-	ASSERT_EQ("123", fs.load("testfile"));
+	ASSERT_TRUE(fs.write("testfile", "123")) << "Failed to write content to testfile in " << fs.homePath();
+	const std::string& content = fs.load("testfile");
+	ASSERT_EQ("123", content) << "Written content doesn't match expected";
 	fs.shutdown();
 }
 
