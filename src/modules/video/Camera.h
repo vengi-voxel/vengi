@@ -237,7 +237,7 @@ public:
 	 */
 	glm::vec3 screenToWorld(const glm::vec3& screenPos) const;
 
-	void update(uint64_t deltaFrame);
+	void update(uint64_t deltaFrame = (uint64_t)0);
 
 	/**
 	 * @brief Split the current frustum by @c bufSize steps

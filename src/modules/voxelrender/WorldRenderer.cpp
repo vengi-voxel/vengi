@@ -158,8 +158,6 @@ WorldRenderer::ChunkBuffer* WorldRenderer::findFreeChunkBuffer() {
 }
 
 static inline size_t transform(size_t indexOffset, const voxel::Mesh& mesh, std::vector<voxel::VoxelVertex>& verts, std::vector<voxel::IndexType>& idxs) {
-	{
-	core_trace_scoped(TransformIndices);
 	const std::vector<voxel::IndexType>& indices = mesh.getIndexVector();
 	const size_t start = idxs.size();
 	idxs.insert(idxs.end(), indices.begin(), indices.end());
@@ -167,13 +165,9 @@ static inline size_t transform(size_t indexOffset, const voxel::Mesh& mesh, std:
 	for (size_t i = start; i < end; ++i) {
 		idxs[i] += indexOffset;
 	}
-	}
-	{
-	core_trace_scoped(TransformVertices);
 	const std::vector<voxel::VoxelVertex>& vertices = mesh.getVertexVector();
 	verts.insert(verts.end(), vertices.begin(), vertices.end());
 	return vertices.size();
-	}
 }
 
 bool WorldRenderer::occluded(ChunkBuffer * chunkBuffer) const {
