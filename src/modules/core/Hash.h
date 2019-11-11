@@ -89,7 +89,7 @@ constexpr uint32_t CalculateFinalHash5(uint32_t h) {
 }
 
 constexpr uint32_t CalculateFinalHash6(uint32_t h) {
-	return h ^ (h >> 16);
+	return (uint32_t)(h ^ (h >> 16));
 }
 
 constexpr uint32_t CalculateFinalHash(uint32_t h, uint32_t length) {

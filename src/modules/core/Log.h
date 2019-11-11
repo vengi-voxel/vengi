@@ -56,11 +56,11 @@ public:
 	 */
 	template<int N>
 	static constexpr uint32_t logid(const char (&name)[N]) {
-		return core::hash(name);
+		return (uint32_t)core::hash(name);
 	}
 
 	static uint32_t logid(const char* name, int size) {
-		return core::hash(name, size);
+		return (uint32_t)core::hash(name, size);
 	}
 
 	static void trace(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));
