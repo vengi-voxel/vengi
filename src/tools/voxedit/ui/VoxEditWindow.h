@@ -31,6 +31,7 @@ private:
 	Viewport* _sceneLeft = nullptr;
 	Viewport* _sceneFront = nullptr;
 	Viewport* _sceneAnimation = nullptr;
+	tb::TBLayout* _animationWidget;
 	PaletteWidget* _paletteWidget;
 	LayerWidget* _layerWidget;
 	tb::TBWidget* _saveButton = nullptr;
@@ -70,6 +71,7 @@ private:
 	tb::TBGenericStringItemSource _treeItems;
 	tb::TBGenericStringItemSource _fileItems;
 	tb::TBGenericStringItemSource _structureItems;
+	tb::TBGenericStringItemSource _animationItems;
 
 	tb::TBInlineSelect *_voxelSize = nullptr;
 	tb::TBCheckBox *_showGrid = nullptr;

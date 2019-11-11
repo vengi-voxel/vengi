@@ -65,6 +65,9 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 }
 
 VoxEditWindow::~VoxEditWindow() {
+	if (tb::TBSelectDropdown* dropdown = getWidgetByType<tb::TBSelectDropdown>("animationlist")) {
+		dropdown->setSource(nullptr);
+	}
 }
 
 bool VoxEditWindow::init() {
@@ -98,9 +101,38 @@ bool VoxEditWindow::init() {
 	_sceneLeft = getWidgetByType<Viewport>("editorsceneleft");
 	_sceneFront = getWidgetByType<Viewport>("editorscenefront");
 	_sceneAnimation = getWidgetByType<Viewport>("animationscene");
+	_animationWidget = getWidgetByType<tb::TBLayout>("animationwidget");
+
+	if (tb::TBSelectDropdown* dropdown = getWidgetByType<tb::TBSelectDropdown>("animationlist")) {
+		dropdown->setSource(&_animationItems);
+		for (int i = 0; i < std::enum_value(animation::Animation::Max); ++i) {
+			addStringItem(_animationItems, animation::toString((animation::Animation)i));
+		}
+	}
+
+	if (tb::TBLayout* layout = getWidgetByType<tb::TBLayout>("animationsettings")) {
+		auto& cs = sceneMgr().characterSettings();
+		for (const SkeletonAttributeMeta* metaIter = SkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
+			const SkeletonAttributeMeta& meta = *metaIter;
+			tb::TBLayout *innerLayout = new tb::TBLayout();
+			tb::TBTextField *name = new tb::TBTextField();
+			name->setText(meta.name);
+			tb::TBInlineSelectDouble *value = new tb::TBInlineSelectDouble();
+			const float *saVal = (const float*)(((const char*)&cs) + meta.offset);
+			// TODO: provide update mechanism
+			value->setValueDouble(*saVal);
+			value->setLimits(-100.0, 100.0);
+			innerLayout->addChild(name);
+			innerLayout->addChild(value);
+			innerLayout->setAxis(tb::AXIS_X);
+			innerLayout->setGravity(tb::WIDGET_GRAVITY_ALL);
+			innerLayout->setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_AVAILABLE);
+			layout->addChild(innerLayout);
+		}
+	}
 
 	_fourViewAvailable = _sceneTop != nullptr && _sceneLeft != nullptr && _sceneFront != nullptr;
-	_animationViewAvailable = _sceneAnimation != nullptr;
+	_animationViewAvailable = _animationWidget != nullptr;
 
 	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
 	if (toggleViewPort != nullptr) {
@@ -273,9 +305,9 @@ void VoxEditWindow::toggleViewport() {
 }
 
 void VoxEditWindow::toggleAnimation() {
-	if (_sceneAnimation != nullptr) {
-		const bool vis = _sceneAnimation->getVisibilityCombined();
-		_sceneAnimation->setVisibility(vis ? tb::WIDGET_VISIBILITY_GONE : tb::WIDGET_VISIBILITY_VISIBLE);
+	if (_animationWidget != nullptr) {
+		const bool vis = _animationWidget->getVisibilityCombined();
+		_animationWidget->setVisibility(vis ? tb::WIDGET_VISIBILITY_GONE : tb::WIDGET_VISIBILITY_VISIBLE);
 	}
 }
 
@@ -668,6 +700,10 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 
 void VoxEditWindow::onDie() {
 	Super::onDie();
+	if (tb::TBSelectDropdown* dropdown = getWidgetByType<tb::TBSelectDropdown>("animationlist")) {
+		dropdown->setSource(nullptr);
+	}
+
 	// TODO: we should get a chance here to ask - really sure? if we have unsaved data...
 	requestQuit();
 }
