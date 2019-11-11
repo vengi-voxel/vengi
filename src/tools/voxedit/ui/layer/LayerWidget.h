@@ -49,7 +49,6 @@ public:
 
 class LayerWidget: public tb::TBWidget, public voxedit::LayerListener {
 private:
-	using Super = tb::TBWidget;
 	tb::TBSelectList *_list;
 	LayerItemSource _source;
 	voxedit::LayerSettings _layerSettings;

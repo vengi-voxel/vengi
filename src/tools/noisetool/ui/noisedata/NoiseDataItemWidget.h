@@ -47,10 +47,9 @@ public:
 
 class NoiseDataList : public tb::TBLayout {
 private:
-	using Super = tb::TBLayout;
 	tb::TBSelectList* _select;
 public:
-	UIWIDGET_SUBCLASS(NoiseDataList, Super);
+	UIWIDGET_SUBCLASS(NoiseDataList, tb::TBLayout);
 
 	NoiseDataList();
 	~NoiseDataList();

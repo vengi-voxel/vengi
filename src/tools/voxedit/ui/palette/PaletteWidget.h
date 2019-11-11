@@ -8,8 +8,6 @@
 #include "voxel/Voxel.h"
 
 class PaletteWidget: public ui::turbobadger::Widget {
-private:
-	using Super = ui::turbobadger::Widget;
 protected:
 	int _width = 0;
 	int _height = 0;
@@ -21,7 +19,7 @@ protected:
 	int _value = 0;
 	uint8_t _voxelColorIndex = 0u;
 public:
-	UIWIDGET_SUBCLASS(PaletteWidget, Super);
+	UIWIDGET_SUBCLASS(PaletteWidget, ui::turbobadger::Widget);
 
 	PaletteWidget();
 

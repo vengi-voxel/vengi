@@ -62,6 +62,7 @@ template <class T> const T *TBSafeCast(const TBTypedObject *obj) {
 
 /** Implement the methods for safe typecasting without requiring RTTI. */
 #define TBOBJECT_SUBCLASS(clazz, baseclazz)                                                                            \
+	private: using Super = baseclazz; public: \
 	virtual const char *getClassName() const override {                                                                \
 		return #clazz;                                                                                                 \
 	}                                                                                                                  \

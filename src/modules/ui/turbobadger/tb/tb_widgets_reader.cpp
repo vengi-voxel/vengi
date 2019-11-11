@@ -191,10 +191,10 @@ void TBButton::onInflate(const INFLATE_INFO &info) {
 TB_WIDGET_FACTORY(TBInlineSelect, TBValue::TYPE_INT, WIDGET_Z_TOP) {
 }
 void TBInlineSelect::onInflate(const INFLATE_INFO &info) {
+	Super::onInflate(info);
 	int min = info.node->getValueInt("min", getMinValue());
 	int max = info.node->getValueInt("max", getMaxValue());
 	setLimits(min, max);
-	TBWidget::onInflate(info);
 	if (const char *command = info.node->getValueString("command", nullptr)) {
 		_command.set(command);
 	}

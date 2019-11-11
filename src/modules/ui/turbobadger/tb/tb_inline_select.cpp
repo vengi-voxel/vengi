@@ -52,7 +52,7 @@ void TBInlineSelect::setLimits(int min, int max) {
 }
 
 void TBInlineSelect::onProcess() {
-	TBWidget::onProcess();
+	Super::onProcess();
 	if (!_var || !_var->isDirty()) {
 		return;
 	}

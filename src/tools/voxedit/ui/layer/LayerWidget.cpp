@@ -13,6 +13,8 @@
 #include "video/WindowedApp.h"
 
 class LayerItemWidget: public tb::TBLayout {
+private:
+	using Super = tb::TBLayout;
 public:
 	tb::TBGenericStringItemSource _actionItems;
 
@@ -139,7 +141,7 @@ public:
 			}
 			return true;
 		}
-		return tb::TBLayout::onEvent(ev);
+		return Super::onEvent(ev);
 	}
 private:
 	LayerItemSource *_source;

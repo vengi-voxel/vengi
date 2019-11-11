@@ -15,7 +15,6 @@
  */
 class Viewport: public ui::turbobadger::Widget {
 private:
-	using Super = ui::turbobadger::Widget;
 	shader::EdgeShader& _edgeShader;
 	video::FrameBuffer _frameBuffer;
 	tb::UIBitmapGL _frameBufferTexture;
@@ -25,7 +24,7 @@ private:
 	void renderFramebuffer();
 
 public:
-	UIWIDGET_SUBCLASS(Viewport, Super);
+	UIWIDGET_SUBCLASS(Viewport, ui::turbobadger::Widget);
 
 	Viewport();
 	~Viewport();

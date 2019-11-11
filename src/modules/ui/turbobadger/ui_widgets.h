@@ -7,10 +7,8 @@
 #include "core/Common.h"
 
 class ColorWidget: public ui::turbobadger::Widget {
-private:
-	using Super = ui::turbobadger::Widget;
 public:
-	UIWIDGET_SUBCLASS(ColorWidget, Super);
+	UIWIDGET_SUBCLASS(ColorWidget, ui::turbobadger::Widget);
 
 	ColorWidget();
 
@@ -36,10 +34,8 @@ private:
 UIWIDGET_FACTORY(ColorWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)
 
 class NodeConnectorWidget: public ui::turbobadger::Widget {
-private:
-	using Super = ui::turbobadger::Widget;
 public:
-	UIWIDGET_SUBCLASS(NodeConnectorWidget, Super);
+	UIWIDGET_SUBCLASS(NodeConnectorWidget, ui::turbobadger::Widget);
 
 	NodeConnectorWidget();
 
@@ -51,10 +47,8 @@ private:
 UIWIDGET_FACTORY(NodeConnectorWidget, tb::TBValue::TYPE_NULL, tb::WIDGET_Z_TOP)
 
 class ImageWidget: public tb::TBImageWidget {
-private:
-	using Super = tb::TBImageWidget;
 public:
-	UIWIDGET_SUBCLASS(ImageWidget, Super);
+	UIWIDGET_SUBCLASS(ImageWidget, tb::TBImageWidget);
 
 	tb::PreferredSize onCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
 };
