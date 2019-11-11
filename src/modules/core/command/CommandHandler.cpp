@@ -80,8 +80,8 @@ size_t levensteinDistance(const std::string &source, const std::string &target) 
 	return levDist[minSize];
 }
 
-static const char* findPotentialMatch(const std::string& arg) {
-	const char *match = nullptr;
+static std::string findPotentialMatch(const std::string& arg) {
+	std::string match;
 	size_t leastCost = 1000000u;
 	core::Command::visit([&] (const core::Command& c) {
 		const size_t cost = levensteinDistance(arg, c.name());
@@ -126,9 +126,9 @@ int executeCommands(const std::string& _commandLine) {
 		const core::VarPtr& c = core::Var::get(cmd);
 		if (!c) {
 			Log::info("unknown command: %s", cmd.c_str());
-			const char *potentialMatch = findPotentialMatch(cmd);
-			if (potentialMatch != nullptr) {
-				Log::info("did you mean: %s", potentialMatch);
+			const std::string& potentialMatch = findPotentialMatch(cmd);
+			if (!potentialMatch.empty()) {
+				Log::info("did you mean: %s", potentialMatch.c_str());
 			}
 			n = -1;
 		} else {
