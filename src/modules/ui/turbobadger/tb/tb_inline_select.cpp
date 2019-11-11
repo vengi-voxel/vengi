@@ -30,7 +30,7 @@ TBInlineSelectBase::TBInlineSelectBase() {
 	m_buttons[1].setID(TBIDC("inc"));
 	m_buttons[0].setAutoRepeat(true);
 	m_buttons[1].setAutoRepeat(true);
-	m_editfield.setTextAlign(TB_TEXT_ALIGN_CENTER);
+	m_editfield.setTextAlign(TB_TEXT_ALIGN_RIGHT);
 	m_editfield.setEditType(EDIT_TYPE_NUMBER);
 	m_editfield.setText("0");
 }
@@ -135,7 +135,7 @@ void TBInlineSelectDouble::setValueInternal(double value, bool updateText) {
 
 	if (updateText) {
 		TBStr strval;
-		strval.setFormatted("%f", (float)m_value);
+		strval.setFormatted("%.3f", (float)m_value);
 		m_editfield.setText(strval);
 	}
 
