@@ -660,11 +660,7 @@ void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
 	_world->updateExtractionOrder(_focusPos);
 
 	const bool shadowMap = _shadowMap->boolVal();
-	video::Camera shadowCamera = camera;
-	shadowCamera.setTargetDistance(1.0f);
-	shadowCamera.setTarget(_focusPos);
-	shadowCamera.update(dt);
-	_shadow.update(shadowCamera, shadowMap);
+	_shadow.update(camera, shadowMap);
 
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {
