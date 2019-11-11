@@ -95,7 +95,7 @@ bool CharacterCache::getCharacterMeshes(const CharacterSettings& settings, const
 		}
 		const std::string& fullPath = settings.fullPath((CharacterMeshType)i);
 		if (!load(fullPath, (CharacterMeshType)i, meshes)) {
-			Log::error("Failed to load %s", settings.paths[i]->c_str());
+			Log::error("Failed to load %s", fullPath.c_str());
 			return false;
 		}
 	}
@@ -167,6 +167,7 @@ bool CharacterCache::load(const std::string& filename, CharacterMeshType meshTyp
 		meshes[std::enum_value(meshType)] = &mesh;
 		return true;
 	}
+	meshes[std::enum_value(meshType)] = nullptr;
 	return false;
 }
 

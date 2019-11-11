@@ -11,7 +11,8 @@ namespace frontend {
 
 ClientEntity::ClientEntity(const stock::StockDataProviderPtr& provider, const animation::CharacterCachePtr& characterCache, ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation) :
 		_id(id), _type(type), _position(pos), _orientation(orientation), _stock(provider), _characterCache(characterCache) {
-	const std::string& entityTypeStr = core::string::toLower(network::EnumNameEntityType(type));
+	// TODO: get rid of the hardcoded prefix here
+	const std::string& entityTypeStr = "human-male-" + core::string::toLower(network::EnumNameEntityType(type));
 	const io::FilePtr& file = io::filesystem()->open(animation::luaFilename(entityTypeStr.c_str()));
 	const std::string& lua = file->load();
 	_character.init(_characterCache, lua);

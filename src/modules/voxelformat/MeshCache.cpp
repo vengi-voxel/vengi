@@ -62,6 +62,7 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 	});
 	delete volume;
 
+	Log::info("Generated mesh for %s", fullPath);
 	return true;
 }
 
