@@ -130,7 +130,7 @@ public:
 
 	static inline VarPtr get(const std::string& name, int value, int32_t flags = -1) {
 		char buf[64];
-		SDL_snprintf(buf, sizeof(buf), "%i", value);
+		core::string::formatBuf(buf, sizeof(buf), "%i", value);
 		return get(name, buf, flags);
 	}
 
