@@ -270,7 +270,9 @@ AppState App::onConstruct() {
 #endif
 	}
 
-	_filesystem->init(_organisation, _appname);
+	if (!_filesystem->init(_organisation, _appname)) {
+		Log::warn("Failed to initialize the filesystem");
+	}
 
 	return AppState::Init;
 }
