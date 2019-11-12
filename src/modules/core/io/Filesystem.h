@@ -44,7 +44,7 @@ private:
 public:
 	~Filesystem();
 
-	void init(const std::string& organisation, const std::string& appname);
+	bool init(const std::string& organisation, const std::string& appname);
 	void shutdown();
 
 	void update();

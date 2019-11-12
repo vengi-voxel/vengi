@@ -18,7 +18,7 @@ Filesystem::~Filesystem() {
 	shutdown();
 }
 
-void Filesystem::init(const std::string& organisation, const std::string& appname) {
+bool Filesystem::init(const std::string& organisation, const std::string& appname) {
 	_organisation = organisation;
 	_appname = appname;
 
@@ -38,7 +38,9 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		_homePath = prefPath;
 		normalizePath(_homePath);
 		SDL_free(prefPath);
-		createDir(_homePath);
+		if (!createDir(_homePath, true)) {
+			return false;
+		}
 	}
 
 	core_assert_always(registerPath(_homePath));
@@ -52,6 +54,7 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 
 	_loop = new uv_loop_t;
 	uv_loop_init(_loop);
+	return true;
 }
 
 bool Filesystem::removeFile(const std::string& file) const {
