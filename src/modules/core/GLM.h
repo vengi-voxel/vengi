@@ -20,8 +20,6 @@
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/epsilon.hpp>
 
-#include <glm/ext/scalar_relational.hpp>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/euler_angles.hpp>
