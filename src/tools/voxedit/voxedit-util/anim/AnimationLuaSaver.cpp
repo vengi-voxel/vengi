@@ -36,7 +36,7 @@ bool saveCharacterLua(const animation::CharacterSettings& characterSettings, con
 		const SkeletonAttributeMeta& meta = *metaIter;
 		const float *saVal = (const float*)(((const char*)&sa) + meta.offset);
 		const float *dvVal = (const float*)(((const char*)&dv) + meta.offset);
-		if (!glm::equal(*saVal, *dvVal)) {
+		if (glm::abs(*saVal - *dvVal) > glm::epsilon<float>()) {
 			stream.addStringFormat(false, "  chr.set%s(%f)\n", meta.name, *saVal);
 		}
 	}
