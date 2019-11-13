@@ -109,7 +109,11 @@ bool Connection::connect() {
 		Log::warn("SSL connection to the database failed");
 	}
 	PQsetNoticeProcessor(_connection, defaultNoticeProcessor, nullptr);
-	PQexec(_connection, "SET TIME ZONE 'UTC';CREATE EXTENSION IF NOT EXISTS pgcrypto;");
+	PGresult *res = PQexec(_connection, "SET TIME ZONE 'UTC';CREATE EXTENSION IF NOT EXISTS pgcrypto;");
+	if (PQresultStatus(res) == PGRES_NONFATAL_ERROR || PQresultStatus(res) == PGRES_FATAL_ERROR) {
+		Log::error("Failed to set timezone");
+	}
+	PQclear(res);
 #endif
 	return true;
 }
