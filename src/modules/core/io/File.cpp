@@ -66,11 +66,13 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 
 long File::write(const unsigned char *buf, size_t len) const {
 	if (!_file) {
-		Log::debug("Invalid file handle");
+		Log::debug("Invalid file handle - can write buffer of length %i (path: %s)",
+				(int)len, _rawPath.c_str());
 		return -1;
 	}
 	if (_mode != FileMode::Write) {
-		Log::debug("Invalid file mode given");
+		Log::debug("Invalid file mode given - can write buffer of length %i (path: %s)",
+				(int)len, _rawPath.c_str());
 		return -1L;
 	}
 
@@ -78,7 +80,8 @@ long File::write(const unsigned char *buf, size_t len) const {
 	while (remaining > 0) {
 		const size_t written = SDL_RWwrite(_file, buf, 1, remaining);
 		if (written == 0) {
-			Log::debug("Error writing file");
+			Log::debug("Error writing file - can write buffer of length %i (remaining: %i) (path: %s)",
+					(int)len, remaining, _rawPath.c_str());
 			return -1L;
 		}
 
@@ -86,6 +89,7 @@ long File::write(const unsigned char *buf, size_t len) const {
 		buf += written;
 	}
 
+	Log::debug("%i bytes were written into path %s", (int)len, _rawPath.c_str());
 	return len;
 }
 
@@ -163,6 +167,7 @@ int File::read(void *buffer, int n) {
 		if (readAmount == 0) {
 			return (len - remaining + readAmount);
 		} else if (readAmount == -1) {
+			Log::debug("Read error while reading %s", _rawPath.c_str());
 			return -1;
 		}
 
@@ -170,20 +175,27 @@ int File::read(void *buffer, int n) {
 		remaining -= readAmount;
 		buf += readAmount;
 	}
+	Log::debug("Read %i bytes from %s", (int)len, _rawPath.c_str());
 	return len;
 }
 
 int File::read(void *buf, size_t size, size_t maxnum) {
 	if (_mode != FileMode::Read) {
 		_state = IOSTATE_FAILED;
+		Log::debug("File %s is not opened in read mode", _rawPath.c_str());
 		return -1;
 	}
 	const int n = SDL_RWread(_file, buf, size, maxnum);
 	if (n == 0) {
 		_state = IOSTATE_LOADED;
+		Log::trace("File %s: read successful", _rawPath.c_str());
 	} else if (n == -1) {
 		_state = IOSTATE_FAILED;
+		Log::trace("File %s: read failed", _rawPath.c_str());
+	} else {
+		Log::trace("File %s: read %i bytes", _rawPath.c_str(), n);
 	}
+
 	return n;
 }
 
@@ -196,6 +208,7 @@ void File::close() {
 
 bool File::open(FileMode mode) {
 	if (_file != nullptr) {
+		Log::debug("File %s is already open", _rawPath.c_str());
 		return -1;
 	}
 	_mode = mode;
