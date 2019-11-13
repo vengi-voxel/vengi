@@ -100,13 +100,13 @@ TEST_F(EventBusTest, testSubscribeAndUnsubscribe_1000) {
 	ASSERT_EQ(n, eventBus.unsubscribe(handler));
 }
 
-TEST_F(EventBusTest, testMassPublish_10000000) {
+TEST_F(EventBusTest, testMassPublish_10000) {
 	EventBus eventBus;
 	HandlerTest handler;
 	TestEvent event;
 
 	eventBus.subscribe(handler);
-	const int n = 10000000;
+	const int n = 10000;
 	for (int i = 0; i < n; ++i) {
 		ASSERT_EQ(1, eventBus.publish(event)) << "Unexpected amount of handlers notified";
 		ASSERT_EQ(i + 1, handler.getCount()) << "Unexpected handler notification amount";
