@@ -39,6 +39,35 @@ TEST_F(FilesystemTest, testListDirectory) {
 	fs.shutdown();
 }
 
+TEST_F(FilesystemTest, testAbsolutePath) {
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.createDir("absolutePathInCurDir"));
+	const std::string& absPath = fs.absolutePath("absolutePathInCurDir");
+	EXPECT_NE("", absPath);
+	fs.shutdown();
+}
+
+TEST_F(FilesystemTest, testIsRelativePath) {
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.isRelativePath("./foo"));
+	EXPECT_TRUE(fs.isRelativePath("foo"));
+	EXPECT_TRUE(fs.isRelativePath("foo/bar"));
+	EXPECT_TRUE(fs.isRelativePath("foo/bar/"));
+	EXPECT_FALSE(fs.isRelativePath("/foo"));
+	EXPECT_FALSE(fs.isRelativePath("/foo/bar"));
+	EXPECT_FALSE(fs.isRelativePath("/foo/bar/"));
+	fs.shutdown();
+}
+
+TEST_F(FilesystemTest, testIsReadableDir) {
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.isReadableDir(fs.homePath())) << fs.homePath() << " is not readable";
+	fs.shutdown();
+}
+
 TEST_F(FilesystemTest, testListFilter) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
@@ -63,6 +92,15 @@ TEST_F(FilesystemTest, testMkdir) {
 	EXPECT_TRUE(fs.removeDir("testdir2/subdir/other"));
 	EXPECT_TRUE(fs.removeDir("testdir2/subdir"));
 	EXPECT_TRUE(fs.removeDir("testdir2"));
+	fs.shutdown();
+}
+
+TEST_F(FilesystemTest, testWriteExplicitCurDir) {
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.write("./testfile", "123")) << "Failed to write content to testfile in " << fs.homePath();
+	const std::string& content = fs.load("./testfile");
+	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.shutdown();
 }
 
