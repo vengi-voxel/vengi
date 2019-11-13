@@ -20,7 +20,7 @@
 Some of these dependencies might not be available as packages in your toolchain - most of them are also bundled with the application. But local installed headers always have the higher priority.
 
 ## Debian
-    apt-get install libglm-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-10 libpq-dev libenet-dev libgtk-3-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers wayland-protocols pkg-config uuid-dev
+    apt-get install libglm-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-10 libpq-dev libenet-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers wayland-protocols pkg-config uuid-dev
 
 If you want to run the database server locally, you have to install the postgres server package:
 
@@ -38,4 +38,4 @@ If you want to run the database server locally, you have to install the postgres
     brew install qt5 mosquitto curl-openssl zlib libuv sdl2 libpq sdl2_mixer
 
 ## Windows
-    vcpkg install sdl2 curl libuv zlib libpq lua glm glslang gtest qt5
+    vcpkg install sdl2 curl libuv zlib libpq lua glm glslang gtest qt5 mosquitto
