@@ -82,7 +82,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 	const std::string& password = core::Var::getSafe(cfg::ClientPassword)->strVal();
 	Log::info("Trying to log into the server with %s", email.c_str());
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnect,
-			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(core::pwhash(password))).Union());
+			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(core::pwhash(password, "TODO"))).Union());
 }
 
 void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
@@ -291,7 +291,7 @@ void Client::onWindowResize(int windowWidth, int windowHeight) {
 
 void Client::signup(const std::string& email, const std::string& password) {
 	const core::rest::Response& r = core::rest::post("signup",
-			core::json { { "email", email }, { "password", core::pwhash(password) } });
+			core::json { { "email", email }, { "password", core::pwhash(password, "TODO") } });
 	if (r.code != core::rest::StatusCode::OK) {
 		Log::error("Failed to signup with %s (%i)", email.c_str(), r.code);
 	}
