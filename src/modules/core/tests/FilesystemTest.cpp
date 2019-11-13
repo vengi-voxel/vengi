@@ -97,4 +97,11 @@ TEST_F(FilesystemTest, testCreateDirRecursive) {
 	fs.shutdown();
 }
 
+TEST_F(FilesystemTest, testCreateDirNonRecursiveFail) {
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_FALSE(fs.createDir("does/not/exist", false));
+	fs.shutdown();
+}
+
 }
