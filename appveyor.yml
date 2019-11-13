@@ -10,10 +10,6 @@ configuration: Release
 platform:
 - x64
 
-branches:
-  only:
-  - master
-
 shallow_clone: true
 
 cache:
