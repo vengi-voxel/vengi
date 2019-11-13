@@ -15,11 +15,11 @@ namespace backend {
 
 namespace {
 const char *INV = R"(function init()
-	local i = stock.createItem(1, 'WEAPON')
+	local i = stock.createItem(1, 'WEAPON', 'some-id')
 	local s = i:shape()
 	s:addRect(0, 0, 1, 1)
 
-	local invMain = stock.createContainer("main")
+	local invMain = stock.createContainer(1, 'main')
 	local invMainShape = invMain:shape()
 	invMainShape:addRect(0, 0, 1, 1)
 end
@@ -45,9 +45,9 @@ protected:
 	void SetUp() override {
 		Super::SetUp();
 		stockDataProvider = std::make_shared<stock::StockDataProvider>();
-		ASSERT_TRUE(stockDataProvider->init(INV));
+		ASSERT_TRUE(stockDataProvider->init(INV)) << stockDataProvider->error();
 		cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
-		ASSERT_TRUE(cooldownProvider->init(COOLDOWNS));
+		ASSERT_TRUE(cooldownProvider->init(COOLDOWNS)) << cooldownProvider->error();
 
 		core::Var::get(cfg::ServerUserTimeout, "60000");
 		core::Var::get(cfg::DatabaseMinConnections, "1");

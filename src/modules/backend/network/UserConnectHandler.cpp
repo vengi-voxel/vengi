@@ -10,7 +10,6 @@
 #include "core/Log.h"
 #include "util/EMailValidator.h"
 #include "UserModel.h"
-#include "core/Password.h"
 #include "backend/entity/EntityStorage.h"
 #include "backend/world/MapProvider.h"
 #include "backend/world/Map.h"
@@ -48,7 +47,8 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, cons
 		Log::warn(logid, "Could not get user id for email: %s", email.c_str());
 		return UserPtr();
 	}
-	if (passwd != core::pwhash(model.password())) {
+	if (passwd != model.password()) {
+		Log::warn("Failed password validation");
 		return UserPtr();
 	}
 	const UserPtr& user = _entityStorage->user(model.id());
