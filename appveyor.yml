@@ -49,8 +49,6 @@ test_script:
   - ctest -V -C Debug -R tests-util
   - ctest -V -C Debug -R tests-stock
   - ctest -V -C Debug -R tests-shadertool
-  - ctest -V -C Debug -R tests-testtraze
-  - ctest -V -C Debug -R tests-voxelworld
 
 after_test:
   - ps: |
