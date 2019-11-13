@@ -16,16 +16,16 @@ class FilesystemTest: public core::AbstractTest {
 
 TEST_F(FilesystemTest, testListDirectory) {
 	io::Filesystem fs;
-	fs.init("test", "test");
-	ASSERT_TRUE(fs.createDir("listdirtest/dir1"));
-	ASSERT_TRUE(fs.syswrite("listdirtest/dir1/ignored", "ignore"));
-	ASSERT_TRUE(fs.syswrite("listdirtest/dir1/ignoredtoo", "ignore"));
-	ASSERT_TRUE(fs.syswrite("listdirtest/file1", "1"));
-	ASSERT_TRUE(fs.syswrite("listdirtest/file2", "2"));
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.createDir("listdirtest/dir1"));
+	EXPECT_TRUE(fs.syswrite("listdirtest/dir1/ignored", "ignore"));
+	EXPECT_TRUE(fs.syswrite("listdirtest/dir1/ignoredtoo", "ignore"));
+	EXPECT_TRUE(fs.syswrite("listdirtest/file1", "1"));
+	EXPECT_TRUE(fs.syswrite("listdirtest/file2", "2"));
 	std::vector<io::Filesystem::DirEntry> entities;
 	fs.list("listdirtest/", entities, "");
-	ASSERT_FALSE(entities.empty());
-	ASSERT_EQ(3u, entities.size()) << entities;
+	EXPECT_FALSE(entities.empty());
+	EXPECT_EQ(3u, entities.size()) << entities;
 	std::sort(entities.begin(), entities.end(),
 		[] (const io::Filesystem::DirEntry& first, const io::Filesystem::DirEntry& second) {
 			return first.name < second.name;
@@ -41,12 +41,12 @@ TEST_F(FilesystemTest, testListDirectory) {
 
 TEST_F(FilesystemTest, testListFilter) {
 	io::Filesystem fs;
-	fs.init("test", "test");
-	ASSERT_TRUE(fs.createDir("listdirtestfilter"));
-	ASSERT_TRUE(fs.createDir("listdirtestfilter/dirxyz"));
-	ASSERT_TRUE(fs.syswrite("listdirtestfilter/filexyz", "1"));
-	ASSERT_TRUE(fs.syswrite("listdirtestfilter/fileother", "2"));
-	ASSERT_TRUE(fs.syswrite("listdirtestfilter/fileignore", "3"));
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.createDir("listdirtestfilter"));
+	EXPECT_TRUE(fs.createDir("listdirtestfilter/dirxyz"));
+	EXPECT_TRUE(fs.syswrite("listdirtestfilter/filexyz", "1"));
+	EXPECT_TRUE(fs.syswrite("listdirtestfilter/fileother", "2"));
+	EXPECT_TRUE(fs.syswrite("listdirtestfilter/fileignore", "3"));
 	std::vector<io::Filesystem::DirEntry> entities;
 	fs.list("listdirtestfilter/", entities, "*xyz");
 	EXPECT_EQ(2u, entities.size()) << entities;
@@ -57,29 +57,30 @@ TEST_F(FilesystemTest, testListFilter) {
 
 TEST_F(FilesystemTest, testMkdir) {
 	io::Filesystem fs;
-	fs.init("test", "test");
-	ASSERT_TRUE(fs.createDir("testdir"));
-	ASSERT_TRUE(fs.createDir("testdir2/subdir/other"));
-	ASSERT_TRUE(fs.removeDir("testdir2/subdir/other"));
-	ASSERT_TRUE(fs.removeDir("testdir2/subdir"));
-	ASSERT_TRUE(fs.removeDir("testdir2"));
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.createDir("testdir"));
+	EXPECT_TRUE(fs.createDir("testdir2/subdir/other"));
+	EXPECT_TRUE(fs.removeDir("testdir2/subdir/other"));
+	EXPECT_TRUE(fs.removeDir("testdir2/subdir"));
+	EXPECT_TRUE(fs.removeDir("testdir2"));
 	fs.shutdown();
 }
 
 TEST_F(FilesystemTest, testWrite) {
 	io::Filesystem fs;
-	ASSERT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
-	ASSERT_TRUE(fs.write("testfile", "123")) << "Failed to write content to testfile in " << fs.homePath();
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.write("testfile", "123")) << "Failed to write content to testfile in " << fs.homePath();
 	const std::string& content = fs.load("testfile");
-	ASSERT_EQ("123", content) << "Written content doesn't match expected";
+	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.shutdown();
 }
 
 TEST_F(FilesystemTest, testWriteNewDir) {
 	io::Filesystem fs;
-	fs.init("test", "test");
-	ASSERT_TRUE(fs.write("dir123/testfile", "123"));
-	ASSERT_EQ("123", fs.load("dir123/testfile"));
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.write("dir123/testfile", "123")) << "Failed to write content to testfile in dir123";
+	const std::string& content = fs.load("dir123/testfile");
+	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.removeFile("dir123/testfile");
 	fs.removeDir("dir123");
 	fs.shutdown();
@@ -87,12 +88,12 @@ TEST_F(FilesystemTest, testWriteNewDir) {
 
 TEST_F(FilesystemTest, testCreateDirRecursive) {
 	io::Filesystem fs;
-	fs.init("test", "test");
-	ASSERT_TRUE(fs.createDir("dir1/dir2/dir3/dir4", true));
-	ASSERT_TRUE(fs.removeDir("dir1/dir2/dir3/dir4"));
-	ASSERT_TRUE(fs.removeDir("dir1/dir2/dir3"));
-	ASSERT_TRUE(fs.removeDir("dir1/dir2"));
-	ASSERT_TRUE(fs.removeDir("dir1"));
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.createDir("dir1/dir2/dir3/dir4", true));
+	EXPECT_TRUE(fs.removeDir("dir1/dir2/dir3/dir4"));
+	EXPECT_TRUE(fs.removeDir("dir1/dir2/dir3"));
+	EXPECT_TRUE(fs.removeDir("dir1/dir2"));
+	EXPECT_TRUE(fs.removeDir("dir1"));
 	fs.shutdown();
 }
 
