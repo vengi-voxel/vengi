@@ -157,7 +157,13 @@ public:
 	 */
 	virtual bool update(long dt);
 
+	/**
+	 * Initialize the entity before putting it onto a map or let it tick.
+	 */
 	virtual void init();
+	/**
+	 * Called after the entity was removed from the map.
+	 */
 	virtual void shutdown();
 
 	/**
