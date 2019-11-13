@@ -419,14 +419,15 @@ const std::string Filesystem::writePath(const char* name) const {
 }
 
 bool Filesystem::write(const std::string& filename, const uint8_t* content, size_t length) {
-	const io::File f(_homePath + filename, FileMode::Write);
+	io::File f(_homePath + filename, FileMode::Write);
 	const std::string& path = f.path();
 	Log::debug("Try to write buffer of length %i to %s", (int)length, filename.c_str());
 	if (!path.empty() && !createDir(path, true)) {
 		Log::debug("Could not create directory %s (filename %s)", path.c_str(), filename.c_str());
 		return false;
 	}
-	Log::trace("Reopen file after creating target dirs");
+	f.close();
+	Log::trace("Reopen file %s after creating target dirs", f.name().c_str());
 	const io::File fileInSubdir(f.name(), FileMode::Write);
 	return fileInSubdir.write(content, length) == static_cast<long>(length);
 }
