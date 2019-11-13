@@ -227,7 +227,10 @@ void Filesystem::shutdown() {
 		uv_fs_event_stop(e.second);
 	}
 	if (_loop != nullptr) {
-		uv_loop_close(_loop);
+		uv_run(_loop, UV_RUN_NOWAIT);
+		if (uv_loop_close(_loop) != 0) {
+			Log::error("Failed to close the filesystem event loop");
+		}
 		delete _loop;
 		_loop = nullptr;
 	}
