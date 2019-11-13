@@ -22,6 +22,9 @@ bool Filesystem::init(const std::string& organisation, const std::string& appnam
 	_organisation = organisation;
 	_appname = appname;
 
+	_loop = new uv_loop_t;
+	uv_loop_init(_loop);
+
 	char *path = SDL_GetBasePath();
 	if (path == nullptr) {
 		_basePath = "";
@@ -52,8 +55,6 @@ bool Filesystem::init(const std::string& organisation, const std::string& appnam
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 
-	_loop = new uv_loop_t;
-	uv_loop_init(_loop);
 	return true;
 }
 
