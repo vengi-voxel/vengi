@@ -61,6 +61,9 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 		fmode = "wb";
 	}
 	SDL_RWops *rwops = SDL_RWFromFile(_rawPath.c_str(), fmode);
+	if (rwops == nullptr) {
+		Log::debug("Can't open file %s: %s", _rawPath.c_str(), SDL_GetError());
+	}
 	return rwops;
 }
 
