@@ -73,7 +73,7 @@ bool Filesystem::removeDir(const std::string& dir, bool recursive) const {
 
 	if (!recursive) {
 		uv_fs_t req;
-		return uv_fs_rmdir(nullptr, &req, dir.c_str(), nullptr) == 0;
+		return uv_fs_rmdir(_loop, &req, dir.c_str(), nullptr) == 0;
 	}
 	// TODO: implement me
 	return false;
