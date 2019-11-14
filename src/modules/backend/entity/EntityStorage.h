@@ -33,8 +33,9 @@ private:
 	bool updateEntity(const EntityPtr& entity, long dt);
 public:
 	EntityStorage(const core::EventBusPtr& eventBus);
+	virtual ~EntityStorage();
 
-	void onEvent(const EntityDeleteEvent& event);
+	void onEvent(const EntityDeleteEvent& event) override;
 
 	bool addUser(const UserPtr& user);
 	bool removeUser(EntityId userId);

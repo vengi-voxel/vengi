@@ -15,6 +15,11 @@ EntityStorage::EntityStorage(const core::EventBusPtr& eventBus) :
 	_eventBus->subscribe<EntityDeleteEvent>(*this);
 }
 
+EntityStorage::~EntityStorage() {
+	core_assert(_npcs.empty());
+	core_assert(_users.empty());
+}
+
 bool EntityStorage::addUser(const UserPtr& user) {
 	auto i = _users.insert(std::make_pair(user->id(), user));
 	if (!i.second) {
