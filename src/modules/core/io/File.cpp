@@ -4,6 +4,7 @@
 
 #include "File.h"
 #include "core/Log.h"
+#include "core/String.h"
 #include <SDL.h>
 
 namespace io {
@@ -97,25 +98,11 @@ long File::write(const unsigned char *buf, size_t len) const {
 }
 
 std::string File::path() const {
-	const std::string& name = this->name();
-	const size_t pos = name.rfind('/');
-	if (pos == std::string::npos) {
-		return "";
-	}
-	return name.substr(0, pos);
+	return std::string(core::string::extractPath(name().c_str()));
 }
 
 std::string File::fileName() const {
-	std::string name = this->name();
-	const size_t pathPos = name.rfind('/');
-	if (pathPos != std::string::npos) {
-		name = name.substr(pathPos + 1);
-	}
-	const size_t extPos = name.rfind('.');
-	if (extPos != std::string::npos) {
-		name = name.substr(0, extPos);
-	}
-	return name;
+	return std::string(core::string::extractFilename(name().c_str()));
 }
 
 std::string File::extension() const {
