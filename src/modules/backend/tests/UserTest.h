@@ -75,8 +75,8 @@ protected:
 		return u;
 	}
 
-	void shutdown(const UserPtr& user) {
-		entityStorage->removeUser(user->id());
+	void shutdown(EntityId id) {
+		entityStorage->removeUser(id);
 	}
 };
 
