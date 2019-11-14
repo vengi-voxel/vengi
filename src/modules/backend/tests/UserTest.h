@@ -74,6 +74,10 @@ protected:
 		entityStorage->addUser(u);
 		return u;
 	}
+
+	void shutdown(const UserPtr& user) {
+		entityStorage->removeUser(user->id());
+	}
 };
 
 }

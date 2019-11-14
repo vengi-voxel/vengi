@@ -26,6 +26,7 @@ TEST_F(UserCooldownMgrTest, testTriggerAndAbort) {
 	ASSERT_EQ(cooldown::CooldownTriggerState::SUCCESS, mgr.triggerCooldown(cooldown::Type::INCREASE));
 	ASSERT_EQ(cooldown::CooldownTriggerState::ALREADY_RUNNING, mgr.triggerCooldown(cooldown::Type::INCREASE));
 	ASSERT_TRUE(mgr.cancelCooldown(cooldown::Type::INCREASE));
+	shutdown(user);
 }
 
 }
