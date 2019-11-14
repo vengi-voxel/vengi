@@ -37,10 +37,11 @@ bool EntityStorage::removeUser(EntityId userId) {
 		Log::warn("User with id " PRIEntId " can't get removed. Reason: NotFound", userId);
 		return false;
 	}
-	Log::warn("User with id " PRIEntId " is going to be removed", userId);
+	Log::info("User with id " PRIEntId " is going to be removed", userId);
+	UserPtr user = i->second;
 	_users.erase(i);
-	i->second->shutdown();
-	const uint64_t count = i->second.use_count();
+	user->shutdown();
+	const uint64_t count = user.use_count();
 	if (count != 1) {
 		Log::warn("Someone is still holding a reference to the user object: %" SDL_PRIu64, count);
 	}
@@ -83,9 +84,10 @@ bool EntityStorage::removeNpc(EntityId id) {
 		Log::warn("Could not delete npc with id " PRIEntId, id);
 		return false;
 	}
+	NpcPtr npc = i->second;
 	_npcs.erase(i);
-	const uint64_t count = i->second.use_count();
-	i->second->shutdown();
+	npc->shutdown();
+	const uint64_t count = npc.use_count();
 	if (count != 1) {
 		Log::warn("Someone is still holding a reference to the npc object: %" SDL_PRIu64, count);
 	}
