@@ -15,7 +15,7 @@ set(FILES
 	voxel/models/trees/pine/1.vox
 )
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxelformat)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxelformat voxel)
 
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
