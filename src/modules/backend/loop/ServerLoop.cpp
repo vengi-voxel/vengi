@@ -10,6 +10,7 @@
 #include "core/Log.h"
 #include "core/App.h"
 #include "core/io/Filesystem.h"
+#include "core/Password.h"
 #include "cooldown/CooldownProvider.h"
 #include "attrib/ContainerProvider.h"
 #include "persistence/ConnectionPool.h"
@@ -31,6 +32,7 @@
 #include "voxelformat/VolumeCache.h"
 #include "eventmgr/EventMgr.h"
 #include "stock/StockDataProvider.h"
+#include "util/EMailValidator.h"
 
 namespace backend {
 
@@ -109,6 +111,37 @@ void ServerLoop::construct() {
 			Log::info("Killed npc with id " PRIEntId, id);
 		}
 	}).setHelp("Kill npc with given entity id");
+
+	core::Command::registerCommand("sv_createuser", [this] (const core::CmdArgs& args) {
+		if (args.size() != 3) {
+			Log::info("Usage: sv_createuser <email> <user> <passwd>");
+			return;
+		}
+		const std::string& email = args[0];
+		const std::string& user = args[1];
+		const std::string& passwd = args[2];
+		if (!util::isValidEmail(email)) {
+			Log::error("%s is no valid email address", email.c_str());
+			return;
+		}
+		if (user.empty()) {
+			Log::error("Invalid user name given");
+			return;
+		}
+		if (passwd.empty()) {
+			Log::error("Invalid password name given");
+			return;
+		}
+		db::UserModel model;
+		model.setEmail(email);
+		model.setName(user);
+		model.setPassword(core::pwhash(passwd, "TODO"));
+		if (!_dbHandler->insert(model)) {
+			Log::error("Failed to register user");
+		} else {
+			Log::info("User registered");
+		}
+	});
 
 	_world->construct();
 	_volumeCache->construct();
