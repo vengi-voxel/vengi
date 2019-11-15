@@ -23,6 +23,7 @@ Voxel engine and tools.
 * [Dependencies](docs/Dependencies.md)
 * [Compilation](docs/Compilation.md)
 * [Setup](docs/Setup.md)
+* [GameDesign](docs/GameDesign.md)
 
 # Running the tests
 The tests need a postgres database named `engine` and a user named `engine` with the password.... `engine` (you can modify them via cvars). If no OpenGL or OpenCL context is available, the related tests are skipped.
