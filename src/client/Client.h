@@ -25,7 +25,9 @@
 #include <SDL.h>
 
 // client states
-constexpr uint32_t CLIENT_CONNECTING = 1 << 0;
+constexpr uint32_t CLIENT_DISCONNECTED = 1 << 0;
+constexpr uint32_t CLIENT_CONNECTING   = 1 << 1;
+constexpr uint32_t CLIENT_CONNECTED    = 1 << 2;
 
 class Client: public ui::turbobadger::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxelworld::WorldCreatedEvent> {
@@ -49,7 +51,7 @@ protected:
 	voxelformat::VolumeCachePtr _volumeCache;
 
 	uint64_t _lastMovement = 0l;
-	uint32_t _state = 0u;
+	uint32_t _state = CLIENT_DISCONNECTED;
 
 	float _fieldOfView = 60.0f;
 	float _targetDistance = 28.0f;

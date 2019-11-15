@@ -74,6 +74,7 @@ void Client::onEvent(const network::DisconnectEvent& event) {
 	removeState(CLIENT_CONNECTING);
 	ui::turbobadger::Window* main = new frontend::LoginWindow(this);
 	new frontend::DisconnectWindow(main);
+	_state = CLIENT_DISCONNECTED;
 }
 
 void Client::onEvent(const network::NewConnectionEvent& event) {
@@ -83,11 +84,13 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 	Log::info("Trying to log into the server with %s", email.c_str());
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnect,
 			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(core::pwhash(password, "TODO"))).Union());
+	_state = CLIENT_CONNECTING;
 }
 
 void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
 	Log::info("world created");
 	new frontend::HudWindow(this, frameBufferDimension());
+	_state = CLIENT_CONNECTED;
 }
 
 core::AppState Client::onConstruct() {
@@ -274,7 +277,9 @@ core::AppState Client::onRunning() {
 		Log::info("TODO: %s needs broadcast", var->name().c_str());
 	});
 	_movement.update(_deltaFrameMillis);
-	_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+	if (hasState(CLIENT_CONNECTED)) {
+		_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+	}
 	_camera.update(_deltaFrameMillis);
 	sendMovement();
 	if (state == core::AppState::Running) {
