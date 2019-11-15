@@ -43,12 +43,10 @@ void UserConnectHandler::sendAuthFailed(ENetPeer* peer) {
 
 UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, const std::string& passwd) {
 	db::UserModel model;
-	if (!_dbHandler->select(model, db::DBConditionUserModelEmail(email.c_str()))) {
+	const db::DBConditionUserModelEmail emailCond(email.c_str());
+	const db::DBConditionUserModelPassword passwordCond(passwd.c_str());
+	if (!_dbHandler->select(model, persistence::DBConditionMultiple(true, {&emailCond, &passwordCond}))) {
 		Log::warn(logid, "Could not get user id for email: %s", email.c_str());
-		return UserPtr();
-	}
-	if (passwd != model.password()) {
-		Log::warn("Failed password validation");
 		return UserPtr();
 	}
 	const UserPtr& user = _entityStorage->user(model.id());
