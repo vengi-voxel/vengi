@@ -49,8 +49,11 @@ protected:
 	voxelformat::VolumeCachePtr _volumeCache;
 
 	uint64_t _lastMovement = 0l;
-
 	uint32_t _state = 0u;
+
+	float _fieldOfView = 60.0f;
+	float _targetDistance = 28.0f;
+	glm::vec3 _cameraPosition {1.0f, 0.4f, 1.0f};
 
 	void setState(uint32_t flag);
 	bool hasState(uint32_t flag) const;
@@ -76,7 +79,6 @@ public:
 	void beforeUI() override;
 	void afterRootWidget() override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
-	bool onMouseWheel(int32_t x, int32_t y) override;
 	void onWindowResize(int windowWidth, int windowHeight) override;
 
 	/**

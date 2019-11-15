@@ -148,8 +148,13 @@ core::AppState Client::onInit() {
 	}
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
+	_camera.setFarPlane(10.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);
+	_camera.setFieldOfView(_fieldOfView);
 	_camera.setTargetDistance(_maxTargetDistance->floatVal());
+	_camera.setPosition(_cameraPosition);
+	_camera.setTarget(glm::zero<glm::vec3>());
+	_camera.update(0l);
 	_waiting.init();
 
 	if (!_characterCache->init()) {
@@ -208,7 +213,6 @@ void Client::beforeUI() {
 			_camera.setTarget(pos);
 		}
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
-		_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 		_camera.update(_deltaFrameMillis);
 
 		_worldRenderer.renderWorld(_camera);
@@ -245,13 +249,6 @@ core::AppState Client::onCleanup() {
 	RestClient::disable();
 
 	return state;
-}
-
-bool Client::onMouseWheel(int32_t x, int32_t y) {
-	const bool retVal = Super::onMouseWheel(x, y);
-	const float targetDistance = glm::clamp(_camera.targetDistance() - y, 0.0f, _maxTargetDistance->floatVal());
-	_camera.setTargetDistance(targetDistance);
-	return retVal;
 }
 
 bool Client::onKeyPress(int32_t key, int16_t modifier) {
