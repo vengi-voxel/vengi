@@ -231,25 +231,35 @@ void Client::afterRootWidget() {
 }
 
 core::AppState Client::onCleanup() {
+	Log::info("shutting down the client");
 	eventBus()->unsubscribe<network::NewConnectionEvent>(*this);
 	eventBus()->unsubscribe<network::DisconnectEvent>(*this);
 	eventBus()->unsubscribe<voxelworld::WorldCreatedEvent>(*this);
 
-	Log::info("shutting down the client");
+	Log::info("disconnect");
 	disconnect();
+
+	Log::info("shutting down the client components");
 	_stockDataProvider->shutdown();
 	_voxelFont.shutdown();
+	Log::info("shutting down the character cache");
 	_characterCache->shutdown();
+	Log::info("shutting down the world renderer");
 	_worldRenderer.shutdown();
 	core::AppState state = Super::onCleanup();
+	Log::info("shutting down the world");
 	_world->shutdown();
 	_player = frontend::ClientEntityPtr();
+	Log::info("shutting down the network");
 	_network->shutdown();
 	_waiting.shutdown();
 	_movement.shutdown();
+	Log::info("shutting down the volume cache");
 	_volumeCache->shutdown();
 
 	RestClient::disable();
+
+	Log::info("everything was shut down");
 
 	return state;
 }
