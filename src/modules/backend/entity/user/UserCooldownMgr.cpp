@@ -45,6 +45,8 @@ bool UserCooldownMgr::init() {
 }
 
 void UserCooldownMgr::shutdown() {
+	const EntityId userId = _user->id();
+	Log::info("Shutdown cooldown manager for user " PRIEntId, userId);
 	_persistenceMgr->unregisterSavable(FOURCC, this);
 }
 

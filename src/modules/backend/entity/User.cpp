@@ -46,6 +46,7 @@ void User::init() {
 }
 
 void User::shutdown() {
+	Log::info("Shutdown user");
 	Super::shutdown();
 	_stockMgr.shutdown();
 	_cooldownMgr.shutdown();

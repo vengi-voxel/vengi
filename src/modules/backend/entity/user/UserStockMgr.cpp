@@ -37,6 +37,7 @@ bool UserStockMgr::init() {
 
 void UserStockMgr::shutdown() {
 	const EntityId userId = _user->id();
+	Log::info("Shutdown stock manager for user " PRIEntId, userId);
 	const stock::Inventory& inventory = _stock.inventory();
 	const int maxContainers = inventory.maxContainers();
 	for (int i = 0; i < maxContainers; ++i) {

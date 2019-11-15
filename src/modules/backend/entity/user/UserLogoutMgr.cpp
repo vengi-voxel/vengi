@@ -39,6 +39,7 @@ bool UserLogoutMgr::init() {
 }
 
 void UserLogoutMgr::shutdown() {
+	Log::info("Shutdown logout manager");
 }
 
 }

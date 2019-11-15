@@ -45,6 +45,7 @@ bool UserAttribMgr::init() {
 }
 
 void UserAttribMgr::shutdown() {
+	Log::info("Shutdown attribute manager for user " PRIEntId, _userId);
 	_persistenceMgr->unregisterSavable(FOURCC, this);
 }
 
