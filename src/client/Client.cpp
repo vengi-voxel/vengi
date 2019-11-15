@@ -32,10 +32,10 @@ Client::Client(const metric::MetricPtr& metric, const animation::CharacterCacheP
 		const network::ClientNetworkPtr& network, const voxelworld::WorldMgrPtr& world,
 		const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
-		const io::FilesystemPtr& filesystem) :
+		const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(), _characterCache(characterCache),
 		_network(network), _world(world), _messageSender(messageSender),
-		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider) {
+		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache) {
 	init(ORGANISATION, "client");
 }
 
@@ -93,6 +93,7 @@ void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
 core::AppState Client::onConstruct() {
 	core::AppState state = Super::onConstruct();
 
+	_volumeCache->construct();
 	_movement.construct();
 
 	core::Var::get(cfg::ClientPort, SERVER_PORT);
@@ -158,6 +159,10 @@ core::AppState Client::onInit() {
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
+		return core::AppState::InitFailure;
+	}
+
+	if (!_volumeCache->init()) {
 		return core::AppState::InitFailure;
 	}
 
@@ -235,6 +240,7 @@ core::AppState Client::onCleanup() {
 	_network->shutdown();
 	_waiting.shutdown();
 	_movement.shutdown();
+	_volumeCache->shutdown();
 
 	RestClient::disable();
 
@@ -381,6 +387,6 @@ int main(int argc, char *argv[]) {
 	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	Client app(metric, characterCache, stockDataProvider, network, world, messageSender, eventBus, timeProvider, filesystem);
+	Client app(metric, characterCache, stockDataProvider, network, world, messageSender, eventBus, timeProvider, filesystem, volumeCache);
 	return app.startMainLoop(argc, argv);
 }

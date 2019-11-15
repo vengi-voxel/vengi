@@ -46,6 +46,7 @@ protected:
 	voxel::VoxelFont _voxelFont;
 	ui::turbobadger::WaitingMessage _waiting;
 	stock::StockDataProviderPtr _stockDataProvider;
+	voxelformat::VolumeCachePtr _volumeCache;
 
 	uint64_t _lastMovement = 0l;
 
@@ -65,7 +66,7 @@ public:
 			const stock::StockDataProviderPtr& stockDataProvider,
 			const network::ClientNetworkPtr& network, const voxelworld::WorldMgrPtr& world,
 			const network::ClientMessageSenderPtr& messageSender, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
-			const io::FilesystemPtr& filesystem);
+			const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache);
 	~Client();
 
 	core::AppState onConstruct() override;
