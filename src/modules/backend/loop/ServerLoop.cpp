@@ -141,7 +141,7 @@ void ServerLoop::construct() {
 		} else {
 			Log::info("User registered");
 		}
-	});
+	}).setHelp("Create a new user with a given email, name and password");
 
 	_world->construct();
 	_volumeCache->construct();

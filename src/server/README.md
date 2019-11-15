@@ -2,6 +2,17 @@
 
 ## General
 
+**Hint**: In order to start the server you will need to setup the postgres database. See
+the setup documentation for more details.
+
+After starting the server, you will get entities spawned in the world. You can use e.g. the
+ai remote debugger (`src/tools/rcon`) to inspect the state or use the client to connect.
+
+For the client connect you need a user in the database. You can create users with a server
+command called `sv_createuser`.
+
+To get a list of available commands, you can use cmdlist in the server terminal.
+
 TODO: document server architecture
 
 ## Docker
