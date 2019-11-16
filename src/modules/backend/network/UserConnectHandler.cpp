@@ -52,7 +52,7 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, cons
 	const UserPtr& user = _entityStorage->user(model.id());
 	if (user) {
 		if (user->peer()->address.host == peer->address.host) {
-			Log::debug(logid, "user %i reconnects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
+			Log::debug(logid, "user %i reconnects with host %u on port %i", (int) model.id(), peer->address.host, peer->address.port);
 			user->setPeer(peer);
 			user->reconnect();
 			return user;
@@ -62,7 +62,7 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, cons
 	}
 	static const std::string name = "NONAME";
 	MapPtr map = _mapProvider->map(model.mapid(), true);
-	Log::info(logid, "user %i connects with host %i on port %i", (int) model.id(), peer->address.host, peer->address.port);
+	Log::info(logid, "user %i connects with host %u on port %i", (int) model.id(), peer->address.host, peer->address.port);
 	const UserPtr& u = std::make_shared<User>(peer, model.id(), model.name(), map, _messageSender, _timeProvider,
 			_containerProvider, _cooldownProvider, _dbHandler, _persistenceMgr, _stockDataProvider);
 	u->init();

@@ -255,7 +255,7 @@ public:
 	glm::vec3 vec3Val() const;
 	void setVal(const std::string& value);
 	inline void setVal(const char* value) {
-		if (!strcmp(_history[_currentHistoryPos]._value.c_str(), value)) {
+		if (_currentHistoryPos > 0 && !strcmp(_history[_currentHistoryPos - 1]._value.c_str(), value)) {
 			return;
 		}
 		setVal(std::string(value));

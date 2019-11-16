@@ -74,11 +74,11 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const
 		// arguments have the highest priority
 		if ((flagsMask & CV_FROMCOMMANDLINE) == 0) {
 			const char* envValue = SDL_getenv(name.c_str());
-			if (envValue == nullptr) {
+			if (envValue == nullptr || envValue[0] == '\0') {
 				const std::string& upper = string::toUpper(name);
 				envValue = SDL_getenv(upper.c_str());
 			}
-			if (envValue != nullptr) {
+			if (envValue != nullptr && envValue[0] != '\0') {
 				value = envValue;
 				flagsMask |= CV_FROMENV;
 				flagsMask &= ~CV_FROMFILE;
@@ -100,11 +100,11 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const
 			Log::debug("Look for env var to resolve value of %s", name.c_str());
 			// environment variables have higher priority than config file values
 			const char* envValue = SDL_getenv(name.c_str());
-			if (envValue == nullptr) {
+			if (envValue == nullptr || envValue[0] == '\0') {
 				const std::string& upper = string::toUpper(name);
 				envValue = SDL_getenv(upper.c_str());
 			}
-			if (envValue != nullptr) {
+			if (envValue != nullptr && envValue[0] != '\0') {
 				value = envValue;
 			}
 			v->setVal(value);
@@ -131,6 +131,7 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const
 Var::Var(const std::string& name, const std::string& value, unsigned int flags, const char *help) :
 		_name(name), _help(help), _flags(flags), _dirty(false) {
 	addValueToHistory(value);
+	core_assert(_currentHistoryPos == 0);
 }
 
 Var::~Var() {
@@ -174,7 +175,7 @@ void Var::setVal(const std::string& value) {
 		}
 		if (_history.size() > 16) {
 			std::vector<Value>(_history.begin() + 8, _history.end()).swap(_history);
-			_currentHistoryPos = _history.size();
+			_currentHistoryPos = _history.size() - 1;
 		}
 	}
 }

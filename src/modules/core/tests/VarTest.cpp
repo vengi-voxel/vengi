@@ -12,29 +12,29 @@ class VarTest: public AbstractTest {
 
 TEST_F(VarTest, testChange) {
 	const VarPtr& v = Var::get("test", "nonsense");
-	ASSERT_EQ("nonsense", v->strVal());
+	EXPECT_EQ("nonsense", v->strVal());
 	v->setVal("1");
-	ASSERT_EQ("1", v->strVal());
-	ASSERT_EQ(1, v->intVal());
+	EXPECT_EQ("1", v->strVal());
+	EXPECT_EQ(1, v->intVal());
 }
 
 TEST_F(VarTest, testFlags) {
 	const VarPtr& v = Var::get("test", "nonsense", CV_READONLY);
-	ASSERT_EQ(CV_READONLY, v->getFlags());
+	EXPECT_EQ(CV_READONLY, v->getFlags());
 }
 
 TEST_F(VarTest, testFlagsOverride) {
 	const VarPtr& v = Var::get("test", "nonsense");
 	Var::get("test", "nonsense", CV_READONLY);
-	ASSERT_EQ(CV_READONLY, v->getFlags());
+	EXPECT_EQ(CV_READONLY, v->getFlags());
 }
 
 TEST_F(VarTest, testDirty) {
 	const VarPtr& v = Var::get("test", "nonsense");
 	v->setVal("reasonable");
-	ASSERT_TRUE(v->isDirty());
+	EXPECT_TRUE(v->isDirty());
 	v->markClean();
-	ASSERT_FALSE(v->isDirty());
+	EXPECT_FALSE(v->isDirty());
 }
 
 TEST_F(VarTest, testPriorityWithoutEnvironmentVariable) {
@@ -86,6 +86,7 @@ TEST_F(VarTest, testPriorityFromEnv) {
 	// load appname.vars
 	Var::get("test", "file", CV_FROMFILE);
 	EXPECT_EQ(Var::get("test")->strVal(), "env") << "Expected to still have the value from env";
+	SDL_setenv("test", "", 1);
 }
 
 TEST_F(VarTest, testPriorityEnvOverrideFromCmd) {
@@ -98,6 +99,27 @@ TEST_F(VarTest, testPriorityEnvOverrideFromCmd) {
 	// onConstruct argument parsing
 	Var::get("test", "commandline", CV_FROMCOMMANDLINE);
 	EXPECT_EQ(Var::get("test")->strVal(), "commandline") << "Commandline should have the highest priority";
+	SDL_setenv("test", "", 1);
+}
+
+TEST_F(VarTest, testHistory) {
+	const VarPtr& v = Var::get("test", "nonsense");
+	EXPECT_EQ("nonsense", v->strVal());
+	v->setVal("reasonable");
+	EXPECT_EQ(2u, v->getHistorySize());
+	EXPECT_EQ(1u, v->getHistoryIndex());
+	EXPECT_EQ("reasonable", v->strVal());
+	v->useHistory(0);
+	EXPECT_EQ(0u, v->getHistoryIndex());
+	EXPECT_EQ("nonsense", v->strVal());
+}
+
+TEST_F(VarTest, testHistoryCleanup) {
+	const VarPtr& v = Var::get("test", "nonsense");
+	for (int i = 0; i < 120; ++i) {
+		v->setVal(core::string::format("reasonable%i", i));
+	}
+	EXPECT_EQ("reasonable119", v->strVal());
 }
 
 }
