@@ -34,11 +34,13 @@ bool Character::initSettings(const std::string& luaString) {
 		_settings.copyFrom(settings);
 		return true;
 	}
+	Log::warn("Failed to load the character settings");
 	return false;
 }
 
 bool Character::initMesh(const CharacterCachePtr& cache) {
 	if (!cache->getCharacterModel(_settings, _vertices, _indices)) {
+		Log::warn("Failed to load the character model");
 		return false;
 	}
 	_toolVerticesOffset = _vertices.size();

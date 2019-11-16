@@ -17,6 +17,7 @@ std::string luaFilename(const char *character) {
 
 bool loadCharacterSettings(const std::string& luaString, CharacterSettings& settings) {
 	if (luaString.empty()) {
+		Log::warn("empty character settings can't get loaded");
 		return false;
 	}
 	// also change the voxel editor lua script saving

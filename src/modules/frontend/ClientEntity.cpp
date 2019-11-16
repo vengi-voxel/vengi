@@ -9,14 +9,32 @@
 
 namespace frontend {
 
-ClientEntity::ClientEntity(const stock::StockDataProviderPtr& provider, const animation::CharacterCachePtr& characterCache, ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation) :
-		_id(id), _type(type), _position(pos), _orientation(orientation), _stock(provider), _characterCache(characterCache) {
+static inline std::string getCharacterLua(network::EntityType type) {
+	const std::string& entityTypeStr = core::string::toLower(network::EnumNameEntityType(type));
 	// TODO: get rid of the hardcoded prefix here
-	const std::string& entityTypeStr = "human-male-" + core::string::toLower(network::EnumNameEntityType(type));
-	const io::FilePtr& file = io::filesystem()->open(animation::luaFilename(entityTypeStr.c_str()));
-	const std::string& lua = file->load();
-	_character.init(_characterCache, lua);
-	_stock.init();
+	const std::string& luaFilename = "human-male-" + entityTypeStr;
+	const std::string& luaPath = animation::luaFilename(luaFilename.c_str());
+	const std::string& lua = io::filesystem()->load(luaPath);
+	if (lua.empty()) {
+		// provide a fallback
+		Log::warn("Could not load character settings from %s", luaPath.c_str());
+		return getCharacterLua(network::EntityType::KNIGHT);
+	}
+	return lua;
+}
+
+ClientEntity::ClientEntity(const stock::StockDataProviderPtr& provider,
+		const animation::CharacterCachePtr& characterCache, ClientEntityId id,
+		network::EntityType type, const glm::vec3& pos, float orientation) :
+		_id(id), _type(type), _position(pos), _orientation(orientation),
+		_stock(provider), _characterCache(characterCache) {
+	const std::string& lua = getCharacterLua(type);
+	if (!_character.init(_characterCache, lua)) {
+		Log::error("Failed to init the character");
+	}
+	if (!_stock.init()) {
+		Log::error("Failed to init the stock");
+	}
 	_vertices = _vbo.create();
 	_indices = _vbo.create(nullptr, 0, video::BufferType::IndexBuffer);
 }
@@ -25,6 +43,8 @@ ClientEntity::~ClientEntity() {
 	_character.shutdown();
 	_stock.shutdown();
 	_vbo.shutdown();
+	_vertices = -1;
+	_indices = -1;
 }
 
 void ClientEntity::update(uint64_t dt) {
