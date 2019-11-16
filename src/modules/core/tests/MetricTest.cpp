@@ -79,48 +79,48 @@ protected:
 };
 
 TEST_F(MetricTest, testCounterIncreaseOne) {
-	ASSERT_EQ(count("test1", 1, Flavor::Etsy), PREFIX ".test1:1|c");
+	EXPECT_EQ(count("test1", 1, Flavor::Etsy), PREFIX ".test1:1|c");
 }
 
 TEST_F(MetricTest, testCounterIncreaseTwo) {
-	ASSERT_EQ(count("test2", 2, Flavor::Etsy), PREFIX ".test2:2|c");
+	EXPECT_EQ(count("test2", 2, Flavor::Etsy), PREFIX ".test2:2|c");
 }
 
 TEST_F(MetricTest, testGaugeValueOne) {
-	ASSERT_EQ(gauge("test1", 1, Flavor::Etsy), PREFIX ".test1:1|g");
+	EXPECT_EQ(gauge("test1", 1, Flavor::Etsy), PREFIX ".test1:1|g");
 }
 
 TEST_F(MetricTest, testGaugeValueTwo) {
-	ASSERT_EQ(gauge("test2", 2, Flavor::Etsy), PREFIX ".test2:2|g");
+	EXPECT_EQ(gauge("test2", 2, Flavor::Etsy), PREFIX ".test2:2|g");
 }
 
 TEST_F(MetricTest, testTimingValueOne) {
-	ASSERT_EQ(timing("test1", 1, Flavor::Etsy), PREFIX ".test1:1|ms");
+	EXPECT_EQ(timing("test1", 1, Flavor::Etsy), PREFIX ".test1:1|ms");
 }
 
 TEST_F(MetricTest, testTimingValueTwo) {
-	ASSERT_EQ(timing("test2", 2, Flavor::Etsy), PREFIX ".test2:2|ms");
+	EXPECT_EQ(timing("test2", 2, Flavor::Etsy), PREFIX ".test2:2|ms");
 }
 
 TEST_F(MetricTest, testTimingSingleTag) {
 	const TagMap map {{"key1", "value1"}};
-	ASSERT_EQ(timing("test", 1, Flavor::Etsy, map), PREFIX ".test:1|ms")
+	EXPECT_EQ(timing("test", 1, Flavor::Etsy, map), PREFIX ".test:1|ms")
 		<< "Expected to get no tags on etsy flavor";
-	ASSERT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX ".test,key1=value1:1|ms")
+	EXPECT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX ".test,key1=value1:1|ms")
 		<< "Expected to get tags after key in telegraf flavor";
-	ASSERT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#key1:value1")
+	EXPECT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#key1:value1")
 		<< "Expected to get tags after type in datadog flavor";
-	ASSERT_EQ(timing("testkey", 1, Flavor::Influx, map), PREFIX "_testkey,type=ms,key1=value1 value=1")
+	EXPECT_EQ(timing("testkey", 1, Flavor::Influx, map), PREFIX "_testkey,type=ms,key1=value1 value=1")
 		<< "Unexpected influx format";
 }
 
 TEST_F(MetricTest, testTimingMultipleTags) {
 	const TagMap map {{"key1", "value1"}, {"key2", "value2"}};
-	ASSERT_EQ(timing("test", 1, Flavor::Etsy, map), PREFIX ".test:1|ms")
+	EXPECT_EQ(timing("test", 1, Flavor::Etsy, map), PREFIX ".test:1|ms")
 		<< "Expected to get no tags on etsy flavor";
-	ASSERT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX ".test,key1=value1,key2=value2:1|ms")
+	EXPECT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX ".test,key1=value1,key2=value2:1|ms")
 		<< "Expected to get tags after key in telegraf flavor";
-	ASSERT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#key1:value1,key2:value2")
+	EXPECT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#key1:value1,key2:value2")
 		<< "Expected to get tags after type in datadog flavor";
 }
 
