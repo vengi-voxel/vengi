@@ -209,16 +209,14 @@ void Client::handleLogin() {
 void Client::beforeUI() {
 	Super::beforeUI();
 
-	if (_world->created()) {
-		if (_player) {
-			const glm::vec3& pos = _player->position();
-			_camera.setTarget(pos);
-		}
-		//_camera.setFarPlane(_worldRenderer.getViewDistance());
+	if (_player) {
+		const glm::vec3& pos = _player->position();
+		_camera.setTarget(pos);
+		_camera.setFarPlane(_worldRenderer.getViewDistance());
 		_camera.update(_deltaFrameMillis);
-
-		_worldRenderer.renderWorld(_camera);
 		_worldRenderer.extractMeshes(_camera);
+		_worldRenderer.onRunning(_camera, _deltaFrameMillis);
+		_worldRenderer.renderWorld(_camera);
 	}
 }
 
@@ -293,9 +291,6 @@ core::AppState Client::onRunning() {
 	sendMovement();
 	if (state == core::AppState::Running) {
 		_network->update();
-		if (_world->created()) {
-			_worldRenderer.onRunning(_camera, _deltaFrameMillis);
-		}
 	}
 
 	return state;
