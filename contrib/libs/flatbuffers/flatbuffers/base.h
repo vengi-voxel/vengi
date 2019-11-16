@@ -99,7 +99,7 @@
 #if !defined(__clang__) && \
     defined(__GNUC__) && \
     (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__ < 40600)
-  // Backwards compatability for g++ 4.4, and 4.5 which don't have the nullptr
+  // Backwards compatibility for g++ 4.4, and 4.5 which don't have the nullptr
   // and constexpr keywords. Note the __clang__ check is needed, because clang
   // presents itself as an older GNUC compiler.
   #ifndef nullptr_t
@@ -242,7 +242,7 @@ namespace flatbuffers {
 // Suppress Undefined Behavior Sanitizer (recoverable only). Usage:
 // - __supress_ubsan__("undefined")
 // - __supress_ubsan__("signed-integer-overflow")
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >=7))
   #define __supress_ubsan__(type) __attribute__((no_sanitize(type)))
 #elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 409)
   #define __supress_ubsan__(type) __attribute__((no_sanitize_undefined))

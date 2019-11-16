@@ -21,13 +21,16 @@ set(COMPILER_SRCS
 	compiler/src/compiler/go_generator.h
 	compiler/src/compiler/java_generator.cc
 	compiler/src/compiler/java_generator.h
+	compiler/src/compiler/python_generator.cc
+	compiler/src/compiler/python_generator.h
 	compiler/code_generators.cpp
 	compiler/flatc.cpp
 	compiler/flatc_main.cpp
 	compiler/idl_gen_cpp.cpp
 	compiler/idl_gen_dart.cpp
 	compiler/idl_gen_fbs.cpp
-	compiler/idl_gen_general.cpp
+	compiler/idl_gen_csharp.cpp
+	compiler/idl_gen_java.cpp
 	compiler/idl_gen_go.cpp
 	compiler/idl_gen_grpc.cpp
 	compiler/idl_gen_js_ts.cpp
