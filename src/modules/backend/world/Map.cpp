@@ -42,7 +42,7 @@ Map::Map(MapId mapId,
 		_mapId(mapId), _mapIdStr(std::to_string(mapId)),
 		_eventBus(eventBus), _filesystem(filesystem), _persistenceMgr(persistenceMgr),
 		_volumeCache(volumeCache), _attackMgr(this),
-		_quadTree(math::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree) {
+		_quadTree(math::RectFloat::getMaxRect(), 100.0f) {
 	_poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
 	_spawnMgr = std::make_shared<backend::SpawnMgr>(this, filesystem, entityStorage, messageSender,
 			timeProvider, loader, containerProvider, cooldownProvider);
@@ -63,7 +63,7 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 	const math::RectFloat& rect = entity->viewRect();
 	// TODO: maybe move into the entity instance to reduce memory allocations.
 	math::QuadTree<QuadTreeNode, float>::Contents contents;
-	_quadTreeCache.query(rect, contents);
+	_quadTree.query(rect, contents);
 	EntitySet set;
 	set.reserve(contents.size());
 	for (const QuadTreeNode& node : contents) {

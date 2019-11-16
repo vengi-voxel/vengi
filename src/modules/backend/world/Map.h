@@ -58,7 +58,6 @@ private:
 	};
 
 	math::QuadTree<QuadTreeNode, float> _quadTree;
-	math::QuadTreeCache<QuadTreeNode, float> _quadTreeCache;
 
 	/**
 	 * @return @c false if the entity should be removed from the server.
