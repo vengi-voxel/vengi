@@ -1,10 +1,10 @@
-require "ai.blacksmith"
-require "ai.knight"
-require "ai.rabbit"
-require "ai.skeleton"
-require "ai.wolf"
-require "ai.worker"
-require "ai.zombie"
+require "ai.animal-rabbit"
+require "ai.animal-wolf"
+require "ai.human-male-blacksmith"
+require "ai.human-male-knight"
+require "ai.human-male-worker"
+require "ai.undead-male-skeleton"
+require "ai.undead-male-zombie"
 
 function init ()
 	registerBlacksmith()

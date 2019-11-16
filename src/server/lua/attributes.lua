@@ -1,10 +1,10 @@
-require "attrib.blacksmith"
-require "attrib.knight"
-require "attrib.rabbit"
-require "attrib.skeleton"
-require "attrib.wolf"
-require "attrib.worker"
-require "attrib.zombie"
+require "attrib.animal-rabbit"
+require "attrib.animal-wolf"
+require "attrib.human-male-blacksmith"
+require "attrib.human-male-knight"
+require "attrib.human-male-worker"
+require "attrib.undead-male-skeleton"
+require "attrib.undead-male-zombie"
 
 function init()
 	registerBlacksmith()

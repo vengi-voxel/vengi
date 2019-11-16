@@ -4,25 +4,25 @@ set(SRCS
 )
 # These lua scripts are matching up with the entity type enum
 set(LUA_BEHAVIOURTREES
-	ai/blacksmith.lua
-	ai/knight.lua
-	ai/rabbit.lua
+	ai/animal-rabbit.lua
+	ai/animal-wolf.lua
+	ai/human-male-blacksmith.lua
+	ai/human-male-knight.lua
+	ai/human-male-worker.lua
+	ai/undead-male-skeleton.lua
+	ai/undead-male-zombie.lua
 	ai/shared.lua
-	ai/skeleton.lua
-	ai/wolf.lua
-	ai/worker.lua
-	ai/zombie.lua
 	behaviourtrees.lua
 )
 set(LUA_ATTRIBUTES
-	attrib/blacksmith.lua
-	attrib/knight.lua
-	attrib/rabbit.lua
+	attrib/animal-rabbit.lua
+	attrib/animal-wolf.lua
+	attrib/human-male-blacksmith.lua
+	attrib/human-male-knight.lua
+	attrib/human-male-worker.lua
+	attrib/undead-male-skeleton.lua
+	attrib/undead-male-zombie.lua
 	attrib/shared.lua
-	attrib/skeleton.lua
-	attrib/wolf.lua
-	attrib/worker.lua
-	attrib/zombie.lua
 	attributes.lua
 )
 set(LUA_EVENTS

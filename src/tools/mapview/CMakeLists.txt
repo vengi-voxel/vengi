@@ -9,7 +9,7 @@ set(FILES
 	mapview/mapview-keybindings.cfg
 )
 set(LUA_ATTRIBUTES
-	attrib/worker.lua
+	attrib/human-male-worker.lua
 	attributes.lua
 )
 set(LUA_SRCS ${LUA_ATTRIBUTES})
