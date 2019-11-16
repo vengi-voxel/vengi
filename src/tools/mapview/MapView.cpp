@@ -131,7 +131,7 @@ core::AppState MapView::onInit() {
 	attrib::ContainerProvider containerProvider;
 	const std::string& attribLua = filesystem()->load("attributes.lua");
 	if (!containerProvider.init(attribLua)) {
-		Log::error("Failed to init attributes");
+		Log::error("Failed to init attributes: %s", containerProvider.error().c_str());
 		return core::AppState::InitFailure;
 	}
 	const std::string& entityTypeStr = network::EnumNameEntityType(_entity->type());
