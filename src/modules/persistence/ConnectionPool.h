@@ -6,8 +6,10 @@
 
 #include "Connection.h"
 #include "core/Var.h"
+#include "core/Trace.h"
 #include "core/IComponent.h"
 #include <queue>
+#include <mutex>
 
 namespace persistence {
 
@@ -16,6 +18,7 @@ namespace persistence {
  */
 class ConnectionPool : public core::IComponent {
 	friend class Connection;
+	friend class ScopedConnection;
 protected:
 	int _min = -1;
 	int _max = -1;
@@ -24,6 +27,9 @@ protected:
 	core::VarPtr _dbHost;
 	core::VarPtr _dbUser;
 	core::VarPtr _dbPw;
+	core::VarPtr _minConnections;
+	core::VarPtr _maxConnections;
+	mutable core_trace_mutex(std::mutex, _mutex);
 
 	std::queue<Connection*> _connections;
 

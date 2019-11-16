@@ -13,14 +13,19 @@ private:
 	using Super = AbstractDatabaseTest;
 protected:
 	bool _supported = true;
+	ConnectionPool _connectionPool;
 public:
 	void SetUp() override {
 		Super::SetUp();
-		ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
-		_supported = pool.init();
+		_supported = _connectionPool.init();
 		if (!_supported) {
 			Log::warn("ConnectionPoolTest is skipped");
 		}
+	}
+
+	void TearDown() override {
+		Super::TearDown();
+		_connectionPool.shutdown();
 	}
 };
 
@@ -28,11 +33,10 @@ TEST_F(ConnectionPoolTest, testConnectionPoolGetConnection) {
 	if (!_supported) {
 		return;
 	}
-	ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
-	ASSERT_TRUE(pool.init());
-	Connection* c = pool.connection();
+	ASSERT_TRUE(_connectionPool.init());
+	Connection* c = _connectionPool.connection();
 	ASSERT_NE(nullptr, c);
-	pool.shutdown();
+	_connectionPool.shutdown();
 }
 
 }

@@ -3,8 +3,6 @@
  */
 
 #include "BindParam.h"
-#include "ScopedConnection.h"
-#include "ConnectionPool.h"
 #include "Connection.h"
 #include "Model.h"
 #include "FieldType.h"

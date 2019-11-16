@@ -41,8 +41,6 @@ public:
 	bool connect();
 
 public:
-	void close();
-
 	ConnectionType* connection() const;
 };
 

@@ -4,7 +4,6 @@
 
 #include "AbstractDatabaseTest.h"
 #include "TestModel.h"
-#include "persistence/ConnectionPool.h"
 #include "persistence/DBHandler.h"
 #include "engine-config.h"
 

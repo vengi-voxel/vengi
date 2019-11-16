@@ -3,8 +3,6 @@
  */
 
 #include "Model.h"
-#include "ConnectionPool.h"
-#include "ScopedConnection.h"
 #include "ConstraintType.h"
 #include "core/Log.h"
 #include "core/String.h"

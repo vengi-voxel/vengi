@@ -3,9 +3,7 @@
  */
 
 #include "DBHandler.h"
-#include "core/Singleton.h"
 #include "core/Assert.h"
-#include "ConnectionPool.h"
 #include "core/Log.h"
 #include "postgres/PQSymbol.h"
 
@@ -27,7 +25,7 @@ bool DBHandler::init() {
 		Log::error("Database driver initialization failed.");
 		return false;
 	}
-	if (!core::Singleton<ConnectionPool>::getInstance().init()) {
+	if (!_connectionPool.init()) {
 		Log::error(logid, "Failed to init the connection pool");
 		return false;
 	}
@@ -37,12 +35,12 @@ bool DBHandler::init() {
 
 void DBHandler::shutdown() {
 	_initialized = false;
-	core::Singleton<ConnectionPool>::getInstance().shutdown();
+	_connectionPool.shutdown();
 	postgresShutdown();
 }
 
 Connection* DBHandler::connection() const {
-	return core::Singleton<ConnectionPool>::getInstance().connection();
+	return _connectionPool.connection();
 }
 
 bool DBHandler::update(Model& model, const DBCondition& condition) const {
@@ -182,7 +180,7 @@ bool DBHandler::exec(const std::string& query) const {
 }
 
 State DBHandler::execInternal(const std::string& query) const {
-	ScopedConnection scoped(connection());
+	ScopedConnection scoped(_connectionPool, connection());
 	if (!scoped) {
 		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());
 		return State();
@@ -198,7 +196,7 @@ State DBHandler::execInternal(const std::string& query) const {
 
 State DBHandler::execInternalWithCondition(const std::string& query, BindParam& params, int conditionOffset, const DBCondition& condition) const {
 	Log::debug(logid, "Execute query '%s'", query.c_str());
-	ScopedConnection scoped(connection());
+	ScopedConnection scoped(_connectionPool, connection());
 	if (!scoped) {
 		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
 		return State();
@@ -225,7 +223,7 @@ State DBHandler::execInternalWithCondition(const std::string& query, BindParam& 
 }
 
 State DBHandler::execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const {
-	ScopedConnection scoped(connection());
+	ScopedConnection scoped(_connectionPool, connection());
 	if (!scoped) {
 		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());
 		return State();
@@ -244,7 +242,7 @@ State DBHandler::execInternalWithParameters(const std::string& query, Model& mod
 }
 
 State DBHandler::execInternalWithParameters(const std::string& query, const BindParam& param) const {
-	ScopedConnection scoped(connection());
+	ScopedConnection scoped(_connectionPool, connection());
 	if (!scoped) {
 		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());
 		return State();

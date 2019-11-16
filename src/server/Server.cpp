@@ -52,7 +52,7 @@ core::AppState Server::onConstruct() {
 	core::Var::get(cfg::ServerSeed, "1");
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	core::Var::get(cfg::DatabaseMinConnections, "2");
-	core::Var::get(cfg::DatabaseMaxConnections, "10");
+	core::Var::get(cfg::DatabaseMaxConnections, "100");
 
 	_serverLoop->construct();
 

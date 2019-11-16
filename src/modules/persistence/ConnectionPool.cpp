@@ -18,8 +18,12 @@ ConnectionPool::~ConnectionPool() {
 }
 
 bool ConnectionPool::init() {
-	_min = core::Var::getSafe(cfg::DatabaseMinConnections)->intVal();
-	_max = core::Var::getSafe(cfg::DatabaseMaxConnections)->intVal();
+	std::unique_lock lock(_mutex);
+	_minConnections = core::Var::getSafe(cfg::DatabaseMinConnections);
+	_maxConnections = core::Var::getSafe(cfg::DatabaseMaxConnections);
+
+	_min = _minConnections->intVal();
+	_max = _maxConnections->intVal();
 
 	if (_min > _max) {
 		Log::error("The min connection amount must be smaller or equal to the max connection amount");
@@ -45,6 +49,7 @@ bool ConnectionPool::init() {
 }
 
 void ConnectionPool::shutdown() {
+	std::unique_lock lock(_mutex);
 	while (!_connections.empty()) {
 		Connection* c = _connections.front();
 		c->disconnect();
@@ -83,13 +88,29 @@ void ConnectionPool::giveBack(Connection* c) {
 	if (c == nullptr) {
 		return;
 	}
+	std::unique_lock lock(_mutex);
 	_connections.push(c);
 }
 
 Connection* ConnectionPool::connection() {
+	std::unique_lock lock(_mutex);
 	if (_connections.empty()) {
+		if (_minConnections->isDirty()) {
+			const int newMin = _minConnections->intVal();
+			if (newMin > 0 && newMin <= _max) {
+				_min = newMin;
+			}
+			_minConnections->markClean();
+		}
+		if (_maxConnections->isDirty()) {
+			const int newMax = _maxConnections->intVal();
+			if (newMax > 0 && newMax >= _min) {
+				_max = newMax;
+			}
+			_maxConnections->markClean();
+		}
 		if (_connectionAmount >= _max) {
-			Log::warn("Could not acquire pooled connection, max limit hit");
+			Log::warn("Could not acquire pooled connection, max limit (%i) hit", _max);
 			return nullptr;
 		}
 		Connection* newC = addConnection();

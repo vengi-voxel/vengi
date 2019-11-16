@@ -8,12 +8,15 @@
 
 namespace persistence {
 
+class ConnectionPool;
+
 class ScopedConnection {
 private:
+	ConnectionPool& _connectionPool;
 	Connection* _c;
 public:
-	ScopedConnection(Connection* c) :
-			_c(c) {
+	ScopedConnection(ConnectionPool& connectionPool, Connection* c) :
+			_connectionPool(connectionPool), _c(c) {
 	}
 
 	inline operator Connection*() {

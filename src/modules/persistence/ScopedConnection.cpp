@@ -4,11 +4,12 @@
 
 #include "ScopedConnection.h"
 #include "Connection.h"
+#include "ConnectionPool.h"
 
 namespace persistence {
 
 ScopedConnection::~ScopedConnection() {
-	_c->close();
+	_connectionPool.giveBack(_c);
 }
 
 }

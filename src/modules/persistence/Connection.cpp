@@ -3,9 +3,7 @@
  */
 
 #include "Connection.h"
-#include "ConnectionPool.h"
 #include "core/Log.h"
-#include "core/Singleton.h"
 #include "postgres/PQSymbol.h"
 
 namespace persistence {
@@ -128,10 +126,6 @@ void Connection::disconnect() {
 		_connection = nullptr;
 	}
 	_preparedStatements.clear();
-}
-
-void Connection::close() {
-	core::Singleton<ConnectionPool>::getInstance().giveBack(this);
 }
 
 }

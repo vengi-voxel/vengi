@@ -10,6 +10,7 @@
 #pragma once
 
 #include "PersistenceModels.h"
+#include "ConnectionPool.h"
 #include "Model.h"
 #include "MassQuery.h"
 #include "core/String.h"
@@ -41,6 +42,8 @@ private:
 	State execInternalWithCondition(const std::string& query, BindParam& params, int conditionOffset, const DBCondition& condition) const;
 	State execInternalWithParameters(const std::string& query, const BindParam& param) const;
 
+	mutable ConnectionPool _connectionPool;
+
 	Connection* connection() const;
 
 	bool insertMetadata(const Model& model) const;
@@ -49,7 +52,7 @@ private:
 	template<class FUNC, class MODEL>
 	bool select(const std::string& query, int conditionAmount, MODEL& model, const DBCondition& condition, FUNC&& func) const {
 		Log::debug(logid, "Execute query '%s'", query.c_str());
-		ScopedConnection scoped(connection());
+		ScopedConnection scoped(_connectionPool, connection());
 		if (!scoped) {
 			Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
 			return false;
