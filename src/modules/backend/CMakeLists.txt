@@ -38,6 +38,7 @@ set(SRCS
 	entity/ai/filter/SelectVisible.cpp entity/ai/filter/SelectVisible.h
 	entity/ai/filter/SelectIncreasePartner.cpp entity/ai/filter/SelectIncreasePartner.h
 	entity/ai/filter/SelectEntitiesOfTypes.h entity/ai/filter/SelectEntitiesOfTypes.cpp
+	entity/ai/movement/WanderAroundHome.h entity/ai/movement/WanderAroundHome.cpp
 
 	entity/user/UserAttribMgr.h entity/user/UserAttribMgr.cpp
 	entity/user/UserStockMgr.h entity/user/UserStockMgr.cpp

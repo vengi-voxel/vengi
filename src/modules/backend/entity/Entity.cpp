@@ -226,6 +226,7 @@ math::RectFloat Entity::rect() const {
 math::RectFloat Entity::viewRect() const {
 	const glm::vec3 p = pos();
 	const float viewDistance = current(attrib::Type::VIEWDISTANCE);
+	core_assert_msg(viewDistance > 0.0f, "Expected to get a view distance > 0.0f, but got %f (EntityType: %i)", viewDistance, (int)entityType());
 	return math::RectFloat(p.x - viewDistance, p.z - viewDistance, p.x + viewDistance, p.z + viewDistance);
 }
 

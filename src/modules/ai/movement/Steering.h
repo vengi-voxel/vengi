@@ -18,9 +18,9 @@ namespace movement {
 
 #define STEERING_FACTORY(SteeringName) \
 public: \
-	class Factory: public ISteeringFactory { \
+	class Factory: public ::ai::ISteeringFactory { \
 	public: \
-		SteeringPtr create (const SteeringFactoryContext *ctx) const override { \
+		::ai::SteeringPtr create (const ::ai::SteeringFactoryContext *ctx) const override { \
 			return std::make_shared<SteeringName>(ctx->parameters); \
 		} \
 	}; \
@@ -31,8 +31,8 @@ public: \
 
 #define STEERING_FACTORY_SINGLETON \
 public: \
-	class Factory: public ISteeringFactory { \
-		SteeringPtr create (const SteeringFactoryContext */*ctx*/) const { \
+	class Factory: public ::ai::ISteeringFactory { \
+		::ai::SteeringPtr create (const ::ai::SteeringFactoryContext */*ctx*/) const { \
 			return get(); \
 		} \
 	}; \

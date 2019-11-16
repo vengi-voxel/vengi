@@ -20,6 +20,8 @@
 #include "filter/SelectEntitiesOfTypes.h"
 #include "filter/SelectIncreasePartner.h"
 
+#include "movement/WanderAroundHome.h"
+
 namespace backend {
 
 void AIRegistry::init() {
@@ -38,6 +40,8 @@ void AIRegistry::init() {
 	registerFilterFactory("SelectVisible", SelectVisible::getFactory());
 	registerFilterFactory("SelectIncreasePartner", SelectIncreasePartner::getFactory());
 	registerFilterFactory("SelectEntitiesOfTypes", SelectEntitiesOfTypes::getFactory());
+
+	registerSteeringFactory("WanderAroundHome", WanderAroundHome::getFactory());
 }
 
 }
