@@ -67,6 +67,13 @@
 #ifndef AT_HWCAP
 #define AT_HWCAP 16
 #endif
+#ifndef AT_PLATFORM
+#define AT_PLATFORM 15
+#endif
+/* Prevent compilation error when including elf.h would also try to define AT_* as an enum */
+#ifndef AT_NULL
+#define AT_NULL 0
+#endif
 #ifndef HWCAP_NEON
 #define HWCAP_NEON (1 << 12)
 #endif
@@ -96,6 +103,7 @@
 #define CPU_HAS_AVX2    (1 << 10)
 #define CPU_HAS_NEON    (1 << 11)
 #define CPU_HAS_AVX512F (1 << 12)
+#define CPU_HAS_ARM_SIMD (1 << 13)
 
 #if SDL_ALTIVEC_BLITTERS && HAVE_SETJMP && !__MACOSX__ && !__OpenBSD__
 /* This is the brute force way of detecting instruction sets...
@@ -325,7 +333,56 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-#if defined(__LINUX__) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
+#if !defined(__ARM_ARCH)
+static int
+CPU_haveARMSIMD(void)
+{
+	return 0;
+}
+
+#elif defined(__LINUX__)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <elf.h>
+
+static int
+CPU_haveARMSIMD(void)
+{
+    int arm_simd = 0;
+    int fd;
+
+    fd = open("/proc/self/auxv", O_RDONLY);
+    if (fd >= 0)
+    {
+        Elf32_auxv_t aux;
+        while (read(fd, &aux, sizeof aux) == sizeof aux)
+        {
+            if (aux.a_type == AT_PLATFORM)
+            {
+                const char *plat = (const char *) aux.a_un.a_val;
+                arm_simd = strncmp(plat, "v6l", 3) == 0 ||
+                           strncmp(plat, "v7l", 3) == 0;
+            }
+        }
+        close(fd);
+    }
+    return arm_simd;
+}
+
+#else
+static int
+CPU_haveARMSIMD(void)
+{
+#if !defined(__ANDROID__) && !defined(__IPHONEOS__) && !defined(__TVOS__)
+#warning SDL_HasARMSIMD is not implemented for this ARM platform, defaulting to TRUE
+#endif
+    return 1;
+}
+#endif
+
+#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
 static int
 readProcAuxvForNeon(void)
 {
@@ -668,6 +725,10 @@ SDL_GetCPUFeatures(void)
             SDL_CPUFeatures |= CPU_HAS_AVX512F;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 64);
         }
+        if (CPU_haveARMSIMD()) {
+            SDL_CPUFeatures |= CPU_HAS_ARM_SIMD;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
+        }
         if (CPU_haveNEON()) {
             SDL_CPUFeatures |= CPU_HAS_NEON;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
@@ -747,6 +808,12 @@ SDL_bool
 SDL_HasAVX512F(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX512F);
+}
+
+SDL_bool
+SDL_HasARMSIMD(void)
+{
+    return CPU_FEATURE_AVAILABLE(CPU_HAS_ARM_SIMD);
 }
 
 SDL_bool
@@ -870,6 +937,7 @@ main()
     printf("AVX: %d\n", SDL_HasAVX());
     printf("AVX2: %d\n", SDL_HasAVX2());
     printf("AVX-512F: %d\n", SDL_HasAVX512F());
+    printf("ARM SIMD: %d\n", SDL_HasARMSIMD());
     printf("NEON: %d\n", SDL_HasNEON());
     printf("RAM: %d MB\n", SDL_GetSystemRAM());
     return 0;

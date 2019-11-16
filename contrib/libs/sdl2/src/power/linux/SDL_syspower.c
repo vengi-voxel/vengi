@@ -99,7 +99,7 @@ make_proc_acpi_key_val(char **_ptr, char **_key, char **_val)
 
     *(ptr++) = '\0';  /* terminate the key. */
 
-    while ((*ptr == ' ') && (*ptr != '\0')) {
+    while (*ptr == ' ') {
         ptr++;  /* skip whitespace. */
     }
 
@@ -289,7 +289,7 @@ static SDL_bool
 next_string(char **_ptr, char **_str)
 {
     char *ptr = *_ptr;
-    char *str = *_str;
+    char *str;
 
     while (*ptr == ' ') {       /* skip any spaces... */
         ptr++;

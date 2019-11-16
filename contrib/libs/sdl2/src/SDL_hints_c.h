@@ -18,24 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "./SDL_internal.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-/* Handle the BeApp specific portions of the application */
+/* This file defines useful function for working with SDL hints */
 
-/* Initialize the Be Application, if it's not already started */
-extern int SDL_InitBeApp(void);
+#ifndef SDL_hints_c_h_
+#define SDL_hints_c_h_
 
-/* Quit the Be Application, if there's nothing left to do */
-extern void SDL_QuitBeApp(void);
+extern SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value);
 
-/* Be Application Signature*/
-extern const char *signature;
+#endif /* SDL_hints_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
-
-#ifdef __cplusplus
-}
-#endif
