@@ -36,7 +36,8 @@ private:
 	int32_t _vertices = -1;
 	int32_t _indices = -1;
 public:
-	ClientEntity(const stock::StockDataProviderPtr& provider, const animation::CharacterCachePtr& characterCache, ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation);
+	ClientEntity(const stock::StockDataProviderPtr& provider, const animation::CharacterCachePtr& characterCache,
+			ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation);
 	~ClientEntity();
 
 	void update(uint64_t dt);

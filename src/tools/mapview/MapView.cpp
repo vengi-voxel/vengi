@@ -18,6 +18,8 @@
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 #include "voxelgenerator/Spiral.h"
+#include "attrib/Attributes.h"
+#include "attrib/ContainerProvider.h"
 
 MapView::MapView(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
@@ -123,8 +125,24 @@ core::AppState MapView::onInit() {
 	const glm::vec3 pos(0.0f, (float)groundPosY, 0.0f);
 	Log::info("Spawn entity at %s", glm::to_string(pos).c_str());
 
-	_entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, 1, network::EntityType::HUMAN_MALE_WORKER, pos, 0.0f);
-	_entity->attrib().setCurrent(attrib::Type::SPEED, 20.0);
+	const network::EntityType entityType = network::EntityType::HUMAN_MALE_WORKER;
+	const frontend::ClientEntityId entityId = (frontend::ClientEntityId)1;
+	_entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, entityId, entityType, pos, 0.0f);
+	attrib::ContainerProvider containerProvider;
+	const std::string& attribLua = filesystem()->load("attributes.lua");
+	if (!containerProvider.init(attribLua)) {
+		Log::error("Failed to init attributes");
+		return core::AppState::InitFailure;
+	}
+	const std::string& entityTypeStr = network::EnumNameEntityType(_entity->type());
+	const attrib::ContainerPtr& attribContainer = containerProvider.container(entityTypeStr);
+	if (!attribContainer) {
+		Log::error("Failed to load attributes for %s", entityTypeStr.c_str());
+		return core::AppState::InitFailure;
+	}
+	attrib::Attributes attributes;
+	attributes.add(attribContainer);
+	_entity->attrib().setCurrent(attrib::Type::SPEED, attributes.current(attrib::Type::SPEED));
 	if (!_worldRenderer.addEntity(_entity)) {
 		Log::error("Failed to create entity");
 		return core::AppState::InitFailure;

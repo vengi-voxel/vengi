@@ -8,5 +8,11 @@ set(FILES
 	shared/biomes.lua
 	mapview/mapview-keybindings.cfg
 )
-engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES imgui voxelrender)
+set(LUA_ATTRIBUTES
+	attrib/worker.lua
+	attributes.lua
+)
+set(LUA_SRCS ${LUA_ATTRIBUTES})
+
+engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} WINDOWED)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES imgui voxelrender attrib)
