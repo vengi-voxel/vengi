@@ -50,6 +50,14 @@ void RandomColorTexture::unbind() {
 }
 
 void RandomColorTexture::shutdown() {
+	while (!_noiseFuture.empty()) {
+		NoiseFuture& future = _noiseFuture.back();
+		if (future.valid()) {
+			NoiseGenerationTask c = future.get();
+			delete[] c.buffer;
+			_noiseFuture.pop_back();
+		}
+	}
 	if (_colorTexture) {
 		_colorTexture->shutdown();
 		_colorTexture = video::TexturePtr();
