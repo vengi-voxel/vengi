@@ -196,7 +196,7 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
       command.sendUnsequenced.dataLength = ENET_HOST_TO_NET_16 (packet -> dataLength);
    }
    else 
-   if (packet -> flags & ENET_PACKET_FLAG_RELIABLE || channel -> outgoingUnreliableSequenceNumber >= 0xFFFF)
+   if ((packet -> flags & ENET_PACKET_FLAG_RELIABLE) || channel -> outgoingUnreliableSequenceNumber >= 0xFFFF)
    {
       command.header.command = ENET_PROTOCOL_COMMAND_SEND_RELIABLE | ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE;
       command.sendReliable.dataLength = ENET_HOST_TO_NET_16 (packet -> dataLength);

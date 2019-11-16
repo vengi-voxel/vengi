@@ -24,6 +24,7 @@ public:
 
 	inline bool sendMessage(ENetPacket* packet, int channel = 0) {
 		if (_peer == nullptr) {
+			enet_packet_destroy(packet);
 			return false;
 		}
 		if (packet == nullptr) {

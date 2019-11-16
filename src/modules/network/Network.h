@@ -54,7 +54,11 @@ public:
 };
 
 inline bool Network::sendMessage(ENetPeer* peer, ENetPacket* packet, int channel) {
-	return enet_peer_send(peer, channel, packet) == 0;
+	if (enet_peer_send(peer, channel, packet) == 0) {
+		return true;
+	}
+	enet_packet_destroy(packet);
+	return false;
 }
 
 inline const ProtocolHandlerRegistryPtr& Network::registry() {
