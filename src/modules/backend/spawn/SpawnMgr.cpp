@@ -38,11 +38,13 @@ bool SpawnMgr::init() {
 }
 
 void SpawnMgr::spawnCharacters() {
-	spawnEntity(network::EntityType::BEGIN_CHARACTERS, network::EntityType::MAX_CHARACTERS, 40);
+	// TODO: let this number come from the map lua script
+	spawnEntity(network::EntityType::BEGIN_CHARACTERS, network::EntityType::MAX_CHARACTERS, 1);
 }
 
 void SpawnMgr::spawnAnimals() {
-	spawnEntity(network::EntityType::BEGIN_ANIMAL, network::EntityType::MAX_ANIMAL, 40);
+	// TODO: let this number come from the map lua script
+	spawnEntity(network::EntityType::BEGIN_ANIMAL, network::EntityType::MAX_ANIMAL, 1);
 }
 
 void SpawnMgr::spawnEntity(network::EntityType start, network::EntityType end, int maxAmount) {
