@@ -20,10 +20,10 @@ matrix:
       osx_image: xcode10
       script:
         - mkdir build && cd build
-        - cmake .. -DDISABLE_UNITY=On
+        - cmake ..
         - cmake --build .
     - os: windows
       script:
         - mkdir build && cd build
-        - cmake .. -DDISABLE_UNITY=On
+        - cmake ..
         - cmake --build .
