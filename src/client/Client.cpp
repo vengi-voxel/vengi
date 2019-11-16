@@ -106,7 +106,7 @@ core::AppState Client::onConstruct() {
 	core::Var::get(cfg::ClientPassword, "");
 	core::Var::get(cfg::HTTPBaseURL, BASE_URL);
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
-	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "250.0");
+	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "40.0");
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	_worldRenderer.construct();
 
@@ -196,7 +196,6 @@ void Client::handleLogin() {
 	if (autoLoginVar->boolVal()) {
 		const int port = core::Var::getSafe(cfg::ClientPort)->intVal();
 		const std::string& host = core::Var::getSafe(cfg::ClientHost)->strVal();
-		Log::info("Trying to connect to server %s:%i", host.c_str(), port);
 		if (!connect(port, host)) {
 			autoLoginVar->setVal(false);
 		}
@@ -215,7 +214,7 @@ void Client::beforeUI() {
 			const glm::vec3& pos = _player->position();
 			_camera.setTarget(pos);
 		}
-		_camera.setFarPlane(_worldRenderer.getViewDistance());
+		//_camera.setFarPlane(_worldRenderer.getViewDistance());
 		_camera.update(_deltaFrameMillis);
 
 		_worldRenderer.renderWorld(_camera);
@@ -362,6 +361,8 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	removeState(CLIENT_CONNECTING);
 	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);
 	_camera.setTarget(pos);
+	_camera.setTargetDistance(_maxTargetDistance->floatVal());
+	_camera.setPosition(pos + _cameraPosition);
 	const network::EntityType type = network::EntityType::PLAYER;
 	_player = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, id, type, pos, orientation);
 	_worldRenderer.addEntity(_player);
@@ -373,16 +374,19 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 }
 
 bool Client::connect(uint16_t port, const std::string& hostname) {
-	setState(CLIENT_CONNECTING);
+	if (hostname.empty()) {
+		Log::error("No hostname given");
+		return false;
+	}
 	ENetPeer* peer = _network->connect(port, hostname);
-	if (!peer) {
-		removeState(CLIENT_CONNECTING);
+	if (peer == nullptr) {
 		Log::error("Failed to connect to server %s:%i", hostname.c_str(), port);
 		return false;
 	}
 
+	setState(CLIENT_CONNECTING);
 	peer->data = this;
-	Log::info("Connected to server %s:%i", hostname.c_str(), port);
+	Log::info("Connecting to server %s:%i", hostname.c_str(), port);
 	_waiting.setTextId("stateconnecting");
 	return true;
 }

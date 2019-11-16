@@ -29,7 +29,6 @@ private:
 
 		const core::VarPtr& port = core::Var::getSafe(cfg::ClientPort);
 		const core::VarPtr& host = core::Var::getSafe(cfg::ClientHost);
-		Log::info("Trying to connect to server %s:%i", host->strVal().c_str(), port->intVal());
 		if (!_client->connect(port->intVal(), host->strVal())) {
 			Log::info("Failed to connect to server %s:%i", host->strVal().c_str(), port->intVal());
 			popup(tr("error"), tr("failed_to_connect"));
@@ -51,6 +50,10 @@ public:
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
 		if (ev.special_key == tb::TB_KEY_ENTER) {
+			// switch focus to finish any cvar editing step
+			if (TBWidget* login = getWidgetByID("login")) {
+				login->setFocus(tb::WIDGET_FOCUS_REASON_UNKNOWN);
+			}
 			doLogin();
 			return true;
 		}
