@@ -87,7 +87,7 @@ bool UserCooldownMgr::getDirtyModels(Models& models) {
 		core_assert_msg(index <= std::enum_value(cooldown::Type::MAX),
 				"invalid index given: %i", index);
 		db::CooldownModel& model = _dirtyModels[index];
-		model.setStarttime(c->startMillis());
+		model.setStarttime(uint64_t(c->startMillis() / 1000l));
 		models.push_back(&model);
 	}
 	return true;
