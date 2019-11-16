@@ -12,7 +12,7 @@ macro(check_lua_files TARGET)
 	foreach(_file ${files})
 		string(REGEX REPLACE "[/]" "_" targetname ${_file})
 		get_filename_component(filename ${_file} NAME)
-		set(_outfile ${filename}.out)
+		set(_outfile ${targetname}.out)
 		add_custom_command(
 			OUTPUT ${_outfile}
 			COMMAND ${LUAC_EXECUTABLE} -o ${_outfile} ${CMAKE_CURRENT_SOURCE_DIR}/lua/${_file}

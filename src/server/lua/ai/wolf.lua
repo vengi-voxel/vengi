@@ -3,7 +3,7 @@ require "ai.shared"
 function wolfStayAlive (parentnode)
 end
 
-function wolf ()
+function registerWolf ()
 	local name = "ANIMAL_WOLF"
 	local rootNode = AI.createTree(name):createRoot("PrioritySelector", name)
 	wolfStayAlive(rootNode)

@@ -128,7 +128,6 @@ bool Map::init() {
 		Log::error("Failed to init the spawn manager");
 		return false;
 	}
-
 	return _persistenceMgr->registerSavable(FOURCC, this);
 }
 

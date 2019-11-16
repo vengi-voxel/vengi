@@ -1,9 +1,17 @@
-require "ai.wolf"
-require "ai.rabbit"
 require "ai.blacksmith"
+require "ai.knight"
+require "ai.rabbit"
+require "ai.skeleton"
+require "ai.wolf"
+require "ai.worker"
+require "ai.zombie"
 
 function init ()
-	wolf()
-	rabbit()
-	blacksmith()
+	registerBlacksmith()
+	registerKnight()
+	registerRabbit()
+	registerSkeleton()
+	registerWolf()
+	registerWorker()
+	registerZombie()
 end

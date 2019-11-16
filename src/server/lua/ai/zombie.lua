@@ -1,7 +1,7 @@
 require "ai.shared"
 
-function registerBlacksmith ()
-	local name = "HUMAN_MALE_BLACKSMITH"
+function registerZombie ()
+	local name = "UNDEAD_MALE_DEFAULT"
 	local rootNode = AI.createTree(name):createRoot("PrioritySelector", name)
 	idle(rootNode)
 end

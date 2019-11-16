@@ -18,7 +18,7 @@ static inline std::string getCharacterLua(network::EntityType type) {
 	if (lua.empty()) {
 		// provide a fallback
 		Log::warn("Could not load character settings from %s", luaPath.c_str());
-		return getCharacterLua(network::EntityType::KNIGHT);
+		return getCharacterLua(network::EntityType::HUMAN_MALE_KNIGHT);
 	}
 	return lua;
 }

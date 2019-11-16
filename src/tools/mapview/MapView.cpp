@@ -123,7 +123,7 @@ core::AppState MapView::onInit() {
 	const glm::vec3 pos(0.0f, (float)groundPosY, 0.0f);
 	Log::info("Spawn entity at %s", glm::to_string(pos).c_str());
 
-	_entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, 1, network::EntityType::WORKER, pos, 0.0f);
+	_entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, 1, network::EntityType::HUMAN_MALE_WORKER, pos, 0.0f);
 	_entity->attrib().setCurrent(attrib::Type::SPEED, 20.0);
 	if (!_worldRenderer.addEntity(_entity)) {
 		Log::error("Failed to create entity");
