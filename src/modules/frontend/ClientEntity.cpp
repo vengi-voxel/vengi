@@ -10,9 +10,8 @@
 namespace frontend {
 
 static inline std::string getCharacterLua(network::EntityType type) {
-	const std::string& entityTypeStr = core::string::toLower(network::EnumNameEntityType(type));
-	// TODO: get rid of the hardcoded prefix here
-	const std::string& luaFilename = "human-male-" + entityTypeStr;
+	const std::string& entityTypeStr = network::EnumNameEntityType(type);
+	const std::string& luaFilename = core::string::toLower(entityTypeStr);
 	const std::string& luaPath = animation::luaFilename(luaFilename.c_str());
 	const std::string& lua = io::filesystem()->load(luaPath);
 	if (lua.empty()) {
