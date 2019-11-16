@@ -35,8 +35,9 @@ bool UserCooldownMgr::init() {
 	}
 
 	// initialize the models
-	_dirtyModels.resize(int(cooldown::Type::MAX));
-	for (std::underlying_type<cooldown::Type>::type i = 0; i < int(cooldown::Type::MAX); ++i) {
+	const int maxDirtyModels = std::enum_value(cooldown::Type::MAX);
+	_dirtyModels.resize(maxDirtyModels + 1);
+	for (int i = 0; i <= maxDirtyModels; ++i) {
 		db::CooldownModel& model = _dirtyModels[i];
 		model.setCooldownid(i);
 		model.setUserid(_user->id());
