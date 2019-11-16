@@ -108,6 +108,8 @@ inline std::string replaceAll(const std::string& str, const std::string& searchS
 	return replaceAll(str, searchStr, replaceStr.data(), replaceStr.size());
 }
 
+extern void replaceAllChars(std::string& str, char in, char out);
+
 inline std::string replaceAll(const std::string& str, const std::string& searchStr, const std::string& replaceStr) {
 	return replaceAll(str, searchStr, replaceStr.data(), replaceStr.size());
 }

@@ -30,6 +30,14 @@ std::string format(const char *msg, ...) {
 	return std::string(text);
 }
 
+void replaceAllChars(std::string& str, char in, char out) {
+	for (std::string::iterator i = str.begin(); i != str.end(); ++i) {
+		if (*i == in) {
+			*i = out;
+		}
+	}
+}
+
 std::string replaceAll(const std::string& str, const std::string& searchStr, const char* replaceStr, size_t replaceStrSize) {
 	if (str.empty()) {
 		return str;

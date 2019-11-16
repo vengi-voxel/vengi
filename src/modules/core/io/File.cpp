@@ -10,11 +10,7 @@
 namespace io {
 
 void normalizePath(std::string& str) {
-	for (std::string::iterator i = str.begin(); i != str.end(); ++i) {
-		if (*i == '\\') {
-			*i = '/';
-		}
-	}
+	core::string::replaceAllChars(str, '\\', '/');
 }
 
 File::File(const std::string& rawPath, FileMode mode) :

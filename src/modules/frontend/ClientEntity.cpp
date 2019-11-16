@@ -11,7 +11,8 @@ namespace frontend {
 
 static inline std::string getCharacterLua(network::EntityType type) {
 	const std::string& entityTypeStr = network::EnumNameEntityType(type);
-	const std::string& luaFilename = core::string::toLower(entityTypeStr);
+	std::string luaFilename = core::string::toLower(entityTypeStr);
+	core::string::replaceAllChars(luaFilename, '_', '-');
 	const std::string& luaPath = animation::luaFilename(luaFilename.c_str());
 	const std::string& lua = io::filesystem()->load(luaPath);
 	if (lua.empty() && type != network::EntityType::HUMAN_MALE_KNIGHT) {
