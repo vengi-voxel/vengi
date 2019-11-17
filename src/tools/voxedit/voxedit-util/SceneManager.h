@@ -201,9 +201,16 @@ public:
 	~SceneManager();
 
 	void resetLastTrace();
+	/**
+	 * @return The full region of all layers of the whole scene
+	 */
 	voxel::Region region() const;
 
 	const render::Gizmo& gizmo() const;
+
+	void setGizmoPosition();
+
+	void setMousePos(int x, int y);
 
 	void setActiveCamera(video::Camera* camera);
 
@@ -259,6 +266,15 @@ public:
 	 */
 	bool loadPalette(const std::string& paletteName);
 	/**
+	 * @brief Fill the volume with the given noise type
+	 */
+	void noise(int octaves, float persistence, float lacunarity, float gain, voxelgenerator::noise::NoiseType type);
+	/**
+	 * @brief Create a new procgen tree
+	 */
+	void createTree(voxelgenerator::TreeContext ctx);
+
+	/**
 	 * @brief Save the volume data to the given file
 	 * @param[in] file The file to store the volume data in. The file extension defines the volume format.
 	 * @param[in] autosave @c true if this is an auto save action, @c false otherwise. This has e.g. an
@@ -281,7 +297,14 @@ public:
 
 	bool newScene(bool force, const std::string& name, const voxel::Region& region);
 
+	/**
+	 * @return @c true if the scene was modified and not saved yet
+	 */
 	bool dirty() const;
+
+	/**
+	 * @return @c true if the scene is completely empty
+	 */
 	bool empty() const;
 
 	static const uint8_t RenderScene = 1u << 0u;
@@ -297,9 +320,6 @@ public:
 	render::GridRenderer& gridRenderer();
 	bool setGridResolution(int resolution);
 
-	void noise(int octaves, float persistence, float lacunarity, float gain, voxelgenerator::noise::NoiseType type);
-	void createTree(voxelgenerator::TreeContext ctx);
-
 	/**
 	 * @brief Shift the whole volume by the given voxel amount
 	 */
@@ -309,11 +329,7 @@ public:
 	 */
 	void move(int x, int y, int z);
 
-	void setMousePos(int x, int y);
-
 	bool trace(bool force = false);
-
-	void setGizmoPosition();
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);
