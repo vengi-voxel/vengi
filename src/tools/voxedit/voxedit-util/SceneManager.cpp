@@ -324,6 +324,17 @@ void SceneManager::setMousePos(int x, int y) {
 	_traceViaMouse = true;
 }
 
+void SceneManager::handleAnimationViewUpdate(int layerId) {
+	if (!_animationUpdate && _animationLayerDirtyState == -1) {
+		// the first layer
+		_animationLayerDirtyState = layerId;
+	} else if (_animationUpdate) {
+		// a second layer was modified (maybe a group action)
+		_animationLayerDirtyState = -1;
+	}
+	_animationUpdate = true;
+}
+
 void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo) {
 	Log::debug("Modified layer %i, undo state: %s", layerId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
@@ -347,14 +358,7 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 	}
 	_dirty = true;
 	_needAutoSave = true;
-	if (!_animationUpdate && _animationLayerDirtyState == -1) {
-		// the first layer
-		_animationLayerDirtyState = layerId;
-	} else if (_animationUpdate) {
-		// a second layer was modified (maybe a group action)
-		_animationLayerDirtyState = -1;
-	}
-	_animationUpdate = true;
+	handleAnimationViewUpdate(layerId);
 	resetLastTrace();
 }
 
@@ -585,13 +589,11 @@ bool SceneManager::newScene(bool force, const std::string& name, const voxel::Re
 		_layerMgr.deleteLayer(idx, true);
 	}
 	core_assert_always(_layerMgr.validLayers() == 0);
-	_mementoHandler.clearStates();
 	core_assert_always(_layerMgr.addLayer(name.c_str(), true, new voxel::RawVolume(region)) != -1);
-	setReferencePosition(region.getCentre());
-	_layerMgr.setActiveLayer(0);
-	modified(_layerMgr.activeLayer(), voxel::Region::InvalidRegion);
-	_dirty = false;
 	core_assert_always(_layerMgr.validLayers() == 1);
+	setReferencePosition(region.getCentre());
+	_layerMgr.findNewActiveLayer();
+	resetSceneState();
 	return true;
 }
 
@@ -1834,6 +1836,7 @@ void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolum
 	_volumeRenderer.hide(layerId, !layer.visible);
 	_needAutoSave = true;
 	_dirty = true;
+	handleAnimationViewUpdate(layerId);
 }
 
 void SceneManager::onLayerDeleted(int layerId, const Layer& layer) {

@@ -145,6 +145,7 @@ private:
 	 * are left, scene is no longer dirty and so on.
 	 */
 	void resetSceneState();
+	void handleAnimationViewUpdate(int layerId);
 	bool setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
 	bool setNewVolumes(const voxel::VoxelVolumes& volumes);
 	void autosave();
