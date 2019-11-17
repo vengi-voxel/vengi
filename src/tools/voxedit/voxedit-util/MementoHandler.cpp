@@ -189,6 +189,7 @@ void MementoHandler::markLayerAdded(int layer, const std::string& name, const vo
 
 void MementoHandler::markUndo(int layer, const std::string& name, const voxel::RawVolume* volume, MementoType type, const voxel::Region& region) {
 	if (_locked > 0) {
+		Log::debug("Don't add undo state - we are currently in locked mode");
 		return;
 	}
 	if (!_states.empty()) {

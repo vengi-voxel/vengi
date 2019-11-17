@@ -325,7 +325,7 @@ void SceneManager::setMousePos(int x, int y) {
 }
 
 void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo) {
-	Log::debug("Modified layer %i", layerId);
+	Log::debug("Modified layer %i, undo state: %s", layerId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
 		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId), MementoType::Modification, modifiedRegion);
@@ -1500,6 +1500,16 @@ bool SceneManager::loadCharacter(const std::string& luaFile) {
 	}
 	_animationUpdate = true;
 	_animationLayerDirtyState = -1;
+	_mementoHandler.clearStates();
+	const int layerId = _layerMgr.activeLayer();
+	// push the initial state of the current layer to the memento handler to
+	// be able to undo your next step
+	Log::debug("New volume for layer %i", layerId);
+	_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
+	_dirty = false;
+	_result = voxel::PickResult();
+	setCursorPosition(cursorPosition(), true);
+	resetLastTrace();
 
 	return true;
 }
