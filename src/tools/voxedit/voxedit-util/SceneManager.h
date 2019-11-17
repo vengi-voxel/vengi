@@ -140,6 +140,11 @@ private:
 	voxel::Voxel _hitCursorVoxel;
 
 	voxel::RawVolume* modelVolume();
+	/**
+	 * @brief Assumes that the current active scene is a fresh scene, no undo states
+	 * are left, scene is no longer dirty and so on.
+	 */
+	void resetSceneState();
 	bool setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
 	bool setNewVolumes(const voxel::VoxelVolumes& volumes);
 	void autosave();

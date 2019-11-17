@@ -509,6 +509,22 @@ bool SceneManager::merge(int layerId1, int layerId2) {
 	return true;
 }
 
+void SceneManager::resetSceneState() {
+	_animationLayerDirtyState = -1;
+	_animationIdx = 0;
+	_animationUpdate = false;
+	_mementoHandler.clearStates();
+	const int layerId = _layerMgr.activeLayer();
+	// push the initial state of the current layer to the memento handler to
+	// be able to undo your next step
+	Log::debug("New volume for layer %i", layerId);
+	_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
+	_dirty = false;
+	_result = voxel::PickResult();
+	setCursorPosition(cursorPosition(), true);
+	resetLastTrace();
+}
+
 bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	const int volumeCnt = (int)volumes.size();
 	if (volumeCnt == 0) {
@@ -534,17 +550,8 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
 		return newScene(true, "", region);
 	}
-	_mementoHandler.clearStates();
 	_layerMgr.findNewActiveLayer();
-	const int layerId = _layerMgr.activeLayer();
-	// push the initial state of the current layer to the memento handler to
-	// be able to undo your next step
-	Log::debug("New volume for layer %i", layerId);
-	_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
-	_dirty = false;
-	_result = voxel::PickResult();
-	setCursorPosition(cursorPosition(), true);
-	resetLastTrace();
+	resetSceneState();
 	return true;
 }
 
@@ -1498,19 +1505,8 @@ bool SceneManager::loadCharacter(const std::string& luaFile) {
 	if (!_character.initSettings(lua)) {
 		Log::warn("Failed to initialize the character settings");
 	}
+	resetSceneState();
 	_animationUpdate = true;
-	_animationLayerDirtyState = -1;
-	_mementoHandler.clearStates();
-	const int layerId = _layerMgr.activeLayer();
-	// push the initial state of the current layer to the memento handler to
-	// be able to undo your next step
-	Log::debug("New volume for layer %i", layerId);
-	_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
-	_dirty = false;
-	_result = voxel::PickResult();
-	setCursorPosition(cursorPosition(), true);
-	resetLastTrace();
-
 	return true;
 }
 
