@@ -19,6 +19,7 @@ $out float v_ambientocclusion;
 
 #include "_fog.vert"
 #include "_shadowmap.vert"
+#include "_ambientocclusion.vert"
 
 void main(void) {
 	v_pos = u_model * u_bones[a_bone_id] * vec4(a_pos, 1.0);
@@ -26,7 +27,6 @@ void main(void) {
 	vec3 materialColor = u_materialcolor[materialColorIndex % MATERIALCOLORS].rgb;
 	v_color = vec4(materialColor, 1.0);
 
-	const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 	v_ambientocclusion = aovalues[a_ambient_occlusion];
 
 #if cl_shadowmap == 1

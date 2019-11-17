@@ -14,6 +14,7 @@ $out vec4 v_color;
 $out float v_ambientocclusion;
 
 #include "_shadowmap.vert"
+#include "_ambientocclusion.vert"
 
 void main(void) {
 	uint a_ao = a_info[0];
@@ -25,7 +26,6 @@ void main(void) {
 	vec3 materialColor = u_materialcolor[materialColorIndex % MATERIALCOLORS].rgb;
 	v_color = vec4(materialColor, 1.0);
 
-	const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 	v_ambientocclusion = aovalues[a_ao];
 
 #if cl_shadowmap == 1
