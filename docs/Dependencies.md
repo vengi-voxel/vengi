@@ -24,7 +24,7 @@ the higher priority.
 ## Debian
     apt-get install libglm-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-all \
       libpq-dev libenet-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers \
-      wayland-protocols pkg-config uuid-dev libbullet-dev
+      wayland-protocols pkg-config uuid-dev libbullet-dev libsdl2-mixer-dev
 
 If you want to run the database server locally, you have to install the postgres server package:
 
