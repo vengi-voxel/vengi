@@ -25,14 +25,14 @@ set(SRCS_SHADERS
 set(FILES
 	voxel/models/characters/dwarf/male/heads/blacksmith.vox
 	voxel/models/characters/dwarf/male/shoulders/blacksmith.vox
-	voxel/models/characters/dwarf/male/feets/blacksmith.vox
+	voxel/models/characters/dwarf/male/feet/blacksmith.vox
 	voxel/models/characters/dwarf/male/hands/blacksmith.vox
 	voxel/models/characters/dwarf/male/pants/blacksmith.vox
 	voxel/models/characters/dwarf/male/belts/blacksmith.vox
 	voxel/models/characters/dwarf/male/chests/blacksmith.vox
 
 	voxel/models/characters/human/male/heads/worker.vox
-	voxel/models/characters/human/male/feets/worker.vox
+	voxel/models/characters/human/male/feet/worker.vox
 	voxel/models/characters/human/male/hands/worker.vox
 	voxel/models/characters/human/male/pants/worker.vox
 	voxel/models/characters/human/male/belts/worker.vox
@@ -40,7 +40,7 @@ set(FILES
 
 	voxel/models/characters/human/male/heads/blacksmith.vox
 	voxel/models/characters/human/male/shoulders/blacksmith.vox
-	voxel/models/characters/human/male/feets/blacksmith.vox
+	voxel/models/characters/human/male/feet/blacksmith.vox
 	voxel/models/characters/human/male/hands/blacksmith.vox
 	voxel/models/characters/human/male/pants/blacksmith.vox
 	voxel/models/characters/human/male/belts/blacksmith.vox
@@ -48,7 +48,7 @@ set(FILES
 
 	voxel/models/characters/human/male/heads/knight.vox
 	voxel/models/characters/human/male/shoulders/knight.vox
-	voxel/models/characters/human/male/feets/knight.vox
+	voxel/models/characters/human/male/feet/knight.vox
 	voxel/models/characters/human/male/hands/knight.vox
 	voxel/models/characters/human/male/pants/knight.vox
 	voxel/models/characters/human/male/belts/knight.vox
@@ -56,14 +56,14 @@ set(FILES
 
 	voxel/models/characters/human/male/heads/shepherd.vox
 	voxel/models/characters/human/male/shoulders/shepherd.vox
-	voxel/models/characters/human/male/feets/shepherd.vox
+	voxel/models/characters/human/male/feet/shepherd.vox
 	voxel/models/characters/human/male/hands/shepherd.vox
 	voxel/models/characters/human/male/pants/shepherd.vox
 	voxel/models/characters/human/male/belts/shepherd.vox
 	voxel/models/characters/human/male/chests/shepherd.vox
 
 	voxel/models/characters/undead/male/heads/default.vox
-	voxel/models/characters/undead/male/feets/default.vox
+	voxel/models/characters/undead/male/feet/default.vox
 	voxel/models/characters/undead/male/hands/default.vox
 	voxel/models/characters/undead/male/pants/default.vox
 	voxel/models/characters/undead/male/belts/default.vox
@@ -71,7 +71,7 @@ set(FILES
 
 	voxel/models/characters/undead/male/shoulders/skeleton.vox
 	voxel/models/characters/undead/male/heads/skeleton.vox
-	voxel/models/characters/undead/male/feets/skeleton.vox
+	voxel/models/characters/undead/male/feet/skeleton.vox
 	voxel/models/characters/undead/male/hands/skeleton.vox
 	voxel/models/characters/undead/male/pants/skeleton.vox
 	voxel/models/characters/undead/male/belts/skeleton.vox

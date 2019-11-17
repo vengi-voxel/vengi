@@ -6,6 +6,6 @@ function init()
   chr.setChest("chests/shepherd")
   chr.setPants("pants/shepherd")
   chr.setHand("hands/shepherd")
-  chr.setFoot("feets/shepherd")
+  chr.setFoot("feet/shepherd")
   chr.setShoulder("shoulders/shepherd")
 end

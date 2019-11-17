@@ -16,7 +16,7 @@ function init()
   chr.setChest("chests/test")
   chr.setPants("pants/test")
   chr.setHand("hands/test")
-  chr.setFoot("feets/test")
+  chr.setFoot("feet/test")
   chr.setScaler(42.0)
   chr.setHeadScale(1337.0)
   chr.setNeckHeight(815.0)
@@ -52,7 +52,7 @@ TEST_F(CharacterSettingsTest, testLUA) {
 	EXPECT_EQ("chests/test", settings.chest);
 	EXPECT_EQ("pants/test", settings.pants);
 	EXPECT_EQ("hands/test", settings.hand);
-	EXPECT_EQ("feets/test", settings.foot);
+	EXPECT_EQ("feet/test", settings.foot);
 
 	EXPECT_FLOAT_EQ(  42.0f,  settings.skeletonAttr.scaler);
 	EXPECT_FLOAT_EQ(1337.0f,  settings.skeletonAttr.headScale);

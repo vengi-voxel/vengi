@@ -17,7 +17,7 @@ TEST_F(QBFormatTest, testLoad) {
 	VolumePrintThreshold = 40;
 	ASSERT_NE(nullptr, volume) << "Could not load qb file";
 
-	// feets
+	// feet
 	ASSERT_NE(Empty, volume->voxel(18, 0, 1)) << *volume;
 	ASSERT_NE(Empty, volume->voxel(18, 0, 2)) << *volume;
 	ASSERT_EQ(Empty, volume->voxel(18, 0, 3)) << *volume;

@@ -6,7 +6,7 @@ function init()
   chr.setChest("chests/knight")
   chr.setPants("pants/knight")
   chr.setHand("hands/knight")
-  chr.setFoot("feets/knight")
+  chr.setFoot("feet/knight")
   chr.setShoulder("shoulders/knight")
 
   chr.setNeckHeight(0.6)
