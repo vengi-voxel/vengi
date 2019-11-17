@@ -34,76 +34,30 @@ struct CharacterSettings : public core::NonCopyable {
 	std::array<const std::string*, std::enum_value(CharacterMeshType::Max)> paths;
 	char basePath[64] {};
 
-	CharacterSettings() {
-		for (size_t i = 0; i < paths.size(); ++i) {
-			paths[i] = nullptr;
-		}
-	}
+	CharacterSettings();
 
-	inline std::string fullPath(CharacterMeshType type) const {
-		return core::string::format("%s/%s.vox", basePath, path(type));
-	}
+	std::string fullPath(CharacterMeshType type) const;
 
-	const char* path(CharacterMeshType type) const {
-		if (paths[std::enum_value(type)] == nullptr) {
-			return "";
-		}
-		return paths[std::enum_value(type)]->c_str();
-	}
+	/**
+	 * @brief Get the original path the settings were loaded with
+	 */
+	const char* path(CharacterMeshType type) const;
+	/**
+	 * @brief Get the default path for the mesh type, but with a new name
+	 */
+	std::string path(CharacterMeshType type, const char *name) const;
 
-	void copyFrom(const CharacterSettings& other) {
-		skeletonAttr = other.skeletonAttr;
-		race = other.race;
-		gender = other.gender;
-		chest = other.chest;
-		belt = other.belt;
-		pants = other.pants;
-		hand = other.hand;
-		foot = other.foot;
-		head = other.head;
-		shoulder = other.shoulder;
-		for (size_t i = 0; i < paths.size(); ++i) {
-			paths[i] = nullptr;
-		}
-		memcpy(basePath, other.basePath, sizeof(basePath));
-		update();
-	}
+	void copyFrom(const CharacterSettings& other);
 
-	void setRace(const char *str) {
-		race = str;
-	}
-
-	void setGender(const char *str) {
-		gender = str;
-	}
-
-	void setChest(const char *str) {
-		chest = str;
-	}
-
-	void setBelt(const char *str) {
-		belt = str;
-	}
-
-	void setPants(const char *str) {
-		pants = str;
-	}
-
-	void setHand(const char *str) {
-		hand = str;
-	}
-
-	void setFoot(const char *str) {
-		foot = str;
-	}
-
-	void setHead(const char *str) {
-		head = str;
-	}
-
-	void setShoulder(const char *str) {
-		shoulder = str;
-	}
+	void setRace(const char *str);
+	void setGender(const char *str);
+	void setChest(const char *str);
+	void setBelt(const char *str);
+	void setPants(const char *str);
+	void setHand(const char *str);
+	void setFoot(const char *str);
+	void setHead(const char *str);
+	void setShoulder(const char *str);
 
 	bool update();
 };

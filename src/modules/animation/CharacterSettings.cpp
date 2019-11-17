@@ -105,4 +105,83 @@ bool CharacterSettings::update() {
 	return true;
 }
 
+CharacterSettings::CharacterSettings() {
+	for (size_t i = 0; i < paths.size(); ++i) {
+		paths[i] = nullptr;
+	}
+}
+
+std::string CharacterSettings::fullPath(CharacterMeshType type) const {
+	return core::string::format("%s/%s.vox", basePath, path(type));
+}
+
+const char* CharacterSettings::path(CharacterMeshType type) const {
+	if (paths[std::enum_value(type)] == nullptr) {
+		return "";
+	}
+	return paths[std::enum_value(type)]->c_str();
+}
+
+std::string CharacterSettings::path(CharacterMeshType type, const char *name) const {
+	if (paths[std::enum_value(type)] == nullptr) {
+		return "";
+	}
+	return core::string::format("%s/%s", animation::toString(type), name);
+}
+
+void CharacterSettings::copyFrom(const CharacterSettings& other) {
+	skeletonAttr = other.skeletonAttr;
+	race = other.race;
+	gender = other.gender;
+	chest = other.chest;
+	belt = other.belt;
+	pants = other.pants;
+	hand = other.hand;
+	foot = other.foot;
+	head = other.head;
+	shoulder = other.shoulder;
+	for (size_t i = 0; i < paths.size(); ++i) {
+		paths[i] = nullptr;
+	}
+	memcpy(basePath, other.basePath, sizeof(basePath));
+	update();
+}
+
+void CharacterSettings::setRace(const char *str) {
+	race = str;
+}
+
+void CharacterSettings::setGender(const char *str) {
+	gender = str;
+}
+
+void CharacterSettings::setChest(const char *str) {
+	chest = str;
+}
+
+void CharacterSettings::setBelt(const char *str) {
+	belt = str;
+}
+
+void CharacterSettings::setPants(const char *str) {
+	pants = str;
+}
+
+void CharacterSettings::setHand(const char *str) {
+	hand = str;
+}
+
+void CharacterSettings::setFoot(const char *str) {
+	foot = str;
+}
+
+void CharacterSettings::setHead(const char *str) {
+	head = str;
+}
+
+void CharacterSettings::setShoulder(const char *str) {
+	shoulder = str;
+}
+
+
 }

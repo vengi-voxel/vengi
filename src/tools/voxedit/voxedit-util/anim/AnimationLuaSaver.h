@@ -9,6 +9,6 @@
 
 namespace voxedit {
 
-extern bool saveCharacterLua(const animation::CharacterSettings& characterSettings, const io::FilePtr& file);
+extern bool saveCharacterLua(const animation::CharacterSettings& characterSettings, const char *name, const io::FilePtr& file);
 
 }

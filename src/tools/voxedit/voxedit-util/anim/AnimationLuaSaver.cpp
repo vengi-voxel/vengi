@@ -8,8 +8,18 @@
 
 namespace voxedit {
 
-bool saveCharacterLua(const animation::CharacterSettings& characterSettings, const io::FilePtr& file) {
+bool saveCharacterLua(const animation::CharacterSettings& characterSettings, const char *name, const io::FilePtr& file) {
+	if (!file || !file->exists()) {
+		return false;
+	}
 	io::FileStream stream(file);
+	const std::string& headPath = characterSettings.path(animation::CharacterMeshType::Head, name);
+	const std::string& beltPath = characterSettings.path(animation::CharacterMeshType::Belt, name);
+	const std::string& chestPath = characterSettings.path(animation::CharacterMeshType::Chest, name);
+	const std::string& pantsPath = characterSettings.path(animation::CharacterMeshType::Pants, name);
+	const std::string& handPath = characterSettings.path(animation::CharacterMeshType::Hand, name);
+	const std::string& footPath = characterSettings.path(animation::CharacterMeshType::Foot, name);
+	const std::string& shoulderPath = characterSettings.path(animation::CharacterMeshType::Shoulder, name);
 	stream.addStringFormat(false, "function init()\n"
 		"  chr.setRace(\"%s\")\n"
 		"  chr.setGender(\"%s\")\n"
@@ -22,13 +32,13 @@ bool saveCharacterLua(const animation::CharacterSettings& characterSettings, con
 		"  chr.setShoulder(\"%s\")\n",
 		characterSettings.race.c_str(),
 		characterSettings.gender.c_str(),
-		characterSettings.path(animation::CharacterMeshType::Head),
-		characterSettings.path(animation::CharacterMeshType::Belt),
-		characterSettings.path(animation::CharacterMeshType::Chest),
-		characterSettings.path(animation::CharacterMeshType::Pants),
-		characterSettings.path(animation::CharacterMeshType::Hand),
-		characterSettings.path(animation::CharacterMeshType::Foot),
-		characterSettings.path(animation::CharacterMeshType::Shoulder));
+		headPath.c_str(),
+		beltPath.c_str(),
+		chestPath.c_str(),
+		pantsPath.c_str(),
+		handPath.c_str(),
+		footPath.c_str(),
+		shoulderPath.c_str());
 
 	SkeletonAttribute dv;
 	const SkeletonAttribute& sa = characterSettings.skeletonAttr;

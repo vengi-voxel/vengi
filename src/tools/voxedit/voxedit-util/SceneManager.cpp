@@ -801,7 +801,11 @@ void SceneManager::construct() {
 	});
 
 	core::Command::registerCommand("character_save", [&] (const core::CmdArgs& args) {
-		saveCharacter();
+		std::string name = "character";
+		if (!args.empty()) {
+			name = args[0];
+		}
+		saveCharacter(name.c_str());
 	});
 
 	core::Command::registerCommand("layerssave", [&] (const core::CmdArgs& args) {
@@ -1426,18 +1430,18 @@ void SceneManager::shutdown() {
 	_character.shutdown();
 }
 
-bool SceneManager::saveCharacter() {
+bool SceneManager::saveCharacter(const char *name) {
 	_dirty = false;
-	// TODO: somehow fix the lua filename
-	const std::string& luaFilename = core::string::format("chr/%s_%s_character.lua",
-			_characterSettings.race.c_str(),
-			_characterSettings.gender.c_str());
-	io::filesystem()->createDir("chr/");
-	const io::FilePtr& luaFile = io::filesystem()->open(luaFilename, io::FileMode::Write);
-	if (luaFile->exists()) {
-		if (saveCharacterLua(_characterSettings, luaFile)) {
-			Log::info("Wrote lua script: %s", luaFile->name().c_str());
-		}
+	const std::string& chrName = core::string::format("%s-%s-%s",
+				_characterSettings.race.c_str(),
+				_characterSettings.gender.c_str(),
+				name);
+	const std::string& luaFilePath = animation::luaFilename(chrName.c_str());
+	const std::string luaDir(core::string::extractPath(luaFilePath));
+	io::filesystem()->createDir(luaDir);
+	const io::FilePtr& luaFile = io::filesystem()->open(luaFilePath, io::FileMode::Write);
+	if (saveCharacterLua(_characterSettings, name, luaFile)) {
+		Log::info("Wrote lua script: %s", luaFile->name().c_str());
 	}
 
 	const voxedit::Layers& layers = _layerMgr.layers();

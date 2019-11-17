@@ -277,7 +277,7 @@ public:
 	 */
 	bool load(const std::string& file);
 	bool loadCharacter(const std::string& luaFile);
-	bool saveCharacter();
+	bool saveCharacter(const char *name);
 
 	/**
 	 * @brief Shift the whole volume by the given voxel amount
