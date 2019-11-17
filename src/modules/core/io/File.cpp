@@ -23,6 +23,10 @@ File::~File() {
 	close();
 }
 
+bool File::validHandle() const {
+	return _file != nullptr;
+}
+
 bool File::exists() const {
 	if (_mode == FileMode::Read) {
 		return _file != nullptr;

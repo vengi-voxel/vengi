@@ -180,7 +180,7 @@ bool SceneManager::saveLayer(int layerId, const std::string& file) {
 	volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
 	voxel::VoxFormat f;
 	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
-	if (!filePtr->exists()) {
+	if (!filePtr->validHandle()) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
 	}
@@ -211,7 +211,7 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 		return false;
 	}
 	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
-	if (!filePtr->exists()) {
+	if (!filePtr->validHandle()) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
 	}

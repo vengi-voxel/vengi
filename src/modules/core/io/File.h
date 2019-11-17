@@ -55,6 +55,7 @@ public:
 	FileMode mode() const;
 
 	bool exists() const;
+	bool validHandle() const;
 	/**
 	 * @return -1 on error, otherwise the length of the file
 	 */
