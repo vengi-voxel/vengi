@@ -146,6 +146,7 @@ macro(engine_add_library)
 	string(TOUPPER ${_ADDLIB_LIB} PREFIX)
 	if (NOT ${PREFIX}_LOCAL)
 		find_package(${FIND_PACKAGE_NAME})
+		find_package(${FIND_PACKAGE_NAME})
 	endif()
 	# now convert it again - looks like find_package exports PREFIX in some versions of cmake, too
 	string(TOUPPER ${_ADDLIB_LIB} PREFIX)
