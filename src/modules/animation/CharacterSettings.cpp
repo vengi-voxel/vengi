@@ -111,6 +111,11 @@ CharacterSettings::CharacterSettings() {
 	}
 }
 
+std::string CharacterSettings::fullPath(CharacterMeshType type, const char* name) const {
+	const std::string& p = path(type, name);
+	return core::string::format("%s/%s.vox", basePath, p.c_str());
+}
+
 std::string CharacterSettings::fullPath(CharacterMeshType type) const {
 	return core::string::format("%s/%s.vox", basePath, path(type));
 }
@@ -123,9 +128,6 @@ const char* CharacterSettings::path(CharacterMeshType type) const {
 }
 
 std::string CharacterSettings::path(CharacterMeshType type, const char *name) const {
-	if (paths[std::enum_value(type)] == nullptr) {
-		return "";
-	}
 	return core::string::format("%s/%s", animation::toString(type), name);
 }
 

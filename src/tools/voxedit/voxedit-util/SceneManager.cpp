@@ -884,16 +884,15 @@ void SceneManager::construct() {
 		crop();
 	}).setHelp("Crop the volume");
 
-	core::Command::registerCommand("setvoxelresolution",
-			[&] (const core::CmdArgs& args) {
-				const int argc = args.size();
-				if (argc == 1) {
-					const int size = core::string::toInt(args[0]);
-					setGridResolution(size);
-				} else {
-					Log::warn("Expected to get a voxel resolution >= 1");
-				}
-			}).setHelp("");
+	core::Command::registerCommand("setvoxelresolution", [&] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc == 1) {
+			const int size = core::string::toInt(args[0]);
+			setGridResolution(size);
+		} else {
+			Log::warn("Expected to get a voxel resolution >= 1");
+		}
+	}).setHelp("");
 
 	core::Command::registerCommand("setreferenceposition", [&] (const core::CmdArgs& args) {
 		if (args.size() != 3) {
@@ -1454,16 +1453,17 @@ bool SceneManager::saveCharacter(const char *name) {
 		const voxedit::Layer& l = layers[i];
 		const std::string& value = l.metadataById("type");
 		if (value.empty()) {
-			Log::debug("No type metadata found on layer %i", (int)i);
+			const std::string& unknown = core::string::format("%i-%s-%s.vox", (int)i, l.name.c_str(), name);
+			Log::warn("No type metadata found on layer %i. Saving to %s", (int)i, unknown.c_str());
+			if (!saveLayer(i, unknown)) {
+				Log::warn("Failed to save unknown layer to %s", unknown.c_str());
+				_dirty = true;
+			}
 			continue;
 		}
 		const int characterMeshTypeId = core::string::toInt(value);
-		const std::string* file = _characterSettings.paths[characterMeshTypeId];
-		if (file == nullptr || file->empty()) {
-			continue;
-		}
 		const animation::CharacterMeshType meshType = (animation::CharacterMeshType)characterMeshTypeId;
-		const std::string& fullPath = _characterSettings.fullPath(meshType);
+		const std::string& fullPath = _characterSettings.fullPath(meshType, name);
 		if (!saveLayer(i, fullPath)) {
 			Log::warn("Failed to save type %i to %s", characterMeshTypeId, fullPath.c_str());
 			_dirty = true;
@@ -1841,6 +1841,8 @@ void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolum
 	_needAutoSave = true;
 	_dirty = true;
 	handleAnimationViewUpdate(layerId);
+	// TODO: add layer meta data if we add a new layer for animations.
+	//_layerMgr.addMetadata(layerId, {{"type", ""}});
 }
 
 void SceneManager::onLayerDeleted(int layerId, const Layer& layer) {

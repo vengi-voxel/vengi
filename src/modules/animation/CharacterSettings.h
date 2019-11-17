@@ -36,6 +36,7 @@ struct CharacterSettings : public core::NonCopyable {
 
 	CharacterSettings();
 
+	std::string fullPath(CharacterMeshType type, const char* name) const;
 	std::string fullPath(CharacterMeshType type) const;
 
 	/**
