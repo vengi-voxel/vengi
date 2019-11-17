@@ -23,6 +23,14 @@ set(SRCS_SHADERS
 	shaders/character.vert shaders/character.frag
 )
 set(FILES
+	voxel/models/characters/dwarf/male/heads/blacksmith.vox
+	voxel/models/characters/dwarf/male/shoulders/blacksmith.vox
+	voxel/models/characters/dwarf/male/feets/blacksmith.vox
+	voxel/models/characters/dwarf/male/hands/blacksmith.vox
+	voxel/models/characters/dwarf/male/pants/blacksmith.vox
+	voxel/models/characters/dwarf/male/belts/blacksmith.vox
+	voxel/models/characters/dwarf/male/chests/blacksmith.vox
+
 	voxel/models/characters/human/male/heads/worker.vox
 	voxel/models/characters/human/male/feets/worker.vox
 	voxel/models/characters/human/male/hands/worker.vox
@@ -68,12 +76,14 @@ set(FILES
 	voxel/models/items/sword-2.vox
 )
 set(LUA_SRCS
-	chr/undead-male-default.lua
-	chr/undead-male-skeleton.lua
+	chr/dwarf-male-blacksmith.lua
 
 	chr/human-male-worker.lua
 	chr/human-male-blacksmith.lua
 	chr/human-male-knight.lua
+
+	chr/undead-male-default.lua
+	chr/undead-male-skeleton.lua
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES core attrib stock voxelformat render commonlua)
 generate_shaders(${LIB} character)

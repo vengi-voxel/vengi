@@ -12,11 +12,14 @@
 static bool reloadCharacter = false;
 
 static const char* validCharacters[] = {
-	"undead-male-skeleton",
-	"undead-male-default",
+	"dwarf-male-blacksmith",
+
 	"human-male-worker",
 	"human-male-blacksmith",
-	"human-male-knight"
+	"human-male-knight",
+
+	"undead-male-skeleton",
+	"undead-male-default"
 };
 
 TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,
