@@ -200,13 +200,15 @@ public:
 	SceneManager();
 	~SceneManager();
 
-	void resetLastTrace();
+	void construct() override;
+	bool init() override;
+	void update(uint64_t time);
+	void shutdown() override;
+
 	/**
 	 * @return The full region of all layers of the whole scene
 	 */
 	voxel::Region region() const;
-
-	const render::Gizmo& gizmo() const;
 
 	void setGizmoPosition();
 
@@ -226,18 +228,6 @@ public:
 	void setCursorPosition(glm::ivec3 pos, bool force = false);
 
 	const glm::ivec3& referencePosition() const;
-
-	void construct() override;
-	bool init() override;
-	void update(uint64_t time);
-	void shutdown() override;
-
-	animation::CharacterSettings& characterSettings() {
-		return _characterSettings;
-	}
-
-	voxelrender::RawVolumeRenderer& renderer();
-	const voxelrender::RawVolumeRenderer& renderer() const;
 
 	void modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo = true);
 	voxel::RawVolume* volume(int idx);
@@ -290,6 +280,15 @@ public:
 	bool saveCharacter();
 
 	/**
+	 * @brief Shift the whole volume by the given voxel amount
+	 */
+	void shift(int x, int y, int z);
+	/**
+	 * @brief Move the voxels inside the volume regions
+	 */
+	void move(int x, int y, int z);
+
+	/**
 	 * @brief Import an existing model
 	 * @note Placed relative to the reference position in the current scene
 	 */
@@ -317,33 +316,30 @@ public:
 	void render(const video::Camera& camera, uint8_t renderMask = RenderAll);
 	void renderAnimation(const video::Camera& camera);
 
-	render::GridRenderer& gridRenderer();
-	bool setGridResolution(int resolution);
-
-	/**
-	 * @brief Shift the whole volume by the given voxel amount
-	 */
-	void shift(int x, int y, int z);
-	/**
-	 * @brief Move the voxels inside the volume regions
-	 */
-	void move(int x, int y, int z);
-
 	bool trace(bool force = false);
+	void resetLastTrace();
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);
 	void setRenderAxis(bool renderAxis);
 	void setRenderLockAxis(bool renderLockAxis);
 	void setRenderShadow(bool shadow);
+	bool setGridResolution(int resolution);
 
+	// component access
 	const LayerManager& layerMgr() const;
 	LayerManager& layerMgr();
 	const Modifier& modifier() const;
 	Modifier& modifier();
 	const MementoHandler& mementoHandler() const;
 	MementoHandler& mementoHandler();
+	const voxelrender::RawVolumeRenderer& renderer() const;
+	voxelrender::RawVolumeRenderer& renderer();
+	render::GridRenderer& gridRenderer();
+	animation::CharacterSettings& characterSettings();
+	const render::Gizmo& gizmo() const;
 
+	// LayerListener
 	void onLayerChanged(int layerId) override;
 	void onLayerDuplicate(int layerId) override;
 	void onLayerSwapped(int layerId1, int layerId2) override;
@@ -385,6 +381,10 @@ inline MementoHandler& SceneManager::mementoHandler() {
 
 inline render::GridRenderer& SceneManager::gridRenderer() {
 	return _gridRenderer;
+}
+
+inline animation::CharacterSettings& SceneManager::characterSettings() {
+	return _characterSettings;
 }
 
 inline bool SceneManager::dirty() const {
