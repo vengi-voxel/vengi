@@ -1,6 +1,6 @@
 # General
 
-We only model the right part of hands, feets and shoulders. The left part is automatically mirrored.
+We only model the right part of hands, feet and shoulders. The left part is automatically mirrored.
 
 Bones are applied to the meshes via code. You just have to keep some dimensions restrictions.
 

@@ -54,6 +54,14 @@ set(FILES
 	voxel/models/characters/human/male/belts/knight.vox
 	voxel/models/characters/human/male/chests/knight.vox
 
+	voxel/models/characters/human/male/heads/shepherd.vox
+	voxel/models/characters/human/male/shoulders/shepherd.vox
+	voxel/models/characters/human/male/feets/shepherd.vox
+	voxel/models/characters/human/male/hands/shepherd.vox
+	voxel/models/characters/human/male/pants/shepherd.vox
+	voxel/models/characters/human/male/belts/shepherd.vox
+	voxel/models/characters/human/male/chests/shepherd.vox
+
 	voxel/models/characters/undead/male/heads/default.vox
 	voxel/models/characters/undead/male/feets/default.vox
 	voxel/models/characters/undead/male/hands/default.vox
@@ -78,9 +86,10 @@ set(FILES
 set(LUA_SRCS
 	chr/dwarf-male-blacksmith.lua
 
-	chr/human-male-worker.lua
 	chr/human-male-blacksmith.lua
 	chr/human-male-knight.lua
+	chr/human-male-shepherd.lua
+	chr/human-male-worker.lua
 
 	chr/undead-male-default.lua
 	chr/undead-male-skeleton.lua
