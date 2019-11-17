@@ -268,7 +268,7 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 		core::Var::get(cfg::VoxEditLastFile)->setVal(file);
 		_needAutoSave = false;
 	} else {
-		Log::warn("Failed to sav to desired format");
+		Log::warn("Failed to save to desired format");
 	}
 	return saved;
 }
