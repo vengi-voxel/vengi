@@ -36,7 +36,7 @@ private:
 	io::FilePtr _luaFile;
 
 	int _currentCharacterIndex = 0;
-	const char *currentCharacter() const;
+	std::string currentCharacter() const;
 	bool loadCharacter();
 	void doRender() override;
 	void onRenderUI() override;

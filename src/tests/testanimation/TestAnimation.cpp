@@ -8,20 +8,14 @@
 #include "voxel/MaterialColor.h"
 #include "core/command/Command.h"
 #include "core/Array.h"
+#include "Shared_generated.h"
+#include <array>
 
 static bool reloadCharacter = false;
 
-static const char* validCharacters[] = {
-	"chr/dwarf-male-blacksmith",
-
-	"chr/human-male-blacksmith",
-	"chr/human-male-knight",
-	"chr/human-male-shepherd",
-	"chr/human-male-worker",
-
-	"chr/undead-male-zombie",
-	"chr/undead-male-skeleton"
-};
+static constexpr int32_t cnt = /*(int)network::EntityType::MAX_ANIMAL - ((int)network::EntityType::BEGIN_ANIMAL + 1) +*/
+		(int)network::EntityType::MAX_CHARACTERS - ((int)network::EntityType::BEGIN_CHARACTERS + 1);
+static std::array<const char*, cnt> validCharacters;
 
 TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem,
@@ -33,10 +27,20 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 	setCameraMotion(true);
 	//setRenderPlane(true);
 	setRenderAxis(true);
+
+	int index = 0;
+	//for (int i = ((int)network::EntityType::BEGIN_ANIMAL) + 1; i < (int)network::EntityType::MAX_ANIMAL; ++i) {
+	//	validCharacters[index++] = network::EnumNameEntityType((network::EntityType)i);
+	//}
+	for (int i = ((int)network::EntityType::BEGIN_CHARACTERS) + 1; i < (int)network::EntityType::MAX_CHARACTERS; ++i) {
+		validCharacters[index++] = network::EnumNameEntityType((network::EntityType)i);
+	}
 }
 
-const char *TestAnimation::currentCharacter() const {
-	return validCharacters[_currentCharacterIndex];
+std::string TestAnimation::currentCharacter() const {
+	std::string name = validCharacters[_currentCharacterIndex];
+	core::string::replaceAllChars(name, '_', '-');
+	return core::string::toLower(name);
 }
 
 core::AppState TestAnimation::onConstruct() {
@@ -63,9 +67,9 @@ core::AppState TestAnimation::onConstruct() {
 		}
 		_currentCharacterIndex += offset;
 		while (_currentCharacterIndex < 0) {
-			_currentCharacterIndex += lengthof(validCharacters);
+			_currentCharacterIndex += validCharacters.size();
 		}
-		_currentCharacterIndex %= lengthof(validCharacters);
+		_currentCharacterIndex %= validCharacters.size();
 		Log::info("current character idx: %i", _currentCharacterIndex);
 		loadCharacter();
 	});
@@ -74,18 +78,18 @@ core::AppState TestAnimation::onConstruct() {
 }
 
 bool TestAnimation::loadCharacter() {
-	const char *chr = currentCharacter();
-	Log::info("Load character settings for %s", chr);
-	const io::FilePtr& file = filesystem()->open(animation::luaFilename(chr));
+	const std::string& chr = currentCharacter();
+	Log::info("Load character settings for %s", chr.c_str());
+	const io::FilePtr& file = filesystem()->open(animation::luaFilename(chr.c_str()));
 	const std::string& lua = file->load();
 	if (lua.empty()) {
-		Log::error("Failed to load character settings for %s", chr);
+		Log::error("Failed to load character settings for %s", chr.c_str());
 		return false;
 	}
 
 	animation::Character testChr;
 	if (!testChr.init(_characterCache, lua)) {
-		Log::error("Failed to initialize the character %s for animation", chr);
+		Log::error("Failed to initialize the character %s for animation", chr.c_str());
 		return false;
 	}
 	core_assert_always(_character.init(_characterCache, lua));
@@ -211,7 +215,7 @@ void TestAnimation::onRenderUI() {
 	if (ImGui::Combo("Item/Tool", &_itemIdx, _items)) {
 		addItem(_itemIdx);
 	}
-	if (ImGui::Combo("Character", &_currentCharacterIndex, validCharacters, lengthof(validCharacters))) {
+	if (ImGui::Combo("Character", &_currentCharacterIndex, validCharacters.front(), validCharacters.size())) {
 		loadCharacter();
 	}
 	Super::onRenderUI();

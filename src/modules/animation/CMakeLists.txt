@@ -94,7 +94,7 @@ set(LUA_SRCS
 	chr/human-male-shepherd.lua
 	chr/human-male-worker.lua
 
-	chr/undead-male-default.lua
+	chr/undead-male-zombie.lua
 	chr/undead-male-skeleton.lua
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES core attrib stock voxelformat render commonlua)

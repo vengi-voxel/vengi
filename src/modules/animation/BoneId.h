@@ -24,6 +24,9 @@ enum class BoneId : uint8_t {
 	Glider,
 	/** The translation, orientation and scaling influences all other bones */
 	Torso,
+	LeftWing,
+	RightWing,
+	Tail,
 	Max
 };
 
