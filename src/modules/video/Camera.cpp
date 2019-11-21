@@ -42,10 +42,18 @@ void Camera::move(const glm::vec3& delta) {
 void Camera::rotate(const glm::vec3& radians) {
 	// TODO: what about rotationtype... should matter here, too, no?
 	switch(_type) {
-	case CameraType::FirstPerson:
+	case CameraType::FirstPerson: {
 		turn(radians.y);
-		pitch(radians.x);
+		const glm::vec3& fw = forward();
+		const float dotResult = glm::dot(-fw, glm::up);
+		const float rotationDegrees = glm::degrees(glm::acos(dotResult)) - 90.0f;
+		constexpr float limitAngle = 75.0f;
+		if ((rotationDegrees <= limitAngle || radians.x >= 0.0f)
+				&& (rotationDegrees >= -limitAngle || radians.x <= 0.0f)) {
+			pitch(radians.x);
+		}
 		break;
+	}
 	case CameraType::Free:
 		yaw(radians.y);
 		pitch(radians.x);
