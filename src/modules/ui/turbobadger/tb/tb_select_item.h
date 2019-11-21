@@ -80,7 +80,7 @@ public:
 		By default, it returns true if GetItemString contains filter. */
 	virtual bool filter(int index, const char *filter);
 
-	/** Get the string of a item. If a item has more than one string,
+	/** Get the string of an item. If an item has more than one string,
 		return the one that should be used for inline-find (pressing keys
 		in the list will scroll to the item starting with the same letters),
 		and for sorting the list. */
@@ -129,7 +129,7 @@ private:
 	TB_SORT m_sort;
 };
 
-/** TBSelectItemSourceList is a item provider for list widgets (TBSelectList and
+/** TBSelectItemSourceList is an item provider for list widgets (TBSelectList and
 	TBSelectDropdown). It stores items of the type specified by the template in an array. */
 template <class T> class TBSelectItemSourceList : public TBSelectItemSource {
 public:
@@ -261,7 +261,7 @@ public:
 	TBValue tag;
 };
 
-/** TBGenericStringItemSource is a item source list providing items of type TBGenericStringItem. */
+/** TBGenericStringItemSource is an item source list providing items of type TBGenericStringItem. */
 
 class TBGenericStringItemSource : public TBSelectItemSourceList<TBGenericStringItem> {};
 

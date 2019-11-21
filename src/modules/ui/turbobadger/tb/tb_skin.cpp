@@ -698,6 +698,7 @@ void TBSkinElement::load(TBNode *n, TBSkin *skin, const char *skinPath) {
 	//       recalculated depending on the DPI the bitmaps are available in.
 	cut = n->getValueInt("cut", cut);
 	expand = n->getValueInt("expand", expand);
+	bitmap_dpi = 0;
 
 	name.set(n->getName());
 	id.set(n->getName());

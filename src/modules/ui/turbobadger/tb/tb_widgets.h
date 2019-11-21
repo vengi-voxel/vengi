@@ -228,6 +228,7 @@ MAKE_ENUM_FLAG_COMBO(WIDGET_GRAVITY);
 enum AXIS {
 	AXIS_X, ///< Horizontal layout
 	AXIS_Y, ///< Vertical layout
+	AXIS_Z ///< Depth
 };
 
 /** Defines how the size in one axis depend on the other axis when a widgets size is
@@ -394,7 +395,7 @@ public:
 	/** Set the rect for this widget in its parent. The rect is relative to the parent widget.
 		The skin may expand outside this rect to draw f.ex shadows. */
 	void setRect(const TBRect &rect);
-	inline TBRect getRect() const {
+	inline const TBRect& getRect() const {
 		return m_rect;
 	}
 
@@ -405,7 +406,15 @@ public:
 
 	/** Set size of this widget. */
 	void setSize(int width, int height) {
-		setRect(TBRect(m_rect.x, m_rect.y, width, height));
+		int dw = width - m_rect.w;
+		int dh = height - m_rect.h;
+		TBRect rect(m_rect.x, m_rect.y, width, height);
+		// If the widget is anchored to an edge, move its origin appropriately
+		if ((m_gravity & WIDGET_GRAVITY_RIGHT) && !((m_gravity & WIDGET_GRAVITY_LEFT)))
+			rect.x -= dw;
+		if ((m_gravity & WIDGET_GRAVITY_BOTTOM) && !((m_gravity & WIDGET_GRAVITY_TOP)))
+			rect.y -= dh;
+		setRect(rect);
 	}
 
 	void execute(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));
@@ -650,7 +659,7 @@ public:
 
 	/** Call SetFocus on all children and their children, until a widget is found that accepts it.
 		Returns true if some child was successfully focused. */
-	bool setFocusRecursive(WIDGET_FOCUS_REASON reason);
+	bool setFocusRecursive(WIDGET_FOCUS_REASON reason = WIDGET_FOCUS_REASON_UNKNOWN);
 
 	/** Move focus from the currently focused widget to another focusable widget. It will search
 		for a focusable widget in the same TBWindow (or top root if there is no window) forward or
@@ -816,7 +825,7 @@ public:
 	virtual void onScroll(int scrollX, int scrollY) {
 	}
 
-	/** Called just after a child has been inflated into this widget.
+	/** Called just after a child have been inflated into this widget.
 		The default implementation will resize the child to it's preferred size
 		and position it according to the gravity. If you implement a layouting
 		widget, you should override this to prevent doing unnecessary measuring. */
@@ -1220,7 +1229,7 @@ public:
 	static bool
 		update_widget_states; ///< true if something has called invalidateStates() and it still hasn't been updated.
 	static bool
-		update_skin_states; ///< true if something has called invalidateStates() and skin still hasn't been updated.
+		update_skin_states; ///< true if something has called invalidateSkinStates() and skin still hasn't been updated.
 	static bool show_focus_state; ///< true if the focused state should be painted automatically.
 	struct TOUCH_INFO {
 		TBWidget *hovered_widget;  ///< The currently hovered widget, or nullptr.

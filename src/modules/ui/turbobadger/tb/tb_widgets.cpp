@@ -348,7 +348,7 @@ void TBWidget::removeChild(TBWidget *child, WIDGET_INVOKE_INFO info) {
 		// If we're not being deleted and delete the focused widget, try
 		// to keep the focus in this widget by moving it to the next widget.
 		if (!m_packed.is_dying && child == focused_widget) {
-			m_parent->moveFocus(true);
+			child->getEventDestination()->setFocusRecursive();
 		}
 
 		onChildRemove(child);

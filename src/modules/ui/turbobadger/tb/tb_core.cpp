@@ -33,10 +33,15 @@ bool tb_core_init(TBRenderer *renderer) {
 void tb_core_shutdown() {
 	TBAnimationManager::abortAllAnimations();
 	delete g_image_manager;
+	g_image_manager = nullptr;
 	delete g_widgets_reader;
+	g_widgets_reader = nullptr;
 	delete g_tb_skin;
+	g_tb_skin = nullptr;
 	delete g_font_manager;
+	g_font_manager = nullptr;
 	delete g_tb_lng;
+	g_tb_lng = nullptr;
 }
 
 bool tb_core_is_initialized() {
