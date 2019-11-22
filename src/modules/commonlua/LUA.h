@@ -8,6 +8,7 @@ extern "C" {
 #include <lauxlib.h>
 #include <lualib.h>
 }
+#include <vector>
 #include <string>
 #include <map>
 #include <memory>
@@ -32,6 +33,16 @@ public:
 		lua_setfield(_state, -2, name.c_str());
 	}
 };
+
+struct LUAFunction {
+	const std::string name;
+	lua_CFunction func;
+
+	inline LUAFunction(const std::string &_name, lua_CFunction _func) :
+			name(_name), func(_func) {
+	}
+};
+using LUAFunctions = std::vector<lua::LUAFunction>;
 
 class LUA : public core::NonCopyable {
 private:
@@ -140,6 +151,17 @@ public:
 	float tableFloat(int i);
 
 	void reg(const std::string& prefix, const luaL_Reg* funcs);
+
+	void reg(const std::string& prefix, const LUAFunctions& funcs) {
+		std::vector<luaL_Reg> f;
+		f.reserve(funcs.size());
+		for (const auto& func : funcs) {
+			f.emplace_back(luaL_Reg{func.name.c_str(), func.func});
+		}
+		f.emplace_back(luaL_Reg{nullptr, nullptr});
+		reg(prefix, &f[0]);
+	}
+
 	LUAType registerType(const std::string& name);
 
 	void setError(const std::string& error);
