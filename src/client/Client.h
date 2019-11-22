@@ -17,7 +17,7 @@
 #include "network/NetworkEvents.h"
 #include "ui/turbobadger/UIApp.h"
 #include "ui/turbobadger/WaitingMessage.h"
-#include "animation/CharacterCache.h"
+#include "animation/chr/CharacterCache.h"
 #include "video/Camera.h"
 #include "stock/StockDataProvider.h"
 

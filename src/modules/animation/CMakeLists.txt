@@ -1,23 +1,26 @@
 set(LIB animation)
 set(SRCS
-	anim/Idle.cpp anim/Idle.h
-	anim/Run.cpp anim/Run.h
-	anim/Jump.cpp anim/Jump.h
-	anim/Glide.cpp anim/Glide.h
-	anim/Tool.cpp anim/Tool.h
+	chr/anim/Idle.cpp chr/anim/Idle.h
+	chr/anim/Run.cpp chr/anim/Run.h
+	chr/anim/Jump.cpp chr/anim/Jump.h
+	chr/anim/Glide.cpp chr/anim/Glide.h
+	chr/anim/Tool.cpp chr/anim/Tool.h
+	chr/CharacterMeshType.cpp chr/CharacterMeshType.h
+	chr/Character.cpp chr/Character.h
+	chr/CharacterCache.cpp chr/CharacterCache.h
+	chr/CharacterSettings.cpp chr/CharacterSettings.h
+	chr/CharacterSkeleton.cpp chr/CharacterSkeleton.h
+	chr/CharacterSkeletonAttribute.h
+	chr/LUAFunctions.h
 
 	Animation.cpp Animation.h
+	AnimationRenderer.cpp AnimationRenderer.h
+	AnimationEntity.h
 	Bone.cpp Bone.h
 	BoneId.h
 	BoneUtil.h
-	CharacterMeshType.cpp CharacterMeshType.h
-	Character.cpp Character.h
-	CharacterCache.cpp CharacterCache.h
-	CharacterRenderer.cpp CharacterRenderer.h
-	CharacterSettings.cpp CharacterSettings.h
-	Skeleton.cpp Skeleton.h
+	Skeleton.h Skeleton.cpp
 	SkeletonAttribute.h
-	LUAFunctions.h
 )
 set(SRCS_SHADERS
 	shaders/character.vert shaders/character.frag

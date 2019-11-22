@@ -7,8 +7,9 @@
 #include "animation/BoneUtil.h"
 
 namespace animation {
+namespace chr {
 namespace glide {
-void update(float animTime, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
+void update(float animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float sine = glm::sin(animTime * 3.0f) * 0.1f;
 	const float cosine = glm::cos(animTime * 3.0f);
 	const float movement = glm::sin(animTime) * skeletonAttr.idleTimeFactor;
@@ -52,6 +53,7 @@ void update(float animTime, CharacterSkeleton &skeleton, const SkeletonAttribute
 	skeleton.bone(BoneId::LeftHand) = mirrorX(skeleton.bone(BoneId::RightHand));
 	skeleton.bone(BoneId::LeftFoot) = mirrorX(skeleton.bone(BoneId::RightFoot));
 	skeleton.bone(BoneId::LeftShoulder) = mirrorX(rightshoulder);
+}
 }
 }
 }

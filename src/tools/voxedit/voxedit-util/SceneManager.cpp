@@ -25,7 +25,7 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedBlendMode.h"
-#include "animation/CharacterMeshType.h"
+#include "animation/chr/CharacterMeshType.h"
 #include "video/Ray.h"
 #include "math/Random.h"
 #include "math/Axis.h"
@@ -1431,7 +1431,7 @@ void SceneManager::shutdown() {
 
 bool SceneManager::saveCharacter(const char *name) {
 	_dirty = false;
-	const std::string& chrName = core::string::format("%s-%s-%s",
+	const std::string& chrName = core::string::format("chr/%s-%s-%s",
 				_characterSettings.race.c_str(),
 				_characterSettings.gender.c_str(),
 				name);

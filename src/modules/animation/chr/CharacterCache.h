@@ -5,7 +5,7 @@
 #pragma once
 
 #include "voxelformat/MeshCache.h"
-#include "Vertex.h"
+#include "animation/Vertex.h"
 #include "CharacterSettings.h"
 #include "CharacterMeshType.h"
 #include "voxel/Mesh.h"

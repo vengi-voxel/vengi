@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/io/File.h"
-#include "animation/CharacterSettings.h"
+#include "animation/chr/CharacterSettings.h"
 
 namespace voxedit {
 

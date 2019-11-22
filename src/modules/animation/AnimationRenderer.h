@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Character.h"
+#include "AnimationEntity.h"
 #include "core/IComponent.h"
 #include "AnimationShaders.h"
 #include "video/Buffer.h"
@@ -17,7 +17,7 @@ namespace animation {
 /**
  * @brief Uses the shaders from the animation module to render characters.
  */
-class CharacterRenderer : public core::IComponent {
+class AnimationRenderer : public core::IComponent {
 private:
 	shader::CharacterShader _shader;
 	shader::CharacterData _shaderData;
@@ -44,7 +44,7 @@ public:
 	 * @note Make sure to update the character before calling this method in order
 	 * to update the bones.
 	 */
-	void render(const Character& character, const video::Camera& camera);
+	void render(const AnimationEntity& character, const video::Camera& camera);
 };
 
 }

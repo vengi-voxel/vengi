@@ -3,7 +3,7 @@
  */
 
 #include "VolumeCache.h"
-#include "animation/Skeleton.h"
+#include "animation/chr/CharacterSkeleton.h"
 #include "core/io/Filesystem.h"
 #include "core/App.h"
 #include "core/Log.h"

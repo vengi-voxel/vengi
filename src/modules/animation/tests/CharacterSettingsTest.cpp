@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "animation/CharacterSettings.h"
+#include "animation/chr/CharacterSettings.h"
 
 namespace animation {
 

@@ -2,18 +2,18 @@
  * @file
  */
 
-#include "CharacterRenderer.h"
+#include "AnimationRenderer.h"
 #include "core/Log.h"
 #include "core/Array.h"
 #include "voxel/MaterialColor.h"
-#include "Vertex.h"
+#include "animation/Vertex.h"
 #include "video/Renderer.h"
 #include "video/Shader.h"
 #include "RenderShaders.h"
 
 namespace animation {
 
-bool CharacterRenderer::init() {
+bool AnimationRenderer::init() {
 	if (!_shader.setup()) {
 		Log::error("Failed to setup character shader");
 		return false;
@@ -57,7 +57,7 @@ bool CharacterRenderer::init() {
 	return true;
 }
 
-void CharacterRenderer::shutdown() {
+void AnimationRenderer::shutdown() {
 	_shaderData.shutdown();
 	_shader.shutdown();
 	_vbo.shutdown();
@@ -66,7 +66,7 @@ void CharacterRenderer::shutdown() {
 	_indices = -1;
 }
 
-void CharacterRenderer::render(const Character& character, const video::Camera& camera) {
+void AnimationRenderer::render(const AnimationEntity& character, const video::Camera& camera) {
 	const Indices& i = character.indices();
 	const Vertices& v = character.vertices();
 	core_assert_always(_vbo.update(_indices, i));

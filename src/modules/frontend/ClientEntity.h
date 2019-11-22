@@ -9,8 +9,8 @@
 #include "ClientEntityId.h"
 #include "attrib/ShadowAttributes.h"
 #include "video/Buffer.h"
-#include "animation/Character.h"
-#include "animation/CharacterCache.h"
+#include "animation/chr/Character.h"
+#include "animation/chr/CharacterCache.h"
 #include "AnimationShaders.h"
 #include "stock/Stock.h"
 #include <functional>

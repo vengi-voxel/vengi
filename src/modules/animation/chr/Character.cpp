@@ -6,7 +6,7 @@
 
 #include <unordered_set>
 
-#include "Animation.h"
+#include "animation/Animation.h"
 
 #include "core/Common.h"
 #include "core/GLM.h"
@@ -102,22 +102,22 @@ void Character::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
 
 	switch (_anim) {
 	case Animation::Idle:
-		idle::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
+		chr::idle::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
 		break;
 	case Animation::Jump:
-		jump::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
+		chr::jump::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
 		break;
 	case Animation::Run:
-		run::update(globalTimeSeconds, velocity, _skeleton, _settings.skeletonAttr);
+		chr::run::update(globalTimeSeconds, velocity, _skeleton, _settings.skeletonAttr);
 		break;
 	case Animation::Glide:
-		glide::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
+		chr::glide::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
 		break;
 	case Animation::Tool:
 		if (_toolAnim == ToolAnimationType::None || _toolAnim == ToolAnimationType::Max) {
-			idle::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
+			chr::idle::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
 		} else {
-			tool::update(globalTimeSeconds, _toolAnim, _skeleton, _settings.skeletonAttr);
+			chr::tool::update(globalTimeSeconds, _toolAnim, _skeleton, _settings.skeletonAttr);
 		}
 		break;
 	default:
@@ -137,6 +137,10 @@ void Character::shutdown() {
 	_toolAnim = ToolAnimationType::Max;
 	_toolVerticesOffset = 0u;
 	_toolIndicesOffset = 0u;
+}
+
+const Skeleton& Character::skeleton() const {
+	return _skeleton;
 }
 
 }

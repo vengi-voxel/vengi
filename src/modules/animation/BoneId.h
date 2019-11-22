@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+namespace animation {
+
 enum class BoneId : uint8_t {
 	Head,
 	Chest,
@@ -24,3 +26,11 @@ enum class BoneId : uint8_t {
 	Torso,
 	Max
 };
+
+struct BoneIds {
+	uint8_t bones[2];
+	bool mirrored[2] { false, false };
+	uint8_t num;
+};
+
+}

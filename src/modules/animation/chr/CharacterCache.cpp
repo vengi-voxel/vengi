@@ -3,7 +3,7 @@
  */
 
 #include "CharacterCache.h"
-#include "Skeleton.h"
+#include "CharacterSkeleton.h"
 #include "core/io/Filesystem.h"
 #include "core/App.h"
 #include "core/Common.h"
@@ -11,12 +11,6 @@
 #include "voxelformat/VoxFileFormat.h"
 
 namespace animation {
-
-struct BoneIds {
-	uint8_t bones[2];
-	bool mirrored[2] { false, false };
-	uint8_t num;
-};
 
 /**
  * @return The used bones for a given mesh type.

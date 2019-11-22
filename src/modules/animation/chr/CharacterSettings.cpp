@@ -12,7 +12,7 @@
 namespace animation {
 
 std::string luaFilename(const char *character) {
-	return core::string::format("chr/%s.lua", character);
+	return core::string::format("%s.lua", character);
 }
 
 bool loadCharacterSettings(const std::string& luaString, CharacterSettings& settings) {
@@ -22,44 +22,44 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 	}
 	// also change the voxel editor lua script saving
 	static const luaL_Reg funcs[] = {
-		{ "setRace", luaMain_SetRace },
-		{ "setGender", luaMain_SetGender },
-		{ "setChest", luaMain_SetChest },
-		{ "setBelt", luaMain_SetBelt },
-		{ "setPants", luaMain_SetPants },
-		{ "setHand", luaMain_SetHand },
-		{ "setFoot", luaMain_SetFoot },
-		{ "setHead", luaMain_SetHead },
-		{ "setShoulder", luaMain_SetShoulder },
+		{ "setRace", luaChr_SetRace },
+		{ "setGender", luaChr_SetGender },
+		{ "setChest", luaChr_SetChest },
+		{ "setBelt", luaChr_SetBelt },
+		{ "setPants", luaChr_SetPants },
+		{ "setHand", luaChr_SetHand },
+		{ "setFoot", luaChr_SetFoot },
+		{ "setHead", luaChr_SetHead },
+		{ "setShoulder", luaChr_SetShoulder },
 
-		{ "setScaler", luaMain_SetScaler },
-		{ "setHeadScale", luaMain_SetHeadScale },
-		{ "setNeckHeight", luaMain_SetNeckHeight },
-		{ "setNeckForward", luaMain_SetNeckForward },
-		{ "setNeckRight", luaMain_SetNeckRight },
-		{ "setHandForward", luaMain_SetHandForward },
-		{ "setHandRight", luaMain_SetHandRight },
-		{ "setShoulderForward", luaMain_SetShoulderForward },
-		{ "setShoulderRight", luaMain_SetShoulderRight },
-		{ "setToolForward", luaMain_SetToolForward },
-		{ "setToolRight", luaMain_SetToolRight },
-		{ "setToolScale", luaMain_SetToolScale },
-		{ "setShoulderScale", luaMain_SetShoulderScale },
-		{ "setHeadHeight", luaMain_SetHeadHeight },
-		{ "setFootRight", luaMain_SetFootRight },
-		{ "setChestHeight", luaMain_SetChestHeight },
-		{ "setBeltHeight", luaMain_SetBeltHeight },
-		{ "setPantsHeight", luaMain_SetPantsHeight },
-		{ "setInvisibleLegHeight", luaMain_SetInvisibleLegHeight },
-		{ "setFootHeight", luaMain_SetFootHeight },
-		{ "setOrigin", luaMain_SetOrigin },
-		{ "setHipOffset", luaMain_SetHipOffset },
-		{ "setJumpTimeFactor", luaMain_SetJumpTimeFactor },
-		{ "setRunTimeFactor", luaMain_SetRunTimeFactor },
-		{ "setIdleTimeFactor", luaMain_SetIdleTimeFactor },
+		{ "setScaler", luaChr_SetScaler },
+		{ "setHeadScale", luaChr_SetHeadScale },
+		{ "setNeckHeight", luaChr_SetNeckHeight },
+		{ "setNeckForward", luaChr_SetNeckForward },
+		{ "setNeckRight", luaChr_SetNeckRight },
+		{ "setHandForward", luaChr_SetHandForward },
+		{ "setHandRight", luaChr_SetHandRight },
+		{ "setShoulderForward", luaChr_SetShoulderForward },
+		{ "setShoulderRight", luaChr_SetShoulderRight },
+		{ "setToolForward", luaChr_SetToolForward },
+		{ "setToolRight", luaChr_SetToolRight },
+		{ "setToolScale", luaChr_SetToolScale },
+		{ "setShoulderScale", luaChr_SetShoulderScale },
+		{ "setHeadHeight", luaChr_SetHeadHeight },
+		{ "setFootRight", luaChr_SetFootRight },
+		{ "setChestHeight", luaChr_SetChestHeight },
+		{ "setBeltHeight", luaChr_SetBeltHeight },
+		{ "setPantsHeight", luaChr_SetPantsHeight },
+		{ "setInvisibleLegHeight", luaChr_SetInvisibleLegHeight },
+		{ "setFootHeight", luaChr_SetFootHeight },
+		{ "setOrigin", luaChr_SetOrigin },
+		{ "setHipOffset", luaChr_SetHipOffset },
+		{ "setJumpTimeFactor", luaChr_SetJumpTimeFactor },
+		{ "setRunTimeFactor", luaChr_SetRunTimeFactor },
+		{ "setIdleTimeFactor", luaChr_SetIdleTimeFactor },
 		{ nullptr, nullptr }
 	};
-	static_assert(lengthof(funcs) - 9 == lengthof(SkeletonAttributeMetaArray), "Array sizes should match");
+	static_assert(lengthof(funcs) - 9 == lengthof(ChrSkeletonAttributeMetaArray), "Array sizes should match");
 
 	lua::LUA lua;
 	lua.reg("chr", funcs);

@@ -3,6 +3,7 @@
  */
 
 #include "AnimationLuaSaver.h"
+#include "animation/SkeletonAttribute.h"
 #include "core/io/FileStream.h"
 #include "core/GLM.h"
 
@@ -40,10 +41,10 @@ bool saveCharacterLua(const animation::CharacterSettings& characterSettings, con
 		footPath.c_str(),
 		shoulderPath.c_str());
 
-	SkeletonAttribute dv;
-	const SkeletonAttribute& sa = characterSettings.skeletonAttr;
-	for (const SkeletonAttributeMeta* metaIter = SkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
-		const SkeletonAttributeMeta& meta = *metaIter;
+	animation::CharacterSkeletonAttribute dv;
+	const animation::CharacterSkeletonAttribute& sa = characterSettings.skeletonAttr;
+	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
+		const animation::SkeletonAttributeMeta& meta = *metaIter;
 		const float *saVal = (const float*)(((const char*)&sa) + meta.offset);
 		const float *dvVal = (const float*)(((const char*)&dv) + meta.offset);
 		if (glm::abs(*saVal - *dvVal) > glm::epsilon<float>()) {

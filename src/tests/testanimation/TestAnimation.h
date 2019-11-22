@@ -5,9 +5,9 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "animation/Character.h"
-#include "animation/CharacterCache.h"
-#include "animation/CharacterRenderer.h"
+#include "animation/chr/Character.h"
+#include "animation/chr/CharacterCache.h"
+#include "animation/AnimationRenderer.h"
 #include "attrib/ShadowAttributes.h"
 #include "stock/StockDataProvider.h"
 #include "stock/Inventory.h"
@@ -23,7 +23,7 @@ private:
 
 	animation::Character _character;
 	animation::CharacterCachePtr _characterCache;
-	animation::CharacterRenderer _renderer;
+	animation::AnimationRenderer _renderer;
 	stock::StockDataProviderPtr _stockDataProvider;
 	stock::Inventory _inventory;
 

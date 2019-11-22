@@ -11,7 +11,7 @@
 #include "render/Axis.h"
 #include "PlayerMovement.h"
 #include "video/Camera.h"
-#include "animation/CharacterCache.h"
+#include "animation/chr/CharacterCache.h"
 #include "video/Buffer.h"
 #include "voxelworld/WorldMgr.h"
 #include "stock/Stock.h"

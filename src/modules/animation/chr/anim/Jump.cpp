@@ -7,8 +7,9 @@
 #include "animation/BoneUtil.h"
 
 namespace animation {
+namespace chr {
 namespace jump {
-void update(float animTime, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
+void update(float animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float sine = glm::sin(animTime * skeletonAttr.jumpTimeFactor);
 	const float sineSlow = glm::sin(animTime * skeletonAttr.jumpTimeFactor / 2.0f);
 	const float sineStop = glm::sin((glm::min)(animTime * 5.0f, glm::half_pi<float>()));
@@ -52,6 +53,7 @@ void update(float animTime, CharacterSkeleton &skeleton, const SkeletonAttribute
 	torso.orientation = glm::angleAxis(-0.2f, glm::right);
 
 	skeleton.bone(BoneId::Glider) = zero();
+}
 }
 }
 }

@@ -7,8 +7,9 @@
 #include "animation/BoneUtil.h"
 
 namespace animation {
+namespace chr {
 namespace run {
-void update(float animTime, float velocity, CharacterSkeleton &skeleton, const SkeletonAttribute &skeletonAttr) {
+void update(float animTime, float velocity, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float timeFactor = skeletonAttr.runTimeFactor;
 	const float sine = glm::sin(animTime * timeFactor);
 	const float cosine = glm::cos(animTime * timeFactor);
@@ -66,6 +67,7 @@ void update(float animTime, float velocity, CharacterSkeleton &skeleton, const S
 
 	skeleton.bone(BoneId::Glider) = zero();
 	skeleton.bone(BoneId::LeftShoulder) = mirrorX(rightshoulder);
+}
 }
 }
 }

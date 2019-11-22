@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "SkeletonAttribute.h"
+#include "CharacterSkeletonAttribute.h"
 #include "CharacterMeshType.h"
 #include "core/NonCopyable.h"
 #include "core/String.h"
@@ -20,7 +20,7 @@ namespace animation {
  * @sa SkeletonAttribute
  */
 struct CharacterSettings : public core::NonCopyable {
-	SkeletonAttribute skeletonAttr;
+	CharacterSkeletonAttribute skeletonAttr;
 	std::string race;
 	std::string gender;
 	std::string chest;

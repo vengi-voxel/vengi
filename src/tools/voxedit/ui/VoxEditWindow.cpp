@@ -112,8 +112,8 @@ bool VoxEditWindow::init() {
 
 	if (tb::TBLayout* layout = getWidgetByType<tb::TBLayout>("animationsettings")) {
 		auto& cs = sceneMgr().characterSettings();
-		for (const SkeletonAttributeMeta* metaIter = SkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
-			const SkeletonAttributeMeta& meta = *metaIter;
+		for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
+			const animation::SkeletonAttributeMeta& meta = *metaIter;
 			tb::TBLayout *innerLayout = new tb::TBLayout();
 			tb::TBTextField *name = new tb::TBTextField();
 			name->setText(meta.name);

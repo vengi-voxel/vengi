@@ -11,8 +11,8 @@
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "video/ShapeBuilder.h"
-#include "animation/Character.h"
-#include "animation/CharacterRenderer.h"
+#include "animation/chr/Character.h"
+#include "animation/AnimationRenderer.h"
 #include "anim/VolumeCache.h"
 #include "render/ShapeRenderer.h"
 #include "render/GridRenderer.h"
@@ -68,7 +68,7 @@ private:
 	// the settings that are modified by the editor and then
 	// later transfered to the character for rendering
 	animation::CharacterSettings _characterSettings;
-	animation::CharacterRenderer _characterRenderer;
+	animation::AnimationRenderer _characterRenderer;
 	animation::CharacterCachePtr _characterCache;
 	// if we are in animation mode and we modified the meshes, we have to
 	// update the cache with the current volume. this is the layer id
