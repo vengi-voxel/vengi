@@ -19,7 +19,7 @@ static const char* validCharacters[] = {
 	"human-male-shepherd",
 	"human-male-worker",
 
-	"undead-male-default",
+	"undead-male-zombie",
 	"undead-male-skeleton"
 };
 

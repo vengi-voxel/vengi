@@ -62,12 +62,12 @@ set(FILES
 	voxel/models/characters/human/male/belt/shepherd.vox
 	voxel/models/characters/human/male/chest/shepherd.vox
 
-	voxel/models/characters/undead/male/head/default.vox
-	voxel/models/characters/undead/male/foot/default.vox
-	voxel/models/characters/undead/male/hand/default.vox
-	voxel/models/characters/undead/male/pants/default.vox
-	voxel/models/characters/undead/male/belt/default.vox
-	voxel/models/characters/undead/male/chest/default.vox
+	voxel/models/characters/undead/male/head/zombie.vox
+	voxel/models/characters/undead/male/foot/zombie.vox
+	voxel/models/characters/undead/male/hand/zombie.vox
+	voxel/models/characters/undead/male/pants/zombie.vox
+	voxel/models/characters/undead/male/belt/zombie.vox
+	voxel/models/characters/undead/male/chest/zombie.vox
 
 	voxel/models/characters/undead/male/shoulder/skeleton.vox
 	voxel/models/characters/undead/male/head/skeleton.vox
