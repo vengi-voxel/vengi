@@ -7,11 +7,11 @@ require "ai.undead-male-skeleton"
 require "ai.undead-male-zombie"
 
 function init ()
-	registerBlacksmith()
-	registerKnight()
-	registerRabbit()
-	registerSkeleton()
-	registerWolf()
-	registerWorker()
-	registerZombie()
+  registerBlacksmith()
+  registerKnight()
+  registerRabbit()
+  registerSkeleton()
+  registerWolf()
+  registerWorker()
+  registerZombie()
 end

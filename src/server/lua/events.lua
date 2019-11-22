@@ -1,5 +1,5 @@
 require "event.generic"
 
 function init ()
-	generic()
+  generic()
 end
