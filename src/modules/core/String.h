@@ -52,6 +52,9 @@ extern void splitString(const std::string& string, std::vector<std::string_view>
 extern std::string toLower(const std::string& string);
 extern std::string toLower(const char* string);
 
+inline char toUpper(char in) { return SDL_toupper((int)in); }
+inline char toLower(char in) { return SDL_tolower((int)in); }
+
 extern std::string toUpper(const std::string& string);
 extern std::string toUpper(const char* string);
 
