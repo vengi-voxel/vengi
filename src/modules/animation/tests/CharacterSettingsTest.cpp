@@ -47,12 +47,12 @@ TEST_F(CharacterSettingsTest, testLUA) {
 
 	EXPECT_EQ("testrace", settings.race);
 	EXPECT_EQ("testgender", settings.gender);
-	EXPECT_EQ("heads/test", settings.head);
-	EXPECT_EQ("belts/test", settings.belt);
-	EXPECT_EQ("chests/test", settings.chest);
-	EXPECT_EQ("pants/test", settings.pants);
-	EXPECT_EQ("hands/test", settings.hand);
-	EXPECT_EQ("feet/test", settings.foot);
+	EXPECT_EQ("heads/test", settings.path(CharacterMeshType::Head));
+	EXPECT_EQ("belts/test", settings.path(CharacterMeshType::Belt));
+	EXPECT_EQ("chests/test", settings.path(CharacterMeshType::Chest));
+	EXPECT_EQ("pants/test", settings.path(CharacterMeshType::Pants));
+	EXPECT_EQ("hands/test", settings.path(CharacterMeshType::Hand));
+	EXPECT_EQ("feet/test", settings.path(CharacterMeshType::Foot));
 
 	EXPECT_FLOAT_EQ(  42.0f,  settings.skeletonAttr.scaler);
 	EXPECT_FLOAT_EQ(1337.0f,  settings.skeletonAttr.headScale);

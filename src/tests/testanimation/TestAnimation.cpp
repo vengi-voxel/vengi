@@ -13,9 +13,8 @@
 
 static bool reloadCharacter = false;
 
-static constexpr int32_t cnt = /*(int)network::EntityType::MAX_ANIMAL - ((int)network::EntityType::BEGIN_ANIMAL + 1) +*/
-		(int)network::EntityType::MAX_CHARACTERS - ((int)network::EntityType::BEGIN_CHARACTERS + 1);
-static std::array<const char*, cnt> validCharacters;
+static constexpr int32_t cnt = (int)network::EntityType::MAX_CHARACTERS - ((int)network::EntityType::BEGIN_CHARACTERS + 1);
+static std::array<std::string, cnt> validCharacters {};
 
 TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem,
@@ -25,22 +24,19 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 				characterCache), _stockDataProvider(stockDataProvider) {
 	init(ORGANISATION, "testanimation");
 	setCameraMotion(true);
-	//setRenderPlane(true);
 	setRenderAxis(true);
 
 	int index = 0;
-	//for (int i = ((int)network::EntityType::BEGIN_ANIMAL) + 1; i < (int)network::EntityType::MAX_ANIMAL; ++i) {
-	//	validCharacters[index++] = network::EnumNameEntityType((network::EntityType)i);
-	//}
 	for (int i = ((int)network::EntityType::BEGIN_CHARACTERS) + 1; i < (int)network::EntityType::MAX_CHARACTERS; ++i) {
-		validCharacters[index++] = network::EnumNameEntityType((network::EntityType)i);
+		const char *entityName = network::EnumNameEntityType((network::EntityType)i);
+		std::string lower = core::string::toLower(core::string::format("chr/%s", entityName));
+		core::string::replaceAllChars(lower, '_', '-');
+		validCharacters[index++] = lower;
 	}
 }
 
 std::string TestAnimation::currentCharacter() const {
-	std::string name = validCharacters[_currentCharacterIndex];
-	core::string::replaceAllChars(name, '_', '-');
-	return core::string::toLower(name);
+	return validCharacters[_currentCharacterIndex];
 }
 
 core::AppState TestAnimation::onConstruct() {
@@ -209,13 +205,13 @@ void TestAnimation::doRender() {
 }
 
 void TestAnimation::onRenderUI() {
-	if (ImGui::Combo("Animation", &_animationIdx, _animations)) {
+	if (ImGui::ComboStl("Animation", &_animationIdx, _animations)) {
 		_character.setAnimation((animation::Animation)_animationIdx);
 	}
-	if (ImGui::Combo("Item/Tool", &_itemIdx, _items)) {
+	if (ImGui::ComboStl("Item/Tool", &_itemIdx, _items)) {
 		addItem(_itemIdx);
 	}
-	if (ImGui::Combo("Character", &_currentCharacterIndex, validCharacters.front(), validCharacters.size())) {
+	if (ImGui::ComboStl("Character", &_currentCharacterIndex, validCharacters)) {
 		loadCharacter();
 	}
 	Super::onRenderUI();

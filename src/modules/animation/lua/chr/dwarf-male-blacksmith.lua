@@ -1,4 +1,7 @@
+require 'chr.bones'
+
 function init()
+  setupBones()
   chr.setRace("dwarf")
   chr.setGender("male")
   chr.setHead("head/blacksmith")

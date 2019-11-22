@@ -21,5 +21,6 @@ enum class CharacterMeshType : uint8_t {
 };
 
 extern const char *toString(CharacterMeshType type);
+extern CharacterMeshType toEnum(const char *type);
 
 }

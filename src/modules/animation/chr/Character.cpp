@@ -31,7 +31,7 @@ bool Character::init(const CharacterCachePtr& cache, const std::string& luaStrin
 bool Character::initSettings(const std::string& luaString) {
 	CharacterSettings settings;
 	if (loadCharacterSettings(luaString, settings)) {
-		_settings.copyFrom(settings);
+		_settings = settings;
 		return true;
 	}
 	Log::warn("Failed to load the character settings");

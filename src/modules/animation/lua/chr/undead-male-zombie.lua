@@ -1,4 +1,7 @@
+require 'chr.bones'
+
 function init()
+  setupBones()
   chr.setRace("undead")
   chr.setGender("male")
   chr.setHead("head/default")

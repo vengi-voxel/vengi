@@ -30,10 +30,13 @@ enum class BoneId : uint8_t {
 	Max
 };
 
+extern BoneId toBoneId(const char *name);
+extern const char* toBoneId(const BoneId id);
+
 struct BoneIds {
-	uint8_t bones[2];
+	uint8_t bones[2] { 0, 0 };
 	bool mirrored[2] { false, false };
-	uint8_t num;
+	uint8_t num = 0;
 };
 
 }

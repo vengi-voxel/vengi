@@ -8,6 +8,7 @@
 #include "IMGUIInternal.h"
 #include "core/Var.h"
 #include <vector>
+#include <array>
 
 namespace ImGui {
 
@@ -16,8 +17,22 @@ IMGUI_API bool InputVarFloat(const char* label, core::VarPtr& var, float step = 
 IMGUI_API bool InputVarInt(const char* label, core::VarPtr& var, int step = 1, int step_fast = 100, ImGuiInputTextFlags extra_flags = 0);
 IMGUI_API bool CheckboxVar(const char* label, core::VarPtr& var);
 IMGUI_API bool CheckboxVar(const char* label, const char* varName);
-IMGUI_API bool Combo(const char* label, int* current_item, const std::vector<std::string>& items, int height_in_items = -1);
+
+template<class Collection>
+static bool ComboStl(const char* label, int* current_item, const Collection& items, int height_in_items = -1) {
+	return Combo(label, current_item,
+		[](void* data, int idx, const char** out_text) {
+			const Collection* vec = (const Collection*)data;
+			if (idx < 0 || idx >= (int)vec->size()) {
+				return false;
+			}
+			*out_text = (*vec)[idx].c_str();
+			return true;
+		},
+		(void*) &items, (int)items.size(), height_in_items);
+}
 IMGUI_API void TooltipText(const char* text);
+
 
 
 }

@@ -4,24 +4,20 @@
 
 #pragma once
 
-#include "voxelformat/MeshCache.h"
+#include "animation/AnimationCache.h"
 #include "animation/Vertex.h"
 #include "CharacterSettings.h"
 #include "CharacterMeshType.h"
-#include "voxel/Mesh.h"
-#include <memory>
 
 namespace animation {
 
 /**
  * @brief Cache @c voxel::Mesh instances for @c Character
  */
-class CharacterCache : public voxelformat::MeshCache {
+class CharacterCache : public AnimationCache<CharacterMeshType> {
 private:
-	bool load(const std::string& filename, CharacterMeshType meshType, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]);
 	bool loadGlider(const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]);
 public:
-	bool getCharacterMeshes(const CharacterSettings& settings, const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]);
 	bool getCharacterModel(const CharacterSettings& settings, Vertices& vertices, Indices& indices);
 	bool getItemModel(const char *itemName, Vertices& vertices, Indices& indices);
 };

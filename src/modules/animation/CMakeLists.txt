@@ -14,10 +14,11 @@ set(SRCS
 	chr/LUAFunctions.h
 
 	Animation.cpp Animation.h
+	AnimationCache.h
 	AnimationRenderer.cpp AnimationRenderer.h
 	AnimationEntity.h
 	Bone.cpp Bone.h
-	BoneId.h
+	BoneId.cpp BoneId.h
 	BoneUtil.h
 	Skeleton.h Skeleton.cpp
 	SkeletonAttribute.h
@@ -87,6 +88,8 @@ set(FILES
 	voxel/models/items/sword-2.vox
 )
 set(LUA_SRCS
+	chr/bones.lua
+
 	chr/dwarf-male-blacksmith.lua
 
 	chr/human-male-blacksmith.lua

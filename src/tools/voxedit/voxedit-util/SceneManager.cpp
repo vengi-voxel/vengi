@@ -715,8 +715,8 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 				continue;
 			}
 			const int characterMeshTypeId = core::string::toInt(value);
-			const std::string* path = _characterSettings.paths[characterMeshTypeId];
-			if (path == nullptr) {
+			const std::string& path = _characterSettings.paths[characterMeshTypeId];
+			if (path.empty()) {
 				Log::debug("No path found for layer %i", (int)i);
 				continue;
 			}
@@ -1480,7 +1480,7 @@ bool SceneManager::loadCharacter(const std::string& luaFile) {
 		Log::warn("Failed to load character settings from %s", luaFile.c_str());
 		return false;
 	}
-	_characterSettings.copyFrom(settings);
+	_characterSettings = settings;
 
 	voxel::VoxelVolumes volumes;
 	if (!_volumeCache.getCharacterVolumes(_characterSettings, volumes)) {
