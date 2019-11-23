@@ -14,7 +14,7 @@ static inline std::string getCharacterLua(network::EntityType type) {
 	std::string luaFilename = core::string::toLower(entityTypeStr);
 	core::string::replaceAllChars(luaFilename, '_', '-');
 	const std::string& luaPath = animation::luaFilename(luaFilename.c_str());
-	const std::string& lua = io::filesystem()->load(luaPath);
+	const std::string& lua = io::filesystem()->load("chr/" + luaPath);
 	if (lua.empty() && type != network::EntityType::HUMAN_MALE_KNIGHT) {
 		// provide a fallback
 		Log::warn("Could not load character settings from %s", luaPath.c_str());
