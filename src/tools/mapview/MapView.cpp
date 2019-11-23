@@ -142,7 +142,9 @@ core::AppState MapView::onInit() {
 	}
 	attrib::Attributes attributes;
 	attributes.add(attribContainer);
-	_entity->attrib().setCurrent(attrib::Type::SPEED, attributes.current(attrib::Type::SPEED));
+	attributes.update(0l);
+	const float speed = attributes.max(attrib::Type::SPEED);
+	_entity->attrib().setCurrent(attrib::Type::SPEED, speed);
 	if (!_worldRenderer.addEntity(_entity)) {
 		Log::error("Failed to create entity");
 		return core::AppState::InitFailure;
