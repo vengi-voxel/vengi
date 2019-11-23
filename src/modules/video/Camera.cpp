@@ -44,10 +44,9 @@ void Camera::rotate(const glm::vec3& radians) {
 	switch(_type) {
 	case CameraType::FirstPerson: {
 		turn(radians.y);
-		const glm::vec3& fw = forward();
-		const float dotResult = glm::dot(-fw, glm::up);
-		const float rotationDegrees = glm::degrees(glm::acos(dotResult)) - 90.0f;
-		constexpr float limitAngle = 75.0f;
+		const float dotResult = glm::dot(forward(), glm::down);
+		const float rotationDegrees = glm::acos(dotResult) - glm::radians(90.0f);
+		constexpr float limitAngle = glm::radians(75.0f);
 		if ((rotationDegrees <= limitAngle || radians.x >= 0.0f)
 				&& (rotationDegrees >= -limitAngle || radians.x <= 0.0f)) {
 			pitch(radians.x);
