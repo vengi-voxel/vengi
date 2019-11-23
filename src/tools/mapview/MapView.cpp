@@ -320,8 +320,8 @@ core::AppState MapView::onRunning() {
 	const bool current = isRelativeMouseMode();
 	if (current) {
 		_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+		_entity->setOrientation(-1.0 * _camera.yaw());
 	}
-
 	_axis.render(_camera);
 	_entity->update(_deltaFrameMillis);
 	return state;

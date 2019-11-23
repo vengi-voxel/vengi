@@ -6,6 +6,7 @@
 #include "core/command/Command.h"
 #include "voxel/Constants.h"
 
+
 namespace frontend {
 
 void PlayerMovement::construct() {
@@ -20,8 +21,9 @@ void PlayerMovement::shutdown() {
 }
 
 void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, ClientEntityPtr& entity, std::function<int(const glm::vec3& pos)> heightResolver) {
-
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
+	const glm::quat& q = camera.quaternion();
+	const double yaw = -1.0 * glm::yaw(q);
 
 	const attrib::ShadowAttributes& attribs = entity->attrib();
 	const double speed = attribs.current(attrib::Type::SPEED);

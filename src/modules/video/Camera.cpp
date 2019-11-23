@@ -61,6 +61,16 @@ void Camera::rotate(const glm::vec3& radians) {
 	}
 }
 
+void Camera::pitch(float radians) {
+	if (_type == CameraType::FirstPerson) {
+		const float curpitch = glm::pitch(_quat);
+		if (glm::abs(curpitch + radians) >= MAX_PITCH) {
+			radians = copysign(MAX_PITCH, curpitch) - curpitch;
+		}
+	}
+	rotate(radians, glm::right);
+}
+
 inline void Camera::slerp(const glm::quat& quat, float factor) {
 	_quat = glm::mix(_quat, quat, factor);
 	_dirty |= DIRTY_ORIENTATION;
@@ -392,5 +402,6 @@ void Camera::setFarPlane(float farPlane) {
 	_dirty |= DIRTY_PERSPECTIVE;
 	_farPlane = farPlane;
 }
+
 
 }
