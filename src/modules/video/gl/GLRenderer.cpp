@@ -362,6 +362,10 @@ bool depthFunc(CompareFunc func) {
 	return true;
 }
 
+CompareFunc getDepthFunc() {
+	return _priv::s.depthFunc;
+}
+
 bool setupStencil(const StencilConfig& config) {
 	bool dirty = false;
 	CompareFunc func = config.func();

@@ -247,6 +247,7 @@ extern bool disable(State state);
 extern void colorMask(bool red, bool green, bool blue, bool alpha);
 extern bool cullFace(Face face);
 extern bool depthFunc(CompareFunc func);
+extern CompareFunc getDepthFunc();
 extern bool setupStencil(const StencilConfig& config);
 extern void getBlendState(bool& enabled, BlendMode& src, BlendMode& dest, BlendEquation& func);
 extern bool blendFunc(BlendMode src, BlendMode dest);
