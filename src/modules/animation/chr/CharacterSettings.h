@@ -25,6 +25,10 @@ struct CharacterSettings : public AnimationSettings<CharacterMeshType> {
 	std::string gender;
 
 	bool update();
+
+	CharacterMeshType getMeshTypeIdForName(const char *name) {
+		return toEnum(name);
+	}
 };
 
 extern bool loadCharacterSettings(const std::string& luaString, CharacterSettings& settings);

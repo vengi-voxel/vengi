@@ -18,6 +18,8 @@ static inline std::string luaFilename(const char *character) {
 
 template<typename T>
 struct AnimationSettings {
+	virtual ~AnimationSettings() {}
+
 	std::array<std::string, std::enum_value(T::Max)> paths;
 	std::string basePath;
 	BoneIds boneIdsArray[std::enum_value(T::Max)] {};
@@ -54,8 +56,10 @@ struct AnimationSettings {
 		paths[std::enum_value(type)] = str;
 	}
 
+	virtual T getMeshTypeIdForName(const char *name) = 0;
+
 	inline BoneIds* boneIds(const char *name) {
-		T id = toEnum(name);
+		T id = getMeshTypeIdForName(name);
 		if (id == T::Max) {
 			return nullptr;
 		}

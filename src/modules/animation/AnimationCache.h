@@ -7,6 +7,7 @@
 #include "voxelformat/MeshCache.h"
 #include "AnimationSettings.h"
 #include "core/Assert.h"
+#include "Vertex.h"
 #include <string>
 
 namespace animation {
