@@ -2,8 +2,6 @@
  * @file
  */
 
-#pragma once
-
 #include "BoneId.h"
 #include "core/Array.h"
 #include "core/Common.h"
