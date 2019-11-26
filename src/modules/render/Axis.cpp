@@ -8,7 +8,7 @@
 
 namespace render {
 
-Axis::Axis() {
+Axis::Axis(bool flipZ) : _flipZ(flipZ) {
 	setPosition(glm::vec3(0));
 }
 
@@ -33,7 +33,7 @@ bool Axis::init() {
 	if (!_shapeRenderer.init()) {
 		return false;
 	}
-	_shapeBuilder.axis(1.0f);
+	_shapeBuilder.axis(glm::vec3(1.0f, 1.0f, _flipZ ? -1.0f : 1.0f));
 	_meshIndex = _shapeRenderer.create(_shapeBuilder);
 	return _meshIndex >= 0;
 }
