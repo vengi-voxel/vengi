@@ -14,27 +14,26 @@ namespace video {
 class Cubemap {
 private:
 	std::string _filename;
-	Id _textureHandle;
+	Id _textureHandle = InvalidId;
 public:
-	/**
-	 * @brief Loads 6 textures that belongs to a cubemap. The naming schema must be "<filename>-cm-X" (where X is replaced by 1-6)
-	 *
-	 * The order of the 1-6 is as followed:
-	 *   - GL_TEXTURE_CUBE_MAP_POSITIVE_X
-	 *   - GL_TEXTURE_CUBE_MAP_NEGATIVE_X
-	 *   - GL_TEXTURE_CUBE_MAP_POSITIVE_Y
-	 *   - GL_TEXTURE_CUBE_MAP_NEGATIVE_Y
-	 *   - GL_TEXTURE_CUBE_MAP_POSITIVE_Z
-	 *   - GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
-	 */
-	Cubemap(const std::string& filename);
 	~Cubemap();
 
+	/**
+	 * @brief Loads 6 textures that belongs to a cubemap.
+	 * The naming schema must be "<filename>-cm-<side>" (where side is
+	 * replaced with front, back, top, bottom, left and right)
+	 */
+	bool init(const char *filename);
 	void shutdown();
 
-	bool load();
+	video::Id handle() const;
+
 	void bind(video::TextureUnit texUnit = video::TextureUnit::Zero);
 	void unbind(video::TextureUnit texUnit = video::TextureUnit::Zero);
 };
+
+inline video::Id Cubemap::handle() const {
+	return _textureHandle;
+}
 
 }
