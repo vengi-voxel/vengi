@@ -14,6 +14,7 @@
 #include "video/Texture.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/Array.h"
 #include "core/Var.h"
 #include "core/Assert.h"
 #include <glm/fwd.hpp>
@@ -112,6 +113,7 @@ bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texC
 
 bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
 	bindTexture(TextureUnit::Upload, TextureType::TextureCube, handle);
+	checkError();
 
 	static const GLenum types[] = {
 		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -122,18 +124,36 @@ bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
 		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
 	};
 
-	for (unsigned int i = 0; i < 6; ++i) {
+	for (int i = 0; i < lengthof(types); ++i) {
 		const image::ImagePtr& img = images[i];
+		if (!img) {
+			Log::error("No image specified for position %i", i);
+			return false;
+		}
+		if (img->width() <= 0 || img->height() <= 0) {
+			Log::error("Invalid image dimensions for position %i", i);
+			return false;
+		}
+		if (img->depth() != 4 && img->depth() != 3) {
+			Log::error("Unsupported image depth for position %i: %i", i, img->depth());
+			return false;
+		}
 		const GLenum mode = img->depth() == 4 ? GL_RGBA : GL_RGB;
-		glTexImage2D(types[i], 0, mode, img->width(), img->height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data());
+		glTexImage2D(types[i], 0, mode, img->width(), img->height(), 0, mode, GL_UNSIGNED_BYTE, img->data());
+		checkError();
 	}
 
 	// TODO: use setupTexture
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	checkError();
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	checkError();
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	checkError();
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	checkError();
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	checkError();
 
 	return true;
 }
