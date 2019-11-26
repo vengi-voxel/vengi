@@ -167,6 +167,74 @@ int32_t Buffer::create(const void* data, size_t size, BufferType target) {
 	return idx;
 }
 
+int32_t Buffer::createSkyboxQuad() {
+	/**
+	 *               0/1/-1
+	 *     ------------------ 1/1/-1
+	 *    /|       /       /|
+	 *   /--------/0/1/0--/ |
+	 *  -1/1/1   /       /  |
+	 *  -----------------1/1/1
+	 *  | /|    |       |  /|
+	 *  |/ |    |0/0/1  | / |
+	 *  -----------------   / 1/-1/-1
+	 *  | /     |       |  /
+	 *  |/      |       | /
+	 *  -----------------
+	 *  -1/-1/1          1/-1/1
+	 */
+	alignas(16) static constexpr glm::vec3 vecs[] = {
+		// side: right
+		{ 1.0f, -1.0f, -1.0f}, // tri(1): right, bottom, front
+		{ 1.0f, -1.0f,  1.0f}, // tri(1): right, bottom, back
+		{ 1.0f,  1.0f,  1.0f}, // tri(1): right, bottom, back
+		{ 1.0f,  1.0f,  1.0f}, // tri(2): right, bottom, back
+		{ 1.0f,  1.0f, -1.0f}, // tri(2): right, top,    front
+		{ 1.0f, -1.0f, -1.0f}, // tri(2): right, bottom, front
+
+		// side: left
+		{-1.0f, -1.0f,  1.0f}, // tri(3): left, bottom, back
+		{-1.0f, -1.0f, -1.0f}, // tri(3): left, bottom, front
+		{-1.0f,  1.0f, -1.0f}, // tri(3): left, top,    front
+		{-1.0f,  1.0f, -1.0f}, // tri(4): left, top,    front
+		{-1.0f,  1.0f,  1.0f}, // tri(4): left, top,    back
+		{-1.0f, -1.0f,  1.0f}, // tri(4): left, bottom, back
+
+		// side: top
+		{-1.0f,  1.0f, -1.0f}, // tri(5): left,  top, front
+		{ 1.0f,  1.0f, -1.0f}, // tri(5): right, top, front
+		{ 1.0f,  1.0f,  1.0f}, // tri(5): right, top, back
+		{ 1.0f,  1.0f,  1.0f}, // tri(6): right, top, back
+		{-1.0f,  1.0f,  1.0f}, // tri(6): left,  top, back
+		{-1.0f,  1.0f, -1.0f}, // tri(6): left,  top, front
+
+		// side: bottom
+		{-1.0f, -1.0f, -1.0f}, // tri(7): left,  bottom, front
+		{-1.0f, -1.0f,  1.0f}, // tri(7): left,  bottom, back
+		{ 1.0f, -1.0f, -1.0f}, // tri(7): right, bottom, front
+		{ 1.0f, -1.0f, -1.0f}, // tri(8): right, bottom, front
+		{-1.0f, -1.0f,  1.0f}, // tri(8): left,  bottom, back
+		{ 1.0f, -1.0f,  1.0f}, // tri(8): right, bottom, back
+
+		// side: back
+		{-1.0f, -1.0f,  1.0f}, // tri(9):  left,  bottom, back
+		{-1.0f,  1.0f,  1.0f}, // tri(9):  left,  top,    back
+		{ 1.0f,  1.0f,  1.0f}, // tri(9):  right, top,    back
+		{ 1.0f,  1.0f,  1.0f}, // tri(10): right, top,    back
+		{ 1.0f, -1.0f,  1.0f}, // tri(10): right, bottom, back
+		{-1.0f, -1.0f,  1.0f}, // tri(10): left,  bottom, back
+
+		// side: front
+		{-1.0f,  1.0f, -1.0f}, // tri(11): left,  top,    front
+		{-1.0f, -1.0f, -1.0f}, // tri(11): left,  bottom, front
+		{ 1.0f, -1.0f, -1.0f}, // tri(11): right, bottom, front
+		{ 1.0f, -1.0f, -1.0f}, // tri(12): right, bottom, front
+		{ 1.0f,  1.0f, -1.0f}, // tri(12): right, top,    front
+		{-1.0f,  1.0f, -1.0f}  // tri(12): left,  top,    front
+	};
+	return create(vecs, sizeof(vecs));
+}
+
 int32_t Buffer::createFullscreenQuad() {
 	// counter clock wise winding
 	//

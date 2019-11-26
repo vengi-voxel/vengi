@@ -97,6 +97,14 @@ public:
 	 * @brief Fullscreen buffer with normalized device coordinates with 3 float components
 	 */
 	int32_t createFullscreenQuad();
+
+	/**
+	 * left, right, top, bottom, back, front
+	 *
+	 * @note winding order: counter clock wise - front faces inside the cube
+	 */
+	int32_t createSkyboxQuad();
+
 	/**
 	 * @brief Full texture coordinate buffer with 2 float components
 	 */
