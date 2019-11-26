@@ -20,7 +20,7 @@ layout(std140) uniform u_materialblock {
 	vec4 u_materialcolor[MATERIALCOLORS];
 };
 
-$out vec4 v_pos;
+$out vec3 v_pos;
 $out vec4 v_color;
 $out float v_ambientocclusion;
 
@@ -33,14 +33,15 @@ void main(void) {
 	uint a_colorindex = a_info[1];
 	uint a_material = a_info[2];
 #ifdef INSTANCED
-	v_pos = vec4(a_offset, 0.0) + u_model * vec4(a_pos, 1.0);
+	vec4 pos = vec4(a_offset, 0.0) + u_model * vec4(a_pos, 1.0);
 #else // INSTANCED
-	v_pos = u_model * vec4(a_pos, 1.0);
+	vec4 pos = u_model * vec4(a_pos, 1.0);
 #endif // INSTANCED
+	v_pos = pos.xyz;
 
 	int materialColorIndex = int(a_colorindex) + materialoffset;
 	vec3 materialColor = u_materialcolor[materialColorIndex % MATERIALCOLORS].rgb;
-	vec3 colornoise = texture(u_texture, abs(v_pos.xz) / 256.0 / 10.0).rgb;
+	vec3 colornoise = texture(u_texture, abs(pos.xz) / 256.0 / 10.0).rgb;
 	float alpha = u_materialcolor[a_colorindex].a;
 	// TODO: use $constant to check this magic number with the code
 	if (a_material == 1u) {
@@ -51,9 +52,9 @@ void main(void) {
 	v_ambientocclusion = aovalues[a_ao];
 
 #if cl_shadowmap == 1
-	v_lightspacepos = v_pos.xyz;
+	v_lightspacepos = v_pos;
 	v_viewz = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif // cl_shadowmap
 
-	gl_Position = u_viewprojection * v_pos;
+	gl_Position = u_viewprojection * pos;
 }
