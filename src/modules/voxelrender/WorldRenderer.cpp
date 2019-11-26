@@ -55,6 +55,7 @@ void WorldRenderer::shutdown() {
 	_opaqueBuffer.shutdown();
 	_waterBuffer.shutdown();
 	_shadow.shutdown();
+	_skybox.shutdown();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_shapeRendererOcclusionQuery.shutdown();
@@ -376,10 +377,13 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	}
 	drawCallsWorld += renderEntities(camera);
 	{
+		_skybox.bind(video::TextureUnit::Two);
 		core_trace_scoped(WorldRendererRenderWater);
 		video::ScopedShader scoped(_waterShader);
 		_waterShader.setModel(glm::mat4(1.0f));
 		_waterShader.setFocuspos(_focusPos);
+		_waterShader.setCubemap(video::TextureUnit::Two);
+		_waterShader.setCamerapos(camera.position());
 		_waterShader.setLightdir(_shadow.sunDirection());
 		_waterShader.setMaterialblock(_materialBlock);
 		_waterShader.setFogcolor(_clearColor);
@@ -412,6 +416,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_shapeRenderer.createOrUpdate(_aabbMeshes, _shapeBuilder);
 		_shapeRenderer.render(_aabbMeshes, camera);
 	}
+
+	_skybox.render(camera);
 
 	return drawCallsWorld;
 }
@@ -610,6 +616,10 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		return false;
 	}
 	if (!_chrShader.setup()) {
+		return false;
+	}
+	if (!_skybox.init("sky")) {
+		Log::warn("Failed to initialize the sky");
 		return false;
 	}
 

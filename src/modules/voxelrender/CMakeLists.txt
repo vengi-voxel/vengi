@@ -14,6 +14,12 @@ set(SRCS_SHADERS
 	shaders/voxel.vert shaders/voxel.frag
 )
 set(FILES
+	sky/sky_bk.png
+	sky/sky_dn.png
+	sky/sky_ft.png
+	sky/sky_lf.png
+	sky/sky_rt.png
+	sky/sky_up.png
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend render voxelfont voxelworld)
 generate_shaders(${LIB} world water world_instanced voxel)

@@ -23,6 +23,7 @@
 #include "render/RandomColorTexture.h"
 #include "video/ShapeBuilder.h"
 #include "render/ShapeRenderer.h"
+#include "render/Skybox.h"
 
 #include <unordered_map>
 #include <list>
@@ -91,6 +92,8 @@ protected:
 	glm::vec3 _focusPos = glm::zero<glm::vec3>();
 	render::Shadow _shadow;
 	render::RandomColorTexture _colorTexture;
+
+	render::Skybox _skybox;
 
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
