@@ -260,7 +260,7 @@ std::string uniformSetterPostfix(const Variable::Type type, int amount) {
 		if (amount > 1) {
 			return "1iv";
 		}
-		return "i";
+		return "";
 	}
 	return "";
 }
