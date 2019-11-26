@@ -574,7 +574,7 @@ void ShapeBuilder::axis(const glm::vec3& scale) {
 	const glm::vec3 verticesAxis[] = {
 		glm::right * scale,
 		glm::up * scale,
-		glm::backward * scale
+		glm::forward * scale
 	};
 
 	setColor(core::Color::Red);
