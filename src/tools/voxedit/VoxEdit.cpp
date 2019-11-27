@@ -161,6 +161,8 @@ core::AppState VoxEdit::onConstruct() {
 		_mainWindow->invokeEvent(event);
 	}).setHelp("Opens the noise dialog");
 
+	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER, "Render the scene with voxel outlines");
+
 	return state;
 }
 
