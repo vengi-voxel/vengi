@@ -200,6 +200,7 @@ void TBButton::onProcess() {
 		return;
 	}
 	setValue(_var->intVal());
+	_var->markClean();
 }
 
 void TBButton::onSkinChanged() {
@@ -223,9 +224,7 @@ bool TBButton::onEvent(const TBWidgetEvent &ev) {
 			// Intentionally don't return true for this event. We want it to continue propagating.
 		}
 		if (_var) {
-			Log::debug("Button pressed update var");
 			_var->setVal(getValue());
-			_var->markClean();
 		}
 		if (!_command.isEmpty()) {
 			if (canToggle()) {
@@ -407,7 +406,6 @@ void TBRadioCheckBox::setValue(int value) {
 	m_value = value;
 	if (_var) {
 		_var->setVal(value != 0);
-		_var->markClean();
 	}
 	if (!_command.isEmpty()) {
 		execute("%s %i", _command.c_str(), m_value);
@@ -435,6 +433,7 @@ void TBRadioCheckBox::onProcess() {
 		return;
 	}
 	setValue(_var->intVal());
+	_var->markClean();
 }
 
 bool TBRadioCheckBox::onEvent(const TBWidgetEvent &ev) {
@@ -623,6 +622,7 @@ void TBSlider::onProcess() {
 		return;
 	}
 	setValue(_var->intVal());
+	_var->markClean();
 }
 
 void TBSlider::setValueDouble(double value) {
@@ -633,7 +633,6 @@ void TBSlider::setValueDouble(double value) {
 	m_value = value;
 	if (_var) {
 		_var->setVal((float)value);
-		_var->markClean();
 	}
 	if (!_command.isEmpty()) {
 		execute("%s %f", _command.c_str(), m_value);
