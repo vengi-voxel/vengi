@@ -406,7 +406,7 @@ void TBRadioCheckBox::setValue(int value) {
 	}
 	m_value = value;
 	if (_var) {
-		_var->setVal(value);
+		_var->setVal(value != 0);
 		_var->markClean();
 	}
 	if (!_command.isEmpty()) {
