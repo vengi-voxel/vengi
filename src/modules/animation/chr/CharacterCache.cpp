@@ -53,10 +53,7 @@ bool CharacterCache::getCharacterModel(const CharacterSettings& settings, Vertic
 		for (uint8_t b = 0u; b < bids.num; ++b) {
 			const uint8_t boneId = bids.bones[b];
 			const std::vector<voxel::VoxelVertex>& meshVertices = mesh->getVertexVector();
-			for (voxel::VoxelVertex v : meshVertices) {
-				if ((CharacterMeshType)i == CharacterMeshType::Foot) {
-					v.position.y -= settings.skeletonAttr.hipOffset;
-				}
+			for (const voxel::VoxelVertex& v : meshVertices) {
 				vertices.emplace_back(Vertex{v.position, v.colorIndex, boneId, v.ambientOcclusion});
 			}
 
