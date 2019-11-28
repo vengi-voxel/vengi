@@ -34,7 +34,7 @@ protected:
 
 	bool getMeshes(const AnimationSettings<T>& settings, const voxel::Mesh* (&meshes)[std::enum_value(T::Max)],
 			std::function<bool(const voxel::Mesh* (&meshes)[std::enum_value(T::Max)])> loadAdditional = {}) {
-		for (size_t i = 0; i < settings.paths.size(); ++i) {
+		for (size_t i = 0; i < AnimationSettings<T>::MAX_ENTRIES; ++i) {
 			if (settings.paths[i].empty()) {
 				meshes[i] = nullptr;
 				continue;

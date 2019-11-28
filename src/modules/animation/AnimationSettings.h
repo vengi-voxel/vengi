@@ -18,11 +18,12 @@ static inline std::string luaFilename(const char *character) {
 
 template<typename T>
 struct AnimationSettings {
+	static constexpr const size_t MAX_ENTRIES {64};
 	virtual ~AnimationSettings() {}
 
-	std::array<std::string, std::enum_value(T::Max)> paths;
+	std::string paths[MAX_ENTRIES];
+	BoneIds boneIdsArray[MAX_ENTRIES];
 	std::string basePath;
-	BoneIds boneIdsArray[std::enum_value(T::Max)] {};
 
 	std::string fullPath(T type, const char* name) const {
 		const std::string& p = path(type, name);
