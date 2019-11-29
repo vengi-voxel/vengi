@@ -11,7 +11,7 @@
 #include "render/Axis.h"
 #include "PlayerMovement.h"
 #include "video/Camera.h"
-#include "animation/chr/CharacterCache.h"
+#include "animation/AnimationCache.h"
 #include "video/Buffer.h"
 #include "voxelworld/WorldMgr.h"
 #include "stock/Stock.h"
@@ -26,7 +26,7 @@ class MapView: public ui::imgui::IMGUIApp {
 protected:
 	using Super = ui::imgui::IMGUIApp;
 	video::Camera _camera;
-	animation::CharacterCachePtr _characterCache;
+	animation::AnimationCachePtr _animationCache;
 	voxelrender::WorldRenderer _worldRenderer;
 	voxelworld::WorldMgrPtr _worldMgr;
 	render::Axis _axis;
@@ -62,7 +62,7 @@ protected:
 	void beforeUI() override;
 
 public:
-	MapView(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
+	MapView(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 			const stock::StockDataProviderPtr& stockDataProvider,
 			const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 			const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world,

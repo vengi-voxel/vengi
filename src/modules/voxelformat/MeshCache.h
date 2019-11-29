@@ -17,8 +17,8 @@ class MeshCache : public core::IComponent {
 protected:
 	std::unordered_map<std::string, voxel::Mesh*> _meshes;
 
-	voxel::Mesh& cacheEntry(const char *path);
 public:
+	voxel::Mesh& cacheEntry(const char *path);
 	bool loadMesh(const char* fullPath, voxel::Mesh& mesh);
 	bool putMesh(const char* fullPath, const voxel::Mesh& mesh);
 	bool init() override;

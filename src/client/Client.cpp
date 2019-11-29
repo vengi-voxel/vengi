@@ -27,13 +27,13 @@
 #include "voxel/MaterialColor.h"
 #include "core/Rest.h"
 
-Client::Client(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
+Client::Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
 		const network::ClientNetworkPtr& network, const voxelworld::WorldMgrPtr& world,
 		const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 		const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache) :
-		Super(metric, filesystem, eventBus, timeProvider), _camera(), _characterCache(characterCache),
+		Super(metric, filesystem, eventBus, timeProvider), _camera(), _animationCache(animationCache),
 		_network(network), _world(world), _messageSender(messageSender),
 		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache) {
 	init(ORGANISATION, "client");
@@ -160,7 +160,7 @@ core::AppState Client::onInit() {
 	_camera.update(0l);
 	_waiting.init();
 
-	if (!_characterCache->init()) {
+	if (!_animationCache->init()) {
 		Log::error("Failed to initialize character cache");
 		return core::AppState::InitFailure;
 	}
@@ -240,7 +240,7 @@ core::AppState Client::onCleanup() {
 	_stockDataProvider->shutdown();
 	_voxelFont.shutdown();
 	Log::info("shutting down the character cache");
-	_characterCache->shutdown();
+	_animationCache->shutdown();
 	Log::info("shutting down the world renderer");
 	_worldRenderer.shutdown();
 	core::AppState state = Super::onCleanup();
@@ -345,7 +345,7 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 
 void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos) {
 	Log::info("Entity %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
-	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, id, type, pos, orientation));
+	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation));
 }
 
 void Client::entityRemove(frontend::ClientEntityId id) {
@@ -359,7 +359,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	_camera.setTargetDistance(_maxTargetDistance->floatVal());
 	_camera.setPosition(pos + _cameraPosition);
 	const network::EntityType type = network::EntityType::PLAYER;
-	_player = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, id, type, pos, orientation);
+	_player = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.extractMeshes(_camera);
 
@@ -387,7 +387,7 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 }
 
 int main(int argc, char *argv[]) {
-	const animation::CharacterCachePtr& characterCache = std::make_shared<animation::CharacterCache>();
+	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(volumeCache);
@@ -398,6 +398,6 @@ int main(int argc, char *argv[]) {
 	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	Client app(metric, characterCache, stockDataProvider, network, world, messageSender, eventBus, timeProvider, filesystem, volumeCache);
+	Client app(metric, animationCache, stockDataProvider, network, world, messageSender, eventBus, timeProvider, filesystem, volumeCache);
 	return app.startMainLoop(argc, argv);
 }

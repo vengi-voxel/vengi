@@ -19,9 +19,9 @@ static std::array<std::string, cnt> validCharacters {};
 TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
-		const animation::CharacterCachePtr& characterCache) :
-		Super(metric, filesystem, eventBus, timeProvider), _characterCache(
-				characterCache), _stockDataProvider(stockDataProvider) {
+		const animation::AnimationCachePtr& animationCache) :
+		Super(metric, filesystem, eventBus, timeProvider), _animationCache(
+				animationCache), _stockDataProvider(stockDataProvider) {
 	init(ORGANISATION, "testanimation");
 	setCameraMotion(true);
 	setRenderAxis(true);
@@ -84,11 +84,11 @@ bool TestAnimation::loadCharacter() {
 	}
 
 	animation::Character testChr;
-	if (!testChr.init(_characterCache, lua)) {
+	if (!testChr.init(_animationCache, lua)) {
 		Log::error("Failed to initialize the character %s for animation", chr.c_str());
 		return false;
 	}
-	core_assert_always(_character.init(_characterCache, lua));
+	core_assert_always(_character.init(_animationCache, lua));
 	if (_luaFile) {
 		filesystem()->unwatch(_luaFile);
 	}
@@ -145,7 +145,7 @@ core::AppState TestAnimation::onInit() {
 		Log::error("Failed to load items");
 		return core::AppState::InitFailure;
 	}
-	if (!_characterCache->init()) {
+	if (!_animationCache->init()) {
 		Log::error("Failed to initialize the character mesh cache");
 		return core::AppState::InitFailure;
 	}
@@ -199,7 +199,7 @@ void TestAnimation::doRender() {
 		loadCharacter();
 		reloadCharacter = false;
 	}
-	_character.updateTool(_characterCache, _inventory);
+	_character.updateTool(_animationCache, _inventory);
 	_character.update(_deltaFrameMillis, _attrib);
 	_renderer.render(_character, _camera);
 }
@@ -219,7 +219,7 @@ void TestAnimation::onRenderUI() {
 
 core::AppState TestAnimation::onCleanup() {
 	core::AppState state = Super::onCleanup();
-	_characterCache->shutdown();
+	_animationCache->shutdown();
 	_stockDataProvider->shutdown();
 	_renderer.shutdown();
 	return state;
@@ -230,8 +230,8 @@ int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	const animation::CharacterCachePtr& characterCache = std::make_shared<animation::CharacterCache>();
+	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	TestAnimation app(metric, stockDataProvider, filesystem, eventBus, timeProvider, characterCache);
+	TestAnimation app(metric, stockDataProvider, filesystem, eventBus, timeProvider, animationCache);
 	return app.startMainLoop(argc, argv);
 }

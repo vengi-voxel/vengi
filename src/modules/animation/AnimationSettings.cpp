@@ -52,7 +52,7 @@ std::string AnimationSettings::path(int idx, const char *name) const {
 	if (name == nullptr) {
 		name = paths[idx].c_str();
 	}
-	return core::string::format("%s/%s/%s", _types[idx].c_str(), paths[idx].c_str(), name);
+	return core::string::format("%s/%s", _types[idx].c_str(), name);
 }
 
 bool AnimationSettings::setPath(int idx, const char *str) {

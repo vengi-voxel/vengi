@@ -111,15 +111,15 @@ bool VoxEditWindow::init() {
 	}
 
 	if (tb::TBLayout* layout = getWidgetByType<tb::TBLayout>("animationsettings")) {
-		auto& cs = sceneMgr().characterSettings();
+		auto& as = sceneMgr().animationSettings();
 		for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
 			const animation::SkeletonAttributeMeta& meta = *metaIter;
 			tb::TBLayout *innerLayout = new tb::TBLayout();
 			tb::TBTextField *name = new tb::TBTextField();
 			name->setText(meta.name);
 			tb::TBInlineSelectDouble *value = new tb::TBInlineSelectDouble();
-			const float *saVal = (const float*)(((const char*)&cs) + meta.offset);
-			// TODO: provide update mechanism
+			const float *saVal = (const float*)(((const char*)&as) + meta.offset);
+			// TODO: provide update mechanism and refresh on load
 			value->setValueDouble(*saVal);
 			value->setID(TBIDC(meta.name));
 			value->setLimits(-100.0, 100.0);

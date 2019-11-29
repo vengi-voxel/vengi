@@ -6,7 +6,7 @@
 
 #include "testcore/TestApp.h"
 #include "animation/chr/Character.h"
-#include "animation/chr/CharacterCache.h"
+#include "animation/AnimationCache.h"
 #include "animation/AnimationRenderer.h"
 #include "attrib/ShadowAttributes.h"
 #include "stock/StockDataProvider.h"
@@ -22,7 +22,7 @@ private:
 	using Super = TestApp;
 
 	animation::Character _character;
-	animation::CharacterCachePtr _characterCache;
+	animation::AnimationCachePtr _animationCache;
 	animation::AnimationRenderer _renderer;
 	stock::StockDataProviderPtr _stockDataProvider;
 	stock::Inventory _inventory;
@@ -45,7 +45,7 @@ public:
 	TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,
 			const io::FilesystemPtr& filesystem,
 			const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
-			const animation::CharacterCachePtr& characterCache);
+			const animation::AnimationCachePtr& animationCache);
 
 	core::AppState onConstruct() override;
 	core::AppState onInit() override;

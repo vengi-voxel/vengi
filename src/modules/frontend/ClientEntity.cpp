@@ -24,12 +24,12 @@ static inline std::string getCharacterLua(network::EntityType type) {
 }
 
 ClientEntity::ClientEntity(const stock::StockDataProviderPtr& provider,
-		const animation::CharacterCachePtr& characterCache, ClientEntityId id,
+		const animation::AnimationCachePtr& animationCache, ClientEntityId id,
 		network::EntityType type, const glm::vec3& pos, float orientation) :
 		_id(id), _type(type), _position(pos), _orientation(orientation),
-		_stock(provider), _characterCache(characterCache) {
+		_stock(provider), _animationCache(animationCache) {
 	const std::string& lua = getCharacterLua(type);
-	if (!_character.init(_characterCache, lua)) {
+	if (!_character.init(_animationCache, lua)) {
 		Log::error("Failed to init the character");
 	}
 	if (!_stock.init()) {
@@ -49,7 +49,7 @@ ClientEntity::~ClientEntity() {
 
 void ClientEntity::update(uint64_t dt) {
 	_attrib.update(dt);
-	_character.updateTool(_characterCache, _stock.inventory());
+	_character.updateTool(_animationCache, _stock.inventory());
 	_character.update(dt, _attrib);
 }
 

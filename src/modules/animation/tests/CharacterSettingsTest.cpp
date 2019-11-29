@@ -10,31 +10,29 @@ namespace animation {
 const char *TestSetters = R"(
 function init()
   settings.setBasePath("testrace", "testgender")
-  settings.setMeshTypes("head", "chest", "belt", "pants", "hand", "foot", "shoulder", "glider")
-  settings.setPath("head", "head")
-  settings.setPath("belt", "belt")
-  settings.setPath("chest", "chest")
-  settings.setPath("pants", "pants")
-  settings.setPath("hand", "hand")
-  settings.setPath("foot", "foot")
-  settings.setPath("glider", "glider")
-  skeleton.setScaler(42.0)
-  skeleton.setHeadScale(1337.0)
-  skeleton.setNeckHeight(815.0)
-  skeleton.setNeckForward(4311.0)
-  skeleton.setNeckRight(3.14)
-  skeleton.setToolForward(1.0)
-  skeleton.setToolRight(-1.0)
-  skeleton.setShoulderScale(100.0)
-  skeleton.setHeadHeight(101.0)
-  skeleton.setChestHeight(102.0)
-  skeleton.setBeltHeight(103.0)
-  skeleton.setPantsHeight(104.0)
-  skeleton.setInvisibleLegHeight(105.0)
-  skeleton.setFootHeight(106.0)
-  skeleton.setOrigin(108.0)
-  skeleton.setHipOffset(109.0)
-  skeleton.setFootRight(-3.2)
+  settings.setMeshTypes("type1", "type2")
+  settings.setPath("type1", "name1")
+  settings.setPath("type2", "name2")
+  local attributes = {
+    scaler = 42.0,
+    headScale = 1337.0,
+    neckHeight = 815.0,
+    neckForward = 4311.0,
+    neckRight = 3.14,
+    toolForward = 1.0,
+    toolRight = -1.0,
+    shoulderScale = 100.0,
+    headHeight = 101.0,
+    chestHeight = 102.0,
+    beltHeight = 103.0,
+    pantsHeight = 104.0,
+    invisibleLegHeight = 105.0,
+    footHeight = 106.0,
+    origin = 108.0,
+    hipOffset = 109.0,
+    footRight = -3.2
+  }
+  return attributes
 end
 )";
 
@@ -42,16 +40,19 @@ class CharacterSettingsTest: public core::AbstractTest {
 };
 
 TEST_F(CharacterSettingsTest, testLUA) {
-	CharacterSettings settings;
-	EXPECT_TRUE(loadCharacterSettings(TestSetters, settings))
+	AnimationSettings settings;
+	CharacterSkeletonAttribute skeletonAttr;
+	ASSERT_TRUE(loadCharacterSettings(TestSetters, settings, skeletonAttr))
 		<< "Failed to initialize the character settings";
 
-	EXPECT_EQ(8u, settings.types().size());
-	for (size_t i = 0; i < settings.types().size(); ++i) {
-		EXPECT_EQ(settings.types()[i], settings.path(i));
-	}
+	ASSERT_EQ(2u, settings.types().size());
 
-	const CharacterSkeletonAttribute& skeletonAttr = settings.skeletonAttr;
+	EXPECT_EQ(0, settings.getIdxForName("type1"));
+	EXPECT_EQ(1, settings.getIdxForName("type2"));
+
+	EXPECT_EQ("type1/name1", settings.path(0));
+	EXPECT_EQ("type2/name2", settings.path(1));
+
 	EXPECT_FLOAT_EQ(  42.0f,  skeletonAttr.scaler);
 	EXPECT_FLOAT_EQ(1337.0f,  skeletonAttr.headScale);
 	EXPECT_FLOAT_EQ( 815.0f,  skeletonAttr.neckHeight);

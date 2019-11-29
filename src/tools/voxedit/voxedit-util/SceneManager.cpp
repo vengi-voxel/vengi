@@ -714,25 +714,25 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 				continue;
 			}
 			const int characterMeshTypeId = core::string::toInt(value);
-			const std::string& path = _characterSettings.paths[characterMeshTypeId];
+			const std::string& path = _animationSettings.paths[characterMeshTypeId];
 			if (path.empty()) {
 				Log::debug("No path found for layer %i", (int)i);
 				continue;
 			}
 			voxel::Mesh mesh;
 			_volumeRenderer.toMesh(i, &mesh);
-			const std::string& fullPath = _characterSettings.fullPath(characterMeshTypeId);
-			_characterCache->putMesh(fullPath.c_str(), mesh);
+			const std::string& fullPath = _animationSettings.fullPath(characterMeshTypeId);
+			_animationCache->putMesh(fullPath.c_str(), mesh);
 			Log::debug("Updated mesh on layer %i for path %s", (int)i, fullPath.c_str());
 		}
-		if (!_character.initMesh(_characterCache)) {
+		if (!_character.initMesh(_animationCache)) {
 			Log::warn("Failed to update the mesh");
 		}
 		_animationUpdate = false;
 		_animationLayerDirtyState = -1;
 	}
 	_character.update(deltaFrame, attrib);
-	_characterRenderer.render(_character, camera);
+	_animationRenderer.render(_character, camera);
 }
 
 void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
@@ -1268,13 +1268,13 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the volume cache");
 		return false;
 	}
-	if (!_characterRenderer.init()) {
+	if (!_animationRenderer.init()) {
 		Log::error("Failed to initialize the character renderer");
 		return false;
 	}
-	_characterRenderer.setClearColor(core::Color::Clear);
-	_characterCache = std::make_shared<animation::CharacterCache>();
-	if (!_characterCache->init()) {
+	_animationRenderer.setClearColor(core::Color::Clear);
+	_animationCache = std::make_shared<animation::AnimationCache>();
+	if (!_animationCache->init()) {
 		Log::error("Failed to initialize the character mesh cache");
 		return false;
 	}
@@ -1423,8 +1423,8 @@ void SceneManager::shutdown() {
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
 	_mementoHandler.clearStates();
-	_characterRenderer.shutdown();
-	_characterCache->shutdown();
+	_animationRenderer.shutdown();
+	_animationCache->shutdown();
 	_character.shutdown();
 }
 
@@ -1436,7 +1436,7 @@ bool SceneManager::saveCharacter(const char *name) {
 	const std::string luaDir(core::string::extractPath(luaFilePath));
 	io::filesystem()->createDir(luaDir);
 	const io::FilePtr& luaFile = io::filesystem()->open(luaFilePath, io::FileMode::Write);
-	if (saveCharacterLua(_characterSettings, name, luaFile)) {
+	if (saveCharacterLua(_animationSettings, _chrSkeletonAttribute, name, luaFile)) {
 		Log::info("Wrote lua script: %s", luaFile->name().c_str());
 	}
 
@@ -1459,7 +1459,7 @@ bool SceneManager::saveCharacter(const char *name) {
 			continue;
 		}
 		const int characterMeshTypeId = core::string::toInt(value);
-		const std::string& fullPath = _characterSettings.fullPath(characterMeshTypeId, name);
+		const std::string& fullPath = _animationSettings.fullPath(characterMeshTypeId, name);
 		if (!saveLayer(i, fullPath)) {
 			Log::warn("Failed to save type %i to %s", characterMeshTypeId, fullPath.c_str());
 			_dirty = true;
@@ -1470,16 +1470,18 @@ bool SceneManager::saveCharacter(const char *name) {
 }
 
 bool SceneManager::loadCharacter(const std::string& luaFile) {
-	animation::CharacterSettings settings;
+	animation::AnimationSettings settings;
+	animation::CharacterSkeletonAttribute attributes;
 	const std::string& lua = io::filesystem()->load(luaFile);
-	if (!animation::loadCharacterSettings(lua, settings)) {
+	if (!animation::loadCharacterSettings(lua, settings, attributes)) {
 		Log::warn("Failed to load character settings from %s", luaFile.c_str());
 		return false;
 	}
-	_characterSettings = settings;
+	_animationSettings = settings;
+	_chrSkeletonAttribute = attributes;
 
 	voxel::VoxelVolumes volumes;
-	if (!_volumeCache.getCharacterVolumes(_characterSettings, volumes)) {
+	if (!_volumeCache.getCharacterVolumes(_animationSettings, volumes)) {
 		return false;
 	}
 

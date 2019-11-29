@@ -10,7 +10,7 @@
 #include "attrib/ShadowAttributes.h"
 #include "video/Buffer.h"
 #include "animation/chr/Character.h"
-#include "animation/chr/CharacterCache.h"
+#include "animation/AnimationCache.h"
 #include "AnimationShaders.h"
 #include "stock/Stock.h"
 #include <functional>
@@ -31,12 +31,12 @@ private:
 	animation::Character _character;
 	attrib::ShadowAttributes _attrib;
 	stock::Stock _stock;
-	animation::CharacterCachePtr _characterCache;
+	animation::AnimationCachePtr _animationCache;
 	video::Buffer _vbo;
 	int32_t _vertices = -1;
 	int32_t _indices = -1;
 public:
-	ClientEntity(const stock::StockDataProviderPtr& provider, const animation::CharacterCachePtr& characterCache,
+	ClientEntity(const stock::StockDataProviderPtr& provider, const animation::AnimationCachePtr& animationCache,
 			ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation);
 	~ClientEntity();
 

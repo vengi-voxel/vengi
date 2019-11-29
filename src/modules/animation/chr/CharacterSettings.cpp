@@ -5,13 +5,11 @@
 #include "CharacterSettings.h"
 #include "core/Log.h"
 #include "core/Common.h"
-#include "core/Array.h"
-#include "commonlua/LUA.h"
 #include "animation/LUAShared.h"
 
 namespace animation {
 
-bool loadCharacterSettings(const std::string& luaString, CharacterSettings& settings) {
+bool loadCharacterSettings(const std::string& luaString, AnimationSettings& settings, CharacterSkeletonAttribute& skeletonAttr) {
 	if (luaString.empty()) {
 		Log::warn("empty animation settings can't get loaded");
 		return false;
@@ -35,15 +33,15 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 
 	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
-		float *saVal = (float*)(((char*)&settings.skeletonAttr) + meta.offset);
+		float *saVal = (float*)(((char*)&skeletonAttr) + meta.offset);
 		if (lua.valueFloatFromTable(meta.name, saVal)) {
-			Log::info("Value for %s: %f", meta.name, *saVal);
+			Log::debug("Skeleton attribute value for %s: %f", meta.name, *saVal);
 		} else {
-			Log::info("Value for %s not given - use default: %f", meta.name, *saVal);
+			Log::debug("Skeleton attribute value for %s not given - use default: %f", meta.name, *saVal);
 		}
 	}
 
-	return settings.skeletonAttr.init();
+	return skeletonAttr.init();
 }
 
 }

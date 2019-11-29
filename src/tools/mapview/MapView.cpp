@@ -21,13 +21,13 @@
 #include "attrib/Attributes.h"
 #include "attrib/ContainerProvider.h"
 
-MapView::MapView(const metric::MetricPtr& metric, const animation::CharacterCachePtr& characterCache,
+MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 		const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world,
 		const voxelformat::VolumeCachePtr& volumeCache) :
 		Super(metric, filesystem, eventBus, timeProvider), _camera(),
-		_characterCache(characterCache), _worldRenderer(world), _worldMgr(world), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache) {
+		_animationCache(animationCache), _worldRenderer(world), _worldMgr(world), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache) {
 	init(ORGANISATION, "mapview");
 }
 
@@ -96,7 +96,7 @@ core::AppState MapView::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_characterCache->init()) {
+	if (!_animationCache->init()) {
 		Log::error("Failed to init mesh cache");
 		return core::AppState::InitFailure;
 	}
@@ -127,7 +127,7 @@ core::AppState MapView::onInit() {
 
 	const network::EntityType entityType = network::EntityType::HUMAN_MALE_WORKER;
 	const frontend::ClientEntityId entityId = (frontend::ClientEntityId)1;
-	_entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _characterCache, entityId, entityType, pos, 0.0f);
+	_entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, entityId, entityType, pos, 0.0f);
 	attrib::ContainerProvider containerProvider;
 	const std::string& attribLua = filesystem()->load("attributes.lua");
 	if (!containerProvider.init(attribLua)) {
@@ -311,7 +311,7 @@ core::AppState MapView::onRunning() {
 
 core::AppState MapView::onCleanup() {
 	_stockDataProvider->shutdown();
-	_characterCache->shutdown();
+	_animationCache->shutdown();
 	_volumeCache->shutdown();
 	_worldRenderer.shutdown();
 	_worldTimer.shutdown();
@@ -336,7 +336,7 @@ bool MapView::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 int main(int argc, char *argv[]) {
-	const animation::CharacterCachePtr& characterCache = std::make_shared<animation::CharacterCache>();
+	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(volumeCache);
@@ -344,6 +344,6 @@ int main(int argc, char *argv[]) {
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	MapView app(metric, characterCache, stockDataProvider, filesystem, eventBus, timeProvider, world, volumeCache);
+	MapView app(metric, animationCache, stockDataProvider, filesystem, eventBus, timeProvider, world, volumeCache);
 	return app.startMainLoop(argc, argv);
 }

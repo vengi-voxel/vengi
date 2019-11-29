@@ -9,6 +9,7 @@
 #include "core/Assert.h"
 #include "Vertex.h"
 #include <string>
+#include <memory>
 
 namespace animation {
 
@@ -128,5 +129,7 @@ public:
 		return true;
 	}
 };
+
+using AnimationCachePtr = std::shared_ptr<AnimationCache>;
 
 }

@@ -21,7 +21,7 @@
 
 namespace animation {
 
-bool Character::init(const CharacterCachePtr& cache, const std::string& luaString) {
+bool Character::init(const AnimationCachePtr& cache, const std::string& luaString) {
 	if (!initSettings(luaString)) {
 		return false;
 	}
@@ -29,18 +29,40 @@ bool Character::init(const CharacterCachePtr& cache, const std::string& luaStrin
 }
 
 bool Character::initSettings(const std::string& luaString) {
-	CharacterSettings settings;
-	if (loadCharacterSettings(luaString, settings)) {
+	AnimationSettings settings;
+	CharacterSkeletonAttribute attributes;
+	if (loadCharacterSettings(luaString, settings, attributes)) {
 		_settings = settings;
+		_attributes = attributes;
 		return true;
 	}
 	Log::warn("Failed to load the character settings");
 	return false;
 }
 
-bool Character::initMesh(const CharacterCachePtr& cache) {
+bool Character::loadGlider(const AnimationCachePtr& cache, const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
+	const int idx = settings.getIdxForName("glider");
+	if (idx < 0 || idx >= (int)AnimationSettings::MAX_ENTRIES) {
+		return false;
+	}
+	const char *fullPath = "models/glider.vox";
+	voxel::Mesh& mesh = cache->cacheEntry(fullPath);
+	if (mesh.getNoOfVertices() > 0) {
+		meshes[idx] = &mesh;
+		return true;
+	}
+	if (cache->loadMesh(fullPath, mesh)) {
+		meshes[idx] = &mesh;
+		return true;
+	}
+	meshes[idx] = nullptr;
+	Log::error("Failed to load glider");
+	return false;
+}
+
+bool Character::initMesh(const AnimationCachePtr& cache) {
 	if (!cache->getBoneModel(_settings, _vertices, _indices, [&] (const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
-		return cache->loadGlider(_settings, meshes);
+		return loadGlider(cache, _settings, meshes);
 	})) {
 		Log::warn("Failed to load the character model");
 		return false;
@@ -50,7 +72,7 @@ bool Character::initMesh(const CharacterCachePtr& cache) {
 	return true;
 }
 
-bool Character::updateTool(const CharacterCachePtr& cache, const stock::Inventory& inv) {
+bool Character::updateTool(const AnimationCachePtr& cache, const stock::Inventory& inv) {
 	// TODO: id resolving via constants
 	// weapon/right hand  see stock.lua
 	const stock::Container* container = inv.container(2);
@@ -110,22 +132,22 @@ void Character::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
 
 	switch (_anim) {
 	case Animation::Idle:
-		chr::idle::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
+		chr::idle::update(globalTimeSeconds, _skeleton, _attributes);
 		break;
 	case Animation::Jump:
-		chr::jump::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
+		chr::jump::update(globalTimeSeconds, _skeleton, _attributes);
 		break;
 	case Animation::Run:
-		chr::run::update(globalTimeSeconds, velocity, _skeleton, _settings.skeletonAttr);
+		chr::run::update(globalTimeSeconds, velocity, _skeleton, _attributes);
 		break;
 	case Animation::Glide:
-		chr::glide::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
+		chr::glide::update(globalTimeSeconds, _skeleton, _attributes);
 		break;
 	case Animation::Tool:
 		if (_toolAnim == ToolAnimationType::None || _toolAnim == ToolAnimationType::Max) {
-			chr::idle::update(globalTimeSeconds, _skeleton, _settings.skeletonAttr);
+			chr::idle::update(globalTimeSeconds, _skeleton, _attributes);
 		} else {
-			chr::tool::update(globalTimeSeconds, _toolAnim, _skeleton, _settings.skeletonAttr);
+			chr::tool::update(globalTimeSeconds, _toolAnim, _skeleton, _attributes);
 		}
 		break;
 	default:

@@ -7,7 +7,7 @@
 #include "animation/AnimationEntity.h"
 #include "CharacterSkeleton.h"
 #include "CharacterSettings.h"
-#include "CharacterCache.h"
+#include "animation/AnimationCache.h"
 #include "attrib/ShadowAttributes.h"
 #include "stock/Inventory.h"
 #include <stdint.h>
@@ -29,15 +29,18 @@ protected:
 	Indices _toolIndices;
 	stock::ItemId _toolId = (stock::ItemId)-1;
 	ToolAnimationType _toolAnim = ToolAnimationType::None;
-	CharacterSettings _settings;
+	AnimationSettings _settings;
+	CharacterSkeletonAttribute _attributes;
+
+	bool loadGlider(const AnimationCachePtr& cache, const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]);
 public:
 	/**
 	 * @brief Initializes the character settings via (optional) lua script.
 	 * @return @c true if the initialization was successful, @c false otherwise.
 	 */
-	bool init(const CharacterCachePtr& cache, const std::string& luaString = "");
+	bool init(const AnimationCachePtr& cache, const std::string& luaString = "");
 	void shutdown();
-	bool initMesh(const CharacterCachePtr& cache);
+	bool initMesh(const AnimationCachePtr& cache);
 	/**
 	 * @note Updating the settings without updating the mesh afterwards is pointless.
 	 */
@@ -54,7 +57,7 @@ public:
 	 * @param[in] cache The cache that is used to resolve the item models
 	 * @param[in] inv The stock::Inventory object to query the active items
 	 */
-	bool updateTool(const CharacterCachePtr& cache, const stock::Inventory& inv);
+	bool updateTool(const AnimationCachePtr& cache, const stock::Inventory& inv);
 	const Skeleton& skeleton() const override;
 };
 
