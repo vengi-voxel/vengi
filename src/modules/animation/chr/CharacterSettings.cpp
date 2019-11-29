@@ -12,16 +12,7 @@
 namespace animation {
 
 bool loadCharacterSettings(const std::string& luaString, CharacterSettings& settings) {
-	if (luaString.empty()) {
-		Log::warn("empty character settings can't get loaded");
-		return false;
-	}
-	// also change the voxel editor lua script saving
-	static const luaL_Reg chrFuncs[] = {
-		{ "setBasePath", luaanim_settingssetbasepath },
-		{ "setPath", luaanim_settingssetpath },
-		{ "setMeshTypes", luaanim_settingssetmeshtypes },
-
+	static const luaL_Reg skeletonFuncs[] = {
 		{ "setScaler", luaChr_SetScaler },
 		{ "setHeadScale", luaChr_SetHeadScale },
 		{ "setNeckHeight", luaChr_SetNeckHeight },
@@ -49,15 +40,16 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 		{ "setIdleTimeFactor", luaChr_SetIdleTimeFactor },
 		{ nullptr, nullptr }
 	};
-	static_assert(lengthof(chrFuncs) - 3 == lengthof(ChrSkeletonAttributeMetaArray), "Array sizes should match");
+	static_assert(lengthof(skeletonFuncs) == lengthof(ChrSkeletonAttributeMetaArray), "Array sizes should match");
 
-	static const luaL_Reg boneFuncs[] = {
-		{ "setup", luaanim_bonesetup },
-		{ nullptr, nullptr }
-	};
+	if (luaString.empty()) {
+		Log::warn("empty animation settings can't get loaded");
+		return false;
+	}
 
 	lua::LUA lua;
-	lua.reg("chr", chrFuncs);
+	lua.reg("skeleton", skeletonFuncs);
+	lua.reg("settings", settingsFuncs);
 	lua.reg("bone", boneFuncs);
 	luaanim_boneidsregister(lua.state());
 

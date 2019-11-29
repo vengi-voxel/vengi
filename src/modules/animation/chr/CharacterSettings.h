@@ -16,7 +16,7 @@ namespace animation {
 
 /**
  * @brief Attributes for the character meshes
- * @sa SkeletonAttribute
+ * @sa CharacterSkeletonAttribute
  */
 struct CharacterSettings : public AnimationSettings {
 	CharacterSkeletonAttribute skeletonAttr;

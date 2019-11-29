@@ -12,12 +12,12 @@ template<> struct clua_meta<animation::BoneIds> { static char const *name() {ret
 
 namespace animation {
 
-static AnimationSettings* luaGetAnimationSettings(lua_State * l) {
+static inline AnimationSettings* luaanim_getsettings(lua_State * l) {
 	return lua::LUA::globalData<AnimationSettings>(l, "Settings");
 }
 
 static int luaanim_settingssetmeshtypes(lua_State * l) {
-	AnimationSettings *settings = luaGetAnimationSettings(l);
+	AnimationSettings *settings = luaanim_getsettings(l);
 	const int n = lua_gettop(l);
 	std::vector<std::string> types;
 	types.reserve(n);
@@ -29,13 +29,13 @@ static int luaanim_settingssetmeshtypes(lua_State * l) {
 }
 
 static int luaanim_settingssetbasepath(lua_State * l) {
-	AnimationSettings *settings = luaGetAnimationSettings(l);
+	AnimationSettings *settings = luaanim_getsettings(l);
 	settings->basePath = luaL_checkstring(l, 1);
 	return 0;
 }
 
 static int luaanim_settingssetpath(lua_State * l) {
-	AnimationSettings *settings = luaGetAnimationSettings(l);
+	AnimationSettings *settings = luaanim_getsettings(l);
 	const char *type = luaL_checkstring(l, 1);
 	const char *value = luaL_checkstring(l, 2);
 	const int idx = settings->getIdxForName(type);
@@ -111,5 +111,17 @@ int luaanim_bonesetup(lua_State* l) {
 	}
 	return 1;
 }
+
+static const luaL_Reg settingsFuncs[] = {
+	{ "setBasePath", luaanim_settingssetbasepath },
+	{ "setPath", luaanim_settingssetpath },
+	{ "setMeshTypes", luaanim_settingssetmeshtypes },
+	{ nullptr, nullptr }
+};
+
+static const luaL_Reg boneFuncs[] = {
+	{ "setup", luaanim_bonesetup },
+	{ nullptr, nullptr }
+};
 
 }
