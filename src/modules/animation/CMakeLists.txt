@@ -89,6 +89,7 @@ set(FILES
 )
 set(LUA_SRCS
 	chr/bones.lua
+	chr/shared.lua
 
 	chr/dwarf-male-blacksmith.lua
 

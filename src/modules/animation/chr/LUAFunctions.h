@@ -15,17 +15,9 @@ static CharacterSettings* luaGetAnimationSettings(lua_State * l) {
 	return lua::LUA::globalData<CharacterSettings>(l, "Settings");
 }
 
-static int luaChr_SetRace(lua_State * l) {
-	// TODO: convert to base path config
+static int luaChr_SetBasePath(lua_State * l) {
 	CharacterSettings *settings = luaGetAnimationSettings(l);
-	settings->race = luaL_checkstring(l, 1);
-	return 0;
-}
-
-static int luaChr_SetGender(lua_State * l) {
-	// TODO: convert to base path config
-	CharacterSettings *settings = luaGetAnimationSettings(l);
-	settings->gender = luaL_checkstring(l, 1);
+	settings->basePath = luaL_checkstring(l, 1);
 	return 0;
 }
 

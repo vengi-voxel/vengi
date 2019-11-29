@@ -27,8 +27,6 @@ struct CharacterSettings : public AnimationSettings {
 			AnimationSettings( { "head", "chest", "belt", "pants", "hand",
 					"foot", "shoulder", "glider" }) {
 	}
-
-	bool update();
 };
 
 extern bool loadCharacterSettings(const std::string& luaString, CharacterSettings& settings);

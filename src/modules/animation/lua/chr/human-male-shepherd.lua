@@ -1,9 +1,9 @@
 require 'chr.bones'
+require 'chr.shared'
 
 function init()
   setupBones()
-  chr.setRace("human")
-  chr.setGender("male")
+  setBasePath("human", "male")
   chr.setPath("head", "head/shepherd")
   chr.setPath("belt", "belt/shepherd")
   chr.setPath("chest", "chest/shepherd")

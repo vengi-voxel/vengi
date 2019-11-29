@@ -18,8 +18,7 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 	}
 	// also change the voxel editor lua script saving
 	static const luaL_Reg chrFuncs[] = {
-		{ "setRace", luaChr_SetRace },
-		{ "setGender", luaChr_SetGender },
+		{ "setBasePath", luaChr_SetBasePath },
 		{ "setPath", luaChr_SetPath },
 
 		{ "setScaler", luaChr_SetScaler },
@@ -49,7 +48,7 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 		{ "setIdleTimeFactor", luaChr_SetIdleTimeFactor },
 		{ nullptr, nullptr }
 	};
-	static_assert(lengthof(chrFuncs) - 3	 == lengthof(ChrSkeletonAttributeMetaArray), "Array sizes should match");
+	static_assert(lengthof(chrFuncs) - 2 == lengthof(ChrSkeletonAttributeMetaArray), "Array sizes should match");
 
 	static const luaL_Reg boneFuncs[] = {
 		{ "setup", luaanim_bonesetup },
@@ -72,18 +71,8 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 		return false;
 	}
 
-	settings.update();
+	settings.skeletonAttr.update();
 
-	return true;
-}
-
-bool CharacterSettings::update() {
-	if (!skeletonAttr.update()) {
-		return false;
-	}
-	const char* racePath = race.c_str();
-	const char* genderPath = gender.c_str();
-	basePath = core::string::format("models/characters/%s/%s", racePath, genderPath);
 	return true;
 }
 

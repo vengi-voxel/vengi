@@ -22,8 +22,7 @@ bool saveCharacterLua(const animation::CharacterSettings& characterSettings, con
 	const std::string& footPath = characterSettings.path("foot", name);
 	const std::string& shoulderPath = characterSettings.path("shoulder", name);
 	stream.addStringFormat(false, "function init()\n"
-		"  chr.setRace(\"%s\")\n"
-		"  chr.setGender(\"%s\")\n"
+		"  chr.setBasePath(\"%s\", \"%s\")\n"
 		"  chr.setPath(\"head\", \"%s\")\n"
 		"  chr.setPath(\"belt\", \"%s\")\n"
 		"  chr.setPath(\"chest\", \"%s\")\n"

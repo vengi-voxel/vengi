@@ -31,7 +31,10 @@ public:
 
 	const std::string& type(size_t idx) const;
 	int getIdxForName(const char *name) const;
+
 	std::string fullPath(const char* type, const char* name) const;
+	std::string fullPath(int idx, const char *name) const;
+
 	std::string fullPath(const char* type) const;
 	std::string fullPath(int idx) const;
 

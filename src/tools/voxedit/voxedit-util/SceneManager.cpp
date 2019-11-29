@@ -25,7 +25,6 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedBlendMode.h"
-#include "animation/chr/CharacterMeshType.h"
 #include "video/Ray.h"
 #include "math/Random.h"
 #include "math/Axis.h"
@@ -722,7 +721,7 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 			}
 			voxel::Mesh mesh;
 			_volumeRenderer.toMesh(i, &mesh);
-			const std::string& fullPath = _characterSettings.fullPath((animation::CharacterMeshType)characterMeshTypeId);
+			const std::string& fullPath = _characterSettings.fullPath(characterMeshTypeId);
 			_characterCache->putMesh(fullPath.c_str(), mesh);
 			Log::debug("Updated mesh on layer %i for path %s", (int)i, fullPath.c_str());
 		}
@@ -1462,8 +1461,7 @@ bool SceneManager::saveCharacter(const char *name) {
 			continue;
 		}
 		const int characterMeshTypeId = core::string::toInt(value);
-		const animation::CharacterMeshType meshType = (animation::CharacterMeshType)characterMeshTypeId;
-		const std::string& fullPath = _characterSettings.fullPath(meshType, name);
+		const std::string& fullPath = _characterSettings.fullPath(characterMeshTypeId, name);
 		if (!saveLayer(i, fullPath)) {
 			Log::warn("Failed to save type %i to %s", characterMeshTypeId, fullPath.c_str());
 			_dirty = true;

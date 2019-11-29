@@ -9,8 +9,7 @@ namespace animation {
 
 const char *TestSetters = R"(
 function init()
-  chr.setRace("testrace")
-  chr.setGender("testgender")
+  chr.setBasePath("testrace", "testgender")
   chr.setPath("head", "heads/test")
   chr.setPath("belt", "belts/test")
   chr.setPath("chest", "chests/test")
@@ -45,8 +44,6 @@ TEST_F(CharacterSettingsTest, testLUA) {
 	EXPECT_TRUE(loadCharacterSettings(TestSetters, settings))
 		<< "Failed to initialize the character settings";
 
-	EXPECT_EQ("testrace", settings.race);
-	EXPECT_EQ("testgender", settings.gender);
 	EXPECT_EQ("heads/test", settings.path("head"));
 	EXPECT_EQ("belts/test", settings.path("belt"));
 	EXPECT_EQ("chests/test", settings.path("chest"));

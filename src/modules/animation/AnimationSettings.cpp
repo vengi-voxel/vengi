@@ -35,10 +35,17 @@ int AnimationSettings::getIdxForName(const char *name) const {
 	return -1;
 }
 
-std::string AnimationSettings::fullPath(const char *type,
-		const char *name) const {
+std::string AnimationSettings::fullPath(const char *type, const char *name) const {
 	const std::string &p = path(type, name);
 	return core::string::format("%s/%s.vox", basePath.c_str(), p.c_str());
+}
+
+std::string AnimationSettings::fullPath(int idx, const char *name) const {
+	if (idx < 0 || idx >= (int) MAX_ENTRIES) {
+		static const std::string EMPTY;
+		return EMPTY;
+	}
+	return core::string::format("%s/%s/%s.vox", basePath.c_str(), paths[idx].c_str(), name);
 }
 
 std::string AnimationSettings::fullPath(const char *type) const {
@@ -50,8 +57,7 @@ std::string AnimationSettings::fullPath(int idx) const {
 		static const std::string EMPTY;
 		return EMPTY;
 	}
-	return core::string::format("%s/%s.vox", basePath.c_str(),
-			paths[idx].c_str());
+	return core::string::format("%s/%s.vox", basePath.c_str(), paths[idx].c_str());
 }
 
 const std::string& AnimationSettings::path(const char *type) const {
