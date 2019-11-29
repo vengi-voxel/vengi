@@ -6,6 +6,13 @@ function setupMeshTypes()
   settings.setMeshTypes("head", "chest", "belt", "pants", "hand", "foot", "shoulder", "glider")
 end
 
+function setAllPaths(path)
+  local meshes = { "head", "chest", "belt", "pants", "hand", "foot", "shoulder" }
+  for i, name in ipairs(meshes) do
+    settings.setPath(name, path)
+  end
+end
+
 function defaultSkeletonAttributes()
   local attributes = {
     scaler = 1.0,
