@@ -31,6 +31,8 @@ bool loadCharacterSettings(const std::string& luaString, AnimationSettings& sett
 		return false;
 	}
 
+	// TODO: sanity checks for the amount of values on the stack and the set values in the attributes
+
 	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
 		float *saVal = (float*)(((char*)&skeletonAttr) + meta.offset);
