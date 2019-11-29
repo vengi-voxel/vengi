@@ -17,8 +17,21 @@ bool saveCharacterLua(const animation::CharacterSettings& characterSettings, con
 	stream.addString("function init()", false);
 	// TODO race and gender
 	stream.addString("  chr.setBasePath(\"human\", \"male\")\n", false);
+	stream.addString("  chr.setMeshTypes(", false);
+	for (size_t i = 0; i < characterSettings.types().size(); ++i) {
+		const std::string& type = characterSettings.types()[i];
+		stream.addStringFormat(false, "\"%s\"", type.c_str());
+		if (i != characterSettings.types().size() - 1) {
+			stream.addString(", ", false);
+		}
+	}
+	stream.addString("  )\n", false);
 	for (const std::string& t : characterSettings.types()) {
-		const std::string& path = characterSettings.path(t.c_str(), name);
+		const int idx = characterSettings.getIdxForName(t.c_str());
+		const std::string& path = characterSettings.path(idx, name);
+		if (path.empty()) {
+			continue;
+		}
 		stream.addStringFormat(false, "  chr.setPath(\"%s\", \"%s\")\n", t.c_str(), path.c_str());
 	}
 	animation::CharacterSkeletonAttribute dv;

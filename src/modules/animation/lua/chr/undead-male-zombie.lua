@@ -2,14 +2,15 @@ require 'chr.bones'
 require 'chr.shared'
 
 function init()
+  setupMeshTypes()
   setupBones()
   setBasePath("undead", "male")
-  chr.setPath("head", "head/default")
-  chr.setPath("belt", "belt/default")
-  chr.setPath("chest", "chest/default")
-  chr.setPath("pants", "pants/default")
-  chr.setPath("hand", "hand/default")
-  chr.setPath("foot", "foot/default")
+  chr.setPath("head", "default")
+  chr.setPath("belt", "default")
+  chr.setPath("chest", "default")
+  chr.setPath("pants", "default")
+  chr.setPath("hand", "default")
+  chr.setPath("foot", "default")
   chr.setPath("shoulder", "")
 
   chr.setHeadHeight(14.0)

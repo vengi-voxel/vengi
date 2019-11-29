@@ -20,12 +20,6 @@ namespace animation {
  */
 struct CharacterSettings : public AnimationSettings {
 	CharacterSkeletonAttribute skeletonAttr;
-
-	CharacterSettings() :
-		// TODO: move this into the lua code
-			AnimationSettings( { "head", "chest", "belt", "pants", "hand",
-					"foot", "shoulder", "glider" }) {
-	}
 };
 
 extern bool loadCharacterSettings(const std::string& luaString, CharacterSettings& settings);

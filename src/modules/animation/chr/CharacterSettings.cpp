@@ -18,8 +18,9 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 	}
 	// also change the voxel editor lua script saving
 	static const luaL_Reg chrFuncs[] = {
-		{ "setBasePath", luaChr_SetBasePath },
-		{ "setPath", luaChr_SetPath },
+		{ "setBasePath", luaanim_settingssetbasepath },
+		{ "setPath", luaanim_settingssetpath },
+		{ "setMeshTypes", luaanim_settingssetmeshtypes },
 
 		{ "setScaler", luaChr_SetScaler },
 		{ "setHeadScale", luaChr_SetHeadScale },
@@ -48,7 +49,7 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 		{ "setIdleTimeFactor", luaChr_SetIdleTimeFactor },
 		{ nullptr, nullptr }
 	};
-	static_assert(lengthof(chrFuncs) - 2 == lengthof(ChrSkeletonAttributeMetaArray), "Array sizes should match");
+	static_assert(lengthof(chrFuncs) - 3 == lengthof(ChrSkeletonAttributeMetaArray), "Array sizes should match");
 
 	static const luaL_Reg boneFuncs[] = {
 		{ "setup", luaanim_bonesetup },
@@ -65,7 +66,8 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 		return false;
 	}
 
-	lua.newGlobalData<CharacterSettings>("Settings", &settings);
+	lua.newGlobalData<AnimationSettings>("Settings", &settings);
+	lua.newGlobalData<CharacterSkeletonAttribute>("SkeletonAttributes", &settings.skeletonAttr);
 	if (!lua.execute("init")) {
 		Log::error("%s", lua.error().c_str());
 		return false;

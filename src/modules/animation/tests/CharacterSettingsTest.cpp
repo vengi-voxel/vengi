@@ -10,12 +10,14 @@ namespace animation {
 const char *TestSetters = R"(
 function init()
   chr.setBasePath("testrace", "testgender")
-  chr.setPath("head", "heads/test")
-  chr.setPath("belt", "belts/test")
-  chr.setPath("chest", "chests/test")
-  chr.setPath("pants", "pants/test")
-  chr.setPath("hand", "hands/test")
-  chr.setPath("foot", "feet/test")
+  chr.setMeshTypes("head", "chest", "belt", "pants", "hand", "foot", "shoulder", "glider")
+  chr.setPath("head", "head")
+  chr.setPath("belt", "belt")
+  chr.setPath("chest", "chest")
+  chr.setPath("pants", "pants")
+  chr.setPath("hand", "hand")
+  chr.setPath("foot", "foot")
+  chr.setPath("glider", "glider")
   chr.setScaler(42.0)
   chr.setHeadScale(1337.0)
   chr.setNeckHeight(815.0)
@@ -44,12 +46,10 @@ TEST_F(CharacterSettingsTest, testLUA) {
 	EXPECT_TRUE(loadCharacterSettings(TestSetters, settings))
 		<< "Failed to initialize the character settings";
 
-	EXPECT_EQ("heads/test", settings.path("head"));
-	EXPECT_EQ("belts/test", settings.path("belt"));
-	EXPECT_EQ("chests/test", settings.path("chest"));
-	EXPECT_EQ("pants/test", settings.path("pants"));
-	EXPECT_EQ("hands/test", settings.path("hand"));
-	EXPECT_EQ("feet/test", settings.path("foot"));
+	EXPECT_EQ(8u, settings.types().size());
+	for (size_t i = 0; i < settings.types().size(); ++i) {
+		EXPECT_EQ(settings.types()[i], settings.path(i));
+	}
 
 	EXPECT_FLOAT_EQ(  42.0f,  settings.skeletonAttr.scaler);
 	EXPECT_FLOAT_EQ(1337.0f,  settings.skeletonAttr.headScale);

@@ -12,6 +12,40 @@ template<> struct clua_meta<animation::BoneIds> { static char const *name() {ret
 
 namespace animation {
 
+static AnimationSettings* luaGetAnimationSettings(lua_State * l) {
+	return lua::LUA::globalData<AnimationSettings>(l, "Settings");
+}
+
+static int luaanim_settingssetmeshtypes(lua_State * l) {
+	AnimationSettings *settings = luaGetAnimationSettings(l);
+	const int n = lua_gettop(l);
+	std::vector<std::string> types;
+	types.reserve(n);
+	for (int i = 1; i <= n; ++i) {
+		types.push_back(luaL_checkstring(l, i));
+	}
+	settings->setTypes(types);
+	return 0;
+}
+
+static int luaanim_settingssetbasepath(lua_State * l) {
+	AnimationSettings *settings = luaGetAnimationSettings(l);
+	settings->basePath = luaL_checkstring(l, 1);
+	return 0;
+}
+
+static int luaanim_settingssetpath(lua_State * l) {
+	AnimationSettings *settings = luaGetAnimationSettings(l);
+	const char *type = luaL_checkstring(l, 1);
+	const char *value = luaL_checkstring(l, 2);
+	const int idx = settings->getIdxForName(type);
+	if (idx < 0) {
+		return luaL_error(l, "Could not find mesh type for %s", type);
+	}
+	settings->setPath(idx, value);
+	return 0;
+}
+
 static int luaanim_boneidstostring(lua_State* s) {
 	BoneIds** a = clua_get<BoneIds*>(s, 1);
 	BoneIds& boneIds = **a;
@@ -66,12 +100,13 @@ int luaanim_pushboneids(lua_State* s, BoneIds* b) {
 int luaanim_bonesetup(lua_State* l) {
 	AnimationSettings* settings = lua::LUA::globalData<AnimationSettings>(l, "Settings");
 	const char* meshType = luaL_checkstring(l, 1);
-	BoneIds* b = settings->boneIds(meshType);
-	if (b == nullptr) {
-		return luaL_error(l, "Failed to resolve mesh type: '%s'", meshType);
+	const int idx = settings->getIdxForName(meshType);
+	if (idx < 0 || idx >= (int)AnimationSettings::MAX_ENTRIES) {
+		return luaL_error(l, "Could not find mesh type for %s", meshType);
 	}
-	*b = BoneIds {};
-	if (luaanim_pushboneids(l, b) != 1) {
+	BoneIds& b = settings->boneIds(idx);
+	b = BoneIds {};
+	if (luaanim_pushboneids(l, &b) != 1) {
 		return luaL_error(l, "Failed to push the bonesids");
 	}
 	return 1;

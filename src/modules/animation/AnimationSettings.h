@@ -22,9 +22,6 @@ private:
 public:
 	static constexpr const size_t MAX_ENTRIES {64};
 
-	AnimationSettings(const std::vector<std::string> &types);
-	virtual ~AnimationSettings();
-
 	std::string paths[MAX_ENTRIES];
 	BoneIds boneIdsArray[MAX_ENTRIES];
 	std::string basePath;
@@ -32,30 +29,27 @@ public:
 	const std::vector<std::string>& types() const;
 	const std::string& type(size_t idx) const;
 	int getIdxForName(const char *name) const;
-
-	std::string fullPath(const char* type, const char* name) const;
-	std::string fullPath(int idx, const char *name) const;
-
-	std::string fullPath(const char* type) const;
-	std::string fullPath(int idx) const;
+	/**
+	 * @brief Configure the available mesh types.
+	 *
+	 * @note They must match the bone configuration. See the lua script for mappings.
+	 */
+	void setTypes(const std::vector<std::string>& types);
 
 	/**
-	 * @brief Get the original path the settings were loaded with
+	 * @brief Assemble the full path to the model that should be used for the given mesh type index.
 	 */
-	const std::string& path(const char* type) const;
+	std::string fullPath(int idx, const char *name = nullptr) const;
+
 	/**
 	 * @brief Get the default path for the mesh type, but with a new name
 	 */
-	std::string path(const char* type, const char *name) const;
-	bool setPath(const char* type, const char *str);
+	std::string path(int idx, const char *name = nullptr) const;
+	bool setPath(int idx, const char *str);
 
-	BoneIds* boneIds(const char *name);
-	const BoneIds& boneIds(size_t id) const;
+	const BoneIds& boneIds(int id) const;
+	BoneIds& boneIds(int id);
 };
-
-inline const BoneIds& AnimationSettings::boneIds(size_t id) const {
-	return boneIdsArray[id];
-}
 
 inline const std::vector<std::string>& AnimationSettings::types() const {
 	return _types;

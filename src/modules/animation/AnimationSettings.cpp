@@ -4,6 +4,7 @@
 
 #include "AnimationSettings.h"
 #include "core/String.h"
+#include "core/Assert.h"
 
 namespace animation {
 
@@ -11,11 +12,8 @@ std::string luaFilename(const char *character) {
 	return core::string::format("%s.lua", character);
 }
 
-AnimationSettings::AnimationSettings(const std::vector<std::string> &types) :
-		_types(types) {
-}
-
-AnimationSettings::~AnimationSettings() {
+void AnimationSettings::setTypes(const std::vector<std::string>& types) {
+	_types = types;
 }
 
 const std::string& AnimationSettings::type(size_t idx) const {
@@ -35,60 +33,42 @@ int AnimationSettings::getIdxForName(const char *name) const {
 	return -1;
 }
 
-std::string AnimationSettings::fullPath(const char *type, const char *name) const {
-	const std::string &p = path(type, name);
-	return core::string::format("%s/%s.vox", basePath.c_str(), p.c_str());
-}
-
 std::string AnimationSettings::fullPath(int idx, const char *name) const {
 	if (idx < 0 || idx >= (int) MAX_ENTRIES) {
 		static const std::string EMPTY;
 		return EMPTY;
 	}
-	return core::string::format("%s/%s/%s.vox", basePath.c_str(), paths[idx].c_str(), name);
+	if (name == nullptr) {
+		name = paths[idx].c_str();
+	}
+	return core::string::format("%s/%s/%s.vox", basePath.c_str(), _types[idx].c_str(), name);
 }
 
-std::string AnimationSettings::fullPath(const char *type) const {
-	return fullPath(getIdxForName(type));
-}
-
-std::string AnimationSettings::fullPath(int idx) const {
+std::string AnimationSettings::path(int idx, const char *name) const {
 	if (idx < 0 || idx >= (int) MAX_ENTRIES) {
 		static const std::string EMPTY;
 		return EMPTY;
 	}
-	return core::string::format("%s/%s.vox", basePath.c_str(), paths[idx].c_str());
-}
-
-const std::string& AnimationSettings::path(const char *type) const {
-	const int idx = getIdxForName(type);
-	if (idx < 0 || idx >= (int) MAX_ENTRIES) {
-		static const std::string EMPTY;
-		return EMPTY;
+	if (name == nullptr) {
+		name = paths[idx].c_str();
 	}
-	return paths[idx];
+	return core::string::format("%s/%s/%s", _types[idx].c_str(), paths[idx].c_str(), name);
 }
 
-std::string AnimationSettings::path(const char *type, const char *name) const {
-	const std::string &p = path(type);
-	return core::string::format("%s/%s", p.c_str(), name);
-}
-
-bool AnimationSettings::setPath(const char *type, const char *str) {
-	const int idx = getIdxForName(type);
-	if (idx < 0 || idx >= (int) MAX_ENTRIES) {
-		return false;
-	}
+bool AnimationSettings::setPath(int idx, const char *str) {
+	core_assert(idx >= 0 && idx < (int) MAX_ENTRIES);
 	paths[idx] = str;
 	return true;
 }
 
-BoneIds* AnimationSettings::boneIds(const char *name) {
-	const int idx = getIdxForName(name);
-	if (idx < 0 || idx >= (int) MAX_ENTRIES) {
-		return nullptr;
-	}
-	return &boneIdsArray[idx];
+const BoneIds& AnimationSettings::boneIds(int idx) const {
+	core_assert(idx >= 0 && idx < (int) MAX_ENTRIES);
+	return boneIdsArray[idx];
+}
+
+BoneIds& AnimationSettings::boneIds(int idx) {
+	core_assert(idx >= 0 && idx < (int) MAX_ENTRIES);
+	return boneIdsArray[idx];
 }
 
 }

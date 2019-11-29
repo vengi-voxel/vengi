@@ -2,13 +2,14 @@ require 'chr.bones'
 require 'chr.shared'
 
 function init()
+  setupMeshTypes()
   setupBones()
   setBasePath("dwarf", "male")
-  chr.setPath("head", "head/blacksmith")
-  chr.setPath("belt", "belt/blacksmith")
-  chr.setPath("chest", "chest/blacksmith")
-  chr.setPath("pants", "pants/blacksmith")
-  chr.setPath("hand", "hand/blacksmith")
-  chr.setPath("foot", "foot/blacksmith")
-  chr.setPath("shoulder", "shoulder/blacksmith")
+  chr.setPath("head", "blacksmith")
+  chr.setPath("belt", "blacksmith")
+  chr.setPath("chest", "blacksmith")
+  chr.setPath("pants", "blacksmith")
+  chr.setPath("hand", "blacksmith")
+  chr.setPath("foot", "blacksmith")
+  chr.setPath("shoulder", "blacksmith")
 end
