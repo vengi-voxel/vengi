@@ -20,13 +20,7 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 	static const luaL_Reg chrFuncs[] = {
 		{ "setRace", luaChr_SetRace },
 		{ "setGender", luaChr_SetGender },
-		{ "setChest", luaChr_SetChest },
-		{ "setBelt", luaChr_SetBelt },
-		{ "setPants", luaChr_SetPants },
-		{ "setHand", luaChr_SetHand },
-		{ "setFoot", luaChr_SetFoot },
-		{ "setHead", luaChr_SetHead },
-		{ "setShoulder", luaChr_SetShoulder },
+		{ "setPath", luaChr_SetPath },
 
 		{ "setScaler", luaChr_SetScaler },
 		{ "setHeadScale", luaChr_SetHeadScale },
@@ -55,10 +49,10 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 		{ "setIdleTimeFactor", luaChr_SetIdleTimeFactor },
 		{ nullptr, nullptr }
 	};
-	static_assert(lengthof(chrFuncs) - 9 == lengthof(ChrSkeletonAttributeMetaArray), "Array sizes should match");
+	static_assert(lengthof(chrFuncs) - 3	 == lengthof(ChrSkeletonAttributeMetaArray), "Array sizes should match");
 
 	static const luaL_Reg boneFuncs[] = {
-		{ "setup", luaanim_bonesetup<CharacterSettings> },
+		{ "setup", luaanim_bonesetup },
 		{ nullptr, nullptr }
 	};
 

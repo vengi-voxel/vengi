@@ -11,12 +11,12 @@ const char *TestSetters = R"(
 function init()
   chr.setRace("testrace")
   chr.setGender("testgender")
-  chr.setHead("heads/test")
-  chr.setBelt("belts/test")
-  chr.setChest("chests/test")
-  chr.setPants("pants/test")
-  chr.setHand("hands/test")
-  chr.setFoot("feet/test")
+  chr.setPath("head", "heads/test")
+  chr.setPath("belt", "belts/test")
+  chr.setPath("chest", "chests/test")
+  chr.setPath("pants", "pants/test")
+  chr.setPath("hand", "hands/test")
+  chr.setPath("foot", "feet/test")
   chr.setScaler(42.0)
   chr.setHeadScale(1337.0)
   chr.setNeckHeight(815.0)
@@ -47,12 +47,12 @@ TEST_F(CharacterSettingsTest, testLUA) {
 
 	EXPECT_EQ("testrace", settings.race);
 	EXPECT_EQ("testgender", settings.gender);
-	EXPECT_EQ("heads/test", settings.path(CharacterMeshType::Head));
-	EXPECT_EQ("belts/test", settings.path(CharacterMeshType::Belt));
-	EXPECT_EQ("chests/test", settings.path(CharacterMeshType::Chest));
-	EXPECT_EQ("pants/test", settings.path(CharacterMeshType::Pants));
-	EXPECT_EQ("hands/test", settings.path(CharacterMeshType::Hand));
-	EXPECT_EQ("feet/test", settings.path(CharacterMeshType::Foot));
+	EXPECT_EQ("heads/test", settings.path("head"));
+	EXPECT_EQ("belts/test", settings.path("belt"));
+	EXPECT_EQ("chests/test", settings.path("chest"));
+	EXPECT_EQ("pants/test", settings.path("pants"));
+	EXPECT_EQ("hands/test", settings.path("hand"));
+	EXPECT_EQ("feet/test", settings.path("foot"));
 
 	EXPECT_FLOAT_EQ(  42.0f,  settings.skeletonAttr.scaler);
 	EXPECT_FLOAT_EQ(1337.0f,  settings.skeletonAttr.headScale);

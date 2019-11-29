@@ -5,7 +5,6 @@
 #pragma once
 
 #include "CharacterSkeletonAttribute.h"
-#include "CharacterMeshType.h"
 #include "animation/AnimationSettings.h"
 #include "core/String.h"
 #include "core/Common.h"
@@ -19,16 +18,17 @@ namespace animation {
  * @brief Attributes for the character meshes
  * @sa SkeletonAttribute
  */
-struct CharacterSettings : public AnimationSettings<CharacterMeshType> {
+struct CharacterSettings : public AnimationSettings {
 	CharacterSkeletonAttribute skeletonAttr;
 	std::string race;
 	std::string gender;
 
-	bool update();
-
-	CharacterMeshType getMeshTypeIdForName(const char *name) {
-		return toEnum(name);
+	CharacterSettings() :
+			AnimationSettings( { "head", "chest", "belt", "pants", "hand",
+					"foot", "shoulder", "glider" }) {
 	}
+
+	bool update();
 };
 
 extern bool loadCharacterSettings(const std::string& luaString, CharacterSettings& settings);

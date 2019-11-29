@@ -16,56 +16,24 @@ static CharacterSettings* luaGetAnimationSettings(lua_State * l) {
 }
 
 static int luaChr_SetRace(lua_State * l) {
+	// TODO: convert to base path config
 	CharacterSettings *settings = luaGetAnimationSettings(l);
 	settings->race = luaL_checkstring(l, 1);
 	return 0;
 }
 
 static int luaChr_SetGender(lua_State * l) {
+	// TODO: convert to base path config
 	CharacterSettings *settings = luaGetAnimationSettings(l);
 	settings->gender = luaL_checkstring(l, 1);
 	return 0;
 }
 
-static int luaChr_SetChest(lua_State * l) {
-	CharacterSettings *settings = luaGetAnimationSettings(l);
-	settings->setPath(CharacterMeshType::Chest, luaL_checkstring(l, 1));
-	return 0;
-}
-
-static int luaChr_SetBelt(lua_State * l) {
-	CharacterSettings *settings = luaGetAnimationSettings(l);
-	settings->setPath(CharacterMeshType::Belt, luaL_checkstring(l, 1));
-	return 0;
-}
-
-static int luaChr_SetPants(lua_State * l) {
-	CharacterSettings *settings = luaGetAnimationSettings(l);
-	settings->setPath(CharacterMeshType::Pants, luaL_checkstring(l, 1));
-	return 0;
-}
-
-static int luaChr_SetHand(lua_State * l) {
-	CharacterSettings *settings = luaGetAnimationSettings(l);
-	settings->setPath(CharacterMeshType::Hand, luaL_checkstring(l, 1));
-	return 0;
-}
-
-static int luaChr_SetFoot(lua_State * l) {
-	CharacterSettings *settings = luaGetAnimationSettings(l);
-	settings->setPath(CharacterMeshType::Foot, luaL_checkstring(l, 1));
-	return 0;
-}
-
-static int luaChr_SetHead(lua_State * l) {
-	CharacterSettings *settings = luaGetAnimationSettings(l);
-	settings->setPath(CharacterMeshType::Head, luaL_checkstring(l, 1));
-	return 0;
-}
-
-static int luaChr_SetShoulder(lua_State * l) {
-	CharacterSettings *settings = luaGetAnimationSettings(l);
-	settings->setPath(CharacterMeshType::Shoulder, luaL_checkstring(l, 1));
+static int luaChr_SetPath(lua_State * l) {
+	AnimationSettings *settings = luaGetAnimationSettings(l);
+	const char *type = luaL_checkstring(l, 1);
+	const char *value = luaL_checkstring(l, 2);
+	settings->setPath(type, value);
 	return 0;
 }
 

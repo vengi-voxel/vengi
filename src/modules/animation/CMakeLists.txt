@@ -5,7 +5,6 @@ set(SRCS
 	chr/anim/Jump.cpp chr/anim/Jump.h
 	chr/anim/Glide.cpp chr/anim/Glide.h
 	chr/anim/Tool.cpp chr/anim/Tool.h
-	chr/CharacterMeshType.cpp chr/CharacterMeshType.h
 	chr/Character.cpp chr/Character.h
 	chr/CharacterCache.cpp chr/CharacterCache.h
 	chr/CharacterSettings.cpp chr/CharacterSettings.h
@@ -15,6 +14,7 @@ set(SRCS
 
 	Animation.cpp Animation.h
 	AnimationCache.h
+	AnimationSettings.cpp AnimationSettings.h
 	AnimationRenderer.cpp AnimationRenderer.h
 	AnimationEntity.h
 	Bone.cpp Bone.h

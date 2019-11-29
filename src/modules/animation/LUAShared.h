@@ -63,9 +63,8 @@ int luaanim_pushboneids(lua_State* s, BoneIds* b) {
 	return clua_push(s, b);
 }
 
-template<class T>
 int luaanim_bonesetup(lua_State* l) {
-	T* settings = lua::LUA::globalData<T>(l, "Settings");
+	AnimationSettings* settings = lua::LUA::globalData<AnimationSettings>(l, "Settings");
 	const char* meshType = luaL_checkstring(l, 1);
 	BoneIds* b = settings->boneIds(meshType);
 	if (b == nullptr) {

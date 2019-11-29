@@ -14,23 +14,23 @@ bool saveCharacterLua(const animation::CharacterSettings& characterSettings, con
 		return false;
 	}
 	io::FileStream stream(file);
-	const std::string& headPath = characterSettings.path(animation::CharacterMeshType::Head, name);
-	const std::string& beltPath = characterSettings.path(animation::CharacterMeshType::Belt, name);
-	const std::string& chestPath = characterSettings.path(animation::CharacterMeshType::Chest, name);
-	const std::string& pantsPath = characterSettings.path(animation::CharacterMeshType::Pants, name);
-	const std::string& handPath = characterSettings.path(animation::CharacterMeshType::Hand, name);
-	const std::string& footPath = characterSettings.path(animation::CharacterMeshType::Foot, name);
-	const std::string& shoulderPath = characterSettings.path(animation::CharacterMeshType::Shoulder, name);
+	const std::string& headPath = characterSettings.path("head", name);
+	const std::string& beltPath = characterSettings.path("belt", name);
+	const std::string& chestPath = characterSettings.path("chest", name);
+	const std::string& pantsPath = characterSettings.path("pants", name);
+	const std::string& handPath = characterSettings.path("hand", name);
+	const std::string& footPath = characterSettings.path("foot", name);
+	const std::string& shoulderPath = characterSettings.path("shoulder", name);
 	stream.addStringFormat(false, "function init()\n"
 		"  chr.setRace(\"%s\")\n"
 		"  chr.setGender(\"%s\")\n"
-		"  chr.setHead(\"%s\")\n"
-		"  chr.setBelt(\"%s\")\n"
-		"  chr.setChest(\"%s\")\n"
-		"  chr.setPants(\"%s\")\n"
-		"  chr.setHand(\"%s\")\n"
-		"  chr.setFoot(\"%s\")\n"
-		"  chr.setShoulder(\"%s\")\n",
+		"  chr.setPath(\"head\", \"%s\")\n"
+		"  chr.setPath(\"belt\", \"%s\")\n"
+		"  chr.setPath(\"chest\", \"%s\")\n"
+		"  chr.setPath(\"pants\", \"%s\")\n"
+		"  chr.setPath(\"hand\", \"%s\")\n"
+		"  chr.setPath(\"foot\", \"%s\")\n"
+		"  chr.setPath(\"shoulder\", \"%s\")\n",
 		characterSettings.race.c_str(),
 		characterSettings.gender.c_str(),
 		headPath.c_str(),

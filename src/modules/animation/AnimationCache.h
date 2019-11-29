@@ -15,10 +15,9 @@ namespace animation {
 /**
  * @brief Cache @c voxel::Mesh instances for @c AnimationEntity
  */
-template<typename T>
 class AnimationCache : public voxelformat::MeshCache {
 protected:
-	bool load(const std::string& filename, size_t meshIndex, const voxel::Mesh* (&meshes)[std::enum_value(T::Max)]) {
+	bool load(const std::string& filename, size_t meshIndex, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
 		voxel::Mesh& mesh = cacheEntry(filename.c_str());
 		if (mesh.getNoOfVertices() > 0) {
 			meshes[meshIndex] = &mesh;
@@ -32,14 +31,14 @@ protected:
 		return false;
 	}
 
-	bool getMeshes(const AnimationSettings<T>& settings, const voxel::Mesh* (&meshes)[std::enum_value(T::Max)],
-			std::function<bool(const voxel::Mesh* (&meshes)[std::enum_value(T::Max)])> loadAdditional = {}) {
-		for (size_t i = 0; i < AnimationSettings<T>::MAX_ENTRIES; ++i) {
+	bool getMeshes(const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES],
+			std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])> loadAdditional = {}) {
+		for (size_t i = 0; i < AnimationSettings::MAX_ENTRIES; ++i) {
 			if (settings.paths[i].empty()) {
 				meshes[i] = nullptr;
 				continue;
 			}
-			const std::string& fullPath = settings.fullPath((T)i);
+			const std::string& fullPath = settings.fullPath(i);
 			if (!load(fullPath, i, meshes)) {
 				Log::error("Failed to load %s", fullPath.c_str());
 				return false;
@@ -79,9 +78,9 @@ public:
 		return true;
 	}
 
-	bool getBoneModel(const AnimationSettings<T>& settings, Vertices& vertices, Indices& indices,
-			std::function<bool(const voxel::Mesh* (&meshes)[std::enum_value(T::Max)])> loadAdditional = {}) {
-		const voxel::Mesh* meshes[std::enum_value(T::Max)] {};
+	bool getBoneModel(const AnimationSettings& settings, Vertices& vertices, Indices& indices,
+			std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])> loadAdditional = {}) {
+		const voxel::Mesh* meshes[AnimationSettings::MAX_ENTRIES] {};
 		getMeshes(settings, meshes, loadAdditional);
 
 		vertices.clear();
@@ -91,15 +90,15 @@ public:
 		IndexType indexOffset = (IndexType)0;
 		int meshCount = 0;
 		// merge everything into one buffer
-		for (int i = 0; i < std::enum_value(T::Max); ++i) {
+		for (size_t i = 0; i < AnimationSettings::MAX_ENTRIES; ++i) {
 			const voxel::Mesh *mesh = meshes[i];
 			if (mesh == nullptr) {
 				continue;
 			}
 			const BoneIds& bids = settings.boneIds(i);
 			core_assert_msg(bids.num >= 0 && bids.num <= 2,
-					"number of bone ids is invalid: %i (for mesh type %i)q",
-					(int)bids.num, i);
+					"number of bone ids is invalid: %i (for mesh type %i)",
+					(int)bids.num, (int)i);
 			for (uint8_t b = 0u; b < bids.num; ++b) {
 				const uint8_t boneId = bids.bones[b];
 				const std::vector<voxel::VoxelVertex>& meshVertices = mesh->getVertexVector();

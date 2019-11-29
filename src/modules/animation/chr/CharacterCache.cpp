@@ -12,25 +12,29 @@
 
 namespace animation {
 
-bool CharacterCache::loadGlider(const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]) {
+bool CharacterCache::loadGlider(const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
+	const int idx = settings.getIdxForName("glider");
+	if (idx < 0 || idx >= (int)AnimationSettings::MAX_ENTRIES) {
+		return false;
+	}
 	const char *fullPath = "models/glider.vox";
 	voxel::Mesh& mesh = cacheEntry(fullPath);
 	if (mesh.getNoOfVertices() > 0) {
-		meshes[std::enum_value(CharacterMeshType::Glider)] = &mesh;
+		meshes[idx] = &mesh;
 		return true;
 	}
 	if (loadMesh(fullPath, mesh)) {
-		meshes[std::enum_value(CharacterMeshType::Glider)] = &mesh;
+		meshes[idx] = &mesh;
 		return true;
 	}
-	meshes[std::enum_value(CharacterMeshType::Glider)] = nullptr;
+	meshes[idx] = nullptr;
 	Log::error("Failed to load glider");
 	return false;
 }
 
-bool CharacterCache::getCharacterModel(const CharacterSettings& settings, Vertices& vertices, Indices& indices) {
-	return getBoneModel(settings, vertices, indices, [&] (const voxel::Mesh* (&meshes)[std::enum_value(CharacterMeshType::Max)]) {
-		return loadGlider(meshes);
+bool CharacterCache::getCharacterModel(const AnimationSettings& settings, Vertices& vertices, Indices& indices) {
+	return getBoneModel(settings, vertices, indices, [&] (const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
+		return loadGlider(settings, meshes);
 	});
 }
 
