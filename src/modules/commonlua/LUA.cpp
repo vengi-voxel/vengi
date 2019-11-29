@@ -128,56 +128,17 @@ bool LUA::load(const std::string& luaString) {
 	return true;
 }
 
-bool LUA::valueBoolFromTable(const char * key, bool defaultValue) {
+bool LUA::valueFloatFromTable(const char* key, float *value) {
 	checkStack();
 	lua_getfield(_state, -1, key);
 	if (lua_isnil(_state, -1)) {
 		lua_pop(_state, 1);
-		return defaultValue;
+		return false;
 	}
 
-	const bool rtn = lua_toboolean(_state, -1);
+	*value = static_cast<float>(lua_tonumber(_state, -1));
 	lua_pop(_state, 1);
-	return rtn;
-}
-
-std::string LUA::valueStringFromTable(const char * key, const std::string& defaultValue) {
-	checkStack();
-	lua_getfield(_state, -1, key);
-	if (lua_isnil(_state, -1)) {
-		lua_pop(_state, 1);
-		return defaultValue;
-	}
-
-	const std::string rtn = lua_tostring(_state, -1);
-	lua_pop(_state, 1);
-	return rtn;
-}
-
-float LUA::valueFloatFromTable(const char * key, float defaultValue) {
-	checkStack();
-	lua_getfield(_state, -1, key);
-	if (lua_isnil(_state, -1)) {
-		lua_pop(_state, 1);
-		return defaultValue;
-	}
-
-	const float rtn = static_cast<float>(lua_tonumber(_state, -1));
-	lua_pop(_state, 1);
-	return rtn;
-}
-
-int LUA::valueIntegerFromTable(const char * key, int defaultValue) {
-	checkStack();
-	lua_getfield(_state, -1, key);
-	if (lua_isnil(_state, -1)) {
-		lua_pop(_state, 1);
-		return defaultValue;
-	}
-
-	const int rtn = static_cast<int>(lua_tointeger(_state, -1));
-	lua_pop(_state, 1);
-	return rtn;
+	return true;
 }
 
 bool LUA::execute(const std::string &function, int returnValues) {
@@ -258,15 +219,6 @@ std::string LUA::stackDump() {
 	return stackDump(_state);
 }
 
-std::string LUA::stringFromStack() {
-	const char* id = lua_tostring(_state, -1);
-	pop();
-	if (id == nullptr) {
-		return "";
-	}
-	return id;
-}
-
 std::string LUA::string(const std::string& expr, const std::string& defaultValue) {
 	checkStack();
 	const char* r = defaultValue.c_str();
@@ -277,7 +229,7 @@ std::string LUA::string(const std::string& expr, const std::string& defaultValue
 		lua_getglobal(_state, "evalExpr");
 		if (lua_isstring(_state, -1)) {
 			r = lua_tostring(_state, -1);
-		} else if (lua_isboolean(_state, -1)) {
+																																																} else if (lua_isboolean(_state, -1)) {
 			r = lua_toboolean(_state, -1) ? "true" : "false";
 		}
 		/* remove lua_getglobal value */
@@ -286,91 +238,24 @@ std::string LUA::string(const std::string& expr, const std::string& defaultValue
 	return r;
 }
 
-void LUA::keyValueMap(std::map<std::string, std::string>& map, const char *key) {
-	checkStack();
-	lua_getglobal(_state, key);
-	lua_pushnil(_state);
-
-	while (lua_next(_state, -2) != 0) {
-		const char *_key = lua_tostring(_state, -2);
-		core_assert(_key);
-		std::string _value;
-		if (lua_isstring(_state, -1)) {
-			_value = lua_tostring(_state, -1);
-		} else if (lua_isnumber(_state, -1)) {
-			std::stringstream ss;
-			ss << lua_tonumber(_state, -1);
-			_value = ss.str();
-		} else if (lua_isboolean(_state, -1)) {
-			_value = lua_toboolean(_state, -1) ? "true" : "false";
-		}
-		map[_key] = _value;
-		lua_pop(_state, 1);
-	}
-
-	lua_pop(_state, 1);
-}
-
 int LUA::intValue(const std::string& path, int defaultValue) {
 	const std::string& str = string(path);
-	if (str.empty())
+	if (str.empty()) {
 		return defaultValue;
+	}
 	return atoi(str.c_str());
 }
 
 float LUA::floatValue(const std::string& path, float defaultValue) {
 	const std::string& str = string(path);
-	if (str.empty())
+	if (str.empty()) {
 		return defaultValue;
+	}
 	return static_cast<float>(atof(str.c_str()));
-}
-
-void LUA::globalKeyValue(const std::string& name) {
-	lua_getglobal(_state, name.c_str());
-	lua_pushnil(_state);
-}
-
-int LUA::table(const std::string& name) {
-	lua_getfield(_state, -1, name.c_str());
-	return static_cast<int>(lua_rawlen(_state, -1));
-}
-
-std::string LUA::tableString(int i) {
-	checkStack();
-	lua_rawgeti(_state, -1, i);
-	const std::string str = lua_tostring(_state, -1);
-	pop();
-	return str;
-}
-
-int LUA::tableInteger(int i) {
-	lua_rawgeti(_state, -1, i);
-	const int val = static_cast<int>(lua_tointeger(_state, -1));
-	pop();
-	return val;
-}
-
-float LUA::tableFloat(int i) {
-	lua_rawgeti(_state, -1, i);
-	const float val = static_cast<float>(lua_tonumber(_state, -1));
-	pop();
-	return val;
-}
-
-std::string LUA::key() {
-	return lua_tostring(_state, -2);
 }
 
 void LUA::pop(int amount) {
 	lua_pop(_state, amount);
-}
-
-bool LUA::nextKeyValue() {
-	return lua_next(_state, -2) != 0;
-}
-
-int LUA::global(const std::string& name) {
-	return lua_getglobal(_state, name.c_str());
 }
 
 }

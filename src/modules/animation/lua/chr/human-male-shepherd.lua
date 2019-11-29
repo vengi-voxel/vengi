@@ -12,4 +12,6 @@ function init()
   settings.setPath("hand", "shepherd")
   settings.setPath("foot", "shepherd")
   settings.setPath("shoulder", "shepherd")
+
+  return defaultSkeletonAttributes()
 end

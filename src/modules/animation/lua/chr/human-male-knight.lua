@@ -13,6 +13,8 @@ function init()
   settings.setPath("foot", "knight")
   settings.setPath("shoulder", "knight")
 
-  skeleton.setNeckHeight(0.6)
-  skeleton.setHeadHeight(11.0)
+  local attributes = defaultSkeletonAttributes()
+  attributes["neckHeight"] = 0.6
+  attributes["headHeight"] = 11.0
+  return attributes
 end

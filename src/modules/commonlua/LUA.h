@@ -132,23 +132,7 @@ public:
 		return luaL_error(L, "%s", error.c_str());
 	}
 
-	int global(const std::string& name);
-
-	std::string key();
-
-	void globalKeyValue(const std::string& name);
-
-	bool nextKeyValue();
-
 	void pop(int amount = 1);
-
-	int table(const std::string& name);
-
-	std::string tableString(int i);
-
-	int tableInteger(int i);
-
-	float tableFloat(int i);
 
 	void reg(const std::string& prefix, const luaL_Reg* funcs);
 
@@ -182,15 +166,10 @@ public:
 	 */
 	bool executeUpdate(uint64_t dt);
 
-	std::string valueStringFromTable(const char * key, const std::string& defaultValue = "");
-	float valueFloatFromTable(const char * key, float defaultValue = 0.0f);
-	int valueIntegerFromTable(const char * key, int defaultValue = 0);
-	bool valueBoolFromTable(const char * key, bool defaultValue = false);
-	void keyValueMap(std::map<std::string, std::string>& map, const char *key);
+	bool valueFloatFromTable(const char* key, float *value);
 
 	int intValue(const std::string& path, int defaultValue = 0);
 	float floatValue(const std::string& path, float defaultValue = 0.0f);
-	std::string stringFromStack();
 	std::string string(const std::string& expr, const std::string& defaultValue = "");
 
 	static std::string stackDump(lua_State *L);

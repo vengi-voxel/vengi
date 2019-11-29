@@ -10,7 +10,6 @@ set(SRCS
 	chr/CharacterSettings.cpp chr/CharacterSettings.h
 	chr/CharacterSkeleton.cpp chr/CharacterSkeleton.h
 	chr/CharacterSkeletonAttribute.h
-	chr/LUAFunctions.h
 
 	Animation.cpp Animation.h
 	AnimationCache.h

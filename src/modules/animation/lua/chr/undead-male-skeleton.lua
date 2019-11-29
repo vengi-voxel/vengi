@@ -13,11 +13,13 @@ function init()
   settings.setPath("foot", "skeleton")
   settings.setPath("shoulder", "skeleton")
 
-  skeleton.setHandRight(-6.5)
-  skeleton.setShoulderRight(-3.0)
-  skeleton.setShoulderForward(-1.0)
-  skeleton.setChestHeight(5.0)
-  skeleton.setBeltHeight(1.0)
-  skeleton.setInvisibleLegHeight(0.4)
-  skeleton.setFootRight(-3.2)
+  local attributes = defaultSkeletonAttributes()
+  attributes["handRight"] = -6.5
+  attributes["shoulderRight"] = -3.0
+  attributes["shoulderForward"] = -1.0
+  attributes["chestHeight"] = 5.0
+  attributes["beltHeight"] = 1.0
+  attributes["invisibleLegHeight"] = 0.4
+  attributes["footRight"] = -3.2
+  return attributes
 end
