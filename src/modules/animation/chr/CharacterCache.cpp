@@ -32,19 +32,4 @@ bool CharacterCache::loadGlider(const AnimationSettings& settings, const voxel::
 	return false;
 }
 
-bool CharacterCache::getCharacterModel(const AnimationSettings& settings, Vertices& vertices, Indices& indices) {
-	return getBoneModel(settings, vertices, indices, [&] (const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
-		return loadGlider(settings, meshes);
-	});
-}
-
-bool CharacterCache::getItemModel(const char *itemName, Vertices& vertices, Indices& indices) {
-	char fullPath[128];
-	if (!core::string::formatBuf(fullPath, sizeof(fullPath), "models/items/%s.vox", itemName)) {
-		Log::error("Failed to initialize the item path buffer. Can't load item %s.", itemName);
-		return false;
-	}
-	return getModel(fullPath, BoneId::Tool, vertices, indices);
-}
-
 }

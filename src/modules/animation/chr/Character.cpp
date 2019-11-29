@@ -39,7 +39,9 @@ bool Character::initSettings(const std::string& luaString) {
 }
 
 bool Character::initMesh(const CharacterCachePtr& cache) {
-	if (!cache->getCharacterModel(_settings, _vertices, _indices)) {
+	if (!cache->getBoneModel(_settings, _vertices, _indices, [&] (const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
+		return cache->loadGlider(_settings, meshes);
+	})) {
 		Log::warn("Failed to load the character model");
 		return false;
 	}
@@ -73,7 +75,13 @@ bool Character::updateTool(const CharacterCachePtr& cache, const stock::Inventor
 		_toolAnim = ToolAnimationType::None;
 	}
 
-	if (!cache->getItemModel(citem.item->name(), _toolVertices, _toolIndices)) {
+	const char *itemName = citem.item->name();
+	char fullPath[128];
+	if (!core::string::formatBuf(fullPath, sizeof(fullPath), "models/items/%s.vox", itemName)) {
+		Log::error("Failed to initialize the item path buffer. Can't load item %s.", itemName);
+		return false;
+	}
+	if (!cache->getModel(fullPath, BoneId::Tool, _toolVertices, _toolIndices)) {
 		Log::warn("Could not get item model for %s", citem.item->name());
 		return false;
 	}
