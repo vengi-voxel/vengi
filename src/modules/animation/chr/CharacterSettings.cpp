@@ -71,9 +71,7 @@ bool loadCharacterSettings(const std::string& luaString, CharacterSettings& sett
 		return false;
 	}
 
-	settings.skeletonAttr.update();
-
-	return true;
+	return settings.skeletonAttr.init();
 }
 
 }

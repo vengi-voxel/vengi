@@ -49,21 +49,18 @@ struct CharacterSkeletonAttribute {
 	float headY;
 	float gliderY;
 
-	CharacterSkeletonAttribute() {
-		update();
-	}
-
 	/**
 	 * @brief Updates some absolute values that depend on other scriptable values
-	 * @note Make sure to call update() after you modified values
+	 * @note Make sure to call init() after you modified the values
 	 */
-	bool update() {
+	bool init() {
 		footY = origin;
 		pantsY = footY + footHeight + invisibleLegHeight;
 		beltY = pantsY + pantsHeight;
 		chestY = beltY + beltHeight;
 		headY = chestY + chestHeight;
 		gliderY = headY + headHeight;
+		// TODO: perform sanity checks
 		return true;
 	}
 };

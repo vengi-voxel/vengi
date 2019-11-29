@@ -14,32 +14,13 @@ bool saveCharacterLua(const animation::CharacterSettings& characterSettings, con
 		return false;
 	}
 	io::FileStream stream(file);
-	const std::string& headPath = characterSettings.path("head", name);
-	const std::string& beltPath = characterSettings.path("belt", name);
-	const std::string& chestPath = characterSettings.path("chest", name);
-	const std::string& pantsPath = characterSettings.path("pants", name);
-	const std::string& handPath = characterSettings.path("hand", name);
-	const std::string& footPath = characterSettings.path("foot", name);
-	const std::string& shoulderPath = characterSettings.path("shoulder", name);
-	stream.addStringFormat(false, "function init()\n"
-		"  chr.setBasePath(\"%s\", \"%s\")\n"
-		"  chr.setPath(\"head\", \"%s\")\n"
-		"  chr.setPath(\"belt\", \"%s\")\n"
-		"  chr.setPath(\"chest\", \"%s\")\n"
-		"  chr.setPath(\"pants\", \"%s\")\n"
-		"  chr.setPath(\"hand\", \"%s\")\n"
-		"  chr.setPath(\"foot\", \"%s\")\n"
-		"  chr.setPath(\"shoulder\", \"%s\")\n",
-		characterSettings.race.c_str(),
-		characterSettings.gender.c_str(),
-		headPath.c_str(),
-		beltPath.c_str(),
-		chestPath.c_str(),
-		pantsPath.c_str(),
-		handPath.c_str(),
-		footPath.c_str(),
-		shoulderPath.c_str());
-
+	stream.addString("function init()", false);
+	// TODO race and gender
+	stream.addString("  chr.setBasePath(\"human\", \"male\")\n", false);
+	for (const std::string& t : characterSettings.types()) {
+		const std::string& path = characterSettings.path(t.c_str(), name);
+		stream.addStringFormat(false, "  chr.setPath(\"%s\", \"%s\")\n", t.c_str(), path.c_str());
+	}
 	animation::CharacterSkeletonAttribute dv;
 	const animation::CharacterSkeletonAttribute& sa = characterSettings.skeletonAttr;
 	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {

@@ -29,6 +29,7 @@ public:
 	BoneIds boneIdsArray[MAX_ENTRIES];
 	std::string basePath;
 
+	const std::vector<std::string>& types() const;
 	const std::string& type(size_t idx) const;
 	int getIdxForName(const char *name) const;
 
@@ -54,6 +55,10 @@ public:
 
 inline const BoneIds& AnimationSettings::boneIds(size_t id) const {
 	return boneIdsArray[id];
+}
+
+inline const std::vector<std::string>& AnimationSettings::types() const {
+	return _types;
 }
 
 }

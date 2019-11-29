@@ -1430,10 +1430,8 @@ void SceneManager::shutdown() {
 
 bool SceneManager::saveCharacter(const char *name) {
 	_dirty = false;
-	const std::string& chrName = core::string::format("chr/%s-%s-%s",
-				_characterSettings.race.c_str(),
-				_characterSettings.gender.c_str(),
-				name);
+	// TODO: race and gender
+	const std::string& chrName = core::string::format("chr/human-male-%s", name);
 	const std::string& luaFilePath = animation::luaFilename(chrName.c_str());
 	const std::string luaDir(core::string::extractPath(luaFilePath));
 	io::filesystem()->createDir(luaDir);

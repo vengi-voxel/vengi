@@ -20,10 +20,9 @@ namespace animation {
  */
 struct CharacterSettings : public AnimationSettings {
 	CharacterSkeletonAttribute skeletonAttr;
-	std::string race;
-	std::string gender;
 
 	CharacterSettings() :
+		// TODO: move this into the lua code
 			AnimationSettings( { "head", "chest", "belt", "pants", "hand",
 					"foot", "shoulder", "glider" }) {
 	}
