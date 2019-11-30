@@ -49,7 +49,7 @@ ClientEntity::~ClientEntity() {
 
 void ClientEntity::update(uint64_t dt) {
 	_attrib.update(dt);
-	_character.updateTool(_animationCache, _stock.inventory());
+	_character.updateTool(_animationCache, _stock);
 	_character.update(dt, _attrib);
 }
 

@@ -45,6 +45,7 @@ bool Character::loadGlider(const AnimationCachePtr& cache, const AnimationSettin
 	if (idx < 0 || idx >= (int)AnimationSettings::MAX_ENTRIES) {
 		return false;
 	}
+	// TODO: model via inventory
 	const char *fullPath = "models/glider.vox";
 	voxel::Mesh& mesh = cache->cacheEntry(fullPath);
 	if (mesh.getNoOfVertices() > 0) {
@@ -72,18 +73,21 @@ bool Character::initMesh(const AnimationCachePtr& cache) {
 	return true;
 }
 
-bool Character::updateTool(const AnimationCachePtr& cache, const stock::Inventory& inv) {
-	// TODO: id resolving via constants
-	// weapon/right hand  see stock.lua
-	const stock::Container* container = inv.container(2);
+bool Character::updateTool(const AnimationCachePtr& cache, const stock::Stock& stock) {
+	const int containerId = stock.containerId("tool");
+	if (containerId < 0) {
+		return false;
+	}
+	const stock::Container* container = stock.inventory().container(containerId);
 	if (container == nullptr) {
 		return false;
 	}
 	const stock::Container::ContainerItems& items = container->items();
-	if (items.size() != 1) {
+	if (items.size() < 1) {
 		return false;
 	}
 
+	// TODO: pick the biggest
 	const auto& citem = items[0];
 	const stock::ItemId id = citem.item->id();
 	if (id == _toolId) {

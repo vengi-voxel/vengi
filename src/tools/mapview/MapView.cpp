@@ -151,9 +151,9 @@ core::AppState MapView::onInit() {
 	}
 	stock::Stock& stock = _entity->stock();
 	stock::Inventory& inv = stock.inventory();
-	const stock::ContainerData* containerData = _stockDataProvider->containerData("weapon");
+	const stock::ContainerData* containerData = _stockDataProvider->containerData("tool");
 	if (containerData == nullptr) {
-		Log::error("Failed to get container with name 'weapon'");
+		Log::error("Could not get container for items");
 		return core::AppState::InitFailure;
 	}
 	const stock::ItemData* itemData = _stockDataProvider->itemData(1);

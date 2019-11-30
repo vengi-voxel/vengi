@@ -8,7 +8,7 @@ function init()
   local invMainShape = invMain:shape()
   invMainShape:addRect(0, 0, 1, 1)
 
-  local invRightHand = stock.createContainer(2, "weapon")
+  local invRightHand = stock.createContainer(2, "tool")
   local invRightHandShape = invRightHand:shape()
   invRightHandShape:addRect(0, 0, 1, 1)
 end

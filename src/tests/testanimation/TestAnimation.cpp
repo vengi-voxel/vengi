@@ -21,7 +21,7 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 		const animation::AnimationCachePtr& animationCache) :
 		Super(metric, filesystem, eventBus, timeProvider), _animationCache(
-				animationCache), _stockDataProvider(stockDataProvider) {
+				animationCache), _stockDataProvider(stockDataProvider), _stock(stockDataProvider) {
 	init(ORGANISATION, "testanimation");
 	setCameraMotion(true);
 	setRenderAxis(true);
@@ -123,13 +123,9 @@ core::AppState TestAnimation::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	for (const auto& entry : _stockDataProvider->containers()) {
-		const stock::ContainerData* data = entry.second;
-		if (!_inventory.initContainer(data->id, data->shape, data->flags)) {
-			Log::error("Failed to init inventory container with name '%s'", entry.first.c_str());
-			return core::AppState::InitFailure;
-		}
-		Log::info("Initialized container %i with name %s", (int)data->id, entry.first.c_str());
+	if (!_stock.init()) {
+		Log::error("Failed to init stock");
+		return core::AppState::InitFailure;
 	}
 
 	const auto& items = _stockDataProvider->items();
@@ -173,9 +169,8 @@ core::AppState TestAnimation::onInit() {
 }
 
 bool TestAnimation::addItem(stock::ItemId id) {
-	const stock::ContainerData* containerData = _stockDataProvider->containerData("weapon");
+	const stock::ContainerData* containerData = _stockDataProvider->containerData("tool");
 	if (containerData == nullptr) {
-		Log::error("Failed to get container with name 'weapon'");
 		return false;
 	}
 	const stock::ItemData* itemData = _stockDataProvider->itemData(id);
@@ -184,8 +179,8 @@ bool TestAnimation::addItem(stock::ItemId id) {
 		return false;
 	}
 	const stock::ItemPtr& item = _stockDataProvider->createItem(itemData->id());
-	_inventory.remove(containerData->id, 0, 0);
-	if (!_inventory.add(containerData->id, item, 0, 0)) {
+	_stock.inventory().remove(containerData->id, 0, 0);
+	if (!_stock.inventory().add(containerData->id, item, 0, 0)) {
 		Log::error("Failed to add item to inventory");
 		return false;
 	}
@@ -199,7 +194,7 @@ void TestAnimation::doRender() {
 		loadCharacter();
 		reloadCharacter = false;
 	}
-	_character.updateTool(_animationCache, _inventory);
+	_character.updateTool(_animationCache, _stock);
 	_character.update(_deltaFrameMillis, _attrib);
 	_renderer.render(_character, _camera);
 }
@@ -219,6 +214,7 @@ void TestAnimation::onRenderUI() {
 
 core::AppState TestAnimation::onCleanup() {
 	core::AppState state = Super::onCleanup();
+	_stock.shutdown();
 	_animationCache->shutdown();
 	_stockDataProvider->shutdown();
 	_renderer.shutdown();

@@ -9,7 +9,7 @@
 #include "CharacterSettings.h"
 #include "animation/AnimationCache.h"
 #include "attrib/ShadowAttributes.h"
-#include "stock/Inventory.h"
+#include "stock/Stock.h"
 #include <stdint.h>
 
 namespace animation {
@@ -55,9 +55,9 @@ public:
 	/**
 	 * @brief Updates the vertices and indices buffer whenever the character switched the active tool
 	 * @param[in] cache The cache that is used to resolve the item models
-	 * @param[in] inv The stock::Inventory object to query the active items
+	 * @param[in] stock The stock::Stock object to query the active items
 	 */
-	bool updateTool(const AnimationCachePtr& cache, const stock::Inventory& inv);
+	bool updateTool(const AnimationCachePtr& cache, const stock::Stock& stock);
 	const Skeleton& skeleton() const override;
 };
 

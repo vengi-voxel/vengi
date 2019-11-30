@@ -18,8 +18,10 @@ bool Stock::init() {
 	for (const auto& entry : _stockDataProvider->containers()) {
 		const ContainerData* data = entry.second;
 		if (!_inventory.initContainer(data->id, data->shape, data->flags)) {
+			Log::error("Failed to init inventory container with name '%s'", entry.first.c_str());
 			return false;
 		}
+		Log::debug("Initialized container %i with name %s", (int)data->id, entry.first.c_str());
 	}
 	return true;
 }
@@ -27,6 +29,15 @@ bool Stock::init() {
 void Stock::shutdown() {
 	_inventory.clear();
 	_items.clear();
+}
+
+int Stock::containerId(const std::string& name) const {
+	const ContainerData* data = _stockDataProvider->containerData(name);
+	if (data == nullptr) {
+		Log::warn("Could not resolve container for '%s'", name.c_str());
+		return -1;
+	}
+	return data->id;
 }
 
 ItemPtr Stock::add(const ItemPtr& item) {

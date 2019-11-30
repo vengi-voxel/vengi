@@ -10,7 +10,7 @@
 #include "animation/AnimationRenderer.h"
 #include "attrib/ShadowAttributes.h"
 #include "stock/StockDataProvider.h"
-#include "stock/Inventory.h"
+#include "stock/Stock.h"
 #include <vector>
 #include <string>
 
@@ -25,7 +25,7 @@ private:
 	animation::AnimationCachePtr _animationCache;
 	animation::AnimationRenderer _renderer;
 	stock::StockDataProviderPtr _stockDataProvider;
-	stock::Inventory _inventory;
+	stock::Stock _stock;
 
 	attrib::ShadowAttributes _attrib;
 	std::vector<std::string> _animations;

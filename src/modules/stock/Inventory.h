@@ -42,6 +42,7 @@ public:
 
 inline const Container* Inventory::container(uint8_t containerId) const {
 	if (containerId >= maxContainers()) {
+		Log::debug("Could not get container for id %i", (int)containerId);
 		return nullptr;
 	}
 	const Container& c = _containers[containerId];

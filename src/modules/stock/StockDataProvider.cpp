@@ -114,11 +114,8 @@ bool StockDataProvider::addItemData(ItemData* data) {
 }
 
 const ItemData* StockDataProvider::itemData(ItemId itemId) const {
-	if (itemId > _itemData.size()) {
+	if (itemId >= _itemData.size()) {
 		Log::error("Invalid item id %i", (int)itemId);
-		return nullptr;
-	}
-	if (itemId > _itemData.size()) {
 		return nullptr;
 	}
 	const ItemData* data = _itemData[itemId];
@@ -155,6 +152,7 @@ bool StockDataProvider::addContainerData(ContainerData* data) {
 const ContainerData* StockDataProvider::containerData(const std::string& name) const {
 	auto i = _containerDataMap.find(name);
 	if (i == _containerDataMap.end()) {
+		Log::warn("Failed to get container with name '%s'", name.c_str());
 		return nullptr;
 	}
 	return i->second;
