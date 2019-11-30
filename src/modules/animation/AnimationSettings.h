@@ -13,6 +13,8 @@
 
 namespace animation {
 
+struct SkeletonAttributeMeta;
+
 extern std::string luaFilename(const char *character);
 
 class AnimationSettings {
@@ -54,5 +56,15 @@ public:
 inline const std::vector<std::string>& AnimationSettings::types() const {
 	return _types;
 }
+
+/**
+ * @brief Load the given lua string and fill the AnimationSettings values as well as the skeleton attributes identified by the via base pointer and the meta data iterator
+ * @param[in] luaString
+ * @param[out] settings the AnimationSettings to fill
+ * @param[out] skeletonAttr The base pointer to the skeleton attributes
+ * @param[in] metaIter a null terminated array of name and offsets for the individual skeleton attributes
+ * @return @c true on success, @c false on failure
+ */
+extern bool loadAnimationSettings(const std::string& luaString, AnimationSettings& settings, void* skeletonAttr, const SkeletonAttributeMeta* metaIter);
 
 }

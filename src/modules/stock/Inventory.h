@@ -6,6 +6,7 @@
 
 #include "Container.h"
 #include "ContainerData.h"
+#include "core/Log.h"
 #include <array>
 
 namespace stock {

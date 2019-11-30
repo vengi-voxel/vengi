@@ -5,7 +5,8 @@
 #pragma once
 
 #include "core/io/File.h"
-#include "animation/chr/CharacterSettings.h"
+#include "animation/AnimationSettings.h"
+#include "animation/chr/CharacterSkeletonAttribute.h"
 
 namespace voxedit {
 

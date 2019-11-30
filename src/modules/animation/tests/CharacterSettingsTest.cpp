@@ -3,7 +3,8 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "animation/chr/CharacterSettings.h"
+#include "animation/AnimationSettings.h"
+#include "animation/chr/CharacterSkeletonAttribute.h"
 
 namespace animation {
 
@@ -42,7 +43,7 @@ class CharacterSettingsTest: public core::AbstractTest {
 TEST_F(CharacterSettingsTest, testLUA) {
 	AnimationSettings settings;
 	CharacterSkeletonAttribute skeletonAttr;
-	ASSERT_TRUE(loadCharacterSettings(TestSetters, settings, skeletonAttr))
+	ASSERT_TRUE(loadAnimationSettings(TestSetters, settings, &skeletonAttr, ChrSkeletonAttributeMetaArray))
 		<< "Failed to initialize the character settings";
 
 	ASSERT_EQ(2u, settings.types().size());

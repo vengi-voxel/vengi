@@ -5,12 +5,54 @@
 #include "AnimationSettings.h"
 #include "core/String.h"
 #include "core/Assert.h"
+#include "core/Log.h"
+#include "core/Common.h"
+#include "LUAShared.h"
+#include "SkeletonAttribute.h"
 
 namespace animation {
 
 std::string luaFilename(const char *character) {
 	return core::string::format("%s.lua", character);
 }
+
+bool loadAnimationSettings(const std::string& luaString, AnimationSettings& settings, void* skeletonAttr, const animation::SkeletonAttributeMeta* metaIter) {
+	if (luaString.empty()) {
+		Log::warn("empty animation settings can't get loaded");
+		return false;
+	}
+
+	lua::LUA lua;
+	lua.reg("settings", settingsFuncs);
+	lua.reg("bone", boneFuncs);
+	luaanim_boneidsregister(lua.state());
+
+	if (!lua.load(luaString)) {
+		Log::error("%s", lua.error().c_str());
+		return false;
+	}
+
+	lua.newGlobalData<AnimationSettings>("Settings", &settings);
+	if (!lua.execute("init", LUA_MULTRET)) {
+		Log::error("%s", lua.error().c_str());
+		return false;
+	}
+
+	// TODO: sanity checks for the amount of values on the stack and the set values in the attributes
+
+	for (; metaIter->name; ++metaIter) {
+		const animation::SkeletonAttributeMeta& meta = *metaIter;
+		float *saVal = (float*)(((char*)&skeletonAttr) + meta.offset);
+		if (lua.valueFloatFromTable(meta.name, saVal)) {
+			Log::debug("Skeleton attribute value for %s: %f", meta.name, *saVal);
+		} else {
+			Log::debug("Skeleton attribute value for %s not given - use default: %f", meta.name, *saVal);
+		}
+	}
+
+	return true;
+}
+
 
 void AnimationSettings::setTypes(const std::vector<std::string>& types) {
 	_types = types;

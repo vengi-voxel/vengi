@@ -5,7 +5,7 @@
 #pragma once
 
 #include "voxelformat/VolumeCache.h"
-#include "animation/chr/CharacterSettings.h"
+#include "animation/AnimationSettings.h"
 #include "voxelformat/VoxelVolumes.h"
 #include <memory>
 

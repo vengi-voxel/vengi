@@ -31,7 +31,10 @@ bool Character::init(const AnimationCachePtr& cache, const std::string& luaStrin
 bool Character::initSettings(const std::string& luaString) {
 	AnimationSettings settings;
 	CharacterSkeletonAttribute attributes;
-	if (loadCharacterSettings(luaString, settings, attributes)) {
+	if (loadAnimationSettings(luaString, settings, &attributes, ChrSkeletonAttributeMetaArray)) {
+		if (!attributes.init()) {
+			return false;
+		}
 		_settings = settings;
 		_attributes = attributes;
 		return true;

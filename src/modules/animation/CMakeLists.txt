@@ -6,7 +6,6 @@ set(SRCS
 	chr/anim/Glide.cpp chr/anim/Glide.h
 	chr/anim/Tool.cpp chr/anim/Tool.h
 	chr/Character.cpp chr/Character.h
-	chr/CharacterSettings.cpp chr/CharacterSettings.h
 	chr/CharacterSkeleton.cpp chr/CharacterSkeleton.h
 	chr/CharacterSkeletonAttribute.h
 

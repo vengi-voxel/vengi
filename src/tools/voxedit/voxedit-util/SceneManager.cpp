@@ -1473,7 +1473,7 @@ bool SceneManager::loadCharacter(const std::string& luaFile) {
 	animation::AnimationSettings settings;
 	animation::CharacterSkeletonAttribute attributes;
 	const std::string& lua = io::filesystem()->load(luaFile);
-	if (!animation::loadCharacterSettings(lua, settings, attributes)) {
+	if (!animation::loadAnimationSettings(lua, settings, &attributes, animation::ChrSkeletonAttributeMetaArray)) {
 		Log::warn("Failed to load character settings from %s", luaFile.c_str());
 		return false;
 	}

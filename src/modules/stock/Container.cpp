@@ -3,6 +3,7 @@
  */
 
 #include "Container.h"
+#include "core/Log.h"
 #include "Item.h"
 #include <algorithm>
 
@@ -19,15 +20,18 @@ bool Container::canAdd(const ItemPtr& item, uint8_t x, uint8_t y) const {
 		return false;
 	}
 	if ((_flags & Single) != 0 && !items().empty()) {
+		Log::debug("Can't add item. Container can only hold a single item - but it is not empty.");
 		return false;
 	}
 	if ((_flags & Unique) != 0 && hasItemOfType(item->type())) {
+		Log::debug("Can't add item. There is already an item with the same type.");
 		return false;
 	}
 	if ((_flags & Scrollable) != 0) {
 		return true;
 	}
 	if (!_shape.isFree(item->shape(), x, y)) {
+		Log::debug("Can't add item. It doesn't fit into the container shape.");
 		return false;
 	}
 	return true;
