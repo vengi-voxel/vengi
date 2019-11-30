@@ -88,15 +88,6 @@ static int luaanim_boneidsadd(lua_State* s) {
 	return 1;
 }
 
-static void luaanim_boneidsregister(lua_State* s) {
-	std::vector<luaL_Reg> funcs = {
-		{"__tostring", luaanim_boneidstostring},
-		{"add", luaanim_boneidsadd},
-		{nullptr, nullptr}
-	};
-	clua_registerfuncs(s, &funcs.front(), clua_meta<BoneIds>::name());
-}
-
 static int luaanim_pushboneids(lua_State* s, BoneIds* b) {
 	return clua_push(s, b);
 }
@@ -123,9 +114,15 @@ static constexpr luaL_Reg settingsFuncs[] = {
 	{ nullptr, nullptr }
 };
 
-static constexpr luaL_Reg boneFuncs[] = {
+static constexpr luaL_Reg globalBoneFuncs[] = {
 	{ "setup", luaanim_bonesetup },
 	{ nullptr, nullptr }
+};
+
+static constexpr luaL_Reg boneFuncs[] = {
+	{"__tostring", luaanim_boneidstostring},
+	{"add", luaanim_boneidsadd},
+	{nullptr, nullptr}
 };
 
 std::string luaFilename(const char *character) {
@@ -140,8 +137,8 @@ bool loadAnimationSettings(const std::string& luaString, AnimationSettings& sett
 
 	lua::LUA lua;
 	lua.reg("settings", settingsFuncs);
-	lua.reg("bone", boneFuncs);
-	luaanim_boneidsregister(lua.state());
+	lua.reg("bone", globalBoneFuncs);
+	clua_registerfuncs(lua.state(), boneFuncs, clua_meta<BoneIds>::name());
 
 	if (!lua.load(luaString)) {
 		Log::error("%s", lua.error().c_str());
