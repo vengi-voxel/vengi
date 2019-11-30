@@ -14,7 +14,9 @@ bool saveCharacterLua(const animation::AnimationSettings& settings, const animat
 		return false;
 	}
 	io::FileStream stream(file);
-	stream.addString("function init()", false);
+	stream.addString("require 'chr.bones'\n", false);
+	stream.addString("require 'chr.shared'\n\n", false);
+	stream.addString("function init()\n", false);
 	// TODO race and gender
 	stream.addString("  settings.setBasePath(\"human\", \"male\")\n", false);
 	stream.addString("  settings.setMeshTypes(", false);
@@ -34,20 +36,18 @@ bool saveCharacterLua(const animation::AnimationSettings& settings, const animat
 		}
 		stream.addStringFormat(false, "  settings.setPath(\"%s\", \"%s\")\n", t.c_str(), path.c_str());
 	}
+
+	stream.addString("  local attributes = defaultSkeletonAttributes()\n", false);
 	animation::CharacterSkeletonAttribute dv;
 	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
 		const float *saVal = (const float*)(((const char*)&sa) + meta.offset);
 		const float *dvVal = (const float*)(((const char*)&dv) + meta.offset);
 		if (glm::abs(*saVal - *dvVal) > glm::epsilon<float>()) {
-			stream.addStringFormat(false, "  %s = %f", meta.name, *saVal);
-		}
-		if ((metaIter + 1)->name) {
-			stream.addString(",\n", false);
-		} else {
-			stream.addString("\n", false);
+			stream.addStringFormat(false, "  attributes[\"%s\"] = %f\n", meta.name, *saVal);
 		}
 	}
+	stream.addString("  return attributes\n", false);
 	stream.addString("end\n", false);
 	return true;
 }

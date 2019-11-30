@@ -164,7 +164,6 @@ bool loadAnimationSettings(const std::string& luaString, AnimationSettings& sett
 	return true;
 }
 
-
 void AnimationSettings::setTypes(const std::vector<std::string>& types) {
 	_types = types;
 }
@@ -209,7 +208,9 @@ std::string AnimationSettings::path(int idx, const char *name) const {
 }
 
 bool AnimationSettings::setPath(int idx, const char *str) {
-	core_assert(idx >= 0 && idx < (int) MAX_ENTRIES);
+	if (idx < 0 || idx >= (int) MAX_ENTRIES) {
+		return false;
+	}
 	paths[idx] = str;
 	return true;
 }
