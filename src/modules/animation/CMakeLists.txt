@@ -11,7 +11,7 @@ set(SRCS
 	chr/CharacterSkeletonAttribute.h
 
 	Animation.cpp Animation.h
-	AnimationCache.h
+	AnimationCache.cpp AnimationCache.h
 	AnimationSettings.cpp AnimationSettings.h
 	AnimationRenderer.cpp AnimationRenderer.h
 	AnimationEntity.h
