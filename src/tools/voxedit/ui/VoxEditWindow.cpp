@@ -554,6 +554,18 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
+
+	auto& skeletonAttributes = sceneMgr().skeletonAttributes();
+	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
+		const animation::SkeletonAttributeMeta& meta = *metaIter;
+		if (id == TBIDC(meta.name)) {
+			const float val = (float)ev.target->getValueDouble();
+			float *saVal = (float*)(((uint8_t*)&skeletonAttributes) + meta.offset);
+			*saVal = val;
+			break;
+		}
+	}
+
 	return false;
 }
 
@@ -822,8 +834,8 @@ bool VoxEditWindow::loadCharacter(const std::string& file) {
 	const auto& skeletonAttributes = sceneMgr().skeletonAttributes();
 	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
-		const float *saVal = (const float*)(((const uint8_t*)&skeletonAttributes) + meta.offset);
 		if (tb::TBInlineSelectDouble *value = getWidgetByIDAndType<tb::TBInlineSelectDouble>(TBIDC(meta.name))) {
+			const float *saVal = (const float*)(((const uint8_t*)&skeletonAttributes) + meta.offset);
 			value->setValueDouble(*saVal);
 		}
 	}
