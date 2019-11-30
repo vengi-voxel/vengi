@@ -38,11 +38,11 @@ bool saveCharacterLua(const animation::AnimationSettings& settings, const animat
 	}
 
 	stream.addString("  local attributes = defaultSkeletonAttributes()\n", false);
-	animation::CharacterSkeletonAttribute dv;
+	const animation::CharacterSkeletonAttribute dv {};
 	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
-		const float *saVal = (const float*)(((const char*)&sa) + meta.offset);
-		const float *dvVal = (const float*)(((const char*)&dv) + meta.offset);
+		const float *saVal = (const float*)(((const uint8_t*)&sa) + meta.offset);
+		const float *dvVal = (const float*)(((const uint8_t*)&dv) + meta.offset);
 		if (glm::abs(*saVal - *dvVal) > glm::epsilon<float>()) {
 			stream.addStringFormat(false, "  attributes[\"%s\"] = %f\n", meta.name, *saVal);
 		}

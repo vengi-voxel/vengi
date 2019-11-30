@@ -26,14 +26,14 @@ class VoxEditWindow: public ui::turbobadger::Window {
 	friend class ::VoxEdit;
 private:
 	using Super = ui::turbobadger::Window;
-	Viewport* _scene;
+	Viewport* _scene = nullptr;
 	Viewport* _sceneTop = nullptr;
 	Viewport* _sceneLeft = nullptr;
 	Viewport* _sceneFront = nullptr;
 	Viewport* _sceneAnimation = nullptr;
-	tb::TBLayout* _animationWidget;
-	PaletteWidget* _paletteWidget;
-	LayerWidget* _layerWidget;
+	tb::TBLayout* _animationWidget = nullptr;
+	PaletteWidget* _paletteWidget = nullptr;
+	LayerWidget* _layerWidget = nullptr;
 	tb::TBWidget* _saveButton = nullptr;
 	tb::TBWidget* _undoButton = nullptr;
 	tb::TBWidget* _redoButton = nullptr;

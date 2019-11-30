@@ -58,6 +58,26 @@ public:
 	 */
 	bool updateTool(const AnimationCachePtr& cache, const stock::Stock& stock);
 	const Skeleton& skeleton() const override;
+	AnimationSettings& animationSettings();
+	CharacterSkeletonAttribute& skeletonAttributes();
+	const AnimationSettings& animationSettings() const;
+	const CharacterSkeletonAttribute& skeletonAttributes() const;
 };
+
+inline AnimationSettings& Character::animationSettings() {
+	return _settings;
+}
+
+inline CharacterSkeletonAttribute& Character::skeletonAttributes() {
+	return _attributes;
+}
+
+inline const AnimationSettings& Character::animationSettings() const {
+	return _settings;
+}
+
+inline const CharacterSkeletonAttribute& Character::skeletonAttributes() const {
+	return _attributes;
+}
 
 }

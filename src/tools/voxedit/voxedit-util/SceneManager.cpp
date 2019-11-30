@@ -714,14 +714,15 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 				continue;
 			}
 			const int characterMeshTypeId = core::string::toInt(value);
-			const std::string& path = _animationSettings.paths[characterMeshTypeId];
+			const animation::AnimationSettings& animSettings = _character.animationSettings();
+			const std::string& path = animSettings.paths[characterMeshTypeId];
 			if (path.empty()) {
 				Log::debug("No path found for layer %i", (int)i);
 				continue;
 			}
 			voxel::Mesh mesh;
 			_volumeRenderer.toMesh(i, &mesh);
-			const std::string& fullPath = _animationSettings.fullPath(characterMeshTypeId);
+			const std::string& fullPath = animSettings.fullPath(characterMeshTypeId);
 			_animationCache->putMesh(fullPath.c_str(), mesh);
 			Log::debug("Updated mesh on layer %i for path %s", (int)i, fullPath.c_str());
 		}
@@ -1436,7 +1437,8 @@ bool SceneManager::saveCharacter(const char *name) {
 	const std::string luaDir(core::string::extractPath(luaFilePath));
 	io::filesystem()->createDir(luaDir);
 	const io::FilePtr& luaFile = io::filesystem()->open(luaFilePath, io::FileMode::Write);
-	if (saveCharacterLua(_animationSettings, _chrSkeletonAttribute, name, luaFile)) {
+	const animation::AnimationSettings& animSettings = _character.animationSettings();
+	if (saveCharacterLua(animSettings, _character.skeletonAttributes(), name, luaFile)) {
 		Log::info("Wrote lua script: %s", luaFile->name().c_str());
 	}
 
@@ -1459,7 +1461,7 @@ bool SceneManager::saveCharacter(const char *name) {
 			continue;
 		}
 		const int characterMeshTypeId = core::string::toInt(value);
-		const std::string& fullPath = _animationSettings.fullPath(characterMeshTypeId, name);
+		const std::string& fullPath = animSettings.fullPath(characterMeshTypeId, name);
 		if (!saveLayer(i, fullPath)) {
 			Log::warn("Failed to save type %i to %s", characterMeshTypeId, fullPath.c_str());
 			_dirty = true;
@@ -1470,18 +1472,13 @@ bool SceneManager::saveCharacter(const char *name) {
 }
 
 bool SceneManager::loadCharacter(const std::string& luaFile) {
-	animation::AnimationSettings settings;
-	animation::CharacterSkeletonAttribute attributes;
 	const std::string& lua = io::filesystem()->load(luaFile);
-	if (!animation::loadAnimationSettings(lua, settings, &attributes, animation::ChrSkeletonAttributeMetaArray)) {
-		Log::warn("Failed to load character settings from %s", luaFile.c_str());
-		return false;
+	if (!_character.initSettings(lua)) {
+		Log::warn("Failed to initialize the character settings");
 	}
-	_animationSettings = settings;
-	_chrSkeletonAttribute = attributes;
 
 	voxel::VoxelVolumes volumes;
-	if (!_volumeCache.getCharacterVolumes(_animationSettings, volumes)) {
+	if (!_volumeCache.getCharacterVolumes(_character.animationSettings(), volumes)) {
 		return false;
 	}
 
@@ -1506,9 +1503,6 @@ bool SceneManager::loadCharacter(const std::string& luaFile) {
 		_layerMgr.findNewActiveLayer();
 	}
 
-	if (!_character.initSettings(lua)) {
-		Log::warn("Failed to initialize the character settings");
-	}
 	resetSceneState();
 	_animationUpdate = true;
 	return true;

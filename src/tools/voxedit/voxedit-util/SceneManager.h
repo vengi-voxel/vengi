@@ -65,12 +65,8 @@ private:
 	render::Gizmo _gizmo;
 
 	animation::Character _character;
-	// the settings that are modified by the editor and then
-	// later transfered to the character for rendering
-	animation::AnimationSettings _animationSettings;
 	animation::AnimationRenderer _animationRenderer;
 	animation::AnimationCachePtr _animationCache;
-	animation::CharacterSkeletonAttribute _chrSkeletonAttribute;
 	// if we are in animation mode and we modified the meshes, we have to
 	// update the cache with the current volume. this is the layer id
 	// that we have to perform the update for - or -1 if all layers were
@@ -337,7 +333,7 @@ public:
 	const voxelrender::RawVolumeRenderer& renderer() const;
 	voxelrender::RawVolumeRenderer& renderer();
 	render::GridRenderer& gridRenderer();
-	animation::AnimationSettings& animationSettings();
+	animation::CharacterSkeletonAttribute& skeletonAttributes();
 	const render::Gizmo& gizmo() const;
 
 	// LayerListener
@@ -384,8 +380,8 @@ inline render::GridRenderer& SceneManager::gridRenderer() {
 	return _gridRenderer;
 }
 
-inline animation::AnimationSettings& SceneManager::animationSettings() {
-	return _animationSettings;
+inline animation::CharacterSkeletonAttribute& SceneManager::skeletonAttributes() {
+	return _character.skeletonAttributes();
 }
 
 inline bool SceneManager::dirty() const {

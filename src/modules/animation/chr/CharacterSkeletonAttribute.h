@@ -11,6 +11,8 @@ namespace animation {
 /**
  * @brief The skeleton attributes reflect the model values that are needed to
  * assemble the final mesh. This is mostly about offsets and positioning.
+ *
+ * @note This must be float values
  */
 struct CharacterSkeletonAttribute {
 	float scaler = 1.0f;
@@ -42,12 +44,12 @@ struct CharacterSkeletonAttribute {
 	float footRight = -3.2f;
 
 	// not exposed but calculated
-	float footY;
-	float pantsY;
-	float beltY;
-	float chestY;
-	float headY;
-	float gliderY;
+	float footY = 0.0f;
+	float pantsY = 0.0f;
+	float beltY = 0.0f;
+	float chestY = 0.0f;
+	float headY = 0.0f;
+	float gliderY = 0.0f;
 
 	/**
 	 * @brief Updates some absolute values that depend on other scriptable values
