@@ -130,6 +130,7 @@ bool LUA::load(const std::string& luaString) {
 
 bool LUA::valueFloatFromTable(const char* key, float *value) {
 	checkStack();
+	core_assert(lua_istable(_state, -1));
 	lua_getfield(_state, -1, key);
 	if (lua_isnil(_state, -1)) {
 		lua_pop(_state, 1);
