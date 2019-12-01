@@ -4,6 +4,7 @@
 
 #include "MementoHandler.h"
 
+#include "voxel/Voxel.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "core/command/Command.h"
@@ -56,6 +57,9 @@ MementoData::MementoData(const MementoData& o) :
 MementoData& MementoData::operator=(MementoData &&o) {
 	if (this != &o) {
 		_compressedSize = std::exchange(o._compressedSize, 0);
+		if (_buffer) {
+			delete[] _buffer;
+		}
 		_buffer = std::exchange(o._buffer, nullptr);
 		_region = o._region;
 	}
