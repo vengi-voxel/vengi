@@ -3,7 +3,7 @@
  */
 
 #include "video/tests/AbstractGLTest.h"
-#include "../Modifier.h"
+#include "../modifier/Modifier.h"
 
 namespace voxedit {
 

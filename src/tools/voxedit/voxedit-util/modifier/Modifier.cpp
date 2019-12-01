@@ -3,16 +3,16 @@
  */
 
 #include "Modifier.h"
-#include "AxisUtil.h"
 #include "math/Axis.h"
 #include "core/Color.h"
-#include "CustomBindingContext.h"
 #include "core/String.h"
-#include "voxel/Region.h"
 #include "core/command/Command.h"
+#include "voxel/Region.h"
 #include "video/ScopedPolygonMode.h"
-#include "SceneManager.h"
 #include "voxelgenerator/ShapeGenerator.h"
+#include "../AxisUtil.h"
+#include "../CustomBindingContext.h"
+#include "../SceneManager.h"
 
 namespace voxedit {
 

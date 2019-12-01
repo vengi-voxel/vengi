@@ -10,7 +10,6 @@
 #include "Viewport.h"
 
 #include "voxedit-util/SceneManager.h"
-#include "voxedit-util/ModifierType.h"
 #include "image/Image.h"
 
 Viewport::Viewport() :

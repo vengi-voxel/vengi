@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "../LayerManager.h"
+#include "../layer/LayerManager.h"
 #include "voxel/RawVolume.h"
 
 namespace voxedit {

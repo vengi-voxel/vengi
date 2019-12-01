@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxedit-util/LayerListener.h"
+#include "voxedit-util/layer/LayerListener.h"
 #include "ui/turbobadger/Widget.h"
 #include "LayerWindow.h"
 

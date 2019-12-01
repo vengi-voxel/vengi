@@ -22,11 +22,11 @@
 #include "core/command/ActionButton.h"
 #include "math/Axis.h"
 #include "MementoHandler.h"
-#include "ModifierType.h"
-#include "LayerListener.h"
-#include "Layer.h"
-#include "Modifier.h"
-#include "LayerManager.h"
+#include "layer/LayerListener.h"
+#include "layer/Layer.h"
+#include "layer/LayerManager.h"
+#include "modifier/ModifierType.h"
+#include "modifier/Modifier.h"
 #include <vector>
 
 namespace voxedit {

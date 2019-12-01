@@ -3,9 +3,9 @@
  */
 
 #include "ModifierButton.h"
-#include "SceneManager.h"
 #include "core/BindingContext.h"
-#include "CustomBindingContext.h"
+#include "../SceneManager.h"
+#include "../CustomBindingContext.h"
 
 namespace voxedit {
 

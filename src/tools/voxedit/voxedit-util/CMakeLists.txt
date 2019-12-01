@@ -1,24 +1,22 @@
 set(SRCS
-	anim/VolumeCache.h anim/VolumeCache.cpp
-	anim/AnimationLuaSaver.h anim/AnimationLuaSaver.cpp
-
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
 	ViewportController.h ViewportController.cpp
-
 	CustomBindingContext.h
-
-	Modifier.h Modifier.cpp
-	ModifierType.h
-	ModifierButton.h ModifierButton.cpp
-
-	LayerManager.h LayerManager.cpp
-	LayerListener.h
-	Layer.h
-
 	AxisUtil.h AxisUtil.cpp
-	ModifierType.h
 	Config.h
+
+	anim/VolumeCache.h anim/VolumeCache.cpp
+	anim/AnimationLuaSaver.h anim/AnimationLuaSaver.cpp
+
+	modifier/Modifier.h modifier/Modifier.cpp
+	modifier/ModifierType.h
+	modifier/ModifierButton.h modifier/ModifierButton.cpp
+	modifier/ModifierType.h
+
+	layer/LayerManager.h layer/LayerManager.cpp
+	layer/LayerListener.h
+	layer/Layer.h
 
 	tool/ImageUtils.h tool/ImageUtils.cpp
 	tool/Clipboard.h tool/Clipboard.cpp
