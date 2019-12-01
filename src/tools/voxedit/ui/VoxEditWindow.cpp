@@ -500,8 +500,10 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		return false;
 	} else if (id == TBIDC("shapetype")) {
 		sceneMgr().modifier().setShapeType((voxedit::ShapeType)widget->getValue());
+		return true;
 	} else if (ev.isAny(TBIDC("animationlist"))) {
 		sceneMgr().character().setAnimation((animation::Animation)widget->getValue());
+		return true;
 	} else if (id == TBIDC("optionvoxelsize")) {
 		sceneMgr().setGridResolution(widget->getValue());
 		return true;
