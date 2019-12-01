@@ -117,6 +117,7 @@ private:
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
 
+	// layer animation speed
 	int _animationSpeed = 0;
 	int _currentAnimationLayer = 0;
 	uint64_t _nextFrameSwitch = 0;
@@ -334,6 +335,7 @@ public:
 	voxelrender::RawVolumeRenderer& renderer();
 	render::GridRenderer& gridRenderer();
 	animation::CharacterSkeletonAttribute& skeletonAttributes();
+	animation::Character& character();
 	const render::Gizmo& gizmo() const;
 
 	// LayerListener
@@ -382,6 +384,10 @@ inline render::GridRenderer& SceneManager::gridRenderer() {
 
 inline animation::CharacterSkeletonAttribute& SceneManager::skeletonAttributes() {
 	return _character.skeletonAttributes();
+}
+
+inline animation::Character& SceneManager::character() {
+	return _character;
 }
 
 inline bool SceneManager::dirty() const {
