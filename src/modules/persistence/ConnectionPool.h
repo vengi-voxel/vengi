@@ -7,9 +7,8 @@
 #include "Connection.h"
 #include "core/Var.h"
 #include "core/Trace.h"
+#include "core/collection/ConcurrentQueue.h"
 #include "core/IComponent.h"
-#include <queue>
-#include <mutex>
 
 namespace persistence {
 
@@ -22,16 +21,15 @@ class ConnectionPool : public core::IComponent {
 protected:
 	int _min = -1;
 	int _max = -1;
-	int _connectionAmount = 0;
+	std::atomic_int _connectionAmount { 0 };
 	core::VarPtr _dbName;
 	core::VarPtr _dbHost;
 	core::VarPtr _dbUser;
 	core::VarPtr _dbPw;
 	core::VarPtr _minConnections;
 	core::VarPtr _maxConnections;
-	mutable core_trace_mutex(std::mutex, _mutex);
 
-	std::queue<Connection*> _connections;
+	core::ConcurrentQueue<Connection*> _connections;
 
 public:
 	ConnectionPool();
@@ -42,14 +40,21 @@ public:
 
 	/**
 	 * @brief Gets one connection from the pool
-	 * @note Make sure to call @c Connection::close() to give the connection back to the pool.
+	 * @note Make sure to call @c giveBack() to give the connection back to the pool.
 	 * @return @c Connection object
+	 * @sa ScopedConnection
 	 */
 	Connection* connection();
+	void giveBack(Connection* c);
+
+	int connections() const;
 
 private:
 	Connection* addConnection();
-	void giveBack(Connection* c);
 };
+
+inline int ConnectionPool::connections() const {
+	return _connectionAmount;
+}
 
 }

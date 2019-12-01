@@ -18,7 +18,6 @@ ConnectionPool::~ConnectionPool() {
 }
 
 bool ConnectionPool::init() {
-	std::unique_lock lock(_mutex);
 	_minConnections = core::Var::getSafe(cfg::DatabaseMinConnections);
 	_maxConnections = core::Var::getSafe(cfg::DatabaseMaxConnections);
 
@@ -38,7 +37,13 @@ bool ConnectionPool::init() {
 	Log::debug("Connect to %s@%s to database %s", _dbUser->strVal().c_str(), _dbHost->strVal().c_str(), _dbName->strVal().c_str());
 
 	for (int i = _connectionAmount; i < _min; ++i) {
-		addConnection();
+		if (addConnection() == nullptr) {
+			break;
+		}
+	}
+
+	if (_connectionAmount < _min) {
+		Log::warn("Could only aquire %i of %i connections", (int)_connectionAmount, _min);
 	}
 
 	if (_connectionAmount > 0) {
@@ -49,16 +54,14 @@ bool ConnectionPool::init() {
 }
 
 void ConnectionPool::shutdown() {
-	std::unique_lock lock(_mutex);
-	while (!_connections.empty()) {
-		Connection* c = _connections.front();
+	Connection* c;
+	while (_connections.pop(c)) {
 		c->disconnect();
-		_connections.pop();
 		--_connectionAmount;
 		delete c;
 	}
 	if (_connectionAmount != 0) {
-		Log::warn("Connections out of sync: %i", _connectionAmount);
+		Log::warn("Connections out of sync: %i", (int)_connectionAmount);
 	}
 	_connectionAmount = 0;
 
@@ -88,50 +91,49 @@ void ConnectionPool::giveBack(Connection* c) {
 	if (c == nullptr) {
 		return;
 	}
-	std::unique_lock lock(_mutex);
 	_connections.push(c);
 }
 
 Connection* ConnectionPool::connection() {
-	std::unique_lock lock(_mutex);
-	if (_connections.empty()) {
-		if (_minConnections->isDirty()) {
-			const int newMin = _minConnections->intVal();
-			if (newMin > 0 && newMin <= _max) {
-				_min = newMin;
-			}
-			_minConnections->markClean();
+	Connection* c;
+	if (_connections.pop(c)) {
+		if (c->connect()) {
+			return c;
 		}
-		if (_maxConnections->isDirty()) {
-			const int newMax = _maxConnections->intVal();
-			if (newMax > 0 && newMax >= _min) {
-				_max = newMax;
-			}
-			_maxConnections->markClean();
-		}
-		if (_connectionAmount >= _max) {
-			Log::warn("Could not acquire pooled connection, max limit (%i) hit", _max);
-			return nullptr;
-		}
-		Connection* newC = addConnection();
-		if (newC == nullptr) {
-			Log::error("Could not connect to database");
-			return nullptr;
-		}
-	}
-	Connection* c = _connections.front();
-	_connections.pop();
-	if (c->status()) {
-		return c;
+
+		delete c;
+		--_connectionAmount;
+		return connection();
 	}
 
-	if (c->connect()) {
-		return c;
+	if (_minConnections->isDirty()) {
+		const int newMin = _minConnections->intVal();
+		if (newMin > 0 && newMin <= _max) {
+			_min = newMin;
+		}
+		_minConnections->markClean();
 	}
 
-	delete c;
-	--_connectionAmount;
-	return connection();
+	if (_maxConnections->isDirty()) {
+		const int newMax = _maxConnections->intVal();
+		if (newMax > 0 && newMax >= _min) {
+			_max = newMax;
+		}
+		_maxConnections->markClean();
+	}
+
+	if (_connectionAmount >= _max) {
+		Log::warn("Could not acquire pooled connection, max limit (%i) hit", _max);
+		return nullptr;
+	}
+
+	Connection* newC = addConnection();
+	if (newC != nullptr) {
+		return newC;
+	}
+
+	Log::error("Could not connect to database");
+	return nullptr;
 }
 
 }

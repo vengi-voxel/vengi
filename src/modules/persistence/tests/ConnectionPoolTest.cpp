@@ -5,6 +5,9 @@
 #include "AbstractDatabaseTest.h"
 #include "core/Singleton.h"
 #include "persistence/ConnectionPool.h"
+#include "persistence/ScopedConnection.h"
+#include "persistence/postgres/PQSymbol.h"
+#include <gtest/gtest.h>
 
 namespace persistence {
 
@@ -17,6 +20,7 @@ protected:
 public:
 	void SetUp() override {
 		Super::SetUp();
+		ASSERT_TRUE(postgresInit());
 		_supported = _connectionPool.init();
 		if (!_supported) {
 			Log::warn("ConnectionPoolTest is skipped");
@@ -26,6 +30,7 @@ public:
 	void TearDown() override {
 		Super::TearDown();
 		_connectionPool.shutdown();
+		postgresShutdown();
 	}
 };
 
@@ -34,9 +39,10 @@ TEST_F(ConnectionPoolTest, testConnectionPoolGetConnection) {
 		return;
 	}
 	ASSERT_TRUE(_connectionPool.init());
-	Connection* c = _connectionPool.connection();
-	ASSERT_NE(nullptr, c);
-	_connectionPool.shutdown();
+	EXPECT_EQ(core::Var::get(cfg::DatabaseMinConnections)->intVal(), _connectionPool.connections()) << "Unexpected connection amount";
+	const ScopedConnection scoped(_connectionPool, _connectionPool.connection());
+	EXPECT_EQ(core::Var::get(cfg::DatabaseMinConnections)->intVal(), _connectionPool.connections()) << "Connection amount should not change";
+	EXPECT_TRUE((bool)scoped) << "ScopedConnection should hold a valid connection";
 }
 
 }
