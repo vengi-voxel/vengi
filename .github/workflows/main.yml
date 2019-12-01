@@ -22,6 +22,7 @@ jobs:
             ctest -V -C Debug -R tests-util
             ctest -V -C Debug -R tests-stock
             ctest -V -C Debug -R tests-shadertool
+            ctest -V -C Debug -R tests-testtraze
             ctest -V -C Debug -R tests-voxedit-util
     linux:
         runs-on: ubuntu-latest
@@ -43,6 +44,7 @@ jobs:
             ctest -V -C Debug -R tests-util
             ctest -V -C Debug -R tests-stock
             ctest -V -C Debug -R tests-shadertool
+            ctest -V -C Debug -R tests-testtraze
             ctest -V -C Debug -R tests-voxedit-util
     windows:
         runs-on: windows-latest
@@ -65,4 +67,5 @@ jobs:
             ctest -V -C Debug -R tests-util
             ctest -V -C Debug -R tests-stock
             ctest -V -C Debug -R tests-shadertool
+            ctest -V -C Debug -R tests-testtraze
             ctest -V -C Debug -R tests-voxedit-util
