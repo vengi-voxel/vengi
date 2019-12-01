@@ -578,14 +578,14 @@ TEST_F(MementoHandlerTest, testAddNewLayerEdit) {
 	std::shared_ptr<voxel::RawVolume> third = create(3);
 	mementoHandler.markUndo(0, "Layer 1", first.get());
 	mementoHandler.markLayerAdded(1, "Layer 2 Added", second.get());
-	mementoHandler.markLayerAdded(2, "Layer 3 Modified", third.get());
+	mementoHandler.markUndo(1, "Layer 2 Modified", third.get());
 
 	// states:
 	// ------------------
 	// volume1  | mod | 0
 	// null     | add | 1
 	// volume2  | add | 2
-	// volume3  | mod | 3 <---
+	// volume2  | mod | 3 <---
 	EXPECT_EQ(4, (int)mementoHandler.stateSize());
 	EXPECT_EQ(3, mementoHandler.statePosition());
 
@@ -596,7 +596,7 @@ TEST_F(MementoHandlerTest, testAddNewLayerEdit) {
 	// volume1  | mod | 0
 	// null     | add | 1
 	// volume2  | add | 2 <---
-	// volume3  | mod | 3
+	// volume2  | mod | 3
 	state = mementoHandler.undo();
 	EXPECT_EQ(2, mementoHandler.statePosition());
 	EXPECT_EQ(1, state.layer);
@@ -610,7 +610,7 @@ TEST_F(MementoHandlerTest, testAddNewLayerEdit) {
 	// volume1  | mod | 0
 	// null     | add | 1 <---
 	// volume2  | add | 2
-	// volume3  | mod | 3
+	// volume2  | mod | 3
 	state = mementoHandler.undo();
 	EXPECT_EQ(1, mementoHandler.statePosition());
 	EXPECT_EQ(1, state.layer);
@@ -623,7 +623,7 @@ TEST_F(MementoHandlerTest, testAddNewLayerEdit) {
 	// volume1  | mod | 0 <---
 	// null     | add | 1
 	// volume2  | add | 2
-	// volume3  | mod | 3
+	// volume2  | mod | 3
 	state = mementoHandler.undo();
 	EXPECT_EQ(0, mementoHandler.statePosition());
 	EXPECT_EQ(0, state.layer);
@@ -637,7 +637,7 @@ TEST_F(MementoHandlerTest, testAddNewLayerEdit) {
 	// volume1  | mod | 0
 	// null     | add | 1
 	// volume2  | add | 2 <---
-	// volume3  | mod | 3
+	// volume2  | mod | 3
 	state = mementoHandler.redo();
 	EXPECT_EQ(2, mementoHandler.statePosition());
 	EXPECT_EQ(1, state.layer);
