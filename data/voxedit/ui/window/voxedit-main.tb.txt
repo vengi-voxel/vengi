@@ -106,6 +106,14 @@ TBLayout: distribution: gravity, axis: y
 								TBRadioButton
 									id actioncolorize
 									@include definitions>toolbutton
+							TBSelectDropdown: gravity: right top, @include: definitions>menubutton, id: shapetype
+								items
+									item: text: "Cube", id: 0
+									item: text: "Torus", id: 1
+									item: text: "Cylinder", id: 2
+									item: text: "Cone", id: 3
+									item: text: "Dome", id: 4
+									item: text: "Ellipse", id: 5
 
 					TBSeparator: gravity: left right, skin: separator
 
