@@ -6,7 +6,10 @@ $in uint a_ambient_occlusion;
 
 uniform mat4 u_model;
 uniform mat4 u_viewprojection;
-uniform mat4 u_bones[16];
+
+#define MAX_BONES 16
+$constant MaxBones MAX_BONES
+uniform mat4 u_bones[MAX_BONES];
 
 #define MATERIALCOLORS 256
 layout(std140) uniform u_materialblock {

@@ -17,7 +17,7 @@ namespace animation {
  */
 class CharacterSkeleton : public Skeleton {
 public:
-	void update(glm::mat4 (&bones)[16]) const override;
+	void update(glm::mat4 (&bones)[shader::CharacterShader::getMaxBones()]) const override;
 
 	Bone& handBone(BoneId id, const CharacterSkeletonAttribute& skeletonAttr);
 	Bone& footBone(BoneId id, const CharacterSkeletonAttribute& skeletonAttr);

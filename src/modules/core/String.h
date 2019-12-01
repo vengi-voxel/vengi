@@ -117,6 +117,9 @@ inline std::string replaceAll(const std::string& str, const std::string& searchS
 	return replaceAll(str, searchStr, replaceStr.data(), replaceStr.size());
 }
 
+extern bool isNumber(const std::string &in);
+extern bool isInteger(const std::string& in);
+
 /**
  * @brief Cuts everything (including the pattern) from the match
  */

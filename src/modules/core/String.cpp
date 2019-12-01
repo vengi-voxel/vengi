@@ -85,6 +85,21 @@ void splitString(const std::string& string, std::vector<std::string_view>& token
 	}
 }
 
+bool isNumber(const std::string &in) {
+	char *end = nullptr;
+	double val = strtod(in.c_str(), &end);
+	return end != in.c_str() && *end == '\0' && val != HUGE_VAL;
+}
+
+bool isInteger(const std::string& in) {
+	for (size_t i = 0u; i < in.length(); i++) {
+		if (!isdigit(in[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
 std::string toLower(const std::string& string) {
 	std::string convert = string;
 	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_tolower);

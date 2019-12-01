@@ -386,9 +386,19 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 		prototypes << "\t/**\n";
 		prototypes << "\t * @brief Exported from shader code by @code $constant " << e.first << " " << e.second << " @endcode\n";
 		prototypes << "\t */\n";
-		prototypes << "\tinline static const char* get" << util::convertName(e.first, true) << "() {\n";
-		prototypes << "\t\treturn \"" << e.second << "\";\n";
-		prototypes << "\t}\n";
+		if (core::string::isInteger(e.second)) {
+			prototypes << "\tinline static constexpr int get" << util::convertName(e.first, true) << "() {\n";
+			prototypes << "\t\treturn " << e.second << ";\n";
+			prototypes << "\t}\n";
+		} else if (core::string::isNumber(e.second)) {
+			prototypes << "\tinline static constexpr double get" << util::convertName(e.first, true) << "() {\n";
+			prototypes << "\t\treturn " << e.second << ";\n";
+			prototypes << "\t}\n";
+		} else {
+			prototypes << "\tinline static constexpr const char* get" << util::convertName(e.first, true) << "() {\n";
+			prototypes << "\t\treturn \"" << e.second << "\";\n";
+			prototypes << "\t}\n";
+		}
 	}
 
 	srcHeader = core::string::replaceAll(srcHeader, "$name$", filename);

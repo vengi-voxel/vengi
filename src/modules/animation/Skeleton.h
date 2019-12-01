@@ -10,6 +10,7 @@
 #include "core/Assert.h"
 #include "core/Common.h"
 #include <vector>
+#include "CharacterShader.h"
 
 namespace animation {
 
@@ -27,7 +28,7 @@ public:
 	 * @brief Calculate the skeleton bones matrices which indices are assigned to the
 	 * mesh vertices to perform the skeletal animation.
 	 */
-	virtual void update(glm::mat4 (&bones)[16]) const = 0;
+	virtual void update(glm::mat4 (&bones)[shader::CharacterShader::getMaxBones()]) const = 0;
 	/**
 	 * @brief Linear interpolate from one skeletal animation state to a new one.
 	 */
