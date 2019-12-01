@@ -14,6 +14,7 @@ jobs:
             cd build
             cmake ..
             make -j 2
+            ctest -V -C Debug -R tests-animation
             ctest -V -C Debug -R tests-computeshadertool
             ctest -V -C Debug -R tests-core
             ctest -V -C Debug -R tests-mail
@@ -21,6 +22,7 @@ jobs:
             ctest -V -C Debug -R tests-util
             ctest -V -C Debug -R tests-stock
             ctest -V -C Debug -R tests-shadertool
+            ctest -V -C Debug -R tests-voxedit-util
     linux:
         runs-on: ubuntu-latest
         steps:
@@ -33,6 +35,7 @@ jobs:
             cd build
             cmake ..
             make -j 2
+            ctest -V -C Debug -R tests-animation
             ctest -V -C Debug -R tests-computeshadertool
             ctest -V -C Debug -R tests-core
             ctest -V -C Debug -R tests-mail
@@ -40,6 +43,7 @@ jobs:
             ctest -V -C Debug -R tests-util
             ctest -V -C Debug -R tests-stock
             ctest -V -C Debug -R tests-shadertool
+            ctest -V -C Debug -R tests-voxedit-util
     windows:
         runs-on: windows-latest
         steps:
@@ -53,6 +57,7 @@ jobs:
             cd build
             cmake .. -DRCON=OFF
             cmake --build .
+            ctest -V -C Debug -R tests-animation
             ctest -V -C Debug -R tests-computeshadertool
             ctest -V -C Debug -R tests-core
             ctest -V -C Debug -R tests-mail
@@ -60,3 +65,4 @@ jobs:
             ctest -V -C Debug -R tests-util
             ctest -V -C Debug -R tests-stock
             ctest -V -C Debug -R tests-shadertool
+            ctest -V -C Debug -R tests-voxedit-util
