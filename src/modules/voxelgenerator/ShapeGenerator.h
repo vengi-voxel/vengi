@@ -72,6 +72,11 @@ void createCube(Volume& volume, const glm::ivec3& center, int width, int height,
 			width, depth, &voxels.front(), height);
 }
 
+template<class Volume>
+void createCube(Volume& volume, const glm::ivec3& center, const glm::ivec3& dim, const voxel::Voxel& voxel) {
+	createCube(volume, center, dim.x, dim.y, dim.z, voxel);
+}
+
 /**
  * @brief Creates a cube with the ground surface starting exactly on the given y coordinate, x and z are the lower left
  * corner here.
@@ -88,6 +93,11 @@ void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int he
 	std::vector<voxel::Voxel> voxels;
 	voxels.assign(height, voxel);
 	volume.setVoxels(pos.x, pos.y, pos.z, width, depth, &voxels.front(), height);
+}
+
+template<class Volume>
+void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, const glm::ivec3& dim, const voxel::Voxel& voxel) {
+	createCubeNoCenter(volume, pos, dim.x, dim.y, dim.z, voxel);
 }
 
 /**
@@ -165,6 +175,11 @@ void createEllipse(Volume& volume, const glm::ivec3& center, int width, int heig
 	}
 }
 
+template<class Volume>
+void createEllipse(Volume& volume, const glm::ivec3& center, const glm::ivec3& dim, const voxel::Voxel& voxel) {
+	createEllipse(volume, center, dim.x, dim.y, dim.z, voxel);
+}
+
 /**
  * @brief Creates a cone
  * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
@@ -190,6 +205,11 @@ void createCone(Volume& volume, const glm::ivec3& center, int width, int height,
 	}
 }
 
+template<class Volume>
+void createCone(Volume& volume, const glm::ivec3& center, const glm::ivec3& dim, const voxel::Voxel& voxel) {
+	createCone(volume, center, dim.x, dim.y, dim.z, voxel);
+}
+
 /**
  * @brief Creates a dome
  * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
@@ -213,6 +233,11 @@ void createDome(Volume& volume, const glm::ivec3& center, int width, int height,
 		const glm::ivec3 planePos(center.x, center.y + y, center.z);
 		createCirclePlane(volume, planePos, width, depth, circleRadius, voxel);
 	}
+}
+
+template<class Volume>
+void createDome(Volume& volume, const glm::ivec3& center, const glm::ivec3& dim, const voxel::Voxel& voxel) {
+	createDome(volume, center, dim.x, dim.y, dim.z, voxel);
 }
 
 template<class Volume>

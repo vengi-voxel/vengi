@@ -17,7 +17,7 @@
 #include "ModifierButton.h"
 #include "math/AABB.h"
 #include "Selection.h"
-#include "voxel/RawVolumeWrapper.h"
+#include "ModifierVolumeWrapper.h"
 
 namespace voxedit {
 
@@ -26,6 +26,7 @@ enum ShapeType {
 	Torus,
 	Cylinder,
 	Cone,
+	Dome,
 	Ellipse,
 
 	Max
@@ -59,7 +60,7 @@ private:
 	void updateMirrorPlane();
 	void renderAABBMode(const video::Camera& camera);
 	void updateSelectionBuffers();
-	bool executeShapeAction(voxel::RawVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, std::function<void(const voxel::Region& region, ModifierType type)> callback);
+	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, std::function<void(const voxel::Region& region, ModifierType type)> callback);
 	bool select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback);
 public:
 	Modifier();

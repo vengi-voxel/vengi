@@ -42,7 +42,7 @@
 #include "AxisUtil.h"
 #include "CustomBindingContext.h"
 #include "Config.h"
-#include "tool/Fill.h"
+#include "tool/Clipboard.h"
 #include "tool/Resize.h"
 #include "tool/ImageUtils.h"
 #include "anim/AnimationLuaSaver.h"

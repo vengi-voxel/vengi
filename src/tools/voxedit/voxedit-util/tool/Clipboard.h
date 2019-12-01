@@ -4,15 +4,11 @@
 
 #pragma once
 
-#include "voxel/RawVolumeWrapper.h"
-#include "math/Axis.h"
-#include "../ModifierType.h"
+#include "voxel/RawVolume.h"
 #include "../Selection.h"
 
 namespace voxedit {
 namespace tool {
-
-extern void aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::ivec3& maxs, const voxel::Voxel& voxel, ModifierType modifierType);
 
 extern voxel::RawVolume* copy(const voxel::RawVolume* volume, const Selection& selection);
 extern voxel::RawVolume* cut(voxel::RawVolume* volume, const Selection& selection, voxel::Region& modifiedRegion);

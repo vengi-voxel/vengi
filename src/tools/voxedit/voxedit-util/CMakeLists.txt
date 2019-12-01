@@ -21,7 +21,7 @@ set(SRCS
 	Config.h
 
 	tool/ImageUtils.h tool/ImageUtils.cpp
-	tool/Fill.h tool/Fill.cpp
+	tool/Clipboard.h tool/Clipboard.cpp
 	tool/Resize.h tool/Resize.cpp
 )
 set(LIB voxedit-util)

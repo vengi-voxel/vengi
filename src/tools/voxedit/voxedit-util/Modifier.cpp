@@ -4,7 +4,6 @@
 
 #include "Modifier.h"
 #include "AxisUtil.h"
-#include "tool/Fill.h"
 #include "math/Axis.h"
 #include "core/Color.h"
 #include "CustomBindingContext.h"
@@ -86,13 +85,14 @@ bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::Raw
 	return true;
 }
 
-bool Modifier::executeShapeAction(voxel::RawVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
+bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
 	glm::ivec3 operateMins = mins;
 	glm::ivec3 operateMaxs = maxs;
 	if (!_selection.isValid()) {
 		operateMins = (glm::max)(mins, _selection.getLowerCorner());
 		operateMaxs = (glm::min)(maxs, _selection.getUpperCorner());
 	}
+
 	const voxel::Region region(operateMins, operateMaxs);
 	const glm::ivec3& center = region.getCentre();
 	glm::ivec3 centerBottom = region.getCentre();
@@ -100,14 +100,13 @@ bool Modifier::executeShapeAction(voxel::RawVolumeWrapper& wrapper, const glm::i
 	const glm::ivec3& dimensions = region.getDimensionsInVoxels();
 	switch (_shapeType) {
 	case ShapeType::AABB:
-		voxedit::tool::aabb(wrapper, operateMins, operateMaxs, _cursorVoxel, _modifierType);
+		voxelgenerator::shape::createCubeNoCenter(wrapper, operateMins, dimensions, _cursorVoxel);
 		break;
 	case ShapeType::Torus: {
 		const int minTorusInnerRadius = 4;
 		const int outerRadius = dimensions.x / 2;
 		if (dimensions.x / 2 < minTorusInnerRadius) {
-			// TODO: not really an aabb
-			voxedit::tool::aabb(wrapper, operateMins, operateMaxs, _cursorVoxel, _modifierType);
+			voxelgenerator::shape::createCubeNoCenter(wrapper, operateMins, dimensions, _cursorVoxel);
 		} else {
 			voxelgenerator::shape::createTorus(wrapper, center, minTorusInnerRadius, outerRadius, _cursorVoxel);
 		}
@@ -117,10 +116,13 @@ bool Modifier::executeShapeAction(voxel::RawVolumeWrapper& wrapper, const glm::i
 		voxelgenerator::shape::createCylinder(wrapper, centerBottom, math::Axis::X, dimensions.x / 2, dimensions.y, _cursorVoxel);
 		break;
 	case ShapeType::Cone:
-		voxelgenerator::shape::createCone(wrapper, center, dimensions.x, dimensions.y, dimensions.z, _cursorVoxel);
+		voxelgenerator::shape::createCone(wrapper, center, dimensions, _cursorVoxel);
+		break;
+	case ShapeType::Dome:
+		voxelgenerator::shape::createDome(wrapper, center, dimensions, _cursorVoxel);
 		break;
 	case ShapeType::Ellipse:
-		voxelgenerator::shape::createEllipse(wrapper, center, dimensions.x, dimensions.y, dimensions.z, _cursorVoxel);
+		voxelgenerator::shape::createEllipse(wrapper, center, dimensions, _cursorVoxel);
 		break;
 	default:
 		return false;
@@ -149,7 +151,7 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const vox
 		return true;
 	}
 
-	voxel::RawVolumeWrapper wrapper(volume);
+	ModifierVolumeWrapper wrapper(volume, _modifierType);
 	glm::ivec3 minsMirror = mins;
 	glm::ivec3 maxsMirror = maxs;
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {

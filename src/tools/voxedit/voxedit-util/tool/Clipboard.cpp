@@ -2,41 +2,13 @@
  * @file
  */
 
-#include "Fill.h"
+#include "Clipboard.h"
 #include "voxel/VolumeMerger.h"
 #include "voxel/VolumeCropper.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace voxedit {
 namespace tool {
-
-void aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::ivec3& maxs, const voxel::Voxel& voxel, ModifierType modifierType) {
-	const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
-	const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
-	const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
-	voxel::Voxel placeVoxel = voxel;
-	if (!overwrite && deleteVoxels) {
-		placeVoxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
-	}
-	for (int32_t z = mins.z; z <= maxs.z; ++z) {
-		for (int32_t y = mins.y; y <= maxs.y; ++y) {
-			for (int32_t x = mins.x; x <= maxs.x; ++x) {
-				bool place = overwrite || deleteVoxels;
-				if (!place) {
-					const bool empty = isAir(target.voxel(x, y, z).getMaterial());
-					if (update) {
-						place = !empty;
-					} else {
-						place = empty;
-					}
-					if (!place) {
-						continue;
-					}
-				}
-				target.setVoxel(x, y, z, placeVoxel);
-			}
-		}
-	}
-}
 
 voxel::RawVolume* copy(const voxel::RawVolume *volume, const Selection &selection) {
 	if (!selection.isValid()) {
