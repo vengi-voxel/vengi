@@ -276,6 +276,10 @@ void Modifier::construct() {
 		setShapeType(ShapeType::Cone);
 	}).setHelp("Change the shape type to 'cone'");
 
+	core::Command::registerCommand("shapedome", [&] (const core::CmdArgs& args) {
+		setShapeType(ShapeType::Dome);
+	}).setHelp("Change the shape type to 'dome'");
+
 	core::Command::registerCommand("unselect", [&] (const core::CmdArgs& args) {
 		_selection = voxel::Region::InvalidRegion;
 		updateSelectionBuffers();
