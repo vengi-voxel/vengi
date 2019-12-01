@@ -396,9 +396,19 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		kernels << "\t/**\n";
 		kernels << "\t * @brief Exported from shader code by @code $constant " << e.first << " " << e.second << " @endcode\n";
 		kernels << "\t */\n";
-		kernels << "\tinline static const char* get" << util::convertName(e.first, true) << "() {\n";
-		kernels << "\t\treturn \"" << e.second << "\";\n";
-		kernels << "\t}\n";
+		if (core::string::isInteger(e.second)) {
+			kernels << "\tinline static constexpr int get" << util::convertName(e.first, true) << "() {\n";
+			kernels << "\t\treturn " << e.second << ";\n";
+			kernels << "\t}\n";
+		} else if (core::string::isNumber(e.second)) {
+			kernels << "\tinline static constexpr double get" << util::convertName(e.first, true) << "() {\n";
+			kernels << "\t\treturn " << e.second << ";\n";
+			kernels << "\t}\n";
+		} else {
+			kernels << "\tinline static constexpr const char* get" << util::convertName(e.first, true) << "() {\n";
+			kernels << "\t\treturn \"" << e.second << "\";\n";
+			kernels << "\t}\n";
+		}
 	}
 
 	std::stringstream structs;
