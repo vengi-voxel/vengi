@@ -2,11 +2,15 @@
  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # About
-Voxel engine and tools.
+Voxel engine for mmorpg game and tools.
 
-# Contact
+Includes behaviour tree based ai, a remote ai debugger, a voxel editor and a lot more. The scripting is lua based.
 
-- [Discord Server](https://discord.gg/AgjCPXy)
+There is still a lot of stuff missing where we could need your help.
+
+You can find some old and most likely outdated videos in my [youtube channel](https://www.youtube.com/channel/UCbnJUW0d4tYvdmsJ-R6iUpA).
+
+Join our [discord Server](https://discord.gg/AgjCPXy) and help developing the game.
 
 # Tools
 * [The voxel editor](src/tools/voxedit/README.md)
@@ -15,7 +19,7 @@ Voxel engine and tools.
 * [Database tool](src/tools/databasetool/README.md)
 * [Shader tool](src/tools/shadertool/README.md)
 * [Compute Shader tool](src/tools/computeshadertool/README.md)
-* [Traze client](src/tests/testtraze/README.md)
+* [Visual test applications](src/tests/README.md)
 
 # General
 * [Dependencies](docs/Dependencies.md)
@@ -26,8 +30,3 @@ Voxel engine and tools.
 # Running the tests
 The tests need a postgres database named `engine` and a user named `engine` with the password.... `engine` (you can modify them via cvars). If no OpenGL or OpenCL context is available, the related tests are skipped.
 You can use the docker-compose files to set up your environment.
-
-# More information
-For more information, please check out the [wiki](https://gitlab.com/mgerhardy/engine/wikis/home) or the [doxygen](https://mgerhardy.gitlab.io/engine/) documentation.
-
-You can find some old and most likely outdated videos in my [youtube channel](https://www.youtube.com/channel/UCbnJUW0d4tYvdmsJ-R6iUpA).

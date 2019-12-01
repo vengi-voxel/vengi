@@ -86,8 +86,6 @@ Visit the frustum in the octree.
 
 Just an empty template for new test applications.
 
-# Notes
+# testtraze
 
-## Currently broken
-
-- The mesh rendering is currently broken - testdepthbuffer is affected.
+* [traze client](testtraze/README.md)
