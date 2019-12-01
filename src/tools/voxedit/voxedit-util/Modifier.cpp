@@ -13,6 +13,7 @@
 #include "core/command/Command.h"
 #include "video/ScopedPolygonMode.h"
 #include "SceneManager.h"
+#include "voxelgenerator/ShapeGenerator.h"
 
 namespace voxedit {
 
@@ -85,6 +86,51 @@ bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::Raw
 	return true;
 }
 
+bool Modifier::executeShapeAction(voxel::RawVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
+	glm::ivec3 operateMins = mins;
+	glm::ivec3 operateMaxs = maxs;
+	if (!_selection.isValid()) {
+		operateMins = (glm::max)(mins, _selection.getLowerCorner());
+		operateMaxs = (glm::min)(maxs, _selection.getUpperCorner());
+	}
+	const voxel::Region region(operateMins, operateMaxs);
+	const glm::ivec3& center = region.getCentre();
+	glm::ivec3 centerBottom = region.getCentre();
+	centerBottom.y = region.getLowerY();
+	const glm::ivec3& dimensions = region.getDimensionsInVoxels();
+	switch (_shapeType) {
+	case ShapeType::AABB:
+		voxedit::tool::aabb(wrapper, operateMins, operateMaxs, _cursorVoxel, _modifierType);
+		break;
+	case ShapeType::Torus: {
+		const int minTorusInnerRadius = 4;
+		const int outerRadius = dimensions.x / 2;
+		if (dimensions.x / 2 < minTorusInnerRadius) {
+			// TODO: not really an aabb
+			voxedit::tool::aabb(wrapper, operateMins, operateMaxs, _cursorVoxel, _modifierType);
+		} else {
+			voxelgenerator::shape::createTorus(wrapper, center, minTorusInnerRadius, outerRadius, _cursorVoxel);
+		}
+		break;
+	}
+	case ShapeType::Cylinder:
+		voxelgenerator::shape::createCylinder(wrapper, centerBottom, math::Axis::X, dimensions.x / 2, dimensions.y, _cursorVoxel);
+		break;
+	case ShapeType::Cone:
+		voxelgenerator::shape::createCone(wrapper, center, dimensions.x, dimensions.y, dimensions.z, _cursorVoxel);
+		break;
+	case ShapeType::Ellipse:
+		voxelgenerator::shape::createEllipse(wrapper, center, dimensions.x, dimensions.y, dimensions.z, _cursorVoxel);
+		break;
+	default:
+		return false;
+	}
+	if (wrapper.dirtyRegion().isValid()) {
+		callback(wrapper.dirtyRegion(), _modifierType);
+	}
+	return true;
+}
+
 bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
 	if (!_aabbMode) {
 		return false;
@@ -104,29 +150,18 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const vox
 	}
 
 	voxel::RawVolumeWrapper wrapper(volume);
-	voxel::Region modifiedRegion = voxel::Region::InvalidRegion;
 	glm::ivec3 minsMirror = mins;
 	glm::ivec3 maxsMirror = maxs;
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
-		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, _selection, &modifiedRegion)) {
-			callback(modifiedRegion, _modifierType);
-		}
-		return true;
+		return executeShapeAction(wrapper, mins, maxs, callback);
 	}
 	const math::AABB<int> first(mins, maxs);
 	const math::AABB<int> second(minsMirror, maxsMirror);
-	voxel::Region modifiedRegionMirror;
 	if (math::intersects(first, second)) {
-		if (voxedit::tool::aabb(wrapper, mins, maxsMirror, _cursorVoxel, _modifierType, _selection, &modifiedRegionMirror)) {
-			callback(modifiedRegionMirror, _modifierType);
-		}
+		executeShapeAction(wrapper, mins, maxsMirror, callback);
 	} else {
-		if (voxedit::tool::aabb(wrapper, mins, maxs, _cursorVoxel, _modifierType, _selection, &modifiedRegion)) {
-			callback(modifiedRegion, _modifierType);
-		}
-		if (voxedit::tool::aabb(wrapper, minsMirror, maxsMirror, _cursorVoxel, _modifierType, _selection, &modifiedRegionMirror)) {
-			callback(modifiedRegionMirror, _modifierType);
-		}
+		executeShapeAction(wrapper, mins, maxs, callback);
+		executeShapeAction(wrapper, minsMirror, maxsMirror, callback);
 	}
 	return true;
 }
@@ -218,6 +253,26 @@ void Modifier::construct() {
 	core::Command::registerCommand("actionoverride", [&] (const core::CmdArgs& args) {
 		setModifierType(ModifierType::Place | ModifierType::Delete);
 	}).setHelp("Change the modifier type to 'override'");
+
+	core::Command::registerCommand("shapeaabb", [&] (const core::CmdArgs& args) {
+		setShapeType(ShapeType::AABB);
+	}).setHelp("Change the shape type to 'aabb'");
+
+	core::Command::registerCommand("shapetorus", [&] (const core::CmdArgs& args) {
+		setShapeType(ShapeType::Torus);
+	}).setHelp("Change the shape type to 'torus'");
+
+	core::Command::registerCommand("shapecylinder", [&] (const core::CmdArgs& args) {
+		setShapeType(ShapeType::Cylinder);
+	}).setHelp("Change the shape type to 'cylinder'");
+
+	core::Command::registerCommand("shapeellipse", [&] (const core::CmdArgs& args) {
+		setShapeType(ShapeType::Ellipse);
+	}).setHelp("Change the shape type to 'ellipse'");
+
+	core::Command::registerCommand("shapecone", [&] (const core::CmdArgs& args) {
+		setShapeType(ShapeType::Cone);
+	}).setHelp("Change the shape type to 'cone'");
 
 	core::Command::registerCommand("unselect", [&] (const core::CmdArgs& args) {
 		_selection = voxel::Region::InvalidRegion;

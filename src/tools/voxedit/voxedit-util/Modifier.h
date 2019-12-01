@@ -17,8 +17,19 @@
 #include "ModifierButton.h"
 #include "math/AABB.h"
 #include "Selection.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace voxedit {
+
+enum ShapeType {
+	AABB,
+	Torus,
+	Cylinder,
+	Cone,
+	Ellipse,
+
+	Max
+};
 
 class Modifier : public core::IComponent {
 private:
@@ -41,12 +52,14 @@ private:
 	int32_t _voxelCursorMesh = -1;
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
+	ShapeType _shapeType = ShapeType::AABB;
 
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 	glm::ivec3 aabbPosition() const;
 	void updateMirrorPlane();
 	void renderAABBMode(const video::Camera& camera);
 	void updateSelectionBuffers();
+	bool executeShapeAction(voxel::RawVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, std::function<void(const voxel::Region& region, ModifierType type)> callback);
 	bool select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback);
 public:
 	Modifier();
@@ -67,6 +80,9 @@ public:
 
 	const voxel::Voxel& cursorVoxel() const;
 	void setCursorVoxel(const voxel::Voxel& voxel);
+
+	ShapeType shapeType() const;
+	void setShapeType(ShapeType type);
 
 	bool aabbMode() const;
 	glm::ivec3 aabbDim() const;
@@ -96,6 +112,14 @@ public:
 
 	void render(const video::Camera& camera);
 };
+
+inline ShapeType Modifier::shapeType() const {
+	return _shapeType;
+}
+
+inline void Modifier::setShapeType(ShapeType type) {
+	_shapeType = type;
+}
 
 inline voxel::FaceNames Modifier::cursorFace() const {
 	return _face;

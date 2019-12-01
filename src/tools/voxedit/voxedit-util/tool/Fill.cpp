@@ -9,7 +9,7 @@
 namespace voxedit {
 namespace tool {
 
-bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::ivec3& maxs, const voxel::Voxel& voxel, ModifierType modifierType, const Selection& selection, voxel::Region* modifiedRegion) {
+void aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::ivec3& maxs, const voxel::Voxel& voxel, ModifierType modifierType) {
 	const bool deleteVoxels = (modifierType & ModifierType::Delete) == ModifierType::Delete;
 	const bool overwrite = (modifierType & ModifierType::Place) == ModifierType::Place && deleteVoxels;
 	const bool update = (modifierType & ModifierType::Update) == ModifierType::Update;
@@ -17,18 +17,9 @@ bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::iv
 	if (!overwrite && deleteVoxels) {
 		placeVoxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
 	}
-	glm::ivec3 modifiedMins((std::numeric_limits<int>::max)());
-	glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)());
-	glm::ivec3 operateMins = mins;
-	glm::ivec3 operateMaxs = maxs;
-	if (!selection.isValid()) {
-		operateMins = (glm::max)(mins, selection.getLowerCorner());
-		operateMaxs = (glm::min)(maxs, selection.getUpperCorner());
-	}
-	int cnt = 0;
-	for (int32_t z = operateMins.z; z <= operateMaxs.z; ++z) {
-		for (int32_t y = operateMins.y; y <= operateMaxs.y; ++y) {
-			for (int32_t x = operateMins.x; x <= operateMaxs.x; ++x) {
+	for (int32_t z = mins.z; z <= maxs.z; ++z) {
+		for (int32_t y = mins.y; y <= maxs.y; ++y) {
+			for (int32_t x = mins.x; x <= maxs.x; ++x) {
 				bool place = overwrite || deleteVoxels;
 				if (!place) {
 					const bool empty = isAir(target.voxel(x, y, z).getMaterial());
@@ -41,27 +32,10 @@ bool aabb(voxel::RawVolumeWrapper& target, const glm::ivec3& mins, const glm::iv
 						continue;
 					}
 				}
-				if (!target.setVoxel(x, y, z, placeVoxel)) {
-					continue;
-				}
-				++cnt;
-				modifiedMins.x = core_min(modifiedMins.x, x);
-				modifiedMins.y = core_min(modifiedMins.y, y);
-				modifiedMins.z = core_min(modifiedMins.z, z);
-
-				modifiedMaxs.x = core_max(modifiedMaxs.x, x);
-				modifiedMaxs.y = core_max(modifiedMaxs.y, y);
-				modifiedMaxs.z = core_max(modifiedMaxs.z, z);
+				target.setVoxel(x, y, z, placeVoxel);
 			}
 		}
 	}
-	if (cnt <= 0) {
-		return false;
-	}
-	if (modifiedRegion != nullptr) {
-		*modifiedRegion = voxel::Region(modifiedMins, modifiedMaxs);
-	}
-	return true;
 }
 
 voxel::RawVolume* copy(const voxel::RawVolume *volume, const Selection &selection) {

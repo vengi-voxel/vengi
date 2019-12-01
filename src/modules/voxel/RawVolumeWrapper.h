@@ -15,7 +15,7 @@ class RawVolumeWrapper {
 private:
 	RawVolume* _volume;
 	const Region& _region;
-	Region _dirtyRegion;
+	Region _dirtyRegion = Region::InvalidRegion;
 
 public:
 	class Sampler : public RawVolume::Sampler {
