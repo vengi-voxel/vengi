@@ -28,4 +28,7 @@ function setupBones()
 
   local glider = bone.setup("glider")
   glider:add("glider")
+
+  -- not part of the mesh - but still used...
+  bone.register("tool");
 end

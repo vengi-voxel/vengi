@@ -48,8 +48,8 @@ TEST_F(CharacterSettingsTest, testLUA) {
 
 	ASSERT_EQ(2u, settings.types().size());
 
-	EXPECT_EQ(0, settings.getIdxForName("type1"));
-	EXPECT_EQ(1, settings.getIdxForName("type2"));
+	EXPECT_EQ(0, settings.getMeshTypeIdxForName("type1"));
+	EXPECT_EQ(1, settings.getMeshTypeIdxForName("type2"));
 
 	EXPECT_EQ("type1/name1", settings.path(0));
 	EXPECT_EQ("type2/name2", settings.path(1));

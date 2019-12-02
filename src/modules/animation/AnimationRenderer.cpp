@@ -76,8 +76,9 @@ void AnimationRenderer::render(const AnimationEntity& character, const video::Ca
 		return;
 	}
 	glm::mat4 bones[shader::SkeletonShader::getMaxBones()];
-	static_assert(std::enum_value(BoneId::Max) == lengthof(bones), "Incompatible array sizes");
-	character.skeleton().update(bones);
+	const AnimationSettings& settings = character.animationSettings();
+	const Skeleton& skeleton = character.skeleton();
+	skeleton.update(settings, bones);
 
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);

@@ -29,8 +29,8 @@ bool saveCharacterLua(const animation::AnimationSettings& settings, const animat
 	}
 	stream.addString("  )\n", false);
 	for (const std::string& t : settings.types()) {
-		const int idx = settings.getIdxForName(t.c_str());
-		const std::string& path = settings.path(idx, name);
+		const int meshTypeIdx = settings.getMeshTypeIdxForName(t.c_str());
+		const std::string& path = settings.path(meshTypeIdx, name);
 		if (path.empty()) {
 			continue;
 		}

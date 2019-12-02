@@ -36,7 +36,7 @@ public:
 			if (volumes[i].volume == nullptr) {
 				continue;
 			}
-			volumes[i].name = settings.type(i);
+			volumes[i].name = settings.meshType(i);
 		}
 		return true;
 	}

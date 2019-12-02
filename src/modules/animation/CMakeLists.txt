@@ -103,6 +103,7 @@ generate_shaders(${LIB} skeleton)
 
 set(TEST_SRCS
 	tests/CharacterSettingsTest.cpp
+	tests/SkeletonTest.cpp
 )
 
 gtest_suite_sources(tests ${TEST_SRCS})

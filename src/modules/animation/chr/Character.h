@@ -20,6 +20,8 @@ namespace animation {
 class Character : public AnimationEntity {
 protected:
 	CharacterSkeleton _skeleton;
+	CharacterSkeletonAttribute _attributes;
+
 	// the offset where the tool starts at
 	size_t _toolVerticesOffset = 0u;
 	// the offset where the tool starts at
@@ -28,8 +30,6 @@ protected:
 	Indices _toolIndices;
 	stock::ItemId _toolId = (stock::ItemId)-1;
 	ToolAnimationType _toolAnim = ToolAnimationType::None;
-	AnimationSettings _settings;
-	CharacterSkeletonAttribute _attributes;
 
 	bool loadGlider(const AnimationCachePtr& cache, const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]);
 public:
@@ -58,22 +58,12 @@ public:
 	 */
 	bool updateTool(const AnimationCachePtr& cache, const stock::Stock& stock);
 	const Skeleton& skeleton() const override;
-	AnimationSettings& animationSettings();
 	CharacterSkeletonAttribute& skeletonAttributes();
-	const AnimationSettings& animationSettings() const;
 	const CharacterSkeletonAttribute& skeletonAttributes() const;
 };
 
-inline AnimationSettings& Character::animationSettings() {
-	return _settings;
-}
-
 inline CharacterSkeletonAttribute& Character::skeletonAttributes() {
 	return _attributes;
-}
-
-inline const AnimationSettings& Character::animationSettings() const {
-	return _settings;
 }
 
 inline const CharacterSkeletonAttribute& Character::skeletonAttributes() const {

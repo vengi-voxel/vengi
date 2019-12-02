@@ -44,7 +44,7 @@ bool Character::initSettings(const std::string& luaString) {
 }
 
 bool Character::loadGlider(const AnimationCachePtr& cache, const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
-	const int idx = settings.getIdxForName("glider");
+	const int idx = settings.getMeshTypeIdxForName("glider");
 	if (idx < 0 || idx >= (int)AnimationSettings::MAX_ENTRIES) {
 		return false;
 	}
@@ -110,7 +110,7 @@ bool Character::updateTool(const AnimationCachePtr& cache, const stock::Stock& s
 		Log::error("Failed to initialize the item path buffer. Can't load item %s.", itemName);
 		return false;
 	}
-	if (!cache->getModel(fullPath, BoneId::Tool, _toolVertices, _toolIndices)) {
+	if (!cache->getModel(_settings, fullPath, BoneId::Tool, _toolVertices, _toolIndices)) {
 		Log::warn("Could not get item model for %s", citem.item->name());
 		return false;
 	}

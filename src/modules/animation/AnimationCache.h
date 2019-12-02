@@ -24,7 +24,7 @@ protected:
 			std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])> loadAdditional = {});
 
 public:
-	bool getModel(const char *fullPath, BoneId bid, Vertices& vertices, Indices& indices);
+	bool getModel(const AnimationSettings& settings, const char *fullPath, BoneId boneId, Vertices& vertices, Indices& indices);
 
 	bool getBoneModel(const AnimationSettings& settings, Vertices& vertices, Indices& indices,
 			std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])> loadAdditional = {});

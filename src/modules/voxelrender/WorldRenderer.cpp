@@ -460,7 +460,10 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		const glm::mat4& model = glm::rotate(translate, glm::pi<float>() + ent->orientation(), glm::up);
 		_chrShader.setModel(model);
 		glm::mat4 bones[16];
-		ent->character().skeleton().update(bones);
+		const animation::Character& chr = ent->character();
+		const animation::AnimationSettings& settings = chr.animationSettings();
+		const animation::Skeleton& skeleton = chr.skeleton();
+		skeleton.update(settings, bones);
 		core_assert_always(_chrShader.setBones(bones));
 		const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
 		++drawCallsEntities;

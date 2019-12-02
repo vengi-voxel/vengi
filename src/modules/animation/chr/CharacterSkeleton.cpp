@@ -5,6 +5,7 @@
 #include "CharacterSkeleton.h"
 #include "core/Common.h"
 #include "animation/BoneUtil.h"
+#include "animation/AnimationSettings.h"
 
 namespace animation {
 
@@ -72,27 +73,27 @@ Bone& CharacterSkeleton::headBone(const CharacterSkeletonAttribute& skeletonAttr
 	return head;
 }
 
-void CharacterSkeleton::update(glm::mat4 (&bones)[shader::SkeletonShader::getMaxBones()]) const {
+void CharacterSkeleton::update(const AnimationSettings& settings, glm::mat4 (&bones)[shader::SkeletonShader::getMaxBones()]) const {
 	const glm::mat4& chestMat = bone(BoneId::Chest).matrix();
 	const glm::mat4& torsoMat = bone(BoneId::Torso).matrix();
 	const glm::mat4& headMat  = bone(BoneId::Head).matrix();
 	const glm::mat4& neckMat  = torsoMat * chestMat;
 
-	bones[std::enum_value(BoneId::Head)] =          torsoMat * headMat;
+	SKELETON_BONE_UPDATE(Head,          torsoMat * headMat);
 
-	bones[std::enum_value(BoneId::Chest)] =         neckMat;
-	bones[std::enum_value(BoneId::LeftHand)] =      neckMat  * bone(BoneId::LeftHand).matrix();
-	bones[std::enum_value(BoneId::RightHand)] =     neckMat  * bone(BoneId::RightHand).matrix();
-	bones[std::enum_value(BoneId::LeftShoulder)] =  neckMat  * bone(BoneId::LeftShoulder).matrix();
-	bones[std::enum_value(BoneId::RightShoulder)] = neckMat  * bone(BoneId::RightShoulder).matrix();
-	bones[std::enum_value(BoneId::Tool)] =          neckMat  * bone(BoneId::Tool).matrix();
+	SKELETON_BONE_UPDATE(Chest,         neckMat);
+	SKELETON_BONE_UPDATE(LeftHand,      neckMat  * bone(BoneId::LeftHand).matrix());
+	SKELETON_BONE_UPDATE(RightHand,     neckMat  * bone(BoneId::RightHand).matrix());
+	SKELETON_BONE_UPDATE(LeftShoulder,  neckMat  * bone(BoneId::LeftShoulder).matrix());
+	SKELETON_BONE_UPDATE(RightShoulder, neckMat  * bone(BoneId::RightShoulder).matrix());
+	SKELETON_BONE_UPDATE(Tool,          neckMat  * bone(BoneId::Tool).matrix());
 
-	bones[std::enum_value(BoneId::Belt)] =          torsoMat * bone(BoneId::Belt).matrix();
-	bones[std::enum_value(BoneId::Pants)] =         torsoMat * bone(BoneId::Pants).matrix();
-	bones[std::enum_value(BoneId::LeftFoot)] =      torsoMat * bone(BoneId::LeftFoot).matrix();
-	bones[std::enum_value(BoneId::RightFoot)] =     torsoMat * bone(BoneId::RightFoot).matrix();
+	SKELETON_BONE_UPDATE(Belt,          torsoMat * bone(BoneId::Belt).matrix());
+	SKELETON_BONE_UPDATE(Pants,         torsoMat * bone(BoneId::Pants).matrix());
+	SKELETON_BONE_UPDATE(LeftFoot,      torsoMat * bone(BoneId::LeftFoot).matrix());
+	SKELETON_BONE_UPDATE(RightFoot,     torsoMat * bone(BoneId::RightFoot).matrix());
 
-	bones[std::enum_value(BoneId::Glider)] =        torsoMat * bone(BoneId::Glider).matrix();
+	SKELETON_BONE_UPDATE(Glider,        torsoMat * bone(BoneId::Glider).matrix());
 }
 
 }

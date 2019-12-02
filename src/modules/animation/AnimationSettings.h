@@ -19,7 +19,10 @@ extern std::string luaFilename(const char *character);
 
 class AnimationSettings {
 private:
-	std::vector<std::string> _types;
+	std::vector<std::string> _meshTypes;
+	int8_t _boneIndices[std::enum_value(BoneId::Max)];
+	// current position in the bone index mapping array
+	uint8_t _currentBoneIdx = 0u;
 
 public:
 	static constexpr const size_t MAX_ENTRIES {64};
@@ -28,33 +31,53 @@ public:
 	BoneIds boneIdsArray[MAX_ENTRIES];
 	std::string basePath;
 
+	void reset();
+
+	/**
+	 * @brief Call this after all settings have been set properly.
+	 */
+	bool init();
+
+	/**
+	 * @brief Register a boneId that is not directly attached to a mesh type, but used anyway.
+	 * This is e.g. the case for items that are visible when a character carries them. But are
+	 * otherwise not part of the model itself. But they still must be taken into account in the
+	 * skeleton to put the item mesh to the correct location.
+	 */
+	bool registerBoneId(BoneId boneId);
+
+	/**
+	 * @return @c -1 if no mapping could get found
+	 */
+	int8_t mapBoneIdToArrayIndex(BoneId boneId) const;
+
 	const std::vector<std::string>& types() const;
-	const std::string& type(size_t idx) const;
-	int getIdxForName(const char *name) const;
+	const std::string& meshType(size_t meshTypeIdx) const;
+	int getMeshTypeIdxForName(const char *name) const;
 	/**
 	 * @brief Configure the available mesh types.
 	 *
 	 * @note They must match the bone configuration. See the lua script for mappings.
 	 */
-	void setTypes(const std::vector<std::string>& types);
+	void setMeshTypes(const std::vector<std::string>& meshTypes);
 
 	/**
 	 * @brief Assemble the full path to the model that should be used for the given mesh type index.
 	 */
-	std::string fullPath(int idx, const char *name = nullptr) const;
+	std::string fullPath(int meshTypeIdx, const char *name = nullptr) const;
 
 	/**
 	 * @brief Get the default path for the mesh type, but with a new name
 	 */
-	std::string path(int idx, const char *name = nullptr) const;
-	bool setPath(int idx, const char *str);
+	std::string path(int meshTypeIdx, const char *name = nullptr) const;
+	bool setPath(int meshTypeIdx, const char *str);
 
-	const BoneIds& boneIds(int id) const;
-	BoneIds& boneIds(int id);
+	const BoneIds& boneIds(int meshTypeIdx) const;
+	BoneIds& boneIds(int meshTypeIdx);
 };
 
 inline const std::vector<std::string>& AnimationSettings::types() const {
-	return _types;
+	return _meshTypes;
 }
 
 /**

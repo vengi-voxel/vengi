@@ -39,7 +39,7 @@ bool AnimationCache::getMeshes(const AnimationSettings& settings, const voxel::M
 	return true;
 }
 
-bool AnimationCache::getModel(const char *fullPath, BoneId bid, Vertices& vertices, Indices& indices) {
+bool AnimationCache::getModel(const AnimationSettings& settings, const char *fullPath, BoneId boneId, Vertices& vertices, Indices& indices) {
 	voxel::Mesh& mesh = cacheEntry(fullPath);
 	if (mesh.getNoOfVertices() <= 0) {
 		if (!loadMesh(fullPath, mesh)) {
@@ -50,11 +50,14 @@ bool AnimationCache::getModel(const char *fullPath, BoneId bid, Vertices& vertic
 	vertices.clear();
 	indices.clear();
 
-	// TODO: map to array index instead of enum index
-	const uint8_t boneIdInt = std::enum_value(bid);
+	const int8_t boneIdx = settings.mapBoneIdToArrayIndex(boneId);
+	if (boneIdx < 0 || boneIdx >= std::enum_value(BoneId::Max)) {
+		Log::error("Could not get bone id mapping for %s", toBoneId(boneId));
+		return false;
+	}
 	vertices.reserve(mesh.getNoOfVertices());
 	for (const voxel::VoxelVertex& v : mesh.getVertexVector()) {
-		vertices.emplace_back(Vertex{v.position, v.colorIndex, boneIdInt, v.ambientOcclusion});
+		vertices.emplace_back(Vertex{v.position, v.colorIndex, (uint8_t)boneIdx, v.ambientOcclusion});
 	}
 	//vertices.resize(mesh.getNoOfVertices());
 
@@ -89,11 +92,15 @@ bool AnimationCache::getBoneModel(const AnimationSettings& settings, Vertices& v
 				"number of bone ids is invalid: %i (for mesh type %i)",
 				(int)bids.num, (int)i);
 		for (uint8_t b = 0u; b < bids.num; ++b) {
-			// TODO: map to array index instead of enum index
-			const uint8_t boneId = bids.bones[b];
+			const BoneId boneId = bids.bones[b];
+			const int8_t boneIdx = settings.mapBoneIdToArrayIndex(boneId);
+			if (boneIdx < 0 || boneIdx >= std::enum_value(BoneId::Max)) {
+				Log::error("Could not get bone id mapping for %s", toBoneId(boneId));
+				return false;
+			}
 			const std::vector<voxel::VoxelVertex>& meshVertices = mesh->getVertexVector();
 			for (const voxel::VoxelVertex& v : meshVertices) {
-				vertices.emplace_back(Vertex{v.position, v.colorIndex, boneId, v.ambientOcclusion});
+				vertices.emplace_back(Vertex{v.position, v.colorIndex, (uint8_t)boneIdx, v.ambientOcclusion});
 			}
 
 			const std::vector<voxel::IndexType>& meshIndices = mesh->getIndexVector();

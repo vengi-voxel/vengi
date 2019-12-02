@@ -7,12 +7,14 @@
 #include "Animation.h"
 #include "Skeleton.h"
 #include "Vertex.h"
+#include "AnimationSettings.h"
 
 namespace animation {
 
 class AnimationEntity {
 protected:
 	Animation _anim = Animation::Idle;
+	AnimationSettings _settings;
 	Vertices _vertices;
 	Indices _indices;
 public:
@@ -36,6 +38,9 @@ public:
 	 * @sa vertices()
 	 */
 	virtual const Skeleton& skeleton() const = 0;
+
+	AnimationSettings& animationSettings();
+	const AnimationSettings& animationSettings() const;
 };
 
 inline Animation AnimationEntity::animation() const {
@@ -52,6 +57,14 @@ inline const Vertices& AnimationEntity::vertices() const {
 
 inline const Indices& AnimationEntity::indices() const {
 	return _indices;
+}
+
+inline AnimationSettings& AnimationEntity::animationSettings() {
+	return _settings;
+}
+
+inline const AnimationSettings& AnimationEntity::animationSettings() const {
+	return _settings;
 }
 
 }

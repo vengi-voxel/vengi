@@ -28,7 +28,7 @@ static int luaanim_settingssetmeshtypes(lua_State * l) {
 	for (int i = 1; i <= n; ++i) {
 		types.push_back(luaL_checkstring(l, i));
 	}
-	settings->setTypes(types);
+	settings->setMeshTypes(types);
 	return 0;
 }
 
@@ -42,7 +42,7 @@ static int luaanim_settingssetpath(lua_State * l) {
 	AnimationSettings *settings = luaanim_getsettings(l);
 	const char *type = luaL_checkstring(l, 1);
 	const char *value = luaL_checkstring(l, 2);
-	const int idx = settings->getIdxForName(type);
+	const int idx = settings->getMeshTypeIdxForName(type);
 	if (idx < 0) {
 		return luaL_error(l, "Could not find mesh type for %s", type);
 	}
@@ -81,7 +81,7 @@ static int luaanim_boneidsadd(lua_State* s) {
 		lua_pushboolean(s, 0);
 		return 1;
 	}
-	boneIds->bones[boneIds->num] = (uint8_t)id;
+	boneIds->bones[boneIds->num] = (BoneId)id;
 	boneIds->mirrored[boneIds->num] = clua_optboolean(s, 3, false);
 	boneIds->num++;
 	lua_pushboolean(s, 1);
@@ -95,7 +95,7 @@ static int luaanim_pushboneids(lua_State* s, BoneIds* b) {
 static int luaanim_bonesetup(lua_State* l) {
 	AnimationSettings* settings = lua::LUA::globalData<AnimationSettings>(l, "Settings");
 	const char* meshType = luaL_checkstring(l, 1);
-	const int idx = settings->getIdxForName(meshType);
+	const int idx = settings->getMeshTypeIdxForName(meshType);
 	if (idx < 0 || idx >= (int)AnimationSettings::MAX_ENTRIES) {
 		return luaL_error(l, "Could not find mesh type for %s", meshType);
 	}
@@ -103,6 +103,21 @@ static int luaanim_bonesetup(lua_State* l) {
 	b = BoneIds {};
 	if (luaanim_pushboneids(l, &b) != 1) {
 		return luaL_error(l, "Failed to push the bonesids");
+	}
+	return 1;
+}
+
+static int luaanim_boneregister(lua_State* l) {
+	AnimationSettings* settings = lua::LUA::globalData<AnimationSettings>(l, "Settings");
+	const char* boneName = luaL_checkstring(l, 1);
+	const BoneId boneId = toBoneId(boneName);
+	if (boneId == BoneId::Max) {
+		return luaL_error(l, "Failed to resolve bone: '%s'", boneName);
+	}
+	if (settings->registerBoneId(boneId)) {
+		lua_pushboolean(l, 1);
+	} else {
+		lua_pushboolean(l, 0);
 	}
 	return 1;
 }
@@ -116,6 +131,7 @@ static constexpr luaL_Reg settingsFuncs[] = {
 
 static constexpr luaL_Reg globalBoneFuncs[] = {
 	{ "setup", luaanim_bonesetup },
+	{ "register", luaanim_boneregister },
 	{ nullptr, nullptr }
 };
 
@@ -145,13 +161,15 @@ bool loadAnimationSettings(const std::string& luaString, AnimationSettings& sett
 		return false;
 	}
 
+	settings.reset();
+
 	lua.newGlobalData<AnimationSettings>("Settings", &settings);
 	if (!lua.execute("init", LUA_MULTRET)) {
 		Log::error("%s", lua.error().c_str());
 		return false;
 	}
 
-	for (; metaIter->name; ++metaIter) {
+	for (; metaIter && metaIter->name; ++metaIter) {
 		const SkeletonAttributeMeta& meta = *metaIter;
 		float *saVal = (float*)(((uint8_t*)skeletonAttr) + meta.offset);
 		if (lua.valueFloatFromTable(meta.name, saVal)) {
@@ -160,69 +178,117 @@ bool loadAnimationSettings(const std::string& luaString, AnimationSettings& sett
 			Log::debug("Skeleton attribute value for %s not given - use default: %f", meta.name, *saVal);
 		}
 	}
+	return settings.init();
+}
+
+void AnimationSettings::reset() {
+	Log::info("Reset bones");
+	for (int i = 0; i < (int)BoneId::Max; ++i) {
+		_boneIndices[i] = -1;
+	}
+	_currentBoneIdx = 0u;
+}
+
+bool AnimationSettings::init() {
+	for (size_t i = 0u; i < MAX_ENTRIES; ++i) {
+		if (boneIdsArray[i].num == 0) {
+			continue;
+		}
+		for (uint8_t b = 0u; b < boneIdsArray[i].num; ++b) {
+			const BoneId boneId = boneIdsArray[i].bones[b];
+			if (boneId == BoneId::Max) {
+				Log::error("Invalid bone mapping found for mesh type %i (bone num: %i)", (int)i, b);
+				return false;
+			}
+			const int idx = std::enum_value(boneId);
+			if (_boneIndices[idx] != -1) {
+				continue;
+			}
+
+			Log::info("Assign index %i to bone %s", _currentBoneIdx, toBoneId(boneId));
+			_boneIndices[idx] = _currentBoneIdx++;
+		}
+	}
+	Log::debug("Bones for animation: %i", (int)_currentBoneIdx);
 
 	return true;
 }
 
-void AnimationSettings::setTypes(const std::vector<std::string>& types) {
-	_types = types;
+void AnimationSettings::setMeshTypes(const std::vector<std::string>& meshTypes) {
+	_meshTypes = meshTypes;
 }
 
-const std::string& AnimationSettings::type(size_t idx) const {
-	if (idx >= (int) MAX_ENTRIES) {
+const std::string& AnimationSettings::meshType(size_t meshTypeIdx) const {
+	if (meshTypeIdx >= (int) MAX_ENTRIES) {
 		static const std::string EMPTY;
 		return EMPTY;
 	}
-	return _types[idx];
+	return _meshTypes[meshTypeIdx];
 }
 
-int AnimationSettings::getIdxForName(const char *name) const {
-	for (size_t i = 0; i < _types.size(); ++i) {
-		if (_types[i] == name) {
+int AnimationSettings::getMeshTypeIdxForName(const char *name) const {
+	for (size_t i = 0; i < _meshTypes.size(); ++i) {
+		if (_meshTypes[i] == name) {
 			return i;
 		}
 	}
 	return -1;
 }
 
-std::string AnimationSettings::fullPath(int idx, const char *name) const {
-	if (idx < 0 || idx >= (int) MAX_ENTRIES) {
+std::string AnimationSettings::fullPath(int meshTypeIdx, const char *name) const {
+	if (meshTypeIdx < 0 || meshTypeIdx >= (int) MAX_ENTRIES) {
 		static const std::string EMPTY;
 		return EMPTY;
 	}
 	if (name == nullptr) {
-		name = paths[idx].c_str();
+		name = paths[meshTypeIdx].c_str();
 	}
-	return core::string::format("%s/%s/%s.vox", basePath.c_str(), _types[idx].c_str(), name);
+	return core::string::format("%s/%s/%s.vox", basePath.c_str(), _meshTypes[meshTypeIdx].c_str(), name);
 }
 
-std::string AnimationSettings::path(int idx, const char *name) const {
-	if (idx < 0 || idx >= (int) MAX_ENTRIES) {
+std::string AnimationSettings::path(int meshTypeIdx, const char *name) const {
+	if (meshTypeIdx < 0 || meshTypeIdx >= (int) MAX_ENTRIES) {
 		static const std::string EMPTY;
 		return EMPTY;
 	}
 	if (name == nullptr) {
-		name = paths[idx].c_str();
+		name = paths[meshTypeIdx].c_str();
 	}
-	return core::string::format("%s/%s", _types[idx].c_str(), name);
+	return core::string::format("%s/%s", _meshTypes[meshTypeIdx].c_str(), name);
 }
 
-bool AnimationSettings::setPath(int idx, const char *str) {
-	if (idx < 0 || idx >= (int) MAX_ENTRIES) {
+bool AnimationSettings::setPath(int meshTypeIdx, const char *str) {
+	if (meshTypeIdx < 0 || meshTypeIdx >= (int) MAX_ENTRIES) {
 		return false;
 	}
-	paths[idx] = str;
+	paths[meshTypeIdx] = str;
 	return true;
 }
 
-const BoneIds& AnimationSettings::boneIds(int idx) const {
-	core_assert(idx >= 0 && idx < (int) MAX_ENTRIES);
-	return boneIdsArray[idx];
+const BoneIds& AnimationSettings::boneIds(int meshTypeIdx) const {
+	core_assert(meshTypeIdx >= 0 && meshTypeIdx < (int) MAX_ENTRIES);
+	return boneIdsArray[meshTypeIdx];
 }
 
-BoneIds& AnimationSettings::boneIds(int idx) {
-	core_assert(idx >= 0 && idx < (int) MAX_ENTRIES);
-	return boneIdsArray[idx];
+BoneIds& AnimationSettings::boneIds(int meshTypeIdx) {
+	core_assert(meshTypeIdx >= 0 && meshTypeIdx < (int) MAX_ENTRIES);
+	return boneIdsArray[meshTypeIdx];
+}
+
+bool AnimationSettings::registerBoneId(BoneId boneId) {
+	core_assert(boneId != BoneId::Max);
+	const int boneIdx = std::enum_value(boneId);
+	if (_boneIndices[boneIdx] != -1) {
+		return false;
+	}
+	Log::info("Register bone %s at index %i", toBoneId(boneId), _currentBoneIdx);
+	_boneIndices[boneIdx] = _currentBoneIdx++;
+	return true;
+}
+
+int8_t AnimationSettings::mapBoneIdToArrayIndex(BoneId boneId) const {
+	core_assert(boneId != BoneId::Max);
+	return _boneIndices[std::enum_value(boneId)];
 }
 
 }

@@ -14,6 +14,16 @@
 
 namespace animation {
 
+class AnimationSettings;
+
+#define SKELETON_BONE_UPDATE(boneid, assign) \
+	const int8_t boneid##boneIdx = settings.mapBoneIdToArrayIndex(BoneId::boneid); \
+	if (boneid##boneIdx >= 0 && boneid##boneIdx < shader::SkeletonShader::getMaxBones()) { \
+		bones[boneid##boneIdx] = assign; \
+	} else { \
+		Log::warn("Invalid bone idx for bone %s", toBoneId(BoneId::boneid)); \
+	}
+
 /**
  * @brief The bones base class
  */
@@ -24,11 +34,12 @@ public:
 	virtual ~Skeleton() {}
 	const Bone& bone(BoneId id) const;
 	Bone& bone(BoneId id);
+
 	/**
 	 * @brief Calculate the skeleton bones matrices which indices are assigned to the
 	 * mesh vertices to perform the skeletal animation.
 	 */
-	virtual void update(glm::mat4 (&bones)[shader::SkeletonShader::getMaxBones()]) const = 0;
+	virtual void update(const AnimationSettings& settings, glm::mat4 (&bones)[shader::SkeletonShader::getMaxBones()]) const = 0;
 	/**
 	 * @brief Linear interpolate from one skeletal animation state to a new one.
 	 */
