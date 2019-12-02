@@ -3,16 +3,10 @@
  */
 
 #include "Character.h"
-
-#include <unordered_set>
-
 #include "animation/Animation.h"
-
 #include "core/Common.h"
 #include "core/GLM.h"
-
 #include "stock/Item.h"
-
 #include "anim/Idle.h"
 #include "anim/Jump.h"
 #include "anim/Run.h"
