@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <SDL.h>
 
 char **_argv;
 int _argc;
@@ -14,6 +15,10 @@ public:
     }
 };
 
+SDL_AssertState Test_AssertionHandler(const SDL_AssertData* data, void* userdata) {
+    return SDL_ASSERTION_ABORT;
+}
+
 extern "C" int main (int argc, char *argv[]) {
     ::testing::AddGlobalTestEnvironment(new LocalEnv);
     ::testing::InitGoogleMock(&argc, argv);
@@ -23,6 +28,7 @@ extern "C" int main (int argc, char *argv[]) {
 #if __cpp_exceptions
     try {
 #endif
+        SDL_SetAssertionHandler(Test_AssertionHandler, nullptr);
         return RUN_ALL_TESTS();
 #if __cpp_exceptions
     } catch (const std::exception& e) {
