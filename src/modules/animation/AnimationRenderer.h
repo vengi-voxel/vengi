@@ -19,8 +19,8 @@ namespace animation {
  */
 class AnimationRenderer : public core::IComponent {
 private:
-	shader::CharacterShader _shader;
-	shader::CharacterData _shaderData;
+	shader::SkeletonShader _shader;
+	shader::SkeletonData _shaderData;
 	render::Shadow _shadow;
 	video::Buffer _vbo;
 

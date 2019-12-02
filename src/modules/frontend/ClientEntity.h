@@ -49,7 +49,7 @@ public:
 
 	bool operator==(const ClientEntity& other) const;
 
-	uint32_t bindVertexBuffers(const shader::CharacterShader& chrShader);
+	uint32_t bindVertexBuffers(const shader::SkeletonShader& chrShader);
 	void unbindVertexBuffers();
 
 	void setAnimation(animation::Animation animation);

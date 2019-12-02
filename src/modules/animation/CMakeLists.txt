@@ -21,7 +21,7 @@ set(SRCS
 	SkeletonAttribute.h
 )
 set(SRCS_SHADERS
-	shaders/character.vert shaders/character.frag
+	shaders/skeleton.vert shaders/skeleton.frag
 )
 set(FILES
 	voxel/models/characters/dwarf/male/head/blacksmith.vox
@@ -99,7 +99,7 @@ set(LUA_SRCS
 	chr/undead-male-skeleton.lua
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES core attrib stock voxelformat render commonlua)
-generate_shaders(${LIB} character)
+generate_shaders(${LIB} skeleton)
 
 set(TEST_SRCS
 	tests/CharacterSettingsTest.cpp

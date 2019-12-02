@@ -19,13 +19,13 @@ bool AnimationRenderer::init() {
 		return false;
 	}
 	render::ShadowParameters shadowParams;
-	shadowParams.maxDepthBuffers = _shader.getUniformArraySize(shader::CharacterShader::getMaxDepthBufferUniformName());
+	shadowParams.maxDepthBuffers = _shader.getUniformArraySize(shader::SkeletonShader::getMaxDepthBufferUniformName());
 	if (!_shadow.init(shadowParams)) {
 		Log::error("Failed to init shadow object");
 		return false;
 	}
 
-	const int shaderMaterialColorsArraySize = lengthof(shader::CharacterData::MaterialblockData::materialcolor);
+	const int shaderMaterialColorsArraySize = lengthof(shader::SkeletonData::MaterialblockData::materialcolor);
 	const int materialColorsArraySize = voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
@@ -33,7 +33,7 @@ bool AnimationRenderer::init() {
 		return false;
 	}
 
-	shader::CharacterData::MaterialblockData materialBlock;
+	shader::SkeletonData::MaterialblockData materialBlock;
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	if (!_shaderData.create(materialBlock)) {
 		Log::error("Failed to create material buffer");
@@ -75,7 +75,7 @@ void AnimationRenderer::render(const AnimationEntity& character, const video::Ca
 	if (numIndices == 0u) {
 		return;
 	}
-	glm::mat4 bones[shader::CharacterShader::getMaxBones()];
+	glm::mat4 bones[shader::SkeletonShader::getMaxBones()];
 	static_assert(std::enum_value(BoneId::Max) == lengthof(bones), "Incompatible array sizes");
 	character.skeleton().update(bones);
 

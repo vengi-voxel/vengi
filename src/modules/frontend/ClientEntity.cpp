@@ -53,7 +53,7 @@ void ClientEntity::update(uint64_t dt) {
 	_character.update(dt, _attrib);
 }
 
-uint32_t ClientEntity::bindVertexBuffers(const shader::CharacterShader& chrShader) {
+uint32_t ClientEntity::bindVertexBuffers(const shader::SkeletonShader& chrShader) {
 	if (_vbo.attributes() == 0) {
 		_vbo.addAttribute(chrShader.getPosAttribute(_vertices, &animation::Vertex::pos));
 		video::Attribute color = chrShader.getColorIndexAttribute(_vertices, &animation::Vertex::colorIndex);

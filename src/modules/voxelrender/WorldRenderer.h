@@ -124,7 +124,7 @@ protected:
 	shader::WorldShader _worldShader;
 	shader::WorldInstancedShader _worldInstancedShader;
 	shader::WaterShader _waterShader;
-	shader::CharacterShader _chrShader;
+	shader::SkeletonShader _chrShader;
 
 	void handleMeshQueue();
 	void updateAABB(ChunkBuffer& chunkBuffer) const;
