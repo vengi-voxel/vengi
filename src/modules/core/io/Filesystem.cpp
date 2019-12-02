@@ -109,7 +109,7 @@ bool Filesystem::createDir(const std::string& dir, bool recursive) const {
 		}
 		const char *dirc = dirpart.c_str();
 		uv_fs_t req;
-		const int retVal = uv_fs_mkdir(nullptr, &req, dirc, 0700, nullptr);
+		const int retVal = uv_fs_mkdir(nullptr, &req, dirc, 0740, nullptr);
 		if (retVal != 0 && req.result != UV_EEXIST) {
 			return false;
 		}
