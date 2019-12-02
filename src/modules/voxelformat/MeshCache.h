@@ -5,7 +5,6 @@
 #pragma once
 
 #include "voxel/Mesh.h"
-#include "voxelformat/VoxFileFormat.h"
 #include "core/IComponent.h"
 #include "core/String.h"
 #include <memory>
