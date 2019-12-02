@@ -24,12 +24,18 @@ voxel::Mesh& MeshCache::cacheEntry(const char *path) {
 	return *i->second;
 }
 
-bool MeshCache::putMesh(const char* fullPath, const voxel::Mesh& mesh) {
+bool MeshCache::removeMesh(const char *fullPath) {
 	auto i = _meshes.find(fullPath);
 	if (i != _meshes.end()) {
 		delete i->second;
 		_meshes.erase(i);
+		return true;
 	}
+	return false;
+}
+
+bool MeshCache::putMesh(const char* fullPath, const voxel::Mesh& mesh) {
+	removeMesh(fullPath);
 	_meshes.insert(std::make_pair(fullPath, new voxel::Mesh(mesh)));
 	return true;
 }
