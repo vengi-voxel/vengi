@@ -23,7 +23,6 @@ jobs:
             ctest -V -C Debug -R tests-stock
             ctest -V -C Debug -R tests-shadertool
             ctest -V -C Debug -R tests-testtraze
-            ctest -V -C Debug -R tests-voxedit-util
     linux:
         runs-on: ubuntu-latest
         steps:
@@ -68,4 +67,3 @@ jobs:
             ctest -V -C Debug -R tests-stock
             ctest -V -C Debug -R tests-shadertool
             ctest -V -C Debug -R tests-testtraze
-            ctest -V -C Debug -R tests-voxedit-util
