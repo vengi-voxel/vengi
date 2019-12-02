@@ -16,7 +16,7 @@ public:
 };
 
 SDL_AssertState Test_AssertionHandler(const SDL_AssertData* data, void* userdata) {
-    return SDL_ASSERTION_ABORT;
+    return SDL_ASSERTION_BREAK;
 }
 
 extern "C" int main (int argc, char *argv[]) {
