@@ -19,6 +19,7 @@ Filesystem::~Filesystem() {
 }
 
 bool Filesystem::init(const std::string& organisation, const std::string& appname) {
+	core_assert(_loop == nullptr);
 	_organisation = organisation;
 	_appname = appname;
 
