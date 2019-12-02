@@ -376,13 +376,13 @@ void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3&
 }
 
 template<class Volume>
-void createTorus(Volume& volume, const glm::ivec3& position, int innerRadius, int outerRadius, const voxel::Voxel& voxel) {
+void createTorus(Volume& volume, const glm::ivec3& center, int innerRadius, int outerRadius, const voxel::Voxel& voxel) {
 	const int radius = outerRadius + 1;
 	const int outerRadiusSquare = outerRadius * outerRadius;
 	for (int x = -radius; x < radius; ++x) {
 		for (int y = -radius; y < radius; ++y) {
 			for (int z = -radius; z < radius; ++z) {
-				const glm::vec3 pos(position.x + x, position.y + y, position.z + z);
+				const glm::vec3 pos(center.x + x, center.y + y, center.z + z);
 				const glm::vec2 q(glm::length(glm::vec2(pos.x - innerRadius, pos.z - innerRadius)), pos.y);
 				if (glm::length2(q) < outerRadiusSquare) {
 					volume.setVoxel(pos, voxel);
@@ -393,17 +393,17 @@ void createTorus(Volume& volume, const glm::ivec3& position, int innerRadius, in
 }
 
 template<class Volume>
-void createCylinder(Volume& volume, const glm::vec3& position, const math::Axis axis, int radius, int height, const voxel::Voxel& voxel) {
+void createCylinder(Volume& volume, const glm::vec3& center, const math::Axis axis, int radius, int height, const voxel::Voxel& voxel) {
 	for (int i = 0; i < height; ++i) {
-		glm::ivec3 center;
+		glm::ivec3 centerH;
 		if (axis == math::Axis::Y) {
-			center = glm::ivec3(position.x, position.y + i, position.z);
+			centerH = glm::ivec3(center.x, center.y + i, center.z);
 		} else if (axis == math::Axis::X) {
-			center = glm::ivec3(position.x + i, position.y, position.z);
-		} else if (axis == math::Axis::Z) {
-			center = glm::ivec3(position.x, position.y, position.z + i);
+			centerH = glm::ivec3(center.x + i, center.y, center.z);
+		} else {
+			centerH = glm::ivec3(center.x, center.y, center.z + i);
 		}
-		createCirclePlane(volume, center, radius * 2, radius * 2, radius, voxel, axis);
+		createCirclePlane(volume, centerH, radius * 2, radius * 2, radius, voxel, axis);
 	}
 }
 

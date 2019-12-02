@@ -113,7 +113,7 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 		break;
 	}
 	case ShapeType::Cylinder:
-		voxelgenerator::shape::createCylinder(wrapper, centerBottom, math::Axis::X, dimensions.x / 2, dimensions.y, _cursorVoxel);
+		voxelgenerator::shape::createCylinder(wrapper, centerBottom, math::Axis::Y, (glm::max)(dimensions.x, dimensions.z), dimensions.y, _cursorVoxel);
 		break;
 	case ShapeType::Cone:
 		voxelgenerator::shape::createCone(wrapper, center, dimensions, _cursorVoxel);
