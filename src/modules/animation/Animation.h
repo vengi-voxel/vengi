@@ -6,6 +6,16 @@
 
 #include <stdint.h>
 
+/**
+ * @defgroup Animation
+ * @{
+ * @brief Skeletal animation with lua configuration support.
+ *
+ * @sa Skeleton
+ * @sa Bone
+ * @sa SkeletonAttribute
+ */
+
 namespace animation {
 
 enum class Animation : uint8_t {
@@ -23,3 +33,7 @@ extern const char* toString(ToolAnimationType anim);
 extern ToolAnimationType toToolAnimationEnum(const char* anim);
 
 }
+
+/**
+ * @}
+ */

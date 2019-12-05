@@ -12,6 +12,11 @@ namespace _private {
 static constexpr float defaultScale = 1.0f / 11.0f;
 }
 
+/**
+ * Defines the scale, translation and orientation of a bone that is used to calculate
+ * the animation matrices for the shader.
+ * @ingroup Animation
+ */
 struct Bone {
 	glm::vec3 scale { _private::defaultScale };
 	glm::vec3 translation { 0.0f };

@@ -17,6 +17,9 @@ struct SkeletonAttributeMeta;
 
 extern std::string luaFilename(const char *character);
 
+/**
+ * @ingroup Animation
+ */
 class AnimationSettings {
 private:
 	std::vector<std::string> _meshTypes;

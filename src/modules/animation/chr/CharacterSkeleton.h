@@ -14,6 +14,7 @@ namespace animation {
 
 /**
  * @brief The bones of the @c Character
+ * @ingroup Animation
  */
 class CharacterSkeleton : public Skeleton {
 public:

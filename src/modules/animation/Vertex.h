@@ -9,6 +9,9 @@
 
 namespace animation {
 
+/**
+ * @ingroup Animation
+ */
 struct Vertex {
 	glm::vec3 pos;
 	uint8_t colorIndex;
@@ -26,8 +29,17 @@ struct Vertex {
 };
 static_assert(sizeof(Vertex) == 16, "Unexpected size of the vertex struct");
 
+/**
+ * @ingroup Animation
+ */
 using IndexType = uint16_t;
+/**
+ * @ingroup Animation
+ */
 using Vertices = std::vector<Vertex>;
+/**
+ * @ingroup Animation
+ */
 using Indices = std::vector<IndexType>;
 
 }

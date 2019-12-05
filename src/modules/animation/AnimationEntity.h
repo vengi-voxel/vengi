@@ -11,6 +11,11 @@
 
 namespace animation {
 
+/**
+ * Base class for animated entities that holds the vertices and indices
+ * of the model
+ * @ingroup Animation
+ */
 class AnimationEntity {
 protected:
 	Animation _anim = Animation::Idle;

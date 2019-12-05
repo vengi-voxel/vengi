@@ -15,7 +15,8 @@
 namespace animation {
 
 /**
- * @brief Uses the shaders from the animation module to render characters.
+ * @brief Uses the shaders from the animation module to render entities.
+ * @ingroup Animation
  */
 class AnimationRenderer : public core::IComponent {
 private:

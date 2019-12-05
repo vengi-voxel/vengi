@@ -25,7 +25,8 @@ class AnimationSettings;
 	}
 
 /**
- * @brief The bones base class
+ * @brief Calculates the skeleton by the single bones of the entity
+ * @ingroup Animation
  */
 class Skeleton {
 public:

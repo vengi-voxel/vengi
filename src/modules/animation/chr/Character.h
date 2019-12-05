@@ -16,6 +16,7 @@ namespace animation {
 /**
  * @brief Handles the loading and creation of the meshes and the bones regarding
  * the given @c CharacterSettings
+ * @ingroup Animation
  */
 class Character : public AnimationEntity {
 protected:

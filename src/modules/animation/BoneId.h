@@ -8,6 +8,9 @@
 
 namespace animation {
 
+/**
+ * @brief Available bone types that are mapped to the AnimationEntity vertices
+ */
 enum class BoneId : uint8_t {
 	Head,
 	Chest,

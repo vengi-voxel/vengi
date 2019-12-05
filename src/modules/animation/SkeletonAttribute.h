@@ -10,6 +10,7 @@ namespace animation {
 
 /**
  * @brief Meta structure for iterating over the float values of a skeleton attribute structure
+ * @ingroup Animation
  */
 struct SkeletonAttributeMeta {
 	const char *name;

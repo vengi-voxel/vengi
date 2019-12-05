@@ -13,6 +13,7 @@ namespace animation {
  * assemble the final mesh. This is mostly about offsets and positioning.
  *
  * @note This must be float values
+ * @ingroup Animation
  */
 struct CharacterSkeletonAttribute {
 	float scaler = 1.0f;
