@@ -196,7 +196,7 @@ bool loadAnimationSettings(const std::string& luaString, AnimationSettings& sett
 }
 
 void AnimationSettings::reset() {
-	Log::info("Reset bones");
+	Log::debug("Reset bones");
 	for (int i = 0; i < (int)BoneId::Max; ++i) {
 		_boneIndices[i] = -1;
 	}
@@ -219,7 +219,7 @@ bool AnimationSettings::init() {
 				continue;
 			}
 
-			Log::info("Assign index %i to bone %s", _currentBoneIdx, toBoneId(boneId));
+			Log::debug("Assign index %i to bone %s", _currentBoneIdx, toBoneId(boneId));
 			_boneIndices[idx] = _currentBoneIdx++;
 		}
 	}
