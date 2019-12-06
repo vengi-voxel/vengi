@@ -32,6 +32,19 @@ static int luaanim_settingssetmeshtypes(lua_State * l) {
 	return 0;
 }
 
+static int luaanim_settingsgetmeshtypes(lua_State * l) {
+	AnimationSettings *settings = luaanim_getsettings(l);
+	lua_newtable(l);
+	const int top = lua_gettop(l);
+	int i = 0;
+	for (const std::string& type : settings->types()) {
+		lua_pushinteger(l, ++i);
+		lua_pushstring(l, type.c_str());
+		lua_settable(l, top);
+	}
+	return 1;
+}
+
 static int luaanim_settingssetbasepath(lua_State * l) {
 	AnimationSettings *settings = luaanim_getsettings(l);
 	settings->basePath = luaL_checkstring(l, 1);
@@ -126,6 +139,7 @@ static constexpr luaL_Reg settingsFuncs[] = {
 	{ "setBasePath", luaanim_settingssetbasepath },
 	{ "setPath", luaanim_settingssetpath },
 	{ "setMeshTypes", luaanim_settingssetmeshtypes },
+	{ "getMeshTypes", luaanim_settingsgetmeshtypes },
 	{ nullptr, nullptr }
 };
 
