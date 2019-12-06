@@ -22,6 +22,7 @@ bool AnimationCache::load(const std::string& filename, size_t meshIndex, const v
 
 bool AnimationCache::getMeshes(const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES],
 		std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])> loadAdditional) {
+	int cnt = 0;
 	for (size_t i = 0; i < AnimationSettings::MAX_ENTRIES; ++i) {
 		if (settings.paths[i].empty()) {
 			meshes[i] = nullptr;
@@ -32,8 +33,13 @@ bool AnimationCache::getMeshes(const AnimationSettings& settings, const voxel::M
 			Log::error("Failed to load %s", fullPath.c_str());
 			return false;
 		}
+		++cnt;
 	}
 	if (loadAdditional && !loadAdditional(meshes)) {
+		return false;
+	}
+	if (cnt <= 0) {
+		Log::error("Could not load any mesh - not path was set");
 		return false;
 	}
 	return true;
@@ -122,7 +128,7 @@ bool AnimationCache::getBoneModel(const AnimationSettings& settings, Vertices& v
 	indices.resize(indices.size());
 	core_assert(indices.size() % 3 == 0);
 
-	return true;
+	return !vertices.empty();
 }
 
 }
