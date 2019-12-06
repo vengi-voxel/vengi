@@ -11,6 +11,7 @@
 #include "attrib/ShadowAttributes.h"
 #include "stock/StockDataProvider.h"
 #include "stock/Stock.h"
+#include "core/Array.h"
 #include <vector>
 #include <string>
 
@@ -21,6 +22,15 @@ class TestAnimation: public TestApp {
 private:
 	using Super = TestApp;
 
+	enum class EntityType : int {
+		Character, Max
+	};
+	static constexpr const char *EntityTypeStrings[] = {
+		"character"
+	};
+	static_assert((int)EntityType::Max == lengthof(EntityTypeStrings));
+
+	EntityType _entityType = EntityType::Character;
 	animation::Character _character;
 	animation::AnimationCachePtr _animationCache;
 	animation::AnimationRenderer _renderer;
@@ -36,11 +46,14 @@ private:
 	io::FilePtr _luaFile;
 
 	int _currentCharacterIndex = 0;
-	std::string currentCharacter() const;
-	bool loadCharacter();
+	const std::string& currentAnimationEntity() const;
+	bool loadAnimationEntity();
 	void doRender() override;
 	void onRenderUI() override;
 	bool addItem(stock::ItemId id);
+
+	int& animationEntityIndex();
+	animation::AnimationEntity* animationEntity();
 public:
 	TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,
 			const io::FilesystemPtr& filesystem,

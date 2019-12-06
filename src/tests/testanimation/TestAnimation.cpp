@@ -11,7 +11,7 @@
 #include "Shared_generated.h"
 #include <array>
 
-static bool reloadCharacter = false;
+static bool reloadAnimationEntity = false;
 
 static constexpr int32_t cnt = (int)network::EntityType::MAX_CHARACTERS - ((int)network::EntityType::BEGIN_CHARACTERS + 1);
 static std::array<std::string, cnt> validCharacters {};
@@ -35,8 +35,16 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 	}
 }
 
-std::string TestAnimation::currentCharacter() const {
+const std::string& TestAnimation::currentAnimationEntity() const {
 	return validCharacters[_currentCharacterIndex];
+}
+
+int& TestAnimation::animationEntityIndex() {
+	return _currentCharacterIndex;
+}
+
+animation::AnimationEntity* TestAnimation::animationEntity() {
+	return &_character;
 }
 
 core::AppState TestAnimation::onConstruct() {
@@ -53,48 +61,55 @@ core::AppState TestAnimation::onConstruct() {
 		}
 		_animationIdx %= std::enum_value(animation::Animation::Max);
 		Log::info("current animation idx: %i", _animationIdx);
-		_character.setAnimation((animation::Animation)_animationIdx);
+		animationEntity()->setAnimation((animation::Animation)_animationIdx);
 	});
 
-	core::Command::registerCommand("cycle_character", [this] (const core::CmdArgs& argv) {
+	core::Command::registerCommand("cycle_animationenttype", [this] (const core::CmdArgs& argv) {
 		int offset = 1;
 		if (argv.size() > 0) {
 			offset = core::string::toInt(argv[0]);
 		}
-		_currentCharacterIndex += offset;
-		while (_currentCharacterIndex < 0) {
-			_currentCharacterIndex += validCharacters.size();
+		int& current = animationEntityIndex();
+		const int size = validCharacters.size();
+		current += offset;
+		while (current < 0) {
+			current += size;
 		}
-		_currentCharacterIndex %= validCharacters.size();
-		Log::info("current character idx: %i", _currentCharacterIndex);
-		loadCharacter();
+		current %= size;
+		Log::info("current animation entity idx: %i", current);
+		loadAnimationEntity();
 	});
 
 	return state;
 }
 
-bool TestAnimation::loadCharacter() {
-	const std::string& chr = currentCharacter();
-	Log::info("Load character settings for %s", chr.c_str());
-	const io::FilePtr& file = filesystem()->open(animation::luaFilename(chr.c_str()));
+bool TestAnimation::loadAnimationEntity() {
+	const std::string& ent = currentAnimationEntity();
+	Log::info("Load animation entity settings for %s", ent.c_str());
+	const io::FilePtr& file = filesystem()->open(animation::luaFilename(ent.c_str()));
 	const std::string& lua = file->load();
 	if (lua.empty()) {
-		Log::error("Failed to load character settings for %s", chr.c_str());
+		Log::error("Failed to load animation entity settings for %s", ent.c_str());
 		return false;
 	}
 
-	animation::Character testChr;
-	if (!testChr.init(_animationCache, lua)) {
-		Log::error("Failed to initialize the character %s for animation", chr.c_str());
+	if (_entityType == EntityType::Character) {
+		animation::Character testEntity;
+		if (!testEntity.init(_animationCache, lua)) {
+			Log::error("Failed to initialize the character %s for animation", ent.c_str());
+			return false;
+		}
+		core_assert_always(_character.init(_animationCache, lua));
+	} else {
+		core_assert(false);
 		return false;
 	}
-	core_assert_always(_character.init(_animationCache, lua));
 	if (_luaFile) {
 		filesystem()->unwatch(_luaFile);
 	}
 	_luaFile = file;
 	filesystem()->watch(_luaFile, [] (const char *file) {
-		reloadCharacter = true;
+		reloadAnimationEntity = true;
 	});
 
 	return true;
@@ -146,8 +161,8 @@ core::AppState TestAnimation::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!loadCharacter()) {
-		Log::error("Failed to initialize the character");
+	if (!loadAnimationEntity()) {
+		Log::error("Failed to initialize the animation entity");
 		return core::AppState::InitFailure;
 	}
 
@@ -157,7 +172,7 @@ core::AppState TestAnimation::onInit() {
 	}
 
 	_attrib.setCurrent(attrib::Type::SPEED, 10.0);
-	const animation::Animation currentAnimation = _character.animation();
+	const animation::Animation currentAnimation = animationEntity()->animation();
 	_animationIdx = std::enum_value(currentAnimation);
 
 	const stock::ItemData* itemData = _stockDataProvider->itemData(_items[0]);
@@ -189,25 +204,30 @@ bool TestAnimation::addItem(stock::ItemId id) {
 }
 
 void TestAnimation::doRender() {
-	if (reloadCharacter) {
-		Log::info("Reload character because file was modified");
-		loadCharacter();
-		reloadCharacter = false;
+	if (reloadAnimationEntity) {
+		Log::info("Reload animation entity because file was modified");
+		loadAnimationEntity();
+		reloadAnimationEntity = false;
 	}
 	_character.updateTool(_animationCache, _stock);
 	_character.update(_deltaFrameMillis, _attrib);
-	_renderer.render(_character, _camera);
+	_renderer.render(*animationEntity(), _camera);
 }
 
 void TestAnimation::onRenderUI() {
+	if (ImGui::Combo("EntityType", (int*)&_entityType, EntityTypeStrings, lengthof(EntityTypeStrings))) {
+		loadAnimationEntity();
+	}
 	if (ImGui::ComboStl("Animation", &_animationIdx, _animations)) {
-		_character.setAnimation((animation::Animation)_animationIdx);
+		animationEntity()->setAnimation((animation::Animation)_animationIdx);
 	}
-	if (ImGui::ComboStl("Item/Tool", &_itemIdx, _items)) {
-		addItem(_itemIdx);
-	}
-	if (ImGui::ComboStl("Character", &_currentCharacterIndex, validCharacters)) {
-		loadCharacter();
+	if (_entityType == EntityType::Character) {
+		if (ImGui::ComboStl("Item/Tool", &_itemIdx, _items)) {
+			addItem(_itemIdx);
+		}
+		if (ImGui::ComboStl("Character", &_currentCharacterIndex, validCharacters)) {
+			loadAnimationEntity();
+		}
 	}
 	Super::onRenderUI();
 }
