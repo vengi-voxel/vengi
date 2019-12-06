@@ -15,6 +15,7 @@
 #include <stdarg.h>
 #include <SDL.h>
 #include <string_view>
+#include <math.h>
 
 namespace core {
 namespace string {
