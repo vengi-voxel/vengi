@@ -62,6 +62,17 @@ public:
 	WorldMgr(const voxelformat::VolumeCachePtr& volumeCache);
 	~WorldMgr();
 
+	/**
+	 * @return true if the ray hit something - false if not.
+	 * @note The callback has a parameter of @c const PagedVolume::Sampler& and returns a boolean. If the callback returns false,
+	 * the ray is interrupted. Only if the callback returned false at some point in time, this function will return @c true.
+	 */
+	template<typename Callback>
+	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) const {
+		const voxel::RaycastResults::RaycastResult result = voxel::raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
+		return result == voxel::RaycastResults::Interupted;
+	}
+
 	template<typename VoxelTypeChecker>
 	int findFloor(int x, int z, VoxelTypeChecker&& check) const {
 		const glm::vec3 start(x, voxel::MAX_HEIGHT, z);
@@ -136,17 +147,6 @@ private:
 	void extractScheduledMesh();
 	BiomeManager& biomeManager();
 	const BiomeManager& biomeManager() const;
-
-	/**
-	 * @return true if the ray hit something - false if not.
-	 * @note The callback has a parameter of @c const PagedVolume::Sampler& and returns a boolean. If the callback returns false,
-	 * the ray is interrupted. Only if the callback returned false at some point in time, this function will return @c true.
-	 */
-	template<typename Callback>
-	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) const {
-		const voxel::RaycastResults::RaycastResult result = voxel::raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
-		return result == voxel::RaycastResults::Interupted;
-	}
 
 	int chunkSize() const;
 
