@@ -210,14 +210,20 @@ void MapView::beforeUI() {
 
 void MapView::onRenderUI() {
 	if (ImGui::CollapsingHeader("Stats")) {
-		const glm::vec3& pos = _camera.target();
+		const glm::vec3& pos = _camera.position();
+		const glm::vec3& targetpos = _camera.target();
+		const float distance = _camera.targetDistance();
+		const float pitch = _camera.pitch();
+		const float yaw = _camera.yaw();
 		voxelrender::WorldRenderer::Stats stats;
 		_worldRenderer.stats(stats);
 		ImGui::Text("%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
 		ImGui::Text("%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
 		ImGui::Text("%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
 		ImGui::Text("Drawcalls: %i (verts: %i)", _drawCallsWorld, _vertices);
-		ImGui::Text("Target pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
+		ImGui::Text("Target Pos: %.2f:%.2f:%.2f ", targetpos.x, targetpos.y, targetpos.z);
+		ImGui::Text("Pos: %.2f:%.2f:%.2f, Distance:%.2f", pos.x, pos.y, pos.z, distance);
+		ImGui::Text("Yaw: %.2f Pitch: %.2f Roll: %.2f", yaw, pitch, _camera.roll());
 		ImGui::Text("Pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
 				stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive, stats.occluded);
 	}
