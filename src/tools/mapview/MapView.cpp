@@ -176,7 +176,6 @@ core::AppState MapView::onInit() {
 void MapView::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
-	_camera.setFarPlane(_worldRenderer.getViewDistance());
 
 	_movement.updatePos(_camera, _deltaFrameSeconds, _entity, [&] (const glm::vec3& pos) {
 		const float maxWalkHeight = 3.0f;
@@ -185,15 +184,27 @@ void MapView::beforeUI() {
 	_camera.update(_deltaFrameMillis);
 
 	// TODO: implement collision in the camera interface
-	const int groundPosY = _movement.groundHeight();
-	glm::vec3 camPos = _camera.position();
-	if (camPos.y < groundPosY + 2) {
-		camPos.y = groundPosY + 1.0f;
-		_camera.rotate(glm::vec3(10.0f, 0.0f, 0.0f) * _rotationSpeed->floatVal());
-		_camera.update(0l);
-	}
-
+	// you need the WolrdMgr for collision detection. Collision management should be part of the surrounding system
 	if (_updateWorld) {
+		glm::vec3 targetpos = _camera.target();
+		glm::vec3 direction = _camera.direction();
+		glm::vec3 hit;
+
+		if (_worldMgr->raycast(targetpos, direction, _targetDistance, [&] (const voxel::PagedVolume::Sampler& sampler) {
+				voxel::Voxel voxel = sampler.voxel();
+				if (voxel::isBlocked(voxel.getMaterial())) {
+					// store position and abort raycast
+					hit = glm::vec3(sampler.position());
+					return false;
+				}
+				return true;
+			})) {
+			_camera.setTargetDistance(glm::distance(targetpos, hit));
+		} else {
+			_camera.setTargetDistance(_targetDistance);
+		}
+
+		_camera.setFarPlane(_worldRenderer.getViewDistance());
 		if (!_singlePosExtraction) {
 			_worldRenderer.extractMeshes(_camera);
 		}
