@@ -274,8 +274,8 @@ public:
 	 * @param[in] file The file to load. The volume format is determined by the file extension.
 	 */
 	bool load(const std::string& file);
-	bool loadCharacter(const std::string& luaFile);
-	bool saveCharacter(const char *name);
+	bool loadAnimationEntity(const std::string& luaFile);
+	bool saveAnimationEntity(const char *name);
 
 	/**
 	 * @brief Shift the whole volume by the given voxel amount

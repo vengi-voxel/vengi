@@ -786,7 +786,7 @@ void SceneManager::construct() {
 	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Scene);
 	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Scene);
 
-	core::Command::registerCommand("cycle_animation", [this] (const core::CmdArgs& argv) {
+	core::Command::registerCommand("animation_cycle", [this] (const core::CmdArgs& argv) {
 		int offset = 1;
 		if (argv.size() > 0) {
 			offset = core::string::toInt(argv[0]);
@@ -800,12 +800,12 @@ void SceneManager::construct() {
 		_character.setAnimation((animation::Animation)_animationIdx);
 	});
 
-	core::Command::registerCommand("character_save", [&] (const core::CmdArgs& args) {
-		std::string name = "character";
+	core::Command::registerCommand("animation_save", [&] (const core::CmdArgs& args) {
+		std::string name = "entity";
 		if (!args.empty()) {
 			name = args[0];
 		}
-		saveCharacter(name.c_str());
+		saveAnimationEntity(name.c_str());
 	});
 
 	core::Command::registerCommand("layerssave", [&] (const core::CmdArgs& args) {
@@ -1429,7 +1429,7 @@ void SceneManager::shutdown() {
 	_character.shutdown();
 }
 
-bool SceneManager::saveCharacter(const char *name) {
+bool SceneManager::saveAnimationEntity(const char *name) {
 	_dirty = false;
 	// TODO: race and gender
 	const std::string& chrName = core::string::format("chr/human-male-%s", name);
@@ -1471,14 +1471,14 @@ bool SceneManager::saveCharacter(const char *name) {
 	return true;
 }
 
-bool SceneManager::loadCharacter(const std::string& luaFile) {
+bool SceneManager::loadAnimationEntity(const std::string& luaFile) {
 	const std::string& lua = io::filesystem()->load(luaFile);
 	if (!_character.initSettings(lua)) {
 		Log::warn("Failed to initialize the character settings");
 	}
 
 	voxel::VoxelVolumes volumes;
-	if (!_volumeCache.getCharacterVolumes(_character.animationSettings(), volumes)) {
+	if (!_volumeCache.getVolumes(_character.animationSettings(), volumes)) {
 		return false;
 	}
 

@@ -19,7 +19,7 @@ class VolumeCache : public voxelformat::VolumeCache {
 private:
 	bool load(const std::string& fullPath, size_t volumeIndex, voxel::VoxelVolumes& volumes);
 public:
-	bool getCharacterVolumes(const animation::AnimationSettings& settings, voxel::VoxelVolumes& volumes) {
+	bool getVolumes(const animation::AnimationSettings& settings, voxel::VoxelVolumes& volumes) {
 		volumes.resize(animation::AnimationSettings::MAX_ENTRIES);
 
 		for (size_t i = 0; i < animation::AnimationSettings::MAX_ENTRIES; ++i) {
