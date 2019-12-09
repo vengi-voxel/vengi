@@ -25,6 +25,7 @@ void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, C
 	const double cosy_cosp = 1.0 - 2.0 * (q.y * q.y + q.z * q.z);
 	const double yaw = -atan2(siny_cosp, cosy_cosp);
 	entity->setOrientation(yaw);
+	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
 
 	const attrib::ShadowAttributes& attribs = entity->attrib();
 	const double speed = attribs.current(attrib::Type::SPEED);
@@ -77,31 +78,21 @@ void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, C
 	}
 	entity->setPosition(newPos);
 
-	camera.setTarget(newPos);
+	camera.setTarget(newPos + eye);
 }
 
 glm::vec3 PlayerMovement::calculateDelta(const glm::quat& rot, float speed) {
-	glm::vec3 delta(0.0f);
 	if (_flying || _jumping) {
+		glm::vec3 delta(0.0f);
 		if (forward()) {
 			delta += rot * (glm::forward * speed);
 		} else if (backward()) {
 			// you can only reduce speed - but not walk backward
 			delta += rot * (glm::forward * speed / 10.0f);
 		}
-	} else {
-		if (left()) {
-			delta += rot * (glm::left * speed);
-		} else if (right()) {
-			delta += rot * (glm::right * speed);
-		}
-		if (forward()) {
-			delta += rot * (glm::forward * speed);
-		} else if (backward()) {
-			delta += rot * (glm::backward * speed);
-		}
+		return delta;
 	}
-	return delta;
+	return Movement::calculateDelta(rot, speed);
 };
 
 }
