@@ -119,6 +119,7 @@ core::AppState MapView::onInit() {
 	_camera.setTargetDistance(_targetDistance);
 	_camera.setPosition(_cameraPosition);
 	_camera.setTarget(glm::zero<glm::vec3>());
+	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.update(0l);
 
 	const int groundPosY = _worldMgr->findWalkableFloor(glm::zero<glm::vec3>());
