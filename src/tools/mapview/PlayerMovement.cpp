@@ -20,16 +20,12 @@ void PlayerMovement::shutdown() {
 }
 
 void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, ClientEntityPtr& entity, std::function<int(const glm::vec3& pos)> heightResolver) {
-	const glm::quat& q = camera.quaternion();
-	const double siny_cosp = 2.0 * (q.w * q.z + q.x * q.y);
-	const double cosy_cosp = 1.0 - 2.0 * (q.y * q.y + q.z * q.z);
-	const double yaw = -atan2(siny_cosp, cosy_cosp);
-	entity->setOrientation(yaw);
+
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
 
 	const attrib::ShadowAttributes& attribs = entity->attrib();
 	const double speed = attribs.current(attrib::Type::SPEED);
-	const glm::vec3& md = moveDelta(speed, yaw);
+	const glm::vec3& md = moveDelta(speed, camera.yaw());
 	const glm::vec3& currentPos = entity->position();
 
 	glm::vec3 newPos = currentPos + md;
