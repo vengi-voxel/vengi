@@ -199,7 +199,7 @@ void File::close() {
 bool File::open(FileMode mode) {
 	if (_file != nullptr) {
 		Log::debug("File %s is already open", _rawPath.c_str());
-		return -1;
+		return false;
 	}
 	_mode = mode;
 	_file = createRWops(mode);
