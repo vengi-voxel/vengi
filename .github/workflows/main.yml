@@ -60,7 +60,6 @@ jobs:
             cmake --build .
             ctest -V -C Debug -R tests-animation
             ctest -V -C Debug -R tests-computeshadertool
-            ctest -V -C Debug -R tests-core
             ctest -V -C Debug -R tests-mail
             ctest -V -C Debug -R tests-math
             ctest -V -C Debug -R tests-util
