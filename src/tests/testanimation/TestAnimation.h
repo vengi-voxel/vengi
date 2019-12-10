@@ -5,7 +5,6 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "animation/chr/Character.h"
 #include "animation/AnimationCache.h"
 #include "animation/AnimationRenderer.h"
 #include "attrib/ShadowAttributes.h"
@@ -31,7 +30,6 @@ private:
 	static_assert((int)EntityType::Max == lengthof(EntityTypeStrings));
 
 	EntityType _entityType = EntityType::Character;
-	animation::Character _character;
 	animation::AnimationCachePtr _animationCache;
 	animation::AnimationRenderer _renderer;
 	stock::StockDataProviderPtr _stockDataProvider;
@@ -45,14 +43,13 @@ private:
 
 	io::FilePtr _luaFile;
 
-	int _currentCharacterIndex = 0;
-	const std::string& currentAnimationEntity() const;
+	int _currentAnimationEntityIndex = 0;
 	bool loadAnimationEntity();
 	void doRender() override;
 	void onRenderUI() override;
 	bool addItem(stock::ItemId id);
 
-	int& animationEntityIndex();
+	const std::vector<std::string>& animationEntityTypes() const;
 	animation::AnimationEntity* animationEntity();
 public:
 	TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,

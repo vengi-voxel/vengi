@@ -48,6 +48,14 @@ public:
 	virtual bool initSettings(const std::string& luaString) = 0;
 
 	/**
+	 * @brief Update the bone states and the tool vertices from the given inventory
+	 * @param[in] dt The delta time since the last call
+	 * @param[in] attrib @c attrib::ShadowAttributes to get the character values
+	 * from
+	 */
+	virtual void update(uint64_t dt, const attrib::ShadowAttributes& attrib) = 0;
+
+	/**
 	 * @brief The 'static' vertices of the character mesh where you have to apply
 	 * the skeleton bones on
 	 * @sa skeleton()

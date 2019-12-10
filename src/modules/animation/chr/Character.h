@@ -36,13 +36,7 @@ public:
 	void shutdown() override;
 	bool initMesh(const AnimationCachePtr& cache) override;
 	bool initSettings(const std::string& luaString) override;
-	/**
-	 * @brief Update the bone states and the tool vertices from the given inventory
-	 * @param[in] dt The delta time since the last call
-	 * @param[in] attrib @c attrib::ShadowAttributes to get the character values
-	 * from
-	 */
-	void update(uint64_t dt, const attrib::ShadowAttributes& attrib);
+	void update(uint64_t dt, const attrib::ShadowAttributes& attrib) override;
 	/**
 	 * @brief Updates the vertices and indices buffer whenever the character switched the active tool
 	 * @param[in] cache The cache that is used to resolve the item models

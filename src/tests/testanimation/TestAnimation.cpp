@@ -9,12 +9,12 @@
 #include "core/command/Command.h"
 #include "core/Array.h"
 #include "Shared_generated.h"
+#include "animation/chr/Character.h"
 #include <array>
 
 static bool reloadAnimationEntity = false;
 
-static constexpr int32_t cnt = (int)network::EntityType::MAX_CHARACTERS - ((int)network::EntityType::BEGIN_CHARACTERS + 1);
-static std::array<std::string, cnt> validCharacters {};
+static std::vector<std::string> validCharacters;
 
 TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem,
@@ -26,6 +26,8 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 	setCameraMotion(true);
 	setRenderAxis(true);
 
+	const int32_t cnt = (int)network::EntityType::MAX_CHARACTERS - ((int)network::EntityType::BEGIN_CHARACTERS + 1);
+	validCharacters.resize(cnt);
 	int index = 0;
 	for (int i = ((int)network::EntityType::BEGIN_CHARACTERS) + 1; i < (int)network::EntityType::MAX_CHARACTERS; ++i) {
 		const char *entityName = network::EnumNameEntityType((network::EntityType)i);
@@ -35,15 +37,12 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 	}
 }
 
-const std::string& TestAnimation::currentAnimationEntity() const {
-	return validCharacters[_currentCharacterIndex];
-}
-
-int& TestAnimation::animationEntityIndex() {
-	return _currentCharacterIndex;
+const std::vector<std::string>& TestAnimation::animationEntityTypes() const {
+	return validCharacters;
 }
 
 animation::AnimationEntity* TestAnimation::animationEntity() {
+	static animation::Character _character;
 	return &_character;
 }
 
@@ -84,8 +83,8 @@ core::AppState TestAnimation::onConstruct() {
 		if (argv.size() > 0) {
 			offset = core::string::toInt(argv[0]);
 		}
-		int& current = animationEntityIndex();
-		const int size = validCharacters.size();
+		int& current = &_currentAnimationEntityIndex;
+		const int size = animationEntityTypes().size();
 		current += offset;
 		while (current < 0) {
 			current += size;
@@ -99,7 +98,9 @@ core::AppState TestAnimation::onConstruct() {
 }
 
 bool TestAnimation::loadAnimationEntity() {
-	const std::string& ent = currentAnimationEntity();
+	const int size = animationEntityTypes().size();
+	_currentAnimationEntityIndex %= size;
+	const std::string& ent = animationEntityTypes()[_currentAnimationEntityIndex];
 	Log::info("Load animation entity settings for %s", ent.c_str());
 	const io::FilePtr& file = filesystem()->open(animation::luaFilename(ent.c_str()));
 	const std::string& lua = file->load();
@@ -108,17 +109,7 @@ bool TestAnimation::loadAnimationEntity() {
 		return false;
 	}
 
-	if (_entityType == EntityType::Character) {
-		animation::Character testEntity;
-		if (!testEntity.init(_animationCache, lua)) {
-			Log::error("Failed to initialize the character %s for animation", ent.c_str());
-			return false;
-		}
-		core_assert_always(_character.init(_animationCache, lua));
-	} else {
-		core_assert(false);
-		return false;
-	}
+	animationEntity()->init(_animationCache, lua);
 	if (_luaFile) {
 		filesystem()->unwatch(_luaFile);
 	}
@@ -224,8 +215,10 @@ void TestAnimation::doRender() {
 		loadAnimationEntity();
 		reloadAnimationEntity = false;
 	}
-	_character.updateTool(_animationCache, _stock);
-	_character.update(_deltaFrameMillis, _attrib);
+	if (_entityType == EntityType::Character) {
+		((animation::Character*)animationEntity())->updateTool(_animationCache, _stock);
+	}
+	animationEntity()->update(_deltaFrameMillis, _attrib);
 	_renderer.render(*animationEntity(), _camera);
 }
 
@@ -240,9 +233,9 @@ void TestAnimation::onRenderUI() {
 		if (ImGui::ComboStl("Item/Tool", &_itemIdx, _items)) {
 			addItem(_itemIdx);
 		}
-		if (ImGui::ComboStl("Character", &_currentCharacterIndex, validCharacters)) {
-			loadAnimationEntity();
-		}
+	}
+	if (ImGui::ComboStl("Entity", &_currentAnimationEntityIndex, animationEntityTypes())) {
+		loadAnimationEntity();
 	}
 	Super::onRenderUI();
 }
