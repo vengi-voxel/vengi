@@ -36,7 +36,7 @@ protected:
 		}
 		~LogLine() {
 			SDL_free(message);
-			message = (char*)(void*)0xdeadbeef;
+			message = (char*)(intptr_t)0xdeadbeef;
 		}
 		LogLine(LogLine&& o) {
 			category = o.category;
