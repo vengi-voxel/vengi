@@ -48,6 +48,10 @@ static constexpr struct Direction {
 	{"backward",  0,  0, -1}
 };
 
+enum class EditMode {
+	Volume, Animation
+};
+
 /**
  * @note The data is shared across all viewports
  */
@@ -63,6 +67,7 @@ private:
 	Modifier _modifier;
 	voxel::RawVolume* _copy = nullptr;
 	render::Gizmo _gizmo;
+	EditMode _editMode = EditMode::Volume;
 
 	animation::Character _character;
 	animation::AnimationRenderer _animationRenderer;
@@ -303,6 +308,7 @@ public:
 	 * @return @c true if the scene is completely empty
 	 */
 	bool empty() const;
+	EditMode editMode() const;
 
 	static const uint8_t RenderScene = 1u << 0u;
 	static const uint8_t RenderUI    = 1u << 1u;
@@ -400,6 +406,10 @@ inline int SceneManager::size() const {
 
 inline bool SceneManager::empty() const {
 	return _layerMgr.layers().empty();
+}
+
+inline EditMode SceneManager::editMode() const {
+	return _editMode;
 }
 
 inline const voxel::Voxel& SceneManager::hitCursorVoxel() const {

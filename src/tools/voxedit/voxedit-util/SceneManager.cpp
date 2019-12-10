@@ -516,6 +516,7 @@ void SceneManager::resetSceneState() {
 	_animationLayerDirtyState = -1;
 	_animationIdx = 0;
 	_animationUpdate = false;
+	_editMode = EditMode::Volume;
 	_mementoHandler.clearStates();
 	const int layerId = _layerMgr.activeLayer();
 	// push the initial state of the current layer to the memento handler to
@@ -1505,6 +1506,7 @@ bool SceneManager::loadAnimationEntity(const std::string& luaFile) {
 
 	resetSceneState();
 	_animationUpdate = true;
+	_editMode = EditMode::Animation;
 	return true;
 }
 
