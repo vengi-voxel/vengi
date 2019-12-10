@@ -8,6 +8,7 @@
 #include "Skeleton.h"
 #include "Vertex.h"
 #include "AnimationSettings.h"
+#include "animation/AnimationCache.h"
 
 namespace animation {
 
@@ -22,10 +23,29 @@ protected:
 	AnimationSettings _settings;
 	Vertices _vertices;
 	Indices _indices;
+	float _globalTimeSeconds = 0.0f;
 public:
 	virtual ~AnimationEntity() {}
 	void setAnimation(Animation animation);
 	Animation animation() const;
+
+	/**
+	 * @brief Initializes the character settings with the given lua script.
+	 * @note This is basically just a wrapper around initMesh() and initSettings()
+	 * @return @c true if the initialization was successful, @c false otherwise.
+	 */
+	bool init(const AnimationCachePtr& cache, const std::string& luaString) {
+		if (!initSettings(luaString)) {
+			return false;
+		}
+		return initMesh(cache);
+	}
+	virtual void shutdown() {}
+	virtual bool initMesh(const AnimationCachePtr& cache) = 0;
+	/**
+	 * @note Updating the settings without updating the mesh afterwards is pointless.
+	 */
+	virtual bool initSettings(const std::string& luaString) = 0;
 
 	/**
 	 * @brief The 'static' vertices of the character mesh where you have to apply

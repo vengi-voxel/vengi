@@ -6,7 +6,6 @@
 
 #include "animation/AnimationEntity.h"
 #include "CharacterSkeleton.h"
-#include "animation/AnimationCache.h"
 #include "attrib/ShadowAttributes.h"
 #include "stock/Stock.h"
 #include <stdint.h>
@@ -34,17 +33,9 @@ protected:
 
 	bool loadGlider(const AnimationCachePtr& cache, const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]);
 public:
-	/**
-	 * @brief Initializes the character settings via (optional) lua script.
-	 * @return @c true if the initialization was successful, @c false otherwise.
-	 */
-	bool init(const AnimationCachePtr& cache, const std::string& luaString = "");
-	void shutdown();
-	bool initMesh(const AnimationCachePtr& cache);
-	/**
-	 * @note Updating the settings without updating the mesh afterwards is pointless.
-	 */
-	bool initSettings(const std::string& luaString);
+	void shutdown() override;
+	bool initMesh(const AnimationCachePtr& cache) override;
+	bool initSettings(const std::string& luaString) override;
 	/**
 	 * @brief Update the bone states and the tool vertices from the given inventory
 	 * @param[in] dt The delta time since the last call

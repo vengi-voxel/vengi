@@ -15,13 +15,6 @@
 
 namespace animation {
 
-bool Character::init(const AnimationCachePtr& cache, const std::string& luaString) {
-	if (!initSettings(luaString)) {
-		return false;
-	}
-	return initMesh(cache);
-}
-
 bool Character::initSettings(const std::string& luaString) {
 	AnimationSettings settings;
 	CharacterSkeletonAttribute attributes;
@@ -124,7 +117,6 @@ bool Character::updateTool(const AnimationCachePtr& cache, const stock::Stock& s
 }
 
 void Character::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
-	static float globalTimeSeconds = 0.0f;
 	const float animTimeSeconds = float(dt) / 1000.0f;
 
 	const CharacterSkeleton old = _skeleton;
@@ -133,34 +125,34 @@ void Character::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
 
 	switch (_anim) {
 	case Animation::Idle:
-		chr::idle::update(globalTimeSeconds, _skeleton, _attributes);
+		chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
 		break;
 	case Animation::Jump:
-		chr::jump::update(globalTimeSeconds, _skeleton, _attributes);
+		chr::jump::update(_globalTimeSeconds, _skeleton, _attributes);
 		break;
 	case Animation::Run:
-		chr::run::update(globalTimeSeconds, velocity, _skeleton, _attributes);
+		chr::run::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
 		break;
 	case Animation::Glide:
-		chr::glide::update(globalTimeSeconds, _skeleton, _attributes);
+		chr::glide::update(_globalTimeSeconds, _skeleton, _attributes);
 		break;
 	case Animation::Tool:
 		if (_toolAnim == ToolAnimationType::None || _toolAnim == ToolAnimationType::Max) {
-			chr::idle::update(globalTimeSeconds, _skeleton, _attributes);
+			chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
 		} else {
-			chr::tool::update(globalTimeSeconds, _toolAnim, _skeleton, _attributes);
+			chr::tool::update(_globalTimeSeconds, _toolAnim, _skeleton, _attributes);
 		}
 		break;
 	default:
 		break;
 	}
 
-	if (globalTimeSeconds > 0.0f) {
+	if (_globalTimeSeconds > 0.0f) {
 		const float ticksPerSecond = 15.0f;
 		_skeleton.lerp(old, glm::min(1.0f, animTimeSeconds * ticksPerSecond));
 	}
 
-	globalTimeSeconds += animTimeSeconds;
+	_globalTimeSeconds += animTimeSeconds;
 }
 
 void Character::shutdown() {

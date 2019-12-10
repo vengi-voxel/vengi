@@ -29,7 +29,7 @@ class AnimationSettings;
  * @ingroup Animation
  */
 class Skeleton {
-public:
+private:
 	Bone _bones[shader::SkeletonShader::getMaxBones()];
 public:
 	virtual ~Skeleton() {}
