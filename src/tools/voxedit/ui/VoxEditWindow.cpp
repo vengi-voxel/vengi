@@ -143,6 +143,7 @@ bool VoxEditWindow::init() {
 		toggleAnimation->setState(tb::WIDGET_STATE_DISABLED, !_animationViewAvailable);
 	}
 	_saveButton = getWidget("save");
+	_saveAnimationButton = getWidget("animation_save");
 	_undoButton = getWidget("undo");
 	_redoButton = getWidget("redo");
 
@@ -624,6 +625,9 @@ void VoxEditWindow::onProcess() {
 		}
 	}
 
+	if (_saveAnimationButton != nullptr) {
+		_saveAnimationButton->setState(tb::WIDGET_STATE_DISABLED, sceneMgr().empty() || sceneMgr().editMode() == EditMode::Volume);
+	}
 	if (_saveButton != nullptr) {
 		_saveButton->setState(tb::WIDGET_STATE_DISABLED, sceneMgr().empty());
 	}

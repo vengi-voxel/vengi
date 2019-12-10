@@ -34,6 +34,7 @@ private:
 	PaletteWidget* _paletteWidget = nullptr;
 	LayerWidget* _layerWidget = nullptr;
 	tb::TBWidget* _saveButton = nullptr;
+	tb::TBWidget* _saveAnimationButton = nullptr;
 	tb::TBWidget* _undoButton = nullptr;
 	tb::TBWidget* _redoButton = nullptr;
 
