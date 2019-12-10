@@ -43,7 +43,7 @@ class CharacterSettingsTest: public core::AbstractTest {
 TEST_F(CharacterSettingsTest, testLUA) {
 	AnimationSettings settings;
 	CharacterSkeletonAttribute skeletonAttr;
-	ASSERT_TRUE(loadAnimationSettings(TestSetters, settings, &skeletonAttr, ChrSkeletonAttributeMetaArray))
+	ASSERT_TRUE(loadAnimationSettings(TestSetters, settings, &skeletonAttr))
 		<< "Failed to initialize the character settings";
 
 	ASSERT_EQ(2u, settings.types().size());

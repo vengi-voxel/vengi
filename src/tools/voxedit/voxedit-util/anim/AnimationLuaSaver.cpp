@@ -9,7 +9,7 @@
 
 namespace voxedit {
 
-bool saveCharacterLua(const animation::AnimationSettings& settings, const animation::CharacterSkeletonAttribute& sa, const char *name, const io::FilePtr& file) {
+bool saveAnimationEntityLua(const animation::AnimationSettings& settings, const animation::SkeletonAttribute& sa, const char *name, const io::FilePtr& file) {
 	if (!file || !file->exists()) {
 		return false;
 	}
@@ -39,7 +39,7 @@ bool saveCharacterLua(const animation::AnimationSettings& settings, const animat
 
 	stream.addString("  local attributes = defaultSkeletonAttributes()\n", false);
 	const animation::CharacterSkeletonAttribute dv {};
-	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
+	for (const animation::SkeletonAttributeMeta* metaIter = sa.metaArray(); metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
 		const float *saVal = (const float*)(((const uint8_t*)&sa) + meta.offset);
 		const float *dvVal = (const float*)(((const uint8_t*)&dv) + meta.offset);

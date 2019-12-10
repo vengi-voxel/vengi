@@ -111,8 +111,8 @@ bool VoxEditWindow::init() {
 	}
 
 	if (tb::TBLayout* layout = getWidgetByType<tb::TBLayout>("animationsettings")) {
-		const void* skeletonAttributes = sceneMgr().skeletonAttributesPtr();
-		for (const animation::SkeletonAttributeMeta* metaIter = getSkeletonAttributeMeta(); metaIter->name; ++metaIter) {
+		const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
+		for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
 			const animation::SkeletonAttributeMeta& meta = *metaIter;
 			tb::TBLayout *innerLayout = new tb::TBLayout();
 			tb::TBTextField *name = new tb::TBTextField();
@@ -562,8 +562,8 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		}
 	}
 
-	void* skeletonAttributes = sceneMgr().skeletonAttributesPtr();
-	for (const animation::SkeletonAttributeMeta* metaIter = getSkeletonAttributeMeta(); metaIter->name; ++metaIter) {
+	animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
+	for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
 		if (id == TBIDC(meta.name)) {
 			const float val = (float)ev.target->getValueDouble();
@@ -841,8 +841,8 @@ bool VoxEditWindow::loadAnimationEntity(const std::string& file) {
 			toggleAnimation->invokeEvent(target_ev);
 		}
 	}
-	const void* skeletonAttributes = sceneMgr().skeletonAttributesPtr();
-	for (const animation::SkeletonAttributeMeta* metaIter = getSkeletonAttributeMeta(); metaIter->name; ++metaIter) {
+	const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
+	for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
 		if (tb::TBInlineSelectDouble *value = getWidgetByIDAndType<tb::TBInlineSelectDouble>(TBIDC(meta.name))) {
 			const float *saVal = (const float*)(((const uint8_t*)skeletonAttributes) + meta.offset);
@@ -850,11 +850,6 @@ bool VoxEditWindow::loadAnimationEntity(const std::string& file) {
 		}
 	}
 	return true;
-}
-
-const animation::SkeletonAttributeMeta* VoxEditWindow::getSkeletonAttributeMeta() const {
-	// TODO: the meta array differs from entity type to entity type
-	return animation::ChrSkeletonAttributeMetaArray;
 }
 
 bool VoxEditWindow::load(const std::string& file) {

@@ -159,7 +159,7 @@ std::string luaFilename(const char *character) {
 	return core::string::format("%s.lua", character);
 }
 
-bool loadAnimationSettings(const std::string& luaString, AnimationSettings& settings, void* skeletonAttr, const SkeletonAttributeMeta* metaIter) {
+bool loadAnimationSettings(const std::string& luaString, AnimationSettings& settings, SkeletonAttribute* skeletonAttr) {
 	if (luaString.empty()) {
 		Log::warn("empty animation settings can't get loaded");
 		return false;
@@ -183,6 +183,7 @@ bool loadAnimationSettings(const std::string& luaString, AnimationSettings& sett
 		return false;
 	}
 
+	const SkeletonAttributeMeta* metaIter = skeletonAttr != nullptr ? skeletonAttr->metaArray() : nullptr;
 	for (; metaIter && metaIter->name; ++metaIter) {
 		const SkeletonAttributeMeta& meta = *metaIter;
 		float *saVal = (float*)(((uint8_t*)skeletonAttr) + meta.offset);

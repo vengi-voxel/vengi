@@ -15,7 +15,7 @@ protected:
 		CharacterSkeleton skel;
 		AnimationSettings settings;
 		const std::string& lua = io::filesystem()->load(file);
-		ASSERT_TRUE(loadAnimationSettings(lua, settings, nullptr, nullptr));
+		ASSERT_TRUE(loadAnimationSettings(lua, settings, nullptr));
 		glm::mat4 bones[shader::SkeletonShader::getMaxBones()];
 		skel.update(settings, bones);
 		EXPECT_NE(-1, settings.mapBoneIdToArrayIndex(BoneId::Head));

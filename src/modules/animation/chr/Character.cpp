@@ -18,7 +18,7 @@ namespace animation {
 bool Character::initSettings(const std::string& luaString) {
 	AnimationSettings settings;
 	CharacterSkeletonAttribute attributes;
-	if (loadAnimationSettings(luaString, settings, &attributes, ChrSkeletonAttributeMetaArray)) {
+	if (loadAnimationSettings(luaString, settings, &attributes)) {
 		if (!attributes.init()) {
 			return false;
 		}

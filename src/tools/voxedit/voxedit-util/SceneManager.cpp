@@ -1439,7 +1439,7 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 	io::filesystem()->createDir(luaDir);
 	const io::FilePtr& luaFile = io::filesystem()->open(luaFilePath, io::FileMode::Write);
 	const animation::AnimationSettings& animSettings = _character.animationSettings();
-	if (saveCharacterLua(animSettings, _character.skeletonAttributes(), name, luaFile)) {
+	if (saveAnimationEntityLua(animSettings, _character.skeletonAttributes(), name, luaFile)) {
 		Log::info("Wrote lua script: %s", luaFile->name().c_str());
 	}
 

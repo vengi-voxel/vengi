@@ -15,7 +15,9 @@ namespace animation {
  * @note This must be float values
  * @ingroup Animation
  */
-struct CharacterSkeletonAttribute {
+struct CharacterSkeletonAttribute : SkeletonAttribute {
+	CharacterSkeletonAttribute();
+
 	float scaler = 1.0f;
 	float toolRight = 6.0f;
 	float toolForward = -6.1f;
@@ -66,35 +68,6 @@ struct CharacterSkeletonAttribute {
 		// TODO: perform sanity checks
 		return true;
 	}
-};
-
-static const SkeletonAttributeMeta ChrSkeletonAttributeMetaArray[] = {
-	{ "scaler",             offsetof(struct CharacterSkeletonAttribute, scaler) },
-	{ "toolRight",          offsetof(struct CharacterSkeletonAttribute, toolRight) },
-	{ "toolForward",        offsetof(struct CharacterSkeletonAttribute, toolForward) },
-	{ "toolScale",          offsetof(struct CharacterSkeletonAttribute, toolScale) },
-	{ "neckRight",          offsetof(struct CharacterSkeletonAttribute, neckRight) },
-	{ "neckForward",        offsetof(struct CharacterSkeletonAttribute, neckForward) },
-	{ "neckHeight",         offsetof(struct CharacterSkeletonAttribute, neckHeight) },
-	{ "headScale",          offsetof(struct CharacterSkeletonAttribute, headScale) },
-	{ "handRight",          offsetof(struct CharacterSkeletonAttribute, handRight) },
-	{ "handForward",        offsetof(struct CharacterSkeletonAttribute, handForward) },
-	{ "shoulderRight",      offsetof(struct CharacterSkeletonAttribute, shoulderRight) },
-	{ "shoulderForward",    offsetof(struct CharacterSkeletonAttribute, shoulderForward) },
-	{ "runTimeFactor",      offsetof(struct CharacterSkeletonAttribute, runTimeFactor) },
-	{ "jumpTimeFactor",     offsetof(struct CharacterSkeletonAttribute, jumpTimeFactor) },
-	{ "idleTimeFactor",     offsetof(struct CharacterSkeletonAttribute, idleTimeFactor) },
-	{ "shoulderScale",      offsetof(struct CharacterSkeletonAttribute, shoulderScale) },
-	{ "hipOffset",          offsetof(struct CharacterSkeletonAttribute, hipOffset) },
-	{ "origin",             offsetof(struct CharacterSkeletonAttribute, origin) },
-	{ "footHeight",         offsetof(struct CharacterSkeletonAttribute, footHeight) },
-	{ "invisibleLegHeight", offsetof(struct CharacterSkeletonAttribute, invisibleLegHeight) },
-	{ "pantsHeight",        offsetof(struct CharacterSkeletonAttribute, pantsHeight) },
-	{ "beltHeight",         offsetof(struct CharacterSkeletonAttribute, beltHeight) },
-	{ "chestHeight",        offsetof(struct CharacterSkeletonAttribute, chestHeight) },
-	{ "headHeight",         offsetof(struct CharacterSkeletonAttribute, headHeight) },
-	{ "footRight",          offsetof(struct CharacterSkeletonAttribute, footRight) },
-	{ nullptr, 0u }
 };
 
 }

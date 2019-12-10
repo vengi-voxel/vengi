@@ -7,7 +7,7 @@ set(SRCS
 	chr/anim/Tool.cpp chr/anim/Tool.h
 	chr/Character.cpp chr/Character.h
 	chr/CharacterSkeleton.cpp chr/CharacterSkeleton.h
-	chr/CharacterSkeletonAttribute.h
+	chr/CharacterSkeletonAttribute.cpp chr/CharacterSkeletonAttribute.h
 
 	Animation.cpp Animation.h
 	AnimationCache.cpp AnimationCache.h

@@ -340,7 +340,7 @@ public:
 	const voxelrender::RawVolumeRenderer& renderer() const;
 	voxelrender::RawVolumeRenderer& renderer();
 	render::GridRenderer& gridRenderer();
-	void* skeletonAttributesPtr();
+	animation::SkeletonAttribute* skeletonAttributes();
 	animation::AnimationEntity& animationEntity();
 	const render::Gizmo& gizmo() const;
 
@@ -388,8 +388,8 @@ inline render::GridRenderer& SceneManager::gridRenderer() {
 	return _gridRenderer;
 }
 
-inline void* SceneManager::skeletonAttributesPtr() {
-	return (void*)&_character.skeletonAttributes();
+inline animation::SkeletonAttribute* SceneManager::skeletonAttributes() {
+	return &_character.skeletonAttributes();
 }
 
 inline animation::AnimationEntity& SceneManager::animationEntity() {

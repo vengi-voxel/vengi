@@ -7,6 +7,7 @@
 #include "Animation.h"
 #include "Skeleton.h"
 #include "Vertex.h"
+#include "SkeletonAttribute.h"
 #include "AnimationSettings.h"
 #include "animation/AnimationCache.h"
 #include "attrib/ShadowAttributes.h"
@@ -72,6 +73,7 @@ public:
 	 * @sa vertices()
 	 */
 	virtual const Skeleton& skeleton() const = 0;
+	virtual SkeletonAttribute& skeletonAttributes() = 0;;
 
 	AnimationSettings& animationSettings();
 	const AnimationSettings& animationSettings() const;
