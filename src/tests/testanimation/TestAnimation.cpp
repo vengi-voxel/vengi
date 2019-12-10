@@ -64,6 +64,21 @@ core::AppState TestAnimation::onConstruct() {
 		animationEntity()->setAnimation((animation::Animation)_animationIdx);
 	});
 
+	core::Command::registerCommand("animation_cycleenttype", [this] (const core::CmdArgs& argv) {
+		int offset = 1;
+		if (argv.size() > 0) {
+			offset = core::string::toInt(argv[0]);
+		}
+		int current = (int)_entityType;
+		current += offset;
+		while (current < 0) {
+			current += std::enum_value(EntityType::Max);
+		}
+		current %= (int)EntityType::Max;
+		_entityType = (EntityType)current;
+		loadAnimationEntity();
+	});
+
 	core::Command::registerCommand("animation_cycletype", [this] (const core::CmdArgs& argv) {
 		int offset = 1;
 		if (argv.size() > 0) {
