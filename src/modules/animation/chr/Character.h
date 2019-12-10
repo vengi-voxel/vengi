@@ -6,7 +6,6 @@
 
 #include "animation/AnimationEntity.h"
 #include "CharacterSkeleton.h"
-#include "attrib/ShadowAttributes.h"
 #include "stock/Stock.h"
 #include <stdint.h>
 

@@ -83,7 +83,7 @@ core::AppState TestAnimation::onConstruct() {
 		if (argv.size() > 0) {
 			offset = core::string::toInt(argv[0]);
 		}
-		int& current = &_currentAnimationEntityIndex;
+		int& current = _currentAnimationEntityIndex;
 		const int size = animationEntityTypes().size();
 		current += offset;
 		while (current < 0) {

@@ -9,6 +9,7 @@
 #include "Vertex.h"
 #include "AnimationSettings.h"
 #include "animation/AnimationCache.h"
+#include "attrib/ShadowAttributes.h"
 
 namespace animation {
 
