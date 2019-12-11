@@ -5,9 +5,9 @@ function setupBones()
   local body = bone.setup("body")
   body:add("body")
 
-  local hand = bone.setup("wing")
-  hand:add("rightwing")
-  hand:add("leftwing", true)
+  local wing = bone.setup("wing")
+  wing:add("rightwing")
+  wing:add("leftwing", true)
 
   local foot = bone.setup("foot")
   foot:add("rightfoot")
