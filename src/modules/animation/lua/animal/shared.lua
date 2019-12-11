@@ -8,7 +8,6 @@ function setAllPaths()
 end
 
 function setBasePath(type)
-  settings.setType("bird")
   settings.setBasePath("models/animals/" .. type)
   setAllPaths()
 end
