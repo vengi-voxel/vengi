@@ -110,22 +110,24 @@ void Entity::onAttribChange(const attrib::DirtyValue& v) {
 	_dirtyAttributeTypes.insert(v);
 }
 
-void Entity::addContainer(const std::string& id) {
+bool Entity::addContainer(const std::string& id) {
 	const attrib::ContainerPtr& c = _containerProvider->container(id);
 	if (!c) {
 		Log::error("could not add attribute container for %s", id.c_str());
-		return;
+		return false;
 	}
 	_attribs.add(c);
+	return true;
 }
 
-void Entity::removeContainer(const std::string& id) {
+bool Entity::removeContainer(const std::string& id) {
 	const attrib::ContainerPtr& c = _containerProvider->container(id);
 	if (!c) {
 		Log::error("could not remove attribute container for %s", id.c_str());
-		return;
+		return false;
 	}
 	_attribs.remove(c);
+	return true;
 }
 
 void Entity::sendAttribUpdate() {

@@ -79,8 +79,8 @@ public:
 			const attrib::ContainerProviderPtr& containerProvider);
 	virtual ~Entity();
 
-	void addContainer(const std::string& id);
-	void removeContainer(const std::string& id);
+	bool addContainer(const std::string& id);
+	bool removeContainer(const std::string& id);
 
 	EntityId id() const;
 	const MapPtr& map() const;
