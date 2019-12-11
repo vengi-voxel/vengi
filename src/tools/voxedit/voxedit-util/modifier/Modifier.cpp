@@ -88,7 +88,7 @@ bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::Raw
 bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
 	glm::ivec3 operateMins = mins;
 	glm::ivec3 operateMaxs = maxs;
-	if (!_selection.isValid()) {
+	if (_selection.isValid()) {
 		operateMins = (glm::max)(mins, _selection.getLowerCorner());
 		operateMaxs = (glm::min)(maxs, _selection.getUpperCorner());
 	}

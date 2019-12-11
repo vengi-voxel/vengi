@@ -34,7 +34,7 @@ enum ShapeType {
 
 class Modifier : public core::IComponent {
 private:
-	Selection _selection;
+	Selection _selection = voxel::Region::InvalidRegion;
 	bool _selectionValid = false;
 	glm::ivec3 _aabbFirstPos;
 	bool _aabbMode = false;
