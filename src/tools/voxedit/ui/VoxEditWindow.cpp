@@ -111,14 +111,14 @@ bool VoxEditWindow::init() {
 	}
 
 	if (tb::TBLayout* layout = getWidgetByType<tb::TBLayout>("animationsettings")) {
-		const auto& skeletonAttributes = sceneMgr().skeletonAttributes();
+		const void* skeletonAttributes = sceneMgr().skeletonAttributesPtr();
 		for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
 			const animation::SkeletonAttributeMeta& meta = *metaIter;
 			tb::TBLayout *innerLayout = new tb::TBLayout();
 			tb::TBTextField *name = new tb::TBTextField();
 			name->setText(meta.name);
 			tb::TBInlineSelectDouble *value = new tb::TBInlineSelectDouble();
-			const float *saVal = (const float*)(((const uint8_t*)&skeletonAttributes) + meta.offset);
+			const float *saVal = (const float*)(((const uint8_t*)skeletonAttributes) + meta.offset);
 			value->setValueDouble(*saVal);
 			value->setID(TBIDC(meta.name));
 			value->setLimits(-100.0, 100.0);
@@ -562,12 +562,12 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		}
 	}
 
-	auto& skeletonAttributes = sceneMgr().skeletonAttributes();
+	void* skeletonAttributes = sceneMgr().skeletonAttributesPtr();
 	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
 		if (id == TBIDC(meta.name)) {
 			const float val = (float)ev.target->getValueDouble();
-			float *saVal = (float*)(((uint8_t*)&skeletonAttributes) + meta.offset);
+			float *saVal = (float*)(((uint8_t*)skeletonAttributes) + meta.offset);
 			*saVal = val;
 			break;
 		}
@@ -841,11 +841,12 @@ bool VoxEditWindow::loadAnimationEntity(const std::string& file) {
 			toggleAnimation->invokeEvent(target_ev);
 		}
 	}
-	const auto& skeletonAttributes = sceneMgr().skeletonAttributes();
+	const void* skeletonAttributes = sceneMgr().skeletonAttributesPtr();
+	// TODO: the meta array differs from entity type to entity type
 	for (const animation::SkeletonAttributeMeta* metaIter = animation::ChrSkeletonAttributeMetaArray; metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
 		if (tb::TBInlineSelectDouble *value = getWidgetByIDAndType<tb::TBInlineSelectDouble>(TBIDC(meta.name))) {
-			const float *saVal = (const float*)(((const uint8_t*)&skeletonAttributes) + meta.offset);
+			const float *saVal = (const float*)(((const uint8_t*)skeletonAttributes) + meta.offset);
 			value->setValueDouble(*saVal);
 		}
 	}
