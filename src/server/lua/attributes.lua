@@ -17,6 +17,9 @@ function init()
 
   local player = attrib.createContainer("PLAYER")
   player:absolute("SPEED", 20.0)
+  player:absolute("HEALTH", 100.0)
+  player:absolute("ATTACKRANGE", 1.0)
+  player:absolute("STRENGTH", 1.0)
   player:absolute("VIEWDISTANCE", 500.0)
   player:register()
 end
