@@ -20,6 +20,9 @@ UserAttribMgr::UserAttribMgr(EntityId userId,
 }
 
 void UserAttribMgr::onAttribChange(const attrib::DirtyValue& v) {
+	if (!v.current) {
+		return;
+	}
 	_dirtyAttributeTypes.insert(v);
 }
 
