@@ -18,7 +18,7 @@ static constexpr float defaultScale = 1.0f / 11.0f;
  * @ingroup Animation
  */
 struct Bone {
-	glm::vec3 scale { _private::defaultScale };
+	glm::vec3 scale { 1.0f };
 	glm::vec3 translation { 0.0f };
 	glm::quat orientation = glm::quat_identity<float, glm::defaultp>();
 
