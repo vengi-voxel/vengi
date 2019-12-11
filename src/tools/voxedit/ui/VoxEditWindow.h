@@ -102,6 +102,8 @@ private:
 
 	void afterLoad(const std::string& file);
 
+	const animation::SkeletonAttributeMeta* getSkeletonAttributeMeta() const;
+
 	// commands
 	void toggleViewport();
 	void toggleAnimation();
