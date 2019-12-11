@@ -24,7 +24,7 @@ public:
 	bool initSettings(const std::string& luaString) override;
 	void update(uint64_t dt, const attrib::ShadowAttributes& attrib) override;
 	const Skeleton& skeleton() const override;
-	BirdSkeletonAttribute& skeletonAttributes();
+	BirdSkeletonAttribute& skeletonAttributes() override;
 	const BirdSkeletonAttribute& skeletonAttributes() const;
 };
 
