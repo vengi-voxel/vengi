@@ -67,7 +67,7 @@ bool Model::fillModelValues(State& state) {
 			setValue(f, state.isBool(value));
 			break;
 		case FieldType::INT:
-			setValue(f, core::string::toInt(value));
+			setValue(f, (int32_t)core::string::toInt(value));
 			break;
 		case FieldType::SHORT:
 			setValue(f, (int16_t)core::string::toInt(value));
