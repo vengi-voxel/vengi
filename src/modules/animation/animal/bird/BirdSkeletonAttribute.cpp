@@ -15,6 +15,7 @@ namespace animation {
 
 static const SkeletonAttributeMeta BirdSkeletonAttributeMetaArray[] = {
 	SKELETONATTRIBUTEBIRD(scaler),
+	SKELETONATTRIBUTEBIRD(headScale),
 	SKELETONATTRIBUTEBIRD(origin),
 	SKELETONATTRIBUTEBIRD(invisibleLegHeight),
 	SKELETONATTRIBUTEBIRD(headHeight),
@@ -22,6 +23,7 @@ static const SkeletonAttributeMeta BirdSkeletonAttributeMetaArray[] = {
 	SKELETONATTRIBUTEBIRD(footRight),
 	SKELETONATTRIBUTEBIRD(wingHeight),
 	SKELETONATTRIBUTEBIRD(wingRight),
+	SKELETONATTRIBUTEBIRD(bodyHeight),
 	SKELETONATTRIBUTE_END
 };
 

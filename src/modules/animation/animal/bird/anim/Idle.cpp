@@ -18,11 +18,13 @@ void update(float animTime, BirdSkeleton &skeleton, const BirdSkeletonAttribute 
 	const float cosine = glm::cos(animTime);
 
 	Bone &head = skeleton.bone(BoneId::Head);
+	head.scale = glm::vec3(skeletonAttr.headScale);
 	head.translation = glm::vec3(skeletonAttr.headY);
 	head.orientation = rotateYZ(sine * 0.1f, cosine * 0.05f);
 
 	Bone &torso = skeleton.bone(BoneId::Torso);
-	torso.translation = glm::zero<glm::vec3>();
+	torso.scale = glm::vec3(_private::defaultScale * skeletonAttr.scaler);
+	torso.translation = glm::vec3(skeletonAttr.bodyY);
 	torso.orientation = glm::quat_identity<float, glm::defaultp>();
 
 	skeleton.bone(BoneId::RightWing) = translate(skeletonAttr.wingRight, skeletonAttr.wingHeight, 0.0f);

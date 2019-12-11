@@ -10,7 +10,8 @@ function defaultSkeletonAttributes()
     wingRight = -3.2,
     wingHeight = 3.0,
     invisibleLegHeight = 0.5,
-    headHeight = 9.0
+    headHeight = 9.0,
+    bodyHeight = 3.0
   }
   return attributes
 end

@@ -19,6 +19,7 @@ struct BirdSkeletonAttribute : public SkeletonAttribute {
 	BirdSkeletonAttribute();
 
 	float scaler = 0.5f;
+	float headScale = 1.0f;
 	float origin = 0.0f;
 	float footHeight = 3.0f;
 	float footRight = -3.2f;
@@ -26,9 +27,11 @@ struct BirdSkeletonAttribute : public SkeletonAttribute {
 	float wingRight = -4.2f;
 	float invisibleLegHeight = 0.5f;
 	float headHeight = 9.0f;
+	float bodyHeight = 3.0f;
 
 	// not exposed but calculated
 	float footY = 0.0f;
+	float bodyY = 0.0f;
 	float headY = 0.0f;
 
 	/**
@@ -37,6 +40,8 @@ struct BirdSkeletonAttribute : public SkeletonAttribute {
 	 */
 	bool init() {
 		footY = origin;
+		bodyY = footY + footHeight;
+		headY = bodyY + bodyHeight;
 		// TODO: perform sanity checks
 		return true;
 	}
