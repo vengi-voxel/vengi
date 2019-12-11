@@ -1239,7 +1239,7 @@ bool SceneManager::init() {
 	}
 
 	if (!_gizmo.init()) {
-		Log::error("Failed to initialize the axis renderer");
+		Log::error("Failed to initialize the gizmo");
 		return false;
 	}
 	if (!_mementoHandler.init()) {
