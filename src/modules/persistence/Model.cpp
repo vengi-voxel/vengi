@@ -79,7 +79,7 @@ bool Model::fillModelValues(State& state) {
 			setValue(f, core::string::toLong(value));
 			break;
 		case FieldType::DOUBLE:
-			setValue(f, core::string::toFloat(value));
+			setValue(f, core::string::toDouble(value));
 			break;
 		case FieldType::TIMESTAMP: {
 			setValue(f, Timestamp(core::string::toLong(value)));
