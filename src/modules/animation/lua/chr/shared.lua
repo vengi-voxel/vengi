@@ -3,6 +3,7 @@ function setBasePath(race, gender)
 end
 
 function setupMeshTypes()
+  settings.setType("character")
   settings.setMeshTypes("head", "chest", "belt", "pants", "hand", "foot", "shoulder", "glider")
 end
 

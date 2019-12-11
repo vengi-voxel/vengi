@@ -9,7 +9,9 @@
 #include "core/command/Command.h"
 #include "core/Array.h"
 #include "Shared_generated.h"
+#include "animation/Animation.h"
 #include "animation/chr/Character.h"
+#include "stock/ContainerData.h"
 #include <array>
 
 static bool reloadAnimationEntity = false;
@@ -71,10 +73,10 @@ core::AppState TestAnimation::onConstruct() {
 		int current = (int)_entityType;
 		current += offset;
 		while (current < 0) {
-			current += std::enum_value(EntityType::Max);
+			current += std::enum_value(animation::AnimationSettings::Type::Max);
 		}
-		current %= (int)EntityType::Max;
-		_entityType = (EntityType)current;
+		current %= (int)animation::AnimationSettings::Type::Max;
+		_entityType = (animation::AnimationSettings::Type)current;
 		loadAnimationEntity();
 	});
 
@@ -215,7 +217,7 @@ void TestAnimation::doRender() {
 		loadAnimationEntity();
 		reloadAnimationEntity = false;
 	}
-	if (_entityType == EntityType::Character) {
+	if (_entityType == animation::AnimationSettings::Type::Character) {
 		((animation::Character*)animationEntity())->updateTool(_animationCache, _stock);
 	}
 	animationEntity()->update(_deltaFrameMillis, _attrib);
@@ -223,13 +225,13 @@ void TestAnimation::doRender() {
 }
 
 void TestAnimation::onRenderUI() {
-	if (ImGui::Combo("EntityType", (int*)&_entityType, EntityTypeStrings, lengthof(EntityTypeStrings))) {
+	if (ImGui::Combo("EntityType", (int*)&_entityType, animation::AnimationSettings::TypeStrings, lengthof(animation::AnimationSettings::TypeStrings))) {
 		loadAnimationEntity();
 	}
 	if (ImGui::ComboStl("Animation", &_animationIdx, _animations)) {
 		animationEntity()->setAnimation((animation::Animation)_animationIdx);
 	}
-	if (_entityType == EntityType::Character) {
+	if (_entityType == animation::AnimationSettings::Type::Character) {
 		if (ImGui::ComboStl("Item/Tool", &_itemIdx, _items)) {
 			addItem(_itemIdx);
 		}

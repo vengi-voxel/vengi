@@ -21,15 +21,7 @@ class TestAnimation: public TestApp {
 private:
 	using Super = TestApp;
 
-	enum class EntityType : int {
-		Character, Max
-	};
-	static constexpr const char *EntityTypeStrings[] = {
-		"character"
-	};
-	static_assert((int)EntityType::Max == lengthof(EntityTypeStrings));
-
-	EntityType _entityType = EntityType::Character;
+	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Character;
 	animation::AnimationCachePtr _animationCache;
 	animation::AnimationRenderer _renderer;
 	stock::StockDataProviderPtr _stockDataProvider;

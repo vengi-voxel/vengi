@@ -63,6 +63,19 @@ static int luaanim_settingssetpath(lua_State * l) {
 	return 0;
 }
 
+static int luaanim_settingssettype(lua_State * l) {
+	AnimationSettings *settings = luaanim_getsettings(l);
+	const char *type = luaL_checkstring(l, 1);
+	const int n = lengthof(AnimationSettings::TypeStrings);
+	for (int i = 0; i < n; ++i) {
+		if (!strcmp(type, AnimationSettings::TypeStrings[i])) {
+			settings->setType((AnimationSettings::Type)i);
+			return 0;
+		}
+	}
+	return luaL_error(l, "Could not find entity type for %s", type);
+}
+
 static int luaanim_boneidstostring(lua_State* s) {
 	BoneIds** a = clua_get<BoneIds*>(s, 1);
 	BoneIds& boneIds = **a;
@@ -138,6 +151,7 @@ static int luaanim_boneregister(lua_State* l) {
 static constexpr luaL_Reg settingsFuncs[] = {
 	{ "setBasePath", luaanim_settingssetbasepath },
 	{ "setPath", luaanim_settingssetpath },
+	{ "setType", luaanim_settingssettype },
 	{ "setMeshTypes", luaanim_settingssetmeshtypes },
 	{ "getMeshTypes", luaanim_settingsgetmeshtypes },
 	{ nullptr, nullptr }

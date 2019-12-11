@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/Array.h"
 #include "Animation.h"
 #include "BoneId.h"
 #include <array>
@@ -22,11 +23,22 @@ extern std::string luaFilename(const char *character);
  * @ingroup Animation
  */
 class AnimationSettings {
+public:
+	enum class Type {
+		Character, Max
+	};
+	static constexpr const char *TypeStrings[] = {
+		"character"
+	};
+	static_assert((int)Type::Max == lengthof(TypeStrings));
+
 private:
 	std::vector<std::string> _meshTypes;
 	int8_t _boneIndices[std::enum_value(BoneId::Max)];
 	// current position in the bone index mapping array
 	uint8_t _currentBoneIdx = 0u;
+
+	Type _type = Type::Max;
 
 public:
 	static constexpr const size_t MAX_ENTRIES {64};
@@ -76,12 +88,23 @@ public:
 	std::string path(int meshTypeIdx, const char *name = nullptr) const;
 	bool setPath(int meshTypeIdx, const char *str);
 
+	Type type() const;
+	void setType(Type type);
+
 	const BoneIds& boneIds(int meshTypeIdx) const;
 	BoneIds& boneIds(int meshTypeIdx);
 };
 
 inline const std::vector<std::string>& AnimationSettings::types() const {
 	return _meshTypes;
+}
+
+inline void AnimationSettings::setType(Type type) {
+	_type = type;
+}
+
+inline AnimationSettings::Type AnimationSettings::type() const {
+	return _type;
 }
 
 /**
