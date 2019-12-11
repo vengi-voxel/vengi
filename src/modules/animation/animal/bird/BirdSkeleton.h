@@ -19,6 +19,10 @@ namespace animation {
 class BirdSkeleton : public Skeleton {
 public:
 	void update(const AnimationSettings& settings, glm::mat4 (&bones)[shader::SkeletonShader::getMaxBones()]) const override;
+
+	Bone& footBone(BoneId id, const BirdSkeletonAttribute& skeletonAttr);
+	Bone& bodyBone(const BirdSkeletonAttribute& skeletonAttr);
+	Bone& headBone(const BirdSkeletonAttribute& skeletonAttr);
 };
 
 }

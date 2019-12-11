@@ -25,11 +25,13 @@ struct BirdSkeletonAttribute : public SkeletonAttribute {
 	float footHeight = 3.0f;
 	float footRight = -3.2f;
 	float wingHeight = 8.0f;
-	float wingRight = -4.2f;
+	float wingRight = -5.0f;
 	float wingOffset = 2.0f;
 	float invisibleLegHeight = 0.5f;
 	float headHeight = 9.0f;
 	float bodyHeight = 3.0f;
+
+	float runTimeFactor = 12.0f;
 
 	// not exposed but calculated
 	float footY = 0.0f;
@@ -45,7 +47,7 @@ struct BirdSkeletonAttribute : public SkeletonAttribute {
 		footY = origin;
 		bodyY = footY + footHeight;
 		headY = bodyY + bodyHeight;
-		wingY = bodyY + wingOffset;
+		wingY = wingOffset;
 		// TODO: perform sanity checks
 		return true;
 	}

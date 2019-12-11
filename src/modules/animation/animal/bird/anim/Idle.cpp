@@ -17,15 +17,11 @@ void update(float animTime, BirdSkeleton &skeleton, const BirdSkeletonAttribute 
 	const float sine = glm::sin(animTime);
 	const float cosine = glm::cos(animTime);
 
-	Bone &head = skeleton.bone(BoneId::Head);
-	head.scale = glm::vec3(skeletonAttr.headScale);
+	Bone &head = skeleton.headBone(skeletonAttr);
 	head.translation = glm::vec3(0.0f, skeletonAttr.headY, 0.0f);
 	head.orientation = rotateYZ(sine * 0.1f, cosine * 0.05f);
 
-	skeleton.torsoBone(skeletonAttr.scaler);
-
-	Bone &body = skeleton.bone(BoneId::Body);
-	body.scale = glm::vec3(skeletonAttr.bodyScale);
+	Bone &body = skeleton.bodyBone(skeletonAttr);
 	body.translation = glm::vec3(0.0f, skeletonAttr.bodyY, 0.0f);
 	body.orientation = glm::quat_identity<float, glm::defaultp>();
 
@@ -34,6 +30,8 @@ void update(float animTime, BirdSkeleton &skeleton, const BirdSkeletonAttribute 
 
 	skeleton.bone(BoneId::RightFoot) = translate(skeletonAttr.footRight, skeletonAttr.footY, 0.0f);
 	skeleton.bone(BoneId::LeftFoot) = mirrorX(skeleton.bone(BoneId::RightFoot));
+
+	skeleton.torsoBone(skeletonAttr.scaler);
 }
 }
 }

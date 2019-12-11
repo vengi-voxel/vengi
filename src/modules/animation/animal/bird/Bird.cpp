@@ -8,6 +8,7 @@
 #include "core/Common.h"
 #include "core/GLM.h"
 #include "anim/Idle.h"
+#include "anim/Run.h"
 
 namespace animation {
 
@@ -34,14 +35,18 @@ bool Bird::initMesh(const AnimationCachePtr& cache) {
 	return true;
 }
 
-void Bird::update(uint64_t dt, const attrib::ShadowAttributes&) {
+void Bird::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
 	const float animTimeSeconds = float(dt) / 1000.0f;
 
 	const BirdSkeleton old = _skeleton;
+	const float velocity = (float)attrib.current(attrib::Type::SPEED);
 
 	switch (_anim) {
 	case Animation::Idle:
 		animal::bird::idle::update(_globalTimeSeconds, _skeleton, _attributes);
+		break;
+	case Animation::Run:
+		animal::bird::run::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
 		break;
 	default:
 		break;

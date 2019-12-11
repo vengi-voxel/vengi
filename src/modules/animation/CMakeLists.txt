@@ -10,6 +10,7 @@ set(SRCS
 	chr/CharacterSkeletonAttribute.cpp chr/CharacterSkeletonAttribute.h
 
 	animal/bird/anim/Idle.cpp animal/bird/anim/Idle.h
+	animal/bird/anim/Run.cpp animal/bird/anim/Run.h
 	animal/bird/Bird.cpp animal/bird/Bird.h
 	animal/bird/BirdSkeleton.cpp animal/bird/BirdSkeleton.h
 	animal/bird/BirdSkeletonAttribute.cpp animal/bird/BirdSkeletonAttribute.h

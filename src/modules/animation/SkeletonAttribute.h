@@ -28,7 +28,17 @@ enum class SkeletonAttributeType : int32_t {
 	Character, Bird, Max
 };
 
+/**
+ * @brief Structure that holds all the relevant skeleton attributes and makes them available to the lua scripts
+ *
+ * @sa SkeletonAttributeMeta
+ * @sa SKELETONATTRIBUTE
+ */
 struct SkeletonAttribute {
+	/**
+	 * @param[in] type The type of the skeleton
+	 * @param[in] metaArray Null terminated (@sa SKELETONATTRIBUTE_END) array of SkeletonAttributeMeta entries
+	 */
 	SkeletonAttribute(SkeletonAttributeType _type, const SkeletonAttributeMeta *metaArray) :
 			type(_type), _metaArray(metaArray) {
 	}
