@@ -11,7 +11,7 @@ namespace animation {
 static const char *boneId_strings[] = { "head", "chest", "belt", "pants",
 		"lefthand", "righthand", "leftfoot", "rightfoot", "tool",
 		"leftshoulder", "rightshoulder", "glider", "torso",
-		"leftwing", "rightwing", "tail" };
+		"leftwing", "rightwing", "tail", "body" };
 static_assert(lengthof(boneId_strings) == std::enum_value(BoneId::Max), "Invalid bone array dimensions");
 
 BoneId toBoneId(const char *name) {

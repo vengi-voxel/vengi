@@ -30,7 +30,7 @@ class AnimationSettings;
  */
 class Skeleton {
 private:
-	Bone _bones[shader::SkeletonShader::getMaxBones()];
+	Bone _bones[std::enum_value(BoneId::Max)];
 public:
 	virtual ~Skeleton() {}
 	const Bone& bone(BoneId id) const;

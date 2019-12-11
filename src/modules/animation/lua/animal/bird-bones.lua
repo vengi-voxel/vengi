@@ -2,8 +2,8 @@ function setupBones()
   local head = bone.setup("head")
   head:add("head")
 
-  local torso = bone.setup("body")
-  torso:add("torso")
+  local body = bone.setup("body")
+  body:add("body")
 
   local hand = bone.setup("wing")
   hand:add("rightwing")

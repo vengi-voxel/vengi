@@ -30,6 +30,7 @@ enum class BoneId : uint8_t {
 	LeftWing,
 	RightWing,
 	Tail,
+	Body,
 	Max
 };
 
