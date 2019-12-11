@@ -1430,6 +1430,10 @@ void SceneManager::shutdown() {
 	_character.shutdown();
 }
 
+animation::AnimationEntity& SceneManager::animationEntity() {
+	return _character;
+}
+
 bool SceneManager::saveAnimationEntity(const char *name) {
 	_dirty = false;
 	// TODO: race and gender
@@ -1474,8 +1478,19 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 
 bool SceneManager::loadAnimationEntity(const std::string& luaFile) {
 	const std::string& lua = io::filesystem()->load(luaFile);
+	animation::AnimationSettings settings;
+	if (!animation::loadAnimationSettings(lua, settings, nullptr)) {
+		Log::warn("Failed to initialize the animation settings for %s", luaFile.c_str());
+		return false;
+	}
+	_entityType = settings.type();
+	if (_entityType == animation::AnimationSettings::Type::Max) {
+		Log::warn("Failed to detect the entity type for %s", luaFile.c_str());
+		return false;
+	}
+
 	if (!animationEntity().initSettings(lua)) {
-		Log::warn("Failed to initialize the character settings");
+		Log::warn("Failed to initialize the animation settings and attributes for %s", luaFile.c_str());
 	}
 
 	voxel::VoxelVolumes volumes;

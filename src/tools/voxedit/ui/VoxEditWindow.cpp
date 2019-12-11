@@ -820,7 +820,6 @@ bool VoxEditWindow::loadAnimationEntity(const std::string& file) {
 			toggleAnimation->invokeEvent(target_ev);
 		}
 	}
-	const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
 	if (tb::TBLayout* layout = getWidgetByType<tb::TBLayout>("animationsettings")) {
 		layout->deleteAllChildren();
 		const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();

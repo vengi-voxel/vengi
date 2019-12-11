@@ -69,6 +69,7 @@ private:
 	render::Gizmo _gizmo;
 	EditMode _editMode = EditMode::Volume;
 
+	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Max;
 	animation::Character _character;
 	animation::AnimationRenderer _animationRenderer;
 	animation::AnimationCachePtr _animationCache;
@@ -390,10 +391,6 @@ inline render::GridRenderer& SceneManager::gridRenderer() {
 
 inline animation::SkeletonAttribute* SceneManager::skeletonAttributes() {
 	return &animationEntity().skeletonAttributes();
-}
-
-inline animation::AnimationEntity& SceneManager::animationEntity() {
-	return _character;
 }
 
 inline bool SceneManager::dirty() const {
