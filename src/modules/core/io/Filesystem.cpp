@@ -379,6 +379,7 @@ bool Filesystem::pushDir(const std::string& directory) {
 
 io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
 	if (mode == FileMode::Write && !isRelativePath(filename)) {
+		Log::debug("Use absolute path to write file %s", filename.c_str());
 		return std::make_shared<make_shared_enabler>(filename, mode);
 	}
 	io::File f(filename, FileMode::Read);
@@ -396,6 +397,7 @@ io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
 			return std::make_shared<make_shared_enabler>(fullpath, mode);
 		}
 	}
+	Log::debug("Use %s from %s", filename.c_str(), _basePath.c_str());
 	return std::make_shared<make_shared_enabler>(_basePath + filename, mode);
 }
 
