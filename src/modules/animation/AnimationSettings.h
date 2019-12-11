@@ -25,10 +25,10 @@ extern std::string luaFilename(const char *character);
 class AnimationSettings {
 public:
 	enum class Type {
-		Character, Max
+		Bird, Character, Max
 	};
 	static constexpr const char *TypeStrings[] = {
-		"character"
+		"bird", "character"
 	};
 	static_assert((int)Type::Max == lengthof(TypeStrings));
 

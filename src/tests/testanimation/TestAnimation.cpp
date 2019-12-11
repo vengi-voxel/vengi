@@ -11,12 +11,14 @@
 #include "Shared_generated.h"
 #include "animation/Animation.h"
 #include "animation/chr/Character.h"
+#include "animation/animal/bird/Bird.h"
 #include "stock/ContainerData.h"
 #include <array>
 
 static bool reloadAnimationEntity = false;
 
 static std::vector<std::string> validCharacters;
+static std::vector<std::string> validBirds { "animal/animal-chicken" };
 
 TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem,
@@ -40,10 +42,17 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 }
 
 const std::vector<std::string>& TestAnimation::animationEntityTypes() const {
+	if (_entityType == (int)animation::AnimationSettings::Type::Bird) {
+		return validBirds;
+	}
 	return validCharacters;
 }
 
 animation::AnimationEntity* TestAnimation::animationEntity() {
+	if (_entityType == (int)animation::AnimationSettings::Type::Bird) {
+		static animation::Bird _bird;
+		return &_bird;
+	}
 	static animation::Character _character;
 	return &_character;
 }

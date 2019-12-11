@@ -1,0 +1,24 @@
+/**
+ * @file
+ */
+
+#pragma once
+
+#include "animation/Bone.h"
+#include "animation/BoneId.h"
+#include "animation/Skeleton.h"
+#include "BirdSkeletonAttribute.h"
+#include "core/GLM.h"
+
+namespace animation {
+
+/**
+ * @brief The bones of the @c Bird
+ * @ingroup Animation
+ */
+class BirdSkeleton : public Skeleton {
+public:
+	void update(const AnimationSettings& settings, glm::mat4 (&bones)[shader::SkeletonShader::getMaxBones()]) const override;
+};
+
+}

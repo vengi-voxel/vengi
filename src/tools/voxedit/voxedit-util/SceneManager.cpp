@@ -1428,10 +1428,14 @@ void SceneManager::shutdown() {
 	_animationRenderer.shutdown();
 	_animationCache->shutdown();
 	_character.shutdown();
+	_bird.shutdown();
 }
 
 animation::AnimationEntity& SceneManager::animationEntity() {
-	return _character;
+	if (_entityType == animation::AnimationSettings::Type::Character) {
+		return _character;
+	}
+	return _bird;
 }
 
 bool SceneManager::saveAnimationEntity(const char *name) {

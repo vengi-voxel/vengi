@@ -12,6 +12,7 @@
 #include "voxelformat/VoxFileFormat.h"
 #include "video/ShapeBuilder.h"
 #include "animation/chr/Character.h"
+#include "animation/animal/bird/Bird.h"
 #include "animation/AnimationRenderer.h"
 #include "anim/VolumeCache.h"
 #include "render/ShapeRenderer.h"
@@ -71,6 +72,8 @@ private:
 
 	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Max;
 	animation::Character _character;
+	animation::Bird _bird;
+
 	animation::AnimationRenderer _animationRenderer;
 	animation::AnimationCachePtr _animationCache;
 	// if we are in animation mode and we modified the meshes, we have to
