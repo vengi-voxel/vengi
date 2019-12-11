@@ -47,6 +47,10 @@ inline float toFloat(const std::string& str) {
 	return (float)SDL_atof(str.c_str());
 }
 
+inline double toDouble(const std::string& str) {
+	return std::stod(str, nullptr);
+}
+
 extern void splitString(const std::string& string, std::vector<std::string>& tokens, const std::string& delimiters = " \t\r\n\f\v");
 extern void splitString(const std::string& string, std::vector<std::string_view>& tokens, const std::string& delimiters = " \t\r\n\f\v");
 
