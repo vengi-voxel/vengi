@@ -11,10 +11,9 @@ namespace animation {
 
 void BirdSkeleton::update(const AnimationSettings& settings, glm::mat4 (&bones)[shader::SkeletonShader::getMaxBones()]) const {
 	const glm::mat4& torsoMat = bone(BoneId::Torso).matrix();
-	const glm::mat4& headMat  = bone(BoneId::Head).matrix();
 
-	SKELETON_BONE_UPDATE(Torso,         torsoMat);
-	SKELETON_BONE_UPDATE(Head,          torsoMat * headMat);
+	SKELETON_BONE_UPDATE(Head,          torsoMat * bone(BoneId::Head).matrix());
+	SKELETON_BONE_UPDATE(Body,          torsoMat * bone(BoneId::Body).matrix());
 
 	SKELETON_BONE_UPDATE(LeftFoot,      torsoMat * bone(BoneId::LeftFoot).matrix());
 	SKELETON_BONE_UPDATE(RightFoot,     torsoMat * bone(BoneId::RightFoot).matrix());

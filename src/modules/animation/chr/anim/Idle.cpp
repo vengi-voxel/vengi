@@ -24,7 +24,7 @@ void update(float animTime, CharacterSkeleton &skeleton, const CharacterSkeleton
 
 	skeleton.toolBone(skeletonAttr);
 
-	Bone &torso = skeleton.torsoBone(skeletonAttr);
+	Bone &torso = skeleton.torsoBone(skeletonAttr.scaler);
 	torso.translation = glm::zero<glm::vec3>();
 	torso.orientation = glm::quat_identity<float, glm::defaultp>();
 

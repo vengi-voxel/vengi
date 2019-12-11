@@ -26,7 +26,6 @@ public:
 	Bone& pantsBone(const CharacterSkeletonAttribute& skeletonAttr);
 	Bone& chestBone(const CharacterSkeletonAttribute& skeletonAttr);
 	Bone& beltBone(const CharacterSkeletonAttribute& skeletonAttr);
-	Bone& torsoBone(const CharacterSkeletonAttribute& skeletonAttr);
 	Bone& gliderBone(const CharacterSkeletonAttribute& skeletonAttr);
 	Bone& toolBone(const CharacterSkeletonAttribute& skeletonAttr, float movementY = 0.0f);
 	Bone& headBone(const CharacterSkeletonAttribute& skeletonAttr);

@@ -61,7 +61,7 @@ void update(float animTime, float velocity, CharacterSkeleton &skeleton, const C
 
 	Bone &rightshoulder = skeleton.shoulderBone(BoneId::RightShoulder, skeletonAttr, rotateX(sine * 0.15f));
 
-	Bone &torso = skeleton.torsoBone(skeletonAttr);
+	Bone &torso = skeleton.torsoBone(skeletonAttr.scaler);
 	torso.translation = glm::vec3(0.0f, 0.0f, sine * 0.04f);
 	torso.orientation = rotateX(cosine * 0.1f);
 

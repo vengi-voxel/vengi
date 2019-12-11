@@ -35,6 +35,7 @@ public:
 	virtual ~Skeleton() {}
 	const Bone& bone(BoneId id) const;
 	Bone& bone(BoneId id);
+	Bone& torsoBone(float scale = 1.0f);
 
 	/**
 	 * @brief Calculate the skeleton bones matrices which indices are assigned to the

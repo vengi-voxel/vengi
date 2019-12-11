@@ -9,7 +9,7 @@
 namespace animation {
 
 namespace _private {
-static constexpr float defaultScale = 1.0f / 11.0f;
+static constexpr float torsoScale = 1.0f / 15.0f;
 }
 
 /**

@@ -17,6 +17,7 @@ static const SkeletonAttributeMeta BirdSkeletonAttributeMetaArray[] = {
 	SKELETONATTRIBUTEBIRD(scaler),
 	SKELETONATTRIBUTEBIRD(headScale),
 	SKELETONATTRIBUTEBIRD(origin),
+	SKELETONATTRIBUTEBIRD(wingOffset),
 	SKELETONATTRIBUTEBIRD(invisibleLegHeight),
 	SKELETONATTRIBUTEBIRD(headHeight),
 	SKELETONATTRIBUTEBIRD(footHeight),
@@ -24,6 +25,7 @@ static const SkeletonAttributeMeta BirdSkeletonAttributeMetaArray[] = {
 	SKELETONATTRIBUTEBIRD(wingHeight),
 	SKELETONATTRIBUTEBIRD(wingRight),
 	SKELETONATTRIBUTEBIRD(bodyHeight),
+	SKELETONATTRIBUTEBIRD(bodyScale),
 	SKELETONATTRIBUTE_END
 };
 

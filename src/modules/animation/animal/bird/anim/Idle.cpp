@@ -19,18 +19,20 @@ void update(float animTime, BirdSkeleton &skeleton, const BirdSkeletonAttribute 
 
 	Bone &head = skeleton.bone(BoneId::Head);
 	head.scale = glm::vec3(skeletonAttr.headScale);
-	head.translation = glm::vec3(skeletonAttr.headY);
+	head.translation = glm::vec3(0.0f, skeletonAttr.headY, 0.0f);
 	head.orientation = rotateYZ(sine * 0.1f, cosine * 0.05f);
 
-	Bone &torso = skeleton.bone(BoneId::Torso);
-	torso.scale = glm::vec3(_private::defaultScale * skeletonAttr.scaler);
-	torso.translation = glm::vec3(skeletonAttr.bodyY);
-	torso.orientation = glm::quat_identity<float, glm::defaultp>();
+	skeleton.torsoBone(skeletonAttr.scaler);
 
-	skeleton.bone(BoneId::RightWing) = translate(skeletonAttr.wingRight, skeletonAttr.wingHeight, 0.0f);
+	Bone &body = skeleton.bone(BoneId::Body);
+	body.scale = glm::vec3(skeletonAttr.bodyScale);
+	body.translation = glm::vec3(0.0f, skeletonAttr.bodyY, 0.0f);
+	body.orientation = glm::quat_identity<float, glm::defaultp>();
+
+	skeleton.bone(BoneId::RightWing) = translate(skeletonAttr.wingRight, skeletonAttr.wingY, 0.0f);
 	skeleton.bone(BoneId::LeftWing) = mirrorX(skeleton.bone(BoneId::RightWing));
 
-	skeleton.bone(BoneId::RightFoot) = translate(skeletonAttr.footRight, skeletonAttr.footHeight, 0.0f);
+	skeleton.bone(BoneId::RightFoot) = translate(skeletonAttr.footRight, skeletonAttr.footY, 0.0f);
 	skeleton.bone(BoneId::LeftFoot) = mirrorX(skeleton.bone(BoneId::RightFoot));
 }
 }

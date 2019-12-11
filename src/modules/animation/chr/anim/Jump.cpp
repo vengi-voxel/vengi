@@ -48,7 +48,7 @@ void update(float animTime, CharacterSkeleton &skeleton, const CharacterSkeleton
 	leftshoulder = mirrorX(rightshoulder);
 	leftshoulder.orientation = rotateX(sineStopAlt * 0.3f);
 
-	Bone &torso = skeleton.torsoBone(skeletonAttr);
+	Bone &torso = skeleton.torsoBone(skeletonAttr.scaler);
 	torso.translation = glm::vec3(0.0f, 0.0f, -0.2f);
 	torso.orientation = glm::angleAxis(-0.2f, glm::right);
 

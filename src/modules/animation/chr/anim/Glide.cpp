@@ -46,7 +46,7 @@ void update(float animTime, CharacterSkeleton &skeleton, const CharacterSkeleton
 	glider.translation = glm::vec3(0.0f, skeletonAttr.gliderY + 3.0f, sine);
 	glider.orientation = glm::quat_identity<float, glm::defaultp>();
 
-	Bone &torso = skeleton.torsoBone(skeletonAttr);
+	Bone &torso = skeleton.torsoBone(skeletonAttr.scaler);
 	torso.translation = glm::zero<glm::vec3>();
 	torso.orientation = rotateXZ(sine * 0.5f, sine);
 

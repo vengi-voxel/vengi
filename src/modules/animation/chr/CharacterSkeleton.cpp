@@ -47,12 +47,6 @@ Bone& CharacterSkeleton::beltBone(const CharacterSkeletonAttribute& skeletonAttr
 	return belt;
 }
 
-Bone& CharacterSkeleton::torsoBone(const CharacterSkeletonAttribute& skeletonAttr) {
-	Bone& torso = bone(BoneId::Torso);
-	torso.scale = glm::vec3(_private::defaultScale * skeletonAttr.scaler);
-	return torso;
-}
-
 Bone& CharacterSkeleton::gliderBone(const CharacterSkeletonAttribute& skeletonAttr) {
 	Bone& torso = bone(BoneId::Glider);
 	torso.scale = glm::one<glm::vec3>();

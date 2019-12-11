@@ -20,11 +20,13 @@ struct BirdSkeletonAttribute : public SkeletonAttribute {
 
 	float scaler = 0.5f;
 	float headScale = 1.0f;
+	float bodyScale = 1.0f;
 	float origin = 0.0f;
 	float footHeight = 3.0f;
 	float footRight = -3.2f;
 	float wingHeight = 8.0f;
 	float wingRight = -4.2f;
+	float wingOffset = 2.0f;
 	float invisibleLegHeight = 0.5f;
 	float headHeight = 9.0f;
 	float bodyHeight = 3.0f;
@@ -33,6 +35,7 @@ struct BirdSkeletonAttribute : public SkeletonAttribute {
 	float footY = 0.0f;
 	float bodyY = 0.0f;
 	float headY = 0.0f;
+	float wingY = 0.0f;
 
 	/**
 	 * @brief Updates some absolute values that depend on other scriptable values
@@ -42,6 +45,7 @@ struct BirdSkeletonAttribute : public SkeletonAttribute {
 		footY = origin;
 		bodyY = footY + footHeight;
 		headY = bodyY + bodyHeight;
+		wingY = bodyY + wingOffset;
 		// TODO: perform sanity checks
 		return true;
 	}
