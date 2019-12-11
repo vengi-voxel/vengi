@@ -389,7 +389,7 @@ inline render::GridRenderer& SceneManager::gridRenderer() {
 }
 
 inline animation::SkeletonAttribute* SceneManager::skeletonAttributes() {
-	return &_character.skeletonAttributes();
+	return &animationEntity().skeletonAttributes();
 }
 
 inline animation::AnimationEntity& SceneManager::animationEntity() {

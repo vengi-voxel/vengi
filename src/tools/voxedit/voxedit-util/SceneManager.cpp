@@ -715,7 +715,7 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 				continue;
 			}
 			const int characterMeshTypeId = core::string::toInt(value);
-			const animation::AnimationSettings& animSettings = _character.animationSettings();
+			const animation::AnimationSettings& animSettings = animationEntity().animationSettings();
 			const std::string& path = animSettings.paths[characterMeshTypeId];
 			if (path.empty()) {
 				Log::debug("No path found for layer %i", (int)i);
@@ -727,14 +727,14 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 			_animationCache->putMesh(fullPath.c_str(), mesh);
 			Log::debug("Updated mesh on layer %i for path %s", (int)i, fullPath.c_str());
 		}
-		if (!_character.initMesh(_animationCache)) {
+		if (!animationEntity().initMesh(_animationCache)) {
 			Log::warn("Failed to update the mesh");
 		}
 		_animationUpdate = false;
 		_animationLayerDirtyState = -1;
 	}
-	_character.update(deltaFrame, attrib);
-	_animationRenderer.render(_character, camera);
+	animationEntity().update(deltaFrame, attrib);
+	_animationRenderer.render(animationEntity(), camera);
 }
 
 void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
@@ -798,7 +798,7 @@ void SceneManager::construct() {
 		}
 		_animationIdx %= std::enum_value(animation::Animation::Max);
 		Log::info("current animation idx: %i", _animationIdx);
-		_character.setAnimation((animation::Animation)_animationIdx);
+		animationEntity().setAnimation((animation::Animation)_animationIdx);
 	});
 
 	core::Command::registerCommand("animation_save", [&] (const core::CmdArgs& args) {
@@ -1438,8 +1438,8 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 	const std::string luaDir(core::string::extractPath(luaFilePath));
 	io::filesystem()->createDir(luaDir);
 	const io::FilePtr& luaFile = io::filesystem()->open(luaFilePath, io::FileMode::Write);
-	const animation::AnimationSettings& animSettings = _character.animationSettings();
-	if (saveAnimationEntityLua(animSettings, _character.skeletonAttributes(), name, luaFile)) {
+	const animation::AnimationSettings& animSettings = animationEntity().animationSettings();
+	if (saveAnimationEntityLua(animSettings, animationEntity().skeletonAttributes(), name, luaFile)) {
 		Log::info("Wrote lua script: %s", luaFile->name().c_str());
 	}
 
@@ -1474,12 +1474,12 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 
 bool SceneManager::loadAnimationEntity(const std::string& luaFile) {
 	const std::string& lua = io::filesystem()->load(luaFile);
-	if (!_character.initSettings(lua)) {
+	if (!animationEntity().initSettings(lua)) {
 		Log::warn("Failed to initialize the character settings");
 	}
 
 	voxel::VoxelVolumes volumes;
-	if (!_volumeCache.getVolumes(_character.animationSettings(), volumes)) {
+	if (!_volumeCache.getVolumes(animationEntity().animationSettings(), volumes)) {
 		return false;
 	}
 

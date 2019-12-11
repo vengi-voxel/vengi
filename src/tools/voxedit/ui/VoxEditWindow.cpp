@@ -110,27 +110,6 @@ bool VoxEditWindow::init() {
 		}
 	}
 
-	if (tb::TBLayout* layout = getWidgetByType<tb::TBLayout>("animationsettings")) {
-		const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
-		for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
-			const animation::SkeletonAttributeMeta& meta = *metaIter;
-			tb::TBLayout *innerLayout = new tb::TBLayout();
-			tb::TBTextField *name = new tb::TBTextField();
-			name->setText(meta.name);
-			tb::TBInlineSelectDouble *value = new tb::TBInlineSelectDouble();
-			const float *saVal = (const float*)(((const uint8_t*)skeletonAttributes) + meta.offset);
-			value->setValueDouble(*saVal);
-			value->setID(TBIDC(meta.name));
-			value->setLimits(-100.0, 100.0);
-			innerLayout->addChild(name);
-			innerLayout->addChild(value);
-			innerLayout->setAxis(tb::AXIS_X);
-			innerLayout->setGravity(tb::WIDGET_GRAVITY_ALL);
-			innerLayout->setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_AVAILABLE);
-			layout->addChild(innerLayout);
-		}
-	}
-
 	_fourViewAvailable = _sceneTop != nullptr && _sceneLeft != nullptr && _sceneFront != nullptr;
 	_animationViewAvailable = _animationWidget != nullptr;
 
@@ -842,11 +821,25 @@ bool VoxEditWindow::loadAnimationEntity(const std::string& file) {
 		}
 	}
 	const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
-	for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
-		const animation::SkeletonAttributeMeta& meta = *metaIter;
-		if (tb::TBInlineSelectDouble *value = getWidgetByIDAndType<tb::TBInlineSelectDouble>(TBIDC(meta.name))) {
+	if (tb::TBLayout* layout = getWidgetByType<tb::TBLayout>("animationsettings")) {
+		layout->deleteAllChildren();
+		const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
+		for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
+			const animation::SkeletonAttributeMeta& meta = *metaIter;
+			tb::TBLayout *innerLayout = new tb::TBLayout();
+			tb::TBTextField *name = new tb::TBTextField();
+			name->setText(meta.name);
+			tb::TBInlineSelectDouble *value = new tb::TBInlineSelectDouble();
 			const float *saVal = (const float*)(((const uint8_t*)skeletonAttributes) + meta.offset);
 			value->setValueDouble(*saVal);
+			value->setID(TBIDC(meta.name));
+			value->setLimits(-100.0, 100.0);
+			innerLayout->addChild(name);
+			innerLayout->addChild(value);
+			innerLayout->setAxis(tb::AXIS_X);
+			innerLayout->setGravity(tb::WIDGET_GRAVITY_ALL);
+			innerLayout->setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_AVAILABLE);
+			layout->addChild(innerLayout);
 		}
 	}
 	return true;
