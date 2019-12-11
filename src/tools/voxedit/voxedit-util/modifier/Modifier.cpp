@@ -94,6 +94,7 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	}
 
 	const voxel::Region region(operateMins, operateMaxs);
+	voxel::logRegion("Shape action execution", region);
 	const glm::ivec3& center = region.getCentre();
 	glm::ivec3 centerBottom = region.getCentre();
 	centerBottom.y = region.getLowerY();
@@ -124,17 +125,21 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	case ShapeType::Ellipse:
 		voxelgenerator::shape::createEllipse(wrapper, center, dimensions, _cursorVoxel);
 		break;
-	default:
+	case ShapeType::Max:
+		Log::warn("Invalid shape type selected - can't perform action");
 		return false;
 	}
-	if (wrapper.dirtyRegion().isValid()) {
-		callback(wrapper.dirtyRegion(), _modifierType);
+	const voxel::Region& modifiedRegion = wrapper.dirtyRegion();
+	if (modifiedRegion.isValid()) {
+		voxel::logRegion("Dirty region", modifiedRegion);
+		callback(modifiedRegion, _modifierType);
 	}
 	return true;
 }
 
 bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
 	if (!_aabbMode) {
+		Log::debug("Not in aabb mode - can't perform action");
 		return false;
 	}
 
@@ -144,10 +149,12 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const vox
 	const glm::ivec3 maxs = (glm::max)(_aabbFirstPos, pos) + (size - 1);
 
 	if ((_modifierType & ModifierType::Select) == ModifierType::Select) {
+		Log::debug("select mode");
 		return select(mins, maxs, volume, callback);
 	}
 
 	if (volume == nullptr) {
+		Log::debug("No volume given - can't perform action");
 		return true;
 	}
 
@@ -157,6 +164,7 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const vox
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
 		return executeShapeAction(wrapper, mins, maxs, callback);
 	}
+	Log::debug("Execute mirror action");
 	const math::AABB<int> first(mins, maxs);
 	const math::AABB<int> second(minsMirror, maxsMirror);
 	if (math::intersects(first, second)) {
