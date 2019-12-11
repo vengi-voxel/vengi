@@ -70,13 +70,12 @@ core::AppState TestAnimation::onConstruct() {
 		if (argv.size() > 0) {
 			offset = core::string::toInt(argv[0]);
 		}
-		int current = (int)_entityType;
+		int& current = _entityType;
 		current += offset;
 		while (current < 0) {
 			current += std::enum_value(animation::AnimationSettings::Type::Max);
 		}
 		current %= (int)animation::AnimationSettings::Type::Max;
-		_entityType = (animation::AnimationSettings::Type)current;
 		loadAnimationEntity();
 	});
 
@@ -217,7 +216,7 @@ void TestAnimation::doRender() {
 		loadAnimationEntity();
 		reloadAnimationEntity = false;
 	}
-	if (_entityType == animation::AnimationSettings::Type::Character) {
+	if (animationEntity()->animationSettings().type() == animation::AnimationSettings::Type::Character) {
 		((animation::Character*)animationEntity())->updateTool(_animationCache, _stock);
 	}
 	animationEntity()->update(_deltaFrameMillis, _attrib);
@@ -225,13 +224,13 @@ void TestAnimation::doRender() {
 }
 
 void TestAnimation::onRenderUI() {
-	if (ImGui::Combo("EntityType", (int*)&_entityType, animation::AnimationSettings::TypeStrings, lengthof(animation::AnimationSettings::TypeStrings))) {
+	if (ImGui::Combo("EntityType", &_entityType, animation::AnimationSettings::TypeStrings, lengthof(animation::AnimationSettings::TypeStrings))) {
 		loadAnimationEntity();
 	}
 	if (ImGui::ComboStl("Animation", &_animationIdx, _animations)) {
 		animationEntity()->setAnimation((animation::Animation)_animationIdx);
 	}
-	if (_entityType == animation::AnimationSettings::Type::Character) {
+	if (animationEntity()->animationSettings().type() == animation::AnimationSettings::Type::Character) {
 		if (ImGui::ComboStl("Item/Tool", &_itemIdx, _items)) {
 			addItem(_itemIdx);
 		}

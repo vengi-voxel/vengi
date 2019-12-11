@@ -1485,7 +1485,7 @@ bool SceneManager::loadAnimationEntity(const std::string& luaFile) {
 
 	// create a new scene and in case of successfully loading all the anim related
 	// stuff, we will then delete the first layer again.
-	newScene(true, "character", voxel::Region());
+	newScene(true, "entity", voxel::Region());
 	int layersAdded = 0;
 	for (size_t i = 0u; i < volumes.size(); ++i) {
 		const auto& v = volumes[i];

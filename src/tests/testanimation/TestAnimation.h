@@ -21,7 +21,7 @@ class TestAnimation: public TestApp {
 private:
 	using Super = TestApp;
 
-	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Character;
+	int _entityType = 0;
 	animation::AnimationCachePtr _animationCache;
 	animation::AnimationRenderer _renderer;
 	stock::StockDataProviderPtr _stockDataProvider;
