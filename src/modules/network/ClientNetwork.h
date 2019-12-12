@@ -33,6 +33,8 @@ public:
 		return Super::sendMessage(_peer, packet, channel);
 	}
 
+	void destroy();
+
 	void update();
 	void shutdown() override;
 };

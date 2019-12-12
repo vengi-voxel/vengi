@@ -71,6 +71,11 @@ ENetPeer* ClientNetwork::connect(uint16_t port, const std::string& hostname, int
 	return _peer;
 }
 
+void ClientNetwork::destroy() {
+	enet_host_destroy(_client);
+	_client = nullptr;
+}
+
 void ClientNetwork::disconnect() {
 	if (_client == nullptr) {
 		return;
@@ -82,8 +87,6 @@ void ClientNetwork::disconnect() {
 		ENetPeer *peer = &_client->peers[i];
 		disconnectPeer(peer, DisconnectReason::Disconnect);
 	}
-	enet_host_destroy(_client);
-	_client = nullptr;
 }
 
 bool ClientNetwork::isConnected() const {

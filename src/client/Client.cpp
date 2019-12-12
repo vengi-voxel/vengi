@@ -72,6 +72,7 @@ void Client::sendMovement() {
 
 void Client::onEvent(const network::DisconnectEvent& event) {
 	removeState(CLIENT_CONNECTING);
+	_network->destroy();
 	ui::turbobadger::Window* main = new frontend::LoginWindow(this);
 	new frontend::DisconnectWindow(main);
 	_state = CLIENT_DISCONNECTED;
