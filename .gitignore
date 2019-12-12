@@ -1,7 +1,5 @@
 *.pyc
 /build*
-/.project
-/.cproject
 /.settings
 /typescript
 gmon.out
