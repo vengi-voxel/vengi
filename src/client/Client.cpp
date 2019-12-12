@@ -269,9 +269,7 @@ bool Client::onKeyPress(int32_t key, int16_t modifier) {
 
 	if (key == SDLK_ESCAPE) {
 		if (hasState(CLIENT_CONNECTING)) {
-			removeState(CLIENT_CONNECTING);
 			disconnect();
-			_network->disconnect();
 		}
 	}
 
@@ -327,11 +325,10 @@ void Client::authFailed() {
 }
 
 void Client::disconnect() {
-	if (!_network->isConnected()) {
-		return;
-	}
+	_player = frontend::ClientEntityPtr();
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserDisconnect, network::CreateUserDisconnect(fbb).Union());
+	_network->disconnect();
 }
 
 void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation) {
