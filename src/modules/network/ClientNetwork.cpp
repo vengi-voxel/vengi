@@ -4,6 +4,7 @@
 
 #include "ServerMessages_generated.h"
 #include "ClientNetwork.h"
+#include "core/Assert.h"
 #include "core/Trace.h"
 #include "core/Log.h"
 
@@ -66,6 +67,7 @@ ENetPeer* ClientNetwork::connect(uint16_t port, const std::string& hostname, int
 
 	enet_host_flush(_client);
 	enet_peer_timeout(_peer, ENET_PEER_TIMEOUT_LIMIT, ENET_PEER_TIMEOUT_MINIMUM, ENET_PEER_TIMEOUT_MAXIMUM);
+	core_assert(_peer->state == ENET_PEER_STATE_CONNECTING);
 	return _peer;
 }
 

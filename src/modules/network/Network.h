@@ -39,7 +39,7 @@ protected:
 	 * @c true if everything went smooth.
 	 */
 	virtual bool packetReceived(ENetEvent& event) = 0;
-	void disconnectPeer(ENetPeer *peer, DisconnectReason reason);
+	bool disconnectPeer(ENetPeer *peer, DisconnectReason reason);
 	void updateHost(ENetHost* host);
 public:
 	Network(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry, const core::EventBusPtr& eventBus);

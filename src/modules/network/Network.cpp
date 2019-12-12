@@ -34,12 +34,16 @@ bool Network::init() {
 	return true;
 }
 
-void Network::disconnectPeer(ENetPeer *peer, DisconnectReason reason) {
+bool Network::disconnectPeer(ENetPeer *peer, DisconnectReason reason) {
 	if (peer == nullptr) {
-		return;
+		return false;
 	}
 	Log::info("trying to disconnect peer: %u", peer->connectID);
 	enet_peer_disconnect(peer, std::enum_value(reason));
+	if (peer->state == ENET_PEER_STATE_DISCONNECTED) {
+		_eventBus->publish(DisconnectEvent(peer, reason));
+	}
+	return true;
 }
 
 void Network::updateHost(ENetHost* host) {
