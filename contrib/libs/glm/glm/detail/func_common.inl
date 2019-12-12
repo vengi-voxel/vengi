@@ -287,7 +287,8 @@ namespace detail
 			std::numeric_limits<genFIType>::is_iec559 || (std::numeric_limits<genFIType>::is_signed && std::numeric_limits<genFIType>::is_integer),
 			"'sign' only accept signed inputs");
 
-		return detail::compute_sign<1, genFIType, defaultp, std::numeric_limits<genFIType>::is_iec559, highp>::call(vec<1, genFIType>(x)).x;
+		return detail::compute_sign<1, genFIType, defaultp,
+                                    std::numeric_limits<genFIType>::is_iec559, detail::is_aligned<highp>::value>::call(vec<1, genFIType>(x)).x;
 	}
 
 	template<length_t L, typename T, qualifier Q>
@@ -737,11 +738,15 @@ namespace detail
 		return reinterpret_cast<vec<L, float, Q>&>(const_cast<vec<L, uint, Q>&>(v));
 	}
 
-	template<typename genType>
-	GLM_FUNC_QUALIFIER genType fma(genType const& a, genType const& b, genType const& c)
-	{
-		return a * b + c;
-	}
+#	if GLM_HAS_CXX11_STL
+		using std::fma;
+#	else
+		template<typename genType>
+		GLM_FUNC_QUALIFIER genType fma(genType const& a, genType const& b, genType const& c)
+		{
+			return a * b + c;
+		}
+#	endif
 
 	template<typename genType>
 	GLM_FUNC_QUALIFIER genType frexp(genType x, int& exp)

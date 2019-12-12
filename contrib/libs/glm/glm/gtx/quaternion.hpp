@@ -37,7 +37,7 @@ namespace glm
 	///
 	/// @see gtx_quaternion
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL qua<T, Q> quat_identity();
+	GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q> quat_identity();
 
 	/// Compute a cross product between a quaternion and a vector.
 	///
@@ -166,7 +166,7 @@ namespace glm
 	///
 	/// @see gtx_quaternion
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL T length2(qua<T, Q> const& q);
+	GLM_FUNC_DECL GLM_CONSTEXPR T length2(qua<T, Q> const& q);
 
 	/// @}
 }//namespace glm

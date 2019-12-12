@@ -583,28 +583,6 @@ namespace detail {
 	};
 
 	template<qualifier Q>
-	struct compute_vec4_div<uint, Q, true>
-	{
-		static vec<4, uint, Q> call(vec<4, uint, Q> const& a, vec<4, uint, Q> const& b)
-		{
-			vec<4, uint, Q> Result;
-			Result.data = vdivq_u32(a.data, b.data);
-			return Result;
-		}
-	};
-
-	template<qualifier Q>
-	struct compute_vec4_div<int, Q, true>
-	{
-		static vec<4, int, Q> call(vec<4, float, Q> const& a, vec<4, int, Q> const& b)
-		{
-			vec<4, int, Q> Result;
-			Result.data = vdivq_s32(a.data, b.data);
-			return Result;
-		}
-	};
-
-	template<qualifier Q>
 	struct compute_vec4_equal<float, Q, false, 32, true>
 	{
 		static bool call(vec<4, float, Q> const& v1, vec<4, float, Q> const& v2)

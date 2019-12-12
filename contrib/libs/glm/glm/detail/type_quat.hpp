@@ -102,67 +102,67 @@ namespace glm
 		GLM_FUNC_DECL qua(vec<3, T, Q> const& u, vec<3, T, Q> const& v);
 
 		/// Build a quaternion from euler angles (pitch, yaw, roll), in radians.
-		GLM_FUNC_DECL GLM_EXPLICIT qua(vec<3, T, Q> const& eulerAngles);
+		GLM_FUNC_DECL GLM_CONSTEXPR GLM_EXPLICIT qua(vec<3, T, Q> const& eulerAngles);
 		GLM_FUNC_DECL GLM_EXPLICIT qua(mat<3, 3, T, Q> const& q);
 		GLM_FUNC_DECL GLM_EXPLICIT qua(mat<4, 4, T, Q> const& q);
 
 		// -- Unary arithmetic operators --
 
-		GLM_FUNC_DECL qua<T, Q>& operator=(qua<T, Q> const& q) GLM_DEFAULT;
+		GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q>& operator=(qua<T, Q> const& q) GLM_DEFAULT;
 
 		template<typename U>
-		GLM_FUNC_DECL qua<T, Q>& operator=(qua<U, Q> const& q);
+		GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q>& operator=(qua<U, Q> const& q);
 		template<typename U>
-		GLM_FUNC_DECL qua<T, Q>& operator+=(qua<U, Q> const& q);
+		GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q>& operator+=(qua<U, Q> const& q);
 		template<typename U>
-		GLM_FUNC_DECL qua<T, Q>& operator-=(qua<U, Q> const& q);
+		GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q>& operator-=(qua<U, Q> const& q);
 		template<typename U>
-		GLM_FUNC_DECL qua<T, Q>& operator*=(qua<U, Q> const& q);
+		GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q>& operator*=(qua<U, Q> const& q);
 		template<typename U>
-		GLM_FUNC_DECL qua<T, Q>& operator*=(U s);
+		GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q>& operator*=(U s);
 		template<typename U>
-		GLM_FUNC_DECL qua<T, Q>& operator/=(U s);
+		GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q>& operator/=(U s);
 	};
 
 	// -- Unary bit operators --
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL qua<T, Q> operator+(qua<T, Q> const& q);
+	GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q> operator+(qua<T, Q> const& q);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL qua<T, Q> operator-(qua<T, Q> const& q);
+	GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q> operator-(qua<T, Q> const& q);
 
 	// -- Binary operators --
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL qua<T, Q> operator+(qua<T, Q> const& q, qua<T, Q> const& p);
+	GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q> operator+(qua<T, Q> const& q, qua<T, Q> const& p);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL qua<T, Q> operator-(qua<T, Q> const& q, qua<T, Q> const& p);
+	GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q> operator-(qua<T, Q> const& q, qua<T, Q> const& p);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL qua<T, Q> operator*(qua<T, Q> const& q, qua<T, Q> const& p);
+	GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q> operator*(qua<T, Q> const& q, qua<T, Q> const& p);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL vec<3, T, Q> operator*(qua<T, Q> const& q, vec<3, T, Q> const& v);
+	GLM_FUNC_DECL GLM_CONSTEXPR vec<3, T, Q> operator*(qua<T, Q> const& q, vec<3, T, Q> const& v);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL vec<3, T, Q> operator*(vec<3, T, Q> const& v, qua<T, Q> const& q);
+	GLM_FUNC_DECL GLM_CONSTEXPR vec<3, T, Q> operator*(vec<3, T, Q> const& v, qua<T, Q> const& q);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL vec<4, T, Q> operator*(qua<T, Q> const& q, vec<4, T, Q> const& v);
+	GLM_FUNC_DECL GLM_CONSTEXPR vec<4, T, Q> operator*(qua<T, Q> const& q, vec<4, T, Q> const& v);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL vec<4, T, Q> operator*(vec<4, T, Q> const& v, qua<T, Q> const& q);
+	GLM_FUNC_DECL GLM_CONSTEXPR vec<4, T, Q> operator*(vec<4, T, Q> const& v, qua<T, Q> const& q);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL qua<T, Q> operator*(qua<T, Q> const& q, T const& s);
+	GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q> operator*(qua<T, Q> const& q, T const& s);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL qua<T, Q> operator*(T const& s, qua<T, Q> const& q);
+	GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q> operator*(T const& s, qua<T, Q> const& q);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL qua<T, Q> operator/(qua<T, Q> const& q, T const& s);
+	GLM_FUNC_DECL GLM_CONSTEXPR qua<T, Q> operator/(qua<T, Q> const& q, T const& s);
 
 	// -- Boolean operators --
 
