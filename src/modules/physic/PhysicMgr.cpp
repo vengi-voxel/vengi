@@ -40,6 +40,14 @@ void PhysicMgr::update(uint64_t dt) {
 void PhysicMgr::shutdown() {
 	delete _dynamicsWorld;
 	_dynamicsWorld = nullptr;
+	delete _solver;
+	_solver = nullptr;
+	delete _dispatcher;
+	_dispatcher = nullptr;
+	delete _collisionConfiguration;
+	_collisionConfiguration = nullptr;
+	delete _broadphase;
+	_broadphase = nullptr;
 }
 
 int PhysicMgr::addVoxelNode(VoxTreeNode *node) {

@@ -19,6 +19,7 @@ TEST_F(VolumeCropperTest, testCropSmall) {
 	EXPECT_EQ(croppedRegion.getUpperCorner(), glm::ivec3(0)) << croppedRegion.toString();
 	EXPECT_EQ(croppedRegion.getLowerCorner(), glm::ivec3(0)) << croppedRegion.toString();
 	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getLowerCorner()), createVoxel(VoxelType::Grass, 0));
+	delete croppedVolume;
 }
 
 TEST_F(VolumeCropperTest, testCropBigger) {
@@ -31,6 +32,7 @@ TEST_F(VolumeCropperTest, testCropBigger) {
 	EXPECT_EQ(croppedRegion.getUpperCorner(), region.getCentre()) << croppedRegion.toString();
 	EXPECT_EQ(croppedRegion.getLowerCorner(), region.getCentre()) << croppedRegion.toString();
 	EXPECT_EQ(croppedVolume->voxel(region.getCentre()), createVoxel(VoxelType::Grass, 0)) << *croppedVolume;
+	delete croppedVolume;
 }
 
 TEST_F(VolumeCropperTest, testCropBiggerMultiple) {
@@ -45,6 +47,7 @@ TEST_F(VolumeCropperTest, testCropBiggerMultiple) {
 	EXPECT_EQ(croppedRegion.getLowerCorner(), region.getCentre()) << croppedRegion.toString();
 	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getLowerCorner()), createVoxel(VoxelType::Grass, 0)) << *croppedVolume;
 	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getUpperCorner()), createVoxel(VoxelType::Grass, 0)) << *croppedVolume;
+	delete croppedVolume;
 }
 
 }

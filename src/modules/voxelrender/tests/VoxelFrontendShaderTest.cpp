@@ -15,7 +15,7 @@ TEST_F(VoxelFrontendShaderTest, testWorldShader) {
 		return;
 	}
 	shader::WorldShader shader;
-	ASSERT_TRUE(shader.setup());
+	EXPECT_TRUE(shader.setup());
 	shader.shutdown();
 }
 

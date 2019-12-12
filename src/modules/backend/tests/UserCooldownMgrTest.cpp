@@ -16,6 +16,11 @@ protected:
 			dbHandler->createOrUpdateTable(db::InventoryModel());
 			dbHandler->createOrUpdateTable(db::CooldownModel());
 			dbHandler->createOrUpdateTable(db::AttribModel());
+			db::UserModel user = db::UserModel();
+			user.setEmail("usercooldownmgrtest@localhost.de");
+			user.setId(1l);
+			user.setName("usercooldownmgrtest");
+			dbHandler->insert(user);
 		}
 	}
 };

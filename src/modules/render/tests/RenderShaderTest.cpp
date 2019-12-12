@@ -15,7 +15,7 @@ TEST_F(RenderShaderTest, testTextureShader) {
 		return;
 	}
 	shader::TextureShader shader;
-	ASSERT_TRUE(shader.setup());
+	EXPECT_TRUE(shader.setup());
 	shader.shutdown();
 }
 
@@ -24,7 +24,7 @@ TEST_F(RenderShaderTest, testColorShader) {
 		return;
 	}
 	shader::ColorShader shader;
-	ASSERT_TRUE(shader.setup());
+	EXPECT_TRUE(shader.setup());
 	shader.shutdown();
 }
 
