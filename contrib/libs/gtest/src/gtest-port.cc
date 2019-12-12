@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cstdint>
 #include <fstream>
 #include <memory>
 
@@ -536,6 +537,9 @@ class ThreadLocalRegistryImpl {
   // Returns a value that can be used to identify the thread from other threads.
   static ThreadLocalValueHolderBase* GetValueOnCurrentThread(
       const ThreadLocalBase* thread_local_instance) {
+#ifdef _MSC_VER
+    MemoryIsNotDeallocated memory_is_not_deallocated;
+#endif  // _MSC_VER
     DWORD current_thread = ::GetCurrentThreadId();
     MutexLock lock(&mutex_);
     ThreadIdToThreadLocals* const thread_to_thread_locals =
@@ -715,7 +719,7 @@ RE::~RE() {
   free(const_cast<char*>(pattern_));
 }
 
-// Returns true if regular expression re matches the entire str.
+// Returns true if and only if regular expression re matches the entire str.
 bool RE::FullMatch(const char* str, const RE& re) {
   if (!re.is_valid_) return false;
 
@@ -723,8 +727,8 @@ bool RE::FullMatch(const char* str, const RE& re) {
   return regexec(&re.full_regex_, str, 1, &match, 0) == 0;
 }
 
-// Returns true if regular expression re matches a substring of str
-// (including str itself).
+// Returns true if and only if regular expression re matches a substring of
+// str (including str itself).
 bool RE::PartialMatch(const char* str, const RE& re) {
   if (!re.is_valid_) return false;
 
@@ -764,14 +768,14 @@ void RE::Init(const char* regex) {
 
 #elif GTEST_USES_SIMPLE_RE
 
-// Returns true if ch appears anywhere in str (excluding the
+// Returns true if and only if ch appears anywhere in str (excluding the
 // terminating '\0' character).
 bool IsInSet(char ch, const char* str) {
   return ch != '\0' && strchr(str, ch) != nullptr;
 }
 
-// Returns true if ch belongs to the given classification.  Unlike
-// similar functions in <ctype.h>, these aren't affected by the
+// Returns true if and only if ch belongs to the given classification.
+// Unlike similar functions in <ctype.h>, these aren't affected by the
 // current locale.
 bool IsAsciiDigit(char ch) { return '0' <= ch && ch <= '9'; }
 bool IsAsciiPunct(char ch) {
@@ -784,13 +788,13 @@ bool IsAsciiWordChar(char ch) {
       ('0' <= ch && ch <= '9') || ch == '_';
 }
 
-// Returns true if "\\c" is a supported escape sequence.
+// Returns true if and only if "\\c" is a supported escape sequence.
 bool IsValidEscape(char c) {
   return (IsAsciiPunct(c) || IsInSet(c, "dDfnrsStvwW"));
 }
 
-// Returns true if the given atom (specified by escaped and pattern)
-// matches ch.  The result is undefined if the atom is invalid.
+// Returns true if and only if the given atom (specified by escaped and
+// pattern) matches ch.  The result is undefined if the atom is invalid.
 bool AtomMatchesChar(bool escaped, char pattern_char, char ch) {
   if (escaped) {  // "\\p" where p is pattern_char.
     switch (pattern_char) {
@@ -828,7 +832,7 @@ bool ValidateRegex(const char* regex) {
 
   bool is_valid = true;
 
-  // True if ?, *, or + can follow the previous atom.
+  // True if and only if ?, *, or + can follow the previous atom.
   bool prev_repeatable = false;
   for (int i = 0; regex[i]; i++) {
     if (regex[i] == '\\') {  // An escape sequence
@@ -904,8 +908,8 @@ bool MatchRepetitionAndRegexAtHead(
   return false;
 }
 
-// Returns true if regex matches a prefix of str.  regex must be a
-// valid simple regular expression and not start with "^", or the
+// Returns true if and only if regex matches a prefix of str. regex must
+// be a valid simple regular expression and not start with "^", or the
 // result is undefined.
 bool MatchRegexAtHead(const char* regex, const char* str) {
   if (*regex == '\0')  // An empty regex matches a prefix of anything.
@@ -935,8 +939,8 @@ bool MatchRegexAtHead(const char* regex, const char* str) {
   }
 }
 
-// Returns true if regex matches any substring of str.  regex must be
-// a valid simple regular expression, or the result is undefined.
+// Returns true if and only if regex matches any substring of str.  regex must
+// be a valid simple regular expression, or the result is undefined.
 //
 // The algorithm is recursive, but the recursion depth doesn't exceed
 // the regex length, so we won't need to worry about running out of
@@ -964,13 +968,13 @@ RE::~RE() {
   free(const_cast<char*>(full_pattern_));
 }
 
-// Returns true if regular expression re matches the entire str.
+// Returns true if and only if regular expression re matches the entire str.
 bool RE::FullMatch(const char* str, const RE& re) {
   return re.is_valid_ && MatchRegexAnywhere(re.full_pattern_, str);
 }
 
-// Returns true if regular expression re matches a substring of str
-// (including str itself).
+// Returns true if and only if regular expression re matches a substring of
+// str (including str itself).
 bool RE::PartialMatch(const char* str, const RE& re) {
   return re.is_valid_ && MatchRegexAnywhere(re.pattern_, str);
 }
@@ -1102,13 +1106,10 @@ class CapturedStream {
     // code as part of a regular standalone executable, which doesn't
     // run in a Dalvik process (e.g. when running it through 'adb shell').
     //
-    // The location /sdcard is directly accessible from native code
-    // and is the only location (unofficially) supported by the Android
-    // team. It's generally a symlink to the real SD Card mount point
-    // which can be /mnt/sdcard, /mnt/sdcard0, /system/media/sdcard, or
-    // other OEM-customized locations. Never rely on these, and always
-    // use /sdcard.
-    char name_template[] = "/sdcard/gtest_captured_stream.XXXXXX";
+    // The location /data/local/tmp is directly accessible from native code.
+    // '/sdcard' and other variants cannot be relied on, as they are not
+    // guaranteed to be mounted, or may have a delay in mounting.
+    char name_template[] = "/data/local/tmp/gtest_captured_stream.XXXXXX";
 #  else
     char name_template[] = "/tmp/captured_stream.XXXXXX";
 #  endif  // GTEST_OS_LINUX_ANDROID
@@ -1289,7 +1290,7 @@ static std::string FlagToEnvVar(const char* flag) {
 // Parses 'str' for a 32-bit signed integer.  If successful, writes
 // the result to *value and returns true; otherwise leaves *value
 // unchanged and returns false.
-bool ParseInt32(const Message& src_text, const char* str, Int32* value) {
+bool ParseInt32(const Message& src_text, const char* str, int32_t* value) {
   // Parses the environment variable as a decimal integer.
   char* end = nullptr;
   const long long_value = strtol(str, &end, 10);  // NOLINT
@@ -1306,13 +1307,13 @@ bool ParseInt32(const Message& src_text, const char* str, Int32* value) {
     return false;
   }
 
-  // Is the parsed value in the range of an Int32?
-  const Int32 result = static_cast<Int32>(long_value);
+  // Is the parsed value in the range of an int32_t?
+  const auto result = static_cast<int32_t>(long_value);
   if (long_value == LONG_MAX || long_value == LONG_MIN ||
       // The parsed value overflows as a long.  (strtol() returns
       // LONG_MAX or LONG_MIN when the input overflows.)
       result != long_value
-      // The parsed value overflows as an Int32.
+      // The parsed value overflows as an int32_t.
       ) {
     Message msg;
     msg << "WARNING: " << src_text
@@ -1330,7 +1331,7 @@ bool ParseInt32(const Message& src_text, const char* str, Int32* value) {
 // Reads and returns the Boolean environment variable corresponding to
 // the given flag; if it's not set, returns default_value.
 //
-// The value is considered true if it's not "0".
+// The value is considered true if and only if it's not "0".
 bool BoolFromGTestEnv(const char* flag, bool default_value) {
 #if defined(GTEST_GET_BOOL_FROM_ENV_)
   return GTEST_GET_BOOL_FROM_ENV_(flag, default_value);
@@ -1345,7 +1346,7 @@ bool BoolFromGTestEnv(const char* flag, bool default_value) {
 // Reads and returns a 32-bit integer stored in the environment
 // variable corresponding to the given flag; if it isn't set or
 // doesn't represent a valid 32-bit integer, returns default_value.
-Int32 Int32FromGTestEnv(const char* flag, Int32 default_value) {
+int32_t Int32FromGTestEnv(const char* flag, int32_t default_value) {
 #if defined(GTEST_GET_INT32_FROM_ENV_)
   return GTEST_GET_INT32_FROM_ENV_(flag, default_value);
 #else
@@ -1356,7 +1357,7 @@ Int32 Int32FromGTestEnv(const char* flag, Int32 default_value) {
     return default_value;
   }
 
-  Int32 result = default_value;
+  int32_t result = default_value;
   if (!ParseInt32(Message() << "Environment variable " << env_var,
                   string_value, &result)) {
     printf("The default value %s is used.\n",

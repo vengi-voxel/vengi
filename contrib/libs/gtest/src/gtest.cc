@@ -44,6 +44,7 @@
 #include <wctype.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <iomanip>
 #include <limits>
 #include <list>
@@ -80,6 +81,14 @@
 
 #elif GTEST_OS_WINDOWS  // We are on Windows proper.
 
+# include <windows.h>  // NOLINT
+# undef min
+
+#ifdef _MSC_VER
+# include <crtdbg.h>  // NOLINT
+# include <debugapi.h>  // NOLINT
+#endif
+
 # include <io.h>  // NOLINT
 # include <sys/timeb.h>  // NOLINT
 # include <sys/types.h>  // NOLINT
@@ -90,11 +99,6 @@
 #  define GTEST_HAS_GETTIMEOFDAY_ 1
 #  include <sys/time.h>  // NOLINT
 # endif  // GTEST_OS_WINDOWS_MINGW
-
-// cpplint thinks that the header is already included, so we want to
-// silence it.
-# include <windows.h>  // NOLINT
-# undef min
 
 #else
 
@@ -177,8 +181,8 @@ namespace internal {
 // stack trace.
 const char kStackTraceMarker[] = "\nStack trace:\n";
 
-// g_help_flag is true if the --help flag or an equivalent form is
-// specified on the command line.
+// g_help_flag is true if and only if the --help flag or an equivalent form
+// is specified on the command line.
 bool g_help_flag = false;
 
 // Utilty function to Open File for Writing
@@ -215,15 +219,14 @@ GTEST_DEFINE_bool_(
     "Run disabled tests too, in addition to the tests normally being run.");
 
 GTEST_DEFINE_bool_(
-    break_on_failure,
-    internal::BoolFromGTestEnv("break_on_failure", false),
-    "True if a failed assertion should be a debugger break-point.");
+    break_on_failure, internal::BoolFromGTestEnv("break_on_failure", false),
+    "True if and only if a failed assertion should be a debugger "
+    "break-point.");
 
-GTEST_DEFINE_bool_(
-    catch_exceptions,
-    internal::BoolFromGTestEnv("catch_exceptions", true),
-    "True if " GTEST_NAME_
-    " should catch exceptions and treat them as test failures.");
+GTEST_DEFINE_bool_(catch_exceptions,
+                   internal::BoolFromGTestEnv("catch_exceptions", true),
+                   "True if and only if " GTEST_NAME_
+                   " should catch exceptions and treat them as test failures.");
 
 GTEST_DEFINE_string_(
     color,
@@ -270,17 +273,13 @@ GTEST_DEFINE_string_(
     "executable's name and, if necessary, made unique by adding "
     "digits.");
 
-GTEST_DEFINE_bool_(
-    print_time,
-    internal::BoolFromGTestEnv("print_time", true),
-    "True if " GTEST_NAME_
-    " should display elapsed time in text output.");
+GTEST_DEFINE_bool_(print_time, internal::BoolFromGTestEnv("print_time", true),
+                   "True if and only if " GTEST_NAME_
+                   " should display elapsed time in text output.");
 
-GTEST_DEFINE_bool_(
-    print_utf8,
-    internal::BoolFromGTestEnv("print_utf8", true),
-    "True if " GTEST_NAME_
-    " prints UTF8 characters as text.");
+GTEST_DEFINE_bool_(print_utf8, internal::BoolFromGTestEnv("print_utf8", true),
+                   "True if and only if " GTEST_NAME_
+                   " prints UTF8 characters as text.");
 
 GTEST_DEFINE_int32_(
     random_seed,
@@ -294,16 +293,14 @@ GTEST_DEFINE_int32_(
     "How many times to repeat each test.  Specify a negative number "
     "for repeating forever.  Useful for shaking out flaky tests.");
 
-GTEST_DEFINE_bool_(
-    show_internal_stack_frames, false,
-    "True if " GTEST_NAME_ " should include internal stack frames when "
-    "printing test failure stack traces.");
+GTEST_DEFINE_bool_(show_internal_stack_frames, false,
+                   "True if and only if " GTEST_NAME_
+                   " should include internal stack frames when "
+                   "printing test failure stack traces.");
 
-GTEST_DEFINE_bool_(
-    shuffle,
-    internal::BoolFromGTestEnv("shuffle", false),
-    "True if " GTEST_NAME_
-    " should randomize tests' order on every run.");
+GTEST_DEFINE_bool_(shuffle, internal::BoolFromGTestEnv("shuffle", false),
+                   "True if and only if " GTEST_NAME_
+                   " should randomize tests' order on every run.");
 
 GTEST_DEFINE_int32_(
     stack_trace_depth,
@@ -337,10 +334,10 @@ namespace internal {
 // Generates a random number from [0, range), using a Linear
 // Congruential Generator (LCG).  Crashes if 'range' is 0 or greater
 // than kMaxRange.
-UInt32 Random::Generate(UInt32 range) {
+uint32_t Random::Generate(uint32_t range) {
   // These constants are the same as are used in glibc's rand(3).
   // Use wider types than necessary to prevent unsigned overflow diagnostics.
-  state_ = static_cast<UInt32>(1103515245ULL*state_ + 12345U) % kMaxRange;
+  state_ = static_cast<uint32_t>(1103515245ULL*state_ + 12345U) % kMaxRange;
 
   GTEST_CHECK_(range > 0)
       << "Cannot generate a number in the range [0, 0).";
@@ -354,7 +351,7 @@ UInt32 Random::Generate(UInt32 range) {
   return state_ % range;
 }
 
-// GTestIsInitialized() returns true if the user has initialized
+// GTestIsInitialized() returns true if and only if the user has initialized
 // Google Test.  Useful for catching the user mistake of not initializing
 // Google Test before calling RUN_ALL_TESTS().
 static bool GTestIsInitialized() { return GetArgvs().size() > 0; }
@@ -371,18 +368,18 @@ static int SumOverTestSuiteList(const std::vector<TestSuite*>& case_list,
   return sum;
 }
 
-// Returns true if the test suite passed.
+// Returns true if and only if the test suite passed.
 static bool TestSuitePassed(const TestSuite* test_suite) {
   return test_suite->should_run() && test_suite->Passed();
 }
 
-// Returns true if the test suite failed.
+// Returns true if and only if the test suite failed.
 static bool TestSuiteFailed(const TestSuite* test_suite) {
   return test_suite->should_run() && test_suite->Failed();
 }
 
-// Returns true if test_suite contains at least one test that should
-// run.
+// Returns true if and only if test_suite contains at least one test that
+// should run.
 static bool ShouldRunTestSuite(const TestSuite* test_suite) {
   return test_suite->should_run();
 }
@@ -482,8 +479,8 @@ std::string UnitTestOptions::GetAbsolutePathToOutputFile() {
   return result.string();
 }
 
-// Returns true if the wildcard pattern matches the string.  The
-// first ':' or '\0' character in pattern marks the end of it.
+// Returns true if and only if the wildcard pattern matches the string.
+// The first ':' or '\0' character in pattern marks the end of it.
 //
 // This recursive algorithm isn't very efficient, but is clear and
 // works well enough for matching test names, which are short.
@@ -525,8 +522,8 @@ bool UnitTestOptions::MatchesFilter(
   }
 }
 
-// Returns true if the user-specified filter matches the test suite
-// name and the test name.
+// Returns true if and only if the user-specified filter matches the test
+// suite name and the test name.
 bool UnitTestOptions::FilterMatchesTest(const std::string& test_suite_name,
                                         const std::string& test_name) {
   const std::string& full_name = test_suite_name + "." + test_name.c_str();
@@ -910,7 +907,8 @@ const char* String::Utf16ToAnsi(LPCWSTR utf16_str)  {
 
 #endif  // GTEST_OS_WINDOWS_MOBILE
 
-// Compares two C strings.  Returns true if they have the same content.
+// Compares two C strings.  Returns true if and only if they have the same
+// content.
 //
 // Unlike strcmp(), this function can handle NULL argument(s).  A NULL
 // C string is considered different to any non-NULL C string,
@@ -1320,7 +1318,7 @@ std::vector<std::string> SplitEscapedString(const std::string& str) {
 //   lhs_value:      "5"
 //   rhs_value:      "6"
 //
-// The ignoring_case parameter is true if the assertion is a
+// The ignoring_case parameter is true if and only if the assertion is a
 // *_STRCASEEQ*.  When it's true, the string "Ignoring case" will
 // be inserted into the message.
 AssertionResult EqFailure(const char* lhs_expression,
@@ -1563,9 +1561,9 @@ namespace {
 
 // Helper functions for implementing IsSubString() and IsNotSubstring().
 
-// This group of overloaded functions return true if needle is a
-// substring of haystack.  NULL is considered a substring of itself
-// only.
+// This group of overloaded functions return true if and only if needle
+// is a substring of haystack.  NULL is considered a substring of
+// itself only.
 
 bool IsSubstringPred(const char* needle, const char* haystack) {
   if (needle == nullptr || haystack == nullptr) return needle == haystack;
@@ -1741,33 +1739,33 @@ AssertionResult IsHRESULTFailure(const char* expr, long hr) {  // NOLINT
 //  17 - 21 bits       11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
 
 // The maximum code-point a one-byte UTF-8 sequence can represent.
-const UInt32 kMaxCodePoint1 = (static_cast<UInt32>(1) <<  7) - 1;
+constexpr uint32_t kMaxCodePoint1 = (static_cast<uint32_t>(1) <<  7) - 1;
 
 // The maximum code-point a two-byte UTF-8 sequence can represent.
-const UInt32 kMaxCodePoint2 = (static_cast<UInt32>(1) << (5 + 6)) - 1;
+constexpr uint32_t kMaxCodePoint2 = (static_cast<uint32_t>(1) << (5 + 6)) - 1;
 
 // The maximum code-point a three-byte UTF-8 sequence can represent.
-const UInt32 kMaxCodePoint3 = (static_cast<UInt32>(1) << (4 + 2*6)) - 1;
+constexpr uint32_t kMaxCodePoint3 = (static_cast<uint32_t>(1) << (4 + 2*6)) - 1;
 
 // The maximum code-point a four-byte UTF-8 sequence can represent.
-const UInt32 kMaxCodePoint4 = (static_cast<UInt32>(1) << (3 + 3*6)) - 1;
+constexpr uint32_t kMaxCodePoint4 = (static_cast<uint32_t>(1) << (3 + 3*6)) - 1;
 
 // Chops off the n lowest bits from a bit pattern.  Returns the n
 // lowest bits.  As a side effect, the original bit pattern will be
 // shifted to the right by n bits.
-inline UInt32 ChopLowBits(UInt32* bits, int n) {
-  const UInt32 low_bits = *bits & ((static_cast<UInt32>(1) << n) - 1);
+inline uint32_t ChopLowBits(uint32_t* bits, int n) {
+  const uint32_t low_bits = *bits & ((static_cast<uint32_t>(1) << n) - 1);
   *bits >>= n;
   return low_bits;
 }
 
 // Converts a Unicode code point to a narrow string in UTF-8 encoding.
-// code_point parameter is of type UInt32 because wchar_t may not be
+// code_point parameter is of type uint32_t because wchar_t may not be
 // wide enough to contain a code point.
 // If the code_point is not a valid Unicode code point
 // (i.e. outside of Unicode range U+0 to U+10FFFF) it will be converted
 // to "(Invalid Unicode 0xXXXXXXXX)".
-std::string CodePointToUtf8(UInt32 code_point) {
+std::string CodePointToUtf8(uint32_t code_point) {
   if (code_point > kMaxCodePoint4) {
     return "(Invalid Unicode 0x" + String::FormatHexUInt32(code_point) + ")";
   }
@@ -1808,11 +1806,11 @@ inline bool IsUtf16SurrogatePair(wchar_t first, wchar_t second) {
 }
 
 // Creates a Unicode code point from UTF16 surrogate pair.
-inline UInt32 CreateCodePointFromUtf16SurrogatePair(wchar_t first,
-                                                    wchar_t second) {
-  const auto first_u = static_cast<UInt32>(first);
-  const auto second_u = static_cast<UInt32>(second);
-  const UInt32 mask = (1 << 10) - 1;
+inline uint32_t CreateCodePointFromUtf16SurrogatePair(wchar_t first,
+                                                      wchar_t second) {
+  const auto first_u = static_cast<uint32_t>(first);
+  const auto second_u = static_cast<uint32_t>(second);
+  const uint32_t mask = (1 << 10) - 1;
   return (sizeof(wchar_t) == 2)
              ? (((first_u & mask) << 10) | (second_u & mask)) + 0x10000
              :
@@ -1840,7 +1838,7 @@ std::string WideStringToUtf8(const wchar_t* str, int num_chars) {
 
   ::std::stringstream stream;
   for (int i = 0; i < num_chars; ++i) {
-    UInt32 unicode_code_point;
+    uint32_t unicode_code_point;
 
     if (str[i] == L'\0') {
       break;
@@ -1849,7 +1847,7 @@ std::string WideStringToUtf8(const wchar_t* str, int num_chars) {
                                                                  str[i + 1]);
       i++;
     } else {
-      unicode_code_point = static_cast<UInt32>(str[i]);
+      unicode_code_point = static_cast<uint32_t>(str[i]);
     }
 
     stream << CodePointToUtf8(unicode_code_point);
@@ -1865,8 +1863,8 @@ std::string String::ShowWideCString(const wchar_t * wide_c_str) {
   return internal::WideStringToUtf8(wide_c_str, -1);
 }
 
-// Compares two wide C strings.  Returns true if they have the same
-// content.
+// Compares two wide C strings.  Returns true if and only if they have the
+// same content.
 //
 // Unlike wcscmp(), this function can handle NULL argument(s).  A NULL
 // C string is considered different to any non-NULL C string,
@@ -1910,7 +1908,7 @@ AssertionResult CmpHelperSTRNE(const char* s1_expression,
                             << " vs " << PrintToString(s2);
 }
 
-// Compares two C strings, ignoring case.  Returns true if they have
+// Compares two C strings, ignoring case.  Returns true if and only if they have
 // the same content.
 //
 // Unlike strcasecmp(), this function can handle NULL argument(s).  A
@@ -1922,18 +1920,18 @@ bool String::CaseInsensitiveCStringEquals(const char * lhs, const char * rhs) {
   return posix::StrCaseCmp(lhs, rhs) == 0;
 }
 
-  // Compares two wide C strings, ignoring case.  Returns true if they
-  // have the same content.
-  //
-  // Unlike wcscasecmp(), this function can handle NULL argument(s).
-  // A NULL C string is considered different to any non-NULL wide C string,
-  // including the empty string.
-  // NB: The implementations on different platforms slightly differ.
-  // On windows, this method uses _wcsicmp which compares according to LC_CTYPE
-  // environment variable. On GNU platform this method uses wcscasecmp
-  // which compares according to LC_CTYPE category of the current locale.
-  // On MacOS X, it uses towlower, which also uses LC_CTYPE category of the
-  // current locale.
+// Compares two wide C strings, ignoring case.  Returns true if and only if they
+// have the same content.
+//
+// Unlike wcscasecmp(), this function can handle NULL argument(s).
+// A NULL C string is considered different to any non-NULL wide C string,
+// including the empty string.
+// NB: The implementations on different platforms slightly differ.
+// On windows, this method uses _wcsicmp which compares according to LC_CTYPE
+// environment variable. On GNU platform this method uses wcscasecmp
+// which compares according to LC_CTYPE category of the current locale.
+// On MacOS X, it uses towlower, which also uses LC_CTYPE category of the
+// current locale.
 bool String::CaseInsensitiveWideCStringEquals(const wchar_t* lhs,
                                               const wchar_t* rhs) {
   if (lhs == nullptr) return rhs == nullptr;
@@ -1956,7 +1954,7 @@ bool String::CaseInsensitiveWideCStringEquals(const wchar_t* lhs,
 #endif  // OS selector
 }
 
-// Returns true if str ends with the given suffix, ignoring case.
+// Returns true if and only if str ends with the given suffix, ignoring case.
 // Any string is considered to end with an empty suffix.
 bool String::EndsWithCaseInsensitive(
     const std::string& str, const std::string& suffix) {
@@ -1975,7 +1973,7 @@ std::string String::FormatIntWidth2(int value) {
 }
 
 // Formats an int value as "%X".
-std::string String::FormatHexUInt32(UInt32 value) {
+std::string String::FormatHexUInt32(uint32_t value) {
   std::stringstream ss;
   ss << std::hex << std::uppercase << value;
   return ss.str();
@@ -1983,7 +1981,7 @@ std::string String::FormatHexUInt32(UInt32 value) {
 
 // Formats an int value as "%X".
 std::string String::FormatHexInt(int value) {
-  return FormatHexUInt32(static_cast<UInt32>(value));
+  return FormatHexUInt32(static_cast<uint32_t>(value));
 }
 
 // Formats a byte as "%02X".
@@ -2198,12 +2196,12 @@ static bool TestPartSkipped(const TestPartResult& result) {
   return result.skipped();
 }
 
-// Returns true if the test was skipped.
+// Returns true if and only if the test was skipped.
 bool TestResult::Skipped() const {
   return !Failed() && CountIf(test_part_results_, TestPartSkipped) > 0;
 }
 
-// Returns true if the test failed.
+// Returns true if and only if the test failed.
 bool TestResult::Failed() const {
   for (int i = 0; i < total_part_count(); ++i) {
     if (GetTestPartResult(i).failed())
@@ -2212,22 +2210,22 @@ bool TestResult::Failed() const {
   return false;
 }
 
-// Returns true if the test part fatally failed.
+// Returns true if and only if the test part fatally failed.
 static bool TestPartFatallyFailed(const TestPartResult& result) {
   return result.fatally_failed();
 }
 
-// Returns true if the test fatally failed.
+// Returns true if and only if the test fatally failed.
 bool TestResult::HasFatalFailure() const {
   return CountIf(test_part_results_, TestPartFatallyFailed) > 0;
 }
 
-// Returns true if the test part non-fatally failed.
+// Returns true if and only if the test part non-fatally failed.
 static bool TestPartNonfatallyFailed(const TestPartResult& result) {
   return result.nonfatally_failed();
 }
 
-// Returns true if the test has a non-fatal failure.
+// Returns true if and only if the test has a non-fatal failure.
 bool TestResult::HasNonfatalFailure() const {
   return CountIf(test_part_results_, TestPartNonfatallyFailed) > 0;
 }
@@ -2523,18 +2521,18 @@ void Test::Run() {
       this, &Test::TearDown, "TearDown()");
 }
 
-// Returns true if the current test has a fatal failure.
+// Returns true if and only if the current test has a fatal failure.
 bool Test::HasFatalFailure() {
   return internal::GetUnitTestImpl()->current_test_result()->HasFatalFailure();
 }
 
-// Returns true if the current test has a non-fatal failure.
+// Returns true if and only if the current test has a non-fatal failure.
 bool Test::HasNonfatalFailure() {
   return internal::GetUnitTestImpl()->current_test_result()->
       HasNonfatalFailure();
 }
 
-// Returns true if the current test was skipped.
+// Returns true if and only if the current test was skipped.
 bool Test::IsSkipped() {
   return internal::GetUnitTestImpl()->current_test_result()->Skipped();
 }
@@ -2633,7 +2631,7 @@ class TestNameIs {
   explicit TestNameIs(const char* name)
       : name_(name) {}
 
-  // Returns true if the test name of test_info matches name_.
+  // Returns true if and only if the test name of test_info matches name_.
   bool operator()(const TestInfo * test_info) const {
     return test_info && test_info->name() == name_;
   }
@@ -2992,7 +2990,7 @@ static const char* GetAnsiColorCode(GTestColor color) {
 
 #endif  // GTEST_OS_WINDOWS && !GTEST_OS_WINDOWS_MOBILE
 
-// Returns true if Google Test should use colors in the output.
+// Returns true if and only if Google Test should use colors in the output.
 bool ShouldUseColor(bool stdout_is_tty) {
   const char* const gtest_color = GTEST_FLAG(color).c_str();
 
@@ -3038,7 +3036,7 @@ void ColoredPrintf(GTestColor color, const char* fmt, ...) {
   va_start(args, fmt);
 
 #if GTEST_OS_WINDOWS_MOBILE || GTEST_OS_ZOS || GTEST_OS_IOS || \
-    GTEST_OS_WINDOWS_PHONE || GTEST_OS_WINDOWS_RT
+    GTEST_OS_WINDOWS_PHONE || GTEST_OS_WINDOWS_RT || defined(ESP_PLATFORM)
   const bool use_color = AlwaysFalse();
 #else
   static const bool in_color_mode =
@@ -3140,6 +3138,7 @@ class PrettyUnitTestResultPrinter : public TestEventListener {
 
  private:
   static void PrintFailedTests(const UnitTest& unit_test);
+  static void PrintFailedTestSuites(const UnitTest& unit_test);
   static void PrintSkippedTests(const UnitTest& unit_test);
 };
 
@@ -3159,7 +3158,7 @@ void PrettyUnitTestResultPrinter::OnTestIterationStart(
   }
 
   if (internal::ShouldShard(kTestTotalShards, kTestShardIndex, false)) {
-    const Int32 shard_index = Int32FromEnvOrDie(kTestShardIndex, -1);
+    const int32_t shard_index = Int32FromEnvOrDie(kTestShardIndex, -1);
     ColoredPrintf(COLOR_YELLOW,
                   "Note: This is test shard %d of %s.\n",
                   static_cast<int>(shard_index) + 1,
@@ -3226,9 +3225,7 @@ void PrettyUnitTestResultPrinter::OnTestStart(const TestInfo& test_info) {
 void PrettyUnitTestResultPrinter::OnTestPartResult(
     const TestPartResult& result) {
   switch (result.type()) {
-    // If the test part succeeded, or was skipped,
-    // we don't need to do anything.
-    case TestPartResult::kSkip:
+    // If the test part succeeded, we don't need to do anything.
     case TestPartResult::kSuccess:
       return;
     default:
@@ -3294,9 +3291,8 @@ void PrettyUnitTestResultPrinter::OnEnvironmentsTearDownStart(
 // Internal helper for printing the list of failed tests.
 void PrettyUnitTestResultPrinter::PrintFailedTests(const UnitTest& unit_test) {
   const int failed_test_count = unit_test.failed_test_count();
-  if (failed_test_count == 0) {
-    return;
-  }
+  ColoredPrintf(COLOR_RED,  "[  FAILED  ] ");
+  printf("%s, listed below:\n", FormatTestCount(failed_test_count).c_str());
 
   for (int i = 0; i < unit_test.total_test_suite_count(); ++i) {
     const TestSuite& test_suite = *unit_test.GetTestSuite(i);
@@ -3313,6 +3309,30 @@ void PrettyUnitTestResultPrinter::PrintFailedTests(const UnitTest& unit_test) {
       PrintFullTestCommentIfPresent(test_info);
       printf("\n");
     }
+  }
+  printf("\n%2d FAILED %s\n", failed_test_count,
+         failed_test_count == 1 ? "TEST" : "TESTS");
+}
+
+// Internal helper for printing the list of test suite failures not covered by
+// PrintFailedTests.
+void PrettyUnitTestResultPrinter::PrintFailedTestSuites(
+    const UnitTest& unit_test) {
+  int suite_failure_count = 0;
+  for (int i = 0; i < unit_test.total_test_suite_count(); ++i) {
+    const TestSuite& test_suite = *unit_test.GetTestSuite(i);
+    if (!test_suite.should_run()) {
+      continue;
+    }
+    if (test_suite.ad_hoc_test_result().Failed()) {
+      ColoredPrintf(COLOR_RED, "[  FAILED  ] ");
+      printf("%s: SetUpTestSuite or TearDownTestSuite\n", test_suite.name());
+      ++suite_failure_count;
+    }
+  }
+  if (suite_failure_count > 0) {
+    printf("\n%2d FAILED TEST %s\n", suite_failure_count,
+           suite_failure_count == 1 ? "SUITE" : "SUITES");
   }
 }
 
@@ -3361,19 +3381,14 @@ void PrettyUnitTestResultPrinter::OnTestIterationEnd(const UnitTest& unit_test,
     PrintSkippedTests(unit_test);
   }
 
-  int num_failures = unit_test.failed_test_count();
   if (!unit_test.Passed()) {
-    const int failed_test_count = unit_test.failed_test_count();
-    ColoredPrintf(COLOR_RED,  "[  FAILED  ] ");
-    printf("%s, listed below:\n", FormatTestCount(failed_test_count).c_str());
     PrintFailedTests(unit_test);
-    printf("\n%2d FAILED %s\n", num_failures,
-                        num_failures == 1 ? "TEST" : "TESTS");
+    PrintFailedTestSuites(unit_test);
   }
 
   int num_disabled = unit_test.reportable_disabled_test_count();
   if (num_disabled && !GTEST_FLAG(also_run_disabled_tests)) {
-    if (!num_failures) {
+    if (unit_test.Passed()) {
       printf("\n");  // Add a spacer if no FAILURE banner is displayed.
     }
     ColoredPrintf(COLOR_YELLOW,
@@ -4514,6 +4529,7 @@ class ScopedPrematureExitFile {
   }
 
   ~ScopedPrematureExitFile() {
+#if !defined GTEST_OS_ESP8266
     if (!premature_exit_filepath_.empty()) {
       int retval = remove(premature_exit_filepath_.c_str());
       if (retval) {
@@ -4522,6 +4538,7 @@ class ScopedPrematureExitFile {
                           << retval;
       }
     }
+#endif
   }
 
  private:
@@ -4709,11 +4726,12 @@ internal::TimeInMillis UnitTest::elapsed_time() const {
   return impl()->elapsed_time();
 }
 
-// Returns true if the unit test passed (i.e. all test suites passed).
+// Returns true if and only if the unit test passed (i.e. all test suites
+// passed).
 bool UnitTest::Passed() const { return impl()->Passed(); }
 
-// Returns true if the unit test failed (i.e. some test suite failed
-// or something outside of all tests failed).
+// Returns true if and only if the unit test failed (i.e. some test suite
+// failed or something outside of all tests failed).
 bool UnitTest::Failed() const { return impl()->Failed(); }
 
 // Gets the i-th test suite among all the test suites. i can range from 0 to
@@ -4913,6 +4931,16 @@ int UnitTest::Run() {
       _set_abort_behavior(
           0x0,                                    // Clear the following flags:
           _WRITE_ABORT_MSG | _CALL_REPORTFAULT);  // pop-up window, core dump.
+
+    // In debug mode, the Windows CRT can crash with an assertion over invalid
+    // input (e.g. passing an invalid file descriptor).  The default handling
+    // for these assertions is to pop up a dialog and wait for user input.
+    // Instead ask the CRT to dump such assertions to stderr non-interactively.
+    if (!IsDebuggerPresent()) {
+      (void)_CrtSetReportMode(_CRT_ASSERT,
+                              _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+      (void)_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+    }
 # endif
   }
 #endif  // GTEST_OS_WINDOWS
@@ -5151,7 +5179,7 @@ class TestSuiteNameIs {
   // Constructor.
   explicit TestSuiteNameIs(const std::string& name) : name_(name) {}
 
-  // Returns true if the name of test_suite matches name_.
+  // Returns true if and only if the name of test_suite matches name_.
   bool operator()(const TestSuite* test_suite) const {
     return test_suite != nullptr &&
            strcmp(test_suite->name(), name_.c_str()) == 0;
@@ -5222,7 +5250,8 @@ static void TearDownEnvironment(Environment* env) { env->TearDown(); }
 // All other functions called from RunAllTests() may safely assume that
 // parameterized tests are ready to be counted and run.
 bool UnitTestImpl::RunAllTests() {
-  // True if Google Test is initialized before RUN_ALL_TESTS() is called.
+  // True if and only if Google Test is initialized before RUN_ALL_TESTS() is
+  // called.
   const bool gtest_is_initialized_before_run_all_tests = GTestIsInitialized();
 
   // Do not run any test if the --help flag was specified.
@@ -5238,7 +5267,7 @@ bool UnitTestImpl::RunAllTests() {
   // protocol.
   internal::WriteToShardStatusFileIfNeeded();
 
-  // True if we are in a subprocess for running a thread-safe-style
+  // True if and only if we are in a subprocess for running a thread-safe-style
   // death test.
   bool in_subprocess_for_death_test = false;
 
@@ -5271,7 +5300,7 @@ bool UnitTestImpl::RunAllTests() {
   random_seed_ = GTEST_FLAG(shuffle) ?
       GetRandomSeedFromFlag(GTEST_FLAG(random_seed)) : 0;
 
-  // True if at least one test has failed.
+  // True if and only if at least one test has failed.
   bool failed = false;
 
   TestEventListener* repeater = listeners()->repeater();
@@ -5293,7 +5322,7 @@ bool UnitTestImpl::RunAllTests() {
 
     // Shuffles test suites and tests if requested.
     if (has_tests_to_run && GTEST_FLAG(shuffle)) {
-      random()->Reseed(static_cast<UInt32>(random_seed_));
+      random()->Reseed(static_cast<uint32_t>(random_seed_));
       // This should be done before calling OnTestIterationStart(),
       // such that a test event listener can see the actual test order
       // in the event.
@@ -5416,8 +5445,8 @@ bool ShouldShard(const char* total_shards_env,
     return false;
   }
 
-  const Int32 total_shards = Int32FromEnvOrDie(total_shards_env, -1);
-  const Int32 shard_index = Int32FromEnvOrDie(shard_index_env, -1);
+  const int32_t total_shards = Int32FromEnvOrDie(total_shards_env, -1);
+  const int32_t shard_index = Int32FromEnvOrDie(shard_index_env, -1);
 
   if (total_shards == -1 && shard_index == -1) {
     return false;
@@ -5454,13 +5483,13 @@ bool ShouldShard(const char* total_shards_env,
 // Parses the environment variable var as an Int32. If it is unset,
 // returns default_val. If it is not an Int32, prints an error
 // and aborts.
-Int32 Int32FromEnvOrDie(const char* var, Int32 default_val) {
+int32_t Int32FromEnvOrDie(const char* var, int32_t default_val) {
   const char* str_val = posix::GetEnv(var);
   if (str_val == nullptr) {
     return default_val;
   }
 
-  Int32 result;
+  int32_t result;
   if (!ParseInt32(Message() << "The value of environment variable " << var,
                   str_val, &result)) {
     exit(EXIT_FAILURE);
@@ -5469,8 +5498,8 @@ Int32 Int32FromEnvOrDie(const char* var, Int32 default_val) {
 }
 
 // Given the total number of shards, the shard index, and the test id,
-// returns true if the test should be run on this shard. The test id is
-// some arbitrary but unique non-negative integer assigned to each test
+// returns true if and only if the test should be run on this shard. The test id
+// is some arbitrary but unique non-negative integer assigned to each test
 // method. Assumes that 0 <= shard_index < total_shards.
 bool ShouldRunTestOnShard(int total_shards, int shard_index, int test_id) {
   return (test_id % total_shards) == shard_index;
@@ -5484,9 +5513,9 @@ bool ShouldRunTestOnShard(int total_shards, int shard_index, int test_id) {
 // https://github.com/google/googletest/blob/master/googletest/docs/advanced.md
 // . Returns the number of tests that should run.
 int UnitTestImpl::FilterTests(ReactionToSharding shard_tests) {
-  const Int32 total_shards = shard_tests == HONOR_SHARDING_PROTOCOL ?
+  const int32_t total_shards = shard_tests == HONOR_SHARDING_PROTOCOL ?
       Int32FromEnvOrDie(kTestTotalShards, -1) : -1;
-  const Int32 shard_index = shard_tests == HONOR_SHARDING_PROTOCOL ?
+  const int32_t shard_index = shard_tests == HONOR_SHARDING_PROTOCOL ?
       Int32FromEnvOrDie(kTestShardIndex, -1) : -1;
 
   // num_runnable_tests are the number of tests that will
@@ -5775,12 +5804,11 @@ static bool ParseBoolFlag(const char* str, const char* flag, bool* value) {
   return true;
 }
 
-// Parses a string for an Int32 flag, in the form of
-// "--flag=value".
+// Parses a string for an int32_t flag, in the form of "--flag=value".
 //
 // On success, stores the value of the flag in *value, and returns
 // true.  On failure, returns false without changing *value.
-bool ParseInt32Flag(const char* str, const char* flag, Int32* value) {
+bool ParseInt32Flag(const char* str, const char* flag, int32_t* value) {
   // Gets the value of the flag as a string.
   const char* const value_str = ParseFlagValue(str, flag, false);
 
@@ -5792,8 +5820,7 @@ bool ParseInt32Flag(const char* str, const char* flag, Int32* value) {
                     value_str, value);
 }
 
-// Parses a string for a string flag, in the form of
-// "--flag=value".
+// Parses a string for a string flag, in the form of "--flag=value".
 //
 // On success, stores the value of the flag in *value, and returns
 // true.  On failure, returns false without changing *value.
@@ -6043,7 +6070,7 @@ void ParseGoogleTestFlagsOnlyImpl(int* argc, CharType** argv) {
 void ParseGoogleTestFlagsOnly(int* argc, char** argv) {
   ParseGoogleTestFlagsOnlyImpl(argc, argv);
 
-  // Fix the value of *_NSGetArgc() on macOS, but if
+  // Fix the value of *_NSGetArgc() on macOS, but if and only if
   // *_NSGetArgv() == argv
   // Only applicable to char** version of argv
 #if GTEST_OS_MAC

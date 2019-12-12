@@ -106,25 +106,6 @@ inline Element* GetRawPointer(Element* p) { return p; }
 # define GMOCK_WCHAR_T_IS_NATIVE_ 1
 #endif
 
-// signed wchar_t and unsigned wchar_t are NOT in the C++ standard.
-// Using them is a bad practice and not portable.  So DON'T use them.
-//
-// Still, Google Mock is designed to work even if the user uses signed
-// wchar_t or unsigned wchar_t (obviously, assuming the compiler
-// supports them).
-//
-// To gcc,
-//   wchar_t == signed wchar_t != unsigned wchar_t == unsigned int
-//
-// gcc-9 appears to treat signed/unsigned wchar_t as ill-formed
-// regardless of the signage of its underlying type.
-#ifdef __GNUC__
-#if !defined(__WCHAR_UNSIGNED__) && (__GNUC__ < 9)
-// signed/unsigned wchar_t are valid types.
-# define GMOCK_HAS_SIGNED_WCHAR_T_ 1
-#endif
-#endif
-
 // In what follows, we use the term "kind" to indicate whether a type
 // is bool, an integer type (excluding bool), a floating-point type,
 // or none of them.  This categorization is useful for determining
@@ -155,14 +136,12 @@ GMOCK_DECLARE_KIND_(int, kInteger);
 GMOCK_DECLARE_KIND_(unsigned int, kInteger);
 GMOCK_DECLARE_KIND_(long, kInteger);  // NOLINT
 GMOCK_DECLARE_KIND_(unsigned long, kInteger);  // NOLINT
+GMOCK_DECLARE_KIND_(long long, kInteger);  // NOLINT
+GMOCK_DECLARE_KIND_(unsigned long long, kInteger);  // NOLINT
 
 #if GMOCK_WCHAR_T_IS_NATIVE_
 GMOCK_DECLARE_KIND_(wchar_t, kInteger);
 #endif
-
-// Non-standard integer types.
-GMOCK_DECLARE_KIND_(Int64, kInteger);
-GMOCK_DECLARE_KIND_(UInt64, kInteger);
 
 // All standard floating-point types.
 GMOCK_DECLARE_KIND_(float, kFloatingPoint);
@@ -176,11 +155,8 @@ GMOCK_DECLARE_KIND_(long double, kFloatingPoint);
   static_cast< ::testing::internal::TypeKind>( \
       ::testing::internal::KindOf<type>::value)
 
-// Evaluates to true if integer type T is signed.
-#define GMOCK_IS_SIGNED_(T) (static_cast<T>(-1) < 0)
-
 // LosslessArithmeticConvertibleImpl<kFromKind, From, kToKind, To>::value
-// is true if arithmetic type From can be losslessly converted to
+// is true if and only if arithmetic type From can be losslessly converted to
 // arithmetic type To.
 //
 // It's the user's responsibility to ensure that both From and To are
@@ -189,77 +165,42 @@ GMOCK_DECLARE_KIND_(long double, kFloatingPoint);
 // From, and kToKind is the kind of To; the value is
 // implementation-defined when the above pre-condition is violated.
 template <TypeKind kFromKind, typename From, TypeKind kToKind, typename To>
-struct LosslessArithmeticConvertibleImpl : public false_type {};
+using LosslessArithmeticConvertibleImpl = std::integral_constant<
+    bool,
+    // clang-format off
+      // Converting from bool is always lossless
+      (kFromKind == kBool) ? true
+      // Converting between any other type kinds will be lossy if the type
+      // kinds are not the same.
+    : (kFromKind != kToKind) ? false
+    : (kFromKind == kInteger &&
+       // Converting between integers of different widths is allowed so long
+       // as the conversion does not go from signed to unsigned.
+      (((sizeof(From) < sizeof(To)) &&
+        !(std::is_signed<From>::value && !std::is_signed<To>::value)) ||
+       // Converting between integers of the same width only requires the
+       // two types to have the same signedness.
+       ((sizeof(From) == sizeof(To)) &&
+        (std::is_signed<From>::value == std::is_signed<To>::value)))
+       ) ? true
+      // Floating point conversions are lossless if and only if `To` is at least
+      // as wide as `From`.
+    : (kFromKind == kFloatingPoint && (sizeof(From) <= sizeof(To))) ? true
+    : false
+    // clang-format on
+    >;
 
-// Converting bool to bool is lossless.
-template <>
-struct LosslessArithmeticConvertibleImpl<kBool, bool, kBool, bool>
-    : public true_type {};  // NOLINT
-
-// Converting bool to any integer type is lossless.
-template <typename To>
-struct LosslessArithmeticConvertibleImpl<kBool, bool, kInteger, To>
-    : public true_type {};  // NOLINT
-
-// Converting bool to any floating-point type is lossless.
-template <typename To>
-struct LosslessArithmeticConvertibleImpl<kBool, bool, kFloatingPoint, To>
-    : public true_type {};  // NOLINT
-
-// Converting an integer to bool is lossy.
-template <typename From>
-struct LosslessArithmeticConvertibleImpl<kInteger, From, kBool, bool>
-    : public false_type {};  // NOLINT
-
-// Converting an integer to another non-bool integer is lossless if
-// the target type's range encloses the source type's range.
-template <typename From, typename To>
-struct LosslessArithmeticConvertibleImpl<kInteger, From, kInteger, To>
-    : public bool_constant<
-      // When converting from a smaller size to a larger size, we are
-      // fine as long as we are not converting from signed to unsigned.
-      ((sizeof(From) < sizeof(To)) &&
-       (!GMOCK_IS_SIGNED_(From) || GMOCK_IS_SIGNED_(To))) ||
-      // When converting between the same size, the signedness must match.
-      ((sizeof(From) == sizeof(To)) &&
-       (GMOCK_IS_SIGNED_(From) == GMOCK_IS_SIGNED_(To)))> {};  // NOLINT
-
-#undef GMOCK_IS_SIGNED_
-
-// Converting an integer to a floating-point type may be lossy, since
-// the format of a floating-point number is implementation-defined.
-template <typename From, typename To>
-struct LosslessArithmeticConvertibleImpl<kInteger, From, kFloatingPoint, To>
-    : public false_type {};  // NOLINT
-
-// Converting a floating-point to bool is lossy.
-template <typename From>
-struct LosslessArithmeticConvertibleImpl<kFloatingPoint, From, kBool, bool>
-    : public false_type {};  // NOLINT
-
-// Converting a floating-point to an integer is lossy.
-template <typename From, typename To>
-struct LosslessArithmeticConvertibleImpl<kFloatingPoint, From, kInteger, To>
-    : public false_type {};  // NOLINT
-
-// Converting a floating-point to another floating-point is lossless
-// if the target type is at least as big as the source type.
-template <typename From, typename To>
-struct LosslessArithmeticConvertibleImpl<
-  kFloatingPoint, From, kFloatingPoint, To>
-    : public bool_constant<sizeof(From) <= sizeof(To)> {};  // NOLINT
-
-// LosslessArithmeticConvertible<From, To>::value is true if arithmetic
-// type From can be losslessly converted to arithmetic type To.
+// LosslessArithmeticConvertible<From, To>::value is true if and only if
+// arithmetic type From can be losslessly converted to arithmetic type To.
 //
 // It's the user's responsibility to ensure that both From and To are
 // raw (i.e. has no CV modifier, is not a pointer, and is not a
 // reference) built-in arithmetic types; the value is
 // implementation-defined when the above pre-condition is violated.
 template <typename From, typename To>
-struct LosslessArithmeticConvertible
-    : public LosslessArithmeticConvertibleImpl<
-  GMOCK_KIND_OF_(From), From, GMOCK_KIND_OF_(To), To> {};  // NOLINT
+using LosslessArithmeticConvertible =
+    LosslessArithmeticConvertibleImpl<GMOCK_KIND_OF_(From), From,
+                                      GMOCK_KIND_OF_(To), To>;
 
 // This interface knows how to report a Google Mock failure (either
 // non-fatal or fatal).
@@ -324,11 +265,11 @@ const char kWarningVerbosity[] = "warning";
 // No logs are printed.
 const char kErrorVerbosity[] = "error";
 
-// Returns true if a log with the given severity is visible according
-// to the --gmock_verbose flag.
+// Returns true if and only if a log with the given severity is visible
+// according to the --gmock_verbose flag.
 GTEST_API_ bool LogIsVisible(LogSeverity severity);
 
-// Prints the given message to stdout if 'severity' >= the level
+// Prints the given message to stdout if and only if 'severity' >= the level
 // specified by the --gmock_verbose flag.  If stack_frames_to_skip >=
 // 0, also prints the stack trace excluding the top
 // stack_frames_to_skip frames.  In opt mode, any positive
@@ -352,33 +293,6 @@ class WithoutMatchers {
 
 // Internal use only: access the singleton instance of WithoutMatchers.
 GTEST_API_ WithoutMatchers GetWithoutMatchers();
-
-// Type traits.
-
-// is_reference<T>::value is non-zero if T is a reference type.
-template <typename T> struct is_reference : public false_type {};
-template <typename T> struct is_reference<T&> : public true_type {};
-
-// type_equals<T1, T2>::value is non-zero if T1 and T2 are the same type.
-template <typename T1, typename T2> struct type_equals : public false_type {};
-template <typename T> struct type_equals<T, T> : public true_type {};
-
-// remove_reference<T>::type removes the reference from type T, if any.
-template <typename T> struct remove_reference { typedef T type; };  // NOLINT
-template <typename T> struct remove_reference<T&> { typedef T type; }; // NOLINT
-
-// DecayArray<T>::type turns an array type U[N] to const U* and preserves
-// other types.  Useful for saving a copy of a function argument.
-template <typename T> struct DecayArray { typedef T type; };  // NOLINT
-template <typename T, size_t N> struct DecayArray<T[N]> {
-  typedef const T* type;
-};
-// Sometimes people use arrays whose size is not available at the use site
-// (e.g. extern const char kNamePrefix[]).  This specialization covers that
-// case.
-template <typename T> struct DecayArray<T[]> {
-  typedef const T* type;
-};
 
 // Disable MSVC warnings for infinite recursion, since in this case the
 // the recursion is unreachable.
@@ -428,9 +342,8 @@ class StlContainerView {
   typedef const type& const_reference;
 
   static const_reference ConstReference(const RawContainer& container) {
-    // Ensures that RawContainer is not a const type.
-    testing::StaticAssertTypeEq<RawContainer,
-        GTEST_REMOVE_CONST_(RawContainer)>();
+    static_assert(!std::is_const<RawContainer>::value,
+                  "RawContainer type must not be const");
     return container;
   }
   static type Copy(const RawContainer& container) { return container; }
@@ -440,7 +353,7 @@ class StlContainerView {
 template <typename Element, size_t N>
 class StlContainerView<Element[N]> {
  public:
-  typedef GTEST_REMOVE_CONST_(Element) RawElement;
+  typedef typename std::remove_const<Element>::type RawElement;
   typedef internal::NativeArray<RawElement> type;
   // NativeArray<T> can represent a native array either by value or by
   // reference (selected by a constructor argument), so 'const type'
@@ -450,8 +363,8 @@ class StlContainerView<Element[N]> {
   typedef const type const_reference;
 
   static const_reference ConstReference(const Element (&array)[N]) {
-    // Ensures that Element is not a const type.
-    testing::StaticAssertTypeEq<Element, RawElement>();
+    static_assert(std::is_same<Element, RawElement>::value,
+                  "Element type must not be const");
     return type(array, N, RelationToSourceReference());
   }
   static type Copy(const Element (&array)[N]) {
@@ -464,8 +377,8 @@ class StlContainerView<Element[N]> {
 template <typename ElementPointer, typename Size>
 class StlContainerView< ::std::tuple<ElementPointer, Size> > {
  public:
-  typedef GTEST_REMOVE_CONST_(
-      typename internal::PointeeOf<ElementPointer>::type) RawElement;
+  typedef typename std::remove_const<
+      typename internal::PointeeOf<ElementPointer>::type>::type RawElement;
   typedef internal::NativeArray<RawElement> type;
   typedef const type const_reference;
 
@@ -497,28 +410,12 @@ struct RemoveConstFromKey<std::pair<const K, V> > {
   typedef std::pair<K, V> type;
 };
 
-// Mapping from booleans to types. Similar to boost::bool_<kValue> and
-// std::integral_constant<bool, kValue>.
-template <bool kValue>
-struct BooleanConstant {};
-
 // Emit an assertion failure due to incorrect DoDefault() usage. Out-of-lined to
 // reduce code size.
 GTEST_API_ void IllegalDoDefault(const char* file, int line);
 
-// Helper types for Apply() below.
-template <size_t... Is> struct int_pack { typedef int_pack type; };
-
-template <class Pack, size_t I> struct append;
-template <size_t... Is, size_t I>
-struct append<int_pack<Is...>, I> : int_pack<Is..., I> {};
-
-template <size_t C>
-struct make_int_pack : append<typename make_int_pack<C - 1>::type, C - 1> {};
-template <> struct make_int_pack<0> : int_pack<> {};
-
 template <typename F, typename Tuple, size_t... Idx>
-auto ApplyImpl(F&& f, Tuple&& args, int_pack<Idx...>) -> decltype(
+auto ApplyImpl(F&& f, Tuple&& args, IndexSequence<Idx...>) -> decltype(
     std::forward<F>(f)(std::get<Idx>(std::forward<Tuple>(args))...)) {
   return std::forward<F>(f)(std::get<Idx>(std::forward<Tuple>(args))...);
 }
@@ -527,9 +424,9 @@ auto ApplyImpl(F&& f, Tuple&& args, int_pack<Idx...>) -> decltype(
 template <typename F, typename Tuple>
 auto Apply(F&& f, Tuple&& args)
     -> decltype(ApplyImpl(std::forward<F>(f), std::forward<Tuple>(args),
-                          make_int_pack<std::tuple_size<Tuple>::value>())) {
+                          MakeIndexSequence<std::tuple_size<Tuple>::value>())) {
   return ApplyImpl(std::forward<F>(f), std::forward<Tuple>(args),
-                   make_int_pack<std::tuple_size<Tuple>::value>());
+                   MakeIndexSequence<std::tuple_size<Tuple>::value>());
 }
 
 // Template struct Function<F>, where F must be a function type, contains
@@ -553,8 +450,7 @@ struct Function<R(Args...)> {
   using Result = R;
   static constexpr size_t ArgumentCount = sizeof...(Args);
   template <size_t I>
-  using Arg = ElemFromList<I, typename MakeIndexSequence<sizeof...(Args)>::type,
-                           Args...>;
+  using Arg = ElemFromList<I, Args...>;
   using ArgumentTuple = std::tuple<Args...>;
   using ArgumentMatcherTuple = std::tuple<Matcher<Args>...>;
   using MakeResultVoid = void(Args...);
