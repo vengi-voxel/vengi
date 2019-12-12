@@ -11,11 +11,14 @@ namespace core {
 
 bool Input::init(uv_loop_t* loop) {
 	_tty.data = this;
-	uv_tty_init(loop, &_tty, 0, 1);
-
+	int ttyFileDescriptor = 0;
+	if (uv_tty_init(loop, &_tty, ttyFileDescriptor, 1) != 0) {
+		return false;
+	}
 	uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(&_tty);
 	if (uv_is_readable(stream)) {
 		uv_read_start(stream, onAllocBuffer, onRead);
+		return false;
 	}
 
 	return true;
