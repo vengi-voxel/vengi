@@ -42,6 +42,7 @@ public:
 		mdl.setName(email);
 		mdl.setEmail(email);
 		mdl.setPassword(password);
+		mdl.setSomedouble(1.0);
 		mdl.setRegistrationdate(persistence::Timestamp::now());
 		return mdl;
 	}
@@ -77,6 +78,9 @@ public:
 		ASSERT_TRUE(_dbHandler.select(mdl2nd, persistence::DBConditionMultiple(true, {&emailCond, &passwordCond})));
 		EXPECT_GT(mdl2nd.registrationdate().seconds(), uint64_t(0));
 		EXPECT_EQ(mdl2nd.email(), mdl.email());
+		ASSERT_NE(mdl2nd.somedouble(), nullptr);
+		ASSERT_NE(mdl.somedouble(), nullptr);
+		EXPECT_NEAR(*mdl2nd.somedouble(), *mdl.somedouble(), 0.0001);
 		ASSERT_EQ(mdl2nd.id(), mdl.id());
 
 		db::TestModel mdl3nd;
