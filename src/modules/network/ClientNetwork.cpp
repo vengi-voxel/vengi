@@ -82,6 +82,9 @@ void ClientNetwork::disconnect() {
 	}
 
 	enet_host_flush(_client);
+	if (_client == nullptr) {
+		return;
+	}
 
 	for (size_t i = 0; i < _client->peerCount; ++i) {
 		ENetPeer *peer = &_client->peers[i];
