@@ -25,6 +25,7 @@ Join our [discord Server](https://discord.gg/AgjCPXy) and help developing the ga
 * [Dependencies](docs/Dependencies.md)
 * [Compilation](docs/Compilation.md)
 * [Setup](docs/Setup.md)
+* [Configuration](docs/Configuration.md)
 * [GameDesign](docs/GameDesign.md)
 
 # Running the tests

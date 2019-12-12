@@ -22,3 +22,12 @@ write this statement
 `ALTER USER engine WITH PASSWORD 'engine';`
 
 For the tests you need a different database called `enginetest`.
+
+You can also use other user/password combinations by setting some cvars:
+
+* **db_name**
+* **db_host**
+* **db_pw**
+* **db_user**
+
+See the [configuration](docs/Configuration.md) documentation for more details.
