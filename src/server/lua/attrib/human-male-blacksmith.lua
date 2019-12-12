@@ -1,6 +1,6 @@
 require "attrib.shared"
 
-function registerBlacksmith()
+function registerHumanBlacksmith()
   local chr = attrib.createContainer("HUMAN_MALE_BLACKSMITH")
   characterDefault(chr)
   chr:register()

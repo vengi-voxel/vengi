@@ -1,6 +1,6 @@
 require "attrib.shared"
 
-function registerWorker()
+function registerHumanWorker()
   local chr = attrib.createContainer("HUMAN_MALE_WORKER")
   characterDefault(chr)
   chr:register()

@@ -1,6 +1,6 @@
 require "attrib.shared"
 
-function registerSkeleton()
+function registerUndeadSkeleton()
   local chr = attrib.createContainer("UNDEAD_MALE_SKELETON")
   characterDefault(chr)
   chr:register()

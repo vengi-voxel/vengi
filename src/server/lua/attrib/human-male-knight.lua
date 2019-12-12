@@ -1,6 +1,6 @@
 require "attrib.shared"
 
-function registerKnight()
+function registerHumanKnight()
   local chr = attrib.createContainer("HUMAN_MALE_KNIGHT")
   characterDefault(chr)
   chr:register()

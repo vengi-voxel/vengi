@@ -1,19 +1,26 @@
 require "attrib.animal-rabbit"
 require "attrib.animal-wolf"
+require "attrib.dwarf-male-blacksmith"
 require "attrib.human-male-blacksmith"
 require "attrib.human-male-knight"
+require "attrib.human-male-shepherd"
 require "attrib.human-male-worker"
 require "attrib.undead-male-skeleton"
 require "attrib.undead-male-zombie"
 
 function init()
-  registerBlacksmith()
-  registerKnight()
+  registerDwarfBlacksmith()
+
+  registerHumanBlacksmith()
+  registerHumanKnight()
+  registerHumanShepherd()
+  registerHumanWorker()
+
+  registerUndeadSkeleton()
+  registerUndeadZombie()
+
   registerRabbit()
-  registerSkeleton()
   registerWolf()
-  registerWorker()
-  registerZombie()
 
   local player = attrib.createContainer("PLAYER")
   player:absolute("SPEED", 20.0)

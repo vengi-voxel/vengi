@@ -1,6 +1,6 @@
 require "attrib.shared"
 
-function registerZombie()
+function registerUndeadZombie()
   local chr = attrib.createContainer("UNDEAD_MALE_ZOMBIE")
   characterDefault(chr)
   chr:absolute("SPEED", 8.0)

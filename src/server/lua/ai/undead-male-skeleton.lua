@@ -1,6 +1,6 @@
 require "ai.shared"
 
-function registerSkeleton ()
+function registerUndeadSkeleton ()
   local name = "UNDEAD_MALE_SKELETON"
   local rootNode = AI.createTree(name):createRoot("PrioritySelector", name)
   idlehome(rootNode)

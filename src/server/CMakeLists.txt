@@ -6,8 +6,10 @@ set(SRCS
 set(LUA_BEHAVIOURTREES
 	ai/animal-rabbit.lua
 	ai/animal-wolf.lua
+	ai/dwarf-male-blacksmith.lua
 	ai/human-male-blacksmith.lua
 	ai/human-male-knight.lua
+	ai/human-male-shepherd.lua
 	ai/human-male-worker.lua
 	ai/undead-male-skeleton.lua
 	ai/undead-male-zombie.lua
@@ -17,8 +19,10 @@ set(LUA_BEHAVIOURTREES
 set(LUA_ATTRIBUTES
 	attrib/animal-rabbit.lua
 	attrib/animal-wolf.lua
+	attrib/dwarf-male-blacksmith.lua
 	attrib/human-male-blacksmith.lua
 	attrib/human-male-knight.lua
+	attrib/human-male-shepherd.lua
 	attrib/human-male-worker.lua
 	attrib/undead-male-skeleton.lua
 	attrib/undead-male-zombie.lua
