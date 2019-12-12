@@ -89,8 +89,50 @@ void ClientNetwork::disconnect() {
 	}
 }
 
+bool ClientNetwork::isConnecting() const {
+	if (_client == nullptr) {
+		return false;
+	}
+	if (_client->peerCount == 0u) {
+		return false;
+	}
+	const ENetPeer& peer = _client->peers[0];
+	return peer.state == ENET_PEER_STATE_CONNECTING || peer.state == ENET_PEER_STATE_CONNECTION_PENDING ||
+			peer.state == ENET_PEER_STATE_ACKNOWLEDGING_CONNECT || peer.state == ENET_PEER_STATE_CONNECTION_SUCCEEDED;
+}
+
 bool ClientNetwork::isConnected() const {
-	return _client != nullptr;
+	if (_client == nullptr) {
+		return false;
+	}
+	if (_client->peerCount == 0u) {
+		return false;
+	}
+	const ENetPeer& peer = _client->peers[0];
+	return peer.state == ENET_PEER_STATE_CONNECTED;
+}
+
+bool ClientNetwork::isDisconnected() const {
+	if (_client == nullptr) {
+		return true;
+	}
+	if (_client->peerCount == 0u) {
+		return true;
+	}
+	const ENetPeer& peer = _client->peers[0];
+	return peer.state == ENET_PEER_STATE_DISCONNECTED;
+}
+
+bool ClientNetwork::isDisconnecting() const {
+	if (_client == nullptr) {
+		return false;
+	}
+	if (_client->peerCount == 0u) {
+		return false;
+	}
+	const ENetPeer& peer = _client->peers[0];
+	return peer.state == ENET_PEER_STATE_DISCONNECT_LATER || peer.state == ENET_PEER_STATE_DISCONNECTING ||
+			peer.state == ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT;
 }
 
 void ClientNetwork::update() {

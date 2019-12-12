@@ -24,11 +24,6 @@
 #include <stdlib.h>
 #include <SDL.h>
 
-// client states
-constexpr uint32_t CLIENT_DISCONNECTED = 1 << 0;
-constexpr uint32_t CLIENT_CONNECTING   = 1 << 1;
-constexpr uint32_t CLIENT_CONNECTED    = 1 << 2;
-
 class Client: public ui::turbobadger::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxelworld::WorldCreatedEvent> {
 protected:
@@ -51,7 +46,6 @@ protected:
 	voxelformat::VolumeCachePtr _volumeCache;
 
 	uint64_t _lastMovement = 0l;
-	uint32_t _state = CLIENT_DISCONNECTED;
 
 	float _fieldOfView = 60.0f;
 	float _targetDistance = 28.0f;
@@ -108,18 +102,6 @@ public:
 
 inline frontend::ClientEntityPtr Client::getEntity(frontend::ClientEntityId id) const {
 	return _worldRenderer.getEntity(id);
-}
-
-inline void Client::setState(uint32_t flag) {
-	_state |= flag;
-}
-
-inline bool Client::hasState(uint32_t flag) const {
-	return (_state & flag) != 0;
-}
-
-inline void Client::removeState(uint32_t flag) {
-	_state &= ~flag;
 }
 
 inline frontend::ClientEntityId Client::id() const {

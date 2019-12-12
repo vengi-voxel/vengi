@@ -71,11 +71,9 @@ void Client::sendMovement() {
 }
 
 void Client::onEvent(const network::DisconnectEvent& event) {
-	removeState(CLIENT_CONNECTING);
 	_network->destroy();
 	ui::turbobadger::Window* main = new frontend::LoginWindow(this);
 	new frontend::DisconnectWindow(main);
-	_state = CLIENT_DISCONNECTED;
 }
 
 void Client::onEvent(const network::NewConnectionEvent& event) {
@@ -85,13 +83,11 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 	Log::info("Trying to log into the server with %s", email.c_str());
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnect,
 			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(core::pwhash(password, "TODO"))).Union());
-	_state = CLIENT_CONNECTING;
 }
 
 void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
 	Log::info("world created");
 	new frontend::HudWindow(this, frameBufferDimension());
-	_state = CLIENT_CONNECTED;
 }
 
 core::AppState Client::onConstruct() {
@@ -222,7 +218,7 @@ void Client::beforeUI() {
 }
 
 void Client::afterRootWidget() {
-	if (hasState(CLIENT_CONNECTING)) {
+	if (_network->isConnecting()) {
 		_waiting.render();
 	}
 	Super::afterRootWidget();
@@ -268,7 +264,7 @@ bool Client::onKeyPress(int32_t key, int16_t modifier) {
 	}
 
 	if (key == SDLK_ESCAPE) {
-		if (hasState(CLIENT_CONNECTING)) {
+		if (_network->isConnecting() || _network->isConnected()) {
 			disconnect();
 		}
 	}
@@ -283,7 +279,7 @@ core::AppState Client::onRunning() {
 		Log::info("TODO: %s needs broadcast", var->name().c_str());
 	});
 	_movement.update(_deltaFrameMillis);
-	if (hasState(CLIENT_CONNECTED)) {
+	if (_network->isConnected()) {
 		_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 	}
 	_camera.update(_deltaFrameMillis);
@@ -317,7 +313,6 @@ void Client::lostPassword(const std::string& email) {
 }
 
 void Client::authFailed() {
-	removeState(CLIENT_CONNECTING);
 	core::Var::getSafe(cfg::ClientAutoLogin)->setVal(false);
 	// TODO: stack (push/pop in UIApp) window support
 	ui::turbobadger::Window* main = new frontend::LoginWindow(this);
@@ -351,7 +346,6 @@ void Client::entityRemove(frontend::ClientEntityId id) {
 }
 
 void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation) {
-	removeState(CLIENT_CONNECTING);
 	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);
 	_camera.setTarget(pos);
 	_camera.setTargetDistance(_maxTargetDistance->floatVal());
@@ -377,7 +371,6 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 		return false;
 	}
 
-	setState(CLIENT_CONNECTING);
 	peer->data = this;
 	Log::info("Connecting to server %s:%i", hostname.c_str(), port);
 	_waiting.setTextId("stateconnecting");

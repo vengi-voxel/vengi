@@ -20,7 +20,10 @@ public:
 	void disconnect();
 	bool packetReceived(ENetEvent& event) override;
 
+	bool isConnecting() const;
 	bool isConnected() const;
+	bool isDisconnected() const;
+	bool isDisconnecting() const;
 
 	inline bool sendMessage(ENetPacket* packet, int channel = 0) {
 		if (_peer == nullptr) {
