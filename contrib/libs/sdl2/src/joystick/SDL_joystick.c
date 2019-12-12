@@ -833,43 +833,49 @@ int
 SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
 {
     int posted;
+    SDL_JoystickAxisInfo *info;
 
     /* Make sure we're not getting garbage or duplicate events */
     if (axis >= joystick->naxes) {
         return 0;
     }
-    if (!joystick->axes[axis].has_initial_value) {
-        joystick->axes[axis].initial_value = value;
-        joystick->axes[axis].value = value;
-        joystick->axes[axis].zero = value;
-        joystick->axes[axis].has_initial_value = SDL_TRUE;
+
+    info = &joystick->axes[axis];
+    if (!info->has_initial_value ||
+        (!info->has_second_value && info->initial_value == -32768 && SDL_abs(value) < (SDL_JOYSTICK_AXIS_MAX / 4))) {
+        info->initial_value = value;
+        info->value = value;
+        info->zero = value;
+        info->has_initial_value = SDL_TRUE;
+    } else {
+        info->has_second_value = SDL_TRUE;
     }
-    if (value == joystick->axes[axis].value) {
+    if (value == info->value) {
         return 0;
     }
-    if (!joystick->axes[axis].sent_initial_value) {
+    if (!info->sent_initial_value) {
         /* Make sure we don't send motion until there's real activity on this axis */
         const int MAX_ALLOWED_JITTER = SDL_JOYSTICK_AXIS_MAX / 80;  /* ShanWan PS3 controller needed 96 */
-        if (SDL_abs(value - joystick->axes[axis].value) <= MAX_ALLOWED_JITTER) {
+        if (SDL_abs(value - info->value) <= MAX_ALLOWED_JITTER) {
             return 0;
         }
-        joystick->axes[axis].sent_initial_value = SDL_TRUE;
-        joystick->axes[axis].value = value; /* Just so we pass the check above */
-        SDL_PrivateJoystickAxis(joystick, axis, joystick->axes[axis].initial_value);
+        info->sent_initial_value = SDL_TRUE;
+        info->value = value; /* Just so we pass the check above */
+        SDL_PrivateJoystickAxis(joystick, axis, info->initial_value);
     }
 
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if ((value > joystick->axes[axis].zero && value >= joystick->axes[axis].value) ||
-            (value < joystick->axes[axis].zero && value <= joystick->axes[axis].value)) {
+        if ((value > info->zero && value >= info->value) ||
+            (value < info->zero && value <= info->value)) {
             return 0;
         }
     }
 
     /* Update internal joystick state */
-    joystick->axes[axis].value = value;
+    info->value = value;
 
     /* Post the event, if desired */
     posted = 0;
@@ -1158,10 +1164,10 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
     }
 }
 
-SDL_bool
-SDL_IsJoystickPS4(Uint16 vendor, Uint16 product)
+const char *
+SDL_GetCustomJoystickName(Uint16 vendor, Uint16 product)
 {
-    return (GuessControllerType(vendor, product) == k_eControllerType_PS4Controller);
+    return GuessControllerName(vendor, product);
 }
 
 SDL_bool
@@ -1170,6 +1176,57 @@ SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
     EControllerType eType = GuessControllerType(vendor, product);
     return (eType == k_eControllerType_SwitchProController ||
             eType == k_eControllerType_SwitchInputOnlyController);
+}
+
+SDL_GameControllerType
+SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name)
+{
+    SDL_GameControllerType type;
+    Uint16 vendor, product;
+
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    type = SDL_GetJoystickGameControllerType(vendor, product, name);
+    if (type == SDL_CONTROLLER_TYPE_UNKNOWN) {
+        if (SDL_IsJoystickXInput(guid)) {
+            /* This is probably an Xbox One controller */
+            return SDL_CONTROLLER_TYPE_XBOXONE;
+        }
+    }
+    return type;
+}
+
+SDL_GameControllerType
+SDL_GetJoystickGameControllerType(Uint16 vendor, Uint16 product, const char *name)
+{
+    if (vendor == 0x0000 && product == 0x0000) {
+        /* Some devices are only identifiable by their name */
+        if (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
+            SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
+            SDL_strcmp(name, "Wireless Gamepad") == 0) {
+            /* HORI or PowerA Switch Pro Controller clone */
+            return SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+        }
+        return SDL_CONTROLLER_TYPE_UNKNOWN;
+    }
+    if (vendor == 0x0001 && product == 0x0001) {
+        return SDL_CONTROLLER_TYPE_UNKNOWN;
+    }
+
+    switch (GuessControllerType(vendor, product)) {
+    case k_eControllerType_XBox360Controller:
+        return SDL_CONTROLLER_TYPE_XBOX360;
+    case k_eControllerType_XBoxOneController:
+        return SDL_CONTROLLER_TYPE_XBOXONE;
+    case k_eControllerType_PS3Controller:
+        return SDL_CONTROLLER_TYPE_PS3;
+    case k_eControllerType_PS4Controller:
+        return SDL_CONTROLLER_TYPE_PS4;
+    case k_eControllerType_SwitchProController:
+    case k_eControllerType_SwitchInputOnlyController:
+        return SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+    default:
+        return SDL_CONTROLLER_TYPE_UNKNOWN;
+    }
 }
 
 SDL_bool
@@ -1185,25 +1242,6 @@ SDL_IsJoystickSteamController(Uint16 vendor, Uint16 product)
     EControllerType eType = GuessControllerType(vendor, product);
     return (eType == k_eControllerType_SteamController ||
             eType == k_eControllerType_SteamControllerV2);
-}
-
-SDL_bool
-SDL_IsJoystickXbox360(Uint16 vendor, Uint16 product)
-{
-    /* Filter out some bogus values here */
-    if (vendor == 0x0000 && product == 0x0000) {
-        return SDL_FALSE;
-    }
-    if (vendor == 0x0001 && product == 0x0001) {
-        return SDL_FALSE;
-    }
-    return (GuessControllerType(vendor, product) == k_eControllerType_XBox360Controller);
-}
-
-SDL_bool
-SDL_IsJoystickXboxOne(Uint16 vendor, Uint16 product)
-{
-    return (GuessControllerType(vendor, product) == k_eControllerType_XBoxOneController);
 }
 
 SDL_bool
@@ -1481,7 +1519,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         }
     }
 
-    if (SDL_IsJoystickPS4(vendor, product) && SDL_IsPS4RemapperRunning()) {
+    if (SDL_GetJoystickGameControllerType(vendor, product, name) == SDL_CONTROLLER_TYPE_PS4 && SDL_IsPS4RemapperRunning()) {
         return SDL_TRUE;
     }
 

@@ -96,7 +96,10 @@
 #cmakedefine HAVE_WCSLEN 1
 #cmakedefine HAVE_WCSLCPY 1
 #cmakedefine HAVE_WCSLCAT 1
+#cmakedefine HAVE_WCSDUP 1
+#cmakedefine HAVE_WCSSTR 1
 #cmakedefine HAVE_WCSCMP 1
+#cmakedefine HAVE_WCSNCMP 1
 #cmakedefine HAVE_STRLEN 1
 #cmakedefine HAVE_STRLCPY 1
 #cmakedefine HAVE_STRLCAT 1
@@ -108,6 +111,8 @@
 #cmakedefine HAVE_STRCHR 1
 #cmakedefine HAVE_STRRCHR 1
 #cmakedefine HAVE_STRSTR 1
+#cmakedefine HAVE_STRTOK_R 1
+#cmakedefine HAVE_STRTOK_S 1
 #cmakedefine HAVE_ITOA 1
 #cmakedefine HAVE__LTOA 1
 #cmakedefine HAVE__UITOA 1
@@ -127,6 +132,7 @@
 #cmakedefine HAVE_STRCASECMP 1
 #cmakedefine HAVE__STRNICMP 1
 #cmakedefine HAVE_STRNCASECMP 1
+#cmakedefine HAVE_SSCANF 1
 #cmakedefine HAVE_VSSCANF 1
 #cmakedefine HAVE_VSNPRINTF 1
 #cmakedefine HAVE_M_PI 1

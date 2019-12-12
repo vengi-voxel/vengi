@@ -80,7 +80,8 @@ static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
 #if !SDL_USE_LIBUDEV
-static Uint32 last_joy_detect_time = 0;
+static Uint32 last_joy_detect_time;
+static time_t last_input_dir_mtime;
 #endif
 
 #define test_bit(nr, addr) \
@@ -88,10 +89,26 @@ static Uint32 last_joy_detect_time = 0;
 #define NBITS(x) ((((x)-1)/(sizeof(long) * 8))+1)
 
 static int
+PrefixMatch(const char *a, const char *b)
+{
+    int matchlen = 0;
+    while (*a && *b) {
+        if (*a++ == *b++) {
+            ++matchlen;
+        } else {
+            break;
+        }
+    }
+    return matchlen;
+}
+
+static int
 IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
     Uint16 *guid16 = (Uint16 *)guid->data;
+    const char *name;
+    const char *spot;
 
 #if !SDL_USE_LIBUDEV
     /* When udev is enabled we only get joystick devices here, so there's no need to test them */
@@ -111,12 +128,26 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
     }
 #endif
 
-    if (ioctl(fd, EVIOCGNAME(namebuflen), namebuf) < 0) {
+    if (ioctl(fd, EVIOCGID, &inpid) < 0) {
         return 0;
     }
 
-    if (ioctl(fd, EVIOCGID, &inpid) < 0) {
-        return 0;
+    name = SDL_GetCustomJoystickName(inpid.vendor, inpid.product);
+    if (name) {
+        SDL_strlcpy(namebuf, name, namebuflen);
+    } else {
+        if (ioctl(fd, EVIOCGNAME(namebuflen), namebuf) < 0) {
+            return 0;
+        }
+
+        /* Remove duplicate manufacturer in the name */
+        for (spot = namebuf + 1; *spot; ++spot) {
+            int matchlen = PrefixMatch(namebuf, spot);
+            if (matchlen > 0 && spot[matchlen - 1] == ' ') {
+                SDL_memmove(namebuf, spot, SDL_strlen(spot)+1);
+                break;
+            }
+        }
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
@@ -421,21 +452,28 @@ LINUX_JoystickDetect(void)
     Uint32 now = SDL_GetTicks();
 
     if (!last_joy_detect_time || SDL_TICKS_PASSED(now, last_joy_detect_time + SDL_JOY_DETECT_INTERVAL_MS)) {
-        DIR *folder;
-        struct dirent *dent;
+        struct stat sb;
 
-        folder = opendir("/dev/input");
-        if (folder) {
-            while ((dent = readdir(folder))) {
-                int len = SDL_strlen(dent->d_name);
-                if (len > 5 && SDL_strncmp(dent->d_name, "event", 5) == 0) {
-                    char path[PATH_MAX];
-                    SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", dent->d_name);
-                    MaybeAddDevice(path);
+        /* Opening input devices can generate synchronous device I/O, so avoid it if we can */
+        if (stat("/dev/input", &sb) == 0 && sb.st_mtime != last_input_dir_mtime) {
+            DIR *folder;
+            struct dirent *dent;
+
+            folder = opendir("/dev/input");
+            if (folder) {
+                while ((dent = readdir(folder))) {
+                    int len = SDL_strlen(dent->d_name);
+                    if (len > 5 && SDL_strncmp(dent->d_name, "event", 5) == 0) {
+                        char path[PATH_MAX];
+                        SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", dent->d_name);
+                        MaybeAddDevice(path);
+                    }
                 }
+
+                closedir(folder);
             }
 
-            closedir(folder);
+            last_input_dir_mtime = sb.st_mtime;
         }
 
         last_joy_detect_time = now;
@@ -483,6 +521,10 @@ LINUX_JoystickInit(void)
     /* Force a scan to build the initial device list */
     SDL_UDEV_Scan();
 #else
+    /* Force immediate joystick detection */
+    last_joy_detect_time = 0;
+    last_input_dir_mtime = 0;
+
     /* Report all devices currently present */
     LINUX_JoystickDetect();
 #endif

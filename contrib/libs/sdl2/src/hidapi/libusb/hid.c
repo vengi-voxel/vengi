@@ -491,7 +491,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x06a3, /* Saitek */
 		0x0738, /* Mad Catz */
 		0x07ff, /* Mad Catz */
-		0x0e6f, /* Unknown */
+		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
 		0x11c9, /* Nacon */
 		0x12ab, /* Unknown */
@@ -526,10 +526,11 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
         static const int SUPPORTED_VENDORS[] = {
             0x045e, /* Microsoft */
             0x0738, /* Mad Catz */
-            0x0e6f, /* Unknown */
+            0x0e6f, /* PDP */
             0x0f0d, /* Hori */
             0x1532, /* Razer Wildcat */
             0x24c6, /* PowerA */
+            0x2e24, /* Hyperkin */
         };
 
 	if (intf_desc->bInterfaceNumber == 0 &&
@@ -939,7 +940,10 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 		int i,j,k;
 		libusb_get_device_descriptor(usb_dev, &desc);
 
-		if (libusb_get_active_config_descriptor(usb_dev, &conf_desc) < 0)
+		res = libusb_get_active_config_descriptor(usb_dev, &conf_desc);
+		if (res < 0)
+			libusb_get_config_descriptor(usb_dev, 0, &conf_desc);
+		if (!conf_desc)
 			continue;
 		for (j = 0; j < conf_desc->bNumInterfaces; j++) {
 			const struct libusb_interface *intf = &conf_desc->interface[j];
@@ -1433,7 +1437,7 @@ static struct lang_map_entry lang_map[] = {
 	LANG("Lithuanian", "lt", 0x0427),
 	LANG("F.Y.R.O. Macedonia", "mk", 0x042F),
 	LANG("Malay - Malaysia", "ms_my", 0x043E),
-	LANG("Malay – Brunei", "ms_bn", 0x083E),
+	LANG("Malay ??? Brunei", "ms_bn", 0x083E),
 	LANG("Maltese", "mt", 0x043A),
 	LANG("Marathi", "mr", 0x044E),
 	LANG("Norwegian - Bokml", "no_no", 0x0414),
@@ -1484,7 +1488,7 @@ static struct lang_map_entry lang_map[] = {
 	LANG("Ukrainian", "uk", 0x0422),
 	LANG("Urdu", "ur", 0x0420),
 	LANG("Uzbek - Cyrillic", "uz_uz", 0x0843),
-	LANG("Uzbek – Latin", "uz_uz", 0x0443),
+	LANG("Uzbek ??? Latin", "uz_uz", 0x0443),
 	LANG("Vietnamese", "vi", 0x042A),
 	LANG("Xhosa", "xh", 0x0434),
 	LANG("Yiddish", "yi", 0x043D),
