@@ -112,6 +112,29 @@ void ServerLoop::construct() {
 		}
 	}).setHelp("Kill npc with given entity id");
 
+	core::Command::registerCommand("sv_teleport", [this] (const core::CmdArgs& args) {
+		if (args.size() < 3) {
+			Log::info("Usage: sv_teleport <entityid> <x> <z>");
+			return;
+		}
+		const EntityId id = core::string::toInt(args[0]);
+		const int x = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		UserPtr user = _entityStorage->user(id);
+		if (user) {
+			Log::info("Set user position to %i:%i", x, z);
+			user->setPos(glm::vec3(x, 20, z));
+			return;
+		}
+		NpcPtr npc = _entityStorage->npc(id);
+		if (npc) {
+			Log::info("Set npc position to %i:%i", x, z);
+			npc->setPos(glm::vec3(x, 20, z));
+			return;
+		}
+		Log::warn("Could not update position for entity id %s", args[0].c_str());
+	}).setHelp("Set the position of a specific entity to the given position");
+
 	core::Command::registerCommand("sv_createuser", [this] (const core::CmdArgs& args) {
 		if (args.size() != 3) {
 			Log::info("Usage: sv_createuser <email> <user> <passwd>");
