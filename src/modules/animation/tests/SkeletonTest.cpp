@@ -14,7 +14,7 @@ protected:
 	void test(const char *file) {
 		CharacterSkeleton skel;
 		AnimationSettings settings;
-		const std::string& lua = io::filesystem()->load(file);
+		const std::string& lua = io::filesystem()->load("%s", file);
 		ASSERT_TRUE(loadAnimationSettings(lua, settings, nullptr));
 		glm::mat4 bones[shader::SkeletonShader::getMaxBones()];
 		skel.update(settings, bones);
