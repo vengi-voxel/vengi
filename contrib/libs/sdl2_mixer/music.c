@@ -18,8 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include <string.h> /* for strtok() and strtok_s() */
-
 #include "SDL_hints.h"
 #include "SDL_log.h"
 #include "SDL_timer.h"
@@ -41,6 +39,8 @@
 #include "music_mad.h"
 #include "music_flac.h"
 #include "native_midi/native_midi.h"
+
+#include "compat.h"
 
 /* Check to make sure we are building with a new enough SDL */
 #if SDL_COMPILEDVERSION < SDL_VERSIONNUM(2, 0, 7)
@@ -153,7 +153,7 @@ static void add_music_decoder(const char *decoder)
         }
     }
 
-    ptr = SDL_realloc((void *)music_decoders, (num_decoders + 1) * sizeof (const char *));
+    ptr = SDL_realloc((void *)music_decoders, ((size_t)num_decoders + 1) * sizeof (const char *));
     if (ptr == NULL) {
         return;  /* oh well, go on without it. */
     }
@@ -194,7 +194,7 @@ int music_pcm_getaudio(void *context, void *data, int bytes, int volume,
     if (volume == MIX_MAX_VOLUME) {
         dst = snd;
     } else {
-        dst = SDL_stack_alloc(Uint8, bytes);
+        dst = SDL_stack_alloc(Uint8, (size_t)bytes);
     }
     while (len > 0 && !done) {
         int consumed = GetSome(context, dst, len, &done);
@@ -219,6 +219,8 @@ int music_pcm_getaudio(void *context, void *data, int bytes, int volume,
 /* Mixing function */
 void SDLCALL music_mixer(void *udata, Uint8 *stream, int len)
 {
+    (void)udata;
+
     while (music_playing && music_active && len > 0) {
         /* Handle fading */
         if (music_playing->fading != MIX_NO_FADING) {
@@ -273,7 +275,8 @@ void SDLCALL music_mixer(void *udata, Uint8 *stream, int len)
 /* Load the music interface libraries for a given music type */
 SDL_bool load_music_type(Mix_MusicType type)
 {
-    int i, loaded = 0;
+    size_t i;
+    int loaded = 0;
     for (i = 0; i < SDL_arraysize(s_music_interfaces); ++i) {
         Mix_MusicInterface *interface = s_music_interfaces[i];
         if (interface->type != type) {
@@ -302,7 +305,8 @@ SDL_bool load_music_type(Mix_MusicType type)
 /* Open the music interfaces for a given music type */
 SDL_bool open_music_type(Mix_MusicType type)
 {
-    int i, opened = 0;
+    size_t i;
+    int opened = 0;
     SDL_bool use_native_midi = SDL_FALSE;
 
     if (!music_spec.format) {
@@ -390,13 +394,13 @@ void open_music(const SDL_AudioSpec *spec)
     Mix_VolumeMusic(MIX_MAX_VOLUME);
 
     /* Calculate the number of ms for each callback */
-    ms_per_step = (int) (((float)spec->samples * 1000.0) / spec->freq);
+    ms_per_step = (int) (((float)spec->samples * 1000.0f) / spec->freq);
 }
 
 /* Return SDL_TRUE if the music type is available */
 SDL_bool has_music(Mix_MusicType type)
 {
-    int i;
+    size_t i;
     for (i = 0; i < SDL_arraysize(s_music_interfaces); ++i) {
         Mix_MusicInterface *interface = s_music_interfaces[i];
         if (interface->type != type) {
@@ -409,10 +413,31 @@ SDL_bool has_music(Mix_MusicType type)
     return SDL_FALSE;
 }
 
-Mix_MusicType detect_music_type_from_magic(const Uint8 *magic)
+Mix_MusicType detect_music_type(SDL_RWops *src)
 {
+    Uint8 magic[12];
+
+    if (SDL_RWread(src, magic, 1, 12) != 12) {
+        Mix_SetError("Couldn't read first 12 bytes of audio data");
+        return MUS_NONE;
+    }
+    SDL_RWseek(src, -12, RW_SEEK_CUR);
+
+    /* WAVE files have the magic four bytes "RIFF"
+       AIFF files have the magic 12 bytes "FORM" XXXX "AIFF" */
+    if (((SDL_memcmp(magic, "RIFF", 4) == 0) && (SDL_memcmp((magic+8), "WAVE", 4) == 0)) ||
+        (SDL_memcmp(magic, "FORM", 4) == 0)) {
+        return MUS_WAV;
+    }
+
     /* Ogg Vorbis files have the magic four bytes "OggS" */
     if (SDL_memcmp(magic, "OggS", 4) == 0) {
+        SDL_RWseek(src, 28, RW_SEEK_CUR);
+        SDL_RWread(src, magic, 1, 8);
+        SDL_RWseek(src,-36, RW_SEEK_CUR);
+        if (SDL_memcmp(magic, "OpusHead", 8) == 0) {
+            return MUS_OPUS;
+        }
         return MUS_OGG;
     }
 
@@ -439,40 +464,10 @@ Mix_MusicType detect_music_type_from_magic(const Uint8 *magic)
     return MUS_MOD;
 }
 
-static Mix_MusicType detect_music_type(SDL_RWops *src)
-{
-    Uint8 magic[12];
-    Mix_MusicType t;
-
-    if (SDL_RWread(src, magic, 1, 12) != 12) {
-        Mix_SetError("Couldn't read first 12 bytes of audio data");
-        return MUS_NONE;
-    }
-    SDL_RWseek(src, -12, RW_SEEK_CUR);
-
-    /* WAVE files have the magic four bytes "RIFF"
-       AIFF files have the magic 12 bytes "FORM" XXXX "AIFF" */
-    if (((SDL_memcmp(magic, "RIFF", 4) == 0) && (SDL_memcmp((magic+8), "WAVE", 4) == 0)) ||
-        (SDL_memcmp(magic, "FORM", 4) == 0)) {
-        return MUS_WAV;
-    }
-    t = detect_music_type_from_magic(magic);
-    if (t == MUS_OGG) {
-        Sint64 pos = SDL_RWtell(src);
-        SDL_RWseek(src, 28, RW_SEEK_CUR);
-        SDL_RWread(src, magic, 1, 8);
-        SDL_RWseek(src, pos, RW_SEEK_SET);
-        if (SDL_memcmp(magic, "OpusHead", 8) == 0) {
-            return MUS_OPUS;
-        }
-    }
-    return t;
-}
-
 /* Load a music file */
 Mix_Music *Mix_LoadMUS(const char *file)
 {
-    int i;
+    size_t i;
     void *context;
     char *ext;
     Mix_MusicType type;
@@ -506,7 +501,7 @@ Mix_Music *Mix_LoadMUS(const char *file)
 
     /* Use the extension as a first guess on the file type */
     type = MUS_NONE;
-    ext = strrchr(file, '.');
+    ext = SDL_strrchr(file, '.');
     if (ext) {
         ++ext; /* skip the dot in the extension */
         if (SDL_strcasecmp(ext, "WAV") == 0) {
@@ -560,7 +555,7 @@ Mix_Music *Mix_LoadMUS_RW(SDL_RWops *src, int freesrc)
 
 Mix_Music *Mix_LoadMUSType_RW(SDL_RWops *src, Mix_MusicType type, int freesrc)
 {
-    int i;
+    size_t i;
     void *context;
     Sint64 start;
 
@@ -755,6 +750,7 @@ int Mix_FadeInMusicPos(Mix_Music *music, int loops, int ms, double position)
         loops = 1;
     }
     retval = music_internal_play(music, loops, position);
+    /* Set music as active */
     music_active = (retval == 0);
     Mix_UnlockAudio();
 
@@ -1003,7 +999,7 @@ int Mix_GetSynchroValue(void)
 /* Uninitialize the music interfaces */
 void close_music(void)
 {
-    int i;
+    size_t i;
 
     Mix_HaltMusic();
 
@@ -1037,7 +1033,7 @@ void close_music(void)
 /* Unload the music interface libraries */
 void unload_music(void)
 {
-    int i;
+    size_t i;
     for (i = 0; i < SDL_arraysize(s_music_interfaces); ++i) {
         Mix_MusicInterface *interface = s_music_interfaces[i];
         if (!interface || !interface->loaded) {
@@ -1117,25 +1113,21 @@ int Mix_EachSoundFont(int (SDLCALL *function)(const char*, void*), void *data)
         return 0;
     }
 
-#if defined(__MINGW32__) || defined(__MINGW64__) || defined(__WATCOMC__)
-    for (path = strtok(paths, ";"); path; path = strtok(NULL, ";")) {
-#elif defined(_WIN32)
-    for (path = strtok_s(paths, ";", &context); path; path = strtok_s(NULL, ";", &context)) {
+#if defined(_WIN32)||defined(__OS2__)
+#define PATHSEP ";"
 #else
-    for (path = strtok_r(paths, ":;", &context); path; path = strtok_r(NULL, ":;", &context)) {
+#define PATHSEP ":;"
 #endif
+    for (path = SDL_strtokr(paths, PATHSEP, &context); path;
+         path = SDL_strtokr(NULL,  PATHSEP, &context)) {
         if (!function(path, data)) {
             continue;
-        } else {
-            soundfonts_found++;
         }
+        soundfonts_found++;
     }
 
     SDL_free(paths);
-    if (soundfonts_found > 0)
-        return 1;
-    else
-        return 0;
+    return (soundfonts_found > 0);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

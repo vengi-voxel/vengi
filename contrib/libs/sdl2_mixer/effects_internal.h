@@ -21,10 +21,10 @@
 
 /* $Id$ */
 
-#ifndef _INCLUDE_EFFECTS_INTERNAL_H_
-#define _INCLUDE_EFFECTS_INTERNAL_H_
+#ifndef INCLUDE_EFFECTS_INTERNAL_H_
+#define INCLUDE_EFFECTS_INTERNAL_H_
 
-#ifndef __MIX_INTERNAL_EFFECT__
+#ifndef MIX_INTERNAL_EFFECT__
 #error You should not include this file or use these functions.
 #endif
 
