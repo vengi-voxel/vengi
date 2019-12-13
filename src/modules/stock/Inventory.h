@@ -51,7 +51,7 @@ inline const Container* Inventory::container(uint8_t containerId) const {
 }
 
 inline int Inventory::maxContainers() const {
-	return _containers.size();
+	return (int)_containers.size();
 }
 
 }

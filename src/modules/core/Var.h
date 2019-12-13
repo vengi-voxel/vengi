@@ -73,9 +73,9 @@ protected:
 	uint8_t _updateFlags = 0u;
 
 	struct Value {
-		float _floatValue;
-		int _intValue;
-		long _longValue;
+		float _floatValue = 0.0f;
+		int _intValue = 0;
+		long _longValue = 0l;
 		std::string _value;
 	};
 
