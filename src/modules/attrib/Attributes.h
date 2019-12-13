@@ -9,6 +9,8 @@
 #include <queue>
 #include <functional>
 
+#undef max
+
 namespace attrib {
 
 struct DirtyValue {
