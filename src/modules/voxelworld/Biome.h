@@ -67,7 +67,7 @@ inline voxel::Voxel Biome::voxel(math::Random& random) const {
 
 inline voxel::Voxel Biome::voxel(uint8_t colorIndex) const {
 	core_assert(!indices.empty());
-	const uint8_t max = indices.size() - 1u;
+	const uint8_t max = (uint8_t)indices.size() - 1u;
 	const uint8_t min = 0u;
 	return voxel::Voxel(type, glm::clamp(colorIndex, min, max));
 }

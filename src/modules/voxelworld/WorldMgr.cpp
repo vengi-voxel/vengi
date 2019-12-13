@@ -163,7 +163,7 @@ int WorldMgr::findWalkableFloor(const glm::vec3& position, float maxDistanceY) c
 	const voxel::VoxelType type = material(position.x, position.y, position.z);
 	int y = voxel::NO_FLOOR_FOUND;
 	if (voxel::isEnterable(type)) {
-		raycast(position, glm::down, glm::min(maxDistanceY, position.y), [&] (const voxel::PagedVolume::Sampler& sampler) {
+		raycast(position, glm::down, (glm::min)(maxDistanceY, position.y), [&] (const voxel::PagedVolume::Sampler& sampler) {
 			voxel::VoxelType mat = sampler.voxel().getMaterial();
 			if (!voxel::isEnterable(mat)) {
 				y = sampler.position().y + 1;
@@ -172,7 +172,7 @@ int WorldMgr::findWalkableFloor(const glm::vec3& position, float maxDistanceY) c
 			return true;
 		});
 	} else {
-		raycast(position, glm::up, glm::min(maxDistanceY, (float)voxel::MAX_HEIGHT - position.y), [&] (const voxel::PagedVolume::Sampler& sampler) {
+		raycast(position, glm::up, (glm::min)(maxDistanceY, (float)voxel::MAX_HEIGHT - position.y), [&] (const voxel::PagedVolume::Sampler& sampler) {
 			voxel::VoxelType mat = sampler.voxel().getMaterial();
 			if (voxel::isEnterable(mat)) {
 				y = sampler.position().y;

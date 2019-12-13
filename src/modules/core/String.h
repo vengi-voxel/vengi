@@ -208,11 +208,11 @@ inline std::string_view trim(const std::string_view str) {
 }
 
 inline bool iequals(const std::string& a, const std::string& b) {
-	const unsigned int sz = a.size();
+	const size_t sz = a.size();
 	if (b.size() != sz) {
 		return false;
 	}
-	for (unsigned int i = 0u; i < sz; ++i) {
+	for (size_t i = 0u; i < sz; ++i) {
 		if (tolower(a[i]) != tolower(b[i])) {
 			return false;
 		}

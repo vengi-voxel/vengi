@@ -293,7 +293,7 @@ public:
 };
 
 inline uint32_t Var::getHistorySize() const {
-	return _history.size();
+	return (uint32_t)_history.size();
 }
 
 inline uint32_t Var::getHistoryIndex() const {
@@ -301,8 +301,9 @@ inline uint32_t Var::getHistoryIndex() const {
 }
 
 inline void Var::clearHistory() {
-	if (_history.size() == 1)
+	if (_history.size() == 1u) {
 		return;
+	}
 	_history.erase(_history.begin(), _history.end() - 1);
 }
 

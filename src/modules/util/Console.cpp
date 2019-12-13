@@ -299,7 +299,7 @@ void Console::cursorWordLeft() {
 		_cursorPos = 0;
 		return;
 	}
-	_cursorPos = prevWordEnd;
+	_cursorPos = (int)prevWordEnd;
 }
 
 void Console::cursorWordRight() {

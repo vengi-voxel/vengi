@@ -151,7 +151,7 @@ inline IndexType Mesh::addVertex(const VoxelVertex& vertex) {
 	}
 
 	_vecVertices.push_back(vertex);
-	return _vecVertices.size() - 1;
+	return (IndexType)_vecVertices.size() - 1;
 }
 
 inline void Mesh::clear() {

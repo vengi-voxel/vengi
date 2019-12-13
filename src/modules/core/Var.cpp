@@ -176,7 +176,7 @@ void Var::setVal(const std::string& value) {
 		}
 		if (_history.size() > 16) {
 			std::vector<Value>(_history.begin() + 8, _history.end()).swap(_history);
-			_currentHistoryPos = _history.size() - 1;
+			_currentHistoryPos = (uint32_t)_history.size() - 1;
 		}
 	}
 }

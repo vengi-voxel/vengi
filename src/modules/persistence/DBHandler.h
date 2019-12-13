@@ -207,8 +207,8 @@ public:
 	template<class MODEL>
 	bool insert(std::vector<MODEL>& models) const {
 		std::vector<const Model*> converted(models.size());
-		const int size = models.size();
-		for (int i = 0; i < size; ++i) {
+		const size_t size = models.size();
+		for (size_t i = 0u; i < size; ++i) {
 			converted[i] = &models[i];
 		}
 		return insert(converted);
