@@ -171,11 +171,11 @@ inline ai::Zone* Map::zone() const {
 }
 
 inline int Map::npcCount() const {
-	return _npcs.size();
+	return (int)_npcs.size();
 }
 
 inline int Map::userCount() const {
-	return _users.size();
+	return (int)_users.size();
 }
 
 typedef std::shared_ptr<Map> MapPtr;

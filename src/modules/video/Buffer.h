@@ -183,11 +183,11 @@ inline bool Buffer::isValid(int32_t idx) const {
 
 inline uint32_t Buffer::size(int32_t idx) const {
 	core_assert_msg(idx >= 0 && idx < MAX_HANDLES, "Given index %i is out of range", idx);
-	return _size[idx];
+	return (uint32_t)_size[idx];
 }
 
 inline uint32_t Buffer::elements(int32_t idx, int components, size_t componentSize) const {
-	return size(idx) / (components * componentSize);
+	return size(idx) / (components * (uint32_t)componentSize);
 }
 
 inline Id Buffer::bufferHandle(int32_t idx) const {

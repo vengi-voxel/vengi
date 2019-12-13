@@ -91,7 +91,7 @@ public:
 			core_trace_scoped(OctreeNodeCount);
 			int count = 0;
 			for (const typename Octree<NODE, TYPE>::OctreeNode& node : _nodes) {
-				count += node.count();
+				count += (int)node.count();
 			}
 			count += _contents.size();
 			return count;

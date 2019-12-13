@@ -74,7 +74,7 @@ private:
 			for (const QuadTreeNode& node : _nodes) {
 				count += node.count();
 			}
-			count += _contents.size();
+			count += (int)_contents.size();
 			return count;
 		}
 

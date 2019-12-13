@@ -77,7 +77,7 @@ public:
 
 	inline uint32_t size() const {
 		std::unique_lock lock(_mutex);
-		return _data.size();
+		return (uint32_t)_data.size();
 	}
 
 	bool pop(Data& poppedValue) {

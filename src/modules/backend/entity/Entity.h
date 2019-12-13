@@ -200,7 +200,7 @@ public:
 };
 
 inline int Entity::visibleCount() const {
-	return _visible.size();
+	return (int)_visible.size();
 }
 
 inline const MapPtr& Entity::map() const {
