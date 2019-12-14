@@ -610,24 +610,28 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	_aabbMeshesOcclusionQuery = _shapeRendererOcclusionQuery.create(_shapeBuilderOcclusionQuery);
 
 	if (!_worldShader.setup()) {
+		Log::error("Failed to setup the post world shader");
 		return false;
 	}
 	if (!_worldInstancedShader.setup()) {
+		Log::error("Failed to setup the post instancing shader");
 		return false;
 	}
 	if (!_waterShader.setup()) {
+		Log::error("Failed to setup the post water shader");
 		return false;
 	}
 	if (!_chrShader.setup()) {
+		Log::error("Failed to setup the post skeleton shader");
 		return false;
 	}
 	if (!_skybox.init("sky")) {
-		Log::warn("Failed to initialize the sky");
+		Log::error("Failed to initialize the sky");
 		return false;
 	}
 
 	const int shaderMaterialColorsArraySize = lengthof(shader::WorldData::MaterialblockData::materialcolor);
-	const int materialColorsArraySize = voxel::getMaterialColors().size();
+	const int materialColorsArraySize = (int)voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
 				shaderMaterialColorsArraySize, materialColorsArraySize);
