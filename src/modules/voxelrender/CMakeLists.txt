@@ -12,6 +12,7 @@ set(SRCS_SHADERS
 	shaders/world_instanced.vert shaders/world_instanced.frag
 	shaders/world.vert shaders/world.frag
 	shaders/voxel.vert shaders/voxel.frag
+	shaders/postprocess.vert shaders/postprocess.frag
 )
 set(FILES
 	sky/sky_bk.png
@@ -22,7 +23,7 @@ set(FILES
 	sky/sky_up.png
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend render voxelfont voxelworld)
-generate_shaders(${LIB} world water world_instanced voxel)
+generate_shaders(${LIB} world water world_instanced voxel postprocess)
 
 gtest_suite_sources(tests
 	tests/VoxelFrontendShaderTest.cpp

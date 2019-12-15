@@ -10,6 +10,7 @@
 #include "video/Camera.h"
 #include "video/Buffer.h"
 #include "video/UniformBuffer.h"
+#include "video/FrameBuffer.h"
 #include "video/GBuffer.h"
 #include "VoxelrenderShaders.h"
 #include "RenderShaders.h"
@@ -95,6 +96,11 @@ protected:
 
 	render::Skybox _skybox;
 
+	video::FrameBuffer _frameBuffer;
+	shader::PostprocessShader _postProcessShader;
+	video::Buffer _postProcessBuf;
+	int32_t _postProcessBufId = -1;
+
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	int32_t _aabbMeshes = -1;
@@ -139,6 +145,11 @@ protected:
 
 	bool initOpaqueBuffer();
 	bool initWaterBuffer();
+
+	void initFrameBuffer(const glm::ivec2& dimensions);
+	void shutdownFrameBuffer();
+
+	int renderToFrameBuffer(const video::Camera& camera);
 
 public:
 	WorldRenderer(const voxelworld::WorldMgrPtr& world);

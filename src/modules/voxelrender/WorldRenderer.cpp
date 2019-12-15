@@ -60,6 +60,11 @@ void WorldRenderer::shutdown() {
 	_shapeBuilder.shutdown();
 	_shapeRendererOcclusionQuery.shutdown();
 	_shapeBuilderOcclusionQuery.shutdown();
+	shutdownFrameBuffer();
+	_postProcessBuf.shutdown();
+	_postProcessBufId = -1;
+	_postProcessShader.shutdown();
+
 	for (int i = 0; i < MAX_CHUNKBUFFERS; ++i) {
 		ChunkBuffer& buf = _chunkBuffers[i];
 		video::deleteOcclusionQuery(buf.occlusionQueryId);
@@ -319,6 +324,42 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		return 0;
 	}
 
+	_frameBuffer.bind(true);
+	const int drawCallsWorld = renderToFrameBuffer(camera);
+	_frameBuffer.unbind();
+
+	{
+		video::ScopedState depthTest(video::State::DepthTest, false);
+		const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+		video::ScopedShader scoped(_postProcessShader);
+		video::ScopedTexture scopedTex(fboTexture, video::TextureUnit::Zero);
+		video::ScopedBuffer scopedBuf(_postProcessBuf);
+		if (camera.eye().y < voxel::MAX_WATER_HEIGHT) {
+			static const voxel::Voxel waterVoxel = voxel::createVoxel(voxel::VoxelType::Water, 0);
+			_postProcessShader.setColor(voxel::getMaterialColor(waterVoxel));
+		} else {
+			_postProcessShader.setColor(glm::one<glm::vec4>());
+		}
+		_postProcessShader.setTexture(video::TextureUnit::Zero);
+		const int elements = _postProcessBuf.elements(_postProcessBufId, _postProcessShader.getComponentsPos());
+		video::drawArrays(video::Primitive::Triangles, elements);
+	}
+
+	// debug rendering
+	const bool shadowMap = _shadowMap->boolVal();
+	if (shadowMap && _shadowMapShow->boolVal()) {
+		_shadow.renderShadowMap(camera);
+	}
+
+	if (_renderAABBs->boolVal()) {
+		_shapeRenderer.createOrUpdate(_aabbMeshes, _shapeBuilder);
+		_shapeRenderer.render(_aabbMeshes, camera);
+	}
+
+	return drawCallsWorld;
+}
+
+int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	core_assert_always(_opaqueBuffer.update(_opaqueVbo, _opaqueVertices));
 	core_assert_always(_opaqueBuffer.update(_opaqueIbo, _opaqueIndices));
 	core_assert_always(_waterBuffer.update(_waterVbo, _waterVertices));
@@ -404,20 +445,9 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		}
 	}
 
-	video::bindVertexArray(video::InvalidId);
-
-	_colorTexture.unbind();
-
-	if (shadowMap && _shadowMapShow->boolVal()) {
-		_shadow.renderShadowMap(camera);
-	}
-
-	if (_renderAABBs->boolVal()) {
-		_shapeRenderer.createOrUpdate(_aabbMeshes, _shapeBuilder);
-		_shapeRenderer.render(_aabbMeshes, camera);
-	}
-
 	_skybox.render(camera);
+	video::bindVertexArray(video::InvalidId);
+	_colorTexture.unbind();
 
 	return drawCallsWorld;
 }
@@ -625,6 +655,10 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		Log::error("Failed to setup the post skeleton shader");
 		return false;
 	}
+	if (!_postProcessShader.setup()) {
+		Log::error("Failed to setup the post processing shader");
+		return false;
+	}
 	if (!_skybox.init("sky")) {
 		Log::error("Failed to initialize the sky");
 		return false;
@@ -663,7 +697,52 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 40;
 	_maxAllowedDistance = glm::pow(_viewDistance + maxCullingThreshold, 2);
 
+	initFrameBuffer(dimension);
+	_postProcessBufId = _postProcessBuf.createFullscreenTextureBufferYFlipped();
+	if (_postProcessBufId == -1) {
+		return false;
+	}
+
+	struct VertexFormat {
+		constexpr VertexFormat(const glm::vec2& p, const glm::vec2& t) : pos(p), tex(t) {}
+		glm::vec2 pos;
+		glm::vec2 tex;
+	};
+	alignas(16) constexpr VertexFormat vecs[] = {
+		// left bottom
+		VertexFormat(glm::vec2(-1.0f, -1.0f), glm::vec2(0.0f)),
+		// right bottom
+		VertexFormat(glm::vec2( 1.0f, -1.0f), glm::vec2(1.0f, 0.0f)),
+		// right top
+		VertexFormat(glm::vec2( 1.0f,  1.0f), glm::vec2(1.0f)),
+		// left bottom
+		VertexFormat(glm::vec2(-1.0f, -1.0f), glm::vec2(0.0f)),
+		// right top
+		VertexFormat(glm::vec2( 1.0f,  1.0f), glm::vec2(1.0f)),
+		// left top
+		VertexFormat(glm::vec2(-1.0f,  1.0f), glm::vec2(0.0f, 1.0f)),
+	};
+
+	_postProcessBufId = _postProcessBuf.create(vecs, sizeof(vecs));
+	_postProcessBuf.addAttribute(_postProcessShader.getPosAttribute(_postProcessBufId, &VertexFormat::pos));
+	_postProcessBuf.addAttribute(_postProcessShader.getTexcoordAttribute(_postProcessBufId, &VertexFormat::tex));
+
 	return true;
+}
+
+void WorldRenderer::initFrameBuffer(const glm::ivec2& dimensions) {
+	video::TextureConfig textureCfg;
+	textureCfg.wrap(video::TextureWrap::ClampToEdge);
+	textureCfg.format(video::TextureFormat::RGBA);
+	glm::vec2 frameBufferSize(dimensions.x, dimensions.y);
+	video::FrameBufferConfig cfg;
+	cfg.dimension(frameBufferSize).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
+	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
+	_frameBuffer.init(cfg);
+}
+
+void WorldRenderer::shutdownFrameBuffer() {
+	_frameBuffer.shutdown();
 }
 
 void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
