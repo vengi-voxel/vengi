@@ -31,7 +31,7 @@ struct Variable {
 		UVEC2, UVEC3, UVEC4, IVEC2, IVEC3, IVEC4,
 		VEC2, VEC3, VEC4,
 		MAT2, MAT3, MAT4, MAT3X4, MAT4X3,
-		SAMPLER1D, SAMPLER2D, SAMPLER3D,
+		SAMPLER1D, SAMPLER2D, SAMPLER3D, SAMPLER2DMS,
 		SAMPLERCUBEMAP, SAMPLER2DARRAYSHADOW, SAMPLER2DARRAY,
 		SAMPLER1DSHADOW, SAMPLER2DSHADOW, IMAGE2D,
 		MAX
@@ -78,6 +78,7 @@ struct Variable {
 		case SAMPLER3D:
 		case SAMPLERCUBEMAP:
 		case SAMPLER2DARRAYSHADOW:
+		case SAMPLER2DMS:
 		case SAMPLER2DARRAY:
 		case SAMPLER1DSHADOW:
 		case SAMPLER2DSHADOW:
@@ -94,7 +95,7 @@ struct Variable {
 	}
 
 	inline bool isSampler() const {
-		return type == Variable::SAMPLER1D || type == Variable::SAMPLER2D || type == Variable::SAMPLER3D
+		return type == Variable::SAMPLER1D || type == Variable::SAMPLER2D || type == Variable::SAMPLER3D || type == Variable::SAMPLER2DMS
 		 || type == Variable::SAMPLER2DSHADOW || type == Variable::SAMPLER1DSHADOW || type == Variable::SAMPLERCUBEMAP;
 	}
 
