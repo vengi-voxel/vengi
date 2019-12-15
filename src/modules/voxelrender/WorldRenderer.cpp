@@ -334,9 +334,11 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		video::ScopedShader scoped(_postProcessShader);
 		video::ScopedTexture scopedTex(fboTexture, video::TextureUnit::Zero);
 		video::ScopedBuffer scopedBuf(_postProcessBuf);
-		if (camera.eye().y < voxel::MAX_WATER_HEIGHT) {
-			static const voxel::Voxel waterVoxel = voxel::createVoxel(voxel::VoxelType::Water, 0);
-			_postProcessShader.setColor(voxel::getMaterialColor(waterVoxel));
+		const int currentEyeHeight = (int)camera.eye().y;
+		if (currentEyeHeight < voxel::MAX_WATER_HEIGHT) {
+			static const voxel::Voxel waterVoxel = voxel::createColorVoxel(voxel::VoxelType::Water, 0);
+			const glm::vec4& waterColor = voxel::getMaterialColor(waterVoxel);
+			_postProcessShader.setColor(waterColor);
 		} else {
 			_postProcessShader.setColor(glm::one<glm::vec4>());
 		}

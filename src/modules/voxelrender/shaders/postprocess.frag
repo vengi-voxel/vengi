@@ -5,5 +5,5 @@ $out vec4 o_color;
 
 void main(void) {
 	vec4 color = $texture2D(u_texture, v_texcoord);
-	o_color = color * u_color;
+	o_color = vec4(color.rgb * u_color.rgb, 1.0);
 }
