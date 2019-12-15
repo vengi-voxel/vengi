@@ -10,6 +10,7 @@
 #include "frontend/ClientEntity.h"
 #include "render/Axis.h"
 #include "PlayerMovement.h"
+#include "voxelrender/PlayerCamera.h"
 #include "video/Camera.h"
 #include "animation/AnimationCache.h"
 #include "video/Buffer.h"
@@ -25,7 +26,6 @@
 class MapView: public ui::imgui::IMGUIApp {
 protected:
 	using Super = ui::imgui::IMGUIApp;
-	video::Camera _camera;
 	animation::AnimationCachePtr _animationCache;
 	voxelrender::WorldRenderer _worldRenderer;
 	voxelworld::WorldMgrPtr _worldMgr;
@@ -38,10 +38,7 @@ protected:
 	frontend::PlayerMovement _movement;
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
-
-	float _fieldOfView = 60.0f;
-	float _targetDistance = 28.0f;
-	glm::vec3 _cameraPosition {1.0f, 0.4f, 1.0f};
+	voxelrender::PlayerCamera _camera;
 
 	bool _lineModeRendering = false;
 	bool _freelook = false;

@@ -26,8 +26,9 @@ MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCach
 		const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 		const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world,
 		const voxelformat::VolumeCachePtr& volumeCache) :
-		Super(metric, filesystem, eventBus, timeProvider), _camera(),
-		_animationCache(animationCache), _worldRenderer(world), _worldMgr(world), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache) {
+		Super(metric, filesystem, eventBus, timeProvider),
+		_animationCache(animationCache), _worldRenderer(world), _worldMgr(world),
+		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _camera(world, _worldRenderer) {
 	init(ORGANISATION, "mapview");
 }
 
@@ -113,14 +114,6 @@ core::AppState MapView::onInit() {
 	}
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
-	_camera.setFarPlane(10.0f);
-	_camera.setRotationType(video::CameraRotationType::Target);
-	_camera.setFieldOfView(_fieldOfView);
-	_camera.setTargetDistance(_targetDistance);
-	_camera.setPosition(_cameraPosition);
-	_camera.setTarget(glm::zero<glm::vec3>());
-	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	_camera.update(0l);
 
 	const int groundPosY = _worldMgr->findWalkableFloor(glm::zero<glm::vec3>());
 	const glm::vec3 pos(0.0f, (float)groundPosY, 0.0f);
@@ -177,44 +170,23 @@ void MapView::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
-	_movement.updatePos(_camera, _deltaFrameSeconds, _entity, [&] (const glm::vec3& pos) {
+	_movement.updatePos(_camera.camera(), _deltaFrameSeconds, _entity, [&] (const glm::vec3& pos) {
 		const float maxWalkHeight = 3.0f;
 		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 	});
-	_camera.update(_deltaFrameMillis);
 
-	// TODO: implement collision in the camera interface
-	// you need the WolrdMgr for collision detection. Collision management should be part of the surrounding system
 	if (_updateWorld) {
-		glm::vec3 targetpos = _camera.target();
-		glm::vec3 direction = _camera.direction();
-		glm::vec3 hit;
-
-		if (_worldMgr->raycast(targetpos, direction, _targetDistance, [&] (const voxel::PagedVolume::Sampler& sampler) {
-				voxel::Voxel voxel = sampler.voxel();
-				if (!voxel::isEnterable(voxel.getMaterial())) {
-					// store position and abort raycast
-					hit = glm::vec3(sampler.position());
-					return false;
-				}
-				return true;
-			})) {
-			_camera.setTargetDistance(glm::distance(targetpos, hit));
-		} else {
-			_camera.setTargetDistance(_targetDistance);
-		}
-
-		_camera.setFarPlane(_worldRenderer.getViewDistance());
+		_camera.update(_deltaFrameMillis);
 		if (!_singlePosExtraction) {
-			_worldRenderer.extractMeshes(_camera);
+			_worldRenderer.extractMeshes(_camera.camera());
 		}
-		_worldRenderer.onRunning(_camera, _deltaFrameMillis);
+		_worldRenderer.onRunning(_camera.camera(), _deltaFrameMillis);
 	}
 	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
 	}
-	_drawCallsWorld = _worldRenderer.renderWorld(_camera, &_vertices);
+	_drawCallsWorld = _worldRenderer.renderWorld(_camera.camera(), &_vertices);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
 	}
@@ -222,11 +194,12 @@ void MapView::beforeUI() {
 
 void MapView::onRenderUI() {
 	if (ImGui::CollapsingHeader("Stats")) {
-		const glm::vec3& pos = _camera.position();
-		const glm::vec3& targetpos = _camera.target();
-		const float distance = _camera.targetDistance();
-		const float pitch = _camera.pitch();
-		const float yaw = _camera.yaw();
+		const video::Camera& camera = _camera.camera();
+		const glm::vec3& pos = camera.position();
+		const glm::vec3& targetpos = camera.target();
+		const float distance = camera.targetDistance();
+		const float pitch = camera.pitch();
+		const float yaw = camera.yaw();
 		voxelrender::WorldRenderer::Stats stats;
 		_worldRenderer.stats(stats);
 		ImGui::Text("%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
@@ -235,7 +208,7 @@ void MapView::onRenderUI() {
 		ImGui::Text("Drawcalls: %i (verts: %i)", _drawCallsWorld, _vertices);
 		ImGui::Text("Target Pos: %.2f:%.2f:%.2f ", targetpos.x, targetpos.y, targetpos.z);
 		ImGui::Text("Pos: %.2f:%.2f:%.2f, Distance:%.2f", pos.x, pos.y, pos.z, distance);
-		ImGui::Text("Yaw: %.2f Pitch: %.2f Roll: %.2f", yaw, pitch, _camera.roll());
+		ImGui::Text("Yaw: %.2f Pitch: %.2f Roll: %.2f", yaw, pitch, camera.roll());
 		ImGui::Text("Pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
 				stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive, stats.occluded);
 	}
@@ -250,7 +223,7 @@ void MapView::onRenderUI() {
 	if (ImGui::CollapsingHeader("Debug")) {
 		ImGui::Checkbox("Single position", &_singlePosExtraction);
 		if (ImGui::Button("Use current position")) {
-			_singleExtractionPoint = _camera.target();
+			_singleExtractionPoint = _camera.camera().target();
 		}
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.2f);
@@ -279,14 +252,14 @@ void MapView::onRenderUI() {
 	}
 
 	if (ImGui::CollapsingHeader("Camera")) {
-		if (ImGui::InputFloat("FOV", &_fieldOfView)) {
-			_camera.setFieldOfView(glm::clamp(_fieldOfView, 1.0f, 360.0f));
+		video::Camera& camera = _camera.camera();
+		float fieldOfView = camera.fieldOfView();
+		if (ImGui::InputFloat("FOV", &fieldOfView)) {
+			camera.setFieldOfView(glm::clamp(fieldOfView, 1.0f, 360.0f));
 		}
-		if (ImGui::InputFloat("Distance", &_targetDistance)) {
-			_camera.setTargetDistance(glm::clamp(_targetDistance, 1.0f, 200.0f));
-		}
-		if (ImGui::InputFloat3("Relative position", glm::value_ptr(_cameraPosition))) {
-			_camera.setPosition(_camera.target() + _cameraPosition);
+		float targetDistance = camera.targetDistance();
+		if (ImGui::InputFloat("Distance", &targetDistance)) {
+			camera.setTargetDistance(glm::clamp(targetDistance, 1.0f, 200.0f));
 		}
 	}
 
@@ -319,10 +292,10 @@ core::AppState MapView::onRunning() {
 
 	const bool current = isRelativeMouseMode();
 	if (current) {
-		_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+		_camera.camera().rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 	}
 
-	_axis.render(_camera);
+	_axis.render(_camera.camera());
 	_entity->update(_deltaFrameMillis);
 	return state;
 }

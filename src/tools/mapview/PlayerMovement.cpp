@@ -20,7 +20,6 @@ void PlayerMovement::shutdown() {
 }
 
 void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, ClientEntityPtr& entity, std::function<int(const glm::vec3& pos)> heightResolver) {
-
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
 
 	const attrib::ShadowAttributes& attribs = entity->attrib();
