@@ -24,12 +24,18 @@ public:
 			_worldMgr(world), _worldRenderer(worldRenderer) {
 	}
 
+	void setTarget(const glm::vec3& position);
+
 	bool init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
 	void update(int64_t deltaFrame);
 
 	video::Camera& camera();
 	const video::Camera& camera() const;
 };
+
+inline void PlayerCamera::setTarget(const glm::vec3& position) {
+	_camera.setTarget(position);
+}
 
 inline video::Camera& PlayerCamera::camera() {
 	return _camera;

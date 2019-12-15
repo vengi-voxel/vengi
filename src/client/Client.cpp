@@ -33,9 +33,10 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 		const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache) :
-		Super(metric, filesystem, eventBus, timeProvider), _camera(), _animationCache(animationCache),
+		Super(metric, filesystem, eventBus, timeProvider), _animationCache(animationCache),
 		_network(network), _world(world), _messageSender(messageSender),
-		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache) {
+		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
+		_camera(world, _worldRenderer) {
 	init(ORGANISATION, "client");
 }
 
@@ -148,13 +149,6 @@ core::AppState Client::onInit() {
 	}
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
-	_camera.setFarPlane(10.0f);
-	_camera.setRotationType(video::CameraRotationType::Target);
-	_camera.setFieldOfView(_fieldOfView);
-	_camera.setTargetDistance(_maxTargetDistance->floatVal());
-	_camera.setPosition(_cameraPosition);
-	_camera.setTarget(glm::zero<glm::vec3>());
-	_camera.update(0l);
 	_waiting.init();
 
 	if (!_animationCache->init()) {
@@ -209,11 +203,11 @@ void Client::beforeUI() {
 	if (_player) {
 		const glm::vec3& pos = _player->position();
 		_camera.setTarget(pos);
-		_camera.setFarPlane(_worldRenderer.getViewDistance());
 		_camera.update(_deltaFrameMillis);
-		_worldRenderer.extractMeshes(_camera);
-		_worldRenderer.onRunning(_camera, _deltaFrameMillis);
-		_worldRenderer.renderWorld(_camera);
+		const video::Camera& camera = _camera.camera();
+		_worldRenderer.extractMeshes(camera);
+		_worldRenderer.onRunning(camera, _deltaFrameMillis);
+		_worldRenderer.renderWorld(camera);
 	}
 }
 
@@ -280,7 +274,7 @@ core::AppState Client::onRunning() {
 	});
 	_movement.update(_deltaFrameMillis);
 	if (_network->isConnected()) {
-		_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+		_camera.camera().rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 	}
 	_camera.update(_deltaFrameMillis);
 	sendMovement();
@@ -348,12 +342,15 @@ void Client::entityRemove(frontend::ClientEntityId id) {
 void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation) {
 	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);
 	_camera.setTarget(pos);
-	_camera.setTargetDistance(_maxTargetDistance->floatVal());
-	_camera.setPosition(pos + _cameraPosition);
+
+	// TODO:get rid of this
+	//_camera.camera().setTargetDistance(_maxTargetDistance->floatVal());
+	//_camera.camera().setPosition(pos + _cameraPosition);
+
 	const network::EntityType type = network::EntityType::PLAYER;
 	_player = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
 	_worldRenderer.addEntity(_player);
-	_worldRenderer.extractMeshes(_camera);
+	_worldRenderer.extractMeshes(_camera.camera());
 
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnected,

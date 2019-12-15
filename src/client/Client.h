@@ -8,6 +8,7 @@
 #include "frontend/ClientEntity.h"
 #include "frontend/Movement.h"
 #include "voxelrender/WorldRenderer.h"
+#include "voxelrender/PlayerCamera.h"
 #include "voxelfont/VoxelFont.h"
 #include "core/Var.h"
 #include "core/Common.h"
@@ -28,7 +29,6 @@ class Client: public ui::turbobadger::UIApp, public core::IEventBusHandler<netwo
 		network::DisconnectEvent>, public core::IEventBusHandler<voxelworld::WorldCreatedEvent> {
 protected:
 	using Super = ui::turbobadger::UIApp;
-	video::Camera _camera;
 	animation::AnimationCachePtr _animationCache;
 	network::ClientNetworkPtr _network;
 	voxelworld::WorldMgrPtr _world;
@@ -44,12 +44,9 @@ protected:
 	ui::turbobadger::WaitingMessage _waiting;
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
+	voxelrender::PlayerCamera _camera;
 
 	uint64_t _lastMovement = 0l;
-
-	float _fieldOfView = 60.0f;
-	float _targetDistance = 28.0f;
-	glm::vec3 _cameraPosition {1.0f, 0.4f, 1.0f};
 
 	void setState(uint32_t flag);
 	bool hasState(uint32_t flag) const;
