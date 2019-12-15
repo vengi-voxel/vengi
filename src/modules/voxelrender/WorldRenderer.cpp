@@ -747,7 +747,7 @@ void WorldRenderer::shutdownFrameBuffer() {
 	_frameBuffer.shutdown();
 }
 
-void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
+void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
 	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
 	_deltaFrame = dt;
@@ -774,6 +774,10 @@ void WorldRenderer::onRunning(const video::Camera& camera, uint64_t dt) {
 		_octree.remove(&chunkBuffer);
 		video::deleteOcclusionQuery(chunkBuffer.occlusionQueryId);
 		Log::trace("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
+	}
+
+	for (const auto& e : _entities) {
+		e.second->update(dt);
 	}
 }
 

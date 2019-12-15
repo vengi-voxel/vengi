@@ -206,7 +206,7 @@ void Client::beforeUI() {
 		_camera.update(_deltaFrameMillis);
 		const video::Camera& camera = _camera.camera();
 		_worldRenderer.extractMeshes(camera);
-		_worldRenderer.onRunning(camera, _deltaFrameMillis);
+		_worldRenderer.update(camera, _deltaFrameMillis);
 		_worldRenderer.renderWorld(camera);
 	}
 }

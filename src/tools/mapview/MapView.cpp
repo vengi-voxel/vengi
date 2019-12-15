@@ -180,7 +180,7 @@ void MapView::beforeUI() {
 		if (!_singlePosExtraction) {
 			_worldRenderer.extractMeshes(_camera.camera());
 		}
-		_worldRenderer.onRunning(_camera.camera(), _deltaFrameMillis);
+		_worldRenderer.update(_camera.camera(), _deltaFrameMillis);
 	}
 	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
@@ -296,7 +296,6 @@ core::AppState MapView::onRunning() {
 	}
 
 	_axis.render(_camera.camera());
-	_entity->update(_deltaFrameMillis);
 	return state;
 }
 
