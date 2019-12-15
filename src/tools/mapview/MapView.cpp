@@ -192,7 +192,7 @@ void MapView::beforeUI() {
 
 		if (_worldMgr->raycast(targetpos, direction, _targetDistance, [&] (const voxel::PagedVolume::Sampler& sampler) {
 				voxel::Voxel voxel = sampler.voxel();
-				if (voxel::isBlocked(voxel.getMaterial())) {
+				if (!voxel::isEnterable(voxel.getMaterial())) {
 					// store position and abort raycast
 					hit = glm::vec3(sampler.position());
 					return false;
