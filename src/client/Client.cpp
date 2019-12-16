@@ -44,10 +44,6 @@ Client::~Client() {
 }
 
 void Client::sendMovement() {
-	if (_now - _lastMovement <= 100UL) {
-		return;
-	}
-
 	network::MoveDirection moveMask = network::MoveDirection::NONE;
 	if (_movement.left()) {
 		moveMask |= network::MoveDirection::MOVELEFT;
@@ -63,7 +59,6 @@ void Client::sendMovement() {
 	if (_lastMoveMask == moveMask) {
 		return;
 	}
-	_lastMovement = _now;
 	_lastMoveMask = moveMask;
 	// TODO: we can't use the camera, as we are aiming for a freelook mode, where the players' angles might be different from the camera's
 	const float pitch = 0.0f;

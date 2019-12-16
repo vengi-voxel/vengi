@@ -46,8 +46,6 @@ protected:
 	voxelformat::VolumeCachePtr _volumeCache;
 	voxelrender::PlayerCamera _camera;
 
-	uint64_t _lastMovement = 0l;
-
 	void setState(uint32_t flag);
 	bool hasState(uint32_t flag) const;
 	void removeState(uint32_t flag);
