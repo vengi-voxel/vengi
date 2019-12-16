@@ -26,7 +26,7 @@ private:
 public:
 	bool jump() const;
 
-	void updatePos(video::Camera& camera, float deltaFrameSeconds, ClientEntityPtr& entity, std::function<int(const glm::vec3& pos)> heightResolver);
+	void updatePos(float orientation, float deltaFrameSeconds, ClientEntityPtr& entity, std::function<int(const glm::vec3& pos)> heightResolver);
 
 	/**
 	 * @brief Available after updatePos() was called.

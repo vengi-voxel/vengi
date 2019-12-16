@@ -19,10 +19,10 @@ void PlayerMovement::shutdown() {
 	_jump.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
 }
 
-void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, ClientEntityPtr& entity, std::function<int(const glm::vec3& pos)> heightResolver) {
+void PlayerMovement::updatePos(float orientation, float deltaFrameSeconds, ClientEntityPtr& entity, std::function<int(const glm::vec3& pos)> heightResolver) {
 	const attrib::ShadowAttributes& attribs = entity->attrib();
 	const double speed = attribs.current(attrib::Type::SPEED);
-	const glm::vec3& md = moveDelta(speed, camera.yaw());
+	const glm::vec3& md = moveDelta(speed, orientation);
 	const glm::vec3& currentPos = entity->position();
 
 	glm::vec3 newPos = currentPos + md;

@@ -170,7 +170,7 @@ void MapView::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
-	_movement.updatePos(_camera.camera(), _deltaFrameSeconds, _entity, [&] (const glm::vec3& pos) {
+	_movement.updatePos(_camera.camera().yaw(), _deltaFrameSeconds, _entity, [&] (const glm::vec3& pos) {
 		const float maxWalkHeight = 3.0f;
 		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 	});
