@@ -27,7 +27,7 @@ public:
 	void setTarget(const glm::vec3& position);
 
 	bool init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
-	void update(int64_t deltaFrame);
+	void update(const glm::vec3& entityPosition, int64_t deltaFrame);
 
 	video::Camera& camera();
 	const video::Camera& camera() const;

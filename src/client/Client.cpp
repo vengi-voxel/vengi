@@ -201,9 +201,8 @@ void Client::beforeUI() {
 	Super::beforeUI();
 
 	if (_player) {
-		const glm::vec3& pos = _player->position();
-		_camera.setTarget(pos);
-		_camera.update(_deltaFrameMillis);
+		_camera.update(_player->position(), _deltaFrameMillis);
+		_movement.update(_deltaFrameMillis);
 		const video::Camera& camera = _camera.camera();
 		_worldRenderer.extractMeshes(camera);
 		_worldRenderer.update(camera, _deltaFrameMillis);
@@ -272,11 +271,9 @@ core::AppState Client::onRunning() {
 	core::Var::visitBroadcast([] (const core::VarPtr& var) {
 		Log::info("TODO: %s needs broadcast", var->name().c_str());
 	});
-	_movement.update(_deltaFrameMillis);
 	if (_network->isConnected()) {
 		_camera.camera().rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 	}
-	_camera.update(_deltaFrameMillis);
 	sendMovement();
 	if (state == core::AppState::Running) {
 		_network->update();

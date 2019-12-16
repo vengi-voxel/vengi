@@ -21,7 +21,9 @@ bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBuffe
 	return true;
 }
 
-void PlayerCamera::update(int64_t deltaFrame) {
+void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
+	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
+	_camera.setTarget(entityPosition + eye);
 	_camera.update(deltaFrame);
 	glm::vec3 targetpos = _camera.target();
 	glm::vec3 direction = _camera.direction();
