@@ -34,7 +34,7 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 		const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache) :
 		Super(metric, filesystem, eventBus, timeProvider), _animationCache(animationCache),
-		_network(network), _world(world), _messageSender(messageSender),
+		_network(network), _worldMgr(world), _messageSender(messageSender),
 		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
 		_camera(world, _worldRenderer) {
 	init(ORGANISATION, "client");
@@ -126,7 +126,7 @@ core::AppState Client::onInit() {
 	regHandler(network::ServerMsgType::EntityUpdate, EntityUpdateHandler);
 	regHandler(network::ServerMsgType::UserSpawn, UserSpawnHandler);
 	regHandler(network::ServerMsgType::AuthFailed, AuthFailedHandler);
-	regHandler(network::ServerMsgType::Seed, SeedHandler, _world, _eventBus);
+	regHandler(network::ServerMsgType::Seed, SeedHandler, _worldMgr, _eventBus);
 
 	core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
@@ -165,7 +165,7 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_world->init(filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
+	if (!_worldMgr->init(filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
 		return core::AppState::InitFailure;
 	}
 
@@ -236,7 +236,7 @@ core::AppState Client::onCleanup() {
 	_worldRenderer.shutdown();
 	core::AppState state = Super::onCleanup();
 	Log::info("shutting down the world");
-	_world->shutdown();
+	_worldMgr->shutdown();
 	_player = frontend::ClientEntityPtr();
 	Log::info("shutting down the network");
 	_network->shutdown();

@@ -31,7 +31,7 @@ protected:
 	using Super = ui::turbobadger::UIApp;
 	animation::AnimationCachePtr _animationCache;
 	network::ClientNetworkPtr _network;
-	voxelworld::WorldMgrPtr _world;
+	voxelworld::WorldMgrPtr _worldMgr;
 	network::ClientMessageSenderPtr _messageSender;
 	voxelrender::WorldRenderer _worldRenderer;
 	flatbuffers::FlatBufferBuilder _moveFbb;
