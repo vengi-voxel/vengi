@@ -9,7 +9,7 @@
 #include "voxelrender/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "render/Axis.h"
-#include "PlayerMovement.h"
+#include "frontend/PlayerMovement.h"
 #include "voxelrender/PlayerCamera.h"
 #include "video/Camera.h"
 #include "animation/AnimationCache.h"
