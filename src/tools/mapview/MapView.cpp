@@ -174,6 +174,8 @@ void MapView::beforeUI() {
 		const float maxWalkHeight = 3.0f;
 		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 	});
+	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
+	_camera.camera().setTarget(_entity->position() + eye);
 
 	if (_updateWorld) {
 		_camera.update(_deltaFrameMillis);

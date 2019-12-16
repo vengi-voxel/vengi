@@ -20,8 +20,6 @@ void PlayerMovement::shutdown() {
 }
 
 void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, ClientEntityPtr& entity, std::function<int(const glm::vec3& pos)> heightResolver) {
-	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
-
 	const attrib::ShadowAttributes& attribs = entity->attrib();
 	const double speed = attribs.current(attrib::Type::SPEED);
 	const glm::vec3& md = moveDelta(speed, camera.yaw());
@@ -72,8 +70,6 @@ void PlayerMovement::updatePos(video::Camera& camera, float deltaFrameSeconds, C
 		entity->setAnimation(animation::Animation::Idle);
 	}
 	entity->setPosition(newPos);
-
-	camera.setTarget(newPos + eye);
 }
 
 glm::vec3 PlayerMovement::calculateDelta(const glm::quat& rot, float speed) {
