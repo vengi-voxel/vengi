@@ -32,16 +32,16 @@ void PlayerMovement::updatePos(float orientation, float deltaFrameSeconds, Clien
 	}
 	_delay -= deltaFrameSeconds;
 	if (jump()) {
-		if (_flying) {
+		if (_gliding) {
 			if (_delay <= 0.0f) {
-				_flying = false;
+				_gliding = false;
 				_jumping = true;
 				_delay = 0.5f;
 			}
 		} else if (_jumping) {
 			if (_delay <= 0.0f) {
 				_jumping = false;
-				_flying = true;
+				_gliding = true;
 				_delay = 0.5f;
 			}
 		} else {
@@ -50,19 +50,19 @@ void PlayerMovement::updatePos(float orientation, float deltaFrameSeconds, Clien
 			_delay = 0.5f;
 		}
 	}
-	const float gravity = _flying ? 0.1f : 20.0f;
+	const float gravity = _gliding ? 0.1f : 20.0f;
 	_velocityY -= gravity * deltaFrameSeconds;
 	newPos.y += _velocityY * deltaFrameSeconds;
 	if (newPos.y <= _groundHeight) {
 		newPos.y = _groundHeight;
 		_velocityY = 0.0f;
 		_jumping = false;
-		_flying = false;
+		_gliding = false;
 		_delay = 0.0f;
 	}
 	if (_jumping) {
 		entity->setAnimation(animation::Animation::Jump);
-	} else if (_flying) {
+	} else if (_gliding) {
 		entity->setAnimation(animation::Animation::Glide);
 	} else if (moving()) {
 		entity->setAnimation(animation::Animation::Run);
@@ -73,7 +73,7 @@ void PlayerMovement::updatePos(float orientation, float deltaFrameSeconds, Clien
 }
 
 glm::vec3 PlayerMovement::calculateDelta(const glm::quat& rot, float speed) {
-	if (_flying || _jumping) {
+	if (_gliding || _jumping) {
 		glm::vec3 delta(0.0f);
 		if (forward()) {
 			delta += rot * (glm::forward * speed);

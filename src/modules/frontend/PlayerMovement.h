@@ -17,7 +17,7 @@ private:
 	core::ActionButton _jump;
 
 	bool _jumping = false;
-	bool _flying = false;
+	bool _gliding = false;
 	float _velocityY = 0.0f;
 	int _groundHeight = 0;
 	float _delay = 0.0f;
