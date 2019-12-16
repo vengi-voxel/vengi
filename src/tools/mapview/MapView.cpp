@@ -170,23 +170,24 @@ void MapView::beforeUI() {
 	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
-	_movement.updatePos(_camera.camera().yaw(), _deltaFrameSeconds, _entity, [&] (const glm::vec3& pos) {
+	const video::Camera& camera = _camera.camera();
+	_movement.updatePos(camera.yaw(), _deltaFrameSeconds, _entity, [&] (const glm::vec3& pos) {
 		const float maxWalkHeight = 3.0f;
 		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 	});
+	_camera.update(_entity->position(), _deltaFrameMillis);
 
 	if (_updateWorld) {
-		_camera.update(_entity->position(), _deltaFrameMillis);
 		if (!_singlePosExtraction) {
-			_worldRenderer.extractMeshes(_camera.camera());
+			_worldRenderer.extractMeshes(camera);
 		}
-		_worldRenderer.update(_camera.camera(), _deltaFrameMillis);
+		_worldRenderer.update(camera, _deltaFrameMillis);
 	}
 	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
 	}
-	_drawCallsWorld = _worldRenderer.renderWorld(_camera.camera(), &_vertices);
+	_drawCallsWorld = _worldRenderer.renderWorld(camera, &_vertices);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
 	}
