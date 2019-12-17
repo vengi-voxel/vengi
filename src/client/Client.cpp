@@ -57,7 +57,7 @@ void Client::sendMovement() {
 	}
 
 	if (_movement.jump()) {
-		moveMask |= network::MoveDirection::MOVEUP;
+		moveMask |= network::MoveDirection::JUMP;
 	}
 
 	if (_lastMoveMask == moveMask) {
@@ -200,13 +200,12 @@ void Client::beforeUI() {
 	Super::beforeUI();
 
 	if (_player) {
+		const video::Camera& camera = _camera.camera();
 		_camera.update(_player->position(), _deltaFrameMillis);
-		_movement.updatePos(_camera.camera().yaw(), _deltaFrameSeconds, _player, [&] (const glm::vec3& pos) {
+		_movement.update(_deltaFrameSeconds, camera.yaw(), _player, [&] (const glm::vec3& pos) {
 			const float maxWalkHeight = 3.0f;
 			return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 		});
-		_movement.update(_deltaFrameMillis);
-		const video::Camera& camera = _camera.camera();
 		_worldRenderer.extractMeshes(camera);
 		_worldRenderer.update(camera, _deltaFrameMillis);
 		_worldRenderer.renderWorld(camera);

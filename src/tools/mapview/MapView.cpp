@@ -170,7 +170,7 @@ void MapView::beforeUI() {
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
 	const video::Camera& camera = _camera.camera();
-	_movement.updatePos(camera.yaw(), _deltaFrameSeconds, _entity, [&] (const glm::vec3& pos) {
+	_movement.update(_deltaFrameSeconds, camera.yaw(), _entity, [&] (const glm::vec3& pos) {
 		const float maxWalkHeight = 3.0f;
 		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 	});
@@ -287,8 +287,6 @@ core::AppState MapView::onRunning() {
 	core_trace_scoped(MapViewOnRunning);
 	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
 	const core::AppState state = Super::onRunning();
-
-	_movement.update(_deltaFrameMillis);
 
 	const bool current = isRelativeMouseMode();
 	if (current) {

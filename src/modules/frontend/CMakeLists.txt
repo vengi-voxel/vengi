@@ -5,4 +5,4 @@ set(SRCS
 )
 
 set(LIB frontend)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES attrib stock animation)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES attrib stock animation shared)
