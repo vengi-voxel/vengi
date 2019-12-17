@@ -60,15 +60,17 @@ void Client::sendMovement() {
 		moveMask |= network::MoveDirection::JUMP;
 	}
 
-	// TODO: orientation must match, too
-	if (_lastMoveMask == moveMask) {
-		return;
-	}
-	_lastMoveMask = moveMask;
 	// TODO: we can't use the camera, as we are aiming for a freelook mode, where the players' angles might be different from the camera's
-	const float pitch = 0.0f;
-	const float yaw = 0.0f;
-	_messageSender->sendClientMessage(_moveFbb, network::ClientMsgType::Move, CreateMove(_moveFbb, moveMask, pitch, yaw).Union());
+	const video::Camera& camera = _camera.camera();
+	const float pitch = camera.pitch();
+	const float yaw = camera.yaw();
+	glm::vec2 moveAngles(pitch, yaw);
+
+	if (_lastMoveMask != moveMask || !glm::all(glm::epsilonEqual(moveAngles, _lastMoveAngles, 0.0001f))) {
+		_lastMoveMask = moveMask;
+		_lastMoveAngles = moveAngles;
+		_messageSender->sendClientMessage(_moveFbb, network::ClientMsgType::Move, CreateMove(_moveFbb, moveMask, moveAngles.x, moveAngles.y).Union());
+	}
 }
 
 void Client::onEvent(const network::DisconnectEvent& event) {

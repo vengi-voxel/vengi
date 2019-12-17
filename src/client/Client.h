@@ -37,6 +37,7 @@ protected:
 	flatbuffers::FlatBufferBuilder _moveFbb;
 	frontend::PlayerMovement _movement;
 	network::MoveDirection _lastMoveMask = network::MoveDirection::NONE;
+	glm::vec2 _lastMoveAngles {0.0f};
 	core::VarPtr _rotationSpeed;
 	core::VarPtr _maxTargetDistance;
 	frontend::ClientEntityPtr _player;
