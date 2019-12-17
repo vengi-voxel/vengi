@@ -15,7 +15,6 @@
 #include "voxel/Picking.h"
 #include "core/io/Filesystem.h"
 #include "ui/imgui/IMGUI.h"
-#include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 #include "voxelgenerator/Spiral.h"
 #include "attrib/Attributes.h"

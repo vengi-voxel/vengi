@@ -3,7 +3,6 @@
  */
 
 #include "ViewportController.h"
-#include "frontend/Movement.h"
 
 namespace voxedit {
 

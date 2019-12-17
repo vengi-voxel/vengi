@@ -26,12 +26,13 @@ protected:
 
 	uint64_t _deltaMillis = 0ul;
 
-	virtual glm::vec3 calculateDelta(const glm::quat& rot, float speed);
+	glm::vec3 calculateDelta(const glm::quat& rot, float speed);
 
 public:
+	virtual ~Movement() {}
 	void construct() override;
 	bool init() override;
-	virtual void update(uint64_t deltaMillis);
+	void update(uint64_t deltaMillis);
 	void shutdown() override;
 
 	bool left() const;

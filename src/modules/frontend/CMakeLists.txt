@@ -1,7 +1,6 @@
 set(SRCS
 	ClientEntity.h ClientEntity.cpp
 	ClientEntityId.h
-	Movement.h Movement.cpp
 	PlayerMovement.h PlayerMovement.cpp
 )
 
