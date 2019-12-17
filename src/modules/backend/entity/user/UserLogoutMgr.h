@@ -31,6 +31,10 @@ public:
 	 */
 	void triggerLogout();
 	bool isDisconnect() const;
+	/**
+	 * @brief Updating the last action time whenever the user did an action to prevent the automatic
+	 * logout-on-inactivity to be triggered.
+	 */
 	void updateLastActionTime();
 
 	void update(long dt);
