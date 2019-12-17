@@ -10,7 +10,7 @@
 #include "video/Camera.h"
 #include "render/Axis.h"
 #include "render/Plane.h"
-#include "frontend/Movement.h"
+#include "Movement.h"
 
 class TestApp: public ui::imgui::IMGUIApp {
 private:
@@ -23,7 +23,7 @@ protected:
 	render::Axis _axis;
 	render::Plane _plane;
 	glm::vec4 _planeColor = core::Color::White;
-	frontend::Movement _movement;
+	testcore::Movement _movement;
 	core::VarPtr _rotationSpeed;
 	float _cameraSpeed = 10.0f;
 
