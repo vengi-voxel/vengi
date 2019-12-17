@@ -13,7 +13,6 @@ namespace shared {
 
 class SharedMovement {
 protected:
-	float _deltaSeconds = 0.0f;
 	network::MoveDirection _move = network::MoveDirection::NONE;
 	bool _gliding = false;
 	bool _jumping = false;
@@ -23,9 +22,8 @@ protected:
 	float _delay = 0.0f;
 
 	glm::vec3 calculateDelta(const glm::quat& rot, float speed);
-	glm::vec3 moveDelta(float speed, float orientation);
 public:
-	glm::vec3 update(float deltaFrameSeconds, float orientation, double speed, const glm::vec3& currentPos, std::function<int(const glm::vec3& pos)> heightResolver);
+	glm::vec3 update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, std::function<int(const glm::vec3& pos)> heightResolver);
 
 	bool left() const;
 	bool right() const;

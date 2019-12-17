@@ -32,46 +32,36 @@ glm::vec3 SharedMovement::calculateDelta(const glm::quat& rot, float speed) {
 	return delta;
 }
 
-glm::vec3 SharedMovement::moveDelta(float speed, float orientation) {
-	if (_deltaSeconds <= glm::epsilon<float>()) {
-		return glm::zero<glm::vec3>();
+glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, std::function<int(const glm::vec3& pos)> heightResolver) {
+	glm::vec3 newPos = currentPos;
+	if (deltaFrameSeconds > glm::epsilon<float>()) {
+		const glm::quat& rot = glm::angleAxis(orientation, glm::up);
+		speed *= deltaFrameSeconds;
+		newPos += calculateDelta(rot, speed);
 	}
-
-	const glm::quat& rot = glm::angleAxis(orientation, glm::up);
-	speed *= _deltaSeconds;
-	const glm::vec3& delta = calculateDelta(rot, speed);
-	_deltaSeconds = 0.0f;
-	return delta;
-}
-
-glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, double speed, const glm::vec3& currentPos, std::function<int(const glm::vec3& pos)> heightResolver) {
-	_deltaSeconds = deltaFrameSeconds;
-
-	const glm::vec3& md = moveDelta(speed, orientation);
-
-	glm::vec3 newPos = currentPos + md;
 	_groundHeight = heightResolver(newPos);
 	if (_groundHeight < voxel::MIN_HEIGHT) {
 		_groundHeight = voxel::MIN_HEIGHT;
 	}
 	_delay -= deltaFrameSeconds;
+	const float inputDelaySeconds = 0.5f;
 	if (jump()) {
 		if (_gliding) {
 			if (_delay <= 0.0f) {
 				_gliding = false;
 				_jumping = true;
-				_delay = 0.5f;
+				_delay = inputDelaySeconds;
 			}
 		} else if (_jumping) {
 			if (_delay <= 0.0f) {
 				_jumping = false;
 				_gliding = true;
-				_delay = 0.5f;
+				_delay = inputDelaySeconds;
 			}
 		} else {
 			_velocityY = 10.0f;
 			_jumping = true;
-			_delay = 0.5f;
+			_delay = inputDelaySeconds;
 		}
 	}
 	const float gravity = _gliding ? 0.1f : 20.0f;
