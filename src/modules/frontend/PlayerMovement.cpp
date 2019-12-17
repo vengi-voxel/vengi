@@ -81,13 +81,13 @@ void PlayerMovement::updatePos(float orientation, float deltaFrameSeconds, Clien
 		_delay = 0.0f;
 	}
 	if (_jumping) {
-		entity->setAnimation(animation::Animation::Jump);
+		entity->setAnimation(animation::Animation::JUMP);
 	} else if (_gliding) {
-		entity->setAnimation(animation::Animation::Glide);
+		entity->setAnimation(animation::Animation::GLIDE);
 	} else if (moving()) {
-		entity->setAnimation(animation::Animation::Run);
+		entity->setAnimation(animation::Animation::RUN);
 	} else {
-		entity->setAnimation(animation::Animation::Idle);
+		entity->setAnimation(animation::Animation::IDLE);
 	}
 	entity->setPosition(newPos);
 }

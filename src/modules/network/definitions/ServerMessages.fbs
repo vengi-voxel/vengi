@@ -27,6 +27,7 @@ table EntitySpawn {
 	type:EntityType;
 	pos:Vec3;
 	rotation:float = 0.0;
+	animation:Animation;
 }
 
 /// sent whenever an entity vanishes from the visible area of an user
@@ -41,6 +42,7 @@ table EntityUpdate {
 	id:long (key);
 	pos:Vec3;
 	rotation:float = 0.0;
+	animation:Animation;
 }
 
 table StartCooldown {

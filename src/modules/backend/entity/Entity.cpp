@@ -186,7 +186,7 @@ void Entity::sendEntityUpdate(const EntityPtr& entity) const {
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	_entityUpdateFBB.Clear();
 	_messageSender->sendServerMessage(_peer, _entityUpdateFBB, network::ServerMsgType::EntityUpdate,
-			network::CreateEntityUpdate(_entityUpdateFBB, entity->id(), &pos, entity->orientation()).Union());
+			network::CreateEntityUpdate(_entityUpdateFBB, entity->id(), &pos, entity->orientation(), entity->animation()).Union());
 }
 
 void Entity::sendEntitySpawn(const EntityPtr& entity) const {
@@ -199,7 +199,7 @@ void Entity::sendEntitySpawn(const EntityPtr& entity) const {
 	_entitySpawnFBB.Clear();
 	// TODO: User::sendUserSpawn()?
 	_messageSender->sendServerMessage(_peer, _entitySpawnFBB, network::ServerMsgType::EntitySpawn,
-			network::CreateEntitySpawn(_entitySpawnFBB, entity->id(), entity->entityType(), &vec3, entityId).Union());
+			network::CreateEntitySpawn(_entitySpawnFBB, entity->id(), entity->entityType(), &vec3, entityId, entity->animation()).Union());
 }
 
 void Entity::sendEntityRemove(const EntityPtr& entity) const {

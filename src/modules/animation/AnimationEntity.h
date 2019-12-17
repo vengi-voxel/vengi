@@ -21,7 +21,7 @@ namespace animation {
  */
 class AnimationEntity {
 protected:
-	Animation _anim = Animation::Idle;
+	Animation _anim = Animation::IDLE;
 	AnimationSettings _settings;
 	Vertices _vertices;
 	Indices _indices;

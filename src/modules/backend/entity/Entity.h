@@ -43,6 +43,8 @@ protected:
 	network::ServerMessageSenderPtr _messageSender;
 	ENetPeer *_peer = nullptr;
 
+	network::Animation _animation = network::Animation::IDLE;
+
 	// attribute stuff
 	attrib::ContainerProviderPtr _containerProvider;
 	attrib::Attributes _attribs;
@@ -81,6 +83,9 @@ public:
 
 	bool addContainer(const std::string& id);
 	bool removeContainer(const std::string& id);
+
+	network::Animation animation() const;
+	network::Animation setAnimation(network::Animation animation);
 
 	EntityId id() const;
 	const MapPtr& map() const;
@@ -205,6 +210,16 @@ inline int Entity::visibleCount() const {
 
 inline const MapPtr& Entity::map() const {
 	return _map;
+}
+
+inline network::Animation Entity::animation() const {
+	return _animation;
+}
+
+inline network::Animation Entity::setAnimation(network::Animation animation) {
+	const network::Animation old = _animation;
+	_animation = animation;
+	return old;
 }
 
 inline double Entity::current(attrib::Type type) const {

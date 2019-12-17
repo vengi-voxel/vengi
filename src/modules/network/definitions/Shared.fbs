@@ -88,3 +88,11 @@ enum MoveDirection:ubyte (bit_flags) {
 	MOVERIGHT,
 	MOVEUP // jump
 }
+
+enum Animation: ubyte {
+	IDLE,
+	JUMP,
+	RUN,
+	GLIDE,
+	TOOL
+}

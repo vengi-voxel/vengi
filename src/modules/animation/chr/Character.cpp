@@ -124,19 +124,19 @@ void Character::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
 	const float velocity = (float)attrib.current(attrib::Type::SPEED);
 
 	switch (_anim) {
-	case Animation::Idle:
+	case Animation::IDLE:
 		chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
 		break;
-	case Animation::Jump:
+	case Animation::JUMP:
 		chr::jump::update(_globalTimeSeconds, _skeleton, _attributes);
 		break;
-	case Animation::Run:
+	case Animation::RUN:
 		chr::run::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
 		break;
-	case Animation::Glide:
+	case Animation::GLIDE:
 		chr::glide::update(_globalTimeSeconds, _skeleton, _attributes);
 		break;
-	case Animation::Tool:
+	case Animation::TOOL:
 		if (_toolAnim == ToolAnimationType::None || _toolAnim == ToolAnimationType::Max) {
 			chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
 		} else {

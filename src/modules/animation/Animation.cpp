@@ -10,9 +10,7 @@
 namespace animation {
 
 const char* toString(Animation anim) {
-	static const char *_strings[] = { "idle", "jump", "run", "glide", "tool" };
-	static_assert(lengthof(_strings) == std::enum_value(Animation::Max), "Invalid animation array dimensions");
-	return _strings[std::enum_value(anim)];
+	return network::EnumNameAnimation(anim);
 }
 
 static const char *_ToolAnimationTypeString[] = { "none", "swing", "stroke", "tense", "twiddle" };

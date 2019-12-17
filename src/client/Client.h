@@ -89,8 +89,8 @@ public:
 	/** @brief spawns our own player */
 	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);
 
-	void entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos);
-	void entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation);
+	void entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos, animation::Animation animation);
+	void entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation, animation::Animation animation);
 	void entityRemove(frontend::ClientEntityId id);
 	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
 };

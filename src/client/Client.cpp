@@ -320,7 +320,7 @@ void Client::disconnect() {
 	_network->disconnect();
 }
 
-void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation) {
+void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation, animation::Animation animation) {
 	const frontend::ClientEntityPtr& entity = _worldRenderer.getEntity(id);
 	if (!entity) {
 		Log::warn("Could not get entity with id %li", id);
@@ -328,11 +328,14 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 	}
 	entity->setPosition(pos);
 	entity->setOrientation(orientation);
+	entity->setAnimation(animation);
 }
 
-void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos) {
+void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos, animation::Animation animation) {
 	Log::info("Entity %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
-	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation));
+	const frontend::ClientEntityPtr& entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
+	entity->setAnimation(animation);
+	_worldRenderer.addEntity(entity);
 }
 
 void Client::entityRemove(frontend::ClientEntityId id) {

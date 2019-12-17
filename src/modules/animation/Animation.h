@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include "core/Common.h"
 #include <stdint.h>
+#include "Shared_generated.h"
 
 /**
  * @defgroup Animation
@@ -18,9 +20,7 @@
 
 namespace animation {
 
-enum class Animation : uint8_t {
-	Idle, Jump, Run, Glide, Tool, Max
-};
+using Animation = ::network::Animation;
 
 enum class ToolAnimationType : uint8_t {
 	None, Swing, Stroke, Tense, Twiddle, Max

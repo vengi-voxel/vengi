@@ -67,9 +67,9 @@ core::AppState TestAnimation::onConstruct() {
 		}
 		_animationIdx += offset;
 		while (_animationIdx < 0) {
-			_animationIdx += std::enum_value(animation::Animation::Max);
+			_animationIdx += (std::enum_value(animation::Animation::MAX) + 1);
 		}
-		_animationIdx %= std::enum_value(animation::Animation::Max);
+		_animationIdx %= (std::enum_value(animation::Animation::MAX) + 1);
 		Log::info("current animation idx: %i", _animationIdx);
 		animationEntity()->setAnimation((animation::Animation)_animationIdx);
 	});
@@ -137,7 +137,7 @@ core::AppState TestAnimation::onInit() {
 		return state;
 	}
 
-	for (int i = 0; i < std::enum_value(animation::Animation::Max); ++i) {
+	for (int i = std::enum_value(animation::Animation::MIN); i <= std::enum_value(animation::Animation::MAX); ++i) {
 		_animations.push_back(animation::toString((animation::Animation)i));
 	}
 
