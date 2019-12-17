@@ -25,11 +25,12 @@ void UserMovementMgr::update(long dt) {
 		return map->findFloor(pos, maxWalkHeight);
 	});
 	_user->setPos(newPos);
+	_user->setAnimation(_movement.animation());
 
 	const network::Vec3 netPos { newPos.x, newPos.y, newPos.z };
 	_user->sendToVisible(_entityUpdateFBB,
 			network::ServerMsgType::EntityUpdate,
-			network::CreateEntityUpdate(_entityUpdateFBB, _user->id(), &netPos, orientation).Union(), true);
+			network::CreateEntityUpdate(_entityUpdateFBB, _user->id(), &netPos, orientation, _movement.animation()).Union(), true);
 
 	_user->logoutMgr().updateLastActionTime();
 }
