@@ -56,20 +56,21 @@ glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, flo
 			if (_delay <= 0.0f) {
 				_jumping = false;
 				_gliding = true;
+				_fallingVelocity = 0.0f;
 				_delay = inputDelaySeconds;
 			}
 		} else {
-			_velocityY = 10.0f;
+			_fallingVelocity = 10.0f;
 			_jumping = true;
 			_delay = inputDelaySeconds;
 		}
 	}
-	const float gravity = _gliding ? 0.1f : 20.0f;
-	_velocityY -= gravity * deltaFrameSeconds;
-	newPos.y += _velocityY * deltaFrameSeconds;
+	const float gravity = _gliding ? 0.5f : 20.0f;
+	_fallingVelocity -= gravity * deltaFrameSeconds;
+	newPos.y += _fallingVelocity * deltaFrameSeconds;
 	if (newPos.y <= _groundHeight) {
 		newPos.y = _groundHeight;
-		_velocityY = 0.0f;
+		_fallingVelocity = 0.0f;
 		_jumping = false;
 		_gliding = false;
 		_delay = 0.0f;
@@ -78,11 +79,11 @@ glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, flo
 }
 
 network::Animation SharedMovement::animation() const {
-	if (_jumping) {
-		return network::Animation::JUMP;
-	}
 	if (_gliding) {
 		return network::Animation::GLIDE;
+	}
+	if (_jumping) {
+		return network::Animation::JUMP;
 	}
 	if (moving()) {
 		return network::Animation::RUN;
