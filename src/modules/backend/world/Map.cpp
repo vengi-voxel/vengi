@@ -221,8 +221,8 @@ NpcPtr Map::npc(EntityId id) {
 	return i->second;
 }
 
-int Map::findFloor(const glm::vec3& pos) const {
-	return _voxelWorldMgr->findWalkableFloor(pos);
+int Map::findFloor(const glm::vec3& pos, float maxDistanceY) const {
+	return _voxelWorldMgr->findWalkableFloor(pos, maxDistanceY);
 }
 
 glm::ivec3 Map::randomPos() const {

@@ -29,7 +29,7 @@ private:
 
 public:
 	bool init() override;
-	void update(float deltaFrameSeconds, float orientation, ClientEntityPtr& entity, std::function<int(const glm::vec3& pos)> heightResolver);
+	void update(float deltaFrameSeconds, float orientation, ClientEntityPtr& entity, shared::WalkableFloorResolver heightResolver);
 	void construct() override;
 	void shutdown() override;
 };

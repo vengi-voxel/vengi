@@ -11,6 +11,8 @@
 
 namespace shared {
 
+using WalkableFloorResolver = std::function<int(const glm::vec3& pos, float maxWalkableHeight)>;
+
 class SharedMovement {
 protected:
 	network::MoveDirection _move = network::MoveDirection::NONE;
@@ -23,7 +25,10 @@ protected:
 
 	glm::vec3 calculateDelta(const glm::quat& rot, float speed);
 public:
-	glm::vec3 update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, std::function<int(const glm::vec3& pos)> heightResolver);
+	glm::vec3 update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, WalkableFloorResolver heightResolver);
+
+	void setMoveMask(network::MoveDirection moveMask);
+	network::MoveDirection moveMask() const;
 
 	bool left() const;
 	bool right() const;
@@ -37,6 +42,14 @@ public:
 
 	int groundHeight() const;
 };
+
+inline void SharedMovement::setMoveMask(network::MoveDirection moveMask) {
+	_move = moveMask;
+}
+
+inline network::MoveDirection SharedMovement::moveMask() const {
+	return _move;
+}
 
 inline bool SharedMovement::moving() const {
 	return left() || right() || forward() || backward();

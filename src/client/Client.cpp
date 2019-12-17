@@ -60,6 +60,7 @@ void Client::sendMovement() {
 		moveMask |= network::MoveDirection::JUMP;
 	}
 
+	// TODO: orientation must match, too
 	if (_lastMoveMask == moveMask) {
 		return;
 	}
@@ -202,8 +203,7 @@ void Client::beforeUI() {
 	if (_player) {
 		const video::Camera& camera = _camera.camera();
 		_camera.update(_player->position(), _deltaFrameMillis);
-		_movement.update(_deltaFrameSeconds, camera.yaw(), _player, [&] (const glm::vec3& pos) {
-			const float maxWalkHeight = 3.0f;
+		_movement.update(_deltaFrameSeconds, camera.yaw(), _player, [&] (const glm::vec3& pos, float maxWalkHeight) {
 			return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 		});
 		_worldRenderer.extractMeshes(camera);

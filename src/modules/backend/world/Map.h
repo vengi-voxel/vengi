@@ -13,6 +13,7 @@
 #include "backend/attack/AttackMgr.h"
 #include "persistence/ISavable.h"
 #include "persistence/ForwardDecl.h"
+#include "voxel/Constants.h"
 #include "MapId.h"
 #include <memory>
 #include <unordered_map>
@@ -121,7 +122,7 @@ public:
 	int npcCount() const;
 	int userCount() const;
 
-	int findFloor(const glm::vec3& pos) const;
+	int findFloor(const glm::vec3& pos, float maxDistanceY = (float)voxel::MAX_HEIGHT) const;
 	glm::ivec3 randomPos() const;
 
 	const AttackMgr& attackMgr() const;
