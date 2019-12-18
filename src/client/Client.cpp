@@ -44,21 +44,7 @@ Client::~Client() {
 }
 
 void Client::sendMovement() {
-	network::MoveDirection moveMask = network::MoveDirection::NONE;
-	if (_movement.left()) {
-		moveMask |= network::MoveDirection::MOVELEFT;
-	} else if (_movement.right()) {
-		moveMask |= network::MoveDirection::MOVERIGHT;
-	}
-	if (_movement.forward()) {
-		moveMask |= network::MoveDirection::MOVEFORWARD;
-	} else if (_movement.backward()) {
-		moveMask |= network::MoveDirection::MOVEBACKWARD;
-	}
-
-	if (_movement.jump()) {
-		moveMask |= network::MoveDirection::JUMP;
-	}
+	const network::MoveDirection moveMask = _movement.moveMask();
 
 	// TODO: we can't use the camera, as we are aiming for a freelook mode, where the players' angles might be different from the camera's
 	const video::Camera& camera = _camera.camera();
@@ -204,10 +190,10 @@ void Client::beforeUI() {
 
 	if (_player) {
 		const video::Camera& camera = _camera.camera();
-		_camera.update(_player->position(), _deltaFrameMillis);
 		_movement.update(_deltaFrameSeconds, camera.yaw(), _player, [&] (const glm::vec3& pos, float maxWalkHeight) {
 			return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 		});
+		_camera.update(_player->position(), _deltaFrameMillis);
 		_worldRenderer.extractMeshes(camera);
 		_worldRenderer.update(camera, _deltaFrameMillis);
 		_worldRenderer.renderWorld(camera);
