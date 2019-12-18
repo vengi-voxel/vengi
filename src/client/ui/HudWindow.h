@@ -23,10 +23,12 @@ public:
 	}
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
+#if 0
 		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("disconnect")) {
 			_client->disconnect();
 			return true;
 		}
+#endif
 		return Super::onEvent(ev);
 	}
 };
