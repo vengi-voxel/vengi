@@ -8,6 +8,7 @@
 #include "ai/common/Types.h"
 #include "core/EventBus.h"
 #include "backend/eventbus/Event.h"
+#include <functional>
 #include <unordered_map>
 
 namespace backend {
@@ -42,6 +43,10 @@ public:
 	bool addNpc(const NpcPtr& npc);
 	bool removeNpc(EntityId id);
 	NpcPtr npc(EntityId id);
+
+	void visit(std::function<void(const EntityPtr&)> visitor);
+	void visitNpcs(std::function<void(const NpcPtr&)> visitor);
+	void visitUsers(std::function<void(const UserPtr&)> visitor);
 };
 
 typedef std::shared_ptr<EntityStorage> EntityStoragePtr;

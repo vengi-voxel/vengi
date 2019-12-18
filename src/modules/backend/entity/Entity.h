@@ -198,7 +198,7 @@ public:
 	bool inFrustum(const Entity& other) const;
 	bool inFrustum(const EntityPtr& other) const;
 
-	const char* name() const;
+	const char* type() const;
 
 	void sendToVisible(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type,
 			flatbuffers::Offset<void> data, bool sendToSelf = false, uint32_t flags = ENET_PACKET_FLAG_RELIABLE) const;

@@ -47,7 +47,7 @@ void Entity::setPointOfInterest(poi::Type type) {
 	map()->poiProvider()->add(pos(), type);
 }
 
-const char* Entity::name() const {
+const char* Entity::type() const {
 	return network::EnumNameEntityType(_entityType);
 }
 

@@ -11,7 +11,7 @@ namespace backend {
 AICharacter::AICharacter(ai::CharacterId id, Npc& npc) :
 		Super(id), _npc(npc) {
 	setOrientation(ai::randomf(glm::two_pi<float>()));
-	setAttribute(ai::attributes::NAME, core::string::format("%s %" PRIChrId, npc.name(), id));
+	setAttribute(ai::attributes::NAME, core::string::format("%s %" PRIChrId, npc.type(), id));
 	setAttribute(ai::attributes::ID, std::to_string(id));
 }
 
