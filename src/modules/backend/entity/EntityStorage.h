@@ -29,8 +29,6 @@ private:
 
 	core::EventBusPtr _eventBus;
 	long _time;
-
-	bool updateEntity(const EntityPtr& entity, long dt);
 public:
 	EntityStorage(const core::EventBusPtr& eventBus);
 	virtual ~EntityStorage();
