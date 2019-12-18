@@ -114,19 +114,28 @@ void ServerLoop::construct() {
 
 	core::Command::registerCommand("sv_entitylist", [this] (const core::CmdArgs& args) {
 		_entityStorage->visit([] (const EntityPtr& e) {
-			Log::info("Id: " PRIEntId ", name: %s", e->id(), e->type());
+			Log::info("Id: " PRIEntId, e->id());
+			Log::info("- type: %s", e->type());
+			const glm::vec3& pos = e->pos();
+			Log::info("- pos: %.0f:%.0f:%.0f", pos.x, pos.y, pos.z);
 		});
 	}).setHelp("Show all entities in the server");
 
 	core::Command::registerCommand("sv_userlist", [this] (const core::CmdArgs& args) {
 		_entityStorage->visitUsers([] (const UserPtr& e) {
-			Log::info("Id: " PRIEntId ", name: %s", e->id(), e->name().c_str());
+			Log::info("Id: " PRIEntId, e->id());
+			Log::info("- name: %s", e->name().c_str());
+			const glm::vec3& pos = e->pos();
+			Log::info("- pos: %.0f:%.0f:%.0f", pos.x, pos.y, pos.z);
 		});
 	}).setHelp("Show all users in the server");
 
 	core::Command::registerCommand("sv_npclist", [this] (const core::CmdArgs& args) {
 		_entityStorage->visitNpcs([] (const NpcPtr& e) {
-			Log::info("Id: " PRIEntId ", name: %s", e->id(), e->type());
+			Log::info("Id: " PRIEntId, e->id());
+			Log::info("- type: %s", e->type());
+			const glm::vec3& pos = e->pos();
+			Log::info("- pos: %.0f:%.0f:%.0f", pos.x, pos.y, pos.z);
 		});
 	}).setHelp("Show all npcs in the server");
 
