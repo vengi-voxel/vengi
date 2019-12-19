@@ -40,7 +40,7 @@ public:
 			const bool hasEnemy = mgr.getHighestEntry() != nullptr;
 			return hasEnemy;
 		}
-		const int size = static_cast<int>(mgr.getEntries().size());
+		const int size = (int)mgr.count();
 		return size >= _enemyCount;
 	}
 };

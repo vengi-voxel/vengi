@@ -75,6 +75,10 @@ public:
 		return _entries;
 	}
 
+	inline size_t count() const {
+		return _entries.size();
+	}
+
 	/**
 	 * @brief Get the entry with the highest aggro value.
 	 *

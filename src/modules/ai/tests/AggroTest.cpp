@@ -20,8 +20,7 @@ public:
 		ASSERT_TRUE(entry) << "Highest entry not set but aggro was added";
 		ASSERT_EQ(max, entry->getCharacterId())<< "Highest entry not what it should be. " << printAggroList(mgr);
 		mgr.update(1000);
-		ASSERT_EQ(0u, mgr.getEntries().size());
-		ASSERT_TRUE(mgr.getEntries().empty());
+		ASSERT_EQ(0u, mgr.count());
 	}
 };
 
@@ -36,7 +35,7 @@ TEST_F(AggroTest, testAggroMgr) {
 	ASSERT_TRUE(entry) << "Highest entry not set but aggro was added";
 	ASSERT_EQ(id, entry->getCharacterId())<< "Highest entry not what it should be";
 	mgr.addAggro(id, 1.0f);
-	ASSERT_EQ(1u, mgr.getEntries().size())<< "Aggrolist contains more entries than expected";
+	ASSERT_EQ(1u, mgr.count())<< "Aggrolist contains more entries than expected";
 	ASSERT_FLOAT_EQ(2.0f, entry->getAggro())<< "Aggro value not what it should be";
 }
 
