@@ -5,6 +5,7 @@
  */
 
 #include "Complement.h"
+#include "core/Common.h"
 #include <algorithm>
 
 namespace ai {

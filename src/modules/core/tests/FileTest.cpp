@@ -1,5 +1,6 @@
 #include "core/tests/AbstractTest.h"
 #include "core/io/Filesystem.h"
+#include "core/String.h"
 
 namespace io {
 

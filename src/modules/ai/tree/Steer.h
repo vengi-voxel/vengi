@@ -5,11 +5,12 @@
 
 #include "tree/ITask.h"
 #include "common/String.h"
-#include "common/Types.h"
+#include "common/Common.h"
 #include "common/Math.h"
 #include "movement/Steering.h"
 #include "movement/WeightedSteering.h"
 #include "common/Random.h"
+#include "common/Assert.h"
 
 namespace ai {
 

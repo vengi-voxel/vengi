@@ -5,6 +5,7 @@
 #include "Var.h"
 #include "Log.h"
 #include "Common.h"
+#include "GLM.h"
 #include "Assert.h"
 
 namespace core {
@@ -20,6 +21,13 @@ MAKE_SHARED_INVIS_CTOR(Var);
 void Var::shutdown() {
 	ScopedWriteLock lock(_lock);
 	_vars.clear();
+}
+
+void Var::setVal(float value) {
+	if (glm::epsilonEqual(floatVal(), value, glm::epsilon<float>())) {
+		return;
+	}
+	setVal(core::string::format("%f", value));
 }
 
 VarPtr Var::getSafe(const std::string& name) {

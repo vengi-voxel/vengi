@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ai/ForwardDecl.h"
-#include "ai/common/Types.h"
+#include "ai/common/CharacterId.h"
 #include "backend/entity/Entity.h"
 #include "cooldown/CooldownMgr.h"
 #include "backend/ForwardDecl.h"

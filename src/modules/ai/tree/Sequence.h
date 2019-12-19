@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tree/Selector.h"
+#include "core/Common.h"
 #include "AI.h"
 
 namespace ai {

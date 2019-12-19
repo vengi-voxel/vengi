@@ -5,6 +5,7 @@
  */
 
 #include "Union.h"
+#include "core/Common.h"
 #include <algorithm>
 
 namespace ai {

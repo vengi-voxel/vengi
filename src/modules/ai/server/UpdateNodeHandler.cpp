@@ -5,6 +5,7 @@
 #include "UpdateNodeHandler.h"
 #include "Server.h"
 #include "AIUpdateNodeMessage.h"
+#include "common/Log.h"
 
 namespace ai {
 

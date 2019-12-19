@@ -4,11 +4,7 @@
 
 #pragma once
 
-#include <unordered_set>
-#include <chrono>
 #include "Common.h"
-#include "Assert.h"
-#include "Var.h"
 #include "metric/Metric.h"
 #include "Trace.h"
 #include "EventBus.h"
@@ -27,6 +23,10 @@ typedef std::shared_ptr<Filesystem> FilesystemPtr;
 
 namespace core {
 
+class Var;
+typedef std::shared_ptr<Var> VarPtr;
+
+
 enum class AppState : uint8_t {
 	Construct,
 	Init,
@@ -37,6 +37,7 @@ enum class AppState : uint8_t {
 	Blocked,
 	NumAppStates,
 	InvalidAppState,
+	Max
 };
 
 /**
@@ -91,7 +92,7 @@ protected:
 
 	AppState _curState = AppState::Construct;
 	AppState _nextState = AppState::InvalidAppState;
-	std::unordered_set<AppState, EnumClassHash> _blockers;
+	bool _blockers[(int)AppState::Max];
 	bool _suspendRequested = false;
 
 	/**
@@ -319,37 +320,11 @@ public:
 	 */
 	BindingContext bindingContext() const;
 
-	static App* getInstance() {
-		core_assert(_staticInstance != nullptr);
-		return _staticInstance;
-	}
+	static App* getInstance();
 
 private:
 	std::list<Argument> _arguments;
 };
-
-inline App::ProfilerCPU::ProfilerCPU(const std::string& name, uint16_t maxSamples) :
-		_name(name), _maxSampleCount(maxSamples) {
-	core_assert(maxSamples > 0);
-	_samples.reserve(_maxSampleCount);
-}
-
-inline const std::vector<double>& App::ProfilerCPU::samples() const {
-	return _samples;
-}
-
-inline void App::ProfilerCPU::enter() {
-	_stamp = (double)core::TimeProvider::systemNanos();
-}
-
-inline void App::ProfilerCPU::leave() {
-	const double time = core::TimeProvider::systemNanos() - _stamp;
-	_max = core_max(_max, time);
-	_min = core_min(_min, time);
-	_avg = _avg * 0.5 + time * 0.5;
-	_samples[_sampleCount & (_maxSampleCount - 1)] = time;
-	++_sampleCount;
-}
 
 inline const std::string& App::ProfilerCPU::name() const {
 	return _name;

@@ -63,7 +63,6 @@ public: \
 #define FILTER_ACTION_CLASS(FilterName) \
 	FilterName(const std::string& parameters, const ::ai::Filters& filters) : \
 		::ai::IFilter(#FilterName, parameters), _filters(filters) { \
-		ai_assert(_filters.size() > 1, #FilterName " must contain at least two sub filters"); \
 	} \
 protected: \
 	const ::ai::Filters _filters; \

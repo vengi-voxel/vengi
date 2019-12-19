@@ -3,9 +3,9 @@
  */
 #pragma once
 
-#include <memory>
 #include "IProtocolMessage.h"
-#include "common/Types.h"
+#include <memory>
+#include <stdint.h>
 
 namespace ai {
 
@@ -32,7 +32,7 @@ public:
 	}
 
 	void execute (const ClientId& clientId, const IProtocolMessage& message) override {
-		const T *msg = ai_assert_cast<const T*>(&message);
+		const T *msg = static_cast<const T*>(&message);
 		execute(clientId, msg);
 	}
 

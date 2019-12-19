@@ -5,9 +5,11 @@
 
 #include "common/NonCopyable.h"
 #include "common/Math.h"
-#include "common/Types.h"
+#include "common/CharacterId.h"
 #include <atomic>
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 namespace ai {
 
@@ -132,7 +134,6 @@ public:
 };
 
 inline void ICharacter::setPosition(const glm::vec3& position) {
-	ai_assert(!isInfinite(position), "invalid position");
 	_position = position;
 }
 
@@ -180,17 +181,17 @@ typedef std::shared_ptr<ICharacter> ICharacterPtr;
 
 template <typename CharacterType>
 inline const CharacterType& character_cast(const ICharacter& character) {
-	return ai_assert_cast<const CharacterType&>(character);
+	return static_cast<const CharacterType&>(character);
 }
 
 template <typename CharacterType>
 inline CharacterType& character_cast(ICharacter& character) {
-	return ai_assert_cast<CharacterType&>(character);
+	return static_cast<CharacterType&>(character);
 }
 
 template <typename CharacterType>
 inline CharacterType& character_cast(const ICharacterPtr& character) {
-	return *ai_assert_cast<CharacterType*>(character.get());
+	return *static_cast<CharacterType*>(character.get());
 }
 
 }

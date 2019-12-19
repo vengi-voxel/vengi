@@ -3,6 +3,7 @@
  */
 
 #include "Network.h"
+#include "core/Common.h"
 #include "IProtocolMessage.h"
 #include "IProtocolHandler.h"
 #include "ProtocolHandlerRegistry.h"

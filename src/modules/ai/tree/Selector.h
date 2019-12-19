@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "tree/TreeNode.h"
+#include "TreeNode.h"
 
 namespace ai {
 

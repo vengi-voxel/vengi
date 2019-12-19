@@ -3,6 +3,7 @@
  */
 
 #include "ConsoleApp.h"
+#include "core/Var.h"
 
 namespace core {
 

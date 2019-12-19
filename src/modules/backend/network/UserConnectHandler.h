@@ -8,7 +8,7 @@
 #include "network/Network.h"
 #include "core/TimeProvider.h"
 #include "core/Log.h"
-#include "ai/common/Types.h"
+#include "ai/common/CharacterId.h"
 
 #include <flatbuffers/flatbuffers.h>
 

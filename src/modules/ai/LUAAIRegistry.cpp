@@ -5,6 +5,8 @@
 
 #include "LUAAIRegistry.h"
 #include "LUAFunctions.h"
+#include "common/Common.h"
+#include "common/Assert.h"
 #include "AI.h"
 
 namespace ai {

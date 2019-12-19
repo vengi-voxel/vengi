@@ -3,10 +3,10 @@
  */
 #pragma once
 
-#include "Types.h"
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <string>
 
 namespace ai {
 

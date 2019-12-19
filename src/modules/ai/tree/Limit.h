@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tree/TreeNode.h"
+#include "common/Log.h"
 
 namespace ai {
 
@@ -31,7 +32,10 @@ public:
 	}
 
 	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
-		ai_assert(_children.size() == 1, "Limit must have exactly one node");
+		if (_children.size() != 1) {
+			ai_log_error("Limit must have exactly one node");
+			return EXCEPTION;
+		}
 
 		if (TreeNode::execute(entity, deltaMillis) == CANNOTEXECUTE) {
 			return CANNOTEXECUTE;

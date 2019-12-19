@@ -4,7 +4,6 @@
 #pragma once
 
 #include "tree/TreeNode.h"
-#include "common/Types.h"
 
 namespace ai {
 
@@ -43,7 +42,6 @@ protected:
 			return state(entity, doAction(entity, deltaMillis));
 #if AI_EXCEPTIONS
 		} catch (...) {
-			ai_log_error("Exception while running task %s of type %s", _name.c_str(), _type.c_str());
 		}
 		return state(entity, EXCEPTION);
 #endif

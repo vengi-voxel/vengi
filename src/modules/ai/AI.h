@@ -12,7 +12,6 @@
 #include "tree/TreeNode.h"
 #include "tree/loaders/ITreeLoader.h"
 #include "common/Thread.h"
-#include "common/Types.h"
 #include "common/NonCopyable.h"
 #include "common/Math.h"
 
@@ -214,7 +213,6 @@ inline ICharacterPtr AI::getCharacter() const {
 }
 
 inline void AI::setCharacter(const ICharacterPtr& character) {
-	ai_assert(!_character, "There is already a character set");
 	_character = character;
 }
 

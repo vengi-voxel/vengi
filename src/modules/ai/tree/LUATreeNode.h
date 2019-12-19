@@ -6,6 +6,7 @@
 
 #include "tree/TreeNode.h"
 #include "../LUAFunctions.h"
+#include "common/Common.h"
 
 namespace ai {
 

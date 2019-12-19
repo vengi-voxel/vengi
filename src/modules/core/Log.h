@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <string>
-#include <SDL.h>
+#include <SDL_log.h>
 
 #ifndef __GNUC__
 #define __attribute__(x)

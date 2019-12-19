@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "core/command/CommandHandler.h"
+#include "core/Var.h"
 
 namespace core {
 

@@ -7,6 +7,7 @@
 #include "noise/Simplex.h"
 #include "image/Image.h"
 #include "core/GLM.h"
+#include <SDL_endian.h>
 
 namespace noise {
 

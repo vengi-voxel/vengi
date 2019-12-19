@@ -7,7 +7,7 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
-#include "GLM.h"
+#include <glm/fwd.hpp>
 #include "String.h"
 #include "ReadWriteLock.h"
 #include "GameConfig.h"
@@ -272,12 +272,7 @@ public:
 		}
 		setVal(core::string::format("%i", value));
 	}
-	inline void setVal(float value) {
-		if (glm::epsilonEqual(floatVal(), value, glm::epsilon<float>())) {
-			return;
-		}
-		setVal(core::string::format("%f", value));
-	}
+	void setVal(float value);
 	/**
 	 * @return The string value of this var
 	 */

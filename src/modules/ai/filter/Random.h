@@ -18,7 +18,6 @@ protected:
 public:
 	Random(const std::string& parameters, const Filters& filters) :
 		IFilter("Random", parameters), _filters(filters) {
-		ai_assert(filters.size() == 1, "Random must have one child");
 		_n = std::stoi(parameters);
 	}
 

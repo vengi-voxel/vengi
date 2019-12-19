@@ -5,6 +5,8 @@
 #include "core/tests/AbstractTest.h"
 #include "video/Shader.h"
 #include "core/io/Filesystem.h"
+#include "core/String.h"
+#include "core/Var.h"
 
 namespace video {
 

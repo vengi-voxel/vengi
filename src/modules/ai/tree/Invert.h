@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tree/TreeNode.h"
+#include "common/Log.h"
 
 namespace ai {
 
@@ -20,7 +21,8 @@ public:
 
 	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
 		if (_children.size() != 1) {
-			ai_assert(false, "Invert must have exactly one child");
+			ai_log_error("Invert must have exactly one child");
+			return EXCEPTION;
 		}
 
 		if (TreeNode::execute(entity, deltaMillis) == CANNOTEXECUTE) {

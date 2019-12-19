@@ -34,7 +34,6 @@ set(SRCS
 	GLM.cpp GLM.h
 	Hash.h
 	IComponent.h
-	IFactoryRegistry.h
 	Input.cpp Input.h
 	JSON.h json.hpp
 	Log.cpp Log.h

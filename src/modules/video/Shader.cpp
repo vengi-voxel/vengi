@@ -9,6 +9,7 @@
 #include "core/Hash.h"
 #include "core/io/Filesystem.h"
 #include "Version.h"
+#include "core/Assert.h"
 #include "core/Var.h"
 #include "core/Singleton.h"
 #include "ShaderManager.h"

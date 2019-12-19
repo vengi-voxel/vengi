@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include <SDL.h>
+#include <SDL_assert.h>
+#include <SDL_stdinc.h>
+
 #ifndef __WINDOWS__
 #define HAVE_BACKWARD
 #endif

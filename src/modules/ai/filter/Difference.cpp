@@ -5,6 +5,7 @@
  */
 
 #include "Difference.h"
+#include "core/Common.h"
 #include <algorithm>
 
 namespace ai {

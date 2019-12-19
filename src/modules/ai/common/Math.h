@@ -3,12 +3,10 @@
  */
 #pragma once
 
-#include "Types.h"
-
 #define GLM_FORCE_RADIANS
 //#define GLM_SWIZZLE
 
-#include <glm/glm.hpp>
+#include <glm/vec3.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -16,6 +14,7 @@
 #include <glm/gtx/norm.hpp>
 #include <limits.h>
 #include <math.h>
+#include <string>
 
 namespace ai {
 

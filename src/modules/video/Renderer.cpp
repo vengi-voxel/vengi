@@ -4,6 +4,7 @@
 
 #include "Renderer.h"
 #include "core/Log.h"
+#include <SDL_video.h>
 
 namespace video {
 

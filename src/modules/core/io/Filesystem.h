@@ -12,7 +12,7 @@
 #include <uv.h>
 #include <unordered_map>
 #include <stdarg.h>
-#include <SDL.h>
+#include <SDL_stdinc.h>
 
 namespace io {
 

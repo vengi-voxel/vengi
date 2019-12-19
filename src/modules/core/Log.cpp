@@ -8,6 +8,7 @@
 #include "App.h"
 #include "Common.h"
 #include "Array.h"
+#include "Assert.h"
 #include <string.h>
 #include <stdio.h>
 #include <unordered_map>

@@ -5,6 +5,7 @@
 #include "DeleteNodeHandler.h"
 #include "AIDeleteNodeMessage.h"
 #include "Server.h"
+#include "common/Log.h"
 
 namespace ai {
 

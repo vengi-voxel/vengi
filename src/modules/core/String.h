@@ -13,7 +13,7 @@
 #include <vector>
 #include <ctype.h>
 #include <stdarg.h>
-#include <SDL.h>
+#include <SDL_stdinc.h>
 #include <string_view>
 #include <math.h>
 

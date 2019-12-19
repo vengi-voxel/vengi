@@ -3,7 +3,6 @@
  */
 #pragma once
 
-#include "common/Types.h"
 #include "common/NonCopyable.h"
 #include <memory>
 #include <map>
@@ -62,7 +61,6 @@ public:
 			return factory->create(ctx);
 #if AI_EXCEPTIONS
 		} catch (...) {
-			ai_log_error("Exception while trying to create a factory");
 		}
 		return std::shared_ptr<TYPE>();
 #endif

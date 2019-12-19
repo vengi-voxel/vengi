@@ -11,7 +11,7 @@
 #include <math.h>
 #include <utility>
 #include <limits.h>
-#include <SDL.h>
+#include <SDL_stdinc.h>
 
 #define CORE_STRINGIFY_INTERNAL(x) #x
 #define CORE_STRINGIFY(x) CORE_STRINGIFY_INTERNAL(x)

@@ -21,6 +21,8 @@
 #include "StencilConfig.h"
 #include "RenderBuffer.h"
 
+struct SDL_Window;
+
 namespace video {
 
 class Texture;

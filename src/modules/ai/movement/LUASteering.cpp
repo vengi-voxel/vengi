@@ -5,6 +5,7 @@
 
 #include "LUASteering.h"
 #include "../LUAFunctions.h"
+#include "common/Log.h"
 
 namespace ai {
 namespace movement {

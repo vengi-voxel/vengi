@@ -28,6 +28,11 @@ namespace core {
 App* App::_staticInstance;
 thread_local std::stack<App::TraceData> App::_traceData;
 
+App* App::getInstance() {
+	core_assert(_staticInstance != nullptr);
+	return _staticInstance;
+}
+
 App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		_filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core"),
 		_timeProvider(timeProvider), _metric(metric) {
@@ -61,11 +66,11 @@ int App::startMainLoop(int argc, char *argv[]) {
 }
 
 void App::addBlocker(AppState blockedState) {
-	_blockers.insert(blockedState);
+	_blockers[(int)blockedState] = true;
 }
 
 void App::remBlocker(AppState blockedState) {
-	_blockers.erase(blockedState);
+	_blockers[(int)blockedState] = false;
 }
 
 void App::traceBeginFrame(const char *threadName) {
@@ -102,7 +107,7 @@ void App::traceEndFrame(const char *threadName) {
 void App::onFrame() {
 	core_trace_begin_frame();
 	if (_nextState != AppState::InvalidAppState && _nextState != _curState) {
-		if (_blockers.find(_nextState) != _blockers.end()) {
+		if (_blockers[(int)_nextState]) {
 			if (AppState::Blocked != _curState) {
 				_curState = AppState::Blocked;
 			}
@@ -666,6 +671,29 @@ BindingContext App::setBindingContext(BindingContext newContext) {
 	std::swap(_bindingContext, newContext);
 	Log::debug("Set the input context to %i (from %i)", (int)_bindingContext, (int)newContext);
 	return newContext;
+}
+
+App::ProfilerCPU::ProfilerCPU(const std::string& name, uint16_t maxSamples) :
+		_name(name), _maxSampleCount(maxSamples) {
+	core_assert(maxSamples > 0);
+	_samples.reserve(_maxSampleCount);
+}
+
+const std::vector<double>& App::ProfilerCPU::samples() const {
+	return _samples;
+}
+
+void App::ProfilerCPU::enter() {
+	_stamp = (double)core::TimeProvider::systemNanos();
+}
+
+void App::ProfilerCPU::leave() {
+	const double time = core::TimeProvider::systemNanos() - _stamp;
+	_max = core_max(_max, time);
+	_min = core_min(_min, time);
+	_avg = _avg * 0.5 + time * 0.5;
+	_samples[_sampleCount & (_maxSampleCount - 1)] = time;
+	++_sampleCount;
 }
 
 }

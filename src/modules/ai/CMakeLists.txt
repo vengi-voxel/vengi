@@ -6,6 +6,9 @@ set(SRCS
 	AIRegistry.h AIRegistry.cpp
 	LUAAIRegistry.h LUAAIRegistry.cpp
 	LUAFunctions.h LUAFunctions.cpp
+	common/Assert.h
+	common/CharacterId.h
+	common/Common.h
 	common/IFactoryRegistry.h
 	common/IParser.h
 	common/Log.h
@@ -16,7 +19,6 @@ set(SRCS
 	common/Random.h
 	common/String.h
 	common/Thread.h
-	common/Types.h
 	conditions/And.h
 	conditions/ConditionParser.h
 	conditions/ConditionParser.cpp

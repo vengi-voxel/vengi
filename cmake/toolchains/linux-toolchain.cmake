@@ -60,7 +60,7 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -D_GNU_SOURCE -D_BSD_SOURCE -D_DEFAULT_SOURCE -D_XOPEN_SOURCE -D_FORTIFY_SOURCE=2")
 foreach(_FLAG
-	-Wreturn-type -Wwrite-strings -Wno-unused-parameter -fdiagnostics-color=auto)
+	-Wreturn-type -Wwrite-strings -Wno-unused-parameter -fdiagnostics-color=auto -ftime-trace)
 	string(REPLACE "=" "_" _NAME ${_FLAG})
 	string(REPLACE "-" "_" _NAME ${_NAME})
 	check_c_compiler_flag(${_FLAG} HAVE_FLAG${_NAME})

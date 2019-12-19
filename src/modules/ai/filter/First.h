@@ -17,7 +17,6 @@ protected:
 public:
 	First(const std::string& parameters, const Filters& filters) :
 		IFilter("First", parameters), _filters(filters) {
-		ai_assert(filters.size() == 1, "First must have one child");
 	}
 	FILTER_ACTION_FACTORY(First)
 

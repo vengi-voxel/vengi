@@ -119,9 +119,6 @@ inline void ITreeLoader::setError(const char* msg, ...) {
 	char buf[1024];
 	std::vsnprintf(buf, sizeof(buf), msg, args);
 	va_end(args);
-	if (buf[0] != '\0') {
-		ai_log_debug("%s", buf);
-	}
 	ScopedWriteLock scopedLock(_lock);
 	_error = buf;
 }

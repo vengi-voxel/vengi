@@ -5,7 +5,6 @@
 #pragma once
 
 #include "common/Thread.h"
-#include "common/Types.h"
 #include "common/Math.h"
 #include "ICharacter.h"
 #include "AI.h"

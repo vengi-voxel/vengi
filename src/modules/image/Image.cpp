@@ -5,6 +5,7 @@
 #include "Image.h"
 #include "core/Log.h"
 #include "core/App.h"
+#include "core/Assert.h"
 #include "core/io/Filesystem.h"
 
 #define STBI_ASSERT core_assert

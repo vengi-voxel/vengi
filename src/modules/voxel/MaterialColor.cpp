@@ -9,6 +9,8 @@
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/io/Filesystem.h"
+#include "core/String.h"
+#include "core/Assert.h"
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
 #include <unordered_map>

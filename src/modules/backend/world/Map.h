@@ -8,7 +8,7 @@
 #include "math/QuadTree.h"
 #include "math/Rect.h"
 #include "core/Common.h"
-#include "ai/common/Types.h"
+#include "ai/common/CharacterId.h"
 #include "core/IComponent.h"
 #include "backend/attack/AttackMgr.h"
 #include "persistence/ISavable.h"

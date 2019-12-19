@@ -3,10 +3,10 @@
  */
 #pragma once
 
-#include "common/Types.h"
-#include "common/MemoryAllocator.h"
 #include "conditions/ICondition.h"
 #include "conditions/True.h"
+#include "common/MemoryAllocator.h"
+#include "common/Common.h"
 #include <vector>
 #include <string>
 #include <memory>
