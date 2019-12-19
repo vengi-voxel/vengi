@@ -19,6 +19,7 @@
 #include "video/Renderer.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
+#include "video/ScopedState.h"
 #include "video/Types.h"
 
 namespace voxelrender {
