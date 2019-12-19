@@ -4,8 +4,6 @@
 #pragma once
 
 #include "IProtocolHandler.h"
-#include "Server.h"
-#include "AIStepMessage.h"
 
 namespace ai {
 
@@ -15,13 +13,9 @@ class StepHandler: public ai::IProtocolHandler {
 private:
 	Server& _server;
 public:
-	explicit StepHandler(Server& server) : _server(server) {
-	}
+	explicit StepHandler(Server& server);
 
-	void execute(const ClientId& /*clientId*/, const IProtocolMessage& message) override {
-		const AIStepMessage& msg = static_cast<const AIStepMessage&>(message);
-		_server.step(msg.getStepMillis());
-	}
+	void execute(const ClientId& clientId, const IProtocolMessage& message) override;
 };
 
 }

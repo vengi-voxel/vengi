@@ -63,10 +63,6 @@ protected:
 	 */
 	mutable FilteredEntities _filteredEntities;
 
-	void setFilteredEntities(const FilteredEntities& filteredEntities);
-
-	void addFilteredEntity(CharacterId id);
-
 	/**
 	 * Often @ai{Selector} states must be stored to continue in the next step at a particular
 	 * position in the behaviour tree. This map is doing exactly this.
@@ -102,6 +98,10 @@ public:
 	}
 	virtual ~AI() {
 	}
+
+	void setFilteredEntities(const FilteredEntities& filteredEntities);
+
+	void addFilteredEntity(CharacterId id);
 
 	/**
 	 * @brief Update the behaviour and the aggro values if the entity is not on hold.

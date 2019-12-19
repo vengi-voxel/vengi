@@ -14,7 +14,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/norm.hpp>
-#include <limits>
+#include <limits.h>
 #include <math.h>
 
 namespace ai {

@@ -17,8 +17,6 @@
 #define SIMPLEAI_SKIP_LOG
 
 #include "Log.h"
-#include <string>
-#include <unordered_map>
 #include <assert.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -142,10 +140,5 @@ namespace ai {
  */
 typedef int CharacterId;
 #define PRIChrId PRId32
-
-/**
- * @brief ICharacter attributes for the remote \ref debugger
- */
-typedef std::unordered_map<std::string, std::string> CharacterAttributes;
 
 }

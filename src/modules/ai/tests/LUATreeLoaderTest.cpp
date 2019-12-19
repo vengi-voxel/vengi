@@ -1,4 +1,4 @@
-#include "LUATreeLoaderTest.h"
+#include "TestShared.h"
 
 namespace {
 const char *TREE = "function init ()"

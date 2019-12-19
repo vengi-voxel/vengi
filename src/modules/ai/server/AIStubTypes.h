@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string>
+#include "ICharacter.h"
 #include "common/Math.h"
 #include "common/Types.h"
 #include "tree/TreeNode.h"

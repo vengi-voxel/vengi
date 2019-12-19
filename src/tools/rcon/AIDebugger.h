@@ -5,7 +5,10 @@
 
 #include <vector>
 #include <utility>
-#include <SimpleAI.h>
+#include "ai/SimpleAI.h"
+#include "ai/server/IProtocolHandler.h"
+#include "ai/server/AICharacterStaticMessage.h"
+#include "ai/server/AICharacterDetailsMessage.h"
 #include <QTcpSocket>
 #include <QSettings>
 #include <QFile>

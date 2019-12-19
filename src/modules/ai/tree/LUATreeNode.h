@@ -5,7 +5,7 @@
 #pragma once
 
 #include "tree/TreeNode.h"
-#include "LUAFunctions.h"
+#include "../LUAFunctions.h"
 
 namespace ai {
 

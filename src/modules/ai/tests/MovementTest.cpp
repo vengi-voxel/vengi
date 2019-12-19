@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "MovementTest.h"
+#include "TestShared.h"
 #include "movement/SelectionSeek.h"
 #include "movement/SelectionFlee.h"
 #include "movement/GroupFlee.h"

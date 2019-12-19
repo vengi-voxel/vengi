@@ -6,7 +6,7 @@
 #pragma once
 
 #include "ICondition.h"
-#include "LUAFunctions.h"
+#include "../LUAFunctions.h"
 
 namespace ai {
 

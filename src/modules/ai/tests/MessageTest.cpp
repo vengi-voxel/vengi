@@ -2,8 +2,14 @@
  * @file
  */
 
-#include "MessageTest.h"
+#include "TestShared.h"
 #include "server/ProtocolMessageFactory.h"
+#include "server/AIPauseMessage.h"
+#include "server/AISelectMessage.h"
+#include "server/AIChangeMessage.h"
+#include "server/AINamesMessage.h"
+#include "server/AICharacterDetailsMessage.h"
+#include "server/AIStateMessage.h"
 
 class MessageTest: public TestSuite {
 protected:

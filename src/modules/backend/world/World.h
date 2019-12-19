@@ -7,6 +7,7 @@
 #include "Map.h"
 #include "core/IComponent.h"
 #include "backend/ForwardDecl.h"
+#include "ai/server/Server.h"
 #include <unordered_map>
 
 namespace backend {

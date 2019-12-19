@@ -23,6 +23,7 @@
 #include "ai/server/AICharacterDetailsMessage.h"
 #include "ai/server/AICharacterStaticMessage.h"
 #include "ai/server/ProtocolMessageFactory.h"
+#include "ai/server/ProtocolHandlerRegistry.h"
 
 namespace ai {
 namespace debug {

@@ -3,7 +3,8 @@
  */
 #pragma once
 
-#include <SimpleAI.h>
+#include "ai/SimpleAI.h"
+#include "ai/server/AIStubTypes.h"
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QWheelEvent>

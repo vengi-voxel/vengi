@@ -4,6 +4,8 @@ set(SRCS
 	AI.h AI.cpp
 	AIFactories.h
 	AIRegistry.h AIRegistry.cpp
+	LUAAIRegistry.h LUAAIRegistry.cpp
+	LUAFunctions.h LUAFunctions.cpp
 	common/IFactoryRegistry.h
 	common/IParser.h
 	common/Log.h
@@ -17,8 +19,10 @@ set(SRCS
 	common/Types.h
 	conditions/And.h
 	conditions/ConditionParser.h
+	conditions/ConditionParser.cpp
 	conditions/False.h
 	conditions/Filter.h
+	conditions/Filter.cpp
 	conditions/HasEnemies.h
 	conditions/ICondition.h
 	conditions/IsCloseToGroup.h
@@ -34,29 +38,37 @@ set(SRCS
 	filter/SelectHighestAggro.h
 	filter/SelectZone.h
 	filter/Union.h
+	filter/Union.cpp
 	filter/Intersection.h
 	filter/First.h
+	filter/First.cpp
 	filter/Last.h
+	filter/Last.cpp
 	filter/Random.h
+	filter/Random.cpp
 	filter/Difference.h
+	filter/Difference.cpp
 	filter/Complement.h
+	filter/Complement.cpp
 	filter/SelectAll.h
 	IAIFactory.h
 	ICharacter.h
 	group/GroupId.h
 	group/GroupMgr.h group/GroupMgr.cpp
 	movement/SelectionSeek.h
-	movement/GroupFlee.h
-	movement/GroupSeek.h
+	movement/GroupFlee.h movement/GroupFlee.cpp
+	movement/GroupSeek.h movement/GroupSeek.cpp
 	movement/Steering.h
 	movement/TargetFlee.h
 	movement/TargetSeek.h
-	movement/Wander.h
+	movement/Wander.h movement/Wander.cpp
 	movement/WeightedSteering.h
+	movement/LUASteering.h
+	movement/LUASteering.cpp
 	server/AIAddNodeMessage.h
 	server/AIChangeMessage.h
-	server/AICharacterDetailsMessage.h
-	server/AICharacterStaticMessage.h
+	server/AICharacterDetailsMessage.h server/AICharacterDetailsMessage.cpp
+	server/AICharacterStaticMessage.h server/AICharacterStaticMessage.cpp
 	server/AIDeleteNodeMessage.h
 	server/AINamesMessage.h
 	server/AIPauseMessage.h
@@ -65,20 +77,20 @@ set(SRCS
 	server/AIStepMessage.h
 	server/AIStubTypes.h
 	server/AIUpdateNodeMessage.h
-	server/AddNodeHandler.h
-	server/ChangeHandler.h
-	server/DeleteNodeHandler.h
+	server/AddNodeHandler.h server/AddNodeHandler.cpp
+	server/ChangeHandler.h server/ChangeHandler.cpp
+	server/DeleteNodeHandler.h server/DeleteNodeHandler.cpp
 	server/IProtocolHandler.h
 	server/IProtocolMessage.h
 	server/Network.h server/Network.cpp
-	server/PauseHandler.h
+	server/PauseHandler.h server/PauseHandler.cpp
 	server/ProtocolHandlerRegistry.h
-	server/ProtocolMessageFactory.h
-	server/ResetHandler.h
-	server/SelectHandler.h
+	server/ProtocolMessageFactory.h server/ProtocolMessageFactory.cpp
+	server/ResetHandler.h server/ResetHandler.cpp
+	server/SelectHandler.h server/SelectHandler.cpp
 	server/Server.h server/Server.cpp
-	server/StepHandler.h
-	server/UpdateNodeHandler.h
+	server/StepHandler.h server/StepHandler.cpp
+	server/UpdateNodeHandler.h server/UpdateNodeHandler.cpp
 	zone/Zone.h zone/Zone.cpp
 	SimpleAI.h
 	tree/Fail.h
@@ -97,7 +109,8 @@ set(SRCS
 	tree/Steer.h
 	tree/Succeed.h
 	tree/TreeNode.h tree/TreeNode.cpp
-	tree/TreeNodeParser.h
+	tree/TreeNodeParser.h tree/TreeNodeParser.cpp
+	tree/loaders/lua/LUATreeLoader.h tree/loaders/lua/LUATreeLoader.cpp
 )
 set(LIB ai)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua)

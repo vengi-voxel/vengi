@@ -6,7 +6,7 @@
 #pragma once
 
 #include "IFilter.h"
-#include "LUAFunctions.h"
+#include "../LUAFunctions.h"
 
 namespace ai {
 

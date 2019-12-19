@@ -28,6 +28,11 @@ const char* const ORIENTATION = "Orientation";
 }
 
 /**
+ * @brief ICharacter attributes for the remote \ref debugger
+ */
+typedef std::unordered_map<std::string, std::string> CharacterAttributes;
+
+/**
  * @brief Class that should be extended by the @ai{AI} controlled entity class.
  *
  * It uses a @ai{CharacterId} to identify the character in the game. The @ai{AI} class

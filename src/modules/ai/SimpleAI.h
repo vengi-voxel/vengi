@@ -234,46 +234,10 @@
  */
 #pragma once
 
-#include "common/Types.h"
-#include "common/MemoryAllocator.h"
-#include "common/String.h"
-#include "common/Math.h"
-#include "common/Random.h"
-#include "common/Log.h"
-#include "common/MoveVector.h"
-#include "common/Random.h"
-#include "common/Thread.h"
-#include "common/ExecutionTime.h"
-
-#include "AI.h"
-#include "AIFactories.h"
 #include "AIRegistry.h"
-#include "ICharacter.h"
 
-#include "tree/TreeNode.h"
-#include "tree/ITask.h"
-#include "tree/ITimedNode.h"
-#include "tree/TreeNodeParser.h"
-#include "tree/loaders/ITreeLoader.h"
-
-#include "group/GroupId.h"
-#include "group/GroupMgr.h"
-
-#include "server/Server.h"
-
-#include "zone/Zone.h"
-
-#include "conditions/ICondition.h"
-#include "filter/IFilter.h"
-
-#ifdef AI_INCLUDE_LUA
 #include "tree/loaders/lua/LUATreeLoader.h"
 #include "LUAAIRegistry.h"
-#endif
-
-#ifdef AI_INCLUDE_XML
-#include "tree/loaders/xml/XMLTreeLoader.h"
-#endif
 
 /**
  * @}

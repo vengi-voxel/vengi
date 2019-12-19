@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "ZoneTest.h"
+#include "TestShared.h"
 #include "tree/PrioritySelector.h"
 
 class ZoneTest: public TestSuite {

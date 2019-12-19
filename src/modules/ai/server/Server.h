@@ -9,14 +9,8 @@
 #include "Network.h"
 #include "zone/Zone.h"
 #include "AIRegistry.h"
-#include "AIStateMessage.h"
-#include "AINamesMessage.h"
 #include "AIStubTypes.h"
-#include "AICharacterDetailsMessage.h"
-#include "AICharacterStaticMessage.h"
 #include "ProtocolHandlerRegistry.h"
-#include "conditions/ConditionParser.h"
-#include "tree/TreeNodeParser.h"
 #include "tree/TreeNode.h"
 
 namespace ai {

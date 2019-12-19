@@ -12,6 +12,15 @@
 #include "DeleteNodeHandler.h"
 #include "UpdateNodeHandler.h"
 
+#include "AIPauseMessage.h"
+#include "AIStateMessage.h"
+#include "AINamesMessage.h"
+#include "AICharacterDetailsMessage.h"
+#include "AICharacterStaticMessage.h"
+
+#include "conditions/ConditionParser.h"
+#include "tree/TreeNodeParser.h"
+
 namespace ai {
 
 namespace {

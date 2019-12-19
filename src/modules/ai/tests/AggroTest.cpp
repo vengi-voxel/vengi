@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "AggroTest.h"
+#include "TestShared.h"
 
 class AggroTest: public TestSuite {
 public:

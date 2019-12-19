@@ -1,4 +1,4 @@
-#include "GeneralTest.h"
+#include "TestShared.h"
 
 class GeneralTest: public TestSuite {
 };

@@ -1,4 +1,4 @@
-#include "ParserTest.h"
+#include "TestShared.h"
 
 class ParserTest: public TestSuite {
 };

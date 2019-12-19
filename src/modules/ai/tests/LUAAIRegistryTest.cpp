@@ -1,4 +1,4 @@
-#include "LUAAIRegistryTest.h"
+#include "TestShared.h"
 #include <string>
 #include <fstream>
 #include <streambuf>

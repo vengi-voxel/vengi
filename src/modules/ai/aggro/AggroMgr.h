@@ -8,7 +8,6 @@
 #pragma once
 
 #include <vector>
-#include <memory>
 #include "ICharacter.h"
 #include "aggro/Entry.h"
 

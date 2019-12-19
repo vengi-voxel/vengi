@@ -1,4 +1,4 @@
-#include "GroupTest.h"
+#include "TestShared.h"
 
 class GroupMgrTest: public TestSuite {
 };

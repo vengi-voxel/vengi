@@ -10,7 +10,7 @@
 #include "Log.h"
 #include <math.h>
 #include <utility>
-#include <limits>
+#include <limits.h>
 #include <SDL.h>
 
 #define CORE_STRINGIFY_INTERNAL(x) #x

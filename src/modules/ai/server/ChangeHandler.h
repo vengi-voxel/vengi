@@ -4,8 +4,6 @@
 #pragma once
 
 #include "IProtocolHandler.h"
-#include "Server.h"
-#include "AIChangeMessage.h"
 
 namespace ai {
 
@@ -15,13 +13,9 @@ class ChangeHandler: public ai::IProtocolHandler {
 private:
 	Server& _server;
 public:
-	explicit ChangeHandler(Server& server) : _server(server) {
-	}
+	explicit ChangeHandler(Server& server);
 
-	void execute(const ClientId& /*clientId*/, const IProtocolMessage& message) override{
-		const AIChangeMessage& msg = static_cast<const AIChangeMessage&>(message);
-		_server.setDebug(msg.getName());
-	}
+	void execute(const ClientId& /*clientId*/, const IProtocolMessage& message) override;
 };
 
 }

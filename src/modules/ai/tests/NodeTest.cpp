@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "NodeTest.h"
+#include "TestShared.h"
 #include "tree/Fail.h"
 #include "tree/Limit.h"
 #include "tree/Invert.h"
