@@ -24,10 +24,6 @@ Test the dearimgui integration
 
 Test geometry shader integration
 
-# testnuklear
-
-Test the nuklear imgui integration
-
 # testcomputetexture3d
 
 Test the OpenCL 3d texture integration of a 3d voxel volume (rendered as 2d side view)
@@ -77,7 +73,6 @@ Conversion of OpenCL marching cubes taken from: https://github.com/smistad/GPU-M
 
 Renders the turbobadger demo.
 
-# testluaui
 # testoctreevisit
 
 Visit the frustum in the octree.
