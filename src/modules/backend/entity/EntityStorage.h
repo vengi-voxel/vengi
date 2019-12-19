@@ -29,7 +29,6 @@ private:
 	Npcs _npcs;
 
 	core::EventBusPtr _eventBus;
-	long _time;
 public:
 	EntityStorage(const core::EventBusPtr& eventBus);
 	virtual ~EntityStorage();

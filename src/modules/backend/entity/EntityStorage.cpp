@@ -11,7 +11,7 @@
 namespace backend {
 
 EntityStorage::EntityStorage(const core::EventBusPtr& eventBus) :
-		_eventBus(eventBus), _time(0L) {
+		_eventBus(eventBus) {
 	_eventBus->subscribe<EntityDeleteEvent>(*this);
 }
 
