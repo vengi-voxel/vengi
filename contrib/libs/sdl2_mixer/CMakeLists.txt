@@ -1,4 +1,5 @@
 set(SRCS
+	compat.c
 	effect_position.c
 	effects_internal.c
 	effect_stereoreverse.c
