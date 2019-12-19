@@ -3,9 +3,15 @@ set(LIB libuv)
 if(MSVC)
   list(APPEND uv_cflags /W4)
 elseif(CMAKE_C_COMPILER_ID MATCHES "AppleClang|Clang|GNU")
-  list(APPEND uv_cflags -fvisibility=hidden --std=gnu89)
-  list(APPEND uv_cflags -Wall -Wextra -Wstrict-prototypes)
-  list(APPEND uv_cflags -Wno-unused-parameter -Wno-shadow -Wno-cast-function-type)
+  foreach(_FLAG
+    -fvisibility=hidden --std=gnu89 -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter -Wno-shadow -Wno-cast-function-type)
+    string(REPLACE "=" "_" _NAME ${_FLAG})
+    string(REPLACE "-" "_" _NAME ${_NAME})
+    check_c_compiler_flag(${_FLAG} HAVE_FLAG${_NAME})
+    if (HAVE_FLAG${_NAME})
+      list(APPEND uv_cflags ${_FLAG})
+    endif()
+  endforeach()
 endif()
 
 set(uv_sources
