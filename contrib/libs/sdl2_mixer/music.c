@@ -1081,7 +1081,7 @@ const char* Mix_GetSoundFonts(void)
        Time to start guessing where they might be...
      */
     {
-        static char *s_soundfont_paths[] = {
+        static const char *s_soundfont_paths[] = {
             "/usr/share/sounds/sf2/FluidR3_GM.sf2"  /* Remember to add ',' here */
         };
         unsigned i;
