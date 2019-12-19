@@ -13,10 +13,9 @@ namespace frontend {
 class HudWindow: public ui::turbobadger::Window {
 private:
 	using Super = ui::turbobadger::Window;
-	Client* _client;
 public:
 	HudWindow(Client* client, const glm::ivec2& dimension) :
-			Super(client), _client(client) {
+			Super(client) {
 		core_assert_always(loadResourceFile("ui/window/client-hud.tb.txt"));
 		setSettings(tb::WINDOW_SETTINGS_NONE);
 		setSize(dimension.x, 20);
