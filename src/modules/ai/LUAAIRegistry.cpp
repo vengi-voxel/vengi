@@ -328,7 +328,7 @@ LUAAIRegistry::~LUAAIRegistry() {
 
 bool LUAAIRegistry::evaluate(const char* luaBuffer, size_t size) {
 	if (_s == nullptr) {
-		ai_log_debug("LUA state is not yet initialized");
+		ai_log_error("LUA state is not yet initialized");
 		return false;
 	}
 	if (luaL_loadbufferx(_s, luaBuffer, size, "", nullptr) || lua_pcall(_s, 0, 0, 0)) {
