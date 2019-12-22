@@ -172,6 +172,7 @@ public:
 	 * @brief Rotation around the y-axis
 	 */
 	float yaw() const;
+	float Camera::horizontalYaw() const {
 	void yaw(float radians);
 	/**
 	 * @brief Rotation around the z-axis
