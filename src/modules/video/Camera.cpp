@@ -44,13 +44,7 @@ void Camera::rotate(const glm::vec3& radians) {
 	switch(_type) {
 	case CameraType::FirstPerson: {
 		turn(radians.y);
-		const float dotResult = glm::dot(forward(), glm::down);
-		const float rotationDegrees = glm::acos(dotResult) - glm::radians(90.0f);
-		constexpr float limitAngle = glm::radians(75.0f);
-		if ((rotationDegrees <= limitAngle || radians.x >= 0.0f)
-				&& (rotationDegrees >= -limitAngle || radians.x <= 0.0f)) {
-			pitch(radians.x);
-		}
+		pitch(radians.x);
 		break;
 	}
 	case CameraType::Free:
@@ -58,6 +52,33 @@ void Camera::rotate(const glm::vec3& radians) {
 		pitch(radians.x);
 		roll(radians.z);
 		break;
+	}
+}
+
+float Camera::horizontalYaw() const {
+	const glm::vec3& dir = direction();
+	const glm::vec3 yawDirection(dir.x, 0.0f, dir.z);
+	const float dotResult = glm::dot(glm::normalize(yawDirection), glm::backward);
+	const float yaw = glm::acos(dotResult);
+	if (yawDirection.x < 0.0f) {
+		return yaw * -1.0f;
+	}
+	return yaw;
+}
+
+void Camera::pitch(float radians) {
+	if (_type == CameraType::FirstPerson) {
+		const float dotResult = glm::dot(direction(), glm::down);
+		float curpitch = glm::acos(dotResult) - glm::half_pi<float>();
+		if (curpitch > MAX_PITCH) {
+			curpitch = MAX_PITCH;
+		}
+		if (glm::abs(curpitch + radians) > MAX_PITCH) {
+			radians = copysign(MAX_PITCH, curpitch) - curpitch;
+		}
+	}
+	if (radians != 0) {
+		rotate(radians, glm::right);
 	}
 }
 
@@ -392,5 +413,6 @@ void Camera::setFarPlane(float farPlane) {
 	_dirty |= DIRTY_PERSPECTIVE;
 	_farPlane = farPlane;
 }
+
 
 }

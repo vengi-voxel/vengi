@@ -170,7 +170,7 @@ void MapView::beforeUI() {
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
 	const video::Camera& camera = _camera.camera();
-	_movement.update(_deltaFrameSeconds, camera.yaw(), _entity, [&] (const glm::vec3& pos, float maxWalkHeight) {
+	_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _entity, [&] (const glm::vec3& pos, float maxWalkHeight) {
 		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 	});
 	_camera.update(_entity->position(), _deltaFrameMillis);
@@ -198,7 +198,7 @@ void MapView::onRenderUI() {
 		const glm::vec3& targetpos = camera.target();
 		const float distance = camera.targetDistance();
 		const float pitch = camera.pitch();
-		const float yaw = camera.yaw();
+		const float yaw = camera.horizontalYaw();
 		voxelrender::WorldRenderer::Stats stats;
 		_worldRenderer.stats(stats);
 		ImGui::Text("%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());

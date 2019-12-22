@@ -51,6 +51,8 @@ protected:
 
 	constexpr static uint32_t DIRTY_ALL = ~0u;
 
+	constexpr static float MAX_PITCH = glm::half_pi<float>() - 0.1f;
+
 	inline bool isDirty(uint32_t flag) const {
 		return (_dirty & flag) != 0u;
 	}
@@ -172,6 +174,7 @@ public:
 	 * @brief Rotation around the y-axis
 	 */
 	float yaw() const;
+	float horizontalYaw() const;
 	void yaw(float radians);
 	/**
 	 * @brief Rotation around the z-axis
@@ -326,10 +329,6 @@ inline float Camera::roll() const {
 
 inline float Camera::yaw() const {
 	return glm::yaw(_quat);
-}
-
-inline void Camera::pitch(float radians) {
-	rotate(radians, glm::right);
 }
 
 inline void Camera::yaw(float radians) {

@@ -62,6 +62,8 @@ void PlayerMovement::update(float deltaFrameSeconds, float orientation, ClientEn
 		_move &= ~network::MoveDirection::JUMP;
 	}
 	const glm::vec3& newPos = Super::update(deltaFrameSeconds, orientation, (float)speed, currentPos, heightResolver);
+
+	entity->setOrientation(orientation);
 	entity->setPosition(newPos);
 	entity->setAnimation(animation());
 }
