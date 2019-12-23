@@ -3,9 +3,6 @@
  */
 #pragma once
 
-#define GLM_FORCE_RADIANS
-//#define GLM_SWIZZLE
-
 #include <glm/vec3.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>

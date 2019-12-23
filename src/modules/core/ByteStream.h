@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <vector>
-#include <list>
 #include <string>
 #include <stdarg.h>
 #include <SDL_endian.h>

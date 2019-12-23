@@ -3,11 +3,8 @@
  */
 #pragma once
 
-#include "Log.h"
-#include <vector>
-#include <string>
-#include <algorithm>
 #include "String.h"
+#include <stdarg.h>
 
 namespace ai {
 

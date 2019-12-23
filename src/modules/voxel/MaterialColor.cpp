@@ -14,6 +14,7 @@
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
 #include <unordered_map>
+#include <unordered_set>
 #include <algorithm>
 #include <numeric>
 

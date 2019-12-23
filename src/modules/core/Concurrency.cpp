@@ -3,7 +3,8 @@
  */
 
 #include "Concurrency.h"
-#include <SDL.h>
+#include "core/Common.h"
+#include <thread>
 
 #if defined(__LINUX__)
 #include <dlfcn.h>
@@ -73,6 +74,14 @@ void setThreadPriority(ThreadPriority prio) {
 	}
 	SetThreadPriority(GetCurrentThread(), value);
 #endif
+}
+
+uint32_t cpus() {
+	return core_max(1u, std::thread::hardware_concurrency());
+}
+
+uint32_t halfcpus() {
+	return core_max(1u, std::thread::hardware_concurrency() / 2u);
 }
 
 }

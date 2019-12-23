@@ -1,6 +1,8 @@
-#pragma once
+/**
+ * @file
+ */
 
-#define GLM_FORCE_RADIANS
+#pragma once
 
 #include <functional>
 #include <limits>

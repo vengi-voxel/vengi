@@ -92,7 +92,7 @@ protected:
 
 	AppState _curState = AppState::Construct;
 	AppState _nextState = AppState::InvalidAppState;
-	bool _blockers[(int)AppState::Max];
+	bool _blockers[(int)AppState::Max] { false, false, false, false, false, false, false, false, false };
 	bool _suspendRequested = false;
 
 	/**

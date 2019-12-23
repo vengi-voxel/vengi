@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <list>
 #include <type_traits>
-#include <vector>
 #include <memory>
 #include "core/Log.h"
 #include "core/Common.h"

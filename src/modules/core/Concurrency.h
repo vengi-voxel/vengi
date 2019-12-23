@@ -4,19 +4,12 @@
 
 #pragma once
 
-#include "core/Common.h"
-#include <thread>
-#include <algorithm>
+#include <stdint.h>
 
 namespace core {
 
-inline uint32_t cpus() {
-	return core_max(1u, std::thread::hardware_concurrency());
-}
-
-inline uint32_t halfcpus() {
-	return core_max(1u, std::thread::hardware_concurrency() / 2u);
-}
+extern uint32_t cpus();
+extern uint32_t halfcpus();
 
 extern void setThreadName(const char *name);
 

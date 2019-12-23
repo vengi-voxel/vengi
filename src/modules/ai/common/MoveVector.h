@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "Math.h"
+#include <glm/vec3.hpp>
 
 namespace ai {
 
