@@ -5,7 +5,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <SDL.h>
 #include "core/Array.h"
 
 namespace voxel {
@@ -149,7 +148,7 @@ inline bool isLeaves(VoxelType material) {
 	return material == VoxelType::Leaf;
 }
 
-SDL_FORCE_INLINE bool isAir(VoxelType material) {
+inline bool isAir(VoxelType material) {
 	return material == VoxelType::Air;
 }
 

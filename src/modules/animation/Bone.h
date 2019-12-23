@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include <glm/vec3.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/mat4x4.hpp>
 
 namespace animation {
 

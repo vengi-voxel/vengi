@@ -86,11 +86,3 @@
 #define core_assert_32byte_aligned(data) core_assert_msg((((uintptr_t )(data)) & 31) == 0, "Data is not aligned properly");
 #define core_assert_64byte_aligned(data) core_assert_msg((((uintptr_t )(data)) & 63) == 0, "Data is not aligned properly");
 #define core_assert_128byte_aligned(data) core_assert_msg((((uintptr_t )(data)) & 127) == 0, "Data is not aligned properly");
-
-template<class T, class S>
-inline T assert_cast(const S object) {
-#ifdef __cpp_rtti
-	core_assert(dynamic_cast<T>(object) == static_cast<T>(object));
-#endif
-	return static_cast<T>(object);
-}

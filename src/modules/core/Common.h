@@ -12,39 +12,13 @@
 #include <utility>
 #include <limits.h>
 #include <SDL_stdinc.h>
+#include "Enum.h"
 
 #define CORE_STRINGIFY_INTERNAL(x) #x
 #define CORE_STRINGIFY(x) CORE_STRINGIFY_INTERNAL(x)
 
 #define CORE_CLASS(name) \
 	friend class name##Test;
-
-#define CORE_ENUM_BIT_OPERATIONS(EnumClassName) \
-	inline constexpr EnumClassName operator&(EnumClassName __x, EnumClassName __y) { \
-		return static_cast<EnumClassName>(static_cast<int>(__x) & static_cast<int>(__y)); \
-	} \
-	inline constexpr EnumClassName operator|(EnumClassName __x, EnumClassName __y) { \
-		return static_cast<EnumClassName>(static_cast<int>(__x) | static_cast<int>(__y)); \
-	} \
-	inline constexpr EnumClassName operator^(EnumClassName __x, EnumClassName __y) { \
-		return static_cast<EnumClassName>(static_cast<int>(__x) ^ static_cast<int>(__y)); \
-	} \
-	inline constexpr EnumClassName operator~(EnumClassName __x) { \
-		return static_cast<EnumClassName>(~static_cast<int>(__x)); \
-	} \
-	inline EnumClassName& operator&=(EnumClassName & __x, EnumClassName __y) { \
-		__x = __x & __y; \
-		return __x; \
-	} \
-	inline EnumClassName& operator|=(EnumClassName & __x, EnumClassName __y) { \
-		__x = __x | __y; \
-		return __x; \
-	} \
-	inline EnumClassName& operator^=(EnumClassName & __x, EnumClassName __y) { \
-		__x = __x ^ __y; \
-		return __x; \
-	}
-
 
 #ifndef core_malloc
 #define core_malloc SDL_malloc
@@ -82,8 +56,8 @@
 #define core_likely(expr) CORE_EXPECT((expr) != 0, 1)
 #define core_unlikely(expr) CORE_EXPECT((expr) != 0, 0)
 
-#define core_min(x, y) (std::min)(x, y)
-#define core_max(x, y) (std::max)(x, y)
+#define core_min(x, y) (x < y ? x : y)
+#define core_max(x, y) (x > y ? x : y)
 
 #define MAKE_SHARED_INVIS_CTOR(classname) \
 	struct make_shared_enabler: public classname { \
@@ -92,21 +66,6 @@
 				classname(std::forward<Args>(args)...) { \
 		} \
 	}
-
-namespace std {
-
-template<typename T>
-constexpr typename underlying_type<T>::type enum_value(const T& val) {
-	return static_cast<typename underlying_type<T>::type>(val);
-}
-}
-
-struct EnumClassHash {
-template<typename T>
-size_t operator()(T t) const {
-	return static_cast<size_t>(std::enum_value(t));
-}
-};
 
 inline constexpr uint32_t FourCC(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 	return ((uint32_t) ((uint32_t(d) << 24) | (uint32_t(c) << 16) | (uint32_t(b) << 8) | uint32_t(a)));

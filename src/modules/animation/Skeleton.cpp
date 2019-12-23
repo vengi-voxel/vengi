@@ -3,10 +3,20 @@
  */
 
 #include "Skeleton.h"
-#include "core/Common.h"
+#include "core/Assert.h"
 #include "animation/BoneUtil.h"
 
 namespace animation {
+
+const Bone& Skeleton::bone(BoneId id) const {
+	core_assert(id != BoneId::Max);
+	return _bones[std::enum_value(id)];
+}
+
+Bone& Skeleton::bone(BoneId id) {
+	core_assert(id != BoneId::Max);
+	return _bones[std::enum_value(id)];
+}
 
 Bone& Skeleton::torsoBone(float scale) {
 	Bone& torso = bone(BoneId::Torso);

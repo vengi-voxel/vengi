@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Assert.h"
-#include "core/GLM.h"
 #include <limits.h>
 
 namespace stock {

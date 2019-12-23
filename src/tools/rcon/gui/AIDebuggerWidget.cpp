@@ -85,7 +85,7 @@ void AIDebuggerWidget::onSelected() {
 	} else {
 		_selectedLabel->setText(tr("selected %1").arg(id));
 	}
-	ai_assert_always(_model.setRootNode(const_cast<AIStateNode*>(&_debugger.getNode())), "Could not set root node");
+	_model.setRootNode(const_cast<AIStateNode*>(&_debugger.getNode()));
 	_stateTable->updateStateTable();
 	_nodeTree->updateTreeWidget();
 	_tree->expandAll();

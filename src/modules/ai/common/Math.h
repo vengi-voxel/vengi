@@ -5,10 +5,10 @@
 
 #include <glm/vec3.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/vector_relational.hpp>
+#include <glm/trigonometric.hpp>
 #include <glm/gtc/epsilon.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/compatibility.hpp>
-#include <glm/gtx/norm.hpp>
+#include <glm/geometric.hpp>
 #include <limits.h>
 #include <math.h>
 #include <string>

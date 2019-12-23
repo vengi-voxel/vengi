@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/Common.h"
 #include <stdint.h>
 #include "Shared_generated.h"
 

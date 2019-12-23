@@ -8,9 +8,9 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/Common.h"
-#include "core/GLM.h"
 #include "core/io/Filesystem.h"
 #include <unordered_map>
+#include <glm/vec2.hpp>
 
 struct Mix_Chunk;
 struct _Mix_Music;

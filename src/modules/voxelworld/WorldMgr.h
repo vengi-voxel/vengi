@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include <glm/vec3.hpp>
 #include "core/Common.h"
 #include "voxel/Mesh.h"
 #include "voxel/PagedVolume.h"
@@ -17,9 +17,7 @@
 #include "voxel/Constants.h"
 #include "voxel/Picking.h"
 #include <memory>
-#include <vector>
 #include <atomic>
-#include <list>
 
 #include "WorldPager.h"
 #include "core/io/Filesystem.h"

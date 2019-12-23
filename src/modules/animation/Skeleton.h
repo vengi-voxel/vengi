@@ -6,10 +6,7 @@
 
 #include "Bone.h"
 #include "BoneId.h"
-#include "core/GLM.h"
-#include "core/Assert.h"
 #include "core/Common.h"
-#include <vector>
 #include "SkeletonShader.h"
 
 namespace animation {
@@ -47,16 +44,5 @@ public:
 	 */
 	void lerp(const Skeleton& previous, float dt);
 };
-
-inline const Bone& Skeleton::bone(BoneId id) const {
-	core_assert(id != BoneId::Max);
-	return _bones[std::enum_value(id)];
-}
-
-inline Bone& Skeleton::bone(BoneId id) {
-	core_assert(id != BoneId::Max);
-	return _bones[std::enum_value(id)];
-}
-
 
 }

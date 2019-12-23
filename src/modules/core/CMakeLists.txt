@@ -29,6 +29,7 @@ set(SRCS
 	Common.h Common.cpp
 	Concurrency.h Concurrency.cpp
 	ConsoleApp.h ConsoleApp.cpp
+	Enum.h
 	EventBus.cpp EventBus.h
 	GameConfig.h
 	GLM.cpp GLM.h

@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "core/Common.h"
+#include "core/Enum.h"
+#include <string>
 
 namespace persistence {
 
