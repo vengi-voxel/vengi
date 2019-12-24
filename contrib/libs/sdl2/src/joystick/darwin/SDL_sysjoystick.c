@@ -400,11 +400,13 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     Sint32 product = 0;
     Sint32 version = 0;
     const char *name;
+    const char *manufacturer_remapped;
     char manufacturer_string[256];
     char product_string[256];
     CFTypeRef refCF = NULL;
     CFArrayRef array = NULL;
     Uint16 *guid16 = (Uint16 *)pDevice->guid.data;
+    int i;
 
     /* get usage page and usage */
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDPrimaryUsagePageKey));
@@ -456,6 +458,19 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
             SDL_strlcpy(product_string, "Unidentified joystick", sizeof(product_string));
         }
+        for (i = (int)SDL_strlen(manufacturer_string) - 1; i > 0; --i) {
+            if (SDL_isspace(manufacturer_string[i])) {
+                manufacturer_string[i] = '\0';
+            } else {
+                break;
+            }
+        }
+
+        manufacturer_remapped = SDL_GetCustomJoystickManufacturer(manufacturer_string);
+        if (manufacturer_remapped != manufacturer_string) {
+            SDL_strlcpy(manufacturer_string, manufacturer_remapped, sizeof(manufacturer_string));
+        }
+
         if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
             SDL_strlcpy(pDevice->product, product_string, sizeof(pDevice->product));
         } else {
@@ -717,6 +732,11 @@ static int
 DARWIN_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
+}
+
+static void
+DARWIN_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+{
 }
 
 static SDL_JoystickGUID
@@ -1018,6 +1038,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickDetect,
     DARWIN_JoystickGetDeviceName,
     DARWIN_JoystickGetDevicePlayerIndex,
+    DARWIN_JoystickSetDevicePlayerIndex,
     DARWIN_JoystickGetDeviceGUID,
     DARWIN_JoystickGetDeviceInstanceID,
     DARWIN_JoystickOpen,

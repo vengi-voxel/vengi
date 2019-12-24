@@ -33,6 +33,7 @@
 #include "../events/SDL_events_c.h"
 #endif
 #include "../video/SDL_sysvideo.h"
+#include "hidapi/SDL_hidapijoystick_c.h"
 
 /* This is included in only one place because it has a large static list of controllers */
 #include "controller_type.h"
@@ -82,6 +83,8 @@ static SDL_Joystick *SDL_joysticks = NULL;
 static SDL_bool SDL_updating_joystick = SDL_FALSE;
 static SDL_mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
 static SDL_atomic_t SDL_next_joystick_instance_id;
+static int SDL_joystick_player_count = 0;
+static SDL_JoystickID *SDL_joystick_players = NULL;
 
 void
 SDL_LockJoysticks(void)
@@ -99,6 +102,81 @@ SDL_UnlockJoysticks(void)
     }
 }
 
+static int
+SDL_FindFreePlayerIndex()
+{
+    int player_index;
+
+    for (player_index = 0; player_index < SDL_joystick_player_count; ++player_index) {
+        if (SDL_joystick_players[player_index] == -1) {
+            return player_index;
+        }
+    }
+    return player_index;
+}
+
+static int
+SDL_GetPlayerIndexForJoystickID(SDL_JoystickID instance_id)
+{
+    int player_index;
+
+    for (player_index = 0; player_index < SDL_joystick_player_count; ++player_index) {
+        if (instance_id == SDL_joystick_players[player_index]) {
+            break;
+        }
+    }
+    if (player_index == SDL_joystick_player_count) {
+        player_index = -1;
+    }
+    return player_index;
+}
+
+static SDL_JoystickID
+SDL_GetJoystickIDForPlayerIndex(int player_index)
+{
+    if (player_index < 0 || player_index >= SDL_joystick_player_count) {
+        return -1;
+    }
+    return SDL_joystick_players[player_index];
+}
+
+static SDL_bool
+SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
+{
+    SDL_JoystickID existing_instance = SDL_GetJoystickIDForPlayerIndex(player_index);
+    SDL_JoystickDriver *driver;
+    int device_index;
+
+    if (player_index < 0) {
+        return SDL_FALSE;
+    }
+    if (player_index >= SDL_joystick_player_count) {
+        SDL_JoystickID *new_players = (SDL_JoystickID *)SDL_realloc(SDL_joystick_players, (player_index + 1)*sizeof(*SDL_joystick_players));
+        if (!new_players) {
+            SDL_OutOfMemory();
+            return SDL_FALSE;
+        }
+
+        SDL_joystick_players = new_players;
+        while (SDL_joystick_player_count <= player_index) {
+            SDL_joystick_players[SDL_joystick_player_count++] = -1;
+        }
+    }
+
+    SDL_joystick_players[player_index] = instance_id;
+
+    /* Update the driver with the new index */
+    device_index = SDL_JoystickGetDeviceIndexFromInstanceID(instance_id);
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+        driver->SetDevicePlayerIndex(device_index, player_index);
+    }
+
+    /* Move any existing joystick to another slot */
+    if (existing_instance >= 0) {
+        SDL_SetJoystickIDForPlayerIndex(SDL_FindFreePlayerIndex(), existing_instance);
+    }
+    return SDL_TRUE;
+}
 
 static void SDLCALL
 SDL_JoystickAllowBackgroundEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -227,16 +305,16 @@ SDL_JoystickNameForIndex(int device_index)
     return name;
 }
 
+/*
+ *  Get the player index of a joystick, or -1 if it's not available
+ */
 int
 SDL_JoystickGetDevicePlayerIndex(int device_index)
 {
-    SDL_JoystickDriver *driver;
-    int player_index = -1;
+    int player_index;
 
     SDL_LockJoysticks();
-    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
-        player_index = driver->GetDevicePlayerIndex(device_index);
-    }
+    player_index = SDL_GetPlayerIndexForJoystickID(SDL_JoystickGetDeviceInstanceID(device_index));
     SDL_UnlockJoysticks();
 
     return player_index;
@@ -322,7 +400,6 @@ SDL_JoystickOpen(int device_index)
     joystick->driver = driver;
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
-    joystick->player_index = -1;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
     if (driver->Open(joystick, device_index) < 0) {
@@ -390,16 +467,16 @@ SDL_JoystickOpen(int device_index)
 /*
  * Checks to make sure the joystick is valid.
  */
-int
+SDL_bool
 SDL_PrivateJoystickValid(SDL_Joystick * joystick)
 {
-    int valid;
+    SDL_bool valid;
 
     if (joystick == NULL) {
         SDL_SetError("Joystick hasn't been opened yet");
-        valid = 0;
+        valid = SDL_FALSE;
     } else {
-        valid = 1;
+        valid = SDL_TRUE;
     }
 
     return valid;
@@ -588,16 +665,36 @@ SDL_JoystickInstanceID(SDL_Joystick * joystick)
 }
 
 /*
- * Find the SDL_Joystick that owns this instance id
+ * Return the SDL_Joystick associated with an instance id.
  */
 SDL_Joystick *
-SDL_JoystickFromInstanceID(SDL_JoystickID joyid)
+SDL_JoystickFromInstanceID(SDL_JoystickID instance_id)
 {
     SDL_Joystick *joystick;
 
     SDL_LockJoysticks();
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
-        if (joystick->instance_id == joyid) {
+        if (joystick->instance_id == instance_id) {
+            break;
+        }
+    }
+    SDL_UnlockJoysticks();
+    return joystick;
+}
+
+/**
+ * Return the SDL_Joystick associated with a player index.
+ */
+SDL_Joystick *
+SDL_JoystickFromPlayerIndex(int player_index)
+{
+    SDL_JoystickID instance_id;
+    SDL_Joystick *joystick;
+
+    SDL_LockJoysticks();
+    instance_id = SDL_GetJoystickIDForPlayerIndex(player_index);
+    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+        if (joystick->instance_id == instance_id) {
             break;
         }
     }
@@ -618,13 +715,38 @@ SDL_JoystickName(SDL_Joystick * joystick)
     return SDL_FixupJoystickName(joystick->name);
 }
 
+/**
+ *  Get the player index of an opened joystick, or -1 if it's not available
+ */
 int
 SDL_JoystickGetPlayerIndex(SDL_Joystick * joystick)
 {
+    int player_index;
+
     if (!SDL_PrivateJoystickValid(joystick)) {
         return -1;
     }
-    return joystick->player_index;
+
+    SDL_LockJoysticks();
+    player_index = SDL_GetPlayerIndexForJoystickID(joystick->instance_id);
+    SDL_UnlockJoysticks();
+
+    return player_index;
+}
+
+/**
+ *  Set the player index of an opened joystick
+ */
+void
+SDL_JoystickSetPlayerIndex(SDL_Joystick * joystick, int player_index)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return;
+    }
+
+    SDL_LockJoysticks();
+    SDL_SetJoystickIDForPlayerIndex(player_index, joystick->instance_id);
+    SDL_UnlockJoysticks();
 }
 
 int
@@ -717,6 +839,11 @@ SDL_JoystickQuit(void)
        SDL_joystick_drivers[i]->Quit();
     }
 
+    if (SDL_joystick_players) {
+        SDL_free(SDL_joystick_players);
+        SDL_joystick_players = NULL;
+        SDL_joystick_player_count = 0;
+    }
     SDL_UnlockJoysticks();
 
 #if !SDL_EVENTS_DISABLED
@@ -754,20 +881,36 @@ SDL_PrivateJoystickShouldIgnoreEvent()
 
 void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance)
 {
-#if !SDL_EVENTS_DISABLED
-    SDL_Event event;
-    int device_index;
-
-    device_index = SDL_JoystickGetDeviceIndexFromInstanceID(device_instance);
+    SDL_JoystickDriver *driver;
+    int driver_device_index;
+    int player_index = -1;
+    int device_index = SDL_JoystickGetDeviceIndexFromInstanceID(device_instance);
     if (device_index < 0) {
         return;
     }
 
-    event.type = SDL_JOYDEVICEADDED;
+    SDL_LockJoysticks();
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &driver_device_index)) {
+        player_index = driver->GetDevicePlayerIndex(driver_device_index);
+    }
+    if (player_index < 0 && SDL_IsGameController(device_index)) {
+        player_index = SDL_FindFreePlayerIndex();
+    }
+    if (player_index >= 0) {
+        SDL_SetJoystickIDForPlayerIndex(player_index, device_instance);
+    }
+    SDL_UnlockJoysticks();
 
-    if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-        event.jdevice.which = device_index;
-        SDL_PushEvent(&event);
+#if !SDL_EVENTS_DISABLED
+    {
+        SDL_Event event;
+
+        event.type = SDL_JOYDEVICEADDED;
+
+        if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+            event.jdevice.which = device_index;
+            SDL_PushEvent(&event);
+        }
     }
 #endif /* !SDL_EVENTS_DISABLED */
 }
@@ -842,7 +985,7 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
 
     info = &joystick->axes[axis];
     if (!info->has_initial_value ||
-        (!info->has_second_value && info->initial_value == -32768 && SDL_abs(value) < (SDL_JOYSTICK_AXIS_MAX / 4))) {
+        (!info->has_second_value && (info->initial_value == -32768 || info->initial_value == 32767) && SDL_abs(value) < (SDL_JOYSTICK_AXIS_MAX / 4))) {
         info->initial_value = value;
         info->value = value;
         info->zero = value;
@@ -1043,6 +1186,11 @@ SDL_JoystickUpdate(void)
     /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
     SDL_UnlockJoysticks();
 
+#ifdef SDL_JOYSTICK_HIDAPI
+    /* Special function for HIDAPI devices, as a single device can provide multiple SDL_Joysticks */
+    HIDAPI_UpdateDevices();
+#endif /* SDL_JOYSTICK_HIDAPI */
+
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
             /* This should always be true, but seeing a crash in the wild...? */
@@ -1165,17 +1313,22 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
 }
 
 const char *
+SDL_GetCustomJoystickManufacturer(const char *manufacturer)
+{
+    if (manufacturer) {
+        if (SDL_strcmp(manufacturer, "Performance Designed Products") == 0) {
+            return "PDP";
+        } else if (SDL_strcmp(manufacturer, "HORI CO.,LTD") == 0) {
+            return "HORI";
+        }
+    }
+    return manufacturer;
+}
+
+const char *
 SDL_GetCustomJoystickName(Uint16 vendor, Uint16 product)
 {
     return GuessControllerName(vendor, product);
-}
-
-SDL_bool
-SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
-{
-    EControllerType eType = GuessControllerType(vendor, product);
-    return (eType == k_eControllerType_SwitchProController ||
-            eType == k_eControllerType_SwitchInputOnlyController);
 }
 
 SDL_GameControllerType

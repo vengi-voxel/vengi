@@ -535,7 +535,9 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
     struct PLATFORM_hid_device_info *raw_dev;
 #endif /* HAVE_PLATFORM_BACKEND */
     struct hid_device_info *devs = NULL, *last = NULL, *new_dev;
+#ifdef SDL_LIBUSB_DYNAMIC
     SDL_bool bFound;
+#endif
 
     if (SDL_hidapi_wasinit == SDL_FALSE) {
         hid_init();
@@ -556,8 +558,8 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 #if HAVE_PLATFORM_BACKEND
             for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
                 if (usb_dev->vendor_id == raw_dev->vendor_id &&
-                    usb_dev->product_id == raw_dev->product_id) {
-
+                    usb_dev->product_id == raw_dev->product_id &&
+                    (raw_dev->interface_number < 0 || usb_dev->interface_number == raw_dev->interface_number)) {
                     bFound = SDL_TRUE;
                     break;
                 }

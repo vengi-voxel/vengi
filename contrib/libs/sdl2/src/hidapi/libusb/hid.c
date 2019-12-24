@@ -481,7 +481,8 @@ int HID_API_EXPORT hid_exit(void)
 static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_descriptor *intf_desc)
 {
 	static const int XB360_IFACE_SUBCLASS = 93;
-	static const int XB360_IFACE_PROTOCOL = 1; /* Wired only */
+	static const int XB360_IFACE_PROTOCOL = 1; /* Wired */
+	static const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
 	static const int SUPPORTED_VENDORS[] = {
 		0x0079, /* GPD Win 2 */
 		0x044f, /* Thrustmaster */
@@ -493,6 +494,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x07ff, /* Mad Catz */
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
+		0x1038, /* SteelSeries */
 		0x11c9, /* Nacon */
 		0x12ab, /* Unknown */
 		0x1430, /* RedOctane */
@@ -505,10 +507,10 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x24c6, /* PowerA */
 	};
 
-	if (intf_desc->bInterfaceNumber == 0 &&
-	    intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
+	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
 	    intf_desc->bInterfaceSubClass == XB360_IFACE_SUBCLASS &&
-	    intf_desc->bInterfaceProtocol == XB360_IFACE_PROTOCOL) {
+	    (intf_desc->bInterfaceProtocol == XB360_IFACE_PROTOCOL ||
+	     intf_desc->bInterfaceProtocol == XB360W_IFACE_PROTOCOL)) {
 		int i;
 		for (i = 0; i < sizeof(SUPPORTED_VENDORS)/sizeof(SUPPORTED_VENDORS[0]); ++i) {
 			if (vendor_id == SUPPORTED_VENDORS[i]) {
@@ -554,13 +556,7 @@ static int should_enumerate_interface(unsigned short vendor_id, const struct lib
 
 	/* Also enumerate Xbox 360 controllers */
 	if (is_xbox360(vendor_id, intf_desc))
-	{
-		/* hid_write() to Xbox 360 controllers doesn't seem to work on Linux:
-		   - xpad 1-2:1.0: xpad_try_sending_next_out_packet - usb_submit_urb failed with result -2
-		   Xbox 360 controller support is good on Linux anyway, so we'll ignore this for now.
 		return 1;
-		*/
-	}
 
 	/* Also enumerate Xbox One controllers */
 	if (is_xboxone(vendor_id, intf_desc))
@@ -1057,17 +1053,17 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t length)
 {
 	int res;
-	int report_number = data[0];
-	int skipped_report_id = 0;
-
-	if (report_number == 0x0) {
-		data++;
-		length--;
-		skipped_report_id = 1;
-	}
-
 
 	if (dev->output_endpoint <= 0) {
+		int report_number = data[0];
+		int skipped_report_id = 0;
+
+		if (report_number == 0x0) {
+			data++;
+			length--;
+			skipped_report_id = 1;
+		}
+
 		/* No interrupt out endpoint. Use the Control Endpoint */
 		res = libusb_control_transfer(dev->device_handle,
 			LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_RECIPIENT_INTERFACE|LIBUSB_ENDPOINT_OUT,
@@ -1096,9 +1092,6 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 
 		if (res < 0)
 			return -1;
-
-		if (skipped_report_id)
-			actual_length++;
 
 		return actual_length;
 	}
