@@ -414,5 +414,4 @@ void Camera::setFarPlane(float farPlane) {
 	_farPlane = farPlane;
 }
 
-
 }

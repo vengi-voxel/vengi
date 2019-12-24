@@ -4,6 +4,7 @@
 
 #pragma once
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/vec3.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
