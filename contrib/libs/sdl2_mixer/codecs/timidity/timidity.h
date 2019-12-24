@@ -146,7 +146,7 @@ typedef struct {
 
 /* Some of these are not defined in timidity.c but are here for convenience */
 
-extern int Timidity_Init(void);
+extern int Timidity_Init(const char *config_file);
 extern int Timidity_Init_NoConfig(void);
 extern void Timidity_SetVolume(MidiSong *song, int volume);
 extern int Timidity_PlaySome(MidiSong *song, void *stream, Sint32 len);

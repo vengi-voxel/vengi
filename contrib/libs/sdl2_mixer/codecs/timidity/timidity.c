@@ -203,7 +203,7 @@ static int read_config_file(const char *name)
 	goto fail;
       }
       for (i=1; i<words; i++)
-	add_to_pathlist(w[i]);
+	add_to_pathlist(w[i], strlen(w[i]));
     }
     else if (!strcmp(w[0], "source"))
     {
@@ -398,7 +398,7 @@ fail:
   return -2;
 }
 
-int Timidity_Init_NoConfig()
+int Timidity_Init_NoConfig(void)
 {
   /* Allocate memory for the standard tonebank and drumset */
   master_tonebank[0] = safe_malloc(sizeof(ToneBank));
@@ -414,40 +414,25 @@ int Timidity_Init_NoConfig()
   return 0;
 }
 
-int Timidity_Init()
+int Timidity_Init(const char *config_file)
 {
-  const char *env = SDL_getenv("TIMIDITY_CFG");
-
-  /* !!! FIXME: This may be ugly, but slightly less so than requiring the
-   *            default search path to have only one element. I think.
-   *
-   *            We only need to include the likely locations for the config
-   *            file itself since that file should contain any other directory
-   *            that needs to be added to the search path.
-   */
-#ifdef DEFAULT_PATH
-    add_to_pathlist(DEFAULT_PATH);
-#endif
-#ifdef DEFAULT_PATH1
-    add_to_pathlist(DEFAULT_PATH1);
-#endif
-#ifdef DEFAULT_PATH2
-    add_to_pathlist(DEFAULT_PATH2);
-#endif
-#ifdef DEFAULT_PATH3
-    add_to_pathlist(DEFAULT_PATH3);
-#endif
+  const char *p;
 
   Timidity_Init_NoConfig();
 
-  if (!env || read_config_file(env)<0) {
-    if (read_config_file(CONFIG_FILE)<0) {
-      if (read_config_file(CONFIG_FILE_ETC)<0) {
-        if (read_config_file(CONFIG_FILE_ETC_TIMIDITY_FREEPATS)<0) {
-          return(-1);
-        }
-      }
-    }
+  if (config_file == NULL || *config_file == '\0')
+      config_file = TIMIDITY_CFG;
+
+  p = strrchr(config_file, '/');
+#if defined(__WIN32__)||defined(__OS2__)
+  if (!p) p = strrchr(config_file, '\\');
+#endif
+  if (p != NULL)
+    add_to_pathlist(config_file, p - config_file + 1);
+
+  if (read_config_file(config_file) < 0) {
+      Timidity_Exit();
+      return -1;
   }
   return 0;
 }

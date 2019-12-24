@@ -65,6 +65,8 @@ struct _Mix_Music {
     Mix_Fading fading;
     int fade_step;
     int fade_steps;
+
+    char filename[1024];
 };
 
 /* Used to calculate fading steps */
@@ -76,6 +78,80 @@ static int num_decoders = 0;
 
 /* Semicolon-separated SoundFont paths */
 static char* soundfont_paths = NULL;
+
+/* full path of timidity config file */
+static char* timidity_cfg = NULL;
+
+/* Meta-Tags utility */
+void meta_tags_init(Mix_MusicMetaTags *tags)
+{
+    SDL_memset(tags, 0, sizeof(Mix_MusicMetaTags));
+}
+
+void meta_tags_clear(Mix_MusicMetaTags *tags)
+{
+    size_t i = 0;
+    for (i = 0; i < MIX_META_LAST; i++) {
+        if (tags->tags[i]) {
+            SDL_free(tags->tags[i]);
+            tags->tags[i] = NULL;
+        }
+    }
+}
+
+void meta_tags_set(Mix_MusicMetaTags *tags, Mix_MusicMetaTag type, const char *value)
+{
+    char *out;
+    size_t len;
+
+    if (!value) {
+        return;
+    }
+    if (type >= MIX_META_LAST) {
+        return;
+    }
+
+    len = SDL_strlen(value);
+    out = (char *)SDL_malloc(sizeof(char) * len + 1);
+    SDL_strlcpy(out, value, len +1);
+
+    if (tags->tags[type]) {
+        SDL_free(tags->tags[type]);
+    }
+
+    tags->tags[type] = out;
+}
+
+const char *meta_tags_get(Mix_MusicMetaTags *tags, Mix_MusicMetaTag type)
+{
+    switch (type) {
+    case MIX_META_TITLE:
+    case MIX_META_ARTIST:
+    case MIX_META_ALBUM:
+    case MIX_META_COPYRIGHT:
+        return tags->tags[type] ? tags->tags[type] : "";
+    case MIX_META_LAST:
+    default:
+        break;
+    }
+    return "";
+}
+
+/* for music->filename */
+#if defined(__WIN32__)||defined(__OS2__)
+static SDL_INLINE const char *get_last_dirsep (const char *p) {
+    const char *p1 = SDL_strrchr(p, '/');
+    const char *p2 = SDL_strrchr(p, '\\');
+    if (!p1) return p2;
+    if (!p2) return p1;
+    return (p1 > p2)? p1 : p2;
+}
+#else /* unix */
+static SDL_INLINE const char *get_last_dirsep (const char *p) {
+    return SDL_strrchr(p, '/');
+}
+#endif
+
 
 /* Interfaces for the various music interfaces, ordered by priority */
 static Mix_MusicInterface *s_music_interfaces[] =
@@ -481,6 +557,7 @@ Mix_Music *Mix_LoadMUS(const char *file)
 
         context = interface->CreateFromFile(file);
         if (context) {
+            const char *p;
             /* Allocate memory for the music structure */
             Mix_Music *music = (Mix_Music *)SDL_calloc(1, sizeof(Mix_Music));
             if (music == NULL) {
@@ -489,6 +566,8 @@ Mix_Music *Mix_LoadMUS(const char *file)
             }
             music->interface = interface;
             music->context = context;
+            p = get_last_dirsep(file);
+            SDL_strlcpy(music->filename, (p != NULL)? p + 1 : file, 1024);
             return music;
         }
     }
@@ -663,6 +742,58 @@ Mix_MusicType Mix_GetMusicType(const Mix_Music *music)
     return(type);
 }
 
+static const char * get_music_tag_internal(const Mix_Music *music, Mix_MusicMetaTag tag_type)
+{
+    const char *tag = "";
+
+    Mix_LockAudio();
+    if (music && music->interface->GetMetaTag) {
+        tag = music->interface->GetMetaTag(music->context, tag_type);
+    } else if (music_playing && music_playing->interface->GetMetaTag) {
+        tag = music_playing->interface->GetMetaTag(music_playing->context, tag_type);
+    } else {
+        Mix_SetError("Music isn't playing");
+    }
+    Mix_UnlockAudio();
+    return tag;
+}
+
+const char *Mix_GetMusicTitleTag(const Mix_Music *music)
+{
+    return get_music_tag_internal(music, MIX_META_TITLE);
+}
+
+/* Get music title from meta-tag if possible */
+const char *Mix_GetMusicTitle(const Mix_Music *music)
+{
+    const char *tag = Mix_GetMusicTitleTag(music);
+    if (SDL_strlen(tag) > 0) {
+        return tag;
+    }
+    if (music) {
+        return music->filename;
+    }
+    if (music_playing) {
+        return music_playing->filename;
+    }
+    return "";
+}
+
+const char *Mix_GetMusicArtistTag(const Mix_Music *music)
+{
+    return get_music_tag_internal(music, MIX_META_ARTIST);
+}
+
+const char *Mix_GetMusicAlbumTag(const Mix_Music *music)
+{
+    return get_music_tag_internal(music, MIX_META_ALBUM);
+}
+
+const char *Mix_GetMusicCopyrightTag(const Mix_Music *music)
+{
+    return get_music_tag_internal(music, MIX_META_COPYRIGHT);
+}
+
 /* Play a music chunk.  Returns 0, or -1 if there was an error.
  */
 static int music_internal_play(Mix_Music *music, int play_count, double position)
@@ -792,6 +923,139 @@ int Mix_SetMusicPosition(double position)
     return(retval);
 }
 
+/* Set the playing music position */
+static double music_internal_position_get(Mix_Music *music)
+{
+    if (music->interface->Tell) {
+        return music->interface->Tell(music->context);
+    }
+    return -1;
+}
+double Mix_GetMusicPosition(Mix_Music *music)
+{
+    double retval;
+
+    Mix_LockAudio();
+    if (music) {
+        retval = music_internal_position_get(music);
+    } else if (music_playing) {
+        retval = music_internal_position_get(music_playing);
+    } else {
+        Mix_SetError("Music isn't playing");
+        retval = -1.0;
+    }
+    Mix_UnlockAudio();
+
+    return(retval);
+}
+
+static double music_internal_duration(Mix_Music *music)
+{
+    if (music->interface->Duration) {
+        return music->interface->Duration(music->context);
+    } else {
+        Mix_SetError("Duration not implemented for music type");
+        return -1;
+    }
+}
+double Mix_MusicDuration(Mix_Music *music)
+{
+    double retval;
+
+    Mix_LockAudio();
+    if (music) {
+        retval = music_internal_duration(music);
+    } else if (music_playing) {
+        retval = music_internal_duration(music_playing);
+    } else {
+        Mix_SetError("music is NULL and no playing music");
+        retval = -1.0;
+    }
+    Mix_UnlockAudio();
+
+    return(retval);
+}
+
+/* Get Loop start position */
+static double music_internal_loop_start(Mix_Music *music)
+{
+    if (music->interface->LoopStart) {
+        return music->interface->LoopStart(music->context);
+    }
+    return -1;
+}
+double Mix_GetMusicLoopStartTime(Mix_Music *music)
+{
+    double retval;
+
+    Mix_LockAudio();
+    if (music) {
+        retval = music_internal_loop_start(music);
+    } else if (music_playing) {
+        retval = music_internal_loop_start(music_playing);
+    } else {
+        Mix_SetError("Music isn't playing");
+        retval = -1.0;
+    }
+    Mix_UnlockAudio();
+
+    return(retval);
+}
+
+/* Get Loop end position */
+static double music_internal_loop_end(Mix_Music *music)
+{
+    if (music->interface->LoopEnd) {
+        return music->interface->LoopEnd(music->context);
+    }
+    return -1;
+}
+double Mix_GetMusicLoopEndTime(Mix_Music *music)
+{
+    double retval;
+
+    Mix_LockAudio();
+    if (music) {
+        retval = music_internal_loop_end(music);
+    } else if (music_playing) {
+        retval = music_internal_loop_end(music_playing);
+    } else {
+        Mix_SetError("Music isn't playing");
+        retval = -1.0;
+    }
+    Mix_UnlockAudio();
+
+    return(retval);
+}
+
+/* Get Loop end position */
+static double music_internal_loop_length(Mix_Music *music)
+{
+    if (music->interface->LoopLength) {
+        return music->interface->LoopLength(music->context);
+    }
+    return -1;
+}
+double Mix_GetMusicLoopLengthTime(Mix_Music *music)
+{
+    double retval;
+
+    Mix_LockAudio();
+    if (music) {
+        retval = music_internal_loop_length(music);
+    } else if (music_playing) {
+        retval = music_internal_loop_length(music_playing);
+    } else {
+        Mix_SetError("Music isn't playing");
+        retval = -1.0;
+    }
+    Mix_UnlockAudio();
+
+    return(retval);
+}
+
+
+
 /* Set the music's initial volume */
 static void music_internal_initialize_volume(void)
 {
@@ -827,6 +1091,21 @@ int Mix_VolumeMusic(int volume)
     }
     Mix_UnlockAudio();
     return(prev_volume);
+}
+
+int Mix_GetVolumeMusicStream(Mix_Music *music)
+{
+    int prev_volume;
+
+    if (music && music->interface->GetVolume)
+        prev_volume = music->interface->GetVolume(music->context);
+    else if (music_playing && music_playing->interface->GetVolume) {
+        prev_volume = music_playing->interface->GetVolume(music_playing->context);
+    } else {
+        prev_volume = music_volume;
+    }
+
+    return prev_volume;
 }
 
 /* Halt playing of music */
@@ -1047,6 +1326,28 @@ void unload_music(void)
     }
 }
 
+int Mix_SetTimidityCfg(const char *path)
+{
+    if (timidity_cfg) {
+        SDL_free(timidity_cfg);
+        timidity_cfg = NULL;
+    }
+
+    if (path && *path) {
+        if (!(timidity_cfg = SDL_strdup(path))) {
+            Mix_SetError("Insufficient memory to set Timidity cfg file");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+const char* Mix_GetTimidityCfg(void)
+{
+    return timidity_cfg;
+}
+
 int Mix_SetSoundFonts(const char *paths)
 {
     if (soundfont_paths) {
@@ -1081,7 +1382,7 @@ const char* Mix_GetSoundFonts(void)
        Time to start guessing where they might be...
      */
     {
-        static const char *s_soundfont_paths[] = {
+        static char *s_soundfont_paths[] = {
             "/usr/share/sounds/sf2/FluidR3_GM.sf2"  /* Remember to add ',' here */
         };
         unsigned i;

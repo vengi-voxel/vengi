@@ -76,10 +76,6 @@ static int dumpstring(SDL_RWops *rw, Sint32 len, Uint8 type)
   free(s);
   return 0;
 }
-#else
-static SDL_INLINE int dumpstring(SDL_RWops *rw, Sint32 len, Uint8 type) {
-  return SDL_RWseek(rw, len, RW_SEEK_CUR);
-}
 #endif
 
 #define MIDIEVENT(at,t,ch,pa,pb) \
@@ -120,7 +116,8 @@ static MidiEventList *read_midi_event(MidiSong *song)
 	  len=getvl(song->rw);
 	  if (type>0 && type<16)
 	    {
-	      dumpstring(song->rw, len, type);
+	    /*dumpstring(song->rw, len, type);*/ /* see above */
+	      SDL_RWseek(song->rw, len, RW_SEEK_CUR);
 	    }
 	  else
 	    switch(type)
@@ -293,7 +290,7 @@ static int read_track(MidiSong *song, int append)
       SNDDBG(("Can't read track header.\n"));
       return -1;
     }
-  len=SDL_SwapBE32(len);
+  len=(Sint32)SDL_SwapBE32((Uint32)len);
   next_pos = SDL_RWtell(song->rw) + len;
   if (memcmp(tmp, "MTrk", 4))
     {
@@ -537,7 +534,7 @@ MidiEvent *read_midi_file(MidiSong *song, Sint32 *count, Sint32 *sp)
 	return NULL;
       }
   }
-  len=SDL_SwapBE32(len);
+  len=(Sint32)SDL_SwapBE32((Uint32)len);
   if (memcmp(tmp, "MThd", 4) || len < 6)
     {
       SNDDBG(("Not a MIDI file!\n"));

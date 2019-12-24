@@ -120,28 +120,30 @@ typedef struct {
     ogg_int64_t loop_start;
     ogg_int64_t loop_end;
     ogg_int64_t loop_len;
+    ogg_int64_t full_length;
+    Mix_MusicMetaTags tags;
 } OPUS_music;
 
 
 static int set_op_error(const char *function, int error)
 {
-#define HANDLE_ERROR_CASE(X)    case X: Mix_SetError("%s: %s", function, #X); break;
+#define HANDLE_ERROR_CASE(X) case X: Mix_SetError("%s: %s", function, #X); break;
     switch (error) {
-    HANDLE_ERROR_CASE(OP_FALSE);
-    HANDLE_ERROR_CASE(OP_EOF);
-    HANDLE_ERROR_CASE(OP_HOLE);
-    HANDLE_ERROR_CASE(OP_EREAD);
-    HANDLE_ERROR_CASE(OP_EFAULT);
-    HANDLE_ERROR_CASE(OP_EIMPL);
-    HANDLE_ERROR_CASE(OP_EINVAL);
-    HANDLE_ERROR_CASE(OP_ENOTFORMAT);
-    HANDLE_ERROR_CASE(OP_EBADHEADER);
-    HANDLE_ERROR_CASE(OP_EVERSION);
-    HANDLE_ERROR_CASE(OP_ENOTAUDIO);
-    HANDLE_ERROR_CASE(OP_EBADPACKET);
-    HANDLE_ERROR_CASE(OP_EBADLINK);
-    HANDLE_ERROR_CASE(OP_ENOSEEK);
-    HANDLE_ERROR_CASE(OP_EBADTIMESTAMP);
+    HANDLE_ERROR_CASE(OP_FALSE)
+    HANDLE_ERROR_CASE(OP_EOF)
+    HANDLE_ERROR_CASE(OP_HOLE)
+    HANDLE_ERROR_CASE(OP_EREAD)
+    HANDLE_ERROR_CASE(OP_EFAULT)
+    HANDLE_ERROR_CASE(OP_EIMPL)
+    HANDLE_ERROR_CASE(OP_EINVAL)
+    HANDLE_ERROR_CASE(OP_ENOTFORMAT)
+    HANDLE_ERROR_CASE(OP_EBADHEADER)
+    HANDLE_ERROR_CASE(OP_EVERSION)
+    HANDLE_ERROR_CASE(OP_ENOTAUDIO)
+    HANDLE_ERROR_CASE(OP_EBADPACKET)
+    HANDLE_ERROR_CASE(OP_EBADLINK)
+    HANDLE_ERROR_CASE(OP_ENOSEEK)
+    HANDLE_ERROR_CASE(OP_EBADTIMESTAMP)
     default:
         Mix_SetError("%s: unknown error %d\n", function, error);
         break;
@@ -213,11 +215,11 @@ static ogg_int64_t parse_time(char *time)
     const ogg_int64_t samplerate_hz = 48000;
     char *num_start, *p;
     ogg_int64_t result = 0;
-    char c;
+    char c; int val;
 
     /* Time is directly expressed as a sample position */
     if (SDL_strchr(time, ':') == NULL) {
-        return (ogg_int64_t)SDL_strtoull(time, NULL, 10);
+        return SDL_strtoll(time, NULL, 10);
     }
 
     result = 0;
@@ -226,18 +228,22 @@ static ogg_int64_t parse_time(char *time)
     for (p = time; *p != '\0'; ++p) {
         if (*p == '.' || *p == ':') {
             c = *p; *p = '\0';
-            result = result * 60 + SDL_atoi(num_start);
+            if ((val = SDL_atoi(num_start)) < 0)
+                return -1;
+            result = result * 60 + val;
             num_start = p + 1;
             *p = c;
         }
 
         if (*p == '.') {
-            return result * samplerate_hz
-                + (ogg_int64_t) (SDL_atof(p) * samplerate_hz);
+            double val_f = SDL_atof(p);
+            if (val_f < 0) return -1;
+            return result * samplerate_hz + (ogg_int64_t) (val_f * samplerate_hz);
         }
     }
 
-    return (result * 60 + SDL_atoi(num_start)) * samplerate_hz;
+    if ((val = SDL_atoi(num_start)) < 0) return -1;
+    return (result * 60 + val) * samplerate_hz;
 }
 
 static SDL_bool is_loop_tag(const char *tag)
@@ -265,10 +271,6 @@ static void *OPUS_CreateFromRW(SDL_RWops *src, int freesrc)
     music->src = src;
     music->volume = MIX_MAX_VOLUME;
     music->section = -1;
-    music->loop = -1;
-    music->loop_start = -1;
-    music->loop_end = 0;
-    music->loop_len = 0;
 
     SDL_zero(callbacks);
     callbacks.read = sdl_read_func;
@@ -314,11 +316,19 @@ static void *OPUS_CreateFromRW(SDL_RWops *src, int freesrc)
         if (SDL_strcasecmp(argument, "LOOPSTART") == 0)
             music->loop_start = parse_time(value);
         else if (SDL_strcasecmp(argument, "LOOPLENGTH") == 0) {
-            music->loop_len = (ogg_int64_t)SDL_strtoull(value, NULL, 10);
+            music->loop_len = SDL_strtoll(value, NULL, 10);
             is_loop_length = SDL_TRUE;
         } else if (SDL_strcasecmp(argument, "LOOPEND") == 0) {
             music->loop_end = parse_time(value);
             is_loop_length = SDL_FALSE;
+        } else if (SDL_strcasecmp(argument, "TITLE") == 0) {
+            meta_tags_set(&music->tags, MIX_META_TITLE, value);
+        } else if (SDL_strcasecmp(argument, "ARTIST") == 0) {
+            meta_tags_set(&music->tags, MIX_META_ARTIST, value);
+        } else if (SDL_strcasecmp(argument, "ALBUM") == 0) {
+            meta_tags_set(&music->tags, MIX_META_ALBUM, value);
+        } else if (SDL_strcasecmp(argument, "COPYRIGHT") == 0) {
+            meta_tags_set(&music->tags, MIX_META_COPYRIGHT, value);
         }
         SDL_free(param);
     }
@@ -329,18 +339,28 @@ static void *OPUS_CreateFromRW(SDL_RWops *src, int freesrc)
         music->loop_len = music->loop_end - music->loop_start;
     }
 
+    /* Ignore invalid loop tag */
+    if (music->loop_start < 0 || music->loop_len < 0 || music->loop_end < 0) {
+        music->loop_start = 0;
+        music->loop_len = 0;
+        music->loop_end = 0;
+    }
+
     full_length = opus.op_pcm_total(music->of, -1);
-    if (((music->loop_start >= 0) || (music->loop_end > 0)) &&
-        ((music->loop_start < music->loop_end) || (music->loop_end == 0)) &&
-         (music->loop_start < full_length) &&
-         (music->loop_end <= full_length)) {
-        if (music->loop_start < 0) music->loop_start = 0;
-        if (music->loop_end == 0)  music->loop_end = full_length;
+    if ((music->loop_end > 0) && (music->loop_end <= full_length) &&
+        (music->loop_start < music->loop_end)) {
         music->loop = 1;
     }
 
+    music->full_length = full_length;
     music->freesrc = freesrc;
     return music;
+}
+
+static const char* OPUS_GetMetaTag(void *context, Mix_MusicMetaTag tag_type)
+{
+    OPUS_music *music = (OPUS_music *)context;
+    return meta_tags_get(&music->tags, tag_type);
 }
 
 /* Set the volume for an Opus stream */
@@ -348,6 +368,13 @@ static void OPUS_SetVolume(void *context, int volume)
 {
     OPUS_music *music = (OPUS_music *)context;
     music->volume = volume;
+}
+
+/* Get the volume for an Opus stream */
+static int OPUS_GetVolume(void *context)
+{
+    OPUS_music *music = (OPUS_music *)context;
+    return music->volume;
 }
 
 /* Start playback of a given Opus stream */
@@ -393,7 +420,7 @@ static int OPUS_GetSome(void *context, void *data, int bytes, SDL_bool *done)
     }
 
     pcmPos = opus.op_pcm_tell(music->of);
-    if ((music->loop == 1) && (music->play_count != 1) && (pcmPos >= music->loop_end)) {
+    if (music->loop && (music->play_count != 1) && (pcmPos >= music->loop_end)) {
         samples -= (int)((pcmPos - music->loop_end) * music->op_info->channel_count) * (int)sizeof(Sint16);
         result = opus.op_pcm_seek(music->of, music->loop_start);
         if (result < 0) {
@@ -441,12 +468,51 @@ static int OPUS_GetAudio(void *context, void *data, int bytes)
 static int OPUS_Seek(void *context, double time)
 {
     OPUS_music *music = (OPUS_music *)context;
-    int result;
-    result = opus.op_pcm_seek(music->of, (ogg_int64_t)(time * 48000));
+    int result = opus.op_pcm_seek(music->of, (ogg_int64_t)(time * 48000));
     if (result < 0) {
         return set_op_error("op_pcm_seek", result);
     }
     return 0;
+}
+
+static double OPUS_Tell(void *context)
+{
+    OPUS_music *music = (OPUS_music *)context;
+    return (double)(opus.op_pcm_tell(music->of)) / 48000.0;
+}
+
+/* Return music duration in seconds */
+static double OPUS_Duration(void *context)
+{
+    OPUS_music *music = (OPUS_music *)context;
+    return music->full_length / 48000.0;
+}
+
+static double OPUS_LoopStart(void *music_p)
+{
+    OPUS_music *music = (OPUS_music *)music_p;
+    if (music->loop > 0) {
+        return (double)music->loop_start / 48000.0;
+    }
+    return -1.0;
+}
+
+static double OPUS_LoopEnd(void *music_p)
+{
+    OPUS_music *music = (OPUS_music *)music_p;
+    if (music->loop > 0) {
+        return (double)music->loop_end / 48000.0;
+    }
+    return -1.0;
+}
+
+static double OPUS_LoopLength(void *music_p)
+{
+    OPUS_music *music = (OPUS_music *)music_p;
+    if (music->loop > 0) {
+        return (double)music->loop_len / 48000.0;
+    }
+    return -1.0;
 }
 
 /* Close the given Opus stream */
@@ -479,10 +545,17 @@ Mix_MusicInterface Mix_MusicInterface_Opus =
     OPUS_CreateFromRW,
     NULL,   /* CreateFromFile */
     OPUS_SetVolume,
+    OPUS_GetVolume,
     OPUS_Play,
     NULL,   /* IsPlaying */
     OPUS_GetAudio,
     OPUS_Seek,
+    OPUS_Tell,
+    OPUS_Duration,
+    OPUS_LoopStart,
+    OPUS_LoopEnd,
+    OPUS_LoopLength,
+    OPUS_GetMetaTag,
     NULL,   /* Pause */
     NULL,   /* Resume */
     NULL,   /* Stop */

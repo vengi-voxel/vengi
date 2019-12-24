@@ -275,10 +275,17 @@ Mix_MusicInterface Mix_MusicInterface_CMD =
     NULL,   /* CreateFromRW */
     MusicCMD_CreateFromFile,
     NULL,   /* SetVolume */
+    NULL,   /* GetVolume */
     MusicCMD_Play,
     MusicCMD_IsPlaying,
     NULL,   /* GetAudio */
     NULL,   /* Seek */
+    NULL,   /* Tell */
+    NULL,   /* Duration */
+    NULL,   /* LoopStart */
+    NULL,   /* LoopEnd */
+    NULL,   /* LoopLength */
+    NULL,   /* GetMetaTag */
     MusicCMD_Pause,
     MusicCMD_Resume,
     MusicCMD_Stop,

@@ -22,6 +22,16 @@
 #include "options.h"
 #include "common.h"
 
+#if defined(__WIN32__) || defined(__OS2__)
+#define CHAR_DIRSEP '\\'
+#define is_dirsep(c) ((c) == '/' || (c) == '\\')
+#define is_abspath(p) ((p)[0] == '/' || (p)[0] == '\\' || ((p)[0] && (p)[1] == ':'))
+#else /* unix: */
+#define CHAR_DIRSEP '/'
+#define is_dirsep(c) ((c) == '/')
+#define is_abspath(p) ((p)[0] == '/')
+#endif
+
 /* The paths in this list will be tried whenever we're reading a file */
 static PathList *pathlist = NULL; /* This is a linked list */
 
@@ -42,7 +52,7 @@ SDL_RWops *open_file(const char *name)
   if ((rw = SDL_RWFromFile(name, "rb")))
     return rw;
 
-  if (name[0] != PATH_SEP)
+  if (!is_abspath(name))
   {
     char current_filename[1024];
     PathList *plp = pathlist;
@@ -55,9 +65,9 @@ SDL_RWops *open_file(const char *name)
 	if(l)
 	  {
 	    strcpy(current_filename, plp->path);
-	    if(current_filename[l - 1] != PATH_SEP)
+	    if(!is_dirsep(current_filename[l - 1]))
 	    {
-	      current_filename[l] = PATH_SEP;
+	      current_filename[l] = CHAR_DIRSEP;
 	      current_filename[l + 1] = '\0';
 	    }
 	  }
@@ -88,21 +98,21 @@ void *safe_malloc(size_t count)
 }
 
 /* This adds a directory to the path list */
-void add_to_pathlist(const char *s)
+void add_to_pathlist(const char *s, size_t l)
 {
   PathList *plp = safe_malloc(sizeof(PathList));
 
   if (plp == NULL)
       return;
 
-  plp->path = safe_malloc(strlen(s) + 1);
+  plp->path = safe_malloc(l + 1);
   if (plp->path == NULL)
   {
-      free(plp);
+      free (plp);
       return;
   }
-
-  strcpy(plp->path, s);
+  strncpy(plp->path, s, l);
+  plp->path[l] = 0;
   plp->next = pathlist;
   pathlist = plp;
 }

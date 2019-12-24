@@ -301,7 +301,7 @@ static int voc_get_block(SDL_RWops *src, vs_t *v, SDL_AudioSpec *spec)
                 if (SDL_RWread(src, trash, sizeof (Uint8), 2) != 2)
                     return 0;
 
-                /* Falling! Falling! */
+                /* fallthrough */
 
             default:  /* text block or other krapola. */
                 for(i = 0; i < sblen; i++)
@@ -351,12 +351,12 @@ static Uint32 voc_read(SDL_RWops *src, vs_t *v, Uint8 *buf, SDL_AudioSpec *spec)
         if (v->size == ST_SIZE_WORD)
         {
             #if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-                Uint16 *samples = (Uint16 *)buf;
-                for (; v->rest > 0; v->rest -= 2)
-                {
-                    *samples = SDL_SwapLE16(*samples);
-                    samples++;
-                }
+            Uint16 *samples = (Uint16 *)buf;
+            for (; v->rest > 0; v->rest -= 2)
+            {
+                *samples = SDL_SwapLE16(*samples);
+                samples++;
+            }
             #endif
             done >>= 1;
         }

@@ -43,6 +43,31 @@ typedef enum
 } Mix_MusicAPI;
 
 
+/* Supported meta-tags */
+
+typedef enum
+{
+    MIX_META_TITLE,
+    MIX_META_ARTIST,
+    MIX_META_ALBUM,
+    MIX_META_COPYRIGHT,
+    MIX_META_LAST
+} Mix_MusicMetaTag;
+
+
+/* MIXER-X: Meta-tags utility structure */
+
+typedef struct {
+    char *tags[4];
+} Mix_MusicMetaTags;
+
+
+extern void meta_tags_init(Mix_MusicMetaTags *tags);
+extern void meta_tags_clear(Mix_MusicMetaTags *tags);
+extern void meta_tags_set(Mix_MusicMetaTags *tags, Mix_MusicMetaTag type, const char *value);
+extern const char* meta_tags_get(Mix_MusicMetaTags *tags, Mix_MusicMetaTag type);
+
+
 /* Music API implementation */
 
 typedef struct
@@ -70,6 +95,9 @@ typedef struct
     /* Set the volume */
     void (*SetVolume)(void *music, int volume);
 
+    /* Get the volume */
+    int (*GetVolume)(void *music);
+
     /* Start playing music from the beginning with an optional loop count */
     int (*Play)(void *music, int play_count);
 
@@ -81,6 +109,24 @@ typedef struct
 
     /* Seek to a play position (in seconds) */
     int (*Seek)(void *music, double position);
+
+    /* Tell a play position (in seconds) */
+    double (*Tell)(void *music);
+
+    /* Get Music duration (in seconds) */
+    double (*Duration)(void *music);
+
+    /* Tell a loop start position (in seconds) */
+    double (*LoopStart)(void *music);
+
+    /* Tell a loop end position (in seconds) */
+    double (*LoopEnd)(void *music);
+
+    /* Tell a loop length position (in seconds) */
+    double (*LoopLength)(void *music);
+
+    /* Get a meta-tag string if available */
+    const char* (*GetMetaTag)(void *music, Mix_MusicMetaTag tag_type);
 
     /* Pause playing music */
     void (*Pause)(void *music);

@@ -171,6 +171,7 @@ typedef struct
     SDL_AudioStream *stream;
     SBYTE *buffer;
     ULONG buffer_size;
+    Mix_MusicMetaTags tags;
 } MIKMOD_Music;
 
 
@@ -329,6 +330,9 @@ void *MIKMOD_CreateFromRW(SDL_RWops *src, int freesrc)
     music->module->loop    = 1;
     music->module->fadeout = 0;
 
+    meta_tags_init(&music->tags);
+    meta_tags_set(&music->tags, MIX_META_TITLE, music->module->songname);
+
     if ((*mikmod.md_mode & DMODE_16BITS) == DMODE_16BITS) {
         format = AUDIO_S16SYS;
     } else {
@@ -367,6 +371,13 @@ static void MIKMOD_SetVolume(void *context, int volume)
     MIKMOD_Music *music = (MIKMOD_Music *)context;
     music->volume = volume;
     mikmod.Player_SetVolume((SWORD)volume);
+}
+
+/* Set the volume for a MOD stream */
+static int MIKMOD_GetVolume(void *context)
+{
+    MIKMOD_Music *music = (MIKMOD_Music *)context;
+    return music->volume;
 }
 
 /* Start playback of a given MOD stream */
@@ -448,11 +459,18 @@ static void MIKMOD_Stop(void *context)
     mikmod.Player_Stop();
 }
 
+static const char* MIKMOD_GetMetaTag(void *context, Mix_MusicMetaTag tag_type)
+{
+    MIKMOD_Music *music = (MIKMOD_Music *)context;
+    return meta_tags_get(&music->tags, tag_type);
+}
+
 /* Close the given MOD stream */
 static void MIKMOD_Delete(void *context)
 {
     MIKMOD_Music *music = (MIKMOD_Music *)context;
 
+    meta_tags_clear(&music->tags);
     if (music->module) {
         mikmod.Player_Free(music->module);
     }
@@ -478,10 +496,17 @@ Mix_MusicInterface Mix_MusicInterface_MIKMOD =
     MIKMOD_CreateFromRW,
     NULL,   /* CreateFromFile */
     MIKMOD_SetVolume,
+    MIKMOD_GetVolume,
     MIKMOD_Play,
     MIKMOD_IsPlaying,
     MIKMOD_GetAudio,
     MIKMOD_Seek,
+    NULL,   /* Tell */
+    NULL,   /* Duration */
+    NULL,   /* LoopStart */
+    NULL,   /* LoopEnd */
+    NULL,   /* LoopLength */
+    MIKMOD_GetMetaTag,
     NULL,   /* Pause */
     NULL,   /* Resume */
     MIKMOD_Stop,

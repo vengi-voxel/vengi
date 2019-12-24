@@ -147,6 +147,8 @@ typedef struct {
     int volume;
     int status;
     SDL_AudioStream *audiostream;
+    unsigned short last_nchannels;
+    unsigned int last_samplerate;
 
     unsigned char input_buffer[MAD_INPUT_BUFFER_SIZE + MAD_BUFFER_GUARD];
 } MAD_Music;
@@ -167,7 +169,7 @@ static void *MAD_CreateFromRW(SDL_RWops *src, int freesrc)
     music->volume = MIX_MAX_VOLUME;
 
     music->mp3file.length = SDL_RWsize(src);
-    if (mp3_skiptags(&music->mp3file) < 0) {
+    if (mp3_skiptags(&music->mp3file, SDL_FALSE) < 0) {
         SDL_free(music);
         Mix_SetError("music_mad: corrupt mp3 file (bad tags.)");
         return NULL;
@@ -186,6 +188,12 @@ static void MAD_SetVolume(void *context, int volume)
 {
     MAD_Music *music = (MAD_Music *)context;
     music->volume = volume;
+}
+
+static int MAD_GetVolume(void *context)
+{
+    MAD_Music *music = (MAD_Music *)context;
+    return music->volume;
 }
 
 /* Starts the playback. */
@@ -300,11 +308,17 @@ static SDL_bool decode_frame(MAD_Music *music)
     mad_synth_frame(&music->synth, &music->frame);
     pcm = &music->synth.pcm;
 
-    if (!music->audiostream) {
-        music->audiostream = SDL_NewAudioStream(AUDIO_S16, (Uint8)pcm->channels, (int)pcm->samplerate, music_spec.format, music_spec.channels, music_spec.freq);
+    if (!music->audiostream || music->last_nchannels != pcm->channels || music->last_samplerate != pcm->samplerate) {
+        if (music->audiostream) {
+            SDL_FreeAudioStream(music->audiostream);
+        }
+        music->audiostream = SDL_NewAudioStream(AUDIO_S16, (Uint8)pcm->channels, (int)pcm->samplerate,
+                                                music_spec.format, music_spec.channels, music_spec.freq);
         if (!music->audiostream) {
             return SDL_FALSE;
         }
+        music->last_nchannels = pcm->channels;
+        music->last_samplerate = pcm->samplerate;
     }
 
     nchannels = pcm->channels;
@@ -400,6 +414,8 @@ static int MAD_Seek(void *context, double position)
         music->status &= ~MS_error_flags;
 
         MP3_RWseek(&music->mp3file, 0, RW_SEEK_SET);
+        /* Avoid junk chunk be played after seek -- Vitaly Novichkov */
+        SDL_memset(music->input_buffer, 0, sizeof(music->input_buffer));
     }
 
     /* Now we have to skip frames until we come to the right one.
@@ -451,10 +467,17 @@ Mix_MusicInterface Mix_MusicInterface_MAD =
     MAD_CreateFromRW,
     NULL,   /* CreateFromFile */
     MAD_SetVolume,
+    MAD_GetVolume,
     MAD_Play,
     NULL,   /* IsPlaying */
     MAD_GetAudio,
     MAD_Seek,
+    NULL,   /* Tell */
+    NULL,   /* Duration */
+    NULL,   /* LoopStart */
+    NULL,   /* LoopEnd */
+    NULL,   /* LoopLength */
+    NULL,   /* GetMetaTag */
     NULL,   /* Pause */
     NULL,   /* Resume */
     NULL,   /* Stop */

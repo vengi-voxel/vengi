@@ -52,6 +52,8 @@ typedef struct {
     int (*mpg123_read)(mpg123_handle *mh, unsigned char *outmemory, size_t outmemsize, size_t *done );
     int (*mpg123_replace_reader_handle)( mpg123_handle *mh, ssize_t (*r_read) (void *, void *, size_t), off_t (*r_lseek)(void *, off_t, int), void (*cleanup)(void*) );
     off_t (*mpg123_seek)( mpg123_handle *mh, off_t sampleoff, int whence );
+    off_t (*mpg123_tell)( mpg123_handle *mh);
+    off_t (*mpg123_length)(mpg123_handle *mh);
     const char* (*mpg123_strerror)(mpg123_handle *mh);
 } mpg123_loader;
 
@@ -99,6 +101,8 @@ static int MPG123_Load(void)
         FUNCTION_LOADER(mpg123_read, int (*)(mpg123_handle *mh, unsigned char *outmemory, size_t outmemsize, size_t *done ))
         FUNCTION_LOADER(mpg123_replace_reader_handle, int (*)( mpg123_handle *mh, ssize_t (*r_read) (void *, void *, size_t), off_t (*r_lseek)(void *, off_t, int), void (*cleanup)(void*) ))
         FUNCTION_LOADER(mpg123_seek, off_t (*)( mpg123_handle *mh, off_t sampleoff, int whence ))
+        FUNCTION_LOADER(mpg123_tell, off_t (*)( mpg123_handle *mh))
+        FUNCTION_LOADER(mpg123_length, off_t (*)(mpg123_handle *mh))
         FUNCTION_LOADER(mpg123_strerror, const char* (*)(mpg123_handle *mh))
     }
     ++mpg123.loaded;
@@ -131,11 +135,14 @@ typedef struct
     SDL_AudioStream *stream;
     unsigned char *buffer;
     size_t buffer_size;
+    long sample_rate;
+    off_t total_length;
 } MPG123_Music;
 
 
 static int MPG123_Seek(void *context, double secs);
 static void MPG123_Delete(void *context);
+
 
 static int mpg123_format_to_sdl(int fmt)
 {
@@ -151,7 +158,8 @@ static int mpg123_format_to_sdl(int fmt)
     }
 }
 
-/*
+/*#define DEBUG_MPG123*/
+#ifdef DEBUG_MPG123
 static const char *mpg123_format_str(int fmt)
 {
     switch (fmt)
@@ -167,7 +175,7 @@ static const char *mpg123_format_str(int fmt)
     }
     return "unknown";
 }
-*/
+#endif
 
 static char const* mpg_err(mpg123_handle* mpg, int result)
 {
@@ -212,7 +220,8 @@ static int MPG123_Open(const SDL_AudioSpec *spec)
 static void *MPG123_CreateFromRW(SDL_RWops *src, int freesrc)
 {
     MPG123_Music *music;
-    int result;
+    int result, format, channels, encoding;
+    long rate;
     const long *rates;
     size_t i, num_rates;
 
@@ -224,7 +233,7 @@ static void *MPG123_CreateFromRW(SDL_RWops *src, int freesrc)
     music->volume = MIX_MAX_VOLUME;
 
     music->mp3file.length = SDL_RWsize(src);
-    if (mp3_skiptags(&music->mp3file) < 0) {
+    if (mp3_skiptags(&music->mp3file, SDL_TRUE) < 0) {
         SDL_free(music);
         Mix_SetError("music_mpg123: corrupt mp3 file (bad tags.)");
         return NULL;
@@ -283,6 +292,30 @@ static void *MPG123_CreateFromRW(SDL_RWops *src, int freesrc)
         return NULL;
     }
 
+    result = mpg123.mpg123_getformat(music->handle, &rate, &channels, &encoding);
+    if (result != MPG123_OK) {
+        MPG123_Delete(music);
+        Mix_SetError("mpg123_getformat: %s", mpg_err(music->handle, result));
+        return NULL;
+    }
+#ifdef DEBUG_MPG123
+        printf("MPG123 format: %s, channels: %d, rate: %ld\n",
+                mpg123_format_str(encoding), channels, rate);
+#endif
+
+    format = mpg123_format_to_sdl(encoding);
+    SDL_assert(format != -1);
+    music->sample_rate = rate;
+
+    music->stream = SDL_NewAudioStream((SDL_AudioFormat)format, (Uint8)channels, (int)rate,
+                                       music_spec.format, music_spec.channels, music_spec.freq);
+    if (!music->stream) {
+        MPG123_Delete(music);
+        return NULL;
+    }
+
+    music->total_length = mpg123.mpg123_length(music->handle);
+
     music->freesrc = freesrc;
     return music;
 }
@@ -291,6 +324,12 @@ static void MPG123_SetVolume(void *context, int volume)
 {
     MPG123_Music *music = (MPG123_Music *)context;
     music->volume = volume;
+}
+
+static int MPG123_GetVolume(void *context)
+{
+    MPG123_Music *music = (MPG123_Music *)context;
+    return music->volume;
 }
 
 static int MPG123_Play(void *context, int play_count)
@@ -336,16 +375,23 @@ static int MPG123_GetSome(void *context, void *data, int bytes, SDL_bool *done)
             Mix_SetError("mpg123_getformat: %s", mpg_err(music->handle, result));
             return -1;
         }
-/*printf("MPG123 format: %s, channels = %d, rate = %ld\n", mpg123_format_str(encoding), channels, rate);*/
+#ifdef DEBUG_MPG123
+        printf("MPG123 format: %s, channels: %d, rate: %ld\n",
+                mpg123_format_str(encoding), channels, rate);
+#endif
 
         format = mpg123_format_to_sdl(encoding);
         SDL_assert(format != -1);
 
+        if (music->stream) {
+            SDL_FreeAudioStream(music->stream);
+        }
         music->stream = SDL_NewAudioStream((SDL_AudioFormat)format, (Uint8)channels, (int)rate,
                                            music_spec.format, music_spec.channels, music_spec.freq);
         if (!music->stream) {
             return -1;
         }
+        music->sample_rate = rate;
         break;
 
     case MPG123_DONE:
@@ -377,12 +423,35 @@ static int MPG123_GetAudio(void *context, void *data, int bytes)
 static int MPG123_Seek(void *context, double secs)
 {
     MPG123_Music *music = (MPG123_Music *)context;
-    off_t offset = (off_t)(music_spec.freq * secs);
+    off_t offset = (off_t)(music->sample_rate * secs);
 
     if ((offset = mpg123.mpg123_seek(music->handle, offset, SEEK_SET)) < 0) {
         return Mix_SetError("mpg123_seek: %s", mpg_err(music->handle, (int)-offset));
     }
     return 0;
+}
+
+static double MPG123_Tell(void *context)
+{
+    MPG123_Music *music = (MPG123_Music *)context;
+    off_t offset = 0;
+    if (!music->sample_rate) {
+        return 0.0;
+    }
+    if ((offset = mpg123.mpg123_tell(music->handle)) < 0) {
+        return Mix_SetError("mpg123_tell: %s", mpg_err(music->handle, (int)-offset));
+    }
+    return (double)offset / music->sample_rate;
+}
+
+/* Return music duration in seconds */
+static double MPG123_Duration(void *context)
+{
+    MPG123_Music *music = (MPG123_Music *)context;
+    if (music->total_length < 0) {
+        return -1.0;
+    }
+    return (double)music->total_length / music->sample_rate;
 }
 
 static void MPG123_Delete(void *context)
@@ -423,10 +492,17 @@ Mix_MusicInterface Mix_MusicInterface_MPG123 =
     MPG123_CreateFromRW,
     NULL,   /* CreateFromFile */
     MPG123_SetVolume,
+    MPG123_GetVolume,
     MPG123_Play,
     NULL,   /* IsPlaying */
     MPG123_GetAudio,
     MPG123_Seek,
+    MPG123_Tell,
+    MPG123_Duration,
+    NULL,   /* LoopStart */
+    NULL,   /* LoopEnd */
+    NULL,   /* LoopLength */
+    NULL,   /* GetMetaTag */
     NULL,   /* Pause */
     NULL,   /* Resume */
     NULL,   /* Stop */

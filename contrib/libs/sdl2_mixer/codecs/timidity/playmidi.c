@@ -65,7 +65,7 @@ static void reset_midi(MidiSong *song)
   reset_voices(song);
 }
 
-static void select_sample(MidiSong *song, int v, Instrument *ip, int vel)
+static void select_sample(MidiSong *song, int v, Instrument *ip)
 {
   Sint32 f, cdiff, diff;
   int s,i;
@@ -268,7 +268,7 @@ static void start_note(MidiSong *song, MidiEvent *e, int i)
 	song->voice[i].orig_frequency = freq_table[(int)(ip->sample->note_to_use)];
       else
 	song->voice[i].orig_frequency = freq_table[e->a & 0x7F];
-      select_sample(song, i, ip, e->b);
+      select_sample(song, i, ip);
     }
 
   song->voice[i].status = VOICE_ON;

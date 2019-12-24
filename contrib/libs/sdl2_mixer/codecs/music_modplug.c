@@ -39,9 +39,11 @@ typedef struct {
     void (*ModPlug_Unload)(ModPlugFile* file);
     int  (*ModPlug_Read)(ModPlugFile* file, void* buffer, int size);
     void (*ModPlug_Seek)(ModPlugFile* file, int millisecond);
+    int  (*ModPlug_GetLength)(ModPlugFile* file);
     void (*ModPlug_GetSettings)(ModPlug_Settings* settings);
     void (*ModPlug_SetSettings)(const ModPlug_Settings* settings);
     void (*ModPlug_SetMasterVolume)(ModPlugFile* file,unsigned int cvol);
+    const char* (*ModPlug_GetName)(ModPlugFile* file);
 } modplug_loader;
 
 static modplug_loader modplug = {
@@ -81,9 +83,11 @@ static int MODPLUG_Load(void)
         FUNCTION_LOADER(ModPlug_Unload, void (*)(ModPlugFile* file))
         FUNCTION_LOADER(ModPlug_Read, int  (*)(ModPlugFile* file, void* buffer, int size))
         FUNCTION_LOADER(ModPlug_Seek, void (*)(ModPlugFile* file, int millisecond))
+        FUNCTION_LOADER(ModPlug_GetLength, int (*)(ModPlugFile* file))
         FUNCTION_LOADER(ModPlug_GetSettings, void (*)(ModPlug_Settings* settings))
         FUNCTION_LOADER(ModPlug_SetSettings, void (*)(const ModPlug_Settings* settings))
         FUNCTION_LOADER(ModPlug_SetMasterVolume, void (*)(ModPlugFile* file,unsigned int cvol))
+        FUNCTION_LOADER(ModPlug_GetName, const char* (*)(ModPlugFile* file))
     }
     ++modplug.loaded;
 
@@ -106,11 +110,13 @@ static void MODPLUG_Unload(void)
 
 typedef struct
 {
+    int volume;
     int play_count;
     ModPlugFile *file;
     SDL_AudioStream *stream;
     void *buffer;
     int buffer_size;
+    Mix_MusicMetaTags tags;
 } MODPLUG_Music;
 
 
@@ -164,6 +170,8 @@ void *MODPLUG_CreateFromRW(SDL_RWops *src, int freesrc)
         return NULL;
     }
 
+    music->volume = MIX_MAX_VOLUME;
+
     music->stream = SDL_NewAudioStream((settings.mBits == 8) ? AUDIO_U8 : AUDIO_S16SYS, (Uint8)settings.mChannels, settings.mFrequency,
                                        music_spec.format, music_spec.channels, music_spec.freq);
     if (!music->stream) {
@@ -192,6 +200,9 @@ void *MODPLUG_CreateFromRW(SDL_RWops *src, int freesrc)
         return NULL;
     }
 
+    meta_tags_init(&music->tags);
+    meta_tags_set(&music->tags, MIX_META_TITLE, modplug.ModPlug_GetName(music->file));
+
     if (freesrc) {
         SDL_RWclose(src);
     }
@@ -202,7 +213,15 @@ void *MODPLUG_CreateFromRW(SDL_RWops *src, int freesrc)
 static void MODPLUG_SetVolume(void *context, int volume)
 {
     MODPLUG_Music *music = (MODPLUG_Music *)context;
+    music->volume = volume;
     modplug.ModPlug_SetMasterVolume(music->file, (unsigned int)volume * 2); /* 0-512, reduced to 0-256 to prevent clipping */
+}
+
+/* Get the volume for a modplug stream */
+static int MODPLUG_GetVolume(void *context)
+{
+    MODPLUG_Music *music = (MODPLUG_Music *)context;
+    return music->volume;
 }
 
 /* Start playback of a given modplug stream */
@@ -264,10 +283,24 @@ static int MODPLUG_Seek(void *context, double position)
     return 0;
 }
 
+/* Return music duration in seconds */
+static double MODPLUG_Duration(void *context)
+{
+    MODPLUG_Music *music = (MODPLUG_Music *)context;
+    return modplug.ModPlug_GetLength(music->file) / 1000.0;
+}
+
+static const char* MODPLUG_GetMetaTag(void *context, Mix_MusicMetaTag tag_type)
+{
+    MODPLUG_Music *music = (MODPLUG_Music *)context;
+    return meta_tags_get(&music->tags, tag_type);
+}
+
 /* Close the given modplug stream */
 static void MODPLUG_Delete(void *context)
 {
     MODPLUG_Music *music = (MODPLUG_Music *)context;
+    meta_tags_clear(&music->tags);
     if (music->file) {
         modplug.ModPlug_Unload(music->file);
     }
@@ -293,10 +326,17 @@ Mix_MusicInterface Mix_MusicInterface_MODPLUG =
     MODPLUG_CreateFromRW,
     NULL,   /* CreateFromFile */
     MODPLUG_SetVolume,
+    MODPLUG_GetVolume,
     MODPLUG_Play,
     NULL,   /* IsPlaying */
     MODPLUG_GetAudio,
     MODPLUG_Seek,
+    NULL,   /* Tell */
+    MODPLUG_Duration,
+    NULL,   /* LoopStart */
+    NULL,   /* LoopEnd */
+    NULL,   /* LoopLength */
+    MODPLUG_GetMetaTag,
     NULL,   /* Pause */
     NULL,   /* Resume */
     NULL,   /* Stop */

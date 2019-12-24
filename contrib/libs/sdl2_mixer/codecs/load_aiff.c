@@ -23,7 +23,7 @@
   externally-callable function is Mix_LoadAIFF_RW(), which is meant to
   act as identically to SDL_LoadWAV_RW() as possible.
 
-  This file by Torbjörn Andersson (torbjorn.andersson@eurotime.se)
+  This file by TorbjÃ¶rn Andersson (torbjorn.andersson@eurotime.se)
   8SVX file support added by Marc Le Douarain (mavati@club-internet.fr)
   in december 2002.
 */
