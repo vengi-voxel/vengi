@@ -67,11 +67,13 @@ float Camera::horizontalYaw() const {
 
 void Camera::pitch(float radians) {
 	if (_type == CameraType::FirstPerson) {
-		const float dotResult = glm::dot(forward(), glm::down);
-		const float curpitch = glm::acos(dotResult) - glm::half_pi<float>();
-		if (glm::abs(curpitch + radians) >= MAX_PITCH) {
-			radians = 0;
-//			radians = copysign(MAX_PITCH, curpitch) - curpitch;
+		const float dotResult = glm::dot(direction(), glm::down);
+		float curpitch = glm::acos(dotResult) - glm::half_pi<float>();
+		if (curpitch > MAX_PITCH) {
+			curpitch = MAX_PITCH;
+	    }
+		if (glm::abs(curpitch + radians) > MAX_PITCH) {
+			radians = copysign(MAX_PITCH, curpitch) - curpitch;
 		}
 	}
 	if (radians != 0) {
