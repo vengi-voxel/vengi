@@ -74,7 +74,7 @@ int Color::getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>&
 				weightSaturation * glm::pow(dS, 2);
 		if (val < minDistance) {
 			minDistance = val;
-			minIndex = i;
+			minIndex = (int)i;
 		}
 	}
 	return minIndex;

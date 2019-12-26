@@ -26,7 +26,7 @@ private:
 	int _pos;
 
 	inline int size() const {
-		return _buffer.size() - _pos;
+		return (int)(_buffer.size() - _pos);
 	}
 
 	inline VectorBuffer::const_iterator begin() const {

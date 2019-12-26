@@ -56,8 +56,8 @@ ActionButtonCommands Command::registerActionButton(const std::string& name, Acti
 
 bool Command::unregisterActionButton(const std::string& name) {
 	ScopedWriteLock lock(_lock);
-	int amount = _cmds.erase("-" + name);
-	amount += _cmds.erase("+" + name);
+	int amount = (int)_cmds.erase("-" + name);
+	amount += (int)_cmds.erase("+" + name);
 	return amount == 2;
 }
 

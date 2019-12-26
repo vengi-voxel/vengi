@@ -52,7 +52,7 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 	}
 	strncpy(buffer, preamble, preambleLen);
 	buffer += preambleLen;
-	int remainingLen = len - preambleLen;
+	int remainingLen = (int)(len - preambleLen);
 	bool first = true;
 	const size_t splitLen = SDL_strlen(split);
 	for (const auto& e : tags) {
@@ -71,7 +71,7 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 			return false;
 		}
 		buffer += keyValueLen;
-		remainingLen -= keyValueLen;
+		remainingLen -= (int)keyValueLen;
 		first = false;
 	}
 	return true;

@@ -29,7 +29,7 @@ bool replacePlaceholders(std::string_view str, char *buf, size_t bufSize) {
 				const std::string& value = var->strVal();
 				const size_t remaining = bufSize - idx - 1;
 				strncpy(&buf[idx], value.c_str(), remaining);
-				idx += value.length();
+				idx += (int)value.length();
 				if (idx >= (int)bufSize) {
 					return false;
 				}

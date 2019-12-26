@@ -80,7 +80,7 @@ long File::write(const unsigned char *buf, size_t len) const {
 		return -1L;
 	}
 
-	int remaining = len;
+	int remaining = (int)len;
 	while (remaining > 0) {
 		const size_t written = SDL_RWwrite(_file, buf, 1, remaining);
 		if (written == 0) {
@@ -89,12 +89,12 @@ long File::write(const unsigned char *buf, size_t len) const {
 			return -1L;
 		}
 
-		remaining -= written;
+		remaining -= (int)written;
 		buf += written;
 	}
 
 	Log::debug("%i bytes were written into path %s", (int)len, _rawPath.c_str());
-	return len;
+	return (long)len;
 }
 
 std::string File::path() const {
@@ -155,7 +155,7 @@ int File::read(void *buffer, int n) {
 
 		/* end of file reached */
 		if (readAmount == 0) {
-			return (len - remaining + readAmount);
+			return int(len - remaining + readAmount);
 		} else if (readAmount == -1) {
 			Log::debug("Read error while reading %s", _rawPath.c_str());
 			return -1;
@@ -166,7 +166,7 @@ int File::read(void *buffer, int n) {
 		buf += readAmount;
 	}
 	Log::debug("Read %i bytes from %s", (int)len, _rawPath.c_str());
-	return len;
+	return (int)len;
 }
 
 int File::read(void *buf, size_t size, size_t maxnum) {
@@ -175,7 +175,7 @@ int File::read(void *buf, size_t size, size_t maxnum) {
 		Log::debug("File %s is not opened in read mode", _rawPath.c_str());
 		return -1;
 	}
-	const int n = SDL_RWread(_file, buf, size, maxnum);
+	const int n = (int)SDL_RWread(_file, buf, size, maxnum);
 	if (n == 0) {
 		_state = IOSTATE_LOADED;
 		Log::trace("File %s: read successful", _rawPath.c_str());

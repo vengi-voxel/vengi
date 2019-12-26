@@ -100,7 +100,7 @@ bool UDPMetricSender::send(const char* buffer) const {
 	const struct sockaddr *sock = (const struct sockaddr *)_statsd;
 	const socklen_t socksize = (socklen_t)sizeof(*_statsd);
 #ifdef WIN32
-	const int ret = sendto(_socket, buffer, len, 0, sock, socksize);
+	const int ret = (int)sendto(_socket, buffer, len, 0, sock, socksize);
 #else
 	const int ret = sendto(_socket, buf, len, 0, sock, socksize);
 #endif

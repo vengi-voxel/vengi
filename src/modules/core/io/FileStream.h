@@ -91,7 +91,7 @@ public:
 		size_t completeBytesWritten = 0;
 		int32_t bytesWritten = 1;
 		while (completeBytesWritten < bufSize && bytesWritten > 0) {
-			bytesWritten = SDL_RWwrite(_rwops, b, 1, (bufSize - completeBytesWritten));
+			bytesWritten = (int32_t)SDL_RWwrite(_rwops, b, 1, (bufSize - completeBytesWritten));
 			b += bytesWritten;
 			completeBytesWritten += bytesWritten;
 		}

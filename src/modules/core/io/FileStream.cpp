@@ -254,7 +254,7 @@ bool FileStream::append(const uint8_t *buf, size_t size) {
 	int32_t bytesWritten = 1;
 	const uint8_t* b = buf;
 	while (completeBytesWritten < size && bytesWritten > 0) {
-		bytesWritten = SDL_RWwrite(_rwops, b, 1, (size - completeBytesWritten));
+		bytesWritten = (int32_t)SDL_RWwrite(_rwops, b, 1, (size - completeBytesWritten));
 		b += bytesWritten;
 		completeBytesWritten += bytesWritten;
 	}
