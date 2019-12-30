@@ -167,6 +167,7 @@ private:
 
 	core::ThreadPool _threadPool;
 	core::ConcurrentQueue<ChunkMeshes> _extracted;
+	glm::ivec3 _pendingExtractionSortPosition = glm::ivec3((std::numeric_limits<int>::max)());
 	core::ConcurrentQueue<glm::ivec3, VecLessThan<3, int> > _pendingExtraction;
 	// fast lookup for positions that are already extracted
 	PositionSet _positionsExtracted;

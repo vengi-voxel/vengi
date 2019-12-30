@@ -78,14 +78,17 @@ void WorldMgr::setSeed(long seed) {
 }
 
 void WorldMgr::updateExtractionOrder(const glm::ivec3& sortPos) {
-	static glm::ivec3 lastSortPos = glm::ivec3((std::numeric_limits<int>::max)());
-	const glm::ivec3 d = lastSortPos - sortPos;
-	const glm::ivec3::value_type allowedDelta = 10;
-	if (d.x > allowedDelta || d.z > allowedDelta) {
-		_pendingExtraction.sort([&] (const glm::ivec3& lhs, const glm::ivec3& rhs) {
-			return glm::length2(glm::vec3(lhs - sortPos)) > glm::length2(glm::vec3(rhs - sortPos));
-		});
+	const glm::ivec3& d = glm::abs(_pendingExtractionSortPosition - sortPos);
+	const int allowedDelta = 3 * _meshSize->intVal();
+	if (d.x < allowedDelta && d.z < allowedDelta) {
+		return;
 	}
+	const auto distanceToSortPos = [&sortPos](const glm::ivec3 &pos) {
+		return glm::abs(pos.x - sortPos.x) + glm::abs(pos.y - sortPos.y) + glm::abs(pos.z - sortPos.z);
+	};
+	_pendingExtraction.sort([&] (const glm::ivec3& lhs, const glm::ivec3& rhs) {
+		return distanceToSortPos(lhs) > distanceToSortPos(rhs);
+	});
 }
 
 bool WorldMgr::allowReExtraction(const glm::ivec3& pos) {
