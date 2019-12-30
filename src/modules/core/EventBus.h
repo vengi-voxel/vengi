@@ -136,7 +136,7 @@ private:
 	typedef std::unordered_map<ClassTypeId, EventBusHandlerReferences> EventBusHandlerReferenceMap;
 	core::ReadWriteLock _lock;
 
-	core::ConcurrentQueue<IEventBusEventPtr> _queue;
+	core::ConcurrentQueue<IEventBusEventPtr, std::less<IEventBusEventPtr> > _queue;
 
 	class EventBusHandlerReference {
 	private:

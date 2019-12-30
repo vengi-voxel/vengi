@@ -1,7 +1,10 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include <stdint.h>
-#include <queue>
 #include <vector>
 #include <condition_variable>
 #include <mutex>
@@ -11,19 +14,32 @@
 
 namespace core {
 
-template<class Data, class Compare = std::less<Data> >
+template<class Data, class Comparator = std::less<Data>>
 class ConcurrentQueue {
 private:
-	using Collection = std::priority_queue<Data, std::vector<Data>, Compare>;
+	using Collection = std::vector<Data>;
 	Collection _data;
 	mutable core_trace_mutex(std::mutex, _mutex);
 	std::condition_variable_any _conditionVariable;
 	std::atomic_bool _abort { false };
+	Comparator _comparator;
 public:
 	using Key = Data;
 
+	ConcurrentQueue() :
+			_comparator(Comparator()) {
+	}
+	ConcurrentQueue(Comparator comparator) :
+			_comparator(comparator) {
+	}
 	~ConcurrentQueue() {
 		abortWait();
+	}
+
+	void setComparator(Comparator comparator) {
+		std::unique_lock lock(_mutex);
+		_comparator = comparator;
+		std::make_heap(const_cast<Data*>(&_data.front()), const_cast<Data*>(&_data.front()) + _data.size(), _comparator);
 	}
 
 	void abortWait() {
@@ -40,15 +56,16 @@ public:
 		_data = Collection();
 	}
 
-	void sort(std::function<bool(const Data& lhs, const Data& rhs)> sorter) {
+	void sort() {
 		std::unique_lock lock(_mutex);
-		std::make_heap(const_cast<Data*>(&_data.top()), const_cast<Data*>(&_data.top()) + _data.size(), sorter);
+		std::make_heap(const_cast<Data*>(&_data.front()), const_cast<Data*>(&_data.front()) + _data.size(), _comparator);
 	}
 
 	void push(Data const& data) {
 		{
 			std::unique_lock lock(_mutex);
-			_data.push(data);
+			_data.push_back(data);
+			std::push_heap(_data.begin(), _data.end(), _comparator);
 		}
 		_conditionVariable.notify_one();
 	}
@@ -56,7 +73,8 @@ public:
 	void push(Data&& data) {
 		{
 			std::unique_lock lock(_mutex);
-			_data.push(data);
+			_data.push_back(std::move(data));
+			std::push_heap(_data.begin(), _data.end(), _comparator);
 		}
 		_conditionVariable.notify_one();
 	}
@@ -65,7 +83,8 @@ public:
 	void emplace(_Args&&... __args) {
 		{
 			std::unique_lock lock(_mutex);
-			_data.emplace(std::forward<_Args>(__args)...);
+			  _data.emplace_back(std::forward<_Args>(__args)...);
+			  std::push_heap(_data.begin(), _data.end(), _comparator);
 		}
 		_conditionVariable.notify_one();
 	}
@@ -86,8 +105,9 @@ public:
 			return false;
 		}
 
-		poppedValue = std::move(_data.top());
-		_data.pop();
+		poppedValue = std::move(_data.front());
+		std::pop_heap(_data.begin(), _data.end(), _comparator);
+		_data.pop_back();
 		return true;
 	}
 
@@ -99,8 +119,9 @@ public:
 		if (_abort) {
 			return false;
 		}
-		poppedValue = std::move(_data.top());
-		_data.pop();
+		poppedValue = std::move(_data.front());
+		std::pop_heap(_data.begin(), _data.end(), _comparator);
+		_data.pop_back();
 		return true;
 	}
 };

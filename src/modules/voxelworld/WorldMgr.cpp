@@ -83,12 +83,8 @@ void WorldMgr::updateExtractionOrder(const glm::ivec3& sortPos) {
 	if (d.x < allowedDelta && d.z < allowedDelta) {
 		return;
 	}
-	const auto distanceToSortPos = [&sortPos](const glm::ivec3 &pos) {
-		return glm::abs(pos.x - sortPos.x) + glm::abs(pos.y - sortPos.y) + glm::abs(pos.z - sortPos.z);
-	};
-	_pendingExtraction.sort([&] (const glm::ivec3& lhs, const glm::ivec3& rhs) {
-		return distanceToSortPos(lhs) > distanceToSortPos(rhs);
-	});
+	_pendingExtractionSortPosition = sortPos;
+	_pendingExtraction.setComparator(CloseToPoint(sortPos));
 }
 
 bool WorldMgr::allowReExtraction(const glm::ivec3& pos) {

@@ -167,8 +167,19 @@ private:
 
 	core::ThreadPool _threadPool;
 	core::ConcurrentQueue<ChunkMeshes> _extracted;
-	glm::ivec3 _pendingExtractionSortPosition = glm::ivec3((std::numeric_limits<int>::max)());
-	core::ConcurrentQueue<glm::ivec3, VecLessThan<3, int> > _pendingExtraction;
+	glm::ivec3 _pendingExtractionSortPosition = glm::zero<glm::ivec3>();
+	struct CloseToPoint {
+		glm::ivec3 _refPoint;
+		CloseToPoint(const glm::ivec3& refPoint) : _refPoint(refPoint) {
+		}
+		inline int distanceToSortPos(const glm::ivec3 &pos) const {
+			return glm::abs(pos.x - _refPoint.x) + glm::abs(pos.y - _refPoint.y) + glm::abs(pos.z - _refPoint.z);
+		}
+		inline bool operator()(const glm::ivec3& lhs, const glm::ivec3& rhs) const {
+			return distanceToSortPos(lhs) > distanceToSortPos(rhs);
+		}
+	};
+	core::ConcurrentQueue<glm::ivec3, CloseToPoint> _pendingExtraction { CloseToPoint(_pendingExtractionSortPosition) };
 	// fast lookup for positions that are already extracted
 	PositionSet _positionsExtracted;
 	core::VarPtr _meshSize;

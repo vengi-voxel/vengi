@@ -84,20 +84,24 @@ TEST_F(ConcurrentQueueTest, testAbortWait) {
 }
 
 TEST_F(ConcurrentQueueTest, testSort) {
-	core::ConcurrentQueue<int> queue;
-	queue.push(1);
-	queue.push(3);
-	queue.push(2);
-	int val;
-	ASSERT_TRUE(queue.pop(val));
-	EXPECT_EQ(3, val);
-	queue.sort([] (const int lhs, const int rhs) {
-		return lhs > rhs;
-	});
-	ASSERT_TRUE(queue.pop(val));
-	EXPECT_EQ(1, val);
-	ASSERT_TRUE(queue.pop(val));
-	EXPECT_EQ(2, val);
+	{
+		core::ConcurrentQueue<int> queue;
+		queue.push(1);
+		queue.push(3);
+		queue.push(2);
+		int val;
+		ASSERT_TRUE(queue.pop(val));
+		EXPECT_EQ(3, val);
+	}
+	{
+		core::ConcurrentQueue<int, std::greater<int>> queue;
+		queue.push(1);
+		queue.push(3);
+		queue.push(2);
+		int val;
+		ASSERT_TRUE(queue.pop(val));
+		EXPECT_EQ(1, val);
+	}
 }
 
 }
