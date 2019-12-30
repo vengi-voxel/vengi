@@ -83,8 +83,8 @@ public:
 	void emplace(_Args&&... __args) {
 		{
 			std::unique_lock lock(_mutex);
-			  _data.emplace_back(std::forward<_Args>(__args)...);
-			  std::push_heap(_data.begin(), _data.end(), _comparator);
+			_data.emplace_back(std::forward<_Args>(__args)...);
+			std::push_heap(_data.begin(), _data.end(), _comparator);
 		}
 		_conditionVariable.notify_one();
 	}
