@@ -305,6 +305,7 @@ bool WorldRenderer::renderWaterBuffers() {
 	if (numIndices == 0u) {
 		return false;
 	}
+	video::ScopedState cullFace(video::State::CullFace, false);
 	video::ScopedBuffer scopedBuf(_waterBuffer);
 	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
 	return true;
