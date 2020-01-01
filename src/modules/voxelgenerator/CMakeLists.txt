@@ -8,4 +8,4 @@ set(SRCS
 	TreeContext.h
 	NoiseGenerator.h
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil noise)
