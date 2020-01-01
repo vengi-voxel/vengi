@@ -1,8 +1,6 @@
 set(LIB voxelrender)
 set(SRCS
-	MapRenderer.cpp MapRenderer.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
-	PagedVolumeRenderer.cpp PagedVolumeRenderer.h
 	PlayerCamera.cpp PlayerCamera.h
 	ShaderAttribute.h
 	VoxelFontRenderer.h VoxelFontRenderer.cpp
