@@ -10,6 +10,7 @@
 #include <mutex>
 #include <atomic>
 #include <functional>
+#include <algorithm>
 #include "core/Trace.h"
 
 namespace core {
