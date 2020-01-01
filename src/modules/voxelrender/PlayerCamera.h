@@ -10,6 +10,9 @@
 
 namespace voxelrender {
 
+/**
+ * @brief The player camera clips against the world while moving.
+ */
 class PlayerCamera {
 private:
 	video::Camera _camera;

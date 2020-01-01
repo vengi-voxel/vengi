@@ -25,8 +25,8 @@ void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
 	_camera.setTarget(entityPosition + eye);
 	_camera.update(deltaFrame);
-	glm::vec3 targetpos = _camera.target();
-	glm::vec3 direction = _camera.direction();
+	const glm::vec3& targetpos = _camera.target();
+	const glm::vec3& direction = _camera.direction();
 	glm::vec3 hit;
 
 	if (_worldMgr->raycast(targetpos, direction, _targetDistance, [&] (const voxel::PagedVolume::Sampler& sampler) {
