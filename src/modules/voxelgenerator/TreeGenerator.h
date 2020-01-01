@@ -5,7 +5,6 @@
 #pragma once
 
 #include "math/Random.h"
-#include "voxelworld/BiomeManager.h"
 #include "voxel/RandomVoxel.h"
 #include "voxel/Constants.h"
 #include "TreeContext.h"
