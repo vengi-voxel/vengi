@@ -497,7 +497,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		// as our models are looking along the positive z-axis, we have to rotate by 180 degree here
 		const glm::mat4& model = glm::rotate(translate, glm::pi<float>() + ent->orientation(), glm::up);
 		_chrShader.setModel(model);
-		glm::mat4 bones[16];
+		glm::mat4 bones[shader::SkeletonShader::getMaxBones()];
 		const animation::Character& chr = ent->character();
 		const animation::AnimationSettings& settings = chr.animationSettings();
 		const animation::Skeleton& skeleton = chr.skeleton();
