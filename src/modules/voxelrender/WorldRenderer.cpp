@@ -486,6 +486,9 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_deltaFrame);
+		// note, that the aabb does not include the orientation - that should be kept in mind here.
+		// a particular rotation could lead to an entity getting culled even though it should still
+		// be visible.
 		const math::AABB<float>& aabb = ent->character().aabb();
 		if (!camera.isVisible(aabb)) {
 			continue;
