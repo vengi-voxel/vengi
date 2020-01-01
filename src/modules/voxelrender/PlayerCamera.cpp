@@ -22,6 +22,7 @@ bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBuffe
 }
 
 void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
+	// TODO: fix this magic number with the real character eye height.
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
 	_camera.setTarget(entityPosition + eye);
 	_camera.update(deltaFrame);
