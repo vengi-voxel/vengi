@@ -24,7 +24,9 @@ bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBuffe
 void PlayerCamera::rotate(float pitch, float turn, float speed) {
 	_pendingPitch = pitch;
 	_pendingTurn = turn;
-	_pendingSpeed = speed;
+	if (glm::abs(pitch + turn) > glm::epsilon<float>()) {
+		_pendingSpeed = speed;
+	}
 }
 
 void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
@@ -33,8 +35,11 @@ void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
 	const glm::vec3 targetpos = entityPosition + eye;
 	_camera.setTarget(targetpos);
 
-	const glm::vec3 radians(_pendingPitch * _pendingSpeed, _pendingTurn * _pendingSpeed, 0.0f);
-	_camera.rotate(radians);
+	if (_pendingSpeed > 0.0f) {
+		const glm::vec3 radians(_pendingPitch * _pendingSpeed, _pendingTurn * _pendingSpeed, 0.0f);
+		_camera.rotate(radians);
+		_pendingSpeed = -1.0f;
+	}
 
 	const glm::vec3& direction = _camera.direction();
 	glm::vec3 hit;

@@ -24,7 +24,7 @@ private:
 	glm::vec3 _cameraPosition {1.0f, 0.4f, 1.0f};
 	float _pendingPitch = 0.0f;
 	float _pendingTurn = 0.0f;
-	float _pendingSpeed = 0.0f;
+	float _pendingSpeed = -1.0f;
 public:
 	PlayerCamera(const voxelworld::WorldMgrPtr &world, voxelrender::WorldRenderer &worldRenderer) :
 			_worldMgr(world), _worldRenderer(worldRenderer) {
