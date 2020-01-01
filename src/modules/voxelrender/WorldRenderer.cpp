@@ -486,7 +486,8 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_deltaFrame);
-		if (!camera.isVisible(ent->position())) {
+		const math::AABB<float>& aabb = ent->character().aabb();
+		if (!camera.isVisible(aabb)) {
 			continue;
 		}
 		const glm::mat4& translate = glm::translate(ent->position());
