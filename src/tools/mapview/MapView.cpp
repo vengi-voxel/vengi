@@ -4,7 +4,7 @@
 
 #include "MapView.h"
 
-#include "../../modules/stock/ContainerData.h"
+#include "stock/ContainerData.h"
 #include "video/Shader.h"
 #include "video/Renderer.h"
 #include "core/GLM.h"
