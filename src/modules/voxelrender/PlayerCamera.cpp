@@ -49,17 +49,17 @@ void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
 	}
 
 	const glm::vec3& direction = _camera.direction();
-	glm::vec3 hit;
+	glm::vec3 hit(0.5f);
 	if (_worldMgr->raycast(targetpos, direction, _targetDistance, [&] (const voxel::PagedVolume::Sampler& sampler) {
 			voxel::Voxel voxel = sampler.voxel();
 			if (!voxel::isEnterable(voxel.getMaterial())) {
 				// store position and abort raycast
-				hit = glm::vec3(sampler.position());
+				hit += sampler.position();
 				return false;
 			}
 			return true;
 		})) {
-		_camera.setTargetDistance(glm::distance(targetpos, hit));
+		_camera.setTargetDistance(core_max(0.1f, glm::distance(targetpos, hit) - 0.5f));
 	} else {
 		_camera.setTargetDistance(_targetDistance);
 	}
