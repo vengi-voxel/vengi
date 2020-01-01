@@ -22,8 +22,9 @@ bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBuffe
 }
 
 void PlayerCamera::rotate(float pitch, float turn, float speed) {
-	const glm::vec3 radians(pitch * speed, turn * speed, 0.0f);
-	_camera.rotate(radians);
+	_pendingPitch = pitch;
+	_pendingTurn = turn;
+	_pendingSpeed = speed;
 }
 
 void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
@@ -31,9 +32,12 @@ void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
 	const glm::vec3 targetpos = entityPosition + eye;
 	_camera.setTarget(targetpos);
+
+	const glm::vec3 radians(_pendingPitch * _pendingSpeed, _pendingTurn * _pendingSpeed, 0.0f);
+	_camera.rotate(radians);
+
 	const glm::vec3& direction = _camera.direction();
 	glm::vec3 hit;
-
 	if (_worldMgr->raycast(targetpos, direction, _targetDistance, [&] (const voxel::PagedVolume::Sampler& sampler) {
 			voxel::Voxel voxel = sampler.voxel();
 			if (!voxel::isEnterable(voxel.getMaterial())) {

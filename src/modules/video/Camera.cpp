@@ -40,7 +40,6 @@ void Camera::move(const glm::vec3& delta) {
 }
 
 void Camera::rotate(const glm::vec3& radians) {
-	// TODO: what about rotationtype... should matter here, too, no?
 	switch(_type) {
 	case CameraType::FirstPerson: {
 		turn(radians.y);
