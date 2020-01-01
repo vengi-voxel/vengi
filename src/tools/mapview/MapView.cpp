@@ -250,15 +250,13 @@ void MapView::onRenderUI() {
 	}
 
 	if (ImGui::CollapsingHeader("Camera")) {
-		video::Camera& camera = _camera.camera();
+		const video::Camera& camera = _camera.camera();
 		float fieldOfView = camera.fieldOfView();
 		if (ImGui::InputFloat("FOV", &fieldOfView)) {
-			camera.setFieldOfView(glm::clamp(fieldOfView, 1.0f, 360.0f));
+			_camera.setFieldOfView(glm::clamp(fieldOfView, 1.0f, 360.0f));
 		}
-		float targetDistance = camera.targetDistance();
-		if (ImGui::InputFloat("Distance", &targetDistance)) {
-			camera.setTargetDistance(glm::clamp(targetDistance, 1.0f, 200.0f));
-		}
+		const float targetDistance = camera.targetDistance();
+		ImGui::Text("Distance: %.0f", targetDistance);
 	}
 
 	if (ImGui::CollapsingHeader("Shadow")) {
@@ -288,7 +286,9 @@ core::AppState MapView::onRunning() {
 
 	const bool current = isRelativeMouseMode();
 	if (current) {
-		_camera.camera().rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+		const float pitch = _mouseRelativePos.y;
+		const float turn = _mouseRelativePos.x;
+		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
 	}
 
 	_axis.render(_camera.camera());

@@ -262,7 +262,9 @@ core::AppState Client::onRunning() {
 		Log::info("TODO: %s needs broadcast", var->name().c_str());
 	});
 	if (_network->isConnected()) {
-		_camera.camera().rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+		const float pitch = _mouseRelativePos.y;
+		const float turn = _mouseRelativePos.x;
+		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
 	}
 	sendMovement();
 	if (state == core::AppState::Running) {

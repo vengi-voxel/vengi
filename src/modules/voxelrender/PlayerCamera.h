@@ -32,7 +32,9 @@ public:
 	bool init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
 	void update(const glm::vec3& entityPosition, int64_t deltaFrame);
 
-	video::Camera& camera();
+	void setFieldOfView(float fieldOfView);
+	void rotate(float pitch, float turn, float speed);
+
 	const video::Camera& camera() const;
 };
 
@@ -40,8 +42,8 @@ inline void PlayerCamera::setTarget(const glm::vec3& position) {
 	_camera.setTarget(position);
 }
 
-inline video::Camera& PlayerCamera::camera() {
-	return _camera;
+inline void PlayerCamera::setFieldOfView(float fieldOfView) {
+	_camera.setFieldOfView(fieldOfView);
 }
 
 inline const video::Camera& PlayerCamera::camera() const {

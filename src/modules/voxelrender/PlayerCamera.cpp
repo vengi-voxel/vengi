@@ -21,6 +21,11 @@ bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBuffe
 	return true;
 }
 
+void PlayerCamera::rotate(float pitch, float turn, float speed) {
+	const glm::vec3 radians(pitch * speed, turn * speed, 0.0f);
+	_camera.rotate(radians);
+}
+
 void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
 	// TODO: fix this magic number with the real character eye height.
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
