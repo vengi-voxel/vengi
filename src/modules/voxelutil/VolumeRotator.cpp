@@ -3,7 +3,7 @@
  */
 
 #include "VolumeRotator.h"
-#include "RawVolume.h"
+#include "voxel/RawVolume.h"
 #include "math/AABB.h"
 #include "core/GLM.h"
 

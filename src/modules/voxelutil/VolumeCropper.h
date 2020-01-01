@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #pragma once
 
-#include "RawVolume.h"
+#include "voxel/RawVolume.h"
 #include "VolumeMerger.h"
 
 namespace voxel {

@@ -2,7 +2,9 @@
  * @file
  */
 
-#include "voxel/AStarPathfinder.h"
+#if 0
+#include "voxelutil/AStarPathfinder.h"
+#endif
 #include "Npc.h"
 #include "ai/AICharacter.h"
 #include "ai/AI.h"

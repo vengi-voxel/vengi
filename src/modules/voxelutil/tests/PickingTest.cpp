@@ -4,7 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
-#include "voxel/Picking.h"
+#include "voxelutil/Picking.h"
 #include "core/GLM.h"
 
 namespace voxel {

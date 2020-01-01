@@ -2,8 +2,8 @@
  * @file
  */
 
-#include "AbstractVoxelTest.h"
-#include "voxel/VolumeMerger.h"
+#include "voxel/tests/AbstractVoxelTest.h"
+#include "voxelutil/VolumeMerger.h"
 
 namespace voxel {
 

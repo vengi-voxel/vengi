@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxel/Picking.h"
+#include "voxelutil/Picking.h"
 #include "voxel/RawVolume.h"
 #include "voxelgenerator/TreeContext.h"
 #include "voxelgenerator/NoiseGenerator.h"

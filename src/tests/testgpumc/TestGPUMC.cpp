@@ -10,7 +10,7 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "voxel/VolumeVisitor.h"
+#include "voxelutil/VolumeVisitor.h"
 #include "voxelgenerator/NoiseGenerator.h"
 
 #define GL_INTEROP 0

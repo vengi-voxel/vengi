@@ -4,7 +4,7 @@
 
 #include "RawVolumeRenderer.h"
 #include "voxel/CubicSurfaceExtractor.h"
-#include "voxel/VolumeMerger.h"
+#include "voxelutil/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"

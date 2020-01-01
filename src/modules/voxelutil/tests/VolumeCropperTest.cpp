@@ -2,8 +2,8 @@
  * @file
  */
 
-#include "AbstractVoxelTest.h"
-#include "voxel/VolumeCropper.h"
+#include "voxel/tests/AbstractVoxelTest.h"
+#include "voxelutil/VolumeCropper.h"
 
 namespace voxel {
 

@@ -3,7 +3,7 @@
  */
 
 #include "Resize.h"
-#include "voxel/VolumeMerger.h"
+#include "voxelutil/VolumeMerger.h"
 #include "voxel/RawVolumeWrapper.h"
 
 namespace voxedit {

@@ -1,11 +1,14 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "core/Common.h"
 #include "core/Trace.h"
-#include "Voxel.h"
-#include "Picking.h"
+#include "voxel/Voxel.h"
 #include "Raycast.h"
-#include "Face.h"
+#include "voxel/Face.h"
 
 namespace voxel {
 

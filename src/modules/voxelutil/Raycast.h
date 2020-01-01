@@ -6,8 +6,8 @@
 
 #include "core/Common.h"
 #include "core/Trace.h"
-#include "PagedVolume.h"
-#include "RawVolume.h"
+#include "voxel/PagedVolume.h"
+#include "voxel/RawVolume.h"
 
 namespace voxel {
 namespace RaycastResults {

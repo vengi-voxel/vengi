@@ -3,8 +3,8 @@
  */
 
 #include "Clipboard.h"
-#include "voxel/VolumeMerger.h"
-#include "voxel/VolumeCropper.h"
+#include "voxelutil/VolumeMerger.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxel/RawVolumeWrapper.h"
 
 namespace voxedit {

@@ -11,11 +11,11 @@
 #include "core/Common.h"
 #include "voxel/Mesh.h"
 #include "voxel/PagedVolume.h"
-#include "voxel/Raycast.h"
+#include "voxelutil/Raycast.h"
 #include "voxelformat/VolumeCache.h"
 #include "math/Frustum.h"
 #include "voxel/Constants.h"
-#include "voxel/Picking.h"
+#include "voxelutil/Picking.h"
 #include <memory>
 #include <atomic>
 

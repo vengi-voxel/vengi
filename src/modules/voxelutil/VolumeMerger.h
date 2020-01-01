@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "RawVolume.h"
+#include "voxel/RawVolume.h"
 #include "core/Common.h"
 #include "core/Trace.h"
 #include <vector>

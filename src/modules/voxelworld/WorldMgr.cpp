@@ -10,7 +10,6 @@
 #include "core/io/File.h"
 #include "math/Random.h"
 #include "core/Concurrency.h"
-#include "voxel/AStarPathfinder.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/PagedVolumeWrapper.h"
 #include "voxel/Voxel.h"

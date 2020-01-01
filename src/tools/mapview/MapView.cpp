@@ -12,7 +12,6 @@
 #include "core/Color.h"
 #include "core/command/Command.h"
 #include "voxel/Voxel.h"
-#include "voxel/Picking.h"
 #include "core/io/Filesystem.h"
 #include "ui/imgui/IMGUI.h"
 #include "voxel/MaterialColor.h"

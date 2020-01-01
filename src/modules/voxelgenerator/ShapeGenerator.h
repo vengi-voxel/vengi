@@ -8,7 +8,7 @@
 #include "core/Common.h"
 #include "math/Bezier.h"
 #include "math/Axis.h"
-#include "voxel/Raycast.h"
+#include "voxelutil/Raycast.h"
 #include "core/GLM.h"
 
 namespace voxelgenerator {

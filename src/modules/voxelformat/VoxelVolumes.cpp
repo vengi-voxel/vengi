@@ -3,7 +3,7 @@
  */
 
 #include "VoxelVolumes.h"
-#include "voxel/VolumeMerger.h"
+#include "voxelutil/VolumeMerger.h"
 #include <vector>
 #include <utility>
 
