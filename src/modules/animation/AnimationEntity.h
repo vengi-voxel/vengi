@@ -34,14 +34,12 @@ protected:
 	 * @note Make sure to initialize the bones states of the skeleton before calling this
 	 */
 	bool updateAABB() {
-		glm::mat4 boneMatrices[std::enum_value(BoneId::Max)];
-		for (int i = 0; i < std::enum_value(BoneId::Max); ++i) {
-			boneMatrices[i] = skeleton().bone((BoneId)i).matrix();
-		}
+		glm::mat4 bones[shader::SkeletonShader::getMaxBones()] {};
+		skeleton().update(_settings, bones);
 		_aabb.setLowerCorner(glm::zero<glm::vec3>());
 		_aabb.setUpperCorner(glm::zero<glm::vec3>());
 		for (const auto& v : _vertices) {
-			const glm::vec4& p = boneMatrices[v.boneId] * glm::vec4(v.pos, 1.0f);
+			const glm::vec4& p = bones[v.boneId] * glm::vec4(v.pos, 1.0f);
 			_aabb.accumulate(p.x, p.y, p.z);
 		}
 		return _aabb.isValid();
