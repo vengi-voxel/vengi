@@ -15,7 +15,7 @@ namespace animation {
  * @note This must be float values
  * @ingroup Animation
  */
-struct CharacterSkeletonAttribute : SkeletonAttribute {
+struct CharacterSkeletonAttribute : public SkeletonAttribute {
 	CharacterSkeletonAttribute();
 
 	float scaler = 1.0f;

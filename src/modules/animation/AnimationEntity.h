@@ -11,6 +11,8 @@
 #include "AnimationSettings.h"
 #include "animation/AnimationCache.h"
 #include "attrib/ShadowAttributes.h"
+#include "math/AABB.h"
+#include "core/Enum.h"
 
 namespace animation {
 
@@ -26,6 +28,25 @@ protected:
 	Vertices _vertices;
 	Indices _indices;
 	float _globalTimeSeconds = 0.0f;
+	math::AABB<float> _aabb { -0.5f, 0.0f, -0.5f, 0.5f, 1.0f, 0.5f };
+
+	/**
+	 * @note Make sure to initialize the bones states of the skeleton before calling this
+	 */
+	bool updateAABB() {
+		glm::mat4 boneMatrices[std::enum_value(BoneId::Max)];
+		for (int i = 0; i < std::enum_value(BoneId::Max); ++i) {
+			boneMatrices[i] = skeleton().bone((BoneId)i).matrix();
+		}
+		_aabb.setLowerCorner(glm::zero<glm::vec3>());
+		_aabb.setUpperCorner(glm::zero<glm::vec3>());
+		for (const auto& v : _vertices) {
+			const glm::vec4& p = boneMatrices[v.boneId] * glm::vec4(v.pos, 1.0f);
+			_aabb.accumulate(p.x, p.y, p.z);
+		}
+		return _aabb.isValid();
+	}
+
 public:
 	virtual ~AnimationEntity() {}
 	void setAnimation(Animation animation);
@@ -40,7 +61,10 @@ public:
 		if (!initSettings(luaString)) {
 			return false;
 		}
-		return initMesh(cache);
+		if (!initMesh(cache)) {
+			return false;
+		}
+		return updateAABB();
 	}
 	virtual void shutdown() {}
 	virtual bool initMesh(const AnimationCachePtr& cache) = 0;
@@ -73,11 +97,17 @@ public:
 	 * @sa vertices()
 	 */
 	virtual const Skeleton& skeleton() const = 0;
-	virtual SkeletonAttribute& skeletonAttributes() = 0;;
+	virtual SkeletonAttribute& skeletonAttributes() = 0;
+
+	const math::AABB<float>& aabb() const;
 
 	AnimationSettings& animationSettings();
 	const AnimationSettings& animationSettings() const;
 };
+
+inline const math::AABB<float>& AnimationEntity::aabb() const {
+	return _aabb;
+}
 
 inline Animation AnimationEntity::animation() const {
 	return _anim;

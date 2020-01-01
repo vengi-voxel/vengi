@@ -60,6 +60,10 @@ bool Character::initMesh(const AnimationCachePtr& cache) {
 	}
 	_toolVerticesOffset = _vertices.size();
 	_toolIndicesOffset = _indices.size();
+
+	// ensure the bones are in a sane state - needed for getting the aabb right
+	chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
+
 	return true;
 }
 
