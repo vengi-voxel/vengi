@@ -36,9 +36,16 @@ void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
 	_camera.setTarget(targetpos);
 
 	if (_pendingSpeed > 0.0f) {
+		// TODO: optimize this
+		video::Camera clone = camera();
 		const glm::vec3 radians(_pendingPitch * _pendingSpeed, _pendingTurn * _pendingSpeed, 0.0f);
-		_camera.rotate(radians);
-		_pendingSpeed = -1.0f;
+		clone.rotate(radians);
+		if (clone.pitch() >= glm::radians(1.0f)) {
+			_camera.rotate(radians);
+			_pendingSpeed = -1.0f;
+		} else {
+			_pendingPitch *= 0.5f;
+		}
 	}
 
 	const glm::vec3& direction = _camera.direction();
