@@ -13,6 +13,7 @@
 #include <memory>
 #include <atomic>
 #include <list>
+#include <unordered_map>
 #include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
