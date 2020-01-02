@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxel/Voxel.h"
+#include "core/Assert.h"
 #include "core/Common.h"
 #include "math/Bezier.h"
 #include "math/Axis.h"
