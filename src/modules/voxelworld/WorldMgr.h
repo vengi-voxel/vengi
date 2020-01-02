@@ -20,7 +20,6 @@
 #include "core/collection/ConcurrentQueue.h"
 #include "core/ThreadPool.h"
 #include "core/Var.h"
-#include "core/Log.h"
 #include "core/GLM.h"
 #include "math/Random.h"
 #include <unordered_set>
