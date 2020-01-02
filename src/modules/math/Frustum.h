@@ -6,6 +6,7 @@
 
 #include "Plane.h"
 #include "AABB.h"
+#include <glm/gtc/matrix_transform.hpp>
 #include <stdint.h>
 
 namespace math {
@@ -42,7 +43,9 @@ public:
 
 	template<class T>
 	Frustum(const math::AABB<T>& aabb) {
-		update(glm::mat4(1.0f), aabb.projectionMatrix());
+		const glm::vec3 mins(aabb.mins());
+		const glm::vec3 maxs(aabb.maxs());
+		update(glm::mat4(1.0f), glm::ortho(mins.x, maxs.x, mins.y, maxs.y, -mins.z, -maxs.z));
 	}
 
 	FrustumResult test(const glm::vec3& position) const;

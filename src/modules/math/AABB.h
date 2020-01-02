@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
 #include <array>
 #include <vector>
 #include <limits>
@@ -57,8 +55,6 @@ public:
 	static inline AABB construct(const std::vector<glm::tvec3<TYPE> >& vertices) {
 		return construct(&vertices[0], vertices.size());
 	}
-
-	glm::mat4 projectionMatrix() const;
 
 	/// Equality Operator.
 	bool operator==(const AABB& rhs) const;
@@ -760,11 +756,6 @@ inline void AABB<TYPE>::shrink(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ) {
 	_maxs.x -= iAmountX;
 	_maxs.y -= iAmountY;
 	_maxs.z -= iAmountZ;
-}
-
-template<typename TYPE>
-inline glm::mat4 AABB<TYPE>::projectionMatrix() const {
-	return glm::ortho(float(_mins.x), float(_maxs.x), float(_mins.y), float(_maxs.y), float(-_mins.z), float(-_maxs.z));
 }
 
 /**
