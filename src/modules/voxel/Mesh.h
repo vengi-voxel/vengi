@@ -6,7 +6,6 @@
 
 #include "Region.h"
 #include "VoxelVertex.h"
-#include "core/Assert.h"
 #include <algorithm>
 #include <stdlib.h>
 #include <memory>
@@ -69,7 +68,7 @@ public:
 private:
 	alignas(16) std::vector<IndexType> _vecIndices;
 	alignas(16) std::vector<VoxelVertex> _vecVertices;
-	glm::ivec3 _offset = glm::zero<glm::ivec3>();
+	glm::ivec3 _offset { 0, 0, 0 };
 	bool _mayGetResized;
 };
 
@@ -130,35 +129,10 @@ inline void Mesh::setOffset(const glm::ivec3& offset) {
 	_offset = offset;
 }
 
-inline void Mesh::addTriangle(IndexType index0, IndexType index1, IndexType index2) {
-	//Make sure the specified indices correspond to valid vertices.
-	core_assert_msg(index0 < _vecVertices.size(), "Index points at an invalid vertex.");
-	core_assert_msg(index1 < _vecVertices.size(), "Index points at an invalid vertex.");
-	core_assert_msg(index2 < _vecVertices.size(), "Index points at an invalid vertex.");
-	if (!_mayGetResized) {
-		core_assert_msg(_vecIndices.size() + 3 < _vecIndices.capacity(), "addTriangle() call exceeds the capacity of the indices vector and will trigger a realloc (%i vs %i)", (int)_vecIndices.size(), (int)_vecIndices.capacity());
-	}
-
-	_vecIndices.push_back(index0);
-	_vecIndices.push_back(index1);
-	_vecIndices.push_back(index2);
-}
-
-inline IndexType Mesh::addVertex(const VoxelVertex& vertex) {
-	// We should not add more vertices than our chosen index type will let us index.
-	core_assert_msg(_vecVertices.size() < (std::numeric_limits<IndexType>::max)(), "Mesh has more vertices that the chosen index type allows.");
-	if (!_mayGetResized) {
-		core_assert_msg(_vecVertices.size() + 1 < _vecVertices.capacity(), "addVertex() call exceeds the capacity of the vertices vector and will trigger a realloc (%i vs %i)", (int)_vecVertices.size(), (int)_vecVertices.capacity());
-	}
-
-	_vecVertices.push_back(vertex);
-	return (IndexType)_vecVertices.size() - 1;
-}
-
 inline void Mesh::clear() {
 	_vecVertices.clear();
 	_vecIndices.clear();
-	_offset = glm::zero<glm::ivec3>();
+	_offset = glm::ivec3(0);
 }
 
 inline bool Mesh::isEmpty() const {

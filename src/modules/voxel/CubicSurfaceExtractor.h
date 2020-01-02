@@ -8,6 +8,7 @@
 #include "Voxel.h"
 #include "VoxelVertex.h"
 #include "core/Common.h"
+#include "core/Assert.h"
 #include "core/NonCopyable.h"
 #include "Region.h"
 #include <vector>

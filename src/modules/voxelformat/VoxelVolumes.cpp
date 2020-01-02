@@ -14,7 +14,7 @@ VoxelVolume::VoxelVolume(voxel::RawVolume* _volume, const std::string& _name, bo
     if (volume != nullptr) {
         pivot = volume->region().getCentre();
     } else {
-        pivot = glm::zero<glm::ivec3>();
+        pivot = glm::ivec3(0.0f);
     }
 }
 VoxelVolume::VoxelVolume(voxel::RawVolume* _volume, const std::string& _name, bool _visible, const glm::ivec3& _pivot) :

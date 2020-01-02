@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "math/AABB.h"
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
 #include <string>

@@ -7,6 +7,7 @@
 #include "voxel/RawVolume.h"
 #include "core/io/File.h"
 #include "VoxelVolumes.h"
+#include <glm/vec4.hpp>
 #include <vector>
 #include <utility>
 

@@ -68,15 +68,15 @@ public:
 		return _primitive;
 	}
 
-	uint32_t addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal = glm::zero<glm::vec3>());
-	uint32_t addVertex(const glm::vec3& vertex, const glm::vec3& normal = glm::zero<glm::vec3>());
+	uint32_t addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal = glm::vec3(0.0f));
+	uint32_t addVertex(const glm::vec3& vertex, const glm::vec3& normal = glm::vec3(0.0f));
 
 	inline void clear() {
 		_colors.clear();
 		_vertices.clear();
 		_indices.clear();
 		_texcoords.clear();
-		_position = glm::zero<glm::vec3>();
+		_position = glm::vec3(0.0f);
 		if (_initialSize > 0) {
 			reserve(_initialSize);
 		}
@@ -120,7 +120,7 @@ public:
 	void frustum(const Camera& camera, int splitFrustum = 0);
 	void geom(const std::vector<glm::vec3>& vert, const std::vector<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
 	void plane(const math::Plane& plane, bool normal);
-	void pyramid(const glm::vec3& size = glm::one<glm::vec3>());
+	void pyramid(const glm::vec3& size = glm::vec3(1.0f));
 	/**
 	 * Geometry layout for spheres is as follows (for 5 slices, 4 stacks):
 	 *
