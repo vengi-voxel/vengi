@@ -5,7 +5,6 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <array>
 #include <vector>
 #include <limits>
 
@@ -60,69 +59,6 @@ public:
 	bool operator==(const AABB& rhs) const;
 	/// Inequality Operator.
 	bool operator!=(const AABB& rhs) const;
-
-	/*
-	 * +Y                        +Z
-	 * |                         /
-	 * |                        /
-	 * |                       /
-	 * |                      /
-	 * |       O---------------O---------------O
-	 * |      /               /               /|
-	 * |     /       3       /       7       / |
-	 * |    /               /               /  |
-	 * |   O---------------O---------------O   |
-	 * |  /               /               /|   |
-	 * | /       2       /       6       / | 7 |
-	 * |/               /               /  |   O
-	 * O---------------O---------------O   |  /|
-	 * |               |               |   | / |
-	 * |               |               | 6 |/  |
-	 * |               |               |   O   |
-	 * |       2       |       6       |  /|   |
-	 * |               |               | / | 5 |
-	 * |               |               |/  |   O
-	 * O---------------O---------------O   |  /
-	 * |               |               |   | /
-	 * |               |               | 4 |/
-	 * |               |               |   O
-	 * |       0       |       4       |  /
-	 * |               |               | /
-	 * |               |               |/
-	 * O---------------O---------------O------------------+X
-	 */
-	void split(std::array<AABB<TYPE>, 8>& result) const {
-		const glm::tvec3<TYPE>& center = getCenter();
-		result[0] = AABB<TYPE>(_mins, center);
-
-		glm::tvec3<TYPE> mins1(getLowerX(), getLowerY(), center.z);
-		glm::tvec3<TYPE> maxs1(center.x, center.y, _maxs.z);
-		result[1] = AABB<TYPE>(mins1, maxs1);
-
-		glm::tvec3<TYPE> mins2(getLowerX(), center.y, getLowerZ());
-		glm::tvec3<TYPE> maxs2(center.x, getUpperY(), center.z);
-		result[2] = AABB<TYPE>(mins2, maxs2);
-
-		glm::tvec3<TYPE> mins3(getLowerX(), center.y, center.z);
-		glm::tvec3<TYPE> maxs3(center.x, getUpperY(), _maxs.z);
-		result[3] = AABB<TYPE>(mins3, maxs3);
-
-		glm::tvec3<TYPE> mins4(center.x, getLowerY(), getLowerZ());
-		glm::tvec3<TYPE> maxs4(getUpperX(), center.y, center.z);
-		result[4] = AABB<TYPE>(mins4, maxs4);
-
-		glm::tvec3<TYPE> mins5(center.x, getLowerY(), center.z);
-		glm::tvec3<TYPE> maxs5(getUpperX(), center.y, getUpperZ());
-		result[5] = AABB<TYPE>(mins5, maxs5);
-
-		glm::tvec3<TYPE> mins6(center.x, center.y, getLowerZ());
-		glm::tvec3<TYPE> maxs6(getUpperX(), getUpperY(), center.z);
-		result[6] = AABB<TYPE>(mins6, maxs6);
-
-		glm::tvec3<TYPE> mins7(center.x, center.y, center.z);
-		glm::tvec3<TYPE> maxs7(getUpperX(), getUpperY(), _maxs.z);
-		result[7] = AABB<TYPE>(mins7, maxs7);
-	}
 
 	TYPE getWidthX() const;
 	TYPE getWidthY() const;

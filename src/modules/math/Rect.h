@@ -5,7 +5,6 @@
 #pragma once
 
 #include <limits>
-#include <array>
 #include <glm/vec2.hpp>
 #include <glm/common.hpp>
 
@@ -75,31 +74,6 @@ public:
 		_mins.y += dz;
 		_maxs.x += dx;
 		_maxs.y += dz;
-	}
-
-	void split(std::array<Rect<TYPE>, 4>& result) const {
-		if (getMaxRect() == *this) {
-			// special case because the length would exceed the max possible value of TYPE
-			if (std::numeric_limits<TYPE>::is_signed) {
-				static const std::array<Rect<TYPE>, 4> maxSplit = {{
-					Rect<TYPE>(_mins.x, _mins.y, 0, 0),
-					Rect<TYPE>(0, _mins.y, _maxs.x, 0),
-					Rect<TYPE>(_mins.x, 0, 0, _maxs.y),
-					Rect<TYPE>(0, 0, _maxs.x, _maxs.y)
-				}};
-				result = maxSplit;
-				return;
-			}
-		}
-
-		const TYPE lengthX = _maxs.x - _mins.x;
-		const TYPE halfX = lengthX / (TYPE)2;
-		const TYPE lengthY = _maxs.y - _mins.y;
-		const TYPE halfY = lengthY / (TYPE)2;
-		result[0] = Rect<TYPE>(_mins.x, _mins.y, _mins.x + halfX, _mins.y + halfY);
-		result[1] = Rect<TYPE>(_mins.x + halfX, _mins.y, _maxs.x, _mins.y + halfY);
-		result[2] = Rect<TYPE>(_mins.x, _mins.y + halfY, _mins.x + halfX, _maxs.y);
-		result[3] = Rect<TYPE>(_mins.x + halfX, _mins.y + halfY, _maxs.x, _maxs.y);
 	}
 
 	inline bool contains(const Rect& rect) const {

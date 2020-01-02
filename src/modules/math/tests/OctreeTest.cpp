@@ -8,6 +8,7 @@
 #include "math/Frustum.h"
 #include "core/Log.h"
 #include "core/GLM.h"
+#include "math/OctreeCache.h"
 
 namespace math {
 

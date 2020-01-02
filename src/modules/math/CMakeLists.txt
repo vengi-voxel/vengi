@@ -4,8 +4,10 @@ set(SRCS
 	Bezier.h
 	Frustum.cpp Frustum.h
 	Octree.h Octree.cpp
+	OctreeCache.h
 	Plane.h Plane.cpp
 	QuadTree.h
+	QuadTreeCache.h
 	Random.cpp Random.h
 	Rect.h
 )

@@ -7,6 +7,7 @@
 #include "core/Trace.h"
 #include "core/Assert.h"
 #include "core/GLM.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace math {
 
@@ -16,6 +17,10 @@ static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
 	glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
 	glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
 };
+
+void Frustum::update(const glm::mat4& mat, const glm::vec3& mins, const glm::vec3& maxs) {
+	update(mat, glm::ortho(mins.x, maxs.x, mins.y, maxs.y, -mins.z, -maxs.z));
+}
 
 const Plane& Frustum::operator[](size_t idx) const {
 	core_assert(idx < FRUSTUM_PLANES_MAX);

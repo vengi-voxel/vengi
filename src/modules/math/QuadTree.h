@@ -8,8 +8,8 @@
 #include <list>
 #include <array>
 #include <algorithm>
-#include <unordered_map>
-#include "core/GLM.h"
+#include <limits>
+#include <glm/vec2.hpp>
 #include "Rect.h"
 #include "core/Trace.h"
 
@@ -53,18 +53,50 @@ private:
 		}
 
 	private:
+		static void split(const Rect<TYPE>& rect, Rect<TYPE> (&result)[4]) {
+			if (Rect<TYPE>::getMaxRect() == rect) {
+				// special case because the length would exceed the max possible value of TYPE
+				if (std::numeric_limits<TYPE>::is_signed) {
+					static const Rect<TYPE> maxSplit[4] = {
+						Rect<TYPE>(rect.getMinX(), rect.getMinZ(), 0, 0),
+						Rect<TYPE>(0, rect.getMinZ(), rect.getMaxX(), 0),
+						Rect<TYPE>(rect.getMinX(), 0, 0, rect.getMaxX()),
+						Rect<TYPE>(0, 0, rect.getMaxX(), rect.getMaxX())
+					};
+					result[0] = maxSplit[0];
+					result[1] = maxSplit[1];
+					result[2] = maxSplit[2];
+					result[3] = maxSplit[3];
+					return;
+				}
+			}
+
+			const TYPE lengthX = rect.getMaxX() - rect.getMinX();
+			const TYPE halfX = lengthX / (TYPE)2;
+			const TYPE lengthY = rect.getMaxZ() - rect.getMinZ();
+			const TYPE halfY = lengthY / (TYPE)2;
+			result[0] = Rect<TYPE>(rect.getMinX(), rect.getMinZ(), rect.getMinX() + halfX, rect.getMinZ() + halfY);
+			result[1] = Rect<TYPE>(rect.getMinX() + halfX, rect.getMinZ(), rect.getMaxX(), rect.getMinZ() + halfY);
+			result[2] = Rect<TYPE>(rect.getMinX(), rect.getMinZ() + halfY, rect.getMinX() + halfX, rect.getMaxZ());
+			result[3] = Rect<TYPE>(rect.getMinX() + halfX, rect.getMinZ() + halfY, rect.getMaxX(), rect.getMaxZ());
+		}
+
 		void createNodes() {
 			if (_depth >= _maxDepth) {
 				return;
 			}
-			if (glm::all(glm::lessThanEqual(getRect().size(), glm::one<glm::tvec2<TYPE> >()))) {
+
+			const auto& rect = getRect();
+			const glm::tvec2<TYPE>& rectSize = rect.size();
+			const constexpr glm::tvec2<TYPE> one((TYPE)1);
+			if (rectSize.x <= one.x && rectSize.y <= one.y) {
 				return;
 			}
 
-			std::array<Rect<TYPE>, 4> subareas;
-			getRect().split(subareas);
-			_nodes.reserve(subareas.size());
-			for (size_t i = 0; i < subareas.size(); ++i) {
+			Rect<TYPE> subareas[4];
+			split(rect, subareas);
+			_nodes.reserve(4);
+			for (size_t i = 0; i < 4; ++i) {
 				_nodes.emplace_back(QuadTreeNode(subareas[i], _maxDepth, _depth + 1));
 			}
 		}
@@ -229,47 +261,5 @@ public:
 		_root.getAllContents(results);
 	}
 };
-
-#define CACHE 1
-template<class NODE, typename TYPE>
-class QuadTreeCache {
-private:
-	QuadTree<NODE, TYPE>& _tree;
-#if CACHE
-	std::unordered_map<Rect<TYPE>, typename QuadTree<NODE, TYPE>::Contents> _cache;
-#endif
-public:
-	QuadTreeCache(QuadTree<NODE, TYPE>& tree) :
-			_tree(tree) {
-	}
-
-	inline void clear() {
-#if CACHE
-		_cache.clear();
-#endif
-	}
-
-	inline bool query(const Rect<TYPE>& area, typename QuadTree<NODE, TYPE>::Contents& contents) {
-#if CACHE
-		if (_tree.isDirty()) {
-			_tree.markAsClean();
-			clear();
-		}
-		// TODO: normalize to quad tree cells to improve the cache hits
-		auto iter = _cache.find(area);
-		if (iter != _cache.end()) {
-			contents = iter->second;
-			return true;
-		}
-		_tree.query(area, contents);
-		_cache.insert(std::make_pair(area, contents));
-#else
-		_tree.query(area, contents);
-#endif
-		return false;
-	}
-};
-
-#undef CACHE
 
 }

@@ -6,13 +6,11 @@
 
 #include <vector>
 #include <list>
-#include <array>
 #include <algorithm>
-#include <unordered_map>
 #include "AABB.h"
 #include "Frustum.h"
 #include "core/Trace.h"
-#include "core/GLM.h"
+#include <glm/vec3.hpp>
 
 namespace math {
 
@@ -35,6 +33,69 @@ public:
 	class OctreeNode {
 		friend class Octree;
 	private:
+		/*
+		 * +Y                        +Z
+		 * |                         /
+		 * |                        /
+		 * |                       /
+		 * |                      /
+		 * |       O---------------O---------------O
+		 * |      /               /               /|
+		 * |     /       3       /       7       / |
+		 * |    /               /               /  |
+		 * |   O---------------O---------------O   |
+		 * |  /               /               /|   |
+		 * | /       2       /       6       / | 7 |
+		 * |/               /               /  |   O
+		 * O---------------O---------------O   |  /|
+		 * |               |               |   | / |
+		 * |               |               | 6 |/  |
+		 * |               |               |   O   |
+		 * |       2       |       6       |  /|   |
+		 * |               |               | / | 5 |
+		 * |               |               |/  |   O
+		 * O---------------O---------------O   |  /
+		 * |               |               |   | /
+		 * |               |               | 4 |/
+		 * |               |               |   O
+		 * |       0       |       4       |  /
+		 * |               |               | /
+		 * |               |               |/
+		 * O---------------O---------------O------------------+X
+		 */
+		static void split(const AABB<TYPE>& aabb, AABB<TYPE> (&result)[8]) {
+			const glm::tvec3<TYPE>& center = aabb.getCenter();
+			result[0] = AABB<TYPE>(aabb.mins(), center);
+
+			glm::tvec3<TYPE> mins1(aabb.getLowerX(), aabb.getLowerY(), center.z);
+			glm::tvec3<TYPE> maxs1(center.x, center.y, aabb.getUpperZ());
+			result[1] = AABB<TYPE>(mins1, maxs1);
+
+			glm::tvec3<TYPE> mins2(aabb.getLowerX(), center.y, aabb.getLowerZ());
+			glm::tvec3<TYPE> maxs2(center.x, aabb.getUpperY(), center.z);
+			result[2] = AABB<TYPE>(mins2, maxs2);
+
+			glm::tvec3<TYPE> mins3(aabb.getLowerX(), center.y, center.z);
+			glm::tvec3<TYPE> maxs3(center.x, aabb.getUpperY(), aabb.getUpperZ());
+			result[3] = AABB<TYPE>(mins3, maxs3);
+
+			glm::tvec3<TYPE> mins4(center.x, aabb.getLowerY(), aabb.getLowerZ());
+			glm::tvec3<TYPE> maxs4(aabb.getUpperX(), center.y, center.z);
+			result[4] = AABB<TYPE>(mins4, maxs4);
+
+			glm::tvec3<TYPE> mins5(center.x, aabb.getLowerY(), center.z);
+			glm::tvec3<TYPE> maxs5(aabb.getUpperX(), center.y, aabb.getUpperZ());
+			result[5] = AABB<TYPE>(mins5, maxs5);
+
+			glm::tvec3<TYPE> mins6(center.x, center.y, aabb.getLowerZ());
+			glm::tvec3<TYPE> maxs6(aabb.getUpperX(), aabb.getUpperY(), center.z);
+			result[6] = AABB<TYPE>(mins6, maxs6);
+
+			glm::tvec3<TYPE> mins7(center.x, center.y, center.z);
+			glm::tvec3<TYPE> maxs7(aabb.getUpperX(), aabb.getUpperY(), aabb.getUpperZ());
+			result[7] = AABB<TYPE>(mins7, maxs7);
+		}
+
 		int _maxDepth;
 		int _depth;
 		const Octree* _octree;
@@ -56,14 +117,18 @@ public:
 			if (_depth >= _maxDepth) {
 				return;
 			}
-			if (glm::all(glm::lessThanEqual(aabb().getWidth(), glm::one<glm::tvec3<TYPE> >()))) {
+
+			const auto& _aabb = aabb();
+			const glm::tvec3<TYPE>& _aabbSize = _aabb.getWidth();
+			const constexpr glm::tvec3<TYPE> one((TYPE)1);
+			if (_aabbSize.x <= one.x && _aabbSize.y <= one.y && _aabbSize.z <= one.z) {
 				return;
 			}
 
-			std::array<AABB<TYPE>, 8> subareas;
-			aabb().split(subareas);
-			_nodes.reserve(subareas.size());
-			for (size_t i = 0u; i < subareas.size(); ++i) {
+			AABB<TYPE> subareas[8];
+			split(_aabb, subareas);
+			_nodes.reserve(8);
+			for (size_t i = 0u; i < 8; ++i) {
 				_nodes.emplace_back(OctreeNode(subareas[i], _maxDepth, _depth + 1, _octree));
 				if (_octree->_listener != nullptr) {
 					_octree->_listener->onNodeCreated(*this, _nodes.back());
@@ -374,47 +439,5 @@ public:
 		_root.visit(func);
 	}
 };
-
-#define CACHE 1
-template<class NODE, typename TYPE>
-class OctreeCache {
-private:
-	Octree<NODE, TYPE>& _tree;
-#if CACHE
-	std::unordered_map<AABB<TYPE>, typename Octree<NODE, TYPE>::Contents> _cache;
-#endif
-public:
-	OctreeCache(Octree<NODE, TYPE>& tree) :
-			_tree(tree) {
-	}
-
-	inline void clear() {
-#if CACHE
-		_cache.clear();
-#endif
-	}
-
-	inline bool query(const AABB<TYPE>& area, typename Octree<NODE, TYPE>::Contents& contents) {
-#if CACHE
-		if (_tree.isDirty()) {
-			_tree.markAsClean();
-			clear();
-		}
-		// TODO: normalize to octree cells to improve the cache hits
-		auto iter = _cache.find(area);
-		if (iter != _cache.end()) {
-			contents = iter->second;
-			return true;
-		}
-		_tree.query(area, contents);
-		_cache.insert(std::make_pair(area, contents));
-#else
-		_tree.query(area, contents);
-#endif
-		return false;
-	}
-};
-
-#undef CACHE
 
 }
