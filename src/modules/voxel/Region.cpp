@@ -49,18 +49,6 @@ int Region::voxels() const {
 	return getWidthInVoxels() * getHeightInVoxels() * getDepthInVoxels();
 }
 
-math::Rect<int> Region::rect(int border) const {
-	core_assert(getUpperX() - getLowerX() > 2 * border);
-	core_assert(getUpperZ() - getLowerZ() > 2 * border);
-	return math::Rect<int>(getLowerX() + border, getLowerZ() + border, getUpperX() - border, getUpperZ() - border);
-}
-
-math::Rect<float> Region::rectf(int border) const {
-	core_assert(getUpperX() - getLowerX() > 2 * border);
-	core_assert(getUpperZ() - getLowerZ() > 2 * border);
-	return math::Rect<float>(getLowerX() + border, getLowerZ() + border, getUpperX() - border, getUpperZ() - border);
-}
-
 glm::ivec3 Region::getRandomPosition(math::Random& random) const {
 	const int x = random.random(m_iLowerX, m_iUpperX);
 	const int y = random.random(m_iLowerY, m_iUpperY);

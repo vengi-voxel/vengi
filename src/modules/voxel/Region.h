@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "math/Rect.h"
 #include "math/AABB.h"
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
@@ -207,11 +206,6 @@ public:
 	/// Shrinks this region by the amounts specified.
 	void shrink(const glm::ivec3& v3dAmount);
 
-	math::AABB<int> aabb() const;
-	/// Returns a rect of the x and z area this region covers
-	math::Rect<int> rect(int border = 0) const;
-	math::Rect<float> rectf(int border = 0) const;
-
 	std::string toString() const;
 
 private:
@@ -222,10 +216,6 @@ private:
 	int32_t m_iUpperY;
 	int32_t m_iUpperZ;
 };
-
-inline math::AABB<int> Region::aabb() const {
-	return math::AABB<int>(getLowerCorner(), getUpperCorner() + 1);
-}
 
 /**
  * @return The 'x' position of the centre.

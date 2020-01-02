@@ -159,13 +159,17 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	return biomeBestMatch;
 }
 
+static inline math::Rect<int> rect(const voxel::Region& region) {
+	return math::Rect<int>(region.getLowerX(), region.getLowerZ(), region.getUpperX(), region.getUpperZ());
+}
+
 void BiomeManager::distributePointsInRegion(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const {
 	std::vector<glm::vec2> initialSet;
 	voxel::Region shrinked = region;
 	shrinked.shrink(border);
 	const glm::ivec3& randomPos = shrinked.getRandomPosition(random);
 	initialSet.push_back(glm::vec2(randomPos.x, randomPos.z));
-	positions = noise::poissonDiskDistribution(distribution, shrinked.rect(), initialSet);
+	positions = noise::poissonDiskDistribution(distribution, rect(shrinked), initialSet);
 }
 
 const std::vector<const char*>& BiomeManager::getTreeTypes(const voxel::Region& region) const {

@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <string>
 #include <stdarg.h>
-#include <SDL.h>
-#include <SDL_endian.h>
+#include <SDL_stdinc.h>
+#include <SDL_rwops.h>
 #include "core/Common.h"
 #include <limits.h>
 #include <memory>

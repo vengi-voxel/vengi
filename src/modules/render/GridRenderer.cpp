@@ -35,8 +35,12 @@ int GridRenderer::gridResolution() const {
 	return _resolution;
 }
 
+static inline math::AABB<int> aabb(const voxel::Region& region) {
+	return math::AABB<int>(region.getLowerCorner(), region.getUpperCorner() + 1);
+}
+
 void GridRenderer::update(const voxel::Region& region) {
-	const math::AABB<int>& intaabb = region.aabb();
+	const math::AABB<int>& intaabb = aabb(region);
 	const math::AABB<float> aabb(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
 	_shapeBuilder.clear();
 	_shapeBuilder.aabb(aabb, false);
