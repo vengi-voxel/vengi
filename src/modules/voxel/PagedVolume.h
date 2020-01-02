@@ -350,7 +350,7 @@ private:
 
 	uint32_t _chunkCountLimit = 0u;
 
-	typedef std::unordered_map<glm::ivec3, ChunkPtr, std::hash<glm::ivec3> > ChunkMap;
+	typedef std::unordered_map<glm::ivec3, ChunkPtr> ChunkMap;
 	mutable ChunkMap _chunks;
 
 	// The size of the chunks

@@ -7,6 +7,7 @@
 #include "voxel/PagedVolumeWrapper.h"
 #include "voxelutil/Raycast.h"
 #include "noise/Simplex.h"
+#include "core/Common.h"
 #include "core/String.h"
 #include <array>
 

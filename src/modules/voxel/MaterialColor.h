@@ -8,9 +8,9 @@
 #include "core/io/File.h"
 #include "image/Image.h"
 
-#include <glm/fwd.hpp>
 #include <glm/vec4.hpp>
 #include <vector>
+#include <string>
 
 namespace math {
 class Random;
