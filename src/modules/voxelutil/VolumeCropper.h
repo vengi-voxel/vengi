@@ -6,6 +6,7 @@
 
 #include "voxel/RawVolume.h"
 #include "VolumeMerger.h"
+#include "core/Common.h"
 
 namespace voxel {
 

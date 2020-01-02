@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Array.h"
+#include "core/Assert.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/UTF8.h"

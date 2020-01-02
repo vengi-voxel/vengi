@@ -3,6 +3,7 @@
  */
 
 #include "RawVolume.h"
+#include "core/Assert.h"
 
 namespace voxel {
 

@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/Zip.h"
 #include "core/Color.h"
+#include "core/Assert.h"
 
 namespace voxel {
 

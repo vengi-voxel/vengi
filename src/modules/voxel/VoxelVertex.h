@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "core/Common.h"
 #include "Voxel.h"
-#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
 namespace voxel {
