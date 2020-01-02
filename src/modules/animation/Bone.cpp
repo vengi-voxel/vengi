@@ -3,6 +3,7 @@
  */
 
 #include "Bone.h"
+#include "core/GLM.h"
 
 namespace animation {
 
