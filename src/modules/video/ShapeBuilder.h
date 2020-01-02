@@ -4,13 +4,9 @@
 
 #pragma once
 
-#include "core/Common.h"
 #include "math/AABB.h"
 #include "math/Plane.h"
 #include "video/Types.h"
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <stdint.h>
 #include <vector>
 #include <functional>
