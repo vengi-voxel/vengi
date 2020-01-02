@@ -444,12 +444,12 @@ inline void AABB<TYPE>::setUpperCorner(const glm::tvec3<TYPE>& v3dUpperCorner) {
  */
 template<typename TYPE>
 inline void AABB<TYPE>::accumulate(TYPE iX, TYPE iY, TYPE iZ) {
-	_mins.x = core_min(_mins.x, iX);
-	_mins.y = core_min(_mins.y, iY);
-	_mins.z = core_min(_mins.z, iZ);
-	_maxs.x = core_max(_maxs.x, iX);
-	_maxs.y = core_max(_maxs.y, iY);
-	_maxs.z = core_max(_maxs.z, iZ);
+	_mins.x = (glm::min)(_mins.x, iX);
+	_mins.y = (glm::min)(_mins.y, iY);
+	_mins.z = (glm::min)(_mins.z, iZ);
+	_maxs.x = (glm::max)(_maxs.x, iX);
+	_maxs.y = (glm::max)(_maxs.y, iY);
+	_maxs.z = (glm::max)(_maxs.z, iZ);
 }
 
 /**
