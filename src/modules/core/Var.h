@@ -8,6 +8,7 @@
 #include "GameConfig.h"
 #include <memory>
 #include <string>
+#include <vector>
 #include <string.h>
 #include <algorithm>
 #include <unordered_map>
