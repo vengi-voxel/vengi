@@ -6,6 +6,7 @@
 #include "Morton.h"
 #include "Utility.h"
 #include "core/Log.h"
+#include "core/Common.h"
 
 namespace voxel {
 

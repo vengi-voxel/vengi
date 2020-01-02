@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include "Types.h"
-#include "core/Assert.h"
+#include "ShaderTypes.h"
 #include "image/Image.h"
 #include <glm/fwd.hpp>
 #include <glm/vec4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 #include <type_traits>
+#include <vector>
 #include "TextureConfig.h"
 #include "FrameBufferConfig.h"
 #include "StencilConfig.h"
@@ -160,17 +160,6 @@ struct RenderState {
 };
 
 extern RenderState& renderState();
-
-inline ProfilerGPU::ProfilerGPU(const std::string& name, uint16_t maxSamples) :
-		_name(name), _maxSampleCount(maxSamples) {
-	core_assert(maxSamples > 0);
-	_samples.reserve(_maxSampleCount);
-}
-
-inline ProfilerGPU::~ProfilerGPU() {
-	core_assert_msg(_id == 0u, "Forgot to shutdown gpu profiler: %s", _name.c_str());
-	shutdown();
-}
 
 inline const std::vector<double>& ProfilerGPU::samples() const {
 	return _samples;

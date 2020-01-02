@@ -7,14 +7,17 @@
 #include "core/Common.h"
 #include "math/AABB.h"
 #include "math/Plane.h"
-#include "video/Camera.h"
 #include "video/Types.h"
-#include "core/GLM.h"
-#include "core/Color.h"
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <stdint.h>
 #include <vector>
+#include <functional>
 
 namespace video {
+
+class Camera;
 
 /**
  * @brief Generates primitives and allows to generate geometry from other types like @c AABB,
@@ -40,7 +43,7 @@ private:
 	glm::mat3 _rotation = glm::mat3(1.0f);
 	Primitive _primitive = Primitive::Triangles;
 	int _initialSize;
-	glm::vec4 _color = core::Color::White;
+	glm::vec4 _color;
 	glm::vec3 _position {0.0f};
 public:
 	ShapeBuilder(int initialSize = 0);
@@ -63,10 +66,7 @@ public:
 		_indices.push_back(index3);
 	}
 
-	inline void setPrimitive(Primitive primitive) {
-		core_assert(_vertices.empty() || primitive == _primitive);
-		_primitive = primitive;
-	}
+	void setPrimitive(Primitive primitive);
 
 	inline Primitive primitive() const {
 		return _primitive;

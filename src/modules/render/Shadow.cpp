@@ -8,6 +8,7 @@
 #include "video/Texture.h"
 #include "core/GLM.h"
 #include "core/Trace.h"
+#include "core/Var.h"
 #include "video/ScopedViewPort.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/Buffer.h"

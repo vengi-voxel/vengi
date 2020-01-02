@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
+#include "core/GLM.h"
 #include "core/Common.h"
 #include "voxel/Mesh.h"
 #include "voxel/PagedVolume.h"

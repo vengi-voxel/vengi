@@ -4,13 +4,14 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
-#include <unordered_map>
-#include <glm/fwd.hpp>
-#include "String.h"
 #include "ReadWriteLock.h"
 #include "GameConfig.h"
+#include <memory>
+#include <string>
+#include <string.h>
+#include <algorithm>
+#include <unordered_map>
+#include <glm/fwd.hpp>
 
 namespace core {
 
@@ -128,11 +129,7 @@ public:
 	 */
 	static bool boolean(const std::string& name);
 
-	static inline VarPtr get(const std::string& name, int value, int32_t flags = -1) {
-		char buf[64];
-		core::string::formatBuf(buf, sizeof(buf), "%i", value);
-		return get(name, buf, flags);
-	}
+	static VarPtr get(const std::string& name, int value, int32_t flags = -1);
 
 	static void shutdown();
 
@@ -266,12 +263,7 @@ public:
 		}
 		setVal(value ? VAR_TRUE : VAR_FALSE);
 	}
-	inline void setVal(int value) {
-		if (intVal() == value) {
-			return;
-		}
-		setVal(core::string::format("%i", value));
-	}
+	void setVal(int value);
 	void setVal(float value);
 	/**
 	 * @return The string value of this var

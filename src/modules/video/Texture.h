@@ -4,12 +4,17 @@
 
 #pragma once
 
-#include "video/Renderer.h"
-#include "video/Types.h"
+#include "TextureConfig.h"
 #include "core/io/IOResource.h"
-#include "image/Image.h"
 
 #include <memory>
+
+namespace image {
+
+class Image;
+typedef std::shared_ptr<Image> ImagePtr;
+
+}
 
 namespace video {
 
@@ -88,6 +93,8 @@ inline Id Texture::handle() const {
 	return _handle;
 }
 
+typedef std::shared_ptr<Texture> TexturePtr;
+
 class ScopedTexture {
 private:
 	const TexturePtr& _texture;
@@ -101,8 +108,6 @@ public:
 		_texture->unbind();
 	}
 };
-
-typedef std::shared_ptr<Texture> TexturePtr;
 
 /** @brief creates empty texture with placeholder pixel in */
 extern TexturePtr createEmptyTexture(const std::string& name);

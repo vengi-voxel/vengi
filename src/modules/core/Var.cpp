@@ -7,6 +7,7 @@
 #include "Common.h"
 #include "GLM.h"
 #include "Assert.h"
+#include "String.h"
 
 namespace core {
 
@@ -18,9 +19,22 @@ ReadWriteLock Var::_lock("Var");
 
 MAKE_SHARED_INVIS_CTOR(Var);
 
+VarPtr Var::get(const std::string& name, int value, int32_t flags) {
+	char buf[64];
+	core::string::formatBuf(buf, sizeof(buf), "%i", value);
+	return get(name, buf, flags);
+}
+
 void Var::shutdown() {
 	ScopedWriteLock lock(_lock);
 	_vars.clear();
+}
+
+void Var::setVal(int value) {
+	if (intVal() == value) {
+		return;
+	}
+	setVal(core::string::format("%i", value));
 }
 
 void Var::setVal(float value) {

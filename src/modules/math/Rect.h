@@ -4,13 +4,10 @@
 
 #pragma once
 
-#include "core/Assert.h"
 #include <limits>
 #include <array>
-#include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/common.hpp>
-#include <functional>
 
 namespace math {
 
@@ -27,14 +24,10 @@ public:
 
 	Rect(TYPE minX, TYPE minZ, TYPE maxX, TYPE maxZ) :
 			_mins(minX, minZ), _maxs(maxX, maxZ) {
-		core_assert(_mins.x < _maxs.x);
-		core_assert(_mins.y < _maxs.y);
 	}
 
 	Rect(const glm::tvec2<TYPE>& mins, const glm::tvec2<TYPE>& maxs) :
 			_mins(mins), _maxs(maxs) {
-		core_assert(_mins.x < _maxs.x);
-		core_assert(_mins.y < _maxs.y);
 	}
 
 	static const Rect<TYPE>& getMaxRect() {

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/Common.h"
 #include "core/Assert.h"
 #include "Timestamp.h"
 #include "FieldType.h"
@@ -21,6 +20,9 @@
 #include <stddef.h>
 
 namespace persistence {
+
+extern std::string toLower(const char *in);
+extern std::string toLower(const std::string& in);
 
 typedef std::vector<Field> Fields;
 using FieldName = const char *;

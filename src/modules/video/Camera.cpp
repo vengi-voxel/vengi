@@ -4,14 +4,50 @@
 
 #include "Camera.h"
 #include "core/Common.h"
+#include "core/Assert.h"
 #include "core/Singleton.h"
-#include "core/io/EventHandler.h"
-#include "core/GLM.h"
 
 namespace video {
 
 Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _pos(glm::vec3(0.0f)), _omega(0.0f) {
+}
+
+void Camera::setOmega(const glm::vec3& omega) {
+	core_assert(!glm::any(glm::isnan(omega)));
+	core_assert(!glm::any(glm::isinf(omega)));
+	_omega = omega;
+}
+
+void Camera::setTarget(const glm::vec3& target) {
+	core_assert(!glm::any(glm::isnan(target)));
+	core_assert(!glm::any(glm::isinf(target)));
+	if (glm::all(glm::epsilonEqual(_target, target, 0.0001f))) {
+		return;
+	}
+	_dirty |= DIRTY_TARGET;
+	_target = target;
+}
+
+void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
+	_quat = glm::quat(glm::vec3(pitch, yaw, roll));
+	core_assert(!glm::any(glm::isnan(_quat)));
+	core_assert(!glm::any(glm::isinf(_quat)));
+	_dirty |= DIRTY_ORIENTATION;
+}
+
+void Camera::setQuaternion(const glm::quat& quat) {
+	_quat = quat;
+	core_assert(!glm::any(glm::isnan(_quat)));
+	core_assert(!glm::any(glm::isinf(_quat)));
+	_dirty |= DIRTY_ORIENTATION;
+}
+
+void Camera::rotate(const glm::quat& rotation) {
+	core_assert(!glm::any(glm::isnan(rotation)));
+	core_assert(!glm::any(glm::isinf(rotation)));
+	_quat = glm::normalize(rotation * _quat);
+	_dirty |= DIRTY_ORIENTATION;
 }
 
 void Camera::init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {

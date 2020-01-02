@@ -4,17 +4,12 @@
 
 #pragma once
 
-#include "core/Assert.h"
-
-#include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <array>
 #include <vector>
-#include <algorithm>
 #include <limits>
-#include <functional>
 
 namespace math {
 
@@ -207,7 +202,7 @@ public:
 	/// Enlarges the AABB so that it contains the specified position.
 	void accumulate(const glm::tvec3<TYPE>& v3dPos);
 	/// Enlarges the AABB so that it contains the specified AABB.
-	void accumulate(const AABB& reg);
+	bool accumulate(const AABB& reg);
 
 	/// Crops the extents of this AABB according to another AABB.
 	void cropTo(const AABB& other);
@@ -468,10 +463,10 @@ inline void AABB<TYPE>::accumulate(const glm::tvec3<TYPE>& v3dPos) {
  * @sa isValid()
  */
 template<typename TYPE>
-inline void AABB<TYPE>::accumulate(const AABB& reg) {
+inline bool AABB<TYPE>::accumulate(const AABB& reg) {
 	if (!reg.isValid()) {
 		// The result of accumulating an invalid AABB is not defined.
-		core_assert_msg(false, "You cannot accumulate an invalid AABB.");
+		return false;
 	}
 
 	_mins.x = core_min(_mins.x, reg.getLowerX());
@@ -480,6 +475,7 @@ inline void AABB<TYPE>::accumulate(const AABB& reg) {
 	_maxs.x = core_max(_maxs.x, reg.getUpperX());
 	_maxs.y = core_max(_maxs.y, reg.getUpperY());
 	_maxs.z = core_max(_maxs.z, reg.getUpperZ());
+	return true;
 }
 
 /**

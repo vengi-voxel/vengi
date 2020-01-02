@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "core/String.h"
 #include "tb_widgets_reader.h"
 #include "image/tb_image_widget.h"
 #include "tb_editfield.h"

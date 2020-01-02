@@ -5,13 +5,10 @@
 #pragma once
 
 #include "core/GLM.h"
-#include "core/Var.h"
 #include "math/AABB.h"
 #include "math/Frustum.h"
 #include "Types.h"
 #include "Ray.h"
-#include <math.h>
-#include <time.h>
 
 namespace video {
 
@@ -355,13 +352,6 @@ inline void Camera::rotate(float radians, const glm::vec3& axis) {
 	rotate(quat);
 }
 
-inline void Camera::rotate(const glm::quat& rotation) {
-	core_assert(!glm::any(glm::isnan(rotation)));
-	core_assert(!glm::any(glm::isinf(rotation)));
-	_quat = glm::normalize(rotation * _quat);
-	_dirty |= DIRTY_ORIENTATION;
-}
-
 inline bool Camera::lookAt(const glm::vec3& position) {
 	return lookAt(position, glm::up);
 }
@@ -392,20 +382,6 @@ inline glm::vec3 Camera::right() const {
 
 inline glm::vec3 Camera::up() const {
 	return glm::conjugate(_quat) * glm::up;
-}
-
-inline void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
-	_quat = glm::quat(glm::vec3(pitch, yaw, roll));
-	core_assert(!glm::any(glm::isnan(_quat)));
-	core_assert(!glm::any(glm::isinf(_quat)));
-	_dirty |= DIRTY_ORIENTATION;
-}
-
-inline void Camera::setQuaternion(const glm::quat& quat) {
-	_quat = quat;
-	core_assert(!glm::any(glm::isnan(_quat)));
-	core_assert(!glm::any(glm::isinf(_quat)));
-	_dirty |= DIRTY_ORIENTATION;
 }
 
 inline void Camera::setPosition(const glm::vec3& pos) {
@@ -483,22 +459,6 @@ inline glm::vec3 Camera::direction() const {
 
 inline const glm::vec3& Camera::position() const {
 	return _pos;
-}
-
-inline void Camera::setOmega(const glm::vec3& omega) {
-	core_assert(!glm::any(glm::isnan(omega)));
-	core_assert(!glm::any(glm::isinf(omega)));
-	_omega = omega;
-}
-
-inline void Camera::setTarget(const glm::vec3& target) {
-	core_assert(!glm::any(glm::isnan(target)));
-	core_assert(!glm::any(glm::isinf(target)));
-	if (glm::all(glm::epsilonEqual(_target, target, 0.0001f))) {
-		return;
-	}
-	_dirty |= DIRTY_TARGET;
-	_target = target;
 }
 
 inline void Camera::setTargetDistance(float distance) {

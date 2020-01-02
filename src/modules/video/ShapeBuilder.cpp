@@ -3,8 +3,11 @@
  */
 
 #include "ShapeBuilder.h"
+#include "Camera.h"
 #include "core/Common.h"
+#include "core/Assert.h"
 #include "math/Frustum.h"
+#include "core/Color.h"
 
 #undef near
 #undef far
@@ -12,10 +15,15 @@
 namespace video {
 
 ShapeBuilder::ShapeBuilder(int initialSize) :
-		_initialSize(initialSize) {
+		_initialSize(initialSize), _color(core::Color::White) {
 	if (_initialSize > 0) {
 		reserve(initialSize);
 	}
+}
+
+void ShapeBuilder::setPrimitive(Primitive primitive) {
+	core_assert(_vertices.empty() || primitive == _primitive);
+	_primitive = primitive;
 }
 
 void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float stepWidth) {

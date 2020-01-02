@@ -6,6 +6,7 @@
 
 #include "Region.h"
 #include "VoxelVertex.h"
+#include "core/Assert.h"
 #include <algorithm>
 #include <stdlib.h>
 #include <memory>

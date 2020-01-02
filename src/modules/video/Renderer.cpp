@@ -4,9 +4,21 @@
 
 #include "Renderer.h"
 #include "core/Log.h"
+#include "core/Assert.h"
 #include <SDL_video.h>
 
 namespace video {
+
+ProfilerGPU::ProfilerGPU(const std::string& name, uint16_t maxSamples) :
+		_name(name), _maxSampleCount(maxSamples) {
+	core_assert(maxSamples > 0);
+	_samples.reserve(_maxSampleCount);
+}
+
+ProfilerGPU::~ProfilerGPU() {
+	core_assert_msg(_id == 0u, "Forgot to shutdown gpu profiler: %s", _name.c_str());
+	shutdown();
+}
 
 void deleteRenderbuffer(Id& id) {
 	if (id == InvalidId) {

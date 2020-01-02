@@ -5,6 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "persistence/SQLGenerator.h"
 #include "TestModels.h"
+#include "core/String.h"
 
 namespace persistence {
 

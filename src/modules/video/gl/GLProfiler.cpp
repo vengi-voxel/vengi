@@ -2,6 +2,8 @@
  * @file
  */
 
+#include "core/Common.h"
+#include "core/Assert.h"
 #include "video/Renderer.h"
 #include "flextGL.h"
 #include <algorithm>

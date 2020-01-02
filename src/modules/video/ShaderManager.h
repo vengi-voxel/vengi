@@ -3,10 +3,11 @@
  */
 #pragma once
 
-#include "Shader.h"
 #include <vector>
 
 namespace video {
+
+class Shader;
 
 /**
  * Register @c Shader instances here to let them automatically recompile

@@ -4,9 +4,11 @@
 
 #pragma once
 
-#include "FrameBuffer.h"
+#include "Types.h"
 
 namespace video {
+
+class FrameBuffer;
 
 /**
  * @sa FrameBuffer
@@ -16,17 +18,11 @@ class ScopedFrameBuffer {
 private:
 	Id _oldFramebuffer;
 public:
-	explicit ScopedFrameBuffer(const FrameBuffer& fbo) :
-			ScopedFrameBuffer(fbo._fbo) {
-	}
+	explicit ScopedFrameBuffer(const FrameBuffer& fbo);
 
-	explicit ScopedFrameBuffer(Id bindHandle) {
-		_oldFramebuffer = video::bindFramebuffer(bindHandle);
-	}
+	explicit ScopedFrameBuffer(Id bindHandle);
 
-	~ScopedFrameBuffer() {
-		video::bindFramebuffer(_oldFramebuffer);
-	}
+	~ScopedFrameBuffer();
 };
 
 }

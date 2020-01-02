@@ -7,6 +7,7 @@
 #include "Voxel.h"
 #include "Region.h"
 #include "core/NonCopyable.h"
+#include "core/Assert.h"
 #include "core/RecursiveReadWriteLock.h"
 #include <array>
 #include <memory>

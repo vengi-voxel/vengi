@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 #include <string>
-#include "core/Common.h"
 #include "FieldType.h"
 #include "ConstraintType.h"
 

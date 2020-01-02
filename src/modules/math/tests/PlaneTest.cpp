@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "math/Plane.h"
+#include "core/GLM.h"
 
 namespace math {
 

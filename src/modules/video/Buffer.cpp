@@ -3,7 +3,9 @@
  */
 
 #include "Buffer.h"
+#include "Renderer.h"
 #include "core/Common.h"
+#include "core/Assert.h"
 #include <vector>
 
 namespace video {
@@ -13,6 +15,50 @@ Buffer::Buffer(const void* data, size_t size, BufferType target) {
 }
 
 Buffer::Buffer() {
+}
+
+size_t Buffer::align(size_t x, BufferType type) {
+	size_t a = 32;
+	switch (type) {
+	case BufferType::IndexBuffer:
+		a = 16;
+		break;
+	case BufferType::UniformBuffer:
+		a = video::specificationi(Spec::UniformBufferAlignment);
+		break;
+	default:
+		break;
+	}
+	return ( ( ( x ) + ((a)-1) ) & ~((a)-1) );
+}
+
+bool Buffer::isValid(int32_t idx) const {
+	if (idx < 0) {
+		return false;
+	}
+	if (idx >= MAX_HANDLES) {
+		return false;
+	}
+	return _handles[idx] != InvalidId;
+}
+
+uint32_t Buffer::size(int32_t idx) const {
+	core_assert_msg(idx >= 0 && idx < MAX_HANDLES, "Given index %i is out of range", idx);
+	return (uint32_t)_size[idx];
+}
+
+uint32_t Buffer::elements(int32_t idx, int components, size_t componentSize) const {
+	return size(idx) / (components * (uint32_t)componentSize);
+}
+
+Id Buffer::bufferHandle(int32_t idx) const {
+	core_assert(idx >= 0 && idx < MAX_HANDLES);
+	return _handles[idx];
+}
+
+void Buffer::setMode(int32_t idx, BufferMode mode) {
+	core_assert(idx >= 0 && idx < MAX_HANDLES);
+	_modes[idx] = mode;
 }
 
 size_t Buffer::bufferSize(int32_t idx) const {

@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "Renderer.h"
-
 namespace video {
 
 /**

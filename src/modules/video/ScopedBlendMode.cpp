@@ -3,6 +3,7 @@
  */
 
 #include "ScopedBlendMode.h"
+#include "Renderer.h"
 
 namespace video {
 

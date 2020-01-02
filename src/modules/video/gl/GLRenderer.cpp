@@ -17,6 +17,7 @@
 #include "core/Array.h"
 #include "core/Var.h"
 #include "core/Assert.h"
+#include "core/String.h"
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>

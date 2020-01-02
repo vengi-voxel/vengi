@@ -69,7 +69,7 @@ bool UDPMetricSender::connect() const {
 	_statsd->sin_port = htons(_port);
 
 	struct addrinfo hints;
-	std::memset(&hints, 0, sizeof(hints));
+	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_DGRAM;
 

@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "Renderer.h"
-#include "core/Vector.h"
-#include "core/GLM.h"
+#include "Types.h"
+#include <glm/vec2.hpp>
 #include <vector>
 
 #define VIDEO_BUFFER_HASH_COMPARE 0
@@ -61,7 +60,7 @@ public:
 		if (!data.empty()) {
 			dataPtr = &data.front();
 		}
-		return update(idx, dataPtr, core::vectorSize(data));
+		return update(idx, dataPtr, data.size() * sizeof(T));
 	}
 
 	/**
@@ -86,7 +85,7 @@ public:
 	 */
 	template<class T>
 	inline int32_t create(const std::vector<T>& data, BufferType target = BufferType::ArrayBuffer) {
-		return create(&data.front(), core::vectorSize(data), target);
+		return create(&data.front(), data.size() * sizeof(T), target);
 	}
 
 	/**
@@ -152,52 +151,8 @@ public:
 	Id handle() const;
 };
 
-inline size_t Buffer::align(size_t x, BufferType type) {
-	size_t a = 32;
-	switch (type) {
-	case BufferType::IndexBuffer:
-		a = 16;
-		break;
-	case BufferType::UniformBuffer:
-		a = video::specificationi(Spec::UniformBufferAlignment);
-		break;
-	default:
-		break;
-	}
-	return ( ( ( x ) + ((a)-1) ) & ~((a)-1) );
-}
-
 inline Id Buffer::handle() const {
 	return _vao;
-}
-
-inline bool Buffer::isValid(int32_t idx) const {
-	if (idx < 0) {
-		return false;
-	}
-	if (idx >= MAX_HANDLES) {
-		return false;
-	}
-	return _handles[idx] != InvalidId;
-}
-
-inline uint32_t Buffer::size(int32_t idx) const {
-	core_assert_msg(idx >= 0 && idx < MAX_HANDLES, "Given index %i is out of range", idx);
-	return (uint32_t)_size[idx];
-}
-
-inline uint32_t Buffer::elements(int32_t idx, int components, size_t componentSize) const {
-	return size(idx) / (components * (uint32_t)componentSize);
-}
-
-inline Id Buffer::bufferHandle(int32_t idx) const {
-	core_assert(idx >= 0 && idx < MAX_HANDLES);
-	return _handles[idx];
-}
-
-inline void Buffer::setMode(int32_t idx, BufferMode mode) {
-	core_assert(idx >= 0 && idx < MAX_HANDLES);
-	_modes[idx] = mode;
 }
 
 class ScopedBuffer {

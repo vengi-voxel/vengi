@@ -4,6 +4,8 @@
 
 #include "video/Shader.h"
 #include "video/UniformBuffer.h"
+#include "core/Assert.h"
+#include "core/GLM.h"
 #include "flextGL.h"
 #include <SDL.h>
 

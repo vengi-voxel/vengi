@@ -20,7 +20,7 @@ set(SRCS
 	collection/ConcurrentSet.h
 	collection/Set.h
 
-	Assert.h
+	Assert.cpp Assert.h
 	App.cpp App.h
 	AppCommand.cpp AppCommand.h
 	BindingContext.cpp BindingContext.h

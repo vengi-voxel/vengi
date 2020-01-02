@@ -5,6 +5,8 @@
 #include "Frustum.h"
 #include "core/Common.h"
 #include "core/Trace.h"
+#include "core/Assert.h"
+#include "core/GLM.h"
 
 namespace math {
 
@@ -14,6 +16,11 @@ static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
 	glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
 	glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
 };
+
+const Plane& Frustum::operator[](size_t idx) const {
+	core_assert(idx < FRUSTUM_PLANES_MAX);
+	return _planes[idx];
+}
 
 void Frustum::transform(const glm::mat4& mat) {
 	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {

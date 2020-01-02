@@ -3,6 +3,7 @@
  */
 
 #include "Plane.h"
+#include "core/GLM.h"
 
 namespace math {
 
@@ -37,6 +38,20 @@ PlaneSide Plane::side(const glm::vec3& point) const {
 	}
 
 	return PlaneSide::On;
+}
+
+void Plane::transform(const glm::mat4& mat) {
+	const glm::vec3& n = glm::rotate(mat, norm());
+	const glm::vec3& p = glm::transform(mat, norm() * dist());
+	set(n, p);
+}
+
+void Plane::set(const glm::vec3& norm, const glm::vec3& point) {
+	set(norm, glm::dot(norm, point));
+}
+
+float Plane::distanceToPlane(const glm::vec3& point) const {
+	return glm::dot(norm(), point) + dist();
 }
 
 }

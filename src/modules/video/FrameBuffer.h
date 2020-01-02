@@ -4,15 +4,14 @@
 
 #pragma once
 
-#include "Renderer.h"
-#include <glm/fwd.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
+#include "FrameBufferConfig.h"
 #include <map>
 #include <memory>
 
 namespace video {
 
+class Texture;
+class RenderBuffer;
 typedef std::shared_ptr<Texture> TexturePtr;
 typedef std::shared_ptr<RenderBuffer> RenderBufferPtr;
 

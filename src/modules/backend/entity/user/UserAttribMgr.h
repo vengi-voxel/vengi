@@ -8,6 +8,7 @@
 #include "backend/entity/EntityId.h"
 #include "attrib/Attributes.h"
 #include "core/IComponent.h"
+#include "core/Common.h"
 #include "persistence/ISavable.h"
 #include "core/collection/ConcurrentSet.h"
 #include "AttribModel.h"

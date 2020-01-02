@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Plane.h"
-#include "math/AABB.h"
+#include "AABB.h"
 #include <stdint.h>
 
 namespace math {
@@ -84,11 +84,6 @@ public:
 	 */
 	static bool isVisible(const glm::vec3& eye, float orientation, const glm::vec3& target, float fieldOfView);
 };
-
-inline const Plane& Frustum::operator[](size_t idx) const {
-	core_assert(idx < FRUSTUM_PLANES_MAX);
-	return _planes[idx];
-}
 
 inline Plane& Frustum::plane(FrustumPlanes frustumPlane) {
 	return _planes[(int)frustumPlane];

@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/fwd.hpp>
 
 namespace math {
 
@@ -58,12 +60,6 @@ inline Plane::Plane(const glm::vec3& point1, const glm::vec3& point2, const glm:
 	set(point1, point2, point3);
 }
 
-inline void Plane::transform(const glm::mat4& mat) {
-	const glm::vec3& n = glm::rotate(mat, norm());
-	const glm::vec3& p = glm::transform(mat, norm() * dist());
-	set(n, p);
-}
-
 inline void Plane::set(const glm::vec4& data) {
 	_norm = glm::vec3(data);
 	_dist = data.w;
@@ -74,16 +70,8 @@ inline void Plane::set(const glm::vec3& norm, float dist) {
 	_dist = -dist;
 }
 
-inline void Plane::set(const glm::vec3& norm, const glm::vec3& point) {
-	set(norm, glm::dot(norm, point));
-}
-
 inline const glm::vec3& Plane::norm() const {
 	return _norm;
-}
-
-inline float Plane::distanceToPlane(const glm::vec3& point) const {
-	return glm::dot(norm(), point) + dist();
 }
 
 inline bool Plane::isBackSide(const glm::vec3& point) const {

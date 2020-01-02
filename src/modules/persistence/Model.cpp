@@ -12,6 +12,14 @@
 
 namespace persistence {
 
+std::string toLower(const char *in) {
+	return core::string::toLower(in);
+}
+
+std::string toLower(const std::string& in) {
+	return core::string::toLower(in);
+}
+
 Model::Model(const Meta* s) :
 		_s(s) {
 	_membersPointer = (uint8_t*)this;

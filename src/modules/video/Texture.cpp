@@ -4,7 +4,11 @@
 
 #include "Texture.h"
 #include "core/Log.h"
+#include "core/Common.h"
+#include "core/Assert.h"
 #include "core/String.h"
+#include "image/Image.h"
+#include "video/Renderer.h"
 
 namespace video {
 

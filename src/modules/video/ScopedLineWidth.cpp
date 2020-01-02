@@ -3,6 +3,7 @@
  */
 
 #include "ScopedLineWidth.h"
+#include "Renderer.h"
 
 namespace video {
 

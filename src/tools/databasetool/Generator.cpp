@@ -252,7 +252,7 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		src << persistence::toFieldType(f.type) << ", ";
 		if (isString(f)) {
 			if (f.isLower()) {
-				src << "core::string::toLower(value)";
+				src << "persistence::toLower(value)";
 			} else {
 				src << "value";
 			}
@@ -271,7 +271,7 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 			src << persistence::toFieldType(f.type);
 			src << ", ";
 			if (f.isLower()) {
-				src << "core::string::toLower(value)";
+				src << "persistence::toLower(value)";
 			} else {
 				src << "value";
 			}
@@ -356,7 +356,7 @@ static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 		src << "\tinline void set" << setter << "(" << cpptypeSetter << " " << f.name << ") {\n";
 		src << "\t\t_m._" << f.name << " = ";
 		if (isString(f) && f.isLower()) {
-			src << "core::string::toLower(" << f.name << ")";
+			src << "persistence::toLower(" << f.name << ")";
 		} else {
 			src << f.name;
 		}
@@ -400,13 +400,8 @@ bool generateClassForTable(const Table& table, std::stringstream& src) {
 	src << "#pragma once\n\n";
 	src << "#include \"persistence/Model.h\"\n";
 	src << "#include \"persistence/DBCondition.h\"\n";
-	src << "#include \"core/String.h\"\n";
-	src << "#include \"core/Common.h\"\n";
 	src << "\n";
 	src << "#include <memory>\n";
-	src << "#include <vector>\n";
-	src << "#include <array>\n";
-	src << "#include <string>\n\n";
 
 	const Namespace ns(table, src);
 	{

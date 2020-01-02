@@ -7,11 +7,13 @@
 #include "core/App.h"
 #include "core/Common.h"
 #include "core/Hash.h"
+#include "core/GLM.h"
 #include "core/io/Filesystem.h"
 #include "Version.h"
 #include "core/Assert.h"
 #include "core/Var.h"
 #include "core/Singleton.h"
+#include "core/String.h"
 #include "ShaderManager.h"
 #include "UniformBuffer.h"
 #include "video/Renderer.h"
@@ -32,6 +34,75 @@ Shader::Shader() {
 
 Shader::~Shader() {
 	shutdown();
+}
+
+void Shader::setVertexAttribute(const std::string& name, int size, DataType type, bool normalize, int stride, const void* buffer) const {
+	core_assert_msg(type == DataType::Float || type == DataType::Double, "unexpected data type given: %i", std::enum_value(type));
+	const int location = getAttributeLocation(name);
+	if (location == -1) {
+		return;
+	}
+	setVertexAttribute(location, size, type, normalize, stride, buffer);
+}
+
+void Shader::setVertexAttributeInt(const std::string& name, int size, DataType type, int stride, const void* buffer) const {
+	core_assert_msg(type != DataType::Float && type != DataType::Double, "unexpected data type given: %i", std::enum_value(type));
+	const int location = getAttributeLocation(name);
+	if (location == -1) {
+		return;
+	}
+	setVertexAttributeInt(location, size, type, stride, buffer);
+}
+
+void Shader::disableVertexAttribute(const std::string& name) const {
+	const int location = getAttributeLocation(name);
+	if (location == -1) {
+		return;
+	}
+	disableVertexAttribute(location);
+}
+
+int Shader::enableVertexAttributeArray(const std::string& name) const {
+	int location = getAttributeLocation(name);
+	if (location == -1) {
+		return -1;
+	}
+	enableVertexAttributeArray(location);
+	return location;
+}
+
+int Shader::getAttributeComponents(int location) const {
+	auto i = _attributeComponents.find(location);
+	if (i != _attributeComponents.end()) {
+		return i->second;
+	}
+	Log::debug("Could not find components for attributes at location %i", location);
+	return -1;
+}
+
+int Shader::getAttributeComponents(const std::string& name) const {
+	const int loc = getAttributeLocation(name);
+	if (loc == -1) {
+		return -1;
+	}
+	Log::debug("Could not find components for attributes at location %s", name.c_str());
+	return getAttributeComponents(loc);
+}
+
+bool Shader::hasAttribute(const std::string& name) const {
+	return _attributes.find(name) != _attributes.end();
+}
+
+bool Shader::hasUniform(const std::string& name) const {
+	return _uniforms.find(name) != _uniforms.end();
+}
+
+bool Shader::isUniformBlock(const std::string& name) const {
+	auto i = _uniforms.find(name);
+	if (i == _uniforms.end()) {
+		return false;
+	}
+	return i->second.block;
 }
 
 void Shader::checkAttribute(const std::string& attribute) {
@@ -437,6 +508,56 @@ bool Shader::transformFeedback() const {
 void Shader::setupTransformFeedback(const std::vector<std::string>& varyings, TransformFeedbackCaptureMode format) {
 	_transformVaryings = varyings;
 	_transformFormat = format;
+}
+
+void Shader::setUniformf(const std::string& name, const glm::vec2& values) const {
+	setUniformf(name, values.x, values.y);
+}
+
+void Shader::setUniformf(int location, const glm::vec2& values) const {
+	setUniformf(location, values.x, values.y);
+}
+
+void Shader::setUniformf(const std::string& name, const glm::vec3& values) const {
+	setUniformf(name, values.x, values.y, values.z);
+}
+
+void Shader::setUniformf(int location, const glm::vec3& values) const {
+	setUniformf(location, values.x, values.y, values.z);
+}
+
+void Shader::setUniformf(const std::string& name, const glm::vec4& values) const {
+	setUniformf(name, values.x, values.y, values.z, values.w);
+}
+
+void Shader::setUniformf(int location, const glm::vec4& values) const {
+	setUniformf(location, values.x, values.y, values.z, values.w);
+}
+
+void Shader::setUniformVec2(int location, const glm::vec2& value) const {
+	setUniform2fv(location, glm::value_ptr(value), 2);
+}
+
+void Shader::setUniformVec3(int location, const glm::vec3& value) const {
+	setUniform3fv(location, glm::value_ptr(value), 3);
+}
+
+void Shader::setUniformVec4(int location, const glm::vec4& value) const {
+	setUniform4fv(location, glm::value_ptr(value), 4);
+}
+
+ScopedShader::ScopedShader(const Shader& shader) :
+		_shader(shader), _oldShader(getProgram()) {
+	_alreadyActive = _shader.isActive();
+	_shader.activate();
+}
+
+ScopedShader::~ScopedShader() {
+	if (_alreadyActive) {
+		return;
+	}
+	_shader.deactivate();
+	useProgram(_oldShader);
 }
 
 }

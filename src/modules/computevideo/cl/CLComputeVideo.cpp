@@ -7,6 +7,7 @@
 #include "video/Buffer.h"
 #include "video/gl/GLRenderer.h"
 #include "video/Texture.h"
+#include "video/Renderer.h"
 #ifdef __APPLE__
 #include <OpenCL/cl_gl_ext.h>
 #include <OpenCL/opencl.h>

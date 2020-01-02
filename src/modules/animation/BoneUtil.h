@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/GLM.h"
 #include "Bone.h"
 
 namespace animation {

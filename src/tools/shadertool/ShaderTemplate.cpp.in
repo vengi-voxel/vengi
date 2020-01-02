@@ -5,6 +5,7 @@
 #include "$name$.h"
 #include <vector>
 #include "video/Shader.h"
+#include "core/GLM.h"
 #include "video/Types.h"
 #include "video/UniformBuffer.h"
 #include "core/Singleton.h"

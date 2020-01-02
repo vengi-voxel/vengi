@@ -16,15 +16,16 @@ set(SRCS
 	Renderer.cpp Renderer.h
 	RenderBuffer.cpp RenderBuffer.h
 	Shader.cpp Shader.h
+	ShaderTypes.h
 	ShapeBuilder.cpp ShapeBuilder.h
 	ShaderManager.cpp ShaderManager.h
 	ScopedLineWidth.h ScopedLineWidth.cpp
-	ScopedViewPort.h
-	ScopedFrameBuffer.h
-	ScopedState.h
+	ScopedViewPort.h ScopedViewPort.cpp
+	ScopedFrameBuffer.h ScopedFrameBuffer.cpp
+	ScopedState.h ScopedState.cpp
 	ScopedBlendMode.h ScopedBlendMode.cpp
-	ScopedScissor.h
-	ScopedPolygonMode.h
+	ScopedScissor.h ScopedScissor.cpp
+	ScopedPolygonMode.h ScopedPolygonMode.cpp
 	StencilConfig.h StencilConfig.cpp
 	Texture.cpp Texture.h
 	TextureConfig.cpp TextureConfig.h

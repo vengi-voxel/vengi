@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "core/Common.h"
+#include "core/Enum.h"
 #include <stdint.h>
-#include <unordered_map>
 #include "gl/GLTypes.h"
 
 namespace video {
@@ -402,7 +401,6 @@ struct Uniform {
 	int location;
 	bool block;
 };
-typedef std::unordered_map<std::string, Uniform> ShaderUniforms;
 
 /**
  * Vertex buffer shader attributes
@@ -432,7 +430,5 @@ struct Attribute {
 	/** if this is true, the values are not converted to float, but are kept as integers */
 	bool typeIsInt = false;
 };
-
-typedef std::unordered_map<std::string, int> ShaderAttributes;
 
 }

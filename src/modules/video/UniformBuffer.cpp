@@ -1,4 +1,9 @@
+/**
+ * @file
+ */
+
 #include "UniformBuffer.h"
+#include "core/Assert.h"
 
 namespace video {
 

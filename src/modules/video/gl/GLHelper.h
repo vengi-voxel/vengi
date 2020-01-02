@@ -4,8 +4,9 @@
 
 #pragma once
 
+#include "core/Log.h"
 #include "flextGL.h"
-#include "video/Types.h"
+#include "video/ShaderTypes.h"
 
 #define GL_OFFSET_CAST(i) ((void*)(i))
 

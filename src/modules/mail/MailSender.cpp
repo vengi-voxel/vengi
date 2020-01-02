@@ -5,6 +5,7 @@
 #include "MailSender.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "core/String.h"
 #include <curl/curl.h>
 
 namespace mail {

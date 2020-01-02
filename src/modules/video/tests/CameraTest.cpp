@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "core/GLM.h"
+#include "core/String.h"
 #include "math/Frustum.h"
 #include "math/AABB.h"
 #include "video/Camera.h"
