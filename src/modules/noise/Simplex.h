@@ -26,7 +26,7 @@
 #pragma once
 
 #include <functional>
-#include <array>
+#include "core/collection/Array.h"
 #include <random>
 #include <math.h>
 #include <stdlib.h>
@@ -69,7 +69,7 @@ inline glm::vec3 dnoise(const glm::vec2 &v);
 //! Returns a 3D simplex noise with analytical derivatives.
 inline glm::vec4 dnoise(const glm::vec3 &v);
 // not optimal but easiest way to return 5 floats
-typedef std::array<float, 5> vec5;
+typedef core::Array<float, 5> vec5;
 //! Returns a 4D simplex noise with analytical derivatives
 inline vec5 dnoise(const glm::vec4 &v);
 

@@ -1872,4 +1872,13 @@ void SceneManager::onLayerDeleted(int layerId, const Layer& layer) {
 	}
 }
 
+bool SceneManager::empty() const {
+	for (const auto& l : _layerMgr.layers()) {
+		if (l.valid) {
+			return false;
+		}
+	}
+	return true;
+}
+
 }

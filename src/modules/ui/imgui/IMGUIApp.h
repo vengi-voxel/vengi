@@ -14,7 +14,7 @@
 #include <thread>
 #include <stack>
 #include <mutex>
-#include <array>
+#include "core/collection/Array.h"
 
 namespace ui {
 namespace imgui {
@@ -72,7 +72,7 @@ protected:
 	int _currentFrameCounter = 0;
 	Measures _traceMeasures;
 	Measures _traceMeasuresLastFrame;
-	using FramesMillis = std::array<uint64_t, _maxMeasureSize>;
+	using FramesMillis = core::Array<uint64_t, _maxMeasureSize>;
 	FramesMillis _frameMillis {{0ul}};
 	std::string _writePathIni;
 	std::string _writePathLog;

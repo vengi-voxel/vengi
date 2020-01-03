@@ -8,7 +8,7 @@
 #include "IMGUIInternal.h"
 #include "core/Var.h"
 #include <vector>
-#include <array>
+#include "core/collection/Array.h"
 
 namespace ImGui {
 

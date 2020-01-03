@@ -8,7 +8,7 @@
 #include "core/ArrayLength.h"
 #include "Animation.h"
 #include "BoneId.h"
-#include <array>
+#include "core/collection/Array.h"
 #include <string>
 #include <vector>
 

@@ -9,7 +9,7 @@
 #include "noise/Simplex.h"
 #include "core/Common.h"
 #include "core/String.h"
-#include <array>
+#include "core/collection/Array.h"
 
 namespace voxelworld {
 
@@ -195,7 +195,7 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 	const glm::ivec3& mins = pagerCtx.region.getLowerCorner();
 	const glm::ivec3& maxs = pagerCtx.region.getUpperCorner();
 	const glm::ivec3& dim = pagerCtx.region.getDimensionsInVoxels();
-	const std::array<voxel::Region, 9> regions = {
+	const core::Array<voxel::Region, 9> regions = {
 		// left neighbors
 		voxel::Region(mins.x - dim.x, mins.y, mins.z - dim.z, maxs.x - dim.x, maxs.y, maxs.z - dim.z),
 		voxel::Region(mins.x - dim.x, mins.y, mins.z,         maxs.x - dim.x, maxs.y, maxs.z        ),

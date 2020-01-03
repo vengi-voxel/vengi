@@ -6,7 +6,7 @@
 #include "ui/imgui/IMGUI.h"
 #include "core/Color.h"
 #include "video/ScopedLineWidth.h"
-#include <array>
+#include "core/collection/Array.h"
 
 TestOctree::TestOctree(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
@@ -98,7 +98,7 @@ void TestOctree::handleDirtyState() {
 
 	// build AABBs
 	_octree.visit([this] (const Node& node) {
-		static const std::array<glm::vec4, 5> colors {
+		static const core::Array<glm::vec4, 5> colors {
 			core::Color::Blue,
 			core::Color::Red,
 			core::Color::Green,

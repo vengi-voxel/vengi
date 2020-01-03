@@ -6,7 +6,7 @@
 
 #include "ContainerData.h"
 #include "Item.h"
-#include <array>
+#include "core/collection/Array.h"
 #include <memory>
 #include <unordered_map>
 
@@ -17,7 +17,7 @@ namespace stock {
  */
 class StockDataProvider {
 public:
-	typedef std::array<const ItemData*, 4096> ItemDataContainer;
+	typedef core::Array<const ItemData*, 4096> ItemDataContainer;
 	typedef std::unordered_map<std::string, ContainerData*> ContainerDataMap;
 
 	StockDataProvider();

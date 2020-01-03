@@ -36,7 +36,7 @@
 #include <stddef.h>
 #include <memory>
 #include <iterator>
-#include <array>
+#include "core/collection/Array.h"
 
 namespace ai {
 
@@ -135,7 +135,7 @@ bool Network::sendMessage(Client& client) {
 		return true;
 	}
 
-	std::array<uint8_t, 16384> buf;
+	core::Array<uint8_t, 16384> buf;
 	while (!client.out.empty()) {
 		const size_t len = core_min(buf.size(), client.out.size());
 		std::copy_n(client.out.begin(), len, buf.begin());
@@ -202,7 +202,7 @@ void Network::update(int64_t deltaTime) {
 		}
 
 		if (FD_ISSET(clientSocket, &readFDsOut)) {
-			std::array<uint8_t, 16384> buf;
+			core::Array<uint8_t, 16384> buf;
 			const network_return len = recv(clientSocket, (char*)&buf[0], buf.size(), 0);
 			if (len < 0) {
 				i = closeClient(i);

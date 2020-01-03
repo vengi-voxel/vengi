@@ -7,7 +7,7 @@
 #include "Container.h"
 #include "ContainerData.h"
 #include "core/Log.h"
-#include <array>
+#include "core/collection/Array.h"
 
 namespace stock {
 
@@ -16,7 +16,7 @@ namespace stock {
  */
 class Inventory {
 private:
-	std::array<Container, 16>  _containers;
+	core::Array<Container, 16>  _containers;
 public:
 	Inventory();
 

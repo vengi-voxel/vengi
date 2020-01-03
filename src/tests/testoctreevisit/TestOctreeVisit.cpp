@@ -8,7 +8,7 @@
 #include "core/Color.h"
 #include "math/AABB.h"
 #include "video/ScopedLineWidth.h"
-#include <array>
+#include "core/collection/Array.h"
 
 TestOctreeVisit::TestOctreeVisit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

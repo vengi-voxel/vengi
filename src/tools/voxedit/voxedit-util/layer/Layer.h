@@ -6,7 +6,7 @@
 
 #include "voxelrender/RawVolumeRenderer.h"
 #include <string>
-#include <array>
+#include "core/collection/Array.h"
 
 namespace voxedit {
 
@@ -38,7 +38,7 @@ struct Layer {
 		metadata.clear();
 	}
 };
-using Layers = std::array<Layer, voxelrender::RawVolumeRenderer::MAX_VOLUMES>;
+using Layers = core::Array<Layer, voxelrender::RawVolumeRenderer::MAX_VOLUMES>;
 
 }
 

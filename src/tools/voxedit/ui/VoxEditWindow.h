@@ -89,7 +89,7 @@ private:
 	LayerSettings _layerSettings;
 	SceneSettings _settings;
 
-	std::array<video::TexturePtr, 4> _backgrounds;
+	core::Array<video::TexturePtr, 4> _backgrounds;
 
 	bool handleEvent(const tb::TBWidgetEvent &ev);
 

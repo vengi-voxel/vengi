@@ -404,10 +404,6 @@ inline int SceneManager::size() const {
 	return _size;
 }
 
-inline bool SceneManager::empty() const {
-	return _layerMgr.layers().empty();
-}
-
 inline EditMode SceneManager::editMode() const {
 	return _editMode;
 }

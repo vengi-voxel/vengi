@@ -7,7 +7,7 @@
 #include "testcore/TestApp.h"
 #include "render/CameraFrustum.h"
 #include "FrustumEntity.h"
-#include <array>
+#include "core/collection/Array.h"
 
 /**
  * @brief Renders the view frustum of a camera
@@ -21,7 +21,7 @@ private:
 	// the cameras to render the frustums for
 	video::Camera _renderCamera[CAMERAS];
 
-	std::array<FrustumEntity, 25> _entities;
+	core::Array<FrustumEntity, 25> _entities;
 
 	int _targetCamera = 0;
 

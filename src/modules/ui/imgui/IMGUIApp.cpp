@@ -483,7 +483,7 @@ void IMGUIApp::renderTracing() {
 	if (!ImGui::Begin("Profiler", &_renderTracing, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
 		return;
 	}
-	std::array<float, _maxMeasureSize> frameMillis;
+	core::Array<float, _maxMeasureSize> frameMillis;
 	static float max = 0.0f;
 	static float min = 0.0f;
 	float avg = 0.0f;
@@ -494,7 +494,7 @@ void IMGUIApp::renderTracing() {
 		max = core_max(max, frameMillis[i]);
 		avg += frameMillis[i];
 	}
-	std::array<float, _maxMeasureSize> frameMillisQuantile = frameMillis;
+	core::Array<float, _maxMeasureSize> frameMillisQuantile = frameMillis;
 	std::sort(frameMillisQuantile.begin(), frameMillisQuantile.end());
 	const int quantileIndex = int(0.95f * (float(_maxMeasureSize + 1)));
 	const float twenthyQuantile = frameMillisQuantile[quantileIndex];

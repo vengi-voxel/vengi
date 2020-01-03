@@ -38,7 +38,7 @@ std::string generateUUID() {
 	auto newId = CFUUIDCreate(nullptr);
 	auto bytes = CFUUIDGetUUIDBytes(newId);
 	CFRelease(newId);
-	const std::array<unsigned char, 16> arr =
+	const core::Array<unsigned char, 16> arr =
 	{{
 		bytes.byte0,
 		bytes.byte1,

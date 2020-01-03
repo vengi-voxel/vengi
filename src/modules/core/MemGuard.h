@@ -6,7 +6,7 @@
 
 #include "core/Assert.h"
 #include "core/ReadWriteLock.h"
-#include <array>
+#include "core/collection/Array.h"
 #include <string>
 #include <stdint.h>
 
@@ -39,7 +39,7 @@ private:
 	uint32_t _byteAmount = 0u;
 	core::ReadWriteLock _rwLock;
 
-	std::array<Chunk*, 13> _chunkBuckets = {{ nullptr, nullptr, nullptr, nullptr,
+	core::Array<Chunk*, 13> _chunkBuckets = {{ nullptr, nullptr, nullptr, nullptr,
 			nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
 			nullptr, nullptr }};
 

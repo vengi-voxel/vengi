@@ -13,7 +13,7 @@
 #include "animation/chr/Character.h"
 #include "animation/animal/bird/Bird.h"
 #include "stock/ContainerData.h"
-#include <array>
+#include "core/collection/Array.h"
 
 static bool reloadAnimationEntity = false;
 

@@ -14,7 +14,7 @@
 #include "video/Texture.h"
 #include "core/GLM.h"
 #include "core/Var.h"
-#include <array>
+#include "core/collection/Array.h"
 
 namespace video {
 class Camera;
@@ -33,9 +33,9 @@ public:
 protected:
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
 	glm::mat4 _model[MAX_VOLUMES] {};
-	std::array<bool, MAX_VOLUMES> _hidden {{ false }};
-	typedef std::array<voxel::Mesh*, MAX_VOLUMES> Meshes;
-	typedef std::unordered_map<glm::ivec3, Meshes, std::hash<glm::ivec3> > MeshesMap;
+	core::Array<bool, MAX_VOLUMES> _hidden {{ false }};
+	typedef core::Array<voxel::Mesh*, MAX_VOLUMES> Meshes;
+	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
 	MeshesMap _meshes;
 
 	video::Buffer _vertexBuffer[MAX_VOLUMES];

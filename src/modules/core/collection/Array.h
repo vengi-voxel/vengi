@@ -8,23 +8,28 @@
 
 namespace core {
 
-template<class TYPE, int SIZE>
-class Array {
-private:
+template<class TYPE, size_t SIZE>
+struct Array {
 	TYPE _items[SIZE];
-public:
-	int size() const {
+
+	size_t size() const {
 		return SIZE;
 	}
 
-	TYPE& operator[](int index) {
-		core_assert(index >= 0 && index < SIZE);
+	inline TYPE& operator[](size_t index) {
+		core_assert(index < SIZE);
 		return _items[index];
 	}
 
-	const TYPE& operator[](int index) const {
-		core_assert(index >= 0 && index < SIZE);
+	inline const TYPE& operator[](size_t index) const {
+		core_assert(index < SIZE);
 		return _items[index];
+	}
+
+	void fill(const TYPE& value) {
+		for (size_t i = 0u; i < SIZE; ++i) {
+			_items[i] = value;
+		}
 	}
 
 	TYPE* begin() {
