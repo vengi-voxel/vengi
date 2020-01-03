@@ -60,7 +60,7 @@ protected:
 	Branch *_root;
 	using AttractionPoints = std::vector<AttractionPoint>;
 	AttractionPoints _attractionPoints;
-	using Branches = std::unordered_map<glm::vec3, Branch*, std::hash<glm::vec3>>;
+	using Branches = std::unordered_map<glm::vec3, Branch*>;
 	Branches _branches;
 	math::Random _random;
 
