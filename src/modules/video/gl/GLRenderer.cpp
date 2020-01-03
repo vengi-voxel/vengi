@@ -14,7 +14,7 @@
 #include "video/Texture.h"
 #include "core/Common.h"
 #include "core/Log.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "core/Var.h"
 #include "core/Assert.h"
 #include "core/String.h"

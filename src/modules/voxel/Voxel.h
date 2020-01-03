@@ -5,7 +5,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 
 namespace voxel {
 

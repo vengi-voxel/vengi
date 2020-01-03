@@ -4,7 +4,7 @@
 
 #include "KeybindingParser.h"
 #include "CustomButtonNames.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 
 namespace util {
 

@@ -15,7 +15,7 @@
 #include "video/ScopedState.h"
 #include "video/Shader.h"
 #include "core/Color.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/GameConfig.h"

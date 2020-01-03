@@ -7,12 +7,10 @@
 
 #include "core/Color.h"
 #include "core/GameConfig.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "core/App.h"
 #include "core/Var.h"
 #include "core/GLM.h"
-#include "core/Array.h"
-
 #include "voxel/Constants.h"
 #include "voxel/MaterialColor.h"
 

@@ -7,7 +7,7 @@
 #include "ui/turbobadger/UIApp.h"
 #include "ui/VoxEditWindow.h"
 #include "voxedit-util/SceneManager.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 
 /**
  * @brief This is a voxel editor that can import and export multiple mesh/voxel formats.

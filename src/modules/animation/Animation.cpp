@@ -4,7 +4,7 @@
 
 #include "Animation.h"
 #include "core/Common.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include <string.h>
 
 namespace animation {

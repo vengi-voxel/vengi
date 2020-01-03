@@ -3,7 +3,7 @@
  */
 
 #include "BoneId.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "core/Common.h"
 
 namespace animation {

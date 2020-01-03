@@ -5,7 +5,7 @@
 #pragma once
 
 #include "video/Types.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "flextGL.h"
 
 namespace video {

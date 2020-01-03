@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "Animation.h"
 #include "BoneId.h"
 #include <array>

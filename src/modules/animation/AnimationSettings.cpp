@@ -5,7 +5,7 @@
 #include "AnimationSettings.h"
 #include "core/String.h"
 #include "core/Assert.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "core/Log.h"
 #include "core/Common.h"
 #include "SkeletonAttribute.h"

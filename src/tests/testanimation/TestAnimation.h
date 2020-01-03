@@ -10,7 +10,7 @@
 #include "attrib/ShadowAttributes.h"
 #include "stock/StockDataProvider.h"
 #include "stock/Stock.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include <vector>
 #include <string>
 

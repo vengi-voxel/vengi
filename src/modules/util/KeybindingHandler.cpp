@@ -6,7 +6,7 @@
 #include "KeybindingHandler.h"
 #include "CustomButtonNames.h"
 #include "core/App.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "core/String.h"
 #include "core/io/Filesystem.h"
 #include <SDL.h>

@@ -3,7 +3,7 @@
  */
 
 #include "NoiseType.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 
 static const char *NoiseTypeStr[] = {
 	"double noise",

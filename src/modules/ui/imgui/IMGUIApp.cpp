@@ -9,7 +9,7 @@
 #include "core/Color.h"
 #include "core/UTF8.h"
 #include "core/Common.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "math/Rect.h"
 #include "video/Renderer.h"
 #include "video/Shader.h"

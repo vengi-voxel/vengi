@@ -7,7 +7,7 @@
 #include "core/String.h"
 #include "core/Common.h"
 #include "core/Assert.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include <SDL.h>
 
 namespace persistence {

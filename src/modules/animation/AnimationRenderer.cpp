@@ -4,7 +4,7 @@
 
 #include "AnimationRenderer.h"
 #include "core/Log.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "voxel/MaterialColor.h"
 #include "animation/Vertex.h"
 #include "video/Renderer.h"

@@ -30,7 +30,7 @@
 #include "math/Axis.h"
 #include "core/command/Command.h"
 #include "core/command/CommandCompleter.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "core/App.h"
 #include "core/Log.h"
 #include "core/Color.h"

@@ -4,7 +4,7 @@
 
 #include "Entity.h"
 #include "core/collection/Set.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "core/Assert.h"
 #include "math/Rect.h"
 #include "core/Common.h"

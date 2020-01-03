@@ -1,6 +1,6 @@
 #include "WaitingMessage.h"
 #include "FontUtil.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "UIApp.h"
 
 namespace ui {

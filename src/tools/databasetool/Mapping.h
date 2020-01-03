@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Common.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "persistence/FieldType.h"
 
 static const char *ConstraintTypeNames[] = {

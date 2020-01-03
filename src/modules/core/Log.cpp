@@ -8,7 +8,7 @@
 #include "engine-config.h"
 #include "App.h"
 #include "Common.h"
-#include "Array.h"
+#include "ArrayLength.h"
 #include "Assert.h"
 #include <string.h>
 #include <stdio.h>

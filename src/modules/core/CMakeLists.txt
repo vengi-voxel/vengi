@@ -20,6 +20,7 @@ set(SRCS
 	collection/ConcurrentSet.h
 	collection/Set.h
 
+	ArrayLength.h
 	Assert.cpp Assert.h
 	App.cpp App.h
 	AppCommand.cpp AppCommand.h

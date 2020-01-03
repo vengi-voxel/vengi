@@ -5,7 +5,7 @@
 #pragma once
 
 #include "compute/Types.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "CL.h"
 
 namespace compute {

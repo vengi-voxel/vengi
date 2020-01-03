@@ -5,7 +5,7 @@
 #include "Util.h"
 #include "core/String.h"
 #include "core/Assert.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include <vector>
 #include <SDL.h>
 #include "video/Shader.h"

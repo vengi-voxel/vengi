@@ -4,7 +4,7 @@
 #include "TestShapeBuilder.h"
 #include "core/io/Filesystem.h"
 #include "core/Color.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "math/AABB.h"
 #include "core/GLM.h"
 #include "ui/imgui/IMGUI.h"

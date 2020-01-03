@@ -7,7 +7,7 @@
 #include "core/io/Filesystem.h"
 #include "voxel/MaterialColor.h"
 #include "core/command/Command.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "Shared_generated.h"
 #include "animation/Animation.h"
 #include "animation/chr/Character.h"

@@ -4,7 +4,7 @@
 
 #include "Parser.h"
 #include "TokenIterator.h"
-#include "core/Array.h"
+#include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/String.h"
 #include "core/Log.h"
