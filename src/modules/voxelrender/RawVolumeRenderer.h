@@ -14,6 +14,7 @@
 #include "video/Texture.h"
 #include "core/GLM.h"
 #include "core/Var.h"
+#include <array>
 
 namespace video {
 class Camera;
