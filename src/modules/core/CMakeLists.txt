@@ -16,6 +16,7 @@ set(SRCS
 	io/IEventObserver.h
 	io/IOResource.h
 
+	collection/Array.h
 	collection/ConcurrentQueue.h
 	collection/ConcurrentSet.h
 	collection/Set.h
