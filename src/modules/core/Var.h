@@ -6,12 +6,12 @@
 
 #include "ReadWriteLock.h"
 #include "GameConfig.h"
+#include "collection/Map.h"
 #include <memory>
 #include <string>
 #include <vector>
 #include <string.h>
 #include <algorithm>
-#include <unordered_map>
 #include <glm/fwd.hpp>
 
 namespace core {
@@ -60,7 +60,7 @@ typedef std::shared_ptr<Var> VarPtr;
  */
 class Var {
 protected:
-	typedef std::unordered_map<std::string, VarPtr> VarMap;
+	typedef Map<std::string, VarPtr, 64, std::hash<std::string> > VarMap;
 	static VarMap _vars;
 	static ReadWriteLock _lock;
 

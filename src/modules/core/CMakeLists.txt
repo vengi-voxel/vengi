@@ -94,6 +94,7 @@ set(TEST_SRCS
 	tests/FileTest.cpp
 	tests/JSONTest.cpp
 	tests/LogTest.cpp
+	tests/MapTest.cpp
 	tests/MD5Test.cpp
 	tests/MetricTest.cpp
 	tests/PoolAllocatorTest.cpp
@@ -120,3 +121,10 @@ gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 gtest_suite_files(tests-${LIB} ${TEST_FILES})
 gtest_suite_deps(tests-${LIB} ${LIB})
 gtest_suite_end(tests-${LIB})
+
+set(BENCHMARK_SRCS
+	benchmark/AbstractBenchmark.cpp
+	benchmarks/CollectionBenchmark.cpp
+)
+engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
+engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark ${LIB})

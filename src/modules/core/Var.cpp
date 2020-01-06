@@ -113,7 +113,7 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const
 
 		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flagsMask, help);
 		ScopedWriteLock lock(_lock);
-		_vars[name] = p;
+		_vars.put(name, p);
 		return p;
 	}
 	const VarPtr& v = i->second;

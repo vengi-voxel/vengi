@@ -5,10 +5,9 @@
 #pragma once
 
 #include "Assert.h"
-#include "Log.h"
 #include <stdint.h>
 #include <type_traits>
-#include <SDL.h>
+#include <SDL_stdinc.h>
 #ifdef _WIN32
 #undef max
 #endif
@@ -62,15 +61,12 @@ public:
 	bool init(SizeType poolSize) {
 		if (_poolBuf != nullptr) {
 			if (_maxPoolSize == poolSize + 1) {
-				Log::debug("Pool is already initialized - don't do anything in this init() call");
 				return true;
 			}
-			Log::error("Pool is already initialized");
 			return false;
 		}
 
 		if (poolSize <= 1) {
-			Log::error("Pool buffer is not big enough");
 			return false;
 		}
 
