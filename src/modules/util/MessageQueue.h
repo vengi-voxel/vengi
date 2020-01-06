@@ -7,9 +7,8 @@
 #include "core/IComponent.h"
 #include <string>
 #include <stdint.h>
-#include <queue>
 #include <vector>
-#include <SDL.h>
+#include <SDL_stdinc.h>
 
 /**
  * @brief Class that implements messages with lifetime. The messages are removed once they got old enough.

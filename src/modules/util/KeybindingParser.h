@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Tokenizer.h"
-#include <SDL.h>
 #include <unordered_map>
 
 namespace util {
