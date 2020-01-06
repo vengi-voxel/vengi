@@ -12,7 +12,7 @@ template<class TYPE, size_t SIZE>
 struct Array {
 	TYPE _items[SIZE];
 
-	size_t size() const {
+	constexpr size_t size() const {
 		return SIZE;
 	}
 
@@ -26,25 +26,25 @@ struct Array {
 		return _items[index];
 	}
 
-	void fill(const TYPE& value) {
+	constexpr void fill(const TYPE& value) {
 		for (size_t i = 0u; i < SIZE; ++i) {
 			_items[i] = value;
 		}
 	}
 
-	TYPE* begin() {
+	constexpr TYPE* begin() {
 		return _items;
 	}
 
-	const TYPE* begin() const {
+	constexpr const TYPE* begin() const {
 		return _items;
 	}
 
-	TYPE* end() {
+	constexpr TYPE* end() {
 		return &_items[SIZE];
 	}
 
-	const TYPE* end() const {
+	constexpr const TYPE* end() const {
 		return &_items[SIZE];
 	}
 };
