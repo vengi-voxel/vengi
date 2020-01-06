@@ -22,14 +22,15 @@ template<typename T, typename SIZE = uint16_t>
 class PoolAllocator {
 public:
 	using Type = T;
-	using PointerType = Type*;
+	using PointerType = T*;
 	using SizeType = SIZE;
 private:
-	static constexpr PointerType POOLBUFFER_END_MARKER = nullptr;
+	static constexpr Type* POOLBUFFER_END_MARKER = nullptr;
+	static_assert(sizeof(T) >= sizeof(T*), "T must at least be of the same size as T*");
 	// the pool buffer memory
-	PointerType _poolBuf = nullptr;
+	Type* _poolBuf = nullptr;
 	// fast lookup of the next free slot in the pool
-	PointerType _nextFreeSlot = nullptr;
+	Type* _nextFreeSlot = nullptr;
 	SizeType _maxPoolSize = (SizeType)0;
 	SizeType _currentAllocatedItems = (SizeType)0;
 
@@ -49,7 +50,7 @@ private:
 		ptr->~T();
 	}
 
-	inline bool outOfRange(PointerType ptr) const {
+	inline bool outOfRange(Type* ptr) const {
 		return ptr < &_poolBuf[0] || ptr > &_poolBuf[_maxPoolSize - 1];
 	}
 public:
@@ -60,7 +61,7 @@ public:
 
 	bool init(SizeType poolSize) {
 		if (_poolBuf != nullptr) {
-			if (_maxPoolSize == poolSize) {
+			if (_maxPoolSize == poolSize + 1) {
 				Log::debug("Pool is already initialized - don't do anything in this init() call");
 				return true;
 			}
@@ -73,17 +74,17 @@ public:
 			return false;
 		}
 
-		_poolBuf = (PointerType)SDL_malloc(sizeof(T) * poolSize);
-		for (SizeType i = (SizeType)0; i < poolSize - 1; ++i) {
+		_maxPoolSize = poolSize;
+		_poolBuf = (Type*)SDL_malloc(sizeof(T) * _maxPoolSize);
+		for (SizeType i = (SizeType)0; i < _maxPoolSize - 1; ++i) {
 			// init the next free slot address (for fast lookup)
-			*(PointerType*) &_poolBuf[i] = &_poolBuf[i + 1];
+			*(Type**) &_poolBuf[i] = &_poolBuf[i + 1];
 		}
 
 		// put end of list marker to ... the end of the list.
-		*(PointerType*) &_poolBuf[poolSize - 1] = POOLBUFFER_END_MARKER;
+		*(Type**) &_poolBuf[_maxPoolSize - 1] = POOLBUFFER_END_MARKER;
 
 		_nextFreeSlot = _poolBuf;
-		_maxPoolSize = poolSize;
 		_currentAllocatedItems = (SizeType)0;
 
 		return true;
@@ -107,14 +108,15 @@ public:
 	}
 
 	T* alloc() {
-		PointerType ptr = nullptr;
+		Type* ptr = nullptr;
 		if (_nextFreeSlot != POOLBUFFER_END_MARKER) {
-			core_assert(_currentAllocatedItems < _maxPoolSize);
-			core_assert(!outOfRange(_nextFreeSlot));
+			core_assert_msg(_currentAllocatedItems < (this->max)(), "Exceed the max allowed items while the end of slot marker wasn't found");
+			core_assert_msg(!outOfRange(_nextFreeSlot), "Out of range after %i allocated slots", (int)_currentAllocatedItems);
 			ptr = _nextFreeSlot;
-			callConstructor(std::is_class<T> {}, ptr);
-			_nextFreeSlot = *(PointerType*) ptr;
+			_nextFreeSlot = *(Type**)ptr;
 			++_currentAllocatedItems;
+			core_assert_msg(_nextFreeSlot == POOLBUFFER_END_MARKER || !outOfRange(_nextFreeSlot), "Out of range after %i allocated slots", (int)_currentAllocatedItems);
+			callConstructor(std::is_class<T> {}, ptr);
 		}
 
 		return ptr;
@@ -122,14 +124,15 @@ public:
 
 	template<class ... Args>
 	inline T* alloc(Args&&... args) {
-		PointerType ptr = nullptr;
+		Type* ptr = nullptr;
 		if (_nextFreeSlot != POOLBUFFER_END_MARKER) {
-			core_assert(_currentAllocatedItems < _maxPoolSize);
-			core_assert(!outOfRange(_nextFreeSlot));
+			core_assert_msg(_currentAllocatedItems < (this->max)(), "Exceed the max allowed items while the end of slot marker wasn't found");
+			core_assert_msg(!outOfRange(_nextFreeSlot), "Out of range after %i allocated slots", (int)_currentAllocatedItems);
 			ptr = _nextFreeSlot;
-			callConstructor(std::is_class<T> {}, ptr, std::forward<Args>(args) ...);
-			_nextFreeSlot = *(PointerType*) ptr;
+			_nextFreeSlot = *(Type**)ptr;
 			++_currentAllocatedItems;
+			core_assert_msg(_nextFreeSlot == POOLBUFFER_END_MARKER || !outOfRange(_nextFreeSlot), "Out of range after %i allocated slots", (int)_currentAllocatedItems);
+			callConstructor(std::is_class<T> {}, ptr, std::forward<Args>(args) ...);
 		}
 
 		return ptr;
@@ -146,7 +149,7 @@ public:
 
 		core_assert(_currentAllocatedItems > 0);
 		callDestructor(std::is_class<T> {}, ptr);
-		*(PointerType*) ptr = _nextFreeSlot;
+		*(Type**) ptr = _nextFreeSlot;
 		_nextFreeSlot = ptr;
 		--_currentAllocatedItems;
 		return true;

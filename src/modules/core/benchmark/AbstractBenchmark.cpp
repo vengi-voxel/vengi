@@ -6,10 +6,16 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/command/Command.h"
+#include <SDL.h>
 
 namespace core {
 
+SDL_AssertState Test_AssertionHandler(const SDL_AssertData* data, void* userdata) {
+	return SDL_ASSERTION_BREAK;
+}
+
 void AbstractBenchmark::SetUp(benchmark::State& st) {
+	SDL_SetAssertionHandler(Test_AssertionHandler, nullptr);
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
