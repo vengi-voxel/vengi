@@ -33,6 +33,7 @@ void AbstractBenchmark::TearDown(benchmark::State& st) {
 AbstractBenchmark::BenchmarkApp::BenchmarkApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark) :
 		Super(metric, filesystem, eventBus, timeProvider), _benchmark(benchmark) {
 	init(ORGANISATION, "benchmark");
+	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 	while (_curState < AppState::Running) {
 		core_trace_scoped(AppMainLoop);
 		onFrame();
