@@ -9,7 +9,6 @@
 #include "video/Camera.h"
 #include "video/Types.h"
 #include "video/Shader.h"
-#include "core/Common.h"
 #include "core/IComponent.h"
 #include "ColorShader.h"
 #include "ColorInstancedShader.h"
