@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <glm/fwd.hpp>
-#include "core/Log.h"
 #include "ShaderTypes.h"
 
 namespace video {
