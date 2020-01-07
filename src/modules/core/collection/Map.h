@@ -134,7 +134,7 @@ public:
 		return false;
 	}
 
-	iterator find(const KEYTYPE& key) {
+	iterator find(const KEYTYPE& key) const {
 		unsigned long hashValue = _hasher(key);
 		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
 		while (entry != nullptr) {
