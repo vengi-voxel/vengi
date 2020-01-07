@@ -44,6 +44,7 @@ set(IMAGES
 	voxedit/ui/skin/voxedit-axis-z
 	voxedit/ui/skin/voxedit-color-picker
 	voxedit/ui/skin/voxedit-color
+	voxedit/ui/skin/voxedit-colors
 	voxedit/ui/skin/voxedit-crop
 	voxedit/ui/skin/voxedit-delete
 	voxedit/ui/skin/voxedit-export

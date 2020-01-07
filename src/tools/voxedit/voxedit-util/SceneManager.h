@@ -29,6 +29,7 @@
 #include "modifier/ModifierType.h"
 #include "modifier/Modifier.h"
 #include <vector>
+#include <functional>
 
 namespace voxedit {
 
@@ -201,7 +202,9 @@ private:
 	bool saveLayer(int layerId, const std::string& file);
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
+	void setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition);
 	void replaceColor(uint8_t oldIndex, int newIndex);
+	bool randomSimilarColor(uint8_t oldIndex, uint8_t density, uint8_t colorCount);
 	void mirror(math::Axis axis);
 public:
 	SceneManager();

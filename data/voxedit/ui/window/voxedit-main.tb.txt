@@ -156,6 +156,8 @@ TBLayout: distribution: gravity, axis: y
 								TBSkinImage: skin: voxedit-crop
 							TBButton: @include: definitions>menubutton, text: Extend, id: extend, command: "resize"
 								TBSkinImage: skin: voxedit-extend
+							TBButton: @include: definitions>menubutton, text: Random color, id: randomsimilarcolor, command: "randomsimilarcolor -1"
+								TBSkinImage: skin: voxedit-colors
 
 					TBSection: value: 1, text: "Translate"
 						TBLayout: position: left top, axis: y, distribution: gravity
