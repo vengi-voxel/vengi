@@ -49,7 +49,6 @@
 
 #include "attrib/ShadowAttributes.h"
 
-#include <set>
 #include <limits>
 
 namespace voxedit {
@@ -1141,7 +1140,7 @@ void SceneManager::construct() {
 
 	core::Command::registerCommand("replacecolor", [&] (const core::CmdArgs& args) {
 		if (args.size() != 2) {
-			Log::info("Usage: replacecolor <index> <index>");
+			Log::info("Usage: replacecolor <current-color-index> <new-color-index>");
 			return;
 		}
 		const uint8_t oldIndex = core::string::toInt(args[0]);
