@@ -6,6 +6,7 @@
 #include <vector>
 #include "command/Command.h"
 #include "core/io/Filesystem.h"
+#include "util/VarUtil.h"
 #include "App.h"
 #include "Log.h"
 #include "Var.h"
@@ -205,7 +206,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 	});
 
 	core::Command::registerCommand("cvarlist", [] (const core::CmdArgs& args) {
-		core::Var::visitSorted([&] (const core::VarPtr& var) {
+		util::visitVarSorted([&] (const core::VarPtr& var) {
 			if (!args.empty() && !core::string::matches(args[0], var->name())) {
 				return;
 			}
@@ -236,7 +237,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			if (help != nullptr) {
 				Log::info("        %s", help);
 			}
-		});
+		}, 0u);
 	}).setHelp("Show the list of known variables (wildcards supported)");
 
 	core::Command::registerCommand("cmdlist", [] (const core::CmdArgs& args) {

@@ -11,6 +11,7 @@
 #include "core/Color.h"
 #include "core/Tokenizer.h"
 #include "core/command/CommandHandler.h"
+#include "VarUtil.h"
 
 namespace util {
 
@@ -400,11 +401,11 @@ void Console::autoComplete() {
 			baseSearchString = strings.back();
 		}
 		baseSearchString += '*';
-		core::Var::visitSorted([&] (const core::VarPtr& var) {
+		util::visitVarSorted([&] (const core::VarPtr& var) {
 			if (core::string::matches(baseSearchString, var->name())) {
 				matches.push_back(var->name());
 			}
-		});
+		}, 0u);
 	}
 
 	if (matches.empty()) {

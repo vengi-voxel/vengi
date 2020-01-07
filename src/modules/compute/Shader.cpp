@@ -10,6 +10,7 @@
 #include "core/String.h"
 #include "core/io/Filesystem.h"
 #include "util/IncludeUtil.h"
+#include "util/VarUtil.h"
 
 namespace compute {
 
@@ -140,22 +141,20 @@ std::string Shader::getSource(const std::string& buffer, bool finalize, std::vec
 	}
 	std::string src;
 
-	core::Var::visitSorted([&] (const core::VarPtr& var) {
-		if ((var->getFlags() & core::CV_SHADER) != 0) {
-			src.append("#define ");
-			const std::string& validName = validPreprocessorName(var->name());
-			src.append(validName);
-			src.append(" ");
-			std::string val;
-			if (var->typeIsBool()) {
-				val = var->boolVal() ? "1" : "0";
-			} else {
-				val = var->strVal();
-			}
-			src.append(val);
-			src.append("\n");
+	util::visitVarSorted([&] (const core::VarPtr& var) {
+		src.append("#define ");
+		const std::string& validName = validPreprocessorName(var->name());
+		src.append(validName);
+		src.append(" ");
+		std::string val;
+		if (var->typeIsBool()) {
+			val = var->boolVal() ? "1" : "0";
+		} else {
+			val = var->strVal();
 		}
-	});
+		src.append(val);
+		src.append("\n");
+	}, core::CV_SHADER);
 
 	for (auto i = _defines.begin(); i != _defines.end(); ++i) {
 		src.append("#ifndef ");
@@ -186,12 +185,10 @@ std::string Shader::getSource(const std::string& buffer, bool finalize, std::vec
 
 	src = handlePragmas(src);
 
-	core::Var::visitSorted([&] (const core::VarPtr& var) {
-		if ((var->getFlags() & core::CV_SHADER) != 0) {
-			const std::string& validName = validPreprocessorName(var->name());
-			src = core::string::replaceAll(src, var->name(), validName);
-		}
-	});
+	util::visitVarSorted([&] (const core::VarPtr& var) {
+		const std::string& validName = validPreprocessorName(var->name());
+		src = core::string::replaceAll(src, var->name(), validName);
+	}, core::CV_SHADER);
 
 	if (finalize) {
 		// TODO: do placeholder/keyword replacement

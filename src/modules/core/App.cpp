@@ -13,6 +13,7 @@
 #include "Log.h"
 #include "Tokenizer.h"
 #include "Concurrency.h"
+#include "util/VarUtil.h"
 #include <thread>
 #include <SDL.h>
 #include "engine-config.h"
@@ -430,7 +431,7 @@ void App::usage() const {
 	}
 
 	int maxWidth = 0;
-	core::Var::visitSorted([&] (const core::VarPtr& v) {
+	core::Var::visit([&] (const core::VarPtr& v) {
 		maxWidth = core_max(maxWidth, (int)v->name().size());
 	});
 	core::Command::visitSorted([&] (const core::Command& c) {
@@ -439,7 +440,7 @@ void App::usage() const {
 
 	Log::info("---");
 	Log::info("Config variables:");
-	core::Var::visitSorted([=] (const core::VarPtr& v) {
+	util::visitVarSorted([=] (const core::VarPtr& v) {
 		const uint32_t flags = v->getFlags();
 		std::string flagsStr = "     ";
 		const char *value = v->strVal().c_str();
@@ -463,7 +464,7 @@ void App::usage() const {
 		if (v->help() != nullptr) {
 			Log::info("   -- %s", v->help());
 		}
-	});
+	}, 0u);
 	Log::info("Flags:");
 	Log::info("   %-*s Readonly  can't get modified at runtime - only at startup", maxWidth, "R");
 	Log::info("   %-*s Nopersist value won't get persisted in the cfg file", maxWidth, "N");
@@ -571,7 +572,7 @@ AppState App::onCleanup() {
 	if (!_organisation.empty() && !_appname.empty()) {
 		Log::debug("save the config variables");
 		std::stringstream ss;
-		core::Var::visitSorted([&](const core::VarPtr& var) {
+		util::visitVarSorted([&](const core::VarPtr& var) {
 			if ((var->getFlags() & core::CV_NOPERSIST) != 0u) {
 				return;
 			}
@@ -588,7 +589,7 @@ AppState App::onCleanup() {
 				flagsStr.append("X");
 			}
 			ss << R"(")" << var->name() << R"(" ")" << value << R"(" ")" << flagsStr << R"(")" << std::endl;
-		});
+		}, 0u);
 		const std::string& str = ss.str();
 		_filesystem->write(_appname + ".vars", str);
 	} else {

@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 #include <string.h>
-#include <algorithm>
 #include <glm/fwd.hpp>
 
 namespace core {
@@ -179,24 +178,6 @@ public:
 			}
 		}
 		return false;
-	}
-
-	template<class Functor>
-	static void visitSorted(Functor&& func) {
-		std::vector<VarPtr> varList;
-		{
-			ScopedReadLock lock(_lock);
-			varList.reserve(_vars.size());
-			for (auto i = _vars.begin(); i != _vars.end(); ++i) {
-				varList.push_back(i->second);
-			}
-		}
-		std::sort(varList.begin(), varList.end(), [] (const VarPtr& v1, const VarPtr& v2) {
-			return v1->name() < v2->name();
-		});
-		for (const VarPtr& var : varList) {
-			func(var);
-		}
 	}
 
 	template<class Functor>

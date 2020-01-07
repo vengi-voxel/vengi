@@ -18,6 +18,7 @@
 #include "UniformBuffer.h"
 #include "video/Renderer.h"
 #include "util/IncludeUtil.h"
+#include "util/VarUtil.h"
 
 namespace video {
 
@@ -378,22 +379,20 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 		//src.append("#extension GL_ARB_compute_variable_group_size : enable\n");
 	}
 
-	core::Var::visitSorted([&] (const core::VarPtr& var) {
-		if ((var->getFlags() & core::CV_SHADER) != 0) {
-			src.append("#define ");
-			const std::string& validName = validPreprocessorName(var->name());
-			src.append(validName);
-			src.append(" ");
-			std::string val;
-			if (var->typeIsBool()) {
-				val = var->boolVal() ? "1" : "0";
-			} else {
-				val = var->strVal();
-			}
-			src.append(val);
-			src.append("\n");
+	util::visitVarSorted([&] (const core::VarPtr& var) {
+		src.append("#define ");
+		const std::string& validName = validPreprocessorName(var->name());
+		src.append(validName);
+		src.append(" ");
+		std::string val;
+		if (var->typeIsBool()) {
+			val = var->boolVal() ? "1" : "0";
+		} else {
+			val = var->strVal();
 		}
-	});
+		src.append(val);
+		src.append("\n");
+	}, core::CV_SHADER);
 
 	for (auto i = _defines.begin(); i != _defines.end(); ++i) {
 		src.append("#ifndef ");
@@ -422,12 +421,12 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 		}
 	}
 
-	core::Var::visitSorted([&] (const core::VarPtr& var) {
+	util::visitVarSorted([&] (const core::VarPtr& var) {
 		if ((var->getFlags() & core::CV_SHADER) != 0) {
 			const std::string& validName = validPreprocessorName(var->name());
 			src = core::string::replaceAll(src, var->name(), validName);
 		}
-	});
+	}, core::CV_SHADER);
 
 	if (finalize) {
 		// TODO: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
