@@ -96,7 +96,7 @@ public:
 			return *this;
 		}
 
-		inline const KeyValue* operator->() {
+		inline const KeyValue* operator->() const {
 			return _ptr;
 		}
 
@@ -193,6 +193,10 @@ public:
 			}
 			_buckets[i] = nullptr;
 		}
+	}
+
+	inline void erase(const iterator& iter) {
+		remove(iter->key);
 	}
 
 	bool remove(const KEYTYPE& key) {

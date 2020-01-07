@@ -121,6 +121,16 @@ TEST(MapTest, testCopy) {
 	map2.clear();
 }
 
+TEST(MapTest, testErase) {
+	core::Map<std::string, std::shared_ptr<std::string>, 4, std::hash<std::string>> map;
+	map.put("foobar", std::make_shared<std::string>("barfoo"));
+	EXPECT_EQ(1u, map.size());
+	auto iter = map.find("foobar");
+	EXPECT_NE(iter, map.end());
+	map.erase(iter);
+	EXPECT_EQ(0u, map.size());
+}
+
 TEST(MapTest, testAssign) {
 	core::Map<std::string, std::shared_ptr<std::string>, 4, std::hash<std::string>> map;
 	map.put("foobar", std::make_shared<std::string>("barfoo"));
