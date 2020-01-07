@@ -11,9 +11,7 @@
 #include "video/Buffer.h"
 #include "video/UniformBuffer.h"
 #include "video/FrameBuffer.h"
-#include "video/GBuffer.h"
 #include "VoxelrenderShaders.h"
-#include "RenderShaders.h"
 #include "AnimationShaders.h"
 #include "core/GLM.h"
 #include "math/Octree.h"
@@ -27,8 +25,6 @@
 #include "render/Skybox.h"
 
 #include <unordered_map>
-#include <list>
-
 namespace voxelrender {
 
 /**
