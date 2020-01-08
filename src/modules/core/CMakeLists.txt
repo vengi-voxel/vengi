@@ -19,6 +19,8 @@ set(SRCS
 	collection/Array.h
 	collection/ConcurrentQueue.h
 	collection/ConcurrentSet.h
+	collection/List.h
+	collection/Map.h
 	collection/Set.h
 
 	ArrayLength.h
@@ -93,6 +95,7 @@ set(TEST_SRCS
 	tests/FileStreamTest.cpp
 	tests/FileTest.cpp
 	tests/JSONTest.cpp
+	tests/ListTest.cpp
 	tests/LogTest.cpp
 	tests/MapTest.cpp
 	tests/MD5Test.cpp
