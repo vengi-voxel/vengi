@@ -12,6 +12,7 @@
 #include "core/Tokenizer.h"
 #include "core/command/CommandHandler.h"
 #include "VarUtil.h"
+#include <SDL.h>
 
 namespace util {
 

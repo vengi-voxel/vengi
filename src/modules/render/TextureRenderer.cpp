@@ -3,6 +3,7 @@
  */
 
 #include "TextureRenderer.h"
+#include "core/Log.h"
 
 namespace render {
 

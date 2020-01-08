@@ -15,6 +15,7 @@
 #include "video/Shader.h"
 #include "video/ScopedViewPort.h"
 #include "IMGUI.h"
+#include <SDL.h>
 #include <SDL_syswm.h>
 
 namespace ui {

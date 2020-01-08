@@ -1,6 +1,7 @@
 #include "TestCamera.h"
 #include "ui/imgui/IMGUI.h"
 #include "core/io/Filesystem.h"
+#include <SDL.h>
 
 TestCamera::TestCamera(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

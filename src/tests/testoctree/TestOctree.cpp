@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "video/ScopedLineWidth.h"
 #include "core/collection/Array.h"
+#include <SDL.h>
 
 TestOctree::TestOctree(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

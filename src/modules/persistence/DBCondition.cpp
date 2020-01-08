@@ -8,7 +8,7 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/ArrayLength.h"
-#include <SDL.h>
+#include <SDL_stdinc.h>
 
 namespace persistence {
 

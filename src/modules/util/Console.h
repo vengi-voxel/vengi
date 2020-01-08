@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <SDL.h>
+#include <SDL_stdinc.h>
+#include <SDL_log.h>
 #include <vector>
 #include <string>
-#include <thread>
 #include "core/Var.h"
 #include "core/IComponent.h"
 #include "math/Rect.h"

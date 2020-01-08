@@ -10,7 +10,7 @@
 #include "voxelfont/VoxelFont.h"
 #include "RenderShaders.h"
 #include <limits>
-#include <SDL.h>
+#include <SDL_stdinc.h>
 
 namespace voxelrender {
 

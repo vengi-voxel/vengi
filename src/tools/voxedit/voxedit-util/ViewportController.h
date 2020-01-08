@@ -7,7 +7,6 @@
 #include "voxel/RawVolume.h"
 #include "core/Var.h"
 #include "video/Camera.h"
-#include <SDL.h>
 
 namespace voxedit {
 

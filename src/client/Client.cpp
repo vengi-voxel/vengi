@@ -26,6 +26,7 @@
 #include "network/UserSpawnHandler.h"
 #include "voxel/MaterialColor.h"
 #include "core/Rest.h"
+#include <SDL.h>
 
 Client::Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 		const stock::StockDataProviderPtr& stockDataProvider,

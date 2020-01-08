@@ -22,9 +22,6 @@
 #include "video/Camera.h"
 #include "stock/StockDataProvider.h"
 
-#include <stdlib.h>
-#include <SDL.h>
-
 class Client: public ui::turbobadger::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxelworld::WorldCreatedEvent> {
 protected:

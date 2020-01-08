@@ -7,6 +7,9 @@
 #include "core/Color.h"
 #include "core/command/Command.h"
 #include "video/ScopedPolygonMode.h"
+#include "core/GameConfig.h"
+#include "core/Var.h"
+#include <SDL.h>
 
 TestApp::TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

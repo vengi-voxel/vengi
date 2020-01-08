@@ -5,7 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "util/KeybindingHandler.h"
 #include "core/command/Command.h"
-#include <unordered_map>
+#include <SDL.h>
 
 namespace util {
 

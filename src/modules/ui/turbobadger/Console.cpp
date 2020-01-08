@@ -7,6 +7,7 @@
 #include "FontUtil.h"
 #include "core/Color.h"
 #include "UIApp.h"
+#include <SDL.h>
 
 namespace ui {
 namespace turbobadger {

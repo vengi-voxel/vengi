@@ -18,6 +18,7 @@
 #include "voxelgenerator/Spiral.h"
 #include "attrib/Attributes.h"
 #include "attrib/ContainerProvider.h"
+#include <SDL.h>
 
 MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 		const stock::StockDataProviderPtr& stockDataProvider,

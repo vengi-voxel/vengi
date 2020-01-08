@@ -11,7 +11,6 @@
 #include "Console.h"
 #include <atomic>
 #include <map>
-#include <thread>
 #include <stack>
 #include <mutex>
 #include "core/collection/Array.h"

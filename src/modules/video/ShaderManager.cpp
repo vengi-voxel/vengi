@@ -7,6 +7,7 @@
 #include "core/Var.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#include <algorithm>
 
 namespace video {
 

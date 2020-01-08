@@ -8,7 +8,6 @@
 #include "core/Assert.h"
 #include "core/ArrayLength.h"
 #include <vector>
-#include <SDL.h>
 #include "video/Shader.h"
 #include "video/Version.h"
 
@@ -277,7 +276,7 @@ std::string convertName(const std::string& in, bool firstUpper) {
 			if (!firstUpper) {
 				firstUpper = true;
 			} else {
-				n[0] = SDL_toupper(n[0]);
+				n[0] = core::string::toUpper(n[0]);
 			}
 			out += n;
 		}
