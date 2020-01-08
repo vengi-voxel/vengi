@@ -8,7 +8,7 @@
 #include "core/Assert.h"
 #include <stdio.h>
 #include <string.h>
-#include <SDL.h>
+#include <SDL_stdinc.h>
 
 namespace metric {
 
