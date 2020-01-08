@@ -12,7 +12,7 @@
 
 #include "IMetricSender.h"
 #include "core/NonCopyable.h"
-#include <map>
+#include "core/collection/Map.h"
 #include <memory>
 #include <string>
 #include <stdint.h>
@@ -32,7 +32,7 @@ enum class Flavor {
 /**
  * @brief If the configured Flavor supports tags, they are just a key-value pair of strings
  */
-using TagMap = std::map<std::string, std::string>;
+using TagMap = core::Map<std::string, std::string, 4, std::hash<std::string>>;
 
 /**
  * @brief The Metric class generates and publishes metrics

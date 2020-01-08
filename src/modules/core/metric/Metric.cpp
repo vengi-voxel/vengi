@@ -59,13 +59,13 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 		if (remainingLen <= 0) {
 			return false;
 		}
-		size_t keyValueLen = e.first.size() + strlen(sep) + e.second.size();
+		size_t keyValueLen = e->key.size() + strlen(sep) + e->value.size();
 		int written;
 		if (first) {
-			written = SDL_snprintf(buffer, remainingLen, "%s%s%s", e.first.c_str(), sep, e.second.c_str());
+			written = SDL_snprintf(buffer, remainingLen, "%s%s%s", e->key.c_str(), sep, e->value.c_str());
 		} else {
 			keyValueLen += splitLen;
-			written = SDL_snprintf(buffer, remainingLen, "%s%s%s%s", split, e.first.c_str(), sep, e.second.c_str());
+			written = SDL_snprintf(buffer, remainingLen, "%s%s%s%s", split, e->key.c_str(), sep, e->value.c_str());
 		}
 		if (written >= remainingLen) {
 			return false;

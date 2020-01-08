@@ -7,9 +7,9 @@
 #pragma once
 
 #include "core/EventBus.h"
+#include "core/collection/Map.h"
 #include <stdint.h>
 #include <string>
-#include <map>
 
 namespace metric {
 
@@ -21,7 +21,7 @@ enum class MetricEventType {
 	Meter
 };
 
-using TagMap = std::map<std::string, std::string>;
+using TagMap = core::Map<std::string, std::string, 4, std::hash<std::string>>;
 
 class MetricEvent: public core::IEventBusEvent {
 private:
