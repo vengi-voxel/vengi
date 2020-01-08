@@ -103,6 +103,20 @@ TEST(MapTest, testIterate) {
 	EXPECT_EQ(1024, cnt);
 }
 
+TEST(MapTest, testIterateRangeBased) {
+	core::Map<int64_t, int64_t, 64, std::hash<int64_t>> map;
+	for (int64_t i = 0; i < 32; i += 2) {
+		map.put(i, i);
+	}
+	EXPECT_EQ(16u, map.size());
+	int cnt = 0;
+	for (auto iter : map) {
+		EXPECT_EQ(iter->key, iter->value);
+		++cnt;
+	}
+	EXPECT_EQ(16, cnt);
+}
+
 TEST(MapTest, testStringSharedPtr) {
 	core::Map<std::string, std::shared_ptr<std::string>, 4, std::hash<std::string>> map;
 	auto foobar = std::make_shared<std::string>("foobar");

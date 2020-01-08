@@ -77,6 +77,10 @@ public:
 				_map(map), _bucket(bucket), _ptr(ptr) {
 		}
 
+		inline const KeyValue* operator*() const {
+			return _ptr;
+		}
+
 		iterator& operator++() {
 			if (_ptr->next != nullptr) {
 				_ptr = _ptr->next;
