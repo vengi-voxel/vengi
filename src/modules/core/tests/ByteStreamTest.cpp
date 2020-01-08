@@ -39,7 +39,7 @@ TEST(ByteStreamTest, testCopy) {
 	ASSERT_EQ(1000u, v.size());
 }
 
-TEST(ByteStreamTest, testBigChunk) {
+TEST(ByteStreamTest, DISABLED_testBigChunk) {
 	const int size = 1000 * 1000 * 50;
 	core::ByteStream bs(size);
 	for (int i = 0; i < size; ++i) {
@@ -51,7 +51,7 @@ TEST(ByteStreamTest, testBigChunk) {
 	}
 }
 
-TEST(ByteStreamTest, testBigChunkAdd) {
+TEST(ByteStreamTest, DISABLED_testBigChunkAdd) {
 	const int size = 1000 * 1000 * 50;
 	core::ByteStream bs(size);
 	for (int i = 0; i < size; ++i) {

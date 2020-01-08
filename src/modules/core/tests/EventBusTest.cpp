@@ -72,7 +72,7 @@ TEST_F(EventBusTest, testSubscribeAndQueuePendingLeft) {
 	ASSERT_EQ(1, handler.getCount()) << "Expected the handler to be notified once";
 }
 
-TEST_F(EventBusTest, testMassSubscribeAndPublish_10000000) {
+TEST_F(EventBusTest, DISABLED_testMassSubscribeAndPublish_10000000) {
 	EventBus eventBus;
 	HandlerTest handler;
 	TestEvent event;

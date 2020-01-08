@@ -113,19 +113,19 @@ std::vector<int> SetMassTest::v4;
 std::unordered_set<int> SetMassTest::set1;
 std::unordered_set<int> SetMassTest::set2;
 
-TEST_F(SetMassTest, testVectorIntersectionSorted) {
+TEST_F(SetMassTest, DISABLED_testVectorIntersectionSorted) {
 	std::vector<int> out;
 	core::vectorIntersection(v1, v2, out);
 	EXPECT_EQ(n - offset, (int)out.size());
 }
 
-TEST_F(SetMassTest, testVisibleActionsPerformance) {
+TEST_F(SetMassTest, DISABLED_testVisibleActionsPerformance) {
 	const auto& inBoth = core::setIntersection(set1, set2);
 	EXPECT_EQ(n - offset, (int)inBoth.size());
 }
 
 // exactly what is done for calculating the visible entities
-TEST_F(SetMassTest, testMassVisibleActions) {
+TEST_F(SetMassTest, DISABLED_testMassVisibleActions) {
 	const size_t n1 = 20110;
 	const size_t n2 = 22031;
 	const size_t overlap = 120;
