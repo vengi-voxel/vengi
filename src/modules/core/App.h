@@ -323,7 +323,7 @@ public:
 	static App* getInstance();
 
 private:
-	std::list<Argument> _arguments;
+	std::vector<Argument> _arguments;
 };
 
 inline const std::string& App::ProfilerCPU::name() const {
