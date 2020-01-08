@@ -82,7 +82,7 @@ void App::traceBegin(const char *threadName, const char* name) {
 }
 
 void App::traceEnd(const char *threadName) {
-	if (_blockMetricsUntilNextFrame) {
+	if (_traceBlockUntilNextFrame) {
 		return;
 	}
 	if (_traceData.empty()) {
@@ -96,13 +96,13 @@ void App::traceEnd(const char *threadName) {
 }
 
 void App::traceEndFrame(const char *threadName) {
-	if (!_blockMetricsUntilNextFrame) {
+	if (!_traceBlockUntilNextFrame) {
 		return;
 	}
 	while (!_traceData.empty()) {
 		_traceData.pop();
 	}
-	_blockMetricsUntilNextFrame = false;
+	_traceBlockUntilNextFrame = false;
 }
 
 void App::onFrame() {
@@ -284,7 +284,7 @@ AppState App::onConstruct() {
 }
 
 bool App::toggleTrace() {
-	_blockMetricsUntilNextFrame = true;
+	_traceBlockUntilNextFrame = true;
 	if (core_trace_set(this) == this) {
 		core_trace_set(nullptr);
 		return false;
