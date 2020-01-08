@@ -674,27 +674,4 @@ BindingContext App::setBindingContext(BindingContext newContext) {
 	return newContext;
 }
 
-App::ProfilerCPU::ProfilerCPU(const std::string& name, uint16_t maxSamples) :
-		_name(name), _maxSampleCount(maxSamples) {
-	core_assert(maxSamples > 0);
-	_samples.reserve(_maxSampleCount);
-}
-
-const std::vector<double>& App::ProfilerCPU::samples() const {
-	return _samples;
-}
-
-void App::ProfilerCPU::enter() {
-	_stamp = (double)core::TimeProvider::systemNanos();
-}
-
-void App::ProfilerCPU::leave() {
-	const double time = core::TimeProvider::systemNanos() - _stamp;
-	_max = core_max(_max, time);
-	_min = core_min(_min, time);
-	_avg = _avg * 0.5 + time * 0.5;
-	_samples[_sampleCount & (_maxSampleCount - 1)] = time;
-	++_sampleCount;
-}
-
 }

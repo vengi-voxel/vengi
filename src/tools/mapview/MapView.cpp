@@ -159,14 +159,11 @@ core::AppState MapView::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	_worldTimer.init();
-
 	return state;
 }
 
 void MapView::beforeUI() {
 	Super::beforeUI();
-	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 
 	const video::Camera& camera = _camera.camera();
 	_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _entity, [&] (const glm::vec3& pos, float maxWalkHeight) {
@@ -180,7 +177,6 @@ void MapView::beforeUI() {
 		}
 		_worldRenderer.update(camera, _deltaFrameMillis);
 	}
-	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
 	}
@@ -200,9 +196,6 @@ void MapView::onRenderUI() {
 		const float yaw = camera.horizontalYaw();
 		voxelrender::WorldRenderer::Stats stats;
 		_worldRenderer.stats(stats);
-		ImGui::Text("%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
-		ImGui::Text("%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
-		ImGui::Text("%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
 		ImGui::Text("Drawcalls: %i (verts: %i)", _drawCallsWorld, _vertices);
 		ImGui::Text("Target Pos: %.2f:%.2f:%.2f ", targetpos.x, targetpos.y, targetpos.z);
 		ImGui::Text("Pos: %.2f:%.2f:%.2f, Distance:%.2f", pos.x, pos.y, pos.z, distance);
@@ -281,7 +274,6 @@ void MapView::onRenderUI() {
 
 core::AppState MapView::onRunning() {
 	core_trace_scoped(MapViewOnRunning);
-	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
 	const core::AppState state = Super::onRunning();
 
 	const bool current = isRelativeMouseMode();
@@ -300,7 +292,6 @@ core::AppState MapView::onCleanup() {
 	_animationCache->shutdown();
 	_volumeCache->shutdown();
 	_worldRenderer.shutdown();
-	_worldTimer.shutdown();
 	_axis.shutdown();
 	_movement.shutdown();
 	_entity = frontend::ClientEntityPtr();

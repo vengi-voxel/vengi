@@ -1,7 +1,6 @@
 set(SRCS
 	gl/flextGL.c gl/flextGL.h
 	gl/GLRenderer.cpp gl/GLRenderer.h
-	gl/GLProfiler.cpp
 	gl/GLState.h
 	gl/GLMapping.h
 	gl/GLShader.cpp

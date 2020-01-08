@@ -32,9 +32,6 @@ protected:
 	render::Axis _axis;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;
-	video::ProfilerGPU _worldTimer = {"World"};
-	ProfilerCPU _frameTimer = {"Frame"};
-	ProfilerCPU _beforeUiTimer = {"BeforeUI"};
 	frontend::PlayerMovement _movement;
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;

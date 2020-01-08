@@ -109,35 +109,6 @@ constexpr inline DataType mapType<glm::vec4>() {
 	return mapType<typename glm::vec4::value_type>();
 }
 
-/**
- * @brief Allows to profile a particular renderer action
- */
-class ProfilerGPU {
-private:
-	Id _id = InvalidId;
-	double _min = 0.0;
-	double _max = 0.0;
-	double _avg = 0.0;
-	std::string _name;
-	std::vector<double> _samples;
-	const int16_t _maxSampleCount;
-	int16_t _sampleCount = 0;
-	uint8_t _state = 0;
-public:
-	ProfilerGPU(const std::string& name, uint16_t maxSamples = 1024u);
-	~ProfilerGPU();
-
-	const std::vector<double>& samples() const;
-	bool init();
-	void shutdown();
-	void enter();
-	void leave();
-	double minimum() const;
-	double maximum() const;
-	double avg() const;
-	const std::string& name() const;
-};
-
 struct RenderState {
 	int limits[std::enum_value(video::Limit::Max)] = { };
 	inline int limit(video::Limit limit) const {
@@ -160,26 +131,6 @@ struct RenderState {
 };
 
 extern RenderState& renderState();
-
-inline const std::vector<double>& ProfilerGPU::samples() const {
-	return _samples;
-}
-
-inline const std::string& ProfilerGPU::name() const {
-	return _name;
-}
-
-inline double ProfilerGPU::avg() const {
-	return _avg;
-}
-
-inline double ProfilerGPU::minimum() const {
-	return _min;
-}
-
-inline double ProfilerGPU::maximum() const {
-	return _max;
-}
 
 /**
  * @brief Prepare the renderer initialization

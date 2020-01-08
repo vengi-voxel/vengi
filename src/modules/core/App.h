@@ -45,40 +45,6 @@ enum class AppState : uint8_t {
  */
 class App : public core::TraceCallback {
 protected:
-	// Deprecated
-	class ProfilerCPU {
-	private:
-		double _min = 0.0;
-		double _max = 0.0;
-		double _avg = 0.0;
-		std::string _name;
-		std::vector<double> _samples;
-		const int16_t _maxSampleCount;
-		int16_t _sampleCount = 0;
-		double _stamp = 0.0;
-	public:
-		ProfilerCPU(const std::string& name, uint16_t maxSamples = 1024u);
-		const std::vector<double>& samples() const;
-		void enter();
-		void leave();
-		double minimum() const;
-		double maximum() const;
-		double avg() const;
-		const std::string& name() const;
-	};
-
-	template<class Profiler>
-	// Deprecated
-	struct ScopedProfiler {
-		Profiler& _p;
-		inline ScopedProfiler(Profiler& p) : _p(p) {
-			p.enter();
-		}
-		inline ~ScopedProfiler() {
-			_p.leave();
-		}
-	};
-
 	core::Trace _trace;
 	int _argc = 0;
 	char **_argv = nullptr;
@@ -325,22 +291,6 @@ public:
 private:
 	std::vector<Argument> _arguments;
 };
-
-inline const std::string& App::ProfilerCPU::name() const {
-	return _name;
-}
-
-inline double App::ProfilerCPU::avg() const {
-	return _avg;
-}
-
-inline double App::ProfilerCPU::minimum() const {
-	return _min;
-}
-
-inline double App::ProfilerCPU::maximum() const {
-	return _max;
-}
 
 inline uint64_t App::lifetimeInSeconds() const {
 	return (_now - _initMillis) / uint64_t(1000);
