@@ -7,6 +7,7 @@
 #include "core/collection/Array.h"
 #include "core/PoolAllocator.h"
 #include <stddef.h>
+#include <initializer_list>
 
 namespace core {
 
@@ -15,7 +16,7 @@ namespace core {
  */
 template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE, typename HASHER>
 class Map {
-private:
+public:
 	struct KeyValue {
 		inline KeyValue(const KEYTYPE& _key, const VALUETYPE& _value) :
 				key(_key), value(_value), next(nullptr), first(key), second(value) {
@@ -32,10 +33,18 @@ private:
 		const KEYTYPE &first;
 		const VALUETYPE &second;
 	};
+private:
 	core::PoolAllocator<KeyValue> _allocator;
 	core::Array<KeyValue *, BUCKETSIZE> _buckets;
 	HASHER _hasher;
 public:
+	Map(std::initializer_list<KeyValue> other, int maxSize = 4096) {
+		_allocator.init(maxSize);
+		_buckets.fill(nullptr);
+		for (auto i = other.begin(); i != other.end(); ++i) {
+			put(i->key, i->value);
+		}
+	}
 	Map(int maxSize = 4096) {
 		_allocator.init(maxSize);
 		_buckets.fill(nullptr);
