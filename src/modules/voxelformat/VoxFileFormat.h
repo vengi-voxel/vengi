@@ -7,9 +7,8 @@
 #include "voxel/RawVolume.h"
 #include "core/io/File.h"
 #include "VoxelVolumes.h"
-#include <glm/vec4.hpp>
+#include <glm/fwd.hpp>
 #include <vector>
-#include <utility>
 
 namespace voxel {
 
@@ -21,6 +20,9 @@ protected:
 	const glm::vec4& getColor(const Voxel& voxel) const;
 	glm::vec4 findClosestMatch(const glm::vec4& color) const;
 	uint8_t findClosestIndex(const glm::vec4& color) const;
+	/**
+	 * @brief Maps a custum palette index to our own 256 color palette by a closest match
+	 */
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
 	RawVolume* merge(const VoxelVolumes& volumes) const;
 public:
