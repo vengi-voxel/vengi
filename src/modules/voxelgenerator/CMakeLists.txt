@@ -6,6 +6,6 @@ set(SRCS
 	TreeType.h
 	TreeGenerator.h TreeGenerator.cpp
 	TreeContext.h
-	NoiseGenerator.h
+	NoiseGenerator.h NoiseGenerator.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil noise)
