@@ -3,6 +3,7 @@
  */
 
 #include "Util.h"
+#include "core/Log.h"
 #include "core/String.h"
 #include "core/Assert.h"
 #include "core/ArrayLength.h"
