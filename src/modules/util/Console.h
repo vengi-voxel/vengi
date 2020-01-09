@@ -12,6 +12,7 @@
 #include "core/IComponent.h"
 #include "math/Rect.h"
 #include "core/collection/ConcurrentQueue.h"
+#include <thread>
 
 namespace util {
 

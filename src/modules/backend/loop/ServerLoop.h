@@ -18,9 +18,6 @@
 #include "persistence/DBHandler.h"
 
 #include <uv.h>
-#include <memory>
-#include <thread>
-#include <chrono>
 
 namespace backend {
 

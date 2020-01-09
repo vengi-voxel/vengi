@@ -14,7 +14,6 @@
 #include "Tokenizer.h"
 #include "Concurrency.h"
 #include "util/VarUtil.h"
-#include <thread>
 #include <SDL.h>
 #include "engine-config.h"
 #ifdef HAVE_SYS_RESOURCE_H

@@ -17,6 +17,7 @@
 #include "IMGUI.h"
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include <thread>
 
 namespace ui {
 namespace imgui {

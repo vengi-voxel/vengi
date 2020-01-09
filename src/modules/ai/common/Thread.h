@@ -3,10 +3,9 @@
  */
 #pragma once
 
-#include <thread>
-#include <mutex>
 #include <atomic>
 #include <string>
+#include <thread>
 
 namespace ai {
 

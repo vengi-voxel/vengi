@@ -5,7 +5,6 @@
 #pragma once
 
 #include <string>
-#include <thread>
 #include <mutex>
 #include "Trace.h"
 #define CORE_SHARED_MUTEX 0
