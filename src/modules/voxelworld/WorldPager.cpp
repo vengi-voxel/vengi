@@ -38,7 +38,7 @@ void WorldPager::setPersist(bool persist) {
 	_worldPersister.setPersist(persist);
 }
 
-void WorldPager::setSeed(long seed) {
+void WorldPager::setSeed(unsigned int seed) {
 	_seed = seed;
 }
 
@@ -228,16 +228,18 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 			return;
 		}
 		const int border = 2;
-		math::Random random(_seed + region.getCentreX() + region.getCentreZ());
+		unsigned int seed = _seed + glm::abs(region.getCentreX() + region.getCentreZ());
+		math::Random random(seed);
 
 		random.shuffle(treeTypes.begin(), treeTypes.end());
 
 		std::vector<glm::vec2> positions;
 		_biomeManager->getTreePositions(region, positions, random, border);
 		int treeTypeIndex = 0;
+		const int regionY = region.getCentreY();
 		const int treeTypeSize = (int)treeTypes.size();
 		for (const glm::vec2& position : positions) {
-			glm::ivec3 treePos(position.x, pagerCtx.region.getCentreY(), position.y);
+			glm::ivec3 treePos(position.x, regionY, position.y);
 			if (!_volumeData->hasChunk(treePos)) {
 				continue;
 			}

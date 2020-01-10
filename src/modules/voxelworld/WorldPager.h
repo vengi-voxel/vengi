@@ -30,7 +30,7 @@ class BiomeManager;
 class WorldPager: public voxel::PagedVolume::Pager {
 private:
 	WorldPersister _worldPersister;
-	long _seed = 0l;
+	unsigned int _seed = 0l;
 	glm::vec2 _noiseSeedOffset;
 
 	voxel::PagedVolume *_volumeData = nullptr;
@@ -74,7 +74,7 @@ public:
 	/**
 	 * @brief The ssed that is going to be used for creating the world
 	 */
-	void setSeed(long seed);
+	void setSeed(unsigned int seed);
 
 	void setNoiseOffset(const glm::vec2& noiseOffset);
 
