@@ -18,5 +18,7 @@
   <string>APPL</string>
   <key>NSHighResolutionCapable</key>
   <true/>
+  <key>NSRequiresAquaSystemAppearance</key>
+  <false/>
 </dict>
 </plist>
