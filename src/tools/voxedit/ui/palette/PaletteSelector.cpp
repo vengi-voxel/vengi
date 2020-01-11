@@ -6,6 +6,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "core/App.h"
 #include "core/io/Filesystem.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxedit {
 
