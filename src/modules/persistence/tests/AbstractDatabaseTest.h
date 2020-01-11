@@ -20,7 +20,7 @@ public:
 		core::Var::get(cfg::DatabaseMaxConnections, "2");
 		core::Var::get(cfg::DatabaseName, "enginetest");
 		core::Var::get(cfg::DatabaseHost, "localhost");
-		core::Var::get(cfg::DatabaseUser, "engine");
+		core::Var::get(cfg::DatabaseUser, "vengi");
 		core::Var::get(cfg::DatabasePassword, "engine");
 	}
 };

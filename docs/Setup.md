@@ -7,7 +7,7 @@ first sudo as postgres default superuser 'postgres' on bash
 
 adding an new new user by typing
 
-`createuser -s engine`
+`createuser -s vengi`
 
 create a new database
 
