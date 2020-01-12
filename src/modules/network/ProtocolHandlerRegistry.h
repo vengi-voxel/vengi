@@ -17,6 +17,9 @@ private:
 
 public:
 	ProtocolHandlerRegistry();
+	~ProtocolHandlerRegistry();
+
+	void shutdown();
 
 	ProtocolHandlerPtr getHandler(const char* type);
 

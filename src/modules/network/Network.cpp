@@ -24,6 +24,7 @@ Network::~Network() {
 
 void Network::shutdown() {
 	enet_deinitialize();
+	_protocolHandlerRegistry->shutdown();
 }
 
 bool Network::init() {

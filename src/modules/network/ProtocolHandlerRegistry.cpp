@@ -6,6 +6,14 @@ namespace network {
 ProtocolHandlerRegistry::ProtocolHandlerRegistry() {
 }
 
+ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {
+	shutdown();
+}
+
+void ProtocolHandlerRegistry::shutdown() {
+	_registry.clear();
+}
+
 ProtocolHandlerPtr ProtocolHandlerRegistry::getHandler(const char* type) {
 	ProtocolHandlers::iterator i = _registry.find(type);
 	if (i != _registry.end()) {
