@@ -33,12 +33,26 @@ PagedVolume::Chunk::~Chunk() {
 	_data = nullptr;
 }
 
+bool PagedVolume::Chunk::setData(const Voxel* voxels, size_t sizeInBytes) {
+	if (sizeInBytes != dataSizeInBytes()) {
+		return false;
+	}
+	core::RecursiveScopedWriteLock writeLock(_rwLock);
+	_dataModified = true;
+	memcpy((uint8_t*)_data, (const uint8_t*)voxels, sizeInBytes);
+	return true;
+}
+
 Voxel* PagedVolume::Chunk::data() const {
 	return _data;
 }
 
 uint32_t PagedVolume::Chunk::dataSizeInBytes() const {
-	return _sideLength * _sideLength * _sideLength * sizeof(Voxel);
+	return voxels() * sizeof(Voxel);
+}
+
+uint32_t PagedVolume::Chunk::voxels() const {
+	return _sideLength * _sideLength * _sideLength;
 }
 
 const Voxel& PagedVolume::Chunk::voxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos) const {

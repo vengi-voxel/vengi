@@ -49,8 +49,10 @@ public:
 		Chunk(const glm::ivec3& v3dPosition, uint16_t uSideLength, Pager* pPager = nullptr);
 		~Chunk();
 
+		bool setData(const Voxel* voxels, size_t sizeInBytes);
 		Voxel* data() const;
 		uint32_t dataSizeInBytes() const;
+		uint32_t voxels() const;
 
 		bool containsPoint(const glm::ivec3& pos) const;
 		bool containsPoint(int32_t x, int32_t y, int32_t z) const;
