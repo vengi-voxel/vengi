@@ -37,4 +37,5 @@ set(FILES
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger animation voxelfont voxelrender util stock)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 check_ui_turbobadger(${PROJECT_NAME} ${UI_WINDOWS})
