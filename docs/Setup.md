@@ -11,7 +11,7 @@ adding an new new user by typing
 
 create a new database
 
-`createdb engine`
+`createdb vengi`
 
 now start postgres and add password for these user
 
