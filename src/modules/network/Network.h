@@ -54,6 +54,10 @@ public:
 };
 
 inline bool Network::sendMessage(ENetPeer* peer, ENetPacket* packet, int channel) {
+	if (packet->dataLength >= peer->host->maximumPacketSize) {
+		Log::error("Packet is too big: %i - max allowed is %i", (int)packet->dataLength, (int)peer->host->maximumPacketSize);
+		return false;
+	}
 	if (enet_peer_send(peer, channel, packet) == 0) {
 		return true;
 	}

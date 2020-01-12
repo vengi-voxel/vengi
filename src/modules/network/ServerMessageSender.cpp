@@ -33,7 +33,9 @@ void ServerMessageSender::sendServerMessage(ENetPeer** peers, int numPeers, Flat
 	{
 		// TODO: lock
 		for (int i = 0; i < numPeers; ++i) {
-			_network->sendMessage(peers[i], packet);
+			if (!_network->sendMessage(peers[i], packet)) {
+				Log::warn("Could not send message of type %i to peer %i", (int)type, i);
+			}
 		}
 	}
 	fbb.Clear();
