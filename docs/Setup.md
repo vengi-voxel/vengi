@@ -19,7 +19,7 @@ now start postgres and add password for these user
 
 write this statement
 
-`ALTER USER engine WITH PASSWORD 'engine';`
+`ALTER USER vengi WITH PASSWORD 'engine';`
 
 For the tests you need a different database called `enginetest`.
 
