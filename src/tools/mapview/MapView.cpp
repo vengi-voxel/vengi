@@ -24,9 +24,10 @@ MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCach
 		const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 		const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world,
+		const voxelworld::WorldPagerPtr& worldPager,
 		const voxelformat::VolumeCachePtr& volumeCache) :
 		Super(metric, filesystem, eventBus, timeProvider),
-		_animationCache(animationCache), _worldRenderer(world), _worldMgr(world),
+		_animationCache(animationCache), _worldRenderer(world), _worldMgr(world), _worldPager(worldPager),
 		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _camera(world, _worldRenderer) {
 	init(ORGANISATION, "mapview");
 }
@@ -58,7 +59,7 @@ core::AppState MapView::onConstruct() {
 
 	_volumeCache->construct();
 	_worldRenderer.construct();
-	_worldMgr->setPersist(false);
+	_worldPager->setPersist(false);
 
 	return state;
 }
@@ -101,12 +102,19 @@ core::AppState MapView::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_worldMgr->init(filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
+	if (!_worldMgr->init()) {
 		Log::error("Failed to init world mgr");
 		return core::AppState::InitFailure;
 	}
 
+	if (!_worldPager->init(_worldMgr->volumeData(), filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
+		Log::error("Failed to init world pager");
+		return core::AppState::InitFailure;
+	}
+
 	_worldMgr->setSeed(1);
+	_worldPager->setSeed(1);
+
 	if (!_worldRenderer.init(glm::ivec2(0), _frameBufferDimension)) {
 		Log::error("Failed to init world renderer");
 		return core::AppState::InitFailure;
@@ -297,6 +305,7 @@ core::AppState MapView::onCleanup() {
 	_movement.shutdown();
 	_entity = frontend::ClientEntityPtr();
 	const core::AppState state = Super::onCleanup();
+	_worldPager->shutdown();
 	_worldMgr->shutdown();
 	return state;
 }
@@ -317,11 +326,12 @@ int main(int argc, char *argv[]) {
 	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
-	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(volumeCache);
+	const voxelworld::WorldPagerPtr& worldPager = std::make_shared<voxelworld::WorldPager>(volumeCache);
+	const voxelworld::WorldMgrPtr& worldMgr = std::make_shared<voxelworld::WorldMgr>(worldPager);
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	MapView app(metric, animationCache, stockDataProvider, filesystem, eventBus, timeProvider, world, volumeCache);
+	MapView app(metric, animationCache, stockDataProvider, filesystem, eventBus, timeProvider, worldMgr, worldPager, volumeCache);
 	return app.startMainLoop(argc, argv);
 }

@@ -8,6 +8,7 @@
 #include "Biome.h"
 #include "noise/Noise.h"
 #include <glm/glm.hpp>
+#include <memory>
 
 namespace math {
 class Random;
@@ -112,5 +113,7 @@ public:
 
 	const Biome* getBiome(const glm::ivec3& pos, bool underground = false) const;
 };
+
+typedef std::shared_ptr<BiomeManager> BiomeManagerPtr;
 
 }

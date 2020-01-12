@@ -15,8 +15,6 @@
 #include <memory>
 #include <atomic>
 
-#include "WorldPager.h"
-#include "BiomeManager.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/ThreadPool.h"
 #include "core/Var.h"
@@ -52,7 +50,7 @@ typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
  */
 class WorldMgr {
 public:
-	WorldMgr(const voxelformat::VolumeCachePtr& volumeCache);
+	WorldMgr(const voxel::PagedVolume::PagerPtr& pager);
 	~WorldMgr();
 
 	/**
@@ -86,7 +84,7 @@ public:
 	 */
 	int findWalkableFloor(const glm::vec3& position, float maxDistanceY = (float)voxel::MAX_HEIGHT) const;
 
-	bool init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes = 512, uint16_t chunkSideLength = 256);
+	bool init(uint32_t volumeMemoryMegaBytes = 512, uint16_t chunkSideLength = 256);
 	void shutdown();
 	void reset();
 
@@ -131,17 +129,15 @@ public:
 
 	bool created() const;
 
-	void setPersist(bool persist);
-
 	glm::ivec3 meshSize() const;
+
+	voxel::PagedVolume *volumeData();
+
+	int chunkSize() const;
 
 private:
 	friend class WorldMgrTest;
 	void extractScheduledMesh();
-	BiomeManager& biomeManager();
-	const BiomeManager& biomeManager() const;
-
-	int chunkSize() const;
 
 	/**
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
@@ -153,10 +149,8 @@ private:
 	 */
 	glm::ivec3 chunkPos(const glm::ivec3& pos) const;
 
-	WorldPager _pager;
+	voxel::PagedVolume::PagerPtr _pager;
 	voxel::PagedVolume *_volumeData = nullptr;
-	BiomeManager _biomeManager;
-	voxelformat::VolumeCachePtr _volumeCache;
 	mutable std::mt19937 _engine;
 	long _seed = 0l;
 
@@ -182,6 +176,10 @@ private:
 	std::atomic_bool _cancelThreads { false };
 };
 
+inline voxel::PagedVolume *WorldMgr::volumeData() {
+	return _volumeData;
+}
+
 inline glm::ivec3 WorldMgr::meshPos(const glm::ivec3& pos) const {
 	const glm::vec3& size = meshSize();
 	const int x = glm::floor(pos.x / size.x);
@@ -206,20 +204,8 @@ inline bool WorldMgr::created() const {
 	return _seed != 0;
 }
 
-inline void WorldMgr::setPersist(bool persist) {
-	_pager.setPersist(persist);
-}
-
 inline long WorldMgr::seed() const {
 	return _seed;
-}
-
-inline BiomeManager& WorldMgr::biomeManager() {
-	return _biomeManager;
-}
-
-inline const BiomeManager& WorldMgr::biomeManager() const {
-	return _biomeManager;
 }
 
 typedef std::shared_ptr<WorldMgr> WorldMgrPtr;

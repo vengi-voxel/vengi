@@ -8,6 +8,9 @@ namespace voxelworld {
 class WorldMgr;
 typedef std::shared_ptr<WorldMgr> WorldMgrPtr;
 
+class WorldPager;
+typedef std::shared_ptr<WorldPager> WorldPagerPtr;
+
 }
 
 namespace voxelformat {

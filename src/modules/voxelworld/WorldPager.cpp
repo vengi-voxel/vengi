@@ -3,7 +3,6 @@
  */
 #include "WorldPager.h"
 #include "math/Random.h"
-#include "voxelworld/BiomeManager.h"
 #include "voxel/PagedVolumeWrapper.h"
 #include "voxelutil/Raycast.h"
 #include "noise/Simplex.h"
@@ -13,12 +12,16 @@
 
 namespace voxelworld {
 
+WorldPager::WorldPager(const voxelformat::VolumeCachePtr& volumeCache) :
+		_volumeCache(volumeCache) {
+}
+
 void WorldPager::erase(const voxel::Region& region) {
 	_worldPersister.erase(region, _seed);
 }
 
 bool WorldPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
-	core_assert(_volumeData != nullptr && _biomeManager != nullptr);
+	core_assert(_volumeData != nullptr);
 	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
@@ -46,7 +49,11 @@ void WorldPager::setNoiseOffset(const glm::vec2& noiseOffset) {
 	_noiseSeedOffset = noiseOffset;
 }
 
-bool WorldPager::init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager, voxelformat::VolumeCache* volumeCache, const std::string& worldParamsLua) {
+bool WorldPager::init(voxel::PagedVolume *volumeData, const std::string& worldParamsLua, const std::string& biomesLua) {
+	if (!_biomeManager.init(biomesLua)) {
+		Log::error("Failed to init biome mgr");
+		return false;
+	}
 	if (!_worldCtx.load(worldParamsLua)) {
 		return false;
 	}
@@ -54,9 +61,7 @@ bool WorldPager::init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager
 		return false;
 	}
 	_volumeData = volumeData;
-	_biomeManager = biomeManager;
-	_volumeCache = volumeCache;
-	return _volumeData != nullptr && _biomeManager != nullptr;
+	return _volumeData != nullptr;
 }
 
 void WorldPager::shutdown() {
@@ -66,7 +71,7 @@ void WorldPager::shutdown() {
 	_noise.shutdown();
 	_volumeData = nullptr;
 	_volumeCache = nullptr;
-	_biomeManager = nullptr;
+	_biomeManager.shutdown();
 	_worldCtx = WorldContext();
 }
 
@@ -113,7 +118,7 @@ int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCt
 	const float n = getHeight(noisePos2d, worldCtx);
 	const glm::ivec3 noisePos3d(x, lowerY, z);
 	int centerHeight;
-	const float cityMultiplier = _biomeManager->getCityMultiplier(glm::ivec2(x, z), &centerHeight);
+	const float cityMultiplier = _biomeManager.getCityMultiplier(glm::ivec2(x, z), &centerHeight);
 	int ni = n * maxHeight;
 	if (cityMultiplier < 1.0f) {
 		const float revn = (1.0f - cityMultiplier);
@@ -138,7 +143,7 @@ int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCt
 		if (finalDensity > worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;
 			pos.y = y;
-			const voxel::Voxel& voxel = _biomeManager->getVoxel(pos, cave);
+			const voxel::Voxel& voxel = _biomeManager.getVoxel(pos, cave);
 			voxels[y] = voxel;
 		} else {
 			if (y < voxel::MAX_WATER_HEIGHT) {
@@ -222,7 +227,7 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 
 	for (size_t i = 0; i < regions.size(); ++i) {
 		const voxel::Region& region = regions[i];
-		treeTypes = _biomeManager->getTreeTypes(region);
+		treeTypes = _biomeManager.getTreeTypes(region);
 		if (treeTypes.empty()) {
 			Log::debug("No tree types given for region %s", region.toString().c_str());
 			return;
@@ -234,7 +239,7 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 		random.shuffle(treeTypes.begin(), treeTypes.end());
 
 		std::vector<glm::vec2> positions;
-		_biomeManager->getTreePositions(region, positions, random, border);
+		_biomeManager.getTreePositions(region, positions, random, border);
 		int treeTypeIndex = 0;
 		const int regionY = region.getCentreY();
 		const int treeTypeSize = (int)treeTypes.size();

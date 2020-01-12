@@ -122,6 +122,8 @@ public:
 		virtual void pageOut(Chunk* chunk) = 0;
 	};
 
+	typedef std::shared_ptr<Pager> PagerPtr;
+
 	class Sampler {
 	public:
 		Sampler(const PagedVolume* volume);

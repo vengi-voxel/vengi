@@ -4,6 +4,7 @@
 
 #include "AbstractVoxelTest.h"
 #include "voxelworld/WorldMgr.h"
+#include "voxelworld/WorldPager.h"
 #include "engine-config.h"
 #include <chrono>
 #include <string>
@@ -16,12 +17,18 @@ private:
 protected:
 	void extract(int expected) {
 		const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
-		WorldMgr world(volumeCache);
-		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-		const io::FilesystemPtr& filesystem = _testApp->filesystem();
-		ASSERT_TRUE(world.init(filesystem->load("worldparams.lua"), filesystem->load("biomes.lua")));
+		WorldPagerPtr pager = std::make_shared<WorldPager>(volumeCache);
+		pager->setSeed(0);
+		pager->setPersist(false);
+
+		WorldMgr world(pager);
 		world.setSeed(0);
-		world.setPersist(false);
+		ASSERT_TRUE(world.init());
+
+		const io::FilesystemPtr& filesystem = io::filesystem();
+		ASSERT_TRUE(pager->init(world.volumeData(), filesystem->load("worldparams.lua"), filesystem->load("biomes.lua")));
+		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
+
 		for (int i = 0; i < expected; ++i) {
 			const glm::ivec3 pos { i * 1024, 0, i };
 			ASSERT_TRUE(world.scheduleMeshExtraction(pos)) << "Failed to schedule mesh extraction for " << glm::to_string(pos);
@@ -46,6 +53,7 @@ protected:
 			}
 			world.stats(meshes, extracted, pending);
 		}
+		pager->shutdown();
 		world.shutdown();
 	}
 

@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxelworld/WorldMgr.h"
+#include "voxelworld/BiomeManager.h"
 
 namespace voxelworld {
 

@@ -31,6 +31,7 @@ private:
 	MapId _mapId;
 	std::string _mapIdStr;
 	voxelworld::WorldMgr* _voxelWorldMgr = nullptr;
+	voxelworld::WorldPagerPtr _pager;
 
 	core::EventBusPtr _eventBus;
 	SpawnMgrPtr _spawnMgr;
@@ -115,6 +116,7 @@ public:
 	bool removeNpc(EntityId id);
 	NpcPtr npc(EntityId id);
 
+	voxelworld::WorldMgr* worldMgr();
 	ai::Zone* zone() const;
 	MapId id() const;
 	const std::string& idStr() const;
@@ -134,6 +136,10 @@ public:
 	const poi::PoiProviderPtr& poiProvider() const;
 	poi::PoiProviderPtr& poiProvider();
 };
+
+inline voxelworld::WorldMgr* Map::worldMgr() {
+	return _voxelWorldMgr;
+}
 
 inline const AttackMgr& Map::attackMgr() const {
 	return _attackMgr;

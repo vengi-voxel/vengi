@@ -15,6 +15,7 @@
 #include "animation/AnimationCache.h"
 #include "video/Buffer.h"
 #include "voxelworld/WorldMgr.h"
+#include "voxelworld/WorldPager.h"
 #include "stock/Stock.h"
 #include "stock/StockDataProvider.h"
 
@@ -29,6 +30,7 @@ protected:
 	animation::AnimationCachePtr _animationCache;
 	voxelrender::WorldRenderer _worldRenderer;
 	voxelworld::WorldMgrPtr _worldMgr;
+	voxelworld::WorldPagerPtr _worldPager;
 	render::Axis _axis;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;
@@ -60,6 +62,7 @@ public:
 			const stock::StockDataProviderPtr& stockDataProvider,
 			const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 			const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world,
+			const voxelworld::WorldPagerPtr& worldPager,
 			const voxelformat::VolumeCachePtr& volumeCache);
 	~MapView();
 

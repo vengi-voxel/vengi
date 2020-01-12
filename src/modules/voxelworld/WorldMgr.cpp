@@ -19,8 +19,8 @@
 
 namespace voxelworld {
 
-WorldMgr::WorldMgr(const voxelformat::VolumeCachePtr& volumeCache) :
-		_volumeCache(volumeCache), _threadPool(core::halfcpus(), "WorldMgr"), _random(_seed) {
+WorldMgr::WorldMgr(const voxel::PagedVolume::PagerPtr& pager) :
+		_pager(pager), _threadPool(core::halfcpus(), "WorldMgr"), _random(_seed) {
 }
 
 WorldMgr::~WorldMgr() {
@@ -73,8 +73,6 @@ void WorldMgr::setSeed(long seed) {
 	Log::info("Seed is: %li", seed);
 	_seed = seed;
 	_random.setSeed(seed);
-	_pager.setSeed(seed);
-	_pager.setNoiseOffset(glm::vec2(_random.randomf(-10000.0f, 10000.0f), _random.randomf(-10000.0f, 10000.0f)));
 }
 
 void WorldMgr::updateExtractionOrder(const glm::ivec3& sortPos) {
@@ -92,16 +90,10 @@ bool WorldMgr::allowReExtraction(const glm::ivec3& pos) {
 	return _positionsExtracted.erase(gridPos) != 0;
 }
 
-bool WorldMgr::init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes, uint16_t chunkSideLength) {
+bool WorldMgr::init(uint32_t volumeMemoryMegaBytes, uint16_t chunkSideLength) {
 	_threadPool.init();
-	if (!_biomeManager.init(luaBiomes)) {
-		Log::error("Failed to init the biome mgr");
-		return false;
-	}
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
-	_volumeData = new voxel::PagedVolume(&_pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
-
-	_pager.init(_volumeData, &_biomeManager, _volumeCache.get(), luaParameters);
+	_volumeData = new voxel::PagedVolume(_pager.get(), volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 
 	for (size_t i = 0u; i < _threadPool.size(); ++i) {
 		_threadPool.enqueue([this] () {extractScheduledMesh();});
@@ -146,8 +138,6 @@ void WorldMgr::shutdown() {
 	_threadPool.shutdown();
 	_positionsExtracted.clear();
 	_extracted.clear();
-	_pager.shutdown();
-	_biomeManager.shutdown();
 	delete _volumeData;
 	_volumeData = nullptr;
 }

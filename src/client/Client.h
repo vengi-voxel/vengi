@@ -13,6 +13,7 @@
 #include "core/Var.h"
 #include "core/Common.h"
 #include "voxelworld/WorldEvents.h"
+#include "voxelworld/WorldPager.h"
 #include "network/ClientNetwork.h"
 #include "network/ClientMessageSender.h"
 #include "network/NetworkEvents.h"
@@ -29,6 +30,7 @@ protected:
 	animation::AnimationCachePtr _animationCache;
 	network::ClientNetworkPtr _network;
 	voxelworld::WorldMgrPtr _worldMgr;
+	voxelworld::WorldPagerPtr _worldPager;
 	network::ClientMessageSenderPtr _messageSender;
 	voxelrender::WorldRenderer _worldRenderer;
 	flatbuffers::FlatBufferBuilder _moveFbb;
@@ -57,6 +59,7 @@ public:
 	Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 			const stock::StockDataProviderPtr& stockDataProvider,
 			const network::ClientNetworkPtr& network, const voxelworld::WorldMgrPtr& world,
+			const voxelworld::WorldPagerPtr& worldPager,
 			const network::ClientMessageSenderPtr& messageSender, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 			const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache);
 	~Client();

@@ -3,6 +3,7 @@
  */
 
 #include "Map.h"
+#include "voxelworld/WorldPager.h"
 #include "voxelworld/WorldMgr.h"
 #include "core/String.h"
 #include "core/EventBus.h"
@@ -112,16 +113,23 @@ bool Map::init() {
 		Log::error("Failed to init attack mgr");
 		return false;
 	}
-	_voxelWorldMgr = new voxelworld::WorldMgr(_volumeCache);
-	const std::string& worldParamData = _filesystem->load("worldparams.lua");
-	const std::string& biomesData = _filesystem->load("biomes.lua");
-	if (!_voxelWorldMgr->init(worldParamData, biomesData)) {
+
+	_pager = std::make_shared<voxelworld::WorldPager>(_volumeCache);
+	_voxelWorldMgr = new voxelworld::WorldMgr(_pager);
+	if (!_voxelWorldMgr->init()) {
 		Log::error("Failed to init map with id %i", _mapId);
 		return false;
 	}
+
 	const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
+	const std::string& worldParamData = _filesystem->load("worldparams.lua");
+	const std::string& biomesData = _filesystem->load("biomes.lua");
+	_pager->init(_voxelWorldMgr->volumeData(), worldParamData, biomesData);
+	_pager->setPersist(false);
+	_pager->setSeed(seed->longVal());
+	_pager->setNoiseOffset(glm::zero<glm::vec2>());
+
 	_voxelWorldMgr->setSeed(seed->longVal());
-	_voxelWorldMgr->setPersist(false);
 	_zone = new ai::Zone(core::string::format("Zone %i", _mapId));
 
 	if (!_spawnMgr->init()) {
@@ -134,6 +142,10 @@ bool Map::init() {
 void Map::shutdown() {
 	_attackMgr.shutdown();
 	_spawnMgr->shutdown();
+	if (_pager != nullptr) {
+		_pager->shutdown();
+		_pager = voxelworld::WorldPagerPtr();
+	}
 	if (_voxelWorldMgr != nullptr) {
 		_voxelWorldMgr->shutdown();
 		delete _voxelWorldMgr;

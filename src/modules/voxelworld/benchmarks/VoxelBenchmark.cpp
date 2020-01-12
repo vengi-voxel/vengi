@@ -9,36 +9,33 @@
 
 class PagedVolumeBenchmark: public core::AbstractBenchmark {
 protected:
-	voxelworld::BiomeManager _biomeManager;
-	voxelformat::VolumeCache _volumeCache;
+	voxelformat::VolumeCachePtr _volumeCache;
 
 public:
 	void onCleanupApp() override {
-		_biomeManager.shutdown();
-		_volumeCache.shutdown();
+		if (_volumeCache) {
+			_volumeCache->shutdown();
+		}
 	}
 
 	bool onInitApp() override {
 		voxel::initDefaultMaterialColors();
-		const io::FilesystemPtr& filesystem = io::filesystem();
-		const std::string& luaBiomes = filesystem->load("biomes.lua");
-		Log::info("%s", luaBiomes.c_str());
-		_biomeManager.init(luaBiomes);
-		_volumeCache.init();
-		return true;
+		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
+		return _volumeCache->init();
 	}
 };
 
 BENCHMARK_DEFINE_F(PagedVolumeBenchmark, pageIn) (benchmark::State& state) {
 	const uint16_t chunkSideLength = state.range(0);
 	const uint32_t volumeMemoryMegaBytes = chunkSideLength * 2;
-	voxelworld::WorldPager pager;
+	voxelworld::WorldPager pager(_volumeCache);
 	pager.setSeed(0l);
 	pager.setPersist(false);
 	voxel::PagedVolume *volumeData = new voxel::PagedVolume(&pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 	const io::FilesystemPtr& filesystem = io::filesystem();
 	const std::string& luaParameters = filesystem->load("worldparams.lua");
-	pager.init(volumeData, &_biomeManager, &_volumeCache, luaParameters);
+	const std::string& luaBiomes = filesystem->load("biomes.lua");
+	pager.init(volumeData, luaParameters, luaBiomes);
 	const glm::ivec3 meshSize(16, 128, 16);
 	int x = 0;
 	while (state.KeepRunning()) {

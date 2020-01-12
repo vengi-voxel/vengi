@@ -31,11 +31,12 @@
 Client::Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
 		const network::ClientNetworkPtr& network, const voxelworld::WorldMgrPtr& world,
+		const voxelworld::WorldPagerPtr& worldPager,
 		const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 		const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache) :
 		Super(metric, filesystem, eventBus, timeProvider), _animationCache(animationCache),
-		_network(network), _worldMgr(world), _messageSender(messageSender),
+		_network(network), _worldMgr(world), _worldPager(worldPager), _messageSender(messageSender),
 		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
 		_camera(world, _worldRenderer) {
 	init(ORGANISATION, "client");
@@ -154,7 +155,7 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_worldMgr->init(filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
+	if (!_worldMgr->init()) {
 		return core::AppState::InitFailure;
 	}
 
@@ -371,14 +372,15 @@ int main(int argc, char *argv[]) {
 	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
-	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(volumeCache);
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 	const network::ClientNetworkPtr& network = std::make_shared<network::ClientNetwork>(protocolHandlerRegistry, eventBus);
 	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
+	const voxelworld::WorldPagerPtr& pager = std::make_shared<voxelworld::WorldPager>(volumeCache);
+	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(pager);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	Client app(metric, animationCache, stockDataProvider, network, world, messageSender, eventBus, timeProvider, filesystem, volumeCache);
+	Client app(metric, animationCache, stockDataProvider, network, world, pager, messageSender, eventBus, timeProvider, filesystem, volumeCache);
 	return app.startMainLoop(argc, argv);
 }

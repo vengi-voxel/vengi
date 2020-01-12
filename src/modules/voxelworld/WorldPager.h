@@ -11,6 +11,8 @@
 #include "core/Trace.h"
 #include "core/Log.h"
 #include "noise/Noise.h"
+#include "BiomeManager.h"
+#include <memory>
 
 namespace voxel {
 class PagedVolumeWrapper;
@@ -18,8 +20,6 @@ class RawVolume;
 }
 
 namespace voxelworld {
-
-class BiomeManager;
 
 /**
  * @brief Pager implementation for PagedVolume.
@@ -34,10 +34,10 @@ private:
 	glm::vec2 _noiseSeedOffset;
 
 	voxel::PagedVolume *_volumeData = nullptr;
-	BiomeManager* _biomeManager = nullptr;
+	BiomeManager _biomeManager;
 	WorldContext _worldCtx;
 	noise::Noise _noise;
-	voxelformat::VolumeCache* _volumeCache;
+	voxelformat::VolumeCachePtr _volumeCache;
 
 	// don't access the volume in anything that is called here
 	void create(voxel::PagedVolume::PagerContext& pagerCtx);
@@ -51,14 +51,14 @@ private:
 	float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const;
 
 public:
+	WorldPager(const voxelformat::VolumeCachePtr& volumeCache);
 	/**
 	 * @brief Initializes the pager
 	 * @param volumeData The volume data to operate on
-	 * @param biomeManager The already initialized BiomeManager
 	 * @return @c true if initialization was successful, @c false otherwise
 	 * @sa shutdown()
 	 */
-	bool init(voxel::PagedVolume *volumeData, BiomeManager* biomeManager, voxelformat::VolumeCache* volumeCache, const std::string& worldParamsLua);
+	bool init(voxel::PagedVolume *volumeData, const std::string& worldParamsLua, const std::string& biomesLua);
 	/**
 	 * @brief Free resources and persist (if activated) the world data
 	 * @sa init()
@@ -85,5 +85,7 @@ public:
 	bool pageIn(voxel::PagedVolume::PagerContext& ctx) override;
 	void pageOut(voxel::PagedVolume::Chunk* chunk) override;
 };
+
+typedef std::shared_ptr<WorldPager> WorldPagerPtr;
 
 }
