@@ -57,7 +57,7 @@ bool Model::fillModelValues(State& state) {
 		const char *value;
 		int length;
 		bool isNull;
-		state.getResult(i, &value, &length, &isNull);
+		state.getResult(i, f.type, &value, &length, &isNull);
 		Log::debug("Try to set '%s' to '%s' (length: %i)", name, value, length);
 		switch (f.type) {
 		case FieldType::PASSWORD:
@@ -73,6 +73,9 @@ bool Model::fillModelValues(State& state) {
 			break;
 		case FieldType::BOOLEAN:
 			setValue(f, state.isBool(value));
+			break;
+		case FieldType::BLOB:
+			setValue(f, Blob((uint8_t*)value, length));
 			break;
 		case FieldType::INT:
 			setValue(f, (int32_t)core::string::toInt(value));

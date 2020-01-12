@@ -1,3 +1,19 @@
+table blobtest {
+	namespace persistence
+	field id {
+		type int
+		operator set
+	}
+	field data {
+		type blob
+		notnull
+		operator set
+	}
+	constraints {
+		id primarykey
+	}
+}
+
 table test {
 	namespace persistence
 	field id {

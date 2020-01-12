@@ -33,14 +33,14 @@ State::~State() {
 	lastErrorMsg = nullptr;
 }
 
-bool State::exec(const char *statement, int parameterCount, const char *const *paramValues) {
+bool State::exec(const char *statement, int parameterCount, const char *const *paramValues, const int *paramLengths, const int *paramFormats) {
 	core_assert_msg(parameterCount <= 0 || paramValues != nullptr, "Parameters don't match");
 	ConnectionType* c = _connection->connection();
 #ifdef HAVE_POSTGRES
 	if (parameterCount <= 0) {
 		res = PQexec(c, statement);
 	} else {
-		res = PQexecParams(c, statement, parameterCount, nullptr, paramValues, nullptr, nullptr, 0);
+		res = PQexecParams(c, statement, parameterCount, nullptr, paramValues, paramLengths, paramFormats, _resultFormat);
 	}
 #endif
 	checkLastResult(c);
@@ -62,24 +62,13 @@ bool State::prepare(const char *name, const char* statement, int parameterCount)
 	return true;
 }
 
-bool State::execPrepared(const char *name, int parameterCount, const char *const *paramValues) {
+bool State::execPrepared(const char *name, int parameterCount, const char *const *paramValues, const int *paramLengths, const int *paramFormats) {
 	ConnectionType* c = _connection->connection();
 #ifdef HAVE_POSTGRES
-	res = PQexecPrepared(c, name, parameterCount, paramValues, nullptr, nullptr, 0);
+	res = PQexecPrepared(c, name, parameterCount, paramValues, paramLengths, paramFormats, _resultFormat);
 #endif
 	checkLastResult(c);
 	return result;
-}
-
-int State::asInt(int colIndex) const {
-	const char *value;
-	int length;
-	bool isNull;
-	getResult(colIndex, &value, &length, &isNull);
-	if (length == 0) {
-		return 0;
-	}
-	return core::string::toInt(value);
 }
 
 bool State::isBool(const char *value) {
@@ -90,7 +79,7 @@ bool State::asBool(int colIndex) const {
 	const char *value;
 	int length;
 	bool isNull;
-	getResult(colIndex, &value, &length, &isNull);
+	getResult(colIndex, FieldType::BOOLEAN, &value, &length, &isNull);
 	if (length == 0) {
 		return false;
 	}
@@ -105,11 +94,29 @@ const char *State::columnName(int colIndex) const {
 #endif
 }
 
-void State::getResult(int colIndex, const char **value, int *length, bool *isNull) const {
+void State::freeBlob(unsigned char* data) {
+	if (data == nullptr) {
+		return;
+	}
+#ifdef HAVE_POSTGRES
+	//core_assert(_resultFormat == 0);
+	PQfreemem(data);
+#endif
+}
+
+void State::getResult(int colIndex, FieldType type, const char **value, int *length, bool *isNull) const {
 #ifdef HAVE_POSTGRES
 	*isNull = PQgetisnull(res, currentRow, colIndex) == 1;
-	*value = *isNull ? nullptr : PQgetvalue(res, currentRow, colIndex);
-	*length = PQgetlength(res, currentRow, colIndex);
+	if (type == FieldType::BLOB) {
+		core_assert(_resultFormat == 0);
+		const unsigned char *byteArray = (const unsigned char*)PQgetvalue(res, currentRow, colIndex);
+		size_t byteArraySize = 0u;
+		*value = *isNull ? nullptr : (char*)PQunescapeBytea(byteArray, &byteArraySize);
+		*length = *isNull ? 0 : byteArraySize;
+	} else {
+		*value = *isNull ? nullptr : PQgetvalue(res, currentRow, colIndex);
+		*length = PQgetlength(res, currentRow, colIndex);
+	}
 	if (*value != nullptr) {
 		Log::trace("value: %s, length: %i", *value, *length);
 	} else {

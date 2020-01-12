@@ -4,6 +4,7 @@
 
 #include "AbstractDatabaseTest.h"
 #include "TestModel.h"
+#include "BlobtestModel.h"
 #include "persistence/DBHandler.h"
 #include "engine-config.h"
 
@@ -20,6 +21,8 @@ public:
 		Super::SetUp();
 		_supported = _dbHandler.init();
 		if (_supported) {
+			ASSERT_TRUE(_dbHandler.dropTable(db::BlobtestModel()));
+			ASSERT_TRUE(_dbHandler.createTable(db::BlobtestModel())) << "Could not create table";
 			ASSERT_TRUE(_dbHandler.dropTable(db::TestModel()));
 			ASSERT_TRUE(_dbHandler.createTable(db::TestModel())) << "Could not create table";
 			ASSERT_TRUE(_dbHandler.dropTable(db::TestModel()));
@@ -99,6 +102,41 @@ TEST_F(DatabaseModelTest, testCreateModel) {
 	}
 	int64_t id = -1L;
 	createModel("testCreateModel@b.c.d", "secret", id);
+}
+
+TEST_F(DatabaseModelTest, testBlob) {
+	if (!_supported) {
+		return;
+	}
+	db::BlobtestModel model;
+	uint8_t data[] = {
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF
+	};
+	model.setId(1);
+	model.setData(Blob(data, sizeof(data)));
+	EXPECT_TRUE(_dbHandler.insert(model));
+
+	db::BlobtestModel modelSelect;
+	modelSelect.setId(1);
+	EXPECT_TRUE(_dbHandler.select(modelSelect, persistence::DBConditionOne()));
+	const Blob dataSelect = modelSelect.data();
+	ASSERT_EQ(dataSelect.length, sizeof(data));
+	_dbHandler.freeBlob(dataSelect);
 }
 
 TEST_F(DatabaseModelTest, testCreateModels) {

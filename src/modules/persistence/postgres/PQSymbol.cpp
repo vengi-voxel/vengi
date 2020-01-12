@@ -25,6 +25,7 @@ void postgresShutdown() {
 	PQescapeString = nullptr;
 	PQescapeByteaConn = nullptr;
 	PQescapeBytea = nullptr;
+	PQunescapeBytea = nullptr;
 	PQfreemem = nullptr;
 	PQexec = nullptr;
 	PQprepare = nullptr;
@@ -90,6 +91,7 @@ bool postgresInit() {
 	DYNLOAD(obj, PQescapeString);
 	DYNLOAD(obj, PQescapeByteaConn);
 	DYNLOAD(obj, PQescapeBytea);
+	DYNLOAD(obj, PQunescapeBytea);
 	DYNLOAD(obj, PQfreemem);
 	DYNLOAD(obj, PQexec);
 	DYNLOAD(obj, PQprepare);
@@ -125,7 +127,7 @@ bool postgresInit() {
 	if (PQescapeStringConn == nullptr || PQexec == nullptr
 			|| PQinitSSL == nullptr || PQsetdbLogin == nullptr
 			|| PQsslInUse == nullptr || PQsetNoticeProcessor == nullptr
-			|| PQflush == nullptr || PQfname == nullptr) {
+			|| PQflush == nullptr || PQfname == nullptr || PQunescapeBytea == nullptr) {
 		Log::error("Could not load all the needed symbols from libpg");
 		return false;
 	}

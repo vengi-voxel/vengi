@@ -136,6 +136,8 @@ static std::string getDbType(const Field& field) {
 	switch (field.type) {
 	case FieldType::TEXT:
 		return "TEXT";
+	case FieldType::BLOB:
+		return "BYTEA";
 	case FieldType::TIMESTAMP:
 		return "TIMESTAMP WITHOUT TIME ZONE";
 	case FieldType::BOOLEAN:

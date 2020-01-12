@@ -14,6 +14,7 @@
 #include "Order.h"
 #include "Field.h"
 #include "Structs.h"
+#include "Blob.h"
 
 #include <stdio.h>
 #include <stdlib.h>

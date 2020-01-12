@@ -217,6 +217,9 @@ void createConstructor(const Table& table, std::stringstream& src) {
 static void createDBConditions(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
+		if (f.type == persistence::FieldType::BLOB) {
+			continue;
+		}
 		const std::string classname = "DBCondition" + core::string::upperCamelCase(table.classname) + core::string::upperCamelCase(f.name);
 		src << "/**\n";
 		src << " * @brief Condition for '" << table.schema << "." << table.name << "." << f.name << "'.\n";

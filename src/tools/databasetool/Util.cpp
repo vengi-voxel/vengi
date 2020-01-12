@@ -9,6 +9,7 @@ bool needsInitCPP(persistence::FieldType type) {
 	case persistence::FieldType::STRING:
 	case persistence::FieldType::TEXT:
 	case persistence::FieldType::TIMESTAMP:
+	case persistence::FieldType::BLOB:
 		return false;
 	default:
 		return true;
@@ -36,6 +37,7 @@ std::string getCPPInit(persistence::FieldType type, bool pointer) {
 		return "0";
 	case persistence::FieldType::BYTE:
 		return "0u";
+	case persistence::FieldType::BLOB:
 	case persistence::FieldType::MAX:
 		break;
 	}
@@ -92,6 +94,11 @@ std::string getCPPType(persistence::FieldType type, bool function, bool pointer)
 			return "const int8_t*";
 		}
 		return "int8_t";
+	case persistence::FieldType::BLOB:
+		if (pointer) {
+			return "const persistence::Blob*";
+		}
+		return "persistence::Blob";
 	case persistence::FieldType::MAX:
 		break;
 	}

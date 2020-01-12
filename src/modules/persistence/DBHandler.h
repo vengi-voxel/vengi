@@ -50,7 +50,7 @@ private:
 	bool loadMetadata(const Model& model, std::vector<db::MetainfoModel>& schemaModels) const;
 
 	template<class FUNC, class MODEL>
-	bool select(const std::string& query, int conditionAmount, MODEL& model, const DBCondition& condition, FUNC&& func) const {
+	bool select(const std::string& query, const BindParam& keyParams, int conditionAmount, MODEL& model, const DBCondition& condition, FUNC&& func) const {
 		Log::debug(logid, "Execute query '%s'", query.c_str());
 		ScopedConnection scoped(_connectionPool, connection());
 		if (!scoped) {
@@ -59,15 +59,21 @@ private:
 		}
 		State s(scoped.connection());
 		if (conditionAmount > 0) {
-			BindParam params(conditionAmount);
-			for (int i = 0; i < conditionAmount; ++i) {
-				const int index = params.add();
-				const char* value = condition.value(i);
-				Log::debug(logid, "Parameter %i: '%s'", index + 1, value);
-				params.values[index] = value;
-			}
-			if (!s.exec(query.c_str(), conditionAmount, &params.values[0])) {
-				Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
+			if (keyParams.position == conditionAmount) {
+				if (!s.exec(query.c_str(), conditionAmount, &keyParams.values[0], &keyParams.lengths[0], &keyParams.formats[0])) {
+					Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
+				}
+			} else {
+				BindParam params = keyParams;
+				for (int i = keyParams.position; i < conditionAmount; ++i) {
+					const int index = params.add();
+					const char* value = condition.value(i);
+					Log::debug(logid, "Parameter %i: '%s'", index + 1, value);
+					params.values[index] = value;
+				}
+				if (!s.exec(query.c_str(), conditionAmount, &params.values[0], &params.lengths[0], &params.formats[0])) {
+					Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
+				}
 			}
 		} else if (!s.exec(query.c_str())) {
 			Log::error("Failed to execute query '%s'", query.c_str());
@@ -133,7 +139,7 @@ public:
 		int conditionAmount = params.position;
 		const std::string& where = createWhere(condition, conditionAmount);
 		const std::string& query = stmt + where;
-		return select(query, conditionAmount, model, condition, func);
+		return select(query, params, conditionAmount, model, condition, func);
 	}
 
 	/**
@@ -152,7 +158,7 @@ public:
 		int conditionAmount = params.position;
 		const std::string& where = createWhere(condition, conditionAmount);
 		const std::string& query = stmt + where + createOrderBy(orderBy) + createLimitOffset(orderBy.range);
-		return select(query, conditionAmount, model, condition, func);
+		return select(query, params, conditionAmount, model, condition, func);
 	}
 
 	/**
@@ -181,6 +187,8 @@ public:
 			model = std::move(selectedModel);
 		});
 	}
+
+	void freeBlob(Blob blob) const;
 
 	/**
 	 * @brief Updates the database entry for the give model. The primary keys must be set in the

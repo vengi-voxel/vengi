@@ -209,7 +209,7 @@ State DBHandler::execInternalWithCondition(const std::string& query, BindParam& 
 			Log::debug(logid, "Parameter %i: '%s'", index + 1, value);
 			params.values[index] = value;
 		}
-		if (!s.exec(query.c_str(), params.position, &params.values[0])) {
+		if (!s.exec(query.c_str(), params.position, &params.values[0], &params.lengths[0], &params.formats[0])) {
 			Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionOffset);
 		}
 	} else if (!s.exec(query.c_str())) {
@@ -230,7 +230,7 @@ State DBHandler::execInternalWithParameters(const std::string& query, Model& mod
 	}
 	State s(scoped.connection());
 	Log::debug("Execute query '%s' with %i parameters", query.c_str(), param.position);
-	if (!s.exec(query.c_str(), param.position, &param.values[0])) {
+	if (!s.exec(query.c_str(), param.position, &param.values[0], &param.lengths[0], &param.formats[0])) {
 		Log::warn(logid, "Failed to execute query: '%s'", query.c_str());
 	}
 	if (s.affectedRows <= 0) {
@@ -249,7 +249,7 @@ State DBHandler::execInternalWithParameters(const std::string& query, const Bind
 	}
 	State s(scoped.connection());
 	Log::debug("Execute query '%s' with %i parameters", query.c_str(), param.position);
-	if (!s.exec(query.c_str(), param.position, &param.values[0])) {
+	if (!s.exec(query.c_str(), param.position, &param.values[0], &param.lengths[0], &param.formats[0])) {
 		Log::warn(logid, "Failed to execute query: '%s'", query.c_str());
 	}
 	Log::debug("current row: %i", s.currentRow);
@@ -266,6 +266,10 @@ bool DBHandler::commit() {
 
 bool DBHandler::rollback() {
 	return exec(createTransactionRollback());
+}
+
+void DBHandler::freeBlob(Blob blob) const {
+	State::freeBlob(blob.data);
 }
 
 }

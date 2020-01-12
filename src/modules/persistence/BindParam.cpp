@@ -54,6 +54,14 @@ void BindParam::push(const Model& model, const Field& field) {
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;
 	}
+	case FieldType::BLOB: {
+		const Blob& value = notNull ? model.getValue<Blob>(field) : *model.getValuePointer<Blob>(field);
+		values[index] = (const char*)value.data;
+		lengths[index] = value.length;
+		formats[index] = 1; // binary format
+		Log::debug("Parameter %i: length: %i", index + 1, (int)value.length);
+		break;
+	}
 	case FieldType::INT: {
 		const int32_t value = notNull ? model.getValue<int32_t>(field) : *model.getValuePointer<int32_t>(field);
 		valueBuffers.emplace_back(std::to_string(value));

@@ -40,6 +40,7 @@ DYNDEFINE(PQresultErrorField);
 DYNDEFINE(PQcmdTuples);
 DYNDEFINE(PQcmdStatus);
 DYNDEFINE(PQgetvalue);
+DYNDEFINE(PQunescapeBytea);
 DYNDEFINE(PQgetlength);
 DYNDEFINE(PQgetisnull);
 DYNDEFINE(PQoidValue);
