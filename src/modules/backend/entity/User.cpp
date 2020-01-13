@@ -101,11 +101,12 @@ void User::sendUserSpawn() const {
 	sendToVisible(fbb, network::ServerMsgType::UserSpawn, network::CreateUserSpawn(fbb, id(), fbb.CreateString(_name), &pos).Union(), true);
 }
 
-void User::sendMessage(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type, flatbuffers::Offset<void> msg) const {
+bool User::sendMessage(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type, flatbuffers::Offset<void> msg) const {
 	if (_peer == nullptr) {
-		return;
+		return false;
 	}
 	_messageSender->sendServerMessage(_peer, fbb, type, msg);
+	return true;
 }
 
 }

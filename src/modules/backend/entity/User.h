@@ -65,7 +65,7 @@ public:
 	 */
 	ENetPeer* setPeer(ENetPeer* peer);
 
-	void sendMessage(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type, flatbuffers::Offset<void> msg) const;
+	bool sendMessage(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type, flatbuffers::Offset<void> msg) const;
 
 	/**
 	 * @brief Informs the user that the login was successful
