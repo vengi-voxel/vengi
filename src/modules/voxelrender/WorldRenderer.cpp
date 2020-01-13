@@ -529,7 +529,6 @@ void WorldRenderer::extractMeshes(const video::Camera& camera) {
 	maxs.y = voxel::MAX_HEIGHT;
 	maxs.z += farplane;
 
-	camera.farPlane();
 	_octree.visit(mins, maxs, [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
 		return !_world->scheduleMeshExtraction(mins);
 	}, glm::vec3(_world->meshSize()));
