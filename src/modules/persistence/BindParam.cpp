@@ -22,7 +22,6 @@ int BindParam::add() {
 	++position;
 	if (values.capacity() < (size_t)position) {
 		values.resize(position);
-		valueBuffers.resize(position);
 		lengths.resize(position);
 		formats.resize(position);
 		fieldTypes.resize(position);
