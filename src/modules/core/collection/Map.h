@@ -11,10 +11,17 @@
 
 namespace core {
 
+struct EqualCompare {
+	template<typename T>
+	inline bool operator() (const T& lhs, const T& rhs) const {
+		return lhs == rhs;
+	}
+};
+
 /**
  * @brief Fixed element amount map
  */
-template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE, typename HASHER>
+template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE, typename HASHER, typename COMPARE = EqualCompare>
 class Map {
 public:
 	struct KeyValue {
@@ -138,7 +145,7 @@ public:
 		unsigned long hashValue = _hasher(key);
 		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
 		while (entry != nullptr) {
-			if (entry->key == key) {
+			if (COMPARE()(entry->key, key)) {
 				value = entry->value;
 				return true;
 			}
@@ -151,7 +158,7 @@ public:
 		unsigned long hashValue = _hasher(key);
 		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
 		while (entry != nullptr) {
-			if (entry->key == key) {
+			if (COMPARE()(entry->key, key)) {
 				return iterator(this, hashValue % BUCKETSIZE, entry);
 			}
 			entry = entry->next;
@@ -164,7 +171,7 @@ public:
 		KeyValue *prev = nullptr;
 		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
 
-		while (entry != nullptr && entry->key != key) {
+		while (entry != nullptr && !COMPARE()(entry->key, key)) {
 			prev = entry;
 			entry = entry->next;
 		}
@@ -218,7 +225,7 @@ public:
 		KeyValue *prev = nullptr;
 
 		while (entry != nullptr) {
-			if (entry->key == key) {
+			if (COMPARE()(entry->key, key)) {
 				break;
 			}
 			prev = entry;
