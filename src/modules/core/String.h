@@ -43,6 +43,11 @@ inline bool toBool(const std::string& str) {
 	return str == "1" || str == "true";
 }
 
+inline char toHex(char code) {
+	static const char* _hex = "0123456789ABCDEF";
+	return _hex[code & 15];
+}
+
 inline float toFloat(const std::string& str) {
 	return (float)SDL_atof(str.c_str());
 }
@@ -94,6 +99,14 @@ inline const char* after(const char* input, int character) {
 		++s;
 	}
 	return s;
+}
+
+/**
+ * @return negative value if not found
+ */
+inline int indexOf(const char *a, const char *b) {
+	char *offset = SDL_strstr(a, b);
+	return (int)(intptr_t)(offset - a);
 }
 
 inline bool endsWith(const std::string& string, const std::string& end) {
@@ -181,6 +194,11 @@ inline std::string eraseAllSpaces(const std::string& str) {
 
 inline bool contains(const std::string& str, const std::string& search) {
 	return str.rfind(search) != std::string::npos;
+}
+
+inline bool contains(const char *haystack, const char *needle) {
+	char *pos = (char*)SDL_strstr(haystack, needle);
+	return pos != nullptr;
 }
 
 inline bool icontains(const std::string& str, const std::string& search) {
@@ -278,6 +296,11 @@ extern std::string lowerCamelCase(const std::string& str);
 extern char* append(char* buf, size_t bufsize, const char* string);
 
 extern int count(const char *buf, char chr);
+
+/**
+ * @note Call @c core_free() on the returned string
+ */
+extern char *urlEncode(const char *str);
 
 }
 }

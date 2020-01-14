@@ -3,6 +3,7 @@
  */
 
 #include "String.h"
+#include "Common.h"
 #include <ctype.h>
 
 namespace core {
@@ -28,6 +29,28 @@ std::string format(const char *msg, ...) {
 	va_end(ap);
 
 	return std::string(text);
+}
+
+char *urlEncode(const char *inBuf) {
+	const char *inBufPos = inBuf;
+	const size_t maxSize = strlen(inBuf) * 3;
+	char *outBuf = (char*)core_malloc(maxSize + 1);
+	char *outBufPos = outBuf;
+	while (inBufPos[0] != '\0') {
+		const char inChr = inBufPos[0];
+		if (inChr == ' ') {
+			*outBufPos++ = '+';
+		} else if (inChr == '-' || inChr == '.' || inChr == '~' || inChr == '_' || isalnum(inChr)) {
+			*outBufPos++ = inChr;
+		} else {
+			*outBufPos++ = '%';
+			*outBufPos++ = toHex(inChr >> 4);
+			*outBufPos++ = toHex(inChr & 15);
+		}
+		++inBufPos;
+	}
+	*outBufPos = '\0';
+	return outBuf;
 }
 
 void replaceAllChars(std::string& str, char in, char out) {
