@@ -94,7 +94,7 @@ inline bool startsWith(const char* string, const char* token) {
  * followed by the last found match.
  */
 inline const char* after(const char* input, int character) {
-	const char *s = strrchr(input, character);
+	const char *s = SDL_strrchr(input, character);
 	if (s != nullptr) {
 		++s;
 	}
