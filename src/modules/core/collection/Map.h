@@ -12,6 +12,8 @@
 
 namespace core {
 
+namespace priv {
+
 struct EqualCompare {
 	template<typename T>
 	inline bool operator() (const T& lhs, const T& rhs) const {
@@ -19,10 +21,12 @@ struct EqualCompare {
 	}
 };
 
+}
+
 /**
  * @brief Fixed element amount map
  */
-template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE, typename HASHER, typename COMPARE = EqualCompare>
+template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE, typename HASHER, typename COMPARE = priv::EqualCompare>
 class Map {
 public:
 	struct KeyValue {

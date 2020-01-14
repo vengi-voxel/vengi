@@ -7,6 +7,7 @@
 #include "Assert.h"
 #include <stdint.h>
 #include <type_traits>
+#include <new>
 #include <SDL_stdinc.h>
 #ifdef _WIN32
 #undef max

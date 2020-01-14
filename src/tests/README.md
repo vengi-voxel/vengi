@@ -84,3 +84,7 @@ Just an empty template for new test applications.
 # testtraze
 
 * [traze client](testtraze/README.md)
+
+# testhttpserver
+
+A test application around the http module server for e.g. fuzzy testing purposes.

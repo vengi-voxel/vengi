@@ -246,6 +246,8 @@ public:
 	uint64_t lifetimeInSeconds() const;
 	float lifetimeInSecondsf() const;
 
+	AppState state() const;
+
 	/**
 	 * @return the millis since the epoch
 	 */
@@ -334,6 +336,10 @@ inline const std::string& App::appname() const {
 
 inline BindingContext App::bindingContext() const {
 	return _bindingContext;
+}
+
+inline AppState App::state() const {
+	return _curState;
 }
 
 }

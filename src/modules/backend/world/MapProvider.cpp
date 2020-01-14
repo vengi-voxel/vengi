@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/Assert.h"
 #include "backend/entity/ai/AILoader.h"
+#include "http/HttpServer.h"
 
 namespace backend {
 
