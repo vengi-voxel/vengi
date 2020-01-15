@@ -53,6 +53,7 @@ private:
 	int _lastDeltaFrame = 0;
 	uint64_t _lifetimeSeconds = 0u;
 
+	void replicateVars() const;
 	static void onIdle(uv_idle_t* handle);
 	static void signalCallback(uv_signal_t* handle, int signum);
 	bool addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMillis, uint64_t initialDelayMillis = 0);
@@ -72,6 +73,7 @@ public:
 	bool init() override;
 	void shutdown() override;
 	void update(long dt);
+
 	void onEvent(const network::DisconnectEvent& event) override;
 };
 

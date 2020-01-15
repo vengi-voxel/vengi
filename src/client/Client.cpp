@@ -25,6 +25,7 @@
 #include "network/EntitySpawnHandler.h"
 #include "network/EntityUpdateHandler.h"
 #include "network/UserSpawnHandler.h"
+#include "network/VarUpdateHandler.h"
 #include "voxel/MaterialColor.h"
 #include "core/Rest.h"
 #include <SDL.h>
@@ -117,6 +118,7 @@ core::AppState Client::onInit() {
 	regHandler(network::ServerMsgType::EntityUpdate, EntityUpdateHandler);
 	regHandler(network::ServerMsgType::UserSpawn, UserSpawnHandler);
 	regHandler(network::ServerMsgType::AuthFailed, AuthFailedHandler);
+	regHandler(network::ServerMsgType::VarUpdate, VarUpdateHandler);
 	regHandler(network::ServerMsgType::Init, InitHandler, _clientPager, _eventBus);
 
 	core::AppState state = Super::onInit();

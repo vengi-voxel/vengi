@@ -22,7 +22,7 @@ class MetricMgr :
 	public core::IEventBusHandler<EntityRemoveFromMapEvent>,
 	public core::IEventBusHandler<EntityAddToMapEvent>,
 	public core::IEventBusHandler<EntityDeleteEvent>,
-	public core::IEventBusHandler<EntityAddEvent>{
+	public core::IEventBusHandler<EntityAddEvent> {
 private:
 	metric::MetricPtr _metric;
 public:

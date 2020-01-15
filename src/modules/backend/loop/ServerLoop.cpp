@@ -370,10 +370,27 @@ void ServerLoop::update(long dt) {
 		_metricMgr->metric()->gauge("events.skip", eventSkip);
 		_lastEventSkip = eventSkip;
 	}
-	core::Var::visitReplicate([] (const core::VarPtr& var) {
-		//_network->broadcast();
-		Log::info("TODO: %s replicate to all connected client", var->name().c_str());
+
+	replicateVars();
+}
+
+void ServerLoop::replicateVars() const {
+	std::vector<core::VarPtr> vars;
+	core::Var::visitDirtyReplicate([&vars] (const core::VarPtr& var) {
+		vars.push_back(var);
 	});
+	if (vars.empty()) {
+		return;
+	}
+	static flatbuffers::FlatBufferBuilder fbb;
+	auto fbbVars = fbb.CreateVector<flatbuffers::Offset<network::Var>>(vars.size(),
+		[&] (size_t i) {
+			auto name = fbb.CreateString(vars[i]->name());
+			auto value = fbb.CreateString(vars[i]->strVal());
+			return network::CreateVar(fbb, name, value);
+		});
+	_messageSender->broadcastServerMessage(fbb, network::ServerMsgType::VarUpdate,
+			network::CreateVarUpdate(fbb, fbbVars).Union());
 }
 
 // TODO: doesn't belong here

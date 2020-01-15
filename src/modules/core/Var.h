@@ -156,11 +156,20 @@ public:
 	}
 
 	template<class Functor>
-	static void visitReplicate(Functor&& func) {
+	static void visitDirtyReplicate(Functor&& func) {
 		visit([&] (const VarPtr& var) {
 			if (var->_updateFlags & NEEDS_REPLICATE) {
 				func(var);
 				var->_updateFlags &= ~NEEDS_REPLICATE;
+			}
+		});
+	}
+
+	template<class Functor>
+	static void visitReplicate(Functor&& func) {
+		visit([&] (const VarPtr& var) {
+			if (var->_flags & CV_REPLICATE) {
+				func(var);
 			}
 		});
 	}

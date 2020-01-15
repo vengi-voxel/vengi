@@ -45,6 +45,26 @@ void User::init() {
 	_attribMgr.init();
 	_logoutMgr.init();
 	_movementMgr.init();
+	replicateVars();
+}
+
+void User::replicateVars() const {
+	std::vector<core::VarPtr> vars;
+	core::Var::visitReplicate([&vars] (const core::VarPtr& var) {
+		vars.push_back(var);
+	});
+	Log::info("send cvars to client: %i", (int)vars.size());
+	flatbuffers::FlatBufferBuilder fbb;
+	auto fbbVars = fbb.CreateVector<flatbuffers::Offset<network::Var>>(vars.size(),
+		[&] (size_t i) {
+			auto name = fbb.CreateString(vars[i]->name());
+			auto value = fbb.CreateString(vars[i]->strVal());
+			return network::CreateVar(fbb, name, value);
+		});
+	if (!_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::VarUpdate,
+			network::CreateVarUpdate(fbb, fbbVars).Union())) {
+		Log::warn("Failed to send var message to the client");
+	}
 }
 
 void User::shutdown() {
@@ -72,6 +92,7 @@ void User::reconnect() {
 	visitVisible([&] (const EntityPtr& e) {
 		sendEntitySpawn(e);
 	});
+	replicateVars();
 }
 
 bool User::update(long dt) {

@@ -13,6 +13,7 @@ set(SRCS
 	network/UserSpawnHandler.h
 	network/EntityUpdateHandler.h
 	network/EntityRemoveHandler.h
+	network/VarUpdateHandler.h
 
 	ui/LoginWindow.h
 	ui/SignupWindow.h

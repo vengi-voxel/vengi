@@ -32,6 +32,8 @@ private:
 	UserLogoutMgr _logoutMgr;
 	UserMovementMgr _movementMgr;
 
+	void replicateVars() const;
+
 public:
 	User(ENetPeer* peer,
 			EntityId id,
