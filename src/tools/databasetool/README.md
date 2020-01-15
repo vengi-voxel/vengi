@@ -64,6 +64,7 @@ table <TABLENAME> {
 * boolean
 * short
 * byte
+* blob
 
 ## Operator
 
