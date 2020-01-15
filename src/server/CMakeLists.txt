@@ -52,6 +52,6 @@ set(MANIFESTS
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS})
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES backend)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES backend http)
 engine_docker(${PROJECT_NAME})
 engine_manifests(${PROJECT_NAME} ${MANIFESTS})

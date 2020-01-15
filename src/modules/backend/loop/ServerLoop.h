@@ -16,6 +16,7 @@
 #include "network/ProtocolHandlerRegistry.h"
 #include "backend/entity/EntityStorage.h"
 #include "persistence/DBHandler.h"
+#include "http/HttpServer.h"
 
 #include <uv.h>
 
@@ -42,6 +43,7 @@ private:
 	io::FilesystemPtr _filesystem;
 	persistence::PersistenceMgrPtr _persistenceMgr;
 	voxelformat::VolumeCachePtr _volumeCache;
+	http::HttpServerPtr _httpServer;
 
 	uv_loop_t *_loop = nullptr;
 	uv_timer_t *_worldTimer = nullptr;
@@ -67,7 +69,7 @@ public:
 			const cooldown::CooldownProviderPtr& cooldownProvider,
 			const eventmgr::EventMgrPtr& eventMgr, const stock::StockDataProviderPtr& stockDataProvider,
 			const MetricMgrPtr& metricMgr, const persistence::PersistenceMgrPtr& persistenceMgr,
-			const voxelformat::VolumeCachePtr& volumeCache);
+			const voxelformat::VolumeCachePtr& volumeCache, const http::HttpServerPtr& httpServer );
 
 	void construct() override;
 	bool init() override;

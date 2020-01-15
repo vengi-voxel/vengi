@@ -30,7 +30,7 @@
 
 Server::Server(const metric::MetricPtr& metric, const backend::ServerLoopPtr& serverLoop,
 		const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
-		const core::EventBusPtr& eventBus) :
+		const core::EventBusPtr& eventBus, const http::HttpServerPtr& httpServer) :
 		Super(metric, filesystem, eventBus, timeProvider),
 		_serverLoop(serverLoop) {
 	_syslog = true;
@@ -49,6 +49,7 @@ core::AppState Server::onConstruct() {
 	core::Var::get(cfg::ServerPort, SERVER_PORT);
 	core::Var::get(cfg::ServerHost, "0.0.0.0");
 	core::Var::get(cfg::ServerMaxClients, "1024");
+	core::Var::get(cfg::ServerHttpPort, "8080", core::CV_REPLICATE);
 	core::Var::get(cfg::ServerSeed, "1", core::CV_REPLICATE);
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	core::Var::get(cfg::DatabaseMinConnections, "2");
@@ -110,6 +111,8 @@ int main(int argc, char *argv[]) {
 	const persistence::PersistenceMgrPtr& persistenceMgr = std::make_shared<persistence::PersistenceMgr>(dbHandler);
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(eventBus);
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
+
+	const http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>();
 	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus, timeProvider,
 			entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache);
 
@@ -121,8 +124,8 @@ int main(int argc, char *argv[]) {
 	const backend::MetricMgrPtr& metricMgr = std::make_shared<backend::MetricMgr>(metric, eventBus);
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(timeProvider, mapProvider,
 			messageSender, world, dbHandler, network, filesystem, entityStorage, eventBus, containerProvider,
-			cooldownProvider, eventMgr, stockDataProvider, metricMgr, persistenceMgr, volumeCache);
+			cooldownProvider, eventMgr, stockDataProvider, metricMgr, persistenceMgr, volumeCache, httpServer);
 
-	Server app(metric, serverLoop, timeProvider, filesystem, eventBus);
+	Server app(metric, serverLoop, timeProvider, filesystem, eventBus, httpServer);
 	return app.startMainLoop(argc, argv);
 }

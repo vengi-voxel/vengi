@@ -46,13 +46,13 @@ ServerLoop::ServerLoop(const core::TimeProviderPtr& timeProvider, const MapProvi
 		const cooldown::CooldownProviderPtr& cooldownProvider, const eventmgr::EventMgrPtr& eventMgr,
 		const stock::StockDataProviderPtr& stockDataProvider, const MetricMgrPtr& metricMgr,
 		const persistence::PersistenceMgrPtr& persistenceMgr,
-		const voxelformat::VolumeCachePtr& volumeCache) :
+		const voxelformat::VolumeCachePtr& volumeCache, const http::HttpServerPtr& httpServer) :
 		_network(network), _timeProvider(timeProvider), _mapProvider(mapProvider), _messageSender(messageSender),
 		_world(world),
 		_entityStorage(entityStorage), _eventBus(eventBus), _attribContainerProvider(containerProvider),
 		_cooldownProvider(cooldownProvider), _eventMgr(eventMgr), _dbHandler(dbHandler),
 		_stockDataProvider(stockDataProvider), _metricMgr(metricMgr), _filesystem(filesystem),
-		_persistenceMgr(persistenceMgr), _volumeCache(volumeCache) {
+		_persistenceMgr(persistenceMgr), _volumeCache(volumeCache), _httpServer(httpServer) {
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
 }
 
@@ -211,6 +211,13 @@ bool ServerLoop::init() {
 		return false;
 	}
 
+	const int httpPort = core::Var::getSafe(cfg::ServerHttpPort)->intVal();
+	if (!_httpServer->init(httpPort)) {
+		Log::error("Failed to initialize the HTTP server on port %i", httpPort);
+		return false;
+	}
+	Log::info("Listen for HTTP requests at port %i", httpPort);
+
 	if (!_metricMgr->init()) {
 		Log::warn("Failed to init metric sender");
 	}
@@ -352,6 +359,7 @@ void ServerLoop::shutdown() {
 	_volumeCache->shutdown();
 	_input.shutdown();
 	_network->shutdown();
+	_httpServer->shutdown();
 	if (_loop != nullptr) {
 		uv_close((uv_handle_t*)_signal, nullptr);
 		uv_close((uv_handle_t*)_worldTimer, nullptr);
@@ -378,6 +386,7 @@ void ServerLoop::update(long dt) {
 	// not everything is ticked in here directly, a lot is handled by libuv timers
 	uv_run(_loop, UV_RUN_NOWAIT);
 	_network->update();
+	_httpServer->update();
 	const int eventSkip = _eventBus->update(200);
 	if (eventSkip != _lastEventSkip) {
 		_metricMgr->metric()->gauge("events.skip", eventSkip);
