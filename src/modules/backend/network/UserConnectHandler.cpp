@@ -95,7 +95,7 @@ void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 	}
 
 	const long seed = core::Var::getSafe(cfg::ServerSeed)->longVal();
-	user->sendSeed(seed);
+	user->sendInit(seed);
 	user->sendUserSpawn();
 }
 

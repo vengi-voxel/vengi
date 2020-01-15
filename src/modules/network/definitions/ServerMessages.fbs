@@ -4,7 +4,7 @@ include "Shared.fbs";
 
 namespace network;
 
-table Seed {
+table Init {
 	seed:long;
 }
 
@@ -75,7 +75,7 @@ table AttribUpdate {
 }
 
 union ServerMsgType {
-	Seed,
+	Init,
 	UserSpawn,
 	EntitySpawn,
 	EntityRemove,

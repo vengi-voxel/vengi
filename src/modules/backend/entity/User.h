@@ -71,7 +71,7 @@ public:
 	 * @brief Informs the user that the login was successful
 	 */
 	void sendUserSpawn() const;
-	void sendSeed(long seed) const;
+	void sendInit(long seed) const;
 
 	UserLogoutMgr& logoutMgr();
 	const UserLogoutMgr& logoutMgr() const;

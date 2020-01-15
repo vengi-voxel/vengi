@@ -1,14 +1,19 @@
 project(client)
 set(SRCS
 	Client.h Client.cpp
+
+	voxel/ClientPager.h
+	voxel/ClientPager.cpp
+
 	network/AttribUpdateHandler.h
 	network/AuthFailedHandler.h
 	network/EntitySpawnHandler.h
-	network/SeedHandler.cpp
-	network/SeedHandler.h
+	network/InitHandler.cpp
+	network/InitHandler.h
 	network/UserSpawnHandler.h
 	network/EntityUpdateHandler.h
 	network/EntityRemoveHandler.h
+
 	ui/LoginWindow.h
 	ui/SignupWindow.h
 	ui/HudWindow.h

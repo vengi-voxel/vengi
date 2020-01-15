@@ -22,6 +22,7 @@
 #include "animation/AnimationCache.h"
 #include "video/Camera.h"
 #include "stock/StockDataProvider.h"
+#include "voxel/ClientPager.h"
 
 class Client: public ui::turbobadger::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxelworld::WorldCreatedEvent> {
@@ -30,7 +31,7 @@ protected:
 	animation::AnimationCachePtr _animationCache;
 	network::ClientNetworkPtr _network;
 	voxelworld::WorldMgrPtr _worldMgr;
-	voxelworld::WorldPagerPtr _worldPager;
+	client::ClientPagerPtr _clientPager;
 	network::ClientMessageSenderPtr _messageSender;
 	voxelrender::WorldRenderer _worldRenderer;
 	flatbuffers::FlatBufferBuilder _moveFbb;
@@ -55,7 +56,7 @@ public:
 	Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 			const stock::StockDataProviderPtr& stockDataProvider,
 			const network::ClientNetworkPtr& network, const voxelworld::WorldMgrPtr& world,
-			const voxelworld::WorldPagerPtr& worldPager,
+			const client::ClientPagerPtr& worldPager,
 			const network::ClientMessageSenderPtr& messageSender, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 			const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache);
 	~Client();

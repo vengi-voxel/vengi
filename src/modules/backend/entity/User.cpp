@@ -90,9 +90,9 @@ bool User::update(long dt) {
 	return true;
 }
 
-void User::sendSeed(long seed) const {
+void User::sendInit(long seed) const {
 	flatbuffers::FlatBufferBuilder fbb;
-	sendMessage(fbb, network::ServerMsgType::Seed, network::CreateSeed(fbb, seed).Union());
+	sendMessage(fbb, network::ServerMsgType::Init, network::CreateInit(fbb, seed).Union());
 }
 
 void User::sendUserSpawn() const {

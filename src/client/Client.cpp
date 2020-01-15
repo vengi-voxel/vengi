@@ -5,6 +5,7 @@
 #include "ClientMessages_generated.h"
 #include "ServerMessages_generated.h"
 #include "Client.h"
+#include "voxel/ClientPager.h"
 #include "ui/LoginWindow.h"
 #include "ui/DisconnectWindow.h"
 #include "ui/AuthFailedWindow.h"
@@ -18,7 +19,7 @@
 #include "core/Password.h"
 #include "network/IMsgProtocolHandler.h"
 #include "network/AttribUpdateHandler.h"
-#include "network/SeedHandler.h"
+#include "network/InitHandler.h"
 #include "network/AuthFailedHandler.h"
 #include "network/EntityRemoveHandler.h"
 #include "network/EntitySpawnHandler.h"
@@ -31,12 +32,12 @@
 Client::Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
 		const network::ClientNetworkPtr& network, const voxelworld::WorldMgrPtr& world,
-		const voxelworld::WorldPagerPtr& worldPager,
+		const client::ClientPagerPtr& worldPager,
 		const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 		const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache) :
 		Super(metric, filesystem, eventBus, timeProvider), _animationCache(animationCache),
-		_network(network), _worldMgr(world), _worldPager(worldPager), _messageSender(messageSender),
+		_network(network), _worldMgr(world), _clientPager(worldPager), _messageSender(messageSender),
 		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
 		_camera(world, _worldRenderer) {
 	init(ORGANISATION, "client");
@@ -116,7 +117,7 @@ core::AppState Client::onInit() {
 	regHandler(network::ServerMsgType::EntityUpdate, EntityUpdateHandler);
 	regHandler(network::ServerMsgType::UserSpawn, UserSpawnHandler);
 	regHandler(network::ServerMsgType::AuthFailed, AuthFailedHandler);
-	regHandler(network::ServerMsgType::Seed, SeedHandler, _worldMgr, _eventBus);
+	regHandler(network::ServerMsgType::Init, InitHandler, _clientPager, _eventBus);
 
 	core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
@@ -377,7 +378,7 @@ int main(int argc, char *argv[]) {
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 	const network::ClientNetworkPtr& network = std::make_shared<network::ClientNetwork>(protocolHandlerRegistry, eventBus);
 	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
-	const voxelworld::WorldPagerPtr& pager = std::make_shared<voxelworld::WorldPager>(volumeCache);
+	const client::ClientPagerPtr& pager = std::make_shared<client::ClientPager>(volumeCache);
 	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(pager);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
