@@ -332,6 +332,16 @@ bool parseTable(core::Tokenizer& tok, Table& table) {
 		}
 	}
 
+	for (auto field : table.fields) {
+		if (field.second.isForeignKey() || field.second.isPrimaryKey()) {
+			if (field.second.updateOperator != persistence::Operator::SET) {
+				Log::error("invalid operator for primary or foreign key of field '%s' for table '%s'. Operator should be 'set'.",
+						field.second.name.c_str(), table.name.c_str());
+				return false;
+			}
+		}
+	}
+
 	sort(table.fields);
 
 	return !table.fields.empty();
