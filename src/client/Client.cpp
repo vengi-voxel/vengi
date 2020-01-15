@@ -129,15 +129,17 @@ core::AppState Client::onInit() {
 	video::enableDebug(video::DebugSeverity::Medium);
 
 	if (!_network->init()) {
+		Log::error("Failed to initialize network layer");
 		return core::AppState::InitFailure;
 	}
 
 	if (!_movement.init()) {
+		Log::error("Failed to initialize movement controller");
 		return core::AppState::InitFailure;
 	}
 
 	if (!_stockDataProvider->init(filesystem()->load("stock.lua"))) {
-		Log::error("Failed to init stock data provider: %s", _stockDataProvider->error().c_str());
+		Log::error("Failed to initialize stock data provider: %s", _stockDataProvider->error().c_str());
 		return core::AppState::InitFailure;
 	}
 
@@ -155,14 +157,17 @@ core::AppState Client::onInit() {
 	}
 
 	if (!_volumeCache->init()) {
+		Log::error("Failed to initialize volume cache");
 		return core::AppState::InitFailure;
 	}
 
 	if (!_worldMgr->init()) {
+		Log::error("Failed to initialize world manager");
 		return core::AppState::InitFailure;
 	}
 
 	if (!_worldRenderer.init(glm::ivec2(0), frameBufferDimension())) {
+		Log::error("Failed to initialize world renderer");
 		return core::AppState::InitFailure;
 	}
 
