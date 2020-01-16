@@ -113,15 +113,13 @@ void Viewport::renderFramebuffer() {
 	const tb::TBRect srcRect(x, y, w, h);
 
 	tb::g_renderer->flush();
-	video::Shader* shader;
+	video::Shader* shader = nullptr;
 	video::Id prevShader = video::InvalidId;
 	switch (_controller.shaderType()) {
 	case voxedit::ViewportController::ShaderType::Edge:
 		shader = &_edgeShader;
 		break;
-	case voxedit::ViewportController::ShaderType::Max:
-	case voxedit::ViewportController::ShaderType::None:
-		shader = nullptr;
+	default:
 		break;
 	}
 	if (shader != nullptr) {
