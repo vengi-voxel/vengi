@@ -3,6 +3,7 @@
  */
 
 #include "IMGUI.h"
+#include <SDL_stdinc.h>
 
 namespace ImGui {
 
@@ -10,7 +11,7 @@ bool InputVarString(const char* label, core::VarPtr& var, ImGuiInputTextFlags fl
 	const std::string& buf = var->strVal();
 	constexpr int size = 256;
 	char newVal[size];
-	strncpy(newVal, buf.c_str(), size);
+	SDL_snprintf(newVal, size, "%s", buf.c_str());
 	flags &= ~ImGuiInputTextFlags_EnterReturnsTrue;
 	if (InputText(label, newVal, size, flags)) {
 		var->setVal(newVal);
