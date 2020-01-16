@@ -1,8 +1,8 @@
 Q              ?= @
 UPDATEDIR      := /tmp
 BUILDTYPE      ?= Debug
-BUILDDIR       ?= ./build
-BUILDDIR_NINJA ?= ./build-ninja
+BUILDDIR       ?= ./build/$(BUILDTYPE)
+BUILDDIR_NINJA ?= ./build-ninja/$(BUILDTYPE)
 INSTALL_DIR    ?= $(BUILDDIR)/$(shell uname)
 NINJA          := ninja
 
