@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "core/ConsoleApp.h"
+#include "core/collection/Map.h"
 #include "core/EventBus.h"
 #include "core/io/Filesystem.h"
 #include <glm/glm.hpp>
@@ -112,6 +113,27 @@ protected:
 			}
 		}
 		return str;
+	}
+
+	void validateMapEntry(const core::CharPointerMap& map, const char *key, const char *value) {
+		const char* mapValue = "";
+		EXPECT_TRUE(map.get(key, mapValue)) << printMap(map);
+		EXPECT_STREQ(value, mapValue);
+	}
+
+	std::string printMap(const core::CharPointerMap& map) const {
+		std::stringstream ss;
+		ss << "Found map entries are: \"";
+		bool first = true;
+		for (const auto& iter : map) {
+			if (!first) {
+				ss << ", ";
+			}
+			ss << iter->first << ": " << iter->second;
+			first = false;
+		}
+		ss << "\"";
+		return ss.str();
 	}
 
 	virtual void onCleanupApp() {
