@@ -90,7 +90,7 @@ core::AppState Client::onConstruct() {
 	core::Var::get(cfg::ClientPort, SERVER_PORT);
 	core::Var::get(cfg::ClientHost, SERVER_HOST);
 	core::Var::get(cfg::ClientAutoLogin, "false");
-	core::Var::get(cfg::ClientName, "noname");
+	core::Var::get(cfg::ClientName, "noname", core::CV_BROADCAST);
 	core::Var::get(cfg::ClientPassword, "");
 	core::Var::get(cfg::HTTPBaseURL, BASE_URL);
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
@@ -261,7 +261,7 @@ core::AppState Client::onRunning() {
 	_waiting.update(_deltaFrameMillis);
 	const core::AppState state = Super::onRunning();
 	core::Var::visitBroadcast([] (const core::VarPtr& var) {
-		Log::info("TODO: %s needs broadcast", var->name().c_str());
+		Log::info("TODO: %s must get sent to the server and broadcasted to other players", var->name().c_str());
 	});
 	if (_network->isConnected()) {
 		const float pitch = _mouseRelativePos.y;

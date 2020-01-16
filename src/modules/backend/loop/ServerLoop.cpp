@@ -370,6 +370,10 @@ void ServerLoop::update(long dt) {
 		_metricMgr->metric()->gauge("events.skip", eventSkip);
 		_lastEventSkip = eventSkip;
 	}
+	core::Var::visitReplicate([] (const core::VarPtr& var) {
+		//_network->broadcast();
+		Log::info("TODO: %s replicate to all connected client", var->name().c_str());
+	});
 }
 
 // TODO: doesn't belong here
