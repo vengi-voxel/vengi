@@ -92,7 +92,9 @@ voxel::RawVolume* MementoData::toVolume(const MementoData& mementoData) {
 	}
 	const size_t uncompressedBufferSize = mementoData._region.voxels() * sizeof(voxel::Voxel);
 	uint8_t *uncompressedBuf = new uint8_t[uncompressedBufferSize];
-	core::zip::uncompress(mementoData._buffer, mementoData._compressedSize, uncompressedBuf, uncompressedBufferSize);
+	if (!core::zip::uncompress(mementoData._buffer, mementoData._compressedSize, uncompressedBuf, uncompressedBufferSize)) {
+		return nullptr;
+	}
 	return voxel::RawVolume::createRaw((voxel::Voxel*)uncompressedBuf, mementoData._region);
 }
 
