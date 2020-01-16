@@ -9,6 +9,25 @@
 namespace core {
 namespace string {
 
+char* getBeforeToken(char **buffer, const char *token, size_t bufferSize) {
+	char *begin = *buffer;
+	const size_t length = SDL_strlen(token);
+	while (**buffer) {
+		if (bufferSize <= 0) {
+			return nullptr;
+		}
+		if (SDL_strncmp(*buffer, token, length) == 0) {
+			**buffer = '\0';
+			*buffer += length;
+			return begin;
+		}
+		++(*buffer);
+		--bufferSize;
+	}
+	*buffer = begin;
+	return nullptr;
+}
+
 bool formatBuf(char *buf, size_t bufSize, const char *msg, ...) {
 	va_list ap;
 	va_start(ap, msg);

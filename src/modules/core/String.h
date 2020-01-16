@@ -56,6 +56,20 @@ inline double toDouble(const std::string& str) {
 	return (double)SDL_atof(str.c_str());
 }
 
+/**
+ * @brief Modifies the string input buffer by looking for the given token, replace the start of the token with @c \0
+ * and returns the position after the given token.
+ *
+ * @code
+ * char *buf = "a b";
+ * char *a = getBeforeToken(buf, " ", strlen(buf)); // "a"
+ * char *b = buf;                                   // "b"
+ * @endcode
+ *
+ * @return The function returns @c nullptr if the token wasn't found inside the given buffer boundaries.
+ */
+extern char* getBeforeToken(char **buffer, const char *token, size_t bufferSize);
+
 extern void splitString(const std::string& string, std::vector<std::string>& tokens, const std::string& delimiters = " \t\r\n\f\v");
 extern void splitString(const std::string& string, std::vector<std::string_view>& tokens, const std::string& delimiters = " \t\r\n\f\v");
 

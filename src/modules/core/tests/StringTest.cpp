@@ -4,11 +4,24 @@
 
 #include "AbstractTest.h"
 #include "core/String.h"
+#include "core/Common.h"
 
 namespace core {
 
 class StringTest: public AbstractTest {
 };
+
+TEST_F(StringTest, testGetBeforeToken) {
+	const size_t bufSize = 32u;
+	char *buf = (char*)core_malloc(bufSize);
+	char *p = buf;
+	SDL_snprintf(buf, bufSize, "a = b c");
+	char *a = core::string::getBeforeToken(&p, " = ", bufSize);
+	char *b = p;
+	EXPECT_STREQ("a", a);
+	EXPECT_STREQ("b c", b);
+	core_free(buf);
+}
 
 TEST_F(StringTest, testFormat) {
 	EXPECT_EQ("1", core::string::format("1"));
@@ -22,7 +35,7 @@ TEST_F(StringTest, testEraseAllSpaces) {
 }
 
 TEST_F(StringTest, testUrlEncode) {
-	EXPECT_EQ("foobar%3D1236%2F%26%0A", core::string::urlEncode("foobar=1236/&"));
+	EXPECT_STREQ("foobar%3D1236%2F%26", core::string::urlEncode("foobar=1236/&"));
 }
 
 TEST_F(StringTest, testStripExtension) {
