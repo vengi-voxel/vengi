@@ -32,8 +32,6 @@ private:
 	UserLogoutMgr _logoutMgr;
 	UserMovementMgr _movementMgr;
 
-	void replicateVars() const;
-
 public:
 	User(ENetPeer* peer,
 			EntityId id,
@@ -55,7 +53,8 @@ public:
 
 	const std::string& name() const;
 
-	void reconnect();
+	void onConnect();
+	void onReconnect();
 
 	bool update(long dt) override;
 
@@ -74,6 +73,7 @@ public:
 	 */
 	void sendUserSpawn() const;
 	void sendInit(long seed) const;
+	void sendVars() const;
 
 	UserLogoutMgr& logoutMgr();
 	const UserLogoutMgr& logoutMgr() const;

@@ -32,7 +32,7 @@ table Move {
 	yaw:float;
 }
 
-union ClientMsgType { UserConnect, UserConnected, UserDisconnect, Attack, Move }
+union ClientMsgType { VarUpdate, UserConnect, UserConnected, UserDisconnect, Attack, Move }
 
 table ClientMessage {
 	data:ClientMsgType;

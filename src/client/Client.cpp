@@ -208,6 +208,27 @@ void Client::beforeUI() {
 		_worldRenderer.update(camera, _deltaFrameMillis);
 		_worldRenderer.renderWorld(camera);
 	}
+
+	sendVars();
+}
+
+void Client::sendVars() const {
+	std::vector<core::VarPtr> vars;
+	core::Var::visitDirtyBroadcast([&vars] (const core::VarPtr& var) {
+		vars.push_back(var);
+	});
+	if (vars.empty()) {
+		return;
+	}
+	static flatbuffers::FlatBufferBuilder fbb;
+	auto fbbVars = fbb.CreateVector<flatbuffers::Offset<network::Var>>(vars.size(),
+		[&] (size_t i) {
+			auto name = fbb.CreateString(vars[i]->name());
+			auto value = fbb.CreateString(vars[i]->strVal());
+			return network::CreateVar(fbb, name, value);
+		});
+	_messageSender->sendClientMessage(fbb, network::ClientMsgType::VarUpdate,
+			network::CreateVarUpdate(fbb, fbbVars).Union());
 }
 
 void Client::afterRootWidget() {

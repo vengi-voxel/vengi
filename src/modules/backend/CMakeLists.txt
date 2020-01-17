@@ -18,6 +18,7 @@ set(SRCS
 	network/AttackHandler.h
 	network/MoveHandler.h
 	network/IUserProtocolHandler.h
+	network/VarUpdateHandler.h
 
 	metric/MetricMgr.cpp metric/MetricMgr.h
 

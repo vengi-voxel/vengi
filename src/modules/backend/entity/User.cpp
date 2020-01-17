@@ -45,10 +45,9 @@ void User::init() {
 	_attribMgr.init();
 	_logoutMgr.init();
 	_movementMgr.init();
-	replicateVars();
 }
 
-void User::replicateVars() const {
+void User::sendVars() const {
 	std::vector<core::VarPtr> vars;
 	core::Var::visitReplicate([&vars] (const core::VarPtr& var) {
 		vars.push_back(var);
@@ -86,13 +85,26 @@ ENetPeer* User::setPeer(ENetPeer* peer) {
 	return old;
 }
 
-void User::reconnect() {
+void User::onConnect() {
+	Log::trace("connect user");
+	sendVars();
+	// TODO: remove init message? we replicate sv_seed now
+	const long seed = core::Var::getSafe(cfg::ServerSeed)->longVal();
+	sendInit(seed);
+	sendUserSpawn();
+	// TODO: send attributes to the client
+}
+
+void User::onReconnect() {
 	Log::trace("reconnect user");
-	_attribs.markAsDirty();
+	sendVars();
+	// TODO: remove init message? we replicate sv_seed now
+	const long seed = core::Var::getSafe(cfg::ServerSeed)->longVal();
+	sendInit(seed);
 	visitVisible([&] (const EntityPtr& e) {
 		sendEntitySpawn(e);
 	});
-	replicateVars();
+	// TODO: send attributes to the client
 }
 
 bool User::update(long dt) {

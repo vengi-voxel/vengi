@@ -24,6 +24,7 @@
 #include "backend/network/UserConnectedHandler.h"
 #include "backend/network/UserDisconnectHandler.h"
 #include "backend/network/AttackHandler.h"
+#include "backend/network/VarUpdateHandler.h"
 #include "backend/network/MoveHandler.h"
 #include "persistence/PersistenceMgr.h"
 #include "backend/world/World.h"
@@ -280,6 +281,7 @@ bool ServerLoop::init() {
 	regHandler(network::ClientMsgType::UserDisconnect, UserDisconnectHandler);
 	regHandler(network::ClientMsgType::Attack, AttackHandler);
 	regHandler(network::ClientMsgType::Move, MoveHandler);
+	regHandler(network::ClientMsgType::VarUpdate, VarUpdateHandler);
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");

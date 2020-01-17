@@ -49,7 +49,9 @@ protected:
 
 	frontend::ClientEntityId id() const;
 
+	void sendVars() const;
 	void sendMovement();
+
 	void handleLogin();
 	int renderMap(video::Shader& shader, const voxelworld::WorldMgrPtr& world, const glm::mat4& view, float aspect);
 public:

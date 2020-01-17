@@ -54,7 +54,7 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, cons
 		if (user->peer()->address.host == peer->address.host) {
 			Log::debug(logid, "user %i reconnects with host %u on port %i", (int) model.id(), peer->address.host, peer->address.port);
 			user->setPeer(peer);
-			user->reconnect();
+			user->onReconnect();
 			return user;
 		}
 		Log::debug(logid, "skip connection attempt for client %i - the hosts don't match", (int) model.id());
@@ -94,9 +94,7 @@ void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 		return;
 	}
 
-	const long seed = core::Var::getSafe(cfg::ServerSeed)->longVal();
-	user->sendInit(seed);
-	user->sendUserSpawn();
+	user->onConnect();
 }
 
 }
