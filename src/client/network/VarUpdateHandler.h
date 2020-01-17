@@ -14,6 +14,7 @@ CLIENTPROTOHANDLERIMPL(VarUpdate) {
 	for (const auto& v : *message->vars()) {
 		auto *name = v->name();
 		auto *value = v->value();
+		Log::trace("Received var update from server for '%s'", name->c_str());
 		core::Var::get(name->str(), "", core::CV_NOPERSIST | core::CV_REPLICATE)->setVal(value->str());
 	}
 }
