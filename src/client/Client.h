@@ -46,10 +46,6 @@ protected:
 	voxelformat::VolumeCachePtr _volumeCache;
 	voxelrender::PlayerCamera _camera;
 
-	void setState(uint32_t flag);
-	bool hasState(uint32_t flag) const;
-	void removeState(uint32_t flag);
-
 	frontend::ClientEntityId id() const;
 
 	void sendMovement();
