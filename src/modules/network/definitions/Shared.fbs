@@ -96,3 +96,12 @@ enum Animation: ubyte {
 	GLIDE,
 	TOOL
 }
+
+table Var {
+	name:string (key,required);
+	value:string (required);
+}
+
+table VarUpdate {
+	vars:[Var] (required);
+}

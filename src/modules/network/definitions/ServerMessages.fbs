@@ -74,15 +74,6 @@ table AttribUpdate {
 	attribs:[AttribEntry] (required);
 }
 
-table Var {
-	name:string (key,required);
-	value:string (required);
-}
-
-table VarUpdate {
-	vars:[Var] (required);
-}
-
 union ServerMsgType {
 	Init,
 	UserSpawn,
