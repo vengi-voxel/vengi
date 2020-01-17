@@ -110,7 +110,7 @@ int executeCommands(const std::string& _commandLine) {
 		}
 		char buf[512];
 		replacePlaceholders(trimmed, buf, sizeof(buf));
-		const core::Tokenizer tokInner(buf, " ");
+		const core::Tokenizer tokInner(false, buf, " ");
 		if (tokInner.tokens().empty()) {
 			continue;
 		}
@@ -139,7 +139,9 @@ int executeCommands(const std::string& _commandLine) {
 					Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
 				}
 			} else {
-				c->setVal(core::string::join(tokens.begin(), tokens.end(), " "));
+				const std::string& value = core::string::join(tokens.begin(), tokens.end(), " ");
+				Log::debug("%s = %s", c->name().c_str(), value.c_str());
+				c->setVal(value);
 			}
 		}
 		if (n != -1) {

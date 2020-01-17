@@ -106,7 +106,7 @@ int Command::execute(const char* msg, ...) {
 
 int Command::execute(const std::string& command) {
 	int executed = 0;
-	Tokenizer commandLineTokenizer(command, ";\n");
+	Tokenizer commandLineTokenizer(false, command, ";\n");
 	while (commandLineTokenizer.hasNext()) {
 		const std::string& fullCmd = commandLineTokenizer.next();
 		if (fullCmd.empty()) {
@@ -124,7 +124,7 @@ int Command::execute(const std::string& command) {
 			continue;
 		}
 		Log::debug("full command: '%s'", fullCmd.c_str());
-		Tokenizer commandTokenizer(fullCmd, " ");
+		Tokenizer commandTokenizer(false, fullCmd, " ");
 		if (!commandTokenizer.hasNext()) {
 			continue;
 		}
