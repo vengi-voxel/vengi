@@ -73,6 +73,8 @@ protected:
 	static constexpr int NEEDS_BROADCAST = 1 << 1;
 	uint8_t _updateFlags = 0u;
 
+	static uint8_t _visitFlags;
+
 	struct Value {
 		float _floatValue = 0.0f;
 		int _intValue = 0;
@@ -146,7 +148,12 @@ public:
 	}
 
 	template<class Functor>
-	static void visitBroadcast(Functor&& func) {
+	static void visitDirtyBroadcast(Functor&& func) {
+		if ((_visitFlags & NEEDS_BROADCAST) == 0) {
+			return;
+		}
+		_visitFlags &= ~NEEDS_BROADCAST;
+
 		visit([&] (const VarPtr& var) {
 			if (var->_updateFlags & NEEDS_BROADCAST) {
 				func(var);
@@ -156,7 +163,20 @@ public:
 	}
 
 	template<class Functor>
+	static void visitBroadcast(Functor&& func) {
+		visit([&] (const VarPtr& var) {
+			if (var->_flags & CV_BROADCAST) {
+				func(var);
+			}
+		});
+	}
+
+	template<class Functor>
 	static void visitDirtyReplicate(Functor&& func) {
+		if ((_visitFlags & NEEDS_REPLICATE) == 0) {
+			return;
+		}
+		_visitFlags &= ~NEEDS_REPLICATE;
 		visit([&] (const VarPtr& var) {
 			if (var->_updateFlags & NEEDS_REPLICATE) {
 				func(var);

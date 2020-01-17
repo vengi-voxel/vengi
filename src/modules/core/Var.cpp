@@ -16,6 +16,7 @@ const std::string VAR_FALSE("false");
 
 Var::VarMap Var::_vars;
 ReadWriteLock Var::_lock("Var");
+uint8_t Var::_visitFlags = 0u;
 
 MAKE_SHARED_INVIS_CTOR(Var);
 
@@ -192,9 +193,11 @@ void Var::setVal(const std::string& value) {
 		++_currentHistoryPos;
 		if ((_flags & CV_REPLICATE) != 0u) {
 			_updateFlags |= NEEDS_REPLICATE;
+			_visitFlags |= NEEDS_REPLICATE;
 		}
 		if ((_flags & CV_BROADCAST) != 0u) {
 			_updateFlags |= NEEDS_BROADCAST;
+			_visitFlags |= NEEDS_BROADCAST;
 		}
 		if (_history.size() > 16) {
 			std::vector<Value>(_history.begin() + 8, _history.end()).swap(_history);
