@@ -35,7 +35,7 @@ bool ServerMessageSender::sendServerMessage(ENetPeer** peers, int numPeers, Flat
 		// TODO: lock
 		for (int i = 0; i < numPeers; ++i) {
 			if (!_network->sendMessage(peers[i], packet)) {
-				Log::warn("Could not send message of type %i to peer %i", (int)type, i);
+				Log::warn("Could not send message of type %s to peer %i", network::EnumNameServerMsgType(type), i);
 			} else {
 				++sent;
 			}
