@@ -49,7 +49,7 @@ core::AppState Server::onConstruct() {
 	core::Var::get(cfg::ServerPort, SERVER_PORT);
 	core::Var::get(cfg::ServerHost, "0.0.0.0");
 	core::Var::get(cfg::ServerMaxClients, "1024");
-	core::Var::get(cfg::ServerSeed, "1");
+	core::Var::get(cfg::ServerSeed, "1", core::CV_REPLICATE);
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	core::Var::get(cfg::DatabaseMinConnections, "2");
 	core::Var::get(cfg::DatabaseMaxConnections, "100");
