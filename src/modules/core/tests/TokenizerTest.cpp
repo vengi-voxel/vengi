@@ -10,6 +10,20 @@ namespace core {
 class TokenizerTest: public AbstractTest {
 };
 
+TEST_F(TokenizerTest, testTokenizerNoSkipComment) {
+	const char *str = "http://foo.bar";
+	core::Tokenizer t(false, str, strlen(str), ";");
+	ASSERT_EQ(1u, t.size()) << toString(t.tokens());
+	EXPECT_STREQ(str, t.tokens()[0].c_str()) << toString(t.tokens());
+}
+
+TEST_F(TokenizerTest, testTokenizerSkipComment) {
+	const char *str = "http://foo.bar";
+	core::Tokenizer t(true, str, strlen(str), ";");
+	ASSERT_EQ(1u, t.size()) << toString(t.tokens());
+	EXPECT_STREQ("http:", t.tokens()[0].c_str()) << toString(t.tokens());
+}
+
 TEST_F(TokenizerTest, testTokenizerEmptyLengthExceedsString) {
 	core::Tokenizer t("", 100, ";");
 	EXPECT_EQ(0u, t.size()) << toString(t.tokens());

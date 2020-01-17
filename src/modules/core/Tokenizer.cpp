@@ -8,8 +8,8 @@
 
 namespace core {
 
-Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char *split) :
-		_posIndex(0u), _len((int32_t)len) {
+Tokenizer::Tokenizer(bool skipComments_, const char* s, std::size_t len, const char *sep, const char *split) :
+		_posIndex(0u), _len((int32_t)len), _skipComments(skipComments_) {
 	bool lastCharIsSep = false;
 	bool lastCharWasQuoteEnd = false;
 	for (;;) {
@@ -152,6 +152,9 @@ bool Tokenizer::isSeparator(char c, const char *sep) {
 }
 
 bool Tokenizer::skipComments(const char **s, bool skipWhitespace) {
+	if (!_skipComments) {
+		return false;
+	}
 	char c = **s;
 	if (c != '/') {
 		return false;

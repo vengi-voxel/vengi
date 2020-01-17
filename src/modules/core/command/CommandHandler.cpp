@@ -99,7 +99,7 @@ int executeCommands(const std::string& _commandLine) {
 		return 0;
 	}
 	int n = 0;
-	const core::Tokenizer tok(_commandLine, ";");
+	const core::Tokenizer tok(false, _commandLine, ";");
 	for (const std::string& command : tok.tokens()) {
 		if (command.empty()) {
 			continue;

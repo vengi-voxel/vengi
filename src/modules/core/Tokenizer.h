@@ -16,6 +16,7 @@ protected:
 	std::size_t _posIndex;
 	std::size_t _size;
 	int32_t _len;
+	bool _skipComments;
 
 	// skip multiline and singleline comments
 	bool skipComments(const char **s, bool skipWhitespac);
@@ -28,11 +29,14 @@ public:
 	 * @param sep The separator chars - they are not included in the tokens.
 	 * @param split Splits chars, they are included in the tokens - but otherwise handled like usual separators.
 	 */
-	Tokenizer(const char* s, std::size_t len, const char *sep = " (){};", const char *split = "");
+	Tokenizer(bool skipComments, const char* s, std::size_t len, const char *sep = " (){};", const char *split = "");
+	Tokenizer(const char* s, std::size_t len, const char *sep = " (){};", const char *split = "") : Tokenizer(true, s, len, sep, split) {}
 
 	Tokenizer(const std::string_view string, const char *sep, const char *split = "") : Tokenizer(string.data(), string.length(), sep, split) {}
-	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(string, strlen(string), sep, split) {}
-	Tokenizer(const std::string& string, const char *sep = " (){};", const char *split = "") : Tokenizer(string.c_str(), string.size(), sep, split) {}
+	Tokenizer(bool skipComments, const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string, strlen(string), sep, split) {}
+	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string, strlen(string), sep, split) {}
+	Tokenizer(const std::string& string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string.c_str(), string.size(), sep, split) {}
+	Tokenizer(bool skipComments, const std::string& string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string.c_str(), string.size(), sep, split) {}
 
 	inline bool hasNext() const {
 		return _posIndex < _tokens.size();
