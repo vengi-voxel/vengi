@@ -13,7 +13,7 @@ inline ENetPacket* createServerPacket(FlatBufferBuilder& fbb, ServerMsgType type
 	auto msg = CreateServerMessage(fbb, type, data);
 	FinishServerMessageBuffer(fbb, msg);
 	ENetPacket* packet = enet_packet_create(fbb.GetBufferPointer(), fbb.GetSize(), flags);
-	Log::trace("Create server package: %s - size %ui", EnumNameServerMsgType(type), fbb.GetSize());
+	Log::trace("Create server package: %s - size %u", EnumNameServerMsgType(type), fbb.GetSize());
 	return packet;
 }
 

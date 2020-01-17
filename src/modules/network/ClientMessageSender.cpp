@@ -12,7 +12,7 @@ inline ENetPacket* createClientPacket(FlatBufferBuilder& fbb, ClientMsgType type
 	auto msg = CreateClientMessage(fbb, type, data);
 	FinishClientMessageBuffer(fbb, msg);
 	ENetPacket* packet = enet_packet_create(fbb.GetBufferPointer(), fbb.GetSize(), flags);
-	Log::trace("Create client package: %s - size %ui", EnumNameClientMsgType(type), fbb.GetSize());
+	Log::trace("Create client package: %s - size %u", EnumNameClientMsgType(type), fbb.GetSize());
 	return packet;
 }
 
