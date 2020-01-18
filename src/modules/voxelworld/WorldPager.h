@@ -66,6 +66,8 @@ public:
 	void shutdown();
 	void construct();
 
+	const WorldPersister& worldPersister() const;
+
 	/**
 	 * @brief Allow to switch whether you would like to persist the world data.
 	 * @note Default is @c true
@@ -85,6 +87,10 @@ public:
 	bool pageIn(voxel::PagedVolume::PagerContext& ctx) override;
 	void pageOut(voxel::PagedVolume::Chunk* chunk) override;
 };
+
+inline const WorldPersister& WorldPager::worldPersister() const {
+	return _worldPersister;
+}
 
 typedef std::shared_ptr<WorldPager> WorldPagerPtr;
 

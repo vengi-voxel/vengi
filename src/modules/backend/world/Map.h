@@ -116,6 +116,7 @@ public:
 	bool removeNpc(EntityId id);
 	NpcPtr npc(EntityId id);
 
+	const voxelworld::WorldPagerPtr& pager() const;
 	voxelworld::WorldMgr* worldMgr();
 	ai::Zone* zone() const;
 	MapId id() const;
@@ -136,6 +137,10 @@ public:
 	const poi::PoiProviderPtr& poiProvider() const;
 	poi::PoiProviderPtr& poiProvider();
 };
+
+inline const voxelworld::WorldPagerPtr& Map::pager() const {
+	return _pager;
+}
 
 inline voxelworld::WorldMgr* Map::worldMgr() {
 	return _voxelWorldMgr;
