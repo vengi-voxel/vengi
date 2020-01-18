@@ -73,6 +73,7 @@ void WorldRenderer::shutdown() {
 frontend::ClientEntityPtr WorldRenderer::getEntity(frontend::ClientEntityId id) const {
 	auto i = _entities.find(id);
 	if (i == _entities.end()) {
+		Log::warn("Could not get entity with id %li", id);
 		return frontend::ClientEntityPtr();
 	}
 	return i->second;

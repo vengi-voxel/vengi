@@ -15,7 +15,13 @@ namespace backend {
  * will get an update
  */
 USERPROTOHANDLERIMPL(VarUpdate) {
-	// TODO: implement me
+	const auto *vars = message->vars();
+	for (const auto& v : *vars) {
+		const auto* name = v->name();
+		const auto* value = v->value();
+		user->userinfo(name->c_str(), value->c_str());
+	}
+	user->sendUserinfo();
 }
 
 }

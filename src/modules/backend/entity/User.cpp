@@ -52,7 +52,6 @@ void User::sendVars() const {
 	core::Var::visitReplicate([&vars] (const core::VarPtr& var) {
 		vars.push_back(var);
 	});
-	Log::info("send cvars to client: %i", (int)vars.size());
 	flatbuffers::FlatBufferBuilder fbb;
 	auto fbbVars = fbb.CreateVector<flatbuffers::Offset<network::Var>>(vars.size(),
 		[&] (size_t i) {
@@ -87,24 +86,19 @@ ENetPeer* User::setPeer(ENetPeer* peer) {
 
 void User::onConnect() {
 	Log::trace("connect user");
+	_attribs.markAsDirty();
 	sendVars();
-	// TODO: remove init message? we replicate sv_seed now
-	const long seed = core::Var::getSafe(cfg::ServerSeed)->longVal();
-	sendInit(seed);
 	sendUserSpawn();
-	// TODO: send attributes to the client
+	sendUserinfo();
 }
 
 void User::onReconnect() {
 	Log::trace("reconnect user");
+	_attribs.markAsDirty();
 	sendVars();
-	// TODO: remove init message? we replicate sv_seed now
-	const long seed = core::Var::getSafe(cfg::ServerSeed)->longVal();
-	sendInit(seed);
 	visitVisible([&] (const EntityPtr& e) {
 		sendEntitySpawn(e);
 	});
-	// TODO: send attributes to the client
 }
 
 bool User::update(long dt) {
@@ -123,9 +117,21 @@ bool User::update(long dt) {
 	return true;
 }
 
-void User::sendInit(long seed) const {
+void User::userinfo(const char *key, const char* value) {
+	_userinfo.put(key, value);
+}
+
+void User::sendUserinfo() {
 	flatbuffers::FlatBufferBuilder fbb;
-	sendMessage(fbb, network::ServerMsgType::Init, network::CreateInit(fbb, seed).Union());
+	auto iter = _userinfo.begin();
+	auto fbbVars = fbb.CreateVector<flatbuffers::Offset<network::Var>>(_userinfo.size(),
+		[&] (size_t i, auto* iter) {
+			auto name = fbb.CreateString((*iter)->key);
+			auto value = fbb.CreateString((*iter)->value);
+			++(*iter);
+			return network::CreateVar(fbb, name, value);
+		}, &iter);
+	sendToVisible(fbb, network::ServerMsgType::UserInfo, network::CreateUserInfo(fbb, id(), fbbVars).Union(), true);
 }
 
 void User::sendUserSpawn() const {

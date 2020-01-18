@@ -8,8 +8,7 @@ set(SRCS
 	network/AttribUpdateHandler.h
 	network/AuthFailedHandler.h
 	network/EntitySpawnHandler.h
-	network/InitHandler.cpp
-	network/InitHandler.h
+	network/UserInfoHandler.h
 	network/UserSpawnHandler.h
 	network/EntityUpdateHandler.h
 	network/EntityRemoveHandler.h

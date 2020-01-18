@@ -4,10 +4,6 @@ include "Shared.fbs";
 
 namespace network;
 
-table Init {
-	seed:long;
-}
-
 /// email and password validation failed
 table AuthFailed {
 }
@@ -18,6 +14,12 @@ table UserSpawn {
 	name:string (required);
 	pos:Vec3;
 	rotation:float = 0.0;
+}
+
+/// this message contains the user information given by vars with the flag CV_BROADCAST
+table UserInfo {
+	id:long (key);
+	vars:[Var] (required);
 }
 
 /// this message is sent whenever an entity (but not an user) is getting into the visible
@@ -75,7 +77,6 @@ table AttribUpdate {
 }
 
 union ServerMsgType {
-	Init,
 	UserSpawn,
 	EntitySpawn,
 	EntityRemove,
@@ -84,7 +85,8 @@ union ServerMsgType {
 	AttribUpdate,
 	StartCooldown,
 	StopCooldown,
-	VarUpdate
+	VarUpdate,
+	UserInfo
 }
 
 table ServerMessage {

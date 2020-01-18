@@ -39,6 +39,7 @@ protected:
 	network::MoveDirection _lastMoveMask = network::MoveDirection::NONE;
 	glm::vec2 _lastMoveAngles {0.0f};
 	core::VarPtr _rotationSpeed;
+	core::VarPtr _seed;
 	core::VarPtr _maxTargetDistance;
 	frontend::ClientEntityPtr _player;
 	voxel::VoxelFont _voxelFont;
@@ -90,7 +91,6 @@ public:
 	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);
 
 	void entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos, animation::Animation animation);
-	void entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation, animation::Animation animation);
 	void entityRemove(frontend::ClientEntityId id);
 	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
 };

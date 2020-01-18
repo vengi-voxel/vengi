@@ -25,6 +25,7 @@ private:
 	persistence::DBHandlerPtr _dbHandler;
 	core::TimeProviderPtr _timeProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
+	core::Map<std::string, std::string, 8, std::hash<std::string>> _userinfo;
 
 	UserStockMgr _stockMgr;
 	UserCooldownMgr _cooldownMgr;
@@ -56,6 +57,12 @@ public:
 	void onConnect();
 	void onReconnect();
 
+	/**
+	 * @brief Sets the user info values that are set on the client side and broadcasted to
+	 * other players (see @c core::CV_BROADCAST)
+	 */
+	void userinfo(const char *key, const char* value);
+
 	bool update(long dt) override;
 
 	void init() override;
@@ -72,8 +79,14 @@ public:
 	 * @brief Informs the user that the login was successful
 	 */
 	void sendUserSpawn() const;
-	void sendInit(long seed) const;
+	/**
+	 * @brief Send all replicate vars from the server to the user
+	 */
 	void sendVars() const;
+	/**
+	 * @brief Send the userinfo to all visible users
+	 */
+	void sendUserinfo();
 
 	UserLogoutMgr& logoutMgr();
 	const UserLogoutMgr& logoutMgr() const;

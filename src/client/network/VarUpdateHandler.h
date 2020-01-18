@@ -8,7 +8,7 @@
 #include "animation/Animation.h"
 
 /**
- * @brief Set the values from the server to your own cvars
+ * @brief Set the values from the server to your own cvars (@c core::CV_REPLICATE)
  */
 CLIENTPROTOHANDLERIMPL(VarUpdate) {
 	for (const auto& v : *message->vars()) {

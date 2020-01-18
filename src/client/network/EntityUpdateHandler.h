@@ -12,9 +12,15 @@
  */
 CLIENTPROTOHANDLERIMPL(EntityUpdate) {
 	const frontend::ClientEntityId id = message->id();
+	const frontend::ClientEntityPtr& entity = client->getEntity(id);
+	if (!entity) {
+		return;
+	}
 	const network::Vec3 *_pos = message->pos();
-	const network::Animation anim = message->animation();
+	const network::Animation animation = message->animation();
 	const glm::vec3 pos(_pos->x(), _pos->y(), _pos->z());
 	const float orientation = message->rotation();
-	client->entityUpdate(id, pos, orientation, anim);
+	entity->setPosition(pos);
+	entity->setOrientation(orientation);
+	entity->setAnimation(animation);
 }

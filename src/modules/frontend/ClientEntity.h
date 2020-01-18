@@ -9,10 +9,12 @@
 #include "ClientEntityId.h"
 #include "attrib/ShadowAttributes.h"
 #include "video/Buffer.h"
+#include "animation/Animation.h"
 #include "animation/chr/Character.h"
 #include "animation/AnimationCache.h"
 #include "AnimationShaders.h"
 #include "stock/Stock.h"
+#include "core/collection/Map.h"
 #include <functional>
 #include <vector>
 #include <memory>
@@ -35,6 +37,7 @@ private:
 	video::Buffer _vbo;
 	int32_t _vertices = -1;
 	int32_t _indices = -1;
+	core::Map<std::string, std::string, 8, std::hash<std::string>> _userinfo;
 public:
 	ClientEntity(const stock::StockDataProviderPtr& provider, const animation::AnimationCachePtr& animationCache,
 			ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation);
@@ -46,6 +49,7 @@ public:
 	const glm::vec3& position() const;
 	void setOrientation(float orientation);
 	float orientation() const;
+	void userinfo(const std::string& key, const std::string& value);
 
 	bool operator==(const ClientEntity& other) const;
 

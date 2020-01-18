@@ -19,12 +19,12 @@
 #include "core/Password.h"
 #include "network/IMsgProtocolHandler.h"
 #include "network/AttribUpdateHandler.h"
-#include "network/InitHandler.h"
 #include "network/AuthFailedHandler.h"
 #include "network/EntityRemoveHandler.h"
 #include "network/EntitySpawnHandler.h"
 #include "network/EntityUpdateHandler.h"
 #include "network/UserSpawnHandler.h"
+#include "network/UserInfoHandler.h"
 #include "network/VarUpdateHandler.h"
 #include "voxel/MaterialColor.h"
 #include "core/Rest.h"
@@ -94,6 +94,7 @@ core::AppState Client::onConstruct() {
 	core::Var::get(cfg::ClientAutoLogin, "false");
 	core::Var::get(cfg::ClientName, "noname", core::CV_BROADCAST);
 	core::Var::get(cfg::ClientPassword, "");
+	_seed = core::Var::get(cfg::ServerSeed, "");
 	core::Var::get(cfg::HTTPBaseURL, BASE_URL);
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "20.0");
@@ -119,7 +120,7 @@ core::AppState Client::onInit() {
 	regHandler(network::ServerMsgType::UserSpawn, UserSpawnHandler);
 	regHandler(network::ServerMsgType::AuthFailed, AuthFailedHandler);
 	regHandler(network::ServerMsgType::VarUpdate, VarUpdateHandler);
-	regHandler(network::ServerMsgType::Init, InitHandler, _clientPager, _eventBus);
+	regHandler(network::ServerMsgType::UserInfo, UserInfoHandler);
 
 	core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
@@ -198,6 +199,13 @@ void Client::handleLogin() {
 void Client::beforeUI() {
 	Super::beforeUI();
 
+	if (_seed->isDirty()) {
+		_seed->markClean();
+		const unsigned int seed = _seed->intVal();
+		Log::info("Initialize for seed %u", seed);
+		_clientPager->setSeed(seed);
+		_eventBus->publish(voxelworld::WorldCreatedEvent());
+	}
 	if (_player) {
 		const video::Camera& camera = _camera.camera();
 		_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _player, [&] (const glm::vec3& pos, float maxWalkHeight) {
@@ -289,9 +297,6 @@ bool Client::onKeyPress(int32_t key, int16_t modifier) {
 core::AppState Client::onRunning() {
 	_waiting.update(_deltaFrameMillis);
 	const core::AppState state = Super::onRunning();
-	core::Var::visitBroadcast([] (const core::VarPtr& var) {
-		Log::info("TODO: %s must get sent to the server and broadcasted to other players", var->name().c_str());
-	});
 	if (_network->isConnected()) {
 		const float pitch = _mouseRelativePos.y;
 		const float turn = _mouseRelativePos.x;
@@ -338,17 +343,6 @@ void Client::disconnect() {
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserDisconnect, network::CreateUserDisconnect(fbb).Union());
 	_network->disconnect();
-}
-
-void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation, animation::Animation animation) {
-	const frontend::ClientEntityPtr& entity = _worldRenderer.getEntity(id);
-	if (!entity) {
-		Log::warn("Could not get entity with id %li", id);
-		return;
-	}
-	entity->setPosition(pos);
-	entity->setOrientation(orientation);
-	entity->setAnimation(animation);
 }
 
 void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos, animation::Animation animation) {

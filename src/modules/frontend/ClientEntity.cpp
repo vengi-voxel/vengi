@@ -6,6 +6,8 @@
 #include "animation/Vertex.h"
 #include "core/App.h"
 #include "core/io/Filesystem.h"
+#include "animation/AnimationSettings.h"
+#include "core/String.h"
 
 namespace frontend {
 
@@ -78,6 +80,10 @@ uint32_t ClientEntity::bindVertexBuffers(const shader::SkeletonShader& chrShader
 
 void ClientEntity::unbindVertexBuffers() {
 	_vbo.unbind();
+}
+
+void ClientEntity::userinfo(const std::string& key, const std::string& value) {
+	_userinfo.put(key, value);
 }
 
 }
