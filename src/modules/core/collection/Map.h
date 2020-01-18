@@ -71,7 +71,7 @@ public:
 
 	Map& operator=(const Map& other) {
 		clear();
-		_allocator.shutdown();
+		_allocator.shutdown(); // TODO: not needed init() will handle this
 		_allocator.init((other._allocator.max)());
 		_buckets.fill(nullptr);
 		for (auto i = other.begin(); i != other.end(); ++i) {
