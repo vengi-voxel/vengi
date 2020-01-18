@@ -146,4 +146,5 @@ bool User::sendMessage(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgTy
 	return true;
 }
 
+
 }

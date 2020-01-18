@@ -50,6 +50,7 @@ core::AppState Server::onConstruct() {
 	core::Var::get(cfg::ServerHost, "0.0.0.0");
 	core::Var::get(cfg::ServerMaxClients, "1024");
 	core::Var::get(cfg::ServerHttpPort, "8080", core::CV_REPLICATE);
+	core::Var::get(cfg::ServerChunkBaseUrl, "http://localhost:8080/chunk", core::CV_REPLICATE);
 	core::Var::get(cfg::ServerSeed, "1", core::CV_REPLICATE);
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	core::Var::get(cfg::DatabaseMinConnections, "2");
@@ -114,7 +115,7 @@ int main(int argc, char *argv[]) {
 
 	const http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>();
 	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus, timeProvider,
-			entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache);
+			entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache, httpServer);
 
 	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);

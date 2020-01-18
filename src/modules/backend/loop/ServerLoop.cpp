@@ -218,6 +218,10 @@ bool ServerLoop::init() {
 	}
 	Log::info("Listen for HTTP requests at port %i", httpPort);
 
+	_httpServer->registerRoute(http::HttpMethod::GET, "/info", [] (const http::RequestParser& request, http::HttpResponse* response) {
+		response->setText("Server info");
+	});
+
 	if (!_metricMgr->init()) {
 		Log::warn("Failed to init metric sender");
 	}

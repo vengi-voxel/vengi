@@ -13,6 +13,8 @@ class PagedVolumeWrapper;
 
 namespace voxelworld {
 
+// TODO: this must become an interface and we need the persister to be in the backend package
+// as we would like to persist the stuff in the database
 class WorldPersister {
 protected:
 	bool _persist = true;

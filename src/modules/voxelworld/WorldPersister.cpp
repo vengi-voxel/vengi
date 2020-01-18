@@ -53,7 +53,6 @@ bool WorldPersister::load(voxel::PagedVolume::Chunk* chunk, long seed) {
 	// TODO: load async, put world into state loading, and do the real loading in onFrame if the file is fully loaded
 	const int fileLen = f->read((void **) &fileBuf);
 	if (!fileBuf || fileLen <= 0) {
-		Log::error("Failed to load the world from %s", f->name().c_str());
 		return false;
 	}
 	std::unique_ptr<uint8_t[]> smartBuf(fileBuf);

@@ -7,6 +7,7 @@
 #include "backend/ForwardDecl.h"
 #include "MapId.h"
 #include "core/IComponent.h"
+#include "http/HttpServer.h"
 #include <memory>
 #include <unordered_map>
 
@@ -29,6 +30,7 @@ private:
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	persistence::PersistenceMgrPtr _persistenceMgr;
 	voxelformat::VolumeCachePtr _volumeCache;
+	http::HttpServerPtr _httpServer;
 
 	std::unordered_map<MapId, MapPtr> _maps;
 public:
@@ -42,7 +44,8 @@ public:
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider,
 			const persistence::PersistenceMgrPtr& persistenceMgr,
-			const voxelformat::VolumeCachePtr& volumeCache);
+			const voxelformat::VolumeCachePtr& volumeCache,
+			const http::HttpServerPtr& httpServer);
 	~MapProvider();
 
 	/**

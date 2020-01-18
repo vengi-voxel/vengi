@@ -41,6 +41,33 @@ table user {
 	}
 }
 
+table chunk {
+	namespace backend
+	field x {
+		type int
+	}
+	field y {
+		type int
+	}
+	field z {
+		type int
+	}
+	field mapid {
+		type int
+	}
+	field data {
+		type blob
+		notnull
+		operator set
+	}
+	constraints {
+		x primarykey
+		y primarykey
+		z primarykey
+		mapid primarykey
+	}
+}
+
 table inventory {
 	namespace backend
 	field userid {

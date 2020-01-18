@@ -9,6 +9,8 @@
 #include "core/Assert.h"
 #include "backend/entity/ai/AILoader.h"
 #include "http/HttpServer.h"
+#include "voxel/PagedVolume.h"
+#include <glm/vec3.hpp>
 
 namespace backend {
 
@@ -22,11 +24,12 @@ MapProvider::MapProvider(
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
 		const persistence::PersistenceMgrPtr& persistenceMgr,
-		const voxelformat::VolumeCachePtr& volumeCache) :
+		const voxelformat::VolumeCachePtr& volumeCache,
+		const http::HttpServerPtr& httpServer) :
 		_filesystem(filesystem), _eventBus(eventBus), _timeProvider(timeProvider),
 		_entityStorage(entityStorage), _messageSender(messageSender), _loader(loader),
 		_containerProvider(containerProvider), _cooldownProvider(cooldownProvider),
-		_persistenceMgr(persistenceMgr), _volumeCache(volumeCache) {
+		_persistenceMgr(persistenceMgr), _volumeCache(volumeCache), _httpServer(httpServer) {
 }
 
 MapProvider::~MapProvider() {
@@ -60,6 +63,25 @@ bool MapProvider::init() {
 		return false;
 	}
 
+	_httpServer->registerRoute(http::HttpMethod::GET, "/chunk", [&] (const http::RequestParser& request, http::HttpResponse* response) {
+		HTTP_QUERY_GET_INT(x);
+		HTTP_QUERY_GET_INT(y);
+		HTTP_QUERY_GET_INT(z);
+		HTTP_QUERY_GET_INT(mapid);
+		const MapPtr& m = map(mapid);
+		if (!m) {
+			Log::debug("Failed to get map for id %i", mapid);
+			return;
+		}
+		// TODO: another option would be to nmap the world persister gzipped file
+		voxelworld::WorldMgr* worldMgr = m->worldMgr();
+		const voxel::PagedVolume::ChunkPtr& chunk = worldMgr->volumeData()->chunk(glm::ivec3(x, y, z));
+		response->body = (const char*)chunk->data();
+		response->bodySize = chunk->dataSizeInBytes();
+		response->freeBody = false;
+		response->headers.put(http::header::CONTENT_TYPE, "application/chunk");
+	});
+
 	const MapPtr& map = std::make_shared<Map>(1, _eventBus, _timeProvider,
 			_filesystem, _entityStorage, _messageSender, _volumeCache,
 			_loader, _containerProvider, _cooldownProvider, _persistenceMgr);
@@ -72,6 +94,7 @@ bool MapProvider::init() {
 }
 
 void MapProvider::shutdown() {
+	_httpServer->unregisterRoute(http::HttpMethod::GET, "/chunk");
 	_maps.clear();
 }
 

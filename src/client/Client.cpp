@@ -93,6 +93,7 @@ core::AppState Client::onConstruct() {
 	core::Var::get(cfg::ClientAutoLogin, "false");
 	core::Var::get(cfg::ClientName, "noname", core::CV_BROADCAST);
 	core::Var::get(cfg::ClientPassword, "");
+	_chunkUrl = core::Var::get(cfg::ServerChunkBaseUrl, "");
 	_seed = core::Var::get(cfg::ServerSeed, "");
 	core::Var::get(cfg::HTTPBaseURL, BASE_URL);
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
@@ -166,6 +167,11 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
+	if (!_clientPager->init(_chunkUrl->strVal())) {
+		Log::error("Failed to initialize client pager");
+		return core::AppState::InitFailure;
+	}
+
 	if (!_worldRenderer.init(glm::ivec2(0), frameBufferDimension())) {
 		Log::error("Failed to initialize world renderer");
 		return core::AppState::InitFailure;
@@ -196,6 +202,10 @@ void Client::handleLogin() {
 void Client::beforeUI() {
 	Super::beforeUI();
 
+	if (_chunkUrl->isDirty()) {
+		_clientPager->init(_chunkUrl->strVal());
+		_chunkUrl->markClean();
+	}
 	if (_seed->isDirty()) {
 		_seed->markClean();
 		const unsigned int seed = _seed->intVal();
@@ -385,7 +395,7 @@ int main(int argc, char *argv[]) {
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 	const network::ClientNetworkPtr& network = std::make_shared<network::ClientNetwork>(protocolHandlerRegistry, eventBus);
 	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
-	const client::ClientPagerPtr& pager = std::make_shared<client::ClientPager>(volumeCache);
+	const client::ClientPagerPtr& pager = std::make_shared<client::ClientPager>();
 	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(pager);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();

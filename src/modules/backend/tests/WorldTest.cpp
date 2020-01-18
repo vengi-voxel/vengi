@@ -32,6 +32,7 @@ public:
 	MapProviderPtr _mapProvider;
 	std::shared_ptr<persistence::PersistenceMgrMock> _persistenceMgr;
 	voxelformat::VolumeCachePtr _volumeCache;
+	http::HttpServerPtr _httpServer;
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
@@ -51,11 +52,12 @@ public:
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
+		_httpServer = std::make_shared<http::HttpServer>();
 		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(_persistenceMgr.get());
 		_mapProvider = std::make_shared<MapProvider>(_testApp->filesystem(), _testApp->eventBus(), _testApp->timeProvider(),
-				_entityStorage, _messageSender, _loader, _containerProvider, _cooldownProvider, _persistenceMgr, _volumeCache);
+				_entityStorage, _messageSender, _loader, _containerProvider, _cooldownProvider, _persistenceMgr, _volumeCache, _httpServer);
 	}
 };
 

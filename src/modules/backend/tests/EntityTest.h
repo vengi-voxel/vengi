@@ -19,6 +19,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeCache.h"
 #include "persistence/tests/Mocks.h"
+#include "http/HttpServer.h"
 
 #pragma once
 
@@ -87,13 +88,14 @@ protected:
 		filesystem = _testApp->filesystem();
 		eventBus = _testApp->eventBus();
 		voxelformat::VolumeCachePtr volumeCache = std::make_shared<voxelformat::VolumeCache>();
+		http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>();
 		timeProvider = _testApp->timeProvider();
 		persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 		EXPECT_CALL(*persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		EXPECT_CALL(*persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(persistenceMgr.get());
 		mapProvider = std::make_shared<MapProvider>(filesystem, eventBus, timeProvider,
-				entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache);
+				entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache, httpServer);
 		ASSERT_TRUE(mapProvider->init()) << "Failed to initialize the map provider";
 		map = mapProvider->map(1);
 	}

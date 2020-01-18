@@ -29,12 +29,11 @@ bool WorldPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 		return false;
 	}
 	create(pctx);
+	_worldPersister.save(pctx.chunk.get(), _seed);
 	return true;
 }
 
 void WorldPager::pageOut(voxel::PagedVolume::Chunk* chunk) {
-	core_assert(chunk != nullptr);
-	_worldPersister.save(chunk, _seed);
 }
 
 void WorldPager::setPersist(bool persist) {
