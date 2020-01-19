@@ -22,7 +22,7 @@ void ThreadPool::init() {
 	_workers.reserve(_threads);
 	for (size_t i = 0; i < _threads; ++i) {
 		_workers.emplace_back([this, i] {
-			const std::string n = core::string::format("%s-%i", this->_name, (int)i);
+			const std::string n = core::string::format("%s-%i-%i", this->_name, (int)i, (int)getThreadId());
 			setThreadName(n.c_str());
 			core_trace_thread(n.c_str());
 			for (;;) {
