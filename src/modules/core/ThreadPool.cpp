@@ -42,6 +42,7 @@ void ThreadPool::init() {
 						});
 					}
 					if (this->_stop && (this->_force || this->_tasks.empty())) {
+						Log::debug(logid, "Shutdown worker thread for %i", (int)getThreadId());
 						break;
 					}
 					task = std::move(this->_tasks.front());
@@ -50,7 +51,9 @@ void ThreadPool::init() {
 
 				core_trace_begin_frame();
 				core_trace_scoped(ThreadPoolWorker);
+				Log::debug(logid, "Execute task in %i", (int)getThreadId());
 				task();
+				Log::debug(logid, "End of task in %i", (int)getThreadId());
 				core_trace_end_frame();
 			}
 		});
