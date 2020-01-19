@@ -84,4 +84,8 @@ uint32_t halfcpus() {
 	return core_max(1u, std::thread::hardware_concurrency() / 2u);
 }
 
+size_t getThreadId() {
+	return std::hash<std::thread::id>{}(std::this_thread::get_id());
+}
+
 }

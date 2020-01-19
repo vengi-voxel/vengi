@@ -17,6 +17,7 @@ enum class ThreadPriority {
 	High, Normal, Low
 };
 
+extern size_t getThreadId();
 extern void setThreadPriority(ThreadPriority prio);
 
 }
