@@ -54,7 +54,15 @@ public:
 
 	const std::string& name() const;
 
+	/**
+	 * @brief Called for every connect/reconnect
+	 * @sa onReconnect()
+	 */
 	void onConnect();
+	/**
+	 * @brief Called only for reconnects. This is called before onConnect() is called.
+	 * @sa onConnect()
+	 */
 	void onReconnect();
 
 	/**
