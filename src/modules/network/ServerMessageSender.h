@@ -6,6 +6,7 @@
 
 #include "ServerMessages_generated.h"
 #include "ServerNetwork.h"
+#include "core/Log.h"
 #include <memory>
 
 namespace network {
@@ -17,6 +18,7 @@ using namespace flatbuffers;
  */
 class ServerMessageSender {
 private:
+	static constexpr auto logid = Log::logid("ServerMessageSender");
 	ServerNetworkPtr _network;
 
 public:

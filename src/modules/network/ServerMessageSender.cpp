@@ -27,7 +27,7 @@ bool ServerMessageSender::sendServerMessage(ENetPeer* peer, FlatBufferBuilder& f
 }
 
 bool ServerMessageSender::sendServerMessage(ENetPeer** peers, int numPeers, FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags) {
-	Log::debug("Send %s", EnumNameServerMsgType(type));
+	Log::debug(logid, "Send %s", EnumNameServerMsgType(type));
 	core_assert(numPeers > 0);
 	int sent = 0;
 	auto packet = createServerPacket(fbb, type, data, flags);
@@ -35,7 +35,7 @@ bool ServerMessageSender::sendServerMessage(ENetPeer** peers, int numPeers, Flat
 		// TODO: lock
 		for (int i = 0; i < numPeers; ++i) {
 			if (!_network->sendMessage(peers[i], packet)) {
-				Log::warn("Could not send message of type %s to peer %i", network::EnumNameServerMsgType(type), i);
+				Log::warn(logid, "Could not send message of type %s to peer %i", network::EnumNameServerMsgType(type), i);
 			} else {
 				++sent;
 			}
@@ -46,7 +46,7 @@ bool ServerMessageSender::sendServerMessage(ENetPeer** peers, int numPeers, Flat
 }
 
 bool ServerMessageSender::broadcastServerMessage(FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, int channel, uint32_t flags) {
-	Log::debug("Broadcast %s", EnumNameServerMsgType(type));
+	Log::debug(logid, "Broadcast %s on channel %i", EnumNameServerMsgType(type), channel);
 	bool success = false;
 	{
 		// TODO: lock
