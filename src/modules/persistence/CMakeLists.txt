@@ -1,5 +1,6 @@
 set(SRCS
 	BindParam.cpp BindParam.h
+	Blob.cpp Blob.h
 	Connection.cpp Connection.h
 	ConnectionPool.cpp ConnectionPool.h
 	ConstraintType.h

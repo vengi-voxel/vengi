@@ -16,9 +16,9 @@ struct Blob {
 	constexpr Blob() {
 	}
 
-	Blob(uint8_t* _data, size_t _length) :
-			data(_data), length(_length) {
-	}
+	Blob(uint8_t* data, size_t length);
+
+	void release();
 };
 
 }

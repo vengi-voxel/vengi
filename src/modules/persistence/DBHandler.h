@@ -188,7 +188,7 @@ public:
 		});
 	}
 
-	void freeBlob(Blob blob) const;
+	void freeBlob(Blob& blob) const;
 
 	/**
 	 * @brief Updates the database entry for the give model. The primary keys must be set in the

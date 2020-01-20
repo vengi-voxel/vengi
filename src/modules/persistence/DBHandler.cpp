@@ -268,8 +268,8 @@ bool DBHandler::rollback() {
 	return exec(createTransactionRollback());
 }
 
-void DBHandler::freeBlob(Blob blob) const {
-	State::freeBlob(blob.data);
+void DBHandler::freeBlob(Blob& blob) const {
+	blob.release();
 }
 
 }

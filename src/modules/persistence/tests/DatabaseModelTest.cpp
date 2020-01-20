@@ -134,7 +134,7 @@ TEST_F(DatabaseModelTest, testBlob) {
 	db::BlobtestModel modelSelect;
 	modelSelect.setId(1);
 	EXPECT_TRUE(_dbHandler.select(modelSelect, persistence::DBConditionOne()));
-	const Blob dataSelect = modelSelect.data();
+	Blob dataSelect = modelSelect.data();
 	ASSERT_EQ(dataSelect.length, sizeof(data));
 	_dbHandler.freeBlob(dataSelect);
 }
