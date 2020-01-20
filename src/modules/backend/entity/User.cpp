@@ -94,8 +94,6 @@ void User::onConnect() {
 
 void User::onReconnect() {
 	Log::info("reconnect user");
-	_attribs.markAsDirty();
-	sendVars();
 	visitVisible([&] (const EntityPtr& e) {
 		sendEntitySpawn(e);
 	});
