@@ -74,6 +74,7 @@ ENetPeer* ClientNetwork::connect(uint16_t port, const std::string& hostname, int
 void ClientNetwork::destroy() {
 	enet_host_destroy(_client);
 	_client = nullptr;
+	_peer = nullptr;
 }
 
 void ClientNetwork::disconnect() {
