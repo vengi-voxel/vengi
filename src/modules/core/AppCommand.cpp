@@ -164,6 +164,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 
 	core::Command::registerCommand("log", [] (const core::CmdArgs& args) {
 		if (args.size() < 2) {
+			Log::info("Usage: log <logid> <trace|debug|info|warn|error|none>");
 			return;
 		}
 		const std::string& id = args[0];
