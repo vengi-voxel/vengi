@@ -16,6 +16,7 @@ ClientNetwork::ClientNetwork(const ProtocolHandlerRegistryPtr& protocolHandlerRe
 
 void ClientNetwork::shutdown() {
 	disconnect();
+	destroy();
 	Super::shutdown();
 }
 
