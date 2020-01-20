@@ -22,7 +22,7 @@ bool DBHandler::init() {
 		return true;
 	}
 	if (!postgresInit()) {
-		Log::error("Database driver initialization failed.");
+		Log::error(logid, "Database driver initialization failed.");
 		return false;
 	}
 	if (!_connectionPool.init()) {
@@ -115,7 +115,7 @@ bool DBHandler::tableExists(const Model& model) const {
 	core_assert_msg(s.cols == 1, "There should exactly be 1 affected column for this statement, but we got %i", s.cols);
 	core_assert_msg(s.currentRow == 0, "s.currentRow should have been 0 - but is %i", s.currentRow);
 	const bool result = s.asBool(0);
-	Log::debug("check whether table '%s' exists: '%s'", model.tableName(), result ? "true" : "false");
+	Log::debug(logid, "check whether table '%s' exists: '%s'", model.tableName(), result ? "true" : "false");
 	return result;
 }
 
@@ -198,7 +198,7 @@ State DBHandler::execInternalWithCondition(const std::string& query, BindParam& 
 	Log::debug(logid, "Execute query '%s'", query.c_str());
 	ScopedConnection scoped(_connectionPool, connection());
 	if (!scoped) {
-		Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
+		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());
 		return State();
 	}
 	State s(scoped.connection());
@@ -210,10 +210,10 @@ State DBHandler::execInternalWithCondition(const std::string& query, BindParam& 
 			params.values[index] = value;
 		}
 		if (!s.exec(query.c_str(), params.position, &params.values[0], &params.lengths[0], &params.formats[0])) {
-			Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionOffset);
+			Log::error(logid, "Failed to execute query '%s' with %i parameters", query.c_str(), conditionOffset);
 		}
 	} else if (!s.exec(query.c_str())) {
-		Log::error("Failed to execute query '%s'", query.c_str());
+		Log::error(logid, "Failed to execute query '%s'", query.c_str());
 	}
 	if (s.affectedRows <= 0) {
 		Log::trace(logid, "No rows affected.");
@@ -229,7 +229,7 @@ State DBHandler::execInternalWithParameters(const std::string& query, Model& mod
 		return State();
 	}
 	State s(scoped.connection());
-	Log::debug("Execute query '%s' with %i parameters", query.c_str(), param.position);
+	Log::debug(logid, "Execute query '%s' with %i parameters", query.c_str(), param.position);
 	if (!s.exec(query.c_str(), param.position, &param.values[0], &param.lengths[0], &param.formats[0])) {
 		Log::warn(logid, "Failed to execute query: '%s'", query.c_str());
 	}
@@ -248,11 +248,11 @@ State DBHandler::execInternalWithParameters(const std::string& query, const Bind
 		return State();
 	}
 	State s(scoped.connection());
-	Log::debug("Execute query '%s' with %i parameters", query.c_str(), param.position);
+	Log::debug(logid, "Execute query '%s' with %i parameters", query.c_str(), param.position);
 	if (!s.exec(query.c_str(), param.position, &param.values[0], &param.lengths[0], &param.formats[0])) {
 		Log::warn(logid, "Failed to execute query: '%s'", query.c_str());
 	}
-	Log::debug("current row: %i", s.currentRow);
+	Log::debug(logid, "current row: %i", s.currentRow);
 	return s;
 }
 

@@ -54,14 +54,14 @@ private:
 		Log::debug(logid, "Execute query '%s'", query.c_str());
 		ScopedConnection scoped(_connectionPool, connection());
 		if (!scoped) {
-			Log::error("Could not execute query '%s' - could not acquire connection", query.c_str());
+			Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());
 			return false;
 		}
 		State s(scoped.connection());
 		if (conditionAmount > 0) {
 			if (keyParams.position == conditionAmount) {
 				if (!s.exec(query.c_str(), conditionAmount, &keyParams.values[0], &keyParams.lengths[0], &keyParams.formats[0])) {
-					Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
+					Log::error(logid, "Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
 				}
 			} else {
 				BindParam params = keyParams;
@@ -72,11 +72,11 @@ private:
 					params.values[index] = value;
 				}
 				if (!s.exec(query.c_str(), conditionAmount, &params.values[0], &params.lengths[0], &params.formats[0])) {
-					Log::error("Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
+					Log::error(logid, "Failed to execute query '%s' with %i parameters", query.c_str(), conditionAmount);
 				}
 			}
 		} else if (!s.exec(query.c_str())) {
-			Log::error("Failed to execute query '%s'", query.c_str());
+			Log::error(logid, "Failed to execute query '%s'", query.c_str());
 		}
 		for (int i = 0; i < s.affectedRows; ++i) {
 			typename std::remove_reference<MODEL>::type selectedModel;

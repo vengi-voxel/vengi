@@ -172,10 +172,10 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		const auto hashVal = Log::logid(id.c_str(), id.length());
 		if (level == Log::Level::None) {
 			Log::disable(hashVal);
-			Log::info("Disabling logging for %s", id.c_str());
+			Log::info("Disabling logging for %s (%u)", id.c_str(), hashVal);
 		} else {
 			Log::enable(hashVal, level);
-			Log::info("Set log level for %s to %s", id.c_str(), args[1].c_str());
+			Log::info("Set log level for %s to %s (%u)", id.c_str(), args[1].c_str(), hashVal);
 		}
 	}).setHelp("Change the log level on an id base").setArgumentCompleter([] (const std::string& str, std::vector<std::string>& matches) -> int {
 		if (str[0] == 't') {
