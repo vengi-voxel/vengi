@@ -15,6 +15,7 @@
 #include "voxel/MaterialColor.h"
 #include "persistence/tests/Mocks.h"
 #include "voxelformat/VolumeCache.h"
+#include "voxelworld/ChunkPersister.h"
 #include "http/HttpServer.h"
 
 namespace backend {
@@ -31,6 +32,8 @@ public:
 	std::shared_ptr<persistence::PersistenceMgrMock> _persistenceMgr;
 	voxelformat::VolumeCachePtr _volumeCache;
 	http::HttpServerPtr _httpServer;
+	core::Factory<DBChunkPersister> _chunkPersisterFactory;
+	persistence::DBHandlerPtr _dbHandler;
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
@@ -49,6 +52,7 @@ public:
 		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		_httpServer = std::make_shared<http::HttpServer>();
+		_dbHandler = std::make_shared<persistence::DBHandlerMock>();
 		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(_persistenceMgr.get());
@@ -58,7 +62,7 @@ public:
 #define create(name) \
 	MapProvider name(_testApp->filesystem(), _testApp->eventBus(), _testApp->timeProvider(), \
 			_entityStorage, _messageSender, _loader, _containerProvider, _cooldownProvider, \
-			_persistenceMgr, _volumeCache, _httpServer);
+			_persistenceMgr, _volumeCache, _httpServer, _chunkPersisterFactory, _dbHandler);
 
 TEST_F(MapProviderTest, testInitShutdown) {
 	create(provider);

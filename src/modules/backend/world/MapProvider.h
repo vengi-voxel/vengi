@@ -8,6 +8,8 @@
 #include "MapId.h"
 #include "core/IComponent.h"
 #include "http/HttpServer.h"
+#include "DBChunkPersister.h"
+#include "core/Factory.h"
 #include <memory>
 #include <unordered_map>
 
@@ -31,6 +33,8 @@ private:
 	persistence::PersistenceMgrPtr _persistenceMgr;
 	voxelformat::VolumeCachePtr _volumeCache;
 	http::HttpServerPtr _httpServer;
+	core::Factory<DBChunkPersister> _chunkPersisterFactory;
+	persistence::DBHandlerPtr _dbHandler;
 
 	std::unordered_map<MapId, MapPtr> _maps;
 public:
@@ -45,7 +49,9 @@ public:
 			const cooldown::CooldownProviderPtr& cooldownProvider,
 			const persistence::PersistenceMgrPtr& persistenceMgr,
 			const voxelformat::VolumeCachePtr& volumeCache,
-			const http::HttpServerPtr& httpServer);
+			const http::HttpServerPtr& httpServer,
+			const core::Factory<DBChunkPersister>& chunkPersisterFactory,
+			const persistence::DBHandlerPtr& dbHandler);
 	~MapProvider();
 
 	/**

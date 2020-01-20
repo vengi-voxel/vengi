@@ -12,12 +12,12 @@
 
 namespace voxelworld {
 
-WorldPager::WorldPager(const voxelformat::VolumeCachePtr& volumeCache) :
-		_volumeCache(volumeCache) {
+WorldPager::WorldPager(const voxelformat::VolumeCachePtr& volumeCache, const ChunkPersisterPtr& chunkPersister) :
+		_volumeCache(volumeCache), _chunkPersister(chunkPersister) {
 }
 
 void WorldPager::erase(const voxel::Region& region) {
-	_worldPersister.erase(region, _seed);
+	_chunkPersister->erase(region, _seed);
 }
 
 bool WorldPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
@@ -25,19 +25,16 @@ bool WorldPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
-	if (_worldPersister.load(pctx.chunk.get(), _seed)) {
+	if (_chunkPersister->load(pctx.chunk.get(), _seed)) {
 		return false;
 	}
 	create(pctx);
-	_worldPersister.save(pctx.chunk.get(), _seed);
+	_chunkPersister->save(pctx.chunk.get(), _seed);
 	return true;
 }
 
 void WorldPager::pageOut(voxel::PagedVolume::Chunk* chunk) {
-}
-
-void WorldPager::setPersist(bool persist) {
-	_worldPersister.setPersist(persist);
+	// currently chunks are not modifiable and are saved directly after creating the chunk
 }
 
 void WorldPager::setSeed(unsigned int seed) {

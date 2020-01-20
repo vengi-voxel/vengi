@@ -28,9 +28,8 @@ public:
 BENCHMARK_DEFINE_F(PagedVolumeBenchmark, pageIn) (benchmark::State& state) {
 	const uint16_t chunkSideLength = state.range(0);
 	const uint32_t volumeMemoryMegaBytes = chunkSideLength * 2;
-	voxelworld::WorldPager pager(_volumeCache);
+	voxelworld::WorldPager pager(_volumeCache, std::make_shared<voxelworld::ChunkPersister>());
 	pager.setSeed(0l);
-	pager.setPersist(false);
 	voxel::PagedVolume *volumeData = new voxel::PagedVolume(&pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 	const io::FilesystemPtr& filesystem = io::filesystem();
 	const std::string& luaParameters = filesystem->load("worldparams.lua");

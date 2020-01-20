@@ -4,7 +4,6 @@
 #pragma once
 
 #include "voxel/PagedVolume.h"
-#include "WorldPersister.h"
 #include "WorldContext.h"
 #include "voxelformat/VolumeCache.h"
 #include "voxel/Constants.h"
@@ -13,6 +12,7 @@
 #include "noise/Noise.h"
 #include "BiomeManager.h"
 #include <memory>
+#include "ChunkPersister.h"
 
 namespace voxel {
 class PagedVolumeWrapper;
@@ -29,7 +29,6 @@ namespace voxelworld {
  */
 class WorldPager: public voxel::PagedVolume::Pager {
 private:
-	WorldPersister _worldPersister;
 	unsigned int _seed = 0l;
 	glm::vec2 _noiseSeedOffset;
 
@@ -38,6 +37,7 @@ private:
 	WorldContext _worldCtx;
 	noise::Noise _noise;
 	voxelformat::VolumeCachePtr _volumeCache;
+	ChunkPersisterPtr _chunkPersister;
 
 	// don't access the volume in anything that is called here
 	void create(voxel::PagedVolume::PagerContext& pagerCtx);
@@ -51,7 +51,7 @@ private:
 	float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const;
 
 public:
-	WorldPager(const voxelformat::VolumeCachePtr& volumeCache);
+	WorldPager(const voxelformat::VolumeCachePtr& volumeCache, const ChunkPersisterPtr& chunkPersister);
 	/**
 	 * @brief Initializes the pager
 	 * @param volumeData The volume data to operate on
@@ -66,13 +66,8 @@ public:
 	void shutdown();
 	void construct();
 
-	const WorldPersister& worldPersister() const;
+	const ChunkPersisterPtr& chunkPersister() const;
 
-	/**
-	 * @brief Allow to switch whether you would like to persist the world data.
-	 * @note Default is @c true
-	 */
-	void setPersist(bool persist);
 	/**
 	 * @brief The ssed that is going to be used for creating the world
 	 */
@@ -88,8 +83,8 @@ public:
 	void pageOut(voxel::PagedVolume::Chunk* chunk) override;
 };
 
-inline const WorldPersister& WorldPager::worldPersister() const {
-	return _worldPersister;
+inline const ChunkPersisterPtr& WorldPager::chunkPersister() const {
+	return _chunkPersister;
 }
 
 typedef std::shared_ptr<WorldPager> WorldPagerPtr;

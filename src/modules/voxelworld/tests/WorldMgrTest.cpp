@@ -17,9 +17,8 @@ private:
 protected:
 	void extract(int expected) {
 		const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
-		WorldPagerPtr pager = std::make_shared<WorldPager>(volumeCache);
+		WorldPagerPtr pager = std::make_shared<WorldPager>(volumeCache, std::make_shared<voxelworld::ChunkPersister>());
 		pager->setSeed(0);
-		pager->setPersist(false);
 
 		WorldMgr world(pager);
 		world.setSeed(0);

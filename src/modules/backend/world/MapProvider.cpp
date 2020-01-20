@@ -25,11 +25,14 @@ MapProvider::MapProvider(
 		const cooldown::CooldownProviderPtr& cooldownProvider,
 		const persistence::PersistenceMgrPtr& persistenceMgr,
 		const voxelformat::VolumeCachePtr& volumeCache,
-		const http::HttpServerPtr& httpServer) :
+		const http::HttpServerPtr& httpServer,
+		const core::Factory<DBChunkPersister>& chunkPersisterFactory,
+		const persistence::DBHandlerPtr& dbHandler) :
 		_filesystem(filesystem), _eventBus(eventBus), _timeProvider(timeProvider),
 		_entityStorage(entityStorage), _messageSender(messageSender), _loader(loader),
 		_containerProvider(containerProvider), _cooldownProvider(cooldownProvider),
-		_persistenceMgr(persistenceMgr), _volumeCache(volumeCache), _httpServer(httpServer) {
+		_persistenceMgr(persistenceMgr), _volumeCache(volumeCache), _httpServer(httpServer),
+		_chunkPersisterFactory(chunkPersisterFactory), _dbHandler(dbHandler) {
 }
 
 MapProvider::~MapProvider() {
@@ -70,26 +73,36 @@ bool MapProvider::init() {
 		HTTP_QUERY_GET_INT(mapid);
 		const MapPtr& m = map(mapid);
 		if (!m) {
-			Log::debug("Failed to get map for id %i", mapid);
+			response->status = http::HttpStatus::NotFound;
+			response->setText("Map with given id not found");
 			return;
 		}
-		// TODO: another option would be to nmap the world persister gzipped file
-		voxelworld::WorldMgr* worldMgr = m->worldMgr();
-		const voxel::PagedVolume::ChunkPtr& chunk = worldMgr->volumeData()->chunk(glm::ivec3(x, y, z));
-		response->body = (const char*)chunk->data();
-		response->bodySize = chunk->dataSizeInBytes();
-		response->freeBody = false;
+		const DBChunkPersisterPtr& persister = m->chunkPersister();
+		const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
+		persistence::Blob blob = persister->load(x, y, z, mapid, seed->uintVal());
+		if (blob.length <= 0) {
+			response->status = http::HttpStatus::NotFound;
+			response->setText("Chunk not found");
+			return;
+		}
+		response->body = (char*)core_malloc(blob.length);
+		::memcpy((void*)response->body, blob.data, blob.length);
+		response->freeBody = true;
+		response->contentLength(blob.length);
 		response->headers.put(http::header::CONTENT_TYPE, "application/chunk");
+		blob.release();
 	});
 
-	const MapPtr& map = std::make_shared<Map>(1, _eventBus, _timeProvider,
+	const MapId mapId = 1;
+	const MapPtr& map = std::make_shared<Map>(mapId, _eventBus, _timeProvider,
 			_filesystem, _entityStorage, _messageSender, _volumeCache,
-			_loader, _containerProvider, _cooldownProvider, _persistenceMgr);
+			_loader, _containerProvider, _cooldownProvider, _persistenceMgr,
+			_chunkPersisterFactory.create(_dbHandler, mapId));
 	if (!map->init()) {
-		Log::warn("Failed to init map %i", map->id());
+		Log::warn("Failed to init map %i", mapId);
 		return false;
 	}
-	_maps.insert(std::make_pair(1, map));
+	_maps.insert(std::make_pair(mapId, map));
 	return true;
 }
 

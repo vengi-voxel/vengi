@@ -55,6 +55,12 @@ table chunk {
 	field mapid {
 		type int
 	}
+	field seed {
+		type int
+	}
+	field version {
+		type int
+	}
 	field data {
 		type blob
 		notnull
@@ -65,6 +71,7 @@ table chunk {
 		y primarykey
 		z primarykey
 		mapid primarykey
+		seed primarykey
 	}
 }
 

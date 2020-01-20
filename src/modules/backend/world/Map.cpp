@@ -39,11 +39,12 @@ Map::Map(MapId mapId,
 		const AILoaderPtr& loader,
 		const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
-		const persistence::PersistenceMgrPtr& persistenceMgr) :
+		const persistence::PersistenceMgrPtr& persistenceMgr,
+		const DBChunkPersisterPtr& chunkPersister) :
 		_mapId(mapId), _mapIdStr(std::to_string(mapId)),
 		_eventBus(eventBus), _filesystem(filesystem), _persistenceMgr(persistenceMgr),
 		_volumeCache(volumeCache), _attackMgr(this),
-		_quadTree(math::RectFloat::getMaxRect(), 100.0f) {
+		_quadTree(math::RectFloat::getMaxRect(), 100.0f), _chunkPersister(chunkPersister) {
 	_poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
 	_spawnMgr = std::make_shared<backend::SpawnMgr>(this, filesystem, entityStorage, messageSender,
 			timeProvider, loader, containerProvider, cooldownProvider);
@@ -114,7 +115,12 @@ bool Map::init() {
 		return false;
 	}
 
-	_pager = std::make_shared<voxelworld::WorldPager>(_volumeCache);
+	if (!_chunkPersister->init()) {
+		Log::error("could not initialize the chunk persister");
+		return false;
+	}
+
+	_pager = std::make_shared<voxelworld::WorldPager>(_volumeCache, _chunkPersister);
 	_voxelWorldMgr = new voxelworld::WorldMgr(_pager);
 	if (!_voxelWorldMgr->init()) {
 		Log::error("Failed to init map with id %i", _mapId);
@@ -125,11 +131,10 @@ bool Map::init() {
 	const std::string& worldParamData = _filesystem->load("worldparams.lua");
 	const std::string& biomesData = _filesystem->load("biomes.lua");
 	_pager->init(_voxelWorldMgr->volumeData(), worldParamData, biomesData);
-	_pager->setPersist(false);
-	_pager->setSeed(seed->longVal());
+	_pager->setSeed(seed->uintVal());
 	_pager->setNoiseOffset(glm::zero<glm::vec2>());
 
-	_voxelWorldMgr->setSeed(seed->longVal());
+	_voxelWorldMgr->setSeed(seed->uintVal());
 	_zone = new ai::Zone(core::string::format("Zone %i", _mapId));
 
 	if (!_spawnMgr->init()) {

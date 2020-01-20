@@ -23,7 +23,8 @@ public:
 		core::AbstractTest::SetUp();
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
-		_worldPager = std::make_shared<voxelworld::WorldPager>(volumeCache);
+		voxelworld::ChunkPersisterPtr chunkPersister = std::make_shared<voxelworld::ChunkPersister>();
+		_worldPager = std::make_shared<voxelworld::WorldPager>(volumeCache, chunkPersister);
 		_world = std::make_shared<voxelworld::WorldMgr>(_worldPager);
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 		const std::string& world = io::filesystem()->load("worldparams.lua");
@@ -46,7 +47,6 @@ public:
 
 TEST_F(WorldRendererTest, testCreate) {
 	ASSERT_TRUE(_world);
-	_worldPager->setPersist(false);
 	ASSERT_NE(nullptr, _renderer);
 	video::Camera camera;
 	camera.init(glm::ivec2(0), glm::ivec2(1024, 1024), glm::ivec2(1024, 1024));

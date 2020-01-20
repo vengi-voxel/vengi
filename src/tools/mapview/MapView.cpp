@@ -59,7 +59,6 @@ core::AppState MapView::onConstruct() {
 
 	_volumeCache->construct();
 	_worldRenderer.construct();
-	_worldPager->setPersist(false);
 
 	return state;
 }
@@ -326,7 +325,8 @@ int main(int argc, char *argv[]) {
 	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
-	const voxelworld::WorldPagerPtr& worldPager = std::make_shared<voxelworld::WorldPager>(volumeCache);
+	const voxelworld::ChunkPersisterPtr& chunkPersister = std::make_shared<voxelworld::ChunkPersister>();
+	const voxelworld::WorldPagerPtr& worldPager = std::make_shared<voxelworld::WorldPager>(volumeCache, chunkPersister);
 	const voxelworld::WorldMgrPtr& worldMgr = std::make_shared<voxelworld::WorldMgr>(worldPager);
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();

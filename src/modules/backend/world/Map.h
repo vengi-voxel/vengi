@@ -14,6 +14,7 @@
 #include "persistence/ISavable.h"
 #include "persistence/ForwardDecl.h"
 #include "voxel/Constants.h"
+#include "DBChunkPersister.h"
 #include "MapId.h"
 #include <memory>
 #include <unordered_map>
@@ -60,7 +61,7 @@ private:
 	};
 
 	math::QuadTree<QuadTreeNode, float> _quadTree;
-
+	DBChunkPersisterPtr _chunkPersister;
 	/**
 	 * @return @c false if the entity should be removed from the server.
 	 */
@@ -79,7 +80,8 @@ public:
 			const AILoaderPtr& loader,
 			const attrib::ContainerProviderPtr& containerProvider,
 			const cooldown::CooldownProviderPtr& cooldownProvider,
-			const persistence::PersistenceMgrPtr& persistenceMgr);
+			const persistence::PersistenceMgrPtr& persistenceMgr,
+			const DBChunkPersisterPtr& chunkPersister);
 	~Map();
 
 	void update(long dt);
@@ -128,6 +130,8 @@ public:
 	int findFloor(const glm::vec3& pos, float maxDistanceY = (float)voxel::MAX_HEIGHT) const;
 	glm::ivec3 randomPos() const;
 
+	const DBChunkPersisterPtr& chunkPersister();
+
 	const AttackMgr& attackMgr() const;
 	AttackMgr& attackMgr();
 
@@ -137,6 +141,10 @@ public:
 	const poi::PoiProviderPtr& poiProvider() const;
 	poi::PoiProviderPtr& poiProvider();
 };
+
+inline const DBChunkPersisterPtr& Map::chunkPersister() {
+	return _chunkPersister;
+}
 
 inline const voxelworld::WorldPagerPtr& Map::pager() const {
 	return _pager;

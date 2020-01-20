@@ -29,6 +29,7 @@ public:
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
 	std::shared_ptr<persistence::PersistenceMgrMock> _persistenceMgr;
+	persistence::DBHandlerPtr _dbHandler;
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
@@ -46,6 +47,7 @@ public:
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
+		_dbHandler = std::make_shared<persistence::DBHandlerMock>();
 		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(_persistenceMgr.get());
@@ -54,7 +56,8 @@ public:
 
 #define create(name, id) \
 	Map name(id, _testApp->eventBus(), _testApp->timeProvider(), _testApp->filesystem(), _entityStorage, \
-			_messageSender, _volumeCache, _loader, _containerProvider, _cooldownProvider, _persistenceMgr);
+			_messageSender, _volumeCache, _loader, _containerProvider, _cooldownProvider, _persistenceMgr, \
+			std::make_shared<DBChunkPersister>(_dbHandler, id));
 
 TEST_F(MapTest, testInitShutdown) {
 	create(map, 1);

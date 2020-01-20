@@ -20,6 +20,7 @@
 #include "backend/spawn/SpawnMgr.h"
 #include "backend/world/MapProvider.h"
 #include "backend/metric/MetricMgr.h"
+#include "backend/world/DBChunkPersister.h"
 #include "persistence/DBHandler.h"
 #include "persistence/PersistenceMgr.h"
 #include "stock/StockDataProvider.h"
@@ -114,8 +115,10 @@ int main(int argc, char *argv[]) {
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 
 	const http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>();
+	core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
 	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus, timeProvider,
-			entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache, httpServer);
+			entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache, httpServer,
+			chunkPersisterFactory, dbHandler);
 
 	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);

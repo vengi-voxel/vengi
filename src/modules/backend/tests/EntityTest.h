@@ -94,8 +94,11 @@ protected:
 		EXPECT_CALL(*persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		EXPECT_CALL(*persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(persistenceMgr.get());
+		persistence::DBHandlerPtr dbHandler = std::make_shared<persistence::DBHandlerMock>();
+		core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
 		mapProvider = std::make_shared<MapProvider>(filesystem, eventBus, timeProvider,
-				entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache, httpServer);
+				entityStorage, messageSender, loader, containerProvider, cooldownProvider,
+				persistenceMgr, volumeCache, httpServer, chunkPersisterFactory, dbHandler);
 		ASSERT_TRUE(mapProvider->init()) << "Failed to initialize the map provider";
 		map = mapProvider->map(1);
 	}

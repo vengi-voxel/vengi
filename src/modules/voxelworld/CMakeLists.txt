@@ -4,7 +4,8 @@ set(SRCS
 	Biome.h Biome.cpp
 	BiomeManager.h BiomeManager.cpp
 	WorldMgr.cpp WorldMgr.h
-	WorldPersister.h WorldPersister.cpp
+	ChunkPersister.h ChunkPersister.cpp
+	FilePersister.h FilePersister.cpp
 	WorldPager.h WorldPager.cpp
 	WorldEvents.h
 	WorldContext.h WorldContext.cpp
@@ -20,7 +21,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxelfo
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
 	tests/WorldMgrTest.cpp
-	tests/WorldPersisterTest.cpp
+	tests/FilePersisterTest.cpp
 	tests/BiomeManagerTest.cpp
 )
 

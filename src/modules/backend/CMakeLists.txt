@@ -7,6 +7,7 @@ set(SRCS
 
 	attack/AttackMgr.cpp attack/AttackMgr.h
 
+	world/DBChunkPersister.h world/DBChunkPersister.cpp
 	world/Map.cpp world/Map.h
 	world/MapId.h
 	world/MapProvider.cpp world/MapProvider.h

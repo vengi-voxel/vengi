@@ -16,6 +16,8 @@ using HttpQuery = core::CharPointerMap;
 	const char *name##value; \
 	if (!request.query.get(CORE_STRINGIFY(name), name##value)) { \
 		Log::debug("Missing query parameter " #name); \
+		response->status = http::HttpStatus::InternalServerError; \
+		response->setText("Missing parameter " #name); \
 		return; \
 	} \
 	int name = SDL_atoi(name##value)
