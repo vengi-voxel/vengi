@@ -85,15 +85,15 @@ ENetPeer* User::setPeer(ENetPeer* peer) {
 }
 
 void User::onConnect() {
-	Log::trace("connect user");
+	Log::info("connect user");
 	_attribs.markAsDirty();
 	sendVars();
-	sendUserSpawn();
-	sendUserinfo();
+	broadcastUserSpawn();
+	broadcastUserinfo();
 }
 
 void User::onReconnect() {
-	Log::trace("reconnect user");
+	Log::info("reconnect user");
 	_attribs.markAsDirty();
 	sendVars();
 	visitVisible([&] (const EntityPtr& e) {
@@ -121,7 +121,7 @@ void User::userinfo(const char *key, const char* value) {
 	_userinfo.put(key, value);
 }
 
-void User::sendUserinfo() {
+void User::broadcastUserinfo() {
 	flatbuffers::FlatBufferBuilder fbb;
 	auto iter = _userinfo.begin();
 	auto fbbVars = fbb.CreateVector<flatbuffers::Offset<network::Var>>(_userinfo.size(),
@@ -134,7 +134,7 @@ void User::sendUserinfo() {
 	sendToVisible(fbb, network::ServerMsgType::UserInfo, network::CreateUserInfo(fbb, id(), fbbVars).Union(), true);
 }
 
-void User::sendUserSpawn() const {
+void User::broadcastUserSpawn() const {
 	flatbuffers::FlatBufferBuilder fbb;
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	sendToVisible(fbb, network::ServerMsgType::UserSpawn, network::CreateUserSpawn(fbb, id(), fbb.CreateString(_name), &pos).Union(), true);

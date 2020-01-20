@@ -130,7 +130,7 @@ bool Entity::removeContainer(const std::string& id) {
 	return true;
 }
 
-void Entity::sendAttribUpdate() {
+void Entity::broadcastAttribUpdate() {
 	// TODO: send current and max values to the clients
 	// TODO: collect which of them are dirty, and maintain a list of
 	// those that are for the owning client only or which of them must be broadcasted
@@ -152,7 +152,7 @@ void Entity::sendAttribUpdate() {
 bool Entity::update(long dt) {
 	_attribs.update(dt);
 	if (!_dirtyAttributeTypes.empty()) {
-		sendAttribUpdate();
+		broadcastAttribUpdate();
 		_dirtyAttributeTypes.clear();
 	}
 	return true;

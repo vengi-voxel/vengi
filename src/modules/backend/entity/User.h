@@ -78,7 +78,7 @@ public:
 	/**
 	 * @brief Informs the user that the login was successful
 	 */
-	void sendUserSpawn() const;
+	void broadcastUserSpawn() const;
 	/**
 	 * @brief Send all replicate vars from the server to the user
 	 */
@@ -86,7 +86,7 @@ public:
 	/**
 	 * @brief Send the userinfo to all visible users
 	 */
-	void sendUserinfo();
+	void broadcastUserinfo();
 
 	UserLogoutMgr& logoutMgr();
 	const UserLogoutMgr& logoutMgr() const;

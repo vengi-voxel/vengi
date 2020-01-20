@@ -21,7 +21,7 @@ USERPROTOHANDLERIMPL(VarUpdate) {
 		const auto* value = v->value();
 		user->userinfo(name->c_str(), value->c_str());
 	}
-	user->sendUserinfo();
+	user->broadcastUserinfo();
 }
 
 }

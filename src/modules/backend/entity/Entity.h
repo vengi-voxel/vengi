@@ -67,7 +67,7 @@ protected:
 	 */
 	void visibleRemove(const EntitySet& entities);
 
-	void sendAttribUpdate();
+	void broadcastAttribUpdate();
 	void sendEntityUpdate(const EntityPtr& entity) const;
 	void sendEntitySpawn(const EntityPtr& entity) const;
 	void sendEntityRemove(const EntityPtr& entity) const;
