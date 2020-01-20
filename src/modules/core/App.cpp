@@ -36,8 +36,7 @@ App* App::getInstance() {
 App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		_filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core"),
 		_timeProvider(timeProvider), _metric(metric) {
-
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_VERBOSE);
 	_now = systemMillis();
 	_timeProvider->update(_now);
 	_staticInstance = this;

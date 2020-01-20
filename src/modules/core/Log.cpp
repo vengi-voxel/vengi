@@ -102,7 +102,7 @@ const char* Log::toLogLevel(Log::Level level) {
 
 void Log::init() {
 	_logLevel = (SDL_LogPriority)core::Var::getSafe(cfg::CoreLogLevel)->intVal();
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, _logLevel);
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_VERBOSE);
 
 	const bool syslog = core::Var::getSafe(cfg::CoreSysLog)->boolVal();
 	if (syslog) {
