@@ -17,6 +17,12 @@ ninja:
 release:
 	$(Q)$(MAKE) BUILDTYPE=Release
 
+clean:
+	$(Q)rm -rf $(BUILDDIR)
+
+distclean:
+	$(Q)git clean -fdx
+
 %:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
 	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR) $@
