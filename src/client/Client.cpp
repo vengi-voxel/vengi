@@ -27,7 +27,6 @@
 #include "network/UserInfoHandler.h"
 #include "network/VarUpdateHandler.h"
 #include "voxel/MaterialColor.h"
-#include "core/Rest.h"
 #include <SDL.h>
 
 Client::Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
@@ -172,8 +171,6 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	RestClient::init();
-
 	_voxelFont.init("font.ttf", 14, 1, voxel::VoxelFont::MergeQuads, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ");
 
 	handleLogin();
@@ -273,8 +270,6 @@ core::AppState Client::onCleanup() {
 	Log::info("shutting down the volume cache");
 	_volumeCache->shutdown();
 
-	RestClient::disable();
-
 	Log::info("everything was shut down");
 
 	return state;
@@ -316,19 +311,9 @@ void Client::onWindowResize(int windowWidth, int windowHeight) {
 }
 
 void Client::signup(const std::string& email, const std::string& password) {
-	const core::rest::Response& r = core::rest::post("signup",
-			core::json { { "email", email }, { "password", core::pwhash(password, "TODO") } });
-	if (r.code != core::rest::StatusCode::OK) {
-		Log::error("Failed to signup with %s (%i)", email.c_str(), r.code);
-	}
 }
 
 void Client::lostPassword(const std::string& email) {
-	const core::rest::Response& r = core::rest::post("lostpassword",
-			core::json { { "email", email } });
-	if (r.code != core::rest::StatusCode::OK) {
-		Log::error("Failed to request the password reset for %s (%i)", email.c_str(), r.code);
-	}
 }
 
 void Client::authFailed() {

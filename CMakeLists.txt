@@ -273,4 +273,3 @@ macro(engine_update_git_lib)
 endmacro()
 
 engine_update_git_lib(LIB simplecpp URL "https://github.com/danmar/simplecpp.git" COPY simplecpp.cpp simplecpp.h)
-engine_update_git_lib(LIB json URL "https://github.com/nlohmann/json.git" COPY single_include/nlohmann/json.hpp TARGETDIR ${ROOT_DIR}/src/modules/core)

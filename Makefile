@@ -46,13 +46,6 @@ define UPDATE_HG
 	fi;
 endef
 
-update-restclient-cpp:
-	$(call UPDATE_GIT,restclient-cpp,https://github.com/mrtazz/restclient-cpp.git)
-	rm -rf contrib/libs/restclient-cpp/restclient-cpp/*.h
-	rm -rf contrib/libs/restclient-cpp/*.cc
-	cp $(UPDATEDIR)/restclient-cpp.sync/include/restclient-cpp/*.h contrib/libs/restclient-cpp/restclient-cpp
-	cp $(UPDATEDIR)/restclient-cpp.sync/source/*.cc contrib/libs/restclient-cpp
-
 update-libuv:
 	$(call UPDATE_GIT,libuv,https://github.com/libuv/libuv.git)
 	rm -rf contrib/libs/libuv/include/uv/*.[ch]
@@ -171,7 +164,7 @@ update-curl:
 # TODO native file dialog support
 # TODO simpleai support
 # TODO lua support
-updatelibs: update-restclient-cpp update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-curl update-glslang
+updatelibs: update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-curl update-glslang
 	$(MAKE) -C $(BUILDDIR) update-libs
 
 windows:

@@ -40,7 +40,6 @@ set(SRCS
 	Hash.h
 	IComponent.h
 	Input.cpp Input.h
-	JSON.h json.hpp
 	Log.cpp Log.h
 	MD5.cpp MD5.h
 	PoolAllocator.h
@@ -50,7 +49,6 @@ set(SRCS
 	Process.cpp Process.h
 	ReadWriteLock.h
 	RecursiveReadWriteLock.h
-	Rest.h Rest.cpp
 	Singleton.h
 	String.cpp String.h
 	ThreadPool.cpp ThreadPool.h
@@ -75,7 +73,7 @@ else()
 	find_package(UUID)
 endif()
 
-set(LIBS restclient-cpp zlib sdl2 glm libuv ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
+set(LIBS zlib sdl2 glm libuv ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
 if (NOT MSVC)
 list(APPEND LIBS backward)
 endif()
@@ -94,7 +92,6 @@ set(TEST_SRCS
 	tests/FilesystemTest.cpp
 	tests/FileStreamTest.cpp
 	tests/FileTest.cpp
-	tests/JSONTest.cpp
 	tests/ListTest.cpp
 	tests/LogTest.cpp
 	tests/MapTest.cpp

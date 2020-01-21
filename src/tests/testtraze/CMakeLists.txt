@@ -3,6 +3,7 @@ find_package(Mosquitto)
 
 if (MOSQUITTO_FOUND)
 	set(SRCS
+		JSON.h json.hpp
 		TrazeEvents.h
 		TrazeProtocol.h TrazeProtocol.cpp
 		TrazeTypes.h
