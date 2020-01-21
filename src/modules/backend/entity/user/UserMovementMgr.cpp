@@ -49,7 +49,7 @@ bool UserMovementMgr::init() {
 
 void UserMovementMgr::shutdown() {
 	const EntityId userId = _user->id();
-	Log::info("Shutdown movement manager for user " PRIEntId, userId);
+	Log::trace("Shutdown movement manager for user " PRIEntId, userId);
 }
 
 }
