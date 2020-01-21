@@ -515,17 +515,6 @@ void WorldRenderer::extractMesh(const glm::ivec3& pos) {
 	_world->scheduleMeshExtraction(pos);
 }
 
-void WorldRenderer::extractMeshesForRegion(const voxel::Region& region) {
-	const glm::vec3& mins = region.getLowerCorner();
-	glm::vec3 maxs = region.getUpperCorner();
-	maxs -= 1;
-	_octree.visit(mins, maxs, [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
-		_world->allowReExtraction(mins);
-		Log::info("Extract mins %i:%i:%i", mins.x, mins.y, mins.z);
-		return !_world->scheduleMeshExtraction(mins);
-	}, glm::vec3(_world->meshSize()));
-}
-
 void WorldRenderer::extractMeshes(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererExtractMeshes);
 

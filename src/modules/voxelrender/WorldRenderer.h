@@ -162,7 +162,6 @@ public:
 
 	void extractMesh(const glm::ivec3& pos);
 	void extractMeshes(const video::Camera& camera);
-	void extractMeshesForRegion(const voxel::Region& region);
 
 	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
 	bool addEntity(const frontend::ClientEntityPtr& entity);
