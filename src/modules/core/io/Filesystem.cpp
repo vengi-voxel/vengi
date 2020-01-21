@@ -302,7 +302,7 @@ bool Filesystem::unwatch(const std::string& path) {
 	if (i == _watches.end()) {
 		return false;
 	}
-	uv_fs_event_stop(i->second);
+	uv_close((uv_handle_t*)i->second, nullptr);
 	delete i->second;
 	_watches.erase(i);
 	return true;
@@ -341,12 +341,14 @@ bool Filesystem::watch(const std::string& path, FileWatcher watcher) {
 	fsEvent->data = (void*)watcher;
 	auto i = _watches.insert(std::make_pair(path, fsEvent));
 	if (!i.second) {
+		uv_close((uv_handle_t*)fsEvent, nullptr);
 		delete fsEvent;
 		return false;
 	}
 	const int ret = uv_fs_event_start(fsEvent, changeCallback, path.c_str(), 0);
 	if (ret != 0) {
 		_watches.erase(_watches.find(path));
+		uv_close((uv_handle_t*)fsEvent, nullptr);
 		delete fsEvent;
 		return false;
 	}
