@@ -10,7 +10,7 @@
 #include "core/Var.h"
 
 TestHttpServer::TestHttpServer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+		Super(metric, filesystem, eventBus, timeProvider), _server(metric) {
 	init(ORGANISATION, "testhttpserver");
 }
 

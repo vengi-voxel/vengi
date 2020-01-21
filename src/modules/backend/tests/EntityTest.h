@@ -88,7 +88,7 @@ protected:
 		filesystem = _testApp->filesystem();
 		eventBus = _testApp->eventBus();
 		voxelformat::VolumeCachePtr volumeCache = std::make_shared<voxelformat::VolumeCache>();
-		http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>();
+		http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>(_testApp->metric());
 		timeProvider = _testApp->timeProvider();
 		persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 		EXPECT_CALL(*persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));

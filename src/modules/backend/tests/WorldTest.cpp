@@ -52,7 +52,7 @@ public:
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
-		_httpServer = std::make_shared<http::HttpServer>();
+		_httpServer = std::make_shared<http::HttpServer>(_testApp->metric());
 		persistence::DBHandlerPtr dbHandler = std::make_shared<persistence::DBHandlerMock>();
 		core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
 		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));

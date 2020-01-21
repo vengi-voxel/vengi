@@ -14,8 +14,8 @@
 
 namespace http {
 
-HttpServer::HttpServer() :
-		_socketFD(INVALID_SOCKET) {
+HttpServer::HttpServer(const metric::MetricPtr& metric) :
+		_socketFD(INVALID_SOCKET), _metric(metric) {
 	FD_ZERO(&_readFDSet);
 	FD_ZERO(&_writeFDSet);
 }
@@ -245,6 +245,7 @@ void HttpServer::assembleError(Client& client, HttpStatus status) {
 	char *responseBuf = (char*)SDL_malloc(responseSize + 1);
 	SDL_snprintf(responseBuf, responseSize + 1, "%s%s", buf, errorPage);
 	client.setResponse(responseBuf, responseSize);
+	metric(status);
 	FD_SET(client.socket, &_writeFDSet);
 }
 
@@ -276,7 +277,14 @@ void HttpServer::assembleResponse(Client& client, const HttpResponse& response) 
 	SDL_memcpy(responseBuf + headerSize, response.body, response.bodySize);
 	client.setResponse(responseBuf, responseSize);
 	Log::info("Response buffer of size %i", (int)responseSize);
+	metric(response.status);
 	FD_SET(client.socket, &_writeFDSet);
+}
+
+void HttpServer::metric(HttpStatus status) const {
+	char buf[8];
+	SDL_snprintf(buf, sizeof(buf), "%u", (uint32_t)status);
+	_metric->count("http.request", 1, {{"status", buf}});
 }
 
 bool HttpServer::sendMessage(Client& client) {

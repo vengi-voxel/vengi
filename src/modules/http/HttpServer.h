@@ -12,6 +12,7 @@
 #include "HttpHeader.h"
 #include "HttpQuery.h"
 #include "core/collection/Map.h"
+#include "core/metric/Metric.h"
 #include <stdint.h>
 #include <functional>
 #include <list>
@@ -32,6 +33,7 @@ private:
 	core::Map<int, const char*, 8, std::hash<int>> _errorPages;
 	Routes _routes[2];
 	size_t _maxRequestBytes = 1 * 1024 * 1024;
+	metric::MetricPtr _metric;
 
 	struct Client {
 		Client();
@@ -54,6 +56,8 @@ private:
 
 	ClientSocketsIter closeClient (ClientSocketsIter& i);
 
+	void metric(HttpStatus status) const;
+
 	bool route(const RequestParser& request, HttpResponse& response);
 	void assembleResponse(Client& client, const HttpResponse& response);
 	void assembleError(Client& client, HttpStatus status);
@@ -62,7 +66,7 @@ private:
 	Routes* getRoutes(HttpMethod method);
 
 public:
-	HttpServer();
+	HttpServer(const metric::MetricPtr& metric);
 	~HttpServer();
 
 	void setMaxRequestSize(size_t maxBytes);

@@ -13,7 +13,7 @@ class HttpClientTest : public core::AbstractTest {
 
 TEST_F(HttpClientTest, testSimple) {
 	_testApp->threadPool().enqueue([this] () {
-		http::HttpServer _httpServer;
+		http::HttpServer _httpServer(_testApp->metric());
 		_httpServer.init(8095);
 		_httpServer.registerRoute(http::HttpMethod::GET, "/", [] (const http::RequestParser& request, HttpResponse* response) {
 			response->setText("Success");

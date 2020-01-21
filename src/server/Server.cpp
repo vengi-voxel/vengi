@@ -114,7 +114,8 @@ int main(int argc, char *argv[]) {
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(eventBus);
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 
-	const http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>();
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+	const http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>(metric);
 	core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
 	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus, timeProvider,
 			entityStorage, messageSender, loader, containerProvider, cooldownProvider, persistenceMgr, volumeCache, httpServer,
@@ -124,7 +125,6 @@ int main(int argc, char *argv[]) {
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
 
 	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, registry, eventBus, filesystem);
-	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const backend::MetricMgrPtr& metricMgr = std::make_shared<backend::MetricMgr>(metric, eventBus);
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(timeProvider, mapProvider,
 			messageSender, world, dbHandler, network, filesystem, entityStorage, eventBus, containerProvider,

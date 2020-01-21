@@ -11,7 +11,7 @@ class HttpServerTest : public core::AbstractTest {
 };
 
 TEST_F(HttpServerTest, testSimple) {
-	HttpServer server;
+	HttpServer server(_testApp->metric());
 	EXPECT_TRUE(server.init(10101));
 	server.registerRoute(HttpMethod::GET, "/", [] (const http::RequestParser& request, HttpResponse* response) {
 	});
