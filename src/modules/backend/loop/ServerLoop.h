@@ -44,10 +44,10 @@ private:
 	voxelformat::VolumeCachePtr _volumeCache;
 
 	uv_loop_t *_loop = nullptr;
-	uv_timer_t _worldTimer;
-	uv_timer_t _persistenceMgrTimer;
-	uv_idle_t _idleTimer;
-	uv_signal_t _signal;
+	uv_timer_t *_worldTimer = nullptr;
+	uv_timer_t *_persistenceMgrTimer = nullptr;
+	uv_idle_t *_idleTimer = nullptr;
+	uv_signal_t *_signal = nullptr;
 
 	int _lastEventSkip = 0;
 	int _lastDeltaFrame = 0;

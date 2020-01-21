@@ -25,6 +25,9 @@ bool Input::init(uv_loop_t* loop) {
 }
 
 void Input::shutdown() {
+	uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(&_tty);
+	uv_read_stop(stream);
+	uv_close((uv_handle_t*)stream, nullptr);
 }
 
 void Input::onAllocBuffer(uv_handle_t *handle, size_t suggestedSize, uv_buf_t *buf) {

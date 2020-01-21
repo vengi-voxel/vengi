@@ -210,11 +210,6 @@ bool ServerLoop::init() {
 		_loop = nullptr;
 		return false;
 	}
-	uv_signal_init(_loop, &_signal);
-	uv_timer_init(_loop, &_worldTimer);
-	uv_timer_init(_loop, &_persistenceMgrTimer);
-	uv_idle_init(_loop, &_idleTimer);
-	uv_signal_init(_loop, &_signal);
 
 	if (!_metricMgr->init()) {
 		Log::warn("Failed to init metric sender");
@@ -293,13 +288,17 @@ bool ServerLoop::init() {
 		return false;
 	}
 
-	addTimer(&_worldTimer, [] (uv_timer_t* handle) {
+	_worldTimer = new uv_timer_t;
+	uv_timer_init(_loop, _worldTimer);
+	addTimer(_worldTimer, [] (uv_timer_t* handle) {
 		core_trace_scoped(WorldTimer);
 		const ServerLoop* loop = (const ServerLoop*)handle->data;
 		loop->_world->update(handle->repeat);
 	}, 1000);
 
-	addTimer(&_persistenceMgrTimer, [] (uv_timer_t* handle) {
+	_persistenceMgrTimer = new uv_timer_t;
+	uv_timer_init(_loop, _persistenceMgrTimer);
+	addTimer(_persistenceMgrTimer, [] (uv_timer_t* handle) {
 		core_trace_scoped(PersistenceTimer);
 		const ServerLoop* loop = (const ServerLoop*)handle->data;
 		const long dt = handle->repeat;
@@ -309,16 +308,19 @@ bool ServerLoop::init() {
 		});
 	}, 10000);
 
-	_idleTimer.data = this;
-	if (uv_idle_init(_loop, &_idleTimer) != 0) {
+	_idleTimer = new uv_idle_t;
+	_idleTimer->data = this;
+	if (uv_idle_init(_loop, _idleTimer) != 0) {
 		Log::warn("Couldn't init the idle timer");
 		return false;
 	}
-	uv_idle_start(&_idleTimer, onIdle);
+	uv_idle_start(_idleTimer, onIdle);
 
-	_signal.data = this;
-	uv_signal_start(&_signal, signalCallback, SIGHUP);
-	uv_signal_start(&_signal, signalCallback, SIGINT);
+	_signal = new uv_signal_t;
+	_signal->data = this;
+	uv_signal_init(_loop, _signal);
+	uv_signal_start(_signal, signalCallback, SIGHUP);
+	uv_signal_start(_signal, signalCallback, SIGINT);
 
 	if (!_input.init(_loop)) {
 		Log::warn("Could not init console input");
@@ -351,12 +353,21 @@ void ServerLoop::shutdown() {
 	_input.shutdown();
 	_network->shutdown();
 	if (_loop != nullptr) {
-		uv_signal_stop(&_signal);
-		uv_timer_stop(&_worldTimer);
-		uv_timer_stop(&_persistenceMgrTimer);
-		uv_idle_stop(&_idleTimer);
+		uv_close((uv_handle_t*)_signal, nullptr);
+		uv_close((uv_handle_t*)_worldTimer, nullptr);
+		uv_close((uv_handle_t*)_persistenceMgrTimer, nullptr);
+		uv_close((uv_handle_t*)_idleTimer, nullptr);
 		uv_tty_reset_mode();
-		uv_loop_close(_loop);
+		uv_run(_loop, UV_RUN_NOWAIT);
+		core_assert_always(uv_loop_close(_loop) == 0);
+		delete _signal;
+		_signal = nullptr;
+		delete _worldTimer;
+		_worldTimer = nullptr;
+		delete _persistenceMgrTimer;
+		_persistenceMgrTimer = nullptr;
+		delete _idleTimer;
+		_idleTimer = nullptr;
 		delete _loop;
 		_loop = nullptr;
 	}
