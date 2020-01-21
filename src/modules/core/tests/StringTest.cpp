@@ -35,7 +35,9 @@ TEST_F(StringTest, testEraseAllSpaces) {
 }
 
 TEST_F(StringTest, testUrlEncode) {
-	EXPECT_STREQ("foobar%3D1236%2F%26", core::string::urlEncode("foobar=1236/&"));
+	char *urlEncoded = core::string::urlEncode("foobar=1236/&");
+	EXPECT_STREQ("foobar%3D1236%2F%26", urlEncoded);
+	core_free(urlEncoded);
 }
 
 TEST_F(StringTest, testStripExtension) {
