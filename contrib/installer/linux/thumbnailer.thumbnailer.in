@@ -1,4 +1,4 @@
 [Thumbnailer Entry]
-TryExec=/usr/bin/@CMAKE_PROJECT_NAME@-@NAME@
-Exec=/usr/bin/@CMAKE_PROJECT_NAME@-@NAME@ -s %s %i %o
-MimeType=application/x-@CMAKE_PROJECT_NAME@;
+TryExec=@CMAKE_PROJECT_NAME@-@NAME@
+Exec=@CMAKE_PROJECT_NAME@-@NAME@ -s %s %i %o
+MimeType=voxel/cubeworld;voxel/binvox;voxel/magicavoxel;voxel/qubicle-binary;voxel/qubicle-tree;voxel/sandbox-voxedit
