@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -165,6 +165,8 @@ static struct
     int (*release_interface)(libusb_device_handle *dev_handle, int interface_number);
     int (*kernel_driver_active)(libusb_device_handle *dev_handle, int interface_number);
     int (*detach_kernel_driver)(libusb_device_handle *dev_handle, int interface_number);
+    int (*attach_kernel_driver)(libusb_device_handle *dev_handle, int interface_number);
+    int (*set_interface_alt_setting)(libusb_device_handle *dev, int interface_number, int alternate_setting);
     struct libusb_transfer * (*alloc_transfer)(int iso_packets);
     int (*submit_transfer)(struct libusb_transfer *transfer);
     int (*cancel_transfer)(struct libusb_transfer *transfer);
@@ -207,6 +209,8 @@ static struct
 #define libusb_release_interface               libusb_ctx.release_interface
 #define libusb_kernel_driver_active            libusb_ctx.kernel_driver_active
 #define libusb_detach_kernel_driver            libusb_ctx.detach_kernel_driver
+#define libusb_attach_kernel_driver            libusb_ctx.attach_kernel_driver
+#define libusb_set_interface_alt_setting       libusb_ctx.set_interface_alt_setting
 #define libusb_alloc_transfer                  libusb_ctx.alloc_transfer
 #define libusb_submit_transfer                 libusb_ctx.submit_transfer
 #define libusb_cancel_transfer                 libusb_ctx.cancel_transfer
@@ -415,6 +419,9 @@ LIBUSB_CopyHIDDeviceInfo(struct LIBUSB_hid_device_info *pSrc,
     pDst->usage_page = pSrc->usage_page;
     pDst->usage = pSrc->usage;
     pDst->interface_number = pSrc->interface_number;
+    pDst->interface_class = pSrc->interface_class;
+    pDst->interface_subclass = pSrc->interface_subclass;
+    pDst->interface_protocol = pSrc->interface_protocol;
     pDst->next = NULL;
 }
 #endif /* SDL_LIBUSB_DYNAMIC */
@@ -434,6 +441,9 @@ PLATFORM_CopyHIDDeviceInfo(struct PLATFORM_hid_device_info *pSrc,
     pDst->usage_page = pSrc->usage_page;
     pDst->usage = pSrc->usage;
     pDst->interface_number = pSrc->interface_number;
+    pDst->interface_class = pSrc->interface_class;
+    pDst->interface_subclass = pSrc->interface_subclass;
+    pDst->interface_protocol = pSrc->interface_protocol;
     pDst->next = NULL;
 }
 #endif /* HAVE_PLATFORM_BACKEND */
@@ -472,6 +482,8 @@ int HID_API_EXPORT HID_API_CALL hid_init(void)
         LOAD_LIBUSB_SYMBOL(release_interface)
         LOAD_LIBUSB_SYMBOL(kernel_driver_active)
         LOAD_LIBUSB_SYMBOL(detach_kernel_driver)
+        LOAD_LIBUSB_SYMBOL(attach_kernel_driver)
+        LOAD_LIBUSB_SYMBOL(set_interface_alt_setting)
         LOAD_LIBUSB_SYMBOL(alloc_transfer)
         LOAD_LIBUSB_SYMBOL(submit_transfer)
         LOAD_LIBUSB_SYMBOL(cancel_transfer)
@@ -535,9 +547,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
     struct PLATFORM_hid_device_info *raw_dev;
 #endif /* HAVE_PLATFORM_BACKEND */
     struct hid_device_info *devs = NULL, *last = NULL, *new_dev;
-#ifdef SDL_LIBUSB_DYNAMIC
     SDL_bool bFound;
-#endif
 
     if (SDL_hidapi_wasinit == SDL_FALSE) {
         hid_init();
@@ -557,6 +567,10 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
             bFound = SDL_FALSE;
 #if HAVE_PLATFORM_BACKEND
             for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
+                if (raw_dev->vendor_id == 0x057e && raw_dev->product_id == 0x0337) {
+                    /* The GameCube adapter is handled by the USB HIDAPI driver */
+                    continue;
+                }
                 if (usb_dev->vendor_id == raw_dev->vendor_id &&
                     usb_dev->product_id == raw_dev->product_id &&
                     (raw_dev->interface_number < 0 || usb_dev->interface_number == raw_dev->interface_number)) {
@@ -585,16 +599,28 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 #if HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
-            new_dev = (struct hid_device_info*) SDL_malloc(sizeof(struct hid_device_info));
-            PLATFORM_CopyHIDDeviceInfo(raw_dev, new_dev);
-            new_dev->next = NULL;
-
-            if (last != NULL) {
-                last->next = new_dev;
-            } else {
-                devs = new_dev;
+            bFound = SDL_FALSE;
+            for (new_dev = devs; new_dev; new_dev = new_dev->next) {
+                if (raw_dev->vendor_id == new_dev->vendor_id &&
+                    raw_dev->product_id == new_dev->product_id &&
+                    raw_dev->interface_number == new_dev->interface_number) {
+                    bFound = SDL_TRUE;
+                    break;
+                }
             }
-            last = new_dev;
+
+            if (!bFound) {
+                new_dev = (struct hid_device_info*) SDL_malloc(sizeof(struct hid_device_info));
+                PLATFORM_CopyHIDDeviceInfo(raw_dev, new_dev);
+                new_dev->next = NULL;
+
+                if (last != NULL) {
+                    last->next = new_dev;
+                } else {
+                    devs = new_dev;
+                }
+                last = new_dev;
+            }
         }
         PLATFORM_hid_free_enumeration(raw_devs);
     }

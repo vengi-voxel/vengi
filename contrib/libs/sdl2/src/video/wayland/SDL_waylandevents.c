@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -809,8 +809,10 @@ data_device_handle_enter(void *data, struct wl_data_device *wl_data_device,
         if (has_mime == SDL_TRUE) {
             dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY;
         }
-        wl_data_offer_set_actions(data_device->drag_offer->offer,
-                                  dnd_action, dnd_action);
+        if (wl_data_offer_get_version(data_device->drag_offer->offer) >= 3) {
+            wl_data_offer_set_actions(data_device->drag_offer->offer,
+                                      dnd_action, dnd_action);
+        }
     }
 }
 

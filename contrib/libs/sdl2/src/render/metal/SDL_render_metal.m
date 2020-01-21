@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -357,6 +357,7 @@ MakePipelineCache(METAL_RenderData *data, METAL_PipelineCache *cache, const char
     MakePipelineState(data, cache, @" (blend=blend)", SDL_BLENDMODE_BLEND);
     MakePipelineState(data, cache, @" (blend=add)", SDL_BLENDMODE_ADD);
     MakePipelineState(data, cache, @" (blend=mod)", SDL_BLENDMODE_MOD);
+    MakePipelineState(data, cache, @" (blend=mul)", SDL_BLENDMODE_MUL);
 }
 
 static void

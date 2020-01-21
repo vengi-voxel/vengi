@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -829,7 +829,11 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
     }
 
     if (ioctl(joystick->hwdata->fd, EVIOCSFF, &joystick->hwdata->effect) < 0) {
-        return SDL_SetError("Couldn't update rumble effect: %s", strerror(errno));
+        /* The kernel may have lost this effect, try to allocate a new one */
+        joystick->hwdata->effect.id = -1;
+        if (ioctl(joystick->hwdata->fd, EVIOCSFF, &joystick->hwdata->effect) < 0) {
+            return SDL_SetError("Couldn't update rumble effect: %s", strerror(errno));
+        }
     }
 
     event.type = EV_FF;

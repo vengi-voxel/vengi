@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1346,9 +1346,9 @@ X11_DispatchEvent(_THIS)
                 X11_ReadProperty(&p, display, data->xwindow, videodata->PRIMARY);
 
                 if (p.format == 8) {
-                    /* !!! FIXME: don't use strtok here. It's not reentrant and not in SDL_stdinc. */
+                    char* saveptr = NULL;
                     char* name = X11_XGetAtomName(display, target);
-                    char *token = strtok((char *) p.data, "\r\n");
+                    char *token = SDL_strtokr((char *) p.data, "\r\n", &saveptr);
                     while (token != NULL) {
                         if (SDL_strcmp("text/plain", name)==0) {
                             SDL_SendDropText(data->window, token);
@@ -1358,7 +1358,7 @@ X11_DispatchEvent(_THIS)
                                 SDL_SendDropFile(data->window, fn);
                             }
                         }
-                        token = strtok(NULL, "\r\n");
+                        token = SDL_strtokr(NULL, "\r\n", &saveptr);
                     }
                     SDL_SendDropComplete(data->window);
                 }

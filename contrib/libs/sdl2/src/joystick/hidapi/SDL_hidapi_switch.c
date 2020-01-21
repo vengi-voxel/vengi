@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -241,9 +241,9 @@ static SDL_bool IsGameCubeFormFactor(int vendor_id, int product_id)
 }
 
 static SDL_bool
-HIDAPI_DriverSwitch_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
+HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return (SDL_GetJoystickGameControllerType(vendor_id, product_id, name) == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO);
+    return (type == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO);
 }
 
 static const char *
@@ -445,7 +445,8 @@ static SDL_bool BTrySetupUSB(SDL_DriverSwitch_Context *ctx)
         return SDL_FALSE;
     }
     if (!WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_HighSpeed, NULL, 0, SDL_TRUE)) {
-        return SDL_FALSE;
+        /* The 8BitDo M30 doesn't respond to this command, but otherwise works correctly */
+        /*return SDL_FALSE;*/
     }
     if (!WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Handshake, NULL, 0, SDL_TRUE)) {
         return SDL_FALSE;
@@ -1092,6 +1093,10 @@ static void
 HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+
+    if (ctx->m_nRumbleExpiration) {
+        HIDAPI_DriverSwitch_RumbleJoystick(device, joystick, 0, 0, 0);
+    }
 
     if (!ctx->m_bInputOnly) {
         /* Restore simple input mode for other applications */
