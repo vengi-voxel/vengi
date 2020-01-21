@@ -57,7 +57,10 @@ bool ClientPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 			Log::error("Failed to uncompress the chunk for position %i:%i:%i and seed %u", x, y, z, _seed);
 			return false;
 		}
-		_chunkPersister.save(pctx.chunk.get(), _seed);
+		if (!_chunkPersister.save(pctx.chunk.get(), _seed)) {
+			Log::error("Failed to save the downloaded chunk");
+			return false;
+		}
 	}
 	if (!_chunkPersister.load(pctx.chunk.get(), _seed)) {
 		Log::error("Failed to load the world");
