@@ -16,6 +16,7 @@ private:
 	shared::SharedMovement _movement;
 	User* _user;
 	flatbuffers::FlatBufferBuilder _entityUpdateFBB;
+	bool _sendUpdate = false;
 public:
 	UserMovementMgr(User* user);
 
