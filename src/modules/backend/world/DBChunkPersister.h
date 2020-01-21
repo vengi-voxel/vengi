@@ -24,6 +24,10 @@ public:
 	bool init() override;
 
 	persistence::Blob load(int x, int y, int z, MapId mapId, unsigned int seed) const;
+	/**
+	 * @brief Removes all persisted chunks from the database for the given parameters
+	 */
+	bool truncate(unsigned int seed);
 
 	bool load(voxel::PagedVolume::Chunk* chunk, unsigned int seed) override;
 	bool save(voxel::PagedVolume::Chunk* chunk, unsigned int seed) override;

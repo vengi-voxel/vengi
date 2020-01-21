@@ -30,6 +30,13 @@ void DBChunkPersister::erase(const voxel::Region& region, unsigned int seed) {
 	_dbHandler->deleteModel(model);
 }
 
+bool DBChunkPersister::truncate(unsigned int seed) {
+	db::ChunkModel model;
+	model.setMapid(_mapId);
+	model.setSeed(seed);
+	return _dbHandler->truncate(model);
+}
+
 persistence::Blob DBChunkPersister::load(int x, int y, int z, MapId mapId, unsigned int seed) const {
 	db::ChunkModel model;
 	model.setMapid(mapId);
