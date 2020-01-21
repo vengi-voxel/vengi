@@ -41,7 +41,7 @@ public:
 			_protocolHandlerRegistry(std::make_shared<network::ProtocolHandlerRegistry>()),
 			_clientNetwork(std::make_shared<network::ClientNetwork>(_protocolHandlerRegistry, _clientEventBus)),
 			_clientMessageSender(std::make_shared<network::ClientMessageSender>(_clientNetwork)),
-			_serverNetwork(std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _serverEventBus)),
+			_serverNetwork(std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _serverEventBus, _testApp->metric())),
 			_port((uint16_t)((uint32_t)(intptr_t)this) + 1025) {
 	}
 

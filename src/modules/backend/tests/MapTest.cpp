@@ -38,8 +38,8 @@ public:
 		voxel::initDefaultMaterialColors();
 		_entityStorage = std::make_shared<EntityStorage>(_testApp->eventBus());
 		_protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
-		_network = std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _testApp->eventBus());
-		_messageSender = std::make_shared<network::ServerMessageSender>(_network);
+		_network = std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());
+		_messageSender = std::make_shared<network::ServerMessageSender>(_network, _testApp->metric());
 		const AIRegistryPtr& registry = std::make_shared<AIRegistry>();
 		registry->init();
 		_loader = std::make_shared<AILoader>(registry);

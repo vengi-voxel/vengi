@@ -8,7 +8,6 @@
 #include "persistence/ForwardDecl.h"
 #include "persistence/ISavable.h"
 #include "backend/entity/EntityId.h"
-#include "network/ServerMessageSender.h"
 #include "CooldownModel.h"
 #include <vector>
 

@@ -99,10 +99,11 @@ int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const backend::AIRegistryPtr& registry = std::make_shared<backend::AIRegistry>();
 	const attrib::ContainerProviderPtr& containerProvider = std::make_shared<attrib::ContainerProvider>();
+	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
-	const network::ServerNetworkPtr& network = std::make_shared<network::ServerNetwork>(protocolHandlerRegistry, eventBus);
-	const network::ServerMessageSenderPtr& messageSender = std::make_shared<network::ServerMessageSender>(network);
+	const network::ServerNetworkPtr& network = std::make_shared<network::ServerNetwork>(protocolHandlerRegistry, eventBus, metric);
+	const network::ServerMessageSenderPtr& messageSender = std::make_shared<network::ServerMessageSender>(network, metric);
 
 	const backend::AILoaderPtr& loader = std::make_shared<backend::AILoader>(registry);
 
@@ -114,7 +115,6 @@ int main(int argc, char *argv[]) {
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(eventBus);
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 
-	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>(metric);
 	core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
 	const backend::MapProviderPtr& mapProvider = std::make_shared<backend::MapProvider>(filesystem, eventBus, timeProvider,

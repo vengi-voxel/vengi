@@ -9,8 +9,9 @@
 
 namespace network {
 
-ServerNetwork::ServerNetwork(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry, const core::EventBusPtr& eventBus) :
-		Super(protocolHandlerRegistry, eventBus) {
+ServerNetwork::ServerNetwork(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry,
+		const core::EventBusPtr& eventBus, const metric::MetricPtr& metric) :
+		Super(protocolHandlerRegistry, eventBus), _metric(metric) {
 }
 
 bool ServerNetwork::packetReceived(ENetEvent& event) {
@@ -28,6 +29,10 @@ bool ServerNetwork::packetReceived(ENetEvent& event) {
 		Log::error("No handler for client msg type %s", clientMsgType);
 		return false;
 	}
+	const metric::TagMap& tags  {{"direction", "in"}, {"type", clientMsgType}};
+	_metric->count("network_packet_count", 1, tags);
+	_metric->count("network_packet_size", (int)event.packet->dataLength, tags);
+
 	Log::debug("Received %s", clientMsgType);
 	handler->execute(event.peer, reinterpret_cast<const flatbuffers::Table*>(req->data()));
 	return true;

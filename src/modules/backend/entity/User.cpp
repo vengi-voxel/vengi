@@ -5,7 +5,6 @@
 #include "User.h"
 #include "attrib/Attributes.h"
 #include "backend/world/Map.h"
-#include "network/ServerMessageSender.h"
 #include "voxel/PagedVolume.h"
 #include "voxelworld/WorldMgr.h"
 

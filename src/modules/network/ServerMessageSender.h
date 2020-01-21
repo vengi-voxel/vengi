@@ -6,6 +6,7 @@
 
 #include "ServerMessages_generated.h"
 #include "ServerNetwork.h"
+#include "core/metric/Metric.h"
 #include "core/Log.h"
 #include <memory>
 
@@ -20,9 +21,12 @@ class ServerMessageSender {
 private:
 	static constexpr auto logid = Log::logid("ServerMessageSender");
 	ServerNetworkPtr _network;
+	metric::MetricPtr _metric;
+
+	ENetPacket* createServerPacket(FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags);
 
 public:
-	ServerMessageSender(const ServerNetworkPtr& network);
+	ServerMessageSender(const ServerNetworkPtr& network, const metric::MetricPtr& metric);
 
 	bool sendServerMessage(ENetPeer* peer, FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags = ENET_PACKET_FLAG_RELIABLE);
 	bool sendServerMessage(std::vector<ENetPeer*> peers, FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags = ENET_PACKET_FLAG_RELIABLE);

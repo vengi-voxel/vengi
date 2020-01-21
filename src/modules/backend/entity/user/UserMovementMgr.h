@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/IComponent.h"
-#include "network/ServerMessageSender.h"
 #include "shared/SharedMovement.h"
 
 namespace backend {

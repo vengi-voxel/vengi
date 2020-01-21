@@ -6,19 +6,24 @@
 #include "core/Log.h"
 #include "core/Common.h"
 #include "core/Assert.h"
+#include "core/String.h"
 
 namespace network {
 
-inline ENetPacket* createServerPacket(FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags) {
+ENetPacket* ServerMessageSender::createServerPacket(FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags) {
 	auto msg = CreateServerMessage(fbb, type, data);
 	FinishServerMessageBuffer(fbb, msg);
 	ENetPacket* packet = enet_packet_create(fbb.GetBufferPointer(), fbb.GetSize(), flags);
-	Log::trace("Create server package: %s - size %u", EnumNameServerMsgType(type), fbb.GetSize());
+	const char *msgType = EnumNameServerMsgType(type);
+	Log::trace(logid, "Create server package: %s - size %u", msgType, fbb.GetSize());
+	const metric::TagMap& tags  {{"direction", "in"}, {"type", msgType}};
+	_metric->count("network_packet_count", 1, tags);
+	_metric->count("network_packet_size", (int)fbb.GetSize(), tags);
 	return packet;
 }
 
-ServerMessageSender::ServerMessageSender(const ServerNetworkPtr& network) :
-		_network(network) {
+ServerMessageSender::ServerMessageSender(const ServerNetworkPtr& network, const metric::MetricPtr& metric) :
+		_network(network), _metric(metric) {
 }
 
 bool ServerMessageSender::sendServerMessage(ENetPeer* peer, FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags) {

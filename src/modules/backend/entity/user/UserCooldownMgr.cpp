@@ -6,7 +6,6 @@
 #include "persistence/DBHandler.h"
 #include "persistence/PersistenceMgr.h"
 #include "core/Log.h"
-#include "network/ServerMessageSender.h"
 #include "backend/entity/User.h"
 
 namespace backend {

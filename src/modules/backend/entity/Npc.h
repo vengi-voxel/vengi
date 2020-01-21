@@ -10,6 +10,7 @@
 #include "cooldown/CooldownMgr.h"
 #include "backend/ForwardDecl.h"
 #include "backend/entity/EntityId.h"
+#include "network/ServerMessageSender.h"
 
 #include <atomic>
 
