@@ -18,7 +18,7 @@ public:
 	virtual ~ChunkPersister() {}
 
 	virtual bool init() override { return true; };
-	virtual void shutdown() { };
+	virtual void shutdown() override { };
 
 	virtual bool load(voxel::PagedVolume::Chunk* chunk, unsigned int seed) { return false; }
 	virtual bool save(voxel::PagedVolume::Chunk* chunk, unsigned int seed) { return false; }
