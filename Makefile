@@ -2,17 +2,12 @@ Q              ?= @
 UPDATEDIR      := /tmp
 BUILDTYPE      ?= Debug
 BUILDDIR       ?= ./build/$(BUILDTYPE)
-BUILDDIR_NINJA ?= ./build-ninja/$(BUILDTYPE)
 INSTALL_DIR    ?= $(BUILDDIR)/$(shell uname)
-NINJA          := ninja
+GENERATOR      := Ninja
 
 all:
-	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
-	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR) $@
-
-ninja:
-	$(Q)if [ ! -f $(BUILDDIR_NINJA)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR_NINJA) -DRCON=OFF -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -GNinja; fi
-	$(Q)$(NINJA) -C $(BUILDDIR_NINJA)
+	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
+	$(Q)cmake --build $(BUILDDIR) --target $@
 
 release:
 	$(Q)$(MAKE) BUILDTYPE=Release
@@ -24,8 +19,8 @@ distclean:
 	$(Q)git clean -fdx
 
 %:
-	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
-	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR) $@
+	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
+	$(Q)cmake --build $(BUILDDIR) --target  $@
 
 cppcheck:
 	$(Q)$(MAKE) BUILDDIR=$(BUILDDIR)/$@
