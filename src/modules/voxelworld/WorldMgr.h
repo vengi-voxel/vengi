@@ -123,9 +123,9 @@ public:
 	 */
 	bool scheduleMeshExtraction(const glm::ivec3& pos);
 
-	long seed() const;
+	unsigned int seed() const;
 
-	void setSeed(long seed);
+	void setSeed(unsigned int seed);
 
 	bool created() const;
 
@@ -204,7 +204,7 @@ inline bool WorldMgr::created() const {
 	return _seed != 0;
 }
 
-inline long WorldMgr::seed() const {
+inline unsigned int WorldMgr::seed() const {
 	return _seed;
 }
 

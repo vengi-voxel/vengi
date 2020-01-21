@@ -69,8 +69,8 @@ bool WorldMgr::scheduleMeshExtraction(const glm::ivec3& p) {
 	return true;
 }
 
-void WorldMgr::setSeed(long seed) {
-	Log::info("Seed is: %li", seed);
+void WorldMgr::setSeed(unsigned int seed) {
+	Log::info("Seed is: %u", seed);
 	_seed = seed;
 	_random.setSeed(seed);
 }
