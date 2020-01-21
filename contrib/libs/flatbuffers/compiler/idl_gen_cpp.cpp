@@ -273,6 +273,9 @@ class CppGenerator : public BaseGenerator {
       if (!struct_def.generated) {
         SetNameSpace(struct_def.defined_namespace);
         code_ += "struct " + Name(struct_def) + ";";
+        if (!struct_def.fixed) {
+          code_ += "struct " + Name(struct_def) + "Builder;";
+        }
         if (opts_.generate_object_based_api) {
           auto nativeName = NativeName(Name(struct_def), &struct_def, opts_);
           if (!struct_def.fixed) { code_ += "struct " + nativeName + ";"; }
@@ -1833,6 +1836,10 @@ class CppGenerator : public BaseGenerator {
     if (opts_.generate_object_based_api) {
       code_ += "  typedef {{NATIVE_NAME}} NativeTableType;";
     }
+    code_ += "  typedef {{STRUCT_NAME}}Builder Builder;";
+    if (opts_.g_cpp_std >= cpp::CPP_STD_17) {
+      code_ += "  struct Traits;";
+    }
     if (opts_.mini_reflect != IDLOptions::kNone) {
       code_ +=
           "  static const flatbuffers::TypeTable *MiniReflectTypeTable() {";
@@ -2085,6 +2092,7 @@ class CppGenerator : public BaseGenerator {
 
     // Generate a builder struct:
     code_ += "struct {{STRUCT_NAME}}Builder {";
+    code_ += "  typedef {{STRUCT_NAME}} Table;";
     code_ += "  flatbuffers::FlatBufferBuilder &fbb_;";
     code_ += "  flatbuffers::uoffset_t start_;";
 
@@ -2192,6 +2200,16 @@ class CppGenerator : public BaseGenerator {
     code_ += "  return builder_.Finish();";
     code_ += "}";
     code_ += "";
+
+    // Definition for type traits for this table type. This allows querying var-
+    // ious compile-time traits of the table.
+    if (opts_.g_cpp_std >= cpp::CPP_STD_17) {
+      code_ += "struct {{STRUCT_NAME}}::Traits {";
+      code_ += "  using type = {{STRUCT_NAME}};";
+      code_ += "  static auto constexpr Create = Create{{STRUCT_NAME}};";
+      code_ += "};";
+      code_ += "";
+    }
 
     // Generate a CreateXDirect function with vector types as parameters
     if (has_string_or_vector_fields) {

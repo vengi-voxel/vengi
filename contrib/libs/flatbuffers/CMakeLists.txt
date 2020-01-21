@@ -41,6 +41,7 @@ set(COMPILER_SRCS
 	compiler/idl_gen_php.cpp
 	compiler/idl_gen_python.cpp
 	compiler/idl_gen_rust.cpp
+	compiler/idl_gen_swift.cpp
 	compiler/idl_gen_text.cpp
 	compiler/idl_parser.cpp
 	compiler/reflection.cpp
