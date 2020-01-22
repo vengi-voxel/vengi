@@ -323,6 +323,12 @@ public:
 	bool hasChunk(const glm::ivec3& pos) const;
 	bool hasChunk(int32_t x, int32_t y, int32_t z) const;
 
+	glm::ivec3 chunkPos(int x, int y, int z) const;
+
+	inline glm::ivec3 chunkPos(const glm::ivec3& worldPos) const {
+		return chunkPos(worldPos.x, worldPos.y, worldPos.z);
+	}
+
 	inline uint16_t chunkSideLength() const {
 		return _chunkSideLength;
 	}

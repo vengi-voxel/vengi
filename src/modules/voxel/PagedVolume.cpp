@@ -141,6 +141,13 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, i
 	setVoxels(uXPos, 0, uZPos, 1, 1, tArray, amount);
 }
 
+glm::ivec3 PagedVolume::chunkPos(int x, int y, int z) const {
+	const int32_t _x = x >> _chunkSideLengthPower;
+	const int32_t _y = y >> _chunkSideLengthPower;
+	const int32_t _z = z >> _chunkSideLengthPower;
+	return glm::ivec3(_x, _y, _z);
+}
+
 void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx, int nz, const Voxel* tArray, int amount) {
 	if (!_region.isValid()) {
 		_region = Region(uXPos, uYPos, uZPos, uXPos + nx, uYPos, uZPos + nz);

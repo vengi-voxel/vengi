@@ -78,12 +78,19 @@ bool MapProvider::init() {
 			return;
 		}
 		const DBChunkPersisterPtr& persister = m->chunkPersister();
+		voxelworld::WorldMgr* worldMgr = m->worldMgr();
+		voxel::PagedVolume* volume = worldMgr->volumeData();
+		const glm::ivec3 chunkPos = volume->chunkPos(x, y, z);
 		const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
-		persistence::Blob blob = persister->load(x, y, z, mapid, seed->uintVal());
+		persistence::Blob blob = persister->load(chunkPos.x, chunkPos.y, chunkPos.z, mapid, seed->uintVal());
 		if (blob.length <= 0) {
-			response->status = http::HttpStatus::NotFound;
-			response->setText("Chunk not found");
-			return;
+			(void)volume->voxel(chunkPos.x, chunkPos.y, chunkPos.z);
+			blob = persister->load(chunkPos.x, chunkPos.y, chunkPos.z, mapid, seed->uintVal());
+			if (blob.length <= 0) {
+				response->status = http::HttpStatus::NotFound;
+				response->setText("Chunk not found");
+				return;
+			}
 		}
 		response->body = (char*)core_malloc(blob.length);
 		::memcpy((void*)response->body, blob.data, blob.length);
