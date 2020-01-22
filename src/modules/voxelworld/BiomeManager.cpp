@@ -141,7 +141,6 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	const Biome *biomeBestMatch = _defaultBiome;
 	float distMin = (std::numeric_limits<float>::max)();
 
-	{
 	core_trace_scoped(BiomeGetBiomeLoop);
 	for (const Biome* biome : _biomes) {
 		if (pos.y > biome->yMax || pos.y < biome->yMin || biome->underground != underground) {
@@ -154,7 +153,6 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 			biomeBestMatch = biome;
 			distMin = dist;
 		}
-	}
 	}
 	return biomeBestMatch;
 }
@@ -185,6 +183,7 @@ void BiomeManager::getTreePositions(const voxel::Region& region, std::vector<glm
 		return;
 	}
 	const Biome* biome = getBiome(pos);
+	// TODO: let the distance depend on the humidity and temperature... - and these values should be lerped between the biomes
 	distributePointsInRegion(region, positions, random, border, biome->treeDistance);
 }
 

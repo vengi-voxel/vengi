@@ -20,13 +20,13 @@ end
 -- The lower the value the higher the amount of trees in that biome.
 --
 function treeDistance(humidity, temperature)
-  local dist = 40
+  local dist = 30
   if temperature > 0.7 or humidity < 0.2 then
-    dist = 65
+    dist = 55
   elseif temperature > 0.9 or humidity < 0.1 then
-    dist = 90;
+    dist = 65;
   end
-  return dist;
+  return math.floor(dist * 1.0 / temperature * humidity);
 end
 
 ---

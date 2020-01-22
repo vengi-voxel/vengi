@@ -39,16 +39,19 @@ private:
 	voxelformat::VolumeCachePtr _volumeCache;
 	ChunkPersisterPtr _chunkPersister;
 
-	// don't access the volume in anything that is called here
-	void create(voxel::PagedVolume::PagerContext& pagerCtx);
-
-	// use a 2d noise to switch between different noises - to generate steep mountains
-	void createWorld(const WorldContext& worldCtx, voxel::PagedVolumeWrapper& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const;
+	void createWorld(voxel::PagedVolumeWrapper& volume) const;
 	void placeTrees(voxel::PagedVolume::PagerContext& pagerCtx);
 	void addVolumeToPosition(voxel::PagedVolumeWrapper& target, const voxel::RawVolume* source, const glm::ivec3& pos);
 
-	int fillVoxels(int x, int y, int z, const WorldContext& worldCtx, voxel::Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const;
-	float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const;
+	int terrainHeight(int x, int minsY, int z) const;
+	int terrainHeight(int x, int minsY, int z, float n) const;
+	int fillVoxels(int x, int minsY, int z, voxel::Voxel* voxels) const;
+
+	/**
+	 * @return A float value between [0.0-1.0]
+	 */
+	float getNoiseValue(float x, float z) const;
+	float getDensity(float x, float y, float z, float n) const;
 
 public:
 	WorldPager(const voxelformat::VolumeCachePtr& volumeCache, const ChunkPersisterPtr& chunkPersister);

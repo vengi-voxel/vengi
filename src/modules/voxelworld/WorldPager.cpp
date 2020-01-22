@@ -3,6 +3,7 @@
  */
 #include "WorldPager.h"
 #include "math/Random.h"
+#include "core/ArrayLength.h"
 #include "voxel/PagedVolumeWrapper.h"
 #include "voxelutil/Raycast.h"
 #include "noise/Simplex.h"
@@ -28,8 +29,14 @@ bool WorldPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 	if (_chunkPersister->load(pctx.chunk.get(), _seed)) {
 		return false;
 	}
-	create(pctx);
+	voxel::PagedVolumeWrapper wrapper(_volumeData, pctx.chunk, pctx.region);
+	//if (pctx.region.getLowerX() == 0 && pctx.region.getLowerZ() == 0) {
+	core_trace_scoped(CreateWorld);
+	math::Random random(_seed);
+	createWorld(wrapper);
+	placeTrees(pctx);
 	_chunkPersister->save(pctx.chunk.get(), _seed);
+	//}
 	return true;
 }
 
@@ -72,14 +79,14 @@ void WorldPager::shutdown() {
 }
 
 // use a 2d noise to switch between different noises - to generate steep mountains
-void WorldPager::createWorld(const WorldContext& worldCtx, voxel::PagedVolumeWrapper& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const {
+void WorldPager::createWorld(voxel::PagedVolumeWrapper& volume) const {
 	core_trace_scoped(WorldGeneration);
 	const voxel::Region& region = volume.region();
 	Log::debug("Create new chunk at %i:%i:%i", region.getLowerX(), region.getLowerY(), region.getLowerZ());
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
 	const int lowerX = region.getLowerX();
-	const int lowerY = region.getLowerY();
+	const int minsY = region.getLowerY();
 	const int lowerZ = region.getLowerZ();
 	core_assert(region.getLowerY() >= 0);
 	voxel::Voxel voxels[voxel::MAX_TERRAIN_HEIGHT];
@@ -90,37 +97,67 @@ void WorldPager::createWorld(const WorldContext& worldCtx, voxel::PagedVolumeWra
 	core_assert(width % size == 0);
 	for (int z = lowerZ; z < lowerZ + depth; z += size) {
 		for (int x = lowerX; x < lowerX + width; x += size) {
-			const int ni = fillVoxels(x, lowerY, z, worldCtx, voxels, noiseSeedOffsetX, noiseSeedOffsetZ, voxel::MAX_TERRAIN_HEIGHT - 1);
-			volume.setVoxels(x, lowerY, z, size, size, voxels, ni);
+			const int ni = fillVoxels(x, minsY, z, voxels);
+			volume.setVoxels(x, minsY, z, size, size, voxels, ni);
+			memset(voxels, 0, ni * sizeof(voxel::Voxel));
 		}
 	}
 }
 
-float WorldPager::getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const {
+float WorldPager::getNoiseValue(float x, float z) const {
+	const glm::vec2 noisePos2d(_noiseSeedOffset.x + x, _noiseSeedOffset.y + z);
 	// TODO: move the noise settings into the biome
-	const float landscapeNoise = noise::fBm(noisePos2d * worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseOctaves,
-			worldCtx.landscapeNoiseLacunarity, worldCtx.landscapeNoiseGain);
+	const float landscapeNoise = noise::fBm(noisePos2d * _worldCtx.landscapeNoiseFrequency, _worldCtx.landscapeNoiseOctaves,
+			_worldCtx.landscapeNoiseLacunarity, _worldCtx.landscapeNoiseGain);
 	const float noiseNormalized = noise::norm(landscapeNoise);
-	const float mountainNoise = noise::fBm(noisePos2d * worldCtx.mountainNoiseFrequency, worldCtx.mountainNoiseOctaves,
-			worldCtx.mountainNoiseLacunarity, worldCtx.mountainNoiseGain);
+	const float mountainNoise = noise::fBm(noisePos2d * _worldCtx.mountainNoiseFrequency, _worldCtx.mountainNoiseOctaves,
+			_worldCtx.mountainNoiseLacunarity, _worldCtx.mountainNoiseGain);
 	const float mountainNoiseNormalized = noise::norm(mountainNoise);
 	const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 	const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
 	return n;
 }
 
-int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, voxel::Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const {
-	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
-	const float n = getHeight(noisePos2d, worldCtx);
-	const glm::ivec3 noisePos3d(x, lowerY, z);
+float WorldPager::getDensity(float x, float y, float z, float n) const {
+	const glm::vec3 noisePos3d(_noiseSeedOffset.x + x, y, _noiseSeedOffset.y + z);
+	// TODO: move the noise settings into the biome
+	const float noiseVal = noise::norm(
+			noise::fBm(noisePos3d * _worldCtx.caveNoiseFrequency, _worldCtx.caveNoiseOctaves, _worldCtx.caveNoiseLacunarity, _worldCtx.caveNoiseGain));
+	const float finalDensity = n + noiseVal;
+	return finalDensity;
+}
+
+int WorldPager::terrainHeight(int x, int y, int z) const {
+	const float n = getNoiseValue(x, z);
+	return terrainHeight(x, y, z, n);
+}
+
+int WorldPager::terrainHeight(int x, int minsY, int z, float n) const {
+	const int maxHeight = voxel::MAX_TERRAIN_HEIGHT - 1;
 	int centerHeight;
+	// the center of a city should make the terrain more even
 	const float cityMultiplier = _biomeManager.getCityMultiplier(glm::ivec2(x, z), &centerHeight);
-	int ni = n * maxHeight;
+	int ni;
 	if (cityMultiplier < 1.0f) {
 		const float revn = (1.0f - cityMultiplier);
-		ni = revn * centerHeight + (n * maxHeight * cityMultiplier);
+		ni = revn * centerHeight + (cityMultiplier * n * maxHeight);
+	} else {
+		ni = n * maxHeight;
 	}
-	if (ni < lowerY) {
+	for (int y = ni - 1; y >= minsY + 1; --y) {
+		const float density = getDensity(x, y, z, n);
+		if (density > _worldCtx.caveDensityThreshold) {
+			break;
+		}
+		--ni;
+	}
+	return ni;
+}
+
+int WorldPager::fillVoxels(int x, int minsY, int z, voxel::Voxel* voxels) const {
+	const float n = getNoiseValue(x, z);
+	const int ni = terrainHeight(x, minsY, z, n);
+	if (ni < minsY) {
 		return 0;
 	}
 
@@ -130,13 +167,9 @@ int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCt
 
 	voxels[0] = dirt;
 	glm::ivec3 pos(x, 0, z);
-	for (int y = ni - 1; y >= lowerY + 1; --y) {
-		const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
-		// TODO: move the noise settings into the biome
-		const float noiseVal = noise::norm(
-				noise::fBm(noisePos3d * worldCtx.caveNoiseFrequency, worldCtx.caveNoiseOctaves, worldCtx.caveNoiseLacunarity, worldCtx.caveNoiseGain));
-		const float finalDensity = n + noiseVal;
-		if (finalDensity > worldCtx.caveDensityThreshold) {
+	for (int y = ni - 1; y >= minsY + 1; --y) {
+		const float density = getDensity(x, y, z, n);
+		if (density > _worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;
 			pos.y = y;
 			const voxel::Voxel& voxel = _biomeManager.getVoxel(pos, cave);
@@ -149,43 +182,12 @@ int WorldPager::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCt
 			}
 		}
 	}
-	for (int i = lowerY; i < voxel::MAX_WATER_HEIGHT; ++i) {
+	for (int i = minsY; i < voxel::MAX_WATER_HEIGHT; ++i) {
 		if (voxels[i] == air) {
 			voxels[i] = water;
 		}
 	}
-	return core_max(ni - lowerY, voxel::MAX_WATER_HEIGHT - lowerY);
-}
-
-/**
- * @brief Looks for a suitable height level for placing a tree
- * @return @c -1 if no suitable floor for placing a tree was found
- */
-static int findFloor(const voxel::PagedVolume* volume, int x, int z) {
-	glm::ivec3 start(x, voxel::MAX_TERRAIN_HEIGHT - 1, z);
-	glm::ivec3 end(x, voxel::MAX_WATER_HEIGHT, z);
-	int y = voxel::NO_FLOOR_FOUND;
-	voxel::raycastWithEndpoints(volume, start, end, [&y] (const typename voxel::PagedVolume::Sampler& sampler) {
-		const voxel::Voxel& voxel = sampler.voxel();
-		const voxel::VoxelType material = voxel.getMaterial();
-		if (isLeaves(material)) {
-			return false;
-		}
-		if (!isRock(material) && (isFloor(material) || isWood(material))) {
-			y = sampler.position().y + 1;
-			return false;
-		}
-		return true;
-	});
-	return y;
-}
-
-void WorldPager::create(voxel::PagedVolume::PagerContext& pagerCtx) {
-	voxel::PagedVolumeWrapper wrapper(_volumeData, pagerCtx.chunk, pagerCtx.region);
-	core_trace_scoped(CreateWorld);
-	math::Random random(_seed);
-	createWorld(_worldCtx, wrapper, _noiseSeedOffset.x, _noiseSeedOffset.y);
-	placeTrees(pagerCtx);
+	return core_max(ni - minsY, voxel::MAX_WATER_HEIGHT - minsY);
 }
 
 void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
@@ -196,40 +198,46 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 	const glm::ivec3& mins = pagerCtx.region.getLowerCorner();
 	const glm::ivec3& maxs = pagerCtx.region.getUpperCorner();
 	const glm::ivec3& dim = pagerCtx.region.getDimensionsInVoxels();
-	const core::Array<voxel::Region, 9> regions = {
+	struct Foo {
+		voxel::Region region;
+		unsigned int seed;
+	} regions[] = {
 		// left neighbors
-		voxel::Region(mins.x - dim.x, mins.y, mins.z - dim.z, maxs.x - dim.x, maxs.y, maxs.z - dim.z),
-		voxel::Region(mins.x - dim.x, mins.y, mins.z,         maxs.x - dim.x, maxs.y, maxs.z        ),
-		voxel::Region(mins.x - dim.x, mins.y, mins.z + dim.z, maxs.x - dim.x, maxs.y, maxs.z + dim.z),
+		{voxel::Region(mins.x - dim.x, mins.y, mins.z - dim.z, maxs.x - dim.x, maxs.y, maxs.z - dim.z), 0},
+		{voxel::Region(mins.x - dim.x, mins.y, mins.z,         maxs.x - dim.x, maxs.y, maxs.z        ), 0},
+		{voxel::Region(mins.x - dim.x, mins.y, mins.z + dim.z, maxs.x - dim.x, maxs.y, maxs.z + dim.z), 0},
 
 		// right neighbors
-		voxel::Region(mins.x + dim.x, mins.y, mins.z - dim.z, maxs.x + dim.x, maxs.y, maxs.z - dim.z),
-		voxel::Region(mins.x + dim.x, mins.y, mins.z,         maxs.x + dim.x, maxs.y, maxs.z        ),
-		voxel::Region(mins.x + dim.x, mins.y, mins.z + dim.z, maxs.x + dim.x, maxs.y, maxs.z + dim.z),
+		{voxel::Region(mins.x + dim.x, mins.y, mins.z - dim.z, maxs.x + dim.x, maxs.y, maxs.z - dim.z), 0},
+		{voxel::Region(mins.x + dim.x, mins.y, mins.z,         maxs.x + dim.x, maxs.y, maxs.z        ), 0},
+		{voxel::Region(mins.x + dim.x, mins.y, mins.z + dim.z, maxs.x + dim.x, maxs.y, maxs.z + dim.z), 0},
 
 		// front and back neighbors
-		voxel::Region(mins.x, mins.y, mins.z - dim.z, maxs.x, maxs.y, maxs.z - dim.z),
-		voxel::Region(mins.x, mins.y, mins.z + dim.z, maxs.x, maxs.y, maxs.z + dim.z),
+		{voxel::Region(mins.x, mins.y, mins.z - dim.z, maxs.x, maxs.y, maxs.z - dim.z), 0},
+		{voxel::Region(mins.x, mins.y, mins.z + dim.z, maxs.x, maxs.y, maxs.z + dim.z), 0},
 
 		// own chunk region
-		voxel::Region(mins, maxs)
+		{voxel::Region(mins, maxs), 0}
 	};
 	// the assumption here is that we get a full heigt paging request, otherwise we
 	// would have to loop over more regions.
 	core_assert(pagerCtx.region.getLowerY() == 0);
 	core_assert(pagerCtx.region.getUpperY() == voxel::MAX_HEIGHT);
+	const int regionY = pagerCtx.region.getCentreY();
 	voxel::PagedVolumeWrapper wrapper(_volumeData, pagerCtx.chunk, pagerCtx.region);
 	std::vector<const char*> treeTypes;
 
-	for (size_t i = 0; i < regions.size(); ++i) {
-		const voxel::Region& region = regions[i];
+	const size_t regionsSize = lengthof(regions);
+
+	for (size_t i = 0; i < regionsSize; ++i) {
+		const voxel::Region& region = regions[i].region;
 		treeTypes = _biomeManager.getTreeTypes(region);
 		if (treeTypes.empty()) {
 			Log::debug("No tree types given for region %s", region.toString().c_str());
 			return;
 		}
-		const int border = 2;
-		unsigned int seed = _seed + glm::abs(region.getCentreX() + region.getCentreZ());
+		const int border = 0;
+		unsigned int seed = _seed + regions[i].seed;
 		math::Random random(seed);
 
 		random.shuffle(treeTypes.begin(), treeTypes.end());
@@ -237,22 +245,15 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 		std::vector<glm::vec2> positions;
 		_biomeManager.getTreePositions(region, positions, random, border);
 		int treeTypeIndex = 0;
-		const int regionY = region.getCentreY();
 		const int treeTypeSize = (int)treeTypes.size();
 		for (const glm::vec2& position : positions) {
 			glm::ivec3 treePos(position.x, regionY, position.y);
-			if (!_volumeData->hasChunk(treePos)) {
-				continue;
-			}
-			treePos.y = findFloor(_volumeData, position.x, position.y);
+			treePos.y = terrainHeight(position.x, pagerCtx.region.getLowerY(), position.y) - 1;
 			if (treePos.y <= voxel::MAX_WATER_HEIGHT) {
 				continue;
 			}
 			const char *treeType = treeTypes[treeTypeIndex++];
 			treeTypeIndex %= treeTypeSize;
-			// TODO: if a tree is placed at the volume chunk sizes, and also overlaps the mesh extraction
-			// chunk size, there are parts of the tree that are missing.
-			// notice mapview with single position activated at -1, 0, 277 and 0, 0, 277
 			// TODO: this hardcoded 10... no way
 			const int treeIndex = 1 ; //random.random(1, 10);
 			char filename[64];
@@ -264,7 +265,6 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 			if (v == nullptr) {
 				continue;
 			}
-			Log::debug("region %i: final treepos: %3i:%3i:%3i", (int)i, treePos.x, treePos.y, treePos.z);
 			addVolumeToPosition(wrapper, v, treePos);
 		}
 	}
