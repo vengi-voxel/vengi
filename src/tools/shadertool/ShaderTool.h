@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/ConsoleApp.h"
+#include "core/CommandlineApp.h"
 #include "Types.h"
 
 /**
@@ -12,9 +12,9 @@
  *
  * @ingroup Tools
  */
-class ShaderTool: public core::ConsoleApp {
+class ShaderTool: public core::CommandlineApp {
 private:
-	using Super = core::ConsoleApp;
+	using Super = core::CommandlineApp;
 protected:
 	ShaderStruct _shaderStruct;
 	std::string _namespaceSrc;

@@ -17,12 +17,6 @@
 namespace util {
 
 namespace {
-static const char* historyFilename = "history";
-static const std::string consolePrompt = "> ";
-static const std::string consoleCursor = ".";
-static const int consoleMarginLeft = 5;
-static const int consoleMarginLeftBehindPrompt = 13;
-static const char colorMark = '^';
 
 static const glm::ivec4 colors[MAX_COLORS] = {
 	glm::ivec4(255, 255, 255, 255),
@@ -47,24 +41,6 @@ static const ConsoleColor priorityColors[SDL_NUM_LOG_PRIORITIES] = {
 static_assert(SDL_arraysize(priorityColors) == SDL_NUM_LOG_PRIORITIES, "Priority count doesn't match");
 }
 
-std::string getColor(ConsoleColor color) {
-	core_assert(color >= 0 && color <= (int)SDL_arraysize(colors));
-	std::string s;
-	s += colorMark;
-	s += std::to_string((int)color);
-	return s;
-}
-
-static inline bool isColor(const char *cstr) {
-	static const char maxColor = MAX_COLORS + '0';
-	return cstr[0] == colorMark && cstr[1] >= '0' && cstr[1] <= maxColor;
-}
-
-static inline void skipColor(const char **cstr) {
-	static_assert((int)MAX_COLORS < 10, "max colors must not exceed one ascii char for encoding");
-	*cstr += 2;
-}
-
 Console::Console() :
 		_mainThread(std::this_thread::get_id()) {
 	SDL_LogGetOutputFunction(&_logFunction, &_logUserData);
@@ -75,6 +51,24 @@ Console::~Console() {
 	SDL_LogSetOutputFunction(_logFunction, _logUserData);
 }
 
+std::string Console::getColor(ConsoleColor color) {
+	core_assert(color >= 0 && color <= (int)SDL_arraysize(colors));
+	std::string s;
+	s += _colorMark;
+	s += std::to_string((int)color);
+	return s;
+}
+
+bool Console::isColor(const char *cstr) {
+	static const char maxColor = MAX_COLORS + '0';
+	return cstr[0] == _colorMark && cstr[1] >= '0' && cstr[1] <= maxColor;
+}
+
+void Console::skipColor(const char **cstr) {
+	static_assert((int)MAX_COLORS < 10, "max colors must not exceed one ascii char for encoding");
+	*cstr += 2;
+}
+
 void Console::construct() {
 	_autoEnable = core::Var::get("ui_autoconsole", "false", "Activate console on output");
 	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); }).setHelp("Toggle the in-game console");
@@ -83,7 +77,7 @@ void Console::construct() {
 
 bool Console::init() {
 	const io::FilesystemPtr& fs = io::filesystem();
-	const std::string& content = fs->load("%s", historyFilename);
+	const std::string& content = fs->load("%s", _historyFilename);
 	core::string::splitString(content, _history, "\n");
 	_historyPos = _history.size();
 	Log::info("Loaded %i history entries", _historyPos);
@@ -99,7 +93,7 @@ void Console::shutdown() {
 	}
 
 	const io::FilesystemPtr& fs = io::filesystem();
-	if (!fs->write(historyFilename, content)) {
+	if (!fs->write(_historyFilename, content)) {
 		Log::warn("Failed to write the history");
 	} else {
 		Log::debug("Wrote the history");
@@ -131,7 +125,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		} else if (key == SDLK_e) {
 			_cursorPos = _commandLine.size();
 		} else if (key == SDLK_c) {
-			_messages.push_back(consolePrompt + _commandLine);
+			_messages.push_back(_consolePrompt + _commandLine);
 			clearCommandLine();
 		} else if (key == SDLK_d) {
 			toggle();
@@ -212,7 +206,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 void Console::executeCommandLine() {
-	_messages.push_back(consolePrompt + _commandLine);
+	_messages.push_back(_consolePrompt + _commandLine);
 	_scrollPos = 0;
 	if (_commandLine.empty()) {
 		return;
@@ -426,7 +420,7 @@ void Console::autoComplete() {
 			_commandLine.insert(cmdEraseIndex, matches.front());
 		}
 	} else {
-		_messages.push_back(consolePrompt + _commandLine);
+		_messages.push_back(_consolePrompt + _commandLine);
 		std::sort(begin(matches), end(matches), [](const std::string& v1, const std::string& v2) {
 			return v1 < v2;
 		});
@@ -544,7 +538,9 @@ void Console::addLogLine(int category, SDL_LogPriority priority, const char *mes
 	if (hasColor) {
 		skipColor(&message);
 	}
-	_logFunction(_logUserData, category, priority, message);
+	if (_useOriginalLogFunction) {
+		_logFunction(_logUserData, category, priority, message);
+	}
 }
 
 bool Console::toggle() {
@@ -609,6 +605,7 @@ void Console::render(const math::Rect<int> &rect, long deltaFrame) {
 	const int lineH = lineHeight();
 	_maxLines = (rect.getMaxZ() - rect.getMinZ()) / lineH;
 	if (_maxLines <= 0) {
+		afterRender(rect);
 		return;
 	}
 	const int maxY = _messages.size() * lineH;
@@ -617,19 +614,19 @@ void Console::render(const math::Rect<int> &rect, long deltaFrame) {
 	MessagesIter i = _messages.rbegin();
 	std::advance(i, _scrollPos);
 	for (int y = startY; i != _messages.rend(); ++i) {
-		if (y < 0) {
+		if (y < rect.getMinZ()) {
 			break;
 		}
 		const glm::ivec2& size = stringSize(i->c_str(), i->length());
 		y -= size.y;
-		drawString(consoleMarginLeft, y, *i, i->length());
+		drawString(_consoleMarginLeft, y, *i, i->length());
 	}
 
-	drawString(consoleMarginLeft, startY, consolePrompt, consolePrompt.length());
-	drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt, startY, _commandLine, _commandLine.length());
+	drawString(_consoleMarginLeft, startY, _consolePrompt, _consolePrompt.length());
+	drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt, startY, _commandLine, _commandLine.length());
 	if (_cursorBlink) {
 		const glm::ivec2& l = stringSize(_commandLine.c_str(), _cursorPos);
-		drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt + l.x, startY, consoleCursor, consoleCursor.length());
+		drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt + l.x, startY, _consoleCursor, _consoleCursor.length());
 	}
 
 	afterRender(rect);

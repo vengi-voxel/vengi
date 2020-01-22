@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "core/ConsoleApp.h"
+#include "core/CommandlineApp.h"
 #include "core/collection/Map.h"
 #include "core/EventBus.h"
 #include "core/io/Filesystem.h"
@@ -81,18 +81,18 @@ inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec1<T, P>& ve
 
 class AbstractTest: public testing::Test {
 private:
-	class TestApp: public core::ConsoleApp {
+	class TestApp: public core::CommandlineApp {
 		friend class AbstractTest;
 	private:
-		using Super = core::ConsoleApp;
+		using Super = core::CommandlineApp;
 	protected:
 		AbstractTest* _test = nullptr;
 	public:
 		TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test);
 		~TestApp();
 
-		AppState onInit() override;
-		AppState onCleanup() override;
+		core::AppState onInit() override;
+		core::AppState onCleanup() override;
 	};
 
 protected:

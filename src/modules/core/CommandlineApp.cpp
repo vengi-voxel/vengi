@@ -2,19 +2,19 @@
  * @file
  */
 
-#include "ConsoleApp.h"
+#include "CommandlineApp.h"
 #include "core/Var.h"
 
 namespace core {
 
-ConsoleApp::ConsoleApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
+CommandlineApp::CommandlineApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize) {
 }
 
-ConsoleApp::~ConsoleApp() {
+CommandlineApp::~CommandlineApp() {
 }
 
-AppState ConsoleApp::onConstruct() {
+AppState CommandlineApp::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 
 	registerArg("--trace").setDescription("Change log level to trace");

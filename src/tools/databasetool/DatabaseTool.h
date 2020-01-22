@@ -5,7 +5,7 @@
 #pragma once
 
 #include <map>
-#include "core/ConsoleApp.h"
+#include "core/CommandlineApp.h"
 #include "core/Tokenizer.h"
 #include "Table.h"
 
@@ -15,9 +15,9 @@
  *
  * @ingroup Tools
  */
-class DatabaseTool: public core::ConsoleApp {
+class DatabaseTool: public core::CommandlineApp {
 private:
-	using Super = core::ConsoleApp;
+	using Super = core::CommandlineApp;
 protected:
 	std::string _tableFile;
 	std::string _targetFile;

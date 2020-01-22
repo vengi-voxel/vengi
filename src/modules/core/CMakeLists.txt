@@ -32,14 +32,13 @@ set(SRCS
 	Color.cpp Color.h
 	Common.h Common.cpp
 	Concurrency.h Concurrency.cpp
-	ConsoleApp.h ConsoleApp.cpp
+	CommandlineApp.h CommandlineApp.cpp
 	Enum.h
 	EventBus.cpp EventBus.h
 	GameConfig.h
 	GLM.cpp GLM.h
 	Hash.h
 	IComponent.h
-	Input.cpp Input.h
 	Log.cpp Log.h
 	MD5.cpp MD5.h
 	PoolAllocator.h

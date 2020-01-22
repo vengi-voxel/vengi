@@ -333,10 +333,6 @@ bool ServerLoop::init() {
 	uv_signal_start(_signal, signalCallback, SIGHUP);
 	uv_signal_start(_signal, signalCallback, SIGINT);
 
-	if (!_input.init(_loop)) {
-		Log::warn("Could not init console input");
-	}
-
 	// init the network last...
 	if (!_network->init()) {
 		Log::error("Failed to init the network");
@@ -361,7 +357,6 @@ void ServerLoop::shutdown() {
 	_dbHandler->shutdown();
 	_metricMgr->shutdown();
 	_volumeCache->shutdown();
-	_input.shutdown();
 	_network->shutdown();
 	_httpServer->shutdown();
 	if (_loop != nullptr) {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/ConsoleApp.h"
+#include "core/CommandlineApp.h"
 #include "ui/turbobadger/TurboBadger.h"
 #include "ui/turbobadger/UIDummies.h"
 
@@ -13,9 +13,9 @@
  *
  * @ingroup Tools
  */
-class UITool: public core::ConsoleApp {
+class UITool: public core::CommandlineApp {
 private:
-	using Super = core::ConsoleApp;
+	using Super = core::CommandlineApp;
 	DummyRenderer _renderer;
 	tb::TBWidget _root;
 public:

@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "core/ConsoleApp.h"
+#include "core/CommandlineApp.h"
 #include "http/HttpServer.h"
-#include "core/Input.h"
+#include "console/Input.h"
 #include <uv.h>
 
 /**
@@ -14,11 +14,11 @@
  *
  * See e.g. https://github.com/zardus/preeny and https://lolware.net/2015/04/28/nginx-fuzzing.html
  */
-class TestHttpServer: public core::ConsoleApp {
+class TestHttpServer: public core::CommandlineApp {
 private:
-	using Super = core::ConsoleApp;
+	using Super = core::CommandlineApp;
 	http::HttpServer _server;
-	core::Input _input;
+	console::Input _input;
 	uv_loop_t *_loop = nullptr;
 	core::VarPtr _exitAfterRequest;
 	int _remainingFrames = 0;

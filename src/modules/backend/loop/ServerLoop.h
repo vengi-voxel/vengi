@@ -6,7 +6,7 @@
 
 #include "core/EventBus.h"
 #include "core/Trace.h"
-#include "core/Input.h"
+#include "console/Input.h"
 #include "core/EventBus.h"
 #include "core/IComponent.h"
 #include "network/ServerNetwork.h"
@@ -38,7 +38,6 @@ private:
 	eventmgr::EventMgrPtr _eventMgr;
 	persistence::DBHandlerPtr _dbHandler;
 	stock::StockDataProviderPtr _stockDataProvider;
-	core::Input _input;
 	MetricMgrPtr _metricMgr;
 	io::FilesystemPtr _filesystem;
 	persistence::PersistenceMgrPtr _persistenceMgr;

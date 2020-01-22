@@ -196,6 +196,9 @@ find_host_program(GIT_EXECUTABLE NAMES ${GIT_BINARY} git)
 find_host_program(HG_EXECUTABLE NAMES ${HG_BINARY} hg)
 check_include_files("uuid/uuid.h" HAVE_UUID_H)
 
+set(CURSES_NEED_NCURSES True)
+find_package(Curses)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # These includes are needed to let the include for IMPLICIT_DEPENDS for shaders work

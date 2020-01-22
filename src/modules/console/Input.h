@@ -6,7 +6,7 @@
 
 #include <uv.h>
 
-namespace core {
+namespace console {
 
 /**
  * @brief Non-blocking console input reading e.g. for dedicated server command line

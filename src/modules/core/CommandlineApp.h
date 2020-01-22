@@ -4,18 +4,18 @@
 
 #pragma once
 
-#include "App.h"
+#include "core/App.h"
 
 namespace core {
 
-class ConsoleApp : public App {
+class CommandlineApp : public core::App {
 private:
 	using Super = core::App;
 public:
-	ConsoleApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
-	virtual ~ConsoleApp();
+	CommandlineApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
+	virtual ~CommandlineApp();
 
-	virtual AppState onConstruct() override;
+	virtual core::AppState onConstruct() override;
 };
 
 }

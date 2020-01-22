@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "core/ConsoleApp.h"
+#include "console/CursesApp.h"
 #include "backend/loop/ServerLoop.h"
 #include "core/TimeProvider.h"
 #include "http/HttpServer.h"
 
-class Server: public core::ConsoleApp {
+class Server: public console::CursesApp {
 private:
-	using Super = core::ConsoleApp;
+	using Super = console::CursesApp;
 	backend::ServerLoopPtr _serverLoop;
 public:
 	Server(const metric::MetricPtr& metric, const backend::ServerLoopPtr& serverLoop,

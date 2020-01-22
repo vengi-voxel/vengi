@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include "core/Var.h"
+#include "core/Assert.h"
 #include "core/IComponent.h"
 #include "math/Rect.h"
 #include "core/collection/ConcurrentQueue.h"
@@ -27,6 +28,20 @@ protected:
 	typedef std::vector<std::string> Messages;
 	typedef Messages::const_reverse_iterator MessagesIter;
 	Messages _messages;
+
+	int _consoleMarginLeft = 5;
+	int _consoleMarginLeftBehindPrompt = 13;
+
+	const char* _historyFilename = "history";
+	std::string _consolePrompt = "> ";
+	std::string _consoleCursor = ".";
+	char _colorMark = '^';
+
+	std::string getColor(ConsoleColor color);
+
+	bool isColor(const char *cstr);
+
+	void skipColor(const char **cstr);
 
 	/**
 	 * @brief Data structure to store a log entry call from a different thread.
@@ -85,6 +100,7 @@ protected:
 	// commandline character will get overwritten if this is true
 	bool _overwrite = false;
 	bool _cursorBlink = false;
+	bool _useOriginalLogFunction = true;
 	int _frame = 0;
 	int _cursorPos = 0;
 	int _scrollPos = 0;

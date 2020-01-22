@@ -7,7 +7,7 @@
 #include "core/command/CommandHandler.h"
 #include <string.h>
 
-namespace core {
+namespace console {
 
 bool Input::init(uv_loop_t* loop) {
 	_tty.data = this;

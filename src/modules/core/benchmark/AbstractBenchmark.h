@@ -5,7 +5,7 @@
 #pragma once
 
 #include <benchmark/benchmark.h>
-#include "core/ConsoleApp.h"
+#include "core/CommandlineApp.h"
 #include "core/io/Filesystem.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
@@ -14,14 +14,14 @@ namespace core {
 
 class AbstractBenchmark : public benchmark::Fixture {
 private:
-	class BenchmarkApp: public core::ConsoleApp {
+	class BenchmarkApp: public core::CommandlineApp {
 		friend class AbstractBenchmark;
 	protected:
-		using Super = core::ConsoleApp;
+		using Super = core::CommandlineApp;
 		AbstractBenchmark* _benchmark = nullptr;
 	public:
 		BenchmarkApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark);
-		~BenchmarkApp();
+		virtual ~BenchmarkApp();
 
 		virtual core::AppState onInit() override;
 		virtual core::AppState onCleanup() override;

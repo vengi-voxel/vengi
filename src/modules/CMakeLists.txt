@@ -3,6 +3,7 @@
 # files will not get copied
 
 add_subdirectory(core)
+add_subdirectory(console)
 add_subdirectory(http)
 add_subdirectory(commonlua)
 add_subdirectory(mail)

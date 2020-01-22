@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/ConsoleApp.h"
+#include "core/CommandlineApp.h"
 #include "Types.h"
 #include <simplecpp.h>
 #include <vector>
@@ -25,9 +25,9 @@
  * @ingroup Tools
  * @ingroup Compute
  */
-class ComputeShaderTool: public core::ConsoleApp {
+class ComputeShaderTool: public core::CommandlineApp {
 private:
-	using Super = core::ConsoleApp;
+	using Super = core::CommandlineApp;
 protected:
 	std::string _namespaceSrc;
 	std::string _sourceDirectory;
