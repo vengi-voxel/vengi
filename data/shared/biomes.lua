@@ -47,6 +47,7 @@ end
 function addGrass(lower, upper, humidity, temperature, underGround)
   local grass = addBiome(lower, upper, humidity, temperature, "Grass", underGround, treeDistance(humidity, temperature))
   addTree(grass, "pine")
+  addTree(grass, "fir")
   return grass
 end
 
