@@ -4,6 +4,7 @@
 
 #include "ResponseParser.h"
 #include "core/String.h"
+#include "core/Log.h"
 
 namespace http {
 

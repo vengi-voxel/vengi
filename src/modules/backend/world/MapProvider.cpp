@@ -10,6 +10,7 @@
 #include "backend/entity/ai/AILoader.h"
 #include "http/HttpServer.h"
 #include "voxel/PagedVolume.h"
+#include "voxelworld/WorldMgr.h"
 #include <glm/vec3.hpp>
 
 namespace backend {
