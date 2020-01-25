@@ -44,7 +44,7 @@ void update(float animTime, float velocity, CharacterSkeleton &skeleton, const C
 	righthand.orientation = rotateX(handAngle);
 
 	Bone &lefthand = skeleton.handBone(BoneId::LeftHand, skeletonAttr);
-	lefthand = mirrorXYZ(righthand);
+	lefthand = mirrorXZ(righthand);
 	lefthand.orientation = rotateX(-handAngle);
 
 	const float footAngle = cosine * 1.5f;

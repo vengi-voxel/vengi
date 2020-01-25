@@ -30,6 +30,13 @@ set(SRCS_SHADERS
 	shaders/skeleton.vert shaders/skeleton.frag
 )
 set(FILES
+	voxel/models/characters/human/female/head/worker.vox
+	voxel/models/characters/human/female/foot/worker.vox
+	voxel/models/characters/human/female/hand/worker.vox
+	voxel/models/characters/human/female/pants/worker.vox
+	voxel/models/characters/human/female/belt/worker.vox
+	voxel/models/characters/human/female/chest/worker.vox
+
 	voxel/models/characters/dwarf/male/head/blacksmith.vox
 	voxel/models/characters/dwarf/male/shoulder/blacksmith.vox
 	voxel/models/characters/dwarf/male/foot/blacksmith.vox
@@ -105,6 +112,7 @@ set(LUA_SRCS
 	chr/human-male-knight.lua
 	chr/human-male-shepherd.lua
 	chr/human-male-worker.lua
+	chr/human-female-worker.lua
 
 	chr/undead-male-zombie.lua
 	chr/undead-male-skeleton.lua
