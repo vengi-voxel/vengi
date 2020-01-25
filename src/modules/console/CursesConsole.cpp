@@ -65,9 +65,9 @@ void CursesConsole::update(uint32_t deltaTime) {
 		}
 		key = getch();
 	}
-#endif
 	const math::Rect<int> rect(0, 0, COLS - 1, LINES - 1);
 	render(rect, (long)deltaTime);
+#endif
 }
 
 void CursesConsole::drawString(int x, int y, const glm::ivec4& color, const char* str, int len) {
