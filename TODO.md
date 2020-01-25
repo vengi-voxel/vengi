@@ -78,14 +78,6 @@ Configure entity types and amounts via lua map script
 
 The attack manager should get updated in the map tick and should maintain a list of attackers and victims.
 
-## Map viewer
-
-Finish implementation of the `mapview` tool.
-
-# Statsd support
-
-Extend statsd support with more events
-
 # SignUp
 
 Implement signup with email verification, Lost password and co - also see password related point in the persistence section.
