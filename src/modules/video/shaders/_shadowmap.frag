@@ -20,19 +20,25 @@ uniform mat4 u_cascades[4];
  */
 float sampleShadowPCF(in int cascade, in vec2 uv, in float compare) {
 	float result = 0.0;
-	for (int x = -2; x <= 2; x++) {
-		for (int y = -2; y <= 2; y++) {
+	const int r = 2;
+	float bias = 0.005;
+	for (int x = -r; x <= r; x++) {
+		for (int y = -r; y <= r; y++) {
 			vec2 off = vec2(x, y) / u_depthsize;
-			result += texture(u_shadowmap, vec4(uv + off, cascade, compare));
+			result += texture(u_shadowmap, vec4(uv + off, cascade, compare - bias));
 		}
 	}
-	return result / 25.0;
+	const float size = 2.0 * float(r) + 1.0;
+	const float elements = size * size;
+	return result / elements;
 }
 
 float calculateShadow(in int cascade, in mat4 viewprojection) {
 	vec4 lightp = u_cascades[cascade] * vec4(v_lightspacepos, 1.0);
 	/* we manually have to do the perspective divide as there is no
-	 * version of textureProj that can take a sampler2DArrayShadow */
+	 * version of textureProj that can take a sampler2DArrayShadow
+	 * Also bring the ndc into the range [0-1] because the depth map
+	 * is in that range */
 	vec3 lightpt = (lightp.xyz / lightp.w) * 0.5 + 0.5;
 	return sampleShadowPCF(cascade, calculateShadowTexcoord(lightpt.xy), lightpt.z);
 }
