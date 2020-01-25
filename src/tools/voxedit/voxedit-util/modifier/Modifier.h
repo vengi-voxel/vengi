@@ -36,8 +36,12 @@ class Modifier : public core::IComponent {
 private:
 	Selection _selection = voxel::Region::InvalidRegion;
 	bool _selectionValid = false;
-	glm::ivec3 _aabbFirstPos;
+	bool _secondPosValid = false;
 	bool _aabbMode = false;
+	bool _center = true;
+	glm::ivec3 _aabbFirstPos;
+	glm::ivec3 _aabbSecondPos;
+	math::Axis _aabbSecondActionDirection = math::Axis::None;
 	ModifierType _modifierType = ModifierType::Place;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
@@ -55,6 +59,7 @@ private:
 	ModifierButton _deleteExecuteButton;
 	ShapeType _shapeType = ShapeType::AABB;
 
+	glm::ivec3 firstPos() const;
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 	glm::ivec3 aabbPosition() const;
 	void updateMirrorPlane();
@@ -71,7 +76,10 @@ public:
 
 	void translate(const glm::ivec3& v);
 
+	bool needsSecondAction();
 	const Selection& selection() const;
+
+	void setCenterMode(bool center);
 
 	math::Axis mirrorAxis() const;
 	void setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
@@ -99,6 +107,7 @@ public:
 	 */
 	bool aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback);
 	void aabbStop();
+	void aabbStep();
 
 	bool modifierTypeRequiresExistingVoxel() const;
 
@@ -113,6 +122,10 @@ public:
 
 	void render(const video::Camera& camera);
 };
+
+inline void Modifier::setCenterMode(bool center) {
+	_center = center;
+}
 
 inline ShapeType Modifier::shapeType() const {
 	return _shapeType;

@@ -20,6 +20,8 @@ private:
 	using Super = core::ActionButton;
 	ModifierType _newType;
 	ModifierType _oldType = ModifierType::None;
+	// some actions might need a second action to complete the command
+	bool _secondAction = false;
 public:
 	/**
 	 * @param[in] newType This ModifierType is set if the action button is triggered. No matter which type is
@@ -27,6 +29,7 @@ public:
 	 */
 	ModifierButton(ModifierType newType = ModifierType::None);
 
+	void execute();
 	bool handleDown(int32_t key, uint64_t pressedMillis) override;
 	bool handleUp(int32_t key, uint64_t releasedMillis) override;
 };

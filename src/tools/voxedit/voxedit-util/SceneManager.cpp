@@ -1177,6 +1177,40 @@ void SceneManager::construct() {
 		}
 		mirror(axis);
 	}).setHelp("Mirror the selected layers around the given axis");
+
+	core::Command::registerCommand("lock", [&] (const core::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::info("Usage: lock <axis:x,y,z>");
+			return;
+		}
+		const char axisChar = args[0][0];
+		math::Axis axis = math::Axis::X;
+		if (axisChar == 'y') {
+			axis = math::Axis::Y;
+		} else if (axisChar == 'z') {
+			axis = math::Axis::Z;
+		}
+		const bool unlock = (_lockedAxis & axis) == axis;
+		setLockedAxis(axis, unlock);
+	}).setHelp("Toggle locked mode for the given axis at the current cursor position");
+
+	core::Command::registerCommand("lockx", [&] (const core::CmdArgs& args) {
+		const math::Axis axis = math::Axis::X;
+		const bool unlock = (_lockedAxis & axis) == axis;
+		setLockedAxis(axis, unlock);
+	}).setHelp("Toggle locked mode for the x axis at the current cursor position");
+
+	core::Command::registerCommand("locky", [&] (const core::CmdArgs& args) {
+		const math::Axis axis = math::Axis::Y;
+		const bool unlock = (_lockedAxis & axis) == axis;
+		setLockedAxis(axis, unlock);
+	}).setHelp("Toggle locked mode for the y axis at the current cursor position");
+
+	core::Command::registerCommand("lockz", [&] (const core::CmdArgs& args) {
+		const math::Axis axis = math::Axis::Z;
+		const bool unlock = (_lockedAxis & axis) == axis;
+		setLockedAxis(axis, unlock);
+	}).setHelp("Toggle locked mode for the z axis at the current cursor position");
 }
 
 void SceneManager::mirror(math::Axis axis) {

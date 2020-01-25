@@ -30,24 +30,46 @@ bool Modifier::aabbMode() const {
 }
 
 glm::ivec3 Modifier::aabbPosition() const {
-	return _cursorPosition;
-}
-
-glm::ivec3 Modifier::aabbDim() const {
-	const int size = _gridResolution;
-	const glm::ivec3& pos = aabbPosition();
-	const glm::ivec3& mins = (glm::min)(_aabbFirstPos, pos);
-	const glm::ivec3& maxs = (glm::max)(_aabbFirstPos, pos);
-	return glm::abs(maxs + size - mins);
+	glm::ivec3 pos = _cursorPosition;
+	if (_secondPosValid) {
+		switch (_aabbSecondActionDirection) {
+		case math::Axis::X:
+			pos.y = _aabbSecondPos.y;
+			pos.z = _aabbSecondPos.z;
+			break;
+		case math::Axis::Y:
+			pos.x = _aabbSecondPos.x;
+			pos.z = _aabbSecondPos.z;
+			break;
+		case math::Axis::Z:
+			pos.x = _aabbSecondPos.x;
+			pos.y = _aabbSecondPos.y;
+			break;
+		default:
+			break;
+		}
+	}
+	return pos;
 }
 
 bool Modifier::aabbStart() {
 	if (_aabbMode) {
 		return false;
 	}
+	// the order here matters - don't change _aabbMode earlier here
 	_aabbFirstPos = aabbPosition();
+	_secondPosValid = false;
 	_aabbMode = true;
 	return true;
+}
+
+void Modifier::aabbStep() {
+	if (!_aabbMode) {
+		return;
+	}
+	_aabbSecondPos = aabbPosition();
+	_aabbFirstPos = firstPos();
+	_secondPosValid = true;
 }
 
 bool Modifier::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
@@ -138,6 +160,54 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	return true;
 }
 
+bool Modifier::needsSecondAction() {
+	const glm::ivec3 delta = aabbDim();
+	if (delta.x > 1 && delta.z > 1 && delta.y == 1) {
+		_aabbSecondActionDirection = math::Axis::Y;
+	} else if (delta.y > 1 && delta.z > 1 && delta.x == 1) {
+		_aabbSecondActionDirection = math::Axis::X;
+	} else if (delta.x > 1 && delta.y > 1 && delta.z == 1) {
+		_aabbSecondActionDirection = math::Axis::Z;
+	} else {
+		_aabbSecondActionDirection = math::Axis::None;
+	}
+	return _aabbSecondActionDirection != math::Axis::None;
+}
+
+glm::ivec3 Modifier::firstPos() const {
+	if (!_center || _secondPosValid) {
+		return _aabbFirstPos;
+	}
+	const int size = _gridResolution;
+	const glm::ivec3& first = _aabbFirstPos;
+	const glm::ivec3& pos = aabbPosition();
+	const glm::ivec3& mins = (glm::min)(first, pos);
+	const glm::ivec3& maxs = (glm::max)(first, pos);
+	const glm::ivec3& delta = maxs + size - mins;
+	const glm::ivec3& deltaa = glm::abs(delta);
+	glm::ivec3 f = _aabbFirstPos;
+	if (deltaa.x > 1 && deltaa.z > 1 && deltaa.y == 1) {
+		f.x += delta.x;
+		f.z += delta.z;
+	} else if (deltaa.y > 1 && deltaa.z > 1 && deltaa.x == 1) {
+		f.y += delta.y;
+		f.z += delta.z;
+	} else if (deltaa.x > 1 && deltaa.y > 1 && deltaa.z == 1) {
+		f.x += delta.x;
+		f.y += delta.y;
+	}
+	return f;
+}
+
+glm::ivec3 Modifier::aabbDim() const {
+	const int size = _gridResolution;
+	glm::ivec3 pos = aabbPosition();
+	const glm::ivec3& first = firstPos();
+	const glm::ivec3& mins = (glm::min)(first, pos);
+	const glm::ivec3& maxs = (glm::max)(first, pos);
+	return glm::abs(maxs + size - mins);
+}
+
 bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
 	if (!_aabbMode) {
 		Log::debug("Not in aabb mode - can't perform action");
@@ -146,8 +216,9 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const vox
 
 	const int size = _gridResolution;
 	const glm::ivec3& pos = aabbPosition();
-	const glm::ivec3 mins = (glm::min)(_aabbFirstPos, pos);
-	const glm::ivec3 maxs = (glm::max)(_aabbFirstPos, pos) + (size - 1);
+	const glm::ivec3& firstP = firstPos();
+	const glm::ivec3 mins = (glm::min)(firstP, pos);
+	const glm::ivec3 maxs = (glm::max)(firstP, pos) + (size - 1);
 
 	if ((_modifierType & ModifierType::Select) == ModifierType::Select) {
 		Log::debug("select mode");
@@ -174,10 +245,12 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const vox
 		executeShapeAction(wrapper, mins, maxs, callback);
 		executeShapeAction(wrapper, minsMirror, maxsMirror, callback);
 	}
+	_secondPosValid = false;
 	return true;
 }
 
 void Modifier::aabbStop() {
+	_secondPosValid = false;
 	_aabbMode = false;
 }
 
@@ -197,8 +270,9 @@ void Modifier::renderAABBMode(const video::Camera& camera) {
 
 		_shapeBuilder.clear();
 		_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.5f));
-		const glm::ivec3& mins = (glm::min)(_aabbFirstPos, cursor);
-		const glm::ivec3& maxs = (glm::max)(_aabbFirstPos, cursor);
+		const glm::ivec3& first = firstPos();
+		const glm::ivec3& mins = (glm::min)(first, cursor);
+		const glm::ivec3& maxs = (glm::max)(first, cursor);
 		glm::ivec3 minsMirror = mins;
 		glm::ivec3 maxsMirror = maxs;
 		const float size = _gridResolution;
