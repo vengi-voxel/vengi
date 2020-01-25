@@ -176,17 +176,17 @@ TBLayout: distribution: gravity, axis: y
 								TBEditField: @include: definitions>menutextfield, id: cursorx, placeholder: x
 								TBClickLabel
 									TBSkinImage: skin: voxedit-axis-x
-									TBCheckBox: id: lockx
+									TBCheckBox: command: lockx
 							TBLayout: axis: x
 								TBEditField: @include: definitions>menutextfield, id: cursory, placeholder: y
 								TBClickLabel
 									TBSkinImage: skin: voxedit-axis-y
-									TBCheckBox: id: locky
+									TBCheckBox: command: locky
 							TBLayout: axis: x
 								TBEditField: @include: definitions>menutextfield, id: cursorz, placeholder: z
 								TBClickLabel
 									TBSkinImage: skin: voxedit-axis-z
-									TBCheckBox: id: lockz
+									TBCheckBox: command: lockz
 
 					TBSection: value: 1, text: "Rotate on axis"
 						TBLayout: position: left top, axis: x

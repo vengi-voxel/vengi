@@ -487,15 +487,6 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	} else if (id == TBIDC("optionvoxelsize")) {
 		sceneMgr().setGridResolution(widget->getValue());
 		return true;
-	} else if (id == TBIDC("lockx")) {
-		sceneMgr().setLockedAxis(math::Axis::X, widget->getValue() != 1);
-		return true;
-	} else if (id == TBIDC("locky")) {
-		sceneMgr().setLockedAxis(math::Axis::Y, widget->getValue() != 1);
-		return true;
-	} else if (id == TBIDC("lockz")) {
-		sceneMgr().setLockedAxis(math::Axis::Z, widget->getValue() != 1);
-		return true;
 	} else if (id == TBIDC("cursorx")) {
 		const tb::TBStr& str = widget->getText();
 		if (str.isEmpty()) {
