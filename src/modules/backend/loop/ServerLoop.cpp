@@ -360,10 +360,18 @@ void ServerLoop::shutdown() {
 	_network->shutdown();
 	_httpServer->shutdown();
 	if (_loop != nullptr) {
-		uv_close((uv_handle_t*)_signal, nullptr);
-		uv_close((uv_handle_t*)_worldTimer, nullptr);
-		uv_close((uv_handle_t*)_persistenceMgrTimer, nullptr);
-		uv_close((uv_handle_t*)_idleTimer, nullptr);
+		if (_signal != nullptr) {
+			uv_close((uv_handle_t*)_signal, nullptr);
+		}
+		if (_worldTimer != nullptr) {
+			uv_close((uv_handle_t*)_worldTimer, nullptr);
+		}
+		if (_persistenceMgrTimer != nullptr) {
+			uv_close((uv_handle_t*)_persistenceMgrTimer, nullptr);
+		}
+		if (_idleTimer != nullptr) {
+			uv_close((uv_handle_t*)_idleTimer, nullptr);
+		}
 		uv_tty_reset_mode();
 		uv_run(_loop, UV_RUN_NOWAIT);
 		core_assert_always(uv_loop_close(_loop) == 0);
