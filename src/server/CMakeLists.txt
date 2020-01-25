@@ -11,6 +11,7 @@ set(LUA_BEHAVIOURTREES
 	ai/human-male-knight.lua
 	ai/human-male-shepherd.lua
 	ai/human-male-worker.lua
+	ai/human-female-worker.lua
 	ai/undead-male-skeleton.lua
 	ai/undead-male-zombie.lua
 	ai/shared.lua
