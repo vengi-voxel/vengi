@@ -24,6 +24,7 @@ set(LUA_ATTRIBUTES
 	attrib/human-male-knight.lua
 	attrib/human-male-shepherd.lua
 	attrib/human-male-worker.lua
+	attrib/human-female-worker.lua
 	attrib/undead-male-skeleton.lua
 	attrib/undead-male-zombie.lua
 	attrib/shared.lua

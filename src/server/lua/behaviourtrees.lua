@@ -5,6 +5,7 @@ require "ai.human-male-blacksmith"
 require "ai.human-male-knight"
 require "ai.human-male-shepherd"
 require "ai.human-male-worker"
+require "ai.human-female-worker"
 require "ai.undead-male-skeleton"
 require "ai.undead-male-zombie"
 
@@ -14,7 +15,8 @@ function init ()
   registerHumanBlacksmith()
   registerHumanKnight()
   registerHumanShepherd()
-  registerHumanWorker()
+  registerHumanMaleWorker()
+  registerHumanFemaleWorker()
 
   registerUndeadSkeleton()
   registerUndeadZombie()

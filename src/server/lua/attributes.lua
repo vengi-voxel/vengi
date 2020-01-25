@@ -5,6 +5,7 @@ require "attrib.human-male-blacksmith"
 require "attrib.human-male-knight"
 require "attrib.human-male-shepherd"
 require "attrib.human-male-worker"
+require "attrib.human-female-worker"
 require "attrib.undead-male-skeleton"
 require "attrib.undead-male-zombie"
 
@@ -14,7 +15,8 @@ function init()
   registerHumanBlacksmith()
   registerHumanKnight()
   registerHumanShepherd()
-  registerHumanWorker()
+  registerHumanMaleWorker()
+  registerHumanFemaleWorker()
 
   registerUndeadSkeleton()
   registerUndeadZombie()
