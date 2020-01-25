@@ -9,6 +9,7 @@ set(FILES
 )
 set(LUA_ATTRIBUTES
 	attrib/human-male-worker.lua
+	attrib/human-female-worker.lua
 	attributes.lua
 )
 set(LUA_SRCS ${LUA_ATTRIBUTES})

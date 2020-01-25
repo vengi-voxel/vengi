@@ -1,5 +1,7 @@
 require "attrib.human-male-worker"
+require "attrib.human-female-worker"
 
 function init()
-	registerWorker()
+	registerMaleWorker()
+	registerFemaleWorker()
 end

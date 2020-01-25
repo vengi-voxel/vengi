@@ -125,7 +125,7 @@ core::AppState MapView::onInit() {
 	const glm::vec3 pos(0.0f, (float)groundPosY, 0.0f);
 	Log::info("Spawn entity at %s", glm::to_string(pos).c_str());
 
-	const network::EntityType entityType = network::EntityType::HUMAN_MALE_WORKER;
+	const network::EntityType entityType = network::EntityType::HUMAN_MALE_WORKER; // network::EntityType::HUMAN_FEMALE_WORKER
 	const frontend::ClientEntityId entityId = (frontend::ClientEntityId)1;
 	_entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, entityId, entityType, pos, 0.0f);
 	attrib::ContainerProvider containerProvider;
