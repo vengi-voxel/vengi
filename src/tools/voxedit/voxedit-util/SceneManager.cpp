@@ -1211,6 +1211,10 @@ void SceneManager::construct() {
 		const bool unlock = (_lockedAxis & axis) == axis;
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the z axis at the current cursor position");
+
+	core::Command::registerCommand("centerplane", [&] (const core::CmdArgs& args) {
+		modifier().setCenterMode(!modifier().centerMode());
+	}).setHelp("Toggle center plane building");
 }
 
 void SceneManager::mirror(math::Axis axis) {

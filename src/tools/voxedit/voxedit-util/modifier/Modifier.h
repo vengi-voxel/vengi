@@ -38,7 +38,7 @@ private:
 	bool _selectionValid = false;
 	bool _secondPosValid = false;
 	bool _aabbMode = false;
-	bool _center = true;
+	bool _center = false;
 	glm::ivec3 _aabbFirstPos;
 	glm::ivec3 _aabbSecondPos;
 	math::Axis _aabbSecondActionDirection = math::Axis::None;
@@ -80,6 +80,7 @@ public:
 	const Selection& selection() const;
 
 	void setCenterMode(bool center);
+	bool centerMode() const;
 
 	math::Axis mirrorAxis() const;
 	void setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
@@ -122,6 +123,10 @@ public:
 
 	void render(const video::Camera& camera);
 };
+
+inline bool Modifier::centerMode() const {
+	return _center;
+}
 
 inline void Modifier::setCenterMode(bool center) {
 	_center = center;
