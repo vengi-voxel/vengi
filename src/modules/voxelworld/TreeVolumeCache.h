@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "voxelformat/VolumeCache.h"
 #include "core/collection/Map.h"
 #include <glm/fwd.hpp>
