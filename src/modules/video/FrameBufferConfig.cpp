@@ -56,8 +56,12 @@ FrameBufferConfig& FrameBufferConfig::stencilBuffer(bool stencilBuffer) {
 
 FrameBufferConfig defaultDepthBufferConfig(const glm::ivec2& dimension, int maxDepthBuffers) {
 	TextureConfig cfg;
-	cfg.format(TextureFormat::D24S8).type(TextureType::Texture2DArray).wrap(TextureWrap::ClampToEdge);
+	cfg.format(TextureFormat::D24S8).type(TextureType::Texture2DArray);
 	cfg.compareFunc(CompareFunc::Less).compareMode(TextureCompareMode::RefToTexture).layers(maxDepthBuffers);
+	// coordinates outside the depth buffer will result in no shadow
+	cfg.borderColor(glm::vec4(1.0f));
+	cfg.wrap(TextureWrap::ClampToBorder);
+
 	FrameBufferConfig fboCfg;
 	fboCfg.dimension(dimension).colorTexture(false);
 	fboCfg.addTextureAttachment(cfg, FrameBufferAttachment::Depth);

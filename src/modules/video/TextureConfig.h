@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Types.h"
+#include <glm/vec4.hpp>
 
 namespace video {
 
@@ -25,6 +26,8 @@ private:
 	TextureCompareMode _compareMode = TextureCompareMode::Max;
 	uint8_t _layers = 1u;
 	uint8_t _alignment = 1u;
+	bool _useBorderColor = false;
+	glm::vec4 _borderColor {0.0f};
 public:
 	TextureConfig& wrap(TextureWrap wrap);
 	TextureConfig& wrapR(TextureWrap wrap);
@@ -37,6 +40,7 @@ public:
 	TextureConfig& format(TextureFormat format);
 	TextureConfig& compareFunc(CompareFunc func);
 	TextureConfig& compareMode(TextureCompareMode mode);
+	TextureConfig& borderColor(const glm::vec4& borderColor);
 	/**
 	 * @param[in] layers The amount of layers for the given texture.
 	 * @see TextureType
@@ -59,6 +63,8 @@ public:
 	uint8_t alignment() const;
 	CompareFunc compareFunc() const;
 	TextureCompareMode compareMode() const;
+	bool useBorderColor() const;
+	const glm::vec4& borderColor() const;
 };
 
 inline TextureFilter TextureConfig::filterMag() const{
@@ -103,6 +109,14 @@ inline uint8_t TextureConfig::layers() const {
 
 inline uint8_t TextureConfig::alignment() const {
 	return _alignment;
+}
+
+inline bool TextureConfig::useBorderColor() const {
+	return _useBorderColor;
+}
+
+inline const glm::vec4& TextureConfig::borderColor() const {
+	return _borderColor;
 }
 
 }

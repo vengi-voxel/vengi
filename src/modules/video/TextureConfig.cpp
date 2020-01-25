@@ -71,4 +71,9 @@ TextureConfig& TextureConfig::alignment(uint8_t alignment) {
 	return *this;
 }
 
+TextureConfig& TextureConfig::borderColor(const glm::vec4& borderColor) {
+	_useBorderColor = true;
+	_borderColor = borderColor;
+	return *this;
+}
 }

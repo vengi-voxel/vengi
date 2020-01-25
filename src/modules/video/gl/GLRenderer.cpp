@@ -23,6 +23,7 @@
 #include <glm/vec4.hpp>
 #include <glm/common.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <SDL.h>
 #include <map>
 
@@ -1277,6 +1278,9 @@ void setupTexture(const TextureConfig& config) {
 		const GLenum glFunc = _priv::CompareFuncs[std::enum_value(config.compareFunc())];
 		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
 		checkError();
+	}
+	if (config.useBorderColor()) {
+		glTexParameterfv(glType, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
 	}
 	const uint8_t alignment = config.alignment();
 	if (alignment > 0u) {
