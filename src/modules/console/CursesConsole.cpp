@@ -123,10 +123,15 @@ bool CursesConsole::init() {
 }
 
 void CursesConsole::shutdown() {
+	SDL_LogSetOutputFunction(_logFunction, _logUserData);
 #ifdef CURSES_HAVE_NCURSES_H
 	refresh();
 	endwin();
+	for (const auto& e : _messages) {
+		Log::info("%s", e.c_str());
+	}
 #endif
+	Super::shutdown();
 }
 
 }
