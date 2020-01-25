@@ -6,6 +6,7 @@ set(SRCS
 	WorldMgr.cpp WorldMgr.h
 	ChunkPersister.h ChunkPersister.cpp
 	FilePersister.h FilePersister.cpp
+	TreeVolumeCache.h TreeVolumeCache.cpp
 	WorldPager.h WorldPager.cpp
 	WorldEvents.h
 	WorldContext.h WorldContext.cpp

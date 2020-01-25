@@ -63,6 +63,9 @@ bool WorldPager::init(voxel::PagedVolume *volumeData, const std::string& worldPa
 	if (!_noise.init()) {
 		return false;
 	}
+	if (!_volumeCache.init()) {
+		return false;
+	}
 	_volumeData = volumeData;
 	return _volumeData != nullptr;
 }
@@ -72,8 +75,8 @@ void WorldPager::shutdown() {
 		_volumeData->flushAll();
 	}
 	_noise.shutdown();
+	_volumeCache.shutdown();
 	_volumeData = nullptr;
-	_volumeCache = nullptr;
 	_biomeManager.shutdown();
 	_worldCtx = WorldContext();
 }
@@ -198,70 +201,57 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 	const glm::ivec3& mins = pagerCtx.region.getLowerCorner();
 	const glm::ivec3& maxs = pagerCtx.region.getUpperCorner();
 	const glm::ivec3& dim = pagerCtx.region.getDimensionsInVoxels();
-	struct Foo {
-		voxel::Region region;
-		unsigned int seed;
-	} regions[] = {
+	const voxel::Region regions[] = {
 		// left neighbors
-		{voxel::Region(mins.x - dim.x, mins.y, mins.z - dim.z, maxs.x - dim.x, maxs.y, maxs.z - dim.z), 0},
-		{voxel::Region(mins.x - dim.x, mins.y, mins.z,         maxs.x - dim.x, maxs.y, maxs.z        ), 0},
-		{voxel::Region(mins.x - dim.x, mins.y, mins.z + dim.z, maxs.x - dim.x, maxs.y, maxs.z + dim.z), 0},
+		voxel::Region(mins.x - dim.x, mins.y, mins.z - dim.z, maxs.x - dim.x, maxs.y, maxs.z - dim.z),
+		voxel::Region(mins.x - dim.x, mins.y, mins.z,         maxs.x - dim.x, maxs.y, maxs.z        ),
+		voxel::Region(mins.x - dim.x, mins.y, mins.z + dim.z, maxs.x - dim.x, maxs.y, maxs.z + dim.z),
 
 		// right neighbors
-		{voxel::Region(mins.x + dim.x, mins.y, mins.z - dim.z, maxs.x + dim.x, maxs.y, maxs.z - dim.z), 0},
-		{voxel::Region(mins.x + dim.x, mins.y, mins.z,         maxs.x + dim.x, maxs.y, maxs.z        ), 0},
-		{voxel::Region(mins.x + dim.x, mins.y, mins.z + dim.z, maxs.x + dim.x, maxs.y, maxs.z + dim.z), 0},
+		voxel::Region(mins.x + dim.x, mins.y, mins.z - dim.z, maxs.x + dim.x, maxs.y, maxs.z - dim.z),
+		voxel::Region(mins.x + dim.x, mins.y, mins.z,         maxs.x + dim.x, maxs.y, maxs.z        ),
+		voxel::Region(mins.x + dim.x, mins.y, mins.z + dim.z, maxs.x + dim.x, maxs.y, maxs.z + dim.z),
 
 		// front and back neighbors
-		{voxel::Region(mins.x, mins.y, mins.z - dim.z, maxs.x, maxs.y, maxs.z - dim.z), 0},
-		{voxel::Region(mins.x, mins.y, mins.z + dim.z, maxs.x, maxs.y, maxs.z + dim.z), 0},
+		voxel::Region(mins.x, mins.y, mins.z - dim.z, maxs.x, maxs.y, maxs.z - dim.z),
+		voxel::Region(mins.x, mins.y, mins.z + dim.z, maxs.x, maxs.y, maxs.z + dim.z),
 
 		// own chunk region
-		{voxel::Region(mins, maxs), 0}
+		voxel::Region(mins, maxs)
 	};
 	// the assumption here is that we get a full heigt paging request, otherwise we
 	// would have to loop over more regions.
 	core_assert(pagerCtx.region.getLowerY() == 0);
 	core_assert(pagerCtx.region.getUpperY() == voxel::MAX_HEIGHT);
-	const int regionY = pagerCtx.region.getCentreY();
 	voxel::PagedVolumeWrapper wrapper(_volumeData, pagerCtx.chunk, pagerCtx.region);
 	std::vector<const char*> treeTypes;
 
 	const size_t regionsSize = lengthof(regions);
 
 	for (size_t i = 0; i < regionsSize; ++i) {
-		const voxel::Region& region = regions[i].region;
+		const voxel::Region& region = regions[i];
 		treeTypes = _biomeManager.getTreeTypes(region);
 		if (treeTypes.empty()) {
 			Log::debug("No tree types given for region %s", region.toString().c_str());
 			return;
 		}
-		const int border = 0;
-		unsigned int seed = _seed + regions[i].seed;
-		math::Random random(seed);
-
-		random.shuffle(treeTypes.begin(), treeTypes.end());
-
 		std::vector<glm::vec2> positions;
-		_biomeManager.getTreePositions(region, positions, random, border);
+		{
+			math::Random random(_seed);
+			random.shuffle(treeTypes.begin(), treeTypes.end());
+			_biomeManager.getTreePositions(region, positions, random, 0);
+		}
 		int treeTypeIndex = 0;
 		const int treeTypeSize = (int)treeTypes.size();
 		for (const glm::vec2& position : positions) {
-			glm::ivec3 treePos(position.x, regionY, position.y);
-			treePos.y = terrainHeight(position.x, pagerCtx.region.getLowerY(), position.y) - 1;
+			glm::ivec3 treePos(position.x, 0, position.y);
+			treePos.y = terrainHeight(position.x, pagerCtx.region.getLowerY(), position.y);
 			if (treePos.y <= voxel::MAX_WATER_HEIGHT) {
 				continue;
 			}
 			const char *treeType = treeTypes[treeTypeIndex++];
 			treeTypeIndex %= treeTypeSize;
-			// TODO: this hardcoded 10... no way
-			const int treeIndex = 1 ; //random.random(1, 10);
-			char filename[64];
-			if (!core::string::formatBuf(filename, sizeof(filename), "models/trees/%s/%i.vox", treeType, treeIndex)) {
-				Log::error("Failed to assemble tree path");
-				continue;
-			}
-			const voxel::RawVolume* v = _volumeCache->loadVolume(filename);
+			const voxel::RawVolume* v = _volumeCache.loadTree(treePos, treeType);
 			if (v == nullptr) {
 				continue;
 			}

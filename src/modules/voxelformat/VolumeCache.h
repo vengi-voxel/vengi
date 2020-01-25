@@ -19,7 +19,7 @@ private:
 public:
 	~VolumeCache();
 	/**
-	 * The returned volume is now owned by the caller. The cache will delete the memory.
+	 * The returned volume is not owned by the caller. The cache will delete the memory.
 	 */
 	voxel::RawVolume* loadVolume(const char* fullPath);
 

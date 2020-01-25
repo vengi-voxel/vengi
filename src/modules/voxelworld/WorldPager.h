@@ -13,6 +13,7 @@
 #include "BiomeManager.h"
 #include <memory>
 #include "ChunkPersister.h"
+#include "TreeVolumeCache.h"
 
 namespace voxel {
 class PagedVolumeWrapper;
@@ -36,7 +37,7 @@ private:
 	BiomeManager _biomeManager;
 	WorldContext _worldCtx;
 	noise::Noise _noise;
-	voxelformat::VolumeCachePtr _volumeCache;
+	TreeVolumeCache _volumeCache;
 	ChunkPersisterPtr _chunkPersister;
 
 	void createWorld(voxel::PagedVolumeWrapper& volume) const;
