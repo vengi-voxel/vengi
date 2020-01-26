@@ -15,7 +15,7 @@ namespace core {
 bool replacePlaceholders(const core::String& str, char *buf, size_t bufSize) {
 	int idx = 0;
 	for (size_t i = 0u; i < str.size(); ++i) {
-		const char *c = &str[i];
+		const char *c = &str.c_str()[i];
 		if (!strncmp(c, "<cvar:", 6)) {
 			const char *l = strchr(c, '>');
 			if (l != nullptr) {

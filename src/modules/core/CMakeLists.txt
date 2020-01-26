@@ -49,7 +49,7 @@ set(SRCS
 	ReadWriteLock.h
 	RecursiveReadWriteLock.h
 	Singleton.h
-	String.h
+	String.cpp String.h
 	StringUtil.cpp StringUtil.h
 	ThreadPool.cpp ThreadPool.h
 	TimeProvider.h TimeProvider.cpp
@@ -100,6 +100,7 @@ set(TEST_SRCS
 	tests/PoolAllocatorTest.cpp
 	tests/ReadWriteLockTest.cpp
 	tests/SetTest.cpp
+	tests/StringTest.cpp
 	tests/StringUtilTest.cpp
 	tests/ThreadPoolTest.cpp
 	tests/TokenizerTest.cpp

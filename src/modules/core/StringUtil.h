@@ -166,37 +166,22 @@ inline core::String extractFilenameWithExtension(const core::String& str) {
 	return str.substr(pathPos + 1);
 }
 
+inline bool contains(const char *haystack, const char *needle) {
+	const char *pos = (const char*)SDL_strstr(haystack, needle);
+	return pos != nullptr;
+}
+
 inline bool contains(const core::String& str, const core::String& search) {
-	return str.rfind(search.c_str()) != core::String::npos;
+	return contains(str.c_str(), search.c_str());
 }
 
 inline core::String extractFilename(core::String str) {
 	return stripExtension(extractFilenameWithExtension(str));
 }
 
-inline bool contains(const char *haystack, const char *needle) {
-	const char *pos = (const char*)SDL_strstr(haystack, needle);
-	return pos != nullptr;
-}
-
 inline bool icontains(const core::String& str, const core::String& search) {
-	return toLower(str).rfind(toLower(search)) != std::string::npos;
-}
-
-inline core::String ltrim(const core::String& str) {
-	size_t startpos = str.find_first_not_of(" \t");
-	if (std::string::npos != startpos) {
-		return str.substr(startpos);
-	}
-	return str;
-}
-
-inline core::String rtrim(const core::String& str) {
-	size_t endpos = str.find_last_not_of(" \t");
-	if (std::string::npos != endpos) {
-		return str.substr(0, endpos + 1);
-	}
-	return str;
+	const core::String& lower = toLower(search);
+	return toLower(str).rfind(lower.c_str()) != core::String::npos;
 }
 
 template<class T>
@@ -206,7 +191,7 @@ core::String toString(const T& v) {
 }
 
 inline core::String trim(const core::String& str) {
-	return ltrim(rtrim(str));
+	return str.trim();
 }
 
 inline bool iequals(const core::String& a, const core::String& b) {

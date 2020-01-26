@@ -129,27 +129,21 @@ bool isInteger(const core::String& in) {
 }
 
 core::String toLower(const core::String& string) {
-	core::String convert = string;
-	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_tolower);
-	return convert;
+	return string.toLower();
 }
 
 core::String toLower(const char* string) {
 	core::String convert(string);
-	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_tolower);
-	return convert;
+	return convert.toLower();
 }
 
 core::String toUpper(const core::String& string) {
-	core::String convert = string;
-	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_toupper);
-	return convert;
+	return string.toUpper();
 }
 
 core::String toUpper(const char* string) {
 	core::String convert(string);
-	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_toupper);
-	return convert;
+	return convert.toUpper();
 }
 
 static bool patternMatch(const char *pattern, const char *text);
