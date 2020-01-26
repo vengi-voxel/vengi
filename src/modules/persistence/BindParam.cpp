@@ -9,6 +9,7 @@
 
 #include "core/Singleton.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 
 namespace persistence {
 

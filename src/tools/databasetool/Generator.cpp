@@ -403,7 +403,7 @@ static void createGetterAndSetter(const Table& table, core::String& src) {
 			src += "\t\t\treturn nullptr;\n";
 			src += "\t\t}\n";
 			if (isString(f)) {
-				src += "\t\treturn _m._" + f.name + ".data();\n";
+				src += "\t\treturn _m._" + f.name + ".c_str();\n";
 			} else {
 				src += "\t\treturn &_m._" + f.name + ";\n";
 			}
@@ -465,6 +465,7 @@ bool generateClassForTable(const Table& table, core::String& src) {
 	src += "#pragma once\n\n";
 	src += "#include \"persistence/Model.h\"\n";
 	src += "#include \"persistence/DBCondition.h\"\n";
+	src += "#include \"core/StringUtil.h\"\n";
 	src += "\n";
 	src += "#include <memory>\n";
 

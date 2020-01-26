@@ -64,7 +64,7 @@ core::String getCPPType(persistence::FieldType type, bool function, bool pointer
 		if (function) {
 			return "const core::String&";
 		}
-		return "std::string";
+		return "core::String";
 	case persistence::FieldType::TIMESTAMP:
 		if (function) {
 			if (pointer) {
