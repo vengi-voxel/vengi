@@ -15,7 +15,7 @@ std::pair<core::String, bool> handleIncludes(const core::String& buffer, const s
 	const core::String include = "#include";
 	int index = 0;
 	bool success = true;
-	for (core::String::const_iterator i = buffer.begin(); i != buffer.end(); ++i, ++index) {
+	for (auto i = buffer.begin(); i != buffer.end(); ++i, ++index) {
 		const char *c = &buffer[index];
 		if (*c != '#') {
 			const char buf[] = {*c, '\0'};
