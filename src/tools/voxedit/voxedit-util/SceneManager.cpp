@@ -835,20 +835,6 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Save a single layer to the given path with their layer names");
 
-	core::Command::registerCommand("zoom", [&] (const core::CmdArgs& args) {
-		const int argc = args.size();
-		if (argc != 1) {
-			Log::info("Usage: zoom [-]amount");
-			return;
-		}
-		float value = core::string::toFloat(args[0]);
-		if (_camera != nullptr) {
-			zoom(*_camera, value);
-		} else {
-			Log::warn("Could not execute zoom - there is no active viewport");
-		}
-	}).setHelp("Zoom the active viewport by the given amount").setBindingContext(BindingContext::Scene);
-
 	core::Command::registerCommand("newscene", [&] (const core::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
 		const char *width = args.size() > 1 ? args[1].c_str() : "64";
