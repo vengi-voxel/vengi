@@ -136,10 +136,33 @@ TEST_F(StringUtilTest, testReplaceAll) {
 	EXPECT_EQ("222222222333", core::string::replaceAll(str, "1", "22"));
 }
 
+TEST_F(StringUtilTest, testReplaceAllBigString) {
+	const String str(128, 'c');
+	const String strExpected(128, 'd');
+	EXPECT_EQ(strExpected, core::string::replaceAll(str, "c", "d"));
+}
+
 TEST_F(StringUtilTest, testReplaceAllChars) {
 	String str("C:\\foo\\bar");
 	core::string::replaceAllChars(str, '\\', '/');
 	EXPECT_EQ("C:/foo/bar", str);
+}
+
+TEST_F(StringUtilTest, testReplaceAllCharsBigString) {
+	String str(128, '\\');
+	String strExpected(128, '/');
+	core::string::replaceAllChars(str, '\\', '/');
+	EXPECT_EQ(strExpected, str);
+}
+
+TEST_F(StringUtilTest, testEndsWith) {
+	EXPECT_TRUE(core::string::endsWith("foobar", "bar"));
+	EXPECT_FALSE(core::string::endsWith("foobar", "foo"));
+}
+
+TEST_F(StringUtilTest, testStarsWith) {
+	EXPECT_FALSE(core::string::startsWith("foobar", "bar"));
+	EXPECT_TRUE(core::string::startsWith("foobar", "foo"));
 }
 
 }
