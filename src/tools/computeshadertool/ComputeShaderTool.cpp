@@ -86,7 +86,7 @@ core::AppState ComputeShaderTool::onRunning() {
 
 	Log::debug("Preparing shader file %s", shaderfile.c_str());
 	_computeFilename = shaderfile + COMPUTE_POSTFIX;
-	const bool changedDir = filesystem()->pushDir(core::string::extractPath(shaderfile.c_str()));
+	const bool changedDir = filesystem()->pushDir(core::string::extractPath(shaderfile));
 	const std::pair<core::String, bool>& computeBuffer = getSource(_computeFilename);
 	if (computeBuffer.first.empty() || !computeBuffer.second) {
 		Log::error("Could not load %s", _computeFilename.c_str());
