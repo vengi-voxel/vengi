@@ -13,6 +13,7 @@ set(SRCS
 )
 
 set(FILES
+	voxel/models/trees/deciduous/1.vox
 	voxel/models/trees/fir/1.vox
 	voxel/models/trees/palm/1.vox
 	voxel/models/trees/pine/1.vox
