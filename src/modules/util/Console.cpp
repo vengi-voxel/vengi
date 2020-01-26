@@ -262,7 +262,7 @@ void Console::insertText(const core::String& text) {
 	if (_overwrite && _cursorPos < int(_commandLine.size())) {
 		cursorDelete();
 	}
-	_commandLine.insert(_commandLine.begin() + _cursorPos, text.begin(), text.end());
+	_commandLine.insert(_cursorPos, text.c_str());
 	_cursorPos += text.size();
 }
 
@@ -417,7 +417,7 @@ void Console::autoComplete() {
 			const int cmdLineSize = _commandLine.size();
 			const int cmdEraseIndex = cmdLineSize - strings.back().size();
 			_commandLine.erase(cmdEraseIndex, strings.back().size());
-			_commandLine.insert(cmdEraseIndex, matches.front());
+			_commandLine.insert(cmdEraseIndex, matches.front().c_str());
 		}
 	} else {
 		_messages.push_back(_consolePrompt + _commandLine);
