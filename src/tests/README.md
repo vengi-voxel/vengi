@@ -88,3 +88,7 @@ Just an empty template for new test applications.
 # testhttpserver
 
 A test application around the http module server for e.g. fuzzy testing purposes.
+
+# testbiomes
+
+A test application that just visualizes the biomes.

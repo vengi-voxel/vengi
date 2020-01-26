@@ -13,6 +13,7 @@
 
 namespace ImGui {
 
+IMGUI_API bool InputVec3(const char* label, glm::ivec3& vec, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVec3(const char* label, glm::vec3& vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVarString(const char* label, core::VarPtr& var, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVarFloat(const char* label, core::VarPtr& var, float step = 0.0f, float step_fast = 0.0f, int decimal_precision = -1, ImGuiInputTextFlags extra_flags = 0);
