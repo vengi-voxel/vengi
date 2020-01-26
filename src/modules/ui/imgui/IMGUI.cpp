@@ -4,6 +4,8 @@
 
 #include "IMGUI.h"
 #include <SDL_stdinc.h>
+#include <glm/vec3.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace ImGui {
 
@@ -27,6 +29,10 @@ bool InputVarFloat(const char* label, core::VarPtr& var, float step, float step_
 		return true;
 	}
 	return false;
+}
+
+bool InputVec3(const char* label, glm::vec3& vec, const char *format, ImGuiInputTextFlags flags) {
+	return InputFloat3(label, glm::value_ptr(vec), format, flags);
 }
 
 bool InputVarInt(const char* label, core::VarPtr& var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
