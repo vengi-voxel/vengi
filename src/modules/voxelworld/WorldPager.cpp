@@ -223,7 +223,7 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 	// would have to loop over more regions.
 	core_assert(pagerCtx.region.getLowerY() == 0);
 	core_assert(pagerCtx.region.getUpperY() == voxel::MAX_HEIGHT);
-	voxel::PagedVolumeWrapper wrapper(_volumeData, pagerCtx.chunk, pagerCtx.region);
+	voxel::PagedVolumeWrapper chunkWrapper(_volumeData, pagerCtx.chunk, pagerCtx.region);
 	std::vector<const char*> treeTypes;
 
 	const size_t regionsSize = lengthof(regions);
@@ -243,7 +243,11 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 		}
 		int treeTypeIndex = 0;
 		const int treeTypeSize = (int)treeTypes.size();
+		const math::Axis axes[] = {math::Axis::None, math::Axis::Y, math::Axis::Y, math::Axis::None, math::Axis::Y};
+		constexpr size_t axesSize = lengthof(axes);
+		int positionIndex = 0;
 		for (const glm::vec2& position : positions) {
+			++positionIndex;
 			glm::ivec3 treePos(position.x, 0, position.y);
 			treePos.y = terrainHeight(position.x, pagerCtx.region.getLowerY(), position.y);
 			if (treePos.y <= voxel::MAX_WATER_HEIGHT) {
@@ -255,13 +259,14 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 			if (v == nullptr) {
 				continue;
 			}
-			addVolumeToPosition(wrapper, v, treePos);
+			const voxelutil::RawVolumeRotateWrapper rotateWrapper(v, axes[positionIndex % axesSize]);
+			addVolumeToPosition(chunkWrapper, rotateWrapper, treePos);
 		}
 	}
 }
 
-void WorldPager::addVolumeToPosition(voxel::PagedVolumeWrapper& target, const voxel::RawVolume* source, const glm::ivec3& pos) {
-	const voxel::Region& region = source->region();
+void WorldPager::addVolumeToPosition(voxel::PagedVolumeWrapper& target, const voxelutil::RawVolumeRotateWrapper& source, const glm::ivec3& pos) {
+	const voxel::Region& region = source.region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
 	const voxel::Region& targetRegion = target.region();
@@ -274,7 +279,7 @@ void WorldPager::addVolumeToPosition(voxel::PagedVolumeWrapper& target, const vo
 				if (!targetRegion.containsPoint(nx, ny, nz)) {
 					continue;
 				}
-				const voxel::Voxel& voxel = source->voxel(x, y, z);
+				const voxel::Voxel& voxel = source.voxel(x, y, z);
 				if (voxel::isAir(voxel.getMaterial())) {
 					continue;
 				}

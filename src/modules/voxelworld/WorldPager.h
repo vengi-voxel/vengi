@@ -14,6 +14,7 @@
 #include <memory>
 #include "ChunkPersister.h"
 #include "TreeVolumeCache.h"
+#include "voxelutil/RawVolumeRotateWrapper.h"
 
 namespace voxel {
 class PagedVolumeWrapper;
@@ -42,7 +43,7 @@ private:
 
 	void createWorld(voxel::PagedVolumeWrapper& volume) const;
 	void placeTrees(voxel::PagedVolume::PagerContext& pagerCtx);
-	void addVolumeToPosition(voxel::PagedVolumeWrapper& target, const voxel::RawVolume* source, const glm::ivec3& pos);
+	void addVolumeToPosition(voxel::PagedVolumeWrapper& target, const voxelutil::RawVolumeRotateWrapper& source, const glm::ivec3& pos);
 
 	int terrainHeight(int x, int minsY, int z) const;
 	int terrainHeight(int x, int minsY, int z, float n) const;
