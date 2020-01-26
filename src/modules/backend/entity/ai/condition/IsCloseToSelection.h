@@ -22,7 +22,7 @@ public:
 		if (_parameters.empty()) {
 			_distance = 1;
 		} else {
-			_distance = std::stoi(_parameters);
+			_distance = core::string::toInt(_parameters);
 		}
 	}
 	CONDITION_FACTORY(IsCloseToSelection)

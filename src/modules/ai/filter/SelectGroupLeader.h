@@ -23,7 +23,7 @@ public:
 		if (_parameters.empty()) {
 			_groupId = -1;
 		} else {
-			_groupId = std::stoi(_parameters);
+			_groupId = core::string::toInt(_parameters);
 		}
 	}
 

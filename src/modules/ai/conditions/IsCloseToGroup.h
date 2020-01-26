@@ -32,8 +32,8 @@ public:
 			_groupId = -1;
 			_distance = -1.0f;
 		} else {
-			_groupId = std::stoi(tokens[0]);
-			_distance = std::stof(tokens[1]);
+			_groupId = core::string::toInt(tokens[0]);
+			_distance = core::string::toFloat(tokens[1]);
 		}
 	}
 

@@ -18,7 +18,7 @@ protected:
 public:
 	Random(const core::String& parameters, const Filters& filters) :
 		IFilter("Random", parameters), _filters(filters) {
-		_n = std::stoi(parameters);
+		_n = core::string::toInt(parameters);
 	}
 
 	FILTER_ACTION_FACTORY(Random)

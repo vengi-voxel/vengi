@@ -29,7 +29,7 @@ public:
 		if (_parameters.empty()) {
 			_enemyCount = -1;
 		} else {
-			_enemyCount = std::stoi(_parameters);
+			_enemyCount = core::string::toInt(_parameters);
 		}
 	}
 

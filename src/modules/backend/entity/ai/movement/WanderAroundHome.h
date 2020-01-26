@@ -20,7 +20,7 @@ public:
 		if (parameter.empty()) {
 			 _maxDistance = 40.0f;
 		} else {
-			 _maxDistance = std::stof(parameter);
+			 _maxDistance = core::string::toFloat(parameter);
 		}
 	}
 

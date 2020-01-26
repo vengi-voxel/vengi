@@ -33,6 +33,7 @@
 #include "AI.h"
 #include "common/MemoryAllocator.h"
 #include "common/Thread.h"
+#include "core/StringUtil.h"
 
 namespace ai {
 
