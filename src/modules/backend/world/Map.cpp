@@ -41,7 +41,7 @@ Map::Map(MapId mapId,
 		const cooldown::CooldownProviderPtr& cooldownProvider,
 		const persistence::PersistenceMgrPtr& persistenceMgr,
 		const DBChunkPersisterPtr& chunkPersister) :
-		_mapId(mapId), _mapIdStr(std::to_string(mapId)),
+		_mapId(mapId), _mapIdStr(core::string::toString(mapId)),
 		_eventBus(eventBus), _filesystem(filesystem), _persistenceMgr(persistenceMgr),
 		_volumeCache(volumeCache), _attackMgr(this),
 		_quadTree(math::RectFloat::getMaxRect(), 100.0f), _chunkPersister(chunkPersister) {

@@ -12,7 +12,7 @@ AICharacter::AICharacter(ai::CharacterId id, Npc& npc) :
 		Super(id), _npc(npc) {
 	setOrientation(ai::randomf(glm::two_pi<float>()));
 	setAttribute(ai::attributes::NAME, core::string::format("%s %" PRIChrId, npc.type(), id));
-	setAttribute(ai::attributes::ID, std::to_string(id));
+	setAttribute(ai::attributes::ID, core::string::toString(id));
 }
 
 AICharacter::~AICharacter() {
@@ -41,7 +41,7 @@ void AICharacter::update(int64_t dt, bool debuggingActive) {
 
 	if (debuggingActive) {
 		setAttribute(ai::attributes::POSITION, ai::Str::toString(getPosition()));
-		setAttribute(ai::attributes::ORIENTATION, std::to_string(ai::toDegrees(getOrientation())));
+		setAttribute(ai::attributes::ORIENTATION, core::string::toString(ai::toDegrees(getOrientation())));
 		const attrib::Attributes& attribs =  _npc._attribs;
 		for (int i = 0; i <= (int)attrib::Type::MAX; ++i) {
 			const attrib::Type attribType = (attrib::Type)i;

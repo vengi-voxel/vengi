@@ -104,7 +104,7 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 
 	size_t pre = 0, pos;
 	while ((pos = s.find_first_of('/', pre)) != core::String::npos) {
-		const core::String dirpart = s.substr(0, pos++);
+		const core::String& dirpart = s.substr(0, pos++);
 		pre = pos;
 		if (dirpart.empty()) {
 			continue; // if leading / first time is 0 length

@@ -33,7 +33,7 @@ core::AppState TestBiomes::onInit() {
 		return state;
 	}
 
-	_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
+	_logLevelVar->setVal(core::string::toString(SDL_LOG_PRIORITY_DEBUG));
 	Log::init();
 	video::clearColor(::core::Color::Black);
 

@@ -78,7 +78,7 @@ bool Connection::connect() {
 
 	core::String port;
 	if (_port > 0) {
-		port = std::to_string(_port);
+		port = core::string::toString(_port);
 	}
 
 #if 0

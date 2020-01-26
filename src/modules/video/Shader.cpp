@@ -371,7 +371,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	}
 	core::String src;
 	src.append("#version ");
-	src.append(std::to_string(glslVersion));
+	src.append(core::string::toString(glslVersion));
 	src.append("\n");
 	if (shaderType == ShaderType::Compute) {
 		src.append("#extension GL_ARB_compute_shader : enable\n");

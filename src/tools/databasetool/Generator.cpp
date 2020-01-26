@@ -121,13 +121,13 @@ static void createMetaStruct(const Table& table, core::String& src) {
 	src += "\t\t\t_schema = \"" + table.schema + "\";\n";
 	src += "\t\t\t_tableName = \"" + table.name + "\";\n";
 	src += "\t\t\t_primaryKeyFields = ";
-	src += std::to_string(table.primaryKeys);
+	src += core::string::toString(table.primaryKeys);
 	src += ";\n";
 	src += "\t\t\t_autoIncrementStart = ";
-	src += std::to_string(table.autoIncrementStart);
+	src += core::string::toString(table.autoIncrementStart);
 	src += ";\n";
 	src += "\t\t\t_fields.reserve(";
-	src += std::to_string(table.fields.size());
+	src += core::string::toString(table.fields.size());
 	src += ");\n";
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
@@ -137,9 +137,11 @@ static void createMetaStruct(const Table& table, core::String& src) {
 		src += persistence::toFieldType(f.type);
 		src += ", persistence::Operator::";
 		src += OperatorNames[std::enum_value(f.updateOperator)];
-		src += ", " + std::to_string(f.contraintMask);
+		src += ", ";
+		src += core::string::toString(f.contraintMask);
 		src += ", \"" + f.defaultVal + "\"";
-		src += ", " + std::to_string(f.length);
+		src += ", ";
+		src += core::string::toString(f.length);
 		src += ", offsetof(";
 		src += MembersStruct::structName();
 		src += ", _";
@@ -163,7 +165,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 	}
 	if (!table.constraints.empty()) {
 		src += "\t\t\t_constraints.reserve(";
-		src +=std::to_string(table.constraints.size());
+		src += core::string::toString(table.constraints.size());
 		src += ");\n";
 	}
 	for (auto i = table.constraints.begin(); i != table.constraints.end(); ++i) {
@@ -173,12 +175,12 @@ static void createMetaStruct(const Table& table, core::String& src) {
 		src += "\", persistence::Constraint{{\"";
 		src += core::string::join(c.fields.begin(), c.fields.end(), "\",\"");
 		src += "\"}, ";
-		src += std::to_string(c.types);
+		src += core::string::toString(c.types);
 		src += "}));\n";
 	}
 	if (table.primaryKeys > 0) {
 		src += "\t\t\t_primaryKeys.reserve(";
-		src += std::to_string(table.primaryKeys);
+		src += core::string::toString(table.primaryKeys);
 		src += ");\n";
 		for (auto entry : table.constraints) {
 			const persistence::Constraint& c = entry.second;
@@ -203,7 +205,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 	}
 	if (!table.uniqueKeys.empty()) {
 		src += "\t\t\t_uniqueKeys.reserve(";
-		src += std::to_string(table.uniqueKeys.size());
+		src += core::string::toString(table.uniqueKeys.size());
 		src += ");\n";
 	}
 	for (const auto& uniqueKey : table.uniqueKeys) {
@@ -213,7 +215,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 	}
 	if (!table.foreignKeys.empty()) {
 		src += "\t\t\t_foreignKeys.reserve(";
-		src += std::to_string(table.foreignKeys.size());
+		src += core::string::toString(table.foreignKeys.size());
 		src += ");\n";
 	}
 	for (const auto& foreignKeyEntry : table.foreignKeys) {
@@ -320,9 +322,9 @@ static void createDBConditions(const Table& table, core::String& src) {
 				src += "value";
 			}
 		} else if (f.type == persistence::FieldType::TIMESTAMP) {
-			src += "std::to_string(value.seconds())";
+			src += "core::string::toString(value.seconds())";
 		} else {
-			src += "std::to_string(value)";
+			src += "core::string::toString(value)";
 		}
 		src += ", comp) {\n\t}\n";
 

@@ -326,7 +326,7 @@ core::String std140Padding(const Variable& v, int& padding) {
 	 || cType.type == Variable::Type::DVEC3
 	 || cType.type == Variable::Type::IVEC3
 	 || cType.type == Variable::Type::BVEC3) {
-		return "\t\tfloat _padding" + std::to_string(padding++) + ";\n";
+		return "\t\tfloat _padding" + core::string::toString(padding++) + ";\n";
 	}
 #endif
 	return "";

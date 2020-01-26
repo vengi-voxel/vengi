@@ -104,7 +104,7 @@ core::AppState TestTraze::onInit() {
 	}
 
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 84.0f));
-	_logLevelVar->setVal(std::to_string(SDL_LOG_PRIORITY_INFO));
+	_logLevelVar->setVal(core::string::toString(SDL_LOG_PRIORITY_INFO));
 	Log::init();
 
 	_textCamera.setMode(video::CameraMode::Orthogonal);

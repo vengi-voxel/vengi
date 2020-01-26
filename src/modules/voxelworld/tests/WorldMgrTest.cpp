@@ -62,7 +62,7 @@ protected:
 			int chunkX, int chunkY, int chunkZ,
 			int meshX,  int meshY,  int meshZ
 			) {
-		SCOPED_TRACE("Testcase call: " + std::to_string(++_chunkMeshPositionTest));
+		SCOPED_TRACE("Testcase call: " + core::string::toString(++_chunkMeshPositionTest));
 
 		const glm::ivec3 vec(worldX, worldY, worldZ);
 

@@ -199,6 +199,12 @@ inline core::String rtrim(const core::String& str) {
 	return str;
 }
 
+template<class T>
+core::String toString(const T& v) {
+	const std::string& str = std::to_string(v);
+	return core::String(str.c_str());
+}
+
 inline core::String trim(const core::String& str) {
 	return ltrim(rtrim(str));
 }
