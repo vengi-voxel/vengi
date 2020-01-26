@@ -216,7 +216,7 @@ void AIDebugger::change(const QString& name) {
 }
 
 void AIDebugger::updateNode(int32_t nodeId, const QVariant& name, const QVariant& type, const QVariant& condition) {
-	writeMessage(AIUpdateNodeMessage(nodeId, _selectedId, name.toString().toStdString(), type.toString().toStdString(), condition.toString().toStdString()));
+	writeMessage(AIUpdateNodeMessage(nodeId, _selectedId, name.toString().c_str(), type.toString().c_str(), condition.toString().c_str()));
 }
 
 void AIDebugger::deleteNode(int32_t nodeId) {
@@ -224,7 +224,7 @@ void AIDebugger::deleteNode(int32_t nodeId) {
 }
 
 void AIDebugger::addNode(int32_t parentNodeId, const QVariant& name, const QVariant& type, const QVariant& condition) {
-	writeMessage(AIAddNodeMessage(parentNodeId, _selectedId, name.toString().toStdString(), type.toString().toStdString(), condition.toString().toStdString()));
+	writeMessage(AIAddNodeMessage(parentNodeId, _selectedId, name.toString().c_str(), type.toString().c_str(), condition.toString().c_str())));
 }
 
 bool AIDebugger::connectToAIServer(const QString& hostname, short port) {

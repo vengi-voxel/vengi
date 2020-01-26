@@ -61,7 +61,7 @@ public:
 		if (i != attributes.end()) {
 			curItem->show();
 			maxItem->show();
-			const QString& curAndMax = QString::fromStdString(i->second);
+			const QString curAndMax(i->second.c_str());
 			QStringList values = curAndMax.split("/");
 			const double curVal = values[0].toDouble();
 			const double maxVal = values[1].toDouble();
