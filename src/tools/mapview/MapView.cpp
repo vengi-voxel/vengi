@@ -41,6 +41,7 @@ core::AppState MapView::onConstruct() {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
 	_movement.construct();
+	_camera.construct();
 
 	core::Command::registerCommand("bird", [&] (const core::CmdArgs& args) {
 		glm::vec3 pos = _entity->position();
@@ -177,7 +178,7 @@ void MapView::beforeUI() {
 	_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _entity, [&] (const glm::vec3& pos, float maxWalkHeight) {
 		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 	});
-	_camera.update(_entity->position(), _deltaFrameMillis);
+	_camera.update(_entity->position(), _deltaFrameMillis, _now);
 
 	if (_updateWorld) {
 		if (!_singlePosExtraction) {
@@ -302,6 +303,7 @@ core::AppState MapView::onCleanup() {
 	_worldRenderer.shutdown();
 	_axis.shutdown();
 	_movement.shutdown();
+	_camera.shutdown();
 	_entity = frontend::ClientEntityPtr();
 	const core::AppState state = Super::onCleanup();
 	_worldPager->shutdown();

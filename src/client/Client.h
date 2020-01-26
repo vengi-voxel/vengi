@@ -41,7 +41,6 @@ protected:
 	core::VarPtr _rotationSpeed;
 	core::VarPtr _chunkUrl;
 	core::VarPtr _seed;
-	core::VarPtr _maxTargetDistance;
 	frontend::ClientEntityPtr _player;
 	voxel::VoxelFont _voxelFont;
 	ui::turbobadger::WaitingMessage _waiting;

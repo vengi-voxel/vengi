@@ -87,6 +87,7 @@ core::AppState Client::onConstruct() {
 
 	_volumeCache->construct();
 	_movement.construct();
+	_camera.construct();
 
 	core::Var::get(cfg::ClientPort, SERVER_PORT);
 	core::Var::get(cfg::ClientHost, SERVER_HOST);
@@ -97,7 +98,6 @@ core::AppState Client::onConstruct() {
 	_seed = core::Var::get(cfg::ServerSeed, "");
 	core::Var::get(cfg::HTTPBaseURL, BASE_URL);
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
-	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "20.0");
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	_worldRenderer.construct();
 
@@ -218,7 +218,7 @@ void Client::beforeUI() {
 		_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _player, [&] (const glm::vec3& pos, float maxWalkHeight) {
 			return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 		});
-		_camera.update(_player->position(), _deltaFrameMillis);
+		_camera.update(_player->position(), _deltaFrameMillis, _now);
 		_worldRenderer.extractMeshes(camera);
 		_worldRenderer.update(camera, _deltaFrameMillis);
 		_worldRenderer.renderWorld(camera);
@@ -277,6 +277,7 @@ core::AppState Client::onCleanup() {
 	_network->shutdown();
 	_waiting.shutdown();
 	_movement.shutdown();
+	_camera.shutdown();
 	Log::info("shutting down the volume cache");
 	_volumeCache->shutdown();
 

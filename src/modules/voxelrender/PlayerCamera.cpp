@@ -4,8 +4,17 @@
 
 #include "PlayerCamera.h"
 #include "voxel/PagedVolume.h"
+#include "core/command/Command.h"
 
 namespace voxelrender {
+
+void PlayerCamera::construct() {
+	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "28.0");
+	_cameraZoomSpeed = core::Var::get(cfg::ClientCameraZoomSpeed, "10.0");
+
+	core::Command::registerActionButton("zoom_in", _zoomIn);
+	core::Command::registerActionButton("zoom_out", _zoomOut);
+}
 
 bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
 	_camera.init(position, frameBufferSize, windowSize);
@@ -21,6 +30,16 @@ bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBuffe
 	return true;
 }
 
+void PlayerCamera::shutdown() {
+	core::Command::unregisterActionButton("zoom_in");
+	core::Command::unregisterActionButton("zoom_out");
+}
+
+void PlayerCamera::zoom(float level) {
+	const float value = _cameraZoomSpeed->floatVal() * level;
+	_targetDistance = glm::clamp(_targetDistance + value, 1.0f, _maxTargetDistance->floatVal());
+}
+
 void PlayerCamera::rotate(float pitch, float turn, float speed) {
 	_pendingPitch = pitch;
 	_pendingTurn = turn;
@@ -29,7 +48,17 @@ void PlayerCamera::rotate(float pitch, float turn, float speed) {
 	}
 }
 
-void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame) {
+void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame, uint64_t now) {
+	if (_zoomIn.pressed()) {
+		_zoomIn.execute(now, 20ul, [&] () {
+			zoom(1.0f);
+		});
+	} else if (_zoomOut.pressed()) {
+		_zoomOut.execute(now, 20ul, [&] () {
+			zoom(-1.0f);
+		});
+	}
+
 	// TODO: fix this magic number with the real character eye height.
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
 	const glm::vec3 targetpos = entityPosition + eye;
