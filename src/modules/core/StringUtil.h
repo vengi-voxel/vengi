@@ -158,21 +158,9 @@ inline core::String stripExtension(const core::String& str) {
 	return str.substr(0, pos) ;
 }
 
-inline core::String extractFilename(core::String str) {
-	const size_t pathPos = str.rfind('/');
-	if (pathPos != core::String::npos) {
-		str = str.substr(pathPos + 1);
-	}
-	const size_t extPos = str.rfind('.');
-	if (extPos != core::String::npos) {
-		str = str.substr(0, extPos);
-	}
-	return str;
-}
-
 inline core::String extractFilenameWithExtension(const core::String& str) {
 	const size_t pathPos = str.rfind('/');
-	if (pathPos == std::string::npos) {
+	if (pathPos == core::String::npos) {
 		return str;
 	}
 	return str.substr(pathPos + 1);
@@ -180,6 +168,10 @@ inline core::String extractFilenameWithExtension(const core::String& str) {
 
 inline bool contains(const core::String& str, const core::String& search) {
 	return str.rfind(search.c_str()) != core::String::npos;
+}
+
+inline core::String extractFilename(core::String str) {
+	return stripExtension(extractFilenameWithExtension(str));
 }
 
 inline bool contains(const char *haystack, const char *needle) {
