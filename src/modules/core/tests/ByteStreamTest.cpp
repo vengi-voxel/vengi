@@ -176,6 +176,7 @@ TEST(ByteStreamTest, testReadString) {
 	const core::String str = "hello IT!";
 	byteStream.addString(str);
 	const size_t previous = byteStream.getSize();
+	EXPECT_EQ(str.size(), previous - 1);
 	const core::String readstr = byteStream.readString();
 	ASSERT_EQ(str, readstr);
 	ASSERT_EQ(previous - str.size() - 1, byteStream.getSize());
