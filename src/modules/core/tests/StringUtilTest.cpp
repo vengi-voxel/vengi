@@ -136,4 +136,10 @@ TEST_F(StringUtilTest, testReplaceAll) {
 	EXPECT_EQ("222222222333", core::string::replaceAll(str, "1", "22"));
 }
 
+TEST_F(StringUtilTest, testReplaceAllChars) {
+	String str("C:\\foo\\bar");
+	core::string::replaceAllChars(str, '\\', '/');
+	EXPECT_EQ("C:/foo/bar", str);
+}
+
 }
