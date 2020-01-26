@@ -57,6 +57,10 @@ core::String File::load() {
 }
 
 SDL_RWops* File::createRWops(FileMode mode) const {
+	if (_rawPath.empty()) {
+		Log::debug("Can't open file - no path given");
+		return nullptr;
+	}
 	const char *fmode = "rb";
 	if (mode == FileMode::Write) {
 		fmode = "wb";
