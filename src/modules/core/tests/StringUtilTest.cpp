@@ -40,6 +40,10 @@ TEST_F(StringUtilTest, testStripExtension) {
 	EXPECT_EQ("foo.bar", core::string::stripExtension("foo.bar.foo"));
 }
 
+TEST_F(StringUtilTest, testExtractPath) {
+	EXPECT_EQ("/a/b/c/def/", core::string::extractPath("/a/b/c/def/foo.bar"));
+}
+
 TEST_F(StringUtilTest, testAppendSmall1) {
 	char buf1[4] = { '\0' };
 	EXPECT_EQ(&buf1[1], core::string::append(buf1, sizeof(buf1), "a"));
@@ -82,6 +86,10 @@ TEST_F(StringUtilTest, testExtractFilename) {
 	EXPECT_EQ("file", core::string::extractFilename("file"));
 }
 
+TEST_F(StringUtilTest, testExtractFilenameWithExtension) {
+	EXPECT_EQ("file.extension", core::string::extractFilenameWithExtension("/path/to/file.extension"));
+}
+
 TEST_F(StringUtilTest, testToLower) {
 	core::String test("FILENAME.EXT");
 	EXPECT_EQ("filename.ext", core::string::toLower(test));
@@ -121,6 +129,11 @@ TEST_F(StringUtilTest, testLowerCamelCase) {
 	EXPECT_EQ("fooBar", core::string::lowerCamelCase("_foo__bar_"));
 	EXPECT_EQ("fooBAr", core::string::lowerCamelCase("_foo__b_ar_"));
 	EXPECT_EQ("fooBAr", core::string::lowerCamelCase("___foo___b__ar__"));
+}
+
+TEST_F(StringUtilTest, testReplaceAll) {
+	const String str("111222333");
+	EXPECT_EQ("222222222333", core::string::replaceAll(str, "1", "22"));
 }
 
 }
