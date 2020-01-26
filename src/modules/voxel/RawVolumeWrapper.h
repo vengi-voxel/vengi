@@ -95,6 +95,11 @@ public:
 		return true;
 	}
 
+	void translate(const glm::ivec3& t) {
+		_volume->translate(t);
+		_dirtyRegion.shift(t.x, t.y, t.z);
+	}
+
 	inline bool setVoxels(int x, int z, const Voxel* voxels, int amount) {
 		for (int y = 0; y < amount; ++y) {
 			setVoxel(x, y, z, voxels[y]);
