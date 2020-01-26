@@ -219,7 +219,7 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 		// own chunk region
 		voxel::Region(mins, maxs)
 	};
-	// the assumption here is that we get a full heigt paging request, otherwise we
+	// the assumption here is that we get a full height paging request, otherwise we
 	// would have to loop over more regions.
 	core_assert(pagerCtx.region.getLowerY() == 0);
 	core_assert(pagerCtx.region.getUpperY() == voxel::MAX_HEIGHT);
