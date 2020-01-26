@@ -49,6 +49,7 @@ function addGrass(lower, upper, humidity, temperature, underGround)
   addTree(grass, "pine")
   addTree(grass, "fir")
   addTree(grass, "deciduous")
+  addTree(grass, "bush")
   return grass
 end
 
