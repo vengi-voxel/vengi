@@ -49,6 +49,12 @@ void WindowedApp::onAfterRunning() {
 
 core::AppState WindowedApp::onRunning() {
 	core_trace_scoped(WindowedAppOnRunning);
+	if (_keybindingHandler.isPressed(util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP)) {
+		handleKeyRelease(util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP, 0);
+	}
+	if (_keybindingHandler.isPressed(util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN)) {
+		handleKeyRelease(util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN, 0);
+	}
 	Super::onRunning();
 
 	SDL_GetMouseState(&_mousePos.x, &_mousePos.y);
@@ -126,7 +132,6 @@ bool WindowedApp::onMouseWheel(int32_t x, int32_t y) {
 	const int32_t key = y < 0 ? util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP : util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
 	const int16_t mod = SDL_GetModState();
 	if (handleKeyPress(key, mod)) {
-		handleKeyRelease(key, mod);
 		return true;
 	}
 	return false;
