@@ -254,11 +254,11 @@ inline bool iequals(const std::string& a, const std::string& b) {
 
 template<typename ITER>
 std::string join(const ITER& begin, const ITER& end, const char *delimiter) {
-	std::ostringstream ss;
 	auto i = begin;
 	if (i == end) {
 		return "";
 	}
+	std::ostringstream ss;
 	ss << *i;
 	for (++i; i != end; ++i) {
 		ss << delimiter;
@@ -269,11 +269,11 @@ std::string join(const ITER& begin, const ITER& end, const char *delimiter) {
 
 template<typename ITER, typename FUNC>
 std::string join(const ITER& begin, const ITER& end, const char *delimiter, FUNC&& func) {
-	std::ostringstream ss;
 	auto i = begin;
 	if (i == end) {
 		return "";
 	}
+	std::ostringstream ss;
 	ss << func(*i);
 	for (++i; i != end; ++i) {
 		ss << delimiter;
