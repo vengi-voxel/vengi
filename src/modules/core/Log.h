@@ -8,7 +8,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
-#include <string>
 #include <SDL_log.h>
 
 #ifndef __GNUC__
@@ -37,7 +36,7 @@ public:
 		Error = SDL_LOG_PRIORITY_ERROR
 	};
 
-	static Level toLogLevel(const std::string& string);
+	static Level toLogLevel(const char* string);
 	static const char* toLogLevel(Level level);
 
 	static void init();

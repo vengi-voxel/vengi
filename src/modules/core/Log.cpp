@@ -62,7 +62,8 @@ static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority p
 }
 #endif
 
-Log::Level Log::toLogLevel(const std::string& string) {
+Log::Level Log::toLogLevel(const char* level) {
+	const std::string string(level);
 	if (core::string::iequals(string, "trace")) {
 		return Level::Trace;
 	}

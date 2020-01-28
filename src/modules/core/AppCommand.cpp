@@ -168,7 +168,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			return;
 		}
 		const std::string& id = args[0];
-		const Log::Level level = Log::toLogLevel(args[1]);
+		const Log::Level level = Log::toLogLevel(args[1].c_str());
 		const auto hashVal = Log::logid(id.c_str(), id.length());
 		if (level == Log::Level::None) {
 			Log::disable(hashVal);
